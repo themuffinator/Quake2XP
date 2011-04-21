@@ -1,0 +1,791 @@
+/*
+Copyright (C) 2006-2011 Quake2xp Team and Berserker (sun code base)
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+
+#include "r_local.h"
+
+
+
+int r_numflares;
+flare_t r_flares[MAX_FLARES];
+vec3_t vert[1];
+
+static vec3_t vert_array[MAX_FLARES_VERTEX];
+static vec2_t tex_array[MAX_FLARES_VERTEX];
+static vec4_t color_array[MAX_FLARES_VERTEX];
+
+
+/*
+=====================
+Draw Occlusion Flares
+=====================
+*/
+void R_BuildFlares(flare_t * light, int Id){
+	
+	float		dist, dist2, scale;
+	vec3_t		j, v, tmp;
+	int			sampleCount;
+    int			ocCount = 0;
+	unsigned	flareIndex[MAX_INDICES];
+	int			flareVert=0, index=0;
+	
+	if (!gl_state.arb_occlusion) 
+		return;
+	
+	if (light->surf->ent) {
+		
+		if (!VectorCompare(light->surf->ent->angles, vec3_origin))
+			return;
+
+		qglPushMatrix();
+		R_RotateForEntity(light->surf->ent);
+		
+	} else { 	
+		
+		if (R_CullOrigin(light->origin))
+			return;
+
+		R_TransformToScreen_Vec3(light->origin, j);
+
+		if( j[0] < r_newrefdef.x || j[0] > r_newrefdef.x + r_newrefdef.width )
+			return;
+		if( j[1] < r_newrefdef.y || j[1] > r_newrefdef.y + r_newrefdef.height)
+			return;
+	}
+		light->surf->visframe = r_framecount;
+	
+		// Draw Occlusion Geometry
+		qglDisable(GL_TEXTURE_2D);
+		qglColorMask(0, 0, 0, 0);
+		qglDepthMask(0);
+		
+		qglEnableClientState(GL_VERTEX_ARRAY);
+		qglVertexPointer(3, GL_FLOAT, sizeof(vec3_t), vert);
+
+		qglBeginQueryARB(GL_SAMPLES_PASSED_ARB, ocQueries[Id]);
+		
+		VA_SetElem3(vert[0],  light->origin[0],  light->origin[1],  light->origin[2]); 
+		
+			
+		qglDrawArrays (GL_POINTS, 0, 1);
+
+		qglEndQueryARB(GL_SAMPLES_PASSED_ARB);
+		
+
+		qglDisableClientState(GL_VERTEX_ARRAY);
+		qglEnable(GL_TEXTURE_2D);
+		qglColorMask(1, 1, 1, 1);
+		qglDepthMask(1);
+		qglColor4f(1, 1, 1, 1);
+	
+		qglGetQueryObjectivARB(ocQueries[Id], GL_QUERY_RESULT_ARB, &sampleCount);
+
+		if (!sampleCount) {
+			if (light->surf->ent)
+				qglPopMatrix();
+			return;
+		} 
+		else
+		{
+
+		if(flareVert){
+		
+		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
+			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, flareVert, index, GL_UNSIGNED_INT, flareIndex);
+		else
+			qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
+		
+			flareVert = 0;
+			index = 0;
+			}
+		}
+
+	if(gl_state.nv_conditional_render)
+		glBeginConditionalRenderNV(ocQueries[Id], GL_QUERY_WAIT_NV);
+
+	// Draw flares if they occlusion 
+	VectorSubtract(light->origin, r_origin, v);
+	dist = VectorLength(v) * (light->size * 0.01);
+
+	// Color Fade and cut off by vis distance
+	dist2 = VectorLength(v);
+	if (dist2 > 2100)
+		return;
+	scale = ((2048 - dist2) / 2048) * 0.5;
+	
+	qglDisable(GL_DEPTH_TEST);
+	VectorScale(light->color, scale, tmp);
+
+	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer		(2, GL_FLOAT, 0, tex_array);
+	qglEnableClientState	(GL_COLOR_ARRAY);
+	qglColorPointer			(4, GL_FLOAT, 0, color_array);
+	qglEnableClientState	(GL_VERTEX_ARRAY);
+	qglVertexPointer		(3, GL_FLOAT, 0, vert_array);
+	
+	VectorMA (light->origin, -1-dist, vup, vert_array[flareVert+0]);
+	VectorMA (vert_array[flareVert+0], 1+dist, vright, vert_array[flareVert+0]);
+	VA_SetElem2(tex_array[flareVert+0], 0, 1);
+	VA_SetElem4(color_array[flareVert+0], tmp[0],tmp[1],tmp[2], 1);
+
+	VectorMA (light->origin, -1-dist, vup, vert_array[flareVert+1]);
+	VectorMA (vert_array[flareVert+1], -1-dist, vright, vert_array[flareVert+1]);
+    VA_SetElem2(tex_array[flareVert+1], 0, 0);
+	VA_SetElem4(color_array[flareVert+1], tmp[0],tmp[1],tmp[2], 1);
+
+    VectorMA (light->origin, 1+dist, vup, vert_array[flareVert+2]);
+	VectorMA (vert_array[flareVert+2], -1-dist, vright, vert_array[flareVert+2]);
+    VA_SetElem2(tex_array[flareVert+2], 1, 0);
+	VA_SetElem4(color_array[flareVert+2], tmp[0],tmp[1],tmp[2], 1);
+
+	VectorMA (light->origin, 1+dist, vup, vert_array[flareVert+3]);
+	VectorMA (vert_array[flareVert+3], 1+dist, vright, vert_array[flareVert+3]);
+    VA_SetElem2(tex_array[flareVert+3], 1, 1);
+	VA_SetElem4(color_array[flareVert+3], tmp[0],tmp[1],tmp[2], 1);
+	
+	flareIndex[index++] = flareVert+0;
+	flareIndex[index++] = flareVert+1;
+	flareIndex[index++] = flareVert+3;
+	flareIndex[index++] = flareVert+3;
+	flareIndex[index++] = flareVert+1;
+	flareIndex[index++] = flareVert+2;
+			
+	flareVert+=4;
+
+	
+	if(flareVert)
+	{
+		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
+			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, flareVert, index, GL_UNSIGNED_INT, flareIndex);
+		else
+			qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
+	}
+
+	if (light->surf->ent)
+		qglPopMatrix();
+
+	
+	qglEnable(GL_DEPTH_TEST);
+	qglDisableClientState(GL_VERTEX_ARRAY);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglDisableClientState(GL_COLOR_ARRAY);
+	qglColor4f(1, 1, 1, 1);
+	c_flares++;
+	
+	if(gl_state.nv_conditional_render)
+		glEndConditionalRenderNV();
+}
+
+
+void R_RenderFlares(void)
+{
+	int i;
+	flare_t *fl;
+
+	if (!r_drawFlares->value)
+		return;
+	
+	if ( r_newrefdef.rdflags & RDF_IRGOGGLES)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	qglDepthMask(0);
+	qglEnable(GL_BLEND);
+	
+	GL_TexEnv(GL_MODULATE);
+	GL_Bind(r_flare->texnum);
+
+	qglShadeModel(GL_SMOOTH);
+	GL_Overbrights(false);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+	fl = r_flares;
+	for (i = 0; i < r_numflares; i++, fl++) {
+		int sidebit;
+		float viewplane;
+		
+		if (fl->surf->visframe != r_framecount)	// pvs culling... haha, nicest optimisation!
+			continue;
+		
+		if(fl->ignore)
+			continue;
+
+		viewplane = DotProduct(r_origin, fl->surf->plane->normal) - fl->surf->plane->dist;
+		if (viewplane >= 0)
+			sidebit = 0;
+		else
+			sidebit = SURF_PLANEBACK;
+
+		if ((fl->surf->flags & SURF_PLANEBACK) != sidebit)
+			continue;			// wrong light poly side!
+		
+		R_BuildFlares(fl, i);
+
+	}
+
+	qglColor4f(1, 1, 1, 1);
+	GL_TexEnv(GL_REPLACE);
+	qglDisable(GL_BLEND);
+	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglDepthMask(1);
+	GL_Overbrights(false);
+
+}
+
+/*
+================
+Berserker@quake2 Sun
+================
+*/
+qboolean draw_sun = false;
+float		sun_size = 0.20f;
+vec3_t		sun_origin;
+float		sun_x, sun_y;
+qboolean	spacebox = false;
+float		last_draw_sun;
+int			sun_time = 0;
+
+
+void transform_point(float out[4], const float m[16], const float in[4])
+{
+#define M(row,col)  m[col*4+row]
+	out[0] =
+		M(0, 0) * in[0] + M(0, 1) * in[1] + M(0, 2) * in[2] + M(0, 3) * in[3];
+	out[1] =
+		M(1, 0) * in[0] + M(1, 1) * in[1] + M(1, 2) * in[2] + M(1, 3) * in[3];
+	out[2] =
+		M(2, 0) * in[0] + M(2, 1) * in[1] + M(2, 2) * in[2] + M(2, 3) * in[3];
+	out[3] =
+		M(3, 0) * in[0] + M(3, 1) * in[1] + M(3, 2) * in[2] + M(3, 3) * in[3];
+#undef M
+}
+
+
+qboolean gluProject2(float objx, float objy, float objz, const float model[16], const float proj[16], const int viewport[4], float *winx, float *winy)	// /, 
+																																						// float 
+																																						// *winz)
+{
+	/* matrice de transformation */
+	float in[4], out[4], temp;
+
+	/* initilise la matrice et le vecteur a transformer */
+	in[0] = objx;
+	in[1] = objy;
+	in[2] = objz;
+	in[3] = 1.0;
+	transform_point(out, model, in);
+	transform_point(in, proj, out);
+
+	/* d'ou le resultat normalise entre -1 et 1 */
+	if (in[3] == 0.0)
+		return false;
+
+	temp = 1.0 / in[3];
+	in[0] *= temp;
+	in[1] *= temp;
+	in[2] *= temp;
+
+	/* en coordonnees ecran */
+	*winx = viewport[0] + (1 + in[0]) * (float) viewport[2] * 0.5;
+	*winy = viewport[1] + (1 + in[1]) * (float) viewport[3] * 0.5;
+
+	return true;
+}
+
+void R_InitSun()
+{
+	draw_sun = false;
+
+	if (!r_drawFlares->value)
+		return;
+
+	if (!sun_size)
+		return;
+
+	if (spacebox)
+		return;
+	
+	if (R_CullOrigin(sun_origin))
+		return;
+
+	draw_sun = true;
+
+	gluProject2(sun_origin[0], sun_origin[1], sun_origin[2], r_world_matrix, r_project_matrix, (int *) r_viewport, &sun_x, &sun_y);	// /, 
+																																	// &sun_z);
+	sun_y = r_newrefdef.height - sun_y;
+}
+
+
+void R_RenderSunFlare(image_t * tex, float offset, float size, float r,
+					  float g, float b)
+{
+	float minx, miny, maxx, maxy;
+	float new_x, new_y, corr;
+
+	qglColor3f(r, g, b);
+	GL_Bind(tex->texnum);
+
+	if (offset) {
+		new_x = offset * (r_newrefdef.width / 2 - sun_x) + sun_x;
+		new_y = offset * (r_newrefdef.height / 2 - sun_y) + sun_y;
+	} else {
+		new_x = sun_x;
+		new_y = sun_y;
+	}
+
+
+	corr = 1;
+
+	minx = new_x - size * corr;
+	miny = new_y - size;
+	maxx = new_x + size * corr;
+	maxy = new_y + size;
+
+	qglBegin(GL_QUADS);
+	qglTexCoord2f(0, 0);
+	qglVertex2f(minx, miny);
+	qglTexCoord2f(1, 0);
+	qglVertex2f(maxx, miny);
+	qglTexCoord2f(1, 1);
+	qglVertex2f(maxx, maxy);
+	qglTexCoord2f(0, 1);
+	qglVertex2f(minx, maxy);
+	qglEnd();
+}
+
+
+void R_RenderSun()
+{
+	float l, hx, hy;
+	float vec[2];
+	int time;
+	float size;
+
+	if (!draw_sun)
+		return;
+	
+	if ( r_newrefdef.rdflags & RDF_IRGOGGLES)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	time = Sys_Milliseconds();
+	 if (time - sun_time < 100) 
+		 l = last_draw_sun; 
+	 else { 
+	qglReadPixels(sun_x, r_newrefdef.height - sun_y, 1, 1,
+				  GL_DEPTH_COMPONENT, GL_FLOAT, &l);
+	 sun_time = time;
+	 last_draw_sun = l;
+	 l = last_draw_sun;
+	 }
+
+	if (l == 1.0) {
+		hx = r_newrefdef.width / 2;
+		hy = r_newrefdef.height / 2;
+		vec[0] = 1 - fabs(sun_x - hx) / hx;
+		vec[1] = 1 - fabs(sun_y - hy) / hy;
+		l = 3 * vec[0] * vec[1] + 0.25;
+
+		// set 2d
+		qglMatrixMode(GL_PROJECTION);
+		qglPushMatrix();
+		qglLoadIdentity();
+		qglOrtho(0, r_newrefdef.width, r_newrefdef.height, 0, -99999,
+				 99999);
+		qglMatrixMode(GL_MODELVIEW);
+		qglPushMatrix();
+		qglLoadIdentity();
+		qglEnable(GL_BLEND);
+		qglBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
+		GL_TexEnv(GL_MODULATE);
+		qglDepthRange(0, 0.3);
+
+
+		size = r_newrefdef.width * sun_size;
+		R_RenderSunFlare(sun_object, 0, size, 1, 0.4, 0.1);
+		
+		if (l > 1)
+			l = 1;
+
+		R_RenderSunFlare(sun2_object, -0.9, size * 0.07, 0.1, 0.1, 0);
+		R_RenderSunFlare(sun2_object, -0.7, size * 0.15, 0, 0, 0.1);
+		R_RenderSunFlare(sun2_object, -0.5, size * 0.085, 0.1, 0, 0);
+		R_RenderSunFlare(sun1_object, 0.3, size * 0.25, 0.1, 0.1, 0.1);
+		R_RenderSunFlare(sun2_object, 0.5, size * 0.05, 0.1, 0, 0);
+		R_RenderSunFlare(sun2_object, 0.64, size * 0.05, 0, 0.1, 0);
+		R_RenderSunFlare(sun2_object, 0.7, size * 0.25, 0.1, 0.1, 0);
+		R_RenderSunFlare(sun1_object, 0.85, size * 0.5, 0.1, 0.1, 0.1);
+		R_RenderSunFlare(sun2_object, 1.1, size * 0.125, 0.1, 0, 0);
+		R_RenderSunFlare(sun2_object, 1.25, size * 0.08, 0.1, 0.1, 0);
+
+		
+		qglDepthRange(0, 1);
+		qglDisable(GL_BLEND);
+		qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		// set 3d
+		qglPopMatrix();
+		qglMatrixMode(GL_PROJECTION);
+		qglPopMatrix();
+		qglMatrixMode(GL_MODELVIEW);
+	}
+}
+
+//===============================
+/*
+====================
+GLSL Full Screen 
+Post Process Effects
+====================
+*/
+
+unsigned int bloomtex = 0;
+
+extern cvar_t	*r_bloomThreshold;
+extern cvar_t	*r_bloomIntens;
+
+void R_Bloom (void) {
+	
+	unsigned	defBits = 0;
+	int			id;
+
+	if(!r_bloom->value)
+		return;
+		
+    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+          return;
+
+	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
+		return;
+
+		GL_SelectTexture		(GL_TEXTURE0_ARB);
+		qglDisable				(GL_TEXTURE_2D);
+		qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
+		
+		// downsample and cut color
+		GL_BindRect				(ScreenMap->texnum);
+        qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+		
+		// setup program
+		GL_BindProgram			(bloomdsProgram, defBits);
+		id = bloomdsProgram->id[defBits];
+
+		qglUniform1f			(qglGetUniformLocation(id, "threshold"), r_bloomThreshold->value);
+		qglUniform1i			(qglGetUniformLocation(id, "u_map"), 0);
+			
+		qglBegin(GL_QUADS);
+        qglVertex2f(0, vid.height);
+        qglVertex2f(vid.width * 0.25 , vid.height);
+        qglVertex2f(vid.width * 0.25 , vid.height  * 0.25);
+        qglVertex2f(0, vid.height * 0.25);
+        qglEnd();
+
+		// create bloom texture (set to zero in default state)
+		if (!bloomtex) {
+		qglGenTextures			(1, &bloomtex);
+		GL_BindRect				(bloomtex);
+		qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglCopyTexImage2D		(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width*0.25, vid.height*0.25, 0);
+		}
+		
+		// blur x
+		GL_BindRect				(bloomtex);
+		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+		
+		GL_BindProgram(gaussXProgram, defBits);
+		id = gaussXProgram->id[defBits];
+		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+	
+		qglBegin(GL_QUADS);
+        qglVertex2f(0, vid.height);
+        qglVertex2f(vid.width * 0.25 , vid.height);
+        qglVertex2f(vid.width * 0.25 , vid.height  * 0.25);
+        qglVertex2f(0, vid.height * 0.25);
+        qglEnd();
+
+		// blur y
+		GL_BindRect				(bloomtex);
+		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+
+		GL_BindProgram(gaussYProgram, defBits);
+		id = gaussYProgram->id[defBits];
+		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+		
+		qglBegin(GL_QUADS);
+        qglVertex2f(0, vid.height);
+        qglVertex2f(vid.width * 0.25 , vid.height);
+        qglVertex2f(vid.width * 0.25 , vid.height  * 0.25);
+        qglVertex2f(0, vid.height * 0.25);
+        qglEnd();
+		
+		// store 2 pass gauss blur 
+		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+
+		//final pass
+		GL_BindProgram(bloomfpProgram, defBits);
+		id = bloomfpProgram->id[defBits];
+		
+		GL_BindRect			(ScreenMap->texnum);
+		qglUniform1i		(qglGetUniformLocation(id, "u_map0"), 0);
+
+		GL_SelectTexture	(GL_TEXTURE1_ARB);
+		qglDisable			(GL_TEXTURE_2D);
+		qglEnable			(GL_TEXTURE_RECTANGLE_ARB);
+		GL_BindRect			(bloomtex);
+		qglUniform1i		(qglGetUniformLocation(id, "u_map1"), 1);
+		
+		qglUniform1f		(qglGetUniformLocation(id, "u_bloomAlpha"), r_bloomIntens->value);
+		
+		qglBegin(GL_QUADS);
+        qglVertex2f(0, vid.height);
+        qglVertex2f(vid.width, vid.height);
+        qglVertex2f(vid.width, 0);
+        qglVertex2f(0, 0);
+        qglEnd();
+						
+		GL_BindNullProgram();
+		GL_SelectTexture		(GL_TEXTURE1_ARB);
+		qglDisable				(GL_TEXTURE_2D);
+		qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
+
+		GL_SelectTexture		(GL_TEXTURE0_ARB);
+        qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
+        qglEnable				(GL_TEXTURE_2D);
+}
+
+
+unsigned int thermaltex = 0;
+
+void R_ThermalVision (void) {
+	
+	unsigned defBits = 0;
+	int	id;
+		
+    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+            return;
+
+    if (!(r_newrefdef.rdflags & RDF_IRGOGGLES))
+            return;
+
+      GL_SelectTexture		(GL_TEXTURE0_ARB);
+      qglDisable			(GL_TEXTURE_2D);
+      qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
+		
+    if (!thermaltex) {
+      qglGenTextures		(1, &thermaltex);
+      GL_BindRect			(thermaltex);
+      qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      qglCopyTexImage2D		(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
+    }
+    else {
+        GL_BindRect				(thermaltex);
+        qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+    }            
+		
+       // setup program
+		GL_BindProgram(thermalProgram, defBits);
+		id = thermalProgram->id[defBits];
+		qglUniform1i(qglGetUniformLocation(id, "u_screenTex"), 0);
+
+        qglBegin(GL_QUADS);
+        qglVertex2f(0, vid.height);
+        qglVertex2f(vid.width * 0.5 , vid.height);
+        qglVertex2f(vid.width * 0.5 , vid.height  * 0.5);
+        qglVertex2f(0, vid.height * 0.5);
+        qglEnd();
+
+		// create thermal texture (set to zero in default state)
+		if (!thermaltex) {
+		qglGenTextures			(1, &thermaltex);
+		GL_BindRect				(thermaltex);
+		qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglCopyTexImage2D		(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width*0.5, vid.height*0.5, 0);
+		}
+
+		// blur x
+		GL_BindRect				(thermaltex);
+		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
+  
+		GL_BindProgram(gaussXProgram, defBits);
+		id = gaussXProgram->id[defBits];
+		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+
+		qglBegin(GL_QUADS);
+        qglVertex2f(0, vid.height);
+        qglVertex2f(vid.width * 0.5 , vid.height);
+        qglVertex2f(vid.width * 0.5 , vid.height  * 0.5);
+        qglVertex2f(0, vid.height * 0.5);
+        qglEnd();
+
+		// blur y
+		GL_BindRect				(thermaltex);
+		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
+		
+		GL_BindProgram(gaussYProgram, defBits);
+		id = gaussYProgram->id[defBits];
+		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+			
+		qglBegin(GL_QUADS);
+        qglVertex2f(0, vid.height);
+        qglVertex2f(vid.width * 0.5 , vid.height);
+        qglVertex2f(vid.width * 0.5 , vid.height  * 0.5);
+        qglVertex2f(0, vid.height * 0.5);
+        qglEnd();
+
+		// store 2 pass gauss blur 
+		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
+
+		//final pass
+		GL_BindProgram(thermalfpProgram, defBits);
+		id = thermalfpProgram->id[defBits];
+		
+		GL_BindRect				(thermaltex);
+		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+		qglUniform1i			(qglGetUniformLocation(id, "u_map"), 0);
+			
+		qglBegin(GL_QUADS);
+        qglVertex2f(0, vid.height);
+        qglVertex2f(vid.width, vid.height);
+        qglVertex2f(vid.width, 0);
+        qglVertex2f(0, 0);
+        qglEnd();
+			
+							
+		GL_BindNullProgram();
+	
+		GL_SelectTexture(GL_TEXTURE0_ARB);
+        qglDisable(GL_TEXTURE_RECTANGLE_ARB);
+        qglEnable(GL_TEXTURE_2D);
+}
+
+
+
+void R_RadialBlur (void) {
+	
+	unsigned	defBits = 0;
+	int			id;
+	float		blur;
+	
+	if(!r_radialBlur->value)
+		return;
+
+    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+            return;
+	
+	if(r_newrefdef.fov_x <= r_radialBlurFov->value)
+		goto hack;
+
+	if (r_newrefdef.rdflags & (RDF_UNDERWATER | RDF_PAIN))
+	{
+
+hack:
+
+	qglDisable				(GL_TEXTURE_2D);
+    qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
+	GL_BindRect				(ScreenMap->texnum);
+    qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+
+	// setup program
+	GL_BindProgram(radialProgram, defBits);
+	id = radialProgram->id[defBits];
+	qglUniform1i(qglGetUniformLocation(id, "u_screenMap"), 0);
+
+	if (r_newrefdef.rdflags & RDF_PAIN)
+		blur = 0.01;
+		else if (r_newrefdef.rdflags & RDF_UNDERWATER)
+					blur = 0.0075;
+					else
+						blur = 0.01;
+
+	// xy = radial center screen space position, z = radius attenuation, w = blur strength
+	qglUniform4f(qglGetUniformLocation(id, "u_radialBlurParams"), vid.width*0.5, vid.height*0.5, 1.0/vid.height, blur);
+	qglUniform1i(qglGetUniformLocation(id, "u_samples"), r_radialBlurSamples->value);
+
+	qglBegin(GL_QUADS);
+    qglVertex2f(0, vid.height);
+    qglVertex2f(vid.width, vid.height);
+    qglVertex2f(vid.width, 0);
+    qglVertex2f(0, 0);
+    qglEnd();
+
+	GL_BindNullProgram		();
+	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
+    qglEnable				(GL_TEXTURE_2D);
+	}
+}
+
+extern cvar_t	*r_dof;
+extern cvar_t	*r_dofBias;
+extern cvar_t	*r_dofFocus;
+
+void R_DofBlur (void) {
+	
+	unsigned	defBits = 0;
+	int			id;
+	
+	if(!r_dof->value)
+		return;
+
+    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+            return;
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+            return;
+
+	// setup program
+	GL_BindProgram(dofProgram, defBits);
+	id = dofProgram->id[defBits];
+	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
+	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+
+	qglUniform1f(qglGetUniformLocation(id, "u_bias"), r_dofBias->value);
+	qglUniform1f(qglGetUniformLocation(id, "u_focus"), r_dofFocus->value);
+
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+	qglDisable				(GL_TEXTURE_2D);
+    qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
+	GL_BindRect				(ScreenMap->texnum);
+    qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+
+	GL_SelectTexture		(GL_TEXTURE1_ARB);	
+	qglDisable				(GL_TEXTURE_2D);
+    qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
+	GL_BindRect				(depthMap->texnum);
+    qglUniform1i			(qglGetUniformLocation(id, "u_DepthTex"), 1);
+
+	qglBegin(GL_QUADS);
+    qglVertex2f(0, vid.height);
+    qglVertex2f(vid.width, vid.height);
+    qglVertex2f(vid.width, 0);
+    qglVertex2f(0, 0);
+    qglEnd();
+
+	GL_BindNullProgram		();
+	GL_SelectTexture		(GL_TEXTURE1_ARB);	
+	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
+
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
+    qglEnable				(GL_TEXTURE_2D);
+}

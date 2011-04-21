@@ -1,0 +1,27 @@
+
+//calc view 
+uniform vec3			u_viewOriginES;
+varying vec3			v_viewVecTS;
+
+attribute vec3			a_tangent;
+attribute vec3			a_binormal;
+
+void main ()
+{
+gl_TexCoord[0] = gl_MultiTexCoord0; // diffuse, addative, caustics
+gl_TexCoord[1] = gl_MultiTexCoord1; // lightmap only
+
+#ifdef PARALLAX
+
+// calculate tangent space view vector for parallax
+vec3 tmp = u_viewOriginES - gl_Vertex.xyz;
+
+v_viewVecTS.x = dot(tmp, a_tangent);
+v_viewVecTS.y = dot(tmp, a_binormal);
+v_viewVecTS.z = dot(tmp, gl_Normal);
+#endif
+
+gl_Position = ftransform();
+
+gl_FrontColor = gl_Color;
+}

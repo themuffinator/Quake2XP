@@ -1,0 +1,29 @@
+varying vec2			v_deformTexCoord;
+varying vec2			v_diffuseTexCoord;
+ 
+uniform float			u_deformMul;
+varying float			v_depth;
+varying vec2			v_deformMul;
+
+
+void main ()
+{
+v_diffuseTexCoord = gl_MultiTexCoord0.xy; // colorMap 
+v_deformTexCoord = gl_MultiTexCoord1.xy; // dstMap
+
+// compute view space depth
+vec4 positionVS = gl_ModelViewMatrix * gl_Vertex;
+positionVS = vec4(1.0, 0.0, positionVS.z, 1.0);
+v_depth = -positionVS.z;
+
+// compute the deform strength
+vec2 d = (gl_ProjectionMatrix * positionVS).xw;
+d.x /= max(d.y, 1.0);
+
+v_deformMul = min(d.xx, 0.02) * u_deformMul;
+	 
+gl_FrontColor = gl_Color;
+
+gl_Position = ftransform();
+
+}

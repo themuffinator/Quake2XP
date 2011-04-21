@@ -1,0 +1,86 @@
+#######################################################################################################
+# Configure guessed variables ...
+#######################################################################################################
+
+CC=@CC@
+CFLAGS=@CFLAGS@
+# MKDIR_P=@MKDIR_P@
+WINDRES=@WINDRES@
+LIBS=@LIBS@
+LDFLAGS=@LDFLAGS@
+
+TARGET_OS=@TARGET_OS@
+TARGET_CPU=@TARGET_CPU@
+EXE_EXT=@EXEEXT@
+
+HAVE_SDL=@HAVE_SDL@
+SDL_CFLAGS=@SDL_CFLAGS@
+SDL_LIBS=@SDL_LIBS@
+
+HAVE_VID_GLX=@HAVE_VID_GLX@
+
+HAVE_OPENAL=@HAVE_OPENAL@
+
+ARTS_CFLAGS=@ARTS_CFLAGS@
+ARTS_LIBS=@ARTS_LIBS@
+
+HAVE_SND_ALSA=@HAVE_SND_ALSA@
+HAVE_SND_SDL=@HAVE_SND_SDL@
+HAVE_SND_OSS=@HAVE_SND_OSS@
+HAVE_SND_WAPI=@HAVE_SND_WAPI@
+HAVE_SND_DX=@HAVE_SND_DX@
+
+PROFILING=@PROFILING@
+PARANOID=@PARANOID@
+BUILD_CLIENT=@BUILD_CLIENT@
+BUILD_DEDICATED=@BUILD_DEDICATED@
+BUILD_DEBUG=@BUILD_DEBUG@
+
+#######################################################################################################
+
+.PHONY: all all2 clean echo_info
+
+include build/platform_specific.mk
+include build/defs.mk
+
+#######################################################################################################
+
+# define all the modules that need to be compiled
+MODULES = client server game sound ref_gl
+
+all: all2
+
+# include the make files for each module
+-include $(patsubst %, build/%.mk, $(MODULES))
+
+all2: Makefile $(TARGETS) echo_info
+
+# check that the makefile is up to date
+Makefile: Makefile.in
+	@echo "ERROR: You need to re-run configure"
+	@exit 1
+
+# Say how to build the build directories
+$(BUILDDIR)/.dirs:
+	@mkdir -p $(foreach i, $(ALL_OBJS), $(dir $i))
+	@touch $@
+
+clean:
+	@echo "Making clean"
+	@rm -f $(ALL_OBJS) $(ALL_DEPS) $(BUILDDIR)/.dirs $(TARGETS)
+
+echo_info:
+	@echo "CFLAGS"
+	@echo "-----------------------"
+	@echo $(CFLAGS)
+	@echo
+	@echo "LDFLAGS"
+	@echo "-----------------------"
+	@echo $(LDFLAGS)
+	@echo
+	@echo "Built for $(BUILDDIR)"
+	@echo
+
+#######################################################################
+
+-include $(ALL_DEPS)
