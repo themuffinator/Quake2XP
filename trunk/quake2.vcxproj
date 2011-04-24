@@ -710,18 +710,6 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="client\cl_inv.c">
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Profile|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug Profile|Win32'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Profile|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug Profile|x64'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
-    </ClCompile>
     <ClCompile Include="client\cl_main.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|x64'">EnableFastChecks</BasicRuntimeChecks>
@@ -1340,12 +1328,12 @@
     <None Include="..\..\baseq2\glsl\dof.fp" />
     <None Include="..\..\baseq2\glsl\dof.vp" />
     <None Include="..\..\baseq2\glsl\gaussY.fp" />
-    <None Include="..\..\baseq2\glsl\gaussY.vp" />
     <None Include="..\..\baseq2\glsl\gaussX.fp" />
     <None Include="..\..\baseq2\glsl\gaussX.vp" />
     <None Include="..\..\baseq2\glsl\diffuse.defs" />
     <None Include="..\..\baseq2\glsl\diffuse.fp" />
     <None Include="..\..\baseq2\glsl\diffuse.vp" />
+    <None Include="..\..\baseq2\glsl\gaussY.vp" />
     <None Include="..\..\baseq2\glsl\radialBlur.fp" />
     <None Include="..\..\baseq2\glsl\radialBlur.vp" />
     <None Include="..\..\baseq2\glsl\refract.defs" />

@@ -1117,7 +1117,11 @@ void R_DrawEntitiesLightPass(void)
 void R_RenderDistortModels(void)
 {
 	int i;
+	
 	qglDepthMask(0);
+	R_CaptureDepthBuffer();
+	R_CaptureColorBuffer();
+
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		currentmodel = currententity->model;
@@ -1152,8 +1156,6 @@ r_newrefdef must be set before the first call
 */
 
 void R_BlobShadow(void);
-void R_CaptureDepthBuffer();
-void R_CaptureColorBuffer();
 
 void R_RenderView(refdef_t * fd)
 {
@@ -1190,9 +1192,6 @@ void R_RenderView(refdef_t * fd)
 	
 	R_DrawParticles(true); //underwater particles
 
-	R_CaptureDepthBuffer();
-	R_CaptureColorBuffer();
-	
 	R_RenderDistortModels();
 	R_DrawAlphaPoly();
 

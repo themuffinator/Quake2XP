@@ -374,20 +374,6 @@ void R_ShutdownPrograms(void);
 void GL_BindNullProgram(void) ;
 void GL_BindRect(int texnum);
 
-typedef struct {
-	unsigned		CausticsBit;
-	unsigned		ParallaxBit;
-	unsigned		OverBrightBit;
-	unsigned		LightmapBits;
-	unsigned		VertexLightBits;
-	unsigned		AlphaMaskBits;
-	unsigned		WaterTransBits;
-	unsigned		PicsBits;
-	unsigned		TrisBtis;
-} worldDefs_t;
-
-worldDefs_t worldDefs;
-
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -736,6 +722,19 @@ extern	glslProgram_t		*radialProgram;
 extern	glslProgram_t		*dofProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
+void R_CaptureDepthBuffer();
+void R_CaptureColorBuffer();
+
+typedef struct {
+	unsigned		CausticsBit;
+	unsigned		ParallaxBit;
+	unsigned		OverBrightBit;
+	unsigned		LightmapBits;
+	unsigned		VertexLightBits;
+	unsigned		AlphaMaskBits;
+} worldDefs_t;
+
+worldDefs_t worldDefs;
 
 /*
 ====================================================================

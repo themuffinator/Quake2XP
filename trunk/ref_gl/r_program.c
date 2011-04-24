@@ -468,7 +468,7 @@ void R_InitPrograms(void) {
 	memset(programHashTable, 0, sizeof(programHashTable));
 	memset(&r_nullProgram, 0, sizeof(glslProgram_t));
 
-	Com_Printf("Load "S_COLOR_YELLOW"diffuse"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"bsp program"S_COLOR_WHITE" ");
 	diffuseProgram = R_FindProgram("diffuse", true, true);
 	if(diffuseProgram->valid){
 		Com_Printf("succeeded\n");
@@ -479,7 +479,7 @@ void R_InitPrograms(void) {
 		worldDefs.VertexLightBits	= R_GetProgramDefBits(diffuseProgram, "VERTEXLIGHT");
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"ambientAlias"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"ambient model program"S_COLOR_WHITE" ");
 	aliasAmbientProgram  = R_FindProgram("ambientAlias", true, true);
 	if(aliasAmbientProgram->valid){
 		Com_Printf("succeeded\n");
@@ -489,7 +489,7 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 
 
-	Com_Printf("Load "S_COLOR_YELLOW"aliasBump"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"bump model program"S_COLOR_WHITE" ");
 	aliasBumpProgram = R_FindProgram("aliasBump", true, true);
 
 	if(aliasBumpProgram->valid)
@@ -497,7 +497,7 @@ void R_InitPrograms(void) {
 	else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 	
-	Com_Printf("Load "S_COLOR_YELLOW"gauss blur"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"gauss blur program"S_COLOR_WHITE" ");
 	gaussXProgram = R_FindProgram("gaussX", true, true);
 	gaussYProgram = R_FindProgram("gaussY", true, true);
 	
@@ -506,21 +506,21 @@ void R_InitPrograms(void) {
 	else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 
-	Com_Printf("Load "S_COLOR_YELLOW"radial blur"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"radial blur program"S_COLOR_WHITE" ");
 	radialProgram = R_FindProgram("radialBlur", true, true);
 	if(radialProgram->valid)
 		Com_Printf("succeeded\n");
 	else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 	
-	Com_Printf("Load "S_COLOR_YELLOW"dof blur"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"dof blur program"S_COLOR_WHITE" ");
 	dofProgram = R_FindProgram("dof", true, true);
 	if(dofProgram->valid)
 		Com_Printf("succeeded\n");
 	else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 	
-	Com_Printf("Load "S_COLOR_YELLOW"bloom"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"bloom program"S_COLOR_WHITE" ");
 	bloomdsProgram = R_FindProgram("bloomds", true, true);
 	bloomfpProgram = R_FindProgram("bloomfp", true, true);
 
@@ -529,7 +529,7 @@ void R_InitPrograms(void) {
 	else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 	
-	Com_Printf("Load "S_COLOR_YELLOW"refract"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"refraction program"S_COLOR_WHITE" ");
 	refractProgram = R_FindProgram("refract", true, true);
 	
 	if(refractProgram->valid){
@@ -540,7 +540,7 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 
 		
-	Com_Printf("Load "S_COLOR_YELLOW"thermal"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"thermal vision program"S_COLOR_WHITE" ");
 	thermalProgram = R_FindProgram("thermal", true, true);
 	
 	thermalfpProgram =  R_FindProgram("thermalfp", true, true);
@@ -550,7 +550,7 @@ void R_InitPrograms(void) {
 	else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 
-	Com_Printf("Load "S_COLOR_YELLOW"water"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"water program"S_COLOR_WHITE" ");
 	waterProgram = R_FindProgram("water", true, true);
 	
 	if(waterProgram->valid){

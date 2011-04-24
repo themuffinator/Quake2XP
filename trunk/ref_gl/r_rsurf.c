@@ -167,29 +167,28 @@ DrawGLPoly
 ================
 */
 
-void DrawGLPoly1PASS(msurface_t * fa)
+void DrawGLPoly(msurface_t * fa)
 {
 	int i;
-	float *v, alpha;
+	float *v;
 	glpoly_t *p = fa->polys;
 
-	GL_Overbrights(false);
+	GL_Overbrights(true);
 
-	if (fa->texinfo->flags & SURF_TRANS33)
-		alpha = 0.33;
-	else 
-		alpha = 0.66;
+	qglDisable(GL_BLEND);
 
 	GL_SelectTexture			(GL_TEXTURE0_ARB);
 	qglEnable					(GL_TEXTURE_2D);
 	GL_Bind						(fa->texinfo->image->texnum);
 	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer			(2, GL_FLOAT, 0, wTexArray);
+
 	qglEnableClientState		(GL_COLOR_ARRAY);
 	qglColorPointer				(4, GL_FLOAT, 0, SurfColorArray);
 
 	qglEnableClientState		(GL_VERTEX_ARRAY);
 	qglVertexPointer			(3, GL_FLOAT, 0, wVertexArray);
+
 
 	v = p->verts[0];
 	
@@ -211,22 +210,20 @@ void DrawGLPoly1PASS(msurface_t * fa)
 		VA_SetElem4		(SurfColorArray[i],	shadelight_surface[0], 
 											shadelight_surface[1], 
 											shadelight_surface[2], 
-											alpha);	
+											1.0);	
 	numVertices++;
 	}
 	R_DrawArrays();
-		numIndeces = numVertices = 0;
+	numIndeces = numVertices = 0;
 	
 	qglDisableClientState	(GL_VERTEX_ARRAY);
 	
 	GL_SelectTexture		(GL_TEXTURE0_ARB);
 	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
 	qglDisableClientState	(GL_COLOR_ARRAY);
-
-
 }
 
-void DrawGLPolyARB(msurface_t * fa)
+void DrawGLPolyGLSL(msurface_t * fa)
 {
 	int i;
 	float *v;
@@ -237,25 +234,21 @@ void DrawGLPolyARB(msurface_t * fa)
 	
 	GL_Overbrights(false);
 
-	if (!fa->texinfo->normalmap) {
-		DrawGLPoly1PASS(fa);
-		return;
-	}
-
-
 	if (fa->texinfo->flags & !(SURF_TRANS33 || SURF_TRANS66)) {
-		DrawGLPoly1PASS(fa);
+		DrawGLPoly(fa);
 		return;
 	}
 
-	if (fa->texinfo->flags & SURF_TRANS33 || SURF_TRANS66)
-		qglDisable(GL_BLEND);
-	
+	R_CaptureDepthBuffer();
+	R_CaptureColorBuffer();
+	qglDisable(GL_BLEND);
+
+
 	if (fa->texinfo->flags & SURF_TRANS33)
 		alpha = 0.33;
 	else 
 		alpha = 0.66;
-
+	
 	// setup program
 	GL_BindProgram(refractProgram, defBits);
 	id = refractProgram->id[defBits];
@@ -338,9 +331,6 @@ void DrawGLPolyARB(msurface_t * fa)
 
 	GL_BindNullProgram		();
 	
-	if (fa->texinfo->flags & SURF_TRANS33 || SURF_TRANS66)
-		qglEnable(GL_BLEND);
-
 }
 
 
@@ -354,18 +344,15 @@ DrawGLFlowingPoly -- version of DrawGLPoly that handles scrolling texture
 ================
 */
 
-void DrawGLFlowingPoly1PASS(msurface_t * fa)
+void DrawGLFlowingPoly(msurface_t * fa)
 {
 	int i;
-	float *v, alpha, scroll;
+	float *v, scroll;
 	glpoly_t *p = fa->polys;
 
 	GL_Overbrights(false);
 
-	if (fa->texinfo->flags & SURF_TRANS33)
-		alpha = 0.33;
-	else 
-		alpha = 0.66;
+	qglDisable(GL_BLEND);
 
 	GL_SelectTexture			(GL_TEXTURE0_ARB);
 	qglEnable					(GL_TEXTURE_2D);
@@ -405,11 +392,11 @@ void DrawGLFlowingPoly1PASS(msurface_t * fa)
 		VA_SetElem4		(SurfColorArray[i],	shadelight_surface[0], 
 											shadelight_surface[1], 
 											shadelight_surface[2], 
-											alpha);	
+											1.0);	
 	numVertices++;
 	}
 	R_DrawArrays();
-		numIndeces = numVertices = 0;
+	numIndeces = numVertices = 0;
 	
 	qglDisableClientState	(GL_VERTEX_ARRAY);
 	
@@ -420,7 +407,7 @@ void DrawGLFlowingPoly1PASS(msurface_t * fa)
 
 }
 
-void DrawGLFlowingPolyARB(msurface_t * fa)
+void DrawGLFlowingPolyGLSL(msurface_t * fa)
 {
 	int i;
 	float *v;
@@ -432,19 +419,16 @@ void DrawGLFlowingPolyARB(msurface_t * fa)
 
 	GL_Overbrights(false);
 
-	if (!fa->texinfo->normalmap) {
-		DrawGLFlowingPoly1PASS(fa);
-		return;
-	}
-
 	if (fa->texinfo->flags & !(SURF_TRANS33 || SURF_TRANS66)) {
-		DrawGLFlowingPoly1PASS(fa);
+		DrawGLFlowingPoly(fa);
 		return;
 	}
 
-	if (fa->texinfo->flags & SURF_TRANS33 || SURF_TRANS66)
-		qglDisable(GL_BLEND);
-	
+	R_CaptureDepthBuffer();
+	R_CaptureColorBuffer();	
+	qglDisable(GL_BLEND);
+
+
 	if (fa->texinfo->flags & SURF_TRANS33)
 		alpha = 0.33;
 	else 
@@ -530,7 +514,7 @@ void DrawGLFlowingPolyARB(msurface_t * fa)
 	numVertices++;
 	}
 	R_DrawArrays();
-		numIndeces = numVertices = 0;
+	numIndeces = numVertices = 0;
 	
 	qglDisableClientState	(GL_VERTEX_ARRAY);
 
@@ -550,10 +534,6 @@ void DrawGLFlowingPolyARB(msurface_t * fa)
 	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
 
 	GL_BindNullProgram		();
-	
-	if (fa->texinfo->flags & SURF_TRANS33 || SURF_TRANS66)
-		qglEnable(GL_BLEND);
-
 }
 
 
@@ -588,9 +568,9 @@ void R_RenderBrushPoly (msurface_t *fa)
 	}
 
 	if(fa->texinfo->flags & SURF_FLOWING)
-		DrawGLFlowingPolyARB (fa);
+		DrawGLFlowingPolyGLSL(fa);
 	else
-		DrawGLPolyARB (fa);
+		DrawGLPolyGLSL(fa);
 
 }
 
@@ -608,7 +588,7 @@ void R_DrawAlphaPoly(void)
 	//
 	// go back to the world matrix
 	//
-	
+
 	qglLoadMatrixf(r_world_matrix);
 	GLSTATE_ENABLE_BLEND 
 	GL_Overbrights(true);
@@ -641,9 +621,9 @@ void R_DrawAlphaPoly(void)
 		if (s->flags & SURF_DRAWTURB)
 			EmitWaterPolys(s);
 		else if (s->texinfo->flags & SURF_FLOWING)	// PGM 9/16/98
-			DrawGLFlowingPolyARB(s);	// PGM
+			DrawGLFlowingPolyGLSL(s);	// PGM
 		else
-			DrawGLPolyARB(s);
+			DrawGLPolyGLSL(s);
 
 	}
 
@@ -906,10 +886,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		} else {
 	
 		c_brush_polys++;
-		
-		qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , vec3_origin);
-		qglUniform3fv(qglGetUniformLocation(id, "u_LightColor"), 1, vec3_origin);
-		qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), 0.0);
 
 		if(numVertices) {
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
@@ -987,6 +963,7 @@ static void R_DrawInlineBModel(void)
 			if (psurf->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {	
 				psurf->texturechain = r_alpha_surfaces;
 				r_alpha_surfaces = psurf;
+
 			} else if (!(psurf->flags & SURF_DRAWTURB)) {
 				
 				scene_surfaces[num_scene_surfaces++] = psurf;

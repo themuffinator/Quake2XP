@@ -60,9 +60,6 @@
     <ClCompile Include="client\cl_input.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
-    <ClCompile Include="client\cl_inv.c">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
     <ClCompile Include="client\cl_main.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
@@ -460,9 +457,6 @@
     <None Include="..\..\baseq2\glsl\gaussY.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\..\baseq2\glsl\gaussY.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
     <None Include="..\..\baseq2\glsl\gaussX.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
@@ -482,6 +476,9 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\..\baseq2\glsl\dof.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\..\baseq2\glsl\gaussY.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

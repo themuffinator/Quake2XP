@@ -723,12 +723,14 @@ void CL_ParseTEnt(void)
 		MSG_ReadPos(&net_message, pos);
 		MSG_ReadDir(&net_message, dir);
 
+		if (type == TE_BULLET_SPARKS){
 		// impact sound
 		cnt = rand() & 15;
 		if (cnt < 3)
 			S_fastsound(pos, 0, 0,
 						fastsound_descriptor[id_cl_sfx_ric1 + cnt], 1,
 						ATTN_NORM);
+		}
 
 		break;
 
@@ -765,6 +767,15 @@ void CL_ParseTEnt(void)
 
 		if (type != TE_SHOTGUN && !net_compatibility->value)
 			CL_ParticleTracer(pos2, pos);
+
+		if (type == TE_GUNSHOT){
+		// impact sound
+		cnt = rand() & 15;
+		if (cnt < 3)
+			S_fastsound(pos, 0, 0,
+						fastsound_descriptor[id_cl_sfx_ric1 + cnt], 1,
+						ATTN_NORM);
+		}
 
 		break;
 

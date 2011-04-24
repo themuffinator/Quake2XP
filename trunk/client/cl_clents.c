@@ -342,18 +342,19 @@ void CL_AddClEntities()
 		} else
 			VectorCopy(org, ent.origin);
 
-		if (CL_PMpointcontents(ent.origin) & MASK_SOLID) {	// kill entity
-															// in solid
-			//	le->alpha = 0;
-			//	continue;
-			//  Berserker: вместо вырезани€, просто останавливаем! 
-			//  » тогда пропадат и падать не будут!
-			 VectorClear(le->vel);     
-             VectorClear(le->accel);
-             le->avel = 0;
-             le->flags &= ~PARTICLE_BOUNCE;
-             le->flags |= PARTICLE_STOPED;
-			 le->org[2] += entSize;
+		if (CL_PMpointcontents(ent.origin) & MASK_SOLID) {	
+		
+		if (le->model == cl_mod_mshell || le->model == cl_mod_sshell){ // kill gun shells in solid only!
+			le->alpha = 0;
+				continue;
+		}else{
+		VectorClear(le->vel);     
+        VectorClear(le->accel);
+        le->avel = 0;
+        le->flags &= ~PARTICLE_BOUNCE;
+        le->flags |= PARTICLE_STOPED;
+		le->org[2] += entSize;
+		}
 		}
 
 		// add model to scene

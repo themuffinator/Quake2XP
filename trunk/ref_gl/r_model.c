@@ -962,6 +962,8 @@ void Mod_LoadTexinfo (lump_t * l) {
 								if (!out->normalmap) {
 									Com_sprintf(name, sizeof(name), "textures/%s_bump.dds", in->texture);
 										out->normalmap = GL_FindImage(name, it_wall);
+							if (!out->normalmap) 
+									out->normalmap = r_defBump;
 							// don't care if it's NULL
 							}	
 						}     
