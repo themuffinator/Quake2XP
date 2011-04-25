@@ -497,6 +497,8 @@ void SV_CalcBlend (edict_t *ent)
 		ent->client->bonus_alpha = 0;
 }
 */
+extern cvar_t *r_radialBlur;
+
 void SV_CalcBlend(edict_t * ent)
 {
 	int contents;
@@ -532,6 +534,7 @@ void SV_CalcBlend(edict_t * ent)
 	}
 	else if (contents & CONTENTS_WATER)
 	{
+		if(!r_radialBlur->value)
 		SV_AddBlend (0.0, 0.0, 0.5, 0.1, ent->client->ps.blend);
 	
 	}
@@ -579,15 +582,15 @@ void SV_CalcBlend(edict_t * ent)
 	// add for damage
 	if (ent->client->damage_alpha > 0) {
 		
-			SV_AddBlend(1.0, 0, 0, 0.2, ent->client->ps.blend);
-	
-			ent->client->ps.rdflags |= RDF_PAIN;
+		if(!r_radialBlur->value)	
+		SV_AddBlend(1.0, 0, 0, 0.2, ent->client->ps.blend);
+		ent->client->ps.rdflags |= RDF_PAIN;
 
 	}
 	if (ent->client->bonus_alpha > 0)
-
-		SV_AddBlend(0.85, 0.7, 0.2, ent->client->bonus_alpha,
-					ent->client->ps.blend);
+		
+		if(!r_radialBlur->value)
+		SV_AddBlend(0.85, 0.7, 0.2, ent->client->bonus_alpha, ent->client->ps.blend);
 
 
 	// drop the damage value

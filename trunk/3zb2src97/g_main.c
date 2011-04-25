@@ -85,6 +85,8 @@ float ctfjob_update;
 cvar_t *cl_3dhud;
 cvar_t *r_motionblur;
 cvar_t *net_compatibility;
+cvar_t *r_radialBlur;
+
 
 void SpawnEntities(char *mapname, char *entities, char *spawnpoint);
 void ClientThink(edict_t * ent, usercmd_t * cmd);

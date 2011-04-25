@@ -1119,8 +1119,6 @@ void R_RenderDistortModels(void)
 	int i;
 	
 	qglDepthMask(0);
-	R_CaptureDepthBuffer();
-	R_CaptureColorBuffer();
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -1192,6 +1190,8 @@ void R_RenderView(refdef_t * fd)
 	
 	R_DrawParticles(true); //underwater particles
 
+	R_CaptureDepthBuffer();
+	R_CaptureColorBuffer();
 	R_RenderDistortModels();
 	R_DrawAlphaPoly();
 
@@ -1283,6 +1283,24 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_DofBlur();
 	R_Bloom();
 
+	if (v_blend[3]) {
+		
+		GL_Blend(true, 0, 0);
+		qglDisable(GL_TEXTURE_2D);
+		qglColor4f(v_blend[0],v_blend[1],v_blend[2], 0.15);
+
+		qglBegin(GL_QUADS);
+		qglVertex2f(0, 0);
+		qglVertex2f(vid.width, 0);
+		qglVertex2f(vid.width, vid.height);
+		qglVertex2f(0, vid.height);
+		qglEnd();
+
+		qglColor4f(1, 1, 1, 1);
+		qglEnable(GL_TEXTURE_2D);
+		GL_Blend(false, 0, 0);
+		}
+	
 	GL_MsgGLError("R_RenderFrame: ");
 }
 

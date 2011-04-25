@@ -152,6 +152,8 @@ only happens when a new game is started or a save game
 is loaded.
 ============
 */
+extern cvar_t *r_radialBlur;
+
 void InitGame (void)
 {
 	gi.dprintf ("==== InitGame ====\n");
@@ -212,7 +214,7 @@ void InitGame (void)
 	r_motionblur		= gi.cvar ("r_motionblur", "0", CVAR_ARCHIVE);
 	cl_3dhud			= gi.cvar ("cl_3dhud", "1", CVAR_ARCHIVE);
 	net_compatibility	= gi.cvar ("net_compatibility", "0", CVAR_SERVERINFO|CVAR_NOSET);
-
+	r_radialBlur		= gi.cvar ("r_radialBlur", "1", CVAR_ARCHIVE);
 		
 	// items
 	InitItems ();

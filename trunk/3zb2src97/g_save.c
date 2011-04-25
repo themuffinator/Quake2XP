@@ -145,6 +145,8 @@ only happens when a new game is started or a save game
 is loaded.
 ============
 */
+extern cvar_t *r_radialBlur;
+
 void SetBotFlag1(edict_t * ent);
 void SetBotFlag2(edict_t * ent);
 void InitGame(void)
@@ -215,8 +217,8 @@ void InitGame(void)
 	r_motionblur = gi.cvar("r_motionblur", "0", CVAR_ARCHIVE);
 	filterban = gi.cvar("filterban", "1", 0);
 	cl_3dhud = gi.cvar("cl_3dhud", "1", CVAR_ARCHIVE);
-	net_compatibility =
-		gi.cvar("net_compatibility", "0", CVAR_SERVERINFO | CVAR_NOSET);
+	net_compatibility = gi.cvar("net_compatibility", "0", CVAR_SERVERINFO | CVAR_NOSET);
+	r_radialBlur = gi.cvar("r_radialBlur", "1", CVAR_ARCHIVE);
 
 	run_pitch = gi.cvar("run_pitch", "0.002", 0);
 	run_roll = gi.cvar("run_roll", "0.005", 0);

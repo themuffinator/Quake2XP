@@ -167,62 +167,6 @@ DrawGLPoly
 ================
 */
 
-void DrawGLPoly(msurface_t * fa)
-{
-	int i;
-	float *v;
-	glpoly_t *p = fa->polys;
-
-	GL_Overbrights(true);
-
-	qglDisable(GL_BLEND);
-
-	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	qglEnable					(GL_TEXTURE_2D);
-	GL_Bind						(fa->texinfo->image->texnum);
-	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer			(2, GL_FLOAT, 0, wTexArray);
-
-	qglEnableClientState		(GL_COLOR_ARRAY);
-	qglColorPointer				(4, GL_FLOAT, 0, SurfColorArray);
-
-	qglEnableClientState		(GL_VERTEX_ARRAY);
-	qglVertexPointer			(3, GL_FLOAT, 0, wVertexArray);
-
-
-	v = p->verts[0];
-	
-	for (i=0; i < p->numverts-2; i++) {
-			indexArray[numIndeces++] = numVertices;
-			indexArray[numIndeces++] = numVertices+i+1;
-			indexArray[numIndeces++] = numVertices+i+2;
-			}
-	c_brush_polys += numIndeces / 3;
-
-	for (i = 0; i < p->numverts; i++, v += VERTEXSIZE) {
-		
-		VectorCopy(v, wVertexArray[i]);
-			
-		wTexArray[i][0] = v[3];
-		wTexArray[i][1] = v[4];
-
-		R_LightColor	(v, shadelight_surface);
-		VA_SetElem4		(SurfColorArray[i],	shadelight_surface[0], 
-											shadelight_surface[1], 
-											shadelight_surface[2], 
-											1.0);	
-	numVertices++;
-	}
-	R_DrawArrays();
-	numIndeces = numVertices = 0;
-	
-	qglDisableClientState	(GL_VERTEX_ARRAY);
-	
-	GL_SelectTexture		(GL_TEXTURE0_ARB);
-	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglDisableClientState	(GL_COLOR_ARRAY);
-}
-
 void DrawGLPolyGLSL(msurface_t * fa)
 {
 	int i;
@@ -232,18 +176,6 @@ void DrawGLPolyGLSL(msurface_t * fa)
 	int			id;
 	unsigned	defBits = 0;
 	
-	GL_Overbrights(false);
-
-	if (fa->texinfo->flags & !(SURF_TRANS33 || SURF_TRANS66)) {
-		DrawGLPoly(fa);
-		return;
-	}
-
-	R_CaptureDepthBuffer();
-	R_CaptureColorBuffer();
-	qglDisable(GL_BLEND);
-
-
 	if (fa->texinfo->flags & SURF_TRANS33)
 		alpha = 0.33;
 	else 
@@ -343,70 +275,6 @@ void DrawGLPolyGLSL(msurface_t * fa)
 DrawGLFlowingPoly -- version of DrawGLPoly that handles scrolling texture
 ================
 */
-
-void DrawGLFlowingPoly(msurface_t * fa)
-{
-	int i;
-	float *v, scroll;
-	glpoly_t *p = fa->polys;
-
-	GL_Overbrights(false);
-
-	qglDisable(GL_BLEND);
-
-	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	qglEnable					(GL_TEXTURE_2D);
-	GL_Bind						(fa->texinfo->image->texnum);
-	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer			(2, GL_FLOAT, 0, wTexArray);
-	qglEnableClientState		(GL_COLOR_ARRAY);
-	qglColorPointer				(4, GL_FLOAT, 0, SurfColorArray);
-
-	qglEnableClientState		(GL_VERTEX_ARRAY);
-	qglVertexPointer			(3, GL_FLOAT, 0, wVertexArray);
-
-	v = p->verts[0];
-	
-	for (i=0; i < p->numverts-2; i++) {
-			indexArray[numIndeces++] = numVertices;
-			indexArray[numIndeces++] = numVertices+i+1;
-			indexArray[numIndeces++] = numVertices+i+2;
-			}
-	c_brush_polys += numIndeces / 3;
-	
-	scroll =
-		-64 * ((r_newrefdef.time / 40.0) -
-			   (int) (r_newrefdef.time / 40.0));
-
-	if (scroll == 0.0)
-		scroll = -64.0;
-
-	for (i = 0; i < p->numverts; i++, v += VERTEXSIZE) {
-		
-		VectorCopy(v, wVertexArray[i]);
-			
-		wTexArray[i][0] = v[3]+scroll;
-		wTexArray[i][1] = v[4];
-
-		R_LightColor	(v, shadelight_surface);
-		VA_SetElem4		(SurfColorArray[i],	shadelight_surface[0], 
-											shadelight_surface[1], 
-											shadelight_surface[2], 
-											1.0);	
-	numVertices++;
-	}
-	R_DrawArrays();
-	numIndeces = numVertices = 0;
-	
-	qglDisableClientState	(GL_VERTEX_ARRAY);
-	
-	GL_SelectTexture		(GL_TEXTURE0_ARB);
-	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglDisableClientState	(GL_COLOR_ARRAY);
-
-
-}
-
 void DrawGLFlowingPolyGLSL(msurface_t * fa)
 {
 	int i;
@@ -418,15 +286,6 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 
 
 	GL_Overbrights(false);
-
-	if (fa->texinfo->flags & !(SURF_TRANS33 || SURF_TRANS66)) {
-		DrawGLFlowingPoly(fa);
-		return;
-	}
-
-	R_CaptureDepthBuffer();
-	R_CaptureColorBuffer();	
-	qglDisable(GL_BLEND);
 
 
 	if (fa->texinfo->flags & SURF_TRANS33)
@@ -590,7 +449,6 @@ void R_DrawAlphaPoly(void)
 	//
 
 	qglLoadMatrixf(r_world_matrix);
-	GLSTATE_ENABLE_BLEND 
 	GL_Overbrights(true);
 	qglShadeModel(GL_SMOOTH);
 	qglDepthMask(0);
@@ -629,8 +487,6 @@ void R_DrawAlphaPoly(void)
 
 	GL_TexEnv(GL_REPLACE);
 	qglColor4f(1, 1, 1, 1);
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(1);
 	r_alpha_surfaces = NULL;
 	GL_Overbrights(false);

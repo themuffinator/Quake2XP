@@ -364,12 +364,7 @@ void EmitWaterPolys(msurface_t * fa)
 	float		*v, dstscroll;
 	int			id, i;
 	unsigned	defBits = 0;
-
-	R_CaptureDepthBuffer();
-	R_CaptureColorBuffer();	
-	
-	qglDisable(GL_BLEND);
-	
+		
 	// setup program
 	GL_BindProgram(waterProgram, defBits);
 	id = waterProgram->id[defBits];

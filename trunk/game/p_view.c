@@ -417,6 +417,8 @@ void SV_AddBlend (float r, float g, float b, float a, float *v_blend)
 SV_CalcBlend
 =============
 */
+extern cvar_t *r_radialBlur;
+
 void SV_CalcBlend (edict_t *ent)
 {
 	int		contents;
@@ -452,6 +454,7 @@ void SV_CalcBlend (edict_t *ent)
 	}
 	else if (contents & CONTENTS_WATER)
 	{
+		if(!r_radialBlur->value)
 		SV_AddBlend (0.0, 0.0, 0.5, 0.1, ent->client->ps.blend);
 	
 	}
@@ -499,14 +502,16 @@ void SV_CalcBlend (edict_t *ent)
 	// add for damage
 	if (ent->client->damage_alpha > 0)
 	{
+	if(!r_radialBlur->value)
 	SV_AddBlend (1.0, 0, 0, 0.2, ent->client->ps.blend);
 	ent->client->ps.rdflags |= RDF_PAIN;
 	}
 
 
-	if (ent->client->bonus_alpha > 0)
-			SV_AddBlend (0.85, 0.7, 0.3, ent->client->bonus_alpha, ent->client->ps.blend);
-
+	if (ent->client->bonus_alpha > 0){
+		if(!r_radialBlur->value)	
+		SV_AddBlend (0.85, 0.7, 0.3, ent->client->bonus_alpha, ent->client->ps.blend);
+	}
 	
 	// drop the damage value
 	ent->client->damage_alpha -= 0.06;
@@ -529,7 +534,7 @@ void SV_CalcBlend (edict_t *ent)
 		if(remaining > 30 || (remaining & 4))
 		{
 			ent->client->ps.rdflags |= RDF_IRGOGGLES;
-			SV_AddBlend (1, 0, 0, 0.2, ent->client->ps.blend);
+	//		SV_AddBlend (1, 0, 0, 0.2, ent->client->ps.blend);
 		}
 		else
 			ent->client->ps.rdflags &= ~RDF_IRGOGGLES;

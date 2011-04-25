@@ -54,9 +54,10 @@ cvar_t  *g_monsterRespawn;
 cvar_t	*sv_maplist;
 
 
-cvar_t   *sv_solidcorpse;
+cvar_t  *sv_solidcorpse;
 cvar_t	*r_motionblur;
 cvar_t	*net_compatibility;
+cvar_t	r_radialBlur;
 
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
 void ClientThink (edict_t *ent, usercmd_t *cmd);
