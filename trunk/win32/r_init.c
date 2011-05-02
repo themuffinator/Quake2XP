@@ -379,11 +379,6 @@ void GLimp_Shutdown( void )
 }
 
 
-
-
-
-
-
 /*
 ====================
 CPU Detect from MSDN
@@ -396,7 +391,6 @@ http://www.gamedev.net/community/forums/topic.asp?topic_id=438752
 static const unsigned CPU_UNKNOWN = 0;
 static const unsigned CPU_AMD = 1;
 static const unsigned CPU_INTEL = 2;
-
 
 int MeasureCpuSpeed()
     {

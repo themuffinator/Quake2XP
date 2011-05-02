@@ -1090,14 +1090,16 @@ Mod_LoadFaces
 */
 void Mod_LoadFaces(lump_t * l)
 {
-	dface_t *in;
+	dface_t		*in;
 	msurface_t *out;
-	int i, count, surfnum;
-	int planenum, side;
-	int ti;
-	float *v;
-	
-	
+	int			i, count, surfnum;
+	int			planenum, side;
+	int			ti;
+	int			ci, cj, flp, j;
+	float		*vi, *vj;
+	msurface_t	*si, *sj;
+	vec3_t		ni, nj, ttt, tttt, ttttt;
+
 	in = (dface_t *) (mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		VID_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size in %s",
@@ -1168,50 +1170,106 @@ void Mod_LoadFaces(lump_t * l)
 			GL_AddFlareSurface(out);
 			
 			CalcSurfaceBounds(out);
-
-		// Tangent Space		
-		if (!(out->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))){
-			
-			vec3_t tangent, binormal, normal;
-			
-			VectorClear(tangent);
-			VectorClear(binormal);
-			VectorClear(normal);
-
-			VectorCopy(out->texinfo->vecs[0], tangent);
-			VectorCopy(out->texinfo->vecs[1], binormal);
-
-			if (!(out->flags & SURF_PLANEBACK))
-				VectorCopy(out->plane->normal, normal);
-			else
-				VectorNegate(out->plane->normal, normal);
-
-			VectorNormalize(tangent);
-			VectorNormalize(binormal);
-			VectorNormalize(normal);
-
-			v = out->polys->verts[0];
-
-			for (i=0;  i<out->numedges; i++, v+=VERTEXSIZE)
-				{					
-					//normals
-					v[7] = normal[0];
-					v[8] = normal[1];
-					v[9] = normal[2];
-					//tangent
-					v[10] = tangent[0];
-					v[11] = tangent[1];
-					v[12] = tangent[2];
-					//binormal
-					v[13] = binormal[0];
-					v[14] = binormal[1];
-					v[15] = binormal[2];
-				}
-		}
-
 	}
-	
-	
+
+	// Build TBN for smoothing bump mapping (Berserker)
+	flp = 0;
+		for (i=0 ; i<count ; i++)
+		{
+			si = &currentmodel->surfaces[i];
+			if (!(si->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW)))
+			{
+				vi = si->polys->verts[0];
+				for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+					vi[7] = vi[8] = vi[9] = vi[10] = vi[11] = vi[12] = vi[13] = vi[14] = vi[15] = 0;
+				if (si->flags & SURF_PLANEBACK)
+					VectorNegate(si->plane->normal, ni);
+				else
+					VectorCopy(si->plane->normal, ni);
+				for (j=0 ; j<count ; j++)
+				{
+					sj = &currentmodel->surfaces[j];
+					if (!(sj->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW)))
+					{
+						if (sj->flags & SURF_PLANEBACK)
+							VectorNegate(sj->plane->normal, nj);
+						else
+							VectorCopy(sj->plane->normal, nj);
+						if(DotProduct(ni, nj)>=cos(DEG2RAD(45)))
+						{
+							vi = si->polys->verts[0];
+							for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+							{
+								vj = sj->polys->verts[0];
+								for (cj=0; cj<sj->numedges; cj++, vj+=VERTEXSIZE)
+								{
+									if (VectorCompare(vi, vj))
+									{
+										vi[7] += nj[0];
+										vi[8] += nj[1];
+										vi[9] += nj[2];
+									}
+								}
+							}
+						}
+					}
+				}
+
+				vi = si->polys->verts[0];
+				for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+				{
+					VectorSet(ttt, vi[7], vi[8], vi[9]);
+					VectorNormalize(ttt);
+
+					if(DotProduct(ttt, ni)<cos(DEG2RAD(45)))
+					{
+						vi[7] = ttt[0] = ni[0];
+						vi[8] = ttt[1] = ni[1];
+						vi[9] = ttt[2] = ni[2];
+					}
+					else
+					{
+						vi[7] = ttt[0];
+						vi[8] = ttt[1];
+						vi[9] = ttt[2];
+					}
+
+					CrossProduct(ttt, si->texinfo->vecs[0], tttt);
+					CrossProduct(ttt, tttt, ttttt);
+					VectorNormalize(ttttt);
+					if (DotProduct(ttttt, si->texinfo->vecs[0])<0)
+					{
+						vi[10] = -ttttt[0];
+						vi[11] = -ttttt[1];
+						vi[12] = -ttttt[2];
+					}
+					else
+					{
+						vi[10] = ttttt[0];
+						vi[11] = ttttt[1];
+						vi[12] = ttttt[2];
+					}
+
+					CrossProduct(ttt, si->texinfo->vecs[1], tttt);
+					CrossProduct(ttt, tttt, ttttt);
+					VectorNormalize(ttttt);
+					if (DotProduct(ttttt, si->texinfo->vecs[1])<0)
+					{
+						vi[13] = -ttttt[0];
+						vi[14] = -ttttt[1];
+						vi[15] = -ttttt[2];
+					}
+					else
+					{
+						vi[13] = ttttt[0];
+						vi[14] = ttttt[1];
+						vi[15] = ttttt[2];
+					}
+
+					flp += 3;
+				}
+			}
+		}
 
 GL_EndBuildingLightmaps();
 }

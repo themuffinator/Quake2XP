@@ -27,8 +27,6 @@ extern float shadowalpha;
 
 typedef float vec4_t[4];
 vec4_t s_lerped[MAX_VERTS];
-
-vec3_t shadevector;
 float shadelight[3];
 
 /*
@@ -525,9 +523,7 @@ void GL_DrawShadowTriangles(msurface_t * surf)
 			}
        
 	R_DrawArrays();
-	numIndeces = numVertices = 0;
-       
-        	
+    	
 }
 
 

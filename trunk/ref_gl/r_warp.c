@@ -270,8 +270,9 @@ void RenderLavaSurfaces(msurface_t * fa)
 	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"),	0.75);
 	qglUniform3fv				(qglGetUniformLocation(id, "u_viewOriginES"),	1 , r_origin);
 	qglUniform2f				(qglGetUniformLocation(id, "u_bumpScale"),		scale[0], scale[1]);
-	qglUniform1i				(qglGetUniformLocation(id, "u_numSteps"), r_parallaxSteps->value);	
-	
+	qglUniform1i				(qglGetUniformLocation(id, "u_numSteps"),		(int)r_parallaxSteps->value);	
+	qglUniform1i				(qglGetUniformLocation(id, "u_bumpMap"),		(int)r_bumpMapping->value);
+
 	GL_SelectTexture			(GL_TEXTURE0_ARB);
 	GL_Bind						(r_lava->texnum);
 	qglEnable					(GL_TEXTURE_2D);
@@ -282,20 +283,26 @@ void RenderLavaSurfaces(msurface_t * fa)
 	qglColorPointer				(4, GL_FLOAT, 0, WarpColorArray);
 	qglUniform1i				(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
-		
+	GL_SelectTexture			(GL_TEXTURE1_ARB);
+	GL_Bind						(fa->texinfo->normalmap->texnum);
+	qglEnable					(GL_TEXTURE_2D);
+	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer			(2, GL_FLOAT, 0, wTexArray);
+	qglUniform1i				(qglGetUniformLocation(id, "u_NormalMap"), 1);	
+
 	//normal
 	qglEnableClientState(GL_NORMAL_ARRAY);
-	qglNormalPointer(GL_FLOAT, sizeof(nTexArray[0]), nTexArray);
+	qglNormalPointer(GL_FLOAT, 0, nTexArray);
 
 	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglVertexPointer(3, GL_FLOAT, sizeof(wVertexArray[0]), wVertexArray);
+	qglVertexPointer(3, GL_FLOAT, 0, wVertexArray);
 
 	qglEnableVertexAttribArray(10);
 	qglEnableVertexAttribArray(11);
 	
 	// tangent & binormal
-	qglVertexAttribPointer(10, 3, GL_FLOAT, false, sizeof(tTexArray[0]), tTexArray);
-	qglVertexAttribPointer(11, 3, GL_FLOAT, false, sizeof(bTexArray[0]), bTexArray);
+	qglVertexAttribPointer(10, 3, GL_FLOAT, false, 0, tTexArray);
+	qglVertexAttribPointer(11, 3, GL_FLOAT, false, 0, bTexArray);
 	
 	qglEnableClientState		(GL_VERTEX_ARRAY);
 	qglVertexPointer			(3, GL_FLOAT, 0, wVertexArray);
@@ -341,9 +348,12 @@ void RenderLavaSurfaces(msurface_t * fa)
 		}
 		
 		R_DrawArrays();
-		numIndeces = numVertices = 0;
 	}
-		
+
+	GL_SelectTexture		(GL_TEXTURE1_ARB);
+	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
+	qglDisable				(GL_TEXTURE_2D);
+
 	GL_SelectTexture		(GL_TEXTURE0_ARB);
 	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
 	qglDisableClientState	(GL_COLOR_ARRAY);
@@ -439,7 +449,6 @@ void EmitWaterPolys(msurface_t * fa)
 		}
 
 		R_DrawArrays();
-		numIndeces = numVertices = 0;
 	}
 
 	

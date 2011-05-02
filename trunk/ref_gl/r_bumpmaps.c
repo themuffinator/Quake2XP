@@ -218,7 +218,7 @@ skipLoad:
 	qglTexCoordPointer		(2, GL_FLOAT, 0, 0);
 	}
 	else
-	qglTexCoordPointer		(2, GL_FLOAT, sizeof(stArray[0]), stArray);
+	qglTexCoordPointer		(2, GL_FLOAT, 0, stArray);
 	GL_Bind					(skin->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
@@ -230,7 +230,7 @@ skipLoad:
 	qglTexCoordPointer		(2, GL_FLOAT, 0, 0);
 	}
 	else
-	qglTexCoordPointer		(2, GL_FLOAT, sizeof(stArray[0]), stArray);
+	qglTexCoordPointer		(2, GL_FLOAT, 0, stArray);
 	qglEnable				(GL_TEXTURE_2D);
 	GL_Bind					(glowskin->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Add"), 1);	
@@ -243,7 +243,7 @@ skipLoad:
 	qglTexCoordPointer		(2, GL_FLOAT, 0, 0);
 	}
 	else
-	qglTexCoordPointer		(2, GL_FLOAT, sizeof(stArray[0]), stArray);
+	qglTexCoordPointer		(2, GL_FLOAT, 0, stArray);
 	qglEnable				(GL_TEXTURE_2D);
 	GL_Bind					(r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
@@ -255,7 +255,7 @@ skipLoad:
 		qglVertexPointer(3, GL_FLOAT, 0, 0);
 	}
 	else
-	qglVertexPointer(3, GL_FLOAT, sizeof(vertexArray[0]), vertexArray);
+	qglVertexPointer(3, GL_FLOAT, 0, vertexArray);
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 

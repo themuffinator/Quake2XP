@@ -41,7 +41,6 @@ static float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 vec4_t	s_lerped[MAX_VERTS];
 
 vec3_t	lightdir;
-vec3_t	shadevector;
 float	shadelight[3];
 extern cvar_t *r_taa;
 // precalculated dot products for quantized angles
@@ -245,15 +244,15 @@ static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 	
 		GL_SelectTexture		(GL_TEXTURE0_ARB);
 		qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-		qglTexCoordPointer		(2, GL_FLOAT, sizeof(Md2TexArray[0]), Md2TexArray);
+		qglTexCoordPointer		(2, GL_FLOAT, 0, Md2TexArray);
 		GL_Bind					(skin->texnum);
 		qglEnableClientState	(GL_COLOR_ARRAY);
-		qglColorPointer			(4, GL_FLOAT, sizeof(Md2ColorArray[0]), Md2ColorArray);
+		qglColorPointer			(4, GL_FLOAT, 0, Md2ColorArray);
 		qglUniform1i			(qglGetUniformLocation(id, "u_Diffuse"), 0);
 		
 		GL_SelectTexture		(GL_TEXTURE1_ARB);
 		qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-		qglTexCoordPointer		(2, GL_FLOAT, sizeof(Md2TexArray[0]), Md2TexArray);
+		qglTexCoordPointer		(2, GL_FLOAT, 0, Md2TexArray);
 		qglEnable				(GL_TEXTURE_2D);
 		GL_Bind					(glowskin->texnum);
 		qglUniform1i			(qglGetUniformLocation(id, "u_Add"), 1);
@@ -261,14 +260,14 @@ static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 		if(caustics){
 		GL_SelectTexture		(GL_TEXTURE2_ARB);
 		qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-		qglTexCoordPointer		(2, GL_FLOAT, sizeof(Md2TexArray[0]), Md2TexArray);
+		qglTexCoordPointer		(2, GL_FLOAT, 0, Md2TexArray);
 		qglEnableClientState	(GL_COLOR_ARRAY);
 		GL_Bind					(r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
 		}
 
 		qglEnableClientState	(GL_VERTEX_ARRAY);
-		qglVertexPointer		(3, GL_FLOAT, sizeof(Md2VertArray[0]), Md2VertArray);
+		qglVertexPointer		(3, GL_FLOAT, 0, Md2VertArray);
 
 		
 		
@@ -768,7 +767,7 @@ int  radarOldTime = 0;
 void R_DrawAliasModel (entity_t *e, qboolean weapon_model)
 {
 	dmdl_t		*paliashdr;
-	float		an, diffuseLight[3];
+	float		diffuseLight[3];
 	vec3_t		bbox[8];
 	image_t		*normalmap;
 	
@@ -795,15 +794,6 @@ next:
 	}
 	
 	paliashdr = (dmdl_t *)currentmodel->extradata;
-
-	an = currententity->angles[1]/180*M_PI;
-	shadevector[0] = cos(-an);
-	shadevector[1] = sin(-an);
-	shadevector[2] = 1;
-	VectorNormalize (shadevector);
-
-	
-	
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		qglDepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
@@ -1035,15 +1025,10 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 
 	qglPushMatrix ();
 	R_RotateForEntity (currententity);
-
 	
-
 	GL_DrawAliasFrameLerpArbBump(paliashdr);
-	
-
-	
+		
 	GL_TexEnv(GL_REPLACE);
-	
 	qglPopMatrix();
 
 	currententity->angles[PITCH] = -currententity->angles[PITCH];	// restore player weapon angles.
@@ -1100,7 +1085,7 @@ void R_DrawAliasDistortModel (entity_t *e)
 		GL_SelectTexture			(GL_TEXTURE0_ARB);
 		qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
 		qglEnableClientState		(GL_COLOR_ARRAY);
-		qglTexCoordPointer			(2, GL_FLOAT, sizeof(Md2TexArray[0]), Md2TexArray);
+		qglTexCoordPointer			(2, GL_FLOAT, 0, Md2TexArray);
 		GL_Bind						(r_predator->texnum);
 		qglUniform1i				(qglGetUniformLocation(id, "u_deformMap"), 0);
 				

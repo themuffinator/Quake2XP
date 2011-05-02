@@ -407,7 +407,7 @@ void VID_MenuInit( void )
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", "[6x]", "[8x]", "[16x]", 0};
 	static char	*samplesNV[]	=	{"[off]", "[8x]", "[8xQ]", "[16x]", "[16xQ]", 0};
 	static char	*parallax[]		=	{"off", "Performance", "Quality", 0};
-
+	static char	*bump[]			=	{"off", "Models", "Models and World", 0};
 	static char	*vsync[]		=	{"off", "on", 0};
 	static char	*alNo[]			=	{"not support", 0};
 	static char	*radar[]		=	{"off", "map only", "map and entities", "move detector", 0};
@@ -647,7 +647,7 @@ void VID_MenuInit( void )
 	s_dot3_list.generic.name = "Bump Mapping";
 	s_dot3_list.generic.x = 0;
 	s_dot3_list.generic.y = 180*cl_fontScale->value;
-	s_dot3_list.itemnames = yesno_names;
+	s_dot3_list.itemnames = bump;
 	s_dot3_list.curvalue = r_bumpMapping->value;
 	s_dot3_list.generic.callback = dot3CB;
 

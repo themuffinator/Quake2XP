@@ -82,6 +82,8 @@ void R_DrawArrays (void)
 		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, numVertices, numIndeces, GL_UNSIGNED_SHORT, indexArray);
 	else
 		qglDrawElements(GL_TRIANGLES, numIndeces, GL_UNSIGNED_SHORT, indexArray);
+
+	numIndeces = numVertices = 0;
 	
 }
 
@@ -94,6 +96,8 @@ void R_DrawArraysType (unsigned int type)
 		qglDrawRangeElementsEXT(type, 0, numVertices, numIndeces, GL_UNSIGNED_SHORT, indexArray);
 	else
 		qglDrawElements(type, numIndeces, GL_UNSIGNED_SHORT, indexArray);
+
+	numIndeces = numVertices = 0;
 	
 }
 
@@ -158,6 +162,22 @@ image_t *R_TextureAnimationFx(mtexinfo_t * tex)
 	}
 
 	return tex->addTexture;
+}
+
+image_t *R_TextureAnimationNormal(mtexinfo_t * tex)
+{
+	int c;
+
+	if (!tex->next)
+		return tex->normalmap;
+
+	c = currententity->frame % tex->numframes;
+	while (c) {
+		tex = tex->next;
+		c--;
+	}
+
+	return tex->normalmap;
 }
 
 float SurfColorArray[MAX_BATCH_SURFS][4];
@@ -243,8 +263,7 @@ void DrawGLPolyGLSL(msurface_t * fa)
 	numVertices++;
 	}
 	R_DrawArrays();
-		numIndeces = numVertices = 0;
-	
+		
 	qglDisableClientState	(GL_VERTEX_ARRAY);
 
 	GL_SelectTexture		(GL_TEXTURE3_ARB);
@@ -373,8 +392,7 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 	numVertices++;
 	}
 	R_DrawArrays();
-	numIndeces = numVertices = 0;
-	
+		
 	qglDisableClientState	(GL_VERTEX_ARRAY);
 
 	GL_SelectTexture		(GL_TEXTURE3_ARB);
@@ -606,8 +624,7 @@ msurface_t	*scene_surfaces[MAX_MAP_FACES];
 static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
-	image_t		*image;
-	image_t		*fx;
+	image_t		*image, *fx, *nm;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
 	int			id, i, map;
@@ -623,6 +640,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	s=scene_surfaces[i];
 	image = R_TextureAnimation(s->texinfo);
 	fx    = R_TextureAnimationFx(s->texinfo);
+	nm    = R_TextureAnimationNormal(s->texinfo);
 	lmtex = s->lightmaptexturenum;
 	
 	if(caustics || (s->flags & SURF_WATER)){
@@ -658,9 +676,9 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
 
 	qglUniform2f(qglGetUniformLocation(id, "u_bumpScale"), scale[0], scale[1]);
-	qglUniform1i(qglGetUniformLocation(id, "u_numSteps"), r_parallaxSteps->value);
-	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), r_parallax->value);
-
+	qglUniform1i(qglGetUniformLocation(id, "u_numSteps"), (int)r_parallaxSteps->value);
+	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), (int)r_bumpMapping->value);
 		
 	GL_CreateParallaxLmPoly(s);
 	
@@ -723,7 +741,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 		c_brush_polys++;
 				
-		if(numVertices) {
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
@@ -734,16 +751,15 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
 		}
-		
+		GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
+
 		R_DrawArrays();
-		}
-		numIndeces = numVertices = 0;
- 		
-		} else {
+		
+	} else {
 	
 		c_brush_polys++;
 
-		if(numVertices) {
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
@@ -754,15 +770,14 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
 		}
+		GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
 
 		R_DrawArrays();
-		}
-		numIndeces = numVertices = 0;
 		}	
 	}
 	GL_BindNullProgram();
 }
-
 
 
 /*
@@ -799,22 +814,21 @@ static void R_DrawInlineBModel(void)
 	for (i = 0; i < currentmodel->nummodelsurfaces; i++, psurf++) {
 		// find which side of the node we are on
 		pplane = psurf->plane;
-
-
-
 		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
 
 		// draw the polygon
 		if (((psurf->flags & SURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
-			|| (!(psurf->flags & SURF_PLANEBACK)
-				&& (dot > BACKFACE_EPSILON))) {
+			|| (!(psurf->flags & SURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+
+			if (psurf->visframe == r_framecount) //reckless fix
+				continue;
+
 			/*===============================
 			berserker - flares for brushmodels
 			=================================*/
 			psurf->visframe = r_framecount;
 			psurf->ent = currententity;
 			// ================================
-
 
 			if (psurf->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {	
 				psurf->texturechain = r_alpha_surfaces;
@@ -850,13 +864,14 @@ static void R_DrawInlineBModel(void)
 R_DrawBrushModel
 =================
 */
-
+int CL_PMpointcontents(vec3_t point);
 
 void R_DrawBrushModel(entity_t * e)
 {
 	vec3_t		mins, maxs;
 	int			i;
-	qboolean	rotated;
+	int         contentsAND, contentsOR; 
+    qboolean   rotated, viewInWater;
 	int			cont[5];
 	vec3_t		org;
 	
@@ -906,55 +921,33 @@ void R_DrawBrushModel(entity_t * e)
 	e->angles[0] = -e->angles[0];	// stupid quake bug
 	e->angles[2] = -e->angles[2];	// stupid quake bug
 
-	// ==================================
-	// detect underwater position
-	// for bmodels caustics by Berserker
-	// ==================================
-	currententity->minmax[0] = mins[0];
-	currententity->minmax[1] = mins[1];
-	currententity->minmax[2] = mins[2];
-	currententity->minmax[3] = maxs[0];
-	currententity->minmax[4] = maxs[1];
-	currententity->minmax[5] = maxs[2];
+	// ================================== 
+    // detect underwater position 
+    // for bmodels caustics by Berserker 
+    // modified a bit by reckless. 
+    // ================================== 
+    currententity->minmax[0] = mins[0]; 
+    currententity->minmax[1] = mins[1]; 
+    currententity->minmax[2] = mins[2]; 
+    currententity->minmax[3] = maxs[0]; 
+    currententity->minmax[4] = maxs[1]; 
+    currententity->minmax[5] = maxs[2]; 
 
-	VectorSet(org, currententity->minmax[0], currententity->minmax[1],
-			  currententity->minmax[5]);
-	cont[0] = CL_PMpointcontents2(org, currentmodel);
-	if (!cont[0])
-		goto nono;
-
-	VectorSet(org, currententity->minmax[3], currententity->minmax[1],
-			  currententity->minmax[5]);
-	cont[1] = CL_PMpointcontents2(org, currentmodel);
-	if (!cont[1])
-		goto nono;
-	VectorSet(org, currententity->minmax[0], currententity->minmax[4],
-			  currententity->minmax[5]);
-	cont[2] = CL_PMpointcontents2(org, currentmodel);
-	if (!cont[2])
-		goto nono;
-	VectorSet(org, currententity->minmax[3], currententity->minmax[4],
-			  currententity->minmax[5]);
-	cont[3] = CL_PMpointcontents2(org, currentmodel);
-	if (!cont[3])
-		goto nono;
-	org[0] = (currententity->minmax[0] + currententity->minmax[3]) * 0.5;
-	org[1] = (currententity->minmax[1] + currententity->minmax[4]) * 0.5;
-	org[2] = (currententity->minmax[2] + currententity->minmax[5]) * 0.5;
-
-	cont[4] = CL_PMpointcontents2(org, currentmodel);
-	if (!cont[4])
-		goto nono;
-
-	if ((cont[0] & MASK_WATERONLY) || (cont[1] & MASK_WATERONLY)
-		|| (cont[2] & MASK_WATERONLY) || (cont[3] & MASK_WATERONLY)
-		|| (cont[4] & MASK_WATERONLY))
-		bmodelcaust = true;
-	else
-		bmodelcaust = false;
-
-
-  nono:
+    VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]); 
+    cont[0] = CL_PMpointcontents2(org, currentmodel); 
+    VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]); 
+    cont[1] = CL_PMpointcontents2(org, currentmodel); 
+    VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]); 
+    cont[2] = CL_PMpointcontents2(org, currentmodel); 
+    VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]); 
+    cont[3] = CL_PMpointcontents2(org, currentmodel); 
+    org[0] = (currententity->minmax[0] + currententity->minmax[3]) * 0.5; 
+    org[1] = (currententity->minmax[1] + currententity->minmax[4]) * 0.5; 
+    org[2] = (currententity->minmax[2] + currententity->minmax[5]) * 0.5; 
+    cont[4] = CL_PMpointcontents2(org, currentmodel); 
+    contentsAND = (cont[0] & cont[1] & cont[2] & cont[3] & cont[4]); 
+    contentsOR = (cont[0] | cont[1] | cont[2] | cont[3] | cont[4]); 
+    viewInWater = (qboolean)(CL_PMpointcontents(r_newrefdef.vieworg) & MASK_WATER);
 
 	//Put camera into model space view angle for bmodels parallax
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
@@ -992,7 +985,12 @@ void R_DrawBrushModel(entity_t * e)
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
 	qglEnable(GL_TEXTURE_2D);
-	
+
+	//normal map
+	GL_SelectTexture(GL_TEXTURE4_ARB);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
+	qglEnable(GL_TEXTURE_2D);
 
 	//normal
 	qglEnableClientState(GL_NORMAL_ARRAY);
@@ -1010,9 +1008,28 @@ void R_DrawBrushModel(entity_t * e)
 	
 	num_scene_surfaces = 0;
 	R_DrawInlineBModel();
-	GL_BatchLightmappedPoly(true, bmodelcaust);
-	bmodelcaust = false;
 	
+	// all types = valid if one or all of these match 
+    if ((contentsAND & MASK_WATER) || ((contentsOR & MASK_WATER) && viewInWater)) 
+    { 
+       // sanity checking since we newer have all the types above. 
+       if (contentsOR & CONTENTS_WATER) 
+       { 
+          GL_BatchLightmappedPoly(true, true); 
+       } 
+       else 
+       { 
+          GL_BatchLightmappedPoly(true, false); 
+       } 
+    } 
+    else 
+    { 
+       GL_BatchLightmappedPoly(true, false); 
+    }
+	
+	GL_SelectTexture(GL_TEXTURE4_ARB);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglDisable(GL_TEXTURE_2D);
 	
 	GL_SelectTexture(GL_TEXTURE3_ARB);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -1068,7 +1085,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	msurface_t *surf, **mark;
 	mleaf_t *pleaf;
 	float dot;
-	image_t *fx, *image;
+	image_t *fx, *image, *nm;
 	
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
@@ -1104,7 +1121,6 @@ static void R_RecursiveWorldNode(mnode_t * node)
 		return;
 	}
 	// node is just a decision point, so go down the apropriate sides
-
 	// find which side of the node we are on
 	plane = node->plane;
 
@@ -1161,6 +1177,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 				// FIXME: this is a hack for animation
 				image = R_TextureAnimation(surf->texinfo);
 				fx = R_TextureAnimationFx(surf->texinfo); // fix glow hack
+				nm = R_TextureAnimationNormal(surf->texinfo);
 				surf->texturechain = image->texturechain;
 				image->texturechain = surf;
 
@@ -1209,45 +1226,53 @@ void R_DrawBSP(void)
 	//diffuse
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, sizeof(wTexArray[0]), wTexArray);
+	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
 	
 	//lighmap
 	GL_SelectTexture(GL_TEXTURE1_ARB);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, sizeof(wLMArray[0]), wLMArray);
+	qglTexCoordPointer(2, GL_FLOAT, 0, wLMArray);
 	qglEnable(GL_TEXTURE_2D);
 	
 	//addative map
 	GL_SelectTexture(GL_TEXTURE2_ARB);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(3, GL_FLOAT, sizeof(wTexArray[0]), wTexArray);
+	qglTexCoordPointer(3, GL_FLOAT, 0, wTexArray);
 	qglEnable(GL_TEXTURE_2D);
 	
 	//caustics map
 	GL_SelectTexture(GL_TEXTURE3_ARB);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, sizeof(wTexArray[0]), wTexArray);
+	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
 	qglEnable(GL_TEXTURE_2D);
 	
+	//normal map
+	GL_SelectTexture(GL_TEXTURE4_ARB);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
+	qglEnable(GL_TEXTURE_2D);
+
 	//normal
 	qglEnableClientState(GL_NORMAL_ARRAY);
-	qglNormalPointer(GL_FLOAT, sizeof(nTexArray[0]), nTexArray);
+	qglNormalPointer(GL_FLOAT, 0, nTexArray);
 
 	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglVertexPointer(3, GL_FLOAT, sizeof(wVertexArray[0]), wVertexArray);
+	qglVertexPointer(3, GL_FLOAT, 0, wVertexArray);
 
 	qglEnableVertexAttribArray(10);
 	qglEnableVertexAttribArray(11);
 	
 	// tangent & binormal
-	qglVertexAttribPointer(10, 3, GL_FLOAT, false, sizeof(tTexArray[0]), tTexArray);
-	qglVertexAttribPointer(11, 3, GL_FLOAT, false, sizeof(bTexArray[0]), bTexArray);
+	qglVertexAttribPointer(10, 3, GL_FLOAT, false, 0, tTexArray);
+	qglVertexAttribPointer(11, 3, GL_FLOAT, false, 0, bTexArray);
 	
 	num_scene_surfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
 	GL_BatchLightmappedPoly(false, false);
-
-//	GL_MsgGLError("after draw: ");
+	
+	GL_SelectTexture(GL_TEXTURE4_ARB);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglDisable(GL_TEXTURE_2D);
 
 	GL_SelectTexture(GL_TEXTURE3_ARB);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
