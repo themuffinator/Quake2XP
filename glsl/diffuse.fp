@@ -2,7 +2,8 @@ uniform sampler2D	u_Diffuse;
 uniform sampler2D	u_LightMap;
 uniform sampler2D	u_Add;
 uniform sampler2D	u_NormalMap;
-uniform float       u_ColorModulate;  
+uniform float       u_ColorModulate;
+uniform float       u_ambientScale;    
 uniform int			u_bumpMap;
 uniform vec2		u_bumpScale;
 uniform int			u_parallaxType;
@@ -16,7 +17,7 @@ varying vec3		v_lightVec;
 
 vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) {
 	
-	if (u_parallaxType > 1)
+	if (u_parallaxType == 2)
 	{
 
 	//Parallax Occlusion Maping
@@ -77,7 +78,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	
 	return offsetBest;
 
-	}else{
+	} else if(u_parallaxType == 1){
 	
 	// simple fastest parallax mapping
 	
@@ -102,56 +103,59 @@ vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const flo
 
 void main ()
 {
-vec4 tmp;
 vec3 V = normalize(v_viewVecTS);
 vec3 L = normalize(v_lightVec);
 
 #ifdef PARALLAX
 vec2 P = CalcParallaxOffset(u_Diffuse, gl_TexCoord[0].xy, V);
-vec4 r0 = texture2D(u_Diffuse,  P);
-vec4 r1 = texture2D(u_LightMap, gl_TexCoord[1].xy); 
-vec4 r2 = texture2D(u_Add,      P);
-vec4 r3 = texture2D(u_Caustics, P);
+vec4 diffuseMap = texture2D(u_Diffuse,  P);
+vec4 lightMap = texture2D(u_LightMap, gl_TexCoord[1].xy); 
+vec4 glowMap = texture2D(u_Add,      P);
+vec4 causticsMap = texture2D(u_Caustics, P);
 
-vec3 normal =  normalize(texture2D(u_NormalMap, P.xy).rgb * 2.0 - 1.0);
-float spec = texture2D(u_NormalMap,   P.xy).a;
+vec3 normalMap =  normalize(texture2D(u_NormalMap, P.xy).rgb * 2.0 - 1.0);
+float specTmp = texture2D(u_NormalMap,   P.xy).a;
 
 #else
 
-vec4 r0 = texture2D(u_Diffuse,  gl_TexCoord[0].xy);
-vec4 r1 = texture2D(u_LightMap, gl_TexCoord[1].xy); 
-vec4 r2 = texture2D(u_Add,      gl_TexCoord[0].xy);
-vec4 r3 = texture2D(u_Caustics, gl_TexCoord[0].xy);
+vec4 diffuseMap = texture2D(u_Diffuse,  gl_TexCoord[0].xy);
+vec4 lightMap = texture2D(u_LightMap, gl_TexCoord[1].xy); 
+vec4 glowMap = texture2D(u_Add,      gl_TexCoord[0].xy);
+vec4 causticsMap = texture2D(u_Caustics, gl_TexCoord[0].xy);
 
-vec3 normal =  normalize(texture2D(u_NormalMap, gl_TexCoord[0].xy).rgb * 2.0 - 1.0);
-float spec = texture2D(u_NormalMap,   gl_TexCoord[0].xy).a;
+vec3 normalMap =  normalize(texture2D(u_NormalMap, gl_TexCoord[0].xy).rgb * 2.0 - 1.0);
+float specTmp = texture2D(u_NormalMap,   gl_TexCoord[0].xy).a;
 #endif 
 
+vec4 bumpLight;
+
 if(u_bumpMap >1){
-vec4 specular = vec4(spec, spec, spec, spec);
-vec2 E = PhongLighting(normal, L, V, 16.0);
+vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
+vec2 E = PhongLighting(normalMap, L, V, 16.0);
 
 #ifdef LIGHTMAP
-vec4 bump = (E.x * r0) + (E.y * specular*r1);
-#else
-vec4 bump = (E.x * r0) + (E.y * specular*gl_Color); //via lava surfaces 
-#endif
-r0 *= 0.15;
-r0+=bump;
-}
-
-#ifdef LIGHTMAP
-r0 *= r1;
+bumpLight = (E.x * diffuseMap) + (E.y * specular * lightMap);
+diffuseMap *= u_ambientScale;
 #endif
 
 #ifdef VERTEXLIGHT
-r0 *= gl_Color;
+bumpLight = (E.x * diffuseMap * gl_Color) + (E.y * specular * gl_Color); //via lava surfaces 
+diffuseMap *= u_ambientScale;
 #endif
 
-vec4 finalColor = r0 + r2;
+diffuseMap += bumpLight;
+}
+
+#ifdef LIGHTMAP
+diffuseMap *= lightMap;
+#endif
+
+vec4 finalColor = diffuseMap + glowMap;
+
+vec4 tmp;
 
 #ifdef CAUSTICS
-tmp = r3 * finalColor;
+tmp = causticsMap * finalColor;
 tmp *= u_CausticsModulate;
 finalColor = tmp + finalColor;
 #endif
