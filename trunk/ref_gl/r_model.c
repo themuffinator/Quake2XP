@@ -1159,7 +1159,7 @@ void Mod_LoadFaces(lump_t * l)
 			}
 			GL_SubdivideSurface (out);	// cut up polygon for warps
 		}
-
+		
 		// create lightmaps and polygons
 		if ( !(out->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_WARP) ) )
 			GL_CreateSurfaceLightmap (out);
@@ -1203,6 +1203,7 @@ void Mod_LoadFaces(lump_t * l)
 								vj = sj->polys->verts[0];
 								for (cj=0; cj<sj->numedges; cj++, vj+=VERTEXSIZE)
 								{
+
 									if (VectorCompare(vi, vj))
 									{
 										vi[7] += nj[0];
@@ -1269,6 +1270,7 @@ void Mod_LoadFaces(lump_t * l)
 					flp += 3;
 				}
 			}
+			
 		}
 
 GL_EndBuildingLightmaps();

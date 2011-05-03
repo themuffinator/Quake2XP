@@ -1362,12 +1362,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">win32</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="cpp\cppwrapper.vcxproj">
-      <Project>{8c951b93-a79a-44a1-8d17-01a9df7fc358}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

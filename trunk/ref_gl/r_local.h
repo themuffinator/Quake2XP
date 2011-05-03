@@ -190,7 +190,6 @@ extern image_t *sun_object;
 extern image_t *sun1_object;
 extern image_t *sun2_object;
 
-extern image_t *r_lava;
 extern image_t *draw_chars;
 extern image_t *r_DSTTex;
 extern image_t *r_blackTexture;
@@ -304,6 +303,7 @@ extern cvar_t	*r_customHeight;
 extern cvar_t	*r_bloom;
 extern cvar_t	*sys_priority;
 extern cvar_t	*sys_affinity;
+extern cvar_t	*r_pplWorldAmbient;
 extern cvar_t	*r_bumpMapping;
 extern cvar_t	*r_DrawRangeElements;
 extern cvar_t	*r_ambientLevel;

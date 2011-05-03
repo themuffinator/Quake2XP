@@ -437,7 +437,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 	if (fa->flags & SURF_DRAWTURB)
 	{	
 
-		if (!strcmp(noext, "brlava"))
+		if (!strcmp(noext, "brlava")|| !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
 			RenderLavaSurfaces(fa);
 		else
 			EmitWaterPolys(fa);
@@ -678,8 +678,12 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	qglUniform2f(qglGetUniformLocation(id, "u_bumpScale"), scale[0], scale[1]);
 	qglUniform1i(qglGetUniformLocation(id, "u_numSteps"), (int)r_parallaxSteps->value);
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+	
+	if(r_bumpMapping->value >1){
 	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), (int)r_bumpMapping->value);
-		
+	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+	}
+	
 	GL_CreateParallaxLmPoly(s);
 	
 	c_brush_polys++;
@@ -751,9 +755,10 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
 		}
+		if(r_bumpMapping->value >1){
 		GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
-
+		}
 		R_DrawArrays();
 		
 	} else {
@@ -770,9 +775,10 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
 		}
+		if(r_bumpMapping->value >1){
 		GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
-
+		}
 		R_DrawArrays();
 		}	
 	}

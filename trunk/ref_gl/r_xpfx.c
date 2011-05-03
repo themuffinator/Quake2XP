@@ -65,6 +65,7 @@ cvar_t	*sys_priority;
 cvar_t	*sys_affinity;
 
 cvar_t	*r_DrawRangeElements;
+cvar_t	*r_pplWorldAmbient;
 cvar_t	*r_bumpMapping;
 cvar_t	*r_ambientLevel;
 
@@ -593,6 +594,7 @@ void R_Register2(void)
 		
 	r_DrawRangeElements	=				Cvar_Get("r_DrawRangeElements","1",CVAR_ARCHIVE);
 
+	r_pplWorldAmbient = 				Cvar_Get("r_pplWorldAmbient", "0.15", CVAR_ARCHIVE);
 	r_bumpMapping =						Cvar_Get("r_bumpMapping", "1", CVAR_ARCHIVE);
 	r_ambientLevel =					Cvar_Get("r_ambientLevel", "0.75", CVAR_ARCHIVE);
 	

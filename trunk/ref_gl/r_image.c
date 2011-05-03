@@ -1657,8 +1657,6 @@ void GL_FreeUnusedImages(void)
 	sun_object->registration_sequence = registration_sequence;
 	sun1_object->registration_sequence = registration_sequence;
 	sun2_object->registration_sequence = registration_sequence;
-
-	r_lava->registration_sequence = registration_sequence;
 	r_distort->registration_sequence = registration_sequence;
 	r_blackTexture->registration_sequence = registration_sequence;
 	r_defBump->registration_sequence = registration_sequence;

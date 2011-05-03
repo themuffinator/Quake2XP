@@ -879,7 +879,7 @@ next:
 	else
 		GL_DrawAliasFrameLerp(paliashdr, currententity->backlerp);
 	
-		if(normalmap && r_bumpMapping->value){
+		if(r_bumpMapping->value){
 			VectorCopy(diffuseLight, shadelight);
 	}
 

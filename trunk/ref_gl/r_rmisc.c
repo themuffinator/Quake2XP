@@ -38,7 +38,6 @@ image_t *r_xblood[MAX_BLOOD];
 image_t *sun_object;
 image_t *sun1_object;
 image_t *sun2_object;
-image_t *r_lava;
 image_t *r_distort;
 image_t *r_predator;
 image_t	*r_texshell[MAX_SHELLS];
@@ -354,11 +353,6 @@ void R_InitEngineTextures(void)
 	sun2_object = GL_FindImage("gfx/sun/sun2.jpg", it_wall);
 	if(!sun2_object)
 		sun2_object = r_notexture;
-
-	
-	r_lava = GL_FindImage("gfx/lava/lava.tga", it_wall);
-	if(!r_lava)
-		r_lava = r_notexture;
 
 	r_distort = GL_FindImage("gfx/distort/explosion.tga", it_wall);
 	if(!r_distort)

@@ -628,7 +628,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 		
 	char		string[64], S[64];
 	ILstring	devil;
-	int			len, devilver, loc, agp, total, avbl;
+	int			len, devilver;
 	#define		OSR2_BUILD_NUMBER 1111
 	DWORD		prType;
 	PGPI		pGPI;
@@ -670,41 +670,6 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 
 	Con_Printf (PRINT_ALL, "\n");
 
-	loc = cpp_getAvailableLocalVideoMemory();
-	avbl = loc;
-	total = cpp_getAvailableTotalVideoMemory();
-	if(!loc)
-		goto err; //fuck! return NULL if video card have pci-e2agp brige or integrated video
-	// fix uncorect local video memory size - direct draw bug??????
-	if(loc<=64)
-		loc = 64;else
-	if(loc<=128)
-		loc = 128;else	
-	if(loc<=256)
-		loc = 256;else
-	if(loc<=384)
-		loc = 384;else
-	if(loc<=512)
-		loc = 512;else
-	if(loc<=768)
-		loc = 768;else
-	if(loc<=896)
-		loc = 896;else
-	if(loc<=1024)
-		loc = 1024;else
-	if(loc<1536)
-		loc = 1536;else
-	if(loc<=2048)
-		loc = 2048;
-	
-	agp = total - avbl;
-
-	Com_Printf("Local video memory:      "S_COLOR_GREEN"~%i"S_COLOR_WHITE" MB\n", loc);
-	Com_Printf("Available video memory:  "S_COLOR_GREEN"~%i"S_COLOR_WHITE" MB\n", avbl);
-	Com_Printf("AGP/PCI-E video memory:  "S_COLOR_GREEN"~%i"S_COLOR_WHITE" MB\n", agp);
-	Com_Printf("Total video memory:      "S_COLOR_GREEN"~%i"S_COLOR_WHITE" MB\n", total);
-	Con_Printf (PRINT_ALL, "\n");
-err:
 	//OS same info from  http://msdn.microsoft.com/en-us/library/ms724429(VS.85).aspx
 	if ( GetVersionEx( &winver) )
 	{
@@ -1111,7 +1076,7 @@ qboolean GLimp_InitGL (void)
 			}
 			
 		}
-
+		
 		qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)qwglGetProcAddress("wglGetExtensionsStringARB");
 		qwglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC)qwglGetProcAddress("wglGetExtensionsStringEXT");
 		
@@ -1133,9 +1098,8 @@ qboolean GLimp_InitGL (void)
 		Com_Printf (S_COLOR_RED "WGL_EXTENSION not found!\n");
 		
 			}
-		
-		glw_state.wglRenderer = (const char*)qglGetString(GL_RENDERER);
 		Com_Printf("\n");
+		glw_state.wglRenderer = (const char*)qglGetString(GL_RENDERER);
 		Com_Printf ("Getting capabilities from "S_COLOR_GREEN"%s"S_COLOR_WHITE"\n", glw_state.wglRenderer);
 		Com_Printf ("WGL_EXTENSION:\n");
 		

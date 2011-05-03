@@ -257,30 +257,32 @@ void RenderLavaSurfaces(msurface_t * fa)
 	float		scale[2];
 	int			id;
 	unsigned	defBits = 0;
-
-	defBits = worldDefs.ParallaxBit | worldDefs.VertexLightBits;
 	
+	if (fa->texinfo->image->has_alpha && r_parallax->value)
+		defBits = worldDefs.ParallaxBit | worldDefs.VertexLightBits;
+	else
+		defBits = worldDefs.VertexLightBits;
+
 	// setup program
 	GL_BindProgram(diffuseProgram, defBits);
 	id = diffuseProgram->id[defBits];
 
-	scale[0] = 6.666 / r_lava->width;
-	scale[1] = 6.666 / r_lava->height;
+	scale[0] = 1.0 / fa->texinfo->image->width;
+	scale[1] = 1.0 / fa->texinfo->image->height;
 
-	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"),	0.75);
+	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"),	1.0);
 	qglUniform3fv				(qglGetUniformLocation(id, "u_viewOriginES"),	1 , r_origin);
 	qglUniform2f				(qglGetUniformLocation(id, "u_bumpScale"),		scale[0], scale[1]);
-	qglUniform1i				(qglGetUniformLocation(id, "u_numSteps"),		(int)r_parallaxSteps->value);	
+	qglUniform1i				(qglGetUniformLocation(id, "u_numSteps"),		(int)r_parallaxSteps->value);
+	qglUniform1i				(qglGetUniformLocation(id, "u_parallaxType"),	(int)r_parallax->value);
 	qglUniform1i				(qglGetUniformLocation(id, "u_bumpMap"),		(int)r_bumpMapping->value);
+	qglUniform1f				(qglGetUniformLocation(id, "u_ambientScale"),	0.0);
 
 	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	GL_Bind						(r_lava->texnum);
+	GL_Bind						(fa->texinfo->image->texnum);
 	qglEnable					(GL_TEXTURE_2D);
 	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer			(2, GL_FLOAT, 0, wTexArray);
-
-	qglEnableClientState		(GL_COLOR_ARRAY);
-	qglColorPointer				(4, GL_FLOAT, 0, WarpColorArray);
 	qglUniform1i				(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
 	GL_SelectTexture			(GL_TEXTURE1_ARB);
@@ -289,21 +291,22 @@ void RenderLavaSurfaces(msurface_t * fa)
 	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer			(2, GL_FLOAT, 0, wTexArray);
 	qglUniform1i				(qglGetUniformLocation(id, "u_NormalMap"), 1);	
-
-	//normal
-	qglEnableClientState(GL_NORMAL_ARRAY);
-	qglNormalPointer(GL_FLOAT, 0, nTexArray);
-
-	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglVertexPointer(3, GL_FLOAT, 0, wVertexArray);
-
-	qglEnableVertexAttribArray(10);
-	qglEnableVertexAttribArray(11);
-	
+			
 	// tangent & binormal
-	qglVertexAttribPointer(10, 3, GL_FLOAT, false, 0, tTexArray);
-	qglVertexAttribPointer(11, 3, GL_FLOAT, false, 0, bTexArray);
+	qglEnableVertexAttribArray	(10);
+	qglVertexAttribPointer		(10, 3, GL_FLOAT, false, 0, tTexArray);
+	qglEnableVertexAttribArray	(11);
+	qglVertexAttribPointer		(11, 3, GL_FLOAT, false, 0, bTexArray);
 	
+	//normal
+	qglEnableClientState		(GL_NORMAL_ARRAY);
+	qglNormalPointer			(GL_FLOAT, 0, nTexArray);
+
+	//color pointer
+	qglEnableClientState		(GL_COLOR_ARRAY);
+	qglColorPointer				(4, GL_FLOAT, 0, WarpColorArray);
+	
+	//vertex pointer
 	qglEnableClientState		(GL_VERTEX_ARRAY);
 	qglVertexPointer			(3, GL_FLOAT, 0, wVertexArray);
 
@@ -356,16 +359,14 @@ void RenderLavaSurfaces(msurface_t * fa)
 
 	GL_SelectTexture		(GL_TEXTURE0_ARB);
 	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglDisableClientState	(GL_COLOR_ARRAY);
 
+	qglDisableClientState	(GL_COLOR_ARRAY);
 	qglDisableClientState	(GL_VERTEX_ARRAY);
 	qglDisableClientState	(GL_NORMAL_ARRAY);
-
+	GL_BindNullProgram		();
+	
 	qglDisableVertexAttribArray(10);
 	qglDisableVertexAttribArray(11);
-
-	GL_BindNullProgram		();
-
 }
 
 void EmitWaterPolys(msurface_t * fa)

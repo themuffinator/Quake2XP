@@ -1346,15 +1346,6 @@ void Dump_EntityString(void){
 
 }
 
-#define	GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
-#define	GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048
-#define	GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  0x9049
-#define	GPU_MEMORY_INFO_EVICTION_COUNT_NVX            0x904A
-#define	GPU_MEMORY_INFO_EVICTED_MEMORY_NVX            0x904B
-#define VBO_FREE_MEMORY_ATI                           0x87FB
-#define TEXTURE_FREE_MEMORY_ATI                       0x87FC
-#define RENDERBUFFER_FREE_MEMORY_ATI                  0x87FD
-
 
 void R_VideoInfo_f(void){
 		
@@ -1520,7 +1511,6 @@ int R_Init(void *hinstance, void *hWnd)
 	char			vendor_buffer[1000];
 	int				j;
 	extern float	r_turbsin[256];
-	char			c, line[128], *string;
 	int				maxTextureCoords;
 	int				aniso_level, max_aniso;
 
@@ -1591,28 +1581,21 @@ int R_Init(void *hinstance, void *hWnd)
 		}
 	}
 
-	Com_Printf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); // Bers@q2 - sort gl extection by line
-	string = (char*)gl_config.extensions_string;
-	while (1)
-	{
-		j = 0;
-		line[j] = 0;
-		while (1)
-		{
-			c = *string++;
-			if ((c == ' ') || (c == 0))
-				break;
-			line[j] = c;
-			j++;
-		}
-		if(!c)
-			break;
-		line[j] = 0;
-		Com_Printf(S_COLOR_YELLOW"%s\n", line);
-	}
-	Com_Printf("\n");
+		if (strstr(gl_config.extensions_string, "GL_NVX_gpu_memory_info")) {
+		int mem;
+		qglGetIntegerv ( GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX , &mem);
+		Com_Printf("GL_ONBOARD_VIDEO_MEMORY: "S_COLOR_GREEN"%i"S_COLOR_WHITE" MB\n", mem >>10);
+		} else 
+		if (strstr(gl_config.extensions_string, "GL_ATI_meminfo")) {
+		int mem[4];
+        qglGetIntegerv (TEXTURE_FREE_MEMORY_ATI, mem);
+        Com_Printf("GL_ONBOARD_VIDEO_MEMORY: "S_COLOR_GREEN"%i"S_COLOR_WHITE" MB\n", mem[0] >>10);
+        }
 
-	
+
+	Com_Printf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
+	Com_Printf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
+
 	if (strstr(renderer_buffer, "gdi"))
 		gl_config.renderer = GL_RENDERER_MCD;
 	else
