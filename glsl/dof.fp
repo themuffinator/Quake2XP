@@ -18,7 +18,7 @@ void main(void)
    
 		// Z-feather
 		float depth = DecodeDepth(texture2DRect(u_DepthTex, gl_FragCoord.xy).x, u_depthParms);
-		float factor = depth.x - u_focus;
+		float factor = depth - u_focus;
 
 		vec2 dofblur = vec2 (clamp(factor * u_bias, -blurClamp, blurClamp));
         
