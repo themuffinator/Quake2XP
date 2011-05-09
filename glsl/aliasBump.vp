@@ -18,11 +18,11 @@ vec3 VV = u_ViewOrigin - gl_Vertex.xyz;
 
 v_lightVec.x = dot(a_tangent, LV);
 v_lightVec.y = dot(a_binormal, LV);
-v_lightVec.z = dot(gl_Normal.xyz, LV); 
+v_lightVec.z = dot(gl_Normal, LV); 
 
 v_viewVec.x = dot(a_tangent, VV);
 v_viewVec.y = dot(a_binormal, VV);
-v_viewVec.z = dot(gl_Normal.xyz, VV); 
+v_viewVec.z = dot(gl_Normal, VV); 
 	
 gl_Position = ftransform();
 }

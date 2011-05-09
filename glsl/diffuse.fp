@@ -127,9 +127,8 @@ vec3 normalMap =  normalize(texture2D(u_NormalMap, gl_TexCoord[0].xy).rgb * 2.0 
 float specTmp = texture2D(u_NormalMap,   gl_TexCoord[0].xy).a;
 #endif 
 
+#ifdef BUMP
 vec4 bumpLight;
-
-if(u_bumpMap >1){
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
 vec2 E = PhongLighting(normalMap, L, V, 16.0);
 
@@ -144,7 +143,7 @@ diffuseMap *= u_ambientScale;
 #endif
 
 diffuseMap += bumpLight;
-}
+#endif
 
 #ifdef LIGHTMAP
 diffuseMap *= lightMap;

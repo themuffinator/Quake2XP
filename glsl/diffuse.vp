@@ -19,9 +19,11 @@ v_viewVecTS.x = dot(tmp, a_tangent);
 v_viewVecTS.y = dot(tmp, a_binormal);
 v_viewVecTS.z = dot(tmp, gl_Normal);
 
+#ifdef BUMP
 v_lightVec.x = dot(a_tangent, gl_Normal);
 v_lightVec.y = dot(a_binormal, gl_Normal);
-v_lightVec.z = dot(gl_Normal.xyz, gl_Normal); 
+v_lightVec.z = 1.0; 
+#endif
 
 gl_Position = ftransform();
 gl_FrontColor = gl_Color;
