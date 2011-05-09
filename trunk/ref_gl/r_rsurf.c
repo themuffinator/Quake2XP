@@ -643,20 +643,17 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	nm    = R_TextureAnimationNormal(s->texinfo);
 	lmtex = s->lightmaptexturenum;
 	
-	if(caustics || (s->flags & SURF_WATER)){
 
+	defBits = worldDefs.LightmapBits;
+	
+	if(caustics || (s->flags & SURF_WATER))
+		defBits |= worldDefs.CausticsBit;
+	
 	if (image->has_alpha && r_parallax->value)
-		defBits = worldDefs.ParallaxBit | worldDefs.CausticsBit | worldDefs.LightmapBits;
-	else
-		defBits = worldDefs.CausticsBit | worldDefs.LightmapBits;
-	}
-	else
-	{
-	if (image->has_alpha && r_parallax->value)
-		defBits = worldDefs.ParallaxBit | worldDefs.LightmapBits;
-	else
-		defBits = worldDefs.LightmapBits;
-	}
+		defBits |= worldDefs.ParallaxBit;
+	
+	if (r_bumpMapping->value >1)
+		defBits |= worldDefs.BumpBits;
 
 	// setup program
 	GL_BindProgram(diffuseProgram, defBits);
@@ -673,17 +670,16 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	if(bmodel)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
 	else
-	qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
+		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
 
 	qglUniform2f(qglGetUniformLocation(id, "u_bumpScale"), scale[0], scale[1]);
+	if(r_parallax->value){
 	qglUniform1i(qglGetUniformLocation(id, "u_numSteps"), (int)r_parallaxSteps->value);
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
-	
-	if(r_bumpMapping->value >1){
-	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), (int)r_bumpMapping->value);
-	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 	}
-	
+	if(r_bumpMapping->value >1)
+	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+		
 	GL_CreateParallaxLmPoly(s);
 	
 	c_brush_polys++;

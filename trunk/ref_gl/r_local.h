@@ -726,12 +726,13 @@ void R_CaptureDepthBuffer();
 void R_CaptureColorBuffer();
 
 typedef struct {
-	unsigned		CausticsBit;
-	unsigned		ParallaxBit;
-	unsigned		OverBrightBit;
-	unsigned		LightmapBits;
-	unsigned		VertexLightBits;
-	unsigned		AlphaMaskBits;
+	unsigned	CausticsBit;
+	unsigned	ParallaxBit;
+	unsigned	OverBrightBit;
+	unsigned	LightmapBits;
+	unsigned	VertexLightBits;
+	unsigned	AlphaMaskBits;
+	unsigned	BumpBits;
 } worldDefs_t;
 
 worldDefs_t worldDefs;
