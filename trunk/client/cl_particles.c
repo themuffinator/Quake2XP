@@ -859,7 +859,7 @@ void CL_ParticleSmoke2(vec3_t org, vec3_t dir, float r, float g, float b,
 		active_particles = p;
 		p->type = PT_SMOKE;
 		p->flags = 0;
-		p->flags = PARTICLE_DEPTHHACK_MID | PARTICLE_AIRONLY;
+		p->flags |= PARTICLE_AIRONLY;
 		p->orient =  frand() * 360;
 		if (add) {
 			p->blend_dst = GL_SRC_ALPHA;
@@ -1181,7 +1181,7 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 		active_particles = p;
 		p->orient = frand() * 360;
 		p->flags = 0;
-		p->flags = PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT;
+		p->flags |= PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -1224,7 +1224,7 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 	VectorClear(p->vel);
 	p->orient = 0;
 	p->flags = 0;
-	p->flags = PARTICLE_DIRECTIONAL | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT;
+	p->flags = PARTICLE_DIRECTIONAL | PARTICLE_AIRONLY;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1253,7 +1253,7 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 		p->vel[j] = dir[j];
 	}
 	
-	for (i = 0; i<2; i++){
+	for (i = 0; i<3; i++){
 	
 	if (!free_particles)
 		return;
@@ -1267,7 +1267,7 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 	VectorNormalize(p->dir);
 	p->orient = 0;
 	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT;
+	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY| PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1402,7 +1402,7 @@ void CL_ParticleSplashSlime(vec3_t org, vec3_t dir)
 	VectorNormalize(p->dir);
 	p->orient = 0;
 	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT;
+	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT| PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1538,7 +1538,7 @@ void CL_ParticleSplashLava(vec3_t org, vec3_t dir)
 	VectorNormalize(p->dir);
 	p->orient = 0;
 	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT;
+	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT | PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1593,7 +1593,7 @@ void CL_ParticleBloodSplash(vec3_t org, vec3_t dir)
 	VectorNormalize(p->dir);
 	p->orient = 0;
 	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_CLAMP;
+	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_CLAMP | PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 2000000;
 	p->blend_dst = GL_ONE;
@@ -2151,7 +2151,7 @@ void CL_Explosion(vec3_t org)
 	active_particles = p;
 	p->flags = 0;
 	p->orient =  0;
-	p->flags = PARTICLE_DEPTHHACK_SHORT | PARTICLE_OVERBRIGHT | PARTICLE_LIGHTING;
+	p->flags = PARTICLE_OVERBRIGHT | PARTICLE_LIGHTING;
 	p->time = cl.time;
 	p->endTime = cl.time + 400;
 	p->size = 50;
@@ -3367,7 +3367,7 @@ void CL_ParticleRick(vec3_t org, vec3_t dir)
 	VectorNormalize(p->dir);
 	p->orient = 0;
 	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY;
+	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -3502,7 +3502,7 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 	VectorNormalize(p->dir);
 	p->orient = 0;
 	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY;
+	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;

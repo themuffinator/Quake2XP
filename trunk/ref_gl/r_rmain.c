@@ -1188,9 +1188,9 @@ void R_RenderView(refdef_t * fd)
 	R_RenderFlares();
 	R_RenderDlights();
 	
-	R_DrawParticles(true); //underwater particles
-
+	
 	R_CaptureDepthBuffer();
+	R_DrawParticles(true); //underwater particles
 	R_CaptureColorBuffer();
 	R_RenderDistortModels();
 	R_DrawAlphaPoly();
@@ -1595,24 +1595,14 @@ int R_Init(void *hinstance, void *hWnd)
 
 	Com_Printf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
 	Com_Printf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
-
-	if (strstr(renderer_buffer, "gdi"))
-		gl_config.renderer = GL_RENDERER_MCD;
-	else
-		gl_config.renderer = GL_RENDERER_OTHER;
-
+	
 	Cvar_Set("scr_drawall", "0");
 
 #ifdef __linux__
 	Cvar_SetValue("r_vsync", 1);
 #endif
 
-	// MCD has buffering issues
-	if (gl_config.renderer == GL_RENDERER_MCD)
-		Cvar_SetValue("r_vsync", 1);
-
-
-
+	
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");
 	Com_Printf(S_COLOR_GREEN"Checking Basic Quake II XP Extensions\n");

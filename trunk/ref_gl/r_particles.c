@@ -60,7 +60,7 @@ void R_DrawParticles(qboolean WaterCheck)
 	particle_t *p;
 	unsigned	ParticleIndex[MAX_INDICES];
 	unsigned	texId, texture = -1;
-	int			i, len, loc, partVert=0, index=0;
+	int			i, len, loc, partVert=0, index=0, id, defBits =0;
 	vec3_t		point, width;
 	vec3_t		move, vec, dir1, dir2, dir3, spdir;
 	vec3_t		up, right;
@@ -70,9 +70,23 @@ void R_DrawParticles(qboolean WaterCheck)
 	float		scale, r, g, b, a;
 	float		c, d, s;
 	
+	// setup program
+	GL_BindProgram(particlesProgram, defBits);
+	id = particlesProgram->id[defBits];
+
 	GL_SelectTexture		(GL_TEXTURE0_ARB);
 	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer		(2, GL_FLOAT, 0, ParticleTextCoord);
+	qglUniform1i			(qglGetUniformLocation(id, "u_map0"), 0);
+
+	GL_SelectTexture		(GL_TEXTURE1_ARB);	
+	qglDisable				(GL_TEXTURE_2D);
+    qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
+	GL_BindRect				(depthMap->texnum);
+    qglUniform1i			(qglGetUniformLocation(id, "u_depthBufferMap"), 1);
+
+	qglUniform2f			(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+
 	qglEnableClientState	(GL_COLOR_ARRAY);
 	qglColorPointer			(4, GL_FLOAT, 0, ParticleColor);
 	qglEnableClientState	(GL_VERTEX_ARRAY);
@@ -216,16 +230,7 @@ void R_DrawParticles(qboolean WaterCheck)
 		g = p->color[1];
 		b = p->color[2];
 		a = p->alpha;
-		
-		if (p->flags & PARTICLE_DEPTHHACK_SHORT)
-			qglDepthRange(0, DEPTHHACK_RANGE_SHORT);
-
-		if (p->flags & PARTICLE_DEPTHHACK_MID)
-			qglDepthRange(0, DEPTHHACK_RANGE_MID);
-		
-		if (p->flags & PARTICLE_DEPTHHACK_LONG)
-			qglDepthRange(0, DEPTHHACK_RANGE_LONG);
-
+				
 		if (p->flags & PARTICLE_VERTEXLIGHT) {
 			outcolor[0] = shadelight_surface[0] * r - r;
 			outcolor[1] = shadelight_surface[1] * g - g;
@@ -240,7 +245,21 @@ void R_DrawParticles(qboolean WaterCheck)
 			a = outcolor[3];
 		}
 
-	
+		if(p->blend_dst == GL_ONE && p->blend_src == GL_ONE)
+			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 1.0, 0.0); //color
+		else
+			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0); //alpha
+		
+		if(p->flags & PARTICLE_NOFADE)
+			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), 0.0);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), scale*0.5); // soft blend scale
+		
+		if (p->flags & PARTICLE_OVERBRIGHT)
+			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
+
 		if (p->flags & PARTICLE_STRETCH) {
 			
 				VectorSubtract (p->origin, r_newrefdef.vieworg, point);
@@ -592,6 +611,12 @@ void R_DrawParticles(qboolean WaterCheck)
 	qglDepthMask(1);			// back to normal Z buffering
 	GL_TexEnv(GL_REPLACE);
 	GL_Overbrights(false);
+
+	GL_BindNullProgram		();
+	GL_SelectTexture		(GL_TEXTURE1_ARB);	
+	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisableClientState(GL_VERTEX_ARRAY);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);

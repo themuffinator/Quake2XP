@@ -29,7 +29,7 @@ glslProgram_t		*thermalfpProgram;
 glslProgram_t		*waterProgram;
 glslProgram_t		*radialProgram;
 glslProgram_t		*dofProgram;
-
+glslProgram_t		*particlesProgram;
 
 // Usage of half-floats gives 5-10% additional performance,
 // as well as "dark room with a lot of little lights" artefacts.
@@ -555,6 +555,14 @@ void R_InitPrograms(void) {
 	waterProgram = R_FindProgram("water", true, true);
 	
 	if(waterProgram->valid){
+		Com_Printf("succeeded\n");
+	}else
+		Com_Printf(S_COLOR_RED"Failed!\n");
+
+	Com_Printf("Load "S_COLOR_YELLOW"particles program"S_COLOR_WHITE" ");
+	particlesProgram =  R_FindProgram("particles", true, true);
+
+	if(particlesProgram->valid){
 		Com_Printf("succeeded\n");
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");

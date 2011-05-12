@@ -519,8 +519,7 @@ int GL_MsgGLError(char* Info);
 /*
 ** GL config stuff
 */
-#define GL_RENDERER_MCD			0x00000010	// software
-#define GL_RENDERER_OTHER		0x80000000
+
 
 typedef struct {
 	int renderer;
@@ -720,6 +719,7 @@ extern	glslProgram_t		*thermalfpProgram;
 extern	glslProgram_t		*waterProgram;
 extern	glslProgram_t		*radialProgram;
 extern	glslProgram_t		*dofProgram;
+extern	glslProgram_t		*particlesProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
