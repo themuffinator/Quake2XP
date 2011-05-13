@@ -841,11 +841,12 @@ static void R_DrawInlineBModel(void)
 				scene_surfaces[num_scene_surfaces++] = psurf;
 								
 			} 
-			else 
-			{
-					R_RenderBrushPoly(psurf);
-					qglDisable(GL_BLEND);
-			}
+		//	else 
+		//	{
+		//		R_RenderBrushPoly(psurf);
+		//		scene_surfaces[num_scene_surfaces++] = psurf;	
+		//		qglDisable(GL_BLEND);
+		//	}
 		}
 	}
 
@@ -854,6 +855,44 @@ static void R_DrawInlineBModel(void)
 		qglDisable(GL_BLEND); 
 		qglColor4f(1, 1, 1, 1);
 		GL_TexEnv(GL_REPLACE);
+	}
+
+	qglDisable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+
+static void R_DrawInlineBModel2(void)
+{
+	int i;
+	cplane_t *pplane;
+	float dot;
+	msurface_t *psurf;
+		
+	psurf = &currentmodel->surfaces[currentmodel->firstmodelsurface];
+	//
+	// draw texture
+	//
+	for (i = 0; i < currentmodel->nummodelsurfaces; i++, psurf++) {
+		// find which side of the node we are on
+		pplane = psurf->plane;
+		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
+
+		// draw the polygon
+		if (((psurf->flags & SURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
+			|| (!(psurf->flags & SURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+
+			if (psurf->visframe == r_framecount) //reckless fix
+				continue;
+		
+			if (psurf->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {	
+				continue;
+			} 
+			else 
+				if (psurf->flags & SURF_DRAWTURB)
+						R_RenderBrushPoly(psurf);
+						
+		}
 	}
 
 	qglDisable(GL_BLEND);
@@ -963,8 +1002,9 @@ void R_DrawBrushModel(entity_t * e)
 		}
 	else
 		VectorSubtract(r_origin, currententity->origin, BmodelViewOrg);
-
-
+		
+	R_DrawInlineBModel2();
+	
 	//diffuse
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -1053,7 +1093,7 @@ void R_DrawBrushModel(entity_t * e)
 
 	qglDisableVertexAttribArray(10);
 	qglDisableVertexAttribArray(11);
-
+	
 	qglPopMatrix();
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
