@@ -44,11 +44,11 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 					 qboolean mipmap);
 
 
-int gl_solid_format =  GL_RGB8;
-int gl_alpha_format = GL_RGBA8;
+int gl_solid_format =  GL_RGBA;
+int gl_alpha_format = GL_RGBA;
 
-int gl_tex_solid_format = GL_RGB8;
-int gl_tex_alpha_format = GL_RGBA8;
+int gl_tex_solid_format = GL_RGBA;
+int gl_tex_alpha_format = GL_RGBA;
 
 int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;	// default to trilinear
 												// filtering - MrG
@@ -979,6 +979,29 @@ __inline float RSqrt(float number)
 	return y;
 }
 
+void GL_sRgbTextureConversion (unsigned *in, int inwidth, int inheight)
+{
+		int		i, c;
+		byte	*p;
+
+		p = (byte *)in;
+
+		c = inwidth*inheight;
+		for (i=0 ; i<c ; i++, p+=4)
+		{
+			if(p[3] && (p[0]>4 || p[1]>4 || p[2]>4))
+			{
+				p[0] = pow(p[0],0.43);
+				p[1] = pow(p[1],0.43);
+				p[2] = pow(p[2],0.43);
+			}
+		}
+	
+}
+
+
+
+
 extern qboolean arbNPOTSupported;
 extern cvar_t	*r_maxTextureSize;
 
@@ -992,7 +1015,6 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 	int i, c;
 	byte *scan;
 	int comp;
-	
 	uploaded_paletted = false;
 
 	// scan the texture for any non-255 alpha
@@ -1045,6 +1067,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 			scaled_height = max_size;
 	}
 	
+		
 	if (scaled_width == width && scaled_height == height) {
 
 		scaled_width = width;
@@ -1053,9 +1076,8 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 
 	} else
 		scaled = (unsigned int*)malloc((scaled_width * scaled_height) * 4);
+	
 
-	
-	
 	GL_ResampleTexture(data, width, height, scaled, scaled_width,
 					   scaled_height);
 

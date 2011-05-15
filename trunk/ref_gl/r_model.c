@@ -1195,7 +1195,7 @@ void Mod_LoadFaces(lump_t * l)
 							VectorNegate(sj->plane->normal, nj);
 						else
 							VectorCopy(sj->plane->normal, nj);
-						if(DotProduct(ni, nj)>=cos(DEG2RAD(45)))
+						if(DotProduct(ni, nj)>=cos(DEG2RAD(30)))
 						{
 							vi = si->polys->verts[0];
 							for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
@@ -1222,7 +1222,7 @@ void Mod_LoadFaces(lump_t * l)
 					VectorSet(ttt, vi[7], vi[8], vi[9]);
 					VectorNormalize(ttt);
 
-					if(DotProduct(ttt, ni)<cos(DEG2RAD(45)))
+					if(DotProduct(ttt, ni)<cos(DEG2RAD(30)))
 					{
 						vi[7] = ttt[0] = ni[0];
 						vi[8] = ttt[1] = ni[1];

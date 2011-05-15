@@ -20,10 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-#define DEPTHHACK_RANGE_SHORT	0.999f
-#define DEPTHHACK_RANGE_MID		0.997f
-#define DEPTHHACK_RANGE_LONG	0.99f
-
 vec4_t shadelight_surface;
 image_t *r_particletexture[PT_MAX];
 
@@ -253,7 +249,7 @@ void R_DrawParticles(qboolean WaterCheck)
 		if(p->flags & PARTICLE_NOFADE)
 			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), 0.0);
 		else
-			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), scale*0.5); // soft blend scale
+			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), scale*0.75); // soft blend scale
 		
 		if (p->flags & PARTICLE_OVERBRIGHT)
 			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);

@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #include <stdio.h>
-
+#include <math.h>
 
 
 #include <GL/glu.h>
@@ -736,6 +736,19 @@ typedef struct {
 } worldDefs_t;
 
 worldDefs_t worldDefs;
+
+#define	SRGB_EXT                                       0x8C40
+#define	SRGB8_EXT                                      0x8C41
+#define	SRGB_ALPHA_EXT                                 0x8C42
+#define	SRGB8_ALPHA8_EXT                               0x8C43
+#define	SLUMINANCE_ALPHA_EXT                           0x8C44
+#define	SLUMINANCE8_ALPHA8_EXT                         0x8C45
+#define	SLUMINANCE_EXT                                 0x8C46
+#define	SLUMINANCE8_EXT                                0x8C47
+#define	COMPRESSED_SRGB_EXT                            0x8C48
+#define	COMPRESSED_SRGB_ALPHA_EXT                      0x8C49
+#define	COMPRESSED_SLUMINANCE_EXT                      0x8C4A
+#define	COMPRESSED_SLUMINANCE_ALPHA_EXT                0x8C4B
 
 /*
 ====================================================================
