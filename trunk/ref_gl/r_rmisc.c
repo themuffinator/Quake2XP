@@ -112,7 +112,7 @@ void CreateDepthTexture(void){
 	qglTexParameteri ( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST ); // rectangle!
     qglTexParameteri ( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); // rectangle!
 
-    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_DEPTH_COMPONENT, vid.width, vid.height, 0,
+    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_DEPTH_COMPONENT24, vid.width, vid.height, 0,
                        GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL );
 
 }
@@ -415,11 +415,9 @@ void GL_ScreenShot_f(void)
 		image = IL_TIF;
 
 	// Create the scrnshots directory if it doesn't exist
-	Com_sprintf(checkname, sizeof(checkname), "%s/screenshots",
-				FS_Gamedir());
+	Com_sprintf(checkname, sizeof(checkname), "%s/screenshots", FS_Gamedir());
 	Sys_Mkdir(checkname);
-
-
+	
 	for (i = 0; i <= 999; i++) {
 		Com_sprintf(picname, sizeof(picname), "q2xp%04i.%s", i,
 					r_screenShot->string);

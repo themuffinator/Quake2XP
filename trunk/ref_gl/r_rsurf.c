@@ -1841,7 +1841,7 @@ void GL_DrawRadar(void)
 	if (!r_radar->value)
 		return;
 
-	qglViewport(vid.width - r_radarSize->value, 0, r_radarSize->value, r_radarSize->value);
+	qglViewport(vid.width - r_radarSize->value, vid.height*0.5 - r_radarSize->value, r_radarSize->value, r_radarSize->value);
 
 	qglDisable(GL_DEPTH_TEST);
 	qglMatrixMode(GL_PROJECTION);
