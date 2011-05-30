@@ -1,6 +1,7 @@
 varying vec2			v_deformTexCoord;
 varying vec2			v_deformMul;
 varying float			v_depth;
+varying float			v_depthS;
 uniform float			u_deformMul;
 
 void main (void) {
@@ -11,6 +12,7 @@ void main (void) {
 	vec4 positionVS = gl_ModelViewMatrix * gl_Vertex;
 	positionVS = vec4(1.0, 0.0, positionVS.z, 1.0);
 	v_depth = -positionVS.z;
+	v_depthS = -(gl_ModelViewMatrix * gl_Vertex).z;
 
 	// compute the deform strength
 	vec2 d = (gl_ProjectionMatrix * positionVS).xw;
