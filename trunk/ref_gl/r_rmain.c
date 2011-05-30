@@ -258,10 +258,6 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglDepthMask(0);		// no z buffering - trans object!
 	qglDisable(GL_BLEND);
 
-	//qglDepthRange(gldepthmin, gldepthmin + 0.99 * (gldepthmax - gldepthmin));
-
-	qglDepthRange(0, 0.999);
-
 	defBits = worldDefs.AlphaMaskBits;
 	// setup program
 	GL_BindProgram(refractProgram, defBits);
@@ -292,8 +288,10 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	15.0);
 	qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.0);
 	qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	200.0);
+	qglUniform1f				(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.5);
 	qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f				(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0);
 
 	qglBegin(GL_QUADS);
 
