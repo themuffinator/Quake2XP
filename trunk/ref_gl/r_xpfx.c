@@ -87,6 +87,7 @@ cvar_t	*r_dofFocus;
 cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;
 cvar_t	*r_radialBlurSamples;
+cvar_t	*r_tbnSmoothAngle;
 //--------------------
 
 void GL_Overbrights(qboolean enable)
@@ -617,5 +618,7 @@ void R_Register2(void)
 	r_radialBlur=						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov=                    Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	r_radialBlurSamples=                Cvar_Get("r_radialBlurSamples", "8", CVAR_ARCHIVE);
+
+	r_tbnSmoothAngle=					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
 }
 
