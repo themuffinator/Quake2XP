@@ -17,11 +17,20 @@ varying vec3		v_lightVec;
 
 vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) {
 	
+	
 	if (u_parallaxType == 2)
 	{
 
-	//Parallax Occlusion Maping
-	//High quality, uses Crysis(tm) shader.
+	/*===================================
+	Parallax Occlusion Maping
+	High quality, uses Crysis(tm) shader.
+	===================================*/
+
+	// clamp z value - fix (but not full) smooth tbn bug 
+	if (viewVec.z < 0.0)
+		viewVec.z = clamp(viewVec.z, -1.0, -0.1);
+	else
+		viewVec.z = clamp(viewVec.z, 0.1, 1.0);
 
 	float	step = 1.0 / float(u_numSteps);
 	vec2	delta = 2.0 * u_bumpScale * viewVec.xy / (-viewVec.z * float(u_numSteps));
@@ -35,7 +44,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 		
 		if (NB1 >= height)
 			break;
-			
+	
 		NB0 = NB1;
 
 		height -= step;
@@ -43,7 +52,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 
 		NB1 = texture2D(hiMap, offset).a;
 	}
-	
+
 	vec2 offsetBest = offset;
 	float error = 1.0;
 
