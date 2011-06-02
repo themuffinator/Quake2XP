@@ -411,7 +411,8 @@ void VID_MenuInit( void )
 	static char	*vsync[]		=	{"off", "on", 0};
 	static char	*alNo[]			=	{"not support", 0};
 	static char	*radar[]		=	{"off", "map only", "map and entities", "move detector", 0};
-	
+	static char	*dof[]			=	{"off", "Performance", "Quality", 0};
+
 	if (!r_mode)
 		r_mode = Cvar_Get("r_mode", "0", 0);
 		
@@ -631,7 +632,7 @@ void VID_MenuInit( void )
 	s_dof_box.generic.x			= 0;
 	s_dof_box.generic.y			= 160*cl_fontScale->value;
 	s_dof_box.generic.name		= "Depth of Field";
-   	s_dof_box.itemnames			= yesno_names;
+   	s_dof_box.itemnames			= dof;
 	s_dof_box.curvalue			= r_dof->value;
     s_dof_box.generic.callback	= DofCallback;
 	

@@ -733,6 +733,7 @@ typedef struct {
 	unsigned	VertexLightBits;
 	unsigned	AlphaMaskBits;
 	unsigned	BumpBits;
+	unsigned	DofExtra;
 } worldDefs_t;
 
 worldDefs_t worldDefs;

@@ -1325,6 +1325,7 @@
     <None Include="..\..\baseq2\glsl\bloomds.fp" />
     <None Include="..\..\baseq2\glsl\bloomds.vp" />
     <None Include="..\..\baseq2\glsl\bloomfp.fp" />
+    <None Include="..\..\baseq2\glsl\dof.defs" />
     <None Include="..\..\baseq2\glsl\dof.fp" />
     <None Include="..\..\baseq2\glsl\dof.vp" />
     <None Include="..\..\baseq2\glsl\gaussY.fp" />

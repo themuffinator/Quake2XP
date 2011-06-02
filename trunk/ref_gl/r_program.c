@@ -516,6 +516,7 @@ void R_InitPrograms(void) {
 	
 	Com_Printf("Load "S_COLOR_YELLOW"dof blur program"S_COLOR_WHITE" ");
 	dofProgram = R_FindProgram("dof", true, true);
+	worldDefs.DofExtra = R_GetProgramDefBits(dofProgram, "EXTRA");
 	if(dofProgram->valid)
 		Com_Printf("succeeded\n");
 	else

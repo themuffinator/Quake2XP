@@ -753,6 +753,9 @@ void R_DofBlur (void) {
             return;
 
 	// setup program
+	if(r_dof->value >1)
+		defBits = worldDefs.DofExtra;
+
 	GL_BindProgram(dofProgram, defBits);
 	id = dofProgram->id[defBits];
 	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
