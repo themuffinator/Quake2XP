@@ -1155,8 +1155,6 @@ void R_BlobShadow(void);
 
 void R_RenderView(refdef_t * fd)
 {
-	numRadarEnts = 0;
-
 	if (r_noRefresh->value)
 		return;
 
@@ -1198,7 +1196,7 @@ void R_RenderView(refdef_t * fd)
 	R_DrawPlayerWeapon();
 	R_DrawPlayerWeaponLightPass();
 	R_RenderSun();
-	GL_DrawRadar();				// GLOOM RADAR !!!
+	
 	
 		
 }
@@ -1299,6 +1297,10 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 		GL_Blend(false, 0, 0);
 		}
 	
+	GL_DrawRadar();	// GLOOM RADAR !!!
+	numRadarEnts = 0;
+//	R_SetGL2D();
+
 	GL_MsgGLError("R_RenderFrame: ");
 }
 

@@ -1843,7 +1843,6 @@ void GL_DrawRadar(void)
 
 	qglViewport(vid.width - r_radarSize->value, vid.height*0.5 - r_radarSize->value, r_radarSize->value, r_radarSize->value);
 
-	qglDisable(GL_DEPTH_TEST);
 	qglMatrixMode(GL_PROJECTION);
 	qglPushMatrix();
 	qglLoadIdentity();
@@ -1958,6 +1957,5 @@ void GL_DrawRadar(void)
 	qglStencilMask(0);
 	GL_TexEnv(GL_REPLACE);
 	qglDisable(GL_BLEND);
-	qglEnable(GL_DEPTH_TEST);
 	qglColor4f(1, 1, 1, 1);
 }
