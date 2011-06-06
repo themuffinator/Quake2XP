@@ -3348,10 +3348,8 @@ qboolean QGL_Init()
 	qglGetTexGenfv               = 	dllGetTexGenfv               = GPA( "glGetTexGenfv" );
 	qglGetTexGeniv               = 	dllGetTexGeniv               = GPA( "glGetTexGeniv" );
 	qglGetTexImage               = 	dllGetTexImage               = GPA( "glGetTexImage" );
-	qglGetTexLevelParameterfv    = 	dllGetTexLevelParameterfv    = GPA( "glGetLevelParameterfv" );
-	qglGetTexLevelParameteriv    = 	dllGetTexLevelParameteriv    = GPA( "glGetLevelParameteriv" );
-	qglGetTexParameterfv         = 	dllGetTexParameterfv         = GPA( "glGetTexParameterfv" );
-	qglGetTexParameteriv         = 	dllGetTexParameteriv         = GPA( "glGetTexParameteriv" );
+	qglGetTexLevelParameterfv    =  dllGetTexLevelParameterfv    = GPA( "glGetTexLevelParameterfv" );
+	qglGetTexLevelParameteriv    =  dllGetTexLevelParameteriv    = GPA( "glGetTexLevelParameteriv" );
 	qglHint                      = 	dllHint                      = GPA( "glHint" );
 	qglIndexMask                 = 	dllIndexMask                 = GPA( "glIndexMask" );
 	qglIndexPointer              = 	dllIndexPointer              = GPA( "glIndexPointer" );

@@ -66,7 +66,8 @@ cvar_t	*sys_affinity;
 
 cvar_t	*r_DrawRangeElements;
 cvar_t	*r_pplWorldAmbient;
-cvar_t	*r_bumpMapping;
+cvar_t	*r_bumpAlias;
+cvar_t	*r_bumpWorld;
 cvar_t	*r_ambientLevel;
 
 cvar_t	*hunk_bsp;
@@ -558,7 +559,7 @@ void R_Register2(void)
 	r_anisotropic =						Cvar_Get("r_anisotropic", "1", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	
-	r_causticIntens =					Cvar_Get("r_causticIntens", "1.5", CVAR_ARCHIVE);
+	r_causticIntens =					Cvar_Get("r_causticIntens", "2.0", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 	
 	
@@ -585,20 +586,12 @@ void R_Register2(void)
 	
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
-	
-	r_bloom =							Cvar_Get("r_bloom", "0", CVAR_ARCHIVE);
-	r_bloomThreshold=					Cvar_Get("r_bloomThreshold", "0.5", CVAR_ARCHIVE);
-	r_bloomIntens=						Cvar_Get("r_bloomIntens", "0.35", CVAR_ARCHIVE);
 
 	sys_priority =						Cvar_Get("sys_priority", "0", CVAR_ARCHIVE);
 	sys_affinity =						Cvar_Get("sys_affinity", "0", CVAR_ARCHIVE);
 		
 	r_DrawRangeElements	=				Cvar_Get("r_DrawRangeElements","1",CVAR_ARCHIVE);
-
-	r_pplWorldAmbient = 				Cvar_Get("r_pplWorldAmbient", "0.15", CVAR_ARCHIVE);
-	r_bumpMapping =						Cvar_Get("r_bumpMapping", "1", CVAR_ARCHIVE);
-	r_ambientLevel =					Cvar_Get("r_ambientLevel", "0.75", CVAR_ARCHIVE);
-	
+			
 	hunk_bsp=							Cvar_Get("hunk_bsp", "20", CVAR_ARCHIVE);
 	hunk_model=							Cvar_Get("hunk_model", "8", CVAR_ARCHIVE);
 	hunk_sprite=						Cvar_Get("hunk_sprite", "1", CVAR_ARCHIVE);
@@ -611,14 +604,22 @@ void R_Register2(void)
 	r_parallaxScale=					Cvar_Get("r_parallaxScale", "0.5", CVAR_ARCHIVE);
 	r_parallaxSteps=					Cvar_Get("r_parallaxSteps", "10", CVAR_ARCHIVE);
 
-	r_dof=								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
-	r_dofBias=							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
-	r_dofFocus=							Cvar_Get("r_dofFocus", "256.0", CVAR_ARCHIVE);
+	r_pplWorldAmbient = 				Cvar_Get("r_pplWorldAmbient", "0.15", CVAR_ARCHIVE);
+	r_bumpAlias =						Cvar_Get("r_bumpAlias", "1", CVAR_ARCHIVE);
+	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
+	r_ambientLevel =					Cvar_Get("r_ambientLevel", "0.75", CVAR_ARCHIVE);
+	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
 
-	r_radialBlur=						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
-	r_radialBlurFov=                    Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
-	r_radialBlurSamples=                Cvar_Get("r_radialBlurSamples", "8", CVAR_ARCHIVE);
+	r_bloom =							Cvar_Get("r_bloom", "0", CVAR_ARCHIVE);
+	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.5", CVAR_ARCHIVE);
+	r_bloomIntens =						Cvar_Get("r_bloomIntens", "0.35", CVAR_ARCHIVE);
 
-	r_tbnSmoothAngle=					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
+	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
+	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
+	r_dofFocus =						Cvar_Get("r_dofFocus", "256.0", CVAR_ARCHIVE);
+
+	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
+	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
+	r_radialBlurSamples =               Cvar_Get("r_radialBlurSamples", "8", CVAR_ARCHIVE);
 }
 

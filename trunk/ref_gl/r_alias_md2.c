@@ -672,7 +672,7 @@ void SetModelsLight (qboolean ppl)
 		for (i = 0; i < 3; i++)
 			shadelight[i] = 1.0;
 	} 
-	else if(r_bumpMapping->value)
+	else if(r_bumpAlias->value)
 				R_LightPoint (currententity->origin, shadelight, ppl);
 	else
 	{
@@ -831,7 +831,7 @@ next:
 		}
 	}
 	
-	if(r_bumpMapping->value)
+	if(r_bumpAlias->value)
 		SetModelsLight(false);
 	else
 		SetModelsLight(true);
@@ -862,7 +862,7 @@ next:
 		currententity->oldframe = 0;
 	}
 		
-	if(normalmap &&r_bumpMapping->value){
+	if(normalmap &&r_bumpAlias->value){
 	VectorCopy(shadelight, diffuseLight);
 
 	VectorScale(shadelight, r_ambientLevel->value, shadelight);
@@ -872,14 +872,14 @@ next:
 	
 			GL_DrawTexturedShell(paliashdr,currententity->backlerp);
 	} else 
-		if(r_bumpMapping->value){
+		if(r_bumpAlias->value){
 
 	GL_DrawAliasFrameLerpAmbient(paliashdr, shadelight);
 	}
 	else
 		GL_DrawAliasFrameLerp(paliashdr, currententity->backlerp);
 	
-		if(r_bumpMapping->value){
+		if(r_bumpAlias->value){
 			VectorCopy(diffuseLight, shadelight);
 	}
 

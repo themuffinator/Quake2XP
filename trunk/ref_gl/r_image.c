@@ -208,22 +208,36 @@ GL_ImageList_f
 
 void GL_ImageList_f(void)
 {
-	int i, totalTexturesSize;
+	int i, totalTexturesSize, totalCompressionTexturesSize;
 	image_t *image;
 	int texels;
+	int compressed_size, isCompressed;
+
 	const char *palstrings[2] = {
 		"RGB",
 		"PAL"
 	};
 	totalTexturesSize = 0;
+	totalCompressionTexturesSize = 0;
 	Com_Printf("------------------\n");
 	texels = 0;
 
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+	for (i = 0, image = gltextures+100; i < numgltextures; i++, image++) {
+		
 		if (image->texnum <= 0)
 			continue;
+		
 		texels += image->upload_width * image->upload_height;
-		totalTexturesSize += image->upload_width * image->upload_height*4;
+
+		if(gl_state.texture_compression_arb)
+		qglGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED_ARB, &isCompressed);
+		if (isCompressed)
+		qglGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &compressed_size);
+		
+		if(isCompressed)
+			totalCompressionTexturesSize += compressed_size;
+		
+			totalTexturesSize += image->upload_width * image->upload_height*4;
 
 		switch (image->type) {
 		case it_skin:
@@ -249,9 +263,15 @@ void GL_ImageList_f(void)
 	}
 	Com_Printf("Total texel count (not counting mipmaps): %i\n",
 			   texels);
-		
-	Com_Printf(" %d.%02d MB total image memory\n", totalTexturesSize / (1024 * 1024),
-			  (totalTexturesSize % (1024 * 1024)) * 100 / (1024 * 1024));
+
+	Com_Printf(" %d.%02d MB total image memory\n",	totalTexturesSize / (1024 * 1024),
+													(totalTexturesSize % (1024 * 1024)) * 100 / (1024 * 1024));
+
+	if(gl_state.texture_compression_arb){
+		Com_Printf(" %d.%02d MB total compressed image memory\n",	totalCompressionTexturesSize / (1024 * 1024),
+																	(totalCompressionTexturesSize % (1024 * 1024)) * 100 / (1024 * 1024));
+
+	}
 }
 
 
@@ -1020,22 +1040,31 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 	// scan the texture for any non-255 alpha
 	c = width * height;
 	scan = ((byte *) data) + 3;
-	samples = gl_solid_format;
+	samples = 3;
 
 	for (i = 0; i < c; i++, scan += 4) {
 		if (*scan != 255) {
-			samples = gl_alpha_format;
+			samples = 4;
 			break;
 		}
 	}
 
+	if (samples == 3){
 
-	if (samples == gl_solid_format)
-		comp = (gl_state.texture_compression_arb && mipmap) ? GL_COMPRESSED_RGB_ARB  : gl_tex_solid_format;
-	else if (samples == gl_alpha_format)
+	if (gl_state.texture_compression_arb && mipmap)
+		comp = GL_COMPRESSED_RGB_ARB;
+	else 
+		comp = gl_tex_solid_format;
+	}
+
+	if (samples == 4){
+
+	if (gl_state.texture_compression_arb && mipmap)
+		comp = GL_COMPRESSED_RGBA_ARB;
+	else 
 		comp = gl_tex_alpha_format;
-
-
+	}
+	
 	// find sizes to scale to
 
 	{
@@ -1107,7 +1136,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, r_anisotropic->value);
 	
-	return (samples == gl_alpha_format);
+	return (samples == 4);
 }
 
 

@@ -257,11 +257,14 @@ void RenderLavaSurfaces(msurface_t * fa)
 	float		scale[2];
 	int			id;
 	unsigned	defBits = 0;
+
+	defBits = worldDefs.VertexLightBits;
 	
 	if (fa->texinfo->image->has_alpha && r_parallax->value)
-		defBits = worldDefs.ParallaxBit | worldDefs.VertexLightBits;
-	else
-		defBits = worldDefs.VertexLightBits;
+		defBits |= worldDefs.ParallaxBit;
+	
+	if(r_bumpWorld->value)
+		defBits |= worldDefs.BumpBits;
 
 	// setup program
 	GL_BindProgram(diffuseProgram, defBits);
@@ -275,7 +278,6 @@ void RenderLavaSurfaces(msurface_t * fa)
 	qglUniform2f				(qglGetUniformLocation(id, "u_bumpScale"),		scale[0], scale[1]);
 	qglUniform1i				(qglGetUniformLocation(id, "u_numSteps"),		(int)r_parallaxSteps->value);
 	qglUniform1i				(qglGetUniformLocation(id, "u_parallaxType"),	(int)r_parallax->value);
-	qglUniform1i				(qglGetUniformLocation(id, "u_bumpMap"),		(int)r_bumpMapping->value);
 	qglUniform1f				(qglGetUniformLocation(id, "u_ambientScale"),	0.0);
 
 	GL_SelectTexture			(GL_TEXTURE0_ARB);

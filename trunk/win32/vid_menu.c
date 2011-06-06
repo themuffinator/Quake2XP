@@ -42,7 +42,8 @@ static cvar_t *r_textureCompression;
 static cvar_t *r_parallax;
 static cvar_t *r_bloom; 
 static cvar_t *r_dof;
-static cvar_t *r_bumpMapping;
+static cvar_t *r_bumpAlias;
+static cvar_t *r_bumpWorld;
 extern cvar_t *r_radialBlur;
 
 static	cvar_t	*r_radar;
@@ -76,7 +77,7 @@ static menulist_s	    s_shadow_box;
 static menulist_s	    s_flare_box;
 static menulist_s	    s_tc_box;
 static menulist_s	    s_refresh_box;
-static menulist_s	    s_mb_box;    
+static menulist_s	    s_parallax_box;    
 static menulist_s	    s_samples_list; 
 static menuslider_s		s_texturelod_slider;
 
@@ -89,8 +90,8 @@ static menuaction_s		s_defaults_action;
 
 
 static	menuframework_s		s_opengl_menu2;
-static	menulist_s			s_dot3_list;
-static	menulist_s			s_parallax_box;
+static	menulist_s			s_ab_list;
+static	menulist_s			s_wb_list;
 static	menulist_s			s_radBlur_box;
 
 static	menulist_s			s_minimap;
@@ -214,7 +215,7 @@ static void ApplyChanges( void *unused )
     Cvar_SetValue( "r_textureCompression",	s_tc_box.curvalue );
 	Cvar_SetValue( "r_mode",				s_mode_list.curvalue );
 	Cvar_SetValue( "r_shadows",				s_shadow_box.curvalue );
-    Cvar_SetValue( "r_parallax",			s_mb_box.curvalue );
+    Cvar_SetValue( "r_parallax",			s_parallax_box.curvalue );
     Cvar_SetValue( "r_bloom",				s_bloom_box.curvalue );  
 	Cvar_SetValue( "r_dof",					s_dof_box.curvalue );
 	Cvar_SetValue( "r_radialBlur",			s_radBlur_box.curvalue );
@@ -368,11 +369,18 @@ static void CancelChanges( void *unused )
 
 
 
-static void dot3CB (void *s)
+static void abumpCB (void *s)
 {
 	menulist_s *box = ( menulist_s * ) s;
 
-	Cvar_SetValue( "r_bumpMapping", box->curvalue * 1 );
+	Cvar_SetValue( "r_bumpAlias", box->curvalue * 1 );
+}
+
+static void wbumpCB (void *s)
+{
+	menulist_s *box = ( menulist_s * ) s;
+
+	Cvar_SetValue( "r_bumpWorld", box->curvalue * 1 );
 }
 
 /*
@@ -407,7 +415,6 @@ void VID_MenuInit( void )
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", "[6x]", "[8x]", "[16x]", 0};
 	static char	*samplesNV[]	=	{"[off]", "[8x]", "[8xQ]", "[16x]", "[16xQ]", 0};
 	static char	*parallax[]		=	{"off", "Performance", "Quality", 0};
-	static char	*bump[]			=	{"off", "Models", "Models and World", 0};
 	static char	*vsync[]		=	{"off", "on", 0};
 	static char	*alNo[]			=	{"not support", 0};
 	static char	*radar[]		=	{"off", "map only", "map and entities", "move detector", 0};
@@ -441,8 +448,11 @@ void VID_MenuInit( void )
 	if(!r_radialBlur->value)
 		r_radialBlur = Cvar_Get ("r_radialBlur", "0", CVAR_ARCHIVE);
 
-	if (!r_bumpMapping)
-		r_bumpMapping = Cvar_Get("r_bumpMapping", "0", CVAR_ARCHIVE);
+	if (!r_bumpAlias)
+		r_bumpAlias = Cvar_Get("r_bumpAlias", "0", CVAR_ARCHIVE);
+
+		if (!r_bumpWorld)
+		r_bumpWorld = Cvar_Get("r_bumpWorld", "0", CVAR_ARCHIVE);
 
 	if ( !r_vsync )
 		r_vsync = Cvar_Get( "r_vsync", "0", CVAR_ARCHIVE );
@@ -612,17 +622,34 @@ void VID_MenuInit( void )
 	s_shadow_box.curvalue         = r_shadows->value;
     s_shadow_box.generic.callback = ShadowsCallback;
 		
-	s_mb_box.generic.type	  = MTYPE_SPINCONTROL;
-	s_mb_box.generic.x	      = 0;
-	s_mb_box.generic.y	      = 140*cl_fontScale->value;
-	s_mb_box.generic.name	  = "Parallax";
-    s_mb_box.itemnames        = parallax;
-	s_mb_box.curvalue         = r_parallax->value;
-	s_mb_box.generic.callback = ParallaxCallback;
+	s_parallax_box.generic.type	  = MTYPE_SPINCONTROL;
+	s_parallax_box.generic.x	      = 0;
+	s_parallax_box.generic.y	      = 140*cl_fontScale->value;
+	s_parallax_box.generic.name	  = "Parallax";
+    s_parallax_box.itemnames        = parallax;
+	s_parallax_box.curvalue         = r_parallax->value;
+	s_parallax_box.generic.callback = ParallaxCallback;
 	
+	s_ab_list.generic.type = MTYPE_SPINCONTROL;
+	s_ab_list.generic.name = "Models Bump Mapping";
+	s_ab_list.generic.x = 0;
+	s_ab_list.generic.y = 150*cl_fontScale->value;
+	s_ab_list.itemnames = yesno_names;
+	s_ab_list.curvalue = r_bumpAlias->value;
+	s_ab_list.generic.callback = abumpCB;
+	
+	s_wb_list.generic.type = MTYPE_SPINCONTROL;
+	s_wb_list.generic.name = "World Bump Mapping";
+	s_wb_list.generic.x = 0;
+	s_wb_list.generic.y = 160*cl_fontScale->value;
+	s_wb_list.itemnames = yesno_names;
+	s_wb_list.curvalue = r_bumpWorld->value;
+	s_wb_list.generic.callback = wbumpCB;
+
+
 	s_bloom_box.generic.type		= MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x			= 0;
-	s_bloom_box.generic.y			= 150*cl_fontScale->value;
+	s_bloom_box.generic.y			= 170*cl_fontScale->value;
 	s_bloom_box.generic.name		= "Light Blooms";
    	s_bloom_box.itemnames			= yesno_names;
 	s_bloom_box.curvalue			= r_bloom->value;
@@ -630,7 +657,7 @@ void VID_MenuInit( void )
 
 	s_dof_box.generic.type		= MTYPE_SPINCONTROL;
 	s_dof_box.generic.x			= 0;
-	s_dof_box.generic.y			= 160*cl_fontScale->value;
+	s_dof_box.generic.y			= 180*cl_fontScale->value;
 	s_dof_box.generic.name		= "Depth of Field";
    	s_dof_box.itemnames			= dof;
 	s_dof_box.curvalue			= r_dof->value;
@@ -638,23 +665,17 @@ void VID_MenuInit( void )
 	
 	s_radBlur_box.generic.type		= MTYPE_SPINCONTROL;
 	s_radBlur_box.generic.x			= 0;
-	s_radBlur_box.generic.y			= 170*cl_fontScale->value;
+	s_radBlur_box.generic.y			= 190*cl_fontScale->value;
 	s_radBlur_box.generic.name		= "Radial Blur";
    	s_radBlur_box.itemnames			= yesno_names;
 	s_radBlur_box.curvalue			= r_radialBlur->value;
     s_radBlur_box.generic.callback	= RBCallback;
 	
-	s_dot3_list.generic.type = MTYPE_SPINCONTROL;
-	s_dot3_list.generic.name = "Bump Mapping";
-	s_dot3_list.generic.x = 0;
-	s_dot3_list.generic.y = 180*cl_fontScale->value;
-	s_dot3_list.itemnames = bump;
-	s_dot3_list.curvalue = r_bumpMapping->value;
-	s_dot3_list.generic.callback = dot3CB;
+
 
 	s_minimap.generic.type		= MTYPE_SPINCONTROL;
 	s_minimap.generic.x			= 0;
-	s_minimap.generic.y			= 190*cl_fontScale->value;
+	s_minimap.generic.y			= 200*cl_fontScale->value;
 	s_minimap.generic.name		= "Draw Radar";
    	s_minimap.itemnames			= radar;
 	s_minimap.curvalue			= r_radar->value;
@@ -662,7 +683,7 @@ void VID_MenuInit( void )
 	
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x	= 0;
-	s_finish_box.generic.y	= 200*cl_fontScale->value;
+	s_finish_box.generic.y	= 210*cl_fontScale->value;
 	s_finish_box.generic.name	= "Vertical Sync";
 	s_finish_box.curvalue = r_vsync->value;
 	s_finish_box.itemnames = yesno_names;
@@ -671,13 +692,13 @@ void VID_MenuInit( void )
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x    = 0;
-	s_defaults_action.generic.y    = 220*cl_fontScale->value;
+	s_defaults_action.generic.y    = 230*cl_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x    = 0;
-	s_apply_action.generic.y    = 230*cl_fontScale->value;
+	s_apply_action.generic.y    = 240*cl_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 	
 	menuSize = 270;
@@ -695,11 +716,12 @@ void VID_MenuInit( void )
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_flare_box );
 
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadow_box );
-    Menu_AddItem( &s_opengl_menu, ( void * ) &s_mb_box );
+    Menu_AddItem( &s_opengl_menu, ( void * ) &s_parallax_box );
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_ab_list);
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_wb_list);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_bloom_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_dof_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_radBlur_box );
-	Menu_AddItem( &s_opengl_menu, ( void * ) &s_dot3_list);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_minimap);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_finish_box);
 

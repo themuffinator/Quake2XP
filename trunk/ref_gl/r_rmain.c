@@ -1039,7 +1039,7 @@ void R_DrawPlayerWeaponLightPass(void)
 
 	if (!r_drawEntities->value)
 		return;
-	if(!r_bumpMapping->value)
+	if(!r_bumpAlias->value)
 		return;
 	
 	
@@ -1073,7 +1073,7 @@ void R_DrawEntitiesLightPass(void)
 
 	if (!r_drawEntities->value)
 		return;
-	if(!r_bumpMapping->value)
+	if(!r_bumpAlias->value)
 		return;
 	
 	qglDepthMask			(0);
@@ -1264,7 +1264,6 @@ void R_Bloom (void);
 void R_ThermalVision (void);
 void R_RadialBlur (void);
 void R_DofBlur (void);
-void R_BoxBlur (void);
 
 void R_RenderFrame(refdef_t * fd, qboolean client)
 {
@@ -1299,7 +1298,6 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	
 	GL_DrawRadar();	// GLOOM RADAR !!!
 	numRadarEnts = 0;
-//	R_SetGL2D();
 
 	GL_MsgGLError("R_RenderFrame: ");
 }
@@ -1348,30 +1346,29 @@ void Dump_EntityString(void){
 
 
 void R_VideoInfo_f(void){
-		
+		int mem[4];
 	if (strstr(gl_config.extensions_string, "GL_NVX_gpu_memory_info")) {
-		int mem;
-				
+						
 		Com_Printf("\nNvidia specific memory info:\n");
 		Com_Printf("\n");
-		qglGetIntegerv ( GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX , &mem);
-		Com_Printf("dedicated video memory %i MB\n", mem >>10);
+		qglGetIntegerv ( GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX , mem);
+		Com_Printf("dedicated video memory %i MB\n", mem[0] >>10);
 
-		qglGetIntegerv ( GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX , &mem);
-		Com_Printf("total available memory %i MB\n", mem >>10);
+		qglGetIntegerv ( GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX , mem);
+		Com_Printf("total available memory %i MB\n", mem[0] >>10);
 
-		qglGetIntegerv ( GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX , &mem);
-		Com_Printf("currently unused GPU memory %i MB\n", mem >>10);
+		qglGetIntegerv ( GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX , mem);
+		Com_Printf("currently unused GPU memory %i MB\n", mem[0] >>10);
 
-		qglGetIntegerv ( GPU_MEMORY_INFO_EVICTION_COUNT_NVX , &mem);
-		Com_Printf("count of total evictions seen by system %i MB\n", mem >>10);
+		qglGetIntegerv ( GPU_MEMORY_INFO_EVICTION_COUNT_NVX , mem);
+		Com_Printf("count of total evictions seen by system %i MB\n", mem[0] >>10);
 
-		qglGetIntegerv ( GPU_MEMORY_INFO_EVICTED_MEMORY_NVX , &mem);
-		Com_Printf("total video memory evicted %i MB\n", mem >>10);
+		qglGetIntegerv ( GPU_MEMORY_INFO_EVICTED_MEMORY_NVX , mem);
+		Com_Printf("total video memory evicted %i MB\n", mem[0] >>10);
 
 	} else 
 		if (strstr(gl_config.extensions_string, "GL_ATI_meminfo")) {
-		int mem[4];
+		
         Com_Printf("\nATI/AMD specific memory info:\n");
 		Com_Printf("\n");
         qglGetIntegerv (VBO_FREE_MEMORY_ATI, mem);
@@ -1503,8 +1500,6 @@ qboolean arbNPOTSupported;
 void R_InitPrograms(void);
 void VLight_Init (void);
 
-#define GL_MAX_DRAW_BUFFERS_ARB           0x8824
-
 int R_Init(void *hinstance, void *hWnd)
 {
 	char			renderer_buffer[1000];
@@ -1575,23 +1570,11 @@ int R_Init(void *hinstance, void *hWnd)
 	// check GL version /:-#)
 	float version = atof(gl_config.version_string);
 
-	if (version < 2.0){
+	if (version < 2.1){
 		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		}
 	}
-
-		if (strstr(gl_config.extensions_string, "GL_NVX_gpu_memory_info")) {
-		int mem;
-		qglGetIntegerv ( GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX , &mem);
-		Com_Printf("GL_ONBOARD_VIDEO_MEMORY: "S_COLOR_GREEN"%i"S_COLOR_WHITE" MB\n", mem >>10);
-		} else 
-		if (strstr(gl_config.extensions_string, "GL_ATI_meminfo")) {
-		int mem[4];
-        qglGetIntegerv (TEXTURE_FREE_MEMORY_ATI, mem);
-        Com_Printf("GL_ONBOARD_VIDEO_MEMORY: "S_COLOR_GREEN"%i"S_COLOR_WHITE" MB\n", mem[0] >>10);
-        }
-
 
 	Com_Printf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
 	Com_Printf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
@@ -1892,14 +1875,10 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	R_InitEngineTextures();
 	R_LoadFont();
 	VLight_Init();
-	
-	
-
 
 	GL_MsgGLError("Init GL Errors: ");
 	return 0;
-
-
+	
 }
 
 
@@ -1953,7 +1932,7 @@ void R_BeginFrame(float camera_separation)
 
 
 	if (r_log->modified) {
-		GLimp_EnableLogging(r_log->value);
+		GLimp_EnableLogging((qboolean)r_log->value);
 		r_log->modified = false;
 	}
 
