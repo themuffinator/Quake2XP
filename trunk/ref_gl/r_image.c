@@ -211,7 +211,7 @@ void GL_ImageList_f(void)
 	int i, totalTexturesSize, totalCompressionTexturesSize;
 	image_t *image;
 	int texels;
-	int compressed_size, isCompressed;
+	int compressed_size, isCompressed, ratio;
 
 	const char *palstrings[2] = {
 		"RGB",
@@ -229,15 +229,16 @@ void GL_ImageList_f(void)
 		
 		texels += image->upload_width * image->upload_height;
 
-		if(gl_state.texture_compression_arb)
+		if(gl_state.texture_compression_arb){
 		qglGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED_ARB, &isCompressed);
 		if (isCompressed)
 		qglGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &compressed_size);
 		
 		if(isCompressed)
 			totalCompressionTexturesSize += compressed_size;
+		}
 		
-			totalTexturesSize += image->upload_width * image->upload_height*4;
+		totalTexturesSize += image->upload_width * image->upload_height*4;
 
 		switch (image->type) {
 		case it_skin:
@@ -264,13 +265,14 @@ void GL_ImageList_f(void)
 	Com_Printf("Total texel count (not counting mipmaps): %i\n",
 			   texels);
 
-	Com_Printf(" %d.%02d MB total image memory\n",	totalTexturesSize / (1024 * 1024),
-													(totalTexturesSize % (1024 * 1024)) * 100 / (1024 * 1024));
+	Com_Printf("%3.2f MB total uncompressed image memory\n",	(float)totalTexturesSize / (1024 * 1024));
 
 	if(gl_state.texture_compression_arb){
-		Com_Printf(" %d.%02d MB total compressed image memory\n",	totalCompressionTexturesSize / (1024 * 1024),
-																	(totalCompressionTexturesSize % (1024 * 1024)) * 100 / (1024 * 1024));
 
+		ratio = totalTexturesSize/totalCompressionTexturesSize;
+
+		Com_Printf("%3.2f MB total compressed image memory\n",	(float)totalCompressionTexturesSize / (1024 * 1024));
+		Com_Printf("Compression ratio: %1.1f\n",	(float)ratio);
 	}
 }
 

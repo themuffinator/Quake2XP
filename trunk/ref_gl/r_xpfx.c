@@ -558,16 +558,16 @@ void R_Register2(void)
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "1", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
-	
+	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
+	r_overBrightBits =					Cvar_Get("r_overBrightBits", "2", CVAR_ARCHIVE);
+	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
+
 	r_causticIntens =					Cvar_Get("r_causticIntens", "2.0", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 	
 	
 	r_screenShot =						Cvar_Get("r_screenShot", "jpg", CVAR_ARCHIVE);
 	r_screenShotJpegQuality =			Cvar_Get("r_screenShotJpegQuality", "99", CVAR_ARCHIVE);
-	
-	r_overBrightBits =					Cvar_Get("r_overBrightBits", "2", CVAR_ARCHIVE);
-	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);														
 		
 	r_radarSize =						Cvar_Get("r_radarSize", "256", CVAR_ARCHIVE);
 	r_radarZoom =						Cvar_Get("r_radarZoom", "1", CVAR_ARCHIVE);
@@ -593,12 +593,10 @@ void R_Register2(void)
 	r_DrawRangeElements	=				Cvar_Get("r_DrawRangeElements","1",CVAR_ARCHIVE);
 			
 	hunk_bsp=							Cvar_Get("hunk_bsp", "20", CVAR_ARCHIVE);
-	hunk_model=							Cvar_Get("hunk_model", "8", CVAR_ARCHIVE);
-	hunk_sprite=						Cvar_Get("hunk_sprite", "1", CVAR_ARCHIVE);
+	hunk_model=							Cvar_Get("hunk_model", "2.4", CVAR_ARCHIVE);
+	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
 	
 	r_vbo=								Cvar_Get("r_vbo", "1", CVAR_ARCHIVE);
-
-	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
 
 	r_parallax=							Cvar_Get("r_parallax", "1", CVAR_ARCHIVE);
 	r_parallaxScale=					Cvar_Get("r_parallaxScale", "0.5", CVAR_ARCHIVE);

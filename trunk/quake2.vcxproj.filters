@@ -69,9 +69,6 @@
     <ClCompile Include="client\cl_pred.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
-    <ClCompile Include="qcommon\cl_wildcard.c">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
     <ClCompile Include="game\m_flash.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
@@ -333,9 +330,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\vid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="qcommon\wildcard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="win32\winquake.h">

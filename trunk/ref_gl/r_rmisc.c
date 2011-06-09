@@ -446,7 +446,7 @@ void GL_ScreenShot_f(void)
 	ilBindImage(ImagesToSave[0]);
 
 	if (ilutGLScreen()) {
-		iluGammaCorrect(2.1 - r_gamma->value);
+		iluGammaCorrect(2.2 - r_gamma->value);
 		ilSave(image, checkname);
 	}
 

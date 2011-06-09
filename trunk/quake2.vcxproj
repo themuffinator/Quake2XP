@@ -746,18 +746,6 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="qcommon\cl_wildcard.c">
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Profile|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug Profile|Win32'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Profile|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug Profile|x64'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
-    </ClCompile>
     <ClCompile Include="game\m_flash.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|x64'">EnableFastChecks</BasicRuntimeChecks>
@@ -1297,7 +1285,6 @@
     <ClInclude Include="server\server.h" />
     <ClInclude Include="qcommon\unzip.h" />
     <ClInclude Include="client\vid.h" />
-    <ClInclude Include="qcommon\wildcard.h" />
     <ClInclude Include="win32\winquake.h" />
     <ClInclude Include="ref_gl\anormtab.h" />
     <ClInclude Include="ref_gl\glext.h" />

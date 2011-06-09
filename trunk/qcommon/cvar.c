@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // cvar.c -- dynamic variable tracking
 
 #include "qcommon.h"
-#include "wildcard.h"
 cvar_t *cvar_vars;
 
 /*
@@ -122,7 +121,7 @@ cvar_t *Cvar_Get(char *var_name, char *var_value, int flags)
 		}
 	}
 
-	var = Z_Malloc(sizeof(*var));
+	var = (cvar_t*)Z_Malloc(sizeof(*var));
 	var->name = CopyString(var_name);
 	var->string = CopyString(var_value);
 	var->modified = true;
@@ -133,6 +132,7 @@ cvar_t *Cvar_Get(char *var_name, char *var_value, int flags)
 	cvar_vars = var;
 
 	var->flags = flags;
+	var->help = NULL;
 
 	return var;
 }
@@ -320,7 +320,25 @@ qboolean Cvar_Command(void)
 
 // perform a variable print or set
 	if (Cmd_Argc() == 1) {
-		Com_Printf("\"%s\" is \"%s\"\n", v->name, v->string);
+		Com_Printf("\"%s\" is \"%s\"", v->name, v->string);
+		
+		if(v->flags & CVAR_ARCHIVE)
+			Com_Printf (""S_COLOR_YELLOW" ARCH");
+
+		if(v->flags & CVAR_USERINFO)
+			Com_Printf (" USER");
+
+		if(v->flags & CVAR_SERVERINFO)
+			Com_Printf (""S_COLOR_BLUE" SERV");
+
+		if(v->flags & CVAR_NOSET)
+			Com_Printf (""S_COLOR_RED" NOSET");
+
+		if(v->flags & CVAR_LATCH)
+			Com_Printf (""S_COLOR_CYAN" LATCH");
+		Com_Printf ("\n");
+
+		Com_Printf ("["S_COLOR_YELLOW"%s"S_COLOR_WHITE"]\n", v->help);
 		return true;
 	}
 
@@ -393,17 +411,47 @@ Cvar_List_f
 
 ============
 */
-/*
+
+// cvar sorting from r1q2
+static int cvarsort( const void *_a, const void *_b )
+{
+	const cvar_t	*a = (const cvar_t *)_a;
+	const cvar_t	*b = (const cvar_t *)_b;
+	return strcmp (a->name, b->name);
+}
+
 void Cvar_List_f (void)
 {
-	cvar_t	*var;
-	int		i;
+	cvar_t		*var, *cvar, *sortedList;
+	int			i, num;
+	char		*hlp;
+	qboolean	help = false;
 
-	i = 0;
-	for (var = cvar_vars ; var ; var = var->next, i++)
+	for (var = cvar_vars, num = 0; var ; var = var->next, num++);
+	sortedList = (cvar_t *) Z_Malloc (num * sizeof(cvar_t));
+	if (sortedList)
 	{
+		for (var = cvar_vars, i = 0; var ; var = var->next, i++)
+			sortedList[i] = *var;
+		qsort (sortedList, num, sizeof(sortedList[0]), cvarsort);
+	}
+
+	if (Cmd_Argc() == 2)
+	{
+		hlp = Cmd_Argv(1);
+		if (!Q_strcasecmp(hlp, "?") || !Q_strcasecmp(hlp, "h") || !Q_strcasecmp(hlp, "help"))
+			help = true;
+	}
+
+	for (cvar = cvar_vars , i = 0; cvar ; cvar = cvar->next, i++)
+	{
+		if (sortedList)
+			var = &sortedList[i];
+		else
+			var = cvar;
+
 		if (var->flags & CVAR_ARCHIVE)
-			Com_Printf ("*");
+			Com_Printf (""S_COLOR_YELLOW"A");
 		else
 			Com_Printf (" ");
 		if (var->flags & CVAR_USERINFO)
@@ -411,83 +459,28 @@ void Cvar_List_f (void)
 		else
 			Com_Printf (" ");
 		if (var->flags & CVAR_SERVERINFO)
-			Com_Printf ("S");
+			Com_Printf (""S_COLOR_BLUE"S");
 		else
 			Com_Printf (" ");
 		if (var->flags & CVAR_NOSET)
-			Com_Printf ("-");
+			Com_Printf (""S_COLOR_RED"-");
 		else if (var->flags & CVAR_LATCH)
-			Com_Printf ("L");
+			Com_Printf (""S_COLOR_CYAN"L");
 		else
 			Com_Printf (" ");
-		Com_Printf (" %s \"%s\"\n", var->name, var->string);
+		Com_Printf (" %s \"%s\"", var->name, var->string);
+		
+		if(help || var->help)
+			Com_Printf (" ["S_COLOR_YELLOW"%s"S_COLOR_WHITE"]", var->help);
+
+		Com_Printf ("\n");
 	}
-	Com_Printf ("%i cvars\n", i);
+
+	Com_Printf ("%i cvars\n", num);
+
+	if (sortedList)
+		Z_Free(sortedList);
 }
-*/
-
-
-void Cvar_List_f(void)
-{
-	cvar_t *var;
-	int i, j, c;
-	char *wc;
-
-//RIOT's Quake3-sytle cvarlist
-	c = Cmd_Argc();
-
-	if (c != 1 && c != 2) {
-		Com_Printf("usage: cvarlist [wildcard]\n");
-		return;
-	}
-
-	if (c == 2)
-		wc = Cmd_Argv(1);
-	else
-		wc = "*";
-
-	i = 0;
-	j = 0;
-	for (var = cvar_vars; var; var = var->next, i++) {
-		if (wildcardfit(wc, var->name))
-			// if (strstr (var->name, Cmd_Argv(1)))
-		{
-			j++;
-			if (var->flags & CVAR_ARCHIVE)
-				Com_Printf("A");
-			else
-				Com_Printf(" ");
-			if (var->flags & CVAR_USERINFO)
-				Com_Printf("U");
-			else
-				Com_Printf(" ");
-			if (var->flags & CVAR_SERVERINFO)
-				Com_Printf("S");
-			else
-				Com_Printf(" ");
-			if (var->flags & CVAR_NOSET)
-				Com_Printf("-");
-			else if (var->flags & CVAR_LATCH)
-				Com_Printf("L");
-			else
-				Com_Printf(" ");
-			// Knightmare- show latched value if applicable
-			if ((var->flags & CVAR_LATCH) && var->latched_string)
-				Com_Printf
-					(" %s \"%s\" - default: \"%s\" - latched: \"%s\"\n",
-					 var->name, var->string, var->default_string,
-					 var->latched_string);
-			else
-				Com_Printf(" %s \"%s\" - default: \"%s\"\n", var->name,
-						   var->string, var->default_string);
-		}
-	}
-	Com_Printf(" %i cvars, %i matching\n", i, j);
-
-
-}
-
-
 
 qboolean userinfo_modified;
 
@@ -518,6 +511,35 @@ char *Cvar_Serverinfo(void)
 	return Cvar_BitInfo(CVAR_SERVERINFO);
 }
 
+// r1ch cvar help system
+void Cvar_Help_f(void)
+{
+	cvar_t	*var;
+	char	str[4096];
+
+	if (Cmd_Argc() != 2)
+	{
+		Com_Printf ("Usage: cvarhelp <cvarName>\n");
+		return;
+	}
+
+	var = Cvar_FindVar (Cmd_Argv(1));
+	if (!var)
+	{
+		Com_Printf ("Cvar %s not found.\n", Cmd_Argv(1));
+		return;
+	}
+
+	if (!var->help)
+	{
+		Com_Printf ("No help available for %s.\n", Cmd_Argv(1));
+		return;
+	}
+
+	Com_sprintf (str, sizeof(str), "%s: %s\n", var->name, var->help);
+	Com_Printf (str, var->string);
+}
+
 /*
 ============
 Cvar_Init
@@ -529,5 +551,6 @@ void Cvar_Init(void)
 {
 	Cmd_AddCommand("set", Cvar_Set_f);
 	Cmd_AddCommand("cvarlist", Cvar_List_f);
+	Cmd_AddCommand ("cvarhelp", Cvar_Help_f);	// r1ch
 
 }
