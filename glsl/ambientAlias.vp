@@ -1,7 +1,14 @@
+uniform vec3 u_entDist;
+
 void main ()
 {
-gl_TexCoord[0] = gl_MultiTexCoord0; 
+vec3 Projection;
+Projection = u_entDist - gl_Position.xyz;
+Projection = normalize(Projection);
+float Depth = dot(gl_Normal.xyz, Projection) * 2.0;
+gl_TexCoord[1].st = vec2(0.5 + (gl_Normal.y * Depth - Projection.y) * 0.5, 0.5 - (gl_Normal.z * Depth - Projection.z) * 0.5);
 
+gl_TexCoord[0] = gl_MultiTexCoord0; 
 gl_FrontColor = gl_Color;
 
 gl_Position = ftransform();
