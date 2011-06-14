@@ -44,6 +44,7 @@ image_t	*r_texshell[MAX_SHELLS];
 image_t *r_blackTexture;
 image_t *r_DSTTex;
 image_t *r_cin;
+image_t *r_envMap;
 
 void CreateDSTTex_ARB (void)
 {
@@ -361,11 +362,15 @@ void R_InitEngineTextures(void)
 	r_predator = GL_FindImage("gfx/distort/modeldst.tga", it_wall);
 	if(!r_predator)
 		r_predator = r_notexture;
+	
+	r_envMap = GL_FindImage("gfx/distort/env.tga", it_wall);
+	if(!r_envMap)
+		r_envMap = r_notexture;
 
 	r_blackTexture = GL_FindImage("gfx/blacktex.tga", it_wall);
 		if(!r_blackTexture)
 			r_blackTexture = r_notexture;
-	
+
 
 	buffer = (byte*)malloc(320 * 240 * 4);
 	memset(buffer, 0, 320 * 240 * 4);

@@ -230,6 +230,10 @@ static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 	if(caustics)
 	defBits = worldDefs.CausticsBit;
 
+	
+	if(currentmodel->envmap)
+		defBits |= worldDefs.ChromeBits;
+
 	// setup program
 	GL_BindProgram(aliasAmbientProgram, defBits);
 	id = aliasAmbientProgram->id[defBits];
@@ -266,6 +270,7 @@ static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 		qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
 		}
 
+		
 		qglEnableClientState	(GL_VERTEX_ARRAY);
 		qglVertexPointer		(3, GL_FLOAT, 0, Md2VertArray);
 

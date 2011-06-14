@@ -176,7 +176,7 @@ extern image_t *r_notexture;
 extern image_t *r_distort;
 extern image_t *r_predator;
 extern image_t *depthMap;
-
+extern image_t *r_envMap;
 
 
 image_t *r_particletexture[PT_MAX];
@@ -735,6 +735,7 @@ typedef struct {
 	unsigned	AlphaMaskBits;
 	unsigned	BumpBits;
 	unsigned	DofExtra;
+	unsigned	ChromeBits;
 } worldDefs_t;
 
 worldDefs_t worldDefs;

@@ -27,6 +27,22 @@ static float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 #include "anorms.h"
 };
 
+/*
+================
+Mat3_MultiplyVector
+
+Used to transform something to world space.
+================
+*/
+void Mat3_MultiplyVector (const mat3_t m, const vec3_t in, vec3_t out) {
+	out[0] = m[0][0] * in[0] + m[1][0] * in[1] + m[2][0] * in[2];
+	out[1] = m[0][1] * in[0] + m[1][1] * in[1] + m[2][1] * in[2];
+	out[2] = m[0][2] * in[0] + m[1][2] * in[1] + m[2][2] * in[2];
+}
+
+
+
+
 vec3_t	tempVertexArray[MAX_VERTICES*4];
 
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr)
@@ -87,7 +103,6 @@ int CL_PMpointcontents(vec3_t point);
 vertCache_t *R_VCLoadData(vertCacheMode_t mode, int size, void *buffer, vertStoreMode_t store, entity_t *ent, int mesh);
 vertCache_t *R_VCFindCache(vertStoreMode_t store, entity_t *ent, int mesh);
 
-
 void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t light)
 {
 	float		stArray[3*MAX_TRIANGLES][2];
@@ -98,7 +113,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t light)
 	dtriangle_t	*tris;
 	image_t		*skin, *glowskin;
 	float		alphaShift;
-	vec3_t		water;
+	vec3_t		water, entDist;
 	qboolean	caustics = false;
 	unsigned	defBits = 0;
 	int			id;
@@ -106,7 +121,8 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t light)
 	alphaShift =			sin (ref_realtime * currentmodel->glowCfg[2]); 
 	alphaShift =			(alphaShift + 1) * 0.5f;
 	alphaShift =			clamp(alphaShift, currentmodel->glowCfg[0], currentmodel->glowCfg[1]);
-	
+		
+
 	VectorAdd(currententity->origin, currententity->model->maxs, water); 
 	if(CL_PMpointcontents(water) & MASK_WATER)
 		caustics = true;
@@ -144,9 +160,9 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t light)
 		}
 	}
 	glowskin	= currentmodel->glowtexture[currententity->skinnum];
-	
+
 	if (!glowskin)
-		glowskin = r_blackTexture;
+		glowskin = r_notexture;
 	
 	if (!skin)
 		skin = r_notexture;
@@ -198,6 +214,9 @@ skipLoad:
 	if(caustics)
 	defBits = worldDefs.CausticsBit;
 
+	if(currentmodel->envmap)
+		defBits |= worldDefs.ChromeBits;
+
 	// setup program
 	GL_BindProgram(aliasAmbientProgram, defBits);
 	id = aliasAmbientProgram->id[defBits];
@@ -248,6 +267,26 @@ skipLoad:
 	GL_Bind					(r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
 	}
+	
+	if(currentmodel->envmap){
+	vec3_t	forward, right, up, tmp;
+	mat3_t			entityAxis;
+	
+	GL_SelectTexture		(GL_TEXTURE3_ARB);
+	qglEnable				(GL_TEXTURE_2D);
+	GL_Bind					(r_envMap->texnum);
+		
+	VectorCopy(r_origin, entDist);
+	AnglesToMat3(currententity->angles, entityAxis);
+	VectorSubtract(entDist, currententity->origin, tmp);
+	Matrix_TransformVector(entityAxis, tmp, entDist); 
+
+	
+	qglUniform1i			(qglGetUniformLocation(id, "u_Chrome"), 3);
+	qglUniform3fv			(qglGetUniformLocation(id, "u_entDist"), 1, entDist);
+
+	}
+
 	qglEnableClientState( GL_VERTEX_ARRAY );
 	if (gl_state.vbo && r_vbo->value)
 	{
@@ -258,6 +297,11 @@ skipLoad:
 	qglVertexPointer(3, GL_FLOAT, 0, vertexArray);
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
+
+	if(currentmodel->envmap){
+	GL_SelectTexture(GL_TEXTURE3_ARB);
+	qglDisable(GL_TEXTURE_2D);
+	}
 
 	if(caustics){
 	GL_SelectTexture(GL_TEXTURE2_ARB);
@@ -304,7 +348,7 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	unsigned		defBits = 0;
 	int				id;
 
-	if (currententity->flags & (RF_VIEWERMODEL))
+//	if (currententity->flags & (RF_VIEWERMODEL))
 			return;
 	
 	if(currentmodel->noselfshadow)

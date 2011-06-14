@@ -1713,6 +1713,7 @@ void GL_FreeUnusedImages(void)
 	r_distort->registration_sequence = registration_sequence;
 	r_blackTexture->registration_sequence = registration_sequence;
 	r_defBump->registration_sequence = registration_sequence;
+	r_envMap->registration_sequence = registration_sequence;
 
 	for (i = 0; i < MAX_SHELLS; i++){
 		r_texshell[i]->registration_sequence = registration_sequence;

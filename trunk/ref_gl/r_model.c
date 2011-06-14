@@ -932,64 +932,46 @@ void Mod_LoadTexinfo (lump_t * l) {
              // Normal Maps Loading
           //
 
-          Com_sprintf(name, sizeof(name), "overrides/%s_nm.tga", purename);
+          Com_sprintf(name, sizeof(name), "overrides/%s_bump.tga", purename);
              out->normalmap = GL_FindImage(name, it_wall);
 
              if (!out->normalmap) {
-               Com_sprintf(name, sizeof(name), "overrides/%s_nm.dds", purename);
+               Com_sprintf(name, sizeof(name), "overrides/%s_bump.dds", purename);
                   out->normalmap = GL_FindImage(name, it_wall);
 				
-				  if (!out->normalmap) {
-						Com_sprintf(name, sizeof(name), "overrides/%s_bump.tga", purename);
-							out->normalmap = GL_FindImage(name, it_wall);
-
-						if (!out->normalmap) {
-							Com_sprintf(name, sizeof(name), "overrides/%s_bump.dds", purename);
-								out->normalmap = GL_FindImage(name, it_wall);
-
+				 
 				if (!out->normalmap) {
-                    Com_sprintf(name, sizeof(name), "textures/%s_nm.tga", in->texture);
+                    Com_sprintf(name, sizeof(name), "textures/%s_bump.tga", in->texture);
                        out->normalmap = GL_FindImage(name, it_wall);
 
                        if (!out->normalmap) {
-                         Com_sprintf(name, sizeof(name), "textures/%s_nm.dds", in->texture);
+                         Com_sprintf(name, sizeof(name), "textures/%s_bump.dds", in->texture);
                             out->normalmap = GL_FindImage(name, it_wall);
 							
-							if (!out->normalmap) {
-								Com_sprintf(name, sizeof(name), "textures/%s_bump.tga", in->texture);
-									 out->normalmap = GL_FindImage(name, it_wall);
-
-								if (!out->normalmap) {
-									Com_sprintf(name, sizeof(name), "textures/%s_bump.dds", in->texture);
-										out->normalmap = GL_FindImage(name, it_wall);
+							
 							if (!out->normalmap) 
 									out->normalmap = r_defBump;
 							// don't care if it's NULL
 							}	
-						}     
-                    }
-               }
-          }
-				  
-	}
+						}
 }
           //
           // Glow Maps Loading
           //
 
-          Com_sprintf(name, sizeof(name), "overrides/%s_add.tga", purename);
+          Com_sprintf(name, sizeof(name), "overrides/%s_light.tga", purename);
              out->addTexture = GL_FindImage(name, it_wall);
 
              if (!out->addTexture) {
-               Com_sprintf(name, sizeof(name), "overrides/%s_light.tga", purename);
+               Com_sprintf(name, sizeof(name), "overrides/%s_light.dds", purename);
                   out->addTexture = GL_FindImage(name, it_wall);
 
                   if (!out->addTexture) {
-                    Com_sprintf(name, sizeof(name), "textures/%s_add.tga", in->texture);
+                    Com_sprintf(name, sizeof(name), "textures/%s_light.tga", in->texture);
                        out->addTexture = GL_FindImage(name, it_wall);
 
                        if (!out->addTexture) {
-                         Com_sprintf(name, sizeof(name), "textures/%s_light.tga", in->texture);
+                         Com_sprintf(name, sizeof(name), "textures/%s_light.dds", in->texture);
                             out->addTexture = GL_FindImage(name, it_wall);
 
                             if (!out->addTexture)
@@ -997,18 +979,6 @@ void Mod_LoadTexinfo (lump_t * l) {
                     }
                }
           }
-//hiMaps loading
-			 Com_sprintf(name, sizeof(name), "overrides/%s_h.tga", purename);
-			 	out->hiMap = GL_FindImage(name, it_wall);
-
-                  
-		if (!out->hiMap) {
-                    Com_sprintf(name, sizeof(name), "textures/%s_h.tga", in->texture);
-                       out->hiMap = GL_FindImage(name, it_wall);
-					
-				   if (!out->hiMap)
-						out->hiMap = r_notexture;
-               }     
 
 
 
@@ -1923,6 +1893,11 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 			continue;
 		}	
 		
+		if (!Q_strcasecmp(token, "envmap"))
+		{
+			mod->envmap = true;
+			continue;
+		}	
 	}
 }
 extern cvar_t *r_specularScale;
@@ -2073,47 +2048,29 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 		// GlowMaps loading
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_gl.tga");
+		strcat(gl, "_light.tga");
 		mod->glowtexture[i] = GL_FindImage(gl, it_skin);
 		
 		if(!mod->glowtexture[i]){
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_add.tga");
+		strcat(gl, "_light.dds");
 		mod->glowtexture[i] = GL_FindImage(gl, it_skin);
 		}
-
-		if(!mod->glowtexture[i]){
-		strcpy(gl, pname);
-		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_light.tga");
-		mod->glowtexture[i] = GL_FindImage(gl, it_skin);
-		}
+		
+		if(!mod->glowtexture[i])
+			mod->glowtexture[i] = r_notexture;
 
 		// Loading Normal maps
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_nm.dds");
+		strcat(gl, "_bump.tga");
 		mod->skins_normal[i] = GL_FindImage(gl, it_wall);
-		
-		if (!mod->skins_normal[i]){
-        strcpy(gl, pname);
-        gl[strlen(gl) - 4] = 0;
-        strcat(gl, "_nm.tga");
-        mod->skins_normal[i] = GL_FindImage(gl, it_wall);
-		}
 
 		if (!mod->skins_normal[i]){
         strcpy(gl, pname);
         gl[strlen(gl) - 4] = 0;
         strcat(gl, "_bump.dds");
-        mod->skins_normal[i] = GL_FindImage(gl, it_wall);
-		}
-
-		if (!mod->skins_normal[i]){
-        strcpy(gl, pname);
-        gl[strlen(gl) - 4] = 0;
-        strcat(gl, "_bump.tga");
         mod->skins_normal[i] = GL_FindImage(gl, it_wall);
 		}
 
@@ -2130,7 +2087,8 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	mod->glowCfg[1] = 1.0;
 	mod->glowCfg[2] = 5.666;
 	mod->noselfshadow = false;
-	
+	mod->envmap = false;
+
 	i = strlen(mod->name);
 	memcpy(nam, mod->name, i);
 	nam[i-3]='r';
@@ -2147,7 +2105,9 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 		buff[i]=bak;
 		FS_FreeFile (buff);
 	}
-	
+	if(mod->envmap)
+		Com_Printf("found env flag on %s", mod->name);
+
 	// Calculate texcoords for triangles (for compute tangents and binormals)
 
 	tris = (dtriangle_t *) ((byte *)pheader + pheader->ofs_tris);
@@ -2528,35 +2488,24 @@ struct model_s *R_RegisterModel(char *name)
 				// GlowMaps loading
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_gl.tga");
+		strcat(gl, "_light.tga");
 		mod->glowtexture[i] = GL_FindImage(gl, it_skin);
 		
 		if(!mod->glowtexture[i]){
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_add.tga");
+		strcat(gl, "_light.dds");
 		mod->glowtexture[i] = GL_FindImage(gl, it_skin);
 		}
 
-		if(!mod->glowtexture[i]){
-		strcpy(gl, pname);
-		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_light.tga");
-		mod->glowtexture[i] = GL_FindImage(gl, it_skin);
-		}
+		if(!mod->glowtexture[i])
+			mod->glowtexture[i] = r_notexture;
 
 		// Loading Normal maps
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_nm.dds");
+		strcat(gl, "_bump.tga");
 		mod->skins_normal[i] = GL_FindImage(gl, it_wall);
-		
-		if (!mod->skins_normal[i]){
-        strcpy(gl, pname);
-        gl[strlen(gl) - 4] = 0;
-        strcat(gl, "_nm.tga");
-        mod->skins_normal[i] = GL_FindImage(gl, it_wall);
-		}
 
 		if (!mod->skins_normal[i]){
         strcpy(gl, pname);
@@ -2565,17 +2514,11 @@ struct model_s *R_RegisterModel(char *name)
         mod->skins_normal[i] = GL_FindImage(gl, it_wall);
 		}
 
-		if (!mod->skins_normal[i]){
-        strcpy(gl, pname);
-        gl[strlen(gl) - 4] = 0;
-        strcat(gl, "_bump.tga");
-        mod->skins_normal[i] = GL_FindImage(gl, it_wall);
-		}
 		
 		if (!mod->skins_normal[i])
 			 mod->skins_normal[i] = r_defBump;		
 		
-			}
+		}
 //PGM
 			mod->numframes = pheader->num_frames;
 //PGM
@@ -2590,8 +2533,6 @@ struct model_s *R_RegisterModel(char *name)
 				if(mod->texinfo[i].addTexture != NULL)
 					mod->texinfo[i].addTexture->registration_sequence	= registration_sequence;
 
-				if(mod->texinfo[i].hiMap != NULL)
-					mod->texinfo[i].hiMap->registration_sequence	= registration_sequence;
 			}
 		}
 	}
