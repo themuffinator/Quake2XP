@@ -486,7 +486,7 @@ void R_InitPrograms(void) {
 		Com_Printf("succeeded\n");
 
 		worldDefs.CausticsBit = R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
-		worldDefs.ChromeBits = R_GetProgramDefBits(aliasAmbientProgram, "ENV");
+
 	} else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 

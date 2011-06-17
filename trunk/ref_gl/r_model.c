@@ -1892,12 +1892,7 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 			mod->noselfshadow = true;
 			continue;
 		}	
-		
-		if (!Q_strcasecmp(token, "envmap"))
-		{
-			mod->envmap = true;
-			continue;
-		}	
+
 	}
 }
 extern cvar_t *r_specularScale;
@@ -2087,7 +2082,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	mod->glowCfg[1] = 1.0;
 	mod->glowCfg[2] = 5.666;
 	mod->noselfshadow = false;
-	mod->envmap = false;
 
 	i = strlen(mod->name);
 	memcpy(nam, mod->name, i);
@@ -2105,9 +2099,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 		buff[i]=bak;
 		FS_FreeFile (buff);
 	}
-	if(mod->envmap)
-		Com_Printf("found env flag on %s", mod->name);
-
+	
 	// Calculate texcoords for triangles (for compute tangents and binormals)
 
 	tris = (dtriangle_t *) ((byte *)pheader + pheader->ofs_tris);

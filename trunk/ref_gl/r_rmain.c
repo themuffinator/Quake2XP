@@ -269,7 +269,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	
 	GL_SelectTexture			(GL_TEXTURE1_ARB);
 	if (!currentmodel->skins[e->frame]->texnum)
-	GL_Bind						(r_blackTexture->texnum);
+	GL_Bind						(r_notexture->texnum);
 	else
 	GL_Bind						(currentmodel->skins[e->frame]->texnum);
 	qglEnable					(GL_TEXTURE_2D);
@@ -287,8 +287,8 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 		
 	qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	15.0);
 	qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.0);
-	qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	200.0);
-	qglUniform1f				(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.5);
+	qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	512.0);
+	qglUniform1f				(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.75);
 	qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform2f				(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0);
@@ -1571,8 +1571,8 @@ int R_Init(void *hinstance, void *hWnd)
 	float version = atof(gl_config.version_string);
 
 	if (version < 2.1){
-		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
-		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
+		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 2.1 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
+		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.1 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		}
 	}
 
@@ -1874,7 +1874,6 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	Mod_Init();
 	R_InitEngineTextures();
 	R_LoadFont();
-	VLight_Init();
 
 	GL_MsgGLError("Init GL Errors: ");
 	return 0;

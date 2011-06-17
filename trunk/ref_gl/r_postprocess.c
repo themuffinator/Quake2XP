@@ -126,6 +126,7 @@ void R_BuildFlares(flare_t * light, int Id){
 	dist2 = VectorLength(v);
 	if (dist2 > 2100)
 		return;
+
 	scale = ((2048 - dist2) / 2048) * 0.5;
 	
 	qglDisable(GL_DEPTH_TEST);

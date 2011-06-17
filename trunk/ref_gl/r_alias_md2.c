@@ -80,33 +80,6 @@ void GL_LerpVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *vert
 
 }
 
-void R_LightAliasModel (vec3_t baselight, dtrivertx_t *verts, dtrivertx_t *ov, float backlerp, vec3_t lightOut)
-{
-	int		i;
-	float	l;
-
-	
-	l = 1.5*shadedots[verts->lightnormalindex]-0.5;
-	
-	VectorScale(baselight, l, lightOut);
-
-	if (model_dlights_num)
-			for (i=0; i<model_dlights_num; i++)
-			{
-				l = 2.0 * VLight_LerpLight (verts->lightnormalindex, ov->lightnormalindex,
-											backlerp, model_dlights[i].direction, currententity->angles, true );
-				
-				VectorMA(lightOut, l, model_dlights[i].color, lightOut);
-			}
-	
-	
-
-	for (i=0; i<3; i++)
-		lightOut[i] = max(min(lightOut[i], 1.0f), 0.0f);
-
-}
-
-
 /*
 =============
 GL_DrawAliasFrameLerp
@@ -140,7 +113,7 @@ static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 	int		aliasArray = 0;
 	image_t	*skin, *glowskin;
 	float	alphaShift;
-	vec3_t water, vColor;
+	vec3_t water;
 	unsigned	defBits = 0;
 	int			id;
 	qboolean caustics = false;
@@ -225,15 +198,9 @@ static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 
 	GL_LerpVerts( paliashdr->num_xyz, v, ov, verts, lerp, move, frontv, backv, 0);
 
-	GL_BindNullProgram();
-
 	if(caustics)
 	defBits = worldDefs.CausticsBit;
-
 	
-	if(currentmodel->envmap)
-		defBits |= worldDefs.ChromeBits;
-
 	// setup program
 	GL_BindProgram(aliasAmbientProgram, defBits);
 	id = aliasAmbientProgram->id[defBits];
@@ -273,8 +240,6 @@ static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 		
 		qglEnableClientState	(GL_VERTEX_ARRAY);
 		qglVertexPointer		(3, GL_FLOAT, 0, Md2VertArray);
-
-		
 		
 		while (1) {
 			// get the vertex count and primitive type
@@ -288,11 +253,9 @@ static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 			do {
 				index_xyz = order[2];
 				l = shadedots[verts[index_xyz].lightnormalindex];
-				
-				R_LightAliasModel (shadelight, &verts[index_xyz], &ov[index_xyz], backlerp, vColor);
-				
+
 				VA_SetElem2(Md2TexArray[aliasArray], ((float *)order)[0], ((float *)order)[1]); 
-				VA_SetElem4(Md2ColorArray[aliasArray], vColor[0], vColor[1], vColor[2], alpha); 
+				VA_SetElem4(Md2ColorArray[aliasArray], shadelight[0]*l, shadelight[1]*l, shadelight[2]*l, alpha); 
 				VA_SetElem3(Md2VertArray[aliasArray], s_lerped[index_xyz][0], s_lerped[index_xyz][1], s_lerped[index_xyz][2]); 
 				aliasArray++;
 				
@@ -677,20 +640,9 @@ void SetModelsLight (qboolean ppl)
 		for (i = 0; i < 3; i++)
 			shadelight[i] = 1.0;
 	} 
-	else if(r_bumpAlias->value)
-				R_LightPoint (currententity->origin, shadelight, ppl);
 	else
-	{
-		int max = 8;
-		
-		if (max<0)max=0;
-			
-		if (max>MAX_MODEL_DLIGHTS)
-				max=MAX_MODEL_DLIGHTS;
+		R_LightPoint (currententity->origin, shadelight, ppl);
 
-		R_LightPointDynamics (currententity->origin, shadelight, model_dlights, &model_dlights_num, max);
-
-	}
 	if (currententity->flags & RF_MINLIGHT) {
 		for (i = 0; i < 3; i++)
 			if (shadelight[i] > 0.1)
@@ -836,7 +788,7 @@ next:
 		}
 	}
 	
-	if(r_bumpAlias->value)
+	if(!r_bumpAlias->value)
 		SetModelsLight(false);
 	else
 		SetModelsLight(true);
@@ -905,9 +857,6 @@ next:
 
 	if (currententity->flags & RF_DEPTHHACK)
 		qglDepthRange(gldepthmin, gldepthmax);
-
-
-//	GL_ATI_TRUFORM(false);
 
 	if (r_radar->value >1 && (!deathmatch->value)) {
 		GL_Overbrights(false);
