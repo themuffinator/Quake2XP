@@ -1,6 +1,5 @@
 uniform sampler2D 	u_Diffuse;
 uniform sampler2D 	u_Add;
-uniform sampler2D	u_Chrome;
 
 #ifdef CAUSTICS
 uniform sampler2D  u_Caustics;
@@ -26,11 +25,6 @@ vec4 color;
 
 r0 *= gl_Color;
 
-#ifdef ENV
-vec4 r3 = texture2D(u_Chrome,	gl_TexCoord[1].xy);
-//r3 *= r1.a;
-r0 = r3;
-#endif
 
 r1 *= u_AddShift;
 

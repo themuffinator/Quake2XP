@@ -117,9 +117,9 @@ vec3 L = normalize(v_lightVec);
 
 #ifdef PARALLAX
 vec2 P = CalcParallaxOffset(u_Diffuse, gl_TexCoord[0].xy, V);
-vec4 diffuseMap = texture2D(u_Diffuse,  P);
+vec4 diffuseMap = texture2D(u_Diffuse, P);
 vec4 lightMap = texture2D(u_LightMap, gl_TexCoord[1].xy); 
-vec4 glowMap = texture2D(u_Add,      P);
+vec4 glowMap = texture2D(u_Add, P);
 vec4 causticsMap = texture2D(u_Caustics, P);
 
 vec3 normalMap =  normalize(texture2D(u_NormalMap, P.xy).rgb * 2.0 - 1.0);
@@ -129,11 +129,11 @@ float specTmp = texture2D(u_NormalMap,   P.xy).a;
 
 vec4 diffuseMap = texture2D(u_Diffuse,  gl_TexCoord[0].xy);
 vec4 lightMap = texture2D(u_LightMap, gl_TexCoord[1].xy); 
-vec4 glowMap = texture2D(u_Add,      gl_TexCoord[0].xy);
+vec4 glowMap = texture2D(u_Add,  gl_TexCoord[0].xy);
 vec4 causticsMap = texture2D(u_Caustics, gl_TexCoord[0].xy);
 
 vec3 normalMap =  normalize(texture2D(u_NormalMap, gl_TexCoord[0].xy).rgb * 2.0 - 1.0);
-float specTmp = texture2D(u_NormalMap,   gl_TexCoord[0].xy).a;
+float specTmp = texture2D(u_NormalMap, gl_TexCoord[0].xy).a;
 #endif 
 
 #ifdef BUMP
