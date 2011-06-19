@@ -69,7 +69,7 @@ unsigned Com_HashKey (const char *string, unsigned size) {
 
 	for (i=0; string[i]; i++) {
 		letter = tolower(string[i]);
-
+		
 		if (letter =='.') break;				// don't include extension
 		if (letter =='\\') letter = '/';		// damn path names
 
@@ -486,6 +486,7 @@ void R_InitPrograms(void) {
 		Com_Printf("succeeded\n");
 
 		worldDefs.CausticsBit = R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
+		worldDefs.EnvBits	= R_GetProgramDefBits(refractProgram, "ENV");
 
 	} else
 		Com_Printf(S_COLOR_RED"Failed!\n");

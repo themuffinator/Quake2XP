@@ -328,8 +328,8 @@ void R_InitSun()
 
 	draw_sun = true;
 
-	gluProject2(sun_origin[0], sun_origin[1], sun_origin[2], r_world_matrix, r_project_matrix, (int *) r_viewport, &sun_x, &sun_y);	// /, 
-																																	// &sun_z);
+	gluProject2(sun_origin[0], sun_origin[1], sun_origin[2], 
+				r_world_matrix, r_project_matrix, (int *) r_viewport, &sun_x, &sun_y);
 	sun_y = r_newrefdef.height - sun_y;
 }
 
@@ -410,8 +410,7 @@ void R_RenderSun()
 		qglMatrixMode(GL_PROJECTION);
 		qglPushMatrix();
 		qglLoadIdentity();
-		qglOrtho(0, r_newrefdef.width, r_newrefdef.height, 0, -99999,
-				 99999);
+		qglOrtho(0, r_newrefdef.width, r_newrefdef.height, 0, -99999, 99999);
 		qglMatrixMode(GL_MODELVIEW);
 		qglPushMatrix();
 		qglLoadIdentity();

@@ -1343,7 +1343,14 @@ void R_DrawBSP(void)
 	
 	qglDepthMask(0);
 	R_DrawSkyBox();
+	R_RenderSun();
 	qglDepthMask(1);
+
+	qglColorMask(0, 0, 0, 1);
+	qglDisable(GL_TEXTURE_2D);
+	R_DrawSkyBox();
+	qglColorMask(1, 1, 1, 1);
+	qglEnable(GL_TEXTURE_2D);
 			
 }
 

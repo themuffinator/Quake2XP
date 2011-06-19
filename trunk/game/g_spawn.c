@@ -817,7 +817,7 @@ void LoadStatusbarProgram()
 	if (deathmatch->value)
 	{
 		if (!*game->string)
-			sprintf (name, "%s/hud/sphud.lst", GAMEVERSION);
+			sprintf (name, "%s/hud/dmhud.lst", GAMEVERSION);
 		else
 			sprintf (name, "%s/hud/dmhud.lst", game->string);
 	}
@@ -826,7 +826,7 @@ void LoadStatusbarProgram()
 		if (!*game->string)
 			sprintf (name, "%s/hud/sphud.lst", GAMEVERSION);
 		else
-			sprintf (name, "%s/hud/dmhud.lst", game->string);
+			sprintf (name, "%s/hud/sphud.lst", game->string);
 	}
 
 	gi.cprintf (NULL, PRINT_HIGH, "Using external layout %s\n", name);

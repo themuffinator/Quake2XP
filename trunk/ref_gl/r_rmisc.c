@@ -44,6 +44,7 @@ image_t	*r_texshell[MAX_SHELLS];
 image_t *r_blackTexture;
 image_t *r_DSTTex;
 image_t *r_cin;
+image_t	*r_envTex;
 
 void CreateDSTTex_ARB (void)
 {
@@ -365,7 +366,10 @@ void R_InitEngineTextures(void)
 	r_blackTexture = GL_FindImage("gfx/blacktex.tga", it_wall);
 		if(!r_blackTexture)
 			r_blackTexture = r_notexture;
-
+	
+	r_envTex = GL_FindImage("gfx/tinfx.jpg", it_wall);
+		if(!r_envTex)
+			r_envTex = r_notexture;
 
 	buffer = (byte*)malloc(320 * 240 * 4);
 	memset(buffer, 0, 320 * 240 * 4);

@@ -655,7 +655,7 @@ void Con_DrawConsole(float frac)
 	SCR_AddDirtyPoint(0, 0);
 	SCR_AddDirtyPoint(viddef.width - 1, lines - 1);
 
-	Com_sprintf(version, sizeof(version), "q2xp 1.26g (%s)", __DATE__);
+	Com_sprintf(version, sizeof(version), "q2xp 1.26q (%s)", __DATE__);
 	for (x = 0; x < strlen(version); x++)
 		version[x] += 128;
 

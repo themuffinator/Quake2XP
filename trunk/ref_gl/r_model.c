@@ -1892,6 +1892,11 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 			mod->noselfshadow = true;
 			continue;
 		}	
+		if (!Q_strcasecmp(token, "env"))
+		{
+			mod->envmap = true;
+			continue;
+		}	
 
 	}
 }

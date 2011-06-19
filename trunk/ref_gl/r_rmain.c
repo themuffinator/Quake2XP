@@ -1195,7 +1195,7 @@ void R_RenderView(refdef_t * fd)
 	
 	R_DrawPlayerWeapon();
 	R_DrawPlayerWeaponLightPass();
-	R_RenderSun();
+
 	
 	
 		

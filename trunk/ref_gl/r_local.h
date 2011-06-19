@@ -194,6 +194,7 @@ extern image_t *r_blackTexture;
 
 extern image_t	*r_defBump;
 extern image_t	*ScreenMap;
+extern image_t	*r_envTex;
 
 
 extern entity_t *currententity;
@@ -733,6 +734,7 @@ typedef struct {
 	unsigned	AlphaMaskBits;
 	unsigned	BumpBits;
 	unsigned	DofExtra;
+	unsigned	EnvBits;
 
 } worldDefs_t;
 
