@@ -673,10 +673,11 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
 
 	qglUniform2f(qglGetUniformLocation(id, "u_bumpScale"), scale[0], scale[1]);
-	
+
 	if(r_parallax->value){
 	qglUniform1i(qglGetUniformLocation(id, "u_numSteps"), (int)r_parallaxSteps->value);
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
 	}
 
 	if(r_bumpWorld->value)
@@ -1341,16 +1342,9 @@ void R_DrawBSP(void)
 
 	DrawTextureChains();
 	
-	qglDepthMask(0);
+//	qglDepthMask(0);
 	R_DrawSkyBox();
-	R_RenderSun();
-	qglDepthMask(1);
-
-	qglColorMask(0, 0, 0, 1);
-	qglDisable(GL_TEXTURE_2D);
-	R_DrawSkyBox();
-	qglColorMask(1, 1, 1, 1);
-	qglEnable(GL_TEXTURE_2D);
+//	qglDepthMask(1);
 			
 }
 

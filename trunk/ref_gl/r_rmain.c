@@ -940,6 +940,7 @@ jump:
 	// draw transparent entities
 	// we could sort these if it ever becomes a problem...
 	qglDepthMask(0);			// no z writes
+
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		if (currententity->flags & RF_WEAPONMODEL)
@@ -1152,6 +1153,7 @@ r_newrefdef must be set before the first call
 */
 
 void R_BlobShadow(void);
+void R_DrawZpassWorld(void);
 
 void R_RenderView(refdef_t * fd)
 {
@@ -1162,7 +1164,7 @@ void R_RenderView(refdef_t * fd)
 
 	if (!r_worldmodel && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel");
-
+		
 	R_PushDlights();
 
 	if (r_finish->value)
@@ -1172,10 +1174,11 @@ void R_RenderView(refdef_t * fd)
 	R_SetFrustum();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
+
 	R_DrawBSP();
 	R_RenderDecals();
 	R_DrawEntitiesOnList();
-	
+
 	R_BlobShadow();	
 	R_CastShadow();
 	R_DrawEntitiesLightPass();
@@ -1183,8 +1186,6 @@ void R_RenderView(refdef_t * fd)
 
 	R_RenderFlares();
 	R_RenderDlights();
-	
-	
 	R_CaptureDepthBuffer();
 	R_DrawParticles(true); //underwater particles
 	R_CaptureColorBuffer();
@@ -1195,9 +1196,8 @@ void R_RenderView(refdef_t * fd)
 	
 	R_DrawPlayerWeapon();
 	R_DrawPlayerWeaponLightPass();
-
 	
-	
+//	R_RenderSun();
 		
 }
 

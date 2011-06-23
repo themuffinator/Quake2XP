@@ -53,10 +53,6 @@ float ref_realtime =0;
 
 float	*shadedots = r_avertexnormal_dots[0];
 
-#define MAX_MODEL_DLIGHTS 128
-m_dlight_t model_dlights[MAX_MODEL_DLIGHTS];
-int model_dlights_num;
-
 
 void GL_LerpVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3], float shellscale)
 {
