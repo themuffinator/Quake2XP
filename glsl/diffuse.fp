@@ -6,6 +6,7 @@ uniform float       u_ColorModulate;
 uniform float       u_ambientScale;    
 uniform int			u_bumpMap;
 uniform vec2		u_bumpScale;
+uniform vec2		u_texSize;
 uniform int			u_parallaxType;
 uniform int			u_numSteps;
  
@@ -14,6 +15,18 @@ uniform float       u_CausticsModulate;
 
 varying vec3		v_viewVecTS;
 varying vec3		v_lightVec;
+
+#extension GL_ARB_shader_texture_lod : enable
+
+//Computing Mipmaplevel
+float MipmapLevel(vec2 UV, vec2 texSize){
+  vec2 ddx = dFdx(UV * texSize.x);
+  vec2 ddy = dFdy(UV * texSize.y);
+  vec2 dist = sqrt(ddx * ddx + ddy * ddy);
+
+  return log2(max(dist.x,dist.y));
+  
+}
 
 vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) {
 	
@@ -32,13 +45,14 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	else
 		viewVec.z = clamp(viewVec.z, 0.1, 1.0);
 
+	float lod = MipmapLevel(texCoord, u_texSize);
+
 	float	step = 1.0 / float(u_numSteps);
 	vec2	delta = 2.0 * u_bumpScale * viewVec.xy / (-viewVec.z * float(u_numSteps));
-	float	NB0 = texture2D(hiMap, texCoord).a;
+	float	NB0 = texture2DLod(hiMap, texCoord, lod).a;
 	float	height = 1.0 - step;
 	vec2	offset = texCoord + delta;
-	float	NB1 = texture2D(hiMap, offset).a;
-
+	float	NB1 = texture2DLod(hiMap, offset, lod).a;
 
 	for (int i = 0; i < u_numSteps; i++) {
 		
@@ -50,7 +64,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 		height -= step;
 		offset += delta;
 
-		NB1 = texture2D(hiMap, offset).a;
+		NB1 = texture2DLod(hiMap, offset, lod).a;
 	}
 
 	vec2 offsetBest = offset;
@@ -72,7 +86,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 		float t = (t0 * delta1 - t1 * delta0) / denom;
 		offsetBest = -t * intersect.xy + intersect.zw;
 		
-		float NB = texture2D(hiMap, offsetBest).a;
+		float NB = texture2DLod(hiMap, offsetBest, lod).a;
 
 		error = t - NB;
 		if (error < 0.0) {
