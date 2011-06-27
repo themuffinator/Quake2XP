@@ -321,17 +321,7 @@ PM_Friction
 Handles both ground friction and water friction
 ==================
 */
-/*
-void CheckSurfLight(void)
 
-{
-
-	if ((pm->groundentity && pml.groundsurface && !(pml.groundsurface->flags & SURF_LAVA) ) )
-	{
-cl.refdef.rdflags |= RDF_BLOOM;
-	}
-}
-*/
 void PM_Friction(void)
 {
 	float *vel;
@@ -777,8 +767,12 @@ void PM_CatagorizePosition(void)
 PM_CheckJump
 =============
 */
+
 void PM_CheckJump(void)
 {
+	int dm_flag;
+	dm_flag = Cvar_VariableValue("dmflags");
+
 	if (pm->s.pm_flags & PMF_TIME_LAND) {	// hasn't been long enough
 											// since landing to jump again
 		return;
@@ -810,6 +804,34 @@ void PM_CheckJump(void)
 		return;
 	}
 
+	// ArchAngel double jump from inside3d forum
+	if(dm_flag & DF_UT_DOUBLE_JUMP){
+
+	if (pm->groundentity == NULL) 
+    { 
+       if(pm->s.pm_flags & PMF_DOUBLE_JUMP)
+       { 
+          pm->s.pm_flags |= PMF_JUMP_HELD; 
+          pm->s.pm_flags  &= ~PMF_DOUBLE_JUMP; 
+          if(pml.velocity[2] > 0)   //Still rising? 
+          { 
+             if(pml.velocity[2] < 270) 
+                pml.velocity[2] = 270; 
+          } 
+       } 
+       return;      // in air, so no effect 
+    } 
+
+    pm->s.pm_flags |= PMF_JUMP_HELD; 
+
+    pm->groundentity = NULL; 
+    pml.velocity[2] += 270; 
+    if (pml.velocity[2] < 270) 
+       pml.velocity[2] = 270; 
+	pm->s.pm_flags |= PMF_DOUBLE_JUMP;
+	}
+	else
+	{
 	if (pm->groundentity == NULL)
 		return;					// in air, so no effect
 
@@ -819,6 +841,8 @@ void PM_CheckJump(void)
 	pml.velocity[2] += 270;
 	if (pml.velocity[2] < 270)
 		pml.velocity[2] = 270;
+	}
+
 }
 
 

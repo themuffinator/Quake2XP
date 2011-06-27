@@ -538,7 +538,7 @@ typedef enum {
 #define	PMF_TIME_TELEPORT	32	// pm_time is non-moving time
 #define PMF_NO_PREDICTION	64	// temporarily disables prediction (used
 								// for grappling hook)
-
+#define PMF_DOUBLE_JUMP		128
 // this structure needs to be communicated bit-accurate
 // from the server to the client to guarantee that
 // prediction stays in sync, so no floats are used.
@@ -1131,6 +1131,7 @@ typedef enum {
 #define DF_NO_SPHERES		0x00100000
 //ROGUE
 #define DF_PREDATOR			0x00800000
+#define DF_UT_DOUBLE_JUMP	0x01000000
 #define ROGUE_VERSION_ID		1278
 
 #define ROGUE_VERSION_STRING	"08/21/1998 Beta 2 for Ensemble"
