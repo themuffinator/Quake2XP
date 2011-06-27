@@ -16,17 +16,18 @@ uniform float       u_CausticsModulate;
 varying vec3		v_viewVecTS;
 varying vec3		v_lightVec;
 
-#extension GL_ARB_shader_texture_lod : enable
+float ComputeLOD( vec2 tc, vec2 texSize ) { 
 
-//Computing Mipmaplevel
-float MipmapLevel(vec2 UV, vec2 texSize){
-  vec2 ddx = dFdx(UV * texSize.x);
-  vec2 ddy = dFdy(UV * texSize.y);
-  vec2 dist = sqrt(ddx * ddx + ddy * ddy);
+ vec2 dx = dFdx( tc ); 
+ vec2 dy = dFdy( tc ); 
 
-  return log2(max(dist.x,dist.y));
-  
-}
+ vec2 mag = ( abs( dx )  + abs( dy )  ) * texSize; 
+ 
+ float lod = log2( max( mag.x, mag.y ) ); 
+
+ return lod; 
+
+} 
 
 vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) {
 	
@@ -45,7 +46,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	else
 		viewVec.z = clamp(viewVec.z, 0.1, 1.0);
 
-	float lod = MipmapLevel(texCoord, u_texSize);
+	float lod = ComputeLOD(texCoord, u_texSize);
 
 	float	step = 1.0 / float(u_numSteps);
 	vec2	delta = 2.0 * u_bumpScale * viewVec.xy / (-viewVec.z * float(u_numSteps));
