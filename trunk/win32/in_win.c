@@ -39,9 +39,6 @@ qboolean	in_appactive;
 ============================================================
 */
 
-// mouse variables
-cvar_t	*m_filter;
-
 qboolean	mlooking;
 
 void IN_MLookDown (void) { mlooking = true; }
@@ -205,9 +202,14 @@ void IN_MouseEvent (int mstate)
 IN_MouseMove
 ===========
 */
+// mouse variables
+cvar_t	*m_filter;
+cvar_t	*m_accel;
+
 void IN_MouseMove (usercmd_t *cmd)
 {
 	int		mx, my;
+	float sens;
 
 	if (!mouseactive)
 		return;
@@ -218,11 +220,6 @@ void IN_MouseMove (usercmd_t *cmd)
 
 	mx = current_pos.x - window_center_x;
 	my = current_pos.y - window_center_y;
-
-#if 0
-	if (!mx && !my)
-		return;
-#endif
 
 	if (m_filter->value)
 	{
@@ -238,8 +235,13 @@ void IN_MouseMove (usercmd_t *cmd)
 	old_mouse_x = mx;
 	old_mouse_y = my;
 
-	mouse_x *= sensitivity->value;
-	mouse_y *= sensitivity->value;
+	if( m_accel->value < 0 )
+		Cvar_Set( "m_accel", "0" );
+
+	/// Berserker: коррекция чуствительности от FOV
+	sens = (sensitivity->value + sqrt(mouse_x * mouse_x + mouse_y * mouse_y) * m_accel->value) * cl.refdef.fov_x / 90.0f;
+	mouse_x *= sens;
+	mouse_y *= sens;
 
 // add mouse X/Y movement to cmd
 	if ( (in_strafe.state & 1) || (lookstrafe->value && mlooking ))
@@ -282,8 +284,9 @@ IN_Init
 void IN_Init (void)
 {
 	// mouse variables
-	m_filter				= Cvar_Get ("m_filter",					"0",		0);
+	m_filter				= Cvar_Get ("m_filter",					"0",		CVAR_ARCHIVE);
     in_mouse				= Cvar_Get ("in_mouse",					"1",		CVAR_ARCHIVE);
+	m_accel					= Cvar_Get( "m_accel",					"0",		CVAR_ARCHIVE);
 
 	// centering
 	v_centermove			= Cvar_Get ("v_centermove",				"0.15",		0);
