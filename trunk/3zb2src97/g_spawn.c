@@ -1153,6 +1153,52 @@ char *dm_statusbar =
 "endif "
 ;
 
+void LoadStatusbarProgram()
+{
+	FILE	*f;
+	char	name[MAX_OSPATH];
+	cvar_t	*game, *dm, *sp;
+	char	buffer[4096];
+	int		len;
+
+	game	= gi.cvar("game",	"", 0);
+	sp		= gi.cvar("sp",		"", 0);
+	dm		= gi.cvar("dm",		"", 0);
+	
+
+	if (!*game->string)
+		sprintf (name, "%s/hud/dmhud.lst", GAMEVERSION);
+	else
+		sprintf (name, "%s/hud/dmhud.lst", game->string);
+
+	gi.cprintf (NULL, PRINT_HIGH, "Using external layout %s\n", name);
+
+	f = fopen (name, "rb");
+	if (!f)
+	{
+		gi.cprintf (NULL, PRINT_HIGH, "Couldn't open %s\n", name);
+		goto old;
+	}
+
+	memset(buffer, 0, sizeof(buffer));
+	len = fread (buffer, 1, sizeof(buffer), f);
+	fclose (f);
+
+	if (len<=0)
+	{
+		gi.cprintf (NULL, PRINT_HIGH, "Couldn't read %s\n", name);
+		goto old;
+	}
+
+	gi.configstring (CS_STATUSBAR, buffer);
+	return;
+
+old:gi.cprintf (NULL, PRINT_HIGH, "Using internal hud program\n");
+
+		gi.configstring (CS_STATUSBAR, dm_statusbar);
+
+}
+
 
 /*QUAKED worldspawn (0 0 0) ?
 
@@ -1233,12 +1279,7 @@ void SP_worldspawn(edict_t * ent)
 		} else
 //ZOID
 
-//  gi.configstring (CS_STATUSBAR, dm_statusbar);
-//  else
-//      gi.configstring (CS_STATUSBAR, single_statusbar);
-
-		
-			gi.configstring(CS_STATUSBAR, dm_statusbar);
+LoadStatusbarProgram();
 
 	}
 	// ---------------
