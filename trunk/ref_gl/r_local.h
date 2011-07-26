@@ -734,7 +734,7 @@ typedef struct {
 	unsigned	AlphaMaskBits;
 	unsigned	BumpBits;
 	unsigned	DofExtra;
-	unsigned	EnvBits;
+	unsigned	DlightBits;
 
 } worldDefs_t;
 

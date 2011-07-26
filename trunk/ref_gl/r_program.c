@@ -478,6 +478,7 @@ void R_InitPrograms(void) {
 		worldDefs.LightmapBits		= R_GetProgramDefBits(diffuseProgram, "LIGHTMAP");
 		worldDefs.VertexLightBits	= R_GetProgramDefBits(diffuseProgram, "VERTEXLIGHT");
 		worldDefs.BumpBits			= R_GetProgramDefBits(diffuseProgram, "BUMP");
+		worldDefs.DlightBits		= R_GetProgramDefBits(diffuseProgram, "Dlight");
 	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"ambient model program"S_COLOR_WHITE" ");
@@ -486,7 +487,6 @@ void R_InitPrograms(void) {
 		Com_Printf("succeeded\n");
 
 		worldDefs.CausticsBit = R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
-		worldDefs.EnvBits	= R_GetProgramDefBits(refractProgram, "ENV");
 
 	} else
 		Com_Printf(S_COLOR_RED"Failed!\n");
