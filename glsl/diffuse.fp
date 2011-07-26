@@ -9,12 +9,11 @@ uniform vec2		u_bumpScale;
 uniform vec2		u_texSize;
 uniform int			u_parallaxType;
 uniform int			u_numSteps;
- 
 uniform sampler2D	u_Caustics;
 uniform float       u_CausticsModulate; 
 
 varying vec3		v_viewVecTS;
-varying vec3		v_lightVec;
+varying vec3		t, b, n;
 
 float ComputeLOD( vec2 tc, vec2 texSize ) { 
 
@@ -117,7 +116,6 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const float sExp) {
 	vec2 E;
 	E.x = max(dot(N, L), 0.0);
-
 	vec3 R = reflect(-L, N);
 	E.y = pow(max(dot(R, V), 0.0), sExp);
 	E.y *= (E.x < 0.01 ? 0.0 : 1.0);
@@ -128,7 +126,19 @@ vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const flo
 void main ()
 {
 vec3 V = normalize(v_viewVecTS);
-vec3 L = normalize(v_lightVec);
+
+// Generate the worldspace delux
+vec3 wDelux = normalize(texture2D(u_LightMap, gl_TexCoord[1].xy).rgb * 2.0 - 1.0);
+
+//Put into tangent space
+vec3 tbnDelux;
+tbnDelux.x = dot(wDelux, t);
+tbnDelux.y = dot(wDelux, b);
+tbnDelux.z = dot(wDelux, n);
+//tbnDelux = abs(tbnDelux);
+
+tbnDelux = clamp (tbnDelux, 0.5, 0.666);
+
 
 #ifdef PARALLAX
 vec2 P = CalcParallaxOffset(u_Diffuse, gl_TexCoord[0].xy, V);
@@ -149,12 +159,13 @@ vec4 causticsMap = texture2D(u_Caustics, gl_TexCoord[0].xy);
 
 vec3 normalMap =  normalize(texture2D(u_NormalMap, gl_TexCoord[0].xy).rgb * 2.0 - 1.0);
 float specTmp = texture2D(u_NormalMap, gl_TexCoord[0].xy).a;
+
 #endif 
 
 #ifdef BUMP
 vec4 bumpLight;
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
-vec2 E = PhongLighting(normalMap, L, V, 16.0);
+vec2 E = PhongLighting(normalMap, tbnDelux, V, 16.0);
 
 #ifdef LIGHTMAP
 bumpLight = (E.x * diffuseMap) + (E.y * specular * lightMap);
@@ -183,6 +194,6 @@ tmp *= u_CausticsModulate;
 finalColor = tmp + finalColor;
 #endif
 
-gl_FragColor = finalColor * u_ColorModulate;
+gl_FragColor.rgb = finalColor * u_ColorModulate;
 
 }
