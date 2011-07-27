@@ -2,6 +2,7 @@ uniform sampler2D	u_Diffuse;
 uniform sampler2D	u_LightMap;
 uniform sampler2D	u_Add;
 uniform sampler2D	u_NormalMap;
+uniform sampler2D	u_deluxMap;
 uniform float       u_ColorModulate;
 uniform float       u_ambientScale;    
 uniform int			u_bumpMap;
@@ -11,7 +12,7 @@ uniform int			u_parallaxType;
 uniform int			u_numSteps;
 uniform sampler2D	u_Caustics;
 uniform float       u_CausticsModulate; 
-
+uniform int			u_dlight;
 varying vec3		v_viewVecTS;
 varying vec3		t, b, n;
 
@@ -126,24 +127,11 @@ vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const flo
 void main ()
 {
 vec3 V = normalize(v_viewVecTS);
-
-// Generate the worldspace delux
-vec3 wDelux = normalize(texture2D(u_LightMap, gl_TexCoord[1].xy).rgb * 2.0 - 1.0);
-
-//Put into tangent space
-vec3 tbnDelux;
-tbnDelux.x = dot(wDelux, t);
-tbnDelux.y = dot(wDelux, b);
-tbnDelux.z = dot(wDelux, n);
-//tbnDelux = abs(tbnDelux);
-
-tbnDelux = clamp (tbnDelux, 0.5, 0.666);
-
+vec4 lightMap = texture2D(u_LightMap, gl_TexCoord[1].xy); 
 
 #ifdef PARALLAX
 vec2 P = CalcParallaxOffset(u_Diffuse, gl_TexCoord[0].xy, V);
 vec4 diffuseMap = texture2D(u_Diffuse, P);
-vec4 lightMap = texture2D(u_LightMap, gl_TexCoord[1].xy); 
 vec4 glowMap = texture2D(u_Add, P);
 vec4 causticsMap = texture2D(u_Caustics, P);
 
@@ -153,7 +141,6 @@ float specTmp = texture2D(u_NormalMap,   P.xy).a;
 #else
 
 vec4 diffuseMap = texture2D(u_Diffuse,  gl_TexCoord[0].xy);
-vec4 lightMap = texture2D(u_LightMap, gl_TexCoord[1].xy); 
 vec4 glowMap = texture2D(u_Add,  gl_TexCoord[0].xy);
 vec4 causticsMap = texture2D(u_Caustics, gl_TexCoord[0].xy);
 
@@ -164,11 +151,23 @@ float specTmp = texture2D(u_NormalMap, gl_TexCoord[0].xy).a;
 
 #ifdef BUMP
 vec4 bumpLight;
+// Generate the worldspace delux
+vec3 wDelux = normalize(texture2D(u_LightMap, gl_TexCoord[1].xy).rgb * 2.0 - 1.0);
+
+//Put into tangent space
+vec3 tbnDelux;
+tbnDelux.x = dot(wDelux, t);
+tbnDelux.y = dot(wDelux, b);
+tbnDelux.z = dot(wDelux, n);
+tbnDelux = clamp (tbnDelux, 0.666, 0.8);
+
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
+specular *=0.2; 
 vec2 E = PhongLighting(normalMap, tbnDelux, V, 16.0);
 
 #ifdef LIGHTMAP
-bumpLight = (E.x * diffuseMap) + (E.y * specular * lightMap);
+bumpLight = (E.x * diffuseMap) + (E.y * specular);
+bumpLight *= 0.3;
 diffuseMap *= u_ambientScale;
 #endif
 
@@ -186,9 +185,8 @@ diffuseMap *= lightMap;
 
 vec4 finalColor = diffuseMap + glowMap;
 
-vec4 tmp;
-
 #ifdef CAUSTICS
+vec4 tmp;
 tmp = causticsMap * finalColor;
 tmp *= u_CausticsModulate;
 finalColor = tmp + finalColor;
