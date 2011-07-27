@@ -608,7 +608,7 @@ void R_Register2(void)
 	r_ambientLevel =					Cvar_Get("r_ambientLevel", "0.75", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
 
-	r_bloom =							Cvar_Get("r_bloom", "0", CVAR_ARCHIVE);
+	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.5", CVAR_ARCHIVE);
 	r_bloomIntens =						Cvar_Get("r_bloomIntens", "0.35", CVAR_ARCHIVE);
 

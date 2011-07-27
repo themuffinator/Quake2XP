@@ -191,7 +191,6 @@ void R_InitEngineTextures(void)
 			notex[y][x][3] = 255;
 		}
 	}
-	r_defBump = GL_FindImage("gfx/flatbump.tga", it_wall);
 
 	r_notexture =
 		GL_LoadPic("***r_notexture***", (byte *) notex, 4, 4, it_wall, 32);	
@@ -361,6 +360,10 @@ void R_InitEngineTextures(void)
 	r_envTex = GL_FindImage("gfx/tinfx.jpg", it_wall);
 		if(!r_envTex)
 			r_envTex = r_notexture;
+	
+	r_defBump = GL_FindImage("gfx/flatbump.tga", it_wall);
+	if(!r_defBump)
+		r_defBump = r_notexture;
 
 	buffer = (byte*)malloc(320 * 240 * 4);
 	memset(buffer, 0, 320 * 240 * 4);
