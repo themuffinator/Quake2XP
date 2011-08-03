@@ -1115,7 +1115,7 @@ void CL_ParseTEnt(void)
 
 		CL_ParticleSmoke(pos, dir, 3);
 		CL_ParticleSpark(pos, dir, 25);
-
+/*
 		ex = CL_AllocExplosion();
 		VectorCopy(pos, ex->ent.origin);
 		ex->type = ex_flash;
@@ -1129,6 +1129,7 @@ void CL_ParseTEnt(void)
 		ex->lightcolor[2] = 0.3;
 		ex->ent.model = cl_mod_flash;
 		ex->frames = 2;
+		*/
 		break;
 
 	case TE_GREENBLOOD:

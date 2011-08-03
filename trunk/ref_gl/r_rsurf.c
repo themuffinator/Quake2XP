@@ -621,6 +621,9 @@ return	(((*a)->lightmaptexturenum<<26)+((*a)->texinfo->image->texnum<<13) + (*b)
 int	num_scene_surfaces;
 msurface_t	*scene_surfaces[MAX_MAP_FACES];
 
+extern cvar_t	*r_pplWorldSpecularScale;
+extern cvar_t	*r_pplWorldLightScale;
+
 static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
@@ -680,9 +683,12 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
 	}
 
-	if(r_bumpWorld->value)
+	if(r_bumpWorld->value){
 	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-		
+	qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), r_pplWorldSpecularScale->value);
+	qglUniform1f(qglGetUniformLocation(id, "u_lightScale"), r_pplWorldLightScale->value);
+	}
+
 	GL_CreateParallaxLmPoly(s);
 	
 	c_brush_polys++;
@@ -844,12 +850,6 @@ static void R_DrawInlineBModel(void)
 				scene_surfaces[num_scene_surfaces++] = psurf;
 								
 			} 
-		//	else 
-		//	{
-		//		R_RenderBrushPoly(psurf);
-		//		scene_surfaces[num_scene_surfaces++] = psurf;	
-		//		qglDisable(GL_BLEND);
-		//	}
 		}
 	}
 

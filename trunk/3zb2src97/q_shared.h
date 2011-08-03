@@ -681,18 +681,20 @@ typedef struct {
 #define RF_USE_DISGUISE		0x00040000
 
 // player_state_t->refdef flags
-#define	RDF_UNDERWATER		1	// warp the screen as apropriate
-#define RDF_NOWORLDMODEL	2	// used for player configuration screen
-
+#define	RDF_UNDERWATER		1		// warp the screen as apropriate
+#define RDF_NOWORLDMODEL	2		// used for player configuration screen
 //ROGUE
 #define	RDF_IRGOGGLES		4
 #define RDF_UVGOGGLES		8
 //ROGUE
 
-#define RDF_PAIN            64
-#define RDF_WATER			128
-#define RDF_LAVA			256
-#define RDF_SLIME			512
+// BEEFQUAKE
+#define RDF_NOCLEAR			16
+// BEEFQUAKE
+#define RDF_PAIN            32
+#define RDF_WATER			64
+#define RDF_LAVA			128
+#define RDF_SLIME			256
 
 //
 // muzzle flashes / player effects
