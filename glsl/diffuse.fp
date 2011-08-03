@@ -12,7 +12,8 @@ uniform int			u_parallaxType;
 uniform int			u_numSteps;
 uniform sampler2D	u_Caustics;
 uniform float       u_CausticsModulate; 
-uniform int			u_dlight;
+uniform float		u_specularScale;
+uniform float		u_lightScale; 
 varying vec3		v_viewVecTS;
 varying vec3		t, b, n;
 
@@ -135,7 +136,7 @@ vec4 diffuseMap = texture2D(u_Diffuse, P);
 vec4 glowMap = texture2D(u_Add, P);
 vec4 causticsMap = texture2D(u_Caustics, P);
 
-vec3 normalMap =  normalize(texture2D(u_NormalMap, P.xy).rgb * 2.0 - 1.0);
+vec3 normalMap =  normalize(texture2D(u_NormalMap, P.xy).rgb - 0.5);
 float specTmp = texture2D(u_NormalMap,   P.xy).a;
 
 #else
@@ -144,7 +145,7 @@ vec4 diffuseMap = texture2D(u_Diffuse,  gl_TexCoord[0].xy);
 vec4 glowMap = texture2D(u_Add,  gl_TexCoord[0].xy);
 vec4 causticsMap = texture2D(u_Caustics, gl_TexCoord[0].xy);
 
-vec3 normalMap =  normalize(texture2D(u_NormalMap, gl_TexCoord[0].xy).rgb * 2.0 - 1.0);
+vec3 normalMap =  normalize(texture2D(u_NormalMap, gl_TexCoord[0].xy).rgb - 0.5);
 float specTmp = texture2D(u_NormalMap, gl_TexCoord[0].xy).a;
 
 #endif 
@@ -152,7 +153,7 @@ float specTmp = texture2D(u_NormalMap, gl_TexCoord[0].xy).a;
 #ifdef BUMP
 vec4 bumpLight;
 // Generate the worldspace delux
-vec3 wDelux = normalize(texture2D(u_LightMap, gl_TexCoord[1].xy).rgb * 2.0 - 1.0);
+vec3 wDelux = normalize(texture2D(u_LightMap, gl_TexCoord[1].xy).rgb - 0.5);
 
 //Put into tangent space
 vec3 tbnDelux;
@@ -161,13 +162,15 @@ tbnDelux.y = dot(wDelux, b);
 tbnDelux.z = dot(wDelux, n);
 tbnDelux = clamp (tbnDelux, 0.666, 0.8);
 
+
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
-specular *=0.2; 
+specular *= lightMap;
+specular *= u_specularScale; 
 vec2 E = PhongLighting(normalMap, tbnDelux, V, 16.0);
 
 #ifdef LIGHTMAP
 bumpLight = (E.x * diffuseMap) + (E.y * specular);
-bumpLight *= 0.3;
+bumpLight *= u_lightScale;
 diffuseMap *= u_ambientScale;
 #endif
 
