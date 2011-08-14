@@ -786,7 +786,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		}
 		R_DrawArrays();
 		}	
-	}
+}
+	
 	GL_BindNullProgram();
 }
 

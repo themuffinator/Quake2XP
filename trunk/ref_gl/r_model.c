@@ -1120,25 +1120,15 @@ void Mod_LoadFaces(lump_t * l)
 	// set the drawing flags
 		
 		if (out->texinfo->flags & SURF_WARP)
-		{
-			out->flags |= SURF_DRAWTURB;
-			for (i=0 ; i<2 ; i++)
-			{
-				out->extents[i] = 16384;
-				out->texturemins[i] = -8192;
-			}
-			GL_SubdivideSurface (out);	// cut up polygon for warps
-		}
+				out->flags |= SURF_DRAWTURB;
+
 		
 		// create lightmaps and polygons
 		if ( !(out->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_WARP) ) )
 			GL_CreateSurfaceLightmap (out);
 
-		if (! (out->texinfo->flags & SURF_WARP) ) 
 			GL_BuildPolygonFromSurface(out);
-		
 			GL_AddFlareSurface(out);
-			
 			CalcSurfaceBounds(out);
 	}
 
@@ -1731,6 +1721,7 @@ void Mod_LoadMd2Indices (model_t *mod, dmdl_t *pheader)
 				tmpIndices[icnt++] = vcnt+i+(i&1);
 				tmpIndices[icnt++] = vcnt+i+((i&1)^1);
 				tmpIndices[icnt++] = vcnt+i+ 2;
+	
 			}
 		} 
 		else
@@ -1951,10 +1942,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	// byte swap the header fields and sanity check
 	for (i = 0; i < sizeof(dmdl_t) * 0.25; i++)
 		((int *) pheader)[i] = LittleLong(((int *) buffer)[i]);
-
-//	if (pheader->skinheight > MAX_LBM_HEIGHT)
-//		VID_Error(ERR_DROP, "model %s has a skin taller than %d",
-//				  mod->name, MAX_LBM_HEIGHT);
 
 	if (pheader->num_xyz <= 0)
 		VID_Error(ERR_DROP, "model %s has no vertices", mod->name);

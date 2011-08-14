@@ -267,7 +267,7 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 		if (program->numDefs)
 		{
 			int len = program->numDefs * 64;	// выделим максимум по 64 байта на дифайн
-			defines = malloc(len);
+			defines = (char*)malloc(len);
 			memset(defines, 0, program->numDefs * 64);
 			for (j=0; j<program->numDefs; j++)
 			{
@@ -555,7 +555,8 @@ void R_InitPrograms(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW"water program"S_COLOR_WHITE" ");
 	waterProgram = R_FindProgram("water", true, true);
-	
+	worldDefs.WaterTransBits = R_GetProgramDefBits(waterProgram, "TRANS");
+
 	if(waterProgram->valid){
 		Com_Printf("succeeded\n");
 	}else

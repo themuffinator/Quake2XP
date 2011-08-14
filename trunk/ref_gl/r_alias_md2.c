@@ -89,9 +89,6 @@ float Md2VertArray[MAX_TRIANGLES*4][3];
 float Md2TexArray[MAX_TRIANGLES*4][2];
 float Md2ColorArray[MAX_TRIANGLES*4][4];
 
-float ShellVertArray[MAX_TRIANGLES*4][3];
-float ShellTexArray[MAX_TRIANGLES*4][2];
-
 static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 {
 	float 	l;
@@ -113,7 +110,7 @@ static void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
 	unsigned	defBits = 0;
 	int			id;
 	qboolean caustics = false;
-	
+		
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
@@ -479,9 +476,9 @@ void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
 	qglShadeModel(GL_SMOOTH);
 
 		qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		qglTexCoordPointer (2, GL_FLOAT, 0, ShellTexArray);
+		qglTexCoordPointer (2, GL_FLOAT, 0, Md2TexArray);
 		qglEnableClientState(GL_VERTEX_ARRAY);
-		qglVertexPointer(3, GL_FLOAT, 0, ShellVertArray);
+		qglVertexPointer(3, GL_FLOAT, 0, Md2VertArray);
 
 	while (1)
 	{
@@ -498,9 +495,9 @@ void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
 			order += 3;
 			scroll = r_newrefdef.time *0.65;
 			
-			VA_SetElem2(ShellTexArray	[shellArray], (	(s_lerped[index_xyz][1] + s_lerped[index_xyz][0]) * 0.1)  - (scroll),
-														(s_lerped[index_xyz][2] * 0.1) + (scroll));
-			VA_SetElem3(ShellVertArray	[shellArray],	s_lerped[index_xyz][0], s_lerped[index_xyz][1], s_lerped[index_xyz][2]); 
+			VA_SetElem2(Md2TexArray[shellArray], (	(s_lerped[index_xyz][1] + s_lerped[index_xyz][0]) * 0.1)  - (scroll),
+													(s_lerped[index_xyz][2] * 0.1) + (scroll));
+			VA_SetElem3(Md2VertArray[shellArray],	s_lerped[index_xyz][0], s_lerped[index_xyz][1], s_lerped[index_xyz][2]); 
 			shellArray++;
 			
 		} while (--count);

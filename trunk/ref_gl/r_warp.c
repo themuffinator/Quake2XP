@@ -28,216 +28,7 @@ char skyname[MAX_QPATH];
 float skyrotate;
 vec3_t skyaxis;
 image_t *sky_images[6];
-
-msurface_t *warpface;
 void R_DrawArrays (void);
-#define	SUBDIVIDE_SIZE	1024 //64
-
-void BoundPoly(int numverts, float *verts, vec3_t mins, vec3_t maxs)
-{
-	int i, j;
-	float *v;
-
-	mins[0] = mins[1] = mins[2] = 9999;
-	maxs[0] = maxs[1] = maxs[2] = -9999;
-	v = verts;
-	for (i = 0; i < numverts; i++)
-		for (j = 0; j < 3; j++, v++) {
-			if (*v < mins[j])
-				mins[j] = *v;
-			if (*v > maxs[j])
-				maxs[j] = *v;
-		}
-}
-
-void SubdividePolygon(int numverts, float *verts)
-{
-	int i, j, k;
-	vec3_t mins, maxs;
-	float m;
-	float *v;
-	vec3_t front[64], back[64];
-	int f, b;
-	float dist[64];
-	float frac;
-	glpoly_t *poly;
-	float s, t;
-	vec3_t total;
-	float total_s, total_t;
-
-	if (numverts > 60)
-		VID_Error(ERR_DROP, "numverts = %i", numverts);
-
-	BoundPoly(numverts, verts, mins, maxs);
-
-	for (i = 0; i < 3; i++) {
-		m = (mins[i] + maxs[i]) * 0.5;
-		m = SUBDIVIDE_SIZE * floor(m / SUBDIVIDE_SIZE + 0.5f);
-		if (maxs[i] - m < 8)
-			continue;
-		if (m - mins[i] < 8)
-			continue;
-
-		// cut it
-		v = verts + i;
-		for (j = 0; j < numverts; j++, v += 3)
-			dist[j] = *v - m;
-
-		// wrap cases
-		dist[j] = dist[0];
-		v -= i;
-		VectorCopy(verts, v);
-
-		f = b = 0;
-		v = verts;
-		for (j = 0; j < numverts; j++, v += 3) {
-			if (dist[j] >= 0) {
-				VectorCopy(v, front[f]);
-				f++;
-			}
-			if (dist[j] <= 0) {
-				VectorCopy(v, back[b]);
-				b++;
-			}
-			if (dist[j] == 0 || dist[j + 1] == 0)
-				continue;
-			if ((dist[j] > 0) != (dist[j + 1] > 0)) {
-				// clip point
-				frac = dist[j] / (dist[j] - dist[j + 1]);
-				for (k = 0; k < 3; k++)
-					front[f][k] = back[b][k] =
-						v[k] + frac * (v[3 + k] - v[k]);
-				f++;
-				b++;
-			}
-		}
-
-		SubdividePolygon(f, front[0]);
-		SubdividePolygon(b, back[0]);
-		return;
-	}
-
-	// add a point in the center to help keep warp valid
-	poly = (glpoly_t*)Hunk_Alloc(sizeof(glpoly_t) + ((numverts - 4) + 2) * VERTEXSIZE * sizeof(float));
-	poly->next = warpface->polys;
-	warpface->polys = poly;
-	poly->numverts = numverts + 2;
-	currentmodel->memorySize += sizeof(glpoly_t) + ((numverts - 4) + 2) * VERTEXSIZE * sizeof(float);
-	VectorClear(total);
-	total_s = 0;
-	total_t = 0;
-	for (i = 0; i < numverts; i++, verts += 3) {
-		VectorCopy(verts, poly->verts[i + 1]);
-		s = DotProduct(verts, warpface->texinfo->vecs[0]);
-		t = DotProduct(verts, warpface->texinfo->vecs[1]);
-
-		total_s += s;
-		total_t += t;
-		VectorAdd(total, verts, total);
-
-		poly->verts[i + 1][3] = s;
-		poly->verts[i + 1][4] = t;
-	}
-
-	VectorScale(total, (1.0 / numverts), poly->verts[0]);
-	poly->verts[0][3] = total_s / numverts;
-	poly->verts[0][4] = total_t / numverts;
-
-	// copy first vertex to last
-	Q_memcpy(poly->verts[i + 1], poly->verts[1], sizeof(poly->verts[0]));
-}
-
-/*
-================
-GL_SubdivideSurface
-
-Breaks a polygon up along axial 64 unit
-boundaries so that turbulent and sky warps
-can be done reasonably.
-================
-*/
-void GL_SubdivideSurface(msurface_t * fa)
-{
-	vec3_t verts[64];
-	int numverts;
-	int i;
-	int lindex;
-	float *vec;
-
-	warpface = fa;
-
-	// 
-	// convert edges back to a normal polygon
-	// 
-	numverts = 0;
-	for (i = 0; i < fa->numedges; i++) {
-		lindex = loadmodel->surfedges[fa->firstedge + i];
-
-		if (lindex > 0)
-			vec =
-				loadmodel->vertexes[loadmodel->edges[lindex].v[0]].
-				position;
-		else
-			vec =
-				loadmodel->vertexes[loadmodel->edges[-lindex].v[1]].
-				position;
-		VectorCopy(vec, verts[numverts]);
-		numverts++;
-	}
-
-	SubdividePolygon(numverts, verts[0]);
-}
-
-//=========================================================
-
-
-
-// speed up sin calculations - Ed
-float r_turbsin[] = {
-#include "r_warpsin.h"
-};
-
-#define TURBSCALE (256.0 / (2 * M_PI))
-
-#define DST_SIZE 16
-unsigned int dst_texture = 0;
-
-
-
-/*
-===============
-CreateDSTTex
-
-Create the texture which warps texture shaders
-===============
-*/
-void CreateDSTTex()
-{
-	signed char data[DST_SIZE][DST_SIZE][2];
-	int x, y;
-
-
-
-	for (x = 0; x < DST_SIZE; x++)
-		for (y = 0; y < DST_SIZE; y++) {
-			data[x][y][0] = rand() % 255 - 128;
-			data[x][y][1] = rand() % 255 - 128;
-		}
-
-	qglGenTextures(1, &dst_texture);
-	qglBindTexture(GL_TEXTURE_2D, dst_texture);
-	qglTexImage2D(GL_TEXTURE_2D, 0, 4, DST_SIZE, DST_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	qglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-}
-
-
-
 static float shadelight[3];
 
 /*
@@ -270,8 +61,8 @@ void RenderLavaSurfaces(msurface_t * fa)
 	GL_BindProgram(diffuseProgram, defBits);
 	id = diffuseProgram->id[defBits];
 
-	scale[0] = 1.0 / fa->texinfo->image->width;
-	scale[1] = 1.0 / fa->texinfo->image->height;
+	scale[0] = 1.50 / fa->texinfo->image->width;
+	scale[1] = 1.50 / fa->texinfo->image->height;
 
 	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"),	1.0);
 	qglUniform3fv				(qglGetUniformLocation(id, "u_viewOriginES"),	1 , r_origin);
@@ -328,8 +119,8 @@ void RenderLavaSurfaces(msurface_t * fa)
 			VectorCopy(v, wVertexArray[i]);
 			
 			// diffuse
-			wTexArray[i][0] = v[3]*0.01;
-			wTexArray[i][1] = v[4]*0.01;
+			wTexArray[i][0] = v[3];
+			wTexArray[i][1] = v[4];
 			
 			//normals
 			nTexArray[i][0] = v[7];
@@ -371,6 +162,42 @@ void RenderLavaSurfaces(msurface_t * fa)
 	qglDisableVertexAttribArray(11);
 }
 
+
+#define DST_SIZE 16
+unsigned int dst_texture = 0;
+
+/*
+===============
+CreateDSTTex
+
+Create the texture which warps texture shaders
+===============
+*/
+void CreateDSTTex()
+{
+	signed char data[DST_SIZE][DST_SIZE][2];
+	int x, y;
+
+
+
+	for (x = 0; x < DST_SIZE; x++)
+		for (y = 0; y < DST_SIZE; y++) {
+			data[x][y][0] = rand() % 255 - 128;
+			data[x][y][1] = rand() % 255 - 128;
+		}
+
+	qglGenTextures(1, &dst_texture);
+	qglBindTexture(GL_TEXTURE_2D, dst_texture);
+	qglTexImage2D(GL_TEXTURE_2D, 0, 4, DST_SIZE, DST_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	qglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+}
+
 void EmitWaterPolys(msurface_t * fa)
 {
 	glpoly_t	*p, *bp;
@@ -380,6 +207,11 @@ void EmitWaterPolys(msurface_t * fa)
 	
 		
 	qglDisable(GL_BLEND);
+
+	if (fa->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66))
+		defBits = worldDefs.WaterTransBits;
+	else
+		defBits = 0;
 
 	// setup program
 	GL_BindProgram(waterProgram, defBits);
@@ -399,7 +231,8 @@ void EmitWaterPolys(msurface_t * fa)
 	qglUniform1i				(qglGetUniformLocation(id, "u_dstMap"), 1);
 	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer			(2, GL_FLOAT, 0, wTmu1Array);
-
+	
+	if(defBits >0){
 	GL_SelectTexture			(GL_TEXTURE2_ARB);
 	GL_BindRect					(ScreenMap->texnum);
 	qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
@@ -409,7 +242,8 @@ void EmitWaterPolys(msurface_t * fa)
 	GL_BindRect					(depthMap->texnum);
 	qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
 	qglUniform1i				(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
-
+	}
+	
 	qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	1.0);
 	qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.499);
 	qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	300.0);
@@ -418,7 +252,8 @@ void EmitWaterPolys(msurface_t * fa)
 	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"), r_overBrightBits->value);
 			
 	dstscroll = -64 * ((r_newrefdef.time * 0.15f) - (int) (r_newrefdef.time * 0.15f));
-		
+	dstscroll /= 64.0f;
+
 	qglEnableClientState		(GL_VERTEX_ARRAY);
 	qglVertexPointer			(3, GL_FLOAT, 0, wVertexArray);
 
@@ -440,17 +275,17 @@ void EmitWaterPolys(msurface_t * fa)
 		
 		VectorCopy(v, wVertexArray[i]);
 			
-		wTmu0Array[i][0] = v[3] * 0.025625;
-		wTmu0Array[i][1] = v[4] * 0.025625;
+		wTmu0Array[i][0] = v[3];
+		wTmu0Array[i][1] = v[4];
 
-		wTmu1Array[i][0] = (v[3] + dstscroll) * 0.015625f;
-		wTmu1Array[i][1] = (v[4] + dstscroll) * 0.015625f;
+		wTmu1Array[i][0] = (v[3] + dstscroll);
+		wTmu1Array[i][1] = (v[4] + dstscroll);
 
 		R_LightColor	(v, shadelight_surface);
 		VA_SetElem4		(WarpColorArray[i],	shadelight_surface[0], 
 											shadelight_surface[1], 
 											shadelight_surface[2], 
-											0.5);	
+											1.0);	
 		numVertices++;
 		}
 
@@ -461,12 +296,14 @@ void EmitWaterPolys(msurface_t * fa)
 	
 	qglDisableClientState	(GL_VERTEX_ARRAY);
 	
+	if(defBits >0){
 	GL_SelectTexture		(GL_TEXTURE3_ARB);
 	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
 	
 	GL_SelectTexture		(GL_TEXTURE2_ARB);
 	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-
+	}
+	
 	GL_SelectTexture		(GL_TEXTURE1_ARB);
 	qglDisable				(GL_TEXTURE_2D);
 	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);

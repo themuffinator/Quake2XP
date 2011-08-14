@@ -1333,6 +1333,7 @@
     <None Include="..\..\baseq2\glsl\thermal.fp" />
     <None Include="..\..\baseq2\glsl\thermalfp.fp" />
     <None Include="..\..\baseq2\glsl\thermalfp.vp" />
+    <None Include="..\..\baseq2\glsl\water.defs" />
     <None Include="..\..\baseq2\glsl\water.fp" />
     <None Include="..\..\baseq2\glsl\water.vp" />
     <None Include="win32\icon1.ico" />

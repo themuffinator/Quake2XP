@@ -1042,7 +1042,7 @@ void R_DrawPlayerWeaponLightPass(void)
 		return;
 	if(!r_bumpAlias->value)
 		return;
-	
+	return;
 	
 	qglDepthMask			(0);
 	qglEnable				(GL_BLEND);
@@ -1076,7 +1076,7 @@ void R_DrawEntitiesLightPass(void)
 		return;
 	if(!r_bumpAlias->value)
 		return;
-	
+	return;
 	qglDepthMask			(0);
 	qglEnable				(GL_BLEND);
 	qglBlendFunc			(GL_ONE, GL_ONE);
@@ -1504,15 +1504,8 @@ int R_Init(void *hinstance, void *hWnd)
 {
 	char			renderer_buffer[1000];
 	char			vendor_buffer[1000];
-	int				j;
-	extern float	r_turbsin[256];
 	int				maxTextureCoords;
 	int				aniso_level, max_aniso;
-
-
-	for (j = 0; j < 256; j++) {
-		r_turbsin[j] *= 0.5;
-	}
 
 	Draw_GetPalette();
 

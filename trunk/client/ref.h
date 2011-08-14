@@ -301,7 +301,7 @@ extern int	c_brush_polys,
 			c_decal_tris;
 
 
-#define	VERTEXSIZE	23 //was 16 fix fact3.bsp and command.bsp crush, wtf?????
+#define	VERTEXSIZE	16 //was 16 fix fact3.bsp and command.bsp crush, wtf?????
 
 
 

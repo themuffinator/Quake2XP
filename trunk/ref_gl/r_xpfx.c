@@ -605,7 +605,7 @@ void R_Register2(void)
 	r_parallaxSteps=					Cvar_Get("r_parallaxSteps", "10", CVAR_ARCHIVE);
 
 	r_pplWorldAmbient = 				Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
-	r_pplWorldSpecularScale = 			Cvar_Get("r_pplWorldSpecularScale", "0.5", CVAR_ARCHIVE);
+	r_pplWorldSpecularScale = 			Cvar_Get("r_pplWorldSpecularScale", "0.3", CVAR_ARCHIVE);
 	r_pplWorldLightScale = 				Cvar_Get("r_pplWorldLightScale", "0.3", CVAR_ARCHIVE);
 	r_bumpAlias =						Cvar_Get("r_bumpAlias", "1", CVAR_ARCHIVE);
 	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);

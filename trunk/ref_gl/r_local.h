@@ -139,7 +139,6 @@ typedef struct {
 } glvert_t;
 
 
-#define	MAX_LBM_HEIGHT		480
 
 #define BACKFACE_EPSILON	0.01
 
@@ -734,6 +733,7 @@ typedef struct {
 	unsigned	AlphaMaskBits;
 	unsigned	BumpBits;
 	unsigned	DofExtra;
+	unsigned	WaterTransBits;
 
 } worldDefs_t;
 
