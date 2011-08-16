@@ -657,7 +657,6 @@ Draw_StretchRaw
 =============
 */
 extern unsigned r_rawpalette[256];
-extern qboolean arbNPOTSupported;
 extern image_t *r_cin;
 
 void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows,
@@ -682,7 +681,7 @@ void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows,
 	t = rows*hscale / 256;
 
 	
-		if (arbNPOTSupported && (cols * rows <= 320 * 240)) {
+	if (gl_state.nPot && (cols * rows <= 320 * 240)) {
 			unsigned *dest = image32;
 			for (i = 0; i < rows * cols; i++)
 				*dest++ = r_rawpalette[*data++];

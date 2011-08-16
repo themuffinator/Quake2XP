@@ -587,6 +587,7 @@ typedef struct {
 	qboolean vbo;
 	qboolean nv_conditional_render;
 	qboolean glsl;
+	qboolean nPot;
 	unsigned vboId;
 	int	programId;
 	int		lastblend_src;

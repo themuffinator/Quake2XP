@@ -1023,8 +1023,6 @@ void GL_sRgbTextureConversion (unsigned *in, int inwidth, int inheight)
 
 
 
-
-extern qboolean arbNPOTSupported;
 extern cvar_t	*r_maxTextureSize;
 
 qboolean GL_Upload32(unsigned *data, int width, int height,
@@ -1074,7 +1072,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 
 		qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
 		
-		if(arbNPOTSupported){
+		if(gl_state.nPot){
 		scaled_width = width;
 		scaled_height = height;
 		}
@@ -1314,17 +1312,13 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		GL_Bind(image->texnum);
 		if (bits == 8)
 			image->has_alpha =
-				GL_Upload8(pic, width, height,
-						   (image->type != it_pic
-							&& image->type != it_sky),
-						   image->type == it_sky);
+				GL_Upload8(pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_sky);
 		else {
 									
-		image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, 
-										(image->type != it_pic && image->type != it_sky));
+		image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_pic && image->type != it_sky));
 					
 		}
-		if(arbNPOTSupported){
+		if(gl_state.nPot){
 		image->upload_width = width;	
 		image->upload_height = height;
 		}

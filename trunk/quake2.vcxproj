@@ -1138,8 +1138,8 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_alias_md2.c" />
-    <ClCompile Include="ref_gl\r_bumpmaps.c" />
+    <ClCompile Include="ref_gl\r_alias.c" />
+    <ClCompile Include="ref_gl\r_aliasbump.c" />
     <ClCompile Include="ref_gl\r_decals.c" />
     <ClCompile Include="ref_gl\r_draw.c" />
     <ClCompile Include="ref_gl\r_image.c" />
@@ -1312,6 +1312,7 @@
     <None Include="..\..\baseq2\glsl\bloomds.fp" />
     <None Include="..\..\baseq2\glsl\bloomds.vp" />
     <None Include="..\..\baseq2\glsl\bloomfp.fp" />
+    <None Include="..\..\baseq2\glsl\bloomfp.vp" />
     <None Include="..\..\baseq2\glsl\dof.defs" />
     <None Include="..\..\baseq2\glsl\dof.fp" />
     <None Include="..\..\baseq2\glsl\dof.vp" />

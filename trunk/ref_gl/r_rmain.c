@@ -1042,7 +1042,6 @@ void R_DrawPlayerWeaponLightPass(void)
 		return;
 	if(!r_bumpAlias->value)
 		return;
-	return;
 	
 	qglDepthMask			(0);
 	qglEnable				(GL_BLEND);
@@ -1074,9 +1073,10 @@ void R_DrawEntitiesLightPass(void)
 
 	if (!r_drawEntities->value)
 		return;
+
 	if(!r_bumpAlias->value)
 		return;
-	return;
+
 	qglDepthMask			(0);
 	qglEnable				(GL_BLEND);
 	qglBlendFunc			(GL_ONE, GL_ONE);
@@ -1495,10 +1495,8 @@ R_Init
 */
 int GL_QueryBits;
 int ocQueries[MAX_FLARES];
-qboolean arbNPOTSupported;
 
 void R_InitPrograms(void);
-void VLight_Init (void);
 
 int R_Init(void *hinstance, void *hWnd)
 {
@@ -1564,8 +1562,8 @@ int R_Init(void *hinstance, void *hWnd)
 	float version = atof(gl_config.version_string);
 
 	if (version < 2.1){
-		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 2.1 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
-		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.1 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
+		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
+		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		}
 	}
 
@@ -1713,14 +1711,14 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		gl_state.arb_occlusion = false;
 	}
 
-	arbNPOTSupported = false;
+	gl_state.nPot = false;
 	if (strstr
 		(gl_config.extensions_string, "GL_ARB_texture_non_power_of_two")) {
 		Com_Printf("...using GL_ARB_texture_non_power_of_two\n");
-		arbNPOTSupported = true;
+		gl_state.nPot = true;
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_texture_non_power_of_two not found\n");
-		arbNPOTSupported = false;
+		gl_state.nPot = false;
 	}
 	
 	
@@ -1732,7 +1730,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		
 	}
 	
-		gl_state.vbo = false;
+/*		gl_state.vbo = false;
 
 	if (strstr(gl_config.extensions_string, "GL_ARB_vertex_buffer_object")) {
 			
@@ -1754,7 +1752,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 		gl_state.vbo = false;
 	}
-
+*/
 	gl_state.nv_multisample_hint = false;
 
 	if ( strstr( gl_config.extensions_string, "GL_NV_multisample_filter_hint" ) )

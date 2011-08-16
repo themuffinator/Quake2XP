@@ -330,7 +330,7 @@ typedef struct model_s {
 	int extradatasize;
 	void *extradata;
 	int triangles[MAX_TRIANGLES];
-	fstvert_t	*st;
+	float	*st;
 	neighbors_t *neighbors;
 	
 	float ambient;
@@ -352,7 +352,7 @@ typedef struct model_s {
 	int			*indexArray2;
 	int			numIndices2;
 
-	struct		vertCache_s	*vbo_st;
+//	struct		vertCache_s	*vbo_st;
 	int memorySize;
 
 } model_t;

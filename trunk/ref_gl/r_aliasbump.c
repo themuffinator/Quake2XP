@@ -72,9 +72,8 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr)
 	}
 
 	lerp = tempVertexArray[0];
-
 	
-		for (i=0 ; i < paliashdr->num_xyz; i++, v++, ov++, lerp+=3)
+	for (i=0 ; i < paliashdr->num_xyz; i++, v++, ov++, lerp+=3)
 		{
 			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0];
 			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1];
@@ -83,20 +82,16 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr)
 
 }
 int CL_PMpointcontents(vec3_t point);
+static float Md2ColorArray[MAX_TRIANGLES*4][4];
 
-vertCache_t *R_VCLoadData(vertCacheMode_t mode, int size, void *buffer, vertStoreMode_t store, entity_t *ent, int mesh);
-vertCache_t *R_VCFindCache(vertStoreMode_t store, entity_t *ent, int mesh);
-
-void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t light)
+void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 {
-	float		stArray[3*MAX_TRIANGLES][2];
 	vec3_t		vertexArray[3*MAX_TRIANGLES];
-	int			index_xyz, index_st;
-	int			i, j, jj;
-	fstvert_t	*st;
+	int			index_xyz;
+	int			i, j, jj =0;
 	dtriangle_t	*tris;
 	image_t		*skin, *glowskin;
-	float		alphaShift;
+	float		alphaShift, alpha;
 	vec3_t		water;
 	qboolean	caustics = false;
 	unsigned	defBits = 0;
@@ -105,7 +100,11 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t light)
 	alphaShift =			sin (ref_realtime * currentmodel->glowCfg[2]); 
 	alphaShift =			(alphaShift + 1) * 0.5f;
 	alphaShift =			clamp(alphaShift, currentmodel->glowCfg[0], currentmodel->glowCfg[1]);
-		
+	
+	if (currententity->flags & RF_TRANSLUCENT)
+		alpha = currententity->alpha;
+	else
+		alpha = 1.0;
 
 	VectorAdd(currententity->origin, currententity->model->maxs, water); 
 	if(CL_PMpointcontents(water) & MASK_WATER)
@@ -113,21 +112,22 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t light)
 	
 	qglDisable(GL_BLEND);
 
-	st = currentmodel->st;
-	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
-	
 	if (currententity->flags & (RF_VIEWERMODEL))
 			return;
-	
+
+	if(r_bumpAlias->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		VectorSet(light, 0.25, 0.25, 0.25);
-	else 
+		VectorSet(lightColor, 0.25, 0.25, 0.25);
+	}
+
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
-		VectorSet(light, 1,1,1);
+		VectorSet(lightColor, 1,1,1);
+
 	
+	qglColor4f(lightColor[0], lightColor[1], lightColor[2], alpha);	
+
 	GL_Overbrights (false);
 
-	qglColor3f(light[0], light[1], light[2]);	
 	// select skin
 	if (currententity->skin)
 		skin = currententity->skin;	// custom player skin
@@ -150,51 +150,24 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t light)
 	
 	if (!skin)
 		skin = r_notexture;
-	
-	if (gl_state.vbo && r_vbo->value)
-	{
-		currententity->vbo_xyz[0] = R_VCFindCache(VBO_STORE_XYZ, currententity, 0);
-		if (currententity->vbo_xyz[0])
-		{
-			jj = paliashdr->num_tris * 3;
-			goto skipLoad;
-		}
-	}
 
 	R_CalcAliasFrameLerp(paliashdr);			/// Просто сюда переместили вычисления Lerp...
 	
-
 	c_alias_polys += paliashdr->num_tris;
-
+	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
 	jj = 0;
-	if (gl_state.vbo  && r_vbo->value)
-	{
-		for (i=0; i<paliashdr->num_tris; i++)
-		{
-			for (j=0; j<3; j++, jj++)
-			{
-				index_xyz = tris[i].index_xyz[j];
-				VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
-			}
-		}
-		currententity->vbo_xyz[0] = R_VCLoadData(VBO_DYNAMIC, jj*sizeof(vec3_t), &vertexArray, VBO_STORE_XYZ, currententity, 0);
-	}
-	else
-	{
-		for (i=0; i<paliashdr->num_tris; i++)
-		{
-			for (j=0; j<3; j++, jj++)
-			{
-				index_xyz = tris[i].index_xyz[j];
-				index_st = tris[i].index_st[j];
-				VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
-				stArray[jj][0] = st[index_st].s;
-				stArray[jj][1] = st[index_st].t;
-			}
-		}
-	}
 
-skipLoad:
+	for (i=0; i<paliashdr->num_tris; i++)
+		{
+			for (j=0; j<3; j++, jj++)
+			{
+			index_xyz = tris[i].index_xyz[j];
+			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+			}
+		}
+
+
+
 	if(caustics)
 	defBits = worldDefs.CausticsBit;
 
@@ -209,28 +182,15 @@ skipLoad:
 	
 	qglUniform1f(qglGetUniformLocation(id, "u_AddShift"), alphaShift);
 
-
 	GL_SelectTexture		(GL_TEXTURE0_ARB);
 	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-	if (gl_state.vbo && r_vbo->value)
-	{
-	GL_BindVBO				(currentmodel->vbo_st);
-	qglTexCoordPointer		(2, GL_FLOAT, 0, 0);
-	}
-	else
-	qglTexCoordPointer		(2, GL_FLOAT, 0, stArray);
+	qglTexCoordPointer		(2, GL_FLOAT, 0, currentmodel->st);
 	GL_Bind					(skin->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
 	GL_SelectTexture		(GL_TEXTURE1_ARB);
 	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-	if (gl_state.vbo && r_vbo->value)
-	{
-	GL_BindVBO				(currentmodel->vbo_st);
-	qglTexCoordPointer		(2, GL_FLOAT, 0, 0);
-	}
-	else
-	qglTexCoordPointer		(2, GL_FLOAT, 0, stArray);
+	qglTexCoordPointer		(2, GL_FLOAT, 0, currentmodel->st);
 	qglEnable				(GL_TEXTURE_2D);
 	GL_Bind					(glowskin->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Add"), 1);	
@@ -238,28 +198,16 @@ skipLoad:
 	if(caustics){
 	GL_SelectTexture		(GL_TEXTURE2_ARB);
 	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-	if (gl_state.vbo && r_vbo->value){
-	GL_BindVBO(currentmodel->vbo_st);
-	qglTexCoordPointer		(2, GL_FLOAT, 0, 0);
-	}
-	else
-	qglTexCoordPointer		(2, GL_FLOAT, 0, stArray);
+	qglTexCoordPointer		(2, GL_FLOAT, 0, currentmodel->st);
 	qglEnable				(GL_TEXTURE_2D);
 	GL_Bind					(r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
 	}
 		
 	qglEnableClientState( GL_VERTEX_ARRAY );
-	if (gl_state.vbo && r_vbo->value)
-	{
-		GL_BindVBO(currententity->vbo_xyz[0]);
-		qglVertexPointer(3, GL_FLOAT, 0, 0);
-	}
-	else
 	qglVertexPointer(3, GL_FLOAT, 0, vertexArray);
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
-
 
 	if(caustics){
 	GL_SelectTexture(GL_TEXTURE2_ARB);
@@ -274,11 +222,7 @@ skipLoad:
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
 	qglDisableClientState(GL_VERTEX_ARRAY);
-	
-	qglColor3f(1,1,1);
-
-	if (gl_state.vbo && r_vbo->value)
-		GL_BindVBO(NULL);
+	qglColor4f(1, 1, 1, 1);	
 
 	GL_BindNullProgram();
 }
@@ -286,11 +230,10 @@ skipLoad:
 void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t lightColor)
 {
 	int				i, j, jj = 0;
-	int				index_xyz, index_st;
+	int				index_xyz;
 	byte			*norms, *oldnorms;
 	byte			*binormals, *oldbinormals;
 	byte			*tangents, *oldtangents;
-	fstvert_t		*st;
 	dtriangle_t		*tris;
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*verts, *oldverts;
@@ -300,7 +243,6 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 					tangentArray[3*MAX_TRIANGLES], 
 					binormalArray[3*MAX_TRIANGLES], 
 					vertexArray[3*MAX_TRIANGLES]; 
-	float			stArray[3*MAX_TRIANGLES][2];
 	image_t			*skin, *skinNormalmap;
 	int				index2, oldindex2;
 	unsigned		defBits = 0;
@@ -332,8 +274,6 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	norms = currentmodel->normals + offs2;
 	binormals = currentmodel->binormals + offs2;
 	tangents = currentmodel->tangents + offs2;
-
-	st = currentmodel->st;
 	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
 	
 	// select skin
@@ -390,13 +330,9 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 			binormalArray[jj][1] = r_avertexnormals[oldbinormals[index_xyz]][1]*backlerp + r_avertexnormals[binormals[index_xyz]][1]*frontlerp;
 			binormalArray[jj][2] = r_avertexnormals[oldbinormals[index_xyz]][2]*backlerp + r_avertexnormals[binormals[index_xyz]][2]*frontlerp;
 
-			if (gl_state.vbo && !r_vbo->value){
-				index_xyz = tris[i].index_xyz[j];
-				index_st = tris[i].index_st[j];
-				VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
-				stArray[jj][0] = st[index_st].s;
-				stArray[jj][1] = st[index_st].t;
-			}
+			index_xyz = tris[i].index_xyz[j];
+			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+	
 		}
 	}
 
@@ -413,72 +349,34 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	GL_SelectTexture							(GL_TEXTURE0_ARB);
 	GL_Bind										(skinNormalmap->texnum);
 	qglEnableClientState						(GL_TEXTURE_COORD_ARRAY);
-	if (gl_state.vbo && !r_vbo->value){
-	qglTexCoordPointer							(2, GL_FLOAT, 0, stArray);
-	}else{
-	GL_BindVBO									(currentmodel->vbo_st);
-	qglTexCoordPointer							(2, GL_FLOAT, 0, 0);
-	}
+	qglTexCoordPointer							(2, GL_FLOAT, 0, currentmodel->st);
 	qglUniform1i								(qglGetUniformLocation(id, "u_bumpMap"), 0);
 
 	GL_SelectTexture							(GL_TEXTURE1_ARB);
 	qglEnable									(GL_TEXTURE_2D);
 	GL_Bind										(skin->texnum);
 	qglEnableClientState						(GL_TEXTURE_COORD_ARRAY);
-	if (gl_state.vbo && !r_vbo->value){
-	qglTexCoordPointer							(2, GL_FLOAT, 0, stArray);
-	}else{
-	GL_BindVBO									(currentmodel->vbo_st);
-	qglTexCoordPointer							(2, GL_FLOAT, 0, 0);
-	}
+	qglTexCoordPointer							(2, GL_FLOAT, 0, currentmodel->st);
 	qglUniform1i								(qglGetUniformLocation(id, "u_diffuseMap"), 1);
 	
 
 	//tangent
 	qglEnableVertexAttribArray(10);
-	if (gl_state.vbo && !r_vbo->value){
 	qglVertexAttribPointer						(10, 3, GL_FLOAT, false, 0, tangentArray);
-	}
-	else
-	{
-	currententity->vbo_tangents[0] =			R_VCLoadData(VBO_DYNAMIC, jj * sizeof(vec3_t), &tangentArray, VBO_STORE_BINORMAL, currententity, 0);
-	GL_BindVBO									(currententity->vbo_tangents[0]);
-	qglVertexAttribPointer						(10, 3, GL_FLOAT, false, 0, 0);
-	}
+	
 
 	//binormal
 	qglEnableVertexAttribArray(11);
-	if (gl_state.vbo && !r_vbo->value){
 	qglVertexAttribPointer						(11, 3, GL_FLOAT, false, 0, binormalArray);
-	}
-	else
-	{
-	currententity->vbo_binormals[0] =			R_VCLoadData(VBO_DYNAMIC, jj * sizeof(vec3_t), &binormalArray, VBO_STORE_BINORMAL, currententity, 0);
-	GL_BindVBO									(currententity->vbo_binormals[0]);
-	qglVertexAttribPointer						(11, 3, GL_FLOAT, false, 0, 0);
-	}
 
 	//normal
 	qglEnableClientState						(GL_NORMAL_ARRAY);
-	if (gl_state.vbo && !r_vbo->value){
 	qglNormalPointer							(GL_FLOAT, 0, normalArray);
-	}
-	else
-	{
-	currententity->vbo_normals[0] =				R_VCLoadData(VBO_DYNAMIC, jj * sizeof(vec3_t), &normalArray, VBO_STORE_NORMAL, currententity, 0);
-	GL_BindVBO									(currententity->vbo_normals[0]);
-	qglNormalPointer							(GL_FLOAT, 0, 0);
-	}
-
+	
 	// vertex
 	qglEnableClientState						(GL_VERTEX_ARRAY);
-	if (gl_state.vbo && !r_vbo->value){
 	qglVertexPointer							(3, GL_FLOAT, 0, vertexArray);
-	}else{
-	GL_BindVBO									(currententity->vbo_xyz[0]);
-	qglVertexPointer							(3, GL_FLOAT, 0, 0);
-	}
-
+	
 	qglDrawArrays								(GL_TRIANGLES, 0, jj);
 
 	qglDisableClientState						(GL_VERTEX_ARRAY);
@@ -497,8 +395,6 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 
 	GL_BindNullProgram();
 	
-	if (gl_state.vbo && r_vbo->value)
-		GL_BindVBO(NULL);
 }
 
 qboolean R_CullSphere( const vec3_t centre, const float radius, const int clipflags );
@@ -515,7 +411,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 	float			lightRad = 0;
 	mat3_t			entityAxis;
 	trace_t			r_trace;
-	
+
 	AnglesToMat3(currententity->angles, entityAxis);
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){

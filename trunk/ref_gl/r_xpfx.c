@@ -76,7 +76,7 @@ cvar_t	*hunk_bsp;
 cvar_t	*hunk_model;
 cvar_t	*hunk_sprite;
 
-cvar_t	*r_vbo;
+//cvar_t	*r_vbo;
 cvar_t	*r_maxTextureSize;
 
 cvar_t	*r_parallax;
@@ -598,7 +598,7 @@ void R_Register2(void)
 	hunk_model=							Cvar_Get("hunk_model", "2.4", CVAR_ARCHIVE);
 	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
 	
-	r_vbo=								Cvar_Get("r_vbo", "1", CVAR_ARCHIVE);
+//	r_vbo=								Cvar_Get("r_vbo", "1", CVAR_ARCHIVE);
 
 	r_parallax=							Cvar_Get("r_parallax", "1", CVAR_ARCHIVE);
 	r_parallaxScale=					Cvar_Get("r_parallaxScale", "0.5", CVAR_ARCHIVE);

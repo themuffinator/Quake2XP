@@ -183,9 +183,6 @@
     <ClCompile Include="client\x86.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_alias_md2.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_decals.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -267,11 +264,14 @@
     <ClCompile Include="qcommon\q_parser.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_bumpmaps.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="client\cl_hud.c">
       <Filter>Source Files\CG</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_alias.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_aliasbump.c">
+      <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -485,6 +485,9 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\..\baseq2\glsl\water.defs">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\..\baseq2\glsl\bloomfp.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

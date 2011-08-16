@@ -53,9 +53,6 @@ void RenderLavaSurfaces(msurface_t * fa)
 	
 	if (fa->texinfo->image->has_alpha && r_parallax->value)
 		defBits |= worldDefs.ParallaxBit;
-	
-	if(r_bumpWorld->value)
-		defBits |= worldDefs.BumpBits;
 
 	// setup program
 	GL_BindProgram(diffuseProgram, defBits);

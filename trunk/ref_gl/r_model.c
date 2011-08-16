@@ -1896,9 +1896,11 @@ vertCache_t *R_VCLoadData(vertCacheMode_t mode, int size, void *buffer, vertStor
 
 void Mod_LoadAliasModel(model_t * mod, void *buffer)
 {
-	int				i, j;
+	int				i, j, indexST;
 	dmdl_t			*pinmodel, *pheader;
-	dstvert_t		*pinst, *poutst;
+	fstvert_t		*poutst;
+	fstvert_t		*st = NULL;
+	dstvert_t		*pinst;
 	dtriangle_t		*pintri, *pouttri, *tris;
 	daliasframe_t	*pinframe, *poutframe;
 	int				*pincmd, *poutcmd;
@@ -1914,7 +1916,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	byte			*norms = NULL, *tangents, *binormals;
 	float			s, t;
 	float			iw, ih;
-	fstvert_t		*st;
 	byte			smooth;
 	int				ax, cx;
 	vec3_t			binormals_[MAX_VERTS];
@@ -1923,7 +1924,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	FILE			*f;
 	unsigned		checksum, cs_binormals, cs_tangents;
 	qboolean		success = false, cache = false, err = true;;
-	
+
 	mod->memorySize = 0;
 
 	pinmodel = (dmdl_t *) buffer;
@@ -1961,13 +1962,13 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 //
 // load base s and t vertices (not used in gl version)
 //
-	pinst = (dstvert_t *) ((byte *) pinmodel + pheader->ofs_st);
-	poutst = (dstvert_t *) ((byte *) pheader + pheader->ofs_st);
+//	pinst = (dstvert_t *) ((byte *) pinmodel + pheader->ofs_st);
+//	poutst = (fstvert_t *) ((byte *) pheader + pheader->ofs_st);
 
-	for (i = 0; i < pheader->num_st; i++) {
-		poutst[i].s = LittleShort(pinst[i].s);
-		poutst[i].t = LittleShort(pinst[i].t);
-	}
+//	for (i = 0; i < pheader->num_st; i++) {
+//		poutst[i].s = LittleShort(pinst[i].s);
+//		poutst[i].t = LittleShort(pinst[i].t);
+//	}
 
 //
 // load triangle lists
@@ -2093,19 +2094,19 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	}
 	
 	// Calculate texcoords for triangles (for compute tangents and binormals)
-
-	tris = (dtriangle_t *) ((byte *)pheader + pheader->ofs_tris);
-	mod->st = st = (fstvert_t*)Hunk_Alloc (pheader->num_st * sizeof(fstvert_t));
 	mod->memorySize += pheader->num_st * sizeof(fstvert_t);
-	iw = 1.0 / pheader->skinwidth;
-	ih = 1.0 / pheader->skinheight;
-	for (i=0; i<pheader->num_st ; i++)
-	{
-		s = poutst[i].s;
-		t = poutst[i].t;
-		st[i].s = (s - 0.5) * iw;
-		st[i].t = (t - 0.5) * ih;
-	}
+    pinst = (dstvert_t *) ((byte *)pinmodel + pheader->ofs_st);
+    poutst = (fstvert_t*)Hunk_Alloc (pheader->num_st * sizeof(fstvert_t));
+    iw = 1.0 / pheader->skinwidth;
+    ih = 1.0 / pheader->skinheight;
+    for (i=0; i<pheader->num_st ; i++)
+     {
+          s = LittleShort (pinst[i].s);
+          t = LittleShort (pinst[i].t);
+          poutst[i].s = (s - 0.5) * iw;
+          poutst[i].t = (t - 0.5) * ih;
+     }
+
 
 	// create the cache directory
 	Com_sprintf (cachename, sizeof(cachename), "%s/cache/%s_xp", FS_Gamedir(), mod->name); /// Berserker: пусть Q2XP кэширует модели в *.md2_xp, чтобы не нарушать кэш Bers@Q2
@@ -2197,6 +2198,7 @@ okey:	Com_DPrintf("%s: loaded from cache\n", mod->name);
 		//for all frames
 	for (i=0; i<pheader->num_frames; i++)
 		{
+			
 			//set temp to zero
 			memset(tangents_, 0, pheader->num_xyz*sizeof(vec3_t));
 			memset(binormals_, 0, pheader->num_xyz*sizeof(vec3_t));
@@ -2319,32 +2321,19 @@ exit:
 
 	for(i=0; i<3; i++)
 		mod->center[i] = (mod->maxs[i] + mod->mins[i]) * 0.5;
-
-	mod->vbo_st = NULL;
-	if (gl_state.vbo)
-	{
-		int		index_st;
-		float	*map;
-
+		
 		tris = (dtriangle_t *) ((byte *)pheader + pheader->ofs_tris);
-		map = (float*) vbo_shadow;	// hack: этот буфер очень большой, поэтому он должен вместить в себя любую модель
-
-		for (l=0, i=0; i<pheader->num_tris; i++)
-		{
-			for (j=0; j<3; j++)
-			{
-				index_st = tris[i].index_st[j];
-				map[l++] = mod->st[index_st].s;
-				map[l++] = mod->st[index_st].t;
-			}
-		}
-
-		if (l>3*MAX_VBO_XYZs)
-			Com_Error(ERR_FATAL, "Temporary buffer overflow\n");
-
-		mod->vbo_st = R_VCLoadData(VBO_STATIC, l*sizeof(float), &vbo_shadow, VBO_STORE_ANY, NULL, 0);
-		GL_BindVBO(NULL);
-	}
+		mod->st = (float*) malloc(pheader->num_tris * 3 * sizeof(float) * 2);
+		 for (l=0, i=0; i<pheader->num_tris; i++)
+          {
+               for (j=0; j<3; j++)
+               {
+                    indexST = tris[i].index_st[j];
+					mod->st[l++] = poutst[indexST].s;
+                    mod->st[l++] = poutst[indexST].t;
+               }
+          }
+ 
 
 }
 
@@ -2577,12 +2566,6 @@ void Mod_Free(model_t * mod)
 {
 	Hunk_Free(mod->extradata);
 	
-	if (mod->vbo_st)
-		{
-			R_VCFree(mod->vbo_st);
-			mod->vbo_st = NULL;
-		}
-
 	if (mod->neighbors)
 		free(mod->neighbors);
 	
