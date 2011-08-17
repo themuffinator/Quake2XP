@@ -152,6 +152,7 @@ float specTmp = texture2D(u_NormalMap, gl_TexCoord[0].xy).a;
 
 #ifdef BUMP
 vec4 bumpLight;
+
 // Generate the worldspace delux
 vec3 wDelux = normalize(texture2D(u_LightMap, gl_TexCoord[1].xy).rgb - 0.5);
 
@@ -195,6 +196,6 @@ tmp *= u_CausticsModulate;
 finalColor = tmp + finalColor;
 #endif
 
-gl_FragColor.rgb = finalColor * u_ColorModulate;
+gl_FragColor = finalColor * u_ColorModulate;
 
 }
