@@ -91,6 +91,8 @@ cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;
 cvar_t	*r_radialBlurSamples;
 cvar_t	*r_tbnSmoothAngle;
+
+cvar_t	*r_ignoreGlErrors;
 //--------------------
 
 void GL_Overbrights(qboolean enable)
@@ -282,11 +284,15 @@ void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out) 
 	out[2] = m[2][0] * in[0] + m[2][1] * in[1] + m[2][2] * in[2];
 }
 
+
 int GL_MsgGLError(char* Info)
 {
 	char	S[1024];
 	int		n = qglGetError();
 	
+	if(r_ignoreGlErrors->value)
+		return false;
+
 	if(n == GL_NO_ERROR) return false;
 
 	switch(n) {        
@@ -613,8 +619,8 @@ void R_Register2(void)
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
-	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.5", CVAR_ARCHIVE);
-	r_bloomIntens =						Cvar_Get("r_bloomIntens", "0.35", CVAR_ARCHIVE);
+	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);
+	r_bloomIntens =						Cvar_Get("r_bloomIntens", "1.0", CVAR_ARCHIVE);
 
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
@@ -623,5 +629,7 @@ void R_Register2(void)
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	r_radialBlurSamples =               Cvar_Get("r_radialBlurSamples", "8", CVAR_ARCHIVE);
+
+	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 }
 

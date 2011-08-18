@@ -1196,8 +1196,6 @@ void R_RenderView(refdef_t * fd)
 	
 	R_DrawPlayerWeapon();
 	R_DrawPlayerWeaponLightPass();
-	
-//	R_RenderSun();
 		
 }
 
@@ -1557,11 +1555,18 @@ int R_Init(void *hinstance, void *hWnd)
 		VID_Error(ERR_FATAL,  "Intel graphics card is unsupported.\n");
 		}
 	
+	if (strstr(renderer_buffer, "sis")) // fuck the SiS too
+		{
+		Com_Printf(S_COLOR_RED"SiS graphics card is unsupported.\n");
+		VID_Error(ERR_FATAL,  "SiS graphics card is unsupported.\n");
+		}
+	
+
 	{
 	// check GL version /:-#)
 	float version = atof(gl_config.version_string);
 
-	if (version < 2.1){
+	if (version < 2.0){
 		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		}

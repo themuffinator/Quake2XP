@@ -291,6 +291,8 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 			}
 		}
 	}
+	if (!skin)
+		skin = r_notexture;
 
 	// select skin
 	if (currententity->bump)
@@ -307,6 +309,8 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 			}
 		}
 	}
+	if (!skinNormalmap)
+		skinNormalmap = r_defBump;
 
 	R_CalcAliasFrameLerp(paliashdr);			/// Просто сюда переместили вычисления Lerp...
 

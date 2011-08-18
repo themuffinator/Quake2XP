@@ -192,9 +192,6 @@
     <ClCompile Include="ref_gl\r_image.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="win32\r_init.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_light.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -271,6 +268,9 @@
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="ref_gl\r_aliasbump.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\r_glw_init.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

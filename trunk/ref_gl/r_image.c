@@ -1510,7 +1510,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 			return image;
 		}
 	}
-	if (strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Jpeg override  crap
+	if (strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Png override  crap
 																															
 		char s[128];
 		override = 1;
@@ -1629,7 +1629,7 @@ struct image_s *R_RegisterPlayerBump (char *name, struct image_s *tex)
 	char	gl[48];
 
 	if(!tex)
-		return NULL;
+		img = r_defBump;
 	
 	strcpy(gl, name);
 	gl[strlen(gl) - 4] = 0;
@@ -1643,6 +1643,8 @@ struct image_s *R_RegisterPlayerBump (char *name, struct image_s *tex)
 		strcat(gl, "_nm.dds");
 		img = GL_FindImage (gl, it_skin);
 	}
+	if(!img)
+		img = r_defBump;
 
 	return img;
 }

@@ -186,17 +186,19 @@ void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
 {
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t	*v, *ov, *verts;
-	int		*order;
-	int		count;
-	float	frontlerp;
-	vec3_t	move, delta, vectors[3];
-	vec3_t	frontv, backv;
-	int		i;
-	int		index_xyz;
-	float	*lerp;
-	float	alpha;
-	float	scroll;
-	int		shellArray = 0;
+	int			*order;
+	int			count;
+	float		frontlerp;
+	vec3_t		move, delta, vectors[3];
+	vec3_t		frontv, backv;
+	int			i;
+	int			index_xyz;
+	float		*lerp;
+	float		alpha;
+	float		scroll;
+	int			shellArray = 0;
+	unsigned	defBits = 0;
+	int			id;
 
 	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames
 		+ currententity->frame * paliashdr->framesize);
@@ -239,8 +241,7 @@ void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
 	}
 
 	lerp = s_lerped[0];
-	
-	
+		
 	if (currententity->flags & RF_WEAPONMODEL)
 		GL_LerpVerts(paliashdr->num_xyz, v, ov, verts, lerp, move, frontv, backv, /*WEAPON_SHELL_SCALE*/0.1f);
 	else if (currententity->flags & RF_CAMERAMODEL2)
@@ -250,7 +251,14 @@ void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
 	
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
-			
+	GL_Overbrights (false);	
+
+	// setup program
+	GL_BindProgram(aliasAmbientProgram, defBits);
+	id = aliasAmbientProgram->id[defBits];
+	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_overBrightBits->value);
+
+	GL_SelectTexture(GL_TEXTURE0_ARB);
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_Bind(r_texshell[0]->texnum);
 	if (currententity->flags & RF_SHELL_RED)
@@ -263,13 +271,21 @@ void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
 		GL_Bind(r_texshell[4]->texnum);
 	if (currententity->flags & RF_SHELL_DOUBLE)
 		GL_Bind(r_texshell[5]->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
-	qglShadeModel(GL_SMOOTH);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer (2, GL_FLOAT, 0, Md2TexArray);
 
-		qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		qglTexCoordPointer (2, GL_FLOAT, 0, Md2TexArray);
-		qglEnableClientState(GL_VERTEX_ARRAY);
-		qglVertexPointer(3, GL_FLOAT, 0, Md2VertArray);
+	GL_SelectTexture(GL_TEXTURE1_ARB);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglEnable(GL_TEXTURE_2D);
+	GL_Bind(r_notexture->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_Add"), 1);
+
+	qglTexCoordPointer (2, GL_FLOAT, 0, Md2TexArray);
+
+	qglEnableClientState(GL_VERTEX_ARRAY);
+	qglVertexPointer(3, GL_FLOAT, 0, Md2VertArray);
 
 	while (1)
 	{
@@ -300,12 +316,19 @@ void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
 		else
 			qglDrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, currentmodel->indexArray);
 
-			
-	qglDisableClientState(GL_VERTEX_ARRAY);
+	GL_SelectTexture(GL_TEXTURE1_ARB);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		
+	qglDisable(GL_TEXTURE_2D);
+
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	qglDisableClientState(GL_VERTEX_ARRAY);
+
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglColor4f(1.0, 1.0, 1.0, 1.0);	
+	GL_BindNullProgram();
 	
 }
 
@@ -510,7 +533,6 @@ void R_DrawAliasModel (entity_t *e, qboolean weapon_model)
 	dmdl_t		*paliashdr;
 	float		diffuseLight[3];
 	vec3_t		bbox[8];
-	image_t		*normalmap;
 	
 	if ( r_newrefdef.rdflags & RDF_IRGOGGLES) 
 		goto next;
@@ -556,22 +578,7 @@ next:
 	R_RotateForEntity (e);
 	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
 
-	// select skin
-	if (currententity->bump)
-		normalmap = currententity->bump;	// custom player skin
-	else {
-		if (currententity->skinnum >= MAX_MD2SKINS) {
-			normalmap = currentmodel->skins_normal[0];
-			currententity->skinnum = 0;
-		} else {
-			normalmap	= currentmodel->skins_normal[currententity->skinnum];
-			if (!normalmap) {
-				normalmap = currentmodel->skins_normal[0];
-				currententity->skinnum = 0;
-			}
-		}
-	}
-	
+
 	if(!r_bumpAlias->value)
 		SetModelsLight(false);
 	else
@@ -782,7 +789,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	qglColor4f(1, 1, 1, 1);
 	GL_Overbrights (false);
 }
-extern image_t *r_distort2;
 
 void R_DrawAliasDistortModel (entity_t *e)
 {
@@ -835,7 +841,7 @@ void R_DrawAliasDistortModel (entity_t *e)
 	
 		qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	2.0);
 		qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.0);
-		qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	1.000);
+		qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	150.000);
 		qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 		qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	
