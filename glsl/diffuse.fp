@@ -155,19 +155,27 @@ vec4 bumpLight;
 
 // Generate the worldspace delux
 vec3 wDelux = normalize(texture2D(u_LightMap, gl_TexCoord[1].xy).rgb - 0.5);
-
 //Put into tangent space
 vec3 tbnDelux;
+
+#ifdef VERTEXLIGHT
+tbnDelux.x = normalize(dot(n[0], t));
+tbnDelux.y = normalize(dot(n[1], b));
+tbnDelux.z = 1.0;
+
+vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
+vec2 E = PhongLighting(normalMap, tbnDelux, V, 16.0);
+#else
 tbnDelux.x = dot(wDelux, t);
 tbnDelux.y = dot(wDelux, b);
 tbnDelux.z = dot(wDelux, n);
 tbnDelux = clamp (tbnDelux, 0.666, 0.8);
 
-
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
 specular *= lightMap;
 specular *= u_specularScale; 
 vec2 E = PhongLighting(normalMap, tbnDelux, V, 16.0);
+#endif
 
 #ifdef LIGHTMAP
 bumpLight = (E.x * diffuseMap) + (E.y * specular);
