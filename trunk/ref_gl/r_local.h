@@ -253,7 +253,6 @@ extern cvar_t *r_clear;
 extern cvar_t *r_cull;
 extern cvar_t *r_poly;
 extern cvar_t *r_polyBlend;
-extern cvar_t *r_flashBlend;
 extern cvar_t *r_drawBuffer;
 
 extern cvar_t *r_vsync;
@@ -331,7 +330,6 @@ extern int r_visframecount;
 extern int radarOldTime;
 extern int r_viewport[4];
 extern qboolean spacebox;
-extern vec3_t sun_origin;
 
 extern qboolean arbMultisampleSupported;
 

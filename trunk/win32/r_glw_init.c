@@ -1132,6 +1132,7 @@ qboolean GLimp_InitGL (void)
 		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribivARB");
         qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
         qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)qwglGetProcAddress("wglChoosePixelFormatARB");
+		glSampleCoverageARB				= (PFNGLSAMPLECOVERAGEARBPROC) qwglGetProcAddress("glSampleCoverageARB");
 	
 	} 
 	else {

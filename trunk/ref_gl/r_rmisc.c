@@ -35,16 +35,12 @@ image_t *r_flare;
 image_t *r_blood[MAX_BLOOD];
 image_t *r_explode[MAX_EXPLODE];
 image_t *r_xblood[MAX_BLOOD];
-image_t *sun_object;
-image_t *sun1_object;
-image_t *sun2_object;
 image_t *r_distort;
 image_t *r_predator;
 image_t	*r_texshell[MAX_SHELLS];
 image_t *r_blackTexture;
 image_t *r_DSTTex;
 image_t *r_cin;
-image_t	*r_envTex;
 
 void CreateDSTTex_ARB (void)
 {
@@ -334,17 +330,7 @@ void R_InitEngineTextures(void)
 	r_around = GL_FindImage("gfx/radar/around.tga", it_wall);
 	if(!r_around)
 		r_around = r_notexture;
-
-	sun_object = GL_FindImage("gfx/sun/sun.jpg", it_wall);
-	if(!sun_object)
-		sun_object = r_notexture;
-	sun1_object = GL_FindImage("gfx/sun/sun1.jpg", it_wall);
-	if(!sun1_object)
-		sun1_object = r_notexture;
-	sun2_object = GL_FindImage("gfx/sun/sun2.jpg", it_wall);
-	if(!sun2_object)
-		sun2_object = r_notexture;
-
+		
 	r_distort = GL_FindImage("gfx/distort/explosion.tga", it_wall);
 	if(!r_distort)
 		r_distort = r_notexture;
@@ -356,10 +342,6 @@ void R_InitEngineTextures(void)
 	r_blackTexture = GL_FindImage("gfx/blacktex.tga", it_wall);
 		if(!r_blackTexture)
 			r_blackTexture = r_notexture;
-	
-	r_envTex = GL_FindImage("gfx/tinfx.jpg", it_wall);
-		if(!r_envTex)
-			r_envTex = r_notexture;
 	
 	r_defBump = GL_FindImage("gfx/flatbump.tga", it_wall);
 	if(!r_defBump)
@@ -494,10 +476,8 @@ void GL_SetDefaultState(void)
 	qglCullFace			(GL_FRONT);
 	qglEnable			(GL_TEXTURE_2D);
 
-	qglAlphaFunc		(GL_GREATER, 0.666f);
-	
-//	if(!gl_state.arb_multisampleNotSupport)
-//	glSampleCoverageARB	(0.1, true);	
+	qglAlphaFunc		(GL_GREATER, 0.6f);
+	glSampleCoverageARB	(0.1, true);	
 	
 	qglEnable			(GL_NORMALIZE);
 	qglDisable			(GL_DEPTH_TEST);

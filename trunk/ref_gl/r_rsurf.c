@@ -810,13 +810,12 @@ static void R_DrawInlineBModel(void)
 	dlight_t *lt;
 	
 	// calculate dynamic lighting for bmodel
-	if (!r_flashBlend->value) {
-		lt = r_newrefdef.dlights;
+	lt = r_newrefdef.dlights;
 		for (k = 0; k < r_newrefdef.num_dlights; k++, lt++) {
 			R_MarkLights(lt, 1 << k,
 						 currentmodel->nodes + currentmodel->firstnode);
 		}
-	}
+	
 
 	psurf = &currentmodel->surfaces[currentmodel->firstmodelsurface];
 
@@ -1006,7 +1005,7 @@ void R_DrawBrushModel(entity_t * e)
 		}
 	else
 		VectorSubtract(r_origin, currententity->origin, BmodelViewOrg);
-		
+
 	R_DrawInlineBModel2();
 	
 	//diffuse
@@ -1264,9 +1263,7 @@ void R_DrawBSP(void)
 
 	qglColor3f(1, 1, 1);
 	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
-
-	R_InitSun();
-
+		
 	R_ClearSkyBox();
 	
 	//diffuse
@@ -1340,12 +1337,11 @@ void R_DrawBSP(void)
 
 	qglDisableVertexAttribArray(10);
 	qglDisableVertexAttribArray(11);
-
-	DrawTextureChains();
 	
-//	qglDepthMask(0);
+	DrawTextureChains();
+
 	R_DrawSkyBox();
-//	qglDepthMask(1);
+
 			
 }
 

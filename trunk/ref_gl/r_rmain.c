@@ -87,7 +87,6 @@ cvar_t *r_dynamic;
 cvar_t *r_noBind;
 cvar_t *r_cull;
 cvar_t *r_polyBlend;
-cvar_t *r_flashBlend;
 cvar_t *r_vsync;
 cvar_t *r_textureMode;
 cvar_t *r_lockPvs;
@@ -1153,7 +1152,6 @@ r_newrefdef must be set before the first call
 */
 
 void R_BlobShadow(void);
-void R_DrawZpassWorld(void);
 
 void R_RenderView(refdef_t * fd)
 {
@@ -1174,7 +1172,6 @@ void R_RenderView(refdef_t * fd)
 	R_SetFrustum();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
-
 	R_DrawBSP();
 	R_RenderDecals();
 	R_DrawEntitiesOnList();
@@ -1185,7 +1182,6 @@ void R_RenderView(refdef_t * fd)
 	R_DrawShadowWorld();
 
 	R_RenderFlares();
-	R_RenderDlights();
 	R_CaptureDepthBuffer();
 	R_DrawParticles(true); //underwater particles
 	R_CaptureColorBuffer();
@@ -1196,7 +1192,8 @@ void R_RenderView(refdef_t * fd)
 	
 	R_DrawPlayerWeapon();
 	R_DrawPlayerWeaponLightPass();
-		
+	
+
 }
 
 
@@ -1417,7 +1414,6 @@ void R_Register(void)
 	r_noBind = Cvar_Get("r_noBind", "0", 0);
 	r_cull = Cvar_Get("r_cull", "1", 0);
 	r_polyBlend = Cvar_Get("r_polyBlend", "1", 0);
-	r_flashBlend = Cvar_Get("r_flashBlend", "0", 0);
 	r_textureMode = Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
 	
 	r_lockPvs = Cvar_Get("r_lockPvs", "0", 0);

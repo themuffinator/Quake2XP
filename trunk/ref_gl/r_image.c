@@ -1702,18 +1702,17 @@ void GL_FreeUnusedImages(void)
 	for (i = 0; i < DECAL_MAX; i++) {
 		r_decaltexture[i]->registration_sequence = registration_sequence;
 	}
-
-	sun_object->registration_sequence = registration_sequence;
-	sun1_object->registration_sequence = registration_sequence;
-	sun2_object->registration_sequence = registration_sequence;
-	r_distort->registration_sequence = registration_sequence;
-	r_blackTexture->registration_sequence = registration_sequence;
-	r_defBump->registration_sequence = registration_sequence;
-	r_envTex->registration_sequence = registration_sequence;
+	
+	
 	for (i = 0; i < MAX_SHELLS; i++){
 		r_texshell[i]->registration_sequence = registration_sequence;
 	}
 	
+
+	r_distort->registration_sequence = registration_sequence;
+	r_blackTexture->registration_sequence = registration_sequence;
+	r_defBump->registration_sequence = registration_sequence;
+
 
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {

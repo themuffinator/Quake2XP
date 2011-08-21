@@ -1959,16 +1959,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	if (pheader->num_frames <= 0)
 		VID_Error(ERR_DROP, "model %s has no frames", mod->name);
 
-//
-// load base s and t vertices (not used in gl version)
-//
-//	pinst = (dstvert_t *) ((byte *) pinmodel + pheader->ofs_st);
-//	poutst = (fstvert_t *) ((byte *) pheader + pheader->ofs_st);
-
-//	for (i = 0; i < pheader->num_st; i++) {
-//		poutst[i].s = LittleShort(pinst[i].s);
-//		poutst[i].t = LittleShort(pinst[i].t);
-//	}
 
 //
 // load triangle lists

@@ -26,89 +26,6 @@ int r_dlightframecount;
 #define	DLIGHT_CUTOFF	0
 
 /*
-=============================================================================
-
-DYNAMIC LIGHTS BLEND RENDERING
-
-=============================================================================
-*/
-
-
-void R_RenderDlight(dlight_t * light)
-{
-	int i, j;
-	float a;
-	vec3_t v;
-	float rad;
-
-
-	rad = light->intensity * 0.35;
-
-	VectorSubtract(light->origin, r_origin, v);
-
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglColor3f(light->color[0] * 0.2, light->color[1] * 0.2,
-			   light->color[2] * 0.2);
-	for (i = 0; i < 3; i++)
-		v[i] = light->origin[i] - vpn[i] * rad;
-	qglVertex3fv(v);
-	qglColor3f(0, 0, 0);
-	for (i = 16; i >= 0; i--) {
-		a = i * 0.39269875;
-		for (j = 0; j < 3; j++)
-			v[j] = light->origin[j] + vright[j] * cos(a) * rad
-				+ vup[j] * sin(a) * rad;
-		qglVertex3fv(v);
-	}
-	qglEnd();
-}
-
-/*
-=============
-R_RenderDlights
-=============
-*/
-void R_RenderDlights(void)
-{
-	int i;
-	dlight_t *l;
-
-
-	if (!r_flashBlend->value)
-		return;
-
-	r_dlightframecount = r_framecount + 1;	// because the count hasn't
-	// advanced yet for this frame
-	qglDepthMask(0);
-	qglDisable(GL_TEXTURE_2D);
-	qglShadeModel(GL_SMOOTH);
-	GL_Blend(true, GL_ONE, GL_ONE);
-
-	l = r_newrefdef.dlights;
-	for (i = 0; i < r_newrefdef.num_dlights; i++, l++)
-		R_RenderDlight(l);
-
-	qglColor3f(1, 1, 1);
-	qglEnable(GL_TEXTURE_2D);
-	GL_Blend(false, 0, 0);
-	qglDepthMask(1);
-
-
-
-}
-
-
-
-
-/*
-=============================================================================
-
-DYNAMIC LIGHTS
-
-=============================================================================
-*/
-/*
  =================
  BoundsAndSphereIntersect
  =================
@@ -193,9 +110,6 @@ void R_PushDlights(void)
 {
 	int i;
 	dlight_t *l;
-
-	if (r_flashBlend->value)
-		return;
 
 	r_dlightframecount = r_framecount + 1;	// because the count hasn't
 	// advanced yet for this frame

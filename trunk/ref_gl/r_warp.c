@@ -672,17 +672,6 @@ void R_SetSky(char *name, float rotate, vec3_t axis)
 			sky_images[i] = r_notexture;
 
 		// Com_Printf("sky box is: %s\n",pathname );
-
-		if (strstr(pathname, "space"))
-			spacebox = true;
-		else
-			spacebox = false;
-
-		if (strstr(pathname, "unit1"))
-			VectorSet(sun_origin, -37100, -100000, 50000);
-		else
-			VectorSet(sun_origin, -37100, -100000, 35000);
-
 	
 			sky_min = 0.001953125f;
 			sky_max = 0.998046875f;
