@@ -228,8 +228,10 @@ higher res screens.
 */
 void M_DrawCharacter(int cx, int cy, int num)
 {
-	Draw_Char(cx + ((viddef.width - 320) >> 1),
-			  cy + ((viddef.height - 240) >> 1), num);
+	int	fontscale = (float)cl_fontScale->value;
+
+	Draw_CharScaled(cx + ((viddef.width - 320) >> 1), cy + ((viddef.height - 240) >> 1), fontscale, fontscale, num);
+	
 }
 
 void M_Print(int cx, int cy, char *str)
@@ -250,48 +252,12 @@ void M_PrintWhite(int cx, int cy, char *str)
 	}
 }
 
-void M_DrawPic(int x, int y, char *pic)
-{
-
-	Draw_Pic(x + ((viddef.width - 320) >> 1),
-			 y + ((viddef.height - 240) >> 1), pic);
-}
-
-
-/*
-=============
-M_DrawCursor
-
-Draws an animating cursor with the point at
-x,y.  The pic will extend to the left of x,
-and both above and below y.
-=============
-*/
-void M_DrawCursor(int x, int y, int f)
-{
-	char cursorname[80];
-	static qboolean cached;
-
-	if (!cached) {
-		int i;
-
-		for (i = 0; i < NUM_CURSOR_FRAMES; i++) {
-			Com_sprintf(cursorname, sizeof(cursorname), "m_cursor%d", i);
-
-			Draw_FindPic(cursorname);
-		}
-		cached = true;
-	}
-
-	Com_sprintf(cursorname, sizeof(cursorname), "m_cursor%d", f);
-	Draw_Pic(x, y, cursorname);
-}
 
 void M_DrawTextBox(int x, int y, int width, int lines)
 {
 	int cx, cy;
 	int n;
-
+	
 	// draw left side
 	cx = x;
 	cy = y;
@@ -421,25 +387,23 @@ void M_Main_Draw(void)
 		totalheight += (h + 12);
 	}
 
-	ystart = (viddef.height / 2 - 110);
+	ystart = (viddef.height / 2) - 110;
 	xoffset = (viddef.width - widest + 70) / 2;
 
 	for (i = 0; names[i] != 0; i++) {
 		if (i != m_main_cursor)
-			Draw_Pic(xoffset, ystart + i * 40 + 13, names[i]);
+			Draw_PicScaled(xoffset, ystart + (i * cl_fontScale->value) * 40 + 13, cl_fontScale->value, cl_fontScale->value, names[i]);
 	}
 	strcpy(litname, names[m_main_cursor]);
 	strcat(litname, "_sel");
-	Draw_Pic(xoffset, ystart + m_main_cursor * 40 + 13, litname);
-
- // M_DrawCursor( xoffset - 25, ystart + m_main_cursor * 40 + 11, (int)(cls.realtime / 100)%NUM_CURSOR_FRAMES );
+	Draw_PicScaled(xoffset, ystart + (m_main_cursor * cl_fontScale->value) * 40 + 13, cl_fontScale->value, cl_fontScale->value, litname);
 
 	Draw_GetPicSize(&w, &h, "m_main_plaque");
-	Draw_Pic(xoffset - 30 - w, ystart, "m_main_plaque");
+	Draw_PicScaled((xoffset - 30) - (w * cl_fontScale->value), ystart, cl_fontScale->value, cl_fontScale->value, "m_main_plaque");
 
-	Draw_Pic(xoffset - 30 - w, ystart + h + 5, "m_main_logo");
+	Draw_PicScaled((xoffset - 30) - (w * cl_fontScale->value), ystart + (h * cl_fontScale->value) + 5, cl_fontScale->value, cl_fontScale->value, "m_main_logo");
 
-	M_Main_DrawQuad(xoffset - 45, ystart + m_main_cursor * 40 + 5);
+	M_Main_DrawQuad(xoffset - 45, ystart + (m_main_cursor * 40 + 5)* cl_fontScale->value);
 }
 
 
@@ -1918,7 +1882,8 @@ void M_Option_Banner(char *name)
 		move  = 140;
 	
 	Draw_GetPicSize(&w, &h, name);
-	Draw_Pic(viddef.width / 2 - w / 2, viddef.height / 2 - move , name);
+	move +=h;
+	Draw_PicScaled(viddef.width / 2 - w / 2, viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
 }
 
 void Options_MenuDraw(void)
@@ -2856,15 +2821,17 @@ void NullCursorDraw(void *self)
 void SearchLocalGames(void)
 {
 	int i;
+	int	fontscale = (float)cl_fontScale->value;
 
 	m_num_servers = 0;
 	for (i = 0; i < MAX_LOCAL_SERVERS; i++)
 		strcpy(local_server_names[i], NO_SERVER_STRING);
 
-	M_DrawTextBox(8, 120 - 48, 36, 3);
-	M_Print(16 + 16, 120 - 48 + 8, "Searching for local servers, this");
-	M_Print(16 + 16, 120 - 48 + 16, "could take up to a minute, so");
-	M_Print(16 + 16, 120 - 48 + 24, "please be patient.");
+	M_DrawTextBox(8, 120 - 48, 36 * fontscale, 3 * fontscale );
+	
+	M_Print(16 + 16, 120 - 48 + 8 * fontscale, "Searching for local servers, this");
+	M_Print(16 + 16, 120 - 48 + 16 * fontscale, "could take up to a minute, so");
+	M_Print(16 + 16, 120 - 48 + 24 * fontscale, "please be patient.");
 
 	// the text box won't show up unless we do a buffer swap
 	GLimp_EndFrame();
@@ -3613,7 +3580,7 @@ void DMOptions_MenuInit(void)
 	s_ut_dj_box.generic.type = MTYPE_SPINCONTROL;
 	s_ut_dj_box.generic.x = 0;
 	s_ut_dj_box.generic.y = y += 10*cl_fontScale->value;
-	s_ut_dj_box.generic.name = "unreal tournament double jump";
+	s_ut_dj_box.generic.name = "UT double jump";
 	s_ut_dj_box.generic.callback = DMFlagCallback;
 	s_ut_dj_box.itemnames = yes_no_names;
 	s_ut_dj_box.curvalue = (dmflags & DF_UT_DOUBLE_JUMP) != 0;
@@ -4171,7 +4138,7 @@ qboolean PlayerConfig_MenuInit(void)
 	char currentdirectory[1024];
 	char currentskin[1024];
 	int i = 0;
-
+	int offcet = 0;
 	int currentdirectoryindex = 0;
 	int currentskinindex = 0;
 
@@ -4180,6 +4147,9 @@ qboolean PlayerConfig_MenuInit(void)
 	static char *handedness[] = { "right", "left", "center", 0 };
 
 	PlayerConfig_ScanDirectories();
+
+	if(cl_fontScale->value >1)
+		offcet = 16;
 
 	if (s_numplayermodels == 0)
 		return false;
@@ -4220,7 +4190,7 @@ qboolean PlayerConfig_MenuInit(void)
 		}
 	}
 
-	s_player_config_menu.x = viddef.width / 2 - 95;
+	s_player_config_menu.x = viddef.width / 2  - 95;
 	s_player_config_menu.y = viddef.height / 2 - 97;
 	s_player_config_menu.nitems = 0;
 
@@ -4236,12 +4206,12 @@ qboolean PlayerConfig_MenuInit(void)
 
 	s_player_model_title.generic.type = MTYPE_SEPARATOR;
 	s_player_model_title.generic.name = "model";
-	s_player_model_title.generic.x = -8;
+	s_player_model_title.generic.x = -8  * cl_fontScale->value;
 	s_player_model_title.generic.y = 60*cl_fontScale->value;
 
 	s_player_model_box.generic.type = MTYPE_SPINCONTROL;
-	s_player_model_box.generic.x = -56;
-	s_player_model_box.generic.y = 70*cl_fontScale->value;
+	s_player_model_box.generic.x = (-56 * cl_fontScale->value) + offcet;
+	s_player_model_box.generic.y = 70 * cl_fontScale->value;
 	s_player_model_box.generic.callback = ModelCallback;
 	s_player_model_box.generic.cursor_offset = -48;
 	s_player_model_box.curvalue = currentdirectoryindex;
@@ -4249,11 +4219,11 @@ qboolean PlayerConfig_MenuInit(void)
 
 	s_player_skin_title.generic.type = MTYPE_SEPARATOR;
 	s_player_skin_title.generic.name = "skin";
-	s_player_skin_title.generic.x = -16;
+	s_player_skin_title.generic.x = -16  * cl_fontScale->value;
 	s_player_skin_title.generic.y = 84*cl_fontScale->value;
 
 	s_player_skin_box.generic.type = MTYPE_SPINCONTROL;
-	s_player_skin_box.generic.x = -56;
+	s_player_skin_box.generic.x = (-56 * cl_fontScale->value)+offcet;
 	s_player_skin_box.generic.y = 94*cl_fontScale->value;
 	s_player_skin_box.generic.name = 0;
 	s_player_skin_box.generic.callback = 0;
@@ -4264,11 +4234,11 @@ qboolean PlayerConfig_MenuInit(void)
 
 	s_player_hand_title.generic.type = MTYPE_SEPARATOR;
 	s_player_hand_title.generic.name = "handedness";
-	s_player_hand_title.generic.x = 32;
-	s_player_hand_title.generic.y = 108*cl_fontScale->value;
+	s_player_hand_title.generic.x = 32 * cl_fontScale->value;
+	s_player_hand_title.generic.y = 108 * cl_fontScale->value;
 
 	s_player_handedness_box.generic.type = MTYPE_SPINCONTROL;
-	s_player_handedness_box.generic.x = -56;
+	s_player_handedness_box.generic.x = (-56 * cl_fontScale->value)+offcet;
 	s_player_handedness_box.generic.y = 118*cl_fontScale->value;
 	s_player_handedness_box.generic.name = 0;
 	s_player_handedness_box.generic.cursor_offset = -48;
@@ -4282,11 +4252,11 @@ qboolean PlayerConfig_MenuInit(void)
 
 	s_player_rate_title.generic.type = MTYPE_SEPARATOR;
 	s_player_rate_title.generic.name = "connect speed";
-	s_player_rate_title.generic.x = 56;
+	s_player_rate_title.generic.x = 56 * cl_fontScale->value;
 	s_player_rate_title.generic.y = 156*cl_fontScale->value;
 
 	s_player_rate_box.generic.type = MTYPE_SPINCONTROL;
-	s_player_rate_box.generic.x = -56;
+	s_player_rate_box.generic.x = (-56 * cl_fontScale->value)+offcet;
 	s_player_rate_box.generic.y = 166*cl_fontScale->value;
 	s_player_rate_box.generic.name = 0;
 	s_player_rate_box.generic.cursor_offset = -48;
@@ -4297,7 +4267,7 @@ qboolean PlayerConfig_MenuInit(void)
 	s_player_download_action.generic.type = MTYPE_ACTION;
 	s_player_download_action.generic.name = "download options";
 	s_player_download_action.generic.flags = QMF_LEFT_JUSTIFY;
-	s_player_download_action.generic.x = -24;
+	s_player_download_action.generic.x = -24*cl_fontScale->value;
 	s_player_download_action.generic.y = 186*cl_fontScale->value;
 	s_player_download_action.generic.statusbar = NULL;
 	s_player_download_action.generic.callback = DownloadOptionsFunc;
@@ -4330,16 +4300,24 @@ int	pose_rot_angle[] = { 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 
 
 struct image_s *R_RegisterPlayerBump (char *name, struct image_s *tex);
 
+char *currentPlayerWeapon;
+
 void PlayerConfig_MenuDraw(void)
 {
 	extern float CalcFov(float fov_x, float w, float h);
 	refdef_t refdef;
 	char scratch[MAX_QPATH];
-	
+	int Xw;
+
 	srand(time(0));
 
 	memset(&refdef, 0, sizeof(refdef));
 
+	Xw = viddef.width / 2;
+
+	if(cl_fontScale->value>1)
+	refdef.x = (Xw) + 144 + 16;
+	else
 	refdef.x = viddef.width / 2;
 	refdef.y = viddef.height / 2 - 72;
 	refdef.width = 144*cl_fontScale->value;
@@ -4367,7 +4345,6 @@ void PlayerConfig_MenuDraw(void)
 		
 		entity[0].skin = R_RegisterSkin(scratch);
 		entity[0].bump = R_RegisterPlayerBump (scratch, entity[0].skin);
-		entity[0].flags |= RF_FULLBRIGHT;
 		entity[0].origin[0] = 90;
 		entity[0].origin[1] = 0;
 		entity[0].origin[2] = -8;
@@ -4395,13 +4372,15 @@ void PlayerConfig_MenuDraw(void)
 		
 		memset(&entity[1], 0, sizeof(entity[1]));
 
-		Com_sprintf(scratch, sizeof(scratch), "players/%s/w_railgun.md2",
-					s_pmi[s_player_model_box.curvalue].directory);
-		
+		if(currentPlayerWeapon &&strlen(currentPlayerWeapon)) //check for disconnected server
+		Com_sprintf(scratch, sizeof(scratch), "players/%s/%s", s_pmi[s_player_model_box.curvalue].directory, currentPlayerWeapon); //current player weapon
+		else
+		Com_sprintf(scratch, sizeof(scratch), "players/%s/weapon.md2", s_pmi[s_player_model_box.curvalue].directory); //default player weapon
+
 		entity[1].model = R_RegisterModel(scratch);
 		if(entity[1].model){
 		entity[1].skin = R_RegisterSkin(scratch);
-		entity[1].flags |= RF_FULLBRIGHT;
+		entity[1].bump = R_RegisterPlayerBump (scratch, entity[1].skin);
 		entity[1].origin[0] = 90;
 		entity[1].origin[1] = 0;
 		entity[1].origin[2] = -8;
@@ -4427,7 +4406,7 @@ void PlayerConfig_MenuDraw(void)
 
 		Menu_Draw(&s_player_config_menu);
 
-		M_DrawTextBox((refdef.x) * (320.0F / viddef.width) - 8,
+		M_DrawTextBox((Xw) * (320.0F * cl_fontScale->value / viddef.width) - 8,
 					  (viddef.height / 2) * (240.0F / viddef.height) - 77,
 					  refdef.width / 8, refdef.height / 8);
 		refdef.height += 4;
@@ -4439,7 +4418,8 @@ void PlayerConfig_MenuDraw(void)
 					s_pmi[s_player_model_box.curvalue].
 					skindisplaynames[s_player_skin_box.curvalue]);
 		
-		Draw_PicScaled(s_player_config_menu.x - 40, refdef.y, cl_fontScale->value, cl_fontScale->value, scratch);
+		Draw_PicScaled(s_player_config_menu.x - 40*cl_fontScale->value, refdef.y, cl_fontScale->value, cl_fontScale->value, scratch);
+		
 	}
 }
 
@@ -4539,9 +4519,9 @@ int M_Quit_Key(int key)
 void M_Quit_Draw(void)
 {
 	int w, h;
-
+	
 	Draw_GetPicSize(&w, &h, "quit");
-	Draw_Pic((viddef.width - w) / 2, (viddef.height - h) / 2, "quit");
+	Draw_PicScaled((viddef.width - w*cl_fontScale->value) / 2, (viddef.height - h) / 2,cl_fontScale->value, cl_fontScale->value, "quit");
 }
 
 

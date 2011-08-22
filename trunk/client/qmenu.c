@@ -43,7 +43,7 @@ extern viddef_t viddef;
 #define VID_WIDTH viddef.width
 #define VID_HEIGHT viddef.height
 
-#define Draw_Char Draw_Char
+
 
 #define Draw_Fill Draw_Fill
 

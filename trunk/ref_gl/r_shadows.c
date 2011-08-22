@@ -699,8 +699,11 @@ void R_RecursiveShadowWorldNode(mnode_t * node)
 
 		if ((surf->flags & SURF_PLANEBACK) != sidebit)
 			continue;			// wrong side
-			
-			GL_DrawShadowTriangles(surf);
+		
+		if (surf->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW | SURF_SKY))
+			continue;
+		
+		GL_DrawShadowTriangles(surf);
 		
 	}
 

@@ -1050,7 +1050,7 @@ void GL_CreateSurfaceLightmap(msurface_t * surf);
 void GL_EndBuildingLightmaps(void);
 void GL_BeginBuildingLightmaps(model_t * m);
 
-#define MAGIC_CACHE 1237	// Здесь это магическое число меняем чтоб следующая версия движка сбрасывала кэш!
+
 int FS_filelength2 (FILE *f);
 extern cvar_t	*r_tbnSmoothAngle;
 /*
@@ -1891,8 +1891,6 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 
 	}
 }
-extern cvar_t *r_specularScale;
-vertCache_t *R_VCLoadData(vertCacheMode_t mode, int size, void *buffer, vertStoreMode_t store, entity_t *ent, int mesh);
 
 void Mod_LoadAliasModel(model_t * mod, void *buffer)
 {
@@ -1913,7 +1911,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 
 	daliasframe_t	*frame;
 	dtrivertx_t		*verts;
-	byte			*norms = NULL, *tangents, *binormals;
+	byte			*norms = NULL, *tangents= NULL, *binormals =NULL;
 	float			s, t;
 	float			iw, ih;
 	byte			smooth;
@@ -2180,11 +2178,14 @@ okey:	Com_DPrintf("%s: loaded from cache\n", mod->name);
 	cx = pheader->num_xyz * pheader->num_frames * sizeof(byte);
 		
 	// Calculate tangents for vertices (bump mapping)
-		
+	if(!binormals || !tangents)
+	{	
 	mod->binormals = binormals = (byte*)Hunk_Alloc (cx);
 	mod->tangents = tangents = (byte*)Hunk_Alloc (cx);
+	}
 	mod->memorySize += cx;
 	mod->memorySize += cx;
+
 		//for all frames
 	for (i=0; i<pheader->num_frames; i++)
 		{
@@ -2192,7 +2193,10 @@ okey:	Com_DPrintf("%s: loaded from cache\n", mod->name);
 			//set temp to zero
 			memset(tangents_, 0, pheader->num_xyz*sizeof(vec3_t));
 			memset(binormals_, 0, pheader->num_xyz*sizeof(vec3_t));
-
+			
+			tris = (dtriangle_t *) ((byte *)pheader + pheader->ofs_tris);
+			st =  (fstvert_t*)((byte *)pheader + pheader->ofs_st);
+			
 			frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
 			verts = frame->verts;
 

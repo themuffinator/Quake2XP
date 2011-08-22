@@ -487,7 +487,6 @@ extern entity_state_t cl_parse_entities[MAX_PARSE_ENTITIES];
 extern netadr_t net_from;
 extern sizebuf_t net_message;
 
-void DrawAltString(int x, int y, char *s);	// toggle high bit
 qboolean CL_CheckOrDownloadFile(char *filename);
 
 void CL_AddNetgraph(void);

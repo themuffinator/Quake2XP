@@ -679,8 +679,10 @@ CL_AddPacketEntities
 
 ===============
 */
+extern	char	*currentPlayerWeapon;
 
 game_export_t *ge;
+
 void CL_AddPacketEntities(frame_t * frame)
 {
 	entity_t ent;
@@ -702,6 +704,8 @@ void CL_AddPacketEntities(frame_t * frame)
 	autoanim = 2 * cl.time / 1000;
 
 	memset(&ent, 0, sizeof(ent));
+	
+	currentPlayerWeapon = NULL;
 
 	for (pnum = 0; pnum < frame->num_entities; pnum++) {
 		qboolean player_camera = false;
@@ -1092,7 +1096,11 @@ void CL_AddPacketEntities(frame_t * frame)
 				i = (s1->skinnum >> 8);	// 0 is default weapon model
 				if (!cl_vwep->value || i > MAX_CLIENTWEAPONMODELS - 1)
 					i = 0;
+				// save cueeent player weapon for player config menu
+				currentPlayerWeapon = cl_weaponmodels[i];
 				ent.model = ci->weaponmodel[i];
+				
+				
 				if (!ent.model) {
 					if (i != 0)
 						ent.model = ci->weaponmodel[0];

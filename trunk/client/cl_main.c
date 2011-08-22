@@ -125,7 +125,7 @@ extern cvar_t *allow_download_players;
 extern cvar_t *allow_download_models;
 extern cvar_t *allow_download_sounds;
 extern cvar_t *allow_download_maps;
-
+extern	char	*currentPlayerWeapon;
 //======================================================================
 
 extern cvar_t *Cvar_FindVar(char *var_name);
@@ -743,6 +743,7 @@ void CL_Disconnect(void)
 	}
 
 	cls.state = ca_disconnected;
+	currentPlayerWeapon = NULL;
 }
 
 void CL_Disconnect_f(void)

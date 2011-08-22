@@ -74,14 +74,6 @@ extern int edit_line;
 extern int key_linepos;
 
 
-void DrawAltString(int x, int y, char *s)
-{
-	while (*s) {
-		Draw_Char(x, y, *s ^ 0x80);
-		x += 8;
-		s++;
-	}
-}
 
 void DrawAltStringScaled(int x, int y, float scale_x, float scale_y, char *s)
 {

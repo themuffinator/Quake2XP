@@ -592,7 +592,6 @@ V_RenderView
 
 ==================
 */
-void R_VCFreeFrame();
 
 void V_RenderView(float stereo_separation)
 {
@@ -721,8 +720,6 @@ void V_RenderView(float stereo_separation)
 	c_decals			= 0;
 	c_decal_tris		= 0;
 	
-	R_VCFreeFrame();
-	need_free_vbo = false;
 	R_RenderFrame(&cl.refdef, false);
 	
 	

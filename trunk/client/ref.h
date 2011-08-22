@@ -529,7 +529,7 @@ void Draw_Pic2(int x, int y, image_t * gl);
 void Draw_StretchPic2(int x, int y, int w, int h, image_t * gl,
 					  qboolean cons);
 void Draw_StretchPic(int x, int y, int w, int h, char *name);
-void Draw_Char(int x, int y, int c);
+
 
 void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char *pic);
 void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl);

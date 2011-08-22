@@ -53,54 +53,6 @@ void R_LoadFont(void)
 
 }
 
-/*
-================
-Draw_Char
-
-Draws one 8*8 graphics character with 0 being transparent.
-It can be clipped to the top of the screen to allow the console to be
-smoothly scrolled off.
-================
-*/
-void Draw_Char(int x, int y, int num)
-{
-	int row, col;
-	float frow, fcol, size;
-
-	num &= 255;
-
-	if ((num & 127) == 32)
-		return;					// space
-
-	if (y <= -8)
-		return;					// totally off screen
-
-	row = num >> 4;
-	col = num & 15;
-
-	GL_Bind(draw_chars->texnum);
-	GL_Blend(true, 0, 0);
-
-	frow = row * 0.0625;
-	fcol = col * 0.0625;
-	size = 0.0625;
-		
-	GL_Overbrights(true);
-
-	qglBegin(GL_QUADS);
-	qglTexCoord2f(fcol, frow);
-	qglVertex2f(x, y);
-	qglTexCoord2f(fcol + size, frow);
-	qglVertex2f(x + 8, y);
-	qglTexCoord2f(fcol + size, frow + size);
-	qglVertex2f(x + 8, y + 8);
-	qglTexCoord2f(fcol, frow + size);
-	qglVertex2f(x, y + 8);
-	qglEnd();
-
-	GL_Blend(false, 0, 0);
-	GL_Overbrights(false);
-}
 
 
 void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char num)
