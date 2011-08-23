@@ -1090,7 +1090,7 @@ Inv_DrawString
 void Inv_DrawString(int x, int y, char *string)
 {
 	while (*string) {
-		Draw_CharScaled(x, y, (float)cl_fontScale->value, (float)cl_fontScale->value, *string);
+		Draw_CharScaled(x, y, cl_fontScale->value, cl_fontScale->value, *string);
 		x += 8 * cl_fontScale->value;
 		string++;
 	}
@@ -1178,7 +1178,7 @@ void CL_DrawInventory(void)
 								// item
 		{
 			if ((int) (cls.realtime * 10) & 1)
-				Draw_CharScaled(x - 8, y, (float)cl_fontScale->value, (float)cl_fontScale->value, 15);
+				Draw_CharScaled(x - 8, y, cl_fontScale->value, cl_fontScale->value, 15);
 		}
 		Inv_DrawString(x, y, string);
 		y += 8*cl_fontScale->value;

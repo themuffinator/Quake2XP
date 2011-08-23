@@ -580,7 +580,6 @@ void Con_Printf(int print_level, char *str, ...);
 cvar_t *Cvar_Get(char *name, char *value, int flags);
 void Cvar_SetValue(char *name, float value);
 cvar_t *Cvar_Set(char *name, char *value);
-qboolean TracePointForRender(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
 void Cmd_AddCommand(char *name, void (*cmd) (void));
 void Cmd_RemoveCommand(char *name);
 int Cmd_Argc(void);

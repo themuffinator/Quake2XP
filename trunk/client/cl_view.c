@@ -580,9 +580,10 @@ void SCR_DrawCrosshair(void)
 	if (!crosshair_pic[0])
 		return;
 
-	Draw_Pic(scr_vrect.x + ((scr_vrect.width - crosshair_width) >> 1)
-			 , scr_vrect.y + ((scr_vrect.height - crosshair_height) >> 1),
-			 crosshair_pic);
+	Draw_PicScaled(scr_vrect.x + ((	scr_vrect.width - crosshair_width) >> 1), 
+									scr_vrect.y + ((scr_vrect.height - crosshair_height) >> 1),
+									cl_fontScale->value,  cl_fontScale->value,
+									crosshair_pic);
 }
 
 

@@ -2097,7 +2097,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 
 
 	// create the cache directory
-	Com_sprintf (cachename, sizeof(cachename), "%s/cache/%s_xp", FS_Gamedir(), mod->name); /// Berserker: пусть Q2XP кэширует модели в *.md2_xp, чтобы не нарушать кэш Bers@Q2
+	Com_sprintf (cachename, sizeof(cachename), "%s/cachexp/%s", FS_Gamedir(), mod->name); /// Berserker: пусть Q2XP кэширует модели в /cachexp/, чтобы не нарушать кэш Bers@Q2
 	FS_CreatePath(cachename);
 	f = fopen (cachename, "rb");
 	if (f)
@@ -2260,7 +2260,7 @@ okey:	Com_DPrintf("%s: loaded from cache\n", mod->name);
 		}
 	
 	// write cache to disk
-	Com_sprintf (cachename, sizeof(cachename), "%s/cache/%s_xp", FS_Gamedir(), mod->name); /// Berserker: пусть Q2XP кэширует модели в *.md2_xp, чтобы не нарушать кэш Bers@Q2
+	Com_sprintf (cachename, sizeof(cachename), "%s/cachexp/%s", FS_Gamedir(), mod->name); /// Berserker: пусть Q2XP кэширует модели в /cachexp/, чтобы не нарушать кэш Bers@Q2
 	FS_CreatePath(cachename);
 	f = fopen (cachename, "wb");
 	if(f)
@@ -2282,7 +2282,7 @@ okey:	Com_DPrintf("%s: loaded from cache\n", mod->name);
 	}
 exit:
 	
-	// Load the Md2 Indices
+	// Load the Md2 Indices - old gl cmd drawing style (shells, distort models)
 	Mod_LoadMd2Indices (mod, pheader);
 
 	ClearBounds(mod->mins, mod->maxs);

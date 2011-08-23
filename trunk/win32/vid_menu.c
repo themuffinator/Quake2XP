@@ -701,7 +701,7 @@ void VID_MenuInit( void )
 	s_apply_action.generic.y    = 240*cl_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 	
-	menuSize = 270;
+	menuSize = 300;
 
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_mode_list);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_samples_list);
@@ -748,7 +748,7 @@ void VID_MenuDraw (void)
 
 	// draw the banner
 	Draw_GetPicSize( &w, &h, "m_banner_video" );
-	Draw_Pic( (int)(viddef.width *0.5 - w *0.5), (int)(viddef.height *0.5 - menuSize), "m_banner_video" );
+	Draw_PicScaled( (int)(viddef.width *0.5 - (w *0.5) *cl_fontScale->value), (int)((viddef.height *0.5 - menuSize )), cl_fontScale->value, cl_fontScale->value, "m_banner_video" );
 
 	// move cursor to a reasonable starting position
 	Menu_AdjustCursor( s_current_menu, 1 );

@@ -252,7 +252,8 @@ void R_LightPoint(vec3_t p, vec3_t color, qboolean bump)
 	dlight_t *dl;
 	vec3_t dir;
 	float add, dst;
-		
+	trace_t trace;
+
 	if ((r_worldmodel && !r_worldmodel->lightdata) || !r_worldmodel)
 	{
           color[0] = color[1] = color[2] = 1.0;
@@ -291,8 +292,12 @@ void R_LightPoint(vec3_t p, vec3_t color, qboolean bump)
 	if (!dst || dst > dl->intensity)
 		continue;
 
-	if (!TracePointForRender(p, NULL, NULL, dl->origin))
-				continue;		// dlight behind the wall
+	// dlight behind the wall
+	if (r_newrefdef.areabits){
+			trace = CM_BoxTrace(dl->origin, p, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			if(trace.fraction != 1.0)
+			continue;
+	}
 
 	add = (dl->intensity - dst) * (1.0/255);
 	VectorMA(color, add, dl->color, color);

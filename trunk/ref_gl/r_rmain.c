@@ -496,7 +496,9 @@ void R_SetupFrame(void)
 		qglEnable(GL_SCISSOR_TEST);
 		qglScissor(r_newrefdef.x,
 				   vid.height - r_newrefdef.height - r_newrefdef.y,
-				   r_newrefdef.width, r_newrefdef.height);
+				   r_newrefdef.width, 
+				   r_newrefdef.height);
+
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
 			qglClearColor(0.35, 0.35, 0.35, 1);
 			qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1422,7 +1424,7 @@ void R_Register(void)
 
 	r_drawBuffer = Cvar_Get("r_drawBuffer", "GL_BACK", 0);
 	r_vsync = Cvar_Get("r_vsync", "0", CVAR_ARCHIVE);
-	r_finish = Cvar_Get("r_finish", "0", CVAR_ARCHIVE);
+	r_finish = Cvar_Get("r_finish", "0", 0);
 	
 	r_fullScreen = Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
 	r_gamma = Cvar_Get("r_gamma", "0.7", CVAR_ARCHIVE);
@@ -1888,8 +1890,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("flaresStats");
 	Cmd_RemoveCommand("dumpEntityString");
 	Cmd_RemoveCommand("r_meminfo");	
-	
-	R_VCShutdown();
+
 	Mod_FreeAll();
 	GL_ShutdownImages();
 	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)ocQueries);
@@ -1954,7 +1955,7 @@ void R_BeginFrame(float camera_separation)
 	}	
 
 	if(r_parallaxSteps->value < 1 )
-		Cvar_SetValue("r_parallaxSteps", r_parallaxSteps->value);
+		Cvar_SetValue("r_parallaxSteps", 1.0);
 
 	GLimp_BeginFrame(camera_separation);
 

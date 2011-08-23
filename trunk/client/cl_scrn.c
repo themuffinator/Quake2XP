@@ -448,14 +448,17 @@ SCR_DrawPause
 */
 void SCR_DrawPause(void)
 {
+	
 	if (!scr_showpause->value)	// turn off for screenshots
 		return;
 
 	if (!cl_paused->value)
 		return;
 
-	Draw_Pic2((viddef.width - i_pause->width) * 0.5f,
-			  viddef.height * 0.5f + 8.0f, i_pause);
+	Draw_ScaledPic((viddef.width - (i_pause->width * cl_fontScale->value)) * 0.5f,
+					viddef.height * 0.5f + 8.0f, 
+					cl_fontScale->value, cl_fontScale->value,
+					i_pause);
 }
 
 /*
@@ -1165,11 +1168,12 @@ void SCR_UpdateScreen(void)
 	if (!scr_initialized || !con.initialized)
 		return;					// not initialized yet
 
-	
-	if(r_mode->value < 1)
-		Cvar_SetValue("cl_fontScale", 1);
-	else
-		Cvar_SetValue("cl_fontScale", 2);
+
+	if(cl_fontScale->value >1)
+		cl_fontScale->value = 2;
+
+	if(cl_fontScale->value < 1)
+		cl_fontScale->value = 1;
 
 	if(cl_hudScale->value >1)
 		Cvar_SetValue("cl_hudScale", 1);

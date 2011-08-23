@@ -1108,14 +1108,3 @@ void SV_Shutdown(char *finalmsg, qboolean reconnect)
 	memset(&svs, 0, sizeof(svs));
 }
 
-qboolean TracePointForRender(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end)
-{
-	trace_t trace;
-	if (sv.state == ss_dead || sv.state == ss_loading)
-		return false;
-	trace = SV_Trace(start, mins, maxs, end, NULL, MASK_VISIBILILITY);
-
-	if (trace.fraction != 1)
-		return false;
-	return true;
-}

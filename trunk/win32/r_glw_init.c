@@ -1485,7 +1485,7 @@ void R_AnimDump (void)
 	cl_anim_count=i;
 
 
-	buffer = malloc(vid.width*vid.height*3 + 18);
+	buffer = (byte*)malloc(vid.width*vid.height*3 + 18);
 	memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = vid.width&255;

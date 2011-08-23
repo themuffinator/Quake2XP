@@ -1552,12 +1552,7 @@ void CL_InitLocal(void)
 	cl_noskins = Cvar_Get("cl_noskins", "0", 0);
 	cl_autoskins = Cvar_Get("cl_autoskins", "0", 0);
 	cl_predict = Cvar_Get("cl_predict", "1", 0);
-	cl_maxfps = Cvar_Get("cl_maxfps", "600", CVAR_ARCHIVE);	// defaults to
-															// 600, saved
-															// in the
-															// config -
-															// Barnes
-
+	cl_maxfps = Cvar_Get("cl_maxfps", "600", CVAR_ARCHIVE);	
 	cl_upspeed = Cvar_Get("cl_upspeed", "200", 0);
 	cl_forwardspeed = Cvar_Get("cl_forwardspeed", "200", 0);
 	cl_sidespeed = Cvar_Get("cl_sidespeed", "200", 0);
@@ -1590,9 +1585,7 @@ void CL_InitLocal(void)
 	rcon_address = Cvar_Get("rcon_address", "", 0);
 
 	cl_lightlevel = Cvar_Get("r_lightLevel", "0", 0);
-	cl_drawclock = Cvar_Get("cl_drawclock", "0", CVAR_ARCHIVE);	// JKnife
-																// -- HUD
-																// Clock
+	cl_drawclock = Cvar_Get("cl_drawclock", "0", CVAR_ARCHIVE);	
 
 	cl_3dhud = Cvar_Get("cl_3dhud", "1", CVAR_ARCHIVE);
 	cl_brass = Cvar_Get("cl_brass", "512", CVAR_ARCHIVE);
@@ -1602,13 +1595,11 @@ void CL_InitLocal(void)
 	cl_railcore_blue = Cvar_Get("cl_railcore_blue", "1", CVAR_ARCHIVE);
 
 	cl_railspiral_red = Cvar_Get("cl_railspiral_red", "0", CVAR_ARCHIVE);
-	cl_railspiral_green =
-		Cvar_Get("cl_railspiral_green", "0", CVAR_ARCHIVE);
+	cl_railspiral_green = Cvar_Get("cl_railspiral_green", "0", CVAR_ARCHIVE);
 	cl_railspiral_blue = Cvar_Get("cl_railspiral_blue", "1", CVAR_ARCHIVE);
 
 	cl_decals = Cvar_Get("cl_decals", "1", CVAR_ARCHIVE);
-	net_compatibility =
-		Cvar_Get("net_compatibility", "0", CVAR_SERVERINFO | CVAR_NOSET);
+	net_compatibility = Cvar_Get("net_compatibility", "0", CVAR_SERVERINFO | CVAR_NOSET);
 	cl_drawhud = Cvar_Get("cl_drawhud", "1", CVAR_ARCHIVE);
 
 	cl_thirdPerson			=	Cvar_Get("cl_thirdPerson", "0", CVAR_ARCHIVE);
@@ -1622,6 +1613,8 @@ void CL_InitLocal(void)
 	
 	if(cl_fontScale->value < 1)
 		Cvar_Set("cl_fontScale", "1");
+	if(cl_fontScale->value > 2)
+		Cvar_Set("cl_fontScale", "2");
 	//
 	// userinfo
 	//
@@ -1999,7 +1992,7 @@ void CL_Shutdown(void)
 	isdown = true;
 
 	// kill temp demo record
-	Com_sprintf (name, sizeof(name), "%s/cache/temp.dm2", FS_Gamedir());
+	Com_sprintf (name, sizeof(name), "%s/cachexp/temp.dm2", FS_Gamedir());
 	remove(name);
 
 	CL_WriteConfiguration();

@@ -58,7 +58,7 @@ void (*m_drawfunc) (void);
 int (*m_keyfunc) (int key);
 
 extern cvar_t *cl_hudScale;
-
+char *currentPlayerWeapon;
 //=============================================================================
 /* Support Routines */
 
@@ -78,7 +78,7 @@ static void M_Banner(char *name)
 	int w, h;
 
 	Draw_GetPicSize(&w, &h, name);
-	Draw_Pic(viddef.width / 2 - w / 2, viddef.height / 2 - 110, name);
+	Draw_PicScaled((viddef.width / 2) - (w * cl_fontScale->value / 2), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
 }
 
 void M_PushMenu(void (*draw) (void), int (*key) (int k))
@@ -302,6 +302,7 @@ MAIN MENU
 */
 #define	MAIN_ITEMS	5
 
+int xOffcet, yOffcet;
 
 void M_Main_DrawQuad(float x, float y)
 {
@@ -316,11 +317,14 @@ void M_Main_DrawQuad(float x, float y)
 
 	refdef.x = x;
 	refdef.y = y;
-	refdef.width = 60;
-	refdef.height = 90;
+	refdef.width = 60 * cl_fontScale->value;
+	refdef.height = 90 * cl_fontScale->value;
 	refdef.fov_x = 40;
 	refdef.fov_y = CalcFov(refdef.fov_x, refdef.width, refdef.height);
 	refdef.time = cls.realtime / 1.5;
+
+	xOffcet = 60;
+	yOffcet = 90;
 
 	memset(&entity, 0, sizeof(entity));
 
@@ -367,6 +371,7 @@ void M_Main_Draw(void)
 	int w, h;
 	int ystart;
 	int xoffset;
+	int offcet = 0;
 	int widest = -1;
 	int totalheight = 0;
 	char litname[80];
@@ -386,18 +391,25 @@ void M_Main_Draw(void)
 			widest = w;
 		totalheight += (h + 12);
 	}
-
+	if(cl_fontScale->value < 2){
 	ystart = (viddef.height / 2) - 110;
 	xoffset = (viddef.width - widest + 70) / 2;
+	}else{
+	ystart = (viddef.height / 2) - 220;
+	xoffset = (viddef.width - widest - 100) / 2;
+	}
+
+	if(cl_fontScale->value > 1)
+		offcet = 60;
 
 	for (i = 0; names[i] != 0; i++) {
 		if (i != m_main_cursor)
-			Draw_PicScaled(xoffset, ystart + (i * cl_fontScale->value) * 40 + 13, cl_fontScale->value, cl_fontScale->value, names[i]);
+			Draw_PicScaled(xoffset + offcet, ystart + (i * cl_fontScale->value) * 40 + 13, cl_fontScale->value, cl_fontScale->value, names[i]);
 	}
 	strcpy(litname, names[m_main_cursor]);
 	strcat(litname, "_sel");
-	Draw_PicScaled(xoffset, ystart + (m_main_cursor * cl_fontScale->value) * 40 + 13, cl_fontScale->value, cl_fontScale->value, litname);
-
+	Draw_PicScaled(xoffset + offcet, ystart + (m_main_cursor * cl_fontScale->value) * 40 + 13, cl_fontScale->value, cl_fontScale->value, litname);
+	
 	Draw_GetPicSize(&w, &h, "m_main_plaque");
 	Draw_PicScaled((xoffset - 30) - (w * cl_fontScale->value), ystart, cl_fontScale->value, cl_fontScale->value, "m_main_plaque");
 
@@ -1883,7 +1895,7 @@ void M_Option_Banner(char *name)
 	
 	Draw_GetPicSize(&w, &h, name);
 	move +=h;
-	Draw_PicScaled(viddef.width / 2 - w / 2, viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
+	Draw_PicScaled(viddef.width / 2 - (w * cl_fontScale->value) / 2, viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
 }
 
 void Options_MenuDraw(void)
@@ -3938,6 +3950,7 @@ static void ModelCallback(void *unused)
 	s_player_skin_box.itemnames =
 		s_pmi[s_player_model_box.curvalue].skindisplaynames;
 	s_player_skin_box.curvalue = 0;
+	currentPlayerWeapon = NULL;  
 }
 
 void FreeFileList(char **list, int n)
@@ -4300,7 +4313,7 @@ int	pose_rot_angle[] = { 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 
 
 struct image_s *R_RegisterPlayerBump (char *name, struct image_s *tex);
 
-char *currentPlayerWeapon;
+
 
 void PlayerConfig_MenuDraw(void)
 {
