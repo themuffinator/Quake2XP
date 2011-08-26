@@ -737,6 +737,19 @@ typedef struct {
 
 worldDefs_t worldDefs;
 
+typedef enum glsl_attribute
+{
+	ATRB_POSITION = 10,
+	ATRB_NORMAL = 11,
+	ATRB_TEX0 = 12,
+	ATRB_TEX1 = 13,
+	ATRB_TANGENT = 14,
+	ATRB_BINORMAL = 15,
+
+}
+glsl_attrib;
+
+
 #define	SRGB_EXT                                       0x8C40
 #define	SRGB8_EXT                                      0x8C41
 #define	SRGB_ALPHA_EXT                                 0x8C42

@@ -799,7 +799,6 @@ void R_BlobShadow(void){
 		return;
 		
 	GL_Overbrights			(false);
-	GL_SelectTexture		(GL_TEXTURE0_ARB);
 	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer		(2, GL_FLOAT, 0, bsTextCoord);
 	qglEnableClientState	(GL_COLOR_ARRAY);
@@ -812,7 +811,7 @@ void R_BlobShadow(void){
 	qglEnable				(GL_BLEND);
 	qglBlendFunc			(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(0);
-	GL_Bind					(r_particletexture[PT_DEFAULT]->texnum);
+	GL_MBind				(GL_TEXTURE0_ARB, r_particletexture[PT_DEFAULT]->texnum);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++)	
 	{

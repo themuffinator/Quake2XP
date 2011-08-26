@@ -290,8 +290,8 @@ int GL_MsgGLError(char* Info)
 	char	S[1024];
 	int		n = qglGetError();
 	
-	if(r_ignoreGlErrors->value)
-		return false;
+//	if(r_ignoreGlErrors->value)
+//		return false;
 
 	if(n == GL_NO_ERROR) return false;
 

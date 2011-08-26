@@ -73,7 +73,6 @@ void RenderLavaSurfaces(msurface_t * fa)
 
 	GL_SelectTexture			(GL_TEXTURE0_ARB);
 	GL_Bind						(fa->texinfo->image->texnum);
-	qglEnable					(GL_TEXTURE_2D);
 	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer			(2, GL_FLOAT, 0, wTexArray);
 	qglUniform1i				(qglGetUniformLocation(id, "u_Diffuse"), 0);
@@ -628,7 +627,7 @@ void R_DrawSkyBox(void)
 			|| skymins[1][i] >= skymaxs[1][i])
 			continue;
 
-		GL_Bind(sky_images[skytexorder[i]]->texnum);
+		GL_MBind(GL_TEXTURE0_ARB, sky_images[skytexorder[i]]->texnum);
 
 		qglBegin(GL_QUADS);
 		MakeSkyVec(skymins[0][i], skymins[1][i], i);

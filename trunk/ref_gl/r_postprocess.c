@@ -211,6 +211,7 @@ void R_RenderFlares(void)
 	qglEnable(GL_BLEND);
 	
 	GL_TexEnv(GL_MODULATE);
+	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_Bind(r_flare->texnum);
 
 	qglShadeModel(GL_SMOOTH);

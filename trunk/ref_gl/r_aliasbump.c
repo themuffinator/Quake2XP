@@ -365,13 +365,11 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	
 
 	//tangent
-	qglEnableVertexAttribArray(10);
-	qglVertexAttribPointer						(10, 3, GL_FLOAT, false, 0, tangentArray);
-	
+	qglEnableVertexAttribArray					(ATRB_TANGENT);
+	qglEnableVertexAttribArray					(ATRB_BINORMAL);
 
-	//binormal
-	qglEnableVertexAttribArray(11);
-	qglVertexAttribPointer						(11, 3, GL_FLOAT, false, 0, binormalArray);
+	qglVertexAttribPointer						(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tangentArray);
+	qglVertexAttribPointer						(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, binormalArray);
 
 	//normal
 	qglEnableClientState						(GL_NORMAL_ARRAY);
@@ -394,8 +392,8 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	qglEnable									(GL_TEXTURE_2D);
 	qglDisableClientState						(GL_TEXTURE_COORD_ARRAY);
 
-	qglDisableVertexAttribArray(10);
-	qglDisableVertexAttribArray(11);
+	qglDisableVertexAttribArray(ATRB_TANGENT);
+	qglDisableVertexAttribArray(ATRB_BINORMAL);
 
 	GL_BindNullProgram();
 	

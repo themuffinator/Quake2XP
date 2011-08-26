@@ -87,7 +87,7 @@ void R_RenderDecals(void)
      qglEnableClientState (GL_VERTEX_ARRAY);
      qglVertexPointer (3, GL_FLOAT, sizeof(vec3_t), DecalVertexArray[0]);
      
-     qglEnable(GL_POLYGON_OFFSET_FILL);
+	 qglEnable(GL_POLYGON_OFFSET_FILL);
      qglPolygonOffset(-1, -1);
 
      qglDepthMask(GL_FALSE);
@@ -130,7 +130,7 @@ void R_RenderDecals(void)
             blendD = dl->blendD;
             blendS = dl->blendS;
 			
-            GL_Bind(texture);
+            GL_MBind(GL_TEXTURE0_ARB, texture);
             qglBlendFunc(dl->blendD, dl->blendS);
           }
 

@@ -1007,50 +1007,21 @@ void R_DrawBrushModel(entity_t * e)
 		VectorSubtract(r_origin, currententity->origin, BmodelViewOrg);
 
 	R_DrawInlineBModel2();
-	
-	//diffuse
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
-	
-	//lighmap
-	GL_SelectTexture(GL_TEXTURE1_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, 0, wLMArray);
-	qglEnable(GL_TEXTURE_2D);
-	
-	//addative map
-	GL_SelectTexture(GL_TEXTURE2_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(3, GL_FLOAT, 0, wTexArray);
-	qglEnable(GL_TEXTURE_2D);
-	
-	//caustics map
-	GL_SelectTexture(GL_TEXTURE3_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
-	qglEnable(GL_TEXTURE_2D);
 
-	//normal map
-	GL_SelectTexture(GL_TEXTURE4_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
-	qglEnable(GL_TEXTURE_2D);
-
-	//normal
-	qglEnableClientState(GL_NORMAL_ARRAY);
-	qglNormalPointer(GL_FLOAT, 0, nTexArray);
-
-	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglVertexPointer(3, GL_FLOAT, 0, wVertexArray);
-
-	qglEnableVertexAttribArray(10);
-	qglEnableVertexAttribArray(11);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TEX1);
+	qglEnableVertexAttribArray(ATRB_TANGENT);
+	qglEnableVertexAttribArray(ATRB_BINORMAL);
 	
-	// tangent & binormal
-	qglVertexAttribPointer(10, 3, GL_FLOAT, false, 0, tTexArray);
-	qglVertexAttribPointer(11, 3, GL_FLOAT, false, 0, bTexArray);
-	
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
+	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
+
 	num_scene_surfaces = 0;
 	R_DrawInlineBModel();
 	
@@ -1072,31 +1043,13 @@ void R_DrawBrushModel(entity_t * e)
        GL_BatchLightmappedPoly(true, false); 
     }
 	
-	GL_SelectTexture(GL_TEXTURE4_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-	
-	GL_SelectTexture(GL_TEXTURE3_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-	
-	GL_SelectTexture(GL_TEXTURE2_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-	
-	GL_SelectTexture(GL_TEXTURE1_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-	
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_NORMAL);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_TEX1);
+	qglDisableVertexAttribArray(ATRB_TANGENT);
+	qglDisableVertexAttribArray(ATRB_BINORMAL);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	qglDisableClientState(GL_VERTEX_ARRAY);
-	qglDisableClientState(GL_NORMAL_ARRAY);
-
-	qglDisableVertexAttribArray(10);
-	qglDisableVertexAttribArray(11);
-	
 	qglPopMatrix();
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1265,79 +1218,32 @@ void R_DrawBSP(void)
 	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 		
 	R_ClearSkyBox();
-	
-	//diffuse
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
-	
-	//lighmap
-	GL_SelectTexture(GL_TEXTURE1_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, 0, wLMArray);
-	qglEnable(GL_TEXTURE_2D);
-	
-	//addative map
-	GL_SelectTexture(GL_TEXTURE2_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(3, GL_FLOAT, 0, wTexArray);
-	qglEnable(GL_TEXTURE_2D);
-	
-	//caustics map
-	GL_SelectTexture(GL_TEXTURE3_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
-	qglEnable(GL_TEXTURE_2D);
-	
-	//normal map
-	GL_SelectTexture(GL_TEXTURE4_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, 0, wTexArray);
-	qglEnable(GL_TEXTURE_2D);
 
-	//normal
-	qglEnableClientState(GL_NORMAL_ARRAY);
-	qglNormalPointer(GL_FLOAT, 0, nTexArray);
-
-	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglVertexPointer(3, GL_FLOAT, 0, wVertexArray);
-
-	qglEnableVertexAttribArray(10);
-	qglEnableVertexAttribArray(11);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TEX1);
+	qglEnableVertexAttribArray(ATRB_TANGENT);
+	qglEnableVertexAttribArray(ATRB_BINORMAL);
 	
-	// tangent & binormal
-	qglVertexAttribPointer(10, 3, GL_FLOAT, false, 0, tTexArray);
-	qglVertexAttribPointer(11, 3, GL_FLOAT, false, 0, bTexArray);
-	
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
+	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
+		
 	num_scene_surfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
 	GL_BatchLightmappedPoly(false, false);
 	
-	GL_SelectTexture(GL_TEXTURE4_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-
-	GL_SelectTexture(GL_TEXTURE3_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-	
-	GL_SelectTexture(GL_TEXTURE2_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-	
-	GL_SelectTexture(GL_TEXTURE1_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-	
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_NORMAL);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_TEX1);
+	qglDisableVertexAttribArray(ATRB_TANGENT);
+	qglDisableVertexAttribArray(ATRB_BINORMAL);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	qglDisableClientState(GL_VERTEX_ARRAY);
-	qglEnableClientState(GL_NORMAL_ARRAY);	
-
-	qglDisableVertexAttribArray(10);
-	qglDisableVertexAttribArray(11);
-	
 	DrawTextureChains();
 
 	R_DrawSkyBox();

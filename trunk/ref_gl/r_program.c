@@ -350,6 +350,13 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 
 		id = qglCreateProgram();
 		
+		qglBindAttribLocation(id, ATRB_POSITION,	"a_vertArray");	
+		qglBindAttribLocation(id, ATRB_NORMAL,		"a_normArray");
+		qglBindAttribLocation(id, ATRB_TEX0,		"a_texCoord");
+		qglBindAttribLocation(id, ATRB_TEX1,		"a_LtexCoord");
+		qglBindAttribLocation(id, ATRB_TANGENT,		"a_tangent");
+		qglBindAttribLocation(id, ATRB_BINORMAL,	"a_binormal");
+
 		if (vertexId) {
 			qglAttachShader(id, vertexId);
 			qglDeleteShader(vertexId);
@@ -359,10 +366,7 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 			qglAttachShader(id, fragmentId);
 			qglDeleteShader(fragmentId);
 		}
-
-		qglBindAttribLocation(id, 10, "a_tangent");
-		qglBindAttribLocation(id, 11, "a_binormal");
-	
+		
 		qglLinkProgram(id);
 		qglGetProgramiv(id, GL_LINK_STATUS, &status);
 
