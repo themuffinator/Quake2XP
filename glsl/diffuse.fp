@@ -14,8 +14,11 @@ uniform sampler2D	u_Caustics;
 uniform float       u_CausticsModulate; 
 uniform float		u_specularScale;
 uniform float		u_lightScale; 
+
 varying vec3		v_viewVecTS;
 varying vec3		t, b, n;
+varying vec2		v_wTexCoord;
+varying vec2		v_lTexCoord;
 
 float ComputeLOD( vec2 tc, vec2 texSize ) { 
 
@@ -128,10 +131,10 @@ vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const flo
 void main ()
 {
 vec3 V = normalize(v_viewVecTS);
-vec4 lightMap = texture2D(u_LightMap, gl_TexCoord[1].xy); 
+vec4 lightMap = texture2D(u_LightMap, v_lTexCoord.xy); 
 
 #ifdef PARALLAX
-vec2 P = CalcParallaxOffset(u_Diffuse, gl_TexCoord[0].xy, V);
+vec2 P = CalcParallaxOffset(u_Diffuse, v_wTexCoord, V);
 vec4 diffuseMap = texture2D(u_Diffuse, P);
 vec4 glowMap = texture2D(u_Add, P);
 vec4 causticsMap = texture2D(u_Caustics, P);
@@ -141,12 +144,12 @@ float specTmp = texture2D(u_NormalMap,   P.xy).a;
 
 #else
 
-vec4 diffuseMap = texture2D(u_Diffuse,  gl_TexCoord[0].xy);
-vec4 glowMap = texture2D(u_Add,  gl_TexCoord[0].xy);
-vec4 causticsMap = texture2D(u_Caustics, gl_TexCoord[0].xy);
+vec4 diffuseMap = texture2D(u_Diffuse,  v_wTexCoord.xy);
+vec4 glowMap = texture2D(u_Add,  v_wTexCoord);
+vec4 causticsMap = texture2D(u_Caustics, v_wTexCoord.xy);
 
-vec3 normalMap =  normalize(texture2D(u_NormalMap, gl_TexCoord[0].xy).rgb - 0.5);
-float specTmp = texture2D(u_NormalMap, gl_TexCoord[0].xy).a;
+vec3 normalMap =  normalize(texture2D(u_NormalMap, v_wTexCoord).rgb - 0.5);
+float specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 
 #endif 
 
@@ -154,7 +157,7 @@ float specTmp = texture2D(u_NormalMap, gl_TexCoord[0].xy).a;
 vec4 bumpLight;
 
 // Generate the worldspace delux
-vec3 wDelux = normalize(texture2D(u_LightMap, gl_TexCoord[1].xy).rgb - 0.5);
+vec3 wDelux = normalize(texture2D(u_LightMap, v_wTexCoord).rgb - 0.5);
 //Put into tangent space
 vec3 tbnDelux;
 
