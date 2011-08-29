@@ -796,6 +796,7 @@ void R_DrawAliasDistortModel (entity_t *e)
 	vec3_t		bbox[8];
 	int			id;
 	unsigned	defBits = 0;
+	image_t		*bump;
 
 		if ( R_CullAliasModel( bbox, e ) )
 			return;
@@ -817,6 +818,25 @@ void R_DrawAliasDistortModel (entity_t *e)
 		R_RotateForEntity (e);
 		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
 
+		// select skin
+		if (currententity->bump)
+		bump = currententity->bump;	// custom player skin
+		else {
+		if (currententity->skinnum >= MAX_MD2SKINS) {
+			bump = currentmodel->skins_normal[0];
+			currententity->skinnum = 0;
+		} else {
+			bump	= currentmodel->skins_normal[currententity->skinnum];
+			if (!bump) {
+				bump = currentmodel->skins_normal[0];
+				currententity->skinnum = 0;
+			}
+		}
+	}
+	if (!bump)
+		bump = r_predator;
+
+
 		// setup program
 		GL_BindProgram(refractProgram, defBits);
 		id = refractProgram->id[defBits];
@@ -825,7 +845,7 @@ void R_DrawAliasDistortModel (entity_t *e)
 		qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
 		qglEnableClientState		(GL_COLOR_ARRAY);
 		qglTexCoordPointer			(2, GL_FLOAT, 0, Md2TexArray);
-		GL_Bind						(r_predator->texnum);
+		GL_Bind						(bump->texnum);
 		qglUniform1i				(qglGetUniformLocation(id, "u_deformMap"), 0);
 				
 		GL_SelectTexture			(GL_TEXTURE1_ARB);
