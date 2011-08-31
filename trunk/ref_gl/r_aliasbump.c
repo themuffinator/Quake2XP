@@ -182,48 +182,27 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	
 	qglUniform1f(qglGetUniformLocation(id, "u_AddShift"), alphaShift);
 
-	GL_SelectTexture		(GL_TEXTURE0_ARB);
-	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer		(2, GL_FLOAT, 0, currentmodel->st);
-	GL_Bind					(skin->texnum);
+	GL_MBind				(GL_TEXTURE0_ARB, skin->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Diffuse"), 0);
-
-	GL_SelectTexture		(GL_TEXTURE1_ARB);
-	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer		(2, GL_FLOAT, 0, currentmodel->st);
-	qglEnable				(GL_TEXTURE_2D);
-	GL_Bind					(glowskin->texnum);
+	GL_MBind				(GL_TEXTURE1_ARB, glowskin->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Add"), 1);	
-	
 	if(caustics){
-	GL_SelectTexture		(GL_TEXTURE2_ARB);
-	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer		(2, GL_FLOAT, 0, currentmodel->st);
-	qglEnable				(GL_TEXTURE_2D);
-	GL_Bind					(r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+	GL_MBind				(GL_TEXTURE2_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
 	}
-		
-	qglEnableClientState( GL_VERTEX_ARRAY );
-	qglVertexPointer(3, GL_FLOAT, 0, vertexArray);
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 
-	if(caustics){
-	GL_SelectTexture(GL_TEXTURE2_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-	}
-	GL_SelectTexture(GL_TEXTURE1_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-	
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	qglDisableClientState(GL_VERTEX_ARRAY);
 	qglColor4f(1, 1, 1, 1);	
-
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
 }
 

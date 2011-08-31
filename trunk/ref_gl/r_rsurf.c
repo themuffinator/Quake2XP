@@ -919,7 +919,6 @@ void R_DrawBrushModel(entity_t * e)
 	int			cont[5];
 	vec3_t		org;
 	
-
 	if (currentmodel->nummodelsurfaces == 0)
 		return;
 

@@ -53,7 +53,7 @@ void RenderLavaSurfaces(msurface_t * fa)
 	
 	if (fa->texinfo->image->has_alpha && r_parallax->value)
 		defBits |= worldDefs.ParallaxBit;
-
+	
 	if(r_bumpWorld->value)
 		defBits |= worldDefs.BumpBits;
 
@@ -64,44 +64,33 @@ void RenderLavaSurfaces(msurface_t * fa)
 	scale[0] = 1.50 / fa->texinfo->image->width;
 	scale[1] = 1.50 / fa->texinfo->image->height;
 
-	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"),	1.0);
-	qglUniform3fv				(qglGetUniformLocation(id, "u_viewOriginES"),	1 , r_origin);
-	qglUniform2f				(qglGetUniformLocation(id, "u_bumpScale"),		scale[0], scale[1]);
-	qglUniform1i				(qglGetUniformLocation(id, "u_numSteps"),		(int)r_parallaxSteps->value);
-	qglUniform1i				(qglGetUniformLocation(id, "u_parallaxType"),	(int)r_parallax->value);
-	qglUniform1f				(qglGetUniformLocation(id, "u_ambientScale"),	0.0);
+	qglUniform1f	(qglGetUniformLocation(id, "u_ColorModulate"),	1.0);
+	qglUniform3fv	(qglGetUniformLocation(id, "u_viewOriginES"),	1 , r_origin);
+	qglUniform2f	(qglGetUniformLocation(id, "u_bumpScale"),		scale[0], scale[1]);
+	qglUniform1i	(qglGetUniformLocation(id, "u_numSteps"),		(int)r_parallaxSteps->value);
+	qglUniform1i	(qglGetUniformLocation(id, "u_parallaxType"),	(int)r_parallax->value);
+	qglUniform1f	(qglGetUniformLocation(id, "u_ambientScale"),	0.0);
 
-	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	GL_Bind						(fa->texinfo->image->texnum);
-	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer			(2, GL_FLOAT, 0, wTexArray);
-	qglUniform1i				(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
-	GL_SelectTexture			(GL_TEXTURE1_ARB);
-	GL_Bind						(fa->texinfo->normalmap->texnum);
-	qglEnable					(GL_TEXTURE_2D);
-	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer			(2, GL_FLOAT, 0, wTexArray);
-	qglUniform1i				(qglGetUniformLocation(id, "u_NormalMap"), 1);	
-			
-	// tangent & binormal
-	qglEnableVertexAttribArray	(10);
-	qglVertexAttribPointer		(10, 3, GL_FLOAT, false, 0, tTexArray);
-	qglEnableVertexAttribArray	(11);
-	qglVertexAttribPointer		(11, 3, GL_FLOAT, false, 0, bTexArray);
+	GL_MBind		(GL_TEXTURE0_ARB, fa->texinfo->image->texnum);
+	qglUniform1i	(qglGetUniformLocation(id, "u_Diffuse"), 0);
+	GL_MBind		(GL_TEXTURE1_ARB, fa->texinfo->normalmap->texnum);
+	qglUniform1i	(qglGetUniformLocation(id, "u_NormalMap"), 1);
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TANGENT);
+	qglEnableVertexAttribArray(ATRB_BINORMAL);
+	qglEnableVertexAttribArray(ATRB_COLOR);
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, wVertexArray);	
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false,		0, nTexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, wTexArray);
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false,	0, tTexArray);
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false,	0, bTexArray);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, WarpColorArray);
 	
-	//normal
-	qglEnableClientState		(GL_NORMAL_ARRAY);
-	qglNormalPointer			(GL_FLOAT, 0, nTexArray);
-
-	//color pointer
-	qglEnableClientState		(GL_COLOR_ARRAY);
-	qglColorPointer				(4, GL_FLOAT, 0, WarpColorArray);
-	
-	//vertex pointer
-	qglEnableClientState		(GL_VERTEX_ARRAY);
-	qglVertexPointer			(3, GL_FLOAT, 0, wVertexArray);
-
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
 
@@ -144,21 +133,16 @@ void RenderLavaSurfaces(msurface_t * fa)
 		
 		R_DrawArrays();
 	}
-
-	GL_SelectTexture		(GL_TEXTURE1_ARB);
-	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglDisable				(GL_TEXTURE_2D);
-
-	GL_SelectTexture		(GL_TEXTURE0_ARB);
-	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-
-	qglDisableClientState	(GL_COLOR_ARRAY);
-	qglDisableClientState	(GL_VERTEX_ARRAY);
-	qglDisableClientState	(GL_NORMAL_ARRAY);
-	GL_BindNullProgram		();
 	
-	qglDisableVertexAttribArray(10);
-	qglDisableVertexAttribArray(11);
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_NORMAL);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_TANGENT);
+	qglDisableVertexAttribArray(ATRB_BINORMAL);
+	qglDisableVertexAttribArray(ATRB_COLOR);
+	GL_BindNullProgram();
+
 }
 
 

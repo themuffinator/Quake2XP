@@ -356,6 +356,7 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 		qglBindAttribLocation(id, ATRB_TEX1,		"a_LtexCoord");
 		qglBindAttribLocation(id, ATRB_TANGENT,		"a_tangent");
 		qglBindAttribLocation(id, ATRB_BINORMAL,	"a_binormal");
+		qglBindAttribLocation(id, ATRB_COLOR,		"a_colorArray");
 
 		if (vertexId) {
 			qglAttachShader(id, vertexId);

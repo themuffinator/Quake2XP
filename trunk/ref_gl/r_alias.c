@@ -251,41 +251,35 @@ void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
 	
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	GL_Overbrights (false);	
 
 	// setup program
 	GL_BindProgram(aliasAmbientProgram, defBits);
 	id = aliasAmbientProgram->id[defBits];
 	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_overBrightBits->value);
 
-	GL_SelectTexture(GL_TEXTURE0_ARB);
+
 	if (currententity->flags & RF_SHELL_BLUE)
-		GL_Bind(r_texshell[0]->texnum);
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[0]->texnum);
 	if (currententity->flags & RF_SHELL_RED)
-		GL_Bind(r_texshell[1]->texnum);
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[1]->texnum);
 	if (currententity->flags & RF_SHELL_GREEN)
-		GL_Bind(r_texshell[2]->texnum);
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[2]->texnum);
 	if (currententity->flags & RF_SHELL_GOD)
-		GL_Bind(r_texshell[3]->texnum);
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[3]->texnum);
 	if (currententity->flags & RF_SHELL_HALF_DAM)
-		GL_Bind(r_texshell[4]->texnum);
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[4]->texnum);
 	if (currententity->flags & RF_SHELL_DOUBLE)
-		GL_Bind(r_texshell[5]->texnum);
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[5]->texnum);
+
 	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
+//	GL_MBind(GL_TEXTURE1_ARB, r_notexture->texnum);
+//	qglUniform1i(qglGetUniformLocation(id, "u_Add"), 1);
 
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer (2, GL_FLOAT, 0, Md2TexArray);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, Md2VertArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, Md2TexArray);
 
-	GL_SelectTexture(GL_TEXTURE1_ARB);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglEnable(GL_TEXTURE_2D);
-	GL_Bind(r_notexture->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_Add"), 1);
-
-	qglTexCoordPointer (2, GL_FLOAT, 0, Md2TexArray);
-
-	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglVertexPointer(3, GL_FLOAT, 0, Md2VertArray);
 
 	while (1)
 	{
@@ -316,15 +310,9 @@ void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
 		else
 			qglDrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, currentmodel->indexArray);
 
-	GL_SelectTexture(GL_TEXTURE1_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisable(GL_TEXTURE_2D);
-
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	qglDisableClientState(GL_VERTEX_ARRAY);
-
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglColor4f(1.0, 1.0, 1.0, 1.0);	

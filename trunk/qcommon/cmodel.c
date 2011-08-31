@@ -623,7 +623,6 @@ cmodel_t *CM_LoadMap(char *name, qboolean clientload, unsigned *checksum)
 	int entlength, length;
 	static unsigned last_checksum;
 	char entfile[MAX_QPATH];
-	qboolean foundentfile;
 	map_noareas = Cvar_Get("map_noareas", "0", 0);
 
 	if (!strcmp(map_name, name)
@@ -704,7 +703,6 @@ cmodel_t *CM_LoadMap(char *name, qboolean clientload, unsigned *checksum)
 		map_entitystring[numentitychars] = 0;
 
 		FS_FreeFile(entbuf);
-		foundentfile = true;
 	}
 	if (!entbuf){
 		Com_Printf("External entities not found. Use bsp entities\n");

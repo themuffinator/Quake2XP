@@ -945,59 +945,8 @@ qboolean RegisterOpenGLWindow(HINSTANCE hInst)
 
 qboolean GLimp_InitGL (void)
 {
-    PIXELFORMATDESCRIPTOR pfd = 
-	{
-		sizeof(PIXELFORMATDESCRIPTOR),	// size of this pfd
-		1,								// version number
-		PFD_DRAW_TO_WINDOW |			// support window
-		PFD_SUPPORT_OPENGL |			// support OpenGL
-		PFD_GENERIC_ACCELERATED |		// accelerated
-		PFD_DOUBLEBUFFER,				// double buffered
-		PFD_TYPE_RGBA,					// RGBA type
-		32,								// 24-bit color depth
-		0, 0, 0, 0, 0, 0,				// color bits ignored
-		0,								// no alpha buffer
-		0,								// shift bit ignored
-		0,								// no accumulation buffer
-		0, 0, 0, 0, 					// accum bits ignored
-		24,								// 32-bit z-buffer	
-		8,								// no stencil buffer
-		0,								// no auxiliary buffer
-		PFD_MAIN_PLANE,					// main layer
-		0,								// reserved
-		0, 0, 0							// layer masks ignored
-    };
-
-    int  pixelformat, i;
+	int  i;
 	char c, line[128], *string;
-	
-	/*
-	** figure out if we're running on a minidriver or not
-	*/
-		glw_state.minidriver = false;
-
-	/*
-	** Get a DC for the specified window
-	*/
-	if ( glw_state.hDC != NULL )
-		Con_Printf( PRINT_ALL, "GLimp_Init() - non-NULL DC exists\n" );
-
-	if ( glw_state.minidriver )
-	{
-		Com_Printf (S_COLOR_YELLOW "WARNING: MINIDRIVER DETECTED! Quake2xp has not been tested with minidrivers!\n");
-	
-		if ( (pixelformat = qwglChoosePixelFormat( glw_state.hDC, &pfd)) == 0 )
-		{
-			Com_Printf (S_COLOR_RED "GLimp_Init() - qwglChoosePixelFormat failed\n");
-			return false;
-		}
-		if ( qwglSetPixelFormat( glw_state.hDC, pixelformat, &pfd) == FALSE )
-		{
-			Com_Printf (S_COLOR_RED "GLimp_Init() - qwglSetPixelFormat failed\n");
-			return false;
-		}
-		qwglDescribePixelFormat( glw_state.hDC, pixelformat, sizeof( pfd ), &pfd );
-	}
 
 	RegisterOpenGLWindow (glw_state.hInstance);
 
@@ -1042,8 +991,8 @@ qboolean GLimp_InitGL (void)
 		
 		if (!pixelFormat)
 		{
-			Com_Printf (S_COLOR_RED "GLimp_Init() - ChoosePixelFormat (%dc/%dd/%da/%ds) failed. Error %d.\n", (int)pfd.cColorBits, (int)pfd.cColorBits, (int)pfd.cAlphaBits, (int)pfd.cStencilBits, GetLastError());
-			VID_Error (ERR_FATAL,  "GLimp_Init() - ChoosePixelFormat (%dc/%dd/%da/%ds) failed. Error %d.\n", (int)pfd.cColorBits, (int)pfd.cColorBits, (int)pfd.cAlphaBits, (int)pfd.cStencilBits, GetLastError());
+			Com_Printf (S_COLOR_RED "GLimp_Init() - ChoosePixelFormat (%dc/%dd/%da/%ds) failed. Error %d.\n", (int)temppfd.cColorBits, (int)temppfd.cColorBits, (int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
+			VID_Error (ERR_FATAL,  "GLimp_Init() - ChoosePixelFormat (%dc/%dd/%da/%ds) failed. Error %d.\n", (int)temppfd.cColorBits, (int)temppfd.cColorBits, (int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
 			
 		}
 
