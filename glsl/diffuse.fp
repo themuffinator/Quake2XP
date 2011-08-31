@@ -19,6 +19,7 @@ varying vec3		v_viewVecTS;
 varying vec3		t, b, n;
 varying vec2		v_wTexCoord;
 varying vec2		v_lTexCoord;
+varying vec4		v_color;
 
 float ComputeLOD( vec2 tc, vec2 texSize ) { 
 
@@ -153,6 +154,10 @@ float specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 
 #endif 
 
+#ifdef VERTEXLIGHT
+diffuseMap *= clamp(v_color, 0.0, 0.666);
+#endif
+
 #ifdef BUMP
 vec4 bumpLight;
 
@@ -187,7 +192,7 @@ diffuseMap *= u_ambientScale;
 #endif
 
 #ifdef VERTEXLIGHT
-bumpLight = (E.x * diffuseMap * gl_Color) + (E.y * specular * gl_Color); //via lava surfaces 
+bumpLight = (E.x * diffuseMap * v_color) + (E.y * specular * v_color); //via lava surfaces 
 diffuseMap *= u_ambientScale;
 #endif
 

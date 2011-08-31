@@ -5,6 +5,7 @@ varying vec3			v_lightVec;
 varying vec3 			t, b, n;
 varying vec2			v_wTexCoord;
 varying vec2			v_lTexCoord;
+varying vec4			v_color;
 
 attribute vec3			a_tangent;
 attribute vec3			a_binormal;
@@ -12,6 +13,7 @@ attribute vec2			a_texCoord;
 attribute vec2			a_LtexCoord;
 attribute vec3			a_vertArray;
 attribute vec3			a_normArray;
+attribute vec4			a_colorArray;
 
 void main ()
 {
@@ -32,5 +34,5 @@ n = a_normArray;
 #endif
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
-gl_FrontColor = gl_Color;
+v_color = a_colorArray;
 }
