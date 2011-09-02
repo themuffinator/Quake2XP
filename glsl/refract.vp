@@ -3,16 +3,18 @@ varying vec2			v_deformMul;
 varying float			v_depth;
 varying float			v_depthS;
 uniform float			u_deformMul;
+attribute	vec2		a_texCoord;
+attribute	vec3		a_vertArray;
 
 void main (void) {
 	
-	v_deformTexCoord = gl_MultiTexCoord0.xy;
+	v_deformTexCoord = a_texCoord;
 
 	// compute view space depth
-	vec4 positionVS = gl_ModelViewMatrix * gl_Vertex;
+	vec4 positionVS = gl_ModelViewMatrix * vec4(a_vertArray, 1.0);
 	positionVS = vec4(1.0, 0.0, positionVS.z, 1.0);
 	v_depth = -positionVS.z;
-	v_depthS = -(gl_ModelViewMatrix * gl_Vertex).z;
+	v_depthS = -(gl_ModelViewMatrix * vec4(a_vertArray, 1.0)).z;
 
 	// compute the deform strength
 	vec2 d = (gl_ProjectionMatrix * positionVS).xw;
@@ -22,5 +24,6 @@ void main (void) {
 	
 	gl_FrontColor = gl_Color;
 
-	gl_Position = ftransform();
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+
 }
