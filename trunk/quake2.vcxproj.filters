@@ -264,13 +264,13 @@
     <ClCompile Include="client\cl_hud.c">
       <Filter>Source Files\CG</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_alias.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="ref_gl\r_aliasbump.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="win32\r_glw_init.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_drawAlias.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_calcAlias.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

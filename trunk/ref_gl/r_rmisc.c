@@ -420,7 +420,7 @@ void GL_ScreenShot_f(void)
 		Cvar_SetValue("r_screenShotJpegQuality", 99);
 
 	ilHint(IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
-	ilSetInteger(IL_JPG_QUALITY, r_screenShotJpegQuality->value);
+	ilSetInteger(IL_JPG_QUALITY, (int)r_screenShotJpegQuality->value);
 	
 	ilGenImages(1, ImagesToSave);
 	ilBindImage(ImagesToSave[0]);
@@ -467,7 +467,6 @@ extern unsigned int thermaltex;
 
 void GL_SetDefaultState(void)
 {
-	memset (tmpIndices, 0, MAX_VERTEX_ARRAY * 3 * sizeof(int));
 	
 	bloomtex = 0;
 	thermaltex = 0;

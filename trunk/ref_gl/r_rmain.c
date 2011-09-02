@@ -810,8 +810,9 @@ void R_CastShadow(void)
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
 		return;
 
-	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglVertexPointer(3, GL_FLOAT, sizeof(vec3_t), ShadowArray);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
+
 	qglEnable(GL_STENCIL_TEST);
 	qglClear(GL_STENCIL_BUFFER_BIT);
 	qglEnable(GL_CULL_FACE);
@@ -857,7 +858,7 @@ void R_CastShadow(void)
 		R_DrawShadowVolume(currententity);
 	}
 	
-	qglDisableClientState(GL_VERTEX_ARRAY);
+	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisable(GL_STENCIL_TEST);
 	qglStencilMask(0);
 	qglDepthMask(true);

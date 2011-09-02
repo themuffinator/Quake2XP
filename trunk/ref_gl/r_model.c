@@ -1684,59 +1684,6 @@ static void Mod_BuildTriangleNeighbors(neighbors_t * neighbors,
 Mod_LoadAliasModel
 ==================
 */
-unsigned int	tmpIndices[MAX_VERTEX_ARRAY*3];
-
-void Mod_LoadMd2Indices (model_t *mod, dmdl_t *pheader)
-{
-	int		*order;
-	int		count;
-	int		vcnt = 0;
-	int		icnt = 0;
-	int		i, n;
-
-	order = (int *)((byte *)pheader + pheader->ofs_glcmds);
-
-	while (count = *order++) 
-	{	// get the vertex count and primitive type
-		if(icnt > MAX_VERTEX_ARRAY * 3 - 6) break;
-
-		if (count < 0) 
-		{
-			count = -count;
-			n = (count-2);
-
-			for(i=0;i<n;i++)
-			{
-				tmpIndices[icnt++] = vcnt;
-				tmpIndices[icnt++] = vcnt+i+1;
-				tmpIndices[icnt++] = vcnt+i+2;
-			}
-		} 
-		else if (count > 0)
-		{
-			n = (count-2);
-
-			for(i=0;i<n;i++)
-			{
-				tmpIndices[icnt++] = vcnt+i+(i&1);
-				tmpIndices[icnt++] = vcnt+i+((i&1)^1);
-				tmpIndices[icnt++] = vcnt+i+ 2;
-	
-			}
-		} 
-		else
-		{
-			break; //done
-		}
-		order += 3*count;
-		vcnt += count;
-	} 
-	mod->numIndices = icnt;
-	mod->numvertexes = vcnt;
-	mod->indexArray = (int*)Hunk_Alloc(icnt*sizeof(int));
-	mod->memorySize += icnt*sizeof(int);
-	memcpy(mod->indexArray, tmpIndices, icnt*sizeof(int));    
-}
 
 //see: http://members.rogers.com/deseric/tangentspace.htm
 void VecsForTris(float *v0, float *v1, float *v2, float *st0, float *st1, float *st2, vec3_t Tangent, vec3_t Binormal)
@@ -2283,8 +2230,6 @@ okey:	Com_DPrintf("%s: loaded from cache\n", mod->name);
 exit:
 	
 	// Load the Md2 Indices - old gl cmd drawing style (shells, distort models)
-	Mod_LoadMd2Indices (mod, pheader);
-
 	ClearBounds(mod->mins, mod->maxs);
 	VectorClear(mod->center);
 	frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames);	//Берем только нулевой кадр!

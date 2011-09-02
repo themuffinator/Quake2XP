@@ -17,8 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// r_bumpmaps.c: glsl bump for alias models
-
+// r_calcAlias.c: calc triangles for alias models
 
 
 #include "r_local.h"
@@ -29,7 +28,7 @@ static float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 vec3_t	tempVertexArray[MAX_VERTICES*4];
 
 
-void R_CalcAliasFrameLerp (dmdl_t *paliashdr)
+void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale)
 {
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t	*v, *ov, *verts;
@@ -73,16 +72,26 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr)
 
 	lerp = tempVertexArray[0];
 	
-	for (i=0 ; i < paliashdr->num_xyz; i++, v++, ov++, lerp+=3)
-		{
+	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) {
+		for (i=0 ; i < paliashdr->num_xyz; i++, v++, ov++, lerp+=3 ) {
+			float *normal = r_avertexnormals[verts[i].lightnormalindex];
+			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0] + normal[0] * shellScale;
+			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1] + normal[1] * shellScale;
+			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2] + normal[2] * shellScale;
+		}
+	} 
+	else 
+	{
+	for (i=0 ; i < paliashdr->num_xyz; i++, v++, ov++, lerp+=3)	{
+
 			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0];
 			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1];
 			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2];
 		}
-
+	}
 }
+
 int CL_PMpointcontents(vec3_t point);
-static float Md2ColorArray[MAX_TRIANGLES*4][4];
 
 void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 {
@@ -151,7 +160,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	if (!skin)
 		skin = r_notexture;
 
-	R_CalcAliasFrameLerp(paliashdr);			/// Просто сюда переместили вычисления Lerp...
+	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
 	c_alias_polys += paliashdr->num_tris;
 	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
@@ -197,14 +206,177 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
-
-
+	
 	qglColor4f(1, 1, 1, 1);	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
 }
+
+void GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr)
+{
+	vec3_t		vertexArray[3*MAX_TRIANGLES];
+	int			index_xyz;
+	int			i, j, jj =0;
+	dtriangle_t	*tris;
+	image_t		*bump;
+	unsigned	defBits = 0;
+	int			id;
+
+	if (currententity->flags & (RF_VIEWERMODEL))
+			return;
+
+	
+// select skin
+		if (currententity->bump)
+		bump = currententity->bump;	// custom player skin
+		else {
+		if (currententity->skinnum >= MAX_MD2SKINS) {
+			bump = currentmodel->skins_normal[0];
+			currententity->skinnum = 0;
+		} else {
+			bump	= currentmodel->skins_normal[currententity->skinnum];
+			if (!bump) {
+				bump = currentmodel->skins_normal[0];
+				currententity->skinnum = 0;
+			}
+		}
+	}
+	if (!bump)
+		bump = r_predator;
+
+	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
+	
+	c_alias_polys += paliashdr->num_tris;
+	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
+	jj = 0;
+
+	for (i=0; i<paliashdr->num_tris; i++)
+		{
+			for (j=0; j<3; j++, jj++)
+			{
+			index_xyz = tris[i].index_xyz[j];
+			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+			}
+		}
+
+
+
+		// setup program
+		GL_BindProgram(refractProgram, defBits);
+		id = refractProgram->id[defBits];
+
+		GL_MBind					(GL_TEXTURE0_ARB, bump->texnum);
+		qglUniform1i				(qglGetUniformLocation(id, "u_deformMap"), 0);
+				
+		GL_SelectTexture			(GL_TEXTURE1_ARB);
+		GL_BindRect					(ScreenMap->texnum);
+		qglUniform1i				(qglGetUniformLocation(id, "g_colorBufferMap"), 1);
+	
+		GL_SelectTexture			(GL_TEXTURE2_ARB);
+		GL_BindRect					(depthMap->texnum);
+		qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
+		qglUniform1i				(qglGetUniformLocation(id, "g_depthBufferMap"), 2);
+	
+	
+		qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	2.0);
+		qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.0);
+		qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	150.000);
+		qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
+		qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
+
+	qglDrawArrays(GL_TRIANGLES, 0, jj);
+	
+	qglColor4f(1, 1, 1, 1);	
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	GL_BindNullProgram();
+}
+
+void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
+{
+	vec3_t		vertexArray[3 * MAX_TRIANGLES];
+	int			index_xyz, id, i, j, jj = 0;
+	dtriangle_t	*tris;
+	unsigned	defBits = 0;
+	float		scroll = 0.0;
+	
+	if (currententity->flags & (RF_VIEWERMODEL))
+		return;
+	
+	qglEnable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+	qglColor4f(1, 1, 1, 1);
+	scroll = r_newrefdef.time *0.65;
+
+	if (currententity->flags & RF_WEAPONMODEL)
+		R_CalcAliasFrameLerp(paliashdr, 0.1);		
+	else if (currententity->flags & RF_CAMERAMODEL2)
+		R_CalcAliasFrameLerp(paliashdr, 0.0);
+	else
+		R_CalcAliasFrameLerp(paliashdr, 0.5);
+
+	c_alias_polys += paliashdr->num_tris;
+	
+	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
+	
+	jj = 0;
+
+	for (i=0; i<paliashdr->num_tris; i++)
+	{
+		for (j=0; j<3; j++, jj++)
+		{
+		index_xyz = tris[i].index_xyz[j];
+		VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+		}
+	}
+		
+	// setup program
+	defBits |= worldDefs.ShellBits;
+	GL_BindProgram(aliasAmbientProgram, defBits);
+	id = aliasAmbientProgram->id[defBits];
+	
+	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_overBrightBits->value);
+	qglUniform1f(qglGetUniformLocation(id, "u_scroll"), scroll);
+
+	if (currententity->flags & RF_SHELL_BLUE)
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[0]->texnum);
+	if (currententity->flags & RF_SHELL_RED)
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[1]->texnum);
+	if (currententity->flags & RF_SHELL_GREEN)
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[2]->texnum);
+	if (currententity->flags & RF_SHELL_GOD)
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[3]->texnum);
+	if (currententity->flags & RF_SHELL_HALF_DAM)
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[4]->texnum);
+	if (currententity->flags & RF_SHELL_DOUBLE)
+		GL_MBind(GL_TEXTURE0_ARB, r_texshell[5]->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
+
+	qglDrawArrays(GL_TRIANGLES, 0, jj);
+	
+	qglColor4f(1, 1, 1, 1);
+	qglDisable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	GL_BindNullProgram();
+}
+
 
 void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t lightColor)
 {
@@ -291,7 +463,7 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	if (!skinNormalmap)
 		skinNormalmap = r_defBump;
 
-	R_CalcAliasFrameLerp(paliashdr);			/// Просто сюда переместили вычисления Lerp...
+	R_CalcAliasFrameLerp(paliashdr,0);			/// Просто сюда переместили вычисления Lerp...
 
 	for (i=0; i<paliashdr->num_tris; i++)
 	{
@@ -324,56 +496,36 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	GL_BindProgram(aliasBumpProgram, defBits);
 	id = aliasBumpProgram->id[defBits];
 		
-	qglUniform1f								(qglGetUniformLocation(id, "u_LightRadius"), rad);
-	qglUniform3fv								(qglGetUniformLocation(id, "u_LightColor"), 1 , lightColor);
-	qglUniform3fv								(qglGetUniformLocation(id, "u_LightOrg"), 1 , light);
-	qglUniform3fv								(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , r_newrefdef.vieworg);
+	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), rad);
+	qglUniform3fv(qglGetUniformLocation(id, "u_LightColor"), 1 , lightColor);
+	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , light);
+	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , r_newrefdef.vieworg);
 
-	GL_SelectTexture							(GL_TEXTURE0_ARB);
-	GL_Bind										(skinNormalmap->texnum);
-	qglEnableClientState						(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer							(2, GL_FLOAT, 0, currentmodel->st);
-	qglUniform1i								(qglGetUniformLocation(id, "u_bumpMap"), 0);
-
-	GL_SelectTexture							(GL_TEXTURE1_ARB);
-	qglEnable									(GL_TEXTURE_2D);
-	GL_Bind										(skin->texnum);
-	qglEnableClientState						(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer							(2, GL_FLOAT, 0, currentmodel->st);
-	qglUniform1i								(qglGetUniformLocation(id, "u_diffuseMap"), 1);
+	GL_MBind(GL_TEXTURE0_ARB, skinNormalmap->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), 0);
+	GL_MBind(GL_TEXTURE1_ARB, skin->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_diffuseMap"), 1);
 	
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TANGENT);
+	qglEnableVertexAttribArray(ATRB_BINORMAL);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
+	qglEnableVertexAttribArray(ATRB_POSITION);
 
-	//tangent
-	qglEnableVertexAttribArray					(ATRB_TANGENT);
-	qglEnableVertexAttribArray					(ATRB_BINORMAL);
-
-	qglVertexAttribPointer						(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tangentArray);
-	qglVertexAttribPointer						(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, binormalArray);
-
-	//normal
-	qglEnableClientState						(GL_NORMAL_ARRAY);
-	qglNormalPointer							(GL_FLOAT, 0, normalArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, currentmodel->st);
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tangentArray);
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, normalArray);
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, binormalArray);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertexArray);
 	
-	// vertex
-	qglEnableClientState						(GL_VERTEX_ARRAY);
-	qglVertexPointer							(3, GL_FLOAT, 0, vertexArray);
-	
-	qglDrawArrays								(GL_TRIANGLES, 0, jj);
+	qglDrawArrays	(GL_TRIANGLES, 0, jj);
 
-	qglDisableClientState						(GL_VERTEX_ARRAY);
-	qglDisableClientState						(GL_NORMAL_ARRAY);
-
-	GL_SelectTexture							(GL_TEXTURE1_ARB);
-	qglDisable									(GL_TEXTURE_2D);
-	qglDisableClientState						(GL_TEXTURE_COORD_ARRAY);
-	
-	GL_SelectTexture							(GL_TEXTURE0_ARB);
-	qglEnable									(GL_TEXTURE_2D);
-	qglDisableClientState						(GL_TEXTURE_COORD_ARRAY);
-
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
-
+	qglDisableVertexAttribArray(ATRB_NORMAL);
+	qglDisableVertexAttribArray(ATRB_POSITION);
 	GL_BindNullProgram();
 	
 }

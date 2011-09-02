@@ -255,6 +255,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
+      <HeapReserveSize>8388608</HeapReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Alpha|Win32'">
@@ -448,12 +449,12 @@
       <ProgramDatabaseFile>.\release/quake2xp.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
-      <LinkTimeCodeGeneration>
-      </LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
+      <HeapReserveSize>8388608</HeapReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -1138,8 +1139,8 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_alias.c" />
-    <ClCompile Include="ref_gl\r_aliasbump.c" />
+    <ClCompile Include="ref_gl\r_drawAlias.c" />
+    <ClCompile Include="ref_gl\r_calcAlias.c" />
     <ClCompile Include="ref_gl\r_decals.c" />
     <ClCompile Include="ref_gl\r_draw.c" />
     <ClCompile Include="ref_gl\r_image.c" />

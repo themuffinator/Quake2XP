@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc. 2004-20011 Quake2xp Team, Berserker.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,7 +17,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// r_alias_md2.c: triangle model functions
+// r_drawAlias.c: draw alias models
+// regular, shells, bumpmapped and refracted
 
 //willow: radar bips!
 #include "r_local.h"
@@ -36,290 +37,17 @@ ALIAS MODELS
 static float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 #include "anorms.h"
 };
-
-vec4_t		s_lerped[MAX_VERTS];
-float		shadelight[3];
-
-// precalculated dot products for quantized angles
-#define		SHADEDOT_QUANT 16
-float		r_avertexnormal_dots[SHADEDOT_QUANT][256]= 
-#include	"anormtab.h"
+#define	SHADEDOT_QUANT 16
+float	r_avertexnormal_dots[SHADEDOT_QUANT][256]= 
+#include "anormtab.h"
 ;
-float		*shadedots = r_avertexnormal_dots[0];
+float shadelight[3];
+float	*shadedots = r_avertexnormal_dots[0];
+float	ref_realtime =0;
 
-float		ref_realtime =0;
-
-
-
-void GL_LerpVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3], float shellscale)
-{
-	int i;
-
-	//PMM -- added RF_SHELL_DOUBLE, RF_SHELL_HALF_DAM
-	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) {
-		for (i=0 ; i < nverts; i++, v++, ov++, lerp+=4 ) {
-			float *normal = r_avertexnormals[verts[i].lightnormalindex];
-			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0] + normal[0] * shellscale;
-			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1] + normal[1] * shellscale;
-			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2] + normal[2] * shellscale;
-		}
-	} else {
-		for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {
-			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0];
-			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1];
-			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2];
-		}
-	}
-
-}
-
-float Md2VertArray[MAX_TRIANGLES*4][3];
-float Md2TexArray[MAX_TRIANGLES*4][2];
-float Md2ColorArray[MAX_TRIANGLES*4][4];
-
-void GL_DrawAliasFrameLerpDistort (dmdl_t *paliashdr, float backlerp)
-{
-	daliasframe_t	*frame, *oldframe;
-	dtrivertx_t	*v, *ov, *verts;
-	int		*order;
-	int		count;
-	float	frontlerp, alpha;
-	vec3_t	move, delta, vectors[3];
-	vec3_t	frontv, backv;
-	int		i;
-	int		index_xyz;
-	float	*lerp;
-	int aliasArray = 0;
-
-
-	if (currententity->flags & (RF_VIEWERMODEL))
-			return;
-	
-	qglDisable(GL_BLEND);
-	
-	if (currententity->flags & RF_TRANSLUCENT)
-		alpha = currententity->alpha;
-	else
-		alpha = 1.0;
-
-	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames
-		+ currententity->frame * paliashdr->framesize);
-	verts = v = frame->verts;
-
-	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames
-		+ currententity->oldframe * paliashdr->framesize);
-	ov = oldframe->verts;
-
-	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
-
-	
-	frontlerp = 1.0 - backlerp;
-	
-	c_alias_polys += paliashdr->num_tris;
-		
-
-	// move should be the delta back to the previous frame * backlerp
-	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
-	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
-
-	move[0] = DotProduct(delta, vectors[0]);	// forward
-	move[1] = -DotProduct(delta, vectors[1]);	// left
-	move[2] = DotProduct(delta, vectors[2]);	// up
-
-	VectorAdd(move, oldframe->translate, move);
-
-	for (i = 0; i < 3; i++) {
-		move[i] = backlerp * move[i] + frontlerp * frame->translate[i];
-	}
-
-	for (i = 0; i < 3; i++) {
-		frontv[i] = frontlerp * frame->scale[i];
-		backv[i] = backlerp * oldframe->scale[i];
-	}
-	
-	
-	lerp = s_lerped[0];
-
-	GL_LerpVerts( paliashdr->num_xyz, v, ov, verts, lerp, move, frontv, backv, 0);
-			
-		qglEnableClientState	(GL_VERTEX_ARRAY);
-		qglVertexPointer		(3, GL_FLOAT, 0, Md2VertArray);
-		
-		while (1) {
-			// get the vertex count and primitive type
-			count = *order++;
-						
-			if (!count)
-				break;		// done
-			if (count < 0)
-				count = -count;
-		
-			do {
-				index_xyz = order[2];
-				VA_SetElem2(Md2TexArray[aliasArray], ((float *)order)[0], ((float *)order)[1]); 
-				VA_SetElem3(Md2VertArray[aliasArray], s_lerped[index_xyz][0], s_lerped[index_xyz][1], s_lerped[index_xyz][2]); 
-				aliasArray++;
-				
-				order += 3;
-			
-			} while (--count);
-		
-			
-		}
-
-
-		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
-			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, aliasArray, currentmodel->numIndices, GL_UNSIGNED_INT, currentmodel->indexArray);		
-		else
-			qglDrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, currentmodel->indexArray);
-
-	
-
-		qglDisableClientState	(GL_VERTEX_ARRAY);
-		
-		
-}
-
-
-
-void GL_DrawTexturedShell(dmdl_t *paliashdr, float backlerp)
-{
-	daliasframe_t	*frame, *oldframe;
-	dtrivertx_t	*v, *ov, *verts;
-	int			*order;
-	int			count;
-	float		frontlerp;
-	vec3_t		move, delta, vectors[3];
-	vec3_t		frontv, backv;
-	int			i;
-	int			index_xyz;
-	float		*lerp;
-	float		alpha;
-	float		scroll;
-	int			shellArray = 0;
-	unsigned	defBits = 0;
-	int			id;
-
-	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames
-		+ currententity->frame * paliashdr->framesize);
-	verts = v = frame->verts;
-
-	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames
-		+ currententity->oldframe * paliashdr->framesize);
-	ov = oldframe->verts;
-
-	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
-
-	
-	if (currententity->flags & RF_TRANSLUCENT)
-		alpha = currententity->alpha;
-	else
-		alpha = 1.0;
-
-	frontlerp = 1.0 - backlerp;
-	
-	c_alias_polys += paliashdr->num_tris;
-
-	// move should be the delta back to the previous frame * backlerp
-	VectorSubtract (currententity->oldorigin, currententity->origin, delta);
-	AngleVectors (currententity->angles, vectors[0], vectors[1], vectors[2]);
-
-
-	move[0] = DotProduct (delta, vectors[0]);	// forward
-	move[1] = -DotProduct (delta, vectors[1]);	// left
-	move[2] = DotProduct (delta, vectors[2]);	// up
-
-	VectorAdd (move, oldframe->translate, move);
-
-	for (i = 0; i < 3; i++) {
-		move[i] = backlerp*move[i] + frontlerp*frame->translate[i];
-	}
-
-	for (i = 0; i < 3; i++) {
-		frontv[i] = frontlerp*frame->scale[i];
-		backv[i] = backlerp*oldframe->scale[i];
-	}
-
-	lerp = s_lerped[0];
-		
-	if (currententity->flags & RF_WEAPONMODEL)
-		GL_LerpVerts(paliashdr->num_xyz, v, ov, verts, lerp, move, frontv, backv, /*WEAPON_SHELL_SCALE*/0.1f);
-	else if (currententity->flags & RF_CAMERAMODEL2)
-		GL_LerpVerts(paliashdr->num_xyz, v, ov, verts, lerp, move, frontv, backv, 0); //he-he-he shell scale dont scale shell, but move shell
-	else
-		GL_LerpVerts(paliashdr->num_xyz, v, ov, verts, lerp, move, frontv, backv, SHELL_SCALE);
-	
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-	// setup program
-	GL_BindProgram(aliasAmbientProgram, defBits);
-	id = aliasAmbientProgram->id[defBits];
-	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_overBrightBits->value);
-
-
-	if (currententity->flags & RF_SHELL_BLUE)
-		GL_MBind(GL_TEXTURE0_ARB, r_texshell[0]->texnum);
-	if (currententity->flags & RF_SHELL_RED)
-		GL_MBind(GL_TEXTURE0_ARB, r_texshell[1]->texnum);
-	if (currententity->flags & RF_SHELL_GREEN)
-		GL_MBind(GL_TEXTURE0_ARB, r_texshell[2]->texnum);
-	if (currententity->flags & RF_SHELL_GOD)
-		GL_MBind(GL_TEXTURE0_ARB, r_texshell[3]->texnum);
-	if (currententity->flags & RF_SHELL_HALF_DAM)
-		GL_MBind(GL_TEXTURE0_ARB, r_texshell[4]->texnum);
-	if (currententity->flags & RF_SHELL_DOUBLE)
-		GL_MBind(GL_TEXTURE0_ARB, r_texshell[5]->texnum);
-
-	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
-//	GL_MBind(GL_TEXTURE1_ARB, r_notexture->texnum);
-//	qglUniform1i(qglGetUniformLocation(id, "u_Add"), 1);
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, Md2VertArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, Md2TexArray);
-
-
-	while (1)
-	{
-		// get the vertex count and primitive type
-		count = *order++;
-		if (!count)
-			break;		// done
-		if (count < 0)
-			count = -count;
-	
-		do
-		{
-			index_xyz = order[2];
-			order += 3;
-			scroll = r_newrefdef.time *0.65;
-			
-			VA_SetElem2(Md2TexArray[shellArray], (	(s_lerped[index_xyz][1] + s_lerped[index_xyz][0]) * 0.1)  - (scroll),
-													(s_lerped[index_xyz][2] * 0.1) + (scroll));
-			VA_SetElem3(Md2VertArray[shellArray],	s_lerped[index_xyz][0], s_lerped[index_xyz][1], s_lerped[index_xyz][2]); 
-			shellArray++;
-			
-		} while (--count);
-		
-	}
-
-		if(gl_state.DrawRangeElements && r_DrawRangeElements->value )
-			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shellArray, currentmodel->numIndices, GL_UNSIGNED_INT, currentmodel->indexArray);		
-		else
-			qglDrawElements(GL_TRIANGLES, currentmodel->numIndices, GL_UNSIGNED_INT, currentmodel->indexArray);
-
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglColor4f(1.0, 1.0, 1.0, 1.0);	
-	GL_BindNullProgram();
-	
-}
-
+void	GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t color);
+void	GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr);
+void	GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr);
 
 /*
 ** R_CullAliasModel
@@ -506,14 +234,13 @@ GL_SetupLightMatrix
 */
 
 
-void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t color);
+
 
 /*
 =================
 R_DrawAliasModel
 =================
 */
-
 
 int  radarOldTime = 0;
 void R_DrawAliasModel (entity_t *e, qboolean weapon_model)
@@ -604,15 +331,13 @@ next:
 	}
 	
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) 
-	{
-		GL_DrawTexturedShell(paliashdr,currententity->backlerp);
-	} 
+		GL_DrawAliasFrameLerpAmbientShell(paliashdr);
 	else 
-	GL_DrawAliasFrameLerpAmbient(paliashdr, shadelight);
+		GL_DrawAliasFrameLerpAmbient(paliashdr, shadelight);
 		
-		if(r_bumpAlias->value){
-			VectorCopy(diffuseLight, shadelight);
-	}
+	if(r_bumpAlias->value)
+		VectorCopy(diffuseLight, shadelight);
+	
 
 	GL_TexEnv(GL_REPLACE);
 
@@ -681,8 +406,6 @@ next:
 	qglColor4f(1, 1, 1, 1);
 	GL_Overbrights (false);
 }
-
-
 
 
 void R_DrawAliasModelLightPass (qboolean weapon_model)
@@ -778,13 +501,11 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	GL_Overbrights (false);
 }
 
+
 void R_DrawAliasDistortModel (entity_t *e)
 {
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
-	int			id;
-	unsigned	defBits = 0;
-	image_t		*bump;
 
 		if ( R_CullAliasModel( bbox, e ) )
 			return;
@@ -806,54 +527,6 @@ void R_DrawAliasDistortModel (entity_t *e)
 		R_RotateForEntity (e);
 		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
 
-		// select skin
-		if (currententity->bump)
-		bump = currententity->bump;	// custom player skin
-		else {
-		if (currententity->skinnum >= MAX_MD2SKINS) {
-			bump = currentmodel->skins_normal[0];
-			currententity->skinnum = 0;
-		} else {
-			bump	= currentmodel->skins_normal[currententity->skinnum];
-			if (!bump) {
-				bump = currentmodel->skins_normal[0];
-				currententity->skinnum = 0;
-			}
-		}
-	}
-	if (!bump)
-		bump = r_predator;
-
-
-		// setup program
-		GL_BindProgram(refractProgram, defBits);
-		id = refractProgram->id[defBits];
-
-		GL_SelectTexture			(GL_TEXTURE0_ARB);
-		qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
-		qglEnableClientState		(GL_COLOR_ARRAY);
-		qglTexCoordPointer			(2, GL_FLOAT, 0, Md2TexArray);
-		GL_Bind						(bump->texnum);
-		qglUniform1i				(qglGetUniformLocation(id, "u_deformMap"), 0);
-				
-		GL_SelectTexture			(GL_TEXTURE1_ARB);
-		GL_BindRect					(ScreenMap->texnum);
-		qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
-		qglUniform1i				(qglGetUniformLocation(id, "g_colorBufferMap"), 1);
-	
-		GL_SelectTexture			(GL_TEXTURE2_ARB);
-		GL_BindRect					(depthMap->texnum);
-		qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
-		qglUniform1i				(qglGetUniformLocation(id, "g_depthBufferMap"), 2);
-	
-	
-		qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	2.0);
-		qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.0);
-		qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	150.000);
-		qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
-		qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	
-
 		if ( (currententity->frame >= paliashdr->num_frames)
 			|| (currententity->frame < 0) ) {
 			Con_Printf (PRINT_ALL, "R_DrawAliasDistortModel %s: no such frame %d\n",
@@ -870,21 +543,8 @@ void R_DrawAliasDistortModel (entity_t *e)
 			currententity->oldframe = 0;
 		}
 
-			GL_DrawAliasFrameLerpDistort (paliashdr, currententity->backlerp);
-
-		GL_SelectTexture		(GL_TEXTURE2_ARB);
-		qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-		qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-	
-		GL_SelectTexture		(GL_TEXTURE1_ARB);
-		qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-		qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-	
-		GL_SelectTexture		(GL_TEXTURE0_ARB);
-		qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-	
-		GL_BindNullProgram();
-
+		GL_DrawAliasFrameLerpAmbientDistort(paliashdr);
+		
 		GL_TexEnv(GL_REPLACE);
 
 		qglPopMatrix();

@@ -350,9 +350,7 @@ void R_InitLightgrid(void);
 void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
-void GL_LerpVerts(int nverts, dtrivertx_t * v, dtrivertx_t * ov,
-				  dtrivertx_t * verts, float *lerp, float move[3],
-				  float frontv[3], float backv[3], float shellscale);
+
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
@@ -623,7 +621,6 @@ extern	vec3_t	lightspot;
 #define MAX_VERTEX_ARRAY	8192
 #define MAX_SHADOW_VERTS	16384
 
-extern unsigned int	tmpIndices[MAX_VERTEX_ARRAY*3];
 
 extern vec3_t ShadowArray[MAX_SHADOW_VERTS];
 
@@ -732,6 +729,7 @@ typedef struct {
 	unsigned	BumpBits;
 	unsigned	DofExtra;
 	unsigned	WaterTransBits;
+	unsigned	ShellBits;
 
 } worldDefs_t;
 

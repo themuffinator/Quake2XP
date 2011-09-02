@@ -491,6 +491,7 @@ void R_InitPrograms(void) {
 		Com_Printf("succeeded\n");
 
 		worldDefs.CausticsBit = R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
+		worldDefs.ShellBits = R_GetProgramDefBits(aliasAmbientProgram, "SHELL");
 
 	} else
 		Com_Printf(S_COLOR_RED"Failed!\n");

@@ -39,6 +39,18 @@ unsigned	ShadowIndex[MAX_INDICES];
 
 qboolean	triangleFacingLight	[MAX_INDICES / 3];
 
+
+void GL_LerpVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3])
+{
+	int i;
+
+		for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {
+			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0];
+			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1];
+			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2];
+		}
+}
+
 void R_MarkShadowTriangles(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg){
 	
 	vec3_t	r_triangleNormals[MAX_INDICES / 3];
@@ -468,7 +480,7 @@ void R_DrawShadowVolume(entity_t * e)
 	}
 
 	GL_LerpVerts(paliashdr->num_xyz, v, ov, verts, s_lerped[0], move,
-				 frontv, backv, 0);
+				 frontv, backv);
 
 
 	if (r_shadows->value > 1 ) {
@@ -730,8 +742,8 @@ void R_DrawShadowWorld(void)
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
 		return;
 
-	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglVertexPointer(3, GL_FLOAT, 0, wVertexArray);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
 	
 	qglEnable(GL_STENCIL_TEST);
     qglStencilFunc(GL_NOTEQUAL, 128, 255);
@@ -764,7 +776,7 @@ void R_DrawShadowWorld(void)
 		R_DrawBrushModelShadow(currententity);
 	}
 
-	qglDisableClientState(GL_VERTEX_ARRAY);
+	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglColor4f(1, 1, 1, 1);    
 	qglDisable(GL_BLEND);
