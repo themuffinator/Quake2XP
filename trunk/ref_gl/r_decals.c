@@ -92,7 +92,6 @@ void R_RenderDecals(void)
 
      qglDepthMask(GL_FALSE);
      qglEnable(GL_BLEND);
-     GL_TexEnv(GL_MODULATE);
 
      for (dl = r_newrefdef.decals, i = 0; i < r_newrefdef.numDecals; i++, dl++) {
           
@@ -178,7 +177,6 @@ void R_RenderDecals(void)
 		c_decal_tris += numIndices/3;
 	 }
 
-     GL_TexEnv(GL_REPLACE);
      qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
      qglDisable(GL_BLEND);
      qglDisableClientState(GL_VERTEX_ARRAY);

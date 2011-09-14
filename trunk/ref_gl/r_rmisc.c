@@ -495,7 +495,7 @@ void GL_SetDefaultState(void)
 	
 	qglPolygonMode		(GL_FRONT_AND_BACK, GL_FILL);
 
-	qglShadeModel		(GL_FLAT);
+	qglShadeModel		(GL_SMOOTH);
 
 	GL_TextureMode		(r_textureMode->string);
 	

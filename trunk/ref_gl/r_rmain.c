@@ -225,7 +225,6 @@ void R_DrawSpriteModel(entity_t * e)
 
 	qglEnd();
 
-	GL_TexEnv(GL_REPLACE);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisable(GL_BLEND);
 	qglColor4f(1, 1, 1, 1);
@@ -235,110 +234,96 @@ void R_DrawSpriteModel(entity_t * e)
 
 static void R_DrawDistortSpriteModel(entity_t * e)
 {
-
-	vec3_t point;
 	dsprframe_t *frame;
-	float *up, *right;
-	dsprite_t *psprite;
+	float		*up, *right;
+	dsprite_t	*psprite;
 	int			id;
 	unsigned	defBits = 0;
-	
-	// don't even bother culling, because it's just a single
-	// polygon without a surface cache
+	unsigned	Index[MAX_INDICES];
+	int			vert=0, index=0;
+	vec3_t		dist;
+	float		len;
 	
 	psprite = (dsprite_t *) currentmodel->extradata;
 	e->frame %= psprite->numframes;
 	frame = &psprite->frames[e->frame];
 
+	VectorSubtract(e->origin, r_origin, dist);
+	len = VectorLength(dist);
+
 	// normal sprite
 	up = vup;
 	right = vright;
-	
-	qglDepthMask(0);		// no z buffering - trans object!
-	qglDisable(GL_BLEND);
 
 	defBits = worldDefs.AlphaMaskBits;
 	// setup program
 	GL_BindProgram(refractProgram, defBits);
 	id = refractProgram->id[defBits];
+		
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
 
-	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	GL_Bind						(r_distort->texnum);
-	qglUniform1i				(qglGetUniformLocation(id, "u_deformMap"), 0);
-	
-	GL_SelectTexture			(GL_TEXTURE1_ARB);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
+
+	GL_MBind(GL_TEXTURE0_ARB, r_distort->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
 	if (!currentmodel->skins[e->frame]->texnum)
-	GL_Bind						(r_notexture->texnum);
+	GL_MBind(GL_TEXTURE1_ARB, r_notexture->texnum);
 	else
-	GL_Bind						(currentmodel->skins[e->frame]->texnum);
-	qglEnable					(GL_TEXTURE_2D);
-	qglUniform1i				(qglGetUniformLocation(id, "u_colorMap"), 1);
-		
-	GL_SelectTexture			(GL_TEXTURE2_ARB);
-	GL_BindRect					(ScreenMap->texnum);
-	qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
-	qglUniform1i				(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
+	GL_MBind(GL_TEXTURE1_ARB, currentmodel->skins[e->frame]->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 1);
+	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
+	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
+			
+	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	15.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	e->alpha);
+	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	len*0.5);
+	qglUniform1f(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.3);
+	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
+	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
-	GL_SelectTexture			(GL_TEXTURE3_ARB);
-	GL_BindRect					(depthMap->texnum);
-	qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
-	qglUniform1i				(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
-		
-	qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	15.0);
-	qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.0);
-	qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	512.0);
-	qglUniform1f				(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.75);
-	qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
-	qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f				(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0);
 
-	qglBegin(GL_QUADS);
-
-	qglMultiTexCoord2fARB		(GL_TEXTURE0_ARB, 0, 1);
-	qglMultiTexCoord2fARB		(GL_TEXTURE1_ARB, 0, 1);
-	VectorMA					(e->origin, -frame->origin_y, up, point);
-	VectorMA					(point, -frame->origin_x, right, point);
-	qglVertex3fv				(point);
-
-	qglMultiTexCoord2fARB		(GL_TEXTURE0_ARB, 0, 0);
-	qglMultiTexCoord2fARB		(GL_TEXTURE1_ARB, 0, 0);
-	VectorMA					(e->origin, frame->height - frame->origin_y, up, point);
-	VectorMA					(point, -frame->origin_x, right, point);
-	qglVertex3fv				(point);
-
-	qglMultiTexCoord2fARB		(GL_TEXTURE0_ARB, 1, 0);
-	qglMultiTexCoord2fARB		(GL_TEXTURE1_ARB, 1, 0);
-	VectorMA					(e->origin, frame->height - frame->origin_y, up, point);
-	VectorMA					(point, frame->width - frame->origin_x, right, point);
-	qglVertex3fv				(point);
-
-	qglMultiTexCoord2fARB		(GL_TEXTURE0_ARB, 1, 1);
-	qglMultiTexCoord2fARB		(GL_TEXTURE1_ARB, 1, 1);
-	VectorMA					(e->origin, -frame->origin_y, up, point);
-	VectorMA					(point, frame->width - frame->origin_x, right, point);
-	qglVertex3fv				(point);
-
-	qglEnd();
+	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+0]);
+	VectorMA (wVertexArray[vert+0], -frame->origin_x, right, wVertexArray[vert+0]);
+	VA_SetElem2(wTexArray[vert+0], 0, 1);
 	
-	GL_SelectTexture			(GL_TEXTURE3_ARB);
-	qglDisable					(GL_TEXTURE_RECTANGLE_ARB);
+	VectorMA (e->origin, frame->height - frame->origin_y, up, wVertexArray[vert+1]);
+	VectorMA (wVertexArray[vert+1], -frame->origin_x, right, wVertexArray[vert+1]);
+    VA_SetElem2(wTexArray[vert+1], 0, 0);
 
-	GL_SelectTexture			(GL_TEXTURE2_ARB);
-	qglDisable					(GL_TEXTURE_RECTANGLE_ARB);
-	
+	VectorMA (e->origin, frame->height - frame->origin_y, up, wVertexArray[vert+2]);
+	VectorMA (wVertexArray[vert+2], frame->width - frame->origin_x, right, wVertexArray[vert+2]);
+    VA_SetElem2(wTexArray[vert+2], 1, 0);
 
-	GL_SelectTexture			(GL_TEXTURE1_ARB);
-	qglDisable					(GL_TEXTURE_2D);
-	
-	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	
-	GL_BindNullProgram			();
-	
-	GL_TexEnv					(GL_REPLACE);
-	GL_Overbrights				(false);
-	qglDepthRange				(0, 1);
-	qglDepthMask				(1);		
+	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+3]);
+	VectorMA (wVertexArray[vert+3],frame->width - frame->origin_x, right, wVertexArray[vert+3]);
+    VA_SetElem2(wTexArray[vert+3], 1, 1);
 
+	Index[index++] = vert+0;
+	Index[index++] = vert+1;
+	Index[index++] = vert+3;
+	Index[index++] = vert+3;
+	Index[index++] = vert+1;
+	Index[index++] = vert+2;
+			
+	vert+=4;
+
+	
+	if(vert)
+	{
+		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
+			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, vert, index, GL_UNSIGNED_INT, Index);
+		else
+			qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, Index);
+	}
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	GL_BindNullProgram();
 }
 
 //==================================================================================
@@ -724,8 +709,6 @@ float SphereInFrustum( vec3_t o, float radius )
 	return d + radius;
 }
 
-//MyGlPerspective(r_newrefdef.fov_y, (float)r_newrefdef.width/r_newrefdef.height, 4);
-//qglGetFloatv (GL_PROJECTION_MATRIX, r_project_matrix);  //Store it for later mirror use
 /*
 =============
 R_SetupGL
@@ -983,7 +966,7 @@ next:
 		}
 	}
 	qglDepthMask(1);			// back to writing
-
+	
 }
 
 /*
@@ -1120,7 +1103,7 @@ void R_RenderDistortModels(void)
 	int i;
 	
 	qglDepthMask(0);
-
+	
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		currentmodel = currententity->model;
@@ -1178,21 +1161,17 @@ void R_RenderView(refdef_t * fd)
 	R_DrawBSP();
 	R_RenderDecals();
 	R_DrawEntitiesOnList();
-
 	R_BlobShadow();	
 	R_CastShadow();
 	R_DrawEntitiesLightPass();
 	R_DrawShadowWorld();
-
 	R_RenderFlares();
 	R_CaptureDepthBuffer();
 	R_DrawParticles(true); //underwater particles
 	R_CaptureColorBuffer();
 	R_RenderDistortModels();
 	R_DrawAlphaPoly();
-
 	R_DrawParticles(false); // air particles
-	
 	R_DrawPlayerWeapon();
 	R_DrawPlayerWeaponLightPass();
 	

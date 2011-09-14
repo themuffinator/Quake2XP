@@ -368,6 +368,7 @@ void R_LightPointDynamics (vec3_t p, vec3_t color, m_dlight_t *list, int *amount
 void R_ShutdownPrograms(void);
 void GL_BindNullProgram(void) ;
 void GL_BindRect(int texnum);
+void GL_MBindRect(GLenum target, int texnum);
 
 //====================================================================
 
@@ -638,13 +639,6 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 #define	MAXSHADOWLIGHTS		1024	//256 //Maximum number of (client side) lights in a map				/// FIXME: уменьшить для спец.карт для данного движка!
 #define MAXUSEDSHADOWLIGHS	128		//64  //Maximum number of lights that can be used in a single frame	/// FIXME: уменьшить для спец.карт для данного движка!
 
-void R_VCInit();
-void R_VCShutdown();
-void GL_BindVBO(vertCache_t *cache);
-
-extern int	vboPosition;
-extern int	totalVBObufferSize;
-extern GLuint bspVbo;
 
 #define LIGHTMAP_BYTES 4
 #define	LIGHTMAP_SIZE	1024 //was 128

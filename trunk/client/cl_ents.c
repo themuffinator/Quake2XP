@@ -730,6 +730,12 @@ void CL_AddPacketEntities(frame_t * frame)
 		else
 			ent.frame = s1->frame;
 
+/*		if(effects & EF_DISTORT){
+		effects &= ~EF_DISTORT;
+		renderfx |= RF_DISTORT;
+		predator = true;
+		}
+		*/
 		// quad and pent can do different things on client
 		if (effects & EF_PENT) {
 			effects &= ~EF_PENT;
@@ -756,13 +762,7 @@ void CL_AddPacketEntities(frame_t * frame)
 			effects |= EF_COLOR_SHELL;
 			renderfx |= RF_SHELL_HALF_DAM;
 		}
-
-		if(effects & EF_DISTORT){
 		
-		effects &= ~EF_DISTORT;
-		renderfx |= RF_DISTORT;
-		predator = true;
-		}
 // pmm
 //======
 		ent.oldframe = cent->prev.frame;
@@ -824,18 +824,8 @@ void CL_AddPacketEntities(frame_t * frame)
 			ent.skin = NULL;
 			ent.model = NULL;
 			ent.flags = 0;
-
-
-			/*
-			ent.alpha = 0.30;
-			index = (s1->skinnum >> ((rand() % 4) * 8)) & 0xff;
-			ent.color[0] = cl_indexPalette[index][0];
-			ent.color[1] = cl_indexPalette[index][1];
-			ent.color[2] = cl_indexPalette[index][2];
-			ent.model = NULL;*/
 		}
-
-
+		
 		else {
 			// set skin
 			if (s1->modelindex == 255) {	// use custom player skin
@@ -976,13 +966,14 @@ void CL_AddPacketEntities(frame_t * frame)
 		if (effects & EF_BFG) {
 			
 			ent.flags = RF_TRANSLUCENT;
-			
+			ent.flags |= RF_DISTORT;
 			ent.alpha = 0.30;
 		}
 		// RAFAEL
 		if (effects & EF_PLASMA) {
 			
 			ent.flags = RF_TRANSLUCENT;
+			ent.flags |= RF_DISTORT;
 			ent.alpha = 0.6;
 		}
 

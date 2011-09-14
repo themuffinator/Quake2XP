@@ -240,8 +240,6 @@ void EmitWaterPolys(msurface_t * fa)
 	qglEnableClientState		(GL_VERTEX_ARRAY);
 	qglVertexPointer			(3, GL_FLOAT, 0, wVertexArray);
 
-	qglShadeModel(GL_SMOOTH);
-
 	
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
@@ -581,8 +579,8 @@ R_DrawSkyBox
 int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox(void)
 {
-
 	int i;
+
 
 	if (skyrotate) {			// check for no sky at all
 		for (i = 0; i < 6; i++)
@@ -611,6 +609,7 @@ void R_DrawSkyBox(void)
 			|| skymins[1][i] >= skymaxs[1][i])
 			continue;
 
+		GL_TexEnv(GL_REPLACE);
 		GL_MBind(GL_TEXTURE0_ARB, sky_images[skytexorder[i]]->texnum);
 
 		qglBegin(GL_QUADS);

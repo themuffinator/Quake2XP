@@ -47,7 +47,7 @@ float	ref_realtime =0;
 
 void	GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t color);
 void	GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr);
-void	GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr);
+void	GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr, vec4_t color);
 
 /*
 ** R_CullAliasModel
@@ -301,8 +301,6 @@ next:
 
 	GL_Overbrights (false);
 
-	
-	qglShadeModel(GL_SMOOTH);
 
 	if (currententity->flags & RF_TRANSLUCENT) {
 		GLSTATE_ENABLE_BLEND
@@ -337,9 +335,6 @@ next:
 		
 	if(r_bumpAlias->value)
 		VectorCopy(diffuseLight, shadelight);
-	
-
-	GL_TexEnv(GL_REPLACE);
 
 	qglPopMatrix();
 
@@ -453,9 +448,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	
 	currententity->angles[PITCH] = -currententity->angles[PITCH];	// sinc with ambient pass.
 
-	
-	qglShadeModel(GL_SMOOTH);
-
 	if ((currententity->frame >= paliashdr->num_frames)
 		|| (currententity->frame < 0)) {
 		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
@@ -478,8 +470,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	R_RotateForEntity (currententity);
 	
 	GL_DrawAliasFrameLerpArbBump(paliashdr);
-		
-	GL_TexEnv(GL_REPLACE);
+
 	qglPopMatrix();
 
 	currententity->angles[PITCH] = -currententity->angles[PITCH];	// restore player weapon angles.
@@ -507,14 +498,15 @@ void R_DrawAliasDistortModel (entity_t *e)
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
 
-		if ( R_CullAliasModel( bbox, e ) )
-			return;
+	if ( R_CullAliasModel( bbox, e ) )
+		return;
 	
 	
 		paliashdr = (dmdl_t *)currentmodel->extradata;
 
 		GL_Overbrights (false);
-	
+		SetModelsLight(false);
+
 		//
 		// draw all the triangles
 		//
@@ -543,10 +535,8 @@ void R_DrawAliasDistortModel (entity_t *e)
 			currententity->oldframe = 0;
 		}
 
-		GL_DrawAliasFrameLerpAmbientDistort(paliashdr);
+		GL_DrawAliasFrameLerpAmbientDistort(paliashdr, shadelight);
 		
-		GL_TexEnv(GL_REPLACE);
-
 		qglPopMatrix();
 
 		if (currententity->flags & RF_DEPTHHACK)

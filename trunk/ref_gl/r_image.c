@@ -119,6 +119,17 @@ void GL_MBind(GLenum target, int texnum)
 	GL_Bind(texnum);
 }
 
+void GL_MBindRect(GLenum target, int texnum)
+{
+	int targ = target - GL_TEXTURE0_ARB;
+	GL_SelectTexture(target);
+
+	if (gl_state.currenttextures[targ] == texnum)
+		return;
+
+	GL_BindRect(texnum);
+}
+
 void GL_Blend(qboolean on, int src, int dst)
 {
 	if (on) {

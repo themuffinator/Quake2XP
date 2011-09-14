@@ -128,7 +128,7 @@ void R_CaptureColorBuffer()
 		return;
 		
 	qglEnable(GL_TEXTURE_RECTANGLE_ARB);
-	GL_BindRect(ScreenMap->texnum);
+	GL_MBindRect(GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglDisable(GL_TEXTURE_RECTANGLE_ARB);
 }
@@ -140,7 +140,7 @@ void R_CaptureDepthBuffer()
 		return;
 		
 	qglEnable(GL_TEXTURE_RECTANGLE_ARB);
-	GL_BindRect(depthMap->texnum);
+	GL_MBindRect(GL_TEXTURE0_ARB, depthMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglDisable(GL_TEXTURE_RECTANGLE_ARB);
 

@@ -214,9 +214,11 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	GL_BindNullProgram();
 }
 
-void GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr)
+
+void GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr, vec4_t color)
 {
 	vec3_t		vertexArray[3*MAX_TRIANGLES];
+	vec4_t		colorArray[4*MAX_TRIANGLES];
 	int			index_xyz;
 	int			i, j, jj =0;
 	dtriangle_t	*tris;
@@ -225,10 +227,9 @@ void GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr)
 	int			id;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
-			return;
-
+		return;
 	
-// select skin
+	// select skin
 		if (currententity->bump)
 		bump = currententity->bump;	// custom player skin
 		else {
@@ -258,45 +259,39 @@ void GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr)
 			{
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+			VA_SetElem4(colorArray[jj], color[0], color[1], color[2], 1.0);
 			}
 		}
 
+	// setup program
+	GL_BindProgram(refractProgram, defBits);
+	id = refractProgram->id[defBits];
 
-
-		// setup program
-		GL_BindProgram(refractProgram, defBits);
-		id = refractProgram->id[defBits];
-
-		GL_MBind					(GL_TEXTURE0_ARB, bump->texnum);
-		qglUniform1i				(qglGetUniformLocation(id, "u_deformMap"), 0);
-				
-		GL_SelectTexture			(GL_TEXTURE1_ARB);
-		GL_BindRect					(ScreenMap->texnum);
-		qglUniform1i				(qglGetUniformLocation(id, "g_colorBufferMap"), 1);
+	GL_MBind(GL_TEXTURE0_ARB, bump->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
+	GL_MBindRect(GL_TEXTURE1_ARB, ScreenMap->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "g_colorBufferMap"), 1);
+	GL_MBindRect(GL_TEXTURE2_ARB, depthMap->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 2);
+		
+	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	2.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	0.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	0.0);
+	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
+	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	
-		GL_SelectTexture			(GL_TEXTURE2_ARB);
-		GL_BindRect					(depthMap->texnum);
-		qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
-		qglUniform1i				(qglGetUniformLocation(id, "g_depthBufferMap"), 2);
-	
-	
-		qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	2.0);
-		qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.0);
-		qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	150.000);
-		qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
-		qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	
-
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_COLOR);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, colorArray);
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
-	
-	qglColor4f(1, 1, 1, 1);	
+
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
 }
@@ -311,12 +306,12 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
-	
+
+
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	qglColor4f(1, 1, 1, 1);
-	scroll = r_newrefdef.time *0.65;
+	scroll = r_newrefdef.time *0.45;
 
 	if (currententity->flags & RF_WEAPONMODEL)
 		R_CalcAliasFrameLerp(paliashdr, 0.1);		
@@ -327,10 +322,9 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 
 	c_alias_polys += paliashdr->num_tris;
 	
+	jj = 0;
 	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
 	
-	jj = 0;
-
 	for (i=0; i<paliashdr->num_tris; i++)
 	{
 		for (j=0; j<3; j++, jj++)
@@ -367,9 +361,9 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
 
+
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
-	
-	qglColor4f(1, 1, 1, 1);
+
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisableVertexAttribArray(ATRB_POSITION);

@@ -912,6 +912,7 @@ void CL_ParseTEnt(void)
 		VectorCopy(pos, ex->ent.origin);
 		ex->type = ex_poly;
 		ex->ent.flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DISTORT;
+		ex->ent.alpha = 0.0;
 		ex->start = cl.frame.servertime - 100;
 
 		ex->ent.model = cl_mod_distort;
@@ -953,6 +954,7 @@ void CL_ParseTEnt(void)
 		VectorCopy(pos, ex->ent.origin);
 		ex->type = ex_poly;
 		ex->ent.flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DISTORT;
+		ex->ent.alpha = 0.0;
 		ex->start = cl.frame.servertime - 100;
 
 		ex->ent.model = cl_mod_distort;
@@ -999,6 +1001,7 @@ void CL_ParseTEnt(void)
 		VectorCopy(pos, ex->ent.origin);
 		ex->type = ex_poly;
 		ex->ent.flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DISTORT;
+		ex->ent.alpha = 0.0;
 		ex->start = cl.frame.servertime - 100;
 
 		ex->ent.model = cl_mod_distort;
@@ -1016,24 +1019,20 @@ void CL_ParseTEnt(void)
 
 	case TE_BFG_EXPLOSION:
 		MSG_ReadPos(&net_message, pos);
-		ex = CL_AllocExplosion();
-		VectorCopy(pos, ex->ent.origin);
+		ex = CL_AllocExplosion ();
+		VectorCopy (pos, ex->ent.origin);
 		ex->type = ex_poly;
-		
-		ex->ent.flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DISTORT;
+		ex->ent.flags = RF_FULLBRIGHT;
 		ex->start = cl.frame.servertime - 100;
-
-		ex->ent.model = cl_mod_distort;
-		ex->frames = 5;
-		ex->baseframe = 0;
-
-		ex->ent.angles[1] = rand() % 360;
-		
-		
 		ex->light = 350;
 		ex->lightcolor[0] = 0.0;
 		ex->lightcolor[1] = 1.0;
 		ex->lightcolor[2] = 0.0;
+		ex->ent.model = cl_mod_bfg_explo;
+		ex->ent.flags |= RF_TRANSLUCENT;
+		ex->ent.flags |= RF_DISTORT;
+		ex->ent.alpha = 0.30;
+		ex->frames = 4;
 		
 		
 		break;
@@ -1047,12 +1046,13 @@ void CL_ParseTEnt(void)
 			CL_FindExplosionPlane(pos, 100, dir);
 		
 		VectorNormalize(dir);
-		
+	/*	
 		ex = CL_AllocExplosion();
 		VectorCopy(pos, ex->ent.origin);
 		ex->type = ex_poly;
 		
 		ex->ent.flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DISTORT;
+		ex->ent.alpha = 0.0;
 		ex->start = cl.frame.servertime - 100;
 
 		ex->ent.model = cl_mod_distort;
@@ -1066,7 +1066,7 @@ void CL_ParseTEnt(void)
 		ex->lightcolor[0] = 0.0;
 		ex->lightcolor[1] = 1.0;
 		ex->lightcolor[2] = 0.0;
-
+*/
 		CL_AddDecalToScene(pos, dir,
 						   0.1, 0.1, 0.1, 1,
 						   0.1, 0.1, 0.1, 1,
@@ -1211,6 +1211,7 @@ void CL_ParseTEnt(void)
 		VectorCopy(pos, ex->ent.origin);
 		ex->type = ex_poly;
 		ex->ent.flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DISTORT;
+		ex->ent.alpha = 0.0;
 		ex->start = cl.frame.servertime - 100;
 
 		ex->ent.model = cl_mod_explo4;

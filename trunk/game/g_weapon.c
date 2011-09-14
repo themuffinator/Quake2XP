@@ -995,7 +995,6 @@ void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, f
 	bfg->s.sound = gi.soundindex ("weapons/bfg__l1a.wav");
     bfg->s.renderfx = RF_NOSHADOW;
 
-
 	bfg->think = bfg_think;
 	bfg->nextthink = level.time + FRAMETIME;
 	bfg->teammaster = bfg;

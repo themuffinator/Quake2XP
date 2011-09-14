@@ -605,8 +605,6 @@ void R_DrawParticles(qboolean WaterCheck)
 	qglColor4f(1, 1, 1, 1);
 	qglDepthRange(0, 1);
 	qglDepthMask(1);			// back to normal Z buffering
-	GL_TexEnv(GL_REPLACE);
-	GL_Overbrights(false);
 
 	GL_BindNullProgram		();
 	GL_SelectTexture		(GL_TEXTURE1_ARB);	

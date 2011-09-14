@@ -926,7 +926,6 @@ void R_BlobShadow(void){
 	}
 	qglDisable				(GL_POLYGON_OFFSET_FILL);
 	qglDisable				(GL_BLEND);
-	GL_TexEnv				(GL_REPLACE);
 	qglDepthMask			(1);
 	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
 	qglDisableClientState	(GL_COLOR_ARRAY);

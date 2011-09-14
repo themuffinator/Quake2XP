@@ -209,12 +209,9 @@ void R_RenderFlares(void)
 
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
-	
-	GL_TexEnv(GL_MODULATE);
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	GL_Bind(r_flare->texnum);
 
-	qglShadeModel(GL_SMOOTH);
+	GL_MBind(GL_TEXTURE0_ARB, r_flare->texnum);
+
 	GL_Overbrights(false);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
@@ -243,7 +240,6 @@ void R_RenderFlares(void)
 	}
 
 	qglColor4f(1, 1, 1, 1);
-	GL_TexEnv(GL_REPLACE);
 	qglDisable(GL_BLEND);
 	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(1);
