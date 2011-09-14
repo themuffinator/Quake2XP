@@ -2,9 +2,13 @@ varying vec2			v_deformTexCoord;
 varying vec2			v_deformMul;
 varying float			v_depth;
 varying float			v_depthS;
+varying	vec4			v_color;
+
 uniform float			u_deformMul;
+
 attribute	vec2		a_texCoord;
 attribute	vec3		a_vertArray;
+attribute	vec4		a_colorArray;
 
 void main (void) {
 	
@@ -22,7 +26,7 @@ void main (void) {
 
 	v_deformMul = min(d.xx, 0.02) * u_deformMul;
 	
-	gl_FrontColor = gl_Color;
+	v_color = a_colorArray;
 
 	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 
