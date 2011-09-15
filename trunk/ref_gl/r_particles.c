@@ -65,7 +65,7 @@ void R_DrawParticles(qboolean WaterCheck)
 	vec4_t		outcolor;
 	float		scale, r, g, b, a;
 	float		c, d, s;
-	
+
 	// setup program
 	GL_BindProgram(particlesProgram, defBits);
 	id = particlesProgram->id[defBits];

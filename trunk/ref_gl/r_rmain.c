@@ -255,7 +255,9 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	up = vup;
 	right = vright;
 
+	qglEnable(GL_BLEND);
 	defBits = worldDefs.AlphaMaskBits;
+
 	// setup program
 	GL_BindProgram(refractProgram, defBits);
 	id = refractProgram->id[defBits];
@@ -265,12 +267,9 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-
+	
 	GL_MBind(GL_TEXTURE0_ARB, r_distort->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
-	if (!currentmodel->skins[e->frame]->texnum)
-	GL_MBind(GL_TEXTURE1_ARB, r_notexture->texnum);
-	else
 	GL_MBind(GL_TEXTURE1_ARB, currentmodel->skins[e->frame]->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 1);
 	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
@@ -281,10 +280,10 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	15.0);
 	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	e->alpha);
 	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	len*0.5);
-	qglUniform1f(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.3);
+	qglUniform1f(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.2);
 	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-
+	qglUniform2f(qglGetUniformLocation(id, "u_mask"),	0.0, 1.0);
 
 	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+0]);
 	VectorMA (wVertexArray[vert+0], -frame->origin_x, right, wVertexArray[vert+0]);
@@ -324,6 +323,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
+	qglDisable(GL_BLEND);
 }
 
 //==================================================================================

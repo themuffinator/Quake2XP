@@ -543,7 +543,7 @@ void R_InitPrograms(void) {
 	
 	if(refractProgram->valid){
 
-		worldDefs.AlphaMaskBits	= R_GetProgramDefBits(refractProgram, "ALPHAMASK");
+		worldDefs.AlphaMaskBits	 = R_GetProgramDefBits(refractProgram, "ALPHAMASK");
 		Com_Printf("succeeded\n");
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");
