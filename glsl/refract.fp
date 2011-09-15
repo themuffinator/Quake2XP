@@ -8,7 +8,7 @@ uniform float			u_thickness;
 uniform float			u_thickness2;
 uniform float			u_alpha;
 uniform vec2			u_viewport;
-
+uniform vec2			u_mask;
 uniform sampler2D		u_deformMap;
 uniform sampler2D		u_colorMap;
 
@@ -28,15 +28,13 @@ void main (void) {
 	// Z-feather
 	float depth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 	N *= clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
-
 	// scale by the deform multiplier and the viewport size
 	N *= v_deformMul * u_viewport.xy;
 	
 	#ifdef ALPHAMASK
-	// refracted sprites with soft edges
 	float A = texture2D(u_deformMap, v_deformTexCoord).a;
 	float softness = clamp((depth - v_depthS) / u_thickness2, 0.0, 1.0);
-	
+	// refracted sprites with soft edges
 	if (A == 0.004) {
 		discard;
 		return;
@@ -44,8 +42,9 @@ void main (void) {
 	N *= A;
 	N *= softness;
 	vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
-	float mixer = A * softness;
-	gl_FragColor = mix(vec4(deform, 1.0), diffuse, mixer);
+	diffuse *= A;
+	gl_FragColor = vec4(deform, 1.0) + diffuse;
+	gl_FragColor *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
 
 	#else
 	// world refracted surfaces
