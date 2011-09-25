@@ -12,7 +12,6 @@ uniform int			u_parallaxType;
 uniform int			u_numSteps;
 uniform sampler2D	u_Caustics;
 uniform float       u_CausticsModulate; 
-uniform float		u_specularScale;
 uniform float		u_lightScale; 
 
 varying vec3		v_viewVecTS;
@@ -133,24 +132,30 @@ void main ()
 {
 vec3 V = normalize(v_viewVecTS);
 vec4 lightMap = texture2D(u_LightMap, v_lTexCoord.xy); 
+vec4 diffuseMap;
+vec4 glowMap;
+vec4 causticsMap;
+vec3 normalMap;
+float specTmp;
+vec3 wDelux = normalize(texture2D(u_deluxMap, v_lTexCoord).rgb - 0.5);
+vec3 tbnDelux;
+vec4 bumpLight;
 
 #ifdef PARALLAX
-vec2 P = CalcParallaxOffset(u_Diffuse, v_wTexCoord, V);
-vec4 diffuseMap = texture2D(u_Diffuse, P);
-vec4 glowMap = texture2D(u_Add, P);
-vec4 causticsMap = texture2D(u_Caustics, P);
-
-vec3 normalMap =  normalize(texture2D(u_NormalMap, P.xy).rgb - 0.5);
-float specTmp = texture2D(u_NormalMap,   P.xy).a;
+vec2 P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
+diffuseMap = texture2D(u_Diffuse, P);
+glowMap = texture2D(u_Add, P);
+causticsMap = texture2D(u_Caustics, P);
+normalMap =  normalize(texture2D(u_NormalMap, P.xy).rgb - 0.5);
+specTmp = texture2D(u_NormalMap,   P.xy).a;
 
 #else
 
-vec4 diffuseMap = texture2D(u_Diffuse,  v_wTexCoord.xy);
-vec4 glowMap = texture2D(u_Add,  v_wTexCoord);
-vec4 causticsMap = texture2D(u_Caustics, v_wTexCoord.xy);
-
-vec3 normalMap =  normalize(texture2D(u_NormalMap, v_wTexCoord).rgb - 0.5);
-float specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
+diffuseMap = texture2D(u_Diffuse,  v_wTexCoord.xy);
+glowMap = texture2D(u_Add,  v_wTexCoord.xy);
+causticsMap = texture2D(u_Caustics, v_wTexCoord.xy);
+normalMap =  normalize(texture2D(u_NormalMap, v_wTexCoord.xy).rgb - 0.5);
+specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 
 #endif 
 
@@ -159,35 +164,28 @@ diffuseMap *= clamp(v_color, 0.0, 0.666);
 #endif
 
 #ifdef BUMP
-vec4 bumpLight;
-
-// Generate the worldspace delux
-vec3 wDelux = normalize(texture2D(u_LightMap, v_wTexCoord).rgb - 0.5);
-//Put into tangent space
-vec3 tbnDelux;
 
 #ifdef VERTEXLIGHT
-tbnDelux.x = normalize(dot(n[0], t));
-tbnDelux.y = normalize(dot(n[1], b));
+tbnDelux.x = abs(dot(n, t));
+tbnDelux.y = abs(dot(n, b));
 tbnDelux.z = 1.0;
-
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
 vec2 E = PhongLighting(normalMap, tbnDelux, V, 16.0);
+
 #else
+
+//Put delux into tangent space
 tbnDelux.x = dot(wDelux, t);
 tbnDelux.y = dot(wDelux, b);
 tbnDelux.z = dot(wDelux, n);
-tbnDelux = clamp (tbnDelux, 0.666, 0.8);
+tbnDelux = abs(tbnDelux);
 
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
-specular *= lightMap;
-specular *= u_specularScale; 
 vec2 E = PhongLighting(normalMap, tbnDelux, V, 16.0);
 #endif
 
 #ifdef LIGHTMAP
-bumpLight = (E.x * diffuseMap) + (E.y * specular);
-bumpLight *= u_lightScale;
+bumpLight = (E.x * diffuseMap) + (E.y * specular * lightMap);
 diffuseMap *= u_ambientScale;
 #endif
 
