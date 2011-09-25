@@ -566,8 +566,6 @@ return	(((*a)->lightmaptexturenum<<26)+((*a)->texinfo->image->texnum<<13) + (*b)
 int	num_scene_surfaces;
 msurface_t	*scene_surfaces[MAX_MAP_FACES];
 
-extern cvar_t	*r_pplWorldSpecularScale;
-extern cvar_t	*r_pplWorldLightScale;
 
 static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 {
@@ -630,8 +628,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 	if(r_bumpWorld->value){
 	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-	qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), r_pplWorldSpecularScale->value);
-	qglUniform1f(qglGetUniformLocation(id, "u_lightScale"), r_pplWorldLightScale->value);
 	}
 
 	GL_CreateParallaxLmPoly(s);
@@ -728,6 +724,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		if(r_bumpWorld->value){
 		GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
+		qglUniform1i(qglGetUniformLocation(id, "u_deluxMap"), 5);
 		}
 		R_DrawArrays();
 		}	

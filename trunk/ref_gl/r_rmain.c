@@ -434,13 +434,12 @@ void R_SetupFrame(void)
 
 	r_framecount++;
 		
-// build the transformation matrix for the given view angles
+	// build the transformation matrix for the given view angles
 	VectorCopy(r_newrefdef.vieworg, r_origin);
 
 	AngleVectors(r_newrefdef.viewangles, vpn, vright, vup);
-
-
-// current viewcluster
+	
+	// current viewcluster
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		r_oldviewcluster = r_viewcluster;
 		r_oldviewcluster2 = r_viewcluster2;
