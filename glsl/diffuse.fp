@@ -132,12 +132,12 @@ void main ()
 {
 vec3 V = normalize(v_viewVecTS);
 vec4 lightMap = texture2D(u_LightMap, v_lTexCoord.xy); 
+vec3 wDelux = normalize(texture2D(u_deluxMap, v_lTexCoord).rgb - 0.5);
 vec4 diffuseMap;
 vec4 glowMap;
 vec4 causticsMap;
 vec3 normalMap;
 float specTmp;
-vec3 wDelux = normalize(texture2D(u_deluxMap, v_lTexCoord).rgb - 0.5);
 vec3 tbnDelux;
 vec4 bumpLight;
 
