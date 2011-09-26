@@ -668,8 +668,8 @@ void R_RecursiveShadowWorldNode(mnode_t * node)
 		return;
 	}
 	// node is just a decision point, so go down the apropriate sides
-
 	// find which side of the node we are on
+
 	plane = node->plane;
 
 	switch (plane->type) {
@@ -712,7 +712,7 @@ void R_RecursiveShadowWorldNode(mnode_t * node)
 		if ((surf->flags & SURF_PLANEBACK) != sidebit)
 			continue;			// wrong side
 		
-		if (surf->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW | SURF_SKY))
+		if (surf->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW | SURF_SKY | SURF_WARP))
 			continue;
 		
 		GL_DrawShadowTriangles(surf);

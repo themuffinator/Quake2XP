@@ -53,7 +53,7 @@ void SV_BeginDemoserver(void) {
      // probably demo from ZIP pak
      if (file_from_pak) {
           
-          Com_sprintf (checkname, sizeof(checkname), "%s/cache/temp.dm2", FS_Gamedir());
+          Com_sprintf (checkname, sizeof(checkname), "%s/cachexp/temp.dm2", FS_Gamedir());
             FS_CreatePath(checkname);
 
           f = fopen (checkname, "wb");
@@ -65,7 +65,7 @@ void SV_BeginDemoserver(void) {
 
           FS_FreeFile(buf);
 
-          Com_sprintf (checkname, sizeof(checkname), "cache/temp.dm2");
+          Com_sprintf (checkname, sizeof(checkname), "cachexp/temp.dm2");
           FS_FOpenFile(checkname, &sv.demofile);
           if (!sv.demofile.f && !sv.demofile.z)
           Com_Error(ERR_DROP, "Couldn't open %s\n", name);

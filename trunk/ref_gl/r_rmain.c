@@ -1064,6 +1064,8 @@ void R_DrawEntitiesLightPass(void)
 	qglDepthMask			(0);
 	qglEnable				(GL_BLEND);
 	qglBlendFunc			(GL_ONE, GL_ONE);
+	qglEnable				(GL_POLYGON_OFFSET_FILL);
+    qglPolygonOffset		(-1, -1);
 
 	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
 	qglEnable				(GL_STENCIL_TEST);
@@ -1093,7 +1095,7 @@ void R_DrawEntitiesLightPass(void)
 	qglBlendFunc			(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisable				(GL_STENCIL_TEST);
 	qglDepthMask			(1);
-	
+	qglDisable				(GL_POLYGON_OFFSET_FILL);
 
 }
 

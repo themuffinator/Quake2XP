@@ -303,13 +303,18 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	dtriangle_t	*tris;
 	unsigned	defBits = 0;
 	float		scroll = 0.0;
-	
+	vec3_t		normalArray[3*MAX_TRIANGLES];
+	float		backlerp, frontlerp;
+	int			index2, oldindex2;
+	daliasframe_t	*frame, *oldframe;
+	dtrivertx_t		*verts, *oldverts;
+
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
 
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
+//	qglEnable(GL_BLEND);
+//	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	scroll = r_newrefdef.time *0.45;
 
@@ -324,13 +329,27 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	
 	jj = 0;
 	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
-	
+	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	oldverts = oldframe->verts;
+	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	verts = frame->verts;
+	backlerp = currententity->backlerp;
+	frontlerp = 1 - backlerp;
+
 	for (i=0; i<paliashdr->num_tris; i++)
 	{
 		for (j=0; j<3; j++, jj++)
 		{
 		index_xyz = tris[i].index_xyz[j];
 		VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+
+		index2 = verts[index_xyz].lightnormalindex;
+		oldindex2 = oldverts[index_xyz].lightnormalindex;
+		
+		normalArray[jj][0] = r_avertexnormals[oldindex2][0]*backlerp + r_avertexnormals[index2][0]*frontlerp;
+		normalArray[jj][1] = r_avertexnormals[oldindex2][1]*backlerp + r_avertexnormals[index2][1]*frontlerp;
+		normalArray[jj][2] = r_avertexnormals[oldindex2][2]*backlerp + r_avertexnormals[index2][2]*frontlerp;
+
 		}
 	}
 		
@@ -357,10 +376,11 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
-
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false,	0, normalArray);
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 
@@ -368,6 +388,7 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_NORMAL);
 	GL_BindNullProgram();
 }
 

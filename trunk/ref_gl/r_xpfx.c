@@ -604,7 +604,7 @@ void R_Register2(void)
 	
 //	r_vbo=								Cvar_Get("r_vbo", "1", CVAR_ARCHIVE);
 
-	r_parallax=							Cvar_Get("r_parallax", "1", CVAR_ARCHIVE);
+	r_parallax=							Cvar_Get("r_parallax", "2", CVAR_ARCHIVE);
 	r_parallaxScale=					Cvar_Get("r_parallaxScale", "0.5", CVAR_ARCHIVE);
 	r_parallaxSteps=					Cvar_Get("r_parallaxSteps", "10", CVAR_ARCHIVE);
 
@@ -616,9 +616,9 @@ void R_Register2(void)
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);
-	r_bloomIntens =						Cvar_Get("r_bloomIntens", "1.0", CVAR_ARCHIVE);
+	r_bloomIntens =						Cvar_Get("r_bloomIntens", "2.0", CVAR_ARCHIVE);
 
-	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
+	r_dof =								Cvar_Get("r_dof", "2", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
 	r_dofFocus =						Cvar_Get("r_dofFocus", "256.0", CVAR_ARCHIVE);
 
