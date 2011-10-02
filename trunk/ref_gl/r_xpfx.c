@@ -91,6 +91,11 @@ cvar_t	*r_radialBlurSamples;
 cvar_t	*r_tbnSmoothAngle;
 
 cvar_t	*r_ignoreGlErrors;
+
+cvar_t	*r_offsetFactor;
+cvar_t	*r_offsetUnits;
+cvar_t	*r_offset;
+
 //--------------------
 
 void GL_Overbrights(qboolean enable)
@@ -627,5 +632,11 @@ void R_Register2(void)
 	r_radialBlurSamples =               Cvar_Get("r_radialBlurSamples", "8", CVAR_ARCHIVE);
 
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
+
+	r_offsetFactor =					Cvar_Get( "r_offsetFactor", "-0.1", CVAR_ARCHIVE);
+	r_offsetUnits =						Cvar_Get( "r_offsetUnits", "-2", CVAR_ARCHIVE);
+	r_offset =							Cvar_Get( "r_offset", "1", CVAR_ARCHIVE );
+	r_offset->help =					"enables the GL_POLYGON_OFFSET_FILL.";
+
 }
 

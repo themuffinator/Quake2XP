@@ -742,6 +742,11 @@ void R_DrawShadowWorld(void)
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
 		return;
 
+	if(r_offset->value){
+	qglEnable				(GL_POLYGON_OFFSET_FILL);
+	qglPolygonOffset		(r_offsetFactor->value, r_offsetUnits->value);
+	}
+
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
 	
@@ -777,7 +782,8 @@ void R_DrawShadowWorld(void)
 	}
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if(r_offset->value)
+	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglColor4f(1, 1, 1, 1);    
 	qglDisable(GL_BLEND);
 	qglEnable(GL_TEXTURE_2D); 
