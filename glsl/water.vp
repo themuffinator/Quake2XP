@@ -26,6 +26,6 @@ v_deformMul = min(d.xx, 0.02) * u_deformMul;
 	 
 gl_FrontColor = gl_Color;
 
-gl_Position = ftransform();
+gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 
 }
