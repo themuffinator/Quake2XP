@@ -666,7 +666,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 			R_LightPoint(lightSurf->origin, diffuseColor, true);
 			VectorScale(diffuseColor, 2.0, diffuseColor);
-						
+			
 			slActive++;
 		}
 

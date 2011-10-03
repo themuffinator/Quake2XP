@@ -253,7 +253,6 @@ extern cvar_t *r_clear;
 extern cvar_t *r_cull;
 extern cvar_t *r_poly;
 extern cvar_t *r_polyBlend;
-extern cvar_t *r_drawBuffer;
 
 extern cvar_t *r_vsync;
 extern cvar_t *r_textureMode;
@@ -457,7 +456,7 @@ void Draw_FadeScreen(void);
 void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows,
 					 byte * data);
 
-void R_BeginFrame(float camera_separation);
+void R_BeginFrame();
 void R_SwapBuffers(int);
 void R_SetPalette(const unsigned char *palette);
 
@@ -562,9 +561,6 @@ typedef struct {
 	int currenttextures[4];
 	int num_tmu;
 	int currenttmu;
-
-	float camera_separation;
-	qboolean stereo_enabled;
 
 // advanced state manager - MrG
 	qboolean alpha_test;
@@ -774,7 +770,6 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 ====================================================================
 */
 
-void GLimp_BeginFrame(float camera_separation);
 void GLimp_EndFrame(void);
 int GLimp_Init(void *hinstance, void *hWnd);
 void GLimp_Shutdown(void);

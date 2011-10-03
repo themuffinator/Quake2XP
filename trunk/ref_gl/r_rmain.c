@@ -81,7 +81,6 @@ cvar_t *r_leftHand;
 cvar_t *r_lightLevel;			// FIXME: This is a HACK to get the
 								// client's light level
 cvar_t *r_log;
-cvar_t *r_drawBuffer;
 cvar_t *r_mode;
 cvar_t *r_dynamic;
 cvar_t *r_noBind;
@@ -94,7 +93,6 @@ cvar_t *r_fullScreen;
 cvar_t *r_gamma;
 cvar_t *vid_ref;
 cvar_t *r_finish;
-cvar_t *r_frameDump;
 cvar_t *r_hardwareGamma;
 
 /*
@@ -757,8 +755,6 @@ void R_SetupGL(void)
 	qglTranslatef(-r_newrefdef.vieworg[0], -r_newrefdef.vieworg[1],
 				  -r_newrefdef.vieworg[2]);
 
-//  if ( gl_state.camera_separation != 0 && gl_state.stereo_enabled )
-//      qglTranslatef ( gl_state.camera_separation, 0, 0 );
 
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
 	qglGetFloatv(GL_PROJECTION_MATRIX, r_project_matrix);	// Store it
@@ -801,8 +797,10 @@ void R_CastShadow(void)
 	qglDepthMask(0);
 	qglDepthFunc(GL_LESS);
 	
-	if (r_shadowVolumesDebug->value)
+	if (r_shadowVolumesDebug->value){
 		qglColor4f(0.8, 0.3, 0, 0.2);
+		qglEnable(GL_BLEND);
+	}
 	else
 		qglColorMask(0, 0, 0, 0);
 	
@@ -844,6 +842,8 @@ void R_CastShadow(void)
 	qglDisable(GL_STENCIL_TEST);
 	qglStencilMask(0);
 	qglDepthMask(true);
+	if (r_shadowVolumesDebug->value)
+	qglDisable(GL_BLEND);
 	qglDepthFunc(GL_LEQUAL);
 	qglColor4f(1,1,1,1);
 	qglColorMask(1, 1, 1, 1);
@@ -1068,12 +1068,12 @@ void R_DrawEntitiesLightPass(void)
 	qglEnable				(GL_POLYGON_OFFSET_FILL);
 	qglPolygonOffset		(r_offsetFactor->value, r_offsetUnits->value);
 	}
-	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
+/*	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
 	qglEnable				(GL_STENCIL_TEST);
 	qglClear				(GL_STENCIL_BUFFER_BIT);
 	qglStencilFunc			(GL_EQUAL, 128, 255);
 	qglStencilMask			(0);
-	}
+	}*/
 
 	
 	for (i = 0; i < r_newrefdef.num_entities; i++)	
@@ -1096,8 +1096,8 @@ void R_DrawEntitiesLightPass(void)
 	qglBlendFunc			(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisable				(GL_STENCIL_TEST);
 	qglDepthMask			(1);
-	if(r_offset->value)
-	qglDisable				(GL_POLYGON_OFFSET_FILL);
+//	if(r_offset->value)
+//	qglDisable				(GL_POLYGON_OFFSET_FILL);
 
 }
 
@@ -1142,6 +1142,56 @@ r_newrefdef must be set before the first call
 
 void R_BlobShadow(void);
 
+void R_ShadowBlend()
+{
+	float shadowalpha;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	if (r_shadows->value < 2)
+		return;
+
+	shadowalpha = 1.0 - r_ambientLevel->value;
+
+	qglMatrixMode(GL_PROJECTION);
+	qglPushMatrix();
+	qglLoadIdentity();
+	qglOrtho(0, 1, 1, 0, -99999, 99999);
+
+	qglMatrixMode(GL_MODELVIEW);
+	qglPushMatrix();
+	qglLoadIdentity();
+	
+	GL_Blend(true, 0, 0);
+	qglDepthMask(0);
+	qglDisable(GL_TEXTURE_2D);
+	qglColor4f(0, 0, 0, shadowalpha);
+
+	qglEnable(GL_STENCIL_TEST);
+	qglStencilFunc(GL_NOTEQUAL, 128, 255);
+	qglStencilMask(0);
+
+	qglBegin(GL_TRIANGLES);
+	qglVertex2f(-5, -5);
+	qglVertex2f(10, -5);
+	qglVertex2f(-5, 10);
+	qglEnd();
+	
+
+	GL_Blend(false, 0, 0);
+	qglEnable(GL_TEXTURE_2D);
+	qglDisable(GL_STENCIL_TEST);
+	qglDepthMask(1);
+
+	qglMatrixMode(GL_PROJECTION);
+	qglPopMatrix();
+
+	qglMatrixMode(GL_MODELVIEW);
+	qglPopMatrix();
+
+}
+
 void R_RenderView(refdef_t * fd)
 {
 	if (r_noRefresh->value)
@@ -1167,7 +1217,8 @@ void R_RenderView(refdef_t * fd)
 	R_BlobShadow();	
 	R_CastShadow();
 	R_DrawEntitiesLightPass();
-	R_DrawShadowWorld();
+	R_ShadowBlend();
+//	R_DrawShadowWorld();
 	R_RenderFlares();
 	R_CaptureDepthBuffer();
 	R_DrawParticles(true); //underwater particles
@@ -1381,8 +1432,6 @@ void R_ListPrograms_f(void);
 
 void R_Register(void)
 {
-	// frame dump - MrG
-	r_frameDump = Cvar_Get("r_frameDump", "0", 0);
 	r_leftHand = Cvar_Get("hand", "0", CVAR_USERINFO | CVAR_ARCHIVE);
 	r_noRefresh = Cvar_Get("r_noRefresh", "0", 0);
 	r_drawEntities = Cvar_Get("r_drawEntities", "1", 0);
@@ -1405,7 +1454,6 @@ void R_Register(void)
 
 	r_hardwareGamma = Cvar_Get("r_hardwareGamma", "1", CVAR_ARCHIVE);	
 
-	r_drawBuffer = Cvar_Get("r_drawBuffer", "GL_BACK", 0);
 	r_vsync = Cvar_Get("r_vsync", "0", CVAR_ARCHIVE);
 	r_finish = Cvar_Get("r_finish", "0", 0);
 	
@@ -1894,9 +1942,8 @@ R_BeginFrame
 */
 void UpdateGammaRamp();
 
-void R_BeginFrame(float camera_separation)
+void R_BeginFrame()
 {
-	gl_state.camera_separation = camera_separation;
 
 	/* 
 	 ** change modes if necessary
@@ -1943,7 +1990,7 @@ void R_BeginFrame(float camera_separation)
 	if(r_parallaxSteps->value < 1 )
 		Cvar_SetValue("r_parallaxSteps", 1.0);
 
-	GLimp_BeginFrame(camera_separation);
+	qglDrawBuffer( GL_BACK );
 
 	/* 
 	 ** go into 2D mode
@@ -1958,20 +2005,6 @@ void R_BeginFrame(float camera_separation)
 	qglDisable(GL_CULL_FACE);
 	GLSTATE_DISABLE_BLEND 
 	qglColor4f(1, 1, 1, 1);
-
-	/* 
-	 ** draw buffer stuff
-	 */
-	if (r_drawBuffer->modified) {
-		r_drawBuffer->modified = false;
-
-		if (gl_state.camera_separation == 0 || !gl_state.stereo_enabled) {
-			if (Q_stricmp(r_drawBuffer->string, "GL_FRONT") == 0)
-				qglDrawBuffer(GL_FRONT);
-			else
-				qglDrawBuffer(GL_BACK);
-		}
-	}
 
 	/* 
 	 ** texturemode stuff

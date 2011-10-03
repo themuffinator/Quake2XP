@@ -452,8 +452,7 @@ void GL_UpdateSwapInterval()
 {
 	r_vsync->modified = (qboolean)false;
 
-	if (!gl_state.stereo_enabled)
-		if (qwglSwapIntervalEXT)
+	if (qwglSwapIntervalEXT)
 			qwglSwapIntervalEXT(r_vsync->value);
 }
 

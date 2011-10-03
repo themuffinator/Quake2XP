@@ -594,7 +594,7 @@ V_RenderView
 ==================
 */
 
-void V_RenderView(float stereo_separation)
+void V_RenderView()
 {
 	extern int entitycmpfnc(const entity_t *, const entity_t *);
 	
@@ -633,13 +633,7 @@ void V_RenderView(float stereo_separation)
 			cl.refdef.blend[2] = 0.25;
 			cl.refdef.blend[3] = 0.5;
 		}
-		// offset vieworg appropriately if we're doing stereo separation
-		if (stereo_separation != 0) {
-			vec3_t tmp;
 
-			VectorScale(cl.v_right, stereo_separation, tmp);
-			VectorAdd(cl.refdef.vieworg, tmp, cl.refdef.vieworg);
-		}
 		// never let it sit exactly on a node line, because a water plane
 		// can
 		// dissapear when viewed with the eye exactly on it.

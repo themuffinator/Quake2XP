@@ -816,7 +816,7 @@ extern int gun_frame;
 extern struct model_s *gun_model;
 
 void V_Init(void);
-void V_RenderView(float stereo_separation);
+void V_RenderView();
 void V_AddEntity(entity_t * ent);
 
 void V_AddParticle(vec3_t org, vec3_t length, vec3_t color, float alpha,

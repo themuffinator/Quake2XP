@@ -180,8 +180,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 	}
 
 	
-	 // build shadows caps from backfacing triangles
-
+	 // build shadows caps
 	for (i = 0, tris = ot; i < hdr->num_tris; i++, tris++) {
 	
 		if (!triangleFacingLight[i])
@@ -228,7 +227,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 	
 	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
 		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shadow_vert, index, GL_UNSIGNED_INT, ShadowIndex);
-			else
+		else
 		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, ShadowIndex);
 			
 	c_shadow_tris += index/3;
@@ -749,7 +748,9 @@ void R_DrawShadowWorld(void)
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
-	
+	qglEnable(GL_POLYGON_OFFSET_FILL);
+    qglPolygonOffset(-2, -1);
+
 	qglEnable(GL_STENCIL_TEST);
     qglStencilFunc(GL_NOTEQUAL, 128, 255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
@@ -786,6 +787,7 @@ void R_DrawShadowWorld(void)
 	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglColor4f(1, 1, 1, 1);    
 	qglDisable(GL_BLEND);
+	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglEnable(GL_TEXTURE_2D); 
 	qglDisable(GL_STENCIL_TEST);
 	qglDepthMask(1);

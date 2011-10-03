@@ -564,7 +564,7 @@ struct model_s *R_RegisterModel(char *name);
 struct image_s *R_RegisterSkin(char *name);
 image_t *Draw_FindPic(char *name);
 void R_SetPalette(const unsigned char *palette);
-void R_BeginFrame(float camera_separation);
+void R_BeginFrame();
 void GLimp_EndFrame (void);
 void GLimp_AppActivate( qboolean active );
 void VID_NewWindow ( int width, int height);

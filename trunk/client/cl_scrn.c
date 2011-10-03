@@ -682,7 +682,7 @@ void SCR_TimeRefresh_f(void)
 	start = Sys_Milliseconds();
 
 	if (Cmd_Argc() == 2) {		// run without page flipping
-		R_BeginFrame(0);
+		R_BeginFrame();
 		for (i = 0; i < 128; i++) {
 			cl.refdef.viewangles[1] = i / 128.0 * 360.0;
 			R_RenderFrame(&cl.refdef, false);
@@ -692,7 +692,7 @@ void SCR_TimeRefresh_f(void)
 		for (i = 0; i < 128; i++) {
 			cl.refdef.viewangles[1] = i / 128.0 * 360.0;
 
-			R_BeginFrame(0);
+			R_BeginFrame();
 			R_RenderFrame(&cl.refdef, false);
 			GLimp_EndFrame();
 		}
@@ -1147,9 +1147,6 @@ void R_VCFreeFrame();
 
 void SCR_UpdateScreen(void)
 {
-	int numframes;
-	int i;
-	float separation[2] = { 0, 0 };
 
 	// if the screen is disabled (loading plaque is up, or vid mode
 	// changing)
@@ -1180,30 +1177,15 @@ void SCR_UpdateScreen(void)
 
 	if(cl_hudScale->value < 0.1)
 		Cvar_SetValue("cl_hudScale", 0.1);
-
-	if (cl_stereo_separation->value > 1.0)
-		Cvar_SetValue("cl_stereo_separation", 1.0);
-	else if (cl_stereo_separation->value < 0)
-		Cvar_SetValue("cl_stereo_separation", 0.0);
-	
+		
 	if(cl_fontScale->value < 1)
 		Cvar_SetValue("cl_fontScale", 1);
 	else
 		if(cl_fontScale->value > 2)
 		Cvar_SetValue("cl_fontScale", 2);
 
-	if (cl_stereo->value) {
-		numframes = 2;
-		separation[0] = -cl_stereo_separation->value / 2;
-		separation[1] = cl_stereo_separation->value / 2;
-	} else {
-		separation[0] = 0;
-		separation[1] = 0;
-		numframes = 1;
-	}
-
-	for (i = 0; i < numframes; i++) {
-		R_BeginFrame(separation[i]);
+	
+		R_BeginFrame();
 
 		if (scr_draw_loading == 2) {	// loading plaque over black
 										// screen
@@ -1213,9 +1195,8 @@ void SCR_UpdateScreen(void)
 			if (cls.disable_screen)
 				scr_draw_loading = 2;
 
-
 			// NO FULLSCREEN CONSOLE!!!
-			continue;
+			goto next;
 		}
 		// if a cinematic is supposed to be running, handle menus
 		// and console specially
@@ -1225,7 +1206,6 @@ void SCR_UpdateScreen(void)
 					R_SetPalette(NULL);
 					cl.cinematicpalette_active = false;
 				}
-				R_VCFreeFrame();
 				M_Draw();
 			} else
 				SCR_DrawCinematic();
@@ -1237,13 +1217,15 @@ void SCR_UpdateScreen(void)
 				R_SetPalette(NULL);
 				cl.cinematicpalette_active = false;
 			}
+next:
+
 			// do 3D refresh drawing, and then update the screen
 			SCR_CalcVrect();
 
 			// clear any dirty part of the background
 			SCR_TileClear();
 			
-			V_RenderView(separation[i]);
+			V_RenderView();
 
 		
 			SCR_DrawNet();
@@ -1267,9 +1249,6 @@ void SCR_UpdateScreen(void)
 			
 			SCR_DrawConsole();
 
-			if (need_free_vbo)		// Если требуется очистка - очистим
-			R_VCFreeFrame();	// в M_Draw может вызываться рисование моделей
-			
 			M_Draw();
 			
 			SCR_DrawLoading();
@@ -1284,6 +1263,5 @@ void SCR_UpdateScreen(void)
 			}
 		}
 
-	}
 	GLimp_EndFrame();
 }

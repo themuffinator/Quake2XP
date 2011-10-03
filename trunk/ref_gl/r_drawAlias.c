@@ -220,10 +220,7 @@ void GL_OldPerspective (GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble
 
    xmin = ymin * aspect;
    xmax = ymax * aspect;
-
-   xmin += -(2 * gl_state.camera_separation) / zNear;
-   xmax += -(2 * gl_state.camera_separation) / zNear;
-
+   
    qglFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
 

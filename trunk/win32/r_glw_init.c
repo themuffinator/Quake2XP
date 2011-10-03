@@ -246,7 +246,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 			// force set 32-bit color depth
 			dm.dmBitsPerPel = 32;
 			dm.dmFields |= DM_BITSPERPEL;
-			Com_Printf(S_COLOR_YELLOW "...forcing 32-bit color depth\n");
+			Com_Printf(S_COLOR_YELLOW "...set 32-bit color depth\n");
 	
 			
 		Con_Printf( PRINT_ALL, "...calling CDS: " );
@@ -583,14 +583,6 @@ void CpuID(void)
 }
 
 
-
-/*
-** GLimp_Init
-**
-** This routine is responsible for initializing the OS specific portions
-** of OpenGL.  Under Win32 this means dealing with the pixelformats and
-** doing the wgl interface stuff.
-*/
 BOOL Is64BitWindows()
 {
 
@@ -622,6 +614,15 @@ int cpp_getAvailableTotalVideoMemory();
 
 #define PRODUCT_STARTER_E		0x00000042	//Starter E
 #define PRODUCT_STARTER_N		0x0000002F	//Starter N
+
+
+/*
+** GLimp_Init
+**
+** This routine is responsible for initializing the OS specific portions
+** of OpenGL.  Under Win32 this means dealing with the pixelformats and
+** doing the wgl interface stuff.
+*/
 
 qboolean GLimp_Init( void *hinstance, void *wndproc )
 {
@@ -1371,104 +1372,12 @@ fail:
 
 
 /*
-** GLimp_BeginFrame
-*/
-
-void GLimp_BeginFrame( float camera_separation )
-{
-
-
-	if ( camera_separation < 0 && gl_state.stereo_enabled )
-	{
-		qglDrawBuffer( GL_BACK_LEFT );
-	}
-	else if ( camera_separation > 0 && gl_state.stereo_enabled )
-	{
-		qglDrawBuffer( GL_BACK_RIGHT );
-	}
-	else
-	{
-		qglDrawBuffer( GL_BACK );
-	}
-	
-
-}
-
-// frame dump - MrG
-// modified screenshot function
-int cl_anim_count = 0;
-
-void R_AnimDump (void) 
-{
-	byte		*buffer;
-	char		checkname[MAX_OSPATH];
-	int			c, temp,o;
-	unsigned int i;
-	FILE		*f;
-
-	// create the scrnshots directory if it doesn't exist
-	Com_sprintf (checkname, sizeof(checkname), "%s/animdump", FS_Gamedir());
-	Sys_Mkdir (checkname);
-
-// 
-// find a file name to save it to 
-// 
-	for (i=cl_anim_count ; i<=99999999 ; i++) 
-	{ 
-		Com_sprintf (checkname, sizeof(checkname), "%s/animdump/anim%5i.tga", FS_Gamedir(), i);
-		for (o=0;o<strlen(checkname);o++)
-			if (checkname[o] == ' ')
-				checkname[o] = '0';
-
-		f = fopen (checkname, "rb");
-		if (!f)
-			break;	// file doesn't exist
-		fclose (f);
-	} 
-	if (i==100000000) 
-	{
-		Cvar_Set("r_frameDump","0");
-		Com_Printf (S_COLOR_RED "r_frameDump: Max frames exported\n"); 
-		return;
- 	}
-	cl_anim_count=i;
-
-
-	buffer = (byte*)malloc(vid.width*vid.height*3 + 18);
-	memset (buffer, 0, 18);
-	buffer[2] = 2;		// uncompressed type
-	buffer[12] = vid.width&255;
-	buffer[13] = vid.width>>8;
-	buffer[14] = vid.height&255;
-	buffer[15] = vid.height>>8;
-	buffer[16] = 24;	// pixel size
-
-	qglReadPixels (0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, buffer+18 ); 
-
-	// swap rgb to bgr
-	c = 18+vid.width*vid.height*3;
-	for (i=18 ; i<c ; i+=3)
-	{
-		temp = buffer[i];
-		buffer[i] = buffer[i+2];
-		buffer[i+2] = temp;
-	}
-
-	f = fopen (checkname, "wb");
-	fwrite (buffer, 1, c, f);
-	fclose (f);
-
-	free (buffer);
-}
-
-/*
 ** GLimp_EndFrame
 ** 
 ** Responsible for doing a swapbuffers and possibly for other stuff
 ** as yet to be determined.  Probably better not to make this a GLimp
 ** function and instead do a call to GLimp_SwapBuffers.
 */
-extern cvar_t	*r_frameDump;
 
 
 void GLimp_EndFrame (void)
@@ -1477,17 +1386,11 @@ void GLimp_EndFrame (void)
 	static cvar_t	*avi_fps = NULL;
 	err = qglGetError();
 
-	// frame dump - MrG
-	if (r_frameDump->value)
-		R_AnimDump();
 
-	if ( stricmp( r_drawBuffer->string, "GL_BACK" ) == 0 )
-	{
-		if ( !qwglSwapBuffers( glw_state.hDC ) )
+	if ( !qwglSwapBuffers( glw_state.hDC ) )
 			VID_Error( ERR_FATAL, "GLimp_EndFrame() - SwapBuffers() failed!\n" );
-	}
 
-	
+		
 	if (!avi_fps)
 		avi_fps = Cvar_Get("avi_fps", "0", 0);
 	
