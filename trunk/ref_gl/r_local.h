@@ -312,9 +312,6 @@ extern cvar_t	*r_vbo;
 extern cvar_t	*r_radialBlur;
 extern cvar_t	*r_radialBlurFov;
 extern cvar_t	*r_radialBlurSamples;
-extern cvar_t	*r_offset;
-extern cvar_t	*r_offsetFactor;
-extern cvar_t	*r_offsetUnits;
 
 extern float ref_realtime;
 

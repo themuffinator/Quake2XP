@@ -810,7 +810,7 @@ void CL_ParseTEnt(void)
 						fastsound_descriptor[id_cl_sfx_spark5 +
 											 (rand() & 3)], 0.5,
 						ATTN_STATIC);
-			CL_ParticleSmoke(pos, dir, 3);
+			CL_ParticleSmoke(pos, dir, 6);
 			CL_ParticleSpark(pos, dir, 25);
 		}
 		break;

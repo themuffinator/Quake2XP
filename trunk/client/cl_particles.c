@@ -963,14 +963,13 @@ void CL_ParticleSpark(vec3_t org, vec3_t dir, int count)
 		active_particles = p;
 		p->orient = 0;
 		p->flags = 0;
-		p->flags = PARTICLE_OVERBRIGHT | PARTICLE_DIRECTIONAL	/* |
-																   PARTICLE_BOUNCE */ ;
+		p->flags = PARTICLE_OVERBRIGHT | PARTICLE_DIRECTIONAL;
 		p->time = cl.time;
-		p->endTime = cl.time + 20000;
+		p->endTime = cl.time + 1000;
 		p->blend_dst = GL_ONE;
 		p->blend_src = GL_ONE;
-		p->len = 5;
-		p->endLen = 50;
+		p->len = 4;
+		p->endLen = 9;
 		p->color[0] = 1;
 		p->color[1] = 1;
 		p->color[2] = 0.7;
@@ -989,7 +988,48 @@ void CL_ParticleSpark(vec3_t org, vec3_t dir, int count)
 		}
 
 		p->accel[0] = p->accel[1] = 0;
-		p->accel[2] = -PARTICLE_GRAVITY;
+		p->accel[2] = -PARTICLE_GRAVITY*5;
+		p->alpha = 1.0;
+
+		p->alphavel = -1.0 / (1.5 + frand() * 1.666);
+		VectorCopy(p->org, p->oldOrg);
+	}
+
+	for (i = 0; i < 50; i++) {
+		if (!free_particles)
+			return;
+		p = free_particles;
+		free_particles = p->next;
+		p->next = active_particles;
+		active_particles = p;
+		p->len = 0;
+		p->endLen = 0;
+		p->orient = 0;
+		p->flags = 0;
+		p->flags |= PARTICLE_OVERBRIGHT;
+		p->time = cl.time;
+		p->endTime = cl.time + 1000;
+		p->blend_dst = GL_SRC_ALPHA;
+		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->color[0] = 1;
+		p->color[1] = 0.5;
+		p->color[2] = 0;
+
+		p->colorVel[0] = 0;
+		p->colorVel[1] = -0.40;
+		p->colorVel[2] = 0;
+
+		p->type = PT_DEFAULT;
+		p->size = 0.5;
+		p->sizeVel = 0;
+		d = rand() & 19;
+		for (j = 0; j < 3; j++) {
+			p->org[j] = org[j] + ((rand() & 7) - 4) + d * dir[j];
+			p->vel[j] = crand() * 70;
+		}
+
+		p->accel[0] = p->accel[1] = 0;
+		p->accel[2] = -PARTICLE_GRAVITY*5;
 		p->alpha = 1.0;
 
 		p->alphavel = -1.0 / (1.5 + frand() * 1.666);

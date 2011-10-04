@@ -92,9 +92,6 @@ cvar_t	*r_tbnSmoothAngle;
 
 cvar_t	*r_ignoreGlErrors;
 
-cvar_t	*r_offsetFactor;
-cvar_t	*r_offsetUnits;
-cvar_t	*r_offset;
 
 //--------------------
 
@@ -633,10 +630,6 @@ void R_Register2(void)
 
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 
-	r_offsetFactor =					Cvar_Get( "r_offsetFactor", "-0.1", CVAR_ARCHIVE);
-	r_offsetUnits =						Cvar_Get( "r_offsetUnits", "-2", CVAR_ARCHIVE);
-	r_offset =							Cvar_Get( "r_offset", "1", CVAR_ARCHIVE );
-	r_offset->help =					"enables the GL_POLYGON_OFFSET_FILL.";
 
 }
 
