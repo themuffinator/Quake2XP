@@ -313,8 +313,8 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 		return;
 
 
-//	qglEnable(GL_BLEND);
-//	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	qglEnable(GL_BLEND);
+	qglBlendFunc(GL_ONE, GL_ONE);
 
 	scroll = r_newrefdef.time *0.45;
 

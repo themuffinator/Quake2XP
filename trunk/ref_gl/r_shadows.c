@@ -99,12 +99,13 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 	
 	R_MarkShadowTriangles(hdr, tris, light);
 
-	for (i = 0, tris = ot, neighbors = currentmodel->neighbors;
-		 i < hdr->num_tris; i++, tris++, neighbors++) {
+	for (i = 0, tris = ot, neighbors = currentmodel->neighbors; i < hdr->num_tris; i++, tris++, neighbors++) {
+		
 		if (!triangleFacingLight[i])
 			continue;
 	
 		if (neighbors->n[0] < 0 || !triangleFacingLight[neighbors->n[0]]) {
+			
 			for (j = 0; j < 3; j++) {
 				v0[j] = s_lerped[tris->index_xyz[1]][j];
 				v1[j] = s_lerped[tris->index_xyz[0]][j];
@@ -130,6 +131,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		}
 
 		if (neighbors->n[1] < 0 || !triangleFacingLight[neighbors->n[1]]) {
+			
 			for (j = 0; j < 3; j++) {
 				v0[j] = s_lerped[tris->index_xyz[2]][j];
 				v1[j] = s_lerped[tris->index_xyz[1]][j];
@@ -154,6 +156,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		}
 
 		if (neighbors->n[2] < 0 || !triangleFacingLight[neighbors->n[2]]) {
+			
 			for (j = 0; j < 3; j++) {
 				v0[j] = s_lerped[tris->index_xyz[0]][j];
 				v1[j] = s_lerped[tris->index_xyz[2]][j];
@@ -500,7 +503,59 @@ void R_DrawShadowVolume(entity_t * e)
 
 }
 
-extern cvar_t *r_shadowAlpha;
+void R_ShadowBlend()
+{
+	float shadowalpha;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	if (r_shadows->value < 2)
+		return;
+
+	shadowalpha = 1.0 - r_ambientLevel->value;
+
+	qglMatrixMode(GL_PROJECTION);
+	qglPushMatrix();
+	qglLoadIdentity();
+	qglOrtho(0, 1, 1, 0, -99999, 99999);
+
+	qglMatrixMode(GL_MODELVIEW);
+	qglPushMatrix();
+	qglLoadIdentity();
+	
+	GL_Blend(true, 0, 0);
+	qglDepthMask(0);
+	qglDisable(GL_TEXTURE_2D);
+	qglDepthFunc(GL_ALWAYS);
+	qglColor4f(0, 0, 0, shadowalpha);
+
+//	qglEnable(GL_STENCIL_TEST);
+	qglStencilFunc(GL_NOTEQUAL, 128, 255);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	qglStencilMask(0);
+
+	qglBegin(GL_TRIANGLES);
+	qglVertex2f(-5, -5);
+	qglVertex2f(10, -5);
+	qglVertex2f(-5, 10);
+	qglEnd();
+	
+
+	GL_Blend(false, 0, 0);
+	qglEnable(GL_TEXTURE_2D);
+	qglDepthFunc(GL_LEQUAL);
+//	qglDisable(GL_STENCIL_TEST);
+	qglDepthMask(1);
+
+	qglMatrixMode(GL_PROJECTION);
+	qglPopMatrix();
+
+	qglMatrixMode(GL_MODELVIEW);
+	qglPopMatrix();
+
+}
+
 
 /*=====================
 Shadow World Triangles
@@ -746,15 +801,12 @@ void R_DrawShadowWorld(void)
 	qglEnable(GL_POLYGON_OFFSET_FILL);
     qglPolygonOffset(-2, -1);
 
-	qglEnable(GL_STENCIL_TEST);
     qglStencilFunc(GL_NOTEQUAL, 128, 255);
-	qglClear(GL_STENCIL_BUFFER_BIT);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     qglStencilMask(0);
 	qglDepthMask(0);
-	
-	qglDisable(GL_TEXTURE_2D);
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-    qglEnable(GL_BLEND);
+    qglDisable(GL_TEXTURE_2D);
+	qglEnable(GL_BLEND);
     qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	shadowalpha = 1.0 - r_ambientLevel->value;
@@ -778,11 +830,10 @@ void R_DrawShadowWorld(void)
 	}
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglColor4f(1, 1, 1, 1);    
 	qglDisable(GL_BLEND);
-	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglEnable(GL_TEXTURE_2D); 
-	qglDisable(GL_STENCIL_TEST);
 	qglDepthMask(1);
     		
 }

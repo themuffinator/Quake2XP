@@ -791,8 +791,6 @@ void R_CastShadow(void)
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
 
-	qglEnable(GL_STENCIL_TEST);
-	qglClear(GL_STENCIL_BUFFER_BIT);
 	qglEnable(GL_CULL_FACE);
 	qglDepthMask(0);
 	qglDepthFunc(GL_LESS);
@@ -839,8 +837,6 @@ void R_CastShadow(void)
 	}
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisable(GL_STENCIL_TEST);
-	qglStencilMask(0);
 	qglDepthMask(true);
 	if (r_shadowVolumesDebug->value)
 	qglDisable(GL_BLEND);
@@ -858,11 +854,7 @@ R_Clear
 
 void R_Clear(void)
 {
-	qglClearStencil(128);
-	qglStencilMask(255);
-	
-	qglClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	
+	qglClear(GL_DEPTH_BUFFER_BIT);
 	gldepthmin = 0;
 	gldepthmax = 1;
 	qglDepthFunc(GL_LEQUAL);
@@ -1024,12 +1016,13 @@ void R_DrawPlayerWeaponLightPass(void)
 
 	if (!r_drawEntities->value)
 		return;
+
 	if(!r_bumpAlias->value)
 		return;
 	
-	qglDepthMask			(0);
-	qglEnable				(GL_BLEND);
-	qglBlendFunc			(GL_ONE, GL_ONE);
+	qglDepthMask(0);
+	qglEnable(GL_BLEND);
+	qglBlendFunc(GL_ONE, GL_ONE);
 	
 	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
 	{
@@ -1046,9 +1039,9 @@ void R_DrawPlayerWeaponLightPass(void)
 			continue;
 		R_DrawAliasModelLightPass(true);
 	}
-	qglDepthMask			(1);
-	qglDisable				(GL_BLEND);
-	qglBlendFunc			(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglDepthMask(1);
+	qglDisable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void R_DrawEntitiesLightPass(void)
@@ -1061,16 +1054,17 @@ void R_DrawEntitiesLightPass(void)
 	if(!r_bumpAlias->value)
 		return;
 
-	qglDepthMask			(0);
-	qglEnable				(GL_BLEND);
-	qglBlendFunc			(GL_ONE, GL_ONE);
+	qglDepthMask(0);
+	qglEnable(GL_BLEND);
+	qglBlendFunc(GL_ONE, GL_ONE);
+	qglEnable(GL_POLYGON_OFFSET_FILL);
+    qglPolygonOffset(-2, -2);
 
-/*	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
-	qglEnable				(GL_STENCIL_TEST);
-	qglClear				(GL_STENCIL_BUFFER_BIT);
-	qglStencilFunc			(GL_EQUAL, 128, 255);
-	qglStencilMask			(0);
-	}*/
+	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
+	qglStencilFunc(GL_EQUAL, 128, 255);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	qglStencilMask(0);
+	}
 
 	
 	for (i = 0; i < r_newrefdef.num_entities; i++)	
@@ -1089,10 +1083,10 @@ void R_DrawEntitiesLightPass(void)
 
 		R_DrawAliasModelLightPass(false);
 	}
-	qglDisable				(GL_BLEND);
-	qglBlendFunc			(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDisable				(GL_STENCIL_TEST);
-	qglDepthMask			(1);
+	qglDisable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglDepthMask(1);
 
 }
 
@@ -1134,58 +1128,20 @@ R_RenderView
 r_newrefdef must be set before the first call
 ================
 */
+void R_Stencil(qboolean on)
+{
+if(on){
+qglClearStencil(128);
+qglStencilMask(255);
+qglClear(GL_STENCIL_BUFFER_BIT);
+qglEnable(GL_STENCIL_TEST);
+}
+else
+qglDisable(GL_STENCIL_TEST);
+}
+
 
 void R_BlobShadow(void);
-
-void R_ShadowBlend()
-{
-	float shadowalpha;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	if (r_shadows->value < 2)
-		return;
-
-	shadowalpha = 1.0 - r_ambientLevel->value;
-
-	qglMatrixMode(GL_PROJECTION);
-	qglPushMatrix();
-	qglLoadIdentity();
-	qglOrtho(0, 1, 1, 0, -99999, 99999);
-
-	qglMatrixMode(GL_MODELVIEW);
-	qglPushMatrix();
-	qglLoadIdentity();
-	
-	GL_Blend(true, 0, 0);
-	qglDepthMask(0);
-	qglDisable(GL_TEXTURE_2D);
-	qglColor4f(0, 0, 0, shadowalpha);
-
-	qglEnable(GL_STENCIL_TEST);
-	qglStencilFunc(GL_NOTEQUAL, 128, 255);
-	qglStencilMask(0);
-
-	qglBegin(GL_TRIANGLES);
-	qglVertex2f(-5, -5);
-	qglVertex2f(10, -5);
-	qglVertex2f(-5, 10);
-	qglEnd();
-	
-
-	GL_Blend(false, 0, 0);
-	qglEnable(GL_TEXTURE_2D);
-	qglDisable(GL_STENCIL_TEST);
-	qglDepthMask(1);
-
-	qglMatrixMode(GL_PROJECTION);
-	qglPopMatrix();
-
-	qglMatrixMode(GL_MODELVIEW);
-	qglPopMatrix();
-
-}
 
 void R_RenderView(refdef_t * fd)
 {
@@ -1209,11 +1165,14 @@ void R_RenderView(refdef_t * fd)
 	R_DrawBSP();
 	R_RenderDecals();
 	R_DrawEntitiesOnList();
-	R_BlobShadow();	
+	R_BlobShadow();
+
+	R_Stencil(true);
 	R_CastShadow();
+	R_DrawShadowWorld();
 	R_DrawEntitiesLightPass();
-	R_ShadowBlend();
-//	R_DrawShadowWorld();
+	R_Stencil(false);
+
 	R_RenderFlares();
 	R_CaptureDepthBuffer();
 	R_DrawParticles(true); //underwater particles
