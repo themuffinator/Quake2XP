@@ -38,7 +38,7 @@ cvar_t	*r_shadows;
 cvar_t	*r_shadowWorldLightScale;
 cvar_t	*r_shadowVolumesDebug;
 cvar_t	*r_playerShadow;
-
+cvar_t	*r_shadowCapOffset;
 cvar_t	*r_radarSize;			// GLOOM radar
 cvar_t	*r_radarZoom;
 cvar_t	*r_radar;
@@ -562,7 +562,7 @@ void R_Register2(void)
 	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "10", CVAR_ARCHIVE);
 	r_shadowVolumesDebug =				Cvar_Get("r_shadowVolumesDebug", "0", 0);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
-	
+	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "1", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);

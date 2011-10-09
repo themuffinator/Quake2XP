@@ -81,6 +81,7 @@ void R_MarkShadowTriangles(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg
 	}
 
 }
+extern cvar_t	*r_shadowCapOffset;
 
 void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistance)
 {
@@ -90,6 +91,8 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 	vec3_t v0, v1, v2, v3;
 	daliasframe_t *frame;
 	dtrivertx_t *verts;
+	vec3_t	offset0, offset1, offset2;
+	float cap_offset = r_shadowCapOffset->value;
 	
 	frame = (daliasframe_t *) ((byte *) hdr + hdr->ofs_frames
 							   + currententity->frame * hdr->framesize);
@@ -110,9 +113,20 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 				v0[j] = s_lerped[tris->index_xyz[1]][j];
 				v1[j] = s_lerped[tris->index_xyz[0]][j];
 
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+			}
+
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+
+			for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
+
 				v2[j] = v1[j] + ((v1[j] - light[j]) * projectdistance);
 				v3[j] = v0[j] + ((v0[j] - light[j]) * projectdistance);
-
 			}
 
 		VA_SetElem3(ShadowArray[shadow_vert+0], v0[0], v0[1], v0[2]);
@@ -135,6 +149,18 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 			for (j = 0; j < 3; j++) {
 				v0[j] = s_lerped[tris->index_xyz[2]][j];
 				v1[j] = s_lerped[tris->index_xyz[1]][j];
+
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+			}
+
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+
+			for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
 
 				v2[j] = v1[j] + ((v1[j] - light[j]) * projectdistance);
 				v3[j] = v0[j] + ((v0[j] - light[j]) * projectdistance);
@@ -161,10 +187,21 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 				v0[j] = s_lerped[tris->index_xyz[0]][j];
 				v1[j] = s_lerped[tris->index_xyz[2]][j];
 
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+			}
+
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+
+			for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
+
 				v2[j] = v1[j] + ((v1[j] - light[j]) * projectdistance);
 				v3[j] = v0[j] + ((v0[j] - light[j]) * projectdistance);
 			}
-
 	
 		VA_SetElem3(ShadowArray[shadow_vert+0], v0[0], v0[1], v0[2]);
 		VA_SetElem3(ShadowArray[shadow_vert+1], v1[0], v1[1], v1[2]);
@@ -182,17 +219,32 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		}
 	}
 
-	
 	 // build shadows caps
-	for (i = 0, tris = ot; i < hdr->num_tris; i++, tris++) {
-	
+	for (i = 0, tris = ot; i < hdr->num_tris; i++, tris++)
+	{
 		if (!triangleFacingLight[i])
 			continue;
 		
-			for (j = 0; j < 3; j++) {
+			for (j = 0; j < 3; j++)
+			{
 				v0[j] = s_lerped[tris->index_xyz[0]][j];
 				v1[j] = s_lerped[tris->index_xyz[1]][j];
 				v2[j] = s_lerped[tris->index_xyz[2]][j];
+
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+				offset2[j] = v2[j] - light[j];
+			}
+
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+			VectorNormalize(offset2);
+
+			for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
+				v2[j] += offset2[j] * cap_offset;
 			}
 
 		VA_SetElem3(ShadowArray[shadow_vert+0], v0[0], v0[1], v0[2]);
@@ -203,7 +255,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		ShadowIndex[index++] = shadow_vert+1;
 		ShadowIndex[index++] = shadow_vert+2;
         shadow_vert +=3;
-			
+
 			// rear cap (with flipped winding order)
 
 			for (j = 0; j < 3; j++) {
@@ -211,11 +263,24 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 				v1[j] = s_lerped[tris->index_xyz[1]][j];
 				v2[j] = s_lerped[tris->index_xyz[2]][j];
 
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+				offset2[j] = v2[j] - light[j];
+			}
 
-				v0[j] = v0[j] + ((v0[j] - light[j]) * projectdistance);
-				v1[j] = v1[j] + ((v1[j] - light[j]) * projectdistance);
-				v2[j] = v2[j] + ((v2[j] - light[j]) * projectdistance);
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+			VectorNormalize(offset2);
 
+			for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
+				v2[j] += offset2[j] * cap_offset;
+
+				v0[j] += (v0[j] - light[j]) * projectdistance;
+				v1[j] += (v1[j] - light[j]) * projectdistance;
+				v2[j] += (v2[j] - light[j]) * projectdistance;
 			}
 			
 		VA_SetElem3(ShadowArray[shadow_vert+0], v0[0], v0[1], v0[2]);
@@ -227,7 +292,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		ShadowIndex[index++] = shadow_vert+0; 
 		shadow_vert +=3;
 	}
-	
+
 	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
 		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shadow_vert, index, GL_UNSIGNED_INT, ShadowIndex);
 		else
