@@ -1531,7 +1531,7 @@ int R_Init(void *hinstance, void *hWnd)
 	
 	strcpy(vendor_buffer, gl_config.vendor_string);
 	strlwr(vendor_buffer);
-
+/*
 	if (strstr(renderer_buffer, "intel")) // fuck the intel lol
 		{
 		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
@@ -1554,7 +1554,7 @@ int R_Init(void *hinstance, void *hWnd)
 		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		}
 	}
-
+	*/
 	Com_Printf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
 	Com_Printf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
 	

@@ -565,19 +565,20 @@ return	(((*a)->lightmaptexturenum<<26)+((*a)->texinfo->image->texnum<<13) + (*b)
 
 int	num_scene_surfaces;
 msurface_t	*scene_surfaces[MAX_MAP_FACES];
-
-
+vec3_t	lightOrg, lightColor;
+float lightRad;
+ 
 static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
 	image_t		*image, *fx, *nm;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
-	int			id, i, map;
+	int			id, i, map, numLights = 0, j;
 	float		scale[2];
 	qboolean	is_dynamic = false;
+	dlight_t	*dl;
 
-	c_visible_textures = 0;
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
 		
@@ -628,12 +629,62 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 	if(r_bumpWorld->value){
 	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+
+	// cleanup lights
+	for (j=0; j < 8; j++) {
+		char uname[32];
+
+		Com_sprintf(uname, sizeof(uname), "u_LightOrg[%i]", j);
+		qglUniform3f(qglGetUniformLocation(id, uname),0, 0, 0);
+		Com_sprintf(uname, sizeof(uname), "u_LightColor[%i]", j);
+		qglUniform3f(qglGetUniformLocation(id, uname), 0, 0, 0);
+		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
+		qglUniform1f(qglGetUniformLocation(id, uname), 0);
+	}
+
+	// setup dlights
+	dl = r_newrefdef.dlights;
+	for (j=0, dl = r_newrefdef.dlights; j < r_newrefdef.num_dlights; j++, dl++ ) 
+	{
+		char uname[32];
+		vec3_t locLight;
+
+			if(j >= 8 )
+				break;
+
+	// put dlight into model space for bmodels
+	if(bmodel){
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
+		{
+		vec3_t	forward, right, up, temp;
+		VectorSubtract(dl->origin, currententity->origin, temp);
+		AngleVectors (currententity->angles, forward, right, up);
+		locLight[0] = DotProduct (temp, forward);
+		locLight[1] = -DotProduct (temp, right);
+		locLight[2] = DotProduct (temp, up);
+		}
+	else
+		VectorSubtract(dl->origin, currententity->origin, locLight);
+	
+		Com_sprintf(uname, sizeof(uname), "u_LightOrg[%i]", j);
+		qglUniform3f(qglGetUniformLocation(id, uname), locLight[0], locLight[1], locLight[2]);
+
+	} else{
+		Com_sprintf(uname, sizeof(uname), "u_LightOrg[%i]", j);
+		qglUniform3f(qglGetUniformLocation(id, uname), dl->origin[0], dl->origin[1], dl->origin[2]);
+	}
+		Com_sprintf(uname, sizeof(uname), "u_LightColor[%i]", j);
+		qglUniform3f(qglGetUniformLocation(id, uname), dl->color[0], dl->color[1], dl->color[2]);
+		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
+		qglUniform1f(qglGetUniformLocation(id, uname), dl->intensity * 0.75);
+	}
+	
 	}
 
 	GL_CreateParallaxLmPoly(s);
 	
-	c_brush_polys++;
-
+//	c_brush_polys++;
+/*
 		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
 		if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
 			goto dynamic;
@@ -689,7 +740,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		
 		}
 
-		c_brush_polys++;
+	//	c_brush_polys++;
 				
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
@@ -707,9 +758,9 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		}
 		R_DrawArrays();
 		
-	} else {
+	} else {*/
 	
-		c_brush_polys++;
+	//	c_brush_polys++;
 
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
@@ -727,7 +778,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform1i(qglGetUniformLocation(id, "u_deluxMap"), 5);
 		}
 		R_DrawArrays();
-		}	
+//		}	
 }
 	
 	GL_BindNullProgram();
@@ -1136,7 +1187,8 @@ r_drawWorld
 void R_DrawBSP(void)
 {
 	entity_t ent;
-	
+	int i;
+
 	if (!r_drawWorld->value)
 		return;
 
@@ -1172,7 +1224,7 @@ void R_DrawBSP(void)
 	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
 	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
-		
+	
 	num_scene_surfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
 	GL_BatchLightmappedPoly(false, false);
