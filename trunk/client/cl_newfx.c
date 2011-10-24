@@ -215,7 +215,7 @@ void CL_ForceWall(vec3_t start, vec3_t end, int color)
 			VectorClear(p->accel);
 			p->type = PT_BLASTER;
 			p->orient = 0;
-			p->flags = 0;
+			p->flags = PARTICLE_DEFAULT;
 			p->size = 1;
 			p->sizeVel = 0;
 
@@ -305,7 +305,7 @@ void CL_Heatbeam(vec3_t start, vec3_t forward)
 			variance = 0.5;
 			c = cos(rot) * variance;
 			s = sin(rot) * variance;
-			p->flags = 0;
+			p->flags = PARTICLE_DEFAULT;
 			p->time = cl.time;
 			p->endTime = cl.time + 20000;
 			p->type = PT_BLASTER;
@@ -371,7 +371,7 @@ void CL_ParticleSteamEffect(vec3_t org, vec3_t dir, int color, int count,
 		index = (color + (rand() & 7)) & 0xff;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -430,7 +430,7 @@ void CL_ParticleSteamEffect2(cl_sustain_t * self)
 		color = (self->color + (rand() & 7)) & 0xff;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -508,7 +508,7 @@ void CL_TrackerTrail(vec3_t start, vec3_t end, int color)
 		p->orient = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->type = PT_BLASTER;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
@@ -557,7 +557,7 @@ void CL_Tracker_Shell(vec3_t origin)
 		p->orient = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->type = PT_BLASTER;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
@@ -606,7 +606,7 @@ void CL_MonsterPlasma_Shell(vec3_t origin)
 		color &= 0xe0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->type = PT_BLASTER;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE;
@@ -660,7 +660,7 @@ void CL_Widowbeamout(cl_sustain_t * self)
 		color = colortable[rand() & 3];
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->type = PT_BLASTER;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE;
@@ -714,7 +714,7 @@ void CL_Nukeblast(cl_sustain_t * self)
 		color = colortable[rand() & 3];
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -765,7 +765,7 @@ void CL_WidowSplash(vec3_t org)
 		color = colortable[rand() & 3];
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -836,7 +836,7 @@ void CL_TagTrail(vec3_t start, vec3_t end, float color)
 
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
 		p->blend_dst = GL_SRC_ALPHA;

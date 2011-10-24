@@ -1359,7 +1359,6 @@ void Q_free (void *buf);
 #define PARTICLE_DIRECTIONAL			4
 #define PARTICLE_VERTEXLIGHT			8
 #define PARTICLE_STRETCH				16
-
 #define PARTICLE_UNDERWATER				32
 #define PARTICLE_OVERBRIGHT				64
 #define PARTICLE_SPIRAL					128
@@ -1370,6 +1369,9 @@ void Q_free (void *buf);
 #define PARTICLE_STOPED					4096
 #define PARTICLE_CLAMP					8192
 #define PARTICLE_NOFADE					16384
+#define PARTICLE_DEFAULT				32768
+
+
 
 #define CLM_BOUNCE			1
 #define CLM_FRICTION		2

@@ -444,26 +444,22 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 		VID_Error(ERR_DROP, "Bad s_blocklights size");
 	}
 	
-// set to full bright if no light data
+	// set to full bright if no light data
 	if (!surf->samples) {
 		int maps;
 
 		for (i = 0; i < size * 3; i++)
-			s_blocklights[i] = 255;
-		for (maps = 0; maps < MAXLIGHTMAPS && surf->styles[maps] != 255;
-			 maps++) {
-			style = &r_newrefdef.lightstyles[surf->styles[maps]];
+				s_blocklights[i] = 255;
+		
+		for (maps = 0; maps < MAXLIGHTMAPS && surf->styles[maps] != 255; maps++) {
+				style = &r_newrefdef.lightstyles[surf->styles[maps]];
 		}
 		goto store;
 	}
 	// count the # of maps
-	for (nummaps = 0;
-		 nummaps < MAXLIGHTMAPS && surf->styles[nummaps] != 255;
-		 nummaps++);
-
-	lightmap = surf->samples;
-	
-	
+	for (nummaps = 0; nummaps < MAXLIGHTMAPS && surf->styles[nummaps] != 255; nummaps++);
+		lightmap = surf->samples;
+		
 	// add all the lightmaps
 	if (nummaps == 1) {
 		int maps;
@@ -495,9 +491,7 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 		int maps;
 
 		memset(s_blocklights, 0, sizeof(s_blocklights[0]) * size * 3);
-		
-		
-
+	
 		for (maps = 0; maps < MAXLIGHTMAPS && surf->styles[maps] != 255;
 			 maps++) {
 			bl = s_blocklights;
@@ -523,13 +517,12 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 	
 	}
 
+	// add all the dynamic lights for non bumped sufaces
+	if(!r_bumpWorld->value){
 
-
-// add all the dynamic lights
-	if (surf->dlightframe == r_framecount)
-		R_AddDynamicLights(surf);
-
-
+		if (surf->dlightframe == r_framecount)
+			R_AddDynamicLights(surf);
+	}
 
 // put into texture format
   store:

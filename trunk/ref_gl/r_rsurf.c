@@ -578,7 +578,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	float		scale[2];
 	qboolean	is_dynamic = false;
 	dlight_t	*dl;
-
+	unsigned	temp[128 * 128];
+	int			smax, tmax;
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
 		
@@ -647,11 +648,22 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	for (j=0, dl = r_newrefdef.dlights; j < r_newrefdef.num_dlights; j++, dl++ ) 
 	{
 		char uname[32];
+		int k;
+		vec3_t mins, maxs;
 		vec3_t locLight;
 
-			if(j >= 8 )
-				break;
+		for (k=0 ; k<3 ; k++)
+		{
+		mins[k] = dl->origin[k] - dl->intensity;
+		maxs[k] = dl->origin[k] + dl->intensity;
+		}
 
+		if(R_CullBox(mins, maxs))
+			continue;
+			
+		if(j >= 8 )
+			break;
+				
 	// put dlight into model space for bmodels
 	if(bmodel){
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
@@ -676,15 +688,15 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		Com_sprintf(uname, sizeof(uname), "u_LightColor[%i]", j);
 		qglUniform3f(qglGetUniformLocation(id, uname), dl->color[0], dl->color[1], dl->color[2]);
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
-		qglUniform1f(qglGetUniformLocation(id, uname), dl->intensity * 0.75);
+		qglUniform1f(qglGetUniformLocation(id, uname), dl->intensity);
 	}
 	
 	}
 
 	GL_CreateParallaxLmPoly(s);
 	
-//	c_brush_polys++;
-/*
+
+
 		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
 		if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
 			goto dynamic;
@@ -706,8 +718,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	}
 
 	if (is_dynamic) {
-		unsigned temp[128 * 128];
-		int smax, tmax;
+
 				
 		if ((s->styles[map] >= 32 || s->styles[map] == 0)
 			&& (s->dlightframe != r_framecount)) {
@@ -724,7 +735,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 			qglTexSubImage2D(GL_TEXTURE_2D, 0,
 							 s->light_s, s->light_t,
 							 smax, tmax,
-							 GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp);
+							 GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
 
 		} else {
 			smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
@@ -736,12 +747,11 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 			lmtex = 0;
 
-			qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp);
+			qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
 		
 		}
 
-	//	c_brush_polys++;
-				
+					
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
@@ -758,9 +768,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		}
 		R_DrawArrays();
 		
-	} else {*/
+	} else {
 	
-	//	c_brush_polys++;
 
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
@@ -778,7 +787,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform1i(qglGetUniformLocation(id, "u_deluxMap"), 5);
 		}
 		R_DrawArrays();
-//		}	
+		}	
 }
 	
 	GL_BindNullProgram();
@@ -1187,7 +1196,6 @@ r_drawWorld
 void R_DrawBSP(void)
 {
 	entity_t ent;
-	int i;
 
 	if (!r_drawWorld->value)
 		return;

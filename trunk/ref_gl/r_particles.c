@@ -55,7 +55,7 @@ void R_DrawParticles(qboolean WaterCheck)
 {
 	particle_t *p;
 	unsigned	ParticleIndex[MAX_INDICES];
-	unsigned	texId, texture = -1;
+	unsigned	texId, texture = -1, flagId, flags = -1;
 	int			i, len, loc, partVert=0, index=0, id, defBits =0;
 	vec3_t		point, width;
 	vec3_t		move, vec, dir1, dir2, dir3, spdir;
@@ -65,6 +65,8 @@ void R_DrawParticles(qboolean WaterCheck)
 	vec4_t		outcolor;
 	float		scale, r, g, b, a;
 	float		c, d, s;
+
+	GL_Overbrights (false);
 
 	// setup program
 	GL_BindProgram(particlesProgram, defBits);
@@ -201,9 +203,9 @@ void R_DrawParticles(qboolean WaterCheck)
 
 
 		scale = p->size;
-
+		flagId = p->flags;
 	
-		if (texture != texId){
+		if (texture != texId && flags != flagId){
 
 		if (partVert){
 		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
@@ -213,6 +215,7 @@ void R_DrawParticles(qboolean WaterCheck)
 		c_part_tris += index/3;
 		}
         texture = texId;
+		flags = flagId;
         partVert = 0;
         index = 0;
 
@@ -220,13 +223,6 @@ void R_DrawParticles(qboolean WaterCheck)
 		GL_Bind					(texId);
 		qglBlendFunc			(p->blend_dst, p->blend_src);
 
-		}
-						
-		r = p->color[0];
-		g = p->color[1];
-		b = p->color[2];
-		a = p->alpha;
-				
 		if (p->flags & PARTICLE_VERTEXLIGHT) {
 			outcolor[0] = shadelight_surface[0] * r - r;
 			outcolor[1] = shadelight_surface[1] * g - g;
@@ -255,7 +251,15 @@ void R_DrawParticles(qboolean WaterCheck)
 			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);
 		else
 			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
+		}
+		
+		r = p->color[0];
+		g = p->color[1];
+		b = p->color[2];
+		a = p->alpha;
+				
 
+	
 		if (p->flags & PARTICLE_STRETCH) {
 			
 				VectorSubtract (p->origin, r_newrefdef.vieworg, point);

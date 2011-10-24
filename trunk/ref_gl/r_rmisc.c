@@ -178,7 +178,8 @@ void R_InitEngineTextures(void)
 	int		x, y, i;
 	byte	notex[4][4][4];
 	byte	*buffer;
-	
+	byte tmp[1][1][4] = {0x80, 0x80, 0xff,0x0};
+
 	for (x = 0; x < 4; x++) {
 		for (y = 0; y < 4; y++) {
 			notex[y][x][0] = missing_texture[x][y] * 255;
@@ -187,6 +188,9 @@ void R_InitEngineTextures(void)
 			notex[y][x][3] = 255;
 		}
 	}
+
+	r_defBump = GL_LoadPic("***r_defBump***", (byte *) tmp, 1, 1, it_wall, 32);	
+
 
 	r_notexture =
 		GL_LoadPic("***r_notexture***", (byte *) notex, 4, 4, it_wall, 32);	
@@ -343,9 +347,6 @@ void R_InitEngineTextures(void)
 		if(!r_blackTexture)
 			r_blackTexture = r_notexture;
 	
-	r_defBump = GL_FindImage("gfx/flatbump.tga", it_wall);
-	if(!r_defBump)
-		r_defBump = r_notexture;
 
 	buffer = (byte*)malloc(320 * 240 * 4);
 	memset(buffer, 0, 320 * 240 * 4);

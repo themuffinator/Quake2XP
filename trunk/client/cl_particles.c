@@ -400,7 +400,7 @@ void CL_ParticleEffect(vec3_t org, vec3_t dir, float r, float b, float g,
 		p->next = active_particles;
 		active_particles = p;
 
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->len = 0;
 		p->endLen = 0;
@@ -436,55 +436,6 @@ void CL_ParticleEffect(vec3_t org, vec3_t dir, float r, float b, float g,
 }
 
 
-void CL_ParticleBloodOLD(vec3_t org, vec3_t dir, int count)
-{
-	int i, j;
-	cparticle_t *p;
-	float d;
-	
-	if(!cl_blood->value) return;
-
-	for (i = 0; i < count; i++) {
-		if (!free_particles)
-			return;
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-
-		p->flags = 0;
-		p->time = cl.time;
-		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
-		p->orient = 0;
-		p->color[0] = 0.2;
-		p->color[1] = 0.2;
-		p->color[2] = 0;
-
-		p->colorVel[0] = 0;
-		p->colorVel[1] = 0;
-		p->colorVel[2] = 0;
-
-		p->type = PT_BLOODSPRAY;
-		p->size = 6;
-		p->sizeVel = 1;
-		d = rand() & 31;
-		for (j = 0; j < 3; j++) {
-			p->org[j] = org[j] + ((rand() & 7) - 4) + d * dir[j];
-			p->vel[j] = crand() * 20;
-		}
-
-		p->accel[0] = p->accel[1] = 0;
-		p->accel[2] = -PARTICLE_GRAVITY * 4;
-		p->alpha = 1;
-
-		p->alphavel = -1.0 / (1.5 + frand() * 0.1);
-		VectorCopy(p->org, p->oldOrg);
-
-	}
-}
-
 void CL_ParticleBlood(vec3_t org, vec3_t dir, int count)
 {
 	int i, j;
@@ -503,8 +454,8 @@ void CL_ParticleBlood(vec3_t org, vec3_t dir, int count)
 		
 		p->type = PT_BLOODDRIP;
 		p->orient = 0;
-		p->flags = 0;
-		p->flags = PARTICLE_DIRECTIONAL | PARTICLE_NONSOLID;
+		p->flags = PARTICLE_DIRECTIONAL;
+		p->flags |= PARTICLE_NONSOLID;
 
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
@@ -547,7 +498,7 @@ void CL_ParticleBlood(vec3_t org, vec3_t dir, int count)
 		active_particles = p;
 		VectorClear(p->vel);
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -596,8 +547,8 @@ void CL_ParticleBlood2(vec3_t org, vec3_t dir, int count)
 		
 		p->type = PT_xBLOODSPRAY;
 		p->orient = 0;
-		p->flags = 0;
-		p->flags = PARTICLE_DIRECTIONAL | PARTICLE_NONSOLID;
+		p->flags = PARTICLE_DIRECTIONAL;
+		p->flags |= PARTICLE_NONSOLID;
 
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
@@ -632,59 +583,6 @@ void CL_ParticleBlood2(vec3_t org, vec3_t dir, int count)
 
 }
 
-void CL_ParticleBloodXXX(vec3_t org, vec3_t dir, int count)
-{
-	int i, j;
-	cparticle_t *p;
-	float d;
-	
-	if(!cl_blood->value) return;
-
-	for (i = 0; i < count; i++) {
-		if (!free_particles)
-			return;
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-
-		p->flags = 0;
-		p->flags |= PARTICLE_NONSOLID;
-		p->time = cl.time;
-		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
-		p->orient = 0;
-		p->color[0] = 1;
-		p->color[1] = 1;
-		p->color[2] = 0;
-
-		p->colorVel[0] = 0;
-		p->colorVel[1] = 0;
-		p->colorVel[2] = 0;
-
-		p->type = PT_xBLOODSPRAY;
-		p->size = 6;
-		p->sizeVel = 1;
-		d = rand() & 31;
-		for (j = 0; j < 3; j++) {
-			p->org[j] = org[j] + ((rand() & 7) - 4) + d * dir[j];
-			p->vel[j] = crand() * 20;
-		}
-
-		p->accel[0] = p->accel[1] = 0;
-		p->accel[2] = -PARTICLE_GRAVITY * 4;
-		p->alpha = 1;
-
-		p->alphavel = -1.0 / (1.5 + frand() * 0.1);
-		VectorCopy(p->org, p->oldOrg);
-
-	}
-}
-
-
-
-
 
 /*
 ===============
@@ -706,8 +604,8 @@ void CL_LaserParticle(vec3_t org, vec3_t dir, int count)
 		p->next = active_particles;
 		active_particles = p;
 
-		p->flags = 0;
-		p->flags = PARTICLE_BOUNCE | PARTICLE_FRICTION;
+		p->flags = PARTICLE_BOUNCE;
+		p->flags |= PARTICLE_FRICTION;
 		p->orient = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
@@ -756,8 +654,8 @@ void CL_LaserParticle2(vec3_t org, vec3_t dir, int color, int count)
 		p->next = active_particles;
 		active_particles = p;
 
-		p->flags = 0;
-		p->flags = PARTICLE_BOUNCE | PARTICLE_FRICTION;
+		p->flags = PARTICLE_BOUNCE;
+		p->flags |= PARTICLE_FRICTION;
 		p->orient = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
@@ -808,8 +706,8 @@ void CL_ParticleSmoke(vec3_t org, vec3_t dir, int count)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->flags = 0;
-		p->flags = PARTICLE_VERTEXLIGHT | PARTICLE_AIRONLY;
+		p->flags = PARTICLE_VERTEXLIGHT;
+		p->flags |= PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -858,8 +756,7 @@ void CL_ParticleSmoke2(vec3_t org, vec3_t dir, float r, float g, float b,
 		p->next = active_particles;
 		active_particles = p;
 		p->type = PT_SMOKE;
-		p->flags = 0;
-		p->flags |= PARTICLE_AIRONLY;
+		p->flags = PARTICLE_AIRONLY;
 		p->orient =  frand() * 360;
 		if (add) {
 			p->blend_dst = GL_SRC_ALPHA;
@@ -901,9 +798,7 @@ void CL_ParticleGunSmoke(vec3_t org, vec3_t dir, int count)
 	int i, j;
 	cparticle_t *p;
 	float d;
-
 	
-
 	for (i = 0; i < count; i++) {
 		if (!free_particles)
 			return;
@@ -913,8 +808,8 @@ void CL_ParticleGunSmoke(vec3_t org, vec3_t dir, int count)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient =  frand() * 360;
-		p->flags = 0;
-		p->flags = PARTICLE_VERTEXLIGHT | PARTICLE_AIRONLY;
+		p->flags = PARTICLE_VERTEXLIGHT;
+		p->flags |= PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -962,8 +857,8 @@ void CL_ParticleSpark(vec3_t org, vec3_t dir, int count)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->flags = 0;
-		p->flags = PARTICLE_OVERBRIGHT | PARTICLE_DIRECTIONAL;
+		p->flags  = PARTICLE_OVERBRIGHT;
+		p->flags |= PARTICLE_DIRECTIONAL;
 		p->time = cl.time;
 		p->endTime = cl.time + 1000;
 		p->blend_dst = GL_ONE;
@@ -1005,8 +900,7 @@ void CL_ParticleSpark(vec3_t org, vec3_t dir, int count)
 		p->len = 0;
 		p->endLen = 0;
 		p->orient = 0;
-		p->flags = 0;
-		p->flags |= PARTICLE_OVERBRIGHT;
+		p->flags = PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 1000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -1052,8 +946,8 @@ void CL_ParticleArmorSpark(vec3_t org, vec3_t dir, int count,
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->flags = 0;
-		p->flags = PARTICLE_OVERBRIGHT | PARTICLE_DIRECTIONAL;
+		p->flags  = PARTICLE_OVERBRIGHT;
+		p->flags |= PARTICLE_DIRECTIONAL;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_ONE;
@@ -1118,8 +1012,8 @@ void CL_ParticleTracer(vec3_t start, vec3_t end)
 
 	active_particles = p;
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_DIRECTIONAL | PARTICLE_NONSOLID;
+	p->flags  = PARTICLE_DIRECTIONAL;
+	p->flags |= PARTICLE_NONSOLID;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1150,59 +1044,6 @@ void CL_ParticleTracer(vec3_t start, vec3_t end)
 
 }
 
-void CL_ParticleBlasterBolt(vec3_t start, vec3_t angles)
-{
-	int j;
-	cparticle_t *p;
-	float d;
-	vec3_t dir;
-	float dist = 4000;
-	float len = 10;
-
-	AngleVectors(angles, dir, NULL, NULL);
-	VectorScale(dir, len, dir); 
-
-	if (!free_particles)
-		return;
-	p = free_particles;
-	free_particles = p->next;
-	p->next = active_particles;
-
-	VectorClear(p->accel);
-	VectorNormalize(dir);
-
-	active_particles = p;
-	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_DIRECTIONAL | PARTICLE_NONSOLID;
-	p->time = cl.time;
-	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_ONE;
-	p->blend_src = GL_ONE;
-	p->len = 30;
-	p->endLen = 0;
-	p->color[0] = 0.97;
-	p->color[1] = 0.46;
-	p->color[2] = 0.14;
-
-	p->colorVel[0] = 0;
-	p->colorVel[1] = 0;
-	p->colorVel[2] = 0;
-
-	p->type = PT_SPARK;
-	p->size = 1;
-	p->sizeVel = 0;
-	d = rand() & 7;
-	for (j = 0; j < 3; j++) {
-		p->org[j] = start[j];
-		p->vel[j] = dir[j] * dist;
-	}
-
-
-	p->alpha = 1.0;
-
-}
-
 
 void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 {
@@ -1220,8 +1061,7 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = frand() * 360;
-		p->flags = 0;
-		p->flags |= PARTICLE_AIRONLY;
+		p->flags = PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -1263,8 +1103,8 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 	VectorClear(p->accel);
 	VectorClear(p->vel);
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_DIRECTIONAL | PARTICLE_AIRONLY;
+	p->flags  = PARTICLE_DIRECTIONAL;
+	p->flags |= PARTICLE_AIRONLY;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1306,8 +1146,9 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 	VectorCopy(dir, p->dir);
 	VectorNormalize(p->dir);
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY| PARTICLE_NOFADE;
+	p->flags  = PARTICLE_ALIGNED;
+	p->flags |= PARTICLE_AIRONLY;
+	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1355,8 +1196,8 @@ void CL_ParticleSplashSlime(vec3_t org, vec3_t dir)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = frand() * 360;
-		p->flags = 0;
-		p->flags = PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT;
+		p->flags  = PARTICLE_AIRONLY;
+		p->flags |= PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -1398,8 +1239,9 @@ void CL_ParticleSplashSlime(vec3_t org, vec3_t dir)
 	VectorClear(p->accel);
 	VectorClear(p->vel);
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_DIRECTIONAL | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT;
+	p->flags  = PARTICLE_DIRECTIONAL;
+	p->flags |= PARTICLE_AIRONLY; 
+	p->flags |= PARTICLE_OVERBRIGHT;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1441,8 +1283,10 @@ void CL_ParticleSplashSlime(vec3_t org, vec3_t dir)
 	VectorCopy(dir, p->dir);
 	VectorNormalize(p->dir);
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT| PARTICLE_NOFADE;
+	p->flags  = PARTICLE_ALIGNED;
+	p->flags |= PARTICLE_AIRONLY;
+	p->flags |= PARTICLE_OVERBRIGHT;
+	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1491,8 +1335,8 @@ void CL_ParticleSplashLava(vec3_t org, vec3_t dir)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = frand() * 360;
-		p->flags = 0;
-		p->flags = PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT;
+		p->flags  = PARTICLE_AIRONLY;
+		p->flags |= PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -1534,8 +1378,9 @@ void CL_ParticleSplashLava(vec3_t org, vec3_t dir)
 	VectorClear(p->accel);
 	VectorClear(p->vel);
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_DIRECTIONAL | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT;
+	p->flags  = PARTICLE_DIRECTIONAL;
+	p->flags |= PARTICLE_AIRONLY;
+	p->flags |= PARTICLE_OVERBRIGHT;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1577,8 +1422,10 @@ void CL_ParticleSplashLava(vec3_t org, vec3_t dir)
 	VectorCopy(dir, p->dir);
 	VectorNormalize(p->dir);
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_OVERBRIGHT | PARTICLE_NOFADE;
+	p->flags  = PARTICLE_ALIGNED;
+	p->flags |= PARTICLE_AIRONLY;
+	p->flags |= PARTICLE_OVERBRIGHT;
+	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -1632,8 +1479,10 @@ void CL_ParticleBloodSplash(vec3_t org, vec3_t dir)
 	VectorCopy(dir, p->dir);
 	VectorNormalize(p->dir);
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_CLAMP | PARTICLE_NOFADE;
+	p->flags  = PARTICLE_ALIGNED;
+	p->flags |= PARTICLE_AIRONLY;
+	p->flags |= PARTICLE_CLAMP; 
+	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 2000000;
 	p->blend_dst = GL_ONE;
@@ -1664,115 +1513,6 @@ void CL_ParticleBloodSplash(vec3_t org, vec3_t dir)
 }
 
 
-/*
-void CL_ParticleSplash(vec3_t org, vec3_t dir, int color)
-{
-	vec3_t		move;
-	vec3_t		vec;
-	vec3_t		start, end;
-	float		len, d;
-	int			j, index, i, count;
-	cparticle_t	*p;
-	int			dec;
-
-	VectorCopy (org, start);
-	VectorCopy (org, end);
-	end[2]+=15;
-
-	VectorCopy (start, move);
-	VectorSubtract (end, start, vec);
-	len = VectorNormalize (vec);
-
-	dec = 1;
-
-	while (len > 0)
-	{
-		len -= dec;
-
-		if (!free_particles)
-			return;
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-		VectorClear (p->accel);
-
-		index = (color + (rand() & 7)) & 0xff;
-
-		p->time = cl.time;
-		p->endTime = cl.time+20000;
-		p->flags = 0;        
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
-		p->type = PT_SPLASH;
-		p->size = 2;
-		p->sizeVel = -2;
-		p->alpha = 0.8;
-		p->alphavel = -1.0 / (0.3+frand()*0.2);
-
-		p->color[0] =	cl_indexPalette[index][0];
-		p->color[1] =	cl_indexPalette[index][1];
-		p->color[2] =	cl_indexPalette[index][2];
-
-		p->colorVel[0] = 0;
-		p->colorVel[1] = 0;
-		p->colorVel[2] = 0;
-		for (j=0 ; j<3 ; j++)
-		{
-			p->org[j] = move[j];
-			p->vel[j] = dir[j];
-			p->accel[j] = 0;
-		}
-		p->accel[2] = PARTICLE_GRAVITY;
-
-		VectorAdd (move, vec, move);
-	}
-
-	count = 30;
-	for (i=0 ; i<count ; i++)
-	{
-		if (!free_particles)
-			return;
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-        index = (color + (rand() & 7)) & 0xff;
-
-		p->flags =0;
-		p->time = cl.time;
-		p->endTime = cl.time+20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
-
-		p->color[0] =	cl_indexPalette[index][0];
-		p->color[1] =	cl_indexPalette[index][1];
-		p->color[2] =	cl_indexPalette[index][2];
-
-		p->colorVel[0] = 0;
-		p->colorVel[1] = 0;
-		p->colorVel[2] = 0;
-
-		p->type = PT_SPLASH;
-		p->size = 0.3;
-		p->sizeVel = 0;
-		
-		d = rand()&15;
-	
-		for (j=0 ; j<3 ; j++)
-		{
-			p->org[j] = org[j] + ((rand()&7)-4) + d*dir[j];
-			p->vel[j] = dir[j] * 30 + crand()*40;	
-		}
-
-		p->accel[0] = p->accel[1] = 0;
-		p->accel[2] = -PARTICLE_GRAVITY*2.5;
-		p->alpha = 1;
-
-		p->alphavel = -1.0 / (0.5 + frand()*0.5);
-	}
-}
-*/
 void CL_ParticleHeadBlood(vec3_t org)
 {
 	int j, i;
@@ -1798,8 +1538,8 @@ void CL_ParticleHeadBlood(vec3_t org)
 
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
-		p->flags = 0;
-		p->flags = PARTICLE_DIRECTIONAL | PARTICLE_NONSOLID;
+		p->flags  = PARTICLE_DIRECTIONAL;
+		p->flags |= PARTICLE_NONSOLID;
 		p->orient = 0;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
@@ -1840,7 +1580,7 @@ void CL_ParticleHeadBlood(vec3_t org)
 		active_particles = p;
 		VectorClear(p->vel);
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -1870,110 +1610,6 @@ void CL_ParticleHeadBlood(vec3_t org)
 
 
 }
-/*
-
-void CL_ParticleGibBlood(vec3_t org)
-{
-	int i, j;
-	cparticle_t *p;
-	float d;
-	vec3_t tmp, end; 
-
-	if(!cl_blood->value) return;
-
-	VectorCopy(org, end);
-	end[2] += 150;
-	VectorSubtract(end, org, tmp);
-	VectorNormalize(tmp);
-
-	for (i = 0; i < 4; i++) {
-		if (!free_particles)
-			return;
-		p = free_particles;
-
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-		VectorClear(p->vel);
-		p->orient = 0;
-		p->flags = 0;
-		p->time = cl.time;
-		p->endTime = cl.time + 5000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
-
-		p->color[0] = 0.1;
-		p->color[1] = 0;
-		p->color[2] = 0;
-
-		p->colorVel[0] = 0;
-		p->colorVel[1] = 0;
-		p->colorVel[2] = 0;
-
-		p->type = PT_BLOODMIST;
-		p->size = 10 + (1.5 * crand());
-		p->sizeVel = 25 - (0.5 * crand());
-		org[2] -= 20;
-		d = rand() & 7;
-		for (j = 0; j < 3; j++)
-			p->org[j] = org[j] + ((rand() & 7) - 4) + d;
-
-
-		p->accel[0] = p->accel[1] = p->accel[2] = 0;
-		p->alpha = 1;
-
-		p->alphavel = -1.0 / (0.5 + frand() * 0.3);
-	}
-
-
-	for (i = 0; i < 15; i++) {
-		if (!free_particles)
-			return;
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-
-	
-		VectorClear(p->accel);
-
-		p->time = cl.time;
-		p->endTime = cl.time + 7000;
-		p->flags = 0;
-		p->flags = PARTICLE_DIRECTIONAL | PARTICLE_NONSOLID;
-		p->orient = 0;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
-		p->type = PT_BLOODDRIP;
-		p->size = 1;
-		p->sizeVel = 0;
-		p->alpha = 1;
-		p->alphavel = 0;
-
-		p->color[0] = 0.1;
-		p->color[1] = 0;
-		p->color[2] = 0;
-
-		p->colorVel[0] = 0;
-		p->colorVel[1] = 0;
-		p->colorVel[2] = 0;
-		p->len = 7;
-		p->endLen = 0;
-		d = rand() & 5;
-		for (j = 0; j < 3; j++) {
-			p->org[j] = org[j] + ((rand() & 2) - 7) + d * tmp[j];
-			p->vel[j] = tmp[j] * 150 + crand() * 190;
-		}
-		p->accel[0] = p->accel[1] = 0;
-		p->accel[2] = -PARTICLE_GRAVITY * 6.5;
-
-		VectorCopy(p->org, p->oldOrg);
-
-	}
-
-	}
-
-*/
 
 void CL_ParticleGibBlood(vec3_t org)
 {
@@ -2002,8 +1638,8 @@ void CL_ParticleGibBlood(vec3_t org)
 
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
-		p->flags = 0;
-		p->flags = PARTICLE_DIRECTIONAL | PARTICLE_NONSOLID;
+		p->flags  = PARTICLE_DIRECTIONAL;
+		p->flags |= PARTICLE_NONSOLID;
 		p->orient = 0;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
@@ -2044,7 +1680,7 @@ void CL_ParticleGibBlood(vec3_t org)
 		active_particles = p;
 		VectorClear(p->vel);
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -2102,9 +1738,9 @@ void CL_ParticleGibBlood2(vec3_t org)
 
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
-		p->flags = 0;
-		p->flags = PARTICLE_DIRECTIONAL | PARTICLE_NONSOLID;
 		p->orient = 0;
+		p->flags  = PARTICLE_DIRECTIONAL;
+		p->flags |= PARTICLE_NONSOLID;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
 		p->type = PT_xBLOODSPRAY;
@@ -2144,7 +1780,7 @@ void CL_ParticleGibBlood2(vec3_t org)
 		active_particles = p;
 		VectorClear(p->vel);
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -2189,9 +1825,9 @@ void CL_Explosion(vec3_t org)
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->flags = 0;
 	p->orient =  0;
-	p->flags = PARTICLE_OVERBRIGHT | PARTICLE_LIGHTING;
+	p->flags  = PARTICLE_OVERBRIGHT;
+	p->flags |= PARTICLE_LIGHTING;
 	p->time = cl.time;
 	p->endTime = cl.time + 400;
 	p->size = 50;
@@ -2231,9 +1867,8 @@ void CL_Explosion(vec3_t org)
 
 		cont = (CL_PMpointcontents(p->org) & MASK_WATER);
 		if (cont) {
-			p->flags = 0;
 			p->orient = 0;
-			p->flags |= PARTICLE_UNDERWATER;
+			p->flags = PARTICLE_UNDERWATER;
 			p->type = PT_BUBBLE;
 			p->blend_dst = GL_SRC_ALPHA;
 			p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
@@ -2247,8 +1882,7 @@ void CL_Explosion(vec3_t org)
 			p->colorVel[1] = 0;
 			p->colorVel[2] = 0;
 		} else {
-			p->flags = 0;
-			p->flags |= PARTICLE_DIRECTIONAL;
+			p->flags = PARTICLE_DIRECTIONAL;
 			p->orient = 0;
 			p->type = PT_DEFAULT;
 
@@ -2298,8 +1932,8 @@ void CL_Explosion(vec3_t org)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient =  frand() * 360;
-		p->flags = 0;
-		p->flags = PARTICLE_AIRONLY | PARTICLE_VERTEXLIGHT;
+		p->flags  = PARTICLE_AIRONLY;
+		p->flags |= PARTICLE_VERTEXLIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 
@@ -2352,7 +1986,7 @@ void CL_TeleporterParticles(entity_state_t * ent)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -2404,7 +2038,7 @@ void CL_LogoutEffect(vec3_t org, int type)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -2469,7 +2103,7 @@ void CL_ItemRespawnParticles(vec3_t org)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -2520,7 +2154,6 @@ void CL_ExplosionParticles(vec3_t org)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->flags = 0;
 		p->flags = PARTICLE_OVERBRIGHT;
 		p->type = PT_BLASTER;
 
@@ -2576,8 +2209,7 @@ void CL_BigTeleportParticles(vec3_t org)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->flags = 0;
-		p->flags |= PARTICLE_OVERBRIGHT;
+		p->flags  = PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -2639,8 +2271,8 @@ void CL_BlasterParticles(vec3_t org, vec3_t dir)
 		active_particles = p;
 		p->type = PT_BLASTER;
 		p->orient = 0;
-		p->flags = 0;
-		p->flags = PARTICLE_BOUNCE | PARTICLE_FRICTION;
+		p->flags  = PARTICLE_BOUNCE;
+		p->flags |= PARTICLE_FRICTION;
 
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE;
@@ -2718,7 +2350,7 @@ void CL_BlasterTrail(vec3_t start, vec3_t end)
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->alpha = 1.0;
 		p->alphavel =  -1.0 / (0.3 + frand() * 0.2);
 		p->color[0] = 0.97;
@@ -2776,7 +2408,7 @@ void CL_QuadTrail(vec3_t start, vec3_t end)
 		active_particles = p;
 		VectorClear(p->accel);
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->type = PT_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
@@ -2835,7 +2467,7 @@ void CL_FlagTrail(vec3_t start, vec3_t end, float r, float g, float b)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		VectorClear(p->accel);
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
@@ -2919,7 +2551,7 @@ void CL_DiminishingTrail(vec3_t start, vec3_t end, centity_t * old,
 			p->next = active_particles;
 			active_particles = p;
 			p->orient =  frand() * 360;
-			p->flags = 0;
+			p->flags = PARTICLE_DEFAULT;
 			VectorClear(p->accel);
 
 			p->time = cl.time;
@@ -3033,14 +2665,12 @@ void CL_DiminishingTrail(vec3_t start, vec3_t end, centity_t * old,
 
 				cont = (CL_PMpointcontents(p->org) & MASK_WATER);
 				if (cont) {
-					p->flags = 0;
-					p->flags |= PARTICLE_UNDERWATER;
+					p->flags = PARTICLE_UNDERWATER;
 					p->type = PT_BUBBLE;
 					p->size = 0.65;
 					p->sizeVel = 0;
 				} else if (!cont) {
-					p->flags = 0;
-					p->flags |= PARTICLE_VERTEXLIGHT;
+					p->flags = PARTICLE_VERTEXLIGHT;
 					p->type = PT_SMOKE;
 					p->size = 2;
 					p->sizeVel = 12;
@@ -3112,7 +2742,7 @@ void CL_RocketFire(vec3_t start, vec3_t end)
 		active_particles = p;
 		VectorClear(p->accel);
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 
 		p->time = cl.time;
 		p->endTime = cl.time + 14000;
@@ -3182,8 +2812,7 @@ void CL_RocketTrail(vec3_t start, vec3_t end, centity_t * old)
 
 			p->blend_dst = GL_SRC_ALPHA;
 			p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
-			p->flags = 0;
-			p->flags |= PARTICLE_VERTEXLIGHT;
+			p->flags = PARTICLE_VERTEXLIGHT;
 			p->type = PT_SMOKE;
 			p->orient =  frand() * 360;
 			p->size = 2;
@@ -3236,7 +2865,6 @@ void CL_RailTrail(vec3_t start, vec3_t end)
 	p->next = active_particles;
 	active_particles = p;
 	p->orient = 0;
-	p->flags = 0;
 	p->flags = PARTICLE_SPIRAL;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
@@ -3276,7 +2904,6 @@ void CL_RailTrail(vec3_t start, vec3_t end)
 	p->endTime = cl.time + 20000;
 	VectorClear(p->accel);
 	p->orient = 0;
-	p->flags = 0;
 	p->flags = PARTICLE_STRETCH;
 	p->alpha = 1;
 	p->alphavel = -1.0 / (0.3 + frand() * 0.3);
@@ -3320,8 +2947,8 @@ void CL_ParticleRick(vec3_t org, vec3_t dir)
 		VectorClear(p->accel);
 		VectorClear(p->vel);
 		p->orient = 0;
-		p->flags = 0;
-		p->flags = PARTICLE_DIRECTIONAL | PARTICLE_AIRONLY;
+		p->flags  = PARTICLE_DIRECTIONAL;
+		p->flags |= PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -3360,8 +2987,7 @@ void CL_ParticleRick(vec3_t org, vec3_t dir)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = frand() * 360;
-		p->flags = 0;
-		p->flags |= PARTICLE_AIRONLY;
+		p->flags = PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 
@@ -3406,8 +3032,9 @@ void CL_ParticleRick(vec3_t org, vec3_t dir)
 	VectorCopy(dir, p->dir);
 	VectorNormalize(p->dir);
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_NOFADE;
+	p->flags  = PARTICLE_ALIGNED;
+	p->flags |= PARTICLE_AIRONLY;
+	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -3456,8 +3083,8 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 		VectorClear(p->accel);
 		VectorClear(p->vel);
 		p->orient = 0;
-		p->flags = 0;
-		p->flags = PARTICLE_DIRECTIONAL | PARTICLE_AIRONLY;
+		p->flags  = PARTICLE_DIRECTIONAL;
+		p->flags |= PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -3496,8 +3123,7 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = frand() * 360;
-		p->flags = 0;
-		p->flags |= PARTICLE_AIRONLY;
+		p->flags = PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 
@@ -3541,8 +3167,9 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 	VectorCopy(dir, p->dir);
 	VectorNormalize(p->dir);
 	p->orient = 0;
-	p->flags = 0;
-	p->flags = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_NOFADE;
+	p->flags  = PARTICLE_ALIGNED;
+	p->flags |= PARTICLE_AIRONLY;
+	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->blend_dst = GL_SRC_ALPHA;
@@ -3579,9 +3206,9 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 		active_particles = p;
 		p->type = PT_BLASTER;
 		p->orient = 0;
-		p->flags = 0;
-		p->flags = PARTICLE_BOUNCE | PARTICLE_FRICTION | PARTICLE_DIRECTIONAL;
-
+		p->flags  = PARTICLE_BOUNCE;
+		p->flags |= PARTICLE_FRICTION;
+		p->flags |= PARTICLE_DIRECTIONAL;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE;
 	
@@ -3658,7 +3285,6 @@ void CL_IonripperTrail(vec3_t start, vec3_t ent)
 		active_particles = p;
 		VectorClear(p->accel);
 		p->orient = 0;
-		p->flags = 0;
 		p->flags = PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
@@ -3729,9 +3355,7 @@ void CL_BubbleTrail(vec3_t start, vec3_t end)
 		p->next = active_particles;
 		active_particles = p;
 		VectorClear(p->accel);
-		p->flags = 0;
-		p->orient = 0;
-		p->flags |= PARTICLE_UNDERWATER;
+		p->flags = PARTICLE_UNDERWATER;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -3811,7 +3435,7 @@ void CL_FlyParticles(vec3_t origin, int count)
 		free_particles = p->next;
 		p->next = active_particles;
 		active_particles = p;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 60000;
@@ -3891,7 +3515,7 @@ void CL_BfgParticles(entity_t * ent)
 	float dist = 64;
 	vec3_t v;
 	float ltime;
-//  return;
+
 	if (!avelocities[0][0]) {
 		for (i = 0; i < NUMVERTEXNORMALS * 3; i++)
 			avelocities[0][i] = (rand() & 255) * 0.01;
@@ -3923,7 +3547,6 @@ void CL_BfgParticles(entity_t * ent)
 		p->orient = 0;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
-		p->flags = 0;
 		p->flags = PARTICLE_OVERBRIGHT;
 		p->type = PT_BLASTER;
 		p->size = 0.7;
@@ -3999,7 +3622,7 @@ void CL_TrapParticles(entity_t * ent)
 		active_particles = p;
 		VectorClear(p->accel);
 		p->orient = 0;
-		p->flags = 0;
+		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
@@ -4049,7 +3672,7 @@ void CL_TrapParticles(entity_t * ent)
 					p->next = active_particles;
 					active_particles = p;
 					p->orient = 0;
-					p->flags = 0;
+					p->flags = PARTICLE_DEFAULT;
 					p->time = cl.time;
 					p->endTime = cl.time + 20000;
 					p->blend_dst = GL_SRC_ALPHA;
@@ -4108,8 +3731,8 @@ void CL_BFGExplosionParticles(vec3_t org)
 		p->endTime = cl.time + 20000;
 		p->blend_dst = GL_SRC_ALPHA;
 		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
-		p->flags = 0;
-		p->flags = PARTICLE_OVERBRIGHT | PARTICLE_DIRECTIONAL;
+		p->flags  = PARTICLE_OVERBRIGHT;
+		p->flags |= PARTICLE_DIRECTIONAL;
 		p->orient = 0;
 		p->type = PT_BLASTER;
 		p->size = 0.30;
@@ -4165,7 +3788,7 @@ void CL_TeleportParticles(vec3_t org)
 				p->blend_dst = GL_SRC_ALPHA;
 				p->blend_src = GL_ONE;
 				p->orient = 0;
-				p->flags = 0;
+				p->flags = PARTICLE_DEFAULT;
 				p->color[0] = color;
 				p->color[1] = color;
 				p->color[2] = color;
@@ -4215,8 +3838,8 @@ void CL_AddLasers(void)
 			p->next = active_particles;
 			active_particles = p;
 			p->orient = 0;
-			p->flags = 0;
-			p->flags = PARTICLE_OVERBRIGHT | PARTICLE_STRETCH;
+			p->flags  = PARTICLE_OVERBRIGHT;
+			p->flags |= PARTICLE_STRETCH;
 			p->time = cl.time;
 			p->endTime = cl.time + 20000;
 			p->blend_dst = GL_SRC_ALPHA;
