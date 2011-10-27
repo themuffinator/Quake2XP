@@ -10,6 +10,7 @@ uniform vec2		u_bumpScale;
 uniform vec2		u_texSize;
 uniform int			u_parallaxType;
 uniform int			u_numSteps;
+uniform int			u_numLights;
 uniform sampler2D	u_Caustics;
 uniform float       u_CausticsModulate; 
 uniform float		u_lightScale; 
@@ -169,6 +170,7 @@ vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
 diffuseMap *= clamp(v_color, 0.0, 0.666);
 #endif
 
+// Bump World 
 #ifdef BUMP
 
 #ifdef VERTEXLIGHT
@@ -198,7 +200,6 @@ diffuseMap *= u_ambientScale;
 #endif
 
 diffuseMap += bumpLight;
-#endif
 
 #ifdef LIGHTMAP
 diffuseMap *= lightMap;
@@ -213,27 +214,16 @@ tmp *= u_CausticsModulate;
 finalColor = tmp + finalColor;
 #endif
 
-/*
-for (int i = 0; i< 8; i++) {
-// compute the atten
-vec3 tmp1 = v_lightVec[i];
-tmp1 /= u_LightRadius[i];
-float att = max(1.0 - dot(tmp1, tmp1), 0.0);
-// compute the light vector
-vec3 L = normalize(v_lightVec[i]);
-vec2 E = PhongLighting(normalMap, L, V, 16.0);
-E *= att;
-vec3 specular = vec3(specTmp, specTmp, specTmp);
-vec3 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[i];
-finalColor.rgb += Dlighting.rgb;
-}
-*/
+// Add dinamyc lights
+if(u_numLights < 8 && u_numLights > 0){
+
 vec3 tmp1;
 float att;
 vec3 L;
 vec2 E;
 vec3 Dlighting;
 
+if(u_numLights >= 1 && u_LightRadius[0] >=1){
 tmp1 = v_lightVec[0];
 tmp1 /= u_LightRadius[0];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
@@ -242,7 +232,8 @@ E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[0];
 finalColor.rgb += Dlighting.rgb;
-
+}
+if(u_numLights >= 2 && u_LightRadius[1] >=1){
 tmp1 = v_lightVec[1];
 tmp1 /= u_LightRadius[1];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
@@ -251,7 +242,8 @@ E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[1];
 finalColor.rgb += Dlighting.rgb;
-
+}
+if(u_numLights >= 3 && u_LightRadius[2] >=1){
 tmp1 = v_lightVec[2];
 tmp1 /= u_LightRadius[2];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
@@ -260,7 +252,8 @@ E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[2];
 finalColor.rgb += Dlighting.rgb;
-
+}
+if(u_numLights >= 4 && u_LightRadius[3] >=1){
 tmp1 = v_lightVec[3];
 tmp1 /= u_LightRadius[3];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
@@ -269,7 +262,8 @@ E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[3];
 finalColor.rgb += Dlighting.rgb;
-
+}
+if(u_numLights >= 5 && u_LightRadius[4] >=1){
 tmp1 = v_lightVec[4];
 tmp1 /= u_LightRadius[4];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
@@ -278,7 +272,8 @@ E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[4];
 finalColor.rgb += Dlighting.rgb;
-
+}
+if(u_numLights >= 6 && u_LightRadius[5] >=1){
 tmp1 = v_lightVec[5];
 tmp1 /= u_LightRadius[5];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
@@ -287,7 +282,8 @@ E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[5];
 finalColor.rgb += Dlighting.rgb;
-
+}
+if(u_numLights >= 7 && u_LightRadius[6] >=1){
 tmp1 = v_lightVec[6];
 tmp1 /= u_LightRadius[6];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
@@ -296,7 +292,8 @@ E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[6];
 finalColor.rgb += Dlighting.rgb;
-
+}
+if(u_numLights = 8 && u_LightRadius[7] >=1){
 tmp1 = v_lightVec[7];
 tmp1 /= u_LightRadius[7];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
@@ -305,6 +302,25 @@ E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
+}
+}
+
+#else
+// Non bump World
+#ifdef LIGHTMAP
+diffuseMap *= lightMap;
+#endif
+
+vec4 finalColor = diffuseMap + glowMap;
+
+#ifdef CAUSTICS
+vec4 tmp;
+tmp = causticsMap * finalColor;
+tmp *= u_CausticsModulate;
+finalColor = tmp + finalColor;
+#endif
+
+#endif
 
 gl_FragColor = finalColor * u_ColorModulate;
 
