@@ -81,7 +81,7 @@ v_lightVec[6].x = dot(a_tangent, LV);
 v_lightVec[6].y = dot(a_binormal, LV);
 v_lightVec[6].z = dot(a_normArray, LV); 
 }
-if(u_numLights >= 8 && u_LightRadius[7] >=1){
+if(u_numLights == 8 && u_LightRadius[7] >=1){
 LV = u_LightOrg[7] - a_vertArray;
 v_lightVec[7].x = dot(a_tangent, LV);
 v_lightVec[7].y = dot(a_binormal, LV);

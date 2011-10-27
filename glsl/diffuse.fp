@@ -293,7 +293,7 @@ E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[6];
 finalColor.rgb += Dlighting.rgb;
 }
-if(u_numLights = 8 && u_LightRadius[7] >=1){
+if(u_numLights == 8 && u_LightRadius[7] >=1){
 tmp1 = v_lightVec[7];
 tmp1 /= u_LightRadius[7];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
