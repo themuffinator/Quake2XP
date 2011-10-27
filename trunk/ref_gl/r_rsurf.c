@@ -635,13 +635,10 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	if ((s->dlightframe != r_framecount))
 	for (j=0; j < 8; j++) {
 		char uname[32];
-
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
 		qglUniform1f(qglGetUniformLocation(id, uname), 0);
 	}
 
-	if ((s->dlightframe == r_framecount)){
-		
 	// setup dlights
 	dl = r_newrefdef.dlights;
 	for (j=0, dl = r_newrefdef.dlights; j < r_newrefdef.num_dlights; j++, dl++ ) 
@@ -650,9 +647,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		int k;
 		vec3_t mins, maxs;
 		vec3_t locLight;
-
-		if(dl->intensity < 1)
-			continue;
 
 		for (k=0 ; k<3 ; k++)
 		{
@@ -694,7 +688,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform1i(qglGetUniformLocation(id, "u_numLights"), r_newrefdef.num_dlights);
 		}
 	}
-}
 
 	GL_CreateParallaxLmPoly(s);
 	

@@ -205,7 +205,7 @@ void R_DrawParticles(qboolean WaterCheck)
 		scale = p->size;
 		flagId = p->flags;
 	
-		if (texture != texId && flags != flagId){
+		if (texture != texId || flags != flagId){
 
 		if (partVert){
 		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
