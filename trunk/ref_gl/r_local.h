@@ -525,7 +525,6 @@ typedef struct {
 	const char	*wglExtensionsString;
 
 	const char	*shadingLanguageVersionString;
-
 	int			maxVertexUniformComponents;		// GLSL info
 	int			maxVaryingFloats;
 	int			maxVertexTextureImageUnits;
@@ -744,7 +743,6 @@ typedef enum glsl_attribute
 
 }
 glsl_attrib;
-
 
 #define	SRGB_EXT                                       0x8C40
 #define	SRGB8_EXT                                      0x8C41

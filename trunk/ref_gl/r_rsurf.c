@@ -574,7 +574,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	image_t		*image, *fx, *nm;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
-	int			id, i, map, numLights = 0, j;
+	int			id, i, map, j;
 	float		scale[2];
 	qboolean	is_dynamic = false;
 	dlight_t	*dl;
@@ -632,17 +632,16 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 
 	// cleanup lights
+	if ((s->dlightframe != r_framecount))
 	for (j=0; j < 8; j++) {
 		char uname[32];
 
-		Com_sprintf(uname, sizeof(uname), "u_LightOrg[%i]", j);
-		qglUniform3f(qglGetUniformLocation(id, uname),0, 0, 0);
-		Com_sprintf(uname, sizeof(uname), "u_LightColor[%i]", j);
-		qglUniform3f(qglGetUniformLocation(id, uname), 0, 0, 0);
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
 		qglUniform1f(qglGetUniformLocation(id, uname), 0);
 	}
 
+	if ((s->dlightframe == r_framecount)){
+		
 	// setup dlights
 	dl = r_newrefdef.dlights;
 	for (j=0, dl = r_newrefdef.dlights; j < r_newrefdef.num_dlights; j++, dl++ ) 
@@ -652,10 +651,13 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		vec3_t mins, maxs;
 		vec3_t locLight;
 
+		if(dl->intensity < 1)
+			continue;
+
 		for (k=0 ; k<3 ; k++)
 		{
-		mins[k] = dl->origin[k] - dl->intensity;
-		maxs[k] = dl->origin[k] + dl->intensity;
+		mins[k] = dl->origin[k] - dl->intensity * 0.7;
+		maxs[k] = dl->origin[k] + dl->intensity * 0.7;
 		}
 
 		if(R_CullBox(mins, maxs))
@@ -681,7 +683,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		Com_sprintf(uname, sizeof(uname), "u_LightOrg[%i]", j);
 		qglUniform3f(qglGetUniformLocation(id, uname), locLight[0], locLight[1], locLight[2]);
 
-	} else{
+	}else{
 		Com_sprintf(uname, sizeof(uname), "u_LightOrg[%i]", j);
 		qglUniform3f(qglGetUniformLocation(id, uname), dl->origin[0], dl->origin[1], dl->origin[2]);
 	}
@@ -689,9 +691,10 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform3f(qglGetUniformLocation(id, uname), dl->color[0], dl->color[1], dl->color[2]);
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
 		qglUniform1f(qglGetUniformLocation(id, uname), dl->intensity);
+		qglUniform1i(qglGetUniformLocation(id, "u_numLights"), r_newrefdef.num_dlights);
+		}
 	}
-	
-	}
+}
 
 	GL_CreateParallaxLmPoly(s);
 	

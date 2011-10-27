@@ -1544,7 +1544,7 @@ int R_Init(void *hinstance, void *hWnd)
 		VID_Error(ERR_FATAL,  "SiS graphics card is unsupported.\n");
 		}
 	
-
+	*/
 	{
 	// check GL version /:-#)
 	float version = atof(gl_config.version_string);
@@ -1554,7 +1554,7 @@ int R_Init(void *hinstance, void *hWnd)
 		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		}
 	}
-	*/
+	
 	Com_Printf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
 	Com_Printf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
 	
@@ -1779,7 +1779,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	gl_state.glsl = true;	
 
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
-	
+	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &gl_config.maxVertexUniformComponents);
 	qglGetIntegerv(GL_MAX_VARYING_FLOATS, &gl_config.maxVaryingFloats);
 	qglGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &gl_config.maxVertexTextureImageUnits);
@@ -1789,6 +1789,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	
 	Com_Printf("\n");
 	Com_Printf(S_COLOR_YELLOW"   GLSL Version:               "S_COLOR_GREEN"   %s\n", gl_config.shadingLanguageVersionString);
+	Com_Printf(S_COLOR_YELLOW"   maxFragmentUniformComponents:"S_COLOR_GREEN"  %i\n", gl_config.maxFragmentUniformComponents);
 	Com_Printf(S_COLOR_YELLOW"   maxVertexUniformComponents: "S_COLOR_GREEN"   %i\n", gl_config.maxVertexUniformComponents);
 	Com_Printf(S_COLOR_YELLOW"   maxVertexAttribs:           "S_COLOR_GREEN"   %i\n", gl_config.maxVertexAttribs);
 	Com_Printf(S_COLOR_YELLOW"   maxVaryingFloats:           "S_COLOR_GREEN"   %i\n", gl_config.maxVaryingFloats);
