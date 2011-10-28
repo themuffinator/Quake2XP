@@ -178,7 +178,7 @@ void R_InitEngineTextures(void)
 	int		x, y, i;
 	byte	notex[4][4][4];
 	byte	*buffer;
-	byte tmp[1][1][4] = {0x80, 0x80, 0xff,0x0};
+	byte bump[1][1][4] = {0x80, 0x80, 0xff,0x40};
 
 	for (x = 0; x < 4; x++) {
 		for (y = 0; y < 4; y++) {
@@ -189,7 +189,7 @@ void R_InitEngineTextures(void)
 		}
 	}
 
-	r_defBump = GL_LoadPic("***r_defBump***", (byte *) tmp, 1, 1, it_wall, 32);	
+	r_defBump = GL_LoadPic("***r_defBump***", (byte *) bump, 1, 1, it_wall, 32);	
 
 
 	r_notexture =

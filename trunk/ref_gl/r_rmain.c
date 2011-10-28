@@ -80,7 +80,7 @@ cvar_t *r_leftHand;
 
 cvar_t *r_lightLevel;			// FIXME: This is a HACK to get the
 								// client's light level
-cvar_t *r_log;
+
 cvar_t *r_mode;
 cvar_t *r_dynamic;
 cvar_t *r_noBind;
@@ -1396,7 +1396,6 @@ void R_Register(void)
 
 	r_lightLevel = Cvar_Get("r_lightLevel", "0", 0);
 
-	r_log = Cvar_Get("r_log", "0", 0);
 	r_mode = Cvar_Get("r_mode", "0", CVAR_ARCHIVE);
 	r_dynamic = Cvar_Get("r_dynamic", "1", 0);
 	r_noBind = Cvar_Get("r_noBind", "0", 0);
@@ -1909,16 +1908,8 @@ void R_BeginFrame()
 		ref = Cvar_Get("vid_ref", "gl", 0);
 		ref->modified = true;
 	}
-
-
-	if (r_log->modified) {
-		GLimp_EnableLogging((qboolean)r_log->value);
-		r_log->modified = false;
-	}
-
-	if (r_log->value)
-		GLimp_LogNewFrame();
-
+	
+	
 	if (r_gamma->modified) {
 		r_gamma->modified = false;
 

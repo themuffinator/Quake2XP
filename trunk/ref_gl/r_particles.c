@@ -50,6 +50,9 @@ vec4_t ParticleColor[MAX_PARTICLE_VERT];
 vec3_t ParticleVert[MAX_PARTICLE_VERT];
 vec2_t ParticleTextCoord[MAX_PARTICLE_VERT];
 
+int SortPart(particle_t *a, particle_t *b ){
+	return ((a->type << 4) + a->flags) - ((b->type << 4) + b->flags);
+}
 
 void R_DrawParticles(qboolean WaterCheck)
 {
@@ -93,6 +96,9 @@ void R_DrawParticles(qboolean WaterCheck)
 	qglDepthMask(0);		// no z buffering
 	qglEnable(GL_BLEND);
 
+	
+	qsort(r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
+
 	for (p = r_newrefdef.particles, i = 0; i < r_newrefdef.num_particles; i++, p++) {
 		
 		if (WaterCheck) {
@@ -108,9 +114,7 @@ void R_DrawParticles(qboolean WaterCheck)
 				continue;
 			}
 		}
-		
-		
-		
+				
 		switch (p->type) {
 
 		case PT_BUBBLE:

@@ -243,7 +243,6 @@ extern cvar_t *r_screenShotJpegQuality;
 extern cvar_t *r_hardwareGamma;
 
 extern cvar_t *r_mode;
-extern cvar_t *r_log;
 extern cvar_t *r_shadows;
 extern cvar_t *r_dynamic;
 extern cvar_t *r_noBind;
