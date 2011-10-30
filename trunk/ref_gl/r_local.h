@@ -303,6 +303,7 @@ extern cvar_t	*r_bumpAlias;
 extern cvar_t	*r_bumpWorld;
 extern cvar_t	*r_DrawRangeElements;
 extern cvar_t	*r_ambientLevel;
+extern cvar_t	*r_pplMaxDlights;
 extern cvar_t	*hunk_bsp;
 extern cvar_t	*hunk_model;
 extern cvar_t	*hunk_sprite;

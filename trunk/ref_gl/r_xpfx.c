@@ -39,6 +39,7 @@ cvar_t	*r_shadowWorldLightScale;
 cvar_t	*r_shadowVolumesDebug;
 cvar_t	*r_playerShadow;
 cvar_t	*r_shadowCapOffset;
+
 cvar_t	*r_radarSize;			// GLOOM radar
 cvar_t	*r_radarZoom;
 cvar_t	*r_radar;
@@ -69,6 +70,7 @@ cvar_t	*r_pplWorldAmbient;
 cvar_t	*r_bumpAlias;
 cvar_t	*r_bumpWorld;
 cvar_t	*r_ambientLevel;
+cvar_t	*r_pplMaxDlights;
 
 cvar_t	*hunk_bsp;
 cvar_t	*hunk_model;
@@ -615,6 +617,7 @@ void R_Register2(void)
 	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
 	r_ambientLevel =					Cvar_Get("r_ambientLevel", "0.75", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
+	r_pplMaxDlights =					Cvar_Get("r_pplMaxDlights", "8", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);

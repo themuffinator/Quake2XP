@@ -1934,7 +1934,13 @@ void R_BeginFrame()
 	}	
 
 	if(r_parallaxSteps->value < 1 )
-		Cvar_SetValue("r_parallaxSteps", 1.0);
+		Cvar_SetValue("r_parallaxSteps", 1);
+
+	if(r_pplMaxDlights->value < 8)
+		Cvar_SetValue("r_pplMaxDlights", 8);
+	
+	if(r_pplMaxDlights->value > 13)
+		Cvar_SetValue("r_pplMaxDlights", 13);
 
 	qglDrawBuffer( GL_BACK );
 

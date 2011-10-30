@@ -633,7 +633,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 	// cleanup lights
 	if ((s->dlightframe != r_framecount))
-	for (j=0; j < 8; j++) {
+	for (j=0; j < r_pplMaxDlights->value; j++) {
 		char uname[32];
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
 		qglUniform1f(qglGetUniformLocation(id, uname), 0);
@@ -657,7 +657,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		if(R_CullBox(mins, maxs))
 			continue;
 			
-		if(j >= 8 )
+		if(j >= r_pplMaxDlights->value )
 			break;
 				
 	// put dlight into model space for bmodels
