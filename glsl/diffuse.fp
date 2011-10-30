@@ -14,15 +14,15 @@ uniform int			u_numLights;
 uniform sampler2D	u_Caustics;
 uniform float       u_CausticsModulate; 
 uniform float		u_lightScale; 
-uniform vec3		u_LightColor[8];
-uniform float		u_LightRadius[8];
+uniform vec3		u_LightColor[13];
+uniform float		u_LightRadius[13];
 
 varying vec3		v_viewVecTS;
 varying vec3		t, b, n;
 varying vec2		v_wTexCoord;
 varying vec2		v_lTexCoord;
 varying vec4		v_color;
-varying vec3		v_lightVec[8];
+varying vec3		v_lightVec[13];
 
 
 float ComputeLOD( vec2 tc, vec2 texSize ) { 
@@ -215,7 +215,7 @@ finalColor = tmp + finalColor;
 #endif
 
 // Add dinamyc lights
-if(u_numLights < 8 && u_numLights > 0){
+if(u_numLights <= 13 && u_numLights > 0){
 
 vec3 tmp1;
 float att;
@@ -293,11 +293,61 @@ E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[6];
 finalColor.rgb += Dlighting.rgb;
 }
-if(u_numLights == 8 && u_LightRadius[7] >=1){
+if(u_numLights >= 8 && u_LightRadius[7] >=1){
 tmp1 = v_lightVec[7];
 tmp1 /= u_LightRadius[7];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[7]);
+E = PhongLighting(normalMap, L, V, 16.0);
+E *= att;
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+finalColor.rgb += Dlighting.rgb;
+}
+if(u_numLights >= 9 && u_LightRadius[8] >=1){
+tmp1 = v_lightVec[8];
+tmp1 /= u_LightRadius[8];
+att = max(1.0 - dot(tmp1, tmp1), 0.0);
+L = normalize(v_lightVec[8]);
+E = PhongLighting(normalMap, L, V, 16.0);
+E *= att;
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+finalColor.rgb += Dlighting.rgb;
+}
+if(u_numLights >= 10 && u_LightRadius[9] >=1){
+tmp1 = v_lightVec[9];
+tmp1 /= u_LightRadius[9];
+att = max(1.0 - dot(tmp1, tmp1), 0.0);
+L = normalize(v_lightVec[9]);
+E = PhongLighting(normalMap, L, V, 16.0);
+E *= att;
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+finalColor.rgb += Dlighting.rgb;
+}
+if(u_numLights == 11 && u_LightRadius[10] >=1){
+tmp1 = v_lightVec[10];
+tmp1 /= u_LightRadius[10];
+att = max(1.0 - dot(tmp1, tmp1), 0.0);
+L = normalize(v_lightVec[10]);
+E = PhongLighting(normalMap, L, V, 16.0);
+E *= att;
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+finalColor.rgb += Dlighting.rgb;
+}
+if(u_numLights >= 12 && u_LightRadius[11] >=1){
+tmp1 = v_lightVec[11];
+tmp1 /= u_LightRadius[11];
+att = max(1.0 - dot(tmp1, tmp1), 0.0);
+L = normalize(v_lightVec[11]);
+E = PhongLighting(normalMap, L, V, 16.0);
+E *= att;
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+finalColor.rgb += Dlighting.rgb;
+}
+if(u_numLights == 13 && u_LightRadius[12] >=1){
+tmp1 = v_lightVec[12];
+tmp1 /= u_LightRadius[12];
+att = max(1.0 - dot(tmp1, tmp1), 0.0);
+L = normalize(v_lightVec[12]);
 E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];

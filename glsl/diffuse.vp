@@ -1,10 +1,10 @@
 //calc view angles
 uniform vec3			u_viewOriginES;
-uniform vec3			u_LightOrg[8];
+uniform vec3			u_LightOrg[13];
 uniform int				u_numLights;
-uniform float			u_LightRadius[8];
+uniform float			u_LightRadius[13];
 varying vec3			v_viewVecTS;
-varying vec3			v_lightVec[8];
+varying vec3			v_lightVec[13];
 
 varying vec3 			t, b, n;
 varying vec2			v_wTexCoord;
@@ -36,7 +36,7 @@ t = a_tangent;
 b = a_binormal;
 n = a_normArray;
 
-if(u_numLights < 8 && u_numLights > 0){
+if(u_numLights <= 13 && u_numLights > 0){
 	
 vec3 LV;
 if(u_numLights >= 1 && u_LightRadius[0] >=1){
@@ -81,11 +81,41 @@ v_lightVec[6].x = dot(a_tangent, LV);
 v_lightVec[6].y = dot(a_binormal, LV);
 v_lightVec[6].z = dot(a_normArray, LV); 
 }
-if(u_numLights == 8 && u_LightRadius[7] >=1){
+if(u_numLights >= 8 && u_LightRadius[7] >=1){
 LV = u_LightOrg[7] - a_vertArray;
 v_lightVec[7].x = dot(a_tangent, LV);
 v_lightVec[7].y = dot(a_binormal, LV);
 v_lightVec[7].z = dot(a_normArray, LV); 
+}
+if(u_numLights >= 9 && u_LightRadius[8] >=1){
+LV = u_LightOrg[8] - a_vertArray;
+v_lightVec[8].x = dot(a_tangent, LV);
+v_lightVec[8].y = dot(a_binormal, LV);
+v_lightVec[8].z = dot(a_normArray, LV); 
+}
+if(u_numLights >= 10 && u_LightRadius[9] >=1){
+LV = u_LightOrg[9] - a_vertArray;
+v_lightVec[9].x = dot(a_tangent, LV);
+v_lightVec[9].y = dot(a_binormal, LV);
+v_lightVec[9].z = dot(a_normArray, LV); 
+}
+if(u_numLights >= 11 && u_LightRadius[10] >=1){
+LV = u_LightOrg[10] - a_vertArray;
+v_lightVec[10].x = dot(a_tangent, LV);
+v_lightVec[10].y = dot(a_binormal, LV);
+v_lightVec[10].z = dot(a_normArray, LV); 
+}
+if(u_numLights >= 12 && u_LightRadius[11] >=1){
+LV = u_LightOrg[11] - a_vertArray;
+v_lightVec[11].x = dot(a_tangent, LV);
+v_lightVec[11].y = dot(a_binormal, LV);
+v_lightVec[11].z = dot(a_normArray, LV); 
+}
+if(u_numLights == 13 && u_LightRadius[12] >=1){
+LV = u_LightOrg[12] - a_vertArray;
+v_lightVec[12].x = dot(a_tangent, LV);
+v_lightVec[12].y = dot(a_binormal, LV);
+v_lightVec[12].z = dot(a_normArray, LV); 
 }
 }
 #endif
