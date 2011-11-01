@@ -49,6 +49,7 @@ typedef struct {
 static cdAudio_t	cdAudio;
 
 cvar_t *cd_nocd;
+cvar_t *cd_drive;
 cvar_t *cd_loopcount;
 cvar_t *cd_looptrack;
 cvar_t	*cd_volume;
@@ -585,15 +586,20 @@ void CDAudio_Update(void)
 
 	}
 
+// Berserker audioCD latter override
 
+char q2cd_letter[3]="-:";
 
 int CDAudio_Init(void)
 {
-	DWORD	dwReturn;
+	DWORD			dwReturn;
 	MCI_OPEN_PARMS	mciOpenParms;
     MCI_SET_PARMS	mciSetParms;
 	int				n;
+	unsigned		flags;
 
+	cd_drive = Cvar_Get ("cd_drive", "", 0);
+	cd_drive->help = "override the automatic assigned CD letter.";
 	cd_nocd = Cvar_Get ("cd_nocd", "0", CVAR_ARCHIVE );
 	cd_loopcount = Cvar_Get ("cd_loopcount", "25", CVAR_ARCHIVE); //was 4
 	cd_looptrack = Cvar_Get ("cd_looptrack", "11", 0);
@@ -602,8 +608,21 @@ int CDAudio_Init(void)
 	if ( cd_nocd->value)
 		return -1;
    
-	mciOpenParms.lpstrDeviceType = "cdaudio";
-	if (dwReturn = mciSendCommand(0, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_SHAREABLE, (DWORD_PTR) &mciOpenParms))
+	if (cd_drive->string && cd_drive->string[0])
+		q2cd_letter[0] = cd_drive->string[0];		// Berserker: override
+	memset(&mciOpenParms, 0 ,sizeof(MCI_OPEN_PARMS));
+	if (q2cd_letter[0])
+	{
+		mciOpenParms.lpstrElementName = q2cd_letter;
+		flags = MCI_OPEN_TYPE_ID | MCI_OPEN_ELEMENT;
+		mciOpenParms.lpstrDeviceType = (LPCSTR) MCI_DEVTYPE_CD_AUDIO;
+	}
+	else
+	{
+		flags = 0;		// Berserker: auto select
+		mciOpenParms.lpstrDeviceType = "cdaudio";
+	}
+	if (dwReturn = mciSendCommand(0, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_SHAREABLE | flags, (DWORD) (LPVOID) &mciOpenParms))
 	{
 		Com_Printf("CDAudio_Init: MCI_OPEN failed (%i)\n", dwReturn);
 		return -1;

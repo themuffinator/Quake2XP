@@ -401,8 +401,8 @@ DECALS
 */
 
 #define MAX_DECALS				1024
-#define MAX_DECAL_VERTS			128
-#define MAX_DECAL_FRAGMENTS		64
+#define MAX_DECAL_VERTS			384
+#define MAX_DECAL_FRAGMENTS		256
 
 typedef struct decals_t {
 	struct decals_t *prev, *next;

@@ -2593,7 +2593,7 @@ void CL_DiminishingTrail(vec3_t start, vec3_t end, centity_t * old,
 					CL_AddDecalToScene(trace.endpos, trace.plane.normal,
 									   1, 1, 1, 1,
 									   1, 1, 1, 1,
-									   25, 12000,
+									   10, 12000,
 									   DECAL_BLOOD9, 0, frand() * 360,
 									   GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 				VectorClear(trace.plane.normal);
@@ -2636,7 +2636,7 @@ void CL_DiminishingTrail(vec3_t start, vec3_t end, centity_t * old,
 					CL_AddDecalToScene(trace.endpos, trace.plane.normal,
 									   1, 1, 0, 1,
 									   1, 1, 0, 1,
-									   60, 12000,
+									   25, 12000,
 									   DECAL_ACIDMARK, DF_OVERBRIGHT,
 									   frand() * 360, GL_ONE, GL_ONE);
 					CL_ParticleSmoke2(trace.endpos, trace.plane.normal, 1,

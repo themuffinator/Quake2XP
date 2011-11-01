@@ -316,7 +316,7 @@ void CL_AddClEntities()
 					if (trace.fraction > 0 && trace.fraction < 1)
 						CL_AddDecalToScene(trace.endpos,
 										   trace.plane.normal,	1, 1, 1, 1,
-																1, 1, 1, 1, 15, 12000,
+																1, 1, 1, 1, 10, 12000,
 																DECAL_BLOOD9, 0,
 																rand() % 360, GL_ZERO,
 																GL_ONE_MINUS_SRC_COLOR);
@@ -455,8 +455,8 @@ void CL_Debris(vec3_t org, vec3_t dir)
 		le->time = cl.time;
 		VectorClear(le->accel);
 		VectorClear(le->vel);
-
-		le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
+		le->flags = CLM_BOUNCE;
+		le->flags |= CLM_FRICTION | CLM_ROTATE | CLM_NOSHADOW;
 		le->model = cl_mod_debris1;
 
 
@@ -487,8 +487,8 @@ void CL_Debris(vec3_t org, vec3_t dir)
 		le->time = cl.time;
 		VectorClear(le->accel);
 		VectorClear(le->vel);
-
-		le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
+		le->flags = CLM_BOUNCE;
+		le->flags |= CLM_FRICTION | CLM_ROTATE | CLM_NOSHADOW;
 		le->model = cl_mod_debris2;
 
 
@@ -519,8 +519,8 @@ void CL_Debris(vec3_t org, vec3_t dir)
 		le->time = cl.time;
 		VectorClear(le->accel);
 		VectorClear(le->vel);
-
-		le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
+		le->flags = CLM_BOUNCE;
+		le->flags |= CLM_FRICTION | CLM_ROTATE | CLM_NOSHADOW;
 		le->model = cl_mod_debris3;
 
 
@@ -569,8 +569,8 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 		le->time = cl.time;
 		VectorClear(le->accel);
 		VectorClear(le->vel);
-
-		le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
+		le->flags = CLM_BOUNCE;
+		le->flags |= CLM_FRICTION | CLM_ROTATE;
 		le->model = cl_mod_gib0;
 
 
@@ -601,8 +601,8 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->time = cl.time;
 	VectorClear(le->accel);
 	VectorClear(le->vel);
-
-	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
+	le->flags = CLM_BOUNCE;
+	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib1;
 
 
@@ -633,8 +633,8 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->time = cl.time;
 	VectorClear(le->accel);
 	VectorClear(le->vel);
-
-	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
+	le->flags = CLM_BOUNCE;
+	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib2;
 
 
@@ -663,8 +663,8 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->time = cl.time;
 	VectorClear(le->accel);
 	VectorClear(le->vel);
-
-	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
+	le->flags = CLM_BOUNCE;
+	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib3;
 
 
@@ -693,8 +693,8 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->time = cl.time;
 	VectorClear(le->accel);
 	VectorClear(le->vel);
-
-	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
+	le->flags = CLM_BOUNCE;
+	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib4;
 
 
@@ -723,8 +723,8 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->time = cl.time;
 	VectorClear(le->accel);
 	VectorClear(le->vel);
-
-	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
+	le->flags = CLM_BOUNCE;
+	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib5;
 
 
