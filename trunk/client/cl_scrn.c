@@ -1050,7 +1050,7 @@ extern cvar_t *cl_hudScale;
 
 void SCR_DrawSpeeds(void){
 	
-	char	bsp[18], alias[18], st[18], partTris[18], flares[18], shadow[18], decals[18], dtr[18];
+	char	bsp[18], alias[18], st[18], partTris[18], flares[18], shadow[18], decals[18] , dtr[18];
 	int		fontscale = (float)cl_fontScale->value;
 
 	if(!r_speeds->value)
@@ -1070,10 +1070,9 @@ void SCR_DrawSpeeds(void){
 	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+10*fontscale, fontscale, fontscale, alias);
 	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+20*fontscale, fontscale, fontscale, st);
 	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+30*fontscale, fontscale, fontscale, partTris);
-	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+40*fontscale, fontscale, fontscale, dtr);
-	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+50*fontscale, fontscale, fontscale, flares);
-	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+60*fontscale, fontscale, fontscale, shadow);
-	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+70*fontscale, fontscale, fontscale, decals);
+	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+40*fontscale, fontscale, fontscale, flares);
+	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+50*fontscale, fontscale, fontscale, shadow);
+	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+60*fontscale, fontscale, fontscale, dtr);
 	RE_SetColor(colorWhite);
 }
 

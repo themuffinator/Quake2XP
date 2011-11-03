@@ -208,7 +208,7 @@ void R_DrawParticles(qboolean WaterCheck)
 
 		scale = p->size;
 		flagId = p->flags;
-	
+		
 		if (texture != texId || flags != flagId){
 
 		if (partVert){
@@ -225,7 +225,30 @@ void R_DrawParticles(qboolean WaterCheck)
 
 		GL_SelectTexture		(GL_TEXTURE0_ARB);
 		GL_Bind					(texId);
-		qglBlendFunc			(p->blend_dst, p->blend_src);
+		qglBlendFunc			(p->sFactor, p->dFactor);
+
+	
+		if(p->sFactor == GL_ONE && p->dFactor == GL_ONE)
+			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 1.0, 0.0); //color
+		else
+			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0); //alpha
+		
+		if(p->flags & PARTICLE_NOFADE)
+			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), 0.0);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), scale*0.75); // soft blend scale
+		
+		if (p->flags & PARTICLE_OVERBRIGHT)
+			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
+		
+		}
+		
+		r = p->color[0];
+		g = p->color[1];
+		b = p->color[2];
+		a = p->alpha;
 
 		if (p->flags & PARTICLE_VERTEXLIGHT) {
 			outcolor[0] = shadelight_surface[0] * r - r;
@@ -241,29 +264,6 @@ void R_DrawParticles(qboolean WaterCheck)
 			a = outcolor[3];
 		}
 
-		if(p->blend_dst == GL_ONE && p->blend_src == GL_ONE)
-			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 1.0, 0.0); //color
-		else
-			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0); //alpha
-		
-		if(p->flags & PARTICLE_NOFADE)
-			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), 0.0);
-		else
-			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), scale*0.75); // soft blend scale
-		
-		if (p->flags & PARTICLE_OVERBRIGHT)
-			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);
-		else
-			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
-		}
-		
-		r = p->color[0];
-		g = p->color[1];
-		b = p->color[2];
-		a = p->alpha;
-				
-
-	
 		if (p->flags & PARTICLE_STRETCH) {
 			
 				VectorSubtract (p->origin, r_newrefdef.vieworg, point);

@@ -199,8 +199,8 @@ typedef struct {
 	float len;
 	int flags;
 	float size;
-	int blend_dst;
-	int blend_src;
+	int sFactor;
+	int dFactor;
 	float time;
 
 
@@ -400,7 +400,7 @@ DECALS
 =====================
 */
 
-#define MAX_DECALS				1024
+#define MAX_DECALS				4096
 #define MAX_DECAL_VERTS			384
 #define MAX_DECAL_FRAGMENTS		256
 
@@ -408,8 +408,7 @@ typedef struct decals_t {
 	struct decals_t *prev, *next;
 	mnode_t *node;
 
-	float time;
-	float endTime;
+	float time, endTime, die;
 
 	int numverts;
 
@@ -424,33 +423,9 @@ typedef struct decals_t {
 	vec3_t org;
 	int type;
 	int flags;
-	int blendD;
-	int blendS;
+	int sFactor;
+	int dFactor;
 } decals_t;
-
-typedef struct rdecals_t {
-	struct rdecals_t *prev, *next;
-	mnode_t *node;
-
-	float time;
-	float endTime;
-
-	int numverts;
-	
-	vec3_t verts[MAX_DECAL_VERTS];
-	vec2_t stcoords[MAX_DECAL_VERTS];
-	vec3_t direction;
-	vec3_t color;
-	vec3_t endColor;
-	float alpha;
-	float endAlpha;
-	float size;
-	vec3_t org;
-	int type;
-	int flags;
-	int blendD;
-	int blendS;
-} rdecals_t;
 
 
 

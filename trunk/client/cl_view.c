@@ -64,12 +64,6 @@ char cl_weaponmodels[MAX_CLIENTWEAPONMODELS][MAX_QPATH];
 int num_cl_weaponmodels;
 
 
-
-
-int r_numDecals;
-rdecals_t r_decals[MAX_DECALS];
-
-
 /*
 ====================
 V_ClearScene
@@ -84,8 +78,6 @@ void V_ClearScene(void)
 	r_numdlights = 0;
 	r_numentities = 0;
 	r_numparticles = 0;
-	r_numDecals = 0;
-
 }
 
 
@@ -128,7 +120,7 @@ V_AddParticle
 */
 
 void V_AddParticle(vec3_t org, vec3_t length, vec3_t color, float alpha,
-				   int type, float size, int blend_dst, int blend_src,
+				   int type, float size, int sFactor, int dFactor,
 				   int flags, int time, float orient, float len,
 				   vec3_t oldOrg, vec3_t dir)
 {
@@ -146,51 +138,14 @@ void V_AddParticle(vec3_t org, vec3_t length, vec3_t color, float alpha,
 	p->alpha = alpha;
 	p->type = type;
 	p->size = size;
-	p->blend_dst = blend_dst;
-	p->blend_src = blend_src;
+	p->sFactor = sFactor;
+	p->dFactor = dFactor;
 	p->flags = flags;
 	p->time = (float) time *0.001;
 	p->orient = orient;
 	p->len = len;
 	VectorCopy(oldOrg, p->oldOrg);
 }
-
-
-/*
-=====================
-V_AddDecal
-=====================
-*/
-
-void V_AddDecal(vec2_t stcoords, vec3_t verts, int numverts,
-				struct mnode_s *node, vec3_t color, float alpha, 
-				int type, int flags, int blendD, int blendS, vec3_t org, vec3_t dir, float size)
-{
-	rdecals_t *d;
-
-	if (r_numDecals >= MAX_DECALS)
-		return;
-
-	d = &r_decals[r_numDecals++];
-
-	VectorCopy	(color, d->color);
-	d->alpha	= alpha;
-	d->type		= type;
-	d->flags	= flags;
-	d->blendD	= blendD;
-	d->blendS	= blendS;
-	d->size		= size;
-	VectorCopy	(org, d->org);
-	VectorCopy	(dir, d->direction);
-
-	d->numverts	= numverts;
-
-	memcpy(&d->node,	&node,		sizeof(node));
-	memcpy(d->stcoords,	stcoords,	numverts * sizeof(vec2_t));
-	memcpy(d->verts,	verts,		numverts * sizeof(vec3_t));
-
-}
-
 
 
 /*
@@ -668,9 +623,6 @@ void V_RenderView()
 		if (!cl_add_entities->value)
 			r_numentities = 0;
 
-		if (!cl_decals->value)
-			r_numDecals = 0;
-
 		if (!cl_add_particles->value)
 			r_numparticles = 0;
 		if (!cl_add_lights->value)
@@ -692,9 +644,6 @@ void V_RenderView()
 
 		cl.refdef.lightstyles = r_lightstyles;
 
-		cl.refdef.numDecals = r_numDecals;
-		cl.refdef.decals = r_decals;
-
 		cl.refdef.rdflags = cl.frame.playerstate.rdflags;
 
 		// sort entities for better cache locality
@@ -712,18 +661,17 @@ void V_RenderView()
 	c_shadow_tris		= 0;
 	c_flares			= 0;
 	c_shadow_volumes	= 0;
-	c_decals			= 0;
 	c_decal_tris		= 0;
 	
 	R_RenderFrame(&cl.refdef, false);
 	
 	
 	if (cl_stats->value)
-		Com_Printf("ent:%i  dlights:%i  part:%i decals:%i\n", r_numentities,
-				   r_numdlights, r_numparticles, r_numDecals);
+		Com_Printf("ent:%i  dlights:%i  part:%i \n", r_numentities,
+				   r_numdlights, r_numparticles);
 	if (log_stats->value && (log_stats_file != 0))
-		fprintf(log_stats_file, "%i,%i,%i,%i,", r_numentities,
-				r_numdlights, r_numparticles, r_numDecals);
+		fprintf(log_stats_file, "%i,%i,%i,", r_numentities,
+				r_numdlights, r_numparticles);
 
 
 	SCR_AddDirtyPoint(scr_vrect.x, scr_vrect.y);

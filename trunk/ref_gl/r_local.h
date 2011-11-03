@@ -581,8 +581,8 @@ typedef struct {
 	qboolean nPot;
 	unsigned vboId;
 	int	programId;
-	int		lastblend_src;
-	int		lastblend_dst;
+	int		lastdFactor;
+	int		lastsFactor;
 	float	color[4];
 	unsigned char originalRedGammaTable[256];
 	unsigned char originalGreenGammaTable[256];

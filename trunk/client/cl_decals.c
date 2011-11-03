@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 2004-2011 Quake2xp Team.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,12 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 
-decals_t *active_decals, *free_decals;
-decals_t decals[MAX_DECALS];
-int cl_maxDecals = MAX_DECALS;
-
-int r_numDecals;
-
+decals_t	decals[MAX_DECALS];
+decals_t	active_decals, *free_decals;
 
 float Clamp_Value(float value, float min, float max)
 {
@@ -44,18 +40,51 @@ CL_ClearDecals
 
 void CL_ClearDecals(void)
 {
-	int i;
+	int		i;
 
-	r_numDecals = 0;
+	memset(decals, 0, sizeof(decals));
 
-	free_decals = &decals[0];
-	active_decals = NULL;
-
-	for (i = 0; i < cl_maxDecals; i++)
+	/* link decals */
+	free_decals = decals;
+	active_decals.prev = &active_decals;
+	active_decals.next = &active_decals;
+	for (i = 0; i < MAX_DECALS - 1; i++)
 		decals[i].next = &decals[i + 1];
+}
 
-	decals[cl_maxDecals - 1].next = NULL;
+decals_t *CL_AllocDecal(void)
+{
+	decals_t       *dl;
 
+	if (free_decals) {	/* take a free decal if possible */
+		dl = free_decals;
+		free_decals = dl->next;
+	} else {		/* grab the oldest one otherwise */
+		dl = active_decals.prev;
+		dl->prev->next = dl->next;
+		dl->next->prev = dl->prev;
+	}
+
+	/* put the decal at the start of the list */
+	dl->prev = &active_decals;
+	dl->next = active_decals.next;
+	dl->next->prev = dl;
+	dl->prev->next = dl;
+	return dl;
+}
+
+void CL_FreeDecal(decals_t * dl)
+{
+	if (!dl->prev)
+		return;
+
+	/* remove from linked active list */
+	dl->prev->next = dl->next;
+	dl->next->prev = dl->prev;
+
+	/* insert into linked free list */
+	dl->next = free_decals;
+	free_decals = dl;
 }
 
 
@@ -70,7 +99,7 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 						float endRed, float endGreen, float endBlue,
 						float endAlpha, float size,
 						float endTime, int type, int flags, float angle,
-						int blendD, int blendS)
+						int sFactor, int dFactor)
 {
 	int i, j, numfragments;
 	vec3_t verts[MAX_DECAL_VERTS];
@@ -111,24 +140,24 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 			fr->numverts = MAX_DECAL_VERTS;
 		else if (fr->numverts <= 0)
 			continue;
-
-
-		if (!free_decals)
-			break;
 		
 		nv = fr->surf->polys->numverts;
 		v = fr->surf->polys->verts[0];
 
-		d = free_decals;
-		free_decals = d->next;
-		d->next = active_decals;
-		active_decals = d;
-		
+		d = CL_AllocDecal();
 		d->numverts = fr->numverts;
 		d->node = fr->node;
-		
-	
-		
+		d->time = cl.refdef.time;
+		d->endTime = cl.refdef.time + endTime;
+		d->alpha = alpha;
+		d->endAlpha = endAlpha;
+		d->size = size;
+		d->type = type;
+		d->flags = flags;
+		d->sFactor = sFactor;
+		d->dFactor = dFactor;
+
+
 		VectorCopy(fr->surf->plane->normal, d->direction);
 		// reverse direction
 		if (!(fr->surf->flags & SURF_PLANEBACK)) {
@@ -140,16 +169,6 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 		VectorSet(d->color, red, green, blue);
 		VectorSet(d->endColor, endRed, endGreen, endBlue);
 
-		d->time = cl.time;
-		d->endTime = cl.time + endTime;
-
-		d->alpha = alpha;
-		d->endAlpha = endAlpha;
-		d->size = size;
-		d->type = type;
-		d->flags = flags;
-		d->blendD = blendD;
-		d->blendS = blendS;
 		
 		for (j = 0; j < fr->numverts; j++) {
 			vec3_t v;
@@ -165,81 +184,3 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 	}
 }
 
-
-
-void AddDecals(void)
-{
-	decals_t *d, *next;
-	vec3_t color, temp, org, dir;
-	decals_t *active, *tail;
-	float alpha;
-	float time;
-	float endLerp;
-	float size;
-	int i, blendD, blendS;
-
-
-	active = NULL;
-	tail = NULL;
-
-	for (d = active_decals; d; d = next) {
-		next = d->next;
-
-		endLerp = (float) (cl.time - d->time) / (float) (d->endTime - d->time);
-
-		time = (cl.time - d->time) * 0.001;
-		alpha = d->alpha + (d->endAlpha - d->alpha) * endLerp;
-
-		if (d->endTime <= cl.time) {
-			d->next = free_decals;
-			free_decals = d;
-			continue;
-		}
-
-		if (alpha <= 0) {		// faded out
-			d->next = free_decals;
-			free_decals = d;
-			continue;
-		}
-		
-		d->next = NULL;
-		if (!tail)
-			active = tail = d;
-		else {
-			tail->next = d;
-			tail = d;
-		}
-
-
-		if (alpha > 1.0)
-			alpha = 1;
-
-		for (i = 0; i < 3; i++)
-			color[i] = d->color[i] + (d->endColor[i] - d->color[i]) * endLerp;
-
-		blendD = d->blendD;
-		blendS = d->blendS;
-		
-		size = d->size;
-		VectorCopy(d->org, org);
-		VectorCopy(d->direction, dir);
-
-		VectorSubtract (cl.refdef.vieworg, d->org, temp);
-		
-		if (DotProduct(temp, temp)/15000 > 100*d->size)
-			goto nextDecal;
-
-		V_AddDecal(d->stcoords[0], d->verts[0], d->numverts, d->node,
-				   color, alpha, d->type, d->flags, d->blendD,
-				   d->blendS, org, dir, size);
-
-
-	nextDecal:
-		for (i = 0; i < 3; i++)
-			color[i] = 0;
-		alpha = 0;
-
-	}
-	active_decals = active;
-	
-}

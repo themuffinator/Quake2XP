@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 2004-2011 Quake2xp Team.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -60,6 +60,11 @@ int PlaneTypeForNormal(const vec3_t normal)
 R_RenderDecals
 ===============
 */
+extern decals_t	decals[MAX_DECALS];
+extern decals_t	active_decals, *free_decals;
+extern cvar_t *cl_decals;
+
+void CL_FreeDecal(decals_t * dl);
 
 #define MAX_DECAL_ARRAY_VERTS 4096
 #define MAX_DECAL_INDICES     8192
@@ -72,35 +77,45 @@ qboolean R_CullSphere( const vec3_t centre, const float radius, const int clipfl
 
 void R_RenderDecals(void)
 {
-     rdecals_t *dl;
-     int i, x;
-     vec3_t v;
-     unsigned     tex, texture = 0;
-     int     blendS = 0, blendD = 0;
-     int     numIndices = 0, numVertices = 0;
-     int     indices[MAX_DECAL_INDICES];
-          
-     qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-     qglTexCoordPointer (2, GL_FLOAT, sizeof(vec2_t), DecalTexCoordArray[0]);
-     qglEnableClientState (GL_COLOR_ARRAY);
-     qglColorPointer (4, GL_FLOAT, sizeof(vec4_t), DecalColorArray[0]);
-     qglEnableClientState (GL_VERTEX_ARRAY);
-     qglVertexPointer (3, GL_FLOAT, sizeof(vec3_t), DecalVertexArray[0]);
+    decals_t    *dl, *next, *active; 
+    vec3_t		v, decalColor;
+    unsigned    tex, texture = 0;
+    int			x, i;
+    int			numIndices = 0, numVertices = 0;
+    int			indices[MAX_DECAL_INDICES];
+    float		endLerp, decalAlpha;
+
+	if (!cl_decals->value)
+		return;
+
+    qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    qglTexCoordPointer (2, GL_FLOAT, sizeof(vec2_t), DecalTexCoordArray[0]);
+    qglEnableClientState (GL_COLOR_ARRAY);
+    qglColorPointer (4, GL_FLOAT, sizeof(vec4_t), DecalColorArray[0]);
+    qglEnableClientState (GL_VERTEX_ARRAY);
+    qglVertexPointer (3, GL_FLOAT, sizeof(vec3_t), DecalVertexArray[0]);
      
-	 qglEnable(GL_POLYGON_OFFSET_FILL);
-     qglPolygonOffset(-1, -1);
+	qglEnable(GL_POLYGON_OFFSET_FILL);
+    qglPolygonOffset(-1, -1);
 
-     qglDepthMask(GL_FALSE);
-     qglEnable(GL_BLEND);
+    qglDepthMask(GL_FALSE);
+    qglEnable(GL_BLEND);
+	
+	active = &active_decals;
 
-     for (dl = r_newrefdef.decals, i = 0; i < r_newrefdef.numDecals; i++, dl++) {
-          
+    for (dl = active->next; dl != active; dl = next) {
+	
+		 next = dl->next;
+
 		 if (!dl->node || dl->node->visframe != r_visframecount)
                continue;
-			
-		     // look if it has a bad type
+
+		 // look if it has a bad type
           if (dl->type < 0 || dl->type >= DECAL_MAX)
-               continue;
+		  {
+			  CL_FreeDecal(dl);
+              continue;
+		  }
 
           VectorSubtract(dl->org, r_origin, v);
           if (DotProduct(dl->direction, v) < 0.0)
@@ -109,14 +124,11 @@ void R_RenderDecals(void)
 		  if( R_CullSphere(dl->org, dl->size*1.3, 15 ) )
 				continue;
 
-          if (dl->flags == DF_OVERBRIGHT)
-               GL_Overbrights(true);
-          else
-               GL_Overbrights(false);
-          
+        endLerp = (float)(r_newrefdef.time - dl->time) / (float)(dl->endTime - dl->time);	
+
           tex = r_decaltexture[dl->type]->texnum;
           
-          if (texture != tex || blendD != dl->blendD || blendS != dl->blendS) {
+          if (texture != tex) {
           // flush array if new texture/blend
           if (numIndices) {
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indices);
@@ -126,11 +138,14 @@ void R_RenderDecals(void)
           }
 
 			texture = tex;
-            blendD = dl->blendD;
-            blendS = dl->blendS;
-			
             GL_MBind(GL_TEXTURE0_ARB, texture);
-            qglBlendFunc(dl->blendD, dl->blendS);
+            qglBlendFunc(dl->sFactor, dl->dFactor);
+
+			if (dl->flags == DF_OVERBRIGHT)
+               GL_Overbrights(true);
+			else
+               GL_Overbrights(false);
+
           }
 
      //
@@ -145,12 +160,17 @@ void R_RenderDecals(void)
          numIndices = 0;
      }
 
+	 for (i = 0; i < 3; i++)
+		decalColor[i] = dl->color[i] + (dl->endColor[i] - dl->color[i]) * endLerp;
+	 		
+	 decalAlpha = dl->alpha + (dl->endAlpha - dl->alpha) * endLerp;
+
      // set vertices
           for (x = 0; x < dl->numverts; x++) {
-               DecalColorArray      [x + numVertices][0] = dl->color[0];
-               DecalColorArray      [x + numVertices][1] = dl->color[1];
-               DecalColorArray      [x + numVertices][2] = dl->color[2];
-               DecalColorArray      [x + numVertices][3] = dl->alpha;
+               DecalColorArray      [x + numVertices][0] = decalColor[0];
+               DecalColorArray      [x + numVertices][1] = decalColor[1];
+               DecalColorArray      [x + numVertices][2] = decalColor[2];
+               DecalColorArray      [x + numVertices][3] = decalAlpha;
 
                DecalTexCoordArray   [x + numVertices][0] = dl->stcoords[x][0];
                DecalTexCoordArray   [x + numVertices][1] = dl->stcoords[x][1];
@@ -168,7 +188,6 @@ void R_RenderDecals(void)
      }
      numVertices += dl->numverts;
      numIndices += (dl->numverts - 2) * 3;
-     c_decals++;
      }     
 
      // draw the rest

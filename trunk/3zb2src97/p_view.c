@@ -65,7 +65,7 @@ float SV_CalcRoll(vec3_t angles, vec3_t velocity)
 ===============
 P_DamageFeedback
 
-Handles color blends and view kicks
+Handles color dFactor and view kicks
 ===============
 */
 void P_DamageFeedback(edict_t * player)
@@ -1482,7 +1482,7 @@ void B_WorldEffects(edict_t * ent)
 ===============
 B_DamageFeedback
 
-Handles color blends and view kicks
+Handles color dFactor and view kicks
 ===============
 */
 void B_DamageFeedback(edict_t * player)

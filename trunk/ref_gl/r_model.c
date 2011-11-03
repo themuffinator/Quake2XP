@@ -543,10 +543,12 @@ void Mod_Modellist_f(void)
 Mod_Init
 ===============
 */
+void CL_ClearDecals(void);
+
 void Mod_Init(void)
 {
 	memset(mod_novis, 0xff, sizeof(mod_novis));
-
+	CL_ClearDecals();
 }
 
 

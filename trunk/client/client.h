@@ -581,8 +581,8 @@ typedef struct particle_s {
 	vec3_t lcolor;
 	float orient;
 	int flags;
-	int blend_dst;
-	int blend_src;
+	int sFactor;
+	int dFactor;
 	float len;
 	float endLen;
 	
@@ -714,12 +714,12 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 						float endRed, float endGreen, float endBlue,
 						float endAlpha, float size,
 						float endTime, int type, int flags, float angle,
-						int blendD, int blendS);
+						int sFactor, int dFactor);
 
 
 void V_AddDecal(vec2_t stcoords, vec3_t verts, int numverts,
 				struct mnode_s *node, vec3_t color, float alpha,
-				int type, int flags, int blendD, int blendS, vec3_t org, vec3_t dir, float size);
+				int type, int flags, int sFactor, int dFactor, vec3_t org, vec3_t dir, float size);
 
 void AddDecals(void);
 
@@ -820,7 +820,7 @@ void V_RenderView();
 void V_AddEntity(entity_t * ent);
 
 void V_AddParticle(vec3_t org, vec3_t length, vec3_t color, float alpha,
-				   int type, float size, int blend_dst, int blend_src,
+				   int type, float size, int sFactor, int dFactor,
 				   int flags, int time, float orient, float len,
 				   vec3_t oldOrg, vec3_t dir);
 

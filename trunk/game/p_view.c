@@ -66,7 +66,7 @@ extern qboolean blooddamage = false;
 ===============
 P_DamageFeedback
 
-Handles color blends and view kicks
+Handles color dFactor and view kicks
 ===============
 */
 void P_DamageFeedback (edict_t *player)

@@ -156,8 +156,8 @@ void CL_DebugTrail (vec3_t start, vec3_t end)
 		p->flags =0;
 		p->time = cl.time;
 		p->endTime = cl.time+20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = cl_indexPalette[index][0];
 		p->color[1] = cl_indexPalette[index][1];
@@ -229,8 +229,8 @@ void CL_ForceWall(vec3_t start, vec3_t end, int color)
 
 			p->time = cl.time;
 			p->endTime = cl.time + 20000;
-			p->blend_dst = GL_SRC_ALPHA;
-			p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 			p->alpha = 1.0;
 			p->alphavel = -1.0 / (3.0 + frand() * 0.5);
 
@@ -309,8 +309,8 @@ void CL_Heatbeam(vec3_t start, vec3_t forward)
 			p->time = cl.time;
 			p->endTime = cl.time + 20000;
 			p->type = PT_BLASTER;
-			p->blend_dst = GL_SRC_ALPHA;
-			p->blend_src = GL_ONE;
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE;
 			p->size = 2;
 			p->sizeVel = 0;
 
@@ -374,8 +374,8 @@ void CL_ParticleSteamEffect(vec3_t org, vec3_t dir, int color, int count,
 		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = cl_indexPalette[index][0];
 		p->color[1] = cl_indexPalette[index][1];
@@ -433,8 +433,8 @@ void CL_ParticleSteamEffect2(cl_sustain_t * self)
 		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = cl_indexPalette[color][0];
 		p->color[1] = cl_indexPalette[color][1];
@@ -510,8 +510,8 @@ void CL_TrackerTrail(vec3_t start, vec3_t end, int color)
 		p->endTime = cl.time + 20000;
 		p->flags = PARTICLE_DEFAULT;
 		p->type = PT_BLASTER;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0;
 		p->color[1] = 0;
@@ -559,8 +559,8 @@ void CL_Tracker_Shell(vec3_t origin)
 		p->endTime = cl.time + 20000;
 		p->flags = PARTICLE_DEFAULT;
 		p->type = PT_BLASTER;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0;
 		p->color[1] = 0;
@@ -608,8 +608,8 @@ void CL_MonsterPlasma_Shell(vec3_t origin)
 		p->endTime = cl.time + 20000;
 		p->flags = PARTICLE_DEFAULT;
 		p->type = PT_BLASTER;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 		p->orient = 0;
 		p->color[0] = cl_indexPalette[color][0];
 		p->color[1] = cl_indexPalette[color][1];
@@ -662,8 +662,8 @@ void CL_Widowbeamout(cl_sustain_t * self)
 		p->endTime = cl.time + 20000;
 		p->flags = PARTICLE_DEFAULT;
 		p->type = PT_BLASTER;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = cl_indexPalette[color][0];
 		p->color[1] = cl_indexPalette[color][1];
@@ -717,8 +717,8 @@ void CL_Nukeblast(cl_sustain_t * self)
 		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = cl_indexPalette[color][0];
 		p->color[1] = cl_indexPalette[color][1];
@@ -768,8 +768,8 @@ void CL_WidowSplash(vec3_t org)
 		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = cl_indexPalette[color][0];
 		p->color[1] = cl_indexPalette[color][1];
@@ -839,8 +839,8 @@ void CL_TagTrail(vec3_t start, vec3_t end, float color)
 		p->flags = PARTICLE_DEFAULT;
 		p->orient = 0;
 		p->type = PT_BLASTER;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = 1;
 		p->color[1] = 1;

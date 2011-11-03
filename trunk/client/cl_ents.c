@@ -798,8 +798,8 @@ void CL_AddPacketEntities(frame_t * frame)
 			p->flags = PARTICLE_OVERBRIGHT | PARTICLE_STRETCH;
 			p->time = cl.time;
 			p->endTime = cl.time+1;
-			p->blend_dst = GL_ONE;
-			p->blend_src = GL_ONE;
+			p->sFactor = GL_ONE;
+			p->dFactor = GL_ONE;
 			VectorClear(p->accel);
 			VectorClear(p->vel);
 			p->alpha = 1;
@@ -1632,7 +1632,6 @@ void CL_AddEntities(void)
 	CL_AddPacketEntities(&cl.frame);
 	CL_AddTEnts();
 	CL_AddParticles();
-	AddDecals();
 	CL_AddDLights();
 	CL_AddClEntities();
 	CL_AddLightStyles();

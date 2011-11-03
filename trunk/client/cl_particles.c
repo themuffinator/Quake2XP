@@ -110,7 +110,7 @@ void CL_AddParticles(void)
 	float time, time2, grav = Cvar_VariableValue("sv_gravity");
 	float size, len, lerp, endLerp;
 	float orient, backup;
-	int blend_dst, blend_src, flags;
+	int sFactor, dFactor, flags;
 	int i, cont;
 	qboolean ground;
 
@@ -181,8 +181,8 @@ void CL_AddParticles(void)
 
 		VectorCopy(p->org, old);
 
-		blend_dst = p->blend_dst;
-		blend_src = p->blend_src;
+		sFactor = p->sFactor;
+		dFactor = p->dFactor;
 		flags = p->flags;
 		orient = p->orient;
 
@@ -367,7 +367,7 @@ void CL_AddParticles(void)
 		}
 
 		V_AddParticle(org, p->length, color, alpha, p->type, size,
-					  p->blend_dst, p->blend_src, p->flags, p->time,
+					  p->sFactor, p->dFactor, p->flags, p->time,
 					  p->orient, len, old, p->dir);
 
 	}
@@ -406,8 +406,8 @@ void CL_ParticleEffect(vec3_t org, vec3_t dir, float r, float b, float g,
 		p->endLen = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = r;
 		p->color[1] = g;
@@ -457,8 +457,8 @@ void CL_ParticleBlood(vec3_t org, vec3_t dir, int count)
 		p->flags = PARTICLE_DIRECTIONAL;
 		p->flags |= PARTICLE_NONSOLID;
 
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->size = 1.3;
 		p->sizeVel = 0;
@@ -501,8 +501,8 @@ void CL_ParticleBlood(vec3_t org, vec3_t dir, int count)
 		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0.1;
 		p->color[1] = 0;
@@ -550,8 +550,8 @@ void CL_ParticleBlood2(vec3_t org, vec3_t dir, int count)
 		p->flags = PARTICLE_DIRECTIONAL;
 		p->flags |= PARTICLE_NONSOLID;
 
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->size = 1.3;
 		p->sizeVel = 0;
@@ -609,8 +609,8 @@ void CL_LaserParticle(vec3_t org, vec3_t dir, int count)
 		p->orient = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = 1;
 		p->color[1] = 1;
@@ -659,8 +659,8 @@ void CL_LaserParticle2(vec3_t org, vec3_t dir, int color, int count)
 		p->orient = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = cl_indexPalette[color][0];
 		p->color[1] = cl_indexPalette[color][1];
@@ -710,8 +710,8 @@ void CL_ParticleSmoke(vec3_t org, vec3_t dir, int count)
 		p->flags |= PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0.4;
 		p->color[1] = 0.4;
@@ -759,11 +759,11 @@ void CL_ParticleSmoke2(vec3_t org, vec3_t dir, float r, float g, float b,
 		p->flags = PARTICLE_AIRONLY;
 		p->orient =  frand() * 360;
 		if (add) {
-			p->blend_dst = GL_SRC_ALPHA;
-			p->blend_src = GL_ONE;
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE;
 		} else {
-			p->blend_dst = GL_SRC_ALPHA;
-			p->blend_src = GL_ONE;
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE;
 		}
 
 		p->size = 3;
@@ -812,8 +812,8 @@ void CL_ParticleGunSmoke(vec3_t org, vec3_t dir, int count)
 		p->flags |= PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0.45;
 		p->color[1] = 0.45;
@@ -861,8 +861,8 @@ void CL_ParticleSpark(vec3_t org, vec3_t dir, int count)
 		p->flags |= PARTICLE_DIRECTIONAL;
 		p->time = cl.time;
 		p->endTime = cl.time + 1000;
-		p->blend_dst = GL_ONE;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_ONE;
+		p->dFactor = GL_ONE;
 		p->len = 4;
 		p->endLen = 9;
 		p->color[0] = 1;
@@ -903,8 +903,8 @@ void CL_ParticleSpark(vec3_t org, vec3_t dir, int count)
 		p->flags = PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 1000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->color[0] = 1;
 		p->color[1] = 0.5;
 		p->color[2] = 0;
@@ -950,8 +950,8 @@ void CL_ParticleArmorSpark(vec3_t org, vec3_t dir, int count,
 		p->flags |= PARTICLE_DIRECTIONAL;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_ONE;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_ONE;
+		p->dFactor = GL_ONE;
 		p->len = 1;
 		p->endLen = 500;
 		if (power) {
@@ -1016,8 +1016,8 @@ void CL_ParticleTracer(vec3_t start, vec3_t end)
 	p->flags |= PARTICLE_NONSOLID;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 	p->len = 20;
 	p->endLen = 0;
 	p->color[0] = 1;
@@ -1064,8 +1064,8 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 		p->flags = PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = r;
 		p->color[1] = g;
@@ -1107,8 +1107,8 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 	p->flags |= PARTICLE_AIRONLY;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE;
 
 	p->color[0] = r;
 	p->color[1] = g;
@@ -1151,8 +1151,8 @@ void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE;
 
 	p->color[0] = r;
 	p->color[1] = b;
@@ -1200,8 +1200,8 @@ void CL_ParticleSplashSlime(vec3_t org, vec3_t dir)
 		p->flags |= PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = 0.2;
 		p->color[1] = 1.0;
@@ -1244,8 +1244,8 @@ void CL_ParticleSplashSlime(vec3_t org, vec3_t dir)
 	p->flags |= PARTICLE_OVERBRIGHT;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE;
 
 	p->color[0] = 0.2;
 	p->color[1] = 1.0;
@@ -1289,8 +1289,8 @@ void CL_ParticleSplashSlime(vec3_t org, vec3_t dir)
 	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE;
 
 	p->color[0] = 0.2;
 	p->color[1] = 1.0;
@@ -1339,8 +1339,8 @@ void CL_ParticleSplashLava(vec3_t org, vec3_t dir)
 		p->flags |= PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = 1;
 		p->color[1] = 0.3;
@@ -1383,8 +1383,8 @@ void CL_ParticleSplashLava(vec3_t org, vec3_t dir)
 	p->flags |= PARTICLE_OVERBRIGHT;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE;
 
 	p->color[0] = 1;
 	p->color[1] = 0.3;
@@ -1428,8 +1428,8 @@ void CL_ParticleSplashLava(vec3_t org, vec3_t dir)
 	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE;
 
 	p->color[0] = 1;
 	p->color[1] = 0.3;
@@ -1485,8 +1485,8 @@ void CL_ParticleBloodSplash(vec3_t org, vec3_t dir)
 	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 2000000;
-	p->blend_dst = GL_ONE;
-	p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+	p->sFactor = GL_ONE;
+	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 	p->color[0] = 0.05;
 	p->color[1] = 0;
@@ -1541,8 +1541,8 @@ void CL_ParticleHeadBlood(vec3_t org)
 		p->flags  = PARTICLE_DIRECTIONAL;
 		p->flags |= PARTICLE_NONSOLID;
 		p->orient = 0;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->type = PT_BLOODDRIP;
 		p->size = 1;
 		p->sizeVel = 0;
@@ -1583,8 +1583,8 @@ void CL_ParticleHeadBlood(vec3_t org)
 		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0.2;
 		p->color[1] = 0.2;
@@ -1641,8 +1641,8 @@ void CL_ParticleGibBlood(vec3_t org)
 		p->flags  = PARTICLE_DIRECTIONAL;
 		p->flags |= PARTICLE_NONSOLID;
 		p->orient = 0;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->type = PT_BLOODDRIP;
 		p->size = 1;
 		p->sizeVel = 0;
@@ -1683,8 +1683,8 @@ void CL_ParticleGibBlood(vec3_t org)
 		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0.1;
 		p->color[1] = 0;
@@ -1741,8 +1741,8 @@ void CL_ParticleGibBlood2(vec3_t org)
 		p->orient = 0;
 		p->flags  = PARTICLE_DIRECTIONAL;
 		p->flags |= PARTICLE_NONSOLID;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->type = PT_xBLOODSPRAY;
 		p->size = 1;
 		p->sizeVel = 0;
@@ -1783,8 +1783,8 @@ void CL_ParticleGibBlood2(vec3_t org)
 		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0.1;
 		p->color[1] = 0;
@@ -1841,8 +1841,8 @@ void CL_Explosion(vec3_t org)
 	p->lcolor[2] = 0.5;
 
 
-	p->blend_dst = GL_ONE;
-	p->blend_src = GL_ONE;
+	p->sFactor = GL_ONE;
+	p->dFactor = GL_ONE;
 
 	p->color[0] = 1;
 	p->color[1] = 1;
@@ -1870,8 +1870,8 @@ void CL_Explosion(vec3_t org)
 			p->orient = 0;
 			p->flags = PARTICLE_UNDERWATER;
 			p->type = PT_BUBBLE;
-			p->blend_dst = GL_SRC_ALPHA;
-			p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 			p->size = 0.8;
 			p->sizeVel = 0;
 			p->color[0] = 1;
@@ -1886,8 +1886,8 @@ void CL_Explosion(vec3_t org)
 			p->orient = 0;
 			p->type = PT_DEFAULT;
 
-			p->blend_dst = GL_SRC_ALPHA;
-			p->blend_src = GL_ONE;
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE;
 			p->size = 0.30;
 			p->sizeVel = 0.1;
 			p->len = 10;
@@ -1937,8 +1937,8 @@ void CL_Explosion(vec3_t org)
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0.35;
 		p->color[1] = 0.35;
@@ -1989,8 +1989,8 @@ void CL_TeleporterParticles(entity_state_t * ent)
 		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = 0.7;
 		p->color[1] = 0.0;
@@ -2041,8 +2041,8 @@ void CL_LogoutEffect(vec3_t org, int type)
 		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		if (type == MZ_LOGIN) {
 			p->color[0] = 0;
@@ -2106,8 +2106,8 @@ void CL_ItemRespawnParticles(vec3_t org)
 		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 
 		p->color[0] = 0;
 		p->color[1] = 1;
@@ -2157,8 +2157,8 @@ void CL_ExplosionParticles(vec3_t org)
 		p->flags = PARTICLE_OVERBRIGHT;
 		p->type = PT_BLASTER;
 
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->time = cl.time;
 		p->endTime = cl.time + 500;
@@ -2212,8 +2212,8 @@ void CL_BigTeleportParticles(vec3_t org)
 		p->flags  = PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		color = 0.1 + (0.2 * frand());
 
@@ -2274,8 +2274,8 @@ void CL_BlasterParticles(vec3_t org, vec3_t dir)
 		p->flags  = PARTICLE_BOUNCE;
 		p->flags |= PARTICLE_FRICTION;
 
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 	
 		p->size = 1;
 		p->sizeVel = 0;
@@ -2348,8 +2348,8 @@ void CL_BlasterTrail(vec3_t start, vec3_t end)
 		p->orient = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 		p->flags = PARTICLE_DEFAULT;
 		p->alpha = 1.0;
 		p->alphavel =  -1.0 / (0.3 + frand() * 0.2);
@@ -2412,8 +2412,8 @@ void CL_QuadTrail(vec3_t start, vec3_t end)
 		p->type = PT_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->size = 1;
 		p->sizeVel = 1;
 		p->alpha = 1.0;
@@ -2469,8 +2469,8 @@ void CL_FlagTrail(vec3_t start, vec3_t end, float r, float g, float b)
 		p->orient = 0;
 		p->flags = PARTICLE_DEFAULT;
 		VectorClear(p->accel);
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->type = PT_DEFAULT;
@@ -2565,8 +2565,8 @@ void CL_DiminishingTrail(vec3_t start, vec3_t end, centity_t * old,
 				p->color[0] = 0.1;
 				p->color[1] = 0.0;
 				p->color[2] = 0.0;
-				p->blend_dst = GL_SRC_ALPHA;
-				p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+				p->sFactor = GL_SRC_ALPHA;
+				p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 				p->colorVel[0] = 0;
 				p->colorVel[1] = 0;
@@ -2608,8 +2608,8 @@ void CL_DiminishingTrail(vec3_t start, vec3_t end, centity_t * old,
 				if(!cl_blood->value)
 					p->alpha = 0;
 
-				p->blend_dst = GL_SRC_ALPHA;
-				p->blend_src = GL_ONE;
+				p->sFactor = GL_SRC_ALPHA;
+				p->dFactor = GL_ONE;
 				p->color[0] = 1;
 				p->color[1] = 1;
 				p->color[2] = 0;
@@ -2652,8 +2652,8 @@ void CL_DiminishingTrail(vec3_t start, vec3_t end, centity_t * old,
 				p->color[0] = 0.5;
 				p->color[1] = 0.5;
 				p->color[2] = 0.5;
-				p->blend_dst = GL_SRC_ALPHA;
-				p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+				p->sFactor = GL_SRC_ALPHA;
+				p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 				p->colorVel[0] = 0;
 				p->colorVel[1] = 0;
 				p->colorVel[2] = 0;
@@ -2746,8 +2746,8 @@ void CL_RocketFire(vec3_t start, vec3_t end)
 
 		p->time = cl.time;
 		p->endTime = cl.time + 14000;
-		p->blend_dst = GL_ONE;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_ONE;
+		p->dFactor = GL_ONE;
 		p->alpha = 1.0;
 		p->alphavel = -2.0 / (0.2 + frand() * 0.1);
 
@@ -2810,8 +2810,8 @@ void CL_RocketTrail(vec3_t start, vec3_t end, centity_t * old)
 			active_particles = p;
 
 
-			p->blend_dst = GL_SRC_ALPHA;
-			p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 			p->flags = PARTICLE_VERTEXLIGHT;
 			p->type = PT_SMOKE;
 			p->orient =  frand() * 360;
@@ -2869,8 +2869,8 @@ void CL_RailTrail(vec3_t start, vec3_t end)
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	VectorClear(p->accel);
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE;
 	p->alpha = 1;
 	p->alphavel = -1.0 / (0.3 + frand() * 0.3);
 	p->color[0] = cl_railspiral_red->value;
@@ -2907,8 +2907,8 @@ void CL_RailTrail(vec3_t start, vec3_t end)
 	p->flags = PARTICLE_STRETCH;
 	p->alpha = 1;
 	p->alphavel = -1.0 / (0.3 + frand() * 0.3);
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE;
 	p->color[0] = cl_railcore_red->value;
 	p->color[1] = cl_railcore_green->value;
 	p->color[2] = cl_railcore_blue->value;
@@ -2951,8 +2951,8 @@ void CL_ParticleRick(vec3_t org, vec3_t dir)
 		p->flags |= PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 		p->type = PT_BLASTER;
 		p->size = 0.7;
 		p->sizeVel = 0;
@@ -2991,8 +2991,8 @@ void CL_ParticleRick(vec3_t org, vec3_t dir)
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0.1;
 		p->color[1] = 0.1;
@@ -3037,8 +3037,8 @@ void CL_ParticleRick(vec3_t org, vec3_t dir)
 	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 	p->color[0] = 0.1;
 	p->color[1] = 0.1;
@@ -3087,8 +3087,8 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 		p->flags |= PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 		p->type = PT_BLASTER;
 		p->size = 0.6;
 		p->sizeVel = 0;
@@ -3127,8 +3127,8 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 		p->color[0] = 0.1;
 		p->color[1] = 0.1;
@@ -3172,8 +3172,8 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 	p->flags |= PARTICLE_NOFADE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->blend_dst = GL_SRC_ALPHA;
-	p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 
 	p->color[0] = 0.1;
 	p->color[1] = 0.1;
@@ -3209,8 +3209,8 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 		p->flags  = PARTICLE_BOUNCE;
 		p->flags |= PARTICLE_FRICTION;
 		p->flags |= PARTICLE_DIRECTIONAL;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 	
 		p->size = 0.5;
 		p->sizeVel = 0;
@@ -3288,8 +3288,8 @@ void CL_IonripperTrail(vec3_t start, vec3_t ent)
 		p->flags = PARTICLE_OVERBRIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 		p->type = PT_BLASTER;
 		p->size = 1.0;
 		p->sizeVel = 1.0;
@@ -3358,8 +3358,8 @@ void CL_BubbleTrail(vec3_t start, vec3_t end)
 		p->flags = PARTICLE_UNDERWATER;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->alpha = 1.0;
 		p->alphavel = -1.0 / (1 + frand() * 0.2);
 		p->color[0] = 1;
@@ -3439,8 +3439,8 @@ void CL_FlyParticles(vec3_t origin, int count)
 		p->orient = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 60000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		dist = sin(ltime + i) * 64;
 		p->org[0] =
 			origin[0] + bytedirs[i][0] * dist + forward[0] * BEAMLENGTH;
@@ -3545,8 +3545,8 @@ void CL_BfgParticles(entity_t * ent)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = 0;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->flags = PARTICLE_OVERBRIGHT;
 		p->type = PT_BLASTER;
 		p->size = 0.7;
@@ -3625,8 +3625,8 @@ void CL_TrapParticles(entity_t * ent)
 		p->flags = PARTICLE_DEFAULT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE;
 		p->type = PT_BLASTER;
 		p->size = 6;
 		p->sizeVel = -10;
@@ -3675,8 +3675,8 @@ void CL_TrapParticles(entity_t * ent)
 					p->flags = PARTICLE_DEFAULT;
 					p->time = cl.time;
 					p->endTime = cl.time + 20000;
-					p->blend_dst = GL_SRC_ALPHA;
-					p->blend_src = GL_ONE;
+					p->sFactor = GL_SRC_ALPHA;
+					p->dFactor = GL_ONE;
 					p->color[0] = 1;
 					p->color[1] = 0.5;
 					p->color[2] = 0;
@@ -3729,8 +3729,8 @@ void CL_BFGExplosionParticles(vec3_t org)
 
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
-		p->blend_dst = GL_SRC_ALPHA;
-		p->blend_src = GL_ONE_MINUS_SRC_ALPHA;
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->flags  = PARTICLE_OVERBRIGHT;
 		p->flags |= PARTICLE_DIRECTIONAL;
 		p->orient = 0;
@@ -3785,8 +3785,8 @@ void CL_TeleportParticles(vec3_t org)
 
 				p->time = cl.time;
 				p->endTime = cl.time + 20000;
-				p->blend_dst = GL_SRC_ALPHA;
-				p->blend_src = GL_ONE;
+				p->sFactor = GL_SRC_ALPHA;
+				p->dFactor = GL_ONE;
 				p->orient = 0;
 				p->flags = PARTICLE_DEFAULT;
 				p->color[0] = color;
@@ -3842,8 +3842,8 @@ void CL_AddLasers(void)
 			p->flags |= PARTICLE_STRETCH;
 			p->time = cl.time;
 			p->endTime = cl.time + 20000;
-			p->blend_dst = GL_SRC_ALPHA;
-			p->blend_src = GL_ONE;
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE;
 			VectorClear(p->accel);
 			VectorClear(p->vel);
 			p->alpha = 0.3;
