@@ -2593,7 +2593,7 @@ void CL_DiminishingTrail(vec3_t start, vec3_t end, centity_t * old,
 					CL_AddDecalToScene(trace.endpos, trace.plane.normal,
 									   1, 1, 1, 1,
 									   1, 1, 1, 1,
-									   10, 12000,
+									   20, 12000,
 									   DECAL_BLOOD9, 0, frand() * 360,
 									   GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 				VectorClear(trace.plane.normal);

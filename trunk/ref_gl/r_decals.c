@@ -125,26 +125,32 @@ void R_RenderDecals(void)
 				continue;
 
         endLerp = (float)(r_newrefdef.time - dl->time) / (float)(dl->endTime - dl->time);	
+		endLerp *=250;
 
-          tex = r_decaltexture[dl->type]->texnum;
+		for (i = 0; i < 3; i++)
+			decalColor[i] = dl->color[i] + (dl->endColor[i] - dl->color[i]) * endLerp;
+		
+		decalAlpha = dl->alpha + (dl->endAlpha - dl->alpha) * endLerp;
+
+		tex = r_decaltexture[dl->type]->texnum;
           
-          if (texture != tex) {
-          // flush array if new texture/blend
-          if (numIndices) {
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indices);
-				c_decal_tris += numIndices/3;
-				numVertices = 0;
-				numIndices = 0;
+        if (texture != tex) {
+        // flush array if new texture/blend
+        if (numIndices) {
+			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indices);
+			c_decal_tris += numIndices/3;
+			numVertices = 0;
+			numIndices = 0;
           }
 
-			texture = tex;
-            GL_MBind(GL_TEXTURE0_ARB, texture);
-            qglBlendFunc(dl->sFactor, dl->dFactor);
+		texture = tex;
+        GL_MBind(GL_TEXTURE0_ARB, texture);
+        qglBlendFunc(dl->sFactor, dl->dFactor);
 
-			if (dl->flags == DF_OVERBRIGHT)
-               GL_Overbrights(true);
-			else
-               GL_Overbrights(false);
+		if (dl->flags == DF_OVERBRIGHT)
+			GL_Overbrights(true);
+		else
+            GL_Overbrights(false);
 
           }
 
@@ -159,11 +165,6 @@ void R_RenderDecals(void)
 		 numVertices = 0;
          numIndices = 0;
      }
-
-	 for (i = 0; i < 3; i++)
-		decalColor[i] = dl->color[i] + (dl->endColor[i] - dl->color[i]) * endLerp;
-	 		
-	 decalAlpha = dl->alpha + (dl->endAlpha - dl->alpha) * endLerp;
 
      // set vertices
           for (x = 0; x < dl->numverts; x++) {

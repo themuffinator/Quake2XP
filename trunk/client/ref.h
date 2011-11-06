@@ -400,7 +400,7 @@ DECALS
 =====================
 */
 
-#define MAX_DECALS				4096
+#define MAX_DECALS				2048
 #define MAX_DECAL_VERTS			384
 #define MAX_DECAL_FRAGMENTS		256
 
@@ -408,7 +408,7 @@ typedef struct decals_t {
 	struct decals_t *prev, *next;
 	mnode_t *node;
 
-	float time, endTime, die;
+	float time, endTime;
 
 	int numverts;
 

@@ -316,7 +316,7 @@ void CL_AddClEntities()
 					if (trace.fraction > 0 && trace.fraction < 1)
 						CL_AddDecalToScene(trace.endpos,
 										   trace.plane.normal,	1, 1, 1, 1,
-																1, 1, 1, 1, 10, 12000,
+																1, 1, 1, 1, 20, 12000,
 																DECAL_BLOOD9, 0,
 																rand() % 360, GL_ZERO,
 																GL_ONE_MINUS_SRC_COLOR);

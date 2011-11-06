@@ -849,9 +849,6 @@ void CL_ParseTEnt(void)
 						   DECAL_BLASTER, 0, frand() * 360,
 						   GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		
-
-	//	CL_NewDlight(0, pos, 10, 10, 10, 10, 11000);
 		CL_ParticleSmoke2(pos, dir, 0.97, 0.46, 0.14, 16, true);
 		CL_BlasterParticles(pos, dir);
 		S_StartSound(pos, 0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
