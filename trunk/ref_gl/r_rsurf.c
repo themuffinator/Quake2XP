@@ -61,46 +61,10 @@ float   wTmu6Array[MAX_BATCH_SURFS][2];
 float	SurfColorArray[MAX_BATCH_SURFS][4];
 
 WORD	indexArray[MAX_BATCH_SURFS*3];
-unsigned	numVertices, numIndeces;
 
 vec3_t	nTexArray[MAX_BATCH_SURFS];
 vec3_t	tTexArray[MAX_BATCH_SURFS];
 vec3_t	bTexArray[MAX_BATCH_SURFS];
-
-
-
-/*
-=================
-R_DrawArrays
-=================
-*/
-void R_DrawArrays (void)
-{
-	if (numVertices == 0 || numIndeces == 0) // nothing to render
-		return;
-
-	if (gl_state.DrawRangeElements)
-		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, numVertices, numIndeces, GL_UNSIGNED_SHORT, indexArray);
-	else
-		qglDrawElements(GL_TRIANGLES, numIndeces, GL_UNSIGNED_SHORT, indexArray);
-
-	numIndeces = numVertices = 0;
-	
-}
-
-void R_DrawArraysType (unsigned int type)
-{
-	if (numVertices == 0 || numIndeces == 0) // nothing to render
-		return;
-
-	if (gl_state.DrawRangeElements)
-		qglDrawRangeElementsEXT(type, 0, numVertices, numIndeces, GL_UNSIGNED_SHORT, indexArray);
-	else
-		qglDrawElements(type, numIndeces, GL_UNSIGNED_SHORT, indexArray);
-
-	numIndeces = numVertices = 0;
-	
-}
 
 /*
 =============================================================
@@ -194,7 +158,7 @@ void DrawGLPolyGLSL(msurface_t * fa)
 	float *v;
 	float alpha;
 	glpoly_t *p;
-	int			id;
+	int	id, nv = fa->polys->numverts;
 	unsigned	defBits = 0;
 	
 	if (fa->texinfo->flags & SURF_TRANS33)
@@ -231,12 +195,8 @@ void DrawGLPolyGLSL(msurface_t * fa)
 	
 	p = fa->polys;
 	v = p->verts[0];
-	for (i=0; i < p->numverts-2; i++) {
-			indexArray[numIndeces++] = numVertices;
-			indexArray[numIndeces++] = numVertices+i+1;
-			indexArray[numIndeces++] = numVertices+i+2;
-			}
-	c_brush_polys += numIndeces / 3;
+
+	c_brush_polys += (nv-2);
 
 	for (i = 0; i < p->numverts; i++, v += VERTEXSIZE) {
 		
@@ -250,9 +210,9 @@ void DrawGLPolyGLSL(msurface_t * fa)
 											shadelight_surface[1], 
 											shadelight_surface[2], 
 											alpha);	
-	numVertices++;
+
 	}
-	R_DrawArrays();
+	qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);	
 			
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -278,7 +238,7 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 	float *v;
 	float alpha, scroll;
 	glpoly_t *p;
-	int			id;
+	int	id, nv = fa->polys->numverts;
 	unsigned	defBits = 0;
 
 
@@ -320,16 +280,10 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 
 	p = fa->polys;
 	v = p->verts[0];
-	for (i=0; i < p->numverts-2; i++) {
-			indexArray[numIndeces++] = numVertices;
-			indexArray[numIndeces++] = numVertices+i+1;
-			indexArray[numIndeces++] = numVertices+i+2;
-			}
-	c_brush_polys += numIndeces / 3;
+
+	c_brush_polys += (nv-2);
 	
-	scroll =
-		-64 * ((r_newrefdef.time / 40.0) -
-			   (int) (r_newrefdef.time / 40.0));
+	scroll =-64 * ((r_newrefdef.time / 40.0) - (int) (r_newrefdef.time / 40.0));
 
 	if (scroll == 0.0)
 		scroll = -64.0;
@@ -352,9 +306,8 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 											shadelight_surface[1], 
 											shadelight_surface[2], 
 											alpha);	
-	numVertices++;
 	}
-	R_DrawArrays();
+	qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
 		
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -381,8 +334,6 @@ void R_RenderBrushPoly (msurface_t *fa)
 	image = R_TextureAnimation(fa->texinfo);
 	purename = COM_SkipPath(image->name);
 	COM_StripExtension(purename, noext);
-
-	c_brush_polys++;
 
 	if (fa->flags & SURF_DRAWTURB)
 	{	
@@ -513,13 +464,6 @@ void GL_CreateParallaxLmPoly(msurface_t * surf)
 			v = p->verts[0];
 			c_brush_polys += (nv-2);
 
-			
-			for (i=0; i < nv-2; i++) {
-			indexArray[numIndeces++] = numVertices;
-			indexArray[numIndeces++] = numVertices+i+1;
-			indexArray[numIndeces++] = numVertices+i+2;
-			}
-
 			for (i = 0; i < nv; i++, v += VERTEXSIZE) 
 				{
 				VectorCopy(v, wVertexArray[i]);
@@ -530,10 +474,11 @@ void GL_CreateParallaxLmPoly(msurface_t * surf)
 				wTexArray[i][0] = v[3];
 				}
 				wTexArray[i][1] = v[4];
-				
 				//lightMap
 				wLMArray[i][0]  = v[5];
 				wLMArray[i][1]  = v[6];
+
+				if(r_bumpWorld->value || r_parallax->value){
 				//normals
 				nTexArray[i][0] = v[7];
 				nTexArray[i][1] = v[8];
@@ -546,8 +491,7 @@ void GL_CreateParallaxLmPoly(msurface_t * surf)
 				bTexArray[i][0] = v[13];
 				bTexArray[i][1] = v[14];
 				bTexArray[i][2] = v[15];
-
-				numVertices++;
+				}
 			}
 	
 }
@@ -567,7 +511,8 @@ int	num_scene_surfaces;
 msurface_t	*scene_surfaces[MAX_MAP_FACES];
 vec3_t	lightOrg, lightColor;
 float lightRad;
- 
+int r_currTex = -9999;
+
 static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
@@ -632,13 +577,16 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 
 	// cleanup lights
+			
 	if ((s->dlightframe != r_framecount))
 	for (j=0; j < r_pplMaxDlights->value; j++) {
 		char uname[32];
+	
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
 		qglUniform1f(qglGetUniformLocation(id, uname), 0);
+		
 	}
-
+	
 	// setup dlights
 	dl = r_newrefdef.dlights;
 	for (j=0, dl = r_newrefdef.dlights; j < r_newrefdef.num_dlights; j++, dl++ ) 
@@ -690,10 +638,9 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	}
 
 	GL_CreateParallaxLmPoly(s);
-	
 
-
-		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
+	for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
+		
 		if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
 			goto dynamic;
 	}
@@ -746,12 +693,11 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 			qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
 		
 		}
-
-					
+		
+		if(s->texinfo->image->texnum != r_currTex) 
+		{
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
-		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
-		qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
 		if(caustics || (s->flags & SURF_WATER)){
@@ -762,11 +708,15 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
 		}
-		R_DrawArrays();
+		}
+		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
+		qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
 		
+		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);
 	} else {
 	
-
+		if(s->texinfo->image->texnum != r_currTex) 
+		{
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
@@ -782,8 +732,10 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
 		qglUniform1i(qglGetUniformLocation(id, "u_deluxMap"), 5);
 		}
-		R_DrawArrays();
-		}	
+		}
+		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
+	}
+	r_currTex = s->texinfo->image->texnum;
 }
 	
 	GL_BindNullProgram();
@@ -899,6 +851,7 @@ static void R_DrawInlineBModel2(void)
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+extern GLuint vboId;
 
 /*
 =================
@@ -1017,7 +970,8 @@ void R_DrawBrushModel(entity_t * e)
 	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
 	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
-
+	
+	r_currTex = -99999;
 	num_scene_surfaces = 0;
 	R_DrawInlineBModel();
 	
@@ -1045,6 +999,7 @@ void R_DrawBrushModel(entity_t * e)
 	qglDisableVertexAttribArray(ATRB_TEX1);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
+
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	qglPopMatrix();
 	qglDisable(GL_BLEND);
@@ -1228,7 +1183,8 @@ void R_DrawBSP(void)
 	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
 	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
-	
+
+	r_currTex = -99999;
 	num_scene_surfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
 	GL_BatchLightmappedPoly(false, false);
@@ -1239,6 +1195,7 @@ void R_DrawBSP(void)
 	qglDisableVertexAttribArray(ATRB_TEX1);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
+
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	DrawTextureChains();
 

@@ -555,29 +555,7 @@ void R_DofBlur (void) {
 	id = dofProgram->id[defBits];
 	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-
-	if(r_dof->value >1){
-	float		dist;
-	trace_t		trace;
-	vec3_t		end, tmp, forvard, right, up, _mins = {-32,-32,-32}, _maxs = {32, 32, 32};
-	
-	AngleVectors(r_newrefdef.viewangles, forvard, right, up);
-	VectorMA(r_origin, 9000, forvard, end);     
-	trace = CL_PMTraceWorld (r_origin, _mins, _maxs, end, (MASK_SOLID));
-	
-	if(trace.fraction >0 && trace.fraction <1){
-	
-	VectorSubtract(r_origin, trace.endpos, tmp);
-	dist = VectorLength(tmp);
-	qglUniform1f(qglGetUniformLocation(id, "u_focus"), dist);
-	}
-	else
-		qglUniform1f(qglGetUniformLocation(id, "u_focus"), r_dofFocus->value);
-	}
-	else
-		qglUniform1f(qglGetUniformLocation(id, "u_focus"), r_dofFocus->value);
-	
-	
+	qglUniform1f(qglGetUniformLocation(id, "u_focus"), r_dofFocus->value);
 	qglUniform1f(qglGetUniformLocation(id, "u_bias"), r_dofBias->value);
 
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	

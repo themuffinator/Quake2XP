@@ -70,56 +70,10 @@ typedef vec_t vec2_t[2];
 #define SHELL_WHITE_COLOR	0xD7
 
 #define	GL_INDEX_TYPE		GL_UNSIGNED_INT
-typedef int			index_t;
+typedef unsigned short		ushort;
+typedef ushort		index_t;
 
 
-#define	MAX_VERTEX_CACHES	4096
-
-typedef enum {
-	VBO_STATIC,
-	VBO_DYNAMIC
-} vertCacheMode_t;
-
-typedef enum {
-	VBO_STORE_ANY,
-	VBO_STORE_XYZ,
-	VBO_STORE_NORMAL,
-	VBO_STORE_BINORMAL,
-	VBO_STORE_TANGENT
-} vertStoreMode_t;
-
-typedef struct vertCache_s
-{
-	struct vertCache_s	*prev;
-	struct vertCache_s	*next;
-
-	vertCacheMode_t		mode;
-
-	int					size;
-
-	void				*pointer;
-
-	vertStoreMode_t		store;
-	struct model_s		*mod;
-	int					frame;
-	float				backlerp;
-	float				angles[3];
-	float				origin[3];
-	int					mesh;		// 0 for md2
-
-	unsigned			id;
-} vertCache_t;
-
-typedef struct {
-	vertCache_t		*freeVertCache;
-	vertCache_t		activeVertCache;
-	vertCache_t		vertCacheList[MAX_VERTEX_CACHES];
-} vertCacheManager_t;
-
-
-static		vertCacheManager_t	vcm;
-#define MAX_VBO_XYZs		65536
-vec3_t	vbo_shadow[MAX_VBO_XYZs];
 
 typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh
@@ -161,14 +115,6 @@ typedef struct entity_s {
 	float minmax[6];
 	vec3_t mins;
 	vec3_t maxs;
-
-	vertCache_t		*vbo_xyz[32];
-	vertCache_t		*vbo_lightp[32];
-	vertCache_t		*vbo_tsh[32];
-	vertCache_t		*vbo_fx[32];
-	vertCache_t		*vbo_normals[32];
-	vertCache_t		*vbo_tangents[32];
-	vertCache_t		*vbo_binormals[32];
 
 } entity_t;
 
@@ -361,17 +307,9 @@ typedef struct msurface_s {
 	entity_t *ent;
 	vec3_t		mins, maxs;
 
-	int			numIndices;
-	int			numVertices;
-	
-	int indexOffset;
-	int indexBuffer;
-	int vertexBuffer;
-
-	int vbo_pos;
-	int	xyz_size;
-	int st_size;
-	int lm_size;
+	int	numIndices;
+	int	numVertices;
+	index_t	*indices;
 
 } msurface_t;
 

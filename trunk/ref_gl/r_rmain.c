@@ -1716,8 +1716,8 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED "...GL_ARB_texture_rectangle not found\n");
 		
 	}
-	
-/*		gl_state.vbo = false;
+	/*
+		gl_state.vbo = false;
 
 	if (strstr(gl_config.extensions_string, "GL_ARB_vertex_buffer_object")) {
 			
@@ -1728,18 +1728,18 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		qglBufferSubData =	(PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
 		qglMapBuffer =		(PFNGLMAPBUFFERPROC)		qwglGetProcAddress("glMapBuffer");
 		qglUnmapBuffer =	(PFNGLUNMAPBUFFERPROC)		qwglGetProcAddress("glUnmapBuffer");
+		qglBufferSubData =	(PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
 
-		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers){
+		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData){
 				
 			Com_Printf("...using GL_ARB_vertex_buffer_object\n");
 			gl_state.vbo = true;
-			R_VCInit();
 		}
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 		gl_state.vbo = false;
 	}
-*/
+	*/
 	gl_state.nv_multisample_hint = false;
 
 	if ( strstr( gl_config.extensions_string, "GL_NV_multisample_filter_hint" ) )

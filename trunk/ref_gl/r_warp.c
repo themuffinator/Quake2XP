@@ -28,7 +28,6 @@ char skyname[MAX_QPATH];
 float skyrotate;
 vec3_t skyaxis;
 image_t *sky_images[6];
-void R_DrawArrays (void);
 static float shadelight[3];
 
 /*
@@ -94,13 +93,7 @@ void RenderLavaSurfaces(msurface_t * fa)
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
 
-	for (i=0; i < p->numverts-2; i++) {
-		indexArray[numIndeces++] = numVertices;
-		indexArray[numIndeces++] = numVertices+i+1;
-		indexArray[numIndeces++] = numVertices+i+2;
-		}
-		
-	c_brush_polys += numIndeces / 3;
+	c_brush_polys += (nv-2);
 
 	for (i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE) {
 			
@@ -128,10 +121,9 @@ void RenderLavaSurfaces(msurface_t * fa)
 												shadelight_surface[1], 
 												shadelight_surface[2], 
 												1);	
-		numVertices++;
 		}
 		
-		R_DrawArrays();
+		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
 	}
 	
 	GL_SelectTexture(GL_TEXTURE0_ARB);
@@ -185,7 +177,7 @@ void EmitWaterPolys(msurface_t * fa)
 {
 	glpoly_t	*p, *bp;
 	float		*v, dstscroll;
-	int			id, i;
+	int			id, i, nv = fa->polys->numverts;
 	unsigned	defBits = 0;
 	
 		
@@ -243,13 +235,8 @@ void EmitWaterPolys(msurface_t * fa)
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
 
-	for (i=0; i < p->numverts-2; i++) {
-		indexArray[numIndeces++] = numVertices;
-		indexArray[numIndeces++] = numVertices+i+1;
-		indexArray[numIndeces++] = numVertices+i+2;
-		}
 		
-	c_brush_polys += numIndeces / 3;
+	c_brush_polys += (nv-2);
 
 	for (i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE) {
 		
@@ -266,10 +253,9 @@ void EmitWaterPolys(msurface_t * fa)
 											shadelight_surface[1], 
 											shadelight_surface[2], 
 											1.0);	
-		numVertices++;
 		}
 
-		R_DrawArrays();
+		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
 	}
 
 	

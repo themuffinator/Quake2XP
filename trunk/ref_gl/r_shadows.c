@@ -638,23 +638,13 @@ void GL_DrawShadowTriangles(msurface_t * surf)
        
     nv = surf->polys->numverts;
 
-            v = p->verts[0];
-			c_shadow_tris += numIndeces / 3;
+    v = p->verts[0];
+	c_brush_polys += (nv-2);
 
-			for (i=0; i < nv-2; i++) {
-			indexArray[numIndeces++] = numVertices;
-			indexArray[numIndeces++] = numVertices+i+1;
-			indexArray[numIndeces++] = numVertices+i+2;
-			}
-
-			for (i = 0; i < nv; i++, v += VERTEXSIZE){
-
-                VectorCopy(v, wVertexArray[i]);
-				numVertices++;
-			}
-       
-	R_DrawArrays();
-    	
+	for (i = 0; i < nv; i++, v += VERTEXSIZE)
+         VectorCopy(v, wVertexArray[i]);
+ 
+	qglDrawElements(GL_TRIANGLES, surf->numIndices, GL_UNSIGNED_SHORT, surf->indices);	
 }
 
 

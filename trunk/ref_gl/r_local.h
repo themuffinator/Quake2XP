@@ -757,6 +757,17 @@ glsl_attrib;
 #define	COMPRESSED_SLUMINANCE_EXT                      0x8C4A
 #define	COMPRESSED_SLUMINANCE_ALPHA_EXT                0x8C4B
 
+#define MAX_VBO_XYZs		65536
+
+vec3_t	vbo_XyzBuffer[MAX_VBO_XYZs];
+vec3_t	vbo_StBuffer[MAX_VBO_XYZs];
+vec3_t	vbo_LmBuffer[MAX_VBO_XYZs];
+vec3_t	vbo_NormalBuffer[MAX_VBO_XYZs];
+vec3_t	vbo_BiNormalBuffer[MAX_VBO_XYZs];
+vec3_t	vbo_TangentBuffer[MAX_VBO_XYZs];
+
+#define	MAX_VERTEX_CACHES	4096
+
 /*
 ====================================================================
 

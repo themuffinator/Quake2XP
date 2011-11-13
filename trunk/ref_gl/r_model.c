@@ -1045,7 +1045,20 @@ void CalcSurfaceExtents(msurface_t * s)
 	}
 }
 
+void GL_CalcBspIndeces(msurface_t *surf)
+{
+int index, i;
 
+	surf->numIndices = (surf->numVertices - 2) * 3;
+	surf->indices = (index_t*)Hunk_Alloc(surf->numIndices * sizeof(int));
+
+	for (i = 0, index = 2; i < surf->numIndices; i += 3, index++) {
+		surf->indices[i+0] = 0;
+		surf->indices[i+1] = index-1;
+		surf->indices[i+2] = index;
+	}
+
+}
 
 void GL_BuildPolygonFromSurface(msurface_t * fa);
 void GL_CreateSurfaceLightmap(msurface_t * surf);
@@ -1132,6 +1145,7 @@ void Mod_LoadFaces(lump_t * l)
 			GL_BuildPolygonFromSurface(out);
 			GL_AddFlareSurface(out);
 			CalcSurfaceBounds(out);
+			GL_CalcBspIndeces(out);
 	}
 
 	// Build TBN for smoothing bump mapping (Berserker)
@@ -1232,7 +1246,6 @@ void Mod_LoadFaces(lump_t * l)
 					flp += 3;
 				}
 			}
-			
 		}
 
 GL_EndBuildingLightmaps();
@@ -2361,7 +2374,6 @@ void R_BeginRegistration(char *model)
 	r_worldmodel = Mod_ForName(fullname, true);
 
 	r_viewcluster = -1;
-
 }
 
 
@@ -2502,7 +2514,6 @@ void R_EndRegistration(void)
 Mod_Free
 ================
 */
-void R_VCFree(vertCache_t *cache);
 
 void Mod_Free(model_t * mod)
 {
