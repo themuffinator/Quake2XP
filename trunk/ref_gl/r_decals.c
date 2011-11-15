@@ -87,6 +87,9 @@ void R_RenderDecals(void)
 
 	if (!cl_decals->value)
 		return;
+	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
 
     qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
     qglTexCoordPointer (2, GL_FLOAT, sizeof(vec2_t), DecalTexCoordArray[0]);

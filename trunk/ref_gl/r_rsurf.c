@@ -524,7 +524,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	qboolean	is_dynamic = false;
 	dlight_t	*dl;
 	unsigned	temp[128 * 128];
-	int			smax, tmax;
+	int			smax, tmax, counter=0;
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
 		
@@ -574,25 +574,26 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	}
 
 	if(r_bumpWorld->value){
-	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 
+	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+	
 	// cleanup lights
-			
-	if ((s->dlightframe != r_framecount))
 	for (j=0; j < r_pplMaxDlights->value; j++) {
 		char uname[32];
-	
+		
+		if(counter < 0)
+			break;
+
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
 		qglUniform1f(qglGetUniformLocation(id, uname), 0);
-		
+		counter--;
 	}
-	
 	// setup dlights
 	dl = r_newrefdef.dlights;
 	for (j=0, dl = r_newrefdef.dlights; j < r_newrefdef.num_dlights; j++, dl++ ) 
 	{
 		char uname[32];
-		int k;
+		int k, zz=0;
 		vec3_t mins, maxs;
 		vec3_t locLight;
 
@@ -634,6 +635,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
 		qglUniform1f(qglGetUniformLocation(id, uname), dl->intensity);
 		qglUniform1i(qglGetUniformLocation(id, "u_numLights"), r_newrefdef.num_dlights);
+		counter ++;
 		}
 	}
 

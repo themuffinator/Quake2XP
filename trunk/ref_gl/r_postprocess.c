@@ -535,7 +535,6 @@ hack:
 extern cvar_t	*r_dof;
 extern cvar_t	*r_dofBias;
 extern cvar_t	*r_dofFocus;
-trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask);
 
 void R_DofBlur (void) {
 	

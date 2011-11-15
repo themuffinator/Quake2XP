@@ -659,7 +659,7 @@ void VID_MenuInit( void )
 	s_dof_box.generic.x			= 0;
 	s_dof_box.generic.y			= 180*cl_fontScale->value;
 	s_dof_box.generic.name		= "Depth of Field";
-   	s_dof_box.itemnames			= dof;
+   	s_dof_box.itemnames			= yesno_names;
 	s_dof_box.curvalue			= r_dof->value;
     s_dof_box.generic.callback	= DofCallback;
 	

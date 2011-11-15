@@ -39,8 +39,6 @@ typedef struct
 	qboolean allowdisplaydepthchange;
 	qboolean mcd_accelerated;
 
-	FILE *log_fp;
-
 	const char	*wglExtsString;
 	const char	*wglRenderer;
 	int desktopWidth, desktopHeight;

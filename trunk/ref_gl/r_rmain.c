@@ -1530,7 +1530,7 @@ int R_Init(void *hinstance, void *hWnd)
 	
 	strcpy(vendor_buffer, gl_config.vendor_string);
 	strlwr(vendor_buffer);
-/*
+
 	if (strstr(renderer_buffer, "intel")) // fuck the intel lol
 		{
 		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
@@ -1543,7 +1543,7 @@ int R_Init(void *hinstance, void *hWnd)
 		VID_Error(ERR_FATAL,  "SiS graphics card is unsupported.\n");
 		}
 	
-	*/
+	
 	{
 	// check GL version /:-#)
 	float version = atof(gl_config.version_string);
@@ -1943,7 +1943,7 @@ void R_BeginFrame()
 		Cvar_SetValue("r_pplMaxDlights", 13);
 
 	qglDrawBuffer( GL_BACK );
-
+	
 	/* 
 	 ** go into 2D mode
 	 */

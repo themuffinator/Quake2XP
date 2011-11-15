@@ -1296,7 +1296,6 @@
     <ClInclude Include="ref_gl\r_local.h" />
     <ClInclude Include="ref_gl\r_model.h" />
     <ClInclude Include="ref_gl\r_particle.h" />
-    <ClInclude Include="ref_gl\r_q2pal.h" />
     <ClInclude Include="ref_gl\r_warpsin.h" />
     <ClInclude Include="ref_gl\wglext.h" />
     <ClInclude Include="ref_gl\ImageLib\config.h" />

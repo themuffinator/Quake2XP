@@ -356,9 +356,6 @@
     <ClInclude Include="ref_gl\r_particle.h">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\r_q2pal.h">
-      <Filter>Header Files\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="ref_gl\r_warpsin.h">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
