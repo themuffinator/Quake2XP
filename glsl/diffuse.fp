@@ -11,6 +11,7 @@ uniform vec2		u_texSize;
 uniform int			u_parallaxType;
 uniform int			u_numSteps;
 uniform int			u_numLights;
+uniform int			u_activeLights;
 uniform sampler2D	u_Caustics;
 uniform float       u_CausticsModulate; 
 uniform float		u_lightScale; 
@@ -215,7 +216,7 @@ finalColor = tmp + finalColor;
 #endif
 
 // Add dinamyc lights
-if(u_numLights <= 13 && u_numLights > 0){
+if(u_numLights <= 13 && u_numLights > 0  && u_activeLights == 1){
 
 vec3 tmp1;
 float att;
