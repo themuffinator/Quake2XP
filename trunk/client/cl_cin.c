@@ -146,6 +146,7 @@ SCR_StopCinematic
 void SCR_StopCinematic(void)
 {
 	cl.cinematictime = 0;		// done
+	S_StopBackgroundTrack();
 	if (cin.pic) {
 		Z_Free(cin.pic);
 		cin.pic = NULL;
@@ -180,6 +181,7 @@ void SCR_FinishCinematic(void)
 	// tell the server to advance to the next map / cinematic
 	MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
 	SZ_Print(&cls.netchan.message, va("nextserver %i\n", cl.servercount));
+
 }
 
 //==========================================================================

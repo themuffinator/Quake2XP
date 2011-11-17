@@ -581,11 +581,12 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	for (j=0; j < r_pplMaxDlights->value; j++) {
 		char uname[32];
 		
-		if(counter < 0)
-			break;
-
+		if(counter < 0){
+		qglUniform1i(qglGetUniformLocation(id, "u_activeLights"), 0);
+		break;
+		}
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
-		qglUniform1f(qglGetUniformLocation(id, uname), 0);
+		qglUniform1f(qglGetUniformLocation(id, uname), -1.0);
 		counter--;
 	}
 	// setup dlights
@@ -599,8 +600,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 		for (k=0 ; k<3 ; k++)
 		{
-		mins[k] = dl->origin[k] - dl->intensity * 0.7;
-		maxs[k] = dl->origin[k] + dl->intensity * 0.7;
+		mins[k] = dl->origin[k] - dl->intensity * 0.666;
+		maxs[k] = dl->origin[k] + dl->intensity * 0.666;
 		}
 
 		if(R_CullBox(mins, maxs))
@@ -635,6 +636,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
 		qglUniform1f(qglGetUniformLocation(id, uname), dl->intensity);
 		qglUniform1i(qglGetUniformLocation(id, "u_numLights"), r_newrefdef.num_dlights);
+		qglUniform1i(qglGetUniformLocation(id, "u_activeLights"), 1);
 		counter ++;
 		}
 	}

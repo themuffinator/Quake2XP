@@ -621,6 +621,7 @@ void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows,
 	float hscale;
 	int row;
 	float t;
+	int x0, y0, x1, y1;
 
 	GL_MBind(GL_TEXTURE0_ARB, r_cin->texnum);
 
@@ -662,16 +663,21 @@ void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows,
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+	x0 = 0;
+	y0 = 0;
+	x1 = w;
+	y1 = h;
 
 	qglBegin(GL_QUADS);
-	qglTexCoord2f(0, 0);
-	qglVertex2f(x, y);
-	qglTexCoord2f(1, 0);
-	qglVertex2f(x + w, y);
-	qglTexCoord2f(1, t);
-	qglVertex2f(x + w, y + h);
-	qglTexCoord2f(0, t);
-	qglVertex2f(x, y + h);
+	qglTexCoord2f (0, 0);
+	qglVertex2f (x0, y0);
+	qglTexCoord2f (1, 0);
+	qglVertex2f (x1, y0);
+	qglTexCoord2f (1, 1);
+	qglVertex2f (x1, y1);
+	qglTexCoord2f (0, 1);
+	qglVertex2f (x0, y1);
 	qglEnd();
 
 	GL_Overbrights (false);
