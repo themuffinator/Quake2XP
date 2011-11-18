@@ -562,6 +562,8 @@ should be skipped
 */
 qboolean SCR_DrawCinematic(void)
 {
+	int     w, h, sw, sh;
+	
 	if (cl.cinematictime <= 0) {
 		return false;
 	}
@@ -581,8 +583,24 @@ qboolean SCR_DrawCinematic(void)
 	if (!cin.pic)
 		return true;
 
-	Draw_StretchRaw(0, 0, viddef.width, viddef.height,
-					cin.width, cin.height, cin.pic);
+	 /// Berserker: prevent distortion of video on a wide monitors.
+    if ((float)viddef.width / (float)viddef.height >= 1.3333333333F)
+    {
+         h = viddef.height;
+         sh = 0;
+         w = (float)h * 1.3333333333F;
+         sw = (viddef.width - w) / 2;
+    }
+    else
+    {
+         w = viddef.width;
+         sw = 0;
+         h = (float)w / 1.3333333333F;
+         sh = (viddef.height - h) / 2;
+    }
+
+
+	Draw_StretchRaw(sw, sh, w, h, cin.width, cin.height, cin.pic);
 
 	return true;
 }

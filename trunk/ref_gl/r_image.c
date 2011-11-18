@@ -1712,6 +1712,7 @@ Any image that was not touched on this registration sequence
 will be freed.
 ================
 */
+
 void GL_FreeUnusedImages(void)
 {
 	int i;
@@ -1816,8 +1817,6 @@ int Draw_GetPalette(void)
 	}
 
 	d_8to24table[255] &= LittleLong(0xffffff);	// 255 is transparent
-
-//	free(pal);
 
 	return 0;
 }

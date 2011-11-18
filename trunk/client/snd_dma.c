@@ -2270,13 +2270,11 @@ void S_Music_f(void)
 	Q_strncpyz(intro, Cmd_Argv(1), sizeof(intro));
 	Com_DefaultPath(intro, sizeof(intro), "music");
 	Com_DefaultExtension(intro, sizeof(intro), ".wav");
-//  Com_DefaultExtension(intro, sizeof(intro), ".ogg");
 
 	if (Cmd_Argc() == 3) {
 		sprintf(loop, Cmd_Argv(2), sizeof(loop));
 		Com_DefaultPath(loop, sizeof(loop), "music");
 		Com_DefaultExtension(loop, sizeof(loop), ".wav");
-//      Com_DefaultExtension(loop, sizeof(loop), ".ogg");
 
 		S_StartBackgroundTrack(intro, loop);
 	} else

@@ -40,7 +40,6 @@ image_t *r_predator;
 image_t	*r_texshell[MAX_SHELLS];
 image_t *r_blackTexture;
 image_t *r_DSTTex;
-image_t *r_cin;
 
 void CreateDSTTex_ARB (void)
 {
@@ -177,7 +176,6 @@ void R_InitEngineTextures(void)
 {
 	int		x, y, i;
 	byte	notex[4][4][4];
-	byte	*buffer;
 	byte bump[1][1][4] = {0x80, 0x80, 0xff,0x40};
 
 	for (x = 0; x < 4; x++) {
@@ -348,11 +346,6 @@ void R_InitEngineTextures(void)
 			r_blackTexture = r_notexture;
 	
 
-	buffer = (byte*)malloc(320 * 240 * 4);
-	memset(buffer, 0, 320 * 240 * 4);
-	r_cin = GL_LoadPic("***r_cin***", (byte *) buffer, 320, 240, it_pic, 24);
-	free(buffer);
-	
 	CreateDSTTex_ARB();
 	CreateDepthTexture();
 	CreateScreenRect();
@@ -488,14 +481,8 @@ void GL_SetDefaultState(void)
 
 	qglHint				(GL_GENERATE_MIPMAP_HINT_SGIS,		GL_NICEST);
 	qglHint				(GL_TEXTURE_COMPRESSION_HINT_ARB,	GL_NICEST);
-	qglHint				(GL_PERSPECTIVE_CORRECTION_HINT,	GL_NICEST);
-	qglHint				(GL_LINE_SMOOTH_HINT,				GL_NICEST);
-	
-	qglGetFloatv		(GL_SMOOTH_LINE_WIDTH_RANGE, &lineAAwidth);
 	
 	qglPolygonMode		(GL_FRONT_AND_BACK, GL_FILL);
-
-	qglShadeModel		(GL_SMOOTH);
 
 	GL_TextureMode		(r_textureMode->string);
 	

@@ -285,12 +285,6 @@ next:
 	}
 	
 
-    qglPushMatrix ();
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-	R_RotateForEntity (e);
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-
-
 	if(!r_bumpAlias->value)
 		SetModelsLight(false);
 	else
@@ -323,8 +317,13 @@ next:
 	if(r_bumpAlias->value){
 	VectorCopy(shadelight, diffuseLight);
 	VectorScale(shadelight, r_ambientLevel->value, shadelight);
-	}
+	}	
 	
+    qglPushMatrix ();
+	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+	R_RotateForEntity (e);
+	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) 
 		GL_DrawAliasFrameLerpAmbientShell(paliashdr);
 	else 
@@ -443,7 +442,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		qglCullFace(GL_BACK);
 	}
 	
-	currententity->angles[PITCH] = -currententity->angles[PITCH];	// sinc with ambient pass.
 
 	if ((currententity->frame >= paliashdr->num_frames)
 		|| (currententity->frame < 0)) {
@@ -464,15 +462,15 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	
 
 	qglPushMatrix ();
+	currententity->angles[PITCH] = -currententity->angles[PITCH];	// sigh.
 	R_RotateForEntity (currententity);
+	currententity->angles[PITCH] = -currententity->angles[PITCH];	// sigh.
 	
 	GL_DrawAliasFrameLerpArbBump(paliashdr);
 
 	qglPopMatrix();
 
-	currententity->angles[PITCH] = -currententity->angles[PITCH];	// restore player weapon angles.
-
-
+	
 	if ((currententity->flags & RF_WEAPONMODEL) && (r_leftHand->value == 1.0F)) {
 		qglMatrixMode(GL_PROJECTION);
 		qglPopMatrix();
@@ -510,12 +508,6 @@ void R_DrawAliasDistortModel (entity_t *e)
 		if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 			qglDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
 
-
-		qglPushMatrix ();
-		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-		R_RotateForEntity (e);
-		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-
 		if ( (currententity->frame >= paliashdr->num_frames)
 			|| (currententity->frame < 0) ) {
 			Con_Printf (PRINT_ALL, "R_DrawAliasDistortModel %s: no such frame %d\n",
@@ -531,6 +523,11 @@ void R_DrawAliasDistortModel (entity_t *e)
 			currententity->frame = 0;
 			currententity->oldframe = 0;
 		}
+		
+		qglPushMatrix ();
+		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+		R_RotateForEntity (e);
+		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
 
 		GL_DrawAliasFrameLerpAmbientDistort(paliashdr, shadelight);
 		

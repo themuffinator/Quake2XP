@@ -1144,7 +1144,7 @@
     <ClCompile Include="ref_gl\r_drawAlias.c" />
     <ClCompile Include="ref_gl\r_calcAlias.c" />
     <ClCompile Include="ref_gl\r_decals.c" />
-    <ClCompile Include="ref_gl\r_draw.c" />
+    <ClCompile Include="ref_gl\r_draw2d.c" />
     <ClCompile Include="ref_gl\r_image.c" />
     <ClCompile Include="win32\r_glw_init.c" />
     <ClCompile Include="ref_gl\r_light.c" />

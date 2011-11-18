@@ -328,7 +328,7 @@ void GL_RenderVolumes(dmdl_t * paliashdr, vec3_t lightdir, int projdist){
 }
 
 
-void GL_DrawAliasShadowVolume(dmdl_t * paliashdr, int posenumm)
+void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 {
 	vec3_t		light, temp;
 	int			i, worldlight = 0, dlight = 0;
@@ -492,7 +492,10 @@ void R_DrawShadowVolume(entity_t * e)
 	float			frontlerp, rad;
 	vec3_t			move, delta, vectors[3], frontv, backv, tmp, water;
 	trace_t			tr;
-		
+	
+	if (r_shadows->value < 2)
+		return;
+
 	VectorAdd(e->origin, currententity->model->maxs, water); 
 	if(CL_PMpointcontents(water) & MASK_WATER)
 		return;
@@ -548,24 +551,17 @@ void R_DrawShadowVolume(entity_t * e)
 
 	GL_LerpVerts(paliashdr->num_xyz, v, ov, verts, s_lerped[0], move,
 				 frontv, backv);
-
-
-	if (r_shadows->value > 1 ) {
-		currententity->angles[PITCH] = -currententity->angles[PITCH];
+		
 		qglPushMatrix();
 		qglDisable(GL_TEXTURE_2D);
-		qglTranslatef(e->origin[0], e->origin[1], e->origin[2]);
-		qglRotatef(e->angles[1], 0, 0, 1);
-		
-		GL_DrawAliasShadowVolume(paliashdr, currententity->frame);
+		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+		R_RotateForEntity (e);
+		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+
+		GL_DrawAliasShadowVolume(paliashdr);
 		
 		qglEnable(GL_TEXTURE_2D);
 		qglPopMatrix();
-		currententity->angles[PITCH] = -currententity->angles[PITCH];
-
-	}
-
-
 }
 
 void R_ShadowBlend()
@@ -595,7 +591,6 @@ void R_ShadowBlend()
 	qglDepthFunc(GL_ALWAYS);
 	qglColor4f(0, 0, 0, shadowalpha);
 
-//	qglEnable(GL_STENCIL_TEST);
 	qglStencilFunc(GL_NOTEQUAL, 128, 255);
 	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	qglStencilMask(0);
@@ -610,7 +605,6 @@ void R_ShadowBlend()
 	GL_Blend(false, 0, 0);
 	qglEnable(GL_TEXTURE_2D);
 	qglDepthFunc(GL_LEQUAL);
-//	qglDisable(GL_STENCIL_TEST);
 	qglDepthMask(1);
 
 	qglMatrixMode(GL_PROJECTION);

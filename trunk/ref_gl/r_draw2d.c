@@ -600,85 +600,72 @@ void Draw_FadeScreen(void)
 }
 
 
-//====================================================================
-
-
 /*
 =============
 Draw_StretchRaw
 =============
 */
 extern unsigned r_rawpalette[256];
-extern image_t *r_cin;
 
-void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows,
-					 byte * data)
+void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data)
 {
-	unsigned image32[320 * 240];
-	int i, j, trows;
-	byte *source;
-	int frac, fracstep;
-	float hscale;
-	int row;
-	float t;
-	int x0, y0, x1, y1;
+	int			i, j, trows;
+	byte		*source;
+	int			frac, fracstep;
+	float		hscale;
+	int			row;
+	float		t;
+	unsigned image32[256*256] = { 0 };
+	unsigned *dest = image32;
 
-	GL_MBind(GL_TEXTURE0_ARB, r_cin->texnum);
+	// clear wide screen borders
+	qglClear(GL_COLOR_BUFFER_BIT);
+	qglClearColor(0.0, 0.0, 0.0, 1);
 
 	GL_Overbrights (true);
 	
-
 	// Berserker: fixed bug - crap cin edges
-	hscale = rows/256.0;
+	hscale = rows * 0.00390625;
 	trows = 256;
-	t = rows*hscale / 256;
+	t = rows*hscale * 0.00390625;
+	fracstep = cols * 0x10000 * 0.00390625;
 
-	
-	if (gl_state.nPot && (cols * rows <= 320 * 240)) {
-			unsigned *dest = image32;
-			for (i = 0; i < rows * cols; i++)
-				*dest++ = r_rawpalette[*data++];
-			t = 1;
-		} else {
-			unsigned *dest;
-			for (i = 0; i < trows; i++) {
-				row = (int) (i * hscale);
-				if (row > rows)
-					break;
-				source = data + cols * row;
-				dest = &image32[i * 256];
-				fracstep = cols * 0x10000 * 0.00390625;	// /256;
-				frac = fracstep >> 1;
-				for (j = 0; j < 256; j++) {
-					dest[j] = r_rawpalette[source[frac >> 16]];
-					frac += fracstep;
-				}
-			}
-			cols = rows = 256;
+	for (i=0 ; i<trows ; i++, dest+=256)
+	{
+		row = (int)(i*hscale);
+		if (row > rows)
+			break;
+		source = data + cols*row;
+
+		frac = fracstep >> 1;
+		for (j=0 ; j<256 ; j+=4)
+		{
+			dest[j] = r_rawpalette[source[frac>>16]];
+			frac += fracstep;
+			dest[j+1] = r_rawpalette[source[frac>>16]];
+			frac += fracstep;
+			dest[j+2] = r_rawpalette[source[frac>>16]];
+			frac += fracstep;
+			dest[j+3] = r_rawpalette[source[frac>>16]];
+			frac += fracstep;
 		}
-		qglTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0,
-					  GL_RGBA, GL_UNSIGNED_BYTE, image32);
-	
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	
-	x0 = 0;
-	y0 = 0;
-	x1 = w;
-	y1 = h;
+	}
 
-	qglBegin(GL_QUADS);
+	qglTexImage2D (GL_TEXTURE_2D, 0, GL_RGB8, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, image32);
+	
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	qglBegin (GL_QUADS);
 	qglTexCoord2f (0, 0);
-	qglVertex2f (x0, y0);
+	qglVertex2i (x, y);
 	qglTexCoord2f (1, 0);
-	qglVertex2f (x1, y0);
-	qglTexCoord2f (1, 1);
-	qglVertex2f (x1, y1);
-	qglTexCoord2f (0, 1);
-	qglVertex2f (x0, y1);
-	qglEnd();
+	qglVertex2i (x+w, y);
+	qglTexCoord2f (1, t);
+	qglVertex2i (x+w, y+h);
+	qglTexCoord2f (0, t);
+	qglVertex2i (x, y+h);
+	qglEnd ();
 
 	GL_Overbrights (false);
 }
