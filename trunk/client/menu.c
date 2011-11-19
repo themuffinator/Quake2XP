@@ -343,7 +343,7 @@ void M_Main_DrawQuad(float x, float y)
 	VectorCopy(entity.origin, entity.currentLightPos);
 	entity.currentLightPos[0] -=50;
 	entity.currentLightPos[2] +=25;
-	entity.lightRad = 300; // Hail Satan!
+	entity.lightRad = 666; // Hail Satan!
 
 	entity.frame = 0;
 	entity.oldframe = 0;
@@ -513,7 +513,7 @@ void Multiplayer_MenuInit(void)
 {
 	
 	
-	s_multiplayer_menu.x = viddef.width * 0.50 - 64;
+	s_multiplayer_menu.x = viddef.width * 0.50 - 64*cl_fontScale->value;
 	s_multiplayer_menu.nitems = 0;
 
 	s_join_network_server_action.generic.type = MTYPE_ACTION;
@@ -528,8 +528,7 @@ void Multiplayer_MenuInit(void)
 	s_start_network_server_action.generic.x = 0;
 	s_start_network_server_action.generic.y = 10*cl_fontScale->value;
 	s_start_network_server_action.generic.name = " start network server";
-	s_start_network_server_action.generic.callback =
-		StartNetworkServerFunc;
+	s_start_network_server_action.generic.callback = StartNetworkServerFunc;
 
 	s_player_setup_action.generic.type = MTYPE_ACTION;
 	s_player_setup_action.generic.flags = QMF_LEFT_JUSTIFY;
@@ -745,8 +744,8 @@ static void Keys_MenuInit(void)
 	s_keys_attack_action.generic.y = y;
 	s_keys_attack_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_attack_action.generic.localdata[0] = i;
-	s_keys_attack_action.generic.name =
-		bindnames[s_keys_attack_action.generic.localdata[0]][1];
+	s_keys_attack_action.generic.name = 
+				bindnames[s_keys_attack_action.generic.localdata[0]][1];
 
 	s_keys_change_weapon_action.generic.type = MTYPE_ACTION;
 	s_keys_change_weapon_action.generic.flags = QMF_GRAYED;
@@ -2500,7 +2499,7 @@ void Game_MenuInit(void)
 		0
 	};
 
-	s_game_menu.x = viddef.width * 0.50;
+	s_game_menu.x = viddef.width * 0.50 - 20 * cl_fontScale->value;
 	s_game_menu.nitems = 0;
 
 	s_easy_game_action.generic.type = MTYPE_ACTION;
@@ -3116,7 +3115,7 @@ void StartServer_MenuInit( void )
 		length = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
 #endif
-		buffer = malloc( length );
+		buffer = (char*)malloc( length );
 		fread( buffer, length, 1, fp );
 	}
 
@@ -3152,7 +3151,7 @@ void StartServer_MenuInit( void )
 		strcpy( longname, COM_Parse( &s ) );
 		Com_sprintf( scratch, sizeof( scratch ), "%s\n%s", longname, shortname );
 
-		mapnames[i] = malloc( strlen( scratch ) + 1 );
+		mapnames[i] = (char*)malloc( strlen( scratch ) + 1 );
 		strcpy( mapnames[i], scratch );
 	}
 	mapnames[nummaps] = 0;
@@ -4203,8 +4202,8 @@ qboolean PlayerConfig_MenuInit(void)
 		}
 	}
 
-	s_player_config_menu.x = viddef.width / 2  - 95;
-	s_player_config_menu.y = viddef.height / 2 - 97;
+	s_player_config_menu.x = viddef.width / 2  - 95  * cl_fontScale->value; //3
+	s_player_config_menu.y = viddef.height / 2 - 97  * cl_fontScale->value; //1
 	s_player_config_menu.nitems = 0;
 
 	s_player_name_field.generic.type = MTYPE_FIELD;
@@ -4320,7 +4319,7 @@ void PlayerConfig_MenuDraw(void)
 	extern float CalcFov(float fov_x, float w, float h);
 	refdef_t refdef;
 	char scratch[MAX_QPATH];
-	int Xw;
+	int Xw, x2;
 
 	srand(time(0));
 
@@ -4328,11 +4327,15 @@ void PlayerConfig_MenuDraw(void)
 
 	Xw = viddef.width / 2;
 
-	if(cl_fontScale->value>1)
-	refdef.x = (Xw) + 144 + 16;
-	else
+	if(cl_fontScale->value>1){
+	refdef.x = (Xw) + 72;
+	x2 = 320;
+	}
+	else{
 	refdef.x = viddef.width / 2;
-	refdef.y = viddef.height / 2 - 72;
+	x2 = 0;
+	}
+	refdef.y = viddef.height / 2 - 72 * cl_fontScale->value; //2
 	refdef.width = 144*cl_fontScale->value;
 	refdef.height = 168*cl_fontScale->value;
 	refdef.fov_x = 40;
@@ -4419,8 +4422,8 @@ void PlayerConfig_MenuDraw(void)
 
 		Menu_Draw(&s_player_config_menu);
 
-		M_DrawTextBox((Xw) * (320.0F * cl_fontScale->value / viddef.width) - 8,
-					  (viddef.height / 2) * (240.0F / viddef.height) - 77,
+		M_DrawTextBox((Xw+x2) * (320.0F / viddef.width) - 8 * cl_fontScale->value,
+					  (viddef.height / 2) * (240.0F / viddef.height) - 77 * cl_fontScale->value,
 					  refdef.width / 8, refdef.height / 8);
 		refdef.height += 4;
 
@@ -4534,7 +4537,8 @@ void M_Quit_Draw(void)
 	int w, h;
 	
 	Draw_GetPicSize(&w, &h, "quit");
-	Draw_PicScaled((viddef.width - w*cl_fontScale->value) / 2, (viddef.height - h) / 2,cl_fontScale->value, cl_fontScale->value, "quit");
+	Draw_PicScaled((viddef.width - w*cl_fontScale->value) / 2, (viddef.height - h*cl_fontScale->value) / 2,cl_fontScale->value, cl_fontScale->value, "quit");
+
 }
 
 

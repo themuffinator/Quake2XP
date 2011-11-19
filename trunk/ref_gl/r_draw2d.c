@@ -621,7 +621,7 @@ void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte *data
 	// clear wide screen borders
 	qglClear(GL_COLOR_BUFFER_BIT);
 	qglClearColor(0.0, 0.0, 0.0, 1);
-
+	GL_MBind(GL_TEXTURE0_ARB, 0);
 	GL_Overbrights (true);
 	
 	// Berserker: fixed bug - crap cin edges
