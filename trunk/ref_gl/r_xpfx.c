@@ -45,7 +45,6 @@ cvar_t	*r_radarZoom;
 cvar_t	*r_radar;
 
 cvar_t	*r_arbSamples;
-cvar_t	*r_useCSAA;
 cvar_t	*r_nvSamplesCoverange;
 cvar_t  *r_nvMultisampleFilterHint;
 
@@ -92,6 +91,7 @@ cvar_t	*r_radialBlurFov;
 cvar_t	*r_radialBlurSamples;
 cvar_t	*r_tbnSmoothAngle;
 
+cvar_t	*r_softParticles;
 cvar_t	*r_ignoreGlErrors;
 
 
@@ -357,7 +357,6 @@ void R_Register2(void)
 	
 	r_arbSamples =						Cvar_Get("r_arbSamples", "1", CVAR_ARCHIVE);
 	r_nvMultisampleFilterHint =			Cvar_Get ("r_nvMultisampleFilterHint", "fastest", CVAR_ARCHIVE);
-	r_useCSAA =							Cvar_Get("r_useCSAA", "0", CVAR_ARCHIVE);
 	r_nvSamplesCoverange =				Cvar_Get("r_nvSamplesCoverange", "8", CVAR_ARCHIVE);
 
 	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);
@@ -402,6 +401,7 @@ void R_Register2(void)
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	r_radialBlurSamples =               Cvar_Get("r_radialBlurSamples", "8", CVAR_ARCHIVE);
+	r_softParticles =					Cvar_Get("r_softParticles", "1", CVAR_ARCHIVE);
 
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 

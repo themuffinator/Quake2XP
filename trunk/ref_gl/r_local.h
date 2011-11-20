@@ -283,7 +283,6 @@ extern cvar_t *r_radarSize;
 extern cvar_t *r_radarZoom;
 
 extern cvar_t *r_arbSamples;
-extern cvar_t *r_useCSAA;
 extern cvar_t *r_nvSamplesCoverange;
 extern cvar_t *r_nvMultisampleFilterHint;
 
@@ -312,6 +311,7 @@ extern cvar_t	*r_vbo;
 extern cvar_t	*r_radialBlur;
 extern cvar_t	*r_radialBlurFov;
 extern cvar_t	*r_radialBlurSamples;
+extern cvar_t	*r_softParticles;
 
 extern float ref_realtime;
 
@@ -571,7 +571,6 @@ typedef struct {
 	qboolean nv_multisample_hint;
 	qboolean arb_occlusion;
 	qboolean arb_multisample;
-	qboolean arb_multisampleNotSupport;
 	qboolean wgl_nv_multisample_coverage;
 	qboolean wgl_nv_multisample_coverage_aviable;
 	qboolean vbo;

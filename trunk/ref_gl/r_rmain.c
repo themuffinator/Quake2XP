@@ -1933,6 +1933,11 @@ void R_BeginFrame()
 		
 	}	
 
+	// realtime update
+	if(r_softParticles->modified)
+		r_softParticles->modified = false;
+
+
 	if(r_parallaxSteps->value < 1 )
 		Cvar_SetValue("r_parallaxSteps", 1);
 

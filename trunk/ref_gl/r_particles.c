@@ -80,14 +80,14 @@ void R_DrawParticles(qboolean WaterCheck)
 	qglTexCoordPointer		(2, GL_FLOAT, 0, ParticleTextCoord);
 	qglUniform1i			(qglGetUniformLocation(id, "u_map0"), 0);
 
+	if(r_softParticles->value){
 	GL_SelectTexture		(GL_TEXTURE1_ARB);	
 	qglDisable				(GL_TEXTURE_2D);
     qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
 	GL_BindRect				(depthMap->texnum);
     qglUniform1i			(qglGetUniformLocation(id, "u_depthBufferMap"), 1);
-
 	qglUniform2f			(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-
+	}
 	qglEnableClientState	(GL_COLOR_ARRAY);
 	qglColorPointer			(4, GL_FLOAT, 0, ParticleColor);
 	qglEnableClientState	(GL_VERTEX_ARRAY);
@@ -227,17 +227,19 @@ void R_DrawParticles(qboolean WaterCheck)
 		GL_Bind					(texId);
 		qglBlendFunc			(p->sFactor, p->dFactor);
 
-	
+		if(r_softParticles->value){
 		if(p->sFactor == GL_ONE && p->dFactor == GL_ONE)
 			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 1.0, 0.0); //color
 		else
 			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0); //alpha
-		
-		if(p->flags & PARTICLE_NOFADE)
+		}
+
+		if(p->flags & PARTICLE_NOFADE || !r_softParticles->value)
 			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), 0.0);
 		else
 			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), scale*0.75); // soft blend scale
-		
+
+
 		if (p->flags & PARTICLE_OVERBRIGHT)
 			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);
 		else
@@ -615,8 +617,11 @@ void R_DrawParticles(qboolean WaterCheck)
 	qglDepthMask(1);			// back to normal Z buffering
 
 	GL_BindNullProgram		();
+	
+	if(r_softParticles->value){
 	GL_SelectTexture		(GL_TEXTURE1_ARB);	
 	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
+	}
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

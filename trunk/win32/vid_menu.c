@@ -31,7 +31,6 @@ static cvar_t *r_mode;
 static cvar_t *r_vsync;
 static cvar_t *r_arbSamples; 
 static cvar_t *r_nvSamplesCoverange;
-extern cvar_t *r_useCSAA;
 static cvar_t *r_displayRefresh; // VorteX: display refresh
 
 static cvar_t *r_anisotropic;
@@ -88,12 +87,10 @@ static menulist_s  		s_finish_box;
 static menuaction_s		s_apply_action;
 static menuaction_s		s_defaults_action;
 
-
-static	menuframework_s		s_opengl_menu2;
 static	menulist_s			s_ab_list;
 static	menulist_s			s_wb_list;
 static	menulist_s			s_radBlur_box;
-
+static	menulist_s			s_softParticles;
 static	menulist_s			s_minimap;
 
 
@@ -109,12 +106,6 @@ static float ClampCvar(float min, float max, float value)
 	if (value < min) return min;
 	if (value > max) return max;
 	return value;
-}
-
-static void DriverCallback(void *unused)
-{
-	s_current_menu = &s_opengl_menu;
-	s_current_menu_index = 1;
 }
 
 static void ScreenSizeCallback(void *s)
@@ -191,6 +182,14 @@ static void RBCallback( void *s )
 	Cvar_SetValue( "r_radialBlur", box->curvalue * 1 );
 }
 
+static void softPartCallback( void *s )
+{
+	menulist_s *box = ( menulist_s * ) s;
+
+	Cvar_SetValue( "r_softParticles", box->curvalue * 1 );
+}
+
+
 static void ResetDefaults( void *unused )
 {
 	VID_MenuInit();
@@ -219,8 +218,11 @@ static void ApplyChanges( void *unused )
     Cvar_SetValue( "r_bloom",				s_bloom_box.curvalue );  
 	Cvar_SetValue( "r_dof",					s_dof_box.curvalue );
 	Cvar_SetValue( "r_radialBlur",			s_radBlur_box.curvalue );
+	Cvar_SetValue( "r_softParticles",		s_softParticles.curvalue);
 	Cvar_SetValue( "r_vsync",				s_finish_box.curvalue);
 	Cvar_SetValue( "r_radar",				s_minimap.curvalue);
+
+
 	
 /*	
 Nvidia Coverange AA
@@ -233,7 +235,7 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 {"[off]", "[8x]", "[8xQ]", "[16x]", "[16xQ]", 0};
 */
 
-	if(gl_state.wgl_nv_multisample_coverage){
+	if(gl_state.wgl_nv_multisample_coverage_aviable){
 	
 		if (s_samples_list.curvalue == 1){//8x
 		Cvar_SetValue("r_arbSamples", 4);
@@ -247,7 +249,7 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		Cvar_SetValue("r_arbSamples", 4);
 		Cvar_SetValue("r_nvSamplesCoverange", 16);
 		}else
-			if (s_samples_list.curvalue == 4){//16xQ
+		if (s_samples_list.curvalue == 4){//16xQ
 		Cvar_SetValue("r_arbSamples", 8);
 		Cvar_SetValue("r_nvSamplesCoverange", 16);
 		}else
@@ -255,7 +257,7 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 			Cvar_SetValue("r_arbSamples", 0);
 			Cvar_SetValue("r_nvSamplesCoverange", 8);
 		}
-	}else{
+	}else if(!gl_state.wgl_nv_multisample_coverage){
 	// Multisampling
 	if (s_samples_list.curvalue == 1)
 		Cvar_SetValue("r_arbSamples", 2);
@@ -264,12 +266,9 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		Cvar_SetValue("r_arbSamples", 4);
 	else 
 		if (s_samples_list.curvalue == 3)
-		Cvar_SetValue("r_arbSamples", 6);
-	else 
-		if (s_samples_list.curvalue == 4)
 		Cvar_SetValue("r_arbSamples", 8);
 	else
-		if (s_samples_list.curvalue == 5)
+		if (s_samples_list.curvalue == 4)
 		Cvar_SetValue("r_arbSamples", 16);
 	else
 		if (s_samples_list.curvalue == 0)
@@ -346,16 +345,15 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		if ( r_nvSamplesCoverange->modified )
 			vid_ref->modified = true;
 
-		if ( r_useCSAA->modified )
-			vid_ref->modified = true;
-		
 		if ( r_radar->modified )
 			vid_ref->modified = true;
 		
 		if(r_radialBlur->modified)
 			vid_ref->modified = true;
 		
-
+		if(r_softParticles->modified)
+			vid_ref->modified = true;
+		
 	M_ForceMenuOff();
 }
 
@@ -412,7 +410,7 @@ void VID_MenuInit( void )
 	static char	*refresh[]		=	{"desktop", "60hz", "75hz", "85hz", "100hz", "120hz", 0};
 	static char	*shadow_names[] =	{"off", "blob", "static volumes", "dynamic volumes", "full dynamic volumes", 0};
 
-	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", "[6x]", "[8x]", "[16x]", 0};
+	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", "[8x]", "[16x]", 0};
 	static char	*samplesNV[]	=	{"[off]", "[8x]", "[8xQ]", "[16x]", "[16xQ]", 0};
 	static char	*parallax[]		=	{"off", "Performance", "Quality", 0};
 	static char	*vsync[]		=	{"off", "on", 0};
@@ -466,10 +464,9 @@ void VID_MenuInit( void )
 	
 	if (!cl_fontScale)
 		cl_fontScale = Cvar_Get ("cl_fontScale", "1", CVAR_ARCHIVE);
-	
-	if(!r_useCSAA->value)
-		r_useCSAA = Cvar_Get ("r_useCSAA", "0", CVAR_ARCHIVE);
-	
+		
+	if(!r_softParticles->value)
+		r_softParticles = Cvar_Get ("r_softParticles", 0, CVAR_ARCHIVE);
 
 
 	s_opengl_menu.x = viddef.width * 0.50;
@@ -484,13 +481,13 @@ void VID_MenuInit( void )
 	s_mode_list.generic.statusbar = "Requires Restart Video Sub-System";
 
 	s_samples_list.generic.type = MTYPE_SPINCONTROL;
-	if(gl_state.wgl_nv_multisample_coverage_aviable && r_useCSAA->value)
+	if(gl_state.wgl_nv_multisample_coverage_aviable)
 	s_samples_list.generic.name = "CSAA Multisampling";
 	else
 	s_samples_list.generic.name = "Multisampling";
 	s_samples_list.generic.x = 0;
 	s_samples_list.generic.y = 20*cl_fontScale->value;
-	if(gl_state.wgl_nv_multisample_coverage_aviable && r_useCSAA->value)
+	if(gl_state.wgl_nv_multisample_coverage_aviable)
 	s_samples_list.itemnames = samplesNV;
 	else
 	s_samples_list.itemnames = samples;
@@ -499,7 +496,7 @@ void VID_MenuInit( void )
 	r_arbSamples = Cvar_Get("r_arbSamples", "0",  CVAR_ARCHIVE);
 	s_samples_list.generic.statusbar = "Requires Restart Video Sub-System";
 
-	if(gl_state.wgl_nv_multisample_coverage){
+	if(gl_state.wgl_nv_multisample_coverage_aviable){
 	
 	if (r_arbSamples->value == 8 && r_nvSamplesCoverange->value == 16) // 16xQ
 		s_samples_list.curvalue = 4;
@@ -518,14 +515,12 @@ void VID_MenuInit( void )
 	else
 		s_samples_list.curvalue = 0; //off
 	}
-	else{
-	if (r_arbSamples->value == 16)
-		s_samples_list.curvalue = 5;
 	else 
-	if (r_arbSamples->value == 8)
+	if(!gl_state.wgl_nv_multisample_coverage){
+	if (r_arbSamples->value == 16)
 		s_samples_list.curvalue = 4;
 	else 
-	if (r_arbSamples->value == 6) // ati only nv force 8x aa
+	if (r_arbSamples->value == 8)
 		s_samples_list.curvalue = 3;
 	else 
 	if (r_arbSamples->value == 4)
@@ -671,11 +666,18 @@ void VID_MenuInit( void )
 	s_radBlur_box.curvalue			= r_radialBlur->value;
     s_radBlur_box.generic.callback	= RBCallback;
 	
+	s_softParticles.generic.type		= MTYPE_SPINCONTROL;
+	s_softParticles.generic.x			= 0;
+	s_softParticles.generic.y			= 200*cl_fontScale->value;
+	s_softParticles.generic.name		= "Soft Particles";
+   	s_softParticles.itemnames			= yesno_names;
+	s_softParticles.curvalue			= r_softParticles->value;
+    s_softParticles.generic.callback	= softPartCallback;
 
 
 	s_minimap.generic.type		= MTYPE_SPINCONTROL;
 	s_minimap.generic.x			= 0;
-	s_minimap.generic.y			= 200*cl_fontScale->value;
+	s_minimap.generic.y			= 210*cl_fontScale->value;
 	s_minimap.generic.name		= "Draw Radar";
    	s_minimap.itemnames			= radar;
 	s_minimap.curvalue			= r_radar->value;
@@ -683,7 +685,7 @@ void VID_MenuInit( void )
 	
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x	= 0;
-	s_finish_box.generic.y	= 210*cl_fontScale->value;
+	s_finish_box.generic.y	= 220*cl_fontScale->value;
 	s_finish_box.generic.name	= "Vertical Sync";
 	s_finish_box.curvalue = r_vsync->value;
 	s_finish_box.itemnames = yesno_names;
@@ -692,13 +694,13 @@ void VID_MenuInit( void )
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x    = 0;
-	s_defaults_action.generic.y    = 230*cl_fontScale->value;
+	s_defaults_action.generic.y    = 240*cl_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x    = 0;
-	s_apply_action.generic.y    = 240*cl_fontScale->value;
+	s_apply_action.generic.y    = 250*cl_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 	
 	menuSize = 300;
@@ -722,6 +724,7 @@ void VID_MenuInit( void )
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_bloom_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_dof_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_radBlur_box );
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_softParticles );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_minimap);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_finish_box);
 
