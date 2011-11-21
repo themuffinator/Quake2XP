@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../ref_gl/r_local.h"
 
 extern cvar_t *vid_ref;
+/*
 extern cvar_t *r_fullScreen;
 extern cvar_t *r_gamma;
 extern cvar_t *scr_viewsize;
@@ -40,7 +41,7 @@ static cvar_t *r_drawFlares;
 static cvar_t *r_textureCompression;
 static cvar_t *r_parallax;
 static cvar_t *r_bloom; 
-static cvar_t *r_dof;
+extern cvar_t *r_dof;
 static cvar_t *r_bumpAlias;
 static cvar_t *r_bumpWorld;
 extern cvar_t *r_radialBlur;
@@ -48,7 +49,7 @@ extern cvar_t *r_radialBlur;
 static	cvar_t	*r_radar;
 
 static cvar_t *cl_fontScale;
-
+*/
 extern void M_ForceMenuOff( void );
 
 int refresh=0;
@@ -348,6 +349,9 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		if ( r_radar->modified )
 			vid_ref->modified = true;
 		
+		if(r_dof->modified)
+			vid_ref->modified = true;
+
 		if(r_radialBlur->modified)
 			vid_ref->modified = true;
 		
@@ -355,6 +359,7 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 			vid_ref->modified = true;
 		
 	M_ForceMenuOff();
+
 }
 
 static void CancelChanges( void *unused )
@@ -531,6 +536,7 @@ void VID_MenuInit( void )
 	else
 		s_samples_list.curvalue = 0;
 	}
+
 	// displayrefresh
 	r_displayRefresh = Cvar_Get("r_displayRefresh", "0",  CVAR_ARCHIVE);
 	if (r_displayRefresh->value >= 120)
@@ -733,6 +739,7 @@ void VID_MenuInit( void )
 
 	Menu_Center( &s_opengl_menu );
 	s_opengl_menu.x -= 8;
+
 }
 
 /*

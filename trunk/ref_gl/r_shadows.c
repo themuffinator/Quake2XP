@@ -81,7 +81,6 @@ void R_MarkShadowTriangles(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg
 	}
 
 }
-extern cvar_t	*r_shadowCapOffset;
 
 void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistance)
 {

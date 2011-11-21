@@ -380,7 +380,7 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false,	0, normalArray);
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false,		0, normalArray);
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 

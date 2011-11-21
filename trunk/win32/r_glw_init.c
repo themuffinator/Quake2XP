@@ -45,11 +45,6 @@ qboolean GLimp_InitGL (void);
 glwstate_t glw_state;
 
 
-extern cvar_t *r_fullScreen;
-extern cvar_t *vid_ref;
-
-
-
 static qboolean VerifyDriver( void )
 {
 	char buffer[1024];

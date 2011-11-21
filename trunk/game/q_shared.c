@@ -1989,5 +1989,3 @@ void Com_DefaultExtension (char *path, int maxSize, const char *newExtension){
 
 	Q_strncatz(path, maxSize, newExtension);
 }
-
-

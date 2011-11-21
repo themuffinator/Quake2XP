@@ -1157,7 +1157,7 @@
     <ClCompile Include="ref_gl\r_rsurf.c" />
     <ClCompile Include="ref_gl\r_shadows.c" />
     <ClCompile Include="ref_gl\r_warp.c" />
-    <ClCompile Include="ref_gl\r_xpfx.c" />
+    <ClCompile Include="ref_gl\r_math.c" />
     <ClCompile Include="client\cl_cin.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|x64'">EnableFastChecks</BasicRuntimeChecks>

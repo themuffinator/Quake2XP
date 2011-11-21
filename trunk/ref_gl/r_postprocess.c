@@ -38,7 +38,7 @@ Draw Occlusion Flares
 void R_BuildFlares(flare_t * light, int Id){
 	
 	float		dist, dist2, scale;
-	vec3_t		j, v, tmp;
+	vec3_t		v, tmp;
 	int			sampleCount;
     int			ocCount = 0;
 	unsigned	flareIndex[MAX_INDICES];
@@ -60,12 +60,6 @@ void R_BuildFlares(flare_t * light, int Id){
 		if (R_CullOrigin(light->origin))
 			return;
 
-		R_TransformToScreen_Vec3(light->origin, j);
-
-		if( j[0] < r_newrefdef.x || j[0] > r_newrefdef.x + r_newrefdef.width )
-			return;
-		if( j[1] < r_newrefdef.y || j[1] > r_newrefdef.y + r_newrefdef.height)
-			return;
 	}
 		light->surf->visframe = r_framecount;
 	
@@ -255,9 +249,6 @@ Post Process Effects
 */
 
 unsigned int bloomtex = 0;
-
-extern cvar_t	*r_bloomThreshold;
-extern cvar_t	*r_bloomIntens;
 
 void R_Bloom (void) {
 	
@@ -532,9 +523,6 @@ hack:
 	}
 }
 
-extern cvar_t	*r_dof;
-extern cvar_t	*r_dofBias;
-extern cvar_t	*r_dofFocus;
 
 void R_DofBlur (void) {
 	

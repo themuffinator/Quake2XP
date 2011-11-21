@@ -69,31 +69,45 @@ refdef_t r_newrefdef;
 
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
 
+int GL_MsgGLError(char* Info)
+{
+	char	S[1024];
+	int		n = qglGetError();
+	
+	if(r_ignoreGlErrors->value)
+		return false;
 
-cvar_t *r_noRefresh;
-cvar_t *r_drawEntities;
-cvar_t *r_drawWorld;
-cvar_t *r_speeds;
-cvar_t *r_noVis;
-cvar_t *r_noCull;
-cvar_t *r_leftHand;
+	if(n == GL_NO_ERROR) return false;
 
-cvar_t *r_lightLevel;			// FIXME: This is a HACK to get the
-								// client's light level
+	switch(n) {        
+		case GL_INVALID_ENUM: 
+			sprintf(S, "%s GL_INVALID_ENUM An unacceptable value is specified for an enumerated argument. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
+			break;
+		case GL_INVALID_VALUE: 
+			sprintf(S, "%s GL_INVALID_VALUE A numeric argument is out of range. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
+			break;
+		case GL_INVALID_OPERATION: 
+			sprintf(S, "%s GL_INVALID_OPERATION The specified operation is not allowed in the current state. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
+			break;
+		case GL_STACK_OVERFLOW: 
+			sprintf(S, "%s GL_STACK_OVERFLOW This command would cause a stack overflow. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
+			break;
+		case GL_STACK_UNDERFLOW: 
+			sprintf(S, "%s GL_STACK_UNDERFLOW This command would cause a stack underflow. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
+			break;
+		case GL_OUT_OF_MEMORY: 
+			sprintf(S, "%s GL_OUT_OF_MEMORY There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.\n",Info);
+			break;
+		default: 
+			sprintf(S, "%s UNKNOWN GL ERROR\n");
+			break;
+	}
 
-cvar_t *r_mode;
-cvar_t *r_dynamic;
-cvar_t *r_noBind;
-cvar_t *r_cull;
-cvar_t *r_polyBlend;
-cvar_t *r_vsync;
-cvar_t *r_textureMode;
-cvar_t *r_lockPvs;
-cvar_t *r_fullScreen;
-cvar_t *r_gamma;
-cvar_t *vid_ref;
-cvar_t *r_finish;
-cvar_t *r_hardwareGamma;
+	Con_Printf(PRINT_ALL, S);
+
+	return n;
+}
+
 
 /*
 =================
@@ -1384,36 +1398,108 @@ void R_VideoInfo_f(void){
 
 void R_ListPrograms_f(void);
 
-void R_Register(void)
+void R_RegisterCvars(void)
 {
-	r_leftHand = Cvar_Get("hand", "0", CVAR_USERINFO | CVAR_ARCHIVE);
-	r_noRefresh = Cvar_Get("r_noRefresh", "0", 0);
-	r_drawEntities = Cvar_Get("r_drawEntities", "1", 0);
-	r_drawWorld = Cvar_Get("r_drawWorld", "1", 0);
-	r_noVis = Cvar_Get("r_noVis", "0", 0);
-	r_noCull = Cvar_Get("r_noCull", "0", 0);
-	r_speeds = Cvar_Get("r_speeds", "0", 0);
+	r_leftHand =						Cvar_Get("hand", "0", CVAR_USERINFO | CVAR_ARCHIVE);
+	r_noRefresh =						Cvar_Get("r_noRefresh", "0", 0);
+	r_drawEntities =					Cvar_Get("r_drawEntities", "1", 0);
+	r_drawWorld =						Cvar_Get("r_drawWorld", "1", 0);
+	r_noVis =							Cvar_Get("r_noVis", "0", 0);
+	r_noCull =							Cvar_Get("r_noCull", "0", 0);
+	r_speeds =							Cvar_Get("r_speeds", "0", 0);
 
-	r_lightLevel = Cvar_Get("r_lightLevel", "0", 0);
+	r_lightLevel =						Cvar_Get("r_lightLevel", "0", 0);
 
-	r_mode = Cvar_Get("r_mode", "0", CVAR_ARCHIVE);
-	r_dynamic = Cvar_Get("r_dynamic", "1", 0);
-	r_noBind = Cvar_Get("r_noBind", "0", 0);
-	r_cull = Cvar_Get("r_cull", "1", 0);
-	r_polyBlend = Cvar_Get("r_polyBlend", "1", 0);
-	r_textureMode = Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
+	r_mode =							Cvar_Get("r_mode", "0", CVAR_ARCHIVE);
+	r_dynamic =							Cvar_Get("r_dynamic", "1", 0);
+	r_noBind =							Cvar_Get("r_noBind", "0", 0);
+	r_cull =							Cvar_Get("r_cull", "1", 0);
+	r_polyBlend =						Cvar_Get("r_polyBlend", "1", 0);
+	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
 	
-	r_lockPvs = Cvar_Get("r_lockPvs", "0", 0);
+	r_lockPvs =							Cvar_Get("r_lockPvs", "0", 0);
 
-	r_hardwareGamma = Cvar_Get("r_hardwareGamma", "1", CVAR_ARCHIVE);	
+	r_hardwareGamma =					Cvar_Get("r_hardwareGamma", "1", CVAR_ARCHIVE);	
 
-	r_vsync = Cvar_Get("r_vsync", "0", CVAR_ARCHIVE);
-	r_finish = Cvar_Get("r_finish", "0", 0);
+	r_vsync =							Cvar_Get("r_vsync", "0", CVAR_ARCHIVE);
+	r_finish =							Cvar_Get("r_finish", "0", 0);
 	
-	r_fullScreen = Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
-	r_gamma = Cvar_Get("r_gamma", "0.7", CVAR_ARCHIVE);
-	vid_ref = Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
+	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
+	r_gamma =							Cvar_Get("r_gamma", "0.7", CVAR_ARCHIVE);
+	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
 
+	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
+	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "10", CVAR_ARCHIVE);
+	r_shadowVolumesDebug =				Cvar_Get("r_shadowVolumesDebug", "0", 0);
+	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
+	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
+
+	r_anisotropic =						Cvar_Get("r_anisotropic", "1", CVAR_ARCHIVE);
+	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
+	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
+	r_overBrightBits =					Cvar_Get("r_overBrightBits", "2", CVAR_ARCHIVE);
+	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
+
+	r_causticIntens =					Cvar_Get("r_causticIntens", "2.0", CVAR_ARCHIVE);
+	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
+	
+	
+	r_screenShot =						Cvar_Get("r_screenShot", "jpg", CVAR_ARCHIVE);
+	r_screenShotJpegQuality =			Cvar_Get("r_screenShotJpegQuality", "99", CVAR_ARCHIVE);
+		
+	r_radarSize =						Cvar_Get("r_radarSize", "256", CVAR_ARCHIVE);
+	r_radarZoom =						Cvar_Get("r_radarZoom", "1", CVAR_ARCHIVE);
+	r_radar =							Cvar_Get("r_radar", "0", CVAR_ARCHIVE);
+	
+	r_arbSamples =						Cvar_Get("r_arbSamples", "1", CVAR_ARCHIVE);
+	r_nvMultisampleFilterHint =			Cvar_Get ("r_nvMultisampleFilterHint", "fastest", CVAR_ARCHIVE);
+	r_nvSamplesCoverange =				Cvar_Get("r_nvSamplesCoverange", "8", CVAR_ARCHIVE);
+
+	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);
+	
+	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
+	r_flaresIntens =					Cvar_Get("r_flaresIntens", "3", CVAR_ARCHIVE);
+	r_flareWeldThreshold =				Cvar_Get("r_flareWeldThreshold", "32", CVAR_ARCHIVE);
+	
+	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
+	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
+
+	sys_priority =						Cvar_Get("sys_priority", "0", CVAR_ARCHIVE);
+	sys_affinity =						Cvar_Get("sys_affinity", "0", CVAR_ARCHIVE);
+		
+	r_DrawRangeElements	=				Cvar_Get("r_DrawRangeElements","1",CVAR_ARCHIVE);
+			
+	hunk_bsp=							Cvar_Get("hunk_bsp", "20", CVAR_ARCHIVE);
+	hunk_model=							Cvar_Get("hunk_model", "2.4", CVAR_ARCHIVE);
+	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
+	
+//	r_vbo=								Cvar_Get("r_vbo", "1", CVAR_ARCHIVE);
+
+	r_parallax=							Cvar_Get("r_parallax", "2", CVAR_ARCHIVE);
+	r_parallaxScale=					Cvar_Get("r_parallaxScale", "0.5", CVAR_ARCHIVE);
+	r_parallaxSteps=					Cvar_Get("r_parallaxSteps", "10", CVAR_ARCHIVE);
+
+	r_pplWorldAmbient = 				Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
+	r_bumpAlias =						Cvar_Get("r_bumpAlias", "1", CVAR_ARCHIVE);
+	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
+	r_ambientLevel =					Cvar_Get("r_ambientLevel", "0.75", CVAR_ARCHIVE);
+	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
+	r_pplMaxDlights =					Cvar_Get("r_pplMaxDlights", "8", CVAR_ARCHIVE);
+
+	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
+	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);
+	r_bloomIntens =						Cvar_Get("r_bloomIntens", "2.0", CVAR_ARCHIVE);
+
+	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
+	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
+	r_dofFocus =						Cvar_Get("r_dofFocus", "256.0", CVAR_ARCHIVE);
+
+	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
+	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
+	r_radialBlurSamples =               Cvar_Get("r_radialBlurSamples", "8", CVAR_ARCHIVE);
+	r_softParticles =					Cvar_Get("r_softParticles", "1", CVAR_ARCHIVE);
+
+	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 
 	Cmd_AddCommand("imagelist", GL_ImageList_f);
 	Cmd_AddCommand("screenshot", GL_ScreenShot_f);
@@ -1487,9 +1573,7 @@ int R_Init(void *hinstance, void *hWnd)
 
 	Draw_GetPalette();
 
-	R_Register();
-	R_Register2();
-
+	R_RegisterCvars();
 
 	// initialize our QGL dynamic bindings
 	if (!QGL_Init()) {
@@ -1936,7 +2020,9 @@ void R_BeginFrame()
 	// realtime update
 	if(r_softParticles->modified)
 		r_softParticles->modified = false;
-
+	
+	if(r_dof->modified)
+		r_dof->modified = false;
 
 	if(r_parallaxSteps->value < 1 )
 		Cvar_SetValue("r_parallaxSteps", 1);

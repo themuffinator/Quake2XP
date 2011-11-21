@@ -353,11 +353,6 @@ void R_RenderBrushPoly (msurface_t *fa)
 }
 
 
-
-
-
-extern image_t *envmap_tex;
-
 void R_DrawAlphaPoly(void)
 {
 	msurface_t *s;
@@ -497,8 +492,6 @@ void GL_CreateParallaxLmPoly(msurface_t * surf)
 }
 
 vec3_t BmodelViewOrg;
-extern cvar_t	*r_parallax;
-extern cvar_t	*r_parallaxScale;
 
  int SurfSort( const msurface_t **a, const msurface_t **b )
 {
@@ -855,7 +848,6 @@ static void R_DrawInlineBModel2(void)
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-extern GLuint vboId;
 
 /*
 =================

@@ -214,6 +214,54 @@ void GL_Blend(qboolean on, int src, int dst)
 
 }
 
+void R_CaptureColorBuffer()
+{
+		
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+		
+	qglEnable(GL_TEXTURE_RECTANGLE_ARB);
+	GL_MBindRect(GL_TEXTURE0_ARB, ScreenMap->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglDisable(GL_TEXTURE_RECTANGLE_ARB);
+}
+
+void R_CaptureDepthBuffer()
+{
+		
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+		
+	qglEnable(GL_TEXTURE_RECTANGLE_ARB);
+	GL_MBindRect(GL_TEXTURE0_ARB, depthMap->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglDisable(GL_TEXTURE_RECTANGLE_ARB);
+
+}
+
+void GL_Overbrights(qboolean enable)
+{
+	
+	if (enable) {				// turn on
+		GL_TexEnv(GL_COMBINE_ARB);
+
+		qglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
+		qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE);
+		qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_PREVIOUS_ARB);
+		qglTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, (int) r_overBrightBits->value);
+
+		qglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_MODULATE);
+		qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE);
+		qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_ARB, GL_PREVIOUS_ARB);
+		qglTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+	} else {					// turn off
+		GL_TexEnv(GL_MODULATE);
+
+		qglTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 1);
+		qglTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+	}
+}
+
 /*
 ===============
 GL_TextureMode

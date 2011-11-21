@@ -226,92 +226,100 @@ extern refdef_t r_newrefdef;
 extern int r_viewcluster, r_viewcluster2, r_oldviewcluster,
 	r_oldviewcluster2;
 
-extern cvar_t *r_noRefresh;
-extern cvar_t *r_leftHand;
-extern cvar_t *r_drawEntities;
-extern cvar_t *r_drawWorld;
-extern cvar_t *r_speeds;
-extern cvar_t *r_noVis;
-extern cvar_t *r_noCull;
+cvar_t *r_noRefresh;
+cvar_t *r_drawEntities;
+cvar_t *r_drawWorld;
+cvar_t *r_speeds;
+cvar_t *r_noVis;
+cvar_t *r_noCull;
+cvar_t *r_leftHand;
+cvar_t *r_lightLevel;	
+cvar_t *r_mode;
+cvar_t *r_dynamic;
+cvar_t *r_noBind;
+cvar_t *r_cull;
+cvar_t *r_polyBlend;
+cvar_t *r_vsync;
+cvar_t *r_textureMode;
+cvar_t *r_lockPvs;
+cvar_t *r_fullScreen;
+cvar_t *r_gamma;
+cvar_t *vid_ref;
+cvar_t *r_finish;
+cvar_t *r_hardwareGamma;
 
-extern cvar_t *r_lightLevel;	// FIXME: This is a HACK to get the
-								// client's light level
+cvar_t	*r_anisotropic;
+cvar_t	*r_maxAnisotropy;
 
+cvar_t	*r_causticIntens;
 
-extern cvar_t *r_screenShot;
-extern cvar_t *r_screenShotJpegQuality;
-extern cvar_t *r_hardwareGamma;
+cvar_t	*r_displayRefresh;
 
-extern cvar_t *r_mode;
-extern cvar_t *r_shadows;
-extern cvar_t *r_dynamic;
-extern cvar_t *r_noBind;
-extern cvar_t *r_skymip;
-extern cvar_t *r_finish;
-extern cvar_t *r_clear;
-extern cvar_t *r_cull;
-extern cvar_t *r_poly;
-extern cvar_t *r_polyBlend;
+cvar_t	*r_screenShot;
+cvar_t	*r_screenShotJpegQuality;
 
-extern cvar_t *r_vsync;
-extern cvar_t *r_textureMode;
-extern cvar_t *r_lockPvs;
+cvar_t	*r_overBrightBits;
+cvar_t	*r_textureCompression;
 
-extern cvar_t *r_fullScreen;
-extern cvar_t *r_gamma;
+cvar_t	*r_shadows;
+cvar_t	*r_shadowWorldLightScale;
+cvar_t	*r_shadowVolumesDebug;
+cvar_t	*r_playerShadow;
+cvar_t	*r_shadowCapOffset;
 
+cvar_t	*r_radarSize;			// GLOOM radar
+cvar_t	*r_radarZoom;
+cvar_t	*r_radar;
 
-extern cvar_t *r_anisotropic;
-extern cvar_t *r_maxAnisotropy;
-extern cvar_t *r_texture_lod;
-extern cvar_t *r_textureCompression;
+cvar_t	*r_arbSamples;
+cvar_t	*r_nvSamplesCoverange;
+cvar_t  *r_nvMultisampleFilterHint;
 
-extern cvar_t *r_displayRefresh;
-extern cvar_t *r_overBrightBits;
+cvar_t	*deathmatch;
 
-extern cvar_t *r_shadowWorldLightScale;
-extern cvar_t *r_shadowVolumesDebug;
-extern cvar_t *r_shadow_debug_shade;
-extern cvar_t *r_useSeparateStencil;
+cvar_t	*r_drawFlares;
+cvar_t	*r_flaresIntens;
+cvar_t	*r_flareWeldThreshold;
 
-extern cvar_t *r_drawFlares;
-extern cvar_t *r_flaresIntens;
-extern cvar_t *r_flareWeldThreshold;
+cvar_t	*r_customWidth;
+cvar_t	*r_customHeight;
 
-extern cvar_t *r_radar;
-extern cvar_t *r_radarSize;
-extern cvar_t *r_radarZoom;
+cvar_t	*r_bloom;
+cvar_t	*r_bloomThreshold;
+cvar_t	*r_bloomIntens;
 
-extern cvar_t *r_arbSamples;
-extern cvar_t *r_nvSamplesCoverange;
-extern cvar_t *r_nvMultisampleFilterHint;
+cvar_t	*sys_priority;
+cvar_t	*sys_affinity;
 
+cvar_t	*r_DrawRangeElements;
+cvar_t	*r_pplWorldAmbient;
+cvar_t	*r_bumpAlias;
+cvar_t	*r_bumpWorld;
+cvar_t	*r_ambientLevel;
+cvar_t	*r_pplMaxDlights;
 
+cvar_t	*hunk_bsp;
+cvar_t	*hunk_model;
+cvar_t	*hunk_sprite;
 
-extern cvar_t	*r_parallax;
-extern cvar_t	*r_parallaxSteps;
-extern cvar_t	*r_playerShadow;
-extern cvar_t	*deathmatch;
-extern cvar_t	*r_customWidth;
-extern cvar_t	*r_customHeight;
-extern cvar_t	*r_bloom;
-extern cvar_t	*sys_priority;
-extern cvar_t	*sys_affinity;
-extern cvar_t	*r_pplWorldAmbient;
-extern cvar_t	*r_bumpAlias;
-extern cvar_t	*r_bumpWorld;
-extern cvar_t	*r_DrawRangeElements;
-extern cvar_t	*r_ambientLevel;
-extern cvar_t	*r_pplMaxDlights;
-extern cvar_t	*hunk_bsp;
-extern cvar_t	*hunk_model;
-extern cvar_t	*hunk_sprite;
-extern cvar_t	*r_causticIntens;
-extern cvar_t	*r_vbo;
-extern cvar_t	*r_radialBlur;
-extern cvar_t	*r_radialBlurFov;
-extern cvar_t	*r_radialBlurSamples;
-extern cvar_t	*r_softParticles;
+//cvar_t	*r_vbo;
+cvar_t	*r_maxTextureSize;
+
+cvar_t	*r_parallax;
+cvar_t	*r_parallaxScale;
+cvar_t	*r_parallaxSteps;
+
+cvar_t	*r_dof;
+cvar_t	*r_dofBias;
+cvar_t	*r_dofFocus;
+
+cvar_t	*r_radialBlur;
+cvar_t	*r_radialBlurFov;
+cvar_t	*r_radialBlurSamples;
+cvar_t	*r_tbnSmoothAngle;
+
+cvar_t	*r_softParticles;
+cvar_t	*r_ignoreGlErrors;
 
 extern float ref_realtime;
 
