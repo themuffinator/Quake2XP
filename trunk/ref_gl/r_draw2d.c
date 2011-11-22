@@ -429,6 +429,9 @@ void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl)
 	
 	if(gl->has_alpha)
 		GL_Blend(true, 0, 0);
+	
+	if (strstr(gl->name, "ch"))
+		GL_Blend(true, GL_ONE, GL_ONE);
 
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer (2, GL_FLOAT, sizeof(vec2_t), texCoord[0]);

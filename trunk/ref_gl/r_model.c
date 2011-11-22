@@ -2480,18 +2480,6 @@ void R_EndRegistration(void)
 	int i, total;
 	model_t *mod;
 
-	total = bspSize+aliasSize+spriteSize;
-	Com_DPrintf("=============="S_COLOR_YELLOW" model memory allocated"S_COLOR_WHITE" ==============\n");
-	Com_DPrintf("Size of Bsp model memory    "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n", bspSize, bspSize>>20);
-	Com_DPrintf("Size of Alias model memory  "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n",aliasSize, aliasSize>>20);
-	Com_DPrintf("Size of Sprite model memory "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n",spriteSize, spriteSize>>20);
-	Com_DPrintf("Size of Total model memory  "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n",total, total>>20);
-	Com_DPrintf("====================================================\n");
-	
-	bspSize =		0;
-	aliasSize =		0;
-	spriteSize =	0;
-
 	for (i = 0, mod = mod_known; i < mod_numknown; i++, mod++) {
 		if (!mod->name[0])
 			continue;
@@ -2503,6 +2491,18 @@ void R_EndRegistration(void)
 		}
 	}
 	GL_FreeUnusedImages();
+
+	total = bspSize+aliasSize+spriteSize;
+	Com_DPrintf("=============="S_COLOR_YELLOW" model memory allocated"S_COLOR_WHITE" ==============\n");
+	Com_DPrintf("Size of Bsp model memory    "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n", bspSize, bspSize>>20);
+	Com_DPrintf("Size of Alias model memory  "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n",aliasSize, aliasSize>>20);
+	Com_DPrintf("Size of Sprite model memory "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n",spriteSize, spriteSize>>20);
+	Com_DPrintf("Size of Total model memory  "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n",total, total>>20);
+	Com_DPrintf("====================================================\n");
+	
+	bspSize =		0;
+	aliasSize =		0;
+	spriteSize =	0;
 }
 
 

@@ -430,9 +430,7 @@ void CL_PrepRefresh(void)
 	R_SetSky(cl.configstrings[CS_SKY], rotate, axis);
 	Com_Printf("                                     \r");
 
-	// the renderer can now free unneeded stuff
-	R_EndRegistration();
-
+	
 	// clear any lines of console text
 	Con_ClearNotify();
 
@@ -440,14 +438,13 @@ void CL_PrepRefresh(void)
 	cl.refresh_prepped = true;
 	cl.force_refdef = true;		// make sure we have a valid refdef
 
-	// start the cd track
-
 	Com_sprintf(loadingMessages[0], sizeof(loadingMessages[0]), "");
 	Com_sprintf(loadingMessages[1], sizeof(loadingMessages[1]), "");
 	Com_sprintf(loadingMessages[2], sizeof(loadingMessages[2]), "");
 	Com_sprintf(loadingMessages[3], sizeof(loadingMessages[3]), "");
-//	CDAudio_Play(atoi(cl.configstrings[CS_CDTRACK]), true);
 
+	// start the cd track
+//	CDAudio_Play(atoi(cl.configstrings[CS_CDTRACK]), true);
 	S_Play_Wav_Music();
 
 	loadingMessage = false;
@@ -455,6 +452,9 @@ void CL_PrepRefresh(void)
 	sec = loadingTime2-loadingTime;
 	sec *=0.001;
 	Com_Printf("level loading time = %i sec\n",sec);
+
+	// the renderer can now free unneeded stuff
+	R_EndRegistration();
 
 	if (newPlaque)
 		SCR_EndLoadingPlaque();
@@ -524,6 +524,9 @@ SCR_DrawCrosshair
 */
 void SCR_DrawCrosshair(void)
 {
+	int		size_x, size_y;
+
+
 	if (!crosshair->value)
 		return;
 
@@ -534,9 +537,12 @@ void SCR_DrawCrosshair(void)
 
 	if (!crosshair_pic[0])
 		return;
+	
+	size_x = crosshair_width * cl_fontScale->value;
+	size_y = crosshair_height * cl_fontScale->value;
 
-	Draw_PicScaled(scr_vrect.x + ((	scr_vrect.width - crosshair_width) >> 1), 
-									scr_vrect.y + ((scr_vrect.height - crosshair_height) >> 1),
+	Draw_PicScaled(scr_vrect.x + ((	scr_vrect.width - size_x) >> 1), 
+									scr_vrect.y + ((scr_vrect.height - size_y) >> 1),
 									cl_fontScale->value,  cl_fontScale->value,
 									crosshair_pic);
 }

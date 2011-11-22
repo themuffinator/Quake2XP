@@ -1178,7 +1178,7 @@ static void ControlsSetMenuItemValues(void)
 	Cvar_SetValue("freelook", ClampCvar(0, 1, freelook->value));
 	s_options_freelook_box.curvalue = freelook->value;
 
-	Cvar_SetValue("crosshair", ClampCvar(0, 4, crosshair->value));
+	Cvar_SetValue("crosshair", ClampCvar(0, 9, crosshair->value));
 	s_options_crosshair_box.curvalue = crosshair->value;
 
 
@@ -1614,11 +1614,17 @@ void Options_MenuInit(void)
 
 	static char *crosshair_names[] = {
 		"none",
-		"cross",
-		"dot",
-		"angle",
-		"cross big",
-		0
+	"dot",
+	"dot in circle",
+	"dot in circle2",
+	"dot in filled circle",
+	"angle",
+	"cross",
+	"cross2",
+	"cross in circle",
+	"dot in cross",
+	0
+
 	};
 
 	unsigned i;

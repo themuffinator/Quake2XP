@@ -1609,10 +1609,10 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		}
 
 		if (eaxEnv != alConfig.eaxState) {
-	/*		if (eaxEnv == EAX_ENVIRONMENT_GENERIC)
+			if (eaxEnv == EAX_ENVIRONMENT_GENERIC)
 				Com_DPrintf("EAXSet: EAX_ENVIRONMENT_GENERIC\n");
 			else
-	*/			Com_DPrintf("EAXSet: EAX_ENVIRONMENT_UNDERWATER\n");
+				Com_DPrintf("EAXSet: EAX_ENVIRONMENT_UNDERWATER\n");
 
 			alConfig.eaxState = eaxEnv;
 

@@ -495,6 +495,8 @@ void SCR_DrawLoading(void)
 		if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
 			Draw_StretchPic(0, 0, viddef.width, viddef.height,
 							va("/levelshots/%s.jpg", mapfile));
+		else
+			Draw_Fill(0, 0, viddef.width, viddef.height, 0);
 
 		if(cl_fontScale->value>1)
 			scaled = 8;
@@ -1001,21 +1003,17 @@ void SCR_TouchPics(void)
 			Draw_FindPic(sb_nums[i][j]);
 
 	if (crosshair->value) {
-		if (crosshair->value > 4 || crosshair->value < 0)
-			crosshair->value = 4;
+		if (crosshair->value > 9 || crosshair->value < 0)
+			crosshair->value = 9;
 
 		Com_sprintf(crosshair_pic, sizeof(crosshair_pic), "ch%i",
 					(int) (crosshair->value));
 		Draw_GetPicSize(&crosshair_width, &crosshair_height,
 						crosshair_pic);
 
-
-
 		if (!crosshair_width)
 			crosshair_pic[0] = 0;
-
-
-
+		
 	}
 }
 //=======================================================
