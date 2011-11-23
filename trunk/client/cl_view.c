@@ -35,6 +35,7 @@ struct model_s *gun_model;
 //=============
 
 cvar_t *crosshair;
+cvar_t *crosshairScale;
 cvar_t *cl_testparticles;
 cvar_t *cl_testentities;
 cvar_t *cl_testlights;
@@ -538,13 +539,12 @@ void SCR_DrawCrosshair(void)
 	if (!crosshair_pic[0])
 		return;
 	
-	size_x = crosshair_width * cl_fontScale->value;
-	size_y = crosshair_height * cl_fontScale->value;
+	size_x = crosshair_width * crosshairScale->value;
+	size_y = crosshair_height * crosshairScale->value;
 
-	Draw_PicScaled(scr_vrect.x + ((	scr_vrect.width - size_x) >> 1), 
-									scr_vrect.y + ((scr_vrect.height - size_y) >> 1),
-									cl_fontScale->value,  cl_fontScale->value,
-									crosshair_pic);
+	Draw_PicScaled(scr_vrect.x + ((	scr_vrect.width - size_x) >> 1), scr_vrect.y + ((scr_vrect.height - size_y) >> 1), 
+					crosshairScale->value,  crosshairScale->value,
+					crosshair_pic);
 }
 
 
@@ -714,7 +714,7 @@ void V_Init(void)
 	Cmd_AddCommand("viewpos", V_Viewpos_f);
 
 	crosshair = Cvar_Get("crosshair", "0", CVAR_ARCHIVE);
-
+	crosshairScale =  Cvar_Get("crosshairScale", "0.666", CVAR_ARCHIVE);
 	cl_testblend = Cvar_Get("cl_testblend", "0", 0);
 	cl_testparticles = Cvar_Get("cl_testparticles", "0", 0);
 	cl_testentities = Cvar_Get("cl_testentities", "0", 0);

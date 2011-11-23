@@ -430,7 +430,7 @@ void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl)
 	if(gl->has_alpha)
 		GL_Blend(true, 0, 0);
 	
-	if (strstr(gl->name, "ch"))
+	if (strstr(gl->name, "chxp"))
 		GL_Blend(true, GL_ONE, GL_ONE);
 
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -482,8 +482,6 @@ void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char *pic)
 	image_t *gl;
 	GL_Overbrights(true);
 	gl = Draw_FindPic(pic);
-	
-
 	if (!gl) {
 		Com_Printf("Can't find pic: %s\n", pic);
 		return;
