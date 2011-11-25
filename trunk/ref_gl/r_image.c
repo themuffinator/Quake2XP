@@ -1370,6 +1370,9 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		s[len - 1] = 'x';		
 		LoadPCX(s, &pics, &palettes, &pcx_w, &pcx_h);	
 
+		image->picScale_w = 1.0;
+		image->picScale_h = 1.0;
+
 		if (pcx_w > 0 && pcx_h > 0) {
 			
 			image->picScale_w = (float)pcx_w/image->width;

@@ -69,7 +69,7 @@ typedef vec_t vec2_t[2];
 
 #define SHELL_WHITE_COLOR	0xD7
 
-#define	GL_INDEX_TYPE		GL_UNSIGNED_INT
+#define	GL_INDEX_TYPE		GL_UNSIGNED_SHORT
 typedef unsigned short		ushort;
 typedef ushort		index_t;
 
@@ -310,6 +310,7 @@ typedef struct msurface_s {
 	int	numIndices;
 	int	numVertices;
 	index_t	*indices;
+	unsigned int sort;
 
 } msurface_t;
 

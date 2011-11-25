@@ -495,8 +495,8 @@ vec3_t BmodelViewOrg;
 
  int SurfSort( const msurface_t **a, const msurface_t **b )
 {
-return	(((*a)->lightmaptexturenum<<26)+((*a)->texinfo->image->texnum<<13) + (*b)->texinfo->addTexture->texnum) - 
-		(((*b)->lightmaptexturenum<<26)+((*b)->texinfo->image->texnum<<13) + (*b)->texinfo->addTexture->texnum);
+	return	(((*a)->lightmaptexturenum<<26)+((*a)->texinfo->image->texnum<<13) + (*a)->texinfo->normalmap->texnum) - 
+			(((*b)->lightmaptexturenum<<26)+((*b)->texinfo->image->texnum<<13) + (*b)->texinfo->normalmap->texnum);
 }
 
 

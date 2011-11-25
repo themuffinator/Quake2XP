@@ -68,6 +68,8 @@ qboolean	glview;
 
 qboolean	nopvs;
 
+qboolean deluxeMapping;
+
 char		source[1024];
 
 float	direct_scale =	0.4;
@@ -617,6 +619,26 @@ static void AddLightmapScaleKey(void) {
 	last->next = e;
 }
 
+static void AddDeluxeKey(void) {
+	epair_t	*w, *e, *last;
+
+	// search for it in entity string, moving to the end of the list
+	for (w = entities->epairs; w; w = w->next) {
+		if (!stricmp(w->key, "deluxe")) {
+			return;
+		}
+
+		if (!w->next)
+			last = w;
+	}
+
+	// create a new key and link it into the chain
+	e = malloc(sizeof(epair_t));
+	memset(e, 0, sizeof(epair_t));
+	e->key = "deluxe";
+	last->next = e;
+}
+
 /*
 ========
 main
@@ -714,6 +736,10 @@ int main (int argc, char **argv) {
 			lightmap_scale = atof (argv[i+1]);
 			i++;
 		}
+		else if (!strcmp(argv[i],"-deluxe"))
+		{
+			deluxeMapping = true;
+		}
 		else if (!strcmp (argv[i],"-tmpin"))
 			strcpy (inbase, "/tmp");
 		else if (!strcmp (argv[i],"-tmpout"))
@@ -758,6 +784,10 @@ int main (int argc, char **argv) {
 
 	// add 'lightmap_scale' key to worldspawn
 	AddLightmapScaleKey();
+
+	// add deluxe key to worldspawn
+	if(deluxeMapping)
+		AddDeluxeKey();
 
 	// write new entity string
 	UnparseEntities();

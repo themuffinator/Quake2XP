@@ -1800,7 +1800,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED "...GL_ARB_texture_rectangle not found\n");
 		
 	}
-	/*
+	
 		gl_state.vbo = false;
 
 	if (strstr(gl_config.extensions_string, "GL_ARB_vertex_buffer_object")) {
@@ -1823,7 +1823,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 		gl_state.vbo = false;
 	}
-	*/
+	
 	gl_state.nv_multisample_hint = false;
 
 	if ( strstr( gl_config.extensions_string, "GL_NV_multisample_filter_hint" ) )

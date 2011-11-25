@@ -541,10 +541,12 @@ void SCR_DrawCrosshair(void)
 	
 	size_x = crosshair_width * crosshairScale->value;
 	size_y = crosshair_height * crosshairScale->value;
+	
+//	Com_Printf("width %i height %i syze_x %i size_y %i cross width %i cross height %i\n",viddef.width, viddef.height, size_x, size_y, crosshair_width, crosshair_height);
 
-	Draw_PicScaled(scr_vrect.x + ((	scr_vrect.width - size_x) >> 1), scr_vrect.y + ((scr_vrect.height - size_y) >> 1), 
-					crosshairScale->value,  crosshairScale->value,
-					crosshair_pic);
+	Draw_PicScaled((viddef.width * 0.5) - (size_x * 0.5), (viddef.height * 0.5) - (size_y * 0.5), 
+					crosshairScale->value,  crosshairScale->value, crosshair_pic);
+
 }
 
 

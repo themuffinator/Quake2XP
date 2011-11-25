@@ -372,7 +372,6 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	
 	w = gl->width;
 	h = gl->height;
-	GL_Overbrights(true);
 	
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_Pic\n");
@@ -409,18 +408,72 @@ void Draw_Pic2(int x, int y, image_t * gl)
 
 	
 	GL_Blend(false, 0, 0);
-	GL_Overbrights(false);
 	qglDisableClientState(GL_VERTEX_ARRAY);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl)
+
+// fix strange ViPeR_2540 bug 
+void Draw_Pic2S(int x, int y, float sX, float sY, image_t * gl)
 {
 	int w, h;
 	
+	if (!gl) {
+		Com_Printf("NULL pic in Draw_Pic\n");
+		return;
+	}
+	
+	w = gl->width * sX *gl->picScale_w;
+	h = gl->height * sY *gl->picScale_h;
+
+	if(gl->has_alpha)
+		GL_Blend(true, 0, 0);
+	
+	
+	if (strstr(gl->name, "chxp")){ // crosshair hack
+		GL_Blend(true, GL_ONE, GL_ONE);
+		w = gl->width * sX;
+		h = gl->height * sY;
+	}
+	
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer (2, GL_FLOAT, sizeof(vec2_t), texCoord[0]);
+     
+	qglEnableClientState (GL_VERTEX_ARRAY);
+	qglVertexPointer (3, GL_FLOAT, sizeof(vec3_t), vertCoord[0]);
+     
+
+	if (scrap_dirty)
+		Scrap_Upload();
+
+		GL_Bind(gl->texnum);
+				
+		VA_SetElem2(texCoord[0],gl->sl, gl->tl);
+		VA_SetElem2(texCoord[1],gl->sh, gl->tl);
+		VA_SetElem2(texCoord[2],gl->sh, gl->th);
+		VA_SetElem2(texCoord[3],gl->sl, gl->th);
+		
+		VA_SetElem2(vertCoord[0],x, y);
+		VA_SetElem2(vertCoord[1],x + w, y);
+		VA_SetElem2(vertCoord[2],x + w, y + h);
+		VA_SetElem2(vertCoord[3],x, y + h);
+		
+
+		qglDrawArrays (GL_QUADS, 0, 4);
+
+	
+	GL_Blend(false, 0, 0);
+	qglDisableClientState(GL_VERTEX_ARRAY);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+
+void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl)
+{
+	int w, h;
+
 	w = gl->width*gl->picScale_w*scale_x;
 	h = gl->height*gl->picScale_h*scale_y;
-	GL_Overbrights(true);
 	
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_Pic\n");
@@ -458,7 +511,6 @@ void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl)
 		qglDrawArrays (GL_QUADS, 0, 4);
 	
 	GL_Blend(false, 0, 0);	
-	GL_Overbrights(false);
 	qglDisableClientState(GL_VERTEX_ARRAY);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
@@ -486,7 +538,8 @@ void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char *pic)
 		Com_Printf("Can't find pic: %s\n", pic);
 		return;
 	}
-	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
+//	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
+	Draw_Pic2S(x, y, scale_x, scale_y, gl);
 	GL_Overbrights(false);
 
 }

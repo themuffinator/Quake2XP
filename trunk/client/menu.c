@@ -361,7 +361,6 @@ void M_Main_DrawQuad(float x, float y)
 
 	refdef.height += 4;
 	R_RenderFrame(&refdef, true);
-	V_ClearScene();
 }
 
 

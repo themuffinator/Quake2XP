@@ -1,12 +1,12 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qbsp3", "qbsp3\qbsp3.vcproj", "{6DA3066D-7BEC-4E77-9410-3C2CCD5085D4}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qbsp3", "qbsp3\qbsp3.vcxproj", "{6DA3066D-7BEC-4E77-9410-3C2CCD5085D4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qvis3", "qvis3\qvis3.vcproj", "{7D8704BB-6967-4FE9-A9E8-87483B782226}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qvis3", "qvis3\qvis3.vcxproj", "{7D8704BB-6967-4FE9-A9E8-87483B782226}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qrad3", "qrad3\qrad3.vcproj", "{D065BA2B-DE11-4E2C-AEE8-BA8AD9A05189}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qrad3", "qrad3\qrad3.vcxproj", "{D065BA2B-DE11-4E2C-AEE8-BA8AD9A05189}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bspinfo3", "bspinfo3\bspinfo3.vcproj", "{6B5B23CB-A1A1-4E89-9D74-36EE29BCBFAF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bspinfo3", "bspinfo3\bspinfo3.vcxproj", "{6B5B23CB-A1A1-4E89-9D74-36EE29BCBFAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
