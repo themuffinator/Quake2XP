@@ -169,7 +169,6 @@ typedef struct {
 	float color[3];
 } stain_t;
 
-qboolean menuActive;
 
 /*
 

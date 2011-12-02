@@ -660,6 +660,10 @@ typedef struct {
 
 gllightmapstate_t gl_lms;
 
+
+// set GL_BGRA for fastest lightmaps upload
+#define GL_LIGHTMAP_FORMAT GL_BGRA
+
 /*
 ====================================================================
 

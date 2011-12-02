@@ -80,14 +80,11 @@ void R_DrawParticles(qboolean WaterCheck)
 	qglTexCoordPointer		(2, GL_FLOAT, 0, ParticleTextCoord);
 	qglUniform1i			(qglGetUniformLocation(id, "u_map0"), 0);
 
-	if(r_softParticles->value){
 	GL_SelectTexture		(GL_TEXTURE1_ARB);	
-	qglDisable				(GL_TEXTURE_2D);
-    qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
 	GL_BindRect				(depthMap->texnum);
     qglUniform1i			(qglGetUniformLocation(id, "u_depthBufferMap"), 1);
 	qglUniform2f			(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	}
+
 	qglEnableClientState	(GL_COLOR_ARRAY);
 	qglColorPointer			(4, GL_FLOAT, 0, ParticleColor);
 	qglEnableClientState	(GL_VERTEX_ARRAY);
@@ -616,14 +613,8 @@ void R_DrawParticles(qboolean WaterCheck)
 	qglDepthRange(0, 1);
 	qglDepthMask(1);			// back to normal Z buffering
 
-	GL_BindNullProgram		();
-	
-	if(r_softParticles->value){
-	GL_SelectTexture		(GL_TEXTURE1_ARB);	
-	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-	}
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-
+	GL_BindNullProgram();
+	GL_SelectTexture(GL_TEXTURE0_ARB);	
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisableClientState(GL_VERTEX_ARRAY);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);

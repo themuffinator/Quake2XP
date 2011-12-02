@@ -289,7 +289,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
 			
-	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	15.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	11.0);
 	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	e->alpha);
 	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	len*0.5);
 	qglUniform1f(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.2);
@@ -1566,7 +1566,6 @@ void R_InitPrograms(void);
 
 int R_Init(void *hinstance, void *hWnd)
 {
-	char			renderer_buffer[1000];
 	char			vendor_buffer[1000];
 	int				maxTextureCoords;
 	int				aniso_level, max_aniso;
@@ -1615,13 +1614,13 @@ int R_Init(void *hinstance, void *hWnd)
 	strcpy(vendor_buffer, gl_config.vendor_string);
 	strlwr(vendor_buffer);
 
-	if (strstr(renderer_buffer, "intel")) // fuck the intel lol
+	if (strstr(vendor_buffer, "intel")) // fuck the intel lol
 		{
 		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
 		VID_Error(ERR_FATAL,  "Intel graphics card is unsupported.\n");
 		}
 	
-	if (strstr(renderer_buffer, "sis")) // fuck the SiS too
+	if (strstr(vendor_buffer, "sis")) // fuck the SiS too
 		{
 		Com_Printf(S_COLOR_RED"SiS graphics card is unsupported.\n");
 		VID_Error(ERR_FATAL,  "SiS graphics card is unsupported.\n");
@@ -1801,7 +1800,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		
 	}
 	
-		gl_state.vbo = false;
+/*		gl_state.vbo = false;
 
 	if (strstr(gl_config.extensions_string, "GL_ARB_vertex_buffer_object")) {
 			
@@ -1823,7 +1822,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 		gl_state.vbo = false;
 	}
-	
+*/
 	gl_state.nv_multisample_hint = false;
 
 	if ( strstr( gl_config.extensions_string, "GL_NV_multisample_filter_hint" ) )

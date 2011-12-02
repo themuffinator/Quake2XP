@@ -4588,7 +4588,6 @@ void M_Init(void)
 	Cmd_AddCommand("menu_quit", M_Menu_Quit_f);
 }
 
-qboolean menuActive = false;
 /*
 =================
 M_Draw
@@ -4598,7 +4597,7 @@ void M_Draw(void)
 {
 	if (cls.key_dest != key_menu)
 		return;
-	menuActive = true;
+
 	// repaint everything next frame
 	SCR_DirtyScreen();
 

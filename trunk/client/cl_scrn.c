@@ -1026,7 +1026,7 @@ text to the screen.
 ==================
 */
 extern cvar_t *r_speeds;
-void SCR_DrawStats(qboolean hud);
+void SCR_DrawStats();
 void SCR_DrawLayout(void);
 
 int c_brush_polys, 
@@ -1137,9 +1137,7 @@ void SCR_DrawClock(void)
 	
 
 }
-extern qboolean menuActive;
-extern cvar_t *r_mode;
-void R_VCFreeFrame();
+
 
 void SCR_UpdateScreen(void)
 {
@@ -1191,8 +1189,8 @@ void SCR_UpdateScreen(void)
 			if (cls.disable_screen)
 				scr_draw_loading = 2;
 
-			// NO FULLSCREEN CONSOLE!!!
-			goto next;
+		// NO FULLSCREEN CONSOLE!!!
+		goto next;
 		}
 		// if a cinematic is supposed to be running, handle menus
 		// and console specially
@@ -1222,26 +1220,30 @@ next:
 			SCR_TileClear();
 			
 			V_RenderView();
+			
+			SCR_DrawStats();
+			if (cl.frame.playerstate.stats[STAT_LAYOUTS] & 1)
+				SCR_DrawLayout();
+			if (cl.frame.playerstate.stats[STAT_LAYOUTS] & 2)
+				CL_DrawInventory();
 
-		
 			SCR_DrawNet();
 			SCR_CheckDrawCenterString();
-
-
+			
 			if (scr_timegraph->value)
 				SCR_DebugGraph(cls.frametime * 300, 0);
 
-			if (scr_debuggraph->value || scr_timegraph->value
-				|| scr_netgraph->value)
+			if (scr_debuggraph->value || scr_timegraph->value || scr_netgraph->value)
 				SCR_DrawDebugGraph();
 
 			SCR_DrawPause();
+
 			SCR_DrawSpeeds();
+			
 			SCR_DrawFPS();
+			
 			if (cl_drawclock->value && (cls.state == ca_active))
 				SCR_DrawClock();
-			
-			menuActive = false;
 			
 			SCR_DrawConsole();
 
@@ -1249,15 +1251,6 @@ next:
 			
 			SCR_DrawLoading();
 		
-			if(!menuActive)	{	
-				SCR_DrawStats(false);
-			if (cl.frame.playerstate.stats[STAT_LAYOUTS] & 1)
-				SCR_DrawLayout();
-			if (cl.frame.playerstate.stats[STAT_LAYOUTS] & 2)
-				CL_DrawInventory();
-				SCR_DrawStats(true);
-			}
 		}
-
 	GLimp_EndFrame();
 }

@@ -1372,14 +1372,10 @@ fail:
 
 void GLimp_EndFrame (void)
 {
-	int		err;
 	static cvar_t	*avi_fps = NULL;
-	err = qglGetError();
-
 
 	if ( !qwglSwapBuffers( glw_state.hDC ) )
 			VID_Error( ERR_FATAL, "GLimp_EndFrame() - SwapBuffers() failed!\n" );
-
 		
 	if (!avi_fps)
 		avi_fps = Cvar_Get("avi_fps", "0", 0);

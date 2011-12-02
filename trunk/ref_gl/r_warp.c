@@ -202,7 +202,6 @@ void EmitWaterPolys(msurface_t * fa)
 
 	GL_SelectTexture			(GL_TEXTURE1_ARB);
 	GL_Bind						(r_DSTTex->texnum);
-	qglEnable					(GL_TEXTURE_2D);
 	qglUniform1i				(qglGetUniformLocation(id, "u_dstMap"), 1);
 	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer			(2, GL_FLOAT, 0, wTmu1Array);
@@ -210,12 +209,10 @@ void EmitWaterPolys(msurface_t * fa)
 	if(defBits >0){
 	GL_SelectTexture			(GL_TEXTURE2_ARB);
 	GL_BindRect					(ScreenMap->texnum);
-	qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
 	qglUniform1i				(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
 	
 	GL_SelectTexture			(GL_TEXTURE3_ARB);
 	GL_BindRect					(depthMap->texnum);
-	qglEnable					(GL_TEXTURE_RECTANGLE_ARB);
 	qglUniform1i				(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
 	}
 	
@@ -261,19 +258,9 @@ void EmitWaterPolys(msurface_t * fa)
 	
 	
 	qglDisableClientState	(GL_VERTEX_ARRAY);
-	
-	if(defBits >0){
-	GL_SelectTexture		(GL_TEXTURE3_ARB);
-	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-	
-	GL_SelectTexture		(GL_TEXTURE2_ARB);
-	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-	}
-	
+
 	GL_SelectTexture		(GL_TEXTURE1_ARB);
-	qglDisable				(GL_TEXTURE_2D);
 	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-	
 	GL_SelectTexture		(GL_TEXTURE0_ARB);
 	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
 	qglDisableClientState	(GL_COLOR_ARRAY);

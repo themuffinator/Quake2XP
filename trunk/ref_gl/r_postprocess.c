@@ -264,11 +264,8 @@ void R_Bloom (void) {
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
 		return;
 
-		GL_SelectTexture		(GL_TEXTURE0_ARB);
-		qglDisable				(GL_TEXTURE_2D);
-		qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
-		
 		// downsample and cut color
+		GL_SelectTexture		(GL_TEXTURE0_ARB);
 		GL_BindRect				(ScreenMap->texnum);
         qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 		
@@ -336,8 +333,6 @@ void R_Bloom (void) {
 		qglUniform1i		(qglGetUniformLocation(id, "u_map0"), 0);
 
 		GL_SelectTexture	(GL_TEXTURE1_ARB);
-		qglDisable			(GL_TEXTURE_2D);
-		qglEnable			(GL_TEXTURE_RECTANGLE_ARB);
 		GL_BindRect			(bloomtex);
 		qglUniform1i		(qglGetUniformLocation(id, "u_map1"), 1);
 		
@@ -351,13 +346,7 @@ void R_Bloom (void) {
         qglEnd();
 						
 		GL_BindNullProgram();
-		GL_SelectTexture		(GL_TEXTURE1_ARB);
-		qglDisable				(GL_TEXTURE_2D);
-		qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-
 		GL_SelectTexture		(GL_TEXTURE0_ARB);
-        qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-        qglEnable				(GL_TEXTURE_2D);
 }
 
 
@@ -373,10 +362,8 @@ void R_ThermalVision (void) {
 
     if (!(r_newrefdef.rdflags & RDF_IRGOGGLES))
             return;
-
-      GL_SelectTexture		(GL_TEXTURE0_ARB);
-      qglDisable			(GL_TEXTURE_2D);
-      qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
+	
+	GL_SelectTexture		(GL_TEXTURE0_ARB);
 		
     if (!thermaltex) {
       qglGenTextures		(1, &thermaltex);
@@ -385,7 +372,8 @@ void R_ThermalVision (void) {
       qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       qglCopyTexImage2D		(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
     }
-    else {
+    else 
+	{
         GL_BindRect				(thermaltex);
         qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
     }            
@@ -463,8 +451,6 @@ void R_ThermalVision (void) {
 		GL_BindNullProgram();
 	
 		GL_SelectTexture(GL_TEXTURE0_ARB);
-        qglDisable(GL_TEXTURE_RECTANGLE_ARB);
-        qglEnable(GL_TEXTURE_2D);
 }
 
 
@@ -489,8 +475,7 @@ void R_RadialBlur (void) {
 
 hack:
 
-	qglDisable				(GL_TEXTURE_2D);
-    qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
+	GL_SelectTexture		(GL_TEXTURE0_ARB);
 	GL_BindRect				(ScreenMap->texnum);
     qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 
@@ -518,8 +503,6 @@ hack:
     qglEnd();
 
 	GL_BindNullProgram		();
-	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-    qglEnable				(GL_TEXTURE_2D);
 	}
 }
 
@@ -546,15 +529,11 @@ void R_DofBlur (void) {
 	qglUniform1f(qglGetUniformLocation(id, "u_bias"), r_dofBias->value);
 
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-	qglDisable				(GL_TEXTURE_2D);
-    qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
 	GL_BindRect				(ScreenMap->texnum);
     qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
 
 	GL_SelectTexture		(GL_TEXTURE1_ARB);	
-	qglDisable				(GL_TEXTURE_2D);
-    qglEnable				(GL_TEXTURE_RECTANGLE_ARB);
 	GL_BindRect				(depthMap->texnum);
     qglUniform1i			(qglGetUniformLocation(id, "u_DepthTex"), 1);
 
@@ -566,10 +545,6 @@ void R_DofBlur (void) {
     qglEnd();
 
 	GL_BindNullProgram		();
-	GL_SelectTexture		(GL_TEXTURE1_ARB);	
-	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-	qglDisable				(GL_TEXTURE_RECTANGLE_ARB);
-    qglEnable				(GL_TEXTURE_2D);
+
 }

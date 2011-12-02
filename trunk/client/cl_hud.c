@@ -1042,12 +1042,12 @@ is based on the stats array
 ================
 */
 
-void SCR_DrawStats(qboolean hud)
+void SCR_DrawStats()
 {
-	if(hud && cl_3dhud->value)
+	if(cl_3dhud->value)
 		SCR_ExecuteLayoutString3d(cl.configstrings[CS_STATUSBAR]);
-	else
-		SCR_ExecuteLayoutString(cl.configstrings[CS_STATUSBAR]);
+
+	SCR_ExecuteLayoutString(cl.configstrings[CS_STATUSBAR]);
 }
 
 
