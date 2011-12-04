@@ -197,6 +197,9 @@ void R_DrawParticles(qboolean WaterCheck)
 			texId = r_particletexture[PT_BLOODMIST]->texnum;
 			break;
 
+		case PT_BLASTER_BOLT:
+			texId =  r_particletexture[PT_BLASTER_BOLT]->texnum;
+		
 		default:
 			texId = r_particletexture[PT_DEFAULT]->texnum;
 

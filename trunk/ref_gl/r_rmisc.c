@@ -215,6 +215,7 @@ void R_InitEngineTextures(void)
 	r_particletexture[PT_BLOODDRIP] =	GL_FindImage("gfx/particles/blooddrip.tga", it_wall);
 	r_particletexture[PT_BLOODMIST] =	GL_FindImage("gfx/particles/bloodmist.tga", it_wall);
 	r_particletexture[PT_BLOOD_SPLAT] =	GL_FindImage("gfx/decals/decal_splat.tga", it_wall);
+	r_particletexture[PT_BLASTER_BOLT] =GL_FindImage("gfx/particles/blaster_bolt.tga", it_wall);
 
 	for (x = 0; x < PT_MAX; x++)
 		if (!r_particletexture[x])

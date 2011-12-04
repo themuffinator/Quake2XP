@@ -1852,6 +1852,12 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 			continue;
 		}	
 
+		if (!Q_strcasecmp(token, "scale"))
+		{
+			mod->modelScale = atof(COM_Parse(&s));
+			continue;
+		}	
+
 	}
 }
 
@@ -1921,6 +1927,32 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 		VID_Error(ERR_DROP, "model %s has no frames", mod->name);
 
 
+	mod->flags = 0;
+
+	// set default render fx values
+	mod->glowCfg[0] = 0.3;
+	mod->glowCfg[1] = 1.0;
+	mod->glowCfg[2] = 5.666;
+	mod->noselfshadow = (qboolean)false;
+	mod->modelScale = 1.0;
+
+	i = strlen(mod->name);
+	memcpy(nam, mod->name, i);
+	nam[i-3]='r';
+	nam[i-2]='f';
+	nam[i-1]='x';
+	nam[i]=0;
+	// load the .rfx
+	i = FS_LoadFile (nam, (void **)&buff);
+	if (buff)
+	{
+		char bak=buff[i];
+		buff[i]=0;
+		Mod_LoadAliasModelFx(mod, buff);
+		buff[i]=bak;
+		FS_FreeFile (buff);
+	}
+
 //
 // load triangle lists
 //
@@ -1951,8 +1983,8 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 
 		Q_memcpy(poutframe->name, pinframe->name, sizeof(poutframe->name));
 		for (j = 0; j < 3; j++) {
-			poutframe->scale[j] = LittleFloat(pinframe->scale[j]);
-			poutframe->translate[j] = LittleFloat(pinframe->translate[j]);
+			poutframe->scale[j] = LittleFloat(pinframe->scale[j]) * mod->modelScale;
+			poutframe->translate[j] = LittleFloat(pinframe->translate[j]) * mod->modelScale;
 		}
 		// verts are all 8 bit, so no swapping needed
 		Q_memcpy(poutframe->verts, pinframe->verts,
@@ -2019,31 +2051,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 
 	}
 
-	mod->flags = 0;
-
-	// set default render fx values
-	mod->glowCfg[0] = 0.3;
-	mod->glowCfg[1] = 1.0;
-	mod->glowCfg[2] = 5.666;
-	mod->noselfshadow = false;
-
-	i = strlen(mod->name);
-	memcpy(nam, mod->name, i);
-	nam[i-3]='r';
-	nam[i-2]='f';
-	nam[i-1]='x';
-	nam[i]=0;
-	// load the .rfx
-	i = FS_LoadFile (nam, (void **)&buff);
-	if (buff)
-	{
-		char bak=buff[i];
-		buff[i]=0;
-		Mod_LoadAliasModelFx(mod, buff);
-		buff[i]=bak;
-		FS_FreeFile (buff);
-	}
-	
+		
 	// Calculate texcoords for triangles (for compute tangents and binormals)
 	mod->memorySize += pheader->num_st * sizeof(fstvert_t);
     pinst = (dstvert_t *) ((byte *)pinmodel + pheader->ofs_st);

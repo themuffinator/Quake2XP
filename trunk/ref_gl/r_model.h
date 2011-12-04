@@ -339,6 +339,7 @@ typedef struct model_s {
 	float alphaShift;
 	float glowCfg[3];
 	float envScale;
+	float modelScale;
 	qboolean noselfshadow;
 	qboolean envmap;
 

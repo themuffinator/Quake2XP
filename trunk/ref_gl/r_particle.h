@@ -19,7 +19,8 @@
 #define PT_BLOODDRIP	17
 #define PT_BLOODMIST	18
 #define PT_BLOOD_SPLAT  19
-#define PT_MAX     20
+#define PT_BLASTER_BOLT 20
+#define PT_MAX     21
 
 
 #define DECAL_BULLET		0

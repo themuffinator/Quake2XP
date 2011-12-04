@@ -1101,6 +1101,57 @@ void CL_ParticleTracer(vec3_t start, vec3_t end)
 
 }
 
+void CL_ParticleBlasterBolt(vec3_t start, vec3_t end)
+{
+	int j;
+	cparticle_t *p;
+	vec3_t dir;
+	float dist = 10000;
+
+	if (!free_particles)
+		return;
+	p = free_particles;
+	free_particles = p->next;
+	p->next = active_particles;
+
+	VectorClear(p->accel);
+	VectorSubtract(end, start, dir);
+	VectorNormalize(dir);
+
+	active_particles = p;
+	p->orient = 0;
+	p->flags  = PARTICLE_DIRECTIONAL;
+	p->flags |= PARTICLE_NOFADE;
+	p->time = cl.time;
+	p->endTime = cl.time + 20000;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
+	p->len = 400;
+	p->endLen = 0;
+	p->color[0] = 1.0;
+	p->color[1] = 0.75;
+	p->color[2] = 0.0;
+
+	p->colorVel[0] = 0;
+	p->colorVel[1] = 0;
+	p->colorVel[2] = 0;
+
+	p->type = PT_BLASTER_BOLT;
+	p->size = 3.5;
+	p->sizeVel = 0;
+
+	for (j = 0; j < 3; j++) {
+		p->org[j] = start[j];
+		p->vel[j] = dir[j] * dist;
+	}
+
+
+	p->alpha = 1.0;
+
+	p->alphavel = 1.0;
+
+}
+
 
 void CL_ParticleSplash(vec3_t org, vec3_t dir, float r, float g, float b)
 {

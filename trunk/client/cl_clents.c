@@ -416,8 +416,8 @@ void CL_BrassShells(vec3_t org, vec3_t dir, int count, qboolean mshell)
 		le->accel[0] = le->accel[1] = 0;
 		le->accel[2] = -6 * PARTICLE_GRAVITY;
 		le->alpha = 1.0;
-		le->alphavel = -0.1;
-		le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE | CLM_NOSHADOW;
+		le->alphavel = -0.07;
+		le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
 		if (mshell)
 			le->model = cl_mod_mshell;
 		else

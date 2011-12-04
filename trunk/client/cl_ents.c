@@ -680,6 +680,7 @@ CL_AddPacketEntities
 ===============
 */
 extern	char	*currentPlayerWeapon;
+void CL_ParticleBlasterBolt(vec3_t start, vec3_t end);
 
 game_export_t *ge;
 
@@ -763,6 +764,8 @@ void CL_AddPacketEntities(frame_t * frame)
 			renderfx |= RF_SHELL_HALF_DAM;
 		}
 		
+
+
 // pmm
 //======
 		ent.oldframe = cent->prev.frame;
@@ -988,10 +991,20 @@ void CL_AddPacketEntities(frame_t * frame)
 		}
 //pmm
 
+						if (ent.model)
+		{
+			if (!Q_strcasecmp((char *)ent.model, "models/objects/laser/tris.md2")
+				&& !(effects & EF_BLASTER))
+			{	// replace the bolt with a particle glow
+				CL_ParticleBlasterBolt (cent->lerp_origin, ent.origin);
+goto next;
+			}
+		}
+
 		// add to refresh list
 		V_AddEntity(&ent);
 
-
+next:
 		// color shells generate a seperate entity for the main model
 		
 		
