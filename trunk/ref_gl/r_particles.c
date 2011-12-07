@@ -51,7 +51,7 @@ vec3_t ParticleVert[MAX_PARTICLE_VERT];
 vec2_t ParticleTextCoord[MAX_PARTICLE_VERT];
 
 int SortPart(particle_t *a, particle_t *b ){
-	return ((a->type << 4) + a->flags) - ((b->type << 4) + b->flags);
+	return (a->type + a->flags) - (b->type + b->flags);
 }
 
 void R_DrawParticles(qboolean WaterCheck)
@@ -94,7 +94,7 @@ void R_DrawParticles(qboolean WaterCheck)
 	qglEnable(GL_BLEND);
 
 	
-	qsort(r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
+//	qsort(r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
 
 	for (p = r_newrefdef.particles, i = 0; i < r_newrefdef.num_particles; i++, p++) {
 		
@@ -119,9 +119,7 @@ void R_DrawParticles(qboolean WaterCheck)
 			break;
 
 		case PT_FLY:
-			texId =
-				fly[((int) (r_newrefdef.time * 10)) & (MAX_FLY - 1)]->
-				texnum;
+			texId = fly[((int) (r_newrefdef.time * 10)) & (MAX_FLY - 1)]->texnum;
 			break;
 
 		case PT_BLOOD:
@@ -158,27 +156,19 @@ void R_DrawParticles(qboolean WaterCheck)
 
 
 		case PT_FLAME:
-			texId =
-				flameanim[((int) ((r_newrefdef.time - p->time) * 10)) %
-						  MAX_FLAMEANIM]->texnum;
+			texId = flameanim[((int) ((r_newrefdef.time - p->time) * 10)) % MAX_FLAMEANIM]->texnum;
 			break;
 
 		case PT_BLOODSPRAY:
-			texId =
-				r_blood[((int) ((r_newrefdef.time - p->time) * 15)) %
-						MAX_BLOOD]->texnum;
+			texId = r_blood[((int) ((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->texnum;
 			break;
 
 		case PT_xBLOODSPRAY:
-			texId =
-				r_xblood[((int) ((r_newrefdef.time - p->time) * 15)) %
-						 MAX_BLOOD]->texnum;
+			texId = r_xblood[((int) ((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->texnum;
 			break;
 
 		case PT_EXPLODE:
-			texId =
-				r_explode[((int) ((r_newrefdef.time - p->time) * 20)) %
-						  MAX_EXPLODE]->texnum;
+			texId = r_explode[((int) ((r_newrefdef.time - p->time) * 20)) % MAX_EXPLODE]->texnum;
 			break;
 
 		case PT_WATERPULME:
@@ -199,7 +189,8 @@ void R_DrawParticles(qboolean WaterCheck)
 
 		case PT_BLASTER_BOLT:
 			texId =  r_particletexture[PT_BLASTER_BOLT]->texnum;
-		
+			break;
+
 		default:
 			texId = r_particletexture[PT_DEFAULT]->texnum;
 

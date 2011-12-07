@@ -1106,7 +1106,6 @@ void CL_ParticleBlasterBolt(vec3_t start, vec3_t end)
 	int j;
 	cparticle_t *p;
 	vec3_t dir;
-	float dist = 10000;
 
 	if (!free_particles)
 		return;
@@ -1121,35 +1120,32 @@ void CL_ParticleBlasterBolt(vec3_t start, vec3_t end)
 	active_particles = p;
 	p->orient = 0;
 	p->flags  = PARTICLE_DIRECTIONAL;
-	p->flags |= PARTICLE_NOFADE;
+	p->flags |= PARTICLE_NONSOLID;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->sFactor = GL_SRC_ALPHA;
-	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
-	p->len = 400;
-	p->endLen = 0;
+	p->sFactor = GL_ONE;
+	p->dFactor = GL_ONE;
+	p->len = 25;
+	p->endLen = 100;
 	p->color[0] = 1.0;
-	p->color[1] = 0.75;
-	p->color[2] = 0.0;
+	p->color[1] = 1.0;
+	p->color[2] = 1.0;
 
 	p->colorVel[0] = 0;
 	p->colorVel[1] = 0;
 	p->colorVel[2] = 0;
 
 	p->type = PT_BLASTER_BOLT;
-	p->size = 3.5;
-	p->sizeVel = 0;
+	p->size = 1.5;
+	p->sizeVel = 1.5;
 
 	for (j = 0; j < 3; j++) {
 		p->org[j] = start[j];
-		p->vel[j] = dir[j] * dist;
+		p->vel[j] = dir[j]*1000;
 	}
-
-
 	p->alpha = 1.0;
-
 	p->alphavel = 1.0;
-
+	VectorCopy(p->org, p->oldOrg);
 }
 
 

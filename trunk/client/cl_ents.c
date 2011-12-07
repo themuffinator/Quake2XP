@@ -991,13 +991,11 @@ void CL_AddPacketEntities(frame_t * frame)
 		}
 //pmm
 
-						if (ent.model)
+		if (ent.model)
 		{
-			if (!Q_strcasecmp((char *)ent.model, "models/objects/laser/tris.md2")
-				&& !(effects & EF_BLASTER))
-			{	// replace the bolt with a particle glow
+			if (!Q_strcasecmp((char *)ent.model, "models/objects/laser/tris.md2")/* && !(effects & EF_BLASTER)*/){	
 				CL_ParticleBlasterBolt (cent->lerp_origin, ent.origin);
-goto next;
+			goto next;
 			}
 		}
 
