@@ -577,43 +577,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			GL_DrawAliasFrameLerpArb(paliashdr, currententity->currentLightPos, lightRad, diffuseColor);
 
 		}
-		
-
-		dlight = r_newrefdef.dlights;
 	
-		for (i = 0; i < r_newrefdef.num_dlights; i++, dlight++) {
-			
-			vec3_t dlOrg;
-
-			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-				continue;
-
-			VectorSubtract(currententity->origin, dlight->origin, temp);
-			dist = VectorLength(temp);
-
-			if (dist > dlight->intensity)
-				continue;		// big distance!
-
-			// light surf behind the wall 
-			if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, dlight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
-			if(r_trace.fraction != 1.0)
-			continue;
-			}
-									
-			lightRad = dlight->intensity;
-			
-			diffuseColor[0] = dlight->color[0];
-			diffuseColor[1] = dlight->color[1];
-			diffuseColor[2] = dlight->color[2];
-
-			VectorSubtract(dlight->origin, currententity->origin, tmp);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, dlOrg);	
-			
-			GL_DrawAliasFrameLerpArb(paliashdr, dlOrg, lightRad, diffuseColor);
-			
-			dlActive++;
-		}	
 								
 		for (i = 0; i < r_numflares; i++) {
 		int sidebit;
@@ -666,12 +630,48 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 			R_LightPoint(lightSurf->origin, diffuseColor, true);
 			VectorScale(diffuseColor, 2.0, diffuseColor);
-			
+			GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
 			slActive++;
 		}
 
-		if(slActive && !dlActive)
-		GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
+			dlight = r_newrefdef.dlights;
+	
+		for (i = 0; i < r_newrefdef.num_dlights; i++, dlight++) {
+			
+			vec3_t dlOrg;
+
+			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+				continue;
+
+			VectorSubtract(currententity->origin, dlight->origin, temp);
+			dist = VectorLength(temp);
+
+			if (dist > dlight->intensity)
+				continue;		// big distance!
+
+			// light surf behind the wall 
+			if (r_newrefdef.areabits){
+			r_trace = CM_BoxTrace(currententity->origin, dlight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			if(r_trace.fraction != 1.0)
+			continue;
+			}
+									
+			lightRad = dlight->intensity;
+			
+			diffuseColor[0] = dlight->color[0];
+			diffuseColor[1] = dlight->color[1];
+			diffuseColor[2] = dlight->color[2];
+
+			VectorSubtract(dlight->origin, currententity->origin, tmp);
+			Mat3_TransposeMultiplyVector(entityAxis, tmp, dlOrg);	
+			
+			GL_DrawAliasFrameLerpArb(paliashdr, dlOrg, lightRad, diffuseColor);
+			
+			dlActive++;
+		}	
+
+	//	if(slActive && !dlActive)
+		
 
 		if(!dlActive && !slActive){
 			vec3_t org;

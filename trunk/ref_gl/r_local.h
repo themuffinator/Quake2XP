@@ -56,13 +56,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <IL/ilut.h>
 #endif
 
-
-#ifndef __linux__
-#ifndef GL_COLOR_INDEX8_EXT
-#define GL_COLOR_INDEX8_EXT GL_COLOR_INDEX
-#endif
-#endif
-
 #include "../client/ref.h"
 
 #include "qgl.h"
@@ -292,10 +285,9 @@ cvar_t	*sys_priority;
 cvar_t	*sys_affinity;
 
 cvar_t	*r_DrawRangeElements;
-cvar_t	*r_pplWorldAmbient;
 cvar_t	*r_bumpAlias;
 cvar_t	*r_bumpWorld;
-cvar_t	*r_ambientLevel;
+cvar_t	*r_pplWorldAmbient;
 cvar_t	*r_pplMaxDlights;
 
 cvar_t	*hunk_bsp;
@@ -560,6 +552,7 @@ typedef struct {
 
 
 	int lightmap_textures;
+	int deluxemap_texnum;
 
 	int currenttextures[4];
 	int num_tmu;
@@ -645,6 +638,9 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 #define	LIGHTMAP_SIZE	1024 //was 128
 #define	MAX_LIGHTMAPS	8 //was 128
 
+#define MAX_GL_DELUXEMAPS	256
+#define TEXNUM_DELUXEMAPS	(TEXNUM_LIGHTMAPS + MAX_LIGHTMAPS)
+
 typedef struct {
 	int internal_format;
 	int current_lightmap_texture;
@@ -652,10 +648,13 @@ typedef struct {
 	msurface_t *lightmap_surfaces[MAX_LIGHTMAPS];
 
 	int allocated[LIGHTMAP_SIZE];
-
+	
 	// the lightmap texture data needs to be kept in
 	// main memory so texsubimage can update properly
+	
 	byte lightmap_buffer[LIGHTMAP_BYTES * LIGHTMAP_SIZE * LIGHTMAP_SIZE];
+	byte *direction_buffer;
+
 } gllightmapstate_t;
 
 gllightmapstate_t gl_lms;

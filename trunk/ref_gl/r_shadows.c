@@ -573,7 +573,7 @@ void R_ShadowBlend()
 	if (r_shadows->value < 2)
 		return;
 
-	shadowalpha = 1.0 - r_ambientLevel->value;
+	shadowalpha = 1.0 - r_pplWorldAmbient->value;
 
 	qglMatrixMode(GL_PROJECTION);
 	qglPushMatrix();
@@ -857,7 +857,7 @@ void R_DrawShadowWorld(void)
 	qglEnable(GL_BLEND);
     qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	shadowalpha = 1.0 - r_ambientLevel->value;
+	shadowalpha = 1.0 - r_pplWorldAmbient->value;
 	
 	qglColor4f(0, 0, 0, shadowalpha);    
 

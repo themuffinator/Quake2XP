@@ -621,10 +621,16 @@ static void AddLightmapScaleKey(void) {
 
 static void AddDeluxeKey(void) {
 	epair_t	*w, *e, *last;
+	char	s[256];
+
+	// convert value into string
+	sprintf(s, "%d", 1);
 
 	// search for it in entity string, moving to the end of the list
 	for (w = entities->epairs; w; w = w->next) {
 		if (!stricmp(w->key, "deluxe")) {
+			// found it already there, give it a new value and bye-bye
+			w->value = copystring(s);
 			return;
 		}
 
@@ -636,6 +642,8 @@ static void AddDeluxeKey(void) {
 	e = malloc(sizeof(epair_t));
 	memset(e, 0, sizeof(epair_t));
 	e->key = "deluxe";
+	e->value = copystring(s);
+
 	last->next = e;
 }
 

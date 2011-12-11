@@ -314,6 +314,7 @@ typedef struct model_s {
 	msurface_t **marksurfaces;
 	
 	int lightmap_scale;
+	qboolean deluxeMapping;
 
 	dvis_t *vis;
 

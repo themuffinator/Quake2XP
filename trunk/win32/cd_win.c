@@ -598,7 +598,7 @@ int CDAudio_Init(void)
 	int				n;
 	unsigned		flags;
 
-	cd_drive = Cvar_Get ("cd_drive", "", 0);
+	cd_drive = Cvar_Get ("cd_drive", "h", CVAR_ARCHIVE);
 	cd_drive->help = "override the automatic assigned CD letter.";
 	cd_nocd = Cvar_Get ("cd_nocd", "0", CVAR_ARCHIVE );
 	cd_loopcount = Cvar_Get ("cd_loopcount", "25", CVAR_ARCHIVE); //was 4

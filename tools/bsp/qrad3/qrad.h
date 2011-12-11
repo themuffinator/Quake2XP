@@ -108,7 +108,7 @@ extern	float	lightscale;
 
 extern int	lightmap_scale;
 extern qboolean	q2xp2_lightmaps;
-
+extern qboolean deluxeMapping;
 
 void MakeShadowSplits (void);
 

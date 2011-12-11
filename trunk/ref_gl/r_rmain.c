@@ -1479,10 +1479,9 @@ void R_RegisterCvars(void)
 	r_parallaxScale=					Cvar_Get("r_parallaxScale", "0.5", CVAR_ARCHIVE);
 	r_parallaxSteps=					Cvar_Get("r_parallaxSteps", "10", CVAR_ARCHIVE);
 
-	r_pplWorldAmbient = 				Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
 	r_bumpAlias =						Cvar_Get("r_bumpAlias", "1", CVAR_ARCHIVE);
 	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
-	r_ambientLevel =					Cvar_Get("r_ambientLevel", "0.75", CVAR_ARCHIVE);
+	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.75", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
 	r_pplMaxDlights =					Cvar_Get("r_pplMaxDlights", "8", CVAR_ARCHIVE);
 

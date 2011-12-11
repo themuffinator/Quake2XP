@@ -729,6 +729,7 @@ typedef struct
 	int			numstyles;
 	int			stylenums[MAX_STYLES];
 	float		*samples[MAX_STYLES];
+	float		*directions;
 } facelight_t;
 
 directlight_t	*directlights[MAX_MAP_LEAFS];
@@ -904,14 +905,23 @@ void CreateDirectLights (void)
 }
 
 /*
+VectorMix
+*/
+void VectorMix(const vec3_t v1, const vec3_t v2, float mix, vec3_t out){
+	int i;
+
+	for(i = 0; i < 3; i++)
+		out[i] = v1[i] * (1.0 - mix) + v2[i] * mix;
+}
+
+/*
 =============
 GatherSampleLight
 
 Lightscale is the normalizer for multisampling
 =============
 */
-void GatherSampleLight (vec3_t pos, vec3_t normal,
-			float **styletable, int offset, int mapsize, float lightscale)
+void GatherSampleLight (vec3_t pos, vec3_t normal, float **styletable, int offset, int mapsize, float lightscale, float *direction)
 {
 	int				i;
 	directlight_t	*l;
@@ -983,6 +993,10 @@ void GatherSampleLight (vec3_t pos, vec3_t normal,
 			// add some light to it
 			VectorMA (dest, scale*lightscale, l->color, dest);
 
+			// and add some direction
+			VectorMix(normal, delta, 2.0 * scale*lightscale / l->intensity, delta);
+			VectorMA(direction, scale*lightscale, delta, direction);
+
 skipadd: ;
 		}
 	}
@@ -1032,7 +1046,6 @@ nextpatch:;
 
 }
 
-
 /*
 =============
 BuildFacelights
@@ -1048,18 +1061,20 @@ void BuildFacelights (int facenum)
 	lightinfo_t	l[5];
 	float		*styletable[MAX_LSTYLES];
 	int			i, j;
-	float		*spot;
+	float		*spot, *direction;
 	patch_t		*patch;
 	int			numsamples;
 	int			tablesize;
-	facelight_t		*fl;
-	
-	f = &dfaces[facenum];
+	facelight_t	*fl;
 
+	f = &dfaces[facenum];
+ 
 	if ( texinfo[f->texinfo].flags & (SURF_WARP|SURF_SKY) )
 		return;		// non-lit texture
 
 	memset (styletable,0, sizeof(styletable));
+	
+	fl = &facelight[facenum];
 
 	if (extrasamples)
 		numsamples = extrasamplesvalue;
@@ -1072,6 +1087,7 @@ void BuildFacelights (int facenum)
 		l[i].face = f;
 		VectorCopy (dplanes[f->planenum].normal, l[i].facenormal);
 		l[i].facedist = dplanes[f->planenum].dist;
+
 		if (f->side)
 		{
 			VectorSubtract (vec3_origin, l[i].facenormal, l[i].facenormal);
@@ -1090,23 +1106,37 @@ void BuildFacelights (int facenum)
 	styletable[0] = malloc(tablesize);
 	memset (styletable[0], 0, tablesize);
 
-	fl = &facelight[facenum];
 	fl->numsamples = l[0].numsurfpt;
 	fl->origins = malloc (tablesize);
 	memcpy (fl->origins, l[0].surfpt, tablesize);
 
+	fl->directions = malloc(fl->numsamples * sizeof(vec3_t)); //deluxe
+
 	for (i=0 ; i<l[0].numsurfpt ; i++)
 	{
+				
 		for (j=0 ; j<numsamples ; j++)
 		{
-			GatherSampleLight (l[j].surfpt[i], l[0].facenormal, styletable,
-				i*3, tablesize, 1.0/numsamples);
+		direction = fl->directions + i * 3;  // accumulate direction here 
+
+			GatherSampleLight (l[j].surfpt[i], l[0].facenormal, styletable, i*3, tablesize, 1.0/numsamples, direction);
 		}
 
 		// contribute the sample to one or more patches
 		AddSampleToPatch (l[0].surfpt[i], styletable[0]+i*3, facenum);
+
 	}
 
+	if(deluxeMapping){  // pad underlit samples with default direction
+
+		for(i = 0; i < l[0].numsurfpt; i++){  // pad them
+
+			direction = fl->directions + i * 3;
+
+			if(VectorCompare(direction, vec3_origin))
+				VectorSet(direction, 0.0, 0.0, 1.0);
+		} 
+	}
 	// average up the direct light on each patch for radiosity
 	for (patch = face_patches[facenum] ; patch ; patch=patch->next)
 	{
@@ -1167,7 +1197,7 @@ void FinalLightFace (int facenum) {
 	float		max, newmax;
 	byte		*dest;
 	int			pfacenum;
-	vec3_t		facemins, facemaxs;
+	vec3_t		facemins, facemaxs, dir;
 
 	f = &dfaces[facenum];
 	fl = &facelight[facenum];
@@ -1180,12 +1210,6 @@ void FinalLightFace (int facenum) {
 	f->lightofs = lightdatasize;
 	lightdatasize += fl->numstyles * (fl->numsamples*3);
 
-// add green sentinals between lightmaps
-#if 0
-	lightdatasize += 64*3;
-	for (i=0 ; i<64 ; i++)
-		dlightdata[lightdatasize-(i+1)*3 + 1] = 255;
-#endif
 
 	if (lightdatasize > MAX_MAP_LIGHTING)
 		Error ("MAX_MAP_LIGHTING");
@@ -1297,7 +1321,16 @@ void FinalLightFace (int facenum) {
 			for (k=0; k<3; k++)
 				*dest++ = lb[k] * newmax / max;
 		}
+		
+		if(!deluxeMapping){  // also write the directional data
+			VectorCopy((fl->directions + j * 3), dir);
+			for(k = 0; k < 3; k++){
+				*dest++ = (byte)((dir[k] + 1.0) * 127.0);
+			} 
+		}
 	}
+
+
 
 	if (numbounce > 0)
 		FreeTriangulation (trian);

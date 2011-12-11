@@ -316,7 +316,7 @@ next:
 		
 	if(r_bumpAlias->value){
 	VectorCopy(shadelight, diffuseLight);
-	VectorScale(shadelight, r_ambientLevel->value, shadelight);
+	VectorScale(shadelight, r_pplWorldAmbient->value, shadelight);
 	}	
 	
     qglPushMatrix ();
