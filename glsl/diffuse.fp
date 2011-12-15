@@ -167,6 +167,7 @@ specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
 
+
 #ifdef VERTEXLIGHT
 diffuseMap *= clamp(v_color, 0.0, 0.666);
 #endif
@@ -191,7 +192,7 @@ vec2 Es = PhongLighting(normalMap, tbnDelux, V, 16.0);
 #endif
 
 #ifdef LIGHTMAP
-bumpLight = (Es.x * diffuseMap) + (Es.y * specular * lightMap);
+bumpLight = (Es.x * diffuseMap) + (Es.y * specular);
 diffuseMap *= u_ambientScale;
 #endif
 
