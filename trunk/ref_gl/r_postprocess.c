@@ -502,7 +502,7 @@ hack:
     qglVertex2f(0, 0);
     qglEnd();
 
-	GL_BindNullProgram		();
+	GL_BindNullProgram();
 	}
 }
 

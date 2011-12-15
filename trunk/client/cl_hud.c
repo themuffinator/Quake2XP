@@ -419,7 +419,8 @@ void SCR_ExecuteLayoutString(char *s)
 
 
 			if (value >= MAX_IMAGES)
-				Com_Error(ERR_DROP, "Pic >= MAX_IMAGES");
+			//	Com_Error(ERR_DROP, "Pic >= MAX_IMAGES");
+			continue;
 			if (cl.configstrings[CS_IMAGES + value]) {
 				
 				SCR_AddDirtyPoint(x, y);
@@ -716,7 +717,9 @@ void SCR_ExecuteLayoutString3d(char *s)
 
 
 			if (value >= MAX_IMAGES)
-				Com_Error(ERR_DROP, "Pic >= MAX_IMAGES");
+			//	Com_Error(ERR_DROP, "Pic >= MAX_IMAGES");
+			continue;
+
 			if (cl.configstrings[CS_IMAGES + value]) {
 
 				SCR_AddDirtyPoint(x, y);
