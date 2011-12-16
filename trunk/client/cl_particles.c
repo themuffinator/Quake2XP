@@ -1126,7 +1126,7 @@ void CL_ParticleBlasterBolt(vec3_t start, vec3_t end)
 	p->sFactor = GL_ONE;
 	p->dFactor = GL_ONE;
 	p->len = 25;
-	p->endLen = 100;
+	p->endLen = 25;
 	p->color[0] = 1.0;
 	p->color[1] = 1.0;
 	p->color[2] = 1.0;

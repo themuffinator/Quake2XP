@@ -291,6 +291,7 @@ CL_PrepRefresh
 Call before entering a new level, or after changing dlls
 =================
 */
+void R_ClearSLights();
 qboolean needLoadingPlaque(void);
 void CL_PrepRefresh(void)
 {
@@ -461,7 +462,8 @@ void CL_PrepRefresh(void)
 		SCR_EndLoadingPlaque();
 	else
 		Cvar_Set("paused", "0");
-
+	
+//	R_ClearSLights();
 }
 
 /*

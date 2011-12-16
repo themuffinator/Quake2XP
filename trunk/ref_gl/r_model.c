@@ -94,7 +94,7 @@ static void R_ParseLightEntities(void)	// WORLDSHADOW
 	float intensity;
 	int leafnum;
 	int cluster;
-	worldLight_t *wl;
+	shadowlight_t *sl;
 
 
 	entString = map_entitystring;
@@ -181,26 +181,23 @@ static void R_ParseLightEntities(void)	// WORLDSHADOW
 		// intensity = 150;
 
 		// Add it to the list
-		if (r_numWorldLights == MAX_LIGHTS)
-			break;
+	if (numShadowLights == 1024)
+		break;
 
-		wl = &r_worldLights[r_numWorldLights++];
+	sl = &shadowlights[numShadowLights++];
 
-		VectorCopy(origin, wl->origin);
-		VectorSet(wl->radius, intensity, intensity, intensity);
-		VectorCopy(color, wl->color);
-		r_worldLights[r_numWorldLights].intensity = intensity;
-		r_worldLights[r_numWorldLights].surf = NULL;
+	VectorCopy(origin, sl->origin);
+	sl->radius =  intensity;
+	VectorCopy(color, sl->color);
+	sl[numShadowLights].isStatic = true;
 
-		leafnum = CM_PointLeafnum(wl->origin);
-		cluster = CM_LeafCluster(leafnum);
-		wl->area = CM_LeafArea(leafnum);
-		Q_memcpy(wl->vis, CM_ClusterPVS(cluster),
-				 (CM_NumClusters() + 7) >> 3);
-
+	leafnum = CM_PointLeafnum(sl->origin);
+	cluster = CM_LeafCluster(leafnum);
+	sl->area = CM_LeafArea(leafnum);
+	Q_memcpy(sl->vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
 	}
 
-//  Com_Printf("Loading World Lights : %i world lights loaded\n", r_numWorldLights);
+  Com_Printf("Loading World Lights : %i world lights loaded\n", numShadowLights);
 
 
 }
@@ -334,14 +331,13 @@ void GL_AddFlareSurface(msurface_t * surf)
 	cluster = CM_LeafCluster(leafnum);
 	r_flares[r_numflares].area = CM_LeafArea(leafnum);
 	Q_memcpy(r_flares[r_numflares].vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
-
 	r_numflares++;
 	free(buffer);
-
 
 	// Com_Printf("%i flare surf, %i surf intens, surf bound %f 
 	// flare size %i\n", 
 //       r_numflares, intens, surf_bound, light->size );
+
 }
 
 void CleanDuplicateFlares(){
@@ -1513,6 +1509,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	int i;
 	dheader_t *header;
 	mmodel_t *bm;
+	shadowlight_t *sl;
 	radarOldTime = 0;
 	R_ClearFlares();
 	R_ClearWorldLights();
@@ -1560,7 +1557,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	
 	CleanDuplicateFlares();
 	R_ParseLightEntities();
-	
+	SpawnStaticLight (&sl);
 //
 // set up the submodels
 //

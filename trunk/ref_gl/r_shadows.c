@@ -346,7 +346,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	VectorClear(light);
 	
 //============================================================================
-	dl = r_newrefdef.dlights;
+/*	dl = r_newrefdef.dlights;
 
 	if (r_shadows->value >3) {
 
@@ -448,8 +448,19 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	}
 	if (worldlight && !dlight)
 		GL_RenderVolumes(paliashdr, light, 5);
+*/
+//	if(currentshadowlight){
 
-	
+	VectorSubtract(currentshadowlight->origin, currententity->origin, temp);
+	dist = VectorNormalize(temp);
+	if (dist > currentshadowlight->radius)
+		return;
+
+	AnglesToMat3(currententity->angles, entityAxis);
+	VectorSubtract(currentshadowlight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
+	GL_RenderVolumes(paliashdr, light, 25);
+//	}
 }
 
 

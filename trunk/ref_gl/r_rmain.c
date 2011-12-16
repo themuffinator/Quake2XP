@@ -1159,6 +1159,8 @@ void R_BlobShadow(void);
 
 void R_RenderView(refdef_t * fd)
 {
+	int j;
+
 	if (r_noRefresh->value)
 		return;
 
@@ -1182,11 +1184,31 @@ void R_RenderView(refdef_t * fd)
 	R_BlobShadow();
 
 	R_Stencil(true);
+	R_InitShadowsForFrame();
+
+	for (j=0; j<numUsedShadowLights; j++)
+	{
+	if (!usedshadowlights[j]->visible)
+		continue;
+	currentshadowlight = usedshadowlights[j];
+	}
+	
+	for (j=0; j<numUsedShadowLights; j++)
+	{
+	currentshadowlight = usedshadowlights[j];
+	if (currentshadowlight->visible)
+		break;
+	}
+
 	R_CastShadow();
 	R_DrawShadowWorld();
-	R_DrawEntitiesLightPass();
+//	R_DrawEntitiesLightPass();
+
 	R_Stencil(false);
 
+	if(currentshadowlight)
+	currentshadowlight->visible = false;
+	
 	R_RenderFlares();
 	R_CaptureDepthBuffer();
 	R_DrawParticles(true); //underwater particles
@@ -1951,6 +1973,8 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 R_Shutdown
 ===============
 */
+void R_ClearSLights();
+
 void R_Shutdown(void)
 {
 	Cmd_RemoveCommand("modellist");
@@ -1967,6 +1991,7 @@ void R_Shutdown(void)
 	GLimp_Shutdown();
 	QGL_Shutdown();
 	R_ShutdownPrograms();
+	R_ClearSLights();
 }
 
 

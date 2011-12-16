@@ -80,7 +80,7 @@ byte			viewvis[MAX_MAP_LEAFS/8];
 
 typedef struct shadowlight_s {
 
-	vec3_t	origin;		//position of light source
+	vec3_t	origin, mins, maxs;		//position of light source
 
 	vec3_t	baseColor, color;		//light color, animated color
 
@@ -131,9 +131,9 @@ typedef struct shadowlight_s {
 #define MAXUSEDSHADOWLIGHS	128		//64  //Maximum number of lights that can be used in a single frame	/// FIXME: СѓРјРµРЅСЊС€РёС‚СЊ РґР»СЏ СЃРїРµС†.РєР°СЂС‚ РґР»СЏ РґР°РЅРЅРѕРіРѕ РґРІРёР¶РєР°!
 
 
-extern int numShadowLights;
-extern int numStaticShadowLights;
-extern int numUsedShadowLights; //number of shadow lights acutally drawn this frame
+int numShadowLights;
+int numStaticShadowLights;
+int numUsedShadowLights; //number of shadow lights acutally drawn this frame
 
 shadowlight_t shadowlights[MAXSHADOWLIGHTS];
 shadowlight_t *usedshadowlights[MAXUSEDSHADOWLIGHS];
