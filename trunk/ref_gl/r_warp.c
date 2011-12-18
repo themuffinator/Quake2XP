@@ -266,8 +266,6 @@ void EmitWaterPolys(msurface_t * fa)
 	qglDisableClientState	(GL_COLOR_ARRAY);
 
 	GL_BindNullProgram		();
-	
-	GL_Overbrights(false);
 }
 
 

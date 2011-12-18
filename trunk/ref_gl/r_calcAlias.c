@@ -135,8 +135,6 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	
 	qglColor4f(lightColor[0], lightColor[1], lightColor[2], alpha);	
 
-	GL_Overbrights (false);
-
 	// select skin
 	if (currententity->skin)
 		skin = currententity->skin;	// custom player skin
@@ -311,8 +309,7 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
-
-
+	
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
 
@@ -419,8 +416,6 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	
 	if(currentmodel->noselfshadow)
 		qglDisable(GL_STENCIL_TEST);
-
-	GL_Overbrights (false);
 	
 	backlerp = currententity->backlerp;
 	frontlerp = 1 - backlerp;
@@ -576,8 +571,9 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 			GL_DrawAliasFrameLerpArb(paliashdr, currententity->currentLightPos, lightRad, diffuseColor);
 
-		}
-	
+		} 
+	else
+	{
 								
 		for (i = 0; i < r_numflares; i++) {
 		int sidebit;
@@ -634,8 +630,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			slActive++;
 		}
 
-			dlight = r_newrefdef.dlights;
-	
+		dlight = r_newrefdef.dlights;
 		for (i = 0; i < r_newrefdef.num_dlights; i++, dlight++) {
 			
 			vec3_t dlOrg;
@@ -670,9 +665,6 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			dlActive++;
 		}	
 
-	//	if(slActive && !dlActive)
-		
-
 		if(!dlActive && !slActive){
 			vec3_t org;
 			
@@ -690,4 +682,6 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			
 			GL_DrawAliasFrameLerpArb(paliashdr, org, 200, diffuseColor);
 		}
+
+	}
 }

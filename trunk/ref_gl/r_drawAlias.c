@@ -60,8 +60,6 @@ qboolean R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 	vec3_t		vectors[3];
 	vec3_t		thismins, oldmins, thismaxs, oldmaxs;
 	daliasframe_t *pframe, *poldframe;
-
-
 	vec3_t tmp;
 
 	paliashdr = (dmdl_t *)currentmodel->extradata;
@@ -225,15 +223,6 @@ void GL_OldPerspective (GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble
 }
 
 /*
-==========================
-GL_SetupLightMatrix
-==========================
-*/
-
-
-
-
-/*
 =================
 R_DrawAliasModel
 =================
@@ -289,8 +278,6 @@ next:
 		SetModelsLight(false);
 	else
 		SetModelsLight(true);
-
-	GL_Overbrights (false);
 
 
 	if (currententity->flags & RF_TRANSLUCENT) {
@@ -349,7 +336,6 @@ next:
 		qglDepthRange(gldepthmin, gldepthmax);
 
 	if (r_radar->value >1 && (!deathmatch->value)) {
-		GL_Overbrights(false);
 		
 			RadarEnts[numRadarEnts].color[0]= 1.0;
 			RadarEnts[numRadarEnts].color[1]= 1.0;
@@ -395,7 +381,6 @@ next:
 		numRadarEnts++;
 	}
 	qglColor4f(1, 1, 1, 1);
-	GL_Overbrights (false);
 }
 
 
@@ -484,7 +469,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	
 
 	qglColor4f(1, 1, 1, 1);
-	GL_Overbrights (false);
 }
 
 
@@ -499,7 +483,6 @@ void R_DrawAliasDistortModel (entity_t *e)
 	
 		paliashdr = (dmdl_t *)currentmodel->extradata;
 
-		GL_Overbrights (false);
 		SetModelsLight(false);
 
 		//
@@ -535,9 +518,4 @@ void R_DrawAliasDistortModel (entity_t *e)
 
 		if (currententity->flags & RF_DEPTHHACK)
 			qglDepthRange (gldepthmin, gldepthmax);
-
-		GL_Overbrights (false);
-
-	
-
 }

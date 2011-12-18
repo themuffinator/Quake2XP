@@ -69,8 +69,6 @@ void R_DrawParticles(qboolean WaterCheck)
 	float		scale, r, g, b, a;
 	float		c, d, s;
 
-	GL_Overbrights (false);
-
 	// setup program
 	GL_BindProgram(particlesProgram, defBits);
 	id = particlesProgram->id[defBits];

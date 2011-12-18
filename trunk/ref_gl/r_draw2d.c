@@ -130,7 +130,6 @@ void Draw_CharScaledShadow(int x, int y, float scale_x, float scale_y, unsigned 
 
 	qglColor3f(1.0, 1.0, 1.0);
 	GL_Blend(false, 0, 0);
-	GL_Overbrights(false);
 }
 
 
@@ -201,7 +200,6 @@ void Draw_StringScaledShadow(int x, int y, float scale_x, float scale_y, const c
 		GL_Bind(draw_chars->texnum);
 	}
 
-	GL_Overbrights(false);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglColor3f(0.0, 0.0, 0.0);
@@ -244,7 +242,6 @@ void Draw_StringScaledShadow(int x, int y, float scale_x, float scale_y, const c
 
 	qglColor3f(1.0, 1.0, 1.0);
 	qglDisable(GL_BLEND);
-	GL_Overbrights(false);
 }
 
 
@@ -346,6 +343,7 @@ void Draw_StretchPic(int x, int y, int w, int h, char *pic)
 {
 	qboolean cons = 0;
 	image_t *gl;
+
 	GL_Overbrights(true);
 	gl = Draw_FindPic(pic);
 
@@ -580,8 +578,8 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 void Draw_TileClear(int x, int y, int w, int h, char *pic)
 {
 	image_t *image;
-//GL_Overbrights (true);
 	image = Draw_FindPic(pic);
+
 	if (!image) {
 		Com_Printf("Can't find pic: %s\n", pic);
 		return;

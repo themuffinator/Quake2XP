@@ -81,6 +81,10 @@ static void R_ClearWorldLights(void)
 {
 	memset(r_worldLights, 0, sizeof(r_worldLights));
 	r_numWorldLights = 0;
+
+	numShadowLights = 0;
+	numStaticShadowLights = 0;
+
 }
 
 static void R_ParseLightEntities(void)	// WORLDSHADOW
@@ -95,7 +99,6 @@ static void R_ParseLightEntities(void)	// WORLDSHADOW
 	int leafnum;
 	int cluster;
 	shadowlight_t *sl;
-
 
 	entString = map_entitystring;
 	buf = CM_EntityString();
@@ -208,6 +211,10 @@ static void R_ClearFlares(void)
 	memset(r_flares, 0, sizeof(r_flares));
 	r_numflares = 0;
 	r_numIgnoreflares = 0;
+
+	numShadowLights = 0;
+	numStaticShadowLights = 0;
+
 }
 
 void GL_AddFlareSurface(msurface_t * surf)
@@ -221,6 +228,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 	vec3_t poly_center, mins, maxs, tmp1;
 	int leafnum;
 	int cluster;
+	shadowlight_t *sl;
 
 	if (surf->texinfo->
 		flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_FLOWING |
@@ -331,12 +339,12 @@ void GL_AddFlareSurface(msurface_t * surf)
 	cluster = CM_LeafCluster(leafnum);
 	r_flares[r_numflares].area = CM_LeafArea(leafnum);
 	Q_memcpy(r_flares[r_numflares].vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
+
 	r_numflares++;
 	free(buffer);
+	 
+//	Com_Printf("%i num x%i y%i z%i org\n", numShadowLights,  sl->color[0], sl->color[1], sl->color[2]);
 
-	// Com_Printf("%i flare surf, %i surf intens, surf bound %f 
-	// flare size %i\n", 
-//       r_numflares, intens, surf_bound, light->size );
 
 }
 
@@ -1504,12 +1512,15 @@ void Mod_GenerateLights(model_t * mod)
 Mod_LoadBrushModel
 =================
 */
+qboolean SpawnStaticLight (shadowlight_t *sl);
+
 void Mod_LoadBrushModel(model_t * mod, void *buffer)
 {
 	int i;
 	dheader_t *header;
 	mmodel_t *bm;
-	shadowlight_t *sl;
+	shadowlight_t sl, *sadowl;
+	flare_t *flare;
 	radarOldTime = 0;
 	R_ClearFlares();
 	R_ClearWorldLights();
@@ -1556,8 +1567,19 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	
 	
 	CleanDuplicateFlares();
-	R_ParseLightEntities();
-	SpawnStaticLight (&sl);
+//	R_ParseLightEntities();
+	for (i = 0; i < r_numflares; i++) {
+	
+		flare = &r_flares[i];
+		
+		VectorCopy(flare->origin, sl.origin);
+		VectorCopy(flare->color, sl.color);
+		sl.radius = flare->sizefull;
+		sl.area = flare->area;
+		SpawnStaticLight (&sl);
+	}
+
+
 //
 // set up the submodels
 //

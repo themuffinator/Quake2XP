@@ -439,6 +439,9 @@ void R_LightColor(vec3_t org, vec3_t color)
 	}
 }
 
+/*==============================
+Berserker Quake II light manager
+==============================*/
 
 shadowlight_t* AllocShadowLight ()
 {
@@ -452,7 +455,6 @@ shadowlight_t* AllocShadowLight ()
 
 void R_SpawnSLight(shadowlight_t *sl)
 {
-	int				i;
 	shadowlight_t	*l;
 
 	l = AllocShadowLight();
@@ -462,8 +464,6 @@ void R_SpawnSLight(shadowlight_t *sl)
 	VectorCopy(sl->color, l->color);
 	VectorCopy(sl->origin, l->origin);
 	l->radius = sl->radius;
-	l->style = sl->style;
-	VectorCopy(sl->angles, l->angles);
 	l->isStatic = true;
 	numStaticShadowLights++;
 }
@@ -472,7 +472,7 @@ qboolean SpawnStaticLight (shadowlight_t *sl)
 {
 	if (numStaticShadowLights >= MAXSHADOWLIGHTS)
 	{
-		Com_DPrintf ("SpawnStaticLight: overflow\n");
+		Com_Printf ("SpawnStaticLight: overflow\n");
 		return false;
 	}
 
@@ -481,7 +481,6 @@ qboolean SpawnStaticLight (shadowlight_t *sl)
 
 	//Create a light and make it static
 	R_SpawnSLight(sl);
-///	numStaticShadowLights++;
 	return true;
 }
 
@@ -519,7 +518,7 @@ qboolean R_MarkLightLeaves ()
 
 	if(!currentshadowlight->area)
 	{
-skip:	Com_DPrintf("Out of BSP, rejected light at %f %f %f\n", currentshadowlight->origin[0], currentshadowlight->origin[1], currentshadowlight->origin[2]);
+skip:	Com_Printf("Out of BSP, rejected light at %f %f %f\n", currentshadowlight->origin[0], currentshadowlight->origin[1], currentshadowlight->origin[2]);
 		return false;
 	}
 
@@ -616,21 +615,19 @@ qboolean R_ContributeFrame ()
 		float d = SphereInFrustum(currentshadowlight->origin, currentshadowlight->radius);
 		if (d == 0)
 			return false;	//whole sphere is out ouf frustum so cut it.
-	
 
-	if(!currentshadowlight->isStatic)
-		if(!R_MarkLightLeaves())
-			return false;
+//	if(!currentshadowlight->isStatic)
+//		if(!R_MarkLightLeaves())
+//			return false;
 
 	//not in a visible area => skip it
+	if(r_newrefdef.areabits){
 	if (!(r_newrefdef.areabits[currentshadowlight->area>>3] & (1<<(currentshadowlight->area&7))))
 		return false;
-		return false;	/// Это вызывает баг при присоединении к удаленному серверу!
+	}
 
-	if (!HasSharedLeafs (currentshadowlight->vis, viewvis))
-		return false;
-
-
+//	if (!HasSharedLeafs (currentshadowlight->vis, viewvis))
+//		return false;
 
 	return true;
 }
@@ -690,7 +687,6 @@ Do per frame intitialization for the shadows
 void R_InitShadowsForFrame ()
 {
 	int		i;
-	vec3_t	temp;
 
 	numShadowLights = numStaticShadowLights;
 	R_AddDlights (); //add dynamic lights to the list
@@ -699,14 +695,9 @@ void R_InitShadowsForFrame ()
 	for (i=0; i<numShadowLights; i++)
 	{
 		currentshadowlight = &shadowlights[i];
-		currentshadowlight->visible = false;
 
-		if(currentshadowlight->isStatic)
-			currentshadowlight->visible = false;
-		else
-		{
-			if (R_ContributeFrame())
-			{
+		if (R_ContributeFrame())
+			{				
 				if (numUsedShadowLights < MAXUSEDSHADOWLIGHS)
 				{
 					currentshadowlight->visible = true;
@@ -715,6 +706,7 @@ void R_InitShadowsForFrame ()
 				}
 				
 			}
-		}
+			else
+			currentshadowlight->visible = false;
 	}
 }

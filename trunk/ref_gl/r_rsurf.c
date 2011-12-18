@@ -234,10 +234,6 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 	int	id, nv = fa->polys->numverts;
 	unsigned	defBits = 0;
 
-
-	GL_Overbrights(false);
-
-
 	if (fa->texinfo->flags & SURF_TRANS33)
 		alpha = 0.33;
 	else 
@@ -360,8 +356,8 @@ void R_DrawAlphaPoly(void)
 	intens = gl_state.inverse_intensity;
 	
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
-		GL_Bind(s->texinfo->image->texnum);
-		c_brush_polys++;
+//		GL_Bind(s->texinfo->image->texnum);
+//		c_brush_polys++;
 
 		// moving trans brushes - spaz
 		if (s->ent) {

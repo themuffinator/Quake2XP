@@ -830,7 +830,7 @@ void R_CastShadow(void)
 		
 		if (currentmodel->type != mod_alias)
 			continue;
-
+		
 		if (currententity->
 		flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED |
 				 RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
@@ -839,14 +839,14 @@ void R_CastShadow(void)
 		
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 			continue;
-
+		
 		if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
 			continue;
-
+		
 		if (r_shadowVolumesDebug->value
 		&& (currententity->flags & RF_VIEWERMODEL))
 			continue;
-
+		
 		R_DrawShadowVolume(currententity);
 	}
 	
@@ -1134,6 +1134,40 @@ void R_RenderDistortModels(void)
 
 }
 
+void R_RenderLight ()
+{
+	int		i, j;
+	float	a;
+	vec3_t	v;
+	float	rad;
+	vec3_t oldlightpos;
+
+	VectorCopy(currentshadowlight->origin, oldlightpos);
+	rad = currentshadowlight->radius * r_shadowWorldLightScale->value;
+
+	VectorSubtract (currentshadowlight->origin, r_origin, v);
+
+	qglBegin (GL_TRIANGLE_FAN);
+	qglColor3f (currentshadowlight->color[0]*0.2, currentshadowlight->color[1]*0.2, currentshadowlight->color[2]*0.2);
+	for (i=0 ; i<3 ; i++)
+		v[i] = currentshadowlight->origin[i] - vpn[i]*rad;
+	qglVertex3fv (v);
+	qglColor3f (0,0,0);
+	for (i=16 ; i>=0 ; i--)
+	{
+		a = i/16.0 * M_PI*2;
+		for (j=0 ; j<3 ; j++)
+			v[j] = currentshadowlight->origin[j] + vright[j]*cos(a)*rad
+				+ vup[j]*sin(a)*rad;
+		qglVertex3fv (v);
+	}
+	qglEnd ();
+	VectorCopy(oldlightpos, currentshadowlight->origin);
+}
+
+
+
+
 
 /*
 ================
@@ -1186,28 +1220,21 @@ void R_RenderView(refdef_t * fd)
 	R_Stencil(true);
 	R_InitShadowsForFrame();
 
-	for (j=0; j<numUsedShadowLights; j++)
+/*	for (j=0; j<numUsedShadowLights; j++)
 	{
 	if (!usedshadowlights[j]->visible)
 		continue;
 	currentshadowlight = usedshadowlights[j];
+	Com_Printf("%f %f %f\n", currentshadowlight->origin[0], currentshadowlight->origin[1], currentshadowlight->origin[2]);
 	}
-	
-	for (j=0; j<numUsedShadowLights; j++)
-	{
-	currentshadowlight = usedshadowlights[j];
-	if (currentshadowlight->visible)
-		break;
-	}
+*/
+	R_CastShadow();	
 
-	R_CastShadow();
+
 	R_DrawShadowWorld();
-//	R_DrawEntitiesLightPass();
+	R_DrawEntitiesLightPass();
 
 	R_Stencil(false);
-
-	if(currentshadowlight)
-	currentshadowlight->visible = false;
 	
 	R_RenderFlares();
 	R_CaptureDepthBuffer();

@@ -232,12 +232,9 @@ void R_RenderFlares(void)
 		R_BuildFlares(fl, i);
 
 	}
-
-	qglColor4f(1, 1, 1, 1);
 	qglDisable(GL_BLEND);
 	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(1);
-	GL_Overbrights(false);
 
 }
 
