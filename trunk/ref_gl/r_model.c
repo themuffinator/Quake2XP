@@ -49,23 +49,15 @@ static float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 };
 
 int bspSize, aliasSize, spriteSize;
-
-/*
-================
-R_ParseLightEntities - BERSERK
-
-parses light entity string
-================
-*/
-
 int numentitychars;
 byte *mod_base;
+
 /*
 =================
 Mod_LoadEntityString
 =================
 */
-void Mod_LoadEntityString(lump_t * l)	// WORLDSHADOW
+void Mod_LoadEntityString(lump_t * l)
 {
 	numentitychars = l->filelen;
 
@@ -77,143 +69,11 @@ void Mod_LoadEntityString(lump_t * l)	// WORLDSHADOW
 
 
 
-static void R_ClearWorldLights(void)
-{
-	memset(r_worldLights, 0, sizeof(r_worldLights));
-	r_numWorldLights = 0;
-
-	numShadowLights = 0;
-	numStaticShadowLights = 0;
-
-}
-
-static void R_ParseLightEntities(void)	// WORLDSHADOW
-{
-
-	int i;
-	char *entString;
-	char *buf, *tok;
-	char block[2048], *bl;
-	vec3_t origin, color;
-	float intensity;
-	int leafnum;
-	int cluster;
-	shadowlight_t *sl;
-
-	entString = map_entitystring;
-	buf = CM_EntityString();
-
-
-	while (1) {
-		tok = Com_ParseExt(&buf, true);
-		if (!tok[0])
-			break;				// End of data
-
-		if (Q_stricmp(tok, "{"))
-			continue;			// Should never happen!
-
-		// Parse the text inside brackets
-		block[0] = 0;
-		do {
-			tok = Com_ParseExt(&buf, false);
-			if (!Q_stricmp(tok, "}"))
-				break;			// Done
-
-			if (!tok[0])		// Newline
-				Q_strcat(block, "\n", sizeof(block));
-			else {				// Token
-				Q_strcat(block, " ", sizeof(block));
-				Q_strcat(block, tok, sizeof(block));
-			}
-		} while (buf);
-
-		// Now look for "classname"
-		tok = strstr(block, "classname");
-		if (!tok)
-			continue;			// Not found
-
-		// Skip over "classname" and whitespace
-		tok += strlen("classname");
-		while (*tok && *tok == ' ')
-			tok++;
-
-		// Next token must be "light"
-		if (Q_strnicmp(tok, "light", 5))
-			continue;			// Not "light"
-
-		// Finally parse the light entity
-		VectorSet(color, 1, 1, 1);	// default color
-		VectorClear(origin);
-		intensity = 0;
-
-		bl = block;
-		while (1) {
-			tok = Com_ParseExt(&bl, true);
-			if (!tok[0])
-				break;			// End of data
-
-			if (!Q_stricmp("origin", tok)) {
-				for (i = 0; i < 3; i++) {
-					tok = Com_ParseExt(&bl, false);
-					origin[i] = atof(tok);
-				}
-			} else if (!Q_stricmp("light", tok)
-					   || !Q_stricmp("_light", tok)) {
-				tok = Com_ParseExt(&bl, false);
-				intensity = atof(tok);
-
-			}
-
-
-				else if (!Q_stricmp(tok, "color") || !Q_stricmp(tok, "_color"))
-			{
-				for(i=0; i<3; i++)
-				{
-					tok = Com_ParseExt(&bl, false);
-					color[i] = atof(tok);	// parse color infomation
-				}
-			}
-
-
-			else
-				Com_SkipRestOfLine(&bl);
-		}
-
-		if (!intensity)
-			continue;
-		// intensity = 150;
-
-		// Add it to the list
-	if (numShadowLights == 1024)
-		break;
-
-	sl = &shadowlights[numShadowLights++];
-
-	VectorCopy(origin, sl->origin);
-	sl->radius =  intensity;
-	VectorCopy(color, sl->color);
-	sl[numShadowLights].isStatic = true;
-
-	leafnum = CM_PointLeafnum(sl->origin);
-	cluster = CM_LeafCluster(leafnum);
-	sl->area = CM_LeafArea(leafnum);
-	Q_memcpy(sl->vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
-	}
-
-  Com_Printf("Loading World Lights : %i world lights loaded\n", numShadowLights);
-
-
-}
-
-
 static void R_ClearFlares(void)
 {
 	memset(r_flares, 0, sizeof(r_flares));
 	r_numflares = 0;
 	r_numIgnoreflares = 0;
-
-	numShadowLights = 0;
-	numStaticShadowLights = 0;
 
 }
 
@@ -228,7 +88,6 @@ void GL_AddFlareSurface(msurface_t * surf)
 	vec3_t poly_center, mins, maxs, tmp1;
 	int leafnum;
 	int cluster;
-	shadowlight_t *sl;
 
 	if (surf->texinfo->
 		flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_FLOWING |
@@ -1519,11 +1378,8 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	int i;
 	dheader_t *header;
 	mmodel_t *bm;
-	shadowlight_t sl, *sadowl;
-	flare_t *flare;
 	radarOldTime = 0;
 	R_ClearFlares();
-	R_ClearWorldLights();
 	
 	loadmodel->memorySize = 0;
 	
@@ -1567,19 +1423,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	
 	
 	CleanDuplicateFlares();
-//	R_ParseLightEntities();
-	for (i = 0; i < r_numflares; i++) {
 	
-		flare = &r_flares[i];
-		
-		VectorCopy(flare->origin, sl.origin);
-		VectorCopy(flare->color, sl.color);
-		sl.radius = flare->sizefull;
-		sl.area = flare->area;
-		SpawnStaticLight (&sl);
-	}
-
-
 //
 // set up the submodels
 //
@@ -2567,5 +2411,53 @@ void Mod_FreeAll(void)
 		if (mod_known[i].extradatasize)
 			Mod_Free(&mod_known[i]);
 	}
+
+}
+
+/// from Tenebrae, asm by Berserker
+qboolean HasSharedLeafs(byte *v1, byte *v2)
+{
+
+	int numleafs__ = r_worldmodel->numleafs;
+	_asm
+	{
+		mov edx, numleafs__
+		mov esi, v1
+		mov edi, v2
+		shr edx, 5
+		jz short l4
+l0:		mov eax, [esi]
+		add esi, 4
+		test eax, [edi]
+		jnz short l3
+		add edi, 4
+		dec edx
+		jnz short l0
+l4:		mov edx, numleafs__
+		mov esi, v1
+		and edx, ~0x1f
+		mov edi, v2
+		cmp edx, numleafs__
+		jz short l5
+l1:		mov eax, edx
+		mov ecx, edx
+		mov ebx, 1
+		and ecx, 7
+		shr eax, 3
+		shl ebx, cl
+		test byte ptr [esi+eax], bl
+		jz short l2
+		test byte ptr [edi+eax], bl
+		jnz short l3
+l2:		inc edx
+		cmp edx, numleafs__
+		jc short l1
+	}
+l5:	return false;
+	_asm
+	{
+l3:
+	}
+	return true;
 
 }

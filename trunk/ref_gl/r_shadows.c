@@ -337,14 +337,11 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	mat3_t		entityAxis;
 	trace_t		r_trace;
 
-//	if (r_newrefdef.vieworg[2] < (currententity->origin[2] - 10))
-//		return;
+	if (r_newrefdef.vieworg[2] < (currententity->origin[2] - 10))
+		return;
 
-//	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-//		return;
-	
 //============================================================================
-/*	dl = r_newrefdef.dlights;
+	dl = r_newrefdef.dlights;
 
 	if (r_shadows->value >3) {
 
@@ -386,7 +383,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 			float viewplane;
 						
 			lightSurf = &r_flares[i];
-			
+						
 			if(dlight)
 				continue;
 			
@@ -396,16 +393,16 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 					continue;
 				}
 			}
-
-			VectorSubtract(lightSurf->origin, currententity->origin, temp);
-
-			dist = VectorNormalize(temp);
-
-			if (dist > lightSurf->size * r_shadowWorldLightScale->value)
-				continue;		// big distance!
+			if (!HasSharedLeafs (lightSurf->vis, viewvis))
+				continue;
 			
 			if(lightSurf->ignore)
 				continue;
+
+			VectorSubtract(lightSurf->origin, currententity->origin, temp);
+			dist = VectorNormalize(temp);
+			if (dist > lightSurf->size * r_shadowWorldLightScale->value)
+				continue;		// big distance!
 
 			viewplane = DotProduct(currententity->origin, lightSurf->surf->plane->normal) - lightSurf->surf->plane->dist;
 			
@@ -417,7 +414,6 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 			if ((lightSurf->surf->flags & SURF_PLANEBACK) != sidebit)
 					continue;		// wrong light poly side!
 			
-		
 			// light surf behind the wall 
 			if (r_newrefdef.areabits){
 			r_trace = CM_BoxTrace(currententity->origin, lightSurf->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
@@ -446,25 +442,6 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	}
 	if (worldlight && !dlight)
 		GL_RenderVolumes(paliashdr, light, 5);
-*/
-
-	for (i=0; i<numUsedShadowLights; i++)
-	{
-	if (!usedshadowlights[i]->visible)
-		continue;
-	currentshadowlight = usedshadowlights[i];
-
-	VectorSubtract(currentshadowlight->origin, currententity->origin, temp);
-	dist = VectorNormalize(temp);
-	if (dist > currentshadowlight->radius  * r_shadowWorldLightScale->value)
-		return;
-	AnglesToMat3(currententity->angles, entityAxis);
-	VectorSubtract(currentshadowlight->origin, currententity->origin, temp);
-	Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-	GL_RenderVolumes(paliashdr, light, 25);
-	
-	Com_Printf("%f %f %f\n", currentshadowlight->origin[0], currentshadowlight->origin[1], currentshadowlight->origin[2]);
-	}
 
 }
 
@@ -510,7 +487,7 @@ void R_DrawShadowVolume(entity_t * e)
 	
 	if (r_shadows->value < 2)
 		return;
-/*
+
 	VectorAdd(e->origin, currententity->model->maxs, water); 
 	if(CL_PMpointcontents(water) & MASK_WATER)
 		return;
@@ -518,17 +495,17 @@ void R_DrawShadowVolume(entity_t * e)
 	VectorSubtract(currententity->model->maxs, currententity->model->mins, tmp);
 	VectorScale (tmp, 1.666, tmp); // Hail Satan!
 	rad = VectorLength (tmp);
-*/	
-//	if( R_CullSphere( e->origin, rad, 15 ) )
-//		return;
+	
+	if( R_CullSphere( e->origin, rad, 15 ) )
+		return;
 		
-	/*
+	
 	if (r_newrefdef.areabits){
 		tr = CM_BoxTrace(r_origin, e->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
 		if(tr.fraction != 1.0)
 			return;
 	}
-	*/
+	
 
 	paliashdr = (dmdl_t *) currentmodel->extradata;
 

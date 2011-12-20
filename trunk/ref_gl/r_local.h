@@ -509,7 +509,8 @@ qboolean SurfInFrustum(msurface_t *s);
 extern vec3_t currentShadowLight;
 
 int GL_MsgGLError(char* Info);
-
+qboolean HasSharedLeafs(byte *v1, byte *v2);
+float SphereInFrustum(vec3_t o, float radius);
 /*
 ** GL config stuff
 */

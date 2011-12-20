@@ -636,8 +636,8 @@ void Con_DrawConsole(float frac)
 
 	if (lines > viddef.height)
 		lines = viddef.height;
-
-// draw the background
+	
+	// draw the background
 	if (cls.state == ca_active || cl.refresh_prepped)
 		Draw_StretchPic2(0, lines - viddef.height, viddef.width,
 						 viddef.height, i_conback, true);
@@ -647,12 +647,12 @@ void Con_DrawConsole(float frac)
 	SCR_AddDirtyPoint(0, 0);
 	SCR_AddDirtyPoint(viddef.width - 1, lines - 1);
 
-	Com_sprintf(version, sizeof(version), "q2xp 1.26q (%s)", __DATE__);
+	Com_sprintf(version, sizeof(version), "q2xp 1.26.1 (%s)", __DATE__);
 	for (x = 0; x < strlen(version); x++)
 		version[x] += 128;
 
-	Draw_StringScaledShadow(viddef.width - 180*fontscale, lines - 12*fontscale, fontscale, fontscale, version);
-	Draw_StringScaled(viddef.width - 180*fontscale, lines - 12*fontscale, fontscale, fontscale, version);
+	Draw_StringScaledShadow(viddef.width - 185*fontscale, lines - 12*fontscale, fontscale, fontscale, version);
+	Draw_StringScaled(viddef.width - 185*fontscale, lines - 12*fontscale, fontscale, fontscale, version);
 
 // draw the text
 	con.vislines = lines;

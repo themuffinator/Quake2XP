@@ -212,8 +212,10 @@ void R_RenderFlares(void)
 	fl = r_flares;
 	for (i = 0; i < r_numflares; i++, fl++) {
 		int sidebit;
-		float viewplane;
-		
+		float viewplane;		
+				
+		if (!HasSharedLeafs (fl->vis, viewvis))
+			continue;
 		if (fl->surf->visframe != r_framecount)	// pvs culling... haha, nicest optimisation!
 			continue;
 		

@@ -122,7 +122,7 @@ typedef struct shadowlight_s {
 	float	haloalpha; //alpha of halo
 
 	vec3_t	oldlightorigin; 
-
+	qboolean ignore;
 	int area;
 
 } shadowlight_t;

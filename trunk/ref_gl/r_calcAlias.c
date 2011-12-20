@@ -578,28 +578,25 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 		for (i = 0; i < r_numflares; i++) {
 		int sidebit;
 		float viewplane;
-			
-		if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-				continue;
 
 		lightSurf = &r_flares[i];
-		
-			// PVS coolling 
+
+		// PVS coolling 
 		if (r_newrefdef.areabits){
 			if (!(r_newrefdef.areabits[lightSurf->area >> 3] & (1 << (lightSurf->area & 7)))){
 					continue;
 				}
 			}
-		VectorSubtract(currententity->origin, lightSurf->origin, temp);
-
-		dist = VectorLength(temp);
-
-		if (dist > lightSurf->size * r_shadowWorldLightScale->value)
-			continue;		// big distance!
-
-
+		if (!HasSharedLeafs (lightSurf->vis, viewvis))
+				continue;
+				
 		if(lightSurf->ignore)
 			continue;
+
+		VectorSubtract(currententity->origin, lightSurf->origin, temp);
+		dist = VectorLength(temp);
+		if (dist > lightSurf->size * r_shadowWorldLightScale->value)
+			continue;		// big distance!
 
 		viewplane = DotProduct(currententity->origin, lightSurf->surf->plane->normal) - lightSurf->surf->plane->dist;
 			
