@@ -188,11 +188,12 @@ tbnDelux.x = dot(wDelux, t);
 tbnDelux.y = dot(wDelux, b);
 tbnDelux.z = dot(wDelux, n);
 tbnDelux = abs(tbnDelux);
+tbnDelux = clamp(tbnDelux, 0.35, 1.0);
 vec2 Es = PhongLighting(normalMap, tbnDelux, V, 16.0);
 #endif
 
 #ifdef LIGHTMAP
-bumpLight = (Es.x * diffuseMap) + (Es.y * specular);
+bumpLight = (Es.x * diffuseMap) + (Es.y * specular * lightMap);
 diffuseMap *= u_ambientScale;
 #endif
 
