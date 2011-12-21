@@ -511,6 +511,7 @@ extern vec3_t currentShadowLight;
 int GL_MsgGLError(char* Info);
 qboolean HasSharedLeafs(byte *v1, byte *v2);
 float SphereInFrustum(vec3_t o, float radius);
+void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t lightColor);
 /*
 ** GL config stuff
 */
