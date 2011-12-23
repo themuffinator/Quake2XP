@@ -1153,8 +1153,8 @@
     <ClCompile Include="ref_gl\r_particles.c" />
     <ClCompile Include="ref_gl\r_postprocess.c" />
     <ClCompile Include="win32\r_qglwin.c" />
-    <ClCompile Include="ref_gl\r_rmain.c" />
-    <ClCompile Include="ref_gl\r_rmisc.c" />
+    <ClCompile Include="ref_gl\r_main.c" />
+    <ClCompile Include="ref_gl\r_misc.c" />
     <ClCompile Include="ref_gl\r_rsurf.c" />
     <ClCompile Include="ref_gl\r_shadows.c" />
     <ClCompile Include="ref_gl\r_warp.c" />

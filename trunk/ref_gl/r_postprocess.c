@@ -492,7 +492,6 @@ hack:
 
 	// xy = radial center screen space position, z = radius attenuation, w = blur strength
 	qglUniform4f(qglGetUniformLocation(id, "u_radialBlurParams"), vid.width*0.5, vid.height*0.5, 1.0/vid.height, blur);
-	qglUniform1i(qglGetUniformLocation(id, "u_samples"), r_radialBlurSamples->value);
 
 	qglBegin(GL_QUADS);
     qglVertex2f(0, vid.height);

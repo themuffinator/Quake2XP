@@ -204,12 +204,6 @@
     <ClCompile Include="win32\r_qglwin.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_rmain.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="ref_gl\r_rmisc.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_rsurf.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -274,6 +268,12 @@
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="ref_gl\r_lightmap.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_main.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_misc.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

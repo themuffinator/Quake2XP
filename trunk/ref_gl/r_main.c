@@ -1527,7 +1527,6 @@ void R_RegisterCvars(void)
 
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
-	r_radialBlurSamples =               Cvar_Get("r_radialBlurSamples", "8", CVAR_ARCHIVE);
 	r_softParticles =					Cvar_Get("r_softParticles", "1", CVAR_ARCHIVE);
 
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
@@ -1598,7 +1597,6 @@ void R_InitPrograms(void);
 int R_Init(void *hinstance, void *hWnd)
 {
 	char			vendor_buffer[1000];
-	int				maxTextureCoords;
 	int				aniso_level, max_aniso;
 
 	Draw_GetPalette();
@@ -1685,8 +1683,7 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf("\n");
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
-	qglGetIntegerv (GL_MAX_TEXTURE_COORDS_ARB, &maxTextureCoords);
-
+	
 #ifdef _WIN32
 	if (strstr(gl_config.extensions_string, "WGL_EXT_swap_control")) {
 		qwglSwapIntervalEXT = (BOOL(WINAPI *) (int)) qwglGetProcAddress("wglSwapIntervalEXT");
@@ -1697,7 +1694,7 @@ int R_Init(void *hinstance, void *hWnd)
 #endif
 
 if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
-	Com_Printf("...using GL_ARB_multitexture ["S_COLOR_GREEN"%i"S_COLOR_WHITE" Texture Units]\n", maxTextureCoords);
+	Com_Printf("...using GL_ARB_multitexture\n");
 		
 		qglMultiTexCoord2fARB =		(PFNGLMULTITEXCOORD2FARBPROC)		qwglGetProcAddress("glMultiTexCoord2fARB");
 		qglActiveTextureARB =		(PFNGLACTIVETEXTUREARBPROC)			qwglGetProcAddress("glActiveTextureARB");
@@ -1899,7 +1896,8 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	qglGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &gl_config.maxCombinedTextureImageUnits);
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &gl_config.maxVertexAttribs);
-	
+	qglGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &gl_config.maxTextureImageUnits);
+
 	Com_Printf("\n");
 	Com_Printf(S_COLOR_YELLOW"   GLSL Version:               "S_COLOR_GREEN"   %s\n", gl_config.shadingLanguageVersionString);
 	Com_Printf(S_COLOR_YELLOW"   maxFragmentUniformComponents:"S_COLOR_GREEN"  %i\n", gl_config.maxFragmentUniformComponents);
@@ -1907,6 +1905,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	Com_Printf(S_COLOR_YELLOW"   maxVertexAttribs:           "S_COLOR_GREEN"   %i\n", gl_config.maxVertexAttribs);
 	Com_Printf(S_COLOR_YELLOW"   maxVaryingFloats:           "S_COLOR_GREEN"   %i\n", gl_config.maxVaryingFloats);
 	Com_Printf(S_COLOR_YELLOW"   maxVertexTextureImageUnits: "S_COLOR_GREEN"   %i\n", gl_config.maxVertexTextureImageUnits);
+	Com_Printf(S_COLOR_YELLOW"   maxTextureImageUnits:       "S_COLOR_GREEN"   %i\n", gl_config.maxTextureImageUnits);
 	Com_Printf(S_COLOR_YELLOW"   maxCombinedTextureImageUnits: "S_COLOR_GREEN" %i\n", gl_config.maxCombinedTextureImageUnits);
 	Com_Printf(S_COLOR_YELLOW"   maxFragmentUniformComponents: "S_COLOR_GREEN" %i\n", gl_config.maxFragmentUniformComponents);
 
