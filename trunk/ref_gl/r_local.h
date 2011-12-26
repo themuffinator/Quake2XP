@@ -282,7 +282,6 @@ cvar_t	*r_bloomThreshold;
 cvar_t	*r_bloomIntens;
 
 cvar_t	*sys_priority;
-cvar_t	*sys_affinity;
 
 cvar_t	*r_DrawRangeElements;
 cvar_t	*r_bumpAlias;

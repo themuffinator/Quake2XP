@@ -482,11 +482,8 @@ void R_DrawShadowVolume(entity_t * e)
 	dtrivertx_t		*v, *ov, *verts;
 	int				*order, i;
 	float			frontlerp, rad;
-	vec3_t			move, delta, vectors[3], frontv, backv, tmp, water, mins, maxs;
+	vec3_t			move, delta, vectors[3], frontv, backv, tmp, water;
 	trace_t			tr;
-	
-	if (r_shadows->value < 2)
-		return;
 
 	VectorAdd(e->origin, currententity->model->maxs, water); 
 	if(CL_PMpointcontents(water) & MASK_WATER)
@@ -498,11 +495,9 @@ void R_DrawShadowVolume(entity_t * e)
 	
 	if( R_CullSphere( e->origin, rad, 15 ) )
 		return;
-		
-	VectorAdd(e->origin, currententity->model->maxs, maxs); 
-	VectorAdd(e->origin, currententity->model->mins, mins); 
+
 	if (r_newrefdef.areabits){
-		tr = CM_BoxTrace(r_origin, e->origin, mins, maxs, r_worldmodel->firstnode, MASK_OPAQUE);
+		tr = CM_BoxTrace(r_origin, e->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
 		if(tr.fraction != 1.0)
 			return;
 	}

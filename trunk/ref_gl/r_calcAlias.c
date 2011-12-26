@@ -571,15 +571,17 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 			GL_DrawAliasFrameLerpArb(paliashdr, currententity->currentLightPos, lightRad, diffuseColor);
 
-		} 
+	} 
 	else
 	{
-								
-		for (i = 0; i < r_numflares; i++) {
+	for (i = 0; i < r_numflares; i++) {
 		int sidebit;
 		float viewplane;
 
 		lightSurf = &r_flares[i];
+		
+		if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+			continue;
 
 		// PVS coolling 
 		if (r_newrefdef.areabits){
@@ -665,20 +667,21 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 		if(!dlActive && !slActive){
 			vec3_t org;
 			
-			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-				return;
+			if (r_newrefdef.areabits){
+			r_trace = CM_BoxTrace(currententity->origin, r_origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			if(r_trace.fraction != 1.0)
+			return;
+			}
 
-			VectorCopy(currententity->origin, org);
+			VectorAdd(currententity->origin, currententity->model->maxs, org);
 			org[1]+=50;
 			org[2]+=50;
 			
 			R_LightPoint(currententity->origin, diffuseColor, true);
-
 			VectorSubtract(org, currententity->origin, tmp);
 			Mat3_TransposeMultiplyVector(entityAxis, tmp, org);	
 			
 			GL_DrawAliasFrameLerpArb(paliashdr, org, 200, diffuseColor);
 		}
-
-	}
+}
 }

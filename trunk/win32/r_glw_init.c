@@ -368,6 +368,31 @@ void GLimp_Shutdown( void )
 	}
 }
 
+int Bin(int num, char *bufr)
+{
+	char	cnt = '0';
+	int		cnt2 = 0;
+	int		i;
+	int		mask = 1;
+	int		offs = 0;
+	qboolean	first = true;
+
+	for (i=0; i<32; i++)		// лимит до 32 ядер
+	{
+		if (num & mask)
+		{
+			if (!first)
+				bufr[offs++]=',';
+			bufr[offs++]=cnt;
+			cnt2++;
+			first = false;
+		}
+		cnt++;
+		mask += mask;
+	}
+
+	return cnt2;
+}
 
 /*
 ====================
@@ -549,26 +574,7 @@ void CpuID(void)
 			}
 
         }
-    }
-
-
-	if(sys_affinity->value)
-		{
-			//	cpumask=1 - use core #0 
-			//	cpumask=2 - use core #1 
-			//	cpumask=3 - use cores #0 & #1 
-			
-			if(sys_affinity->value >3)
-				Cvar_SetValue("sys_affinity", 3);
-	
-			//	if number of cpu core > 1 
-			//	we can run run game on second core or use both cores
-
-			if (BaseCpuInfo.dwNumberOfProcessors > 1) 
-					SetProcessAffinityMask(GetCurrentProcess(), (DWORD_PTR)sys_affinity->value); 
-		
-		CloseHandle(GetCurrentProcess());
-		}
+    }	
 
 }
 

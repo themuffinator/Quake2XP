@@ -796,10 +796,13 @@ void R_CastShadow(void)
 {
 	int i;
 	
-	if (!r_shadows->value)
+	if (r_shadows->value < 2)
 		return;
 	
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+		return;
+			
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
@@ -837,14 +840,10 @@ void R_CastShadow(void)
 				 RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
 				 continue;
 		
-		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			continue;
-		
 		if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
 			continue;
 		
-		if (r_shadowVolumesDebug->value
-		&& (currententity->flags & RF_VIEWERMODEL))
+		if (r_shadowVolumesDebug->value && (currententity->flags & RF_VIEWERMODEL))
 			continue;
 		
 		R_DrawShadowVolume(currententity);
@@ -1497,7 +1496,6 @@ void R_RegisterCvars(void)
 	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
 
 	sys_priority =						Cvar_Get("sys_priority", "0", CVAR_ARCHIVE);
-	sys_affinity =						Cvar_Get("sys_affinity", "0", CVAR_ARCHIVE);
 		
 	r_DrawRangeElements	=				Cvar_Get("r_DrawRangeElements","1",CVAR_ARCHIVE);
 			
