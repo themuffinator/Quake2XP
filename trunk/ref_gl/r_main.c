@@ -1080,8 +1080,6 @@ void R_DrawEntitiesLightPass(void)
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
-	qglEnable(GL_POLYGON_OFFSET_FILL);
-    qglPolygonOffset(-2, -2);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++)	
 	{
@@ -1101,7 +1099,6 @@ void R_DrawEntitiesLightPass(void)
 	}
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglDepthMask(1);
 
 }
