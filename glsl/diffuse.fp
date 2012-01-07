@@ -52,9 +52,9 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 
 	// clamp z value - fix (but not full) smooth tbn bug 
 	if (viewVec.z < 0.0)
-		viewVec.z = clamp(viewVec.z, -1.0, -0.1);
+		viewVec.z = clamp(viewVec.z, -1.0, -0.001);
 	else
-		viewVec.z = clamp(viewVec.z, 0.1, 1.0);
+		viewVec.z = clamp(viewVec.z, 0.001, 1.0);
 
 	float lod = ComputeLOD(texCoord, u_texSize);
 
