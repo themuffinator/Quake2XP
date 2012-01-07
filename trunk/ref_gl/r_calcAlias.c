@@ -126,7 +126,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	if(r_bumpAlias->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		VectorSet(lightColor, 0.25, 0.25, 0.25);
+		VectorSet(lightColor, 0.15, 0.15, 0.15);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
@@ -545,7 +545,7 @@ qboolean R_CullSphere( const vec3_t centre, const float radius, const int clipfl
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 {
 	
-	vec3_t			temp, tmp, light;
+	vec3_t			temp, tmp, light, tmpLight;
 	float			dist;
 	int				i, dlActive = 0, slActive = 0;
 	dlight_t		*dlight;     //dynamic lights
@@ -558,18 +558,19 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 	AnglesToMat3(currententity->angles, entityAxis);
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-				
-			lightRad = currententity->lightRad;
-						
+									
 			VectorClear(diffuseColor);
 			diffuseColor[0] = 1.0;
 			diffuseColor[1] = 1.0;
 			diffuseColor[2] = 1.0;
-			
-			VectorSubtract(currententity->currentLightPos, currententity->origin, tmp);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, currententity->currentLightPos);	
+			VectorCopy(currententity->origin, tmpLight);
+			tmpLight[0]-= 100;
+			tmpLight[2]+= 60;
 
-			GL_DrawAliasFrameLerpArb(paliashdr, currententity->currentLightPos, lightRad, diffuseColor);
+			VectorSubtract(tmpLight, currententity->origin, tmp);
+			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);		
+
+			GL_DrawAliasFrameLerpArb(paliashdr, light, 666, diffuseColor);
 
 	} 
 	else
@@ -625,7 +626,8 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 			R_LightPoint(lightSurf->origin, diffuseColor, true);
 			VectorScale(diffuseColor, 2.0, diffuseColor);
-			GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
+			if (currententity->flags & RF_WEAPONMODEL)
+				GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
 			slActive++;
 		}
 
@@ -683,5 +685,8 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			
 			GL_DrawAliasFrameLerpArb(paliashdr, org, 200, diffuseColor);
 		}
+
+		if(!dlActive && slActive)
+			GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
 }
 }

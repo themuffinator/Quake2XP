@@ -162,6 +162,53 @@ void CreateScreenRect(void){
 
 }
 
+image_t *shadowMask;
+
+void CreateShadowMask(void){
+
+	
+	int		i;
+	char	name[17] = "***shadowMask***";
+	image_t	*image;
+
+	// find a free image_t
+	for (i=0, image=gltextures ; i<numgltextures ; i++,image++)
+	{
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures)
+	{
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error (ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+	
+	strcpy (image->name, name);
+
+	image->width = vid.width;
+	image->height = vid.height;
+	image->upload_width = vid.width;
+	image->upload_height = vid.height;
+	image->type = it_pic;
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+
+	shadowMask = image;
+
+
+	 // create shadow mask texture
+   
+    qglBindTexture   (GL_TEXTURE_RECTANGLE_ARB, shadowMask->texnum);
+    qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0,
+                       GL_RGB, GL_UNSIGNED_BYTE, NULL );
+
+}
 
 byte missing_texture[4][4] = {
 	{0.0, 0.0, 0.0, 0.0},
@@ -350,6 +397,7 @@ void R_InitEngineTextures(void)
 	CreateDSTTex_ARB();
 	CreateDepthTexture();
 	CreateScreenRect();
+	CreateShadowMask();
 }
 
 

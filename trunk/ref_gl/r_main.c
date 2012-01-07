@@ -66,7 +66,7 @@ mat4x4_t r_project_matrix;
 // screen size info
 //
 refdef_t r_newrefdef;
-
+glwstate_t glw_state;
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
 
 int GL_MsgGLError(char* Info)
@@ -484,6 +484,11 @@ void R_SetupFrame(void)
 		}
 	}
 
+	if(CL_PMpointcontents(r_origin) & CONTENTS_SOLID)
+		outMap = true;
+	else
+		outMap = false;
+
 	for (i = 0; i < 4; i++)
 		v_blend[i] = r_newrefdef.blend[i];
 
@@ -792,7 +797,7 @@ void R_SetupGL(void)
 
 
 
-void R_CastShadow(void)
+void R_CastShadowVolumes(void)
 {
 	int i;
 	
@@ -819,8 +824,8 @@ void R_CastShadow(void)
 	else
 		qglColorMask(0, 0, 0, 0);
 	
+	qglEnable(GL_STENCIL_TEST);
 	qglStencilMask(255);
-
 	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
 		
 	for (i = 0; i < r_newrefdef.num_entities; i++) 
@@ -849,6 +854,7 @@ void R_CastShadow(void)
 		R_DrawShadowVolume(currententity);
 	}
 	
+	qglDisable(GL_STENCIL_TEST);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDepthMask(true);
 	if (r_shadowVolumesDebug->value)
@@ -867,6 +873,10 @@ R_Clear
 
 void R_Clear(void)
 {
+	qglClearStencil(128);
+	qglStencilMask(255);
+	qglClear(GL_STENCIL_BUFFER_BIT);
+
 	qglClear(GL_DEPTH_BUFFER_BIT);
 	gldepthmin = 0;
 	gldepthmax = 1;
@@ -1073,13 +1083,6 @@ void R_DrawEntitiesLightPass(void)
 	qglEnable(GL_POLYGON_OFFSET_FILL);
     qglPolygonOffset(-2, -2);
 
-	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
-	qglStencilFunc(GL_EQUAL, 128, 255);
-	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	qglStencilMask(0);
-	}
-
-	
 	for (i = 0; i < r_newrefdef.num_entities; i++)	
 	{
 		currententity = &r_newrefdef.entities[i];
@@ -1133,40 +1136,6 @@ void R_RenderDistortModels(void)
 
 }
 
-void R_RenderLight ()
-{
-	int		i, j;
-	float	a;
-	vec3_t	v;
-	float	rad;
-	vec3_t oldlightpos;
-
-	VectorCopy(currentshadowlight->origin, oldlightpos);
-	rad = currentshadowlight->radius * r_shadowWorldLightScale->value;
-
-	VectorSubtract (currentshadowlight->origin, r_origin, v);
-
-	qglBegin (GL_TRIANGLE_FAN);
-	qglColor3f (currentshadowlight->color[0]*0.2, currentshadowlight->color[1]*0.2, currentshadowlight->color[2]*0.2);
-	for (i=0 ; i<3 ; i++)
-		v[i] = currentshadowlight->origin[i] - vpn[i]*rad;
-	qglVertex3fv (v);
-	qglColor3f (0,0,0);
-	for (i=16 ; i>=0 ; i--)
-	{
-		a = i/16.0 * M_PI*2;
-		for (j=0 ; j<3 ; j++)
-			v[j] = currentshadowlight->origin[j] + vright[j]*cos(a)*rad
-				+ vup[j]*sin(a)*rad;
-		qglVertex3fv (v);
-	}
-	qglEnd ();
-	VectorCopy(oldlightpos, currentshadowlight->origin);
-}
-
-
-
-
 
 /*
 ================
@@ -1175,20 +1144,9 @@ R_RenderView
 r_newrefdef must be set before the first call
 ================
 */
-void R_Stencil(qboolean on)
-{
-if(on){
-qglClearStencil(128);
-qglStencilMask(255);
-qglClear(GL_STENCIL_BUFFER_BIT);
-qglEnable(GL_STENCIL_TEST);
-}
-else
-qglDisable(GL_STENCIL_TEST);
-}
-
 
 void R_BlobShadow(void);
+void R_ShadowBlend();
 
 void R_RenderView(refdef_t * fd)
 {
@@ -1212,16 +1170,14 @@ if (r_noRefresh->value)
 	R_DrawBSP();
 	R_RenderDecals();
 	R_DrawEntitiesOnList();
-	R_BlobShadow();
-
-	R_Stencil(true);
-	R_CastShadow();	
-	R_DrawShadowWorld();
-	R_DrawEntitiesLightPass();
-	R_Stencil(false);
-	
-	R_RenderFlares();
 	R_CaptureDepthBuffer();
+	
+	R_BlobShadow();
+	R_CastShadowVolumes();	
+	R_DrawEntitiesLightPass();
+	R_ShadowBlend();
+
+	R_RenderFlares();
 	R_DrawParticles(true); //underwater particles
 	R_CaptureColorBuffer();
 	R_RenderDistortModels();
@@ -1302,11 +1258,13 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_RenderView(fd);
 	R_SetGL2D();
 
-	// post processing
+	// post processing - cut of if player camera out map bounds
+	if(!outMap){
 	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();
 	R_Bloom();
+	}
 
 	if (v_blend[3]) {
 		
@@ -1483,7 +1441,6 @@ void R_RegisterCvars(void)
 	r_radar =							Cvar_Get("r_radar", "0", CVAR_ARCHIVE);
 	
 	r_arbSamples =						Cvar_Get("r_arbSamples", "1", CVAR_ARCHIVE);
-	r_nvMultisampleFilterHint =			Cvar_Get ("r_nvMultisampleFilterHint", "fastest", CVAR_ARCHIVE);
 	r_nvSamplesCoverange =				Cvar_Get("r_nvSamplesCoverange", "8", CVAR_ARCHIVE);
 
 	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);
@@ -1511,7 +1468,7 @@ void R_RegisterCvars(void)
 
 	r_bumpAlias =						Cvar_Get("r_bumpAlias", "1", CVAR_ARCHIVE);
 	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
-	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.75", CVAR_ARCHIVE);
+	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
 	r_pplMaxDlights =					Cvar_Get("r_pplMaxDlights", "8", CVAR_ARCHIVE);
 
@@ -1664,8 +1621,8 @@ int R_Init(void *hinstance, void *hWnd)
 		}
 	}
 	
-	Com_Printf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
-	Com_Printf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
+	Com_DPrintf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
+	Com_DPrintf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
 	
 	Cvar_Set("scr_drawall", "0");
 
@@ -1679,6 +1636,55 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf(S_COLOR_GREEN"Checking Basic Quake II XP Extensions\n");
 	Com_Printf("=====================================\n");
 	Com_Printf("\n");
+	
+	if ( strstr( glw_state.wglExtsString, "WGL_ARB_pixel_format" ) )
+		Com_Printf("...using WGL_ARB_pixel_format\n");
+
+	
+	gl_state.wgl_nv_multisample_coverage = false;
+		if (strstr(glw_state.wglExtsString, "WGL_NV_multisample_coverage")) {
+		
+		if(r_arbSamples->value < 2){
+		Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_NV_multisample_coverage\n");
+		gl_state.wgl_nv_multisample_coverage = false;
+		gl_state.wgl_nv_multisample_coverage_aviable = true;
+		}else{
+		Com_Printf("...using WGL_NV_multisample_coverage\n");
+		gl_state.wgl_nv_multisample_coverage = true;
+		gl_state.wgl_nv_multisample_coverage_aviable = true;
+		
+		if(r_arbSamples->value >=16){ // clamp regular msaa 16x value to csaa 16q 
+		Cvar_SetValue("r_arbSamples", 8);
+		Cvar_SetValue("r_nvSamplesCoverange", 16);
+		}
+		
+		}
+		} else {
+			Com_Printf(S_COLOR_RED"...WGL_NV_multisample_coverage not found\n");
+			gl_state.wgl_nv_multisample_coverage = false;
+			gl_state.wgl_nv_multisample_coverage_aviable = false;
+		}
+
+	gl_state.arb_multisample = false;
+	if ( strstr(  glw_state.wglExtsString, "WGL_ARB_multisample" ) )
+	if(r_arbSamples->value < 2)
+		{
+			Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_ARB_multisample\n");
+			arbMultisampleSupported = false;
+			gl_state.arb_multisample = false;
+		}else
+	{
+			Com_Printf("...using WGL_ARB_multisample\n");
+			arbMultisampleSupported = true;
+			gl_state.arb_multisample = true;
+		
+	}
+	else
+	{
+		Com_Printf("...WGL_ARB_multisample not found\n");
+		arbMultisampleSupported = false;
+		gl_state.arb_multisample = false;
+	}
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
 	
@@ -1849,17 +1855,6 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		gl_state.vbo = false;
 	}
 */
-	gl_state.nv_multisample_hint = false;
-
-	if ( strstr( gl_config.extensions_string, "GL_NV_multisample_filter_hint" ) )
-	{
-		Com_Printf("...using GL_NV_multisample_filter_hint\n");
-		gl_state.nv_multisample_hint = true;
-	} else {
-		Com_Printf(S_COLOR_RED"...GL_NV_multisample_filter_hint not found\n");
-		gl_state.nv_multisample_hint = false;		
-	}
-	
 	gl_state.nv_conditional_render = false;
 	if ( strstr( gl_config.extensions_string, "GL_NV_conditional_render" ) )
 	{		
@@ -2029,20 +2024,6 @@ void R_BeginFrame()
 		}
 	}
 
-	if (gl_state.nv_multisample_hint) {
-			
-		if (r_nvMultisampleFilterHint->modified){
-
-		r_nvMultisampleFilterHint->modified = false;
-		
-		if (!stricmp(r_nvMultisampleFilterHint->string, "nicest"))
-			 	qglHint (GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
-			else
-		if (!stricmp(r_nvMultisampleFilterHint->string, "fastest"))
-				qglHint (GL_MULTISAMPLE_FILTER_HINT_NV, GL_FASTEST);
-		}
-		
-	}	
 
 	// realtime update
 	if(r_softParticles->modified)

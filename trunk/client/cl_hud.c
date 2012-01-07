@@ -311,10 +311,10 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	entity.backlerp = 0.0;
 
 	VectorCopy(entity.origin, entity.currentLightPos);
-	entity.currentLightPos[0] -=50;
-	entity.currentLightPos[2] +=25;
+	entity.currentLightPos[0] -=100;
+	entity.currentLightPos[2] +=100;
 
-	entity.lightRad = 400;
+	entity.lightRad = 666;
 	entity.angles[1] = anglemod(refdef.time*48);
 	
 	if ( entity.angles[1] > 360 )	

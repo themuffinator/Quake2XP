@@ -187,7 +187,7 @@ extern image_t *r_blackTexture;
 extern image_t	*r_defBump;
 extern image_t	*ScreenMap;
 extern image_t	*r_envTex;
-
+extern image_t	*shadowMask;
 
 extern entity_t *currententity;
 extern model_t *currentmodel;
@@ -266,7 +266,6 @@ cvar_t	*r_radar;
 
 cvar_t	*r_arbSamples;
 cvar_t	*r_nvSamplesCoverange;
-cvar_t  *r_nvMultisampleFilterHint;
 
 cvar_t	*deathmatch;
 
@@ -310,6 +309,9 @@ cvar_t	*r_tbnSmoothAngle;
 
 cvar_t	*r_softParticles;
 cvar_t	*r_ignoreGlErrors;
+
+int CL_PMpointcontents(vec3_t point);
+qboolean outMap;
 
 extern float ref_realtime;
 
@@ -700,7 +702,6 @@ typedef struct glslProgram_s {
 
 extern	glslProgram_t		*diffuseProgram;
 extern	glslProgram_t		*aliasAmbientProgram;
-extern	glslProgram_t		*particlesProgram;
 extern	glslProgram_t		*aliasBumpProgram;
 extern	glslProgram_t		*gaussXProgram;
 extern	glslProgram_t		*gaussYProgram;
@@ -713,6 +714,8 @@ extern	glslProgram_t		*waterProgram;
 extern	glslProgram_t		*radialProgram;
 extern	glslProgram_t		*dofProgram;
 extern	glslProgram_t		*particlesProgram;
+extern	glslProgram_t		*shadowProgram;
+extern	glslProgram_t		*skyProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
@@ -729,8 +732,8 @@ typedef struct {
 	unsigned	DofExtra;
 	unsigned	WaterTransBits;
 	unsigned	ShellBits;
-
-} worldDefs_t;
+} 
+worldDefs_t;
 
 worldDefs_t worldDefs;
 
@@ -801,5 +804,38 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode,
 void GLimp_AppActivate(qboolean active);
 void GLimp_EnableLogging(qboolean enable);
 void GLimp_LogNewFrame(void);
+
+#ifndef _WIN32
+#  error You should not be including this file on this platform
+#endif
+
+#ifndef __GLW_WIN_H__
+#define __GLW_WIN_H__
+
+typedef struct
+{
+	HINSTANCE	hInstance;
+	void	*wndproc;
+
+	HDC     hDC;			// handle to device context
+	HWND    hWnd;			// handle to window
+	HGLRC   hGLRC;			// handle to GL rendering context
+
+	HINSTANCE hinstOpenGL;	// HINSTANCE for the OpenGL library
+
+	qboolean minidriver;
+	qboolean allowdisplaydepthchange;
+	qboolean mcd_accelerated;
+
+	const char	*wglExtsString;
+	const char	*wglRenderer;
+	int desktopWidth, desktopHeight;
+
+} glwstate_t;
+
+extern glwstate_t glw_state;
+
+#endif
+
 
 #endif							/* R_LOCAL_H */

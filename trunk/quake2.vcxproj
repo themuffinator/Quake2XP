@@ -258,6 +258,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <HeapReserveSize>8388608</HeapReserveSize>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Alpha|Win32'">
@@ -503,6 +504,7 @@
       <MapFileName>.\debug/quake2xp.map</MapFileName>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Alpha|x64'">
@@ -1333,6 +1335,10 @@
     <None Include="..\..\baseq2\glsl\refract.vp" />
     <None Include="..\..\baseq2\glsl\particles.fp" />
     <None Include="..\..\baseq2\glsl\particles.vp" />
+    <None Include="..\..\baseq2\glsl\shadow.fp" />
+    <None Include="..\..\baseq2\glsl\shadow.vp" />
+    <None Include="..\..\baseq2\glsl\sky.fp" />
+    <None Include="..\..\baseq2\glsl\sky.vp" />
     <None Include="..\..\baseq2\glsl\thermal.vp" />
     <None Include="..\..\baseq2\glsl\thermal.fp" />
     <None Include="..\..\baseq2\glsl\thermalfp.fp" />

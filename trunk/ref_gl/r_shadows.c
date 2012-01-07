@@ -81,7 +81,7 @@ void R_MarkShadowTriangles(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg
 	}
 
 }
-
+/*
 void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistance)
 {
 	dtriangle_t *ot, *tris;
@@ -299,6 +299,270 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 			
 	c_shadow_tris += index/3;
 }
+*/
+
+void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistance)
+{
+	dtriangle_t *ot, *tris;
+	neighbors_t *neighbors;
+	int i, j, shadow_vert = 0, index = 0;
+	vec3_t v0, v1, v2, v3, l0, l1, l2, l3;
+	daliasframe_t *frame;
+	dtrivertx_t *verts;
+	vec3_t	offset0, offset1, offset2;
+	float cap_offset = r_shadowCapOffset->value;
+	
+	frame = (daliasframe_t *) ((byte *) hdr + hdr->ofs_frames
+							   + currententity->frame * hdr->framesize);
+	verts = frame->verts;
+
+	ot = tris = (dtriangle_t *) ((unsigned char *) hdr + hdr->ofs_tris);
+	
+	R_MarkShadowTriangles(hdr, tris, light);
+
+	for (i = 0, tris = ot, neighbors = currentmodel->neighbors; i < hdr->num_tris; i++, tris++, neighbors++) {
+		
+		if (!triangleFacingLight[i])
+			continue;
+	
+		if (neighbors->n[0] < 0 || !triangleFacingLight[neighbors->n[0]]) {
+			
+			for (j = 0; j < 3; j++) {
+				v0[j] = s_lerped[tris->index_xyz[1]][j];
+				v1[j] = s_lerped[tris->index_xyz[0]][j];
+
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+			}
+
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+
+	/*		for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
+
+				v2[j] = v1[j] + ((v1[j] - light[j]) * projectdistance);
+				v3[j] = v0[j] + ((v0[j] - light[j]) * projectdistance);
+			}
+*/
+			VectorMA(v0, cap_offset, offset0, v0);	
+			VectorMA(v1, cap_offset, offset1, v1);	
+			VectorSubtract(v1, light, l2);
+			VectorSubtract(v0, light, l3);
+			VectorNormalize(l2);
+			VectorNormalize(l3);
+			VectorMA(v1, projectdistance, l2, v2);
+			VectorMA(v0, projectdistance, l3, v3);
+
+
+		VA_SetElem3(ShadowArray[shadow_vert+0], v0[0], v0[1], v0[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+1], v1[0], v1[1], v1[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+2], v2[0], v2[1], v2[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+3], v3[0], v3[1], v3[2]);
+            
+
+		ShadowIndex[index++] = shadow_vert+0;
+		ShadowIndex[index++] = shadow_vert+1;
+		ShadowIndex[index++] = shadow_vert+3;
+		ShadowIndex[index++] = shadow_vert+3;
+		ShadowIndex[index++] = shadow_vert+1;
+		ShadowIndex[index++] = shadow_vert+2;
+		shadow_vert +=4;
+		}
+
+		if (neighbors->n[1] < 0 || !triangleFacingLight[neighbors->n[1]]) {
+			
+			for (j = 0; j < 3; j++) {
+				v0[j] = s_lerped[tris->index_xyz[2]][j];
+				v1[j] = s_lerped[tris->index_xyz[1]][j];
+
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+			}
+
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+
+		/*	for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
+
+				v2[j] = v1[j] + ((v1[j] - light[j]) * projectdistance);
+				v3[j] = v0[j] + ((v0[j] - light[j]) * projectdistance);
+			}
+*/	
+			VectorMA(v0, cap_offset, offset0, v0);					
+			VectorMA(v1, cap_offset, offset1, v1);	
+			VectorSubtract(v1, light, l2);
+			VectorSubtract(v0, light, l3);
+			VectorNormalize(l2);
+			VectorNormalize(l3);
+			VectorMA(v1, projectdistance, l2, v2);
+			VectorMA(v0, projectdistance, l3, v3);
+
+
+		VA_SetElem3(ShadowArray[shadow_vert+0], v0[0], v0[1], v0[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+1], v1[0], v1[1], v1[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+2], v2[0], v2[1], v2[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+3], v3[0], v3[1], v3[2]);
+            
+
+		ShadowIndex[index++] = shadow_vert+0;
+		ShadowIndex[index++] = shadow_vert+1;
+		ShadowIndex[index++] = shadow_vert+3;
+		ShadowIndex[index++] = shadow_vert+3;
+		ShadowIndex[index++] = shadow_vert+1;
+		ShadowIndex[index++] = shadow_vert+2;
+		shadow_vert +=4;
+		}
+
+		if (neighbors->n[2] < 0 || !triangleFacingLight[neighbors->n[2]]) {
+			
+			for (j = 0; j < 3; j++) {
+				v0[j] = s_lerped[tris->index_xyz[0]][j];
+				v1[j] = s_lerped[tris->index_xyz[2]][j];
+
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+			}
+
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+
+	/*		for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
+
+				v2[j] = v1[j] + ((v1[j] - light[j]) * projectdistance);
+				v3[j] = v0[j] + ((v0[j] - light[j]) * projectdistance);
+			}
+*/
+			VectorMA(v0, cap_offset, offset0, v0);					
+			VectorMA(v1, cap_offset, offset1, v1);	
+			VectorSubtract(v1, light, l2);
+			VectorSubtract(v0, light, l3);
+			VectorNormalize(l2);
+			VectorNormalize(l3);
+			VectorMA(v1, projectdistance, l2, v2);
+			VectorMA(v0, projectdistance, l3, v3);
+	
+
+	
+		VA_SetElem3(ShadowArray[shadow_vert+0], v0[0], v0[1], v0[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+1], v1[0], v1[1], v1[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+2], v2[0], v2[1], v2[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+3], v3[0], v3[1], v3[2]);
+            
+
+		ShadowIndex[index++] = shadow_vert+0;
+		ShadowIndex[index++] = shadow_vert+1;
+		ShadowIndex[index++] = shadow_vert+3;
+		ShadowIndex[index++] = shadow_vert+3;
+		ShadowIndex[index++] = shadow_vert+1;
+		ShadowIndex[index++] = shadow_vert+2;
+		shadow_vert +=4;
+		}
+	}
+
+	 // build shadows caps
+	for (i = 0, tris = ot; i < hdr->num_tris; i++, tris++)
+	{
+		if (!triangleFacingLight[i])
+			continue;
+		
+			for (j = 0; j < 3; j++)
+			{
+				v0[j] = s_lerped[tris->index_xyz[0]][j];
+				v1[j] = s_lerped[tris->index_xyz[1]][j];
+				v2[j] = s_lerped[tris->index_xyz[2]][j];
+
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+				offset2[j] = v2[j] - light[j];
+			}
+
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+			VectorNormalize(offset2);
+
+			for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
+				v2[j] += offset2[j] * cap_offset;
+			}
+
+		VA_SetElem3(ShadowArray[shadow_vert+0], v0[0], v0[1], v0[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+1], v1[0], v1[1], v1[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+2], v2[0], v2[1], v2[2]);
+			
+		ShadowIndex[index++] = shadow_vert+0;
+		ShadowIndex[index++] = shadow_vert+1;
+		ShadowIndex[index++] = shadow_vert+2;
+        shadow_vert +=3;
+
+			// rear cap (with flipped winding order)
+
+			for (j = 0; j < 3; j++) {
+				v0[j] = s_lerped[tris->index_xyz[0]][j];
+				v1[j] = s_lerped[tris->index_xyz[1]][j];
+				v2[j] = s_lerped[tris->index_xyz[2]][j];
+
+				offset0[j] = v0[j] - light[j];
+				offset1[j] = v1[j] - light[j];
+				offset2[j] = v2[j] - light[j];
+			}
+
+			VectorNormalize(offset0);
+			VectorNormalize(offset1);
+			VectorNormalize(offset2);
+/*
+			for (j = 0; j < 3; j++)
+			{
+				v0[j] += offset0[j] * cap_offset;
+				v1[j] += offset1[j] * cap_offset;
+				v2[j] += offset2[j] * cap_offset;
+
+				v0[j] += (v0[j] - light[j]) * projectdistance;
+				v1[j] += (v1[j] - light[j]) * projectdistance;
+				v2[j] += (v2[j] - light[j]) * projectdistance;
+			}
+*/
+			VectorMA(v0, cap_offset, offset0, v0);					
+			VectorMA(v1, cap_offset, offset1, v1);					
+			VectorMA(v2, cap_offset, offset2, v2);				
+			VectorSubtract(v0, light, l0);
+			VectorSubtract(v1, light, l1);
+			VectorSubtract(v2, light, l2);
+			VectorNormalize(l0);
+			VectorNormalize(l1);
+			VectorNormalize(l2);
+			VectorMA(v0, projectdistance, l0, v0);
+			VectorMA(v1, projectdistance, l1, v1);
+			VectorMA(v2, projectdistance, l2, v2);
+
+			
+		VA_SetElem3(ShadowArray[shadow_vert+0], v0[0], v0[1], v0[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+1], v1[0], v1[1], v1[2]);
+		VA_SetElem3(ShadowArray[shadow_vert+2], v2[0], v2[1], v2[2]);
+				 
+		ShadowIndex[index++] = shadow_vert+2; 
+		ShadowIndex[index++] = shadow_vert+1; 
+		ShadowIndex[index++] = shadow_vert+0; 
+		shadow_vert +=3;
+	}
+
+	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
+		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shadow_vert, index, GL_UNSIGNED_INT, ShadowIndex);
+		else
+		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, ShadowIndex);
+			
+	c_shadow_tris += index/3;
+}
 
 
 // openGL 2.0 Unified Separate Stencil
@@ -333,7 +597,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	int			i, worldlight = 0, dlight = 0;
 	dlight_t	*dl;
 	flare_t		*lightSurf;
-	float		dist;
+	float		dist, projdist;
 	mat3_t		entityAxis;
 	trace_t		r_trace;
 
@@ -347,10 +611,8 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 
 		for (i = 0; i < r_newrefdef.num_dlights; i++, dl++) {
 			
-			if ((dl->origin[0] == currententity->origin[0]) &&
-		    (dl->origin[1] == currententity->origin[1]) &&
-		    (dl->origin[2] == currententity->origin[2]))
-		        continue;
+			if(VectorCompare(dl->origin, currententity->origin))
+			   continue;
 
 			VectorSubtract(currententity->origin, dl->origin, temp);
 			dist = VectorLength(temp);
@@ -362,14 +624,14 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 			if (r_newrefdef.areabits){
 			r_trace = CM_BoxTrace(currententity->origin, dl->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
 			if(r_trace.fraction != 1.0)
-			continue;
+				continue;
 			}
 
 			AnglesToMat3(currententity->angles, entityAxis);
 			VectorSubtract(dl->origin, currententity->origin, temp);
 			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-												
-			GL_RenderVolumes(paliashdr, light, 15);
+			projdist = (dl->intensity + currententity->model->radius - dist) * 1.5;									
+			GL_RenderVolumes(paliashdr, light, projdist);
 			worldlight++;
 			dlight++;
 		}
@@ -424,6 +686,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 			VectorSubtract(lightSurf->origin, currententity->origin, temp);
 			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
 			light[2] += currententity->model->maxs[2] + 56;
+			projdist = ((currententity->model->radius+lightSurf->size * r_shadowWorldLightScale->value) - dist) * 2.0;
 			worldlight++;
 			
 		}
@@ -436,12 +699,12 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 		AnglesToMat3(currententity->angles, entityAxis);
 		VectorSubtract(light, currententity->origin, temp);
 		Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-	
-		GL_RenderVolumes(paliashdr, light, 3);
+		projdist = currententity->model->radius + 25;	
+		GL_RenderVolumes(paliashdr, light, projdist);
 
 	}
 	if (worldlight && !dlight)
-		GL_RenderVolumes(paliashdr, light, 5);
+		GL_RenderVolumes(paliashdr, light, projdist);
 
 }
 
@@ -472,8 +735,6 @@ qboolean R_CullSphere( const vec3_t centre, const float radius, const int clipfl
 
 	return false;
 }
-
-int CL_PMpointcontents(vec3_t point);
 
 void R_DrawShadowVolume(entity_t * e)
 {
@@ -552,9 +813,17 @@ void R_DrawShadowVolume(entity_t * e)
 		qglPopMatrix();
 }
 
+
+/*
+===================
+Soft shadow volumes
+===================
+*/
 void R_ShadowBlend()
 {
 	float shadowalpha;
+	int id;
+	unsigned	defBits = 0;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -568,312 +837,89 @@ void R_ShadowBlend()
 	qglPushMatrix();
 	qglLoadIdentity();
 	qglOrtho(0, 1, 1, 0, -99999, 99999);
-
 	qglMatrixMode(GL_MODELVIEW);
 	qglPushMatrix();
 	qglLoadIdentity();
-	
-	GL_Blend(true, 0, 0);
-	qglDepthMask(0);
-	qglDisable(GL_TEXTURE_2D);
-	qglDepthFunc(GL_ALWAYS);
-	qglColor4f(0, 0, 0, shadowalpha);
 
-	qglStencilFunc(GL_NOTEQUAL, 128, 255);
+	qglDepthMask(0);
+	qglDepthFunc(GL_ALWAYS);
+	qglEnable(GL_STENCIL_TEST);
+	qglStencilFunc(GL_EQUAL, 128, 255);
 	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	qglStencilMask(0);
+	
+	qglColorMask(0, 0, 0, 1);
+	qglColor4f(0.0, 0.0, 0.0, 0.0);
+
+	// bind shadow mask texture and render stencil marks in to alpha chanel
+	GL_SelectTexture(GL_TEXTURE0_ARB);	
+	GL_BindRect(shadowMask->texnum);
+    
+	qglBegin(GL_TRIANGLES);
+	qglVertex2f(-5, -5);
+	qglVertex2f(10, -5);
+	qglVertex2f(-5, 10);
+	qglEnd();
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglDisable(GL_STENCIL_TEST);
+
+	//now blur it! Gauss blur two x and y passes
+/*	GL_BindRect(shadowMask->texnum);
+	GL_BindProgram(gaussXProgram, defBits);
+	id = gaussXProgram->id[defBits];
+	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+		
+	qglBegin(GL_TRIANGLES);
+	qglVertex2f(-5, -5);
+	qglVertex2f(10, -5);
+	qglVertex2f(-5, 10);
+	qglEnd();
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+
+	GL_BindRect(shadowMask->texnum);
+	GL_BindProgram(gaussYProgram, defBits);
+	id = gaussYProgram->id[defBits];
+	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+		
+	qglBegin(GL_TRIANGLES);
+	qglVertex2f(-5, -5);
+	qglVertex2f(10, -5);
+	qglVertex2f(-5, 10);
+	qglEnd();
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	*/
+	qglColorMask(1.0, 1.0, 1.0, 1.0);
+	qglColor4f(1.0, 1.0, 1.0, 1.0);
+		
+	//visualize it!
+	GL_Blend(true, GL_ZERO, GL_SRC_ALPHA);
+	GL_BindProgram(shadowProgram, defBits);
+	id = shadowProgram->id[defBits];
+	GL_BindRect(shadowMask->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_mask"), 0);
+	qglUniform1f(qglGetUniformLocation(id, "u_alpha"), shadowalpha);
 
 	qglBegin(GL_TRIANGLES);
 	qglVertex2f(-5, -5);
 	qglVertex2f(10, -5);
 	qglVertex2f(-5, 10);
 	qglEnd();
-	
-
 	GL_Blend(false, 0, 0);
-	qglEnable(GL_TEXTURE_2D);
+
+	qglColorMask(1.0, 1.0, 1.0, 1.0);
+	qglColor4f(1.0, 1.0, 1.0, 1.0);
+
+	GL_BindNullProgram();
 	qglDepthFunc(GL_LEQUAL);
 	qglDepthMask(1);
-
 	qglMatrixMode(GL_PROJECTION);
 	qglPopMatrix();
-
 	qglMatrixMode(GL_MODELVIEW);
 	qglPopMatrix();
 
 }
 
 
-/*=====================
-Shadow World Triangles
-=====================*/
-
-vec3_t sVertexArray[MAX_BATCH_SURFS];
-static vec3_t modelorg;			// relative to viewpoint
-void R_DrawArrays (void);
-
-void GL_DrawShadowTriangles(msurface_t * surf)
-{
-    glpoly_t *p= surf->polys;
-    float *v;
-    int i, nv;
-       
-    nv = surf->polys->numverts;
-
-    v = p->verts[0];
-	c_brush_polys += (nv-2);
-
-	for (i = 0; i < nv; i++, v += VERTEXSIZE)
-         VectorCopy(v, wVertexArray[i]);
- 
-	qglDrawElements(GL_TRIANGLES, surf->numIndices, GL_UNSIGNED_SHORT, surf->indices);	
-}
-
-
-void R_DrawBModelShadow(void)
-{
-	int i;
-	cplane_t *pplane;
-	float dot;
-	msurface_t *psurf;
-	
-	psurf = &currentmodel->surfaces[currentmodel->firstmodelsurface];
-
-	for (i = 0; i < currentmodel->nummodelsurfaces; i++, psurf++) {
-		// find which side of the node we are on
-		pplane = psurf->plane;
-
-		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
-		
-		// draw the polygon
-		if (((psurf->flags & SURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
-			|| (!(psurf->flags & SURF_PLANEBACK)
-				&& (dot > BACKFACE_EPSILON))) {
-			
-				GL_DrawShadowTriangles(psurf);
-			
-		}
-	}
-	
-}
-
-
-void R_DrawBrushModelShadow(entity_t * e)
-{
-	vec3_t mins, maxs;
-	int i;
-	qboolean rotated;
-	
-	if (currentmodel->nummodelsurfaces == 0)
-		return;
-
-	currententity = e;
-	
-	if (e->angles[0] || e->angles[1] || e->angles[2]) {
-		rotated = true;
-		for (i = 0; i < 3; i++) {
-			mins[i] = e->origin[i] - currentmodel->radius;
-			maxs[i] = e->origin[i] + currentmodel->radius;
-		}
-	} else {
-		rotated = false;
-		VectorAdd(e->origin, currentmodel->mins, mins);
-		VectorAdd(e->origin, currentmodel->maxs, maxs);
-	}
-
-	if (R_CullBox(mins, maxs))
-		return;
-
-
-	VectorSubtract(r_newrefdef.vieworg, e->origin, modelorg);
-
-	if (rotated) {
-		vec3_t temp;
-		vec3_t forward, right, up;
-
-		VectorCopy(modelorg, temp);
-		AngleVectors(e->angles, forward, right, up);
-		modelorg[0] = DotProduct(temp, forward);
-		modelorg[1] = -DotProduct(temp, right);
-		modelorg[2] = DotProduct(temp, up);
-	}
-
-	qglPushMatrix();
-	e->angles[0] = -e->angles[0];	// stupid quake bug
-	e->angles[2] = -e->angles[2];	// stupid quake bug
-	R_RotateForEntity(e);
-	e->angles[0] = -e->angles[0];	// stupid quake bug
-	e->angles[2] = -e->angles[2];	// stupid quake bug
-
-
-
-	R_DrawBModelShadow();
-	
-
-	qglPopMatrix();
-	
-}
-
-
-
-void R_RecursiveShadowWorldNode(mnode_t * node)
-{
-	int c, side, sidebit;
-	cplane_t *plane;
-	msurface_t *surf, **mark;
-	mleaf_t *pleaf;
-	float dot, viewplane;
-
-	if (node->contents == CONTENTS_SOLID)
-		return;					// solid
-
-	if (node->visframe != r_visframecount)
-		return;
-
-	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
-		return;
-	
-	
-	// if a leaf node, draw stuff
-	if (node->contents != -1) {
-		pleaf = (mleaf_t *) node;
-
-		// check for door connected areas
-		if (r_newrefdef.areabits) {
-			if (!(r_newrefdef.areabits[pleaf->area >> 3] & (1 << (pleaf->area & 7))))
-				return;			// not visible
-		}
-
-		mark = pleaf->firstmarksurface;
-		c = pleaf->nummarksurfaces;
-
-		if (c) {
-			do {
-			if (SurfInFrustum(*mark))
-					(*mark)->visframe = r_framecount;
-				(*mark)->ent = NULL;
-				mark++;
-			} while (--c);
-		}
-
-		return;
-	}
-	// node is just a decision point, so go down the apropriate sides
-	// find which side of the node we are on
-
-	plane = node->plane;
-
-	switch (plane->type) {
-	case PLANE_X:
-		dot = modelorg[0] - plane->dist;
-		break;
-	case PLANE_Y:
-		dot = modelorg[1] - plane->dist;
-		break;
-	case PLANE_Z:
-		dot = modelorg[2] - plane->dist;
-		break;
-	default:
-		dot = DotProduct(modelorg, plane->normal) - plane->dist;
-		break;
-	}
-
-	if (dot >= 0) 
-		side = 0;
-	else 
-		side = 1;
-
-
-	// recurse down the children, front side first
-	R_RecursiveShadowWorldNode(node->children[side]);
-
-	// draw stuff
-	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
-		
-		if (surf->visframe != r_framecount)
-			continue;
-		
-		// SURF_PLANEBACK culling fix
-		viewplane = DotProduct(r_origin, surf->plane->normal) - surf->plane->dist;
-		if (viewplane >= 0)
-			sidebit = 0;
-		else
-			sidebit = SURF_PLANEBACK;
-
-		if ((surf->flags & SURF_PLANEBACK) != sidebit)
-			continue;			// wrong side
-		
-		if (surf->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW | SURF_SKY | SURF_WARP))
-			continue;
-		
-		GL_DrawShadowTriangles(surf);
-		
-	}
-
-	// recurse down the back side
-	R_RecursiveShadowWorldNode(node->children[!side]);
-}
-
-
-
-void R_DrawShadowWorld(void)
-{
-	int i;
-	float shadowalpha;
-
-	if (!r_drawWorld->value)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-	
-	if(r_shadows->value < 2 )
-		return;
-
-	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
-		return;
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
-	qglEnable(GL_POLYGON_OFFSET_FILL);
-    qglPolygonOffset(-2, -1);
-
-    qglStencilFunc(GL_NOTEQUAL, 128, 255);
-	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-    qglStencilMask(0);
-	qglDepthMask(0);
-    qglDisable(GL_TEXTURE_2D);
-	qglEnable(GL_BLEND);
-    qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	shadowalpha = 1.0 - r_pplWorldAmbient->value;
-	
-	qglColor4f(0, 0, 0, shadowalpha);    
-
-	R_RecursiveShadowWorldNode(r_worldmodel->nodes);
-	
-
-	for (i = 0; i < r_newrefdef.num_entities; i++) {
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		
-		if (!currentmodel)
-			continue;
-		
-		if (currentmodel->type != mod_brush)
-			continue;
-
-		R_DrawBrushModelShadow(currententity);
-	}
-
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisable(GL_POLYGON_OFFSET_FILL);
-	qglColor4f(1, 1, 1, 1);    
-	qglDisable(GL_BLEND);
-	qglEnable(GL_TEXTURE_2D); 
-	qglDepthMask(1);
-    		
-}
 /*
 ==================
 Simple blob shadow
@@ -888,31 +934,34 @@ void R_BlobShadow(void){
 	vec3_t			end, mins = {-15, -15, 0}, maxs = {15, 15, 2};
 	trace_t			trace;
 	float			alpha, dist;
-	int				sVert=0, index=0, i;
-	unsigned		sIndex[MAX_INDICES];
+	int				sVert=0, index=0, i, id;
+	unsigned		sIndex[MAX_INDICES], defBits = 0;
 	vec3_t			axis[3];
 	vec3_t			bbox[8], temp;
 	vec4_t			bsColor[MAX_BLOB_SHADOW_VERT];
 	vec3_t			bsVert[MAX_BLOB_SHADOW_VERT];
 	vec2_t			bsTextCoord[MAX_BLOB_SHADOW_VERT];
-
+	
 	if(r_shadows->value != 1)
 		return;
-		
-	GL_Overbrights			(false);
-	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer		(2, GL_FLOAT, 0, bsTextCoord);
-	qglEnableClientState	(GL_COLOR_ARRAY);
-	qglColorPointer			(4, GL_FLOAT, 0, bsColor);
-	qglEnableClientState	(GL_VERTEX_ARRAY);
-	qglVertexPointer		(3, GL_FLOAT, 0, bsVert);
 	
-	qglEnable				(GL_POLYGON_OFFSET_FILL);
-    qglPolygonOffset		(-2, -1);
-	qglEnable				(GL_BLEND);
-	qglBlendFunc			(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_BindProgram(skyProgram, defBits);
+	id = skyProgram->id[defBits];
+	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer(2, GL_FLOAT, 0, bsTextCoord);
+	qglEnableClientState(GL_COLOR_ARRAY);
+	qglColorPointer(4, GL_FLOAT, 0, bsColor);
+	qglEnableClientState(GL_VERTEX_ARRAY);
+	qglVertexPointer(3, GL_FLOAT, 0, bsVert);
+	
+	qglEnable(GL_POLYGON_OFFSET_FILL);
+    qglPolygonOffset(-2, -1);
+	qglEnable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(0);
-	GL_MBind				(GL_TEXTURE0_ARB, r_particletexture[PT_DEFAULT]->texnum);
+	GL_MBind(GL_TEXTURE0_ARB, r_particletexture[PT_DEFAULT]->texnum);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++)	
 	{
@@ -1013,11 +1062,13 @@ void R_BlobShadow(void){
 	}
 	
 	}
-	qglDisable				(GL_POLYGON_OFFSET_FILL);
-	qglDisable				(GL_BLEND);
-	qglDepthMask			(1);
-	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglDisableClientState	(GL_COLOR_ARRAY);
-	qglDisableClientState	(GL_VERTEX_ARRAY);
+	
+	GL_BindNullProgram();
+	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglDisable(GL_BLEND);
+	qglDepthMask(1);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglDisableClientState(GL_COLOR_ARRAY);
+	qglDisableClientState(GL_VERTEX_ARRAY);
 	
 }

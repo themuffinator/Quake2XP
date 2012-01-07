@@ -4350,8 +4350,8 @@ void PlayerConfig_MenuDraw(void)
 	x2 = 0;
 	}
 	refdef.y = viddef.height / 2 - 72 * cl_fontScale->value; //2
-	refdef.width = 144*cl_fontScale->value;
-	refdef.height = 168*cl_fontScale->value;
+	refdef.width = 171*cl_fontScale->value;
+	refdef.height = 200*cl_fontScale->value;
 	refdef.fov_x = 40;
 	refdef.fov_y = CalcFov(refdef.fov_x, refdef.width, refdef.height);
 	refdef.time = cls.realtime * 0.001;
@@ -4380,8 +4380,8 @@ void PlayerConfig_MenuDraw(void)
 		entity[0].origin[2] = -8;
 
 		VectorCopy(entity[0].origin, entity[0].currentLightPos);
-		entity[0].currentLightPos[0] -=50;
-		entity[0].currentLightPos[2] +=56;
+		entity[0].currentLightPos[0] -=100;
+		entity[0].currentLightPos[2] +=100;
 		entity[0].lightRad = 666; // Hail Satan!
 		
 		VectorCopy(entity[0].origin, entity[0].oldorigin);
@@ -4422,9 +4422,9 @@ void PlayerConfig_MenuDraw(void)
 		entity[1].oldframe = entity[0].oldframe;
 		entity[1].backlerp = entity[0].backlerp;
 
-		VectorCopy(entity[1].origin, entity[1].currentLightPos);
-		entity[1].currentLightPos[0] -=50;
-		entity[1].currentLightPos[2] +=56;
+		VectorCopy(entity[0].origin, entity[1].currentLightPos);
+		entity[1].currentLightPos[0] -=100;
+		entity[1].currentLightPos[2] +=100;
 		entity[1].lightRad = 666; // Shemhamforash!
 
 		refdef.num_entities++;
@@ -4436,9 +4436,9 @@ void PlayerConfig_MenuDraw(void)
 
 		Menu_Draw(&s_player_config_menu);
 
-		M_DrawTextBox((Xw+x2) * (320.0F / viddef.width) - 8 * cl_fontScale->value,
-					  (viddef.height / 2) * (240.0F / viddef.height) - 77 * cl_fontScale->value,
-					  refdef.width / 8, refdef.height / 8);
+	//	M_DrawTextBox((Xw+x2) * (320.0F / viddef.width) - 8 * cl_fontScale->value,
+	//				  (viddef.height / 2) * (240.0F / viddef.height) - 77 * cl_fontScale->value,
+	//				  refdef.width / 8, refdef.height / 8);
 		refdef.height += 4;
 
 		R_RenderFrame(&refdef, true);

@@ -549,7 +549,12 @@ R_DrawSkyBox
 int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox(void)
 {
-	int i;
+	int i, id;
+	unsigned defBits = 0;
+	
+	GL_BindProgram(skyProgram, defBits);
+	id = skyProgram->id[defBits];
+	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 
 
 	if (skyrotate) {			// check for no sky at all
@@ -565,8 +570,9 @@ void R_DrawSkyBox(void)
 	qglTranslatef(r_origin[0], r_origin[1], r_origin[2]);
 	qglRotatef(r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1],
 			   skyaxis[2]);
-
+	
 	for (i = 0; i < 6; i++) {
+		
 		if (skyrotate) {		// hack, forces full sky to draw when
 								// rotating
 			skymins[0][i] = -1;
@@ -579,9 +585,7 @@ void R_DrawSkyBox(void)
 			|| skymins[1][i] >= skymaxs[1][i])
 			continue;
 
-		GL_TexEnv(GL_REPLACE);
 		GL_MBind(GL_TEXTURE0_ARB, sky_images[skytexorder[i]]->texnum);
-
 		qglBegin(GL_QUADS);
 		MakeSkyVec(skymins[0][i], skymins[1][i], i);
 		MakeSkyVec(skymins[0][i], skymaxs[1][i], i);
@@ -591,7 +595,7 @@ void R_DrawSkyBox(void)
 	}
 
 
-
+	GL_BindNullProgram();
 	qglPopMatrix();
 
 }
