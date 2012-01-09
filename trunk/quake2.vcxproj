@@ -887,7 +887,7 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="client\snd_context.c" />
-    <ClCompile Include="client\snd_dma.c">
+    <ClCompile Include="client\snd_openal.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Profile|Win32'">EnableFastChecks</BasicRuntimeChecks>

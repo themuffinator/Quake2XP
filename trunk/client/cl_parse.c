@@ -262,8 +262,14 @@ void CL_RegisterSounds(void)
 
 	while (i < MAX_SOUNDS && cl.configstrings[CS_SOUNDS + i][0]) {
 		WILLOW_HACK_SOUND(i);
-		cl.sound_precache[i] =
-			S_RegisterSound(cl.configstrings[CS_SOUNDS + i]);
+
+		cl.sound_precache[i] = S_RegisterSound(cl.configstrings[CS_SOUNDS + i]);
+
+		if (cl.configstrings[CS_SOUNDS + i][0] == '*')
+			cl.sound_sexedname[i] = cl.configstrings[CS_SOUNDS + i];
+		else
+			cl.sound_sexedname[i] = NULL;
+
 		Sys_SendKeyEvents();	// pump message loop
 		++i;
 	}
@@ -718,6 +724,7 @@ void CL_ParseStartSoundPacket(void)
 	float volume;
 	float attenuation;
 	unsigned ofs;
+	int id;
 	int flags = MSG_ReadByte(&net_message);
 
 	sound_num = MSG_ReadByte(&net_message);
@@ -743,10 +750,14 @@ void CL_ParseStartSoundPacket(void)
 
 	if (flags & SND_POS) {		// positioned in space
 		MSG_ReadPos(&net_message, pos_v);
-
 		pos = pos_v;
 	} else						// use entity number
 		pos = NULL;
+
+	if (cl.sound_sexedname[sound_num])
+		id = S_RegisterSexedSound(&cl_entities[ent].current, cl.sound_sexedname[sound_num]);
+	else
+		id = cl.sound_precache[sound_num];
 
 	// willow: F**K THE HACK'S!!! trying to cheat ugly id's map design and 
 	// stuff
@@ -754,7 +765,7 @@ void CL_ParseStartSoundPacket(void)
 		&& (cl.
 			sound_precache_hacks[sound_num] & sound_precache_hacks_FLAT2D))
 	{
-		S_StartLocalSound(cl.sound_precache[sound_num]);
+		S_StartLocalSound(id);
 		return;
 	}
 
@@ -762,14 +773,14 @@ void CL_ParseStartSoundPacket(void)
 		sound_precache_hacks[sound_num] &
 		sound_precache_hacks_AUTOFIX_gain)
 		volume = cl.sound_precache_gain[sound_num];
-
+		
 	if (cl.
 		sound_precache_hacks[sound_num] &
 		sound_precache_hacks_AUTOFIX_rolloff_factor)
 		attenuation = cl.sound_precache_rolloff_factor[sound_num];
 
 	// willow: simple as it should be ^_^
-	S_StartSound(pos, ent, channel, cl.sound_precache[sound_num], volume,
+	S_StartSound(pos, ent, channel, id, volume,
 				 attenuation, ofs);
 }
 

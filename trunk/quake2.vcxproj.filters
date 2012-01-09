@@ -105,9 +105,6 @@
     <ClCompile Include="client\snd_context.c">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="client\snd_dma.c">
-      <Filter>Source Files\Sound</Filter>
-    </ClCompile>
     <ClCompile Include="client\snd_eax.c">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
@@ -275,6 +272,9 @@
     </ClCompile>
     <ClCompile Include="ref_gl\r_misc.c">
       <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="client\snd_openal.c">
+      <Filter>Source Files\Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -258,6 +258,8 @@ typedef struct {
 	struct cmodel_s *model_clip[MAX_MODELS];
 
 	ALuint sound_precache[MAX_SOUNDS];
+	const char *sound_sexedname[MAX_SOUNDS];
+
 	unsigned long sound_precache_hacks[MAX_SOUNDS];
 	ALfloat sound_precache_rolloff_factor[MAX_SOUNDS];
 	ALfloat sound_precache_gain[MAX_SOUNDS];

@@ -1733,7 +1733,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	dstvert_t		*pinst;
 	dtriangle_t		*pintri, *pouttri, *tris;
 	daliasframe_t	*pinframe, *poutframe;
-	int				*pincmd, *poutcmd;
 	int				version;
 	
 	vec3_t			tempr, tempv;
@@ -1860,11 +1859,11 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	// 
 	// load the glcmds
 	// 
-	pincmd = (int *) ((byte *) pinmodel + pheader->ofs_glcmds);
+/*	pincmd = (int *) ((byte *) pinmodel + pheader->ofs_glcmds);
 	poutcmd = (int *) ((byte *) pheader + pheader->ofs_glcmds);
 	for (i = 0; i < pheader->num_glcmds; i++)
 		poutcmd[i] = LittleLong(pincmd[i]);
-
+		*/
 
 
 	// register all skins

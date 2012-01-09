@@ -630,7 +630,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 			AnglesToMat3(currententity->angles, entityAxis);
 			VectorSubtract(dl->origin, currententity->origin, temp);
 			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-			projdist = (dl->intensity + currententity->model->radius - dist) * 1.5;									
+			projdist = (dl->intensity + currententity->model->radius - dist) * 2.5;									
 			GL_RenderVolumes(paliashdr, light, projdist);
 			worldlight++;
 			dlight++;
@@ -686,7 +686,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 			VectorSubtract(lightSurf->origin, currententity->origin, temp);
 			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
 			light[2] += currententity->model->maxs[2] + 56;
-			projdist = ((currententity->model->radius+lightSurf->size * r_shadowWorldLightScale->value) - dist) * 2.0;
+			projdist = ((currententity->model->radius+lightSurf->size * r_shadowWorldLightScale->value) - dist) * 2.5;
 			worldlight++;
 			
 		}
@@ -843,11 +843,12 @@ void R_ShadowBlend()
 
 	qglDepthMask(0);
 	qglDepthFunc(GL_ALWAYS);
+
 	qglEnable(GL_STENCIL_TEST);
 	qglStencilFunc(GL_EQUAL, 128, 255);
 	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	qglStencilMask(0);
-	
+
 	qglColorMask(0, 0, 0, 1);
 	qglColor4f(0.0, 0.0, 0.0, 0.0);
 
@@ -860,39 +861,15 @@ void R_ShadowBlend()
 	qglVertex2f(10, -5);
 	qglVertex2f(-5, 10);
 	qglEnd();
+	
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	
 	qglDisable(GL_STENCIL_TEST);
-
-	//now blur it! Gauss blur two x and y passes
-/*	GL_BindRect(shadowMask->texnum);
-	GL_BindProgram(gaussXProgram, defBits);
-	id = gaussXProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-		
-	qglBegin(GL_TRIANGLES);
-	qglVertex2f(-5, -5);
-	qglVertex2f(10, -5);
-	qglVertex2f(-5, 10);
-	qglEnd();
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-
-	GL_BindRect(shadowMask->texnum);
-	GL_BindProgram(gaussYProgram, defBits);
-	id = gaussYProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-		
-	qglBegin(GL_TRIANGLES);
-	qglVertex2f(-5, -5);
-	qglVertex2f(10, -5);
-	qglVertex2f(-5, 10);
-	qglEnd();
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	*/
 	qglColorMask(1.0, 1.0, 1.0, 1.0);
 	qglColor4f(1.0, 1.0, 1.0, 1.0);
 		
-	//visualize it!
-	GL_Blend(true, GL_ZERO, GL_SRC_ALPHA);
+	//blur alpha mask and visualize it!
+	GL_Blend(true, 0, 0);
 	GL_BindProgram(shadowProgram, defBits);
 	id = shadowProgram->id[defBits];
 	GL_BindRect(shadowMask->texnum);
@@ -904,11 +881,8 @@ void R_ShadowBlend()
 	qglVertex2f(10, -5);
 	qglVertex2f(-5, 10);
 	qglEnd();
+	
 	GL_Blend(false, 0, 0);
-
-	qglColorMask(1.0, 1.0, 1.0, 1.0);
-	qglColor4f(1.0, 1.0, 1.0, 1.0);
-
 	GL_BindNullProgram();
 	qglDepthFunc(GL_LEQUAL);
 	qglDepthMask(1);
@@ -934,8 +908,8 @@ void R_BlobShadow(void){
 	vec3_t			end, mins = {-15, -15, 0}, maxs = {15, 15, 2};
 	trace_t			trace;
 	float			alpha, dist;
-	int				sVert=0, index=0, i, id;
-	unsigned		sIndex[MAX_INDICES], defBits = 0;
+	int				sVert=0, index=0, i;
+	unsigned		sIndex[MAX_INDICES];
 	vec3_t			axis[3];
 	vec3_t			bbox[8], temp;
 	vec4_t			bsColor[MAX_BLOB_SHADOW_VERT];
@@ -945,10 +919,6 @@ void R_BlobShadow(void){
 	if(r_shadows->value != 1)
 		return;
 	
-	GL_BindProgram(skyProgram, defBits);
-	id = skyProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer(2, GL_FLOAT, 0, bsTextCoord);
 	qglEnableClientState(GL_COLOR_ARRAY);
@@ -962,6 +932,7 @@ void R_BlobShadow(void){
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(0);
 	GL_MBind(GL_TEXTURE0_ARB, r_particletexture[PT_DEFAULT]->texnum);
+	GL_Overbrights(false);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++)	
 	{
@@ -1062,8 +1033,7 @@ void R_BlobShadow(void){
 	}
 	
 	}
-	
-	GL_BindNullProgram();
+
 	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglDisable(GL_BLEND);
 	qglDepthMask(1);

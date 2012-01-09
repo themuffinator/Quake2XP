@@ -49,8 +49,6 @@ cvar_t	*s_openal_eax;
 cvar_t	*s_openal_device;
 cvar_t	*s_quality;
 cvar_t	*s_distance_model;
-cvar_t	*s_dopplerFactor;
-cvar_t	*s_dopplerVelocity;
 cvar_t	*s_initsound;
 
 openal_channel_t s_openal_channels[MAX_CHANNELS];
@@ -172,8 +170,6 @@ void S_Init(int hardreset)
 		s_openal_eax		=	Cvar_Get("s_openal_eax", "0", CVAR_ARCHIVE);
 		s_quality			=	Cvar_Get("s_quality", "0", CVAR_ARCHIVE);
 		s_distance_model	=	Cvar_Get("s_distance_model", "0", CVAR_ARCHIVE);
-		s_dopplerFactor		=	Cvar_Get("s_dopplerFactor", "1", CVAR_ARCHIVE);
-		s_dopplerVelocity	=	Cvar_Get("s_dopplerVelocity", "343.3", CVAR_ARCHIVE);
 		s_initsound			=	Cvar_Get("s_initsound", "1", CVAR_NOSET);	
 	}
 
@@ -343,200 +339,20 @@ void S_Shutdown(void)
 // =======================================================================
 void S_Restart(void)
 {
-/*	if (s_openal_numChannels)
-	{
-		Com_Printf("Restart OpenAL subsystem\n");
-
-		S_StopAllSounds();
-
-		FreeChannels ();
-
-		if (alConfig.hALC)
-		{
-			if (alcMakeContextCurrent)
-			{
-				Com_Printf("...alcMakeContextCurrent( NULL ): ");
-				if (!alcMakeContextCurrent(NULL))
-					Com_Printf("failed\n");
-				else
-					Com_Printf("succeeded\n");
-			}
-
-			if (alcDestroyContext)
-			{
-				Com_Printf("...destroying AL context\n");
-				alcDestroyContext(alConfig.hALC);
-			}
-
-			alConfig.hALC = NULL;
-		}
-
-		if (alConfig.hDevice)
-		{
-			if (alcCloseDevice)
-			{
-				Com_Printf("...closing device\n");
-				alcCloseDevice(alConfig.hDevice);
-			}
-
-			alConfig.hDevice = NULL;
-		}
-
-		S_Init (0);
-	}
-	else S_Init (1);
-*/
-
-	// willow: Soft reset doesn't work for an unknown reason. Perform full
-	// sound system reset.
-
 	S_Shutdown();
 	S_Init(1);
 }
 
 
-
-/*
-==================
-S_AliasName
-
-==================
-*/
-/*sfx_t *S_AliasName (char *aliasname, char *truename)
-{
-	sfx_t	*sfx;
-	int		i;
-//	char	*s = Z_Malloc (MAX_QPATH);
-
-//	strcpy (s, truename);
-	Com_Printf ("S_AliasName:\n");
-	Com_Printf ("s% s%\n",aliasname,truename);
-
-	// find a free sfx
-	for (i=0 ; i < num_sfx ; i++)
-		if (!known_sfx[i].name[0])
-			break;
-
-	if (i == num_sfx)
-	{
-		if (num_sfx == MAX_SOUNDS)
-			Com_Error (ERR_FATAL, "S_FindName: out of sfx_t");
-		num_sfx++;
-	}
-	sfx = &known_sfx[i];
-
-	memset (sfx, 0, sizeof(sfx_t));
-
-	strcpy (sfx->name, aliasname);
-//	sfx->truename = s;
-
-	return sfx;
-}*/
-
-ALuint S_RegisterSexedSound(entity_state_t * ent, char *base);
-
-/*
-==================
-S_RegisterSound
-
-==================
-*/
-ALuint S_RegisterSound(char *name)
+ALuint S_RegisterSound(const char *name)
 {
 	if (name[0] == '*')
-		return S_RegisterSexedSound(&cl_entities[cl.playernum + 1].current,
-									name);
+		return S_RegisterSexedSound(&cl_entities[cl.playernum + 1].current, name);
 	else
-		return S_FindName(name, s_openal_numChannels);
+		return S_FindName((char*)name, s_openal_numChannels);
 }
 
 
-//=============================================================================
-
-/*
-=================
-S_PickChannel
-=================
-*/
-/*channel_t *S_PickChannel(int entnum, unsigned int entchannel)
-{
-    int			ch_idx;
-    int			first_to_die;
-    int			life_left;
-	channel_t	*ch;
-
-// Check for replacement sound, or find the best one to replace
-    first_to_die = -1;
-    life_left = 0x7fffffff;
-    for (ch_idx=0 ; ch_idx < MAX_CHANNELS ; ch_idx++)
-    {
-		// Don't let game sounds override streaming sounds
-		if (channels[ch_idx].streaming)  // Q2E
-			continue;
-
-		if (
-			//entchannel != 0	&&	// channel 0 never overrides -willow: Ouch! ^_^
-		channels[ch_idx].entnum == entnum
-		&& channels[ch_idx].entchannel == entchannel)
-		{	// always override sound from same entity
-			first_to_die = ch_idx;
-			break;
-		}
-
-		// don't let monster sounds override player sounds
-		//if (channels[ch_idx].entnum == cl.playernum+1 && entnum != cl.playernum+1 && channels[ch_idx].sfx) continue;
-
-		if (channels[ch_idx].end - paintedtime < life_left)
-		{
-			life_left = channels[ch_idx].end - paintedtime;
-			first_to_die = ch_idx;
-		}
-   }
-
-	if (first_to_die == -1)
-		return NULL;
-
-	ch = &channels[first_to_die];
-	memset (ch, 0, sizeof(*ch));
-
-    return ch;
-}
-*/
-
-/*
-=================
-S_Spatialize
-=================
-*/
-/*
-void S_Spatialize(channel_t *ch)
-{
-	vec3_t		origin;
-
-	// anything coming from the view entity will always be full volume
-	if (ch->entnum == cl.playernum+1)
-	{
-		ch->leftvol = ch->master_vol;
-		ch->rightvol = ch->master_vol;
-		return;
-	}
-
-	if (ch->fixed_origin)
-	{
-		VectorCopy (ch->origin, origin);
-	}
-	else
-		CL_GetEntitySoundOrigin (ch->entnum, origin);
-
-	S_SpatializeOrigin (origin, ch->master_vol, ch->dist_mult, &ch->leftvol, &ch->rightvol);
-}
-*/
-
-/*
-=================
-S_AllocPlaysound
-=================
-*/
 playsound_t *S_AllocPlaysound(void)
 {
 	playsound_t *ps = s_freeplays.next;
@@ -578,14 +394,12 @@ S_RegisterSexedSound
 */
 extern cvar_t *gender;
 
-ALuint S_RegisterSexedSound(entity_state_t * ent, char *base)
+ALuint S_RegisterSexedSound(entity_state_t * ent, const char *base)
 {
 	int n;
 	char *p;
-//  FILE            *f;
 	char model[MAX_QPATH];
 	char sexedFilename[MAX_QPATH];
-//  char            maleFilename[MAX_QPATH];
 
 	// determine what model the client is using
 	model[0] = 0;
@@ -600,26 +414,22 @@ ALuint S_RegisterSexedSound(entity_state_t * ent, char *base)
 				*p = 0;
 		}
 	}
-							
-
+	
 	// if we can't figure it out, they're male
-		if (!model[0]){
-		
+	if (!model[0]){
 		if (!strcmp(cl.clientinfo->sex, "cyborg"))
 			strcpy(model, "cyborg");
-		else
-		if (!strcmp(cl.clientinfo->sex, "female"))
+		else if (!strcmp(cl.clientinfo->sex, "female"))
 			strcpy(model, "female");
-		else
-		if (!strcmp(cl.clientinfo->sex, "male"))
+		else if (!strcmp(cl.clientinfo->sex, "male"))
 			strcpy(model, "male");
 		else
-		strcpy(model, gender->string);
+			strcpy(model, gender->string);
 		
-		}
+	}
+
 	// see if we already know of the model specific sound
-	Com_sprintf(sexedFilename, sizeof(sexedFilename), "#players/%s/%s",
-				model, base + 1);
+	Com_sprintf(sexedFilename, sizeof(sexedFilename), "#players/%s/%s", model, base + 1);
 
 	return S_FindName(sexedFilename, true);
 
@@ -736,27 +546,6 @@ openal_channel_t *PickChannel_NEW(unsigned int entNum,
 			is_terminate = false;
 			break;
 		}
-/*		}*/
-
-		// willow: Channel 0 never overrides?
-/*		if (//entChannel != 0 &&
-			(ch->entNum == entNum && ch->entChannel == entChannel))
-		{
-			// Always override sound from same entity
-			firstToDie = i;
-			break;
-		}*/
-
-		// Don't let monster sounds override player sounds
-/*		if (entNum != cl.playernum+1 && ch->entNum == cl.playernum+1)
-			continue;*/
-
-		// Replace the oldest sound
-		// if (ch->startTime < oldestTime)
-		// {
-		// oldestTime = ch->startTime;
-		// firstToDie = i;
-		// }
 	}
 
 	// Emergency channel re-caption.
@@ -918,77 +707,6 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 #endif
 }
 
-
-/*
-=======================================================================
-S_StartSound
-Start a sound effect, legacy version.
-
-Validates the parms and ques the sound up
-if pos is NULL, the sound will be dynamically sourced from the entity
-Entchannel 0 will never override a playing sound
-=======================================================================
-*/
-/*void S_StartSound (vec3_t origin, int entnum, int entchannel, sfx_t *sfx, float fvol, float attenuation, unsigned timeofs)
-{
-	playsound_t *ps, *sort;
-
-	if (!s_openal_numChannels || !sfx) return;
-
-	// Make sure the sound is loaded
-	if (sfx->name[0] == '*')
-	{
-		sfx = S_RegisterSexedSound(&cl_entities[entnum].current, sfx->name);
-	}
-	if (!sfx->bufferNum)
-	{
-		Com_Printf("S_StartSound: NO BUFFER! %s\n", sfx->name);
-		return;
-	}
-
-	//willow: Immediate sound effect start in case no time delay
-	if (!timeofs)
-	{
-		S_fastsound(origin, entnum, entchannel, sfx->bufferNum, fvol, attenuation);
-		return;
-	}
-
-	// Allocate a playSound
-	ps = S_AllocPlaysound ();
-	if (!ps)
-	{
-		Com_Printf("S_StartSound: active-task queue fault\n");
-		return;
-	}
-
-	ps->bufferNum = sfx->bufferNum; //ps->sfx = sfx;
-	ps->entnum = entnum;
-	ps->entchannel = entchannel;
-
-//	ps->flat = is_flat;
-
-	if (origin)
-	{
-		ps->fixed_origin = true;
-		VectorCopy(origin, ps->origin);
-	}
-	else
-		ps->fixed_origin = false;
-
-	ps->volume = fvol;
-	ps->attenuation = attenuation;
-	ps->begin = cl.time + timeofs;
-
-	// Sort into the pending playSounds list
-	for (sort = s_pendingplays.next; sort != &s_pendingplays && sort->begin < ps->begin; sort = sort->next);
-
-	ps->next = sort;
-	ps->prev = sort->prev;
-
-	ps->next->prev = ps;
-	ps->prev->next = ps;
-}
-*/
 void S_fastsound_queue(vec3_t origin, int entnum, int entchannel,
 					   ALuint bufferNum, float fvol, float attenuation,
 					   unsigned timeofs)
@@ -1263,97 +981,6 @@ void S_StopAllSounds(void)
 	S_StopBackgroundTrack();
 }
 
-/*
-==================
-S_AddLoopSounds
-
-Entities with a ->sound field will generated looped sounds
-that are automatically started, stopped, and merged together
-as the entities are sent to the client
-
-void S_AddLoopSounds (void)
-{
-	int			i, j;
-	int			sounds[MAX_EDICTS];
-	int			left, right, left_total, right_total;
-	channel_t	*ch;
-	sfx_t		*sfx;
-	sfxcache_t	*sc;
-	int			num;
-	entity_state_t	*ent;
-
-	if (cl_paused->value)
-		return;
-
-	if (cls.state != ca_active)
-		return;
-
-	if (!cl.sound_prepped)
-		return;
-
-	for (i=0 ; i<cl.frame.num_entities ; i++)
-	{
-		num = (cl.frame.parse_entities + i)&(MAX_PARSE_ENTITIES-1);
-		ent = &cl_parse_entities[num];
-		sounds[i] = ent->sound;
-	}
-
-	for (i=0 ; i<cl.frame.num_entities ; i++)
-	{
-		if (!sounds[i])
-			continue;
-
-		sfx = cl.sound_precache[sounds[i]];
-		if (!sfx)
-			continue;		// bad sound effect
-		sc = sfx->cache;
-		if (!sc)
-			continue;
-
-		num = (cl.frame.parse_entities + i)&(MAX_PARSE_ENTITIES-1);
-		ent = &cl_parse_entities[num];
-
-		// find the total contribution of all sounds of this type
-		S_SpatializeOrigin (ent->origin, 255.0, SOUND_LOOPATTENUATE,
-			&left_total, &right_total);
-		for (j=i+1 ; j<cl.frame.num_entities ; j++)
-		{
-			if (sounds[j] != sounds[i])
-				continue;
-			sounds[j] = 0;	// don't check this again later
-
-			num = (cl.frame.parse_entities + j)&(MAX_PARSE_ENTITIES-1);
-			ent = &cl_parse_entities[num];
-
-			S_SpatializeOrigin (ent->origin, 255.0, SOUND_LOOPATTENUATE,
-				&left, &right);
-			left_total += left;
-			right_total += right;
-		}
-
-		if (left_total == 0 && right_total == 0)
-			continue;		// not audible
-
-		// allocate a channel
-		ch = S_PickChannel(0, 0);
-		if (!ch)
-			return;
-
-		if (left_total > 255)
-			left_total = 255;
-		if (right_total > 255)
-			right_total = 255;
-		ch->leftvol = left_total;
-		ch->rightvol = right_total;
-		ch->autosound = true;	// remove next frame
-		ch->sfx = sfx;
-		ch->pos = paintedtime % sc->length;
-		ch->end = paintedtime + sc->length - ch->pos;
-	}
-}
-*/
-//=============================================================================
-
 void S_RawSetup(unsigned rate, unsigned width, unsigned channels)
 {
 	if (!s_openal_numChannels)
@@ -1367,55 +994,6 @@ void S_RawSamples(unsigned samples, byte * data)
 }
 
 
-//=============================================================================
-/*
-static void PlayChannel (openal_channel_t *ch, sfx_t *sfx)
-{
-	ch->sfx = sfx;
-
-	alSourcei(ch->sourceNum, AL_BUFFER, sfx->bufferNum);
-	alSourcei(ch->sourceNum, AL_LOOPING, ch->loopSound);
-	alSourcei(ch->sourceNum, AL_SOURCE_RELATIVE, AL_FALSE);
-	alSourcePlay(ch->sourceNum);
-}
-*/
-
-/*
-	willow (notes):
-	Do not touch sample volume once it was mentioned by setup
-*/
-/*
-static void SpatializeChannel (openal_channel_t *ch, vec3_t	direction, vec3_t velocity)
-{
-	// Update position and velocity
-//	if (ch->entNum == cl.playernum+1 || !ch->distanceMult)		//willow: wrong for distant player look.
-//	{
-//		alSourcefv(ch->sourceNum, AL_POSITION, s_openal_listener.position);
-//		alSourcefv(ch->sourceNum, AL_VELOCITY, s_openal_listener.velocity);
-//	}
-//	else {<...>}
-
-//	if (ch->fixedPosition)
-//	{
-//		alSourcefv(ch->sourceNum, AL_POSITION, fixed_position); //ch->position);
-//		alSource3f(ch->sourceNum, AL_VELOCITY, 0, 0, 0);
-//	}
-//	else
-//	{
-		vec3_t	position;
-
-		CL_GetEntityOrigin ((ch->loopSound) ? ch->loopNum : ch->entNum, position);
-
-		alSourcefv(ch->sourceNum, AL_POSITION, position);
-//		alSourcefv(ch->sourceNum, AL_DIRECTION, direction);
-		alSourcefv(ch->sourceNum, AL_VELOCITY, velocity);
-	//	alSource3f(ch->sourceNum, AL_VELOCITY, velocity[1], velocity[2], -velocity[0]);
-	//}
-}
-*/
-
-
-// picks a channel based on priorities, empty slots, number of channels
 openal_channel_t *PickChannel(channel_task_t * Channels_TODO,
 							  unsigned int entNum, unsigned int entChannel,
 							  vec3_t new_vec, int *return_index,
@@ -1461,25 +1039,6 @@ openal_channel_t *PickChannel(channel_task_t * Channels_TODO,
 			}
 		}
 
-		// willow: Channel 0 never overrides?
-/*		if (//entChannel != 0 &&
-			(ch->entNum == entNum && ch->entChannel == entChannel))
-		{
-			// Always override sound from same entity
-			firstToDie = i;
-			break;
-		}*/
-
-		// Don't let monster sounds override player sounds
-/*		if (entNum != cl.playernum+1 && ch->entNum == cl.playernum+1)
-			continue;*/
-
-		// Replace the oldest sound
-		// if (ch->startTime < oldestTime)
-		// {
-		// oldestTime = ch->startTime;
-		// firstToDie = i;
-		// }
 	}
 
 	// Emergency channel re-caption.
@@ -1574,20 +1133,15 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 	if (!s_openal_numChannels)
 		return;
 	
-	/* if (!ActiveApp) return */// willow: what i must to do? drop new sounds or just return?
-/*
-	if (cls.disable_screen) {
-		S_StopAllSounds();
-		return;
-	}*/
 	// Set up listener
 	alListenerfv(AL_POSITION, listener_position);
 	alListenerfv(AL_VELOCITY, velocity);
 	alListenerfv(AL_ORIENTATION, orientation);
 
-	alSpeedOfSound(343.3); //real sound speed
-	alDopplerFactor(s_dopplerFactor->value); //sound speed scale factor
-	alDopplerVelocity(s_dopplerVelocity->value); // == alSpeedOfSound dont affect on audigy
+	if((CL_PMpointcontents(listener_position) & MASK_WATER))
+		alSpeedOfSound(59000);
+	else
+		alSpeedOfSound(13515);
 
 
 #ifdef _WIN32
@@ -1597,7 +1151,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		unsigned long ulEAXValLF = -150;  //range form 0 to -10000
 		unsigned long ulEAXValHF = 0;
 		unsigned long eaxEnv;			//reverberation type
-		unsigned long eaxEnvSize = 100; // surround room size def 7.5 max 100
+		unsigned long eaxEnvSize = 75; // surround room size def 7.5 max 100
 		unsigned long eaxReverb = 0; //reverberation level min - 10000 max 2000
 		unsigned long eaxReverbDelay = 0.1;  //reverberation delay (sec) range 0.0 to 0.1
 		
@@ -1655,30 +1209,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 
 		}
 
-/*		willow: code snap to test new EAX effects
-		for (i = 0, ch = s_openal_channels; i < s_openal_numChannels; i++, ch++)
-		{
-			EAXBUFFERPROPERTIES nullEAX;
 
-			nullEAX.lDirect = 0;				// direct path level
-			nullEAX.lDirectHF = 0;				// direct path level at high frequencies
-			nullEAX.lRoom = FlagAL_check (ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room effect level
-			nullEAX.lRoomHF = FlagAL_check (ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room effect level at high frequencies
-			nullEAX.flRoomRolloffFactor = 0;	// like DS3D flRolloffFactor but for room effect
-			nullEAX.lObstruction = 0;			// main obstruction control (attenuation at high frequencies)
-			nullEAX.flObstructionLFRatio = 0;	// obstruction low-frequency level re. main control
-			nullEAX.lOcclusion = 0;				// main occlusion control (attenuation at high frequencies)
-			nullEAX.flOcclusionLFRatio = 0;		// occlusion low-frequency level re. main control
-			nullEAX.flOcclusionRoomRatio = 0;	// occlusion room effect level re. main control
-			nullEAX.lOutsideVolumeHF = 0;		// outside sound cone level at high frequencies
-			nullEAX.flAirAbsorptionFactor = 0;	// multiplies DSPROPERTY_EAXLISTENER_AIRABSORPTIONHF
-			// modifies the behavior of properties
-			nullEAX.dwFlags = FlagAL_check (ch, AL_FLAGS_FLAT2D)
-				? 0
-				: EAXBUFFERFLAGS_DIRECTHFAUTO + EAXBUFFERFLAGS_ROOMAUTO + EAXBUFFERFLAGS_ROOMHFAUTO;
-
-			alSource_EAX_All(source_name[i], &nullEAX);	//willow: should be no EAX effects!
-		}*/
 	}
 #endif
 
@@ -1855,11 +1386,6 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		if (ps->begin > cl.time)
 			break;				// No more pending playSounds this frame
 
-		// Pick a channel and start the sound effect
-/*		if (ps->flat)
-			ch = PickChannel(Channels_TODO, ps->entnum, ps->entchannel, NULL, &logical_channel_index, listener_position);	//100% success
-		else
-		{*/
 		if (ps->fixed_origin)
 			ch = PickChannel(Channels_TODO, ps->entnum, ps->entchannel,
 							 ps->origin, &logical_channel_index,
@@ -1871,7 +1397,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 							 position, &logical_channel_index,
 							 listener_position);
 		}
-/*		}*/
+
 
 		if (ch) {
 			channel_task_t *current_task =
@@ -1880,24 +1406,8 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 			// VectorCopy(ps->origin, ch->position);
 			ch->bufferNum = ps->bufferNum;	// ch->sfx = ps->sfx;
 
-/*			if (ps->flat)
-			{
-				ch->fixedPosition = AL_TRUE;
-				current_task->TASK_AL_ROLLOFF_FACTOR = 0;
-				current_task->TASK_AL_GAIN = 0.74;
-				//alSourcef(ch->sourceNum, AL_PITCH, 1);
-				current_task->TASK_AL_REFERENCE_DISTANCE = 0;
-				memset(current_task->TASK_AL_VELOCITY, 0, sizeof(vec3_t));
-				//alSource3f(ch->sourceNum, AL_DIRECTION, 0, 0, 0);
-//				current_task->TASK_AL_SOURCE_RELATIVE = AL_TRUE;
-			}
-			else*/
-			{
-/*			if (ps->attenuation != ATTN_NONE)
-				ch->distanceMult = 1.0f / ps->attenuation;
-			else
-				ch->distanceMult = 0.0f;*/
 
+			{
 				// Update min/max distance
 				current_task->TASK_AL_REFERENCE_DISTANCE = 28;	// 34;
 				// Set max distance really far away (default)
@@ -2043,63 +1553,6 @@ void S_Play(void)
 
 void S_SoundList_f(void)
 {
-/*	int		i;
-	sfx_t	*sfx;
-	sfxcache_t	*sc;
-	int		size, total = 0;
-
-	for (sfx=known_sfx, i=0 ; i<num_sfx ; i++, sfx++)
-	{
-		if (!sfx->registration_sequence)
-			continue;
-		sc = sfx->cache;
-		if (sc)
-		{
-			size = sc->length*sc->width*(sc->stereo+1);
-			total += size;
-			if (sc->loopstart >= 0)
-				Com_Printf ("L");
-			else
-				Com_Printf (" ");
-			Com_Printf("(%2db) %6i : %s\n",sc->width*8,  size, sfx->name);
-		}
-		else
-		{
-			if (sfx->name[0] == '*')
-				Com_Printf("  placeholder : %s\n", sfx->name);
-			else
-				Com_Printf("  not loaded  : %s\n", sfx->name);
-		}
-	}
-	Com_Printf ("Total resident: %i\n", total);
-*/
-/*	int		i;
-	sfx_t	*sfx;
-	sfxcache_t	*sc;
-	int		size, total = 0, numsounds = 0;
-
-	for (sfx=known_sfx, i=0 ; i<num_sfx ; i++, sfx++)
-	{
-		if (!sfx->name[0])
-			continue;
-
-		sc = sfx->cache;
-		if (sc)
-		{
-			size = sc->length*sc->width*(sc->stereo+1);
-			total += size;
-			Com_Printf("%s(%2db) %8i : %s\n", sc->loopstart != -1 ? "L" : " ", sc->width*8,  size, sfx->name);
-		}
-		else
-		{
-			if (sfx->name[0] == '*')
-				Com_Printf("    placeholder : %s\n", sfx->name);
-			else
-				Com_Printf("    not loaded  : %s\n", sfx->name);
-		}
-		numsounds++;
-	}
-	Com_Printf ("Total resident: %i bytes (%.2f MB) in %d sounds\n", total, (float)total / 1024 / 1024, numsounds);*/
 }
 
 
@@ -2157,17 +1610,6 @@ void S_UpdateBackgroundTrack()
 			ALuint uiBuffer = 0;
 			alSourceUnqueueBuffers(source_name[s_openal_numChannels], 1,
 								   &uiBuffer);
-
-			// Read more audio data (if there is any)
-/*			pWaveLoader->ReadWaveData(WaveID, pData, ulBufferSize, &ulBytesWritten);
-*/
-/*			if (ulBytesWritten)
-			{
-				// Copy audio data to Buffer
-				alBufferData(uiBuffer, AL_FORMAT_STEREO16, pData, ulBytesWritten, stream_info_rate);
-				// Queue Buffer on the Source
-				alSourceQueueBuffers(source_name[s_openal_numChannels], 1, &uiBuffer);
-			}*/
 
 			  if (streaming == 1)     // music streaming
                {
@@ -2359,28 +1801,7 @@ void S_StartCinematic(void)
 	
 	if (streaming)
 		S_StopBackgroundTrack();
-/*
-	int i;
-	// Fill all the Buffers with audio data from the wavefile
-	for (i = 0; i < SND_STREAMING_NUMBUFFERS; i++)
-	{
-		SCR_audioCinematic(pData, ulBufferSize, &ulBytesWritten);
 
-//		ulBytesWritten = (ulBufferSize > stream_info_samples*2) ? stream_info_samples*2 : ulBufferSize;
-		if (ulBytesWritten)
-		{
-//			memcpy(pData, stream_wav + stream_info_dataofs, ulBytesWritten);
-			{
-				alBufferData(uiBuffers[i], AL_FORMAT_STEREO16, pData, ulBytesWritten, stream_info_rate);
-				alSourceQueueBuffers(source_name[s_openal_numChannels], 1, &uiBuffers[i]);
-			}
-//			stream_info_samples -= ulBytesWritten/2;
-//			stream_info_dataofs += ulBytesWritten;
-		}
-	}
-	// Start playing source
-	alSourcePlay(source_name[s_openal_numChannels]);
-*/
 	alSourcef(source_name[s_openal_numChannels], AL_GAIN, 1.0);
 
 	cinframe = 0;

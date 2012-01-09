@@ -40,7 +40,9 @@ void S_StopAllSounds(void);
 void S_Update(vec3_t listener_position, vec3_t velocity,
 			  float orientation[6]);
 
-ALuint S_RegisterSound(char *sample);
+ALuint S_RegisterSound(const char *sample);
+ALuint S_RegisterSexedSound(entity_state_t * ent, const char *base);
+
 ALuint S_FindName(char *name, qboolean create);
 ALuint S_FindName_lite(char *input_name);
 

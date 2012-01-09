@@ -1306,11 +1306,13 @@ void CL_EntityEvent(entity_state_t * ent)
 		break;
 	case EV_FALL:
 		S_StartSound(NULL, ent->number, CHAN_AUTO,
-					 S_RegisterSound("*fall2.wav"), 1, ATTN_NORM, 0);
+					S_RegisterSexedSound(&cl_entities[ent->number].current, "*fall2.wav"), 1, ATTN_NORM, 0);
+//					S_RegisterSound("*fall2.wav"), 1, ATTN_NORM, 0);
 		break;
 	case EV_FALLFAR:
 		S_StartSound(NULL, ent->number, CHAN_AUTO,
-					 S_RegisterSound("*fall1.wav"), 1, ATTN_NORM, 0);
+					S_RegisterSexedSound(&cl_entities[ent->number].current, "*fall1.wav"), 1, ATTN_NORM, 0);
+//					S_RegisterSound("*fall1.wav"), 1, ATTN_NORM, 0);
 		break;
 	}
 }

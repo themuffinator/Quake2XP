@@ -100,10 +100,11 @@ void R_RenderDecals(void)
      
 	qglEnable(GL_POLYGON_OFFSET_FILL);
     qglPolygonOffset(-1, -1);
-
-    qglDepthMask(GL_FALSE);
+	qglStencilMask(0);
+    qglDepthMask(0);
     qglEnable(GL_BLEND);
-	
+	qglColorMask(1, 1, 1, 0);
+
 	active = &active_decals;
 
     for (dl = active->next; dl != active; dl = next) {
@@ -200,14 +201,15 @@ void R_RenderDecals(void)
 		c_decal_tris += numIndices/3;
 	 }
 
-     qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-     qglDisable(GL_BLEND);
-     qglDisableClientState(GL_VERTEX_ARRAY);
-     qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-     qglDisableClientState(GL_COLOR_ARRAY);
-     qglColor4f(1, 1, 1, 1);
-     qglDepthMask(GL_TRUE);
-     qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglColorMask(1, 1, 1, 1);
+    qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    qglDisable(GL_BLEND);
+    qglDisableClientState(GL_VERTEX_ARRAY);
+    qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    qglDisableClientState(GL_COLOR_ARRAY);
+    qglColor4f(1, 1, 1, 1);
+    qglDepthMask(1);
+    qglDisable(GL_POLYGON_OFFSET_FILL);
 }
 
 

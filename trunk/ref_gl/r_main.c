@@ -1177,8 +1177,8 @@ if (r_noRefresh->value)
 	R_RenderFlares();
 	R_DrawParticles(true); //underwater particles
 	R_CaptureColorBuffer();
-	R_RenderDistortModels();
 	R_DrawAlphaPoly();
+	R_RenderDistortModels();
 	R_DrawParticles(false); // air particles
 	R_DrawPlayerWeapon();
 	R_DrawPlayerWeaponLightPass();
@@ -1263,7 +1263,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_Bloom();
 	}
 
-	if (v_blend[3]) {
+	if (v_blend[3] && r_polyBlend->value) {
 		
 		GL_Blend(true, 0, 0);
 		qglDisable(GL_TEXTURE_2D);
@@ -1400,7 +1400,7 @@ void R_RegisterCvars(void)
 	r_dynamic =							Cvar_Get("r_dynamic", "1", 0);
 	r_noBind =							Cvar_Get("r_noBind", "0", 0);
 	r_cull =							Cvar_Get("r_cull", "1", 0);
-	r_polyBlend =						Cvar_Get("r_polyBlend", "1", 0);
+	r_polyBlend =						Cvar_Get("r_polyBlend", "1", CVAR_ARCHIVE);
 	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
 	
 	r_lockPvs =							Cvar_Get("r_lockPvs", "0", 0);
