@@ -20,14 +20,14 @@ void main (void) {
 	float weight = 0.125;
   
 	vec4 accum = vec4(0.0);   
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * float(0) * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * float(1) * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * float(2) * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * float(3) * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * float(4) * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * float(5) * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * float(6) * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * float(7) * strength);
+	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 0.0 * strength);
+	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 1.0 * strength);
+	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 2.0 * strength);
+	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 3.0 * strength);
+	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 4.0 * strength);
+	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 5.0 * strength);
+	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 6.0 * strength);
+	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 7.0 * strength);
 
 	gl_FragColor = accum * weight;
 }
