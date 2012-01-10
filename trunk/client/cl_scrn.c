@@ -1160,12 +1160,6 @@ void SCR_UpdateScreen(void)
 		return;					// not initialized yet
 
 
-	if(cl_fontScale->value >1)
-		cl_fontScale->value = 2;
-
-	if(cl_fontScale->value < 1)
-		cl_fontScale->value = 1;
-
 	if(cl_hudScale->value >1)
 		Cvar_SetValue("cl_hudScale", 1);
 

@@ -653,9 +653,10 @@ void Draw_FadeScreen(void)
 
 
 /*
-=============
-Draw_StretchRaw
-=============
+=================================
+Draw_StretchRaw - draw cinematics 
+with scanline postprocessing
+=================================
 */
 extern unsigned r_rawpalette[256];
 
@@ -669,11 +670,20 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	int			row, x0, y0, x1, y1;
 	float		t;
 	unsigned	*dest;
+	int			id;
+	unsigned	defBits = 0;
 
 	qglClear(GL_COLOR_BUFFER_BIT);
 	qglClearColor(0.0, 0.0, 0.0, 1);
+
+	// setup program
+	GL_BindProgram(cinProgram, defBits);
+	id = cinProgram->id[defBits];
+
 	GL_MBind(GL_TEXTURE0, 0);
-	GL_Overbrights (true);
+	qglUniform1i(qglGetUniformLocation(id, "u_cinMap"), 0);
+	qglUniform2f(qglGetUniformLocation(id, "u_cinSize"), w, h);
+	qglUniform2f(qglGetUniformLocation(id, "u_cinIntSize"), cols, rows);
 
 	hscale = rows/256.0;
 	trows = 256;
@@ -719,6 +729,6 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	qglTexCoord2f (0, 1);
 	qglVertex2f (x0, y1);
 	qglEnd ();
-
-	GL_Overbrights (false);
+	
+	GL_BindNullProgram();
 }

@@ -12,26 +12,7 @@
 #define	PROGRAM_HASH_SIZE	MAX_PROGRAMS
 
 static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
-
-glslProgram_t r_programs[MAX_PROGRAMS];
 int r_numPrograms;
-
-glslProgram_t		*diffuseProgram;
-glslProgram_t		*aliasAmbientProgram;
-glslProgram_t		*aliasBumpProgram;
-glslProgram_t		*bloomdsProgram;
-glslProgram_t		*gaussXProgram;
-glslProgram_t		*gaussYProgram;
-glslProgram_t		*bloomfpProgram;
-glslProgram_t		*refractProgram;
-glslProgram_t		*thermalProgram;
-glslProgram_t		*thermalfpProgram;
-glslProgram_t		*waterProgram;
-glslProgram_t		*radialProgram;
-glslProgram_t		*dofProgram;
-glslProgram_t		*particlesProgram;
-glslProgram_t		*shadowProgram;
-glslProgram_t		*skyProgram;
 
 // Usage of half-floats gives 5-10% additional performance,
 // as well as "dark room with a lot of little lights" artefacts.
@@ -590,6 +571,14 @@ void R_InitPrograms(void) {
 	skyProgram =  R_FindProgram("sky", true, true);
 	
 	if(skyProgram->valid){
+		Com_Printf("succeeded\n");
+	}else
+		Com_Printf(S_COLOR_RED"Failed!\n");
+
+	Com_Printf("Load "S_COLOR_YELLOW"cinematic program"S_COLOR_WHITE" ");
+	cinProgram =  R_FindProgram("cin", true, true);
+	
+	if(cinProgram->valid){
 		Com_Printf("succeeded\n");
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");

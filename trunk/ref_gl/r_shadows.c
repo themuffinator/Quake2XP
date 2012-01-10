@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-extern float shadowalpha;
-
 typedef float vec4_t[4];
 vec4_t s_lerped[MAX_VERTS];
 float shadelight[3];

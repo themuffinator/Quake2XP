@@ -699,23 +699,25 @@ typedef struct glslProgram_s {
 
 } glslProgram_t;
 
+glslProgram_t r_programs[MAX_PROGRAMS];
 
-extern	glslProgram_t		*diffuseProgram;
-extern	glslProgram_t		*aliasAmbientProgram;
-extern	glslProgram_t		*aliasBumpProgram;
-extern	glslProgram_t		*gaussXProgram;
-extern	glslProgram_t		*gaussYProgram;
-extern	glslProgram_t		*bloomdsProgram;
-extern	glslProgram_t		*bloomfpProgram;
-extern	glslProgram_t		*refractProgram;
-extern	glslProgram_t		*thermalProgram;
-extern	glslProgram_t		*thermalfpProgram;
-extern	glslProgram_t		*waterProgram;
-extern	glslProgram_t		*radialProgram;
-extern	glslProgram_t		*dofProgram;
-extern	glslProgram_t		*particlesProgram;
-extern	glslProgram_t		*shadowProgram;
-extern	glslProgram_t		*skyProgram;
+glslProgram_t		*diffuseProgram;
+glslProgram_t		*aliasAmbientProgram;
+glslProgram_t		*aliasBumpProgram;
+glslProgram_t		*bloomdsProgram;
+glslProgram_t		*gaussXProgram;
+glslProgram_t		*gaussYProgram;
+glslProgram_t		*bloomfpProgram;
+glslProgram_t		*refractProgram;
+glslProgram_t		*thermalProgram;
+glslProgram_t		*thermalfpProgram;
+glslProgram_t		*waterProgram;
+glslProgram_t		*radialProgram;
+glslProgram_t		*dofProgram;
+glslProgram_t		*particlesProgram;
+glslProgram_t		*shadowProgram;
+glslProgram_t		*skyProgram;
+glslProgram_t		*cinProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
