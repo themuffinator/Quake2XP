@@ -126,7 +126,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	if(r_bumpAlias->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		VectorSet(lightColor, 0.15, 0.15, 0.15);
+		VectorSet(lightColor, 0.2, 0.2, 0.2);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
@@ -540,12 +540,43 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	
 }
 
+void R_DebugLights (vec3_t lightOrg)
+{
+	int		i, j;
+	float	a;
+	vec3_t	v;
+	float	rad;
+
+	rad = 5.0;
+
+	qglDisable(GL_CULL_FACE);
+	VectorSubtract (lightOrg, r_origin, v);
+	qglColor3f (1, 0, 1);
+
+	qglBegin (GL_TRIANGLE_FAN);
+	for (i=0 ; i<3 ; i++)
+		v[i] = lightOrg[i] - vpn[i]*rad;
+	qglVertex3fv (v);
+	
+	for (i=16 ; i>=0 ; i--)
+	{
+		a = i/16.0 * M_PI*2;
+		for (j=0 ; j<3 ; j++)
+			v[j] = lightOrg[j] + vright[j]*cos(a)*rad
+				+ vup[j]*sin(a)*rad;
+		qglVertex3fv (v);
+	}
+	qglEnd ();
+	qglColor3f (1,1,1);
+	qglEnable(GL_CULL_FACE);
+}
+
 qboolean R_CullSphere( const vec3_t centre, const float radius, const int clipflags );
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 {
 	
-	vec3_t			temp, tmp, light, tmpLight;
+	vec3_t			temp, tmp, light;
 	float			dist;
 	int				i, dlActive = 0, slActive = 0;
 	dlight_t		*dlight;     //dynamic lights
@@ -555,26 +586,24 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 	mat3_t			entityAxis;
 	trace_t			r_trace;
 
-	AnglesToMat3(currententity->angles, entityAxis);
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-									
-			VectorClear(diffuseColor);
+
 			diffuseColor[0] = 1.0;
 			diffuseColor[1] = 1.0;
 			diffuseColor[2] = 1.0;
-			VectorCopy(currententity->origin, tmpLight);
-			tmpLight[0]-= 100;
-			tmpLight[2]+= 60;
+			VectorCopy(currententity->origin, light);
+			light[0] -= 100;
+			light[2] += 100;
 
-			VectorSubtract(tmpLight, currententity->origin, tmp);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);		
+			VectorSubtract(light, currententity->origin, tmp);
+			AnglesToMat3(currententity->angles, entityAxis);
+			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);
 
-			GL_DrawAliasFrameLerpArb(paliashdr, light, 666, diffuseColor);
+			GL_DrawAliasFrameLerpArb(paliashdr, light, 999, diffuseColor);
 
-	} 
-	else
-	{
+	}
+	
 	for (i = 0; i < r_numflares; i++) {
 		int sidebit;
 		float viewplane;
@@ -613,28 +642,27 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			
 			// light surf behind the wall 
 		if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, lightSurf->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			r_trace = CM_BoxTrace(	currententity->origin, lightSurf->origin, vec3_origin, 
+									vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
 				
 			if(r_trace.fraction != 1.0)
 				continue;
 			}
 			
 			VectorSubtract(lightSurf->origin, currententity->origin, tmp);
+			AnglesToMat3(currententity->angles, entityAxis);
 			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);	
 			
 			lightRad = lightSurf->size * r_shadowWorldLightScale->value;
 
 			R_LightPoint(lightSurf->origin, diffuseColor, true);
 			VectorScale(diffuseColor, 2.0, diffuseColor);
-			if (currententity->flags & RF_WEAPONMODEL)
-				GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
+			GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
 			slActive++;
 		}
 
 		dlight = r_newrefdef.dlights;
 		for (i = 0; i < r_newrefdef.num_dlights; i++, dlight++) {
-			
-			vec3_t dlOrg;
 
 			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 				continue;
@@ -647,7 +675,8 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 			// light surf behind the wall 
 			if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, dlight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			r_trace = CM_BoxTrace(	currententity->origin, dlight->origin, vec3_origin, 
+									vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
 			if(r_trace.fraction != 1.0)
 			continue;
 			}
@@ -659,34 +688,34 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			diffuseColor[2] = dlight->color[2];
 
 			VectorSubtract(dlight->origin, currententity->origin, tmp);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, dlOrg);	
+			AnglesToMat3(currententity->angles, entityAxis);
+			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);	
 			
-			GL_DrawAliasFrameLerpArb(paliashdr, dlOrg, lightRad, diffuseColor);
+			GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
 			
 			dlActive++;
 		}	
 
 		if(!dlActive && !slActive){
-			vec3_t org;
 			
+			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+				return;
+
 			if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, r_origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			r_trace = CM_BoxTrace(	currententity->origin, r_origin, vec3_origin, 
+									vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
 			if(r_trace.fraction != 1.0)
 			return;
 			}
 
-			VectorAdd(currententity->origin, currententity->model->maxs, org);
-			org[1]+=50;
-			org[2]+=50;
+			VectorCopy(currententity->origin, light);
+			light[2]+=100;
 			
 			R_LightPoint(currententity->origin, diffuseColor, true);
-			VectorSubtract(org, currententity->origin, tmp);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, org);	
-			
-			GL_DrawAliasFrameLerpArb(paliashdr, org, 200, diffuseColor);
+			VectorSubtract(light, currententity->origin, tmp);
+			AnglesToMat3(currententity->angles, entityAxis);
+			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);	
+			GL_DrawAliasFrameLerpArb(paliashdr, light, 250, diffuseColor);
 		}
 
-		if(!dlActive && slActive)
-			GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
-}
 }

@@ -1178,8 +1178,9 @@ if (r_noRefresh->value)
 	R_DrawParticles(true); //underwater particles
 	R_CaptureColorBuffer();
 	R_DrawAlphaPoly();
-	R_RenderDistortModels();
 	R_DrawParticles(false); // air particles
+	R_CaptureColorBuffer();
+	R_RenderDistortModels();
 	R_DrawPlayerWeapon();
 	R_DrawPlayerWeaponLightPass();
 }

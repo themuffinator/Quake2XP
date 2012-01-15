@@ -314,7 +314,7 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	entity.currentLightPos[0] -=100;
 	entity.currentLightPos[2] +=100;
 
-	entity.lightRad = 666;
+	entity.lightRad = 256;
 	entity.angles[1] = anglemod(refdef.time*48);
 	
 	if ( entity.angles[1] > 360 )	
