@@ -1109,6 +1109,7 @@ void CL_ParticleBlasterBolt(vec3_t start, vec3_t end)
 
 	if (!free_particles)
 		return;
+
 	p = free_particles;
 	free_particles = p->next;
 	p->next = active_particles;
@@ -1126,7 +1127,7 @@ void CL_ParticleBlasterBolt(vec3_t start, vec3_t end)
 	p->sFactor = GL_ONE;
 	p->dFactor = GL_ONE;
 	p->len = 25;
-	p->endLen = 25;
+	p->endLen = 0;
 	p->color[0] = 1.0;
 	p->color[1] = 1.0;
 	p->color[2] = 1.0;
@@ -1141,10 +1142,11 @@ void CL_ParticleBlasterBolt(vec3_t start, vec3_t end)
 
 	for (j = 0; j < 3; j++) {
 		p->org[j] = start[j];
-		p->vel[j] = dir[j]*1000;
+		p->vel[j] = dir[j]*1000; // Fuck the id! 600 for solder, 800 for tank, 1000 for others!!!!!!!
 	}
 	p->alpha = 1.0;
 	p->alphavel = 1.0;
+
 	VectorCopy(p->org, p->oldOrg);
 }
 

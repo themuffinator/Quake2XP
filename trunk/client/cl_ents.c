@@ -991,11 +991,10 @@ void CL_AddPacketEntities(frame_t * frame)
 		}
 //pmm
 
-		if (ent.model)
+		if (ent.model) // hack for blaster bolt particle
 		{
-			if (!Q_strcasecmp((char *)ent.model, "models/objects/laser/tris.md2")/* && !(effects & EF_BLASTER)*/){	
-				CL_ParticleBlasterBolt (cent->lerp_origin, ent.origin);
-			goto next;
+			if (!Q_strcasecmp((char *)ent.model, "models/objects/laser/tris.md2")){	
+				goto next;
 			}
 		}
 
@@ -1204,7 +1203,7 @@ next:
 					V_AddLight(ent.origin, 200, 0, 1, 0);
 				} else {
 					CL_BlasterTrail(cent->lerp_origin, ent.origin);
-
+					CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
 					V_AddLight(ent.origin, 200, 1, 1, 0);
 				}
 //PGM
@@ -1214,7 +1213,11 @@ next:
 					V_AddLight(ent.origin, 200, 0, 1, 0);	// PGM
 				else			// PGM
 					V_AddLight(ent.origin, 200, 1, 1, 0);
-			} else if (effects & EF_GIB) {
+					CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
+
+			} else 
+				
+			if (effects & EF_GIB) {
 
 				CL_DiminishingTrail(cent->lerp_origin, ent.origin, cent,
 									effects);

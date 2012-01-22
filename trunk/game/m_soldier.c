@@ -513,7 +513,7 @@ if(skill->value ==0)
 
 	if (self->s.skinnum <= 1)
 	{
-		monster_fire_blaster (self, start, aim, 5, 600, flash_index, EF_BLASTER);
+		monster_fire_blaster (self, start, aim, 5, 1000, flash_index, EF_BLASTER);  // hack for client blaster bolt was 600
 	}
 	else if (self->s.skinnum <= 3)
 	{

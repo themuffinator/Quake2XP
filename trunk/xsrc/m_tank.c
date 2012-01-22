@@ -1,23 +1,4 @@
 /*
-Copyright (C) 1997-2001 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-/*
 ==============================================================================
 
 TANK
@@ -312,8 +293,8 @@ void tank_pain (edict_t *self, edict_t *other, float kick, int damage)
 	self->pain_debounce_time = level.time + 3;
 	gi.sound (self, CHAN_VOICE, sound_pain, 1, ATTN_NORM, 0);
 
-//	if (skill->value == 3)
-//		return;		// no pain anims in nightmare
+	if (skill->value == 3)
+		return;		// no pain anims in nightmare
 
 	if (damage <= 30)
 		self->monsterinfo.currentmove = &tank_move_pain1;
@@ -350,7 +331,7 @@ void TankBlaster (edict_t *self)
 	end[2] += self->enemy->viewheight;
 	VectorSubtract (end, start, dir);
 
-	monster_fire_blaster (self, start, dir, 30, 1000, flash_number, EF_BLASTER); // hack for client blaster bolt was 800
+	monster_fire_blaster (self, start, dir, 30, 1000, flash_number, EF_BLASTER);  // hack for client blaster bolt was 800
 }	
 
 void TankStrike (edict_t *self)
@@ -706,11 +687,12 @@ void tank_attack(edict_t *self)
 void tank_dead (edict_t *self)
 {
 	VectorSet (self->mins, -16, -16, -16);
-	VectorSet (self->maxs, 16, 16, 1);
+	VectorSet (self->maxs, 16, 16, -0);
 	self->movetype = MOVETYPE_TOSS;
 	self->svflags |= SVF_DEADMONSTER;
 	self->nextthink = 0;
 	Touch_Corpse(self);
+
 	gi.linkentity (self);
 
 	if (skill->value <3) M_FlyCheck(self);
@@ -762,7 +744,7 @@ void tank_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage,
 // check for gib
 	if (self->health <= self->gib_health)
 	{
-		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
 		for (n= 0; n < 1 /*4*/; n++)
 			ThrowGib (self, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
 		for (n= 0; n < 4; n++)
@@ -832,6 +814,7 @@ void SP_monster_tank (edict_t *self)
 	self->gib_health = -500;
 	else
 	self->gib_health = -225;
+
 	}
 	else
 	{
@@ -840,6 +823,7 @@ void SP_monster_tank (edict_t *self)
 	self->gib_health = -450;
 	else
 	self->gib_health = -200;
+
 	}
 
 	self->mass = 500;

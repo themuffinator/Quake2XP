@@ -1,22 +1,3 @@
-/*
-Copyright (C) 1997-2001 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 #include "g_local.h"
 
 
@@ -57,6 +38,148 @@ void monster_fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, 
 	gi.WriteByte (flashtype);
 	gi.multicast (start, MULTICAST_PVS);
 }	
+
+// RAFAEL
+void monster_fire_blueblaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int flashtype, int effect)
+{
+	fire_blueblaster (self, start, dir, damage, speed, effect);
+
+	gi.WriteByte (svc_muzzleflash2);
+	gi.WriteShort (self - g_edicts);
+	gi.WriteByte (MZ_BLUEHYPERBLASTER);
+	gi.multicast (start, MULTICAST_PVS);
+}	
+
+// RAFAEL
+void monster_fire_ionripper (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int flashtype, int effect)
+{
+	fire_ionripper (self, start, dir, damage, speed, effect);
+
+	gi.WriteByte (svc_muzzleflash2);
+	gi.WriteShort (self - g_edicts);
+	gi.WriteByte (flashtype);
+	gi.multicast (start, MULTICAST_PVS);
+}
+
+// RAFAEL
+void monster_fire_heat (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, int flashtype)
+{
+	fire_heat (self, start, dir, damage, speed, damage, damage);
+
+	gi.WriteByte (svc_muzzleflash2);
+	gi.WriteShort (self - g_edicts);
+	gi.WriteByte (flashtype);
+	gi.multicast (start, MULTICAST_PVS);
+}
+
+// RAFAEL
+void dabeam_hit (edict_t *self)
+{
+	edict_t	*ignore;
+	vec3_t	start;
+	vec3_t	end;
+	trace_t	tr;
+	int		count;
+	static	vec3_t	lmins = {-4, -4, -4};
+	static	vec3_t	lmaxs = {4, 4, 4};
+
+	if (self->spawnflags & 0x80000000)
+		count = 8;
+	else
+		count = 4;
+
+	ignore = self;
+	VectorCopy (self->s.origin, start);
+	VectorMA (start, 2048, self->movedir, end);
+	
+	while(1)
+	{
+		tr = gi.trace (start, NULL, NULL, end, ignore, CONTENTS_SOLID|CONTENTS_MONSTER|CONTENTS_DEADMONSTER);
+		if (!tr.ent)
+			break;
+
+		// hurt it if we can
+		if ((tr.ent->takedamage) && !(tr.ent->flags & FL_IMMUNE_LASER) && (tr.ent != self->owner))
+			T_Damage (tr.ent, self, self->owner, self->movedir, tr.endpos, vec3_origin, self->dmg, skill->value, DAMAGE_ENERGY, MOD_TARGET_LASER);
+
+		if (self->dmg < 0) // healer ray
+		{
+			// when player is at 100 health
+			// just undo health fix
+			// keeping fx
+			if (tr.ent->client && tr.ent->health > 100)
+				tr.ent->health += self->dmg; 
+		}
+		
+		// if we hit something that's not a monster or player or is immune to lasers, we're done
+		if (!(tr.ent->svflags & SVF_MONSTER) && (!tr.ent->client))
+		{
+			if (self->spawnflags & 0x80000000)
+			{
+				self->spawnflags &= ~0x80000000;
+				gi.WriteByte (svc_temp_entity);
+				gi.WriteByte (TE_LASER_SPARKS);
+				gi.WriteByte (10);
+				gi.WritePosition (tr.endpos);
+				gi.WriteDir (tr.plane.normal);
+				gi.WriteByte (self->s.skinnum);
+				gi.multicast (tr.endpos, MULTICAST_PVS);
+			}
+			break;
+		}
+
+		ignore = tr.ent;
+		VectorCopy (tr.endpos, start);
+	}
+
+
+	VectorCopy (tr.endpos, self->s.old_origin);
+	self->nextthink = level.time + 0.1;
+	self->think = G_FreeEdict;
+  
+}
+
+// RAFAEL
+void monster_dabeam (edict_t *self)
+{
+	vec3_t last_movedir;
+	vec3_t point;
+	
+	self->movetype = MOVETYPE_NONE;
+	self->solid = SOLID_NOT;
+	self->s.renderfx |= RF_BEAM|RF_TRANSLUCENT;
+	self->s.modelindex = 1;
+		
+	self->s.frame = 2;
+	
+	if (self->owner->monsterinfo.aiflags & AI_MEDIC)
+		self->s.skinnum = 0xf3f3f1f1;
+	else
+		self->s.skinnum = 0xf2f2f0f0;
+
+	if (self->enemy)
+	{
+		VectorCopy (self->movedir, last_movedir);
+		VectorMA (self->enemy->absmin, 0.5, self->enemy->size, point);
+		if (self->owner->monsterinfo.aiflags & AI_MEDIC)
+			point[0] += sin (level.time) * 8;
+		VectorSubtract (point, self->s.origin, self->movedir);
+		VectorNormalize (self->movedir);
+		if (!VectorCompare(self->movedir, last_movedir))
+			self->spawnflags |= 0x80000000;
+	}
+	else
+		G_SetMovedir (self->s.angles, self->movedir);
+
+	self->think = dabeam_hit;
+	self->nextthink = level.time + 0.1;
+	VectorSet (self->mins, -8, -8, -8);
+	VectorSet (self->maxs, 8, 8, 8);
+	gi.linkentity (self);
+ 
+	self->spawnflags |= 0x80000001;
+	self->svflags &= ~SVF_NOCLIENT;
+}
 
 void monster_fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int flashtype)
 {
@@ -110,16 +233,12 @@ static void M_FliesOff (edict_t *self)
 	self->s.sound = 0;
 }
 
-//static int	sound_deadfly;
-
 static void M_FliesOn (edict_t *self)
 {
 	if (self->waterlevel)
 		return;
-//	sound_deadfly = gi.soundindex ("infantry/inflies1.wav");
 	self->s.effects |= EF_FLIES;
 	self->s.sound = gi.soundindex ("infantry/inflies1.wav");
-//	gi.sound (self, CHAN_VOICE, sound_deadfly, 1, ATTN_NORM, 0);
 	self->think = M_FliesOff;
 	self->nextthink = level.time + 60;
 }
@@ -131,85 +250,10 @@ void M_FlyCheck (edict_t *self)
 
 	if (random() > 0.5)
 		return;
-    
+
 	self->think = M_FliesOn;
 	self->nextthink = level.time + 5 + 10 * random();
 }
-
-void monster_start_go (edict_t *self);
-
-/*
-=====================================
-      NIGHTMARE REBORN
-original idea by Lord Dewl [LeD Clan]
- code by Kirk Barnes and Vortex
-       Quake2xp team
-=====================================
-*/
-//cplane_t *plane;
-void monster_respawn(edict_t *self)
-{
-  if (skill->value == 3)
-	{	
-	gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
-	self->spawnflags = 0;
-	self->monsterinfo.aiflags = 0;
-	self->target = NULL;
-	self->targetname = NULL;
-	self->combattarget = NULL;
-	self->deathtarget = NULL;
-	self->owner = self;
-	ED_CallSpawn (self);
-    self->owner = NULL;
-
-	gi.WriteByte (svc_temp_entity);
-	gi.WriteByte (TE_REBORN);
-	gi.WritePosition (self->s.origin);
-	if (!plane)
-			gi.WriteDir (vec3_origin);
-		else
-			gi.WriteDir (plane->normal);
-	
-	gi.multicast (self->s.origin, MULTICAST_PVS);
-
-    monster_start_go (self);
-    FoundTarget (self);
-	level.killed_monsters--;     // fixed by Berserker: монстр воскрес, вычтем из списка убитых
-    level.total_monsters--;      // fixed by Berserker: monster_start_go прибавляет 1 к списку живых монстров, но это не верно в данном случае. Поправим
-	}
-  }
-
-void monster_reborn(edict_t *self)
-{
-	if (skill->value == 3)
-	{		
-		if (random() > g_monsterRespawn->value)
-		return;
-
-	self->think = monster_respawn;
-	self->nextthink = level.time + 5 + 10 * random();
-
-	}
-}
-/*
-=============================
-      TOUCH DEAD BODYES
-this a crazy idea Kirk Barnes
-=============================
-*/
-
-void Touch_Corpse (edict_t *self)
-{
-	if (!sv_solidcorpse->value) return;
-
-    self->solid = SOLID_BBOX;
-	self->movetype = MOVETYPE_STEP;
-	self->touch = barrel_touch;
-	self->think = M_droptofloor;
-}
-
-//=====================================================
-
 
 void AttackFinished (edict_t *self, float time)
 {
@@ -415,7 +459,7 @@ void M_SetEffects (edict_t *ent)
 
 	if (ent->monsterinfo.aiflags & AI_RESURRECTING)
 	{
-	//	ent->s.effects |= EF_COLOR_SHELL;
+		ent->s.effects |= EF_COLOR_SHELL;
 		ent->s.renderfx |= RF_SHELL_RED;
 	}
 
@@ -533,7 +577,7 @@ void monster_use (edict_t *self, edict_t *other, edict_t *activator)
 }
 
 
-
+void monster_start_go (edict_t *self);
 
 
 void monster_triggered_spawn (edict_t *self)
@@ -549,6 +593,16 @@ void monster_triggered_spawn (edict_t *self)
 
 	monster_start_go (self);
 
+	// RAFAEL
+	if (strcmp (self->classname, "monster_fixbot") == 0)
+	{
+		if (self->spawnflags &16 || self->spawnflags &8 || self->spawnflags &4)
+		{
+			self->enemy = NULL;
+			return;
+		}
+	}
+	
 	if (self->enemy && !(self->spawnflags & 1) && !(self->enemy->flags & FL_NOTARGET))
 	{
 		FoundTarget (self);
@@ -579,6 +633,73 @@ void monster_triggered_start (edict_t *self)
 }
 
 
+
+
+void monster_start_go (edict_t *self);
+
+/*
+=================================
+      NIGHTMARE REBORN
+original idea by Lord Dewl [LeD]
+ code by Kirk Barnes and Vortex
+
+=================================
+*/
+
+void monster_respawn(edict_t *self)
+{
+  if (skill->value == 3)
+	{	
+	gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/tele_up.wav"), 1, ATTN_NORM, 0);
+	self->spawnflags = 0;
+	self->monsterinfo.aiflags = 0;
+	self->target = NULL;
+	self->targetname = NULL;
+	self->combattarget = NULL;
+	self->deathtarget = NULL;
+	self->owner = self;
+	ED_CallSpawn (self);
+    self->owner = NULL;
+	
+    monster_start_go (self);
+    FoundTarget (self);
+	level.killed_monsters--;   // fixed by Berserker: монстр воскрес, вычтем из списка убитых
+    level.total_monsters--;    // fixed by Berserker: monster_start_go прибавляет 1 к списку живых монстров, но это не верно в данном случае. Поправим
+  }
+  }
+
+void monster_reborn(edict_t *self)
+{
+	if (skill->value == 3)
+	{		
+		if (random() > g_monsterRespawn->value)
+		return;
+
+	self->think = monster_respawn;
+
+	self->nextthink = level.time + 5 +10 * random();
+	}
+}
+/*
+=============================
+      TOUCH DEAD BODYES
+this a crazy idea Kirk Barnes
+=============================
+*/
+
+void Touch_Corpse (edict_t *self)
+{
+	if (!sv_solidcorpse->value) return;
+
+    self->solid = SOLID_BBOX;
+	self->movetype = MOVETYPE_STEP;
+	self->touch = barrel_touch;
+	self->think = M_droptofloor;
+}
+
+
+
+
 /*
 ================
 monster_death_use
@@ -587,16 +708,10 @@ When a monster dies, it fires all of its targets with the current
 enemy as activator.
 ================
 */
-
-
-
-
-
 void monster_death_use (edict_t *self)
 {
 	self->flags &= ~(FL_FLY|FL_SWIM);
 	self->monsterinfo.aiflags &= AI_GOOD_GUY;
-    
 
 	if (self->item)
 	{
@@ -610,15 +725,7 @@ void monster_death_use (edict_t *self)
 	if (!self->target)
 		return;
 
-
-   
-
-G_UseTargets (self, self->enemy);
-
-
-
-
-
+	G_UseTargets (self, self->enemy);
 }
 
 
@@ -655,8 +762,6 @@ qboolean monster_start (edict_t *self)
 	self->deadflag = DEAD_NO;
 	self->svflags &= ~SVF_DEADMONSTER;
 
-
-
 	if (!self->monsterinfo.checkattack)
 		self->monsterinfo.checkattack = M_CheckAttack;
 	VectorCopy (self->s.origin, self->s.old_origin);
@@ -681,7 +786,7 @@ void monster_start_go (edict_t *self)
 
 	if (self->health <= 0)
 		return;
-		
+
 	// check for target to combat_point and change to combattarget
 	if (self->target)
 	{

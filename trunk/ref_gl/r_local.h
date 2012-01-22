@@ -310,6 +310,9 @@ cvar_t	*r_tbnSmoothAngle;
 cvar_t	*r_softParticles;
 cvar_t	*r_ignoreGlErrors;
 
+cvar_t	*r_stereoVision;
+cvar_t	*r_stereoSeparation;
+
 int CL_PMpointcontents(vec3_t point);
 qboolean outMap;
 
