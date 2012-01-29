@@ -705,7 +705,6 @@ void CL_AddPacketEntities(frame_t * frame)
 	autoanim = 2 * cl.time / 1000;
 
 	memset(&ent, 0, sizeof(ent));
-	
 	currentPlayerWeapon = NULL;
 
 	for (pnum = 0; pnum < frame->num_entities; pnum++) {
@@ -993,7 +992,8 @@ void CL_AddPacketEntities(frame_t * frame)
 
 		if (ent.model) // hack for blaster bolt particle
 		{
-			if (!Q_strcasecmp((char *)ent.model, "models/objects/laser/tris.md2")){	
+			if (!Q_strcasecmp((char *)ent.model, "models/objects/laser/tris.md2") && !(effects & EF_BLASTER)){	
+				CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
 				goto next;
 			}
 		}
@@ -1080,6 +1080,7 @@ next:
 
 		// duplicate for linked models
 		// Third Person weapon
+
 		if (s1->modelindex2) {
 			if (player_camera)
 				ent.flags |= RF_VIEWERMODEL;	// dont draw 3th person
@@ -1213,7 +1214,6 @@ next:
 					V_AddLight(ent.origin, 200, 0, 1, 0);	// PGM
 				else			// PGM
 					V_AddLight(ent.origin, 200, 1, 1, 0);
-					CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
 
 			} else 
 				

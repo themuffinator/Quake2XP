@@ -373,11 +373,9 @@ void CL_PrepRefresh(void)
 			Com_sprintf(loadingMessages[1], sizeof(loadingMessages[1]),
 				"Loading Models...%s", cl.configstrings[CS_MODELS+i]);
 
-			cl.model_draw[i] =
-				R_RegisterModel(cl.configstrings[CS_MODELS + i]);
+			cl.model_draw[i] = R_RegisterModel(cl.configstrings[CS_MODELS + i]);
 			if (name[0] == '*')
-				cl.model_clip[i] =
-					CM_InlineModel(cl.configstrings[CS_MODELS + i]);
+				cl.model_clip[i] = CM_InlineModel(cl.configstrings[CS_MODELS + i]);
 			else
 				cl.model_clip[i] = NULL;
 		}

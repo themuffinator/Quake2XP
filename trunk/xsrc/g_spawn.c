@@ -922,8 +922,7 @@ void SP_worldspawn (edict_t *ent)
 	// THIS ORDER MUST MATCH THE DEFINES IN g_local.h
 	// you can add more, max 19 (pete change)
 	// these models are only loaded in coop or deathmatch. not singleplayer.
-	if (coop->value || deathmatch->value)
-	{
+
 		gi.modelindex ("#w_blaster.md2");
 		gi.modelindex ("#w_shotgun.md2");
 		gi.modelindex ("#w_sshotgun.md2");
@@ -938,7 +937,6 @@ void SP_worldspawn (edict_t *ent)
 
 		gi.modelindex ("#w_phalanx.md2");
 		gi.modelindex ("#w_ripper.md2");
-	}
 
 	//-------------------
 

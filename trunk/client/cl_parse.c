@@ -582,19 +582,17 @@ void CL_LoadClientinfo(clientinfo_t * ci, char *s)
 		}
 		// weapon file
 		for (i = 0; i < num_cl_weaponmodels; i++) {
-			Com_sprintf(weapon_filename, sizeof(weapon_filename),
-						"players/%s/%s", model_name, cl_weaponmodels[i]);
+			Com_sprintf(weapon_filename, sizeof(weapon_filename), "players/%s/%s", model_name, cl_weaponmodels[i]);
 			ci->weaponmodel[i] = R_RegisterModel(weapon_filename);
+
 			if (!ci->weaponmodel[i] && strcmp(model_name, "cyborg") == 0) {
 				// try male
-				Com_sprintf(weapon_filename, sizeof(weapon_filename),
-							"players/male/%s", cl_weaponmodels[i]);
+				Com_sprintf(weapon_filename, sizeof(weapon_filename), "players/male/%s", cl_weaponmodels[i]);
 				ci->weaponmodel[i] = R_RegisterModel(weapon_filename);
 			}
 			if (!cl_vwep->value)
 				break;			// only one when vwep is off
 		}
-
 		// icon file
 		Com_sprintf(ci->iconname, sizeof(ci->iconname),
 					"/players/%s/%s_i.pcx", model_name, skin_name);
