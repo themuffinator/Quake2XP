@@ -1,29 +1,29 @@
-uniform sampler2D	u_Diffuse;
-uniform sampler2D	u_LightMap;
-uniform sampler2D	u_Add;
-uniform sampler2D	u_NormalMap;
-uniform sampler2D	u_deluxMap;
-uniform float       u_ColorModulate;
-uniform float       u_ambientScale;    
-uniform int			u_bumpMap;
-uniform vec2		u_bumpScale;
-uniform vec2		u_texSize;
-uniform int			u_parallaxType;
-uniform int			u_numSteps;
-uniform int			u_numLights;
-uniform int			u_activeLights;
-uniform sampler2D	u_Caustics;
-uniform float       u_CausticsModulate; 
-uniform float		u_lightScale; 
-uniform vec3		u_LightColor[13];
-uniform float		u_LightRadius[13];
+uniform sampler2D		u_Diffuse;
+uniform sampler2D		u_LightMap;
+uniform sampler2D		u_Add;
+uniform sampler2D		u_NormalMap;
+uniform sampler2D		u_deluxMap;
+uniform sampler2D		u_Caustics;
+uniform float       	u_ColorModulate;
+uniform float       	u_ambientScale;    
+uniform int				u_bumpMap;
+uniform vec2			u_bumpScale;
+uniform vec2			u_texSize;
+uniform int				u_parallaxType;
+uniform int				u_numSteps;
+uniform int				u_numLights;
+uniform int				u_activeLights;
+uniform float       	u_CausticsModulate; 
+uniform float			u_lightScale; 
+uniform vec3			u_LightColor[13];
+uniform float			u_LightRadius[13];
 
-varying vec3		v_viewVecTS;
-varying vec3		t, b, n;
-varying vec2		v_wTexCoord;
-varying vec2		v_lTexCoord;
-varying vec4		v_color;
-varying vec3		v_lightVec[13];
+varying vec3			v_viewVecTS;
+varying vec3			t, b, n;
+varying vec2			v_wTexCoord;
+varying vec2			v_lTexCoord;
+varying vec4			v_color;
+varying vec3			v_lightVec[13];
 
 
 float ComputeLOD( vec2 tc, vec2 texSize ) { 
@@ -51,15 +51,11 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	===================================*/
 
 	// clamp z value - fix (but not full) smooth tbn bug 
-	if (viewVec.z < 0.0)
-		viewVec.z = clamp(viewVec.z, -1.0, -0.001);
-	else
-		viewVec.z = clamp(viewVec.z, 0.001, 1.0);
+	viewVec.z = clamp(viewVec.z, 0.001, 1.0);
 
 	float lod = ComputeLOD(texCoord, u_texSize);
-
 	float	step = 1.0 / float(u_numSteps);
-	vec2	delta = 2.0 * u_bumpScale * viewVec.xy / (-viewVec.z * float(u_numSteps));
+	vec2	delta = vec2(viewVec.x, viewVec.y) * u_bumpScale / (-viewVec.z * u_numSteps);
 	float	NB0 = texture2DLod(hiMap, texCoord, lod).a;
 	float	height = 1.0 - step;
 	vec2	offset = texCoord + delta;

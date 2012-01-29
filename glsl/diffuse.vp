@@ -1,7 +1,7 @@
 //calc view angles
 uniform vec3			u_viewOriginES;
 uniform vec3			u_LightOrg[13];
-uniform int				u_numLights;
+uniform int			u_numLights;
 uniform float			u_LightRadius[13];
 varying vec3			v_viewVecTS;
 varying vec3			v_lightVec[13];
@@ -29,7 +29,7 @@ v_lTexCoord = a_LtexCoord; // lightmap only
 vec3 tmp = u_viewOriginES - a_vertArray;
 v_viewVecTS.x = dot(tmp, a_tangent);
 v_viewVecTS.y = dot(tmp, a_binormal);
-v_viewVecTS.z = dot(tmp, a_normArray);
+v_viewVecTS.z = abs(dot(tmp, a_normArray));
 
 #ifdef BUMP
 t = a_tangent;
