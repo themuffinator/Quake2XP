@@ -1301,8 +1301,6 @@ void CL_ParseTEnt(void)
 		break;
 
 	case TE_BUBBLETRAIL2:
-//      cnt = MSG_ReadByte (&net_message);
-
 		MSG_ReadPos(&net_message, pos);
 		MSG_ReadPos(&net_message, pos2);
 		CL_BubbleTrail(pos, pos2);

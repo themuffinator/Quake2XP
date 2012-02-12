@@ -146,7 +146,6 @@ SCR_StopCinematic
 void SCR_StopCinematic(void)
 {
 	cl.cinematictime = 0;		// done
-	S_StopBackgroundTrack();
 	if (cin.pic) {
 		Z_Free(cin.pic);
 		cin.pic = NULL;

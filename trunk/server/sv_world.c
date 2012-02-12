@@ -359,19 +359,7 @@ void SV_AreaEdicts_r(areanode_t * node)
 		start = &node->trigger_edicts;
 
 	for (l = start->next; l != start || !l; l = next)
-		// for (l=start->next ; l != start ; l = next)
-	{
-
-//  if(!l) return; /// Berserker: добавил проверку, т.к.
-		// / IsVisible может вызвать SV_Trace в неудобное время (карта
-		// недозагружена?)
-/*
-// убрал нахуй. взрываются энтити на платформах
-	if (sv.state==ss_dead || sv.state==ss_loading)
-   return;  
-*/
-
-
+		{
 
 		next = l->next;
 		check = EDICT_FROM_AREA(l);

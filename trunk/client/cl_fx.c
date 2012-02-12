@@ -396,7 +396,7 @@ void CL_ParseMuzzleFlash(void)
 	VectorMA(dl->origin, 43, up, dl->origin);
 	
 	// shell brass  and gun smoke origins
-	if(cl.playernum == i-1){ //local player?
+	if(cl.playernum == i-1 && !cl_thirdPerson->value){ //local player w/o third person view
 	VectorCopy (smoke_puff, smoke_origin);
 	VectorCopy (shell_puff, shell_brass);
 	}

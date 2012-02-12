@@ -328,6 +328,7 @@
       <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>
       <GenerateAlternateCodePaths>SSSE3</GenerateAlternateCodePaths>
       <UseProcessorExtensions>SSSE3</UseProcessorExtensions>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

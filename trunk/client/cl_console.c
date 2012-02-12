@@ -650,7 +650,7 @@ void Con_DrawConsole(float frac)
 	Com_sprintf(version, sizeof(version), "q2xp 1.26.1 (%s)", __DATE__);
 	for (x = 0; x < strlen(version); x++)
 		version[x] += 128;
-
+	
 	Draw_StringScaledShadow(viddef.width - 185*fontscale, lines - 12*fontscale, fontscale, fontscale, version);
 	Draw_StringScaled(viddef.width - 185*fontscale, lines - 12*fontscale, fontscale, fontscale, version);
 

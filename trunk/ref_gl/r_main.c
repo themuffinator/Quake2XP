@@ -1468,7 +1468,7 @@ void R_RegisterCvars(void)
 	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
-	r_pplMaxDlights =					Cvar_Get("r_pplMaxDlights", "8", CVAR_ARCHIVE);
+	r_pplMaxDlights =					Cvar_Get("r_pplMaxDlights", "13", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);

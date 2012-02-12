@@ -151,7 +151,7 @@ void VectorReflect(const vec3_t v, const vec3_t normal, vec3_t out)
 	out[2] = v[2] - normal[2] * d;
 }
 
-
+trace_t CL_PMTrace(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
 
 
 void CL_AddParticles(void)
@@ -262,9 +262,19 @@ void CL_AddParticles(void)
 		
 				
 		
-		if (p->flags & PARTICLE_NONSOLID) { 
+		if (p->flags & PARTICLE_NONSOLID) 
+		{ 
+			vec3_t maxs = {1, 1, 1};
+			vec3_t mins = {-1, -1, -1};
+			trace_t trace = SV_Trace (p->oldOrg, mins, maxs, org, 0, MASK_SHOT);
+			
+			if(trace.fraction != 1.0){
+				p->next = free_particles;
+				free_particles = p;
+				continue;
+			}
 
-		if (CL_PMpointcontents(kls) & MASK_SOLID) {
+		if (CL_PMpointcontents(kls) & MASK_SHOT) {
 				p->next = free_particles;
 				free_particles = p;
 				continue;
