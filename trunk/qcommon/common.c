@@ -170,7 +170,7 @@ void Com_Printf(char *fmt, ...)
      i = 0;
      while (1)
      {
-repeat:     if (!(c = *in))
+repeat:     if (!(c = *in)) //-V595
                break;
           if (IsColorString(in))
           {

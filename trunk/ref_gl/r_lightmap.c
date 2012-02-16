@@ -177,7 +177,7 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 		goto store;
 	}
 	// count the # of maps
-	for (nummaps = 0; nummaps < MAXLIGHTMAPS && surf->styles[nummaps] != 255; nummaps++);
+	for (nummaps = 0; nummaps < MAXLIGHTMAPS && surf->styles[nummaps] != 255; nummaps++)
 		lightmap = surf->samples;
 		
 	// add all the lightmaps

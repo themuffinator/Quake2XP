@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>Intel C++ Compiler XE 12.0</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Alpha|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>

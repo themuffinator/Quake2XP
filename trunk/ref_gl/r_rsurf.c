@@ -1358,8 +1358,8 @@ void R_RecursiveRadarNode(mnode_t * node)
 				if (surf->texinfo->flags & SURF_SKY) {
 					continue;
 				}
-                        
-				if (surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66)&& surf->texinfo->flags & !(SURF_WARP|SURF_FLOWING)) 
+                
+				if (surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66) && !(surf->texinfo->flags & (SURF_WARP|SURF_FLOWING))) 
 				{
 					qglColor4f(0,1,0,0.7);
 				} else 

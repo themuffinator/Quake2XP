@@ -99,7 +99,7 @@ int GL_MsgGLError(char* Info)
 			sprintf(S, "%s GL_OUT_OF_MEMORY There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.\n",Info);
 			break;
 		default: 
-			sprintf(S, "%s UNKNOWN GL ERROR\n");
+			sprintf(S, "UNKNOWN GL ERROR\n");
 			break;
 	}
 

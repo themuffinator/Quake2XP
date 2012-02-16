@@ -484,13 +484,13 @@ void CpuID(void)
         // Interpret CPU feature information.
         if  (i == 1)
         {
-            SSE4					= (CPUInfo[2] & BIT (9))||false;
-            SSE3					= (CPUInfo[2] & BIT (0))||false;
-			SSE2					= (CPUInfo[3] & BIT(26))||false;
-			SSE						= (CPUInfo[3] & BIT(25))||false;
-			MMX						= (CPUInfo[3] & BIT(23))||false;
-            HTT						= (CPUInfo[3] & BIT(28))||false;
-			EM64T					= (CPUInfo[3] & BIT(29))||false;
+            SSE4					= (CPUInfo[2] & BIT (9));
+            SSE3					= (CPUInfo[2] & BIT (0));
+			SSE2					= (CPUInfo[3] & BIT(26));
+			SSE						= (CPUInfo[3] & BIT(25));
+			MMX						= (CPUInfo[3] & BIT(23));
+            HTT						= (CPUInfo[3] & BIT(28));
+			EM64T					= (CPUInfo[3] & BIT(29));
             nFeatureInfo			=  CPUInfo[3];
         }
     }
@@ -1167,16 +1167,16 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 			// Since WGL_ARB_multisample and WGL_pbuffer are extensions, we must check if
 			// those extensions are supported before passing the corresponding enums
 			// to the driver. This could cause an error if they are not supported.
-			if(gl_state.wgl_nv_multisample_coverage){
 			iAttributes[8 ] = arbMultisampleSupported ? WGL_SAMPLE_BUFFERS_ARB : WGL_PIXEL_TYPE_ARB;
-			iAttributes[9 ] = arbMultisampleSupported ? WGL_COVERAGE_SAMPLES_NV : WGL_PIXEL_TYPE_ARB;
-			}else{
-			iAttributes[8 ] = arbMultisampleSupported ? WGL_SAMPLE_BUFFERS_ARB : WGL_PIXEL_TYPE_ARB;
-			iAttributes[9 ] = arbMultisampleSupported ? WGL_SAMPLES_ARB : WGL_PIXEL_TYPE_ARB;
-			}
-			iAttributes[12] = WGL_PIXEL_TYPE_ARB;
+			
+			if (arbMultisampleSupported)
+			iAttributes[9] = gl_state.wgl_nv_multisample_coverage ? WGL_COVERAGE_SAMPLES_NV : WGL_SAMPLES_ARB;
+			else
+			iAttributes[9] = WGL_PIXEL_TYPE_ARB;
+			
 			iAttributes[10] = WGL_DRAW_TO_WINDOW_ARB;
 			iAttributes[11] = WGL_DRAW_TO_BITMAP_ARB;
+			iAttributes[12] = WGL_PIXEL_TYPE_ARB;
 			iAttributes[13] = WGL_DOUBLE_BUFFER_ARB;
 			iAttributes[14] = WGL_STEREO_ARB;
 			iAttributes[15] = WGL_ACCELERATION_ARB;

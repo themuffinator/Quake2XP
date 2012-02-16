@@ -368,13 +368,13 @@ void Draw_Pic2(int x, int y, image_t * gl)
 {
 	int w, h;
 	
-	w = gl->width;
-	h = gl->height;
-	
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_Pic\n");
 		return;
 	}
+
+	w = gl->width;
+	h = gl->height;
 	
 	if(gl->has_alpha)
 		GL_Blend(true, 0, 0);
@@ -470,14 +470,14 @@ void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl)
 {
 	int w, h;
 
-	w = gl->width*gl->picScale_w*scale_x;
-	h = gl->height*gl->picScale_h*scale_y;
-	
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_Pic\n");
 		return;
 	}
 	
+	w = gl->width*gl->picScale_w*scale_x;
+	h = gl->height*gl->picScale_h*scale_y;
+
 	if(gl->has_alpha)
 		GL_Blend(true, 0, 0);
 	

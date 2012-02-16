@@ -830,7 +830,7 @@ void CL_ParticleSmoke2(vec3_t org, vec3_t dir, float r, float g, float b,
 			p->dFactor = GL_ONE;
 		} else {
 			p->sFactor = GL_SRC_ALPHA;
-			p->dFactor = GL_ONE;
+			p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		}
 
 		p->size = 3;
@@ -3524,9 +3524,13 @@ void CL_FlyParticles(vec3_t origin, int count)
 		count = NUMVERTEXNORMALS;
 
 	if (!avelocities[0][0]) {
-		for (i = 0; i < NUMVERTEXNORMALS * 3; i++)
-			avelocities[0][i] = (rand() & 255) * 0.01;
+		for (i = 0; i < NUMVERTEXNORMALS; i++) {
+ 		avelocities[i][0] = (rand() & 255) * 0.01;
+		avelocities[i][1] = (rand() & 255) * 0.01;
+		avelocities[i][2] = (rand() & 255) * 0.01;
+		}
 	}
+
 
 
 	ltime = (float) cl.time / 1000.0;
@@ -3633,8 +3637,11 @@ void CL_BfgParticles(entity_t * ent)
 	float ltime;
 
 	if (!avelocities[0][0]) {
-		for (i = 0; i < NUMVERTEXNORMALS * 3; i++)
-			avelocities[0][i] = (rand() & 255) * 0.01;
+		for (i = 0; i < NUMVERTEXNORMALS; i++) {
+ 		avelocities[i][0] = (rand() & 255) * 0.01;
+		avelocities[i][1] = (rand() & 255) * 0.01;
+		avelocities[i][2] = (rand() & 255) * 0.01;
+		}
 	}
 
 

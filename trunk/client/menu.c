@@ -4607,19 +4607,15 @@ void M_Draw(void)
 	SCR_DirtyScreen();
 
 	// dim everything behind it down
-	if (cl.cinematictime > 0 /* || cls.state == ca_disconnected */ )
-//  {
-		// re.DrawStretchPic (0, 0, viddef.width, viddef.height,
-		// "conback");
-//  }else
-		//Draw_Fill(0, 0, viddef.width, viddef.height, 0);
-		Draw_StretchPic (0, 0, viddef.width, viddef.height,
-		 "menuback");
+	if (cl.cinematictime > 0)
+	{
+		Draw_StretchPic (0, 0, viddef.width, viddef.height, "menuback");
+	}
 	else
-		 Draw_StretchPic (0, 0, viddef.width, viddef.height,
-		 "menuback");
+	{
+		Draw_StretchPic (0, 0, viddef.width, viddef.height, "menuback");
 		Draw_FadeScreen();
-
+	}
 	m_drawfunc();
 
 	// delay playing the enter sound until after the

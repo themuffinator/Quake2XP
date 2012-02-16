@@ -625,7 +625,7 @@ void CL_FindRailedSurface(vec3_t start, vec3_t end, vec3_t dir)
 
 	trace = CM_BoxTrace(start, point, vec3_origin, vec3_origin, 0, MASK_SOLID);
 	
-	if(!(trace.surface->flags && SURF_SKY))
+	if(!(trace.surface->flags & SURF_SKY))
 	{
 		 CL_ParticleRailRick(end, dir);
 		
@@ -979,7 +979,7 @@ void CL_ParseTEnt(void)
 		
 		if (!net_compatibility->value) {
 			if (type != TE_ROCKET_EXPLOSION
-				|| type != TE_ROCKET_EXPLOSION_WATER)
+				&& type != TE_ROCKET_EXPLOSION_WATER)
 				CL_FindExplosionPlane(pos, 100, dir);
 
 		} else if (net_compatibility->value)
@@ -1224,7 +1224,7 @@ void CL_ParseTEnt(void)
 
 		if (!net_compatibility->value) {
 			if (type != TE_ROCKET_EXPLOSION
-				|| type != TE_ROCKET_EXPLOSION_WATER)
+				&& type != TE_ROCKET_EXPLOSION_WATER)
 				CL_FindExplosionPlane(pos, 40, dir);
 
 		} else if (net_compatibility->value)

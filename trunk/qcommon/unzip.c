@@ -1031,12 +1031,12 @@ local int unzlocal_CheckCurrentFileCoherencyHeader (unz_s* s,uInt* piSizeVar,
 	if (fseek(s->file, s->cur_file_info_internal.offset_curfile + s->byte_before_the_zipfile, SEEK_SET) != 0)
 		return UNZ_ERRNO;
 
-	if (err == UNZ_OK)
+	if (err == UNZ_OK){
 		if (unzlocal_getLong(s->file, &uMagic) != UNZ_OK)
 			err=UNZ_ERRNO;
 	else if (uMagic != 0x04034b50)
 			err = UNZ_BADZIPFILE;
-
+	}
 	if (unzlocal_getShort(s->file, &uData) != UNZ_OK)
 		err = UNZ_ERRNO;
 
@@ -1499,7 +1499,7 @@ extern int ZEXPORT unzGetGlobalComment (unzFile file, char *szComment, uLong uSi
 
 	if (uReadThis > 0)
     {
-		*szComment = '\0';
+		*szComment = '\0'; //-V595
 
 		if (fread(szComment, (uInt)uReadThis, 1, s->file) != 1)
 			return UNZ_ERRNO;

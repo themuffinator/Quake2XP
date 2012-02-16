@@ -796,8 +796,8 @@ void CL_AddPacketEntities(frame_t * frame)
 			p->next = active_particles;
 			active_particles = p;
 			p->orient = 0;
-			p->flags = 0;
-			p->flags = PARTICLE_OVERBRIGHT | PARTICLE_STRETCH;
+			p->flags = PARTICLE_OVERBRIGHT;
+			p->flags |= PARTICLE_STRETCH;
 			p->time = cl.time;
 			p->endTime = cl.time+1;
 			p->sFactor = GL_ONE;
