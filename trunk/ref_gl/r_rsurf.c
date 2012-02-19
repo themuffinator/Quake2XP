@@ -537,7 +537,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	scale[0] = r_parallaxScale->value / image->width;
 	scale[1] = r_parallaxScale->value / image->height;
 
-	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_overBrightBits->value);
+	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
 
 	if(caustics || (s->flags & SURF_WATER))
 		qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);

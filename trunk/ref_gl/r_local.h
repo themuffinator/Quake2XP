@@ -241,9 +241,6 @@ cvar_t *vid_ref;
 cvar_t *r_finish;
 cvar_t *r_hardwareGamma;
 
-cvar_t	*r_anisotropic;
-cvar_t	*r_maxAnisotropy;
-
 cvar_t	*r_causticIntens;
 
 cvar_t	*r_displayRefresh;
@@ -251,8 +248,11 @@ cvar_t	*r_displayRefresh;
 cvar_t	*r_screenShot;
 cvar_t	*r_screenShotJpegQuality;
 
-cvar_t	*r_overBrightBits;
+cvar_t	*r_worldColorScale;
+cvar_t	*r_picsColorScale;
 cvar_t	*r_textureCompression;
+cvar_t	*r_anisotropic;
+cvar_t	*r_maxAnisotropy;
 
 cvar_t	*r_shadows;
 cvar_t	*r_shadowWorldLightScale;
@@ -345,7 +345,7 @@ void R_LightPoint(vec3_t p, vec3_t color, qboolean bump);
 void R_PushDlights(void);
 
 
-void GL_Overbrights(qboolean enable);
+void GL_PicsColorScaleARB(qboolean enable);
 void SetLevelOverbright(void);
 void R_Register2(void);
 void R_InitLightgrid(void);

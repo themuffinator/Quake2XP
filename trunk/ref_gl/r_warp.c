@@ -221,7 +221,7 @@ void EmitWaterPolys(msurface_t * fa)
 	qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	300.0);
 	qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"), r_overBrightBits->value);
+	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
 			
 	dstscroll = ((r_newrefdef.time * 0.15f) - (int) (r_newrefdef.time * 0.15f));
 

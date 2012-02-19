@@ -239,7 +239,7 @@ void R_CaptureDepthBuffer()
 
 }
 
-void GL_Overbrights(qboolean enable)
+void GL_PicsColorScaleARB(qboolean enable)
 {
 	
 	if (enable) {				// turn on
@@ -248,7 +248,7 @@ void GL_Overbrights(qboolean enable)
 		qglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
 		qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE);
 		qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_PREVIOUS_ARB);
-		qglTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, (int) r_overBrightBits->value);
+		qglTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, (int) r_picsColorScale->value);
 
 		qglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_MODULATE);
 		qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE);
@@ -1186,9 +1186,10 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 		}
 		
 		if(r_maxTextureSize->value >= max_size)
-			Cvar_SetValue("r_maxTextureSize->value", max_size);
-		if(r_maxTextureSize->value <= 128)
-			Cvar_SetValue("r_maxTextureSize->value", 128);
+			Cvar_SetValue("r_maxTextureSize", max_size);
+
+		if(r_maxTextureSize->value <= 64 && r_maxTextureSize->value > 0 )
+			Cvar_SetValue("r_maxTextureSize", 64);
 
 		if(r_maxTextureSize->value)
 			max_size =	r_maxTextureSize->value;

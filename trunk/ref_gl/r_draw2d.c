@@ -74,7 +74,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	frow = row * 0.0625;
 	fcol = col * 0.0625;
 	size = 0.0625;
-	GL_Overbrights(true);
+	GL_PicsColorScaleARB(true);
 	GL_Blend(true, 0, 0);
 	GL_Bind(draw_chars->texnum);
 
@@ -90,7 +90,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	qglEnd();
 
 	GL_Blend(false, 0, 0);
-	GL_Overbrights(false);
+	GL_PicsColorScaleARB(false);
 }
 
 
@@ -144,7 +144,7 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		GL_Bind(draw_chars->texnum);
 	}
 
-	GL_Overbrights(true);
+	GL_PicsColorScaleARB(true);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -185,7 +185,7 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 	qglEnd();
 
 	qglDisable(GL_BLEND);
-	GL_Overbrights(false);
+	GL_PicsColorScaleARB(false);
 }
 
 
@@ -308,11 +308,11 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t * gl,
 	if (cons) {
 
 		qglColor4f(1, 1, 1, 0.55);
-		GL_Overbrights(false);
+		GL_PicsColorScaleARB(false);
 		qglDepthMask(GL_FALSE);	
 	} else {
 		qglColor4f(1, 1, 1, 1);
-		GL_Overbrights(true);
+		GL_PicsColorScaleARB(true);
 		qglDepthMask(GL_TRUE);	
 
 	}
@@ -334,7 +334,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t * gl,
 
 	
 	GL_Blend(false, 0, 0);
-	GL_Overbrights(false);
+	GL_PicsColorScaleARB(false);
 	qglDepthMask(GL_TRUE);	
 }
 
@@ -344,7 +344,7 @@ void Draw_StretchPic(int x, int y, int w, int h, char *pic)
 	qboolean cons = 0;
 	image_t *gl;
 
-	GL_Overbrights(true);
+	GL_PicsColorScaleARB(true);
 	gl = Draw_FindPic(pic);
 
 	if (!gl) {
@@ -354,7 +354,7 @@ void Draw_StretchPic(int x, int y, int w, int h, char *pic)
 
 
 	Draw_StretchPic2(x, y, w, h, gl, cons);
-	GL_Overbrights(false);
+	GL_PicsColorScaleARB(false);
 }
 
 
@@ -516,21 +516,21 @@ void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl)
 void Draw_Pic(int x, int y, char *pic)
 {
 	image_t *gl;
-	GL_Overbrights(true);
+	GL_PicsColorScaleARB(true);
 	gl = Draw_FindPic(pic);
 	if (!gl) {
 		Com_Printf("Can't find pic: %s\n", pic);
 		return;
 	}
 	Draw_Pic2(x, y, gl);
-	GL_Overbrights(false);
+	GL_PicsColorScaleARB(false);
 
 }
 
 void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char *pic)
 {
 	image_t *gl;
-	GL_Overbrights(true);
+	GL_PicsColorScaleARB(true);
 	gl = Draw_FindPic(pic);
 	if (!gl) {
 		Com_Printf("Can't find pic: %s\n", pic);
@@ -538,7 +538,7 @@ void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char *pic)
 	}
 //	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
 	Draw_Pic2S(x, y, scale_x, scale_y, gl);
-	GL_Overbrights(false);
+	GL_PicsColorScaleARB(false);
 
 }
 

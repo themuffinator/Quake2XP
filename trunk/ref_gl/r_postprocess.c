@@ -206,7 +206,7 @@ void R_RenderFlares(void)
 
 	GL_MBind(GL_TEXTURE0_ARB, r_flare->texnum);
 
-	GL_Overbrights(false);
+	GL_PicsColorScaleARB(false);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	fl = r_flares;

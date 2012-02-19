@@ -485,10 +485,14 @@ void GL_ScreenShot_f(void)
 */
 void GL_Strings_f(void)
 {
-	Com_Printf("GL_VENDOR: %s\n",		gl_config.vendor_string);
-	Com_Printf("GL_RENDERER: %s\n",		gl_config.renderer_string);
-	Com_Printf("GL_VERSION: %s\n",		gl_config.version_string);
-	Com_Printf("GL_EXTENSIONS: %s\n",	gl_config.extensions_string);
+	char *string;
+	string = (char*)glw_state.wglExtsString;
+	Com_Printf("\n");
+	Com_Printf("GL_VENDOR:   "S_COLOR_GREEN"%s\n",		gl_config.vendor_string);
+	Com_Printf("GL_RENDERER: "S_COLOR_GREEN"%s\n",		gl_config.renderer_string);
+	Com_Printf("GL_VERSION:  "S_COLOR_GREEN"%s\n\n",		gl_config.version_string);
+	Com_Printf("WGL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n",	string);
+	Com_Printf("GL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n",	gl_config.extensions_string);
 }
 
 void GL_UpdateSwapInterval()
@@ -524,7 +528,7 @@ void GL_SetDefaultState(void)
 	qglDisable			(GL_DEPTH_TEST);
 	qglDisable			(GL_CULL_FACE);
 	qglDisable			(GL_BLEND);
-	gl_state.blend		= false;
+	gl_state.blend		= (qboolean)false;
 
 	qglColor4f			(1, 1, 1, 1);
 
@@ -543,7 +547,7 @@ void GL_SetDefaultState(void)
 
 	qglBlendFunc		(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	GL_Overbrights		(false);
+	GL_PicsColorScaleARB(false);
 	GL_TexEnv			(GL_REPLACE);
 
 	gl_state.texgen		= (qboolean)false;

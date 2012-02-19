@@ -211,7 +211,7 @@ void R_DrawSpriteModel(entity_t * e)
 
 	GL_Bind(currentmodel->skins[e->frame]->texnum);
 
-	GL_Overbrights(true);
+	GL_PicsColorScaleARB(true);
 
 	qglBegin(GL_QUADS);
 
@@ -1306,8 +1306,7 @@ void Dump_EntityString(void){
 	return;
 	}
 
-	Com_sprintf(name, sizeof(name), "%s/%s", FS_Gamedir(),
-		r_worldmodel->name);
+	Com_sprintf(name, sizeof(name), "%s/%s", FS_Gamedir(), r_worldmodel->name);
 	
 	name[strlen(name) - 4] = 0;
 	strcat(name, ".ent");
@@ -1332,7 +1331,9 @@ void Dump_EntityString(void){
 
 
 void R_VideoInfo_f(void){
-		int mem[4];
+	
+	int mem[4];
+	
 	if (strstr(gl_config.extensions_string, "GL_NVX_gpu_memory_info")) {
 						
 		Com_Printf("\nNvidia specific memory info:\n");
@@ -1402,18 +1403,16 @@ void R_RegisterCvars(void)
 	r_noBind =							Cvar_Get("r_noBind", "0", 0);
 	r_cull =							Cvar_Get("r_cull", "1", 0);
 	r_polyBlend =						Cvar_Get("r_polyBlend", "1", CVAR_ARCHIVE);
-	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
-	
 	r_lockPvs =							Cvar_Get("r_lockPvs", "0", 0);
-
-	r_hardwareGamma =					Cvar_Get("r_hardwareGamma", "1", CVAR_ARCHIVE);	
 
 	r_vsync =							Cvar_Get("r_vsync", "0", CVAR_ARCHIVE);
 	r_finish =							Cvar_Get("r_finish", "0", 0);
 	
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
+	r_hardwareGamma =					Cvar_Get("r_hardwareGamma", "1", CVAR_ARCHIVE);	
 	r_gamma =							Cvar_Get("r_gamma", "0.7", CVAR_ARCHIVE);
 	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
+	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
 	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "10", CVAR_ARCHIVE);
@@ -1424,13 +1423,12 @@ void R_RegisterCvars(void)
 	r_anisotropic =						Cvar_Get("r_anisotropic", "1", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
-	r_overBrightBits =					Cvar_Get("r_overBrightBits", "2", CVAR_ARCHIVE);
+	r_worldColorScale =					Cvar_Get("r_worldColorScale", "2", CVAR_ARCHIVE);
+	r_picsColorScale =					Cvar_Get("r_picsColorScale", "2", CVAR_ARCHIVE);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
-
 	r_causticIntens =					Cvar_Get("r_causticIntens", "2.0", CVAR_ARCHIVE);
-	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
-	
-	
+	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
+
 	r_screenShot =						Cvar_Get("r_screenShot", "jpg", CVAR_ARCHIVE);
 	r_screenShotJpegQuality =			Cvar_Get("r_screenShotJpegQuality", "99", CVAR_ARCHIVE);
 		
@@ -1487,7 +1485,7 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("imagelist", GL_ImageList_f);
 	Cmd_AddCommand("screenshot", GL_ScreenShot_f);
 	Cmd_AddCommand("modellist", Mod_Modellist_f);
-	Cmd_AddCommand("glstrings", GL_Strings_f);
+	Cmd_AddCommand("openglInfo", GL_Strings_f);
 	Cmd_AddCommand("flaresStats", FlareStatsList_f);
 	Cmd_AddCommand("dumpEntityString", Dump_EntityString);
 	Cmd_AddCommand("glslInfo", R_ListPrograms_f);
@@ -1634,56 +1632,7 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf(S_COLOR_GREEN"Checking Basic Quake II XP Extensions\n");
 	Com_Printf("=====================================\n");
 	Com_Printf("\n");
-	
-	if ( strstr( glw_state.wglExtsString, "WGL_ARB_pixel_format" ) )
-		Com_Printf("...using WGL_ARB_pixel_format\n");
-
-	
-	gl_state.wgl_nv_multisample_coverage = false;
-		if (strstr(glw_state.wglExtsString, "WGL_NV_multisample_coverage")) {
 		
-		if(r_arbSamples->value < 2){
-		Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_NV_multisample_coverage\n");
-		gl_state.wgl_nv_multisample_coverage = false;
-		gl_state.wgl_nv_multisample_coverage_aviable = true;
-		}else{
-		Com_Printf("...using WGL_NV_multisample_coverage\n");
-		gl_state.wgl_nv_multisample_coverage = true;
-		gl_state.wgl_nv_multisample_coverage_aviable = true;
-		
-		if(r_arbSamples->value >=16){ // clamp regular msaa 16x value to csaa 16q 
-		Cvar_SetValue("r_arbSamples", 8);
-		Cvar_SetValue("r_nvSamplesCoverange", 16);
-		}
-		
-		}
-		} else {
-			Com_Printf(S_COLOR_RED"...WGL_NV_multisample_coverage not found\n");
-			gl_state.wgl_nv_multisample_coverage = false;
-			gl_state.wgl_nv_multisample_coverage_aviable = false;
-		}
-
-	gl_state.arb_multisample = false;
-	if ( strstr(  glw_state.wglExtsString, "WGL_ARB_multisample" ) )
-	if(r_arbSamples->value < 2)
-		{
-			Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_ARB_multisample\n");
-			arbMultisampleSupported = false;
-			gl_state.arb_multisample = false;
-		}else
-	{
-			Com_Printf("...using WGL_ARB_multisample\n");
-			arbMultisampleSupported = true;
-			gl_state.arb_multisample = true;
-		
-	}
-	else
-	{
-		Com_Printf("...WGL_ARB_multisample not found\n");
-		arbMultisampleSupported = false;
-		gl_state.arb_multisample = false;
-	}
-
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
 	
 #ifdef _WIN32

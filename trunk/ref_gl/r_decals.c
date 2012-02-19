@@ -152,9 +152,9 @@ void R_RenderDecals(void)
         qglBlendFunc(dl->sFactor, dl->dFactor);
 
 		if (dl->flags == DF_OVERBRIGHT)
-			GL_Overbrights(true);
+			GL_PicsColorScaleARB(true);
 		else
-            GL_Overbrights(false);
+            GL_PicsColorScaleARB(false);
 
           }
 

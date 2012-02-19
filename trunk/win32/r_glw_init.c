@@ -185,8 +185,8 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 
 	if(r_mode->value>=15)
 	{
-		width	=(int)(r_customWidth->value); 
-		height	=(int)(r_customHeight->value);
+		width	= (int)r_customWidth->value; 
+		height	= (int)r_customHeight->value;
 	}
 
 	if(width > glw_state.desktopWidth || height > glw_state.desktopHeight){
@@ -224,7 +224,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 
 		if (r_displayRefresh->value !=0 )
 		{
-	        gl_state.displayrefresh = r_displayRefresh->value;
+	        gl_state.displayrefresh	= r_displayRefresh->value;
 			dm.dmDisplayFrequency	= r_displayRefresh->value;
 			dm.dmFields				|= DM_DISPLAYFREQUENCY;
 			Com_Printf("...display frequency is "S_COLOR_GREEN"%d"S_COLOR_WHITE" hz\n", gl_state.displayrefresh);
@@ -365,32 +365,6 @@ void GLimp_Shutdown( void )
 		ChangeDisplaySettings( 0, 0 );
 		gl_state.fullscreen = false;
 	}
-}
-
-int Bin(int num, char *bufr)
-{
-	char	cnt = '0';
-	int		cnt2 = 0;
-	int		i;
-	int		mask = 1;
-	int		offs = 0;
-	qboolean	first = true;
-
-	for (i=0; i<32; i++)		// лимит до 32 ядер
-	{
-		if (num & mask)
-		{
-			if (!first)
-				bufr[offs++]=',';
-			bufr[offs++]=cnt;
-			cnt2++;
-			first = false;
-		}
-		cnt++;
-		mask += mask;
-	}
-
-	return cnt2;
 }
 
 /*
@@ -940,9 +914,6 @@ qboolean RegisterOpenGLWindow(HINSTANCE hInst)
 
 qboolean GLimp_InitGL (void)
 {
-	int  i;
-	char c, line[128], *string;
-
 	RegisterOpenGLWindow (glw_state.hInstance);
 
 	if (1) {
@@ -1028,38 +999,21 @@ qboolean GLimp_InitGL (void)
 			Com_Printf (S_COLOR_RED  "WGL extension string not found!");
 			VID_Error (ERR_FATAL, "WGL extension string not found!");
 			}
-			glw_state.wglExtsString = qwglGetExtensionsStringARB (hDC);
+		
+		glw_state.wglExtsString = qwglGetExtensionsStringARB (hDC);
 		
 		if (glw_state.wglExtsString == NULL)
 			Com_Printf (S_COLOR_RED "WGL_EXTENSION not found!\n");
 		
 		Com_Printf("\n");
-		glw_state.wglRenderer = (const char*)qglGetString(GL_RENDERER);
-		Com_DPrintf ("Getting capabilities from "S_COLOR_GREEN"%s"S_COLOR_WHITE"\n", glw_state.wglRenderer);
-		Com_DPrintf ("WGL_EXTENSION:\n");
-		
-		string = (char*)glw_state.wglExtsString;
-		while (1)
-		{
-		i = 0;
-		line[i] = 0;
-		while (1)
-		{
-			c = *string++;
-			if ((c == ' ') || (c == 0))
-				break;
-			line[i] = c;
-			i++;
-		}
-		if(!c)
-			break;
-		line[i] = 0;
-		Com_DPrintf(S_COLOR_YELLOW"%s\n", line);
-		}
-				
+
+	Com_Printf ("=============================\n");
+	Com_Printf (S_COLOR_GREEN"Checking Basic WGL Extensions\n");
+	Com_Printf ("=============================\n\n");
+
 	if ( strstr( glw_state.wglExtsString, "WGL_ARB_pixel_format" ) )
 	{
-	//	Com_Printf("...using WGL_ARB_pixel_format\n");
+		Com_Printf("...using WGL_ARB_pixel_format\n");
 		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribivARB");
         qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
         qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)qwglGetProcAddress("wglChoosePixelFormatARB");
@@ -1071,7 +1025,54 @@ qboolean GLimp_InitGL (void)
 		VID_Error (ERR_FATAL, "WGL_ARB_pixel_format not found!");
 		}
 
+		
+	gl_state.wgl_nv_multisample_coverage = false;
+		if (strstr(glw_state.wglExtsString, "WGL_NV_multisample_coverage")) {
+		
+		if(r_arbSamples->value < 2){
+		Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_NV_multisample_coverage\n");
+		gl_state.wgl_nv_multisample_coverage = false;
+		gl_state.wgl_nv_multisample_coverage_aviable = true;
+		}else{
+		Com_Printf("...using WGL_NV_multisample_coverage\n");
+		gl_state.wgl_nv_multisample_coverage = true;
+		gl_state.wgl_nv_multisample_coverage_aviable = true;
+		
+		if(r_arbSamples->value >=16){ // clamp regular msaa 16x value to csaa 16q 
+		Cvar_SetValue("r_arbSamples", 8);
+		Cvar_SetValue("r_nvSamplesCoverange", 16);
+		}
+		
+		}
+		} else {
+			Com_Printf(S_COLOR_RED"...WGL_NV_multisample_coverage not found\n");
+			gl_state.wgl_nv_multisample_coverage = false;
+			gl_state.wgl_nv_multisample_coverage_aviable = false;
+		}
+
+	gl_state.arb_multisample = false;
+	if ( strstr(  glw_state.wglExtsString, "WGL_ARB_multisample" ) )
+	if(r_arbSamples->value < 2)
+		{
+			Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_ARB_multisample\n");
+			arbMultisampleSupported = false;
+			gl_state.arb_multisample = false;
+		}else
+	{
+			Com_Printf("...using WGL_ARB_multisample\n");
+			arbMultisampleSupported = true;
+			gl_state.arb_multisample = true;
+		
+	}
+	else
+	{
+		Com_Printf("...WGL_ARB_multisample not found\n");
+		arbMultisampleSupported = false;
+		gl_state.arb_multisample = false;
+	}
 	
+	Com_Printf ("\n=============================\n\n");
+
 /*	
 Nvidia Coverange AA
 	
