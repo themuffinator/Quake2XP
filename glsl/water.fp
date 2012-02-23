@@ -36,6 +36,7 @@ vec4 diffuse  = texture2D (u_colorMap, coord.xy);
 
 // set vertex lighting
 diffuse *= gl_Color;
+diffuse = clamp(diffuse, 0.0, 1.0); 
 
 #ifdef TRANS
 vec2 N = offset.xy; // use autogen dst texture
@@ -47,11 +48,12 @@ N *= clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
 // scale by the deform multiplier and the viewport size
 N *= v_deformMul * u_viewport.xy;
 
-// screen texture	
-vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
-
-// final color with refract
-gl_FragColor.xyz = deform * (1.0 - u_alpha) + diffuse.xyz * u_alpha;
+// chromatic aberration approximation coefficients
+gl_FragColor.x = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).x;
+gl_FragColor.y = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.0).y;
+gl_FragColor.z = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).z;
+//blend water texture
+gl_FragColor.xyz += diffuse.xyz * u_alpha;
 
 #else
 

@@ -48,9 +48,14 @@ void main (void) {
 
 	#else
 	// world refracted surfaces
-	vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
 	diffuse *= v_color;
-	gl_FragColor.xyz = deform * (1.0 - u_alpha) + diffuse.xyz * u_alpha;
-
+	diffuse = clamp(diffuse, 0.0, 1.0);
+	// chromatic aberration approximation
+	gl_FragColor.x = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).x;
+	gl_FragColor.y = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.0).y;
+	gl_FragColor.z = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).z;
+	// blend glass texture
+	gl_FragColor.xyz += diffuse.xyz * u_alpha;
+	
 	#endif
 }

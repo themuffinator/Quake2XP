@@ -1,31 +1,43 @@
 uniform sampler2DRect u_mask;
 uniform float u_alpha;
+uniform vec2 u_screenSize;
 
 void main(void) 
 {
- vec4 mask = texture2DRect(u_mask, gl_FragCoord.xy);
- 
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(1.0, 0.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(2.0, 0.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(3.0, 0.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(4.0, 0.0));
+vec2 offset = vec2( u_screenSize.y / u_screenSize.x , 1.0);
+// Box Blur with 5x5 kernel
+float
+mask  = texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -2.0,	offset.y * -2.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -1.0,	offset.y * -2.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0,				offset.y * -2.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x,			offset.y * -2.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * 2.0,	offset.y * -2.0)).a;
 
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(-1.0, 0.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(-2.0, 0.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(-3.0, 0.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(-4.0, 0.0));
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -2.0,	offset.y * -1.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -1.0,	offset.y * -1.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0,				offset.y * -1.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x,			offset.y * -1.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * 2.0,	offset.y * -1.0)).a;
 
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0, 1.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0, 2.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0, 3.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0, 4.0));
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -2.0,	0.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -1.0,	0.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0,				0.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x,			0.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * 2.0,	0.0)).a;
 
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0, -1.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0, -2.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0, -3.0));
- mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0, -4.0));
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -2.0,	offset.y)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -1.0,	offset.y)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0,				offset.y)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x,			offset.y)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * 2.0,	offset.y)).a;
 
- mask /= 16.0;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -2.0,	offset.y * 2.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * -1.0,	offset.y * 2.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(0.0,               offset.y * 2.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x,			offset.y * 2.0)).a;
+mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * 2.0,	offset.y * 2.0)).a;
 
- gl_FragColor = vec4(0.0, 0.0, 0.0, mask.a * u_alpha);
+mask /=25.0;
+gl_FragColor = vec4(0.0, 0.0, 0.0, mask * u_alpha);
+
 }

@@ -1,7 +1,7 @@
 //calc view angles
 uniform vec3			u_viewOriginES;
 uniform vec3			u_LightOrg[13];
-uniform int			u_numLights;
+uniform int				u_numLights;
 uniform float			u_LightRadius[13];
 varying vec3			v_viewVecTS;
 varying vec3			v_lightVec[13];
