@@ -469,7 +469,6 @@ void R_DrawShadowVolume(entity_t * e)
 	int				*order, i;
 	float			frontlerp, rad;
 	vec3_t			move, delta, vectors[3], frontv, backv, tmp, water;
-	trace_t			tr;
 
 	VectorAdd(e->origin, currententity->model->maxs, water); 
 	if(CL_PMpointcontents(water) & MASK_WATER)
@@ -481,13 +480,6 @@ void R_DrawShadowVolume(entity_t * e)
 	
 	if( R_CullSphere( e->origin, rad, 15 ) )
 		return;
-
-/*	if (r_newrefdef.areabits){
-		tr = CM_BoxTrace(r_origin, e->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
-		if(tr.fraction != 1.0)
-			return;
-	}
-	*/
 
 	paliashdr = (dmdl_t *) currentmodel->extradata;
 
@@ -598,8 +590,10 @@ void R_ShadowBlend()
 	GL_BindProgram(shadowProgram, defBits);
 	id = shadowProgram->id[defBits];
 	GL_BindRect(shadowMask->texnum);
+	
 	qglUniform1i(qglGetUniformLocation(id, "u_mask"), 0);
 	qglUniform1f(qglGetUniformLocation(id, "u_alpha"), shadowalpha);
+	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
 
 	qglBegin(GL_TRIANGLES);
 	qglVertex2f(-5, -5);
@@ -633,8 +627,8 @@ void R_BlobShadow(void){
 	vec3_t			end, mins = {-15, -15, 0}, maxs = {15, 15, 2};
 	trace_t			trace;
 	float			alpha, dist;
-	int				sVert=0, index=0, i;
-	unsigned		sIndex[MAX_INDICES];
+	int				sVert=0, index=0, i, id;
+	unsigned		sIndex[MAX_INDICES], defBits = 0;
 	vec3_t			axis[3];
 	vec3_t			bbox[8], temp;
 	vec4_t			bsColor[MAX_BLOB_SHADOW_VERT];
@@ -651,13 +645,18 @@ void R_BlobShadow(void){
 	qglEnableClientState(GL_VERTEX_ARRAY);
 	qglVertexPointer(3, GL_FLOAT, 0, bsVert);
 	
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
+
 	qglEnable(GL_POLYGON_OFFSET_FILL);
     qglPolygonOffset(-2, -1);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(0);
 	GL_MBind(GL_TEXTURE0_ARB, r_particletexture[PT_DEFAULT]->texnum);
-	GL_PicsColorScaleARB(false);
+	
 
 	for (i = 0; i < r_newrefdef.num_entities; i++)	
 	{
@@ -765,5 +764,6 @@ void R_BlobShadow(void){
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	qglDisableClientState(GL_COLOR_ARRAY);
 	qglDisableClientState(GL_VERTEX_ARRAY);
+	GL_BindNullProgram();
 	
 }

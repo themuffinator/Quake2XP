@@ -357,6 +357,49 @@ void Draw_StretchPic(int x, int y, int w, int h, char *pic)
 	GL_PicsColorScaleARB(false);
 }
 
+float loadScreenColorFade;
+void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
+{
+	int id;
+	unsigned defBits = 0;
+	
+
+	if (!gl) {
+		Com_Printf("NULL pic in Draw_LoadingScreen2\n");
+		return;
+	}
+
+		GL_MBind(GL_TEXTURE0_ARB,gl->texnum);
+		GL_BindProgram(loadingProgram, defBits);
+		id = loadingProgram->id[defBits];
+		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), loadScreenColorFade);
+
+		qglBegin(GL_QUADS);
+		qglTexCoord2f(gl->sl, gl->tl);
+		qglVertex2f(x, y);
+		qglTexCoord2f(gl->sh, gl->tl);
+		qglVertex2f(x + w, y);
+		qglTexCoord2f(gl->sh, gl->th);
+		qglVertex2f(x + w, y + h);
+		qglTexCoord2f(gl->sl, gl->th);
+		qglVertex2f(x, y + h);
+		qglEnd();
+		GL_BindNullProgram();
+
+}
+
+void Draw_LoadingScreen(int x, int y, int w, int h, char *pic)
+{
+	image_t *gl;
+	gl = Draw_FindPic(pic);
+	if (!gl) {
+		Com_Printf("Can't find pic: %s\n", pic);
+		return;
+	}
+
+	Draw_LoadingScreen2(x, y, w, h, gl);
+}
 
 /*
 =============

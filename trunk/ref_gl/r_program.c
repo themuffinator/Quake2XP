@@ -506,7 +506,6 @@ void R_InitPrograms(void) {
 	
 	Com_Printf("Load "S_COLOR_YELLOW"dof blur program"S_COLOR_WHITE" ");
 	dofProgram = R_FindProgram("dof", true, true);
-	worldDefs.DofExtra = R_GetProgramDefBits(dofProgram, "EXTRA");
 	if(dofProgram->valid)
 		Com_Printf("succeeded\n");
 	else
@@ -567,10 +566,10 @@ void R_InitPrograms(void) {
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 
-	Com_Printf("Load "S_COLOR_YELLOW"sky program"S_COLOR_WHITE" ");
-	skyProgram =  R_FindProgram("sky", true, true);
+	Com_Printf("Load "S_COLOR_YELLOW"generic program"S_COLOR_WHITE" ");
+	genericProgram =  R_FindProgram("generic", true, true);
 	
-	if(skyProgram->valid){
+	if(genericProgram->valid){
 		Com_Printf("succeeded\n");
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -579,6 +578,14 @@ void R_InitPrograms(void) {
 	cinProgram =  R_FindProgram("cin", true, true);
 	
 	if(cinProgram->valid){
+		Com_Printf("succeeded\n");
+	}else
+		Com_Printf(S_COLOR_RED"Failed!\n");
+
+	Com_Printf("Load "S_COLOR_YELLOW"load screen program"S_COLOR_WHITE" ");
+	loadingProgram =  R_FindProgram("loading", true, true);
+	
+	if(loadingProgram->valid){
 		Com_Printf("succeeded\n");
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");

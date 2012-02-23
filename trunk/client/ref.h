@@ -412,10 +412,7 @@ typedef struct {
 
 } refdef_t;
 
-
-
-extern qboolean	vc_initialised;
-extern qboolean	need_free_vbo;
+extern float loadScreenColorFade;
 
 
 //sul

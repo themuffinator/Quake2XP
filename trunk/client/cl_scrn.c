@@ -478,6 +478,7 @@ void SCR_DrawLoadingBar(float percent, float scale)
 	
 }
 
+void Draw_LoadingScreen(int x, int y, int w, int h, char *pic);
 
 void SCR_DrawLoading(void)
 {
@@ -489,12 +490,12 @@ void SCR_DrawLoading(void)
 	if (!scr_draw_loading)
 		return;
 	scr_draw_loading = 0;
+	
 	if (loadingMessage && cl.configstrings[CS_MODELS + 1][0]) {
 		strcpy(mapfile, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
 		mapfile[strlen(mapfile) - 4] = 0;	// cut off ".bsp"
 		if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
-			Draw_StretchPic(0, 0, viddef.width, viddef.height,
-							va("/levelshots/%s.jpg", mapfile));
+			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
 		else
 			Draw_Fill(0, 0, viddef.width, viddef.height, 0);
 
@@ -866,46 +867,7 @@ void SizeHUDString(char *string, int *w, int *h)
 	*w = width * 8;
 	*h = lines * 8;
 }
-/*
-void DrawHUDString(int x, int y, int centerwidth, int xor, char *string,
-				   ...)
-{
-	int margin;
-	char line[1024];
-	int width;
-	int i;
-	va_list argptr;
-	char msg[2048], *strp = msg;
 
-	va_start(argptr, string);
-	vsprintf(msg, string, argptr);
-	va_end(argptr);
-
-	margin = x;
-
-	while (*strp) {
-		// scan out one line of text from the string
-		width = 0;
-		while (*strp && *strp != '\n')
-			line[width++] = *strp++;
-		line[width] = 0;
-
-		if (centerwidth)
-			x = margin + (centerwidth - width * 8) * 0.5;
-		else
-			x = margin;
-		for (i = 0; i < width; i++) {
-			Draw_Char(x, y, line[i] ^ xor);
-			x += 8;
-		}
-		if (*strp) {
-			strp++;				// skip the \n
-			x = margin;
-			y += 8;
-		}
-	}
-}
-*/
 
 void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwidth, int xor, char *string)
 {

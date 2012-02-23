@@ -182,7 +182,7 @@ void DrawGLPolyGLSL(msurface_t * fa)
 
 	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	1.0);
 	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	alpha);
-	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	300.000);
+	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	150.0);
 	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	

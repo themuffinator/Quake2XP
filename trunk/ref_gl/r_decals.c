@@ -80,11 +80,12 @@ void R_RenderDecals(void)
     decals_t    *dl, *next, *active; 
     vec3_t		v, decalColor;
     unsigned    tex, texture = 0;
-    int			x, i;
+    int			x, i, id;
     int			numIndices = 0, numVertices = 0;
     int			indices[MAX_DECAL_INDICES];
     float		endLerp, decalAlpha;
-
+	unsigned	defBits = 0;
+	
 	if (!cl_decals->value)
 		return;
 	
@@ -98,6 +99,10 @@ void R_RenderDecals(void)
     qglEnableClientState (GL_VERTEX_ARRAY);
     qglVertexPointer (3, GL_FLOAT, sizeof(vec3_t), DecalVertexArray[0]);
      
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+	
 	qglEnable(GL_POLYGON_OFFSET_FILL);
     qglPolygonOffset(-1, -1);
 	qglStencilMask(0);
@@ -152,9 +157,9 @@ void R_RenderDecals(void)
         qglBlendFunc(dl->sFactor, dl->dFactor);
 
 		if (dl->flags == DF_OVERBRIGHT)
-			GL_PicsColorScaleARB(true);
+			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);
 		else
-            GL_PicsColorScaleARB(false);
+			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
 
           }
 
@@ -210,6 +215,7 @@ void R_RenderDecals(void)
     qglColor4f(1, 1, 1, 1);
     qglDepthMask(1);
     qglDisable(GL_POLYGON_OFFSET_FILL);
+	GL_BindNullProgram();
 }
 
 

@@ -719,8 +719,9 @@ glslProgram_t		*radialProgram;
 glslProgram_t		*dofProgram;
 glslProgram_t		*particlesProgram;
 glslProgram_t		*shadowProgram;
-glslProgram_t		*skyProgram;
+glslProgram_t		*genericProgram;
 glslProgram_t		*cinProgram;
+glslProgram_t		*loadingProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
@@ -734,7 +735,6 @@ typedef struct {
 	unsigned	VertexLightBits;
 	unsigned	AlphaMaskBits;
 	unsigned	BumpBits;
-	unsigned	DofExtra;
 	unsigned	WaterTransBits;
 	unsigned	ShellBits;
 } 

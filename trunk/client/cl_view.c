@@ -315,6 +315,8 @@ void CL_PrepRefresh(void)
 	
 	loadingTime = Sys_Milliseconds ();
 	
+	loadScreenColorFade = 0.1;
+
 	loadingMessage = true;
 	Com_sprintf(loadingMessages[0], sizeof(loadingMessages[0]),
 				"Loading Map...");
@@ -327,20 +329,19 @@ void CL_PrepRefresh(void)
 	loadingPercent = 0;
 
 	// let the render dll load the map
-	strcpy(mapname, cl.configstrings[CS_MODELS + 1] + 5);	// skip
-															// "maps/"
+	strcpy(mapname, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
 	mapname[strlen(mapname) - 4] = 0;	// cut off ".bsp"
-
-
-
+	
 	// register models, pics, and skins
 	Com_Printf("Map: %s\r", mapname);
 	SCR_UpdateScreen();
 	R_BeginRegistration(mapname);
+	
 	Com_Printf("                                     \r");
 	Com_sprintf(loadingMessages[0], sizeof(loadingMessages[0]),
 				"Loading Map...done");
 	loadingPercent += 20;
+	loadScreenColorFade = 0.55;
 
 	// precache status bar pics
 	Com_Printf("pics\r");
@@ -385,6 +386,8 @@ void CL_PrepRefresh(void)
 	Com_sprintf(loadingMessages[1], sizeof(loadingMessages[1]),
 				"Loading Models...done");
 	loadingPercent += 60.0f;
+	loadScreenColorFade = 0.75;
+
 	Com_Printf("images\r", i);
 	SCR_UpdateScreen();
 	for (i = 1; i < MAX_IMAGES && cl.configstrings[CS_IMAGES + i][0]; i++) {
@@ -399,6 +402,9 @@ void CL_PrepRefresh(void)
 	Com_sprintf(loadingMessages[2], sizeof(loadingMessages[2]),
 				"Loading Pics...done");
 	loadingPercent += 10.0f;
+	
+	loadScreenColorFade = 0.9;
+
 	for (i = 0; i < MAX_CLIENTS; i++) {
 		if (!cl.configstrings[CS_PLAYERSKINS + i][0])
 			continue;
@@ -416,6 +422,7 @@ void CL_PrepRefresh(void)
 					"Loading Clients...done");
 		loadingPercent += 10.0f;
 
+		loadScreenColorFade = 1.3;
 	}
 	loadingPercent = 100;
 

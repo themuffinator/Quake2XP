@@ -102,7 +102,6 @@ void RenderLavaSurfaces(msurface_t * fa)
 			// diffuse
 			wTexArray[i][0] = v[3];
 			wTexArray[i][1] = v[4];
-			
 			//normals
 			nTexArray[i][0] = v[7];
 			nTexArray[i][1] = v[8];
@@ -218,7 +217,7 @@ void EmitWaterPolys(msurface_t * fa)
 	
 	qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	1.0);
 	qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.499);
-	qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	300.0);
+	qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	150.0);
 	qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
@@ -552,10 +551,12 @@ void R_DrawSkyBox(void)
 	int i, id;
 	unsigned defBits = 0;
 	
-	GL_BindProgram(skyProgram, defBits);
-	id = skyProgram->id[defBits];
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-
+	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
+	qglColorMask(1, 1, 1, 1);
+	qglColor4f(1, 1, 1, 1);
 
 	if (skyrotate) {			// check for no sky at all
 		for (i = 0; i < 6; i++)
