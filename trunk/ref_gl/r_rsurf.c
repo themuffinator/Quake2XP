@@ -534,9 +534,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	GL_BindProgram(diffuseProgram, defBits);
 	id = diffuseProgram->id[defBits];
 
-	scale[0] = r_parallaxScale->value / image->width;
-	scale[1] = r_parallaxScale->value / image->height;
-
 	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
 
 	if(caustics || (s->flags & SURF_WATER))
@@ -547,11 +544,11 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	else
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
 
-	qglUniform2f(qglGetUniformLocation(id, "u_bumpScale"), scale[0], scale[1]);
-
 	if(r_parallax->value){
-	qglUniform1i(qglGetUniformLocation(id, "u_numSteps"), (int)r_parallaxSteps->value);
+	scale[0] = r_parallaxScale->value / image->width;
+	scale[1] = r_parallaxScale->value / image->height;
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+	qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
 	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
 	}
 

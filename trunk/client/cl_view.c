@@ -315,7 +315,7 @@ void CL_PrepRefresh(void)
 	
 	loadingTime = Sys_Milliseconds ();
 	
-	loadScreenColorFade = 0.1;
+	loadScreenColorFade = 0.35;
 
 	loadingMessage = true;
 	Com_sprintf(loadingMessages[0], sizeof(loadingMessages[0]),

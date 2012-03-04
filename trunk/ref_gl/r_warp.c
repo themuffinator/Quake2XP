@@ -66,7 +66,6 @@ void RenderLavaSurfaces(msurface_t * fa)
 	qglUniform1f	(qglGetUniformLocation(id, "u_ColorModulate"),	1.0);
 	qglUniform3fv	(qglGetUniformLocation(id, "u_viewOriginES"),	1 , r_origin);
 	qglUniform2f	(qglGetUniformLocation(id, "u_bumpScale"),		scale[0], scale[1]);
-	qglUniform1i	(qglGetUniformLocation(id, "u_numSteps"),		(int)r_parallaxSteps->value);
 	qglUniform1i	(qglGetUniformLocation(id, "u_parallaxType"),	(int)r_parallax->value);
 	qglUniform1f	(qglGetUniformLocation(id, "u_ambientScale"),	0.0);
 

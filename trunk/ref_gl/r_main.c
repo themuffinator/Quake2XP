@@ -1459,8 +1459,7 @@ void R_RegisterCvars(void)
 //	r_vbo=								Cvar_Get("r_vbo", "1", CVAR_ARCHIVE);
 
 	r_parallax=							Cvar_Get("r_parallax", "2", CVAR_ARCHIVE);
-	r_parallaxScale=					Cvar_Get("r_parallaxScale", "0.5", CVAR_ARCHIVE);
-	r_parallaxSteps=					Cvar_Get("r_parallaxSteps", "10", CVAR_ARCHIVE);
+	r_parallaxScale=					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
 
 	r_bumpAlias =						Cvar_Get("r_bumpAlias", "1", CVAR_ARCHIVE);
 	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
@@ -1979,8 +1978,6 @@ void R_BeginFrame()
 	if(r_dof->modified)
 		r_dof->modified = false;
 
-	if(r_parallaxSteps->value < 1 )
-		Cvar_SetValue("r_parallaxSteps", 1);
 
 	if(r_pplMaxDlights->value < 8)
 		Cvar_SetValue("r_pplMaxDlights", 8);

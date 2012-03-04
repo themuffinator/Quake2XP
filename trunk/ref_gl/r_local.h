@@ -297,7 +297,6 @@ cvar_t	*r_maxTextureSize;
 
 cvar_t	*r_parallax;
 cvar_t	*r_parallaxScale;
-cvar_t	*r_parallaxSteps;
 
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;
