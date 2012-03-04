@@ -6,15 +6,12 @@ uniform sampler2D		u_deluxMap;
 uniform sampler2D		u_Caustics;
 uniform float       	u_ColorModulate;
 uniform float       	u_ambientScale;    
-uniform int				u_bumpMap;
-uniform vec2			u_bumpScale;
 uniform vec2			u_texSize;
+uniform vec2			u_parallaxScale;
 uniform int				u_parallaxType;
-uniform int				u_numSteps;
 uniform int				u_numLights;
 uniform int				u_activeLights;
 uniform float       	u_CausticsModulate; 
-uniform float			u_lightScale; 
 uniform vec3			u_LightColor[13];
 uniform float			u_LightRadius[13];
 
@@ -41,77 +38,33 @@ float ComputeLOD( vec2 tc, vec2 texSize ) {
 
 vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) {
 	
-	
-	if (u_parallaxType == 2)
-	{
-
-	/*===================================
-	Parallax Occlusion Maping
-	High quality, uses Crysis(tm) shader.
-	===================================*/
-
-	// clamp z value - fix (but not full) smooth tbn bug 
-	viewVec.z = clamp(viewVec.z, 0.001, 1.0);
-
+	if (u_parallaxType == 2){
+	// 14 sample relief mapping: linear search and then binary search, 
+	// improved qfusion shader
 	float lod = ComputeLOD(texCoord, u_texSize);
-	float	step = 1.0 / float(u_numSteps);
-	vec2	delta = vec2(viewVec.x, viewVec.y) * u_bumpScale / (-viewVec.z * u_numSteps);
-	float	NB0 = texture2DLod(hiMap, texCoord, lod).a;
-	float	height = 1.0 - step;
-	vec2	offset = texCoord + delta;
-	float	NB1 = texture2DLod(hiMap, offset, lod).a;
+	vec3 offsetVector = vec3(viewVec.xy * u_parallaxScale * vec2(-1, -1), -1);
+	vec3 offsetBest = vec3(texCoord, 1);
+	offsetVector *= 0.1;
 
-	for (int i = 0; i < u_numSteps; i++) {
-		
-		if (NB1 >= height)
-			break;
+	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z)          - 0.5);
+	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.5    - 0.25);
+	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.25   - 0.125);
+	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.125  - 0.0625);
+	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.0625 - 0.03125);
 	
-		NB0 = NB1;
-
-		height -= step;
-		offset += delta;
-
-		NB1 = texture2DLod(hiMap, offset, lod).a;
-	}
-
-	vec2 offsetBest = offset;
-	float error = 1.0;
-
-	float t1 = height;
-	float t0 = t1 + step;
-	
-	float delta1 = t1 - NB1;
-	float delta0 = t0 - NB0;
-
-	vec4 intersect = vec4(delta * float(u_numSteps), delta * float(u_numSteps) + texCoord);
-   
-	for (int i = 0; i < 10; i++) {
-		if (abs(error) <= 0.01)
-			break;
-	
-		float denom = delta1 - delta0;
-		float t = (t0 * delta1 - t1 * delta0) / denom;
-		offsetBest = -t * intersect.xy + intersect.zw;
-		
-		float NB = texture2DLod(hiMap, offsetBest, lod).a;
-
-		error = t - NB;
-		if (error < 0.0) {
-			delta1 = error;
-			t1 = t;
-		}
-		else {
-			delta0 = error;
-			t0 = t;
-		}
-	}
-	
-	return offsetBest;
-
-	} else if(u_parallaxType == 1){
-	
+	return offsetBest.xy;
+	} 
+	else if(u_parallaxType == 1){
 	// simple fastest parallax mapping
-	
 	float offset = texture2D( hiMap, texCoord.xy ).a;
 	offset = offset * 0.04 - 0.02;
 	vec2 offsetBest = offset * viewVec.xy + texCoord.xy;
