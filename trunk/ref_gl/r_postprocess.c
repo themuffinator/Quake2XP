@@ -546,3 +546,42 @@ void R_DofBlur (void) {
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 
 }
+
+extern mat4x4_t r_oldModelViewProjection;
+extern mat4x4_t r_modelViewProjectionInverse;
+
+void R_MotionBlur (void) {
+	
+	unsigned	defBits = 0;
+	int			id;
+
+    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+            return;
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+            return;
+
+	// setup program
+	GL_BindProgram(motionBlurProgram, defBits);
+	id = motionBlurProgram->id[defBits];
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "PrevMatrix"), 1, GL_FALSE, r_oldModelViewProjection);
+	
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+	GL_BindRect				(ScreenMap->texnum);
+    qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1i			(qglGetUniformLocation(id, "u_screenMap"), 0);
+
+	GL_SelectTexture		(GL_TEXTURE1_ARB);	
+	GL_BindRect				(depthMap->texnum);
+    qglUniform1i			(qglGetUniformLocation(id, "u_depthMap"), 1);
+
+	qglBegin(GL_QUADS);
+    qglVertex2f(0, vid.height);
+    qglVertex2f(vid.width, vid.height);
+    qglVertex2f(vid.width, 0);
+    qglVertex2f(0, 0);
+    qglEnd();
+
+	GL_BindNullProgram		();
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+
+}

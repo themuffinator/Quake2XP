@@ -514,6 +514,12 @@
     <None Include="..\..\baseq2\glsl\generic.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
+    <None Include="..\..\baseq2\glsl\motionblur.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\..\baseq2\glsl\motionblur.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\q2.rc">

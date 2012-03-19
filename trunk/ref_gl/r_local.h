@@ -370,6 +370,9 @@ void R_ShutdownPrograms(void);
 void GL_BindNullProgram(void) ;
 void GL_BindRect(int texnum);
 void GL_MBindRect(GLenum target, int texnum);
+void Matrix4_Multiply( const mat4x4_t m1, const mat4x4_t m2, mat4x4_t out );
+void Matrix4_Copy( const mat4x4_t m1, mat4x4_t m2 );
+qboolean Mat4_Invert(const mat4_t in, mat4_t out);
 
 //====================================================================
 
@@ -721,6 +724,7 @@ glslProgram_t		*shadowProgram;
 glslProgram_t		*genericProgram;
 glslProgram_t		*cinProgram;
 glslProgram_t		*loadingProgram;
+glslProgram_t		*motionBlurProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();

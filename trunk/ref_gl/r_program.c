@@ -590,6 +590,14 @@ void R_InitPrograms(void) {
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 
+	Com_Printf("Load "S_COLOR_YELLOW"motion blur program"S_COLOR_WHITE" ");
+	motionBlurProgram =  R_FindProgram("motionblur", true, true);
+	
+	if(motionBlurProgram->valid){
+		Com_Printf("succeeded\n");
+	}else
+		Com_Printf(S_COLOR_RED"Failed!\n");
+
 	Com_Printf("\n");
 }
 

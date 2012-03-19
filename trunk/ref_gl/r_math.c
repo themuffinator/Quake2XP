@@ -83,3 +83,134 @@ void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out) 
 	out[2] = m[2][0] * in[0] + m[2][1] * in[1] + m[2][2] * in[2];
 }
 
+
+void Matrix4_Multiply( const mat4x4_t m1, const mat4x4_t m2, mat4x4_t out )
+{
+	out[0]  = m1[0] * m2[0] + m1[4] * m2[1] + m1[8] * m2[2] + m1[12] * m2[3];
+	out[1]  = m1[1] * m2[0] + m1[5] * m2[1] + m1[9] * m2[2] + m1[13] * m2[3];
+	out[2]  = m1[2] * m2[0] + m1[6] * m2[1] + m1[10] * m2[2] + m1[14] * m2[3];
+	out[3]  = m1[3] * m2[0] + m1[7] * m2[1] + m1[11] * m2[2] + m1[15] * m2[3];
+	out[4]  = m1[0] * m2[4] + m1[4] * m2[5] + m1[8] * m2[6] + m1[12] * m2[7];
+	out[5]  = m1[1] * m2[4] + m1[5] * m2[5] + m1[9] * m2[6] + m1[13] * m2[7];
+	out[6]  = m1[2] * m2[4] + m1[6] * m2[5] + m1[10] * m2[6] + m1[14] * m2[7];
+	out[7]  = m1[3] * m2[4] + m1[7] * m2[5] + m1[11] * m2[6] + m1[15] * m2[7];
+	out[8]  = m1[0] * m2[8] + m1[4] * m2[9] + m1[8] * m2[10] + m1[12] * m2[11];
+	out[9]  = m1[1] * m2[8] + m1[5] * m2[9] + m1[9] * m2[10] + m1[13] * m2[11];
+	out[10] = m1[2] * m2[8] + m1[6] * m2[9] + m1[10] * m2[10] + m1[14] * m2[11];
+	out[11] = m1[3] * m2[8] + m1[7] * m2[9] + m1[11] * m2[10] + m1[15] * m2[11];
+	out[12] = m1[0] * m2[12] + m1[4] * m2[13] + m1[8] * m2[14] + m1[12] * m2[15];
+	out[13] = m1[1] * m2[12] + m1[5] * m2[13] + m1[9] * m2[14] + m1[13] * m2[15];
+	out[14] = m1[2] * m2[12] + m1[6] * m2[13] + m1[10] * m2[14] + m1[14] * m2[15];
+	out[15] = m1[3] * m2[12] + m1[7] * m2[13] + m1[11] * m2[14] + m1[15] * m2[15];
+}
+
+void Matrix4_Copy( const mat4x4_t m1, mat4x4_t m2 )
+{
+	int i;
+
+	for( i = 0; i < 16; i++ )
+		m2[i] = m1[i];
+}
+
+
+/*
+============
+Mat4_Invert
+
+104 multiplications, 1 division.
+============
+*/
+#define MATRIX_INVERSE_EPSILON		1e-14
+#define MATRIX_EPSILON				1e-6
+
+qboolean Mat4_Invert(const mat4_t in, mat4_t out) {
+	float	det2_01_01, det2_01_02, det2_01_03;
+	float	det2_01_12, det2_01_13, det2_01_23;
+
+	float	det3_201_012, det3_201_013, det3_201_023, det3_201_123;
+
+	float	det2_03_01, det2_03_02, det2_03_03;
+	float	det2_03_12, det2_03_13, det2_03_23;
+	float	det2_13_01, det2_13_02, det2_13_03;
+	float	det2_13_12, det2_13_13, det2_13_23;
+
+	float	det3_203_012, det3_203_013, det3_203_023, det3_203_123;
+	float	det3_213_012, det3_213_013, det3_213_023, det3_213_123;
+	float	det3_301_012, det3_301_013, det3_301_023, det3_301_123;
+
+	double	det, invDet;
+
+	// 2x2 sub-determinants required to calculate 4x4 determinant
+	det2_01_01 = in[0][0] * in[1][1] - in[0][1] * in[1][0];
+	det2_01_02 = in[0][0] * in[1][2] - in[0][2] * in[1][0];
+	det2_01_03 = in[0][0] * in[1][3] - in[0][3] * in[1][0];
+	det2_01_12 = in[0][1] * in[1][2] - in[0][2] * in[1][1];
+	det2_01_13 = in[0][1] * in[1][3] - in[0][3] * in[1][1];
+	det2_01_23 = in[0][2] * in[1][3] - in[0][3] * in[1][2];
+
+	// 3x3 sub-determinants required to calculate 4x4 determinant
+	det3_201_012 = in[2][0] * det2_01_12 - in[2][1] * det2_01_02 + in[2][2] * det2_01_01;
+	det3_201_013 = in[2][0] * det2_01_13 - in[2][1] * det2_01_03 + in[2][3] * det2_01_01;
+	det3_201_023 = in[2][0] * det2_01_23 - in[2][2] * det2_01_03 + in[2][3] * det2_01_02;
+	det3_201_123 = in[2][1] * det2_01_23 - in[2][2] * det2_01_13 + in[2][3] * det2_01_12;
+
+	det = -det3_201_123 * in[3][0] + det3_201_023 * in[3][1] - det3_201_013 * in[3][2] + det3_201_012 * in[3][3];
+
+	if (fabs(det) < MATRIX_INVERSE_EPSILON)
+		return false;
+
+	invDet = 1.f / det;
+
+	// remaining 2x2 sub-determinants
+	det2_03_01 = in[0][0] * in[3][1] - in[0][1] * in[3][0];
+	det2_03_02 = in[0][0] * in[3][2] - in[0][2] * in[3][0];
+	det2_03_03 = in[0][0] * in[3][3] - in[0][3] * in[3][0];
+	det2_03_12 = in[0][1] * in[3][2] - in[0][2] * in[3][1];
+	det2_03_13 = in[0][1] * in[3][3] - in[0][3] * in[3][1];
+	det2_03_23 = in[0][2] * in[3][3] - in[0][3] * in[3][2];
+
+	det2_13_01 = in[1][0] * in[3][1] - in[1][1] * in[3][0];
+	det2_13_02 = in[1][0] * in[3][2] - in[1][2] * in[3][0];
+	det2_13_03 = in[1][0] * in[3][3] - in[1][3] * in[3][0];
+	det2_13_12 = in[1][1] * in[3][2] - in[1][2] * in[3][1];
+	det2_13_13 = in[1][1] * in[3][3] - in[1][3] * in[3][1];
+	det2_13_23 = in[1][2] * in[3][3] - in[1][3] * in[3][2];
+
+	// remaining 3x3 sub-determinants
+	det3_203_012 = in[2][0] * det2_03_12 - in[2][1] * det2_03_02 + in[2][2] * det2_03_01;
+	det3_203_013 = in[2][0] * det2_03_13 - in[2][1] * det2_03_03 + in[2][3] * det2_03_01;
+	det3_203_023 = in[2][0] * det2_03_23 - in[2][2] * det2_03_03 + in[2][3] * det2_03_02;
+	det3_203_123 = in[2][1] * det2_03_23 - in[2][2] * det2_03_13 + in[2][3] * det2_03_12;
+
+	det3_213_012 = in[2][0] * det2_13_12 - in[2][1] * det2_13_02 + in[2][2] * det2_13_01;
+	det3_213_013 = in[2][0] * det2_13_13 - in[2][1] * det2_13_03 + in[2][3] * det2_13_01;
+	det3_213_023 = in[2][0] * det2_13_23 - in[2][2] * det2_13_03 + in[2][3] * det2_13_02;
+	det3_213_123 = in[2][1] * det2_13_23 - in[2][2] * det2_13_13 + in[2][3] * det2_13_12;
+
+	det3_301_012 = in[3][0] * det2_01_12 - in[3][1] * det2_01_02 + in[3][2] * det2_01_01;
+	det3_301_013 = in[3][0] * det2_01_13 - in[3][1] * det2_01_03 + in[3][3] * det2_01_01;
+	det3_301_023 = in[3][0] * det2_01_23 - in[3][2] * det2_01_03 + in[3][3] * det2_01_02;
+	det3_301_123 = in[3][1] * det2_01_23 - in[3][2] * det2_01_13 + in[3][3] * det2_01_12;
+
+	out[0][0] = -det3_213_123 * invDet;
+	out[1][0] =  det3_213_023 * invDet;
+	out[2][0] = -det3_213_013 * invDet;
+	out[3][0] =  det3_213_012 * invDet;
+
+	out[0][1] =  det3_203_123 * invDet;
+	out[1][1] = -det3_203_023 * invDet;
+	out[2][1] =  det3_203_013 * invDet;
+	out[3][1] = -det3_203_012 * invDet;
+
+	out[0][2] =  det3_301_123 * invDet;
+	out[1][2] = -det3_301_023 * invDet;
+	out[2][2] =  det3_301_013 * invDet;
+	out[3][2] = -det3_301_012 * invDet;
+
+	out[0][3] = -det3_201_123 * invDet;
+	out[1][3] =  det3_201_023 * invDet;
+	out[2][3] = -det3_201_013 * invDet;
+	out[3][3] =  det3_201_012 * invDet;
+
+	return true;
+}

@@ -60,7 +60,8 @@ vec3_t r_origin;
 mat4x4_t r_world_matrix;
 mat4x4_t r_base_world_matrix;
 mat4x4_t r_project_matrix;
-
+mat4x4_t r_modelViewProjection;
+mat4x4_t r_oldModelViewProjection;
 
 //
 // screen size info
@@ -779,6 +780,8 @@ void R_SetupGL(void)
 	qglGetFloatv(GL_PROJECTION_MATRIX, r_project_matrix);	// Store it
 															// for later
 															// mirror use
+	Matrix4_Multiply(r_world_matrix, r_project_matrix, r_modelViewProjection);
+
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
 	// 
 	// set drawing parms
@@ -1248,20 +1251,25 @@ void R_Bloom (void);
 void R_ThermalVision (void);
 void R_RadialBlur (void);
 void R_DofBlur (void);
+void R_MotionBlur (void);
 
 void R_RenderFrame(refdef_t * fd, qboolean client)
 {
 	
 	R_SetLightLevel();
 	R_RenderView(fd);
+
+	Matrix4_Copy(r_modelViewProjection, r_oldModelViewProjection);
+
 	R_SetGL2D();
 
 	// post processing - cut of if player camera out map bounds
 	if(!outMap){
-	R_RadialBlur();
+/*	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();
-	R_Bloom();
+	R_Bloom();*/
+	R_MotionBlur();
 	}
 
 	if (v_blend[3] && r_polyBlend->value) {
