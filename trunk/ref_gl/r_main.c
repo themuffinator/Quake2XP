@@ -61,6 +61,7 @@ mat4x4_t r_world_matrix;
 mat4x4_t r_base_world_matrix;
 mat4x4_t r_project_matrix;
 mat4x4_t r_modelViewProjection;
+mat4x4_t r_modelViewProjectionInv;
 mat4x4_t r_oldModelViewProjection;
 
 //
@@ -726,6 +727,7 @@ float SphereInFrustum( vec3_t o, float radius )
 	return d + radius;
 }
 
+
 /*
 =============
 R_SetupGL
@@ -777,10 +779,11 @@ void R_SetupGL(void)
 
 
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
-	qglGetFloatv(GL_PROJECTION_MATRIX, r_project_matrix);	// Store it
-															// for later
-															// mirror use
+	qglGetFloatv(GL_PROJECTION_MATRIX, r_project_matrix);	
+
 	Matrix4_Multiply(r_world_matrix, r_project_matrix, r_modelViewProjection);
+//	Matrix4_Copy(r_project_matrix, r_modelViewProjection);
+	InvertMatrix(r_modelViewProjection, r_modelViewProjectionInv);
 
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
 	// 
@@ -1258,9 +1261,6 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	
 	R_SetLightLevel();
 	R_RenderView(fd);
-
-	Matrix4_Copy(r_modelViewProjection, r_oldModelViewProjection);
-
 	R_SetGL2D();
 
 	// post processing - cut of if player camera out map bounds
@@ -1271,6 +1271,8 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_Bloom();*/
 	R_MotionBlur();
 	}
+
+	Matrix4_Copy(r_modelViewProjection, r_oldModelViewProjection);
 
 	if (v_blend[3] && r_polyBlend->value) {
 		

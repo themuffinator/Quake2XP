@@ -372,7 +372,7 @@ void GL_BindRect(int texnum);
 void GL_MBindRect(GLenum target, int texnum);
 void Matrix4_Multiply( const mat4x4_t m1, const mat4x4_t m2, mat4x4_t out );
 void Matrix4_Copy( const mat4x4_t m1, mat4x4_t m2 );
-qboolean Mat4_Invert(const mat4_t in, mat4_t out);
+qboolean InvertMatrix(const mat4x4_t m, mat4x4_t invOut);
 
 //====================================================================
 

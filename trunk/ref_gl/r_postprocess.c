@@ -548,7 +548,7 @@ void R_DofBlur (void) {
 }
 
 extern mat4x4_t r_oldModelViewProjection;
-extern mat4x4_t r_modelViewProjectionInverse;
+extern mat4x4_t r_modelViewProjectionInv;
 
 void R_MotionBlur (void) {
 	
@@ -563,7 +563,9 @@ void R_MotionBlur (void) {
 	// setup program
 	GL_BindProgram(motionBlurProgram, defBits);
 	id = motionBlurProgram->id[defBits];
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "invMatrix"), 1, GL_FALSE, r_modelViewProjectionInv);
 	qglUniformMatrix4fv(qglGetUniformLocation(id, "PrevMatrix"), 1, GL_FALSE, r_oldModelViewProjection);
+
 	
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 	GL_BindRect				(ScreenMap->texnum);
