@@ -1,7 +1,7 @@
 varying vec2 v_texCoord;
 uniform sampler2D u_map;
 uniform float u_colorScale;
-const vec3 LUMINANCE_MONO = vec3(0.27, 0.67, 0.06);
+const vec4 LUMINANCE_MONO = vec4(0.27, 0.67, 0.06, 1.0);
 
 
 /*
