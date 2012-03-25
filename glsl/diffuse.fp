@@ -6,12 +6,12 @@ uniform sampler2D		u_deluxMap;
 uniform sampler2D		u_Caustics;
 uniform float       	u_ColorModulate;
 uniform float       	u_ambientScale;    
+uniform float       	u_CausticsModulate; 
 uniform vec2			u_texSize;
 uniform vec2			u_parallaxScale;
 uniform int				u_parallaxType;
 uniform int				u_numLights;
 uniform int				u_activeLights;
-uniform float       	u_CausticsModulate; 
 uniform vec3			u_LightColor[13];
 uniform float			u_LightRadius[13];
 
@@ -65,7 +65,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	} 
 	else if(u_parallaxType == 1){
 	// simple fastest parallax mapping
-	float offset = texture2D( hiMap, texCoord.xy ).a;
+	float offset = texture2DLod( hiMap, texCoord.xy, lod).a;
 	offset = offset * 0.04 - 0.02;
 	vec2 offsetBest = offset * viewVec.xy + texCoord.xy;
 	

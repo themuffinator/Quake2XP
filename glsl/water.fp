@@ -2,6 +2,7 @@ varying vec2				v_deformTexCoord;
 varying vec2				v_diffuseTexCoord;
 varying float				v_depth;
 varying vec2				v_deformMul;
+varying vec4				v_color;
 
 uniform float				u_thickness;
 uniform float				u_alpha;
@@ -35,7 +36,7 @@ coord.y = v_diffuseTexCoord.y + offset.w;
 vec4 diffuse  = texture2D (u_colorMap, coord.xy);  
 
 // set vertex lighting
-diffuse *= gl_Color;
+diffuse *= v_color;
 diffuse = clamp(diffuse, 0.0, 1.0); 
 
 #ifdef TRANS
