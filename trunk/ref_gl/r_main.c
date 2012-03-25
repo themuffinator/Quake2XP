@@ -47,7 +47,6 @@ int r_framecount;				// used for dlight push checking
 float v_blend[4];				// final blending color
 
 void GL_Strings_f(void);
-void R_CaptureScreen(qboolean depth);
 
 //
 // view origin
@@ -60,9 +59,6 @@ vec3_t r_origin;
 mat4x4_t r_world_matrix;
 mat4x4_t r_base_world_matrix;
 mat4x4_t r_project_matrix;
-mat4x4_t r_modelViewProjection;
-mat4x4_t r_modelViewProjectionInv;
-mat4x4_t r_oldModelViewProjection;
 
 //
 // screen size info
@@ -167,7 +163,7 @@ void R_RotateForEntity(entity_t * e)
 {
 	qglTranslatef(e->origin[0], e->origin[1], e->origin[2]);
 
-	qglRotatef(e->angles[1], 0, 0, 1);
+	qglRotatef( e->angles[1], 0, 0, 1);
 	qglRotatef(-e->angles[0], 0, 1, 0);
 	qglRotatef(-e->angles[2], 1, 0, 0);
 }
@@ -781,10 +777,6 @@ void R_SetupGL(void)
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
 	qglGetFloatv(GL_PROJECTION_MATRIX, r_project_matrix);	
 
-	Matrix4_Multiply(r_world_matrix, r_project_matrix, r_modelViewProjection);
-//	Matrix4_Copy(r_project_matrix, r_modelViewProjection);
-	InvertMatrix(r_modelViewProjection, r_modelViewProjectionInv);
-
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
 	// 
 	// set drawing parms
@@ -1148,9 +1140,6 @@ r_newrefdef must be set before the first call
 ================
 */
 
-void R_BlobShadow(void);
-void R_ShadowBlend();
-
 void R_RenderView(refdef_t * fd)
 {
 if (r_noRefresh->value)
@@ -1250,12 +1239,6 @@ R_RenderFrame
 @@@@@@@@@@@@@@@@@@@@@
 */
 
-void R_Bloom (void);
-void R_ThermalVision (void);
-void R_RadialBlur (void);
-void R_DofBlur (void);
-void R_MotionBlur (void);
-
 void R_RenderFrame(refdef_t * fd, qboolean client)
 {
 	
@@ -1265,14 +1248,12 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 
 	// post processing - cut of if player camera out map bounds
 	if(!outMap){
-/*	R_RadialBlur();
+	R_FXAA();
+	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();
-	R_Bloom();*/
-	R_MotionBlur();
+	R_Bloom();
 	}
-
-	Matrix4_Copy(r_modelViewProjection, r_oldModelViewProjection);
 
 	if (v_blend[3] && r_polyBlend->value) {
 		
@@ -1393,9 +1374,6 @@ void R_VideoInfo_f(void){
 
 }
 
-
-void R_ListPrograms_f(void);
-
 void R_RegisterCvars(void)
 {
 	r_leftHand =						Cvar_Get("hand", "0", CVAR_USERINFO | CVAR_ARCHIVE);
@@ -1430,7 +1408,7 @@ void R_RegisterCvars(void)
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
 
-	r_anisotropic =						Cvar_Get("r_anisotropic", "1", CVAR_ARCHIVE);
+	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
 	r_worldColorScale =					Cvar_Get("r_worldColorScale", "2", CVAR_ARCHIVE);
@@ -1448,6 +1426,7 @@ void R_RegisterCvars(void)
 	
 	r_arbSamples =						Cvar_Get("r_arbSamples", "1", CVAR_ARCHIVE);
 	r_nvSamplesCoverange =				Cvar_Get("r_nvSamplesCoverange", "8", CVAR_ARCHIVE);
+	r_fxaa =							Cvar_Get("r_fxaa", "0", CVAR_ARCHIVE);
 
 	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);
 	
@@ -1474,7 +1453,7 @@ void R_RegisterCvars(void)
 	r_bumpAlias =						Cvar_Get("r_bumpAlias", "1", CVAR_ARCHIVE);
 	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
-	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "30", CVAR_ARCHIVE);
+	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_pplMaxDlights =					Cvar_Get("r_pplMaxDlights", "13", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
@@ -1483,7 +1462,7 @@ void R_RegisterCvars(void)
 
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
-	r_dofFocus =						Cvar_Get("r_dofFocus", "256.0", CVAR_ARCHIVE);
+	r_dofFocus =						Cvar_Get("r_dofFocus", "512.0", CVAR_ARCHIVE);
 
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
@@ -1551,8 +1530,6 @@ R_Init
 */
 int GL_QueryBits;
 int ocQueries[MAX_FLARES];
-
-void R_InitPrograms(void);
 
 int R_Init(void *hinstance, void *hWnd)
 {

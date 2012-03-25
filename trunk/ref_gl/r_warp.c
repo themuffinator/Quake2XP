@@ -32,7 +32,7 @@ static float shadelight[3];
 
 /*
 =============
-EmitWaterPolys
+R_DrawWaterPolygons
 
 Does a water warp on the pre-fragmented glpoly_t chain
 =============
@@ -171,7 +171,7 @@ void CreateDSTTex()
 
 }
 
-void EmitWaterPolys(msurface_t * fa)
+void R_DrawWaterPolygons(msurface_t * fa)
 {
 	glpoly_t	*p, *bp;
 	float		*v, dstscroll;
@@ -223,9 +223,15 @@ void EmitWaterPolys(msurface_t * fa)
 			
 	dstscroll = ((r_newrefdef.time * 0.15f) - (int) (r_newrefdef.time * 0.15f));
 
-	qglEnableClientState		(GL_VERTEX_ARRAY);
-	qglVertexPointer			(3, GL_FLOAT, 0, wVertexArray);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TEX2);
+	qglEnableVertexAttribArray(ATRB_COLOR);
 
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, wVertexArray);	
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, wTexArray);
+	qglVertexAttribPointer(ATRB_TEX2, 2, GL_FLOAT, false,		0, wTmu2Array);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, WarpColorArray);
 	
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
@@ -237,11 +243,11 @@ void EmitWaterPolys(msurface_t * fa)
 		
 		VectorCopy(v, wVertexArray[i]);
 			
-		wTmu0Array[i][0] = v[3];
-		wTmu0Array[i][1] = v[4];
+		wTexArray[i][0] = v[3];
+		wTexArray[i][1] = v[4];
 
-		wTmu1Array[i][0] = (v[3] + dstscroll);
-		wTmu1Array[i][1] = (v[4] + dstscroll);
+		wTmu2Array[i][0] = (v[3] + dstscroll);
+		wTmu2Array[i][1] = (v[4] + dstscroll);
 
 		R_LightColor	(v, shadelight_surface);
 		VA_SetElem4		(WarpColorArray[i],	shadelight_surface[0], 
@@ -252,18 +258,13 @@ void EmitWaterPolys(msurface_t * fa)
 
 		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
 	}
-
-	
-	
-	qglDisableClientState	(GL_VERTEX_ARRAY);
-
-	GL_SelectTexture		(GL_TEXTURE1_ARB);
-	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-	GL_SelectTexture		(GL_TEXTURE0_ARB);
-	qglDisableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglDisableClientState	(GL_COLOR_ARRAY);
-
-	GL_BindNullProgram		();
+		
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_TEX2);
+	qglDisableVertexAttribArray(ATRB_COLOR);
+	GL_BindNullProgram();
 }
 
 

@@ -330,7 +330,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 		if (!strcmp(noext, "brlava")|| !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
 			RenderLavaSurfaces(fa);
 		else
-			EmitWaterPolys(fa);
+			R_DrawWaterPolygons(fa);
 		return;
 	}
 
@@ -378,7 +378,7 @@ void R_DrawAlphaPoly(void)
 		
 
 		if (s->flags & SURF_DRAWTURB)
-			EmitWaterPolys(s);
+			R_DrawWaterPolygons(s);
 		else if (s->texinfo->flags & SURF_FLOWING)
 			DrawGLFlowingPolyGLSL(s);
 		else

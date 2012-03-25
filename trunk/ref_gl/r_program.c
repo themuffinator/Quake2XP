@@ -337,6 +337,7 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 		qglBindAttribLocation(id, ATRB_NORMAL,		"a_normArray");
 		qglBindAttribLocation(id, ATRB_TEX0,		"a_texCoord");
 		qglBindAttribLocation(id, ATRB_TEX1,		"a_LtexCoord");
+		qglBindAttribLocation(id, ATRB_TEX2,		"a_2texCoord");
 		qglBindAttribLocation(id, ATRB_TANGENT,		"a_tangent");
 		qglBindAttribLocation(id, ATRB_BINORMAL,	"a_binormal");
 		qglBindAttribLocation(id, ATRB_COLOR,		"a_colorArray");
@@ -590,10 +591,10 @@ void R_InitPrograms(void) {
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 
-	Com_Printf("Load "S_COLOR_YELLOW"motion blur program"S_COLOR_WHITE" ");
-	motionBlurProgram =  R_FindProgram("motionblur", true, true);
+	Com_Printf("Load "S_COLOR_YELLOW"fxaa program"S_COLOR_WHITE" ");
+	fxaaProgram =  R_FindProgram("fxaa", true, true);
 	
-	if(motionBlurProgram->valid){
+	if(fxaaProgram->valid){
 		Com_Printf("succeeded\n");
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");

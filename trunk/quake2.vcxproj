@@ -1332,8 +1332,8 @@
     <None Include="..\..\baseq2\glsl\gaussY.vp" />
     <None Include="..\..\baseq2\glsl\loading.fp" />
     <None Include="..\..\baseq2\glsl\loading.vp" />
-    <None Include="..\..\baseq2\glsl\motionblur.fp" />
-    <None Include="..\..\baseq2\glsl\motionblur.vp" />
+    <None Include="..\..\baseq2\glsl\fxaa.fp" />
+    <None Include="..\..\baseq2\glsl\fxaa.vp" />
     <None Include="..\..\baseq2\glsl\radialBlur.fp" />
     <None Include="..\..\baseq2\glsl\radialBlur.vp" />
     <None Include="..\..\baseq2\glsl\refract.defs" />

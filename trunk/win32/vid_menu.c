@@ -23,33 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../ref_gl/r_local.h"
 
 extern cvar_t *vid_ref;
-/*
-extern cvar_t *r_fullScreen;
-extern cvar_t *r_gamma;
-extern cvar_t *scr_viewsize;
 
-static cvar_t *r_mode;
-static cvar_t *r_vsync;
-static cvar_t *r_arbSamples; 
-static cvar_t *r_nvSamplesCoverange;
-static cvar_t *r_displayRefresh; // VorteX: display refresh
-
-static cvar_t *r_anisotropic;
-static cvar_t *r_maxAnisotropy;
-static cvar_t *r_shadows;
-static cvar_t *r_drawFlares;
-static cvar_t *r_textureCompression;
-static cvar_t *r_parallax;
-static cvar_t *r_bloom; 
-extern cvar_t *r_dof;
-static cvar_t *r_bumpAlias;
-static cvar_t *r_bumpWorld;
-extern cvar_t *r_radialBlur;
-
-static	cvar_t	*r_radar;
-
-static cvar_t *cl_fontScale;
-*/
 extern void M_ForceMenuOff( void );
 
 int refresh=0;
@@ -92,6 +66,7 @@ static	menulist_s			s_ab_list;
 static	menulist_s			s_wb_list;
 static	menulist_s			s_radBlur_box;
 static	menulist_s			s_softParticles;
+static	menulist_s			s_fxaa_box;
 static	menulist_s			s_minimap;
 
 
@@ -190,6 +165,12 @@ static void softPartCallback( void *s )
 	Cvar_SetValue( "r_softParticles", box->curvalue * 1 );
 }
 
+static void fxaaCallback( void *s )
+{
+	menulist_s *box = ( menulist_s * ) s;
+
+	Cvar_SetValue( "r_fxaa", box->curvalue * 1 );
+}
 
 static void ResetDefaults( void *unused )
 {
@@ -220,6 +201,7 @@ static void ApplyChanges( void *unused )
 	Cvar_SetValue( "r_dof",					s_dof_box.curvalue );
 	Cvar_SetValue( "r_radialBlur",			s_radBlur_box.curvalue );
 	Cvar_SetValue( "r_softParticles",		s_softParticles.curvalue);
+	Cvar_SetValue( "r_fxaa",				s_fxaa_box.curvalue);
 	Cvar_SetValue( "r_vsync",				s_finish_box.curvalue);
 	Cvar_SetValue( "r_radar",				s_minimap.curvalue);
 
@@ -357,6 +339,9 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		
 		if(r_softParticles->modified)
 			vid_ref->modified = true;
+
+		if(r_fxaa->modified)
+			vid_ref->modified = true;
 		
 	M_ForceMenuOff();
 
@@ -472,6 +457,9 @@ void VID_MenuInit( void )
 		
 	if(!r_softParticles->value)
 		r_softParticles = Cvar_Get ("r_softParticles", 0, CVAR_ARCHIVE);
+
+	if(!r_fxaa->value)
+		r_fxaa = Cvar_Get ("r_fxaa", 0, CVAR_ARCHIVE);
 
 
 	s_opengl_menu.x = viddef.width * 0.50;
@@ -680,10 +668,18 @@ void VID_MenuInit( void )
 	s_softParticles.curvalue			= r_softParticles->value;
     s_softParticles.generic.callback	= softPartCallback;
 
+	s_fxaa_box.generic.type		= MTYPE_SPINCONTROL;
+	s_fxaa_box.generic.x		= 0;
+	s_fxaa_box.generic.y		= 210*cl_fontScale->value;
+	s_fxaa_box.generic.name		= "FXAA";
+   	s_fxaa_box.itemnames		= yesno_names;
+	s_fxaa_box.curvalue			= r_fxaa->value;
+    s_fxaa_box.generic.callback	= fxaaCallback;
+	s_fxaa_box.generic.statusbar = "Nvidia Post-Process Anti-Aliasing";
 
 	s_minimap.generic.type		= MTYPE_SPINCONTROL;
 	s_minimap.generic.x			= 0;
-	s_minimap.generic.y			= 210*cl_fontScale->value;
+	s_minimap.generic.y			= 220*cl_fontScale->value;
 	s_minimap.generic.name		= "Draw Radar";
    	s_minimap.itemnames			= radar;
 	s_minimap.curvalue			= r_radar->value;
@@ -691,7 +687,7 @@ void VID_MenuInit( void )
 	
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x	= 0;
-	s_finish_box.generic.y	= 220*cl_fontScale->value;
+	s_finish_box.generic.y	= 230*cl_fontScale->value;
 	s_finish_box.generic.name	= "Vertical Sync";
 	s_finish_box.curvalue = r_vsync->value;
 	s_finish_box.itemnames = yesno_names;
@@ -700,16 +696,16 @@ void VID_MenuInit( void )
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x    = 0;
-	s_defaults_action.generic.y    = 240*cl_fontScale->value;
+	s_defaults_action.generic.y    = 250*cl_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x    = 0;
-	s_apply_action.generic.y    = 250*cl_fontScale->value;
+	s_apply_action.generic.y    = 260*cl_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 	
-	menuSize = 300;
+	menuSize = 320;
 
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_mode_list);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_samples_list);
@@ -731,6 +727,7 @@ void VID_MenuInit( void )
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_dof_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_radBlur_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_softParticles );
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_fxaa_box);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_minimap);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_finish_box);
 
@@ -754,7 +751,7 @@ void VID_MenuDraw (void)
 	s_current_menu = &s_opengl_menu;
 	
 	if(cl_fontScale->value == 1)
-		menuSize = 170;
+		menuSize = 180;
 
 	// draw the banner
 	Draw_GetPicSize( &w, &h, "m_banner_video" );

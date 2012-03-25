@@ -1100,6 +1100,7 @@ void SCR_DrawClock(void)
 
 }
 
+void R_FXAA(void);
 
 void SCR_UpdateScreen(void)
 {
@@ -1185,7 +1186,7 @@ next:
 
 			SCR_DrawNet();
 			SCR_CheckDrawCenterString();
-			
+						
 			if (scr_timegraph->value)
 				SCR_DebugGraph(cls.frametime * 300, 0);
 
@@ -1206,7 +1207,7 @@ next:
 			M_Draw();
 			
 			SCR_DrawLoading();
-		
+	
 		}
 	GLimp_EndFrame();
 }

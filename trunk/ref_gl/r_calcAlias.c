@@ -715,7 +715,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			VectorSubtract(light, currententity->origin, tmp);
 			AnglesToMat3(currententity->angles, entityAxis);
 			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);	
-			GL_DrawAliasFrameLerpArb(paliashdr, light, 250, diffuseColor);
+			GL_DrawAliasFrameLerpArb(paliashdr, light, 500, diffuseColor);
 		}
 
 }

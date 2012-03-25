@@ -266,7 +266,7 @@ cvar_t	*r_radar;
 
 cvar_t	*r_arbSamples;
 cvar_t	*r_nvSamplesCoverange;
-
+cvar_t	*r_fxaa;
 cvar_t	*deathmatch;
 
 cvar_t	*r_drawFlares;
@@ -373,7 +373,15 @@ void GL_MBindRect(GLenum target, int texnum);
 void Matrix4_Multiply( const mat4x4_t m1, const mat4x4_t m2, mat4x4_t out );
 void Matrix4_Copy( const mat4x4_t m1, mat4x4_t m2 );
 qboolean InvertMatrix(const mat4x4_t m, mat4x4_t invOut);
-
+void R_BlobShadow(void);
+void R_ShadowBlend();
+void R_Bloom (void);
+void R_ThermalVision (void);
+void R_RadialBlur (void);
+void R_DofBlur (void);
+void R_FXAA(void);
+void R_ListPrograms_f(void);
+void R_InitPrograms(void);
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -441,7 +449,7 @@ void R_MarkLeaves(void);
 void R_EnableScreenMatrix(void);
 void R_DisableScreenMatrix(void);
 glpoly_t *WaterWarpPolyVerts(glpoly_t * p);
-void EmitWaterPolys(msurface_t * fa);
+void R_DrawWaterPolygons(msurface_t * fa);
 void R_AddSkySurface(msurface_t * fa);
 void R_ClearSkyBox(void);
 void R_DrawSkyBox(void);
@@ -724,7 +732,7 @@ glslProgram_t		*shadowProgram;
 glslProgram_t		*genericProgram;
 glslProgram_t		*cinProgram;
 glslProgram_t		*loadingProgram;
-glslProgram_t		*motionBlurProgram;
+glslProgram_t		*fxaaProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
