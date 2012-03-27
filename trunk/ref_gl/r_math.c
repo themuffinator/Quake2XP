@@ -84,7 +84,7 @@ void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out) 
 }
 
 
-void Matrix4_Multiply( const mat4x4_t m1, const mat4x4_t m2, mat4x4_t out )
+void Matrix4_Multiply( const mat4x4_t m2, const mat4x4_t m1, mat4x4_t out )
 {
 	out[0]  = m1[0] * m2[0] + m1[4] * m2[1] + m1[8] * m2[2] + m1[12] * m2[3];
 	out[1]  = m1[1] * m2[0] + m1[5] * m2[1] + m1[9] * m2[2] + m1[13] * m2[3];

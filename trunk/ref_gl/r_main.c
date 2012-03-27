@@ -775,7 +775,6 @@ void R_SetupGL(void)
 
 
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
-	qglGetFloatv(GL_PROJECTION_MATRIX, r_project_matrix);	
 
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
 	// 

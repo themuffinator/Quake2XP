@@ -272,6 +272,9 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	float screenAspect, scaledHeight;
 	entity_t entity;
 
+	if (cls.state != ca_active || !cl.refresh_prepped)
+		return;
+	
 	if (!model)
 		return;
 	
@@ -309,14 +312,8 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	entity.frame = 0;
 	entity.oldframe = 0;
 	entity.backlerp = 0.0;
-
-	VectorCopy(entity.origin, entity.currentLightPos);
-	entity.currentLightPos[0] -=100;
-	entity.currentLightPos[2] +=100;
-
-	entity.lightRad = 256;
 	entity.angles[1] = anglemod(refdef.time*48);
-	
+
 	if ( entity.angles[1] > 360 )	
 		entity.angles[1] -= 360;
 	

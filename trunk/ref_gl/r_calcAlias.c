@@ -126,7 +126,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	if(r_bumpAlias->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		VectorSet(lightColor, 0.2, 0.2, 0.2);
+			VectorSet(lightColor, 0.0, 0.0, 0.0);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
@@ -588,19 +588,20 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+		vec3_t old;
 
 			diffuseColor[0] = 1.0;
 			diffuseColor[1] = 1.0;
 			diffuseColor[2] = 1.0;
 			VectorCopy(currententity->origin, light);
-			light[0] -= 100;
-			light[2] += 100;
-
+			light[0] -=100;
+		//	light[2] +=100;
+			
 			VectorSubtract(light, currententity->origin, tmp);
 			AnglesToMat3(currententity->angles, entityAxis);
 			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);
 
-			GL_DrawAliasFrameLerpArb(paliashdr, light, 999, diffuseColor);
+			GL_DrawAliasFrameLerpArb(paliashdr, light, 256, diffuseColor);
 
 	}
 	
@@ -710,7 +711,8 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 			VectorCopy(currententity->origin, light);
 			light[2]+=100;
-			
+			light[1]+=100;
+
 			R_LightPoint(currententity->origin, diffuseColor, true);
 			VectorSubtract(light, currententity->origin, tmp);
 			AnglesToMat3(currententity->angles, entityAxis);
