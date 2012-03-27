@@ -22,7 +22,7 @@ Trims the algorithm from processing darks.
 1/16 - high quality
 1/12 - upper limit (start of visible unfiltered edges)
 */
-#define FXAA_EDGE_THRESHOLD     	1/8
+#define FXAA_EDGE_THRESHOLD     	1/2
 #define FXAA_EDGE_THRESHOLD_MIN     1/16
 
 vec4 fxaaPixelShader(sampler2DRect ScreenTex)
@@ -48,6 +48,7 @@ vec4 fxaaPixelShader(sampler2DRect ScreenTex)
 	float range = lumaMax - lumaMin;
 	if(range < max(FXAA_EDGE_THRESHOLD_MIN, lumaMax * FXAA_EDGE_THRESHOLD))
 		return vec4(rgbM, 1.0);
+		//return vec4(1.0, 0.0, 0.0, 1.0);// debug!
 
     vec2 dir;
     dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));

@@ -21,7 +21,7 @@ vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const flo
 
 	vec3 R = reflect(-L, N);
 	E.y = pow(max(dot(R, V), 0.0), sExp);
-//	E.y *= (E.x < 0.01 ? 0.0 : 1.0);
+	E.y *= (E.x < 0.01 ? 0.0 : 1.0);
 	E.y *= E.x;
 
 	return E;

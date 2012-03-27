@@ -65,6 +65,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	} 
 	else if(u_parallaxType == 1){
 	// simple fastest parallax mapping
+	float lod = ComputeLOD(texCoord, u_texSize);
 	float offset = texture2DLod( hiMap, texCoord.xy, lod).a;
 	offset = offset * 0.04 - 0.02;
 	vec2 offsetBest = offset * viewVec.xy + texCoord.xy;
