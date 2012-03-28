@@ -593,12 +593,11 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	if(bmodel){
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
 		{
-		vec3_t	forward, right, up, temp;
-		VectorSubtract(dl->origin, currententity->origin, temp);
-		AngleVectors (currententity->angles, forward, right, up);
-		locLight[0] = DotProduct (temp, forward);
-		locLight[1] = -DotProduct (temp, right);
-		locLight[2] = DotProduct (temp, up);
+		mat3_t	entityAxis;
+		vec3_t	tmp;
+		VectorSubtract(r_origin, currententity->origin, tmp);
+		AnglesToMat3(currententity->angles, entityAxis);
+		Mat3_TransposeMultiplyVector(entityAxis, tmp, locLight);
 		}
 	else
 		VectorSubtract(dl->origin, currententity->origin, locLight);
@@ -847,10 +846,11 @@ void R_DrawBrushModel(entity_t * e)
 	vec3_t		mins, maxs;
 	int			i;
 	int         contentsAND, contentsOR; 
-    qboolean   rotated, viewInWater;
+    qboolean	rotated, viewInWater;
 	int			cont[5];
-	vec3_t		org;
-	
+	vec3_t		org, tmp;
+	mat3_t		entityAxis;
+
 	if (currentmodel->nummodelsurfaces == 0)
 		return;
 
@@ -927,12 +927,9 @@ void R_DrawBrushModel(entity_t * e)
 	//Put camera into model space view angle for bmodels parallax
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
 		{
-		vec3_t	forward, right, up, temp;
-		VectorSubtract(r_origin, currententity->origin, temp);
-		AngleVectors (currententity->angles, forward, right, up);
-		BmodelViewOrg[0] = DotProduct (temp, forward);
-		BmodelViewOrg[1] = -DotProduct (temp, right);
-		BmodelViewOrg[2] = DotProduct (temp, up);
+		VectorSubtract(r_origin, currententity->origin, tmp);
+		AnglesToMat3(currententity->angles, entityAxis);
+		Mat3_TransposeMultiplyVector(entityAxis, tmp, BmodelViewOrg);
 		}
 	else
 		VectorSubtract(r_origin, currententity->origin, BmodelViewOrg);

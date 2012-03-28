@@ -86,7 +86,8 @@ typedef struct entity_s {
 	float origin[3];			// also used as RF_BEAM's "from"
 	int frame;					// also used as RF_BEAM's diameter
 	vec3_t currentLightPos;
-	int lightRad;
+	vec3_t nwmViewOrg;
+	float lightRad;
 
 //  float   model_scale;
 

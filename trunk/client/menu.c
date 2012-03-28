@@ -322,7 +322,6 @@ void M_Main_DrawQuad(float x, float y)
 	refdef.fov_x = 40;
 	refdef.fov_y = CalcFov(refdef.fov_x, refdef.width, refdef.height);
 	refdef.time = cls.realtime / 1.5;
-
 	xOffcet = 60;
 	yOffcet = 90;
 
@@ -338,11 +337,12 @@ void M_Main_DrawQuad(float x, float y)
 	entity.origin[0] = 80;
 	entity.origin[1] = 0;
 	entity.origin[2] = 0;
+	VectorCopy(refdef.vieworg, entity.nwmViewOrg);
 	VectorCopy(entity.origin, entity.oldorigin);
 	
 	VectorCopy(entity.origin, entity.currentLightPos);
 	entity.currentLightPos[0] -=50;
-	entity.currentLightPos[2] +=25;
+//	entity.currentLightPos[2] +=25;
 	entity.lightRad = 666; // Hail Satan!
 
 	entity.frame = 0;

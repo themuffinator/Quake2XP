@@ -126,7 +126,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	if(r_bumpAlias->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.0, 0.0, 0.0);
+			VectorSet(lightColor, 0.33, 0.33, 0.33);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
@@ -405,7 +405,9 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	vec3_t			normalArray[3*MAX_TRIANGLES], 
 					tangentArray[3*MAX_TRIANGLES], 
 					binormalArray[3*MAX_TRIANGLES], 
-					vertexArray[3*MAX_TRIANGLES]; 
+					vertexArray[3*MAX_TRIANGLES],
+					viewOrg, tmp;
+	mat3_t			entityAxis;
 	image_t			*skin, *skinNormalmap;
 	int				index2, oldindex2;
 	unsigned		defBits = 0;
@@ -500,8 +502,7 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	
 		}
 	}
-
-
+	
 	// setup program
 	GL_BindProgram(aliasBumpProgram, defBits);
 	id = aliasBumpProgram->id[defBits];
@@ -509,7 +510,13 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), rad);
 	qglUniform3fv(qglGetUniformLocation(id, "u_LightColor"), 1 , lightColor);
 	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , light);
-	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , r_newrefdef.vieworg);
+	
+	// move view org to modelspace
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	AnglesToMat3(currententity->angles, entityAxis);
+	Mat3_TransposeMultiplyVector(entityAxis, tmp, viewOrg);
+	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , viewOrg);
+	
 
 	GL_MBind(GL_TEXTURE0_ARB, skinNormalmap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), 0);
@@ -588,20 +595,13 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		vec3_t old;
-
-			diffuseColor[0] = 1.0;
-			diffuseColor[1] = 1.0;
-			diffuseColor[2] = 1.0;
-			VectorCopy(currententity->origin, light);
-			light[0] -=100;
-		//	light[2] +=100;
+		vec3_t color = {1,1,1}, hudLight;
 			
-			VectorSubtract(light, currententity->origin, tmp);
-			AnglesToMat3(currententity->angles, entityAxis);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);
+		VectorSubtract(currententity->currentLightPos, currententity->origin, tmp);
+		AnglesToMat3(currententity->angles, entityAxis);
+		Mat3_TransposeMultiplyVector(entityAxis, tmp, hudLight);
 
-			GL_DrawAliasFrameLerpArb(paliashdr, light, 256, diffuseColor);
+		GL_DrawAliasFrameLerpArb(paliashdr, hudLight, 256, color);
 
 	}
 	
