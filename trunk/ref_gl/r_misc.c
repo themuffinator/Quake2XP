@@ -206,7 +206,7 @@ void CreateShadowMask(void){
     qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0,
-                       GL_RGB, GL_UNSIGNED_BYTE, NULL );
+                       GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
 }
 
@@ -523,14 +523,15 @@ void GL_SetDefaultState(void)
 
 	qglAlphaFunc		(GL_GREATER, 0.6f);
 	glSampleCoverageARB	(0.1, true);	
-	
-	qglEnable			(GL_NORMALIZE);
+
 	qglDisable			(GL_DEPTH_TEST);
 	qglDisable			(GL_CULL_FACE);
+	qglDisable			(GL_STENCIL_TEST);
 	qglDisable			(GL_BLEND);
 	gl_state.blend		= (qboolean)false;
 
 	qglColor4f			(1, 1, 1, 1);
+	qglColorMask		(1, 1, 1, 1);
 
 	qglHint				(GL_GENERATE_MIPMAP_HINT_SGIS,		GL_NICEST);
 	qglHint				(GL_TEXTURE_COMPRESSION_HINT_ARB,	GL_NICEST);

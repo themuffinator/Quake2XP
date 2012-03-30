@@ -549,7 +549,7 @@ void R_ShadowBlend()
 		return;
 
 	shadowalpha = 1.0 - r_pplWorldAmbient->value;
-
+	
 	qglMatrixMode(GL_PROJECTION);
 	qglPushMatrix();
 	qglLoadIdentity();
@@ -589,6 +589,8 @@ void R_ShadowBlend()
 	GL_Blend(true, 0, 0);
 	GL_BindProgram(shadowProgram, defBits);
 	id = shadowProgram->id[defBits];
+	
+	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindRect(shadowMask->texnum);
 	
 	qglUniform1i(qglGetUniformLocation(id, "u_mask"), 0);
@@ -603,6 +605,7 @@ void R_ShadowBlend()
 	
 	GL_Blend(false, 0, 0);
 	GL_BindNullProgram();
+	GL_SelectTexture(GL_TEXTURE0_ARB);
 	qglDepthFunc(GL_LEQUAL);
 	qglDepthMask(1);
 	qglMatrixMode(GL_PROJECTION);

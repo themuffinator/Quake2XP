@@ -1103,7 +1103,7 @@ void R_DrawEntitiesLightPass(void)
 void R_RenderDistortModels(void)
 {
 	int i;
-	
+
 	qglDepthMask(0);
 	
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -1158,11 +1158,12 @@ if (r_noRefresh->value)
 	R_SetFrustum();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
+
 	R_DrawBSP();
 	R_RenderDecals();
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
-	
+
 	R_BlobShadow();
 	R_CastShadowVolumes();	
 	R_DrawEntitiesLightPass();
@@ -1373,6 +1374,46 @@ void R_VideoInfo_f(void){
 
 }
 
+void R_LowSpecMachine_f(void)
+{
+Cvar_Set("r_textureCompression", "1");
+Cvar_Set("r_maxTextureSize", "256");
+Cvar_Set("r_anisotropic", "1");
+Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_NEAREST");
+
+Cvar_Set("r_shadows", "0");
+Cvar_Set("r_drawFlares", "0");
+Cvar_Set("r_parallax", "0");
+Cvar_Set("r_bumpAlias", "0");
+Cvar_Set("r_bumpWorld", "0");
+Cvar_Set("r_bloom", "0");
+Cvar_Set("r_dof", "0");
+Cvar_Set("r_radialBlur", "0");
+Cvar_Set("r_softParticles", "0");
+
+vid_ref->modified = true;
+}
+
+void R_HiSpecMachine_f(void)
+{
+Cvar_Set("r_textureCompression", "0");
+Cvar_Set("r_maxTextureSize", "0");
+Cvar_Set("r_anisotropic", "16");
+Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
+
+Cvar_Set("r_shadows", "4");
+Cvar_Set("r_drawFlares", "1");
+Cvar_Set("r_parallax", "2");
+Cvar_Set("r_bumpAlias", "1");
+Cvar_Set("r_bumpWorld", "1");
+Cvar_Set("r_bloom", "1");
+Cvar_Set("r_dof", "1");
+Cvar_Set("r_radialBlur", "1");
+Cvar_Set("r_softParticles", "1");
+
+vid_ref->modified = true;
+}
+
 void R_RegisterCvars(void)
 {
 	r_leftHand =						Cvar_Get("hand", "0", CVAR_USERINFO | CVAR_ARCHIVE);
@@ -1469,14 +1510,16 @@ void R_RegisterCvars(void)
 
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 
-	Cmd_AddCommand("imagelist", GL_ImageList_f);
-	Cmd_AddCommand("screenshot", GL_ScreenShot_f);
-	Cmd_AddCommand("modellist", Mod_Modellist_f);
-	Cmd_AddCommand("openglInfo", GL_Strings_f);
-	Cmd_AddCommand("flaresStats", FlareStatsList_f);
-	Cmd_AddCommand("dumpEntityString", Dump_EntityString);
-	Cmd_AddCommand("glslInfo", R_ListPrograms_f);
-	Cmd_AddCommand("r_meminfo", R_VideoInfo_f);
+	Cmd_AddCommand("imagelist",			GL_ImageList_f);
+	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
+	Cmd_AddCommand("modellist",			Mod_Modellist_f);
+	Cmd_AddCommand("openglInfo",		GL_Strings_f);
+	Cmd_AddCommand("flaresStats",		FlareStatsList_f);
+	Cmd_AddCommand("dumpEntityString",	Dump_EntityString);
+	Cmd_AddCommand("glslInfo",			R_ListPrograms_f);
+	Cmd_AddCommand("r_meminfo",			R_VideoInfo_f);
+	Cmd_AddCommand("low_spec",			R_LowSpecMachine_f);
+	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
 	
 	
 	

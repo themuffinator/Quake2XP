@@ -539,10 +539,12 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	if(caustics || (s->flags & SURF_WATER))
 		qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
 
+	if(r_bumpWorld->value || r_parallax->value){
 	if(bmodel)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
 	else
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
+	}
 
 	if(r_parallax->value){
 	scale[0] = r_parallaxScale->value / image->width;
@@ -718,9 +720,11 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
 	}
 	r_currTex = s->texinfo->image->texnum;
+
+	GL_BindNullProgram();
 }
 	
-	GL_BindNullProgram();
+	
 }
 
 

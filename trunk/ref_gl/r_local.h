@@ -741,7 +741,6 @@ void R_CaptureColorBuffer();
 typedef struct {
 	unsigned	CausticsBit;
 	unsigned	ParallaxBit;
-	unsigned	OverBrightBit;
 	unsigned	LightmapBits;
 	unsigned	VertexLightBits;
 	unsigned	AlphaMaskBits;

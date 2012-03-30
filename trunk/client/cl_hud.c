@@ -267,7 +267,7 @@ void LoadHudEnts(void)
 void SCR_DrawHudModel(float x, float y, struct model_s *model)
 {
 	refdef_t refdef;
-	vec3_t mins, maxs, center, rad, oldView;
+	vec3_t mins, maxs, center, rad;
 	float scale, hud_sx, hud_sy;
 	float screenAspect, scaledHeight;
 	entity_t entity;
@@ -277,8 +277,6 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	
 	if (!model)
 		return;
-
-	VectorCopy(refdef.vieworg, oldView);
 
 	screenAspect = (float)viddef.width/(float)viddef.height;
 	scaledHeight = 320.0 / screenAspect;
@@ -317,11 +315,6 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	entity.backlerp = 0.0;
 	entity.angles[1] = anglemod(refdef.time*48);
 
-	VectorCopy(entity.origin, entity.currentLightPos);
-	entity.currentLightPos[0] -=100;
-	entity.currentLightPos[2] +=100;
-	entity.lightRad = 256.0;
-
 	if ( entity.angles[1] > 360 )	
 		entity.angles[1] -= 360;
 	
@@ -330,9 +323,7 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 
 	// Draw it
 	R_RenderFrame(&refdef, true);
-	
-	VectorCopy(oldView, refdef.vieworg);
-	VectorCopy(entity.oldorigin, entity.origin);
+	refdef.num_entities++;
 }
 
 

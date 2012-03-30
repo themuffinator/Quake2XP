@@ -337,18 +337,11 @@ void M_Main_DrawQuad(float x, float y)
 	entity.origin[0] = 80;
 	entity.origin[1] = 0;
 	entity.origin[2] = 0;
-	VectorCopy(refdef.vieworg, entity.nwmViewOrg);
 	VectorCopy(entity.origin, entity.oldorigin);
-	
-	VectorCopy(entity.origin, entity.currentLightPos);
-	entity.currentLightPos[0] -=50;
-//	entity.currentLightPos[2] +=25;
-	entity.lightRad = 666; // Hail Satan!
 
 	entity.frame = 0;
 	entity.oldframe = 0;
 	entity.backlerp = 0.0;
-	entity.lightRad = 300;
 	entity.angles[1] = cl.time * 0.09;
 	if (++yaw > 360)
 		yaw -= 360;
@@ -361,6 +354,7 @@ void M_Main_DrawQuad(float x, float y)
 
 	refdef.height += 4;
 	R_RenderFrame(&refdef, true);
+	refdef.num_entities++;
 }
 
 
@@ -4378,11 +4372,6 @@ void PlayerConfig_MenuDraw(void)
 		entity[0].origin[0] = 90;
 		entity[0].origin[1] = 0;
 		entity[0].origin[2] = -8;
-
-		VectorCopy(entity[0].origin, entity[0].currentLightPos);
-		entity[0].currentLightPos[0] -=100;
-		entity[0].currentLightPos[2] +=100;
-		entity[0].lightRad = 666; // Hail Satan!
 		
 		VectorCopy(entity[0].origin, entity[0].oldorigin);
 	
@@ -4421,11 +4410,6 @@ void PlayerConfig_MenuDraw(void)
 		entity[1].frame = entity[0].frame;
 		entity[1].oldframe = entity[0].oldframe;
 		entity[1].backlerp = entity[0].backlerp;
-
-		VectorCopy(entity[0].origin, entity[1].currentLightPos);
-		entity[1].currentLightPos[0] -=100;
-		entity[1].currentLightPos[2] +=100;
-		entity[1].lightRad = 666; // Shemhamforash!
 
 		refdef.num_entities++;
 		}
