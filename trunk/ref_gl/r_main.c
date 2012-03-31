@@ -1386,10 +1386,32 @@ Cvar_Set("r_drawFlares", "0");
 Cvar_Set("r_parallax", "0");
 Cvar_Set("r_bumpAlias", "0");
 Cvar_Set("r_bumpWorld", "0");
+Cvar_Set("r_pplMaxDlights", "8");
 Cvar_Set("r_bloom", "0");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "0");
 Cvar_Set("r_softParticles", "0");
+
+vid_ref->modified = true;
+}
+
+void R_MediumSpecMachine_f(void)
+{
+Cvar_Set("r_textureCompression", "1");
+Cvar_Set("r_maxTextureSize", "0");
+Cvar_Set("r_anisotropic", "8");
+Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
+
+Cvar_Set("r_shadows", "2");
+Cvar_Set("r_drawFlares", "1");
+Cvar_Set("r_parallax", "1");
+Cvar_Set("r_bumpAlias", "0");
+Cvar_Set("r_bumpWorld", "0");
+Cvar_Set("r_pplMaxDlights", "8");
+Cvar_Set("r_bloom", "1");
+Cvar_Set("r_dof", "0");
+Cvar_Set("r_radialBlur", "1");
+Cvar_Set("r_softParticles", "1");
 
 vid_ref->modified = true;
 }
@@ -1406,10 +1428,12 @@ Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "2");
 Cvar_Set("r_bumpAlias", "1");
 Cvar_Set("r_bumpWorld", "1");
+Cvar_Set("r_pplMaxDlights", "13");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "1");
 Cvar_Set("r_radialBlur", "1");
 Cvar_Set("r_softParticles", "1");
+Cvar_Set("r_fxaa", "1");
 
 vid_ref->modified = true;
 }
@@ -1519,6 +1543,7 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("glslInfo",			R_ListPrograms_f);
 	Cmd_AddCommand("r_meminfo",			R_VideoInfo_f);
 	Cmd_AddCommand("low_spec",			R_LowSpecMachine_f);
+	Cmd_AddCommand("medium_spec",		R_MediumSpecMachine_f);
 	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
 	
 	
