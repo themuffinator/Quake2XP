@@ -325,6 +325,6 @@ finalColor = tmp + finalColor;
 
 #endif
 
-gl_FragColor = finalColor * u_ColorModulate;
+gl_FragColor = vec4(finalColor.rgb, 1.0) * u_ColorModulate;
 
 }
