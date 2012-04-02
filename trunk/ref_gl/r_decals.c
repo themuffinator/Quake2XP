@@ -92,12 +92,13 @@ void R_RenderDecals(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-    qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    qglTexCoordPointer (2, GL_FLOAT, sizeof(vec2_t), DecalTexCoordArray[0]);
-    qglEnableClientState (GL_COLOR_ARRAY);
-    qglColorPointer (4, GL_FLOAT, sizeof(vec4_t), DecalColorArray[0]);
-    qglEnableClientState (GL_VERTEX_ARRAY);
-    qglVertexPointer (3, GL_FLOAT, sizeof(vec3_t), DecalVertexArray[0]);
+    qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_COLOR);
+
+    qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, DecalVertexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, DecalTexCoordArray);
+    qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, DecalColorArray);
      
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
@@ -209,10 +210,10 @@ void R_RenderDecals(void)
 	qglColorMask(1, 1, 1, 1);
     qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     qglDisable(GL_BLEND);
-    qglDisableClientState(GL_VERTEX_ARRAY);
-    qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    qglDisableClientState(GL_COLOR_ARRAY);
-    qglColor4f(1, 1, 1, 1);
+    qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+    qglDisableVertexAttribArray(ATRB_COLOR);
+	qglColor4f(1, 1, 1, 1);
     qglDepthMask(1);
     qglDisable(GL_POLYGON_OFFSET_FILL);
 	GL_BindNullProgram();

@@ -505,6 +505,12 @@ void R_ClearSkyBox(void)
 }
 
 
+vec2_t SkyTexCoordArray [2 * MAX_TRIANGLES];
+vec3_t SkyVertexArray	[3 * MAX_TRIANGLES];
+vec4_t SkyColorArray	[4 * MAX_TRIANGLES];
+unsigned	skyIndex[MAX_INDICES];
+static int numVerts, index;
+
 void MakeSkyVec(float s, float t, int axis)
 {
 	vec3_t v, b;
@@ -536,8 +542,20 @@ void MakeSkyVec(float s, float t, int axis)
 		t = sky_max;
 
 	t = 1.0 - t;
-	qglTexCoord2f(s, t);
-	qglVertex3fv(v);
+
+	VA_SetElem3(SkyVertexArray[numVerts],	v[0], v[1], v[2]);
+	VA_SetElem2(SkyTexCoordArray[numVerts], s, t);
+	VA_SetElem4(SkyColorArray[numVerts],	1, 1, 1, 1);
+
+	skyIndex[index++] = numVerts+0;
+	skyIndex[index++] = numVerts+1;
+	skyIndex[index++] = numVerts+3;
+	skyIndex[index++] = numVerts+3;
+	skyIndex[index++] = numVerts+1;
+	skyIndex[index++] = numVerts+2;
+
+	numVerts++;
+
 }
 
 /*
@@ -555,9 +573,15 @@ void R_DrawSkyBox(void)
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
-	qglColorMask(1, 1, 1, 1);
-	qglColor4f(1, 1, 1, 1);
 
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_COLOR);
+
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, SkyTexCoordArray);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, SkyVertexArray);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, SkyColorArray);
+	
 	if (skyrotate) {			// check for no sky at all
 		for (i = 0; i < 6; i++)
 			if (skymins[0][i] < skymaxs[0][i]
@@ -587,15 +611,20 @@ void R_DrawSkyBox(void)
 			continue;
 
 		GL_MBind(GL_TEXTURE0_ARB, sky_images[skytexorder[i]]->texnum);
-		qglBegin(GL_QUADS);
+		
+		numVerts = index = 0;
+		
 		MakeSkyVec(skymins[0][i], skymins[1][i], i);
 		MakeSkyVec(skymins[0][i], skymaxs[1][i], i);
 		MakeSkyVec(skymaxs[0][i], skymaxs[1][i], i);
 		MakeSkyVec(skymaxs[0][i], skymins[1][i], i);
-		qglEnd();
+
+		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, skyIndex);
 	}
 
-
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+    qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_BindNullProgram();
 	qglPopMatrix();
 
