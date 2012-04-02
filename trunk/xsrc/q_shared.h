@@ -20,6 +20,10 @@
 
 #endif
 
+#ifndef _WIN32
+#define _vsnprintf vsnprintf
+#endif
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>

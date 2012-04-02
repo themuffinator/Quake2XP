@@ -42,6 +42,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning(disable : 4312)
 #endif
 
+#ifndef _WIN32
+#define _vsnprintf vsnprintf
+#endif
 
 #include <assert.h>
 #include <math.h>

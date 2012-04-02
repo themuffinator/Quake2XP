@@ -1732,6 +1732,7 @@ void Q_free (void *buf)
 	free (buf);
 }
 
+#ifdef _WIN32
 
 typedef enum
 {
@@ -1880,6 +1881,14 @@ outta:
 		pop		edi
 	}
 }
+
+#else
+
+void Q_memcpy (void *dest, const void *src, const size_t count) {
+    memcpy(dest, src, count);
+}
+
+#endif
 
 /*
  =================
