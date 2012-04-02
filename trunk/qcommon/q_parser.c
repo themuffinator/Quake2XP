@@ -176,9 +176,11 @@ static qboolean Parser_SkipWhiteSpace (parser_t *parser, qboolean allowLineBreak
 
 		// skip /* */ comments
 		if (*parser->text == '/' && parser->text[1] == '*') {
+#ifdef _WIN32
 			// some VC6 compiler round-around fucking shit...
 			// do not remove!
 			_asm nop
+#endif
 
 			while (*parser->text && (*parser->text != '*' || parser->text[1] != '/')) {
 				if (*parser->text == '\n')

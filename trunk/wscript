@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 VERSION = '1.0'
-APPNAME = 'test'
+APPNAME = 'quake2xp'
 top = '.'
 out = 'build'
 
@@ -11,21 +11,15 @@ sources_glob = {
     'game' : [
         'game/*.c'
         ],
-    'xsrc' : [
+    'xatrix' : [
         'xsrc/*.c'
         ],
     '3zb2' : [
         '3zb2src97/*.c'
         ],
     'server' : [
-        'common/**/*.c',
-        'server/**/*.c',
-        'unix/glob.c',
-        'unix/hunk.c',
-        'unix/misc.c',
-        'unix/network.c',
-        'unix/signalhandler.c',
-        'unix/system.c'
+        'qcommon/*.c',
+        'server/*.c',
         ],
     'refresh' : [
         'refresh/**/*.c',
@@ -39,18 +33,9 @@ sources_glob = {
         'unix/qgl.c'
         ],
     'client' : [
-        'common/**/*.c',
-        'client/**/*.c',
-        'sdl/cd.c',
-        'sdl/sound.c',
-        'server/sv_*.c',
-        'unix/glob.c',
-        'unix/hunk.c',
-        'unix/misc.c',
-        'unix/network.c',
-        'unix/signalhandler.c',
-        'unix/system.c',
-        'unix/vid.c'
+        'client/*.c',
+        'qcommon/*.c',
+        'server/*.c',
         ]
 }
 
@@ -60,7 +45,7 @@ def options(opt):
 def configure(conf):
     conf.load('compiler_c')
     #conf.env['cshlib_PATTERN'] = '%s.so'
-    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'x11', 'xxf86vm']:
+    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'x11', 'xxf86vm', 'IL', 'ILU']:
         conf.check_cfg(package=lib, args=['--cflags', '--libs'])
 
 def build(bld):
@@ -83,8 +68,8 @@ def build(bld):
     # ambos casos
 
     a = bld.shlib(
-        source = sources['xsrc'],
-        target = 'baseq2/xgame',
+        source = sources['xatrix'],
+        target = 'xatrix/game',
         )
     a.env['cshlib_PATTERN'] = '%s.so'
 
@@ -95,13 +80,6 @@ def build(bld):
     a.env['cshlib_PATTERN'] = '%s.so'
 
     if False:
-        bld.program(
-            source = sources['server'],
-            target = 'q2ded',
-            cflags = ['-DDEDICATED_ONLY'],
-            lib = ['z', 'm', 'dl']
-        )
-
         a = bld.shlib(
             source = sources['refresh'],
             target = 'ref_gl',
@@ -111,8 +89,15 @@ def build(bld):
         a.env['cshlib_PATTERN'] = '%s.so'
 
         bld.program(
-            source = sources['client'],
-            target = 'quake2',
-            lib = ['z', 'm', 'dl'],
-            use = ['SDL', 'OGG', 'VORBIS', 'VORBISFILE']
+            source = sources['server'],
+            target = 'q2ded',
+            cflags = ['-DDEDICATED_ONLY'],
+            lib = ['z', 'm', 'dl']
         )
+
+    bld.program(
+        source = sources['client'],
+        target = 'quake2',
+        lib = ['z', 'm', 'dl'],
+        use = ['IL', 'ILU']
+    )

@@ -405,7 +405,7 @@ extern float   wTmu4Array[MAX_BATCH_SURFS][2];
 extern float   wTmu5Array[MAX_BATCH_SURFS][2];
 extern float   wTmu6Array[MAX_BATCH_SURFS][2];
 
-extern WORD	indexArray[MAX_BATCH_SURFS*3];
+extern int	indexArray[MAX_BATCH_SURFS*3];
 extern unsigned	numVertices, numIndeces;
 
 extern model_t *r_worldmodel;
@@ -820,10 +820,7 @@ void GLimp_AppActivate(qboolean active);
 void GLimp_EnableLogging(qboolean enable);
 void GLimp_LogNewFrame(void);
 
-#ifndef _WIN32
-#  error You should not be including this file on this platform
-#endif
-
+#ifdef _WIN32
 #ifndef __GLW_WIN_H__
 #define __GLW_WIN_H__
 
@@ -850,6 +847,7 @@ typedef struct
 
 extern glwstate_t glw_state;
 
+#endif
 #endif
 
 

@@ -20,7 +20,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "qcommon.h"
 #include "unzip.h" // unzip stuff thx to Vic
+#ifdef _WIN32
 #include <io.h>
+#else
+#include <glob.h>
+#endif
 
 
 
@@ -504,6 +508,8 @@ Sets fs_gamedir, adds the directory to the head of the path,
 then loads and adds pak1.pak pak2.pak ... 
 ================
 */
+#ifdef _WIN32
+
 void FS_AddGameDirectory (char *dir)
 {
 	searchpath_t		*search;
@@ -583,6 +589,84 @@ void FS_AddGameDirectory (char *dir)
 	}
 //--
 }
+
+#else
+
+void FS_AddGameDirectory (char *dir)
+{
+	searchpath_t		*search;
+	pack_t				*pak;
+	char				pakfile[MAX_OSPATH], dirstring[MAX_OSPATH];
+	int					handle;
+	glob_t              pglob;
+	char				pakfile_list[1024][MAX_OSPATH];
+	int					pakfile_count = 0, i;
+
+	strcpy (fs_gamedir, dir);
+
+	//
+	// add the directory to the search path
+	//
+	search = Z_Malloc (sizeof(searchpath_t));
+	strcpy (search->filename, dir);
+	search->next = fs_searchpaths;
+	fs_searchpaths = search;
+
+	// Build up a list of pak files to add to our search path
+	sprintf(dirstring,"%s/*.pak",dir);
+    if (glob(dirstring, 0, NULL, &pglob) != 0) {
+		for (i = 0; i < pglob.gl_pathc; i++) {
+			if (pglob.gl_pathv[i][0] == '.')
+				continue;
+			sprintf(pakfile,"%s/%s", dir, pglob.gl_pathv[i]);
+
+			strcpy(pakfile_list[pakfile_count],pakfile);
+			pakfile_count++;
+		}
+		globfree(&pglob);
+	}  
+
+	// Add each pak file from our list to the search path
+	for (i=0; i<pakfile_count; i++) {
+		pak = FS_LoadPackFile (pakfile_list[i]);
+		if (!pak) continue;
+
+		search = Z_Malloc (sizeof(searchpath_t));
+		search->pack = pak;
+		search->next = fs_searchpaths;
+		fs_searchpaths = search;		
+	}
+
+//-- also add zip pak files
+	pakfile_count=0;
+	sprintf(dirstring,"%s/*.pkx",dir);
+    if (glob(dirstring, 0, NULL, &pglob) != 0) {
+		for (i = 0; i < pglob.gl_pathc; i++) {
+			if (pglob.gl_pathv[i][0] == '.')
+				continue;
+			sprintf(pakfile,"%s/%s", dir, pglob.gl_pathv[i]);
+
+			strcpy(pakfile_list[pakfile_count],pakfile);
+			pakfile_count++;
+		}
+		globfree(&pglob);
+	}  
+
+  // Add each pak file from our list to the search path
+	for (i=0; i<pakfile_count; i++) {
+		pak = FS_LoadZipFile (pakfile_list[i]);
+		if (!pak)
+			continue;
+
+		search = Z_Malloc (sizeof(searchpath_t));
+		search->pack = pak;
+		search->next = fs_searchpaths;
+		fs_searchpaths = search;		
+	}
+//--
+}
+
+#endif
 
 /*
 ============

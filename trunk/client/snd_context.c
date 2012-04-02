@@ -155,7 +155,7 @@ qboolean AL_StartOpenAL(void)
 		al_device[2] = "DirectSound";
 		al_device[3] = "MMSYSTEM";
 		alConfig.device_count = 3;
-#elif
+#else
 		QAL_Shutdown();
 		return false;
 #endif

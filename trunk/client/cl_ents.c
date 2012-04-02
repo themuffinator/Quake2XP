@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // cl_ents.c -- entity parsing and management
 
 #include "client.h"
-#include "..\ref_gl\r_local.h"
+#include "../ref_gl/r_local.h"
 void vectoangles2(vec3_t value1, vec3_t angles);
 
 trace_t CL_Trace(vec3_t start, vec3_t end, float size, int contentmask)

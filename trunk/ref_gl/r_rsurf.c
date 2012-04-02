@@ -53,7 +53,7 @@ float   wTmu5Array[MAX_BATCH_SURFS][2];
 float   wTmu6Array[MAX_BATCH_SURFS][2];
 float	SurfColorArray[MAX_BATCH_SURFS][4];
 
-WORD	indexArray[MAX_BATCH_SURFS*3];
+int		indexArray[MAX_BATCH_SURFS*3];
 
 vec3_t	nTexArray[MAX_BATCH_SURFS];
 vec3_t	tTexArray[MAX_BATCH_SURFS];

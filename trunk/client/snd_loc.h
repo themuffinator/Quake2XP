@@ -198,15 +198,6 @@ extern LPEAXGETBUFFERMODE eaxGetBufferMode;
 
 void QAL_Shutdown(void);
 
-#elif __linux__
-
-#define AL_DRIVER_OPENAL	"/usr/lib/libopenal.so"
-#include "../linux/al_linux.h"
-
-#else
-
-#error "ALimp_* not available for this platform"
-
 #endif
 
 #define		MAX_SFX 4096
