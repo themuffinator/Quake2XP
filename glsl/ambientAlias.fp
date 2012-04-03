@@ -1,4 +1,5 @@
 varying	vec2		v_texCoord;
+varying	vec4		v_color;
 uniform sampler2D 	u_Diffuse;
 uniform sampler2D 	u_Add;
 
@@ -29,7 +30,7 @@ vec4 tmp;
 #endif
 
 vec4 color;
-r0 *= gl_Color;
+r0 *= v_color;
 r1 *= u_AddShift;
 color = r0+r1;
 

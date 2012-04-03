@@ -4,13 +4,14 @@ uniform vec2 u_screenSize;
 uniform vec2 u_depthParms;
 uniform float u_focus;  // = 512.0;
 uniform float u_bias;	// = 0.005; aperture - bigger values for shallower depth of field
- 
+
 float blurClamp = 3.0;  // max blur amount
 
 float DecodeDepth (const float d, const in vec2 parms) {
 	return parms.x / (parms.y - d);
 }
- 
+
+
 void main(void) 
 {
 		float aspectratio = u_screenSize.x / u_screenSize.y;

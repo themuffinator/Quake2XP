@@ -1,7 +1,9 @@
 attribute	vec2			a_texCoord;
 attribute	vec3			a_vertArray;
 attribute	vec3			a_normArray;
+attribute	vec4			a_colorArray;
 varying		vec2			v_texCoord;
+varying		vec4			v_color;
 uniform		float			u_scroll;
 
 void main ()
@@ -17,7 +19,7 @@ v_texCoord.t = r.y/m + 0.5;
 v_texCoord += u_scroll;
 #else
 v_texCoord = a_texCoord;
-gl_FrontColor = gl_Color;
+v_color = a_colorArray;
 #endif
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
