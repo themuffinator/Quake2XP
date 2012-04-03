@@ -306,6 +306,8 @@ cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;
 cvar_t	*r_tbnSmoothAngle;
 
+cvar_t	*r_filmGrain;
+
 cvar_t	*r_softParticles;
 cvar_t	*r_ignoreGlErrors;
 
@@ -380,6 +382,7 @@ void R_ThermalVision (void);
 void R_RadialBlur (void);
 void R_DofBlur (void);
 void R_FXAA(void);
+void R_FilmGrain (void);
 void R_ListPrograms_f(void);
 void R_InitPrograms(void);
 //====================================================================
@@ -733,6 +736,7 @@ glslProgram_t		*genericProgram;
 glslProgram_t		*cinProgram;
 glslProgram_t		*loadingProgram;
 glslProgram_t		*fxaaProgram;
+glslProgram_t		*filmGrainProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();

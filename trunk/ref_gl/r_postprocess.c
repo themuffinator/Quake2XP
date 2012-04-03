@@ -576,3 +576,36 @@ void R_FXAA (void) {
 	GL_SelectTexture	(GL_TEXTURE0_ARB);	
 
 }
+
+void R_FilmGrain (void) {
+	
+	unsigned	defBits = 0;
+	int			id;
+
+	if(!r_filmGrain->value)
+		return;
+
+    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+            return;
+
+	// setup program
+	GL_BindProgram(filmGrainProgram, defBits);
+	id = filmGrainProgram->id[defBits];
+
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+	GL_BindRect				(ScreenMap->texnum);
+    qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+	qglUniform1f			(qglGetUniformLocation(id, "u_scroll"), -3 * (r_newrefdef.time / 40.0));
+
+	qglBegin(GL_QUADS);
+    qglVertex2f(0, vid.height);
+    qglVertex2f(vid.width, vid.height);
+    qglVertex2f(vid.width, 0);
+    qglVertex2f(0, 0);
+    qglEnd();
+
+	GL_BindNullProgram		();
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+
+}

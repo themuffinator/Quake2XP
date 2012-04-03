@@ -1323,6 +1323,8 @@
     <None Include="..\..\baseq2\glsl\dof.defs" />
     <None Include="..\..\baseq2\glsl\dof.fp" />
     <None Include="..\..\baseq2\glsl\dof.vp" />
+    <None Include="..\..\baseq2\glsl\filmGrain.fp" />
+    <None Include="..\..\baseq2\glsl\filmGrain.vp" />
     <None Include="..\..\baseq2\glsl\gaussY.fp" />
     <None Include="..\..\baseq2\glsl\gaussX.fp" />
     <None Include="..\..\baseq2\glsl\gaussX.vp" />

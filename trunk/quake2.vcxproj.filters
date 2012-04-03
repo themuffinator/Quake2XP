@@ -520,6 +520,12 @@
     <None Include="..\..\baseq2\glsl\fxaa.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
+    <None Include="..\..\baseq2\glsl\filmGrain.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\..\baseq2\glsl\filmGrain.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\q2.rc">

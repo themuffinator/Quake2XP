@@ -96,6 +96,7 @@ int CL_PMpointcontents(vec3_t point);
 void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 {
 	vec3_t		vertexArray[3*MAX_TRIANGLES];
+	vec4_t		colorArray[4*MAX_TRIANGLES];
 	int			index_xyz;
 	int			i, j, jj =0;
 	dtriangle_t	*tris;
@@ -133,7 +134,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 		VectorSet(lightColor, 1,1,1);
 
 	
-	qglColor4f(lightColor[0], lightColor[1], lightColor[2], alpha);	
+//	qglColor4f(lightColor[0], lightColor[1], lightColor[2], alpha);	
 
 	// select skin
 	if (currententity->skin)
@@ -160,6 +161,13 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_COLOR);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, colorArray);
+
 	c_alias_polys += paliashdr->num_tris;
 	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
 	jj = 0;
@@ -170,6 +178,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			{
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+			VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], alpha);
 			}
 		}
 
@@ -198,16 +207,11 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
 	}
 
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
-
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 	
-	qglColor4f(1, 1, 1, 1);	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
 }

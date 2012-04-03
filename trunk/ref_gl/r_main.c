@@ -1253,6 +1253,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_ThermalVision();
 	R_DofBlur();
 	R_Bloom();
+	R_FilmGrain();
 	}
 
 	if (v_blend[3] && r_polyBlend->value) {
@@ -1531,7 +1532,7 @@ void R_RegisterCvars(void)
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	r_softParticles =					Cvar_Get("r_softParticles", "1", CVAR_ARCHIVE);
-
+	r_filmGrain = 						Cvar_Get("r_filmGrain", "0", CVAR_ARCHIVE);
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);

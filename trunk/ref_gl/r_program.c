@@ -599,6 +599,14 @@ void R_InitPrograms(void) {
 	}else
 		Com_Printf(S_COLOR_RED"Failed!\n");
 
+	Com_Printf("Load "S_COLOR_YELLOW"film grain program"S_COLOR_WHITE" ");
+	filmGrainProgram =  R_FindProgram("filmGrain", true, true);
+	
+	if(filmGrainProgram->valid){
+		Com_Printf("succeeded\n");
+	}else
+		Com_Printf(S_COLOR_RED"Failed!\n");
+
 	Com_Printf("\n");
 }
 
