@@ -715,21 +715,24 @@ void Con_DrawConsole(float frac)
 	// draw the download bar
 	// figure out width
 	if (cls.download) {
-		if ((text = strrchr(cls.downloadname, '/')) != NULL)
-			text++;
+        // avoid warnings of using a short* instead of char* in strrchr/strlen
+        char *textch = (char*)text;
+
+		if ((textch = strrchr(cls.downloadname, '/')) != NULL)
+			textch++;
 		else
-			text = cls.downloadname;
+			textch = cls.downloadname;
 
 		x = con.lineWidth - ((con.lineWidth * 7) * 0.025);
-		y = x - strlen(text) - 8;
+		y = x - strlen(textch) - 8;
 		i = con.lineWidth * 0.3333333333;
-		if (strlen(text) > i) {
+		if (strlen(textch) > i) {
 			y = x - i - 11;
-			strncpy(dlbar, text, i);
+			strncpy(dlbar, textch, i);
 			dlbar[i] = 0;
 			strcat(dlbar, "...");
 		} else
-			strcpy(dlbar, text);
+			strcpy(dlbar, textch);
 		strcat(dlbar, ": ");
 		i = strlen(dlbar);
 		dlbar[i++] = '\x80';

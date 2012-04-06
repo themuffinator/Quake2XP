@@ -60,7 +60,7 @@ float SV_CalcRoll (vec3_t angles, vec3_t velocity)
 	
 }
 
-extern qboolean blooddamage = false;
+qboolean blooddamage = false;
 
 /*
 ===============

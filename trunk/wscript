@@ -59,25 +59,28 @@ def build(bld):
         for pat in v:
             sources[k] += src_dir.ant_glob(pat)
 
-    a = bld.shlib(
+    # Game shared library environment
+    genv = bld.env.derive()
+    genv.append_value('CFLAGS', ['-Wno-pointer-to-int-cast'])
+    genv.cshlib_PATTERN = genv.cshlib_PATTERN.replace('lib', '')
+
+    bld.shlib(
         source = sources['game'],
         target = 'baseq2/game',
+        env = genv
         )
-    a.env['cshlib_PATTERN'] = '%s.so'
-    # TODO: hacer copia de env con esa modificación y pasarla como parámetro en
-    # ambos casos
 
-    a = bld.shlib(
+    bld.shlib(
         source = sources['xatrix'],
         target = 'xatrix/game',
+        env = genv
         )
-    a.env['cshlib_PATTERN'] = '%s.so'
 
-    a = bld.shlib(
+    bld.shlib(
         source = sources['3zb2'],
         target = '3zb2/game',
+        env = genv
         )
-    a.env['cshlib_PATTERN'] = '%s.so'
 
     if False:
         a = bld.shlib(
