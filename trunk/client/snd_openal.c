@@ -849,7 +849,9 @@ S_StartLocalSound
 */
 void S_StartLocalSound(ALuint bufferNum)
 {
+#ifdef _WIN32
 	EAXBUFFERPROPERTIES nullEAX;
+#endif
 	// long lDirect; // direct path level
 	// long lDirectHF; // direct path level at high frequencies
 	// long lRoom; // room effect level
@@ -1454,7 +1456,9 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		}
 
 		if (Flag_check(current_task, AL_TASK_MANAGER__EXECUTE)) {
+#ifdef _WIN32
 			EAXBUFFERPROPERTIES normalEAX;
+#endif
 
 			ALuint sourceNum = source_name[i];
 			alSourcef(sourceNum, AL_PITCH, 1);

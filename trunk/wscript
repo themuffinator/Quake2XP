@@ -17,25 +17,17 @@ sources_glob = {
     '3zb2' : [
         '3zb2src97/*.c'
         ],
-    'server' : [
-        'qcommon/*.c',
-        'server/*.c',
-        ],
-    'refresh' : [
-        'refresh/**/*.c',
-        'sdl/input.c',
-        'sdl/refresh.c',
-        'common/shared/flash.c',
-        'common/shared/shared.c',
-        'unix/glob.c',
-        'unix/hunk.c',
-        'unix/misc.c',
-        'unix/qgl.c'
-        ],
     'client' : [
-        'client/*.c',
+        'client/cl_*.c',
+        'client/keys.c',
+        'client/menu.c',
+        'client/qmenu.c',
+        'client/snd_mem.c',
+        'client/snd_openal.c',
         'qcommon/*.c',
         'server/*.c',
+        'ref_gl/*.c'
+        'linux/*.c'
         ]
 }
 
@@ -82,25 +74,9 @@ def build(bld):
         env = genv
         )
 
-    if False:
-        a = bld.shlib(
-            source = sources['refresh'],
-            target = 'ref_gl',
-            use = ['SDL', 'X11','XXF86VM']
-            #env = bld.env
-        )
-        a.env['cshlib_PATTERN'] = '%s.so'
-
-        bld.program(
-            source = sources['server'],
-            target = 'q2ded',
-            cflags = ['-DDEDICATED_ONLY'],
-            lib = ['z', 'm', 'dl']
-        )
-
     bld.program(
         source = sources['client'],
-        target = 'quake2',
+        target = 'quake2xp',
         lib = ['z', 'm', 'dl'],
         use = ['IL', 'ILU']
     )

@@ -187,6 +187,7 @@ extern LPEAXGETBUFFERMODE eaxGetBufferMode;
 //extern EAXGetBufferMode aleaxGetMode;
 
 
+
 /*
  =======================================================================
 
@@ -194,11 +195,7 @@ extern LPEAXGETBUFFERMODE eaxGetBufferMode;
 
  =======================================================================
 */
-#ifdef _WIN32
-
 void QAL_Shutdown(void);
-
-#endif
 
 #define		MAX_SFX 4096
 
