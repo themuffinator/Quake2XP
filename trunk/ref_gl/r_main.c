@@ -64,7 +64,11 @@ mat4x4_t r_project_matrix;
 // screen size info
 //
 refdef_t r_newrefdef;
+
+#ifdef _WIN32
 glwstate_t glw_state;
+#endif
+
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
 
 int GL_MsgGLError(char* Info)
@@ -1323,7 +1327,8 @@ void Dump_EntityString(void){
 
 
 void R_VideoInfo_f(void){
-	
+
+#ifdef _WIN32
 	int mem[4];
 	
 	if (strstr(gl_config.extensions_string, "GL_NVX_gpu_memory_info")) {
@@ -1369,10 +1374,8 @@ void R_VideoInfo_f(void){
         Com_Printf("RenderBuffer: largest auxiliary free block %i MB\n", mem[3] >> 10);
     }
 	else
+#endif
 		Com_Printf("MemInfo not availabled for your video card or driver!\n");
-
-
-
 }
 
 void R_LowSpecMachine_f(void)

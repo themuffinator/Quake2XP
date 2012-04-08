@@ -131,7 +131,9 @@ static void AllocChannels(void)
 {
 #define GPA(a) GetProcAddress(alConfig.hInstOpenAL, a);
 
+#ifdef _WIN32
 	LPALGENSOURCES alGenSources = (LPALGENSOURCES) GPA("alGenSources");
+#endif
 
 	if (alGenSources) {
 		s_openal_numChannels = MAX_CHANNELS + 1;	// +1 streaming
@@ -214,8 +216,10 @@ void S_Init(int hardreset)
 						AL_EXPONENT_DISTANCE,
 						AL_EXPONENT_DISTANCE_CLAMPED
 					};
+#ifdef _WIN32
 					LPALDISTANCEMODEL alDistanceModel =
 						(LPALDISTANCEMODEL) GPA("alDistanceModel");
+#endif
 					if (alDistanceModel)
 						alDistanceModel(modelName
 										[(int) s_distance_model->value -
@@ -224,11 +228,7 @@ void S_Init(int hardreset)
 
 				alListenerf(AL_GAIN, Com_Clamp(s_volume->value, 0, 1));
 				
-						
-
-#ifdef _WIN32
 				alConfig.eaxState = 0xFFFF;	// force EAX state reset
-#endif
 
 				if (hardreset) {
 					Cmd_AddCommand("play", S_Play);
@@ -242,6 +242,7 @@ void S_Init(int hardreset)
 
 					// Generate some AL Buffers for streaming
 					alGenBuffers(SND_STREAMING_NUMBUFFERS, uiBuffers);
+#ifdef _WIN32
 					if (!eaxSetBufferMode
 						(SND_STREAMING_NUMBUFFERS, uiBuffers,
 						 alGetEnumValue(" AL_STORAGE_ACCESSIBLE"))) {
@@ -250,6 +251,7 @@ void S_Init(int hardreset)
 						Com_DPrintf
 							("MP3 player: unable to set X-RAM mode\n");
 					} 
+#endif
 					// Streaming memory management
 					ulBufferSize = 0x10000;
 					pData = malloc(ulBufferSize);

@@ -27,7 +27,11 @@ Q_sincos
 ===========
 */
 
+#ifdef _WIN32
 #define Q_INLINE		__forceinline
+#else
+#define Q_INLINE __inline__
+#endif
 
 Q_INLINE void Q_sincos(float a, float *s, float *c) {
 #if defined _WIN32 && defined ASM_X86

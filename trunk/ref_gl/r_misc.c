@@ -485,8 +485,10 @@ void GL_ScreenShot_f(void)
 */
 void GL_Strings_f(void)
 {
-	char *string;
+	char *string = "";
+#ifdef _WIN32
 	string = (char*)glw_state.wglExtsString;
+#endif
 	Com_Printf("\n");
 	Com_Printf("GL_VENDOR:   "S_COLOR_GREEN"%s\n",		gl_config.vendor_string);
 	Com_Printf("GL_RENDERER: "S_COLOR_GREEN"%s\n",		gl_config.renderer_string);
@@ -499,8 +501,10 @@ void GL_UpdateSwapInterval()
 {
 	r_vsync->modified = (qboolean)false;
 
+#if _WIN32
 	if (qwglSwapIntervalEXT)
 			qwglSwapIntervalEXT(r_vsync->value);
+#endif
 }
 
 float lineAAwidth;

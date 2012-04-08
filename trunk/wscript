@@ -18,6 +18,7 @@ sources_glob = {
         '3zb2src97/*.c'
         ],
     'client' : [
+        'game/q_shared.c',
         'client/cl_*.c',
         'client/keys.c',
         'client/menu.c',
@@ -26,7 +27,7 @@ sources_glob = {
         'client/snd_openal.c',
         'qcommon/*.c',
         'server/*.c',
-        'ref_gl/*.c'
+        'ref_gl/*.c',
         'linux/*.c'
         ]
 }
@@ -36,8 +37,7 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_c')
-    #conf.env['cshlib_PATTERN'] = '%s.so'
-    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'x11', 'xxf86vm', 'IL', 'ILU']:
+    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'x11', 'xxf86vm', 'IL', 'ILU', 'openal']:
         conf.check_cfg(package=lib, args=['--cflags', '--libs'])
 
 def build(bld):
@@ -78,5 +78,5 @@ def build(bld):
         source = sources['client'],
         target = 'quake2xp',
         lib = ['z', 'm', 'dl'],
-        use = ['IL', 'ILU']
+        use = ['IL', 'ILU', 'OPENAL', 'SDL']
     )

@@ -2413,6 +2413,7 @@ void Mod_FreeAll(void)
 
 }
 
+#ifdef _WIN32
 /// from Tenebrae, asm by Berserker
 qboolean HasSharedLeafs(byte *v1, byte *v2)
 {
@@ -2460,3 +2461,11 @@ l3:
 	return true;
 
 }
+
+#else
+
+qboolean HasSharedLeafs(byte *v1, byte *v2) {
+    // TODO: write in C
+}
+
+#endif

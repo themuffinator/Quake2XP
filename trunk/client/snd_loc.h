@@ -35,7 +35,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  =======================================================================
 */
 
+#define VER_EAX_NONE	0
+#define VER_EFX			1
+#define VER_EAX_2		2
+#define VER_EAX_3		3
+#define VER_EAX_4		4
+#define VER_EAX_5		5
+#define VER_I3DL2		6
+
 //main OpenAL framework (Creative's hardware)
+#ifdef _WIN32
 #define AL_NO_PROTOTYPES YES
 #include "AL/al.h"
 #define ALC_NO_PROTOTYPES YES
@@ -49,14 +58,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //ancient architecture support (other hardware chips and workaround tricks)
 #include "AL/eax.h"
 #include "AL/3dl2.h"
-
-#define VER_EAX_NONE	0
-#define VER_EFX			1
-#define VER_EAX_2		2
-#define VER_EAX_3		3
-#define VER_EAX_4		4
-#define VER_EAX_5		5
-#define VER_I3DL2		6
 
 extern LPALCOPENDEVICE alcOpenDevice;
 extern LPALCCLOSEDEVICE alcCloseDevice;
@@ -186,6 +187,11 @@ extern LPEAXGETBUFFERMODE eaxGetBufferMode;
 //extern EAXSetBufferMode aleaxSetMode;
 //extern EAXGetBufferMode aleaxGetMode;
 
+#else
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/efx.h>
+#endif
 
 
 /*
@@ -228,11 +234,9 @@ typedef struct {
 	// OS dependency
 #ifdef _WIN32
 	HINSTANCE hInstOpenAL;
+#endif
 	unsigned eax;				// EAX version in use.
 	unsigned eaxState;			// EAX status
-#else
-	void* hInstOpenAL;
-#endif
 
 	// OpenAL internals
 	ALCdevice *hDevice;

@@ -23,27 +23,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #ifdef _WIN32
-
 #include <windows.h>
-
-
 #endif
 
 #include <stdio.h>
 #include <math.h>
 
-
 #include <GL/glu.h>
-
-
 
 #include "r_particle.h"
 
-
+#ifdef _WIN32
 #include "glext.h"
 #include <math.h>
-
-#ifdef _WIN32
 #include "wglext.h"
 
 #include "imagelib/il.h"
@@ -51,9 +43,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "imagelib/ilut.h"
 
 #else
+#include <GL/glext.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <IL/ilut.h>
+
+typedef void ILvoid;
+#define _inline inline
 #endif
 
 #include "../client/ref.h"
