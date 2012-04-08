@@ -28,7 +28,8 @@ sources_glob = {
         'qcommon/*.c',
         'server/*.c',
         'ref_gl/*.c',
-        'linux/*.c'
+        'linux/*.c',
+        'win32/r_qglwin.c'
         ]
 }
 

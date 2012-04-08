@@ -29,8 +29,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include <float.h>
 #include "../ref_gl/r_local.h"
-#include "glw_win.h"
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 
+#ifdef _WIN32
+#include "glw_win.h"
 
 extern const char * (WINAPI * qwglGetExtensionsStringARB) (HDC);
 extern BOOL (WINAPI * qwglGetPixelFormatAttribivARB) (HDC, int, int, UINT, const int *, int *);
@@ -42,9 +46,6 @@ const char * (WINAPI * qwglGetExtensionsStringEXT) (void);
 BOOL (WINAPI * qwglGetPixelFormatAttribivEXT) (HDC, int, int, UINT, int *, int *);
 BOOL (WINAPI * qwglGetPixelFormatAttribfvEXT) (HDC, int, int, UINT, int *, FLOAT *);
 BOOL (WINAPI * qwglChoosePixelFormatEXT) (HDC, const int *, const FLOAT *, UINT, int *, UINT *);
-
-
-
 
 int   ( WINAPI * qwglChoosePixelFormat )(HDC, CONST PIXELFORMATDESCRIPTOR *);
 int   ( WINAPI * qwglDescribePixelFormat) (HDC, int, UINT, LPPIXELFORMATDESCRIPTOR);
@@ -74,6 +75,11 @@ int  ( WINAPI * qwglGetLayerPaletteEntries)(HDC, int, int, int,
                                                 COLORREF *);
 BOOL ( WINAPI * qwglRealizeLayerPalette)(HDC, int, BOOL);
 BOOL ( WINAPI * qwglSwapLayerBuffers)(HDC, UINT);
+
+BOOL ( WINAPI * qwglSwapIntervalEXT)( int interval );
+BOOL ( WINAPI * qwglGetDeviceGammaRampEXT)( unsigned char *, unsigned char *, unsigned char * );
+BOOL ( WINAPI * qwglSetDeviceGammaRampEXT)( const unsigned char *, const unsigned char *, const unsigned char * );
+#endif
 
 void ( APIENTRY * qglAccum )(GLenum op, GLfloat value);
 void ( APIENTRY * qglAlphaFunc )(GLenum func, GLclampf ref);
@@ -415,9 +421,6 @@ void ( APIENTRY * qglViewport )(GLint x, GLint y, GLsizei width, GLsizei height)
 void ( APIENTRY * qglLockArraysEXT)( int, int);
 void ( APIENTRY * qglUnlockArraysEXT) ( void );
 
-BOOL ( WINAPI * qwglSwapIntervalEXT)( int interval );
-BOOL ( WINAPI * qwglGetDeviceGammaRampEXT)( unsigned char *, unsigned char *, unsigned char * );
-BOOL ( WINAPI * qwglSetDeviceGammaRampEXT)( const unsigned char *, const unsigned char *, const unsigned char * );
 void ( APIENTRY * qglPointParameterfEXT)( GLenum param, GLfloat value );
 void ( APIENTRY * qglPointParameterfvEXT)( GLenum param, const GLfloat *value );
 void ( APIENTRY * qglColorTableEXT)( int, int, int, int, int, const void * );
@@ -597,11 +600,13 @@ void QGL_Shutdown( void )
 {
 	if ( glw_state.hinstOpenGL )
 	{
+#ifdef _WIN32
 		FreeLibrary( glw_state.hinstOpenGL );
+#else
+        dlclose(glw_state.hinstOpenGL);
+#endif
 		glw_state.hinstOpenGL = NULL;
 	}
-
-	glw_state.hinstOpenGL = NULL;
 
 	qglAccum                     = NULL;
 	qglAlphaFunc                 = NULL;
@@ -940,6 +945,7 @@ void QGL_Shutdown( void )
 	qglVertexPointer             = NULL;
 	qglViewport                  = NULL;
 
+#ifdef _WIN32
 	qwglCopyContext              = NULL;
 	qwglCreateContext            = NULL;
 	qwglCreateLayerContext       = NULL;
@@ -971,6 +977,9 @@ void QGL_Shutdown( void )
 
 #	pragma warning (disable : 4113 4133 4047 )
 #	define GPA( a ) GetProcAddress( glw_state.hinstOpenGL, a )
+#else
+#	define GPA( a ) dlsym( glw_state.hinstOpenGL, a )
+#endif
 
 
 /*
@@ -985,7 +994,7 @@ void QGL_Shutdown( void )
 */
 qboolean QGL_Init()
 {
-
+#ifdef _WIN32
 	if ( ( glw_state.hinstOpenGL = LoadLibrary( "opengl32" ) ) == 0 )
 	{
 		char *buf = NULL;
@@ -994,6 +1003,12 @@ qboolean QGL_Init()
 		Con_Printf( PRINT_ALL, "%s\n", buf );
 		return false;
 	}
+#else
+	if ((glw_state.hinstOpenGL = dlopen("libGL.so", RTLD_LAZY)) == 0) {
+		Con_Printf( PRINT_ALL, "%s\n", dlerror() );
+        return false;
+    }
+#endif
 
 	qglAccum					 =  GPA( "glAccum" );
 	qglAlphaFunc                 =  GPA( "glAlphaFunc" );
@@ -1330,6 +1345,7 @@ qboolean QGL_Init()
 	qglVertexPointer             = 	GPA( "glVertexPointer" );
 	qglViewport                  = 	GPA( "glViewport" );
 
+#ifdef _WIN32
 	qwglCopyContext              = GPA( "wglCopyContext" );
 	qwglCreateContext            = GPA( "wglCreateContext" );
 	qwglCreateLayerContext       = GPA( "wglCreateLayerContext" );
@@ -1354,6 +1370,7 @@ qboolean QGL_Init()
 	qwglSwapBuffers              = GPA( "wglSwapBuffers" );
 
 	qwglSwapIntervalEXT = 0;
+#endif
 	qglPointParameterfEXT = 0;
 	qglPointParameterfvEXT = 0;
 	qglColorTableEXT = 0;
@@ -1366,9 +1383,4 @@ qboolean QGL_Init()
 	return true;
 }
 
-
-
 #pragma warning (default : 4113 4133 4047 )
-
-
-

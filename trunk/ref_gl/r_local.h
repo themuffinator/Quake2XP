@@ -820,12 +820,12 @@ void GLimp_AppActivate(qboolean active);
 void GLimp_EnableLogging(qboolean enable);
 void GLimp_LogNewFrame(void);
 
-#ifdef _WIN32
-#ifndef __GLW_WIN_H__
-#define __GLW_WIN_H__
+#ifndef __GLW_H__
+#define __GLW_H__
 
 typedef struct
 {
+#ifdef _WIN32
 	HINSTANCE	hInstance;
 	void	*wndproc;
 
@@ -842,12 +842,13 @@ typedef struct
 	const char	*wglExtsString;
 	const char	*wglRenderer;
 	int desktopWidth, desktopHeight;
-
+#else
+	void *hinstOpenGL;
+#endif
 } glwstate_t;
 
 extern glwstate_t glw_state;
 
-#endif
 #endif
 
 
