@@ -29,7 +29,8 @@ sources_glob = {
         'server/*.c',
         'ref_gl/*.c',
         'linux/*.c',
-        'win32/r_qglwin.c'
+        'win32/r_qglwin.c',
+        'win32/vid_menu.c'
         ]
 }
 
@@ -59,19 +60,19 @@ def build(bld):
 
     bld.shlib(
         source = sources['game'],
-        target = 'baseq2/game',
+        target = 'baseq2/gamexp',
         env = genv
         )
 
     bld.shlib(
         source = sources['xatrix'],
-        target = 'xatrix/game',
+        target = 'xatrix/gamexp',
         env = genv
         )
 
     bld.shlib(
         source = sources['3zb2'],
-        target = '3zb2/game',
+        target = '3zb2/gamexp',
         env = genv
         )
 

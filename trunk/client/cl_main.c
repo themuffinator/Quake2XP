@@ -1559,6 +1559,7 @@ void CL_InitLocal(void)
 															// MrG
 
 	cl_run = Cvar_Get("cl_run", "0", CVAR_ARCHIVE);
+
 	freelook = Cvar_Get("freelook", "1", CVAR_ARCHIVE);
 	lookspring = Cvar_Get("lookspring", "0", CVAR_ARCHIVE);
 	lookstrafe = Cvar_Get("lookstrafe", "0", CVAR_ARCHIVE);
