@@ -442,7 +442,9 @@ pack_t *FS_LoadPackFile (char *packfile)
 	
 
 	if(fs_OriginalPaksOnly->value){ //Load ONLY original q2 data!!!
+#ifdef _WIN32
 	strlwr(packfile);
+#endif
 	if (!strstr(packfile, "pak0.pak") && !strstr(packfile, "pak1.pak") && !strstr(packfile, "pak2.pak"))
 		return NULL;
 	}
@@ -596,7 +598,7 @@ void FS_AddGameDirectory (char *dir)
 {
 	searchpath_t		*search;
 	pack_t				*pak;
-	char				pakfile[MAX_OSPATH], dirstring[MAX_OSPATH];
+	char				dirstring[MAX_OSPATH];
 	int					handle;
 	glob_t              pglob;
 	char				pakfile_list[1024][MAX_OSPATH];
@@ -614,13 +616,9 @@ void FS_AddGameDirectory (char *dir)
 
 	// Build up a list of pak files to add to our search path
 	sprintf(dirstring,"%s/*.pak",dir);
-    if (glob(dirstring, 0, NULL, &pglob) != 0) {
+    if (glob(dirstring, 0, NULL, &pglob) == 0) {
 		for (i = 0; i < pglob.gl_pathc; i++) {
-			if (pglob.gl_pathv[i][0] == '.')
-				continue;
-			sprintf(pakfile,"%s/%s", dir, pglob.gl_pathv[i]);
-
-			strcpy(pakfile_list[pakfile_count],pakfile);
+			strcpy(pakfile_list[pakfile_count],pglob.gl_pathv[i]);
 			pakfile_count++;
 		}
 		globfree(&pglob);
@@ -640,13 +638,9 @@ void FS_AddGameDirectory (char *dir)
 //-- also add zip pak files
 	pakfile_count=0;
 	sprintf(dirstring,"%s/*.pkx",dir);
-    if (glob(dirstring, 0, NULL, &pglob) != 0) {
+    if (glob(dirstring, 0, NULL, &pglob) == 0) {
 		for (i = 0; i < pglob.gl_pathc; i++) {
-			if (pglob.gl_pathv[i][0] == '.')
-				continue;
-			sprintf(pakfile,"%s/%s", dir, pglob.gl_pathv[i]);
-
-			strcpy(pakfile_list[pakfile_count],pakfile);
+			strcpy(pakfile_list[pakfile_count],pglob.gl_pathv[i]);
 			pakfile_count++;
 		}
 		globfree(&pglob);

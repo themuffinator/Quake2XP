@@ -35,6 +35,9 @@ cvar_t         *r_fullscreen;
 viddef_t	viddef;		/* global video state; used by other modules */
 qboolean	reflib_active = 0;
 
+/* INPUT */
+void IN_Close();
+
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
 /*
@@ -229,11 +232,8 @@ void
 VID_Init(void)
 {
 
-	/*
-	 * Create the video variables so we know how to start the graphics
-	 * drivers
-	 */
-	/* if DISPLAY is defined, try X */
+	/* Create the video variables so we know how to start the graphics drivers */
+	vid_ref = Cvar_Get ("vid_ref", "xpgl", CVAR_ARCHIVE);
 	r_fullscreen = Cvar_Get("r_fullscreen", "1", CVAR_ARCHIVE);
 	r_gamma = Cvar_Get("r_gamma", "0.7", CVAR_ARCHIVE);
 

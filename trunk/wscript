@@ -48,6 +48,8 @@ def build(bld):
     src_dir = bld.srcnode
     #src_dir = bld.path.find_dir('src')
 
+    bld.env.append_value('CFLAGS', ['-g'])
+
     # Expand source files
     sources = {}
     for k, v in sources_glob.items():

@@ -1006,7 +1006,7 @@ qboolean QGL_Init()
 		return false;
 	}
 #else
-	if ((glw_state.hinstOpenGL = dlopen("libGL.so", RTLD_LAZY)) == 0) {
+	if ((glw_state.hinstOpenGL = dlopen("libGL.so.1", RTLD_LAZY)) == 0) {
 		Con_Printf( PRINT_ALL, "%s\n", dlerror() );
         return false;
     }
@@ -1267,6 +1267,9 @@ qboolean QGL_Init()
 	qglStencilFunc               = 	GPA( "glStencilFunc" );
 	qglStencilMask               = 	GPA( "glStencilMask" );
 	qglStencilOp                 = 	GPA( "glStencilOp" );
+#ifndef _WIN32
+    glSampleCoverageARB          =  GPA("glSampleCoverageARB");
+#endif
 	qglTexCoord1d                = 	GPA( "glTexCoord1d" );
 	qglTexCoord1dv               = 	GPA( "glTexCoord1dv" );
 	qglTexCoord1f                = 	GPA( "glTexCoord1f" );
