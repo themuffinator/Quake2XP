@@ -20,8 +20,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // r_main.c
 #include "r_local.h"
 
-viddef_t vid;
+#ifndef _WIN32
+#include <dlfcn.h>
+#define qwglGetProcAddress( a ) dlsym( glw_state.hinstOpenGL, a )
+#endif
 
+viddef_t vid;
 
 model_t *r_worldmodel;
 
@@ -65,9 +69,7 @@ mat4x4_t r_project_matrix;
 //
 refdef_t r_newrefdef;
 
-#ifdef _WIN32
 glwstate_t glw_state;
-#endif
 
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
 
@@ -520,9 +522,9 @@ void R_SetupFrame(void)
 INFINITY PERSPECTIVE
 ==================*/
 
-GLdouble nudge = 1.0 - 1.0 / ((GLdouble) (1 << 23));
+static GLdouble nudge = 1.0 - 1.0 / ((GLdouble) (1 << 23));
 
-GLdouble p[4][4] = {
+static GLdouble p[4][4] = {
 	{0.0, 0.0, 0.0, 0.0}
 	,
 	{0.0, 0.0, 0.0, 0.0}
@@ -2004,7 +2006,11 @@ void R_Shutdown(void)
 R_BeginFrame
 @@@@@@@@@@@@@@@@@@@@@
 */
+#ifdef _WIN32
 void UpdateGammaRamp();
+#else
+void UpdateHardwareGamma(void);
+#endif
 
 void R_BeginFrame()
 {
@@ -2023,9 +2029,13 @@ void R_BeginFrame()
 	if (r_gamma->modified) {
 		r_gamma->modified = false;
 
+#ifdef _WIN32
 		if (gl_state.gammaramp) {
 			UpdateGammaRamp();
 		}
+#else
+        UpdateHardwareGamma();
+#endif
 	}
 
 

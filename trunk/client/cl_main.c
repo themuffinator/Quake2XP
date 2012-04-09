@@ -1975,7 +1975,6 @@ FIXME: this is a callback from Sys_Quit and Com_Error.  It would be better
 to run quit through here before the final handoff to the sys code.
 ===============
 */
-void CDAudio_MixerShutdown (void);
 void CL_Shutdown(void)
 {
 	char	name[MAX_OSPATH];
@@ -1994,7 +1993,6 @@ void CL_Shutdown(void)
 	CL_WriteConfiguration();
 
 	CDAudio_Shutdown();
-	CDAudio_MixerShutdown(); 
 	S_Shutdown();
 	IN_Shutdown();
 	VID_Shutdown();

@@ -497,7 +497,7 @@ pack_t *FS_LoadPackFile (char *packfile)
 
 int SortList(const void *data1, const void *data2)
 {
-	return _stricmp((char *)data1, (char *)data2);
+	return Q_stricmp((char *)data1, (char *)data2);
 }
 
 /*

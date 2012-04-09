@@ -973,8 +973,10 @@ void QGL_Shutdown( void )
 
 	qwglGetDeviceGammaRampEXT = NULL;
 	qwglSetDeviceGammaRampEXT = NULL;
+#endif
 }
 
+#ifdef _WIN32
 #	pragma warning (disable : 4113 4133 4047 )
 #	define GPA( a ) GetProcAddress( glw_state.hinstOpenGL, a )
 #else

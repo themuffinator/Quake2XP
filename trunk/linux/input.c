@@ -391,7 +391,7 @@ IN_MLookUp ( void )
  * Initializes the backend
  */
 void
-IN_BackendInit ( void )
+IN_Init ( void )
 {
 	m_filter = Cvar_Get( "m_filter", "0", CVAR_ARCHIVE );
 
@@ -417,7 +417,7 @@ IN_BackendInit ( void )
  * Shuts the backend down
  */
 void
-IN_BackendShutdown ( void )
+IN_Shutdown ( void )
 {
 	Cmd_RemoveCommand( "+mlook" );
 	Cmd_RemoveCommand( "-mlook" );
@@ -429,7 +429,7 @@ IN_BackendShutdown ( void )
  * Mouse button handling
  */
 void
-IN_BackendMouseButtons ( void )
+IN_MouseButtons ( void )
 {
 	int i;
 
@@ -475,7 +475,7 @@ IN_BackendMouseButtons ( void )
  * Move handling
  */
 void
-IN_BackendMove ( usercmd_t *cmd )
+IN_Move ( usercmd_t *cmd )
 {
 	IN_GetMouseState( &mouse_x, &mouse_y, &mouse_buttonstate );
 	
@@ -554,3 +554,4 @@ IN_BackendMove ( usercmd_t *cmd )
 	}
 }
 
+void IN_Frame(void) {}

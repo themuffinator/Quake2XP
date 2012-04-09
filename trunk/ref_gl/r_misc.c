@@ -46,7 +46,11 @@ void CreateDSTTex_ARB (void)
 	unsigned char	dist[16][16][4];
 	int				x,y;
 
+#ifdef _WIN32
 	srand(GetTickCount());
+#else
+	srand(time(NULL));
+#endif
 	for (x=0; x<16; x++)
 		for (y=0; y<16; y++) {
 			dist[x][y][0] = rand()%255;

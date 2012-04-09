@@ -22,6 +22,8 @@
 /* Quake refresh engine. */
 
 #include "../client/client.h"
+#include "../client/input.h"
+#include "../client/keys.h"
 #include "../client/snd_loc.h"
 
 /* Console variables that we need to access from this module */
@@ -35,13 +37,6 @@ qboolean	reflib_active = 0;
 
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
-void IN_Close( void );
-
-void IN_BackendInit( void );
-void IN_BackendShutdown( void );
-
-extern void VID_MenuShutdown ( void );
-
 /*
  * ==========================================================================
  *
@@ -52,7 +47,7 @@ extern void VID_MenuShutdown ( void );
 
 #define	MAXPRINTMSG	4096
 void
-VID_Printf(int print_level, char *fmt,...)
+Con_Printf(int print_level, char *fmt,...)
 {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
@@ -155,7 +150,7 @@ void
 VID_FreeReflib(void)
 {
     IN_Close();
-    IN_BackendShutdown();
+    IN_Shutdown();
 	reflib_active = false;
 }
 
@@ -163,12 +158,12 @@ qboolean VID_StartRefresh()
 {
 	if (reflib_active) {
         IN_Close();
-        IN_BackendShutdown();
+        IN_Shutdown();
         R_Shutdown();
 		VID_FreeReflib();
 	}
 
-    IN_BackendInit();
+    IN_Init();
 
 	if (R_Init(0, 0) == -1)
 	{
@@ -257,11 +252,8 @@ VID_Shutdown(void)
 {
 	if (reflib_active) {
         IN_Close();
-        IN_BackendShutdown();
+        IN_Shutdown();
         R_Shutdown();
 		VID_FreeReflib();
 	}
-
-    // FIXME: is it needed?
-	VID_MenuShutdown();
 }

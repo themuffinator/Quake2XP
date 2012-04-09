@@ -1666,6 +1666,12 @@ void HACK_RecalcVertsLightNormalIdx (dmdl_t *pheader)
 
 }
 
+#ifndef _WIN32
+static inline vec_t max(vec_t a, vec_t b) {
+    return (a > b) ? a : b;
+}
+#endif
+
 void Mod_LoadAliasModelFx(model_t *mod, char *s){
 
 	char	*token;

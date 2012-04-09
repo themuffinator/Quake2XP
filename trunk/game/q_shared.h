@@ -42,10 +42,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning(disable : 4312)
 #endif
 
-#ifndef _WIN32
-#define _vsnprintf vsnprintf
-#endif
-
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -77,6 +73,9 @@ typedef enum {false, true}	qboolean;
 /* FIXME: Beware - _vsnprintf does not end with \0 - vsnprintf (*nix) does */
 #ifdef _WIN32
 #define vsnprintf	_vsnprintf
+#else
+#define _vsnprintf vsnprintf
+#define strcpy_s(dst,size,src) strncpy(dst,src,size)
 #endif
 
 //#ifdef _WIN32

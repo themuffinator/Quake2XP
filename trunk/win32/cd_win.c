@@ -670,6 +670,7 @@ void CDAudio_Shutdown(void)
 	CDAudio_Stop();
 	if (mciSendCommand(wDeviceID, MCI_CLOSE, MCI_WAIT, MCI_NULL))
 		Com_DPrintf("CDAudio_Shutdown: MCI_CLOSE failed\n");
+	CDAudio_MixerShutdown(); 
 }
 
 

@@ -390,8 +390,8 @@ cblock_t Huff1Decompress(cblock_t in)
 	return out;
 }
 
-byte data[0x40000], *p;
-long audio_bytes_cashed;
+static byte data[0x40000], *p;
+static long audio_bytes_cashed;
 
 /*
 willow: !!EXTREMELY BETA!!

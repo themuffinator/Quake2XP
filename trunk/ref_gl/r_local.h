@@ -604,6 +604,9 @@ typedef struct {
 
 // ----------------------------------------------------------------
 
+#ifndef _WIN32
+    qboolean hwgamma;
+#endif
 
 } glstate_t;
 
@@ -850,6 +853,5 @@ typedef struct
 extern glwstate_t glw_state;
 
 #endif
-
 
 #endif							/* R_LOCAL_H */

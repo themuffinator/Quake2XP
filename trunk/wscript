@@ -25,12 +25,14 @@ sources_glob = {
         'client/qmenu.c',
         'client/snd_mem.c',
         'client/snd_openal.c',
+        'client/snd_context.c',
         'qcommon/*.c',
         'server/*.c',
         'ref_gl/*.c',
         'linux/*.c',
         'win32/r_qglwin.c',
-        'win32/vid_menu.c'
+        'win32/vid_menu.c',
+        'game/m_flash.c'
         ]
 }
 
@@ -39,7 +41,7 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_c')
-    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'x11', 'xxf86vm', 'IL', 'ILU', 'openal']:
+    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'x11', 'xxf86vm', 'IL', 'ILU', 'ILUT', 'openal']:
         conf.check_cfg(package=lib, args=['--cflags', '--libs'])
 
 def build(bld):
@@ -80,5 +82,5 @@ def build(bld):
         source = sources['client'],
         target = 'quake2xp',
         lib = ['z', 'm', 'dl'],
-        use = ['IL', 'ILU', 'OPENAL', 'SDL']
+        use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL', 'X11', 'XXF86VM']
     )
