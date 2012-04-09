@@ -115,7 +115,7 @@ void Parser_Error (parser_t *parser, const char *msg, ...) {
 		return;
 
 	va_start(argptr, msg);
-	_vsnprintf(string, sizeof(string), msg, argptr);
+	vsnprintf(string, sizeof(string), msg, argptr);
 	va_end(argptr);
 
 	Com_Error(ERR_DROP, "%s, line %i: %s", parser->name, parser->line, string);
@@ -135,7 +135,7 @@ void Parser_Warning (parser_t *parser, const char *msg, ...) {
 		return;
 
 	va_start(argptr, msg);
-	_vsnprintf(string, sizeof(string), msg, argptr);
+	vsnprintf(string, sizeof(string), msg, argptr);
 	va_end(argptr);
 
 	Com_Printf("%s, line %i: %s", parser->name, parser->line, string);

@@ -25,9 +25,9 @@
  * =======================================================================
  */
 
-#include <stdio.h>
 #include <SDL.h>
 #include "../qcommon/qcommon.h"
+#include "../client/cdaudio.h"
 
 static qboolean cdValid = false;
 static qboolean initialized = false;

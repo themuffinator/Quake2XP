@@ -162,7 +162,6 @@ UpdateHardwareGamma(void)
  */
 static qboolean GLimp_InitGraphics( qboolean fullscreen )
 {
-	int counter = 0;
 	int flags;
 	int stencil_bits;
 	

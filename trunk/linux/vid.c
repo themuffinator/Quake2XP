@@ -35,9 +35,6 @@ cvar_t         *r_fullscreen;
 viddef_t	viddef;		/* global video state; used by other modules */
 qboolean	reflib_active = 0;
 
-/* INPUT */
-void IN_Close();
-
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
 /*
@@ -152,21 +149,15 @@ VID_NewWindow(int width, int height)
 void
 VID_FreeReflib(void)
 {
-    IN_Close();
-    IN_Shutdown();
 	reflib_active = false;
 }
 
 qboolean VID_StartRefresh()
 {
 	if (reflib_active) {
-        IN_Close();
-        IN_Shutdown();
         R_Shutdown();
 		VID_FreeReflib();
 	}
-
-    IN_Init();
 
 	if (R_Init(0, 0) == -1)
 	{
@@ -251,8 +242,6 @@ void
 VID_Shutdown(void)
 {
 	if (reflib_active) {
-        IN_Close();
-        IN_Shutdown();
         R_Shutdown();
 		VID_FreeReflib();
 	}

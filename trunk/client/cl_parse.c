@@ -598,12 +598,12 @@ void CL_LoadClientinfo(clientinfo_t * ci, char *s)
 					"/players/%s/%s_i.pcx", model_name, skin_name);
 		ci->icon = Draw_FindPic(ci->iconname);
 	}
-	if(!strcmp(model_name, "cyborg")|| !strcmp(model_name, "male") || !strcmp(model_name, "female"))
+	if (!strcmp(model_name, "cyborg")|| !strcmp(model_name, "male") || !strcmp(model_name, "female"))
 	{
-	strcpy_s(ci->sex, sizeof(ci->sex), model_name);
-	Cvar_ForceSet ("gender", ci->sex);
-	}else
-		strcpy_s(ci->sex, sizeof(ci->sex), "null");
+        strncpy(ci->sex, model_name, sizeof(ci->sex));
+        Cvar_ForceSet ("gender", ci->sex);
+	} else
+        strncpy(ci->sex, "null", sizeof(ci->sex));
 	
 	
 	// must have loaded all data types to be valud

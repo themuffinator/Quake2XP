@@ -26,13 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef _WIN32
 #  include <windows.h>
-#endif
-
-//#include <GL/gl.h>
-
-#ifdef __linux__
-//#include <GL/fxmesa.h>
-#include <GL/glx.h>
+#else
+#  include <GL/glx.h>
 #endif
 
 qboolean QGL_Init();

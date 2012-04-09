@@ -41,8 +41,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #endif
 
-#ifndef _WIN32
-#define _vsnprintf vsnprintf
+/* FIXME: Beware - _vsnprintf does not end with \0 - vsnprintf (*nix) does */
+#ifdef _WIN32
+#define vsnprintf _vsnprintf
 #endif
 
 #include <assert.h>

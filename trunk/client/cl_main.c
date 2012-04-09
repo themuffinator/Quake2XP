@@ -1932,10 +1932,9 @@ void CL_Init(void)
 	if (dedicated->value)
 		return;					// nothing running on the client
 
-	// all archived variables will now be loaded
-
-//	Con_Init();
-#if defined __linux__ || defined __sgi
+// FIXME: if it works on both, just remove the #if
+//#if defined __linux__ || defined __sgi
+#if 0
 	S_Init(1);
 
 	VID_Init();
@@ -1960,10 +1959,8 @@ void CL_Init(void)
 	CL_InitLocal();
 	IN_Init();
 
-//  Cbuf_AddText ("exec autoexec.cfg\n");
 	FS_ExecAutoexec();
 	Cbuf_Execute();
-
 }
 
 

@@ -8,20 +8,18 @@
 # video
 # - add gamma/stencil to glw_state
 # - check for WGL extensions with GLX in Linux
-# - support windowed mode and grab mouse
-# - try setting gamma from SDL
-# input
-# - do not init/deinit twice, add check
+# - support windowed mode and grab mouse, alt-enter, etc
+# - try setting gamma from SDL instead of X11/GLX
 # sys
 # - implement Sys_GetClipboardData with X11 calls?
-# - avi export
 # other
-# - use network code from Yamagi Q2
 # - use system.c and related from Yamagi Q2
 # - use uint64_t for x86-64 in HasSharedLeafs at ref_gl/r_model.c
-# - clean up or remove snd_efx.c and other unused sources and headers
-# - change _vsnprintf to vsnprintf, not the other way around
+# - remove unused files: client/asm_i386.h, client/block16.h, client/block8.h,
+#   client/x86.c, null/*
 # - fix warnings with -Wall, or disable
+# - use same variable names in linux/ as in win32/ where needed
+# - change all strcpy/strncpy to Q_strncpyz
 
 
 VERSION = '1.0'
@@ -72,6 +70,7 @@ def build(bld):
     #src_dir = bld.path.find_dir('src')
 
     bld.env.append_value('CFLAGS', ['-g'])
+    #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
 
     # Expand source files
     sources = {}

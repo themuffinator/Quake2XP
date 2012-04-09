@@ -47,7 +47,6 @@ qboolean AL_StartOpenAL (void);
 
 qboolean AL_Init (int hardreset)
 {
-    char	path[MAX_OSPATH];
     Com_Printf("\n");
     Com_Printf("==="S_COLOR_YELLOW"Starting OpenAL audio subsystem"S_COLOR_WHITE"===\n");
     Com_Printf("\n");

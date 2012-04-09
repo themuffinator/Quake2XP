@@ -1320,7 +1320,7 @@ void Dump_EntityString(void){
 		return;
 	}
 
-	fprintf(f, buf);
+	fputs(buf, f);
 
 	fclose(f);
 
@@ -1681,11 +1681,6 @@ int R_Init(void *hinstance, void *hWnd)
 	
 	Cvar_Set("scr_drawall", "0");
 
-#ifdef __linux__
-	Cvar_SetValue("r_vsync", 1);
-#endif
-
-	
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");
 	Com_Printf(S_COLOR_GREEN"Checking Basic Quake II XP Extensions\n");
@@ -1986,7 +1981,6 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("modellist");
 	Cmd_RemoveCommand("screenshot");
 	Cmd_RemoveCommand("imagelist");
-	Cmd_RemoveCommand("glstrings");
 	Cmd_RemoveCommand("flaresStats");
 	Cmd_RemoveCommand("dumpEntityString");
 	Cmd_RemoveCommand("r_meminfo");	

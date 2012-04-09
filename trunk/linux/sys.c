@@ -392,15 +392,7 @@ main(int argc, char **argv)
 			mytime = newtime - oldtime;
 		} while (mytime < 1);
 
-#if 0
-		// Heffo - AVI Export
-		if(avi_fps && avi_fps->value)
-		{
-			curtime += (1000/avi_fps->value);
-			Qcommon_Frame(1000/avi_fps->value);
-		} else
-#endif
-			Qcommon_Frame(mytime);
+		Qcommon_Frame(mytime);
 
 		oldtime = newtime;
 	}

@@ -72,10 +72,9 @@ typedef enum {false, true}	qboolean;
 
 /* FIXME: Beware - _vsnprintf does not end with \0 - vsnprintf (*nix) does */
 #ifdef _WIN32
+// Ale: defined the other way around, so it can be changed to _vsnprintf_s()
+// or a local version which terminates the string in Windows
 #define vsnprintf	_vsnprintf
-#else
-#define _vsnprintf vsnprintf
-#define strcpy_s(dst,size,src) strncpy(dst,src,size)
 #endif
 
 //#ifdef _WIN32

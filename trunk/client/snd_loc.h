@@ -191,6 +191,7 @@ extern LPEAXGETBUFFERMODE eaxGetBufferMode;
 #define _WITH_EAX
 
 #else
+#define AL_ALEXT_PROTOTYPES
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/efx.h>

@@ -330,18 +330,6 @@ void IN_Update(void)
   IN_Update_Flag = 0;
 }
 
-/* 
- * Closes all inputs and clears
- * the input queue.
- */
-void IN_Close(void)
-{
-	keyq_head = 0;
-	keyq_tail = 0;
-	
-	memset(keyq, 0, sizeof(keyq));
-}
-
 /*
  * Gets the mouse state
  */
@@ -419,6 +407,11 @@ IN_Init ( void )
 void
 IN_Shutdown ( void )
 {
+    // clears the input queue
+	keyq_head = 0;
+	keyq_tail = 0;
+	memset(keyq, 0, sizeof(keyq));
+
 	Cmd_RemoveCommand( "+mlook" );
 	Cmd_RemoveCommand( "-mlook" );
 	Cmd_RemoveCommand( "force_centerview" );
