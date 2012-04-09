@@ -1017,7 +1017,7 @@ qboolean GLimp_InitGL (void)
 		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribivARB");
         qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
         qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)qwglGetProcAddress("wglChoosePixelFormatARB");
-		glSampleCoverageARB				= (PFNGLSAMPLECOVERAGEARBPROC) qwglGetProcAddress("glSampleCoverageARB");
+        // glSampleCoverageARB was here, but was moved to r_qglwin.c which is also used in Linux
 	
 	} 
 	else {

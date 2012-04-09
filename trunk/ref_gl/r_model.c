@@ -2470,8 +2470,48 @@ l3:
 
 #else
 
+#if 0
+// original version from Tenebrae
 qboolean HasSharedLeafs(byte *v1, byte *v2) {
-    // TODO: write in C
+
+	int i;
+
+	for (i=0 ; i<r_worldmodel->numleafs ; i++)
+	{
+		if (v1[i>>3] & (1<<(i&7)))
+		{
+			if (v2[i>>3] & (1<<(i&7))) 
+				return true;
+		}
+	}
+	return false;
 }
+#else
+// optiimized version based on previous assembly one
+// TODO_ALE: use uint64_t for x86-64?
+qboolean HasSharedLeafs(byte *v1, byte *v2) {
+	int numleafs = r_worldmodel->numleafs;
+    int i;
+
+    while (numleafs > 32) {
+        uint32_t *v1_x4 = (uint32_t*)v1;
+        uint32_t *v2_x4 = (uint32_t*)v2;
+        if (*v1_x4 & *v2_x4)
+            return true;
+
+        numleafs -= 32;
+        v1 += 4;
+        v2 += 4;
+    }
+
+    for (i = 0; i < numleafs; i++) {
+        if (v1[i>>3] & (1<<(i&7)))
+            if (v2[i>>3] & (1<<(i&7)))
+                return true;
+    }
+
+    return false;
+}
+#endif
 
 #endif

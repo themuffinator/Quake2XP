@@ -56,7 +56,7 @@ unsigned s_openal_numChannels;
 
 static struct rbtree *knownsounds;
 
-#ifdef _WIN32
+#ifdef _WITH_EAX
 const GUID DSPROPSETID_EAX20_ListenerProperties =
 	{ 0x306a6a8, 0xb224, 0x11d2, {0x99, 0xe5, 0x0, 0x0, 0xe8, 0xd8, 0xc7,
 								  0x22} };
@@ -242,7 +242,7 @@ void S_Init(int hardreset)
 
 					// Generate some AL Buffers for streaming
 					alGenBuffers(SND_STREAMING_NUMBUFFERS, uiBuffers);
-#ifdef _WIN32
+#ifdef _WITH_EAX
 					if (!eaxSetBufferMode
 						(SND_STREAMING_NUMBUFFERS, uiBuffers,
 						 alGetEnumValue(" AL_STORAGE_ACCESSIBLE"))) {
@@ -619,8 +619,6 @@ openal_channel_t *PickChannel_NEW(unsigned int entNum,
 void S_fastsound(vec3_t origin, int entnum, int entchannel,
 				 ALuint bufferNum, ALfloat gain, ALfloat rolloff_factor)
 {
-// mattn: currently commented out - no eax on linux
-#ifdef _WIN32
 	openal_channel_t *ch;
 	ALuint sourceNum;
 
@@ -637,7 +635,9 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 	}
 
 	if (ch) {
+#ifdef _WITH_EAX
 		EAXBUFFERPROPERTIES normalEAX;
+#endif
 //      VectorCopy(ps->origin, ch->position);
 		ch->bufferNum = bufferNum;	// ch->sfx = sfx;
 
@@ -668,6 +668,7 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 		alSourcef(sourceNum, AL_ROLLOFF_FACTOR, rolloff_factor);
 		alSourcef(sourceNum, AL_GAIN, gain);
 
+#ifdef _WITH_EAX
 		normalEAX.lDirect = 0;	// direct path level
 		normalEAX.lDirectHF = 0;	// direct path level at high
 									// frequencies
@@ -703,10 +704,10 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 			EAXBUFFERFLAGS_ROOMHFAUTO;
 
 		alSource_EAX_All(sourceNum, &normalEAX);
+#endif
 
 		alSourcePlay(sourceNum);
 	}
-#endif
 }
 
 void S_fastsound_queue(vec3_t origin, int entnum, int entchannel,
@@ -896,7 +897,7 @@ void S_StartLocalSound(ALuint bufferNum)
 			alSourcei(sourceNum, AL_LOOPING, AL_FALSE);
 			alSourcef(sourceNum, AL_GAIN, 0.47);
 
-#ifdef _WIN32
+#ifdef _WITH_EAX
 			// alSource_EAX_Flags(sourceNum, 0); //willow: should be no
 			// EAX effects!
 			nullEAX.lDirect = 0;	// direct path level
@@ -1148,7 +1149,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		alSpeedOfSound(13515);
 
 
-#ifdef _WIN32
+#ifdef _HAVE_EAX
 //willow: mattn sure we have EAX on win only, so do i
 	// If EAX is enabled, apply listener environmental effects
 	if (alConfig.eax >= 2 && alConfig.eax <= 5) {
@@ -1458,7 +1459,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		}
 
 		if (Flag_check(current_task, AL_TASK_MANAGER__EXECUTE)) {
-#ifdef _WIN32
+#ifdef _WITH_EAX
 			EAXBUFFERPROPERTIES normalEAX;
 #endif
 
@@ -1479,7 +1480,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 			alSourcei(sourceNum, AL_LOOPING, FlagAL_checkAL(ch, AL_FLAGS_AL_LOOPING));	// ch->loopSound);
 			alSourcef(sourceNum, AL_GAIN, current_task->TASK_AL_GAIN);
 
-#ifdef _WIN32
+#ifdef _WITH_EAX
 		normalEAX.lDirect = 0;	// direct path level
 			normalEAX.lDirectHF = 0;	// direct path level at high
 										// frequencies
