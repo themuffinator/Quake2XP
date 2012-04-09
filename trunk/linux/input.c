@@ -554,4 +554,7 @@ IN_Move ( usercmd_t *cmd )
 	}
 }
 
-void IN_Frame(void) {}
+void IN_Frame(void)
+{
+    IN_MouseButtons();
+}
