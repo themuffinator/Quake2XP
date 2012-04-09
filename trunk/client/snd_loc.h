@@ -188,8 +188,6 @@ extern LPEAXGETBUFFERMODE eaxGetBufferMode;
 //extern EAXGetBufferMode aleaxGetMode;
 
 // Linux has EFX support, so I have replaced _WIN32 checks with _WITH_EAX
-// TODO_ALE: port EAX effects to EFX or equivalent OpenAL calls if possible
-// TODO_ALE: clean up or remove snd_efx.c and other unused files
 #define _WITH_EAX
 
 #else
@@ -240,7 +238,6 @@ typedef struct {
 #ifdef _WIN32
 	HINSTANCE hInstOpenAL;
 #else
-    // TODO_ALE: for now OpenAL is linked at compile time in Linux, we need to rename al* to qal* like with gl function pointers
     //void *hInstOpenAL;
 #endif
 	unsigned eax;				// EAX version in use.

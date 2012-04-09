@@ -289,7 +289,6 @@ Sys_SendKeyEvents(void)
 	sys_frame_time = Sys_Milliseconds();
 }
 
-// TODO_ALE: implement if necessary
 char *Sys_GetClipboardData(void) {
     return NULL;
 }
@@ -393,7 +392,6 @@ main(int argc, char **argv)
 			mytime = newtime - oldtime;
 		} while (mytime < 1);
 
-// TODO_ALE: implement
 #if 0
 		// Heffo - AVI Export
 		if(avi_fps && avi_fps->value)

@@ -112,7 +112,7 @@ ALuint S_FindName(char *name, qboolean create)
 	} else {
 		// Upload the sound
 		alGenBuffers(1, &known_sfx_bufferNum[i]);
-#ifdef _WIN32
+#ifdef _WITH_EAX
 		if (!eaxSetBufferMode
 			(1, &known_sfx_bufferNum[i],
 			 alGetEnumValue("AL_STORAGE_HARDWARE"))) {
@@ -149,7 +149,7 @@ void S_fastsound_get_descriptors_pool(unsigned count,
 
 	// "AL_STORAGE_AUTOMATIC" "AL_STORAGE_HARDWARE"
 	// "AL_STORAGE_ACCESSIBLE"
-#ifdef _WIN32
+#ifdef _WITH_EAX
 	if (!eaxSetBufferMode
 		(count, descriptors_pool, alGetEnumValue("AL_STORAGE_HARDWARE")))
 		Com_DPrintf("S_fastsound: unable to set X-RAM mode\n");

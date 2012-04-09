@@ -929,7 +929,6 @@ void GL_EndBuildingLightmaps(void);
 void GL_BeginBuildingLightmaps(model_t * m);
 
 
-int FS_filelength2 (FILE *f);
 extern cvar_t	*r_tbnSmoothAngle;
 /*
 =================
@@ -2487,8 +2486,7 @@ qboolean HasSharedLeafs(byte *v1, byte *v2) {
 	return false;
 }
 #else
-// optiimized version based on previous assembly one
-// TODO_ALE: use uint64_t for x86-64?
+// optimized version based on previous assembly one
 qboolean HasSharedLeafs(byte *v1, byte *v2) {
 	int numleafs = r_worldmodel->numleafs;
     int i;

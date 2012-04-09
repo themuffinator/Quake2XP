@@ -18,9 +18,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 #include <ctype.h>
-#ifdef _WIN32
-#include <io.h>
-#endif
 #include "client.h"
 #include "../client/qmenu.h"
 #include "snd_loc.h"
@@ -3116,13 +3113,10 @@ void StartServer_MenuInit( void )
 	}
 	else
 	{
-#ifdef _WIN32
-		length = filelength( fileno( fp  ) );
-#else
 		fseek(fp, 0, SEEK_END);
 		length = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
-#endif
+
 		buffer = (char*)malloc( length );
 		fread( buffer, length, 1, fp );
 	}

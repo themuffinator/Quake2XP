@@ -40,8 +40,6 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/xf86vmode.h>
 
-// TODO_ALE: add gamma/stencil to glw_state, and possibly check for other WGL extensions with GLX
-
 SDL_Surface		*surface;
 glwstate_t		glw_state;
 qboolean		have_stencil = false;

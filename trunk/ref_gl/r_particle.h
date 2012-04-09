@@ -1,3 +1,5 @@
+#ifndef _R_PARTICLE_H_
+#define _R_PARTICLE_H_
 
 #define PT_DEFAULT 0
 #define PT_BUBBLE  1
@@ -48,3 +50,5 @@
 #define DF_OVERBRIGHT	1
 #define DF_VERTEXLIGHT	2
 #define DF_AREADECAL	4
+
+#endif

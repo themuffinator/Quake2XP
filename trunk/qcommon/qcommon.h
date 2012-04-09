@@ -768,6 +768,8 @@ void FS_FreeFile(void *buffer);
 
 void FS_CreatePath(char *path);
 
+int FS_filelength (qFILE *f);
+int FS_filelength2 (FILE *f);
 
 /*
 ==============================================================

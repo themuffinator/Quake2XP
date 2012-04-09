@@ -852,7 +852,7 @@ S_StartLocalSound
 */
 void S_StartLocalSound(ALuint bufferNum)
 {
-#ifdef _WIN32
+#ifdef _WITH_EAX
 	EAXBUFFERPROPERTIES nullEAX;
 #endif
 	// long lDirect; // direct path level
@@ -1520,7 +1520,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 				EAXBUFFERFLAGS_ROOMHFAUTO;
 
 			alSource_EAX_All(sourceNum, &normalEAX);
-#endif /* _WIN32 */
+#endif /* __WITH_EAX */
 
 			alSourcePlay(sourceNum);
 		}
