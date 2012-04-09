@@ -67,6 +67,26 @@ int GLimp_Init(void *hinstance, void *wndproc)
         Con_Printf( PRINT_ALL, "SDL video driver is \"%s\".\n", driverName );
 	}
 
+    // DevIL initialization
+	Com_Printf ("==="S_COLOR_YELLOW"OpenIL library initiation..."S_COLOR_WHITE"===\n");
+	Com_Printf ("\n");
+	
+	ilInit();
+	iluInit();
+	ilutInit();
+
+	ilutRenderer	(ILUT_OPENGL);
+	ilEnable		(IL_ORIGIN_SET);
+	ilSetInteger	(IL_ORIGIN_MODE, IL_ORIGIN_UPPER_LEFT);
+
+	Con_Printf (PRINT_ALL, "OpenIL VENDOR: "S_COLOR_GREEN" %s\n", ilGetString(IL_VENDOR));
+	Con_Printf (PRINT_ALL, "OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
+	
+	Com_Printf ("\n");
+	Com_Printf ("==================================\n");
+	Com_Printf ("\n");
+	
+
 	return true;
 }
 

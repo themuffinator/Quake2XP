@@ -21,6 +21,7 @@
 # - use uint64_t for x86-64 in HasSharedLeafs at ref_gl/r_model.c
 # - clean up or remove snd_efx.c and other unused sources and headers
 # - change _vsnprintf to vsnprintf, not the other way around
+# - fix warnings with -Wall, or disable
 
 
 VERSION = '1.0'
