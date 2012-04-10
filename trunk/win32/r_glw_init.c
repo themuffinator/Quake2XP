@@ -587,8 +587,7 @@ int cpp_getAvailableTotalVideoMemory();
 qboolean GLimp_Init( void *hinstance, void *wndproc )
 {
 	char		string[64], S[64];
-	ILstring	devil;
-	int			len, devilver;
+	int			len;
 	#define		OSR2_BUILD_NUMBER 1111
 	DWORD		prType;
 	PGPI		pGPI;

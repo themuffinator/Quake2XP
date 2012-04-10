@@ -586,8 +586,6 @@ extern PFNGLSTENCILFUNCSEPARATEPROC				qglStencilFuncSeparate;
 extern PFNGLSTENCILOPSEPARATEPROC				qglStencilOpSeparate;
 extern PFNGLSTENCILMASKSEPARATEPROC				qglStencilMaskSeparate;
 
-extern PFNGLSAMPLECOVERAGEARBPROC				glSampleCoverageARB;
-
 extern PFNGLGENQUERIESARBPROC					qglGenQueriesARB;
 extern PFNGLDELETEQUERIESARBPROC				qglDeleteQueriesARB;
 extern PFNGLISQUERYARBPROC						qglIsQueryARB;

@@ -530,7 +530,6 @@ void GL_SetDefaultState(void)
 	qglEnable			(GL_TEXTURE_2D);
 
 	qglAlphaFunc		(GL_GREATER, 0.6f);
-	glSampleCoverageARB	(0.1, true);	
 
 	qglDisable			(GL_DEPTH_TEST);
 	qglDisable			(GL_CULL_FACE);

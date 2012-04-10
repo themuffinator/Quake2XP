@@ -487,8 +487,6 @@ PFNGLSTENCILFUNCSEPARATEPROC		qglStencilFuncSeparate		= NULL;
 PFNGLSTENCILOPSEPARATEPROC			qglStencilOpSeparate		= NULL;
 PFNGLSTENCILMASKSEPARATEPROC		qglStencilMaskSeparate		= NULL;
 
-PFNGLSAMPLECOVERAGEARBPROC			glSampleCoverageARB = NULL;
-
 PFNGLGENQUERIESARBPROC				qglGenQueriesARB = NULL;
 PFNGLDELETEQUERIESARBPROC			qglDeleteQueriesARB = NULL;
 PFNGLISQUERYARBPROC					qglIsQueryARB = NULL;
@@ -1267,9 +1265,6 @@ qboolean QGL_Init()
 	qglStencilFunc               = 	GPA( "glStencilFunc" );
 	qglStencilMask               = 	GPA( "glStencilMask" );
 	qglStencilOp                 = 	GPA( "glStencilOp" );
-
-    // was part of r_glw_init.c, but is also present on Linux and required by Quake2XP
-    glSampleCoverageARB          =  GPA("glSampleCoverageARB");
 
 	qglTexCoord1d                = 	GPA( "glTexCoord1d" );
 	qglTexCoord1dv               = 	GPA( "glTexCoord1dv" );

@@ -39,7 +39,7 @@ __forceinline void Q_sincos(float a, float *s, float *c) {
 	}
 }
 #else
-inline void Q_sincos(float a, float *s, float *c) {
+__inline void Q_sincos(float a, float *s, float *c) {
 	*s = (float)sin(a);
 	*c = (float)cos(a);
 }
