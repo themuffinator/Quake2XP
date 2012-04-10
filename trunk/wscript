@@ -8,18 +8,16 @@
 # video
 # - add gamma/stencil to glw_state
 # - check for WGL extensions with GLX in Linux
-# - support windowed mode and grab mouse, alt-enter, etc
-# - try setting gamma from SDL instead of X11/GLX
+# - clean up glstate_t, most win32 specific fields  are unused
+# - avoid reloading maps when changing resolution
 # sys
 # - implement Sys_GetClipboardData with X11 calls?
+# - make output console friendly (use terminal colors)
 # other
-# - use system.c and related from Yamagi Q2
-# - use uint64_t for x86-64 in HasSharedLeafs at ref_gl/r_model.c
+# - use system.c and related from Yamagi Q2, FS_ListFiles
+# - change all calls to fopen() to FS_OpenFile and similar
 # - remove unused files: client/asm_i386.h, client/block16.h, client/block8.h,
-#   client/x86.c, null/*
-# - fix warnings with -Wall, or disable
-# - use same variable names in linux/ as in win32/ where needed
-# - change all strcpy/strncpy to Q_strncpyz
+#   client/x86.c, null/*, client/snd_efx.c
 
 
 VERSION = '1.0'
@@ -69,8 +67,8 @@ def build(bld):
     src_dir = bld.srcnode
     #src_dir = bld.path.find_dir('src')
 
-    bld.env.append_value('CFLAGS', ['-g'])
-    #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
+    #bld.env.append_value('CFLAGS', ['-g'])
+    bld.env.append_value('CFLAGS', ['-g', '-Wall'])
 
     # Expand source files
     sources = {}

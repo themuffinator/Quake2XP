@@ -43,6 +43,8 @@ cvar_t		*vid_ref;			// Name of Refresh DLL loaded
 cvar_t		*vid_xpos;			// X coordinate of window position
 cvar_t		*vid_ypos;			// Y coordinate of window position
 cvar_t		*r_fullScreen;
+cvar_t		*r_customWidth;
+cvar_t		*r_customHeight;
 
 
 
@@ -529,11 +531,16 @@ static vidmode_t vid_modes[] = {
 
 qboolean VID_GetModeInfo( int *width, int *height, int mode )
 {
-	if ( mode < 0 || mode >= VID_NUM_MODES )
+	if (mode < 0 || mode >= VID_NUM_MODES)
 		return false;
 
-	*width  = vid_modes[mode].width;
-	*height = vid_modes[mode].height;
+    if (mode == VID_NUM_MODES-1) {
+        *width = r_customWidth->value;
+        *height = r_customHeight->value;
+    } else {
+        *width = vid_modes[mode].width;
+        *height = vid_modes[mode].height;
+    }
 
 	return true;
 }
@@ -701,6 +708,8 @@ void VID_Init (void)
 	vid_xpos = Cvar_Get ("vid_xpos", "3", CVAR_ARCHIVE);
 	vid_ypos = Cvar_Get ("vid_ypos", "22", CVAR_ARCHIVE);
 	r_fullScreen = Cvar_Get ("r_fullScreen", "0", CVAR_ARCHIVE);
+	r_customWidth = Cvar_Get ("r_customWidth", "800", CVAR_ARCHIVE);
+	r_customHeight = Cvar_Get ("r_customHeight", "600", CVAR_ARCHIVE);
 	r_gamma = Cvar_Get( "r_gamma", "0.7", CVAR_ARCHIVE );
 	win_noalttab = Cvar_Get( "win_noalttab", "0", CVAR_ARCHIVE );
 

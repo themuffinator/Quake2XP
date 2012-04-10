@@ -1564,36 +1564,68 @@ R_SetMode
 qboolean R_SetMode(void)
 {
 	rserr_t err;
-	qboolean fullscreen;
-
-	fullscreen = r_fullScreen->value;
+	const qboolean fullscreen = r_fullScreen->value;
 
 	r_fullScreen->modified = false;
 	r_mode->modified = false;
 
-	if ((err = GLimp_SetMode(&vid.width, &vid.height, r_mode->value, fullscreen)) == rserr_ok) {
+    err = GLimp_SetMode(&vid.width, &vid.height, r_mode->value, fullscreen);
+
+    // success, update variables
+	if (err == rserr_ok) {
+        Cvar_SetValue("r_fullScreen", gl_state.fullscreen);
+        r_fullScreen->modified = false;
 		gl_state.prev_mode = r_mode->value;
-	} else {
-		if (err == rserr_invalid_fullscreen) {
-			Cvar_SetValue("r_fullScreen", 0);
-			r_fullScreen->modified = false;
-			Com_Printf(S_COLOR_RED "ref_xpgl::R_SetMode() - fullscreen unavailable in this mode\n");
-			if ((err = GLimp_SetMode(&vid.width, &vid.height, r_mode->value, false)) == rserr_ok)
-				return true;
-		} else if (err == rserr_invalid_mode) {
-			Cvar_SetValue("r_mode", gl_state.prev_mode);
-			r_mode->modified = false;
-			Com_Printf(S_COLOR_RED"ref_xpgl::R_SetMode() - invalid mode\n");
-		}
-		// try setting it back to something safe
-		if ((err =
-			 GLimp_SetMode(&vid.width, &vid.height, gl_state.prev_mode,
-						   false)) != rserr_ok) {
-			Com_Printf(S_COLOR_RED"ref_xpgl::R_SetMode() - could not revert to safe mode\n");
-			return false;
-		}
-	}
-	return true;
+        return true;
+
+    // try without fullscreen
+	} else if (err == rserr_invalid_fullscreen) {
+        Com_Printf(S_COLOR_RED "ref_xpgl::R_SetMode() - fullscreen unavailable in this mode\n");
+        if ((err = GLimp_SetMode(&vid.width, &vid.height, r_mode->value, false)) == rserr_ok) {
+            Cvar_SetValue("r_fullScreen", 0);
+            r_fullScreen->modified = false;
+            gl_state.prev_mode = r_mode->value;
+            return true;
+        }
+
+    } else if (err == rserr_invalid_mode) {
+        Com_Printf(S_COLOR_RED"ref_xpgl::R_SetMode() - invalid mode\n");
+    }
+
+    // revert to previous mode
+    if (GLimp_SetMode(&vid.width, &vid.height, gl_state.prev_mode, false) == rserr_ok) {
+        Cvar_SetValue("r_mode", gl_state.prev_mode);
+        r_mode->modified = false;
+        Cvar_SetValue("r_fullScreen", 0);
+        r_fullScreen->modified = false;
+        return true;
+    } else {
+        Com_Printf(S_COLOR_RED"ref_xpgl::R_SetMode() - could not revert to safe mode\n");
+        return false;
+    }
+}
+
+static void DevIL_Init() {
+    static qboolean init = false;
+
+    if (init)
+        return;
+
+	Com_Printf ("==="S_COLOR_YELLOW"OpenIL library initiation..."S_COLOR_WHITE"===\n");
+	
+	ilInit();
+	iluInit();
+	ilutInit();
+
+	ilutRenderer(ILUT_OPENGL);
+	ilEnable(IL_ORIGIN_SET);
+	ilSetInteger(IL_ORIGIN_MODE, IL_ORIGIN_UPPER_LEFT);
+
+	Con_Printf (PRINT_ALL, "OpenIL VENDOR: "S_COLOR_GREEN" %s\n", ilGetString(IL_VENDOR));
+	Con_Printf (PRINT_ALL, "OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
+	Com_Printf ("==================================\n\n");
+
+    init = true;
 }
 
 /*
@@ -1626,6 +1658,9 @@ int R_Init(void *hinstance, void *hWnd)
 	}
 	// set our "safe" modes
 	gl_state.prev_mode = 0;
+
+    // initialize IL library
+    DevIL_Init();
 
 	// create the window and set up the context
 	if (!R_SetMode()) {
@@ -2000,11 +2035,7 @@ void R_Shutdown(void)
 R_BeginFrame
 @@@@@@@@@@@@@@@@@@@@@
 */
-#ifdef _WIN32
-void UpdateGammaRamp();
-#else
-void UpdateHardwareGamma(void);
-#endif
+void UpdateGamma();
 
 void R_BeginFrame()
 {
@@ -2015,21 +2046,23 @@ void R_BeginFrame()
 	if (r_mode->modified || r_fullScreen->modified) {
 		cvar_t *ref;
 
+#ifdef _WIN32
 		ref = Cvar_Get("vid_ref", "gl", 0);
 		ref->modified = true;
+#else
+    // no need to reload everything?
+	if (!R_SetMode()) {
+		QGL_Shutdown();
+		Com_Printf(S_COLOR_RED "ref_xpgl::R_Init() - could not R_SetMode()\n");
+	}
+#endif
 	}
 	
 	
 	if (r_gamma->modified) {
 		r_gamma->modified = false;
 
-#ifdef _WIN32
-		if (gl_state.gammaramp) {
-			UpdateGammaRamp();
-		}
-#else
-        UpdateHardwareGamma();
-#endif
+        UpdateGamma();
 	}
 
 

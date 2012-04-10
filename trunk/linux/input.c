@@ -26,24 +26,22 @@
  */
 
 #include <SDL.h>
-#include "../ref_gl/r_local.h"
 #include "../client/client.h"
 
 #define MOUSE_MAX 3000
 #define MOUSE_MIN 40
 
-static int		old_windowed_mouse;
-static cvar_t	*windowed_mouse;
+static int		grab_status;
 static cvar_t   *in_grab;
+static cvar_t	*fullscreen;;
 static int		mouse_x, mouse_y;
 static int		old_mouse_x, old_mouse_y;
 static int		mouse_buttonstate;
 static int		mouse_oldbuttonstate;    
 
-struct
-{
-  int key;
-  int down;
+struct {
+	int key;
+	int down;
 } keyq[128];
 
 int keyq_head=0;
@@ -58,11 +56,12 @@ static qboolean		 mlooking;
 static cvar_t *m_filter;
 static cvar_t *exponential_speedup;
 
-void
+inline void
 Do_Key_Event (int key, qboolean down)
 {
 	Key_Event(key, down, Sys_Milliseconds());
 }
+
 /*
  * This function translates the SDL keycodes
  * to the internal key representation of the
@@ -182,24 +181,17 @@ IN_GetEvent(SDL_Event *event)
 		/* The user pressed a button */
 		case SDL_KEYDOWN:
 			/* Fullscreen switch via Alt-Return */
-			if ( (KeyStates[SDLK_LALT] || KeyStates[SDLK_RALT]) && (event->key.keysym.sym == SDLK_RETURN) ) 
+			if ( (KeyStates[SDLK_LALT] || KeyStates[SDLK_RALT]) && (event->key.keysym.sym == SDLK_RETURN) )
 			{
-				cvar_t *fullscreen;
 
 				SDL_WM_ToggleFullScreen(surface);
 
 				if (surface->flags & SDL_FULLSCREEN) 
-				{
-					Cvar_SetValue( "r_fullscreen", 1 );
-				} 
+					Cvar_SetValue( "r_fullScreen", 1 );
 				else 
-				{
-					Cvar_SetValue( "r_fullscreen", 0 );
-				}
+					Cvar_SetValue( "r_fullScreen", 0 );
 
-				fullscreen = Cvar_Get( "r_fullscreen", "0", 0 );
 				fullscreen->modified = false; 
-
 				break;
 			}
 	  
@@ -239,104 +231,82 @@ IN_GetEvent(SDL_Event *event)
  */
 void IN_Update(void)
 {
-  SDL_Event event;
-  static int IN_Update_Flag;
-  int bstate;
+SDL_Event event;
+	static int IN_Update_Flag;
+	int bstate;
 
-  /* Protection against multiple calls */
-  if (IN_Update_Flag == 1)
-  {
-    return;
-  }
+	/* Protection against multiple calls */
+	if (IN_Update_Flag == 1)
+		return;
   
-  IN_Update_Flag = 1;
+	IN_Update_Flag = 1;
 
-  while (SDL_PollEvent(&event))
-  {
-	  IN_GetEvent(&event);
-  }
+	while (SDL_PollEvent(&event))
+		IN_GetEvent(&event);
 
-  /* Mouse button processing. Button 4 
-     and 5 are the mousewheel and thus
-     not processed here. */
+	/* Mouse button processing. Button 4 
+	and 5 are the mousewheel and thus
+	not processed here. */
 
-  if (!mx && !my)
-  {
-	  SDL_GetRelativeMouseState(&mx, &my);
-  }
+	if (!mx && !my)
+		SDL_GetRelativeMouseState(&mx, &my);
 
-  mouse_buttonstate = 0;
-  bstate = SDL_GetMouseState(NULL, NULL);
+	mouse_buttonstate = 0;
+	bstate = SDL_GetMouseState(NULL, NULL);
 
-  if (SDL_BUTTON(1) & bstate)
-  {
-	  mouse_buttonstate |= (1 << 0);
-  }
+	if (SDL_BUTTON(1) & bstate)
+	mouse_buttonstate |= (1 << 0);
   
-  if (SDL_BUTTON(3) & bstate) 
-  {
-	  mouse_buttonstate |= (1 << 1);
-  }
+	if (SDL_BUTTON(3) & bstate) 
+		mouse_buttonstate |= (1 << 1);
   
-  if (SDL_BUTTON(2) & bstate) 
-  {
-	  mouse_buttonstate |= (1 << 2);
-  }
+	if (SDL_BUTTON(2) & bstate) 
+		mouse_buttonstate |= (1 << 2);
   
-  if (SDL_BUTTON(6) & bstate)
-  {
-	  mouse_buttonstate |= (1 << 3);
-  }
+	if (SDL_BUTTON(6) & bstate)
+		mouse_buttonstate |= (1 << 3);
   
-  if (SDL_BUTTON(7) & bstate)
-  {
-	  mouse_buttonstate |= (1 << 4);
-  }
+	if (SDL_BUTTON(7) & bstate)
+		mouse_buttonstate |= (1 << 4);
 
-  /* Grab and ungrab the mouse if the
-     console is opened */
-  if (in_grab->value == 2)
-  {
-	  if (old_windowed_mouse != windowed_mouse->value) 
-	  {
-		  old_windowed_mouse = windowed_mouse->value;
+	/* Grab and ungrab the mouse if the console is opened */
+	switch ((int)in_grab->value) {
+	case 0:
+		SDL_WM_GrabInput(SDL_GRAB_OFF);
+		break;
+	case 1:
+		SDL_WM_GrabInput(SDL_GRAB_ON);
+		break;
+	case 2:
+		if (grab_status < cl_paused->value) {
+			SDL_WM_GrabInput(SDL_GRAB_ON);
+			grab_status = 1;
+		} else if (grab_status > cl_paused->value) {
+			SDL_WM_GrabInput(SDL_GRAB_OFF);
+			grab_status = 0;
+		}
+		break;
+	default:
+		Cvar_SetValue("in_grab", 2);
+		break;
+	}
 
-		  if (!windowed_mouse->value) 
-		  {
-			  SDL_WM_GrabInput(SDL_GRAB_OFF);
-		  } 
-		  else 
-		  {
-			  SDL_WM_GrabInput(SDL_GRAB_ON);
-		  }
-	  }
-  }
-  else if (in_grab->value == 1)
-  {
-	  SDL_WM_GrabInput(SDL_GRAB_ON);
-  }
-  else
-  {
-	  SDL_WM_GrabInput(SDL_GRAB_OFF);
-  }
+	/* Process the key events */
+	while (keyq_head != keyq_tail) {
+		Do_Key_Event(keyq[keyq_tail].key, keyq[keyq_tail].down);
+		keyq_tail = (keyq_tail + 1) & 127;
+	}
 
-  /* Process the key events */
-  while (keyq_head != keyq_tail)
-  {
-	  Do_Key_Event(keyq[keyq_tail].key, keyq[keyq_tail].down);
-	  keyq_tail = (keyq_tail + 1) & 127;
-  }
-
-  IN_Update_Flag = 0;
+	IN_Update_Flag = 0;
 }
 
 /*
  * Gets the mouse state
  */
 void IN_GetMouseState(int *x, int *y, int *state) {
-  *x = mx;
-  *y = my;
-  *state = mouse_buttonstate;
+	*x = mx;
+	*y = my;
+	*state = mouse_buttonstate;
 } 
 
 /*
@@ -344,18 +314,9 @@ void IN_GetMouseState(int *x, int *y, int *state) {
  */
 void IN_ClearMouseState() 
 {
-  mx = my = 0;
+	mx = my = 0;
 }
  
-/*
- * Centers the view
- */
-static void
-IN_ForceCenterView ( void )
-{
-	cl.viewangles [ PITCH ] = 0;
-}  
-
 /*
  * Look up
  */
@@ -387,7 +348,6 @@ IN_Init ( void )
 
 	Cmd_AddCommand( "+mlook", IN_MLookDown );
 	Cmd_AddCommand( "-mlook", IN_MLookUp );
-	Cmd_AddCommand( "force_centerview", IN_ForceCenterView );
 
 	mouse_x = mouse_y = 0.0;
 
@@ -395,8 +355,10 @@ IN_Init ( void )
 	SDL_EnableUNICODE( 0 );
     SDL_EnableKeyRepeat( SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL );
 
-	windowed_mouse = Cvar_Get ("windowed_mouse", "1", CVAR_ARCHIVE);
 	in_grab = Cvar_Get ("in_grab", "2", CVAR_ARCHIVE);
+	fullscreen = Cvar_Get ("r_fullScreen", "1", CVAR_ARCHIVE);
+	grab_status = false;
+	SDL_WM_GrabInput(SDL_GRAB_OFF);
 
 	Com_Printf( "Input initialized.\n" );
 }
@@ -412,9 +374,8 @@ IN_Shutdown ( void )
 	keyq_tail = 0;
 	memset(keyq, 0, sizeof(keyq));
 
-	Cmd_RemoveCommand( "+mlook" );
-	Cmd_RemoveCommand( "-mlook" );
-	Cmd_RemoveCommand( "force_centerview" );
+	Cmd_RemoveCommand("+mlook");
+	Cmd_RemoveCommand("-mlook");
 	Com_Printf("Input shut down.\n");
 }
 
@@ -431,35 +392,23 @@ IN_MouseButtons ( void )
 	for ( i = 0; i < 3; i++ )
 	{
 		if ( ( mouse_buttonstate & ( 1 << i ) ) && !( mouse_oldbuttonstate & ( 1 << i ) ) )
-		{
 			Do_Key_Event( K_MOUSE1 + i, true );
-		}
 
 		if ( !( mouse_buttonstate & ( 1 << i ) ) && ( mouse_oldbuttonstate & ( 1 << i ) ) )
-		{
 			Do_Key_Event( K_MOUSE1 + i, false );
-		}
 	}
 
 	if ( ( mouse_buttonstate & ( 1 << 3 ) ) && !( mouse_oldbuttonstate & ( 1 << 3 ) ) )
-	{
 		Do_Key_Event( K_MOUSE4, true );
-	}
 
 	if ( !( mouse_buttonstate & ( 1 << 3 ) ) && ( mouse_oldbuttonstate & ( 1 << 3 ) ) )
-	{
 		Do_Key_Event( K_MOUSE4, false );
-	}
 
 	if ( ( mouse_buttonstate & ( 1 << 4 ) ) && !( mouse_oldbuttonstate & ( 1 << 4 ) ) )
-	{
 		Do_Key_Event( K_MOUSE5, true );
-	}
 
 	if ( !( mouse_buttonstate & ( 1 << 4 ) ) && ( mouse_oldbuttonstate & ( 1 << 4 ) ) )
-	{
 		Do_Key_Event( K_MOUSE5, false );
-	}
 
 	mouse_oldbuttonstate = mouse_buttonstate;
 }

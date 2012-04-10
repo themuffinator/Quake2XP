@@ -17,9 +17,6 @@
  * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-/* Main windowed and fullscreen graphics interface module. This module */
-/* is used for both the software and OpenGL rendering versions of the */
-/* Quake refresh engine. */
 
 #include "../client/client.h"
 #include "../client/input.h"
@@ -27,9 +24,11 @@
 #include "../client/snd_loc.h"
 
 /* Console variables that we need to access from this module */
-cvar_t         *r_gamma;
-cvar_t         *vid_ref;
-cvar_t         *r_fullscreen;
+cvar_t *r_gamma;
+cvar_t *vid_ref;
+cvar_t *r_fullScreen;
+cvar_t *r_customWidth;
+cvar_t *r_customHeight;
 
 /* Global variables used internally by this module */
 viddef_t	viddef;		/* global video state; used by other modules */
@@ -119,7 +118,7 @@ static vidmode_t vid_modes[] =
      { "1920x1080", 1920, 1080, 12 },     // 16:9 1080p full HDTV
      { "1920x1200", 1920, 1200, 13 },     // 16:10
 	 { "2560x1600", 2560, 1600, 14 },     // 16:10
-	 { "Custom",    800,  600,  15}       // custom
+	 { "Custom",    -1,  -1,  15}       // custom
 };
 
 qboolean
@@ -128,8 +127,13 @@ VID_GetModeInfo(int *width, int *height, int mode)
 	if (mode < 0 || mode >= VID_NUM_MODES)
 		return false;
 
-	*width = vid_modes[mode].width;
-	*height = vid_modes[mode].height;
+    if (mode == VID_NUM_MODES-1) {
+        *width = r_customWidth->value;
+        *height = r_customHeight->value;
+    } else {
+        *width = vid_modes[mode].width;
+        *height = vid_modes[mode].height;
+    }
 
 	return true;
 }
@@ -167,7 +171,6 @@ qboolean VID_StartRefresh()
 	}
 
 	Key_ClearStates();
-
 	reflib_active = true;
 
 	return true;
@@ -187,33 +190,28 @@ VID_CheckChanges(void)
 {
 	while (vid_ref->modified) {
 		/*
-		 * * refresh has changed
-		 */
+         * * refresh has changed
+         */
 
         cl.force_refdef = true;
-		S_StopAllSounds();
+        S_StopAllSounds();
 
-		vid_ref->modified = false;
-		r_fullscreen->modified = true;
+        vid_ref->modified = false;
+		r_fullScreen->modified = true;
 		cl.refresh_prepped = false;
 		cls.disable_screen = true;
         CL_ClearDecals();
 
 		if (!VID_StartRefresh()) {
-			Com_Error(ERR_FATAL, "Couldn't fall back to software refresh!");
+			Com_Error(ERR_FATAL, "Couldn't start refresh");
 
-			/*
-			 * * drop the console if we fail to load a refresh
-			 */
+			// drop the console if we fail to load a refresh
 			if (cls.key_dest != key_console) 
-			{
 				Con_ToggleConsole_f();
-			}
 		}
 		cls.disable_screen = false;
         CL_InitImages();
 	}
-
 }
 
 /*
@@ -225,8 +223,10 @@ VID_Init(void)
 
 	/* Create the video variables so we know how to start the graphics drivers */
 	vid_ref = Cvar_Get ("vid_ref", "xpgl", CVAR_ARCHIVE);
-	r_fullscreen = Cvar_Get("r_fullscreen", "1", CVAR_ARCHIVE);
-	r_gamma = Cvar_Get("r_gamma", "0.7", CVAR_ARCHIVE);
+	r_gamma = Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE);
+	r_fullScreen = Cvar_Get ("r_fullScreen", "1", CVAR_ARCHIVE);
+	r_customWidth = Cvar_Get ("r_customWidth", "800", CVAR_ARCHIVE);
+	r_customHeight = Cvar_Get ("r_customHeight", "600", CVAR_ARCHIVE);
 
 	/* Add some console commands that we want to handle */
 	Cmd_AddCommand("vid_restart", VID_Restart_f);

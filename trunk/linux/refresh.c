@@ -26,7 +26,6 @@
  */ 
 
 #include <SDL.h>
-#include <GL/gl.h>
 
 #include "../ref_gl/r_local.h"
 #include "../client/ref.h"
@@ -34,20 +33,9 @@
 /* The window icon */
 #include "q2icon.xbm"
  
-/* X.org stuff */
-#include <X11/Xos.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/xf86vmode.h>
-
 SDL_Surface		*surface;
 glwstate_t		glw_state;
 qboolean		have_stencil = false;
-
-char *displayname = NULL;
-Display *dpy;
-int screen = -1;
-XF86VidModeGamma x11_oldgamma;
 
 /*
  * Initialzes the SDL OpenGL context
@@ -64,28 +52,8 @@ int GLimp_Init(void *hinstance, void *wndproc)
             return false;
         }
 		SDL_VideoDriverName( driverName, sizeof( driverName ) - 1 );
-        Con_Printf( PRINT_ALL, "SDL video driver is \"%s\".\n", driverName );
+        Con_Printf( PRINT_ALL, "Initialized SDL video, driver is \"%s\".\n", driverName );
 	}
-
-    // DevIL initialization
-	Com_Printf ("==="S_COLOR_YELLOW"OpenIL library initiation..."S_COLOR_WHITE"===\n");
-	Com_Printf ("\n");
-	
-	ilInit();
-	iluInit();
-	ilutInit();
-
-	ilutRenderer	(ILUT_OPENGL);
-	ilEnable		(IL_ORIGIN_SET);
-	ilSetInteger	(IL_ORIGIN_MODE, IL_ORIGIN_UPPER_LEFT);
-
-	Con_Printf (PRINT_ALL, "OpenIL VENDOR: "S_COLOR_GREEN" %s\n", ilGetString(IL_VENDOR));
-	Con_Printf (PRINT_ALL, "OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
-	
-	Com_Printf ("\n");
-	Com_Printf ("==================================\n");
-	Com_Printf ("\n");
-	
 
 	return true;
 }
@@ -137,62 +105,67 @@ static void SetSDLIcon()
 }
 
 /*
- * Sets the hardware gamma
+ * Sets the gamma
  */
 void
-UpdateHardwareGamma(void)
+UpdateGamma(void)
 {
-	float gamma;
-	XF86VidModeGamma x11_gamma;
+    const float g = r_gamma->value;
 
-	gamma = r_gamma->value;
-
-	x11_gamma.red = gamma;
-	x11_gamma.green = gamma;
-	x11_gamma.blue = gamma;
-
-	XF86VidModeSetGamma(dpy, screen, &x11_gamma); 
-
-	/* This forces X11 to update the gamma tables */
-	XF86VidModeGetGamma(dpy, screen, &x11_gamma); 
+    if (r_hardwareGamma->value != 0)
+        SDL_SetGamma(g, g, g);
 }
 
 /*
- * Initializes the OpenGL window
+ * Swaps the buffers to show the new frame
  */
-static qboolean GLimp_InitGraphics( qboolean fullscreen )
+void GLimp_EndFrame (void)
 {
+	SDL_GL_SwapBuffers();
+}
+
+/*
+ * Changes the video mode, and initializes the OpenGL window
+ */
+rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fullscreen)
+{
+    int width, height;
 	int flags;
 	int stencil_bits;
-	
-	if (surface && (surface->w == vid.width) && (surface->h == vid.height)) 
+
+    if (!VID_GetModeInfo( &width, &height, mode))
+	{
+		Con_Printf( PRINT_ALL, " invalid mode\n" );
+		return rserr_invalid_mode;
+	}
+
+	Com_Printf ("setting mode "S_COLOR_YELLOW"%d"S_COLOR_WHITE":"S_COLOR_YELLOW"[%ix%i]", mode , width, height);
+
+	if (surface && (surface->w == width) && (surface->h == height))
 	{
 		/* Are we running fullscreen? */
 		int isfullscreen = (surface->flags & SDL_FULLSCREEN) ? 1 : 0;
 
 		/* We should, but we don't */
 		if (fullscreen != isfullscreen)
-		{
 			SDL_WM_ToggleFullScreen(surface);
-		}
 
 		/* Do we now? */
 		isfullscreen = (surface->flags & SDL_FULLSCREEN) ? 1 : 0;
-
-		if (fullscreen == isfullscreen)
-		{
-			return true;
-		}
+		if (fullscreen == isfullscreen) {
+            gl_state.fullscreen = fullscreen;
+			return rserr_ok;
+        }
+        else if (fullscreen)
+            return rserr_invalid_fullscreen;
 	}
 	
 	/* Is the surface used? */
 	if (surface)
-	{
 		SDL_FreeSurface(surface);
-	}
 
 	/* Create the window */
-	VID_NewWindow (vid.width, vid.height);
+	VID_NewWindow(width, height);
 
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -205,87 +178,38 @@ static qboolean GLimp_InitGraphics( qboolean fullscreen )
 	flags = SDL_OPENGL;
 
 	if (fullscreen)
-	{
 		flags |= SDL_FULLSCREEN;
-	}
 	
 	/* Set the icon */
 	SetSDLIcon();
 	
-    if ((surface = SDL_SetVideoMode(vid.width, vid.height, 0, flags)) == NULL) {
+    if ((surface = SDL_SetVideoMode(width, height, 0, flags)) == NULL) {
 			Sys_Error(PRINT_ALL, "SDL SetVideoMode failed: %s\n", SDL_GetError());
-            return false;
+            return rserr_invalid_mode;
 	}
 
 	/* Initialize the stencil buffer */
-	if (!SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &stencil_bits)) 
-	{
+	if (!SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &stencil_bits)) {
 		Con_Printf(PRINT_ALL, "Got %d bits of stencil.\n", stencil_bits);
 		
 		if (stencil_bits >= 1) 
-		{
 			have_stencil = true;
-		}
 	}
 
-	/* Initialize hardware gamma */
-	if ( ( dpy = XOpenDisplay( displayname ) ) == NULL )
-	{
-		Con_Printf(PRINT_ALL, "Unable to open display.\n");
-	}
-	else
-	{
-		if (screen == -1)
-		{
-			screen = DefaultScreen(dpy);
-		}
-
-		gl_state.hwgamma = true;
-		r_gamma->modified = true;
-
-        XF86VidModeGetGamma(dpy, screen, &x11_oldgamma);
-
-		Con_Printf(PRINT_ALL, "Using hardware gamma.\n");
-	}
+	/* Initialize gamma, there is no need to restore manually */
+    if (r_hardwareGamma->value != 0)
+        r_gamma->modified = true;
 
 	/* Window title */
-	SDL_WM_SetCaption("Yamagi Quake II", "Yamagi Quake II");
+	SDL_WM_SetCaption("Quake2XP", "Quake2XP");
 
 	/* No cursor */
 	SDL_ShowCursor(0);
 
-	return true;
-}
-
-/*
- * Swaps the buffers to show the new frame
- */
-void GLimp_EndFrame (void)
-{
-	SDL_GL_SwapBuffers();
-}
-
-/*
- * Changes the video mode
- */
-rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean fullscreen )
-{
-	Con_Printf (PRINT_ALL, "setting mode %d:", mode );
-	
-	/* mode -1 is not in the vid mode table - so we keep the values in pwidth 
-	   and pheight and don't even try to look up the mode info */
-	if ( mode != -1 && !VID_GetModeInfo( pwidth, pheight, mode ) )
-	{
-		Con_Printf( PRINT_ALL, " invalid mode\n" );
-		return rserr_invalid_mode;
-	}
-
-	Con_Printf( PRINT_ALL, " %d %d\n", *pwidth, *pheight);
-
-	if ( !GLimp_InitGraphics( fullscreen ) ) 
-	{
-		return rserr_invalid_mode;
-	}
+    /* Notify of current values */
+    *pwidth = width;
+    *pheight = height;
+    gl_state.fullscreen = fullscreen;
 
 	return rserr_ok;
 }
@@ -295,6 +219,8 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
  */
 void GLimp_Shutdown( void )
 {
+    Con_Printf(PRINT_ALL, "GLimp shut down\n");
+
 	if (surface)
 	{
 		SDL_FreeSurface(surface);
@@ -310,14 +236,4 @@ void GLimp_Shutdown( void )
 	{
 		SDL_QuitSubSystem(SDL_INIT_VIDEO);
 	}
-	
-	if (gl_state.hwgamma == true)
-	{
-		XF86VidModeSetGamma(dpy, screen, &x11_oldgamma);
-		
-		/* This forces X11 to update the gamma tables */
-		XF86VidModeGetGamma(dpy, screen, &x11_oldgamma);
-	}
-
-	gl_state.hwgamma = false;
 }

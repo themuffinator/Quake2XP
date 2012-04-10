@@ -172,9 +172,6 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 
 	Com_Printf("Initializing OpenGL display\n");
 	
-	if(r_mode->value>15)
-		Cvar_SetValue("r_mode", 15);
-
 	if ( !VID_GetModeInfo( &width, &height, mode ) )
 	{
 		Com_Printf(S_COLOR_RED " invalid mode\n" );
@@ -182,12 +179,6 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 	}
 	
 	Com_Printf ("...setting mode "S_COLOR_YELLOW"%d"S_COLOR_WHITE":"S_COLOR_YELLOW"[%ix%i]", mode , width, height);
-
-	if(r_mode->value>=15)
-	{
-		width	= (int)r_customWidth->value; 
-		height	= (int)r_customHeight->value;
-	}
 
 	if(width > glw_state.desktopWidth || height > glw_state.desktopHeight){
 		width = glw_state.desktopWidth;
@@ -840,27 +831,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	len = sizeof(string);
 	Com_Printf("\nUserName: "S_COLOR_GREEN"%s\n", GetUserName(string, &len) ? string : "");
 	Com_Printf ("\n");
-	Com_Printf ("==="S_COLOR_YELLOW"OpenIL library initiation..."S_COLOR_WHITE"===\n");
-	Com_Printf ("\n");
-	
-	ilInit();
-	iluInit();
-	ilutInit();
 
-	ilutRenderer	(ILUT_OPENGL);
-	ilEnable		(IL_ORIGIN_SET);
-	ilSetInteger	(IL_ORIGIN_MODE, IL_ORIGIN_UPPER_LEFT);
-
-	devil = ilGetString(IL_VENDOR);
-	devilver = ilGetInteger(IL_VERSION_NUM);
-
-	Con_Printf (PRINT_ALL, "OpenIL VENDOR: "S_COLOR_GREEN" %s\n", devil);
-	Con_Printf (PRINT_ALL, "OpenIL Version: "S_COLOR_GREEN"%i\n", devilver);
-	
-	Com_Printf ("\n");
-	Com_Printf ("==================================\n");
-	Com_Printf ("\n");
-	
 	glw_state.hInstance = ( HINSTANCE ) hinstance;
 	glw_state.wndproc = wndproc;
 
@@ -1337,7 +1308,7 @@ void GLimp_EndFrame (void)
 	Sleep(0);	// fixes a few problems ive been having
 }
 
-void UpdateGammaRamp()
+void UpdateGamma()
 {
      int          i, j, v;
 

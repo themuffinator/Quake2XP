@@ -604,10 +604,6 @@ typedef struct {
 
 // ----------------------------------------------------------------
 
-#ifndef _WIN32
-    qboolean hwgamma;
-#endif
-
 } glstate_t;
 
 #ifndef BIT

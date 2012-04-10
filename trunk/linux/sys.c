@@ -295,88 +295,10 @@ char *Sys_GetClipboardData(void) {
 
 /*****************************************************************************/
 
-#ifdef __linux__
-
-void
-printBacktrace(int sig)
-{
-	void *array[15];
-	size_t size;
-	char **strings;
-	int i;
-
-	size = backtrace(array, 15);
-	strings = backtrace_symbols(array, size);
-
-	printf("Signal:       %i\n", sig);
-	printf("\nBacktrace:\n");
-
-	for (i = 0; i < size; i++)
-	{
-		printf("  %s\n", strings[i]);
-	}
-
-	printf("\n");
-}
-
-#else
-
-void
-printBacktrace(int sig)
-{
-	printf("Product:      Yamagi Quake II\n");
-	printf("Version:      %4.2f\n", VERSION);
-	printf("Plattform:    %s\n", BUILDSTRING);
-	printf("Architecture: %s\n", CPUSTRING);
-	printf("Signal:       %i\n", sig);
-	printf("\nBacktrace:\n");
-	printf("  Not available on this plattform.\n\n");
-
-}
-
-#endif
-
-void
-signalhandler(int sig)
-{
-	printf("\nYamagi Quake II crashed! This should not happen...\n");
-	printf("\nMake sure that you're using the last version. It can\n");
-	printf("be found at http://www.yamagi.org/quake2. If you do send\n");
-	printf("a bug report to quake2@yamagi.org and include this output,\n");
-	printf("detailed condition, reproduction of the issue (if possible)\n");
-	printf("and additional data you think might be useful. Thanks.\n");
-	printf("\n=======================================================\n\n");
-
-#ifdef __linux__
-	printBacktrace(sig);
-#endif
-
-    /* reset signalhandler */
-	signal(SIGSEGV, SIG_DFL);
-	signal(SIGILL, SIG_DFL);
-	signal(SIGFPE, SIG_DFL);
-    signal(SIGABRT, SIG_DFL); 
-
-	/* pass signal to the os */
-    raise(sig);
-}
-
-void
-registerHandler(void)
-{
-	signal(SIGSEGV, signalhandler);
-	signal(SIGILL, signalhandler);
-	signal(SIGFPE, signalhandler);
-    signal(SIGABRT, signalhandler);
-}
-
 int
 main(int argc, char **argv)
 {
 	int	mytime, oldtime, newtime;
-
-    // TODO: signal handlers for ignoring FPU exceptions and printing backtraces
-    registerHandler();
 
 	/* go back to real user for config loads */
 	saved_euid = geteuid();
