@@ -3,21 +3,19 @@
 
 # TODO list
 # sound
-# - for now OpenAL is linked at compile time in Linux, we need to rename al* to qal* like with gl function pointers
-# - port EAX effects to EFX or equivalent OpenAL calls if possible
+# - put back snd_efx.c, or port EAX effects to EFX
 # video
-# - add gamma/stencil to glw_state
-# - check for WGL extensions with GLX in Linux
-# - clean up glstate_t, most win32 specific fields  are unused
-# - avoid reloading maps when changing resolution
-# sys
-# - implement Sys_GetClipboardData with X11 calls?
-# - make output console friendly (use terminal colors)
+# - use simple multisampling through SDL
+# - debug: avoid reloading maps when changing resolution, move automatic checking of
+#   vid_ref->modified to r_main.c?
 # other
-# - use system.c and related from Yamagi Q2, FS_ListFiles
-# - change all calls to fopen() to FS_OpenFile and similar
+# - respect filesystem: f* -> FS_*, one write directory, etc
+# - compare system.c and related with Yamagi Q2
 # - remove unused files: client/asm_i386.h, client/block16.h, client/block8.h,
 #   client/x86.c, null/*, client/snd_efx.c
+# cool
+# - use GLX for nv_multisample_coverage in Linux?
+# - try PhysicsFS from icculus.org to simplify filesystem management
 
 
 VERSION = '1.0'
@@ -67,8 +65,10 @@ def build(bld):
     src_dir = bld.srcnode
     #src_dir = bld.path.find_dir('src')
 
-    #bld.env.append_value('CFLAGS', ['-g'])
-    bld.env.append_value('CFLAGS', ['-g', '-Wall'])
+    bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
+    #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
+    #bld.env.append_value('CFLAGS', ['-pg', '-O3'])
+    #bld.env.append_value('LINKFLAGS', ['-pg'])
 
     # Expand source files
     sources = {}

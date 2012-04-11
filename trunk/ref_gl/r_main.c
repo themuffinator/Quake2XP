@@ -1671,7 +1671,6 @@ int R_Init(void *hinstance, void *hWnd)
 	
 	VID_MenuInit();
 
-	// Get Windows Version
 	/* 
 	 ** get our various GL strings
 	 */
