@@ -173,6 +173,11 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+	if (r_arbSamples->value > 0) {
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+	}
 	
 	/* Initiate the flags */
 	flags = SDL_OPENGL;
@@ -195,6 +200,9 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 		if (stencil_bits >= 1) 
 			have_stencil = true;
 	}
+
+	if (r_arbSamples->value > 0)
+		qglEnable(GL_MULTISAMPLE);
 
 	/* Initialize gamma, there is no need to restore manually */
     if (r_hardwareGamma->value != 0)

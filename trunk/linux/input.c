@@ -31,7 +31,7 @@
 #define MOUSE_MAX 3000
 #define MOUSE_MIN 40
 
-static int		grab_status;
+static qboolean	grab_on;
 static cvar_t   *in_grab;
 static cvar_t	*fullscreen;;
 static int		mouse_x, mouse_y;
@@ -278,12 +278,12 @@ SDL_Event event;
 		SDL_WM_GrabInput(SDL_GRAB_ON);
 		break;
 	case 2:
-		if (grab_status < cl_paused->value) {
+		if (!grab_on && cl_paused->value == 0) {
 			SDL_WM_GrabInput(SDL_GRAB_ON);
-			grab_status = 1;
-		} else if (grab_status > cl_paused->value) {
+			grab_on = true;
+		} else if (grab_on && cl_paused->value != 0) {
 			SDL_WM_GrabInput(SDL_GRAB_OFF);
-			grab_status = 0;
+			grab_on = false;
 		}
 		break;
 	default:
@@ -357,7 +357,7 @@ IN_Init ( void )
 
 	in_grab = Cvar_Get ("in_grab", "2", CVAR_ARCHIVE);
 	fullscreen = Cvar_Get ("r_fullScreen", "1", CVAR_ARCHIVE);
-	grab_status = false;
+	grab_on = false;
 	SDL_WM_GrabInput(SDL_GRAB_OFF);
 
 	Com_Printf( "Input initialized.\n" );

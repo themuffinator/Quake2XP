@@ -2038,30 +2038,16 @@ void UpdateGamma();
 
 void R_BeginFrame()
 {
-
 	/* 
 	 ** change modes if necessary
 	 */
-	if (r_mode->modified || r_fullScreen->modified) {
-		cvar_t *ref;
+	if (r_mode->modified || r_fullScreen->modified)
+        vid_ref->modified = true;
 
-#ifdef _WIN32
-		ref = Cvar_Get("vid_ref", "gl", 0);
-		ref->modified = true;
-#else
-    // no need to reload everything?
-	if (!R_SetMode()) {
-		QGL_Shutdown();
-		Com_Printf(S_COLOR_RED "ref_xpgl::R_Init() - could not R_SetMode()\n");
-	}
-#endif
-	}
-	
-	
+
 	if (r_gamma->modified) {
-		r_gamma->modified = false;
-
         UpdateGamma();
+		r_gamma->modified = false;
 	}
 
 

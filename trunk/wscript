@@ -2,19 +2,10 @@
 # encoding: utf-8
 
 # TODO list
-# sound
-# - put back snd_efx.c, or port EAX effects to EFX
-# video
-# - use simple multisampling through SDL
-# - debug: avoid reloading maps when changing resolution, move automatic checking of
-#   vid_ref->modified to r_main.c?
 # other
 # - respect filesystem: f* -> FS_*, one write directory, etc
 # - compare system.c and related with Yamagi Q2
-# - remove unused files: client/asm_i386.h, client/block16.h, client/block8.h,
-#   client/x86.c, null/*, client/snd_efx.c
 # cool
-# - use GLX for nv_multisample_coverage in Linux?
 # - try PhysicsFS from icculus.org to simplify filesystem management
 
 
@@ -104,5 +95,5 @@ def build(bld):
         source = sources['client'],
         target = 'quake2xp',
         lib = ['z', 'm', 'dl'],
-        use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL', 'X11', 'XXF86VM']
+        use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL']#, 'X11', 'XXF86VM']
     )
