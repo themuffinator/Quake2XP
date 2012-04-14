@@ -18,8 +18,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 #include <ctype.h>
+
 #include "client.h"
-#include "../client/qmenu.h"
+#include "qmenu.h"
 #include "snd_loc.h"
 
 static int m_main_cursor;
@@ -1060,9 +1061,8 @@ static menulist_s s_options_lookspring_box;
 static menulist_s s_options_lookstrafe_box;
 static menulist_s s_options_crosshair_box;
 static menuslider_s s_options_sfxvolume_slider;
-static menuslider_s s_options_acdvolume_slider;
 static menuslider_s s_options_musicvolume_slider;
-static menulist_s s_options_cdvolume_box;
+static menulist_s s_options_musicsrc_list;
 static menulist_s s_options_useEax_list;
 static menulist_s s_options_unlimited_ambient_list;
 static menulist_s s_options_aldev_box;
@@ -1143,9 +1143,7 @@ static void ControlsSetMenuItemValues(void)
 {
 	s_options_sfxvolume_slider.curvalue =
 		Cvar_VariableValue("s_volume") * 20;
-	s_options_acdvolume_slider.curvalue =
-		Cvar_VariableValue("cd_volume") * 20;
-	s_options_cdvolume_box.curvalue = !Cvar_VariableValue("cd_nocd");
+	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicsrc");
 	s_options_useEax_list.curvalue = Cvar_VariableValue("s_openal_eax");
 	s_options_aldistancemodel_list.curvalue =
 		Cvar_VariableValue("s_distance_model");
@@ -1214,21 +1212,15 @@ static void UpdateVolumeFunc(void *unused)
 	}
 }
 
-
-
-static void UpdateCDVolumeFunc(void *unused)
-{
-	Cvar_SetValue("cd_volume", s_options_acdvolume_slider.curvalue / 20);
-}
-
 static void UpdateMusicVolumeFunc(void *unused)
 {
-	if (alSourcef) {
-		Cvar_SetValue("s_musicvolume",
-					  s_options_musicvolume_slider.curvalue / 20);
-		alSourcef(source_name[s_openal_numChannels], AL_GAIN,
-				  s_musicvolume->value);
-	}
+	Cvar_SetValue("s_musicvolume", s_options_musicvolume_slider.curvalue / 20);
+
+	if (alSourcef)
+		alSourcef(source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
+
+	if (s_musicsrc->value == MUSIC_CD)
+		Cvar_SetValue("cd_volume", s_musicvolume->value);
 }
 
 char *al_device[] = {
@@ -1252,12 +1244,10 @@ static void AlDevice(void *unused)
 	CL_Snd_Restart_f();
 }
 
-static void UpdateCDFunc(void *unused)
+static void UpdateMusicSrcFunc(void *unused)
 {
-	Cvar_SetValue("cd_nocd", !s_options_cdvolume_box.curvalue);
-	if (!cd_nocd->value)
-	//	CDAudio_Play(atoi(cl.configstrings[CS_CDTRACK]), true);
-		S_Play_Wav_Music();
+	Cvar_SetValue("s_musicsrc", s_options_musicsrc_list.curvalue);
+	Music_Play();
 }
 
 static void UpdateEAX(void *unused)
@@ -1567,9 +1557,10 @@ static char *yesno_names[] = {
 
 void Options_MenuInit(void)
 {
-	static char *cd_music_items[] = {
-		"disabled",
-		"enabled",
+	static char *s_musicsrc_items[] = {
+		"none",
+		"CD-ROM",
+		"WAV/OGG files",
 		0
 	};
 
@@ -1648,7 +1639,7 @@ void Options_MenuInit(void)
 	s_options_musicvolume_slider.generic.type = MTYPE_SLIDER;
 	s_options_musicvolume_slider.generic.x = 0;
 	s_options_musicvolume_slider.generic.y = 20*cl_fontScale->value;
-	s_options_musicvolume_slider.generic.name = "music volume";
+	s_options_musicvolume_slider.generic.name = "Music volume";
 	s_options_musicvolume_slider.generic.callback = UpdateMusicVolumeFunc;
 	s_options_musicvolume_slider.minvalue = 0;
 	s_options_musicvolume_slider.maxvalue = 20;
@@ -1656,24 +1647,13 @@ void Options_MenuInit(void)
 		Cvar_VariableValue("s_musicvolume") * 20;
 	
 
-	s_options_acdvolume_slider.generic.type = MTYPE_SLIDER;
-	s_options_acdvolume_slider.generic.x = 0;
-	s_options_acdvolume_slider.generic.y = 30*cl_fontScale->value;
-	s_options_acdvolume_slider.generic.name = "CD audio volume";
-	s_options_acdvolume_slider.generic.callback = UpdateCDVolumeFunc;
-	s_options_acdvolume_slider.minvalue = 0;
-	s_options_acdvolume_slider.maxvalue = 20;
-	s_options_acdvolume_slider.curvalue =
-		Cvar_VariableValue("cd_volume") * 20;
-	
-
-	s_options_cdvolume_box.generic.type = MTYPE_SPINCONTROL;
-	s_options_cdvolume_box.generic.x = 0;
-	s_options_cdvolume_box.generic.y = 40*cl_fontScale->value;
-	s_options_cdvolume_box.generic.name = "CD music";
-	s_options_cdvolume_box.generic.callback = UpdateCDFunc;
-	s_options_cdvolume_box.itemnames = cd_music_items;
-	s_options_cdvolume_box.curvalue = !Cvar_VariableValue("cd_nocd");
+	s_options_musicsrc_list.generic.type = MTYPE_SPINCONTROL;
+	s_options_musicsrc_list.generic.x = 0;
+	s_options_musicsrc_list.generic.y = 30*cl_fontScale->value;
+	s_options_musicsrc_list.generic.name = "Music source";
+	s_options_musicsrc_list.generic.callback = UpdateMusicSrcFunc;
+	s_options_musicsrc_list.itemnames = s_musicsrc_items;
+	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicsrc");
 	
 	s_options_alquality_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_alquality_list.generic.x = 0;
@@ -1857,8 +1837,7 @@ void Options_MenuInit(void)
 
 	Menu_AddItem(&s_options_menu, (void *) &s_options_sfxvolume_slider);
 	Menu_AddItem(&s_options_menu, (void *) &s_options_musicvolume_slider);
-	Menu_AddItem(&s_options_menu, (void *) &s_options_acdvolume_slider);
-	Menu_AddItem(&s_options_menu, (void *) &s_options_cdvolume_box);
+	Menu_AddItem(&s_options_menu, (void *) &s_options_musicsrc_list);
 	Menu_AddItem(&s_options_menu, (void *) &s_options_alquality_list);
 	Menu_AddItem(&s_options_menu, (void *) &s_options_aldev_box);
 	Menu_AddItem(&s_options_menu,

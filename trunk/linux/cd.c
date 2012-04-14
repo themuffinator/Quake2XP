@@ -34,12 +34,14 @@ static qboolean initialized = false;
 static qboolean enabled = true;
 static qboolean playLooping = false;
 static SDL_CD *cd_id;
-static float cdvolume = 1.0;
 static int lastTrack = 0;
+static int loopcounter = 0;
 
-cvar_t *cd_volume;
 cvar_t *cd_nocd;
 cvar_t *cd_dev;
+cvar_t *cd_volume;
+cvar_t *cd_loopcount;
+cvar_t *cd_looptrack;
 
 static void CD_f ();
 
@@ -47,14 +49,10 @@ static void
 CDAudio_Eject ()
 {
 	if ( !cd_id || !enabled )
-	{
 		return;
-	}
 
 	if ( SDL_CDEject( cd_id ) )
-	{
 		Com_DPrintf( "Unable to eject CD-ROM tray.\n" );
-	}
 }
 
 void
@@ -65,9 +63,7 @@ CDAudio_Play ( int track, qboolean looping )
 	lastTrack = track + 1;
 
 	if ( !cd_id || !enabled )
-	{
 		return;
-	}
 
 	cd_stat = SDL_CDStatus( cd_id );
 
@@ -92,9 +88,7 @@ CDAudio_Play ( int track, qboolean looping )
 	if ( cd_stat == CD_PLAYING )
 	{
 		if ( cd_id->cur_track == track )
-		{
 			return;
-		}
 
 		CDAudio_Stop();
 	}
@@ -118,16 +112,12 @@ CDAudio_RandomPlay ( void )
 	byte *track_bools;
 
 	if ( !cd_id || !enabled )
-	{
 		return;
-	}
 
 	track_bools = (byte *) malloc( cd_id->numtracks * sizeof ( byte ) );
 
 	if ( track_bools == 0 )
-	{
 		return;
-	}
 
 	/* create an array of available audio tracknumbers */
 	for ( ; i < cd_id->numtracks; i++ )
@@ -159,9 +149,7 @@ CDAudio_RandomPlay ( void )
 		if ( !cdValid )
 		{
 			if ( !CD_INDRIVE( cd_stat ) || ( !cd_id->numtracks ) )
-			{
 				goto free_end;
-			}
 
 			cdValid = true;
 		}
@@ -169,9 +157,7 @@ CDAudio_RandomPlay ( void )
 		if ( cd_stat == CD_PLAYING )
 		{
 			if ( cd_id->cur_track == track + 1 )
-			{
 				goto free_end;
-			}
 
 			CDAudio_Stop();
 		}
@@ -200,21 +186,15 @@ CDAudio_Stop ()
 	int cdstate;
 
 	if ( !cd_id || !enabled )
-	{
 		return;
-	}
 
 	cdstate = SDL_CDStatus( cd_id );
 
 	if ( ( cdstate != CD_PLAYING ) && ( cdstate != CD_PAUSED ) )
-	{
 		return;
-	}
 
 	if ( SDL_CDStop( cd_id ) )
-	{
 		Com_DPrintf( "CDAudio_Stop: Failed to stop track.\n" );
-	}
 
 	playLooping = 0;
 }
@@ -223,38 +203,26 @@ void
 CDAudio_Pause ()
 {
 	if ( !cd_id || !enabled )
-	{
 		return;
-	}
 
 	if ( SDL_CDStatus( cd_id ) != CD_PLAYING )
-	{
 		return;
-	}
 
 	if ( SDL_CDPause( cd_id ) )
-	{
 		Com_DPrintf( "CDAudio_Pause: Failed to pause track.\n" );
-	}
 }
 
 void
 CDAudio_Resume ()
 {
 	if ( !cd_id || !enabled )
-	{
 		return;
-	}
 
 	if ( SDL_CDStatus( cd_id ) != CD_PAUSED )
-	{
 		return;
-	}
 
 	if ( SDL_CDResume( cd_id ) )
-	{
 		Com_DPrintf( "CDAudio_Resume: Failed to resume track.\n" );
-	}
 }
 
 void
@@ -263,26 +231,7 @@ CDAudio_Update ()
 	static int cnt = 0;
 
 	if ( !cd_id || !enabled )
-	{
 		return;
-	}
-
-	if ( cd_volume && ( cd_volume->value != cdvolume ) )
-	{
-		if ( cdvolume )
-		{
-			Cvar_SetValue( "cd_volume", 0.0 );
-			CDAudio_Pause();
-		}
-		else
-		{
-			Cvar_SetValue( "cd_volume", 1.0 );
-			CDAudio_Resume();
-		}
-
-		cdvolume = cd_volume->value;
-		return;
-	}
 
 	/* this causes too much overhead to be executed every frame */
 	if ( ++cnt == 16 )
@@ -299,7 +248,12 @@ CDAudio_Update ()
 			 ( SDL_CDStatus( cd_id ) != CD_PLAYING ) &&
 			 ( SDL_CDStatus( cd_id ) != CD_PAUSED ) )
 		{
-			CDAudio_Play( lastTrack, true );
+			if (loopcounter >= cd_loopcount->value) {
+				CDAudio_Play( cd_looptrack->value, true );
+			} else {
+				CDAudio_Play( lastTrack, true );
+				loopcounter++;
+			}
 		}
 	}
 }
@@ -310,25 +264,19 @@ CDAudio_Init ()
 	cvar_t *cv;
 
 	if ( initialized )
-	{
-		return ( 0 );
-	}
-
-	cv = Cvar_Get( "nocdaudio", "0", CVAR_NOSET );
-
-	if ( cv->value )
-	{
-		return ( -1 );
-	}
+		return 0;
 
 	cd_nocd = Cvar_Get( "cd_nocd", "0", CVAR_ARCHIVE );
+	cd_dev = Cvar_Get( "cd_dev", "0", CVAR_ARCHIVE );
+
+	// XXX: we can't adjust CD volume with SDL, so it is ignored
+	cd_volume = Cvar_Get( "cd_volume", "1", CVAR_ARCHIVE );
+
+	cd_loopcount = Cvar_Get ("cd_loopcount", "25", CVAR_ARCHIVE); //was 4
+	cd_looptrack = Cvar_Get ("cd_looptrack", "11", 0);
 
 	if ( cd_nocd->value )
-	{
-		return ( -1 );
-	}
-
-	cd_volume = Cvar_Get( "cd_volume", "1", CVAR_ARCHIVE );
+		return -1;
 
 	if ( SDL_WasInit( SDL_INIT_EVERYTHING ) == 0 )
 	{
@@ -347,7 +295,7 @@ CDAudio_Init ()
 		}
 	}
 
-	cd_id = SDL_CDOpen( 0 );
+	cd_id = SDL_CDOpen( cd_dev->value );
 
 	if ( !cd_id )
 	{
@@ -381,20 +329,15 @@ void
 CDAudio_Shutdown ()
 {
 	if ( !cd_id )
-	{
 		return;
-	}
 
 	CDAudio_Stop();
 	SDL_CDClose( cd_id );
 	cd_id = NULL;
 
-	if ( SDL_WasInit( SDL_INIT_EVERYTHING ) == SDL_INIT_CDROM )
-	{
+	if ( SDL_WasInit( SDL_INIT_EVERYTHING ) == SDL_INIT_CDROM ) {
 		SDL_Quit();
-	}
-	else
-	{
+	} else {
 		SDL_QuitSubSystem( SDL_INIT_CDROM );
 	}
 
@@ -408,30 +351,22 @@ CD_f ()
 	int cdstate;
 
 	if ( Cmd_Argc() < 2 )
-	{
 		return;
-	}
 
 	command = Cmd_Argv( 1 );
 
 	if ( !Q_strcasecmp( command, "on" ) )
-	{
 		enabled = true;
-	}
 
 	if ( !Q_strcasecmp( command, "off" ) )
 	{
 		if ( !cd_id )
-		{
 			return;
-		}
 
 		cdstate = SDL_CDStatus( cd_id );
 
 		if ( ( cdstate == CD_PLAYING ) || ( cdstate == CD_PAUSED ) )
-		{
 			CDAudio_Stop();
-		}
 
 		enabled = false;
 		return;
@@ -489,8 +424,7 @@ CD_f ()
 					playLooping ? "looping" : "playing",
 					cd_id->cur_track + 1 );
 		}
-		else
-		if ( cdstate == CD_PAUSED )
+		else if ( cdstate == CD_PAUSED )
 		{
 			Com_Printf( "Paused %s track %d\n",
 					playLooping ? "looping" : "playing",
@@ -505,12 +439,8 @@ void
 CDAudio_Activate ( qboolean active )
 {
 	if ( active )
-	{
 		CDAudio_Resume();
-	}
 	else
-	{
 		CDAudio_Pause();
-	}
 }
 

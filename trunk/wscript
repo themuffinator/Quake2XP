@@ -2,11 +2,15 @@
 # encoding: utf-8
 
 # TODO list
-# other
+# mandatory
 # - respect filesystem: f* -> FS_*, one write directory, etc
 # - compare system.c and related with Yamagi Q2
-# cool
-# - try PhysicsFS from icculus.org to simplify filesystem management
+# - add ogg/vorbis support (not the complete QuDos player, only for original tracks)
+# performance
+# - try -ftree-vectorize-verbose=2 and related to replace hand-optimized C or
+#   assembly code
+# - if needed, try OpenMP in some loops like Mod_LoadFaces and
+#   GL_ResampleTexture (check prof and profO3 for more)
 
 
 VERSION = '1.0'
@@ -34,6 +38,7 @@ sources_glob = {
         'client/snd_mem.c',
         'client/snd_openal.c',
         'client/snd_context.c',
+        'client/music.c',
         'qcommon/*.c',
         'server/*.c',
         'ref_gl/*.c',
@@ -56,8 +61,10 @@ def build(bld):
     src_dir = bld.srcnode
     #src_dir = bld.path.find_dir('src')
 
-    bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
+    #bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
+    #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-ftree-vectorize', '-ftree-vectorizer-verbose=2'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
+    bld.env.append_value('CFLAGS', ['-g'])
     #bld.env.append_value('CFLAGS', ['-pg', '-O3'])
     #bld.env.append_value('LINKFLAGS', ['-pg'])
 

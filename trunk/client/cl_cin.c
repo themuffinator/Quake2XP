@@ -166,6 +166,7 @@ void SCR_StopCinematic(void)
 		Z_Free(cin.hnodes1);
 		cin.hnodes1 = NULL;
 	}
+	S_Streaming_Stop();
 }
 
 /*
@@ -390,32 +391,6 @@ cblock_t Huff1Decompress(cblock_t in)
 	return out;
 }
 
-static byte data[0x40000], *p;
-static long audio_bytes_cashed;
-
-/*
-willow: !!EXTREMELY BETA!!
-*/
-void SCR_audioCinematic(void **cin_data, long *cin_rate,
-						long *ulBytesWritten, ALenum * format)
-{
-	if (cin.s_width == 2) {
-		if (cin.s_channels == 1)
-			*format = AL_FORMAT_MONO16;
-		else
-			*format = AL_FORMAT_STEREO16;
-	} else {
-		if (cin.s_channels == 1)
-			*format = AL_FORMAT_MONO8;
-		else
-			*format = AL_FORMAT_STEREO8;
-	}
-	*cin_rate = cin.s_rate;
-	*cin_data = data;
-	*ulBytesWritten = audio_bytes_cashed;
-	audio_bytes_cashed = 0;
-}
-
 /*
 ==================
 SCR_ReadNextFrame
@@ -425,11 +400,13 @@ byte *SCR_ReadNextFrame(void)
 {
 	size_t r;
 	int command;
+	byte samples[22050 / 14 * 4 + 4096*4];
+	byte *pSamples;
 	byte compressed[0x20000];
 	int size;
 	byte *pic;
 	cblock_t in, huf1;
-	int start, end, samples, len;
+	int start, end, numSamples, numBytes;
 
 
 
@@ -461,31 +438,21 @@ byte *SCR_ReadNextFrame(void)
 	// read sound
 	start = cl.cinematicframe * cin.s_rate / 14;
 	end = (cl.cinematicframe + 1) * cin.s_rate / 14;
-	samples = end - start;
-	len = samples * cin.s_width * cin.s_channels;
+	numSamples = end - start;
+	numBytes = numSamples * cin.s_width * cin.s_channels;
 
 	if (cl.cinematicframe == 0) {
-		samples += 4096;
-
-		if (cin.s_width == 2)
-			memset(data, 0x00, 4096 * cin.s_width * cin.s_channels);
-		else
-			memset(data, 0x80, 4096 * cin.s_width * cin.s_channels);
-
-		p = data + (4096 * cin.s_width * cin.s_channels);
-	} else
-		p = data;
-
-	// FS_Read (p, len, cl.cinematic_file);
-
-	FS_Read(p + audio_bytes_cashed, len, &cl.cinematic_file);
-	if (audio_bytes_cashed < 200000) {
-		if (cl.cinematicframe == 0)
-			audio_bytes_cashed +=
-				len + (4096 * cin.s_width * cin.s_channels);
-		else
-			audio_bytes_cashed += len;
+		const int pattern = (cin.s_width == 2) ? 0 : 0x80;
+		const int num = 4096 * cin.s_width * cin.s_channels;
+		memset(samples, pattern, num);
+		S_Streaming_AddChunk(samples, num);
 	}
+
+	FS_Read(samples, numBytes, &cl.cinematic_file);
+	// FIXME: convert to little endian if cin.s_width == 2, as in Yamagi Q2
+	
+	S_Streaming_AddChunk(samples, numBytes);
+
 	// ///////////////////////
 
 	in.data = compressed;
@@ -617,7 +584,7 @@ void SCR_PlayCinematic(char *arg)
 	char name[MAX_OSPATH], *dot;
 
 	// make sure CD isn't playing music
-	CDAudio_Stop();
+	Music_Stop();
 	// make sure all the audio sources is free and silent
 	S_StopAllSounds();
 
@@ -666,13 +633,11 @@ void SCR_PlayCinematic(char *arg)
 	FS_Read(&cin.s_channels, 4, &cl.cinematic_file);
 	cin.s_channels = LittleLong(cin.s_channels);
 
+	S_Streaming_StartChunk(cin.s_width*8, cin.s_channels, cin.s_rate, 1.0);
 
 	Huff1TableInit();
 
 	cl.cinematicframe = 0;
 	cin.pic = SCR_ReadNextFrame();
 	cl.cinematictime = Sys_Milliseconds();
-
-	audio_bytes_cashed = 0;
-	S_StartCinematic();
 }

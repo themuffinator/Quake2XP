@@ -35,7 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "input.h"
 #include "keys.h"
 #include "cl_console.h"
-#include "cdaudio.h"
 #include "snd_loc.h"
 
 #include "../ref_gl/r_particle.h"
@@ -426,8 +425,8 @@ extern cvar_t *cl_blood;
 
 extern cvar_t *r_player_shadow;
 
-extern cvar_t *cd_nocd;
-extern cvar_t *cd_volume;
+extern cvar_t *music_source;
+extern cvar_t *music_volume;
 
 extern cvar_t *cl_brass;
 extern cvar_t *cl_3dhud;
@@ -521,7 +520,6 @@ void CL_ParticleEffect3(vec3_t org, vec3_t dir, int color, int count);
 
 int CL_PMpointcontents(vec3_t point);
 void CL_GetEntityOrigin(int ent, vec3_t origin);
-void CL_PlayBackgroundTrack(void);
 void LoadHudEnts(void);
 void CL_ParticleBlood(vec3_t org, vec3_t dir, int count);
 void CL_ParticleRick(vec3_t org, vec3_t dir);

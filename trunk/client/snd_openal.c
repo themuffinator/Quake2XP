@@ -45,6 +45,7 @@ playsound_t s_pendingplays;
 cvar_t	*s_volume;
 cvar_t	*s_show;
 cvar_t	*s_musicvolume;
+cvar_t	*s_musicsrc;
 cvar_t	*s_openal_eax;
 cvar_t	*s_openal_device;
 cvar_t	*s_quality;
@@ -68,21 +69,54 @@ const GUID DSPROPSETID_EAX20_BufferProperties =
 // =======================================================================
 // Video & Music streaming
 // =======================================================================
-int streaming;					// willow: If enabled (not zero) one
-								// channel dedicated to cinematic or VOIP
-								// communications.
-#define			SND_STREAMING_NUMBUFFERS              4
-extern byte *stream_wav;
-extern long stream_info_rate;
-extern long stream_info_samples;
-extern long stream_info_dataofs;
-ALuint uiBuffers[SND_STREAMING_NUMBUFFERS];
-unsigned long ulDataSize = 0;
-unsigned long ulBufferSize = 0;
-unsigned long ulBytesWritten = 0;
-void *pData = NULL;
-int BackgroundTrack_Repeat;
-void StreamingWav_Reset(void);
+
+#define NUM_STREAMING_BUFFERS 4
+
+typedef struct {
+	// willow: If enabled (not zero) one channel dedicated to cinematic or VOIP communications.
+	qboolean enabled;
+
+	ALuint buffers[NUM_STREAMING_BUFFERS];
+	unsigned bFirst, bNumAvail;
+
+	// FIXME: memcpy crashed with malloc's buffer. try again later.
+	//void *preloadBf;
+	char preloadBf[0x10000];
+	int preloadBfSize;
+	int preloadBfPos;
+
+	ALsizei sound_rate;
+	ALenum sound_format;
+
+} streaming_t;
+
+streaming_t streaming;
+
+static inline void sq_add(ALuint x) {
+	int tail = (streaming.bFirst + streaming.bNumAvail) % NUM_STREAMING_BUFFERS;
+
+	// assuming non-full queue
+	assert(streaming.bNumAvail < NUM_STREAMING_BUFFERS);
+
+	streaming.buffers[tail] = x;
+	streaming.bNumAvail++;
+}
+
+static inline ALuint sq_remove(void) {
+	ALuint r;
+
+	// assuming non-empty queue
+	assert(streaming.bNumAvail > 0);
+
+	r = streaming.buffers[streaming.bFirst];
+	streaming.bFirst = (streaming.bFirst+1) % NUM_STREAMING_BUFFERS;
+	streaming.bNumAvail--;
+
+	return r;
+}
+
+// TODO: put in global header together with max and others below
+#define MIN(a,b) ((a)>(b) ? (b) : (a))
 
 /*
 =================
@@ -104,9 +138,31 @@ float VectorLength_Squared(vec3_t v)
 	return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 }
 
-// ====================================================================
-// User-setable variables
-// ====================================================================
+/*
+===============================================================================
+console functions
+===============================================================================
+*/
+
+void S_Play(void)
+{
+	int i = 1;
+	char name[256];
+
+	while (i < Cmd_Argc()) {
+		if (!strrchr(Cmd_Argv(i), '.')) {
+			strcpy(name, Cmd_Argv(i));
+			strcat(name, ".wav");
+		} else
+			strcpy(name, Cmd_Argv(i));
+
+		// TO DO - willow: do not cache this data to onboard memory!
+		// this seems to be just any random file, we do no need to store
+		// it in valuable memory.
+		S_StartLocalSound(S_FindName(name, true));
+		i++;
+	}
+}
 
 void S_SoundInfo_f(void)
 {
@@ -129,27 +185,19 @@ void S_SoundInfo_f(void)
 
 static void AllocChannels(void)
 {
-#define GPA(a) GetProcAddress(alConfig.hInstOpenAL, a);
+	s_openal_numChannels = MAX_CHANNELS + 1;	// +1 streaming channel
 
-#ifdef _WIN32
-	LPALGENSOURCES alGenSources = (LPALGENSOURCES) GPA("alGenSources");
-#endif
-
-	if (alGenSources) {
-		s_openal_numChannels = MAX_CHANNELS + 1;	// +1 streaming
-													// channel
-		while (s_openal_numChannels > MIN_CHANNELS) {
-			alGenSources(s_openal_numChannels, source_name);
-			--s_openal_numChannels;
-			if (alGetError() == AL_NO_ERROR) {
-				Com_Printf("%i mix channels allocated.\n",
-						   s_openal_numChannels);
-				Com_Printf("streaming channel allocated.\n");
-				return;
-			}
+	while (s_openal_numChannels > MIN_CHANNELS) {
+		alGenSources(s_openal_numChannels, source_name);
+		--s_openal_numChannels;
+		if (alGetError() == AL_NO_ERROR) {
+			Com_Printf("%i mix channels allocated.\n", s_openal_numChannels);
+			Com_Printf("streaming channel allocated.\n");
+			return;
 		}
-		Com_Printf("Not enough mix channels!\n");
 	}
+
+	Com_Printf("Not enough mix channels!\n");
 	s_openal_numChannels = 0;
 }
 
@@ -168,6 +216,7 @@ void S_Init(int hardreset)
 		s_volume			=	Cvar_Get("s_volume", "1", CVAR_ARCHIVE);
 		s_show				=	Cvar_Get("s_show", "0", 0);
 		s_musicvolume		=	Cvar_Get("s_musicvolume", "0.8", CVAR_ARCHIVE);
+		s_musicsrc			=	Cvar_Get("s_musicsrc", "auto", CVAR_ARCHIVE);
 		s_openal_device		=	Cvar_Get("s_openal_device", "", CVAR_ARCHIVE);
 		s_openal_eax		=	Cvar_Get("s_openal_eax", "0", CVAR_ARCHIVE);
 		s_quality			=	Cvar_Get("s_quality", "0", CVAR_ARCHIVE);
@@ -216,14 +265,8 @@ void S_Init(int hardreset)
 						AL_EXPONENT_DISTANCE,
 						AL_EXPONENT_DISTANCE_CLAMPED
 					};
-#ifdef _WIN32
-					LPALDISTANCEMODEL alDistanceModel =
-						(LPALDISTANCEMODEL) GPA("alDistanceModel");
-#endif
-					if (alDistanceModel)
-						alDistanceModel(modelName
-										[(int) s_distance_model->value -
-										 1]);
+
+					alDistanceModel(modelName [(int) s_distance_model->value - 1]);
 				}
 
 				alListenerf(AL_GAIN, Com_Clamp(s_volume->value, 0, 1));
@@ -235,16 +278,16 @@ void S_Init(int hardreset)
 					Cmd_AddCommand("stopsound", S_StopAllSounds);
 					Cmd_AddCommand("music", S_Music_f);
 					Cmd_AddCommand("s_info", S_SoundInfo_f);
-					Cmd_AddCommand("s_test", S_Play_Wav_Music);
+					Cmd_AddCommand("s_test", Music_Play);
 					
 
 					CL_fast_sound_init();
 
 					// Generate some AL Buffers for streaming
-					alGenBuffers(SND_STREAMING_NUMBUFFERS, uiBuffers);
+					alGenBuffers(NUM_STREAMING_BUFFERS, streaming.buffers);
 #ifdef _WITH_EAX
 					if (!eaxSetBufferMode
-						(SND_STREAMING_NUMBUFFERS, uiBuffers,
+						(NUM_STREAMING_BUFFERS, streaming.buffers,
 						 alGetEnumValue(" AL_STORAGE_ACCESSIBLE"))) {
 						// "AL_STORAGE_AUTOMATIC" "AL_STORAGE_HARDWARE"
 						// "AL_STORAGE_ACCESSIBLE"
@@ -253,8 +296,8 @@ void S_Init(int hardreset)
 					} 
 #endif
 					// Streaming memory management
-					ulBufferSize = 0x10000;
-					pData = malloc(ulBufferSize);
+					streaming.preloadBfSize = 0x10000;
+					//streaming.preloadBf = malloc(streaming.preloadBfSize);
 				}
 
 				S_StopAllSounds();	// inits freeplays
@@ -311,11 +354,12 @@ void S_Shutdown(void)
 {
 	if (s_openal_numChannels) {
 		// Release temporary streaming storage
-		free(pData);
-		pData = NULL;
+		//free(streaming.preloadBf);
+		streaming.preloadBfSize = 0;
+		//streaming.preloadBf = NULL;
 
 		// Clean up streaming buffers
-		alDeleteBuffers(SND_STREAMING_NUMBUFFERS, uiBuffers);
+		alDeleteBuffers(NUM_STREAMING_BUFFERS, streaming.buffers);
 
 		CL_fast_sound_close();
 		FreeSounds();
@@ -982,22 +1026,8 @@ void S_StopAllSounds(void)
 	// clear all the channels
 	// memset(s_openal_channels, 0, sizeof(s_openal_channels));
 
-	// Stop streaming channel
-	S_StopBackgroundTrack();
+	S_Streaming_Stop();
 }
-
-void S_RawSetup(unsigned rate, unsigned width, unsigned channels)
-{
-	if (!s_openal_numChannels)
-		return;
-}
-
-void S_RawSamples(unsigned samples, byte * data)
-{
-	if (!s_openal_numChannels)
-		return;
-}
-
 
 openal_channel_t *PickChannel(channel_task_t * Channels_TODO,
 							  unsigned int entNum, unsigned int entChannel,
@@ -1525,292 +1555,116 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 			alSourcePlay(sourceNum);
 		}
 	}
-
-	S_UpdateBackgroundTrack();
 }
-
 
 /*
 ===============================================================================
-
-console functions
-
+Music Streaming
 ===============================================================================
 */
 
-void S_Play(void)
-{
-	int i = 1;
-	char name[256];
-
-	while (i < Cmd_Argc()) {
-		if (!strrchr(Cmd_Argv(i), '.')) {
-			strcpy(name, Cmd_Argv(i));
-			strcat(name, ".wav");
-		} else
-			strcpy(name, Cmd_Argv(i));
-
-		// TO DO - willow: do not cache this data to onboard memory!
-		// this seems to be just any random file, we do no need to store
-		// it in valuable memory.
-		S_StartLocalSound(S_FindName(name, true));
-		i++;
-	}
-}
-
-void S_SoundList_f(void)
-{
-}
-
-
-int cinframe;
-
-
-void S_StopBackgroundTrack()
-{
-	if (streaming) {
+void S_Streaming_Stop() {
+	if (streaming.enabled) {
 		// Stop the Source and clear the Queue
-		alSourceStop(source_name[s_openal_numChannels]);
-		alSourcei(source_name[s_openal_numChannels], AL_BUFFER, 0);
+		alSourceStop(source_name[CH_STREAMING]);
+		alSourcei(source_name[CH_STREAMING], AL_BUFFER, 0);
 
-		// Close Wave Handle
-		if (streaming == 1)		// music streaming
-		{
-			StreamingWav_close();
-		}
-
-		streaming = 0;
+		streaming.enabled = false;
 	}
 }
 
-void S_UpdateBackgroundTrack()
-{
-	if (streaming) {
-		ALint iState;
-		ALenum format;
-		int iBuffersProcessed = 0;
+qboolean S_Streaming_StartChunk(int num_bits, int num_channels, ALsizei rate, float volume) {
+	if (streaming.enabled) {
+		Com_Printf(S_COLOR_YELLOW "S_Streaming_StartChunk: interrupting active stream\n");
+		S_Streaming_Stop();
+	}
 
-		if (cinframe < 4 && streaming == 2) {
-			void *cin_data;
-			SCR_audioCinematic(&cin_data, &stream_info_rate,
-							   &ulBytesWritten, &format);
-			if (ulBytesWritten) {
-				alBufferData(uiBuffers[cinframe], format, cin_data,
-							 ulBytesWritten, stream_info_rate);
-				alSourceQueueBuffers(source_name[s_openal_numChannels], 1,
-									 &uiBuffers[cinframe]);
-				cinframe++;
-			}
+	if (num_bits == 8 && num_channels == 1)
+		streaming.sound_format = AL_FORMAT_MONO8;
+	else if (num_bits == 8 && num_channels == 2)
+		streaming.sound_format = AL_FORMAT_STEREO8;
+	else if (num_bits == 16 && num_channels == 1)
+		streaming.sound_format = AL_FORMAT_MONO16;
+	else if (num_bits == 16 && num_channels == 2)
+		streaming.sound_format = AL_FORMAT_STEREO16;
+	else {
+		Com_Printf(S_COLOR_RED "Unsupported format: %d bits and %d channels\n", num_bits, num_channels);
+		return false;
+	}
+
+	alSourcef(source_name[CH_STREAMING], AL_GAIN, volume);
+	streaming.sound_rate = rate;
+	streaming.preloadBfPos = 0;
+	streaming.bFirst = 0;
+	streaming.bNumAvail = NUM_STREAMING_BUFFERS;
+	streaming.enabled = true;
+
+	return true;
+}
+
+int S_Streaming_AddChunk(const byte *buffer, int num_bytes) {
+	// TODO: use initial buffer before sending data to AL; keep count of used buffers; better algorithm: always dequeue, and then always add if we have enough data (otherwise wait)
+	// TODO: restore comments
+
+	ALint iState;
+	int readacc = 0;
+
+	if (!streaming.enabled)
+		return 0;
+
+	if (num_bytes == 0)
+		return 0;
+
+	// reclaim buffers that have been played
+	if (streaming.bNumAvail < NUM_STREAMING_BUFFERS) {
+		int recycled, i;
+		alGetSourcei(source_name[CH_STREAMING], AL_BUFFERS_PROCESSED, &recycled);
+
+		for (i = 0; i < recycled; i++) {
+			ALuint buf;
+			alSourceUnqueueBuffers(source_name[CH_STREAMING], 1, &buf);
+			sq_add(buf);
+		}
+	}
+
+	// 
+	while (num_bytes > 0 && streaming.bNumAvail > 0) {
+		int readcur = MIN(streaming.preloadBfSize - streaming.preloadBfPos, num_bytes);
+
+		memcpy(streaming.preloadBf + streaming.preloadBfPos, buffer, readcur);
+		streaming.preloadBfPos += readcur;
+		num_bytes -= readcur;
+		readacc += readcur;
+
+		//if (streaming.preloadBfPos > 25000) {
+		if (streaming.preloadBfPos > 0) {
+			const ALuint buf = sq_remove();
+
+			alBufferData(buf, streaming.sound_format,
+				streaming.preloadBf, streaming.preloadBfPos, streaming.sound_rate);
+			alSourceQueueBuffers(source_name[CH_STREAMING], 1, &buf);
+			streaming.preloadBfPos = 0;
 		} else
-			// Request the number of OpenAL Buffers have been processed
-			// (played) on the Source
-			alGetSourcei(source_name[s_openal_numChannels],
-						 AL_BUFFERS_PROCESSED, &iBuffersProcessed);
+			break;
+	}
 
-		// For each processed buffer, remove it from the Source Queue,
-		// read next chunk of audio
-		// data from disk, fill buffer with new data, and add it to the
-		// Source Queue
-		while (iBuffersProcessed) {
-			// Remove the Buffer from the Queue.  (uiBuffer contains the
-			// Buffer ID for the unqueued Buffer)
-			ALuint uiBuffer = 0;
-			alSourceUnqueueBuffers(source_name[s_openal_numChannels], 1,
-								   &uiBuffer);
+	alGetSourcei(source_name[CH_STREAMING], AL_SOURCE_STATE, &iState);
+	if (iState != AL_PLAYING) {
+		ALint iQueuedBuffers;
+		alGetSourcei(source_name[CH_STREAMING], AL_BUFFERS_QUEUED, &iQueuedBuffers);
 
-			  if (streaming == 1)     // music streaming
-               {
-				a:
-                    ulBytesWritten =
-                         (ulBufferSize >
-                          stream_info_samples * 2) ? stream_info_samples *
-                         2 : ulBufferSize;
-                    if (ulBytesWritten) {
-                         memcpy(pData, stream_wav + stream_info_dataofs,
-                                 ulBytesWritten);
-                         {
-                              alBufferData(uiBuffer, AL_FORMAT_STEREO16, pData,
-                                              ulBytesWritten, stream_info_rate);
-                              alSourceQueueBuffers(source_name
-                                                        [s_openal_numChannels], 1,
-                                                        &uiBuffer);
-                         }
-                         stream_info_samples -= ulBytesWritten / 2;
-                         stream_info_dataofs += ulBytesWritten;
-                    }
-                    else
-                    {
-                         if (BackgroundTrack_Repeat)
-                              StreamingWav_Reset();
-                         goto a;
-                    }
-               }
-			if (streaming == 2)	// cinematic streaming
-			{
-				void *cin_data;
-				SCR_audioCinematic(&cin_data, &stream_info_rate,
-								   &ulBytesWritten, &format);
-				if (ulBytesWritten) {
-					{
-						alBufferData(uiBuffer, format, cin_data,
-									 ulBytesWritten, stream_info_rate);
-						alSourceQueueBuffers(source_name
-											 [s_openal_numChannels], 1,
-											 &uiBuffer);
-					}
-				}
-			}
-
-			iBuffersProcessed--;
-		}
-
-		// Check the status of the Source.  If it is not playing, then
-		// playback was completed,
-		// or the Source was starved of audio data, and needs to be
-		// restarted.
-
-		if (cinframe < 4 && streaming == 2)
-			return;
-
-		alGetSourcei(source_name[s_openal_numChannels], AL_SOURCE_STATE,
-					 &iState);
-		  if (iState != AL_PLAYING) {
-               ALint iQueuedBuffers;
-               // If there are Buffers in the Source Queue then the Source
-               // was starved of audio
-               // data, so needs to be restarted (because there is more audio
-               // data to play)
-               alGetSourcei(source_name[s_openal_numChannels],
-                               AL_BUFFERS_QUEUED, &iQueuedBuffers);
-               if (iQueuedBuffers) {
-                    alSourcePlay(source_name[s_openal_numChannels]);
-               } else {
-                    if (BackgroundTrack_Repeat)
-                    // Repeat track
-                         StreamingWav_Reset();
-                    else
-                    // Finished playing
-                         S_StopBackgroundTrack();
-               }
+		if (iQueuedBuffers > 0) {
+			alSourcePlay(source_name[CH_STREAMING]);
+		} else {
+			// FIXME: avoid stopping when buffering, but consume preloadBf when nothing is received?
+			printf("nothing playing and no queued buffers; %d preload\n", streaming.preloadBfPos);
+			// Finished playing
+			//streaming_buffered = false;
+			//S_Streaming_Stop();
 		}
 	}
-}
 
-
-/*
- =================
- S_Music_f
- =================
-*/
-
-
-void S_Music_f(void)
-{
-
-	char intro[MAX_QPATH], loop[MAX_QPATH];
-
-	Com_Printf("*** MUSIC BOX HIGHLY BETA!! ***\n");
-
-	if (Cmd_Argc() < 2 || Cmd_Argc() > 3) {
-		Com_Printf("Usage: music <musicfile> [loopfile]\n");
-		return;
-	}
-
-	Q_strncpyz(intro, Cmd_Argv(1), sizeof(intro));
-	Com_DefaultPath(intro, sizeof(intro), "music");
-	Com_DefaultExtension(intro, sizeof(intro), ".wav");
-
-	if (Cmd_Argc() == 3) {
-		sprintf(loop, Cmd_Argv(2), sizeof(loop));
-		Com_DefaultPath(loop, sizeof(loop), "music");
-		Com_DefaultExtension(loop, sizeof(loop), ".wav");
-
-		S_StartBackgroundTrack(intro, loop);
-	} else
-		S_StartBackgroundTrack(intro, intro);
-}
-
-
-
-
-void S_Play_Wav_Music(void)
-{
-	char	name[MAX_QPATH];
-	int		track;
-	
-	if(cd_nocd->value){
-		CDAudio_Stop();
-		S_StopBackgroundTrack();	
-		return;
-	}
-	track = atoi(cl.configstrings[CS_CDTRACK]);
-
-	if (track == 0){
-		// Stop any playing track
-		CDAudio_Stop();
-		S_StopBackgroundTrack();
-		return;
-	}
-
-	// If an wav file exists play it, otherwise fall back to CD audio
-	Q_snprintfz(name, sizeof(name), "music/track%02i.wav", track);
-	if (FS_LoadFile(name, NULL) != -1)
-		S_StartBackgroundTrack(name, name);
-	else
-		CDAudio_Play(track, true);
-
-}
-
-void S_StartBackgroundTrack(char *introTrack, char *loopTrack)
-{
-	 BackgroundTrack_Repeat = loopTrack != 0;
-	
-	if (streaming)
-		S_StopBackgroundTrack();
-
-	if (StreamingWav_init(loopTrack ? loopTrack : introTrack)) {
-		int i;
-		// Fill all the Buffers with audio data from the wavefile
-		for (i = 0; i < SND_STREAMING_NUMBUFFERS; i++) {
-/*				if (SUCCEEDED(pWaveLoader->ReadWaveData(WaveID, pData, ulBufferSize, &ulBytesWritten)))
-*/
-			ulBytesWritten =
-				(ulBufferSize >
-				 stream_info_samples * 2) ? stream_info_samples *
-				2 : ulBufferSize;
-			if (ulBytesWritten) {
-				memcpy(pData, stream_wav + stream_info_dataofs,
-					   ulBytesWritten);
-				{
-					alBufferData(uiBuffers[i], AL_FORMAT_STEREO16, pData,
-								 ulBytesWritten, stream_info_rate);
-					alSourceQueueBuffers(source_name[s_openal_numChannels],
-										 1, &uiBuffers[i]);
-				}
-				stream_info_samples -= ulBytesWritten / 2;
-				stream_info_dataofs += ulBytesWritten;
-			}
-		}
-		// Start playing source
-		alSourcef(source_name[s_openal_numChannels], AL_GAIN,
-				  s_musicvolume->value);
-		alSourcePlay(source_name[s_openal_numChannels]);
-		streaming = 1;
-
-	} else
-		Com_Printf("Failed to load %s\n", introTrack);
-}
-
-void S_StartCinematic(void)
-{
-	if(!s_initsound->value || openalStop)
-		return;
-	
-	if (streaming)
-		S_StopBackgroundTrack();
-
-	alSourcef(source_name[s_openal_numChannels], AL_GAIN, 1.0);
-
-	cinframe = 0;
-	streaming = 2;				// Streaming CINEMATICS audio
+	if (readacc == 0)
+		Com_Printf(S_COLOR_RED "Warning: added 0 samples to queue but %d given\n", num_bytes);
+	return readacc;
 }

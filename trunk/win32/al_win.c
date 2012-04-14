@@ -53,11 +53,13 @@ LPALBUFFERDATA				alBufferData;
 LPALDELETEBUFFERS			alDeleteBuffers;
 LPALDELETESOURCES			alDeleteSources;
 LPALDISABLE					alDisable;
+LPALDISTANCEMODEL			alDistanceModel;
 LPALDOPPLERFACTOR			alDopplerFactor;
 LPALDOPPLERVELOCITY			alDopplerVelocity;			//willow:		must not be used in OpenAL 1.1
 LPALSPEEDOFSOUND            alSpeedOfSound;
 LPALENABLE					alEnable;
 LPALGENBUFFERS				alGenBuffers;
+LPALGENSOURCES				alGenSources;
 LPALGETBOOLEAN				alGetBoolean;
 LPALGETBOOLEANV				alGetBooleanv;
 LPALGETBUFFERF				alGetBufferf;
@@ -194,12 +196,14 @@ void QAL_Shutdown (void)
 	alBufferData				= NULL;
 	alDeleteBuffers				= NULL;
 	alDeleteSources				= NULL;
+	alDistanceModel				= NULL;
 	alDisable					= NULL;
 	alDopplerFactor				= NULL;
 	alDopplerVelocity			= NULL;
 	alSpeedOfSound				= NULL;
 	alEnable					= NULL;
 	alGenBuffers				= NULL;
+	alGenSources				= NULL;
 	alGetBoolean				= NULL;
 	alGetBooleanv				= NULL;
 	alGetBufferf				= NULL;
@@ -358,12 +362,15 @@ qboolean AL_Init (int hardreset)
 		alBufferData			= (LPALBUFFERDATA)GPA("alBufferData");
 		alDeleteBuffers			= (LPALDELETEBUFFERS)GPA("alDeleteBuffers");
 		alDeleteSources			= (LPALDELETESOURCES)GPA("alDeleteSources");
+
+		alDistanceModel			= (LPALDISTANCEMODEL) GPA("alDistanceModel");
 		alDisable				= (LPALDISABLE)GPA("alDisable");
 		alDopplerFactor			= (LPALDOPPLERFACTOR)GPA("alDopplerFactor");
 		alDopplerVelocity		= (LPALDOPPLERVELOCITY)GPA("alDopplerVelocity");
 		alSpeedOfSound			= (LPALSPEEDOFSOUND)GPA ("alSpeedOfSound");
 		alEnable				= (LPALENABLE)GPA("alEnable");
 		alGenBuffers			= (LPALGENBUFFERS)GPA("alGenBuffers");
+		alGenSources			= (LPALGENSOURCES) GPA("alGenSources");
 		alGetBoolean			= (LPALGETBOOLEAN)GPA("alGetBoolean");
 		alGetBooleanv			= (LPALGETBOOLEANV)GPA("alGetBooleanv");
 		alGetBufferf			= (LPALGETBUFFERF)GPA("alGetBufferf");

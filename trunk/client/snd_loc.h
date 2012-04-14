@@ -287,6 +287,9 @@ typedef struct {
 
 ====================================================================
 */
+
+#define CH_STREAMING s_openal_numChannels
+
 #define MAX_CHANNELS 126		// Creative X-Fi limits (126, except the 1
 								// streaming channel)
 #define MIN_CHANNELS 13			// NVidia onboard audio. (WIN x64
@@ -297,10 +300,10 @@ extern openal_channel_t s_openal_channels[MAX_CHANNELS];
 extern ALuint source_name[MAX_CHANNELS + 1];	// plus 1 streaming
 												// channel
 extern unsigned s_openal_numChannels;
-extern int streaming;
 
 extern cvar_t *s_volume;
 extern cvar_t *s_musicvolume;
+extern cvar_t *s_musicsrc;
 extern cvar_t *s_show;
 extern cvar_t *s_openal_eax;
 extern cvar_t *s_openal_device;
@@ -312,19 +315,21 @@ qboolean alSource_EAX_Flags(ALuint sourceNum, DWORD dwValue);
 qboolean alSource_EAX_All(ALuint sourceNum, LPEAXBUFFERPROPERTIES lpData);
 #endif
 
-void S_StreamBackgroundTrack(void);
-void S_UpdateBackgroundTrack(void);
-void S_StartBackgroundTrack(char *introTrack, char *loopTrack);
-void S_StopBackgroundTrack(void);
-void S_StartCinematic(void);
+qboolean S_Streaming_StartChunk(int num_bits, int num_channels, ALsizei rate, float volume);
+int S_Streaming_AddChunk(const byte *buffer, int num_bytes);
+void S_Streaming_Stop(void);
+
+typedef enum {
+	MUSIC_NONE, MUSIC_CD, MUSIC_FILES
+} music_type_t;
+
+void Music_Init(void);
+void Music_Shutdown(void);
+void Music_Play(void);
+void Music_Stop(void);
+void Music_Update(void);
 
 qboolean StreamingWav_init(char *name);
-
-void S_Play_Wav_Music(void);
-
 void StreamingWav_close(void);
-
-/* willow: !!EXTREMELY BETA!! */
-void SCR_audioCinematic(void **cin_data, long *cin_rate, long *ulBytesWritten, ALenum * format);
 
 #endif /* __SND_LOC_H */

@@ -447,8 +447,7 @@ void CL_PrepRefresh(void)
 	Com_sprintf(loadingMessages[3], sizeof(loadingMessages[3]), "");
 
 	// start the cd track
-//	CDAudio_Play(atoi(cl.configstrings[CS_CDTRACK]), true);
-	S_Play_Wav_Music();
+	Music_Play();
 
 	loadingMessage = false;
 	loadingTime2 = Sys_Milliseconds ();

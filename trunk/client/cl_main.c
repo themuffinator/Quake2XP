@@ -1892,7 +1892,7 @@ void CL_Frame(int msec)
 		S_Update(cl.refdef.vieworg, cl.v_forward, orientation);
 	}
 
-	CDAudio_Update();
+	Music_Update();
 
 	// advance local effects for next frame
 	CL_RunDLights();
@@ -1955,7 +1955,7 @@ void CL_Init(void)
 	SCR_Init();
 	cls.disable_screen = true;	// don't draw yet
 
-	CDAudio_Init();
+	Music_Init();
 	CL_InitLocal();
 	IN_Init();
 
@@ -1989,7 +1989,7 @@ void CL_Shutdown(void)
 
 	CL_WriteConfiguration();
 
-	CDAudio_Shutdown();
+	Music_Shutdown();
 	S_Shutdown();
 	IN_Shutdown();
 	VID_Shutdown();
