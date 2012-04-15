@@ -2,80 +2,163 @@
 #include "cdaudio.h"
 #include "snd_loc.h"
 
+qboolean LoadWAV2(char *name, void **wav, int *outBits, int *outChannels, ALsizei * rate, ALsizei * size);
+
+typedef enum {
+	MSTAT_STOPPED, MSTAT_PAUSED, MSTAT_PLAYING
+} mstat_t;
+
+static mstat_t mstat;
+
 static music_type_t music_type;
 
-static qboolean playing = false;
+//byte music_buffer[MAX_STRBUF_SIZE];
+byte music_buffer[0x1000];
 
-void S_Play_Wav_Music(void)
-{
-	char	name[MAX_QPATH];
-	int		track;
-	
-	if (s_musicsrc->value == MUSIC_NONE){
-		CDAudio_Stop();
-		S_Streaming_Stop();	
-		return;
-	}
-	//}
-	track = atoi(cl.configstrings[CS_CDTRACK]);
-
-	if (track == 0){
-		// Stop any playing track
-		CDAudio_Stop();
-		S_Streaming_Stop();
-		return;
-	}
-
-	// If an wav file exists play it, otherwise fall back to CD audio
-	Q_snprintfz(name, sizeof(name), "music/track%02i.wav", track);
-	if (FS_LoadFile(name, NULL) != -1)
-		//S_StartBackgroundTrack(name, name);
-		;
-	else
-		CDAudio_Play(track, true);
-
-}
+void *mFile;
+int mFilePos, mFileSize;
 
 void Music_Init(void) {
-	if (music_type != -1)
-		return;
-
 	music_type = s_musicsrc->value;
+	mstat = MSTAT_STOPPED;
+
+	Com_Printf("Music init\n");
+
 	switch (music_type) {
 		case MUSIC_NONE:
+			return;
 		case MUSIC_CD:
-		case MUSIC_FILES:
-		default:
+			CDAudio_Init();
 			break;
+		case MUSIC_FILES:
+			break;
+		default:
+			Cvar_SetValue("s_musicsrc", MUSIC_NONE);
+			music_type = MUSIC_NONE;
+			return;
 	}
 }
 
 void Music_Shutdown(void) {
-	if (s_musicsrc->value == MUSIC_CD)
-		CDAudio_Shutdown();
+	Music_Stop();
+
+	Com_Printf("Music shutdown\n");
+
+	switch (music_type) {
+		case MUSIC_CD:
+			CDAudio_Shutdown();
+			break;
+		case MUSIC_FILES:
+			break;
+	}
 }
 
 void Music_Play(void) {
-}
+	int track = atoi(cl.configstrings[CS_CDTRACK]);
+	char name[MAX_QPATH];
+	int format, rate, bits, channels;
 
-void Music_Stop(void) {
+	Music_Stop();
+
+	// TODO: support random track/random file, unify with cd_* variables which are general enough
 #if 0
-	if (streaming == 0) {
-		return;
-	} else if (streaming != 1) {
-		Com_Printf(S_COLOR_RED"Music_Stop(): streaming is %d; should be 0 or 2 here\n");
+	if (track == 0) {
 		return;
 	}
 #endif
 
-	//S_Streaming_Stop();
-	
-	// choice dependent
-	//CDAudio_Stop();
-	//StreamingWav_close();
+	switch (music_type) {
+		case MUSIC_CD:
+			CDAudio_Play(track, true);
+			mstat = MSTAT_PLAYING;
+			break;
+		case MUSIC_FILES:
+			Q_snprintfz(name, sizeof(name), "music/track%02i.wav", track);
+			//Q_snprintfz(name, sizeof(name), "music/test.wav");
+			if (LoadWAV2(name, &mFile, &bits, &channels, &rate, &mFileSize)) {
+				mstat = MSTAT_PLAYING;
+				mFilePos = 0;
+				S_Streaming_Start(bits, channels, rate, s_musicvolume->value);
+			} else
+				Com_Printf("Music_Play: unable to load music from %s\n");
+			break;
+	}
 }
 
+void Music_Stop(void) {
+	if (mstat == MSTAT_STOPPED)
+		return;
+
+	switch (music_type) {
+		case MUSIC_CD:
+			CDAudio_Stop();
+			break;
+		case MUSIC_FILES:
+			S_Streaming_Stop();
+			free(mFile);
+			break;
+	}
+
+	mstat == MSTAT_STOPPED;
+}
+
+void Music_Pause() {
+	if (mstat != MSTAT_PLAYING)
+		return;
+
+	switch (music_type) {
+		case MUSIC_CD:
+			CDAudio_Activate(false);
+			break;
+		case MUSIC_FILES:
+			alSourcePause(source_name[CH_STREAMING]);
+			break;
+	}
+
+	mstat = MSTAT_PAUSED;
+}
+
+void Music_Resume() {
+	if (mstat != MSTAT_PAUSED)
+		return;
+
+	switch (music_type) {
+		case MUSIC_CD:
+			CDAudio_Activate(false);
+			break;
+		case MUSIC_FILES:
+			alSourcePlay(source_name[CH_STREAMING]);
+			break;
+	}
+
+	mstat = MSTAT_PLAYING;
+}
+
+
 void Music_Update(void) {
+	switch (music_type) {
+		case MUSIC_CD:
+			CDAudio_Update();
+			break;
+		case MUSIC_FILES:
+			if (mstat == MSTAT_PLAYING) {
+				int n;
+
+				// TODO: now similar code can be removed from menu
+				if (s_musicvolume->modified) {
+					alSourcef(source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
+					s_musicvolume->modified = false;
+				}
+				// FIXME: do something more intelligent, like returning the free space in S_Streaming_Add or sleeping for a number of frames
+				n = S_Streaming_Add(mFile + mFilePos, 1024*64);
+				//Com_Printf("Inserted %d bytes of music, pos %d\n", n, mFilePos);
+				mFilePos += n;
+				if (mFilePos == mFileSize)
+					// play something else
+					Music_Play();
+			}
+			break;
+	}
 }
 
 // TODO: rewrite with FS_ListFiles and similar, like snd_ogg.c
@@ -105,7 +188,6 @@ void S_Music_f(void)
 		//S_StartBackgroundTrack(intro, intro);
 		;
 }
-
 
 #if 0
 void S_UpdateBackgroundTrack()

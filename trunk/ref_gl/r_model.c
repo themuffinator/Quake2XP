@@ -945,7 +945,7 @@ void Mod_LoadFaces(lump_t * l)
 	int			ci, cj, flp, j;
 	float		*vi, *vj;
 	msurface_t	*si, *sj;
-	vec3_t		ni, nj, ttt, tttt, ttttt;
+	vec3_t		ni, nj;
 
 	in = (dface_t *) (mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -1057,6 +1057,7 @@ void Mod_LoadFaces(lump_t * l)
 				vi = si->polys->verts[0];
 				for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
 				{
+                    vec3_t ttt, tttt, ttttt;
 					VectorSet(ttt, vi[7], vi[8], vi[9]);
 					VectorNormalize(ttt);
 

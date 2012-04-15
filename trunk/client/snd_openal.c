@@ -23,6 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "client.h"
 #include "snd_loc.h"
 
+// TODO: put in global header and merge with equivalents
+#define MIN(a,b) ((a)>(b) ? (b) : (a))
+#define VectorLength_Squared(v) DotProduct(v,v)
+#define clamp(a,b,c)	((a) < (b) ? (b) : (a) > (c) ? (c) : (a))
 
 // =======================================================================
 // Internal sound data & structures
@@ -70,33 +74,28 @@ const GUID DSPROPSETID_EAX20_BufferProperties =
 // Video & Music streaming
 // =======================================================================
 
-#define NUM_STREAMING_BUFFERS 4
+#define NUM_STRBUF 4
+#define MAX_STRBUF_SIZE (1024*256)
 
 typedef struct {
 	// willow: If enabled (not zero) one channel dedicated to cinematic or VOIP communications.
 	qboolean enabled;
 
-	ALuint buffers[NUM_STREAMING_BUFFERS];
+	// use a buffer queue to mirror OpenAL behavior
+	ALuint buffers[NUM_STRBUF];
 	unsigned bFirst, bNumAvail;
-
-	// FIXME: memcpy crashed with malloc's buffer. try again later.
-	//void *preloadBf;
-	char preloadBf[0x10000];
-	int preloadBfSize;
-	int preloadBfPos;
 
 	ALsizei sound_rate;
 	ALenum sound_format;
-
 } streaming_t;
 
 streaming_t streaming;
 
 static inline void sq_add(ALuint x) {
-	int tail = (streaming.bFirst + streaming.bNumAvail) % NUM_STREAMING_BUFFERS;
+	int tail = (streaming.bFirst + streaming.bNumAvail) % NUM_STRBUF;
 
 	// assuming non-full queue
-	assert(streaming.bNumAvail < NUM_STREAMING_BUFFERS);
+	assert(streaming.bNumAvail < NUM_STRBUF);
 
 	streaming.buffers[tail] = x;
 	streaming.bNumAvail++;
@@ -109,33 +108,10 @@ static inline ALuint sq_remove(void) {
 	assert(streaming.bNumAvail > 0);
 
 	r = streaming.buffers[streaming.bFirst];
-	streaming.bFirst = (streaming.bFirst+1) % NUM_STREAMING_BUFFERS;
+	streaming.bFirst = (streaming.bFirst+1) % NUM_STRBUF;
 	streaming.bNumAvail--;
 
 	return r;
-}
-
-// TODO: put in global header together with max and others below
-#define MIN(a,b) ((a)>(b) ? (b) : (a))
-
-/*
-=================
-Com_Clamp
-=================
-*/
-float Com_Clamp(float value, float min, float max)
-{
-	return (value < min) ? min : ((value > max) ? max : value);
-}
-
-/*
-	Customized MATH
-	willow's TO DO: add this prototype to common math
-*/
-float VectorLength_Squared(vec3_t v)
-{
-	// return DotProduct(v,v);
-	return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 }
 
 /*
@@ -269,7 +245,7 @@ void S_Init(int hardreset)
 					alDistanceModel(modelName [(int) s_distance_model->value - 1]);
 				}
 
-				alListenerf(AL_GAIN, Com_Clamp(s_volume->value, 0, 1));
+				alListenerf(AL_GAIN, clamp(s_volume->value, 0, 1));
 				
 				alConfig.eaxState = 0xFFFF;	// force EAX state reset
 
@@ -284,10 +260,10 @@ void S_Init(int hardreset)
 					CL_fast_sound_init();
 
 					// Generate some AL Buffers for streaming
-					alGenBuffers(NUM_STREAMING_BUFFERS, streaming.buffers);
+					alGenBuffers(NUM_STRBUF, streaming.buffers);
 #ifdef _WITH_EAX
 					if (!eaxSetBufferMode
-						(NUM_STREAMING_BUFFERS, streaming.buffers,
+						(NUM_STRBUF, streaming.buffers,
 						 alGetEnumValue(" AL_STORAGE_ACCESSIBLE"))) {
 						// "AL_STORAGE_AUTOMATIC" "AL_STORAGE_HARDWARE"
 						// "AL_STORAGE_ACCESSIBLE"
@@ -295,9 +271,6 @@ void S_Init(int hardreset)
 							("MP3 player: unable to set X-RAM mode\n");
 					} 
 #endif
-					// Streaming memory management
-					streaming.preloadBfSize = 0x10000;
-					//streaming.preloadBf = malloc(streaming.preloadBfSize);
 				}
 
 				S_StopAllSounds();	// inits freeplays
@@ -353,13 +326,8 @@ void CL_fast_sound_close(void);
 void S_Shutdown(void)
 {
 	if (s_openal_numChannels) {
-		// Release temporary streaming storage
-		//free(streaming.preloadBf);
-		streaming.preloadBfSize = 0;
-		//streaming.preloadBf = NULL;
-
 		// Clean up streaming buffers
-		alDeleteBuffers(NUM_STREAMING_BUFFERS, streaming.buffers);
+		alDeleteBuffers(NUM_STRBUF, streaming.buffers);
 
 		CL_fast_sound_close();
 		FreeSounds();
@@ -1573,9 +1541,9 @@ void S_Streaming_Stop() {
 	}
 }
 
-qboolean S_Streaming_StartChunk(int num_bits, int num_channels, ALsizei rate, float volume) {
+qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float volume) {
 	if (streaming.enabled) {
-		Com_Printf(S_COLOR_YELLOW "S_Streaming_StartChunk: interrupting active stream\n");
+		Com_Printf(S_COLOR_YELLOW "S_Streaming_Start: interrupting active stream\n");
 		S_Streaming_Stop();
 	}
 
@@ -1588,23 +1556,22 @@ qboolean S_Streaming_StartChunk(int num_bits, int num_channels, ALsizei rate, fl
 	else if (num_bits == 16 && num_channels == 2)
 		streaming.sound_format = AL_FORMAT_STEREO16;
 	else {
-		Com_Printf(S_COLOR_RED "Unsupported format: %d bits and %d channels\n", num_bits, num_channels);
+		Com_Printf(S_COLOR_RED "S_StreamingStart: unsupported format ()%d bits and %d channels)\n", num_bits, num_channels);
 		return false;
 	}
 
 	alSourcef(source_name[CH_STREAMING], AL_GAIN, volume);
 	streaming.sound_rate = rate;
-	streaming.preloadBfPos = 0;
 	streaming.bFirst = 0;
-	streaming.bNumAvail = NUM_STREAMING_BUFFERS;
+	streaming.bNumAvail = NUM_STRBUF;
 	streaming.enabled = true;
 
 	return true;
 }
 
-int S_Streaming_AddChunk(const byte *buffer, int num_bytes) {
-	// TODO: use initial buffer before sending data to AL; keep count of used buffers; better algorithm: always dequeue, and then always add if we have enough data (otherwise wait)
-	// TODO: restore comments
+int S_Streaming_Add(const byte *buffer, int num_bytes) {
+	// TODO: add comments
+	// TODO: remove Com_Printf, leaving assert if desired
 
 	ALint iState;
 	int readacc = 0;
@@ -1612,11 +1579,15 @@ int S_Streaming_AddChunk(const byte *buffer, int num_bytes) {
 	if (!streaming.enabled)
 		return 0;
 
-	if (num_bytes == 0)
+#if 0
+	if (num_bytes == 0) {
+		Com_Printf(S_COLOR_RED "Warning: called S_Streaming_Add with empty buffer\n");
 		return 0;
+	}
+#endif
 
-	// reclaim buffers that have been played
-	if (streaming.bNumAvail < NUM_STREAMING_BUFFERS) {
+	// Reclaim buffers that have been played, and keep them in a queue
+	if (streaming.bNumAvail < NUM_STRBUF) {
 		int recycled, i;
 		alGetSourcei(source_name[CH_STREAMING], AL_BUFFERS_PROCESSED, &recycled);
 
@@ -1627,44 +1598,40 @@ int S_Streaming_AddChunk(const byte *buffer, int num_bytes) {
 		}
 	}
 
-	// 
+	// If there is data to play and free buffers,
+	// copy the data and enqueue them.
 	while (num_bytes > 0 && streaming.bNumAvail > 0) {
-		int readcur = MIN(streaming.preloadBfSize - streaming.preloadBfPos, num_bytes);
+		int readcur = MIN(MAX_STRBUF_SIZE, num_bytes);
+		const ALuint buf = sq_remove();
 
-		memcpy(streaming.preloadBf + streaming.preloadBfPos, buffer, readcur);
-		streaming.preloadBfPos += readcur;
+		alBufferData(buf, streaming.sound_format,
+			buffer + readacc, readcur, streaming.sound_rate);
+		alSourceQueueBuffers(source_name[CH_STREAMING], 1, &buf);
+
 		num_bytes -= readcur;
 		readacc += readcur;
-
-		//if (streaming.preloadBfPos > 25000) {
-		if (streaming.preloadBfPos > 0) {
-			const ALuint buf = sq_remove();
-
-			alBufferData(buf, streaming.sound_format,
-				streaming.preloadBf, streaming.preloadBfPos, streaming.sound_rate);
-			alSourceQueueBuffers(source_name[CH_STREAMING], 1, &buf);
-			streaming.preloadBfPos = 0;
-		} else
-			break;
 	}
 
+	// Check if we have stopped or starved and should restart
+	// (the latter includes the case right afer initialization)
 	alGetSourcei(source_name[CH_STREAMING], AL_SOURCE_STATE, &iState);
 	if (iState != AL_PLAYING) {
 		ALint iQueuedBuffers;
 		alGetSourcei(source_name[CH_STREAMING], AL_BUFFERS_QUEUED, &iQueuedBuffers);
 
 		if (iQueuedBuffers > 0) {
+			// If we are not playing but there are still enqueued buffers,
+			// restart the audio because it starved of data to play
 			alSourcePlay(source_name[CH_STREAMING]);
 		} else {
-			// FIXME: avoid stopping when buffering, but consume preloadBf when nothing is received?
-			printf("nothing playing and no queued buffers; %d preload\n", streaming.preloadBfPos);
 			// Finished playing
-			//streaming_buffered = false;
-			//S_Streaming_Stop();
+			S_Streaming_Stop();
 		}
 	}
 
+#if 0
 	if (readacc == 0)
 		Com_Printf(S_COLOR_RED "Warning: added 0 samples to queue but %d given\n", num_bytes);
+#endif
 	return readacc;
 }

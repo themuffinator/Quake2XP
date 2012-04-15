@@ -166,7 +166,6 @@ void SCR_StopCinematic(void)
 		Z_Free(cin.hnodes1);
 		cin.hnodes1 = NULL;
 	}
-	S_Streaming_Stop();
 }
 
 /*
@@ -445,13 +444,13 @@ byte *SCR_ReadNextFrame(void)
 		const int pattern = (cin.s_width == 2) ? 0 : 0x80;
 		const int num = 4096 * cin.s_width * cin.s_channels;
 		memset(samples, pattern, num);
-		S_Streaming_AddChunk(samples, num);
+		S_Streaming_Add(samples, num);
 	}
 
 	FS_Read(samples, numBytes, &cl.cinematic_file);
 	// FIXME: convert to little endian if cin.s_width == 2, as in Yamagi Q2
 	
-	S_Streaming_AddChunk(samples, numBytes);
+	S_Streaming_Add(samples, numBytes);
 
 	// ///////////////////////
 
@@ -633,7 +632,7 @@ void SCR_PlayCinematic(char *arg)
 	FS_Read(&cin.s_channels, 4, &cl.cinematic_file);
 	cin.s_channels = LittleLong(cin.s_channels);
 
-	S_Streaming_StartChunk(cin.s_width*8, cin.s_channels, cin.s_rate, 1.0);
+	S_Streaming_Start(cin.s_width*8, cin.s_channels, cin.s_rate, 1.0);
 
 	Huff1TableInit();
 

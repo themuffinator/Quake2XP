@@ -315,8 +315,8 @@ qboolean alSource_EAX_Flags(ALuint sourceNum, DWORD dwValue);
 qboolean alSource_EAX_All(ALuint sourceNum, LPEAXBUFFERPROPERTIES lpData);
 #endif
 
-qboolean S_Streaming_StartChunk(int num_bits, int num_channels, ALsizei rate, float volume);
-int S_Streaming_AddChunk(const byte *buffer, int num_bytes);
+qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float volume);
+int S_Streaming_Add(const byte *buffer, int num_bytes);
 void S_Streaming_Stop(void);
 
 typedef enum {
@@ -327,6 +327,8 @@ void Music_Init(void);
 void Music_Shutdown(void);
 void Music_Play(void);
 void Music_Stop(void);
+void Music_Pause(void);
+void Music_Resume(void);
 void Music_Update(void);
 
 qboolean StreamingWav_init(char *name);

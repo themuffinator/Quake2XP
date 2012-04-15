@@ -33,10 +33,6 @@ byte *S_Alloc(int size);
 static qboolean LoadWAV(char *name, byte ** wav, ALenum * format,
 						ALsizei * rate, ALsizei * size);
 
-long stream_info_samples_initial;
-long stream_info_dataofs_initial;
-
-
 
 // =======================================================================
 // Load a sound
@@ -375,129 +371,88 @@ static qboolean LoadWAV(char *name, byte ** wav, ALenum * format,
 	return true;
 }
 
-
-
-
-
-byte *stream_wav;
-long stream_info_rate;
-long stream_info_samples;
-long stream_info_dataofs;
-
-void StreamingWav_close(void)
+qboolean LoadWAV2(char *name, void **wav, int *outBits, int *outChannels, ALsizei * rate, ALsizei * size)
 {
-	FS_FreeFile(stream_wav);
-}
+	byte *buffer;
+	short channels, width;
+	int length = FS_LoadFile(name, (void **) &buffer);
 
-/*
-============
-wave file streaming service
-============
-*/
-qboolean StreamingWav_init(char *name)
-{
-	int samples;
+	if (!buffer)
+		return false;
 
-	int wavlength = FS_LoadFile(name, (void **) &stream_wav);
+	iff_data = buffer;
+	iff_end = buffer + length;
 
-	if (!stream_wav)
-		return 0;
-
-	iff_data = stream_wav;
-	iff_end = stream_wav + wavlength;
-
-// find "RIFF" chunk
+	// Find "RIFF" chunk
 	FindChunk("RIFF");
-	if (!(data_p && !strncmp(data_p + 8, "WAVE", 4))) {
-		Com_Printf("Missing RIFF/WAVE chunks\n");
-		StreamingWav_close();
-		return 0;
+	if (!(data_p && !memcmp((void *) (data_p + 8), "WAVE", 4))) {
+		Com_DPrintf("S_LoadWAV: missing 'RIFF/WAVE' chunks (%s)\n", name);
+		FS_FreeFile(buffer);
+		return false;
 	}
-// get "fmt " chunk
+	// Get "fmt " chunk
 	iff_data = data_p + 12;
-// DumpChunks ();
 
 	FindChunk("fmt ");
 	if (!data_p) {
-		Com_Printf("Missing fmt chunk\n");
-		StreamingWav_close();
-		return 0;
-	}
-	data_p += 8;
-	if (GetLittleShort() != 1) {
-		Com_Printf("Microsoft PCM format only\n");
-		StreamingWav_close();
-		return 0;
-	}
-	if (GetLittleShort() != 2) {
-		Com_Printf("Stereo files only\n");
-		StreamingWav_close();
-		return 0;
+		Com_DPrintf("S_LoadWAV: missing 'fmt ' chunk (%s)\n", name);
+		FS_FreeFile(buffer);
+		return false;
 	}
 
-	stream_info_rate = GetLittleLong();
+	data_p += 8;
+
+	if (GetLittleShort() != 1) {
+		Com_DPrintf("S_LoadWAV: Microsoft PCM format only (%s)\n", name);
+		FS_FreeFile(buffer);
+		return false;
+	}
+
+	channels = GetLittleShort();
+	if (channels < 1 || channels > 2) {
+		Com_DPrintf
+			("S_LoadWAV: only mono and stereo WAV files supported (%s)\n",
+			 name);
+		FS_FreeFile(buffer);
+		return false;
+	}
+	*outChannels = channels;
+
+	*rate = GetLittleLong();
+
 	data_p += 4 + 2;
 
-	if (GetLittleShort() != 16) {
-		Com_Printf("16 bit files only\n");
-		StreamingWav_close();
-		return 0;
+	width = GetLittleShort() >> 3;
+	if (width != 1 && width != 2) {
+		Com_DPrintf
+			("S_LoadWAV: only 8 and 16 bit WAV files supported (%s)\n",
+			 name);
+		FS_FreeFile(buffer);
+		return false;
 	}
-// get cue chunk
-/*	FindChunk("cue ");
-	if (data_p)
-	{
-		int			i;
-		data_p += 32;
-		info.loopstart = GetLittleLong();
-//		Com_Printf("loopstart=%d\n", sfx->loopstart);
+	*outBits = width * 8;
 
-	// if the next chunk is a LIST chunk, look for a cue length marker
-		FindNextChunk ("LIST");
-		if (data_p)
-		{
-			if (!strncmp (data_p + 28, "mark", 4))
-			{	// this is not a proper parse, but it works with cooledit...
-				data_p += 24;
-				i = GetLittleLong ();	// samples in loop
-				info.samples = info.loopstart + i;
-//				Com_Printf("looped length: %i\n", i);
-			}
-		}
-	}
-	else
-		info.loopstart = -1;*/
-
-// find data chunk
+	// Find data chunk
 	FindChunk("data");
 	if (!data_p) {
-		Com_Printf("Missing data chunk\n");
-		StreamingWav_close();
-		return 0;
+		Com_DPrintf("S_LoadWAV: missing 'data' chunk (%s)\n", name);
+		FS_FreeFile(buffer);
+		return false;
 	}
 
 	data_p += 4;
-	samples = GetLittleLong() >> 1;
-/*
-	if (stream_info.samples)
-	{
-		if (samples < stream_info.samples)
-			Com_Error (ERR_DROP, "Sound %s has a bad loop length", name);
+	*size = GetLittleLong();
+
+	if (*size == 0) {
+		Com_DPrintf("S_LoadWAV: file with 0 samples (%s)\n", name);
+		FS_FreeFile(buffer);
+		return false;
 	}
-	else*/
-	stream_info_samples = samples;
+	// Load the data
+	*wav = malloc(*size);
+	memcpy(*wav, buffer + (data_p - buffer), *size);
 
-	stream_info_dataofs = data_p - stream_wav;
-//  memcpy(out, buffer + (data_p - buffer), *size);
+	FS_FreeFile(buffer);
 
-  stream_info_samples = stream_info_samples_initial = samples;
-  stream_info_dataofs = stream_info_dataofs_initial = data_p - stream_wav;
-
-	return 1;					// info;
-}
-
-void StreamingWav_Reset(void)
-{
-     stream_info_samples = stream_info_samples_initial;
-     stream_info_dataofs = stream_info_dataofs_initial;
+	return true;
 }

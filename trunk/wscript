@@ -7,10 +7,7 @@
 # - compare system.c and related with Yamagi Q2
 # - add ogg/vorbis support (not the complete QuDos player, only for original tracks)
 # performance
-# - try -ftree-vectorize-verbose=2 and related to replace hand-optimized C or
-#   assembly code
-# - if needed, try OpenMP in some loops like Mod_LoadFaces and
-#   GL_ResampleTexture (check prof and profO3 for more)
+# - optimize Mod_LoadFaces with vectorization and/or OpenMP
 
 
 VERSION = '1.0'
@@ -61,12 +58,14 @@ def build(bld):
     src_dir = bld.srcnode
     #src_dir = bld.path.find_dir('src')
 
+    #bld.env.append_value('CFLAGS', ['-flax-vector-conversions'])
     #bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
     #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-ftree-vectorize', '-ftree-vectorizer-verbose=2'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
     bld.env.append_value('CFLAGS', ['-g'])
-    #bld.env.append_value('CFLAGS', ['-pg', '-O3'])
     #bld.env.append_value('LINKFLAGS', ['-pg'])
+    #bld.env.append_value('CFLAGS', ['-fopenmp', '-g'])
+    #bld.env.append_value('LINKFLAGS', ['-fopenmp'])
 
     # Expand source files
     sources = {}

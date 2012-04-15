@@ -1007,11 +1007,7 @@ void GL_ResampleTexture(unsigned *in, int inwidth, int inheight,
 	byte *pix1, *pix2, *pix3, *pix4;
 
 	// divby0 error! - psychospaz
-	if (outheight == 0) {
-		out = NULL;
-		return;
-	}
-	if (outwidth == 0) {
+	if (outheight == 0 || outwidth == 0) {
 		out = NULL;
 		return;
 	}
@@ -1034,6 +1030,8 @@ void GL_ResampleTexture(unsigned *in, int inwidth, int inheight,
 		inrow2 = in + inwidth * (int) ((i + 0.75) * inheight / outheight);
 		frac = fracstep >> 1;
 		for (j = 0; j < outwidth; j++) {
+			// XXX: I've tried with SSE and it doesn't improve considerably,
+			// also keep in mind to allocate extra space for average intermediate overflow.
 			pix1 = (byte *) inrow + p1[j];
 			pix2 = (byte *) inrow + p2[j];
 			pix3 = (byte *) inrow2 + p1[j];
@@ -1049,11 +1047,6 @@ void GL_ResampleTexture(unsigned *in, int inwidth, int inheight,
 		}
 	}
 }
-
-
-
-
-
 
 /*
 ===============
