@@ -60,7 +60,7 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_c')
-    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'x11', 'xxf86vm', 'IL', 'ILU', 'ILUT', 'openal']:
+    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'IL', 'ILU', 'ILUT', 'openal']:#, 'x11', 'xxf86vm']
         conf.check_cfg(package=lib, args=['--cflags', '--libs'])
 
 def build(bld):
