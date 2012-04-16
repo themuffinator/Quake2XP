@@ -33,9 +33,7 @@
 /* The window icon */
 #include "q2icon.xbm"
  
-SDL_Surface		*surface;
-glwstate_t		glw_state;
-qboolean		have_stencil = false;
+SDL_Surface		*surface = NULL;
 
 /*
  * Initialzes the SDL OpenGL context
@@ -48,11 +46,11 @@ int GLimp_Init(void *hinstance, void *wndproc)
 
         if (SDL_Init(SDL_INIT_VIDEO) == -1)
         {
-			Con_Printf( PRINT_ALL, "Couldn't init SDL video: %s.\n", SDL_GetError());
+			Com_Printf(S_COLOR_RED "Couldn't init SDL video: %s.\n", SDL_GetError());
             return false;
         }
 		SDL_VideoDriverName( driverName, sizeof( driverName ) - 1 );
-        Con_Printf( PRINT_ALL, "Initialized SDL video, driver is \"%s\".\n", driverName );
+        Com_Printf(S_COLOR_GREEN "Initialized SDL video, driver is \"%s\".\n", driverName );
 	}
 
 	return true;
@@ -116,6 +114,11 @@ UpdateGamma(void)
         SDL_SetGamma(g, g, g);
 }
 
+void GL_UpdateSwapInterval()
+{
+	// XXX: needs restarting video mode
+}
+
 /*
  * Swaps the buffers to show the new frame
  */
@@ -135,11 +138,11 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 
     if (!VID_GetModeInfo( &width, &height, mode))
 	{
-		Con_Printf( PRINT_ALL, " invalid mode\n" );
+		Com_Printf(S_COLOR_RED "GLimp_SetMode: invalid mode\n" );
 		return rserr_invalid_mode;
 	}
 
-	Com_Printf ("setting mode "S_COLOR_YELLOW"%d"S_COLOR_WHITE":"S_COLOR_YELLOW"[%ix%i]", mode , width, height);
+	Com_Printf("setting mode "S_COLOR_YELLOW"%d"S_COLOR_WHITE":"S_COLOR_YELLOW"[%ix%i]\n", mode , width, height);
 
 	if (surface && (surface->w == width) && (surface->h == height))
 	{
@@ -170,9 +173,11 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, r_vsync->value);
 
 	if (r_arbSamples->value > 0) {
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -189,17 +194,13 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	SetSDLIcon();
 	
     if ((surface = SDL_SetVideoMode(width, height, 0, flags)) == NULL) {
-			Sys_Error(PRINT_ALL, "SDL SetVideoMode failed: %s\n", SDL_GetError());
+			Com_Printf("SDL SetVideoMode failed: %s\n", SDL_GetError());
             return rserr_invalid_mode;
 	}
 
-	/* Initialize the stencil buffer */
-	if (!SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &stencil_bits)) {
-		Con_Printf(PRINT_ALL, "Got %d bits of stencil.\n", stencil_bits);
-		
-		if (stencil_bits >= 1) 
-			have_stencil = true;
-	}
+	// Print information
+	if (!SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &stencil_bits))
+		Com_Printf("Got %d bits of stencil.\n", stencil_bits);
 
 	if (r_arbSamples->value > 0)
 		qglEnable(GL_MULTISAMPLE);
@@ -227,7 +228,7 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
  */
 void GLimp_Shutdown( void )
 {
-    Con_Printf(PRINT_ALL, "GLimp shut down\n");
+    Com_Printf("GLimp shut down\n");
 
 	if (surface)
 	{

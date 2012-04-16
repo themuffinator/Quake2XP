@@ -2021,9 +2021,13 @@ void R_Shutdown(void)
 
 	Mod_FreeAll();
 	GL_ShutdownImages();
-	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)ocQueries);
+
+    // FIXME: crashes if video could not be initialized, add check if necessary
+	//qglDeleteQueriesARB(MAX_FLARES, (GLuint*)ocQueries);
+
 	GLimp_Shutdown();
 	QGL_Shutdown();
+	ilShutDown();
 	R_ShutdownPrograms();
 }
 
@@ -2038,6 +2042,14 @@ void UpdateGamma();
 
 void R_BeginFrame()
 {
+#ifndef _WIN32
+    // there is no need to restart video mode with SDL
+    if (r_fullScreen->modified) {
+        R_SetMode();
+		r_fullScreen->modified = false;
+    }
+#endif
+
 	/* 
 	 ** change modes if necessary
 	 */
@@ -2049,7 +2061,6 @@ void R_BeginFrame()
         UpdateGamma();
 		r_gamma->modified = false;
 	}
-
 
 	// realtime update
 	if(r_softParticles->modified)

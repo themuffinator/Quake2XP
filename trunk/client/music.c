@@ -140,6 +140,10 @@ void Music_Play(void) {
 
 	Music_Stop();
 
+	if (music_type != MUSIC_OTHER_FILES &&
+	  track == 0 && s_musicrandom->value == 0)
+		return;
+
 	switch (music_type) {
 		case MUSIC_CD:
 			if (s_musicrandom->value == 0)
@@ -346,7 +350,7 @@ static Gen_Interface_t *Gen_Open(const char *name, soundparams_t *sp) {
 
 static int MC_ReadVorbis(MC_Vorbis_t *f, void *buffer, int n) {
 	int total = 0;
-	const int step = 4096;
+	const int step = 1024*64;
 
 	assert(step < n);
 	while (total + step < n) {

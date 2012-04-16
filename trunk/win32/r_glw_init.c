@@ -325,9 +325,6 @@ void GLimp_Shutdown( void )
 {
 	SetDeviceGammaRamp(glw_state.hDC, original_ramp);
 
-
-	ilShutDown();
-
 	if ( qwglMakeCurrent && !qwglMakeCurrent( NULL, NULL ) )
 		Com_Printf(S_COLOR_RED"ref_gl::R_Shutdown() - wglMakeCurrent failed\n");
 	if ( glw_state.hGLRC )
@@ -1327,6 +1324,14 @@ void UpdateGamma()
           }
      }
      SetDeviceGammaRamp(glw_state.hDC, gamma_ramp);
+}
+
+void GL_UpdateSwapInterval()
+{
+	r_vsync->modified = (qboolean)false;
+
+	if (qwglSwapIntervalEXT)
+			qwglSwapIntervalEXT(r_vsync->value);
 }
 
 /*

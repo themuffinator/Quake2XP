@@ -501,16 +501,6 @@ void GL_Strings_f(void)
 	Com_Printf("GL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n",	gl_config.extensions_string);
 }
 
-void GL_UpdateSwapInterval()
-{
-	r_vsync->modified = (qboolean)false;
-
-#if _WIN32
-	if (qwglSwapIntervalEXT)
-			qwglSwapIntervalEXT(r_vsync->value);
-#endif
-}
-
 float lineAAwidth;
 
 /*
