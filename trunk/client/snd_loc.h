@@ -343,6 +343,6 @@ void Music_Pause(void);
 void Music_Resume(void);
 void Music_Update(void);
 
-qboolean S_LoadWAV(const char *name, void **oWav, void **oStart, int *oBits, int *oChans, int *oRate, int *oSize);
+qboolean S_LoadWAV(const char *name, byte **oWav, byte **oStart, int *oBits, int *oChans, int *oRate, int *oSize);
 
 #endif /* __SND_LOC_H */

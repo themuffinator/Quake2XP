@@ -60,7 +60,6 @@ void Music_Init(void) {
 	music_type = s_musicsrc->value;
 	mstat = MSTAT_STOPPED;
 
-//	Com_Printf("Music init (type %d)\n", music_type);
 	Com_Printf("\n========Init Music subsistem========\n\n");
 
 	switch (music_type) {
@@ -135,9 +134,8 @@ static qboolean Music_PlayFile(const char *name, qboolean hasExt) {
 }
 
 void Music_Play(void) {
-	int track = atoi(cl.configstrings[CS_CDTRACK]);
+	int track, count;
 	char name[MAX_QPATH];
-	int count;
 
 	Music_Stop();
 
@@ -145,23 +143,19 @@ void Music_Play(void) {
 	  track == 0 && s_musicrandom->value == 0)
 		return;
 
+	if (s_musicrandom->value != 0)
+		// original soundtrack has tracks 2 to 11
+		track = 2 + rand()%10;
+	else
+		track = atoi(cl.configstrings[CS_CDTRACK]);
+
 	switch (music_type) {
 		case MUSIC_CD:
-#ifdef WIN32	
-				CDAudio_Play(track, true);
-#else
-			if (s_musicrandom->value == 0)
-				CDAudio_Play(track, true);
-			else
-				CDAudio_RandomPlay();
-#endif
+			CDAudio_Play(track, true);
 			mstat = MSTAT_PLAYING;
 			break;
 
 		case MUSIC_CD_FILES:
-			if (s_musicrandom->value != 0)
-				// original soundtrack has tracks 2 to 11
-				track = 2 + rand()%10;
 			Q_snprintfz(name, sizeof(name), "music/%02i", track);
 			Music_PlayFile(name, false);
 			break;
@@ -176,7 +170,6 @@ void Music_Play(void) {
 				fsIndex = (fsIndex+1) % fsNumFiles;
 			count = fsNumFiles;
 			while (count-- > 0) {
-				Com_DPrintf("index = %d, f[index] = %s and offset %d\n", fsIndex, fsList[fsIndex], fsNameOffset);
 				if (Music_PlayFile(fsList[fsIndex] + fsNameOffset, true))
 					return;
 				fsIndex = (fsIndex+1) % fsNumFiles;

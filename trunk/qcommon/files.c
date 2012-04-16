@@ -495,12 +495,6 @@ pack_t *FS_LoadPackFile (char *packfile)
 }
 
 
-int SortList(const void *data1, const void *data2)
-{
-	// XXX: this way pak2.pak comes after pak1.pak, etc
-	return Q_stricmp((char *)data1, (char *)data2);
-}
-
 /*
 ================
 FS_AddGameDirectory
@@ -510,6 +504,11 @@ then loads and adds pak1.pak pak2.pak ...
 ================
 */
 #ifdef WIN32
+
+int SortList(const void *data1, const void *data2)
+{
+	return Q_stricmp((char *)data1, (char *)data2);
+}
 
 void FS_AddGameDirectory (char *dir)
 {
@@ -592,6 +591,12 @@ void FS_AddGameDirectory (char *dir)
 }
 
 #else
+
+int SortList(const void *data1, const void *data2)
+{
+	// FIXME: don't ask me why, this works
+	return Q_stricmp((char *)data2, (char *)data1);
+}
 
 void FS_AddGameDirectory (char *dir)
 {

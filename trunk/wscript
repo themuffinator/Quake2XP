@@ -3,13 +3,20 @@
 
 # TODO list
 # performance
+# - inline VectorCompare, BoxOnPlaneSide, Q_strcasecmp
+# - measure FPS distribution and jitter through a level and draw a graph
+# - use usleep/timers to give up CPU according to cl_maxfps if not dore already
+# - convert FPS indicator into a weighted average, to avoid fluctuations
+#   (check for QuDos code or Yamagi maybe)
 # - optimize Mod_LoadFaces with explicit/implicit vectorization and/or OpenMP
 # - optimize GL_ResampleTextures with OpenMP (or the loop in the calling
-#   function)
+#   function); or use OpenGL to resample the image; or cache results in cachexp
 # other
-# - try GLX_multisample_coverage like the WGL code
 # - try to use underwater effect with EFX code in snd_efx.c
+# - try GL_NV_multisample_coverage
 # - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
+# - use sound time to avoid polling (when adding new audio to stream,
+#   or checking for free AL buffers; try SDL or posix timers)
 
 
 VERSION = '1.0'
@@ -64,8 +71,9 @@ def build(bld):
     #bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
     #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-ftree-vectorize', '-ftree-vectorizer-verbose=2'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
-    bld.env.append_value('CFLAGS', ['-g'])
-    #bld.env.append_value('LINKFLAGS', ['-pg'])
+    #bld.env.append_value('CFLAGS', ['-g'])
+    bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-pg'])
+    bld.env.append_value('LINKFLAGS', ['-pg'])
     #bld.env.append_value('CFLAGS', ['-fopenmp', '-g'])
     #bld.env.append_value('LINKFLAGS', ['-fopenmp'])
 

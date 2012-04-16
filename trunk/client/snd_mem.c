@@ -371,7 +371,7 @@ static qboolean LoadWAV(char *name, byte ** wav, ALenum * format,
 	return true;
 }
 // Loads WAV file in memory returned as "wav", but also returns start of audio data in "start"
-qboolean S_LoadWAV(const char *name, void **oWav, void **oStart, int *oBits, int *oChans, int *oRate, int *oSize)
+qboolean S_LoadWAV(const char *name, byte **oWav, byte **oStart, int *oBits, int *oChans, int *oRate, int *oSize)
 {
 	byte *buffer;
 	short channels, width;

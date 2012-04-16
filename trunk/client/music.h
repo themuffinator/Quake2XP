@@ -4,7 +4,11 @@
 // Implementation header, do not include in other places than music.c
 
 #define OV_EXCLUDE_STATIC_CALLBACKS
+#ifdef _WIN32
 #include "vorbis/vorbisfile.h"
+#else
+#include <vorbis/vorbisfile.h>
+#endif
 
 // Generic interfaces
 
@@ -47,7 +51,7 @@ typedef struct {
 } MC_Vorbis_t;
 
 typedef struct {
-	char *data, *start;
+	byte *data, *start;
 	int pos, size;
 } MC_WAV_t;
 
