@@ -179,9 +179,9 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, r_vsync->value);
 
-	if (r_arbSamples->value > 0) {
+	if (r_arbSamples->value > 1) {
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (int)r_arbSamples->value);
 	}
 	
 	/* Initiate the flags */
@@ -202,7 +202,7 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	if (!SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &stencil_bits))
 		Com_Printf("Got %d bits of stencil.\n", stencil_bits);
 
-	if (r_arbSamples->value > 0)
+	if (r_arbSamples->value > 1)
 		qglEnable(GL_MULTISAMPLE);
 
 	/* Initialize gamma, there is no need to restore manually */
@@ -210,7 +210,7 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
         r_gamma->modified = true;
 
 	/* Window title */
-	SDL_WM_SetCaption("Quake2XP", "Quake2XP");
+	SDL_WM_SetCaption("quake2xp", "quake2xp");
 
 	/* No cursor */
 	SDL_ShowCursor(0);

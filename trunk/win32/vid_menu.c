@@ -480,11 +480,17 @@ void VID_MenuInit( void )
 	s_samples_list.generic.name = "Multisampling";
 	s_samples_list.generic.x = 0;
 	s_samples_list.generic.y = 20*cl_fontScale->value;
+
+#ifdef WIN32
 	if(gl_state.wgl_nv_multisample_coverage_aviable)
 	s_samples_list.itemnames = samplesNV;
 	else
 	s_samples_list.itemnames = samples;
+#else
+	s_samples_list.itemnames = samples;
+#endif
 
+#ifdef WIN32
 	r_nvSamplesCoverange = Cvar_Get("r_nvSamplesCoverange", "8",  CVAR_ARCHIVE);
 	r_arbSamples = Cvar_Get("r_arbSamples", "0",  CVAR_ARCHIVE);
 	s_samples_list.generic.statusbar = "Requires Restart Video Sub-System";
@@ -524,6 +530,21 @@ void VID_MenuInit( void )
 	else
 		s_samples_list.curvalue = 0;
 	}
+#else
+		if (r_arbSamples->value == 16)
+		s_samples_list.curvalue = 4;
+	else 
+	if (r_arbSamples->value == 8)
+		s_samples_list.curvalue = 3;
+	else 
+	if (r_arbSamples->value == 4)
+		s_samples_list.curvalue = 2;
+	else 
+		if (r_arbSamples->value == 2)
+		s_samples_list.curvalue = 1;
+	else
+		s_samples_list.curvalue = 0;
+#endif
 
 	// displayrefresh
 	r_displayRefresh = Cvar_Get("r_displayRefresh", "0",  CVAR_ARCHIVE);
