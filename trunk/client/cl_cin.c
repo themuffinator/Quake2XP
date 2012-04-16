@@ -400,7 +400,6 @@ byte *SCR_ReadNextFrame(void)
 	size_t r;
 	int command;
 	byte samples[22050 / 14 * 4 + 4096*4];
-	byte *pSamples;
 	byte compressed[0x20000];
 	int size;
 	byte *pic;

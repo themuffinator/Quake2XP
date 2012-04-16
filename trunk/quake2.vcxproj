@@ -243,12 +243,12 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;wsock32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;wsock32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;ogg_static.lib;vorbisfile_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>c:\quake2\quake2xp.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>odbc32.dll;LIBC.lib;MSVCRTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>odbc32.dll;LIBC.lib;MSVCRTD.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\debug/quake2xp.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -440,7 +440,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;wsock32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;wsock32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;ogg_static.lib;vorbisfile_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>c:\quake2\quake2xp.exe</OutputFile>
       <Version>
       </Version>
@@ -751,6 +751,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
+    <ClCompile Include="client\music.c" />
     <ClCompile Include="game\m_flash.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|x64'">EnableFastChecks</BasicRuntimeChecks>
@@ -1132,18 +1133,6 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="client\x86.c">
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Profile|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug Profile|Win32'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Profile|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug Profile|x64'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_drawAlias.c" />
     <ClCompile Include="ref_gl\r_calcAlias.c" />
     <ClCompile Include="ref_gl\r_decals.c" />
@@ -1276,6 +1265,7 @@
     <ClInclude Include="client\cdaudio.h" />
     <ClInclude Include="client\cl_console.h" />
     <ClInclude Include="client\client.h" />
+    <ClInclude Include="client\music.h" />
     <ClInclude Include="win32\conproc.h" />
     <ClInclude Include="game\game.h" />
     <ClInclude Include="client\input.h" />

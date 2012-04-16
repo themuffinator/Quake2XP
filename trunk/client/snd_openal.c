@@ -84,7 +84,7 @@ typedef struct {
 
 streaming_t streaming;
 
-static inline void sq_add(ALuint x) {
+static __inline void sq_add(ALuint x) {
 	int tail = (streaming.bFirst + streaming.bNumAvail) % NUM_STRBUF;
 
 	// assuming non-full queue
@@ -94,7 +94,7 @@ static inline void sq_add(ALuint x) {
 	streaming.bNumAvail++;
 }
 
-static inline ALuint sq_remove(void) {
+static __inline ALuint sq_remove(void) {
 	ALuint r;
 
 	// assuming non-empty queue

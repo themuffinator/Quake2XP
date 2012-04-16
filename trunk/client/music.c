@@ -60,7 +60,8 @@ void Music_Init(void) {
 	music_type = s_musicsrc->value;
 	mstat = MSTAT_STOPPED;
 
-	Com_Printf("Music init (type %d)\n", music_type);
+//	Com_Printf("Music init (type %d)\n", music_type);
+	Com_Printf("\n========Init Music subsistem========\n\n");
 
 	switch (music_type) {
 		case MUSIC_NONE:
@@ -72,15 +73,15 @@ void Music_Init(void) {
 			break;
 		case MUSIC_OTHER_FILES:
 			Q_snprintfz(path, sizeof(path), "%s/music/*", FS_Gamedir());
-			Com_Printf(S_COLOR_MAGENTA "Music_Init: searching files in \"%s\"\n", path);
+			Com_DPrintf(S_COLOR_MAGENTA "Music_Init: searching files in \"%s\"\n", path);
 			fsList = FS_ListFiles(path, &fsNumFiles, 0, SFF_SUBDIR);
 			fsNumFiles--;
 			fsIndex = -1;
 			fsNameOffset = strlen(FS_Gamedir())+1;
-			int i;
 
 			if (fsList != NULL)
-				Com_Printf(S_COLOR_MAGENTA "Music_Init: found %d files\n", fsNumFiles);
+				Com_Printf(S_COLOR_YELLOW "found "S_COLOR_GREEN"%d "S_COLOR_YELLOW"music files\n\n", fsNumFiles);
+			Com_Printf("====================================\n\n");
 			break;
 		default:
 			Cvar_SetValue("s_musicsrc", MUSIC_NONE);
@@ -120,9 +121,9 @@ static qboolean Music_PlayFile(const char *name, qboolean hasExt) {
 
 	if (music_handle != NULL) {
 		if (hasExt)
-			Com_Printf(S_COLOR_GREEN "Music_Play: playing \"%s\"\n", name);
+			Com_DPrintf(S_COLOR_GREEN "Music_Play: playing \"%s\"\n", name);
 		else
-			Com_Printf(S_COLOR_GREEN "Music_Play: playing \"%s.%s\"\n", name, music_handle->ext);
+			Com_DPrintf(S_COLOR_GREEN "Music_Play: playing \"%s.%s\"\n", name, music_handle->ext);
 
 		S_Streaming_Start(sp.bits, sp.channels, sp.rate, s_musicvolume->value);
 		mstat = MSTAT_PLAYING;
@@ -146,10 +147,14 @@ void Music_Play(void) {
 
 	switch (music_type) {
 		case MUSIC_CD:
+#ifdef WIN32	
+				CDAudio_Play(track, true);
+#else
 			if (s_musicrandom->value == 0)
 				CDAudio_Play(track, true);
 			else
 				CDAudio_RandomPlay();
+#endif
 			mstat = MSTAT_PLAYING;
 			break;
 
@@ -171,7 +176,7 @@ void Music_Play(void) {
 				fsIndex = (fsIndex+1) % fsNumFiles;
 			count = fsNumFiles;
 			while (count-- > 0) {
-				Com_Printf("index = %d, f[index] = %s and offset %d\n", fsIndex, fsList[fsIndex], fsNameOffset);
+				Com_DPrintf("index = %d, f[index] = %s and offset %d\n", fsIndex, fsList[fsIndex], fsNameOffset);
 				if (Music_PlayFile(fsList[fsIndex] + fsNameOffset, true))
 					return;
 				fsIndex = (fsIndex+1) % fsNumFiles;
@@ -184,7 +189,7 @@ void Music_Stop(void) {
 	if (mstat == MSTAT_STOPPED)
 		return;
 
-	Com_Printf(S_COLOR_GREEN "Stopped playing music\n");
+	Com_DPrintf(S_COLOR_GREEN "Stopped playing music\n");
 
 	switch (music_type) {
 		case MUSIC_CD:
@@ -339,16 +344,16 @@ static Gen_Interface_t *Gen_Open(const char *name, soundparams_t *sp) {
 	if (ext == NULL)
 		return NULL;
 
-	Com_Printf("trying to load %s\n", name);
+	Com_DPrintf("trying to load %s\n", name);
 
 	for (i = 0; i < sizeof(supported_exts)/sizeof(supported_exts[0]); i++)
-		if (strcasecmp(ext + 1, supported_exts[i].name) == 0)
+		if (Q_strcasecmp(ext + 1, supported_exts[i].name) == 0)
 			return supported_exts[i].openFunc(name, sp);
 
 	return NULL;
 }
 
-static int MC_ReadVorbis(MC_Vorbis_t *f, void *buffer, int n) {
+static int MC_ReadVorbis(MC_Vorbis_t *f, char *buffer, int n) {
 	int total = 0;
 	const int step = 1024*64;
 

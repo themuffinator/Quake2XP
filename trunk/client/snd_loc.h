@@ -132,6 +132,9 @@ extern LPALSOURCEREWINDV alSourceRewindv;
 extern LPALSOURCESTOP alSourceStop;
 extern LPALSOURCESTOPV alSourceStopv;
 extern LPALSOURCEUNQUEUEBUFFERS alSourceUnqueueBuffers;
+extern LPALGENSOURCES alGenSources;
+extern LPALDISTANCEMODEL alDistanceModel;
+
 
 extern LPALEAXSET alEAXSet;
 extern LPALEAXGET alEAXGet;

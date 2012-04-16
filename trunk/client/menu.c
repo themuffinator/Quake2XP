@@ -1937,6 +1937,7 @@ static char *idcredits[] = {
 	"KriGSSv1N",
 	"Pavel 'VorteX' Timofeyev",
 	"Willow",
+	"Linux port by Alejandro Pulver",
 	"",
 	"+BETA TESTERS",
 	"Serge 'Berserker' Borodulin",

@@ -248,7 +248,22 @@ static int CDAudio_GetAudioDiskInfo(void)
 	return 0;
 }
 
+void CDAudio_Stop(void)
+{
+	DWORD	dwReturn;
 
+	if (!enabled)
+		return;
+	
+	if (!playing)
+		return;
+
+    if (dwReturn = mciSendCommand(wDeviceID, MCI_STOP, 0, MCI_NULL))
+		Com_Printf("MCI_STOP failed (%i)", dwReturn);
+
+	wasPlaying = false;
+	playing = false;
+}
 
 void CDAudio_Play2(int track, qboolean looping)
 {
@@ -331,23 +346,6 @@ void CDAudio_Play(int track, qboolean looping)
 	// looptrack later
 	loopcounter = 0;
 	CDAudio_Play2(track, looping);
-}
-
-void CDAudio_Stop(void)
-{
-	DWORD	dwReturn;
-
-	if (!enabled)
-		return;
-	
-	if (!playing)
-		return;
-
-    if (dwReturn = mciSendCommand(wDeviceID, MCI_STOP, 0, MCI_NULL))
-		Com_Printf("MCI_STOP failed (%i)", dwReturn);
-
-	wasPlaying = false;
-	playing = false;
 }
 
 

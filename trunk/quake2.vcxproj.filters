@@ -177,9 +177,6 @@
     <ClCompile Include="win32\vid_dll.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="client\x86.c">
-      <Filter>Source Files\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_decals.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -274,6 +271,9 @@
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="client\snd_openal.c">
+      <Filter>Source Files\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="client\music.c">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
   </ItemGroup>
@@ -381,6 +381,9 @@
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="client\sound.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="client\music.h">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
   </ItemGroup>
