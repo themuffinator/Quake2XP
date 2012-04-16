@@ -23,11 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "client.h"
 #include "snd_loc.h"
 
-// TODO: put in global header and merge with equivalents
-#define MIN(a,b) ((a)>(b) ? (b) : (a))
-#define VectorLength_Squared(v) DotProduct(v,v)
-#define clamp(a,b,c)	((a) < (b) ? (b) : (a) > (c) ? (c) : (a))
-
 // =======================================================================
 // Internal sound data & structures
 // =======================================================================
@@ -50,6 +45,7 @@ cvar_t	*s_volume;
 cvar_t	*s_show;
 cvar_t	*s_musicvolume;
 cvar_t	*s_musicsrc;
+cvar_t	*s_musicrandom;
 cvar_t	*s_openal_eax;
 cvar_t	*s_openal_device;
 cvar_t	*s_quality;
@@ -73,9 +69,6 @@ const GUID DSPROPSETID_EAX20_BufferProperties =
 // =======================================================================
 // Video & Music streaming
 // =======================================================================
-
-#define NUM_STRBUF 4
-#define MAX_STRBUF_SIZE (1024*256)
 
 typedef struct {
 	// willow: If enabled (not zero) one channel dedicated to cinematic or VOIP communications.
@@ -113,6 +106,8 @@ static inline ALuint sq_remove(void) {
 
 	return r;
 }
+
+static void S_Streaming_RecycleBuffers(void);
 
 /*
 ===============================================================================
@@ -192,7 +187,8 @@ void S_Init(int hardreset)
 		s_volume			=	Cvar_Get("s_volume", "1", CVAR_ARCHIVE);
 		s_show				=	Cvar_Get("s_show", "0", 0);
 		s_musicvolume		=	Cvar_Get("s_musicvolume", "0.8", CVAR_ARCHIVE);
-		s_musicsrc			=	Cvar_Get("s_musicsrc", "auto", CVAR_ARCHIVE);
+		s_musicsrc			=	Cvar_Get("s_musicsrc", "1", CVAR_ARCHIVE);
+		s_musicrandom		=	Cvar_Get("s_musicrandom", "0", CVAR_ARCHIVE);
 		s_openal_device		=	Cvar_Get("s_openal_device", "", CVAR_ARCHIVE);
 		s_openal_eax		=	Cvar_Get("s_openal_eax", "0", CVAR_ARCHIVE);
 		s_quality			=	Cvar_Get("s_quality", "0", CVAR_ARCHIVE);
@@ -254,7 +250,6 @@ void S_Init(int hardreset)
 					Cmd_AddCommand("stopsound", S_StopAllSounds);
 					Cmd_AddCommand("music", S_Music_f);
 					Cmd_AddCommand("s_info", S_SoundInfo_f);
-					Cmd_AddCommand("s_test", Music_Play);
 					
 
 					CL_fast_sound_init();
@@ -336,7 +331,6 @@ void S_Shutdown(void)
 		Cmd_RemoveCommand("stopsound");
 		Cmd_RemoveCommand("music");
 		Cmd_RemoveCommand("s_info");
-		Cmd_RemoveCommand("s_test");
 		
 		FreeChannels();
 		AL_Shutdown();
@@ -1523,6 +1517,8 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 			alSourcePlay(sourceNum);
 		}
 	}
+
+	S_Streaming_RecycleBuffers();
 }
 
 /*
@@ -1530,16 +1526,6 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 Music Streaming
 ===============================================================================
 */
-
-void S_Streaming_Stop() {
-	if (streaming.enabled) {
-		// Stop the Source and clear the Queue
-		alSourceStop(source_name[CH_STREAMING]);
-		alSourcei(source_name[CH_STREAMING], AL_BUFFER, 0);
-
-		streaming.enabled = false;
-	}
-}
 
 qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float volume) {
 	if (streaming.enabled) {
@@ -1556,7 +1542,7 @@ qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float v
 	else if (num_bits == 16 && num_channels == 2)
 		streaming.sound_format = AL_FORMAT_STEREO16;
 	else {
-		Com_Printf(S_COLOR_RED "S_StreamingStart: unsupported format ()%d bits and %d channels)\n", num_bits, num_channels);
+		Com_Printf(S_COLOR_RED "S_StreamingStart: unsupported format (%d bits and %d channels)\n", num_bits, num_channels);
 		return false;
 	}
 
@@ -1569,23 +1555,21 @@ qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float v
 	return true;
 }
 
-int S_Streaming_Add(const byte *buffer, int num_bytes) {
-	// TODO: add comments
-	// TODO: remove Com_Printf, leaving assert if desired
+void S_Streaming_Stop(void) {
+	if (streaming.enabled) {
+		// Stop the Source and clear the Queue
+		alSourceStop(source_name[CH_STREAMING]);
+		alSourcei(source_name[CH_STREAMING], AL_BUFFER, 0);
 
-	ALint iState;
-	int readacc = 0;
-
-	if (!streaming.enabled)
-		return 0;
-
-#if 0
-	if (num_bytes == 0) {
-		Com_Printf(S_COLOR_RED "Warning: called S_Streaming_Add with empty buffer\n");
-		return 0;
+		streaming.enabled = false;
 	}
-#endif
+}
 
+int S_Streaming_NumFreeBufs(void) {
+	return streaming.bNumAvail;
+}
+
+static void S_Streaming_RecycleBuffers(void) {
 	// Reclaim buffers that have been played, and keep them in a queue
 	if (streaming.bNumAvail < NUM_STRBUF) {
 		int recycled, i;
@@ -1596,6 +1580,25 @@ int S_Streaming_Add(const byte *buffer, int num_bytes) {
 			alSourceUnqueueBuffers(source_name[CH_STREAMING], 1, &buf);
 			sq_add(buf);
 		}
+	}
+
+
+}
+
+int S_Streaming_Add(const byte *buffer, int num_bytes) {
+	// TODO: add comments
+
+	ALint iState;
+	int readacc = 0;
+
+	if (!streaming.enabled) {
+		Com_DPrintf("S_Streaming_Add: called with %d bytes when disabled\n", num_bytes);
+		return 0;
+	}
+
+	if (num_bytes == 0) {
+		Com_DPrintf("S_Streaming_Add: called with empty buffer\n");
+		return 0;
 	}
 
 	// If there is data to play and free buffers,
@@ -1623,15 +1626,16 @@ int S_Streaming_Add(const byte *buffer, int num_bytes) {
 			// If we are not playing but there are still enqueued buffers,
 			// restart the audio because it starved of data to play
 			alSourcePlay(source_name[CH_STREAMING]);
+			Com_DPrintf("S_Streaming_Add: restarting stream, starved\n");
 		} else {
 			// Finished playing
+			Com_DPrintf("S_Streaming_Add: no more buffers to play, stopping\n");
 			S_Streaming_Stop();
 		}
 	}
 
-#if 0
 	if (readacc == 0)
-		Com_Printf(S_COLOR_RED "Warning: added 0 samples to queue but %d given\n", num_bytes);
-#endif
+		Com_DPrintf("S_Streaming_Add: added 0 samples to queue but %d given\n", num_bytes);
+
 	return readacc;
 }

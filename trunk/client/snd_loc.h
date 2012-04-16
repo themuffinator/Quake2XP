@@ -26,6 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../win32/winquake.h"
 #endif
 
+#define MIN(a,b) ((a)>(b) ? (b) : (a))
+#define MAX(a,b) ((a)>(b) ? (a) : (b))
+#define VectorLength_Squared(v) DotProduct(v,v)
+#define clamp(a,b,c)	((a) < (b) ? (b) : (a) > (c) ? (c) : (a))
 
 /*
  =======================================================================
@@ -304,6 +308,7 @@ extern unsigned s_openal_numChannels;
 extern cvar_t *s_volume;
 extern cvar_t *s_musicvolume;
 extern cvar_t *s_musicsrc;
+extern cvar_t *s_musicrandom;
 extern cvar_t *s_show;
 extern cvar_t *s_openal_eax;
 extern cvar_t *s_openal_device;
@@ -315,12 +320,16 @@ qboolean alSource_EAX_Flags(ALuint sourceNum, DWORD dwValue);
 qboolean alSource_EAX_All(ALuint sourceNum, LPEAXBUFFERPROPERTIES lpData);
 #endif
 
+#define NUM_STRBUF 8
+#define MAX_STRBUF_SIZE (1024*256)
+
 qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float volume);
 int S_Streaming_Add(const byte *buffer, int num_bytes);
+int S_Streaming_NumFreeBufs(void);
 void S_Streaming_Stop(void);
 
 typedef enum {
-	MUSIC_NONE, MUSIC_CD, MUSIC_FILES
+	MUSIC_NONE, MUSIC_CD, MUSIC_CD_FILES, MUSIC_OTHER_FILES
 } music_type_t;
 
 void Music_Init(void);
@@ -331,7 +340,6 @@ void Music_Pause(void);
 void Music_Resume(void);
 void Music_Update(void);
 
-qboolean StreamingWav_init(char *name);
-void StreamingWav_close(void);
+qboolean S_LoadWAV(const char *name, void **oWav, void **oStart, int *oBits, int *oChans, int *oRate, int *oSize);
 
 #endif /* __SND_LOC_H */

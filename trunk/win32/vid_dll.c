@@ -258,7 +258,7 @@ void AppActivate(BOOL fActive, BOOL minimize)
 	{
 		ActiveApp = false;
 		IN_Activate (false);
-		CDAudio_Activate (false);
+		Music_Pause();
 		if ( win_noalttab->value )
 		{
 			WIN_EnableAltTab();
@@ -269,7 +269,7 @@ void AppActivate(BOOL fActive, BOOL minimize)
 	{
 		ActiveApp = true;
 		IN_Activate (true);
-		CDAudio_Activate (true);
+		Music_Resume();
 		if ( win_noalttab->value )
 		{
 			WIN_DisableAltTab();

@@ -313,9 +313,9 @@ void Com_PageInMemory (byte *buffer, int size);
 //=============================================
 
 // portable case insensitive compare
-int Q_stricmp (char *s1, char *s2);
-int Q_strcasecmp (char *s1, char *s2);
-int Q_strncasecmp (char *s1, char *s2, int n);
+int Q_stricmp (const char *s1, const char *s2);
+int Q_strcasecmp (const char *s1, const char *s2);
+int Q_strncasecmp (const char *s1, const char *s2, int n);
 
 void Q_strncpyz (char *dst, const char *src, int dstSize);
 void Q_strcat (char *dst, const char *src, int dstSize);
@@ -374,6 +374,7 @@ int		Hunk_End (void);
 #define SFF_RDONLY  0x04
 #define SFF_SUBDIR  0x08
 #define SFF_SYSTEM  0x10
+#define SFF_INPACK  0x20
 
 /*
 ** pass in an attribute mask of things you wish to REJECT

@@ -753,11 +753,11 @@ void FS_ExecAutoexec(void);
 char *FS_FindNext(char *find);
 char *FS_FindFirst(char *find);
 
-int FS_FOpenFile(char *filename, qFILE *file);
+int FS_FOpenFile(const char *filename, qFILE *file);
 void FS_FCloseFile(qFILE * f);
 // note: this can't be called from another DLL, due to MS libc issues
 
-int FS_LoadFile(char *path, void **buffer);
+int FS_LoadFile(const char *path, void **buffer);
 // a null buffer will just return the file length without loading
 // a -1 length is not present
 
@@ -770,6 +770,9 @@ void FS_CreatePath(char *path);
 
 int FS_filelength (qFILE *f);
 int FS_filelength2 (FILE *f);
+
+char **FS_ListFiles ( char *findname, int *numfiles, unsigned musthave, unsigned canthave );
+void FS_FreeList (char **list, int nfiles);
 
 /*
 ==============================================================

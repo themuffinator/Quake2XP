@@ -2,12 +2,14 @@
 # encoding: utf-8
 
 # TODO list
-# mandatory
-# - respect filesystem: f* -> FS_*, one write directory, etc
-# - compare system.c and related with Yamagi Q2
-# - add ogg/vorbis support (not the complete QuDos player, only for original tracks)
 # performance
-# - optimize Mod_LoadFaces with vectorization and/or OpenMP
+# - optimize Mod_LoadFaces with explicit/implicit vectorization and/or OpenMP
+# - optimize GL_ResampleTextures with OpenMP (or the loop in the calling
+#   function)
+# other
+# - try GLX_multisample_coverage like the WGL code
+# - try to use underwater effect with EFX code in snd_efx.c
+# - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
 
 
 VERSION = '1.0'
@@ -101,5 +103,5 @@ def build(bld):
         source = sources['client'],
         target = 'quake2xp',
         lib = ['z', 'm', 'dl'],
-        use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL']#, 'X11', 'XXF86VM']
+        use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL', 'OGG', 'VORBIS', 'VORBISFILE']#, 'X11', 'XXF86VM']
     )

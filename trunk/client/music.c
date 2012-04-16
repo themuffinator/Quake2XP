@@ -2,27 +2,65 @@
 #include "cdaudio.h"
 #include "snd_loc.h"
 
-qboolean LoadWAV2(char *name, void **wav, int *outBits, int *outChannels, ALsizei * rate, ALsizei * size);
+// Implementation specific header, do not include outside music.c
+#include "music.h"
 
 typedef enum {
 	MSTAT_STOPPED, MSTAT_PAUSED, MSTAT_PLAYING
 } mstat_t;
 
-static mstat_t mstat;
+static mstat_t mstat = MSTAT_STOPPED;
+static music_type_t music_type = MUSIC_NONE;
+static Gen_Interface_t *music_handle;
+static byte music_buffer[MAX_STRBUF_SIZE];
 
-static music_type_t music_type;
+static char **fsList;
+static int fsIndex;
+static int fsNumFiles;
+static int fsNameOffset;
 
-//byte music_buffer[MAX_STRBUF_SIZE];
-byte music_buffer[0x1000];
+#if 0
+#define MAX_PATTERNS 16
+char **FS_ListFilesMany(int numPatterns, char **patterns, int *nfiles, int musthave, int canthave) {
+	int i, j, ntotal, pos;
+	int subNumFiles[MAX_PATTERNS];
+	char **subNameLists[MAX_PATTERNS];
+	char **res;
 
-void *mFile;
-int mFilePos, mFileSize;
+	ntotal = 0;
+	for (i = 0, j = 0; i < numPatterns; i++) {
+		subNameLists[j] = FS_ListFiles(patterns[j], &subNumFiles[j], musthave, canthave);
+		subNumFiles[i]--;
+		if (subNameLists[j] != NULL) {
+			ntotal += subNumFiles[j];
+			j++;
+		}
+	}
+	if (j == 0) {
+		*nfiles = 0;
+		return NULL;
+	}
+
+	res = malloc((ntotal+1) * sizeof(char*));
+	pos = 0;
+	for (i = 0; i < j; i++) {
+		memcpy(res + pos, subNameLists[i], sizeof(char*) * (subNumFiles[i]));
+		free(subNameLists[i]);
+		pos += subNumFiles[i];
+	}
+	pos++;
+	assert(pos == ntotal);
+	return res;
+}
+#endif
 
 void Music_Init(void) {
+	char path[MAX_QPATH];
+
 	music_type = s_musicsrc->value;
 	mstat = MSTAT_STOPPED;
 
-	Com_Printf("Music init\n");
+	Com_Printf("Music init (type %d)\n", music_type);
 
 	switch (music_type) {
 		case MUSIC_NONE:
@@ -30,7 +68,19 @@ void Music_Init(void) {
 		case MUSIC_CD:
 			CDAudio_Init();
 			break;
-		case MUSIC_FILES:
+		case MUSIC_CD_FILES:
+			break;
+		case MUSIC_OTHER_FILES:
+			Q_snprintfz(path, sizeof(path), "%s/music/*", FS_Gamedir());
+			Com_Printf(S_COLOR_MAGENTA "Music_Init: searching files in \"%s\"\n", path);
+			fsList = FS_ListFiles(path, &fsNumFiles, 0, SFF_SUBDIR);
+			fsNumFiles--;
+			fsIndex = -1;
+			fsNameOffset = strlen(FS_Gamedir())+1;
+			int i;
+
+			if (fsList != NULL)
+				Com_Printf(S_COLOR_MAGENTA "Music_Init: found %d files\n", fsNumFiles);
 			break;
 		default:
 			Cvar_SetValue("s_musicsrc", MUSIC_NONE);
@@ -40,47 +90,88 @@ void Music_Init(void) {
 }
 
 void Music_Shutdown(void) {
-	Music_Stop();
+	if (music_type == MUSIC_NONE)
+		return;
 
 	Com_Printf("Music shutdown\n");
+	Music_Stop();
 
 	switch (music_type) {
 		case MUSIC_CD:
 			CDAudio_Shutdown();
 			break;
-		case MUSIC_FILES:
+		case MUSIC_CD_FILES:
 			break;
+		case MUSIC_OTHER_FILES:
+			fsNumFiles++;
+			FS_FreeList(fsList, fsNumFiles);
+			break;
+	}
+	music_type = MUSIC_NONE;
+}
+// only to be called inside Music_Play
+static qboolean Music_PlayFile(const char *name, qboolean hasExt) {
+	soundparams_t sp;
+
+	if (hasExt)
+		music_handle = Gen_Open(name, &sp);
+	else
+		music_handle = Gen_OpenAny(name, &sp);
+
+	if (music_handle != NULL) {
+		if (hasExt)
+			Com_Printf(S_COLOR_GREEN "Music_Play: playing \"%s\"\n", name);
+		else
+			Com_Printf(S_COLOR_GREEN "Music_Play: playing \"%s.%s\"\n", name, music_handle->ext);
+
+		S_Streaming_Start(sp.bits, sp.channels, sp.rate, s_musicvolume->value);
+		mstat = MSTAT_PLAYING;
+		return true;
+	} else {
+		Com_Printf(S_COLOR_YELLOW "Music_Play: unable to load \"%s\"\n", name);
+		return false;
 	}
 }
 
 void Music_Play(void) {
 	int track = atoi(cl.configstrings[CS_CDTRACK]);
 	char name[MAX_QPATH];
-	int format, rate, bits, channels;
+	int count;
 
 	Music_Stop();
 
-	// TODO: support random track/random file, unify with cd_* variables which are general enough
-#if 0
-	if (track == 0) {
-		return;
-	}
-#endif
-
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Play(track, true);
+			if (s_musicrandom->value == 0)
+				CDAudio_Play(track, true);
+			else
+				CDAudio_RandomPlay();
 			mstat = MSTAT_PLAYING;
 			break;
-		case MUSIC_FILES:
-			Q_snprintfz(name, sizeof(name), "music/track%02i.wav", track);
-			//Q_snprintfz(name, sizeof(name), "music/test.wav");
-			if (LoadWAV2(name, &mFile, &bits, &channels, &rate, &mFileSize)) {
-				mstat = MSTAT_PLAYING;
-				mFilePos = 0;
-				S_Streaming_Start(bits, channels, rate, s_musicvolume->value);
-			} else
-				Com_Printf("Music_Play: unable to load music from %s\n");
+
+		case MUSIC_CD_FILES:
+			if (s_musicrandom->value != 0)
+				// original soundtrack has tracks 2 to 11
+				track = 2 + rand()%10;
+			Q_snprintfz(name, sizeof(name), "music/%02i", track);
+			Music_PlayFile(name, false);
+			break;
+
+		case MUSIC_OTHER_FILES:
+			if (fsList == NULL)
+				return;
+
+			if (s_musicrandom->value != 0)
+				fsIndex = rand() % fsNumFiles;
+			else
+				fsIndex = (fsIndex+1) % fsNumFiles;
+			count = fsNumFiles;
+			while (count-- > 0) {
+				Com_Printf("index = %d, f[index] = %s and offset %d\n", fsIndex, fsList[fsIndex], fsNameOffset);
+				if (Music_PlayFile(fsList[fsIndex] + fsNameOffset, true))
+					return;
+				fsIndex = (fsIndex+1) % fsNumFiles;
+			}
 			break;
 	}
 }
@@ -89,20 +180,23 @@ void Music_Stop(void) {
 	if (mstat == MSTAT_STOPPED)
 		return;
 
+	Com_Printf(S_COLOR_GREEN "Stopped playing music\n");
+
 	switch (music_type) {
 		case MUSIC_CD:
 			CDAudio_Stop();
 			break;
-		case MUSIC_FILES:
+		case MUSIC_CD_FILES:
+		case MUSIC_OTHER_FILES:
+			music_handle->close(music_handle->f);
 			S_Streaming_Stop();
-			free(mFile);
 			break;
 	}
 
-	mstat == MSTAT_STOPPED;
+	mstat = MSTAT_STOPPED;
 }
 
-void Music_Pause() {
+void Music_Pause(void) {
 	if (mstat != MSTAT_PLAYING)
 		return;
 
@@ -110,7 +204,8 @@ void Music_Pause() {
 		case MUSIC_CD:
 			CDAudio_Activate(false);
 			break;
-		case MUSIC_FILES:
+		case MUSIC_CD_FILES:
+		case MUSIC_OTHER_FILES:
 			alSourcePause(source_name[CH_STREAMING]);
 			break;
 	}
@@ -118,15 +213,16 @@ void Music_Pause() {
 	mstat = MSTAT_PAUSED;
 }
 
-void Music_Resume() {
+void Music_Resume(void) {
 	if (mstat != MSTAT_PAUSED)
 		return;
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Activate(false);
+			CDAudio_Activate(true);
 			break;
-		case MUSIC_FILES:
+		case MUSIC_CD_FILES:
+		case MUSIC_OTHER_FILES:
 			alSourcePlay(source_name[CH_STREAMING]);
 			break;
 	}
@@ -134,168 +230,207 @@ void Music_Resume() {
 	mstat = MSTAT_PLAYING;
 }
 
-
 void Music_Update(void) {
+	int n;
+
+	// if we are in the configuration menu, or paused we don't do anything
+	if (mstat == MSTAT_PAUSED)
+		return;
+
+	// Check for configuration changes
+	
+	if (s_musicsrc->modified) {
+		Music_Shutdown();
+		Music_Init();
+		Music_Play();
+		s_musicsrc->modified = false;
+		s_musicvolume->modified = false;
+		s_musicrandom->modified = false;
+		return;
+	}
+
+	if (music_type == MUSIC_NONE)
+		return;
+
+	if (s_musicrandom->modified) {
+		s_musicrandom->modified = false;
+		Music_Play();
+		return;
+	}
+
+	if (s_musicvolume->modified) {
+		switch (music_type) {
+			case MUSIC_CD:
+				Cvar_SetValue("cd_volume", s_musicvolume->value);
+				break;
+			case MUSIC_CD_FILES:
+			case MUSIC_OTHER_FILES:
+				alSourcef(source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
+				break;
+		}
+		s_musicvolume->modified = false;
+		return;
+	}
+
+	// Do the actual update
+
 	switch (music_type) {
 		case MUSIC_CD:
 			CDAudio_Update();
 			break;
-		case MUSIC_FILES:
-			if (mstat == MSTAT_PLAYING) {
-				int n;
 
-				// TODO: now similar code can be removed from menu
-				if (s_musicvolume->modified) {
-					alSourcef(source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
-					s_musicvolume->modified = false;
-				}
-				// FIXME: do something more intelligent, like returning the free space in S_Streaming_Add or sleeping for a number of frames
-				n = S_Streaming_Add(mFile + mFilePos, 1024*64);
-				//Com_Printf("Inserted %d bytes of music, pos %d\n", n, mFilePos);
-				mFilePos += n;
-				if (mFilePos == mFileSize)
-					// play something else
-					Music_Play();
+		case MUSIC_CD_FILES:
+		case MUSIC_OTHER_FILES:
+			if (mstat != MSTAT_PLAYING || S_Streaming_NumFreeBufs() == 0)
+				return;
+
+			// Play a portion of the current file
+			n = music_handle->read(music_handle->f, music_buffer, sizeof(music_buffer));
+			if (n == 0) {
+				Music_Play();
+			} else {
+				// don't check return value as the buffer is guaranteed to fit
+				S_Streaming_Add(music_buffer, n);
 			}
 			break;
 	}
 }
 
-// TODO: rewrite with FS_ListFiles and similar, like snd_ogg.c
 void S_Music_f(void)
 {
-
-	char intro[MAX_QPATH], loop[MAX_QPATH];
-
-	Com_Printf("*** MUSIC BOX HIGHLY BETA!! ***\n");
-
-	if (Cmd_Argc() < 2 || Cmd_Argc() > 3) {
-		Com_Printf("Usage: music <musicfile> [loopfile]\n");
-		return;
-	}
-
-	Q_strncpyz(intro, Cmd_Argv(1), sizeof(intro));
-	Com_DefaultPath(intro, sizeof(intro), "music");
-	Com_DefaultExtension(intro, sizeof(intro), ".wav");
-
-	if (Cmd_Argc() == 3) {
-		sprintf(loop, Cmd_Argv(2), sizeof(loop));
-		Com_DefaultPath(loop, sizeof(loop), "music");
-		Com_DefaultExtension(loop, sizeof(loop), ".wav");
-
-		//S_StartBackgroundTrack(intro, loop);
-	} else
-		//S_StartBackgroundTrack(intro, intro);
-		;
+	// CD: uses the level track, or another one if s_musicrandom
+	// Other: advances to the next, or random if s_musircandom
+	Music_Play();
 }
 
-#if 0
-void S_UpdateBackgroundTrack()
-{
-	ALint iState;
-	ALenum format;
-	int iBuffersProcessed = 0;
+// Generic interface and type specific implementations
 
-	if (!streaming)
-		return;
+supported_exts_t supported_exts[] = {
+	{"wav", (openFunc_t)MC_OpenWAV},
+	{"ogg", (openFunc_t)MC_OpenVorbis}
+};
 
-	// Request the number of OpenAL Buffers have been processed
-	// (played) on the Source
-	alGetSourcei(source_name[CH_STREAMING], AL_BUFFERS_PROCESSED, &iBuffersProcessed);
+// Gen_OpenAny: try all possible extensions of filename in sequence
+static Gen_Interface_t *Gen_OpenAny(const char *name, soundparams_t *sp) {
+	// check all supported extensions, or better try in a loop somewhere else?
+	int i;
 
-	// For each processed buffer, remove it from the Source Queue,
-	// read next chunk of audio
-	// data from disk, fill buffer with new data, and add it to the
-	// Source Queue
-	while (iBuffersProcessed) {
-		// Remove the Buffer from the Queue.  (uiBuffer contains the
-		// Buffer ID for the unqueued Buffer)
-		ALuint uiBuffer = 0;
-		alSourceUnqueueBuffers(source_name[CH_STREAMING], 1,
-								&uiBuffer);
+	for (i = 0; i < sizeof(supported_exts)/sizeof(supported_exts[0]); i++) {
+		char path[MAX_QPATH];
+		Gen_Interface_t *res;
 
-		begin:
-		ulBytesWritten = (ulBufferSize > stream_info_samples * 2) ? stream_info_samples * 2 : ulBufferSize;
-		if (ulBytesWritten) {
-				memcpy(pData, stream_wav + stream_info_dataofs,
-						ulBytesWritten);
-				{
-					alBufferData(uiBuffer, AL_FORMAT_STEREO16, pData, ulBytesWritten, stream_info_rate);
-					alSourceQueueBuffers(source_name [CH_STREAMING], 1, &uiBuffer);
-				}
-				stream_info_samples -= ulBytesWritten / 2;
-				stream_info_dataofs += ulBytesWritten;
-		}
-		else
-		{
-				if (BackgroundTrack_Repeat)
-					StreamingWav_Reset();
-				goto begin;
-		}
-
-		iBuffersProcessed--;
+		Q_snprintfz(path, sizeof(path), "%s.%s", name, supported_exts[i].name);
+		res = supported_exts[i].openFunc(path, sp);
+		if (res != NULL)
+			return res;
 	}
+	return NULL;
+}
 
-	// Check the status of the Source.  If it is not playing, then
-	// playback was completed,
-	// or the Source was starved of audio data, and needs to be
-	// restarted.
+// Gen_Open: check given filename and call appropiate routine
+static Gen_Interface_t *Gen_Open(const char *name, soundparams_t *sp) {
+	int i;
+	const char *ext = strrchr(name, '.');
 
+	if (ext == NULL)
+		return NULL;
 
-	alGetSourcei(source_name[CH_STREAMING], AL_SOURCE_STATE,
-					&iState);
-		if (iState != AL_PLAYING) {
-			ALint iQueuedBuffers;
-			// If there are Buffers in the Source Queue then the Source
-			// was starved of audio
-			// data, so needs to be restarted (because there is more audio
-			// data to play)
-			alGetSourcei(source_name[CH_STREAMING], AL_BUFFERS_QUEUED, &iQueuedBuffers);
-			if (iQueuedBuffers) {
-				alSourcePlay(source_name[CH_STREAMING]);
-			} else {
-				// Finished playing
-				S_Streaming_Stop();
-			}
+	Com_Printf("trying to load %s\n", name);
+
+	for (i = 0; i < sizeof(supported_exts)/sizeof(supported_exts[0]); i++)
+		if (strcasecmp(ext + 1, supported_exts[i].name) == 0)
+			return supported_exts[i].openFunc(name, sp);
+
+	return NULL;
+}
+
+static int MC_ReadVorbis(MC_Vorbis_t *f, void *buffer, int n) {
+	int total = 0;
+	const int step = 4096;
+
+	assert(step < n);
+	while (total + step < n) {
+		// FIXME: check endianess
+		int cur = ov_read(&f->ovFile, buffer + total, step, 0, 2, 1, &f->pos);
+		if (cur < 0)
+			return 0;
+		if (cur == 0)
+			return total;
+		total += cur;
+	}
+	return total;
+}
+
+static void MC_RewindVorbis(MC_Vorbis_t *f) {
+	f->pos = 0;
+}
+
+static void MC_CloseVorbis(MC_Vorbis_t *f) {
+	ov_clear(&f->ovFile);
+	FS_FreeFile(f->ovRawFile);
+}
+
+static Gen_Interface_t *MC_OpenVorbis(const char *name, soundparams_t *sp) {
+	static MC_Vorbis_t f;
+	static Gen_Interface_t res;
+
+	f.size = FS_LoadFile(name, &f.ovRawFile);
+	if (f.size < 0)
+		return NULL;
+
+	if (ov_open(NULL, &f.ovFile, f.ovRawFile, f.size) == 0) {
+		f.info = ov_info(&f.ovFile, 0);
+		f.pos = 0;
+		sp->bits = 16;
+		sp->channels = f.info->channels;
+		sp->rate = f.info->rate;
+
+		res.read = (readFunc_t)MC_ReadVorbis;
+		res.rewind = (rewindFunc_t)MC_RewindVorbis;
+		res.close = (closeFunc_t)MC_CloseVorbis;
+		res.f = &f;
+		res.ext = "ogg";
+
+		return &res;
+	} else {
+		FS_FreeFile(f.ovRawFile);
+		return NULL;
 	}
 }
 
-void S_StartBackgroundTrack(char *introTrack, char *loopTrack)
-{
-	 BackgroundTrack_Repeat = loopTrack != 0;
-	
-	if (streaming)
-		S_Streaming_Stop();
+static int MC_ReadWAV(MC_WAV_t *f, void *buffer, int n) {
+	const int r = MIN(n, f->size - f->pos);
 
-	if (StreamingWav_init(loopTrack ? loopTrack : introTrack)) {
-		int i;
-		// Fill all the Buffers with audio data from the wavefile
-		for (i = 0; i < SND_STREAMING_NUMBUFFERS; i++) {
-/*				if (SUCCEEDED(pWaveLoader->ReadWaveData(WaveID, pData, ulBufferSize, &ulBytesWritten)))
-*/
-			ulBytesWritten =
-				(ulBufferSize >
-				 stream_info_samples * 2) ? stream_info_samples *
-				2 : ulBufferSize;
-			if (ulBytesWritten) {
-				memcpy(pData, stream_wav + stream_info_dataofs,
-					   ulBytesWritten);
-				{
-					alBufferData(uiBuffers[i], AL_FORMAT_STEREO16, pData,
-								 ulBytesWritten, stream_info_rate);
-					alSourceQueueBuffers(source_name[CH_STREAMING],
-										 1, &uiBuffers[i]);
-				}
-				stream_info_samples -= ulBytesWritten / 2;
-				stream_info_dataofs += ulBytesWritten;
-			}
-		}
-		// Start playing source
-		alSourcef(source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
-		alSourcePlay(source_name[CH_STREAMING]);
-		streaming = true;
+	if (n > 0) {
+		memcpy(buffer, f->start + f->pos, r);
+		f->pos += r;
+	}
 
-	} else
-		Com_Printf("Failed to load %s\n", introTrack);
+	return n;
 }
-#endif
+
+static void MC_RewindWAV(MC_WAV_t *f) {
+	f->pos = 0;
+}
+
+static void MC_CloseWAV(MC_WAV_t *f) {
+	FS_FreeFile(f->data);
+}
+
+static Gen_Interface_t *MC_OpenWAV(const char *name, soundparams_t *sp) {
+	static MC_WAV_t f;
+	static Gen_Interface_t res;
+
+	if (S_LoadWAV(name, &f.data, &f.start, &sp->bits, &sp->channels, &sp->rate, &f.size)) {
+		f.pos = 0;
+
+		res.read = (readFunc_t)MC_ReadWAV;
+		res.rewind = (rewindFunc_t)MC_RewindWAV;
+		res.close = (closeFunc_t)MC_CloseWAV;
+		res.f = &f;
+		res.ext = "wav";
+
+		return &res;
+	}
+	return NULL;
+}

@@ -370,8 +370,8 @@ static qboolean LoadWAV(char *name, byte ** wav, ALenum * format,
 
 	return true;
 }
-
-qboolean LoadWAV2(char *name, void **wav, int *outBits, int *outChannels, ALsizei * rate, ALsizei * size)
+// Loads WAV file in memory returned as "wav", but also returns start of audio data in "start"
+qboolean S_LoadWAV(const char *name, void **oWav, void **oStart, int *oBits, int *oChans, int *oRate, int *oSize)
 {
 	byte *buffer;
 	short channels, width;
@@ -416,9 +416,9 @@ qboolean LoadWAV2(char *name, void **wav, int *outBits, int *outChannels, ALsize
 		FS_FreeFile(buffer);
 		return false;
 	}
-	*outChannels = channels;
+	*oChans = channels;
 
-	*rate = GetLittleLong();
+	*oRate = GetLittleLong();
 
 	data_p += 4 + 2;
 
@@ -430,7 +430,7 @@ qboolean LoadWAV2(char *name, void **wav, int *outBits, int *outChannels, ALsize
 		FS_FreeFile(buffer);
 		return false;
 	}
-	*outBits = width * 8;
+	*oBits = width * 8;
 
 	// Find data chunk
 	FindChunk("data");
@@ -441,18 +441,17 @@ qboolean LoadWAV2(char *name, void **wav, int *outBits, int *outChannels, ALsize
 	}
 
 	data_p += 4;
-	*size = GetLittleLong();
+	*oSize = GetLittleLong();
 
-	if (*size == 0) {
+	if (*oSize == 0) {
 		Com_DPrintf("S_LoadWAV: file with 0 samples (%s)\n", name);
 		FS_FreeFile(buffer);
 		return false;
 	}
-	// Load the data
-	*wav = malloc(*size);
-	memcpy(*wav, buffer + (data_p - buffer), *size);
 
-	FS_FreeFile(buffer);
+	// Load the data
+	*oWav = buffer;
+	*oStart = data_p;
 
 	return true;
 }

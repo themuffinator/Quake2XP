@@ -1063,6 +1063,7 @@ static menulist_s s_options_crosshair_box;
 static menuslider_s s_options_sfxvolume_slider;
 static menuslider_s s_options_musicvolume_slider;
 static menulist_s s_options_musicsrc_list;
+static menulist_s s_options_musicrandom_list;
 static menulist_s s_options_useEax_list;
 static menulist_s s_options_unlimited_ambient_list;
 static menulist_s s_options_aldev_box;
@@ -1144,6 +1145,7 @@ static void ControlsSetMenuItemValues(void)
 	s_options_sfxvolume_slider.curvalue =
 		Cvar_VariableValue("s_volume") * 20;
 	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicsrc");
+	s_options_musicrandom_list.curvalue = Cvar_VariableValue("s_musicrandom");
 	s_options_useEax_list.curvalue = Cvar_VariableValue("s_openal_eax");
 	s_options_aldistancemodel_list.curvalue =
 		Cvar_VariableValue("s_distance_model");
@@ -1215,12 +1217,6 @@ static void UpdateVolumeFunc(void *unused)
 static void UpdateMusicVolumeFunc(void *unused)
 {
 	Cvar_SetValue("s_musicvolume", s_options_musicvolume_slider.curvalue / 20);
-
-	if (alSourcef)
-		alSourcef(source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
-
-	if (s_musicsrc->value == MUSIC_CD)
-		Cvar_SetValue("cd_volume", s_musicvolume->value);
 }
 
 char *al_device[] = {
@@ -1247,7 +1243,11 @@ static void AlDevice(void *unused)
 static void UpdateMusicSrcFunc(void *unused)
 {
 	Cvar_SetValue("s_musicsrc", s_options_musicsrc_list.curvalue);
-	Music_Play();
+}
+
+static void UpdateMusicRandomFunc(void *unused)
+{
+	Cvar_SetValue("s_musicrandom", s_options_musicrandom_list.curvalue);
 }
 
 static void UpdateEAX(void *unused)
@@ -1558,9 +1558,10 @@ static char *yesno_names[] = {
 void Options_MenuInit(void)
 {
 	static char *s_musicsrc_items[] = {
-		"none",
+		"disabled",
 		"CD-ROM",
-		"WAV/OGG files",
+		"soundtrack files",
+		"any files",
 		0
 	};
 
@@ -1654,6 +1655,14 @@ void Options_MenuInit(void)
 	s_options_musicsrc_list.generic.callback = UpdateMusicSrcFunc;
 	s_options_musicsrc_list.itemnames = s_musicsrc_items;
 	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicsrc");
+	
+	s_options_musicrandom_list.generic.type = MTYPE_SPINCONTROL;
+	s_options_musicrandom_list.generic.x = 0;
+	s_options_musicrandom_list.generic.y = 40*cl_fontScale->value;
+	s_options_musicrandom_list.generic.name = "Random music playing";
+	s_options_musicrandom_list.generic.callback = UpdateMusicRandomFunc;
+	s_options_musicrandom_list.itemnames = yesno_names;
+	s_options_musicrandom_list.curvalue = Cvar_VariableValue("s_musicrandom");
 	
 	s_options_alquality_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_alquality_list.generic.x = 0;
@@ -1838,6 +1847,7 @@ void Options_MenuInit(void)
 	Menu_AddItem(&s_options_menu, (void *) &s_options_sfxvolume_slider);
 	Menu_AddItem(&s_options_menu, (void *) &s_options_musicvolume_slider);
 	Menu_AddItem(&s_options_menu, (void *) &s_options_musicsrc_list);
+	Menu_AddItem(&s_options_menu, (void *) &s_options_musicrandom_list);
 	Menu_AddItem(&s_options_menu, (void *) &s_options_alquality_list);
 	Menu_AddItem(&s_options_menu, (void *) &s_options_aldev_box);
 	Menu_AddItem(&s_options_menu,

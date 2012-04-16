@@ -495,7 +495,7 @@ int Cmd_Argc(void);
 char *Cmd_Argv(int i);
 void VID_Error(int err_level, char *str, ...);
 void Cbuf_ExecuteText(int exec_when, char *text);
-int FS_LoadFile(char *name, void **buf);
+int FS_LoadFile(const char *name, void **buf);
 void FS_FreeFile(void *buf);
 char *FS_Gamedir(void);
 

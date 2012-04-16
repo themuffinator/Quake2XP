@@ -20,12 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "qcommon.h"
 #include "unzip.h" // unzip stuff thx to Vic
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <glob.h>
-#endif
-
 
 
 // define this to dissalow any data but the demo pak file
@@ -217,7 +211,7 @@ a seperate file.
 */
 int file_from_pak = 0;
 int zipdata;
-int FS_FOpenFile (char *filename, qFILE *qfile) {
+int FS_FOpenFile (const char *filename, qFILE *qfile) {
 	searchpath_t	*search;
 	char			netpath[MAX_OSPATH];
 	pack_t			*pak;
@@ -288,6 +282,7 @@ Properly handles partial reads
 =================
 */
 void CDAudio_Stop(void);
+// FIXME: do we still need these prehistoric limits, considering ~5MB music files are loaded in memory with FS_LoadFile?
 #define	MAX_READ	0x10000		// read in blocks of 64k
 void FS_Read (void *buffer, int len, qFILE *qfile)
 {
@@ -347,7 +342,7 @@ Filename are reletive to the quake search path
 a null buffer will just return the file length without loading
 ============  
 */
-int FS_LoadFile (char *path, void **buffer)
+int FS_LoadFile (const char *path, void **buffer)
 {
 	qFILE	qfile;
 	byte	*buf;
@@ -499,7 +494,8 @@ pack_t *FS_LoadPackFile (char *packfile)
 
 int SortList(const void *data1, const void *data2)
 {
-	return Q_stricmp((char *)data1, (char *)data2);
+	// XXX: this way pak2.pak comes after pak1.pak, etc
+	return Q_stricmp((char *)data2, (char *)data1);
 }
 
 /*
@@ -510,7 +506,7 @@ Sets fs_gamedir, adds the directory to the head of the path,
 then loads and adds pak1.pak pak2.pak ... 
 ================
 */
-#ifdef _WIN32
+#if 0
 
 void FS_AddGameDirectory (char *dir)
 {
@@ -592,7 +588,7 @@ void FS_AddGameDirectory (char *dir)
 //--
 }
 
-#else
+#elif 0
 
 void FS_AddGameDirectory (char *dir)
 {
@@ -658,6 +654,62 @@ void FS_AddGameDirectory (char *dir)
 		fs_searchpaths = search;		
 	}
 //--
+}
+
+#else
+
+void FS_AddGameDirectory (char *dir)
+{
+	searchpath_t		*search;
+	pack_t				*pak;
+	char				pattern[MAX_OSPATH];
+	int					i;
+	char				**paklist;
+	int					nfiles;
+
+	strcpy (fs_gamedir, dir);
+
+	// add the directory to the search path
+	search = Z_Malloc (sizeof(searchpath_t));
+	strcpy (search->filename, dir);
+	search->next = fs_searchpaths;
+	fs_searchpaths = search;
+
+	// Get list of PAK files
+	sprintf(pattern,"%s/*.pak",dir);
+	paklist = FS_ListFiles(pattern, &nfiles, 0, SFF_SUBDIR);
+	qsort((void *)paklist, nfiles-1, sizeof(char*), SortList);
+
+	// Add each pak file from our list to the search path
+	for (i=0; i<nfiles-1; i++) {
+		pak = FS_LoadPackFile (paklist[i]);
+		if (!pak) continue;
+
+		search = Z_Malloc (sizeof(searchpath_t));
+		search->pack = pak;
+		search->next = fs_searchpaths;
+		fs_searchpaths = search;		
+	}
+	FS_FreeList(paklist, nfiles);
+	// -----------------------------------------------------
+
+	// Get list of PKX files
+	sprintf(pattern,"%s/*.pkx",dir);
+	paklist = FS_ListFiles(pattern, &nfiles, 0, SFF_SUBDIR);
+	qsort((void *)paklist, nfiles-1, sizeof(char*), SortList);
+
+	// Add each pak file from our list to the search path
+	for (i=0; i<nfiles-1; i++) {
+		pak = FS_LoadZipFile (paklist[i]);
+		if (!pak)
+			continue;
+
+		search = Z_Malloc (sizeof(searchpath_t));
+		search->pack = pak;
+		search->next = fs_searchpaths;
+		fs_searchpaths = search;		
+	}
+	FS_FreeList(paklist, nfiles);
 }
 
 #endif
@@ -804,6 +856,20 @@ char **FS_ListFiles( char *findname, int *numfiles, unsigned musthave, unsigned 
 }
 
 /*
+ * Free list of files created by FS_ListFiles().
+ */
+void
+FS_FreeList(char **list, int nfiles)
+{
+	int		i;
+
+	for (i = 0; i < nfiles - 1; i++)
+		free(list[i]);
+
+	free(list);
+}
+
+/*
 ** FS_Dir_f
 */
 void FS_Dir_f( void )
@@ -931,9 +997,7 @@ void FS_InitFilesystem (void)
 	if (fs_cddir->string[0])
 		FS_AddGameDirectory (va("%s/"BASEDIRNAME, fs_cddir->string) );
 
-	//
 	// start up with baseq2 by default
-	//
 	FS_AddGameDirectory (va("%s/"BASEDIRNAME, fs_basedir->string) );
 
 	// any set gamedirs will be freed up to here
@@ -943,6 +1007,9 @@ void FS_InitFilesystem (void)
 	fs_gamedirvar = Cvar_Get ("game", "", CVAR_LATCH|CVAR_SERVERINFO);
 	if (fs_gamedirvar->string[0])
 		FS_SetGamedir (fs_gamedirvar->string);
+
+	/* Create directory if it does not exist. */
+	Sys_Mkdir(fs_gamedir);
 }
 
 // only lists pk3 contents currently
