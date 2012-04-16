@@ -13,7 +13,7 @@
 #   function); or use OpenGL to resample the image; or cache results in cachexp
 # other
 # - try to use underwater effect with EFX code in snd_efx.c
-# - try GL_NV_multisample_coverage
+# - try Nvidia CSAA with GLX
 # - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
 # - use sound time to avoid polling (when adding new audio to stream,
 #   or checking for free AL buffers; try SDL or posix timers)
