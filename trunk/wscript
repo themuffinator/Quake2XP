@@ -2,17 +2,19 @@
 # encoding: utf-8
 
 # TODO list
-# performance
-# - inline VectorCompare, BoxOnPlaneSide, Q_strcasecmp
-# - measure FPS distribution and jitter through a level and draw a graph
-# - use usleep/timers to give up CPU according to cl_maxfps if not dore already
+# important
+# - try to use underwater effect with EFX code in snd_efx.c
 # - convert FPS indicator into a weighted average, to avoid fluctuations
+# - use usleep/timers to give up CPU according to cl_maxfps if not dore already
 #   (check for QuDos code or Yamagi maybe)
+# - detach renderer from network if not done already (see kmq2, egl, etc)
+# performance
+# - measure FPS distribution and jitter through a level and draw a graph
+# - try inlining VectorCompare, BoxOnPlaneSide, Q_strcasecmp
 # - optimize Mod_LoadFaces with explicit/implicit vectorization and/or OpenMP
 # - optimize GL_ResampleTextures with OpenMP (or the loop in the calling
 #   function); or use OpenGL to resample the image; or cache results in cachexp
 # other
-# - try to use underwater effect with EFX code in snd_efx.c
 # - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
 # - use sound time to avoid polling (when adding new audio to stream,
 #   or checking for free AL buffers; try SDL or posix timers)

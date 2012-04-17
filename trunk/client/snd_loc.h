@@ -23,7 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __SND_LOC_H
 
 #ifdef _WIN32
-#include "../win32/winquake.h"
+//This looks obsolete, please uncomment if wrong
+//#include "../win32/winquake.h"
 #endif
 
 #define MIN(a,b) ((a)>(b) ? (b) : (a))
@@ -217,18 +218,6 @@ void QAL_Shutdown(void);
 #define		MAX_SFX 4096
 
 typedef struct {
-	char introName[MAX_QPATH];
-	char loopName[MAX_QPATH];
-	qboolean looping;
-//  fileHandle_t        file;
-	FILE *file;
-	int start;
-	int rate;
-	unsigned format;
-	void *vorbisFile;
-} bgTrack_t;
-
-typedef struct {
 	unsigned long flags;		// collection of 1 bit data
 	vec3_t _AL_POSITION;
 
@@ -242,11 +231,9 @@ typedef struct {
 } openal_channel_t;
 
 typedef struct {
-	// OS dependency
+	// In Linux we link at compile time
 #ifdef _WIN32
 	HINSTANCE hInstOpenAL;
-#else
-    //void *hInstOpenAL;
 #endif
 	unsigned eax;				// EAX version in use.
 	unsigned eaxState;			// EAX status
@@ -275,17 +262,6 @@ typedef struct playsound_s {
 	unsigned begin;				// begin on this sample
 } playsound_t;
 
-typedef struct {
-	int rate;
-	int width;
-	int channels;
-	int loopstart;
-	int samples;
-	int dataofs;				// chunk starts this many bytes from file
-								// start
-} wavinfo_t;
-
-
 
 /*
 ====================================================================
@@ -295,17 +271,16 @@ typedef struct {
 ====================================================================
 */
 
-#define CH_STREAMING s_openal_numChannels
-
 #define MAX_CHANNELS 126		// Creative X-Fi limits (126, except the 1
 								// streaming channel)
 #define MIN_CHANNELS 13			// NVidia onboard audio. (WIN x64
 								// defaults) (13+1)
 
+#define CH_STREAMING s_openal_numChannels
+
 extern playsound_t s_pendingplays;
 extern openal_channel_t s_openal_channels[MAX_CHANNELS];
-extern ALuint source_name[MAX_CHANNELS + 1];	// plus 1 streaming
-												// channel
+extern ALuint source_name[MAX_CHANNELS + 1];	// plus 1 streaming channel
 extern unsigned s_openal_numChannels;
 
 extern cvar_t *s_volume;
@@ -319,9 +294,12 @@ extern cvar_t *s_quality;
 extern cvar_t *s_distance_model;
 
 #ifdef _WIN32
-qboolean alSource_EAX_Flags(ALuint sourceNum, DWORD dwValue);
-qboolean alSource_EAX_All(ALuint sourceNum, LPEAXBUFFERPROPERTIES lpData);
+void applyEAX_Effects(void);
+void normalEAX_Effects(openal_channel_t *ch, ALuint sourceNum);
+void nullEAX_Effects(openal_channel_t *ch, ALuint sourceNum);
 #endif
+
+// Streaming and music definitions
 
 #define NUM_STRBUF 8
 #define MAX_STRBUF_SIZE (1024*256)

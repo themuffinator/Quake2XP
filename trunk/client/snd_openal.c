@@ -57,15 +57,6 @@ unsigned s_openal_numChannels;
 
 static struct rbtree *knownsounds;
 
-#ifdef _WITH_EAX
-const GUID DSPROPSETID_EAX20_ListenerProperties =
-	{ 0x306a6a8, 0xb224, 0x11d2, {0x99, 0xe5, 0x0, 0x0, 0xe8, 0xd8, 0xc7,
-								  0x22} };
-const GUID DSPROPSETID_EAX20_BufferProperties =
-	{ 0x306a6a7, 0xb224, 0x11d2, {0x99, 0xe5, 0x0, 0x0, 0xe8, 0xd8, 0xc7,
-								  0x22} };
-#endif
-
 // =======================================================================
 // Video & Music streaming
 // =======================================================================
@@ -641,9 +632,6 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 	}
 
 	if (ch) {
-#ifdef _WITH_EAX
-		EAXBUFFERPROPERTIES normalEAX;
-#endif
 //      VectorCopy(ps->origin, ch->position);
 		ch->bufferNum = bufferNum;	// ch->sfx = sfx;
 
@@ -675,41 +663,7 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 		alSourcef(sourceNum, AL_GAIN, gain);
 
 #ifdef _WITH_EAX
-		normalEAX.lDirect = 0;	// direct path level
-		normalEAX.lDirectHF = 0;	// direct path level at high
-									// frequencies
-		normalEAX.lRoom = FlagAL_check(ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room
-																			// effect
-																			// level
-		normalEAX.lRoomHF = FlagAL_check(ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room
-																			// effect
-																			// level
-																			// at
-																			// high
-																			// frequencies
-		normalEAX.flRoomRolloffFactor = 0;	// like DS3D flRolloffFactor
-											// but for room effect
-		normalEAX.lObstruction = 0;	// main obstruction control
-									// (attenuation at high frequencies)
-		normalEAX.flObstructionLFRatio = 0;	// obstruction low-frequency
-											// level re. main control
-		normalEAX.lOcclusion = 0;	// main occlusion control (attenuation
-									// at high frequencies)
-		normalEAX.flOcclusionLFRatio = 0;	// occlusion low-frequency
-											// level re. main control
-		normalEAX.flOcclusionRoomRatio = 0;	// occlusion room effect level
-											// re. main control
-		normalEAX.lOutsideVolumeHF = 0;	// outside sound cone level at
-										// high frequencies
-		normalEAX.flAirAbsorptionFactor = 0;	// multiplies
-												// DSPROPERTY_EAXLISTENER_AIRABSORPTIONHF
-		// modifies the behavior of properties
-		normalEAX.dwFlags = FlagAL_check(ch, AL_FLAGS_FLAT2D)
-			? 0
-			: EAXBUFFERFLAGS_DIRECTHFAUTO + EAXBUFFERFLAGS_ROOMAUTO +
-			EAXBUFFERFLAGS_ROOMHFAUTO;
-
-		alSource_EAX_All(sourceNum, &normalEAX);
+		normalEAX_Effects(ch, sourceNum);
 #endif
 
 		alSourcePlay(sourceNum);
@@ -858,31 +812,6 @@ S_StartLocalSound
 */
 void S_StartLocalSound(ALuint bufferNum)
 {
-#ifdef _WITH_EAX
-	EAXBUFFERPROPERTIES nullEAX;
-#endif
-	// long lDirect; // direct path level
-	// long lDirectHF; // direct path level at high frequencies
-	// long lRoom; // room effect level
-	// long lRoomHF; // room effect level at high frequencies
-	// float flRoomRolloffFactor; // like DS3D flRolloffFactor but for
-	// room effect
-	// long lObstruction; // main obstruction control (attenuation at high
-	// frequencies)
-	// float flObstructionLFRatio; // obstruction low-frequency level re.
-	// main control
-	// long lOcclusion; // main occlusion control (attenuation at high
-	// frequencies)
-	// float flOcclusionLFRatio; // occlusion low-frequency level re. main
-	// control
-	// float flOcclusionRoomRatio; // occlusion room effect level re. main
-	// control
-	// long lOutsideVolumeHF; // outside sound cone level at high
-	// frequencies
-	// float flAirAbsorptionFactor; // multiplies
-	// DSPROPERTY_EAXLISTENER_AIRABSORPTIONHF
-	// unsigned long dwFlags; // modifies the behavior of properties
-
 	if (s_openal_numChannels && bufferNum) {
 		ALuint sourceNum;
 		// Pick a channel and start the sound effect
@@ -904,42 +833,8 @@ void S_StartLocalSound(ALuint bufferNum)
 			alSourcef(sourceNum, AL_GAIN, 0.47);
 
 #ifdef _WITH_EAX
-			// alSource_EAX_Flags(sourceNum, 0); //willow: should be no
-			// EAX effects!
-			nullEAX.lDirect = 0;	// direct path level
-			nullEAX.lDirectHF = 0;	// direct path level at high
-									// frequencies
-			nullEAX.lRoom = -10000;	// room effect level
-			nullEAX.lRoomHF = -10000;	// room effect level at high
-										// frequencies
-			nullEAX.flRoomRolloffFactor = 0;	// like DS3D
-												// flRolloffFactor but for
-												// room effect
-			nullEAX.lObstruction = 0;	// main obstruction control
-										// (attenuation at high
-										// frequencies)
-			nullEAX.flObstructionLFRatio = 0;	// obstruction
-												// low-frequency level re.
-												// main control
-			nullEAX.lOcclusion = 0;	// main occlusion control (attenuation
-									// at high frequencies)
-			nullEAX.flOcclusionLFRatio = 0;	// occlusion low-frequency
-											// level re. main control
-			nullEAX.flOcclusionRoomRatio = 0;	// occlusion room effect
-												// level re. main control
-			nullEAX.lOutsideVolumeHF = 0;	// outside sound cone level at
-											// high frequencies
-			nullEAX.flAirAbsorptionFactor = 0;	// multiplies
-												// DSPROPERTY_EAXLISTENER_AIRABSORPTIONHF
-			nullEAX.dwFlags = 0;	// modifies the behavior of properties
-			alSource_EAX_All(sourceNum, &nullEAX);	// willow: should be
-													// no EAX effects!
+			nullEAX_Effects(ch, sourceNum);
 #endif
-			// alEAXSet(&DSPROPSETID_EAX_BufferProperties,
-			// DSPROPERTY_EAXBUFFER_NONE,
-			// sourceNum,
-			// 0,
-			// 0);
 
 			alSourcePlay(sourceNum);
 		} else {
@@ -1141,73 +1036,10 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		alSpeedOfSound(13515);
 
 
-#ifdef _HAVE_EAX
-//willow: mattn sure we have EAX on win only, so do i
+#ifdef _WITH_EAX
 	// If EAX is enabled, apply listener environmental effects
-	if (alConfig.eax >= 2 && alConfig.eax <= 5) {
-		unsigned long ulEAXValLF = -150;  //range form 0 to -10000
-		unsigned long ulEAXValHF = 0;
-		unsigned long eaxEnv;			//reverberation type
-		unsigned long eaxEnvSize = 75; // surround room size def 7.5 max 100
-		unsigned long eaxReverb = 0; //reverberation level min - 10000 max 2000
-		unsigned long eaxReverbDelay = 0.1;  //reverberation delay (sec) range 0.0 to 0.1
-		
-		if (cls.state != ca_active) {
-			eaxEnv = EAX_ENVIRONMENT_GENERIC;
-		} else {
-			eaxEnv = (CL_PMpointcontents(listener_position) & MASK_WATER)
-				? EAX_ENVIRONMENT_UNDERWATER : EAX_ENVIRONMENT_HANGAR;
-		}
-
-		if (eaxEnv != alConfig.eaxState) {
-			if (eaxEnv == EAX_ENVIRONMENT_GENERIC)
-				Com_DPrintf("EAXSet: EAX_ENVIRONMENT_GENERIC\n");
-			else
-				Com_DPrintf("EAXSet: EAX_ENVIRONMENT_UNDERWATER\n");
-
-			alConfig.eaxState = eaxEnv;
-
-//EAXSet description:
-//This function sets an EAX value.
-//C Specification:
-//ALenum EAXSet(const struct _GUID *propertySetID,ALuint property,ALuint source,ALvoid
-//*value,ALuint size);
-//Parameters:
-//*propertySetID - A pointer to the property set GUID of the object being set (a listener or a source)
-//property - The property being set
-//source - The ID of the source to be set
-//*value - A pointer to the value being returned
-//size - The size of the data storage area pointed to by *value
-//Return Value: An OpenAL error code indicating if there was an error in setting the data
-			alEAXSet(&DSPROPSETID_EAX_ListenerProperties,
-					 DSPROPERTY_EAXLISTENER_ROOM, 0, &ulEAXValLF,
-					 sizeof(unsigned long));
-
-			alEAXSet(&DSPROPSETID_EAX_ListenerProperties,
-					 DSPROPERTY_EAXLISTENER_ROOMHF, 0, &ulEAXValHF,
-					 sizeof(unsigned long));
-
-			alEAXSet(&DSPROPSETID_EAX_ListenerProperties,
-					 DSPROPERTY_EAXLISTENER_ENVIRONMENT, 0, &eaxEnv,
-					 sizeof(unsigned long));
-			
-			alEAXSet(&DSPROPSETID_EAX_ListenerProperties,
-					 DSPROPERTY_EAXLISTENER_ENVIRONMENTSIZE, 0, &eaxEnvSize,
-					 sizeof(unsigned long));
-
-			alEAXSet(&DSPROPSETID_EAX_ListenerProperties,
-					 DSPROPERTY_EAXLISTENER_REVERB, 0, &eaxReverb,
-					 sizeof(unsigned long));
-
-			alEAXSet(&DSPROPSETID_EAX_ListenerProperties,
-					 DSPROPERTY_EAXLISTENER_REVERBDELAY, 0, &eaxReverbDelay,
-					 sizeof(unsigned long));
-			
-
-		}
-
-
-	}
+	if (alConfig.eax >= 2 && alConfig.eax <= 5)
+		applyEAX_Effects();
 #endif
 
 	memset(Channels_TODO, 0, sizeof(Channels_TODO));
@@ -1451,10 +1283,6 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		}
 
 		if (Flag_check(current_task, AL_TASK_MANAGER__EXECUTE)) {
-#ifdef _WITH_EAX
-			EAXBUFFERPROPERTIES normalEAX;
-#endif
-
 			ALuint sourceNum = source_name[i];
 			alSourcef(sourceNum, AL_PITCH, 1);
 			alSource3f(sourceNum, AL_DIRECTION, 0, 0, 0);
@@ -1473,46 +1301,8 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 			alSourcef(sourceNum, AL_GAIN, current_task->TASK_AL_GAIN);
 
 #ifdef _WITH_EAX
-		normalEAX.lDirect = 0;	// direct path level
-			normalEAX.lDirectHF = 0;	// direct path level at high
-										// frequencies
-			normalEAX.lRoom = FlagAL_check(ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room
-																				// effect
-																				// level
-			normalEAX.lRoomHF = FlagAL_check(ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room
-																				// effect
-																				// level
-																				// at
-																				// high
-																				// frequencies
-			normalEAX.flRoomRolloffFactor = 0;	// like DS3D
-												// flRolloffFactor but for
-												// room effect
-			normalEAX.lObstruction = 0;	// main obstruction control
-										// (attenuation at high
-										// frequencies)
-			normalEAX.flObstructionLFRatio = 0;	// obstruction
-												// low-frequency level re.
-												// main control
-			normalEAX.lOcclusion = 0;	// main occlusion control
-										// (attenuation at high
-										// frequencies)
-			normalEAX.flOcclusionLFRatio = 0;	// occlusion low-frequency
-												// level re. main control
-			normalEAX.flOcclusionRoomRatio = 0;	// occlusion room effect
-												// level re. main control
-			normalEAX.lOutsideVolumeHF = 0;	// outside sound cone level at
-											// high frequencies
-			normalEAX.flAirAbsorptionFactor = 0;	// multiplies
-													// DSPROPERTY_EAXLISTENER_AIRABSORPTIONHF
-			// modifies the behavior of properties
-			normalEAX.dwFlags = FlagAL_check(ch, AL_FLAGS_FLAT2D)
-				? 0
-				: EAXBUFFERFLAGS_DIRECTHFAUTO + EAXBUFFERFLAGS_ROOMAUTO +
-				EAXBUFFERFLAGS_ROOMHFAUTO;
-
-			alSource_EAX_All(sourceNum, &normalEAX);
-#endif /* __WITH_EAX */
+			normalEAX_Effects(ch, sourceNum);
+#endif
 
 			alSourcePlay(sourceNum);
 		}
