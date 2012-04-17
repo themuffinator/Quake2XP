@@ -17,12 +17,13 @@
 #include "AL/efx-presets.h"
 
 EFXEAXREVERBPROPERTIES rvb_generic = EFX_REVERB_PRESET_GENERIC;
+EFXEAXREVERBPROPERTIES rvb_room = EFX_REVERB_PRESET_ROOM;
 EFXEAXREVERBPROPERTIES rvb_underwater = EFX_REVERB_PRESET_UNDERWATER;
 
 typedef struct {
 	qboolean on;
-	qboolean underwater;
 	ALuint rvbGenericEffect;
+	ALuint rvbRoomEffect;
 	ALuint rvbUnderwaterEffect;
 	ALuint rvbAuxSlot;
 } efx_t;
@@ -37,15 +38,14 @@ void EFXEAX_RvbInit(void) {
 		return;
 
 	//efx.rvbGenericEffect = EFXEAX_RvbCreate(&rvb_generic);
+	//efx.rvbRoomEffect = EFXEAX_RvbCreate(&rvb_room);
 	//efx.rvbUnderwaterEffect = EFXEAX_RvbCreate(&rvb_underwater);
 	efx.rvbGenericEffect = EFX_RvbCreate(&rvb_generic);
+	efx.rvbRoomEffect = EFX_RvbCreate(&rvb_room);
 	efx.rvbUnderwaterEffect = EFX_RvbCreate(&rvb_underwater);
 
 	alGenAuxiliaryEffectSlots(1, &efx.rvbAuxSlot);
 	alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
-
-	alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbGenericEffect);
-	efx.underwater = false;
 
 	if (alGetError() == AL_NO_ERROR) {
 		Com_Printf(S_COLOR_MAGENTA "EFX initialized\n");
@@ -57,22 +57,21 @@ void EFXEAX_RvbInit(void) {
 }
 
 void EFXEAX_RvbUpdate(vec3_t listener_position) {
-	qboolean res;
-	
 	if (!efx.on)
 		return;
 
-	res = (CL_PMpointcontents(listener_position) & MASK_WATER) ? true : false;
-	if (res != efx.underwater) {
-		efx.underwater = res;
-		if (efx.underwater)
-			alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbUnderwaterEffect);
-		else
-			alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbGenericEffect);
-
-		if (alGetError() != AL_NO_ERROR)
-			Com_Printf(S_COLOR_YELLOW "EFX update failed\n");
+	// If we are not playing, use default preset
+	if (cls.state != ca_active) {
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbGenericEffect);
+	} else if (CL_PMpointcontents(listener_position) & MASK_WATER) {
+		// Check if we are underwater and update data
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbUnderwaterEffect);
+	} else {
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbRoomEffect);
 	}
+
+	if (alGetError() != AL_NO_ERROR)
+		Com_Printf(S_COLOR_YELLOW "EFX update failed\n");
 }
 
 void EFXEAX_RvbShutdown(void) {
@@ -82,15 +81,15 @@ void EFXEAX_RvbShutdown(void) {
 	Com_Printf(S_COLOR_MAGENTA "EFX shutdown\n");
 	alDeleteAuxiliaryEffectSlots(1, &efx.rvbAuxSlot);
 	alDeleteEffects(1, &efx.rvbGenericEffect);
+	alDeleteEffects(1, &efx.rvbRoomEffect);
 	alDeleteEffects(1, &efx.rvbUnderwaterEffect);
 	efx.on = false;
 }
 
 void EFXEAX_RvbProcSrc(openal_channel_t *ch, ALuint source, qboolean enabled) {
-	if (!enabled) {
+	if (!enabled)
 		alSource3i(source, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL);
-		return;
-	} else
+	else
 		alSource3i(source, AL_AUXILIARY_SEND_FILTER, efx.rvbAuxSlot, 0, AL_FILTER_NULL);
 }
 

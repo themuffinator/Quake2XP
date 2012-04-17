@@ -3,7 +3,6 @@
 
 # TODO list
 # important
-# - try to use underwater effect with EFX code in snd_efx.c
 # - convert FPS indicator into a weighted average, to avoid fluctuations
 # - use usleep/timers to give up CPU according to cl_maxfps if not dore already
 #   (check for QuDos code or Yamagi maybe)
@@ -16,8 +15,6 @@
 #   function); or use OpenGL to resample the image; or cache results in cachexp
 # other
 # - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
-# - use sound time to avoid polling (when adding new audio to stream,
-#   or checking for free AL buffers; try SDL or posix timers)
 
 
 VERSION = '1.0'

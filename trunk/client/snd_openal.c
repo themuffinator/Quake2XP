@@ -845,6 +845,7 @@ void S_StartLocalSound(ALuint bufferNum)
 				nullEAX_Effects(ch, sourceNum);
 #endif
 			if (alConfig.eax == VER_EFX)
+				EFXEAX_RvbProcSrc(ch, sourceNum, false);
 
 			alSourcePlay(sourceNum);
 		} else {
@@ -1317,7 +1318,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 				normalEAX_Effects(ch, sourceNum);
 #endif
 			if (alConfig.eax == VER_EFX)
-				EFXEAX_RvbProcSrc(ch, sourceNum, false);
+				EFXEAX_RvbProcSrc(ch, sourceNum, true);
 	
 
 			alSourcePlay(sourceNum);

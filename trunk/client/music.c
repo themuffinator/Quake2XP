@@ -139,15 +139,15 @@ void Music_Play(void) {
 
 	Music_Stop();
 
-	if (music_type != MUSIC_OTHER_FILES &&
-	  track == 0 && s_musicrandom->value == 0)
-		return;
-
 	if (s_musicrandom->value != 0)
 		// original soundtrack has tracks 2 to 11
 		track = 2 + rand()%10;
 	else
 		track = atoi(cl.configstrings[CS_CDTRACK]);
+
+	if (music_type != MUSIC_OTHER_FILES &&
+	  track == 0 && s_musicrandom->value == 0)
+		return;
 
 	switch (music_type) {
 		case MUSIC_CD:
