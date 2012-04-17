@@ -257,6 +257,8 @@ void S_Init(int hardreset)
 							("MP3 player: unable to set X-RAM mode\n");
 					} 
 #endif
+					if (alConfig.eax == VER_EFX)
+						EFXEAX_RvbInit();
 				}
 
 				S_StopAllSounds();	// inits freeplays
@@ -312,6 +314,9 @@ void CL_fast_sound_close(void);
 void S_Shutdown(void)
 {
 	if (s_openal_numChannels) {
+		if (alConfig.eax == VER_EFX)
+			EFXEAX_RvbShutdown();
+
 		// Clean up streaming buffers
 		alDeleteBuffers(NUM_STRBUF, streaming.buffers);
 
@@ -663,8 +668,11 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 		alSourcef(sourceNum, AL_GAIN, gain);
 
 #ifdef _WITH_EAX
-		normalEAX_Effects(ch, sourceNum);
+		if (alConfig.eax >= 2 && alConfig.eax <= 5)
+			normalEAX_Effects(ch, sourceNum);
 #endif
+		if (alConfig.eax == VER_EFX)
+			EFXEAX_RvbProcSrc(ch, sourceNum, true);
 
 		alSourcePlay(sourceNum);
 	}
@@ -833,8 +841,10 @@ void S_StartLocalSound(ALuint bufferNum)
 			alSourcef(sourceNum, AL_GAIN, 0.47);
 
 #ifdef _WITH_EAX
-			nullEAX_Effects(ch, sourceNum);
+			if (alConfig.eax >= 2 && alConfig.eax <= 5)
+				nullEAX_Effects(ch, sourceNum);
 #endif
+			if (alConfig.eax == VER_EFX)
 
 			alSourcePlay(sourceNum);
 		} else {
@@ -1039,8 +1049,10 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 #ifdef _WITH_EAX
 	// If EAX is enabled, apply listener environmental effects
 	if (alConfig.eax >= 2 && alConfig.eax <= 5)
-		applyEAX_Effects();
+		applyEAX_Effects(listener_position);
 #endif
+	if (alConfig.eax == VER_EFX)
+		EFXEAX_RvbUpdate(listener_position);
 
 	memset(Channels_TODO, 0, sizeof(Channels_TODO));
 
@@ -1301,8 +1313,12 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 			alSourcef(sourceNum, AL_GAIN, current_task->TASK_AL_GAIN);
 
 #ifdef _WITH_EAX
-			normalEAX_Effects(ch, sourceNum);
+			if (alConfig.eax >= 2 && alConfig.eax <= 5)
+				normalEAX_Effects(ch, sourceNum);
 #endif
+			if (alConfig.eax == VER_EFX)
+				EFXEAX_RvbProcSrc(ch, sourceNum, false);
+	
 
 			alSourcePlay(sourceNum);
 		}

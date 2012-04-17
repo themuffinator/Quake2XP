@@ -45,6 +45,7 @@ sources_glob = {
         'client/snd_mem.c',
         'client/snd_openal.c',
         'client/snd_context.c',
+        'client/snd_efx.c',
         'client/music.c',
         'qcommon/*.c',
         'server/*.c',
@@ -69,12 +70,12 @@ def build(bld):
     #src_dir = bld.path.find_dir('src')
 
     #bld.env.append_value('CFLAGS', ['-flax-vector-conversions'])
-    #bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
+    bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
     #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-ftree-vectorize', '-ftree-vectorizer-verbose=2'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
     #bld.env.append_value('CFLAGS', ['-g'])
-    bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-pg'])
-    bld.env.append_value('LINKFLAGS', ['-pg'])
+    #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-pg'])
+    #bld.env.append_value('LINKFLAGS', ['-pg'])
     #bld.env.append_value('CFLAGS', ['-fopenmp', '-g'])
     #bld.env.append_value('LINKFLAGS', ['-fopenmp'])
 

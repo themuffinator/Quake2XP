@@ -294,10 +294,15 @@ extern cvar_t *s_quality;
 extern cvar_t *s_distance_model;
 
 #ifdef _WIN32
-void applyEAX_Effects(void);
+void applyEAX_Effects(vec3_t listener_position);
 void normalEAX_Effects(openal_channel_t *ch, ALuint sourceNum);
 void nullEAX_Effects(openal_channel_t *ch, ALuint sourceNum);
 #endif
+
+void EFXEAX_RvbInit(void);
+void EFXEAX_RvbUpdate(vec3_t listener_position);
+void EFXEAX_RvbProcSrc(openal_channel_t *ch, ALuint source, qboolean enabled);
+void EFXEAX_RvbShutdown(void);
 
 // Streaming and music definitions
 

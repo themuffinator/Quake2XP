@@ -13,7 +13,7 @@ const GUID DSPROPSETID_EAX20_BufferProperties =
 	{ 0x306a6a7, 0xb224, 0x11d2, {0x99, 0xe5, 0x0, 0x0, 0xe8, 0xd8, 0xc7,
 								  0x22} };
 
-void applyEAX_Effects(void)
+void applyEAX_Effects(vec3_t listener_position)
 {
 	unsigned long ulEAXValLF = -150;  //range form 0 to -10000
 	unsigned long ulEAXValHF = 0;
