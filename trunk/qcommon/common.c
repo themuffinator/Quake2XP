@@ -21,8 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "qcommon.h"
 #include <setjmp.h>
 
-#define	MAXPRINTMSG	8192
-
 #define MAX_NUM_ARGVS	50
 
 
@@ -133,7 +131,18 @@ tagmalloc_tag_t tagmalloc_tags[] = {
 	{TAGMALLOC_MAX_TAGS, "*** UNDEFINED ***"}
 };
 
+int Com_DecolorizeStr(char *dst, const char *src) {
+	int i = 0, j = 0;
+	while (src[i] != '\0') {
+		if (IsColorString(src+i))
+			i += 2;
+		else
+			dst[j++] = src[i++];
+	}
+	dst[j++] = '\0';
 
+	return j;
+}
 
 /*
 =============
@@ -146,9 +155,7 @@ to the apropriate place.
 void Com_Printf(char *fmt, ...)
 {
 	va_list argptr;
-	char msg[MAXPRINTMSG], msg_mono[MAXPRINTMSG];
-	char *in, c;
-    int i;
+	char msg[MAXPRINTMSG];
 
 	 va_start(argptr, fmt);
      vsnprintf(msg, sizeof(msg), fmt, argptr);
@@ -164,26 +171,21 @@ void Com_Printf(char *fmt, ...)
 	}
 
 	Con_Print(msg);
-	
-	  // Berserker: convert colored text to mono
-     in = msg;
-     i = 0;
-     while (1)
-     {
-repeat:     if (!(c = *in)) //-V595
-               break;
-          if (IsColorString(in))
-          {
-               in+=2;          // Remove color marks
-               goto repeat;
-          }
-          in++;
-          msg_mono[i++] = c;
-     }
-     msg_mono[i] = 0;
+
+#ifdef _WIN32
+	// Berserker: convert colored text to mono
+	Com_DecolorizeStr(msg, msg);
 
 	// also echo to debugging console with out color marks
-	Sys_ConsoleOutput(msg_mono);
+	Sys_ConsoleOutput(msg);
+
+#else
+	// if we output to a terminal, color will be converted and preserved
+	Sys_ConsoleOutput(msg);
+
+	// Berserker: convert colored text to mono
+	Com_DecolorizeStr(msg, msg);
+#endif
 
 	// logfile
 	if (logfile_active && logfile_active->value) {
@@ -198,7 +200,7 @@ repeat:     if (!(c = *in)) //-V595
 				logfile = fopen(name, "w");
 		}
 		if (logfile)
-			fprintf(logfile, "%s", msg_mono);
+			fprintf(logfile, "%s", msg);
 		if (logfile_active->value > 1)
 			fflush(logfile);	// force it to save every time
 	}

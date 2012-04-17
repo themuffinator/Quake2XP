@@ -782,7 +782,6 @@ MISC
 ==============================================================
 */
 
-
 #define	ERR_FATAL	0			// exit the entire game with a popup
 								// window
 #define	ERR_DROP	1			// print to console and disconnect from
@@ -797,9 +796,12 @@ MISC
 #define	PRINT_ALL		0
 #define PRINT_DEVELOPER	1		// only print when "developer 1"
 
+#define	MAXPRINTMSG	8192
+
 void Com_BeginRedirect(int target, char *buffer, int buffersize,
 					   void (*flush));
 void Com_EndRedirect(void);
+int Com_DecolorizeStr(char *dst, const char *src);
 void Com_Printf(char *fmt, ...);
 void Com_DPrintf(char *fmt, ...);
 void Com_Error(int code, char *fmt, ...);

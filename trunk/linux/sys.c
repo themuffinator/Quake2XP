@@ -35,9 +35,6 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include <dlfcn.h>
-#ifdef __linux__
-#include <execinfo.h>
-#endif
 
 #include "../qcommon/qcommon.h"
 
@@ -51,10 +48,40 @@ uid_t saved_euid;
 /* General routines */
 /* ======================================================================= */
 
+// Converts Quake II color escape codes to ANSI terminal
+static inline void PrintWithColors(const char *s) {
+	int i = 0;
+	while (s[i] != '\0') {
+		if (s[i] == Q_COLOR_ESCAPE) {
+			i++;
+			if (s[i] == Q_COLOR_ESCAPE) {
+				putchar(Q_COLOR_ESCAPE);
+				i++;
+			} else if (ColorIndex(s[i]) < 8) {
+				// TODO: use cvar to control color (on/bold/off); is it possible here?
+				//fputs("\033[1m", stdout);	// bold font
+				printf("\033[%dm", 30 + ColorIndex(s[i]));
+				i++;
+			}
+		} else {
+			putchar(s[i]);
+			i++;
+		}
+	}
+	fputs("\033[0m", stdout);	// reset terminal colors
+}
+
 void
-Sys_ConsoleOutput(char *string)
+Sys_ConsoleOutput(char *msg)
 {
-	fputs(string, stdout);
+	char msg_mono[MAXPRINTMSG];
+
+	if (isatty(STDOUT_FILENO))
+		PrintWithColors(msg);
+	else {
+		Com_DecolorizeStr(msg_mono, msg);
+		fputs(msg_mono, stdout);
+	}
 }
 
 void
