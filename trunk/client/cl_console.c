@@ -493,7 +493,7 @@ The input line scrolls horizontally if typing goes beyond the right edge
 void Con_DrawInput (void) {
 	char	*text;
 	int		i;
-	int		fontscale = (float)cl_fontScale->value;
+	float	fontscale = cl_fontScale->value;
 	if (cls.key_dest == key_menu)
 		return;
 	if (cls.key_dest != key_console && cls.state == ca_active)
@@ -518,7 +518,7 @@ void Con_DrawInput (void) {
 
 	for (i=0; i<con.lineWidth; i++)
 	//	Draw_Char ((i + 1) << 3, con.vislines - 15, text[i]);
-	Draw_CharScaled ((i*fontscale + 1) << 3, con.vislines - 15*fontscale, fontscale, fontscale, text[i]);
+	Draw_CharScaled ((i*fontscale + 1) * 8, con.vislines - 15*fontscale, fontscale, fontscale, text[i]);
 
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;
@@ -543,7 +543,7 @@ void Con_DrawNotify (void)
 	char	*s;
 	int		skip;
 	int		currentColor;
-	int		fontscale = (float)cl_fontScale->value;
+	float	fontscale = cl_fontScale->value;
 
 	currentColor = 7;
 	RE_SetColor(ColorTable[currentColor]);
@@ -570,7 +570,7 @@ void Con_DrawNotify (void)
 			}
 
 		//	Draw_Char ((x + 1) << 3, v, text[x] & 0xff);
-			Draw_CharScaled ((x*fontscale + 1) << 3, v, fontscale, fontscale, text[x] & 0xff);
+			Draw_CharScaled ((x*fontscale + 1) * 8, v, fontscale, fontscale, text[x] & 0xff);
 		}
 
 		v += 8*fontscale;
@@ -591,17 +591,17 @@ void Con_DrawNotify (void)
 	//	if (chat_bufferlen > (viddef.width>>3)-(skip+1))
 	//		s += chat_bufferlen - ((viddef.width>>3)-(skip+1));
 		
-			if (chat_bufferlen > ((viddef.width/fontscale)>>3)-(skip+1))
-			s += chat_bufferlen - (((viddef.width/fontscale)>>3)-(skip+1));
+			if (chat_bufferlen > ((viddef.width/fontscale)/8)-(skip+1))
+			s += chat_bufferlen - (int)(((viddef.width/fontscale)/8)-(skip+1));
 
 	//	Draw_String(skip<<3, v, s);
 	//	Draw_Char ( (strlen(s)+skip)<<3, v, 10+((cls.realtime>>8)&1));
 			if(cl_fontScale->value == 2)
-		Draw_StringScaled(skip*fontscale<<2, v, fontscale, fontscale, s);
+		Draw_StringScaled(skip*fontscale*4, v, fontscale, fontscale, s);
 			else
-		Draw_StringScaled(skip*fontscale<<3, v, fontscale, fontscale, s);
+		Draw_StringScaled(skip*fontscale*8, v, fontscale, fontscale, s);
 
-		Draw_CharScaled ( (strlen(s)*fontscale+skip)<<3, v, fontscale, fontscale, 10+((cls.realtime>>8)&1));
+		Draw_CharScaled ( (strlen(s)*fontscale+skip)*8, v, fontscale, fontscale, 10+((cls.realtime>>8)&1));
 
 		v += 8;
 	}
@@ -628,7 +628,7 @@ void Con_DrawConsole(float frac)
 	char version[64];
 	char dlbar[1024];
 	int		currentColor;
-	int		fontscale = (float)cl_fontScale->value;
+	float	fontscale = cl_fontScale->value;
 
 	lines = viddef.height * frac;
 	if (lines <= 0)
@@ -662,7 +662,7 @@ void Con_DrawConsole(float frac)
 
 	y = lines - 24;
 #else
-	rows = (lines - 22*fontscale) >> 3;	// rows of text to draw
+	rows = (lines - 22*fontscale) / 8;	// rows of text to draw
 
 	y = lines - 30*fontscale;
 #endif
@@ -672,8 +672,7 @@ void Con_DrawConsole(float frac)
 		// draw arrows to show the buffer is backscrolled
 		RE_SetColor(colorCyan);
 		for (x = 0; x < con.lineWidth; x += 4)
-
-		Draw_CharScaled((x*fontscale + 1) << 3, y, fontscale, fontscale, '^');	
+			Draw_CharScaled((x*fontscale + 1) * 8, y, fontscale, fontscale, '^');
 
 		RE_SetColor(NULL);
 		y -= 8*fontscale;
@@ -704,10 +703,11 @@ void Con_DrawConsole(float frac)
 				RE_SetColor(ColorTable[currentColor]);
 				}
 			//Draw console font shadow 
-			Draw_CharScaledShadow((x*fontscale + 1) << 3, y, fontscale, fontscale, text[x] & 0xFF);
+			Draw_CharScaledShadow((x*fontscale + 1) * 8, y, fontscale, fontscale, text[x] & 0xFF);
+
 			//Reset Current font color
 			RE_SetColor(ColorTable[currentColor]);
-			Draw_CharScaled((x*fontscale + 1) << 3, y, fontscale, fontscale, text[x] & 0xFF);	
+			Draw_CharScaled((x*fontscale + 1) * 8, y, fontscale, fontscale, text[x] & 0xFF);
 		}
 		}
 
@@ -756,7 +756,7 @@ void Con_DrawConsole(float frac)
 		y = con.vislines - 12;
 		for (i = 0; i < strlen(dlbar); i++)
 		//	Draw_Char((i + 1) << 3, y, dlbar[i]);
-		Draw_CharScaled((i*fontscale + 1) << 3, y, fontscale, fontscale, dlbar[i]);
+		Draw_CharScaled((i*fontscale + 1) * 8, y, fontscale, fontscale, dlbar[i]);
 	}
 //ZOID
 

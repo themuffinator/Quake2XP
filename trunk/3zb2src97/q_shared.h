@@ -43,7 +43,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /* FIXME: Beware - _vsnprintf does not end with \0 - vsnprintf (*nix) does */
 #ifdef _WIN32
-#define vsnprintf _vsnprintf
+// Ale: defined the other way around, so it can be changed to _vsnprintf_s()
+// or a local version which terminates the string in Windows
+#define vsnprintf	_vsnprintf
+typedef int intptr_t
+#else
+#include <stdint.h>
 #endif
 
 #include <assert.h>

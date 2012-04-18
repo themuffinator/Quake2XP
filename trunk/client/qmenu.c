@@ -56,7 +56,7 @@ void Action_DoEnter(menuaction_s * a)
 //action items and sub menus
 void Action_Draw(menuaction_s * a)
 {
-int	fontscale = (float)cl_fontScale->value;
+	float	fontscale = cl_fontScale->value;
 
 	if (a->generic.flags & QMF_LEFT_JUSTIFY) {
 		if (a->generic.flags & QMF_GRAYED)
@@ -98,7 +98,7 @@ void Field_Draw(menufield_s * f)
 {
 	int i;
 	char tempbuffer[128] = "";
-	int	fontscale = (float)cl_fontScale->value;
+	float fontscale = cl_fontScale->value;
 
 	if (f->generic.name)
 		Menu_DrawStringR2LDark(f->generic.x + f->generic.parent->x +
@@ -435,37 +435,36 @@ void Menu_Draw(menuframework_s * menu)
 
 void Menu_DrawStatusBar(const char *string)
 {
-	int	fontscale = (float)cl_fontScale->value;
+	float	fontscale = cl_fontScale->value;
 	
 	if (string) {
 		int l = strlen(string);
 		int maxcol = VID_WIDTH / 8;
 		int col = maxcol / 2 - l / 2;
 		
-		if(fontscale == 1)
+		if (fontscale == 1)
 			Draw_Fill(0, VID_HEIGHT - 8, VID_WIDTH, 8, 4);
 		else
-		Draw_Fill(0, VID_HEIGHT - 8 - fontscale*4, VID_WIDTH, 8*fontscale, 4);
-	//	Menu_DrawString(col * 8, VID_HEIGHT - 8, string);
-		
-		if(cl_fontScale->value == 2){
+			Draw_Fill(0, VID_HEIGHT - 8 - fontscale*4, VID_WIDTH, 8*fontscale, 4);
+
+		if (cl_fontScale->value == 2) {
 			Menu_DrawStringScaled((col * 8) / fontscale*1.5, VID_HEIGHT - 8*fontscale, fontscale, fontscale, string);
-		}else{
+		} else {
 			Menu_DrawStringScaled((col * 8) / fontscale, VID_HEIGHT - 8*fontscale, fontscale, fontscale, string);
 		}
 		
 	} else {
-		if(fontscale == 1)
+		if (fontscale == 1)
 			Draw_Fill(0, VID_HEIGHT - 8, VID_WIDTH, 8, 0);
 		else
-		Draw_Fill(0, VID_HEIGHT - 8 - fontscale*4, VID_WIDTH, 8*fontscale, 0);
+			Draw_Fill(0, VID_HEIGHT - 8 - fontscale*4, VID_WIDTH, 8*fontscale, 0);
 	}
 }
 
 void Menu_DrawStringDark(int x, int y, const char *string)
 {
-	unsigned i;
-	int	fontscale = (float)cl_fontScale->value;
+	unsigned	i;
+	float		fontscale = cl_fontScale->value;
 
 	for (i = 0; i < strlen(string); i++) {
 		Draw_CharScaled((x + i * 8*fontscale), y, fontscale, fontscale, string[i] + 128);
@@ -474,8 +473,8 @@ void Menu_DrawStringDark(int x, int y, const char *string)
 
 void Menu_DrawStringR2L(int x, int y, const char *string)
 {
-	unsigned i;
-	int	fontscale = (float)cl_fontScale->value;
+	unsigned	i;
+	float		fontscale = cl_fontScale->value;
 
 	for (i = 0; i < strlen(string); i++) {
 		Draw_CharScaled((x - i * 8*fontscale), y, fontscale, fontscale, string[strlen(string) - i - 1]);
@@ -484,8 +483,8 @@ void Menu_DrawStringR2L(int x, int y, const char *string)
 
 void Menu_DrawStringR2LDark(int x, int y, const char *string)
 {
-	unsigned i;
-	int	fontscale = (float)cl_fontScale->value;
+	unsigned	i;
+	float		fontscale = cl_fontScale->value;
 
 	for (i = 0; i < strlen(string); i++) {
 		Draw_CharScaled((x - i * 8*fontscale), y, fontscale, fontscale, string[strlen(string) - i - 1] + 128);
@@ -628,10 +627,10 @@ void Slider_DoSlide(menuslider_s * s, int dir)
 
 void Slider_Draw(menuslider_s * s)
 {
-	int i, shift;
-	int	fontscale = (float)cl_fontScale->value;
+	int		i, shift;
+	float	fontscale = cl_fontScale->value;
 	
-	if(cl_fontScale->value > 1)
+	if (cl_fontScale->value > 1)
 		shift = 8;
 	else 
 		shift = 0;
@@ -695,8 +694,8 @@ void SpinControl_DoSlide(menulist_s * s, int dir)
 
 void SpinControl_Draw(menulist_s * s)
 {
-	char buffer[100];
-	int	fontscale = (float)cl_fontScale->value;
+	char	buffer[100];
+	float	fontscale = cl_fontScale->value;
 
 	if (s->generic.name) {
 		Menu_DrawStringR2LDark(s->generic.x + s->generic.parent->x +

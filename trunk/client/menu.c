@@ -226,10 +226,9 @@ higher res screens.
 */
 void M_DrawCharacter(int cx, int cy, int num)
 {
-	int	fontscale = (float)cl_fontScale->value;
+	float	fontscale = cl_fontScale->value;
 
 	Draw_CharScaled(cx + ((viddef.width - 320) >> 1), cy + ((viddef.height - 240) >> 1), fontscale, fontscale, num);
-	
 }
 
 void M_Print(int cx, int cy, char *str)
@@ -374,6 +373,7 @@ void M_Main_Draw(void)
 		"m_main_quit",
 		0
 	};
+	const float fontscale = cl_fontScale->value;
 
 	for (i = 0; names[i] != 0; i++) {
 		Draw_GetPicSize(&w, &h, names[i]);
@@ -382,31 +382,32 @@ void M_Main_Draw(void)
 			widest = w;
 		totalheight += (h + 12);
 	}
-	if(cl_fontScale->value < 2){
-	ystart = (viddef.height / 2) - 110;
-	xoffset = (viddef.width - widest + 70) / 2;
-	}else{
-	ystart = (viddef.height / 2) - 220;
-	xoffset = (viddef.width - widest - 100) / 2;
+
+	if (fontscale < 2){
+		ystart = (viddef.height / 2) - 110;
+		xoffset = (viddef.width - widest + 70) / 2;
+	} else {
+		ystart = (viddef.height / 2) - 220;
+		xoffset = (viddef.width - widest - 100) / 2;
 	}
 
-	if(cl_fontScale->value > 1)
+	if (fontscale > 1)
 		offcet = 60;
 
 	for (i = 0; names[i] != 0; i++) {
 		if (i != m_main_cursor)
-			Draw_PicScaled(xoffset + offcet, ystart + (i * cl_fontScale->value) * 40 + 13, cl_fontScale->value, cl_fontScale->value, names[i]);
+			Draw_PicScaled(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, names[i]);
 	}
 	strcpy(litname, names[m_main_cursor]);
 	strcat(litname, "_sel");
-	Draw_PicScaled(xoffset + offcet, ystart + (m_main_cursor * cl_fontScale->value) * 40 + 13, cl_fontScale->value, cl_fontScale->value, litname);
+	Draw_PicScaled(xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, litname);
 	
 	Draw_GetPicSize(&w, &h, "m_main_plaque");
-	Draw_PicScaled((xoffset - 30) - (w * cl_fontScale->value), ystart, cl_fontScale->value, cl_fontScale->value, "m_main_plaque");
+	Draw_PicScaled((xoffset - 30) - (w * fontscale), ystart, fontscale, fontscale, "m_main_plaque");
 
-	Draw_PicScaled((xoffset - 30) - (w * cl_fontScale->value), ystart + (h * cl_fontScale->value) + 5, cl_fontScale->value, cl_fontScale->value, "m_main_logo");
+	Draw_PicScaled((xoffset - 30) - (w * fontscale), ystart + (h * fontscale) + 5, fontscale, fontscale, "m_main_logo");
 
-	M_Main_DrawQuad(xoffset - 45, ystart + (m_main_cursor * 40 + 5)* cl_fontScale->value);
+	M_Main_DrawQuad(xoffset - 45, ystart + (m_main_cursor * 40 + 5)* fontscale);
 }
 
 
@@ -2826,8 +2827,8 @@ void NullCursorDraw(void *self)
 
 void SearchLocalGames(void)
 {
-	int i;
-	int	fontscale = (float)cl_fontScale->value;
+	int		i;
+	float	fontscale = cl_fontScale->value;
 
 	m_num_servers = 0;
 	for (i = 0; i < MAX_LOCAL_SERVERS; i++)

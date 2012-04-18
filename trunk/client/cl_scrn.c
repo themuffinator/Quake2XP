@@ -482,10 +482,10 @@ void Draw_LoadingScreen(int x, int y, int w, int h, char *pic);
 
 void SCR_DrawLoading(void)
 {
-	int scaled;
-	char mapfile[32];
-	char *mapname;
-	int	fontscale = (float)cl_fontScale->value;
+	int		scaled;
+	char	mapfile[32];
+	char	*mapname;
+	float	fontscale = cl_fontScale->value;
 	
 	if (!scr_draw_loading)
 		return;
@@ -499,12 +499,8 @@ void SCR_DrawLoading(void)
 		else
 			Draw_Fill(0, 0, viddef.width, viddef.height, 0);
 
-		if(cl_fontScale->value>1)
-			scaled = 8;
-		else scaled = 4;
-
+		scaled = (fontscale > 1) ? 8 : 4;
 		SCR_DrawLoadingBar(loadingPercent, scaled);
-
 
 		mapname = cl.configstrings[CS_NAME];
 		
@@ -520,9 +516,7 @@ void SCR_DrawLoading(void)
 		Draw_StringScaled(0, 48*fontscale, fontscale, fontscale,
 					va("%s", loadingMessages[3]));
 		RE_SetColor(NULL);
-
 	}
-
 }
 
 
@@ -664,14 +658,11 @@ int entitycmpfnc(const entity_t * a, const entity_t * b)
 	 ** all other models are sorted by model then skin
 	 */
 	if (a->model == b->model) {
-		return ((int) a->skin - (int) b->skin);
+		return ((intptr_t) a->skin - (intptr_t) b->skin);
 	} else {
-		return ((int) a->model - (int) b->model);
+		return ((intptr_t) a->model - (intptr_t) b->model);
 	}
 }
-
-
-
 
 void SCR_TimeRefresh_f(void)
 {
@@ -1010,7 +1001,7 @@ extern cvar_t *cl_hudScale;
 void SCR_DrawSpeeds(void){
 	
 	char	bsp[18], alias[18], st[18], partTris[18], flares[18], shadow[18], decals[18] , dtr[18];
-	int		fontscale = (float)cl_fontScale->value;
+	float	fontscale = cl_fontScale->value;
 
 	if(!r_speeds->value)
 		return;
@@ -1039,7 +1030,7 @@ void SCR_DrawFPS(void){
 	
 	static char	fps[8];
 	static int	millis;
-	int		fontscale = (float)cl_fontScale->value;
+	float		fontscale = cl_fontScale->value;
 	
 //	if (frames_this_second < 50)
 //		Draw_ScaledPic((viddef.width - i_turtle->width*fontscale-10), (viddef.height*0.8) 
@@ -1057,11 +1048,7 @@ void SCR_DrawFPS(void){
 	}
 	if (cl_drawfps->value && (cls.state == ca_active))
 		Draw_StringScaled(viddef.width - 57*fontscale, viddef.height*0.8, fontscale, fontscale, fps);
-		
 }
-
-
-
 
 void SCR_DrawClock(void)
 {
@@ -1069,7 +1056,7 @@ void SCR_DrawClock(void)
 	char	tmpbuf[24];
 	char	datebuf[20];
 	char	tmpdatebuf[24];
-	int	fontscale = (float)cl_fontScale->value;
+	float	fontscale = cl_fontScale->value;
 #ifndef _WIN32
 	struct tm *tm;
 	time_t aclock;
@@ -1085,19 +1072,16 @@ void SCR_DrawClock(void)
 
 	sprintf(tmpbuf, "Time %s", timebuf);
 	sprintf(tmpdatebuf, "Date %s", datebuf);
-	
+
 	if (!cl_drawfps->value)
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.8, fontscale, fontscale, tmpbuf);
 		else
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.8+10*fontscale , fontscale, fontscale, tmpbuf);
 
-
 	if (!cl_drawfps->value)
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.8+10*fontscale, fontscale, fontscale, tmpdatebuf);
 		else
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.8+20*fontscale, fontscale, fontscale, tmpdatebuf);
-	
-
 }
 
 void R_FXAA(void);
@@ -1128,7 +1112,7 @@ void SCR_UpdateScreen(void)
 
 	if(cl_hudScale->value < 0.1)
 		Cvar_SetValue("cl_hudScale", 0.1);
-		
+
 	if(cl_fontScale->value < 1)
 		Cvar_SetValue("cl_fontScale", 1);
 	else

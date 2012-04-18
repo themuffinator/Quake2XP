@@ -494,7 +494,6 @@ pack_t *FS_LoadPackFile (char *packfile)
 	return pack;
 }
 
-
 /*
 ================
 FS_AddGameDirectory
@@ -594,8 +593,8 @@ void FS_AddGameDirectory (char *dir)
 
 int SortList(const void *data1, const void *data2)
 {
-	// FIXME: don't ask me why, this works
-	return Q_stricmp((char *)data2, (char *)data1);
+	// XXX: we have pointers to strings here!
+	return Q_stricmp(*(char * const *)data1, *(char * const *)data2);
 }
 
 void FS_AddGameDirectory (char *dir)

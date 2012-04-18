@@ -21,6 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 cvar_t *freelook;
 
@@ -1840,11 +1843,17 @@ void CL_Frame(int msec)
 		Cvar_SetValue("cl_maxfps", 100);
 
 	if (!cl_timedemo->value) {
+		int temptime = 1000/cl_maxfps->value - extratime;
 		if (cls.state == ca_connected && extratime < 100)
-			return;				// don't flood packets out while
-								// connecting
-		if (extratime < 1000 / cl_maxfps->value)
+			return;				// don't flood packets out while connecting
+		if (temptime > 0) {
+#ifndef _WIN32
+			// give CPU to other processes while idle
+			// XXX: if necessary, sleep less (like half) or use a weighted average as upper bound
+			usleep(temptime);
+#endif
 			return;				// framerate is too high
+		}
 	}
 	// let the mouse activate or deactivate
 	IN_Frame();

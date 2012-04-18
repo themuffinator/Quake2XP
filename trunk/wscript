@@ -4,8 +4,6 @@
 # TODO list
 # important
 # - convert FPS indicator into a weighted average, to avoid fluctuations
-# - use usleep/timers to give up CPU according to cl_maxfps if not dore already
-#   (check for QuDos code or Yamagi maybe)
 # - detach renderer from network if not done already (see kmq2, egl, etc)
 # performance
 # - measure FPS distribution and jitter through a level and draw a graph
@@ -14,6 +12,10 @@
 # - optimize GL_ResampleTextures with OpenMP (or the loop in the calling
 #   function); or use OpenGL to resample the image; or cache results in cachexp
 # other
+# - support key repeat in menu/console
+# - don't store the same console history line twice
+# - add antialias/multisampling to menu characters in Draw_CharScaled (if
+#   cl_fontScale > 1)
 # - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
 
 
@@ -85,7 +87,7 @@ def build(bld):
 
     # Game shared library environment
     genv = bld.env.derive()
-    genv.append_value('CFLAGS', ['-Wno-pointer-to-int-cast'])
+    #genv.append_value('CFLAGS', ['-Wno-pointer-to-int-cast'])
     genv.cshlib_PATTERN = genv.cshlib_PATTERN.replace('lib', '')
 
     bld.shlib(
