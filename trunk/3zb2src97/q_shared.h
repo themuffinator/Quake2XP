@@ -46,7 +46,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Ale: defined the other way around, so it can be changed to _vsnprintf_s()
 // or a local version which terminates the string in Windows
 #define vsnprintf	_vsnprintf
-typedef int intptr_t
+typedef int intptr_t;
 #else
 #include <stdint.h>
 #endif

@@ -75,7 +75,7 @@ typedef enum {false, true}	qboolean;
 // Ale: defined the other way around, so it can be changed to _vsnprintf_s()
 // or a local version which terminates the string in Windows
 #define vsnprintf	_vsnprintf
-typedef int intptr_t
+typedef int intptr_t;
 #else
 #include <stdint.h>
 #endif
