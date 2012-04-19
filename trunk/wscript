@@ -2,21 +2,29 @@
 # encoding: utf-8
 
 # TODO list
+#
+# notes
+# - host_speed reports almost always zero for anything else than ref,
+#   so the renderer greatly dominates frame time
+#
 # important
+# - key repeat doesn't work after vid_restart, SDL_... problem?
 # - add descriptions to menu entres with the statusbar property
-# - finish willow code for audio source velocity (doppler?), and use the rest of
-#   data in openal_..._t ch argument, as well as the HACK_ functions
+# - add cvar and menu item to select reverb: EAX, EFX or NONE
+# - add support for Rogue expansion pack (check Yamagi Q2)
+# - add support for Zaero expansion pack (check Yamagi Q2)
+# - get launchpad account, create Ubuntu package and promote in
+#   forums (english and spanish)
+#
 # performance
 # - measure FPS distribution and jitter through a level and draw a graph
-# - try inlining VectorCompare, BoxOnPlaneSide, Q_strcasecmp
+#   (use time_after_ref/time_before_ref, in case cl_maxfps is limiting FPS)
 # - optimize Mod_LoadFaces with explicit/implicit vectorization and/or OpenMP
 # - optimize GL_ResampleTextures with OpenMP (or the loop in the calling
 #   function); or use OpenGL to resample the image; or cache results in cachexp
+#
 # other/maybe
-# - try to change resolution in Linux withoun restarting level
-# - try recording samples/max/min/med of host_speeds output, print a few times
-# per second instead of every frame (same code as FPS), allow logging to file
-# (and real FPS too to make graph)
+# - try to change resolution in Linux without restarting level
 # - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
 # - compile with -Wall and eliminate warnings?
 
@@ -63,7 +71,7 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_c')
-    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'IL', 'ILU', 'ILUT', 'openal']:#, 'x11', 'xxf86vm']
+    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'IL', 'ILU', 'ILUT', 'openal']:
         conf.check_cfg(package=lib, args=['--cflags', '--libs'])
 
 def build(bld):
@@ -89,7 +97,6 @@ def build(bld):
 
     # Game shared library environment
     genv = bld.env.derive()
-    #genv.append_value('CFLAGS', ['-Wno-pointer-to-int-cast'])
     genv.cshlib_PATTERN = genv.cshlib_PATTERN.replace('lib', '')
 
     bld.shlib(
@@ -114,5 +121,5 @@ def build(bld):
         source = sources['client'],
         target = 'quake2xp',
         lib = ['z', 'm', 'dl'],
-        use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL', 'OGG', 'VORBIS', 'VORBISFILE']#, 'X11', 'XXF86VM']
+        use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL', 'OGG', 'VORBIS', 'VORBISFILE']
     )

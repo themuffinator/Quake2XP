@@ -1903,7 +1903,6 @@ void CL_Frame(int msec)
 		memcpy(&orientation[3], cl.v_up, sizeof(vec3_t));
 		S_Update(cl.refdef.vieworg, cl.v_forward, orientation);
 	}
-
 	Music_Update();
 
 	// advance local effects for next frame

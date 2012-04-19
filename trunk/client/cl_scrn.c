@@ -499,7 +499,7 @@ void SCR_DrawLoading(void)
 		else
 			Draw_Fill(0, 0, viddef.width, viddef.height, 0);
 
-		scaled = (fontscale > 1) ? 8 : 4;
+		scaled = 4*(fontscale-1);
 		SCR_DrawLoadingBar(loadingPercent, scaled);
 
 		mapname = cl.configstrings[CS_NAME];

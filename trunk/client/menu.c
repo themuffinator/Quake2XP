@@ -383,16 +383,10 @@ void M_Main_Draw(void)
 		totalheight += (h + 12);
 	}
 
-	if (fontscale < 2){
-		ystart = (viddef.height / 2) - 110;
-		xoffset = (viddef.width - widest + 70) / 2;
-	} else {
-		ystart = (viddef.height / 2) - 220;
-		xoffset = (viddef.width - widest - 100) / 2;
-	}
+	ystart = (viddef.height / 2) - 110*cl_fontScale->value;
+	xoffset = (viddef.width - widest + (70-(cl_fontScale->value-1)*170)) / 2;
 
-	if (fontscale > 1)
-		offcet = 60;
+	offcet = (fontscale-1)*60;
 
 	for (i = 0; names[i] != 0; i++) {
 		if (i != m_main_cursor)
@@ -1394,10 +1388,7 @@ static char *yesno_names[] = {
 	 ** configure controls menu and menu items
 	 */
 	s_options_menu.x = viddef.width >> 1;
-	if(cl_fontScale->value >1)
-	s_options_menu.y = (viddef.height >> 1) - 200;
-	else
-	s_options_menu.y = (viddef.height >> 1) - 100;
+	s_options_menu.y = (viddef.height >> 1) - 100*cl_fontScale->value;
 	s_options_menu.nitems = 0;
 	
 	s_aoptions_railCoreRed_slider.generic.type = MTYPE_SLIDER;
@@ -1409,7 +1400,7 @@ static char *yesno_names[] = {
 	s_aoptions_railCoreRed_slider.maxvalue = 10;
 	s_aoptions_railCoreRed_slider.curvalue = Cvar_VariableValue("cl_railcore_red")*10;
 	menu_y += 10*cl_fontScale->value;
-
+	
 	s_aoptions_railCoreGreen_slider.generic.type = MTYPE_SLIDER;
 	s_aoptions_railCoreGreen_slider.generic.x = 0;
 	s_aoptions_railCoreGreen_slider.generic.y = menu_y;
@@ -1887,11 +1878,8 @@ void M_Option_Banner(char *name)
 	int w,h;
 	int move;
 
-	if (cl_fontScale->value>1)
-		move  = 240;
-		else
-		move  = 140;
-	
+	move = 140 + (cl_fontScale->value-1)*100;
+
 	Draw_GetPicSize(&w, &h, name);
 	move +=h;
 	Draw_PicScaled(viddef.width / 2 - (w * cl_fontScale->value) / 2, viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
@@ -4159,8 +4147,7 @@ qboolean PlayerConfig_MenuInit(void)
 
 	PlayerConfig_ScanDirectories();
 
-	if(cl_fontScale->value >1)
-		offcet = 16;
+	offcet = (cl_fontScale->value-1)*16;
 
 	if (s_numplayermodels == 0)
 		return false;
@@ -4318,23 +4305,15 @@ void PlayerConfig_MenuDraw(void)
 	extern float CalcFov(float fov_x, float w, float h);
 	refdef_t refdef;
 	char scratch[MAX_QPATH];
-	int Xw, x2;
+	int x2;
 
 	srand(time(0));
 
 	memset(&refdef, 0, sizeof(refdef));
 
-	Xw = viddef.width / 2;
-
-	if(cl_fontScale->value>1){
-	refdef.x = (Xw) + 72;
-	x2 = 320;
-	}
-	else{
-	refdef.x = viddef.width / 2;
-	x2 = 0;
-	}
-	refdef.y = viddef.height / 2 - 72 * cl_fontScale->value; //2
+	refdef.x = viddef.width/2 + (cl_fontScale->value-1)*72;
+	x2 = 320*(cl_fontScale->value-1);
+	refdef.y = viddef.height/2 - 72*cl_fontScale->value;
 	refdef.width = 171*cl_fontScale->value;
 	refdef.height = 200*cl_fontScale->value;
 	refdef.fov_x = 40;

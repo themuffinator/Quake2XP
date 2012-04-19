@@ -618,12 +618,9 @@ void Slider_Draw(menuslider_s * s)
 {
 	int		i, shift;
 	float	fontscale = cl_fontScale->value;
-	
-	if (cl_fontScale->value > 1)
-		shift = 8;
-	else 
-		shift = 0;
-		
+
+	shift = (cl_fontScale->value-1)*8;
+
 	Menu_DrawStringR2LDark(s->generic.x + s->generic.parent->x +
 						   LCOLUMN_OFFSET,
 						   s->generic.y + s->generic.parent->y,

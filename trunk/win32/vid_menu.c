@@ -770,9 +770,8 @@ void VID_MenuDraw (void)
 	int w, h;
 
 	s_current_menu = &s_opengl_menu;
-	
-	//if (cl_fontScale->value == 1)
-		menuSize = 180;
+
+	menuSize = 180*cl_fontScale->value;
 
 	// draw the banner
 	Draw_GetPicSize( &w, &h, "m_banner_video" );
