@@ -23,8 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __SND_LOC_H
 
 #ifdef _WIN32
-//This looks obsolete, please uncomment if wrong
-//#include "../win32/winquake.h"
+// For HINSTANCE type in <windows.h>
+#include "../win32/winquake.h"
 #endif
 
 #define MIN(a,b) ((a)>(b) ? (b) : (a))
