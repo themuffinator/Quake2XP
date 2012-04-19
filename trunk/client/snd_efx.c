@@ -33,7 +33,7 @@ efx_t efx;
 ALuint EFXEAX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb);
 ALuint EFX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb);
 
-void EFXEAX_RvbInit(void) {
+void EFX_RvbInit(void) {
 	if (efx.on)
 		return;
 
@@ -56,7 +56,7 @@ void EFXEAX_RvbInit(void) {
 	}
 }
 
-void EFXEAX_RvbUpdate(vec3_t listener_position) {
+void EFX_RvbUpdate(vec3_t listener_position) {
 	if (!efx.on)
 		return;
 
@@ -74,7 +74,7 @@ void EFXEAX_RvbUpdate(vec3_t listener_position) {
 		Com_Printf(S_COLOR_YELLOW "EFX update failed\n");
 }
 
-void EFXEAX_RvbShutdown(void) {
+void EFX_RvbShutdown(void) {
 	if (!efx.on)
 		return;
 
@@ -86,7 +86,7 @@ void EFXEAX_RvbShutdown(void) {
 	efx.on = false;
 }
 
-void EFXEAX_RvbProcSrc(openal_channel_t *ch, ALuint source, qboolean enabled) {
+void EFX_RvbProcSrc(openal_channel_t *ch, ALuint source, qboolean enabled) {
 	if (!enabled)
 		alSource3i(source, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 0, AL_FILTER_NULL);
 	else

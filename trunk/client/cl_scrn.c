@@ -995,7 +995,6 @@ int c_brush_polys,
 	c_decal_tris;
 
 extern cvar_t *cl_drawfps;
-int frames_this_second = 0;
 extern cvar_t *cl_hudScale;
 
 void SCR_DrawSpeeds(void){
@@ -1026,28 +1025,29 @@ void SCR_DrawSpeeds(void){
 	RE_SetColor(colorWhite);
 }
 
-void SCR_DrawFPS(void){
-	
-	static char	fps[8];
-	static int	millis;
-	float		fontscale = cl_fontScale->value;
-	
-//	if (frames_this_second < 50)
-//		Draw_ScaledPic((viddef.width - i_turtle->width*fontscale-10), (viddef.height*0.8) 
-//									- (i_turtle->height*fontscale), fontscale, fontscale, i_turtle);	
+void SCR_DrawFPS(void)
+{
+	static char	str[16];
+	static int fps = 0;
+	static float fpsAvg = 0;
+	static int	lastUpdate;
 
-	frames_this_second++;
-	
-	if(curtime - millis >= 1000){
-			
-		Com_sprintf(fps, sizeof(fps), "%4dfps", frames_this_second);
-	
-		millis = curtime;
-		frames_this_second = 0;
-		
+	const int samPerSec = 4;
+	const float	fontscale = cl_fontScale->value;
+
+	fps++;
+	if (curtime - lastUpdate >= 1000/samPerSec) {
+		const float alpha = 0.15;
+
+		Com_sprintf(str, sizeof(str), "%4d FPS", (int)fpsAvg);
+
+		lastUpdate = curtime;
+		fpsAvg = samPerSec * (alpha*fps + ((1-alpha)*fpsAvg)/samPerSec);
+		fps = 0;
 	}
+
 	if (cl_drawfps->value && (cls.state == ca_active))
-		Draw_StringScaled(viddef.width - 57*fontscale, viddef.height*0.8, fontscale, fontscale, fps);
+		Draw_StringScaled(viddef.width - 65*fontscale, viddef.height*0.8, fontscale, fontscale, str);
 }
 
 void SCR_DrawClock(void)
@@ -1057,6 +1057,7 @@ void SCR_DrawClock(void)
 	char	datebuf[20];
 	char	tmpdatebuf[24];
 	float	fontscale = cl_fontScale->value;
+
 #ifndef _WIN32
 	struct tm *tm;
 	time_t aclock;
@@ -1073,15 +1074,13 @@ void SCR_DrawClock(void)
 	sprintf(tmpbuf, "Time %s", timebuf);
 	sprintf(tmpdatebuf, "Date %s", datebuf);
 
-	if (!cl_drawfps->value)
+	if (!cl_drawfps->value) {
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.8, fontscale, fontscale, tmpbuf);
-		else
-		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.8+10*fontscale , fontscale, fontscale, tmpbuf);
-
-	if (!cl_drawfps->value)
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.8+10*fontscale, fontscale, fontscale, tmpdatebuf);
-		else
+	} else {
+		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.8+10*fontscale , fontscale, fontscale, tmpbuf);
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.8+20*fontscale, fontscale, fontscale, tmpdatebuf);
+	}
 }
 
 void R_FXAA(void);

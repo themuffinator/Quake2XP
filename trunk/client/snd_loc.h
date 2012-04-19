@@ -299,10 +299,10 @@ void normalEAX_Effects(openal_channel_t *ch, ALuint sourceNum);
 void nullEAX_Effects(openal_channel_t *ch, ALuint sourceNum);
 #endif
 
-void EFXEAX_RvbInit(void);
-void EFXEAX_RvbUpdate(vec3_t listener_position);
-void EFXEAX_RvbProcSrc(openal_channel_t *ch, ALuint source, qboolean enabled);
-void EFXEAX_RvbShutdown(void);
+void EFX_RvbInit(void);
+void EFX_RvbUpdate(vec3_t listener_position);
+void EFX_RvbProcSrc(openal_channel_t *ch, ALuint source, qboolean enabled);
+void EFX_RvbShutdown(void);
 
 // Streaming and music definitions
 

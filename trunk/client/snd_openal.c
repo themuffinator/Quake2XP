@@ -258,7 +258,7 @@ void S_Init(int hardreset)
 					} 
 #endif
 					if (alConfig.eax == VER_EFX)
-						EFXEAX_RvbInit();
+						EFX_RvbInit();
 				}
 
 				S_StopAllSounds();	// inits freeplays
@@ -315,7 +315,7 @@ void S_Shutdown(void)
 {
 	if (s_openal_numChannels) {
 		if (alConfig.eax == VER_EFX)
-			EFXEAX_RvbShutdown();
+			EFX_RvbShutdown();
 
 		// Clean up streaming buffers
 		alDeleteBuffers(NUM_STRBUF, streaming.buffers);
@@ -448,9 +448,7 @@ ALuint S_RegisterSexedSound(entity_state_t * ent, const char *base)
 
 #define AL_FLAGS_FLAT2D						1
 #define AL_FLAGS_AL_LOOPING					2
-#define AL_FLAGS_FIXED_POSITION				4	// Use position instead of
-												// fetching entity's
-												// origin
+#define AL_FLAGS_FIXED_POSITION				4	// Use position instead of fetching entity's origin
 
 typedef struct {
 	ALfloat TASK_AL_REFERENCE_DISTANCE;
@@ -672,7 +670,7 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 			normalEAX_Effects(ch, sourceNum);
 #endif
 		if (alConfig.eax == VER_EFX)
-			EFXEAX_RvbProcSrc(ch, sourceNum, true);
+			EFX_RvbProcSrc(ch, sourceNum, true);
 
 		alSourcePlay(sourceNum);
 	}
@@ -845,7 +843,7 @@ void S_StartLocalSound(ALuint bufferNum)
 				nullEAX_Effects(ch, sourceNum);
 #endif
 			if (alConfig.eax == VER_EFX)
-				EFXEAX_RvbProcSrc(ch, sourceNum, false);
+				EFX_RvbProcSrc(ch, sourceNum, false);
 
 			alSourcePlay(sourceNum);
 		} else {
@@ -1053,7 +1051,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		applyEAX_Effects(listener_position);
 #endif
 	if (alConfig.eax == VER_EFX)
-		EFXEAX_RvbUpdate(listener_position);
+		EFX_RvbUpdate(listener_position);
 
 	memset(Channels_TODO, 0, sizeof(Channels_TODO));
 
@@ -1318,7 +1316,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 				normalEAX_Effects(ch, sourceNum);
 #endif
 			if (alConfig.eax == VER_EFX)
-				EFXEAX_RvbProcSrc(ch, sourceNum, true);
+				EFX_RvbProcSrc(ch, sourceNum, true);
 	
 
 			alSourcePlay(sourceNum);

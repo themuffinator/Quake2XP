@@ -771,7 +771,7 @@ void VID_MenuDraw (void)
 
 	s_current_menu = &s_opengl_menu;
 	
-	if(cl_fontScale->value == 1)
+	//if (cl_fontScale->value == 1)
 		menuSize = 180;
 
 	// draw the banner

@@ -346,7 +346,6 @@ int chat_bufferlen = 0;
 
 void Key_Message(int key)
 {
-
 	if (key == K_ENTER || key == K_KP_ENTER) {
 		if (chat_team)
 			Cbuf_AddText("say_team \"");
@@ -688,6 +687,7 @@ void Key_Event(int key, qboolean down, unsigned time)
 			key_waiting = key;
 		return;
 	}
+
 	// update auto-repeat status
 	if (down) {
 		key_repeats[key]++;
@@ -695,13 +695,18 @@ void Key_Event(int key, qboolean down, unsigned time)
 			&& key != K_PAUSE
 			&& key != K_PGUP
 			&& key != K_KP_PGUP
-			&& key != K_PGDN && key != K_KP_PGDN && key_repeats[key] > 1)
+			&& key != K_PGDN
+			&& key != K_KP_PGDN
+			&& key_repeats[key] > 1
+			// enable auto-repeat for menu navigation and console history
+			&& key != K_UPARROW && key != K_DOWNARROW
+			&& key != K_LEFTARROW && key != K_RIGHTARROW
+			// enable auto-repeat for "say" and "say_team"
+			&& cls.key_dest != key_message)
 			return;				// ignore most autorepeats
 
-		if (key >= 200 && !keybindings[key] && key != K_MWHEELDOWN
-			&& key != K_MWHEELUP)
-			Com_Printf("%s is unbound, hit F4 to set.\n",
-					   Key_KeynumToString(key));
+		if (key >= 200 && !keybindings[key] && key != K_MWHEELDOWN && key != K_MWHEELUP)
+			Com_Printf("%s is unbound, hit F4 to set.\n", Key_KeynumToString(key));
 	} else {
 		key_repeats[key] = 0;
 	}
@@ -739,25 +744,18 @@ void Key_Event(int key, qboolean down, unsigned time)
 			return;
 		}
 		// Knightmare- skip cinematic
-		if (cl.cinematictime > 0 && !cl.attractloop && cls.realtime - cl.cinematictime > 1000) {	// skip 
-																									// the 
-																									// rest 
-																									// of 
-																									// the 
-																									// cinematic
+		if (cl.cinematictime > 0 && !cl.attractloop && cls.realtime - cl.cinematictime > 1000) {
+			// skip the rest of the cinematic
 			SCR_FinishCinematic();
 		}
 
 
-		if (cl.frame.playerstate.stats[STAT_LAYOUTS] && cls.key_dest == key_game) {	// put 
-																					// away 
-																					// help 
-																					// computer 
-																					// / 
-																					// inventory
+		if (cl.frame.playerstate.stats[STAT_LAYOUTS] && cls.key_dest == key_game) {
+			// put away help computer / inventory
 			Cbuf_AddText("cmd putaway\n");
 			return;
 		}
+
 		switch (cls.key_dest) {
 		case key_message:
 			Key_Message(key);
@@ -774,6 +772,7 @@ void Key_Event(int key, qboolean down, unsigned time)
 		}
 		return;
 	}
+
 	// track if any key is down for BUTTON_ANY
 	keydown[key] = down;
 	if (down) {
@@ -823,8 +822,8 @@ void Key_Event(int key, qboolean down, unsigned time)
 
 		kb = keybindings[key];
 		if (kb) {
-			if (kb[0] == '+') {	// button commands add keynum and time as
-								// a parm
+			if (kb[0] == '+') {
+				// button commands add keynum and time as a parm
 				Com_sprintf(cmd, sizeof(cmd), "%s %i %i\n", kb, key, time);
 				Cbuf_AddText(cmd);
 			} else {
@@ -838,8 +837,7 @@ void Key_Event(int key, qboolean down, unsigned time)
   SkipKeys:
 
 	if (!down)
-		return;					// other systems only care about key down
-								// events
+		return;		// other systems only care about key down events
 
 	if (shift_down)
 		key = keyshift[key];

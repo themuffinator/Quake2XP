@@ -1607,12 +1607,11 @@ void CL_InitLocal(void)
 	cl_blood				=	Cvar_Get("cl_blood", "1", CVAR_ARCHIVE);
 	cl_bigHud				=	Cvar_Get("cl_bigHud", "1", CVAR_ARCHIVE);
 	cl_hudScale				=	Cvar_Get("cl_hudScale", "0.7", CVAR_ARCHIVE);
-
-	cl_fontScale	=	Cvar_Get("cl_fontScale", "2", CVAR_ARCHIVE);
+	cl_fontScale			=	Cvar_Get("cl_fontScale", "1.5", CVAR_ARCHIVE);
 	
-	if(cl_fontScale->value < 1)
+	if (cl_fontScale->value < 1)
 		Cvar_Set("cl_fontScale", "1");
-	if(cl_fontScale->value > 2)
+	if (cl_fontScale->value > 2)
 		Cvar_Set("cl_fontScale", "2");
 	//
 	// userinfo
@@ -1844,13 +1843,17 @@ void CL_Frame(int msec)
 
 	if (!cl_timedemo->value) {
 		int temptime = 1000/cl_maxfps->value - extratime;
+
 		if (cls.state == ca_connected && extratime < 100)
 			return;				// don't flood packets out while connecting
+
+		// give CPU to other processes while idle
 		if (temptime > 0) {
+			// XXX: sleep half the time? for now it doesn't seem necessary
 #ifndef _WIN32
-			// give CPU to other processes while idle
-			// XXX: if necessary, sleep less (like half) or use a weighted average as upper bound
 			usleep(temptime);
+#else
+			Sleep(temptime);
 #endif
 			return;				// framerate is too high
 		}

@@ -503,8 +503,6 @@ static void StartNetworkServerFunc(void *unused)
 
 void Multiplayer_MenuInit(void)
 {
-	
-	
 	s_multiplayer_menu.x = viddef.width * 0.50 - 64*cl_fontScale->value;
 	s_multiplayer_menu.nitems = 0;
 
@@ -1306,12 +1304,12 @@ static menuslider_s s_aoptions_railSpiralGreen_slider;
 static menuslider_s s_aoptions_railSpiralBlue_slider;
 
 static menuslider_s s_aoptions_hudScale_slider;
+static menuslider_s s_aoptions_fontScale_slider;
 
 static menulist_s s_aoptions_blood_box;
 static menulist_s s_aoptions_decals_box;
 static menulist_s s_aoptions_3dcam_box;
 
-static menulist_s s_aoptions_bigFont_box;
 static menulist_s s_aoptions_bigHud_box;
 static menulist_s s_aoptions_3dhud_box;
 
@@ -1350,6 +1348,11 @@ static void UpdateHudScaleFunc(void *unused)
 	Cvar_SetValue("cl_hudScale", s_aoptions_hudScale_slider.curvalue / 10);
 }
 
+static void UpdateFontScaleFunc(void *unused)
+{
+	Cvar_SetValue("cl_fontScale", s_aoptions_fontScale_slider.curvalue/10 + 1);
+}
+
 static void UpdateBloodFunc(void *unused)
 {
 	Cvar_SetValue("cl_blood", s_aoptions_blood_box.curvalue);
@@ -1363,11 +1366,6 @@ static void UpdateDecalsFunc(void *unused)
 static void Update3dCamFunc(void *unused)
 {
 	Cvar_SetValue("cl_thirdPerson", s_aoptions_3dcam_box.curvalue);
-}
-
-static void UpdateFont(void *unused)
-{
-	Cvar_SetValue("cl_fontScale", s_aoptions_bigFont_box.curvalue);
 }
 
 static void UpdateHud(void *unused)
@@ -1411,7 +1409,7 @@ static char *yesno_names[] = {
 	s_aoptions_railCoreRed_slider.maxvalue = 10;
 	s_aoptions_railCoreRed_slider.curvalue = Cvar_VariableValue("cl_railcore_red")*10;
 	menu_y += 10*cl_fontScale->value;
-	
+
 	s_aoptions_railCoreGreen_slider.generic.type = MTYPE_SLIDER;
 	s_aoptions_railCoreGreen_slider.generic.x = 0;
 	s_aoptions_railCoreGreen_slider.generic.y = menu_y;
@@ -1441,7 +1439,7 @@ static char *yesno_names[] = {
 	s_aoptions_railSpiralRed_slider.maxvalue = 10;
 	s_aoptions_railSpiralRed_slider.curvalue = Cvar_VariableValue("cl_railspiral_red")*10;
 	menu_y += 10*cl_fontScale->value;
-	
+
 	s_aoptions_railSpiralGreen_slider.generic.type = MTYPE_SLIDER;
 	s_aoptions_railSpiralGreen_slider.generic.x = 0;
 	s_aoptions_railSpiralGreen_slider.generic.y = menu_y;
@@ -1461,7 +1459,7 @@ static char *yesno_names[] = {
 	s_aoptions_railSpiralBlue_slider.maxvalue = 10;
 	s_aoptions_railSpiralBlue_slider.curvalue = Cvar_VariableValue("cl_railspiral_blue")*10;
 	menu_y += 20*cl_fontScale->value;
-	
+
 	s_aoptions_blood_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_blood_box.generic.x = 0;
 	s_aoptions_blood_box.generic.y = menu_y;
@@ -1488,7 +1486,7 @@ static char *yesno_names[] = {
 	s_aoptions_3dcam_box.itemnames = yesno_names;
 	s_aoptions_3dcam_box.curvalue = Cvar_VariableValue("cl_thirdPepson");
 	menu_y += 20*cl_fontScale->value;
-	
+
 	s_aoptions_bigHud_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_bigHud_box.generic.x = 0;
 	s_aoptions_bigHud_box.generic.y = menu_y;
@@ -1508,6 +1506,16 @@ static char *yesno_names[] = {
 	s_aoptions_hudScale_slider.curvalue = Cvar_VariableValue("cl_hudScale")*10;
 	menu_y += 10*cl_fontScale->value;
 
+	s_aoptions_fontScale_slider.generic.type = MTYPE_SLIDER;
+	s_aoptions_fontScale_slider.generic.x = 0;
+	s_aoptions_fontScale_slider.generic.y = menu_y;
+	s_aoptions_fontScale_slider.generic.name = "Font Scale";
+	s_aoptions_fontScale_slider.generic.callback = UpdateFontScaleFunc;
+	s_aoptions_fontScale_slider.minvalue = 0;
+	s_aoptions_fontScale_slider.maxvalue = 10;
+	s_aoptions_fontScale_slider.curvalue = (Cvar_VariableValue("cl_fontScale")-1)*10;
+	menu_y += 10*cl_fontScale->value;
+
 	s_aoptions_3dhud_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_3dhud_box.generic.x = 0;
 	s_aoptions_3dhud_box.generic.y = menu_y;
@@ -1516,7 +1524,7 @@ static char *yesno_names[] = {
 	s_aoptions_3dhud_box.itemnames = yesno_names;
 	s_aoptions_3dhud_box.curvalue = Cvar_VariableValue("cl_3dhud");
 	menu_y += 10*cl_fontScale->value;
-	
+
 	s_aoptions_railCoreRed_slider.curvalue = cl_railcore_red->value*10;
 	s_aoptions_railCoreGreen_slider.curvalue = cl_railcore_green->value*10;
 	s_aoptions_railCoreBlue_slider.curvalue = cl_railcore_blue->value*10;
@@ -1531,6 +1539,7 @@ static char *yesno_names[] = {
 
 	s_aoptions_bigHud_box.curvalue = cl_bigHud->value;
 	s_aoptions_hudScale_slider.curvalue = cl_hudScale->value*10;
+	s_aoptions_fontScale_slider.curvalue = (cl_fontScale->value-1)*10;
 	s_aoptions_3dhud_box.curvalue = cl_3dhud->value;
 
 
@@ -1548,6 +1557,7 @@ static char *yesno_names[] = {
 
 	Menu_AddItem(&s_options_menu, (void *) &s_aoptions_bigHud_box);
 	Menu_AddItem(&s_options_menu, (void *) &s_aoptions_hudScale_slider);
+	Menu_AddItem(&s_options_menu, (void *) &s_aoptions_fontScale_slider);
 	Menu_AddItem(&s_options_menu, (void *) &s_aoptions_3dhud_box);
 	
 }
@@ -2856,9 +2866,7 @@ void JoinServer_MenuInit(void)
 {
 	int i, shift;
 
-	if(cl_fontScale->value == 1)
-		shift = 0;
-	else shift = 60;
+	shift = 60 * (cl_fontScale->value-1);
 
 	s_joinserver_menu.x = viddef.width * 0.50 - 120;
 	
@@ -2882,7 +2890,7 @@ void JoinServer_MenuInit(void)
 	s_joinserver_server_title.generic.type = MTYPE_SEPARATOR;
 	s_joinserver_server_title.generic.name = "connect to...";
 	s_joinserver_server_title.generic.x = 80;
-	s_joinserver_server_title.generic.y = shift+20*cl_fontScale->value;
+	s_joinserver_server_title.generic.y = shift+30*cl_fontScale->value;
 
 	for (i = 0; i < MAX_LOCAL_SERVERS; i++) {
 		s_joinserver_server_actions[i].generic.type = MTYPE_ACTION;
@@ -2891,10 +2899,8 @@ void JoinServer_MenuInit(void)
 			local_server_names[i];
 		s_joinserver_server_actions[i].generic.flags = QMF_LEFT_JUSTIFY;
 		s_joinserver_server_actions[i].generic.x = 0;
-		if(cl_fontScale->value == 1)
-		s_joinserver_server_actions[i].generic.y = 40 + i * 10*cl_fontScale->value;
-		else
-			s_joinserver_server_actions[i].generic.y = shift+60 + i * 10*cl_fontScale->value;
+		s_joinserver_server_actions[i].generic.y = shift+40*cl_fontScale->value + i*10*cl_fontScale->value;
+
 		s_joinserver_server_actions[i].generic.callback = JoinServerFunc;
 		s_joinserver_server_actions[i].generic.statusbar = 
 			"press ENTER to connect";

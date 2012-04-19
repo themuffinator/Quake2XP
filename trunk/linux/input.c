@@ -194,12 +194,12 @@ IN_GetEvent(SDL_Event *event)
 				fullscreen->modified = false; 
 				break;
 			}
-	  
+
 			KeyStates[event->key.keysym.sym] = 1;
-	  
+
 			/* Get the pressed key and add it to the key list */
 			key = IN_TranslateSDLtoQ2Key(event->key.keysym.sym);
-			if (key) 
+			if (key)
 			{
 				keyq[keyq_head].key = key;
 				keyq[keyq_head].down = true;
@@ -232,21 +232,12 @@ IN_GetEvent(SDL_Event *event)
 void IN_Update(void)
 {
 SDL_Event event;
-	static int IN_Update_Flag;
 	int bstate;
-
-	/* Protection against multiple calls */
-	if (IN_Update_Flag == 1)
-		return;
-  
-	IN_Update_Flag = 1;
 
 	while (SDL_PollEvent(&event))
 		IN_GetEvent(&event);
 
-	/* Mouse button processing. Button 4 
-	and 5 are the mousewheel and thus
-	not processed here. */
+	/* Mouse button processing. Button 4 and 5 are the mousewheel and thus not processed here. */
 
 	if (!mx && !my)
 		SDL_GetRelativeMouseState(&mx, &my);
@@ -298,8 +289,6 @@ SDL_Event event;
 		Do_Key_Event(keyq[keyq_tail].key, keyq[keyq_tail].down);
 		keyq_tail = (keyq_tail + 1) & 127;
 	}
-
-	IN_Update_Flag = 0;
 }
 
 /*

@@ -3,20 +3,22 @@
 
 # TODO list
 # important
-# - convert FPS indicator into a weighted average, to avoid fluctuations
-# - detach renderer from network if not done already (see kmq2, egl, etc)
+# - add descriptions to menu entres with the statusbar property
+# - finish willow code for audio source velocity (doppler?), and use the rest of
+#   data in openal_..._t ch argument, as well as the HACK_ functions
 # performance
 # - measure FPS distribution and jitter through a level and draw a graph
 # - try inlining VectorCompare, BoxOnPlaneSide, Q_strcasecmp
 # - optimize Mod_LoadFaces with explicit/implicit vectorization and/or OpenMP
 # - optimize GL_ResampleTextures with OpenMP (or the loop in the calling
 #   function); or use OpenGL to resample the image; or cache results in cachexp
-# other
-# - support key repeat in menu/console
-# - don't store the same console history line twice
-# - add antialias/multisampling to menu characters in Draw_CharScaled (if
-#   cl_fontScale > 1)
+# other/maybe
+# - try to change resolution in Linux withoun restarting level
+# - try recording samples/max/min/med of host_speeds output, print a few times
+# per second instead of every frame (same code as FPS), allow logging to file
+# (and real FPS too to make graph)
 # - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
+# - compile with -Wall and eliminate warnings?
 
 
 VERSION = '1.0'

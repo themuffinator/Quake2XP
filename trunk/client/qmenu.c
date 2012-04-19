@@ -436,28 +436,17 @@ void Menu_Draw(menuframework_s * menu)
 void Menu_DrawStatusBar(const char *string)
 {
 	float	fontscale = cl_fontScale->value;
-	
+
 	if (string) {
 		int l = strlen(string);
 		int maxcol = VID_WIDTH / 8;
 		int col = maxcol / 2 - l / 2;
 		
-		if (fontscale == 1)
-			Draw_Fill(0, VID_HEIGHT - 8, VID_WIDTH, 8, 4);
-		else
-			Draw_Fill(0, VID_HEIGHT - 8 - fontscale*4, VID_WIDTH, 8*fontscale, 4);
+		Draw_Fill(0, VID_HEIGHT - 8 - (fontscale-1)*4, VID_WIDTH, 8*fontscale, 4);
+		Menu_DrawStringScaled((col * 8) / fontscale*(1+(fontscale-1)*0.5), VID_HEIGHT - 8*fontscale, fontscale, fontscale, string);
 
-		if (cl_fontScale->value == 2) {
-			Menu_DrawStringScaled((col * 8) / fontscale*1.5, VID_HEIGHT - 8*fontscale, fontscale, fontscale, string);
-		} else {
-			Menu_DrawStringScaled((col * 8) / fontscale, VID_HEIGHT - 8*fontscale, fontscale, fontscale, string);
-		}
-		
 	} else {
-		if (fontscale == 1)
-			Draw_Fill(0, VID_HEIGHT - 8, VID_WIDTH, 8, 0);
-		else
-			Draw_Fill(0, VID_HEIGHT - 8 - fontscale*4, VID_WIDTH, 8*fontscale, 0);
+			Draw_Fill(0, VID_HEIGHT - 8 - (fontscale-1)*4, VID_WIDTH, 8*fontscale, 0);
 	}
 }
 

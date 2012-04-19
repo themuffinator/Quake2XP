@@ -581,27 +581,24 @@ void Con_DrawNotify (void)
 	if (cls.key_dest == key_message) {
 		if (chat_team) {
 			Draw_StringScaled (8*fontscale, v, fontscale, fontscale, "say_team:");
-			skip = 11*fontscale;
+			skip = 11;
 		} else {
 			Draw_StringScaled (8*fontscale, v, fontscale, fontscale, "say:");
-			skip = 5*fontscale;
+			skip = 5;
 		}
 
 		s = chat_buffer;
 	//	if (chat_bufferlen > (viddef.width>>3)-(skip+1))
 	//		s += chat_bufferlen - ((viddef.width>>3)-(skip+1));
-		
-			if (chat_bufferlen > ((viddef.width/fontscale)/8)-(skip+1))
+		if (chat_bufferlen > ((viddef.width/fontscale)/8)-(skip+1))
 			s += chat_bufferlen - (int)(((viddef.width/fontscale)/8)-(skip+1));
 
 	//	Draw_String(skip<<3, v, s);
 	//	Draw_Char ( (strlen(s)+skip)<<3, v, 10+((cls.realtime>>8)&1));
-			if(cl_fontScale->value == 2)
-		Draw_StringScaled(skip*fontscale*4, v, fontscale, fontscale, s);
-			else
+		//Draw_StringScaled(skip*fontscale*4*(2-(fontscale-1)), v, fontscale, fontscale, s);
 		Draw_StringScaled(skip*fontscale*8, v, fontscale, fontscale, s);
 
-		Draw_CharScaled ( (strlen(s)*fontscale+skip)*8, v, fontscale, fontscale, 10+((cls.realtime>>8)&1));
+		Draw_CharScaled ( (strlen(s)+skip)*fontscale*8, v, fontscale, fontscale, 10+((cls.realtime>>8)&1));
 
 		v += 8;
 	}
