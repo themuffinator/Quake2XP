@@ -27,17 +27,18 @@
 
 #include <SDL.h>
 #include "../client/client.h"
+#include "../ref_gl/r_local.h"
 
 #define MOUSE_MAX 3000
 #define MOUSE_MIN 40
 
 static qboolean	grab_on;
 static cvar_t   *in_grab;
-static cvar_t	*fullscreen;;
+static cvar_t	*fullscreen;
 static int		mouse_x, mouse_y;
 static int		old_mouse_x, old_mouse_y;
 static int		mouse_buttonstate;
-static int		mouse_oldbuttonstate;    
+static int		mouse_oldbuttonstate;
 
 struct {
 	int key;
@@ -192,6 +193,7 @@ IN_GetEvent(SDL_Event *event)
 					Cvar_SetValue( "r_fullScreen", 0 );
 
 				fullscreen->modified = false; 
+				gl_state.fullscreen = fullscreen->value;
 				break;
 			}
 

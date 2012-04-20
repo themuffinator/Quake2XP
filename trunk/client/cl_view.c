@@ -304,8 +304,6 @@ void CL_PrepRefresh(void)
 	if (newPlaque)
 		SCR_BeginLoadingPlaque();
 
-	
-
 	SCR_AddDirtyPoint(0, 0);
 	SCR_AddDirtyPoint(viddef.width - 1, viddef.height - 1);
 	

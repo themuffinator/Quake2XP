@@ -270,7 +270,9 @@ void CL_RegisterSounds(void)
 		else
 			cl.sound_sexedname[i] = NULL;
 
-		Sys_SendKeyEvents();	// pump message loop
+		// XXX: this causes audio menu sliders to start counting to infinity,
+		//      as if the user keeps pressing left/right arrow keys, when a map is loaded
+		//Sys_SendKeyEvents();	// pump message loop
 		++i;
 	}
 }

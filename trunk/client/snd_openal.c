@@ -46,7 +46,7 @@ cvar_t	*s_show;
 cvar_t	*s_musicvolume;
 cvar_t	*s_musicsrc;
 cvar_t	*s_musicrandom;
-cvar_t	*s_openal_eax;
+cvar_t	*s_openal_efx;
 cvar_t	*s_openal_device;
 cvar_t	*s_quality;
 cvar_t	*s_distance_model;
@@ -181,20 +181,19 @@ void S_Init(int hardreset)
 		s_musicsrc			=	Cvar_Get("s_musicsrc", "1", CVAR_ARCHIVE);
 		s_musicrandom		=	Cvar_Get("s_musicrandom", "0", CVAR_ARCHIVE);
 		s_openal_device		=	Cvar_Get("s_openal_device", "", CVAR_ARCHIVE);
-		s_openal_eax		=	Cvar_Get("s_openal_eax", "0", CVAR_ARCHIVE);
+		s_openal_efx		=	Cvar_Get("s_openal_efx", "1", CVAR_ARCHIVE);
 		s_quality			=	Cvar_Get("s_quality", "0", CVAR_ARCHIVE);
 		s_distance_model	=	Cvar_Get("s_distance_model", "0", CVAR_ARCHIVE);
-		s_initsound			=	Cvar_Get("s_initsound", "1", CVAR_NOSET);	
+		s_initsound			=	Cvar_Get("s_initsound", "1", CVAR_NOSET);
 	}
 
 	if (!s_initsound->value || openalStop)
-	{	
+	{
 		Com_Printf("\n");
 		Com_Printf(S_COLOR_YELLOW"=======Sound not initializing.=======\n");
 		Com_Printf("\n");
-	return;
-	}
-	else {
+		return;
+	} else {
 		if (AL_Init(hardreset)) {
 			AllocChannels();
 			if (s_openal_numChannels) {
@@ -234,30 +233,18 @@ void S_Init(int hardreset)
 
 				alListenerf(AL_GAIN, clamp(s_volume->value, 0, 1));
 				
-				alConfig.eaxState = 0xFFFF;	// force EAX state reset
-
 				if (hardreset) {
 					Cmd_AddCommand("play", S_Play);
 					Cmd_AddCommand("stopsound", S_StopAllSounds);
 					Cmd_AddCommand("music", S_Music_f);
 					Cmd_AddCommand("s_info", S_SoundInfo_f);
-					
 
 					CL_fast_sound_init();
 
 					// Generate some AL Buffers for streaming
 					alGenBuffers(NUM_STRBUF, streaming.buffers);
-#ifdef _WITH_EAX
-					if (!eaxSetBufferMode
-						(NUM_STRBUF, streaming.buffers,
-						 alGetEnumValue(" AL_STORAGE_ACCESSIBLE"))) {
-						// "AL_STORAGE_AUTOMATIC" "AL_STORAGE_HARDWARE"
-						// "AL_STORAGE_ACCESSIBLE"
-						Com_DPrintf
-							("MP3 player: unable to set X-RAM mode\n");
-					} 
-#endif
-					if (alConfig.eax == VER_EFX)
+
+					if (alConfig.efx)
 						EFX_RvbInit();
 				}
 
@@ -314,20 +301,17 @@ void CL_fast_sound_close(void);
 void S_Shutdown(void)
 {
 	if (s_openal_numChannels) {
-		if (alConfig.eax == VER_EFX)
-			EFX_RvbShutdown();
-
-		// Clean up streaming buffers
-		alDeleteBuffers(NUM_STRBUF, streaming.buffers);
-
 		CL_fast_sound_close();
 		FreeSounds();
-		
+
 		Cmd_RemoveCommand("play");
 		Cmd_RemoveCommand("stopsound");
 		Cmd_RemoveCommand("music");
 		Cmd_RemoveCommand("s_info");
-		
+
+		if (alConfig.efx)
+			EFX_RvbShutdown();
+
 		FreeChannels();
 		AL_Shutdown();
 	}
@@ -665,11 +649,7 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 		alSourcef(sourceNum, AL_ROLLOFF_FACTOR, rolloff_factor);
 		alSourcef(sourceNum, AL_GAIN, gain);
 
-#ifdef _WITH_EAX
-		if (alConfig.eax >= 2 && alConfig.eax <= 5)
-			normalEAX_Effects(ch, sourceNum);
-#endif
-		if (alConfig.eax == VER_EFX)
+		if (alConfig.efx)
 			EFX_RvbProcSrc(ch, sourceNum, true);
 
 		alSourcePlay(sourceNum);
@@ -838,11 +818,7 @@ void S_StartLocalSound(ALuint bufferNum)
 			alSourcei(sourceNum, AL_LOOPING, AL_FALSE);
 			alSourcef(sourceNum, AL_GAIN, 0.47);
 
-#ifdef _WITH_EAX
-			if (alConfig.eax >= 2 && alConfig.eax <= 5)
-				nullEAX_Effects(ch, sourceNum);
-#endif
-			if (alConfig.eax == VER_EFX)
+			if (alConfig.efx)
 				EFX_RvbProcSrc(ch, sourceNum, false);
 
 			alSourcePlay(sourceNum);
@@ -1045,12 +1021,7 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 		alSpeedOfSound(13515);
 
 
-#ifdef _WITH_EAX
-	// If EAX is enabled, apply listener environmental effects
-	if (alConfig.eax >= 2 && alConfig.eax <= 5)
-		applyEAX_Effects(listener_position);
-#endif
-	if (alConfig.eax == VER_EFX)
+	if (alConfig.efx)
 		EFX_RvbUpdate(listener_position);
 
 	memset(Channels_TODO, 0, sizeof(Channels_TODO));
@@ -1311,13 +1282,8 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 			alSourcei(sourceNum, AL_LOOPING, FlagAL_checkAL(ch, AL_FLAGS_AL_LOOPING));	// ch->loopSound);
 			alSourcef(sourceNum, AL_GAIN, current_task->TASK_AL_GAIN);
 
-#ifdef _WITH_EAX
-			if (alConfig.eax >= 2 && alConfig.eax <= 5)
-				normalEAX_Effects(ch, sourceNum);
-#endif
-			if (alConfig.eax == VER_EFX)
+			if (alConfig.efx)
 				EFX_RvbProcSrc(ch, sourceNum, true);
-	
 
 			alSourcePlay(sourceNum);
 		}

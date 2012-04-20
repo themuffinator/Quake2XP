@@ -40,14 +40,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  =======================================================================
 */
 
-#define VER_EAX_NONE	0
-#define VER_EFX			1
-#define VER_EAX_2		2
-#define VER_EAX_3		3
-#define VER_EAX_4		4
-#define VER_EAX_5		5
-#define VER_I3DL2		6
-
 //main OpenAL framework (Creative's hardware)
 #ifdef _WIN32
 #define AL_NO_PROTOTYPES YES
@@ -59,10 +51,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "AL/EFX-Util.h"
 
 #include "AL/xram.h"
-
-//ancient architecture support (other hardware chips and workaround tricks)
-#include "AL/eax.h"
-#include "AL/3dl2.h"
 
 extern LPALCOPENDEVICE alcOpenDevice;
 extern LPALCCLOSEDEVICE alcCloseDevice;
@@ -137,12 +125,6 @@ extern LPALGENSOURCES alGenSources;
 extern LPALDISTANCEMODEL alDistanceModel;
 
 
-extern LPALEAXSET alEAXSet;
-extern LPALEAXGET alEAXGet;
-extern I3DL2Get I3dl2Get;
-extern I3DL2Set I3dl2Set;
-
-
 // EFX Extension function pointer variables
 
 // Effect objects
@@ -184,20 +166,6 @@ extern LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
 extern LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
 extern LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 
-// XRAM Extension function pointer variables and enum values
-typedef ALboolean(AL_APIENTRY * LPEAXSETBUFFERMODE) (ALsizei n,
-												 ALuint * buffers,
-												 ALint value);
-typedef ALenum(AL_APIENTRY * LPEAXGETBUFFERMODE) (ALuint buffer,
-											  ALint * value);
-extern LPEAXSETBUFFERMODE eaxSetBufferMode;
-extern LPEAXGETBUFFERMODE eaxGetBufferMode;
-//extern EAXSetBufferMode aleaxSetMode;
-//extern EAXGetBufferMode aleaxGetMode;
-
-// Linux has EFX support, so I have replaced _WIN32 checks with _WITH_EAX
-#define _WITH_EAX
-
 #else
 #define AL_ALEXT_PROTOTYPES
 #include <AL/al.h>
@@ -235,8 +203,7 @@ typedef struct {
 #ifdef _WIN32
 	HINSTANCE hInstOpenAL;
 #endif
-	unsigned eax;				// EAX version in use.
-	unsigned eaxState;			// EAX status
+	qboolean efx;
 
 	// OpenAL internals
 	ALCdevice *hDevice;
@@ -288,16 +255,10 @@ extern cvar_t *s_musicvolume;
 extern cvar_t *s_musicsrc;
 extern cvar_t *s_musicrandom;
 extern cvar_t *s_show;
-extern cvar_t *s_openal_eax;
+extern cvar_t *s_openal_efx;
 extern cvar_t *s_openal_device;
 extern cvar_t *s_quality;
 extern cvar_t *s_distance_model;
-
-#ifdef _WIN32
-void applyEAX_Effects(vec3_t listener_position);
-void normalEAX_Effects(openal_channel_t *ch, ALuint sourceNum);
-void nullEAX_Effects(openal_channel_t *ch, ALuint sourceNum);
-#endif
 
 void EFX_RvbInit(void);
 void EFX_RvbUpdate(vec3_t listener_position);

@@ -1057,7 +1057,7 @@ static menuslider_s s_options_sfxvolume_slider;
 static menuslider_s s_options_musicvolume_slider;
 static menulist_s s_options_musicsrc_list;
 static menulist_s s_options_musicrandom_list;
-static menulist_s s_options_useEax_list;
+static menulist_s s_options_useEFX_list;
 static menulist_s s_options_unlimited_ambient_list;
 static menulist_s s_options_aldev_box;
 static menulist_s s_options_alquality_list;
@@ -1139,7 +1139,7 @@ static void ControlsSetMenuItemValues(void)
 		Cvar_VariableValue("s_volume") * 20;
 	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicsrc");
 	s_options_musicrandom_list.curvalue = Cvar_VariableValue("s_musicrandom");
-	s_options_useEax_list.curvalue = Cvar_VariableValue("s_openal_eax");
+	s_options_useEFX_list.curvalue = Cvar_VariableValue("s_openal_efx");
 	s_options_aldistancemodel_list.curvalue =
 		Cvar_VariableValue("s_distance_model");
 	s_options_alquality_list.curvalue = Cvar_VariableValue("s_quality");
@@ -1243,9 +1243,9 @@ static void UpdateMusicRandomFunc(void *unused)
 	Cvar_SetValue("s_musicrandom", s_options_musicrandom_list.curvalue);
 }
 
-static void UpdateEAX(void *unused)
+static void UpdateEFX(void *unused)
 {
-	Cvar_SetValue("s_openal_eax", s_options_useEax_list.curvalue);
+	Cvar_SetValue("s_openal_efx", s_options_useEFX_list.curvalue);
 	CL_Snd_Restart_f();
 }
 
@@ -1665,6 +1665,8 @@ void Options_MenuInit(void)
 	s_options_musicrandom_list.generic.callback = UpdateMusicRandomFunc;
 	s_options_musicrandom_list.itemnames = yesno_names;
 	s_options_musicrandom_list.curvalue = Cvar_VariableValue("s_musicrandom");
+	s_options_musicrandom_list.generic.statusbar =
+		"If enabled, the music track won't match the current level";
 	
 	s_options_alquality_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_alquality_list.generic.x = 0;
@@ -1702,15 +1704,17 @@ void Options_MenuInit(void)
 		Cvar_VariableValue("s_distance_model");
 	
 
-	s_options_useEax_list.generic.type = MTYPE_SPINCONTROL;
-	s_options_useEax_list.generic.x = 0;
-	s_options_useEax_list.generic.y = 80*cl_fontScale->value;
-	s_options_useEax_list.generic.name =
-		"Use EAX2.0";
-	s_options_useEax_list.generic.callback = UpdateEAX;
-	s_options_useEax_list.itemnames = yesno_names;
-	s_options_useEax_list.curvalue =
-		Cvar_VariableValue("s_openal_eax") != 0;
+	s_options_useEFX_list.generic.type = MTYPE_SPINCONTROL;
+	s_options_useEFX_list.generic.x = 0;
+	s_options_useEFX_list.generic.y = 80*cl_fontScale->value;
+	s_options_useEFX_list.generic.name =
+		"EFX reverb";
+	s_options_useEFX_list.generic.callback = UpdateEFX;
+	s_options_useEFX_list.itemnames = yesno_names;
+	s_options_useEFX_list.curvalue =
+		Cvar_VariableValue("s_openal_efx");
+	s_options_useEFX_list.generic.statusbar =
+		"Enable room and underwater reverberation effects";
 	
 /*
 	s_options_unlimited_ambient_list.generic.type = MTYPE_SPINCONTROL;
@@ -1854,7 +1858,7 @@ void Options_MenuInit(void)
 	Menu_AddItem(&s_options_menu, (void *) &s_options_aldev_box);
 	Menu_AddItem(&s_options_menu,
 				 (void *) &s_options_aldistancemodel_list);
-	Menu_AddItem(&s_options_menu, (void *) &s_options_useEax_list);
+	Menu_AddItem(&s_options_menu, (void *) &s_options_useEFX_list);
 //	Menu_AddItem(&s_options_menu,
 //				 (void *) &s_options_unlimited_ambient_list);
 	Menu_AddItem(&s_options_menu, (void *) &s_options_sensitivity_slider);

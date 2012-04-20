@@ -44,7 +44,7 @@ qboolean	reflib_active = 0;
  * ==========================================================================
  */
 
-#define	MAXPRINTMSG	4096
+//#define	MAXPRINTMSG	4096
 void
 Con_Printf(int print_level, char *fmt,...)
 {
@@ -210,7 +210,11 @@ VID_CheckChanges(void)
 				Con_ToggleConsole_f();
 		}
 		cls.disable_screen = false;
-        CL_InitImages();
+		CL_InitImages();
+
+		// XXX: as SDL was restarted, key repeat settings were lost
+		IN_Shutdown();
+		IN_Init();
 	}
 }
 

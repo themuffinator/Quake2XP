@@ -16,6 +16,19 @@
 // so for now we have it here.
 #include "AL/efx-presets.h"
 
+// TODO: original snd_eax.c code which wasn't ported to EAX
+#if 0
+	normalEAX.lRoom = FlagAL_check(ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room
+																		// effect
+																		// level
+	normalEAX.lRoomHF = FlagAL_check(ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room
+																		// effect
+																		// level
+																		// at
+																		// high
+																		// frequencies
+#endif
+
 EFXEAXREVERBPROPERTIES rvb_generic = EFX_REVERB_PRESET_GENERIC;
 EFXEAXREVERBPROPERTIES rvb_room = EFX_REVERB_PRESET_ROOM;
 EFXEAXREVERBPROPERTIES rvb_underwater = EFX_REVERB_PRESET_UNDERWATER;

@@ -1173,8 +1173,10 @@ new parameters and flush all sounds
 void CL_Snd_Restart_f(void)
 {
 	S_Restart();
-
 	CL_RegisterSounds();
+
+	// cause music track to reload if already playing
+	s_musicsrc->modified = true;
 }
 
 int precache_check;				// for autodownload of precache items

@@ -51,7 +51,7 @@ uid_t saved_euid;
 // Converts Quake II color escape codes to ANSI terminal
 static inline void PrintWithColors(const char *s) {
 	static int convTable[] = {
-		0, 1, 2, 3, 4, 5, 6, 5, 7
+		0, 1, 2, 3, 4, 6, 5, 7
 	};
 	int i = 0;
 
@@ -63,7 +63,7 @@ static inline void PrintWithColors(const char *s) {
 				i++;
 			} else if (ColorIndex(s[i]) < 8) {
 				// TODO: use cvar to control color (on/bold/off); is it possible here?
-				//fputs("\033[1m", stdout);	// bold font
+				fputs("\033[1m", stdout);	// bold font
 				printf("\033[%dm", 30 + convTable[ColorIndex(s[i])]);
 				i++;
 			}
@@ -311,8 +311,7 @@ Sys_AppActivate(void)
 }
 
 void IN_Update(void);
-void
-Sys_SendKeyEvents(void)
+void Sys_SendKeyEvents(void)
 {
     IN_Update();
 

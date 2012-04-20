@@ -133,9 +133,8 @@ qboolean AL_StartOpenAL(void)
 	if (alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT")) {
 		unsigned i = 0;
 		const char *a = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
-		if (!a)					// We have no audio output devices. No
-								// hope.
-		{
+		if (!a) {
+			// We have no audio output devices. No hope.
 			QAL_Shutdown();
 			return false;
 		}
@@ -162,13 +161,12 @@ qboolean AL_StartOpenAL(void)
 	}
 
 	// Initialize the device, context, etc...
-	if (AL_InitDriver())
+	if (AL_InitDriver()) {
 		return true;
-
-	// Shutdown QAL
-	QAL_Shutdown();
-
-	return false;
+	} else {
+		QAL_Shutdown();
+		return false;
+	}
 }
 
 /*

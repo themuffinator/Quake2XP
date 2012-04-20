@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /*
  * Linux version:
  * - We link to OpenAL at compile time.
- * - There is no EAX, but some EFX exists.
+ * - EFX is available for effects.
  */
 #include "../client/client.h"
 #include "../client/snd_loc.h"
@@ -62,93 +62,95 @@ qboolean AL_Init (int hardreset)
 	}
 
 	// Initialize extensions
-	alConfig.eax = VER_EAX_NONE;
+	alConfig.efx = false;
 
 	// Check for ALC Extensions
 	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_EXT_CAPTURE") == AL_TRUE)
 		Com_Printf("...capture capabilities.\n");
 
-    if (alcIsExtensionPresent(alConfig.hDevice, "ALC_EXT_EFX") == AL_TRUE)
-    {
-        ALuint		uiEffectSlots[128] = { 0 };
-        ALuint		uiEffects[1] = { 0 };
-        ALuint		uiFilters[1] = { 0 };
-        ALint		iEffectSlotsGenerated;
-        ALint		iSends;
-    
-        alConfig.eax = VER_EFX;
-
-        // To determine how many Auxiliary Effects Slots are available, create as many as possible (up to 128)
-        // until the call fails.
-        for (iEffectSlotsGenerated = 0; iEffectSlotsGenerated < 128; iEffectSlotsGenerated++)
+    if (s_openal_efx->value) {
+        if (alcIsExtensionPresent(alConfig.hDevice, "ALC_EXT_EFX") == AL_TRUE)
         {
-            alGenAuxiliaryEffectSlots(1, &uiEffectSlots[iEffectSlotsGenerated]);
-            if (alGetError() != AL_NO_ERROR)
-                break;
-        }
+            ALuint		uiEffectSlots[128] = { 0 };
+            ALuint		uiEffects[1] = { 0 };
+            ALuint		uiFilters[1] = { 0 };
+            ALint		iEffectSlotsGenerated;
+            ALint		iSends;
 
-        Com_Printf("\n%d Auxiliary Effect Slot%s\n", iEffectSlotsGenerated, (iEffectSlotsGenerated == 1) ? "" : "s");
+            alConfig.efx = true;
 
-        // Retrieve the number of Auxiliary Effect Slots Sends available on each Source
-        alcGetIntegerv(alConfig.hDevice, ALC_MAX_AUXILIARY_SENDS, 1, &iSends);
-        Com_Printf("%d Auxiliary Send%s per Source\n", iSends, (iSends == 1) ? "" : "s");
+            // To determine how many Auxiliary Effects Slots are available, create as many as possible (up to 128)
+            // until the call fails.
+            for (iEffectSlotsGenerated = 0; iEffectSlotsGenerated < 128; iEffectSlotsGenerated++)
+            {
+                alGenAuxiliaryEffectSlots(1, &uiEffectSlots[iEffectSlotsGenerated]);
+                if (alGetError() != AL_NO_ERROR)
+                    break;
+            }
 
-        // To determine which Effects are supported, generate an Effect Object, and try to set its type to
-        // the various Effect enum values
-        Com_Printf("\nEffects Supported: -\n");
-        alGenEffects(1, &uiEffects[0]);
-        if (alGetError() == AL_NO_ERROR)
-        {
-            // Try setting Effect Type to known Effects
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_REVERB);
-            Com_Printf("'Reverb' Support            %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
-            Com_Printf("'EAX Reverb' Support        %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_CHORUS);
-            Com_Printf("'Chorus' Support            %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_DISTORTION);
-            Com_Printf("'Distortion' Support        %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_ECHO);
-            Com_Printf("'Echo' Support              %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_FLANGER);
-            Com_Printf("'Flanger' Support           %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_FREQUENCY_SHIFTER);
-            Com_Printf("'Frequency Shifter' Support %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_VOCAL_MORPHER);
-            Com_Printf("'Vocal Morpher' Support     %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_PITCH_SHIFTER);
-            Com_Printf("'Pitch Shifter' Support     %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_RING_MODULATOR);
-            Com_Printf("'Ring Modulator' Support    %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_AUTOWAH);
-            Com_Printf("'Autowah' Support           %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_COMPRESSOR);
-            Com_Printf("'Compressor' Support        %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_EQUALIZER);
-            Com_Printf("'Equalizer' Support         %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+            Com_Printf("\n%d Auxiliary Effect Slot%s\n", iEffectSlotsGenerated, (iEffectSlotsGenerated == 1) ? "" : "s");
+
+            // Retrieve the number of Auxiliary Effect Slots Sends available on each Source
+            alcGetIntegerv(alConfig.hDevice, ALC_MAX_AUXILIARY_SENDS, 1, &iSends);
+            Com_Printf("%d Auxiliary Send%s per Source\n", iSends, (iSends == 1) ? "" : "s");
+
+            // To determine which Effects are supported, generate an Effect Object, and try to set its type to
+            // the various Effect enum values
+            Com_Printf("\nEffects Supported: -\n");
+            alGenEffects(1, &uiEffects[0]);
+            if (alGetError() == AL_NO_ERROR)
+            {
+                // Try setting Effect Type to known Effects
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_REVERB);
+                Com_Printf("'Reverb' Support            %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
+                Com_Printf("'EAX Reverb' Support        %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_CHORUS);
+                Com_Printf("'Chorus' Support            %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_DISTORTION);
+                Com_Printf("'Distortion' Support        %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_ECHO);
+                Com_Printf("'Echo' Support              %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_FLANGER);
+                Com_Printf("'Flanger' Support           %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_FREQUENCY_SHIFTER);
+                Com_Printf("'Frequency Shifter' Support %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_VOCAL_MORPHER);
+                Com_Printf("'Vocal Morpher' Support     %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_PITCH_SHIFTER);
+                Com_Printf("'Pitch Shifter' Support     %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_RING_MODULATOR);
+                Com_Printf("'Ring Modulator' Support    %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_AUTOWAH);
+                Com_Printf("'Autowah' Support           %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_COMPRESSOR);
+                Com_Printf("'Compressor' Support        %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alEffecti(uiEffects[0], AL_EFFECT_TYPE, AL_EFFECT_EQUALIZER);
+                Com_Printf("'Equalizer' Support         %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+            }
+            // To determine which Filters are supported, generate a Filter Object, and try to set its type to
+            // the various Filter enum values
+            Com_Printf("\nFilters Supported: -\n");
+            // Generate a Filter to use to determine what Filter Types are supported
+            alGenFilters(1, &uiFilters[0]);
+            if (alGetError() == AL_NO_ERROR)
+            {
+                // Try setting the Filter type to known Filters
+                alFilteri(uiFilters[0], AL_FILTER_TYPE, AL_FILTER_LOWPASS);
+                Com_Printf("'Low Pass'  Support         %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alFilteri(uiFilters[0], AL_FILTER_TYPE, AL_FILTER_HIGHPASS);
+                Com_Printf("'High Pass' Support         %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+                alFilteri(uiFilters[0], AL_FILTER_TYPE, AL_FILTER_BANDPASS);
+                Com_Printf("'Band Pass' Support         %s\n\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
+            }
+            // Clean-up ...
+            // Delete Filter
+            alDeleteFilters(1, &uiFilters[0]);
+            // Delete Effect
+            alDeleteEffects(1, &uiEffects[0]);
+            // Delete Auxiliary Effect Slots
+            alDeleteAuxiliaryEffectSlots(iEffectSlotsGenerated, uiEffectSlots);
         }
-        // To determine which Filters are supported, generate a Filter Object, and try to set its type to
-        // the various Filter enum values
-        Com_Printf("\nFilters Supported: -\n");
-        // Generate a Filter to use to determine what Filter Types are supported
-        alGenFilters(1, &uiFilters[0]);
-        if (alGetError() == AL_NO_ERROR)
-        {
-            // Try setting the Filter type to known Filters
-            alFilteri(uiFilters[0], AL_FILTER_TYPE, AL_FILTER_LOWPASS);
-            Com_Printf("'Low Pass'  Support         %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alFilteri(uiFilters[0], AL_FILTER_TYPE, AL_FILTER_HIGHPASS);
-            Com_Printf("'High Pass' Support         %s\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-            alFilteri(uiFilters[0], AL_FILTER_TYPE, AL_FILTER_BANDPASS);
-            Com_Printf("'Band Pass' Support         %s\n\n", (alGetError() == AL_NO_ERROR) ? "YES" : "NO");
-        }
-        // Clean-up ...
-        // Delete Filter
-        alDeleteFilters(1, &uiFilters[0]);
-        // Delete Effect
-        alDeleteEffects(1, &uiEffects[0]);
-        // Delete Auxiliary Effect Slots
-        alDeleteAuxiliaryEffectSlots(iEffectSlotsGenerated, uiEffectSlots);
     }
 
 	if (alIsExtensionPresent("AL_EXT_OFFSET") == AL_TRUE)

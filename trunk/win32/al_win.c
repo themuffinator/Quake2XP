@@ -106,15 +106,6 @@ LPALSOURCESTOP				alSourceStop;
 LPALSOURCESTOPV				alSourceStopv;
 LPALSOURCEUNQUEUEBUFFERS	alSourceUnqueueBuffers;
 
-LPALEAXSET					alEAXSet;
-LPALEAXGET					alEAXGet;
-I3DL2Get					I3dl2Get;
-I3DL2Set					I3dl2Set;
-
-// X-RAM
-EAXSetBufferMode			eaxSetBufferMode;
-EAXGetBufferMode			eaxGetBufferMode;
-
 // Effect objects
 LPALGENEFFECTS				alGenEffects;
 LPALDELETEEFFECTS			alDeleteEffects;
@@ -249,11 +240,6 @@ void QAL_Shutdown (void)
 	alSourceStopv				= NULL;
 	alSourceUnqueueBuffers		= NULL;
 
-	alEAXSet					= NULL;
-	alEAXGet					= NULL;
-	I3dl2Get					= NULL;
-	I3dl2Set					= NULL;
-
 	// Effect objects
 	alGenEffects				= NULL;
 	alDeleteEffects				= NULL;
@@ -295,21 +281,6 @@ void QAL_Shutdown (void)
 }
 
 void S_SoundInfo_f(void);
-
-ALboolean EAXSetBufferMode_NULL(ALsizei n, ALuint *buffers, ALint value)
-{
-	//willow:
-	//Always successfull, we do not really care of non X-RAM audio chips.
-	//No X-RAM no deal no failures too.
-	return AL_TRUE;
-}
-
-ALenum EAXGetBufferMode_NULL(ALuint buffer, ALint *value)
-{
-	//willow:
-	//I'm not interested in this function anyway, just heck it would be existed and even realistic!
-	return alGetEnumValue("AL_STORAGE_AUTOMATIC");
-}
 
 /*
  =================
@@ -416,10 +387,6 @@ qboolean AL_Init (int hardreset)
 		alSourceStopv			= (LPALSOURCESTOPV)GPA("alSourceStopv");
 		alSourceUnqueueBuffers	= (LPALSOURCEUNQUEUEBUFFERS)GPA("alSourceUnqueueBuffers");
 	}
-	alEAXGet					= NULL;
-	alEAXSet					= NULL;
-	I3dl2Get					= NULL;
-	I3dl2Set					= NULL;
 
 	// Initialize OpenAL subsystem
 	if (!AL_StartOpenAL())
@@ -431,27 +398,15 @@ qboolean AL_Init (int hardreset)
 	}
 
 	// Initialize extensions
-	alConfig.eax = VER_EAX_NONE;
+	alConfig.efx = false;
 
 	// Check for ALC Extensions
 	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_EXT_CAPTURE") == AL_TRUE)
 		Com_Printf("...capture capabilities.\n");
 
-	//If EAX extensions is not forced, try better extension for this hardware.
-	if (!s_openal_eax->value)
+	// If EFX is enabled, determine if it's available and use it
+	if (s_openal_efx->value)
 	{
-		//check I3DL2 extension for NVidia's Sound Storm chips. I3DL2 is hidden and can be missed in extension list.
-		if (!strcmp(NVIDIA_DEVICE_NAME, alcGetString(alConfig.hDevice, ALC_DEVICE_SPECIFIER)))
-		{
-		    I3dl2Get = (I3DL2Get)alGetProcAddress("I3DL2Get");
-		    I3dl2Set = (I3DL2Set)alGetProcAddress("I3DL2Set");
-			if(I3dl2Get && I3dl2Set)
-			{
-				Com_Printf("...using I3DL2\n");
-				alConfig.eax = VER_I3DL2;
-			}
-		}
-
 		if (alcIsExtensionPresent(alConfig.hDevice, "ALC_EXT_EFX") == AL_TRUE)
 		{
 			ALuint		uiEffectSlots[128] = { 0 };
@@ -460,7 +415,7 @@ qboolean AL_Init (int hardreset)
 			ALint		iEffectSlotsGenerated;
 			ALint		iSends;
 		
-			alConfig.eax = VER_EFX;
+			alConfig.efx = true;
 
 			// Imported EFX functions; Get function pointers
 			// Effect objects
@@ -572,61 +527,9 @@ qboolean AL_Init (int hardreset)
 			// Delete Auxiliary Effect Slots
 			alDeleteAuxiliaryEffectSlots(iEffectSlotsGenerated, uiEffectSlots);
 		}
-	}//<---(!s_openal_eax->value)
+	}//<---(!s_openal_efx->value)
 
 	// Check for AL Extensions
-
-	if (!alConfig.eax)
-	{
-/*		if (alIsExtensionPresent((ALubyte *)"EAX5.0"))
-		{
-			Com_Printf("...using EAX 5.0\n");
-			alConfig.eax = VER_EAX_5;
-		} else
-		if (alIsExtensionPresent((ALubyte *)"EAX4.0"))
-		{
-			Com_Printf("...using EAX 4.0\n");
-			alConfig.eax = VER_EAX_4;
-		} else
-		if (alIsExtensionPresent((ALubyte *)"EAX3.0"))
-		{
-			Com_Printf("...using EAX 3.0\n");
-			alConfig.eax = VER_EAX_4;
-		} else*/
-		if (alIsExtensionPresent((ALubyte *)"EAX2.0"))
-		{
-			Com_Printf("...using EAX 2.0\n");
-			alConfig.eax = VER_EAX_2;
-		}
-		//willow: do not check "EAX" extension, it's too old!
-
-		if (alConfig.eax >= VER_EAX_2 && alConfig.eax <= VER_EAX_5)
-		{
-			alEAXSet = (LPALEAXSET)alGetProcAddress((ALubyte *)"EAXSet");
-			alEAXGet = (LPALEAXGET)alGetProcAddress((ALubyte *)"EAXGet");
-			if (!alEAXSet || !alEAXGet)
-			{
-				Com_Printf("...bad EAX extension, disabled.\n");
-				alConfig.eax = VER_EAX_NONE;
-			}
-		}
-	}
-
-	if (alIsExtensionPresent((ALubyte *)"EAX-RAM"))
-	{
-		Com_Printf("X-RAM free %d of total %d bytes\n",
-			alGetInteger(alGetEnumValue("AL_EAX_RAM_FREE")),
-			alGetInteger(alGetEnumValue("AL_EAX_RAM_SIZE"))
-		);
-		eaxSetBufferMode = (EAXSetBufferMode)alGetProcAddress("EAXSetBufferMode");
-		eaxGetBufferMode = (EAXGetBufferMode)alGetProcAddress("EAXGetBufferMode");
-		if (!eaxSetBufferMode) eaxSetBufferMode = EAXSetBufferMode_NULL;
-		if (!eaxGetBufferMode) eaxGetBufferMode = EAXGetBufferMode_NULL;
-	} else {
-		Com_Printf("...audio chip without onboard RAM.\n");
-		eaxSetBufferMode = EAXSetBufferMode_NULL;
-		eaxGetBufferMode = EAXGetBufferMode_NULL;
-	}
 
 	if (alIsExtensionPresent("AL_EXT_OFFSET") == AL_TRUE)
 		Com_Printf("...sample offset capabilities.\n");
