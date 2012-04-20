@@ -92,6 +92,7 @@ LPALLISTENERF				alListenerf;
 LPALLISTENERFV				alListenerfv;
 LPALLISTENERI				alListeneri;
 LPALSOURCE3F				alSource3f;
+LPALSOURCE3I				alSource3i;
 LPALSOURCEF					alSourcef;
 LPALSOURCEFV				alSourcefv;
 LPALSOURCEI					alSourcei;
@@ -183,7 +184,7 @@ void QAL_Shutdown (void)
 	alcIsExtensionPresent		= NULL;
 	alcGetProcAddress			= NULL;
 	alcGetEnumValue				= NULL;
-
+	alSource3i					= NULL;
 	alBufferData				= NULL;
 	alDeleteBuffers				= NULL;
 	alDeleteSources				= NULL;
@@ -386,6 +387,7 @@ qboolean AL_Init (int hardreset)
 		alSourceStop			= (LPALSOURCESTOP)GPA("alSourceStop");
 		alSourceStopv			= (LPALSOURCESTOPV)GPA("alSourceStopv");
 		alSourceUnqueueBuffers	= (LPALSOURCEUNQUEUEBUFFERS)GPA("alSourceUnqueueBuffers");
+		alSource3i				= (LPALSOURCE3I)alGetProcAddress("alSource3i");
 	}
 
 	// Initialize OpenAL subsystem

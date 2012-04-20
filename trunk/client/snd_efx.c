@@ -16,28 +16,17 @@
 // so for now we have it here.
 #include "AL/efx-presets.h"
 
-// TODO: original snd_eax.c code which wasn't ported to EAX
-#if 0
-	normalEAX.lRoom = FlagAL_check(ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room
-																		// effect
-																		// level
-	normalEAX.lRoomHF = FlagAL_check(ch, AL_FLAGS_FLAT2D) ? -10000 : 0;	// room
-																		// effect
-																		// level
-																		// at
-																		// high
-																		// frequencies
-#endif
-
 EFXEAXREVERBPROPERTIES rvb_generic = EFX_REVERB_PRESET_GENERIC;
 EFXEAXREVERBPROPERTIES rvb_room = EFX_REVERB_PRESET_ROOM;
 EFXEAXREVERBPROPERTIES rvb_underwater = EFX_REVERB_PRESET_UNDERWATER;
+EFXEAXREVERBPROPERTIES rvb_level = EFX_REVERB_PRESET_CITY;
 
 typedef struct {
 	qboolean on;
 	ALuint rvbGenericEffect;
 	ALuint rvbRoomEffect;
 	ALuint rvbUnderwaterEffect;
+	ALuint rvbLevelEffect;
 	ALuint rvbAuxSlot;
 } efx_t;
 
@@ -47,21 +36,20 @@ ALuint EFXEAX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb);
 ALuint EFX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb);
 
 void EFX_RvbInit(void) {
+
 	if (efx.on)
 		return;
 
-	//efx.rvbGenericEffect = EFXEAX_RvbCreate(&rvb_generic);
-	//efx.rvbRoomEffect = EFXEAX_RvbCreate(&rvb_room);
-	//efx.rvbUnderwaterEffect = EFXEAX_RvbCreate(&rvb_underwater);
 	efx.rvbGenericEffect = EFX_RvbCreate(&rvb_generic);
 	efx.rvbRoomEffect = EFX_RvbCreate(&rvb_room);
 	efx.rvbUnderwaterEffect = EFX_RvbCreate(&rvb_underwater);
+	efx.rvbLevelEffect = EFX_RvbCreate(&rvb_level);
 
 	alGenAuxiliaryEffectSlots(1, &efx.rvbAuxSlot);
 	alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
 
 	if (alGetError() == AL_NO_ERROR) {
-		Com_Printf(S_COLOR_MAGENTA "EFX initialized\n");
+		Com_Printf(S_COLOR_YELLOW "EFX initialized\n");
 		efx.on = true;
 	} else {
 		Com_Printf(S_COLOR_RED "EFX init failed\n");
@@ -80,22 +68,23 @@ void EFX_RvbUpdate(vec3_t listener_position) {
 		// Check if we are underwater and update data
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbUnderwaterEffect);
 	} else {
-		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbRoomEffect);
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbLevelEffect);
 	}
 
 	if (alGetError() != AL_NO_ERROR)
-		Com_Printf(S_COLOR_YELLOW "EFX update failed\n");
+		Com_Printf(S_COLOR_RED "EFX update failed\n");
 }
 
 void EFX_RvbShutdown(void) {
 	if (!efx.on)
 		return;
 
-	Com_Printf(S_COLOR_MAGENTA "EFX shutdown\n");
+	Com_Printf("EFX shutdown\n");
 	alDeleteAuxiliaryEffectSlots(1, &efx.rvbAuxSlot);
 	alDeleteEffects(1, &efx.rvbGenericEffect);
 	alDeleteEffects(1, &efx.rvbRoomEffect);
 	alDeleteEffects(1, &efx.rvbUnderwaterEffect);
+	alDeleteEffects(1, &efx.rvbLevelEffect);
 	efx.on = false;
 }
 
@@ -106,8 +95,9 @@ void EFX_RvbProcSrc(openal_channel_t *ch, ALuint source, qboolean enabled) {
 		alSource3i(source, AL_AUXILIARY_SEND_FILTER, efx.rvbAuxSlot, 0, AL_FILTER_NULL);
 }
 
+#ifdef _WIN32
 // XXX: OpenAL Soft 1.13 in Linux doesn't work with this
-ALuint EFXEAX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb) {
+ALuint EFX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb) {
 	ALuint effect;
 
 	alGenEffects(1, &effect);
@@ -143,6 +133,8 @@ ALuint EFXEAX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb) {
 	return effect;
 }
 
+#else
+
 // XXX: for now we use standard Reverb with EAX presets (ignoring unsupported parameters)
 ALuint EFX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb) {
 	ALuint effect;
@@ -169,3 +161,5 @@ ALuint EFX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb) {
 
 	return effect;
 }
+
+#endif

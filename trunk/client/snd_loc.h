@@ -50,7 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "AL/efx-creative.h"
 #include "AL/EFX-Util.h"
 
-#include "AL/xram.h"
+//#include "AL/xram.h"
 
 extern LPALCOPENDEVICE alcOpenDevice;
 extern LPALCCLOSEDEVICE alcCloseDevice;
@@ -123,7 +123,7 @@ extern LPALSOURCESTOPV alSourceStopv;
 extern LPALSOURCEUNQUEUEBUFFERS alSourceUnqueueBuffers;
 extern LPALGENSOURCES alGenSources;
 extern LPALDISTANCEMODEL alDistanceModel;
-
+extern LPALSOURCE3I alSource3i;
 
 // EFX Extension function pointer variables
 
