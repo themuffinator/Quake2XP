@@ -11,24 +11,19 @@
 # TODO list
 #
 # important
-# - fix ordering of input system start/shutdown, or better just check in
-# corresponding functions
 # - add menu item to limit FPS in Video options
-# - check for other undocumented options, and maybe add to menu
+# - create q2xpTBNCache.pkx for little-endian machines with script
 # - test additional mouse buttons (5, 6, etc) and extra trackball ones
 # - get launchpad account, create Ubuntu package and promote in
 #   forums (english and spanish)
 # - play complete single player campaign (saving at some points) to test
 #
-# performance
-# - optimize Mod_LoadFaces with explicit/implicit vectorization and/or OpenMP
-# - optimize GL_ResampleTextures with OpenMP (or the loop in the calling
-#   function); or use OpenGL/DevIL to resample the image; or cache results in cachexp
-#
 # other/maybe
 # - add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
 # - add support for Zaero expansion pack (check Yamagi Q2 and QuDos)
 # - compile with -Wall and eliminate warnings?
+# - check for other undocumented options, and maybe add to menu
+#   like hi_spec and related
 # - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
 
 

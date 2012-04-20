@@ -29,6 +29,8 @@
 #include "../client/client.h"
 #include "../ref_gl/r_local.h"
 
+static qboolean input_started = false;
+
 #define MOUSE_MAX 3000
 #define MOUSE_MIN 40
 
@@ -335,6 +337,9 @@ IN_MLookUp ( void )
 void
 IN_Init ( void )
 {
+	if (input_started)
+		return;
+
 	m_filter = Cvar_Get( "m_filter", "0", CVAR_ARCHIVE );
 
 	exponential_speedup = Cvar_Get( "exponential_speedup", "0", CVAR_ARCHIVE );
@@ -354,6 +359,7 @@ IN_Init ( void )
 	SDL_WM_GrabInput(SDL_GRAB_OFF);
 
 	Com_Printf( "Input initialized.\n" );
+	input_started = true;
 }
 
 /*
@@ -362,6 +368,9 @@ IN_Init ( void )
 void
 IN_Shutdown ( void )
 {
+	if (!input_started)
+		return;
+
     // clears the input queue
 	keyq_head = 0;
 	keyq_tail = 0;
@@ -370,6 +379,7 @@ IN_Shutdown ( void )
 	Cmd_RemoveCommand("+mlook");
 	Cmd_RemoveCommand("-mlook");
 	Com_Printf("Input shut down.\n");
+	input_started = false;
 }
 
 /*
