@@ -927,7 +927,7 @@ void GL_BuildPolygonFromSurface(msurface_t * fa);
 void GL_CreateSurfaceLightmap(msurface_t * surf);
 void GL_EndBuildingLightmaps(void);
 void GL_BeginBuildingLightmaps(model_t * m);
-
+void GL_BuildTBN(int count);
 
 extern cvar_t	*r_tbnSmoothAngle;
 /*
@@ -940,12 +940,6 @@ void Mod_LoadFaces(lump_t * l)
 	dface_t		*in;
 	msurface_t *out;
 	int			i, count, surfnum;
-	int			planenum, side;
-	int			ti;
-	int			ci, cj, flp, j;
-	float		*vi, *vj;
-	msurface_t	*si, *sj;
-	vec3_t		ni, nj;
 
 	in = (dface_t *) (mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -964,7 +958,10 @@ void Mod_LoadFaces(lump_t * l)
 	GL_BeginBuildingLightmaps(loadmodel);
 
 	for ( surfnum=0 ; surfnum<count ; surfnum++, in++, out++)
-		{
+	{
+		int			ti;
+		int			planenum, side;
+
 		out->firstedge = LittleLong(in->firstedge);
 		out->numedges = LittleShort(in->numedges);		
 		out->flags = 0;
@@ -1011,107 +1008,168 @@ void Mod_LoadFaces(lump_t * l)
 	}
 
 	// Build TBN for smoothing bump mapping (Berserker)
-	flp = 0;
-		for (i=0 ; i<count ; i++)
-		{
-			si = &currentmodel->surfaces[i];
-			if (!(si->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW)))
-			{
-				vi = si->polys->verts[0];
-				for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
-					vi[7] = vi[8] = vi[9] = vi[10] = vi[11] = vi[12] = vi[13] = vi[14] = vi[15] = 0;
-				if (si->flags & SURF_PLANEBACK)
-					VectorNegate(si->plane->normal, ni);
-				else
-					VectorCopy(si->plane->normal, ni);
-				for (j=0 ; j<count ; j++)
-				{
-					sj = &currentmodel->surfaces[j];
-					if (!(sj->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW)))
-					{
-						if (sj->flags & SURF_PLANEBACK)
-							VectorNegate(sj->plane->normal, nj);
-						else
-							VectorCopy(sj->plane->normal, nj);
-						if(DotProduct(ni, nj)>=cos(DEG2RAD(r_tbnSmoothAngle->value)))
-						{
-							vi = si->polys->verts[0];
-							for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
-							{
-								vj = sj->polys->verts[0];
-								for (cj=0; cj<sj->numedges; cj++, vj+=VERTEXSIZE)
-								{
+	GL_BuildTBN(count);
 
-									if (VectorCompare(vi, vj))
-									{
-										vi[7] += nj[0];
-										vi[8] += nj[1];
-										vi[9] += nj[2];
-									}
-								}
+	GL_EndBuildingLightmaps();
+}
+
+void GL_BuildTBN(int count) {
+	int			ci, cj, i, j;
+	float		*vi, *vj;
+	msurface_t	*si, *sj;
+	vec3_t		ni, nj;
+
+	// TBN cache
+	char		cacheName[MAX_QPATH];
+	int			cacheSize;
+	byte		*cacheData;
+	FILE		*cacheFile = NULL;
+
+	if (r_tbnCache->value) {
+		// Check for existing data
+		Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
+		cacheSize = FS_LoadFile(cacheName, (void**)&cacheData);
+		if (cacheData != NULL) {
+			int pos = 0;
+			const int chunk = 9*sizeof(float);
+
+			for (i=0 ; i<count ; i++) {
+				si = &currentmodel->surfaces[i];
+
+				if (si->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
+					continue;
+
+				vi = si->polys->verts[0];
+
+				for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+				{
+					memcpy(vi+7, cacheData + pos, chunk);
+					pos += chunk;
+
+					if (pos > cacheSize) {
+						Com_Printf(S_COLOR_RED "GL_BuildTBN: insufficient data in %s\n", cacheName);
+						FS_FreeFile(cacheData);
+						goto recreate;
+					}
+				}
+			}
+			Com_Printf(S_COLOR_GREEN "GL_BuildTBN: using cached data from %s\n", cacheName);
+			FS_FreeFile(cacheData);
+			return;
+		}
+
+	recreate:
+		// Not found, so write it as we calculate it
+		Com_sprintf(cacheName, sizeof(cacheName), "%s/cachexp/%s", FS_Gamedir(), currentmodel->name);
+		FS_CreatePath(cacheName);
+		cacheFile = fopen(cacheName, "wb");
+		if (cacheFile == NULL)
+			Com_Printf(S_COLOR_RED "GL_BuildTBN: could't open %s for writing", currentmodel->name);
+		else
+			Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating data for %s", currentmodel->name);
+	}
+
+	for (i=0 ; i<count ; i++)
+	{
+		si = &currentmodel->surfaces[i];
+
+		if (si->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
+			continue;
+
+		vi = si->polys->verts[0];
+		for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+			vi[7] = vi[8] = vi[9] = vi[10] = vi[11] = vi[12] = vi[13] = vi[14] = vi[15] = 0;
+		if (si->flags & SURF_PLANEBACK)
+			VectorNegate(si->plane->normal, ni);
+		else
+			VectorCopy(si->plane->normal, ni);
+		for (j=0 ; j<count ; j++)
+		{
+			sj = &currentmodel->surfaces[j];
+			if (!(sj->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW)))
+			{
+				if (sj->flags & SURF_PLANEBACK)
+					VectorNegate(sj->plane->normal, nj);
+				else
+					VectorCopy(sj->plane->normal, nj);
+				if(DotProduct(ni, nj)>=cos(DEG2RAD(r_tbnSmoothAngle->value)))
+				{
+					vi = si->polys->verts[0];
+					for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+					{
+						vj = sj->polys->verts[0];
+						for (cj=0; cj<sj->numedges; cj++, vj+=VERTEXSIZE)
+						{
+
+							if (VectorCompare(vi, vj))
+							{
+								vi[7] += nj[0];
+								vi[8] += nj[1];
+								vi[9] += nj[2];
 							}
 						}
 					}
 				}
-
-				vi = si->polys->verts[0];
-				for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
-				{
-                    vec3_t ttt, tttt, ttttt;
-					VectorSet(ttt, vi[7], vi[8], vi[9]);
-					VectorNormalize(ttt);
-
-					if(DotProduct(ttt, ni)<cos(DEG2RAD(r_tbnSmoothAngle->value)))
-					{
-						vi[7] = ttt[0] = ni[0];
-						vi[8] = ttt[1] = ni[1];
-						vi[9] = ttt[2] = ni[2];
-					}
-					else
-					{
-						vi[7] = ttt[0];
-						vi[8] = ttt[1];
-						vi[9] = ttt[2];
-					}
-
-					CrossProduct(ttt, si->texinfo->vecs[0], tttt);
-					CrossProduct(ttt, tttt, ttttt);
-					VectorNormalize(ttttt);
-					if (DotProduct(ttttt, si->texinfo->vecs[0])<0)
-					{
-						vi[10] = -ttttt[0];
-						vi[11] = -ttttt[1];
-						vi[12] = -ttttt[2];
-					}
-					else
-					{
-						vi[10] = ttttt[0];
-						vi[11] = ttttt[1];
-						vi[12] = ttttt[2];
-					}
-
-					CrossProduct(ttt, si->texinfo->vecs[1], tttt);
-					CrossProduct(ttt, tttt, ttttt);
-					VectorNormalize(ttttt);
-					if (DotProduct(ttttt, si->texinfo->vecs[1])<0)
-					{
-						vi[13] = -ttttt[0];
-						vi[14] = -ttttt[1];
-						vi[15] = -ttttt[2];
-					}
-					else
-					{
-						vi[13] = ttttt[0];
-						vi[14] = ttttt[1];
-						vi[15] = ttttt[2];
-					}
-
-					flp += 3;
-				}
 			}
 		}
 
-GL_EndBuildingLightmaps();
+		vi = si->polys->verts[0];
+		for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+		{
+			vec3_t ttt, tttt, ttttt;
+			VectorSet(ttt, vi[7], vi[8], vi[9]);
+			VectorNormalize(ttt);
+
+			if(DotProduct(ttt, ni)<cos(DEG2RAD(r_tbnSmoothAngle->value)))
+			{
+				vi[7] = ttt[0] = ni[0];
+				vi[8] = ttt[1] = ni[1];
+				vi[9] = ttt[2] = ni[2];
+			}
+			else
+			{
+				vi[7] = ttt[0];
+				vi[8] = ttt[1];
+				vi[9] = ttt[2];
+			}
+
+			CrossProduct(ttt, si->texinfo->vecs[0], tttt);
+			CrossProduct(ttt, tttt, ttttt);
+			VectorNormalize(ttttt);
+			if (DotProduct(ttttt, si->texinfo->vecs[0])<0)
+			{
+				vi[10] = -ttttt[0];
+				vi[11] = -ttttt[1];
+				vi[12] = -ttttt[2];
+			}
+			else
+			{
+				vi[10] = ttttt[0];
+				vi[11] = ttttt[1];
+				vi[12] = ttttt[2];
+			}
+
+			CrossProduct(ttt, si->texinfo->vecs[1], tttt);
+			CrossProduct(ttt, tttt, ttttt);
+			VectorNormalize(ttttt);
+			if (DotProduct(ttttt, si->texinfo->vecs[1])<0)
+			{
+				vi[13] = -ttttt[0];
+				vi[14] = -ttttt[1];
+				vi[15] = -ttttt[2];
+			}
+			else
+			{
+				vi[13] = ttttt[0];
+				vi[14] = ttttt[1];
+				vi[15] = ttttt[2];
+			}
+			if (cacheFile != NULL)
+				fwrite(vi+7, sizeof(*vi), 9, cacheFile);
+		}
+	}
+	if (cacheFile != NULL)
+		fclose(cacheFile);
 }
 
 

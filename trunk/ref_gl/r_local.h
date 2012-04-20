@@ -301,6 +301,7 @@ cvar_t	*r_dofFocus;
 cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;
 cvar_t	*r_tbnSmoothAngle;
+cvar_t	*r_tbnCache;
 
 cvar_t	*r_filmGrain;
 

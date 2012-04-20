@@ -1044,8 +1044,11 @@ void SCR_DrawFPS(void)
 		fps = 0;
 	}
 
-	if (cl_drawfps->value && (cls.state == ca_active))
+	if (cl_drawfps->value && (cls.state == ca_active)) {
+		RE_SetColor(colorGreen);
 		Draw_StringScaled(viddef.width - 65*fontscale, viddef.height*0.8, fontscale, fontscale, str);
+		RE_SetColor(NULL);
+	}
 }
 
 void SCR_DrawClock(void)

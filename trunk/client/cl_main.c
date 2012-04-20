@@ -1945,18 +1945,10 @@ void CL_Init(void)
 	if (dedicated->value)
 		return;					// nothing running on the client
 
-// FIXME: if it works on both, just remove the #if
-//#if defined __linux__ || defined __sgi
-#if 0
+	// in Windows sound must be initialized after window is created,
+	// but in Linux both work
+	VID_Init();
 	S_Init(1);
-
-	VID_Init();
-#else
-	VID_Init();
-	S_Init(1);					// sound must be initialized after window
-								// is created
-
-#endif
 
 	V_Init();
 

@@ -1,33 +1,35 @@
 #! /usr/bin/env python
 # encoding: utf-8
 
-# TODO list
-#
-# notes
+# Notes
 # - host_speed reports almost always zero for anything else than ref,
 #   so the renderer greatly dominates frame time
+# - renderer frame seems to take less when using cl_maxfps, which makes
+#   sense as some frames fit on a timeslice uninterrupted by the scheduler
+#   because it uses usleep() often (and then is where it pauses)
+#
+# TODO list
 #
 # important
-# - add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
-# - add support for Zaero expansion pack (check Yamagi Q2 and QuDos)
+# - fix ordering of input system start/shutdown, or better just check in
+# corresponding functions
+# - add menu item to limit FPS in Video options
+# - check for other undocumented options, and maybe add to menu
+# - test additional mouse buttons (5, 6, etc) and extra trackball ones
 # - get launchpad account, create Ubuntu package and promote in
 #   forums (english and spanish)
+# - play complete single player campaign (saving at some points) to test
 #
 # performance
-# - measure ref user time and compare with real time, to confirm
-#   that it runs faster when limiting framerate with sleep
-# - measure FPS distribution and jitter through a level and draw a graph
-#   (use time_after_ref/time_before_ref, in case cl_maxfps is limiting FPS)
 # - optimize Mod_LoadFaces with explicit/implicit vectorization and/or OpenMP
 # - optimize GL_ResampleTextures with OpenMP (or the loop in the calling
 #   function); or use OpenGL/DevIL to resample the image; or cache results in cachexp
 #
 # other/maybe
-# - add SDL joystick support, and try it with Linux to see how it goes
-# - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
+# - add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
+# - add support for Zaero expansion pack (check Yamagi Q2 and QuDos)
 # - compile with -Wall and eliminate warnings?
-# - ask Kirk to improve railgun effect with shaders if he has time
-# - add more resolution with clock_gettime to timers?
+# - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
 
 
 VERSION = '1.0'
@@ -80,10 +82,10 @@ def build(bld):
     #src_dir = bld.path.find_dir('src')
 
     #bld.env.append_value('CFLAGS', ['-flax-vector-conversions'])
-    #bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
+    bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
     #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-ftree-vectorize', '-ftree-vectorizer-verbose=2'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
-    bld.env.append_value('CFLAGS', ['-g'])
+    #bld.env.append_value('CFLAGS', ['-g'])
     #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-pg'])
     #bld.env.append_value('LINKFLAGS', ['-pg'])
     #bld.env.append_value('CFLAGS', ['-fopenmp', '-g'])
