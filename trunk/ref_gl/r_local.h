@@ -98,9 +98,6 @@ extern viddef_t vid;
 
  // ===================================================================
 
-#define GL_SMOOTH_LINE_WIDTH_RANGE 0x0B22
-extern float lineAAwidth;
-
 typedef enum {
 	rserr_ok,
 
@@ -301,7 +298,6 @@ cvar_t	*r_dofFocus;
 cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;
 cvar_t	*r_tbnSmoothAngle;
-cvar_t	*r_tbnCache;
 
 cvar_t	*r_filmGrain;
 

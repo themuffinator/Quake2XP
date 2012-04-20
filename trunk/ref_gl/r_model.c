@@ -929,7 +929,6 @@ void GL_EndBuildingLightmaps(void);
 void GL_BeginBuildingLightmaps(model_t * m);
 void GL_BuildTBN(int count);
 
-extern cvar_t	*r_tbnSmoothAngle;
 /*
 =================
 Mod_LoadFaces
@@ -1025,8 +1024,7 @@ void GL_BuildTBN(int count) {
 	byte		*cacheData;
 	FILE		*cacheFile = NULL;
 
-	if (r_tbnCache->value) {
-		// Check for existing data
+	// Check for existing data
 		Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
 		cacheSize = FS_LoadFile(cacheName, (void**)&cacheData);
 		if (cacheData != NULL) {
@@ -1067,7 +1065,6 @@ void GL_BuildTBN(int count) {
 			Com_Printf(S_COLOR_RED "GL_BuildTBN: could't open %s for writing", currentmodel->name);
 		else
 			Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating data for %s", currentmodel->name);
-	}
 
 	for (i=0 ; i<count ; i++)
 	{

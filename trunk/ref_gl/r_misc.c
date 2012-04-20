@@ -501,7 +501,6 @@ void GL_Strings_f(void)
 	Com_Printf("GL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n",	gl_config.extensions_string);
 }
 
-float lineAAwidth;
 
 /*
 ** GL_SetDefaultState
