@@ -1025,46 +1025,46 @@ void GL_BuildTBN(int count) {
 	FILE		*cacheFile = NULL;
 
 	// Check for existing data
-		Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
-		cacheSize = FS_LoadFile(cacheName, (void**)&cacheData);
-		if (cacheData != NULL) {
-			int pos = 0;
-			const int chunk = 9*sizeof(float);
+	Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
+	cacheSize = FS_LoadFile(cacheName, (void**)&cacheData);
+	if (cacheData != NULL) {
+		int pos = 0;
+		const int chunk = 9*sizeof(float);
 
-			for (i=0 ; i<count ; i++) {
-				si = &currentmodel->surfaces[i];
+		for (i=0 ; i<count ; i++) {
+			si = &currentmodel->surfaces[i];
 
-				if (si->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
-					continue;
+			if (si->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
+				continue;
 
-				vi = si->polys->verts[0];
+			vi = si->polys->verts[0];
 
-				for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
-				{
-					memcpy(vi+7, cacheData + pos, chunk);
-					pos += chunk;
+			for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+			{
+				memcpy(vi+7, cacheData + pos, chunk);
+				pos += chunk;
 
-					if (pos > cacheSize) {
-						Com_Printf(S_COLOR_RED "GL_BuildTBN: insufficient data in %s\n", cacheName);
-						FS_FreeFile(cacheData);
-						goto recreate;
-					}
+				if (pos > cacheSize) {
+					Com_Printf(S_COLOR_RED "GL_BuildTBN: insufficient data in %s\n", cacheName);
+					FS_FreeFile(cacheData);
+					goto recreate;
 				}
 			}
-			Com_Printf(S_COLOR_GREEN "GL_BuildTBN: using cached data from %s\n", cacheName);
-			FS_FreeFile(cacheData);
-			return;
 		}
+		Com_Printf(S_COLOR_GREEN "GL_BuildTBN: using cached data from %s\n", cacheName);
+		FS_FreeFile(cacheData);
+		return;
+	}
 
-	recreate:
-		// Not found, so write it as we calculate it
-		Com_sprintf(cacheName, sizeof(cacheName), "%s/cachexp/%s", FS_Gamedir(), currentmodel->name);
-		FS_CreatePath(cacheName);
-		cacheFile = fopen(cacheName, "wb");
-		if (cacheFile == NULL)
-			Com_Printf(S_COLOR_RED "GL_BuildTBN: could't open %s for writing", currentmodel->name);
-		else
-			Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating data for %s", currentmodel->name);
+recreate:
+	// Not found, so write it as we calculate it
+	Com_sprintf(cacheName, sizeof(cacheName), "%s/cachexp/%s", FS_Gamedir(), currentmodel->name);
+	FS_CreatePath(cacheName);
+	cacheFile = fopen(cacheName, "wb");
+	if (cacheFile == NULL)
+		Com_Printf(S_COLOR_RED "GL_BuildTBN: could't open %s for writing\n", currentmodel->name);
+	else
+		Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating data for %s\n", currentmodel->name);
 
 	for (i=0 ; i<count ; i++)
 	{
@@ -1716,9 +1716,7 @@ void HACK_RecalcVertsLightNormalIdx (dmdl_t *pheader)
 			VectorNormalize(normals_[j]);
 			verts[j].lightnormalindex = Normal2Index(normals_[j]);
 		}
-
 	}
-
 }
 
 #ifndef _WIN32
@@ -1784,6 +1782,33 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 
 	}
 }
+
+// Mini cache abstraction, don't touch these varibles directly!
+
+static byte *_cacheData;
+static int _cachePos, _cacheSize;
+
+static qboolean cache_Open(const char *name) {
+	_cacheSize = FS_LoadFile(name, (void**)&_cacheData);
+	_cachePos = 0;
+	return (_cacheData != NULL);
+}
+
+static void cache_Close() {
+	FS_FreeFile(_cacheData);
+}
+
+static qboolean cache_Fetch(void *dst, int size) {
+	if (_cacheSize - _cachePos < size) {
+		return false;
+	} else {
+		memcpy(dst, _cacheData + _cachePos, size);
+		_cachePos += size;
+		return true;
+	}
+}
+
+// End mini cache
 
 void Mod_LoadAliasModel(model_t * mod, void *buffer)
 {
@@ -1970,11 +1995,8 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 
 		if (!mod->skins_normal[i])
 			 mod->skins_normal[i] = r_defBump;
-		
-
 	}
 
-		
 	// Calculate texcoords for triangles (for compute tangents and binormals)
 	mod->memorySize += pheader->num_st * sizeof(fstvert_t);
     pinst = (dstvert_t *) ((byte *)pinmodel + pheader->ofs_st);
@@ -1991,43 +2013,41 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 
 
 	// create the cache directory
-	Com_sprintf (cachename, sizeof(cachename), "%s/cachexp/%s", FS_Gamedir(), mod->name); /// Berserker: пусть Q2XP кэширует модели в /cachexp/, чтобы не нарушать кэш Bers@Q2
-	FS_CreatePath(cachename);
-	f = fopen (cachename, "rb");
-	if (f)
-	{	/// read from cache
-		ax = fread(&smooth, 1, sizeof(smooth), f);
-		if(ax==sizeof(smooth))
+	Com_sprintf (cachename, sizeof(cachename), "cachexp/%s", mod->name); /// Berserker: пусть Q2XP кэширует модели в /cachexp/, чтобы не нарушать кэш Bers@Q2
+	if (cache_Open(cachename))
+	{
+		if (cache_Fetch(&smooth, sizeof(smooth)))
 		{
 			unsigned	ang;
-			if(fread(&ang, 1, sizeof(unsigned), f)!=sizeof(unsigned))
+
+			if (!cache_Fetch(&ang, sizeof(ang)))
 				goto badd;
 			if (ang != (unsigned)(cos(DEG2RAD(45))*0x7fffffff))
 			{
-badd:			fclose(f);
+badd:			cache_Close();
 				goto bad;
 			}
 
 			cache = true;
-				
-				cx = pheader->num_xyz * pheader->num_frames * sizeof(byte);
-				mod->binormals = binormals =(byte*)Hunk_Alloc (cx);
-				mod->tangents = tangents = (byte*)Hunk_Alloc (cx);
-				mod->memorySize += cx;
-				mod->memorySize += cx;
-				if(fread(&cs_binormals, 1, sizeof(int), f)!=sizeof(int))
+
+			cx = pheader->num_xyz * pheader->num_frames * sizeof(byte);
+			mod->binormals = binormals =(byte*)Hunk_Alloc (cx);
+			mod->tangents = tangents = (byte*)Hunk_Alloc (cx);
+			mod->memorySize += cx;
+			mod->memorySize += cx;
+
+			if (!cache_Fetch(&cs_binormals, sizeof(cs_binormals)))
+				goto badd;
+
+			if (cache_Fetch(mod->binormals, cx))
+			{
+				if (!cache_Fetch(&cs_tangents, sizeof(cs_tangents)))
 					goto badd;
-				ax = fread(mod->binormals, 1, cx, f);
-				if(ax==cx)
-				{
-					if(fread(&cs_tangents, 1, sizeof(int), f)!=sizeof(int))
-						goto badd;
-					ax = fread(mod->tangents, 1, cx, f);
-					success = (ax==cx); 
-				}
-					
+
+				success = cache_Fetch(mod->tangents, cx);
+			}
 		}
-		fclose(f);
+		cache_Close();
 	}
 
 	if(!success){
