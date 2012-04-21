@@ -50,7 +50,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "AL/efx-creative.h"
 #include "AL/EFX-Util.h"
 
-//#include "AL/xram.h"
+#include "AL/xram.h"
+#define _WITH_XRAM
 
 extern LPALCOPENDEVICE alcOpenDevice;
 extern LPALCCLOSEDEVICE alcCloseDevice;
@@ -165,6 +166,15 @@ extern LPALGETAUXILIARYEFFECTSLOTI alGetAuxiliaryEffectSloti;
 extern LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
 extern LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
 extern LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
+
+// XRAM Extension function pointer variables and enum values
+typedef ALboolean(AL_APIENTRY * LPEAXSETBUFFERMODE) (ALsizei n,
+												 ALuint * buffers,
+												 ALint value);
+typedef ALenum(AL_APIENTRY * LPEAXGETBUFFERMODE) (ALuint buffer,
+											  ALint * value);
+extern LPEAXSETBUFFERMODE eaxSetBufferMode;
+extern LPEAXGETBUFFERMODE eaxGetBufferMode;
 
 #else
 #define AL_ALEXT_PROTOTYPES

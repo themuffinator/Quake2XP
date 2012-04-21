@@ -244,6 +244,14 @@ void S_Init(int hardreset)
 					// Generate some AL Buffers for streaming
 					alGenBuffers(NUM_STRBUF, streaming.buffers);
 
+#ifdef _WITH_XRAM
+					if (!eaxSetBufferMode
+						(NUM_STRBUF, streaming.buffers,
+						 alGetEnumValue(" AL_STORAGE_ACCESSIBLE"))) {
+						Com_DPrintf ("music: unable to set X-RAM mode\n");
+					} 
+#endif
+
 					if (alConfig.efx)
 						EFX_RvbInit();
 				}

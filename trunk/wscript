@@ -13,7 +13,6 @@
 # TODO list
 #
 # important
-# - bring back X-RAM code with #ifdef _WIN32
 # - upload data in ZIP format or just PKX to sourceforge.net
 # - get launchpad account, create Ubuntu package and promote in
 #   forums (english and spanish)

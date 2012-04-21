@@ -107,6 +107,10 @@ LPALSOURCESTOP				alSourceStop;
 LPALSOURCESTOPV				alSourceStopv;
 LPALSOURCEUNQUEUEBUFFERS	alSourceUnqueueBuffers;
 
+// X-RAM
+EAXSetBufferMode			eaxSetBufferMode;
+EAXGetBufferMode			eaxGetBufferMode;
+
 // Effect objects
 LPALGENEFFECTS				alGenEffects;
 LPALDELETEEFFECTS			alDeleteEffects;
@@ -283,6 +287,21 @@ void QAL_Shutdown (void)
 
 void S_SoundInfo_f(void);
 
+ALboolean EAXSetBufferMode_NULL(ALsizei n, ALuint *buffers, ALint value)
+{
+	//willow:
+	//Always successfull, we do not really care of non X-RAM audio chips.
+	//No X-RAM no deal no failures too.
+	return AL_TRUE;
+}
+
+ALenum EAXGetBufferMode_NULL(ALuint buffer, ALint *value)
+{
+	//willow:
+	//I'm not interested in this function anyway, just heck it would be existed and even realistic!
+	return alGetEnumValue("AL_STORAGE_AUTOMATIC");
+}
+
 /*
  =================
  AL_Init
@@ -401,6 +420,23 @@ qboolean AL_Init (int hardreset)
 
 	// Initialize extensions
 	alConfig.efx = false;
+
+    // X-RAM
+	if (alIsExtensionPresent((ALubyte *)"EAX-RAM"))
+	{
+		Com_Printf("X-RAM free %d of total %d bytes\n",
+			alGetInteger(alGetEnumValue("AL_EAX_RAM_FREE")),
+			alGetInteger(alGetEnumValue("AL_EAX_RAM_SIZE"))
+		);
+		eaxSetBufferMode = (EAXSetBufferMode)alGetProcAddress("EAXSetBufferMode");
+		eaxGetBufferMode = (EAXGetBufferMode)alGetProcAddress("EAXGetBufferMode");
+		if (!eaxSetBufferMode) eaxSetBufferMode = EAXSetBufferMode_NULL;
+		if (!eaxGetBufferMode) eaxGetBufferMode = EAXGetBufferMode_NULL;
+	} else {
+		Com_Printf("...audio chip without onboard RAM.\n");
+		eaxSetBufferMode = EAXSetBufferMode_NULL;
+		eaxGetBufferMode = EAXGetBufferMode_NULL;
+	}
 
 	// Check for ALC Extensions
 	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_EXT_CAPTURE") == AL_TRUE)
