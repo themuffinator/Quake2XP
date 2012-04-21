@@ -1012,6 +1012,33 @@ void Mod_LoadFaces(lump_t * l)
 	GL_EndBuildingLightmaps();
 }
 
+// Mini cache abstraction, don't touch these varibles directly!
+
+static byte *_cacheData;
+static int _cachePos, _cacheSize;
+
+static qboolean cache_Open(const char *name) {
+	_cacheSize = FS_LoadFile(name, (void**)&_cacheData);
+	_cachePos = 0;
+	return (_cacheData != NULL);
+}
+
+static void cache_Close() {
+	FS_FreeFile(_cacheData);
+}
+
+static qboolean cache_Fetch(void *dst, int size) {
+	if (_cacheSize - _cachePos < size) {
+		return false;
+	} else {
+		memcpy(dst, _cacheData + _cachePos, size);
+		_cachePos += size;
+		return true;
+	}
+}
+
+// End mini cache
+
 void GL_BuildTBN(int count) {
 	int			ci, cj, i, j;
 	float		*vi, *vj;
@@ -1020,16 +1047,20 @@ void GL_BuildTBN(int count) {
 
 	// TBN cache
 	char		cacheName[MAX_QPATH];
-	int			cacheSize;
-	byte		*cacheData;
 	FILE		*cacheFile = NULL;
+    int         smoothAng = (int)r_tbnSmoothAngle->value;
 
 	// Check for existing data
 	Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
-	cacheSize = FS_LoadFile(cacheName, (void**)&cacheData);
-	if (cacheData != NULL) {
-		int pos = 0;
-		const int chunk = 9*sizeof(float);
+	if (cache_Open(cacheName)) {
+        int angle;
+
+        if (!cache_Fetch(&angle, sizeof(angle)) || angle != smoothAng) {
+            Com_Printf(S_COLOR_RED "GL_BuildTBN: ignoring data for %s with angle %d (need %d)\n",
+              cacheName, angle, smoothAng);
+            cache_Close();
+            goto recreate;
+        }
 
 		for (i=0 ; i<count ; i++) {
 			si = &currentmodel->surfaces[i];
@@ -1041,18 +1072,15 @@ void GL_BuildTBN(int count) {
 
 			for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
 			{
-				memcpy(vi+7, cacheData + pos, chunk);
-				pos += chunk;
-
-				if (pos > cacheSize) {
+                if (!cache_Fetch(vi+7, 9*sizeof(*vi))) {
 					Com_Printf(S_COLOR_RED "GL_BuildTBN: insufficient data in %s\n", cacheName);
-					FS_FreeFile(cacheData);
+                    cache_Close();
 					goto recreate;
 				}
 			}
 		}
-		Com_Printf(S_COLOR_GREEN "GL_BuildTBN: using cached data from %s\n", cacheName);
-		FS_FreeFile(cacheData);
+		Com_DPrintf(S_COLOR_GREEN "GL_BuildTBN: using cached data from %s\n", cacheName);
+        cache_Close();
 		return;
 	}
 
@@ -1063,8 +1091,11 @@ recreate:
 	cacheFile = fopen(cacheName, "wb");
 	if (cacheFile == NULL)
 		Com_Printf(S_COLOR_RED "GL_BuildTBN: could't open %s for writing\n", currentmodel->name);
-	else
-		Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating data for %s\n", currentmodel->name);
+	else {
+		Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating %s, with angle %d\n",
+          currentmodel->name, smoothAng);
+        fwrite(&smoothAng, sizeof(smoothAng), 1, cacheFile);
+    }
 
 	for (i=0 ; i<count ; i++)
 	{
@@ -1782,33 +1813,6 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 
 	}
 }
-
-// Mini cache abstraction, don't touch these varibles directly!
-
-static byte *_cacheData;
-static int _cachePos, _cacheSize;
-
-static qboolean cache_Open(const char *name) {
-	_cacheSize = FS_LoadFile(name, (void**)&_cacheData);
-	_cachePos = 0;
-	return (_cacheData != NULL);
-}
-
-static void cache_Close() {
-	FS_FreeFile(_cacheData);
-}
-
-static qboolean cache_Fetch(void *dst, int size) {
-	if (_cacheSize - _cachePos < size) {
-		return false;
-	} else {
-		memcpy(dst, _cacheData + _cachePos, size);
-		_cachePos += size;
-		return true;
-	}
-}
-
-// End mini cache
 
 void Mod_LoadAliasModel(model_t * mod, void *buffer)
 {

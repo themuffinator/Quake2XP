@@ -285,7 +285,6 @@ Properly handles partial reads
 =================
 */
 void CDAudio_Stop(void);
-// FIXME: do we still need these prehistoric limits, considering ~5MB music files are loaded in memory with FS_LoadFile?
 #define	MAX_READ	0x10000		// read in blocks of 64k
 void FS_Read (void *buffer, int len, qFILE *qfile)
 {
@@ -521,14 +520,6 @@ void FS_AddGameDirectory (char *dir)
 
 	strcpy (fs_gamedir, dir);
 
-	//
-	// add the directory to the search path
-	//
-	search = Z_Malloc (sizeof(searchpath_t));
-	strcpy (search->filename, dir);
-	search->next = fs_searchpaths;
-	fs_searchpaths = search;
-
 	// Build up a list of pak files to add to our search path
 	sprintf(dirstring,"%s/*.pak",dir);
 	handle = _findfirst (dirstring, &fileinfo);
@@ -586,7 +577,14 @@ void FS_AddGameDirectory (char *dir)
 		search->next = fs_searchpaths;
 		fs_searchpaths = search;		
 	}
-//--
+
+	//
+	// add the directory to the search path here, so it overrides pak/pkx
+	//
+	search = Z_Malloc (sizeof(searchpath_t));
+	strcpy (search->filename, dir);
+	search->next = fs_searchpaths;
+	fs_searchpaths = search;
 }
 
 #else
@@ -608,47 +606,51 @@ void FS_AddGameDirectory (char *dir)
 
 	strcpy (fs_gamedir, dir);
 
-	// add the directory to the search path
-	search = Z_Malloc (sizeof(searchpath_t));
-	strcpy (search->filename, dir);
-	search->next = fs_searchpaths;
-	fs_searchpaths = search;
-
 	// Get list of PAK files
 	sprintf(pattern,"%s/*.pak",dir);
 	paklist = FS_ListFiles(pattern, &nfiles, 0, SFF_SUBDIR);
-	qsort((void *)paklist, nfiles-1, sizeof(char*), SortList);
+    if (paklist != NULL) {
+        qsort((void *)paklist, nfiles-1, sizeof(char*), SortList);
 
-	// Add each pak file from our list to the search path
-	for (i=0; i<nfiles-1; i++) {
-		pak = FS_LoadPackFile (paklist[i]);
-		if (!pak) continue;
+        // Add each pak file from our list to the search path
+        for (i=0; i<nfiles-1; i++) {
+            pak = FS_LoadPackFile (paklist[i]);
+            if (!pak) continue;
 
-		search = Z_Malloc (sizeof(searchpath_t));
-		search->pack = pak;
-		search->next = fs_searchpaths;
-		fs_searchpaths = search;		
-	}
-	FS_FreeList(paklist, nfiles);
+            search = Z_Malloc (sizeof(searchpath_t));
+            search->pack = pak;
+            search->next = fs_searchpaths;
+            fs_searchpaths = search;		
+        }
+        FS_FreeList(paklist, nfiles);
+    }
 	// -----------------------------------------------------
 
 	// Get list of PKX files
 	sprintf(pattern,"%s/*.pkx",dir);
 	paklist = FS_ListFiles(pattern, &nfiles, 0, SFF_SUBDIR);
-	qsort((void *)paklist, nfiles-1, sizeof(char*), SortList);
+    if (paklist != NULL) {
+        qsort((void *)paklist, nfiles-1, sizeof(char*), SortList);
 
-	// Add each pak file from our list to the search path
-	for (i=0; i<nfiles-1; i++) {
-		pak = FS_LoadZipFile (paklist[i]);
-		if (!pak)
-			continue;
+        // Add each pak file from our list to the search path
+        for (i=0; i<nfiles-1; i++) {
+            pak = FS_LoadZipFile (paklist[i]);
+            if (!pak)
+                continue;
 
-		search = Z_Malloc (sizeof(searchpath_t));
-		search->pack = pak;
-		search->next = fs_searchpaths;
-		fs_searchpaths = search;		
-	}
-	FS_FreeList(paklist, nfiles);
+            search = Z_Malloc (sizeof(searchpath_t));
+            search->pack = pak;
+            search->next = fs_searchpaths;
+            fs_searchpaths = search;		
+        }
+        FS_FreeList(paklist, nfiles);
+    }
+
+	// add the directory to the search path here, so it overrides pak/pkx
+	search = Z_Malloc (sizeof(searchpath_t));
+	strcpy (search->filename, dir);
+	search->next = fs_searchpaths;
+	fs_searchpaths = search;
 }
 
 #endif
@@ -686,6 +688,29 @@ void FS_ExecAutoexec (void)
 	if (Sys_FindFirst(name, 0, SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM))
 		Cbuf_AddText ("exec autoexec.cfg\n");
 	Sys_FindClose();
+}
+
+/*
+ * ================
+ * FS_AddHomeAsGameDirectory
+ *
+ * Use ~/.quake2xp/dir as fs_gamedir.
+ * ================
+ */
+static void
+FS_AddHomeAsGameDirectory(char *dir)
+{
+#ifndef _WIN32
+	char		gdir[MAX_OSPATH];	/* Game directory. */
+	char           *homedir;		/* Home directory. */
+
+	if ((homedir = getenv("HOME")) != NULL) {
+		Com_sprintf(gdir, sizeof(gdir), "%s/.quake2xp/%s", homedir, dir);
+		FS_AddGameDirectory(gdir);
+	}
+#else
+    // TODO: add C:\Users\username\...\Quake2XP\dir to path here, to use for saving files
+#endif
 }
 
 
@@ -744,6 +769,7 @@ void FS_SetGamedir (char *dir)
 		if (fs_cddir->string[0])
 			FS_AddGameDirectory (va("%s/%s", fs_cddir->string, dir) );
 		FS_AddGameDirectory (va("%s/%s", fs_basedir->string, dir) );
+		FS_AddHomeAsGameDirectory(dir);
 	}
 }
 
@@ -908,7 +934,6 @@ char *FS_NextPath (char *prevpath)
 	return NULL;
 }
 
-
 /*
 ================
 FS_InitFilesystem
@@ -938,6 +963,7 @@ void FS_InitFilesystem (void)
 
 	// start up with baseq2 by default
 	FS_AddGameDirectory (va("%s/"BASEDIRNAME, fs_basedir->string) );
+	FS_AddHomeAsGameDirectory(BASEDIRNAME);
 
 	// any set gamedirs will be freed up to here
 	fs_base_searchpaths = fs_searchpaths;
@@ -949,6 +975,8 @@ void FS_InitFilesystem (void)
 
 	/* Create directory if it does not exist. */
 	Sys_Mkdir(fs_gamedir);
+
+	Com_Printf("Using '%s' for writing\n", fs_gamedir);
 }
 
 // only lists pk3 contents currently

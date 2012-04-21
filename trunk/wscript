@@ -8,21 +8,19 @@
 #   sense as some frames fit on a timeslice uninterrupted by the scheduler
 #   because it uses usleep() often (and then is where it pauses)
 # - there are some commands not in menu: {hi,medium,low}_spec
+# - cl_maxfps works fine at 60, and uses usleep() to wait
 #
 # TODO list
 #
 # important
 # - bring back X-RAM code with #ifdef _WIN32
-# - add menu item to limit FPS in Video options
-# - test additional mouse buttons (5, 6, etc) and extra trackball ones
+# - upload data in ZIP format or just PKX to sourceforge.net
 # - get launchpad account, create Ubuntu package and promote in
 #   forums (english and spanish)
-# - play complete single player campaign (saving at some points) to test
 #
 # other/maybe
 # - add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
 # - add support for Zaero expansion pack (check Yamagi Q2 and QuDos)
-# - in the future, use icculus.org's PhysicsFS to handle paths/pak/pkx
 
 
 VERSION = '1.0'
@@ -75,12 +73,12 @@ def build(bld):
     #src_dir = bld.path.find_dir('src')
 
     #bld.env.append_value('CFLAGS', ['-flax-vector-conversions'])
-    #bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
+    bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
     #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-ftree-vectorize', '-ftree-vectorizer-verbose=2'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
     #bld.env.append_value('CFLAGS', ['-g'])
-    bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-pg'])
-    bld.env.append_value('LINKFLAGS', ['-pg'])
+    #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-pg'])
+    #bld.env.append_value('LINKFLAGS', ['-pg'])
     #bld.env.append_value('CFLAGS', ['-fopenmp', '-g'])
     #bld.env.append_value('LINKFLAGS', ['-fopenmp'])
 
