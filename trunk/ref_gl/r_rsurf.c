@@ -509,7 +509,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	int			smax, tmax, counter=0;
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
-		
+
 	for (i=0; i<num_scene_surfaces; i++)
 	{
 	s=scene_surfaces[i];

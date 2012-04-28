@@ -1045,7 +1045,6 @@ void SCR_DrawFPS(void)
 	}
 
 	if (cl_drawfps->value && (cls.state == ca_active)) {
-		RE_SetColor(colorGreen);
 		Draw_StringScaled(viddef.width - 65*fontscale, viddef.height*0.8, fontscale, fontscale, str);
 		RE_SetColor(NULL);
 	}

@@ -21,21 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 
-typedef enum {
-	ex_free, ex_explosion, ex_misc, ex_flash, ex_mflash, ex_poly, ex_poly2
-} exptype_t;
-
-typedef struct {
-	exptype_t type;
-	entity_t ent;
-
-	int frames;
-	float light;
-	vec3_t lightcolor;
-	float start;
-	int baseframe;
-} explosion_t;
-
 void CL_ParticleGibBlood2(vec3_t org);
 
 #define	MAX_EXPLOSIONS	32
@@ -869,7 +854,6 @@ void CL_ParseTEnt(void)
 		CL_RailTrail(pos, pos2);
 		
 		CL_FindRailedSurface(pos,pos2,dir);
-
 	
 		CL_AddDecalToScene(pos2, dir,
 						   1, 1, 1, 1,

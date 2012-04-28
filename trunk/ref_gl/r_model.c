@@ -1836,7 +1836,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	float			s, t;
 	float			iw, ih;
 	byte			smooth;
-	int				ax, cx;
+	int				cx;
 	vec3_t			binormals_[MAX_VERTS];
 	vec3_t			tangents_[MAX_VERTS];
 	char			cachename[MAX_OSPATH];

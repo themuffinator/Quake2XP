@@ -310,6 +310,13 @@ typedef struct msurface_s {
 	index_t	*indices;
 	unsigned int sort;
 
+		//vbo
+	size_t vbo_pos;
+	int	xyz_size;
+	int st_size;
+	int lm_size;
+	int has_vbo;
+
 } msurface_t;
 
 

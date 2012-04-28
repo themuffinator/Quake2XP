@@ -95,6 +95,21 @@ extern viddef_t viddef;
 #define id_cl_sfx_disrexp		39
 #define id_radar_sound			40
 
+typedef enum {
+	ex_free, ex_explosion, ex_misc, ex_flash, ex_mflash, ex_poly, ex_poly2
+} exptype_t;
+
+typedef struct {
+	exptype_t type;
+	entity_t ent;
+
+	int frames;
+	float light;
+	vec3_t lightcolor;
+	float start;
+	int baseframe;
+} explosion_t;
+
 
 //=============================================================================
 #include "../game/game.h"
