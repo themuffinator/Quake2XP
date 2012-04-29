@@ -462,7 +462,6 @@ void R_InitPrograms(void) {
 	if(diffuseProgram->valid){
 		Com_Printf("succeeded\n");
 
-		worldDefs.CausticsBit		= R_GetProgramDefBits(diffuseProgram, "CAUSTICS");
 		worldDefs.ParallaxBit		= R_GetProgramDefBits(diffuseProgram, "PARALLAX");
 		worldDefs.LightmapBits		= R_GetProgramDefBits(diffuseProgram, "LIGHTMAP");
 		worldDefs.VertexLightBits	= R_GetProgramDefBits(diffuseProgram, "VERTEXLIGHT");

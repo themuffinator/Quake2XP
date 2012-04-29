@@ -340,8 +340,6 @@ void R_PushDlights(void);
 
 
 void GL_PicsColorScaleARB(qboolean enable);
-void SetLevelOverbright(void);
-void R_Register2(void);
 void R_InitLightgrid(void);
 void R_RenderFlares(void);
 
@@ -360,7 +358,6 @@ void R_DrawAliasDistortModel (entity_t *e);
 void VID_MenuInit( void );
 void AnglesToMat3(const vec3_t angles, mat3_t m);
 void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out);
-void R_LightPointDynamics (vec3_t p, vec3_t color, m_dlight_t *list, int *amount, int max);
 void R_ShutdownPrograms(void);
 void GL_BindNullProgram(void) ;
 void GL_BindRect(int texnum);
@@ -418,9 +415,6 @@ extern qboolean inwater;
 extern qboolean nodrawmodel;
 extern unsigned char lightmap_gammatable[256];
 
-
-void V_AddBlend(float r, float g, float b, float a, float *v_blend);
-
 int R_Init(void *hinstance, void *hWnd);
 void R_Shutdown(void);
 
@@ -435,16 +429,10 @@ void R_RenderDlights(void);
 void R_RenderBrushPoly(msurface_t * fa);
 void R_InitEngineTextures(void);
 void R_LoadFont(void);
-void GL_SubdivideSurface(msurface_t * fa);
-void GL_SubdivideLightmappedSurface(msurface_t * fa, float subdivide_size);	// Heffo 
-																			// surface 
-																			// subdivision
+
 qboolean R_CullBox(vec3_t mins, vec3_t maxs);
 void R_RotateForEntity(entity_t * e);
 void R_MarkLeaves(void);
-void R_EnableScreenMatrix(void);
-void R_DisableScreenMatrix(void);
-glpoly_t *WaterWarpPolyVerts(glpoly_t * p);
 void R_DrawWaterPolygons(msurface_t * fa);
 void R_AddSkySurface(msurface_t * fa);
 void R_ClearSkyBox(void);
@@ -463,7 +451,6 @@ void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows,
 					 byte * data);
 
 void R_BeginFrame();
-void R_SwapBuffers(int);
 void R_SetPalette(const unsigned char *palette);
 
 int Draw_GetPalette(void);
@@ -481,7 +468,6 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 
 image_t *GL_FindImage(char *name, imagetype_t type);
 
-image_t *R_AutoRelief(char *name, imagetype_t type);
 void GL_TextureMode(char *string);
 void GL_ImageList_f(void);
 
@@ -489,13 +475,8 @@ void GL_InitImages(void);
 void GL_ShutdownImages(void);
 
 void GL_FreeUnusedImages(void);
-
-void GL_TextureAlphaMode(char *string);
-void GL_TextureSolidMode(char *string);
 qboolean R_CullOrigin(vec3_t origin);
-void R_InitSun();
-void R_RenderSun();
-byte *R_HeightToNormal(byte *data, int width, int height);
+
 /*
 ** GL extension emulation functions
 */
@@ -503,17 +484,7 @@ void GL_DrawParticles();
 void R_TransformToScreen_Vec3(vec3_t in, vec3_t out);
 void GL_Blend(qboolean on, int dst, int src);
 
-void R_DesaturateImage(byte *data, int size, float amount);
-void R_AutoLevelImage(byte *data, int size);
-byte *R_HeightToNormal(byte *data, int width, int height);
-
-void  VLight_Init (void);
-float VLight_LerpLight ( int index1, int index2, float ilerp, vec3_t dir, vec3_t angles, qboolean dlight );
-
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
-void GL_SetupLightMatrix();
-void GL_CleanLightMatrix();
-void R_DrawShadowWorld(void);
 qboolean SurfInFrustum(msurface_t *s);
 extern vec3_t currentShadowLight;
 
@@ -767,19 +738,6 @@ typedef enum glsl_attribute
 
 }
 glsl_attrib;
-
-#define	SRGB_EXT                                       0x8C40
-#define	SRGB8_EXT                                      0x8C41
-#define	SRGB_ALPHA_EXT                                 0x8C42
-#define	SRGB8_ALPHA8_EXT                               0x8C43
-#define	SLUMINANCE_ALPHA_EXT                           0x8C44
-#define	SLUMINANCE8_ALPHA8_EXT                         0x8C45
-#define	SLUMINANCE_EXT                                 0x8C46
-#define	SLUMINANCE8_EXT                                0x8C47
-#define	COMPRESSED_SRGB_EXT                            0x8C48
-#define	COMPRESSED_SRGB_ALPHA_EXT                      0x8C49
-#define	COMPRESSED_SLUMINANCE_EXT                      0x8C4A
-#define	COMPRESSED_SLUMINANCE_ALPHA_EXT                0x8C4B
 
 #define MAX_VBO_XYZs		65536
 

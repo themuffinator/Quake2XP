@@ -508,23 +508,9 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	unsigned	temp[128 * 128];
 	int			smax, tmax, counter=0;
 
-	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
-
-	for (i=0; i<num_scene_surfaces; i++)
-	{
-	s=scene_surfaces[i];
-	image = R_TextureAnimation(s->texinfo);
-	fx    = R_TextureAnimationFx(s->texinfo);
-	nm    = R_TextureAnimationNormal(s->texinfo);
-	lmtex = s->lightmaptexturenum;
-	
-
 	defBits = worldDefs.LightmapBits;
-	
-	if(caustics || (s->flags & SURF_WATER))
-		defBits |= worldDefs.CausticsBit;
-	
-	if (image->has_alpha && r_parallax->value)
+
+	if (r_parallax->value)
 		defBits |= worldDefs.ParallaxBit;
 	
 	if (r_bumpWorld->value)
@@ -536,9 +522,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
 
-	if(caustics || (s->flags & SURF_WATER))
-		qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
-
 	if(r_bumpWorld->value || r_parallax->value){
 	if(bmodel)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
@@ -547,11 +530,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	}
 
 	if(r_parallax->value){
-	scale[0] = r_parallaxScale->value / image->width;
-	scale[1] = r_parallaxScale->value / image->height;
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
-	qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
-	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
 	}
 
 	if(r_bumpWorld->value){
@@ -620,6 +599,29 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		counter ++;
 		}
 	}
+
+	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
+
+	for (i=0; i<num_scene_surfaces; i++)
+	{
+	s=scene_surfaces[i];
+	image = R_TextureAnimation(s->texinfo);
+	fx    = R_TextureAnimationFx(s->texinfo);
+	nm    = R_TextureAnimationNormal(s->texinfo);
+	lmtex = s->lightmaptexturenum;
+	
+	if(r_parallax->value){
+	scale[0] = r_parallaxScale->value / image->width;
+	scale[1] = r_parallaxScale->value / image->height;
+	qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
+	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
+	}
+
+	if(caustics || (s->flags & SURF_WATER)){
+		qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
+		qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 1);
+	}else
+		qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 0);
 
 	GL_CreateParallaxLmPoly(s);
 
@@ -720,11 +722,9 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
 	}
 	r_currTex = s->texinfo->image->texnum;
-
-	GL_BindNullProgram();
 }
 	
-	
+	GL_BindNullProgram();
 }
 
 
