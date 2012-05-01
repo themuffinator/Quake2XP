@@ -12,6 +12,7 @@ uniform vec2			u_parallaxScale;
 uniform int				u_parallaxType;
 uniform int				u_numLights;
 uniform int				u_activeLights;
+uniform int				u_isCaustics;
 uniform vec3			u_LightColor[13];
 uniform float			u_LightRadius[13];
 
@@ -117,7 +118,6 @@ specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
 
-
 #ifdef VERTEXLIGHT
 diffuseMap *= clamp(v_color, 0.0, 0.666);
 #endif
@@ -160,12 +160,12 @@ diffuseMap *= lightMap;
 
 vec4 finalColor = diffuseMap + glowMap;
 
-#ifdef CAUSTICS
+if (u_isCaustics == 1){
 vec4 tmp;
 tmp = causticsMap * finalColor;
 tmp *= u_CausticsModulate;
 finalColor = tmp + finalColor;
-#endif
+}
 
 // Add dinamyc lights
 if(u_numLights <= 13 && u_numLights > 0  && u_activeLights == 1){
@@ -316,12 +316,12 @@ diffuseMap *= lightMap;
 
 vec4 finalColor = diffuseMap + glowMap;
 
-#ifdef CAUSTICS
+if (u_isCaustics == 1){
 vec4 tmp;
 tmp = causticsMap * finalColor;
 tmp *= u_CausticsModulate;
 finalColor = tmp + finalColor;
-#endif
+}
 
 #endif
 
