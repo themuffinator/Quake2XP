@@ -640,14 +640,15 @@ void R_BlobShadow(void){
 	
 	if(r_shadows->value != 1)
 		return;
-	
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, 0, bsTextCoord);
-	qglEnableClientState(GL_COLOR_ARRAY);
-	qglColorPointer(4, GL_FLOAT, 0, bsColor);
-	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglVertexPointer(3, GL_FLOAT, 0, bsVert);
-	
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_COLOR);
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, bsVert);	
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, bsTextCoord);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, bsColor);
+
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
@@ -764,9 +765,9 @@ void R_BlobShadow(void){
 	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglDisable(GL_BLEND);
 	qglDepthMask(1);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisableClientState(GL_COLOR_ARRAY);
-	qglDisableClientState(GL_VERTEX_ARRAY);
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_BindNullProgram();
 	
 }
