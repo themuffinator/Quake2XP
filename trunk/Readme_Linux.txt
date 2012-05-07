@@ -47,6 +47,10 @@ You can also uninstall it with the "uninstall" target.
 3. Notes
 ==============================================================================
 
+document important cvars (not in menu) here
+document music subsystem
+document how to install update from IdSoftware's FTP
+add something about the cache
 ...
 
 ==============================================================================
