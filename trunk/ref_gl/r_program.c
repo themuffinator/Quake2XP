@@ -452,6 +452,8 @@ R_InitPrograms
 =============
 */
 void R_InitPrograms(void) {
+	int missing = 0;
+	
 	Com_Printf("\nInitializing programs...\n\n");
 	
 	memset(programHashTable, 0, sizeof(programHashTable));
@@ -466,6 +468,9 @@ void R_InitPrograms(void) {
 		worldDefs.LightmapBits		= R_GetProgramDefBits(diffuseProgram, "LIGHTMAP");
 		worldDefs.VertexLightBits	= R_GetProgramDefBits(diffuseProgram, "VERTEXLIGHT");
 		worldDefs.BumpBits			= R_GetProgramDefBits(diffuseProgram, "BUMP");
+	} else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
 	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"ambient model program"S_COLOR_WHITE" ");
@@ -476,8 +481,10 @@ void R_InitPrograms(void) {
 		worldDefs.CausticsBit = R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
 		worldDefs.ShellBits = R_GetProgramDefBits(aliasAmbientProgram, "SHELL");
 
-	} else
+	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 
 	Com_Printf("Load "S_COLOR_YELLOW"bump model program"S_COLOR_WHITE" ");
@@ -485,8 +492,10 @@ void R_InitPrograms(void) {
 
 	if(aliasBumpProgram->valid)
 		Com_Printf("succeeded\n");
-	else
+	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 	
 	Com_Printf("Load "S_COLOR_YELLOW"gauss blur program"S_COLOR_WHITE" ");
 	gaussXProgram = R_FindProgram("gaussX", true, true);
@@ -494,22 +503,28 @@ void R_InitPrograms(void) {
 	
 	if(gaussXProgram->valid && gaussYProgram->valid)
 		Com_Printf("succeeded\n");
-	else
+	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"radial blur program"S_COLOR_WHITE" ");
 	radialProgram = R_FindProgram("radialBlur", true, true);
 	if(radialProgram->valid)
 		Com_Printf("succeeded\n");
-	else
+	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 	
 	Com_Printf("Load "S_COLOR_YELLOW"dof blur program"S_COLOR_WHITE" ");
 	dofProgram = R_FindProgram("dof", true, true);
 	if(dofProgram->valid)
 		Com_Printf("succeeded\n");
-	else
+	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 	
 	Com_Printf("Load "S_COLOR_YELLOW"bloom program"S_COLOR_WHITE" ");
 	bloomdsProgram = R_FindProgram("bloomds", true, true);
@@ -517,8 +532,10 @@ void R_InitPrograms(void) {
 
 	if(bloomfpProgram->valid)
 		Com_Printf("succeeded\n");
-	else
+	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 	
 	Com_Printf("Load "S_COLOR_YELLOW"refraction program"S_COLOR_WHITE" ");
 	refractProgram = R_FindProgram("refract", true, true);
@@ -527,8 +544,10 @@ void R_InitPrograms(void) {
 
 		worldDefs.AlphaMaskBits	 = R_GetProgramDefBits(refractProgram, "ALPHAMASK");
 		Com_Printf("succeeded\n");
-	}else
+	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 		
 	Com_Printf("Load "S_COLOR_YELLOW"thermal vision program"S_COLOR_WHITE" ");
@@ -538,8 +557,10 @@ void R_InitPrograms(void) {
 
 	if(thermalProgram->valid && thermalfpProgram)
 		Com_Printf("succeeded\n");
-	else
+	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"water program"S_COLOR_WHITE" ");
 	waterProgram = R_FindProgram("water", true, true);
@@ -547,66 +568,84 @@ void R_InitPrograms(void) {
 
 	if(waterProgram->valid){
 		Com_Printf("succeeded\n");
-	}else
+	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"particles program"S_COLOR_WHITE" ");
 	particlesProgram =  R_FindProgram("particles", true, true);
 
 	if(particlesProgram->valid){
 		Com_Printf("succeeded\n");
-	}else
+	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"shadow program"S_COLOR_WHITE" ");
 	shadowProgram =  R_FindProgram("shadow", true, true);
 	
 	if(shadowProgram->valid){
 		Com_Printf("succeeded\n");
-	}else
+	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"generic program"S_COLOR_WHITE" ");
 	genericProgram =  R_FindProgram("generic", true, true);
 	
 	if(genericProgram->valid){
 		Com_Printf("succeeded\n");
-	}else
+	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"cinematic program"S_COLOR_WHITE" ");
 	cinProgram =  R_FindProgram("cin", true, true);
 	
 	if(cinProgram->valid){
 		Com_Printf("succeeded\n");
-	}else
+	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"load screen program"S_COLOR_WHITE" ");
 	loadingProgram =  R_FindProgram("loading", true, true);
 	
 	if(loadingProgram->valid){
 		Com_Printf("succeeded\n");
-	}else
+	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"fxaa program"S_COLOR_WHITE" ");
 	fxaaProgram =  R_FindProgram("fxaa", true, true);
 	
 	if(fxaaProgram->valid){
 		Com_Printf("succeeded\n");
-	}else
+	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"film grain program"S_COLOR_WHITE" ");
 	filmGrainProgram =  R_FindProgram("filmGrain", true, true);
 	
 	if(filmGrainProgram->valid){
 		Com_Printf("succeeded\n");
-	}else
+	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("\n");
+	if (missing > 0)
+		Com_Error(ERR_FATAL, "%d programs couldn't be found\n", missing);
 }
 
 /*
