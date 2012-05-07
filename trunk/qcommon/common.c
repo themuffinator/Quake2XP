@@ -1510,9 +1510,9 @@ qboolean CheckNetCompatibility(void)
 
     for (i = 0; i < COM_Argc(); i++) {
         s = COM_Argv(i);
-        if (stricmp(s, "+set"))
+        if (Q_stricmp(s, "+set"))
             continue;
-	if (!stricmp(COM_Argv(i + 1), "net_compatibility")) {
+	if (!Q_stricmp(COM_Argv(i + 1), "net_compatibility")) {
 	
 		if (atoi(COM_Argv(i + 2))) {
 		//  делаем то что нужно поповоду дефолт конфига то есть как при net_compatibility === 1

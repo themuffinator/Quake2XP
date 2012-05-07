@@ -345,48 +345,53 @@ void Use_Weapon (edict_t *ent, gitem_t *item)
 
 void Extr_Shell_Touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
-gi.sound(self, CHAN_VOICE, gi.soundindex("misc/brass_shell.wav"), 1, ATTN_NORM, 0);
-self->solid = SOLID_NOT;
+	gi.sound(self, CHAN_VOICE, gi.soundindex("misc/brass_shell.wav"), 1, ATTN_NORM, 0);
+	self->solid = SOLID_NOT;
 }
 
 
 void Extr_Shell (edict_t *self, char *modelname, vec3_t start, vec3_t aimdir, int speed, vec3_t velocity, char *kierunek)
 {
-edict_t *Extr_Shell;
-vec3_t dir;
-vec3_t forward, right, up;
-return;
-        if (deathmatch->value || coop->value)
-                return; 
+	edict_t *Extr_Shell;
+	vec3_t dir;
+	vec3_t forward, right, up;
 
-vectoangles (aimdir, dir);
-AngleVectors (dir, forward, right,  up);
-Extr_Shell = G_Spawn();
-VectorCopy (start, Extr_Shell->s.origin);
-VectorCopy (aimdir, Extr_Shell->movedir);
-VectorCopy (velocity, Extr_Shell->velocity);
-vectoangles (aimdir, Extr_Shell->s.angles);
-VectorMA (Extr_Shell->velocity, 120 + random()*20, up, Extr_Shell->velocity);
-if (!stricmp(kierunek, "right"))
-VectorMA (Extr_Shell->velocity, -80 - random()*20, right, Extr_Shell->velocity);
-else
-VectorMA (Extr_Shell->velocity, 80 + random()*20, right, Extr_Shell->velocity);
-Extr_Shell->avelocity[0] = random()*600;
-Extr_Shell->avelocity[1] = random()*600;
-Extr_Shell->avelocity[2] = random()*600;
-gi.setmodel (Extr_Shell, modelname);
-Extr_Shell->movetype = MOVETYPE_BOUNCE;
-Extr_Shell->clipmask = MASK_SHOT;
-Extr_Shell->solid = SOLID_BBOX;
-Extr_Shell->owner = self;
-VectorSet(Extr_Shell->mins, -1.5, -0.6, -0.55);
-VectorSet(Extr_Shell->maxs, 1.5, 0.6, 0.55);
-//Extr_Shell->nextthink = level.time + 25 + random()*1;
-Extr_Shell->nextthink = level.time + 2 + random()*1; 
-Extr_Shell->think = G_FreeEdict;
-Extr_Shell->touch = Extr_Shell_Touch;
-Extr_Shell->classname = "Extr_Shell";
-gi.linkentity (Extr_Shell);
+	// FIXME: remove code if not used
+	return;
+	
+	if (deathmatch->value || coop->value)
+			return; 
+
+	vectoangles (aimdir, dir);
+	AngleVectors (dir, forward, right,  up);
+	Extr_Shell = G_Spawn();
+	VectorCopy (start, Extr_Shell->s.origin);
+	VectorCopy (aimdir, Extr_Shell->movedir);
+	VectorCopy (velocity, Extr_Shell->velocity);
+	vectoangles (aimdir, Extr_Shell->s.angles);
+	VectorMA (Extr_Shell->velocity, 120 + random()*20, up, Extr_Shell->velocity);
+
+	if (!Q_stricmp(kierunek, "right"))
+		VectorMA (Extr_Shell->velocity, -80 - random()*20, right, Extr_Shell->velocity);
+	else
+		VectorMA (Extr_Shell->velocity, 80 + random()*20, right, Extr_Shell->velocity);
+
+	Extr_Shell->avelocity[0] = random()*600;
+	Extr_Shell->avelocity[1] = random()*600;
+	Extr_Shell->avelocity[2] = random()*600;
+	gi.setmodel (Extr_Shell, modelname);
+	Extr_Shell->movetype = MOVETYPE_BOUNCE;
+	Extr_Shell->clipmask = MASK_SHOT;
+	Extr_Shell->solid = SOLID_BBOX;
+	Extr_Shell->owner = self;
+	VectorSet(Extr_Shell->mins, -1.5, -0.6, -0.55);
+	VectorSet(Extr_Shell->maxs, 1.5, 0.6, 0.55);
+	//Extr_Shell->nextthink = level.time + 25 + random()*1;
+	Extr_Shell->nextthink = level.time + 2 + random()*1; 
+	Extr_Shell->think = G_FreeEdict;
+	Extr_Shell->touch = Extr_Shell_Touch;
+	Extr_Shell->classname = "Extr_Shell";
+	gi.linkentity (Extr_Shell);
 }
 
 

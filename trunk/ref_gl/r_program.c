@@ -125,7 +125,7 @@ static glslProgram_t *R_ProgramForName(const char *name) {
 	hash = Com_HashKey(name, PROGRAM_HASH_SIZE);
 
 	for (program=programHashTable[hash]; program; program=program->nextHash) {
-		if(!stricmp(program->name, name))
+		if(!Q_stricmp(program->name, name))
 			return program;
 	}
 

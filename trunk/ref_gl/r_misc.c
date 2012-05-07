@@ -420,25 +420,25 @@ void GL_ScreenShot_f(void)
 	int i, image = 0;
 	ILuint ImagesToSave[1];
 
-	if (stricmp(r_screenShot->string, "jpg") != 0 &&
-		stricmp(r_screenShot->string, "tga") != 0 &&
-		stricmp(r_screenShot->string, "png") != 0 &&
-		stricmp(r_screenShot->string, "bmp") != 0 &&
-		stricmp(r_screenShot->string, "tif") != 0 &&
-		stricmp(r_screenShot->string, "pcx") != 0)
+	if (Q_stricmp(r_screenShot->string, "jpg") != 0 &&
+		Q_stricmp(r_screenShot->string, "tga") != 0 &&
+		Q_stricmp(r_screenShot->string, "png") != 0 &&
+		Q_stricmp(r_screenShot->string, "bmp") != 0 &&
+		Q_stricmp(r_screenShot->string, "tif") != 0 &&
+		Q_stricmp(r_screenShot->string, "pcx") != 0)
 			Cvar_Set("r_screenShot", "jpg");
 
-	if (!stricmp(r_screenShot->string, "tga"))
+	if (!Q_stricmp(r_screenShot->string, "tga"))
 		image = IL_TGA;
-	if (!stricmp(r_screenShot->string, "png"))
+	if (!Q_stricmp(r_screenShot->string, "png"))
 		image = IL_PNG;
-	if (!stricmp(r_screenShot->string, "bmp"))
+	if (!Q_stricmp(r_screenShot->string, "bmp"))
 		image = IL_BMP;
-	if (!stricmp(r_screenShot->string, "pcx"))
+	if (!Q_stricmp(r_screenShot->string, "pcx"))
 		image = IL_PCX;
-	if (!stricmp(r_screenShot->string, "jpg"))
+	if (!Q_stricmp(r_screenShot->string, "jpg"))
 		image = IL_JPG;
-	if (!stricmp(r_screenShot->string, "tif"))
+	if (!Q_stricmp(r_screenShot->string, "tif"))
 		image = IL_TIF;
 
 	// Create the scrnshots directory if it doesn't exist

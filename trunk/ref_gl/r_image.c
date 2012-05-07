@@ -275,35 +275,35 @@ void GL_TextureMode(char *string)
 
 	strlwr(string);
 
-	if (stricmp(r_textureMode->string,	"GL_NEAREST") != 0 &&
-	stricmp(r_textureMode->string,		"GL_LINEAR") != 0 &&
-	stricmp(r_textureMode->string,		"GL_NEAREST_MIPMAP_NEAREST") != 0 &&
-	stricmp(r_textureMode->string,		"GL_LINEAR_MIPMAP_NEAREST") != 0 &&
-	stricmp(r_textureMode->string,		"GL_NEAREST_MIPMAP_LINEAR") != 0 &&
-	stricmp(r_textureMode->string,		"GL_LINEAR_MIPMAP_LINEAR") != 0)
+	if (Q_stricmp(r_textureMode->string,	"GL_NEAREST") != 0 &&
+	Q_stricmp(r_textureMode->string,		"GL_LINEAR") != 0 &&
+	Q_stricmp(r_textureMode->string,		"GL_NEAREST_MIPMAP_NEAREST") != 0 &&
+	Q_stricmp(r_textureMode->string,		"GL_LINEAR_MIPMAP_NEAREST") != 0 &&
+	Q_stricmp(r_textureMode->string,		"GL_NEAREST_MIPMAP_LINEAR") != 0 &&
+	Q_stricmp(r_textureMode->string,		"GL_LINEAR_MIPMAP_LINEAR") != 0)
 	Cvar_Set("r_textureMode",			"GL_NEAREST");
 	
-	if (!stricmp(r_textureMode->string, "GL_NEAREST")){
+	if (!Q_stricmp(r_textureMode->string, "GL_NEAREST")){
 		gl_filter_min = GL_NEAREST;
 		gl_filter_max = GL_NEAREST;
 	}
-	if (!stricmp(r_textureMode->string, "GL_LINEAR")){
+	if (!Q_stricmp(r_textureMode->string, "GL_LINEAR")){
 		gl_filter_min = GL_LINEAR;
 		gl_filter_max = GL_LINEAR;
 	}
-	if (!stricmp(r_textureMode->string, "GL_NEAREST_MIPMAP_NEAREST")){
+	if (!Q_stricmp(r_textureMode->string, "GL_NEAREST_MIPMAP_NEAREST")){
 		gl_filter_min = GL_NEAREST_MIPMAP_NEAREST;
 		gl_filter_max = GL_NEAREST;
 	}
-	if (!stricmp(r_textureMode->string, "GL_LINEAR_MIPMAP_NEAREST")){
+	if (!Q_stricmp(r_textureMode->string, "GL_LINEAR_MIPMAP_NEAREST")){
 		gl_filter_min = GL_LINEAR_MIPMAP_NEAREST;
 		gl_filter_max = GL_LINEAR;
 	}
-	if (!stricmp(r_textureMode->string, "GL_NEAREST_MIPMAP_LINEAR")){
+	if (!Q_stricmp(r_textureMode->string, "GL_NEAREST_MIPMAP_LINEAR")){
 		gl_filter_min = GL_NEAREST_MIPMAP_LINEAR;
 		gl_filter_max = GL_NEAREST;
 	}
-	if (!stricmp(r_textureMode->string, "GL_LINEAR_MIPMAP_LINEAR")){
+	if (!Q_stricmp(r_textureMode->string, "GL_LINEAR_MIPMAP_LINEAR")){
 		gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;
 		gl_filter_max = GL_LINEAR;
 	}
@@ -1175,20 +1175,16 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 		if (scaled_height > max_size)
 			scaled_height = max_size;
 	}
-	
-		
-	if (scaled_width == width && scaled_height == height) {
 
+	if (scaled_width == width && scaled_height == height) {
 		scaled_width = width;
 		scaled_height = height;
 		scaled = data;
-
-	} else
-		scaled = (unsigned int*)malloc((scaled_width * scaled_height) * 4);
-	
-
-	GL_ResampleTexture(data, width, height, scaled, scaled_width,
-					   scaled_height);
+        
+	} else {
+		scaled = malloc((scaled_width * scaled_height) * 4);
+        GL_ResampleTexture(data, width, height, scaled, scaled_width, scaled_height);
+    }
 
 
 	if (mipmap) {

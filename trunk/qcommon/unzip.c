@@ -971,7 +971,7 @@ extern int ZEXPORT unzLocateFile (unzFile file, const char *szFileName, int iCas
 
 	for (i = 0; i < s->counts[key]; i++)
 	{
-		if (!stricmp(szFileName, s->cache[key][i].name))
+		if (!Q_stricmp(szFileName, s->cache[key][i].name))
 		{
 			s->pos_in_central_dir = s->cache[key][i].pos_in_central_dir;
 			err = unzlocal_GetCurrentFileInfoInternal(file, &s->cur_file_info,
