@@ -60,15 +60,17 @@ void Music_Init(void) {
 	music_type = s_musicsrc->value;
 	mstat = MSTAT_STOPPED;
 
-	Com_Printf("\n========Init Music subsistem========\n\n");
+	Com_Printf("\n======== Init Music subsistem =======\n\n");
 
 	switch (music_type) {
 		case MUSIC_NONE:
 			return;
 		case MUSIC_CD:
 			CDAudio_Init();
+	Com_Printf("=====================================\n\n");
 			break;
 		case MUSIC_CD_FILES:
+	Com_Printf("=====================================\n\n");
 			break;
 		case MUSIC_OTHER_FILES:
 			Q_snprintfz(path, sizeof(path), "%s/music/*", FS_Gamedir());
@@ -79,7 +81,7 @@ void Music_Init(void) {
 			fsNameOffset = strlen(FS_Gamedir())+1;
 
 			if (fsList != NULL)
-				Com_Printf(S_COLOR_YELLOW "found "S_COLOR_GREEN"%d "S_COLOR_YELLOW"music files\n\n", fsNumFiles);
+				Com_DPrintf(S_COLOR_YELLOW "found "S_COLOR_GREEN"%d "S_COLOR_YELLOW"music files\n\n", fsNumFiles);
 			Com_Printf("====================================\n\n");
 			break;
 		default:
@@ -156,7 +158,7 @@ void Music_Play(void) {
 			break;
 
 		case MUSIC_CD_FILES:
-			Q_snprintfz(name, sizeof(name), "music/%02i", track);
+			Q_snprintfz(name, sizeof(name), "music/track%02i", track);
 			Music_PlayFile(name, false);
 			break;
 

@@ -501,12 +501,12 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	image_t		*image, *fx, *nm;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
-	int			id, i, map, j;
+	int		id, i, map, j;
 	float		scale[2];
 	qboolean	is_dynamic = false;
 	dlight_t	*dl;
 	unsigned	temp[128 * 128];
-	int			smax, tmax, counter=0;
+	int		smax, tmax, counter=0;
 
 	defBits = worldDefs.LightmapBits;
 
