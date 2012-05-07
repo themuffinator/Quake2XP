@@ -9,6 +9,7 @@
 #   because it uses usleep() often (and then is where it pauses)
 # - there are some commands not in menu: {hi,medium,low}_spec
 # - cl_maxfps works fine at 60, and uses usleep() to wait
+# - optimizing GL_ResampleTextures or HACK_RecalcVertsLightNormalIdx is useless
 #
 # TODO list
 #
@@ -16,8 +17,9 @@
 # - upload data in ZIP format or just PKX to sourceforge.net
 # - get launchpad account, create Ubuntu package and promote in
 #   forums (english and spanish)
-# - add cache for GL_Resample...
-# - write README_linux.txt with notes and compilation instructions
+#
+# - add target to create source distribution for ubuntu package
+# - use correct version number below
 #
 # other/maybe
 # - add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
@@ -53,6 +55,8 @@ sources_glob = {
         ]
 }
 
+#def dist(ctx):
+
 def options(opt):
     opt.load('compiler_c')
 
@@ -65,10 +69,10 @@ def build(bld):
     src_dir = bld.srcnode
     #src_dir = bld.path.find_dir('src')
 
-    #bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
+    bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
-    bld.env.append_value('CFLAGS', ['-pg', '-O3', '-march=native'])
-    bld.env.append_value('LINKFLAGS', ['-pg'])
+    #bld.env.append_value('CFLAGS', ['-pg', '-O3', '-march=native'])
+    #bld.env.append_value('LINKFLAGS', ['-pg'])
 
     # Expand source files
     sources = {}
@@ -84,22 +88,26 @@ def build(bld):
     bld.shlib(
         source = sources['game'],
         target = 'baseq2/gamexp',
+        install_path = '${PREFIX}/share/quake2xp/baseq2',
         env = genv
         )
 
     bld.shlib(
         source = sources['xatrix'],
         target = 'xatrix/gamexp',
+        install_path = '${PREFIX}/share/quake2xp/xatrix',
         env = genv
         )
 
     bld.shlib(
         source = sources['3zb2'],
         target = '3zb2/gamexp',
+        install_path = '${PREFIX}/share/quake2xp/3zb2',
         env = genv
         )
 
     bld.program(
+        cflags = '-DSYSTEMWIDE=' + '"' + bld.env.PREFIX + '/share/quake2xp' + '"',
         source = sources['client'],
         target = 'quake2xp',
         lib = ['z', 'm', 'dl'],

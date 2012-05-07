@@ -234,10 +234,10 @@ extern cvar_t *net_compatibility;
 void           *
 Sys_GetGameAPI(void *parms)
 {
-	void           *(*GetGameAPI) (void *);
-	FILE           *fp;
+	void		*(*GetGameAPI) (void *);
+	FILE		*fp;
 	char		name[MAX_OSPATH];
-	char           *path;
+	char		*path;
 	const char	*gamename;
 
     gamename = (net_compatibility->value) ? "game.so" : "gamexp.so";
@@ -273,8 +273,7 @@ Sys_GetGameAPI(void *parms)
 			Com_DPrintf("LoadLibrary (%s)\n", name);
 			break;
 		} else {
-#if defined __GNUC__ >= 3
-			char  *str_p;
+			char *str_p;
 			
 			Com_Printf("LoadLibrary (%s):", name);
 
@@ -288,9 +287,6 @@ Sys_GetGameAPI(void *parms)
 			Com_Printf("%s\n", str_p);
 
 			return NULL;
-#else
-			Com_DPrintf("LoadLibrary (%s) failed\n", name, dlerror());
-#endif
 		}
 	}
 
