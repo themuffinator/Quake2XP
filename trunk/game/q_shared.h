@@ -316,9 +316,15 @@ void Com_PageInMemory (byte *buffer, int size);
 //=============================================
 
 // portable case insensitive compare
+#ifdef _WIN32
 int Q_stricmp (const char *s1, const char *s2);
 int Q_strcasecmp (const char *s1, const char *s2);
 int Q_strncasecmp (const char *s1, const char *s2, int n);
+#else
+#define Q_stricmp strcasecmp
+#define Q_strcasecmp strcasecmp
+#define Q_strncasecmp strncasecmp
+#endif
 
 void Q_strncpyz (char *dst, const char *src, int dstSize);
 void Q_strcat (char *dst, const char *src, int dstSize);

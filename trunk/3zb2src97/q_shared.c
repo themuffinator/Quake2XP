@@ -1189,14 +1189,12 @@ void Com_PageInMemory(byte * buffer, int size)
 ============================================================================
 */
 
+#ifdef _WIN32
+
 // FIXME: replace all Q_stricmp with Q_strcasecmp
 int Q_stricmp(const char *s1, const char *s2)
 {
-#if defined(WIN32)
 	return _stricmp(s1, s2);
-#else
-	return strcasecmp(s1, s2);
-#endif
 }
 
 
@@ -1229,7 +1227,7 @@ int Q_strcasecmp(const char *s1, const char *s2)
 	return Q_strncasecmp(s1, s2, 99999);
 }
 
-
+#endif
 
 void Com_sprintf(char *dest, int size, char *fmt, ...)
 {

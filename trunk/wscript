@@ -16,6 +16,8 @@
 # - upload data in ZIP format or just PKX to sourceforge.net
 # - get launchpad account, create Ubuntu package and promote in
 #   forums (english and spanish)
+# - add cache for GL_Resample...
+# - write README_linux.txt with notes and compilation instructions
 #
 # other/maybe
 # - add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
@@ -40,15 +42,7 @@ sources_glob = {
         ],
     'client' : [
         'game/q_shared.c',
-        'client/cl_*.c',
-        'client/keys.c',
-        'client/menu.c',
-        'client/qmenu.c',
-        'client/snd_mem.c',
-        'client/snd_openal.c',
-        'client/snd_context.c',
-        'client/snd_efx.c',
-        'client/music.c',
+        'client/*.c',
         'qcommon/*.c',
         'server/*.c',
         'ref_gl/*.c',
@@ -71,15 +65,10 @@ def build(bld):
     src_dir = bld.srcnode
     #src_dir = bld.path.find_dir('src')
 
-    #bld.env.append_value('CFLAGS', ['-flax-vector-conversions'])
     bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
-    #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-ftree-vectorize', '-ftree-vectorizer-verbose=2'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
-    #bld.env.append_value('CFLAGS', ['-g'])
-    #bld.env.append_value('CFLAGS', ['-O3', '-march=native', '-pg'])
     #bld.env.append_value('LINKFLAGS', ['-pg'])
-    #bld.env.append_value('CFLAGS', ['-fopenmp', '-g'])
-    #bld.env.append_value('LINKFLAGS', ['-fopenmp'])
+    #bld.env.append_value('LINKFLAGS', ['-pg'])
 
     # Expand source files
     sources = {}
