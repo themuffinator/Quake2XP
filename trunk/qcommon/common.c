@@ -51,7 +51,7 @@ cvar_t *developer;
 cvar_t *timescale;
 cvar_t *fixedtime;
 cvar_t *logfile_active;			// 1 = buffer log, 2 = flush after each
-								// print
+cvar_t	*sys_firstRun;			// print
 cvar_t *showtrace;
 cvar_t *dedicated;
 cvar_t *fs_OriginalPaksOnly;
@@ -1535,8 +1535,7 @@ void Con_Init(void);
 void Qcommon_Init(int argc, char **argv)
 {
 	char *s;
-  	int error;
-  		
+
 	if (setjmp(abortframe))
 		Sys_Error("Error during initialization");
 
@@ -1571,7 +1570,7 @@ void Qcommon_Init(int argc, char **argv)
 		Cbuf_AddText("exec xpdef.cfg\n");	// q2xp new default config
 	
 	Cbuf_AddText("exec xpconfig.cfg\n");
-	
+		
 	Cbuf_AddEarlyCommands(true);
 	Cbuf_Execute();
 	Com_Printf("\n");
@@ -1622,8 +1621,20 @@ void Qcommon_Init(int argc, char **argv)
 	}
 
 	Com_Printf("====== Quake2xp Initialized ======\n\n");
+	
+	sys_firstRun = Cvar_Get("sys_firstRun", "1", CVAR_ARCHIVE); 
 
-#ifndef _WIN32
+
+	if(sys_firstRun->value)
+	{
+		Com_Printf(S_COLOR_RED"FIRST RUN.\nGenerating cache... Please wait!\n");
+		Cbuf_AddText("exec cache.cfg\n");
+		sys_firstRun = Cvar_Set("sys_firstRun", "0");
+		Com_Printf(S_COLOR_YELLOW"Press ESC to open Main Menu\n");
+	}
+
+
+#ifdef __linux__
     Sys_PrintInfo();
 #endif
 }

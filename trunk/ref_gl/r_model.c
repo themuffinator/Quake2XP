@@ -1947,16 +1947,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 
 	mod->type = mod_alias;
 
-	// 
-	// load the glcmds
-	// 
-/*	pincmd = (int *) ((byte *) pinmodel + pheader->ofs_glcmds);
-	poutcmd = (int *) ((byte *) pheader + pheader->ofs_glcmds);
-	for (i = 0; i < pheader->num_glcmds; i++)
-		poutcmd[i] = LittleLong(pincmd[i]);
-		*/
-
-
 	// register all skins
 	Q_memcpy((char *) pheader + pheader->ofs_skins,
 			 (char *) pinmodel + pheader->ofs_skins,
@@ -2059,7 +2049,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 		for (i=0; i<pheader->num_frames; i++)
 		{
 			daliasframe_t	*frame;
-			dtrivertx_t		*verts, *v;
+			dtrivertx_t		*verts;
 
 			frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
 			verts = frame->verts;
@@ -2197,7 +2187,7 @@ bad:
 		for (i=0; i<pheader->num_frames; i++)
 		{
 			daliasframe_t	*frame;
-			dtrivertx_t		*verts, *v;
+			dtrivertx_t		*verts;
 
 			frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
 			verts = frame->verts;
@@ -2212,7 +2202,7 @@ bad:
 	}
 
 exit:
-	// Load the Md2 Indices - old gl cmd drawing style (shells, distort models)
+
 	ClearBounds(mod->mins, mod->maxs);
 	VectorClear(mod->center);
 	frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames);	//Берем только нулевой кадр!
@@ -2243,7 +2233,8 @@ exit:
 
 	for(i=0; i<3; i++)
 		mod->center[i] = (mod->maxs[i] + mod->mins[i]) * 0.5;
-
+	
+	// generate st cache for fast md2 rendering
 	tris = (dtriangle_t *) ((byte *)pheader + pheader->ofs_tris);
 	mod->st = (float*) malloc(pheader->num_tris * 3 * sizeof(float) * 2);
 	for (l=0, i=0; i<pheader->num_tris; i++)

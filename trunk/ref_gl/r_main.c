@@ -1999,6 +1999,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	R_LoadFont();
 
 	GL_MsgGLError("Init GL Errors: ");
+	
 	return 0;
 	
 }

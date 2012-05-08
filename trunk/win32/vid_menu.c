@@ -399,8 +399,11 @@ void VID_MenuInit( void )
 	static char	*yesno_names[]	=	{"no", "yes", 0};
 	static char	*refresh[]		=	{"desktop", "60hz", "75hz", "85hz", "100hz", "120hz", 0};
 	static char	*shadow_names[] =	{"off", "blob", "static volumes", "dynamic volumes", "full dynamic volumes", 0};
-
+#ifdef __linux__
+	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", 0}; // sdl bug work only 2 and 4 samples per pixel
+#else
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", "[8x]", "[16x]", 0};
+#endif
 	static char	*samplesNV[]	=	{"[off]", "[8x]", "[8xQ]", "[16x]", "[16xQ]", 0};
 	static char	*parallax[]		=	{"off", "Performance", "Quality", 0};
 	static char	*vsync[]		=	{"off", "on", 0};
