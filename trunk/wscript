@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 # Notes
-# - host_speed reports almost always zero for anything else than ref,
+# - host_speed reports almost always zero for anything else than ref
 #   so the renderer greatly dominates frame time
 # - renderer frame seems to take less when using cl_maxfps, which makes
 #   sense as some frames fit on a timeslice uninterrupted by the scheduler
@@ -10,22 +10,8 @@
 # - there are some commands not in menu: {hi,medium,low}_spec
 # - cl_maxfps works fine at 60, and uses usleep() to wait
 #
-# TODO list
-#
-# important
-# - upload data in ZIP format or just PKX to sourceforge.net
-# - get launchpad account, create Ubuntu package and promote in
-#   forums (english and spanish)
-#
-# - add target to create source distribution for ubuntu package
-# - use correct version number below
-#
-# other/maybe
-# - add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
-# - add support for Zaero expansion pack (check Yamagi Q2 and QuDos)
 
-
-VERSION = '1.0'
+VERSION = '20120507'
 APPNAME = 'quake2xp'
 top = '.'
 out = 'build'
@@ -54,7 +40,8 @@ sources_glob = {
         ]
 }
 
-#def dist(ctx):
+def dist(ctx):
+    ctx.excl  = '**/.svn **/.waf* **/.lock-w* Libs/* build/* test/* **/*.vcproj* **/*.vcxproj*'
 
 def options(opt):
     opt.load('compiler_c')
@@ -68,10 +55,10 @@ def build(bld):
     src_dir = bld.srcnode
     #src_dir = bld.path.find_dir('src')
 
-    #bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
+    bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
-    bld.env.append_value('CFLAGS', ['-pg', '-O3', '-march=native'])
-    bld.env.append_value('LINKFLAGS', ['-pg'])
+    #bld.env.append_value('CFLAGS', ['-pg', '-O3', '-march=native'])
+    #bld.env.append_value('LINKFLAGS', ['-pg'])
 
     # Expand source files
     sources = {}
@@ -80,6 +67,8 @@ def build(bld):
         for pat in v:
             sources[k] += src_dir.ant_glob(pat)
 
+    bld.env.DATADIR = bld.env.PREFIX + '/share/quake2xp'
+
     # Game shared library environment
     genv = bld.env.derive()
     genv.cshlib_PATTERN = genv.cshlib_PATTERN.replace('lib', '')
@@ -87,28 +76,30 @@ def build(bld):
     bld.shlib(
         source = sources['game'],
         target = 'baseq2/gamexp',
-        install_path = '${PREFIX}/share/quake2xp/baseq2',
+        install_path = '${DATADIR}/baseq2',
         env = genv
         )
 
     bld.shlib(
         source = sources['xatrix'],
         target = 'xatrix/gamexp',
-        install_path = '${PREFIX}/share/quake2xp/xatrix',
+        install_path = '${DATADIR}/xatrix',
         env = genv
         )
 
     bld.shlib(
         source = sources['3zb2'],
         target = '3zb2/gamexp',
-        install_path = '${PREFIX}/share/quake2xp/3zb2',
+        install_path = '${DATADIR}/3zb2',
         env = genv
         )
 
     bld.program(
-        cflags = '-DSYSTEMWIDE=' + '"' + bld.env.PREFIX + '/share/quake2xp' + '"',
+        cflags = '-DSYSTEMWIDE="${DATADIR}"',
         source = sources['client'],
         target = 'quake2xp',
         lib = ['z', 'm', 'dl'],
         use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL', 'OGG', 'VORBIS', 'VORBISFILE']
     )
+
+    bld.install_files('${DATADIR}/baseq2', 'linux/q2xpGLSL.pkx')

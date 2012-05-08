@@ -2,56 +2,96 @@
 Quake2XP Linux Notes
 ==============================================================================
 
-1. Building
-2. Installing
+1. Building and installing
+2. Copying data
 3. Notes
 4. Contact
+5. TODO
 
 ==============================================================================
-1. Building
+1. Building and installing
 ==============================================================================
 
-The following libraries are needed:
+The following libraries are needed to compile Quake2XP.
 - DevIL
 - OpenGL
 - OpenAL
 - SDL
 - Vorbisfile (which requires Ogg and Vorbis)
 
-In Ubuntu they can be installed with the following command:
+In Ubuntu they can be installed with the following command.
 $ sudo apt-get install build-essential libvorbis-dev libdevil-dev \
   libsdl1.2-dev libopenal-dev
 
-As the project uses the Waf build system, Python is also needed. Once you have
-the necessary tools, run the following commands:
+As the project uses the Waf build system, Python must also be present. Once
+you have the mentioned packages, build and install with:
+
 $ python waf configure
 $ python waf
-
-By default the installation prefix is "/usr/local", but can be changed via:
-$ python waf configure --prefix=/usr
-
-==============================================================================
-2. Installing
-==============================================================================
-
-After configuring and building, the following command installs the program:
-
 $ sudo python waf install
 
-Then you need to copy or symlink the original Quake II data (only
-pak[0-2].pak) to "${PREFIX}/share/quake2xp".
+By default the installation prefix is "/usr/local", but can be changed via
+arguments. In fact, Quake2XP will run from any directory because the data path
+is added to the executable, and libraries are loaded at run-time. For example,
+you can install it in "$HOME/local" as follows.
 
-You can also uninstall it with the "uninstall" target.
+$ python waf configure --prefix=$HOME/local
+$ python waf
+$ python install
+
+If you have the required libraries but still get an error, see below for
+contact information.
+
+You can also uninstall it with "python waf uninstall".
+
+==============================================================================
+2. Copying data
+==============================================================================
+
+Before running the program, you need to copy the following data to
+"$PREFIX/share/quake2xp" (under baseq2/).
+
+- baseq2/pak0.pak from the original Quake II CD
+
+- baseq2 (without DLLs) from q2-3.20-x86-full.exe
+  Available at ftp://ftp.idsoftware.com/idstuff/quake2/ or any mirror.
+  It's a self-extracting ZIP, so you can unpack it without using Wine.
+
+- baseq2/*.pkx from the Quake2XP Windows installer
+  Available at http://sourceforge.net/projects/quake2xp/files/release/
+  You'll need Wine to install to a temporary location and obtain these.
+
+- (optional) cache pkx ...
+  To improve initial startup speed. It will be generated automatically as
+  you load new leves if not present.
+
+- (optional) original CD music in Ogg format
+  Available at http://forums.steampowered.com/forums/showthread.php?t=1756937
+  It's a self-extracting ZIP, so you can unpack it without using Wine.
+  Quake2XP expects tracks as "baseq2/music/trackNN.ogg", so renaming is
+  needed (i.e. 02.ogg -> track02.ogg). You also need to select that music
+  source in the options menu.
 
 ==============================================================================
 3. Notes
 ==============================================================================
 
-document important cvars (not in menu) here
-document music subsystem
-document how to install update from IdSoftware's FTP
-add something about the cache
-...
+The framerate is unlimited by default, but you can adjust it with
+"cl_maxfps 60" or similar. You may want to do it for smooth playing when
+running background processes, for saving battery or just to avoid hearing the
+GPU cooling fan.
+
+The music system has three modes (accessible through the options menu or the
+"s_musicsrc" cvar with integers from 0 to 3):
+- disabled: do not play anything.
+- CD-ROM: plays the appropiate tracks from an inserted CD.
+- soundtrack files: play ogg/wav files with the name
+  "baseq2/music/trackXX.EXT" (where XX is 02, 03, etc). They will be used as
+  the original CD tracks (different for each level).
+- any files: plays any ogg/wav files found in "baseq2/music".
+
+If random playing is enabled, it should do what's expected. The command
+"music" can switch tracks if playing random or any files.
 
 ==============================================================================
 4. Contact
@@ -63,5 +103,18 @@ to mail me at "alepulver at gmail.com".
 The Quake2XP author's address is "barnes at yandex.ru".
 
 Website: http://quake2xp.sourceforge.net/
+
+==============================================================================
+5. TODO
+==============================================================================
+
+- document important cvars (not in menu)
+- fix warnings
+- add note about xatrix, after testing
+- add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
+- add support for Zaero expansion pack (check Yamagi Q2 and QuDos)
+- upload data in ZIP format or just PKX to sourceforge.net
+- get launchpad account, create Ubuntu package and promote in
+  forums (english and spanish)
 
 ==============================================================================
