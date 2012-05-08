@@ -50,7 +50,7 @@ int GLimp_Init(void *hinstance, void *wndproc)
             return false;
         }
 		SDL_VideoDriverName( driverName, sizeof( driverName ) - 1 );
-        Com_Printf(S_COLOR_GREEN "Initialized SDL video, driver is \"%s\".\n", driverName );
+        Com_Printf(S_COLOR_GREEN "\nInitialized SDL video, driver is \"%s\".\n\n", driverName );
 	}
 
 	return true;
@@ -142,8 +142,6 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 		return rserr_invalid_mode;
 	}
 
-	Com_Printf("setting mode "S_COLOR_YELLOW"%d"S_COLOR_WHITE":"S_COLOR_YELLOW"[%ix%i]\n", mode , width, height);
-
 	if (surface && (surface->w == width) && (surface->h == height))
 	{
 		/* Are we running fullscreen? */
@@ -197,14 +195,16 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 			Com_Printf("SDL SetVideoMode failed: %s\n", SDL_GetError());
             return rserr_invalid_mode;
 	}
-
+	Com_Printf("setting mode "S_COLOR_YELLOW"%d"S_COLOR_WHITE":"S_COLOR_YELLOW"[%ix%i]\n", mode , width, height);
 	// Print information
 	if (!SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &stencil_bits))
 		Com_Printf("Got %d bits of stencil.\n", stencil_bits);
 
-	if (r_arbSamples->value > 1)
+	if (r_arbSamples->value > 1){
 		qglEnable(GL_MULTISAMPLE);
-
+		Com_Printf("Use multisampling %ix samples per pixel.\n", (int)r_arbSamples->value);
+	} 
+	
 	/* Initialize gamma, there is no need to restore manually */
     if (r_hardwareGamma->value != 0)
         r_gamma->modified = true;

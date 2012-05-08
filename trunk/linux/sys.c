@@ -321,11 +321,12 @@ char *Sys_GetClipboardData(void) {
 
 /*****************************************************************************/
 
+
 int
 main(int argc, char **argv)
 {
 	int	mytime, oldtime, newtime;
-
+	
 	/* go back to real user for config loads */
 	saved_euid = geteuid();
 	seteuid( getuid() );
@@ -344,7 +345,6 @@ main(int argc, char **argv)
 
 		oldtime = newtime;
 	}
-
     // never gets here
     return 0;
 }
