@@ -1525,6 +1525,19 @@ qboolean CheckNetCompatibility(void)
  return false; // работаем в режиме net_comp... = 0
 }
 
+// cpu info from http://www.daniweb.com/software-development/c/threads/33551/c-program-to-extract-system-info
+#ifdef __linux__
+#include <sys/sysinfo.h>
+//#include <libgtop-2.0/glibtop.h>
+//#include <libgtop-2.0/glibtop/cpu.h>
+struct CpuInfo {
+	char vendor_id[50];
+	int family;
+	char model[50];
+	float freq;
+	char cache[20];
+};
+#endif
 
 /*
 =================
@@ -1536,7 +1549,11 @@ void Con_Init(void);
 void Qcommon_Init(int argc, char **argv)
 {
 	char *s;
-	
+	struct sysinfo m_info;
+  	int error;
+	struct CpuInfo info = {"", 0, "", 0.0, ""};
+	FILE *cpuInfo;
+  		
 	if (setjmp(abortframe))
 		Sys_Error("Error during initialization");
 
@@ -1622,6 +1639,39 @@ void Qcommon_Init(int argc, char **argv)
 	}
 
 	Com_Printf("====== Quake2xp Initialized ======\n\n");
+
+#ifdef __linux__
+	
+	cpuInfo = fopen("/proc/cpuinfo", "rb");
+	if(cpuInfo == NULL)
+	{
+		Com_Printf("ERROR! can't read CPU info.");
+	}
+	else 
+	{
+	Com_Printf("==============\nCpu info: ");
+	
+		while (!feof(cpuInfo)) {
+			fread(&info, sizeof(struct CpuInfo), 1, cpuInfo);
+
+			if(info.vendor_id !=0) {
+				Com_Printf("%s\n%d\n%s\n%.2f\n%s\n\n", info.vendor_id, info.family, info.model, info.freq, info.cache);
+			Com_Printf("==============\n");
+			}
+		}
+	}
+		
+	error = sysinfo(&m_info);
+	if ( error != 0 ){
+	Com_Printf(S_COLOR_RED"Error! Code = %d\n", error );
+}else{
+	Com_Printf("============================\n");
+	Com_Printf("Total Physical RAM: "S_COLOR_GREEN"%lu"S_COLOR_WHITE" MB\n", m_info.totalram>>20);
+	Com_Printf("Aviable RAM: "S_COLOR_GREEN"       %lu"S_COLOR_WHITE" MB\n", m_info.freeram>>20);
+	Com_Printf("============================\n");
+}
+#endif
+ 
 }
 
 /*
