@@ -108,9 +108,9 @@ Website: http://quake2xp.sourceforge.net/
 5. TODO
 ==============================================================================
 
-- document important cvars (not in menu)
-- fix warnings
+- document important cvars (which are not in menu)
 - add note about xatrix, after testing
+- add note about 3zb2, after testing
 - add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
 - add support for Zaero expansion pack (check Yamagi Q2 and QuDos)
 - upload data in ZIP format or just PKX to sourceforge.net

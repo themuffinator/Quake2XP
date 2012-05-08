@@ -88,6 +88,67 @@ Sys_ConsoleOutput(char *msg)
 	}
 }
 
+static char *meminfoAwk =
+  "/^MemTotal/  { print \"^7Total physical RAM:       ^2\", $2/1024, \" ^7MB\"} "
+  "/^MemFree/   { print \"^7Available physical RAM:   ^2\", $2/1024, \" ^7MB\"} "
+  "/^SwapFree/  { print \"^7Total Virtual Memory:     ^2\", $2/1024, \" ^7MB\"} "
+  "/^SwapFree/  { print \"^7Available virtual memory: ^2\", $2/1024, \" ^7MB\"} "
+  ;
+
+static char *cpuinfoAwk =
+  "/^processor\\t/  { if ($3 != 0) exit }"
+  "/^vendor_id\\t/  { printf \"^7CPU vendor: ^2\"; for (i=3;i<=NF;i++) printf(\"%s \", $i); print \"\" } "
+  "/^model name\\t/ { printf \"^7CPU model:  ^2\"; for (i=4;i<=NF;i++) printf(\"%s \", $i); print \"\" } "
+  "/^cpu cores\\t/  { printf \"^7CPU cores:  ^2%d\\n\", $4} "
+  "/^flags\\t/      { printf \"^7CPU flags:  ^2\"; for (i=3;i<=NF;i++) if ($i ~ /sse|mmx|3d/) printf(\"%s \", $i); print \"\" } "
+  ;
+
+void Sys_PrintInfo(void) {
+    FILE *info;
+    char buffer[4096];
+    char cmd[4096];
+    
+	Com_Printf ("========"S_COLOR_YELLOW"System Information"S_COLOR_WHITE"========\n\n");
+    
+#ifdef __linux__
+    // CPU
+    Com_sprintf(cmd, sizeof(cmd), "awk '%s' /proc/cpuinfo", cpuinfoAwk);
+    if ((info = popen(cmd, "r")) != NULL) {
+        int sz = fread(&buffer, 1, sizeof(buffer), info);
+        buffer[sz] = '\0';
+        Com_Printf("%s\n", buffer);
+        fclose(info);
+    }
+    
+	// RAM
+    Com_sprintf(cmd, sizeof(cmd), "awk '%s' /proc/meminfo", meminfoAwk);
+    if ((info = popen(cmd, "r")) != NULL) {
+        int sz = fread(&buffer, 1, sizeof(buffer), info);
+        buffer[sz] = '\0';
+        Com_Printf("%s\n", buffer);
+        fclose(info);
+    }
+#endif
+    
+    // FIXME: separate platform, kernel version, etc
+    if ((info = popen("uname -a", "r")) != NULL) {
+        fgets(buffer, sizeof(buffer), info);
+        Com_Printf(S_COLOR_WHITE "OS info: " S_COLOR_YELLOW "%s\n", buffer);
+        //Com_Printf (PRINT_ALL, "\n");
+        pclose(info);
+    } else
+        Com_Printf(PRINT_ALL, "uname failed\n");
+    
+    if ((info = popen("whoami", "r")) != NULL) {
+        fgets(buffer, sizeof(buffer), info);
+        Com_Printf(S_COLOR_WHITE "User name: " S_COLOR_YELLOW "%s\n", buffer);
+        pclose(info);
+    }
+    
+	Com_Printf ("==================================\n\n");
+}
+
+
 void
 Sys_Printf(char *fmt,...)
 {
