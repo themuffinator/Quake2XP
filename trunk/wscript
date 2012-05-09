@@ -95,7 +95,7 @@ def build(bld):
         )
 
     bld.program(
-        cflags = '-DSYSTEMWIDE="${DATADIR}"',
+        cflags = '-DSYSTEMWIDE="' + bld.env.DATADIR + '"',
         source = sources['client'],
         target = 'quake2xp',
         lib = ['z', 'm', 'dl'],

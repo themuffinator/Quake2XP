@@ -49,25 +49,19 @@ You can also uninstall it with "python waf uninstall".
 ==============================================================================
 
 Before running the program, you need to copy the following data to
-"$PREFIX/share/quake2xp" (under baseq2/).
+"$PREFIX/share/quake2xp" (under baseq2/). Note that all EXEs are
+self-extracting archives (i.e. can be extracted without Wine).
 
 - baseq2/pak0.pak from the original Quake II CD
 
 - baseq2 (without DLLs) from q2-3.20-x86-full.exe
   Available at ftp://ftp.idsoftware.com/idstuff/quake2/ or any mirror.
-  It's a self-extracting ZIP, so you can unpack it without using Wine.
 
-- baseq2/*.pkx from the Quake2XP Windows installer
+- baseq2 (without EXEs and DLLs) from the Quake2XP installer
   Available at http://sourceforge.net/projects/quake2xp/files/release/
-  You'll need Wine to install to a temporary location and obtain these.
-
-- (optional) cache pkx ...
-  To improve initial startup speed. It will be generated automatically as
-  you load new leves if not present.
 
 - (optional) original CD music in Ogg format
   Available at http://forums.steampowered.com/forums/showthread.php?t=1756937
-  It's a self-extracting ZIP, so you can unpack it without using Wine.
   Quake2XP expects tracks as "baseq2/music/trackNN.ogg", so renaming is
   needed (i.e. 02.ogg -> track02.ogg). You also need to select that music
   source in the options menu.
