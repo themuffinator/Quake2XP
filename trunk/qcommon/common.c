@@ -1608,34 +1608,22 @@ void Qcommon_Init(int argc, char **argv)
 	CL_Init();
 
 	// add + commands from command line
-	if (!Cbuf_AddLateCommands()) {	// if the user didn't give any
-									// commands, run default action
+	if (!Cbuf_AddLateCommands()) {
+		// if the user didn't give any commands, run default action
 		if (!dedicated->value)
 			Cbuf_AddText("d1\n");
 		else
 			Cbuf_AddText("dedicated_start\n");
 		Cbuf_Execute();
-	} else {					// the user asked for something explicit
-		// so drop the loading plaque
+	} else {
+		// the user asked for something explicit so drop the loading plaque
 		SCR_EndLoadingPlaque();
 	}
 
 	Com_Printf("====== Quake2xp Initialized ======\n\n");
-	
-	sys_firstRun = Cvar_Get("sys_firstRun", "1", CVAR_ARCHIVE); 
-
-
-	if(sys_firstRun->value)
-	{
-		Com_Printf(S_COLOR_RED"FIRST RUN.\nGenerating cache... Please wait!\n");
-		Cbuf_AddText("exec cache.cfg\n");
-		sys_firstRun = Cvar_Set("sys_firstRun", "0");
-		Com_Printf(S_COLOR_YELLOW"Press ESC to open Main Menu\n");
-	}
-
 
 #ifdef __linux__
-    Sys_PrintInfo();
+	Sys_PrintInfo();
 #endif
 }
 

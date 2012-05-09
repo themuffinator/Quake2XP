@@ -11,7 +11,7 @@
 # - cl_maxfps works fine at 60, and uses usleep() to wait
 #
 
-VERSION = '20120507'
+VERSION = '1.26.2'
 APPNAME = 'quake2xp'
 top = '.'
 out = 'build'
