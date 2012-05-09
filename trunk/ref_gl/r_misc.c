@@ -40,6 +40,7 @@ image_t *r_predator;
 image_t	*r_texshell[MAX_SHELLS];
 image_t *r_blackTexture;
 image_t *r_DSTTex;
+image_t *r_scanline;
 
 void CreateDSTTex_ARB (void)
 {
@@ -396,6 +397,10 @@ void R_InitEngineTextures(void)
 	r_blackTexture = GL_FindImage("gfx/blacktex.tga", it_wall);
 		if(!r_blackTexture)
 			r_blackTexture = r_notexture;
+	
+	r_scanline  = GL_FindImage("pics/conback_add.tga", it_wall);
+		if(!r_scanline)
+			r_scanline = r_notexture;
 	
 
 	CreateDSTTex_ARB();

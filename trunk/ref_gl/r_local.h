@@ -181,6 +181,7 @@ extern image_t	*r_defBump;
 extern image_t	*ScreenMap;
 extern image_t	*r_envTex;
 extern image_t	*shadowMask;
+extern image_t	*r_scanline;
 
 extern entity_t *currententity;
 extern model_t *currentmodel;

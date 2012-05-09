@@ -295,10 +295,9 @@ Draw_StretchPic
 =============
 */
 
-void Draw_StretchPic2(int x, int y, int w, int h, image_t * gl,
-					  qboolean cons)
+void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl, qboolean cons)
 {
-		
+	float scroll = -13 * (r_newrefdef.time / 40.0);
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_StretchPic\n");
 		return;
@@ -332,7 +331,24 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t * gl,
 		qglVertex2f(x, y + h);
 		qglEnd();
 
+	if (strstr(gl->name, "conback")){
+
+		qglColor4f(1, 1, 1, 0.05);
+
+		GL_Bind(r_scanline->texnum);
+		qglBegin(GL_QUADS);
+		qglTexCoord2f(gl->sl, gl->tl-scroll);
+		qglVertex2f(x, y);
+		qglTexCoord2f(gl->sh, gl->tl-scroll);
+		qglVertex2f(x + w, y);
+		qglTexCoord2f(gl->sh, gl->th-scroll);
+		qglVertex2f(x + w, y + h);
+		qglTexCoord2f(gl->sl, gl->th-scroll);
+		qglVertex2f(x, y + h);
+		qglEnd();
 	
+	}
+	qglColor4f(1, 1, 1, 1);
 	GL_Blend(false, 0, 0);
 	GL_PicsColorScaleARB(false);
 	qglDepthMask(GL_TRUE);	
