@@ -229,7 +229,7 @@ Sys_FindFirst(char *path, unsigned musthave, unsigned canthave)
 	char           *p;
 
 	if (fdir)
-		Sys_Error("Sys_BeginFind without close");
+		Sys_Error("Sys_FindFirst without close");
 
 	/* COM_FilePath (path, findbase); */
 	Q_strncpyz(findbase, path, sizeof(findbase));
@@ -260,10 +260,8 @@ Sys_FindNext(unsigned musthave, unsigned canthave)
 		if (!*findpattern || fnmatch(findpattern, d->d_name, 0) == 0) {
 			/* if (*findpattern) */
 			/* printf("%s matched %s\n", findpattern, d->d_name); */
-			if (CompareAttributes(findbase, d->d_name,
-			    musthave, canthave)) {
-				Com_sprintf(findpath, sizeof(findpath),
-				    "%s/%s", findbase, d->d_name);
+			if (CompareAttributes(findbase, d->d_name, musthave, canthave)) {
+				Com_sprintf(findpath, sizeof(findpath), "%s/%s", findbase, d->d_name);
 				return (findpath);
 			}
 		}

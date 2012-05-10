@@ -277,6 +277,19 @@ int FS_FOpenFile (const char *filename, qFILE *qfile) {
 }
 
 
+qboolean FS_FileExists(char *path)
+{
+	qFILE f;
+
+	if (FS_FOpenFile(path, &f))
+	{
+		FS_FCloseFile(&f);
+		return (true);
+	}
+
+	return (false);
+}
+
 /*
 =================
 FS_ReadFile
@@ -493,6 +506,12 @@ pack_t *FS_LoadPackFile (char *packfile)
 	return pack;
 }
 
+static int SortListPtrs(const void *data1, const void *data2)
+{
+	// XXX: we have pointers to strings here!
+	return Q_stricmp(*(char * const *)data1, *(char * const *)data2);
+}
+
 /*
 ================
 FS_AddGameDirectory
@@ -503,7 +522,7 @@ then loads and adds pak1.pak pak2.pak ...
 */
 #ifdef WIN32
 
-int SortList(const void *data1, const void *data2)
+static int SortList(const void *data1, const void *data2)
 {
 	return Q_stricmp((char *)data1, (char *)data2);
 }
@@ -589,12 +608,6 @@ void FS_AddGameDirectory (char *dir)
 
 #else
 
-int SortList(const void *data1, const void *data2)
-{
-	// XXX: we have pointers to strings here!
-	return Q_stricmp(*(char * const *)data1, *(char * const *)data2);
-}
-
 void FS_AddGameDirectory (char *dir)
 {
 	searchpath_t		*search;
@@ -609,42 +622,42 @@ void FS_AddGameDirectory (char *dir)
 	// Get list of PAK files
 	sprintf(pattern,"%s/*.pak",dir);
 	paklist = FS_ListFiles(pattern, &nfiles, 0, SFF_SUBDIR);
-    if (paklist != NULL) {
-        qsort((void *)paklist, nfiles-1, sizeof(char*), SortList);
+	if (paklist != NULL) {
+		qsort((void *)paklist, nfiles, sizeof(char*), SortListPtrs);
 
-        // Add each pak file from our list to the search path
-        for (i=0; i<nfiles-1; i++) {
-            pak = FS_LoadPackFile (paklist[i]);
-            if (!pak) continue;
+		// Add each pak file from our list to the search path
+		for (i=0; i<nfiles; i++) {
+			pak = FS_LoadPackFile (paklist[i]);
+			if (!pak) continue;
 
-            search = Z_Malloc (sizeof(searchpath_t));
-            search->pack = pak;
-            search->next = fs_searchpaths;
-            fs_searchpaths = search;		
-        }
-        FS_FreeList(paklist, nfiles);
-    }
+			search = Z_Malloc (sizeof(searchpath_t));
+			search->pack = pak;
+			search->next = fs_searchpaths;
+			fs_searchpaths = search;		
+		}
+		FS_FreeList(paklist, nfiles);
+	}
 	// -----------------------------------------------------
 
 	// Get list of PKX files
 	sprintf(pattern,"%s/*.pkx",dir);
 	paklist = FS_ListFiles(pattern, &nfiles, 0, SFF_SUBDIR);
-    if (paklist != NULL) {
-        qsort((void *)paklist, nfiles-1, sizeof(char*), SortList);
+	if (paklist != NULL) {
+		qsort((void *)paklist, nfiles, sizeof(char*), SortListPtrs);
 
-        // Add each pak file from our list to the search path
-        for (i=0; i<nfiles-1; i++) {
-            pak = FS_LoadZipFile (paklist[i]);
-            if (!pak)
-                continue;
+		// Add each pak file from our list to the search path
+		for (i=0; i<nfiles; i++) {
+			pak = FS_LoadZipFile (paklist[i]);
+			if (!pak)
+				continue;
 
-            search = Z_Malloc (sizeof(searchpath_t));
-            search->pack = pak;
-            search->next = fs_searchpaths;
-            fs_searchpaths = search;		
-        }
-        FS_FreeList(paklist, nfiles);
-    }
+			search = Z_Malloc (sizeof(searchpath_t));
+			search->pack = pak;
+			search->next = fs_searchpaths;
+			fs_searchpaths = search;		
+		}
+		FS_FreeList(paklist, nfiles);
+	}
 
 	// add the directory to the search path here, so it overrides pak/pkx
 	search = Z_Malloc (sizeof(searchpath_t));
@@ -773,51 +786,234 @@ void FS_SetGamedir (char *dir)
 	}
 }
 
+//
+// Pattern matching and listing
+//
+
+static int FS_ListFilesDir( char *findname, char **list, int len, unsigned musthave, unsigned canthave )
+{
+	searchpath_t* search;
+	const char *s;
+	int nfound = 0;
+	
+	for (search = fs_searchpaths ; search ; search = search->next) {
+		char path[MAX_OSPATH];
+		
+		if (search->pack != NULL)
+			continue;
+		
+		Com_sprintf(path, sizeof(path), "%s/%s", search->filename, findname);
+		s = Sys_FindFirst( path, musthave, canthave );
+		while ( s )
+		{
+			assert(nfound < len && "Please increase FSLF_MAX");
+
+			if ( s[strlen(s)-1] != '.' ) {
+				list[nfound] = strdup( s + strlen(search->filename) + 1);
+				nfound++;
+			}
+			s = Sys_FindNext( musthave, canthave );
+		}
+		Sys_FindClose ();
+	}
+
+	return nfound;
+}
 
 /*
-** FS_ListFiles
-*/
+ * Compare file attributes (musthave and canthave) in packed files. If
+ * "output" is not NULL, "size" is greater than zero and the file matches the
+ * attributes then a copy of the matching string will be placed there (with
+ * SFF_SUBDIR it changes).
+ */
+qboolean
+FS_MatchPath(const char *findname, const char *name, char **output, unsigned musthave, unsigned canthave)
+{
+	qboolean	 retval;
+	char		*ptr;
+	char		 buffer[MAX_OSPATH];
+
+	strncpy(buffer, name, sizeof(buffer));
+
+	if ((canthave & SFF_SUBDIR) && name[strlen(name)-1] == '/')
+		return (false);
+
+	if (musthave & SFF_SUBDIR)
+	{
+		if ((ptr = strrchr(buffer, '/')) != NULL)
+			*ptr = '\0';
+
+		else
+			return (false);
+	}
+
+	if ((musthave & SFF_HIDDEN) || (canthave & SFF_HIDDEN))
+	{
+		if ((ptr = strrchr(buffer, '/')) == NULL)
+			ptr = buffer;
+
+		if (((musthave & SFF_HIDDEN) && ptr[1] != '.') ||
+		        ((canthave & SFF_HIDDEN) && ptr[1] == '.'))
+			return (false);
+	}
+
+	if (canthave & SFF_RDONLY)
+		return (false);
+
+	retval = Com_glob_match(findname, buffer);
+	
+	// FIXME: check that the number of / does not increase from pattern to path, to be consistent with Sys_FindFirst
+
+	if (retval && output != NULL)
+		*output = strdup(buffer);
+
+	return (retval);
+}
+
+static int FS_ListFilesPacks( char *findname, char **list, int len, unsigned musthave, unsigned canthave )
+{
+	searchpath_t	*search;
+	int				i;
+	int				nfound = 0;
+	
+	for (search = fs_searchpaths ; search ; search = search->next) {
+		const pack_t* pak = search->pack;
+		
+		if (pak == NULL)
+			continue;
+		
+		assert(nfound < len && "Please increase FSLF_MAX");
+			
+		if (search->pack->packtype == pt_pak){
+			for (i = 0; i < pak->numfiles; i++) {
+				char *s;
+
+				if (FS_MatchPath(findname, pak->files[i].name, &s, musthave, canthave)) {
+					list[nfound] = s;
+					nfound++;
+				}
+			}
+		} else if(search->pack->packtype == pt_zip) {
+			nfound += Unz_ListFiles(pak->qfile.z, findname, list+nfound, len-nfound, musthave, canthave);
+		}
+	}
+	
+	return nfound;
+}
+
+static char **FS_ListSortUnique(char **list, int len, int *numfiles)
+{
+	int i, j, nfound = 0;
+
+	if (len == 0) {
+		*numfiles = 0;
+		return list;
+	}
+
+	qsort((void *)list, len, sizeof(char*), SortListPtrs);
+
+	// Remove duplicate elements, replacing by NULL
+	i = 0;
+	while (i < len) {
+		j = i+1;
+		while (j < len && Q_stricmp(list[i], list[j]) == 0) {
+			free(list[j]);
+			list[j] = NULL;
+			j++;
+		}
+		i = j;
+		nfound++;
+	}
+
+	// remove holes added in the previous step
+	for (i = 0; i < len; i++) {
+		// skip value if not a hole
+		if (list[i] != NULL)
+			continue;
+		// find a valid string to fill the current hole
+		j = i+1;
+		while (list[j] == NULL && j < len)
+			j++;
+		// if there are not any more values, exit
+		if (j == len)
+			break;
+		// otherwise, fill the hole with the value found
+		list[i] = list[j];
+		list[j] = 0;
+	}
+
+	*numfiles = nfound;
+	// adjust the size of the list
+	return realloc(list, nfound * sizeof(char*));
+}
+
+/*
+ * FS_ListFiles
+ *
+ * Create a list of files matching "findname" pattern under specified real path.
+ * 
+ * XXX: use FS_ListFilesAll instead if possible.
+ */
+#define FSLF_MAX (1024*16)
+
 char **FS_ListFiles( char *findname, int *numfiles, unsigned musthave, unsigned canthave )
 {
-	char *s;
-	int nfiles = 0;
+	const char *s;
+	int nfound = 0;
 	char **list = 0;
-
+	
+	list = malloc(FSLF_MAX * sizeof(char*));
+	
 	s = Sys_FindFirst( findname, musthave, canthave );
 	while ( s )
 	{
-		if ( s[strlen(s)-1] != '.' )
-			nfiles++;
-		s = Sys_FindNext( musthave, canthave );
-	}
-	Sys_FindClose ();
+		assert(nfound < FSLF_MAX && "Please increase FSLF_MAX");
 
-	if ( !nfiles )
-		return NULL;
-
-	nfiles++; // add space for a guard
-	*numfiles = nfiles;
-
-	list = Q_malloc( sizeof( char * ) * nfiles );
-	memset( list, 0, sizeof( char * ) * nfiles );
-
-	s = Sys_FindFirst( findname, musthave, canthave );
-	nfiles = 0;
-	while ( s )
-	{
-		if ( s[strlen(s)-1] != '.' )
-		{
-			list[nfiles] = strdup( s );
-#ifdef _WIN32
-			strlwr( list[nfiles] );
-#endif
-			nfiles++;
+		if ( s[strlen(s)-1] != '.' ) {
+			list[nfound] = strdup( s );
+			nfound++;
 		}
 		s = Sys_FindNext( musthave, canthave );
 	}
 	Sys_FindClose ();
 
-	return list;
+	*numfiles = nfound;
+	if (nfound > 0) {
+		list = realloc(list, nfound * sizeof(char*));
+		qsort((void *)list, nfound, sizeof(char*), SortListPtrs);
+		return list;
+	} else {
+		free(list);
+		return NULL;
+	}
+}
+
+/*
+ * FS_ListFilesAll
+ * 
+ * Create a list of files matching "findname" pattern under all search paths, including PAKs/PKXs.
+ */
+char **FS_ListFilesAll( char *findname, int *numfiles, unsigned musthave, unsigned canthave )
+{
+	int nfound = 0;
+	char **list = 0;
+	
+	list = malloc(FSLF_MAX * sizeof(char*));
+
+	nfound += FS_ListFilesDir(findname, list+nfound, FSLF_MAX - nfound, musthave, canthave);
+	if (!(canthave & SFF_RDONLY))
+		nfound += FS_ListFilesPacks(findname, list+nfound, FSLF_MAX - nfound, musthave, canthave);
+
+	list = FS_ListSortUnique(list, nfound, &nfound);
+
+	*numfiles = nfound;
+	if (nfound > 0) {
+		list = realloc(list, nfound * sizeof(char*));
+		return list;
+	} else {
+		free(list);
+		return NULL;
+	}
 }
 
 /*
@@ -828,7 +1024,10 @@ FS_FreeList(char **list, int nfiles)
 {
 	int		i;
 
-	for (i = 0; i < nfiles - 1; i++)
+	if (list == NULL || nfiles == 0)
+		return;
+	
+	for (i = 0; i < nfiles; i++)
 		free(list[i]);
 
 	free(list);
@@ -981,36 +1180,4 @@ void FS_InitFilesystem (void)
 	Sys_Mkdir(fs_gamedir);
 
 	Com_Printf("Using '%s' for writing\n", fs_gamedir);
-}
-
-// only lists pk3 contents currently
-int FS_GetFileList (const char *dir, const char *extension, char *str, int bufsize)
-{
-	int len = 0, alllen = 0;
-	int state = 0;
-	int found = 0, allfound = 0;
-	searchpath_t	*search;
-	pack_t	*pak;
-
-	for (search = fs_searchpaths ; search ; search = search->next)
-	{
-	// is the element a pak file?
-		if (search->pack && search->pack->qfile.z)
-		{
-      
-		// look through all the pak file elements
-			pak = search->pack;
-      if(pak->packtype != pt_zip) found=false;
-			found = Unz_GetStringForDir(pak->qfile.z, dir, extension, str + alllen, bufsize - alllen, &len);
-
-			if (found)
-			{
-				allfound += found;
-				state = 1;
-				alllen += len + 1;
-			}
-		}
-	}
-
-	return allfound;
 }

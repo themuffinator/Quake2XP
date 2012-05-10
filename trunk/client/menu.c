@@ -3943,20 +3943,6 @@ static void ModelCallback(void *unused)
 	currentPlayerWeapon = NULL;  
 }
 
-void FreeFileList(char **list, int n)
-{
-	int i;
-
-	for (i = 0; i < n; i++) {
-		if (list[i]) {
-			free(list[i]);
-			list[i] = 0;
-		}
-	}
-	free(list);
-}
-
-
 static qboolean IconOfSkinExists(char *skin, char **pcxfiles,
 								 int npcxfiles)
 {
@@ -3975,141 +3961,92 @@ static qboolean IconOfSkinExists(char *skin, char **pcxfiles,
 	return false;
 }
 
-static qboolean PlayerConfig_ScanDirectories(void)
+static qboolean
+PlayerConfig_ScanDirectories(void)
 {
-	char findname[1024];
-	char scratch[1024];
-	int ndirs = 0, npms = 0;
-	char **dirnames;
-	char *path = NULL;
-	int i;
-
-	extern char **FS_ListFiles(char *, int *, unsigned, unsigned);
+	char		path[MAX_OSPATH];
+	char           *ptr;
+	char          **dirnames;
+	char          **pcxnames;
+	char          **skinnames;
+	int		i, j, k;
+	int		ndirs, npms;
+	int		npcxfiles;
+	int		nskins;
 
 	s_numplayermodels = 0;
+	ndirs = npms = 0;
 
-	/*
-	 ** get a list of directories
-	 */
-	do {
-		path = FS_NextPath(path);
-		Com_sprintf(findname, sizeof(findname), "%s/players/*.*", path);
+	/* Get a list of directories. */
+	dirnames = FS_ListFilesAll("players/*", &ndirs, SFF_SUBDIR, 0);
 
-		if ((dirnames =
-			 FS_ListFiles(findname, &ndirs, SFF_SUBDIR, 0)) != 0)
-			break;
-	} while (path);
+	if (dirnames == NULL)
+		return (false);
 
-	if (!dirnames)
-		return false;
-
-	/*
-	 ** go through the subdirectories
-	 */
+	/* Go through the subdirectories. */
 	npms = ndirs;
 	if (npms > MAX_PLAYERMODELS)
 		npms = MAX_PLAYERMODELS;
 
 	for (i = 0; i < npms; i++) {
-		int k, s;
-		char *a, *b, *c;
-		char **pcxnames;
-		char **skinnames;
-		int npcxfiles;
-		int nskins = 0;
-
-		if (dirnames[i] == 0)
+		if (*dirnames[i] == '\0')
 			continue;
 
-		// verify the existence of tris.md2
-		strcpy(scratch, dirnames[i]);
-		strcat(scratch, "/tris.md2");
-		if (!Sys_FindFirst
-			(scratch, 0, SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM)) {
-			free(dirnames[i]);
-			dirnames[i] = 0;
-			Sys_FindClose();
+		/* Verify the existence of tris.md2. */
+		if (!FS_FileExists(va("%s/tris.md2", dirnames[i]))) {
+			*dirnames[i] = '\0';
 			continue;
 		}
-		Sys_FindClose();
 
-		// verify the existence of at least one pcx skin
-		strcpy(scratch, dirnames[i]);
-		strcat(scratch, "/*.pcx");
-		pcxnames =
-			FS_ListFiles(scratch, &npcxfiles, 0,
-						 SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM);
+		/* Verify the existence of at least one pcx skin. */
+		pcxnames = FS_ListFilesAll(va("%s/*.pcx", dirnames[i]),
+		    &npcxfiles, 0, SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM);
 
-		if (!pcxnames) {
-			free(dirnames[i]);
-			dirnames[i] = 0;
+		if (pcxnames == NULL) {
+			*dirnames[i] = '\0';
 			continue;
 		}
-		// count valid skins, which consist of a skin with a matching "_i"
-		// icon
-		for (k = 0; k < npcxfiles - 1; k++) {
-			if (!strstr(pcxnames[k], "_i.pcx")) {
-				if (IconOfSkinExists(pcxnames[k], pcxnames, npcxfiles - 1)) {
-					nskins++;
-				}
-			}
-		}
-		if (!nskins)
+
+		/*
+		 * Count valid skins, which consist of a skin with a matching
+		 * "_i" icon.
+		 */
+		for (j = 0, nskins = 0; j < npcxfiles; j++)
+			if (strstr(pcxnames[j], "_i.pcx") == 0 &&
+			  IconOfSkinExists(pcxnames[j], pcxnames, npcxfiles))
+				nskins++;
+
+		if (nskins == 0)
 			continue;
 
 		skinnames = malloc(sizeof(char *) * (nskins + 1));
 		memset(skinnames, 0, sizeof(char *) * (nskins + 1));
 
-		// copy the valid skins
-		for (s = 0, k = 0; k < npcxfiles - 1; k++) {
-			char *a, *b, *c;
-
-			if (!strstr(pcxnames[k], "_i.pcx")) {
-				if (IconOfSkinExists(pcxnames[k], pcxnames, npcxfiles - 1)) {
-					a = strrchr(pcxnames[k], '/');
-					b = strrchr(pcxnames[k], '\\');
-
-					if (a > b)
-						c = a;
-					else
-						c = b;
-
-					strcpy(scratch, c + 1);
-
-					if (strrchr(scratch, '.'))
-						*strrchr(scratch, '.') = 0;
-
-					skinnames[s] = strdup(scratch);
-					s++;
-				}
+		/* Copy the valid skins. */
+		for (k = 0, j = 0; j < npcxfiles; j++) {
+			if (strstr(pcxnames[j], "_i.pcx") == 0 &&
+			  IconOfSkinExists(pcxnames[j], pcxnames, npcxfiles)) {
+				COM_FileBase(pcxnames[j], path);
+				skinnames[k++] = strdup(path);
 			}
 		}
 
-		// at this point we have a valid player model
+		/* At this point we have a valid player model. */
 		s_pmi[s_numplayermodels].nskins = nskins;
 		s_pmi[s_numplayermodels].skindisplaynames = skinnames;
 
-		// make short name for the model
-		a = strrchr(dirnames[i], '/');
-		b = strrchr(dirnames[i], '\\');
-
-		if (a > b)
-			c = a;
-		else
-			c = b;
-
-		strncpy(s_pmi[s_numplayermodels].displayname, c + 1,
-				MAX_DISPLAYNAME - 1);
-		strcpy(s_pmi[s_numplayermodels].directory, c + 1);
-
-		FreeFileList(pcxnames, npcxfiles);
-
+		/* Make short name for the model. */
+		ptr = strrchr(dirnames[i], '/');
+		Q_strncpyz(s_pmi[s_numplayermodels].displayname, ptr + 1, MAX_DISPLAYNAME);
+		Q_strncpyz(s_pmi[s_numplayermodels].directory, ptr + 1, MAX_QPATH);
 		s_numplayermodels++;
-	}
-	if (dirnames)
-		FreeFileList(dirnames, ndirs);
 
-	return true;
+		FS_FreeList(pcxnames, npcxfiles);
+	}
+
+	FS_FreeList(dirnames, ndirs);
+
+	return (true);
 }
 
 static int pmicmpfnc(const void *_a, const void *_b)

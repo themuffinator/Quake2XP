@@ -1484,7 +1484,7 @@ qboolean Parser_SkipBracedSection (parser_t *parser, int depth);
 void Parser_SkipRestOfLine (parser_t *parser);
 
 // an old one for mods
-char *Com_Parse (const char *(*data_p));
+char *Com_Parse (char **data_p);
 #define COM_Parse(p)	Com_Parse(p)
 
 void Q_strncatz (char *dst, int dstSize, const char *src) ;

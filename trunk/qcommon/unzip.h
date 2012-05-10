@@ -66,7 +66,7 @@ typedef voidp unzFile;
 #endif
 
 int		Unz_NumEntries (unzFile *pak);
-int		Unz_GetStringForDir (unzFile *pak, const char *dir, const char *extension, char *buf, int bufsize, int *len);
+int		Unz_ListFiles (unzFile *pak, const char *pattern, char **list, int len, unsigned musthave, unsigned canthave);
 
 #define UNZ_OK                                  (0)
 #define UNZ_END_OF_LIST_OF_FILE					(-100)

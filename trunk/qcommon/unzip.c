@@ -856,48 +856,28 @@ extern int ZEXPORT unzGoToNextFile (unzFile file)
 	return err;
 }
 
-int Unz_GetStringForDir (unzFile *pak, const char *dir, const char *extension, char *buf, int bufsize, int *len)
+int Unz_ListFiles (unzFile *pak, const char *pattern, char **list, int len, unsigned musthave, unsigned canthave)
 {
-	unz_s *s = (unz_s *)pak;
-	char *token, *bufpos = buf;
-	int i, j, found = 0;
+	const unz_s *s = (unz_s *)pak;
+	int i, j, nfound = 0;
 
-	*len = 0;
-	
 	for (i = 0; i < HASHSIZE; i++)
 	{
 		for (j = 0; j < s->counts[i]; j++)
 		{
-			token = s->cache[i][j].name;
-			
-			if (dir[0])
-				if (strncmp (token, dir, strlen(dir)))
-					continue;
+			const char *token = s->cache[i][j].name;
+			char *s;
 
-			if (dir[0])
-				if (strlen (token) <= strlen (dir) + strlen (extension))
-					continue;
+			assert(nfound < len && "Please increase FSLF_MAX");
 
-			if (strlen (token) > strlen (extension)) 
-			{
-				if (!strncmp(extension, token + strlen(token) - strlen(extension), strlen(extension)))
-				{
-					found++;
-
-					if (dir[0])
-						token += strlen (dir) + 1;
-
-					strncpy (bufpos, token, strlen(token) + 1);
-
-					bufpos += strlen(token);
-					*len = bufpos - buf;		// bugfix
-					*bufpos++ = 0;
-				}
+			if (FS_MatchPath(pattern, token, &s, musthave, canthave)) {
+				list[nfound] = s;
+				nfound++;
 			}
 		}
 	}
-
-	return found;
+	
+	return nfound;
 }
 
 int Unz_FileExists (unzFile *pak, const char *file)

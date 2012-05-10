@@ -1160,11 +1160,11 @@ Parse a token out of a string.
 Keep it for old mods.
 ==============
 */
-char *Com_Parse (const char *(*data_p)) {
+char *Com_Parse (char **data_p) {
 	static char	token[MAX_TOKEN_CHARS];
 	static int	parseLine;
 	int		c, len;
-	const char	*data;
+	char	*data;
 
 	data = *data_p;
 	len = 0;

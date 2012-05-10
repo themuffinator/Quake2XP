@@ -17,46 +17,8 @@ static byte music_buffer[MAX_STRBUF_SIZE];
 static char **fsList;
 static int fsIndex;
 static int fsNumFiles;
-static int fsNameOffset;
-
-#if 0
-#define MAX_PATTERNS 16
-char **FS_ListFilesMany(int numPatterns, char **patterns, int *nfiles, int musthave, int canthave) {
-	int i, j, ntotal, pos;
-	int subNumFiles[MAX_PATTERNS];
-	char **subNameLists[MAX_PATTERNS];
-	char **res;
-
-	ntotal = 0;
-	for (i = 0, j = 0; i < numPatterns; i++) {
-		subNameLists[j] = FS_ListFiles(patterns[j], &subNumFiles[j], musthave, canthave);
-		subNumFiles[i]--;
-		if (subNameLists[j] != NULL) {
-			ntotal += subNumFiles[j];
-			j++;
-		}
-	}
-	if (j == 0) {
-		*nfiles = 0;
-		return NULL;
-	}
-
-	res = malloc((ntotal+1) * sizeof(char*));
-	pos = 0;
-	for (i = 0; i < j; i++) {
-		memcpy(res + pos, subNameLists[i], sizeof(char*) * (subNumFiles[i]));
-		free(subNameLists[i]);
-		pos += subNumFiles[i];
-	}
-	pos++;
-	assert(pos == ntotal);
-	return res;
-}
-#endif
 
 void Music_Init(void) {
-	char path[MAX_QPATH];
-
 	music_type = s_musicsrc->value;
 	mstat = MSTAT_STOPPED;
 
@@ -73,12 +35,8 @@ void Music_Init(void) {
 	Com_Printf("=====================================\n\n");
 			break;
 		case MUSIC_OTHER_FILES:
-			Q_snprintfz(path, sizeof(path), "%s/music/*", FS_Gamedir());
-			Com_DPrintf(S_COLOR_MAGENTA "Music_Init: searching files in \"%s\"\n", path);
-			fsList = FS_ListFiles(path, &fsNumFiles, 0, SFF_SUBDIR);
-			fsNumFiles--;
+			fsList = FS_ListFilesAll("music/*", &fsNumFiles, 0, SFF_SUBDIR);
 			fsIndex = -1;
-			fsNameOffset = strlen(FS_Gamedir())+1;
 
 			if (fsList != NULL)
 				Com_DPrintf(S_COLOR_YELLOW "found "S_COLOR_GREEN"%d "S_COLOR_YELLOW"music files\n\n", fsNumFiles);
@@ -105,7 +63,6 @@ void Music_Shutdown(void) {
 		case MUSIC_CD_FILES:
 			break;
 		case MUSIC_OTHER_FILES:
-			fsNumFiles++;
 			FS_FreeList(fsList, fsNumFiles);
 			break;
 	}
@@ -172,7 +129,7 @@ void Music_Play(void) {
 				fsIndex = (fsIndex+1) % fsNumFiles;
 			count = fsNumFiles;
 			while (count-- > 0) {
-				if (Music_PlayFile(fsList[fsIndex] + fsNameOffset, true))
+				if (Music_PlayFile(fsList[fsIndex], true))
 					return;
 				fsIndex = (fsIndex+1) % fsNumFiles;
 			}

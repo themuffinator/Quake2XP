@@ -754,6 +754,7 @@ char *FS_FindNext(char *find);
 char *FS_FindFirst(char *find);
 
 int FS_FOpenFile(const char *filename, qFILE *file);
+qboolean FS_FileExists(char *path);
 void FS_FCloseFile(qFILE * f);
 // note: this can't be called from another DLL, due to MS libc issues
 
@@ -772,7 +773,9 @@ int FS_filelength (qFILE *f);
 int FS_filelength2 (FILE *f);
 
 char **FS_ListFiles ( char *findname, int *numfiles, unsigned musthave, unsigned canthave );
+char **FS_ListFilesAll ( char *findname, int *numfiles, unsigned musthave, unsigned canthave );
 void FS_FreeList (char **list, int nfiles);
+qboolean FS_MatchPath(const char *findname, const char *name, char **output, unsigned musthave, unsigned canthave);
 
 /*
 ==============================================================
@@ -812,6 +815,7 @@ void Com_SetServerState(int state);
 
 unsigned Com_BlockChecksum(void *buffer, int length);
 byte COM_BlockSequenceCRCByte(byte * base, int length, int sequence);
+int Com_glob_match ( const char *pattern, const char *text );
 
 float frand(void);				// 0 ti 1
 float crand(void);				// -1 to 1
