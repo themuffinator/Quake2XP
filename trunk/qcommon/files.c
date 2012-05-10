@@ -820,6 +820,16 @@ static int FS_ListFilesDir( char *findname, char **list, int len, unsigned musth
 	return nfound;
 }
 
+static int countchs(const char *s, char c) {
+    int i = 0, res = 0;
+    while (s[i] != '\0') {
+        if (s[i] == c)
+            res++;
+        i++;
+    }
+    return res;
+}
+
 /*
  * Compare file attributes (musthave and canthave) in packed files. If
  * "output" is not NULL, "size" is greater than zero and the file matches the
@@ -861,8 +871,10 @@ FS_MatchPath(const char *findname, const char *name, char **output, unsigned mus
 		return (false);
 
 	retval = Com_glob_match(findname, buffer);
-	
-	// FIXME: check that the number of / does not increase from pattern to path, to be consistent with Sys_FindFirst
+
+    // check that the path depth does not increase
+    if (countchs(buffer, '/') > countchs(findname, '/'))
+        retval = false;
 
 	if (retval && output != NULL)
 		*output = strdup(buffer);

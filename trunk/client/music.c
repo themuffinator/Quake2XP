@@ -68,8 +68,9 @@ void Music_Shutdown(void) {
 	}
 	music_type = MUSIC_NONE;
 }
+
 // only to be called inside Music_Play
-static qboolean Music_PlayFile(const char *name, qboolean hasExt) {
+static qboolean Music_PlayFile(const char *name, qboolean hasExt, qboolean paused) {
 	soundparams_t sp;
 
 	if (hasExt)
@@ -84,7 +85,10 @@ static qboolean Music_PlayFile(const char *name, qboolean hasExt) {
 			Com_DPrintf(S_COLOR_GREEN "Music_Play: playing \"%s.%s\"\n", name, music_handle->ext);
 
 		S_Streaming_Start(sp.bits, sp.channels, sp.rate, s_musicvolume->value);
-		mstat = MSTAT_PLAYING;
+		if (paused)
+            mstat = MSTAT_PAUSED;
+        else
+            mstat = MSTAT_PLAYING;
 		return true;
 	} else {
 		Com_Printf(S_COLOR_YELLOW "Music_Play: unable to load \"%s\"\n", name);
@@ -95,6 +99,7 @@ static qboolean Music_PlayFile(const char *name, qboolean hasExt) {
 void Music_Play(void) {
 	int track, count;
 	char name[MAX_QPATH];
+    qboolean paused = (mstat == MSTAT_PAUSED);
 
 	Music_Stop();
 
@@ -116,7 +121,7 @@ void Music_Play(void) {
 
 		case MUSIC_CD_FILES:
 			Q_snprintfz(name, sizeof(name), "music/track%02i", track);
-			Music_PlayFile(name, false);
+			Music_PlayFile(name, false, paused);
 			break;
 
 		case MUSIC_OTHER_FILES:
@@ -129,7 +134,7 @@ void Music_Play(void) {
 				fsIndex = (fsIndex+1) % fsNumFiles;
 			count = fsNumFiles;
 			while (count-- > 0) {
-				if (Music_PlayFile(fsList[fsIndex], true))
+				if (Music_PlayFile(fsList[fsIndex], true, paused))
 					return;
 				fsIndex = (fsIndex+1) % fsNumFiles;
 			}
