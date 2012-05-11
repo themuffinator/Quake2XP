@@ -193,16 +193,10 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	GL_SelectTexture			(GL_TEXTURE0_ARB);
 	GL_Bind						(fa->texinfo->image->texnum);
 	qglUniform1i				(qglGetUniformLocation(id, "u_colorMap"), 0);
-	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer			(2, GL_FLOAT, 0, wTmu0Array);
-	qglEnableClientState		(GL_COLOR_ARRAY);
-	qglColorPointer				(4, GL_FLOAT, 0, WarpColorArray);
 
 	GL_SelectTexture			(GL_TEXTURE1_ARB);
 	GL_Bind						(r_DSTTex->texnum);
 	qglUniform1i				(qglGetUniformLocation(id, "u_dstMap"), 1);
-	qglEnableClientState		(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer			(2, GL_FLOAT, 0, wTmu1Array);
 	
 	if(defBits >0){
 	GL_SelectTexture			(GL_TEXTURE2_ARB);

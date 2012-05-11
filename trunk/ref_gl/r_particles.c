@@ -73,6 +73,14 @@ void R_DrawParticles(qboolean WaterCheck)
 	GL_BindProgram(particlesProgram, defBits);
 	id = particlesProgram->id[defBits];
 
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_COLOR);
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, ParticleVert);	
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, ParticleTextCoord);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, ParticleColor);
+
 	GL_SelectTexture		(GL_TEXTURE0_ARB);
 	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer		(2, GL_FLOAT, 0, ParticleTextCoord);
@@ -83,16 +91,11 @@ void R_DrawParticles(qboolean WaterCheck)
     qglUniform1i			(qglGetUniformLocation(id, "u_depthBufferMap"), 1);
 	qglUniform2f			(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
-	qglEnableClientState	(GL_COLOR_ARRAY);
-	qglColorPointer			(4, GL_FLOAT, 0, ParticleColor);
-	qglEnableClientState	(GL_VERTEX_ARRAY);
-	qglVertexPointer		(3, GL_FLOAT, 0, ParticleVert);
-
 	qglDepthMask(0);		// no z buffering
 	qglEnable(GL_BLEND);
 
 	
-//	qsort(r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
+	qsort(r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
 
 	for (p = r_newrefdef.particles, i = 0; i < r_newrefdef.num_particles; i++, p++) {
 		
@@ -608,8 +611,8 @@ void R_DrawParticles(qboolean WaterCheck)
 	GL_BindNullProgram();
 	GL_SelectTexture(GL_TEXTURE0_ARB);	
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDisableClientState(GL_VERTEX_ARRAY);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisableClientState(GL_COLOR_ARRAY);
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_COLOR);
 	
 }

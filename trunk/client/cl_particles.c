@@ -2982,6 +2982,7 @@ void CL_RailTrail(vec3_t start, vec3_t end)
 	active_particles = p;
 	p->orient = 0;
 	p->flags = PARTICLE_SPIRAL;
+	p->flags |= PARTICLE_OVERBRIGHT;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	VectorClear(p->accel);
@@ -3021,6 +3022,7 @@ void CL_RailTrail(vec3_t start, vec3_t end)
 	VectorClear(p->accel);
 	p->orient = 0;
 	p->flags = PARTICLE_STRETCH;
+	p->flags |= PARTICLE_OVERBRIGHT;
 	p->alpha = 1;
 	p->alphavel = -0.5 / (0.3 + frand() * 0.3);
 	p->sFactor = GL_SRC_ALPHA;
