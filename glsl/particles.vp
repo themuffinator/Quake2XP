@@ -1,9 +1,14 @@
 varying vec2			v_texCoord0;
 varying float			v_depth;
+varying	vec4			v_color;
+
+attribute	vec2		a_texCoord;
+attribute	vec3		a_vertArray;
+attribute	vec4		a_colorArray;
 
 void main (void) {
-	v_texCoord0 = gl_MultiTexCoord0.xy;
-	gl_FrontColor = gl_Color;
-	v_depth = -(gl_ModelViewMatrix * gl_Vertex).z;
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+	v_texCoord0 = a_texCoord;
+	v_color = a_colorArray;
+	v_depth = -(gl_ModelViewMatrix * vec4(a_vertArray, 1.0)).z;
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 }

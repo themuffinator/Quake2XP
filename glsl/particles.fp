@@ -1,5 +1,6 @@
 
 varying float			v_depth;
+varying	vec4			v_color;
 uniform sampler2D		u_map0;
 uniform sampler2DRect	u_depthBufferMap;
 uniform vec2			u_depthParms;
@@ -21,9 +22,9 @@ void main (void) {
 	float depth = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 	float softness = clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
 	
-	gl_FragColor = color * gl_Color * u_colorScale;
+	gl_FragColor = color * v_color * u_colorScale;
 	gl_FragColor *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
 	}
 	else
-	gl_FragColor = color * gl_Color;
+	gl_FragColor = color * v_color;
 }
