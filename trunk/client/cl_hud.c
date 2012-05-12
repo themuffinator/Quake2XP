@@ -642,7 +642,6 @@ void SCR_ExecuteLayoutString3d(char *s)
 	int x, y;
 	int value;
 	char *token;
-	int width;
 	float scale, hud_sx, hud_sy;
 	float screenAspect, scaledHeight;
 	
@@ -665,8 +664,6 @@ void SCR_ExecuteLayoutString3d(char *s)
 
 	x = 0;
 	y = 0;
-	width = 3;
-
 
 	while (s) {
 		token = COM_Parse(&s);

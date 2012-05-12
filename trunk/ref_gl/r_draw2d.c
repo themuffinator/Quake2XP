@@ -135,7 +135,7 @@ void Draw_CharScaledShadow(int x, int y, float scale_x, float scale_y, unsigned 
 
 void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *str)
 {
-	int px, py, row, col, num, va = 0;
+	int px, py, row, col, num;
 	float frow, fcol, size;
 	unsigned char *s = (unsigned char *) str;
 
@@ -191,7 +191,7 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 
 void Draw_StringScaledShadow(int x, int y, float scale_x, float scale_y, const char *str)
 {
-	int px, py, row, col, num, va = 0;
+	int px, py, row, col, num;
 	float frow, fcol, size;
 	unsigned char *s = (unsigned char *) str;
 

@@ -1284,7 +1284,6 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 	int i;
 	int len;
 	char s[128];
-	qboolean bump = false;
 	
 	// find a free image_t
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {

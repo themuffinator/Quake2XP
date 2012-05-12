@@ -1439,7 +1439,6 @@ void CL_CalcViewValues(void)
 {
 	int i;
 	float lerp, backlerp;
-	centity_t *ent;
 	frame_t *oldframe;
 	player_state_t *ps, *ops;
 
@@ -1458,7 +1457,6 @@ void CL_CalcViewValues(void)
 		|| abs(ops->pmove.origin[2] - ps->pmove.origin[2]) > 256 * 8)
 		ops = ps;				// don't interpolate
 
-	ent = &cl_entities[cl.playernum + 1];
 	lerp = cl.lerpfrac;
 
 	// calculate the origin
@@ -1526,7 +1524,7 @@ void CL_CalcViewValues(void)
 	if (cl_thirdPerson->value)
 	{
 
-		vec3_t end, oldorg, camPos;
+		vec3_t end, camPos;
 		float dist_up, dist_back, angle;
 
 		if (cl_thirdPersonAngle->value < 0)
@@ -1545,8 +1543,6 @@ void CL_CalcViewValues(void)
 		angle = M_PI * cl_thirdPersonAngle->value / 180.0f;
 		dist_up = cl_thirdPersonRange->value * sin(angle);
 		dist_back = cl_thirdPersonRange->value * cos(angle);
-
-		VectorCopy(cl.refdef.vieworg, oldorg);
 
 		VectorMA(cl.refdef.vieworg, -dist_back, cl.v_forward, end);
 

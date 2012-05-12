@@ -21,10 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "qcommon.h"
 #include "unzip.h" // unzip stuff thx to Vic
 
-#ifdef WIN32
-#include <io.h>
-#endif
-
 // define this to dissalow any data but the demo pak file
 //#define   NO_ADDONS
 
@@ -449,16 +445,11 @@ pack_t *FS_LoadPackFile (char *packfile)
 	FILE			*packhandle;
 	dpackfile_t		info[MAX_FILES_IN_PACK];
 	unsigned		checksum;
-	
 
-	if(fs_OriginalPaksOnly->value){ //Load ONLY original q2 data!!!
-#ifdef _WIN32
-	strlwr(packfile);
-#endif
-	if (!strstr(packfile, "pak0.pak") && !strstr(packfile, "pak1.pak") && !strstr(packfile, "pak2.pak"))
-		return NULL;
+	if (fs_OriginalPaksOnly->value) { //Load ONLY original q2 data!!!
+		if (!strstr(packfile, "pak0.pak") && !strstr(packfile, "pak1.pak") && !strstr(packfile, "pak2.pak"))
+			return NULL;
 	}
-
 
 	packhandle = fopen(packfile, "rb");
 
@@ -520,94 +511,6 @@ Sets fs_gamedir, adds the directory to the head of the path,
 then loads and adds pak1.pak pak2.pak ... 
 ================
 */
-#ifdef WIN32
-
-static int SortList(const void *data1, const void *data2)
-{
-	return Q_stricmp((char *)data1, (char *)data2);
-}
-
-void FS_AddGameDirectory (char *dir)
-{
-	searchpath_t		*search;
-	pack_t				*pak;
-	char				pakfile[MAX_OSPATH], dirstring[MAX_OSPATH];
-	int					handle;
-	struct _finddata_t	fileinfo;
-	char				pakfile_list[1024][MAX_OSPATH];
-	int					pakfile_count = 0, i;
-
-	strcpy (fs_gamedir, dir);
-
-	// Build up a list of pak files to add to our search path
-	sprintf(dirstring,"%s/*.pak",dir);
-	handle = _findfirst (dirstring, &fileinfo);
-	if (handle != -1) {
-		do {
-			if (fileinfo.name[0] == '.')
-				continue;
-			sprintf(pakfile,"%s/%s", dir, fileinfo.name);
-
-			strcpy(pakfile_list[pakfile_count],pakfile);
-			pakfile_count++;
-		} while (_findnext( handle, &fileinfo ) != -1);
-		_findclose (handle);
-	}  
-
-	// Sort our list alphabetically
-	qsort((void *)pakfile_list, pakfile_count, MAX_OSPATH, SortList);
-
-	// Add each pak file from our list to the search path
-	for (i=0; i<pakfile_count; i++) {
-		pak = FS_LoadPackFile (pakfile_list[i]);
-		if (!pak) continue;
-
-		search = Z_Malloc (sizeof(searchpath_t));
-		search->pack = pak;
-		search->next = fs_searchpaths;
-		fs_searchpaths = search;		
-	}
-
-//-- also add zip pak files
-  pakfile_count=0;
-  sprintf(dirstring,"%s/*.pkx",dir);
-	handle = _findfirst (dirstring, &fileinfo);
-	if (handle != -1) {
-		do {
-			if (fileinfo.name[0] == '.') continue;
-			sprintf(pakfile,"%s/%s", dir, fileinfo.name);
-			strcpy(pakfile_list[pakfile_count],pakfile);
-			pakfile_count++;
-		} while (_findnext( handle, &fileinfo ) != -1);
-		_findclose (handle);
-	}
-
-  // Sort our list alphabetically
-	qsort((void *)pakfile_list, pakfile_count, MAX_OSPATH, SortList);
-
-  // Add each pak file from our list to the search path
-	for (i=0; i<pakfile_count; i++) {
-		pak = FS_LoadZipFile (pakfile_list[i]);
-		if (!pak)
-			continue;
-
-		search = Z_Malloc (sizeof(searchpath_t));
-		search->pack = pak;
-		search->next = fs_searchpaths;
-		fs_searchpaths = search;		
-	}
-
-	//
-	// add the directory to the search path here, so it overrides pak/pkx
-	//
-	search = Z_Malloc (sizeof(searchpath_t));
-	strcpy (search->filename, dir);
-	search->next = fs_searchpaths;
-	fs_searchpaths = search;
-}
-
-#else
-
 void FS_AddGameDirectory (char *dir)
 {
 	searchpath_t		*search;
@@ -665,8 +568,6 @@ void FS_AddGameDirectory (char *dir)
 	search->next = fs_searchpaths;
 	fs_searchpaths = search;
 }
-
-#endif
 
 /*
 ============

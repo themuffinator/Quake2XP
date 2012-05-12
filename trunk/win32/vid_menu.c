@@ -39,7 +39,6 @@ MENU INTERACTION
 */
 static menuframework_s	s_opengl_menu;
 static menuframework_s *s_current_menu;
-static int				s_current_menu_index;
 
 static menulist_s		s_mode_list;
 static menuslider_s		s_aniso_slider;
@@ -53,7 +52,6 @@ static menulist_s	    s_tc_box;
 static menulist_s	    s_refresh_box;
 static menulist_s	    s_parallax_box;    
 static menulist_s	    s_samples_list; 
-static menuslider_s		s_texturelod_slider;
 
 static menulist_s	    s_bloom_box;
 static menulist_s	    s_dof_box;
@@ -403,13 +401,10 @@ void VID_MenuInit( void )
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", 0}; // sdl bug work only 2 and 4 samples per pixel
 #else
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", "[8x]", "[16x]", 0};
-#endif
 	static char	*samplesNV[]	=	{"[off]", "[8x]", "[8xQ]", "[16x]", "[16xQ]", 0};
+#endif
 	static char	*parallax[]		=	{"off", "Performance", "Quality", 0};
-	static char	*vsync[]		=	{"off", "on", 0};
-	static char	*alNo[]			=	{"not support", 0};
 	static char	*radar[]		=	{"off", "map only", "map and entities", "move detector", 0};
-	static char	*dof[]			=	{"off", "Performance", "Quality", 0};
 
 	if (!r_mode)
 		r_mode = Cvar_Get("r_mode", "0", 0);
@@ -486,11 +481,11 @@ void VID_MenuInit( void )
 
 #ifdef WIN32
 	if(gl_state.wgl_nv_multisample_coverage_aviable)
-	s_samples_list.itemnames = samplesNV;
+        s_samples_list.itemnames = samplesNV;
 	else
-	s_samples_list.itemnames = samples;
+        s_samples_list.itemnames = samples;
 #else
-	s_samples_list.itemnames = samples;
+    s_samples_list.itemnames = samples;
 #endif
 
 #ifdef WIN32

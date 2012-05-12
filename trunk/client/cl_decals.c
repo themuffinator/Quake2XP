@@ -106,8 +106,6 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 	fragment_t *fr, fragments[MAX_DECAL_FRAGMENTS];
 	mat3_t axis;
 	decals_t *d = NULL;
-	int nv;
-	float *v;
 
 	if (!cl_decals->value)
 		return;
@@ -141,9 +139,6 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 		else if (fr->numverts <= 0)
 			continue;
 		
-		nv = fr->surf->polys->numverts;
-		v = fr->surf->polys->verts[0];
-
 		d = CL_AllocDecal();
 		d->numverts = fr->numverts;
 		d->node = fr->node;

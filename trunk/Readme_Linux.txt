@@ -75,6 +75,9 @@ The framerate is unlimited by default, but you can adjust it with
 running background processes, for saving battery or just to avoid hearing the
 GPU cooling fan.
 
+In case you experience audio delays, try selecting "PulseAudio" instead of
+"ALSA" as the sound device in the options menu.
+
 The music system has three modes (accessible through the options menu or the
 "s_musicsrc" cvar with integers from 0 to 3):
 - disabled: do not play anything.

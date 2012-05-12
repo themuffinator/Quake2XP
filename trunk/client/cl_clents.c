@@ -126,9 +126,7 @@ void CL_AddClEntities()
 	float alpha, bak;
 	int contents;
 	qboolean onground = (qboolean)false;
-	float time, time2, dist, dst, grav = Cvar_VariableValue("sv_gravity");
-	vec3_t gib_min = { -2, -2, -2 };
-	vec3_t gib_max = { 2, 2, 2 };
+	float time, time2, dst, grav = Cvar_VariableValue("sv_gravity");
 	vec3_t tmpSize;
 	float entSize;
 	dst = cl_brass->value * cl_brass->value;
@@ -155,12 +153,6 @@ void CL_AddClEntities()
 			free_clentities = le;
 			continue;
 		}
-
-		if ((le->model == cl_mod_debris1) || (le->model == cl_mod_debris2)
-			|| (le->model == cl_mod_debris3))
-			dist = dst * 64;	
-		else
-			dist = dst;
 
 		time2 = time * time;
 		org[0] = le->org[0] + le->vel[0] * time + le->accel[0] * time2;
