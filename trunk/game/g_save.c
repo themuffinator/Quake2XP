@@ -234,10 +234,7 @@ void InitGame (void)
 	game.clients = gi.TagMalloc (game.maxclients * sizeof(game.clients[0]), TAG_GAME);
 	globals.num_edicts = game.maxclients+1;
 		gi.dprintf ("\n");
-	if(!net_compatibility->value)
 		gi.dprintf ("==== Use Quake2xp Net Protocol ====\n");
-	else
-		gi.dprintf ("==== Use Standart Net Protocol ====\n");
 	gi.dprintf ("\n");
 
 }

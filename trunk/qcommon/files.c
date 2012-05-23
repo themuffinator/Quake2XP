@@ -1088,7 +1088,8 @@ static void FS_ScanForGameDLL(void)
         Com_sprintf (gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamenames[ncv]);
         fp = fopen(gameDLLPath, "rb");
         if (fp != NULL)
-            break;
+        //    break;
+		return;
 	} else {
 		// case 2: autodetect
 		int i;

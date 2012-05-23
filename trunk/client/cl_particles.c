@@ -2994,9 +2994,9 @@ void CL_RailTrail(vec3_t start, vec3_t end)
 	p->color[1] = cl_railspiral_green->value;
 	p->color[2] = cl_railspiral_blue->value;
 
-	p->colorVel[0] = 0;
-	p->colorVel[1] = 0;
-	p->colorVel[2] = 0;
+	p->colorVel[0] = -0.5;
+	p->colorVel[1] = -0.75;
+	p->colorVel[2] = -1.0;
 	p->type = PT_BLASTER;
 	p->size = 2.8;
 	p->sizeVel = 1;

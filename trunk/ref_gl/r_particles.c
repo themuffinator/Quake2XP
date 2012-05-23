@@ -82,8 +82,6 @@ void R_DrawParticles(qboolean WaterCheck)
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, ParticleColor);
 
 	GL_SelectTexture		(GL_TEXTURE0_ARB);
-	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer		(2, GL_FLOAT, 0, ParticleTextCoord);
 	qglUniform1i			(qglGetUniformLocation(id, "u_map0"), 0);
 
 	GL_SelectTexture		(GL_TEXTURE1_ARB);	

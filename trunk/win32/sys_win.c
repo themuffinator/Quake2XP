@@ -541,10 +541,11 @@ void *Sys_GetGameAPI (void *parms)
 		Com_Error (ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
 	
 	game_library = LoadLibrary (gameDLLPath);
+	
 	if (game_library)
 	{
-		Com_DPrintf ("LoadLibrary (%s)\n",name);
-		break;
+		Com_Printf ("LoadLibrary (%s)\n", gameDLLPath);
+//		break;
 	}
 
 	GetGameAPI = (void *(__cdecl *)(void *)) GetProcAddress (game_library, "GetGameAPI");
