@@ -275,6 +275,21 @@ void Cvar_SetValue(char *var_name, float value)
 	Cvar_Set(var_name, val);
 }
 
+/*
+============
+Cvar_ForceSetValue
+============
+*/
+void Cvar_ForceSetValue(char *var_name, float value)
+{
+	char val[32];
+
+	if (value == (int) value)
+		Com_sprintf(val, sizeof(val), "%i", (int) value);
+	else
+		Com_sprintf(val, sizeof(val), "%f", value);
+	Cvar_ForceSet(var_name, val);
+}
 
 /*
 ============

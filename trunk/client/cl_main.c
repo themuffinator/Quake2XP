@@ -1600,7 +1600,6 @@ void CL_InitLocal(void)
 	cl_railspiral_blue = Cvar_Get("cl_railspiral_blue", "1", CVAR_ARCHIVE);
 
 	cl_decals = Cvar_Get("cl_decals", "1", CVAR_ARCHIVE);
-	net_compatibility = Cvar_Get("net_compatibility", "0", CVAR_SERVERINFO | CVAR_NOSET);
 	cl_drawhud = Cvar_Get("cl_drawhud", "1", CVAR_ARCHIVE);
 
 	cl_thirdPerson			=	Cvar_Get("cl_thirdPerson", "0", CVAR_ARCHIVE);

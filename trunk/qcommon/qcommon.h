@@ -494,6 +494,9 @@ cvar_t *Cvar_FullSet(char *var_name, char *value, int flags);
 void Cvar_SetValue(char *var_name, float value);
 // expands value to a string and calls Cvar_Set
 
+void Cvar_ForceSetValue(char *var_name, float value);
+// will set the variable even if NOSET or LATCH
+	
 float Cvar_VariableValue(char *var_name);
 // returns 0 if not defined or non numeric
 
@@ -743,7 +746,6 @@ typedef enum {
 } fsSearchType_t;
 
 
-
 void FS_InitFilesystem(void);
 void FS_SetGamedir(char *dir);
 char *FS_Gamedir(void);
@@ -873,7 +875,6 @@ void Sys_Error(char *error, ...);
 void Sys_Quit(void);
 char *Sys_GetClipboardData(void);
 void Sys_CopyProtect(void);
-void Sys_PrintInfo(void);
 
 /*
 ==============================================================

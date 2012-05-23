@@ -66,6 +66,27 @@ self-extracting archives (i.e. can be extracted without Wine).
   needed (i.e. 02.ogg -> track02.ogg). You also need to select that music
   source in the options menu.
 
+Expansion packs
+
+If you have expansion packs (like "xatrix", "rogue" or "zaero") copy the
+pak*.pak files and video/ folder to the corresponding directory under
+"$PREFIX/share/quake2xp" (not under baseq2/). Then start the game as:
+$ quake2xp +set game dirname
+
+The soundtracks for these expansions are included in the music pack mentioned
+before, and they should be copied into "dirname/music". Remember to rename the
+files as appropiate.
+
+Additional mods
+
+The process of installing other mods is similar, but there is a potential
+issue. In case the folder contains a gamex86.dll file, you probably need a
+Linux version of it. The equivalent game.so is (in general) easy to build if
+you have the source code, but keep in mind it's different for x86 and x86_64.
+
+If the mod already includes one appropiate for your architecture, just rename
+it to game.so and start Quake2XP as mentioned before for expansion packs.
+
 ==============================================================================
 3. Notes
 ==============================================================================
@@ -105,12 +126,10 @@ Website: http://quake2xp.sourceforge.net/
 5. TODO
 ==============================================================================
 
-- document important cvars (which are not in menu)
-- add note about xatrix, after testing
+- upload cache pkx and mention it URL as optional
 - add note about 3zb2, after testing
 - add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
 - add support for Zaero expansion pack (check Yamagi Q2 and QuDos)
-- upload data in ZIP format or just PKX to sourceforge.net
 - get launchpad account, create Ubuntu package and promote in
   forums (english and spanish)
 

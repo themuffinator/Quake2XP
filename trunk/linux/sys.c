@@ -39,10 +39,8 @@
 #include "../qcommon/qcommon.h"
 
 unsigned	sys_frame_time;
-
 qboolean	stdin_active = true;
-
-uid_t saved_euid;
+uid_t		saved_euid;
 
 /* ======================================================================= */
 /* General routines */
@@ -178,9 +176,12 @@ Sys_Quit(void)
 	exit(0);
 }
 
+extern cvar_t *net_compatibility;
+
 void
 Sys_Init(void)
 {
+	Sys_PrintInfo();
 }
 
 void
@@ -286,77 +287,54 @@ Sys_UnloadGame(void)
 	game_library = NULL;
 }
 
-extern cvar_t *net_compatibility;
+extern char gameDLLPath[];
+
 /*
- * ================= Sys_GetGameAPI
+ * ==============
+ * Sys_GetGameAPI
+ * ==============
  *
- * Loads the game dll =================
+ * Loads the game dll
  */
 void           *
 Sys_GetGameAPI(void *parms)
 {
 	void		*(*GetGameAPI) (void *);
-	FILE		*fp;
-	char		name[MAX_OSPATH];
-	char		*path;
-	const char	*gamename;
-
-    gamename = (net_compatibility->value) ? "game.so" : "gamexp.so";
-
-	setreuid(getuid(), getuid());
-	setegid(getgid());
 
 	if (game_library)
 		Com_Error(ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
 
-	Com_Printf("Loading %s\n\n", gamename);
+	setreuid(getuid(), getuid());
+	setegid(getgid());
 
-	/* now run through the search paths */
-	path = NULL;
-	while (1) {
-		path = FS_NextPath(path);
-		if (!path)
-			return NULL;	/* couldn't find one anywhere */
-			
-      		Com_Printf("Game dir: %s\n\n", path);
+	Com_Printf("Loading %s\n\n", gameDLLPath);
+	game_library = dlopen(gameDLLPath, RTLD_LAZY);
+	
+	if (game_library)
+		Com_DPrintf("LoadLibrary (%s)\n", gameDLLPath);
+	else {
+		char *str_p, *path;
 		
-		Com_sprintf(name, sizeof(name), "%s/%s", path, gamename);
+		Com_Printf("LoadLibrary (%s):", gameDLLPath);
 
-		/* skip it if it just doesn't exist */
-		fp = fopen(name, "rb");
-		if (fp == NULL)
-			continue;
-		fclose(fp);
-		
-		game_library = dlopen(name, RTLD_LAZY);
-		
-		if (game_library) {
-			Com_DPrintf("LoadLibrary (%s)\n", name);
-			break;
-		} else {
-			char *str_p;
-			
-			Com_Printf("LoadLibrary (%s):", name);
+		path = (char *)dlerror();
+		str_p = strchr(path, ':');	/* skip the path (already shown) */
+		if (str_p == NULL)
+			str_p = path;
+		else
+			str_p++;
 
-			path = (char *)dlerror();
-			str_p = strchr(path, ':');	/* skip the path (already shown) */
-			if (str_p == NULL)
-				str_p = path;
-			else
-				str_p++;
+		Com_Printf("%s\n", str_p);
 
-			Com_Printf("%s\n", str_p);
-
-			return NULL;
-		}
+		return NULL;
 	}
 
 	GetGameAPI = (void *)dlsym(game_library, "GetGameAPI");
-
 	if (!GetGameAPI) {
 		Sys_UnloadGame();
 		return NULL;
 	}
+
 	return GetGameAPI(parms);
 }
 

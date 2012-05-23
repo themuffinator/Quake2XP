@@ -80,9 +80,10 @@ typedef struct searchpath_s
 searchpath_t *curr_search = NULL;
 int curr_pak_index = 0;
 
-
 searchpath_t	*fs_searchpaths;
 searchpath_t	*fs_base_searchpaths;	// without gamedirs
+
+char gameDLLPath[MAX_OSPATH];
 
 /*
 
@@ -520,6 +521,7 @@ void FS_AddGameDirectory (char *dir)
 	char				**paklist;
 	int					nfiles;
 
+    Com_DPrintf("Added search path '%s'\n", dir);
 	strcpy (fs_gamedir, dir);
 
 	// Get list of PAK files
@@ -736,7 +738,10 @@ static int countchs(const char *s, char c) {
  * "output" is not NULL, "size" is greater than zero and the file matches the
  * attributes then a copy of the matching string will be placed there (with
  * SFF_SUBDIR it changes).
+ *
+ * XXX: Sys_Find* doesn't support multi-depth patterns, but FS_MathPath does
  */
+
 qboolean
 FS_MatchPath(const char *findname, const char *name, char **output, unsigned musthave, unsigned canthave)
 {
@@ -802,6 +807,9 @@ static int FS_ListFilesPacks( char *findname, char **list, int len, unsigned mus
 				char *s;
 
 				if (FS_MatchPath(findname, pak->files[i].name, &s, musthave, canthave)) {
+                    // XXX: in case of SFF_SUBDIR, a directory will appear as many times as nodes below itself
+                    if (nfound > 0 && strcmp(list[nfound-1], s) == 0)
+                        continue;
 					list[nfound] = s;
 					nfound++;
 				}
@@ -1046,6 +1054,89 @@ char *FS_NextPath (char *prevpath)
 	return NULL;
 }
 
+extern cvar_t *net_compatibility;
+
+static void FS_ScanForGameDLL(void)
+{
+	FILE		*fp;
+	char		*path;
+#ifdef _WIN32
+	static const char	*gamenames[] = { "gamex86xp.dll", "gamex86.dll" };
+#else
+	static const char	*gamenames[] = { "gamexp.so", "game.so" };
+#endif
+	int			ncv;
+
+	// possible values: 0 (gamexp), 1 (game), 2 (auto detect)
+	net_compatibility = Cvar_Get("net_compatibility", "2", CVAR_SERVERINFO | CVAR_NOSET);
+	ncv = net_compatibility->value;
+
+	if (ncv != 0 && ncv != 1 && ncv != 2) {
+		Cvar_ForceSetValue("net_compatibility", 2);
+		ncv = net_compatibility->value;
+	}
+
+#ifdef _WIN32
+    // check the current debug directory first for development purposes
+#ifdef NDEBUG
+	path = "release";
+#else
+	path = "debug";
+#endif
+	if (ncv != 2) {
+		// cases 0 and 1: option was specified by user
+        Com_sprintf (gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamenames[ncv]);
+        fp = fopen(gameDLLPath, "rb");
+        if (fp != NULL)
+            break;
+	} else {
+		// case 2: autodetect
+		int i;
+		for (i = 0; i < 2; i++) {
+			Com_sprintf (gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamenames[i]);
+			fp = fopen (gameDLLPath, "rb");
+			if (fp != NULL) {
+				Cvar_ForceSetValue("net_compatibility", i);
+				break;
+			}
+		}
+	}
+    
+    if (fp != NULL) {
+        fclose(fp);
+        return;
+    }
+#endif  // _WIN32
+    
+	/* now run through the search paths */
+	path = NULL;
+	while ((path = FS_NextPath(path)) != NULL) {
+		if (ncv != 2) {
+			Com_sprintf(gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamenames[ncv]);
+			fp = fopen(gameDLLPath, "rb");
+			if (fp == NULL)
+				continue;
+		} else {
+			int i;
+			for (i = 0; i < 2; i++) {
+				Com_sprintf(gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamenames[i]);
+				fp = fopen(gameDLLPath, "rb");
+				if (fp != NULL)
+					break;
+			}
+			if (fp == NULL)
+				continue;
+			else
+				Cvar_ForceSetValue("net_compatibility", i);
+		}
+		
+		fclose(fp);
+		return;
+	}
+    
+    Com_Error(ERR_FATAL, "Could not find any game DLLs\n");
+}
+
 /*
 ================
 FS_InitFilesystem
@@ -1092,5 +1183,9 @@ void FS_InitFilesystem (void)
 	/* Create directory if it does not exist. */
 	Sys_Mkdir(fs_gamedir);
 
-	Com_Printf("Using '%s' for writing\n", fs_gamedir);
+	Com_Printf("\n");
+	Com_Printf(S_COLOR_YELLOW "Using " S_COLOR_GREEN "'%s'" S_COLOR_YELLOW " for writing\n", fs_gamedir);
+
+    FS_ScanForGameDLL();
+    Com_Printf(S_COLOR_YELLOW "Found game library at " S_COLOR_GREEN "'%s'\n", gameDLLPath);
 }

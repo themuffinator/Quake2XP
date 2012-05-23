@@ -871,6 +871,9 @@ int Unz_ListFiles (unzFile *pak, const char *pattern, char **list, int len, unsi
 			assert(nfound < len && "Please increase FSLF_MAX");
 
 			if (FS_MatchPath(pattern, token, &s, musthave, canthave)) {
+                // XXX: in case of SFF_SUBDIR, a directory will appear as many times as nodes below itself
+                if (nfound > 0 && strcmp(list[nfound-1], s) == 0)
+                    continue;
 				list[nfound] = s;
 				nfound++;
 			}

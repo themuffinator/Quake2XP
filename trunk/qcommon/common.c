@@ -1503,28 +1503,6 @@ void Com_Error_f(void)
 	Com_Error(ERR_FATAL, "%s", Cmd_Argv(1));
 }
 
-qboolean CheckNetCompatibility(void)
-{
-    int i;
-    char *s;
-
-    for (i = 0; i < COM_Argc(); i++) {
-        s = COM_Argv(i);
-        if (Q_stricmp(s, "+set"))
-            continue;
-	if (!Q_stricmp(COM_Argv(i + 1), "net_compatibility")) {
-	
-		if (atoi(COM_Argv(i + 2))) {
-		//  делаем то что нужно поповоду дефолт конфига то есть как при net_compatibility === 1
-		return true;
-			}
-		}
-
-        i += 2;
-    }
- return false; // работаем в режиме net_comp... = 0
-}
-
 /*
  * Like glob_match, but match PATTERN against any final segment of TEXT.  
  */
@@ -1719,21 +1697,18 @@ void Qcommon_Init(int argc, char **argv)
 	// the settings of the config files
 	Cbuf_AddEarlyCommands(false);
 	Cbuf_Execute();
-	
+
 	Con_Init();
 	FS_InitFilesystem();
 	Com_Printf("\n");
-	
-	if(CheckNetCompatibility())
-		Cbuf_AddText ("exec default.cfg\n");
-	else
-		Cbuf_AddText("exec xpdef.cfg\n");	// q2xp new default config
-	
+
+	Cbuf_AddText("exec default.cfg\n");
 	Cbuf_AddText("exec xpconfig.cfg\n");
 		
 	Cbuf_AddEarlyCommands(true);
 	Cbuf_Execute();
 	Com_Printf("\n");
+
 	// 
 	// init commands and vars
 	// 
@@ -1747,11 +1722,7 @@ void Qcommon_Init(int argc, char **argv)
 	fixedtime = Cvar_Get("fixedtime", "0", 0);
 	logfile_active = Cvar_Get("logfile", "0", 0);
 	showtrace = Cvar_Get("showtrace", "0", 0);
-#ifdef DEDICATED_ONLY
-	dedicated = Cvar_Get("dedicated", "1", CVAR_NOSET);
-#else
 	dedicated = Cvar_Get("dedicated", "0", CVAR_NOSET);
-#endif
 
 	s = va("%s %s %s %s", VERSION, CPUSTRING, __DATE__, BUILDSTRING);
 	Cvar_Get("version", s, CVAR_SERVERINFO | CVAR_NOSET);
@@ -1760,7 +1731,7 @@ void Qcommon_Init(int argc, char **argv)
 		Cmd_AddCommand("quit", Com_Quit);
 
 	Sys_Init();
-
+    
 	NET_Init();
 	Netchan_Init();
 
@@ -1781,10 +1752,6 @@ void Qcommon_Init(int argc, char **argv)
 	}
 
 	Com_Printf("====== Quake2xp Initialized ======\n\n");
-
-#ifdef __linux__
-	Sys_PrintInfo();
-#endif
 }
 
 /*
