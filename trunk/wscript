@@ -24,6 +24,9 @@ sources_glob = {
     'xatrix' : [
         'xsrc/*.c'
         ],
+    'rogue' : [
+        'roguesrc/**/*.c'
+        ],
     '3zb2' : [
         '3zb2src97/*.c'
         ],
@@ -85,6 +88,13 @@ def build(bld):
         source = sources['xatrix'],
         target = 'xatrix/gamexp',
         install_path = '${DATADIR}/xatrix',
+        env = genv
+        )
+
+    bld.shlib(
+        source = sources['rogue'],
+        target = 'rogue/game',
+        install_path = '${DATADIR}/rogue',
         env = genv
         )
 

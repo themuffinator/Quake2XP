@@ -68,10 +68,10 @@ self-extracting archives (i.e. can be extracted without Wine).
 
 Expansion packs
 
-If you have expansion packs (like "xatrix", "rogue" or "zaero") copy the
+If you have the official expansion packs ("xatrix" and "rogue") copy the
 pak*.pak files and video/ folder to the corresponding directory under
 "$PREFIX/share/quake2xp" (not under baseq2/). Then start the game as:
-$ quake2xp +set game dirname
+$ quake2xp +set game <dirname>
 
 The soundtracks for these expansions are included in the music pack mentioned
 before, and they should be copied into "dirname/music". Remember to rename the
@@ -86,6 +86,11 @@ you have the source code, but keep in mind it's different for x86 and x86_64.
 
 If the mod already includes one appropiate for your architecture, just rename
 it to game.so and start Quake2XP as mentioned before for expansion packs.
+
+Additional levels
+
+You can find more SP and MP maps here (which don't require a new mod):
+http://www-personal.umich.edu/~jimw/q2/
 
 ==============================================================================
 3. Notes
@@ -128,8 +133,6 @@ Website: http://quake2xp.sourceforge.net/
 
 - upload cache pkx and mention it URL as optional
 - add note about 3zb2, after testing
-- add support for Rogue expansion pack (check Yamagi Q2 and QuDos)
-- add support for Zaero expansion pack (check Yamagi Q2 and QuDos)
 - get launchpad account, create Ubuntu package and promote in
   forums (english and spanish)
 
