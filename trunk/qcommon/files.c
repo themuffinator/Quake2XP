@@ -448,6 +448,9 @@ pack_t *FS_LoadPackFile (char *packfile)
 	unsigned		checksum;
 
 	if (fs_OriginalPaksOnly->value) { //Load ONLY original q2 data!!!
+#ifdef _WIN32
+		strlwr(packfile);
+#endif
 		if (!strstr(packfile, "pak0.pak") && !strstr(packfile, "pak1.pak") && !strstr(packfile, "pak2.pak"))
 			return NULL;
 	}
