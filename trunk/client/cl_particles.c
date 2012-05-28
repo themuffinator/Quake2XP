@@ -260,8 +260,7 @@ void CL_AddParticles(void)
 			}
 		}
 		
-				
-		
+
 		if (p->flags & PARTICLE_NONSOLID) 
 		{ 
 			vec3_t maxs = {1, 1, 1};

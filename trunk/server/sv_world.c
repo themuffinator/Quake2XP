@@ -611,9 +611,13 @@ trace_t SV_Trace(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
 		maxs = vec3_origin;
 
 	memset(&clip, 0, sizeof(moveclip_t));
-
+	
 	// clip to world
 	clip.trace = CM_BoxTrace(start, end, mins, maxs, 0, contentmask);
+	
+	if (!ge)
+		 return clip.trace; // FIX Sometimes function can be called if a player is killed
+
 	clip.trace.ent = ge->edicts;
 	if (clip.trace.fraction == 0)
 		return clip.trace;		// blocked by the world
