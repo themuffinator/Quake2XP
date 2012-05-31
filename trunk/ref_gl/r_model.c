@@ -1800,7 +1800,7 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 			mod->noselfshadow = true;
 			continue;
 		}	
-		if (!Q_strcasecmp(token, "env"))
+		if (!Q_strcasecmp(token, "envmap"))
 		{
 			mod->envmap = true;
 			continue;
@@ -1888,6 +1888,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	mod->glowCfg[2] = 5.666;
 	mod->noselfshadow = (qboolean)false;
 	mod->modelScale = 1.0;
+	mod->envmap = (qboolean)false;
 
 	i = strlen(mod->name);
 	memcpy(nam, mod->name, i);

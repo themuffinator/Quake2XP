@@ -41,6 +41,7 @@ image_t	*r_texshell[MAX_SHELLS];
 image_t *r_blackTexture;
 image_t *r_DSTTex;
 image_t *r_scanline;
+image_t	*r_envTex;
 
 void CreateDSTTex_ARB (void)
 {
@@ -402,6 +403,9 @@ void R_InitEngineTextures(void)
 		if(!r_scanline)
 			r_scanline = r_notexture;
 	
+	r_envTex =  GL_FindImage("gfx/tinfx.jpg", it_wall);
+		if(!r_envTex)
+			r_envTex = r_notexture;
 
 	CreateDSTTex_ARB();
 	CreateDepthTexture();

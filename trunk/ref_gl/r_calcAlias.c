@@ -106,6 +106,11 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	qboolean	caustics = false;
 	unsigned	defBits = 0;
 	int			id;
+	vec3_t		normalArray[3*MAX_TRIANGLES];
+	float		backlerp, frontlerp;
+	int			index2, oldindex2;
+	daliasframe_t	*frame, *oldframe;
+	dtrivertx_t		*verts, *oldverts;
 
 	alphaShift =			sin (ref_realtime * currentmodel->glowCfg[2]); 
 	alphaShift =			(alphaShift + 1) * 0.5f;
@@ -133,9 +138,6 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
 		VectorSet(lightColor, 1,1,1);
 
-	
-//	qglColor4f(lightColor[0], lightColor[1], lightColor[2], alpha);	
-
 	// select skin
 	if (currententity->skin)
 		skin = currententity->skin;	// custom player skin
@@ -162,16 +164,27 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
 	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_COLOR);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, currentmodel->st);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, colorArray);
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false,		0, normalArray);
 
 	c_alias_polys += paliashdr->num_tris;
 	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
 	jj = 0;
-
+	
+	if(currentmodel->envmap){
+	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	oldverts = oldframe->verts;
+	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	verts = frame->verts;
+	backlerp = currententity->backlerp;
+	frontlerp = 1 - backlerp;
+	}
+	
 	for (i=0; i<paliashdr->num_tris; i++)
 		{
 			for (j=0; j<3; j++, jj++)
@@ -179,6 +192,15 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
 			VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], alpha);
+			
+			if(currentmodel->envmap){
+			index2 = verts[index_xyz].lightnormalindex;
+			oldindex2 = oldverts[index_xyz].lightnormalindex;
+		
+			normalArray[jj][0] = r_avertexnormals[oldindex2][0]*backlerp + r_avertexnormals[index2][0]*frontlerp;
+			normalArray[jj][1] = r_avertexnormals[oldindex2][1]*backlerp + r_avertexnormals[index2][1]*frontlerp;
+			normalArray[jj][2] = r_avertexnormals[oldindex2][2]*backlerp + r_avertexnormals[index2][2]*frontlerp;
+			}
 			}
 		}
 
@@ -186,6 +208,9 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	if(caustics)
 	defBits = worldDefs.CausticsBit;
+
+	if(currentmodel->envmap)
+		defBits |= worldDefs.EnvBits;
 
 	// setup program
 	GL_BindProgram(aliasAmbientProgram, defBits);
@@ -206,12 +231,18 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	GL_MBind				(GL_TEXTURE2_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
 	}
+	if(currentmodel->envmap){
+	GL_MBind				(GL_TEXTURE3_ARB, r_envTex->texnum);
+	qglUniform1i			(qglGetUniformLocation(id, "u_env"), 3);
+	}
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_COLOR);
+	if(currentmodel->envmap)
+	qglDisableVertexAttribArray(ATRB_NORMAL);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
 }

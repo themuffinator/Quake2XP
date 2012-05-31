@@ -480,6 +480,7 @@ void R_InitPrograms(void) {
 
 		worldDefs.CausticsBit = R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
 		worldDefs.ShellBits = R_GetProgramDefBits(aliasAmbientProgram, "SHELL");
+		worldDefs.EnvBits = R_GetProgramDefBits(aliasAmbientProgram, "ENVMAP");
 
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -644,8 +645,8 @@ void R_InitPrograms(void) {
 	}
 
 	Com_Printf("\n");
-	if (missing > 0)
-		Com_Error(ERR_FATAL, "%d programs couldn't be found\n", missing);
+//	if (missing > 0)
+//		Com_Error(ERR_FATAL, "%d programs couldn't be found\n", missing);
 }
 
 /*

@@ -152,8 +152,6 @@ extern	image_t	*r_texshell[MAX_SHELLS];
 #define		MAX_EXPLODE 8
 extern image_t *r_explode[MAX_EXPLODE];
 
-#define MAX_MODEL_DLIGHTS 128
-
 extern qboolean drawFlares;
 extern image_t gltextures[MAX_GLTEXTURES];
 extern int numgltextures;
@@ -168,10 +166,6 @@ image_t *r_decaltexture[DECAL_MAX];
 extern image_t *r_radarmap;
 extern image_t *r_around;
 extern image_t *r_flare;
-
-extern image_t *sun_object;
-extern image_t *sun1_object;
-extern image_t *sun2_object;
 
 extern image_t *draw_chars;
 extern image_t *r_DSTTex;
@@ -715,6 +709,7 @@ typedef struct {
 	unsigned	BumpBits;
 	unsigned	WaterTransBits;
 	unsigned	ShellBits;
+	unsigned	EnvBits;
 } 
 worldDefs_t;
 
