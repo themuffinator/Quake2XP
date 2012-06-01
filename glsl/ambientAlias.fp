@@ -5,6 +5,7 @@ uniform sampler2D 	u_Add;
 
 #ifdef ENVMAP
 uniform sampler2D	u_env;
+uniform float		u_envScale;
 varying		vec2	v_envCoord;
 #endif
 
@@ -45,7 +46,7 @@ color = r0+r1;
 #ifdef ENVMAP
 vec4 r3 = texture2D(u_env,  v_envCoord);
 r3 *= r1.a;
-r3*= 0.07;
+r3*= u_envScale;
 color += r3;
 #endif
 
