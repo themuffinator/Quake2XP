@@ -196,11 +196,11 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			if(currentmodel->envmap){
 			index2 = verts[index_xyz].lightnormalindex;
 			oldindex2 = oldverts[index_xyz].lightnormalindex;
-		
 			normalArray[jj][0] = r_avertexnormals[oldindex2][0]*backlerp + r_avertexnormals[index2][0]*frontlerp;
 			normalArray[jj][1] = r_avertexnormals[oldindex2][1]*backlerp + r_avertexnormals[index2][1]*frontlerp;
 			normalArray[jj][2] = r_avertexnormals[oldindex2][2]*backlerp + r_avertexnormals[index2][2]*frontlerp;
 			}
+			
 			}
 		}
 
@@ -234,6 +234,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	if(currentmodel->envmap){
 	GL_MBind				(GL_TEXTURE3_ARB, r_envTex->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_env"), 3);
+	qglUniform1f			(qglGetUniformLocation(id, "u_envScale"), currentmodel->envScale);
 	}
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);

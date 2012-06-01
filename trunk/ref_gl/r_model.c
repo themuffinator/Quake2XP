@@ -1803,6 +1803,7 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 		if (!Q_strcasecmp(token, "envmap"))
 		{
 			mod->envmap = true;
+			mod->envScale = atof(COM_Parse(&s));
 			continue;
 		}	
 
@@ -1889,7 +1890,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	mod->noselfshadow = (qboolean)false;
 	mod->modelScale = 1.0;
 	mod->envmap = (qboolean)false;
-
+	mod->envScale = 0.07;
 	i = strlen(mod->name);
 	memcpy(nam, mod->name, i);
 	nam[i-3]='r';
