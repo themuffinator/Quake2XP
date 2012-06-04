@@ -1890,7 +1890,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	mod->noselfshadow = (qboolean)false;
 	mod->modelScale = 1.0;
 	mod->envmap = (qboolean)false;
-	mod->envScale = 0.07;
+	mod->envScale = 0.1;
 	i = strlen(mod->name);
 	memcpy(nam, mod->name, i);
 	nam[i-3]='r';

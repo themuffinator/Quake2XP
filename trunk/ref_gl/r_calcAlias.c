@@ -232,8 +232,8 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
 	}
 	if(currentmodel->envmap){
-	GL_MBind				(GL_TEXTURE3_ARB, r_envTex->texnum);
-	qglUniform1i			(qglGetUniformLocation(id, "u_env"), 3);
+	GL_MBind				(GL_TEXTURE6_ARB, r_envTex->texnum);
+	qglUniform1i			(qglGetUniformLocation(id, "u_env"), 6);
 	qglUniform1f			(qglGetUniformLocation(id, "u_envScale"), currentmodel->envScale);
 	}
 
