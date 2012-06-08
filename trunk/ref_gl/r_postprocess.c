@@ -67,8 +67,7 @@ void R_BuildFlares(flare_t * light, int Id){
 		qglDisable(GL_TEXTURE_2D);
 		qglColorMask(0, 0, 0, 0);
 		qglDepthMask(0);
-		
-		qglEnableVertexAttribArray(ATRB_POSITION);
+
 		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vert);	
 
 		qglBeginQueryARB(GL_SAMPLES_PASSED_ARB, ocQueries[Id]);
@@ -80,8 +79,6 @@ void R_BuildFlares(flare_t * light, int Id){
 
 		qglEndQueryARB(GL_SAMPLES_PASSED_ARB);
 		
-
-		qglDisableVertexAttribArray(ATRB_POSITION);
 		qglEnable(GL_TEXTURE_2D);
 		qglColorMask(1, 1, 1, 1);
 		qglDepthMask(1);
@@ -126,12 +123,7 @@ void R_BuildFlares(flare_t * light, int Id){
 	qglDisable(GL_DEPTH_TEST);
 	VectorScale(light->color, scale, tmp);
 
-	qglEnableClientState	(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer		(2, GL_FLOAT, 0, tex_array);
-	qglEnableClientState	(GL_COLOR_ARRAY);
-	qglColorPointer			(4, GL_FLOAT, 0, color_array);
-	qglEnableClientState	(GL_VERTEX_ARRAY);
-	qglVertexPointer		(3, GL_FLOAT, 0, vert_array);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vert_array);
 	
 	VectorMA (light->origin, -1-dist, vup, vert_array[flareVert+0]);
 	VectorMA (vert_array[flareVert+0], 1+dist, vright, vert_array[flareVert+0]);
@@ -176,9 +168,6 @@ void R_BuildFlares(flare_t * light, int Id){
 
 	
 	qglEnable(GL_DEPTH_TEST);
-	qglDisableClientState(GL_VERTEX_ARRAY);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglDisableClientState(GL_COLOR_ARRAY);
 	qglColor4f(1, 1, 1, 1);
 	c_flares++;
 	
@@ -189,8 +178,9 @@ void R_BuildFlares(flare_t * light, int Id){
 
 void R_RenderFlares(void)
 {
-	int i;
+	int i, id;
 	flare_t *fl;
+	unsigned defBits = 0;
 
 	if (!r_drawFlares->value)
 		return;
@@ -201,12 +191,21 @@ void R_RenderFlares(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
+	qglEnableVertexAttribArray(ATRB_POSITION); //set vertex attrib pointer in R_BuildFlares (occlusion geometry and flare billboard)
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_COLOR);
+
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, tex_array);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, color_array);
+
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
 	GL_MBind(GL_TEXTURE0_ARB, r_flare->texnum);
-
-	GL_PicsColorScaleARB(false);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	fl = r_flares;
@@ -235,6 +234,10 @@ void R_RenderFlares(void)
 		R_BuildFlares(fl, i);
 
 	}
+	GL_BindNullProgram();
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+    qglDisableVertexAttribArray(ATRB_COLOR);
 	qglDisable(GL_BLEND);
 	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(1);
