@@ -363,12 +363,12 @@ static Gen_Interface_t *MC_OpenVorbis(const char *name, soundparams_t *sp) {
 static int MC_ReadWAV(MC_WAV_t *f, void *buffer, int n) {
 	const int r = MIN(n, f->size - f->pos);
 
-	if (n > 0) {
+	if (r > 0) {
 		memcpy(buffer, f->start + f->pos, r);
 		f->pos += r;
 	}
 
-	return n;
+	return r;
 }
 
 static void MC_RewindWAV(MC_WAV_t *f) {

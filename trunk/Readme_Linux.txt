@@ -15,7 +15,7 @@ Quake2XP Linux Notes
 The following libraries are needed to compile Quake2XP.
 - DevIL
 - OpenGL
-- OpenAL
+- OpenAL (>= 1.14, see troubleshooting)
 - SDL
 - Vorbisfile (which requires Ogg and Vorbis)
 
@@ -95,6 +95,12 @@ http://www-personal.umich.edu/~jimw/q2/
 ==============================================================================
 3. Notes
 ==============================================================================
+
+If you experience sound distortions (specially under water), check your OpenAL
+Soft version. There is a known problem in 1.13, that was fixed in 1.14. If
+your distribution is outdated or you can't update the system package, just
+download and build it from source, and then run the game as:
+$ LD_PELOAD=/home/user/Downloads/openal-soft-1.14/build/libopenal.so quake2xp
 
 The framerate is unlimited by default, but you can adjust it with
 "cl_maxfps 60" or similar. You may want to do it for smooth playing when

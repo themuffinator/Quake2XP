@@ -95,8 +95,6 @@ void EFX_RvbProcSrc(openal_channel_t *ch, ALuint source, qboolean enabled) {
 		alSource3i(source, AL_AUXILIARY_SEND_FILTER, efx.rvbAuxSlot, 0, AL_FILTER_NULL);
 }
 
-#ifdef _WIN32
-// XXX: OpenAL Soft 1.13 in Linux doesn't work with this
 ALuint EFX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb) {
 	ALuint effect;
 
@@ -132,34 +130,3 @@ ALuint EFX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb) {
 
 	return effect;
 }
-
-#else
-
-// XXX: for now we use standard Reverb with EAX presets (ignoring unsupported parameters)
-ALuint EFX_RvbCreate(EFXEAXREVERBPROPERTIES *rvb) {
-	ALuint effect;
-
-	alGenEffects(1, &effect);
-
-	alEffecti(effect, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
-	alEffectf(effect, AL_REVERB_DENSITY, rvb->flDensity);
-	alEffectf(effect, AL_REVERB_DIFFUSION, rvb->flDiffusion);
-	alEffectf(effect, AL_REVERB_GAIN, rvb->flGain);
-	alEffectf(effect, AL_REVERB_GAINHF, rvb->flGainHF);
-	alEffectf(effect, AL_REVERB_DECAY_TIME, rvb->flDecayTime);
-	alEffectf(effect, AL_REVERB_DECAY_HFRATIO, rvb->flDecayHFRatio);
-	alEffectf(effect, AL_REVERB_REFLECTIONS_GAIN, rvb->flReflectionsGain);
-	alEffectf(effect, AL_REVERB_REFLECTIONS_DELAY, rvb->flReflectionsDelay);
-	alEffectf(effect, AL_REVERB_LATE_REVERB_GAIN, rvb->flLateReverbGain);
-	alEffectf(effect, AL_REVERB_LATE_REVERB_DELAY, rvb->flLateReverbDelay);
-	alEffectf(effect, AL_REVERB_AIR_ABSORPTION_GAINHF, rvb->flAirAbsorptionGainHF);
-	alEffectf(effect, AL_REVERB_ROOM_ROLLOFF_FACTOR, rvb->flRoomRolloffFactor);
-	alEffecti(effect, AL_REVERB_DECAY_HFLIMIT, rvb->iDecayHFLimit);
-
-	if (alGetError() != AL_NO_ERROR)
-		Com_Printf(S_COLOR_RED "EFX create filter failed\n");
-
-	return effect;
-}
-
-#endif

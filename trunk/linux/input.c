@@ -275,11 +275,9 @@ SDL_Event event;
 	case 2:
 		if (!grab_on && cl_paused->value == 0) {
 			SDL_WM_GrabInput(SDL_GRAB_ON);
-			Music_Resume();
 			grab_on = true;
 		} else if (grab_on && cl_paused->value != 0) {
 			SDL_WM_GrabInput(SDL_GRAB_OFF);
-			Music_Pause();
 			grab_on = false;
 		}
 		break;
@@ -287,6 +285,11 @@ SDL_Event event;
 		Cvar_SetValue("in_grab", 2);
 		break;
 	}
+    
+    if (cl_paused->value == 0)
+        Music_Resume();
+    else
+        Music_Pause();
 
 	/* Process the key events */
 	while (keyq_head != keyq_tail) {
