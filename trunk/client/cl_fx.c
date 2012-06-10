@@ -373,7 +373,6 @@ void CL_ParseMuzzleFlash(void)
 
 	i = MSG_ReadShort(&net_message);
 
-
 	if (i < 1 || i >= MAX_EDICTS)
 		// Com_Error (ERR_DROP, "CL_ParseMuzzleFlash: bad entity");
 		Com_Error(ERR_DROP, "CL_ParseMuzzleFlash: bad entity - %i", i);

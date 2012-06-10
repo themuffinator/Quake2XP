@@ -393,22 +393,12 @@ extern float   wTmu4Array[MAX_BATCH_SURFS][2];
 extern float   wTmu5Array[MAX_BATCH_SURFS][2];
 extern float   wTmu6Array[MAX_BATCH_SURFS][2];
 
-extern int	indexArray[MAX_BATCH_SURFS*3];
-extern unsigned	numVertices, numIndeces;
-
 extern model_t *r_worldmodel;
 
 extern unsigned d_8to24table[256];
 extern float	d_8to24tablef[256][3];
 
 extern int registration_sequence;
-
-extern qboolean is_sky;
-extern qboolean inlava;
-extern qboolean inslime;
-extern qboolean inwater;
-extern qboolean nodrawmodel;
-extern unsigned char lightmap_gammatable[256];
 
 int R_Init(void *hinstance, void *hWnd);
 void R_Shutdown(void);
