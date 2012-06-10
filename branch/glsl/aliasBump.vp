@@ -1,0 +1,30 @@
+attribute vec2		a_texCoord;
+attribute vec3		a_vertArray;
+attribute vec3		a_normArray;
+attribute vec3		a_tangent;
+attribute vec3		a_binormal;
+
+uniform vec3		u_LightOrg;
+uniform vec3		u_ViewOrigin; 		
+
+varying vec2		v_texCoord;
+varying vec3		v_viewVec;
+varying vec3		v_lightVec;
+
+void main (void) {
+	
+v_texCoord = a_texCoord; 
+
+vec3 LV = u_LightOrg - a_vertArray;
+vec3 VV = u_ViewOrigin - a_vertArray;
+
+v_lightVec.x = dot(a_tangent, LV);
+v_lightVec.y = dot(a_binormal, LV);
+v_lightVec.z = dot(a_normArray, LV); 
+
+v_viewVec.x = dot(a_tangent, VV);
+v_viewVec.y = dot(a_binormal, VV);
+v_viewVec.z = dot(a_normArray, VV); 
+	
+gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+}
