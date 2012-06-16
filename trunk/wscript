@@ -112,5 +112,3 @@ def build(bld):
         lib = ['z', 'm', 'dl'],
         use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL', 'OGG', 'VORBIS', 'VORBISFILE']
     )
-
-    bld.install_files('${DATADIR}/baseq2', 'linux/q2xpGLSL.pkx')
