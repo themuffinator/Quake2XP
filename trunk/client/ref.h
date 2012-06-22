@@ -213,8 +213,9 @@ typedef struct image_s {
 	
 	float		picScale_w;		
 	float		picScale_h;		
-	index_t		*index;						
-
+	index_t		*index;	
+	
+	float parallaxScale, specularScale, SpecularExp;
 
 } image_t;
 

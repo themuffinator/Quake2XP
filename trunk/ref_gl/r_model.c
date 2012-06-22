@@ -719,14 +719,43 @@ Mod_LoadTexinfo
 =================
 */
 
+void Mod_LoadTextureFx(image_t *tex, char *s){
+
+	char	*token;
+
+	while (s)
+	{
+		token = COM_Parse (&s);
+		
+		if (!Q_strcasecmp(token, "parallaxScale"))
+		{
+			tex->parallaxScale = atof(COM_Parse(&s));
+			continue;
+		}
+		
+		if (!Q_strcasecmp(token, "specularScale"))
+		{
+			tex->specularScale = atof(COM_Parse(&s));
+			continue;
+		}
+		
+		if (!Q_strcasecmp(token, "specularExponent"))
+		{
+			tex->SpecularExp = atof(COM_Parse(&s));
+			continue;
+		}
+	}
+}
+
 void Mod_LoadTexinfo (lump_t * l) {
-     texinfo_t     *in;
-     mtexinfo_t     *out, *step;
-     image_t          *image;
-     char          name[MAX_QPATH];
-     char          *purename;
-     int               count, next;
-     int               i, j, k;
+     texinfo_t  *in;
+     mtexinfo_t *out, *step;
+     image_t    *image;
+     char       name[MAX_QPATH];
+     char       *purename;
+     int        count, next;
+     int        i, j, k, x;
+	 char		*buff;
 
      in = (texinfo_t *) (mod_base + l->fileofs);
 
@@ -758,7 +787,7 @@ void Mod_LoadTexinfo (lump_t * l) {
              // grab original texture size for override textures
              Com_sprintf(name, sizeof(name), "textures/%s.wal", in->texture);
              out->image = GL_FindImage(name, it_wall);
-
+			
           if (!out->image) {
                // failed to load WAL, use default
                Com_Printf("Couldn't load %s\n", name);
@@ -778,7 +807,7 @@ void Mod_LoadTexinfo (lump_t * l) {
              // check if we have something to override with
              Com_sprintf (name, sizeof(name), "overrides/%s.tga", purename);
              image = GL_FindImage(name, it_wall);
-        
+
              if (!image) {
                   Com_sprintf (name, sizeof(name), "overrides/%s.dds", purename);
                   image = GL_FindImage(name, it_wall);
@@ -786,12 +815,31 @@ void Mod_LoadTexinfo (lump_t * l) {
 
              // scale override texture size
              if (image) {
-                  image->width = out->image->width;
-                  image->height = out->image->height;
+                image->width = out->image->width;
+                image->height = out->image->height;
+			
+				// use override instead of WAL
+				out->image = image;
 
-               // use override instead of WAL
-               out->image = image;
+				image->parallaxScale =	0.0;
+				image->specularScale =	0.0;
+				image->SpecularExp =	0.0;
+			}
+
+			 // load texture configuration file
+			 Com_sprintf (name, sizeof(name), "materials/%s.mtr", purename);
+             x = FS_LoadFile (name, (void **)&buff);
+			 if (buff){
+
+				char bak=buff[i];
+				buff[x]=0;
+				Com_Printf("_Found texture script of %s\n", name);
+				Mod_LoadTextureFx(image, buff);
+				buff[x]=bak;
+				FS_FreeFile (buff);
+
              }
+			 
         
           //
              // Normal Maps Loading

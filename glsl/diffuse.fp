@@ -16,6 +16,9 @@ uniform int				u_isCaustics;
 uniform vec3			u_LightColor[13];
 uniform float			u_LightRadius[13];
 
+uniform float			u_specularScale;
+uniform float			u_specularExp;
+
 varying vec3			v_viewVecTS;
 varying vec3			t, b, n;
 varying vec2			v_wTexCoord;
@@ -117,6 +120,8 @@ specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 #endif 
 
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
+
+specular *=u_specularScale;
 
 #ifdef VERTEXLIGHT
 diffuseMap *= clamp(v_color, 0.0, 0.666);

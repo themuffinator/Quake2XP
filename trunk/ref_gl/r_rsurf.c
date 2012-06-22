@@ -601,10 +601,31 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		lmtex = s->lightmaptexturenum;
 
 		if(r_parallax->value){
+			
+			if(!image->parallaxScale){
+
 			scale[0] = r_parallaxScale->value / image->width;
 			scale[1] = r_parallaxScale->value / image->height;
+			}
+			else
+			{
+			scale[0] = image->parallaxScale / image->width;
+			scale[1] = image->parallaxScale / image->height;
+			}
 			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
 			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
+		}
+
+		if(r_bumpWorld->value){
+			if(!image->specularScale)
+			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), 1.0);
+			else
+			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), image->specularScale);
+
+			if(!image->SpecularExp)
+			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), 16.0);
+			else
+			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), image->SpecularExp);
 		}
 
 		if(caustics || (s->flags & SURF_WATER)){
