@@ -636,7 +636,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 		GL_CreateParallaxLmPoly(s);
 
-		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
+	for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
 			if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
 				goto dynamic;
 		}
@@ -701,7 +701,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 					GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
 					qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
 				}
-			}
+		}
 			GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
 			qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
 			

@@ -820,10 +820,6 @@ void Mod_LoadTexinfo (lump_t * l) {
 			
 				// use override instead of WAL
 				out->image = image;
-
-				image->parallaxScale =	0.0;
-				image->specularScale =	0.0;
-				image->SpecularExp =	0.0;
 			}
 
 			 // load texture configuration file
