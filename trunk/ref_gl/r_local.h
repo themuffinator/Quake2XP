@@ -409,7 +409,8 @@ void R_DrawAliasModel(entity_t * e, qboolean weapon_model);
 void R_DrawBrushModel(entity_t * e);
 void R_DrawSpriteModel(entity_t * e);
 void R_DrawBeam();
-void R_DrawBSP(void);
+void R_DrawAmbientWorld(void);
+void R_DrawLightWorld(void);
 void R_RenderDlights(void);
 void R_RenderBrushPoly(msurface_t * fa);
 void R_InitEngineTextures(void);
@@ -665,7 +666,8 @@ typedef struct glslProgram_s {
 
 glslProgram_t r_programs[MAX_PROGRAMS];
 
-glslProgram_t		*diffuseProgram;
+glslProgram_t		*ambientWorldProgram;
+glslProgram_t		*lightWorldProgram;
 glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*bloomdsProgram;

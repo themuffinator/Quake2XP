@@ -1165,8 +1165,9 @@ if (r_noRefresh->value)
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
 
-	R_DrawBSP();
+	R_DrawAmbientWorld();
 	R_RenderDecals();
+	R_DrawLightWorld();
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
 

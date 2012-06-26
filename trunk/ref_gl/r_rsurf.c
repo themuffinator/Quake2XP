@@ -423,7 +423,7 @@ BSP SURFACES
 ===============
 */
 
-void GL_CreateParallaxLmPoly(msurface_t * surf)
+void GL_CreateAmbientPoly(msurface_t * surf)
 	{
 	int i, nv = surf->polys->numverts;
 	float *v;
@@ -470,6 +470,37 @@ void GL_CreateParallaxLmPoly(msurface_t * surf)
 	
 }
 
+void GL_CreateLightPoly(msurface_t * surf)
+	{
+	int i, nv = surf->polys->numverts;
+	float *v;
+	glpoly_t *p = surf->polys;
+
+	v = p->verts[0];
+	c_brush_polys += (nv-2);
+
+	for (i = 0; i < nv; i++, v += VERTEXSIZE) 
+		{
+		VectorCopy(v, wVertexArray[i]);
+		//baseTex
+		wTexArray[i][0] = v[3];
+		wTexArray[i][1] = v[4];
+		//normals
+		nTexArray[i][0] = v[7];
+		nTexArray[i][1] = v[8];
+		nTexArray[i][2] = v[9];
+		//tangents
+		tTexArray[i][0] = v[10];
+		tTexArray[i][1] = v[11];
+		tTexArray[i][2] = v[12];
+		//binormals
+		bTexArray[i][0] = v[13];
+		bTexArray[i][1] = v[14];
+		bTexArray[i][2] = v[15];
+	}
+	
+}
+
 vec3_t BmodelViewOrg;
 
  int SurfSort( const msurface_t **a, const msurface_t **b )
@@ -481,22 +512,16 @@ vec3_t BmodelViewOrg;
 
 int	num_scene_surfaces;
 msurface_t	*scene_surfaces[MAX_MAP_FACES];
-vec3_t	lightOrg, lightColor;
-float lightRad;
-int r_currTex = -9999;
 
-static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
+static void GL_BatchAmbientPass(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
 	image_t		*image, *fx, *nm;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
-	int		id, i, map, j;
+	int			id, i;
 	float		scale[2];
-	qboolean	is_dynamic = false;
-	dlight_t	*dl;
-	unsigned	temp[128 * 128];
-	int		smax, tmax, counter=0;
+
 
 	defBits = worldDefs.LightmapBits;
 
@@ -507,8 +532,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		defBits |= worldDefs.BumpBits;
 
 	// setup program
-	GL_BindProgram(diffuseProgram, defBits);
-	id = diffuseProgram->id[defBits];
+	GL_BindProgram(ambientWorldProgram, defBits);
+	id = ambientWorldProgram->id[defBits];
 
 	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
 
@@ -519,76 +544,12 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
 	}
 
-	if(r_parallax->value){
-	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
-	}
-
-	if(r_bumpWorld->value){
-
-	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+	if(r_parallax->value)
+		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
 	
-	// cleanup lights
-	for (j=0; j < r_pplMaxDlights->value; j++) {
-		char uname[32];
-		
-		if(counter < 0){
-		qglUniform1i(qglGetUniformLocation(id, "u_activeLights"), 0);
-		break;
-		}
-		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
-		qglUniform1f(qglGetUniformLocation(id, uname), -1.0);
-		counter--;
-	}
-	// setup dlights
-	dl = r_newrefdef.dlights;
-	for (j=0, dl = r_newrefdef.dlights; j < r_newrefdef.num_dlights; j++, dl++ ) 
-	{
-		char uname[32];
-		int k;
-		vec3_t mins, maxs;
-		vec3_t locLight;
 
-		for (k=0 ; k<3 ; k++)
-		{
-		mins[k] = dl->origin[k] - dl->intensity * 0.666;
-		maxs[k] = dl->origin[k] + dl->intensity * 0.666;
-		}
-
-		if(R_CullBox(mins, maxs))
-			continue;
-			
-		if(j >= r_pplMaxDlights->value )
-			break;
-				
-	// put dlight into model space for bmodels
-	if(bmodel){
-	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
-		{
-		mat3_t	entityAxis;
-		vec3_t	tmp;
-		VectorSubtract(r_origin, currententity->origin, tmp);
-		AnglesToMat3(currententity->angles, entityAxis);
-		Mat3_TransposeMultiplyVector(entityAxis, tmp, locLight);
-		}
-	else
-		VectorSubtract(dl->origin, currententity->origin, locLight);
-	
-		Com_sprintf(uname, sizeof(uname), "u_LightOrg[%i]", j);
-		qglUniform3f(qglGetUniformLocation(id, uname), locLight[0], locLight[1], locLight[2]);
-
-	}else{
-		Com_sprintf(uname, sizeof(uname), "u_LightOrg[%i]", j);
-		qglUniform3f(qglGetUniformLocation(id, uname), dl->origin[0], dl->origin[1], dl->origin[2]);
-	}
-		Com_sprintf(uname, sizeof(uname), "u_LightColor[%i]", j);
-		qglUniform3f(qglGetUniformLocation(id, uname), dl->color[0], dl->color[1], dl->color[2]);
-		Com_sprintf(uname, sizeof(uname), "u_LightRadius[%i]", j);
-		qglUniform1f(qglGetUniformLocation(id, uname), dl->intensity);
-		qglUniform1i(qglGetUniformLocation(id, "u_numLights"), r_newrefdef.num_dlights);
-		qglUniform1i(qglGetUniformLocation(id, "u_activeLights"), 1);
-		counter ++;
-		}
-	}
+	if(r_bumpWorld->value)
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
 
@@ -634,107 +595,118 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		}else
 			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 0);
 
-		GL_CreateParallaxLmPoly(s);
+		GL_CreateAmbientPoly(s);
 
-	for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
-			if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
-				goto dynamic;
-		}
-
-		// dynamic this frame or dynamic previously
-		if ((s->dlightframe == r_framecount)) {
-        
-		dynamic:
-			if (r_dynamic->value) {
-                
-                if (!(s->texinfo-> flags &
-				  (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP))) {
-					is_dynamic = true;
-				}
-			}
-		}
-
-		if (is_dynamic) {
-			if ((s->styles[map] >= 32 || s->styles[map] == 0)
-				&& (s->dlightframe != r_framecount)) {
-				smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
-				tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;
-
-				R_BuildLightMap(s, (byte *) temp, smax * 4, false);
-				R_SetCacheState(s);
-
-				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
-
-				lmtex = s->lightmaptexturenum;
-
-				qglTexSubImage2D(GL_TEXTURE_2D, 0,
-								s->light_s, s->light_t,
-								smax, tmax,
-								GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
-
-			} else {
-				smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
-				tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;
-
-				R_BuildLightMap(s, (byte *) temp, smax * 4, false);
-
-				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + 0);
-
-				lmtex = 0;
-
-				qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
-			
-			}
-			
-			if(s->texinfo->image->texnum != r_currTex) 
-			{
-				GL_MBind(GL_TEXTURE0_ARB, image->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
-				GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
-
-				if(caustics || (s->flags & SURF_WATER)){
-					GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
-				}
-				if(r_bumpWorld->value){
-					GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
-				}
-		}
-			GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
-			qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
-			
-			qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);
-		} else {
-		
-			if(s->texinfo->image->texnum != r_currTex) 
-			{
-				GL_MBind(GL_TEXTURE0_ARB, image->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
-				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
-				qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
-				GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
+		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
+		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
+		qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
+		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
 				
-				if(caustics || (s->flags & SURF_WATER)){
-					GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
-				}
-				if(r_bumpWorld->value){
-					GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
-					qglUniform1i(qglGetUniformLocation(id, "u_deluxMap"), 5);
-				}
-			}
-			qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
+		if(caustics || (s->flags & SURF_WATER)){
+			GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+			qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
 		}
-		r_currTex = s->texinfo->image->texnum;
+		if(r_bumpWorld->value){
+			GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
+			qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
+			qglUniform1i(qglGetUniformLocation(id, "u_deluxMap"), 5);
+		}
+			
+			qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
+		
+	
 	}
 	
 	GL_BindNullProgram();
 }
 
+int	r_lightTimestamp;
+
+static void GL_BatchLightPass(dlight_t *light, qboolean bmodel)
+{
+	msurface_t	*s;
+	image_t		*image, *nm;
+	unsigned	defBits = 0;
+	int			id, i;
+	float		scale[2];
+	glpoly_t	*poly;
+		
+	if (r_parallax->value)
+		defBits = worldDefs.ParallaxBit;
+
+	// setup program
+	GL_BindProgram(lightWorldProgram, defBits);
+	id = lightWorldProgram->id[defBits];
+
+	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
+
+	if(bmodel)
+		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
+	else
+		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
+
+	if(r_parallax->value)
+		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+
+	qglUniform3f(qglGetUniformLocation(id, "u_LightOrg"), light->origin[0], light->origin[1], light->origin[2]);
+	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), light->color[0], light->color[1], light->color[2], 1.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), light->intensity);
+
+	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
+
+	for (i=0; i<num_scene_surfaces; i++)
+	{
+		s=scene_surfaces[i];
+		poly = s->polys;
+
+		if (poly->lightTimestamp != r_lightTimestamp)
+			continue;
+
+		image = R_TextureAnimation(s->texinfo);
+		nm    = R_TextureAnimationNormal(s->texinfo);
+
+		if(r_parallax->value){
+			
+			if(!image->parallaxScale){
+
+			scale[0] = r_parallaxScale->value / image->width;
+			scale[1] = r_parallaxScale->value / image->height;
+			}
+			else
+			{
+			scale[0] = image->parallaxScale / image->width;
+			scale[1] = image->parallaxScale / image->height;
+			}
+			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
+			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
+		}
+
+		if(!image->specularScale)
+			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), 1.0);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), image->specularScale);
+
+		if(!image->SpecularExp)
+			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), 16.0);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), image->SpecularExp);
+
+		
+		GL_CreateLightPoly(s);
+
+		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
+		GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
+	
+		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
+
+	}
+	
+	GL_BindNullProgram();
+}
 
 /*
 =================
@@ -961,8 +933,7 @@ void R_DrawBrushModel(entity_t * e)
 	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
 	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
-	
-	r_currTex = -99999;
+
 	num_scene_surfaces = 0;
 	R_DrawInlineBModel();
 	
@@ -972,16 +943,16 @@ void R_DrawBrushModel(entity_t * e)
        // sanity checking since we newer have all the types above. 
        if (contentsOR & CONTENTS_WATER) 
        { 
-          GL_BatchLightmappedPoly(true, true); 
+          GL_BatchAmbientPass(true, true); 
        } 
        else 
        { 
-          GL_BatchLightmappedPoly(true, false); 
+          GL_BatchAmbientPass(true, false); 
        } 
     } 
     else 
     { 
-       GL_BatchLightmappedPoly(true, false); 
+       GL_BatchAmbientPass(true, false); 
     }
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
@@ -1130,15 +1101,142 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	R_RecursiveWorldNode(node->children[!side]);
 }
 
+__inline qboolean BBoxIntersectBBox(float *bbox0, float *bbox1)
+{
+	if ( bbox0[0] >= bbox1[3] )	return false;
+	if ( bbox0[3] <= bbox1[0] )	return false;
+	if ( bbox0[1] >= bbox1[4] )	return false;
+	if ( bbox0[4] <= bbox1[1] )	return false;
+	if ( bbox0[2] >= bbox1[5] )	return false;
+	if ( bbox0[5] <= bbox1[2] )	return false;
+	return true;
+}
+
+qboolean R_MarkLightSurf(msurface_t *surf, dlight_t *light, qboolean world)
+{
+	cplane_t	*plane;
+	float		dist;
+	glpoly_t	*poly;
+
+	if ((surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
+		return false;
+
+	plane = surf->plane;
+	poly = surf->polys;
+
+	switch (plane->type)
+	{
+	case PLANE_X:
+		dist = light->origin[0] - plane->dist;
+		break;
+	case PLANE_Y:
+		dist = light->origin[1] - plane->dist;
+		break;
+	case PLANE_Z:
+		dist = light->origin[2] - plane->dist;
+		break;
+	default:
+		dist = DotProduct (light->origin, plane->normal) - plane->dist;
+		break;
+	}
+
+	//the normals are flipped when surf_planeback is 1
+	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
+		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
+		return false;
+
+	//the normals are flipped when surf_planeback is 1
+	if (abs(dist) > light->intensity)
+		return false;
+
+	if(world)
+	{
+		float	lbbox[6], pbbox[6];
+
+		lbbox[0] = light->origin[0] - light->intensity;
+		lbbox[1] = light->origin[1] - light->intensity;
+		lbbox[2] = light->origin[2] - light->intensity;
+		lbbox[3] = light->origin[0] + light->intensity;
+		lbbox[4] = light->origin[1] + light->intensity;
+		lbbox[5] = light->origin[2] + light->intensity;
+
+		// surface bounding box
+		pbbox[0] = surf->mins[0];
+		pbbox[1] = surf->mins[1];
+		pbbox[2] = surf->mins[2];
+		pbbox[3] = surf->maxs[0];
+		pbbox[4] = surf->maxs[1];
+		pbbox[5] = surf->maxs[2];
+
+		if(!BBoxIntersectBBox(lbbox, pbbox))
+			return false;
+
+	}
+
+	poly->lightTimestamp = r_lightTimestamp;
+	return true;
+}
+
+void R_MarkLightCasting (dlight_t *light, mnode_t *node)
+{
+	cplane_t	*plane;
+	float		dist;
+	msurface_t	**surf;
+	mleaf_t		*leaf;
+	int			c;
+
+	if (node->contents != -1)
+	{
+		//we are in a leaf
+		leaf = (mleaf_t *)node;
+
+		surf = leaf->firstmarksurface;
+
+		for (c=0; c<leaf->nummarksurfaces; c++, surf++)
+		{
+			if (R_MarkLightSurf ((*surf), light, true))
+			{
+				scene_surfaces[num_scene_surfaces++] = (*surf);
+			}
+		}
+		return;
+	}
+
+	plane = node->plane;
+	dist = DotProduct (light->origin, plane->normal) - plane->dist;
+
+	if (dist > light->intensity)
+	{
+		R_MarkLightCasting (light, node->children[0]);
+		return;
+	}
+	if (dist < -light->intensity)
+	{
+		R_MarkLightCasting (light, node->children[1]);
+		return;
+	}
+
+	R_MarkLightCasting (light, node->children[0]);
+	R_MarkLightCasting (light, node->children[1]);
+}
+
+
+qboolean R_FillLightChain (dlight_t *light)
+{
+	R_MarkLightCasting (light, r_worldmodel->nodes);
+	return num_scene_surfaces;
+}
+
+
 /*
 =============
 r_drawWorld
 =============
 */
-void R_DrawBSP(void)
+void R_DrawAmbientWorld(void)
 {
 	entity_t ent;
-
+	
 	if (!r_drawWorld->value)
 		return;
 
@@ -1175,11 +1273,10 @@ void R_DrawBSP(void)
 	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
 
-	r_currTex = -99999;
 	num_scene_surfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
-	GL_BatchLightmappedPoly(false, false);
-	
+	GL_BatchAmbientPass(false, false);
+
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -1189,13 +1286,58 @@ void R_DrawBSP(void)
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	DrawTextureChains();
-
 	R_DrawSkyBox();
-
-			
 }
 
+void R_DrawLightWorld(void)
+{
+	dlight_t *dl;
+	int i;
+	
+	if (!r_drawWorld->value)
+		return;
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TANGENT);
+	qglEnableVertexAttribArray(ATRB_BINORMAL);
+	
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
+
+	r_lightTimestamp++;
+	num_scene_surfaces = 0;
+	qglDepthMask(0);
+	qglEnable(GL_BLEND);
+	qglBlendFunc(GL_ONE, GL_ONE);
+
+	dl = r_newrefdef.dlights;
+	for (i = 0; i < r_newrefdef.num_dlights; i++, dl++)
+	{
+	if(R_FillLightChain(dl));{
+		GL_BatchLightPass(dl, false);
+	}
+	}
+
+	qglDisable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglDepthMask(1);
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_NORMAL);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_TANGENT);
+	qglDisableVertexAttribArray(ATRB_BINORMAL);
+
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+}
 
 /*
 ===============

@@ -459,21 +459,33 @@ void R_InitPrograms(void) {
 	memset(programHashTable, 0, sizeof(programHashTable));
 	memset(&r_nullProgram, 0, sizeof(glslProgram_t));
 
-	Com_Printf("Load "S_COLOR_YELLOW"bsp program"S_COLOR_WHITE" ");
-	diffuseProgram = R_FindProgram("diffuse", true, true);
-	if(diffuseProgram->valid){
+	Com_Printf("Load "S_COLOR_YELLOW"ambient world program"S_COLOR_WHITE" ");
+	ambientWorldProgram = R_FindProgram("ambientworld", true, true);
+	if(ambientWorldProgram->valid){
 		Com_Printf("succeeded\n");
 
-		worldDefs.ParallaxBit		= R_GetProgramDefBits(diffuseProgram, "PARALLAX");
-		worldDefs.LightmapBits		= R_GetProgramDefBits(diffuseProgram, "LIGHTMAP");
-		worldDefs.VertexLightBits	= R_GetProgramDefBits(diffuseProgram, "VERTEXLIGHT");
-		worldDefs.BumpBits			= R_GetProgramDefBits(diffuseProgram, "BUMP");
+		worldDefs.ParallaxBit		= R_GetProgramDefBits(ambientWorldProgram, "PARALLAX");
+		worldDefs.LightmapBits		= R_GetProgramDefBits(ambientWorldProgram, "LIGHTMAP");
+		worldDefs.VertexLightBits	= R_GetProgramDefBits(ambientWorldProgram, "VERTEXLIGHT");
+		worldDefs.BumpBits			= R_GetProgramDefBits(ambientWorldProgram, "BUMP");
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"ambient model program"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"light world program"S_COLOR_WHITE" ");
+	lightWorldProgram = R_FindProgram("lightworld", true, true);
+	if(lightWorldProgram->valid){
+		Com_Printf("succeeded\n");
+
+		worldDefs.ParallaxBit		= R_GetProgramDefBits(lightWorldProgram, "PARALLAX");
+
+	} else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"ambient alias program"S_COLOR_WHITE" ");
 	aliasAmbientProgram  = R_FindProgram("ambientAlias", true, true);
 	if(aliasAmbientProgram->valid){
 		Com_Printf("succeeded\n");
