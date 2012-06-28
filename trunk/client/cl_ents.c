@@ -1009,7 +1009,7 @@ next:
 		 && (!player_camera || (cl_thirdPerson->value
 		 && !(cl.attractloop && !(cl.cinematictime > 0
 		 && cls.realtime - cl.cinematictime > 1000))))) {
-			ent.origin[2]+=56;
+		//	ent.origin[2]+=56;
 			if (renderfx & RF_SHELL_RED)
 				V_AddLight(ent.origin, 200, 1.0, 0, 0);
 			else if (renderfx & RF_SHELL_BLUE)
@@ -1030,7 +1030,7 @@ next:
 				V_AddLight(ent.origin, 225, 1.0, 1.0, 0.0);
 			else if (effects & EF_TRACKERTRAIL)
 				V_AddLight(ent.origin, 225, -1.0, -1.0, -1.0);
-			ent.origin[2]-=56;
+		//	ent.origin[2]-=56;
 			if (renderfx & RF_SHELL_HALF_DAM) {
 				if (Developer_searchpath(2) == 2) {
 					// ditch the half damage shell if any of red, blue, or

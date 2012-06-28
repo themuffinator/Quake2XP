@@ -708,6 +708,399 @@ static void GL_BatchLightPass(dlight_t *light, qboolean bmodel)
 	GL_BindNullProgram();
 }
 
+__inline qboolean BBoxIntersectBBox(float *bbox0, float *bbox1)
+{
+	if ( bbox0[0] >= bbox1[3] )	return false;
+	if ( bbox0[3] <= bbox1[0] )	return false;
+	if ( bbox0[1] >= bbox1[4] )	return false;
+	if ( bbox0[4] <= bbox1[1] )	return false;
+	if ( bbox0[2] >= bbox1[5] )	return false;
+	if ( bbox0[5] <= bbox1[2] )	return false;
+	return true;
+}
+
+qboolean R_MarkLightSurf(msurface_t *surf, dlight_t *light, qboolean world)
+{
+	cplane_t	*plane;
+	float		dist;
+	glpoly_t	*poly;
+	vec3_t		lmins, lmaxs;
+
+	if ((surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
+		return false;
+
+	plane = surf->plane;
+	poly = surf->polys;
+
+	if (poly->lightTimestamp == r_lightTimestamp) 
+		return false;
+	
+	switch (plane->type)
+	{
+	case PLANE_X:
+		dist = light->origin[0] - plane->dist;
+		break;
+	case PLANE_Y:
+		dist = light->origin[1] - plane->dist;
+		break;
+	case PLANE_Z:
+		dist = light->origin[2] - plane->dist;
+		break;
+	default:
+		dist = DotProduct (light->origin, plane->normal) - plane->dist;
+		break;
+	}
+
+	//the normals are flipped when surf_planeback is 1
+	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
+		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
+		return false;
+
+	//the normals are flipped when surf_planeback is 1
+	if (abs(dist) > light->intensity)
+		return false;
+
+	if(world)
+	{
+		float	lbbox[6], pbbox[6];
+		
+
+		lbbox[0] = light->origin[0] - light->intensity;
+		lbbox[1] = light->origin[1] - light->intensity;
+		lbbox[2] = light->origin[2] - light->intensity;
+		lbbox[3] = light->origin[0] + light->intensity;
+		lbbox[4] = light->origin[1] + light->intensity;
+		lbbox[5] = light->origin[2] + light->intensity;
+
+		// surface bounding box
+		pbbox[0] = surf->mins[0];
+		pbbox[1] = surf->mins[1];
+		pbbox[2] = surf->mins[2];
+		pbbox[3] = surf->maxs[0];
+		pbbox[4] = surf->maxs[1];
+		pbbox[5] = surf->maxs[2];
+
+		if(!BBoxIntersectBBox(lbbox, pbbox))
+			return false;
+
+		
+	}
+	
+	lmins[0] = light->origin[0] - light->intensity;
+	lmins[1] = light->origin[1] - light->intensity;
+	lmins[2] = light->origin[2] - light->intensity;
+	lmaxs[3] = light->origin[0] + light->intensity;
+	lmaxs[4] = light->origin[1] + light->intensity;
+	lmaxs[5] = light->origin[2] + light->intensity;
+
+	if(R_CullBox(lmins, lmaxs))
+			return false;
+	
+	poly->lightTimestamp = r_lightTimestamp;
+	return true;
+}
+
+
+
+/*
+=============================================================
+
+	WORLD MODEL
+
+=============================================================
+*/
+qboolean SurfInFrustum(msurface_t *s)
+{
+	if (s->polys)
+		return !R_CullBox(s->mins, s->maxs);
+	return true;
+}
+
+
+
+/*
+================
+R_RecursiveWorldNode
+================
+*/
+static void R_RecursiveWorldNode(mnode_t * node)
+{
+	int c, side, sidebit;
+	cplane_t *plane;
+	msurface_t *surf, **mark;
+	mleaf_t *pleaf;
+	float dot;
+	image_t *fx, *image, *nm;
+	
+	if (node->contents == CONTENTS_SOLID)
+		return;					// solid
+
+	if (node->visframe != r_visframecount)
+		return;
+
+	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
+		return;
+
+	// if a leaf node, draw stuff
+	if (node->contents != -1) {
+		pleaf = (mleaf_t *) node;
+
+		// check for door connected areas
+		if (r_newrefdef.areabits) {
+			if (!(r_newrefdef.areabits[pleaf->area >> 3] & (1 << (pleaf->area & 7))))
+				return;			// not visible
+		}
+
+		mark = pleaf->firstmarksurface;
+		c = pleaf->nummarksurfaces;
+
+		if (c) {
+			do {
+			if (SurfInFrustum(*mark))
+					(*mark)->visframe = r_framecount;
+				(*mark)->ent = NULL;
+				mark++;
+			} while (--c);
+		}
+
+		return;
+	}
+	// node is just a decision point, so go down the apropriate sides
+	// find which side of the node we are on
+	plane = node->plane;
+
+	switch (plane->type) {
+	case PLANE_X:
+		dot = modelorg[0] - plane->dist;
+		break;
+	case PLANE_Y:
+		dot = modelorg[1] - plane->dist;
+		break;
+	case PLANE_Z:
+		dot = modelorg[2] - plane->dist;
+		break;
+	default:
+		dot = DotProduct(modelorg, plane->normal) - plane->dist;
+		break;
+	}
+
+	if (dot >= 0) {
+		side = 0;
+		sidebit = 0;
+	} else {
+		side = 1;
+		sidebit = SURF_PLANEBACK;
+	}
+
+	// recurse down the children, front side first
+	R_RecursiveWorldNode(node->children[side]);
+
+	// draw stuff
+	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
+		
+		if (surf->visframe != r_framecount)
+			continue;
+
+		if ((surf->flags & SURF_PLANEBACK) != sidebit)
+			continue;			// wrong side
+
+		if (surf->texinfo->flags & SURF_SKY) {	// just adds to visible sky bounds
+			R_AddSkySurface(surf);
+		} else if (surf->texinfo->flags & SURF_NODRAW)
+			continue;
+		else if (surf->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {	// add to the translucent chain
+			surf->texturechain = r_alpha_surfaces;
+			r_alpha_surfaces = surf;
+		} else {
+			if (!(surf->flags & SURF_DRAWTURB)) {
+		
+				scene_surfaces[num_scene_surfaces++] = surf;
+
+			} else {
+				// the polygon is visible, so add it to the texture
+				// sorted chain
+				// FIXME: this is a hack for animation
+				image = R_TextureAnimation(surf->texinfo);
+				fx = R_TextureAnimationFx(surf->texinfo); // fix glow hack
+				nm = R_TextureAnimationNormal(surf->texinfo);
+				surf->texturechain = image->texturechain;
+				image->texturechain = surf;
+
+			}
+		
+		}
+	}
+
+	// recurse down the back side
+	R_RecursiveWorldNode(node->children[!side]);
+}
+
+
+void R_MarkLightCasting (dlight_t *light, mnode_t *node)
+{
+	cplane_t	*plane;
+	float		dist;
+	msurface_t	**surf;
+	mleaf_t		*leaf;
+	int			c;
+
+	if (node->contents != -1)
+	{
+		//we are in a leaf
+		leaf = (mleaf_t *)node;
+
+		surf = leaf->firstmarksurface;
+
+		for (c=0; c<leaf->nummarksurfaces; c++, surf++)
+		{
+			if (R_MarkLightSurf ((*surf), light, true))
+			{
+				scene_surfaces[num_scene_surfaces++] = (*surf);
+			}
+		}
+		return;
+	}
+
+	plane = node->plane;
+	dist = DotProduct (light->origin, plane->normal) - plane->dist;
+
+	if (dist > light->intensity)
+	{
+		R_MarkLightCasting (light, node->children[0]);
+		return;
+	}
+	if (dist < -light->intensity)
+	{
+		R_MarkLightCasting (light, node->children[1]);
+		return;
+	}
+
+	R_MarkLightCasting (light, node->children[0]);
+	R_MarkLightCasting (light, node->children[1]);
+}
+
+
+qboolean R_FillLightChain (dlight_t *light)
+{
+	r_lightTimestamp++;
+	R_MarkLightCasting (light, r_worldmodel->nodes);
+	return num_scene_surfaces;
+}
+
+
+/*
+=============
+r_drawWorld
+=============
+*/
+void R_DrawAmbientWorld(void)
+{
+	entity_t ent;
+	
+	if (!r_drawWorld->value)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	currentmodel = r_worldmodel;
+
+	VectorCopy(r_newrefdef.vieworg, modelorg);
+
+	// auto cycle the world frame for texture animation
+	memset(&ent, 0, sizeof(ent));
+	ent.frame = (int) (r_newrefdef.time * 2);
+	currententity = &ent;
+
+	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
+
+	qglColor3f(1, 1, 1);
+	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
+		
+	R_ClearSkyBox();
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TEX1);
+	qglEnableVertexAttribArray(ATRB_TANGENT);
+	qglEnableVertexAttribArray(ATRB_BINORMAL);
+	
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
+	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
+
+	num_scene_surfaces = 0;
+	R_RecursiveWorldNode(r_worldmodel->nodes);
+	GL_BatchAmbientPass(false, false);
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_NORMAL);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_TEX1);
+	qglDisableVertexAttribArray(ATRB_TANGENT);
+	qglDisableVertexAttribArray(ATRB_BINORMAL);
+
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	DrawTextureChains();
+	R_DrawSkyBox();
+}
+
+void R_DrawLightWorld(void)
+{
+	dlight_t *dl;
+	int i;
+	
+	if (!r_drawWorld->value)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TANGENT);
+	qglEnableVertexAttribArray(ATRB_BINORMAL);
+	
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
+
+	num_scene_surfaces = 0;
+	r_lightTimestamp++;
+	qglDepthMask(0);
+	qglEnable(GL_BLEND);
+	qglBlendFunc(GL_ONE, GL_ONE);
+
+	dl = r_newrefdef.dlights;
+	for (i = 0; i < r_newrefdef.num_dlights; i++, dl++)
+	{
+	
+	if(R_FillLightChain(dl))
+		GL_BatchLightPass(dl, false);
+		
+	}
+
+	qglDisable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglDepthMask(1);
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_NORMAL);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_TANGENT);
+	qglDisableVertexAttribArray(ATRB_BINORMAL);
+
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+}
+
+
 /*
 =================
 R_DrawInlineBModel
@@ -968,376 +1361,7 @@ void R_DrawBrushModel(entity_t * e)
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-/*
-=============================================================
 
-	WORLD MODEL
-
-=============================================================
-*/
-qboolean SurfInFrustum(msurface_t *s)
-{
-	if (s->polys)
-		return !R_CullBox(s->mins, s->maxs);
-	return true;
-}
-
-
-
-/*
-================
-R_RecursiveWorldNode
-================
-*/
-static void R_RecursiveWorldNode(mnode_t * node)
-{
-	int c, side, sidebit;
-	cplane_t *plane;
-	msurface_t *surf, **mark;
-	mleaf_t *pleaf;
-	float dot;
-	image_t *fx, *image, *nm;
-	
-	if (node->contents == CONTENTS_SOLID)
-		return;					// solid
-
-	if (node->visframe != r_visframecount)
-		return;
-
-	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
-		return;
-
-	// if a leaf node, draw stuff
-	if (node->contents != -1) {
-		pleaf = (mleaf_t *) node;
-
-		// check for door connected areas
-		if (r_newrefdef.areabits) {
-			if (!(r_newrefdef.areabits[pleaf->area >> 3] & (1 << (pleaf->area & 7))))
-				return;			// not visible
-		}
-
-		mark = pleaf->firstmarksurface;
-		c = pleaf->nummarksurfaces;
-
-		if (c) {
-			do {
-			if (SurfInFrustum(*mark))
-					(*mark)->visframe = r_framecount;
-				(*mark)->ent = NULL;
-				mark++;
-			} while (--c);
-		}
-
-		return;
-	}
-	// node is just a decision point, so go down the apropriate sides
-	// find which side of the node we are on
-	plane = node->plane;
-
-	switch (plane->type) {
-	case PLANE_X:
-		dot = modelorg[0] - plane->dist;
-		break;
-	case PLANE_Y:
-		dot = modelorg[1] - plane->dist;
-		break;
-	case PLANE_Z:
-		dot = modelorg[2] - plane->dist;
-		break;
-	default:
-		dot = DotProduct(modelorg, plane->normal) - plane->dist;
-		break;
-	}
-
-	if (dot >= 0) {
-		side = 0;
-		sidebit = 0;
-	} else {
-		side = 1;
-		sidebit = SURF_PLANEBACK;
-	}
-
-	// recurse down the children, front side first
-	R_RecursiveWorldNode(node->children[side]);
-
-	// draw stuff
-	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
-		
-		if (surf->visframe != r_framecount)
-			continue;
-
-		if ((surf->flags & SURF_PLANEBACK) != sidebit)
-			continue;			// wrong side
-
-		if (surf->texinfo->flags & SURF_SKY) {	// just adds to visible sky bounds
-			R_AddSkySurface(surf);
-		} else if (surf->texinfo->flags & SURF_NODRAW)
-			continue;
-		else if (surf->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {	// add to the translucent chain
-			surf->texturechain = r_alpha_surfaces;
-			r_alpha_surfaces = surf;
-		} else {
-			if (!(surf->flags & SURF_DRAWTURB)) {
-		
-				scene_surfaces[num_scene_surfaces++] = surf;
-
-			} else {
-				// the polygon is visible, so add it to the texture
-				// sorted chain
-				// FIXME: this is a hack for animation
-				image = R_TextureAnimation(surf->texinfo);
-				fx = R_TextureAnimationFx(surf->texinfo); // fix glow hack
-				nm = R_TextureAnimationNormal(surf->texinfo);
-				surf->texturechain = image->texturechain;
-				image->texturechain = surf;
-
-			}
-		
-		}
-	}
-
-	// recurse down the back side
-	R_RecursiveWorldNode(node->children[!side]);
-}
-
-__inline qboolean BBoxIntersectBBox(float *bbox0, float *bbox1)
-{
-	if ( bbox0[0] >= bbox1[3] )	return false;
-	if ( bbox0[3] <= bbox1[0] )	return false;
-	if ( bbox0[1] >= bbox1[4] )	return false;
-	if ( bbox0[4] <= bbox1[1] )	return false;
-	if ( bbox0[2] >= bbox1[5] )	return false;
-	if ( bbox0[5] <= bbox1[2] )	return false;
-	return true;
-}
-
-qboolean R_MarkLightSurf(msurface_t *surf, dlight_t *light, qboolean world)
-{
-	cplane_t	*plane;
-	float		dist;
-	glpoly_t	*poly;
-
-	if ((surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
-		return false;
-
-	plane = surf->plane;
-	poly = surf->polys;
-
-	switch (plane->type)
-	{
-	case PLANE_X:
-		dist = light->origin[0] - plane->dist;
-		break;
-	case PLANE_Y:
-		dist = light->origin[1] - plane->dist;
-		break;
-	case PLANE_Z:
-		dist = light->origin[2] - plane->dist;
-		break;
-	default:
-		dist = DotProduct (light->origin, plane->normal) - plane->dist;
-		break;
-	}
-
-	//the normals are flipped when surf_planeback is 1
-	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
-		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
-		return false;
-
-	//the normals are flipped when surf_planeback is 1
-	if (abs(dist) > light->intensity)
-		return false;
-
-	if(world)
-	{
-		float	lbbox[6], pbbox[6];
-
-		lbbox[0] = light->origin[0] - light->intensity;
-		lbbox[1] = light->origin[1] - light->intensity;
-		lbbox[2] = light->origin[2] - light->intensity;
-		lbbox[3] = light->origin[0] + light->intensity;
-		lbbox[4] = light->origin[1] + light->intensity;
-		lbbox[5] = light->origin[2] + light->intensity;
-
-		// surface bounding box
-		pbbox[0] = surf->mins[0];
-		pbbox[1] = surf->mins[1];
-		pbbox[2] = surf->mins[2];
-		pbbox[3] = surf->maxs[0];
-		pbbox[4] = surf->maxs[1];
-		pbbox[5] = surf->maxs[2];
-
-		if(!BBoxIntersectBBox(lbbox, pbbox))
-			return false;
-
-	}
-
-	poly->lightTimestamp = r_lightTimestamp;
-	return true;
-}
-
-void R_MarkLightCasting (dlight_t *light, mnode_t *node)
-{
-	cplane_t	*plane;
-	float		dist;
-	msurface_t	**surf;
-	mleaf_t		*leaf;
-	int			c;
-
-	if (node->contents != -1)
-	{
-		//we are in a leaf
-		leaf = (mleaf_t *)node;
-
-		surf = leaf->firstmarksurface;
-
-		for (c=0; c<leaf->nummarksurfaces; c++, surf++)
-		{
-			if (R_MarkLightSurf ((*surf), light, true))
-			{
-				scene_surfaces[num_scene_surfaces++] = (*surf);
-			}
-		}
-		return;
-	}
-
-	plane = node->plane;
-	dist = DotProduct (light->origin, plane->normal) - plane->dist;
-
-	if (dist > light->intensity)
-	{
-		R_MarkLightCasting (light, node->children[0]);
-		return;
-	}
-	if (dist < -light->intensity)
-	{
-		R_MarkLightCasting (light, node->children[1]);
-		return;
-	}
-
-	R_MarkLightCasting (light, node->children[0]);
-	R_MarkLightCasting (light, node->children[1]);
-}
-
-
-qboolean R_FillLightChain (dlight_t *light)
-{
-	R_MarkLightCasting (light, r_worldmodel->nodes);
-	return num_scene_surfaces;
-}
-
-
-/*
-=============
-r_drawWorld
-=============
-*/
-void R_DrawAmbientWorld(void)
-{
-	entity_t ent;
-	
-	if (!r_drawWorld->value)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	currentmodel = r_worldmodel;
-
-	VectorCopy(r_newrefdef.vieworg, modelorg);
-
-	// auto cycle the world frame for texture animation
-	memset(&ent, 0, sizeof(ent));
-	ent.frame = (int) (r_newrefdef.time * 2);
-	currententity = &ent;
-
-	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
-
-	qglColor3f(1, 1, 1);
-	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
-		
-	R_ClearSkyBox();
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_NORMAL);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_TEX1);
-	qglEnableVertexAttribArray(ATRB_TANGENT);
-	qglEnableVertexAttribArray(ATRB_BINORMAL);
-	
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
-
-	num_scene_surfaces = 0;
-	R_RecursiveWorldNode(r_worldmodel->nodes);
-	GL_BatchAmbientPass(false, false);
-
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_NORMAL);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_TEX1);
-	qglDisableVertexAttribArray(ATRB_TANGENT);
-	qglDisableVertexAttribArray(ATRB_BINORMAL);
-
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	DrawTextureChains();
-	R_DrawSkyBox();
-}
-
-void R_DrawLightWorld(void)
-{
-	dlight_t *dl;
-	int i;
-	
-	if (!r_drawWorld->value)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_NORMAL);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_TANGENT);
-	qglEnableVertexAttribArray(ATRB_BINORMAL);
-	
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
-
-	r_lightTimestamp++;
-	num_scene_surfaces = 0;
-	qglDepthMask(0);
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_ONE, GL_ONE);
-
-	dl = r_newrefdef.dlights;
-	for (i = 0; i < r_newrefdef.num_dlights; i++, dl++)
-	{
-	if(R_FillLightChain(dl));{
-		GL_BatchLightPass(dl, false);
-	}
-	}
-
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDepthMask(1);
-
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_NORMAL);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_TANGENT);
-	qglDisableVertexAttribArray(ATRB_BINORMAL);
-
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-}
 
 /*
 ===============

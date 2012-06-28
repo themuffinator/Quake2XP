@@ -500,7 +500,7 @@ void R_InitPrograms(void) {
 	}
 
 
-	Com_Printf("Load "S_COLOR_YELLOW"bump model program"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"light model program"S_COLOR_WHITE" ");
 	aliasBumpProgram = R_FindProgram("aliasBump", true, true);
 
 	if(aliasBumpProgram->valid)
