@@ -409,8 +409,7 @@ void R_DrawAliasModel(entity_t * e, qboolean weapon_model);
 void R_DrawBrushModel(entity_t * e);
 void R_DrawSpriteModel(entity_t * e);
 void R_DrawBeam();
-void R_DrawAmbientWorld(void);
-void R_DrawLightWorld(void);
+void R_DrawBSP(void);
 void R_RenderDlights(void);
 void R_RenderBrushPoly(msurface_t * fa);
 void R_InitEngineTextures(void);
@@ -598,13 +597,9 @@ typedef byte color4ub_t[4];
 void Q_strncatz (char *dst, int dstSize, const char *src);
 
 
-#define	MAXSHADOWLIGHTS		1024	//256 //Maximum number of (client side) lights in a map				/// FIXME: уменьшить для спец.карт для данного движка!
-#define MAXUSEDSHADOWLIGHS	128		//64  //Maximum number of lights that can be used in a single frame	/// FIXME: уменьшить для спец.карт для данного движка!
-
-
 #define LIGHTMAP_BYTES 4
-#define	LIGHTMAP_SIZE	1024 //was 128
-#define	MAX_LIGHTMAPS	8 //was 128
+#define	LIGHTMAP_SIZE	256 //was 128
+#define	MAX_LIGHTMAPS	256 //was 128
 
 #define MAX_GL_DELUXEMAPS	256
 #define TEXNUM_DELUXEMAPS	(TEXNUM_LIGHTMAPS + MAX_LIGHTMAPS)
@@ -666,8 +661,7 @@ typedef struct glslProgram_s {
 
 glslProgram_t r_programs[MAX_PROGRAMS];
 
-glslProgram_t		*ambientWorldProgram;
-glslProgram_t		*lightWorldProgram;
+glslProgram_t		*diffuseProgram;
 glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*bloomdsProgram;

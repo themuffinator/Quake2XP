@@ -517,16 +517,10 @@
     <None Include="..\glsl\water.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\glsl\ambientworld.fp">
+    <None Include="..\glsl\diffuse.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\glsl\ambientworld.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\glsl\lightworld.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\glsl\lightworld.vp">
+    <None Include="..\glsl\diffuse.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

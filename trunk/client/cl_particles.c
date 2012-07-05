@@ -399,13 +399,13 @@ void CL_AddParticles(void)
 
 		if (p->type == PT_BLOODDRIP || p->type == PT_xBLOODSPRAY) {
 			trace_t trace;
-			trace = CL_Trace(p->oldOrg, org, 0.1, MASK_SOLID);
+			trace = CL_Trace(p->oldOrg, org, p->size*1.2, MASK_SOLID);
 
 			if (trace.fraction != 1.0) {
 				p->alpha = 0;	// kill the particle after marking
 			
 				if (p->type == PT_BLOODDRIP) {
-					for (i=0; i<1; i++)		
+				
 						CL_AddDecalToScene(org, trace.plane.normal,
 										   1, 1, 1, 1,
 										   1, 1, 1, 1,
@@ -415,7 +415,7 @@ void CL_AddParticles(void)
 										   GL_ONE_MINUS_SRC_COLOR);
 					
 					} else if (p->type == PT_xBLOODSPRAY) {
-					for (i=0; i<1; i++)	
+				
 						CL_AddDecalToScene(org, trace.plane.normal,
 										   1, 1, 0, 1,
 										   1, 1, 0, 1,
@@ -1659,7 +1659,7 @@ void CL_ParticleHeadBlood(vec3_t org)
 		p->sFactor = GL_SRC_ALPHA;
 		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->type = PT_BLOODDRIP;
-		p->size = 1;
+		p->size = 1.3;
 		p->sizeVel = 0;
 		p->alpha = 1;
 		p->alphavel = 0;

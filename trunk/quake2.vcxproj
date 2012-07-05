@@ -1310,8 +1310,8 @@
     <None Include="..\glsl\cin.fp" />
     <None Include="..\glsl\cin.vp" />
     <None Include="..\glsl\diffuse.defs" />
-    <None Include="..\glsl\ambientworld.fp" />
-    <None Include="..\glsl\ambientworld.vp" />
+    <None Include="..\glsl\diffuse.fp" />
+    <None Include="..\glsl\diffuse.vp" />
     <None Include="..\glsl\dof.fp" />
     <None Include="..\glsl\dof.vp" />
     <None Include="..\glsl\filmGrain.fp" />
@@ -1324,8 +1324,6 @@
     <None Include="..\glsl\gaussY.vp" />
     <None Include="..\glsl\generic.fp" />
     <None Include="..\glsl\generic.vp" />
-    <None Include="..\glsl\lightworld.fp" />
-    <None Include="..\glsl\lightworld.vp" />
     <None Include="..\glsl\loading.fp" />
     <None Include="..\glsl\loading.vp" />
     <None Include="..\glsl\particles.fp" />
