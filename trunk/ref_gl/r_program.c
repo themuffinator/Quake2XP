@@ -195,6 +195,60 @@ static void R_ParseDefs(glslProgram_t *program, const char *text) {
 	}
 }
 
+/*
+==============
+R_LoadIncludes
+
+Search shader texts for '#include' directives
+and insert included file contents.
+==============
+*/
+ char *R_LoadIncludes(char *glsl)
+{
+    char filename[MAX_QPATH];
+    char *token, *p, *oldp, *oldglsl;
+    int l, limit = 64;          // limit for prevent infinity recursion
+
+    /// calculate size of glsl with includes
+    l = strlen(glsl);
+    p = glsl;
+    while ( 1 )
+    {
+         oldp = p;
+         token = Com_ParseExt(&p, true);
+         if ( !token[0] )
+              break;
+
+		 if (!strcmp(token, "#include"))
+         {
+              int	li;
+              char	*buf;
+
+              if (limit<0)
+                   Com_Error (ERR_FATAL, "R_LoadIncludes: more than 64 includes");
+
+              token = Com_ParseExt(&p, false);
+              Com_sprintf( filename, sizeof( filename ), "glsl/include/%s", token );
+              li = FS_LoadFile(filename, (void **)&buf);
+              if ( !buf )
+                   Com_Error (ERR_FATAL, "Couldn't load %s", filename);
+
+              oldglsl = glsl;
+              glsl = (char*)Q_malloc(l+li+2);
+              memset(glsl, 0, l+li+2);
+              Q_memcpy(glsl, oldglsl, oldp-oldglsl);
+              Q_strcat(glsl, "\n", l+li+1);
+              Q_strcat(glsl, buf,  l+li+1);
+              Q_strcat(glsl, p,    l+li+1);
+              p = oldp - oldglsl + glsl;
+              l = strlen(glsl);
+              FS_FreeFile( buf );
+              limit--;
+         }
+    }
+
+    return glsl;
+}
 
 /*
 ==============
@@ -267,10 +321,12 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 
 		strings[numStrings++] = floatDefs32;
 
+		// compile vertex shader
 		if (vertexSource) {
-			// compile vertex shader
+			// link includes
+			vertexSource = R_LoadIncludes((char*)vertexSource);
+			
 			strings[numStrings] = vertexSource;
-
 			vertexId = qglCreateShader(GL_VERTEX_SHADER);
 			qglShaderSource(vertexId, numStrings + 1, strings, NULL);
 			qglCompileShader(vertexId);
@@ -283,11 +339,12 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 				continue;
 			}
 		}
-
+		
+		// compile fragment shader
 		if (fragmentSource) {
-			// compile fragment shader
+			// link includes
+			fragmentSource = R_LoadIncludes((char*)fragmentSource);
 			strings[numStrings] = fragmentSource;
-
 			fragmentId = qglCreateShader(GL_FRAGMENT_SHADER);
 			
 		if(0){
@@ -459,7 +516,7 @@ void R_InitPrograms(void) {
 	memset(programHashTable, 0, sizeof(programHashTable));
 	memset(&r_nullProgram, 0, sizeof(glslProgram_t));
 
-	Com_Printf("Load "S_COLOR_YELLOW"bsp program"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"world program"S_COLOR_WHITE" ");
 	diffuseProgram = R_FindProgram("diffuse", true, true);
 	if(diffuseProgram->valid){
 		Com_Printf("succeeded\n");
@@ -488,7 +545,7 @@ void R_InitPrograms(void) {
 	}
 
 
-	Com_Printf("Load "S_COLOR_YELLOW"bump model program"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"light model program"S_COLOR_WHITE" ");
 	aliasBumpProgram = R_FindProgram("aliasBump", true, true);
 
 	if(aliasBumpProgram->valid)

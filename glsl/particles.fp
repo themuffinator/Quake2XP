@@ -10,9 +10,7 @@ uniform float			u_colorScale;
 varying vec2			v_texCoord0;
 
 
-float DecodeDepth (const float d, const in vec2 parms) {
-	return parms.x / (parms.y - d);
-}
+#include depth.inc
 
 void main (void) {
 	vec4 color = texture2D(u_map0, v_texCoord0);

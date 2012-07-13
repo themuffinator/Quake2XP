@@ -330,7 +330,8 @@ void Q_strncpyz (char *dst, const char *src, int dstSize);
 void Q_strcat (char *dst, const char *src, int dstSize);
 int Q_strnicmp (const char *string1, const char *string2, int n);
 
-
+void Com_Memcpy (void* dest, const void* src, const size_t count);
+void Com_Memset (void* dest, const int val, const size_t count);
 
 //=============================================
 

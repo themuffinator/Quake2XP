@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int r_dlightframecount;
 
-#define	DLIGHT_CUTOFF	0
-
 /*
  =================
  BoundsAndSphereIntersect
@@ -60,11 +58,11 @@ void R_MarkLights(dlight_t * light, int bit, mnode_t * node)
 	dist =
 		DotProduct(light->origin, splitplane->normal) - splitplane->dist;
 
-	if (dist > light->intensity - DLIGHT_CUTOFF) {
+	if (dist > light->intensity) {
 		R_MarkLights(light, bit, node->children[0]);
 		return;
 	}
-	if (dist < -light->intensity + DLIGHT_CUTOFF) {
+	if (dist < -light->intensity) {
 		R_MarkLights(light, bit, node->children[1]);
 		return;
 	}

@@ -598,8 +598,8 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 
 
 #define LIGHTMAP_BYTES 4
-#define	LIGHTMAP_SIZE	256 //was 128
-#define	MAX_LIGHTMAPS	256 //was 128
+#define	LIGHTMAP_SIZE	1024 //was 128
+#define	MAX_LIGHTMAPS	8 //was 128
 
 #define MAX_GL_DELUXEMAPS	256
 #define TEXNUM_DELUXEMAPS	(TEXNUM_LIGHTMAPS + MAX_LIGHTMAPS)

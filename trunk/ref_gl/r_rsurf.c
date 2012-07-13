@@ -688,6 +688,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 			
 			if(texture != image->texnum || ltmp != gl_state.lightmap_textures + lmtex) 
 			{
+				
+				if(texture != image->texnum){ 
 				GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 				qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 				GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
@@ -701,9 +703,13 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 					GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
 					qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
 				}
-		
+				}
+				
+				if(ltmp != gl_state.lightmap_textures + lmtex) {
 				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
 				qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
+				}
+
 			}
 
 			qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);

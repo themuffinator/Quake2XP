@@ -7,10 +7,7 @@ uniform float u_bias;	// = 0.005; aperture - bigger values for shallower depth o
 
 float blurClamp = 3.0;  // max blur amount
 
-float DecodeDepth (const float d, const in vec2 parms) {
-	return parms.x / (parms.y - d);
-}
-
+#include depth.inc
 
 void main(void) 
 {

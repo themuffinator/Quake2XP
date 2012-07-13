@@ -1,3 +1,4 @@
+
 uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_LightMap;
 uniform sampler2D		u_Add;
@@ -16,77 +17,15 @@ uniform int				u_isCaustics;
 uniform vec3			u_LightColor[13];
 uniform float			u_LightRadius[13];
 
-uniform float			u_specularScale;
-uniform float			u_specularExp;
-
 varying vec3			v_viewVecTS;
 varying vec3			t, b, n;
 varying vec2			v_wTexCoord;
 varying vec2			v_lTexCoord;
 varying vec4			v_color;
 varying vec3			v_lightVec[13];
-
-
-float ComputeLOD( vec2 tc, vec2 texSize ) { 
-
- vec2 dx = dFdx( tc ); 
- vec2 dy = dFdy( tc ); 
-
- vec2 mag = ( abs( dx )  + abs( dy )  ) * texSize; 
  
- float lod = log2( max( mag.x, mag.y ) ); 
-
- return lod; 
-
-} 
-
-vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) {
-	
-	if (u_parallaxType == 2){
-	// 14 sample relief mapping: linear search and then binary search, 
-	// improved qfusion shader
-	float lod = ComputeLOD(texCoord, u_texSize);
-	vec3 offsetVector = vec3(viewVec.xy * u_parallaxScale * vec2(-1, -1), -1);
-	vec3 offsetBest = vec3(texCoord, 1);
-	offsetVector *= 0.1;
-
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z)          - 0.5);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.5    - 0.25);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.25   - 0.125);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.125  - 0.0625);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.0625 - 0.03125);
-	
-	return offsetBest.xy;
-	} 
-	else if(u_parallaxType == 1){
-	// simple fastest parallax mapping
-	float lod = ComputeLOD(texCoord, u_texSize);
-	float offset = texture2DLod( hiMap, texCoord.xy, lod).a;
-	offset = offset * 0.04 - 0.02;
-	vec2 offsetBest = offset * viewVec.xy + texCoord.xy;
-	
-	return offsetBest;
-	}
-}
-
-vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V) {
-	vec2 E;
-	E.x = max(dot(N, L), 0.0);
-	vec3 R = reflect(-L, N);
-	E.y = pow(max(dot(R, V), 0.0), u_specularExp);
-//	E.y *= (E.x < 0.01 ? 0.0 : 1.0);
-	E.y *= E.x;
-	return E;
-}
+#include parallax.inc
+#include lighting.inc
 
 void main ()
 {
@@ -121,8 +60,6 @@ specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 
 vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
 
-specular *=u_specularScale;
-
 #ifdef VERTEXLIGHT
 diffuseMap *= clamp(v_color, 0.0, 0.666);
 #endif
@@ -134,7 +71,7 @@ diffuseMap *= clamp(v_color, 0.0, 0.666);
 tbnDelux.x = abs(dot(n, t));
 tbnDelux.y = abs(dot(n, b));
 tbnDelux.z = 1.0;
-vec2 Es = PhongLighting(normalMap, tbnDelux, V);
+vec2 Es = PhongLighting(normalMap, tbnDelux, V, 16.0);
 
 #else
 
@@ -144,7 +81,7 @@ tbnDelux.y = dot(wDelux, b);
 tbnDelux.z = dot(wDelux, n);
 tbnDelux = abs(tbnDelux);
 tbnDelux = clamp(tbnDelux, 0.35, 1.0);
-vec2 Es = PhongLighting(normalMap, tbnDelux, V);
+vec2 Es = PhongLighting(normalMap, tbnDelux, V, 16.0);
 #endif
 
 #ifdef LIGHTMAP
@@ -186,7 +123,7 @@ tmp1 = v_lightVec[0];
 tmp1 /= u_LightRadius[0];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[0]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[0];
 finalColor.rgb += Dlighting.rgb;
@@ -196,7 +133,7 @@ tmp1 = v_lightVec[1];
 tmp1 /= u_LightRadius[1];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[1]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[1];
 finalColor.rgb += Dlighting.rgb;
@@ -206,7 +143,7 @@ tmp1 = v_lightVec[2];
 tmp1 /= u_LightRadius[2];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[2]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[2];
 finalColor.rgb += Dlighting.rgb;
@@ -216,7 +153,7 @@ tmp1 = v_lightVec[3];
 tmp1 /= u_LightRadius[3];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[3]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[3];
 finalColor.rgb += Dlighting.rgb;
@@ -226,7 +163,7 @@ tmp1 = v_lightVec[4];
 tmp1 /= u_LightRadius[4];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[4]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[4];
 finalColor.rgb += Dlighting.rgb;
@@ -236,7 +173,7 @@ tmp1 = v_lightVec[5];
 tmp1 /= u_LightRadius[5];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[5]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[5];
 finalColor.rgb += Dlighting.rgb;
@@ -246,7 +183,7 @@ tmp1 = v_lightVec[6];
 tmp1 /= u_LightRadius[6];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[6]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[6];
 finalColor.rgb += Dlighting.rgb;
@@ -256,7 +193,7 @@ tmp1 = v_lightVec[7];
 tmp1 /= u_LightRadius[7];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[7]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -266,7 +203,7 @@ tmp1 = v_lightVec[8];
 tmp1 /= u_LightRadius[8];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[8]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -276,7 +213,7 @@ tmp1 = v_lightVec[9];
 tmp1 /= u_LightRadius[9];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[9]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -286,7 +223,7 @@ tmp1 = v_lightVec[10];
 tmp1 /= u_LightRadius[10];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[10]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -296,7 +233,7 @@ tmp1 = v_lightVec[11];
 tmp1 /= u_LightRadius[11];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[11]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -306,7 +243,7 @@ tmp1 = v_lightVec[12];
 tmp1 /= u_LightRadius[12];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[12]);
-E = PhongLighting(normalMap, L, V);
+E = PhongLighting(normalMap, L, V, 16.0);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;

@@ -166,7 +166,7 @@ void CL_AddParticles(void)
 	float size, len, lerp, endLerp;
 	float orient, backup;
 	int sFactor, dFactor, flags;
-	int i, cont, k;
+	int cont, k;
 	qboolean ground;
 
 	if (!grav)

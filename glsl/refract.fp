@@ -16,9 +16,7 @@ uniform	sampler2DRect	g_depthBufferMap;
 uniform	sampler2DRect	g_colorBufferMap;
 uniform vec2			u_depthParms;
 
-float DecodeDepth (const float d, const in vec2 parms) {
-	return parms.x / (parms.y - d);
-}
+#include depth.inc
 
 void main (void) {
 

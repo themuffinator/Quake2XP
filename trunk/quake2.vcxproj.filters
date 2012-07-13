@@ -49,6 +49,9 @@
     <Filter Include="Source Files\CG">
       <UniqueIdentifier>{131e8761-b794-4813-a06a-0d3696cb94cd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Renderer\glsl\include">
+      <UniqueIdentifier>{c96a43d6-5ee2-47ee-80c6-f0970729b8e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="client\cl_console.c">
@@ -522,6 +525,15 @@
     </None>
     <None Include="..\glsl\diffuse.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\glsl\include\depth.inc">
+      <Filter>Source Files\Renderer\glsl\include</Filter>
+    </None>
+    <None Include="..\glsl\include\lighting.inc">
+      <Filter>Source Files\Renderer\glsl\include</Filter>
+    </None>
+    <None Include="..\glsl\include\parallax.inc">
+      <Filter>Source Files\Renderer\glsl\include</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -1721,6 +1721,7 @@ void *Q_malloc (int cnt)
 	return buf;
 }
 
+
 void Q_free (void *buf)
 {
 	if (!buf) {

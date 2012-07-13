@@ -1324,6 +1324,9 @@
     <None Include="..\glsl\gaussY.vp" />
     <None Include="..\glsl\generic.fp" />
     <None Include="..\glsl\generic.vp" />
+    <None Include="..\glsl\include\depth.inc" />
+    <None Include="..\glsl\include\lighting.inc" />
+    <None Include="..\glsl\include\parallax.inc" />
     <None Include="..\glsl\loading.fp" />
     <None Include="..\glsl\loading.vp" />
     <None Include="..\glsl\particles.fp" />

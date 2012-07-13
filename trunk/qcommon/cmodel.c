@@ -137,15 +137,15 @@ void CMod_LoadSubmodels(lump_t * l)
 	cmodel_t *out;
 	int i, j, count;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (dmodel_t *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error(ERR_DROP, "CMod_LoadSubmodels: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "Map with no models");
+		Com_Error(ERR_DROP, "CMod_LoadSubmodels: map with no models");
 	if (count > MAX_MAP_MODELS)
-		Com_Error(ERR_DROP, "Map has too many models");
+		Com_Error(ERR_DROP, "CMod_LoadSubmodels: map has too many models");
 
 	numcmodels = count;
 
@@ -173,14 +173,14 @@ void CMod_LoadSurfaces(lump_t * l)
 	mapsurface_t *out;
 	int i, count;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (texinfo_t *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error(ERR_DROP, "CMod_LoadSurfaces: funny lump size");
 	count = l->filelen / sizeof(*in);
 	if (count < 1)
-		Com_Error(ERR_DROP, "Map with no surfaces");
+		Com_Error(ERR_DROP, "CMod_LoadSurfaces: map with no surfaces");
 	if (count > MAX_MAP_TEXINFO)
-		Com_Error(ERR_DROP, "Map has too many surfaces");
+		Com_Error(ERR_DROP, "CMod_LoadSurfaces: map has too many surfaces");
 
 	numtexinfo = count;
 	out = map_surfaces;
@@ -207,15 +207,15 @@ void CMod_LoadNodes(lump_t * l)
 	cnode_t *out;
 	int i, j, count;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (dnode_t *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error(ERR_DROP, "CMod_LoadNodes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "Map has no nodes");
+		Com_Error(ERR_DROP, "CMod_LoadNodes: map has no nodes");
 	if (count > MAX_MAP_NODES)
-		Com_Error(ERR_DROP, "Map has too many nodes");
+		Com_Error(ERR_DROP, "CMod_LoadNodes: map has too many nodes");
 
 	out = map_nodes;
 
@@ -243,13 +243,13 @@ void CMod_LoadBrushes(lump_t * l)
 	cbrush_t *out;
 	int i, count;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (dbrush_t *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error(ERR_DROP, "CMod_LoadBrushes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count > MAX_MAP_BRUSHES)
-		Com_Error(ERR_DROP, "Map has too many brushes");
+		Com_Error(ERR_DROP, "CMod_LoadBrushes: map has too many brushes");
 
 	out = map_brushes;
 
@@ -275,15 +275,15 @@ void CMod_LoadLeafs(lump_t * l)
 	dleaf_t *in;
 	int count;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (dleaf_t *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error(ERR_DROP, "CMod_LoadLeafs: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "Map with no leafs");
+		Com_Error(ERR_DROP, "CMod_LoadLeafs: map with no leafs");
 	// need to save space for box planes
-	if (count > MAX_MAP_PLANES)
+	if (count > MAX_MAP_LEAFS)
 		Com_Error(ERR_DROP, "Map has too many planes");
 
 	out = map_leafs;
@@ -328,16 +328,16 @@ void CMod_LoadPlanes(lump_t * l)
 	int count;
 	int bits;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (dplane_t *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error(ERR_DROP, "CMod_LoadPlanes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "Map with no planes");
+		Com_Error(ERR_DROP, "CMod_LoadPlanes :map with no planes");
 	// need to save space for box planes
 	if (count > MAX_MAP_PLANES)
-		Com_Error(ERR_DROP, "Map has too many planes");
+		Com_Error(ERR_DROP, "CMod_LoadPlanes: map has too many planes");
 
 	out = map_planes;
 	numplanes = count;
@@ -368,16 +368,16 @@ void CMod_LoadLeafBrushes(lump_t * l)
 	unsigned short *in;
 	int count;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (unsigned short *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error(ERR_DROP, "CMod_LoadLeafBrushes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "Map with no planes");
+		Com_Error(ERR_DROP, "CMod_LoadLeafBrushes: map with no planes");
 	// need to save space for box planes
 	if (count > MAX_MAP_LEAFBRUSHES)
-		Com_Error(ERR_DROP, "Map has too many leafbrushes");
+		Com_Error(ERR_DROP, "CMod_LoadLeafBrushes: map has too many leafbrushes");
 
 	out = map_leafbrushes;
 	numleafbrushes = count;
@@ -399,7 +399,7 @@ void CMod_LoadBrushSides(lump_t * l)
 	int count;
 	int num;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (dbrushside_t *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
 	count = l->filelen / sizeof(*in);
@@ -433,13 +433,15 @@ void CMod_LoadAreas(lump_t * l)
 	darea_t *in;
 	int count;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (darea_t *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error(ERR_DROP, "CMod_LoadAreas: funny lump size");
 	count = l->filelen / sizeof(*in);
 
+	Com_Printf("Map has %i areas\n", count);
+
 	if (count > MAX_MAP_AREAS)
-		Com_Error(ERR_DROP, "Map has too many areas");
+		Com_Error(ERR_DROP, "CMod_LoadAreas: map has too many areas %i\n", count);
 
 	out = map_areas;
 	numareas = count;
@@ -464,13 +466,13 @@ void CMod_LoadAreaPortals(lump_t * l)
 	dareaportal_t *in;
 	int count;
 
-	in = (void *) (cmod_base + l->fileofs);
+	in = (dareaportal_t *) (cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error(ERR_DROP, "CMod_LoadAreaPortals: funny lump size");
 	count = l->filelen / sizeof(*in);
 
-	if (count > MAX_MAP_AREAS)
-		Com_Error(ERR_DROP, "Map has too many areas");
+	if (count > MAX_MAP_AREAPORTALS)
+		Com_Error(ERR_DROP, "CMod_LoadAreaPortals: map has too many areaportals");
 
 	out = map_areaportals;
 	numareaportals = count;
@@ -492,7 +494,7 @@ void CMod_LoadVisibility(lump_t * l)
 
 	numvisibility = l->filelen;
 	if (l->filelen > MAX_MAP_VISIBILITY)
-		Com_Error(ERR_DROP, "Map has too large visibility lump");
+		Com_Error(ERR_DROP, "CMod_LoadVisibility: map has too large visibility lump");
 
 	memcpy(map_visibility, cmod_base + l->fileofs, l->filelen);
 
@@ -513,7 +515,7 @@ void CMod_LoadEntityString(lump_t * l)
 {
 	numentitychars = l->filelen;
 	if (l->filelen > MAX_MAP_ENTSTRING)
-		Com_Error(ERR_DROP, "Map has too large entity lump");
+		Com_Error(ERR_DROP, "CMod_LoadEntityString: map has too large entity lump");
 
 	memcpy(map_entitystring, cmod_base + l->fileofs, l->filelen);
 }
