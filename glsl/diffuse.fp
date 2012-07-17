@@ -16,6 +16,8 @@ uniform int				u_activeLights;
 uniform int				u_isCaustics;
 uniform vec3			u_LightColor[13];
 uniform float			u_LightRadius[13];
+uniform float			u_specularScale;
+uniform float			u_specularExp;
 
 varying vec3			v_viewVecTS;
 varying vec3			t, b, n;
@@ -58,7 +60,8 @@ specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 
 #endif 
 
-vec4 specular = vec4(specTmp, specTmp, specTmp, specTmp);
+vec4 specular = vec4(specTmp) * u_specularScale;
+
 
 #ifdef VERTEXLIGHT
 diffuseMap *= clamp(v_color, 0.0, 0.666);
@@ -71,29 +74,29 @@ diffuseMap *= clamp(v_color, 0.0, 0.666);
 tbnDelux.x = abs(dot(n, t));
 tbnDelux.y = abs(dot(n, b));
 tbnDelux.z = 1.0;
-vec2 Es = PhongLighting(normalMap, tbnDelux, V, 16.0);
+vec2 Es = PhongLighting(normalMap, tbnDelux, V, u_specularExp);
 
 #else
 
 //Put delux into tangent space
 tbnDelux.x = dot(wDelux, t);
 tbnDelux.y = dot(wDelux, b);
-tbnDelux.z = dot(wDelux, n);
-tbnDelux = abs(tbnDelux);
-tbnDelux = clamp(tbnDelux, 0.35, 1.0);
-vec2 Es = PhongLighting(normalMap, tbnDelux, V, 16.0);
+tbnDelux.z = abs(dot(wDelux, n));
+
+tbnDelux = clamp(tbnDelux, 0.555, 1.0);
+vec2 Es = PhongLighting(normalMap, tbnDelux, V, u_specularExp);
+
 #endif
 
 #ifdef LIGHTMAP
 bumpLight = (Es.x * diffuseMap) + (Es.y * specular * lightMap);
-diffuseMap *= u_ambientScale;
 #endif
 
 #ifdef VERTEXLIGHT
 bumpLight = (Es.x * diffuseMap * v_color) + (Es.y * specular * v_color); //via lava surfaces 
-diffuseMap *= u_ambientScale;
 #endif
 
+diffuseMap *= u_ambientScale;
 diffuseMap += bumpLight;
 
 #ifdef LIGHTMAP
@@ -123,7 +126,7 @@ tmp1 = v_lightVec[0];
 tmp1 /= u_LightRadius[0];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[0]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[0];
 finalColor.rgb += Dlighting.rgb;
@@ -133,7 +136,7 @@ tmp1 = v_lightVec[1];
 tmp1 /= u_LightRadius[1];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[1]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[1];
 finalColor.rgb += Dlighting.rgb;
@@ -143,7 +146,7 @@ tmp1 = v_lightVec[2];
 tmp1 /= u_LightRadius[2];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[2]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[2];
 finalColor.rgb += Dlighting.rgb;
@@ -153,7 +156,7 @@ tmp1 = v_lightVec[3];
 tmp1 /= u_LightRadius[3];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[3]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[3];
 finalColor.rgb += Dlighting.rgb;
@@ -163,7 +166,7 @@ tmp1 = v_lightVec[4];
 tmp1 /= u_LightRadius[4];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[4]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[4];
 finalColor.rgb += Dlighting.rgb;
@@ -173,7 +176,7 @@ tmp1 = v_lightVec[5];
 tmp1 /= u_LightRadius[5];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[5]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[5];
 finalColor.rgb += Dlighting.rgb;
@@ -183,7 +186,7 @@ tmp1 = v_lightVec[6];
 tmp1 /= u_LightRadius[6];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[6]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[6];
 finalColor.rgb += Dlighting.rgb;
@@ -193,7 +196,7 @@ tmp1 = v_lightVec[7];
 tmp1 /= u_LightRadius[7];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[7]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -203,7 +206,7 @@ tmp1 = v_lightVec[8];
 tmp1 /= u_LightRadius[8];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[8]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -213,7 +216,7 @@ tmp1 = v_lightVec[9];
 tmp1 /= u_LightRadius[9];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[9]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -223,7 +226,7 @@ tmp1 = v_lightVec[10];
 tmp1 /= u_LightRadius[10];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[10]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -233,7 +236,7 @@ tmp1 = v_lightVec[11];
 tmp1 /= u_LightRadius[11];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[11]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;
@@ -243,7 +246,7 @@ tmp1 = v_lightVec[12];
 tmp1 /= u_LightRadius[12];
 att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[12]);
-E = PhongLighting(normalMap, L, V, 16.0);
+E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
 Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
 finalColor.rgb += Dlighting.rgb;

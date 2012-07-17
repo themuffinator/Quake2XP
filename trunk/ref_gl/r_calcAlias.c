@@ -669,7 +669,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 
 		VectorSubtract(currententity->origin, lightSurf->origin, temp);
 		dist = VectorLength(temp);
-		if (dist > lightSurf->size * r_shadowWorldLightScale->value)
+		if (dist > lightSurf->size * r_shadowWorldLightScale->value + 50)
 			continue;		// big distance!
 
 		viewplane = DotProduct(currententity->origin, lightSurf->surf->plane->normal) - lightSurf->surf->plane->dist;

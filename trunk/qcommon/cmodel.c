@@ -438,8 +438,6 @@ void CMod_LoadAreas(lump_t * l)
 		Com_Error(ERR_DROP, "CMod_LoadAreas: funny lump size");
 	count = l->filelen / sizeof(*in);
 
-	Com_Printf("Map has %i areas\n", count);
-
 	if (count > MAX_MAP_AREAS)
 		Com_Error(ERR_DROP, "CMod_LoadAreas: map has too many areas %i\n", count);
 
