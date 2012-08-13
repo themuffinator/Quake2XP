@@ -958,6 +958,8 @@ struct gclient_s
 	float		breather_framenum;
 	float		enviro_framenum;
 	
+	float		autogenHealth_framenum;
+
 	float		ir_framenum;
 
 	qboolean	grenade_blew_up;

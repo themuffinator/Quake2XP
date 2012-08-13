@@ -137,7 +137,7 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 	int smax, tmax;
 	int r, g, b, a, max;
 	int i, j, size;
-	byte *lightmap;
+	byte *lightmap, *deluxemap, *dm;
 	float scale[4];
 	int nummaps;
 	float *bl;
@@ -164,6 +164,13 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 		VID_Error(ERR_DROP, "Bad s_blocklights size");
 	}
 	
+	deluxemap = dm = NULL;
+
+	if(loadmodel->deluxeMapping){
+		deluxemap = (byte *)Z_Malloc(size * 4);
+		dm = deluxemap;
+	} 
+
 	// set to full bright if no light data
 	if (!surf->samples) {
 		int maps;
@@ -248,7 +255,10 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
   store:
 	stride -= (smax << 2);
 	bl = s_blocklights;
-		
+	
+	if(loadmodel->deluxeMapping)
+		dm = deluxemap; 
+
 	for (i = 0; i < tmax; i++, dest += stride) {
 			for (j = 0; j < smax; j++) {
 
@@ -359,6 +369,25 @@ static void LM_UploadBlock(qboolean dynamic)
 		if (++gl_lms.current_lightmap_texture == MAX_LIGHTMAPS)
 			VID_Error(ERR_DROP,
 					  "LM_UploadBlock() - MAX_LIGHTMAPS exceeded\n");
+	}
+
+		if(loadmodel->deluxeMapping){  // upload deluxe block as well
+
+		if(gl_state.deluxemap_texnum == MAX_GL_DELUXEMAPS){
+			Com_Printf(S_COLOR_YELLOW "R_UploadLightmapBlock: MAX_GL_DELUXEMAPS reached.\n");
+			return;
+		}
+
+		GL_Bind(gl_state.deluxemap_texnum);
+
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		qglTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, LIGHTMAP_SIZE, LIGHTMAP_SIZE,
+				0, GL_RGBA, GL_UNSIGNED_BYTE, gl_lms.direction_buffer);
+
+		gl_state.deluxemap_texnum++;
+		Com_Printf(S_COLOR_YELLOW "num of deluxe %i\n", gl_state.deluxemap_texnum);
 	}
 }
 
@@ -492,7 +521,7 @@ GL_CreateSurfaceLightmap
 void GL_CreateSurfaceLightmap(msurface_t * surf)
 {
 	int smax, tmax;
-	byte *base;
+	byte *base, *directions;
 
 	if (surf->flags & (SURF_DRAWSKY | SURF_DRAWTURB))
 		return;
@@ -511,9 +540,13 @@ void GL_CreateSurfaceLightmap(msurface_t * surf)
 	}
 
 	surf->lightmaptexturenum = gl_lms.current_lightmap_texture;
+	surf->deluxemap_texnum = gl_state.deluxemap_texnum; 
 
 	base = gl_lms.lightmap_buffer;
 	base += (surf->light_t * LIGHTMAP_SIZE + surf->light_s) * LIGHTMAP_BYTES;
+
+	directions = gl_lms.direction_buffer;
+	directions += (surf->light_t * LIGHTMAP_SIZE + surf->light_s) * 4; 
 
 	R_SetCacheState(surf);
 	R_BuildLightMap(surf, base, LIGHTMAP_SIZE * LIGHTMAP_BYTES, true);

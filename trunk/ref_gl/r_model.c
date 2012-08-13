@@ -569,6 +569,20 @@ void Mod_LoadLighting(lump_t * l)
 	if(loadmodel->lightmap_scale == -1)  // ensure safe default
 		loadmodel->lightmap_scale = 16;
 
+	loadmodel->deluxeMapping = false;
+
+	if((s = strstr(CM_EntityString(), "\"deluxe\""))){  // check for deluxe maps
+
+		c = COM_Parse(&s);  // parse the string itself
+		c = COM_Parse(&s);  // and then the value
+
+		loadmodel->deluxeMapping = atoi(c);
+
+		Com_DPrintf("Found deluxeMapping bocks\n");
+	}
+	
+	if(loadmodel->deluxeMapping == 1)  // ensure safe default
+		loadmodel->deluxeMapping = true;
 }
 
 

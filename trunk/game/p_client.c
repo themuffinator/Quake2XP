@@ -545,6 +545,7 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 	self->client->invincible_framenum = 0;
 	self->client->breather_framenum = 0;
 	self->client->enviro_framenum = 0;
+	self->client->autogenHealth_framenum = 0;
 	self->flags &= ~FL_POWER_ARMOR;
 
 	if (self->health < 1)
@@ -1573,6 +1574,7 @@ void PrintPmove (pmove_t *pm)
 	Com_Printf (""S_COLOR_WHITE"sv %3i:%i %i\n", pm->cmd.impulse, c1, c2);
 }
 
+
 /*
 ==============
 ClientThink
@@ -1755,6 +1757,8 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		if (other->inuse && other->client->chase_target == ent)
 			UpdateChaseCam(other);
 	}
+
+
 }
 
 

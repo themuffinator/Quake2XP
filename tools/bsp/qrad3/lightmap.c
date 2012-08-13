@@ -1322,7 +1322,7 @@ void FinalLightFace (int facenum) {
 				*dest++ = lb[k] * newmax / max;
 		}
 		
-		if(!deluxeMapping){  // also write the directional data
+		if(deluxeMapping){  // also write the directional data
 			VectorCopy((fl->directions + j * 3), dir);
 			for(k = 0; k < 3; k++){
 				*dest++ = (byte)((dir[k] + 1.0) * 127.0);

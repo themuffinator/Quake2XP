@@ -118,6 +118,7 @@ v_lightVec[12].y = dot(a_binormal, LV);
 v_lightVec[12].z = dot(a_normArray, LV); 
 }
 }
+
 #endif
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);

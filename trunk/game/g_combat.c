@@ -374,6 +374,7 @@ qboolean CheckTeamDamage (edict_t *targ, edict_t *attacker)
 	return false;
 }
 
+
 void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir, vec3_t point, vec3_t normal, int damage, int knockback, int dflags, int mod)
 {
 	gclient_t	*client;
@@ -526,6 +527,7 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	{
 		if (!(targ->flags & FL_GODMODE) && (take))
 			targ->pain (targ, attacker, knockback, take);
+
 	}
 	else if (take)
 	{

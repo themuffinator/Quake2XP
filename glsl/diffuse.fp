@@ -83,7 +83,7 @@ tbnDelux.x = dot(wDelux, t);
 tbnDelux.y = dot(wDelux, b);
 tbnDelux.z = abs(dot(wDelux, n));
 
-tbnDelux = clamp(tbnDelux, 0.555, 1.0);
+tbnDelux = clamp(tbnDelux, 0.333, 1.0);
 vec2 Es = PhongLighting(normalMap, tbnDelux, V, u_specularExp);
 
 #endif
@@ -208,7 +208,7 @@ att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[8]);
 E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
-Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[8];
 finalColor.rgb += Dlighting.rgb;
 }
 if(u_numLights >= 10 && u_LightRadius[9] >=1){
@@ -218,7 +218,7 @@ att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[9]);
 E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
-Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[9];
 finalColor.rgb += Dlighting.rgb;
 }
 if(u_numLights == 11 && u_LightRadius[10] >=1){
@@ -228,7 +228,7 @@ att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[10]);
 E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
-Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[10];
 finalColor.rgb += Dlighting.rgb;
 }
 if(u_numLights >= 12 && u_LightRadius[11] >=1){
@@ -238,7 +238,7 @@ att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[11]);
 E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
-Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[11];
 finalColor.rgb += Dlighting.rgb;
 }
 if(u_numLights == 13 && u_LightRadius[12] >=1){
@@ -248,9 +248,10 @@ att = max(1.0 - dot(tmp1, tmp1), 0.0);
 L = normalize(v_lightVec[12]);
 E = PhongLighting(normalMap, L, V, u_specularExp);
 E *= att;
-Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[7];
+Dlighting = (E.x * diffuseMap.rgb + E.y * specular.rgb) * u_LightColor[12];
 finalColor.rgb += Dlighting.rgb;
 }
+
 }
 
 #else

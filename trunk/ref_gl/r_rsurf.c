@@ -585,6 +585,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform1i(qglGetUniformLocation(id, "u_activeLights"), 1);
 		counter ++;
 		}
+		
 	}
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);

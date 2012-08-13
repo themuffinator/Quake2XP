@@ -62,6 +62,20 @@ float SV_CalcRoll (vec3_t angles, vec3_t velocity)
 
 qboolean blooddamage = false;
 
+
+void ClientAutoGenHealth(edict_t *ent){
+
+	ent->nextthink = level.time + 100;
+	
+	if(ent->health <= 25 && ent->health >=1 && ent->nextthink > level.time)
+	{
+	ent->health += 1;
+	}
+
+	ent->think = ClientAutoGenHealth;
+
+}
+
 /*
 ===============
 P_DamageFeedback
@@ -82,6 +96,11 @@ void P_DamageFeedback (edict_t *player)
     
 	client = player->client;
 
+//	if(player->health <= 25 && player->health >=1)
+//	{
+//	player->health += 1;
+//	}
+		
 	// flash the backgrounds behind the status numbers
 	client->ps.stats[STAT_FLASHES] = 0;
 	if (client->damage_blood)
@@ -1110,6 +1129,8 @@ void ClientEndServerFrame (edict_t *ent)
 
 	// apply all the damage taken this frame
 	P_DamageFeedback (ent);
+
+	ClientAutoGenHealth(ent);
 
 	// determine the view offsets
 	SV_CalcViewOffset (ent);

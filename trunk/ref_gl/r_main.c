@@ -2074,7 +2074,7 @@ void R_BeginFrame()
 	if(r_pplMaxDlights->value < 8)
 		Cvar_SetValue("r_pplMaxDlights", 8);
 	
-	if(r_pplMaxDlights->value > 13)
+	if(r_pplMaxDlights->value > 32)
 		Cvar_SetValue("r_pplMaxDlights", 13);
 
 	qglDrawBuffer( GL_BACK );
