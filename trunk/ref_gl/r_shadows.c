@@ -326,8 +326,6 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	mat3_t		entityAxis;
 	trace_t		r_trace;
 
-	if (r_newrefdef.vieworg[2] < (currententity->origin[2] - 10))
-		return;
 
 //============================================================================
 	dl = r_newrefdef.dlights;
@@ -440,7 +438,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 Vis's CullSphere
 ==============*/
 
-qboolean R_CullSphere( const vec3_t centre, const float radius, const int clipflags )
+qboolean R_CullSphere( const vec3_t centre, const float radius)
 {
 	int		i;
 	cplane_t *p;
@@ -450,11 +448,7 @@ qboolean R_CullSphere( const vec3_t centre, const float radius, const int clipfl
 
 	for (i=0,p=frustum ; i<4; i++,p++)
 	{
-		if ( !(clipflags & (1<<i)) ) {
-			continue;
-		}
-
-		if ( DotProduct ( centre, p->normal ) - p->dist <= -radius )
+	if ( DotProduct ( centre, p->normal ) - p->dist <= -radius )
 			return true;
 	}
 
@@ -468,17 +462,22 @@ void R_DrawShadowVolume(entity_t * e)
 	dtrivertx_t		*v, *ov, *verts;
 	int				*order, i;
 	float			frontlerp, rad;
-	vec3_t			move, delta, vectors[3], frontv, backv, tmp, water;
+	vec3_t			move, delta, vectors[3], frontv, backv, tmp, maxs, mins;
 
-	VectorAdd(e->origin, currententity->model->maxs, water); 
-	if(CL_PMpointcontents(water) & MASK_WATER)
+	if (r_newrefdef.vieworg[2] < (currententity->origin[2] - 10))
 		return;
-	
-	VectorSubtract(currententity->model->maxs, currententity->model->mins, tmp);
-	VectorScale (tmp, 1.666, tmp); // Hail Satan!
+
+	VectorAdd(e->origin, currententity->model->maxs, maxs);
+	VectorAdd(e->origin, currententity->model->mins, mins);
+
+	VectorSubtract(maxs, mins, tmp);
 	rad = VectorLength (tmp);
-	
-	if( R_CullSphere( e->origin, rad, 15 ) )
+	rad *= 1.666;
+
+	if( R_CullSphere(e->origin, rad) )
+		return;
+
+	if(CL_PMpointcontents(maxs) & MASK_WATER)
 		return;
 
 	paliashdr = (dmdl_t *) currentmodel->extradata;
