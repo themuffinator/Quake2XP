@@ -23,7 +23,7 @@ Trims the algorithm from processing darks.
 1/12 - upper limit (start of visible unfiltered edges)
 */
 #define FXAA_EDGE_THRESHOLD     	1/2
-#define FXAA_EDGE_THRESHOLD_MIN     1/16
+#define FXAA_EDGE_THRESHOLD_MIN     1/12
 
 vec4 fxaaPixelShader(sampler2DRect ScreenTex)
 {

@@ -54,6 +54,25 @@ typedef struct					// WORLDSHADOWTEST
 worldLight_t r_worldLights[MAX_LIGHTS];
 int r_numWorldLights;
 
+typedef struct worldShadowLight_s {
+	vec3_t origin;
+	float radius;
+	vec3_t color, sColor;
+
+	vec3_t mins, maxs;
+	qboolean isShadow;
+	qboolean isStatic;
+	int style;
+
+	struct worldShadowLight_s *next;
+	struct worldShadowLight_s *s_next;
+
+	qboolean ignore;
+	byte vis[MAX_MAP_LEAFS / 8];
+	int area;
+
+} worldShadowLight_t;
+
 
 typedef struct {
 	vec3_t origin;
@@ -78,69 +97,6 @@ flare_t r_flares[MAX_FLARES];
 
 byte			viewvis[MAX_MAP_LEAFS/8];
 
-typedef struct shadowlight_s {
-
-	vec3_t	origin, mins, maxs;		//position of light source
-
-	vec3_t	baseColor, color;		//light color, animated color
-
-	float	radius;		//radius of light source (doesn't light anyting out of that circle)
-
-						//so we can "clip" our shadowvolumes against that circle
-
-	float	brightness;
-
-	qboolean visible;	//light is "visible" this frame
-
-	qboolean isStatic;	//light is static and has a precalc volume
-
-	qboolean castShadow;//lights casts shadows
-
-	qboolean halo;		//light has a halo
-
-//	mleaf_t	*leaf;		//leaf this light is in
-
-	byte vis[MAX_MAP_LEAFS/8];//redone pvs for light, only poly's in nodes
-
-	byte entvis[MAX_MAP_LEAFS/8];//original pvs a light origin
-
-	msurface_t	**visSurf; //the surfaces that should cast shadows for this light (only when static)
-
-	int		style;
-
-	entity_t *owner;
-
-	
-	int		filtercube;	//texture object of this light's cubemap filter
-
-	vec3_t	angles; //angles of the cubemap filter
-
-	float	rspeed; //rotation speed of cube map;
-
-	float	cubescale; //scale factor of cube map;
-
-	float	haloalpha; //alpha of halo
-
-	vec3_t	oldlightorigin; 
-	qboolean ignore;
-	int area;
-
-} shadowlight_t;
-
-#define	MAXSHADOWLIGHTS		1024	//256 //Maximum number of (client side) lights in a map				/// FIXME: СѓРјРµРЅСЊС€РёС‚СЊ РґР»СЏ СЃРїРµС†.РєР°СЂС‚ РґР»СЏ РґР°РЅРЅРѕРіРѕ РґРІРёР¶РєР°!
-#define MAXUSEDSHADOWLIGHS	128		//64  //Maximum number of lights that can be used in a single frame	/// FIXME: СѓРјРµРЅСЊС€РёС‚СЊ РґР»СЏ СЃРїРµС†.РєР°СЂС‚ РґР»СЏ РґР°РЅРЅРѕРіРѕ РґРІРёР¶РєР°!
-
-
-int numShadowLights;
-int numStaticShadowLights;
-int numUsedShadowLights; //number of shadow lights acutally drawn this frame
-
-shadowlight_t shadowlights[MAXSHADOWLIGHTS];
-shadowlight_t *usedshadowlights[MAXUSEDSHADOWLIGHS];
-shadowlight_t *currentshadowlight;
-
-shadowlight_t* AllocShadowLight(void);
-void R_InitShadowsForFrame(void);
 /*
 ==============================================================================
 

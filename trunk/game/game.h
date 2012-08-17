@@ -178,6 +178,9 @@ typedef struct
 	void	(*AddCommandString) (char *text);
 
 	void	(*DebugGraph) (float value, int color);
+
+	void (*SCR_DrawLoadingBar)(float percent, float scale);
+
 } game_import_t;
 
 //

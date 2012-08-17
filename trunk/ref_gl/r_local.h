@@ -339,6 +339,7 @@ void R_InitLightgrid(void);
 void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
+worldShadowLight_t *AddNewLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow);
 
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
@@ -471,7 +472,6 @@ void GL_Blend(qboolean on, int dst, int src);
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
 qboolean SurfInFrustum(msurface_t *s);
-extern vec3_t currentShadowLight;
 
 int GL_MsgGLError(char* Info);
 qboolean HasSharedLeafs(byte *v1, byte *v2);
@@ -586,6 +586,9 @@ extern	vec3_t	lightspot;
 
 extern vec3_t ShadowArray[MAX_SHADOW_VERTS];
 
+void Wl_Prepare(void);
+extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;
+qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius);
 
 #define Vector4Set(v, a, b, c, d)	((v)[0]=(a),(v)[1]=(b),(v)[2]=(c),(v)[3]=(d))
 #define Vector4Copy(a,b) ((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])

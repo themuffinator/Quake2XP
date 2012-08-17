@@ -113,6 +113,7 @@ typedef struct entity_s {
 	float minmax[6];
 	vec3_t mins;
 	vec3_t maxs;
+	qboolean lightVised;
 
 } entity_t;
 
@@ -245,7 +246,7 @@ extern int	c_brush_polys,
 			c_decal_tris;
 
 
-#define	VERTEXSIZE	16 //was 16 fix fact3.bsp and command.bsp crush, wtf?????
+#define	VERTEXSIZE	16
 
 
 

@@ -316,118 +316,63 @@ void GL_RenderVolumes(dmdl_t * paliashdr, vec3_t lightdir, int projdist){
 }
 
 
+
 void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 {
-	vec3_t		light, temp;
-	int			i, worldlight = 0, dlight = 0;
-	dlight_t	*dl;
-	flare_t		*lightSurf;
-	float		dist, projdist;
-	mat3_t		entityAxis;
-	trace_t		r_trace;
-
-
-//============================================================================
-	dl = r_newrefdef.dlights;
-
-	if (r_shadows->value >3) {
-
-		for (i = 0; i < r_newrefdef.num_dlights; i++, dl++) {
+	worldShadowLight_t *shadowLight;
+	vec3_t				light, temp;
+	float				dist, projdist;
+	mat3_t				entityAxis;
+	trace_t				r_trace;
+	int					dlight = 0, slight = 0;
 			
-			if(VectorCompare(dl->origin, currententity->origin))
+	Wl_Prepare();
+	
+	if(shadowLight_frame) {
+		
+		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
+			
+
+		if(VectorCompare(shadowLight->origin, currententity->origin))
 			   continue;
-
-			VectorSubtract(currententity->origin, dl->origin, temp);
-			dist = VectorLength(temp);
-
-			if (dist > dl->intensity)
-				continue;		// big distance!
-
-			// light surf behind the wall 
-			if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, dl->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
-			if(r_trace.fraction != 1.0)
-				continue;
-			}
-
-			AnglesToMat3(currententity->angles, entityAxis);
-			VectorSubtract(dl->origin, currententity->origin, temp);
-			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-			projdist = (dl->intensity + currententity->model->radius - dist) * 2.5;									
-			GL_RenderVolumes(paliashdr, light, projdist);
-			worldlight++;
-			dlight++;
-		}
-	}
-//============================================================================
-
-	if (r_shadows->value >2) {
-
-		for (i = 0; i < r_numflares; i++) {
-			int sidebit;
-			float viewplane;
-						
-			lightSurf = &r_flares[i];
-						
-			if(dlight)
-				continue;
 			
-			// PVS coolling 
-			if (r_newrefdef.areabits){
-				if (!(r_newrefdef.areabits[lightSurf->area >> 3] & (1 << (lightSurf->area & 7)))){
-					continue;
-				}
-			}
-			if (!HasSharedLeafs (lightSurf->vis, viewvis))
-				continue;
+		VectorSubtract(currententity->origin, shadowLight->origin, temp);
+		dist = VectorLength(temp);
 			
-			if(lightSurf->ignore)
-				continue;
-
-			VectorSubtract(lightSurf->origin, currententity->origin, temp);
-			dist = VectorNormalize(temp);
-			if (dist > lightSurf->size * r_shadowWorldLightScale->value)
-				continue;		// big distance!
-
-			viewplane = DotProduct(currententity->origin, lightSurf->surf->plane->normal) - lightSurf->surf->plane->dist;
+		if (dist > shadowLight->radius)
+			continue;		// big distance!
 			
-			if (viewplane >= 0)
-				sidebit = 0;
-			else
-				sidebit = SURF_PLANEBACK;
-
-			if ((lightSurf->surf->flags & SURF_PLANEBACK) != sidebit)
-					continue;		// wrong light poly side!
-			
-			// light surf behind the wall 
-			if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, lightSurf->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
-			if(r_trace.fraction != 1.0)
+		// light behind the wall 
+		if (r_newrefdef.areabits){
+		r_trace = CM_BoxTrace(currententity->origin, shadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+		if(r_trace.fraction != 1.0)
 			continue;
-			}
-			AnglesToMat3(currententity->angles, entityAxis);
-			VectorSubtract(lightSurf->origin, currententity->origin, temp);
-			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-			light[2] += currententity->model->maxs[2] + 56;
-			projdist = ((currententity->model->radius+lightSurf->size * r_shadowWorldLightScale->value) - dist) * 2.5;
-			worldlight++;
-			
 		}
-	}
-//============================================================================
-	if (!worldlight) {
 
-		VectorSet(light, currententity->origin[0], currententity->origin[1], currententity->origin[2]);
-		light[2] += 200;
 		AnglesToMat3(currententity->angles, entityAxis);
-		VectorSubtract(light, currententity->origin, temp);
+		VectorSubtract(shadowLight->origin, currententity->origin, temp);
 		Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-		projdist = currententity->model->radius + 25;	
+		projdist = (shadowLight->radius + currententity->model->radius - dist) * 2.5;
+			
+		if(shadowLight->isStatic)
+			light[2] +=56;
+			
 		GL_RenderVolumes(paliashdr, light, projdist);
-
+		currententity->lightVised = true;
+		}
+				
 	}
-	if (worldlight && !dlight)
-		GL_RenderVolumes(paliashdr, light, projdist);
+
+	if(!currententity->lightVised){
+		vec3_t staticOrg;
+		VectorSet(staticOrg, currententity->origin[0], currententity->origin[1], currententity->origin[2]);
+		staticOrg[2] += 200;
+		AnglesToMat3(currententity->angles, entityAxis);
+		VectorSubtract(staticOrg, currententity->origin, temp);
+		Mat3_TransposeMultiplyVector(entityAxis, temp, staticOrg);	
+		projdist = currententity->model->radius + 25;	
+		GL_RenderVolumes(paliashdr, staticOrg, projdist);
+	}
 
 }
 
@@ -464,7 +409,7 @@ void R_DrawShadowVolume(entity_t * e)
 	float			frontlerp, rad;
 	vec3_t			move, delta, vectors[3], frontv, backv, tmp, maxs, mins;
 
-	if (r_newrefdef.vieworg[2] < (currententity->origin[2] - 10))
+	if (r_newrefdef.vieworg[2] + 25 < (currententity->origin[2]))
 		return;
 
 	VectorAdd(e->origin, currententity->model->maxs, maxs);
@@ -593,7 +538,7 @@ void R_ShadowBlend()
 	GL_BindRect(shadowMask->texnum);
 	
 	qglUniform1i(qglGetUniformLocation(id, "u_mask"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_alpha"), shadowalpha);
+	qglUniform1f(qglGetUniformLocation(id, "u_alpha"), 0.4);
 	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
 
 	qglBegin(GL_TRIANGLES);
@@ -682,7 +627,7 @@ void R_BlobShadow(void){
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 			continue;
 	
-		if (R_CullSphere(currententity->origin, 35, 15))
+		if (R_CullSphere(currententity->origin, 35))
 			continue;
 		
 		VectorCopy(currententity->origin, end);

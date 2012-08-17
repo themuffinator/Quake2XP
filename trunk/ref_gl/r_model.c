@@ -199,6 +199,8 @@ void GL_AddFlareSurface(msurface_t * surf)
 	r_flares[r_numflares].area = CM_LeafArea(leafnum);
 	Q_memcpy(r_flares[r_numflares].vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
 
+	AddNewLight(r_flares[r_numflares].origin, r_flares[r_numflares].color, r_flares[r_numflares].size * 10, 0, true, true);
+	
 	r_numflares++;
 	free(buffer);
 	 
@@ -1515,7 +1517,6 @@ void Mod_GenerateLights(model_t * mod)
 Mod_LoadBrushModel
 =================
 */
-qboolean SpawnStaticLight (shadowlight_t *sl);
 
 void Mod_LoadBrushModel(model_t * mod, void *buffer)
 {
@@ -2364,7 +2365,7 @@ void Mod_LoadSpriteModel(model_t * mod, void *buffer)
 }
 
 //=============================================================================
-
+int Load_BspLights(void);
 /*
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 R_BeginRegistration
@@ -2390,6 +2391,8 @@ void R_BeginRegistration(char *model)
 	r_worldmodel = Mod_ForName(fullname, true);
 
 	r_viewcluster = -1;
+
+	Load_BspLights();
 }
 
 

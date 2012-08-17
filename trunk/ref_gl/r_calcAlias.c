@@ -623,135 +623,67 @@ static vec3_t	lightArray[2] =	{
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 {
-	
-	vec3_t			temp, tmp, light;
+	worldShadowLight_t *shadowLight;
+	vec3_t			temp, light;
 	float			dist;
-	int				i, dlActive = 0, slActive = 0;
-	dlight_t		*dlight;     //dynamic lights
-	flare_t			*lightSurf;  //lights surfaces lights
-	float			diffuseColor[3];
-	float			lightRad = 0;
 	mat3_t			entityAxis;
 	trace_t			r_trace;
 
-
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		vec3_t color = {1,1,1}, hudLight;
+		vec3_t color = {1,1,1}, hudLight, tmp;
+		int i;
 
-		for(i = 0; i<2; i++){
+	for(i = 0; i<2; i++){
 		VectorSubtract(lightArray[i], currententity->origin, tmp);
 		AnglesToMat3(currententity->angles, entityAxis);
 		Mat3_TransposeMultiplyVector(entityAxis, tmp, hudLight);
 		GL_DrawAliasFrameLerpArb(paliashdr, hudLight, 250, color);
 		}
+	return;
 	}
-	
-	for (i = 0; i < r_numflares; i++) {
-		int sidebit;
-		float viewplane;
 
-		lightSurf = &r_flares[i];
+	Wl_Prepare();
+
+	if(shadowLight_frame) {
 		
-		if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			continue;
-
-		// PVS coolling 
-		if (r_newrefdef.areabits){
-			if (!(r_newrefdef.areabits[lightSurf->area >> 3] & (1 << (lightSurf->area & 7)))){
-					continue;
-				}
-			}
-		if (!HasSharedLeafs (lightSurf->vis, viewvis))
-				continue;
-				
-		if(lightSurf->ignore)
-			continue;
-
-		VectorSubtract(currententity->origin, lightSurf->origin, temp);
-		dist = VectorLength(temp);
-		if (dist > lightSurf->size * r_shadowWorldLightScale->value + 50)
-			continue;		// big distance!
-
-		viewplane = DotProduct(currententity->origin, lightSurf->surf->plane->normal) - lightSurf->surf->plane->dist;
+		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
 			
-		if (viewplane >= 0)
-			sidebit = 0;
-		else
-			sidebit = SURF_PLANEBACK;
+			if(VectorCompare(shadowLight->origin, currententity->origin))
+			   continue;
 
-		if ((lightSurf->surf->flags & SURF_PLANEBACK) != sidebit)
-				continue;		// wrong light poly side!
-			
-			// light surf behind the wall 
-		if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(	currententity->origin, lightSurf->origin, vec3_origin, 
-									vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
-				
-			if(r_trace.fraction != 1.0)
-				continue;
-			}
-			
-			VectorSubtract(lightSurf->origin, currententity->origin, tmp);
-			AnglesToMat3(currententity->angles, entityAxis);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);	
-			
-			lightRad = lightSurf->size * r_shadowWorldLightScale->value;
-
-			R_LightPoint(lightSurf->origin, diffuseColor, true);
-			VectorScale(diffuseColor, 2.0, diffuseColor);
-			GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
-			slActive++;
-		}
-
-		dlight = r_newrefdef.dlights;
-		for (i = 0; i < r_newrefdef.num_dlights; i++, dlight++) {
-
-			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-				continue;
-
-			VectorSubtract(currententity->origin, dlight->origin, temp);
+			VectorSubtract(currententity->origin, shadowLight->origin, temp);
 			dist = VectorLength(temp);
-
-			if (dist > dlight->intensity)
+			
+			if (dist > shadowLight->radius)
 				continue;		// big distance!
-
-			// light surf behind the wall 
+			
+			// light behind the wall 
 			if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(	currententity->origin, dlight->origin, vec3_origin, 
-									vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			r_trace = CM_BoxTrace(currententity->origin, shadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
 			if(r_trace.fraction != 1.0)
-			continue;
+				continue;
 			}
-									
-			lightRad = dlight->intensity;
-			
-			diffuseColor[0] = dlight->color[0];
-			diffuseColor[1] = dlight->color[1];
-			diffuseColor[2] = dlight->color[2];
 
-			VectorSubtract(dlight->origin, currententity->origin, tmp);
 			AnglesToMat3(currententity->angles, entityAxis);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);	
-			
-			GL_DrawAliasFrameLerpArb(paliashdr, light, lightRad, diffuseColor);
-			
-			dlActive++;
-		}	
+			VectorSubtract(shadowLight->origin, currententity->origin, temp);
+			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
+			GL_DrawAliasFrameLerpArb(paliashdr, light, shadowLight->radius, shadowLight->color);
+			currententity->lightVised = true;
 
-		if(!dlActive && !slActive){
-			
-			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-				return;
-
-			VectorCopy(currententity->origin, light);
-			light[2]+=100;
-			light[1]+=100;
-
-			R_LightPoint(currententity->origin, diffuseColor, true);
-			VectorSubtract(light, currententity->origin, tmp);
-			AnglesToMat3(currententity->angles, entityAxis);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, light);	
-			GL_DrawAliasFrameLerpArb(paliashdr, light, 500, diffuseColor);
+			}
 		}
 
+		if(!currententity->lightVised){
+		vec3_t clr;
+		vec3_t staticOrg;
+		VectorSet(staticOrg, currententity->origin[0], currententity->origin[1], currententity->origin[2]);
+		staticOrg[0] += 100;
+		staticOrg[2] += 100;
+		R_LightPoint (currententity->origin, clr, true);
+		
+		AnglesToMat3(currententity->angles, entityAxis);
+		VectorSubtract(staticOrg, currententity->origin, temp);
+		Mat3_TransposeMultiplyVector(entityAxis, temp, staticOrg);	
+		GL_DrawAliasFrameLerpArb(paliashdr, staticOrg, 300, clr);
+		}
 }

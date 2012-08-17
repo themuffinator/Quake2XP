@@ -384,7 +384,7 @@ next:
 }
 
 
-void R_DrawAliasModelLightPass (qboolean weapon_model)
+void R_DrawAliasModelLightPass (qboolean weapon_model,  worldShadowLight_t *shadowLight)
 {
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];

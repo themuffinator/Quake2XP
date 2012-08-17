@@ -436,3 +436,185 @@ void R_LightColor(vec3_t org, vec3_t color)
 		}
 	}
 }
+
+/*=====================
+Discoloda light Manager
+=====================*/
+
+worldShadowLight_t *shadowLight_static = NULL, *shadowLight_frame = NULL;
+static worldShadowLight_t dlArray[32];
+static int num_dlits;
+
+qboolean PF_inPVS(vec3_t p1, vec3_t p2);
+
+qboolean Wl_CullLight(worldShadowLight_t *light) {
+	vec3_t mins, maxs, none = {1, 1, 1};
+	float c;
+
+	c = (light->sColor[0] + light->sColor[1] + light->sColor[2]) * light->radius*(1.0/3.0);
+	if(c < 0.1)
+		return true;
+
+	VectorMA(light->origin, light->radius, none, maxs);
+	VectorMA(light->origin, -light->radius, none, mins);
+	
+	if(R_CullBox(mins, maxs))
+		return true;
+
+	return !PF_inPVS(light->origin, r_origin);
+}
+
+void Wl_AddDlight(dlight_t *dl) {
+	worldShadowLight_t *light;
+	vec3_t mins, maxs, none = {1, 1, 1};
+	float c;
+
+	c = (dl->color[0] + dl->color[1] + dl->color[2]) * dl->intensity*(1.0/3.0);
+	if(c < 0.1)
+		return;
+
+	VectorMA(dl->origin, dl->intensity, none, maxs);
+	VectorMA(dl->origin, -dl->intensity, none, mins);
+
+	if(R_CullBox(mins, maxs))
+		return;
+
+	light = &dlArray[num_dlits++];
+	memset(light, 0, sizeof(worldShadowLight_t));
+	light->next = shadowLight_frame;
+	shadowLight_frame = light;
+
+	VectorCopy(dl->origin, light->origin);
+	VectorCopy(dl->color, light->sColor);
+	light->radius = dl->intensity;
+	light->isStatic = false;
+}
+
+void Wl_Prepare(void) {
+	int i;
+	worldShadowLight_t *light;
+
+	num_dlits = 0;
+	shadowLight_frame = NULL;
+
+	// add pre computed lights
+	if(shadowLight_static) {
+		for(light = shadowLight_static; light; light = light->s_next) {
+			if(Wl_CullLight(light))
+				continue;
+
+			light->next = shadowLight_frame;
+			shadowLight_frame = light;
+		}
+	}
+
+	// add tempory lights
+	for(i=0;i<r_newrefdef.num_dlights;i++) {
+		if(num_dlits > 32)
+			break;
+		Wl_AddDlight(&r_newrefdef.dlights[i]);
+	}
+
+	if(!shadowLight_frame) 
+		return;
+
+	for(light = shadowLight_frame; light; light = light->next) {
+
+		VectorCopy(light->sColor, light->color);
+		light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
+		light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
+		light->color[2] *= r_newrefdef.lightstyles[light->style].rgb[2];
+
+		light->mins[0] = light->origin[0] - light->radius;
+		light->mins[1] = light->origin[1] - light->radius;
+		light->mins[2] = light->origin[2] - light->radius;
+		light->maxs[0] = light->origin[0] + light->radius;
+		light->maxs[1] = light->origin[1] + light->radius;
+		light->maxs[2] = light->origin[2] + light->radius;
+	}
+
+}
+
+
+worldShadowLight_t *AddNewLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow) {
+	worldShadowLight_t *light;
+
+	light = (worldShadowLight_t*)malloc(sizeof(worldShadowLight_t));
+	light->s_next = shadowLight_static;
+	shadowLight_static = light;
+
+	VectorCopy(origin, light->origin);
+	VectorCopy(color, light->sColor);
+	light->radius = radius;
+	light->isStatic = isStatic;
+	light->isShadow = isShadow;
+	light->next = NULL;
+	light->style = style;
+
+	return light;
+}
+
+int Load_BspLights(void) {
+	int addLight, style, numlights;
+	char *c, *token, key[256], *value;
+	float color[3], origin[3], radius;
+
+	if(!r_worldmodel) {
+		Com_Printf(PRINT_ALL, "No map loaded.\n");
+		return 0;
+	}
+
+	c = CM_EntityString();
+	numlights = 0;
+
+	while(1) {
+		token = COM_Parse(&c);
+		if(!c)
+			break;
+
+		color[0] = 0.5;
+		color[1] = 0.5;
+		color[2] = 0.5;
+		radius = 300;
+		origin[0] = 0;
+		origin[1] = 0;
+		origin[2] = 0;
+		addLight = false;
+		style = 0;
+
+		while(1) {
+			token = COM_Parse(&c);
+			if(token[0] == '}')
+				break;
+
+			strncpy(key, token, sizeof(key)-1);
+
+			value = COM_Parse(&c);
+			if(!Q_stricmp(key, "classname")) {
+				if(!Q_stricmp(value, "light"))
+					addLight = true;
+				if(!Q_stricmp(value, "light_mine1"))
+					addLight = true;
+				if(!Q_stricmp(value, "light_mine2"))
+					addLight = true;
+			}
+
+			if(!Q_stricmp(key, "light"))
+				radius = atof(value);
+			else if(!Q_stricmp(key, "origin"))
+				sscanf(value, "%f %f %f", &origin[0], &origin[1], &origin[2]);
+			else if(!Q_stricmp(key, "_color"))
+				sscanf(value, "%f %f %f", &color[0], &color[1], &color[2]);
+			else if(!Q_stricmp(key, "style"))
+				style = atoi(value);
+		}
+
+		if(addLight) {
+			if(style)
+			AddNewLight(origin, color, radius, style, true, true);
+			numlights++;	
+		}
+	}
+	Com_Printf("load %i bsp lights\n",numlights);
+	return numlights;
+}
