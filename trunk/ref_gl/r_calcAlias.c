@@ -583,38 +583,6 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	
 }
 
-void R_DebugLights (vec3_t lightOrg)
-{
-	int		i, j;
-	float	a;
-	vec3_t	v;
-	float	rad;
-
-	rad = 5.0;
-
-	qglDisable(GL_CULL_FACE);
-	VectorSubtract (lightOrg, r_origin, v);
-	qglColor3f (1, 0, 1);
-
-	qglBegin (GL_TRIANGLE_FAN);
-	for (i=0 ; i<3 ; i++)
-		v[i] = lightOrg[i] - vpn[i]*rad;
-	qglVertex3fv (v);
-	
-	for (i=16 ; i>=0 ; i--)
-	{
-		a = i/16.0 * M_PI*2;
-		for (j=0 ; j<3 ; j++)
-			v[j] = lightOrg[j] + vright[j]*cos(a)*rad
-				+ vup[j]*sin(a)*rad;
-		qglVertex3fv (v);
-	}
-	qglEnd ();
-	qglColor3f (1,1,1);
-	qglEnable(GL_CULL_FACE);
-}
-
-qboolean R_CullSphere( const vec3_t centre, const float radius, const int clipflags );
 
 static vec3_t	lightArray[2] =	{
 				{-50.0,  100.0, 50.0},
@@ -642,12 +610,16 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 	return;
 	}
 
-	Wl_Prepare();
+	R_PrepareShadowLightFrame();
 
 	if(shadowLight_frame) {
 		
 		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
-			
+			vec3_t sColor;
+
+			if(shadowLight->ignore)
+				continue;
+
 			if(VectorCompare(shadowLight->origin, currententity->origin))
 			   continue;
 
@@ -663,13 +635,16 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			if(r_trace.fraction != 1.0)
 				continue;
 			}
-
+			if(shadowLight->isStatic && !shadowLight->style)
+			{	
+				R_LightPoint (currententity->origin, sColor, true);
+				VectorCopy(sColor, shadowLight->color);
+			}
 			AnglesToMat3(currententity->angles, entityAxis);
 			VectorSubtract(shadowLight->origin, currententity->origin, temp);
 			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
 			GL_DrawAliasFrameLerpArb(paliashdr, light, shadowLight->radius, shadowLight->color);
 			currententity->lightVised = true;
-
 			}
 		}
 
@@ -677,7 +652,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 		vec3_t clr;
 		vec3_t staticOrg;
 		VectorSet(staticOrg, currententity->origin[0], currententity->origin[1], currententity->origin[2]);
-		staticOrg[0] += 100;
+		staticOrg[0] += 15;
 		staticOrg[2] += 100;
 		R_LightPoint (currententity->origin, clr, true);
 		

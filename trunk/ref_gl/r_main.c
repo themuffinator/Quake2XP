@@ -72,6 +72,7 @@ refdef_t r_newrefdef;
 glwstate_t glw_state;
 
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
+float frustumPlanes[6][4];
 
 int GL_MsgGLError(char* Info)
 {
@@ -161,6 +162,40 @@ qboolean R_CullPoint(vec3_t org)
 	for (i = 0; i < 4; i++)
 		if (DotProduct(org, frustum[i].normal) > frustum[i].dist)
 			return true;
+
+	return false;
+}
+
+qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs)
+{
+	int		i, j;
+	float	dist1, dist2;
+	vec3_t	corners[2];
+
+///	if (r_nocull->value)
+///		return false;
+
+	for (i=0 ; i<6 ; i++)
+	{
+		for (j=0 ; j<3 ; j++)
+		{
+			if (frustumPlanes[i][j] < 0)
+			{
+				corners[0][j] = mins[j];
+				corners[1][j] = maxs[j];
+			}
+			else
+			{
+				corners[1][j] = mins[j];
+				corners[0][j] = maxs[j];
+			}
+		}
+
+		dist1 = DotProduct (frustumPlanes[i], corners[0]) + frustumPlanes[i][3];
+		dist2 = DotProduct (frustumPlanes[i], corners[1]) + frustumPlanes[i][3];
+		if (dist1 < 0 && dist2 < 0)
+			return true;
+	}
 
 	return false;
 }
@@ -556,7 +591,6 @@ PENTA:
 from http://www.markmorley.com/opengl/frustumculling.html
 Should clean it up by using procedures.
 */
-float frustumPlanes[6][4];
 
 void ExtractFrustum()			// <AWE> added return type.
 {
@@ -1473,10 +1507,11 @@ void R_RegisterCvars(void)
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
-	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "10", CVAR_ARCHIVE);
+	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "12", CVAR_ARCHIVE);
 	r_shadowVolumesDebug =				Cvar_Get("r_shadowVolumesDebug", "0", 0);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
+	r_maxShadowsPerModel =				Cvar_Get("r_maxShadowsPerModel", "3", CVAR_ARCHIVE);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
@@ -1525,6 +1560,7 @@ void R_RegisterCvars(void)
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_pplMaxDlights =					Cvar_Get("r_pplMaxDlights", "13", CVAR_ARCHIVE);
+	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "32", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);

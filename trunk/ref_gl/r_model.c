@@ -199,7 +199,8 @@ void GL_AddFlareSurface(msurface_t * surf)
 	r_flares[r_numflares].area = CM_LeafArea(leafnum);
 	Q_memcpy(r_flares[r_numflares].vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
 
-	AddNewLight(r_flares[r_numflares].origin, r_flares[r_numflares].color, r_flares[r_numflares].size * 10, 0, true, true);
+	R_AddNewWorldLight(	r_flares[r_numflares].origin,	r_flares[r_numflares].color, 
+						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, true, true);
 	
 	r_numflares++;
 	free(buffer);
@@ -1568,7 +1569,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	
 	
 	CleanDuplicateFlares();
-	
+	CleanDuplicateLights();
 //
 // set up the submodels
 //
@@ -2373,10 +2374,13 @@ Specifies the model
 that will be used as the world.
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 */
+
 void R_BeginRegistration(char *model)
 {
 	char fullname[MAX_QPATH];
 	cvar_t *flushmap;
+	
+	R_ClearWorldLights();
 
 	registration_sequence++;
 	r_oldviewcluster = -1;		// force markleafs

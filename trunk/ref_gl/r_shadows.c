@@ -324,41 +324,48 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	float				dist, projdist;
 	mat3_t				entityAxis;
 	trace_t				r_trace;
-	int					dlight = 0, slight = 0;
+	int					numShadows = 1;
 			
-	Wl_Prepare();
+	R_PrepareShadowLightFrame();
 	
 	if(shadowLight_frame) {
 		
 		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
-			
+		
+		if(numShadows > r_maxShadowsPerModel->value)
+			continue;
+
+		if(shadowLight->ignore)
+			continue;
 
 		if(VectorCompare(shadowLight->origin, currententity->origin))
-			   continue;
+		   continue;
 			
 		VectorSubtract(currententity->origin, shadowLight->origin, temp);
 		dist = VectorLength(temp);
 			
 		if (dist > shadowLight->radius)
 			continue;		// big distance!
-			
-		// light behind the wall 
-		if (r_newrefdef.areabits){
-		r_trace = CM_BoxTrace(currententity->origin, shadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
-		if(r_trace.fraction != 1.0)
-			continue;
-		}
 
 		AnglesToMat3(currententity->angles, entityAxis);
 		VectorSubtract(shadowLight->origin, currententity->origin, temp);
 		Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-		projdist = (shadowLight->radius + currententity->model->radius - dist) * 2.5;
-			
+		projdist = (shadowLight->radius + currententity->model->radius - dist) * 3.5;
+		
 		if(shadowLight->isStatic)
-			light[2] +=56;
-			
+			light[2] = currententity->maxs[2]+95;
+		
+		// light behind the wall 
+		if (r_newrefdef.areabits){
+			r_trace = CM_BoxTrace(currententity->origin, shadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+		
+				if(r_trace.fraction != 1.0)
+					continue;
+		}
+
 		GL_RenderVolumes(paliashdr, light, projdist);
 		currententity->lightVised = true;
+		numShadows++;
 		}
 				
 	}
@@ -424,6 +431,14 @@ void R_DrawShadowVolume(entity_t * e)
 
 	if(CL_PMpointcontents(maxs) & MASK_WATER)
 		return;
+	
+	if (r_newrefdef.areabits){
+	
+		trace_t tr = CM_BoxTrace(r_origin, e->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+		
+		if(tr.fraction != 1.0)
+			return;
+	}
 
 	paliashdr = (dmdl_t *) currentmodel->extradata;
 

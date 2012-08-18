@@ -73,8 +73,6 @@ vec4_t DecalColorArray [MAX_DECAL_ARRAY_VERTS];
 vec2_t DecalTexCoordArray [MAX_DECAL_ARRAY_VERTS];
 vec3_t DecalVertexArray [MAX_DECAL_ARRAY_VERTS];
 
-qboolean R_CullSphere( const vec3_t centre, const float radius, const int clipflags );
-
 void R_RenderDecals(void)
 {
     decals_t    *dl, *next, *active; 
@@ -131,7 +129,7 @@ void R_RenderDecals(void)
           if (DotProduct(dl->direction, v) < 0.0)
                continue;
        	
-		  if( R_CullSphere(dl->org, dl->size*1.3, 15 ) )
+		  if( R_CullSphere(dl->org, dl->size*1.3) )
 				continue;
 
         endLerp = (float)(r_newrefdef.time - dl->time) / (float)(dl->endTime - dl->time);	

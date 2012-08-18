@@ -93,7 +93,7 @@ typedef struct {
 	float minvalue;
 	float maxvalue;
 	float curvalue;
-
+	int		intVal;
 	float range;
 } menuslider_s;
 

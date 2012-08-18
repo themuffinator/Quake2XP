@@ -67,6 +67,7 @@ static	menulist_s			s_softParticles;
 static	menulist_s			s_fxaa_box;
 static	menulist_s			s_minimap;
 
+static menuslider_s		s_numShadows_slider;
 
 
 /////////////////////////////////////////////////////////
@@ -89,6 +90,12 @@ static void ScreenSizeCallback(void *s)
 	Cvar_SetValue("viewsize", slider->curvalue * 10);
 }
 
+static void numShadowsCallback(void *s)
+{
+	menuslider_s *slider = (menuslider_s*) s;
+
+	Cvar_SetValue("r_maxShadowsPerModel", slider->curvalue);
+}
 
 static void RadarCallback( void *s )
 {
@@ -202,7 +209,7 @@ static void ApplyChanges( void *unused )
 	Cvar_SetValue( "r_fxaa",				s_fxaa_box.curvalue);
 	Cvar_SetValue( "r_vsync",				s_finish_box.curvalue);
 	Cvar_SetValue( "r_radar",				s_minimap.curvalue);
-
+	Cvar_SetValue( "r_maxShadowsPerModel",  s_numShadows_slider.curvalue);
 
 	
 /*	
@@ -340,6 +347,9 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 
 		if(r_fxaa->modified)
 			vid_ref->modified = true;
+
+		if(r_maxShadowsPerModel->modified)
+			vid_ref->modified = true;
 		
 	M_ForceMenuOff();
 
@@ -396,7 +406,7 @@ void VID_MenuInit( void )
 	
 	static char	*yesno_names[]	=	{"no", "yes", 0};
 	static char	*refresh[]		=	{"desktop", "60hz", "75hz", "85hz", "100hz", "120hz", 0};
-	static char	*shadow_names[] =	{"off", "blob", "static volumes", "dynamic volumes", "full dynamic volumes", 0};
+	static char	*shadow_names[] =	{"off", "blob", "volumetic", 0};
 #ifdef __linux__
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", 0}; // sdl bug work only 2 and 4 samples per pixel
 #else
@@ -459,6 +469,8 @@ void VID_MenuInit( void )
 	if(!r_fxaa->value)
 		r_fxaa = Cvar_Get ("r_fxaa", 0, CVAR_ARCHIVE);
 
+	if(!r_maxShadowsPerModel->value)
+		r_maxShadowsPerModel = Cvar_Get ("r_maxShadowsPerModel", "3", CVAR_ARCHIVE);
 
 	s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;
@@ -620,28 +632,39 @@ void VID_MenuInit( void )
 	s_flare_box.itemnames       = yesno_names;
 	s_flare_box.curvalue        = r_drawFlares->value;
 	s_flare_box.generic.callback = FlareCallback;
-		
-	
-	s_shadow_box.generic.type	  = MTYPE_SPINCONTROL;
-	s_shadow_box.generic.x	      = 0;
-	s_shadow_box.generic.y	      = 130*cl_fontScale->value;
-	s_shadow_box.generic.name	  = "Shadows";
-    s_shadow_box.itemnames        = shadow_names;
-	s_shadow_box.curvalue         = r_shadows->value;
-    s_shadow_box.generic.callback = ShadowsCallback;
-		
-	s_parallax_box.generic.type	  = MTYPE_SPINCONTROL;
-	s_parallax_box.generic.x	      = 0;
-	s_parallax_box.generic.y	      = 140*cl_fontScale->value;
-	s_parallax_box.generic.name	  = "Parallax";
-    s_parallax_box.itemnames        = parallax;
-	s_parallax_box.curvalue         = r_parallax->value;
-	s_parallax_box.generic.callback = ParallaxCallback;
-	
+
+	s_shadow_box.generic.type		= MTYPE_SPINCONTROL;
+	s_shadow_box.generic.x			= 0;
+	s_shadow_box.generic.y			= 130*cl_fontScale->value;
+	s_shadow_box.generic.name		= "Shadows";
+    s_shadow_box.itemnames			= shadow_names;
+	s_shadow_box.curvalue			= r_shadows->value;
+    s_shadow_box.generic.callback	= ShadowsCallback;
+	s_shadow_box.generic.statusbar		= "1 - Planar Shadows, 2 - Shadow Volumes";
+
+	s_numShadows_slider.generic.type		= MTYPE_SLIDER;
+	s_numShadows_slider.generic.x			= 0;
+	s_numShadows_slider.generic.y			= 140*cl_fontScale->value;
+	s_numShadows_slider.generic.name		= "Amount of Shadows";
+	s_numShadows_slider.curvalue			= r_maxShadowsPerModel->value;
+	s_numShadows_slider.minvalue			= 1;
+	s_numShadows_slider.maxvalue			= 10;
+	s_numShadows_slider.generic.callback	= numShadowsCallback;
+	s_numShadows_slider.generic.statusbar	= "Maximum Shadows Per Model, 1-10";
+
+	s_parallax_box.generic.type			= MTYPE_SPINCONTROL;
+	s_parallax_box.generic.x			= 0;
+	s_parallax_box.generic.y			= 150*cl_fontScale->value;
+	s_parallax_box.generic.name			= "Parallax";
+    s_parallax_box.itemnames			= parallax;
+	s_parallax_box.curvalue				= r_parallax->value;
+	s_parallax_box.generic.callback		= ParallaxCallback;
+	s_parallax_box.generic.statusbar	= "Sample Parallax Mapping - Parallax Relief Mapping";
+
 	s_ab_list.generic.type = MTYPE_SPINCONTROL;
 	s_ab_list.generic.name = "Models Bump Mapping";
 	s_ab_list.generic.x = 0;
-	s_ab_list.generic.y = 150*cl_fontScale->value;
+	s_ab_list.generic.y = 160*cl_fontScale->value;
 	s_ab_list.itemnames = yesno_names;
 	s_ab_list.curvalue = r_bumpAlias->value;
 	s_ab_list.generic.callback = abumpCB;
@@ -649,7 +672,7 @@ void VID_MenuInit( void )
 	s_wb_list.generic.type = MTYPE_SPINCONTROL;
 	s_wb_list.generic.name = "World Bump Mapping";
 	s_wb_list.generic.x = 0;
-	s_wb_list.generic.y = 160*cl_fontScale->value;
+	s_wb_list.generic.y = 170*cl_fontScale->value;
 	s_wb_list.itemnames = yesno_names;
 	s_wb_list.curvalue = r_bumpWorld->value;
 	s_wb_list.generic.callback = wbumpCB;
@@ -657,7 +680,7 @@ void VID_MenuInit( void )
 
 	s_bloom_box.generic.type		= MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x			= 0;
-	s_bloom_box.generic.y			= 170*cl_fontScale->value;
+	s_bloom_box.generic.y			= 180*cl_fontScale->value;
 	s_bloom_box.generic.name		= "Light Blooms";
    	s_bloom_box.itemnames			= yesno_names;
 	s_bloom_box.curvalue			= r_bloom->value;
@@ -665,7 +688,7 @@ void VID_MenuInit( void )
 
 	s_dof_box.generic.type		= MTYPE_SPINCONTROL;
 	s_dof_box.generic.x			= 0;
-	s_dof_box.generic.y			= 180*cl_fontScale->value;
+	s_dof_box.generic.y			= 190*cl_fontScale->value;
 	s_dof_box.generic.name		= "Depth of Field";
    	s_dof_box.itemnames			= yesno_names;
 	s_dof_box.curvalue			= r_dof->value;
@@ -673,7 +696,7 @@ void VID_MenuInit( void )
 	
 	s_radBlur_box.generic.type		= MTYPE_SPINCONTROL;
 	s_radBlur_box.generic.x			= 0;
-	s_radBlur_box.generic.y			= 190*cl_fontScale->value;
+	s_radBlur_box.generic.y			= 200*cl_fontScale->value;
 	s_radBlur_box.generic.name		= "Radial Blur";
    	s_radBlur_box.itemnames			= yesno_names;
 	s_radBlur_box.curvalue			= r_radialBlur->value;
@@ -681,7 +704,7 @@ void VID_MenuInit( void )
 	
 	s_softParticles.generic.type		= MTYPE_SPINCONTROL;
 	s_softParticles.generic.x			= 0;
-	s_softParticles.generic.y			= 200*cl_fontScale->value;
+	s_softParticles.generic.y			= 210*cl_fontScale->value;
 	s_softParticles.generic.name		= "Soft Particles";
    	s_softParticles.itemnames			= yesno_names;
 	s_softParticles.curvalue			= r_softParticles->value;
@@ -689,7 +712,7 @@ void VID_MenuInit( void )
 
 	s_fxaa_box.generic.type		= MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x		= 0;
-	s_fxaa_box.generic.y		= 210*cl_fontScale->value;
+	s_fxaa_box.generic.y		= 220*cl_fontScale->value;
 	s_fxaa_box.generic.name		= "FXAA";
    	s_fxaa_box.itemnames		= yesno_names;
 	s_fxaa_box.curvalue			= r_fxaa->value;
@@ -698,7 +721,7 @@ void VID_MenuInit( void )
 
 	s_minimap.generic.type		= MTYPE_SPINCONTROL;
 	s_minimap.generic.x			= 0;
-	s_minimap.generic.y			= 220*cl_fontScale->value;
+	s_minimap.generic.y			= 230*cl_fontScale->value;
 	s_minimap.generic.name		= "Draw Radar";
    	s_minimap.itemnames			= radar;
 	s_minimap.curvalue			= r_radar->value;
@@ -706,7 +729,7 @@ void VID_MenuInit( void )
 	
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x	= 0;
-	s_finish_box.generic.y	= 230*cl_fontScale->value;
+	s_finish_box.generic.y	= 240*cl_fontScale->value;
 	s_finish_box.generic.name	= "Vertical Sync";
 	s_finish_box.curvalue = r_vsync->value;
 	s_finish_box.itemnames = yesno_names;
@@ -715,13 +738,13 @@ void VID_MenuInit( void )
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x    = 0;
-	s_defaults_action.generic.y    = 250*cl_fontScale->value;
+	s_defaults_action.generic.y    = 260*cl_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x    = 0;
-	s_apply_action.generic.y    = 260*cl_fontScale->value;
+	s_apply_action.generic.y    = 270*cl_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 	
 	menuSize = 320;
@@ -737,9 +760,10 @@ void VID_MenuInit( void )
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_tc_box );
     
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_flare_box );
-
+		
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadow_box );
-    Menu_AddItem( &s_opengl_menu, ( void * ) &s_parallax_box );
+    Menu_AddItem( &s_opengl_menu, ( void * ) &s_numShadows_slider );
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_parallax_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_ab_list);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_wb_list);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_bloom_box );
@@ -769,7 +793,7 @@ void VID_MenuDraw (void)
 
 	s_current_menu = &s_opengl_menu;
 
-	menuSize = 180*cl_fontScale->value;
+	menuSize = 190*cl_fontScale->value;
 
 	// draw the banner
 	Draw_GetPicSize( &w, &h, "m_banner_video" );

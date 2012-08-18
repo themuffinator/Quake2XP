@@ -36,24 +36,6 @@ WORLD LIGHTS
 ==============================================================================
 */
 
-#define MAX_LIGHTS 4096
-#define MAX_SHADOWLIHGTS 1024
-
-typedef struct					// WORLDSHADOWTEST
-{
-	vec3_t origin;
-	float intensity;
-	void *surf;
-	vec3_t spotlight;
-	vec3_t color;
-	vec3_t radius;
-	byte vis[MAX_MAP_LEAFS / 8];
-	int area;
-} worldLight_t;
-
-worldLight_t r_worldLights[MAX_LIGHTS];
-int r_numWorldLights;
-
 typedef struct worldShadowLight_s {
 	vec3_t origin;
 	float radius;
@@ -62,17 +44,19 @@ typedef struct worldShadowLight_s {
 	vec3_t mins, maxs;
 	qboolean isShadow;
 	qboolean isStatic;
+	qboolean ignore;
 	int style;
+	byte vis[MAX_MAP_LEAFS / 8];
+	int area;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
 
-	qboolean ignore;
-	byte vis[MAX_MAP_LEAFS / 8];
-	int area;
-
 } worldShadowLight_t;
 
+#define MAX_WORLD_SHADOW_LIHGTS 4096
+int r_numIgnoreLights;
+int r_numWorlsShadowLights;
 
 typedef struct {
 	vec3_t origin;
@@ -104,18 +88,7 @@ BRUSH MODELS
 
 ==============================================================================
 */
-typedef struct {
-	vec3_t color;				// ���� ������
-	vec3_t origin;				// for bbox
-	vec3_t origin2;				// for bbox
-	float density;
-	float minmax[6];
-} fog_t;
 
-#define  MAX_FOG_AREAS 64		// ������������ ���������� ��������
-								// �������� �� �����
-int numFogs;
-fog_t fog_infos[MAX_FOG_AREAS];
 //
 // in memory representation
 //
@@ -138,24 +111,13 @@ typedef struct {
 #define	SIDE_BACK	1
 #define	SIDE_ON		2
 
-
-
-
 // !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct {
 	unsigned short v[2];
 	unsigned int cachededgeoffset;
 } medge_t;
 
-
-
-
 #define CONTENTS_NODE -1
-
-
-
-
-
 
 typedef struct mleaf_s {
 // common with node

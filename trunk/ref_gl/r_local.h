@@ -247,6 +247,7 @@ cvar_t	*r_shadowWorldLightScale;
 cvar_t	*r_shadowVolumesDebug;
 cvar_t	*r_playerShadow;
 cvar_t	*r_shadowCapOffset;
+cvar_t	*r_maxShadowsPerModel;
 
 cvar_t	*r_radarSize;			// GLOOM radar
 cvar_t	*r_radarZoom;
@@ -275,6 +276,7 @@ cvar_t	*r_bumpAlias;
 cvar_t	*r_bumpWorld;
 cvar_t	*r_pplWorldAmbient;
 cvar_t	*r_pplMaxDlights;
+cvar_t	*r_lightsWeldThreshold;
 
 cvar_t	*hunk_bsp;
 cvar_t	*hunk_model;
@@ -339,7 +341,7 @@ void R_InitLightgrid(void);
 void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
-worldShadowLight_t *AddNewLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow);
+worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow);
 
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
@@ -371,6 +373,11 @@ void R_FXAA(void);
 void R_FilmGrain (void);
 void R_ListPrograms_f(void);
 void R_InitPrograms(void);
+void R_ClearWorldLights(void);
+void CleanDuplicateLights(void);
+qboolean R_CullSphere( const vec3_t centre, const float radius);
+void R_DebugLights (vec3_t lightOrg, float rad, float r, float g, float b);
+qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -586,7 +593,7 @@ extern	vec3_t	lightspot;
 
 extern vec3_t ShadowArray[MAX_SHADOW_VERTS];
 
-void Wl_Prepare(void);
+void R_PrepareShadowLightFrame(void);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;
 qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius);
 

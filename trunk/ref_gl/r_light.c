@@ -437,34 +437,46 @@ void R_LightColor(vec3_t org, vec3_t color)
 	}
 }
 
-/*=====================
-Discoloda light Manager
-=====================*/
+/*==============================
+
+Per Pixel Lighting Light Manager
+
+==============================*/
 
 worldShadowLight_t *shadowLight_static = NULL, *shadowLight_frame = NULL;
-static worldShadowLight_t dlArray[32];
+static worldShadowLight_t shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
 static int num_dlits;
+static int numCulledLights;
 
-qboolean PF_inPVS(vec3_t p1, vec3_t p2);
-
-qboolean Wl_CullLight(worldShadowLight_t *light) {
-	vec3_t mins, maxs, none = {1, 1, 1};
+qboolean R_CullLight(worldShadowLight_t *light) {
+	
 	float c;
+	vec3_t mins, maxs, none = {1, 1, 1};
 
-	c = (light->sColor[0] + light->sColor[1] + light->sColor[2]) * light->radius*(1.0/3.0);
-	if(c < 0.1)
+	if (r_newrefdef.areabits){
+		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))){
+			return true;
+		}
+	}
+	
+	if (!HasSharedLeafs (light->vis, viewvis))
 		return true;
 
-	VectorMA(light->origin, light->radius, none, maxs);
-	VectorMA(light->origin, -light->radius, none, mins);
+	c = (light->sColor[0] + light->sColor[1] + light->sColor[2]) * light->radius*(1.0/3.0);
+		if(c < 0.1)
+			return true;
 	
+	VectorMA(light->origin,  light->radius, none, maxs);
+	VectorMA(light->origin, -light->radius, none, mins);
+
 	if(R_CullBox(mins, maxs))
 		return true;
 
-	return !PF_inPVS(light->origin, r_origin);
-}
+	return false;
+	}
 
-void Wl_AddDlight(dlight_t *dl) {
+void R_AddDynamicLight(dlight_t *dl) {
+	
 	worldShadowLight_t *light;
 	vec3_t mins, maxs, none = {1, 1, 1};
 	float c;
@@ -476,10 +488,12 @@ void Wl_AddDlight(dlight_t *dl) {
 	VectorMA(dl->origin, dl->intensity, none, maxs);
 	VectorMA(dl->origin, -dl->intensity, none, mins);
 
-	if(R_CullBox(mins, maxs))
+	if(R_CullBox(mins, maxs)){
+		numCulledLights++;
 		return;
+	}
 
-	light = &dlArray[num_dlits++];
+	light = &shadowLightsBlock[num_dlits++];
 	memset(light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
@@ -490,19 +504,21 @@ void Wl_AddDlight(dlight_t *dl) {
 	light->isStatic = false;
 }
 
-void Wl_Prepare(void) {
+void R_PrepareShadowLightFrame(void) {
+	
 	int i;
 	worldShadowLight_t *light;
-
 	num_dlits = 0;
 	shadowLight_frame = NULL;
 
+	numCulledLights = 0;
 	// add pre computed lights
 	if(shadowLight_static) {
 		for(light = shadowLight_static; light; light = light->s_next) {
-			if(Wl_CullLight(light))
+			if(R_CullLight(light)){
+				numCulledLights++;
 				continue;
-
+			}
 			light->next = shadowLight_frame;
 			shadowLight_frame = light;
 		}
@@ -510,11 +526,13 @@ void Wl_Prepare(void) {
 
 	// add tempory lights
 	for(i=0;i<r_newrefdef.num_dlights;i++) {
-		if(num_dlits > 32)
+		if(num_dlits > MAX_WORLD_SHADOW_LIHGTS)
 			break;
-		Wl_AddDlight(&r_newrefdef.dlights[i]);
+		R_AddDynamicLight(&r_newrefdef.dlights[i]);
 	}
 
+	Com_DPrintf("%i lights was culled\n", numCulledLights);
+	
 	if(!shadowLight_frame) 
 		return;
 
@@ -536,9 +554,12 @@ void Wl_Prepare(void) {
 }
 
 
-worldShadowLight_t *AddNewLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow) {
+worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow) {
+	
 	worldShadowLight_t *light;
-
+	int leafnum;
+	int cluster;
+	
 	light = (worldShadowLight_t*)malloc(sizeof(worldShadowLight_t));
 	light->s_next = shadowLight_static;
 	shadowLight_static = light;
@@ -548,14 +569,23 @@ worldShadowLight_t *AddNewLight(vec3_t origin, vec3_t color, float radius, int s
 	light->radius = radius;
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
+	light->ignore = false;
 	light->next = NULL;
 	light->style = style;
 
+	leafnum = CM_PointLeafnum(light->origin);
+	cluster = CM_LeafCluster(leafnum);
+	light->area = CM_LeafArea(leafnum);
+	Q_memcpy(light->vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
+
+	if(!light->style)
+		r_numWorlsShadowLights++;
 	return light;
 }
 
 int Load_BspLights(void) {
-	int addLight, style, numlights;
+	
+	int addLight, style, numlights, addLight_mine;
 	char *c, *token, key[256], *value;
 	float color[3], origin[3], radius;
 
@@ -580,6 +610,7 @@ int Load_BspLights(void) {
 		origin[1] = 0;
 		origin[2] = 0;
 		addLight = false;
+		addLight_mine = false;
 		style = 0;
 
 		while(1) {
@@ -593,10 +624,14 @@ int Load_BspLights(void) {
 			if(!Q_stricmp(key, "classname")) {
 				if(!Q_stricmp(value, "light"))
 					addLight = true;
-				if(!Q_stricmp(value, "light_mine1"))
+				if(!Q_stricmp(value, "light_mine1")){
 					addLight = true;
-				if(!Q_stricmp(value, "light_mine2"))
+					addLight_mine = true;
+				}
+				if(!Q_stricmp(value, "light_mine2")){
 					addLight = true;
+					addLight_mine = true;
+				}
 			}
 
 			if(!Q_stricmp(key, "light"))
@@ -610,11 +645,84 @@ int Load_BspLights(void) {
 		}
 
 		if(addLight) {
-			if(style)
-			AddNewLight(origin, color, radius, style, true, true);
+			if((style < 0 && style < 12) || addLight_mine){
+			R_AddNewWorldLight(origin, color, radius, style, true, true);
 			numlights++;	
+			}
 		}
 	}
-	Com_Printf("load %i bsp lights\n",numlights);
+	Com_DPrintf("loaded %i bsp lights with styles\n",numlights);
 	return numlights;
+}
+
+void CleanDuplicateLights(void){
+
+	worldShadowLight_t *light1, *light2;
+	vec3_t tmp;
+	
+	for(light1 = shadowLight_static; light1; light1 = light1->s_next) {
+
+	for(light2 = light1->s_next; light2; light2 = light2->s_next) {
+
+		VectorSubtract(light2->origin, light1->origin, tmp);
+  
+		if (VectorLength(tmp) < r_lightsWeldThreshold->value){
+	
+			light2->ignore = true;  
+			VectorAdd(light1->origin, light2->origin, tmp);
+			VectorScale(tmp, 0.5f, light1->origin);
+			r_numIgnoreLights++;
+		}
+	}
+}
+
+Com_DPrintf("loaded %i world lights, %i lights ignored\n", r_numWorlsShadowLights, r_numIgnoreLights);
+}
+
+void R_ClearWorldLights(void)
+{
+	worldShadowLight_t *light, *next;
+
+	if(shadowLight_static) {
+		for(light = shadowLight_static; light; light = next) {
+			next = light->s_next;
+			free(light);
+		}
+		shadowLight_static = NULL;
+	}
+
+	memset(shadowLightsBlock, 0, sizeof(worldShadowLight_t) * MAX_WORLD_SHADOW_LIHGTS);
+
+	r_numWorlsShadowLights = 0;
+	r_numIgnoreLights = 0;
+
+}
+
+
+void R_DebugLights (vec3_t lightOrg, float rad, float r, float g, float b)
+{
+	int		i, j;
+	float	a;
+	vec3_t	v;
+
+	qglDisable(GL_CULL_FACE);
+	VectorSubtract (lightOrg, r_origin, v);
+	qglColor3f (r, g, b);
+
+	qglBegin (GL_TRIANGLE_FAN);
+	for (i=0 ; i<3 ; i++)
+		v[i] = lightOrg[i] - vpn[i]*rad;
+	qglVertex3fv (v);
+	
+	for (i=16 ; i>=0 ; i--)
+	{
+		a = i/16.0 * M_PI*2;
+		for (j=0 ; j<3 ; j++)
+			v[j] = lightOrg[j] + vright[j]*cos(a)*rad
+				+ vup[j]*sin(a)*rad;
+		qglVertex3fv (v);
+	}
+	qglEnd ();
+	qglColor3f (1,1,1);
+	qglEnable(GL_CULL_FACE);
 }
