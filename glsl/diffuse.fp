@@ -83,7 +83,7 @@ tbnDelux.x = dot(wDelux, t);
 tbnDelux.y = dot(wDelux, b);
 tbnDelux.z = abs(dot(wDelux, n));
 
-tbnDelux = clamp(tbnDelux, 0.333, 1.0);
+tbnDelux = clamp(tbnDelux, 0.6, 0.666);
 vec2 Es = PhongLighting(normalMap, tbnDelux, V, u_specularExp);
 
 #endif
