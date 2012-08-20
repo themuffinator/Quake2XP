@@ -637,7 +637,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			}
 			if(shadowLight->isStatic && !shadowLight->style)
 			{	
-				R_LightPoint (currententity->origin, sColor, true);
+				R_LightPoint (shadowLight->origin, sColor, true);
 				VectorCopy(sColor, shadowLight->color);
 			}
 			AnglesToMat3(currententity->angles, entityAxis);

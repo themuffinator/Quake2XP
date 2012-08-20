@@ -452,6 +452,8 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 	
 	float c;
 	vec3_t mins, maxs, none = {1, 1, 1};
+	int sidebit;
+	float viewplane;
 
 	if (r_newrefdef.areabits){
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))){
@@ -462,6 +464,18 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 	if (!HasSharedLeafs (light->vis, viewvis))
 		return true;
 
+	if(light->surf){
+
+	viewplane = DotProduct(currententity->origin, light->surf->plane->normal) - light->surf->plane->dist;
+			
+	if (viewplane >= 0)
+		sidebit = 0;
+	else
+		sidebit = SURF_PLANEBACK;
+
+	if ((light->surf->flags & SURF_PLANEBACK) != sidebit)
+		return true;
+	}
 	c = (light->sColor[0] + light->sColor[1] + light->sColor[2]) * light->radius*(1.0/3.0);
 		if(c < 0.1)
 			return true;
@@ -503,6 +517,7 @@ void R_AddDynamicLight(dlight_t *dl) {
 	light->radius = dl->intensity;
 	light->isStatic = false;
 }
+void R_DebugLights (vec3_t lightOrg, float rad, float r, float g, float b);
 
 void R_PrepareShadowLightFrame(void) {
 	
@@ -549,12 +564,15 @@ void R_PrepareShadowLightFrame(void) {
 		light->maxs[0] = light->origin[0] + light->radius;
 		light->maxs[1] = light->origin[1] + light->radius;
 		light->maxs[2] = light->origin[2] + light->radius;
+		qglDisable(GL_DEPTH_TEST);
+		R_DebugLights (light->origin, 15, 0, 1, 0);
+		qglEnable(GL_DEPTH_TEST);
 	}
 
 }
 
 
-worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow) {
+worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow, msurface_t *surf) {
 	
 	worldShadowLight_t *light;
 	int leafnum;
@@ -573,6 +591,8 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->next = NULL;
 	light->style = style;
 
+	// cull info
+	light->surf = surf;
 	leafnum = CM_PointLeafnum(light->origin);
 	cluster = CM_LeafCluster(leafnum);
 	light->area = CM_LeafArea(leafnum);
@@ -645,8 +665,8 @@ int Load_BspLights(void) {
 		}
 
 		if(addLight) {
-			if((style < 0 && style < 12) || addLight_mine){
-			R_AddNewWorldLight(origin, color, radius, style, true, true);
+			if((style > 0 && style < 12) || addLight_mine){
+			R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
 			numlights++;	
 			}
 		}

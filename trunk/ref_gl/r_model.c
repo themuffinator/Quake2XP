@@ -200,7 +200,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 	Q_memcpy(r_flares[r_numflares].vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
 
 	R_AddNewWorldLight(	r_flares[r_numflares].origin,	r_flares[r_numflares].color, 
-						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, true, true);
+						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, true, true, surf);
 	
 	r_numflares++;
 	free(buffer);

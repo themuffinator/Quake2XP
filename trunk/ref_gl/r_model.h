@@ -46,8 +46,11 @@ typedef struct worldShadowLight_s {
 	qboolean isStatic;
 	qboolean ignore;
 	int style;
+	//pvs cullung
 	byte vis[MAX_MAP_LEAFS / 8];
 	int area;
+	// for backface culling
+	msurface_t *surf;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
