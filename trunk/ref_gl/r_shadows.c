@@ -325,7 +325,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	mat3_t				entityAxis;
 	trace_t				r_trace;
 	int					numShadows = 1;
-			
+		
 	R_PrepareShadowLightFrame();
 	
 	if(shadowLight_frame) {

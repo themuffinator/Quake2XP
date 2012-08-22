@@ -185,6 +185,9 @@ extern cplane_t frustum[4];
 
 extern	int gl_filter_min, gl_filter_max;
 extern	int ocQueries[MAX_FLARES];
+
+//extern 	worldShadowLight_t *shadowLight;
+
 //
 // view origin
 //

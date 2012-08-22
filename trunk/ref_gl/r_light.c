@@ -476,6 +476,7 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 	if ((light->surf->flags & SURF_PLANEBACK) != sidebit)
 		return true;
 	}
+
 	c = (light->sColor[0] + light->sColor[1] + light->sColor[2]) * light->radius*(1.0/3.0);
 		if(c < 0.1)
 			return true;
@@ -517,7 +518,7 @@ void R_AddDynamicLight(dlight_t *dl) {
 	light->radius = dl->intensity;
 	light->isStatic = false;
 }
-void R_DebugLights (vec3_t lightOrg, float rad, float r, float g, float b);
+
 
 void R_PrepareShadowLightFrame(void) {
 	
@@ -554,9 +555,13 @@ void R_PrepareShadowLightFrame(void) {
 	for(light = shadowLight_frame; light; light = light->next) {
 
 		VectorCopy(light->sColor, light->color);
+		
+		if(r_newrefdef.rdflags & !(RDF_NOWORLDMODEL))
+		{
 		light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
 		light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
 		light->color[2] *= r_newrefdef.lightstyles[light->style].rgb[2];
+		}
 
 		light->mins[0] = light->origin[0] - light->radius;
 		light->mins[1] = light->origin[1] - light->radius;
@@ -564,9 +569,6 @@ void R_PrepareShadowLightFrame(void) {
 		light->maxs[0] = light->origin[0] + light->radius;
 		light->maxs[1] = light->origin[1] + light->radius;
 		light->maxs[2] = light->origin[2] + light->radius;
-		qglDisable(GL_DEPTH_TEST);
-		R_DebugLights (light->origin, 15, 0, 1, 0);
-		qglEnable(GL_DEPTH_TEST);
 	}
 
 }
@@ -716,33 +718,4 @@ void R_ClearWorldLights(void)
 	r_numWorlsShadowLights = 0;
 	r_numIgnoreLights = 0;
 
-}
-
-
-void R_DebugLights (vec3_t lightOrg, float rad, float r, float g, float b)
-{
-	int		i, j;
-	float	a;
-	vec3_t	v;
-
-	qglDisable(GL_CULL_FACE);
-	VectorSubtract (lightOrg, r_origin, v);
-	qglColor3f (r, g, b);
-
-	qglBegin (GL_TRIANGLE_FAN);
-	for (i=0 ; i<3 ; i++)
-		v[i] = lightOrg[i] - vpn[i]*rad;
-	qglVertex3fv (v);
-	
-	for (i=16 ; i>=0 ; i--)
-	{
-		a = i/16.0 * M_PI*2;
-		for (j=0 ; j<3 ; j++)
-			v[j] = lightOrg[j] + vright[j]*cos(a)*rad
-				+ vup[j]*sin(a)*rad;
-		qglVertex3fv (v);
-	}
-	qglEnd ();
-	qglColor3f (1,1,1);
-	qglEnable(GL_CULL_FACE);
 }

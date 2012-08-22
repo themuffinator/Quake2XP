@@ -592,11 +592,13 @@ static vec3_t	lightArray[2] =	{
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 {
 	worldShadowLight_t *shadowLight;
-	vec3_t			temp, light;
-	float			dist;
-	mat3_t			entityAxis;
-	trace_t			r_trace;
-
+	vec3_t				temp, light;
+	float				dist;
+	mat3_t				entityAxis;
+	trace_t				r_trace;
+	
+	R_PrepareShadowLightFrame();
+	
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 		vec3_t color = {1,1,1}, hudLight, tmp;
 		int i;
@@ -609,8 +611,6 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 		}
 	return;
 	}
-
-	R_PrepareShadowLightFrame();
 
 	if(shadowLight_frame) {
 		
