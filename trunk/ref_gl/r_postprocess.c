@@ -83,31 +83,32 @@ void R_BuildFlares(flare_t * light, int Id){
 		qglColorMask(1, 1, 1, 1);
 		qglDepthMask(1);
 		qglColor4f(1, 1, 1, 1);
-	
-		qglGetQueryObjectivARB(ocQueries[Id], GL_QUERY_RESULT_ARB, &sampleCount);
 
-		if (!sampleCount) {
-			if (light->surf->ent)
-				qglPopMatrix();
-			return;
-		} 
-		else
-		{
+		if(!gl_state.nv_conditional_render){
+			qglGetQueryObjectivARB(ocQueries[Id], GL_QUERY_RESULT_ARB, &sampleCount);
 
-		if(flareVert){
-		
-		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
-			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, flareVert, index, GL_UNSIGNED_INT, flareIndex);
-		else
-			qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
-		
-			flareVert = 0;
-			index = 0;
-			}
+			if (!sampleCount) {
+				if (light->surf->ent)
+					qglPopMatrix();
+				return;
+			} 
 		}
+
 
 	if(gl_state.nv_conditional_render)
 		glBeginConditionalRenderNV(ocQueries[Id], GL_QUERY_WAIT_NV);
+
+
+	if(flareVert){
+		
+	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
+		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, flareVert, index, GL_UNSIGNED_INT, flareIndex);
+	else
+		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
+		
+		flareVert = 0;
+		index = 0;
+		}
 
 	// Draw flares if they occlusion 
 	VectorSubtract(light->origin, r_origin, v);
@@ -161,6 +162,7 @@ void R_BuildFlares(flare_t * light, int Id){
 			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, flareVert, index, GL_UNSIGNED_INT, flareIndex);
 		else
 			qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
+
 	}
 
 	if (light->surf->ent)
