@@ -1511,7 +1511,7 @@ void R_RegisterCvars(void)
 	r_shadowVolumesDebug =				Cvar_Get("r_shadowVolumesDebug", "0", 0);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
-	r_maxShadowsPerModel =				Cvar_Get("r_maxShadowsPerModel", "3", CVAR_ARCHIVE);
+	r_maxShadowsLightsPerModel =				Cvar_Get("r_maxShadowsLightsPerModel", "3", CVAR_ARCHIVE);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);

@@ -250,7 +250,7 @@ cvar_t	*r_shadowWorldLightScale;
 cvar_t	*r_shadowVolumesDebug;
 cvar_t	*r_playerShadow;
 cvar_t	*r_shadowCapOffset;
-cvar_t	*r_maxShadowsPerModel;
+cvar_t	*r_maxShadowsLightsPerModel;
 
 cvar_t	*r_radarSize;			// GLOOM radar
 cvar_t	*r_radarZoom;

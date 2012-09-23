@@ -596,7 +596,8 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 	float				dist;
 	mat3_t				entityAxis;
 	trace_t				r_trace;
-	
+	int					numLights= 1;
+
 	R_PrepareShadowLightFrame();
 	
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
@@ -616,6 +617,10 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 		
 		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
 			vec3_t sColor;
+
+			if(numLights > r_maxShadowsLightsPerModel->value)
+				continue;
+
 
 			if(shadowLight->ignore)
 				continue;
@@ -645,6 +650,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
 			GL_DrawAliasFrameLerpArb(paliashdr, light, shadowLight->radius, shadowLight->color);
 			currententity->lightVised = true;
+			numLights++;
 			}
 		}
 

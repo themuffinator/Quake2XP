@@ -332,7 +332,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 		
 		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
 		
-		if(numShadows > r_maxShadowsPerModel->value)
+		if(numShadows > r_maxShadowsLightsPerModel->value)
 			continue;
 
 		if(shadowLight->ignore)

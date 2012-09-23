@@ -94,7 +94,7 @@ static void numShadowsCallback(void *s)
 {
 	menuslider_s *slider = (menuslider_s*) s;
 
-	Cvar_SetValue("r_maxShadowsPerModel", slider->curvalue);
+	Cvar_SetValue("r_maxShadowsLightsPerModel", slider->curvalue);
 }
 
 static void RadarCallback( void *s )
@@ -209,7 +209,7 @@ static void ApplyChanges( void *unused )
 	Cvar_SetValue( "r_fxaa",				s_fxaa_box.curvalue);
 	Cvar_SetValue( "r_vsync",				s_finish_box.curvalue);
 	Cvar_SetValue( "r_radar",				s_minimap.curvalue);
-	Cvar_SetValue( "r_maxShadowsPerModel",  s_numShadows_slider.curvalue);
+	Cvar_SetValue( "r_maxShadowsLightsPerModel",  s_numShadows_slider.curvalue);
 
 	
 /*	
@@ -348,7 +348,7 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		if(r_fxaa->modified)
 			vid_ref->modified = true;
 
-		if(r_maxShadowsPerModel->modified)
+		if(r_maxShadowsLightsPerModel->modified)
 			vid_ref->modified = true;
 		
 	M_ForceMenuOff();
@@ -469,8 +469,8 @@ void VID_MenuInit( void )
 	if(!r_fxaa->value)
 		r_fxaa = Cvar_Get ("r_fxaa", 0, CVAR_ARCHIVE);
 
-	if(!r_maxShadowsPerModel->value)
-		r_maxShadowsPerModel = Cvar_Get ("r_maxShadowsPerModel", "3", CVAR_ARCHIVE);
+	if(!r_maxShadowsLightsPerModel->value)
+		r_maxShadowsLightsPerModel = Cvar_Get ("r_maxShadowsLightsPerModel", "3", CVAR_ARCHIVE);
 
 	s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;
@@ -645,12 +645,12 @@ void VID_MenuInit( void )
 	s_numShadows_slider.generic.type		= MTYPE_SLIDER;
 	s_numShadows_slider.generic.x			= 0;
 	s_numShadows_slider.generic.y			= 140*cl_fontScale->value;
-	s_numShadows_slider.generic.name		= "Amount of Shadows";
-	s_numShadows_slider.curvalue			= r_maxShadowsPerModel->value;
+	s_numShadows_slider.generic.name		= "Amount of Shadow Lights";
+	s_numShadows_slider.curvalue			= r_maxShadowsLightsPerModel->value;
 	s_numShadows_slider.minvalue			= 1;
 	s_numShadows_slider.maxvalue			= 10;
 	s_numShadows_slider.generic.callback	= numShadowsCallback;
-	s_numShadows_slider.generic.statusbar	= "Maximum Shadows Per Model, 1-10";
+	s_numShadows_slider.generic.statusbar	= "Maximum Shadow Lights Per Model, 1-10";
 
 	s_parallax_box.generic.type			= MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x			= 0;

@@ -556,7 +556,7 @@ void R_PrepareShadowLightFrame(void) {
 
 		VectorCopy(light->sColor, light->color);
 		
-		if(r_newrefdef.rdflags & !(RDF_NOWORLDMODEL))
+	if(r_newrefdef.lightstyles)
 		{
 		light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
 		light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
