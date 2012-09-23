@@ -688,7 +688,7 @@ void CL_AddPacketEntities(frame_t * frame)
 {
 	entity_t ent;
 	entity_state_t *s1;
-	float autorotate;
+	float autorotate, radiusHack;
 	int i, index;
 	int pnum;
 	centity_t *cent;
@@ -931,6 +931,7 @@ void CL_AddPacketEntities(frame_t * frame)
 		if (s1->number == cl.playernum + 1) {
 			ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
 			player_camera = true;	// set filter for power shells and over
+			radiusHack = ent.model->radius;
 			// fixed player origin from EGL
 			if ((cl_predict->value)
 				&& !(cl.frame.playerstate.pmove.
@@ -1083,8 +1084,9 @@ next:
 
 		if (s1->modelindex2) {
 			if (player_camera)
-				ent.flags |= RF_VIEWERMODEL;	// dont draw 3th person
-												// weapon
+				ent.flags |= RF_VIEWERMODEL;	// dont draw 3th person  weapon
+
+			ent.model->radius = radiusHack;
 			// Predator Mod Stuff
 			if(predator)
 			{	
@@ -1123,6 +1125,7 @@ next:
 				ent.alpha = 0.32;
 				ent.flags = RF_TRANSLUCENT;
 			}
+			ent.model->radius = radiusHack;
 			// pmm
 			V_AddEntity(&ent);
 

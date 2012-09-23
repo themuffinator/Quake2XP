@@ -448,6 +448,18 @@ static worldShadowLight_t shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
 static int num_dlits;
 static int numCulledLights;
 
+qboolean EntityInLightSphere(worldShadowLight_t *light) {
+
+	vec3_t dst;
+
+	VectorSubtract (light->origin, currententity->origin, dst);
+	return
+		(VectorLength (dst) < (light->radius + currentmodel->radius));
+
+		
+		
+}
+
 qboolean R_CullLight(worldShadowLight_t *light) {
 	
 	float c;
@@ -485,6 +497,9 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 	VectorMA(light->origin, -light->radius, none, mins);
 
 	if(R_CullBox(mins, maxs))
+		return true;
+
+	if(!EntityInLightSphere(light))
 		return true;
 
 	return false;

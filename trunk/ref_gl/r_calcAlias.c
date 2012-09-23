@@ -593,7 +593,6 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 {
 	worldShadowLight_t *shadowLight;
 	vec3_t				temp, light;
-	float				dist;
 	mat3_t				entityAxis;
 	trace_t				r_trace;
 	int					numLights= 1;
@@ -628,12 +627,6 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			if(VectorCompare(shadowLight->origin, currententity->origin))
 			   continue;
 
-			VectorSubtract(currententity->origin, shadowLight->origin, temp);
-			dist = VectorLength(temp);
-			
-			if (dist > shadowLight->radius)
-				continue;		// big distance!
-			
 			// light behind the wall 
 			if (r_newrefdef.areabits){
 			r_trace = CM_BoxTrace(currententity->origin, shadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);

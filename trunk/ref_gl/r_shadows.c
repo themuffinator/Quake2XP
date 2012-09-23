@@ -321,7 +321,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 {
 	worldShadowLight_t *shadowLight;
 	vec3_t				light, temp;
-	float				dist, projdist;
+	float				dist, projdist, scale;
 	mat3_t				entityAxis;
 	trace_t				r_trace;
 	int					numShadows = 1;
@@ -343,14 +343,12 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 			
 		VectorSubtract(currententity->origin, shadowLight->origin, temp);
 		dist = VectorLength(temp);
-			
-		if (dist > shadowLight->radius)
-			continue;		// big distance!
+		scale = shadowLight->radius * 2.5;
+		projdist = scale - dist;
 
 		AnglesToMat3(currententity->angles, entityAxis);
 		VectorSubtract(shadowLight->origin, currententity->origin, temp);
 		Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-		projdist = (shadowLight->radius + currententity->model->radius - dist) * 3.5;
 		
 		if(shadowLight->isStatic)
 			light[2] = currententity->maxs[2]+95;
@@ -369,7 +367,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 		}
 				
 	}
-
+	
 	if(!currententity->lightVised){
 		vec3_t staticOrg;
 		VectorSet(staticOrg, currententity->origin[0], currententity->origin[1], currententity->origin[2]);
