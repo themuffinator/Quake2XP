@@ -1940,7 +1940,8 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED"...GL_NV_conditional_render not found\n");
 		gl_state.nv_conditional_render = false;		
 	}
-	
+
+
 	gl_state.glsl = false;	
 	if ( strstr( gl_config.extensions_string, "GL_ARB_shading_language_100" ) )
 	{
