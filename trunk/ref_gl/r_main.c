@@ -60,9 +60,7 @@ vec3_t vpn;
 vec3_t vright;
 vec3_t r_origin;
 
-mat4x4_t r_world_matrix;
-mat4x4_t r_base_world_matrix;
-mat4x4_t r_project_matrix;
+
 
 //
 // screen size info
@@ -770,7 +768,48 @@ R_SetupGL
 =============
 */
 int r_viewport[4];
+/*
+void Mat4_Transpose(const mat4_t in, mat4_t out) {
+	out[0][0] = in[0][0];
+	out[0][1] = in[1][0];
+	out[0][2] = in[2][0];
+	out[0][3] = in[3][0];
+	out[1][0] = in[0][1];
+	out[1][1] = in[1][1];
+	out[1][2] = in[2][1];
+	out[1][3] = in[3][1];
+	out[2][0] = in[0][2];
+	out[2][1] = in[1][2];
+	out[2][2] = in[2][2];
+	out[2][3] = in[3][2];
+	out[3][0] = in[0][3];
+	out[3][1] = in[1][3];
+	out[3][2] = in[2][3];
+	out[3][3] = in[3][3];
+}
+*/
 
+void Mat4_Transpose(const mat4x4_t in, mat4x4_t out) {
+	out[0*4+0] = in[0*4+0];
+	out[0*4+1] = in[1*4+0];
+	out[0*4+2] = in[2*4+0];
+	out[0*4+3] = in[3*4+0];
+	
+	out[1*4+0] = in[0*4+1];
+	out[1*4+1] = in[1*4+1];
+	out[1*4+2] = in[2*4+1];
+	out[1*4+3] = in[3*4+1];
+
+	out[2*4+0] = in[0*4+2];
+	out[2*4+1] = in[1*4+2];
+	out[2*4+2] = in[2*4+2];
+	out[2*4+3] = in[3*4+2];
+
+	out[3*4+0] = in[0*4+3];
+	out[3*4+1] = in[1*4+3];
+	out[3*4+2] = in[2*4+3];
+	out[3*4+3] = in[3*4+3];
+}
 
 void R_SetupGL(void)
 {
@@ -814,7 +853,13 @@ void R_SetupGL(void)
 				  -r_newrefdef.vieworg[2]);
 
 
+	Matrix4_Copy(r_modelViewProjection, r_oldModelViewProjection);
+
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
+	qglGetFloatv(GL_PROJECTION_MATRIX, r_project_matrix);
+	Matrix4_Multiply(r_world_matrix, r_project_matrix, r_modelViewProjection);
+	InvertMatrix(r_modelViewProjection, r_modelViewProjectionInv);
+	Mat4_Transpose(r_modelViewProjectionInv, r_modelViewProjectionInvTransp);
 
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
 	// 
@@ -1278,6 +1323,7 @@ R_RenderFrame
 
 @@@@@@@@@@@@@@@@@@@@@
 */
+void R_MotionBlur (void);
 
 void R_RenderFrame(refdef_t * fd, qboolean client)
 {
@@ -1294,6 +1340,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_DofBlur();
 	R_Bloom();
 	R_FilmGrain();
+//	R_MotionBlur();
 	}
 
 	if (v_blend[3] && r_polyBlend->value) {

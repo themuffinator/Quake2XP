@@ -584,6 +584,16 @@ void R_InitPrograms(void) {
 		missing++;
 	}
 	
+	Com_Printf("Load "S_COLOR_YELLOW"motion blur program"S_COLOR_WHITE" ");
+	motionBlurProgram = R_FindProgram("mblur", true, true);
+	if(motionBlurProgram->valid)
+		Com_Printf("succeeded\n");
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+		
+
 	Com_Printf("Load "S_COLOR_YELLOW"bloom program"S_COLOR_WHITE" ");
 	bloomdsProgram = R_FindProgram("bloomds", true, true);
 	bloomfpProgram = R_FindProgram("bloomfp", true, true);

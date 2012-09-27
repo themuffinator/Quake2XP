@@ -202,6 +202,12 @@ typedef vec_t mat4x4_t[16];
 typedef vec3_t	mat3_t[3];		// column-major (axis)
 typedef vec4_t	mat4_t[4];		// row-major
 
+mat4x4_t r_world_matrix;
+mat4x4_t r_project_matrix;
+mat4x4_t r_modelViewProjectionInv;
+mat4x4_t r_modelViewProjectionInvTransp;
+mat4x4_t r_modelViewProjection;
+mat4x4_t r_oldModelViewProjection;
 
 //
 // screen size info
@@ -318,8 +324,6 @@ extern int gl_alpha_format;
 extern int gl_tex_solid_format;
 extern int gl_tex_alpha_format;
 
-extern float r_world_matrix[16];
-extern float r_project_matrix[16];
 extern qboolean inwaterfognode;
 extern int r_visframecount;
 
@@ -694,6 +698,7 @@ glslProgram_t		*cinProgram;
 glslProgram_t		*loadingProgram;
 glslProgram_t		*fxaaProgram;
 glslProgram_t		*filmGrainProgram;
+glslProgram_t		*motionBlurProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
