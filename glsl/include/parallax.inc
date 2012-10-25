@@ -1,3 +1,8 @@
+uniform vec2			u_texSize;
+uniform vec2			u_parallaxScale;
+uniform int			u_parallaxType;
+
+
 float ComputeLOD( vec2 tc, vec2 texSize ) { 
 
  vec2 dx = dFdx( tc ); 

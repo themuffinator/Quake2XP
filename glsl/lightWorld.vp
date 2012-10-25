@@ -1,25 +1,21 @@
 //calc view angles
 uniform vec3			u_viewOriginES;
+uniform vec3 			u_LightOrg;
 
 varying vec3			v_viewVecTS;
-varying vec3 			t, b, n;
-varying vec2			v_wTexCoord;
-varying vec2			v_lTexCoord;
-varying vec4			v_color;
+varying vec3 			v_lightVec;
+varying vec2			v_colorCoord; 
 
 attribute vec3			a_tangent;
 attribute vec3			a_binormal;
-attribute vec2			a_texCoord;
-attribute vec2			a_LtexCoord;
-attribute vec3			a_vertArray;
 attribute vec3			a_normArray;
-attribute vec4			a_colorArray;
+attribute vec3			a_vertArray;
+attribute vec2			a_texCoord;
 
 void main ()
 {
 // setup tex coords
-v_wTexCoord = a_texCoord;  // diffuse, addative, caustics
-v_lTexCoord = a_LtexCoord; // lightmap only
+v_colorCoord = a_texCoord;  // diffuse & bump
 
 // calculate tangent space view vector for parallax
 vec3 tmp = u_viewOriginES - a_vertArray;
@@ -27,12 +23,11 @@ v_viewVecTS.x = dot(tmp, a_tangent);
 v_viewVecTS.y = dot(tmp, a_binormal);
 v_viewVecTS.z = dot(tmp, a_normArray);
 
-#ifdef BUMP
-t = a_tangent;
-b = a_binormal;
-n = a_normArray;
-#endif
+vec3 LV = u_LightOrg - a_vertArray;
+v_lightVec.x = dot(a_tangent, LV);
+v_lightVec.y = dot(a_binormal, LV);
+v_lightVec.z = dot(a_normArray, LV); 
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
-v_color = a_colorArray;
+
 }
