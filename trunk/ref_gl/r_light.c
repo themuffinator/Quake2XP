@@ -499,9 +499,6 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 	if(R_CullBox(mins, maxs))
 		return true;
 
-	if(!EntityInLightSphere(light))
-		return true;
-
 	return false;
 	}
 
@@ -570,8 +567,8 @@ void R_PrepareShadowLightFrame(void) {
 	for(light = shadowLight_frame; light; light = light->next) {
 
 		VectorCopy(light->sColor, light->color);
-		
-	if(r_newrefdef.lightstyles)
+
+	if(r_newrefdef.areabits)
 		{
 		light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
 		light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];

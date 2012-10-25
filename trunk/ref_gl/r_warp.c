@@ -57,8 +57,8 @@ void RenderLavaSurfaces(msurface_t * fa)
 		defBits |= worldDefs.BumpBits;
 
 	// setup program
-	GL_BindProgram(diffuseProgram, defBits);
-	id = diffuseProgram->id[defBits];
+	GL_BindProgram(ambientWorldProgram, defBits);
+	id = ambientWorldProgram->id[defBits];
 
 	scale[0] = 1.50 / fa->texinfo->image->width;
 	scale[1] = 1.50 / fa->texinfo->image->height;

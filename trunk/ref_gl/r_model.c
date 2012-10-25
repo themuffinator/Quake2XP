@@ -761,6 +761,17 @@ void Mod_LoadTextureFx(image_t *tex, char *s){
 			tex->SpecularExp = atof(COM_Parse(&s));
 			continue;
 		}
+		if (!Q_strcasecmp(token, "envScale"))
+		{
+			tex->envScale = atof(COM_Parse(&s));
+			continue;
+		}
+		tex->envMap = false;
+		if (!Q_strcasecmp(token, "envMap"))
+		{
+			tex->envMap = true;
+			continue;
+		}
 	}
 }
 
@@ -904,8 +915,31 @@ void Mod_LoadTexinfo (lump_t * l) {
                                     out->addTexture = r_notexture;
                     }
                }
-          }
+}
+          //
+          // Env Maps Loading
+          //
 
+          Com_sprintf(name, sizeof(name), "overrides/%s_env.tga", purename);
+             out->envTexture = GL_FindImage(name, it_wall);
+
+             if (!out->envTexture) {
+               Com_sprintf(name, sizeof(name), "overrides/%s_env.dds", purename);
+                  out->envTexture = GL_FindImage(name, it_wall);
+
+                  if (!out->envTexture) {
+                    Com_sprintf(name, sizeof(name), "textures/%s_env.tga", in->texture);
+                       out->envTexture = GL_FindImage(name, it_wall);
+
+                       if (!out->envTexture) {
+                         Com_sprintf(name, sizeof(name), "textures/%s_env.dds", in->texture);
+                            out->envTexture = GL_FindImage(name, it_wall);
+
+                            if (!out->envTexture)
+                                    out->envTexture = r_notexture;
+                    }
+               }
+}
 
 
 }

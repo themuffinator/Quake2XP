@@ -1445,6 +1445,8 @@ void CL_CalcViewValues(void)
 	frame_t *oldframe;
 	player_state_t *ps, *ops;
 
+	VectorCopy(cl.refdef.viewangles, cl.refdef.oldViewAngles);
+
 	// find the previous frame to interpolate from
 	ps = &cl.frame.playerstate;
 	i = (cl.frame.serverframe - 1) & UPDATE_MASK;

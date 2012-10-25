@@ -633,6 +633,10 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			if(r_trace.fraction != 1.0)
 				continue;
 			}
+
+			if(!EntityInLightSphere(shadowLight))
+				continue;
+
 			if(shadowLight->isStatic && !shadowLight->style)
 			{	
 				R_LightPoint (shadowLight->origin, sColor, true);

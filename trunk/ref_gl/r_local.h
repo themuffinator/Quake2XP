@@ -385,6 +385,7 @@ void CleanDuplicateLights(void);
 qboolean R_CullSphere( const vec3_t centre, const float radius);
 void R_DebugLights (vec3_t lightOrg, float rad, float r, float g, float b);
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
+qboolean EntityInLightSphere(worldShadowLight_t *light);
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -491,6 +492,8 @@ int GL_MsgGLError(char* Info);
 qboolean HasSharedLeafs(byte *v1, byte *v2);
 float SphereInFrustum(vec3_t o, float radius);
 void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t lightColor);
+void R_DrawLightBrushModel(entity_t * e);
+
 /*
 ** GL config stuff
 */
@@ -678,7 +681,8 @@ typedef struct glslProgram_s {
 
 glslProgram_t r_programs[MAX_PROGRAMS];
 
-glslProgram_t		*diffuseProgram;
+glslProgram_t		*ambientWorldProgram;
+glslProgram_t		*lightWorldProgram;
 glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*bloomdsProgram;
@@ -703,10 +707,13 @@ glslProgram_t		*motionBlurProgram;
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
 void R_CaptureColorBuffer();
+void R_DrawLightWorld();
 
 typedef struct {
 	unsigned	CausticsBit;
 	unsigned	ParallaxBit;
+	unsigned	LightParallaxBit;
+	unsigned	SelfShadowParallaxBit;
 	unsigned	LightmapBits;
 	unsigned	VertexLightBits;
 	unsigned	AlphaMaskBits;

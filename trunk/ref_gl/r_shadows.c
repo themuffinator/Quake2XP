@@ -340,7 +340,10 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 
 		if(VectorCompare(shadowLight->origin, currententity->origin))
 		   continue;
-			
+		
+		if(!EntityInLightSphere(shadowLight))
+			continue;
+
 		VectorSubtract(currententity->origin, shadowLight->origin, temp);
 		dist = VectorLength(temp);
 		scale = shadowLight->radius * 2.5;
