@@ -63,9 +63,34 @@ void RenderLavaSurfaces(msurface_t * fa)
 	scale[0] = 1.50 / fa->texinfo->image->width;
 	scale[1] = 1.50 / fa->texinfo->image->height;
 
+	if(!fa->texinfo->image->specularScale)
+			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), 1.0);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), fa->texinfo->image->specularScale);
+
+		if(!fa->texinfo->image->SpecularExp)
+			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), 16.0);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), fa->texinfo->image->SpecularExp);
+
+		if(r_parallax->value){
+			
+			if(!fa->texinfo->image->parallaxScale){
+
+			scale[0] = r_parallaxScale->value / fa->texinfo->image->width;
+			scale[1] = r_parallaxScale->value / fa->texinfo->image->height;
+			}
+			else
+			{
+			scale[0] = fa->texinfo->image->parallaxScale / fa->texinfo->image->width;
+			scale[1] = fa->texinfo->image->parallaxScale / fa->texinfo->image->height;
+			}
+			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
+			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), fa->texinfo->image->upload_width, fa->texinfo->image->upload_height);
+		}
+
 	qglUniform1f	(qglGetUniformLocation(id, "u_ColorModulate"),	1.0);
 	qglUniform3fv	(qglGetUniformLocation(id, "u_viewOriginES"),	1 , r_origin);
-	qglUniform2f	(qglGetUniformLocation(id, "u_bumpScale"),		scale[0], scale[1]);
 	qglUniform1i	(qglGetUniformLocation(id, "u_parallaxType"),	(int)r_parallax->value);
 	qglUniform1f	(qglGetUniformLocation(id, "u_ambientScale"),	0.0);
 

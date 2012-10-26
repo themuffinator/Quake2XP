@@ -45,6 +45,7 @@ typedef struct worldShadowLight_s {
 	qboolean isShadow;
 	qboolean isStatic;
 	qboolean ignore;
+
 	int style;
 	//pvs cullung
 	byte vis[MAX_MAP_LEAFS / 8];

@@ -976,6 +976,9 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 		break;
 	}
 
+	if(!SurfInFrustum(surf))
+		return false;
+
 	//the normals are flipped when surf_planeback is 1
 	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
 		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
@@ -1021,6 +1024,12 @@ void R_MarkLightCasting (worldShadowLight_t *light, mnode_t *node)
 	mleaf_t		*leaf;
 	int			c;
 
+	if (node->visframe != r_visframecount)
+		return;
+
+	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
+		return;
+
 	if (node->contents != -1)
 	{
 		//we are in a leaf
@@ -1062,6 +1071,8 @@ qboolean R_FillLightChain (worldShadowLight_t *light)
 	return num_light_surfaces;
 }
 
+void L_OccTests(worldShadowLight_t *light);
+
 void R_DrawLightWorld(void)
 {
 	worldShadowLight_t *shadowLight;
@@ -1100,13 +1111,15 @@ void R_DrawLightWorld(void)
 	num_light_surfaces = 0;
 
 	for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
+	
+		if(shadowLight->surf)
+		shadowLight->surf->visframe = r_framecount;
 
-		if(shadowLight->style || !shadowLight->isStatic){
+	//	if(shadowLight->style || !shadowLight->isStatic){
 
 			if(R_FillLightChain(shadowLight))
 				GL_BatchLightPass(shadowLight, false);
-			}
-		
+	//		}
 		}
 	}
 
@@ -1560,7 +1573,7 @@ void R_DrawLightBrushModel(entity_t * e)
 
 	for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
 
-			if(shadowLight->style || !shadowLight->isStatic){
+//			if(shadowLight->style || !shadowLight->isStatic){
 		
 				VectorCopy(shadowLight->origin, msLight);
 		
@@ -1572,7 +1585,7 @@ void R_DrawLightBrushModel(entity_t * e)
 						GL_BatchLightPass(shadowLight, true);
 
 				VectorCopy(msLight, shadowLight->origin);
-			}
+	//		}
 		}
 	}
 	

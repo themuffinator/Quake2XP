@@ -465,16 +465,18 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 	float c;
 	vec3_t mins, maxs, none = {1, 1, 1};
 	int sidebit;
-	float viewplane;
+	float viewplane, dist;
+
 
 	if (r_newrefdef.areabits){
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))){
 			return true;
 		}
 	}
-	
+		
 	if (!HasSharedLeafs (light->vis, viewvis))
 		return true;
+
 
 	if(light->surf){
 
@@ -487,6 +489,7 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 
 	if ((light->surf->flags & SURF_PLANEBACK) != sidebit)
 		return true;
+
 	}
 
 	c = (light->sColor[0] + light->sColor[1] + light->sColor[2]) * light->radius*(1.0/3.0);
@@ -499,7 +502,15 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 	if(R_CullBox(mins, maxs))
 		return true;
 
+	//frustum scissor testing
+	dist = SphereInFrustum(light->origin, light->radius);
+	if (dist == 0)  {
+		//whole sphere is out ouf frustum so cut it.
+		return true;
+	}
+
 	return false;
+
 	}
 
 void R_AddDynamicLight(dlight_t *dl) {
@@ -536,6 +547,7 @@ void R_PrepareShadowLightFrame(void) {
 	
 	int i;
 	worldShadowLight_t *light;
+	
 	num_dlits = 0;
 	shadowLight_frame = NULL;
 
@@ -543,10 +555,12 @@ void R_PrepareShadowLightFrame(void) {
 	// add pre computed lights
 	if(shadowLight_static) {
 		for(light = shadowLight_static; light; light = light->s_next) {
+			
 			if(R_CullLight(light)){
 				numCulledLights++;
 				continue;
 			}
+
 			light->next = shadowLight_frame;
 			shadowLight_frame = light;
 		}
@@ -563,7 +577,7 @@ void R_PrepareShadowLightFrame(void) {
 	
 	if(!shadowLight_frame) 
 		return;
-
+		
 	for(light = shadowLight_frame; light; light = light->next) {
 
 		VectorCopy(light->sColor, light->color);
@@ -586,6 +600,66 @@ void R_PrepareShadowLightFrame(void) {
 }
 
 
+void FS_StripExtension (const char *in, char *out, size_t size_out)
+{
+	char *last = NULL;
+
+	if (size_out == 0)
+		return;
+
+	while (*in && size_out > 1)
+	{
+		if (*in == '.')
+			last = out;
+		else if (*in == '/' || *in == '\\' || *in == ':')
+			last = NULL;
+		*out++ = *in++;
+		size_out--;
+	}
+	if (last)
+		*last = 0;
+	else
+		*out = 0;
+}
+
+void SaveLights_f(void) {
+	
+	worldShadowLight_t	*light;
+	char		name[MAX_QPATH], path[MAX_QPATH];
+	FILE		*f;
+	int i=0;
+
+	if(!shadowLight_static) 
+		return;
+
+	FS_StripExtension(r_worldmodel->name, name, sizeof (name));
+	Com_sprintf(path, sizeof(path),"%s/%s.xplit", FS_Gamedir(), name);
+	f = fopen(path, "w");
+	if(!f) {
+		Com_Printf("Could not open %s.\n", path);
+		return;
+	}
+
+	for(light = shadowLight_static; light; light = light->s_next){
+		
+		fprintf(f, "//Light %i\n", i);
+		fprintf(f, "{\n");
+		fprintf(f, "\"classname\" \"light\"\n");
+		fprintf(f, "\"origin\" \"%i %i %i\"\n", (int)light->origin[0], (int)light->origin[1], (int)light->origin[2]);
+		fprintf(f, "\"radius\" \"%i\"\n", (int)light->radius);
+		fprintf(f, "\"color\" \"%f %f %f\"\n", light->sColor[0], light->sColor[1], light->sColor[2]);
+		fprintf(f, "\"style\" \"%i\"\n", (int)light->style);
+		fprintf(f, "}\n");
+		i++;
+	}
+		fclose(f);
+	
+		Com_Printf(""S_COLOR_MAGENTA"SaveLights_f: "S_COLOR_WHITE"Save lights to "S_COLOR_GREEN"%s.xplit\n"S_COLOR_WHITE"Save "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights", name, i);
+
+}
+
+
+
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow, msurface_t *surf) {
 	
 	worldShadowLight_t *light;
@@ -605,7 +679,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->next = NULL;
 	light->style = style;
 
-	// cull info
+	//// cull info
 	light->surf = surf;
 	leafnum = CM_PointLeafnum(light->origin);
 	cluster = CM_LeafCluster(leafnum);
@@ -617,6 +691,63 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	return light;
 }
 
+void Load_LightFile(void) {
+	
+	int		style, numLights = 0;
+	char	*c, *token, key[256], *value;
+	float	color[3], origin[3], radius;
+	char	name[MAX_QPATH], path[MAX_QPATH];
+	
+
+	if(!r_worldmodel) {
+		Com_Printf("No map loaded.\n");
+		return;
+	}
+
+	FS_StripExtension(r_worldmodel->name, name, sizeof (name));
+	Com_sprintf(path, sizeof(path),"%s.xplit", name);
+	FS_LoadFile (path, (void **)&c);
+
+	while(1) {
+		token = COM_Parse(&c);
+		if(!c)
+			break;
+
+		color[0] = 0.5;
+		color[1] = 0.5;
+		color[2] = 0.5;
+		radius = 300;
+		origin[0] = 0;
+		origin[1] = 0;
+		origin[2] = 0;
+		style = 0;
+
+		while(1) {
+			token = COM_Parse(&c);
+			if(token[0] == '}')
+				break;
+
+			strncpy(key, token, sizeof(key)-1);
+
+			value = COM_Parse(&c);
+
+			if(!Q_stricmp(key, "radius"))
+				radius = atof(value);
+			else if(!Q_stricmp(key, "origin"))
+				sscanf(value, "%f %f %f", &origin[0], &origin[1], &origin[2]);
+			else if(!Q_stricmp(key, "color"))
+				sscanf(value, "%f %f %f", &color[0], &color[1], &color[2]);
+			else if(!Q_stricmp(key, "style"))
+				style = atoi(value);
+		}
+	
+		R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
+		numLights++;
+		}
+	Com_DPrintf("add %i world lights from relight file\n", numLights);
+}
+
+
 int Load_BspLights(void) {
 	
 	int addLight, style, numlights, addLight_mine;
@@ -624,7 +755,7 @@ int Load_BspLights(void) {
 	float color[3], origin[3], radius;
 
 	if(!r_worldmodel) {
-		Com_Printf(PRINT_ALL, "No map loaded.\n");
+		Com_Printf("No map loaded.\n");
 		return 0;
 	}
 

@@ -198,6 +198,20 @@ qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs)
 	return false;
 }
 
+float SphereInFrustum( vec3_t o, float radius )
+{
+   int p;
+   float d = 0;
+
+   for( p = 0; p < 6; p++ )
+   {
+      d = frustumPlanes[p][0] * o[0] + frustumPlanes[p][1] * o[1] + frustumPlanes[p][2] * o[2] + frustumPlanes[p][3];
+      if( d <= -radius )
+         return 0;
+   }
+   return d + radius;
+}
+
 void R_RotateForEntity(entity_t * e)
 {
 	qglTranslatef(e->origin[0], e->origin[1], e->origin[2]);
@@ -747,20 +761,6 @@ void ExtractFrustum()			// <AWE> added return type.
 	frustumPlanes[5][3] /= t;
 }
 
-float SphereInFrustum( vec3_t o, float radius )
-{
-	int		p;
-	float	d;
-
-	for( p = 0; p < 6; p++ )
-	{
-		d = frustumPlanes[p][0] * o[0] + frustumPlanes[p][1] * o[1] + frustumPlanes[p][2] * o[2] + frustumPlanes[p][3];
-		if( d <= -radius )
-			return 0;
-	}
-	return d + radius;
-}
-
 
 /*
 =============
@@ -1220,8 +1220,8 @@ if (r_noRefresh->value)
 	R_MarkLeaves();				// done here so we know if we're in water
 
 	R_DrawBSP();
-	R_RenderDecals();
 	R_DrawLightWorld();
+	R_RenderDecals();
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
 
@@ -1500,6 +1500,8 @@ Cvar_Set("r_fxaa", "1");
 vid_ref->modified = true;
 }
 
+void SaveLights_f(void);
+
 void R_RegisterCvars(void)
 {
 	r_leftHand =						Cvar_Get("hand", "0", CVAR_USERINFO | CVAR_ARCHIVE);
@@ -1609,7 +1611,7 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("low_spec",			R_LowSpecMachine_f);
 	Cmd_AddCommand("medium_spec",		R_MediumSpecMachine_f);
 	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
-	
+	Cmd_AddCommand("saveLights",		SaveLights_f);
 	
 	
 }
