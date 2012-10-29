@@ -5,10 +5,14 @@ uniform sampler2D		u_Add;
 uniform sampler2D		u_NormalMap;
 uniform sampler2D		u_deluxMap;
 uniform sampler2D		u_Caustics;
-uniform float       		u_ColorModulate;
-uniform float       		u_ambientScale;    
-uniform float       		u_CausticsModulate; 
-uniform int			u_isCaustics;
+uniform sampler2D		u_envMap;
+
+uniform float       	u_ColorModulate;
+uniform float       	u_ambientScale;    
+uniform float       	u_CausticsModulate; 
+uniform int				u_isCaustics;
+uniform int				u_envPass;
+uniform float			u_envPassScale;
 uniform float			u_specularScale;
 uniform float			u_specularExp;
 
@@ -16,6 +20,7 @@ varying vec3			v_viewVecTS;
 varying vec3			t, b, n;
 varying vec2			v_wTexCoord;
 varying vec2			v_lTexCoord;
+varying vec2			v_envCoord;
 varying vec4			v_color;
 
  
@@ -25,13 +30,15 @@ varying vec4			v_color;
 void main ()
 {
 vec3 V = normalize(v_viewVecTS);
-vec4 lightMap = texture2D(u_LightMap, v_lTexCoord.xy); 
+vec4 lightMap = texture2D(u_LightMap, v_lTexCoord.xy);
+vec4 envMap = texture2D(u_envMap, v_envCoord.xy);
 vec3 wDelux = normalize(texture2D(u_deluxMap, v_lTexCoord).rgb - 0.5);
 vec4 diffuseMap;
 vec4 glowMap;
 vec4 causticsMap;
 vec3 normalMap;
 float specTmp;
+float envMask;
 vec3 tbnDelux;
 vec4 bumpLight;
 
@@ -42,6 +49,7 @@ glowMap = texture2D(u_Add, P);
 causticsMap = texture2D(u_Caustics, P);
 normalMap =  normalize(texture2D(u_NormalMap, P.xy).rgb - 0.5);
 specTmp = texture2D(u_NormalMap,   P.xy).a;
+envMask =  texture2D(u_envMap, P.xy).a;
 
 #else
 
@@ -50,6 +58,7 @@ glowMap = texture2D(u_Add,  v_wTexCoord.xy);
 causticsMap = texture2D(u_Caustics, v_wTexCoord.xy);
 normalMap =  normalize(texture2D(u_NormalMap, v_wTexCoord.xy).rgb - 0.5);
 specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
+envMask =  texture2D(u_envMap, v_wTexCoord.xy).a;
 
 #endif 
 
@@ -76,7 +85,7 @@ tbnDelux.x = dot(wDelux, t);
 tbnDelux.y = dot(wDelux, b);
 tbnDelux.z = abs(dot(wDelux, n));
 
-tbnDelux = clamp(tbnDelux, 0.4, 1.0);
+tbnDelux = clamp(tbnDelux, 0.6, 1.0);
 vec2 Es = PhongLighting(normalMap, tbnDelux, V, u_specularExp);
 
 #endif
@@ -97,6 +106,13 @@ diffuseMap *= lightMap;
 #endif
 
 vec4 finalColor = diffuseMap + glowMap;
+
+if(u_envPass == 1)
+{
+envMap *= envMask;
+envMap *= u_envPassScale;
+finalColor +=envMap;
+}
 
 if (u_isCaustics == 1){
 vec4 tmp;
@@ -121,6 +137,13 @@ finalColor = tmp + finalColor;
 }
 
 #endif
+
+if(u_envPass == 1)
+{
+envMap *= envMask;
+envMap *= u_envPassScale;
+finalColor +=envMap;
+}
 
 gl_FragColor = vec4(finalColor.rgb, 1.0) * u_ColorModulate;
 
