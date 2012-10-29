@@ -691,64 +691,8 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	return light;
 }
 
-void Load_LightFile(void) {
-	
-	int		style, numLights = 0;
-	char	*c, *token, key[256], *value;
-	float	color[3], origin[3], radius;
-	char	name[MAX_QPATH], path[MAX_QPATH];
-	
 
-	if(!r_worldmodel) {
-		Com_Printf("No map loaded.\n");
-		return;
-	}
-
-	FS_StripExtension(r_worldmodel->name, name, sizeof (name));
-	Com_sprintf(path, sizeof(path),"%s.xplit", name);
-	FS_LoadFile (path, (void **)&c);
-
-	while(1) {
-		token = COM_Parse(&c);
-		if(!c)
-			break;
-
-		color[0] = 0.5;
-		color[1] = 0.5;
-		color[2] = 0.5;
-		radius = 300;
-		origin[0] = 0;
-		origin[1] = 0;
-		origin[2] = 0;
-		style = 0;
-
-		while(1) {
-			token = COM_Parse(&c);
-			if(token[0] == '}')
-				break;
-
-			strncpy(key, token, sizeof(key)-1);
-
-			value = COM_Parse(&c);
-
-			if(!Q_stricmp(key, "radius"))
-				radius = atof(value);
-			else if(!Q_stricmp(key, "origin"))
-				sscanf(value, "%f %f %f", &origin[0], &origin[1], &origin[2]);
-			else if(!Q_stricmp(key, "color"))
-				sscanf(value, "%f %f %f", &color[0], &color[1], &color[2]);
-			else if(!Q_stricmp(key, "style"))
-				style = atoi(value);
-		}
-	
-		R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
-		numLights++;
-		}
-	Com_DPrintf("add %i world lights from relight file\n", numLights);
-}
-
-
-int Load_BspLights(void) {
+void Load_BspLights() {
 	
 	int addLight, style, numlights, addLight_mine;
 	char *c, *token, key[256], *value;
@@ -756,7 +700,7 @@ int Load_BspLights(void) {
 
 	if(!r_worldmodel) {
 		Com_Printf("No map loaded.\n");
-		return 0;
+		return;
 	}
 
 	c = CM_EntityString();
@@ -770,7 +714,7 @@ int Load_BspLights(void) {
 		color[0] = 0.5;
 		color[1] = 0.5;
 		color[2] = 0.5;
-		radius = 300;
+		radius = 0;
 		origin[0] = 0;
 		origin[1] = 0;
 		origin[2] = 0;
@@ -817,7 +761,63 @@ int Load_BspLights(void) {
 		}
 	}
 	Com_DPrintf("loaded %i bsp lights with styles\n",numlights);
-	return numlights;
+
+}
+
+void Load_LightFile() {
+	
+	int		style, numLights = 0;
+	char	*c, *token, key[256], *value;
+	float	color[3], origin[3], radius;
+	char	name[MAX_QPATH], path[MAX_QPATH];
+	
+
+	if(!r_worldmodel) {
+		Com_Printf("No map loaded.\n");
+		return;
+	}
+
+	FS_StripExtension(r_worldmodel->name, name, sizeof (name));
+	Com_sprintf(path, sizeof(path),"%s.xplit", name);
+	FS_LoadFile (path, (void **)&c);
+
+	while(1) {
+		token = COM_Parse(&c);
+		if(!c)
+			break;
+
+		color[0] = 0.5;
+		color[1] = 0.5;
+		color[2] = 0.5;
+		radius = 0;
+		origin[0] = 0;
+		origin[1] = 0;
+		origin[2] = 0;
+		style = 0;
+
+		while(1) {
+			token = COM_Parse(&c);
+			if(token[0] == '}')
+				break;
+
+			strncpy(key, token, sizeof(key)-1);
+
+			value = COM_Parse(&c);
+
+			if(!Q_stricmp(key, "radius"))
+				radius = atof(value);
+			else if(!Q_stricmp(key, "origin"))
+				sscanf(value, "%f %f %f", &origin[0], &origin[1], &origin[2]);
+			else if(!Q_stricmp(key, "color"))
+				sscanf(value, "%f %f %f", &color[0], &color[1], &color[2]);
+			else if(!Q_stricmp(key, "style"))
+				style = atoi(value);
+		}
+	
+		R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
+		numLights++;
+		}
+	Com_Printf(""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights from relight file\n", numLights);
 }
 
 void CleanDuplicateLights(void){

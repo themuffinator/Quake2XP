@@ -270,6 +270,7 @@ cvar_t	*deathmatch;
 cvar_t	*r_drawFlares;
 cvar_t	*r_flaresIntens;
 cvar_t	*r_flareWeldThreshold;
+cvar_t	*r_useNvConditionalRender;
 
 cvar_t	*r_customWidth;
 cvar_t	*r_customHeight;
@@ -494,6 +495,7 @@ float SphereInFrustum(vec3_t o, float radius);
 void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t lightColor);
 void R_DrawLightBrushModel(entity_t * e);
 
+extern qboolean FoundReLight;
 /*
 ** GL config stuff
 */
@@ -702,7 +704,6 @@ glslProgram_t		*cinProgram;
 glslProgram_t		*loadingProgram;
 glslProgram_t		*fxaaProgram;
 glslProgram_t		*filmGrainProgram;
-glslProgram_t		*motionBlurProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
@@ -713,10 +714,10 @@ typedef struct {
 	unsigned	CausticsBit;
 	unsigned	ParallaxBit;
 	unsigned	LightParallaxBit;
-	unsigned	SelfShadowParallaxBit;
 	unsigned	LightmapBits;
 	unsigned	VertexLightBits;
 	unsigned	AlphaMaskBits;
+	unsigned	bspBumpBits;
 	unsigned	BumpBits;
 	unsigned	WaterTransBits;
 	unsigned	ShellBits;

@@ -524,7 +524,7 @@ void R_InitPrograms(void) {
 		worldDefs.ParallaxBit		= R_GetProgramDefBits(ambientWorldProgram, "PARALLAX");
 		worldDefs.LightmapBits		= R_GetProgramDefBits(ambientWorldProgram, "LIGHTMAP");
 		worldDefs.VertexLightBits	= R_GetProgramDefBits(ambientWorldProgram, "VERTEXLIGHT");
-		worldDefs.BumpBits			= R_GetProgramDefBits(ambientWorldProgram, "BUMP");
+		worldDefs.bspBumpBits		= R_GetProgramDefBits(ambientWorldProgram, "BUMP");
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;

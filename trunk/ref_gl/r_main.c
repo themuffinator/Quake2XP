@@ -1562,7 +1562,8 @@ void R_RegisterCvars(void)
 	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
 	r_flaresIntens =					Cvar_Get("r_flaresIntens", "3", CVAR_ARCHIVE);
 	r_flareWeldThreshold =				Cvar_Get("r_flareWeldThreshold", "32", CVAR_ARCHIVE);
-	
+	r_useNvConditionalRender =			Cvar_Get("r_useNvConditionalRender", "1", CVAR_ARCHIVE);
+
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
 

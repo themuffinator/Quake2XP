@@ -92,7 +92,7 @@ void R_BuildFlares(flare_t * light, int Id){
 		qglDepthMask(1);
 		qglColor4f(1, 1, 1, 1);
 
-		if(!gl_state.nv_conditional_render){
+		if(!gl_state.nv_conditional_render || !r_useNvConditionalRender->value){
 			qglGetQueryObjectivARB(ocQueries[Id], GL_QUERY_RESULT_ARB, &sampleCount);
 
 			if (!sampleCount) {
@@ -103,8 +103,8 @@ void R_BuildFlares(flare_t * light, int Id){
 		}
 
 
-	if(gl_state.nv_conditional_render)
-		glBeginConditionalRenderNV(ocQueries[Id], GL_QUERY_WAIT_NV);
+	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
+			glBeginConditionalRenderNV(ocQueries[Id], GL_QUERY_WAIT_NV);
 
 
 	if(flareVert){
@@ -172,7 +172,7 @@ void R_BuildFlares(flare_t * light, int Id){
 	qglColor4f(1, 1, 1, 1);
 	c_flares++;
 	
-	if(gl_state.nv_conditional_render)
+	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
 		glEndConditionalRenderNV();
 }
 

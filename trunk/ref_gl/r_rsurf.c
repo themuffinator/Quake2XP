@@ -130,6 +130,21 @@ image_t *R_TextureAnimationNormal(mtexinfo_t * tex)
 	return tex->normalmap;
 }
 
+image_t *R_TextureAnimationEnv(mtexinfo_t * tex)
+{
+	int c;
+
+	if (!tex->next)
+		return tex->envTexture;
+
+	c = currententity->frame % tex->numframes;
+	while (c) {
+		tex = tex->next;
+		c--;
+	}
+
+	return tex->normalmap;
+}
 
 /*
 ================
@@ -485,7 +500,7 @@ msurface_t	*scene_surfaces[MAX_MAP_FACES];
 static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
-	image_t		*image, *fx, *nm;
+	image_t		*image, *fx, *nm, *env;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
 	unsigned	texture = -1, ltmp;
@@ -499,7 +514,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		defBits |= worldDefs.ParallaxBit;
 	
 	if (r_bumpWorld->value)
-		defBits |= worldDefs.BumpBits;
+		defBits |= worldDefs.bspBumpBits;
 
 	// setup program
 	GL_BindProgram(ambientWorldProgram, defBits);
@@ -526,10 +541,20 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	for (i=0; i<num_scene_surfaces; i++)
 	{
 		s=scene_surfaces[i];
-		image = R_TextureAnimation(s->texinfo);
-		fx    = R_TextureAnimationFx(s->texinfo);
-		nm    = R_TextureAnimationNormal(s->texinfo);
-		lmtex = s->lightmaptexturenum;
+		image	= R_TextureAnimation(s->texinfo);
+		fx		= R_TextureAnimationFx(s->texinfo);
+		nm		= R_TextureAnimationNormal(s->texinfo);
+		env		= R_TextureAnimationEnv(s->texinfo);
+		lmtex	= s->lightmaptexturenum;
+
+		if(image->envMap){
+			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 1);
+			if(image->envScale)
+				qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), image->envScale);
+			else
+				qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), 0.5);
+		}else
+			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 0);
 
 		if(r_parallax->value){
 			
@@ -637,6 +662,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 					GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
 					qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
 				}
+					GL_MBind(GL_TEXTURE6_ARB, env->texnum);
+					qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 6);
 				}
 				
 				if(ltmp != gl_state.lightmap_textures + lmtex) {
@@ -668,6 +695,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 					qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
 					qglUniform1i(qglGetUniformLocation(id, "u_deluxMap"), 5);
 				}
+					GL_MBind(GL_TEXTURE6_ARB, env->texnum);
+					qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 6);
 			}
 			qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
 		}
@@ -689,9 +718,9 @@ msurface_t	*light_surfaces[MAX_MAP_FACES];
 
 void GL_CreateLightPoly(msurface_t * surf)
 	{
-	int i, nv = surf->polys->numverts;
-	float *v;
-	glpoly_t *p = surf->polys;
+	int			i, nv = surf->polys->numverts;
+	float		*v;
+	glpoly_t	*p = surf->polys;
 
 	v = p->verts[0];
 	c_brush_polys += (nv-2);
@@ -736,23 +765,19 @@ static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 
 	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
 
-	if(bmodel){
-	
-	qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
-	}
+	if(bmodel)
+		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
 	else
-	{
-	qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
+		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
 
-	}
-
-	qglUniform3f(qglGetUniformLocation(id, "u_LightOrg"), light->origin[0], light->origin[1], light->origin[2]);
+	
+	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1, light->origin);
 	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), light->color[0], light->color[1], light->color[2], 1.0);
 	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), light->radius);
 
-	if(r_parallax->value){
-	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
-	}
+	if(r_parallax->value)
+		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+	
 
 	qsort(light_surfaces, num_light_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))lightSurfSort);
 
@@ -760,9 +785,11 @@ static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 	{
 		s		= light_surfaces[i];
 		poly	= s->polys;
-
+		
 		if (poly->lightTimestamp != r_lightTimestamp)
 			continue;
+		
+		GL_CreateLightPoly(s);
 
 		image = R_TextureAnimation(s->texinfo);
 		nm    = R_TextureAnimationNormal(s->texinfo);
@@ -792,8 +819,6 @@ static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
 			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
 		}
-		
-		GL_CreateLightPoly(s);
 
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
@@ -802,6 +827,7 @@ static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 	
 		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
 		
+
 	}
 	
 
@@ -828,7 +854,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	msurface_t *surf, **mark;
 	mleaf_t *pleaf;
 	float dot;
-	image_t *fx, *image, *nm;
+	image_t *fx, *image, *nm, *env;
 	
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
@@ -921,6 +947,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 				image = R_TextureAnimation(surf->texinfo);
 				fx = R_TextureAnimationFx(surf->texinfo); // fix glow hack
 				nm = R_TextureAnimationNormal(surf->texinfo);
+				env = R_TextureAnimationEnv(surf->texinfo);
 				surf->texturechain = image->texturechain;
 				image->texturechain = surf;
 
@@ -976,9 +1003,6 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 		break;
 	}
 
-	if(!SurfInFrustum(surf))
-		return false;
-
 	//the normals are flipped when surf_planeback is 1
 	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
 		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
@@ -1006,6 +1030,9 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 		pbbox[3] = surf->maxs[0];
 		pbbox[4] = surf->maxs[1];
 		pbbox[5] = surf->maxs[2];
+
+		if(!SurfInFrustum(surf))
+		return false;
 
 		if(!BBoxIntersectBBox(lbbox, pbbox))
 			return false;
@@ -1071,7 +1098,6 @@ qboolean R_FillLightChain (worldShadowLight_t *light)
 	return num_light_surfaces;
 }
 
-void L_OccTests(worldShadowLight_t *light);
 
 void R_DrawLightWorld(void)
 {
@@ -1111,15 +1137,12 @@ void R_DrawLightWorld(void)
 	num_light_surfaces = 0;
 
 	for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
-	
-		if(shadowLight->surf)
-		shadowLight->surf->visframe = r_framecount;
 
-	//	if(shadowLight->style || !shadowLight->isStatic){
+		if(shadowLight->style || !shadowLight->isStatic){
 
 			if(R_FillLightChain(shadowLight))
 				GL_BatchLightPass(shadowLight, false);
-	//		}
+			}
 		}
 	}
 
@@ -1473,6 +1496,7 @@ qboolean R_MarkBrushModelSurfaces(worldShadowLight_t *shadowLight)
 	clmodel = currententity->model;
 	psurf = &clmodel->surfaces[clmodel->firstmodelsurface];
 
+
 	for (i=0 ; i<clmodel->nummodelsurfaces ; i++, psurf++)
 	{
 
@@ -1491,7 +1515,7 @@ void R_DrawLightBrushModel(entity_t * e)
 	vec3_t				mins, maxs;
 	int					i;
     qboolean			rotated;
-	vec3_t				tmp, temp, msLight;
+	vec3_t				tmp, oldLight;
 	mat3_t				entityAxis;
 	
 	if(!r_bumpWorld->value)
@@ -1572,20 +1596,27 @@ void R_DrawLightBrushModel(entity_t * e)
 	num_light_surfaces = 0;
 
 	for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
-
-//			if(shadowLight->style || !shadowLight->isStatic){
 		
-				VectorCopy(shadowLight->origin, msLight);
-		
-				AnglesToMat3(currententity->angles, entityAxis);
-				VectorSubtract(shadowLight->origin, currententity->origin, temp);
-				Mat3_TransposeMultiplyVector(entityAxis, temp, shadowLight->origin);	
+		VectorCopy(shadowLight->origin, oldLight);
 
+		if(shadowLight->style || !shadowLight->isStatic){
+
+		if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
+		{
+		VectorSubtract(shadowLight->origin, currententity->origin, tmp);
+		AnglesToMat3(currententity->angles, entityAxis);
+		Mat3_TransposeMultiplyVector(entityAxis, tmp, shadowLight->origin);
+		}
+		else
+		VectorSubtract(shadowLight->origin, currententity->origin, shadowLight->origin);
+		
 				if(R_MarkBrushModelSurfaces(shadowLight))
 						GL_BatchLightPass(shadowLight, true);
 
-				VectorCopy(msLight, shadowLight->origin);
-	//		}
+			}
+
+		VectorCopy(oldLight, shadowLight->origin);
+
 		}
 	}
 	
@@ -1601,8 +1632,6 @@ void R_DrawLightBrushModel(entity_t * e)
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	qglPopMatrix();
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 
