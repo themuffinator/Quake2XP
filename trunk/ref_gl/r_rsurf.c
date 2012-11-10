@@ -1099,7 +1099,7 @@ qboolean R_FillLightChain (worldShadowLight_t *light)
 }
 
 
-void R_DrawLightWorld(void)
+void R_DrawDebugLightWorld(void)
 {
 	worldShadowLight_t *shadowLight;
 
@@ -1135,15 +1135,31 @@ void R_DrawLightWorld(void)
 	
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
-
+	num_visLights = 0;
 	for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
 
+		if(!R_DrawLightOccluders(shadowLight))
+			continue;
+				
+		if(!FoundReLight){
 		if(shadowLight->style || !shadowLight->isStatic){
 
 			if(R_FillLightChain(shadowLight))
 				GL_BatchLightPass(shadowLight, false);
+			R_DrawDebugLight(shadowLight);
 			}
+		}else{
+			if(R_FillLightChain(shadowLight))
+				GL_BatchLightPass(shadowLight, false);
+			R_DrawDebugLight(shadowLight);
 		}
+
+	num_visLights++;
+
+	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
+		glEndConditionalRenderNV();
+	}
+
 	}
 
 	qglDisable(GL_BLEND);
@@ -1509,7 +1525,7 @@ qboolean R_MarkBrushModelSurfaces(worldShadowLight_t *shadowLight)
 	return num_light_surfaces;
 }
 
-void R_DrawLightBrushModel(entity_t * e)
+void R_DrawDebugLightBrushModel(entity_t * e)
 {
 	worldShadowLight_t *shadowLight;
 	vec3_t				mins, maxs;
@@ -1594,12 +1610,14 @@ void R_DrawLightBrushModel(entity_t * e)
 	
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
+	num_visLights = 0;
 
 	for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
 		
 		VectorCopy(shadowLight->origin, oldLight);
-
-		if(shadowLight->style || !shadowLight->isStatic){
+		
+		if(!R_DrawLightOccluders(shadowLight))
+			continue;
 
 		if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
 		{
@@ -1610,13 +1628,26 @@ void R_DrawLightBrushModel(entity_t * e)
 		else
 		VectorSubtract(shadowLight->origin, currententity->origin, shadowLight->origin);
 		
-				if(R_MarkBrushModelSurfaces(shadowLight))
+		if(!FoundReLight){
+				
+			if(shadowLight->style || !shadowLight->isStatic){
+			if(R_MarkBrushModelSurfaces(shadowLight))
 						GL_BatchLightPass(shadowLight, true);
-
+			R_DrawDebugLight(shadowLight);
 			}
 
-		VectorCopy(oldLight, shadowLight->origin);
+		} else{
 
+			if(R_MarkBrushModelSurfaces(shadowLight))
+						GL_BatchLightPass(shadowLight, true);
+			R_DrawDebugLight(shadowLight);
+		}
+
+		VectorCopy(oldLight, shadowLight->origin);
+		num_visLights++;
+
+		if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
+			glEndConditionalRenderNV();
 		}
 	}
 	

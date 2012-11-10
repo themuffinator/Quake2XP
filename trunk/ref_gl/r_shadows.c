@@ -335,9 +335,6 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 		if(numShadows > r_maxShadowsLightsPerModel->value)
 			continue;
 
-		if(shadowLight->ignore)
-			continue;
-
 		if(VectorCompare(shadowLight->origin, currententity->origin))
 		   continue;
 		

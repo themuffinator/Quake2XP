@@ -282,11 +282,14 @@ cvar_t	*r_bloomIntens;
 cvar_t	*sys_priority;
 
 cvar_t	*r_DrawRangeElements;
+
 cvar_t	*r_bumpAlias;
 cvar_t	*r_bumpWorld;
 cvar_t	*r_pplWorldAmbient;
-cvar_t	*r_pplMaxDlights;
 cvar_t	*r_lightsWeldThreshold;
+cvar_t	*r_debugLights;
+cvar_t	*r_occLightBoundsSize;
+cvar_t	*r_debugOccLightBoundsSize;
 
 cvar_t	*hunk_bsp;
 cvar_t	*hunk_model;
@@ -493,7 +496,14 @@ int GL_MsgGLError(char* Info);
 qboolean HasSharedLeafs(byte *v1, byte *v2);
 float SphereInFrustum(vec3_t o, float radius);
 void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t lightColor);
-void R_DrawLightBrushModel(entity_t * e);
+void R_DrawDebugLightBrushModel(entity_t * e);
+qboolean R_DrawLightOccluders(worldShadowLight_t *light);
+void Load_LightFile();
+void R_GenLightQueries(void);
+void R_DrawDebugLight(worldShadowLight_t *light);
+extern int num_visLights;
+extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
+extern int numLightQ;
 
 extern qboolean FoundReLight;
 /*
@@ -708,7 +718,7 @@ glslProgram_t		*filmGrainProgram;
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
 void R_CaptureColorBuffer();
-void R_DrawLightWorld();
+void R_DrawDebugLightWorld();
 
 typedef struct {
 	unsigned	CausticsBit;

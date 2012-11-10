@@ -52,6 +52,7 @@ typedef struct worldShadowLight_s {
 	int area;
 	// for backface culling
 	msurface_t *surf;
+	unsigned int occQ;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;

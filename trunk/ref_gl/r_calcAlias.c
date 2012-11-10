@@ -597,8 +597,6 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 	trace_t				r_trace;
 	int					numLights= 1;
 
-	R_PrepareShadowLightFrame();
-	
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 		vec3_t color = {1,1,1}, hudLight, tmp;
 		int i;
@@ -612,16 +610,14 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 	return;
 	}
 
+	R_PrepareShadowLightFrame();
+
 	if(shadowLight_frame) {
 		
 		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
 			vec3_t sColor;
 
 			if(numLights > r_maxShadowsLightsPerModel->value)
-				continue;
-
-
-			if(shadowLight->ignore)
 				continue;
 
 			if(VectorCompare(shadowLight->origin, currententity->origin))

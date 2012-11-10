@@ -981,7 +981,7 @@ jump:
 				break;
 			case mod_brush:
 				R_DrawBrushModel(currententity);
-				R_DrawLightBrushModel(currententity);
+				R_DrawDebugLightBrushModel(currententity);
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
@@ -1220,7 +1220,7 @@ if (r_noRefresh->value)
 	R_MarkLeaves();				// done here so we know if we're in water
 
 	R_DrawBSP();
-	R_DrawLightWorld();
+	R_DrawDebugLightWorld();
 	R_RenderDecals();
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
@@ -1229,6 +1229,8 @@ if (r_noRefresh->value)
 	R_CastShadowVolumes();	
 	R_DrawEntitiesLightPass();
 	R_ShadowBlend();
+	
+//	Com_Printf("draw %i lights\n", num_visLights);
 
 	R_RenderFlares();
 	R_DrawParticles(true); //underwater particles
@@ -1448,7 +1450,6 @@ Cvar_Set("r_drawFlares", "0");
 Cvar_Set("r_parallax", "0");
 Cvar_Set("r_bumpAlias", "0");
 Cvar_Set("r_bumpWorld", "0");
-Cvar_Set("r_pplMaxDlights", "8");
 Cvar_Set("r_bloom", "0");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "0");
@@ -1469,7 +1470,6 @@ Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "1");
 Cvar_Set("r_bumpAlias", "0");
 Cvar_Set("r_bumpWorld", "0");
-Cvar_Set("r_pplMaxDlights", "8");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "1");
@@ -1490,7 +1490,6 @@ Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "2");
 Cvar_Set("r_bumpAlias", "1");
 Cvar_Set("r_bumpWorld", "1");
-Cvar_Set("r_pplMaxDlights", "13");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "1");
 Cvar_Set("r_radialBlur", "1");
@@ -1535,7 +1534,7 @@ void R_RegisterCvars(void)
 	r_shadowVolumesDebug =				Cvar_Get("r_shadowVolumesDebug", "0", 0);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
-	r_maxShadowsLightsPerModel =				Cvar_Get("r_maxShadowsLightsPerModel", "3", CVAR_ARCHIVE);
+	r_maxShadowsLightsPerModel =		Cvar_Get("r_maxShadowsLightsPerModel", "3", CVAR_ARCHIVE);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
@@ -1562,7 +1561,7 @@ void R_RegisterCvars(void)
 	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
 	r_flaresIntens =					Cvar_Get("r_flaresIntens", "3", CVAR_ARCHIVE);
 	r_flareWeldThreshold =				Cvar_Get("r_flareWeldThreshold", "32", CVAR_ARCHIVE);
-	r_useNvConditionalRender =			Cvar_Get("r_useNvConditionalRender", "1", CVAR_ARCHIVE);
+	r_useNvConditionalRender =			Cvar_Get("r_useNvConditionalRender", "1", CVAR_ARCHIVE); // Fucking Ati! Nv conditional render dont work on some radeons... Set to zero, force old, slow Occlusion Query test
 
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
@@ -1584,8 +1583,10 @@ void R_RegisterCvars(void)
 	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
-	r_pplMaxDlights =					Cvar_Get("r_pplMaxDlights", "13", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "32", CVAR_ARCHIVE);
+	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
+	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
+	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);
@@ -1696,6 +1697,7 @@ R_Init
 */
 int GL_QueryBits;
 int ocQueries[MAX_FLARES];
+int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 
 int R_Init(void *hinstance, void *hWnd)
 {
@@ -1901,6 +1903,8 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		
 		if (GL_QueryBits) {
 			qglGenQueriesARB(MAX_FLARES, (GLuint*)ocQueries);
+			qglGenQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
+
 			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " occlusion query bits\n", GL_QueryBits);
 		}
 		
@@ -2075,6 +2079,12 @@ R_Shutdown
 */
 void R_Shutdown(void)
 {
+    
+	if(qglDeleteQueriesARB){
+	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)ocQueries);
+	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
+	}
+	
 	Cmd_RemoveCommand("modellist");
 	Cmd_RemoveCommand("screenshot");
 	Cmd_RemoveCommand("imagelist");
@@ -2085,9 +2095,7 @@ void R_Shutdown(void)
 	Mod_FreeAll();
 	GL_ShutdownImages();
 
-    // FIXME: crashes if video could not be initialized, add check if necessary
-	//qglDeleteQueriesARB(MAX_FLARES, (GLuint*)ocQueries);
-
+	R_ClearWorldLights();
 	GLimp_Shutdown();
 	QGL_Shutdown();
 	ilShutDown();
@@ -2131,13 +2139,6 @@ void R_BeginFrame()
 	
 	if(r_dof->modified)
 		r_dof->modified = false;
-
-
-	if(r_pplMaxDlights->value < 8)
-		Cvar_SetValue("r_pplMaxDlights", 8);
-	
-	if(r_pplMaxDlights->value > 32)
-		Cvar_SetValue("r_pplMaxDlights", 13);
 
 	qglDrawBuffer( GL_BACK );
 	
