@@ -44,6 +44,7 @@ typedef struct worldShadowLight_s {
 	vec3_t mins, maxs;
 	qboolean isShadow;
 	qboolean isStatic;
+	qboolean isNoWorldModel;
 	qboolean ignore;
 
 	int style;

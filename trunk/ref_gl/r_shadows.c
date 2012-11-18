@@ -320,25 +320,29 @@ void GL_RenderVolumes(dmdl_t * paliashdr, vec3_t lightdir, int projdist){
 void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 {
 	worldShadowLight_t *shadowLight;
-	vec3_t				light, temp;
+	vec3_t				light, temp, mins, maxs;
 	float				dist, projdist, scale;
 	mat3_t				entityAxis;
 	trace_t				r_trace;
 	int					numShadows = 1;
-		
+	
+	
+	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
+	VectorAdd(currententity->origin, currententity->model->mins, mins);
+
 	R_PrepareShadowLightFrame();
 	
 	if(shadowLight_frame) {
 		
 		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
-		
+
 		if(numShadows > r_maxShadowsLightsPerModel->value)
 			continue;
 
 		if(VectorCompare(shadowLight->origin, currententity->origin))
 		   continue;
 		
-		if(!EntityInLightSphere(shadowLight))
+		if(!BoundsAndSphereIntersect(mins, maxs, shadowLight->origin, shadowLight->radius))
 			continue;
 
 		VectorSubtract(currententity->origin, shadowLight->origin, temp);
@@ -413,6 +417,9 @@ void R_DrawShadowVolume(entity_t * e)
 	int				*order, i;
 	float			frontlerp, rad;
 	vec3_t			move, delta, vectors[3], frontv, backv, tmp, maxs, mins;
+
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
 
 	if (r_newrefdef.vieworg[2] + 25 < (currententity->origin[2]))
 		return;
@@ -543,7 +550,7 @@ void R_ShadowBlend()
 	qglColor4f(1.0, 1.0, 1.0, 1.0);
 		
 	//blur alpha mask and visualize it!
-	GL_Blend(true, 0, 0);
+	GL_Blend(true, GL_DST_COLOR, GL_ZERO);
 	GL_BindProgram(shadowProgram, defBits);
 	id = shadowProgram->id[defBits];
 	

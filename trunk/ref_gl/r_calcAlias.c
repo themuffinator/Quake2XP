@@ -132,7 +132,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	if(r_bumpAlias->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.165, 0.165, 0.165);
+			VectorSet(lightColor, 0.7, 0.7, 0.7);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
@@ -552,7 +552,6 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	AnglesToMat3(currententity->angles, entityAxis);
 	Mat3_TransposeMultiplyVector(entityAxis, tmp, viewOrg);
 	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , viewOrg);
-	
 
 	GL_MBind(GL_TEXTURE0_ARB, skinNormalmap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), 0);
@@ -585,30 +584,20 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 
 
 static vec3_t	lightArray[2] =	{
-				{-50.0,  100.0, 50.0},
-				{-50.0, -100.0, 50.0}
+				{-100.0,  100.0, 50.0},
+				{ 100.0, -100.0, 50.0}
 				};
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 {
 	worldShadowLight_t *shadowLight;
-	vec3_t				temp, light;
+	vec3_t				temp, light, mins, maxs;
 	mat3_t				entityAxis;
 	trace_t				r_trace;
 	int					numLights= 1;
 
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		vec3_t color = {1,1,1}, hudLight, tmp;
-		int i;
-
-	for(i = 0; i<2; i++){
-		VectorSubtract(lightArray[i], currententity->origin, tmp);
-		AnglesToMat3(currententity->angles, entityAxis);
-		Mat3_TransposeMultiplyVector(entityAxis, tmp, hudLight);
-		GL_DrawAliasFrameLerpArb(paliashdr, hudLight, 250, color);
-		}
-	return;
-	}
+	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
+	VectorAdd(currententity->origin, currententity->model->mins, mins);
 
 	R_PrepareShadowLightFrame();
 
@@ -620,6 +609,10 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			if(numLights > r_maxShadowsLightsPerModel->value)
 				continue;
 
+			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+				if(!shadowLight->isNoWorldModel)
+					continue;
+
 			if(VectorCompare(shadowLight->origin, currententity->origin))
 			   continue;
 
@@ -630,9 +623,9 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 				continue;
 			}
 
-			if(!EntityInLightSphere(shadowLight))
+			if(!BoundsAndSphereIntersect(mins, maxs, shadowLight->origin, shadowLight->radius))
 				continue;
-
+			
 			if(shadowLight->isStatic && !shadowLight->style)
 			{	
 				R_LightPoint (shadowLight->origin, sColor, true);

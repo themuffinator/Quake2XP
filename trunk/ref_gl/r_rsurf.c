@@ -500,7 +500,7 @@ msurface_t	*scene_surfaces[MAX_MAP_FACES];
 static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
-	image_t		*image, *fx, *nm, *env;
+	image_t		*image, *fx, *env;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
 	unsigned	texture = -1, ltmp;
@@ -512,9 +512,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 	if (r_parallax->value)
 		defBits |= worldDefs.ParallaxBit;
-	
-	if (r_bumpWorld->value)
-		defBits |= worldDefs.bspBumpBits;
 
 	// setup program
 	GL_BindProgram(ambientWorldProgram, defBits);
@@ -522,14 +519,15 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
 
-	if(r_bumpWorld->value || r_parallax->value){
+	if(r_parallax->value){
 	if(bmodel)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
 	else
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
-
-	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 	}
+
+	
+	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 
 	if(r_parallax->value){
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
@@ -543,7 +541,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		s=scene_surfaces[i];
 		image	= R_TextureAnimation(s->texinfo);
 		fx		= R_TextureAnimationFx(s->texinfo);
-		nm		= R_TextureAnimationNormal(s->texinfo);
 		env		= R_TextureAnimationEnv(s->texinfo);
 		lmtex	= s->lightmaptexturenum;
 
@@ -572,17 +569,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
 		}
 
-		if(r_bumpWorld->value){
-			if(!image->specularScale)
-			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), 1.0);
-			else
-			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), image->specularScale);
-
-			if(!image->SpecularExp)
-			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), 16.0);
-			else
-			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), image->SpecularExp);
-		}
 
 		if(caustics || (s->flags & SURF_WATER)){
 			qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
@@ -658,12 +644,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 					GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 					qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
 				}
-				if(r_bumpWorld->value){
-					GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
-				}
-					GL_MBind(GL_TEXTURE6_ARB, env->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 6);
+				GL_MBind(GL_TEXTURE4_ARB, env->texnum);
+				qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
 				}
 				
 				if(ltmp != gl_state.lightmap_textures + lmtex) {
@@ -690,13 +672,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 					GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 					qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
 				}
-				if(r_bumpWorld->value){
-					GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
-					qglUniform1i(qglGetUniformLocation(id, "u_deluxMap"), 5);
-				}
-					GL_MBind(GL_TEXTURE6_ARB, env->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 6);
+					GL_MBind(GL_TEXTURE4_ARB, env->texnum);
+					qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
 			}
 			qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
 		}
@@ -854,7 +831,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	msurface_t *surf, **mark;
 	mleaf_t *pleaf;
 	float dot;
-	image_t *fx, *image, *nm, *env;
+	image_t *fx, *image, *env;
 	
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
@@ -946,7 +923,6 @@ static void R_RecursiveWorldNode(mnode_t * node)
 				// FIXME: this is a hack for animation
 				image = R_TextureAnimation(surf->texinfo);
 				fx = R_TextureAnimationFx(surf->texinfo); // fix glow hack
-				nm = R_TextureAnimationNormal(surf->texinfo);
 				env = R_TextureAnimationEnv(surf->texinfo);
 				surf->texturechain = image->texturechain;
 				image->texturechain = surf;

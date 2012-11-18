@@ -688,7 +688,7 @@ void CL_AddPacketEntities(frame_t * frame)
 {
 	entity_t ent;
 	entity_state_t *s1;
-	float autorotate, radiusHack;
+	float autorotate;
 	int i, index;
 	int pnum;
 	centity_t *cent;
@@ -696,7 +696,7 @@ void CL_AddPacketEntities(frame_t * frame)
 	clientinfo_t *ci;
 	unsigned int effects, renderfx;
 	qboolean predator = false;
-
+	vec3_t minsHack, maxsHack;
 
 	// bonus items rotate at a fixed rate
 	autorotate = anglemod(cl.time / 10);
@@ -898,17 +898,21 @@ void CL_AddPacketEntities(frame_t * frame)
 		else
 			ent.flags = renderfx;
 
+		ent.angleMod = false;
+
 		// calculate angles
 		if (effects & EF_ROTATE) {	// some bonus items auto-rotate
 			ent.angles[0] = 0;
 			ent.angles[1] = autorotate;
 			ent.angles[2] = 0;
+			ent.angleMod = true;
 		}
 		// RAFAEL
 		else if (effects & EF_SPINNINGLIGHTS) {
 			ent.angles[0] = 0;
 			ent.angles[1] = anglemod(cl.time / 2) + s1->angles[1];
 			ent.angles[2] = 180;
+			ent.angleMod = true;
 			{
 				vec3_t forward;
 				vec3_t start;
@@ -931,7 +935,10 @@ void CL_AddPacketEntities(frame_t * frame)
 		if (s1->number == cl.playernum + 1) {
 			ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
 			player_camera = true;	// set filter for power shells and over
-			radiusHack = ent.model->radius;
+			
+			VectorSet(minsHack, ent.model->mins[0], ent.model->mins[1], ent.model->mins[2]);
+			VectorSet(maxsHack, ent.model->maxs[0], ent.model->maxs[1], ent.model->maxs[2]);
+
 			// fixed player origin from EGL
 			if ((cl_predict->value)
 				&& !(cl.frame.playerstate.pmove.
@@ -1085,8 +1092,10 @@ next:
 		if (s1->modelindex2) {
 			if (player_camera)
 				ent.flags |= RF_VIEWERMODEL;	// dont draw 3th person  weapon
+			
+			VectorCopy(minsHack,ent.model->mins);
+			VectorCopy(maxsHack,ent.model->maxs);
 
-			ent.model->radius = radiusHack;
 			// Predator Mod Stuff
 			if(predator)
 			{	
@@ -1125,7 +1134,10 @@ next:
 				ent.alpha = 0.32;
 				ent.flags = RF_TRANSLUCENT;
 			}
-			ent.model->radius = radiusHack;
+						
+			VectorCopy(minsHack,ent.model->mins);
+			VectorCopy(maxsHack,ent.model->maxs);
+
 			// pmm
 			V_AddEntity(&ent);
 

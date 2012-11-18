@@ -444,8 +444,9 @@ Per Pixel Lighting Light Manager
 ==============================*/
 
 worldShadowLight_t *shadowLight_static = NULL, *shadowLight_frame = NULL;
-static worldShadowLight_t shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
+worldShadowLight_t shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
 static int num_dlits;
+int num_nwmLights;
 int num_visLights;
 static int numCulledLights;
 
@@ -459,6 +460,26 @@ qboolean EntityInLightSphere(worldShadowLight_t *light) {
 
 		
 		
+}
+
+qboolean R_CheckSharedArea(vec3_t p1, vec3_t p2)
+{
+	int leafnum;
+	int cluster;
+	int area1, area2;
+	byte *mask;
+
+	leafnum = CM_PointLeafnum(p1);
+	cluster = CM_LeafCluster(leafnum);
+	area1 = CM_LeafArea(leafnum);
+	mask = CM_ClusterPVS(cluster);
+
+	leafnum = CM_PointLeafnum(p2);
+	cluster = CM_LeafCluster(leafnum);
+	area2 = CM_LeafArea(leafnum);
+	if (!CM_AreasConnected(area1, area2))
+		return false;			
+	return true;
 }
 
 qboolean R_CullLight(worldShadowLight_t *light) {
@@ -476,6 +497,10 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 	}
 		
 	if (!HasSharedLeafs (light->vis, viewvis))
+		return true;
+
+	
+	if(!R_CheckSharedArea(light->origin, r_origin))
 		return true;
 
 	if(light->ignore)
@@ -502,7 +527,7 @@ qboolean R_CullLight(worldShadowLight_t *light) {
 	VectorSubtract(light->origin, r_origin, v);
 	dist = VectorLength(v);
 	if (dist > 2100)
-		return;
+		return true;
 
 	VectorMA(light->origin,  light->radius, none, maxs);
 	VectorMA(light->origin, -light->radius, none, mins);
@@ -550,6 +575,26 @@ void R_AddDynamicLight(dlight_t *dl) {
 	light->isStatic = false;
 }
 
+void R_AddNoWorldModelLight() {
+	
+	worldShadowLight_t *light;
+
+	light = &shadowLightsBlock[num_nwmLights++];
+	memset(light, 0, sizeof(worldShadowLight_t));
+	light->next = shadowLight_frame;
+	shadowLight_frame = light;
+
+	VectorSet(light->origin, -100, 100, 76);
+	VectorSet(light->sColor, 1.0, 1.0, 1.0);
+	light->radius = 1024;
+	VectorSet(light->mins, -1024, -1024, -1024);
+	VectorSet(light->maxs,  1024,  1024,  1024);
+	
+	light->isStatic = false;
+	light->isShadow = false;
+	light->isNoWorldModel = true;
+}
+
 
 void R_PrepareShadowLightFrame(void) {
 	
@@ -557,6 +602,7 @@ void R_PrepareShadowLightFrame(void) {
 	worldShadowLight_t *light;
 	
 	num_dlits = 0;
+	num_nwmLights = 0;
 	shadowLight_frame = NULL;
 
 	numCulledLights = 0;
@@ -580,6 +626,9 @@ void R_PrepareShadowLightFrame(void) {
 			break;
 		R_AddDynamicLight(&r_newrefdef.dlights[i]);
 	}
+
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		R_AddNoWorldModelLight();
 
 	Com_DPrintf("%i lights was culled\n", numCulledLights);
 	
