@@ -361,8 +361,6 @@ void R_DrawAlphaPoly(void)
 	qglDepthMask(0);
 	
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
-//		GL_Bind(s->texinfo->image->texnum);
-//		c_brush_polys++;
 
 		// moving trans brushes - spaz
 		if (s->ent) {
@@ -467,7 +465,7 @@ void GL_CreateParallaxLmPoly(msurface_t * surf)
 				wLMArray[i][0]  = v[5];
 				wLMArray[i][1]  = v[6];
 
-				if(r_bumpWorld->value || r_parallax->value){
+				if(r_parallax->value){
 				//normals
 				nTexArray[i][0] = v[7];
 				nTexArray[i][1] = v[8];
@@ -538,7 +536,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 	for (i=0; i<num_scene_surfaces; i++)
 	{
-		s=scene_surfaces[i];
+		s		= scene_surfaces[i];
 		image	= R_TextureAnimation(s->texinfo);
 		fx		= R_TextureAnimationFx(s->texinfo);
 		env		= R_TextureAnimationEnv(s->texinfo);
@@ -1075,7 +1073,7 @@ qboolean R_FillLightChain (worldShadowLight_t *light)
 }
 
 
-void R_DrawDebugLightWorld(void)
+void R_DrawLightWorld(void)
 {
 	worldShadowLight_t *shadowLight;
 
@@ -1501,7 +1499,7 @@ qboolean R_MarkBrushModelSurfaces(worldShadowLight_t *shadowLight)
 	return num_light_surfaces;
 }
 
-void R_DrawDebugLightBrushModel(entity_t * e)
+void R_DrawLightBrushModel(entity_t * e)
 {
 	worldShadowLight_t *shadowLight;
 	vec3_t				mins, maxs;
@@ -1719,6 +1717,7 @@ void R_MarkLeaves(void)
 GLOOM MINI MAP !!!
 ======================*/
 
+
 //sul's minimap thing
 void R_RecursiveRadarNode(mnode_t * node)
 {
@@ -1754,9 +1753,7 @@ void R_RecursiveRadarNode(mnode_t * node)
 		// check for door connected areas
 		if (r_newrefdef.areabits) {
 			// not visible
-			if (!
-				(r_newrefdef.
-				 areabits[pleaf->area >> 3] & (1 << (pleaf->area & 7))))
+			if (!(r_newrefdef.areabits[pleaf->area >> 3] & (1 << (pleaf->area & 7))))
 				return;
 		}
 		mark = pleaf->firstmarksurface;
@@ -1918,8 +1915,7 @@ void GL_DrawRadar(void)
 
 	qglRotatef(90 - r_newrefdef.viewangles[1], 0, 0, 1);
 	
-	qglTranslatef(-r_newrefdef.vieworg[0], -r_newrefdef.vieworg[1],
-				  -r_newrefdef.vieworg[2]);
+	qglTranslatef(-r_newrefdef.vieworg[0], -r_newrefdef.vieworg[1], -r_newrefdef.vieworg[2]);
 
 	if (!deathmatch->value) {
 		qglBegin(GL_QUADS);

@@ -496,7 +496,7 @@ int GL_MsgGLError(char* Info);
 qboolean HasSharedLeafs(byte *v1, byte *v2);
 float SphereInFrustum(vec3_t o, float radius);
 void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t lightColor);
-void R_DrawDebugLightBrushModel(entity_t * e);
+void R_DrawLightBrushModel(entity_t * e);
 qboolean R_DrawLightOccluders(worldShadowLight_t *light);
 void Load_LightFile();
 void R_GenLightQueries(void);
@@ -718,7 +718,7 @@ glslProgram_t		*filmGrainProgram;
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
 void R_CaptureColorBuffer();
-void R_DrawDebugLightWorld();
+void R_DrawLightWorld();
 
 typedef struct {
 	unsigned	CausticsBit;

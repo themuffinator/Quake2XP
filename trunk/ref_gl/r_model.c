@@ -1564,6 +1564,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	R_ClearFlares();
 	R_ClearWorldLights();
 	numLightQ = 0;
+	FoundReLight = false;
 
 	loadmodel->memorySize = 0;
 	

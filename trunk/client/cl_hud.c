@@ -604,13 +604,13 @@ void SCR_ExecuteLayoutString(char *s)
 			continue;
 		}
 
-		if (!strcmp(token, "cstring2")) {	// F1
+		if (!strcmp(token, "cstring2")) {	// F1 messages upper block
 			token = COM_Parse(&s);
 			DrawHUDString(x, y, hud_sx, hud_sy, 320, 0x80, token);
 			continue;
 		}
 
-		if (!strcmp(token, "string2")) {	// F1
+		if (!strcmp(token, "string2")) {	// F1 messages lower block
 			token = COM_Parse(&s);
 			DrawAltStringScaled(x, y, hud_sx, hud_sy, token);
 			continue;

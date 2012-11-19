@@ -573,6 +573,7 @@ void R_AddDynamicLight(dlight_t *dl) {
 	VectorCopy(dl->color, light->sColor);
 	light->radius = dl->intensity;
 	light->isStatic = false;
+	light->isNoWorldModel = false;
 }
 
 void R_AddNoWorldModelLight() {
@@ -703,7 +704,7 @@ void SaveLights_f(void) {
 
 	for(light = shadowLight_static; light; light = light->s_next){
 		
-		if(light->ignore)
+		if(light->ignore || light->isNoWorldModel)
 			continue;
 		
 		fprintf(f, "//Light %i\n", i);
@@ -719,7 +720,8 @@ void SaveLights_f(void) {
 		fclose(f);
 	
 		Com_Printf(""S_COLOR_MAGENTA"SaveLights_f: "S_COLOR_WHITE"Save lights to "S_COLOR_GREEN"%s.xplit\n"S_COLOR_WHITE"Save "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights", name, i);
-
+		
+		vid_ref->modified = true; // force restart
 }
 int numLightQ;
 
@@ -738,6 +740,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->radius = radius;
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
+	light->isNoWorldModel = false;
 	light->ignore = false;
 	light->next = NULL;
 	light->style = style;
@@ -881,7 +884,7 @@ void Load_LightFile() {
 			strncpy(key, token, sizeof(key)-1);
 
 			value = COM_Parse(&c);
-
+			
 			if(!Q_stricmp(key, "radius"))
 				radius = atof(value);
 			else if(!Q_stricmp(key, "origin"))
@@ -899,7 +902,7 @@ void Load_LightFile() {
 }
 
 /*====================================
-AVERAGE OVER THE NEXT LIGHTS. 
+AVERAGE LIGHTS. 
 BUT NEVER REMOVE THE LIGHT WITH STYLE!
 =====================================*/
 
@@ -952,9 +955,11 @@ void R_ClearWorldLights(void)
 
 }
 /*
-Build occlusion boxes for lights
-
+================================
+Build Occlusion Boxes For Lights
+================================
 */
+
 qboolean R_DrawLightOccluders(worldShadowLight_t *light)
 {
 	vec3_t	v[8], org;

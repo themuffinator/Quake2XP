@@ -176,6 +176,7 @@ void R_BuildFlares(flare_t * light, int Id){
 		glEndConditionalRenderNV();
 }
 
+qboolean PF_inPVS(vec3_t p1, vec3_t p2);
 
 void R_RenderFlares(void)
 {
@@ -213,17 +214,14 @@ void R_RenderFlares(void)
 	for (i = 0; i < r_numflares; i++, fl++) {
 		int sidebit;
 		float viewplane;		
-		
-		if (!(r_newrefdef.areabits[fl->area >> 3] & (1 << (fl->area & 7))))
-			continue;
 
-		if (!HasSharedLeafs (fl->vis, viewvis))
+		if(fl->ignore)
 			continue;
 
 		if (fl->surf->visframe != r_framecount)	// pvs culling... haha, nicest optimisation!
 			continue;
 		
-		if(fl->ignore)
+		if(!PF_inPVS(fl->origin, r_origin))
 			continue;
 
 		viewplane = DotProduct(r_origin, fl->surf->plane->normal) - fl->surf->plane->dist;

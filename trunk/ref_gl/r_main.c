@@ -981,7 +981,7 @@ jump:
 				break;
 			case mod_brush:
 				R_DrawBrushModel(currententity);
-				R_DrawDebugLightBrushModel(currententity);
+				R_DrawLightBrushModel(currententity);
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
@@ -1220,7 +1220,7 @@ if (r_noRefresh->value)
 	R_MarkLeaves();				// done here so we know if we're in water
 
 	R_DrawBSP();
-	R_DrawDebugLightWorld();
+	R_DrawLightWorld();
 	R_RenderDecals();
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
