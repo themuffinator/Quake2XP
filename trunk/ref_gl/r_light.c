@@ -443,7 +443,7 @@ Per Pixel Lighting Light Manager
 
 ==============================*/
 
-worldShadowLight_t *shadowLight_static = NULL, *shadowLight_frame = NULL;
+worldShadowLight_t *shadowLight_static = NULL, *shadowLight_frame = NULL, *shadowLight_selection = NULL;
 worldShadowLight_t shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
 static int num_dlits;
 int num_nwmLights;
@@ -686,8 +686,8 @@ void SaveLights_f(void) {
 	worldShadowLight_t	*light;
 	char				name[MAX_QPATH], path[MAX_QPATH];
 	FILE				*f;
-	int					i=0;
-
+	int					i=0, z =0;
+	
 	if(!shadowLight_static) 
 		return;
 
@@ -706,7 +706,7 @@ void SaveLights_f(void) {
 		
 		if(light->ignore || light->isNoWorldModel)
 			continue;
-		
+
 		fprintf(f, "//Light %i\n", i);
 		fprintf(f, "{\n");
 		fprintf(f, "\"classname\" \"light\"\n");
@@ -719,9 +719,8 @@ void SaveLights_f(void) {
 	}
 		fclose(f);
 	
-		Com_Printf(""S_COLOR_MAGENTA"SaveLights_f: "S_COLOR_WHITE"Save lights to "S_COLOR_GREEN"%s.xplit\n"S_COLOR_WHITE"Save "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights", name, i);
-		
-		vid_ref->modified = true; // force restart
+		Com_Printf(""S_COLOR_MAGENTA"SaveLights_f: "S_COLOR_WHITE"Save lights to "S_COLOR_GREEN"%s.xplit\n"S_COLOR_WHITE"Save "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", name, i);
+	//	vid_ref->modified = true; // force restart
 }
 int numLightQ;
 

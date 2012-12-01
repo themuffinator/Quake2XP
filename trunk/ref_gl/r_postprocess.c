@@ -46,14 +46,6 @@ void R_BuildFlares(flare_t * light, int Id){
 	
 	if (!gl_state.arb_occlusion) 
 		return;
-	
-
-	// Color Fade and cut off by vis distance
-	VectorSubtract(light->origin, r_origin, v);
-	dist = VectorLength(v) * (light->size * 0.01);
-	dist2 = VectorLength(v);
-	if (dist2 > 2100)
-		return;
 
 	if (light->surf->ent) {
 		
@@ -117,6 +109,11 @@ void R_BuildFlares(flare_t * light, int Id){
 		flareVert = 0;
 		index = 0;
 		}
+	
+	// Color Fade
+	VectorSubtract(light->origin, r_origin, v);
+	dist = VectorLength(v) * (light->size * 0.01);
+	dist2 = VectorLength(v);
 
 	scale = ((2048 - dist2) / 2048) * 0.5;
 	

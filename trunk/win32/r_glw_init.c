@@ -399,15 +399,14 @@ int MeasureCpuSpeed()
     }
 
 
-void CpuID(void)
+void GLimp_CpuID(void)
 {
     char		CPUString[0x20];
     char		CPUBrandString[0x40];
+	int			numProcessCPU = 0, numSystemCPU = 0;
     int			CPUInfo[4]		= {-1};
     int			nFeatureInfo	= 0;
-    int			nCacheSizeK		= 0;
-	int			nCache1SizeK	= 0;
-    unsigned    nIds, nExIds, i;
+    unsigned    nIds, nExIds, i, z;
 	unsigned	dwCPUSpeed = MeasureCpuSpeed();
 	unsigned	pType;
 	qboolean    SSE3	= false;
@@ -418,6 +417,7 @@ void CpuID(void)
 	qboolean	MMX		= false;
 	qboolean	EM64T	= false;
 	SYSTEM_INFO BaseCpuInfo;
+	DWORD		dwProcessAffinity, dwSystemAffinity;
 
     // __cpuid with an InfoType argument of 0 returns the number of
     // valid Ids in CPUInfo[0] and the CPU identification string in
@@ -476,16 +476,7 @@ void CpuID(void)
         else 
 			if  (i == 0x80000004)
 					memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
-       	else 
-			if  (i == 0x80000005)
-					nCache1SizeK = (CPUInfo[2] >> 24); //AMD L1 CACHE SIZE. RETURN ZERO FOR INTEL CPU
-		else 
-			if  (i == 0x80000006)
-			{
-		if(pType == CPU_INTEL)
-				nCache1SizeK		=	(CPUInfo[2] >> 10) & 0xffff; //INTEL L1 CACHE SIZE. 
-				nCacheSizeK			=	(CPUInfo[2] >> 16) & 0xffff; //L2 CACHE SIZE.
-			}
+       	
 	 }
 
     if  (nIds >= 1)
@@ -494,13 +485,26 @@ void CpuID(void)
         if  (nFeatureInfo || SSE3 || MMX || SSE || SSE2 || SSE4 || HTT || EM64T)	{
        		
 		GetSystemInfo(&BaseCpuInfo);
-		
+
+		//Berserker - get current numbers of cpu cores and threads
+		if (GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity )){
+
+			for (z=1; z; z+=z){
+				
+				if (dwProcessAffinity & z)
+					numProcessCPU = numProcessCPU + 1;
+				if (dwSystemAffinity & z)
+					numSystemCPU = numSystemCPU + 1;
+			}
+		}
+
 		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", CPUBrandString);
-		Com_Printf ("Number of CPUs: "S_COLOR_GREEN"%d\n", BaseCpuInfo.dwNumberOfProcessors);	
-		Com_Printf ("CPU speed: "S_COLOR_GREEN"~%d"S_COLOR_WHITE"MHz\n", dwCPUSpeed);
+		Com_Printf ("Number of Cpu Cores: "S_COLOR_GREEN"%i"S_COLOR_WHITE", Threads: "S_COLOR_GREEN"%i\n", numSystemCPU, numProcessCPU);
+		Com_Printf ("CPU Speed: "S_COLOR_GREEN"~%d"S_COLOR_WHITE"MHz\n", dwCPUSpeed);
 		Com_Printf ("Supported Extensions: ");
 				
-				__cpuid(CPUInfo, 0x80000001);
+		__cpuid(CPUInfo, 0x80000001);
+		
 			if (CPUInfo[3] & 0x80000000)
 				Com_Printf (S_COLOR_YELLOW"3DNow! ");
 			if (CPUInfo[3] & 1<<30)
@@ -518,25 +522,33 @@ void CpuID(void)
 	            Com_Printf (S_COLOR_YELLOW"SSE3 ");
 			if  (SSE4)
 	            Com_Printf (S_COLOR_YELLOW"SSE4 ");
-		//	if  (HTT)
-		//	     Com_Printf (S_COLOR_YELLOW"/Hyper-threading Technology ");
+			if  (numProcessCPU > numSystemCPU)
+			     Com_Printf (S_COLOR_YELLOW"Hyper-Threading Technology ");
 			if (EM64T)
 				Com_Printf (S_COLOR_YELLOW"EM64T");
 			Com_Printf("\n");
 
-			if(BaseCpuInfo.dwNumberOfProcessors > 1){
-				Com_Printf ("L1 Cache Size = "S_COLOR_GREEN"%i"S_COLOR_WHITE" x "S_COLOR_GREEN"%d"S_COLOR_WHITE"K\n",BaseCpuInfo.dwNumberOfProcessors, nCache1SizeK);
-				Com_Printf ("L2 Cache Size = "S_COLOR_GREEN"%i"S_COLOR_WHITE" x "S_COLOR_GREEN"%d"S_COLOR_WHITE"K\n",BaseCpuInfo.dwNumberOfProcessors, nCacheSizeK);
-			}
-			else
-				{
-				Com_Printf ("L1 Cache Size = "S_COLOR_GREEN"%d"S_COLOR_WHITE"K\n", nCache1SizeK);
-				Com_Printf ("L2 Cache Size = "S_COLOR_GREEN"%d"S_COLOR_WHITE"K\n", nCacheSizeK);
-			}
-
         }
     }	
 
+}
+
+void GLimp_GetMemorySize(){
+
+MEMORYSTATUS		ramcheck;
+	
+	GlobalMemoryStatus	(&ramcheck);
+		
+	Con_Printf (PRINT_ALL, "\n");
+	
+	Com_Printf("Total physical RAM:       "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalPhys >> 20);
+	Com_Printf("Available physical RAM:   "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailPhys >> 20);
+	Com_Printf("Total PageFile:           "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalPageFile >> 20);
+	Com_Printf("Available PageFile:       "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailPageFile >> 20);
+	Com_Printf("Total Virtual Memory:     "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalVirtual >> 20);
+	Com_Printf("Available Virtual Memory: "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailVirtual >> 20);
+
+	Con_Printf (PRINT_ALL, "\n");
 }
 
 
@@ -551,27 +563,6 @@ BOOL Is64BitWindows()
 typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
 typedef BOOL (WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
 
-int cpp_getAvailableLocalVideoMemory();
-int cpp_getAvailableTotalVideoMemory();
-
-#define PRODUCT_ENTERPRISE_E	0x00000046	//Enterprise E
-#define PRODUCT_ENTERPRISE_N	0x0000001B //Enterprise N
-
-#define PRODUCT_ULTIMATE_E		0x00000047	//Ultimate E
-#define PRODUCT_ULTIMATE_N		0x0000001C //Ultimate N
-
-#define PRODUCT_HOME_BASIC_E	0x00000043 //Home Basic E
-
-#define PRODUCT_HOME_PREMIUM_E	0x00000044 //Home Premium E
-#define PRODUCT_HOME_PREMIUM_N	0x0000001A //Home Premium N
-
-#define PRODUCT_PROFESSIONAL	0x00000030	//Professional
-#define PRODUCT_PROFESSIONAL_E	0x00000045	//Professional E
-#define PRODUCT_PROFESSIONAL_N	0x00000031	//Professional N
-
-#define PRODUCT_STARTER_E		0x00000042	//Starter E
-#define PRODUCT_STARTER_N		0x0000002F	//Starter N
-
 
 /*
 ** GLimp_Init
@@ -585,14 +576,11 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 {
 	char		string[64], S[64];
 	int			len;
-	#define		OSR2_BUILD_NUMBER 1111
 	DWORD		prType;
 	PGPI		pGPI;
 
 	OSVERSIONINFOEX		winver;
-	MEMORYSTATUS		ramcheck;
 	SYSTEM_INFO			cpuinf;
-	GlobalMemoryStatus	(&ramcheck);
 
 	winver.dwOSVersionInfoSize = sizeof(winver);
 		
@@ -612,19 +600,9 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	Con_Printf (PRINT_ALL, "\n");
 	
 	//CPU info
-	CpuID();
-
-	Con_Printf (PRINT_ALL, "\n");
-	//RAM
-
-	Com_Printf("Total physical RAM:       "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalPhys >> 20);
-	Com_Printf("Available physical RAM:   "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailPhys >> 20);
-	Com_Printf("Total PageFile:           "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalPageFile >> 20);
-	Com_Printf("Available PageFile:       "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailPageFile >> 20);
-	Com_Printf("Total Virtual Memory:     "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalVirtual >> 20);
-	Com_Printf("Available Virtual Memory: "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailVirtual >> 20);
-
-	Con_Printf (PRINT_ALL, "\n");
+	GLimp_CpuID();
+	//Memory info
+	GLimp_GetMemorySize();
 
 	//OS same info from  http://msdn.microsoft.com/en-us/library/ms724429(VS.85).aspx
 	if ( GetVersionEx( &winver) )
@@ -632,7 +610,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	if ( winver.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS )
 			VID_Error (ERR_FATAL, "Quake2xp requires Windows 2000 or greater");
 		
-		 if ( winver.dwMajorVersion == 6 && (winver.dwMinorVersion == 0 || winver.dwMinorVersion == 1) ) //vista & win7
+		 if ( winver.dwMajorVersion == 6 && (winver.dwMinorVersion == 0 || winver.dwMinorVersion == 1 || winver.dwMinorVersion == 2) ) //vista, win7 and 8
 			{
 			
 			pGPI = (PGPI) GetProcAddress(
@@ -765,6 +743,25 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 7 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
 			if( winver.wProductType == VER_NT_SERVER)
 				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2009 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
+			}
+			
+			}
+
+			if(winver.dwMinorVersion == 2){
+			if(!Is64BitWindows()){
+			
+			if( winver.wProductType == VER_NT_WORKSTATION)
+				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
+			if( winver.wProductType == VER_NT_SERVER)
+				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
+			}
+
+			if(Is64BitWindows()){	
+			
+			if( winver.wProductType == VER_NT_WORKSTATION)
+				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
+			if( winver.wProductType == VER_NT_SERVER)
+				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
 			}
 			
 			}

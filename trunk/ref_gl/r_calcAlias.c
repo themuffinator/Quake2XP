@@ -132,7 +132,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	if(r_bumpAlias->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.7, 0.7, 0.7);
+			VectorSet(lightColor, 0.55, 0.55, 0.55);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 

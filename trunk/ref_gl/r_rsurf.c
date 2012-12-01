@@ -1126,6 +1126,9 @@ void R_DrawLightWorld(void)
 			if(R_FillLightChain(shadowLight))
 				GL_BatchLightPass(shadowLight, false);
 			R_DrawDebugLight(shadowLight);
+			
+	//		if(BoundsAndSphereIntersect(shadowLight->mins, shadowLight->maxs, r_origin, 1))
+		//		shadowLight->ignore = true;
 		}
 
 	num_visLights++;

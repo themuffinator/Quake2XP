@@ -1608,9 +1608,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	
 	
 	CleanDuplicateFlares();
-	
-	Load_LightFile();
-	CleanDuplicateLights();
+
 //
 // set up the submodels
 //
@@ -2434,6 +2432,10 @@ void R_BeginRegistration(char *model)
 	r_worldmodel = Mod_ForName(fullname, true);
 
 	r_viewcluster = -1;
+
+		
+	Load_LightFile();
+	CleanDuplicateLights();
 
 }
 
