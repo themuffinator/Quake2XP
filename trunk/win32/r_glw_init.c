@@ -356,12 +356,13 @@ void GLimp_Shutdown( void )
 }
 
 /*
-====================
+=====================================================================
 CPU Detect from MSDN
 http://msdn2.microsoft.com/en-us/library/hskdteyh(VS.80).aspx
 adv info for AMD CPU's form 
 http://www.gamedev.net/community/forums/topic.asp?topic_id=438752
-====================
+Hyper Threading detection form DOOM 3 gpl code. Fucking port from C++
+=====================================================================
 */
 
 static const unsigned CPU_UNKNOWN = 0;
@@ -398,6 +399,192 @@ int MeasureCpuSpeed()
 
     }
 
+/*
+================
+LogicalProcPerPhysicalProc
+================
+*/
+#define NUM_LOGICAL_BITS   0x00FF0000     // EBX[23:16] Bit 16-23 in ebx contains the number of logical
+                                          // processors per physical processor when execute cpuid with 
+                                          // eax set to 1
+static unsigned char LogicalProcPerPhysicalProc( void ) {
+	unsigned int regebx = 0;
+	__asm {
+		mov eax, 1
+		cpuid
+		mov regebx, ebx
+	}
+	return (unsigned char) ((regebx & NUM_LOGICAL_BITS) >> 16);
+}
+
+/*
+================
+GetAPIC_ID
+================
+*/
+#define INITIAL_APIC_ID_BITS  0xFF000000  // EBX[31:24] Bits 24-31 (8 bits) return the 8-bit unique 
+                                          // initial APIC ID for the processor this code is running on.
+                                          // Default value = 0xff if HT is not supported
+static unsigned char GetAPIC_ID( void ) {
+	unsigned int regebx = 0;
+	__asm {
+		mov eax, 1
+		cpuid
+		mov regebx, ebx
+	}
+	return (unsigned char) ((regebx & INITIAL_APIC_ID_BITS) >> 24);
+}
+
+/*
+================
+CPUCount
+
+	logicalNum is the number of logical CPU per physical CPU
+    physicalNum is the total number of physical processor
+	returns one of the HT_* flags
+================
+*/
+#define HT_NOT_CAPABLE				0
+#define HT_ENABLED					1
+#define HT_DISABLED					2
+#define HT_SUPPORTED_NOT_ENABLED	3
+#define HT_CANNOT_DETECT			4
+
+int CPUCount( int logicalNum, int physicalNum ) {
+	int statusFlag;
+	unsigned char HT_Enabled = 0;
+	unsigned char i = 1, PHY_ID_MASK  = 0xFF, PHY_ID_SHIFT = 0;
+	SYSTEM_INFO info;
+
+	physicalNum = 1;
+	logicalNum = 1;
+	statusFlag = HT_NOT_CAPABLE;
+
+	info.dwNumberOfProcessors = 0;
+	GetSystemInfo (&info);
+
+	// Number of physical processors in a non-Intel system
+	// or in a 32-bit Intel system with Hyper-Threading technology disabled
+	physicalNum = info.dwNumberOfProcessors;  
+	logicalNum = LogicalProcPerPhysicalProc();
+
+	if ( logicalNum >= 1 ) {	// > 1 doesn't mean HT is enabled in the BIOS
+		HANDLE hCurrentProcessHandle;
+		DWORD  dwProcessAffinity;
+		DWORD  dwSystemAffinity;
+		DWORD  dwAffinityMask;
+
+		// Calculate the appropriate  shifts and mask based on the 
+		// number of logical processors.
+
+		while( i < logicalNum ) {
+			i *= 2;
+ 			PHY_ID_MASK  <<= 1;
+			PHY_ID_SHIFT++;
+		}
+		
+		hCurrentProcessHandle = GetCurrentProcess();
+		GetProcessAffinityMask( hCurrentProcessHandle, &dwProcessAffinity, &dwSystemAffinity );
+
+		// Check if available process affinity mask is equal to the
+		// available system affinity mask
+		if ( dwProcessAffinity != dwSystemAffinity ) {
+			statusFlag = HT_CANNOT_DETECT;
+			physicalNum = -1;
+			return statusFlag;
+		}
+
+		dwAffinityMask = 1;
+		while ( dwAffinityMask != 0 && dwAffinityMask <= dwProcessAffinity ) {
+			// Check if this CPU is available
+			if ( dwAffinityMask & dwProcessAffinity ) {
+				if ( SetProcessAffinityMask( hCurrentProcessHandle, dwAffinityMask ) ) {
+					unsigned char APIC_ID, LOG_ID, PHY_ID;
+
+					Sleep( 0 ); // Give OS time to switch CPU
+
+					APIC_ID = GetAPIC_ID();
+					LOG_ID  = APIC_ID & ~PHY_ID_MASK;
+					PHY_ID  = APIC_ID >> PHY_ID_SHIFT;
+
+					if ( LOG_ID != 0 ) {
+						HT_Enabled = 1;
+					}
+				}
+			}
+			dwAffinityMask = dwAffinityMask << 1;
+		}
+	        
+		// Reset the processor affinity
+		SetProcessAffinityMask( hCurrentProcessHandle, dwProcessAffinity );
+	    
+		if ( logicalNum == 1 ) {  // Normal P4 : HT is disabled in hardware
+			statusFlag = HT_DISABLED;
+		} else {
+			if ( HT_Enabled ) {
+				// Total physical processors in a Hyper-Threading enabled system.
+				physicalNum /= logicalNum;
+				statusFlag = HT_ENABLED;
+			} else {
+				statusFlag = HT_SUPPORTED_NOT_ENABLED;
+			}
+		}
+	}
+	return statusFlag;
+}
+
+/*
+================
+CPUID
+================
+*/
+#define _REG_EAX		0
+#define _REG_EBX		1
+#define _REG_ECX		2
+#define _REG_EDX		3
+
+static void CPUID( int func, unsigned regs[4] ) {
+	unsigned regEAX, regEBX, regECX, regEDX;
+
+	__asm pusha
+	__asm mov eax, func
+	__asm __emit 00fh
+	__asm __emit 0a2h
+	__asm mov regEAX, eax
+	__asm mov regEBX, ebx
+	__asm mov regECX, ecx
+	__asm mov regEDX, edx
+	__asm popa
+
+	regs[_REG_EAX] = regEAX;
+	regs[_REG_EBX] = regEBX;
+	regs[_REG_ECX] = regECX;
+	regs[_REG_EDX] = regEDX;
+}
+
+/*
+================
+HasHTT
+================
+*/
+static qboolean HasHTT( void ) {
+	unsigned regs[4];
+	int logicalNum=0, physicalNum=0, HTStatusFlag;
+
+	// get CPU feature bits
+	CPUID( 1, regs );
+
+	// bit 28 of EDX denotes HTT existence
+	if ( !( regs[_REG_EDX] & ( 1 << 28 ) ) ) {
+		return false;
+	}
+
+	HTStatusFlag = CPUCount( logicalNum, physicalNum );
+	if ( HTStatusFlag != HT_ENABLED ) {
+		return false;
+	}
+	return true;
+}
 
 void GLimp_CpuID(void)
 {
@@ -405,12 +592,11 @@ void GLimp_CpuID(void)
     char		CPUBrandString[0x40];
 	int			numProcessCPU = 0, numSystemCPU = 0;
     int			CPUInfo[4]		= {-1};
-    int			nFeatureInfo	= 0;
+    int			nFeatureInfo	= 0, numPhysicalCores;
     unsigned    nIds, nExIds, i, z;
 	unsigned	dwCPUSpeed = MeasureCpuSpeed();
 	unsigned	pType;
 	qboolean    SSE3	= false;
-   	qboolean	HTT		= false;
 	qboolean	SSE4	= false;
 	qboolean	SSE2	= false;
 	qboolean	SSE		= false;
@@ -451,7 +637,6 @@ void GLimp_CpuID(void)
 			SSE2					= (CPUInfo[3] & BIT(26));
 			SSE						= (CPUInfo[3] & BIT(25));
 			MMX						= (CPUInfo[3] & BIT(23));
-            HTT						= (CPUInfo[3] & BIT(28));
 			EM64T					= (CPUInfo[3] & BIT(29));
             nFeatureInfo			=  CPUInfo[3];
         }
@@ -482,11 +667,11 @@ void GLimp_CpuID(void)
     if  (nIds >= 1)
     {
  
-        if  (nFeatureInfo || SSE3 || MMX || SSE || SSE2 || SSE4 || HTT || EM64T)	{
+        if  (nFeatureInfo || SSE3 || MMX || SSE || SSE2 || SSE4 || EM64T)	{
        		
 		GetSystemInfo(&BaseCpuInfo);
 
-		//Berserker - get current numbers of cpu cores and threads
+		//Berserker - get current numbers of cpu threads
 		if (GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity )){
 
 			for (z=1; z; z+=z){
@@ -497,9 +682,12 @@ void GLimp_CpuID(void)
 					numSystemCPU = numSystemCPU + 1;
 			}
 		}
+		numPhysicalCores = numProcessCPU;
+		if(HasHTT())
+			numPhysicalCores *=0.5;
 
 		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", CPUBrandString);
-		Com_Printf ("Number of Cpu Cores: "S_COLOR_GREEN"%i"S_COLOR_WHITE", Threads: "S_COLOR_GREEN"%i\n", numSystemCPU, numProcessCPU);
+		Com_Printf ("Number of Cpu Cores: "S_COLOR_GREEN"%i"S_COLOR_WHITE", Threads: "S_COLOR_GREEN"%i\n", numPhysicalCores, numProcessCPU);
 		Com_Printf ("CPU Speed: "S_COLOR_GREEN"~%d"S_COLOR_WHITE"MHz\n", dwCPUSpeed);
 		Com_Printf ("Supported Extensions: ");
 				
@@ -522,8 +710,8 @@ void GLimp_CpuID(void)
 	            Com_Printf (S_COLOR_YELLOW"SSE3 ");
 			if  (SSE4)
 	            Com_Printf (S_COLOR_YELLOW"SSE4 ");
-			if  (numProcessCPU > numSystemCPU)
-			     Com_Printf (S_COLOR_YELLOW"Hyper-Threading Technology ");
+			if(HasHTT())
+			     Com_Printf (S_COLOR_YELLOW"HTT ");
 			if (EM64T)
 				Com_Printf (S_COLOR_YELLOW"EM64T");
 			Com_Printf("\n");
@@ -536,11 +724,10 @@ void GLimp_CpuID(void)
 void GLimp_GetMemorySize(){
 
 MEMORYSTATUS		ramcheck;
-	
-	GlobalMemoryStatus	(&ramcheck);
-		
+
 	Con_Printf (PRINT_ALL, "\n");
-	
+
+	GlobalMemoryStatus	(&ramcheck);	
 	Com_Printf("Total physical RAM:       "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalPhys >> 20);
 	Com_Printf("Available physical RAM:   "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailPhys >> 20);
 	Com_Printf("Total PageFile:           "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalPageFile >> 20);
