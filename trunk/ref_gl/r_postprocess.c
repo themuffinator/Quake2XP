@@ -230,6 +230,9 @@ void R_RenderFlares(void)
 		if ((fl->surf->flags & SURF_PLANEBACK) != sidebit)
 			continue;			// wrong light poly side!
 		
+		if(CL_PMpointcontents(fl->origin) & MASK_SOLID)
+			continue;
+
 		R_BuildFlares(fl, i);
 
 	}

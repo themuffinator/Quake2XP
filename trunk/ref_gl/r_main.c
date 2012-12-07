@@ -1500,6 +1500,7 @@ vid_ref->modified = true;
 }
 
 void SaveLights_f(void);
+void RemoveLight_f(void);
 
 void R_RegisterCvars(void)
 {
@@ -1601,6 +1602,11 @@ void R_RegisterCvars(void)
 	r_softParticles =					Cvar_Get("r_softParticles", "1", CVAR_ARCHIVE);
 	r_filmGrain = 						Cvar_Get("r_filmGrain", "0", CVAR_ARCHIVE);
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
+	
+	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
+	editLightSpawn =					Cvar_Get("editLightSpawn", "0", 0);
+	editLightRemove =					Cvar_Get("editLightRemove", "0", 0);
+
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
@@ -1614,7 +1620,6 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("medium_spec",		R_MediumSpecMachine_f);
 	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
 	Cmd_AddCommand("saveLights",		SaveLights_f);
-	
 	
 }
 
@@ -2091,6 +2096,10 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("flaresStats");
 	Cmd_RemoveCommand("dumpEntityString");
 	Cmd_RemoveCommand("r_meminfo");	
+	Cmd_RemoveCommand("low_spec");
+	Cmd_RemoveCommand("medium_spec");
+	Cmd_RemoveCommand("hi_spec");
+	Cmd_RemoveCommand("saveLights");
 
 	Mod_FreeAll();
 	GL_ShutdownImages();

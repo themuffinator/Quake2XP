@@ -1586,7 +1586,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	for (i = 0; i < sizeof(dheader_t) * 0.25; i++)
 		((int *) header)[i] = LittleLong(((int *) header)[i]);
 
-	
+
 // load into heap
 	Mod_LoadEntityString(&header->lumps[LUMP_ENTITIES]);
 	Mod_LoadVertexes(&header->lumps[LUMP_VERTEXES]);
@@ -1608,7 +1608,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	
 	
 	CleanDuplicateFlares();
-
+	CleanDuplicateLights();
 //
 // set up the submodels
 //
@@ -2432,11 +2432,8 @@ void R_BeginRegistration(char *model)
 	r_worldmodel = Mod_ForName(fullname, true);
 
 	r_viewcluster = -1;
-
-		
+	
 	Load_LightFile();
-	CleanDuplicateLights();
-
 }
 
 

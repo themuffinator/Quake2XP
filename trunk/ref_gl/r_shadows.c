@@ -359,7 +359,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 		
 		// light behind the wall 
 		if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, shadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			r_trace = CM_BoxTrace(currententity->origin, shadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_SOLID);
 		
 				if(r_trace.fraction != 1.0)
 					continue;

@@ -721,6 +721,8 @@ void GL_CreateLightPoly(msurface_t * surf)
 	}
 	
 }
+void R_EditLightRemove(worldShadowLight_t	*light);
+void R_EditLightSpawn(worldShadowLight_t *light);
 
 static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 {
@@ -730,6 +732,9 @@ static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 	int			id, i;
 	float		scale[2];
 	glpoly_t	*poly;
+
+	R_EditLightRemove(light);
+	R_EditLightSpawn(light);
 
 	if (r_parallax->value)
 		defBits = worldDefs.LightParallaxBit;
@@ -1126,9 +1131,7 @@ void R_DrawLightWorld(void)
 			if(R_FillLightChain(shadowLight))
 				GL_BatchLightPass(shadowLight, false);
 			R_DrawDebugLight(shadowLight);
-			
-	//		if(BoundsAndSphereIntersect(shadowLight->mins, shadowLight->maxs, r_origin, 1))
-		//		shadowLight->ignore = true;
+	
 		}
 
 	num_visLights++;

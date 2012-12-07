@@ -707,6 +707,9 @@ void SaveLights_f(void) {
 		if(light->ignore || light->isNoWorldModel)
 			continue;
 
+		if(CL_PMpointcontents(light->origin) & MASK_SOLID) // light out of level cut off!!!!
+			continue;
+
 		fprintf(f, "//Light %i\n", i);
 		fprintf(f, "{\n");
 		fprintf(f, "\"classname\" \"light\"\n");
@@ -720,9 +723,80 @@ void SaveLights_f(void) {
 		fclose(f);
 	
 		Com_Printf(""S_COLOR_MAGENTA"SaveLights_f: "S_COLOR_WHITE"Save lights to "S_COLOR_GREEN"%s.xplit\n"S_COLOR_WHITE"Save "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", name, i);
-	//	vid_ref->modified = true; // force restart
+	
+		if (!strcmp(Cmd_Argv(1), "restart"))
+			vid_ref->modified = true; // force restart
 }
 int numLightQ;
+
+
+void R_EditLightRemove(worldShadowLight_t	*light) {
+		
+	if(!r_lightEditor->value)
+		return;
+	
+	
+	if(editLightRemove->value){
+		Com_Printf("Remove light CMD\n");
+		if(BoundsAndSphereIntersect(light->mins, light->maxs, r_origin, 10)){
+				light->ignore = true;
+				Com_Printf("Remove light from scene on x %i y %i z %i", light->origin[0], light->origin[1], light->origin[2]);
+		}
+	}
+//	editLightRemove = Cvar_Set("editLightRemove", "0");
+}
+
+void R_EditLightSpawn(worldShadowLight_t *light) {
+	
+	vec3_t color;
+	float radius;
+	int style;
+	qboolean isShadow;
+	
+	
+	if(!r_lightEditor->value)
+		return;
+	
+
+	if(editLightSpawn->value){
+
+
+	 if (!strcmp(Cmd_Argv(1), "color")) {
+		if(Cmd_Argc() != 5) {
+			Com_Printf("usage: editLightSpawn %s red green blue\n", Cmd_Argv(0));
+			return;
+		}
+		color[0] = atof(Cmd_Argv(2));
+		color[1] = atof(Cmd_Argv(3));
+		color[2] = atof(Cmd_Argv(4));
+	} 
+	 else if (!strcmp(Cmd_Argv(1), "radius")) {
+		if(Cmd_Argc() != 3) {
+			Com_Printf("usage: editLightSpawn %s value\n", Cmd_Argv(0));
+			return;
+		}
+		radius = atof(Cmd_Argv(2));
+	 }
+	  else if (!strcmp(Cmd_Argv(1), "style")) {
+		if(Cmd_Argc() != 3) {
+			Com_Printf("usage: editLightSpawn %s value\n", Cmd_Argv(0));
+			return;
+		}
+		style = atoi(Cmd_Argv(2));
+	 }
+	  else if (!strcmp(Cmd_Argv(1), "shadow")) {
+		if(Cmd_Argc() != 3) {
+			Com_Printf("usage: editLightSpawn %s value\n", Cmd_Argv(0));
+			return;
+		}
+		isShadow = atoi(Cmd_Argv(2));
+	 }
+
+	R_AddNewWorldLight(r_origin, color, radius, style, true, isShadow, NULL);
+
+	editLightSpawn = Cvar_Set("editLightSpawn", "0");
+	}
+}
 
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow, msurface_t *surf) {
 	
@@ -932,7 +1006,7 @@ void CleanDuplicateLights(void){
 	}
 }
 
-Com_DPrintf("loaded %i world lights, %i lights ignored\n", r_numWorlsShadowLights, r_numIgnoreLights);
+Com_Printf("loaded %i world lights, %i lights ignored\n", r_numWorlsShadowLights, r_numIgnoreLights);
 }
 
 void R_ClearWorldLights(void)

@@ -314,8 +314,13 @@ cvar_t	*r_filmGrain;
 cvar_t	*r_softParticles;
 cvar_t	*r_ignoreGlErrors;
 
+cvar_t	*r_lightEditor;
+cvar_t	*editLightSpawn;
+cvar_t	*editLightRemove;
+
 cvar_t	*r_stereoVision;
 cvar_t	*r_stereoSeparation;
+
 
 int CL_PMpointcontents(vec3_t point);
 qboolean outMap;
