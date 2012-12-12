@@ -1385,6 +1385,15 @@ void Dump_EntityString(void){
 
 }
 
+#define		GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
+#define		GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048
+#define		GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  0x9049
+#define		GPU_MEMORY_INFO_EVICTION_COUNT_NVX            0x904A
+#define		GPU_MEMORY_INFO_EVICTED_MEMORY_NVX            0x904B
+
+#define     VBO_FREE_MEMORY_ATI                     0x87FB
+#define     TEXTURE_FREE_MEMORY_ATI                 0x87FC
+#define     RENDERBUFFER_FREE_MEMORY_ATI            0x87FD
 
 void R_VideoInfo_f(void){
 
@@ -1703,6 +1712,7 @@ R_Init
 int GL_QueryBits;
 int ocQueries[MAX_FLARES];
 int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
+HANDLE	fProgram_hThread = NULL;
 
 int R_Init(void *hinstance, void *hWnd)
 {
@@ -1987,6 +1997,27 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 			Com_Printf("...using GL_ARB_vertex_shader\n");
 	gl_state.glsl = true;	
 
+
+	gl_state.glslBinary = false;
+	if ( strstr( gl_config.extensions_string, "GL_ARB_get_program_binary" ) )
+	{		
+		int numFormats;
+		glGetProgramBinary	=	(PFNGLGETPROGRAMBINARYPROC)		qwglGetProcAddress("glGetProgramBinary");
+		glProgramBinary	=		(PFNGLPROGRAMBINARYPROC)		qwglGetProcAddress("glProgramBinary");
+		glProgramParameteri	=	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
+
+		if(glGetProgramBinary && glProgramBinary && glProgramParameteri)
+			Com_Printf("...using GL_ARB_get_program_binary\n");
+			qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &numFormats);
+			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " binary formats\n", numFormats);
+			gl_state.glslBinary = true;
+
+	} else {
+		Com_Printf(S_COLOR_RED"...GL_ARB_get_program_binary not found\n");
+		gl_state.glslBinary = false;		
+	}
+
+
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &gl_config.maxVertexUniformComponents);
@@ -2049,7 +2080,10 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	qglUniformMatrix3fv =			(PFNGLUNIFORMMATRIX3FVPROC)         qwglGetProcAddress("glUniformMatrix3fv");
 	qglUniformMatrix4fv =			(PFNGLUNIFORMMATRIX4FVPROC)			qwglGetProcAddress("glUniformMatrix4fv");
 	
+
 	R_InitPrograms();
+	
+		
 	}
 
 	}

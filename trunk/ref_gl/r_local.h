@@ -580,6 +580,7 @@ typedef struct {
 	qboolean nv_conditional_render;
 	qboolean glsl;
 	qboolean nPot;
+	qboolean glslBinary;
 	unsigned vboId;
 	int	programId;
 	int		lastdFactor;

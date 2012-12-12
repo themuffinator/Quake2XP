@@ -694,6 +694,8 @@ void SaveLights_f(void) {
 	FS_StripExtension(r_worldmodel->name, name, sizeof (name));
 	Com_sprintf(path, sizeof(path),"%s/%s.xplit", FS_Gamedir(), name);
 	remove(path); //remove prev version
+
+	Com_sprintf(path, sizeof(path),"%s/%s.xplit", FS_Gamedir(), name);
 	f = fopen(path, "w");
 	if(!f) {
 		Com_Printf("Could not open %s.\n", path);
@@ -724,8 +726,9 @@ void SaveLights_f(void) {
 	
 		Com_Printf(""S_COLOR_MAGENTA"SaveLights_f: "S_COLOR_WHITE"Save lights to "S_COLOR_GREEN"%s.xplit\n"S_COLOR_WHITE"Save "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", name, i);
 	
-		if (!strcmp(Cmd_Argv(1), "restart"))
+		if (!strcmp(Cmd_Argv(1), "restart")){
 			vid_ref->modified = true; // force restart
+		}
 }
 int numLightQ;
 

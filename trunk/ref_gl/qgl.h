@@ -683,6 +683,9 @@ extern PFNGLISPROGRAMARBPROC						glIsProgramARB;
 extern PFNGLBEGINCONDITIONALRENDERNVPROC			glBeginConditionalRenderNV;
 extern PFNGLENDCONDITIONALRENDERNVPROC				glEndConditionalRenderNV;
 
+extern PFNGLGETPROGRAMBINARYPROC					glGetProgramBinary;
+extern PFNGLPROGRAMBINARYPROC						glProgramBinary;
+extern PFNGLPROGRAMPARAMETERIPROC					glProgramParameteri;
 
 extern	PFNGLCREATESHADERPROC					qglCreateShader;
 extern	PFNGLCREATEPROGRAMOBJECTARBPROC			qglCreateProgram;

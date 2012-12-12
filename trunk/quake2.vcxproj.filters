@@ -394,155 +394,155 @@
     <None Include="win32\q2.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\..\baseq2\glsl\aliasBump.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\aliasBump.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\ambientAlias.defs">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\ambientAlias.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\ambientAlias.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\ambientWorld.defs">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\ambientWorld.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\ambientWorld.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\bloomds.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\bloomds.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\bloomfp.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\bloomfp.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\cin.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\cin.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\dof.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\dof.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\filmGrain.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\filmGrain.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\fxaa.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\fxaa.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\gaussX.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\gaussX.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\gaussY.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\gaussY.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\generic.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\generic.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\lightWorld.defs">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\lightWorld.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\lightWorld.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\loading.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\loading.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\particles.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\particles.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\radialBlur.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\radialBlur.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\refract.defs">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\refract.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\refract.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\shadow.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\shadow.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\thermal.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\thermal.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\thermalfp.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\thermalfp.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\water.defs">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\water.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\water.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\..\baseq2\glsl\include\depth.inc">
+    <None Include="..\baseq2\glsl\include\depth.inc">
       <Filter>Source Files\Renderer\glsl\include</Filter>
     </None>
-    <None Include="..\..\baseq2\glsl\include\lighting.inc">
+    <None Include="..\baseq2\glsl\include\lighting.inc">
       <Filter>Source Files\Renderer\glsl\include</Filter>
     </None>
-    <None Include="..\..\baseq2\glsl\include\parallax.inc">
+    <None Include="..\baseq2\glsl\include\parallax.inc">
       <Filter>Source Files\Renderer\glsl\include</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\aliasBump.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\aliasBump.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientAlias.defs">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientAlias.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientAlias.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientWorld.defs">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientWorld.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientWorld.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\bloomds.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\bloomds.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\bloomfp.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\bloomfp.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\cin.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\cin.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\dof.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\dof.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\filmGrain.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\filmGrain.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\fxaa.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\fxaa.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\gaussX.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\gaussX.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\gaussY.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\gaussY.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\generic.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\generic.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\lightWorld.defs">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\lightWorld.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\lightWorld.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\loading.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\loading.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\particles.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\particles.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\radialBlur.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\radialBlur.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\refract.defs">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\refract.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\refract.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\shadow.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\shadow.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\thermal.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\thermal.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\thermalfp.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\thermalfp.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\water.defs">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\water.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\water.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

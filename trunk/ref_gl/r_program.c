@@ -6,6 +6,7 @@
 ==============================
 */
 #include "r_local.h"
+#include <process.h>
 
 #define MAX_INFO_LOG		4096
 
@@ -250,22 +251,67 @@ and insert included file contents.
     return glsl;
 }
 
+
+/*
+===============================
+Try To Load Precompiled Shaders
+===============================
+*/
+static 	GLenum		binaryFormat = 0;
+
+qboolean R_LoadBinaryShader(char *shaderName, int shaderId, int mutatorIndex){
+
+	char			name[MAX_QPATH];
+	GLint			binLength;
+    GLvoid*			bin;
+    GLint			success;
+    FILE*			binFile;
+	
+	Com_sprintf(name, sizeof(name), "%s/glslbin/%s_%i.bin", FS_Gamedir(), shaderName, mutatorIndex);
+	FS_CreatePath(name);
+
+	binFile = fopen(name, "rb");
+	if(!binFile){
+		return false;
+	}else{
+	fseek(binFile, 0, SEEK_END);
+    binLength = (GLint)ftell(binFile);
+    bin = (GLvoid*)malloc(binLength);
+    fseek(binFile, 0, SEEK_SET);
+    fread(bin, binLength, 1, binFile);
+    fclose(binFile);
+
+	glProgramBinary(shaderId, binaryFormat, bin, binLength);
+	qglGetProgramiv(shaderId, GL_LINK_STATUS, &success);
+	free(bin);	        
+        
+		if (success){
+			return true;
+		}
+	}
+	return false;
+}
+
 /*
 ==============
 R_CreateProgram
 
 ==============
 */
+
 static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const char *vertexSource, const char *fragmentSource) {
-	char		log[MAX_INFO_LOG];
-	unsigned	hash;
+	char			log[MAX_INFO_LOG];
+	unsigned		hash;
 	glslProgram_t	*program;
-	const char	*strings[MAX_PROGRAM_DEFS * 3 + 2];
-	int			numStrings;
-	int			numLinked = 0;
-	int			id, vertexId, fragmentId;
-	int			status;
-	int			i, j;
+	const char		*strings[MAX_PROGRAM_DEFS * 3 + 2];
+	int				numStrings;
+	int				numLinked = 0;
+	int				id, vertexId, fragmentId;
+	int				status;
+	int				i, j;
+	GLint			binLength;
+    GLvoid*			bin;
+    FILE*			binFile;
 
 	if ((vertexSource && strlen(vertexSource) < 17) || (fragmentSource && strlen(fragmentSource) < 17))
 		return NULL;
@@ -390,6 +436,11 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 
 		id = qglCreateProgram();
 		
+		if(gl_state.glslBinary){
+		if(R_LoadBinaryShader(program->name, id, i))
+			goto end;
+		}
+
 		qglBindAttribLocation(id, ATRB_POSITION,	"a_vertArray");	
 		qglBindAttribLocation(id, ATRB_NORMAL,		"a_normArray");
 		qglBindAttribLocation(id, ATRB_TEX0,		"a_texCoord");
@@ -409,8 +460,27 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 			qglDeleteShader(fragmentId);
 		}
 		
+		if(gl_state.glslBinary)
+			glProgramParameteri(id, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+		
 		qglLinkProgram(id);
 		qglGetProgramiv(id, GL_LINK_STATUS, &status);
+		
+		if(gl_state.glslBinary){
+			
+		char name[MAX_QPATH];
+		
+		qglGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binLength);
+		bin = (GLvoid*)malloc(binLength);
+		glGetProgramBinary(id, binLength, NULL, &binaryFormat, bin);
+		
+		Com_sprintf(name, sizeof(name), "%s/glslbin/%s_%i.bin", FS_Gamedir(), program->name, i);
+		FS_CreatePath(name);
+		binFile = fopen(name, "wb");
+        fwrite(bin, binLength, 1, binFile);
+        fclose(binFile);
+        free(bin);
+		}
 
 		R_GetInfoLog(id, log, true);
 
@@ -428,7 +498,7 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 		}
 
 		// TODO: glValidateProgram?
-
+end:
 		/// Berserker's fix start
 		if (defines)
 			free(defines);
@@ -456,14 +526,16 @@ R_FindProgram
 
 ==============
 */
+
 glslProgram_t *R_FindProgram(const char *name, qboolean vertex, qboolean fragment) {
-	char		filename[MAX_QPATH];
-	char		newname[MAX_QPATH];
+	char			filename[MAX_QPATH];
+	char			newname[MAX_QPATH];
 	glslProgram_t	*program;
-	char		*defs, *vertexSource = NULL, *fragmentSource = NULL;
-	
+	char			*defs, *vertexSource = NULL, *fragmentSource = NULL;
+
 	if (!vertex && !fragment)
 		return &r_nullProgram;
+
 
 	Q_snprintfz(newname, sizeof(newname), "%s%s", name, !vertex ? "(fragment)" : !fragment ? "(vertex)" : "");
 
@@ -486,8 +558,9 @@ glslProgram_t *R_FindProgram(const char *name, qboolean vertex, qboolean fragmen
 
 	if (!vertexSource && !fragmentSource)
 		return &r_nullProgram;		// no appropriate shaders found
-
+		
 	program = R_CreateProgram(newname, defs, vertexSource, fragmentSource);
+
 
 	if (defs)
 		FS_FreeFile(defs);
@@ -508,11 +581,15 @@ R_InitPrograms
 
 =============
 */
+
+
 void R_InitPrograms(void) {
-	int missing = 0;
+	int missing = 0, loadingTime=0, loadingTime2=0, sec;
 	
 	Com_Printf("\nInitializing programs...\n\n");
 	
+	loadingTime = Sys_Milliseconds ();
+
 	memset(programHashTable, 0, sizeof(programHashTable));
 	memset(&r_nullProgram, 0, sizeof(glslProgram_t));
 
@@ -712,6 +789,11 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
+	
+	loadingTime2 = Sys_Milliseconds ();
+	sec = loadingTime2 - loadingTime;
+//	sec *=0.001;
+	Com_Printf("Programs loading time = %i msec\n",sec);
 
 	Com_Printf("\n");
 //	if (missing > 0)
