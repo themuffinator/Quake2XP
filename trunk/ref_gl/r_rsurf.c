@@ -721,8 +721,7 @@ void GL_CreateLightPoly(msurface_t * surf)
 	}
 	
 }
-void R_EditLightRemove(worldShadowLight_t	*light);
-void R_EditLightSpawn(worldShadowLight_t *light);
+
 
 static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 {
@@ -733,8 +732,6 @@ static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 	float		scale[2];
 	glpoly_t	*poly;
 
-	R_EditLightRemove(light);
-	R_EditLightSpawn(light);
 
 	if (r_parallax->value)
 		defBits = worldDefs.LightParallaxBit;

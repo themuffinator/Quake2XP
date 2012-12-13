@@ -45,7 +45,6 @@ typedef struct worldShadowLight_s {
 	qboolean isShadow;
 	qboolean isStatic;
 	qboolean isNoWorldModel;
-	qboolean ignore;
 
 	int style;
 	//pvs cullung
@@ -61,7 +60,6 @@ typedef struct worldShadowLight_s {
 } worldShadowLight_t;
 
 #define MAX_WORLD_SHADOW_LIHGTS 4096
-int r_numIgnoreLights;
 int r_numWorlsShadowLights;
 
 typedef struct {
