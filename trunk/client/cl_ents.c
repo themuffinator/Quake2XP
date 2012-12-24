@@ -696,7 +696,6 @@ void CL_AddPacketEntities(frame_t * frame)
 	clientinfo_t *ci;
 	unsigned int effects, renderfx;
 	qboolean predator = false;
-	vec3_t minsHack, maxsHack;
 
 	// bonus items rotate at a fixed rate
 	autorotate = anglemod(cl.time / 10);
@@ -935,9 +934,6 @@ void CL_AddPacketEntities(frame_t * frame)
 		if (s1->number == cl.playernum + 1) {
 			ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
 			player_camera = true;	// set filter for power shells and over
-			
-			VectorSet(minsHack, ent.model->mins[0], ent.model->mins[1], ent.model->mins[2]);
-			VectorSet(maxsHack, ent.model->maxs[0], ent.model->maxs[1], ent.model->maxs[2]);
 
 			// fixed player origin from EGL
 			if ((cl_predict->value)
@@ -1092,9 +1088,6 @@ next:
 		if (s1->modelindex2) {
 			if (player_camera)
 				ent.flags |= RF_VIEWERMODEL;	// dont draw 3th person  weapon
-			
-			VectorCopy(minsHack,ent.model->mins);
-			VectorCopy(maxsHack,ent.model->maxs);
 
 			// Predator Mod Stuff
 			if(predator)
@@ -1134,9 +1127,7 @@ next:
 				ent.alpha = 0.32;
 				ent.flags = RF_TRANSLUCENT;
 			}
-						
-			VectorCopy(minsHack,ent.model->mins);
-			VectorCopy(maxsHack,ent.model->maxs);
+
 
 			// pmm
 			V_AddEntity(&ent);

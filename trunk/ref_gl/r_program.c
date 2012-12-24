@@ -584,8 +584,9 @@ R_InitPrograms
 
 
 void R_InitPrograms(void) {
-	int missing = 0, loadingTime=0, loadingTime2=0, sec;
-	
+	int missing = 0, loadingTime=0, loadingTime2=0;
+	float sec;
+
 	Com_Printf("\nInitializing programs...\n\n");
 	
 	loadingTime = Sys_Milliseconds ();
@@ -791,9 +792,9 @@ void R_InitPrograms(void) {
 	}
 	
 	loadingTime2 = Sys_Milliseconds ();
-	sec = loadingTime2 - loadingTime;
-//	sec *=0.001;
-	Com_Printf("Programs loading time = %i msec\n",sec);
+	sec = (float)loadingTime2 - (float)loadingTime;
+	sec *=0.001;
+	Com_Printf("Programs loading time = %0.4f msec\n",sec);
 
 	Com_Printf("\n");
 //	if (missing > 0)

@@ -319,7 +319,6 @@ void GL_RenderVolumes(dmdl_t * paliashdr, vec3_t lightdir, int projdist){
 
 void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 {
-	worldShadowLight_t *shadowLight;
 	vec3_t				light, temp, mins, maxs;
 	float				dist, projdist, scale;
 	mat3_t				entityAxis;
@@ -330,59 +329,35 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
 
-	R_PrepareShadowLightFrame();
-	
-	if(shadowLight_frame) {
+	if(numShadows > r_maxShadowsLightsPerModel->value)
+		return;
+
+	if(VectorCompare(currentShadowLight->origin, currententity->origin))
+		return;
 		
-		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
+	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
+		return;
 
-		if(numShadows > r_maxShadowsLightsPerModel->value)
-			continue;
-
-		if(VectorCompare(shadowLight->origin, currententity->origin))
-		   continue;
-		
-		if(!BoundsAndSphereIntersect(mins, maxs, shadowLight->origin, shadowLight->radius))
-			continue;
-
-		VectorSubtract(currententity->origin, shadowLight->origin, temp);
+		VectorSubtract(currententity->origin, currentShadowLight->origin, temp);
 		dist = VectorLength(temp);
-		scale = shadowLight->radius * 2.5;
+		scale = currentShadowLight->radius * 2.5;
 		projdist = scale - dist;
 
 		AnglesToMat3(currententity->angles, entityAxis);
-		VectorSubtract(shadowLight->origin, currententity->origin, temp);
+		VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
 		Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-		
-		if(shadowLight->isStatic)
-			light[2] = currententity->maxs[2]+95;
 		
 		// light behind the wall 
 		if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, shadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_SOLID);
+			r_trace = CM_BoxTrace(currententity->origin, currentShadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_SOLID);
 		
 				if(r_trace.fraction != 1.0)
-					continue;
+					return;
 		}
 
 		GL_RenderVolumes(paliashdr, light, projdist);
 		currententity->lightVised = true;
 		numShadows++;
-		}
-				
-	}
-	
-	if(!currententity->lightVised){
-		vec3_t staticOrg;
-		VectorSet(staticOrg, currententity->origin[0], currententity->origin[1], currententity->origin[2]);
-		staticOrg[2] += 200;
-		AnglesToMat3(currententity->angles, entityAxis);
-		VectorSubtract(staticOrg, currententity->origin, temp);
-		Mat3_TransposeMultiplyVector(entityAxis, temp, staticOrg);	
-		projdist = currententity->model->radius + 25;	
-		GL_RenderVolumes(paliashdr, staticOrg, projdist);
-	}
-
 }
 
 
@@ -415,36 +390,12 @@ void R_DrawShadowVolume(entity_t * e)
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*v, *ov, *verts;
 	int				*order, i;
-	float			frontlerp, rad;
-	vec3_t			move, delta, vectors[3], frontv, backv, tmp, maxs, mins;
+	float			frontlerp;
+	vec3_t			move, delta, vectors[3], frontv, backv;
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-
-	if (r_newrefdef.vieworg[2] + 25 < (currententity->origin[2]))
-		return;
-
-	VectorAdd(e->origin, currententity->model->maxs, maxs);
-	VectorAdd(e->origin, currententity->model->mins, mins);
-
-	VectorSubtract(maxs, mins, tmp);
-	rad = VectorLength (tmp);
-	rad *= 1.666;
-
-	if( R_CullSphere(e->origin, rad) )
-		return;
-
-	if(CL_PMpointcontents(maxs) & MASK_WATER)
-		return;
 	
-	if (r_newrefdef.areabits){
-	
-		trace_t tr = CM_BoxTrace(r_origin, e->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
-		
-		if(tr.fraction != 1.0)
-			return;
-	}
-
 	paliashdr = (dmdl_t *) currentmodel->extradata;
 
 	frame = (daliasframe_t *) ((byte *) paliashdr   + paliashdr->ofs_frames

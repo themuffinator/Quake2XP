@@ -590,69 +590,47 @@ static vec3_t	lightArray[2] =	{
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 {
-	worldShadowLight_t *shadowLight;
 	vec3_t				temp, light, mins, maxs;
 	mat3_t				entityAxis;
 	trace_t				r_trace;
 	int					numLights= 1;
+	vec3_t sColor;
 
 	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
-
-	R_PrepareShadowLightFrame();
-
-	if(shadowLight_frame) {
-		
-		for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
-			vec3_t sColor;
-
+	currententity->lightVised = false;
 			if(numLights > r_maxShadowsLightsPerModel->value)
-				continue;
+				return;
 
 			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-				if(!shadowLight->isNoWorldModel)
-					continue;
+				if(!currentShadowLight->isNoWorldModel)
+					return;
 
-			if(VectorCompare(shadowLight->origin, currententity->origin))
-			   continue;
+			if(VectorCompare(currentShadowLight->origin, currententity->origin))
+			   return;
 
 			// light behind the wall 
 			if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, shadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			r_trace = CM_BoxTrace(currententity->origin, currentShadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
 			if(r_trace.fraction != 1.0)
-				continue;
+				return;
 			}
 
-			if(!BoundsAndSphereIntersect(mins, maxs, shadowLight->origin, shadowLight->radius))
-				continue;
+			if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
+				return;
 			
-			if(shadowLight->isStatic && !shadowLight->style)
+			if(currentShadowLight->isStatic && !currentShadowLight->style)
 			{	
 			if(!FoundReLight){
-				R_LightPoint (shadowLight->origin, sColor, true);
-				VectorCopy(sColor, shadowLight->color);
+				R_LightPoint (currentShadowLight->origin, sColor, true);
+				VectorCopy(sColor, currentShadowLight->color);
 				}
 			}
 			AnglesToMat3(currententity->angles, entityAxis);
-			VectorSubtract(shadowLight->origin, currententity->origin, temp);
+			VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
 			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
-			GL_DrawAliasFrameLerpArb(paliashdr, light, shadowLight->radius, shadowLight->color);
 			currententity->lightVised = true;
+			GL_DrawAliasFrameLerpArb(paliashdr, light, currentShadowLight->radius, currentShadowLight->color);
 			numLights++;
-			}
-		}
 
-		if(!currententity->lightVised){
-		vec3_t clr;
-		vec3_t staticOrg;
-		VectorSet(staticOrg, currententity->origin[0], currententity->origin[1], currententity->origin[2]);
-		staticOrg[0] += 15;
-		staticOrg[2] += 100;
-		R_LightPoint (currententity->origin, clr, true);
-		
-		AnglesToMat3(currententity->angles, entityAxis);
-		VectorSubtract(staticOrg, currententity->origin, temp);
-		Mat3_TransposeMultiplyVector(entityAxis, temp, staticOrg);	
-		GL_DrawAliasFrameLerpArb(paliashdr, staticOrg, 300, clr);
-		}
 }

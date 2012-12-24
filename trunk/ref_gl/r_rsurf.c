@@ -1077,8 +1077,6 @@ qboolean R_FillLightChain (worldShadowLight_t *light)
 
 void R_DrawLightWorld(void)
 {
-	worldShadowLight_t *shadowLight;
-
 	if(!r_bumpWorld->value)
 		return;
 
@@ -1101,33 +1099,24 @@ void R_DrawLightWorld(void)
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
 
 	
-	qglDepthMask(0);
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_ONE, GL_ONE);
-
-	R_PrepareShadowLightFrame();
-	
-	if(shadowLight_frame) {
-	
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
 	num_visLights = 0;
-	for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
 
-		if(!R_DrawLightOccluders(shadowLight))
-			continue;
+		if(!R_DrawLightOccluders(currentShadowLight))
+			return;
 				
 		if(!FoundReLight){
-		if(shadowLight->style || !shadowLight->isStatic){
+		if(currentShadowLight->style || !currentShadowLight->isStatic){
 
-			if(R_FillLightChain(shadowLight))
-				GL_BatchLightPass(shadowLight, false);
-			R_DrawDebugLight(shadowLight);
+			if(R_FillLightChain(currentShadowLight))
+				GL_BatchLightPass(currentShadowLight, false);
+			R_DrawDebugLight(currentShadowLight);
 			}
 		}else{
-			if(R_FillLightChain(shadowLight))
-				GL_BatchLightPass(shadowLight, false);
-			R_DrawDebugLight(shadowLight);
+			if(R_FillLightChain(currentShadowLight))
+				GL_BatchLightPass(currentShadowLight, false);
+			R_DrawDebugLight(currentShadowLight);
 	
 		}
 
@@ -1135,13 +1124,7 @@ void R_DrawLightWorld(void)
 
 	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
 		glEndConditionalRenderNV();
-	}
 
-	}
-
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDepthMask(1);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -1504,7 +1487,7 @@ qboolean R_MarkBrushModelSurfaces(worldShadowLight_t *shadowLight)
 
 void R_DrawLightBrushModel(entity_t * e)
 {
-	worldShadowLight_t *shadowLight;
+
 	vec3_t				mins, maxs;
 	int					i;
     qboolean			rotated;
@@ -1577,60 +1560,45 @@ void R_DrawLightBrushModel(entity_t * e)
 	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
 	
-	qglDepthMask(0);
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_ONE, GL_ONE);
 
-	R_PrepareShadowLightFrame();
-	
-	if(shadowLight_frame) {
-	
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
 	num_visLights = 0;
-
-	for(shadowLight = shadowLight_frame; shadowLight; shadowLight = shadowLight->next) {
 		
-		VectorCopy(shadowLight->origin, oldLight);
+		VectorCopy(currentShadowLight->origin, oldLight);
 		
-		if(!R_DrawLightOccluders(shadowLight))
-			continue;
+		if(!R_DrawLightOccluders(currentShadowLight))
+			return;
 
 		if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
 		{
-		VectorSubtract(shadowLight->origin, currententity->origin, tmp);
+		VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
 		AnglesToMat3(currententity->angles, entityAxis);
-		Mat3_TransposeMultiplyVector(entityAxis, tmp, shadowLight->origin);
+		Mat3_TransposeMultiplyVector(entityAxis, tmp, currentShadowLight->origin);
 		}
 		else
-		VectorSubtract(shadowLight->origin, currententity->origin, shadowLight->origin);
+		VectorSubtract(currentShadowLight->origin, currententity->origin, currentShadowLight->origin);
 		
 		if(!FoundReLight){
 				
-			if(shadowLight->style || !shadowLight->isStatic){
-			if(R_MarkBrushModelSurfaces(shadowLight))
-						GL_BatchLightPass(shadowLight, true);
-			R_DrawDebugLight(shadowLight);
+			if(currentShadowLight->style || !currentShadowLight->isStatic){
+			if(R_MarkBrushModelSurfaces(currentShadowLight))
+						GL_BatchLightPass(currentShadowLight, true);
+			R_DrawDebugLight(currentShadowLight);
 			}
 
 		} else{
 
-			if(R_MarkBrushModelSurfaces(shadowLight))
-						GL_BatchLightPass(shadowLight, true);
-			R_DrawDebugLight(shadowLight);
+			if(R_MarkBrushModelSurfaces(currentShadowLight))
+						GL_BatchLightPass(currentShadowLight, true);
+			R_DrawDebugLight(currentShadowLight);
 		}
 
-		VectorCopy(oldLight, shadowLight->origin);
+		VectorCopy(oldLight, currentShadowLight->origin);
 		num_visLights++;
 
 		if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
 			glEndConditionalRenderNV();
-		}
-	}
-	
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDepthMask(1);
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);

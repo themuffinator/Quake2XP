@@ -36,6 +36,12 @@ WORLD LIGHTS
 ==============================================================================
 */
 
+typedef struct screenrect_s
+{
+	int coords[4];
+	struct screenrect_s *next;
+} screenrect_t;
+
 typedef struct worldShadowLight_s {
 	vec3_t origin;
 	float radius;
@@ -53,6 +59,7 @@ typedef struct worldShadowLight_s {
 	// for backface culling
 	msurface_t *surf;
 	unsigned int occQ;
+	screenrect_t	scizz;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
@@ -61,6 +68,7 @@ typedef struct worldShadowLight_s {
 
 #define MAX_WORLD_SHADOW_LIHGTS 4096
 int r_numWorlsShadowLights;
+extern worldShadowLight_t *currentShadowLight;
 
 typedef struct {
 	vec3_t origin;
@@ -77,6 +85,7 @@ typedef struct {
 	int area;
 
 } flare_t;
+
 int r_numflares;
 int r_numIgnoreflares;
 flare_t r_flares[MAX_FLARES];

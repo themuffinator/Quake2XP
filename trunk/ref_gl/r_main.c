@@ -212,6 +212,18 @@ float SphereInFrustum( vec3_t o, float radius )
    return d + radius;
 }
 
+qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p)
+{
+	if (p[0] > maxs[0]) return false;
+	if (p[1] > maxs[1]) return false;
+	if (p[2] > maxs[2]) return false;
+ 
+	if (p[0] < mins[0]) return false;
+	if (p[1] < mins[1]) return false;
+	if (p[2] < mins[2]) return false;
+
+	return true;
+}
 void R_RotateForEntity(entity_t * e)
 {
 	qglTranslatef(e->origin[0], e->origin[1], e->origin[2]);
@@ -603,12 +615,12 @@ PENTA:
 from http://www.markmorley.com/opengl/frustumculling.html
 Should clean it up by using procedures.
 */
+float clip[16];
 
 void ExtractFrustum()			// <AWE> added return type.
 {
 	float proj[16];
 	float modl[16];
-	float clip[16];
 	float t;
 
 	/* Get the current PROJECTION matrix from OpenGL */
@@ -833,9 +845,10 @@ void R_SetupGL(void)
 
 
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
-
-
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
+
+	ExtractFrustum();
+
 	// 
 	// set drawing parms
 	// 
@@ -874,15 +887,12 @@ void R_CastShadowVolumes(void)
 	qglDepthFunc(GL_LESS);
 	
 	if (r_shadowVolumesDebug->value){
-		qglColor4f(0.8, 0.3, 0, 0.2);
-		qglEnable(GL_BLEND);
+		qglColor4f(0.8, 0.3, 0, 0.1);
 	}
-	else
-		qglColorMask(0, 0, 0, 0);
-	
-	qglEnable(GL_STENCIL_TEST);
-	qglStencilMask(255);
-	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	else{
+	qglColorMask(0, 0, 0, 0);
+	qglDisable(GL_BLEND);	
+	}
 		
 	for (i = 0; i < r_newrefdef.num_entities; i++) 
 	{
@@ -909,12 +919,10 @@ void R_CastShadowVolumes(void)
 		
 		R_DrawShadowVolume(currententity);
 	}
-	
-	qglDisable(GL_STENCIL_TEST);
+
 	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDepthMask(true);
-	if (r_shadowVolumesDebug->value)
-	qglDisable(GL_BLEND);
+	qglDepthMask(1);
+	qglEnable(GL_BLEND);
 	qglDepthFunc(GL_LEQUAL);
 	qglColor4f(1,1,1,1);
 	qglColorMask(1, 1, 1, 1);
@@ -929,10 +937,6 @@ R_Clear
 
 void R_Clear(void)
 {
-	qglClearStencil(128);
-	qglStencilMask(255);
-	qglClear(GL_STENCIL_BUFFER_BIT);
-
 	qglClear(GL_DEPTH_BUFFER_BIT);
 	gldepthmin = 0;
 	gldepthmax = 1;
@@ -981,7 +985,7 @@ jump:
 				break;
 			case mod_brush:
 				R_DrawBrushModel(currententity);
-				R_DrawLightBrushModel(currententity);
+	//			R_DrawLightBrushModel(currententity);
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
@@ -1089,6 +1093,7 @@ void R_DrawPlayerWeapon(void)
 }
 
 void R_DrawAliasModelLightPass (qboolean weapon_model);
+worldShadowLight_t *currentShadowLight;
 
 void R_DrawPlayerWeaponLightPass(void)
 {
@@ -1103,60 +1108,129 @@ void R_DrawPlayerWeaponLightPass(void)
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
-	
-	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
-	{
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		if (currententity->flags & RF_TRANSLUCENT)
-			continue;
 
-		if (!currentmodel)
-			continue;
-		if (currentmodel->type != mod_alias)
-			continue;
-		if (!(currententity->flags & RF_WEAPONMODEL))
-			continue;
-		R_DrawAliasModelLightPass(true);
+	R_PrepareShadowLightFrame();
+	
+	if(shadowLight_frame) {
+
+	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
+
+		for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
+		{
+			currententity = &r_newrefdef.entities[i];
+			currentmodel = currententity->model;
+			if (currententity->flags & RF_TRANSLUCENT)
+				continue;
+
+			if (!currentmodel)
+				continue;
+			if (currentmodel->type != mod_alias)
+				continue;
+			if (!(currententity->flags & RF_WEAPONMODEL))
+				continue;
+			R_DrawAliasModelLightPass(true);
+		}
 	}
+}
 	qglDepthMask(1);
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void R_DrawEntitiesLightPass(void)
+qboolean R_CheckRectList(screenrect_t *rec);
+void R_AddRectList(screenrect_t *rec);
+extern screenrect_t	*recList;					//first rectangle of the list
+extern screenrect_t	totalRect;					//rectangle that holds all rectangles in the list
+
+void R_DrawShadowLightPass(void)
 {
 	int i;
 
 	if (!r_drawEntities->value)
 		return;
-
+	
 	if(!r_bumpAlias->value)
 		return;
 
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
+	qglEnable(GL_STENCIL_TEST);
+//	qglEnable(GL_SCISSOR_TEST);
+//	qglScissor(r_viewport[0], r_viewport[1], r_viewport[2], r_viewport[3]);
 
-	for (i = 0; i < r_newrefdef.num_entities; i++)	
-	{
+	R_PrepareShadowLightFrame();
+	
+	if(shadowLight_frame) {
+
+	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
+	
+	//if (R_CheckRectList(&currentShadowLight->scizz))
+	//	//we can have another go without clearing
+	//	R_AddRectList(&currentShadowLight->scizz);
+	//else
+	//	{
+	////Only clear dirty part
+	//qglScissor(totalRect.coords[0], totalRect.coords[1], totalRect.coords[2]-totalRect.coords[0], totalRect.coords[3]-totalRect.coords[1]);
+	//
+	//qglClearStencil(128);
+	//qglStencilMask(255);
+	//qglClear(GL_STENCIL_BUFFER_BIT);
+
+	//recList = NULL;
+	//R_AddRectList(&currentShadowLight->scizz);
+	//}
+	//	
+	//qglScissor(	currentShadowLight->scizz.coords[0], 
+	//			currentShadowLight->scizz.coords[1], 
+	//			currentShadowLight->scizz.coords[2]-currentShadowLight->scizz.coords[0], 
+	//			currentShadowLight->scizz.coords[3]-currentShadowLight->scizz.coords[1]);
+
+	qglClearStencil(128);
+	qglStencilMask(255);
+	qglClear(GL_STENCIL_BUFFER_BIT);
+
+	qglStencilMask(255);
+	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	R_CastShadowVolumes();
+
+	qglStencilFunc(GL_EQUAL, 128, 255);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	qglStencilMask(0);
+
+	R_DrawLightWorld();
+
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		if (currententity->flags & RF_TRANSLUCENT)
-			continue;
 
-		if (!currentmodel)
-			continue;
-		if (currentmodel->type != mod_alias)
-			continue;
 		if (currententity->flags & RF_WEAPONMODEL)
 			continue;
 
-		R_DrawAliasModelLightPass(false);
+		if (currententity->flags & RF_TRANSLUCENT)
+			continue;			
+
+		if (currententity->flags & RF_DISTORT)
+				continue;
+
+
+			currentmodel = currententity->model;
+			if (!currentmodel) {
+				R_DrawNullModel();
+				continue;
+			}
+			if (currentmodel->type == mod_brush) 
+				R_DrawLightBrushModel(currententity);
+			if(currentmodel->type == mod_alias)
+				R_DrawAliasModelLightPass(false);
+		}
+
 	}
+	}
+	qglDepthMask(1);
+	qglDisable(GL_STENCIL_TEST);
+	qglDisable(GL_SCISSOR_TEST);
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDepthMask(1);
 
 }
 
@@ -1220,17 +1294,12 @@ if (r_noRefresh->value)
 	R_MarkLeaves();				// done here so we know if we're in water
 
 	R_DrawBSP();
-	R_DrawLightWorld();
-	R_RenderDecals();
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
 
 	R_BlobShadow();
-	R_CastShadowVolumes();	
-	R_DrawEntitiesLightPass();
-	R_ShadowBlend();
-	
-//	Com_Printf("draw %i lights\n", num_visLights);
+	R_DrawShadowLightPass();
+	R_RenderDecals();
 
 	R_RenderFlares();
 	R_DrawParticles(true); //underwater particles
@@ -1509,7 +1578,6 @@ vid_ref->modified = true;
 }
 
 void SaveLights_f(void);
-void RemoveLight_f(void);
 
 void R_RegisterCvars(void)
 {
@@ -1593,7 +1661,7 @@ void R_RegisterCvars(void)
 	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "1.0", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
-	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "32", CVAR_ARCHIVE);
+	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
 	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
 	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
