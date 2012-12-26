@@ -274,7 +274,7 @@ next:
 	}
 	
 
-	if(!r_bumpAlias->value)
+	if(!r_pplWorld->value)
 		SetModelsLight(false);
 	else
 		SetModelsLight(true);
@@ -301,7 +301,7 @@ next:
 		currententity->oldframe = 0;
 	}
 		
-	if(r_bumpAlias->value){
+	if(r_pplWorld->value){
 	VectorCopy(shadelight, diffuseLight);
 	VectorScale(shadelight, r_pplWorldAmbient->value, shadelight);
 	}	
@@ -316,7 +316,7 @@ next:
 	else 
 		GL_DrawAliasFrameLerpAmbient(paliashdr, shadelight);
 		
-	if(r_bumpAlias->value)
+	if(r_pplWorld->value)
 		VectorCopy(diffuseLight, shadelight);
 
 	qglPopMatrix();
@@ -384,7 +384,7 @@ next:
 }
 
 
-void R_DrawAliasModelLightPass (qboolean weapon_model,  worldShadowLight_t *shadowLight)
+void R_DrawAliasModelLightPass (qboolean weapon_model)
 {
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];

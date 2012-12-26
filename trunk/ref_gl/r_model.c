@@ -192,7 +192,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 	VectorCopy(origin, r_flares[r_numflares].origin);
 	VectorCopy(tmp, r_flares[r_numflares].lightsurf_origin);
 	r_flares[r_numflares].surf = surf;
-	r_flares[r_numflares].style = 1;
+	r_flares[r_numflares].style = 0;
 
 	leafnum = CM_PointLeafnum(r_flares[r_numflares].origin);
 	cluster = CM_LeafCluster(leafnum);
@@ -205,9 +205,6 @@ void GL_AddFlareSurface(msurface_t * surf)
 
 	r_numflares++;
 	free(buffer);
-
-//	Com_Printf("%i num x%i y%i z%i org\n", numShadowLights,  sl->color[0], sl->color[1], sl->color[2]);
-
 
 }
 

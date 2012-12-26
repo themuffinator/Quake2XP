@@ -224,6 +224,19 @@ qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p)
 
 	return true;
 }
+
+qboolean EntityInLightSphere(worldShadowLight_t *light) {
+
+	vec3_t dst;
+
+	VectorSubtract (light->origin, currententity->origin, dst);
+	return
+		(VectorLength (dst) < (light->radius + currentmodel->radius));
+
+		
+		
+}
+
 void R_RotateForEntity(entity_t * e)
 {
 	qglTranslatef(e->origin[0], e->origin[1], e->origin[2]);
@@ -610,169 +623,6 @@ void MyGlPerspective(GLdouble fov, GLdouble aspectr, GLdouble zNear)
 	qglLoadMatrixd(&p[0][0]);
 }
 
-/*
-PENTA:
-from http://www.markmorley.com/opengl/frustumculling.html
-Should clean it up by using procedures.
-*/
-float clip[16];
-
-void ExtractFrustum()			// <AWE> added return type.
-{
-	float proj[16];
-	float modl[16];
-	float t;
-
-	/* Get the current PROJECTION matrix from OpenGL */
-	qglGetFloatv(GL_PROJECTION_MATRIX, proj);
-
-	/* Get the current MODELVIEW matrix from OpenGL */
-	qglGetFloatv(GL_MODELVIEW_MATRIX, modl);
-
-	/* Combine the two matrices (multiply projection by modelview) */
-	clip[0] =
-		modl[0] * proj[0] + modl[1] * proj[4] + modl[2] * proj[8] +
-		modl[3] * proj[12];
-	clip[1] =
-		modl[0] * proj[1] + modl[1] * proj[5] + modl[2] * proj[9] +
-		modl[3] * proj[13];
-	clip[2] =
-		modl[0] * proj[2] + modl[1] * proj[6] + modl[2] * proj[10] +
-		modl[3] * proj[14];
-	clip[3] =
-		modl[0] * proj[3] + modl[1] * proj[7] + modl[2] * proj[11] +
-		modl[3] * proj[15];
-
-	clip[4] =
-		modl[4] * proj[0] + modl[5] * proj[4] + modl[6] * proj[8] +
-		modl[7] * proj[12];
-	clip[5] =
-		modl[4] * proj[1] + modl[5] * proj[5] + modl[6] * proj[9] +
-		modl[7] * proj[13];
-	clip[6] =
-		modl[4] * proj[2] + modl[5] * proj[6] + modl[6] * proj[10] +
-		modl[7] * proj[14];
-	clip[7] =
-		modl[4] * proj[3] + modl[5] * proj[7] + modl[6] * proj[11] +
-		modl[7] * proj[15];
-
-	clip[8] =
-		modl[8] * proj[0] + modl[9] * proj[4] + modl[10] * proj[8] +
-		modl[11] * proj[12];
-	clip[9] =
-		modl[8] * proj[1] + modl[9] * proj[5] + modl[10] * proj[9] +
-		modl[11] * proj[13];
-	clip[10] =
-		modl[8] * proj[2] + modl[9] * proj[6] + modl[10] * proj[10] +
-		modl[11] * proj[14];
-	clip[11] =
-		modl[8] * proj[3] + modl[9] * proj[7] + modl[10] * proj[11] +
-		modl[11] * proj[15];
-
-	clip[12] =
-		modl[12] * proj[0] + modl[13] * proj[4] + modl[14] * proj[8] +
-		modl[15] * proj[12];
-	clip[13] =
-		modl[12] * proj[1] + modl[13] * proj[5] + modl[14] * proj[9] +
-		modl[15] * proj[13];
-	clip[14] =
-		modl[12] * proj[2] + modl[13] * proj[6] + modl[14] * proj[10] +
-		modl[15] * proj[14];
-	clip[15] =
-		modl[12] * proj[3] + modl[13] * proj[7] + modl[14] * proj[11] +
-		modl[15] * proj[15];
-
-	/* Extract the numbers for the RIGHT plane */
-	frustumPlanes[0][0] = clip[3] - clip[0];
-	frustumPlanes[0][1] = clip[7] - clip[4];
-	frustumPlanes[0][2] = clip[11] - clip[8];
-	frustumPlanes[0][3] = clip[15] - clip[12];
-
-	/* Normalize the result */
-	t = sqrt(frustumPlanes[0][0] * frustumPlanes[0][0] +
-			 frustumPlanes[0][1] * frustumPlanes[0][1] +
-			 frustumPlanes[0][2] * frustumPlanes[0][2]);
-	frustumPlanes[0][0] /= t;
-	frustumPlanes[0][1] /= t;
-	frustumPlanes[0][2] /= t;
-	frustumPlanes[0][3] /= t;
-
-	/* Extract the numbers for the LEFT plane */
-	frustumPlanes[1][0] = clip[3] + clip[0];
-	frustumPlanes[1][1] = clip[7] + clip[4];
-	frustumPlanes[1][2] = clip[11] + clip[8];
-	frustumPlanes[1][3] = clip[15] + clip[12];
-
-	/* Normalize the result */
-	t = sqrt(frustumPlanes[1][0] * frustumPlanes[1][0] +
-			 frustumPlanes[1][1] * frustumPlanes[1][1] +
-			 frustumPlanes[1][2] * frustumPlanes[1][2]);
-	frustumPlanes[1][0] /= t;
-	frustumPlanes[1][1] /= t;
-	frustumPlanes[1][2] /= t;
-	frustumPlanes[1][3] /= t;
-
-	/* Extract the BOTTOM plane */
-	frustumPlanes[2][0] = clip[3] + clip[1];
-	frustumPlanes[2][1] = clip[7] + clip[5];
-	frustumPlanes[2][2] = clip[11] + clip[9];
-	frustumPlanes[2][3] = clip[15] + clip[13];
-
-	/* Normalize the result */
-	t = sqrt(frustumPlanes[2][0] * frustumPlanes[2][0] +
-			 frustumPlanes[2][1] * frustumPlanes[2][1] +
-			 frustumPlanes[2][2] * frustumPlanes[2][2]);
-	frustumPlanes[2][0] /= t;
-	frustumPlanes[2][1] /= t;
-	frustumPlanes[2][2] /= t;
-	frustumPlanes[2][3] /= t;
-
-	/* Extract the TOP plane */
-	frustumPlanes[3][0] = clip[3] - clip[1];
-	frustumPlanes[3][1] = clip[7] - clip[5];
-	frustumPlanes[3][2] = clip[11] - clip[9];
-	frustumPlanes[3][3] = clip[15] - clip[13];
-
-	/* Normalize the result */
-	t = sqrt(frustumPlanes[3][0] * frustumPlanes[3][0] +
-			 frustumPlanes[3][1] * frustumPlanes[3][1] +
-			 frustumPlanes[3][2] * frustumPlanes[3][2]);
-	frustumPlanes[3][0] /= t;
-	frustumPlanes[3][1] /= t;
-	frustumPlanes[3][2] /= t;
-	frustumPlanes[3][3] /= t;
-
-	/* Extract the FAR plane */
-	frustumPlanes[4][0] = clip[3] - clip[2];
-	frustumPlanes[4][1] = clip[7] - clip[6];
-	frustumPlanes[4][2] = clip[11] - clip[10];
-	frustumPlanes[4][3] = clip[15] - clip[14];
-
-	/* Normalize the result */
-	t = sqrt(frustumPlanes[4][0] * frustumPlanes[4][0] +
-			 frustumPlanes[4][1] * frustumPlanes[4][1] +
-			 frustumPlanes[4][2] * frustumPlanes[4][2]);
-	frustumPlanes[4][0] /= t;
-	frustumPlanes[4][1] /= t;
-	frustumPlanes[4][2] /= t;
-	frustumPlanes[4][3] /= t;
-
-	/* Extract the NEAR plane */
-	frustumPlanes[5][0] = clip[3] + clip[2];
-	frustumPlanes[5][1] = clip[7] + clip[6];
-	frustumPlanes[5][2] = clip[11] + clip[10];
-	frustumPlanes[5][3] = clip[15] + clip[14];
-
-	/* Normalize the result */
-	t = sqrt(frustumPlanes[5][0] * frustumPlanes[5][0] +
-			 frustumPlanes[5][1] * frustumPlanes[5][1] +
-			 frustumPlanes[5][2] * frustumPlanes[5][2]);
-	frustumPlanes[5][0] /= t;
-	frustumPlanes[5][1] /= t;
-	frustumPlanes[5][2] /= t;
-	frustumPlanes[5][3] /= t;
-}
-
 
 /*
 =============
@@ -780,7 +630,6 @@ R_SetupGL
 =============
 */
 int r_viewport[4];
-
 
 void Matrix4_Transpose( const mat4x4_t m, mat4x4_t out )
 {
@@ -847,8 +696,6 @@ void R_SetupGL(void)
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
 
-	ExtractFrustum();
-
 	// 
 	// set drawing parms
 	// 
@@ -861,72 +708,6 @@ void R_SetupGL(void)
 	GLSTATE_DISABLE_ALPHATEST 
 	qglEnable(GL_DEPTH_TEST);
 
-}
-
-
-
-
-void R_CastShadowVolumes(void)
-{
-	int i;
-	
-	if (r_shadows->value < 2)
-		return;
-	
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
-		return;
-			
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
-
-	qglEnable(GL_CULL_FACE);
-	qglDepthMask(0);
-	qglDepthFunc(GL_LESS);
-	
-	if (r_shadowVolumesDebug->value){
-		qglColor4f(0.8, 0.3, 0, 0.1);
-	}
-	else{
-	qglColorMask(0, 0, 0, 0);
-	qglDisable(GL_BLEND);	
-	}
-		
-	for (i = 0; i < r_newrefdef.num_entities; i++) 
-	{
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		
-		if (!currentmodel)
-			continue;
-		
-		if (currentmodel->type != mod_alias)
-			continue;
-		
-		if (currententity->
-		flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED |
-				 RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
-				 RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
-				 continue;
-		
-		if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
-			continue;
-		
-		if (r_shadowVolumesDebug->value && (currententity->flags & RF_VIEWERMODEL))
-			continue;
-		
-		R_DrawShadowVolume(currententity);
-	}
-
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDepthMask(1);
-	qglEnable(GL_BLEND);
-	qglDepthFunc(GL_LEQUAL);
-	qglColor4f(1,1,1,1);
-	qglColorMask(1, 1, 1, 1);
-	
 }
 
 /*
@@ -985,7 +766,6 @@ jump:
 				break;
 			case mod_brush:
 				R_DrawBrushModel(currententity);
-	//			R_DrawLightBrushModel(currententity);
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
@@ -1092,8 +872,6 @@ void R_DrawPlayerWeapon(void)
 	qglDepthMask(1);
 }
 
-void R_DrawAliasModelLightPass (qboolean weapon_model);
-worldShadowLight_t *currentShadowLight;
 
 void R_DrawPlayerWeaponLightPass(void)
 {
@@ -1102,7 +880,7 @@ void R_DrawPlayerWeaponLightPass(void)
 	if (!r_drawEntities->value)
 		return;
 
-	if(!r_bumpAlias->value)
+	if(!r_pplWorld->value)
 		return;
 	
 	qglDepthMask(0);
@@ -1137,11 +915,6 @@ void R_DrawPlayerWeaponLightPass(void)
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-qboolean R_CheckRectList(screenrect_t *rec);
-void R_AddRectList(screenrect_t *rec);
-extern screenrect_t	*recList;					//first rectangle of the list
-extern screenrect_t	totalRect;					//rectangle that holds all rectangles in the list
-
 void R_DrawShadowLightPass(void)
 {
 	int i;
@@ -1149,15 +922,17 @@ void R_DrawShadowLightPass(void)
 	if (!r_drawEntities->value)
 		return;
 	
-	if(!r_bumpAlias->value)
+	if(!r_pplWorld->value)
 		return;
-
+	
+	num_visLights = 0;
+	
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
-	qglEnable(GL_STENCIL_TEST);
-//	qglEnable(GL_SCISSOR_TEST);
-//	qglScissor(r_viewport[0], r_viewport[1], r_viewport[2], r_viewport[3]);
+	
+	if(r_shadows->value > 1)
+		qglEnable(GL_STENCIL_TEST);
 
 	R_PrepareShadowLightFrame();
 	
@@ -1165,38 +940,23 @@ void R_DrawShadowLightPass(void)
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 	
-	//if (R_CheckRectList(&currentShadowLight->scizz))
-	//	//we can have another go without clearing
-	//	R_AddRectList(&currentShadowLight->scizz);
-	//else
-	//	{
-	////Only clear dirty part
-	//qglScissor(totalRect.coords[0], totalRect.coords[1], totalRect.coords[2]-totalRect.coords[0], totalRect.coords[3]-totalRect.coords[1]);
-	//
-	//qglClearStencil(128);
-	//qglStencilMask(255);
-	//qglClear(GL_STENCIL_BUFFER_BIT);
-
-	//recList = NULL;
-	//R_AddRectList(&currentShadowLight->scizz);
-	//}
-	//	
-	//qglScissor(	currentShadowLight->scizz.coords[0], 
-	//			currentShadowLight->scizz.coords[1], 
-	//			currentShadowLight->scizz.coords[2]-currentShadowLight->scizz.coords[0], 
-	//			currentShadowLight->scizz.coords[3]-currentShadowLight->scizz.coords[1]);
-
+	if(r_shadows->value > 1){
 	qglClearStencil(128);
 	qglStencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
 
 	qglStencilMask(255);
 	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	
 	R_CastShadowVolumes();
 
 	qglStencilFunc(GL_EQUAL, 128, 255);
 	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	qglStencilMask(0);
+	}
+
+	if(!R_DrawLightOccluders(currentShadowLight))
+		continue;
 
 	R_DrawLightWorld();
 
@@ -1212,8 +972,7 @@ void R_DrawShadowLightPass(void)
 		if (currententity->flags & RF_DISTORT)
 				continue;
 
-
-			currentmodel = currententity->model;
+		currentmodel = currententity->model;
 			if (!currentmodel) {
 				R_DrawNullModel();
 				continue;
@@ -1223,12 +982,17 @@ void R_DrawShadowLightPass(void)
 			if(currentmodel->type == mod_alias)
 				R_DrawAliasModelLightPass(false);
 		}
+	
+	num_visLights++;
 
+	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
+			glEndConditionalRenderNV();
 	}
 	}
+	
 	qglDepthMask(1);
-	qglDisable(GL_STENCIL_TEST);
-	qglDisable(GL_SCISSOR_TEST);
+	if(r_shadows->value > 1)
+		qglDisable(GL_STENCIL_TEST);
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1526,8 +1290,8 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_NEAREST");
 Cvar_Set("r_shadows", "0");
 Cvar_Set("r_drawFlares", "0");
 Cvar_Set("r_parallax", "0");
-Cvar_Set("r_bumpAlias", "0");
-Cvar_Set("r_bumpWorld", "0");
+Cvar_Set("r_pplWorld", "0");
+Cvar_Set("r_pplWorld", "0");
 Cvar_Set("r_bloom", "0");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "0");
@@ -1546,8 +1310,8 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 Cvar_Set("r_shadows", "2");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "1");
-Cvar_Set("r_bumpAlias", "0");
-Cvar_Set("r_bumpWorld", "0");
+Cvar_Set("r_pplWorld", "0");
+Cvar_Set("r_pplWorld", "0");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "1");
@@ -1566,8 +1330,8 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 Cvar_Set("r_shadows", "4");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "2");
-Cvar_Set("r_bumpAlias", "1");
-Cvar_Set("r_bumpWorld", "1");
+Cvar_Set("r_pplWorld", "1");
+Cvar_Set("r_pplWorld", "1");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "1");
 Cvar_Set("r_radialBlur", "1");
@@ -1657,8 +1421,7 @@ void R_RegisterCvars(void)
 	r_parallax=							Cvar_Get("r_parallax", "2", CVAR_ARCHIVE);
 	r_parallaxScale=					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
 
-	r_bumpAlias =						Cvar_Get("r_bumpAlias", "1", CVAR_ARCHIVE);
-	r_bumpWorld =						Cvar_Get("r_bumpWorld", "1", CVAR_ARCHIVE);
+	r_pplWorld =						Cvar_Get("r_pplWorld", "1", CVAR_ARCHIVE);
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "1.0", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);

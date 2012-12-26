@@ -245,7 +245,7 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 	}
 
 	// add all the dynamic lights for non bumped sufaces
-	if(!r_bumpWorld->value){
+	if(!r_pplWorld->value){
 
 		if (surf->dlightframe == r_framecount)
 			R_AddDynamicLights(surf);

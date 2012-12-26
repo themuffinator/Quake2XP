@@ -60,8 +60,7 @@ static menulist_s  		s_finish_box;
 static menuaction_s		s_apply_action;
 static menuaction_s		s_defaults_action;
 
-static	menulist_s			s_ab_list;
-static	menulist_s			s_wb_list;
+static	menulist_s			a_pplWorld_list;
 static	menulist_s			s_radBlur_box;
 static	menulist_s			s_softParticles;
 static	menulist_s			s_fxaa_box;
@@ -365,18 +364,18 @@ static void CancelChanges( void *unused )
 
 
 
-static void abumpCB (void *s)
+static void pplWorldCallBack (void *s)
 {
 	menulist_s *box = ( menulist_s * ) s;
 
-	Cvar_SetValue( "r_bumpAlias", box->curvalue * 1 );
+	Cvar_SetValue( "r_pplWorld", box->curvalue * 1 );
 }
 
 static void wbumpCB (void *s)
 {
 	menulist_s *box = ( menulist_s * ) s;
 
-	Cvar_SetValue( "r_bumpWorld", box->curvalue * 1 );
+	Cvar_SetValue( "r_pplWorld", box->curvalue * 1 );
 }
 
 /*
@@ -444,11 +443,8 @@ void VID_MenuInit( void )
 	if(!r_radialBlur->value)
 		r_radialBlur = Cvar_Get ("r_radialBlur", "0", CVAR_ARCHIVE);
 
-	if (!r_bumpAlias)
-		r_bumpAlias = Cvar_Get("r_bumpAlias", "0", CVAR_ARCHIVE);
-
-		if (!r_bumpWorld)
-		r_bumpWorld = Cvar_Get("r_bumpWorld", "0", CVAR_ARCHIVE);
+	if (!r_pplWorld)
+		r_pplWorld = Cvar_Get("r_pplWorld", "0", CVAR_ARCHIVE);
 
 	if ( !r_vsync )
 		r_vsync = Cvar_Get( "r_vsync", "0", CVAR_ARCHIVE );
@@ -625,26 +621,19 @@ void VID_MenuInit( void )
 	
 	// -----------------------------------------------------------------------
 	
-	s_flare_box.generic.type	= MTYPE_SPINCONTROL;
-	s_flare_box.generic.x	    = 0;
-	s_flare_box.generic.y	    = 120*cl_fontScale->value;
-	s_flare_box.generic.name	= "Flares";
-	s_flare_box.itemnames       = yesno_names;
-	s_flare_box.curvalue        = r_drawFlares->value;
-	s_flare_box.generic.callback = FlareCallback;
 
 	s_shadow_box.generic.type		= MTYPE_SPINCONTROL;
 	s_shadow_box.generic.x			= 0;
-	s_shadow_box.generic.y			= 130*cl_fontScale->value;
+	s_shadow_box.generic.y			= 120*cl_fontScale->value;
 	s_shadow_box.generic.name		= "Shadows";
     s_shadow_box.itemnames			= shadow_names;
 	s_shadow_box.curvalue			= r_shadows->value;
     s_shadow_box.generic.callback	= ShadowsCallback;
-	s_shadow_box.generic.statusbar		= "1 - Planar Shadows, 2 - Shadow Volumes";
+	s_shadow_box.generic.statusbar		= "1 - Planar Shadows, 2 - Shadow Volumes (only with realitme lighting)";
 
 	s_numShadows_slider.generic.type		= MTYPE_SLIDER;
 	s_numShadows_slider.generic.x			= 0;
-	s_numShadows_slider.generic.y			= 140*cl_fontScale->value;
+	s_numShadows_slider.generic.y			= 130*cl_fontScale->value;
 	s_numShadows_slider.generic.name		= "Amount of Shadow Lights";
 	s_numShadows_slider.curvalue			= r_maxShadowsLightsPerModel->value;
 	s_numShadows_slider.minvalue			= 1;
@@ -654,29 +643,29 @@ void VID_MenuInit( void )
 
 	s_parallax_box.generic.type			= MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x			= 0;
-	s_parallax_box.generic.y			= 150*cl_fontScale->value;
+	s_parallax_box.generic.y			= 140*cl_fontScale->value;
 	s_parallax_box.generic.name			= "Parallax";
     s_parallax_box.itemnames			= parallax;
 	s_parallax_box.curvalue				= r_parallax->value;
 	s_parallax_box.generic.callback		= ParallaxCallback;
 	s_parallax_box.generic.statusbar	= "Sample Parallax Mapping - Parallax Relief Mapping";
 
-	s_ab_list.generic.type = MTYPE_SPINCONTROL;
-	s_ab_list.generic.name = "Models Bump Mapping";
-	s_ab_list.generic.x = 0;
-	s_ab_list.generic.y = 160*cl_fontScale->value;
-	s_ab_list.itemnames = yesno_names;
-	s_ab_list.curvalue = r_bumpAlias->value;
-	s_ab_list.generic.callback = abumpCB;
-	
-	s_wb_list.generic.type = MTYPE_SPINCONTROL;
-	s_wb_list.generic.name = "World Bump Mapping";
-	s_wb_list.generic.x = 0;
-	s_wb_list.generic.y = 170*cl_fontScale->value;
-	s_wb_list.itemnames = yesno_names;
-	s_wb_list.curvalue = r_bumpWorld->value;
-	s_wb_list.generic.callback = wbumpCB;
+	a_pplWorld_list.generic.type = MTYPE_SPINCONTROL;
+	a_pplWorld_list.generic.name = "Realtime Lighting";
+	a_pplWorld_list.generic.x = 0;
+	a_pplWorld_list.generic.y = 150*cl_fontScale->value;
+	a_pplWorld_list.itemnames = yesno_names;
+	a_pplWorld_list.curvalue = r_pplWorld->value;
+	a_pplWorld_list.generic.callback = pplWorldCallBack;
+	a_pplWorld_list.generic.statusbar	= "Enable Per-Pixel Lighting";	
 
+	s_flare_box.generic.type	= MTYPE_SPINCONTROL;
+	s_flare_box.generic.x	    = 0;
+	s_flare_box.generic.y	    = 170*cl_fontScale->value;
+	s_flare_box.generic.name	= "Flares";
+	s_flare_box.itemnames       = yesno_names;
+	s_flare_box.curvalue        = r_drawFlares->value;
+	s_flare_box.generic.callback = FlareCallback;
 
 	s_bloom_box.generic.type		= MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x			= 0;
@@ -758,14 +747,12 @@ void VID_MenuInit( void )
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_aniso_slider);
 	
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_tc_box );
-    
-	Menu_AddItem( &s_opengl_menu, ( void * ) &s_flare_box );
-		
+    	
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadow_box );
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_numShadows_slider );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_parallax_box );
-	Menu_AddItem( &s_opengl_menu, ( void * ) &s_ab_list);
-	Menu_AddItem( &s_opengl_menu, ( void * ) &s_wb_list);
+	Menu_AddItem( &s_opengl_menu, ( void * ) &a_pplWorld_list);
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_flare_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_bloom_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_dof_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_radBlur_box );

@@ -283,8 +283,7 @@ cvar_t	*sys_priority;
 
 cvar_t	*r_DrawRangeElements;
 
-cvar_t	*r_bumpAlias;
-cvar_t	*r_bumpWorld;
+cvar_t	*r_pplWorld;
 cvar_t	*r_pplWorldAmbient;
 cvar_t	*r_lightsWeldThreshold;
 cvar_t	*r_debugLights;
@@ -392,7 +391,10 @@ void R_InitPrograms(void);
 void R_ClearWorldLights(void);
 void CleanDuplicateLights(void);
 qboolean R_CullSphere( const vec3_t centre, const float radius);
-void R_DebugLights (vec3_t lightOrg, float rad, float r, float g, float b);
+void R_DebugLights (vec3_t lightOrg);
+void R_CastShadowVolumes(void);
+void R_DrawAliasModelLightPass (qboolean weapon_model);
+
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
 qboolean EntityInLightSphere(worldShadowLight_t *light);
 //====================================================================

@@ -524,9 +524,11 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
 	}
 
-	
+	if(r_pplWorld->value)
 	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-
+	else
+	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
+	
 	if(r_parallax->value){
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
 	}
@@ -615,7 +617,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 								smax, tmax,
 								GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
 
-			} else if(!r_bumpWorld->value){
+			} else if(!r_pplWorld->value){
 
 				smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
 				tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;
@@ -1077,8 +1079,6 @@ qboolean R_FillLightChain (worldShadowLight_t *light)
 
 void R_DrawLightWorld(void)
 {
-	if(!r_bumpWorld->value)
-		return;
 
 	if (!r_drawWorld->value)
 		return;
@@ -1101,10 +1101,6 @@ void R_DrawLightWorld(void)
 	
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
-	num_visLights = 0;
-
-		if(!R_DrawLightOccluders(currentShadowLight))
-			return;
 				
 		if(!FoundReLight){
 		if(currentShadowLight->style || !currentShadowLight->isStatic){
@@ -1119,12 +1115,6 @@ void R_DrawLightWorld(void)
 			R_DrawDebugLight(currentShadowLight);
 	
 		}
-
-	num_visLights++;
-
-	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
-		glEndConditionalRenderNV();
-
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -1494,9 +1484,6 @@ void R_DrawLightBrushModel(entity_t * e)
 	vec3_t				tmp, oldLight;
 	mat3_t				entityAxis;
 	
-	if(!r_bumpWorld->value)
-		return;
-
 	if (currentmodel->nummodelsurfaces == 0)
 		return;
 
@@ -1563,12 +1550,8 @@ void R_DrawLightBrushModel(entity_t * e)
 
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
-	num_visLights = 0;
 		
 		VectorCopy(currentShadowLight->origin, oldLight);
-		
-		if(!R_DrawLightOccluders(currentShadowLight))
-			return;
 
 		if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
 		{
@@ -1595,10 +1578,6 @@ void R_DrawLightBrushModel(entity_t * e)
 		}
 
 		VectorCopy(oldLight, currentShadowLight->origin);
-		num_visLights++;
-
-		if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
-			glEndConditionalRenderNV();
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);

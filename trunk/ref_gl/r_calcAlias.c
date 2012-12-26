@@ -130,9 +130,9 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	if (currententity->flags & (RF_VIEWERMODEL))
 			return;
 
-	if(r_bumpAlias->value){
+	if(r_pplWorld->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.55, 0.55, 0.55);
+			VectorSet(lightColor, 0.35, 0.35, 0.35);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
@@ -594,11 +594,14 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 	mat3_t				entityAxis;
 	trace_t				r_trace;
 	int					numLights= 1;
-	vec3_t sColor;
+	vec3_t				sColor, tmp;
 
 	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
-	currententity->lightVised = false;
+
+	if((!FoundReLight && currentShadowLight->isStatic)|| (!FoundReLight && !currentShadowLight->style)) // only dynamic lighting if we don't relight
+			return;
+			
 			if(numLights > r_maxShadowsLightsPerModel->value)
 				return;
 
@@ -622,7 +625,8 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			if(currentShadowLight->isStatic && !currentShadowLight->style)
 			{	
 			if(!FoundReLight){
-				R_LightPoint (currentShadowLight->origin, sColor, true);
+				VectorCopy(currentShadowLight->color, tmp);
+				R_LightPoint (currententity->origin, sColor, true);
 				VectorCopy(sColor, currentShadowLight->color);
 				}
 			}
@@ -632,5 +636,9 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			currententity->lightVised = true;
 			GL_DrawAliasFrameLerpArb(paliashdr, light, currentShadowLight->radius, currentShadowLight->color);
 			numLights++;
+
+			if(currentShadowLight->isStatic && !currentShadowLight->style)
+				if(!FoundReLight)
+					VectorCopy(tmp, currentShadowLight->color);
 
 }

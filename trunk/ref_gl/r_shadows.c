@@ -329,6 +329,9 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
 
+	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic shadows if we don't relight
+		return;
+
 	if(numShadows > r_maxShadowsLightsPerModel->value)
 		return;
 
@@ -340,7 +343,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 
 		VectorSubtract(currententity->origin, currentShadowLight->origin, temp);
 		dist = VectorLength(temp);
-		scale = currentShadowLight->radius * 2.5;
+		scale = currentShadowLight->radius * 2.0;
 		projdist = scale - dist;
 
 		AnglesToMat3(currententity->angles, entityAxis);
@@ -443,6 +446,70 @@ void R_DrawShadowVolume(entity_t * e)
 		
 		qglEnable(GL_TEXTURE_2D);
 		qglPopMatrix();
+}
+
+
+void R_CastShadowVolumes(void)
+{
+	int i;
+	
+	if (r_shadows->value < 2 && !r_pplWorld->value)
+		return;
+	
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+		return;
+			
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
+
+	qglEnable(GL_CULL_FACE);
+	qglDepthMask(0);
+	qglDepthFunc(GL_LESS);
+	
+	if (r_shadowVolumesDebug->value){
+		qglColor4f(0.3, 0.3, 0, 0.1);
+	}
+	else{
+	qglColorMask(0, 0, 0, 0);
+	qglDisable(GL_BLEND);	
+	}
+		
+	for (i = 0; i < r_newrefdef.num_entities; i++) 
+	{
+		currententity = &r_newrefdef.entities[i];
+		currentmodel = currententity->model;
+		
+		if (!currentmodel)
+			continue;
+		
+		if (currentmodel->type != mod_alias)
+			continue;
+		
+		if (currententity->
+		flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED |
+				 RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
+				 RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
+				 continue;
+		
+		if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
+			continue;
+		
+		if (r_shadowVolumesDebug->value && (currententity->flags & RF_VIEWERMODEL))
+			continue;
+		
+		R_DrawShadowVolume(currententity);
+	}
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDepthMask(1);
+	qglEnable(GL_BLEND);
+	qglDepthFunc(GL_LEQUAL);
+	qglColor4f(1,1,1,1);
+	qglColorMask(1, 1, 1, 1);
+	
 }
 
 

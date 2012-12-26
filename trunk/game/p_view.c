@@ -1129,8 +1129,9 @@ void ClientEndServerFrame (edict_t *ent)
 
 	// apply all the damage taken this frame
 	P_DamageFeedback (ent);
-
-	ClientAutoGenHealth(ent);
+	
+	if(skill->value >=3)
+		ClientAutoGenHealth(ent);
 
 	// determine the view offsets
 	SV_CalcViewOffset (ent);

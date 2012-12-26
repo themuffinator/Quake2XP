@@ -443,25 +443,13 @@ Per Pixel Lighting Light Manager
 
 ==============================*/
 
+worldShadowLight_t *currentShadowLight;
 worldShadowLight_t *shadowLight_static = NULL, *shadowLight_frame = NULL, *shadowLight_selection = NULL;
 worldShadowLight_t shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
 static int num_dlits;
 int num_nwmLights;
 int num_visLights;
 static int numCulledLights;
-
-qboolean EntityInLightSphere(worldShadowLight_t *light) {
-
-	vec3_t dst;
-
-	VectorSubtract (light->origin, currententity->origin, dst);
-	return
-		(VectorLength (dst) < (light->radius + currentmodel->radius));
-
-		
-		
-}
-qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p);
 
 qboolean R_CheckSharedArea(vec3_t p1, vec3_t p2)
 {
@@ -615,21 +603,8 @@ void R_PrepareShadowLightFrame(void) {
 	for(light = shadowLight_frame; light; light = light->next) {
 
 		VectorCopy(light->sColor, light->color);
-	
-		////fully/partially in frustum
-		//if(!intersectsBoxPoint(light->mins, light->maxs, r_origin))
-		//{
-		//boxScreenSpaceRect(light, light->scizz.coords);
-		//}
-		//else
-		//{	//viewport is ofs/width based
-		//light->scizz.coords[0] = r_viewport[0];
-		//light->scizz.coords[1] = r_viewport[1];
-		//light->scizz.coords[2] = r_viewport[0] + r_viewport[2];
-		//light->scizz.coords[3] = r_viewport[1] + r_viewport[3];
-		//}
 
-		if(r_newrefdef.areabits && r_newrefdef.lightstyles)
+		if(r_newrefdef.areabits)
 		{
 		light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
 		light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
@@ -642,6 +617,7 @@ void R_PrepareShadowLightFrame(void) {
 		light->maxs[0] = light->origin[0] + light->radius;
 		light->maxs[1] = light->origin[1] + light->radius;
 		light->maxs[2] = light->origin[2] + light->radius;
+
 	}
 
 }
@@ -804,7 +780,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 
 void Load_BspLights() {
 	
-	int addLight, style, numlights, addLight_mine;
+	int addLight, style, numlights, addLight_mine, numLightStyles;
 	char *c, *token, key[256], *value;
 	float color[3], origin[3], radius;
 
@@ -815,6 +791,7 @@ void Load_BspLights() {
 
 	c = CM_EntityString();
 	numlights = 0;
+	numLightStyles = 0;
 
 	while(1) {
 		token = COM_Parse(&c);
@@ -866,11 +843,13 @@ void Load_BspLights() {
 		if(addLight) {
 			if((style > 0 && style < 12) || addLight_mine){
 			R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
-			numlights++;	
+			numlights++;
+			if(style > 0 && style < 12)
+				numLightStyles++;
 			}
 		}
 	}
-	Com_DPrintf("loaded %i bsp lights with styles\n",numlights);
+	Com_DPrintf("loaded %i bsp lights whith styles %i\n",numlights, numLightStyles);
 
 }
 
@@ -1166,237 +1145,4 @@ void R_DrawDebugLight(worldShadowLight_t *light)
 	qglDisable(GL_LINE_SMOOTH);
 	qglDepthMask(1);
 	qglColor3f(1,1,1);
-}
-
-extern float   clip[16];
-
-void IntersectRayPlane(vec3_t v1, vec3_t v2, cplane_t *plane, vec3_t res)
-{
-	vec3_t	v;
-	float	sect;
-
-	VectorSubtract (v1, v2, v);
-	sect = -(DotProduct (plane->normal, v1)-plane->dist) / DotProduct (plane->normal, v);
-	VectorScale (v,sect,v);
-	VectorAdd (v1, v, res);
-}
-
-void Mat_Mul_1x4_4x4(vec4_t a, vec4_t result)
-{
-	int	index_j,	// column index
-		index_k;	// row index
-	float sum;		// temp used to hold sum of products
-
-	// loop thru columns of b
-	for (index_j=0; index_j<4; index_j++)
-    {
-	    // multiply ith row of a by jth column of b and store the sum
-		// of products in the position i,j of result
-	    sum = 0;
-	    for (index_k=0; index_k<4; index_k++)
-		    sum += a[index_k]*clip[index_k*4+index_j];
-	    // store result
-	    result[index_j] = sum;
-    }
-}
-
-
-void addPoint(vec3_t v1, int *rect)
-{
-	vec4_t	point, res;
-	float	px, py, tmp;
-
-	point[0] = v1[0];
-	point[1] = v1[1];
-	point[2] = v1[2];
-	point[3] = 1;
-	Mat_Mul_1x4_4x4(point, res);
-
-	tmp = 1.0/res[3];
-	px = (res[0]*tmp+1.0) * 0.5;
-	py = (res[1]*tmp+1.0) * 0.5;
-
-	px = px * r_viewport[2] + r_viewport[0];
-	py = py * r_viewport[3] + r_viewport[1];
-
-	if (px > rect[2]) rect[2] = (int)px;
-	if (px < rect[0]) rect[0] = (int)px;
-	if (py > rect[3]) rect[3] = (int)py;
-	if (py < rect[1]) rect[1] = (int)py;
-}
-
-
-void addEdge(vec3_t v1, vec3_t v2, int *rect)
-{
-	vec3_t		intersect, v1_, v2_;
-	cplane_t	plane;
-	qboolean	side1, side2;
-
-	VectorCopy(v1,v1_);
-	VectorCopy(v2,v2_);
-	VectorCopy(vpn, plane.normal);
-	plane.dist = DotProduct(r_origin, vpn) + 5.0;
-
-	//Check edge to frustrum near plane
-	side1 = ((DotProduct(plane.normal, v1_) - plane.dist) >= 0);
-	side2 = ((DotProduct(plane.normal, v2_) - plane.dist) >= 0);
-
-	if (!side1 && !side2)
-		return; //edge behind near plane
-
-	if (!side1 || !side2)
-		IntersectRayPlane(v1_,v2_,&plane,intersect);
-
-	if (!side1)
-		VectorCopy(intersect,v1_);
-	else if (!side2)
-		VectorCopy(intersect,v2_);
-
-	addPoint(v1_, rect);
-	addPoint(v2_, rect);
-}
-
-void boxScreenSpaceRect(worldShadowLight_t *light, int *rect)
-{
-	vec3_t	aaa,iaa,aia,iia,aai,iai,aii,iii;
-
-		VectorSet(aaa, light->maxs[0], light->maxs[1], light->maxs[2]);
-		VectorSet(iaa, light->mins[0], light->maxs[1], light->maxs[2]);
-		VectorSet(aia, light->maxs[0], light->mins[1], light->maxs[2]);
-		VectorSet(iia, light->mins[0], light->mins[1], light->maxs[2]);
-		VectorSet(aai, light->maxs[0], light->maxs[1], light->mins[2]);
-		VectorSet(iai, light->mins[0], light->maxs[1], light->mins[2]);
-		VectorSet(aii, light->maxs[0], light->mins[1], light->mins[2]);
-		VectorSet(iii, light->mins[0], light->mins[1], light->mins[2]);
-
-
-	rect[0] = 9999999;
-	rect[1] = 9999999;
-	rect[2] = -9999999;
-	rect[3] = -9999999;
-
-	addEdge(aaa, iaa, rect);
-	addEdge(aaa, aia, rect);
-	addEdge(iia, iaa, rect);
-	addEdge(iia, aia, rect);
-	addEdge(aai, iai, rect);
-	addEdge(aai, aii, rect);
-	addEdge(iii, iai, rect);
-	addEdge(iii, aii, rect);
-	addEdge(iai, iaa, rect);
-	addEdge(aai, aaa, rect);
-	addEdge(iii, iia, rect);
-	addEdge(aii, aia, rect);
-}
-
-/*
-Check if rectangles overlap
-returns true if they overlap
-*/
-qboolean R_RectOverlap(screenrect_t *r1, screenrect_t *r2)
-{
-	//r1 is rightof r2
-	if (r1->coords[0] > r2->coords[0])
-	{
-		//overlap in x dir?
-		if ((r1->coords[0] - r2->coords[2]) < 0)
-		{
-			//check y dir
-
-			//r1 below r2
-			if (r1->coords[1] > r2->coords[1])
-			{
-				if ((r1->coords[1]-r2->coords[3]) < 0)
-					return true;
-				else
-					return false;
-			//r1 above r2
-			}
-			else
-			{
-				if ((r2->coords[1]-r1->coords[3]) < 0) 
-					return true;
-				else 
-					return false;
-			}
-		//no overlap in x- they don't overlap at all
-		}
-		else
-			return false;
-
-		//r2 is rightof r1
-	}
-	else
-	{
-		//overlap in x dir
-		if ((r2->coords[0] - r1->coords[2]) < 0)
-		{
-			//check y dir
-
-			//r1 below r2
-			if (r1->coords[1] > r2->coords[1])
-			{
-				if ((r1->coords[1]-r2->coords[3]) < 0)
-					return true;
-				else
-					return false;
-			//r1 above r2
-			}
-			else
-			{
-				if ((r2->coords[1]-r1->coords[3]) < 0) 
-					return true;
-				else 
-					return false;
-			}
-		//no overlap in x- they don't overlap at all
-		}
-		else
-			return false;
-	}
-}
-
-screenrect_t	*recList;					//first rectangle of the list
-screenrect_t	totalRect;					//rectangle that holds all rectangles in the list
-
-qboolean R_CheckRectList(screenrect_t *rec)
-{
-	screenrect_t *r;
-	r = recList;
-	while (r)
-	{
-		if (R_RectOverlap(rec,r))
-			return false;
-		r = r->next;
-	}
-	return true;
-}
-
-void R_RectsAdd(screenrect_t *add, screenrect_t *res)
-{
-	res->coords[0] = min (res->coords[0],add->coords[0]);
-	res->coords[1] = min (res->coords[1],add->coords[1]);
-	res->coords[2] = max (res->coords[2],add->coords[2]);
-	res->coords[3] = max (res->coords[3],add->coords[3]);
-}
-
-//Copy one rectangle to another.
-void R_RectCopy(screenrect_t *src, screenrect_t *dst)
-{
-	int i;
-	for (i=0; i<4; i++)
-		dst->coords[i] = src->coords[i];
-}
-
-void R_AddRectList(screenrect_t *rec)
-{
-	//Extend bounding rectangle
-	if (!recList)
-		R_RectCopy(rec,&totalRect);
-	else
-		R_RectsAdd(rec,&totalRect);
-
-	//Add it to the list
-	rec->next = recList;
-	recList = rec;
 }
