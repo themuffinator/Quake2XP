@@ -498,7 +498,7 @@ msurface_t	*scene_surfaces[MAX_MAP_FACES];
 static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
-	image_t		*image, *fx, *env;
+	image_t		*image, *fx, *env, *nm;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
 	unsigned	texture = -1, ltmp;
@@ -542,6 +542,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		image	= R_TextureAnimation(s->texinfo);
 		fx		= R_TextureAnimationFx(s->texinfo);
 		env		= R_TextureAnimationEnv(s->texinfo);
+		nm		= R_TextureAnimationNormal(s->texinfo);
 		lmtex	= s->lightmaptexturenum;
 
 		if(image->envMap){

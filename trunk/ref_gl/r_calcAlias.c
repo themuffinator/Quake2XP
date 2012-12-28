@@ -599,7 +599,7 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
 
-	if((!FoundReLight && currentShadowLight->isStatic)|| (!FoundReLight && !currentShadowLight->style)) // only dynamic lighting if we don't relight
+	if(!FoundReLight && currentShadowLight->isStatic && !currentShadowLight->style) // only dynamic lighting if we don't relight
 			return;
 			
 			if(numLights > r_maxShadowsLightsPerModel->value)
