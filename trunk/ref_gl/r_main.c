@@ -915,6 +915,7 @@ void R_DrawPlayerWeaponLightPass(void)
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+
 void R_DrawShadowLightPass(void)
 {
 	int i;
@@ -926,7 +927,7 @@ void R_DrawShadowLightPass(void)
 		return;
 	
 	num_visLights = 0;
-	
+
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
@@ -940,6 +941,8 @@ void R_DrawShadowLightPass(void)
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 	
+	UpdateLightEditor();
+
 	if(r_shadows->value > 1){
 	qglClearStencil(128);
 	qglStencilMask(255);
@@ -955,7 +958,7 @@ void R_DrawShadowLightPass(void)
 	qglStencilMask(0);
 	}
 
-	if(!R_DrawLightOccluders(currentShadowLight))
+	if(!R_DrawLightOccluders())
 		continue;
 
 	R_DrawLightWorld();
@@ -1135,6 +1138,11 @@ R_RenderFrame
 
 @@@@@@@@@@@@@@@@@@@@@
 */
+extern char buff0[4096];
+extern char buff1[4096];
+extern char buff2[4096];
+extern char buff3[4096];
+extern worldShadowLight_t *selectedShadowLight;
 
 void R_RenderFrame(refdef_t * fd, qboolean client)
 {
@@ -1173,6 +1181,15 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	
 	GL_DrawRadar();	// GLOOM RADAR !!!
 	numRadarEnts = 0;
+
+	if(selectedShadowLight && r_lightEditor->value){
+	qglColor3f(0,1,1);
+	Draw_StringScaled(0, vid.height*0.5, 2, 2, buff0);
+	Draw_StringScaled(0, vid.height*0.5+25, 2, 2, buff1);
+	Draw_StringScaled(0, vid.height*0.5+45, 2, 2, buff2);
+	Draw_StringScaled(0, vid.height*0.5+65, 2, 2, buff3);
+	qglColor3f(1,1,1);
+	}
 
 	GL_MsgGLError("R_RenderFrame: ");
 }
@@ -1341,7 +1358,6 @@ Cvar_Set("r_fxaa", "1");
 vid_ref->modified = true;
 }
 
-void SaveLights_f(void);
 
 void R_RegisterCvars(void)
 {
@@ -1444,9 +1460,6 @@ void R_RegisterCvars(void)
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 	
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
-	editLightSpawn =					Cvar_Get("editLightSpawn", "0", 0);
-	editLightRemove =					Cvar_Get("editLightRemove", "0", 0);
-
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
@@ -1459,8 +1472,32 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("low_spec",			R_LowSpecMachine_f);
 	Cmd_AddCommand("medium_spec",		R_MediumSpecMachine_f);
 	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
-	Cmd_AddCommand("saveLights",		SaveLights_f);
-	
+/*
+bind INS		"spawnLight"
+bind HOME		"spawnLightToCamera"
+bind END		"saveLights"
+bind DEL		"removeLight"
+bind LEFTARROW	"moveLight_right   -1"
+bind RIGHTARROW "moveLight_right    1"
+bind UPARROW	"moveLight_forward  1"
+bind DOWNARROW	"moveLight_forward -1"
+bind PGUP		"moveLight_z        1"
+bind PGDN		"moveLight_z       -1"
+bind KP_MINUS	"changeLightRadius -5"
+bind KP_PLUS	"changeLightRadius  5"
+bind KP_INS		"copyLight"
+*/
+
+	Cmd_AddCommand("saveLights",				SaveLights_f);
+	Cmd_AddCommand("spawnLight",				Light_Spawn_f);
+	Cmd_AddCommand("spawnLightToCamera",		Light_SpawnToCamera_f);
+	Cmd_AddCommand("removeLight",				Light_Delete_f);
+	Cmd_AddCommand("editLight",					R_EditSelectedLight_f);
+	Cmd_AddCommand("moveLight_right",			R_MoveLightToRight_f);
+	Cmd_AddCommand("moveLight_forward",			R_MoveLightForward_f);
+	Cmd_AddCommand("moveLight_z",				R_MoveLightUpDown_f);
+	Cmd_AddCommand("changeLightRadius",			R_ChangeLightRadius_f);
+	Cmd_AddCommand("copyLight",					Light_Copy_f);
 }
 
 /*
@@ -1543,7 +1580,7 @@ R_Init
 int GL_QueryBits;
 int ocQueries[MAX_FLARES];
 int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
-HANDLE	fProgram_hThread = NULL;
+
 
 int R_Init(void *hinstance, void *hWnd)
 {
@@ -1832,16 +1869,19 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	gl_state.glslBinary = false;
 	if ( strstr( gl_config.extensions_string, "GL_ARB_get_program_binary" ) )
 	{		
-		int numFormats;
+
 		glGetProgramBinary	=	(PFNGLGETPROGRAMBINARYPROC)		qwglGetProcAddress("glGetProgramBinary");
 		glProgramBinary	=		(PFNGLPROGRAMBINARYPROC)		qwglGetProcAddress("glProgramBinary");
 		glProgramParameteri	=	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
 
-		if(glGetProgramBinary && glProgramBinary && glProgramParameteri)
+		if(glGetProgramBinary && glProgramBinary && glProgramParameteri){
 			Com_Printf("...using GL_ARB_get_program_binary\n");
-			qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &numFormats);
-			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " binary formats\n", numFormats);
+			qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
+			qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
+			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " binary formats\n", gl_state.numFormats);
+			Com_Printf("   Binary Format is "S_COLOR_GREEN "%u"S_COLOR_WHITE"\n", gl_state.binaryFormats);
 			gl_state.glslBinary = true;
+		}
 
 	} else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_get_program_binary not found\n");
@@ -1964,7 +2004,17 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("low_spec");
 	Cmd_RemoveCommand("medium_spec");
 	Cmd_RemoveCommand("hi_spec");
+	
 	Cmd_RemoveCommand("saveLights");
+	Cmd_RemoveCommand("spawnLight");
+	Cmd_RemoveCommand("removeLight");
+	Cmd_RemoveCommand("editLight");
+	Cmd_RemoveCommand("moveSelectedLight_right");
+	Cmd_RemoveCommand("moveSelectedLight_forward");
+	Cmd_RemoveCommand("moveSelectedLight_z");
+	Cmd_RemoveCommand("spawnLightToCamera");
+	Cmd_RemoveCommand("changeLightRadius");
+	Cmd_RemoveCommand("copyLight");
 
 	Mod_FreeAll();
 	GL_ShutdownImages();

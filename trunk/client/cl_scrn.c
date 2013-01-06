@@ -976,6 +976,8 @@ This is called every frame, and can also be called explicitly to flush
 text to the screen.
 ==================
 */
+extern cvar_t *r_lightEditor;
+
 extern cvar_t *r_speeds;
 void SCR_DrawStats();
 void SCR_DrawLayout(void);
@@ -1181,7 +1183,7 @@ next:
 			SCR_DrawSpeeds();
 			
 			SCR_DrawFPS();
-			
+
 			if (cl_drawclock->value && (cls.state == ca_active))
 				SCR_DrawClock();
 			

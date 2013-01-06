@@ -57,8 +57,6 @@ void RenderLavaSurfaces(msurface_t * fa)
 	GL_BindProgram(ambientWorldProgram, defBits);
 	id = ambientWorldProgram->id[defBits];
 
-	scale[0] = 1.50 / fa->texinfo->image->width;
-	scale[1] = 1.50 / fa->texinfo->image->height;
 
 	if(!fa->texinfo->image->specularScale)
 			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), 1.0);
@@ -74,8 +72,8 @@ void RenderLavaSurfaces(msurface_t * fa)
 			
 			if(!fa->texinfo->image->parallaxScale){
 
-			scale[0] = r_parallaxScale->value / fa->texinfo->image->width;
-			scale[1] = r_parallaxScale->value / fa->texinfo->image->height;
+			scale[0] = 7.0 / fa->texinfo->image->width;
+			scale[1] = 7.0 / fa->texinfo->image->height;
 			}
 			else
 			{

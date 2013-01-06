@@ -1108,13 +1108,10 @@ void R_DrawLightWorld(void)
 
 			if(R_FillLightChain(currentShadowLight))
 				GL_BatchLightPass(currentShadowLight, false);
-			R_DrawDebugLight(currentShadowLight);
 			}
 		}else{
 			if(R_FillLightChain(currentShadowLight))
 				GL_BatchLightPass(currentShadowLight, false);
-			R_DrawDebugLight(currentShadowLight);
-	
 		}
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
@@ -1548,7 +1545,6 @@ void R_DrawLightBrushModel(entity_t * e)
 	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
 	
-
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
 		
@@ -1568,14 +1564,12 @@ void R_DrawLightBrushModel(entity_t * e)
 			if(currentShadowLight->style || !currentShadowLight->isStatic){
 			if(R_MarkBrushModelSurfaces(currentShadowLight))
 						GL_BatchLightPass(currentShadowLight, true);
-			R_DrawDebugLight(currentShadowLight);
 			}
 
 		} else{
 
 			if(R_MarkBrushModelSurfaces(currentShadowLight))
 						GL_BatchLightPass(currentShadowLight, true);
-			R_DrawDebugLight(currentShadowLight);
 		}
 
 		VectorCopy(oldLight, currentShadowLight->origin);
@@ -1587,6 +1581,7 @@ void R_DrawLightBrushModel(entity_t * e)
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
+
 	qglPopMatrix();
 }
 

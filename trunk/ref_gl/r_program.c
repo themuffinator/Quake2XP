@@ -257,8 +257,6 @@ and insert included file contents.
 Try To Load Precompiled Shaders
 ===============================
 */
-static 	GLenum		binaryFormat = 0;
-
 qboolean R_LoadBinaryShader(char *shaderName, int shaderId, int mutatorIndex){
 
 	char			name[MAX_QPATH];
@@ -281,7 +279,7 @@ qboolean R_LoadBinaryShader(char *shaderName, int shaderId, int mutatorIndex){
     fread(bin, binLength, 1, binFile);
     fclose(binFile);
 
-	glProgramBinary(shaderId, binaryFormat, bin, binLength);
+	glProgramBinary(shaderId, gl_state.binaryFormats, bin, binLength);
 	qglGetProgramiv(shaderId, GL_LINK_STATUS, &success);
 	free(bin);	        
         
@@ -472,7 +470,7 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 		
 		qglGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binLength);
 		bin = (GLvoid*)malloc(binLength);
-		glGetProgramBinary(id, binLength, NULL, &binaryFormat, bin);
+		glGetProgramBinary(id, binLength, &binLength, &gl_state.binaryFormats, bin);
 		
 		Com_sprintf(name, sizeof(name), "%s/glslbin/%s_%i.bin", FS_Gamedir(), program->name, i);
 		FS_CreatePath(name);
@@ -794,7 +792,7 @@ void R_InitPrograms(void) {
 	loadingTime2 = Sys_Milliseconds ();
 	sec = (float)loadingTime2 - (float)loadingTime;
 	sec *=0.001;
-	Com_Printf("Programs loading time = %0.4f msec\n",sec);
+	Com_Printf("Programs loading time = %0.4f sec\n",sec);
 
 	Com_Printf("\n");
 //	if (missing > 0)

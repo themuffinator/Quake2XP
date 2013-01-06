@@ -1561,7 +1561,6 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	R_ClearFlares();
 	R_ClearWorldLights();
 	numLightQ = 0;
-	FoundReLight = false;
 
 	loadmodel->memorySize = 0;
 	
@@ -1592,7 +1591,14 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadLighting(&header->lumps[LUMP_LIGHTING]);
 	Mod_LoadPlanes(&header->lumps[LUMP_PLANES]);
 	Mod_LoadTexinfo(&header->lumps[LUMP_TEXINFO]);
+
+	Load_LightFile();
+
 	Mod_LoadFaces(&header->lumps[LUMP_FACES]);	
+
+	CleanDuplicateFlares();
+	CleanDuplicateLights();
+
 	Mod_LoadMarksurfaces(&header->lumps[LUMP_LEAFFACES]);
 	Mod_LoadVisibility(&header->lumps[LUMP_VISIBILITY]);
 	Mod_LoadLeafs(&header->lumps[LUMP_LEAFS]);
@@ -1600,12 +1606,8 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadSubmodels(&header->lumps[LUMP_MODELS]);
 	Mod_GenerateLights(mod);
 
-
 	mod->numframes = 2;			// regular and alternate animation
-	
-	
-	CleanDuplicateFlares();
-	CleanDuplicateLights();
+
 //
 // set up the submodels
 //
@@ -2429,8 +2431,7 @@ void R_BeginRegistration(char *model)
 	r_worldmodel = Mod_ForName(fullname, true);
 
 	r_viewcluster = -1;
-	
-	Load_LightFile();
+
 }
 
 

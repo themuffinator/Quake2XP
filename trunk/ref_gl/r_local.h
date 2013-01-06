@@ -314,11 +314,9 @@ cvar_t	*r_softParticles;
 cvar_t	*r_ignoreGlErrors;
 
 cvar_t	*r_lightEditor;
-cvar_t	*editLightSpawn;
-cvar_t	*editLightRemove;
 
-cvar_t	*r_stereoVision;
-cvar_t	*r_stereoSeparation;
+//cvar_t	*r_stereoVision;
+//cvar_t	*r_stereoSeparation;
 
 
 int CL_PMpointcontents(vec3_t point);
@@ -394,6 +392,32 @@ qboolean R_CullSphere( const vec3_t centre, const float radius);
 void R_DebugLights (vec3_t lightOrg);
 void R_CastShadowVolumes(void);
 void R_DrawAliasModelLightPass (qboolean weapon_model);
+
+void SaveLights_f(void);
+void Light_Spawn_f(void);
+void Light_Delete_f(void);
+void R_EditSelectedLight_f(void);
+void R_MoveLightToRight_f(void);
+void R_MoveLightForward_f(void);
+void R_MoveLightUpDown_f(void);
+void Light_SpawnToCamera_f(void);
+void R_ChangeLightRadius_f(void);
+void Light_Copy_f(void);
+
+
+void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
+qboolean SurfInFrustum(msurface_t *s);
+qboolean HasSharedLeafs(byte *v1, byte *v2);
+float SphereInFrustum(vec3_t o, float radius);
+void R_DrawLightBrushModel(entity_t * e);
+qboolean R_DrawLightOccluders();
+void UpdateLightEditor(void);
+void Load_LightFile();
+extern int num_visLights;
+extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
+extern int numLightQ;
+
+extern qboolean FoundReLight;
 
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
 qboolean EntityInLightSphere(worldShadowLight_t *light);
@@ -496,23 +520,7 @@ void GL_DrawParticles();
 void R_TransformToScreen_Vec3(vec3_t in, vec3_t out);
 void GL_Blend(qboolean on, int dst, int src);
 
-void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
-qboolean SurfInFrustum(msurface_t *s);
-
 int GL_MsgGLError(char* Info);
-qboolean HasSharedLeafs(byte *v1, byte *v2);
-float SphereInFrustum(vec3_t o, float radius);
-void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t lightColor);
-void R_DrawLightBrushModel(entity_t * e);
-qboolean R_DrawLightOccluders(worldShadowLight_t *light);
-void Load_LightFile();
-void R_GenLightQueries(void);
-void R_DrawDebugLight(worldShadowLight_t *light);
-extern int num_visLights;
-extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
-extern int numLightQ;
-
-extern qboolean FoundReLight;
 /*
 ** GL config stuff
 */
@@ -588,6 +596,10 @@ typedef struct {
 	int		lastdFactor;
 	int		lastsFactor;
 	float	color[4];
+	
+	int numFormats;
+	GLenum binaryFormats;
+
 	unsigned char originalRedGammaTable[256];
 	unsigned char originalGreenGammaTable[256];
 	unsigned char originalBlueGammaTable[256];

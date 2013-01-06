@@ -1558,6 +1558,68 @@ trace_t CM_TransformedBoxTrace(vec3_t start, vec3_t end,
 	return trace;
 }
 
+void CL_ClipMoveToEntitiesWorld(vec3_t start, vec3_t mins, vec3_t maxs,
+								vec3_t end, trace_t * tr, int mask);
+
+trace_t CM_TransformedBoxTrace2(vec3_t start, vec3_t end,
+							   vec3_t mins, vec3_t maxs,
+							   int headnode, int brushmask,
+							   vec3_t origin, vec3_t angles)
+{
+	trace_t trace;
+	vec3_t start_l, end_l;
+	vec3_t a;
+	vec3_t forward, right, up;
+	vec3_t temp;
+	qboolean rotated;
+
+	// subtract origin offset
+	VectorSubtract(start, origin, start_l);
+	VectorSubtract(end, origin, end_l);
+
+	// rotate start and end into the models frame of reference
+	if (headnode != box_headnode && (angles[0] || angles[1] || angles[2]))
+		rotated = true;
+	else
+		rotated = false;
+
+	if (rotated) {
+		AngleVectors(angles, forward, right, up);
+
+		VectorCopy(start_l, temp);
+		start_l[0] = DotProduct(temp, forward);
+		start_l[1] = -DotProduct(temp, right);
+		start_l[2] = DotProduct(temp, up);
+
+		VectorCopy(end_l, temp);
+		end_l[0] = DotProduct(temp, forward);
+		end_l[1] = -DotProduct(temp, right);
+		end_l[2] = DotProduct(temp, up);
+	}
+	// sweep the box through the model
+	trace = CM_BoxTrace(start_l, end_l, mins, maxs, headnode, brushmask);
+
+		// check all other solid models
+	CL_ClipMoveToEntitiesWorld(start, mins, maxs, end, &trace, brushmask);
+
+	if (rotated && trace.fraction != 1.0) {
+		// FIXME: figure out how to do this with existing angles
+		VectorNegate(angles, a);
+		AngleVectors(a, forward, right, up);
+
+		VectorCopy(trace.plane.normal, temp);
+		trace.plane.normal[0] = DotProduct(temp, forward);
+		trace.plane.normal[1] = -DotProduct(temp, right);
+		trace.plane.normal[2] = DotProduct(temp, up);
+	}
+
+	trace.endpos[0] = start[0] + trace.fraction * (end[0] - start[0]);
+	trace.endpos[1] = start[1] + trace.fraction * (end[1] - start[1]);
+	trace.endpos[2] = start[2] + trace.fraction * (end[2] - start[2]);
+
+	return trace;
+}
+
 /*
 ===============================================================================
 
