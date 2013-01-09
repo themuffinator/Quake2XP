@@ -346,21 +346,26 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 
 		/// Berserker's fix start
 		if (program->numDefs)
-		{
-			int len = program->numDefs * 64;	// выделим максимум по 64 байта на дифайн
-			defines = (char*)malloc(len);
-			memset(defines, 0, program->numDefs * 64);
-			for (j=0; j<program->numDefs; j++)
 			{
-				if (i & program->defBits[j])
+				int len = 0;
+				// посчитаем требуемый объём памяти по дифайны
+				for (j = 0; j<program->numDefs; j++)
+					if (i & program->defBits[j])
+						len += 8 + strlen(program->defStrings[j]) + 1; // 8 = strlen("#define "), 1 = strlen("\n")
+
+			len++; // for trailing NULL
+			defines = (char*)calloc(len, 1); // calloc = malloc + memclear  ;)
+			for (j = 0; j<program->numDefs; j++)
 				{
-					Q_strcat(defines, "#define ", len);
-					Q_strcat(defines, program->defStrings[j], len);
-					Q_strcat(defines, "\n", len);
+				if (i & program->defBits[j])
+					{
+						Q_strcat(defines, "#define ", len);
+						Q_strcat(defines, program->defStrings[j], len);
+						Q_strcat(defines, "\n", len);
+					}
 				}
+				strings[numStrings++] = defines;
 			}
-			strings[numStrings++] = defines;
-		}
 		/// Berserker's fix end
 
 		strings[numStrings++] = floatDefs32;
