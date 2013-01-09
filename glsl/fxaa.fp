@@ -45,18 +45,18 @@ vec4 fxaaPixelShader(sampler2DRect ScreenTex)
     float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
     float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
 
-	float range = lumaMax - lumaMin;
-	if(range < max(FXAA_EDGE_THRESHOLD_MIN, lumaMax * FXAA_EDGE_THRESHOLD))
+	  float range = lumaMax - lumaMin;
+  	if(range < max(FXAA_EDGE_THRESHOLD_MIN, lumaMax * FXAA_EDGE_THRESHOLD))
 		return vec4(rgbM, 1.0);
-		//return vec4(1.0, 0.0, 0.0, 1.0);// debug!
 
     vec2 dir;
     dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
-    dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
+    dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));   
     
-    float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) *
-                          (0.25 * FXAA_REDUCE_MUL), FXAA_REDUCE_MIN);
-    
+     float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL), 
+							FXAA_REDUCE_MIN);
+
+
     float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
     dir =	min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX), 
 			max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX), dir * rcpDirMin));

@@ -38,11 +38,9 @@ v_viewVecTS.x = dot(tmp, a_tangent);
 v_viewVecTS.y = dot(tmp, a_binormal);
 v_viewVecTS.z = dot(tmp, a_normArray);
 
-#ifdef BUMP
 t = a_tangent;
 b = a_binormal;
 n = a_normArray;
-#endif
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 v_color = a_colorArray;
