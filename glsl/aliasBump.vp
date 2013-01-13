@@ -8,12 +8,14 @@ uniform vec3		u_LightOrg;
 uniform vec3		u_ViewOrigin; 		
 
 varying vec2		v_texCoord;
+varying vec4		v_CubeCoord;
 varying vec3		v_viewVec;
 varying vec3		v_lightVec;
 
 void main (void) {
 	
 v_texCoord = a_texCoord; 
+v_CubeCoord = gl_MultiTexCoord5;
 
 vec3 LV = u_LightOrg - a_vertArray;
 vec3 VV = u_ViewOrigin - a_vertArray;

@@ -1,6 +1,7 @@
 
 uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_NormalMap;
+uniform samplerCube 		u_CubeFilterMap;
 
 uniform float      		u_ColorModulate;
 uniform float			u_specularScale;
@@ -11,6 +12,7 @@ uniform float 			u_LightRadius;
 varying vec3			v_viewVecTS;
 varying vec3			v_lightVec;
 varying vec2			v_colorCoord;
+varying vec4			v_CubeCoord;
 
 #include lighting.inc
 #include parallax.inc
@@ -41,7 +43,7 @@ float att = max(1.0 - dot(tmp1, tmp1), 0.0);
 
 vec2 Es = PhongLighting(normalMap, L, V, u_specularExp);
 Es *=att;
+vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
 
-gl_FragColor = (Es.x * diffuseMap + Es.y * specular)* u_LightColor;
-
+gl_FragColor = (Es.x * diffuseMap + Es.y * specular)* u_LightColor * cubeFilter;
 }
