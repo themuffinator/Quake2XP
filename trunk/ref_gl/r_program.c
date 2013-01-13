@@ -6,7 +6,9 @@
 ==============================
 */
 #include "r_local.h"
+#ifdef _WIN32
 #include <process.h>
+#endif
 
 #define MAX_INFO_LOG		4096
 
