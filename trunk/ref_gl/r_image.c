@@ -161,6 +161,18 @@ void GL_Bind(int texnum)
 	qglBindTexture(GL_TEXTURE_2D, texnum);
 }
 
+void GL_BindCube(int texnum)
+{
+	extern image_t *draw_chars;
+
+	if (r_noBind->value && draw_chars)	// performance evaluation option
+		texnum = draw_chars->texnum;
+	if (gl_state.currenttextures[gl_state.currenttmu] == texnum)
+		return;
+	gl_state.currenttextures[gl_state.currenttmu] = texnum;
+	qglBindTexture(GL_TEXTURE_CUBE_MAP_ARB, texnum);
+}
+
 void GL_BindRect(int texnum)
 {
 	extern image_t *draw_chars;
@@ -181,6 +193,17 @@ void GL_MBind(GLenum target, int texnum)
 	if (gl_state.currenttextures[targ] == texnum)
 		return;
 	GL_Bind(texnum);
+}
+
+
+void GL_MBindCube(GLenum target, int texnum)
+{
+	int targ = target - GL_TEXTURE0_ARB;
+	GL_SelectTexture(target);
+
+	if (gl_state.currenttextures[targ] == texnum)
+		return;
+	GL_BindCube(texnum);
 }
 
 void GL_MBindRect(GLenum target, int texnum)
@@ -1468,6 +1491,8 @@ void GL_FreeUnusedImages(void)
 		r_texshell[i]->registration_sequence = registration_sequence;
 	}
 	
+	for(i=0; i<MAX_GLOBAL_FILTERS; i++)
+			filtercube_texture_object[i]->registration_sequence = registration_sequence;
 
 	r_distort->registration_sequence = registration_sequence;
 	r_blackTexture->registration_sequence = registration_sequence;

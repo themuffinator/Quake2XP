@@ -256,6 +256,8 @@ void SaveLights_f(void) {
 		fprintf(f, "\"radius\" \"%i\"\n",		(int)currentShadowLight->radius);
 		fprintf(f, "\"color\" \"%f %f %f\"\n",	currentShadowLight->sColor[0], currentShadowLight->sColor[1], currentShadowLight->sColor[2]);
 		fprintf(f, "\"style\" \"%i\"\n",		(int)currentShadowLight->style);
+		fprintf(f, "\"filter\" \"%i\"\n",		(int)currentShadowLight->filter);
+		fprintf(f, "\"angles\" \"%i %i %i\"\n", (int)currentShadowLight->angles[0], (int)currentShadowLight->angles[1], (int)currentShadowLight->angles[2]);
 		fprintf(f, "}\n");
 		i++;
 	}
@@ -295,7 +297,7 @@ void Light_Spawn_f(void) {
 	
 	if (trace.fraction != 1.0){
 		VectorMA(trace.endpos, -10, v_forward, spawn);
-		R_AddNewWorldLight(spawn, color, 300, 0, true, true, NULL);
+		R_AddNewWorldLight(spawn, color, 300, 0, 0, vec3_origin, true, true, NULL);
 	}
 }
 
@@ -305,33 +307,35 @@ void Light_SpawnToCamera_f(void) {
 	if(!r_lightEditor->value)
 		return;
 
-	R_AddNewWorldLight(player_org, color, 300, 0, true, true, NULL);
+	R_AddNewWorldLight(player_org, color, 300, 0, 0, vec3_origin, true, true, NULL);
 
 }
 
 void Light_Copy_f(void) {
-	vec3_t color, spawn, origin;
+	vec3_t color, spawn, origin, angles;
 	float radius;
-	int style;
+	int style, filter;
 
 	if(!r_lightEditor->value)
 		return;
 
 	VectorCopy(selectedShadowLight->origin, origin);
 	VectorCopy(selectedShadowLight->color, color);
+	VectorCopy(selectedShadowLight->angles, angles);
 	radius = selectedShadowLight->radius;
 	style = selectedShadowLight->style;
+	filter = selectedShadowLight->filter;
 
 	VectorMA(origin, -50, v_forward, spawn);
-	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, true, true, NULL);
+	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, true, true, NULL);
 	
 }
 
 void R_EditSelectedLight_f(void) {
 	
-	vec3_t color, origin;
+	vec3_t color, origin, angles;
 	float radius = 10;
-	int style = 0;
+	int style = 0, filter = 0;
 	
 	if(!r_lightEditor->value)
 		return;
@@ -344,8 +348,10 @@ void R_EditSelectedLight_f(void) {
 
 	VectorCopy(selectedShadowLight->origin, origin);
 	VectorCopy(selectedShadowLight->color, color);
+	VectorCopy(selectedShadowLight->angles, angles);
 	radius = selectedShadowLight->radius;
 	style = selectedShadowLight->style;
+	filter = selectedShadowLight->filter;
 	
 	if (!strcmp(Cmd_Argv(1), "origin")) {
 		if(Cmd_Argc() != 5) {
@@ -391,25 +397,49 @@ void R_EditSelectedLight_f(void) {
 		style = atoi(Cmd_Argv(2)); 
 	 }
 	 else
-		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f\nStyle %i\n",
+		if (Cmd_Argc() == 3 && !strcmp(Cmd_Argv(1), "filter")) {
+		if(Cmd_Argc() != 3) {
+			Com_Printf("usage: editLight %s value\nCurrent Cube Filter %i", Cmd_Argv(0),
+			selectedShadowLight->filter);
+			return;
+		}
+		filter = atoi(Cmd_Argv(2)); 
+	 }
+	 else
+		if (!strcmp(Cmd_Argv(1), "angles")) {
+		if(Cmd_Argc() != 5) {
+			Com_Printf("usage: editLight: %s X Y Z \nCurrent Angles: %.4f %.4f %.4f", Cmd_Argv(0),
+			selectedShadowLight->angles[0], 
+			selectedShadowLight->angles[1], 
+			selectedShadowLight->angles[2]);
+			return;
+		}
+		angles[0] = atof(Cmd_Argv(2));
+		angles[1] = atof(Cmd_Argv(3));
+		angles[2] = atof(Cmd_Argv(4));
+	} 
+	else
+		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\n",
 		 selectedShadowLight->origin[0], selectedShadowLight->origin[1], selectedShadowLight->origin[2],
 		 selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 
 		 selectedShadowLight->radius,
-		 selectedShadowLight->style);
+		 selectedShadowLight->style,
+		 selectedShadowLight->filter,
+		 selectedShadowLight->angles[0], selectedShadowLight->angles[1], selectedShadowLight->angles[2]);
 	
 	if(style < 0 || style >11)
 		style = 0;
 
 	 DeleteCurrentLight(selectedShadowLight);
-	 selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
+	 selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles, true, true, NULL);
 
 }
 
 void R_MoveLightToRight_f(void) {
 	
-	vec3_t color, origin;
+	vec3_t color, origin, angles;
 	float radius, offset;
-	int style;
+	int style, filter;
 	
 	if(!r_lightEditor->value)
 		return;
@@ -422,8 +452,10 @@ void R_MoveLightToRight_f(void) {
 
 	VectorCopy(selectedShadowLight->origin, origin);
 	VectorCopy(selectedShadowLight->color, color);
+	VectorCopy(selectedShadowLight->angles, angles);
 	radius = selectedShadowLight->radius;
 	style = selectedShadowLight->style;
+	filter = selectedShadowLight->filter;
 
 	if( Cmd_Argc() != 2 )
 	{
@@ -435,15 +467,15 @@ void R_MoveLightToRight_f(void) {
 	VectorMA(origin, offset, v_right, origin);
 	
 	DeleteCurrentLight(selectedShadowLight);
-	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
+	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles, true, true, NULL);
 
 }
 
 void R_MoveLightForward_f(void) {
 	
-	vec3_t color, origin;
+	vec3_t color, origin, angles;
 	float radius, offset, fix;
-	int style;
+	int style, filter;
 	
 	if(!r_lightEditor->value)
 		return;
@@ -456,8 +488,10 @@ void R_MoveLightForward_f(void) {
 
 	VectorCopy(selectedShadowLight->origin, origin);
 	VectorCopy(selectedShadowLight->color, color);
+	VectorCopy(selectedShadowLight->angles, angles);
 	radius = selectedShadowLight->radius;
 	style = selectedShadowLight->style;
+	filter = selectedShadowLight->filter;
 
 	if( Cmd_Argc() != 2 )
 	{
@@ -471,15 +505,15 @@ void R_MoveLightForward_f(void) {
 	origin[2] = fix;
 
 	DeleteCurrentLight(selectedShadowLight);
-	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
+	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles, true, true, NULL);
 
 }
 
 void R_MoveLightUpDown_f(void) {
 	
-	vec3_t color, origin;
+	vec3_t color, origin, angles;
 	float radius, offset;
-	int style;
+	int style, filter;
 	
 	if(!r_lightEditor->value)
 		return;
@@ -492,8 +526,10 @@ void R_MoveLightUpDown_f(void) {
 
 	VectorCopy(selectedShadowLight->origin, origin);
 	VectorCopy(selectedShadowLight->color, color);
+	VectorCopy(selectedShadowLight->angles, angles);
 	radius = selectedShadowLight->radius;
 	style = selectedShadowLight->style;
+	filter = selectedShadowLight->filter;
 
 	if( Cmd_Argc() != 2 )
 	{
@@ -505,15 +541,15 @@ void R_MoveLightUpDown_f(void) {
 	origin[2] += offset;
 
 	DeleteCurrentLight(selectedShadowLight);
-	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
+	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles,  true, true, NULL);
 
 }
 
 void R_ChangeLightRadius_f(void) {
 	
-	vec3_t color, origin;
+	vec3_t color, origin, angles;
 	float radius, offset;
-	int style;
+	int style, filter;
 	
 	if(!r_lightEditor->value)
 		return;
@@ -526,8 +562,10 @@ void R_ChangeLightRadius_f(void) {
 
 	VectorCopy(selectedShadowLight->origin, origin);
 	VectorCopy(selectedShadowLight->color, color);
+	VectorCopy(selectedShadowLight->angles, angles);
 	radius = selectedShadowLight->radius;
 	style = selectedShadowLight->style;
+	filter = selectedShadowLight->filter;
 
 	if( Cmd_Argc() != 2 )
 	{
@@ -540,9 +578,10 @@ void R_ChangeLightRadius_f(void) {
 	if(radius <10)
 		radius = 10;
 	DeleteCurrentLight(selectedShadowLight);
-	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
+	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles,  true, true, NULL);
 
 }
+
 
 void Light_Delete_f(void) {
 
@@ -751,7 +790,9 @@ void UpdateLightEditor(void){
 
 }
 
-worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow, msurface_t *surf) {
+worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
+									   int filter, vec3_t angles, qboolean isStatic, 
+									   qboolean isShadow, msurface_t *surf) {
 	
 	worldShadowLight_t *light;
 	int leafnum;
@@ -763,12 +804,14 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 
 	VectorCopy(origin, light->origin);
 	VectorCopy(color, light->sColor);
+	VectorCopy(angles, light->angles);
 	light->radius = radius;
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
 	light->isNoWorldModel = false;
 	light->next = NULL;
 	light->style = style;
+	light->filter = filter;
 		
 	//// cull info
 	light->surf = surf;
@@ -855,7 +898,7 @@ void Load_BspLights() {
 
 		if(addLight) {
 			if((style > 0 && style < 12) || addLight_mine){
-			R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
+			R_AddNewWorldLight(origin, color, radius, style, 0, vec3_origin, true, true, NULL);
 			numlights++;
 			if(style > 0 && style < 12)
 				numLightStyles++;
@@ -870,7 +913,8 @@ qboolean FoundReLight;
 
 void Load_LightFile() {
 	
-	int		style, numLights = 0;
+	int		style, numLights = 0, filter;
+	vec3_t	angles;
 	char	*c, *token, key[256], *value;
 	float	color[3], origin[3], radius;
 	char	name[MAX_QPATH], path[MAX_QPATH];
@@ -908,6 +952,8 @@ void Load_LightFile() {
 		origin[1] = 0;
 		origin[2] = 0;
 		style = 0;
+		filter = 0;
+		VectorClear(angles);
 
 		while(1) {
 			token = COM_Parse(&c);
@@ -926,9 +972,13 @@ void Load_LightFile() {
 				sscanf(value, "%f %f %f", &color[0], &color[1], &color[2]);
 			else if(!Q_stricmp(key, "style"))
 				style = atoi(value);
+			else if(!Q_stricmp(key, "filter"))
+				filter = atoi(value);
+			else if(!Q_stricmp(key, "angles"))
+				sscanf(value, "%f %f %f", &angles[0], &angles[1], &angles[2]);
 		}
 	
-		R_AddNewWorldLight(origin, color, radius, style, true, true, NULL);
+		R_AddNewWorldLight(origin, color, radius, style, filter, angles, true, true, NULL);
 		numLights++;
 		}
 	Com_Printf(""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights\n", numLights);
@@ -1013,7 +1063,7 @@ qboolean R_DrawLightOccluders()
 	qglColorMask(0,0,0,0);
 	
 	// begin occlusion test
-	qglBeginQueryARB(GL_SAMPLES_PASSED_ARB, lightsQueries[currentShadowLight->occQ]);
+	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
 
 	VectorCopy(currentShadowLight->origin, org);
 	rad = currentShadowLight->radius * r_occLightBoundsSize->value;
@@ -1051,7 +1101,7 @@ qboolean R_DrawLightOccluders()
 	qglEnd();
 
 	// end occlusion test
-	qglEndQueryARB(GL_SAMPLES_PASSED_ARB);
+	qglEndQueryARB(gl_state.query_passed);
 
 	qglEnable(GL_CULL_FACE);
 	qglEnable(GL_TEXTURE_2D);
@@ -1077,3 +1127,43 @@ qboolean R_DrawLightOccluders()
 		return true;
 	}	
 }
+
+/*
+=============
+GL_SetupCubeMapMatrix
+
+Loads the current matrix with a tranformation used for light filters
+=============
+*/
+void GL_SetupCubeMapMatrix(qboolean world)
+{
+	float	a, b, c;
+
+	qglMatrixMode(GL_TEXTURE);
+	qglLoadIdentity();
+
+	a = currentShadowLight->angles[2];
+	b = currentShadowLight->angles[0];
+	c = currentShadowLight->angles[1];
+
+	if (a)
+		qglRotatef ( -a,  1, 0, 0);
+	if (b)
+		qglRotatef ( -b,  0, 1, 0);
+	if (c)
+		qglRotatef ( -c,  0, 0, 1);
+
+	if (!world)
+	{
+		if (currententity->angles[1])
+			qglRotatef (currententity->angles[1],  0, 0, 1);
+		if (currententity->angles[0])
+			qglRotatef (currententity->angles[0],  0, 1, 0);		/// fixed "stupid quake bug" ;)
+		if (currententity->angles[2])
+			qglRotatef (currententity->angles[2],  1, 0, 0);
+	}
+
+	qglTranslatef(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
+	qglMatrixMode(GL_MODELVIEW);
+}
+

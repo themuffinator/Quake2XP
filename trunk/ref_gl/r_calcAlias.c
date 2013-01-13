@@ -557,7 +557,11 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), 0);
 	GL_MBind(GL_TEXTURE1_ARB, skin->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_diffuseMap"), 1);
-	
+
+	GL_MBindCube(GL_TEXTURE5_ARB, filtercube_texture_object[currentShadowLight->filter]->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"), 5);
+	GL_SetupCubeMapMatrix(false);
+
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_TANGENT);
 	qglEnableVertexAttribArray(ATRB_BINORMAL);
@@ -571,6 +575,11 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertexArray);
 	
 	qglDrawArrays	(GL_TRIANGLES, 0, jj);
+
+	GL_SelectTexture(GL_TEXTURE5_ARB);
+	qglMatrixMode(GL_TEXTURE);
+	qglLoadIdentity();
+	qglMatrixMode(GL_MODELVIEW);
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	qglDisableVertexAttribArray(ATRB_TEX0);

@@ -193,6 +193,8 @@ void GL_AddFlareSurface(msurface_t * surf)
 	VectorCopy(tmp, r_flares[r_numflares].lightsurf_origin);
 	r_flares[r_numflares].surf = surf;
 	r_flares[r_numflares].style = 0;
+	r_flares[r_numflares].occId = numFlareOcc;
+	numFlareOcc++;
 
 	leafnum = CM_PointLeafnum(r_flares[r_numflares].origin);
 	cluster = CM_LeafCluster(leafnum);
@@ -201,7 +203,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 
 	if(!FoundReLight)
 	R_AddNewWorldLight(	r_flares[r_numflares].origin,	r_flares[r_numflares].color, 
-						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, true, true, surf);
+						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, 0, vec3_origin, true, true, surf);
 
 	r_numflares++;
 	free(buffer);
@@ -1561,6 +1563,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	R_ClearFlares();
 	R_ClearWorldLights();
 	numLightQ = 0;
+	numFlareOcc = 0;
 
 	loadmodel->memorySize = 0;
 	

@@ -372,6 +372,8 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 
 		strings[numStrings++] = floatDefs32;
 
+		// add check for binaries here!!!
+
 		// compile vertex shader
 		if (vertexSource) {
 			// link includes

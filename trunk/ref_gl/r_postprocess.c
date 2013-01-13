@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int r_numflares;
 flare_t r_flares[MAX_FLARES];
 vec3_t vert[1];
-
+int numFlareOcc;
 static vec3_t vert_array[MAX_FLARES_VERTEX];
 static vec2_t tex_array[MAX_FLARES_VERTEX];
 static vec4_t color_array[MAX_FLARES_VERTEX];
@@ -35,12 +35,11 @@ static vec4_t color_array[MAX_FLARES_VERTEX];
 Draw Occlusion Flares
 =====================
 */
-void R_BuildFlares(flare_t * light, int Id){
+void R_BuildFlares(flare_t * light){
 	
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
 	int			sampleCount;
-    int			ocCount = 0;
 	unsigned	flareIndex[MAX_INDICES];
 	int			flareVert=0, index=0;
 	
@@ -70,14 +69,13 @@ void R_BuildFlares(flare_t * light, int Id){
 
 		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vert);	
 
-		qglBeginQueryARB(GL_SAMPLES_PASSED_ARB, ocQueries[Id]);
+		qglBeginQueryARB(gl_state.query_passed, flareQueries[light->occId]);
 		
 		VA_SetElem3(vert[0],  light->origin[0],  light->origin[1],  light->origin[2]); 
-		
-			
+		 	
 		qglDrawArrays (GL_POINTS, 0, 1);
 
-		qglEndQueryARB(GL_SAMPLES_PASSED_ARB);
+		qglEndQueryARB(gl_state.query_passed);
 		
 		qglEnable(GL_TEXTURE_2D);
 		qglColorMask(1, 1, 1, 1);
@@ -85,7 +83,7 @@ void R_BuildFlares(flare_t * light, int Id){
 		qglColor4f(1, 1, 1, 1);
 
 		if(!gl_state.nv_conditional_render || !r_useNvConditionalRender->value){
-			qglGetQueryObjectivARB(ocQueries[Id], GL_QUERY_RESULT_ARB, &sampleCount);
+			qglGetQueryObjectivARB(flareQueries[light->occId], GL_QUERY_RESULT_ARB, &sampleCount);
 
 			if (!sampleCount) {
 				if (light->surf->ent)
@@ -96,7 +94,7 @@ void R_BuildFlares(flare_t * light, int Id){
 
 
 	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
-			glBeginConditionalRenderNV(ocQueries[Id], GL_QUERY_WAIT_NV);
+			glBeginConditionalRenderNV(flareQueries[light->occId], GL_QUERY_WAIT_NV);
 
 
 	if(flareVert){
@@ -233,7 +231,7 @@ void R_RenderFlares(void)
 		if(CL_PMpointcontents(fl->origin) & MASK_SOLID)
 			continue;
 
-		R_BuildFlares(fl, i);
+		R_BuildFlares(fl);
 
 	}
 	GL_BindNullProgram();

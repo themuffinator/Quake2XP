@@ -1578,7 +1578,7 @@ R_Init
 ===============
 */
 int GL_QueryBits;
-int ocQueries[MAX_FLARES];
+int flareQueries[MAX_WORLD_SHADOW_LIHGTS];
 int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 
 
@@ -1769,10 +1769,11 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 
 
 	gl_state.arb_occlusion = false;
+	gl_state.arb_occlusion2 = false;
 	if (strstr(gl_config.extensions_string, "GL_ARB_occlusion_query")) {
 		Com_Printf("...using GL_ARB_occlusion_query\n");
 		gl_state.arb_occlusion = true;
-
+		
 		qglGenQueriesARB		=	(PFNGLGENQUERIESARBPROC) qwglGetProcAddress("glGenQueriesARB");
 		qglDeleteQueriesARB		=	(PFNGLDELETEQUERIESARBPROC) qwglGetProcAddress("glDeleteQueriesARB");
 		qglIsQueryARB			=	(PFNGLISQUERYARBPROC) qwglGetProcAddress("glIsQueryARB");
@@ -1785,12 +1786,25 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		qglGetQueryivARB(GL_SAMPLES_PASSED_ARB, GL_QUERY_COUNTER_BITS_ARB, &GL_QueryBits);
 		
 		if (GL_QueryBits) {
-			qglGenQueriesARB(MAX_FLARES, (GLuint*)ocQueries);
+			qglGenQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
 			qglGenQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
 
 			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " occlusion query bits\n", GL_QueryBits);
+
+			if (strstr(gl_config.extensions_string, "GL_ARB_occlusion_query2")){
+				Com_Printf("...using GL_ARB_occlusion_query2\n");
+				gl_state.arb_occlusion2 = true;
+			}
+			else{
+				Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query2 not found\n");
+				gl_state.arb_occlusion2 = false;
+			}
 		}
-		
+		if(gl_state.arb_occlusion2)
+			gl_state.query_passed = GL_ANY_SAMPLES_PASSED;
+		else
+			gl_state.query_passed = GL_SAMPLES_PASSED;
+
 		} else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query not found\n");
 		gl_state.arb_occlusion = false;
@@ -1991,7 +2005,7 @@ void R_Shutdown(void)
 {
     
 	if(qglDeleteQueriesARB){
-	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)ocQueries);
+	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
 	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
 	}
 	

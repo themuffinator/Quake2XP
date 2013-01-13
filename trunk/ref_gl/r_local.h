@@ -177,6 +177,10 @@ extern image_t	*r_envTex;
 extern image_t	*shadowMask;
 extern image_t	*r_scanline;
 
+#define MAX_FILTERS 256
+extern image_t	*filtercube_texture_object[MAX_FILTERS];
+#define	MAX_GLOBAL_FILTERS	128
+
 extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;
@@ -184,7 +188,7 @@ extern int r_framecount;
 extern cplane_t frustum[4];
 
 extern	int gl_filter_min, gl_filter_max;
-extern	int ocQueries[MAX_FLARES];
+extern	int flareQueries[MAX_WORLD_SHADOW_LIHGTS];
 
 //extern 	worldShadowLight_t *shadowLight;
 
@@ -344,6 +348,7 @@ void GL_MBind(GLenum target, int texnum);
 void GL_TexEnv(GLenum value);
 void GL_EnableMultitexture(qboolean enable);
 void GL_SelectTexture(GLenum);
+void GL_MBindCube(GLenum target, int texnum);
 
 void R_LightPoint(vec3_t p, vec3_t color, qboolean bump);
 void R_PushDlights(void);
@@ -354,8 +359,8 @@ void R_InitLightgrid(void);
 void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
-worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, qboolean isStatic, qboolean isShadow, msurface_t *surf);
-
+worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
+									   int filter, vec3_t angles, qboolean isStatic, qboolean isShadow, msurface_t *surf);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
@@ -403,7 +408,7 @@ void R_MoveLightUpDown_f(void);
 void Light_SpawnToCamera_f(void);
 void R_ChangeLightRadius_f(void);
 void Light_Copy_f(void);
-
+void GL_SetupCubeMapMatrix(qboolean world);
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
 qboolean SurfInFrustum(msurface_t *s);
@@ -416,6 +421,7 @@ void Load_LightFile();
 extern int num_visLights;
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
+extern int numFlareOcc;
 
 extern qboolean FoundReLight;
 
@@ -583,6 +589,8 @@ typedef struct {
 	int displayrefresh;
 	qboolean nv_multisample_hint;
 	qboolean arb_occlusion;
+	qboolean arb_occlusion2;
+	unsigned query_passed;
 	qboolean arb_multisample;
 	qboolean wgl_nv_multisample_coverage;
 	qboolean wgl_nv_multisample_coverage_aviable;

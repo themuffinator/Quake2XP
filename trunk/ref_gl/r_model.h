@@ -44,6 +44,8 @@ typedef struct screenrect_s
 
 typedef struct worldShadowLight_s {
 	vec3_t origin;
+	vec3_t angles;
+	int filter;
 	float radius;
 	vec3_t color, sColor;
 
@@ -77,6 +79,7 @@ typedef struct {
 	float size;
 	float sizefull;
 	int style;
+	int occId;
 	float lightIntens;
 	msurface_t *surf;
 	vec3_t lightsurf_origin;

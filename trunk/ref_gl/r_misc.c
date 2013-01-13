@@ -42,6 +42,7 @@ image_t *r_blackTexture;
 image_t *r_DSTTex;
 image_t *r_scanline;
 image_t	*r_envTex;
+image_t	*filtercube_texture_object[MAX_FILTERS];
 
 void CreateDSTTex_ARB (void)
 {
@@ -215,6 +216,195 @@ void CreateShadowMask(void){
                        GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
 }
+
+typedef struct img_s
+{
+	byte	*pixels;
+	int		width;
+	int		height;
+} img_t;
+
+char	*lsuf[6] = {"ft", "bk", "lf", "rt", "up", "dn"};
+unsigned	trans[4096*4096];
+
+void IL_LoadImage(char *filename, byte ** pic, int *width, int *height, ILenum type);
+void R_FlipImage(int idx, img_t *pix, byte *dst)
+{
+	byte *from;
+	byte *src = pix->pixels;
+	int	width = pix->width;
+	int	height = pix->height;
+	int	x,y;
+
+	if (idx==1)		// bk
+	{
+		for(y=height-1; y>=0; y--)
+		{
+			for(x=width-1; x>=0; x--)
+			{	// copy rgb components
+				from = src + (x*height + y)*3;
+				dst[0] = from[0];
+				dst[1] = from[1];
+				dst[2] = from[2];
+				dst[3] = 255;
+				dst+=4;
+			}
+		}
+		return;
+	}
+
+	if (idx==2)		// lf
+	{
+		for(y=height-1; y>=0; y--)
+		{
+			for(x=0; x<width; x++)
+			{	// copy rgb components
+				from = src + (y*width + x)*3;
+				dst[0] = from[0];
+				dst[1] = from[1];
+				dst[2] = from[2];
+				dst[3] = 255;
+				dst+=4;
+			}
+		}
+		return;
+	}
+
+	if (idx==3)		// rt
+	{
+		for(y=0; y<height; y++)
+		{
+			for(x=width-1; x>=0; x--)
+			{	// copy rgb components
+				from = src + (y*width + x)*3;
+				dst[0] = from[0];				// swap for BGRA
+				dst[1] = from[1];
+				dst[2] = from[2];
+				dst[3] = 255;
+				dst+=4;
+			}
+		}
+		return;
+	}
+
+	// ft, up, dn
+	for(y=0; y<height; y++)
+	{
+		for(x=0; x<width; x++)
+		{	// copy rgb components
+			from = src + (x*height + y)*3;
+			dst[0] = from[0];				// swap for BGRA
+			dst[1] = from[1];
+			dst[2] = from[2];
+			dst[3] = 255;
+			dst+=4;
+		}
+	}
+}
+
+image_t *R_LoadLightFilter (int id)
+{
+	int		i, minw, minh, maxw, maxh;
+	image_t	*image;
+	char	name[MAX_OSPATH];
+	char	checkname[MAX_OSPATH];
+	img_t	pix[6];
+	byte	*nullpixels;
+	qboolean	allNull = true;
+
+	Com_sprintf (name, sizeof(name), "***Filter%2i***", id+1);
+
+	// find a free image_t
+	for (i=0, image=gltextures ; i<numgltextures ; i++,image++)
+	{
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures)
+	{
+		if (numgltextures == MAX_GLTEXTURES)
+			Com_Error (ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy (image->name, name);
+//	image->hash = Com_HashKey(name);
+	image->registration_sequence = registration_sequence;
+	image->type = it_pic;
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+
+	qglBindTexture(GL_TEXTURE_CUBE_MAP_ARB, image->texnum);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	minw = minh = 0;
+	maxw = maxh = 9999999;
+	for (i = 0; i < 6; i++)
+	{
+		pix[i].pixels = NULL;
+		pix[i].width = pix[i].height = 0;
+		Com_sprintf (checkname, sizeof(checkname), "gfx/lights/%i_%s.jpg", id+1, lsuf[i]);
+
+		// Berserker: stop spam
+		if (FS_LoadFile(checkname, NULL) != -1)
+		{
+			IL_LoadImage (checkname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_JPG);
+			if(pix[i].width)
+			{
+				if (minw < pix[i].width)	minw = pix[i].width;
+				if (maxw > pix[i].width)	maxw = pix[i].width;
+			}
+
+			if(pix[i].height)
+			{
+				if (minh < pix[i].height)	minh = pix[i].height;
+				if (maxh > pix[i].height)	maxh = pix[i].height;
+			}
+		}
+	}
+
+	if ((minw == 0) || (minh == 0))
+	{
+///		Com_DPrintf("R_LoadLightFilter: filter %i does not exist\n", id+1);	// Berserker: stop spam
+		minw = minh = maxw = maxh = 1;	// Для отсутствующего фильтра пусть будет фильтр 1х1 черный... (нет света)
+	}
+
+	if ((minw != maxw) || (minh != maxh) || (minw != minh))
+		Com_Error(ERR_DROP, "R_LoadLightFilter: (%i) all images must be quadratic with equal sizes", id+1);
+
+	for (i = 0; i < 6; i++)
+	{
+		if(pix[i].pixels)
+		{
+			allNull = false;
+			R_FlipImage(i, &pix[i], (byte*)trans);
+			free(pix[i].pixels);
+			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB+i, 0, GL_RGBA8, minw, minh, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, trans);	// Berserker: using BGRA instead RGB
+		}
+		else
+		{
+			nullpixels = (byte*)malloc(minw*minh*4);
+			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB+i, 0, GL_RGBA8, minw, minh, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, nullpixels);	// Berserker: using BGRA instead RGB
+			free(nullpixels);
+		}
+	}
+
+	image->width = minw;
+	image->height = minh;
+	image->upload_width = image->width * 6;
+	image->upload_height = image->height * 6;
+
+	if (allNull)
+		image->registration_sequence = -1;	// free
+
+	return image;
+}
+
+
 
 byte missing_texture[4][4] = {
 	{0.0, 0.0, 0.0, 0.0},
@@ -406,6 +596,9 @@ void R_InitEngineTextures(void)
 	r_envTex =  GL_FindImage("gfx/tinfx.jpg", it_wall);
 		if(!r_envTex)
 			r_envTex = r_notexture;
+
+	for(i=0; i<MAX_GLOBAL_FILTERS; i++)
+			filtercube_texture_object[i] = R_LoadLightFilter (i);
 
 	CreateDSTTex_ARB();
 	CreateDepthTexture();
