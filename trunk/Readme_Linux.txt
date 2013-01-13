@@ -12,6 +12,9 @@ Quake2XP Linux Notes
 1. Building and installing
 ==============================================================================
 
+The source code can be downloaded from SourceForge as:
+$ svn checkout svn://svn.code.sf.net/p/quake2xp/code/trunk quake2xp-code
+
 The following libraries are needed to compile Quake2XP.
 - DevIL
 - OpenGL
@@ -37,7 +40,7 @@ you can install it in "$HOME/local" as follows.
 
 $ python waf configure --prefix=$HOME/local
 $ python waf
-$ python install
+$ python waf install
 
 If you have the required libraries but still get an error, see below for
 contact information.
@@ -54,17 +57,32 @@ self-extracting archives (i.e. can be extracted without Wine).
 
 - baseq2/pak0.pak from the original Quake II CD
 
-- baseq2 (without DLLs) from q2-3.20-x86-full.exe
+- Updated baseq2/ (without DLLs) from q2-3.20-x86-full.exe
   Available at ftp://ftp.idsoftware.com/idstuff/quake2/ or any mirror.
+  After extracting it you should have baseq2/pak1.pak and baseq2/pak2.pak
 
-- baseq2 (without EXEs and DLLs) from the Quake2XP installer
-  Available at http://sourceforge.net/projects/quake2xp/files/release/
+- Quake2XP baseq2/ data
+  Available at http://sourceforge.net/projects/quake2xp/files/media/baseq2
+  You should put all the .pkx files under the baseq2 directory
+
+- Quake2XP shaders
+  For the moment, shaders must be installed manually. Download with:
+  $ svn checkout svn://svn.code.sf.net/p/quake2xp/code/glsl glsl
+  Then may copy the "glsl" folder under your "baseq2/".
+
+  Alternatively, if you have "zip", a PKX can be created as:
+  $ zip -r q2xpGLSL.pkx glsl
+  And then copy the file under "baseq2/".
 
 - (optional) original CD music in Ogg format
   Available at http://forums.steampowered.com/forums/showthread.php?t=1756937
+
   Quake2XP expects tracks as "baseq2/music/trackNN.ogg", so renaming is
   needed (i.e. 02.ogg -> track02.ogg). You also need to select that music
   source in the options menu.
+
+  The original Quake II music it's included in q2xpMusic.pkx, but the
+  mentioned archive also has the music for expansions (rogue/xatrix).
 
 Expansion packs
 
@@ -72,6 +90,10 @@ If you have the official expansion packs ("xatrix" and "rogue") copy the
 pak*.pak files and video/ folder to the corresponding directory under
 "$PREFIX/share/quake2xp" (not under baseq2/). Then start the game as:
 $ quake2xp +set game <dirname>
+
+You also need the corresponding Quake2XP data for expansions, available at:
+- http://sourceforge.net/projects/quake2xp/files/media/xatrix
+- http://sourceforge.net/projects/quake2xp/files/media/rogue
 
 The soundtracks for these expansions are included in the music pack mentioned
 before, and they should be copied into "dirname/music". Remember to rename the
@@ -137,7 +159,6 @@ Website: http://quake2xp.sourceforge.net/
 5. TODO
 ==============================================================================
 
-- upload cache pkx and mention it URL as optional
 - add note about 3zb2, after testing
 - get launchpad account, create Ubuntu package and promote in
   forums (english and spanish)
