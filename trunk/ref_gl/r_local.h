@@ -408,7 +408,7 @@ void R_MoveLightUpDown_f(void);
 void Light_SpawnToCamera_f(void);
 void R_ChangeLightRadius_f(void);
 void Light_Copy_f(void);
-void GL_SetupCubeMapMatrix(qboolean world);
+void GL_SetupCubeMapMatrix(qboolean model);
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
 qboolean SurfInFrustum(msurface_t *s);

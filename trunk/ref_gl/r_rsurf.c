@@ -802,12 +802,13 @@ static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
-		GL_MBind(GL_TEXTURE4_ARB, nm->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 4);
-		GL_MBind(GL_TEXTURE5_ARB, filtercube_texture_object[currentShadowLight->filter]->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"), 5);
-		GL_SetupCubeMapMatrix(true);
-
+		GL_MBind(GL_TEXTURE1_ARB, nm->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 1);
+	
+		GL_MBindCube(GL_TEXTURE2_ARB, filtercube_texture_object[currentShadowLight->filter]->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"), 2);
+		GL_SetupCubeMapMatrix(bmodel);
+		
 		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
 		
 
@@ -1123,10 +1124,13 @@ void R_DrawLightWorld(void)
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 	
-	GL_SelectTexture(GL_TEXTURE5_ARB);
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
-	qglMatrixMode(GL_MODELVIEW);
+	GL_SelectTexture(GL_TEXTURE2_ARB);
+//	qglMatrixMode(GL_TEXTURE);
+//	qglLoadIdentity();
+	//qglMatrixMode(GL_MODELVIEW);
+	qglPopMatrix();
+    qglMatrixMode(GL_MODELVIEW);
+	
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 }
 
@@ -1587,10 +1591,14 @@ void R_DrawLightBrushModel(entity_t * e)
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 
-	GL_SelectTexture(GL_TEXTURE5_ARB);
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
-	qglMatrixMode(GL_MODELVIEW);
+	GL_SelectTexture(GL_TEXTURE2_ARB);
+//	qglMatrixMode(GL_TEXTURE);
+//	qglLoadIdentity();
+//	qglMatrixMode(GL_MODELVIEW);
+	
+	qglPopMatrix();
+    qglMatrixMode(GL_MODELVIEW);
+
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 
 	qglPopMatrix();

@@ -115,6 +115,7 @@ void R_AddDynamicLight(dlight_t *dl) {
 	VectorCopy(dl->origin, light->origin);
 	VectorCopy(dl->color, light->sColor);
 	light->style = 0;
+	light->filter = 0;
 	light->radius = dl->intensity;
 	light->isStatic = false;
 	light->isNoWorldModel = false;
@@ -135,6 +136,7 @@ void R_AddNoWorldModelLight() {
 	VectorSet(light->mins, -1024, -1024, -1024);
 	VectorSet(light->maxs,  1024,  1024,  1024);
 	light->style = 0;
+	light->filter = 0;
 	light->isStatic = false;
 	light->isShadow = false;
 	light->isNoWorldModel = true;
@@ -603,6 +605,7 @@ char buff0[128];
 char buff1[128];
 char buff2[128];
 char buff3[128];
+char buff4[128];
 
 void UpdateLightEditor(void){
 
@@ -639,7 +642,7 @@ void UpdateLightEditor(void){
 
 	trace_bsp = CL_PMTraceWorld(r_origin, vec3_origin, vec3_origin, end_trace, MASK_SOLID); //bsp collision with bmodels
 
-	// check if it is in focus
+	// light in focus?
 	trace_light = CM_TransformedBoxTrace(	r_origin, trace_bsp.endpos, vec3_origin, vec3_origin, headNode, MASK_ALL, 
 											currentShadowLight->origin, vec3_origin); // find light
 
@@ -711,6 +714,7 @@ void UpdateLightEditor(void){
 												selectedShadowLight->color[2]);
 	sprintf(buff2,	"Radius: %.3f",				selectedShadowLight->radius);		
 	sprintf(buff3,	"Style: %i",				selectedShadowLight->style);
+	sprintf(buff4,	"Filter: %i",				selectedShadowLight->filter);
 
 	VectorSet(v[0], tmpOrg[0]-rad, tmpOrg[1]-rad, tmpOrg[2]-rad);
 	VectorSet(v[1], tmpOrg[0]-rad, tmpOrg[1]-rad, tmpOrg[2]+rad);
@@ -836,7 +840,7 @@ model_t *loadmodel;
 
 void Load_BspLights() {
 	
-	int addLight, style, numlights, addLight_mine, numLightStyles;
+	int addLight, style, numlights, addLight_mine, numLightStyles, filter;
 	char *c, *token, key[256], *value;
 	float color[3], origin[3], radius;
 
@@ -864,6 +868,7 @@ void Load_BspLights() {
 		addLight = false;
 		addLight_mine = false;
 		style = 0;
+		filter = 0;
 
 		while(1) {
 			token = COM_Parse(&c);
@@ -894,6 +899,8 @@ void Load_BspLights() {
 				sscanf(value, "%f %f %f", &color[0], &color[1], &color[2]);
 			else if(!Q_stricmp(key, "style"))
 				style = atoi(value);
+			else if(!Q_stricmp(key, "filter"))
+				filter = atoi(value);
 		}
 
 		if(addLight) {
@@ -1135,11 +1142,15 @@ GL_SetupCubeMapMatrix
 Loads the current matrix with a tranformation used for light filters
 =============
 */
-void GL_SetupCubeMapMatrix(qboolean world)
+void GL_SetupCubeMapMatrix(qboolean model)
 {
 	float	a, b, c;
 
+//	qglMatrixMode(GL_TEXTURE);
+//	qglLoadIdentity();
+
 	qglMatrixMode(GL_TEXTURE);
+	qglPushMatrix();
 	qglLoadIdentity();
 
 	a = currentShadowLight->angles[2];
@@ -1153,17 +1164,10 @@ void GL_SetupCubeMapMatrix(qboolean world)
 	if (c)
 		qglRotatef ( -c,  0, 0, 1);
 
-	if (!world)
-	{
-		if (currententity->angles[1])
-			qglRotatef (currententity->angles[1],  0, 0, 1);
-		if (currententity->angles[0])
-			qglRotatef (currententity->angles[0],  0, 1, 0);		/// fixed "stupid quake bug" ;)
-		if (currententity->angles[2])
-			qglRotatef (currententity->angles[2],  1, 0, 0);
-	}
+	if (model)
+		R_RotateForEntity(currententity);
 
 	qglTranslatef(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
-	qglMatrixMode(GL_MODELVIEW);
+//	qglMatrixMode(GL_MODELVIEW);
 }
 

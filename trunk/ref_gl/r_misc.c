@@ -242,7 +242,7 @@ void R_FlipImage(int idx, img_t *pix, byte *dst)
 		{
 			for(x=width-1; x>=0; x--)
 			{	// copy rgb components
-				from = src + (x*height + y)*3;
+				from = src + (x*height + y)*4;
 				dst[0] = from[0];
 				dst[1] = from[1];
 				dst[2] = from[2];
@@ -259,7 +259,7 @@ void R_FlipImage(int idx, img_t *pix, byte *dst)
 		{
 			for(x=0; x<width; x++)
 			{	// copy rgb components
-				from = src + (y*width + x)*3;
+				from = src + (y*width + x)*4;
 				dst[0] = from[0];
 				dst[1] = from[1];
 				dst[2] = from[2];
@@ -276,8 +276,8 @@ void R_FlipImage(int idx, img_t *pix, byte *dst)
 		{
 			for(x=width-1; x>=0; x--)
 			{	// copy rgb components
-				from = src + (y*width + x)*3;
-				dst[0] = from[0];				// swap for BGRA
+				from = src + (y*width + x)*4;
+				dst[0] = from[0];
 				dst[1] = from[1];
 				dst[2] = from[2];
 				dst[3] = 255;
@@ -292,8 +292,8 @@ void R_FlipImage(int idx, img_t *pix, byte *dst)
 	{
 		for(x=0; x<width; x++)
 		{	// copy rgb components
-			from = src + (x*height + y)*3;
-			dst[0] = from[0];				// swap for BGRA
+			from = src + (x*height + y)*4;
+			dst[0] = from[0];
 			dst[1] = from[1];
 			dst[2] = from[2];
 			dst[3] = 255;
@@ -311,7 +311,7 @@ image_t *R_LoadLightFilter (int id)
 	img_t	pix[6];
 	byte	*nullpixels;
 	qboolean	allNull = true;
-
+	
 	Com_sprintf (name, sizeof(name), "***Filter%2i***", id+1);
 
 	// find a free image_t
@@ -329,7 +329,6 @@ image_t *R_LoadLightFilter (int id)
 	image = &gltextures[i];
 
 	strcpy (image->name, name);
-//	image->hash = Com_HashKey(name);
 	image->registration_sequence = registration_sequence;
 	image->type = it_pic;
 	image->texnum = TEXNUM_IMAGES + (image - gltextures);
@@ -347,12 +346,12 @@ image_t *R_LoadLightFilter (int id)
 	{
 		pix[i].pixels = NULL;
 		pix[i].width = pix[i].height = 0;
-		Com_sprintf (checkname, sizeof(checkname), "gfx/lights/%i_%s.jpg", id+1, lsuf[i]);
+		Com_sprintf (checkname, sizeof(checkname), "gfx/lights/%i_%s.tga", id+1, lsuf[i]);
 
 		// Berserker: stop spam
 		if (FS_LoadFile(checkname, NULL) != -1)
 		{
-			IL_LoadImage (checkname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_JPG);
+			IL_LoadImage (checkname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
 			if(pix[i].width)
 			{
 				if (minw < pix[i].width)	minw = pix[i].width;
@@ -383,14 +382,15 @@ image_t *R_LoadLightFilter (int id)
 			allNull = false;
 			R_FlipImage(i, &pix[i], (byte*)trans);
 			free(pix[i].pixels);
-			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB+i, 0, GL_RGBA8, minw, minh, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, trans);	// Berserker: using BGRA instead RGB
+			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB+i, 0, GL_RGBA, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, /*pix[i].pixels*/ trans);
 		}
 		else
 		{
-			nullpixels = (byte*)malloc(minw*minh*4);
-			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB+i, 0, GL_RGBA8, minw, minh, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, nullpixels);	// Berserker: using BGRA instead RGB
+			nullpixels = (byte*)calloc(minw*minh*4, 1);
+			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB+i, 0, GL_RGBA, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
 			free(nullpixels);
 		}
+		
 	}
 
 	image->width = minw;

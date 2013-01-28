@@ -211,8 +211,13 @@ int RecursiveLightPoint(mnode_t * node, vec3_t start, vec3_t end)
 			for (maps = 0;
 				 maps < MAXLIGHTMAPS && surf->styles[maps] != 255;
 				 maps++) {
-				for (i = 0; i < 3; i++)
-					scale[i] = r_newrefdef.lightstyles[surf->styles[maps]].rgb[i];
+				
+				if(!r_pplWorld->value){
+					for (i = 0; i < 3; i++)
+						scale[i] = r_newrefdef.lightstyles[surf->styles[maps]].rgb[i];
+						}
+				else
+					VectorSet (scale, 1,1,1);
 
 				pointcolor[0] +=
 					lightmap[0] * scale[0] *
