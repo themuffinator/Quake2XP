@@ -17,7 +17,7 @@ void main ()
 {
 // setup tex coords
 v_colorCoord = a_texCoord;  // diffuse & bump
-v_CubeCoord = gl_MultiTexCoord5;
+v_CubeCoord = gl_TextureMatrix[2] * vec4(a_vertArray, 1.0);
 
 // calculate tangent space view vector for parallax
 vec3 tmp = u_viewOriginES - a_vertArray;

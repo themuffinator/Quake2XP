@@ -10,6 +10,7 @@ varying vec3			v_viewVec;
 varying vec3			v_lightVec;
 varying vec4			v_CubeCoord;
 
+
 #include lighting.inc
 
 void main(){
@@ -33,7 +34,6 @@ vec3 V = normalize(v_viewVec);
 
 vec2 E = PhongLighting(N, L, V, 16.0);
 
-E *= att;
+gl_FragColor.rgb = cubeFilter * att * vec4(u_LightColor, 1) * (E.x * diffuse + E.y * specular);
 
-gl_FragColor.rgb = (E.x * diffuse.rgb + E.y * specular.rgb)* u_LightColor *cubeFilter.rgb;
 }
