@@ -425,8 +425,9 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	GL_BindNullProgram();
 }
 
+vec3_t viewOrg;
 
-void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t lightColor)
+void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 {
 	int				i, j, jj = 0;
 	int				index_xyz;
@@ -441,9 +442,7 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	vec3_t			normalArray[3*MAX_TRIANGLES], 
 					tangentArray[3*MAX_TRIANGLES], 
 					binormalArray[3*MAX_TRIANGLES], 
-					vertexArray[3*MAX_TRIANGLES],
-					viewOrg, tmp;
-	mat3_t			entityAxis;
+					vertexArray[3*MAX_TRIANGLES];
 	image_t			*skin, *skinNormalmap;
 	int				index2, oldindex2;
 	unsigned		defBits = 0;
@@ -543,15 +542,10 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	GL_BindProgram(aliasBumpProgram, defBits);
 	id = aliasBumpProgram->id[defBits];
 		
-	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), rad);
-	qglUniform3fv(qglGetUniformLocation(id, "u_LightColor"), 1 , lightColor);
-	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , light);
-	
-	// move view org to modelspace
-	VectorSubtract(r_origin, currententity->origin, tmp);
-	AnglesToMat3(currententity->angles, entityAxis);
-	Mat3_TransposeMultiplyVector(entityAxis, tmp, viewOrg);
-	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , viewOrg);
+	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), currentShadowLight->radius);
+	qglUniform3fv(qglGetUniformLocation(id, "u_LightColor"), 1 , currentShadowLight->color);
+	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , currentShadowLight->origin);
+	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , r_origin);
 
 	GL_MBind(GL_TEXTURE0_ARB, skinNormalmap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), 0);
@@ -577,13 +571,12 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 	qglDrawArrays	(GL_TRIANGLES, 0, jj);
 
 	GL_SelectTexture(GL_TEXTURE2_ARB);
-//	qglMatrixMode(GL_TEXTURE);
-//	qglLoadIdentity();
-//	qglMatrixMode(GL_MODELVIEW);
-	qglPopMatrix();
-    qglMatrixMode(GL_MODELVIEW);
+	qglMatrixMode(GL_TEXTURE);
+	qglLoadIdentity();
+	qglMatrixMode(GL_MODELVIEW);
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
+
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
@@ -594,18 +587,14 @@ void GL_DrawAliasFrameLerpArb(dmdl_t *paliashdr, vec3_t light, float rad, vec3_t
 }
 
 
-static vec3_t	lightArray[2] =	{
-				{-100.0,  100.0, 50.0},
-				{ 100.0, -100.0, 50.0}
-				};
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 {
-	vec3_t				temp, light, mins, maxs;
+	vec3_t				temp, mins, maxs;
 	mat3_t				entityAxis;
 	trace_t				r_trace;
 	int					numLights= 1;
-	vec3_t				sColor, tmp;
+	vec3_t				sColor, tmp, tmpOrg, tmpView;
 
 	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
@@ -641,12 +630,25 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 				VectorCopy(sColor, currentShadowLight->color);
 				}
 			}
+			VectorCopy(currentShadowLight->origin, tmpOrg);
+			VectorCopy(r_origin, tmpView);
+
 			AnglesToMat3(currententity->angles, entityAxis);
 			VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-			Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
+			Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
 			currententity->lightVised = true;
-			GL_DrawAliasFrameLerpArb(paliashdr, light, currentShadowLight->radius, currentShadowLight->color);
+
+			// move view org to modelspace
+			VectorSubtract(r_origin, currententity->origin, tmp);
+			AnglesToMat3(currententity->angles, entityAxis);
+			Mat3_TransposeMultiplyVector(entityAxis, tmp, r_origin);
+
+			
+			GL_DrawAliasFrameLerpLight(paliashdr);
 			numLights++;
+			
+			VectorCopy(tmpOrg, currentShadowLight->origin);
+			VectorCopy(tmpView, r_origin);
 
 			if(currentShadowLight->isStatic && !currentShadowLight->style)
 				if(!FoundReLight)

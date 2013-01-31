@@ -726,7 +726,7 @@ void GL_CreateLightPoly(msurface_t * surf)
 }
 
 
-static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
+static void GL_BatchLightPass(qboolean bmodel)
 {
 	msurface_t	*s;
 	image_t		*image, *nm;
@@ -751,9 +751,9 @@ static void GL_BatchLightPass(worldShadowLight_t *light, qboolean bmodel)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
 
 	
-	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1, light->origin);
-	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), light->color[0], light->color[1], light->color[2], 1.0);
-	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), light->radius);
+	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1, currentShadowLight->origin);
+	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), currentShadowLight->radius);
 
 	if(r_parallax->value)
 		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
@@ -1111,11 +1111,11 @@ void R_DrawLightWorld(void)
 		if(currentShadowLight->style || !currentShadowLight->isStatic){
 
 			if(R_FillLightChain(currentShadowLight))
-				GL_BatchLightPass(currentShadowLight, false);
+				GL_BatchLightPass(false);
 			}
 		}else{
 			if(R_FillLightChain(currentShadowLight))
-				GL_BatchLightPass(currentShadowLight, false);
+				GL_BatchLightPass(false);
 		}
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
@@ -1125,11 +1125,9 @@ void R_DrawLightWorld(void)
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 	
 	GL_SelectTexture(GL_TEXTURE2_ARB);
-//	qglMatrixMode(GL_TEXTURE);
-//	qglLoadIdentity();
-	//qglMatrixMode(GL_MODELVIEW);
-	qglPopMatrix();
-    qglMatrixMode(GL_MODELVIEW);
+	qglMatrixMode(GL_TEXTURE);
+	qglLoadIdentity();
+	qglMatrixMode(GL_MODELVIEW);
 	
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 }
@@ -1574,13 +1572,13 @@ void R_DrawLightBrushModel(entity_t * e)
 				
 			if(currentShadowLight->style || !currentShadowLight->isStatic){
 			if(R_MarkBrushModelSurfaces(currentShadowLight))
-						GL_BatchLightPass(currentShadowLight, true);
+						GL_BatchLightPass(true);
 			}
 
 		} else{
 
 			if(R_MarkBrushModelSurfaces(currentShadowLight))
-						GL_BatchLightPass(currentShadowLight, true);
+						GL_BatchLightPass(true);
 		}
 
 		VectorCopy(oldLight, currentShadowLight->origin);
@@ -1592,12 +1590,9 @@ void R_DrawLightBrushModel(entity_t * e)
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 
 	GL_SelectTexture(GL_TEXTURE2_ARB);
-//	qglMatrixMode(GL_TEXTURE);
-//	qglLoadIdentity();
-//	qglMatrixMode(GL_MODELVIEW);
-	
-	qglPopMatrix();
-    qglMatrixMode(GL_MODELVIEW);
+	qglMatrixMode(GL_TEXTURE);
+	qglLoadIdentity();
+	qglMatrixMode(GL_MODELVIEW);
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 

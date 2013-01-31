@@ -1146,11 +1146,7 @@ void GL_SetupCubeMapMatrix(qboolean model)
 {
 	float	a, b, c;
 
-//	qglMatrixMode(GL_TEXTURE);
-//	qglLoadIdentity();
-
 	qglMatrixMode(GL_TEXTURE);
-	qglPushMatrix();
 	qglLoadIdentity();
 
 	a = currentShadowLight->angles[2];
@@ -1164,10 +1160,17 @@ void GL_SetupCubeMapMatrix(qboolean model)
 	if (c)
 		qglRotatef ( -c,  0, 0, 1);
 
-	if (model)
-		R_RotateForEntity(currententity);
+	if (model){
 
+	if (currententity->angles[1])
+		qglRotatef (currententity->angles[1],  0, 0, 1);
+	if (currententity->angles[0])
+		qglRotatef (currententity->angles[0],  0, 1, 0);		/// fixed "stupid quake bug" ;)
+	if (currententity->angles[2])
+		qglRotatef (currententity->angles[2],  1, 0, 0);
+	
+	}
 	qglTranslatef(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
-//	qglMatrixMode(GL_MODELVIEW);
+	qglMatrixMode(GL_MODELVIEW);
 }
 
