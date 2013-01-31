@@ -17,10 +17,10 @@ void main(){
 
 vec3 N =  normalize(texture2D(u_bumpMap, v_texCoord).rgb * 2.0 - 1.0);
 float tmp = texture2D(u_bumpMap,   v_texCoord.xy).a;
-vec4 specular = vec4(tmp, tmp, tmp, tmp);
+vec4 specular = vec4(tmp);
 vec4 diffuse  = texture2D(u_diffuseMap,  v_texCoord.xy);
 vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
-
+               
 // compute the atten
 vec3 tmp1 = v_lightVec;
 tmp1 /= u_LightRadius;
