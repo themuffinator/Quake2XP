@@ -261,9 +261,6 @@
     <ClCompile Include="ref_gl\r_math.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_lightmap.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_main.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -276,7 +273,10 @@
     <ClCompile Include="client\music.c">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_lightMan.c">
+    <ClCompile Include="ref_gl\r_lightMaps.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_lightMananager.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

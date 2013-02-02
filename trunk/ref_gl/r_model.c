@@ -1025,6 +1025,33 @@ void GL_BeginBuildingLightmaps(model_t * m);
 void GL_BuildTBN(int count);
 
 /*
+================
+SetupSurfaceConnectivity
+
+Setup the neighour pointers of this surface's polygon.
+================
+*/
+void SetupSurfaceConnectivity(msurface_t *surf)
+{
+	int				i, j, lindex;
+	temp_connect_t	*tempEdge;
+
+	if (surf->numedges > MAX_POLY_VERT)
+		Com_DPrintf ("SetupSurfaceConnectivity: too many edges %i\n", surf->numedges);
+
+	for (i=0 ; i<surf->numedges ; i++)
+	{
+		lindex = currentmodel->surfedges[surf->firstedge + i];
+		tempEdge = tempEdges+abs(lindex);
+
+		surf->polys->neighbours[i] = NULL;
+		for (j=0; j<tempEdge->used; j++)
+			if (tempEdge->poly[j] != surf->polys)
+				surf->polys->neighbours[i] = tempEdge->poly[j];
+	}
+}
+
+/*
 =================
 Mod_LoadFaces
 =================
@@ -1033,6 +1060,7 @@ void Mod_LoadFaces(lump_t * l)
 {
 	dface_t		*in;
 	msurface_t *out;
+	msurface_t	*surf;
 	int			i, count, surfnum;
 
 	in = (dface_t *) (mod_base + l->fileofs);
@@ -1048,6 +1076,9 @@ void Mod_LoadFaces(lump_t * l)
 	loadmodel->memorySize += count * sizeof(*out);
 
 	currentmodel = loadmodel;
+	surf = currentmodel->surfaces;
+
+	tempEdges = (temp_connect_t *)Z_Malloc(currentmodel->numedges * sizeof(temp_connect_t));
 
 	GL_BeginBuildingLightmaps(loadmodel);
 
@@ -1099,12 +1130,25 @@ void Mod_LoadFaces(lump_t * l)
 			GL_AddFlareSurface(out);
 			CalcSurfaceBounds(out);
 			GL_CalcBspIndeces(out);
+		
 	}
-
+	
 	// Build TBN for smoothing bump mapping (Berserker)
 	GL_BuildTBN(count);
 
 	GL_EndBuildingLightmaps();
+
+	// calc neighbours for shadow volumes
+	for (surfnum=0 ; surfnum<count ; surfnum++, surf++)
+	{
+		if ( surf->flags & (SURF_DRAWTURB|SURF_DRAWSKY) )
+			continue;
+			SetupSurfaceConnectivity (surf);
+	}
+
+	Z_Free (tempEdges);
+
+
 }
 
 // Mini cache abstraction, don't touch these varibles directly!
@@ -1433,8 +1477,6 @@ void Mod_LoadLeafs(lump_t * l)
 
 	}
 }
-
-
 
 /*
 =================

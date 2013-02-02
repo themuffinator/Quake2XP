@@ -430,14 +430,15 @@ GL_BuildPolygonFromSurface
 */
 void GL_BuildPolygonFromSurface(msurface_t * fa)
 {
-	int i, lindex, lnumverts;
-	medge_t *pedges, *r_pedge;
-	int vertpage;
-	float *vec;
-	float s, t;
-	glpoly_t *poly;
-	vec3_t total;
-	
+	int			i, lindex, lnumverts;
+	medge_t		*pedges, *r_pedge;
+	int			vertpage;
+	float		*vec;
+	float		s, t;
+	glpoly_t	*poly;
+	vec3_t		total;
+	temp_connect_t *tempEdge;
+
 	fa->numVertices = fa->numedges;
     fa->numIndices = (fa->numVertices - 2) * 3;
 
@@ -457,7 +458,11 @@ void GL_BuildPolygonFromSurface(msurface_t * fa)
 	poly->numverts = lnumverts;
 
 	currentmodel->memorySize += sizeof(glpoly_t) + (lnumverts - 4) * VERTEXSIZE * sizeof(float);
-	
+
+	// reserve space for neighbour pointers
+	// FIXME: pointers don't need to be 4 bytes
+	poly->neighbours = (glpoly_t **)Hunk_Alloc (lnumverts*4);
+
 	for (i = 0; i < lnumverts; i++) {
 		lindex = currentmodel->surfedges[fa->firstedge + i];
 
@@ -499,6 +504,16 @@ void GL_BuildPolygonFromSurface(msurface_t * fa)
 		poly->verts[i][5] = s;
 		poly->verts[i][6] = t;
 
+		// Store in the tempedges table that this polygon uses the edge
+		tempEdge = tempEdges+abs(lindex);
+		if (tempEdge->used < 2)
+			{
+				tempEdge->poly[tempEdge->used]  = poly;
+				tempEdge->used++;
+			}
+			else
+				Com_DPrintf ("GL_BuildPolygonFromSurface: Edge used by more than 2 surfaces\n");
+		
 	}
 
 	poly->numverts = lnumverts;

@@ -251,12 +251,10 @@ extern int	c_brush_polys,
 
 #define	VERTEXSIZE	16
 
-
-
 typedef struct glpoly_s {
 	struct glpoly_s *next;
 	struct glpoly_s *chain;
-
+	struct	glpoly_s	**neighbours;
 	vec3_t normal;
 
 	vec3_t center;
@@ -266,6 +264,15 @@ typedef struct glpoly_s {
 								// anymore?)
 	float verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
 } glpoly_t;
+
+//temporaly storage for polygons that use an edge
+typedef struct
+{
+	byte		used;		//how many polygons use this edge
+	glpoly_t	*poly[2];	//pointer to the polygons who use this edge
+} temp_connect_t;
+
+temp_connect_t	*tempEdges;
 
 typedef struct msurface_s {
 	int visframe;				// should be drawn when node is crossed

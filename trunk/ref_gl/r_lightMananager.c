@@ -235,11 +235,7 @@ void SaveLights_f(void) {
 
 	FS_StripExtension(r_worldmodel->name, name, sizeof (name));
 	Com_sprintf(path, sizeof(path),"%s/%s.xplit", FS_Gamedir(), name);
-	
-//	if (!strcmp(Cmd_Argv(1), "clean")){
-		remove(path); //remove prev version
-//		return;
-//	}
+	remove(path); //remove prev version
 
 	f = fopen(path, "w");
 	if(!f) {
@@ -366,6 +362,7 @@ void R_EditSelectedLight_f(void) {
 		origin[0] = atof(Cmd_Argv(2));
 		origin[1] = atof(Cmd_Argv(3));
 		origin[2] = atof(Cmd_Argv(4));
+		VectorCopy(origin, selectedShadowLight->origin);
 	} 
 	else
 	if (!strcmp(Cmd_Argv(1), "color")) {
@@ -379,6 +376,7 @@ void R_EditSelectedLight_f(void) {
 		color[0] = atof(Cmd_Argv(2));
 		color[1] = atof(Cmd_Argv(3));
 		color[2] = atof(Cmd_Argv(4));
+		VectorCopy(color, selectedShadowLight->color);
 	} 
 	else
 	if (!strcmp(Cmd_Argv(1), "radius")) {
@@ -388,6 +386,7 @@ void R_EditSelectedLight_f(void) {
 			return;
 		}
 		radius = atof(Cmd_Argv(2));
+		selectedShadowLight->radius = radius;
 	 } 
 	else
 	 if (Cmd_Argc() == 3 && !strcmp(Cmd_Argv(1), "style")) {
@@ -397,6 +396,7 @@ void R_EditSelectedLight_f(void) {
 			return;
 		}
 		style = atoi(Cmd_Argv(2)); 
+		selectedShadowLight->style = style;
 	 }
 	 else
 		if (Cmd_Argc() == 3 && !strcmp(Cmd_Argv(1), "filter")) {
@@ -406,6 +406,7 @@ void R_EditSelectedLight_f(void) {
 			return;
 		}
 		filter = atoi(Cmd_Argv(2)); 
+		selectedShadowLight->filter = filter;
 	 }
 	 else
 		if (!strcmp(Cmd_Argv(1), "angles")) {
@@ -419,6 +420,7 @@ void R_EditSelectedLight_f(void) {
 		angles[0] = atof(Cmd_Argv(2));
 		angles[1] = atof(Cmd_Argv(3));
 		angles[2] = atof(Cmd_Argv(4));
+		VectorCopy (angles, selectedShadowLight->angles);
 	} 
 	else
 		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\n",
@@ -429,12 +431,6 @@ void R_EditSelectedLight_f(void) {
 		 selectedShadowLight->filter,
 		 selectedShadowLight->angles[0], selectedShadowLight->angles[1], selectedShadowLight->angles[2]);
 	
-	if(style < 0 || style >11)
-		style = 0;
-
-	 DeleteCurrentLight(selectedShadowLight);
-	 selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles, true, true, NULL);
-
 }
 
 void R_MoveLightToRight_f(void) {
@@ -467,10 +463,7 @@ void R_MoveLightToRight_f(void) {
 
 	offset = atof(Cmd_Argv(1)); 
 	VectorMA(origin, offset, v_right, origin);
-	
-	DeleteCurrentLight(selectedShadowLight);
-	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles, true, true, NULL);
-
+	VectorCopy(origin, selectedShadowLight->origin);
 }
 
 void R_MoveLightForward_f(void) {
@@ -506,9 +499,7 @@ void R_MoveLightForward_f(void) {
 	VectorMA(origin, offset, v_forward, origin);
 	origin[2] = fix;
 
-	DeleteCurrentLight(selectedShadowLight);
-	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles, true, true, NULL);
-
+	VectorCopy(origin, selectedShadowLight->origin);
 }
 
 void R_MoveLightUpDown_f(void) {
@@ -542,8 +533,7 @@ void R_MoveLightUpDown_f(void) {
 	offset = atof(Cmd_Argv(1)); 
 	origin[2] += offset;
 
-	DeleteCurrentLight(selectedShadowLight);
-	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles,  true, true, NULL);
+	VectorCopy(origin, selectedShadowLight->origin);
 
 }
 
@@ -579,8 +569,8 @@ void R_ChangeLightRadius_f(void) {
 	radius += offset;
 	if(radius <10)
 		radius = 10;
-	DeleteCurrentLight(selectedShadowLight);
-	selectedShadowLight = R_AddNewWorldLight(origin, color, radius, style, filter, angles,  true, true, NULL);
+
+	selectedShadowLight->radius = radius;
 
 }
 
@@ -606,6 +596,7 @@ char buff1[128];
 char buff2[128];
 char buff3[128];
 char buff4[128];
+char buff5[128];
 
 void UpdateLightEditor(void){
 
@@ -715,6 +706,9 @@ void UpdateLightEditor(void){
 	sprintf(buff2,	"Radius: %.3f",				selectedShadowLight->radius);		
 	sprintf(buff3,	"Style: %i",				selectedShadowLight->style);
 	sprintf(buff4,	"Filter: %i",				selectedShadowLight->filter);
+	sprintf(buff5,	"Angles: %.3f %.3f %.3f",	selectedShadowLight->angles[0], 
+												selectedShadowLight->angles[1], 
+												selectedShadowLight->angles[2]);
 
 	VectorSet(v[0], tmpOrg[0]-rad, tmpOrg[1]-rad, tmpOrg[2]-rad);
 	VectorSet(v[1], tmpOrg[0]-rad, tmpOrg[1]-rad, tmpOrg[2]+rad);

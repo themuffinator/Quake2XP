@@ -304,14 +304,11 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 
 void GL_RenderVolumes(dmdl_t * paliashdr, vec3_t lightdir, int projdist){
 
-	qglDisable(GL_CULL_FACE);
-	
-	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
-	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+//	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
+//	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 	
 	BuildShadowVolumeTriangles(paliashdr, lightdir, projdist);
-	
-	qglEnable(GL_CULL_FACE);
+
 	c_shadow_volumes++;
 }
 
@@ -357,8 +354,7 @@ void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 				if(r_trace.fraction != 1.0)
 					return;
 		}
-
-		GL_RenderVolumes(paliashdr, light, projdist);
+		BuildShadowVolumeTriangles(paliashdr, light, projdist);
 		currententity->lightVised = true;
 		numShadows++;
 }
@@ -399,6 +395,18 @@ void R_DrawShadowVolume(entity_t * e)
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 	
+	if (currententity->
+		flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED |
+				 RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
+				 RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
+				 return;
+		
+		if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
+			return;
+		
+		if (r_shadowVolumesDebug->value && (currententity->flags & RF_VIEWERMODEL))
+			return;
+
 	paliashdr = (dmdl_t *) currentmodel->extradata;
 
 	frame = (daliasframe_t *) ((byte *) paliashdr   + paliashdr->ofs_frames
@@ -437,79 +445,13 @@ void R_DrawShadowVolume(entity_t * e)
 	GL_LerpVerts(paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
 		
 		qglPushMatrix();
-		qglDisable(GL_TEXTURE_2D);
 		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
 		R_RotateForEntity (e);
 		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
 
 		GL_DrawAliasShadowVolume(paliashdr);
-		
-		qglEnable(GL_TEXTURE_2D);
+
 		qglPopMatrix();
-}
-
-
-void R_CastShadowVolumes(void)
-{
-	int i;
-	
-	if (r_shadows->value < 2 && !r_pplWorld->value)
-		return;
-	
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
-		return;
-			
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
-
-	qglEnable(GL_CULL_FACE);
-	qglDepthMask(0);
-	qglDepthFunc(GL_LESS);
-	
-	if (r_shadowVolumesDebug->value){
-		qglColor4f(0.3, 0.3, 0, 0.1);
-	}
-	else{
-	qglColorMask(0, 0, 0, 0);
-	qglDisable(GL_BLEND);	
-	}
-		
-	for (i = 0; i < r_newrefdef.num_entities; i++) 
-	{
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		
-		if (!currentmodel)
-			continue;
-		
-		if (currentmodel->type != mod_alias)
-			continue;
-		
-		if (currententity->
-		flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED |
-				 RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
-				 RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
-				 continue;
-		
-		if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
-			continue;
-		
-		if (r_shadowVolumesDebug->value && (currententity->flags & RF_VIEWERMODEL))
-			continue;
-		
-		R_DrawShadowVolume(currententity);
-	}
-
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDepthMask(1);
-	qglEnable(GL_BLEND);
-	qglDepthFunc(GL_LEQUAL);
-	qglColor4f(1,1,1,1);
-	qglColorMask(1, 1, 1, 1);
-	
 }
 
 
@@ -751,5 +693,185 @@ void R_BlobShadow(void){
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_BindNullProgram();
+	
+}
+
+
+/*
+=============
+R_DrawBrushModelVolumes
+
+Draw the shadow volumes of the brush model.
+They are dynamically calculated.
+=============
+*/
+vec3_t		bcache[MAX_MAP_TEXINFO][MAX_POLY_VERT];
+extern int	r_lightTimestamp;
+
+void R_DrawBrushModelVolumes()
+{
+	int			i, j;
+	float		scale, sca;
+	msurface_t	*surf, *baksurf;
+	model_t		*clmodel;
+	glpoly_t	*poly;
+	vec3_t		v1, temp;
+	qboolean	shadow;
+	vec3_t		oldlightorigin, mins, maxs;
+	mat3_t		entityAxis;
+
+
+	clmodel = currententity->model;
+	baksurf = surf = &clmodel->surfaces[clmodel->firstmodelsurface];
+
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
+		for (i = 0; i < 3; i++) {
+			mins[i] = currententity->origin[i] - currentmodel->radius;
+			maxs[i] = currententity->origin[i] + currentmodel->radius;
+		}
+	}
+	else
+	{
+	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
+	VectorAdd(currententity->origin, currententity->model->mins, mins);
+	}
+
+	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
+		return;
+
+	VectorCopy (currentShadowLight->origin, oldlightorigin);
+	AnglesToMat3(currententity->angles, entityAxis);
+	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
+
+	qglPushMatrix ();
+	R_RotateForEntity (currententity);
+
+	scale = 2.5 * currentShadowLight->radius;
+
+//	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
+//	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+
+		for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
+		{
+			if (surf->polys->lightTimestamp != r_lightTimestamp)
+				continue;
+			poly = surf->polys;
+
+				for (j=0 ; j<surf->numedges ; j++)
+				{
+					VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
+					sca = scale/VectorLength(v1);
+					bcache[i][j][0] = v1[0] * sca + poly->verts[j][0];
+					bcache[i][j][1] = v1[1] * sca + poly->verts[j][1];
+					bcache[i][j][2] = v1[2] * sca + poly->verts[j][2];
+				}
+
+			//check if neighbouring polygons are shadowed
+			for (j=0 ; j<surf->numedges ; j++)
+			{
+				shadow = false;
+				if (poly->neighbours[j] != NULL)
+				{
+					if ( poly->neighbours[j]->lightTimestamp != poly->lightTimestamp)
+						shadow = true;
+				}
+				else
+					shadow = true;
+
+				if (shadow)
+				{
+					int jj = (j+1)%poly->numverts;
+					//we extend the shadow volumes by projecting them on the
+					//light's sphere.
+					//This sometimes gives problems when the light is very close to a big
+					//polygon.  But further extending the volume wastes fill rate.
+					//So ill have to fix it.
+					qglBegin(GL_QUAD_STRIP);
+					qglVertex3fv(poly->verts[j]);
+					qglVertex3fv(bcache[i][j]);
+					qglVertex3fv(poly->verts[jj]);
+					qglVertex3fv(bcache[i][jj]);
+					qglEnd();
+				}
+			}
+
+			//Draw near light cap
+			qglBegin(GL_TRIANGLE_FAN);
+			for (j=0; j<surf->numedges ; j++)
+				qglVertex3fv(poly->verts[j]);
+			qglEnd();
+
+			//Draw extruded cap
+			qglBegin(GL_TRIANGLE_FAN);
+			for (j=surf->numedges-1; j>=0 ; j--)
+				qglVertex3fv(bcache[i][j]);
+			qglEnd();
+		}
+	
+	qglPopMatrix ();
+
+	VectorCopy(oldlightorigin, currentShadowLight->origin);
+
+}
+
+
+void R_CastShadowVolumes(void)
+{
+	int i;
+	
+	if (r_shadows->value < 2 && !r_pplWorld->value)
+		return;
+	
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+		return;
+			
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	qglDisable(GL_CULL_FACE);
+	qglDisable(GL_TEXTURE_2D);
+	qglDepthMask(0);
+	qglDepthFunc(GL_LESS);
+	
+	if (r_shadowVolumesDebug->value){
+		qglColor4f(0.3, 0.3, 0, 0.1);
+	}
+	else{
+	qglColorMask(0, 0, 0, 0);
+	qglDisable(GL_BLEND);	
+	}
+	
+	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
+	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+
+	for (i = 0; i < r_newrefdef.num_entities; i++) 
+	{
+		currententity = &r_newrefdef.entities[i];
+		currentmodel = currententity->model;
+		
+		if (!currentmodel)
+			continue;
+		
+		if (currentmodel->type == mod_brush)
+			R_DrawBrushModelVolumes();
+
+		if (currentmodel->type == mod_alias){
+			
+			qglEnableVertexAttribArray(ATRB_POSITION);
+			qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
+
+			R_DrawShadowVolume(currententity);
+
+			qglDisableVertexAttribArray(ATRB_POSITION);
+		}
+	}
+	qglDepthMask(1);
+	qglEnable(GL_BLEND);
+	qglEnable(GL_TEXTURE_2D);
+	qglEnable(GL_CULL_FACE);
+	qglDepthFunc(GL_LEQUAL);
+	qglColor4f(1,1,1,1);
+	qglColorMask(1, 1, 1, 1);
 	
 }
