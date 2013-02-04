@@ -706,12 +706,11 @@ They are dynamically calculated.
 =============
 */
 vec3_t		bcache[MAX_MAP_TEXINFO][MAX_POLY_VERT];
-extern int	r_lightTimestamp;
 
 void R_DrawBrushModelVolumes()
 {
 	int			i, j;
-	float		scale, sca;
+	float		scale, sca, dot;
 	msurface_t	*surf, *baksurf;
 	model_t		*clmodel;
 	glpoly_t	*poly;
@@ -749,13 +748,17 @@ void R_DrawBrushModelVolumes()
 
 	scale = 2.5 * currentShadowLight->radius;
 
-//	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
-//	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
-
 		for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
 		{
-			if (surf->polys->lightTimestamp != r_lightTimestamp)
-				continue;
+
+		dot = DotProduct(currentShadowLight->origin, surf->plane->normal) - surf->plane->dist;
+
+		if(surf->flags & SURF_PLANEBACK && dot > 0)
+			continue;
+		
+		if(!(surf->flags & SURF_PLANEBACK) && dot < 0)
+			continue;
+			
 			poly = surf->polys;
 
 				for (j=0 ; j<surf->numedges ; j++)
@@ -772,11 +775,6 @@ void R_DrawBrushModelVolumes()
 			{
 				shadow = false;
 				if (poly->neighbours[j] != NULL)
-				{
-					if ( poly->neighbours[j]->lightTimestamp != poly->lightTimestamp)
-						shadow = true;
-				}
-				else
 					shadow = true;
 
 				if (shadow)
