@@ -709,19 +709,18 @@ vec3_t		bcache[MAX_MAP_TEXINFO][MAX_POLY_VERT];
 
 void R_DrawBrushModelVolumes()
 {
-	int			i, j;
+	int			i, j, sidebit;
 	float		scale, sca, dot;
-	msurface_t	*surf, *baksurf;
+	msurface_t	*surf;
 	model_t		*clmodel;
 	glpoly_t	*poly;
 	vec3_t		v1, temp;
-	qboolean	shadow;
-	vec3_t		oldlightorigin, mins, maxs;
+	vec3_t		oldLightOrigin, mins, maxs;
 	mat3_t		entityAxis;
 
 
 	clmodel = currententity->model;
-	baksurf = surf = &clmodel->surfaces[clmodel->firstmodelsurface];
+	surf = &clmodel->surfaces[clmodel->firstmodelsurface];
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
@@ -738,7 +737,8 @@ void R_DrawBrushModelVolumes()
 	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
 		return;
 
-	VectorCopy (currentShadowLight->origin, oldlightorigin);
+	VectorCopy (currentShadowLight->origin, oldLightOrigin);
+
 	AnglesToMat3(currententity->angles, entityAxis);
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
@@ -753,10 +753,12 @@ void R_DrawBrushModelVolumes()
 
 		dot = DotProduct(currentShadowLight->origin, surf->plane->normal) - surf->plane->dist;
 
-		if(surf->flags & SURF_PLANEBACK && dot > 0)
-			continue;
-		
-		if(!(surf->flags & SURF_PLANEBACK) && dot < 0)
+		if (dot >= 0)
+			sidebit = 0;
+		else
+		sidebit = SURF_PLANEBACK;
+
+		if ((surf->flags & SURF_PLANEBACK) != sidebit)
 			continue;
 			
 			poly = surf->polys;
@@ -773,25 +775,15 @@ void R_DrawBrushModelVolumes()
 			//check if neighbouring polygons are shadowed
 			for (j=0 ; j<surf->numedges ; j++)
 			{
-				shadow = false;
-				if (poly->neighbours[j] != NULL)
-					shadow = true;
-
-				if (shadow)
-				{
-					int jj = (j+1)%poly->numverts;
-					//we extend the shadow volumes by projecting them on the
-					//light's sphere.
-					//This sometimes gives problems when the light is very close to a big
-					//polygon.  But further extending the volume wastes fill rate.
-					//So ill have to fix it.
-					qglBegin(GL_QUAD_STRIP);
-					qglVertex3fv(poly->verts[j]);
-					qglVertex3fv(bcache[i][j]);
-					qglVertex3fv(poly->verts[jj]);
-					qglVertex3fv(bcache[i][jj]);
-					qglEnd();
-				}
+			int jj = (j+1)%poly->numverts;
+	
+			//we extend the shadow volumes by projecting them on the light's sphere.
+			qglBegin(GL_QUAD_STRIP);
+			qglVertex3fv(poly->verts[j]);
+			qglVertex3fv(bcache[i][j]);
+			qglVertex3fv(poly->verts[jj]);
+			qglVertex3fv(bcache[i][jj]);
+			qglEnd();
 			}
 
 			//Draw near light cap
@@ -807,10 +799,8 @@ void R_DrawBrushModelVolumes()
 			qglEnd();
 		}
 	
+	VectorCopy(oldLightOrigin, currentShadowLight->origin);
 	qglPopMatrix ();
-
-	VectorCopy(oldlightorigin, currentShadowLight->origin);
-
 }
 
 
