@@ -237,14 +237,14 @@ qboolean EntityInLightSphere(worldShadowLight_t *light) {
 		
 }
 
-void R_RotateForEntity(entity_t * e)
-{
-	qglTranslatef(e->origin[0], e->origin[1], e->origin[2]);
-
-	qglRotatef( e->angles[1], 0, 0, 1);
-	qglRotatef(-e->angles[0], 0, 1, 0);
-	qglRotatef(-e->angles[2], 1, 0, 0);
+void R_RotateForLightEntity(entity_t * e) {
+	// fixed stupig quake bug, lol)))
+	qglTranslatef	(e->origin[0], e->origin[1], e->origin[2]);
+    qglRotatef		(e->angles[1],  0, 0, 1);
+    qglRotatef		(e->angles[0],  0, 1, 0);
+    qglRotatef		(e->angles[2],  1, 0, 0);
 }
+
 
 /*
 =============================================================
@@ -429,7 +429,7 @@ void R_DrawNullModel(void)
 		return;
 
 	qglPushMatrix();
-	R_RotateForEntity(currententity);
+	R_RotateForLightEntity(currententity);
 
 	qglDisable(GL_TEXTURE_2D);
 	qglColor3f(1, 0, 1);
@@ -950,7 +950,9 @@ void R_DrawShadowLightPass(void)
 
 	qglStencilMask(255);
 	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	
+	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
+	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+
 	R_CastShadowVolumes();
 
 	qglStencilFunc(GL_EQUAL, 128, 255);
@@ -1363,6 +1365,7 @@ Cvar_Set("r_fxaa", "1");
 vid_ref->modified = true;
 }
 
+void R_ChangeLightColor_f(void) ;
 
 void R_RegisterCvars(void)
 {
@@ -1465,6 +1468,7 @@ void R_RegisterCvars(void)
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 	
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
+	r_CameraSpaceLightMove =			Cvar_Get("r_CameraSpaceLightMove", "1", CVAR_ARCHIVE);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
@@ -1493,16 +1497,16 @@ bind KP_PLUS	"changeLightRadius  5"
 bind KP_INS		"copyLight"
 */
 
-	Cmd_AddCommand("saveLights",				SaveLights_f);
-	Cmd_AddCommand("spawnLight",				Light_Spawn_f);
-	Cmd_AddCommand("spawnLightToCamera",		Light_SpawnToCamera_f);
-	Cmd_AddCommand("removeLight",				Light_Delete_f);
+	Cmd_AddCommand("saveLights",				R_SaveLights_f);
+	Cmd_AddCommand("spawnLight",				R_Light_Spawn_f);
+	Cmd_AddCommand("spawnLightToCamera",		R_Light_SpawnToCamera_f);
+	Cmd_AddCommand("removeLight",				R_Light_Delete_f);
 	Cmd_AddCommand("editLight",					R_EditSelectedLight_f);
 	Cmd_AddCommand("moveLight_right",			R_MoveLightToRight_f);
 	Cmd_AddCommand("moveLight_forward",			R_MoveLightForward_f);
 	Cmd_AddCommand("moveLight_z",				R_MoveLightUpDown_f);
 	Cmd_AddCommand("changeLightRadius",			R_ChangeLightRadius_f);
-	Cmd_AddCommand("copyLight",					Light_Copy_f);
+	Cmd_AddCommand("copyLight",					R_Light_Copy_f);
 }
 
 /*

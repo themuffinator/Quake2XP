@@ -203,7 +203,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 
 	if(!FoundReLight)
 	R_AddNewWorldLight(	r_flares[r_numflares].origin,	r_flares[r_numflares].color, 
-						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, 0, vec3_origin, true, true, surf);
+						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, 0, vec3_origin, vec3_origin, true, 1);
 
 	r_numflares++;
 	free(buffer);

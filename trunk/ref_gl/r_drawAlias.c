@@ -307,9 +307,8 @@ next:
 	}	
 	
     qglPushMatrix ();
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-	R_RotateForEntity (e);
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+
+	R_RotateForLightEntity(e);
 
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) 
 		GL_DrawAliasFrameLerpAmbientShell(paliashdr);
@@ -443,14 +442,11 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		currententity->frame = 0;
 		currententity->oldframe = 0;
 	}
-
-	
-
+		
 	qglPushMatrix ();
-	currententity->angles[PITCH] = -currententity->angles[PITCH];	// sigh.
-	R_RotateForEntity (currententity);
-	currententity->angles[PITCH] = -currententity->angles[PITCH];	// sigh.
 	
+	R_RotateForLightEntity(currententity);
+
 	GL_DrawAliasFrameLerpArbBump(paliashdr);
 
 	qglPopMatrix();
@@ -508,9 +504,8 @@ void R_DrawAliasDistortModel (entity_t *e)
 		}
 		
 		qglPushMatrix ();
-		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-		R_RotateForEntity (e);
-		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+
+		R_RotateForLightEntity(e);
 
 		GL_DrawAliasFrameLerpAmbientDistort(paliashdr, shadelight);
 		

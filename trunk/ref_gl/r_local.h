@@ -318,6 +318,7 @@ cvar_t	*r_softParticles;
 cvar_t	*r_ignoreGlErrors;
 
 cvar_t	*r_lightEditor;
+cvar_t	*r_CameraSpaceLightMove;
 
 //cvar_t	*r_stereoVision;
 //cvar_t	*r_stereoSeparation;
@@ -360,7 +361,8 @@ void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
-									   int filter, vec3_t angles, qboolean isStatic, qboolean isShadow, msurface_t *surf);
+									   int filter, vec3_t angles, vec3_t speed, int isStatic, 
+									   int isShadow);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
@@ -397,17 +399,18 @@ qboolean R_CullSphere( const vec3_t centre, const float radius);
 void R_DebugLights (vec3_t lightOrg);
 void R_CastShadowVolumes(void);
 void R_DrawAliasModelLightPass (qboolean weapon_model);
+void R_RotateForLightEntity(entity_t * e);
 
-void SaveLights_f(void);
-void Light_Spawn_f(void);
-void Light_Delete_f(void);
+void R_SaveLights_f(void);
+void R_Light_Spawn_f(void);
+void R_Light_Delete_f(void);
 void R_EditSelectedLight_f(void);
 void R_MoveLightToRight_f(void);
 void R_MoveLightForward_f(void);
 void R_MoveLightUpDown_f(void);
-void Light_SpawnToCamera_f(void);
+void R_Light_SpawnToCamera_f(void);
 void R_ChangeLightRadius_f(void);
-void Light_Copy_f(void);
+void R_Light_Copy_f(void);
 void GL_SetupCubeMapMatrix(qboolean model);
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
@@ -473,7 +476,6 @@ void R_InitEngineTextures(void);
 void R_LoadFont(void);
 
 qboolean R_CullBox(vec3_t mins, vec3_t maxs);
-void R_RotateForEntity(entity_t * e);
 void R_MarkLeaves(void);
 void R_DrawWaterPolygons(msurface_t * fa);
 void R_AddSkySurface(msurface_t * fa);

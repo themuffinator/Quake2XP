@@ -45,23 +45,25 @@ typedef struct screenrect_s
 typedef struct worldShadowLight_s {
 	vec3_t origin;
 	vec3_t angles;
-	int filter;
-	float radius;
-	vec3_t color, sColor;
-
+	vec3_t speed;
+	vec3_t color, startColor;
 	vec3_t mins, maxs;
-	qboolean isShadow;
-	qboolean isStatic;
-	qboolean isNoWorldModel;
+	vec3_t linkedModelOrigin;
 
-	int style;
-	//pvs cullung
-	byte vis[MAX_MAP_LEAFS / 8];
-	int area;
-	// for backface culling
-	msurface_t *surf;
+	int filter, style, area;
+	
+	int isShadow;
+	int isStatic;
+	int isNoWorldModel;
+
 	unsigned int occQ;
-	screenrect_t	scizz;
+	
+	float radius;
+
+	byte vis[MAX_MAP_LEAFS / 8];
+	
+	msurface_t *surf;
+	screenrect_t scizz;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;

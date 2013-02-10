@@ -445,9 +445,7 @@ void R_DrawShadowVolume(entity_t * e)
 	GL_LerpVerts(paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
 		
 		qglPushMatrix();
-		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-		R_RotateForEntity (e);
-		e->angles[PITCH] = -e->angles[PITCH];	// sigh.
+		R_RotateForLightEntity (e);
 
 		GL_DrawAliasShadowVolume(paliashdr);
 
@@ -707,6 +705,7 @@ They are dynamically calculated.
 */
 vec3_t		bcache[MAX_MAP_TEXINFO][MAX_POLY_VERT];
 
+
 void R_DrawBrushModelVolumes()
 {
 	int			i, j, sidebit;
@@ -717,7 +716,6 @@ void R_DrawBrushModelVolumes()
 	vec3_t		v1, temp;
 	vec3_t		oldLightOrigin, mins, maxs;
 	mat3_t		entityAxis;
-
 
 	clmodel = currententity->model;
 	surf = &clmodel->surfaces[clmodel->firstmodelsurface];
@@ -738,18 +736,21 @@ void R_DrawBrushModelVolumes()
 		return;
 
 	VectorCopy (currentShadowLight->origin, oldLightOrigin);
-
+	
 	AnglesToMat3(currententity->angles, entityAxis);
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
-
-	qglPushMatrix ();
-	R_RotateForEntity (currententity);
+	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);
+	
+	qglPushMatrix();
+	R_RotateForLightEntity(currententity);
 
 	scale = 2.5 * currentShadowLight->radius;
 
 		for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
 		{
+
+		if (surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_FLOWING|SURF_DRAWTURB))
+			return;
 
 		dot = DotProduct(currentShadowLight->origin, surf->plane->normal) - surf->plane->dist;
 
@@ -773,17 +774,16 @@ void R_DrawBrushModelVolumes()
 				}
 
 			//check if neighbouring polygons are shadowed
-			for (j=0 ; j<surf->numedges ; j++)
-			{
-			int jj = (j+1)%poly->numverts;
-	
-			//we extend the shadow volumes by projecting them on the light's sphere.
-			qglBegin(GL_QUAD_STRIP);
-			qglVertex3fv(poly->verts[j]);
-			qglVertex3fv(bcache[i][j]);
-			qglVertex3fv(poly->verts[jj]);
-			qglVertex3fv(bcache[i][jj]);
-			qglEnd();
+			for (j=0 ; j<surf->numedges ; j++){
+				int jj = (j+1)%poly->numverts;
+				//we extend the shadow volumes by projecting 
+				//them on the light's sphere.
+				qglBegin(GL_QUAD_STRIP);
+				qglVertex3fv(poly->verts[j]);
+				qglVertex3fv(bcache[i][j]);
+				qglVertex3fv(poly->verts[jj]);
+				qglVertex3fv(bcache[i][jj]);
+				qglEnd();
 			}
 
 			//Draw near light cap
@@ -800,7 +800,7 @@ void R_DrawBrushModelVolumes()
 		}
 	
 	VectorCopy(oldLightOrigin, currentShadowLight->origin);
-	qglPopMatrix ();
+	qglPopMatrix();
 }
 
 
@@ -822,16 +822,16 @@ void R_CastShadowVolumes(void)
 	qglDepthMask(0);
 	qglDepthFunc(GL_LESS);
 	
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
+
 	if (r_shadowVolumesDebug->value){
-		qglColor4f(0.3, 0.3, 0, 0.1);
+		qglColor4f(0.1, 0.0, 0.1, 0.1);
 	}
 	else{
 	qglColorMask(0, 0, 0, 0);
 	qglDisable(GL_BLEND);	
 	}
-	
-	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
-	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) 
 	{
@@ -844,17 +844,11 @@ void R_CastShadowVolumes(void)
 		if (currentmodel->type == mod_brush)
 			R_DrawBrushModelVolumes();
 
-		if (currentmodel->type == mod_alias){
-			
-			qglEnableVertexAttribArray(ATRB_POSITION);
-			qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
-
+		if (currentmodel->type == mod_alias)
 			R_DrawShadowVolume(currententity);
-
-			qglDisableVertexAttribArray(ATRB_POSITION);
-		}
 	}
 	qglDepthMask(1);
+	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglEnable(GL_BLEND);
 	qglEnable(GL_TEXTURE_2D);
 	qglEnable(GL_CULL_FACE);

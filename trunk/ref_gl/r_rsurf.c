@@ -363,13 +363,8 @@ void R_DrawAlphaPoly(void)
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
 
 		// moving trans brushes - spaz
-		if (s->ent) {
-			s->ent->angles[0] = -s->ent->angles[0];	// stupid quake bug
-			s->ent->angles[2] = -s->ent->angles[2];	// stupid quake bug
-			R_RotateForEntity(s->ent);
-			s->ent->angles[0] = -s->ent->angles[0];	// stupid quake bug
-			s->ent->angles[2] = -s->ent->angles[2];	// stupid quake bug
-		}
+		if (s->ent)
+			R_RotateForLightEntity(s->ent);
 
 		if (s->texinfo->flags & SURF_TRANS33) 
 			shadelight_surface[3] = 0.33;
@@ -618,7 +613,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 								smax, tmax,
 								GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
 
-			} else if(!r_pplWorld->value){
+			} else if(!r_pplWorld->value || !FoundReLight){
 
 				smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
 				tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;
@@ -1108,7 +1103,7 @@ void R_DrawLightWorld(void)
 	num_light_surfaces = 0;
 				
 		if(!FoundReLight){
-		if(currentShadowLight->style || !currentShadowLight->isStatic){
+		if(!currentShadowLight->isStatic){
 
 			if(R_FillLightChain(currentShadowLight))
 				GL_BatchLightPass(false);
@@ -1363,11 +1358,7 @@ void R_DrawBrushModel(entity_t * e)
 	}
 
 	qglPushMatrix();
-	e->angles[0] = -e->angles[0];	// stupid quake bug
-	e->angles[2] = -e->angles[2];	// stupid quake bug
-	R_RotateForEntity(e);
-	e->angles[0] = -e->angles[0];	// stupid quake bug
-	e->angles[2] = -e->angles[2];	// stupid quake bug
+	R_RotateForLightEntity(e);
 
 	// ================================== 
     // detect underwater position 
@@ -1525,11 +1516,7 @@ void R_DrawLightBrushModel(entity_t * e)
 	}
 
 	qglPushMatrix();
-	e->angles[0] = -e->angles[0];	// stupid quake bug
-	e->angles[2] = -e->angles[2];	// stupid quake bug
-	R_RotateForEntity(e);
-	e->angles[0] = -e->angles[0];	// stupid quake bug
-	e->angles[2] = -e->angles[2];	// stupid quake bug
+	R_RotateForLightEntity(e);
 
 	//Put camera into model space view angle for bmodels parallax
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
@@ -1570,7 +1557,7 @@ void R_DrawLightBrushModel(entity_t * e)
 		
 		if(!FoundReLight){
 				
-			if(currentShadowLight->style || !currentShadowLight->isStatic){
+			if(!currentShadowLight->isStatic){
 			if(R_MarkBrushModelSurfaces(currentShadowLight))
 						GL_BatchLightPass(true);
 			}
