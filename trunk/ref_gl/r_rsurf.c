@@ -574,6 +574,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 		GL_CreateParallaxLmPoly(s);
 
+	if(!r_pplWorld->value || !FoundReLight){
+
 	for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
 			if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
 				goto dynamic;
@@ -613,7 +615,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 								smax, tmax,
 								GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
 
-			} else if(!r_pplWorld->value || !FoundReLight){
+			} else {
 
 				smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
 				tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;
@@ -626,6 +628,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 				qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
 			}
+		}
 
 			if(texture != image->texnum || ltmp != gl_state.lightmap_textures + lmtex) 
 			{
@@ -726,6 +729,7 @@ static void GL_BatchLightPass(qboolean bmodel)
 	msurface_t	*s;
 	image_t		*image, *nm;
 	unsigned	defBits = 0;
+	unsigned	texture = -1;
 	int			id, i;
 	float		scale[2];
 	glpoly_t	*poly;
@@ -769,6 +773,9 @@ static void GL_BatchLightPass(qboolean bmodel)
 		image = R_TextureAnimation(s->texinfo);
 		nm    = R_TextureAnimationNormal(s->texinfo);
 
+		
+		if(texture != image->texnum){
+
 		if(!image->specularScale)
 			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), 1.0);
 		else
@@ -803,9 +810,10 @@ static void GL_BatchLightPass(qboolean bmodel)
 		GL_MBindCube(GL_TEXTURE2_ARB, filtercube_texture_object[currentShadowLight->filter]->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"), 2);
 		GL_SetupCubeMapMatrix(bmodel);
-		
+		}
+
 		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
-		
+		texture = image->texnum;
 
 	}
 	

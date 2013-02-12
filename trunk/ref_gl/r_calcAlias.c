@@ -622,12 +622,14 @@ void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 			if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
 				return;
 			
-	
+			if(r_newrefdef.rdflags & !(RDF_NOWORLDMODEL)){
+			
 			if(!FoundReLight){
 				VectorCopy(currentShadowLight->color, tmp);
 				R_LightPoint (currententity->origin, sColor, true);
 				VectorCopy(sColor, currentShadowLight->color);
 				}
+			}
 			VectorCopy(currentShadowLight->origin, tmpOrg);
 			VectorCopy(r_origin, tmpView);
 

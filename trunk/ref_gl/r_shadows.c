@@ -817,6 +817,9 @@ void R_CastShadowVolumes(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
+	if(!currentShadowLight->isShadow)
+		return;
+
 	qglDisable(GL_CULL_FACE);
 	qglDisable(GL_TEXTURE_2D);
 	qglDepthMask(0);
