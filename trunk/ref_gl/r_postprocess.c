@@ -82,7 +82,7 @@ void R_BuildFlares(flare_t * light){
 		qglDepthMask(1);
 		qglColor4f(1, 1, 1, 1);
 
-		if(!gl_state.nv_conditional_render || !r_useNvConditionalRender->value){
+		if(!gl_state.conditional_render || !r_useConditionalRender->value){
 			qglGetQueryObjectivARB(flareQueries[light->occId], GL_QUERY_RESULT_ARB, &sampleCount);
 
 			if (!sampleCount) {
@@ -93,8 +93,8 @@ void R_BuildFlares(flare_t * light){
 		}
 
 
-	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
-			glBeginConditionalRenderNV(flareQueries[light->occId], GL_QUERY_WAIT_NV);
+	if(gl_state.conditional_render && r_useConditionalRender->value)
+			glBeginConditionalRender(flareQueries[light->occId], GL_QUERY_WAIT);
 
 
 	if(flareVert){
@@ -167,8 +167,8 @@ void R_BuildFlares(flare_t * light){
 	qglColor4f(1, 1, 1, 1);
 	c_flares++;
 	
-	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
-		glEndConditionalRenderNV();
+	if(gl_state.conditional_render && r_useConditionalRender->value)
+		glEndConditionalRender();
 }
 
 qboolean PF_inPVS(vec3_t p1, vec3_t p2);

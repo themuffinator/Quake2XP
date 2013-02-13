@@ -5455,7 +5455,7 @@ extern "C" {
 #ifndef GL_GREMEDY_frame_terminator
 #endif
 
-#ifndef GL_NV_conditional_render
+#ifndef GL_conditional_render
 #define GL_QUERY_WAIT_NV                  0x8E13
 #define GL_QUERY_NO_WAIT_NV               0x8E14
 #define GL_QUERY_BY_REGION_WAIT_NV        0x8E15
@@ -11492,8 +11492,8 @@ GLAPI void APIENTRY glFrameTerminatorGREMEDY (void);
 typedef void (APIENTRYP PFNGLFRAMETERMINATORGREMEDYPROC) (void);
 #endif
 
-#ifndef GL_NV_conditional_render
-#define GL_NV_conditional_render 1
+#ifndef GL_conditional_render
+#define GL_conditional_render 1
 #ifdef GL_GLEXT_PROTOTYPES
 GLAPI void APIENTRY glBeginConditionalRenderNV (GLuint id, GLenum mode);
 GLAPI void APIENTRY glEndConditionalRenderNV (void);

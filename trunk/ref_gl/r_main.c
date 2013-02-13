@@ -990,8 +990,8 @@ void R_DrawShadowLightPass(void)
 	
 	num_visLights++;
 
-	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value)
-			glEndConditionalRenderNV();
+	if(gl_state.conditional_render && r_useConditionalRender->value)
+			glEndConditionalRender();
 	}
 	}
 	
@@ -1431,7 +1431,7 @@ void R_RegisterCvars(void)
 	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
 	r_flaresIntens =					Cvar_Get("r_flaresIntens", "3", CVAR_ARCHIVE);
 	r_flareWeldThreshold =				Cvar_Get("r_flareWeldThreshold", "32", CVAR_ARCHIVE);
-	r_useNvConditionalRender =			Cvar_Get("r_useNvConditionalRender", "1", CVAR_ARCHIVE); // Fucking Ati! Nv conditional render dont work on some radeons... Set to zero, force old, slow Occlusion Query test
+	r_useConditionalRender =			Cvar_Get("r_useConditionalRender", "1", CVAR_ARCHIVE); // Fucking Ati! Nv conditional render dont work on some radeons... Set to zero, force old, slow Occlusion Query test
 
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
@@ -1865,19 +1865,21 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		gl_state.vbo = false;
 	}
 	*/
-	gl_state.nv_conditional_render = false;
-	if ( strstr( gl_config.extensions_string, "GL_NV_conditional_render" ) )
-	{		
-		glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
-		glEndConditionalRenderNV	= (PFNGLENDCONDITIONALRENDERNVPROC)		qwglGetProcAddress("glEndConditionalRenderNV");
-		
-		if(glBeginConditionalRenderNV && glEndConditionalRenderNV)
-			Com_Printf("...using GL_NV_conditional_render\n");
-				gl_state.nv_conditional_render = true;
+	gl_state.conditional_render = false;
+			
+	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
+	glEndConditionalRenderNV	= (PFNGLENDCONDITIONALRENDERNVPROC)		qwglGetProcAddress("glEndConditionalRenderNV");
+
+	glBeginConditionalRender	= (PFNGLBEGINCONDITIONALRENDERPROC)		qwglGetProcAddress("glBeginConditionalRender");
+	glEndConditionalRender		= (PFNGLENDCONDITIONALRENDERPROC)		qwglGetProcAddress("glEndConditionalRender");
+
+	if(glBeginConditionalRender && glEndConditionalRender){
+			Com_Printf("...using GL_conditional_render\n");
+				gl_state.conditional_render = true;
 
 	} else {
-		Com_Printf(S_COLOR_RED"...GL_NV_conditional_render not found\n");
-		gl_state.nv_conditional_render = false;		
+		Com_Printf(S_COLOR_RED"...GL_conditional_render not found\n");
+		gl_state.conditional_render = false;		
 	}
 
 

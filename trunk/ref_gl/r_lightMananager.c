@@ -1111,7 +1111,7 @@ qboolean R_DrawLightOccluders()
 	int		sampleCount;
 	
 	// direct visible, player in light bounds
-	if(!r_useNvConditionalRender->value){
+	if(!r_useConditionalRender->value){
 	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
 		return true;
 	}
@@ -1167,12 +1167,12 @@ qboolean R_DrawLightOccluders()
 	qglDepthMask(1);
 	qglColorMask(1,1,1,1);
 
-	if(gl_state.nv_conditional_render && r_useNvConditionalRender->value){
+	if(gl_state.conditional_render && r_useConditionalRender->value){
 	// player in light bounds draw light in any case
 	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
-		glBeginConditionalRenderNV(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT_NV);
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
 	else
-		glBeginConditionalRenderNV(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT_NV);
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
 	
 	return true;
 	}

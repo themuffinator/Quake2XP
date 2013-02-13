@@ -274,7 +274,7 @@ cvar_t	*deathmatch;
 cvar_t	*r_drawFlares;
 cvar_t	*r_flaresIntens;
 cvar_t	*r_flareWeldThreshold;
-cvar_t	*r_useNvConditionalRender;
+cvar_t	*r_useConditionalRender;
 
 cvar_t	*r_customWidth;
 cvar_t	*r_customHeight;
@@ -597,7 +597,7 @@ typedef struct {
 	qboolean wgl_nv_multisample_coverage;
 	qboolean wgl_nv_multisample_coverage_aviable;
 	qboolean vbo;
-	qboolean nv_conditional_render;
+	qboolean conditional_render;
 	qboolean glsl;
 	qboolean nPot;
 	qboolean glslBinary;
