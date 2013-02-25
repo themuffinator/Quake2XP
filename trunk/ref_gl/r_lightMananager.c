@@ -200,6 +200,9 @@ void R_PrepareShadowLightFrame(void) {
 
 }
 
+#define Q_clamp(a,b,c) ((b) >= (c) ? (a)=(b) : (a) < (b) ? (a)=(b) : (a) > (c) ? (a)=(c) : (a))
+
+#define RgbClamp(a) ((a) < (0) ? (a)=(0) : (a) > (1) ? (a)=(1) : (a))
 
 void FS_StripExtension (const char *in, char *out, size_t size_out)
 {
@@ -261,7 +264,10 @@ void R_SaveLights_f(void) {
 		fprintf(f, "\"filter\" \"%i\"\n",		(int)currentShadowLight->filter);
 		fprintf(f, "\"angles\" \"%i %i %i\"\n", (int)currentShadowLight->angles[0], (int)currentShadowLight->angles[1], (int)currentShadowLight->angles[2]);
 		fprintf(f, "\"speed\" \"%f %f %f\"\n",		 currentShadowLight->speed[0],		 currentShadowLight->speed[1],	     currentShadowLight->speed[2]);
-		fprintf(f, "\"shadow\" \"%i\"\n",			 currentShadowLight->isShadow);
+		if (!strcmp(Cmd_Argv(1), "forceShadow"))
+			fprintf(f, "\"shadow\" \"%i\"\n", 1);
+		else
+			fprintf(f, "\"shadow\" \"%i\"\n", currentShadowLight->isShadow);
 		fprintf(f, "}\n");
 		i++;
 	}
@@ -430,7 +436,7 @@ void R_EditSelectedLight_f(void) {
 		selectedShadowLight->style = style;
 	 }
 	 else
-		if (Cmd_Argc() == 3 && !strcmp(Cmd_Argv(1), "filter")) {
+		if (!strcmp(Cmd_Argv(1), "filter")) {
 		if(Cmd_Argc() != 3) {
 			Com_Printf("usage: editLight %s value\nCurrent Cube Filter %i\n", Cmd_Argv(0),
 			selectedShadowLight->filter);
@@ -892,8 +898,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->occQ = numLightQ;
 	numLightQ++;
 
-	if(!light->style)
-		r_numWorlsShadowLights++;
+	r_numWorlsShadowLights++;
 	return light;
 }
 

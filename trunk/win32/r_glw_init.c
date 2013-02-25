@@ -1125,7 +1125,7 @@ qboolean GLimp_InitGL (void)
 			Com_Printf (S_COLOR_RED "GLimp_Init() - qwglCreateContext failed\n");
 			VID_Error (ERR_FATAL,  "GLimp_Init() - qwglCreateContext failed\n");
 		}
-
+		
 		// Make the rendering context current
 		if (!(qwglMakeCurrent(hDC, hGLRC))) {
 			
