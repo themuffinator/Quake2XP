@@ -177,7 +177,7 @@ void R_PrepareShadowLightFrame(void) {
 		
 	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
 		
-		if(light->style < 1){
+		if(light->style < 31){
 			light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
 			light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
 			light->color[2] *= r_newrefdef.lightstyles[light->style].rgb[2];
@@ -264,7 +264,7 @@ void R_SaveLights_f(void) {
 		fprintf(f, "\"filter\" \"%i\"\n",		(int)currentShadowLight->filter);
 		fprintf(f, "\"angles\" \"%i %i %i\"\n", (int)currentShadowLight->angles[0], (int)currentShadowLight->angles[1], (int)currentShadowLight->angles[2]);
 		fprintf(f, "\"speed\" \"%f %f %f\"\n",		 currentShadowLight->speed[0],		 currentShadowLight->speed[1],	     currentShadowLight->speed[2]);
-		if (!strcmp(Cmd_Argv(1), "forceShadow"))
+		if (!strcmp(Cmd_Argv(1), "forceshadow"))
 			fprintf(f, "\"shadow\" \"%i\"\n", 1);
 		else
 			fprintf(f, "\"shadow\" \"%i\"\n", currentShadowLight->isShadow);
@@ -342,7 +342,7 @@ void R_Light_Copy_f(void) {
 	radius = selectedShadowLight->radius;
 	style = selectedShadowLight->style;
 	filter = selectedShadowLight->filter;
-	shadow = currentShadowLight->isShadow;
+	shadow = selectedShadowLight->isShadow;
 
 	VectorMA(origin, -50, v_forward, spawn);
 	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, 1, shadow);

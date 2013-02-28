@@ -125,6 +125,9 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	if(CL_PMpointcontents(water) & MASK_WATER)
 		caustics = true;
 	
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		caustics = false;
+
 	qglDisable(GL_BLEND);
 
 	if (currententity->flags & (RF_VIEWERMODEL))

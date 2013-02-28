@@ -798,7 +798,7 @@ void R_DrawBrushModelVolumes()
 				qglVertex3fv(bcache[i][j]);
 			qglEnd();
 		}
-	
+
 	VectorCopy(oldLightOrigin, currentShadowLight->origin);
 	qglPopMatrix();
 }
@@ -819,6 +819,9 @@ void R_CastShadowVolumes(void)
 
 	if(!currentShadowLight->isShadow)
 		return;
+
+	qglEnable(GL_POLYGON_OFFSET_FILL); //fix ugly shadow z-fighting bug under gf 660ti
+	qglPolygonOffset(1, 2);
 
 	qglDisable(GL_CULL_FACE);
 	qglDisable(GL_TEXTURE_2D);
@@ -852,6 +855,7 @@ void R_CastShadowVolumes(void)
 	}
 	qglDepthMask(1);
 	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglEnable(GL_BLEND);
 	qglEnable(GL_TEXTURE_2D);
 	qglEnable(GL_CULL_FACE);

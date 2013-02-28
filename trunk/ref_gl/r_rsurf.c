@@ -1527,14 +1527,9 @@ void R_DrawLightBrushModel(entity_t * e)
 	R_RotateForLightEntity(e);
 
 	//Put camera into model space view angle for bmodels parallax
-	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
-		{
-		VectorSubtract(r_origin, currententity->origin, tmp);
-		AnglesToMat3(currententity->angles, entityAxis);
-		Mat3_TransposeMultiplyVector(entityAxis, tmp, BmodelViewOrg);
-		}
-	else
-		VectorSubtract(r_origin, currententity->origin, BmodelViewOrg);
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	AnglesToMat3(currententity->angles, entityAxis);
+	Mat3_TransposeMultiplyVector(entityAxis, tmp, BmodelViewOrg);
 
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
@@ -1554,14 +1549,9 @@ void R_DrawLightBrushModel(entity_t * e)
 		
 		VectorCopy(currentShadowLight->origin, oldLight);
 
-		if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
-		{
 		VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
 		AnglesToMat3(currententity->angles, entityAxis);
 		Mat3_TransposeMultiplyVector(entityAxis, tmp, currentShadowLight->origin);
-		}
-		else
-		VectorSubtract(currentShadowLight->origin, currententity->origin, currentShadowLight->origin);
 		
 		if(!FoundReLight){
 				
