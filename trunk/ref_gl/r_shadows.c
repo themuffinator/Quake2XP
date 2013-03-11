@@ -704,11 +704,11 @@ They are dynamically calculated.
 =============
 */
 vec3_t		bcache[MAX_MAP_TEXINFO][MAX_POLY_VERT];
-
+int	FaceInShadow;
 
 void R_DrawBrushModelVolumes()
 {
-	int			i, j, sidebit;
+	int			i, j, sidebit, jj, index = 0, shadow_vert = 0;
 	float		scale, sca, dot;
 	msurface_t	*surf;
 	model_t		*clmodel;
@@ -716,6 +716,7 @@ void R_DrawBrushModelVolumes()
 	vec3_t		v1, temp;
 	vec3_t		oldLightOrigin, mins, maxs;
 	mat3_t		entityAxis;
+	qboolean	shadow;
 
 	clmodel = currententity->model;
 	surf = &clmodel->surfaces[clmodel->firstmodelsurface];
@@ -749,6 +750,7 @@ void R_DrawBrushModelVolumes()
 		for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
 		{
 
+
 		if (surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_FLOWING|SURF_DRAWTURB))
 			return;
 
@@ -759,9 +761,11 @@ void R_DrawBrushModelVolumes()
 		else
 		sidebit = SURF_PLANEBACK;
 
-		if ((surf->flags & SURF_PLANEBACK) != sidebit)
+		if ((surf->flags & SURF_PLANEBACK) != sidebit){
+			FaceInShadow++;
+			surf->polys->ShadowedFace = FaceInShadow;
 			continue;
-			
+		}
 			poly = surf->polys;
 
 				for (j=0 ; j<surf->numedges ; j++)
@@ -775,7 +779,18 @@ void R_DrawBrushModelVolumes()
 
 			//check if neighbouring polygons are shadowed
 			for (j=0 ; j<surf->numedges ; j++){
-				int jj = (j+1)%poly->numverts;
+				shadow = false;
+
+				if (poly->neighbours[j] != NULL)
+				{
+				if ( poly->neighbours[j]->ShadowedFace != poly->ShadowedFace)
+					shadow = true;
+				}
+				else
+					shadow = true;
+
+				if(shadow){
+				jj = (j+1)%poly->numverts;
 				//we extend the shadow volumes by projecting 
 				//them on the light's sphere.
 				qglBegin(GL_QUAD_STRIP);
@@ -784,6 +799,34 @@ void R_DrawBrushModelVolumes()
 				qglVertex3fv(poly->verts[jj]);
 				qglVertex3fv(bcache[i][jj]);
 				qglEnd();
+
+				//VA_SetElem3(ShadowArray[shadow_vert+0], poly->verts[0][j],  poly->verts[1][j],  poly->verts[2][j]);
+				//VA_SetElem3(ShadowArray[shadow_vert+1], bcache[0][i][j],	bcache[1][i][j],	bcache[2][i][j]);
+				//VA_SetElem3(ShadowArray[shadow_vert+2], poly->verts[0][jj], poly->verts[1][jj], poly->verts[2][jj]);
+				//VA_SetElem3(ShadowArray[shadow_vert+3], bcache[0][i][jj],	bcache[1][i][jj],	bcache[2][i][jj]);
+				//ShadowIndex[index++] = shadow_vert+0;
+				//ShadowIndex[index++] = shadow_vert+4;
+				//ShadowIndex[index++] = shadow_vert+1;
+				//ShadowIndex[index++] = shadow_vert+1;
+				//ShadowIndex[index++] = shadow_vert+4;
+				//ShadowIndex[index++] = shadow_vert+5;
+
+				//ShadowIndex[index++] = shadow_vert+2;
+				//ShadowIndex[index++] = shadow_vert+6;
+				//ShadowIndex[index++] = shadow_vert+3;
+				//ShadowIndex[index++] = shadow_vert+3;
+				//ShadowIndex[index++] = shadow_vert+6;
+				//ShadowIndex[index++] = shadow_vert+7;
+
+				//ShadowIndex[index++] = shadow_vert+4;
+				//ShadowIndex[index++] = shadow_vert+0;
+				//ShadowIndex[index++] = shadow_vert+5;
+				//ShadowIndex[index++] = shadow_vert+5;
+				//ShadowIndex[index++] = shadow_vert+0;
+				//ShadowIndex[index++] = shadow_vert+1;
+				//shadow_vert +=12;
+
+				}
 			}
 
 			//Draw near light cap
@@ -798,7 +841,7 @@ void R_DrawBrushModelVolumes()
 				qglVertex3fv(bcache[i][j]);
 			qglEnd();
 		}
-
+	
 	VectorCopy(oldLightOrigin, currentShadowLight->origin);
 	qglPopMatrix();
 }
@@ -819,9 +862,6 @@ void R_CastShadowVolumes(void)
 
 	if(!currentShadowLight->isShadow)
 		return;
-
-	qglEnable(GL_POLYGON_OFFSET_FILL); //fix ugly shadow z-fighting bug under gf 660ti
-	qglPolygonOffset(1, 2);
 
 	qglDisable(GL_CULL_FACE);
 	qglDisable(GL_TEXTURE_2D);
@@ -855,7 +895,6 @@ void R_CastShadowVolumes(void)
 	}
 	qglDepthMask(1);
 	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglEnable(GL_BLEND);
 	qglEnable(GL_TEXTURE_2D);
 	qglEnable(GL_CULL_FACE);
