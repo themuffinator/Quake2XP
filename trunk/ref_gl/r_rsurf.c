@@ -1017,9 +1017,6 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 		pbbox[4] = surf->maxs[1];
 		pbbox[5] = surf->maxs[2];
 
-		if(!SurfInFrustum(surf))
-		return false;
-
 		if(!BBoxIntersectBBox(lbbox, pbbox))
 			return false;
 
@@ -1035,18 +1032,16 @@ void R_MarkLightCasting (worldShadowLight_t *light, mnode_t *node)
 	float		dist;
 	msurface_t	**surf;
 	mleaf_t		*leaf;
-	int			c;
-
-	if (node->visframe != r_visframecount)
-		return;
-
-	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
-		return;
+	int			c, cluster;
 
 	if (node->contents != -1)
 	{
 		//we are in a leaf
 		leaf = (mleaf_t *)node;
+		cluster = leaf->cluster;
+
+		if (!(light->vis[cluster>>3] & (1<<(cluster&7))))
+			return;
 
 		surf = leaf->firstmarksurface;
 

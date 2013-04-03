@@ -960,9 +960,6 @@ void R_DrawShadowLightPass(void)
 	qglStencilMask(0);
 	}
 
-	if(!R_DrawLightOccluders())
-		continue;
-
 	R_DrawLightWorld();
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {

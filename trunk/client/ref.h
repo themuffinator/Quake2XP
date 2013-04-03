@@ -259,6 +259,7 @@ typedef struct glpoly_s {
 
 	vec3_t center;
 	int		lightTimestamp;
+	int		shadowTimestamp;
 	int		ShadowedFace;
 	int numverts;
 	int flags;					// for SURF_UNDERWATER (not needed

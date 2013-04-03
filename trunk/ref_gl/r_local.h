@@ -421,6 +421,8 @@ void R_DrawLightBrushModel(entity_t * e);
 qboolean R_DrawLightOccluders();
 void UpdateLightEditor(void);
 void Load_LightFile();
+__inline qboolean BBoxIntersectBBox(float *bbox0, float *bbox1);
+
 extern int num_visLights;
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;

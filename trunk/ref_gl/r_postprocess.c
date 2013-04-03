@@ -48,8 +48,8 @@ void R_BuildFlares(flare_t * light){
 
 	if (light->surf->ent) {
 		
-	//	if (!VectorCompare(light->surf->ent->angles, vec3_origin))
-		//	return;
+		if (!VectorCompare(light->surf->ent->angles, vec3_origin))
+		return;
 
 		qglPushMatrix();
 		R_RotateForLightEntity(light->surf->ent);
