@@ -313,55 +313,33 @@ void GL_RenderVolumes(dmdl_t * paliashdr, vec3_t lightdir, int projdist){
 
 void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
 {
-	vec3_t				light, temp, mins, maxs;
+	vec3_t				light, temp;
 	float				dist, projdist, scale;
 	mat3_t				entityAxis;
 	
-	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
-	VectorAdd(currententity->origin, currententity->model->mins, mins);
-
 	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic shadows if we don't relight
 		return;
 
 	if(VectorCompare(currentShadowLight->origin, currententity->origin))
 		return;
+	
+	VectorSubtract(currententity->origin, currentShadowLight->origin, temp);
+	dist = VectorLength(temp);
 		
-	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
+	if(dist > (currentShadowLight->radius + currentmodel->radius))
 		return;
-
-		VectorSubtract(currententity->origin, currentShadowLight->origin, temp);
-		dist = VectorLength(temp);
-		scale = currentShadowLight->radius * 2.0;
-		projdist = scale - dist;
-
-		AnglesToMat3(currententity->angles, entityAxis);
-		VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-		Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
 		
-		BuildShadowVolumeTriangles(paliashdr, light, projdist);
-		c_shadow_volumes++;
+	scale = currentShadowLight->radius * 2.0;
+	projdist = scale - dist;
+
+	AnglesToMat3(currententity->angles, entityAxis);
+	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
+		
+	BuildShadowVolumeTriangles(paliashdr, light, projdist);
+	c_shadow_volumes++;
 }
 
-/*==============
-Vis's CullSphere
-==============*/
-
-qboolean R_CullSphere( const vec3_t centre, const float radius)
-{
-	int		i;
-	cplane_t *p;
-
-	if (r_noCull->value)
-		return false;
-
-	for (i=0,p=frustum ; i<4; i++,p++)
-	{
-	if ( DotProduct ( centre, p->normal ) - p->dist <= -radius )
-			return true;
-	}
-
-	return false;
-}
 
 void R_DrawShadowVolume(entity_t * e)
 {
@@ -381,11 +359,11 @@ void R_DrawShadowVolume(entity_t * e)
 				 RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
 				 return;
 		
-		if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
-			return;
+	if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
+		return;
 		
-		if (r_shadowVolumesDebug->value && (currententity->flags & RF_VIEWERMODEL))
-			return;
+	if (r_shadowVolumesDebug->value && (currententity->flags & RF_VIEWERMODEL))
+		return;
 
 	paliashdr = (dmdl_t *) currentmodel->extradata;
 
@@ -519,20 +497,11 @@ void R_ShadowBlend()
 
 /*
 ======================================
-BSP Shadow Volumes
-Easy Version From Tenebrae and Bers@Q2 
+BSP SHADOW VOLUMES
+EASY VERSION FROM TENEBRAE AND BERS@Q2 
 ======================================
 */
 
-
-/*
-=============
-R_DrawBrushModelVolumes
-
-Draw the shadow volumes of the brush model.
-They are dynamically calculated.
-=============
-*/
 vec3_t		bcache[MAX_MAP_TEXINFO][MAX_POLY_VERT];
 int			FaceInShadow;
 int			num_shadow_surfaces;
@@ -853,22 +822,16 @@ void R_CastShadowVolumes(void)
 	qglDepthMask(0);
 	qglDepthFunc(GL_LESS);
 	qglEnable(GL_POLYGON_OFFSET_FILL);
-    qglPolygonOffset(1, 1);
-
+    
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
-
-	if (r_shadowVolumesDebug->value){
-		qglColor4f(0.1, 0.0, 0.1, 0.1);
-	}
-	else{
 	qglColorMask(0, 0, 0, 0);
 	qglDisable(GL_BLEND);	
-	}
 
 	shadowTimestamp++;
 	num_shadow_surfaces = 0;
 	R_MarkShadowCasting (r_worldmodel->nodes);
+	qglPolygonOffset(1, 1);
 	R_DrawBspModelVolumes();
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) 
@@ -879,16 +842,21 @@ void R_CastShadowVolumes(void)
 		if (!currentmodel)
 			continue;
 		
-		if (currentmodel->type == mod_brush)
+		if (currentmodel->type == mod_brush){
+			qglPolygonOffset(1, 1);
 			R_DrawBrushModelVolumes();
-
-		if (currentmodel->type == mod_alias)
+		}
+		if (currentmodel->type == mod_alias){
+			qglPolygonOffset(0, 0);
 			R_DrawShadowVolume(currententity);
+		
+		}
 	}
 	qglDepthMask(1);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglEnable(GL_BLEND);
 	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglPolygonOffset(0, 0);
 	qglEnable(GL_TEXTURE_2D);
 	qglEnable(GL_CULL_FACE);
 	qglDepthFunc(GL_LEQUAL);
@@ -903,6 +871,7 @@ void R_CastShadowVolumes(void)
 Simple blob shadow
 ==================
 */
+
 void MakeNormalVectors(vec3_t forward, vec3_t right, vec3_t up);
 trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask);
 #define MAX_BLOB_SHADOW_VERT 4096*4
@@ -937,7 +906,7 @@ void R_BlobShadow(void){
 	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
 
 	qglEnable(GL_POLYGON_OFFSET_FILL);
-    qglPolygonOffset(-2, -1);
+    qglPolygonOffset(-2, -2);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(0);
@@ -1045,6 +1014,7 @@ void R_BlobShadow(void){
 	}
 
 	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglPolygonOffset(0, 0);
 	qglDisable(GL_BLEND);
 	qglDepthMask(1);
 	qglDisableVertexAttribArray(ATRB_POSITION);

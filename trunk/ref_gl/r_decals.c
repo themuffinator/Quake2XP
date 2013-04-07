@@ -214,6 +214,7 @@ void R_RenderDecals(void)
 	qglColor4f(1, 1, 1, 1);
     qglDepthMask(1);
     qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglPolygonOffset(0, 0);
 	GL_BindNullProgram();
 }
 

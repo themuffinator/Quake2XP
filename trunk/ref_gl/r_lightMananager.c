@@ -256,6 +256,7 @@ void R_AddDynamicLight(dlight_t *dl) {
 void R_AddNoWorldModelLight() {
 	
 	worldShadowLight_t *light;
+	int i;
 
 	light = &shadowLightsBlock[num_nwmLights++];
 	memset(light, 0, sizeof(worldShadowLight_t));
@@ -265,8 +266,12 @@ void R_AddNoWorldModelLight() {
 	VectorSet(light->origin, -100, 100, 76);
 	VectorSet(light->startColor, 1.0, 1.0, 1.0);
 	light->radius = 1024;
-	VectorSet(light->mins, -1024, -1024, -1024);
-	VectorSet(light->maxs,  1024,  1024,  1024);
+
+	for (i = 0; i < 3; i++) {
+		light->mins[i] = light->origin[i] - 1024;
+		light->maxs[i] = light->origin[i] + 1024;
+	}
+
 	light->style = 0;
 	light->filter = 0;
 	light->isStatic = 0;
@@ -320,6 +325,25 @@ void R_PrepareShadowLightFrame(void) {
 		if(!R_MarkLightLeaves(light))
 			return;
 
+		//fully/partially in frustum
+	if(!intersectsBoxPoint(light->mins, light->maxs, r_origin))
+	{
+		if(r_newrefdef.fov_x <= 90)
+			/// Berserker: этот способ быстрее, но при углах обзора больше 90, дает артефакты куллинга;
+			/// поэтому юзаем его тока при углах меньших или равных 90.
+			R_ProjectSphere(light, light->scizz.coords);
+		else
+			boxScreenSpaceRect(light, light->scizz.coords);
+	}
+	else
+	{	//viewport is ofs/width based
+		light->scizz.coords[0] = r_viewport[0];
+		light->scizz.coords[1] = r_viewport[1];
+		light->scizz.coords[2] = r_viewport[0] + r_viewport[2];
+		light->scizz.coords[3] = r_viewport[1] + r_viewport[3];
+	}
+
+
 		VectorCopy(light->startColor, light->color);
 		
 	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
@@ -346,10 +370,6 @@ void R_PrepareShadowLightFrame(void) {
 	}
 
 }
-
-#define Q_clamp(a,b,c) ((b) >= (c) ? (a)=(b) : (a) < (b) ? (a)=(b) : (a) > (c) ? (a)=(c) : (a))
-
-#define RgbClamp(a) ((a) < (0) ? (a)=(0) : (a) > (1) ? (a)=(1) : (a))
 
 void FS_StripExtension (const char *in, char *out, size_t size_out)
 {

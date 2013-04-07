@@ -164,6 +164,36 @@ qboolean R_CullPoint(vec3_t org)
 	return false;
 }
 
+qboolean R_CullSphere( const vec3_t centre, const float radius)
+{
+	int		i;
+	cplane_t *p;
+
+	if (r_noCull->value)
+		return false;
+
+	for (i=0,p=frustum ; i<4; i++,p++)
+	{
+	if ( DotProduct ( centre, p->normal ) - p->dist <= -radius )
+			return true;
+	}
+
+	return false;
+}
+
+qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p)
+{
+	if (p[0] > maxs[0]) return false;
+	if (p[1] > maxs[1]) return false;
+	if (p[2] > maxs[2]) return false;
+ 
+	if (p[0] < mins[0]) return false;
+	if (p[1] < mins[1]) return false;
+	if (p[2] < mins[2]) return false;
+
+	return true;
+}
+
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs)
 {
 	int		i, j;
@@ -212,18 +242,6 @@ float SphereInFrustum( vec3_t o, float radius )
    return d + radius;
 }
 
-qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p)
-{
-	if (p[0] > maxs[0]) return false;
-	if (p[1] > maxs[1]) return false;
-	if (p[2] > maxs[2]) return false;
- 
-	if (p[0] < mins[0]) return false;
-	if (p[1] < mins[1]) return false;
-	if (p[2] < mins[2]) return false;
-
-	return true;
-}
 
 qboolean EntityInLightSphere(worldShadowLight_t *light) {
 
@@ -694,6 +712,8 @@ void R_SetupGL(void)
 
 
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
+	qglGetFloatv (GL_PROJECTION_MATRIX, r_project_matrix);
+
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
 
 	// 
@@ -919,9 +939,9 @@ void R_DrawPlayerWeaponLightPass(void)
 void R_DrawShadowLightPass(void)
 {
 	int i;
+	qboolean stencil_cleared = false;
+	qboolean foundone = false;
 
-	if (!r_drawEntities->value)
-		return;
 	
 	if(!r_pplWorld->value)
 		return;
@@ -931,9 +951,12 @@ void R_DrawShadowLightPass(void)
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
-	
+	qglEnable(GL_SCISSOR_TEST);
+	qglScissor(0, 0, r_newrefdef.width, r_newrefdef.height);
+
 	if(r_shadows->value > 1)
 		qglEnable(GL_STENCIL_TEST);
+	
 
 	R_PrepareShadowLightFrame();
 	
@@ -942,12 +965,17 @@ void R_DrawShadowLightPass(void)
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 	
 	UpdateLightEditor();
+	
 
 	if(r_shadows->value > 1){
-	qglClearStencil(128);
-	qglStencilMask(255);
-	qglClear(GL_STENCIL_BUFFER_BIT);
-
+		
+		qglScissor(	currentShadowLight->scizz.coords[0], currentShadowLight->scizz.coords[1], 
+					currentShadowLight->scizz.coords[2]-currentShadowLight->scizz.coords[0], 
+					currentShadowLight->scizz.coords[3]-currentShadowLight->scizz.coords[1]);
+		qglClearStencil(128);
+		qglStencilMask(255);
+		qglClear(GL_STENCIL_BUFFER_BIT);
+	
 	qglStencilMask(255);
 	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
 	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
@@ -959,7 +987,7 @@ void R_DrawShadowLightPass(void)
 	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	qglStencilMask(0);
 	}
-
+	
 	R_DrawLightWorld();
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -986,18 +1014,16 @@ void R_DrawShadowLightPass(void)
 		}
 	
 	num_visLights++;
-
-	if(gl_state.conditional_render && r_useConditionalRender->value)
-			glEndConditionalRender();
 	}
 	}
 	
 	qglDepthMask(1);
 	if(r_shadows->value > 1)
 		qglDisable(GL_STENCIL_TEST);
+	qglDisable(GL_SCISSOR_TEST);
+	qglScissor(0, 0, r_newrefdef.width, r_newrefdef.height);
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 }
 
 void R_RenderDistortModels(void)
@@ -1062,9 +1088,9 @@ if (r_noRefresh->value)
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
-
-	R_BlobShadow();
+		
 	R_DrawShadowLightPass();
+	R_BlobShadow();
 	R_RenderDecals();
 
 	R_RenderFlares();

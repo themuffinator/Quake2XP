@@ -279,6 +279,9 @@
     <ClCompile Include="ref_gl\r_lightMananager.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="ref_gl\r_scissors.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\anorms.h">

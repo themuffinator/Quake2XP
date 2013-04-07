@@ -422,12 +422,17 @@ qboolean R_DrawLightOccluders();
 void UpdateLightEditor(void);
 void Load_LightFile();
 __inline qboolean BBoxIntersectBBox(float *bbox0, float *bbox1);
-
+void boxScreenSpaceRect(worldShadowLight_t *light, int *rect);
+void R_ProjectSphere (worldShadowLight_t *light, int *rect);
+qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p);
+qboolean R_CheckRectList(screenrect_t *rec);
+void R_AddRectList(screenrect_t *rec);
+extern screenrect_t	*recList;					//first rectangle of the list
+extern screenrect_t	totalRect;					//rectangle that holds all rectangles in the list
 extern int num_visLights;
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
 extern int numFlareOcc;
-
 extern qboolean FoundReLight;
 
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
