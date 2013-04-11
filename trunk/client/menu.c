@@ -1135,14 +1135,12 @@ static float ClampCvar(float min, float max, float value)
 
 static void ControlsSetMenuItemValues(void)
 {
-	s_options_sfxvolume_slider.curvalue =
-		Cvar_VariableValue("s_volume") * 20;
-	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicsrc");
-	s_options_musicrandom_list.curvalue = Cvar_VariableValue("s_musicrandom");
-	s_options_useEFX_list.curvalue = Cvar_VariableValue("s_openal_efx");
-	s_options_aldistancemodel_list.curvalue =
-		Cvar_VariableValue("s_distance_model");
-	s_options_alquality_list.curvalue = Cvar_VariableValue("s_quality");
+	s_options_sfxvolume_slider.curvalue =		Cvar_VariableValue("s_volume") * 20;
+	s_options_musicsrc_list.curvalue =			Cvar_VariableValue("s_musicsrc");
+	s_options_musicrandom_list.curvalue =		Cvar_VariableValue("s_musicrandom");
+	s_options_useEFX_list.curvalue =			Cvar_VariableValue("s_openal_efx");
+	s_options_aldistancemodel_list.curvalue =	Cvar_VariableValue("s_distance_model");
+	s_options_alquality_list.curvalue =			Cvar_VariableValue("s_quality");
 
 
 	s_options_sensitivity_slider.curvalue = (sensitivity->value) * 2;
@@ -1635,8 +1633,7 @@ void Options_MenuInit(void)
 	s_options_sfxvolume_slider.generic.callback = UpdateVolumeFunc;
 	s_options_sfxvolume_slider.minvalue = 0;
 	s_options_sfxvolume_slider.maxvalue = 20;
-	s_options_sfxvolume_slider.curvalue =
-		Cvar_VariableValue("s_volume") * 20;
+	s_options_sfxvolume_slider.curvalue = Cvar_VariableValue("s_volume") * 20;
 	
 
 	s_options_musicvolume_slider.generic.type = MTYPE_SLIDER;
@@ -1646,8 +1643,7 @@ void Options_MenuInit(void)
 	s_options_musicvolume_slider.generic.callback = UpdateMusicVolumeFunc;
 	s_options_musicvolume_slider.minvalue = 0;
 	s_options_musicvolume_slider.maxvalue = 20;
-	s_options_musicvolume_slider.curvalue =
-		Cvar_VariableValue("s_musicvolume") * 20;
+	s_options_musicvolume_slider.curvalue = Cvar_VariableValue("s_musicvolume") * 20;
 	
 
 	s_options_musicsrc_list.generic.type = MTYPE_SPINCONTROL;

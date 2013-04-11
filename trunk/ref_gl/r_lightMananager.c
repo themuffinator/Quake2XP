@@ -85,7 +85,7 @@ skip:	Com_DPrintf("Out of BSP, rejected light at %f %f %f\n", light->origin[0], 
 		return false;
 	}
 
-	// строим vis-data
+	// build vis-data
 	memcpy (&light->vis, CM_ClusterPVS(cluster), (((CM_NumClusters()+31)>>5)<<2));
 
 	for (i=0 ; i<3 ; i++)
@@ -105,7 +105,7 @@ skip:	Com_DPrintf("Out of BSP, rejected light at %f %f %f\n", light->origin[0], 
 	memset(&vis, 0, (((r_worldmodel->numleafs+31)>>5)<<2));
 	for (i=0 ; i<count ; i++)
 		vis[leafs[i]>>3] |= (1<<(leafs[i]&7));
-	// вырезаем кластеры, которых нет в списке leafs
+
 	for (i=0 ; i<((r_worldmodel->numleafs+31)>>5); i++)
 		((long *)light->vis)[i] &= ((long *)vis)[i];
 

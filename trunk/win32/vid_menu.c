@@ -93,7 +93,7 @@ static void ambientLevelCallback(void *s)
 {
 	menuslider_s *slider = ( menuslider_s * ) s;
 
-	Cvar_SetValue("r_pplWorldAmbient", slider->curvalue * 0.1);
+	Cvar_SetValue("r_pplWorldAmbient", s_ambientLevel_slider.curvalue / 20);
 }
 
 static void RadarCallback( void *s )
@@ -648,9 +648,9 @@ void VID_MenuInit( void )
 	s_ambientLevel_slider.generic.y			= 150*cl_fontScale->value;
 	s_ambientLevel_slider.generic.name		= "Ambient Level";
 	s_ambientLevel_slider.minvalue			= 0;
-	s_ambientLevel_slider.maxvalue			= 1;
+	s_ambientLevel_slider.maxvalue			= 20;
 	s_ambientLevel_slider.generic.callback	= ambientLevelCallback;
-	s_ambientLevel_slider.curvalue			= r_pplWorldAmbient->value * 0.1;
+	s_ambientLevel_slider.curvalue			= Cvar_VariableValue("r_pplWorldAmbient") * 20;
 	s_ambientLevel_slider.generic.statusbar	= "Realtime World Ambient Lighting Level";
 
 	s_flare_box.generic.type	= MTYPE_SPINCONTROL;

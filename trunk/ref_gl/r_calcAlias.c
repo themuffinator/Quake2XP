@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2004-20011 Quake2xp Team, Berserker.
+Copyright (C) 2004-2013 Quake2xp Team, Berserker.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -454,7 +454,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	if (currententity->flags & (RF_VIEWERMODEL))
 			return;
 	
-	if(currentmodel->noselfshadow)
+	if(currentmodel->noselfshadow && r_shadows->value)
 		qglDisable(GL_STENCIL_TEST);
 	
 	backlerp = currententity->backlerp;
@@ -579,6 +579,9 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	qglMatrixMode(GL_MODELVIEW);
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
+	
+	if(currentmodel->noselfshadow && r_shadows->value)
+		qglEnable(GL_STENCIL_TEST);
 
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
@@ -593,68 +596,46 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr)
 {
-	vec3_t				temp, mins, maxs;
+	vec3_t				temp;
 	mat3_t				entityAxis;
-	trace_t				r_trace;
-	int					numLights= 1;
 	vec3_t				sColor, tmp, tmpOrg, tmpView;
-
-	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
-	VectorAdd(currententity->origin, currententity->model->mins, mins);
 
 	if(!FoundReLight && currentShadowLight->isStatic && !currentShadowLight->style) // only dynamic lighting if we don't relight
 			return;
 			
-			if(numLights > r_maxShadowsLightsPerModel->value)
-				return;
-
-			if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-				if(!currentShadowLight->isNoWorldModel)
-					return;
-
-			if(VectorCompare(currentShadowLight->origin, currententity->origin))
-			   return;
-
-			// light behind the wall 
-			if (r_newrefdef.areabits){
-			r_trace = CM_BoxTrace(currententity->origin, currentShadowLight->origin, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
-			if(r_trace.fraction != 1.0)
-				return;
-			}
-
-			if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
-				return;
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		if(!currentShadowLight->isNoWorldModel)
+			return;
 			
-			if(r_newrefdef.rdflags & !(RDF_NOWORLDMODEL)){
+	if(r_newrefdef.rdflags & !(RDF_NOWORLDMODEL)){
 			
-			if(!FoundReLight){
-				VectorCopy(currentShadowLight->color, tmp);
-				R_LightPoint (currententity->origin, sColor, true);
-				VectorCopy(sColor, currentShadowLight->color);
-				}
-			}
-			VectorCopy(currentShadowLight->origin, tmpOrg);
-			VectorCopy(r_origin, tmpView);
+	if(!FoundReLight){
+		VectorCopy(currentShadowLight->color, tmp);
+		R_LightPoint (currententity->origin, sColor, true);
+		VectorCopy(sColor, currentShadowLight->color);
+		}
+	}
+	VectorCopy(currentShadowLight->origin, tmpOrg);
+	VectorCopy(r_origin, tmpView);
 
-			AnglesToMat3(currententity->angles, entityAxis);
-			VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-			Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
-			currententity->lightVised = true;
+	AnglesToMat3(currententity->angles, entityAxis);
+	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
+	currententity->lightVised = true;
 
-			// move view org to modelspace
-			VectorSubtract(r_origin, currententity->origin, tmp);
-			AnglesToMat3(currententity->angles, entityAxis);
-			Mat3_TransposeMultiplyVector(entityAxis, tmp, r_origin);
+	// move view org to modelspace
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	AnglesToMat3(currententity->angles, entityAxis);
+	Mat3_TransposeMultiplyVector(entityAxis, tmp, r_origin);
 
 			
-			GL_DrawAliasFrameLerpLight(paliashdr);
-			numLights++;
+	GL_DrawAliasFrameLerpLight(paliashdr);
 			
-			VectorCopy(tmpOrg, currentShadowLight->origin);
-			VectorCopy(tmpView, r_origin);
+	VectorCopy(tmpOrg, currentShadowLight->origin);
+	VectorCopy(tmpView, r_origin);
 
-			if(currentShadowLight->isStatic && !currentShadowLight->style)
-				if(!FoundReLight)
-					VectorCopy(tmp, currentShadowLight->color);
+	if(currentShadowLight->isStatic && !currentShadowLight->style)
+		if(!FoundReLight)
+			VectorCopy(tmp, currentShadowLight->color);
 
 }
