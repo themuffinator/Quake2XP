@@ -2700,23 +2700,6 @@ l3:
 
 #else
 
-#if 0
-// original version from Tenebrae
-qboolean HasSharedLeafs(byte *v1, byte *v2) {
-
-	int i;
-
-	for (i=0 ; i<r_worldmodel->numleafs ; i++)
-	{
-		if (v1[i>>3] & (1<<(i&7)))
-		{
-			if (v2[i>>3] & (1<<(i&7))) 
-				return true;
-		}
-	}
-	return false;
-}
-#else
 // optimized version based on previous assembly one
 qboolean HasSharedLeafs(byte *v1, byte *v2) {
 	int numleafs = r_worldmodel->numleafs;
@@ -2743,4 +2726,3 @@ qboolean HasSharedLeafs(byte *v1, byte *v2) {
 }
 #endif
 
-#endif

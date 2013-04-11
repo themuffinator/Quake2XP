@@ -66,7 +66,7 @@ static	menulist_s			s_softParticles;
 static	menulist_s			s_fxaa_box;
 static	menulist_s			s_minimap;
 
-static menuslider_s		s_numShadows_slider;
+static menuslider_s		s_ambientLevel_slider;
 
 
 /////////////////////////////////////////////////////////
@@ -89,11 +89,11 @@ static void ScreenSizeCallback(void *s)
 	Cvar_SetValue("viewsize", slider->curvalue * 10);
 }
 
-static void numShadowsCallback(void *s)
+static void ambientLevelCallback(void *s)
 {
-	menuslider_s *slider = (menuslider_s*) s;
+	menuslider_s *slider = ( menuslider_s * ) s;
 
-	Cvar_SetValue("r_maxShadowsLightsPerModel", slider->curvalue);
+	Cvar_SetValue("r_pplWorldAmbient", slider->curvalue * 0.1);
 }
 
 static void RadarCallback( void *s )
@@ -208,7 +208,7 @@ static void ApplyChanges( void *unused )
 	Cvar_SetValue( "r_fxaa",				s_fxaa_box.curvalue);
 	Cvar_SetValue( "r_vsync",				s_finish_box.curvalue);
 	Cvar_SetValue( "r_radar",				s_minimap.curvalue);
-	Cvar_SetValue( "r_maxShadowsLightsPerModel",  s_numShadows_slider.curvalue);
+	Cvar_SetValue( "r_pplWorldAmbient",		s_ambientLevel_slider.curvalue);
 
 	
 /*	
@@ -347,7 +347,7 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		if(r_fxaa->modified)
 			vid_ref->modified = true;
 
-		if(r_maxShadowsLightsPerModel->modified)
+		if(r_pplWorldAmbient->modified)
 			vid_ref->modified = true;
 		
 	M_ForceMenuOff();
@@ -371,12 +371,6 @@ static void pplWorldCallBack (void *s)
 	Cvar_SetValue( "r_pplWorld", box->curvalue * 1 );
 }
 
-static void wbumpCB (void *s)
-{
-	menulist_s *box = ( menulist_s * ) s;
-
-	Cvar_SetValue( "r_pplWorld", box->curvalue * 1 );
-}
 
 /*
 ** VID_MenuInit
@@ -405,7 +399,7 @@ void VID_MenuInit( void )
 	
 	static char	*yesno_names[]	=	{"no", "yes", 0};
 	static char	*refresh[]		=	{"desktop", "60hz", "75hz", "85hz", "100hz", "120hz", 0};
-	static char	*shadow_names[] =	{"off", "blob", "volumetic", 0};
+
 #ifdef __linux__
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", 0}; // sdl bug work only 2 and 4 samples per pixel
 #else
@@ -465,8 +459,8 @@ void VID_MenuInit( void )
 	if(!r_fxaa->value)
 		r_fxaa = Cvar_Get ("r_fxaa", 0, CVAR_ARCHIVE);
 
-	if(!r_maxShadowsLightsPerModel->value)
-		r_maxShadowsLightsPerModel = Cvar_Get ("r_maxShadowsLightsPerModel", "3", CVAR_ARCHIVE);
+	if(!r_pplWorldAmbient->value)
+		r_pplWorldAmbient = Cvar_Get ("r_pplWorldAmbient", "1", CVAR_ARCHIVE);
 
 	s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;
@@ -626,24 +620,14 @@ void VID_MenuInit( void )
 	s_shadow_box.generic.x			= 0;
 	s_shadow_box.generic.y			= 120*cl_fontScale->value;
 	s_shadow_box.generic.name		= "Shadows";
-    s_shadow_box.itemnames			= shadow_names;
+    s_shadow_box.itemnames			= yesno_names;
 	s_shadow_box.curvalue			= r_shadows->value;
     s_shadow_box.generic.callback	= ShadowsCallback;
 	s_shadow_box.generic.statusbar		= "1 - Planar Shadows, 2 - Shadow Volumes (only with realitme lighting)";
 
-	s_numShadows_slider.generic.type		= MTYPE_SLIDER;
-	s_numShadows_slider.generic.x			= 0;
-	s_numShadows_slider.generic.y			= 130*cl_fontScale->value;
-	s_numShadows_slider.generic.name		= "Amount of Shadow Lights";
-	s_numShadows_slider.curvalue			= r_maxShadowsLightsPerModel->value;
-	s_numShadows_slider.minvalue			= 1;
-	s_numShadows_slider.maxvalue			= 10;
-	s_numShadows_slider.generic.callback	= numShadowsCallback;
-	s_numShadows_slider.generic.statusbar	= "Maximum Shadow Lights Per Model, 1-10";
-
 	s_parallax_box.generic.type			= MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x			= 0;
-	s_parallax_box.generic.y			= 140*cl_fontScale->value;
+	s_parallax_box.generic.y			= 130*cl_fontScale->value;
 	s_parallax_box.generic.name			= "Parallax";
     s_parallax_box.itemnames			= parallax;
 	s_parallax_box.curvalue				= r_parallax->value;
@@ -653,11 +637,21 @@ void VID_MenuInit( void )
 	a_pplWorld_list.generic.type = MTYPE_SPINCONTROL;
 	a_pplWorld_list.generic.name = "Realtime Lighting";
 	a_pplWorld_list.generic.x = 0;
-	a_pplWorld_list.generic.y = 150*cl_fontScale->value;
+	a_pplWorld_list.generic.y = 140*cl_fontScale->value;
 	a_pplWorld_list.itemnames = yesno_names;
 	a_pplWorld_list.curvalue = r_pplWorld->value;
 	a_pplWorld_list.generic.callback = pplWorldCallBack;
 	a_pplWorld_list.generic.statusbar	= "Enable Per-Pixel Lighting";	
+
+	s_ambientLevel_slider.generic.type		= MTYPE_SLIDER;
+	s_ambientLevel_slider.generic.x			= 0;
+	s_ambientLevel_slider.generic.y			= 150*cl_fontScale->value;
+	s_ambientLevel_slider.generic.name		= "Ambient Level";
+	s_ambientLevel_slider.minvalue			= 0;
+	s_ambientLevel_slider.maxvalue			= 1;
+	s_ambientLevel_slider.generic.callback	= ambientLevelCallback;
+	s_ambientLevel_slider.curvalue			= r_pplWorldAmbient->value * 0.1;
+	s_ambientLevel_slider.generic.statusbar	= "Realtime World Ambient Lighting Level";
 
 	s_flare_box.generic.type	= MTYPE_SPINCONTROL;
 	s_flare_box.generic.x	    = 0;
@@ -749,9 +743,9 @@ void VID_MenuInit( void )
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_tc_box );
     	
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadow_box );
-    Menu_AddItem( &s_opengl_menu, ( void * ) &s_numShadows_slider );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_parallax_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &a_pplWorld_list);
+    Menu_AddItem( &s_opengl_menu, ( void * ) &s_ambientLevel_slider);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_flare_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_bloom_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_dof_box );

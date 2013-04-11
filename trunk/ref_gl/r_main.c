@@ -939,9 +939,6 @@ void R_DrawPlayerWeaponLightPass(void)
 void R_DrawShadowLightPass(void)
 {
 	int i;
-	qboolean stencil_cleared = false;
-	qboolean foundone = false;
-
 	
 	if(!r_pplWorld->value)
 		return;
@@ -951,10 +948,13 @@ void R_DrawShadowLightPass(void)
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
-	qglEnable(GL_SCISSOR_TEST);
-	qglScissor(0, 0, r_newrefdef.width, r_newrefdef.height);
+	
+	if(r_useLightScissors->value){
+		qglEnable(GL_SCISSOR_TEST);
+		qglScissor(0, 0, r_newrefdef.width, r_newrefdef.height);
+	}
 
-	if(r_shadows->value > 1)
+	if(r_shadows->value)
 		qglEnable(GL_STENCIL_TEST);
 	
 
@@ -967,14 +967,16 @@ void R_DrawShadowLightPass(void)
 	UpdateLightEditor();
 	
 
-	if(r_shadows->value > 1){
-		
+	if(r_shadows->value){
+	
+	if(r_useLightScissors->value)
 		qglScissor(	currentShadowLight->scizz.coords[0], currentShadowLight->scizz.coords[1], 
 					currentShadowLight->scizz.coords[2]-currentShadowLight->scizz.coords[0], 
 					currentShadowLight->scizz.coords[3]-currentShadowLight->scizz.coords[1]);
-		qglClearStencil(128);
-		qglStencilMask(255);
-		qglClear(GL_STENCIL_BUFFER_BIT);
+
+	qglClearStencil(128);
+	qglStencilMask(255);
+	qglClear(GL_STENCIL_BUFFER_BIT);
 	
 	qglStencilMask(255);
 	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
@@ -1018,10 +1020,14 @@ void R_DrawShadowLightPass(void)
 	}
 	
 	qglDepthMask(1);
-	if(r_shadows->value > 1)
+	if(r_shadows->value)
 		qglDisable(GL_STENCIL_TEST);
-	qglDisable(GL_SCISSOR_TEST);
-	qglScissor(0, 0, r_newrefdef.width, r_newrefdef.height);
+	
+	if(r_useLightScissors->value){
+		qglDisable(GL_SCISSOR_TEST);
+		qglScissor(0, 0, r_newrefdef.width, r_newrefdef.height);
+	}
+
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -1454,7 +1460,7 @@ void R_RegisterCvars(void)
 	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
 	r_flaresIntens =					Cvar_Get("r_flaresIntens", "3", CVAR_ARCHIVE);
 	r_flareWeldThreshold =				Cvar_Get("r_flareWeldThreshold", "32", CVAR_ARCHIVE);
-	r_useConditionalRender =			Cvar_Get("r_useConditionalRender", "1", CVAR_ARCHIVE); // Fucking Ati! Nv conditional render dont work on some radeons... Set to zero, force old, slow Occlusion Query test
+	r_useConditionalRender =			Cvar_Get("r_useConditionalRender", "1", CVAR_ARCHIVE); // Fucking Ati! Nv conditional render dont work on radeons... Set to zero, force old, slow Occlusion Query test
 
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
@@ -1474,6 +1480,7 @@ void R_RegisterCvars(void)
 
 	r_pplWorld =						Cvar_Get("r_pplWorld", "1", CVAR_ARCHIVE);
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "1.0", CVAR_ARCHIVE);
+	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1.0", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);

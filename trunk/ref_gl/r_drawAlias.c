@@ -407,6 +407,9 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 			return;
 	}
 
+	if(!InLightVISEntity())
+		return;
+
 	paliashdr = (dmdl_t *)currentmodel->extradata;
 	
 	c_alias_polys += paliashdr->num_tris;

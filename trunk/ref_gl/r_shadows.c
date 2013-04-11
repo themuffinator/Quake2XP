@@ -535,6 +535,9 @@ void R_DrawBrushModelVolumes()
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
 	}
 
+	if(!InLightVISEntity())
+		return;
+
 	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
 		return;
 
@@ -805,7 +808,7 @@ void R_CastShadowVolumes(void)
 {
 	int i;
 	
-	if (r_shadows->value < 2 && !r_pplWorld->value)
+	if (!r_shadows->value || !r_pplWorld->value)
 		return;
 	
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
@@ -889,7 +892,7 @@ void R_BlobShadow(void){
 	vec3_t			bsVert[MAX_BLOB_SHADOW_VERT];
 	vec2_t			bsTextCoord[MAX_BLOB_SHADOW_VERT];
 	
-	if(r_shadows->value != 1)
+	if(!r_shadows->value || r_pplWorld->value)
 		return;
 
 	qglEnableVertexAttribArray(ATRB_POSITION);

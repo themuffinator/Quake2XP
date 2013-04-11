@@ -493,7 +493,7 @@ msurface_t	*scene_surfaces[MAX_MAP_FACES];
 static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
-	image_t		*image, *fx, *env, *nm;
+	image_t		*image, *fx, *env;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
 	unsigned	texture = -1, ltmp;
@@ -537,7 +537,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		image	= R_TextureAnimation(s->texinfo);
 		fx		= R_TextureAnimationFx(s->texinfo);
 		env		= R_TextureAnimationEnv(s->texinfo);
-		nm		= R_TextureAnimationNormal(s->texinfo);
 		lmtex	= s->lightmaptexturenum;
 
 		if(image->envMap){
@@ -636,6 +635,10 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 				if(texture != image->texnum){ 
 				GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 				qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
+
+				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
+				qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
+
 				GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 				qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
 
@@ -645,11 +648,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 				}
 				GL_MBind(GL_TEXTURE4_ARB, env->texnum);
 				qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
-				}
-				
-				if(ltmp != gl_state.lightmap_textures + lmtex) {
-				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
-				qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
 				}
 
 			}
@@ -1082,9 +1080,6 @@ qboolean R_FillLightChain (worldShadowLight_t *light)
 
 void R_DrawLightWorld(void)
 {
-
-	if (!r_drawWorld->value)
-		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;

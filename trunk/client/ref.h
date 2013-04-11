@@ -114,6 +114,7 @@ typedef struct entity_s {
 	vec3_t mins;
 	vec3_t maxs;
 	qboolean lightVised;
+	byte vis[MAX_MAP_LEAFS / 8];
 
 } entity_t;
 
@@ -369,7 +370,9 @@ typedef struct decals_t {
 	float time, endTime;
 
 	int numverts;
-
+	int numIndices;
+	index_t	*indices;
+	
 	vec3_t verts[MAX_DECAL_VERTS];
 	vec2_t stcoords[MAX_DECAL_VERTS];
 	vec3_t direction;

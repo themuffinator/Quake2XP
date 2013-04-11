@@ -54,89 +54,6 @@ qboolean R_CheckSharedArea(vec3_t p1, vec3_t p2)
 	return true;
 }
 
-qboolean R_DrawLightOccluders()
-{
-	vec3_t	v[8], org;
-	float	rad;
-	int		sampleCount;
-	
-	// direct visible, player in light bounds
-	if(!r_useConditionalRender->value){
-	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
-		return true;
-	}
-
-	qglDisable (GL_CULL_FACE);
-	qglDisable(GL_TEXTURE_2D);
-	qglDepthMask(0);
-	qglColorMask(0,0,0,0);
-	
-	// begin occlusion test
-	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
-
-	VectorCopy(currentShadowLight->origin, org);
-	rad = currentShadowLight->radius * r_occLightBoundsSize->value;
-
-	VectorSet(v[0], org[0]-rad, org[1]-rad, org[2]-rad);
-	VectorSet(v[1], org[0]-rad, org[1]-rad, org[2]+rad);
-	VectorSet(v[2], org[0]-rad, org[1]+rad, org[2]-rad);
-	VectorSet(v[3], org[0]-rad, org[1]+rad, org[2]+rad);
-	VectorSet(v[4], org[0]+rad, org[1]-rad, org[2]-rad);
-	VectorSet(v[5], org[0]+rad, org[1]-rad, org[2]+rad);
-	VectorSet(v[6], org[0]+rad, org[1]+rad, org[2]-rad);
-	VectorSet(v[7], org[0]+rad, org[1]+rad, org[2]+rad);
-
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[4]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[3]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
-
-	// end occlusion test
-	qglEndQueryARB(gl_state.query_passed);
-
-	qglEnable(GL_CULL_FACE);
-	qglEnable(GL_TEXTURE_2D);
-	qglDepthMask(1);
-	qglColorMask(1,1,1,1);
-
-	if(gl_state.conditional_render && r_useConditionalRender->value){
-	// player in light bounds draw light in any case
-	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
-		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
-	else
-		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
-	
-	return true;
-	}
-	else
-	{
-	qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
-
-	if (!sampleCount) 
-		return false;
-	else 
-		return true;
-	}	
-}
-
 
 /*
 ===============
@@ -195,45 +112,72 @@ skip:	Com_DPrintf("Out of BSP, rejected light at %f %f %f\n", light->origin[0], 
 	return true;
 }
 
+qboolean InLightVISEntity()
+{
+	int		leafs[MAX_MAP_LEAFS];
+	int		i, count;
+	int		longs;
+	vec3_t	mins, maxs;
 
-qboolean R_CullLight(worldShadowLight_t *light) {
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
+		for (i = 0; i < 3; i++) {
+			mins[i] = currententity->origin[i] - currentmodel->radius;
+			maxs[i] = currententity->origin[i] + currentmodel->radius;
+		}
+	}
+	else
+	{
+	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
+	VectorAdd(currententity->origin, currententity->model->mins, mins);
+	}
+
+	count = CM_BoxLeafnums (mins, maxs, leafs, r_worldmodel->numleafs, NULL);
+	if (count < 1)
+		Com_Error (ERR_FATAL, "InLightVISEntity: count < 1");
+	longs = (CM_NumClusters()+31)>>5;
+
+	// convert leafs to clusters
+	for (i=0 ; i<count ; i++)
+		leafs[i] = CM_LeafCluster(leafs[i]);
+
+	memset(&currententity->vis, 0, (((r_worldmodel->numleafs+31)>>5)<<2));
+	for (i=0 ; i<count ; i++)
+		currententity->vis[leafs[i]>>3] |= (1<<(leafs[i]&7));
+
+
+	return HasSharedLeafs (currentShadowLight->vis, currententity->vis);
+}
+
+
+qboolean R_AddLightToFrame(worldShadowLight_t *light) {
 	
-	vec3_t mins, maxs, none = {1, 1, 1};
-
 	if (r_newrefdef.areabits){
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))){
-			return true;
+			return false;
 		}
 	}
 	
 	if(!R_CheckSharedArea(light->origin, r_origin))
-		return true;
-
-	if(CL_PMpointcontents(light->origin) & MASK_SOLID)
-		return true;
+		return false;
 	
 	if(!HasSharedLeafs(light->vis, viewvis))
-		return true;
-	
-	VectorMA(light->origin,  light->radius, none, maxs);
-	VectorMA(light->origin, -light->radius, none, mins);
+		return false;
 
-	if(R_CullBox(mins, maxs))
-		return true;
+	if(CL_PMpointcontents(light->origin) & MASK_SOLID)
+		return false;
 
-	return false;
+	if(R_CullSphere(light->origin, light->radius))
+		return false;
+
+	return true;
 
 	}
 
 void R_AddDynamicLight(dlight_t *dl) {
 	
 	worldShadowLight_t *light;
-	vec3_t mins, maxs, none = {1, 1, 1};
 
-	VectorMA(dl->origin, dl->intensity, none, maxs);
-	VectorMA(dl->origin, -dl->intensity, none, mins);
-
-	if(R_CullBox(mins, maxs)){
+	if(R_CullSphere(dl->origin, dl->intensity)){
 		numCulledLights++;
 		return;
 	}
@@ -293,7 +237,7 @@ void R_PrepareShadowLightFrame(void) {
 	if(shadowLight_static) {
 		for(light = shadowLight_static; light; light = light->s_next) {
 			
-			if(R_CullLight(light)){
+			if(!R_AddLightToFrame(light)){
 				numCulledLights++;
 				continue;
 			}
@@ -325,7 +269,7 @@ void R_PrepareShadowLightFrame(void) {
 		if(!R_MarkLightLeaves(light))
 			return;
 
-		//fully/partially in frustum
+	//fully/partially in frustum
 	if(!intersectsBoxPoint(light->mins, light->maxs, r_origin))
 	{
 		if(r_newrefdef.fov_x <= 90)
@@ -1321,3 +1265,86 @@ void GL_SetupCubeMapMatrix(qboolean model)
 	qglMatrixMode(GL_MODELVIEW);
 }
 
+
+qboolean R_DrawLightOccluders() //unused, to slow
+{
+	vec3_t	v[8], org;
+	float	rad;
+	int		sampleCount;
+	
+	// direct visible, player in light bounds
+	if(!r_useConditionalRender->value){
+	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
+		return true;
+	}
+
+	qglDisable (GL_CULL_FACE);
+	qglDisable(GL_TEXTURE_2D);
+	qglDepthMask(0);
+	qglColorMask(0,0,0,0);
+	
+	// begin occlusion test
+	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
+
+	VectorCopy(currentShadowLight->origin, org);
+	rad = currentShadowLight->radius * r_occLightBoundsSize->value;
+
+	VectorSet(v[0], org[0]-rad, org[1]-rad, org[2]-rad);
+	VectorSet(v[1], org[0]-rad, org[1]-rad, org[2]+rad);
+	VectorSet(v[2], org[0]-rad, org[1]+rad, org[2]-rad);
+	VectorSet(v[3], org[0]-rad, org[1]+rad, org[2]+rad);
+	VectorSet(v[4], org[0]+rad, org[1]-rad, org[2]-rad);
+	VectorSet(v[5], org[0]+rad, org[1]-rad, org[2]+rad);
+	VectorSet(v[6], org[0]+rad, org[1]+rad, org[2]-rad);
+	VectorSet(v[7], org[0]+rad, org[1]+rad, org[2]+rad);
+
+
+	qglBegin(GL_TRIANGLE_FAN);
+	qglVertex3fv(v[4]);
+	qglVertex3fv(v[0]);
+	qglVertex3fv(v[1]);
+	qglVertex3fv(v[5]);
+	qglVertex3fv(v[7]);
+	qglVertex3fv(v[6]);
+	qglVertex3fv(v[2]);
+	qglVertex3fv(v[0]);
+	qglEnd();
+
+	qglBegin(GL_TRIANGLE_FAN);
+	qglVertex3fv(v[3]);
+	qglVertex3fv(v[0]);
+	qglVertex3fv(v[1]);
+	qglVertex3fv(v[5]);
+	qglVertex3fv(v[7]);
+	qglVertex3fv(v[6]);
+	qglVertex3fv(v[2]);
+	qglVertex3fv(v[0]);
+	qglEnd();
+
+	// end occlusion test
+	qglEndQueryARB(gl_state.query_passed);
+
+	qglEnable(GL_CULL_FACE);
+	qglEnable(GL_TEXTURE_2D);
+	qglDepthMask(1);
+	qglColorMask(1,1,1,1);
+
+	if(gl_state.conditional_render && r_useConditionalRender->value){
+	// player in light bounds draw light in any case
+	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
+	else
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
+	
+	return true;
+	}
+	else
+	{
+	qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
+
+	if (!sampleCount) 
+		return false;
+	else 
+		return true;
+	}	
+}

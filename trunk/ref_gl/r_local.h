@@ -293,6 +293,7 @@ cvar_t	*r_lightsWeldThreshold;
 cvar_t	*r_debugLights;
 cvar_t	*r_occLightBoundsSize;
 cvar_t	*r_debugOccLightBoundsSize;
+cvar_t	*r_useLightScissors;
 
 cvar_t	*hunk_bsp;
 cvar_t	*hunk_model;
@@ -416,6 +417,7 @@ void GL_SetupCubeMapMatrix(qboolean model);
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
 qboolean SurfInFrustum(msurface_t *s);
 qboolean HasSharedLeafs(byte *v1, byte *v2);
+qboolean InLightVISEntity();
 float SphereInFrustum(vec3_t o, float radius);
 void R_DrawLightBrushModel(entity_t * e);
 qboolean R_DrawLightOccluders();
