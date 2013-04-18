@@ -623,7 +623,6 @@ void VID_MenuInit( void )
     s_shadow_box.itemnames			= yesno_names;
 	s_shadow_box.curvalue			= r_shadows->value;
     s_shadow_box.generic.callback	= ShadowsCallback;
-	s_shadow_box.generic.statusbar		= "1 - Planar Shadows, 2 - Shadow Volumes (only with realitme lighting)";
 
 	s_parallax_box.generic.type			= MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x			= 0;

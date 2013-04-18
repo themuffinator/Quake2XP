@@ -1587,7 +1587,7 @@ void Mod_GenerateLights(model_t * mod)
 	R_InitLightgrid();
 }
 
-
+void CalcLightVis(void);
 
 /*
 =================

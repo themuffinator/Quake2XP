@@ -386,8 +386,8 @@ next:
 void R_DrawAliasModelLightPass (qboolean weapon_model)
 {
 	dmdl_t		*paliashdr;
-	vec3_t		bbox[8];
-		
+	vec3_t		bbox[8], temp;
+	float		dist;
 	
 	if (currententity->flags & RF_DISTORT)
 			return;
@@ -408,6 +408,12 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	}
 
 	if(!InLightVISEntity())
+		return;
+	
+	VectorSubtract(currententity->origin, currentShadowLight->origin, temp);
+	dist = VectorLength(temp);
+		
+	if(dist > (currentShadowLight->radius + currentmodel->radius))
 		return;
 
 	paliashdr = (dmdl_t *)currentmodel->extradata;

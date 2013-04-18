@@ -435,6 +435,7 @@ extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
 extern int numFlareOcc;
 extern qboolean FoundReLight;
+qboolean PF_inPVS(vec3_t p1, vec3_t p2);
 
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
 qboolean EntityInLightSphere(worldShadowLight_t *light);

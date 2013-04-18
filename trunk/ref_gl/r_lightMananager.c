@@ -34,27 +34,6 @@ static int numCulledLights;
 vec3_t player_org, v_forward, v_right, v_up;
 trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask);
 
-qboolean R_CheckSharedArea(vec3_t p1, vec3_t p2)
-{
-	int leafnum;
-	int cluster;
-	int area1, area2;
-	byte *mask;
-
-	leafnum = CM_PointLeafnum(p1);
-	cluster = CM_LeafCluster(leafnum);
-	area1 = CM_LeafArea(leafnum);
-	mask = CM_ClusterPVS(cluster);
-
-	leafnum = CM_PointLeafnum(p2);
-	cluster = CM_LeafCluster(leafnum);
-	area2 = CM_LeafArea(leafnum);
-	if (!CM_AreasConnected(area1, area2))
-		return false;			
-	return true;
-}
-
-
 /*
 ===============
 R_MarkLightLeaves
@@ -151,17 +130,17 @@ qboolean InLightVISEntity()
 
 qboolean R_AddLightToFrame(worldShadowLight_t *light) {
 	
-	if (r_newrefdef.areabits){
-		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))){
+	//if (r_newrefdef.areabits){
+	//	if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))){
+	//		return false;
+	//	}
+	//}
+	
+	if(!PF_inPVS(light->origin, r_origin))
 			return false;
-		}
-	}
-	
-	if(!R_CheckSharedArea(light->origin, r_origin))
-		return false;
-	
-	if(!HasSharedLeafs(light->vis, viewvis))
-		return false;
+
+	//if(!HasSharedLeafs(light->vis, viewvis))
+	//	return false;
 
 	if(CL_PMpointcontents(light->origin) & MASK_SOLID)
 		return false;
@@ -304,13 +283,7 @@ void R_PrepareShadowLightFrame(void) {
 			light->color[2] += r_newrefdef.lightstyles[light->style].rgb[2]*0.5 - light->startColor[2];
 		}
 	}
-		
-		light->mins[0] = light->origin[0] - light->radius;
-		light->mins[1] = light->origin[1] - light->radius;
-		light->mins[2] = light->origin[2] - light->radius;
-		light->maxs[0] = light->origin[0] + light->radius;
-		light->maxs[1] = light->origin[1] + light->radius;
-		light->maxs[2] = light->origin[2] + light->radius;
+
 	}
 
 }
@@ -984,8 +957,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 									   int isShadow) {
 	
 	worldShadowLight_t *light;
-	int leafnum;
-	int cluster;
+	int leafnum, cluster, i;
 	
 	light = (worldShadowLight_t*)malloc(sizeof(worldShadowLight_t));
 	light->s_next = shadowLight_static;
@@ -1005,7 +977,12 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->next = NULL;
 	light->style = style;
 	light->filter = filter;
-		
+	
+	for (i = 0; i < 3; i++) {
+		light->mins[i] = light->origin[i] - light->radius;
+		light->maxs[i] = light->origin[i] + light->radius;
+	}
+
 	//// cull info
 	leafnum = CM_PointLeafnum(light->origin);
 	cluster = CM_LeafCluster(leafnum);

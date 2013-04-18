@@ -641,7 +641,6 @@ void R_DrawSkyBox(void)
     qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_BindNullProgram();
 	qglPopMatrix();
-
 }
 
 

@@ -1095,7 +1095,6 @@ void R_DrawLightWorld(void)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
 	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
-
 	
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
@@ -1121,8 +1120,8 @@ void R_DrawLightWorld(void)
 	qglMatrixMode(GL_TEXTURE);
 	qglLoadIdentity();
 	qglMatrixMode(GL_MODELVIEW);
-	
 	GL_SelectTexture(GL_TEXTURE0_ARB);
+	
 }
 
 
@@ -1597,16 +1596,11 @@ void R_MarkLeaves(void)
 		&& r_viewcluster != -1)
 		return;
 
-	// development aid to let you run around and see exactly where
-	// the pvs ends
-	if (r_lockPvs->value)
-		return;
-
 	r_visframecount++;
 	r_oldviewcluster = r_viewcluster;
 	r_oldviewcluster2 = r_viewcluster2;
 
-	if (r_noVis->value || r_viewcluster == -1 || !r_worldmodel->vis) {
+	if (r_viewcluster == -1 || !r_worldmodel->vis) {
 		// mark everything
 		for (i = 0; i < r_worldmodel->numleafs; i++)
 			r_worldmodel->leafs[i].visframe = r_visframecount;

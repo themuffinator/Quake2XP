@@ -383,10 +383,10 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
 			
-	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	11.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	2.5);
 	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	e->alpha);
 	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	len*0.5);
-	qglUniform1f(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.2);
+	qglUniform1f(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.5);
 	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform2f(qglGetUniformLocation(id, "u_mask"),	0.0, 1.0);
@@ -935,6 +935,66 @@ void R_DrawPlayerWeaponLightPass(void)
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+void DrawLights(void){
+
+	vec3_t	v[8];
+	vec3_t tmpOrg;
+
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	if(!currentShadowLight->isStatic)
+		return;
+	
+	qglColor3f(1.0, 0.0, 1.0);
+	qglDisable(GL_DEPTH_TEST);
+	qglDisable(GL_TEXTURE_2D);
+	qglDisable(GL_CULL_FACE);
+	qglDisable(GL_BLEND);
+	qglDisable(GL_STENCIL_TEST);
+	VectorCopy(currentShadowLight->origin, tmpOrg);
+
+	VectorSet(v[0], tmpOrg[0]-5, tmpOrg[1]-5, tmpOrg[2]-5);
+	VectorSet(v[1], tmpOrg[0]-5, tmpOrg[1]-5, tmpOrg[2]+5);
+	VectorSet(v[2], tmpOrg[0]-5, tmpOrg[1]+5, tmpOrg[2]-5);
+	VectorSet(v[3], tmpOrg[0]-5, tmpOrg[1]+5, tmpOrg[2]+5);
+	VectorSet(v[4], tmpOrg[0]+5, tmpOrg[1]-5, tmpOrg[2]-5);
+	VectorSet(v[5], tmpOrg[0]+5, tmpOrg[1]-5, tmpOrg[2]+5);
+	VectorSet(v[6], tmpOrg[0]+5, tmpOrg[1]+5, tmpOrg[2]-5);
+	VectorSet(v[7], tmpOrg[0]+5, tmpOrg[1]+5, tmpOrg[2]+5);
+
+
+	qglBegin(GL_TRIANGLE_FAN);
+	qglVertex3fv(v[4]);
+	qglVertex3fv(v[0]);
+	qglVertex3fv(v[1]);
+	qglVertex3fv(v[5]);
+	qglVertex3fv(v[7]);
+	qglVertex3fv(v[6]);
+	qglVertex3fv(v[2]);
+	qglVertex3fv(v[0]);
+	qglEnd();
+
+	qglBegin(GL_TRIANGLE_FAN);
+	qglVertex3fv(v[3]);
+	qglVertex3fv(v[0]);
+	qglVertex3fv(v[1]);
+	qglVertex3fv(v[5]);
+	qglVertex3fv(v[7]);
+	qglVertex3fv(v[6]);
+	qglVertex3fv(v[2]);
+	qglVertex3fv(v[0]);
+	qglEnd();
+
+	qglEnable(GL_DEPTH_TEST);
+	qglColor3f(1.0, 1.0, 1.0);
+	qglEnable(GL_TEXTURE_2D);
+	qglEnable(GL_CULL_FACE);
+	qglEnable(GL_BLEND);
+	qglEnable(GL_STENCIL_TEST);
+
+}
 
 void R_DrawShadowLightPass(void)
 {
@@ -966,6 +1026,8 @@ void R_DrawShadowLightPass(void)
 	
 	UpdateLightEditor();
 	
+	if(r_debugLights->value)
+		DrawLights();
 
 	if(r_shadows->value){
 	
