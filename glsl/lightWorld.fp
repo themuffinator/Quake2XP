@@ -41,9 +41,18 @@ vec3 tmp1 = v_lightVec;
 tmp1 /= u_LightRadius;
 float att = max(1.0 - dot(tmp1, tmp1), 0.0);
 
-vec2 Es = PhongLighting(normalMap, L, V, u_specularExp);
+// light filter
 vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
+cubeFilter *= 2;
 
+#ifdef AMBIENT
+
+gl_FragColor = diffuseMap * u_LightColor *att;
+
+#else
+
+vec2 Es = PhongLighting(normalMap, L, V, u_specularExp);
 gl_FragColor = cubeFilter * u_LightColor * att * (Es.x * diffuseMap + Es.y * specular);
 
+#endif
 }

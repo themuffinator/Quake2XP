@@ -20,20 +20,25 @@ float tmp = texture2D(u_bumpMap,   v_texCoord.xy).a;
 vec4 specular = vec4(tmp);
 vec4 diffuse  = texture2D(u_diffuseMap,  v_texCoord.xy);
 vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
-               
+cubeFilter *= 2;
+
 // compute the atten
 vec3 tmp1 = v_lightVec;
 tmp1 /= u_LightRadius;
 float att = max(1.0 - dot(tmp1, tmp1), 0.0);
 
+#ifdef AMBIENT
+
+gl_FragColor = diffuse * vec4(u_LightColor, 1) *att;
+
+#else
 // compute the light vector
 vec3 L = normalize(v_lightVec);
-
 // compute the view vector
 vec3 V = normalize(v_viewVec);
-
 vec2 E = PhongLighting(N, L, V, 16.0);
 
-gl_FragColor.rgb = cubeFilter * att * vec4(u_LightColor, 1) * (E.x * diffuse + E.y * specular);
+gl_FragColor = cubeFilter * att * vec4(u_LightColor, 1) * (E.x * diffuse + E.y * specular);
 
+#endif
 }

@@ -25,7 +25,6 @@ varying vec4			v_color;
  
 #include parallax.inc
 #include lighting.inc
-
 void main ()
 {
 vec3 V = normalize(v_viewVecTS);
@@ -34,10 +33,10 @@ vec4 envMap = texture2D(u_envMap, v_envCoord.xy);
 vec4 diffuseMap;
 vec4 glowMap;
 vec4 causticsMap;
+vec4 bumpLight;
 vec3 normalMap;
 float specTmp;
 float envMask;
-vec4 bumpLight;
 
 #ifdef PARALLAX
 vec2 P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
@@ -69,10 +68,10 @@ tbnDelux.y = abs(dot(n, b));
 tbnDelux.z = 1.0;
 vec2 Es = PhongLighting(normalMap, tbnDelux, V, u_specularExp);
 bumpLight = (Es.x * diffuseMap * v_color) + (Es.y * specular * v_color); //via lava surfaces 
+diffuseMap += bumpLight;
 #endif
 
-diffuseMap *= u_ambientScale;
-diffuseMap += bumpLight;
+diffuseMap *= vec4(0.15, 0.075, 0.05, 1.0);
 
 #ifdef LIGHTMAP
 diffuseMap *= lightMap;

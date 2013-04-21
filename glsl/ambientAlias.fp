@@ -40,7 +40,7 @@ vec4 tmp;
 #endif
 
 vec4 color;
-r0 *= v_color;
+r0 *= vec4(0.15, 0.075, 0.05, 1.0);//v_color;
 r1.rgb *= u_AddShift;
 color = r0+r1;
 
