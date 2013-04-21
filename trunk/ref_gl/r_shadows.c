@@ -299,38 +299,29 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, ShadowIndex);
 			
 	c_shadow_tris += index/3;
-}
-
-
-void GL_RenderVolumes(dmdl_t * paliashdr, vec3_t lightdir, int projdist){
-
-	BuildShadowVolumeTriangles(paliashdr, lightdir, projdist);
-
 	c_shadow_volumes++;
 }
 
 
-
-void GL_DrawAliasShadowVolume(dmdl_t * paliashdr)
+void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 {
-	vec3_t				light, temp;
-	float				dist, projdist, scale;
-	mat3_t				entityAxis;
+	vec3_t	light, temp;
+	float	projdist;
+	mat3_t	entityAxis;
 	
 	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic shadows if we don't relight
+		return;
+	
+	if(!InLightVISEntity())
+		return;
+
+	if(!EntityInLightSphere()) 
 		return;
 
 	if(VectorCompare(currentShadowLight->origin, currententity->origin))
 		return;
-	
-	VectorSubtract(currententity->origin, currentShadowLight->origin, temp);
-	dist = VectorLength(temp);
-		
-	if(dist > (currentShadowLight->radius + currentmodel->radius))
-		return;
-		
-	scale = currentShadowLight->radius * 2.0;
-	projdist = scale - dist;
+
+	projdist = currentShadowLight->radius * 2.5;
 
 	AnglesToMat3(currententity->angles, entityAxis);
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
@@ -360,9 +351,6 @@ void R_DrawShadowVolume(entity_t * e)
 				 return;
 		
 	if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
-		return;
-		
-	if (r_shadowVolumesDebug->value && (currententity->flags & RF_VIEWERMODEL))
 		return;
 
 	paliashdr = (dmdl_t *) currentmodel->extradata;
@@ -405,7 +393,7 @@ void R_DrawShadowVolume(entity_t * e)
 	qglPushMatrix();
 	R_RotateForLightEntity (e);
 
-	GL_DrawAliasShadowVolume(paliashdr);
+	GL_DrawAliasShadowVolumeTriangles(paliashdr);
 
 	qglPopMatrix();
 }
@@ -523,6 +511,9 @@ void R_DrawBrushModelVolumes()
 	clmodel = currententity->model;
 	surf = &clmodel->surfaces[clmodel->firstmodelsurface];
 
+	if(!InLightVISEntity())
+		return;
+
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -547,7 +538,7 @@ void R_DrawBrushModelVolumes()
 	qglPushMatrix();
 	R_RotateForLightEntity(currententity);
 
-	scale = 2.5 * currentShadowLight->radius;
+	scale = 10 * currentShadowLight->radius;
 
 		for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
 		{
@@ -743,7 +734,7 @@ void R_DrawBspModelVolumes()
 	vec3_t		v1;
 	qboolean	shadow;
 
-	scale = 2.5 * currentShadowLight->radius;
+	scale = 10 * currentShadowLight->radius;
 	
 	for (i=0 ; i<num_shadow_surfaces; i++)
 		{

@@ -203,7 +203,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 
 	if(!FoundReLight)
 	R_AddNewWorldLight(	r_flares[r_numflares].origin,	r_flares[r_numflares].color, 
-						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, 0, vec3_origin, vec3_origin, 1, 1);
+						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, 0, vec3_origin, vec3_origin, 1, 1, 0);
 
 	r_numflares++;
 	free(buffer);
@@ -1650,7 +1650,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadNodes(&header->lumps[LUMP_NODES]);
 	Mod_LoadSubmodels(&header->lumps[LUMP_MODELS]);
 	Mod_GenerateLights(mod);
-
+	CalcLightVis();
 	mod->numframes = 2;			// regular and alternate animation
 
 //

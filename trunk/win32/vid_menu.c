@@ -371,7 +371,6 @@ static void pplWorldCallBack (void *s)
 	Cvar_SetValue( "r_pplWorld", box->curvalue * 1 );
 }
 
-
 /*
 ** VID_MenuInit
 */
@@ -460,7 +459,13 @@ void VID_MenuInit( void )
 		r_fxaa = Cvar_Get ("r_fxaa", 0, CVAR_ARCHIVE);
 
 	if(!r_pplWorldAmbient->value)
-		r_pplWorldAmbient = Cvar_Get ("r_pplWorldAmbient", "1", CVAR_ARCHIVE);
+		r_pplWorldAmbient = Cvar_Get ("r_pplWorldAmbient", "0", CVAR_ARCHIVE);
+	
+		if(r_pplWorldAmbient->value >1)
+		Cvar_SetValue("r_pplWorldAmbient", 1);
+
+	if(r_pplWorldAmbient->value < 0)
+		Cvar_SetValue("r_pplWorldAmbient", 0);
 
 	s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;

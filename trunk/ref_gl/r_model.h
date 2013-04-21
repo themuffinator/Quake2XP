@@ -55,6 +55,7 @@ typedef struct worldShadowLight_s {
 	int isShadow;
 	int isStatic;
 	int isNoWorldModel;
+	int isAmbient;
 
 	unsigned int occQ;
 	

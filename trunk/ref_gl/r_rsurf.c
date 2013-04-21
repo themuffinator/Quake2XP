@@ -501,7 +501,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	float		scale[2];
 	qboolean	is_dynamic = false;
 
-	defBits = worldDefs.LightmapBits;
+	if(r_pplWorldAmbient->value || !r_pplWorld->value)
+		defBits = worldDefs.LightmapBits;
 
 	if (r_parallax->value)
 		defBits |= worldDefs.ParallaxBit;
@@ -736,6 +737,8 @@ static void GL_BatchLightPass(qboolean bmodel)
 	if (r_parallax->value)
 		defBits = worldDefs.LightParallaxBit;
 
+	if(currentShadowLight->isAmbient)
+		defBits |= worldDefs.AmbientBits;
 	// setup program
 	GL_BindProgram(lightWorldProgram, defBits);
 	id = lightWorldProgram->id[defBits];
@@ -1582,56 +1585,58 @@ Mark the leaves and nodes that are in the PVS for the current
 cluster
 ===============
 */
-void R_MarkLeaves(void)
+void R_MarkLeaves ()
 {
-	byte *vis;
-	byte fatvis[MAX_MAP_LEAFS / 8];
-	mnode_t *node;
-	int i, c;
-	mleaf_t *leaf;
-	int cluster;
+	byte	*vis;
+	byte	fatvis[MAX_MAP_LEAFS/8];
+	mnode_t	*node;
+	int		i, c;
+	mleaf_t	*leaf;
+	int		cluster;
 
-	if (r_oldviewcluster == r_viewcluster
-		&& r_oldviewcluster2 == r_viewcluster2 && !r_noVis->value
-		&& r_viewcluster != -1)
+	if (r_oldviewcluster == r_viewcluster && r_oldviewcluster2 == r_viewcluster2 /*&& !r_novis->value*/ && r_viewcluster != -1)
 		return;
+
 
 	r_visframecount++;
 	r_oldviewcluster = r_viewcluster;
 	r_oldviewcluster2 = r_viewcluster2;
 
-	if (r_viewcluster == -1 || !r_worldmodel->vis) {
+	if (/*r_novis->value ||*/ r_viewcluster == -1 || !r_worldmodel->vis)
+	{
 		// mark everything
-		for (i = 0; i < r_worldmodel->numleafs; i++)
+		for (i=0 ; i<r_worldmodel->numleafs ; i++)
 			r_worldmodel->leafs[i].visframe = r_visframecount;
-		for (i = 0; i < r_worldmodel->numnodes; i++)
+		for (i=0 ; i<r_worldmodel->numnodes ; i++)
 			r_worldmodel->nodes[i].visframe = r_visframecount;
-		memset(&viewvis, 0xff, (r_worldmodel->numleafs+7)>>3);
+		memset(&viewvis, 0xff, (r_worldmodel->numleafs+7)>>3);	// all visible
 		return;
 	}
 
-	vis = Mod_ClusterPVS(r_viewcluster, r_worldmodel);
+	vis = Mod_ClusterPVS (r_viewcluster, r_worldmodel);
 	// may have to combine two clusters because of solid water boundaries
-	if (r_viewcluster2 != r_viewcluster) {
-		Q_memcpy(fatvis, vis,
-				 (int) ((r_worldmodel->numleafs + 7) * 0.125));
-		vis = Mod_ClusterPVS(r_viewcluster2, r_worldmodel);
-		c = (r_worldmodel->numleafs + 31) * 0.03125;
-		for (i = 0; i < c; i++)
-			((int *) fatvis)[i] |= ((int *) vis)[i];
+	if (r_viewcluster2 != r_viewcluster)
+	{
+		memcpy (fatvis, vis, (r_worldmodel->numleafs+7)>>3);
+		vis = Mod_ClusterPVS (r_viewcluster2, r_worldmodel);
+		c = (r_worldmodel->numleafs+31)/32;
+		for (i=0 ; i<c ; i++)
+			((int *)fatvis)[i] |= ((int *)vis)[i];
 		vis = fatvis;
 	}
 
-	memset(&viewvis, 0xff, (r_worldmodel->numleafs+7)>>3);
+	memcpy(&viewvis, vis, (r_worldmodel->numleafs+7)>>3);
 
-	for (i = 0, leaf = r_worldmodel->leafs; i < r_worldmodel->numleafs;
-		 i++, leaf++) {
+	for (i=0,leaf=r_worldmodel->leafs ; i<r_worldmodel->numleafs ; i++, leaf++)
+	{
 		cluster = leaf->cluster;
 		if (cluster == -1)
 			continue;
-		if (vis[cluster >> 3] & (1 << (cluster & 7))) {
-			node = (mnode_t *) leaf;
-			do {
+		if (vis[cluster>>3] & (1<<(cluster&7)))
+		{
+			node = (mnode_t *)leaf;
+			do
+			{
 				if (node->visframe == r_visframecount)
 					break;
 				node->visframe = r_visframecount;

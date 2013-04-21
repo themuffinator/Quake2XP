@@ -609,7 +609,6 @@ void R_InitPrograms(void) {
 		worldDefs.ParallaxBit		= R_GetProgramDefBits(ambientWorldProgram, "PARALLAX");
 		worldDefs.LightmapBits		= R_GetProgramDefBits(ambientWorldProgram, "LIGHTMAP");
 		worldDefs.VertexLightBits	= R_GetProgramDefBits(ambientWorldProgram, "VERTEXLIGHT");
-		worldDefs.bspBumpBits		= R_GetProgramDefBits(ambientWorldProgram, "BUMP");
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
@@ -620,6 +619,7 @@ void R_InitPrograms(void) {
 	if(lightWorldProgram->valid){
 		Com_Printf("succeeded\n");
 		worldDefs.LightParallaxBit	= R_GetProgramDefBits(lightWorldProgram, "PARALLAX");
+		worldDefs.AmbientBits		= R_GetProgramDefBits(lightWorldProgram, "AMBIENT");
 
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -631,9 +631,9 @@ void R_InitPrograms(void) {
 	if(aliasAmbientProgram->valid){
 		Com_Printf("succeeded\n");
 
-		worldDefs.CausticsBit = R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
-		worldDefs.ShellBits = R_GetProgramDefBits(aliasAmbientProgram, "SHELL");
-		worldDefs.EnvBits = R_GetProgramDefBits(aliasAmbientProgram, "ENVMAP");
+		worldDefs.CausticsBit	= R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
+		worldDefs.ShellBits		= R_GetProgramDefBits(aliasAmbientProgram, "SHELL");
+		worldDefs.EnvBits		= R_GetProgramDefBits(aliasAmbientProgram, "ENVMAP");
 
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -644,8 +644,10 @@ void R_InitPrograms(void) {
 	Com_Printf("Load "S_COLOR_YELLOW"light model program"S_COLOR_WHITE" ");
 	aliasBumpProgram = R_FindProgram("aliasBump", true, true);
 
-	if(aliasBumpProgram->valid)
+	if(aliasBumpProgram->valid){
 		Com_Printf("succeeded\n");
+		worldDefs.AmbientAliasBits	= R_GetProgramDefBits(aliasBumpProgram, "AMBIENT");
+	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;

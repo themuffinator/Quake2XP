@@ -362,7 +362,7 @@ void R_RenderFlares(void);
 void R_DrawShadowVolume(entity_t * e);
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
 									   int filter, vec3_t angles, vec3_t speed, int isStatic, 
-									   int isShadow);
+									   int isShadow, int isAmbient);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
@@ -436,9 +436,9 @@ extern int numLightQ;
 extern int numFlareOcc;
 extern qboolean FoundReLight;
 qboolean PF_inPVS(vec3_t p1, vec3_t p2);
-
+void R_SetFrustum(void);
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
-qboolean EntityInLightSphere(worldShadowLight_t *light);
+qboolean EntityInLightSphere();
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -763,11 +763,11 @@ typedef struct {
 	unsigned	CausticsBit;
 	unsigned	ParallaxBit;
 	unsigned	LightParallaxBit;
+	unsigned	AmbientBits;
+	unsigned	AmbientAliasBits;
 	unsigned	LightmapBits;
 	unsigned	VertexLightBits;
 	unsigned	AlphaMaskBits;
-	unsigned	bspBumpBits;
-	unsigned	BumpBits;
 	unsigned	WaterTransBits;
 	unsigned	ShellBits;
 	unsigned	EnvBits;

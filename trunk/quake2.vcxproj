@@ -781,6 +781,7 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="qcommon\q_parser.c" />
+    <ClCompile Include="ref_gl\r_cull.c" />
     <ClCompile Include="ref_gl\r_lightMananager.c" />
     <ClCompile Include="ref_gl\r_lightMaps.c" />
     <ClCompile Include="ref_gl\r_program.c" />

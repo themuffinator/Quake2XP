@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1997-2001 Id Software, Inc. 2004-2011 Quake2xp Team, Berserker.
+Copyright (C) 1997-2001 Id Software, Inc. 2004-2013 Quake2xp Team, Berserker.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -386,8 +386,7 @@ next:
 void R_DrawAliasModelLightPass (qboolean weapon_model)
 {
 	dmdl_t		*paliashdr;
-	vec3_t		bbox[8], temp;
-	float		dist;
+	vec3_t		bbox[8];
 	
 	if (currententity->flags & RF_DISTORT)
 			return;
@@ -409,11 +408,8 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 
 	if(!InLightVISEntity())
 		return;
-	
-	VectorSubtract(currententity->origin, currentShadowLight->origin, temp);
-	dist = VectorLength(temp);
-		
-	if(dist > (currentShadowLight->radius + currentmodel->radius))
+
+	if(!EntityInLightSphere()) 
 		return;
 
 	paliashdr = (dmdl_t *)currentmodel->extradata;

@@ -60,8 +60,6 @@ vec3_t vpn;
 vec3_t vright;
 vec3_t r_origin;
 
-
-
 //
 // screen size info
 //
@@ -70,7 +68,7 @@ refdef_t r_newrefdef;
 glwstate_t glw_state;
 
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
-float frustumPlanes[6][4];
+
 
 int GL_MsgGLError(char* Info)
 {
@@ -111,149 +109,6 @@ int GL_MsgGLError(char* Info)
 	return n;
 }
 
-
-/*
-=================
-R_CullBox
-
-Returns true if the box is completely outside the frustom
-=================
-*/
-qboolean R_CullBox(vec3_t mins, vec3_t maxs)
-{
-	int i;
-
-	if (r_noCull->value)
-		return false;
-
-	for (i = 0; i < 4; i++)
-		if (BOX_ON_PLANE_SIDE(mins, maxs, &frustum[i]) == 2)
-			return true;
-	return false;
-}
-
-/*
-=================
-R_CullOrigin
-
-Returns true if the origin is completely outside the frustom
-=================
-*/
-qboolean R_CullOrigin(vec3_t origin)
-{
-	int i;
-	
-	if (r_noCull->value)
-		return false;
-
-	for (i = 0; i < 4; i++)
-		if (BOX_ON_PLANE_SIDE(origin, origin, &frustum[i]) == 2)
-			return true;
-	return false;
-}
-
-
-qboolean R_CullPoint(vec3_t org)
-{
-	int i;
-
-	for (i = 0; i < 4; i++)
-		if (DotProduct(org, frustum[i].normal) > frustum[i].dist)
-			return true;
-
-	return false;
-}
-
-qboolean R_CullSphere( const vec3_t centre, const float radius)
-{
-	int		i;
-	cplane_t *p;
-
-	if (r_noCull->value)
-		return false;
-
-	for (i=0,p=frustum ; i<4; i++,p++)
-	{
-	if ( DotProduct ( centre, p->normal ) - p->dist <= -radius )
-			return true;
-	}
-
-	return false;
-}
-
-qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p)
-{
-	if (p[0] > maxs[0]) return false;
-	if (p[1] > maxs[1]) return false;
-	if (p[2] > maxs[2]) return false;
- 
-	if (p[0] < mins[0]) return false;
-	if (p[1] < mins[1]) return false;
-	if (p[2] < mins[2]) return false;
-
-	return true;
-}
-
-qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs)
-{
-	int		i, j;
-	float	dist1, dist2;
-	vec3_t	corners[2];
-
-///	if (r_nocull->value)
-///		return false;
-
-	for (i=0 ; i<6 ; i++)
-	{
-		for (j=0 ; j<3 ; j++)
-		{
-			if (frustumPlanes[i][j] < 0)
-			{
-				corners[0][j] = mins[j];
-				corners[1][j] = maxs[j];
-			}
-			else
-			{
-				corners[1][j] = mins[j];
-				corners[0][j] = maxs[j];
-			}
-		}
-
-		dist1 = DotProduct (frustumPlanes[i], corners[0]) + frustumPlanes[i][3];
-		dist2 = DotProduct (frustumPlanes[i], corners[1]) + frustumPlanes[i][3];
-		if (dist1 < 0 && dist2 < 0)
-			return true;
-	}
-
-	return false;
-}
-
-float SphereInFrustum( vec3_t o, float radius )
-{
-   int p;
-   float d = 0;
-
-   for( p = 0; p < 6; p++ )
-   {
-      d = frustumPlanes[p][0] * o[0] + frustumPlanes[p][1] * o[1] + frustumPlanes[p][2] * o[2] + frustumPlanes[p][3];
-      if( d <= -radius )
-         return 0;
-   }
-   return d + radius;
-}
-
-
-qboolean EntityInLightSphere(worldShadowLight_t *light) {
-
-	vec3_t dst;
-
-	VectorSubtract (light->origin, currententity->origin, dst);
-	return
-		(VectorLength (dst) < (light->radius + currentmodel->radius));
-
-		
-		
-}
 
 void R_RotateForLightEntity(entity_t * e) {
 	// fixed stupig quake bug, lol)))
@@ -470,61 +325,6 @@ void R_DrawNullModel(void)
 	qglPopMatrix();
 	qglEnable(GL_TEXTURE_2D);
 }
-
-
-
-
-//=======================================================================
-
-int SignbitsForPlane(cplane_t * out)
-{
-	int bits, j;
-
-	// for fast box on planeside test
-
-	bits = 0;
-	for (j = 0; j < 3; j++) {
-		if (out->normal[j] < 0)
-			bits |= 1 << j;
-	}
-	return bits;
-}
-
-
-void R_SetFrustum(void)
-{
-	int i;
-
-	if (r_newrefdef.fov_x == 90) {
-		// front side is visible
-
-		VectorAdd(vpn, vright, frustum[0].normal);
-		VectorSubtract(vpn, vright, frustum[1].normal);
-
-		VectorAdd(vpn, vup, frustum[2].normal);
-		VectorSubtract(vpn, vup, frustum[3].normal);
-	} else {
-		// Speedup Small Calculations - Eradicator
-		RotatePointAroundVector(frustum[0].normal, vup, vpn,
-								-(90 - r_newrefdef.fov_x * 0.5));
-		RotatePointAroundVector(frustum[1].normal, vup, vpn,
-								90 - r_newrefdef.fov_x * 0.5);
-		RotatePointAroundVector(frustum[2].normal, vright, vpn,
-								90 - r_newrefdef.fov_y * 0.5);
-		RotatePointAroundVector(frustum[3].normal, vright, vpn,
-								-(90 - r_newrefdef.fov_y * 0.5));
-	}
-
-	for (i = 0; i < 4; i++) {
-		frustum[i].type = PLANE_ANYZ;
-		frustum[i].dist = DotProduct(r_origin, frustum[i].normal);
-		frustum[i].signbits = SignbitsForPlane(&frustum[i]);
-	}
-}
-
-
-
-
 
 //=======================================================================
 
@@ -1033,8 +833,8 @@ void R_DrawShadowLightPass(void)
 	
 	if(r_useLightScissors->value)
 		qglScissor(	currentShadowLight->scizz.coords[0], currentShadowLight->scizz.coords[1], 
-					currentShadowLight->scizz.coords[2]-currentShadowLight->scizz.coords[0], 
-					currentShadowLight->scizz.coords[3]-currentShadowLight->scizz.coords[1]);
+					currentShadowLight->scizz.coords[2]- currentShadowLight->scizz.coords[0], 
+					currentShadowLight->scizz.coords[3]- currentShadowLight->scizz.coords[1]);
 
 	qglClearStencil(128);
 	qglStencilMask(255);
@@ -1239,6 +1039,7 @@ extern char buff4[4096];
 extern char buff5[4096];
 extern char buff6[4096];
 extern char buff7[4096];
+extern char buff8[4096];
 
 extern worldShadowLight_t *selectedShadowLight;
 
@@ -1290,6 +1091,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	Draw_StringScaled(0, vid.height*0.5+105, 2, 2, buff5);
 	Draw_StringScaled(0, vid.height*0.5+125, 2, 2, buff6);
 	Draw_StringScaled(0, vid.height*0.5+145, 2, 2, buff7);
+	Draw_StringScaled(0, vid.height*0.5+165, 2, 2, buff8);
 	qglColor3f(1,1,1);
 	}
 
@@ -1425,7 +1227,7 @@ Cvar_Set("r_maxTextureSize", "0");
 Cvar_Set("r_anisotropic", "8");
 Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 
-Cvar_Set("r_shadows", "2");
+Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "1");
 Cvar_Set("r_pplWorld", "0");
@@ -1444,7 +1246,7 @@ Cvar_Set("r_maxTextureSize", "0");
 Cvar_Set("r_anisotropic", "16");
 Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 
-Cvar_Set("r_shadows", "4");
+Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "2");
 Cvar_Set("r_pplWorld", "1");
@@ -2180,6 +1982,15 @@ void R_BeginFrame()
 	
 	if(r_dof->modified)
 		r_dof->modified = false;
+
+	if(r_pplWorldAmbient->modified)
+		r_pplWorldAmbient->modified = false;
+
+	if(r_pplWorldAmbient->value >1)
+		Cvar_SetValue("r_pplWorldAmbient", 1);
+
+	if(r_pplWorldAmbient->value < 0)
+		Cvar_SetValue("r_pplWorldAmbient", 0);
 
 	qglDrawBuffer( GL_BACK );
 	

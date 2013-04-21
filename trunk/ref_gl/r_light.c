@@ -23,20 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int r_dlightframecount;
 
-/*
- =================
- BoundsAndSphereIntersect
- =================
-*/
-qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius){
-
-	if (mins[0] > origin[0] + radius || mins[1] > origin[1] + radius || mins[2] > origin[2] + radius)
-		return false;
-	if (maxs[0] < origin[0] - radius || maxs[1] < origin[1] - radius || maxs[2] < origin[2] - radius)
-		return false;
-
-	return true;
-}
 
 /*
 =============
@@ -108,6 +94,9 @@ void R_PushDlights(void)
 {
 	int i;
 	dlight_t *l;
+
+	if(r_pplWorld->value && !r_pplWorldAmbient->value)
+		return;
 
 	r_dlightframecount = r_framecount + 1;	// because the count hasn't
 	// advanced yet for this frame
@@ -256,6 +245,7 @@ void R_LightPoint(vec3_t p, vec3_t color, qboolean bump)
 	vec3_t dir;
 	float add, dst;
 	trace_t trace;
+
 
 	if ((r_worldmodel && !r_worldmodel->lightdata) || !r_worldmodel)
 	{

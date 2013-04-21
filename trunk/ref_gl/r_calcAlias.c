@@ -541,6 +541,9 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 		}
 	}
 	
+	if(currentShadowLight->isAmbient)
+		defBits = worldDefs.AmbientAliasBits;
+
 	// setup program
 	GL_BindProgram(aliasBumpProgram, defBits);
 	id = aliasBumpProgram->id[defBits];
