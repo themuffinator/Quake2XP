@@ -1733,7 +1733,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	}
 	
 		gl_state.vbo = false;
-/*
+
 	if (strstr(gl_config.extensions_string, "GL_ARB_vertex_buffer_object")) {
 			
 		qglBindBuffer =		(PFNGLBINDBUFFERPROC)		qwglGetProcAddress("glBindBuffer");
@@ -1754,7 +1754,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 		gl_state.vbo = false;
 	}
-	*/
+
 	gl_state.conditional_render = false;
 			
 	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");

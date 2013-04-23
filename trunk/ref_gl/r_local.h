@@ -610,7 +610,6 @@ typedef struct {
 	qboolean glsl;
 	qboolean nPot;
 	qboolean glslBinary;
-	unsigned vboId;
 	int	programId;
 	int		lastdFactor;
 	int		lastsFactor;
@@ -622,7 +621,7 @@ typedef struct {
 	unsigned char originalRedGammaTable[256];
 	unsigned char originalGreenGammaTable[256];
 	unsigned char originalBlueGammaTable[256];
-
+	GLuint	vbo_id;
 // ----------------------------------------------------------------
 
 } glstate_t;
@@ -795,22 +794,6 @@ typedef enum glsl_attribute
 
 }
 glsl_attrib;
-
-#define MAX_VBO_XYZs		65536
-
-vec3_t	vbo_XyzBuffer[MAX_VBO_XYZs];
-vec3_t	vbo_StBuffer[MAX_VBO_XYZs];
-vec3_t	vbo_LmBuffer[MAX_VBO_XYZs];
-vec3_t	vbo_NormalBuffer[MAX_VBO_XYZs];
-vec3_t	vbo_BiNormalBuffer[MAX_VBO_XYZs];
-vec3_t	vbo_TangentBuffer[MAX_VBO_XYZs];
-
-typedef struct {
-	unsigned		indexBuffer;
-	unsigned		vertexBuffer;
-} vbo_t;
-
-vbo_t vbo_s;
 
 #define	MAX_VERTEX_CACHES	4096
 

@@ -292,7 +292,8 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		ShadowIndex[index++] = shadow_vert+0; 
 		shadow_vert +=3;
 	}
-
+	
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
 	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
 		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shadow_vert, index, GL_UNSIGNED_INT, ShadowIndex);
 		else
@@ -495,6 +496,9 @@ int			FaceInShadow;
 int			num_shadow_surfaces;
 msurface_t	*shadow_surfaces[MAX_MAP_FACES];
 int			shadowTimestamp;
+vec3_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
+unsigned	icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
+
 
 void R_DrawBrushModelVolumes()
 {
@@ -511,9 +515,6 @@ void R_DrawBrushModelVolumes()
 	clmodel = currententity->model;
 	surf = &clmodel->surfaces[clmodel->firstmodelsurface];
 
-	if(!InLightVISEntity())
-		return;
-
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -525,6 +526,9 @@ void R_DrawBrushModelVolumes()
 	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
 	}
+
+	if(!InLightVISEntity())
+		return;
 
 	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
 		return;
@@ -538,7 +542,7 @@ void R_DrawBrushModelVolumes()
 	qglPushMatrix();
 	R_RotateForLightEntity(currententity);
 
-	scale = 10 * currentShadowLight->radius;
+	scale = 2.5 * currentShadowLight->radius;
 
 		for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
 		{
@@ -613,6 +617,7 @@ void R_DrawBrushModelVolumes()
 	qglPopMatrix();
 }
 
+
 qboolean R_MarkShadowSurf(msurface_t *surf)
 {
 	cplane_t	*plane;
@@ -620,9 +625,13 @@ qboolean R_MarkShadowSurf(msurface_t *surf)
 	glpoly_t	*poly;
 	float	lbbox[6], pbbox[6];
 
-	if ((surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
-		return false;
+	if (surf->texinfo->flags & (SURF_SKY))
+		goto hack;
 
+	// add sky surfaces to shadow marking
+	if ((surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
+		return false;
+hack:
 	plane = surf->plane;
 	poly = surf->polys;
 
@@ -727,66 +736,92 @@ void R_MarkShadowCasting (mnode_t *node)
 
 void R_DrawBspModelVolumes()
 {
-	int			i, j, jj;
+	int			i, j, vb = 0, ib = 0, surfBase = 0;
 	float		scale, sca;
 	msurface_t	*surf;
 	glpoly_t	*poly;
 	vec3_t		v1;
 	qboolean	shadow;
-
+	
 	scale = 10 * currentShadowLight->radius;
 	
+	// generate vertex buffer
 	for (i=0 ; i<num_shadow_surfaces; i++)
 		{
 			surf = shadow_surfaces[i];
 			poly = surf->polys;
 
-				for (j=0 ; j<surf->numedges ; j++)
-				{
-					VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
-					sca = scale/VectorLength(v1);
-					bcache[i][j][0] = v1[0] * sca + poly->verts[j][0];
-					bcache[i][j][1] = v1[1] * sca + poly->verts[j][1];
-					bcache[i][j][2] = v1[2] * sca + poly->verts[j][2];
-				}
+			if (surf->polys->shadowTimestamp != shadowTimestamp)
+               continue;
+			
+			for (j=0 ; j<surf->numedges ; j++)
+                {
+                VectorCopy(poly->verts[j], vcache[vb*2+0]);
+                VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
+                sca = scale/VectorLength(v1);
+                vcache[vb*2+1][0] = v1[0] * sca + poly->verts[j][0];
+                vcache[vb*2+1][1] = v1[1] * sca + poly->verts[j][1];
+                vcache[vb*2+1][2] = v1[2] * sca + poly->verts[j][2];
+                vb++;
+                }
 
-			//check if neighbouring polygons are shadowed
-			for (j=0 ; j<surf->numedges ; j++){
-				shadow = false;
+		}
 
-				if (poly->neighbours[j] != NULL)
-				{
-					if ( poly->neighbours[j]->shadowTimestamp != poly->shadowTimestamp)
-					shadow = true;
-				}
-				else
-					shadow = true;
+        // generate index buffer
+		for (i=0 ; i<num_shadow_surfaces; i++)
+		{
+			surf = shadow_surfaces[i];
+			poly = surf->polys;
 
-				if(shadow){
-				jj = (j+1)%poly->numverts;
-				//we extend the shadow volumes by projecting 
-				//them on the light's sphere.
-				qglBegin(GL_QUADS);
-				qglVertex3fv(poly->verts[j]);
-				qglVertex3fv(bcache[i][j]);
-				qglVertex3fv(bcache[i][jj]);
-				qglVertex3fv(poly->verts[jj]);
-				qglEnd();
+		if (surf->polys->shadowTimestamp != shadowTimestamp)
+               continue;
 
-				}
-			}
-
-			//Draw near light cap
-			qglBegin(GL_TRIANGLE_FAN);
-			for (j=0; j<surf->numedges ; j++)
-				qglVertex3fv(poly->verts[j]);
-			qglEnd();
-
-			//Draw extruded cap
-			qglBegin(GL_TRIANGLE_FAN);
-			for (j=surf->numedges-1; j>=0 ; j--)
-				qglVertex3fv(bcache[i][j]);
-			qglEnd();
+		for (j=0 ; j<surf->numedges ; j++){
+                shadow = false;
+                if (poly->neighbours[j] != NULL)
+                {
+                   if (poly->neighbours[j]->shadowTimestamp != poly->shadowTimestamp)
+                       shadow = true;
+                }
+                else
+                       shadow = true;
+ 
+                if (shadow)
+                {
+                        int jj = (j+1)%poly->numverts;
+ 
+                        icache[ib++] = j*2+0    +surfBase;
+                        icache[ib++] = j*2+1    +surfBase;
+                        icache[ib++] = jj*2+1   +surfBase;
+ 
+                        icache[ib++] = j*2+0    +surfBase;
+                        icache[ib++] = jj*2+1   +surfBase;
+                        icache[ib++] = jj*2+0   +surfBase;
+                }
+        }
+ 
+        //Draw near light cap
+        for (j=0; j<surf->numedges-2 ; j++)
+        {
+                icache[ib++] = 0         +surfBase;
+                icache[ib++] = (j+1)*2+0 +surfBase;
+                icache[ib++] = (j+2)*2+0 +surfBase;
+        }
+ 
+        //Draw extruded cap
+        for (j=0; j<surf->numedges-2 ; j++)
+        {
+                icache[ib++] = 1         +surfBase;
+                icache[ib++] = (j+2)*2+1 +surfBase;
+                icache[ib++] = (j+1)*2+1 +surfBase;
+        }
+ 
+                surfBase += surf->numedges*2;
+        }
+		
+		if(ib){
+			qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
+			qglDrawElements(GL_TRIANGLES, ib, GL_UNSIGNED_INT, icache);
 		}
 	c_shadow_volumes++;
 }
@@ -813,11 +848,9 @@ void R_CastShadowVolumes(void)
 	qglDepthMask(0);
 	qglDepthFunc(GL_LESS);
 	qglEnable(GL_POLYGON_OFFSET_FILL);
-    
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
 	qglColorMask(0, 0, 0, 0);
 	qglDisable(GL_BLEND);	
+	qglEnableVertexAttribArray(ATRB_POSITION);
 
 	shadowTimestamp++;
 	num_shadow_surfaces = 0;
@@ -840,13 +873,13 @@ void R_CastShadowVolumes(void)
 		if (currentmodel->type == mod_alias){
 			qglPolygonOffset(0, 0);
 			R_DrawShadowVolume(currententity);
-		
 		}
 	}
 	qglDepthMask(1);
-	qglDisableVertexAttribArray(ATRB_POSITION);
+
 	qglEnable(GL_BLEND);
 	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglPolygonOffset(0, 0);
 	qglEnable(GL_TEXTURE_2D);
 	qglEnable(GL_CULL_FACE);

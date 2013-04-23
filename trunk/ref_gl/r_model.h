@@ -65,6 +65,9 @@ typedef struct worldShadowLight_s {
 	
 	msurface_t *surf;
 	screenrect_t scizz;
+	GLuint	*vboId;				
+	GLuint	vboXyz;
+	GLuint	vboInx;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
