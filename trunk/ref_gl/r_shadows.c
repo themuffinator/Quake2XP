@@ -734,7 +734,7 @@ void R_MarkShadowCasting (mnode_t *node)
 }
 
 
-void R_DrawBspModelVolumes()
+void R_DrawBspModelVolumes(qboolean precalc)
 {
 	int			i, j, vb = 0, ib = 0, surfBase = 0;
 	float		scale, sca;
@@ -742,7 +742,11 @@ void R_DrawBspModelVolumes()
 	glpoly_t	*poly;
 	vec3_t		v1;
 	qboolean	shadow;
-	
+		
+	shadowTimestamp++;
+	num_shadow_surfaces = 0;
+	R_MarkShadowCasting (r_worldmodel->nodes);
+
 	scale = 10 * currentShadowLight->radius;
 	
 	// generate vertex buffer
@@ -818,10 +822,23 @@ void R_DrawBspModelVolumes()
  
                 surfBase += surf->numedges*2;
         }
-		
+
+		if(precalc){
+			qglGenBuffers(1, (GLuint*)currentShadowLight->vboId);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, surfBase*sizeof(int), vcache, GL_STATIC_DRAW_ARB);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+			qglGenBuffers(1, (GLuint*)currentShadowLight->iboId);
+			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
+			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, ib*sizeof(int), icache, GL_STATIC_DRAW_ARB);
+			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}else
+		{
 		if(ib){
 			qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
 			qglDrawElements(GL_TRIANGLES, ib, GL_UNSIGNED_INT, icache);
+		}
 		}
 	c_shadow_volumes++;
 }
@@ -852,11 +869,19 @@ void R_CastShadowVolumes(void)
 	qglDisable(GL_BLEND);	
 	qglEnableVertexAttribArray(ATRB_POSITION);
 
-	shadowTimestamp++;
-	num_shadow_surfaces = 0;
-	R_MarkShadowCasting (r_worldmodel->nodes);
 	qglPolygonOffset(1, 1);
-	R_DrawBspModelVolumes();
+
+	if(currentShadowLight->vboId && currentShadowLight->iboId){
+		qglBindBuffer(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
+
+		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
+		qglDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
+
+		qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}else
+		R_DrawBspModelVolumes(false); // no pre cached lights aka dlights
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) 
 	{

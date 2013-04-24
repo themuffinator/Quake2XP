@@ -42,6 +42,8 @@ typedef struct screenrect_s
 	struct screenrect_s *next;
 } screenrect_t;
 
+#define BUFFER_OFFSET(i) ((byte*)NULL + (i))
+
 typedef struct worldShadowLight_s {
 	vec3_t origin;
 	vec3_t angles;
@@ -65,9 +67,8 @@ typedef struct worldShadowLight_s {
 	
 	msurface_t *surf;
 	screenrect_t scizz;
-	GLuint	*vboId;				
-	GLuint	vboXyz;
-	GLuint	vboInx;
+	GLuint	vboId;
+	GLuint	iboId;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;

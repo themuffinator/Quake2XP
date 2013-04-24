@@ -1906,6 +1906,8 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 R_Shutdown
 ===============
 */
+void DeleteShadowVertexBuffers(void);
+
 void R_Shutdown(void)
 {
     
@@ -1914,7 +1916,9 @@ void R_Shutdown(void)
 	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
 	}
 	
-	Cmd_RemoveCommand("modellist");
+	DeleteShadowVertexBuffers();
+	
+		Cmd_RemoveCommand("modellist");
 	Cmd_RemoveCommand("screenshot");
 	Cmd_RemoveCommand("imagelist");
 	Cmd_RemoveCommand("flaresStats");

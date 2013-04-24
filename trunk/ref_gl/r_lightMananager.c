@@ -893,7 +893,9 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->next = NULL;
 	light->style = style;
 	light->filter = filter;
-	
+	light->vboId = 0;
+	light->iboId = 0;
+
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - light->radius;
 		light->maxs[i] = light->origin[i] + light->radius;
@@ -1157,15 +1159,36 @@ qboolean InLightVISEntity()
 	return HasSharedLeafs (currentShadowLight->vis, currententity->vis);
 }
 
+void R_DrawBspModelVolumes(qboolean precalc);
 
 void CalcLightVis(void){
 	worldShadowLight_t *light;
 
 		for(light = shadowLight_static; light; light = light->s_next) {
-			
+
 			if(!R_MarkLightLeaves(light))
 				continue;
 	
+		}
+}
+
+void CalcShadowVertexBuffers(void){
+	worldShadowLight_t *light;
+
+		for(light = shadowLight_static; light; light = light->s_next) {
+			
+			R_DrawBspModelVolumes(true);
+	
+		}
+}
+
+void DeleteShadowVertexBuffers(void){
+	worldShadowLight_t *light;
+
+		for(light = shadowLight_static; light; light = light->s_next) {
+			
+			qglDeleteBuffers(1, &light->vboId);
+			qglDeleteBuffers(1, &light->iboId);
 		}
 }
 
