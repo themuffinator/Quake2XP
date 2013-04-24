@@ -412,6 +412,7 @@ void R_Light_SpawnToCamera_f(void);
 void R_ChangeLightRadius_f(void);
 void R_Light_Copy_f(void);
 void GL_SetupCubeMapMatrix(qboolean model);
+void DeleteShadowVertexBuffers(void);
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
 qboolean SurfInFrustum(msurface_t *s);
@@ -433,6 +434,7 @@ extern screenrect_t	totalRect;					//rectangle that holds all rectangles in the 
 extern int num_visLights;
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
+extern int vboPos;
 extern int numFlareOcc;
 extern qboolean FoundReLight;
 qboolean PF_inPVS(vec3_t p1, vec3_t p2);

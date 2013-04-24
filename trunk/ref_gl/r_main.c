@@ -1906,7 +1906,6 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 R_Shutdown
 ===============
 */
-void DeleteShadowVertexBuffers(void);
 
 void R_Shutdown(void)
 {

@@ -1605,6 +1605,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	R_ClearFlares();
 	R_ClearWorldLights();
 	numLightQ = 0;
+	vboPos = 0;
 	numFlareOcc = 0;
 
 	loadmodel->memorySize = 0;

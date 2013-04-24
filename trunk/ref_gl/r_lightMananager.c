@@ -30,6 +30,7 @@ static int num_dlits;
 int num_nwmLights;
 int num_visLights;
 int numLightQ;
+int vboPos, iboPos;
 vec3_t player_org, v_forward, v_right, v_up;
 trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask);
 qboolean R_MarkLightLeaves (worldShadowLight_t *light);
@@ -890,12 +891,13 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->isShadow = isShadow;
 	light->isAmbient = isAmbient;
 	light->isNoWorldModel = false;
+	light->hasVBO = false;
 	light->next = NULL;
 	light->style = style;
 	light->filter = filter;
-	light->vboId = 0;
-	light->iboId = 0;
-
+	light->vboId = light->iboId = vboPos;
+	vboPos++;
+	
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - light->radius;
 		light->maxs[i] = light->origin[i] + light->radius;
