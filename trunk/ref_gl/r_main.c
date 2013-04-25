@@ -559,8 +559,8 @@ void R_DrawEntitiesOnList(void)
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 
-		if (currententity->flags & RF_WEAPONMODEL)
-			continue;
+//		if (currententity->flags & RF_WEAPONMODEL)
+//			continue;
 
 		if (currententity->flags & RF_TRANSLUCENT)
 			continue;			// solid
@@ -603,8 +603,9 @@ jump:
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
-		if (currententity->flags & RF_WEAPONMODEL)
-			continue;
+//		if (currententity->flags & RF_WEAPONMODEL)
+//			continue;
+
 		if (!(currententity->flags & RF_TRANSLUCENT))
 			continue;			// solid
 
@@ -707,8 +708,6 @@ void R_DrawPlayerWeaponLightPass(void)
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
 
-	R_PrepareShadowLightFrame();
-	
 	if(shadowLight_frame) {
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
@@ -857,8 +856,8 @@ void R_DrawShadowLightPass(void)
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 
-		if (currententity->flags & RF_WEAPONMODEL)
-			continue;
+//		if (currententity->flags & RF_WEAPONMODEL)
+//			continue;
 
 		if (currententity->flags & RF_TRANSLUCENT)
 			continue;			
@@ -956,7 +955,6 @@ if (r_noRefresh->value)
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
-		
 	R_DrawShadowLightPass();
 	R_BlobShadow();
 	R_RenderDecals();
@@ -968,9 +966,13 @@ if (r_noRefresh->value)
 	R_DrawParticles(false); // air particles
 	R_CaptureColorBuffer();
 	R_RenderDistortModels();
-	R_DrawPlayerWeapon();
-	R_DrawPlayerWeaponLightPass();
+//	R_DrawPlayerWeapon();
+//	R_DrawPlayerWeaponLightPass();
 	R_CaptureColorBuffer();
+
+	if(gl_state.createVbo)
+		Com_DPrintf("calc vbo data for "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", numPreCachedLights);
+	gl_state.createVbo = false;
 }
 
 
@@ -1291,8 +1293,7 @@ void R_RegisterCvars(void)
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
 	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "12", CVAR_ARCHIVE);
-	r_shadowVolumesDebug =				Cvar_Get("r_shadowVolumesDebug", "0", 0);
-	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
+	r_playerShadow =					Cvar_Get("r_playerShadow", "0", CVAR_ARCHIVE);
 	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
@@ -1732,7 +1733,6 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		
 	}
 	
-		gl_state.vbo = false;
 
 	if (strstr(gl_config.extensions_string, "GL_ARB_vertex_buffer_object")) {
 			
@@ -1748,11 +1748,9 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData){
 				
 			Com_Printf("...using GL_ARB_vertex_buffer_object\n");
-			gl_state.vbo = true;
 		}
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
-		gl_state.vbo = false;
 	}
 
 	gl_state.conditional_render = false;
@@ -1894,9 +1892,8 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	R_LoadFont();
 
 	GL_MsgGLError("Init GL Errors: ");
-	
+
 	return 0;
-	
 }
 
 
@@ -1916,8 +1913,8 @@ void R_Shutdown(void)
 	}
 	
 	DeleteShadowVertexBuffers();
-	
-		Cmd_RemoveCommand("modellist");
+
+	Cmd_RemoveCommand("modellist");
 	Cmd_RemoveCommand("screenshot");
 	Cmd_RemoveCommand("imagelist");
 	Cmd_RemoveCommand("flaresStats");

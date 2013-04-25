@@ -247,10 +247,10 @@ next:
 			return;
 	}
 
-	if (e->flags & RF_WEAPONMODEL) {
-		if (!weapon_model)
-			return;
-	}
+//	if (e->flags & RF_WEAPONMODEL) {
+//		if (!weapon_model)
+//			return;
+//	}
 
 	if (e->flags & RF_WEAPONMODEL) {
 		if (r_leftHand->value == 2)
@@ -396,21 +396,25 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 			return;
 	}
 
-	if (currententity->flags & RF_WEAPONMODEL) {
-		if (!weapon_model)
-			return;
-	}
+//	if (currententity->flags & RF_WEAPONMODEL) {
+//		if (!weapon_model)
+//			return;
+//	}
 
 	if (currententity->flags & RF_WEAPONMODEL) {
 		if (r_leftHand->value == 2)
 			return;
 	}
 
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		goto hack;
+
 	if(!InLightVISEntity())
 		return;
 
 	if(!EntityInLightSphere()) 
 		return;
+hack:
 
 	paliashdr = (dmdl_t *)currentmodel->extradata;
 	

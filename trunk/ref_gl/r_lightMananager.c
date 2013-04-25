@@ -120,10 +120,12 @@ void R_PrepareShadowLightFrame(void) {
 	// add pre computed lights
 	if(shadowLight_static) {
 		for(light = shadowLight_static; light; light = light->s_next) {
-			
+				
+		if (!gl_state.createVbo){
 			if(!R_AddLightToFrame(light))
 				continue;
-		
+		}
+
 			light->next = shadowLight_frame;
 			shadowLight_frame = light;
 		}
@@ -267,11 +269,18 @@ void R_SaveLights_f(void) {
 static void DeleteCurrentLight(worldShadowLight_t *l) {
 	worldShadowLight_t *light;
 
-	if(l == shadowLight_static) 
+	if(l == shadowLight_static) {
+		qglDeleteBuffers(1, &l->vboId);
+		qglDeleteBuffers(1, &l->iboId);
+		l->iboNumIndices = l->vboId = l->iboId = 0;
 		shadowLight_static = l->s_next;
+	}
 	else {
 		for(light = shadowLight_static; light; light = light->s_next) {
 			if(light->s_next == l) {
+				qglDeleteBuffers(1, &light->vboId);
+				qglDeleteBuffers(1, &light->iboId);
+				l->iboNumIndices = l->vboId = l->iboId = 0;
 				light->s_next = l->s_next;
 				break;
 			}
@@ -339,6 +348,12 @@ void R_Light_Copy_f(void) {
 	VectorMA(origin, -50, v_forward, spawn);
 	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, 1, shadow, ambient);
 	R_MarkLightLeaves(selectedShadowLight);
+	
+	//reset vbo data - recalc it!
+	selectedShadowLight->vboId = 0;
+	selectedShadowLight->iboId = 0;
+	selectedShadowLight->iboNumIndices = 0;
+
 }
 
 void R_EditSelectedLight_f(void) {
@@ -379,6 +394,11 @@ void R_EditSelectedLight_f(void) {
 		origin[1] = atof(Cmd_Argv(3));
 		origin[2] = atof(Cmd_Argv(4));
 		VectorCopy(origin, selectedShadowLight->origin);
+		
+		//reset vbo data - recalc it!
+	selectedShadowLight->vboId = 0;
+	selectedShadowLight->iboId = 0;
+	selectedShadowLight->iboNumIndices = 0;
 	} 
 	else
 	if (!strcmp(Cmd_Argv(1), "color")) {
@@ -417,6 +437,10 @@ void R_EditSelectedLight_f(void) {
 		}
 		radius = atof(Cmd_Argv(2));
 		selectedShadowLight->radius = radius;
+
+		selectedShadowLight->vboId = 0;
+		selectedShadowLight->iboId = 0;
+		selectedShadowLight->iboNumIndices = 0;
 	 } 
 	else
 	 if (!strcmp(Cmd_Argv(1), "style")) {
@@ -522,6 +546,11 @@ void R_MoveLightToRight_f(void) {
 		origin[0] += offset;
 
 	VectorCopy(origin, selectedShadowLight->origin);
+
+	//reset vbo data - recalc it!
+	selectedShadowLight->vboId = 0;
+	selectedShadowLight->iboId = 0;
+	selectedShadowLight->iboNumIndices = 0;
 }
 
 void R_MoveLightForward_f(void) {
@@ -559,6 +588,11 @@ void R_MoveLightForward_f(void) {
 		origin[1] += offset;
 
 	VectorCopy(origin, selectedShadowLight->origin);
+	
+	//reset vbo data - recalc it!
+	selectedShadowLight->vboId = 0;
+	selectedShadowLight->iboId = 0;
+	selectedShadowLight->iboNumIndices = 0;
 }
 
 void R_MoveLightUpDown_f(void) {
@@ -591,6 +625,10 @@ void R_MoveLightUpDown_f(void) {
 
 	VectorCopy(origin, selectedShadowLight->origin);
 
+	//reset vbo data - recalc it!
+	selectedShadowLight->vboId = 0;
+	selectedShadowLight->iboId = 0;
+	selectedShadowLight->iboNumIndices = 0;
 }
 
 void R_ChangeLightRadius_f(void) {
@@ -623,6 +661,11 @@ void R_ChangeLightRadius_f(void) {
 		radius = 10;
 
 	selectedShadowLight->radius = radius;
+	
+	//reset vbo data - recalc it!
+	selectedShadowLight->vboId = 0;
+	selectedShadowLight->iboId = 0;
+	selectedShadowLight->iboNumIndices = 0;
 
 }
 
@@ -891,12 +934,10 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->isShadow = isShadow;
 	light->isAmbient = isAmbient;
 	light->isNoWorldModel = false;
-	light->hasVBO = false;
 	light->next = NULL;
 	light->style = style;
 	light->filter = filter;
-	light->vboId = light->iboId = vboPos;
-	vboPos++;
+	light->vboId = light->iboId = light->iboNumIndices = 0;
 	
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - light->radius;
@@ -1132,6 +1173,12 @@ qboolean InLightVISEntity()
 	int		longs;
 	vec3_t	mins, maxs;
 
+	if (!r_worldmodel)
+		return false;
+
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return false;
+
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -1170,17 +1217,6 @@ void CalcLightVis(void){
 
 			if(!R_MarkLightLeaves(light))
 				continue;
-	
-		}
-}
-
-void CalcShadowVertexBuffers(void){
-	worldShadowLight_t *light;
-
-		for(light = shadowLight_static; light; light = light->s_next) {
-			
-			R_DrawBspModelVolumes(true);
-	
 		}
 }
 
@@ -1191,6 +1227,7 @@ void DeleteShadowVertexBuffers(void){
 			
 			qglDeleteBuffers(1, &light->vboId);
 			qglDeleteBuffers(1, &light->iboId);
+			light->vboId = light->iboId = light->iboNumIndices = 0;
 		}
 }
 

@@ -42,22 +42,19 @@ typedef struct screenrect_s
 	struct screenrect_s *next;
 } screenrect_t;
 
-#define BUFFER_OFFSET(i) ((byte*)NULL + (i))
-
 typedef struct worldShadowLight_s {
-	vec3_t origin;
-	vec3_t angles;
-	vec3_t speed;
-	vec3_t color, startColor;
-	vec3_t mins, maxs;
-	vec3_t linkedModelOrigin;
+	vec3_t	origin;
+	vec3_t	angles;
+	vec3_t	speed;
+	vec3_t	color, startColor;
+	vec3_t	mins, maxs;
+	vec3_t	linkedModelOrigin;
 
-	int filter, style, area;
-	
-	int isShadow;
-	int isStatic;
-	int isNoWorldModel;
-	int isAmbient;
+	int		filter, style, area;
+	int		isShadow;
+	int		isStatic;
+	int		isNoWorldModel;
+	int		isAmbient;
 
 	unsigned int occQ;
 	
@@ -65,20 +62,21 @@ typedef struct worldShadowLight_s {
 
 	byte vis[MAX_MAP_LEAFS / 8];
 	
-	msurface_t *surf;
-	screenrect_t scizz;
-	qboolean hasVBO;
-	GLuint	vboId;
-	GLuint	iboId;
+	msurface_t		*surf;
+	screenrect_t	scizz;
+	GLuint			vboId;
+	GLuint			iboId;
+	int				iboNumIndices;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
 
 } worldShadowLight_t;
 
-#define MAX_WORLD_SHADOW_LIHGTS 4096
-int r_numWorlsShadowLights;
-extern worldShadowLight_t *currentShadowLight;
+#define		MAX_WORLD_SHADOW_LIHGTS 4096
+int			r_numWorlsShadowLights;
+extern		worldShadowLight_t *currentShadowLight;
+extern int	numPreCachedLights;
 
 typedef struct {
 	vec3_t origin;
@@ -103,7 +101,7 @@ flare_t r_flares[MAX_FLARES];
 #define MAX_FLARES_VERTEX MAX_FLARES*4
 
 
-byte			viewvis[MAX_MAP_LEAFS/8];
+byte	viewvis[MAX_MAP_LEAFS/8];
 
 /*
 ==============================================================================

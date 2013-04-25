@@ -257,7 +257,6 @@ cvar_t	*r_maxAnisotropy;
 
 cvar_t	*r_shadows;
 cvar_t	*r_shadowWorldLightScale;
-cvar_t	*r_shadowVolumesDebug;
 cvar_t	*r_playerShadow;
 cvar_t	*r_shadowCapOffset;
 
@@ -607,7 +606,7 @@ typedef struct {
 	qboolean arb_multisample;
 	qboolean wgl_nv_multisample_coverage;
 	qboolean wgl_nv_multisample_coverage_aviable;
-	qboolean vbo;
+	qboolean createVbo;
 	qboolean conditional_render;
 	qboolean glsl;
 	qboolean nPot;

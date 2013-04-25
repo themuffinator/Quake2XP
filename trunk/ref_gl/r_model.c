@@ -1605,7 +1605,6 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	R_ClearFlares();
 	R_ClearWorldLights();
 	numLightQ = 0;
-	vboPos = 0;
 	numFlareOcc = 0;
 
 	loadmodel->memorySize = 0;
@@ -2478,6 +2477,10 @@ void R_BeginRegistration(char *model)
 
 	r_viewcluster = -1;
 
+	// cleanup shadow vbo
+	gl_state.createVbo =  true;
+	numPreCachedLights = 0;
+	DeleteShadowVertexBuffers();
 }
 
 
@@ -2575,7 +2578,6 @@ struct model_s *R_RegisterModel(char *name)
 	
 }
 
-void CalcShadowVertexBuffers(void);
 /*
 @@@@@@@@@@@@@@@@@@@@@
 R_EndRegistration
@@ -2612,8 +2614,7 @@ void R_EndRegistration(void)
 	spriteSize =	0;
 	qglClear(GL_COLOR_BUFFER_BIT);
 	qglClearColor(0.0, 0.0, 0.0, 1);
-
-//	CalcShadowVertexBuffers();
+	gl_state.createVbo =  true;
 }
 
 

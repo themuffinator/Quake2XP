@@ -1480,6 +1480,7 @@ trace_t CM_BoxTrace(vec3_t start, vec3_t end,
 	// 
 	// general sweeping through world
 	// 
+
 	CM_RecursiveHullCheck(headnode, 0, 1, start, end);
 
 	if (trace_trace.fraction == 1) {
