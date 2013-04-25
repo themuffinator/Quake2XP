@@ -71,10 +71,8 @@ bumpLight = (Es.x * diffuseMap * v_color) + (Es.y * specular * v_color); //via l
 diffuseMap += bumpLight;
 #endif
 
-diffuseMap *= vec4(0.15, 0.075, 0.05, 1.0);
-
 #ifdef LIGHTMAP
-diffuseMap *= lightMap;
+diffuseMap *= lightMap * u_ambientScale;
 #endif
 
 vec4 finalColor = diffuseMap + glowMap;
