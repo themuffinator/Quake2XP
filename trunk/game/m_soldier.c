@@ -922,11 +922,10 @@ void soldier_dead (edict_t *self)
 
 	gi.linkentity (self);
 
-if (skill->value <3) M_FlyCheck(self);
+if (skill->value <3) 
+	M_FlyCheck(self);
+
 monster_reborn(self);
-
-	 
-
 }
 
 mframe_t soldier_frames_death1 [] =

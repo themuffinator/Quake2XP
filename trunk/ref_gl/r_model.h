@@ -48,13 +48,13 @@ typedef struct worldShadowLight_s {
 	vec3_t	speed;
 	vec3_t	color, startColor;
 	vec3_t	mins, maxs;
-	vec3_t	linkedModelOrigin;
 
 	int		filter, style, area;
 	int		isShadow;
 	int		isStatic;
 	int		isNoWorldModel;
 	int		isAmbient;
+	int		linkedSurf;
 
 	unsigned int occQ;
 	

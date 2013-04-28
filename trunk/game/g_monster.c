@@ -129,7 +129,7 @@ void M_FlyCheck (edict_t *self)
 	if (self->waterlevel)
 		return;
 
-	if (random() > 0.5)
+	if (random() > 0.9)
 		return;
     
 	self->think = M_FliesOn;

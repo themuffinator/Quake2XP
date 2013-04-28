@@ -149,7 +149,7 @@ void ThrowGib (edict_t *self, char *gibname, int damage, int type)
 	gi.setmodel (gib, gibname);
 	gib->solid = SOLID_NOT;
 	gib->s.effects |= EF_GIB;
-	gib->s.renderfx |= RF_NOSHADOW; 
+//	gib->s.renderfx |= RF_NOSHADOW; 
 	gib->flags |= FL_NO_KNOCKBACK;
 	gib->takedamage = DAMAGE_YES;
 	gib->die = gib_die;
@@ -195,7 +195,7 @@ void ThrowHead (edict_t *self, char *gibname, int damage, int type)
 	gi.setmodel (self, gibname);
 	self->solid = SOLID_NOT;
 	self->s.effects |= EF_GIB;
-	self->s.renderfx |= RF_NOSHADOW; 
+//	self->s.renderfx |= RF_NOSHADOW; 
 	self->s.effects &= ~EF_FLIES;
 	self->s.sound = 0;
 	self->flags |= FL_NO_KNOCKBACK;
@@ -250,7 +250,7 @@ void ThrowGibACID (edict_t *self, char *gibname, int damage, int type)
 
 	gib->clipmask = MASK_SHOT;
 	gib->solid = SOLID_BBOX;
-	gib->s.renderfx |= RF_NOSHADOW; 
+//	gib->s.renderfx |= RF_NOSHADOW; 
 	gib->s.effects |= EF_GREENGIB;
 	// note to self check this
 	gib->s.renderfx |= RF_FULLBRIGHT;
@@ -302,7 +302,7 @@ void ThrowHeadACID (edict_t *self, char *gibname, int damage, int type)
  
 	self->clipmask = MASK_SHOT;
 	self->solid = SOLID_BBOX;
-	self->s.renderfx |= RF_NOSHADOW; 
+//	self->s.renderfx |= RF_NOSHADOW; 
 	self->s.effects |= EF_GREENGIB;
 	self->s.effects &= ~EF_FLIES;
 	self->s.effects |= RF_FULLBRIGHT;
@@ -365,7 +365,7 @@ void ThrowClientHead (edict_t *self, int damage)
 	self->takedamage = DAMAGE_NO;
 	self->solid = SOLID_NOT;
 	self->s.effects = EF_GIB;
-	self->s.renderfx |= RF_NOSHADOW; 
+//	self->s.renderfx |= RF_NOSHADOW; 
 	self->s.sound = 0;
 	self->flags |= FL_NO_KNOCKBACK;
 	self->movetype = MOVETYPE_BOUNCE;
@@ -411,7 +411,7 @@ void ThrowDebris (edict_t *self, char *modelname, float speed, vec3_t origin)
 	VectorMA (self->velocity, speed, v, chunk->velocity);
 	chunk->movetype = MOVETYPE_BOUNCE;
 	chunk->solid = SOLID_NOT;
-	chunk->s.renderfx |= RF_NOSHADOW;  
+//	chunk->s.renderfx |= RF_NOSHADOW;  
 	chunk->avelocity[0] = random()*600;
 	chunk->avelocity[1] = random()*600;
 	chunk->avelocity[2] = random()*600;
@@ -1336,7 +1336,7 @@ void SP_misc_banner (edict_t *ent)
 	ent->s.modelindex = gi.modelindex ("models/objects/banner/tris.md2");
 	ent->s.frame = rand() % 16;
 	gi.linkentity (ent);
-    ent->s.renderfx |= RF_NOSHADOW;  
+//    ent->s.renderfx |= RF_NOSHADOW;  
 	ent->think = misc_banner_think;
 	ent->nextthink = level.time + FRAMETIME;
 }
@@ -1728,7 +1728,7 @@ void SP_light_mine1 (edict_t *ent)
 	ent->movetype = MOVETYPE_NONE;
 	ent->solid = SOLID_BBOX;
 	ent->s.modelindex = gi.modelindex ("models/objects/minelite/light1/tris.md2");
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 	gi.linkentity (ent);
 }
 
@@ -1740,7 +1740,7 @@ void SP_light_mine2 (edict_t *ent)
 	ent->movetype = MOVETYPE_NONE;
 	ent->solid = SOLID_BBOX;
 	ent->s.modelindex = gi.modelindex ("models/objects/minelite/light2/tris.md2");
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 	gi.linkentity (ent);
 }
 
@@ -1754,7 +1754,7 @@ void SP_misc_gib_arm (edict_t *ent)
 	ent->solid = SOLID_NOT;
 	ent->s.effects |= EF_GIB;
 	ent->takedamage = DAMAGE_YES;
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 	ent->die = gib_die;
 	ent->movetype = MOVETYPE_TOSS;
 	ent->svflags |= SVF_MONSTER;
@@ -1776,7 +1776,7 @@ void SP_misc_gib_leg (edict_t *ent)
 	ent->solid = SOLID_NOT;
 	ent->s.effects |= EF_GIB;
 	ent->takedamage = DAMAGE_YES;
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 	ent->die = gib_die;
 	ent->movetype = MOVETYPE_TOSS;
 	ent->svflags |= SVF_MONSTER;
@@ -1802,7 +1802,7 @@ void SP_misc_gib_head (edict_t *ent)
 	ent->movetype = MOVETYPE_TOSS;
 	ent->svflags |= SVF_MONSTER;
 	ent->deadflag = DEAD_DEAD;
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 	ent->avelocity[0] = random()*200;
 	ent->avelocity[1] = random()*200;
 	ent->avelocity[2] = random()*200;
@@ -2127,7 +2127,7 @@ void SP_misc_teleporter_dest (edict_t *ent)
 	ent->s.skinnum = 0;
 	ent->solid = SOLID_BBOX;
 //	ent->s.effects |= EF_FLIES;
-	ent->s.renderfx |= RF_NOSHADOW;
+//	ent->s.renderfx |= RF_NOSHADOW;
 	VectorSet (ent->mins, -32, -32, -24);
 	VectorSet (ent->maxs, 32, 32, -16);
 	gi.linkentity (ent);

@@ -173,7 +173,7 @@ void ThrowGib (edict_t *self, char *gibname, int damage, int type)
 	gib->flags |= FL_NO_KNOCKBACK;
 	gib->takedamage = DAMAGE_YES;
 	gib->die = gib_die;
-    gib->s.renderfx |= RF_NOSHADOW; 
+//	gib->s.renderfx |= RF_NOSHADOW; 
 	if (type == GIB_ORGANIC)
 	{
 		gib->movetype = MOVETYPE_TOSS;
@@ -215,7 +215,7 @@ void ThrowHead (edict_t *self, char *gibname, int damage, int type)
 	self->solid = SOLID_NOT;
 	self->s.effects |= EF_GIB;
 	self->s.effects &= ~EF_FLIES;
-	self->s.renderfx |= RF_NOSHADOW; 
+//	self->s.renderfx |= RF_NOSHADOW; 
 	self->s.sound = 0;
 	self->flags |= FL_NO_KNOCKBACK;
 	self->svflags &= ~SVF_MONSTER;
@@ -272,7 +272,7 @@ void ThrowClientHead (edict_t *self, int damage)
 	self->takedamage = DAMAGE_NO;
 	self->solid = SOLID_NOT;
 	self->s.effects = EF_GIB;
-	self->s.renderfx |= RF_NOSHADOW; 
+//	self->s.renderfx |= RF_NOSHADOW; 
 	self->s.sound = 0;
 	self->flags |= FL_NO_KNOCKBACK;
     
@@ -366,7 +366,7 @@ void ThrowDebris (edict_t *self, char *modelname, float speed, vec3_t origin)
 	chunk->s.frame = 0;
 	chunk->flags = 0;
 
-	chunk->s.renderfx |= RF_NOSHADOW;  
+//	chunk->s.renderfx |= RF_NOSHADOW;  
 
 	chunk->classname = "debris";
 	chunk->takedamage = DAMAGE_YES;
@@ -1289,7 +1289,7 @@ void SP_misc_banner (edict_t *ent)
 	ent->s.modelindex = gi.modelindex ("models/objects/banner/tris.md2");
 	ent->s.frame = rand() % 16;
 	gi.linkentity (ent);
-    ent->s.renderfx |= RF_NOSHADOW; 
+//  ent->s.renderfx |= RF_NOSHADOW; 
 	ent->think = misc_banner_think;
 	ent->nextthink = level.time + FRAMETIME;
 }
@@ -1557,7 +1557,7 @@ void SP_light_mine1 (edict_t *ent)
 {
 	ent->movetype = MOVETYPE_NONE;
 	ent->solid = SOLID_BBOX;
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 
 	ent->s.modelindex = gi.modelindex ("models/objects/minelite/light1/tris.md2");
 	gi.linkentity (ent);
@@ -1570,7 +1570,7 @@ void SP_light_mine2 (edict_t *ent)
 {
 	ent->movetype = MOVETYPE_NONE;
 	ent->solid = SOLID_BBOX;
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 	ent->s.modelindex = gi.modelindex ("models/objects/minelite/light2/tris.md2");
 	gi.linkentity (ent);
 }
@@ -1589,7 +1589,7 @@ void SP_misc_gib_arm (edict_t *ent)
 	ent->movetype = MOVETYPE_TOSS;
 	ent->svflags |= SVF_MONSTER;
 	ent->deadflag = DEAD_DEAD;
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 	ent->avelocity[0] = random()*200;
 	ent->avelocity[1] = random()*200;
 	ent->avelocity[2] = random()*200;
@@ -1611,7 +1611,7 @@ void SP_misc_gib_leg (edict_t *ent)
 	ent->movetype = MOVETYPE_TOSS;
 	ent->svflags |= SVF_MONSTER;
 	ent->deadflag = DEAD_DEAD;
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 	ent->avelocity[0] = random()*200;
 	ent->avelocity[1] = random()*200;
 	ent->avelocity[2] = random()*200;
@@ -1633,7 +1633,7 @@ void SP_misc_gib_head (edict_t *ent)
 	ent->movetype = MOVETYPE_TOSS;
 	ent->svflags |= SVF_MONSTER;
 	ent->deadflag = DEAD_DEAD;
-	ent->s.renderfx |= RF_NOSHADOW; 
+//	ent->s.renderfx |= RF_NOSHADOW; 
 	ent->avelocity[0] = random()*200;
 	ent->avelocity[1] = random()*200;
 	ent->avelocity[2] = random()*200;
@@ -1959,7 +1959,7 @@ void SP_misc_teleporter_dest (edict_t *ent)
 	gi.setmodel (ent, "models/objects/dmspot/tris.md2");
 	ent->s.skinnum = 0;
 	ent->solid = SOLID_BBOX;
-	ent->s.renderfx |= RF_NOSHADOW;
+//	ent->s.renderfx |= RF_NOSHADOW;
 	VectorSet (ent->mins, -32, -32, -24);
 	VectorSet (ent->maxs, 32, 32, -16);
 	gi.linkentity (ent);

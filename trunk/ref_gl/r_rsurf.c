@@ -1502,6 +1502,12 @@ void R_DrawLightBrushModel(entity_t * e)
 	if (R_CullBox(mins, maxs))
 		return;
 
+	if(!InLightVISEntity())
+		return;
+	
+	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
+		return;
+
 	VectorSubtract(r_newrefdef.vieworg, e->origin, modelorg);
 
 	if (rotated) {
@@ -1549,13 +1555,13 @@ void R_DrawLightBrushModel(entity_t * e)
 				
 			if(!currentShadowLight->isStatic){
 			if(R_MarkBrushModelSurfaces(currentShadowLight))
-						GL_BatchLightPass(true);
+				GL_BatchLightPass(true);
 			}
 
 		} else{
 
 			if(R_MarkBrushModelSurfaces(currentShadowLight))
-						GL_BatchLightPass(true);
+				GL_BatchLightPass(true);
 		}
 
 		VectorCopy(oldLight, currentShadowLight->origin);

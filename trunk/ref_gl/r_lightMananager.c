@@ -270,17 +270,11 @@ static void DeleteCurrentLight(worldShadowLight_t *l) {
 	worldShadowLight_t *light;
 
 	if(l == shadowLight_static) {
-		qglDeleteBuffers(1, &l->vboId);
-		qglDeleteBuffers(1, &l->iboId);
-		l->iboNumIndices = l->vboId = l->iboId = 0;
 		shadowLight_static = l->s_next;
 	}
 	else {
 		for(light = shadowLight_static; light; light = light->s_next) {
 			if(light->s_next == l) {
-				qglDeleteBuffers(1, &light->vboId);
-				qglDeleteBuffers(1, &light->iboId);
-				l->iboNumIndices = l->vboId = l->iboId = 0;
 				light->s_next = l->s_next;
 				break;
 			}
