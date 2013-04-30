@@ -30,6 +30,6 @@ v_lightVec.x = dot(a_tangent, LV);
 v_lightVec.y = dot(a_binormal, LV);
 v_lightVec.z = dot(a_normArray, LV); 
 
-gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1);
 
 }

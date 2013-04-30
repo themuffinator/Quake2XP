@@ -1,7 +1,7 @@
 
 uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_NormalMap;
-uniform samplerCube 		u_CubeFilterMap;
+uniform samplerCube 	u_CubeFilterMap;
 
 uniform float      		u_ColorModulate;
 uniform float			u_specularScale;
