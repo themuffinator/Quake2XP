@@ -237,10 +237,14 @@ cvar_t *r_vsync;
 cvar_t *r_textureMode;
 cvar_t *r_lockPvs;
 cvar_t *r_fullScreen;
+
 cvar_t *r_gamma;
+cvar_t *r_brightens;
+cvar_t *r_contrast;
+cvar_t *r_saturation;
+
 cvar_t *vid_ref;
 cvar_t *r_finish;
-cvar_t *r_hardwareGamma;
 
 cvar_t	*r_causticIntens;
 
@@ -753,6 +757,8 @@ glslProgram_t		*cinProgram;
 glslProgram_t		*loadingProgram;
 glslProgram_t		*fxaaProgram;
 glslProgram_t		*filmGrainProgram;
+glslProgram_t		*nullProgram;
+glslProgram_t		*gammaProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();

@@ -1286,8 +1286,12 @@ void R_RegisterCvars(void)
 	r_finish =							Cvar_Get("r_finish", "0", 0);
 	
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
-	r_hardwareGamma =					Cvar_Get("r_hardwareGamma", "1", CVAR_ARCHIVE);	
-	r_gamma =							Cvar_Get("r_gamma", "0.7", CVAR_ARCHIVE);
+	
+	r_gamma =							Cvar_Get("r_gamma", "1.5", CVAR_ARCHIVE);
+	r_brightens	=						Cvar_Get("r_brightens", "1", CVAR_ARCHIVE);
+	r_contrast	=						Cvar_Get("r_contrast", "1", CVAR_ARCHIVE);
+	r_saturation =						Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
+
 	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 
@@ -1952,7 +1956,7 @@ void R_Shutdown(void)
 R_BeginFrame
 @@@@@@@@@@@@@@@@@@@@@
 */
-void UpdateGamma();
+//void UpdateGamma();
 
 void R_BeginFrame()
 {
@@ -1971,10 +1975,10 @@ void R_BeginFrame()
         vid_ref->modified = true;
 
 
-	if (r_gamma->modified) {
-        UpdateGamma();
-		r_gamma->modified = false;
-	}
+	//if (r_gamma->modified) {
+ //       UpdateGamma();
+	//	r_gamma->modified = false;
+	//}
 
 	// realtime update
 	if(r_softParticles->modified)

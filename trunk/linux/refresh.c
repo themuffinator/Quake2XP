@@ -102,18 +102,6 @@ static void SetSDLIcon()
 	SDL_FreeSurface(icon);
 }
 
-/*
- * Sets the gamma
- */
-void
-UpdateGamma(void)
-{
-    const float g = r_gamma->value;
-
-    if (r_hardwareGamma->value != 0)
-        SDL_SetGamma(g, g, g);
-}
-
 void GL_UpdateSwapInterval()
 {
 	// XXX: needs restarting video mode
@@ -205,9 +193,6 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 		Com_Printf("Use multisampling %ix samples per pixel.\n", (int)r_arbSamples->value);
 	} 
 	
-	/* Initialize gamma, there is no need to restore manually */
-    if (r_hardwareGamma->value != 0)
-        r_gamma->modified = true;
 
 	/* Window title */
 	SDL_WM_SetCaption("quake2xp", "quake2xp");

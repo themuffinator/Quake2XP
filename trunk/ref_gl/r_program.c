@@ -601,6 +601,15 @@ void R_InitPrograms(void) {
 	memset(programHashTable, 0, sizeof(programHashTable));
 	memset(&r_nullProgram, 0, sizeof(glslProgram_t));
 
+		Com_Printf("Load "S_COLOR_YELLOW"null program"S_COLOR_WHITE" ");
+	nullProgram = R_FindProgram("null", true, true);
+	if(nullProgram->valid){
+		Com_Printf("succeeded\n");
+	} else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	Com_Printf("Load "S_COLOR_YELLOW"ambient world program"S_COLOR_WHITE" ");
 	ambientWorldProgram = R_FindProgram("ambientWorld", true, true);
 	if(ambientWorldProgram->valid){
@@ -800,6 +809,15 @@ void R_InitPrograms(void) {
 		missing++;
 	}
 	
+	Com_Printf("Load "S_COLOR_YELLOW"gammaramp program"S_COLOR_WHITE" ");
+	gammaProgram = R_FindProgram("gamma", true, true);
+	if(gammaProgram->valid){
+		Com_Printf("succeeded\n");
+	} else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	loadingTime2 = Sys_Milliseconds ();
 	sec = (float)loadingTime2 - (float)loadingTime;
 	sec *=0.001;

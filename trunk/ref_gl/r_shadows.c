@@ -853,8 +853,9 @@ void R_DrawBspModelVolumes(qboolean precalc)
 
 void R_CastShadowVolumes(void)
 {
-	int i;
-	
+	int			id, i;
+	unsigned	defBits = 0;
+
 	if (!r_shadows->value && !r_pplWorld->value)
 		return;
 	
@@ -867,6 +868,10 @@ void R_CastShadowVolumes(void)
 	if(!currentShadowLight->isShadow)
 		return;
 
+	// setup program
+	GL_BindProgram(nullProgram, defBits);
+	id = nullProgram->id[defBits];
+
 	qglDisable(GL_CULL_FACE);
 	qglDisable(GL_TEXTURE_2D);
 	qglDepthFunc(GL_LESS);
@@ -874,7 +879,7 @@ void R_CastShadowVolumes(void)
 	qglColorMask(0, 0, 0, 0);
 	qglEnableVertexAttribArray(ATRB_POSITION);
 
-	qglPolygonOffset(1, 4);
+	qglPolygonOffset(0.1, 1);
 
 	if(!currentShadowLight->vboId && !currentShadowLight->iboId && currentShadowLight->isStatic){
 		R_DrawBspModelVolumes(true); // vbo cache not found! calc vbo data
@@ -904,7 +909,7 @@ void R_CastShadowVolumes(void)
 			continue;
 		
 		if (currentmodel->type == mod_brush){
-			qglPolygonOffset(1, 4);
+			qglPolygonOffset(0.1, 1);
 			R_DrawBrushModelVolumes();
 		}
 		if (currentmodel->type == mod_alias){
@@ -919,7 +924,7 @@ void R_CastShadowVolumes(void)
 	qglEnable(GL_CULL_FACE);
 	qglDepthFunc(GL_LEQUAL);
 	qglColorMask(1, 1, 1, 1);
-
+	GL_BindNullProgram();
 }
 
 

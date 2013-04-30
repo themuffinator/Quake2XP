@@ -318,12 +318,9 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 ** for the window.  The state structure is also nulled out.
 **
 */
-WORD original_ramp[3][256];
-WORD gamma_ramp[3][256];
 
 void GLimp_Shutdown( void )
 {
-	SetDeviceGammaRamp(glw_state.hDC, original_ramp);
 
 	if ( qwglMakeCurrent && !qwglMakeCurrent( NULL, NULL ) )
 		Com_Printf(S_COLOR_RED"ref_gl::R_Shutdown() - wglMakeCurrent failed\n");
@@ -1431,13 +1428,6 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 
 	}
 
-	ZeroMemory(original_ramp,sizeof(original_ramp));
-	gl_state.gammaramp= (qboolean)GetDeviceGammaRamp(glw_state.hDC,original_ramp);
-	if (!r_hardwareGamma->value)
-		gl_state.gammaramp=false;
-
-	if (gl_state.gammaramp)
-		r_gamma->modified=true;
 
 GL_MsgGLError("Init PFD: ");
 	return true;
@@ -1488,27 +1478,6 @@ void GLimp_EndFrame (void)
 	Sleep(0);	// fixes a few problems ive been having
 }
 
-void UpdateGamma()
-{
-     int          i, j, v;
-
-     if (!gl_state.gammaramp)
-          return;
-
-     Q_memcpy(gamma_ramp, original_ramp, sizeof(gamma_ramp));
-
-     for (j=0; j<3; j++)
-     {
-          for (i=0; i<256; i++)
-          {
-               v = 255 * pow((float)(i + 0.5) / 255, r_gamma->value ) + 0.5;
-               v = clamp(v, 0, 255);
-
-               gamma_ramp[j][i] = (WORD)v << 8;
-          }
-     }
-     SetDeviceGammaRamp(glw_state.hDC, gamma_ramp);
-}
 
 void GL_UpdateSwapInterval()
 {

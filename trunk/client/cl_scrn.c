@@ -1086,6 +1086,7 @@ void SCR_DrawClock(void)
 }
 
 void R_FXAA(void);
+void R_GammaRamp (void) ;
 
 void SCR_UpdateScreen(void)
 {
@@ -1194,5 +1195,8 @@ next:
 			SCR_DrawLoading();
 	
 		}
+	
+	R_GammaRamp (); 
+	
 	GLimp_EndFrame();
 }

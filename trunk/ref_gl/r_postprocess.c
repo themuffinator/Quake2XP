@@ -612,3 +612,34 @@ void R_FilmGrain (void) {
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 
 }
+
+
+void R_GammaRamp (void) {
+	
+	unsigned	defBits = 0;
+	int			id;
+
+	// setup program
+	GL_BindProgram(gammaProgram, defBits);
+	id = gammaProgram->id[defBits];
+
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+	GL_BindRect				(ScreenMap->texnum);
+    qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+	qglUniform1f			(qglGetUniformLocation(id, "u_gamma"), r_gamma->value);
+	qglUniform1f			(qglGetUniformLocation(id, "u_brightnes"), r_brightens->value);
+	qglUniform1f			(qglGetUniformLocation(id, "u_contrast"), r_contrast->value);
+	qglUniform1f			(qglGetUniformLocation(id, "u_saturation"), r_saturation->value);
+
+	qglBegin(GL_QUADS);
+    qglVertex2f(0, vid.height);
+    qglVertex2f(vid.width, vid.height);
+    qglVertex2f(vid.width, 0);
+    qglVertex2f(0, 0);
+    qglEnd();
+
+	GL_BindNullProgram		();
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+
+}

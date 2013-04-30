@@ -135,7 +135,7 @@ static void AnisoCallback( void *s )
 static void BrightnessCallback( void *s )
 {
 	float gamma;
-	gamma = ( 0.8 - ( s_brightness_slider.curvalue/10.0 - 0.5 ) ) + 0.5;
+	gamma = s_brightness_slider.curvalue / 20;
 
 	Cvar_SetValue( "r_gamma", gamma );
 }
@@ -183,16 +183,6 @@ static void ResetDefaults( void *unused )
 
 static void ApplyChanges( void *unused )
 {
-	float gamma;
-
-
-	/*
-	** invert sense so greater = brighter, and scale to a range of 0.5 to 1.3
-	*/
-	gamma = ( 0.8 - ( s_brightness_slider.curvalue/10.0 - 0.5 ) ) + 0.5;
-
-	Cvar_SetValue( "r_gamma", gamma );
-	
 
 	Cvar_SetValue( "r_anisotropic",			s_aniso_slider.curvalue);
 	Cvar_SetValue( "r_fullScreen",			s_fs_box.curvalue );
@@ -580,9 +570,9 @@ void VID_MenuInit( void )
 	s_brightness_slider.generic.y	= 50*cl_fontScale->value;
 	s_brightness_slider.generic.name	= "Brightness";
 	s_brightness_slider.generic.callback = BrightnessCallback;
-	s_brightness_slider.minvalue = 5;
-	s_brightness_slider.maxvalue = 13;
-	s_brightness_slider.curvalue = ( 1.3 - r_gamma->value + 0.5 ) * 10;
+	s_brightness_slider.minvalue = 20;
+	s_brightness_slider.maxvalue = 40;
+	s_brightness_slider.curvalue = r_gamma->value *20;
 
 	s_refresh_box.generic.type	= MTYPE_SPINCONTROL;
 	s_refresh_box.generic.x	    = 0;
