@@ -1337,6 +1337,8 @@
     <None Include="..\baseq2\glsl\filmGrain.vp" />
     <None Include="..\baseq2\glsl\fxaa.fp" />
     <None Include="..\baseq2\glsl\fxaa.vp" />
+    <None Include="..\baseq2\glsl\gamma.fp" />
+    <None Include="..\baseq2\glsl\gamma.vp" />
     <None Include="..\baseq2\glsl\gaussX.fp" />
     <None Include="..\baseq2\glsl\gaussX.vp" />
     <None Include="..\baseq2\glsl\gaussY.fp" />
@@ -1351,6 +1353,8 @@
     <None Include="..\baseq2\glsl\lightWorld.vp" />
     <None Include="..\baseq2\glsl\loading.fp" />
     <None Include="..\baseq2\glsl\loading.vp" />
+    <None Include="..\baseq2\glsl\null.fp" />
+    <None Include="..\baseq2\glsl\null.vp" />
     <None Include="..\baseq2\glsl\particles.fp" />
     <None Include="..\baseq2\glsl\particles.vp" />
     <None Include="..\baseq2\glsl\radialBlur.fp" />

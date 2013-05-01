@@ -553,6 +553,18 @@
     <None Include="..\baseq2\glsl\water.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
+    <None Include="..\baseq2\glsl\gamma.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\gamma.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\null.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\null.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\q2.rc">

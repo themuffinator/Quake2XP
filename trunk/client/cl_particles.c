@@ -245,9 +245,7 @@ void CL_AddParticles(void)
 		lightradius = p->lightradius;
 		VectorCopy(p->lcolor, lcol);
 		if (p->flags & PARTICLE_LIGHTING){
-		for (k=0;k<1;k++)
-			V_AddLight(org, lightradius, lcol[0], lcol[1], lcol[2]);
-		
+				V_AddLight(org, lightradius, lcol[0], lcol[1], lcol[2]);
 		}
 		VectorSet(kls, org[0], org[1], org[2] + size *2 ); //killed particle origin -  in air, water
 
@@ -265,7 +263,7 @@ void CL_AddParticles(void)
 		{ 
 			vec3_t maxs = {1, 1, 1};
 			vec3_t mins = {-1, -1, -1};
-			trace_t trace = SV_Trace (p->oldOrg, mins, maxs, org, 0, MASK_SHOT);
+			trace_t trace = SV_Trace (p->oldOrg, mins, maxs, org, 0, MASK_SOLID);
 			
 			if(trace.fraction != 1.0){
 				p->next = free_particles;
@@ -399,7 +397,7 @@ void CL_AddParticles(void)
 
 		if (p->type == PT_BLOODDRIP || p->type == PT_xBLOODSPRAY) {
 			trace_t trace;
-			trace = CL_Trace(p->oldOrg, org, p->size*1.2, MASK_SOLID);
+			trace = CL_Trace(p->oldOrg, org, p->size*2, MASK_SOLID);
 
 			if (trace.fraction != 1.0) {
 				p->alpha = 0;	// kill the particle after marking
@@ -538,12 +536,12 @@ void CL_ParticleBlood(vec3_t org, vec3_t dir, int count)
 		p->colorVel[1] = 0;
 		p->colorVel[2] = 0;
 
-		p->len = 5;
-		p->endLen = 80;
+		p->len = 10;
+		p->endLen = 90;
 
 		for (j = 0; j < 3; j++) {
 			p->org[j] = org[j];
-			p->vel[j] = dir[j] * 30 + crand() * 40;
+			p->vel[j] = dir[j] * 30 + crand() * 60;
 		}
 
 		p->accel[0] = p->accel[1] = 0;
@@ -554,7 +552,7 @@ void CL_ParticleBlood(vec3_t org, vec3_t dir, int count)
 		VectorCopy(p->org, p->oldOrg);
 	}
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 2; i++) {
 		if (!free_particles)
 			return;
 		p = free_particles;
@@ -579,8 +577,8 @@ void CL_ParticleBlood(vec3_t org, vec3_t dir, int count)
 		p->colorVel[2] = 0;
 
 		p->type = PT_BLOODMIST;
-		p->size = 2;
-		p->sizeVel = 10;
+		p->size = 5;
+		p->sizeVel = 20;
 
 		d = rand() & 7;
 		for (j = 0; j < 3; j++)

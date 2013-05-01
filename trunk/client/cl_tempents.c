@@ -698,7 +698,7 @@ void CL_ParseTEnt(void)
 
 		MSG_ReadPos(&net_message, pos);
 		MSG_ReadDir(&net_message, dir);
-		CL_ParticleBlood(pos, dir, 1);
+		CL_ParticleBlood(pos, dir, 3);
 
 		break;
 
