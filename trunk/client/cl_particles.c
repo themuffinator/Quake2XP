@@ -166,7 +166,7 @@ void CL_AddParticles(void)
 	float size, len, lerp, endLerp;
 	float orient, backup;
 	int sFactor, dFactor, flags;
-	int cont, k;
+	int cont;
 	qboolean ground;
 
 	if (!grav)
@@ -245,7 +245,7 @@ void CL_AddParticles(void)
 		lightradius = p->lightradius;
 		VectorCopy(p->lcolor, lcol);
 		if (p->flags & PARTICLE_LIGHTING){
-				V_AddLight(org, lightradius, lcol[0], lcol[1], lcol[2]);
+				V_AddLight(org, lightradius, lcol[0], lcol[1], lcol[2], vec3_origin, 0 ,0);
 		}
 		VectorSet(kls, org[0], org[1], org[2] + size *2 ); //killed particle origin -  in air, water
 

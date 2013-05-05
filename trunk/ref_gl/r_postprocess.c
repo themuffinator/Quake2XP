@@ -29,7 +29,6 @@ static vec3_t vert_array[MAX_FLARES_VERTEX];
 static vec2_t tex_array[MAX_FLARES_VERTEX];
 static vec4_t color_array[MAX_FLARES_VERTEX];
 
-
 /*
 =====================
 Draw Occlusion Flares
@@ -633,11 +632,11 @@ void R_GammaRamp (void) {
 	qglUniform1f			(qglGetUniformLocation(id, "u_saturation"), r_saturation->value);
 
 	qglBegin(GL_QUADS);
-    qglVertex2f(0, vid.height);
-    qglVertex2f(vid.width, vid.height);
-    qglVertex2f(vid.width, 0);
-    qglVertex2f(0, 0);
-    qglEnd();
+	qglVertex2f(0, vid.height);
+	qglVertex2f(vid.width, vid.height);
+	qglVertex2f(vid.width, 0);
+	qglVertex2f(0, 0);
+	qglEnd();
 
 	GL_BindNullProgram		();
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	

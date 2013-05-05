@@ -365,7 +365,7 @@ void R_RenderFlares(void);
 void R_DrawShadowVolume(entity_t * e);
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
 									   int filter, vec3_t angles, vec3_t speed, int isStatic, 
-									   int isShadow, int isAmbient);
+									   int isShadow, int isAmbient, float cone);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
@@ -414,8 +414,11 @@ void R_MoveLightUpDown_f(void);
 void R_Light_SpawnToCamera_f(void);
 void R_ChangeLightRadius_f(void);
 void R_Light_Copy_f(void);
+void R_ChangeLightCone_f(void);
 void GL_SetupCubeMapMatrix(qboolean model);
 void DeleteShadowVertexBuffers(void);
+void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame);
+qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust);
 
 void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
 qboolean SurfInFrustum(msurface_t *s);
@@ -599,26 +602,26 @@ typedef struct {
 	qboolean gammaramp;
 // End - MrG
 
-	qboolean DrawRangeElements;
-	qboolean separateStencil;
-	qboolean texture_compression_arb;
-	int displayrefresh;
-	qboolean nv_multisample_hint;
-	qboolean arb_occlusion;
-	qboolean arb_occlusion2;
-	unsigned query_passed;
-	qboolean arb_multisample;
-	qboolean wgl_nv_multisample_coverage;
-	qboolean wgl_nv_multisample_coverage_aviable;
-	qboolean createVbo;
-	qboolean conditional_render;
-	qboolean glsl;
-	qboolean nPot;
-	qboolean glslBinary;
-	int	programId;
-	int		lastdFactor;
-	int		lastsFactor;
-	float	color[4];
+	qboolean	DrawRangeElements;
+	qboolean	separateStencil;
+	qboolean	texture_compression_arb;
+	int			displayrefresh;
+	qboolean	nv_multisample_hint;
+	qboolean	arb_occlusion;
+	qboolean	arb_occlusion2;
+	unsigned	query_passed;
+	qboolean	arb_multisample;
+	qboolean	wgl_nv_multisample_coverage;
+	qboolean	wgl_nv_multisample_coverage_aviable;
+	qboolean	createVbo;
+	qboolean	conditional_render;
+	qboolean	glsl;
+	qboolean	nPot;
+	qboolean	glslBinary;
+	int			programId;
+	int			lastdFactor;
+	int			lastsFactor;
+	float		color[4];
 	
 	int numFormats;
 	GLenum binaryFormats;
@@ -626,14 +629,15 @@ typedef struct {
 	unsigned char originalRedGammaTable[256];
 	unsigned char originalGreenGammaTable[256];
 	unsigned char originalBlueGammaTable[256];
-	GLuint	vbo_id;
+	GLuint	vbo_fullScreenQuad;
+	GLuint	vbo_halfScreenQuad;
 // ----------------------------------------------------------------
-
 } glstate_t;
 
 #ifndef BIT
 #define BIT(num)				(1 << (num))
 #endif
+
 
 extern glconfig_t gl_config;
 extern glstate_t gl_state;
@@ -676,8 +680,6 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 #define	LIGHTMAP_SIZE	1024 //was 128
 #define	MAX_LIGHTMAPS	8 //was 128
 
-#define MAX_GL_DELUXEMAPS	256
-#define TEXNUM_DELUXEMAPS	(TEXNUM_LIGHTMAPS + MAX_LIGHTMAPS)
 
 typedef struct {
 	int internal_format;

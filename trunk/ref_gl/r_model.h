@@ -48,6 +48,8 @@ typedef struct worldShadowLight_s {
 	vec3_t	speed;
 	vec3_t	color, startColor;
 	vec3_t	mins, maxs;
+	vec3_t	mins_cone;
+	vec3_t	maxs_cone;
 
 	int		filter, style, area;
 	int		isShadow;
@@ -59,6 +61,9 @@ typedef struct worldShadowLight_s {
 	unsigned int occQ;
 	
 	float radius;
+	float _cone;
+
+	cplane_t	frust[4];
 
 	byte vis[MAX_MAP_LEAFS / 8];
 	
@@ -73,7 +78,7 @@ typedef struct worldShadowLight_s {
 
 } worldShadowLight_t;
 
-#define		MAX_WORLD_SHADOW_LIHGTS 4096
+#define		MAX_WORLD_SHADOW_LIHGTS 1024
 int			r_numWorlsShadowLights;
 extern		worldShadowLight_t *currentShadowLight;
 extern int	numPreCachedLights;
@@ -254,7 +259,6 @@ typedef struct model_s {
 	msurface_t **marksurfaces;
 	
 	int lightmap_scale;
-	qboolean deluxeMapping;
 
 	dvis_t *vis;
 

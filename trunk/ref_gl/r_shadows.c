@@ -680,6 +680,9 @@ hack:
 
 		if(!BBoxIntersectBBox(lbbox, pbbox))
 			return false;
+		
+		if(currentShadowLight->_cone && R_CullBox_(&pbbox[0], &pbbox[3], currentShadowLight->frust))
+			return false;
 
 	poly->shadowTimestamp = shadowTimestamp;
 	return true;

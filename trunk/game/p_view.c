@@ -828,7 +828,7 @@ void G_SetClientEffects (edict_t *ent)
 	if (ent->health <= 0 || level.intermissiontime)
 		return;
 	
-	if(deathmatch->value && ((int)dmflags->value & DF_PREDATOR)){
+	if(deathmatch->value && ((int)dmflags->value & DF_FLASHLIGHT)){
 		if (!ent->waterlevel) 
 		ent->s.effects |= EF_DISTORT;
 		if(ent->health <= 20)

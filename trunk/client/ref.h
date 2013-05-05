@@ -121,11 +121,10 @@ typedef struct entity_s {
 #define ENTITY_FLAGS  68
 
 typedef struct {
-	vec3_t origin;
-	vec3_t color;
-	float intensity;
+	vec3_t origin, color, angles;
+	float intensity, _cone;
+	int filter;
 	qboolean spotlight;
-	vec3_t	angles;				//PENTA
 
 } dlight_t;
 

@@ -3318,7 +3318,7 @@ static menulist_s s_allow_exit_box;
 static menulist_s s_infinite_ammo_box;
 static menulist_s s_fixed_fov_box;
 static menulist_s s_quad_drop_box;
-//static menulist_s s_predator_box;
+static menulist_s s_predator_box;
 static menulist_s s_ut_dj_box;
 
 //ROGUE
@@ -3396,9 +3396,9 @@ static void DMFlagCallback(void *self)
 		bit = DF_FIXED_FOV;
 	} else if (f == &s_quad_drop_box) {
 		bit = DF_QUAD_DROP;
-	} /*else if (f == &s_predator_box) {
-		bit = DF_PREDATOR;
-	} */else if (f == &s_ut_dj_box) {
+	} else if (f == &s_predator_box) {
+		bit = DF_FLASHLIGHT;
+	} else if (f == &s_ut_dj_box) {
 		bit = DF_UT_DOUBLE_JUMP;
 		
 	}
@@ -3567,13 +3567,13 @@ void DMOptions_MenuInit(void)
 	s_friendlyfire_box.itemnames = yes_no_names;
 	s_friendlyfire_box.curvalue = (dmflags & DF_NO_FRIENDLY_FIRE) == 0;
 
-/*	s_predator_box.generic.type = MTYPE_SPINCONTROL;
+	s_predator_box.generic.type = MTYPE_SPINCONTROL;
 	s_predator_box.generic.x = 0;
 	s_predator_box.generic.y = y += 10*cl_fontScale->value;
-	s_predator_box.generic.name = "predator mod";
+	s_predator_box.generic.name = "Flash Light";
 	s_predator_box.generic.callback = DMFlagCallback;
 	s_predator_box.itemnames = yes_no_names;
-	s_predator_box.curvalue = (dmflags & DF_PREDATOR) != 0;*/
+	s_predator_box.curvalue = (dmflags & DF_FLASHLIGHT) != 0;
 
 	s_ut_dj_box.generic.type = MTYPE_SPINCONTROL;
 	s_ut_dj_box.generic.x = 0;
@@ -3637,7 +3637,7 @@ void DMOptions_MenuInit(void)
 	Menu_AddItem(&s_dmoptions_menu, &s_fixed_fov_box);
 	Menu_AddItem(&s_dmoptions_menu, &s_quad_drop_box);
 	Menu_AddItem(&s_dmoptions_menu, &s_friendlyfire_box);
-//	Menu_AddItem(&s_dmoptions_menu, &s_predator_box);
+	Menu_AddItem(&s_dmoptions_menu, &s_predator_box);
 	Menu_AddItem(&s_dmoptions_menu, &s_ut_dj_box);
 
 //=======

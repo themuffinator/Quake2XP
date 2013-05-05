@@ -137,7 +137,7 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 	int smax, tmax;
 	int r, g, b, a, max;
 	int i, j, size;
-	byte *lightmap, *deluxemap, *dm;
+	byte *lightmap;
 	float scale[4];
 	int nummaps;
 	float *bl;
@@ -164,13 +164,6 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 		VID_Error(ERR_DROP, "Bad s_blocklights size");
 	}
 	
-	deluxemap = dm = NULL;
-
-	if(loadmodel->deluxeMapping){
-		deluxemap = (byte *)Z_Malloc(size * 4);
-		dm = deluxemap;
-	} 
-
 	// set to full bright if no light data
 	if (!surf->samples) {
 		int maps;
@@ -255,9 +248,6 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
   store:
 	stride -= (smax << 2);
 	bl = s_blocklights;
-	
-	if(loadmodel->deluxeMapping)
-		dm = deluxemap; 
 
 	for (i = 0; i < tmax; i++, dest += stride) {
 			for (j = 0; j < smax; j++) {
@@ -370,26 +360,8 @@ static void LM_UploadBlock(qboolean dynamic)
 			VID_Error(ERR_DROP,
 					  "LM_UploadBlock() - MAX_LIGHTMAPS exceeded\n");
 	}
-
-		if(loadmodel->deluxeMapping){  // upload deluxe block as well
-
-		if(gl_state.deluxemap_texnum == MAX_GL_DELUXEMAPS){
-			Com_Printf(S_COLOR_YELLOW "R_UploadLightmapBlock: MAX_GL_DELUXEMAPS reached.\n");
-			return;
-		}
-
-		GL_Bind(gl_state.deluxemap_texnum);
-
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		qglTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, LIGHTMAP_SIZE, LIGHTMAP_SIZE,
-				0, GL_RGBA, GL_UNSIGNED_BYTE, gl_lms.direction_buffer);
-
-		gl_state.deluxemap_texnum++;
-		Com_Printf(S_COLOR_YELLOW "num of deluxe %i\n", gl_state.deluxemap_texnum);
-	}
 }
+
 
 // returns a texture number and the position inside it
 static qboolean LM_AllocBlock(int w, int h, int *x, int *y)

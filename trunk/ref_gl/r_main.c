@@ -823,6 +823,7 @@ void R_DrawShadowLightPass(void)
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 	
+
 	UpdateLightEditor();
 	
 	if(r_debugLights->value)
@@ -1033,15 +1034,16 @@ R_RenderFrame
 
 @@@@@@@@@@@@@@@@@@@@@
 */
-extern char buff0[4096];
-extern char buff1[4096];
-extern char buff2[4096];
-extern char buff3[4096];
-extern char buff4[4096];
-extern char buff5[4096];
-extern char buff6[4096];
-extern char buff7[4096];
-extern char buff8[4096];
+extern char buff0[128];
+extern char buff1[128];
+extern char buff2[128];
+extern char buff3[128];
+extern char buff4[128];
+extern char buff5[128];
+extern char buff6[128];
+extern char buff7[128];
+extern char buff8[128];
+extern char buff9[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
@@ -1094,6 +1096,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	Draw_StringScaled(0, vid.height*0.5+125, 2, 2, buff6);
 	Draw_StringScaled(0, vid.height*0.5+145, 2, 2, buff7);
 	Draw_StringScaled(0, vid.height*0.5+165, 2, 2, buff8);
+	Draw_StringScaled(0, vid.height*0.5+185, 2, 2, buff9);
 	qglColor3f(1,1,1);
 	}
 
@@ -1406,6 +1409,7 @@ bind KP_INS		"copyLight"
 	Cmd_AddCommand("moveLight_z",				R_MoveLightUpDown_f);
 	Cmd_AddCommand("changeLightRadius",			R_ChangeLightRadius_f);
 	Cmd_AddCommand("copyLight",					R_Light_Copy_f);
+	Cmd_AddCommand("changeLightCone",			R_ChangeLightCone_f);
 }
 
 /*
@@ -1938,6 +1942,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("spawnLightToCamera");
 	Cmd_RemoveCommand("changeLightRadius");
 	Cmd_RemoveCommand("copyLight");
+	Cmd_RemoveCommand("changeLightCone");
 
 	Mod_FreeAll();
 	GL_ShutdownImages();

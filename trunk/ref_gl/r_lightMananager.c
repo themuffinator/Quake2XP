@@ -68,16 +68,18 @@ void R_AddDynamicLight(dlight_t *dl) {
 
 	VectorCopy(dl->origin, light->origin);
 	VectorCopy(dl->color, light->startColor);
-	
+	VectorCopy(dl->angles, light->angles);
+
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - dl->intensity;
 		light->maxs[i] = light->origin[i] + dl->intensity;
 	}
 
 	light->style = 0;
-	light->filter = 0;
+	light->filter = dl->filter;
 	light->radius = dl->intensity;
 	light->isStatic = 0;
+	light->_cone = dl->_cone;
 	light->isNoWorldModel = 0;
 	light->isShadow = 1;
 }
@@ -105,6 +107,8 @@ void R_AddNoWorldModelLight() {
 	light->filter = 0;
 	light->isStatic = 0;
 	light->isShadow = 0;
+	light->_cone = 0;
+	VectorSet(light->angles, 0, 0, 0);
 	light->isNoWorldModel = 1;
 }
 
@@ -169,6 +173,7 @@ void R_PrepareShadowLightFrame(void) {
 		light->scizz.coords[3] = r_viewport[1] + r_viewport[3];
 	}
 
+	MakeFrustum4Light(light, true);
 
 		VectorCopy(light->startColor, light->color);
 		
@@ -256,6 +261,7 @@ void R_SaveLights_f(void) {
 		else
 			fprintf(f, "\"shadow\" \"%i\"\n", currentShadowLight->isShadow);
 		fprintf(f, "\"ambient\" \"%i\"\n", currentShadowLight->isAmbient);
+		fprintf(f, "\"_cone\" \"%f\"\n", currentShadowLight->_cone);
 		fprintf(f, "}\n");
 		i++;
 	}
@@ -298,7 +304,7 @@ void R_Light_Spawn_f(void) {
 	
 	if (trace.fraction != 1.0){
 		VectorMA(trace.endpos, -10, v_forward, spawn);
-		R_AddNewWorldLight(spawn, color, 300, 0, 0, vec3_origin, vec3_origin, 1, 1, 0);
+		R_AddNewWorldLight(spawn, color, 300, 0, 0, vec3_origin, vec3_origin, 1, 1, 0, 0);
 	}
 }
 
@@ -310,12 +316,12 @@ void R_Light_SpawnToCamera_f(void) {
 		return;
 	}
 
-	R_AddNewWorldLight(player_org, color, 300, 0, 0, vec3_origin, vec3_origin, 1, 1, 0);
+	R_AddNewWorldLight(player_org, color, 300, 0, 0, vec3_origin, vec3_origin, 1, 1, 0, 0);
 }
 
 void R_Light_Copy_f(void) {
 	vec3_t color, spawn, origin, angles, speed;
-	float radius;
+	float radius, _cone;
 	int style, filter, shadow, ambient;
 
 	if(!r_lightEditor->value){
@@ -338,10 +344,12 @@ void R_Light_Copy_f(void) {
 	filter = selectedShadowLight->filter;
 	shadow = selectedShadowLight->isShadow;
 	ambient = selectedShadowLight->isAmbient;
+	_cone = selectedShadowLight->_cone;
 
 	VectorMA(origin, -50, v_forward, spawn);
-	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, 1, shadow, ambient);
+	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, 1, shadow, ambient, _cone);
 	R_MarkLightLeaves(selectedShadowLight);
+	MakeFrustum4Light(selectedShadowLight, true);
 	
 	//reset vbo data - recalc it!
 	selectedShadowLight->vboId = 0;
@@ -353,7 +361,7 @@ void R_Light_Copy_f(void) {
 void R_EditSelectedLight_f(void) {
 	
 	vec3_t color, origin, angles, speed;
-	float radius;
+	float radius, _cone;
 	int style, filter, shadow, ambient;
 	
 	if(!r_lightEditor->value){
@@ -375,6 +383,7 @@ void R_EditSelectedLight_f(void) {
 	filter = selectedShadowLight->filter;
 	shadow = selectedShadowLight->isShadow;
 	ambient = selectedShadowLight->isAmbient;
+	_cone = selectedShadowLight->_cone;
 
 	if (!strcmp(Cmd_Argv(1), "origin")) {
 		if(Cmd_Argc() != 5) {
@@ -388,7 +397,6 @@ void R_EditSelectedLight_f(void) {
 		origin[1] = atof(Cmd_Argv(3));
 		origin[2] = atof(Cmd_Argv(4));
 		VectorCopy(origin, selectedShadowLight->origin);
-		
 		//reset vbo data - recalc it!
 	selectedShadowLight->vboId = 0;
 	selectedShadowLight->iboId = 0;
@@ -431,6 +439,20 @@ void R_EditSelectedLight_f(void) {
 		}
 		radius = atof(Cmd_Argv(2));
 		selectedShadowLight->radius = radius;
+
+		selectedShadowLight->vboId = 0;
+		selectedShadowLight->iboId = 0;
+		selectedShadowLight->iboNumIndices = 0;
+	 } 
+	else
+	if (!strcmp(Cmd_Argv(1), "cone")) {
+		if(Cmd_Argc() != 3) {
+			Com_Printf("usage: editLight: %s value\nCurrent Light Cone: %.1f\n", Cmd_Argv(0), 
+				selectedShadowLight->_cone);
+			return;
+		}
+		_cone = atof(Cmd_Argv(2));
+		selectedShadowLight->_cone = _cone;
 
 		selectedShadowLight->vboId = 0;
 		selectedShadowLight->iboId = 0;
@@ -491,7 +513,7 @@ void R_EditSelectedLight_f(void) {
 		selectedShadowLight->isAmbient = ambient;
 	 }
 	else{
-		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\nSpeed: %.4f %.4f %.4f\nShadows %i\nAmbient %i",
+		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\nSpeed: %.4f %.4f %.4f\nShadows %i\nAmbient %i\nCone %f\n",
 		 selectedShadowLight->origin[0], selectedShadowLight->origin[1], selectedShadowLight->origin[2],
 		 selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 
 		 selectedShadowLight->radius,
@@ -500,7 +522,8 @@ void R_EditSelectedLight_f(void) {
 		 selectedShadowLight->angles[0], selectedShadowLight->angles[1], selectedShadowLight->angles[2],
 		 selectedShadowLight->speed[0], selectedShadowLight->speed[1], selectedShadowLight->speed[2],
 		 selectedShadowLight->isShadow, 
-		 selectedShadowLight->isAmbient);
+		 selectedShadowLight->isAmbient,
+		 selectedShadowLight->_cone);
 
 	}
 
@@ -663,6 +686,47 @@ void R_ChangeLightRadius_f(void) {
 
 }
 
+void R_ChangeLightCone_f(void) {
+	
+	float cone, offset;
+	
+	if(!r_lightEditor->value){
+		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
+		return;
+	}
+
+	if(!selectedShadowLight)
+	{
+	Com_Printf("No selected light.\n");
+		return;
+	}
+
+	if( Cmd_Argc() != 2 )
+	{
+		Com_Printf("Usage: ajustSelectedLightRadius: <value>\n");
+		return;
+	}
+
+	cone = selectedShadowLight->_cone;
+
+	offset = atof(Cmd_Argv(1));
+	
+	cone += offset;
+	if(cone >999999)
+		cone = 999999;
+
+	if(cone < 0)
+		cone = 0;
+
+	selectedShadowLight->_cone = cone;
+	
+	//reset vbo data - recalc it!
+	selectedShadowLight->vboId = 0;
+	selectedShadowLight->iboId = 0;
+	selectedShadowLight->iboNumIndices = 0;
+
+}
+
 
 void R_Light_Delete_f(void) {
 
@@ -691,6 +755,7 @@ char buff5[128];
 char buff6[128];
 char buff7[128];
 char buff8[128];
+char buff9[128];
 
 void UpdateLightEditor(void){
 
@@ -808,6 +873,7 @@ void UpdateLightEditor(void){
 												selectedShadowLight->speed[2]);
 	sprintf(buff7,	"Shadow: %i",				selectedShadowLight->isShadow);
 	sprintf(buff8,	"Ambient: %i",				selectedShadowLight->isAmbient);
+	sprintf(buff9,	"Cone: %f",					selectedShadowLight->_cone);
 
 	VectorSet(v[0], tmpOrg[0]-rad, tmpOrg[1]-rad, tmpOrg[2]-rad);
 	VectorSet(v[1], tmpOrg[0]-rad, tmpOrg[1]-rad, tmpOrg[2]+rad);
@@ -905,17 +971,100 @@ void Clamp2RGB(vec3_t color)
 		color[2] = 0.0;
 }
 
+
+
+void CreateNormal(vec3_t dst, vec3_t xyz0, vec3_t xyz1, vec3_t xyz2)
+{
+	float x10,y10,z10;
+	float x20,y20,z20;
+
+	x10=xyz1[0]-xyz0[0];
+	x20=xyz2[0]-xyz0[0];
+	y10=xyz1[1]-xyz0[1];
+	y20=xyz2[1]-xyz0[1];
+	z10=xyz1[2]-xyz0[2];
+	z20=xyz2[2]-xyz0[2];
+	dst[0]=y10*z20-y20*z10;
+	dst[1]=z10*x20-z20*x10;
+	dst[2]=x10*y20-x20*y10;
+	VectorNormalize(dst);
+}
+
+
+void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame)
+{
+	vec3_t		v0, v1, v2, v3, v4;
+	vec3_t		forward, right, up;
+	vec3_t		angles, rspeed;
+
+	if (!light->_cone)
+		return;	// ”йдем, если фрустум не надо рассчитывать (не задан параметр _cone)
+
+	// ≈сли фрустум уже был рассчитан...
+	if(!VectorCompare(light->frust[0].normal, vec3_origin))
+		// и если источник - статичный...
+//		if(light->isStatic)
+			// и если источник никак не вращаетс€ в пространстве (вращение в своей плоскости не учитываем)
+//			if(!light->speed[0] && !light->speed[1])
+//				return;		// то фрустум больше не считаем!
+
+	if(ingame)
+		VectorCopy(light->speed, rspeed);
+	else
+		VectorClear(rspeed);
+
+	angles[0] = light->angles[0] + rspeed[0] * r_newrefdef.time * 1000;
+	angles[1] = light->angles[1] + rspeed[1] * r_newrefdef.time * 1000;
+	angles[2] = light->angles[2] + rspeed[2] * r_newrefdef.time * 1000;
+
+	AngleVectors (angles, forward, right, up);
+
+	VectorScale(right, light->_cone, right);
+	VectorScale(up, light->_cone, up);
+	VectorCopy(light->origin, v0);
+
+	v1[0] = v0[0] + (forward[0] - right[0] - up[0]);
+	v1[1] = v0[1] + (forward[1] - right[1] - up[1]);
+	v1[2] = v0[2] + (forward[2] - right[2] - up[2]);
+
+	v2[0] = v0[0] + (forward[0] - right[0] + up[0]);
+	v2[1] = v0[1] + (forward[1] - right[1] + up[1]);
+	v2[2] = v0[2] + (forward[2] - right[2] + up[2]);
+
+	v3[0] = v0[0] + (forward[0] + right[0] + up[0]);
+	v3[1] = v0[1] + (forward[1] + right[1] + up[1]);
+	v3[2] = v0[2] + (forward[2] + right[2] + up[2]);
+
+	v4[0] = v0[0] + (forward[0] + right[0] - up[0]);
+	v4[1] = v0[1] + (forward[1] + right[1] - up[1]);
+	v4[2] = v0[2] + (forward[2] + right[2] - up[2]);
+
+	CreateNormal(light->frust[0].normal, v1, v2, v0);
+	light->frust[0].dist = DotProduct(light->frust[0].normal, v0);
+
+	CreateNormal(light->frust[1].normal, v2, v3, v0);
+	light->frust[1].dist = DotProduct(light->frust[1].normal, v0);
+
+	CreateNormal(light->frust[2].normal, v3, v4, v0);
+	light->frust[2].dist = DotProduct(light->frust[2].normal, v0);
+
+	CreateNormal(light->frust[3].normal, v4, v1, v0);
+	light->frust[3].dist = DotProduct(light->frust[3].normal, v0);
+}
+
+
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
 									   int filter, vec3_t angles, vec3_t speed, qboolean isStatic, 
-									   int isShadow, int isAmbient) {
+									   int isShadow, int isAmbient, float cone) {
 	
 	worldShadowLight_t *light;
 	int i, leafnum, cluster;
-	
+
 	light = (worldShadowLight_t*)malloc(sizeof(worldShadowLight_t));
 	light->s_next = shadowLight_static;
 	shadowLight_static = light;
-
+	
+	VectorClear(light->frust[0].normal);
 	VectorCopy(origin, light->origin);
 	VectorCopy(color, light->startColor);
 	VectorCopy(angles, light->angles);
@@ -924,6 +1073,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	Clamp2RGB(light->color);
 
 	light->radius = radius;
+	light->_cone = cone;
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
 	light->isAmbient = isAmbient;
@@ -936,8 +1086,14 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - light->radius;
 		light->maxs[i] = light->origin[i] + light->radius;
+
+		light->mins_cone[i] = light->origin[i] - light->radius;
+		light->maxs_cone[i] = light->origin[i] + light->radius;
+
 	}
 	
+	MakeFrustum4Light(light, false);
+
 	//// simple cull info for new light 
 	leafnum = CM_PointLeafnum(light->origin);
 	cluster = CM_LeafCluster(leafnum);
@@ -960,7 +1116,7 @@ void Load_BspLights() {
 	
 	int addLight, style, numlights, addLight_mine, numLightStyles, filter;
 	char *c, *token, key[256], *value;
-	float color[3], origin[3], radius;
+	float color[3], origin[3], radius, cone;
 
 	if(!loadmodel) {
 		Com_Printf("No map loaded.\n");
@@ -981,7 +1137,8 @@ void Load_BspLights() {
 		radius = 0;
 		style = 0;
 		filter = 0;
-		
+		cone = 0;
+
 		addLight = false;
 		addLight_mine = false;
 
@@ -1012,11 +1169,13 @@ void Load_BspLights() {
 				sscanf(value, "%f %f %f", &color[0], &color[1], &color[2]);
 			else if(!Q_stricmp(key, "style"))
 				style = atoi(value);
+			else if(!Q_stricmp(key, "_cone"))
+				cone = atoi(value);
 		}
 
 		if(addLight) {
 			if(style > 31 || style > 0 && style < 12){
-			R_AddNewWorldLight(origin, color, radius, style, 0, vec3_origin, vec3_origin, 1, 1, 0);
+			R_AddNewWorldLight(origin, color, radius, style, 0, vec3_origin, vec3_origin, 1, 1, 0, cone);
 			numlights++;
 			}
 		}
@@ -1030,7 +1189,7 @@ void Load_LightFile() {
 	int		style, numLights = 0, filter, shadow, ambient;
 	vec3_t	angles, speed, color, origin, lOrigin;
 	char	*c, *token, key[256], *value;
-	float	radius;
+	float	radius, cone;
 	char	name[MAX_QPATH], path[MAX_QPATH];
 
 	if(!loadmodel) {
@@ -1062,6 +1221,8 @@ void Load_LightFile() {
 		filter = 0;
 		shadow = 0;
 		ambient = 0;
+		cone = 0;
+
 		VectorClear(angles);
 		VectorClear(speed);
 		VectorClear(origin);
@@ -1095,9 +1256,11 @@ void Load_LightFile() {
 				shadow = atoi(value);
 			else if(!Q_stricmp(key, "ambient"))
 				ambient = atoi(value);
+			else if(!Q_stricmp(key, "_cone"))
+				cone = atoi(value);
 		}
 	
-		R_AddNewWorldLight(origin, color, radius, style, filter, angles, speed, 1, shadow, ambient);
+		R_AddNewWorldLight(origin, color, radius, style, filter, angles, speed, 1, shadow, ambient, cone);
 		numLights++;
 		}
 	Com_Printf(""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights\n", numLights);

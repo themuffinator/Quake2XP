@@ -141,7 +141,7 @@ void Spawn_Gib_Blood(edict_t *self)
 		VectorCopy(self->s.origin, tmp);
 		tmp[2] +=30;
 		gi.WriteByte (svc_temp_entity);
-		if(deathmatch->value && ((int)dmflags->value & DF_PREDATOR))
+		if(deathmatch->value && ((int)dmflags->value & DF_FLASHLIGHT))
 		gi.WriteByte (TE_GIB2);
 		else
 		gi.WriteByte (TE_GIB);

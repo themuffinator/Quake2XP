@@ -1842,7 +1842,7 @@ void CL_AddExplosions(void)
 		if (ex->light) {
 			V_AddLight(ent->origin, ex->light * ent->alpha,
 					   ex->lightcolor[0], ex->lightcolor[1],
-					   ex->lightcolor[2]);
+					   ex->lightcolor[2], vec3_origin, 0 ,0);
 		}
 
 		VectorCopy(ent->origin, ent->oldorigin);

@@ -1243,8 +1243,7 @@ void CL_AddDLights(void)
 		for (i = 0; i < MAX_DLIGHTS; i++, dl++) {
 			if (!dl->radius)
 				continue;
-			V_AddLight(dl->origin, dl->radius,
-					   dl->color[0], dl->color[1], dl->color[2]);
+			V_AddLight(dl->origin, dl->radius, dl->color[0], dl->color[1], dl->color[2], vec3_origin, 0 ,0);
 		}
 	} else {
 		for (i = 0; i < MAX_DLIGHTS; i++, dl++) {
@@ -1260,7 +1259,7 @@ void CL_AddDLights(void)
 				dl->color[2] = 1;
 			}
 			V_AddLight(dl->origin, dl->radius,
-					   dl->color[0], dl->color[1], dl->color[2]);
+					   dl->color[0], dl->color[1], dl->color[2], vec3_origin, 0 ,0);
 		}
 	}
 //PGM

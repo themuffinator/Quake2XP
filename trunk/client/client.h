@@ -839,7 +839,7 @@ void V_AddParticle(vec3_t org, vec3_t length, vec3_t color, float alpha,
 				   int flags, int time, float orient, float len,
 				   vec3_t oldOrg, vec3_t dir);
 
-void V_AddLight(vec3_t org, float intensity, float r, float g, float b);
+void V_AddLight(vec3_t org, float intensity, float r, float g, float b, vec3_t ang, float cone, int filter);
 
 void V_AddLightStyle(int style, float r, float g, float b);
 

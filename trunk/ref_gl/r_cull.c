@@ -22,6 +22,39 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 float frustumPlanes[6][4];
 
+// this is the slow, general version
+int BoxOnPlaneSide22 (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
+{
+	int		i;
+	float	dist1, dist2;
+	int		sides;
+	vec3_t	corners[2];
+
+	for (i=0 ; i<3 ; i++)
+	{
+		if (p->normal[i] < 0)
+		{
+			corners[0][i] = emins[i];
+			corners[1][i] = emaxs[i];
+		}
+		else
+		{
+			corners[1][i] = emins[i];
+			corners[0][i] = emaxs[i];
+		}
+	}
+	dist1 = DotProduct (p->normal, corners[0]) - p->dist;
+	dist2 = DotProduct (p->normal, corners[1]) - p->dist;
+	sides = 0;
+	if (dist1 >= 0)
+		sides = 1;
+	if (dist2 < 0)
+		sides |= 2;
+
+	return sides;
+}
+
+
 /*
  =================
  BoundsAndSphereIntersect
@@ -54,6 +87,16 @@ qboolean R_CullBox(vec3_t mins, vec3_t maxs)
 
 	for (i = 0; i < 4; i++)
 		if (BOX_ON_PLANE_SIDE(mins, maxs, &frustum[i]) == 2)
+			return true;
+	return false;
+}
+
+qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust)
+{
+	int		i;
+
+	for (i=0 ; i<4 ; i++)
+		if ( BoxOnPlaneSide22(mins, maxs, &frust[i]) == 2)
 			return true;
 	return false;
 }
