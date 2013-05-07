@@ -387,7 +387,9 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 {
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
-	
+	vec3_t		tmpOrg, tmpView, tmp, temp;
+	mat3_t		entityAxis;
+
 	if (currententity->flags & RF_DISTORT)
 			return;
 
@@ -405,9 +407,16 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		if (r_leftHand->value == 2)
 			return;
 	}
+	
+	if(!FoundReLight && currentShadowLight->isStatic && !currentShadowLight->style) // only dynamic lighting if we don't relight
+		return;
 
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+		if(!currentShadowLight->isNoWorldModel)
+			return;
+	
 		goto hack;
+	}
 
 	if(!InLightVISEntity())
 		return;
@@ -451,12 +460,24 @@ hack:
 		currententity->frame = 0;
 		currententity->oldframe = 0;
 	}
-		
+	
+	VectorCopy(currentShadowLight->origin, tmpOrg);
+	VectorCopy(r_origin, tmpView);
+
+	AnglesToMat3(currententity->angles, entityAxis);
+	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
+
+	// move view org to modelspace
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	AnglesToMat3(currententity->angles, entityAxis);
+	Mat3_TransposeMultiplyVector(entityAxis, tmp, r_origin);
+
 	qglPushMatrix ();
 	
 	R_RotateForLightEntity(currententity);
 
-	GL_DrawAliasFrameLerpArbBump(paliashdr);
+	GL_DrawAliasFrameLerpLight(paliashdr);
 
 	qglPopMatrix();
 
@@ -471,7 +492,8 @@ hack:
 	if (currententity->flags & RF_DEPTHHACK)
 		qglDepthRange(gldepthmin, gldepthmax);
 		
-	
+	VectorCopy(tmpOrg, currentShadowLight->origin);
+	VectorCopy(tmpView, r_origin);
 
 	qglColor4f(1, 1, 1, 1);
 }

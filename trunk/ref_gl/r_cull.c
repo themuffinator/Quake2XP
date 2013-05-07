@@ -216,7 +216,7 @@ qboolean EntityInLightSphere() {
 
 	VectorSubtract (currentShadowLight->origin, currententity->origin, dst);
 	return
-		(VectorLength (dst) < (currentShadowLight->radius + currentmodel->radius)*0.75);
+		(VectorLength (dst) < (currentShadowLight->radius + currentmodel->radius)/**0.75*/);
 			
 }
 

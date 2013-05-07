@@ -419,8 +419,7 @@ void GL_SetupCubeMapMatrix(qboolean model);
 void DeleteShadowVertexBuffers(void);
 void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame);
 qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust);
-
-void GL_DrawAliasFrameLerpArbBump (dmdl_t *paliashdr);
+void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr);
 qboolean SurfInFrustum(msurface_t *s);
 qboolean HasSharedLeafs(byte *v1, byte *v2);
 qboolean InLightVISEntity();
@@ -629,8 +628,10 @@ typedef struct {
 	unsigned char originalRedGammaTable[256];
 	unsigned char originalGreenGammaTable[256];
 	unsigned char originalBlueGammaTable[256];
+
 	GLuint	vbo_fullScreenQuad;
 	GLuint	vbo_halfScreenQuad;
+	GLuint	vbo_quarterScreenQuad;
 // ----------------------------------------------------------------
 } glstate_t;
 

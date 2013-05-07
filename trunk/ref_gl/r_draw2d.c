@@ -451,7 +451,6 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_gammaControl"), r_gamma->value);
 	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
 
 	if (scrap_dirty)

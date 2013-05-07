@@ -84,7 +84,7 @@ void R_AddDynamicLight(dlight_t *dl) {
 	light->isShadow = 1;
 }
 
-void R_AddNoWorldModelLight() {
+void R_AddNoWorldModelLight1() {
 	
 	worldShadowLight_t *light;
 	int i;
@@ -93,10 +93,12 @@ void R_AddNoWorldModelLight() {
 	memset(light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-
-	VectorSet(light->origin, -100, 100, 76);
+//	light->origin[0] -= 100;
+	light->origin[1] += 100;
+	light->origin[2] += 76;
 	VectorSet(light->startColor, 1.0, 1.0, 1.0);
-	light->radius = 1024;
+	VectorSet(light->angles, 0, 0, 0);
+	light->radius = 256;
 
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - light->radius;
@@ -108,7 +110,35 @@ void R_AddNoWorldModelLight() {
 	light->isStatic = 0;
 	light->isShadow = 0;
 	light->_cone = 0;
+	light->isNoWorldModel = 1;
+}
+
+void R_AddNoWorldModelLight2() {
+	
+	worldShadowLight_t *light;
+	int i;
+
+	light = &shadowLightsBlock[num_nwmLights++];
+	memset(light, 0, sizeof(worldShadowLight_t));
+	light->next = shadowLight_frame;
+	shadowLight_frame = light;
+//	light->origin[0] += 100;
+	light->origin[1] -= 100;
+	light->origin[2] += 76;
+	VectorSet(light->startColor, 1.0, 1.0, 1.0);
 	VectorSet(light->angles, 0, 0, 0);
+	light->radius = 256;
+
+	for (i = 0; i < 3; i++) {
+		light->mins[i] = light->origin[i] - light->radius;
+		light->maxs[i] = light->origin[i] + light->radius;
+	}
+
+	light->style = 0;
+	light->filter = 0;
+	light->isStatic = 0;
+	light->isShadow = 0;
+	light->_cone = 0;
 	light->isNoWorldModel = 1;
 }
 
@@ -143,9 +173,10 @@ void R_PrepareShadowLightFrame(void) {
 	}
 
 
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		R_AddNoWorldModelLight();
-	
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+		R_AddNoWorldModelLight1();
+		R_AddNoWorldModelLight2();
+	}
 	if(!shadowLight_frame) 
 		return;
 		
@@ -1077,7 +1108,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
 	light->isAmbient = isAmbient;
-	light->isNoWorldModel = false;
+	light->isNoWorldModel = 0;
 	light->next = NULL;
 	light->style = style;
 	light->filter = filter;

@@ -250,6 +250,42 @@ Post Process Effects
 ====================
 */
 
+void R_DrawFullScreenQuad()
+{
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_fullScreenQuad);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
+	
+	qglDrawArrays (GL_QUADS, 0, 4);
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+}
+
+void R_DrawHalfScreenQuad()
+{
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_halfScreenQuad);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
+	
+	qglDrawArrays (GL_QUADS, 0, 4);
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+}
+
+void R_DrawQuarterScreenQuad()
+{
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_quarterScreenQuad);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
+	
+	qglDrawArrays (GL_QUADS, 0, 4);
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+}
+
 unsigned int bloomtex = 0;
 
 void R_Bloom (void) {
@@ -278,12 +314,7 @@ void R_Bloom (void) {
 		qglUniform1f			(qglGetUniformLocation(id, "threshold"), r_bloomThreshold->value);
 		qglUniform1i			(qglGetUniformLocation(id, "u_map"), 0);
 			
-		qglBegin(GL_QUADS);
-        qglVertex2f(0, vid.height);
-        qglVertex2f(vid.width * 0.25 , vid.height);
-        qglVertex2f(vid.width * 0.25 , vid.height  * 0.25);
-        qglVertex2f(0, vid.height * 0.25);
-        qglEnd();
+		R_DrawQuarterScreenQuad();
 
 		// create bloom texture (set to zero in default state)
 		if (!bloomtex) {
@@ -302,12 +333,7 @@ void R_Bloom (void) {
 		id = gaussXProgram->id[defBits];
 		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 	
-		qglBegin(GL_QUADS);
-        qglVertex2f(0, vid.height);
-        qglVertex2f(vid.width * 0.25 , vid.height);
-        qglVertex2f(vid.width * 0.25 , vid.height  * 0.25);
-        qglVertex2f(0, vid.height * 0.25);
-        qglEnd();
+		R_DrawQuarterScreenQuad();
 
 		// blur y
 		GL_BindRect				(bloomtex);
@@ -317,12 +343,7 @@ void R_Bloom (void) {
 		id = gaussYProgram->id[defBits];
 		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 		
-		qglBegin(GL_QUADS);
-        qglVertex2f(0, vid.height);
-        qglVertex2f(vid.width * 0.25 , vid.height);
-        qglVertex2f(vid.width * 0.25 , vid.height  * 0.25);
-        qglVertex2f(0, vid.height * 0.25);
-        qglEnd();
+		R_DrawQuarterScreenQuad();
 		
 		// store 2 pass gauss blur 
 		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
@@ -340,12 +361,7 @@ void R_Bloom (void) {
 		
 		qglUniform1f		(qglGetUniformLocation(id, "u_bloomAlpha"), r_bloomIntens->value);
 		
-		qglBegin(GL_QUADS);
-        qglVertex2f(0, vid.height);
-        qglVertex2f(vid.width, vid.height);
-        qglVertex2f(vid.width, 0);
-        qglVertex2f(0, 0);
-        qglEnd();
+		R_DrawFullScreenQuad();
 						
 		GL_BindNullProgram();
 		GL_SelectTexture		(GL_TEXTURE0_ARB);
@@ -385,12 +401,7 @@ void R_ThermalVision (void) {
 		id = thermalProgram->id[defBits];
 		qglUniform1i(qglGetUniformLocation(id, "u_screenTex"), 0);
 
-        qglBegin(GL_QUADS);
-        qglVertex2f(0, vid.height);
-        qglVertex2f(vid.width * 0.5 , vid.height);
-        qglVertex2f(vid.width * 0.5 , vid.height  * 0.5);
-        qglVertex2f(0, vid.height * 0.5);
-        qglEnd();
+		R_DrawHalfScreenQuad();
 
 		// create thermal texture (set to zero in default state)
 		if (!thermaltex) {
@@ -409,12 +420,7 @@ void R_ThermalVision (void) {
 		id = gaussXProgram->id[defBits];
 		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 
-		qglBegin(GL_QUADS);
-        qglVertex2f(0, vid.height);
-        qglVertex2f(vid.width * 0.5 , vid.height);
-        qglVertex2f(vid.width * 0.5 , vid.height  * 0.5);
-        qglVertex2f(0, vid.height * 0.5);
-        qglEnd();
+		R_DrawHalfScreenQuad();
 
 		// blur y
 		GL_BindRect				(thermaltex);
@@ -424,12 +430,7 @@ void R_ThermalVision (void) {
 		id = gaussYProgram->id[defBits];
 		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 			
-		qglBegin(GL_QUADS);
-        qglVertex2f(0, vid.height);
-        qglVertex2f(vid.width * 0.5 , vid.height);
-        qglVertex2f(vid.width * 0.5 , vid.height  * 0.5);
-        qglVertex2f(0, vid.height * 0.5);
-        qglEnd();
+		R_DrawHalfScreenQuad();
 
 		// store 2 pass gauss blur 
 		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
@@ -442,16 +443,9 @@ void R_ThermalVision (void) {
 		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 		qglUniform1i			(qglGetUniformLocation(id, "u_map"), 0);
 			
-		qglBegin(GL_QUADS);
-        qglVertex2f(0, vid.height);
-        qglVertex2f(vid.width, vid.height);
-        qglVertex2f(vid.width, 0);
-        qglVertex2f(0, 0);
-        qglEnd();
-			
+		R_DrawFullScreenQuad();
 							
 		GL_BindNullProgram();
-	
 		GL_SelectTexture(GL_TEXTURE0_ARB);
 }
 
@@ -496,14 +490,10 @@ hack:
 	// xy = radial center screen space position, z = radius attenuation, w = blur strength
 	qglUniform4f(qglGetUniformLocation(id, "u_radialBlurParams"), vid.width*0.5, vid.height*0.5, 1.0/vid.height, blur);
 
-	qglBegin(GL_QUADS);
-    qglVertex2f(0, vid.height);
-    qglVertex2f(vid.width, vid.height);
-    qglVertex2f(vid.width, 0);
-    qglVertex2f(0, 0);
-    qglEnd();
+	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram();
+	GL_SelectTexture(GL_TEXTURE0_ARB);
 	}
 }
 
@@ -538,16 +528,10 @@ void R_DofBlur (void) {
 	GL_BindRect				(depthMap->texnum);
     qglUniform1i			(qglGetUniformLocation(id, "u_DepthTex"), 1);
 
-	qglBegin(GL_QUADS);
-    qglVertex2f(0, vid.height);
-    qglVertex2f(vid.width, vid.height);
-    qglVertex2f(vid.width, 0);
-    qglVertex2f(0, 0);
-    qglEnd();
+	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram		();
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-
 }
 
 void R_FXAA (void) {
@@ -567,12 +551,7 @@ void R_FXAA (void) {
     qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglUniform1i		(qglGetUniformLocation(id, "u_ScreenTex"), 0);
 
-	qglBegin			(GL_QUADS);
-    qglVertex2f			(0, vid.height);
-    qglVertex2f			(vid.width, vid.height);
-    qglVertex2f			(vid.width, 0);
-    qglVertex2f			(0, 0);
-    qglEnd				();
+	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram	();
 	GL_SelectTexture	(GL_TEXTURE0_ARB);	
@@ -600,18 +579,11 @@ void R_FilmGrain (void) {
 	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
 	qglUniform1f			(qglGetUniformLocation(id, "u_scroll"), -3 * (r_newrefdef.time / 40.0));
 
-	qglBegin(GL_QUADS);
-    qglVertex2f(0, vid.height);
-    qglVertex2f(vid.width, vid.height);
-    qglVertex2f(vid.width, 0);
-    qglVertex2f(0, 0);
-    qglEnd();
+	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram		();
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-
 }
-
 
 void R_GammaRamp (void) {
 	
@@ -631,14 +603,8 @@ void R_GammaRamp (void) {
 	qglUniform1f			(qglGetUniformLocation(id, "u_contrast"), r_contrast->value);
 	qglUniform1f			(qglGetUniformLocation(id, "u_saturation"), r_saturation->value);
 
-	qglBegin(GL_QUADS);
-	qglVertex2f(0, vid.height);
-	qglVertex2f(vid.width, vid.height);
-	qglVertex2f(vid.width, 0);
-	qglVertex2f(0, 0);
-	qglEnd();
-
+	R_DrawFullScreenQuad();
+	
 	GL_BindNullProgram		();
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-
 }

@@ -1,6 +1,6 @@
 /*
 Copyright (C)	1997-2001 Id Software, Inc., 
-				2004-2011 Quake2xp Team
+				2004-2013 Quake2xp Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -267,7 +267,7 @@ void LoadHudEnts(void)
 void SCR_DrawHudModel(float x, float y, struct model_s *model)
 {
 	refdef_t refdef;
-	vec3_t mins, maxs, center, rad;
+	vec3_t center, rad, tmp, tmp2;
 	float scale, hud_sx, hud_sy;
 	float screenAspect, scaledHeight;
 	entity_t entity;
@@ -289,10 +289,11 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	memset(&refdef, 0, sizeof(refdef));
 	memset(&entity, 0, sizeof(entity));
 
-	R_ModelBounds(model, mins, maxs);
 	R_ModelRadius(model, rad);
 	R_ModelCenter(model, center);
-	
+	VectorCopy(refdef.vieworg, tmp);
+	VectorCopy(refdef.viewangles, tmp2);
+
 	refdef.x = x;
 	refdef.y = y;
 	refdef.width = 24*hud_sx;
@@ -324,6 +325,9 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	// Draw it
 	R_RenderFrame(&refdef, true);
 	refdef.num_entities++;
+
+	VectorCopy(tmp2, refdef.viewangles);
+	VectorCopy(tmp, refdef.vieworg);
 }
 
 

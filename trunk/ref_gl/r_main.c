@@ -1579,8 +1579,6 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf("=====================================\n");
 	Com_Printf("\n");
 		
-	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
-	
 #ifdef _WIN32
 	if (strstr(gl_config.extensions_string, "WGL_EXT_swap_control")) {
 		qwglSwapIntervalEXT = (BOOL(WINAPI *) (int)) qwglGetProcAddress("wglSwapIntervalEXT");
@@ -1592,12 +1590,9 @@ int R_Init(void *hinstance, void *hWnd)
 
 if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	Com_Printf("...using GL_ARB_multitexture\n");
-		
-		qglMultiTexCoord2fARB =		(PFNGLMULTITEXCOORD2FARBPROC)		qwglGetProcAddress("glMultiTexCoord2fARB");
+
 		qglActiveTextureARB =		(PFNGLACTIVETEXTUREARBPROC)			qwglGetProcAddress("glActiveTextureARB");
 		qglClientActiveTextureARB =	(PFNGLCLIENTACTIVETEXTUREARBPROC)	qwglGetProcAddress("glClientActiveTextureARB");
-		qglMultiTexCoord3fvARB =	(PFNGLMULTITEXCOORD3FVARBPROC)		qwglGetProcAddress("glMultiTexCoord3fvARB");
-
 	
 	} else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_multitexture not found\n");
@@ -1605,7 +1600,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	}
 
 
-
+	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
 	Cvar_SetValue("r_maxAnisotropy", max_aniso);
 	if (r_anisotropic->value >= r_maxAnisotropy->value)
 		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->value);
@@ -1754,8 +1749,38 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		qglBufferSubData =	(PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
 
 		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData){
-				
+			vec2_t		tmpVerts0[4], tmpVerts1[4], tmpVerts2[4];	
 			Com_Printf("...using GL_ARB_vertex_buffer_object\n");
+			// precalc screen quads for postprocessing
+			// full quad
+			VA_SetElem2(tmpVerts0[0],0 ,			vid.height);
+			VA_SetElem2(tmpVerts0[1],vid.width,	vid.height);
+			VA_SetElem2(tmpVerts0[2],vid.width,	0);
+			VA_SetElem2(tmpVerts0[3],0,			0);
+			qglGenBuffers(1, &gl_state.vbo_fullScreenQuad);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_fullScreenQuad);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts0, GL_STATIC_DRAW_ARB);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+			// half quad
+			VA_SetElem2(tmpVerts1[0],0,					vid.height);
+			VA_SetElem2(tmpVerts1[1],vid.width * 0.5 ,	vid.height);
+			VA_SetElem2(tmpVerts1[2],vid.width * 0.5 ,	vid.height * 0.5);
+			VA_SetElem2(tmpVerts1[3],0,					vid.height * 0.5);
+			qglGenBuffers(1, &gl_state.vbo_halfScreenQuad);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_halfScreenQuad);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts1, GL_STATIC_DRAW_ARB);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+			// quater quad
+			VA_SetElem2(tmpVerts2[0],0,						vid.height);
+			VA_SetElem2(tmpVerts2[1],vid.width * 0.25 ,		vid.height);
+			VA_SetElem2(tmpVerts2[2],vid.width * 0.25 ,		vid.height * 0.25);
+			VA_SetElem2(tmpVerts2[3],0,						vid.height * 0.25);
+			qglGenBuffers(1, &gl_state.vbo_quarterScreenQuad);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_quarterScreenQuad);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts2, GL_STATIC_DRAW_ARB);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 		}
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
@@ -1914,14 +1939,6 @@ R_Shutdown
 
 void R_Shutdown(void)
 {
-    
-	if(qglDeleteQueriesARB){
-	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
-	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
-	}
-	
-	DeleteShadowVertexBuffers();
-
 	Cmd_RemoveCommand("modellist");
 	Cmd_RemoveCommand("screenshot");
 	Cmd_RemoveCommand("imagelist");
@@ -1952,6 +1969,17 @@ void R_Shutdown(void)
 	QGL_Shutdown();
 	ilShutDown();
 	R_ShutdownPrograms();
+		    
+	if(qglDeleteQueriesARB){
+	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
+	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
+	}
+	
+	DeleteShadowVertexBuffers();
+
+	qglDeleteBuffers(1, &gl_state.vbo_fullScreenQuad);
+	qglDeleteBuffers(1, &gl_state.vbo_halfScreenQuad);
+	qglDeleteBuffers(1, &gl_state.vbo_quarterScreenQuad);
 }
 
 
