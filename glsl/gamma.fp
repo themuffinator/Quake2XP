@@ -14,9 +14,9 @@ vec3 BrightnesContrastSaturation(vec3 color, float brt, float con, float sat)
   
   const vec3 LumCoeff = vec3(0.2125, 0.7154, 0.0721);
   
-  vec3 AvgLumin = vec3(AvgLumR, AvgLumG, AvgLumB);
-  vec3 brtColor = color * brt;
-  vec3 intensity = vec3(dot(brtColor, LumCoeff));
+	vec3 AvgLumin = vec3(AvgLumR, AvgLumG, AvgLumB);
+	vec3 brtColor = color * brt;
+	vec3 intensity = vec3(dot(brtColor, LumCoeff));
 	vec3 satColor = mix(intensity, brtColor, sat);
 	vec3 conColor = mix(AvgLumin, satColor, con);
 	return conColor;
@@ -25,7 +25,8 @@ vec3 BrightnesContrastSaturation(vec3 color, float brt, float con, float sat)
  
 void main(void) 
 {
-vec4 color = texture2DRect(u_ScreenTex, gl_FragCoord.xy);
-color.rgb = BrightnesContrastSaturation(color, u_brightnes, u_contrast, u_saturation);
-gl_FragColor = pow(color, 1.0 / u_gamma);
+vec3 color = texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb;
+color = BrightnesContrastSaturation(color, u_brightnes, u_contrast, u_saturation);
+gl_FragColor.rgb = pow(color, 1.0 / vec3(u_gamma));
+gl_FragColor.a = 1.0;
 }
