@@ -1,6 +1,7 @@
 uniform sampler2D		u_bumpMap;
 uniform sampler2D		u_diffuseMap;
 uniform samplerCube 	u_CubeFilterMap;
+uniform sampler3D	 	u_attenMap;
 
 uniform float           u_LightRadius;
 uniform vec3			u_LightColor;
@@ -9,7 +10,7 @@ varying vec2			v_texCoord;
 varying vec3			v_viewVec;
 varying vec3			v_lightVec;
 varying vec4			v_CubeCoord;
-
+varying vec3			v_AttenCoord;
 
 #include lighting.inc
 
@@ -22,24 +23,20 @@ vec4 diffuse  = texture2D(u_diffuseMap,  v_texCoord.xy);
 vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
 cubeFilter *= 2;
 
+vec4 u_attenMap = texture3D(u_attenMap ,v_AttenCoord);
+
+#ifdef AMBIENT
+
+gl_FragColor = diffuse * vec4(u_LightColor, 1) * u_attenMap;
+
+#else
 // compute the light vector
 vec3 L = normalize(v_lightVec);
 // compute the view vector
 vec3 V = normalize(v_viewVec);
-
-// compute the atten
-vec3 tmp1 = L;
-tmp1 /= u_LightRadius;
-float att = max(1.0 - dot(tmp1, tmp1), 0.0);
-
-#ifdef AMBIENT
-
-gl_FragColor = diffuse * vec4(u_LightColor, 1) * att;
-
-#else
 vec2 E = PhongLighting(N, L, V, 16.0);
 
-gl_FragColor = (E.x * diffuse + E.y * specular) * vec4(u_LightColor, 1) * cubeFilter * att ;
+gl_FragColor = (E.x * diffuse + E.y * specular) * cubeFilter * vec4(u_LightColor, 1) * u_attenMap;
 
 #endif
 }

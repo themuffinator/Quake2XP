@@ -9,6 +9,7 @@ uniform vec3		u_ViewOrigin;
 
 varying vec2		v_texCoord;
 varying vec4		v_CubeCoord;
+varying vec3		v_AttenCoord;
 varying vec3		v_viewVec;
 varying vec3		v_lightVec;
 
@@ -16,6 +17,7 @@ void main (void) {
 	
 v_texCoord = a_texCoord; 
 v_CubeCoord = gl_TextureMatrix[2] * vec4(a_vertArray, 1.0);
+v_AttenCoord = gl_TextureMatrix[3] * vec4(a_vertArray, 1.0);
 
 vec3 LV = u_LightOrg - a_vertArray;
 v_lightVec.x = dot(a_tangent, LV);
