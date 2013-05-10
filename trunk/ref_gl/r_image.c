@@ -161,6 +161,18 @@ void GL_Bind(int texnum)
 	qglBindTexture(GL_TEXTURE_2D, texnum);
 }
 
+void GL_Bind3d(int texnum)
+{
+	extern image_t *draw_chars;
+
+	if (r_noBind->value && draw_chars)	// performance evaluation option
+		texnum = draw_chars->texnum;
+	if (gl_state.currenttextures[gl_state.currenttmu] == texnum)
+		return;
+	gl_state.currenttextures[gl_state.currenttmu] = texnum;
+	qglBindTexture(GL_TEXTURE_3D, texnum);
+}
+
 void GL_BindCube(int texnum)
 {
 	extern image_t *draw_chars;
@@ -215,6 +227,17 @@ void GL_MBindRect(GLenum target, int texnum)
 		return;
 
 	GL_BindRect(texnum);
+}
+
+void GL_MBind3d(GLenum target, int texnum)
+{
+	int targ = target - GL_TEXTURE0_ARB;
+	GL_SelectTexture(target);
+
+	if (gl_state.currenttextures[targ] == texnum)
+		return;
+
+	GL_Bind3d(texnum);
 }
 
 void GL_Blend(qboolean on, int src, int dst)
@@ -1499,6 +1522,7 @@ void GL_FreeUnusedImages(void)
 	r_defBump->registration_sequence = registration_sequence;
 	r_scanline->registration_sequence = registration_sequence;
 	r_envTex->registration_sequence = registration_sequence;
+	atten3d_texture_object->registration_sequence = registration_sequence;
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)

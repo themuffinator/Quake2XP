@@ -306,17 +306,30 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 
 void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 {
-	vec3_t	light, temp;
+	vec3_t	light, temp, mins, maxs;
 	float	projdist;
 	mat3_t	entityAxis;
-	
+	int		i;
+
 	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic shadows if we don't relight
 		return;
 	
 	if(!InLightVISEntity())
 		return;
 
-	if(!EntityInLightSphere()) 
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
+		for (i = 0; i < 3; i++) {
+			mins[i] = currententity->origin[i] - currentmodel->radius;
+			maxs[i] = currententity->origin[i] + currentmodel->radius;
+		}
+	}
+	else
+	{
+	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
+	VectorAdd(currententity->origin, currententity->model->mins, mins);
+	}
+	
+	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
 		return;
 
 	if(VectorCompare(currentShadowLight->origin, currententity->origin))
@@ -805,7 +818,7 @@ void R_DrawBspModelVolumes(qboolean precalc)
  
                         icache[ib++] = j*2+0    +surfBase;
                         icache[ib++] = jj*2+1   +surfBase;
-                        icache[ib++] = jj*2+0   +surfBase;
+                        icache[ib++] = jj*2+0	+surfBase;
                 }
         }
  
@@ -842,7 +855,7 @@ void R_DrawBspModelVolumes(qboolean precalc)
 			numPreCachedLights++;
 
 				if(!gl_state.createVbo)
-					Com_Printf("calc vbo data for light\n");
+					Com_DPrintf("calc vbo data for light\n");
 			}else
 		{
 		if(ib){

@@ -246,7 +246,7 @@ next:
 		if (R_CullAliasModel(bbox, e))
 			return;
 	}
-
+	
 //	if (e->flags & RF_WEAPONMODEL) {
 //		if (!weapon_model)
 //			return;
@@ -300,12 +300,15 @@ next:
 		currententity->frame = 0;
 		currententity->oldframe = 0;
 	}
-		
-	if(r_pplWorld->value){
-	VectorCopy(shadelight, diffuseLight);
-	VectorScale(shadelight, r_pplWorldAmbient->value, shadelight);
-	}	
 	
+	if (!(currententity->flags & RF_TRANSLUCENT)){
+	
+		if(r_pplWorld->value){
+		VectorCopy(shadelight, diffuseLight);
+		VectorScale(shadelight, r_pplWorldAmbient->value, shadelight);
+		}	
+	}
+
     qglPushMatrix ();
 
 	R_RotateForLightEntity(e);
@@ -314,10 +317,11 @@ next:
 		GL_DrawAliasFrameLerpAmbientShell(paliashdr);
 	else 
 		GL_DrawAliasFrameLerpAmbient(paliashdr, shadelight);
-		
+	
+	if (!(currententity->flags & RF_TRANSLUCENT)){
 	if(r_pplWorld->value)
 		VectorCopy(diffuseLight, shadelight);
-
+	}
 	qglPopMatrix();
 
 	if ((currententity->flags & RF_WEAPONMODEL) && (r_leftHand->value == 1.0F)) {
@@ -389,9 +393,14 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	vec3_t		bbox[8];
 	vec3_t		tmpOrg, tmpView, tmp, temp;
 	mat3_t		entityAxis;
+	vec3_t		mins, maxs;
+	int			i;
 
 	if (currententity->flags & RF_DISTORT)
 			return;
+	
+	if (currententity->flags & RF_TRANSLUCENT)
+		return;
 
 	if (!(currententity->flags & RF_WEAPONMODEL)) {
 		if (R_CullAliasModel(bbox, currententity))
@@ -408,22 +417,32 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 			return;
 	}
 	
-	if(!FoundReLight && currentShadowLight->isStatic && !currentShadowLight->style) // only dynamic lighting if we don't relight
+	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic lighting if we don't relight
 		return;
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 		if(!currentShadowLight->isNoWorldModel)
 			return;
-	
-		goto hack;
 	}
 
 	if(!InLightVISEntity())
 		return;
 
-	if(!EntityInLightSphere()) 
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
+		for (i = 0; i < 3; i++) {
+			mins[i] = currententity->origin[i] - currentmodel->radius;
+			maxs[i] = currententity->origin[i] + currentmodel->radius;
+		}
+	}
+	else
+	{
+	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
+	VectorAdd(currententity->origin, currententity->model->mins, mins);
+	}
+	
+	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
 		return;
-hack:
+
 
 	paliashdr = (dmdl_t *)currentmodel->extradata;
 	

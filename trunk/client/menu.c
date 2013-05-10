@@ -299,8 +299,6 @@ MAIN MENU
 */
 #define	MAIN_ITEMS	5
 
-int xOffcet, yOffcet;
-
 void M_Main_DrawQuad(float x, float y)
 {
 	extern float CalcFov(float fov_x, float w, float h);
@@ -313,14 +311,12 @@ void M_Main_DrawQuad(float x, float y)
 	memset(&refdef, 0, sizeof(refdef));
 
 	refdef.x = x;
-	refdef.y = y;
-	refdef.width = 60 * cl_fontScale->value;
-	refdef.height = 90 * cl_fontScale->value;
+	refdef.y = y- 7 * cl_fontScale->value;
+	refdef.width = 50 * cl_fontScale->value;
+	refdef.height = 50 * cl_fontScale->value;
 	refdef.fov_x = 40;
 	refdef.fov_y = CalcFov(refdef.fov_x, refdef.width, refdef.height);
 	refdef.time = cls.realtime / 1.5;
-	xOffcet = 60;
-	yOffcet = 90;
 
 	memset(&entity, 0, sizeof(entity));
 
@@ -331,9 +327,9 @@ void M_Main_DrawQuad(float x, float y)
 				"models/items/quaddama/skin.pcx");
 	entity.skin = R_RegisterSkin(scratch);
 	entity.flags = RF_FULLBRIGHT | RF_NOSHADOW;
-	entity.origin[0] = 80;
-	entity.origin[1] = 0;
-	entity.origin[2] = 0;
+	entity.origin[0] = 55;
+	entity.origin[1] = -3;
+	entity.origin[2] = -17;
 	VectorCopy(entity.origin, entity.oldorigin);
 
 	entity.frame = 0;
@@ -349,7 +345,6 @@ void M_Main_DrawQuad(float x, float y)
 	refdef.lightstyles = 0;
 	refdef.rdflags = RDF_NOWORLDMODEL | RDF_NOCLEAR;
 
-	refdef.height += 4;
 	R_RenderFrame(&refdef, true);
 	refdef.num_entities++;
 }

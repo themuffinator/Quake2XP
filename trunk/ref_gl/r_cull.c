@@ -210,18 +210,6 @@ float SphereInFrustum( vec3_t o, float radius )
 }
 
 
-qboolean EntityInLightSphere() {
-
-	vec3_t dst;
-
-	VectorSubtract (currentShadowLight->origin, currententity->origin, dst);
-	return
-		(VectorLength (dst) < (currentShadowLight->radius + currentmodel->radius)/**0.75*/);
-			
-}
-
-
-
 int SignbitsForPlane(cplane_t * out)
 {
 	int bits, j;

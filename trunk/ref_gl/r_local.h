@@ -176,6 +176,7 @@ extern image_t	*ScreenMap;
 extern image_t	*r_envTex;
 extern image_t	*shadowMask;
 extern image_t	*r_scanline;
+extern image_t *atten3d_texture_object;
 
 #define MAX_FILTERS 256
 extern image_t	*filtercube_texture_object[MAX_FILTERS];
@@ -403,6 +404,7 @@ void R_DebugLights (vec3_t lightOrg);
 void R_CastShadowVolumes(void);
 void R_DrawAliasModelLightPass (qboolean weapon_model);
 void R_RotateForLightEntity(entity_t * e);
+void GL_MBind3d(GLenum target, int texnum);
 
 void R_SaveLights_f(void);
 void R_Light_Spawn_f(void);
@@ -445,7 +447,6 @@ extern qboolean FoundReLight;
 qboolean PF_inPVS(vec3_t p1, vec3_t p2);
 void R_SetFrustum(void);
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
-qboolean EntityInLightSphere();
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -746,6 +747,7 @@ glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*bloomdsProgram;
 glslProgram_t		*gaussXProgram;
 glslProgram_t		*gaussYProgram;
+glslProgram_t		*starBlurProgram;
 glslProgram_t		*bloomfpProgram;
 glslProgram_t		*refractProgram;
 glslProgram_t		*thermalProgram;

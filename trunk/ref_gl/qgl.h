@@ -686,6 +686,8 @@ extern PFNGLENDCONDITIONALRENDERNVPROC				glEndConditionalRenderNV;
 extern PFNGLBEGINCONDITIONALRENDERPROC				glBeginConditionalRender;
 extern PFNGLENDCONDITIONALRENDERPROC				glEndConditionalRender;
 
+extern PFNGLTEXIMAGE3DEXTPROC						glTexImage3DEXT;
+
 extern PFNGLGETPROGRAMBINARYPROC					glGetProgramBinary;
 extern PFNGLPROGRAMBINARYPROC						glProgramBinary;
 extern PFNGLPROGRAMPARAMETERIPROC					glProgramParameteri;

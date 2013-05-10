@@ -1624,6 +1624,12 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		r_maxAnisotropy = Cvar_Set("r_maxAnisotropy", "0");
 	}
 
+	
+	if (strstr(gl_config.extensions_string, "GL_EXT_texture3D")){
+	glTexImage3DEXT = (PFNGLTEXIMAGE3DEXTPROC)	qwglGetProcAddress("glTexImage3DEXT");
+	Com_Printf("...using GL_EXT_texture3D\n");
+	}else
+	Com_Printf(S_COLOR_RED "...GL_EXT_texture3D not found\n");
 
 	gl_state.texture_compression_arb = false;
 	if (strstr(gl_config.extensions_string, "GL_ARB_texture_compression"))

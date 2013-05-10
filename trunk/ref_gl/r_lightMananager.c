@@ -84,7 +84,7 @@ void R_AddDynamicLight(dlight_t *dl) {
 	light->isShadow = 1;
 }
 
-void R_AddNoWorldModelLight1() {
+void R_AddNoWorldModelLight() {
 	
 	worldShadowLight_t *light;
 	int i;
@@ -93,7 +93,8 @@ void R_AddNoWorldModelLight1() {
 	memset(light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-//	light->origin[0] -= 100;
+	VectorCopy(currententity->origin, light->origin);
+	light->origin[0] -= 100;
 	light->origin[1] += 100;
 	light->origin[2] += 76;
 	VectorSet(light->startColor, 1.0, 1.0, 1.0);
@@ -107,40 +108,12 @@ void R_AddNoWorldModelLight1() {
 
 	light->style = 0;
 	light->filter = 0;
-	light->isStatic = 0;
+	light->isStatic = 1;
 	light->isShadow = 0;
 	light->_cone = 0;
 	light->isNoWorldModel = 1;
 }
 
-void R_AddNoWorldModelLight2() {
-	
-	worldShadowLight_t *light;
-	int i;
-
-	light = &shadowLightsBlock[num_nwmLights++];
-	memset(light, 0, sizeof(worldShadowLight_t));
-	light->next = shadowLight_frame;
-	shadowLight_frame = light;
-//	light->origin[0] += 100;
-	light->origin[1] -= 100;
-	light->origin[2] += 76;
-	VectorSet(light->startColor, 1.0, 1.0, 1.0);
-	VectorSet(light->angles, 0, 0, 0);
-	light->radius = 256;
-
-	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - light->radius;
-		light->maxs[i] = light->origin[i] + light->radius;
-	}
-
-	light->style = 0;
-	light->filter = 0;
-	light->isStatic = 0;
-	light->isShadow = 0;
-	light->_cone = 0;
-	light->isNoWorldModel = 1;
-}
 
 void R_PrepareShadowLightFrame(void) {
 	
@@ -174,9 +147,9 @@ void R_PrepareShadowLightFrame(void) {
 
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		R_AddNoWorldModelLight1();
-		R_AddNoWorldModelLight2();
+		R_AddNoWorldModelLight();
 	}
+
 	if(!shadowLight_frame) 
 		return;
 		
@@ -1031,14 +1004,6 @@ void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame)
 	if (!light->_cone)
 		return;	// ”йдем, если фрустум не надо рассчитывать (не задан параметр _cone)
 
-	// ≈сли фрустум уже был рассчитан...
-	if(!VectorCompare(light->frust[0].normal, vec3_origin))
-		// и если источник - статичный...
-//		if(light->isStatic)
-			// и если источник никак не вращаетс€ в пространстве (вращение в своей плоскости не учитываем)
-//			if(!light->speed[0] && !light->speed[1])
-//				return;		// то фрустум больше не считаем!
-
 	if(ingame)
 		VectorCopy(light->speed, rspeed);
 	else
@@ -1205,13 +1170,13 @@ void Load_BspLights() {
 		}
 
 		if(addLight) {
-			if(style > 31 || style > 0 && style < 12){
+			if(style > 31 || style > 0 && style < 12 || cone){
 			R_AddNewWorldLight(origin, color, radius, style, 0, vec3_origin, vec3_origin, 1, 1, 0, cone);
 			numlights++;
 			}
 		}
 	}
-	Com_Printf("loaded %i bsp lights whith styles\n", numlights);
+	Com_Printf("loaded %i bsp lights whith styles or cone\n", numlights);
 
 }
 
@@ -1360,11 +1325,11 @@ qboolean InLightVISEntity()
 	int		i, count;
 	int		longs;
 	vec3_t	mins, maxs;
+		
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return true;
 
 	if (!r_worldmodel)
-		return false;
-
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return false;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
@@ -1392,7 +1357,6 @@ qboolean InLightVISEntity()
 	for (i=0 ; i<count ; i++)
 		currententity->vis[leafs[i]>>3] |= (1<<(leafs[i]&7));
 
-
 	return HasSharedLeafs (currentShadowLight->vis, currententity->vis);
 }
 
@@ -1419,10 +1383,6 @@ void DeleteShadowVertexBuffers(void){
 		}
 }
 
-/*====================================
-AVERAGE LIGHTS. 
-BUT NEVER REMOVE THE LIGHT WITH STYLE!
-=====================================*/
 
 void CleanDuplicateLights(void){
 
@@ -1434,14 +1394,14 @@ void CleanDuplicateLights(void){
 
 	for(light1 = shadowLight_static; light1; light1 = light1->s_next) {
 	
-		if(light1->style)
+		if(light1->style || light1->_cone)
 			continue;
 
 	for(light2 = light1->s_next; light2; light2 = plug) {
 		
 		plug = light2->s_next;
 
-		if(light2->style)
+		if(light2->style || light2->_cone)
 			continue;
 
 		VectorSubtract(light2->origin, light1->origin, tmp);
