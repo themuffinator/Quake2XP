@@ -1,3 +1,4 @@
+// fixed
 uniform sampler2DRect u_ScreenTex;
 
 uniform float u_gamma;
