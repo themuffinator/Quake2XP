@@ -2379,6 +2379,10 @@ exit:
 			mod->st[l++] = poutst[indexST].t;
 		}
 	}
+	qglGenBuffers(1, &mod->vboId);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, mod->vboId);
+	qglBufferData(GL_ARRAY_BUFFER_ARB, l * sizeof(float), mod->st, GL_STATIC_DRAW_ARB);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 
@@ -2622,6 +2626,9 @@ void Mod_Free(model_t * mod)
 	if (mod->neighbors)
 		free(mod->neighbors);
 	
+	if(mod->type == mod_alias)
+		qglDeleteBuffers(1, &mod->vboId);
+
 	memset(mod, 0, sizeof(*mod));
 }
 

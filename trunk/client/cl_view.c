@@ -367,8 +367,6 @@ void CL_PrepRefresh(void)
 		SCR_EndLoadingPlaque();
 	else
 		Cvar_Set("paused", "0");
-	
-//	R_ClearSLights();
 }
 
 /*

@@ -326,7 +326,7 @@ void M_Main_DrawQuad(float x, float y)
 	Com_sprintf(scratch, sizeof(scratch),
 				"models/items/quaddama/skin.pcx");
 	entity.skin = R_RegisterSkin(scratch);
-	entity.flags = RF_FULLBRIGHT | RF_NOSHADOW;
+	entity.flags = RF_NOSHADOW | RF_FULLBRIGHT;
 	entity.origin[0] = 55;
 	entity.origin[1] = -3;
 	entity.origin[2] = -17;
@@ -4274,6 +4274,7 @@ void PlayerConfig_MenuDraw(void)
 		entity[0].origin[0] = 90;
 		entity[0].origin[1] = 0;
 		entity[0].origin[2] = -8;
+		entity[0].flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DEPTHHACK;
 		
 		VectorCopy(entity[0].origin, entity[0].oldorigin);
 	
@@ -4312,7 +4313,7 @@ void PlayerConfig_MenuDraw(void)
 		entity[1].frame = entity[0].frame;
 		entity[1].oldframe = entity[0].oldframe;
 		entity[1].backlerp = entity[0].backlerp;
-
+		entity[1].flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DEPTHHACK;
 		refdef.num_entities++;
 		}
 

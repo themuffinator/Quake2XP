@@ -297,8 +297,7 @@ typedef struct model_s {
 
 	int			*indexArray2;
 	int			numIndices2;
-
-//	struct		vertCache_s	*vbo_st;
+	GLuint		vboId;
 	int memorySize;
 
 } model_t;

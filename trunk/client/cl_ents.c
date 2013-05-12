@@ -998,7 +998,7 @@ void CL_AddPacketEntities(frame_t * frame)
 
 		if (ent.model) // hack for blaster bolt particle
 		{
-			if (!Q_strcasecmp((char *)ent.model, "models/objects/laser/tris.md2") && !(effects & EF_BLASTER)){	
+			if (!Q_strcasecmp(ent.model->name, "models/objects/laser/tris.md2") && !(effects & EF_BLASTER)){	
 				CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
 				goto next;
 			}

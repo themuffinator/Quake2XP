@@ -91,9 +91,8 @@ static void ScreenSizeCallback(void *s)
 
 static void ambientLevelCallback(void *s)
 {
-	menuslider_s *slider = ( menuslider_s * ) s;
-
-	Cvar_SetValue("r_pplWorldAmbient", s_ambientLevel_slider.curvalue / 20);
+	float ambient = s_ambientLevel_slider.curvalue / 20;
+	Cvar_SetValue( "r_pplWorldAmbient", ambient );
 }
 
 static void RadarCallback( void *s )
@@ -198,8 +197,6 @@ static void ApplyChanges( void *unused )
 	Cvar_SetValue( "r_fxaa",				s_fxaa_box.curvalue);
 	Cvar_SetValue( "r_vsync",				s_finish_box.curvalue);
 	Cvar_SetValue( "r_radar",				s_minimap.curvalue);
-	Cvar_SetValue( "r_pplWorldAmbient",		s_ambientLevel_slider.curvalue);
-
 	
 /*	
 Nvidia Coverange AA
@@ -451,11 +448,11 @@ void VID_MenuInit( void )
 	if(!r_pplWorldAmbient->value)
 		r_pplWorldAmbient = Cvar_Get ("r_pplWorldAmbient", "0", CVAR_ARCHIVE);
 	
-		if(r_pplWorldAmbient->value >1)
-		Cvar_SetValue("r_pplWorldAmbient", 1);
+//	if(r_pplWorldAmbient->value >1)
+//		Cvar_SetValue("r_pplWorldAmbient", 1);
 
-	if(r_pplWorldAmbient->value < 0)
-		Cvar_SetValue("r_pplWorldAmbient", 0);
+//	if(r_pplWorldAmbient->value < 0)
+//		Cvar_SetValue("r_pplWorldAmbient", 0);
 
 	s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;
@@ -568,7 +565,7 @@ void VID_MenuInit( void )
 	s_brightness_slider.generic.type	= MTYPE_SLIDER;
 	s_brightness_slider.generic.x	= 0;
 	s_brightness_slider.generic.y	= 50*cl_fontScale->value;
-	s_brightness_slider.generic.name	= "Brightness";
+	s_brightness_slider.generic.name	= "Gamma";
 	s_brightness_slider.generic.callback = BrightnessCallback;
 	s_brightness_slider.minvalue = 20;
 	s_brightness_slider.maxvalue = 40;
@@ -641,10 +638,10 @@ void VID_MenuInit( void )
 	s_ambientLevel_slider.generic.x			= 0;
 	s_ambientLevel_slider.generic.y			= 150*cl_fontScale->value;
 	s_ambientLevel_slider.generic.name		= "Ambient Level";
+	s_ambientLevel_slider.generic.callback	= ambientLevelCallback;
 	s_ambientLevel_slider.minvalue			= 0;
 	s_ambientLevel_slider.maxvalue			= 20;
-	s_ambientLevel_slider.generic.callback	= ambientLevelCallback;
-	s_ambientLevel_slider.curvalue			= Cvar_VariableValue("r_pplWorldAmbient") * 20;
+	s_ambientLevel_slider.curvalue			= r_pplWorldAmbient->value * 20;
 	s_ambientLevel_slider.generic.statusbar	= "Realtime World Ambient Lighting Level";
 
 	s_flare_box.generic.type	= MTYPE_SPINCONTROL;

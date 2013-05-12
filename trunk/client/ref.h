@@ -79,7 +79,6 @@ typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh
 	float angles[3];
 	qboolean angleMod;
-
 	/*
 	 ** most recent data
 	 */
