@@ -358,6 +358,13 @@ static void pplWorldCallBack (void *s)
 	Cvar_SetValue( "r_pplWorld", box->curvalue * 1 );
 }
 
+static void vSyncCallBack (void *s)
+{
+	menulist_s *box = ( menulist_s * ) s;
+
+	Cvar_SetValue( "r_vsync", box->curvalue * 1 );
+}
+
 /*
 ** VID_MenuInit
 */
@@ -447,12 +454,6 @@ void VID_MenuInit( void )
 
 	if(!r_pplWorldAmbient->value)
 		r_pplWorldAmbient = Cvar_Get ("r_pplWorldAmbient", "0", CVAR_ARCHIVE);
-	
-//	if(r_pplWorldAmbient->value >1)
-//		Cvar_SetValue("r_pplWorldAmbient", 1);
-
-//	if(r_pplWorldAmbient->value < 0)
-//		Cvar_SetValue("r_pplWorldAmbient", 0);
 
 	s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;
@@ -705,9 +706,9 @@ void VID_MenuInit( void )
 	s_finish_box.generic.x	= 0;
 	s_finish_box.generic.y	= 240*cl_fontScale->value;
 	s_finish_box.generic.name	= "Vertical Sync";
+	s_finish_box.generic.callback = vSyncCallBack;
 	s_finish_box.curvalue = r_vsync->value;
 	s_finish_box.itemnames = yesno_names;
-	s_finish_box.generic.statusbar = "Requires Restart Video Sub-System";
 	
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";

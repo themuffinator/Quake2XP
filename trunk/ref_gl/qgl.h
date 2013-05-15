@@ -599,6 +599,8 @@ extern PFNGLDRAWRANGEELEMENTSEXTPROC			qglDrawRangeElementsEXT;
 
 extern PFNGLBLENDCOLOREXTPROC					qglBlendColorEXT;
 
+extern PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
+
 extern PFNGLACTIVETEXTUREARBPROC				qglActiveTextureARB; 
 extern PFNGLCLIENTACTIVETEXTUREARBPROC			qglClientActiveTextureARB;
 extern PFNGLMULTITEXCOORD2FARBPROC				qglMultiTexCoord2fARB;
@@ -685,8 +687,6 @@ extern PFNGLENDCONDITIONALRENDERNVPROC				glEndConditionalRenderNV;
 
 extern PFNGLBEGINCONDITIONALRENDERPROC				glBeginConditionalRender;
 extern PFNGLENDCONDITIONALRENDERPROC				glEndConditionalRender;
-
-extern PFNGLTEXIMAGE3DEXTPROC						glTexImage3DEXT;
 
 extern PFNGLGETPROGRAMBINARYPROC					glGetProgramBinary;
 extern PFNGLPROGRAMBINARYPROC						glProgramBinary;
@@ -792,7 +792,6 @@ extern int (WINAPI * qwglGetLayerPaletteEntries) (HDC, int, int, int,
 extern BOOL(WINAPI * qwglRealizeLayerPalette) (HDC, int, BOOL);
 extern BOOL(WINAPI * qwglSwapLayerBuffers) (HDC, UINT);
 
-extern BOOL(WINAPI * qwglSwapIntervalEXT) (int interval);
 
 extern BOOL(WINAPI * qwglGetDeviceGammaRampEXT) (unsigned char *pRed,
 												 unsigned char *pGreen,

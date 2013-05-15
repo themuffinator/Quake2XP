@@ -613,6 +613,7 @@ typedef struct {
 	qboolean	arb_multisample;
 	qboolean	wgl_nv_multisample_coverage;
 	qboolean	wgl_nv_multisample_coverage_aviable;
+	qboolean	wgl_swap_control_tear;
 	qboolean	createVbo;
 	qboolean	conditional_render;
 	qboolean	glsl;
@@ -818,7 +819,7 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 */
 
 void GLimp_EndFrame(void);
-int GLimp_Init(void *hinstance, void *hWnd);
+qboolean GLimp_Init(void *hinstance, void *hWnd);
 void GLimp_Shutdown(void);
 rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode,
 				  qboolean fullscreen);

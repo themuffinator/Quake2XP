@@ -1172,9 +1172,24 @@ qboolean GLimp_InitGL (void)
 		Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_pixel_format not found\nOpenGL subsystem not initiation\n");
 		VID_Error (ERR_FATAL, "WGL_ARB_pixel_format not found!");
 		}
+	
+		if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control")) {
+		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) qwglGetProcAddress("wglSwapIntervalEXT");
+		Com_Printf("...using WGL_EXT_swap_control\n");
+		} else 
+		Com_Printf(S_COLOR_RED"...WGL_EXT_swap_control not found\n");
 
-		
-	gl_state.wgl_nv_multisample_coverage = false;
+		gl_state.wgl_swap_control_tear = false;
+		if ( strstr( glw_state.wglExtsString, "WGL_EXT_swap_control_tear" ) )
+		{
+		Com_Printf("...using WGL_EXT_swap_control_tear\n");
+		gl_state.wgl_swap_control_tear = true;
+		} 
+		else {
+		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
+		}
+	
+		gl_state.wgl_nv_multisample_coverage = false;
 		if (strstr(glw_state.wglExtsString, "WGL_NV_multisample_coverage")) {
 		
 		if(r_arbSamples->value < 2){
@@ -1459,32 +1474,34 @@ fail:
 
 void GLimp_EndFrame (void)
 {
-	static cvar_t	*avi_fps = NULL;
-
 	if ( !qwglSwapBuffers( glw_state.hDC ) )
 			VID_Error( ERR_FATAL, "GLimp_EndFrame() - SwapBuffers() failed!\n" );
-		
-	if (!avi_fps)
-		avi_fps = Cvar_Get("avi_fps", "0", 0);
-	
-	if (avi_fps->value) {
-		r_newrefdef.time += (1000/avi_fps->value) * 0.001f;
-	} else
-		r_newrefdef.time=Sys_Milliseconds() * 0.001f;
 
+	r_newrefdef.time=Sys_Milliseconds() * 0.001f;
 	ref_realtime=Sys_Milliseconds() * 0.0005f;
-
-	
 	Sleep(0);	// fixes a few problems ive been having
 }
 
 
 void GL_UpdateSwapInterval()
 {
-	r_vsync->modified = (qboolean)false;
 
-	if (qwglSwapIntervalEXT)
-			qwglSwapIntervalEXT(r_vsync->value);
+	if(r_vsync->modified)
+	r_vsync->modified = false;
+
+	if(gl_state.wgl_swap_control_tear){
+	
+	if (wglSwapIntervalEXT){
+		if(r_vsync->value)
+			wglSwapIntervalEXT(-1);
+		else
+			wglSwapIntervalEXT(0);
+		}
+	}
+	else
+		if (wglSwapIntervalEXT)
+			wglSwapIntervalEXT(r_vsync->value);
+	
 }
 
 /*

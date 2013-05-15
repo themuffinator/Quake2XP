@@ -472,7 +472,9 @@ void CreateAttenuation ()
 	image->type = it_pic;
 
 	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-
+	
+	glTexImage3DEXT = (PFNGLTEXIMAGE3DEXTPROC) qwglGetProcAddress("glTexImage3DEXT");
+	
 	atten3d_texture_object = image;
 	qglBindTexture(GL_TEXTURE_3D, atten3d_texture_object->texnum);
 	glTexImage3DEXT(GL_TEXTURE_3D, 0, GL_INTENSITY, ATTEN_VOLUME_SIZE, ATTEN_VOLUME_SIZE, ATTEN_VOLUME_SIZE, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);

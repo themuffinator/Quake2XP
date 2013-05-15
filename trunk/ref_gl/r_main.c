@@ -740,8 +740,8 @@ void DrawLights(void){
 	vec3_t tmpOrg;
 
 
-//	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-//		return;
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
 
 	if(!currentShadowLight->isStatic)
 		return;
@@ -1578,15 +1578,6 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf(S_COLOR_GREEN"Checking Basic Quake II XP Extensions\n");
 	Com_Printf("=====================================\n");
 	Com_Printf("\n");
-		
-#ifdef _WIN32
-	if (strstr(gl_config.extensions_string, "WGL_EXT_swap_control")) {
-		qwglSwapIntervalEXT = (BOOL(WINAPI *) (int)) qwglGetProcAddress("wglSwapIntervalEXT");
-		Com_Printf("...using WGL_EXT_swap_control\n");
-	} else {
-		Com_Printf(S_COLOR_RED"...WGL_EXT_swap_control not found\n");
-	}
-#endif
 
 if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	Com_Printf("...using GL_ARB_multitexture\n");
@@ -1598,7 +1589,6 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED"...GL_ARB_multitexture not found\n");
 		VID_Error(ERR_FATAL, "GL_ARB_multitexture not found!");
 	}
-
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
 	Cvar_SetValue("r_maxAnisotropy", max_aniso);
@@ -1624,12 +1614,6 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		r_maxAnisotropy = Cvar_Set("r_maxAnisotropy", "0");
 	}
 
-	
-	if (strstr(gl_config.extensions_string, "GL_EXT_texture3D")){
-	glTexImage3DEXT = (PFNGLTEXIMAGE3DEXTPROC)	qwglGetProcAddress("glTexImage3DEXT");
-	Com_Printf("...using GL_EXT_texture3D\n");
-	}else
-	Com_Printf(S_COLOR_RED "...GL_EXT_texture3D not found\n");
 
 	gl_state.texture_compression_arb = false;
 	if (strstr(gl_config.extensions_string, "GL_ARB_texture_compression"))
@@ -1755,37 +1739,37 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		qglBufferSubData =	(PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
 
 		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData){
-			vec2_t		tmpVerts[4];	
+			vec2_t		tmpVerts0[4], tmpVerts1[4], tmpVerts2[4];	
 			Com_Printf("...using GL_ARB_vertex_buffer_object\n");
 			// precalc screen quads for postprocessing
 			// full quad
-			VA_SetElem2(tmpVerts[0],0 ,		vid.height);
-			VA_SetElem2(tmpVerts[1],vid.width,	vid.height);
-			VA_SetElem2(tmpVerts[2],vid.width,	0);
-			VA_SetElem2(tmpVerts[3],0,			0);
+			VA_SetElem2(tmpVerts0[0],0 ,			vid.height);
+			VA_SetElem2(tmpVerts0[1],vid.width,	vid.height);
+			VA_SetElem2(tmpVerts0[2],vid.width,	0);
+			VA_SetElem2(tmpVerts0[3],0,			0);
 			qglGenBuffers(1, &gl_state.vbo_fullScreenQuad);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_fullScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts0, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 			// half quad
-			VA_SetElem2(tmpVerts[0],0,					vid.height);
-			VA_SetElem2(tmpVerts[1],vid.width * 0.5,	vid.height);
-			VA_SetElem2(tmpVerts[2],vid.width * 0.5,	vid.height * 0.5);
-			VA_SetElem2(tmpVerts[3],0,					vid.height * 0.5);
+			VA_SetElem2(tmpVerts1[0],0,					vid.height);
+			VA_SetElem2(tmpVerts1[1],vid.width * 0.5 ,	vid.height);
+			VA_SetElem2(tmpVerts1[2],vid.width * 0.5 ,	vid.height * 0.5);
+			VA_SetElem2(tmpVerts1[3],0,					vid.height * 0.5);
 			qglGenBuffers(1, &gl_state.vbo_halfScreenQuad);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_halfScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts1, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 			// quater quad
-			VA_SetElem2(tmpVerts[0],0,						vid.height);
-			VA_SetElem2(tmpVerts[1],vid.width * 0.25,		vid.height);
-			VA_SetElem2(tmpVerts[2],vid.width * 0.25,		vid.height * 0.25);
-			VA_SetElem2(tmpVerts[3],0,						vid.height * 0.25);
+			VA_SetElem2(tmpVerts2[0],0,						vid.height);
+			VA_SetElem2(tmpVerts2[1],vid.width * 0.25 ,		vid.height);
+			VA_SetElem2(tmpVerts2[2],vid.width * 0.25 ,		vid.height * 0.25);
+			VA_SetElem2(tmpVerts2[3],0,						vid.height * 0.25);
 			qglGenBuffers(1, &gl_state.vbo_quarterScreenQuad);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_quarterScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts2, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 		}
 	} else {
@@ -1935,6 +1919,8 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	return 0;
 }
 
+
+
 /*
 ===============
 R_Shutdown
@@ -1964,25 +1950,26 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("changeLightRadius");
 	Cmd_RemoveCommand("copyLight");
 	Cmd_RemoveCommand("changeLightCone");
-			
+
+	Mod_FreeAll();
+	GL_ShutdownImages();
+
+	R_ClearWorldLights();
+	GLimp_Shutdown();
+	QGL_Shutdown();
+	ilShutDown();
+	R_ShutdownPrograms();
+		    
 	if(qglDeleteQueriesARB){
 	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
 	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
 	}
 	
+	DeleteShadowVertexBuffers();
+
 	qglDeleteBuffers(1, &gl_state.vbo_fullScreenQuad);
 	qglDeleteBuffers(1, &gl_state.vbo_halfScreenQuad);
 	qglDeleteBuffers(1, &gl_state.vbo_quarterScreenQuad);
-
-	DeleteShadowVertexBuffers();
-	R_ClearWorldLights();
-
-	Mod_FreeAll();
-	GL_ShutdownImages();
-	GLimp_Shutdown();
-	QGL_Shutdown();
-	ilShutDown();
-	R_ShutdownPrograms();
 }
 
 
@@ -2010,11 +1997,6 @@ void R_BeginFrame()
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = true;
 
-
-	if (r_gamma->modified) 
-		r_gamma->modified = false;
-
-
 	// realtime update
 	if(r_softParticles->modified)
 		r_softParticles->modified = false;
@@ -2025,11 +2007,11 @@ void R_BeginFrame()
 	if(r_pplWorldAmbient->modified)
 		r_pplWorldAmbient->modified = false;
 
-	//if(r_pplWorldAmbient->value >1)
-	//	Cvar_SetValue("r_pplWorldAmbient", 1);
+	if(r_pplWorldAmbient->value >1)
+		Cvar_SetValue("r_pplWorldAmbient", 1);
 
-	//if(r_pplWorldAmbient->value < 0)
-	//	Cvar_SetValue("r_pplWorldAmbient", 0);
+	if(r_pplWorldAmbient->value < 0)
+		Cvar_SetValue("r_pplWorldAmbient", 0);
 
 	qglDrawBuffer( GL_BACK );
 	
@@ -2060,7 +2042,6 @@ void R_BeginFrame()
 		if (r_anisotropic->modified)
 			r_anisotropic->modified = false;
 	}
-
 	
 	/* 
 	 ** swapinterval stuff

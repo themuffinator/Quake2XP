@@ -76,7 +76,6 @@ int  ( WINAPI * qwglGetLayerPaletteEntries)(HDC, int, int, int,
 BOOL ( WINAPI * qwglRealizeLayerPalette)(HDC, int, BOOL);
 BOOL ( WINAPI * qwglSwapLayerBuffers)(HDC, UINT);
 
-BOOL ( WINAPI * qwglSwapIntervalEXT)( int interval );
 BOOL ( WINAPI * qwglGetDeviceGammaRampEXT)( unsigned char *, unsigned char *, unsigned char * );
 BOOL ( WINAPI * qwglSetDeviceGammaRampEXT)( const unsigned char *, const unsigned char *, const unsigned char * );
 #endif
@@ -502,7 +501,7 @@ PFNGLBLENDCOLOREXTPROC				qglBlendColorEXT = NULL;
 
 
 
-
+PFNWGLSWAPINTERVALEXTPROC			wglSwapIntervalEXT = NULL;
 
 PFNGLACTIVETEXTUREARBPROC			qglActiveTextureARB = NULL; 
 PFNGLCLIENTACTIVETEXTUREARBPROC		qglClientActiveTextureARB = NULL;
@@ -973,7 +972,7 @@ void QGL_Shutdown( void )
 	qwglSetPixelFormat           = NULL;
 	qwglSwapBuffers              = NULL;
 
-	qwglSwapIntervalEXT	= NULL;
+	wglSwapIntervalEXT			= NULL;
 
 	qwglGetDeviceGammaRampEXT = NULL;
 	qwglSetDeviceGammaRampEXT = NULL;
@@ -1375,8 +1374,6 @@ qboolean QGL_Init()
 	qwglGetPixelFormat           = GPA( "wglGetPixelFormat" );
 	qwglSetPixelFormat           = GPA( "wglSetPixelFormat" );
 	qwglSwapBuffers              = GPA( "wglSwapBuffers" );
-
-	qwglSwapIntervalEXT = 0;
 #endif
 	qglPointParameterfEXT = 0;
 	qglPointParameterfvEXT = 0;
