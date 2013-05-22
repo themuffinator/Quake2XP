@@ -487,7 +487,10 @@ void R_SetupGL(void)
 	h = y - y2;
 
 	qglViewport(x, y2, w, h);
-
+	gl_state.x = x;
+	gl_state.y = y2;
+	gl_state.w = w;
+	gl_state.h = h;
 	// 
 	// set up projection matrix
 	// 
@@ -734,67 +737,6 @@ void R_DrawPlayerWeaponLightPass(void)
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void DrawLights(void){
-
-	vec3_t	v[8];
-	vec3_t tmpOrg;
-
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	if(!currentShadowLight->isStatic)
-		return;
-	
-	qglColor3f(1.0, 0.0, 1.0);
-	qglDisable(GL_DEPTH_TEST);
-	qglDisable(GL_TEXTURE_2D);
-	qglDisable(GL_CULL_FACE);
-	qglDisable(GL_BLEND);
-	qglDisable(GL_STENCIL_TEST);
-	VectorCopy(currentShadowLight->origin, tmpOrg);
-
-	VectorSet(v[0], tmpOrg[0]-5, tmpOrg[1]-5, tmpOrg[2]-5);
-	VectorSet(v[1], tmpOrg[0]-5, tmpOrg[1]-5, tmpOrg[2]+5);
-	VectorSet(v[2], tmpOrg[0]-5, tmpOrg[1]+5, tmpOrg[2]-5);
-	VectorSet(v[3], tmpOrg[0]-5, tmpOrg[1]+5, tmpOrg[2]+5);
-	VectorSet(v[4], tmpOrg[0]+5, tmpOrg[1]-5, tmpOrg[2]-5);
-	VectorSet(v[5], tmpOrg[0]+5, tmpOrg[1]-5, tmpOrg[2]+5);
-	VectorSet(v[6], tmpOrg[0]+5, tmpOrg[1]+5, tmpOrg[2]-5);
-	VectorSet(v[7], tmpOrg[0]+5, tmpOrg[1]+5, tmpOrg[2]+5);
-
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[4]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[3]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
-
-	qglEnable(GL_DEPTH_TEST);
-	qglColor3f(1.0, 1.0, 1.0);
-	qglEnable(GL_TEXTURE_2D);
-	qglEnable(GL_CULL_FACE);
-	qglEnable(GL_BLEND);
-	qglEnable(GL_STENCIL_TEST);
-
-}
-
 void R_DrawShadowLightPass(void)
 {
 	int i;
@@ -809,13 +751,19 @@ void R_DrawShadowLightPass(void)
 	qglBlendFunc(GL_ONE, GL_ONE);
 	
 	if(r_useLightScissors->value){
+		if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
 		qglEnable(GL_SCISSOR_TEST);
-		qglScissor(0, 0, r_newrefdef.width, r_newrefdef.height);
+		qglScissor(gl_state.x,gl_state.y, gl_state.w, gl_state.h);
+		}
 	}
 
-	if(r_shadows->value)
-		qglEnable(GL_STENCIL_TEST);
+	if(r_shadows->value){
+		if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+			qglEnable(GL_STENCIL_TEST);
+	}
 	
+	qglEnable(GL_DEPTH_BOUNDS_EXT);
+	glDepthBoundsEXT(0.0, 1.0);
 
 	R_PrepareShadowLightFrame();
 	
@@ -825,20 +773,24 @@ void R_DrawShadowLightPass(void)
 	
 
 	UpdateLightEditor();
-	
-	if(r_debugLights->value)
-		DrawLights();
+
+	if(!R_DrawLightOccluders())
+		continue;
+
 
 	if(r_shadows->value){
+	
+	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
 	
 	if(r_useLightScissors->value)
 		qglScissor(	currentShadowLight->scizz.coords[0], currentShadowLight->scizz.coords[1], 
 					currentShadowLight->scizz.coords[2]- currentShadowLight->scizz.coords[0], 
 					currentShadowLight->scizz.coords[3]- currentShadowLight->scizz.coords[1]);
-
+	
 	qglClearStencil(128);
 	qglStencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
+	}
 	
 	qglStencilMask(255);
 	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
@@ -878,6 +830,9 @@ void R_DrawShadowLightPass(void)
 		}
 	
 	num_visLights++;
+	
+//	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+	//	glEndConditionalRender();
 	}
 	}
 	
@@ -885,11 +840,10 @@ void R_DrawShadowLightPass(void)
 	if(r_shadows->value)
 		qglDisable(GL_STENCIL_TEST);
 	
-	if(r_useLightScissors->value){
+	if(r_useLightScissors->value)
 		qglDisable(GL_SCISSOR_TEST);
-		qglScissor(0, 0, r_newrefdef.width, r_newrefdef.height);
-	}
-
+	
+	qglDisable(GL_DEPTH_BOUNDS_EXT);
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -1662,7 +1616,14 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	}else
 		Com_Printf(S_COLOR_RED"...GL_EXT_stencil_two_side not found\n");
 
+	if (strstr(gl_config.extensions_string, "GL_EXT_depth_bounds_test")) {
+	Com_Printf("...using GL_EXT_depth_bounds_test\n");
 
+	glDepthBoundsEXT = (PFNGLDEPTHBOUNDSEXTPROC) qwglGetProcAddress("glDepthBoundsEXT");
+	
+	} else {
+		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
+	}
 
 
 	gl_state.arb_occlusion = false;

@@ -64,7 +64,6 @@ void R_BuildFlares(flare_t * light){
 		// Draw Occlusion Geometry
 		qglDisable(GL_TEXTURE_2D);
 		qglColorMask(0, 0, 0, 0);
-		qglDepthMask(0);
 
 		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vert);	
 
@@ -78,7 +77,6 @@ void R_BuildFlares(flare_t * light){
 		
 		qglEnable(GL_TEXTURE_2D);
 		qglColorMask(1, 1, 1, 1);
-		qglDepthMask(1);
 		qglColor4f(1, 1, 1, 1);
 
 		if(!gl_state.conditional_render || !r_useConditionalRender->value){

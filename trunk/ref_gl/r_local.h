@@ -623,7 +623,7 @@ typedef struct {
 	int			lastdFactor;
 	int			lastsFactor;
 	float		color[4];
-	
+	int			x, y, w, h;
 	int numFormats;
 	GLenum binaryFormats;
 
