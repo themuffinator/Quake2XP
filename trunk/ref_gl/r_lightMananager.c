@@ -1535,15 +1535,17 @@ qboolean R_DrawLightOccluders()
 	qglEnable(GL_BLEND);
 	qglEnable(GL_STENCIL_TEST);
 
-	//if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
+	//if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 1))
 	//	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
 	//else
-	//	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
 	
-	qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
+//	qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
 
-	if (!sampleCount) 
-		return false;
-	else 
+//	if (!sampleCount) 
+//		return false;
+//	else 
 		return true;
+
+		return false;
 }

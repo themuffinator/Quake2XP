@@ -247,3 +247,31 @@ qboolean InvertMatrix(const mat4x4_t m, mat4x4_t invOut)
 
     return true;
 }
+
+void Matrix4_Transpose( const mat4x4_t m, mat4x4_t out )
+{
+	out[0] = m[0]; 
+	out[1] = m[4]; 
+	out[2] = m[8]; 
+	out[3] = m[12];
+	out[4] = m[1]; 
+	out[5] = m[5]; 
+	out[6] = m[9]; 
+	out[7] = m[13];
+	out[8] = m[2]; 
+	out[9] = m[6]; 
+	out[10] = m[10]; 
+	out[11] = m[14];
+	out[12] = m[3]; 
+	out[13] = m[7]; 
+	out[14] = m[11]; 
+	out[15] = m[15];
+}
+
+void Matrix4_Multiply_Vector( const mat4x4_t m, const vec4_t v, vec4_t out )
+{
+	out[0] = m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12] * v[3];
+	out[1] = m[1] * v[0] + m[5] * v[1] + m[9] * v[2] + m[13] * v[3];
+	out[2] = m[2] * v[0] + m[6] * v[1] + m[10] * v[2] + m[14] * v[3];
+	out[3] = m[3] * v[0] + m[7] * v[1] + m[11] * v[2] + m[15] * v[3];
+}

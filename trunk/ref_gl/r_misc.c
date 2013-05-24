@@ -28,6 +28,9 @@ R_InitEngineTextures
 ==================
 */
 
+image_t *r_notexture;		
+image_t *r_radarmap;		
+image_t *r_around;
 image_t *r_caustic[MAX_CAUSTICS];
 image_t *fly[MAX_FLY];
 image_t *flameanim[MAX_FLAMEANIM];

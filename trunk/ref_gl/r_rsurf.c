@@ -1321,6 +1321,9 @@ void R_DrawBrushModel(entity_t * e)
 	vec3_t		org, tmp;
 	mat3_t		entityAxis;
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
 	if (currentmodel->nummodelsurfaces == 0)
 		return;
 
@@ -1484,6 +1487,9 @@ void R_DrawLightBrushModel(entity_t * e)
 	vec3_t				tmp, oldLight;
 	mat3_t				entityAxis;
 	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
 	if (currentmodel->nummodelsurfaces == 0)
 		return;
 

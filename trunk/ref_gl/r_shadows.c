@@ -925,11 +925,11 @@ void R_CastShadowVolumes(void)
 			continue;
 		
 		if (currentmodel->type == mod_brush){
-			qglPolygonOffset(0.1, 1);
+	//		qglPolygonOffset(0.1, 1);
 			R_DrawBrushModelVolumes();
 		}
 		if (currentmodel->type == mod_alias){
-			qglPolygonOffset(0, 0);
+	//		qglPolygonOffset(0, 0);
 			R_DrawShadowVolume(currententity);
 		}
 	}
