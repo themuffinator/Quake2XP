@@ -332,7 +332,7 @@ void R_SetupFrame(void)
 	mleaf_t *leaf;
 
 	r_framecount++;
-		
+	lightVissFrame++;
 	// build the transformation matrix for the given view angles
 	VectorCopy(r_newrefdef.vieworg, r_origin);
 
@@ -734,9 +734,6 @@ void R_DrawShadowLightPass(void)
 		if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 			qglEnable(GL_STENCIL_TEST);
 	}
-	
-	qglEnable(GL_DEPTH_BOUNDS_EXT);
-	glDepthBoundsEXT(0.0, 1.0);
 
 	R_PrepareShadowLightFrame();
 	
@@ -804,7 +801,6 @@ void R_DrawShadowLightPass(void)
 	
 	num_visLights++;
 	
-	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		glEndConditionalRender();
 	}
 	}
@@ -816,7 +812,6 @@ void R_DrawShadowLightPass(void)
 	if(r_useLightScissors->value)
 		qglDisable(GL_SCISSOR_TEST);
 	
-	qglDisable(GL_DEPTH_BOUNDS_EXT);
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -1218,7 +1213,7 @@ void R_RegisterCvars(void)
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
 	
 	r_gamma =							Cvar_Get("r_gamma", "1.5", CVAR_ARCHIVE);
-	r_brightens	=						Cvar_Get("r_brightens", "1", CVAR_ARCHIVE);
+	r_brightness	=						Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
 	r_contrast	=						Cvar_Get("r_contrast", "1", CVAR_ARCHIVE);
 	r_saturation =						Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
 
@@ -1229,6 +1224,7 @@ void R_RegisterCvars(void)
 	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "12", CVAR_ARCHIVE);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "0", CVAR_ARCHIVE);
 	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
+	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "1", CVAR_ARCHIVE);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);

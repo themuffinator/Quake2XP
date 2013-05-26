@@ -240,7 +240,7 @@ cvar_t *r_lockPvs;
 cvar_t *r_fullScreen;
 
 cvar_t *r_gamma;
-cvar_t *r_brightens;
+cvar_t *r_brightness;
 cvar_t *r_contrast;
 cvar_t *r_saturation;
 
@@ -264,6 +264,7 @@ cvar_t	*r_shadows;
 cvar_t	*r_shadowWorldLightScale;
 cvar_t	*r_playerShadow;
 cvar_t	*r_shadowCapOffset;
+cvar_t	*r_useLightOccluders;
 
 cvar_t	*r_radarSize;			// GLOOM radar
 cvar_t	*r_radarZoom;
@@ -344,6 +345,7 @@ extern int r_visframecount;
 
 extern int radarOldTime;
 extern int r_viewport[4];
+extern int lightVissFrame;
 extern qboolean spacebox;
 
 extern qboolean arbMultisampleSupported;
@@ -430,6 +432,7 @@ void R_DrawLightBrushModel(entity_t * e);
 qboolean R_DrawLightOccluders();
 void UpdateLightEditor(void);
 void Load_LightFile();
+void R_SetViewLightDepthBounds(); 
 __inline qboolean BBoxIntersectBBox(float *bbox0, float *bbox1);
 void boxScreenSpaceRect(worldShadowLight_t *light, int *rect);
 void R_ProjectSphere (worldShadowLight_t *light, int *rect);
@@ -582,7 +585,6 @@ typedef struct {
 #define GLSTATE_ENABLE_TEXGEN		if (!gl_state.texgen) { qglEnable(GL_TEXTURE_GEN_S); qglEnable(GL_TEXTURE_GEN_T); qglEnable(GL_TEXTURE_GEN_R); qglEnable(GL_TEXTURE_GEN_Q); gl_state.texgen=(qboolean)true; }
 
 typedef struct {
-	float inverse_intensity;
 	qboolean fullscreen;
 
 	int prev_mode;

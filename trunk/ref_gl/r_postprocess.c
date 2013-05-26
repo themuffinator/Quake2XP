@@ -63,6 +63,7 @@ void R_BuildFlares(flare_t * light){
 	
 		// Draw Occlusion Geometry
 		qglDisable(GL_TEXTURE_2D);
+		qglDisable(GL_CULL_FACE);
 		qglColorMask(0, 0, 0, 0);
 
 		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vert);	
@@ -76,8 +77,8 @@ void R_BuildFlares(flare_t * light){
 		qglEndQueryARB(gl_state.query_passed);
 		
 		qglEnable(GL_TEXTURE_2D);
+		qglEnable(GL_CULL_FACE);
 		qglColorMask(1, 1, 1, 1);
-		qglColor4f(1, 1, 1, 1);
 
 		if(!gl_state.conditional_render || !r_useConditionalRender->value){
 			qglGetQueryObjectivARB(flareQueries[light->occId], GL_QUERY_RESULT_ARB, &sampleCount);
@@ -596,7 +597,7 @@ void R_GammaRamp (void) {
 	GL_BindRect				(ScreenMap->texnum);
     qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
-	qglUniform4f			(qglGetUniformLocation(id, "u_control"), r_brightens->value, r_contrast->value, r_saturation->value, r_gamma->value);
+	qglUniform4f			(qglGetUniformLocation(id, "u_control"), r_brightness->value, r_contrast->value, r_saturation->value, 1 / r_gamma->value);
 
 	R_DrawFullScreenQuad();
 	

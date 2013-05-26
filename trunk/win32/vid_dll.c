@@ -710,7 +710,6 @@ void VID_Init (void)
 	r_fullScreen = Cvar_Get ("r_fullScreen", "0", CVAR_ARCHIVE);
 	r_customWidth = Cvar_Get ("r_customWidth", "800", CVAR_ARCHIVE);
 	r_customHeight = Cvar_Get ("r_customHeight", "600", CVAR_ARCHIVE);
-	r_gamma = Cvar_Get( "r_gamma", "0.7", CVAR_ARCHIVE );
 	win_noalttab = Cvar_Get( "win_noalttab", "0", CVAR_ARCHIVE );
 
 

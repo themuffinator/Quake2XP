@@ -1582,40 +1582,8 @@ GL_InitImages
 */
 void GL_InitImages(void)
 {
-	int i, j;
-	float g = r_gamma->value;
-
 	registration_sequence = 1;
-		
-
-	gl_state.inverse_intensity = 1;
-
 	Draw_GetPalette();
-
-	for (i = 0; i < 256; i++) {
-		if (g == 1) {
-			gammatable[i] = i;
-		} else {
-			float inf;
-
-			inf =
-				255 * pow((i + 0.5) * 0.0039138943248532289628180039138943,
-						  g) + 0.5;
-			if (inf < 0)
-				inf = 0;
-			if (inf > 255)
-				inf = 255;
-			gammatable[i] = inf;
-		}
-	}
-
-	for (i = 0; i < 256; i++) {
-		j = i;
-		if (j > 255)
-			j = 255;
-		intensitytable[i] = j;
-	}
-
 
 }
 

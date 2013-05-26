@@ -894,7 +894,6 @@ void R_CastShadowVolumes(void)
 	qglEnable(GL_POLYGON_OFFSET_FILL);
 	qglColorMask(0, 0, 0, 0);
 	qglEnableVertexAttribArray(ATRB_POSITION);
-
 	qglPolygonOffset(0.1, 1);
 
 	if(!currentShadowLight->vboId && !currentShadowLight->iboId && currentShadowLight->isStatic){
@@ -925,11 +924,9 @@ void R_CastShadowVolumes(void)
 			continue;
 		
 		if (currentmodel->type == mod_brush){
-	//		qglPolygonOffset(0.1, 1);
 			R_DrawBrushModelVolumes();
 		}
 		if (currentmodel->type == mod_alias){
-	//		qglPolygonOffset(0, 0);
 			R_DrawShadowVolume(currententity);
 		}
 	}

@@ -111,6 +111,7 @@ void R_AddNoWorldModelLight() {
 	light->isNoWorldModel = 1;
 }
 
+int lightVissFrame;
 
 void R_PrepareShadowLightFrame(void) {
 	
@@ -176,7 +177,7 @@ void R_PrepareShadowLightFrame(void) {
 
 	MakeFrustum4Light(light, true);
 
-		VectorCopy(light->startColor, light->color);
+	VectorCopy(light->startColor, light->color);
 		
 	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
 		
@@ -1052,12 +1053,18 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	
 	worldShadowLight_t *light;
 	int i, leafnum, cluster;
+	mat3_t lightAxis;
+	vec3_t tmp;
 
 	light = (worldShadowLight_t*)malloc(sizeof(worldShadowLight_t));
 	light->s_next = shadowLight_static;
 	shadowLight_static = light;
 	
 	VectorClear(light->frust[0].normal);
+	VectorClear(tmp);
+	for (i=0; i<8; i++)
+		VectorClear(light->corners[i]);
+
 	VectorCopy(origin, light->origin);
 	VectorCopy(color, light->startColor);
 	VectorCopy(angles, light->angles);
@@ -1075,7 +1082,9 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->style = style;
 	light->filter = filter;
 	light->vboId = light->iboId = light->iboNumIndices = 0;
-	
+	light->depthBounds[0] = 0.0;
+	light->depthBounds[1] = 1.0;
+
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - light->radius;
 		light->maxs[i] = light->origin[i] + light->radius;
@@ -1084,7 +1093,17 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 		light->maxs_cone[i] = light->origin[i] + light->radius;
 
 	}
-	
+
+	 for (i=0; i<8; i++) {
+		tmp[0] = (i & 1) ? -light->radius : light->radius;
+		tmp[1] = (i & 2) ? -light->radius : light->radius;
+		tmp[2] = (i & 4) ? -light->radius : light->radius;
+
+		AnglesToMat3(light->angles, lightAxis);
+		Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
+		VectorAdd(light->corners[i], light->origin, light->corners[i]);
+	}
+
 	MakeFrustum4Light(light, false);
 
 	//// simple cull info for new light 
@@ -1482,9 +1501,10 @@ qboolean R_DrawLightOccluders()
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return true;
 	
-	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 1))
+	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0)){
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
 		return true;
-
+	}
 	qglColorMask(0,0,0,0);
 	qglDisable(GL_TEXTURE_2D);
 	qglDisable(GL_CULL_FACE);
@@ -1503,6 +1523,7 @@ qboolean R_DrawLightOccluders()
 	VectorSet(v[6], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]-radius);
 	VectorSet(v[7], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]+radius);
 
+	currentShadowLight->occ_frame = r_visframecount;
 	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
 
 	qglBegin(GL_TRIANGLE_FAN);
@@ -1535,17 +1556,15 @@ qboolean R_DrawLightOccluders()
 	qglEnable(GL_BLEND);
 	qglEnable(GL_STENCIL_TEST);
 
-	//if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 1))
-	//	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
-	//else
-		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
-	
-//	qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
 
-//	if (!sampleCount) 
-//		return false;
-//	else 
+	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
+	//if(currentShadowLight->occ_frame == lightVissFrame - 1)
+	//qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
+
+	//if (!sampleCount) 
+	//	return false;
+	//else 
 		return true;
 
-		return false;
+//		return false;
 }

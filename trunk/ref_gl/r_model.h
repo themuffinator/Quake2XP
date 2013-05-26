@@ -50,6 +50,11 @@ typedef struct worldShadowLight_s {
 	vec3_t	mins, maxs;
 	vec3_t	mins_cone;
 	vec3_t	maxs_cone;
+	vec3_t	corners[8];
+	
+	float	radius;
+	float	_cone;
+	float	depthBounds[2];
 
 	int		filter, style, area;
 	int		isShadow;
@@ -57,18 +62,16 @@ typedef struct worldShadowLight_s {
 	int		isNoWorldModel;
 	int		isAmbient;
 	int		linkedSurf;
+	int		occ_frame;
 
 	unsigned int occQ;
-	
-	float radius;
-	float _cone;
-
-	cplane_t	frust[4];
+	cplane_t		frust[4];
 
 	byte vis[MAX_MAP_LEAFS / 8];
 	
 	msurface_t		*surf;
 	screenrect_t	scizz;
+
 	GLuint			vboId;
 	GLuint			iboId;
 	int				iboNumIndices;
@@ -77,7 +80,7 @@ typedef struct worldShadowLight_s {
 	struct worldShadowLight_s *s_next;
 
 } worldShadowLight_t;
-
+#define Q_INFINITY					1e30f
 #define		MAX_WORLD_SHADOW_LIHGTS 1024
 int			r_numWorlsShadowLights;
 extern		worldShadowLight_t *currentShadowLight;
