@@ -22,7 +22,7 @@ void main (void) {
 
 	vec2 N = texture2D(u_deformMap, v_deformTexCoord).xy * 2.0 - 1.0;
 	vec4 diffuse  = texture2D(u_colorMap,  v_deformTexCoord.xy);
-
+  
 	// Z-feather
 	float depth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 	N *= clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
