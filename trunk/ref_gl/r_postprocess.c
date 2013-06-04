@@ -604,3 +604,37 @@ void R_GammaRamp (void) {
 	GL_BindNullProgram		();
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 }
+
+void R_MotionBlur (void) {
+	
+	unsigned	defBits = 0;
+	int			id;
+
+    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+            return;
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+            return;
+
+	// setup program
+	GL_BindProgram(motionBlurProgram, defBits);
+	id = motionBlurProgram->id[defBits];
+	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform3fv(qglGetUniformLocation(id, "u_viewOrg"), 1, r_origin);
+
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_InverseModelViewMat"), 1,	GL_FALSE, r_modelViewInv);
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_PrevModelViewProj"), 1,	GL_FALSE, r_oldModelViewProjection);
+
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+	GL_BindRect				(ScreenMap->texnum);
+    qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+
+	GL_SelectTexture		(GL_TEXTURE1_ARB);	
+	GL_BindRect				(depthMap->texnum);
+    qglUniform1i			(qglGetUniformLocation(id, "u_DepthTex"), 1);
+
+	R_DrawFullScreenQuad();
+
+	GL_BindNullProgram		();
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+}

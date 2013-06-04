@@ -1498,11 +1498,16 @@ qboolean R_DrawLightOccluders()
 	float	radius;
 	int		sampleCount;
 
+	if(!r_useLightOccluders->value)
+		return true;
+
+	
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return true;
 	
+	
 	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0)){
-		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
+	//	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
 		return true;
 	}
 	qglColorMask(0,0,0,0);
@@ -1557,13 +1562,13 @@ qboolean R_DrawLightOccluders()
 	qglEnable(GL_STENCIL_TEST);
 
 
-	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
-	//if(currentShadowLight->occ_frame == lightVissFrame - 1)
-	//qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
+//	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
+	if(currentShadowLight->occ_frame == lightVissFrame - 1)
+		qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
 
-	//if (!sampleCount) 
-	//	return false;
-	//else 
+	if (!sampleCount) 
+		return false;
+	else 
 		return true;
 
 //		return false;

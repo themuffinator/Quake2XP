@@ -253,45 +253,6 @@ and insert included file contents.
     return glsl;
 }
 
-
-/*
-===============================
-Try To Load Precompiled Shaders
-===============================
-*/
-qboolean R_LoadBinaryShader(char *shaderName, int shaderId, int mutatorIndex){
-
-	char			name[MAX_QPATH];
-	GLint			binLength;
-    GLvoid*			bin;
-    GLint			success;
-    FILE*			binFile;
-	
-	Com_sprintf(name, sizeof(name), "%s/glslbin/%s_%i.bin", FS_Gamedir(), shaderName, mutatorIndex);
-	FS_CreatePath(name);
-
-	binFile = fopen(name, "rb");
-	if(!binFile){
-		return false;
-	}else{
-	fseek(binFile, 0, SEEK_END);
-    binLength = (GLint)ftell(binFile);
-    bin = (GLvoid*)malloc(binLength);
-    fseek(binFile, 0, SEEK_SET);
-    fread(bin, binLength, 1, binFile);
-    fclose(binFile);
-
-	glProgramBinary(shaderId, gl_state.binaryFormats, bin, binLength);
-	qglGetProgramiv(shaderId, GL_LINK_STATUS, &success);
-	free(bin);	        
-        
-		if (success){
-			return true;
-		}
-	}
-	return false;
-}
-
 /*
 ==============
 R_CreateProgram
@@ -309,9 +270,6 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 	int				id, vertexId, fragmentId;
 	int				status;
 	int				i, j;
-	GLint			binLength;
-    GLvoid*			bin;
-    FILE*			binFile;
 
 	if ((vertexSource && strlen(vertexSource) < 17) || (fragmentSource && strlen(fragmentSource) < 17))
 		return NULL;
@@ -443,11 +401,6 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 
 		id = qglCreateProgram();
 		
-		if(gl_state.glslBinary){
-		if(R_LoadBinaryShader(program->name, id, i))
-			goto end;
-		}
-
 		qglBindAttribLocation(id, ATRB_POSITION,	"a_vertArray");	
 		qglBindAttribLocation(id, ATRB_NORMAL,		"a_normArray");
 		qglBindAttribLocation(id, ATRB_TEX0,		"a_texCoord");
@@ -473,22 +426,6 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 		qglLinkProgram(id);
 		qglGetProgramiv(id, GL_LINK_STATUS, &status);
 		
-		if(gl_state.glslBinary){
-			
-		char name[MAX_QPATH];
-		
-		qglGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binLength);
-		bin = (GLvoid*)malloc(binLength);
-		glGetProgramBinary(id, binLength, &binLength, &gl_state.binaryFormats, bin);
-		
-		Com_sprintf(name, sizeof(name), "%s/glslbin/%s_%i.bin", FS_Gamedir(), program->name, i);
-		FS_CreatePath(name);
-		binFile = fopen(name, "wb");
-        fwrite(bin, binLength, 1, binFile);
-        fclose(binFile);
-        free(bin);
-		}
-
 		R_GetInfoLog(id, log, true);
 
 		if(!status) {
@@ -505,7 +442,6 @@ static glslProgram_t *R_CreateProgram(const char *name, const char *defs, const 
 		}
 
 		// TODO: glValidateProgram?
-end:
 		/// Berserker's fix start
 		if (defines)
 			free(defines);
@@ -690,7 +626,15 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-	
+
+		Com_Printf("Load "S_COLOR_YELLOW"motion blur program"S_COLOR_WHITE" ");
+	motionBlurProgram = R_FindProgram("mblur", true, true);
+	if(motionBlurProgram->valid)
+		Com_Printf("succeeded\n");
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"bloom program"S_COLOR_WHITE" ");
 	bloomdsProgram = R_FindProgram("bloomds", true, true);

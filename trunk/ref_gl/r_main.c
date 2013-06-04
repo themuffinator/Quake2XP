@@ -447,6 +447,8 @@ void R_SetupGL(void)
 	float screenaspect;
 //  float   yfov;
 	int x, x2, y2, y, w, h;
+	
+	Matrix4_Copy(r_modelViewProjection, r_oldModelViewProjection);
 
 	// 
 	// set up viewport
@@ -489,6 +491,9 @@ void R_SetupGL(void)
 
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
 	qglGetFloatv (GL_PROJECTION_MATRIX, r_project_matrix);
+
+	Matrix4_Multiply(r_modelViewProjection, r_world_matrix, r_project_matrix);
+	InvertMatrix(r_world_matrix, r_modelViewInv);
 
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
 
@@ -801,7 +806,7 @@ void R_DrawShadowLightPass(void)
 	
 	num_visLights++;
 	
-		glEndConditionalRender();
+	//	glEndConditionalRender();
 	}
 	}
 	
@@ -969,6 +974,8 @@ extern char buff9[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
+void R_MotionBlur (void);
+
 void R_RenderFrame(refdef_t * fd, qboolean client)
 {
 	
@@ -982,6 +989,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();
+	R_MotionBlur();
 	R_Bloom();
 	R_FilmGrain();
 	}
@@ -1734,29 +1742,6 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		if ( strstr( gl_config.extensions_string, "GL_ARB_vertex_shader" ) ){
 			Com_Printf("...using GL_ARB_vertex_shader\n");
 	gl_state.glsl = true;	
-
-
-	gl_state.glslBinary = false;
-	if ( strstr( gl_config.extensions_string, "GL_ARB_get_program_binary" ) )
-	{		
-
-		glGetProgramBinary	=	(PFNGLGETPROGRAMBINARYPROC)		qwglGetProcAddress("glGetProgramBinary");
-		glProgramBinary	=		(PFNGLPROGRAMBINARYPROC)		qwglGetProcAddress("glProgramBinary");
-		glProgramParameteri	=	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
-
-		if(glGetProgramBinary && glProgramBinary && glProgramParameteri){
-			Com_Printf("...using GL_ARB_get_program_binary\n");
-			qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
-			qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
-			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " binary formats\n", gl_state.numFormats);
-			Com_Printf("   Binary Format is "S_COLOR_GREEN "%u"S_COLOR_WHITE"\n", gl_state.binaryFormats);
-			gl_state.glslBinary = true;
-		}
-
-	} else {
-		Com_Printf(S_COLOR_RED"...GL_ARB_get_program_binary not found\n");
-		gl_state.glslBinary = false;		
-	}
 
 
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);

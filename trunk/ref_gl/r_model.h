@@ -92,8 +92,11 @@ typedef struct {
 	float outcolor[4];
 	float size;
 	float sizefull;
+	
 	int style;
 	int occId;
+	int	occ_frame;
+	
 	float lightIntens;
 	msurface_t *surf;
 	vec3_t lightsurf_origin;

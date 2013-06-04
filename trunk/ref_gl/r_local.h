@@ -209,8 +209,7 @@ typedef vec4_t	mat4_t[4];		// row-major
 
 mat4x4_t r_world_matrix;
 mat4x4_t r_project_matrix;
-mat4x4_t r_modelViewProjectionInv;
-mat4x4_t r_modelViewProjectionInvTransp;
+mat4x4_t r_modelViewInv;
 mat4x4_t r_modelViewProjection;
 mat4x4_t r_oldModelViewProjection;
 
@@ -750,7 +749,6 @@ glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*bloomdsProgram;
 glslProgram_t		*gaussXProgram;
 glslProgram_t		*gaussYProgram;
-glslProgram_t		*starBlurProgram;
 glslProgram_t		*bloomfpProgram;
 glslProgram_t		*refractProgram;
 glslProgram_t		*thermalProgram;
@@ -767,6 +765,7 @@ glslProgram_t		*fxaaProgram;
 glslProgram_t		*filmGrainProgram;
 glslProgram_t		*nullProgram;
 glslProgram_t		*gammaProgram;
+glslProgram_t		*motionBlurProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
