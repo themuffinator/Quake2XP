@@ -30,11 +30,13 @@ vec4 u_attenMap = texture3D(u_attenMap ,v_AttenCoord);
 gl_FragColor = diffuse * vec4(u_LightColor, 1) * u_attenMap;
 
 #else
+
 // compute the light vector
 vec3 L = normalize(v_lightVec);
 // compute the view vector
 vec3 V = normalize(v_viewVec);
 vec2 E = PhongLighting(N, L, V, 16.0);
+
 
 gl_FragColor = (E.x * diffuse + E.y * specular) * cubeFilter * vec4(u_LightColor, 1) * u_attenMap;
 
