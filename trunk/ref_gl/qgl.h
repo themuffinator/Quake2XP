@@ -601,8 +601,6 @@ extern PFNGLDRAWRANGEELEMENTSEXTPROC			qglDrawRangeElementsEXT;
 
 extern PFNGLBLENDCOLOREXTPROC					qglBlendColorEXT;
 
-extern PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
-
 extern PFNGLACTIVETEXTUREARBPROC				qglActiveTextureARB; 
 extern PFNGLCLIENTACTIVETEXTUREARBPROC			qglClientActiveTextureARB;
 extern PFNGLMULTITEXCOORD2FARBPROC				qglMultiTexCoord2fARB;
@@ -739,6 +737,7 @@ extern	PFNGLUNIFORMMATRIX4FVPROC				qglUniformMatrix4fv;
 #ifdef _WIN32
 
 
+extern PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
 
 const char *(WINAPI * qwglGetExtensionsStringARB) (HDC);
 BOOL(WINAPI * qwglGetPixelFormatAttribivARB) (HDC, int, int, UINT,
@@ -807,9 +806,6 @@ extern BOOL(WINAPI * qwglSetDeviceGammaRampEXT) (const unsigned char *pRed,
 #endif
 
 #ifdef __linux__
-
-// local function in dll
-extern void *qwglGetProcAddress(char *symbol);
 
 extern void (*qgl3DfxSetPaletteEXT) (GLuint *);
 

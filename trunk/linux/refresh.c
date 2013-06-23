@@ -38,7 +38,7 @@ SDL_Surface		*surface = NULL;
 /*
  * Initialzes the SDL OpenGL context
  */
-int GLimp_Init(void *hinstance, void *wndproc)
+qboolean GLimp_Init(void *hinstance, void *wndproc)
 {
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
     {

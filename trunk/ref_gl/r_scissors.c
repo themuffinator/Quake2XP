@@ -16,10 +16,17 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+#ifdef __linux__
+// required for sincosf(3), before including <math.h>
+#define _GNU_SOURCE
+#endif
+
 #include "r_local.h"
 
 void SinCos( float radians, float *sine, float *cosine )
 {
+#ifdef _WIN32
 	_asm
 	{
 		fld	dword ptr [radians]
@@ -31,6 +38,12 @@ void SinCos( float radians, float *sine, float *cosine )
 		fstp dword ptr [edx]
 		fstp dword ptr [eax]
 	}
+#elif __linux__
+    sincosf(radians, sine, cosine);
+#else
+    *sine = sinf(radians);
+    *cosine = cosf(radians);
+#endif
 }
 
 void transform_point(float out[4], const float m[16], const float in[4])

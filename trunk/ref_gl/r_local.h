@@ -366,7 +366,7 @@ void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
-									   int filter, vec3_t angles, vec3_t speed, int isStatic, 
+									   int filter, vec3_t angles, vec3_t speed, qboolean isStatic, 
 									   int isShadow, int isAmbient, float cone);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
