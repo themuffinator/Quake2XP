@@ -19,9 +19,9 @@ uniform sampler2D  u_Caustics;
 uniform float      u_CausticsModulate;
 #endif
 
-uniform float      u_ColorModulate;  
-uniform float      u_AddShift; 
-
+uniform float       u_ColorModulate;  
+uniform float       u_AddShift; 
+uniform int			u_weaponHack;
 
 void main ()
 {
@@ -58,5 +58,11 @@ color = tmp + color;
 #endif
 
 gl_FragColor = color * u_ColorModulate;
+
+if(u_weaponHack == 1)
+	gl_FragColor.a = 0.0;
+else
+	gl_FragColor.a = 1.0;
+
 #endif
 }

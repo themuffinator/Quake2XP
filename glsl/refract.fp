@@ -14,11 +14,17 @@ uniform sampler2D		u_colorMap;
 
 uniform	sampler2DRect	g_depthBufferMap;
 uniform	sampler2DRect	g_colorBufferMap;
+uniform sampler2DRect	g_weaponHackMap;
+
 uniform vec2			u_depthParms;
 
 #include depth.inc
 
 void main (void) {
+
+	if (texture2DRect(g_weaponHackMap, gl_FragCoord.xy).a == 0.0) {
+		discard;
+	}
 
 	vec2 N = texture2D(u_deformMap, v_deformTexCoord).xy * 2.0 - 1.0;
 	vec4 diffuse  = texture2D(u_colorMap,  v_deformTexCoord.xy);
@@ -54,6 +60,5 @@ void main (void) {
 	gl_FragColor.z = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).z;
 	// blend glass texture
 	gl_FragColor.xyz += diffuse.xyz * u_alpha;
-	
 	#endif
 }

@@ -11,6 +11,7 @@ varying		vec2			v_shellCoord;
 #endif
 varying		vec4			v_color;
 uniform		float			u_scroll;
+uniform		int				u_weaponHack;
 
 void main ()
 {
@@ -38,6 +39,11 @@ v_envCoord.y = r.y/m + 0.5;
 
 v_texCoord = a_texCoord;
 v_color = a_colorArray;
+
+if(u_weaponHack == 1)
+v_color.a = 0.0;
+else
+v_color.a = 1.0;
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 
