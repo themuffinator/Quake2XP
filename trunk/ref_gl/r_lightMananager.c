@@ -1507,7 +1507,9 @@ qboolean R_DrawLightOccluders()
 	
 	
 	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0)){
-	//	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
+	
+	if(gl_state.conditional_render && r_useConditionalRender->value)
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
 		return true;
 	}
 	qglColorMask(0,0,0,0);
@@ -1561,8 +1563,12 @@ qboolean R_DrawLightOccluders()
 	qglEnable(GL_BLEND);
 	qglEnable(GL_STENCIL_TEST);
 
-
-//	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
+	if(gl_state.conditional_render && r_useConditionalRender->value){
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
+			return true;
+	}
+	else
+	{
 	if(currentShadowLight->occ_frame == lightVissFrame - 1)
 		qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
 
@@ -1570,6 +1576,6 @@ qboolean R_DrawLightOccluders()
 		return false;
 	else 
 		return true;
+	}
 
-//		return false;
 }

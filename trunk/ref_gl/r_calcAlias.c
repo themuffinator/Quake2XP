@@ -231,6 +231,11 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
 	
 	qglUniform1f(qglGetUniformLocation(id, "u_AddShift"), alphaShift);
+	
+	if (currententity->flags & RF_WEAPONMODEL) 
+		qglUniform1i(qglGetUniformLocation(id, "u_weaponHack"), 1);
+	else
+		qglUniform1i(qglGetUniformLocation(id, "u_weaponHack"), 0);
 
 	GL_MBind				(GL_TEXTURE0_ARB, skin->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Diffuse"), 0);

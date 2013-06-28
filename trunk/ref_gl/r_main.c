@@ -806,7 +806,8 @@ void R_DrawShadowLightPass(void)
 	
 	num_visLights++;
 	
-	//	glEndConditionalRender();
+	if(gl_state.conditional_render && r_useConditionalRender->value)
+		glEndConditionalRender();
 	}
 	}
 	
@@ -989,7 +990,6 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();
-	R_MotionBlur();
 	R_Bloom();
 	R_FilmGrain();
 	}
@@ -1677,37 +1677,37 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		qglBufferSubData =	(PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
 
 		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData){
-			vec2_t		tmpVerts0[4], tmpVerts1[4], tmpVerts2[4];	
+			vec2_t		tmpVerts[4];	
 			Com_Printf("...using GL_ARB_vertex_buffer_object\n");
 			// precalc screen quads for postprocessing
 			// full quad
-			VA_SetElem2(tmpVerts0[0],0 ,			vid.height);
-			VA_SetElem2(tmpVerts0[1],vid.width,	vid.height);
-			VA_SetElem2(tmpVerts0[2],vid.width,	0);
-			VA_SetElem2(tmpVerts0[3],0,			0);
+			VA_SetElem2(tmpVerts[0],0 ,			vid.height);
+			VA_SetElem2(tmpVerts[1],vid.width,	vid.height);
+			VA_SetElem2(tmpVerts[2],vid.width,	0);
+			VA_SetElem2(tmpVerts[3],0,			0);
 			qglGenBuffers(1, &gl_state.vbo_fullScreenQuad);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_fullScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts0, GL_STATIC_DRAW_ARB);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 			// half quad
-			VA_SetElem2(tmpVerts1[0],0,					vid.height);
-			VA_SetElem2(tmpVerts1[1],vid.width * 0.5 ,	vid.height);
-			VA_SetElem2(tmpVerts1[2],vid.width * 0.5 ,	vid.height * 0.5);
-			VA_SetElem2(tmpVerts1[3],0,					vid.height * 0.5);
+			VA_SetElem2(tmpVerts[0],0,					vid.height);
+			VA_SetElem2(tmpVerts[1],vid.width * 0.5 ,	vid.height);
+			VA_SetElem2(tmpVerts[2],vid.width * 0.5 ,	vid.height * 0.5);
+			VA_SetElem2(tmpVerts[3],0,					vid.height * 0.5);
 			qglGenBuffers(1, &gl_state.vbo_halfScreenQuad);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_halfScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts1, GL_STATIC_DRAW_ARB);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 			// quater quad
-			VA_SetElem2(tmpVerts2[0],0,						vid.height);
-			VA_SetElem2(tmpVerts2[1],vid.width * 0.25 ,		vid.height);
-			VA_SetElem2(tmpVerts2[2],vid.width * 0.25 ,		vid.height * 0.25);
-			VA_SetElem2(tmpVerts2[3],0,						vid.height * 0.25);
+			VA_SetElem2(tmpVerts[0],0,						vid.height);
+			VA_SetElem2(tmpVerts[1],vid.width * 0.25 ,		vid.height);
+			VA_SetElem2(tmpVerts[2],vid.width * 0.25 ,		vid.height * 0.25);
+			VA_SetElem2(tmpVerts[3],0,						vid.height * 0.25);
 			qglGenBuffers(1, &gl_state.vbo_quarterScreenQuad);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_quarterScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts2, GL_STATIC_DRAW_ARB);
+			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 		}
 	} else {

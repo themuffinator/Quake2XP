@@ -173,8 +173,8 @@ void CreateScreenRect(void){
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, vid.width, vid.height, 0,
-                       GL_RGB, GL_UNSIGNED_BYTE, NULL );
+    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0,
+                       GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
 }
 
@@ -518,7 +518,7 @@ void R_InitEngineTextures(void)
 		}
 	}
 
-	r_defBump = GL_LoadPic("***r_defBump***", (byte *) bump, 1, 1, it_wall, 32);	
+	r_defBump = GL_LoadPic("***r_defBump***", (byte *) bump, 1, 1, it_bump, 32);	
 
 
 	r_notexture =
@@ -820,7 +820,7 @@ void GL_SetDefaultState(void)
 	qglColor4f			(1, 1, 1, 1);
 	qglColorMask		(1, 1, 1, 1);
 
-	qglHint				(GL_GENERATE_MIPMAP_HINT_SGIS,		GL_NICEST);
+	qglHint				(GL_GENERATE_MIPMAP_HINT,			GL_NICEST);
 	qglHint				(GL_TEXTURE_COMPRESSION_HINT_ARB,	GL_NICEST);
 	
 	qglPolygonMode		(GL_FRONT_AND_BACK, GL_FILL);

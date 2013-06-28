@@ -105,8 +105,13 @@ float d_8to24tablef[256][3];
 qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 					qboolean is_sky);
 qboolean GL_Upload32(unsigned *data, int width, int height,
-					 qboolean mipmap);
+					 qboolean mipmap, qboolean bump);
 
+int upload_width, upload_height;
+qboolean uploaded_paletted;
+
+image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
+					imagetype_t type, int bits);
 
 int gl_solid_format =  GL_RGBA;
 int gl_alpha_format = GL_RGBA;
@@ -707,53 +712,93 @@ void R_FloodFillSkin(byte * skin, int skinwidth, int skinheight)
 GL_ResampleTexture
 ================
 */
-void GL_ResampleTexture(unsigned *in, int inwidth, int inheight,
-						unsigned *out, int outwidth, int outheight)
+void GL_ResampleTexture (unsigned *in, int inwidth, int inheight, unsigned *out,  int outwidth, int outheight, qboolean normalMap)
 {
-	int i, j;
-	unsigned *inrow, *inrow2;
-	unsigned frac, fracstep;
-	unsigned p1[4096], p2[4096];
-	byte *pix1, *pix2, *pix3, *pix4;
+	int			i, j;
+	unsigned	*inrow, *inrow2;
+	unsigned	frac, fracstep;
+	unsigned	p1[4096], p2[4096];
+	byte		*pix1, *pix2, *pix3, *pix4;
 
-	// divby0 error! - psychospaz
-	if (outheight == 0 || outwidth == 0) {
-		out = NULL;
-		return;
-	}
+	fracstep = inwidth*0x10000/outwidth;
 
-	fracstep = inwidth * 0x10000 / outwidth;
-
-	frac = fracstep >> 2;
-	for (i = 0; i < outwidth; i++) {
-		p1[i] = 4 * (frac >> 16);
+	frac = fracstep>>2;
+	for (i=0 ; i<outwidth ; i++)
+	{
+		p1[i] = 4*(frac>>16);
 		frac += fracstep;
 	}
-	frac = 3 * (fracstep >> 2);
-	for (i = 0; i < outwidth; i++) {
-		p2[i] = 4 * (frac >> 16);
+	frac = 3*(fracstep>>2);
+	for (i=0 ; i<outwidth ; i++)
+	{
+		p2[i] = 4*(frac>>16);
 		frac += fracstep;
 	}
 
-	for (i = 0; i < outheight; i++, out += outwidth) {
-		inrow = in + inwidth * (int) ((i + 0.25) * inheight / outheight);
-		inrow2 = in + inwidth * (int) ((i + 0.75) * inheight / outheight);
-		frac = fracstep >> 1;
-		for (j = 0; j < outwidth; j++) {
-			// XXX: I've tried with SSE and it doesn't improve considerably,
-			// also keep in mind to allocate extra space for average overflow.
-			pix1 = (byte *) inrow + p1[j];
-			pix2 = (byte *) inrow + p2[j];
-			pix3 = (byte *) inrow2 + p1[j];
-			pix4 = (byte *) inrow2 + p2[j];
-			((byte *) (out + j))[0] =
-				(pix1[0] + pix2[0] + pix3[0] + pix4[0]) >> 2;
-			((byte *) (out + j))[1] =
-				(pix1[1] + pix2[1] + pix3[1] + pix4[1]) >> 2;
-			((byte *) (out + j))[2] =
-				(pix1[2] + pix2[2] + pix3[2] + pix4[2]) >> 2;
-			((byte *) (out + j))[3] =
-				(pix1[3] + pix2[3] + pix3[3] + pix4[3]) >> 2;
+	if(normalMap)
+	{
+		float	inv127 = 1.0 / 127.0;
+		vec3_t	n, n2, n3, n4;
+
+		for(i = 0; i < outheight; i++, out += outwidth)
+		{
+			inrow = in + inwidth * (int)((i + 0.25) * inheight / outheight);
+			inrow2 = in + inwidth * (int)((i + 0.75) * inheight / outheight);
+
+			for(j = 0; j < outwidth; j++)
+			{
+				pix1 = (byte *) inrow + p1[j];
+				pix2 = (byte *) inrow + p2[j];
+				pix3 = (byte *) inrow2 + p1[j];
+				pix4 = (byte *) inrow2 + p2[j];
+
+				n[0] = (pix1[0] * inv127 - 1.0);
+				n[1] = (pix1[1] * inv127 - 1.0);
+				n[2] = (pix1[2] * inv127 - 1.0);
+
+				n2[0] = (pix2[0] * inv127 - 1.0);
+				n2[1] = (pix2[1] * inv127 - 1.0);
+				n2[2] = (pix2[2] * inv127 - 1.0);
+
+				n3[0] = (pix3[0] * inv127 - 1.0);
+				n3[1] = (pix3[1] * inv127 - 1.0);
+				n3[2] = (pix3[2] * inv127 - 1.0);
+
+				n4[0] = (pix4[0] * inv127 - 1.0);
+				n4[1] = (pix4[1] * inv127 - 1.0);
+				n4[2] = (pix4[2] * inv127 - 1.0);
+
+				n[0] += n2[0] + n3[0] + n4[0];
+				n[1] += n2[1] + n3[1] + n4[1];
+				n[2] += n2[2] + n3[2] + n4[2];
+
+				if(!VectorNormalize(n))
+					VectorSet(n, 0, 0, 1);
+
+				((byte *) (out + j))[0] = (byte)(128 + 127 * n[0]);
+				((byte *) (out + j))[1] = (byte)(128 + 127 * n[1]);
+				((byte *) (out + j))[2] = (byte)(128 + 127 * n[2]);
+				((byte *) (out + j))[3] = (pix1[3] + pix2[3] + pix3[3] + pix4[3])>>2;
+			}
+		}
+	}
+	else
+	{
+		for (i=0 ; i<outheight ; i++, out += outwidth)
+		{
+			inrow = in + inwidth*(int)((i+0.25)*inheight/outheight);
+			inrow2 = in + inwidth*(int)((i+0.75)*inheight/outheight);
+			for (j=0 ; j<outwidth ; j++)
+			{
+				pix1 = (byte *)inrow + p1[j];
+				pix2 = (byte *)inrow + p2[j];
+				pix3 = (byte *)inrow2 + p1[j];
+				pix4 = (byte *)inrow2 + p2[j];
+				((byte *)(out+j))[0] = (pix1[0] + pix2[0] + pix3[0] + pix4[0])>>2;
+				((byte *)(out+j))[1] = (pix1[1] + pix2[1] + pix3[1] + pix4[1])>>2;
+				((byte *)(out+j))[2] = (pix1[2] + pix2[2] + pix3[2] + pix4[2])>>2;
+				((byte *)(out+j))[3] = (pix1[3] + pix2[3] + pix3[3] + pix4[3])>>2;
+			}
 		}
 	}
 }
@@ -766,82 +811,107 @@ Returns has_alpha
 ===============
 */
 
-int upload_width, upload_height;
-qboolean uploaded_paletted;
-
-int nearest_power_of_2(int size)
+void R_MipMap (byte *in, int width, int height)
 {
-	int i = 2;
+	int		i, j;
+	byte	*out;
+	int		row;
 
-	while (1) {
-		i <<= 1;
-		if (size == i)
-			return i;
-		if (size > i && size < (i << 1)) {
-			if (size >= ((i + (i << 1)) / 2))
-				return i << 1;
-			else
-				return i;
-		}
-	};
-}
+	if ( width == 1 && height == 1 )
+		return;
 
+	row = width * 4;
+	out = in;
+	width >>= 1;
+	height >>= 1;
 
-image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
-					imagetype_t type, int bits);
-
-// Fast reciprocal square root (Quake 3 game code)
-__inline float RSqrt(float number)
-{
-	long i;
-	float x2, y;
-	const float threehalfs = 1.5f;
-
-	x2 = number * 0.5f;
-	y  = number;
-	i  = * (long *) &y;						// evil floating point bit level hacking
-	i  = 0x5f3759df - (i >> 1);             // what the fuck?
-	y  = * (float *) &i;
-	y  = y * (threehalfs - (x2 * y * y));   // 1st iteration
-
-	return y;
-}
-
-void GL_sRgbTextureConversion (unsigned *in, int inwidth, int inheight)
-{
-		int		i, c;
-		byte	*p;
-
-		p = (byte *)in;
-
-		c = inwidth*inheight;
-		for (i=0 ; i<c ; i++, p+=4)
+	if ( width == 0 || height == 0 )
+	{
+		width += height;	// get largest
+		for (i=0 ; i<width ; i++, out+=4, in+=8 )
 		{
-			if(p[3] && (p[0]>4 || p[1]>4 || p[2]>4))
-			{
-				p[0] = pow(p[0],0.43);
-				p[1] = pow(p[1],0.43);
-				p[2] = pow(p[2],0.43);
-			}
+			out[0] = ( in[0] + in[4] )>>1;
+			out[1] = ( in[1] + in[5] )>>1;
+			out[2] = ( in[2] + in[6] )>>1;
+			out[3] = ( in[3] + in[7] )>>1;
 		}
-	
+		return;
+	}
+
+	for (i=0 ; i<height ; i++, in+=row)
+	{
+		for (j=0 ; j<width ; j++, out+=4, in+=8)
+		{
+			out[0] = (in[0] + in[4] + in[row+0] + in[row+4])>>2;
+			out[1] = (in[1] + in[5] + in[row+1] + in[row+5])>>2;
+			out[2] = (in[2] + in[6] + in[row+2] + in[row+6])>>2;
+			out[3] = (in[3] + in[7] + in[row+3] + in[row+7])>>2;
+		}
+	}
 }
 
 
-
-extern cvar_t	*r_maxTextureSize;
-
-qboolean GL_Upload32(unsigned *data, int width, int height,
-					 qboolean mipmap)
+// from XReal
+void R_MipNormalMap (byte *in, int width, int height)
 {
+	int		i, j;
+	byte	*out;
+	vec3_t	n;
+	float	length, inv127 = 1.0f / 127.0f;
 
-	int samples;
-	unsigned *scaled;
-	int scaled_width, scaled_height;
-	int i, c;
-	byte *scan;
-	int comp;
-	uploaded_paletted = false;
+	if(width == 1 && height == 1)
+		return;
+
+	out = in;
+	width <<= 2;
+	height >>= 1;
+
+	for(i = 0; i < height; i++, in += width)
+	{
+		for(j = 0; j < width; j += 8, out += 4, in += 8)
+		{
+			n[0] =	(inv127 * in[0] - 1.0) +
+					(inv127 * in[4] - 1.0) +
+					(inv127 * in[width + 0] - 1.0) +
+					(inv127 * in[width + 4] - 1.0);
+
+			n[1] =	(inv127 * in[1] - 1.0) +
+					(inv127 * in[5] - 1.0) +
+					(inv127 * in[width + 1] - 1.0) +
+					(inv127 * in[width + 5] - 1.0);
+
+			n[2] =	(inv127 * in[2] - 1.0) +
+					(inv127 * in[6] - 1.0) +
+					(inv127 * in[width + 2] - 1.0) +
+					(inv127 * in[width + 6] - 1.0);
+
+			length = VectorLength(n);
+
+			if(length)
+			{
+				n[0] /= length;
+				n[1] /= length;
+				n[2] /= length;
+			}
+			else
+				VectorSet(n, 0.0, 0.0, 1.0);
+
+			out[0] = (byte) (128 + 127 * n[0]);
+			out[1] = (byte) (128 + 127 * n[1]);
+			out[2] = (byte) (128 + 127 * n[2]);
+			out[3] = (in[3] + in[7] + in[width + 3] + in[width + 7]) >> 2;
+		}
+	}
+}
+
+unsigned	scaled[4096*4096];
+qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean bump)
+{
+	int			samples;
+	int			scaled_width, scaled_height;
+	int			comp, c, i;
+	int			max_size;
+	byte		*scan;
 
 	// scan the texture for any non-255 alpha
 	c = width * height;
@@ -854,6 +924,36 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 			break;
 		}
 	}
+
+	for (scaled_width = 1; scaled_width < width; scaled_width<<=1);
+	for (scaled_height = 1; scaled_height < height; scaled_height<<=1);
+
+	qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+
+	if(mipmap){
+	if(r_maxTextureSize->value >= max_size)
+		Cvar_SetValue("r_maxTextureSize", max_size);
+
+	if(r_maxTextureSize->value <= 64 && r_maxTextureSize->value > 0 )
+		Cvar_SetValue("r_maxTextureSize", 64);
+
+	if(r_maxTextureSize->value)
+		max_size =	(int)r_maxTextureSize->value;
+	}
+
+	if (scaled_width > max_size)
+		scaled_width = max_size;
+	if (scaled_height > max_size)
+		scaled_height = max_size;
+
+	if (scaled_width < 1)
+		scaled_width = 1;
+	if (scaled_height < 1)
+		scaled_height = 1;
+
+	upload_width = scaled_width;
+	upload_height = scaled_height;
+
 
 	if (samples == 3){
 
@@ -870,75 +970,63 @@ qboolean GL_Upload32(unsigned *data, int width, int height,
 	else 
 		comp = gl_tex_alpha_format;
 	}
-	
-	// find sizes to scale to
 
+
+	if (scaled_width == width && scaled_height == height)
 	{
-		int max_size;
-
-		qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
-		
-		if(gl_state.nPot){
-		scaled_width = width;
-		scaled_height = height;
-		}
-		else
+		if (!mipmap)
 		{
-		scaled_width = nearest_power_of_2(width);
-		scaled_height = nearest_power_of_2(height);
+			qglTexImage2D (GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			goto done;
 		}
-		
-		if(r_maxTextureSize->value >= max_size)
-			Cvar_SetValue("r_maxTextureSize", max_size);
+		memcpy (scaled, data, width*height*4);
+	}
+	else{
+		if(bump)
+			GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height, true);
+		else
+			GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height, false);
+	}
+	qglTexImage2D( GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaled );
 
-		if(r_maxTextureSize->value <= 64 && r_maxTextureSize->value > 0 )
-			Cvar_SetValue("r_maxTextureSize", 64);
+	if (mipmap)
+	{
+		int		miplevel;
 
-		if(r_maxTextureSize->value)
-			max_size =	r_maxTextureSize->value;
-		
-		if (scaled_width > max_size)
-			scaled_width = max_size;
-		if (scaled_height > max_size)
-			scaled_height = max_size;
+		miplevel = 0;
+		while (scaled_width > 1 || scaled_height > 1)
+		{
+			if(bump)
+			R_MipNormalMap ((byte *)scaled, scaled_width, scaled_height);
+			else
+			R_MipMap ((byte *)scaled, scaled_width, scaled_height);
+
+			scaled_width >>= 1;
+			scaled_height >>= 1;
+			if (scaled_width < 1)
+				scaled_width = 1;
+			if (scaled_height < 1)
+				scaled_height = 1;
+			miplevel++;
+			qglTexImage2D (GL_TEXTURE_2D, miplevel, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaled);
+		}
+	}
+done:
+
+
+	if (mipmap)
+	{
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, r_anisotropic->value);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+	}
+	else
+	{
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
 
-	if (scaled_width == width && scaled_height == height) {
-		scaled_width = width;
-		scaled_height = height;
-		scaled = data;
-        
-	} else {
-		scaled = malloc((scaled_width * scaled_height) * 4);
-        GL_ResampleTexture(data, width, height, scaled, scaled_width, scaled_height);
-    }
 
-
-	if (mipmap) {
-
-		qglTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, true);
-		qglTexImage2D(GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height,
-					  0, GL_RGBA, GL_UNSIGNED_BYTE, scaled);
-
-	} else {
-
-		qglTexImage2D(GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height,
-					  0, GL_RGBA, GL_UNSIGNED_BYTE, scaled);
-	}
-
-
-
-	if (scaled_width != width || scaled_height != height)
-		free(scaled);
-
-	upload_width = scaled_width;
-	upload_height = scaled_height;
-
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (mipmap) ? gl_filter_min : gl_filter_max);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, r_anisotropic->value);
-	
 	return (samples == 4);
 }
 
@@ -992,7 +1080,7 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	}
 
 
-	return GL_Upload32(trans, width, height, mipmap);
+	return GL_Upload32(trans, width, height, mipmap, false);
 }
 
 
@@ -1120,7 +1208,7 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 				GL_Upload8(pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_sky);
 		else {
 									
-		image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_pic && image->type != it_sky));
+			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_bump);
 					
 		}
 		if(gl_state.nPot){

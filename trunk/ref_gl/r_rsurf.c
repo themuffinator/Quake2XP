@@ -696,6 +696,9 @@ void GL_CreateLightPoly(msurface_t * surf)
 	int			i, nv = surf->polys->numverts;
 	float		*v;
 	glpoly_t	*p = surf->polys;
+		float scroll;
+	
+	scroll = -64 * ((r_newrefdef.time / 40.0) - (int) (r_newrefdef.time / 40.0));
 
 	v = p->verts[0];
 	c_brush_polys += (nv-2);
@@ -704,7 +707,11 @@ void GL_CreateLightPoly(msurface_t * surf)
 		{
 		VectorCopy(v, wVertexArray[i]);
 		//baseTex
+		if (surf->texinfo->flags & SURF_FLOWING){
+		wTexArray[i][0] = v[3]+scroll;
+		}else{
 		wTexArray[i][0] = v[3];
+		}
 		wTexArray[i][1] = v[4];
 		//normals
 		nTexArray[i][0] = v[7];

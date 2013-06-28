@@ -1353,6 +1353,8 @@
     <None Include="..\baseq2\glsl\lightWorld.vp" />
     <None Include="..\baseq2\glsl\loading.fp" />
     <None Include="..\baseq2\glsl\loading.vp" />
+    <None Include="..\baseq2\glsl\mblur.fp" />
+    <None Include="..\baseq2\glsl\mblur.vp" />
     <None Include="..\baseq2\glsl\null.fp" />
     <None Include="..\baseq2\glsl\null.vp" />
     <None Include="..\baseq2\glsl\particles.fp" />

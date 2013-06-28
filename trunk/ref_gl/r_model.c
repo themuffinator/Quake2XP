@@ -858,20 +858,20 @@ void Mod_LoadTexinfo (lump_t * l) {
           //
 
           Com_sprintf(name, sizeof(name), "overrides/%s_bump.tga", purename);
-             out->normalmap = GL_FindImage(name, it_wall);
+             out->normalmap = GL_FindImage(name, it_bump);
 
              if (!out->normalmap) {
                Com_sprintf(name, sizeof(name), "overrides/%s_bump.dds", purename);
-                  out->normalmap = GL_FindImage(name, it_wall);
+                  out->normalmap = GL_FindImage(name, it_bump);
 				
 				 
 				if (!out->normalmap) {
                     Com_sprintf(name, sizeof(name), "textures/%s_bump.tga", in->texture);
-                       out->normalmap = GL_FindImage(name, it_wall);
+                       out->normalmap = GL_FindImage(name, it_bump);
 
                        if (!out->normalmap) {
                          Com_sprintf(name, sizeof(name), "textures/%s_bump.dds", in->texture);
-                            out->normalmap = GL_FindImage(name, it_wall);
+                            out->normalmap = GL_FindImage(name, it_bump);
 							
 							
 							if (!out->normalmap) 
@@ -2112,13 +2112,13 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
 		strcat(gl, "_bump.tga");
-		mod->skins_normal[i] = GL_FindImage(gl, it_wall);
+		mod->skins_normal[i] = GL_FindImage(gl, it_bump);
 
 		if (!mod->skins_normal[i]){
         strcpy(gl, pname);
         gl[strlen(gl) - 4] = 0;
         strcat(gl, "_bump.dds");
-        mod->skins_normal[i] = GL_FindImage(gl, it_wall);
+        mod->skins_normal[i] = GL_FindImage(gl, it_bump);
 		}
 
 		if (!mod->skins_normal[i])
@@ -2531,13 +2531,13 @@ struct model_s *R_RegisterModel(char *name)
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
 		strcat(gl, "_bump.tga");
-		mod->skins_normal[i] = GL_FindImage(gl, it_wall);
+		mod->skins_normal[i] = GL_FindImage(gl, it_bump);
 
 		if (!mod->skins_normal[i]){
         strcpy(gl, pname);
         gl[strlen(gl) - 4] = 0;
         strcat(gl, "_bump.dds");
-        mod->skins_normal[i] = GL_FindImage(gl, it_wall);
+        mod->skins_normal[i] = GL_FindImage(gl, it_bump);
 		}
 
 		
