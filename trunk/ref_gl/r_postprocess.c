@@ -618,11 +618,10 @@ void R_MotionBlur (void) {
 	// setup program
 	GL_BindProgram(motionBlurProgram, defBits);
 	id = motionBlurProgram->id[defBits];
-	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform3fv(qglGetUniformLocation(id, "u_viewOrg"), 1, r_origin);
 
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_InverseModelViewMat"), 1,	GL_FALSE, r_modelViewInv);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_PrevModelViewProj"), 1,	GL_FALSE, r_oldModelViewProjection);
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_ProjMat"), 1,	GL_FALSE, r_project_matrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_ModelViewProj"), 1,	GL_FALSE, r_modelViewProjection);
+	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
 
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 	GL_BindRect				(ScreenMap->texnum);

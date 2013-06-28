@@ -277,6 +277,18 @@ void R_CaptureColorBuffer()
 	qglDisable(GL_TEXTURE_RECTANGLE_ARB);
 }
 
+void R_CapturePlayerWeapon()
+{
+		
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+		
+	qglEnable(GL_TEXTURE_RECTANGLE_ARB);
+	GL_MBindRect(GL_TEXTURE0_ARB, weaponHack->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglDisable(GL_TEXTURE_RECTANGLE_ARB);
+}
+
 void R_CaptureDepthBuffer()
 {
 		

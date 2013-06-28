@@ -313,19 +313,13 @@ next:
 
 	R_RotateForLightEntity(e);
 	
-	if (currententity->flags & RF_WEAPONMODEL) {
-		qglColorMask(1,1,1,0);
-		qglClearColor(0,0,0,1);
-	}
+
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) 
 		GL_DrawAliasFrameLerpAmbientShell(paliashdr);
 	else 
 		GL_DrawAliasFrameLerpAmbient(paliashdr, shadelight);
-	
-	if (currententity->flags & RF_WEAPONMODEL) {
-		qglColorMask(1,1,1,1);
-		qglClearColor(0,0,0,1);
-	}
+
+
 	if (!(currententity->flags & RF_TRANSLUCENT)){
 	if(r_pplWorld->value)
 		VectorCopy(diffuseLight, shadelight);

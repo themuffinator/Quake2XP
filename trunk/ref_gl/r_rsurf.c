@@ -186,6 +186,8 @@ void DrawGLPolyGLSL(msurface_t * fa)
 	qglUniform1i(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
 	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
+	GL_MBindRect(GL_TEXTURE4_ARB, weaponHack->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "g_weaponHackMap"), 4);
 
 	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	1.0);
 	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	alpha);

@@ -555,8 +555,8 @@ void GL_BeginBuildingLightmaps(model_t * m)
 	
 	dummy = (byte*)Z_Malloc(LIGHTMAP_BYTES * LIGHTMAP_SIZE * LIGHTMAP_SIZE);
 
-	r_framecount = 1;			// no dlightcache
-	lightVissFrame = 1;
+	r_framecount = lightVissFrame = 1;			// no dlightcache
+	
 
 	GL_SelectTexture( GL_TEXTURE1 );
 	qglEnable( GL_TEXTURE_2D );

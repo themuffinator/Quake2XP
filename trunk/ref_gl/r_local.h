@@ -176,7 +176,8 @@ extern image_t	*ScreenMap;
 extern image_t	*r_envTex;
 extern image_t	*shadowMask;
 extern image_t	*r_scanline;
-extern image_t *atten3d_texture_object;
+extern image_t	*atten3d_texture_object;
+extern image_t	*weaponHack;
 
 #define MAX_FILTERS 256
 extern image_t	*filtercube_texture_object[MAX_FILTERS];
@@ -406,6 +407,7 @@ void R_CastShadowVolumes(void);
 void R_DrawAliasModelLightPass (qboolean weapon_model);
 void R_RotateForLightEntity(entity_t * e);
 void GL_MBind3d(GLenum target, int texnum);
+void R_CapturePlayerWeapon();
 
 void R_SaveLights_f(void);
 void R_Light_Spawn_f(void);

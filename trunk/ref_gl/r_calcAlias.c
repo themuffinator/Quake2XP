@@ -200,8 +200,11 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			{
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
-			VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], alpha);
 			
+			if (currententity->flags & RF_WEAPONMODEL)
+				VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], 0.0);
+			else
+				VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], alpha);
 			if(currentmodel->envmap){
 			index2 = verts[index_xyz].lightnormalindex;
 			oldindex2 = oldverts[index_xyz].lightnormalindex;
@@ -252,7 +255,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	}
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
-	
+
 	qglDisableVertexAttribArray	(ATRB_POSITION);
 	qglDisableVertexAttribArray	(ATRB_NORMAL);
 	qglDisableVertexAttribArray	(ATRB_COLOR);
@@ -260,6 +263,10 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	qglBindBuffer				(GL_ARRAY_BUFFER_ARB, 0);
 	GL_SelectTexture			(GL_TEXTURE0_ARB);
 	GL_BindNullProgram			();
+	
+	if (currententity->flags & RF_WEAPONMODEL) {
+		R_CapturePlayerWeapon();
+	}
 
 }
 
