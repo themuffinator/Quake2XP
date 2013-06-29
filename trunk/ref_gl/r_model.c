@@ -1575,7 +1575,7 @@ void Mod_GenerateLights(model_t * mod)
 	R_InitLightgrid();
 }
 
-void CalcLightVis(void);
+void R_PreCalcLightData(void);
 
 /*
 =================
@@ -1638,7 +1638,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadNodes(&header->lumps[LUMP_NODES]);
 	Mod_LoadSubmodels(&header->lumps[LUMP_MODELS]);
 	Mod_GenerateLights(mod);
-	CalcLightVis();
+	R_PreCalcLightData();
 	mod->numframes = 2;			// regular and alternate animation
 
 //
@@ -2469,9 +2469,6 @@ void R_BeginRegistration(char *model)
 
 	r_viewcluster = -1;
 
-	// cleanup shadow vbo
-	gl_state.createVbo =  true;
-	numPreCachedLights = 0;
 	DeleteShadowVertexBuffers();
 }
 
@@ -2606,7 +2603,6 @@ void R_EndRegistration(void)
 	spriteSize =	0;
 	qglClear(GL_COLOR_BUFFER_BIT);
 	qglClearColor(0.0, 0.0, 0.0, 1);
-	gl_state.createVbo =  true;
 }
 
 

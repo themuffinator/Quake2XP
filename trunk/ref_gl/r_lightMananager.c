@@ -125,11 +125,9 @@ void R_PrepareShadowLightFrame(void) {
 	// add pre computed lights
 	if(shadowLight_static) {
 		for(light = shadowLight_static; light; light = light->s_next) {
-				
-		if (!gl_state.createVbo){
+
 			if(!R_AddLightToFrame(light))
 				continue;
-		}
 
 			light->next = shadowLight_frame;
 			shadowLight_frame = light;
@@ -1376,16 +1374,19 @@ qboolean InLightVISEntity()
 	return HasSharedLeafs (currentShadowLight->vis, currententity->vis);
 }
 
-void R_DrawBspModelVolumes(qboolean precalc);
+void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light);
 
-void CalcLightVis(void){
+void R_PreCalcLightData(void){
 	worldShadowLight_t *light;
 
 		for(light = shadowLight_static; light; light = light->s_next) {
 
 			if(!R_MarkLightLeaves(light))
 				continue;
+			
+			R_DrawBspModelVolumes(true, light);
 		}
+	Com_Printf(""S_COLOR_MAGENTA"R_PreCalcLightData: "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", numPreCachedLights);
 }
 
 void DeleteShadowVertexBuffers(void){
@@ -1397,6 +1398,7 @@ void DeleteShadowVertexBuffers(void){
 			qglDeleteBuffers(1, &light->iboId);
 			light->vboId = light->iboId = light->iboNumIndices = 0;
 		}
+	numPreCachedLights = 0;
 }
 
 
@@ -1508,8 +1510,11 @@ qboolean R_DrawLightOccluders()
 	
 	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0)){
 	
-	if(gl_state.conditional_render && r_useConditionalRender->value)
+	if(gl_state.conditional_render && r_useConditionalRender->value){
 		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
+		return true;
+	}
+	else
 		return true;
 	}
 	qglColorMask(0,0,0,0);

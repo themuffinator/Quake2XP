@@ -899,9 +899,6 @@ if (r_noRefresh->value)
 //	R_DrawPlayerWeaponLightPass();
 	R_CaptureColorBuffer();
 
-	if(gl_state.createVbo)
-		Com_DPrintf("calc vbo data for "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", numPreCachedLights);
-	gl_state.createVbo = false;
 }
 
 

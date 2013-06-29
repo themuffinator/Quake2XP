@@ -752,7 +752,7 @@ void R_MarkShadowCasting (mnode_t *node)
 model_t *loadmodel;
 int numPreCachedLights;
 
-void R_DrawBspModelVolumes(qboolean precalc)
+void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
 {
 	int			i, j, vb = 0, ib = 0, surfBase = 0;
 	float		scale, sca;
@@ -760,7 +760,13 @@ void R_DrawBspModelVolumes(qboolean precalc)
 	glpoly_t	*poly;
 	vec3_t		v1;
 	qboolean	shadow;
-	
+	;
+
+	if(precalc)
+		currentShadowLight = light;
+	else 
+		light = NULL;
+
 	shadowTimestamp++;
 	num_shadow_surfaces = 0;
 	R_MarkShadowCasting (r_worldmodel->nodes);
@@ -853,9 +859,6 @@ void R_DrawBspModelVolumes(qboolean precalc)
 			currentShadowLight->iboNumIndices = ib;
 			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			numPreCachedLights++;
-
-				if(!gl_state.createVbo)
-					Com_DPrintf("calc vbo data for light\n");
 			}else
 		{
 		if(ib){
@@ -896,11 +899,7 @@ void R_CastShadowVolumes(void)
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglPolygonOffset(0.1, 1);
 
-	if(!currentShadowLight->vboId && !currentShadowLight->iboId && currentShadowLight->isStatic){
-		R_DrawBspModelVolumes(true); // vbo cache not found! calc vbo data
-	}else 
-	
-		if(currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic){ // draw vbo shadow
+	if(currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic){ // draw vbo shadow
 		
 		qglBindBuffer(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
@@ -913,7 +912,7 @@ void R_CastShadowVolumes(void)
 	}
 
 	if(!currentShadowLight->isStatic)
-		R_DrawBspModelVolumes(false); //dlights have't vbo data
+		R_DrawBspModelVolumes(false, NULL); //dlights have't vbo data
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) 
 	{

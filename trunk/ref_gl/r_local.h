@@ -614,7 +614,6 @@ typedef struct {
 	qboolean	wgl_nv_multisample_coverage;
 	qboolean	wgl_nv_multisample_coverage_aviable;
 	qboolean	wgl_swap_control_tear;
-	qboolean	createVbo;
 	qboolean	conditional_render;
 	qboolean	glsl;
 	qboolean	nPot;
