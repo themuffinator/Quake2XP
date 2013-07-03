@@ -279,9 +279,6 @@
     <ClCompile Include="ref_gl\r_lightMananager.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_scissors.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_cull.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>

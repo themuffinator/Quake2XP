@@ -368,7 +368,7 @@ void R_RenderFlares(void);
 void R_DrawShadowVolume(entity_t * e);
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
 									   int filter, vec3_t angles, vec3_t speed, qboolean isStatic, 
-									   int isShadow, int isAmbient, float cone);
+									   int isShadow, int isAmbient, float cone, qboolean ingame);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
@@ -438,10 +438,6 @@ __inline qboolean BBoxIntersectBBox(float *bbox0, float *bbox1);
 void boxScreenSpaceRect(worldShadowLight_t *light, int *rect);
 void R_ProjectSphere (worldShadowLight_t *light, int *rect);
 qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p);
-qboolean R_CheckRectList(screenrect_t *rec);
-void R_AddRectList(screenrect_t *rec);
-extern screenrect_t	*recList;					//first rectangle of the list
-extern screenrect_t	totalRect;					//rectangle that holds all rectangles in the list
 extern int num_visLights;
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
@@ -451,6 +447,11 @@ extern qboolean FoundReLight;
 qboolean PF_inPVS(vec3_t p1, vec3_t p2);
 void R_SetFrustum(void);
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
+void R_CalcDepthBounds();
+
+void Matrix4_Transpose( const mat4x4_t m, mat4x4_t out );
+void Matrix4_Multiply_Vector( const mat4x4_t m, const vec4_t v, vec4_t out );
+
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -618,6 +619,7 @@ typedef struct {
 	qboolean	glsl;
 	qboolean	nPot;
 	qboolean	glslBinary;
+	qboolean	depthBoundsTest;
 	int			programId;
 	int			lastdFactor;
 	int			lastsFactor;

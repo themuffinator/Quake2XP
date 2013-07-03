@@ -163,6 +163,8 @@ qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p)
 	return true;
 }
 
+
+
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs)
 {
 	int		i, j;

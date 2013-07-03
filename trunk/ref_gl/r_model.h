@@ -36,12 +36,6 @@ WORLD LIGHTS
 ==============================================================================
 */
 
-typedef struct screenrect_s
-{
-	int coords[4];
-	struct screenrect_s *next;
-} screenrect_t;
-
 typedef struct worldShadowLight_s {
 	vec3_t	origin;
 	vec3_t	angles;
@@ -63,6 +57,7 @@ typedef struct worldShadowLight_s {
 	int		isAmbient;
 	int		linkedSurf;
 	int		occ_frame;
+	int		scissor[4];
 
 	unsigned int occQ;
 	cplane_t		frust[4];
@@ -70,7 +65,6 @@ typedef struct worldShadowLight_s {
 	byte vis[MAX_MAP_LEAFS / 8];
 	
 	msurface_t		*surf;
-	screenrect_t	scizz;
 
 	GLuint			vboId;
 	GLuint			iboId;

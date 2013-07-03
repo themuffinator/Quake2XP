@@ -847,11 +847,19 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
                 surfBase += surf->numedges*2;
         }
 
+
 		if(precalc){
+			
+			if(currentShadowLight->vboId)
+					qglDeleteBuffers(1, &currentShadowLight->vboId);
+
 			qglGenBuffers(1, &currentShadowLight->vboId);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
 			qglBufferData(GL_ARRAY_BUFFER_ARB, surfBase*sizeof(vec3_t), vcache, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+			if(currentShadowLight->iboId)
+					qglDeleteBuffers(1, &currentShadowLight->iboId);
 
 			qglGenBuffers(1, &currentShadowLight->iboId);
 			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);

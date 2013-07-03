@@ -34,7 +34,7 @@ int vboPos, iboPos;
 vec3_t player_org, v_forward, v_right, v_up;
 trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask);
 qboolean R_MarkLightLeaves (worldShadowLight_t *light);
-
+void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light);
 
 qboolean R_AddLightToFrame(worldShadowLight_t *light) {
 	
@@ -154,24 +154,6 @@ void R_PrepareShadowLightFrame(void) {
 	if(!light->isStatic)
 		if(!R_MarkLightLeaves(light))
 			return;
-
-	//fully/partially in frustum
-	if(!intersectsBoxPoint(light->mins, light->maxs, r_origin))
-	{
-		if(r_newrefdef.fov_x <= 90)
-			/// Berserker: этот способ быстрее, но при углах обзора больше 90, дает артефакты куллинга;
-			/// поэтому юзаем его тока при углах меньших или равных 90.
-			R_ProjectSphere(light, light->scizz.coords);
-		else
-			boxScreenSpaceRect(light, light->scizz.coords);
-	}
-	else
-	{	//viewport is ofs/width based
-		light->scizz.coords[0] = r_viewport[0];
-		light->scizz.coords[1] = r_viewport[1];
-		light->scizz.coords[2] = r_viewport[0] + r_viewport[2];
-		light->scizz.coords[3] = r_viewport[1] + r_viewport[3];
-	}
 
 	MakeFrustum4Light(light, true);
 
@@ -304,7 +286,7 @@ void R_Light_Spawn_f(void) {
 	
 	if (trace.fraction != 1.0){
 		VectorMA(trace.endpos, -10, v_forward, spawn);
-		R_AddNewWorldLight(spawn, color, 300, 0, 0, vec3_origin, vec3_origin, 1, 1, 0, 0);
+		R_AddNewWorldLight(spawn, color, 300, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true);
 	}
 }
 
@@ -316,7 +298,7 @@ void R_Light_SpawnToCamera_f(void) {
 		return;
 	}
 
-	R_AddNewWorldLight(player_org, color, 300, 0, 0, vec3_origin, vec3_origin, 1, 1, 0, 0);
+	R_AddNewWorldLight(player_org, color, 300, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true);
 }
 
 void R_Light_Copy_f(void) {
@@ -347,14 +329,10 @@ void R_Light_Copy_f(void) {
 	_cone = selectedShadowLight->_cone;
 
 	VectorMA(origin, -50, v_forward, spawn);
-	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, 1, shadow, ambient, _cone);
+	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, _cone, true);
 	R_MarkLightLeaves(selectedShadowLight);
 	MakeFrustum4Light(selectedShadowLight, true);
-	
-	//reset vbo data - recalc it!
-	selectedShadowLight->vboId = 0;
-	selectedShadowLight->iboId = 0;
-	selectedShadowLight->iboNumIndices = 0;
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 
 }
 
@@ -397,10 +375,7 @@ void R_EditSelectedLight_f(void) {
 		origin[1] = atof(Cmd_Argv(3));
 		origin[2] = atof(Cmd_Argv(4));
 		VectorCopy(origin, selectedShadowLight->origin);
-		//reset vbo data - recalc it!
-	selectedShadowLight->vboId = 0;
-	selectedShadowLight->iboId = 0;
-	selectedShadowLight->iboNumIndices = 0;
+		R_DrawBspModelVolumes(true, selectedShadowLight);
 	} 
 	else
 	if (!strcmp(Cmd_Argv(1), "color")) {
@@ -439,10 +414,7 @@ void R_EditSelectedLight_f(void) {
 		}
 		radius = atof(Cmd_Argv(2));
 		selectedShadowLight->radius = radius;
-
-		selectedShadowLight->vboId = 0;
-		selectedShadowLight->iboId = 0;
-		selectedShadowLight->iboNumIndices = 0;
+		R_DrawBspModelVolumes(true, selectedShadowLight);
 	 } 
 	else
 	if (!strcmp(Cmd_Argv(1), "cone")) {
@@ -453,10 +425,7 @@ void R_EditSelectedLight_f(void) {
 		}
 		_cone = atof(Cmd_Argv(2));
 		selectedShadowLight->_cone = _cone;
-
-		selectedShadowLight->vboId = 0;
-		selectedShadowLight->iboId = 0;
-		selectedShadowLight->iboNumIndices = 0;
+		R_DrawBspModelVolumes(true, selectedShadowLight);
 	 } 
 	else
 	 if (!strcmp(Cmd_Argv(1), "style")) {
@@ -563,11 +532,7 @@ void R_MoveLightToRight_f(void) {
 		origin[0] += offset;
 
 	VectorCopy(origin, selectedShadowLight->origin);
-
-	//reset vbo data - recalc it!
-	selectedShadowLight->vboId = 0;
-	selectedShadowLight->iboId = 0;
-	selectedShadowLight->iboNumIndices = 0;
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 }
 
 void R_MoveLightForward_f(void) {
@@ -605,11 +570,7 @@ void R_MoveLightForward_f(void) {
 		origin[1] += offset;
 
 	VectorCopy(origin, selectedShadowLight->origin);
-	
-	//reset vbo data - recalc it!
-	selectedShadowLight->vboId = 0;
-	selectedShadowLight->iboId = 0;
-	selectedShadowLight->iboNumIndices = 0;
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 }
 
 void R_MoveLightUpDown_f(void) {
@@ -641,11 +602,7 @@ void R_MoveLightUpDown_f(void) {
 	origin[2] += offset;
 
 	VectorCopy(origin, selectedShadowLight->origin);
-
-	//reset vbo data - recalc it!
-	selectedShadowLight->vboId = 0;
-	selectedShadowLight->iboId = 0;
-	selectedShadowLight->iboNumIndices = 0;
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 }
 
 void R_ChangeLightRadius_f(void) {
@@ -678,11 +635,7 @@ void R_ChangeLightRadius_f(void) {
 		radius = 10;
 
 	selectedShadowLight->radius = radius;
-	
-	//reset vbo data - recalc it!
-	selectedShadowLight->vboId = 0;
-	selectedShadowLight->iboId = 0;
-	selectedShadowLight->iboNumIndices = 0;
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 
 }
 
@@ -719,11 +672,7 @@ void R_ChangeLightCone_f(void) {
 		cone = 0;
 
 	selectedShadowLight->_cone = cone;
-	
-	//reset vbo data - recalc it!
-	selectedShadowLight->vboId = 0;
-	selectedShadowLight->iboId = 0;
-	selectedShadowLight->iboNumIndices = 0;
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 
 }
 
@@ -1047,7 +996,7 @@ void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame)
 
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
 									   int filter, vec3_t angles, vec3_t speed, qboolean isStatic, 
-									   int isShadow, int isAmbient, float cone) {
+									   int isShadow, int isAmbient, float cone, qboolean ingame) {
 	
 	worldShadowLight_t *light;
 	int i, leafnum, cluster;
@@ -1103,6 +1052,8 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	}
 
 	MakeFrustum4Light(light, false);
+	if(ingame)
+	R_DrawBspModelVolumes(true, light);
 
 	//// simple cull info for new light 
 	leafnum = CM_PointLeafnum(light->origin);
@@ -1185,7 +1136,7 @@ void Load_BspLights() {
 
 		if(addLight) {
 			if(style > 31 || style > 0 && style < 12 || cone){
-			R_AddNewWorldLight(origin, color, radius, style, 0, vec3_origin, vec3_origin, 1, 1, 0, cone);
+			R_AddNewWorldLight(origin, color, radius, style, 0, vec3_origin, vec3_origin, true, 1, 0, cone, false);
 			numlights++;
 			}
 		}
@@ -1270,7 +1221,7 @@ void Load_LightFile() {
 				cone = atoi(value);
 		}
 	
-		R_AddNewWorldLight(origin, color, radius, style, filter, angles, speed, 1, shadow, ambient, cone);
+		R_AddNewWorldLight(origin, color, radius, style, filter, angles, speed, true, shadow, ambient, cone, false);
 		numLights++;
 		}
 	Com_Printf(""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights\n", numLights);
@@ -1374,7 +1325,6 @@ qboolean InLightVISEntity()
 	return HasSharedLeafs (currentShadowLight->vis, currententity->vis);
 }
 
-void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light);
 
 void R_PreCalcLightData(void){
 	worldShadowLight_t *light;
@@ -1583,4 +1533,253 @@ qboolean R_DrawLightOccluders()
 		return true;
 	}
 
+}
+
+/*
+==================
+R_ClipLightPlane
+
+==================
+*/
+#define MAX_LIGHT_PLANE_VERTICES 64
+#define	ON_EPSILON			0.1	// point on plane side epsilon
+
+void VectorLerp (const vec3_t from, const vec3_t to, float frac, vec3_t out) {
+	if (frac <= 0.0f) {
+		out[0] = from[0];
+		out[1] = from[1];
+		out[2] = from[2];
+		return;
+	}
+
+	if (frac >= 1.0f) {
+		out[0] = to[0];
+		out[1] = to[1];
+		out[2] = to[2];
+		return;
+	}
+
+	out[0] = from[0] + (to[0] - from[0]) * frac;
+	out[1] = from[1] + (to[1] - from[1]) * frac;
+	out[2] = from[2] + (to[2] - from[2]) * frac;
+}
+
+/*
+=============
+PointOnPlaneSide
+
+=============
+*/
+int PointOnPlaneSide (const vec3_t point, struct cplane_s *plane) {
+	float	dist;
+
+	if (plane->type < 3)
+		dist = point[plane->type] - plane->dist;
+	else
+		dist = DotProduct(point, plane->normal) - plane->dist;
+
+	if (dist > ON_EPSILON)
+		return SIDE_FRONT;
+	if (dist < -ON_EPSILON)
+		return SIDE_BACK;
+
+	return SIDE_ON;
+}
+
+static void R_ClipLightPlane (const mat4x4_t mvpMatrix, vec3_t mins, vec3_t maxs, int numPoints, vec3_t *points, int stage) {
+	vec3_t	clipped[MAX_LIGHT_PLANE_VERTICES];
+	float	dists[MAX_LIGHT_PLANE_VERTICES];
+	int		sides[MAX_LIGHT_PLANE_VERTICES];
+	qboolean	front, back;
+	vec4_t	in, out;
+	vec3_t	point;
+	float	scale;
+	int		i, numClipped;
+
+	if (stage == 5) {
+		// fully clipped, so add points in normalized device coordinates
+		for (i = 0; i < numPoints; i++) {
+			in[0] = points[i][0];
+			in[1] = points[i][1];
+			in[2] = points[i][2];
+			in[3] = 1.0f;
+
+			Matrix4_Multiply_Vector(mvpMatrix, in, out);
+
+			scale = 1.0f;
+
+			point[0] = out[0] * scale;
+			point[1] = out[1] * scale;
+			point[2] = out[2] * scale;
+
+			AddPointToBounds(point, mins, maxs);
+		}
+
+		return;
+	}
+
+	if (numPoints > MAX_LIGHT_PLANE_VERTICES - 2)
+		Com_Error(false, "R_ClipLightPlane: MAX_LIGHT_PLANE_VERTICES hit");
+
+	// determine sides for each point
+	front = false;
+	back = false;
+
+	for (i = 0; i < numPoints; i++) {
+		dists[i] = DotProduct(points[i], frustum[stage].normal) - frustum[stage].dist;
+
+		if (dists[i] > ON_EPSILON) {
+			sides[i] = SIDE_FRONT;
+			front = true;
+			continue;
+		}
+
+		if (dists[i] < -ON_EPSILON) {
+			sides[i] = SIDE_BACK;
+			back = true;
+			continue;
+		}
+
+		sides[i] = SIDE_ON;
+	}
+
+	if (!front)
+		return;		// not clipped
+
+	if (!back) {
+		// continue
+		R_ClipLightPlane(mvpMatrix, mins, maxs, numPoints, points, stage+1);
+		return;
+	}
+
+	// handle wraparound case
+	VectorCopy(points[0], points[i]);
+
+	dists[i] = dists[0];
+	sides[i] = sides[0];
+
+	// clip it
+	numClipped = 0;
+
+	for (i = 0; i < numPoints; i++) {
+		if (sides[i] == SIDE_ON) {
+			VectorCopy(points[i], clipped[numClipped]);
+			numClipped++;
+			continue;
+		}
+
+		if (sides[i] == SIDE_FRONT) {
+			VectorCopy(points[i], clipped[numClipped]);
+			numClipped++;
+		}
+
+		if (sides[i+1] == SIDE_ON || sides[i+1] == sides[i])
+			continue;
+
+		if (dists[i] == dists[i+1]) {
+			VectorCopy(points[i], clipped[numClipped]);
+			numClipped++;
+		}
+		else
+			VectorLerp(points[i], points[i+1], dists[i] / (dists[i] - dists[i+1]), clipped[numClipped++]);
+	}
+
+	// continue
+	R_ClipLightPlane(mvpMatrix, mins, maxs, numClipped, clipped, stage+1);
+}
+
+void R_SetViewLightScreenBounds () {
+	int			cornerIndices[6][4] = {{3, 2, 6, 7}, {0, 1, 5, 4}, {2, 3, 1, 0}, {4, 5, 7, 6}, {1, 3, 7, 5}, {2, 0, 4, 6}};
+	vec3_t		points[5];
+	vec3_t		mins = {Q_INFINITY, Q_INFINITY, Q_INFINITY};
+	vec3_t		maxs = {-Q_INFINITY, -Q_INFINITY, -Q_INFINITY};
+	mat4x4_t	tmpMatrix, mvpMatrix;
+	int			scissor[4];
+	float		depth[2];
+	int			i;
+
+	if (!(gl_state.depthBoundsTest || r_useLightScissors->value)) {
+
+		currentShadowLight->scissor[0] = r_viewport[0];
+		currentShadowLight->scissor[1] = r_viewport[1];
+		currentShadowLight->scissor[2] = r_viewport[2];
+		currentShadowLight->scissor[3] = r_viewport[3];
+
+		currentShadowLight->depthBounds[0] = 0.0f;
+		currentShadowLight->depthBounds[1] = 1.0f;
+
+		return;
+	}
+
+	// compute modelview-projection matrix
+	Matrix4_Multiply(r_project_matrix, r_world_matrix, tmpMatrix);
+	Matrix4_Transpose(tmpMatrix, mvpMatrix);
+
+	// copy the corner points of each plane and clip to the frustum
+	for (i = 0; i < 6; i++) {
+		VectorCopy(currentShadowLight->corners[cornerIndices[i][0]], points[0]);
+		VectorCopy(currentShadowLight->corners[cornerIndices[i][1]], points[1]);
+		VectorCopy(currentShadowLight->corners[cornerIndices[i][2]], points[2]);
+		VectorCopy(currentShadowLight->corners[cornerIndices[i][3]], points[3]);
+
+		R_ClipLightPlane(mvpMatrix, mins, maxs, 4, points, 0);
+	}
+
+	// check if any corner point is not in front of the near plane
+	for (i = 0; i < 8; i++) {
+		if (PointOnPlaneSide(currentShadowLight->corners[i], &frustum[4]) != SIDE_FRONT) {
+			mins[2] = -1.0f;
+			break;
+		}
+	}
+
+	// transform into screen space
+	mins[0] = (0.5f + 0.5f * mins[0]) * r_viewport[2] + r_viewport[0];
+	mins[1] = (0.5f + 0.5f * mins[1]) * r_viewport[3] + r_viewport[1];
+	mins[2] = (0.5f + 0.5f * mins[2]);
+	maxs[0] = (0.5f + 0.5f * maxs[0]) * r_viewport[2] + r_viewport[0];
+	maxs[1] = (0.5f + 0.5f * maxs[1]) * r_viewport[3] + r_viewport[1];
+	maxs[2] = (0.5f + 0.5f * maxs[2]);
+
+
+	// set the scissor rectangle
+	if (r_useLightScissors->integer) {
+		scissor[0] = max(Q_ftol(floor(mins[0])), r_viewport[0]);
+		scissor[1] = max(Q_ftol(floor(mins[1])), r_viewport[1]);
+		scissor[2] = min(Q_ftol(ceil(maxs[0])), r_viewport[0] + r_viewport[2]);
+		scissor[3] = min(Q_ftol(ceil(maxs[1])), r_viewport[1] + r_viewport[3]);
+
+		if (scissor[0] > scissor[2] || scissor[1] > scissor[3]) {
+			currentShadowLight->scissor[0] = r_viewport[0];
+			currentShadowLight->scissor[1] = r_viewport[1];
+			currentShadowLight->scissor[2] = r_viewport[2];
+			currentShadowLight->scissor[3] = r_viewport[3];
+		}
+		else {
+			currentShadowLight->scissor[0] = scissor[0];
+			currentShadowLight->scissor[1] = scissor[1];
+			currentShadowLight->scissor[2] = scissor[2] - scissor[0];
+			currentShadowLight->scissor[3] = scissor[3] - scissor[1];
+		}
+	}
+	else {
+		currentShadowLight->scissor[0] = r_viewport[0];
+		currentShadowLight->scissor[1] = r_viewport[1];
+		currentShadowLight->scissor[2] = r_viewport[2];
+		currentShadowLight->scissor[3] = r_viewport[3];
+	}
+
+	// set the depth bounds
+	
+		depth[0] = max(mins[2], 0.0f);
+		depth[1] = min(maxs[2], 1.0f);
+
+		if (depth[0] > depth[1]) {
+			currentShadowLight->depthBounds[0] = 0.0f;
+			currentShadowLight->depthBounds[1] = 1.0f;
+		}
+		else {
+			currentShadowLight->depthBounds[0] = depth[0];
+			currentShadowLight->depthBounds[1] = depth[1];
+		}
 }

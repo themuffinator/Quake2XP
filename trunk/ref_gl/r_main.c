@@ -492,7 +492,7 @@ void R_SetupGL(void)
 	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
 	qglGetFloatv (GL_PROJECTION_MATRIX, r_project_matrix);
 
-	Matrix4_Multiply(r_modelViewProjection, r_world_matrix, r_project_matrix);
+	Matrix4_Multiply(r_project_matrix, r_world_matrix, r_modelViewProjection);
 	InvertMatrix(r_world_matrix, r_modelViewInv);
 
 	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
@@ -715,6 +715,8 @@ void R_DrawPlayerWeaponLightPass(void)
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+void R_SetViewLightScreenBounds ();
+
 void R_DrawShadowLightPass(void)
 {
 	int i;
@@ -731,9 +733,11 @@ void R_DrawShadowLightPass(void)
 	if(r_useLightScissors->value){
 		if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
 		qglEnable(GL_SCISSOR_TEST);
-		qglScissor(gl_state.x,gl_state.y, gl_state.w, gl_state.h);
 		}
 	}
+
+	if(gl_state.depthBoundsTest)
+		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	if(r_shadows->value){
 		if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
@@ -746,6 +750,10 @@ void R_DrawShadowLightPass(void)
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 	
+	if(gl_state.depthBoundsTest){
+	R_SetViewLightScreenBounds();
+	glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
+	}
 
 	UpdateLightEditor();
 
@@ -758,9 +766,8 @@ void R_DrawShadowLightPass(void)
 	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
 	
 	if(r_useLightScissors->value)
-		qglScissor(	currentShadowLight->scizz.coords[0], currentShadowLight->scizz.coords[1], 
-					currentShadowLight->scizz.coords[2]- currentShadowLight->scizz.coords[0], 
-					currentShadowLight->scizz.coords[3]- currentShadowLight->scizz.coords[1]);
+		qglScissor(	currentShadowLight->scissor[0], currentShadowLight->scissor[1], 
+					currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
 	
 	qglClearStencil(128);
 	qglStencilMask(255);
@@ -816,8 +823,11 @@ void R_DrawShadowLightPass(void)
 		qglDisable(GL_STENCIL_TEST);
 	
 	if(r_useLightScissors->value)
-		qglDisable(GL_SCISSOR_TEST);
-	
+	qglDisable(GL_SCISSOR_TEST);
+
+	if(gl_state.depthBoundsTest)
+		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
+
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -1590,13 +1600,15 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	}else
 		Com_Printf(S_COLOR_RED"...GL_EXT_stencil_two_side not found\n");
 
+	gl_state.depthBoundsTest = false;
 	if (strstr(gl_config.extensions_string, "GL_EXT_depth_bounds_test")) {
 	Com_Printf("...using GL_EXT_depth_bounds_test\n");
 
 	glDepthBoundsEXT = (PFNGLDEPTHBOUNDSEXTPROC) qwglGetProcAddress("glDepthBoundsEXT");
-	
+	gl_state.depthBoundsTest = true;
 	} else {
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
+	gl_state.depthBoundsTest = false;
 	}
 
 

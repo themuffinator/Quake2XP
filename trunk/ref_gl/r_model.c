@@ -205,7 +205,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 
 	if(!FoundReLight)
 	R_AddNewWorldLight(	lightOffset, r_flares[r_numflares].color, 
-						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, 0, vec3_origin, vec3_origin, 1, 1, 0, 0);
+						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false);
 
 	r_numflares++;
 	free(buffer);
@@ -2468,8 +2468,7 @@ void R_BeginRegistration(char *model)
 	r_worldmodel = Mod_ForName(fullname, true);
 
 	r_viewcluster = -1;
-
-	DeleteShadowVertexBuffers();
+	numPreCachedLights = 0;
 }
 
 
