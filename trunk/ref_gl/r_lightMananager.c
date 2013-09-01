@@ -38,6 +38,9 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light);
 
 qboolean R_AddLightToFrame(worldShadowLight_t *light) {
 	
+	if(r_pplWorldAmbient->value > 0.01 && light->isAmbient) //skip ambient lights if we use lightmaps
+		return false;
+
 	if (r_newrefdef.areabits){
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))){
 			return false;
@@ -799,7 +802,6 @@ void UpdateLightEditor(void){
 
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	qglEnable(GL_LINE_SMOOTH);
-	qglDisable(GL_DEPTH_TEST);
 	qglLineWidth(3.0);
 	VectorCopy(selectedShadowLight->origin, tmpOrg);
 	tmpRad = selectedShadowLight->radius;
@@ -858,7 +860,9 @@ void UpdateLightEditor(void){
 	
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	qglDisable(GL_LINE_SMOOTH);
+	
 	// draw small light box
+	qglDisable(GL_DEPTH_TEST);
 	VectorSet(v[0], tmpOrg[0]-5, tmpOrg[1]-5, tmpOrg[2]-5);
 	VectorSet(v[1], tmpOrg[0]-5, tmpOrg[1]-5, tmpOrg[2]+5);
 	VectorSet(v[2], tmpOrg[0]-5, tmpOrg[1]+5, tmpOrg[2]-5);
@@ -1445,10 +1449,11 @@ void GL_SetupCubeMapMatrix(qboolean model)
 
 qboolean R_DrawLightOccluders()
 {
-	vec3_t	v[8];
-	vec3_t	tmpOrg;
-	float	radius;
-	int		sampleCount;
+	vec3_t		v[8];
+	vec3_t		tmpOrg;
+	float		radius;
+	int			sampleCount, id;
+	unsigned	defBits = 0;
 
 	if(!r_useLightOccluders->value)
 		return true;
@@ -1456,17 +1461,14 @@ qboolean R_DrawLightOccluders()
 	
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return true;
-	
-	
-	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0)){
-	
-	if(gl_state.conditional_render && r_useConditionalRender->value){
-		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
+		
+	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0))
 		return true;
-	}
-	else
-		return true;
-	}
+	
+	// setup program
+	GL_BindProgram(nullProgram, defBits);
+	id = nullProgram->id[defBits];
+
 	qglColorMask(0,0,0,0);
 	qglDisable(GL_TEXTURE_2D);
 	qglDisable(GL_CULL_FACE);
@@ -1517,13 +1519,8 @@ qboolean R_DrawLightOccluders()
 	qglEnable(GL_CULL_FACE);
 	qglEnable(GL_BLEND);
 	qglEnable(GL_STENCIL_TEST);
+	GL_BindNullProgram();
 
-	if(gl_state.conditional_render && r_useConditionalRender->value){
-		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
-			return true;
-	}
-	else
-	{
 	if(currentShadowLight->occ_frame == lightVissFrame - 1)
 		qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
 
@@ -1531,7 +1528,6 @@ qboolean R_DrawLightOccluders()
 		return false;
 	else 
 		return true;
-	}
 
 }
 
@@ -1586,7 +1582,7 @@ int PointOnPlaneSide (const vec3_t point, struct cplane_s *plane) {
 	return SIDE_ON;
 }
 
-static void R_ClipLightPlane (const mat4x4_t mvpMatrix, vec3_t mins, vec3_t maxs, int numPoints, vec3_t *points, int stage) {
+static void R_ClipLightPlane (const mat4_t mvpMatrix, vec3_t mins, vec3_t maxs, int numPoints, vec3_t *points, int stage) {
 	vec3_t	clipped[MAX_LIGHT_PLANE_VERTICES];
 	float	dists[MAX_LIGHT_PLANE_VERTICES];
 	int		sides[MAX_LIGHT_PLANE_VERTICES];
@@ -1604,7 +1600,7 @@ static void R_ClipLightPlane (const mat4x4_t mvpMatrix, vec3_t mins, vec3_t maxs
 			in[2] = points[i][2];
 			in[3] = 1.0f;
 
-			Matrix4_Multiply_Vector(mvpMatrix, in, out);
+			Mat4_MultiplyVector(mvpMatrix, in, out);
 
 			scale = 1.0f;
 
@@ -1693,27 +1689,29 @@ void R_SetViewLightScreenBounds () {
 	vec3_t		points[5];
 	vec3_t		mins = {Q_INFINITY, Q_INFINITY, Q_INFINITY};
 	vec3_t		maxs = {-Q_INFINITY, -Q_INFINITY, -Q_INFINITY};
-	mat4x4_t	tmpMatrix, mvpMatrix;
+	mat4_t		tmpMatrix, mvpMatrix;
 	int			scissor[4];
 	float		depth[2];
 	int			i;
 
-	if (!(gl_state.depthBoundsTest || r_useLightScissors->value)) {
+	if (!r_useLightScissors->value) {
 
-		currentShadowLight->scissor[0] = r_viewport[0];
-		currentShadowLight->scissor[1] = r_viewport[1];
-		currentShadowLight->scissor[2] = r_viewport[2];
-		currentShadowLight->scissor[3] = r_viewport[3];
+		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
+		currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
+		currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
+		currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
+	return;
+	}
 
+	if(!gl_state.depthBoundsTest ){
 		currentShadowLight->depthBounds[0] = 0.0f;
 		currentShadowLight->depthBounds[1] = 1.0f;
-
-		return;
+	return;
 	}
 
 	// compute modelview-projection matrix
-	Matrix4_Multiply(r_project_matrix, r_world_matrix, tmpMatrix);
-	Matrix4_Transpose(tmpMatrix, mvpMatrix);
+	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, tmpMatrix);
+	Mat4_Transpose(tmpMatrix, mvpMatrix);
 
 	// copy the corner points of each plane and clip to the frustum
 	for (i = 0; i < 6; i++) {
@@ -1734,26 +1732,26 @@ void R_SetViewLightScreenBounds () {
 	}
 
 	// transform into screen space
-	mins[0] = (0.5f + 0.5f * mins[0]) * r_viewport[2] + r_viewport[0];
-	mins[1] = (0.5f + 0.5f * mins[1]) * r_viewport[3] + r_viewport[1];
+	mins[0] = (0.5f + 0.5f * mins[0]) * r_newrefdef.viewport[2] + r_newrefdef.viewport[0];
+	mins[1] = (0.5f + 0.5f * mins[1]) * r_newrefdef.viewport[3] + r_newrefdef.viewport[1];
 	mins[2] = (0.5f + 0.5f * mins[2]);
-	maxs[0] = (0.5f + 0.5f * maxs[0]) * r_viewport[2] + r_viewport[0];
-	maxs[1] = (0.5f + 0.5f * maxs[1]) * r_viewport[3] + r_viewport[1];
+	maxs[0] = (0.5f + 0.5f * maxs[0]) * r_newrefdef.viewport[2] + r_newrefdef.viewport[0];
+	maxs[1] = (0.5f + 0.5f * maxs[1]) * r_newrefdef.viewport[3] + r_newrefdef.viewport[1];
 	maxs[2] = (0.5f + 0.5f * maxs[2]);
 
 
 	// set the scissor rectangle
-	if (r_useLightScissors->integer) {
-		scissor[0] = max(Q_ftol(floor(mins[0])), r_viewport[0]);
-		scissor[1] = max(Q_ftol(floor(mins[1])), r_viewport[1]);
-		scissor[2] = min(Q_ftol(ceil(maxs[0])), r_viewport[0] + r_viewport[2]);
-		scissor[3] = min(Q_ftol(ceil(maxs[1])), r_viewport[1] + r_viewport[3]);
+	if (r_useLightScissors->value) {
+		scissor[0] = max(Q_ftol(floor(mins[0])), r_newrefdef.viewport[0]);
+		scissor[1] = max(Q_ftol(floor(mins[1])), r_newrefdef.viewport[1]);
+		scissor[2] = min(Q_ftol(ceil(maxs[0])), r_newrefdef.viewport[0] + r_newrefdef.viewport[2]);
+		scissor[3] = min(Q_ftol(ceil(maxs[1])), r_newrefdef.viewport[1] + r_newrefdef.viewport[3]);
 
 		if (scissor[0] > scissor[2] || scissor[1] > scissor[3]) {
-			currentShadowLight->scissor[0] = r_viewport[0];
-			currentShadowLight->scissor[1] = r_viewport[1];
-			currentShadowLight->scissor[2] = r_viewport[2];
-			currentShadowLight->scissor[3] = r_viewport[3];
+			currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
+			currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
+			currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
+			currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
 		}
 		else {
 			currentShadowLight->scissor[0] = scissor[0];
@@ -1763,10 +1761,10 @@ void R_SetViewLightScreenBounds () {
 		}
 	}
 	else {
-		currentShadowLight->scissor[0] = r_viewport[0];
-		currentShadowLight->scissor[1] = r_viewport[1];
-		currentShadowLight->scissor[2] = r_viewport[2];
-		currentShadowLight->scissor[3] = r_viewport[3];
+		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
+		currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
+		currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
+		currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
 	}
 
 	// set the depth bounds

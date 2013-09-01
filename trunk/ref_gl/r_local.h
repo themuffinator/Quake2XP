@@ -205,8 +205,6 @@ extern entity_t r_worldentity;
 
 typedef vec_t mat4x4_t[16];
 
-typedef vec3_t	mat3_t[3];		// column-major (axis)
-typedef vec4_t	mat4_t[4];		// row-major
 
 mat4x4_t r_world_matrix;
 mat4x4_t r_project_matrix;
@@ -298,7 +296,7 @@ cvar_t	*r_debugLights;
 cvar_t	*r_occLightBoundsSize;
 cvar_t	*r_debugOccLightBoundsSize;
 cvar_t	*r_useLightScissors;
-
+cvar_t	*r_zNear;
 cvar_t	*hunk_bsp;
 cvar_t	*hunk_model;
 cvar_t	*hunk_sprite;
@@ -344,7 +342,6 @@ extern qboolean inwaterfognode;
 extern int r_visframecount;
 
 extern int radarOldTime;
-extern int r_viewport[4];
 extern int lightVissFrame;
 extern qboolean spacebox;
 
@@ -366,9 +363,8 @@ void R_InitLightgrid(void);
 void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
-worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
-									   int filter, vec3_t angles, vec3_t speed, qboolean isStatic, 
-									   int isShadow, int isAmbient, float cone, qboolean ingame);
+worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius,  int style, int filter, vec3_t angles, vec3_t speed, 
+									   qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
@@ -447,11 +443,16 @@ extern qboolean FoundReLight;
 qboolean PF_inPVS(vec3_t p1, vec3_t p2);
 void R_SetFrustum(void);
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
-void R_CalcDepthBounds();
+void R_SetViewLightScreenBounds ();
 
 void Matrix4_Transpose( const mat4x4_t m, mat4x4_t out );
 void Matrix4_Multiply_Vector( const mat4x4_t m, const vec4_t v, vec4_t out );
 
+void GL_LoadMatrix(GLenum mode, const mat4_t matrix);
+void Mat4_Multiply(const mat4_t a, const mat4_t b, mat4_t out);
+void Mat4_Copy(const mat4_t in, mat4_t out);
+void Mat4_Transpose(const mat4_t in, mat4_t out);
+void Mat4_MultiplyVector(const mat4_t m, const vec3_t in, vec3_t out);
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -625,8 +626,9 @@ typedef struct {
 	int			lastsFactor;
 	float		color[4];
 	int			x, y, w, h;
-	int numFormats;
-	GLenum binaryFormats;
+	int			numFormats;
+	GLenum		binaryFormats;
+	GLenum		matrixMode;
 
 	unsigned char originalRedGammaTable[256];
 	unsigned char originalGreenGammaTable[256];

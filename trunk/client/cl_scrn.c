@@ -1047,7 +1047,7 @@ void SCR_DrawFPS(void)
 	}
 
 	if (cl_drawfps->value && (cls.state == ca_active)) {
-		Draw_StringScaled(viddef.width - 65*fontscale, viddef.height*0.7, fontscale, fontscale, str);
+		Draw_StringScaled(viddef.width - 65*fontscale, viddef.height*0.65, fontscale, fontscale, str);
 		RE_SetColor(NULL);
 	}
 }
@@ -1077,11 +1077,11 @@ void SCR_DrawClock(void)
 	sprintf(tmpdatebuf, "Date %s", datebuf);
 
 	if (!cl_drawfps->value) {
-		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.7, fontscale, fontscale, tmpbuf);
-		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.7+10*fontscale, fontscale, fontscale, tmpdatebuf);
+		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
+		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.65+10*fontscale, fontscale, fontscale, tmpdatebuf);
 	} else {
-		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.7+10*fontscale , fontscale, fontscale, tmpbuf);
-		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.7+20*fontscale, fontscale, fontscale, tmpdatebuf);
+		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.65+10*fontscale , fontscale, fontscale, tmpbuf);
+		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.65+20*fontscale, fontscale, fontscale, tmpdatebuf);
 	}
 }
 

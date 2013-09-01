@@ -359,7 +359,8 @@ void R_DrawAlphaPoly(void)
 	// go back to the world matrix
 	//
 
-	qglLoadMatrixf(r_world_matrix);
+//	qglLoadMatrixf(r_world_matrix);
+	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
 	qglDepthMask(0);
 	
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
@@ -1806,7 +1807,7 @@ void GL_DrawRadar(void)
 	if (!r_radar->value)
 		return;
 
-	qglViewport(vid.width - r_radarSize->value, vid.height*0.5 - r_radarSize->value, r_radarSize->value, r_radarSize->value);
+	qglViewport(vid.width - r_radarSize->value, vid.height*0.6 - r_radarSize->value, r_radarSize->value, r_radarSize->value);
 
 	qglMatrixMode(GL_PROJECTION);
 	qglPushMatrix();

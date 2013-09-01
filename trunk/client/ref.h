@@ -403,6 +403,8 @@ typedef struct {
 // end decals
 //================
 
+typedef vec3_t	mat3_t[3];		// column-major (axis)
+typedef vec4_t	mat4_t[4];		// row-major
 
 typedef struct {
 	vec2_t depthParms;
@@ -420,6 +422,12 @@ typedef struct {
 								// will be drawn
 
 	lightstyle_t *lightstyles;	// [MAX_LIGHTSTYLES]
+
+		// viewport
+	int		viewport[4];
+	mat3_t			axis;
+	mat4_t			projectionMatrix;
+	mat4_t			modelViewMatrix;
 
 	int num_entities;
 	entity_t *entities;

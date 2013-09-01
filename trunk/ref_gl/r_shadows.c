@@ -892,7 +892,7 @@ void R_CastShadowVolumes(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	if(!currentShadowLight->isShadow)
+	if(!currentShadowLight->isShadow || currentShadowLight->isAmbient)
 		return;
 
 	// setup program

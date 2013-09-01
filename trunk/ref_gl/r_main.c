@@ -382,10 +382,7 @@ void R_SetupFrame(void)
 	// clear out the portion of the screen that the NOWORLDMODEL defines
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
 		qglEnable(GL_SCISSOR_TEST);
-		qglScissor(r_newrefdef.x,
-				   vid.height - r_newrefdef.height - r_newrefdef.y,
-				   r_newrefdef.width, 
-				   r_newrefdef.height);
+		qglScissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
 			qglClearColor(0.35, 0.35, 0.35, 1);
@@ -399,39 +396,101 @@ void R_SetupFrame(void)
 	
 }
 
-
-
-/*==================
-INFINITY PERSPECTIVE
-==================*/
-
-static GLdouble nudge = 1.0 - 1.0 / ((GLdouble) (1 << 23));
-
-static GLdouble p[4][4] = {
-	{0.0, 0.0, 0.0, 0.0}
-	,
-	{0.0, 0.0, 0.0, 0.0}
-	,
-	{0.0, 0.0, 0.0, -1.0}
-	,
-	{0.0, 0.0, 0.0, 0.0}
-};
-
-void MyGlPerspective(GLdouble fov, GLdouble aspectr, GLdouble zNear)
-{
-	GLdouble fov1, fov2;
-	fov1 = fov2 = fov * M_PI / 360.0;
+void GL_LoadMatrix(GLenum mode, const mat4_t matrix) {
 	
+	if (gl_state.matrixMode != mode) {
+		qglMatrixMode(mode);
+		gl_state.matrixMode = mode;
+	}
+
+	if (!matrix)
+		qglLoadIdentity();
+	else
+		qglLoadMatrixf((const float *)matrix);
+}
+
+/*
+=============
+R_SetupViewMatrices
+
+=============
+*/
+static void R_SetupViewMatrices (void) {
+	float	xMin, xMax, xDiv;
+	float	yMin, yMax, yDiv;
+	float	zNear, zFar, zDiv;
+	mat4_t	tmpMatrix; //temp data (for transpose and etc)
+
+	// setup perspective projection matrix
+	zNear = max(r_zNear->value, 3.0);
+	zFar = 0.0;			// infinite
+
 	r_newrefdef.depthParms[0] = zNear;
 	r_newrefdef.depthParms[1] = 0.9995f;
+	
+	xMax = zNear * tan(DEG2RAD(r_newrefdef.fov_x) * 0.5);
+	xMin = -xMax;
 
-	p[0][0] = 1.0 / (aspectr * tan(fov1));
-	p[1][1] = 1.0 / tan(fov2);
+	yMax = zNear * tan(DEG2RAD(r_newrefdef.fov_y) * 0.5);
+	yMin = -yMax;
 
-	p[2][2] = -0.999f;
-	p[3][2] = -2.f * zNear;
+	xDiv = 1.0f / (xMax - xMin);
+	yDiv = 1.0f / (yMax - yMin);
+	zDiv = 1.0f / (zFar - zNear);
 
-	qglLoadMatrixd(&p[0][0]);
+	tmpMatrix[0][0] = 2.0f * zNear * xDiv;
+	tmpMatrix[0][1] = 0.0f;
+	tmpMatrix[0][2] = 0.0f;
+	tmpMatrix[0][3] = 0.0f;
+	tmpMatrix[1][0] = 0.0f;
+	tmpMatrix[1][1] = 2.0f * zNear * yDiv;
+	tmpMatrix[1][2] = 0.0f;
+	tmpMatrix[1][3] = 0.0f;
+	tmpMatrix[2][0] = (xMax + xMin) * xDiv;
+	tmpMatrix[2][1] = (yMax + yMin) * yDiv;
+	tmpMatrix[2][2] = -0.999f;
+	tmpMatrix[2][3] = -1.0f;
+	tmpMatrix[3][0] = 0.0f;
+	tmpMatrix[3][1] = 0.0f;
+	tmpMatrix[3][2] = -2.0f * zNear;
+	tmpMatrix[3][3] = 0.0f;
+
+	if (zFar > zNear) {
+		tmpMatrix[2][2] = -(zNear + zFar) * zDiv;
+		tmpMatrix[3][2] = -2.0f * zNear * zFar * zDiv;
+	}
+	
+	Mat4_Copy(tmpMatrix, r_newrefdef.projectionMatrix);
+
+	// setup view matrix
+	AnglesToMat3(r_newrefdef.viewangles, r_newrefdef.axis);
+
+	tmpMatrix[0][0] = -r_newrefdef.axis[1][0];
+	tmpMatrix[0][1] = r_newrefdef.axis[2][0];
+	tmpMatrix[0][2] = -r_newrefdef.axis[0][0];
+	tmpMatrix[0][3] = 0.0;
+
+	tmpMatrix[1][0] = -r_newrefdef.axis[1][1];
+	tmpMatrix[1][1] = r_newrefdef.axis[2][1];
+	tmpMatrix[1][2] = -r_newrefdef.axis[0][1];
+	tmpMatrix[1][3] = 0.0;
+
+	tmpMatrix[2][0] = -r_newrefdef.axis[1][2];
+	tmpMatrix[2][1] = r_newrefdef.axis[2][2];
+	tmpMatrix[2][2] = -r_newrefdef.axis[0][2];
+	tmpMatrix[2][3] = 0.0;
+
+	tmpMatrix[3][0] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[1]);
+	tmpMatrix[3][1] = -DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[2]);
+	tmpMatrix[3][2] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[0]);
+	tmpMatrix[3][3] = 1.0;
+
+	Mat4_Copy(tmpMatrix, r_newrefdef.modelViewMatrix);
+
+	// load matrices
+	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix); // q2 r_project_matrix
+	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix); // q2 r_world_matrix
+
 }
 
 
@@ -440,66 +499,14 @@ void MyGlPerspective(GLdouble fov, GLdouble aspectr, GLdouble zNear)
 R_SetupGL
 =============
 */
-int r_viewport[4];
 
 void R_SetupGL(void)
 {
-	float screenaspect;
-//  float   yfov;
-	int x, x2, y2, y, w, h;
+ 
+	// set drawing parms
 	
-	Matrix4_Copy(r_modelViewProjection, r_oldModelViewProjection);
-
-	// 
-	// set up viewport
-	// 
-	x = floor (r_newrefdef.x * vid.width / vid.width);
-	x2 = ceil ((r_newrefdef.x + r_newrefdef.width) * vid.width / vid.width);
-	y = floor (vid.height - r_newrefdef.y * vid.height / vid.height);
-	y2 = ceil (vid.height - (r_newrefdef.y + r_newrefdef.height) * vid.height / vid.height);
-
-	w = x2 - x;
-	h = y - y2;
-
-	qglViewport(x, y2, w, h);
-	gl_state.x = x;
-	gl_state.y = y2;
-	gl_state.w = w;
-	gl_state.h = h;
-	// 
-	// set up projection matrix
-	// 
-	screenaspect = (float) r_newrefdef.width / r_newrefdef.height;
-//  yfov = 2*atan((float)r_newrefdef.height/r_newrefdef.width)*180/M_PI;
-	qglMatrixMode(GL_PROJECTION);
-	qglLoadIdentity();
-	MyGlPerspective(r_newrefdef.fov_y, (float) r_newrefdef.width / r_newrefdef.height, 1);
-
 	qglCullFace(GL_FRONT);
 
-	qglMatrixMode(GL_MODELVIEW);
-	qglLoadIdentity();
-
-	qglRotatef(-90, 1, 0, 0);	// put Z going up
-	qglRotatef(90, 0, 0, 1);	// put Z going up
-	qglRotatef(-r_newrefdef.viewangles[2], 1, 0, 0);
-	qglRotatef(-r_newrefdef.viewangles[0], 0, 1, 0);
-	qglRotatef(-r_newrefdef.viewangles[1], 0, 0, 1);
-	qglTranslatef(-r_newrefdef.vieworg[0], -r_newrefdef.vieworg[1],
-				  -r_newrefdef.vieworg[2]);
-
-
-	qglGetFloatv(GL_MODELVIEW_MATRIX, r_world_matrix);
-	qglGetFloatv (GL_PROJECTION_MATRIX, r_project_matrix);
-
-	Matrix4_Multiply(r_project_matrix, r_world_matrix, r_modelViewProjection);
-	InvertMatrix(r_world_matrix, r_modelViewInv);
-
-	qglGetIntegerv(GL_VIEWPORT, (int *) r_viewport);
-
-	// 
-	// set drawing parms
-	// 
 	if (r_cull->value)
 		qglEnable(GL_CULL_FACE);
 	else
@@ -626,12 +633,14 @@ next:
 	
 }
 
+
 /*
 =========================
 Draw player weapon AFTER 
 distort texture capture
 =========================
 */
+/*
 void R_DrawPlayerWeapon(void)
 {
 	int i;
@@ -714,8 +723,8 @@ void R_DrawPlayerWeaponLightPass(void)
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
+*/
 
-void R_SetViewLightScreenBounds ();
 
 void R_DrawShadowLightPass(void)
 {
@@ -730,50 +739,69 @@ void R_DrawShadowLightPass(void)
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
 	
-	if(r_useLightScissors->value){
-		if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
+	if(r_useLightScissors->value)
 		qglEnable(GL_SCISSOR_TEST);
-		}
-	}
-
+	
 	if(gl_state.depthBoundsTest)
 		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
 
-	if(r_shadows->value){
-		if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+	if(r_shadows->value)
 			qglEnable(GL_STENCIL_TEST);
-	}
-
+	
 	R_PrepareShadowLightFrame();
 	
 	if(shadowLight_frame) {
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
-	
-	if(gl_state.depthBoundsTest){
-	R_SetViewLightScreenBounds();
-	glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
-	}
 
 	UpdateLightEditor();
 
 	if(!R_DrawLightOccluders())
 		continue;
 
-
 	if(r_shadows->value){
 	
-	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
+	R_SetViewLightScreenBounds();
+
+	qglScissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
+
+	if(gl_state.depthBoundsTest){
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		glDepthBoundsEXT(0.0, 1.0);
+	else
+		glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
+	}
+
+	/*
+	qglColor3fv(currentShadowLight->color);
+	qglMatrixMode(GL_PROJECTION);
+	qglPushMatrix();
+	qglLoadIdentity();
+	qglOrtho(r_newrefdef.viewport[0], r_newrefdef.viewport[0] + r_newrefdef.viewport[2], r_newrefdef.viewport[1], r_newrefdef.viewport[1] +r_newrefdef.viewport[3], -1.0, 1.0);
+	qglMatrixMode(GL_MODELVIEW);
+	qglPushMatrix();
+	qglLoadIdentity();
 	
-	if(r_useLightScissors->value)
-		qglScissor(	currentShadowLight->scissor[0], currentShadowLight->scissor[1], 
-					currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
-	
+	qglDisable(GL_DEPTH_TEST);
+			qglBegin(GL_LINE_LOOP);
+			qglVertex2i(currentShadowLight->scissor[0], currentShadowLight->scissor[1]);
+			qglVertex2i(currentShadowLight->scissor[0] + currentShadowLight->scissor[2], currentShadowLight->scissor[1]);
+			qglVertex2i(currentShadowLight->scissor[0] + currentShadowLight->scissor[2], currentShadowLight->scissor[1] + currentShadowLight->scissor[3]);
+			qglVertex2i(currentShadowLight->scissor[0], currentShadowLight->scissor[1] + currentShadowLight->scissor[3]);
+			qglEnd();
+			qglEnable(GL_DEPTH_TEST);
+
+	qglMatrixMode(GL_PROJECTION);
+	qglPopMatrix();
+	qglMatrixMode(GL_MODELVIEW);
+	qglPopMatrix();
+	qglColor3f(1,1,1);
+*/
+
 	qglClearStencil(128);
 	qglStencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
-	}
-	
+		
 	qglStencilMask(255);
 	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
 	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
@@ -812,18 +840,16 @@ void R_DrawShadowLightPass(void)
 		}
 	
 	num_visLights++;
-	
-	if(gl_state.conditional_render && r_useConditionalRender->value)
-		glEndConditionalRender();
 	}
 	}
 	
 	qglDepthMask(1);
+
 	if(r_shadows->value)
 		qglDisable(GL_STENCIL_TEST);
 	
 	if(r_useLightScissors->value)
-	qglDisable(GL_SCISSOR_TEST);
+		qglDisable(GL_SCISSOR_TEST);
 
 	if(gl_state.depthBoundsTest)
 		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
@@ -876,8 +902,16 @@ void R_RenderView(refdef_t * fd)
 if (r_noRefresh->value)
 		return;
 
+	// calc gl viewport
 	r_newrefdef = *fd;
+	r_newrefdef.viewport[0] = fd->x;
+	r_newrefdef.viewport[1] = vid.height - fd->height - fd->y;
+	r_newrefdef.viewport[2] = fd->width;
+	r_newrefdef.viewport[3] = fd->height;
 
+	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+
+	
 	if (!r_worldmodel && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel");
 		
@@ -888,6 +922,7 @@ if (r_noRefresh->value)
 	
 	R_SetupFrame();
 	R_SetFrustum();
+	R_SetupViewMatrices();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
 
@@ -1228,7 +1263,7 @@ void R_RegisterCvars(void)
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
 	
 	r_gamma =							Cvar_Get("r_gamma", "1.5", CVAR_ARCHIVE);
-	r_brightness	=						Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
+	r_brightness	=					Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
 	r_contrast	=						Cvar_Get("r_contrast", "1", CVAR_ARCHIVE);
 	r_saturation =						Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
 
@@ -1286,12 +1321,13 @@ void R_RegisterCvars(void)
 
 	r_pplWorld =						Cvar_Get("r_pplWorld", "1", CVAR_ARCHIVE);
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "1.0", CVAR_ARCHIVE);
-	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1.0", CVAR_ARCHIVE);
+	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", CVAR_ARCHIVE);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
 	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
 	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
+	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);

@@ -59,7 +59,7 @@ typedef struct worldShadowLight_s {
 	int		occ_frame;
 	int		scissor[4];
 
-	unsigned int occQ;
+	unsigned int	occQ;
 	cplane_t		frust[4];
 
 	byte vis[MAX_MAP_LEAFS / 8];
@@ -74,6 +74,7 @@ typedef struct worldShadowLight_s {
 	struct worldShadowLight_s *s_next;
 
 } worldShadowLight_t;
+
 #define Q_INFINITY					1e30f
 #define		MAX_WORLD_SHADOW_LIHGTS 1024
 int			r_numWorlsShadowLights;
