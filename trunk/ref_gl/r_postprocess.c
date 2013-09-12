@@ -533,6 +533,8 @@ void R_DofBlur (void) {
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 }
 
+unsigned int fxaatex = 0;
+
 void R_FXAA (void) {
 	
 	unsigned	defBits = 0;
@@ -541,19 +543,30 @@ void R_FXAA (void) {
 	if(!r_fxaa->value)
 		return;
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+        return;
+
 	// setup program
 	GL_BindProgram(fxaaProgram, defBits);
 	id = fxaaProgram->id[defBits];
-
+	
 	GL_SelectTexture	(GL_TEXTURE0_ARB);	
-	GL_BindRect			(ScreenMap->texnum);
-    qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i		(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+
+	if (!fxaatex) {
+	qglGenTextures			(1, &fxaatex);
+	GL_Bind					(fxaatex);
+	qglTexParameteri		(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri		(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglCopyTexImage2D		(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
+	}
+	GL_Bind				(fxaatex);
+    qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1i(qglGetUniformLocation(id, "u_BaseTexture"), 0);
+	qglUniform4f(qglGetUniformLocation(id, "u_Viewport"), r_newrefdef.viewport[0], r_newrefdef.viewport[1],	r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram	();
-	GL_SelectTexture	(GL_TEXTURE0_ARB);	
 
 }
 

@@ -1492,9 +1492,11 @@ void GL_UpdateSwapInterval()
 	if(gl_state.wgl_swap_control_tear){
 	
 	if (wglSwapIntervalEXT){
-		if(r_vsync->value)
+		if(r_vsync->value >=2)
 			wglSwapIntervalEXT(-1);
-		else
+	else if(r_vsync->value >=1)
+			wglSwapIntervalEXT(1);	
+	else
 			wglSwapIntervalEXT(0);
 		}
 	}

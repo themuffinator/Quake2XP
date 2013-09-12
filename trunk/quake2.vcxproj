@@ -1345,6 +1345,7 @@
     <None Include="..\baseq2\glsl\generic.fp" />
     <None Include="..\baseq2\glsl\generic.vp" />
     <None Include="..\baseq2\glsl\include\depth.inc" />
+    <None Include="..\baseq2\glsl\include\Fxaa3_11.inc" />
     <None Include="..\baseq2\glsl\include\lighting.inc" />
     <None Include="..\baseq2\glsl\include\parallax.inc" />
     <None Include="..\baseq2\glsl\lightWorld.defs" />

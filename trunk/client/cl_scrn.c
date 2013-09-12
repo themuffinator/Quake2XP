@@ -1197,6 +1197,6 @@ next:
 		}
 	
 	R_GammaRamp (); 
-	
+//	R_FXAA();
 	GLimp_EndFrame();
 }

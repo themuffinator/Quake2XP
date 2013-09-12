@@ -846,13 +846,15 @@ void GL_Strings_f(void)
 */
 extern unsigned int bloomtex;
 extern unsigned int thermaltex;
+extern unsigned int fxaatex;
 
 void GL_SetDefaultState(void)
 {
 	
 	bloomtex = 0;
 	thermaltex = 0;
-
+	fxaatex = 0;
+	
 	qglClearColor		(0.35, 0.35, 0.35, 1);
 	qglCullFace			(GL_FRONT);
 	qglEnable			(GL_TEXTURE_2D);

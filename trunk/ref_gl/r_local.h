@@ -178,6 +178,7 @@ extern image_t	*shadowMask;
 extern image_t	*r_scanline;
 extern image_t	*atten3d_texture_object;
 extern image_t	*weaponHack;
+extern image_t *fxaaMap;
 
 #define MAX_FILTERS 256
 extern image_t	*filtercube_texture_object[MAX_FILTERS];
@@ -637,6 +638,9 @@ typedef struct {
 	GLuint	vbo_fullScreenQuad;
 	GLuint	vbo_halfScreenQuad;
 	GLuint	vbo_quarterScreenQuad;
+
+	mat4_t			projectionMatrix;
+	mat4_t			modelViewMatrix;		// ready to load
 // ----------------------------------------------------------------
 } glstate_t;
 

@@ -568,6 +568,9 @@
     <None Include="..\baseq2\glsl\mblur.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
+    <None Include="..\baseq2\glsl\include\Fxaa3_11.inc">
+      <Filter>Source Files\Renderer\glsl\include</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\q2.rc">

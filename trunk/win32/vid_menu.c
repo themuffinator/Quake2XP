@@ -391,6 +391,7 @@ void VID_MenuInit( void )
 										"[custom]", 0};
 	
 	static char	*yesno_names[]	=	{"no", "yes", 0};
+	static char	*adaptive_vc[]	=	{"no", "default", "adaptive", 0};
 	static char	*refresh[]		=	{"desktop", "60hz", "75hz", "85hz", "100hz", "120hz", 0};
 
 #ifdef __linux__
@@ -688,7 +689,7 @@ void VID_MenuInit( void )
 	s_fxaa_box.generic.type		= MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x		= 0;
 	s_fxaa_box.generic.y		= 220*cl_fontScale->value;
-	s_fxaa_box.generic.name		= "FXAA";
+	s_fxaa_box.generic.name		= "FXAA 3.11";
    	s_fxaa_box.itemnames		= yesno_names;
 	s_fxaa_box.curvalue			= r_fxaa->value;
     s_fxaa_box.generic.callback	= fxaaCallback;
@@ -708,8 +709,17 @@ void VID_MenuInit( void )
 	s_finish_box.generic.name	= "Vertical Sync";
 	s_finish_box.generic.callback = vSyncCallBack;
 	s_finish_box.curvalue = r_vsync->value;
+	if(gl_state.wgl_swap_control_tear){
+	if(r_vsync->value >= 3)
+	Cvar_SetValue("r_vsync", 2);
+	s_finish_box.itemnames = adaptive_vc;
+	s_finish_box.generic.statusbar = "Off - On - Adaptive";
+	}else{
+		if(r_vsync->value >= 2)
+	Cvar_SetValue("r_vsync", 1);
 	s_finish_box.itemnames = yesno_names;
-	
+	s_finish_box.generic.statusbar = "Off - On";
+	}
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x    = 0;
