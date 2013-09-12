@@ -13,7 +13,6 @@ varying vec3			v_viewVecTS;
 varying vec3			v_lightVec;
 varying vec2			v_colorCoord;
 varying vec4			v_CubeCoord;
-attribute vec3			a_vertArray;
 
 #include lighting.inc
 #include parallax.inc

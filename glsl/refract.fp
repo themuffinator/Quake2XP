@@ -22,9 +22,6 @@ uniform vec2			u_depthParms;
 
 void main (void) {
 
-	if (texture2DRect(g_weaponHackMap, gl_FragCoord.xy).a == 0.0) {
-		discard;
-	}
 
 	vec2 N = texture2D(u_deformMap, v_deformTexCoord).xy * 2.0 - 1.0;
 	vec4 diffuse  = texture2D(u_colorMap,  v_deformTexCoord.xy);
