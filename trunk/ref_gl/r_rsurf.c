@@ -290,14 +290,8 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 		
 		VectorCopy(v, wVertexArray[i]);
 			
-		wTmu0Array[i][0] = v[3]+scroll;
-		wTmu0Array[i][1] = v[4];
-
-		wTmu1Array[i][0] = v[3];
-		wTmu1Array[i][1] = v[4];
-
-		wTmu2Array[i][0] = v[3]+scroll;
-		wTmu2Array[i][1] = v[4];
+		wTexArray[i][0] = v[3]+scroll;
+		wTexArray[i][1] = v[4];
 
 		R_LightColor	(v, shadelight_surface);
 		VA_SetElem4		(SurfColorArray[i],	shadelight_surface[0], 
