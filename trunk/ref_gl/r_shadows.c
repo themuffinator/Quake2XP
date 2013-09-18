@@ -878,7 +878,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
 }
 
 
-void R_CastShadowVolumes(void)
+void R_CastBspShadowVolumes(void)
 {
 	int			id, i;
 	unsigned	defBits = 0;
@@ -929,10 +929,66 @@ void R_CastShadowVolumes(void)
 		
 		if (!currentmodel)
 			continue;
-		
+		if (currentmodel->type != mod_brush)
+			continue;
+
 		if (currentmodel->type == mod_brush){
 			R_DrawBrushModelVolumes();
 		}
+	}
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglPolygonOffset(0, 0);
+	qglEnable(GL_TEXTURE_2D);
+	qglEnable(GL_CULL_FACE);
+	qglDepthFunc(GL_LEQUAL);
+	qglColorMask(1, 1, 1, 1);
+	GL_BindNullProgram();
+}
+
+
+void R_CastAliasShadowVolumes(void)
+{
+	int			id, i;
+	unsigned	defBits = 0;
+
+	if (!r_shadows->value && !r_pplWorld->value)
+		return;
+	
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+		return;
+			
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	if(!currentShadowLight->isShadow || currentShadowLight->isAmbient)
+		return;
+
+	// setup program
+	GL_BindProgram(nullProgram, defBits);
+	id = nullProgram->id[defBits];
+
+	qglDisable(GL_CULL_FACE);
+	qglDisable(GL_TEXTURE_2D);
+	qglDepthFunc(GL_LESS);
+	qglEnable(GL_POLYGON_OFFSET_FILL);
+	qglColorMask(0, 0, 0, 0);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglPolygonOffset(0.1, 1);
+
+
+	for (i = 0; i < r_newrefdef.num_entities; i++) 
+	{
+		currententity = &r_newrefdef.entities[i];
+		currentmodel = currententity->model;
+		
+		if (!currentmodel)
+			continue;
+
+		if (currentmodel->type != mod_alias)
+			continue;
+
 		if (currentmodel->type == mod_alias){
 			R_DrawShadowVolume(currententity);
 		}

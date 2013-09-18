@@ -409,10 +409,10 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 			return;
 	}
 
-//	if (currententity->flags & RF_WEAPONMODEL) {
-//		if (!weapon_model)
-//			return;
-//	}
+	if (currententity->flags & RF_WEAPONMODEL) {
+		if (!weapon_model)
+			return;
+	}
 
 	if (currententity->flags & RF_WEAPONMODEL) {
 		if (r_leftHand->value == 2)

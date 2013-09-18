@@ -1531,6 +1531,83 @@ qboolean R_DrawLightOccluders()
 
 }
 
+void R_LightScale(void) {
+	float	val;
+	int		i;
+
+	if (!r_lightScale->value || !r_pplWorld->value)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+         return;
+
+	qglLoadIdentity();
+
+	qglMatrixMode(GL_PROJECTION);
+	qglPushMatrix();
+	qglLoadIdentity();
+	qglOrtho(0, 1, 0, 1, -1, 1);
+
+	GL_MBind(GL_TEXTURE0, 0);
+
+	qglEnable(GL_BLEND);
+	qglBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);	// multiply by two every pass
+
+	qglColorMask(1, 1, 1, 0);
+	qglDepthMask(0);
+
+//
+// first get power-of-two scale
+//
+	val = max(r_lightScale->value, 0.0);
+
+	qglColor3f(1, 1, 1);
+
+	qglBegin(GL_QUADS);
+
+	for(i=1; i<val; i<<=1) {
+		qglVertex2f(0, 0);
+		qglVertex2f(0, 1);
+		qglVertex2f(1, 1);
+		qglVertex2f(1, 0);
+	}
+
+//
+// apply the remainder
+//
+	// val	=5
+	// i	=8
+	// R	=4
+	// 
+	// 2*src*dst = val
+	// 2*src*R = val
+	// 2*src*4 = 5
+	// src = 5/8
+
+	// val	=0.9
+	// i	=1
+	// R	=1
+	// 2*src*1 = 0.9
+	// src = 0.9/2 (need shl'ed i)
+	val /= (float)(i << 1);
+	qglColor3f(val, val, val);
+
+	qglVertex2f(0, 0);
+	qglVertex2f(0, 1);
+	qglVertex2f(1, 1);
+	qglVertex2f(1, 0);
+
+	qglEnd();
+
+	qglPopMatrix();
+	qglMatrixMode(GL_MODELVIEW);
+
+	qglColor3f(1, 1, 1);
+	qglColorMask(1, 1, 1, 1);
+	qglDepthMask(1);
+	qglDisable(GL_BLEND);
+}
+
 /*
 ==================
 R_ClipLightPlane

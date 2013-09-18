@@ -682,7 +682,7 @@ void R_DrawPlayerWeapon(void)
 	}
 	qglDepthMask(1);
 }
-
+*/
 
 void R_DrawPlayerWeaponLightPass(void)
 {
@@ -693,14 +693,6 @@ void R_DrawPlayerWeaponLightPass(void)
 
 	if(!r_pplWorld->value)
 		return;
-	
-	qglDepthMask(0);
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_ONE, GL_ONE);
-
-	if(shadowLight_frame) {
-
-	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
 		for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
 		{
@@ -717,16 +709,12 @@ void R_DrawPlayerWeaponLightPass(void)
 				continue;
 			R_DrawAliasModelLightPass(true);
 		}
-	}
+
 }
-	qglDepthMask(1);
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-}
-*/
 
 
-void R_DrawShadowLightPass(void)
+
+void R_DrawLightInteractions(void)
 {
 	int i;
 	
@@ -759,7 +747,6 @@ void R_DrawShadowLightPass(void)
 	if(!R_DrawLightOccluders())
 		continue;
 
-	if(r_shadows->value){
 	
 	R_SetViewLightScreenBounds();
 
@@ -807,20 +794,33 @@ void R_DrawShadowLightPass(void)
 	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
 	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
-	R_CastShadowVolumes();
+	R_CastBspShadowVolumes(); // bsp and bmodels shadows
+	
+	qglStencilFunc(GL_EQUAL, 128, 255);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	qglStencilMask(0);
+	
+	R_DrawPlayerWeaponLightPass(); // shade player weapon only from bsp!
+	
+	qglStencilMask(255);
+	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
+	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+	
+	R_CastAliasShadowVolumes(); // alias models shadows
 
 	qglStencilFunc(GL_EQUAL, 128, 255);
 	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	qglStencilMask(0);
-	}
 	
-	R_DrawLightWorld();
-
+	R_DrawLightWorld(); //light world
+	
+	//entities lightpass w/o player weapon
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 
-//		if (currententity->flags & RF_WEAPONMODEL)
-//			continue;
+		if (currententity->flags & RF_WEAPONMODEL)
+			continue;
 
 		if (currententity->flags & RF_TRANSLUCENT)
 			continue;			
@@ -929,19 +929,18 @@ if (r_noRefresh->value)
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
-	R_DrawShadowLightPass();
+	R_DrawLightInteractions();
 	R_BlobShadow();
 	R_RenderDecals();
 
 	R_RenderFlares();
+	R_LightScale();
 	R_DrawParticles(true); //underwater particles
 	R_CaptureColorBuffer();
 	R_DrawAlphaPoly();
 	R_DrawParticles(false); // air particles
 	R_CaptureColorBuffer();
 	R_RenderDistortModels();
-//	R_DrawPlayerWeapon();
-//	R_DrawPlayerWeaponLightPass();
 	R_CaptureColorBuffer();
 
 }
@@ -1272,7 +1271,7 @@ void R_RegisterCvars(void)
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
 	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "12", CVAR_ARCHIVE);
-	r_playerShadow =					Cvar_Get("r_playerShadow", "0", CVAR_ARCHIVE);
+	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
 	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "1", CVAR_ARCHIVE);
 
@@ -1327,6 +1326,8 @@ void R_RegisterCvars(void)
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
 	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
 	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
+	r_lightScale =						Cvar_Get("r_lightScale", "1", CVAR_ARCHIVE);
+
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
