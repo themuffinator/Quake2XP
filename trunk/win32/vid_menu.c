@@ -689,7 +689,7 @@ void VID_MenuInit( void )
 	s_fxaa_box.generic.type		= MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x		= 0;
 	s_fxaa_box.generic.y		= 220*cl_fontScale->value;
-	s_fxaa_box.generic.name		= "FXAA 3.11";
+	s_fxaa_box.generic.name		= "FXAA";
    	s_fxaa_box.itemnames		= yesno_names;
 	s_fxaa_box.curvalue			= r_fxaa->value;
     s_fxaa_box.generic.callback	= fxaaCallback;

@@ -1197,6 +1197,7 @@ next:
 		}
 	
 	R_GammaRamp (); 
-//	R_FXAA();
+	if(cls.state == ca_active)
+	R_FXAA();
 	GLimp_EndFrame();
 }

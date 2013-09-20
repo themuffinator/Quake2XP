@@ -1027,7 +1027,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 
 	// post processing - cut off if player camera out map bounds
 	if(!outMap){
-	R_FXAA();
+//	R_FXAA();
 	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();

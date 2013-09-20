@@ -543,9 +543,6 @@ void R_FXAA (void) {
 	if(!r_fxaa->value)
 		return;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-        return;
-
 	// setup program
 	GL_BindProgram(fxaaProgram, defBits);
 	id = fxaaProgram->id[defBits];
@@ -561,8 +558,8 @@ void R_FXAA (void) {
 	}
 	GL_Bind				(fxaatex);
     qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i(qglGetUniformLocation(id, "u_BaseTexture"), 0);
-	qglUniform4f(qglGetUniformLocation(id, "u_Viewport"), r_newrefdef.viewport[0], r_newrefdef.viewport[1],	r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+	qglUniform1i(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+	qglUniform2f(qglGetUniformLocation(id, "u_ScreenSize"), vid.width, vid.height);
 
 	R_DrawFullScreenQuad();
 
