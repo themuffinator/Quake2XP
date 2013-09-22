@@ -29,11 +29,10 @@ static vec3_t vert_array[MAX_FLARES_VERTEX];
 static vec2_t tex_array[MAX_FLARES_VERTEX];
 static vec4_t color_array[MAX_FLARES_VERTEX];
 
-/*
-=====================
-Draw Occlusion Flares
-=====================
-*/
+/*===============
+World lens flares
+===============*/
+
 void R_BuildFlares(flare_t * light){
 	
 	float		dist, dist2, scale;
@@ -42,9 +41,6 @@ void R_BuildFlares(flare_t * light){
 	unsigned	flareIndex[MAX_INDICES];
 	int			flareVert=0, index=0;
 	
-	if (!gl_state.arb_occlusion) 
-		return;
-
 	if (light->surf->ent) {
 		
 		if (!VectorCompare(light->surf->ent->angles, vec3_origin))
@@ -53,48 +49,10 @@ void R_BuildFlares(flare_t * light){
 		qglPushMatrix();
 		R_RotateForLightEntity(light->surf->ent);
 		
-	} else { 	
-		
-		if (R_CullOrigin(light->origin))
-			return;
-
 	}
-		light->surf->visframe = r_framecount;
 	
-		// Draw Occlusion Geometry
-		qglDisable(GL_TEXTURE_2D);
-		qglDisable(GL_CULL_FACE);
-		qglColorMask(0, 0, 0, 0);
-
-		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vert);	
-
-		qglBeginQueryARB(gl_state.query_passed, flareQueries[light->occId]);
+	light->surf->visframe = r_framecount;
 		
-		VA_SetElem3(vert[0],  light->origin[0],  light->origin[1],  light->origin[2]); 
-		 	
-		qglDrawArrays (GL_POINTS, 0, 1);
-
-		qglEndQueryARB(gl_state.query_passed);
-		
-		qglEnable(GL_TEXTURE_2D);
-		qglEnable(GL_CULL_FACE);
-		qglColorMask(1, 1, 1, 1);
-
-		if(!gl_state.conditional_render || !r_useConditionalRender->value){
-			qglGetQueryObjectivARB(flareQueries[light->occId], GL_QUERY_RESULT_ARB, &sampleCount);
-
-			if (!sampleCount) {
-				if (light->surf->ent)
-					qglPopMatrix();
-				return;
-			} 
-		}
-
-
-	if(gl_state.conditional_render && r_useConditionalRender->value)
-			glBeginConditionalRender(flareQueries[light->occId], GL_QUERY_WAIT);
-
-
 	if(flareVert){
 		
 	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
@@ -112,12 +70,11 @@ void R_BuildFlares(flare_t * light){
 	dist2 = VectorLength(v);
 
 	scale = ((2048 - dist2) / 2048) * 0.5;
-	
-	qglDisable(GL_DEPTH_TEST);
+	if(r_lightScale->value)
+		scale /= r_lightScale->value;
+
 	VectorScale(light->color, scale, tmp);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vert_array);
-	
 	VectorMA (light->origin, -1-dist, vup, vert_array[flareVert+0]);
 	VectorMA (vert_array[flareVert+0], 1+dist, vright, vert_array[flareVert+0]);
 	VA_SetElem2(tex_array[flareVert+0], 0, 1);
@@ -160,13 +117,8 @@ void R_BuildFlares(flare_t * light){
 	if (light->surf->ent)
 		qglPopMatrix();
 
-	
-	qglEnable(GL_DEPTH_TEST);
 	qglColor4f(1, 1, 1, 1);
 	c_flares++;
-	
-	if(gl_state.conditional_render && r_useConditionalRender->value)
-		glEndConditionalRender();
 }
 
 qboolean PF_inPVS(vec3_t p1, vec3_t p2);
@@ -186,21 +138,30 @@ void R_RenderFlares(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	qglEnableVertexAttribArray(ATRB_POSITION); //set vertex attrib pointer in R_BuildFlares (occlusion geometry and flare billboard)
+	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_COLOR);
 
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vert_array);
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, tex_array);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, color_array);
 
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
-	GL_MBind(GL_TEXTURE0_ARB, r_flare->texnum);
+	GL_BindProgram(particlesProgram, defBits);
+	id = particlesProgram->id[defBits];
+
+	GL_MBind				(GL_TEXTURE0_ARB, r_flare->texnum);
+	qglUniform1i			(qglGetUniformLocation(id, "u_map0"), 0);
+
+	GL_SelectTexture		(GL_TEXTURE1_ARB);	
+	GL_BindRect				(depthMap->texnum);
+    qglUniform1i			(qglGetUniformLocation(id, "u_depthBufferMap"), 1);
+	qglUniform2f			(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f			(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0);
+	qglUniform1f			(qglGetUniformLocation(id, "u_colorScale"), 1.0);
+
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	fl = r_flares;
@@ -211,12 +172,12 @@ void R_RenderFlares(void)
 		if(fl->ignore)
 			continue;
 
-		if (fl->surf->visframe != r_framecount)	// pvs culling... haha, nicest optimisation!
-			continue;
-		
 		if(!PF_inPVS(fl->origin, r_origin))
 			continue;
 
+		if (fl->surf->visframe != r_framecount)	// pvs culling... haha, nicest optimisation!
+			continue;
+		
 		viewplane = DotProduct(r_origin, fl->surf->plane->normal) - fl->surf->plane->dist;
 		if (viewplane >= 0)
 			sidebit = 0;
@@ -225,10 +186,8 @@ void R_RenderFlares(void)
 
 		if ((fl->surf->flags & SURF_PLANEBACK) != sidebit)
 			continue;			// wrong light poly side!
-		
-		if(CL_PMpointcontents(fl->origin) & MASK_SOLID)
-			continue;
 
+		qglUniform1f(qglGetUniformLocation(id, "u_thickness"), fl->size * 0.75);
 		R_BuildFlares(fl);
 
 	}
@@ -239,7 +198,7 @@ void R_RenderFlares(void)
 	qglDisable(GL_BLEND);
 	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDepthMask(1);
-
+	GL_SelectTexture(GL_TEXTURE0_ARB);
 }
 
 /*

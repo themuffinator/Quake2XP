@@ -625,6 +625,7 @@ typedef struct {
 	qboolean	nPot;
 	qboolean	glslBinary;
 	qboolean	depthBoundsTest;
+	qboolean	shader5;
 	int			programId;
 	int			lastdFactor;
 	int			lastsFactor;

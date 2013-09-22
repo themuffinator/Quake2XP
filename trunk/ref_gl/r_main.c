@@ -1027,7 +1027,6 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 
 	// post processing - cut off if player camera out map bounds
 	if(!outMap){
-//	R_FXAA();
 	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();
@@ -1788,7 +1787,13 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		if ( strstr( gl_config.extensions_string, "GL_ARB_vertex_shader" ) ){
 			Com_Printf("...using GL_ARB_vertex_shader\n");
 	gl_state.glsl = true;	
+	
+	gl_state.shader5= false;
 
+	if ( strstr( gl_config.extensions_string, "GL_ARB_gpu_shader5" ) ){
+			Com_Printf("...using GL_ARB_gpu_shader5\n");
+	gl_state.shader5= true;
+	}
 
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);

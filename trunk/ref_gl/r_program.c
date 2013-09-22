@@ -40,7 +40,8 @@ static const char *floatDefs32 =
 
 static glslProgram_t	r_nullProgram;
 
-
+static const char *shader5 =
+	"#extension GL_ARB_gpu_shader5 : enable";
 
 /*
 =================

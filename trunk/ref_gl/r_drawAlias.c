@@ -470,18 +470,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		currententity->oldframe = 0;
 	}
 	
-	VectorCopy(currentShadowLight->origin, tmpOrg);
-	VectorCopy(r_origin, tmpView);
-
-	AnglesToMat3(currententity->angles, entityAxis);
-	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
-
-	// move view org to modelspace
-	VectorSubtract(r_origin, currententity->origin, tmp);
-	AnglesToMat3(currententity->angles, entityAxis);
-	Mat3_TransposeMultiplyVector(entityAxis, tmp, r_origin);
-
 	if ((currententity->flags & RF_WEAPONMODEL ) && ( r_leftHand->value == 1.0F)) {
 		extern void GL_OldPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
 		qglMatrixMode(GL_PROJECTION);
@@ -496,6 +484,18 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	qglPushMatrix ();
 	
 	R_RotateForLightEntity(currententity);
+
+	VectorCopy(currentShadowLight->origin, tmpOrg);
+	VectorCopy(r_origin, tmpView);
+
+	AnglesToMat3(currententity->angles, entityAxis);
+	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
+
+	// move view org to modelspace
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	AnglesToMat3(currententity->angles, entityAxis);
+	Mat3_TransposeMultiplyVector(entityAxis, tmp, r_origin);
 
 	GL_DrawAliasFrameLerpLight(paliashdr);
 
