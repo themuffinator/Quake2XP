@@ -2,6 +2,8 @@
 // Original algorithm and code by Timothy Lottes
 // Adoptation by Vic
 
+#extension GL_ARB_gpu_shader5 : enable
+
 #define FXAA_PC 1
 #if QF_GLSLVERSION >= 130
 # define FXAA_GLSL_130 1
@@ -9,17 +11,17 @@
 # define FXAA_GLSL_120 1
 #endif
 #define FXAA_GREEN_AS_LUMA 1
-#define FXAA_QUALITY__PRESET 23
+#define FXAA_QUALITY__PRESET 39
 
 #include Fxaa3_11.inc
 
-uniform sampler2D	u_BaseTexture;
-uniform vec4		u_Viewport;
+uniform sampler2D	u_ScreenTex;
+uniform vec2		u_ScreenSize;
 
 void main(void)
 {
-    vec2 rcpFrame = vec2(1.0) / vec2(u_Viewport.zw); 
-    vec2 pos = gl_FragCoord.xy / vec2(u_Viewport.zw);
+    vec2 rcpFrame = vec2(1.0) / u_ScreenSize.xy; 
+    vec2 pos = gl_FragCoord.xy / u_ScreenSize.xy;
 
 	// Only used on FXAA Quality.
     // Choose the amount of sub-pixel aliasing removal.
@@ -37,7 +39,7 @@ void main(void)
     //   0.166 - default
     //   0.125 - high quality 
     //   0.033 - very high quality (slower)
-    float QualityEdgeThreshold = 0.166;
+    float QualityEdgeThreshold = 0.033;
     float QualityEdgeThresholdMin = 0.0;
 
     vec4 ConsolePosPos = vec4(0.0,0.0,0.0,0.0);
@@ -49,5 +51,5 @@ void main(void)
     float ConsoleEdgeThresholdMin = 0.05;
     vec4  Console360ConstDir = vec4(1.0, -1.0, 0.25, -0.25);
 
-    gl_FragColor = FxaaPixelShader(pos, ConsolePosPos, u_BaseTexture, u_BaseTexture, u_BaseTexture, rcpFrame, ConsoleRcpFrameOpt, ConsoleRcpFrameOpt2, Console360RcpFrameOpt2, QualitySubpix, QualityEdgeThreshold, QualityEdgeThresholdMin, ConsoleEdgeSharpness, ConsoleEdgeThreshold, ConsoleEdgeThresholdMin, Console360ConstDir);
+    gl_FragColor = FxaaPixelShader(pos, ConsolePosPos, u_ScreenTex, u_ScreenTex, u_ScreenTex, rcpFrame, ConsoleRcpFrameOpt, ConsoleRcpFrameOpt2, Console360RcpFrameOpt2, QualitySubpix, QualityEdgeThreshold, QualityEdgeThresholdMin, ConsoleEdgeSharpness, ConsoleEdgeThreshold, ConsoleEdgeThresholdMin, Console360ConstDir);
 }
