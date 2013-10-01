@@ -583,6 +583,7 @@ void R_DrawSkyBox(void)
 	int i, id;
 	unsigned defBits = 0;
 	
+	defBits = worldDefs.AttribColorBits;
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);

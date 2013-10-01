@@ -44,6 +44,22 @@ qboolean GLimp_InitGL (void);
 
 glwstate_t glw_state;
 
+// Disable win aero desktop
+void GLimp_DesktopComposition(qboolean enable)
+{
+    static HMODULE	dwmApi = NULL;
+    static HRESULT	(WINAPI *dwmEnableComposition)(UINT);
+
+    if (!dwmApi && (dwmApi = LoadLibrary("dwmapi.dll")))
+        dwmEnableComposition = (HRESULT(WINAPI *)(UINT))GetProcAddress(dwmApi, "DwmEnableComposition");
+
+    if (dwmEnableComposition)
+    {
+        dwmEnableComposition(enable);
+		Com_Printf("...disabling Aero desktop: "S_COLOR_GREEN"ok\n");
+    }else
+		Com_Printf("...disabling Aero desktop: "S_COLOR_YELLOW"false\n");
+}
 
 static qboolean VerifyDriver( void )
 {
@@ -79,7 +95,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
     wc.hInstance     = glw_state.hInstance;
     wc.hIcon         = 0;
     wc.hCursor       = LoadCursor (NULL,IDC_ARROW);
-	wc.hbrBackground = (void *)COLOR_GRAYTEXT;
+	wc.hbrBackground = (HBRUSH)COLOR_GRAYTEXT;
     wc.lpszMenuName  = 0;
     wc.lpszClassName = WINDOW_CLASS_NAME;
 
@@ -286,7 +302,6 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 				Com_Printf(S_COLOR_GREEN" ok\n" );
 				if ( !VID_CreateWindow (width, height, true) )
 					return rserr_invalid_mode;
-
 				gl_state.fullscreen = true;
 				return rserr_ok;
 			}
@@ -950,7 +965,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 			
 			}
 			
-
+			GLimp_DesktopComposition(false);
 			}
 	
 
@@ -1011,8 +1026,6 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 
 	glw_state.hInstance = ( HINSTANCE ) hinstance;
 	glw_state.wndproc = wndproc;
-
-	
 	return true;
 	
 

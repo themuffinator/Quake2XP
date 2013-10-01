@@ -64,7 +64,7 @@ static	menulist_s			a_pplWorld_list;
 static	menulist_s			s_radBlur_box;
 static	menulist_s			s_softParticles;
 static	menulist_s			s_fxaa_box;
-static	menulist_s			s_minimap;
+static	menulist_s			s_film_grain;
 
 static menuslider_s		s_ambientLevel_slider;
 
@@ -99,7 +99,7 @@ static void RadarCallback( void *s )
 {
 	menulist_s *box = ( menulist_s * ) s;
 
-	Cvar_SetValue( "r_radar", box->curvalue * 1 );
+	Cvar_SetValue( "r_filmGrain", box->curvalue * 1 );
 }
 
 static void ShadowsCallback( void *s )
@@ -196,7 +196,7 @@ static void ApplyChanges( void *unused )
 	Cvar_SetValue( "r_softParticles",		s_softParticles.curvalue);
 	Cvar_SetValue( "r_fxaa",				s_fxaa_box.curvalue);
 	Cvar_SetValue( "r_vsync",				s_finish_box.curvalue);
-	Cvar_SetValue( "r_radar",				s_minimap.curvalue);
+	Cvar_SetValue( "r_filmGrain",			s_film_grain.curvalue);
 	
 /*	
 Nvidia Coverange AA
@@ -695,13 +695,13 @@ void VID_MenuInit( void )
     s_fxaa_box.generic.callback	= fxaaCallback;
 	s_fxaa_box.generic.statusbar = "Nvidia Post-Process Anti-Aliasing";
 
-	s_minimap.generic.type		= MTYPE_SPINCONTROL;
-	s_minimap.generic.x			= 0;
-	s_minimap.generic.y			= 230*cl_fontScale->value;
-	s_minimap.generic.name		= "Draw Radar";
-   	s_minimap.itemnames			= radar;
-	s_minimap.curvalue			= r_radar->value;
-    s_minimap.generic.callback	= RadarCallback;
+	s_film_grain.generic.type		= MTYPE_SPINCONTROL;
+	s_film_grain.generic.x			= 0;
+	s_film_grain.generic.y			= 230*cl_fontScale->value;
+	s_film_grain.generic.name		= "Film Grain";
+   	s_film_grain.itemnames			= yesno_names;
+	s_film_grain.curvalue			= r_filmGrain->value;
+    s_film_grain.generic.callback	= RadarCallback;
 	
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x	= 0;
@@ -754,7 +754,7 @@ void VID_MenuInit( void )
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_radBlur_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_softParticles );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_fxaa_box);
-	Menu_AddItem( &s_opengl_menu, ( void * ) &s_minimap);
+	Menu_AddItem( &s_opengl_menu, ( void * ) &s_film_grain);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_finish_box);
 
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_defaults_action);

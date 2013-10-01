@@ -188,7 +188,7 @@ extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;
 extern int r_framecount;
-extern cplane_t frustum[4];
+extern cplane_t frustum[5];
 
 extern	int gl_filter_min, gl_filter_max;
 extern	int flareQueries[MAX_WORLD_SHADOW_LIHGTS];
@@ -297,6 +297,8 @@ cvar_t	*r_debugLights;
 cvar_t	*r_occLightBoundsSize;
 cvar_t	*r_debugOccLightBoundsSize;
 cvar_t	*r_useLightScissors;
+cvar_t	*r_useDepthBounds;
+cvar_t	*r_debugLightScissors;
 cvar_t	*r_lightScale;
 cvar_t	*r_zNear;
 cvar_t	*hunk_bsp;
@@ -420,6 +422,8 @@ void R_Light_SpawnToCamera_f(void);
 void R_ChangeLightRadius_f(void);
 void R_Light_Copy_f(void);
 void R_ChangeLightCone_f(void);
+void R_Light_UnSelect_f(void);
+
 void GL_SetupCubeMapMatrix(qboolean model);
 void DeleteShadowVertexBuffers(void);
 void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame);
@@ -449,8 +453,6 @@ void R_SetFrustum(void);
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
 void R_SetViewLightScreenBounds ();
 
-void Matrix4_Transpose( const mat4x4_t m, mat4x4_t out );
-void Matrix4_Multiply_Vector( const mat4x4_t m, const vec4_t v, vec4_t out );
 
 void GL_LoadMatrix(GLenum mode, const mat4_t matrix);
 void Mat4_Multiply(const mat4_t a, const mat4_t b, mat4_t out);
@@ -794,6 +796,7 @@ typedef struct {
 	unsigned	WaterTransBits;
 	unsigned	ShellBits;
 	unsigned	EnvBits;
+	unsigned	AttribColorBits;
 } 
 worldDefs_t;
 

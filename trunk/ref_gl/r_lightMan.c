@@ -486,13 +486,13 @@ void R_EditSelectedLight_f(void) {
 	 }
 	else{
 		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\nSpeed: %.4f %.4f %.4f\nShadows %i\nAmbient %i\nCone %f\n",
-		 selectedShadowLight->origin[0], selectedShadowLight->origin[1], selectedShadowLight->origin[2],
-		 selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 
+		 selectedShadowLight->origin[0],	selectedShadowLight->origin[1], selectedShadowLight->origin[2],
+		 selectedShadowLight->color[0],		selectedShadowLight->color[1], selectedShadowLight->color[2], 
 		 selectedShadowLight->radius,
 		 selectedShadowLight->style,
 		 selectedShadowLight->filter,
-		 selectedShadowLight->angles[0], selectedShadowLight->angles[1], selectedShadowLight->angles[2],
-		 selectedShadowLight->speed[0], selectedShadowLight->speed[1], selectedShadowLight->speed[2],
+		 selectedShadowLight->angles[0],	selectedShadowLight->angles[1], selectedShadowLight->angles[2],
+		 selectedShadowLight->speed[0],		selectedShadowLight->speed[1], selectedShadowLight->speed[2],
 		 selectedShadowLight->isShadow, 
 		 selectedShadowLight->isAmbient,
 		 selectedShadowLight->_cone);
@@ -697,6 +697,20 @@ void R_Light_Delete_f(void) {
 	selectedShadowLight = NULL;
 }
 
+void R_Light_UnSelect_f(void) {
+
+	if(!r_lightEditor->value){
+		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
+		return;
+	}
+	
+	if(!selectedShadowLight)
+	{
+	Com_Printf("No selected light.\n");
+		return;
+	}
+	selectedShadowLight = NULL;
+}
 
 char buff0[128];
 char buff1[128];
@@ -711,16 +725,18 @@ char buff9[128];
 
 void UpdateLightEditor(void){
 
-	vec3_t end_trace, mins = { -5.0f, -5.0f, -5.0f }, maxs = { 5.0f, 5.0f, 5.0f };
-	vec3_t	corners[8], tmp;
-	int j;
-	float rad;
-	float fraction = 1.0;
-	vec3_t	v[8];
-	trace_t trace_light, trace_bsp;
+	vec3_t		end_trace, mins = { -5.0f, -5.0f, -5.0f }, maxs = { 5.0f, 5.0f, 5.0f };
+	vec3_t		corners[8], tmp;
+	int			j;
+	float		rad;
+	float		fraction = 1.0;
+	vec3_t		v[8];
+	trace_t		trace_light, trace_bsp;
 	unsigned	headNode;
-	vec3_t tmpOrg;
-	float tmpRad;
+	vec3_t		tmpOrg;
+	float		tmpRad;
+	int			id;
+	unsigned	defBits = 0;
 
 	if(!r_lightEditor->value)
 		return;
@@ -730,6 +746,11 @@ void UpdateLightEditor(void){
 
 	if(!currentShadowLight->isStatic)
 		return;
+
+	qglDisable(GL_SCISSOR_TEST);
+	
+	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
+		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	qglDisable(GL_BLEND);
 	qglDisable(GL_STENCIL_TEST);
@@ -756,6 +777,10 @@ void UpdateLightEditor(void){
 	qglDisable(GL_TEXTURE_2D);
 	qglDisable(GL_CULL_FACE);
 
+	// setup program
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+
 	if(currentShadowLight != selectedShadowLight){
 
 	for (j=0; j<8; j++) {
@@ -765,7 +790,7 @@ void UpdateLightEditor(void){
 
 	VectorAdd(tmp, currentShadowLight->origin, corners[j]);
 	}
-	qglColor3fv(currentShadowLight->color);
+	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2]);
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
 
@@ -805,7 +830,7 @@ void UpdateLightEditor(void){
 	qglLineWidth(3.0);
 	VectorCopy(selectedShadowLight->origin, tmpOrg);
 	tmpRad = selectedShadowLight->radius;
-	qglColor3fv(selectedShadowLight->color);
+	qglUniform3f(qglGetUniformLocation(id, "u_color"),	selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2]);
 	rad = tmpRad;
 	sprintf(buff0,	"Origin: %.3f %.3f %.3f",	selectedShadowLight->origin[0], 
 												selectedShadowLight->origin[1], 
@@ -897,13 +922,23 @@ void UpdateLightEditor(void){
 
 	qglColor3f(1,1,1);
 	qglEnable(GL_DEPTH_TEST);
+
 }
 	qglColor3f(1.0, 1.0, 1.0);
 	qglEnable(GL_TEXTURE_2D);
 	qglEnable(GL_CULL_FACE);
 	qglEnable(GL_BLEND);
-	qglEnable(GL_STENCIL_TEST);
 
+	if(r_shadows->value)
+		qglEnable(GL_STENCIL_TEST);
+
+	if(r_useLightScissors->value)
+		qglEnable(GL_SCISSOR_TEST);
+	
+	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
+		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
+
+	GL_BindNullProgram();
 }
 
 void Clamp2RGB(vec3_t color)
@@ -1771,21 +1806,31 @@ void R_SetViewLightScreenBounds () {
 	float		depth[2];
 	int			i;
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+
+		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
+		currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
+		currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
+		currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
+		currentShadowLight->depthBounds[0] = 0.0f;
+		currentShadowLight->depthBounds[1] = 1.0f;
+		return;
+	}
+
 	if (!r_useLightScissors->value) {
 
 		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
 		currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
 		currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
 		currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
-	return;
 	}
 
-	if(!gl_state.depthBoundsTest ){
+	if(!(gl_state.depthBoundsTest || r_useDepthBounds->value)){
 		currentShadowLight->depthBounds[0] = 0.0f;
 		currentShadowLight->depthBounds[1] = 1.0f;
-	return;
 	}
 
+	if(r_useLightScissors->value || (gl_state.depthBoundsTest && r_useDepthBounds->value)){
 	// compute modelview-projection matrix
 	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, tmpMatrix);
 	Mat4_Transpose(tmpMatrix, mvpMatrix);
@@ -1815,7 +1860,8 @@ void R_SetViewLightScreenBounds () {
 	maxs[0] = (0.5f + 0.5f * maxs[0]) * r_newrefdef.viewport[2] + r_newrefdef.viewport[0];
 	maxs[1] = (0.5f + 0.5f * maxs[1]) * r_newrefdef.viewport[3] + r_newrefdef.viewport[1];
 	maxs[2] = (0.5f + 0.5f * maxs[2]);
-
+	
+	}
 
 	// set the scissor rectangle
 	if (r_useLightScissors->value) {
@@ -1845,7 +1891,7 @@ void R_SetViewLightScreenBounds () {
 	}
 
 	// set the depth bounds
-	
+	if(r_useDepthBounds->value){
 		depth[0] = max(mins[2], 0.0f);
 		depth[1] = min(maxs[2], 1.0f);
 
@@ -1857,4 +1903,5 @@ void R_SetViewLightScreenBounds () {
 			currentShadowLight->depthBounds[0] = depth[0];
 			currentShadowLight->depthBounds[1] = depth[1];
 		}
+	}
 }

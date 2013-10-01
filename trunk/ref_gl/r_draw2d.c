@@ -448,6 +448,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
 	
+	defBits = worldDefs.AttribColorBits;
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
@@ -516,6 +517,7 @@ void Draw_Pic2S(int x, int y, float sX, float sY, image_t * gl)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
 	
+	defBits = worldDefs.AttribColorBits;
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
@@ -580,6 +582,7 @@ void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
 	
+	defBits = worldDefs.AttribColorBits;
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);

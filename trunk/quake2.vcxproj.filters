@@ -276,10 +276,10 @@
     <ClCompile Include="ref_gl\r_lightMaps.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_lightMananager.c">
+    <ClCompile Include="ref_gl\r_cull.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_cull.c">
+    <ClCompile Include="ref_gl\r_lightMan.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
@@ -570,6 +570,9 @@
     </None>
     <None Include="..\baseq2\glsl\include\Fxaa3_11.inc">
       <Filter>Source Files\Renderer\glsl\include</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\generic.defs">
+      <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

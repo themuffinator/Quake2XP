@@ -231,6 +231,9 @@ void R_SetFrustum(void)
 {
 	int i;
 
+	
+	VectorCopy(vpn, frustum[4].normal);
+
 	if (r_newrefdef.fov_x == 90) {
 		// front side is visible
 
@@ -239,6 +242,7 @@ void R_SetFrustum(void)
 
 		VectorAdd(vpn, vup, frustum[2].normal);
 		VectorSubtract(vpn, vup, frustum[3].normal);
+
 	} else {
 		// Speedup Small Calculations - Eradicator
 		RotatePointAroundVector(frustum[0].normal, vup, vpn,
@@ -251,10 +255,12 @@ void R_SetFrustum(void)
 								-(90 - r_newrefdef.fov_y * 0.5));
 	}
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 5; i++) {
 		frustum[i].type = PLANE_ANYZ;
 		frustum[i].dist = DotProduct(r_origin, frustum[i].normal);
 		frustum[i].signbits = SignbitsForPlane(&frustum[i]);
 	}
+	frustum[4].dist += r_zNear->value; // near clip plane
+
 }
 

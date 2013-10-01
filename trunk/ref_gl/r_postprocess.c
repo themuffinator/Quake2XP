@@ -37,7 +37,6 @@ void R_BuildFlares(flare_t * light){
 	
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
-	int			sampleCount;
 	unsigned	flareIndex[MAX_INDICES];
 	int			flareVert=0, index=0;
 	
@@ -187,7 +186,7 @@ void R_RenderFlares(void)
 		if ((fl->surf->flags & SURF_PLANEBACK) != sidebit)
 			continue;			// wrong light poly side!
 
-		qglUniform1f(qglGetUniformLocation(id, "u_thickness"), fl->size * 0.75);
+		qglUniform1f(qglGetUniformLocation(id, "u_thickness"), fl->size * 0.5);
 		R_BuildFlares(fl);
 
 	}

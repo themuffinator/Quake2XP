@@ -36,7 +36,7 @@ glstate_t gl_state;
 entity_t *currententity;
 model_t *currentmodel;
 
-cplane_t frustum[4];
+cplane_t frustum[5];
 
 int r_visframecount;			// bumped when going to a new PVS
 int r_framecount;				// used for dlight push checking
@@ -409,6 +409,8 @@ void GL_LoadMatrix(GLenum mode, const mat4_t matrix) {
 		qglLoadMatrixf((const float *)matrix);
 }
 
+
+
 /*
 =============
 R_SetupViewMatrices
@@ -419,7 +421,6 @@ static void R_SetupViewMatrices (void) {
 	float	xMin, xMax, xDiv;
 	float	yMin, yMax, yDiv;
 	float	zNear, zFar, zDiv;
-	mat4_t	tmpMatrix; //temp data (for transpose and etc)
 
 	// setup perspective projection matrix
 	zNear = max(r_zNear->value, 3.0);
@@ -438,54 +439,50 @@ static void R_SetupViewMatrices (void) {
 	yDiv = 1.0f / (yMax - yMin);
 	zDiv = 1.0f / (zFar - zNear);
 
-	tmpMatrix[0][0] = 2.0f * zNear * xDiv;
-	tmpMatrix[0][1] = 0.0f;
-	tmpMatrix[0][2] = 0.0f;
-	tmpMatrix[0][3] = 0.0f;
-	tmpMatrix[1][0] = 0.0f;
-	tmpMatrix[1][1] = 2.0f * zNear * yDiv;
-	tmpMatrix[1][2] = 0.0f;
-	tmpMatrix[1][3] = 0.0f;
-	tmpMatrix[2][0] = (xMax + xMin) * xDiv;
-	tmpMatrix[2][1] = (yMax + yMin) * yDiv;
-	tmpMatrix[2][2] = -0.999f;
-	tmpMatrix[2][3] = -1.0f;
-	tmpMatrix[3][0] = 0.0f;
-	tmpMatrix[3][1] = 0.0f;
-	tmpMatrix[3][2] = -2.0f * zNear;
-	tmpMatrix[3][3] = 0.0f;
+	r_newrefdef.projectionMatrix[0][0] = 2.0f * zNear * xDiv;
+	r_newrefdef.projectionMatrix[0][1] = 0.0f;
+	r_newrefdef.projectionMatrix[0][2] = 0.0f;
+	r_newrefdef.projectionMatrix[0][3] = 0.0f;
+	r_newrefdef.projectionMatrix[1][0] = 0.0f;
+	r_newrefdef.projectionMatrix[1][1] = 2.0f * zNear * yDiv;
+	r_newrefdef.projectionMatrix[1][2] = 0.0f;
+	r_newrefdef.projectionMatrix[1][3] = 0.0f;
+	r_newrefdef.projectionMatrix[2][0] = (xMax + xMin) * xDiv;
+	r_newrefdef.projectionMatrix[2][1] = (yMax + yMin) * yDiv;
+	r_newrefdef.projectionMatrix[2][2] = -0.999f;
+	r_newrefdef.projectionMatrix[2][3] = -1.0f;
+	r_newrefdef.projectionMatrix[3][0] = 0.0f;
+	r_newrefdef.projectionMatrix[3][1] = 0.0f;
+	r_newrefdef.projectionMatrix[3][2] = -2.0f * zNear;
+	r_newrefdef.projectionMatrix[3][3] = 0.0f;
 
 	if (zFar > zNear) {
-		tmpMatrix[2][2] = -(zNear + zFar) * zDiv;
-		tmpMatrix[3][2] = -2.0f * zNear * zFar * zDiv;
+		r_newrefdef.projectionMatrix[2][2] = -(zNear + zFar) * zDiv;
+		r_newrefdef.projectionMatrix[3][2] = -2.0f * zNear * zFar * zDiv;
 	}
-	
-	Mat4_Copy(tmpMatrix, r_newrefdef.projectionMatrix);
 
 	// setup view matrix
 	AnglesToMat3(r_newrefdef.viewangles, r_newrefdef.axis);
 
-	tmpMatrix[0][0] = -r_newrefdef.axis[1][0];
-	tmpMatrix[0][1] = r_newrefdef.axis[2][0];
-	tmpMatrix[0][2] = -r_newrefdef.axis[0][0];
-	tmpMatrix[0][3] = 0.0;
+	r_newrefdef.modelViewMatrix[0][0] = -r_newrefdef.axis[1][0];
+	r_newrefdef.modelViewMatrix[0][1] =  r_newrefdef.axis[2][0];
+	r_newrefdef.modelViewMatrix[0][2] = -r_newrefdef.axis[0][0];
+	r_newrefdef.modelViewMatrix[0][3] = 0.0;
 
-	tmpMatrix[1][0] = -r_newrefdef.axis[1][1];
-	tmpMatrix[1][1] = r_newrefdef.axis[2][1];
-	tmpMatrix[1][2] = -r_newrefdef.axis[0][1];
-	tmpMatrix[1][3] = 0.0;
+	r_newrefdef.modelViewMatrix[1][0] = -r_newrefdef.axis[1][1];
+	r_newrefdef.modelViewMatrix[1][1] =	 r_newrefdef.axis[2][1];
+	r_newrefdef.modelViewMatrix[1][2] = -r_newrefdef.axis[0][1];
+	r_newrefdef.modelViewMatrix[1][3] = 0.0;
 
-	tmpMatrix[2][0] = -r_newrefdef.axis[1][2];
-	tmpMatrix[2][1] = r_newrefdef.axis[2][2];
-	tmpMatrix[2][2] = -r_newrefdef.axis[0][2];
-	tmpMatrix[2][3] = 0.0;
+	r_newrefdef.modelViewMatrix[2][0] = -r_newrefdef.axis[1][2];
+	r_newrefdef.modelViewMatrix[2][1] =  r_newrefdef.axis[2][2];
+	r_newrefdef.modelViewMatrix[2][2] = -r_newrefdef.axis[0][2];
+	r_newrefdef.modelViewMatrix[2][3] = 0.0;
 
-	tmpMatrix[3][0] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[1]);
-	tmpMatrix[3][1] = -DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[2]);
-	tmpMatrix[3][2] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[0]);
-	tmpMatrix[3][3] = 1.0;
-
-	Mat4_Copy(tmpMatrix, r_newrefdef.modelViewMatrix);
+	r_newrefdef.modelViewMatrix[3][0] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[1]);
+	r_newrefdef.modelViewMatrix[3][1] = -DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[2]);
+	r_newrefdef.modelViewMatrix[3][2] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[0]);
+	r_newrefdef.modelViewMatrix[3][3] = 1.0;
 
 	// load matrices
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix); // q2 r_project_matrix
@@ -634,56 +631,6 @@ next:
 }
 
 
-/*
-=========================
-Draw player weapon AFTER 
-distort texture capture
-=========================
-*/
-/*
-void R_DrawPlayerWeapon(void)
-{
-	int i;
-
-	if (!r_drawEntities->value)
-		return;
-
-	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
-	{
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		if (currententity->flags & RF_TRANSLUCENT)
-			continue;
-
-		if (!currentmodel)
-			continue;
-		if (currentmodel->type != mod_alias)
-			continue;
-		if (!(currententity->flags & RF_WEAPONMODEL))
-			continue;
-		R_DrawAliasModel(currententity, true);
-	}
-
-	qglDepthMask(0);
-	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon shells
-	{
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		if (!(currententity->flags & RF_TRANSLUCENT))
-			continue;
-
-		if (!currentmodel)
-			continue;
-		if (currentmodel->type != mod_alias)
-			continue;
-		if (!(currententity->flags & RF_WEAPONMODEL))
-			continue;
-		R_DrawAliasModel(currententity, true);
-	}
-	qglDepthMask(1);
-}
-*/
-
 void R_DrawPlayerWeaponLightPass(void)
 {
 	int i;
@@ -717,7 +664,7 @@ void R_DrawPlayerWeaponLightPass(void)
 void R_DrawLightInteractions(void)
 {
 	int i;
-	
+
 	if(!r_pplWorld->value)
 		return;
 	
@@ -726,11 +673,11 @@ void R_DrawLightInteractions(void)
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
-	
+
 	if(r_useLightScissors->value)
 		qglEnable(GL_SCISSOR_TEST);
 	
-	if(gl_state.depthBoundsTest)
+	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	if(r_shadows->value)
@@ -746,21 +693,24 @@ void R_DrawLightInteractions(void)
 
 	if(!R_DrawLightOccluders())
 		continue;
-
 	
 	R_SetViewLightScreenBounds();
 
-	qglScissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
-
-	if(gl_state.depthBoundsTest){
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		glDepthBoundsEXT(0.0, 1.0);
-	else
+	if(r_useLightScissors->value)
+		qglScissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
+	
+	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
-	}
 
-	/*
-	qglColor3fv(currentShadowLight->color);
+	if(r_debugLightScissors->value){
+	int			id;
+	unsigned	defBits = 0;
+	// setup program
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2]);
+	qglEnable(GL_LINE_SMOOTH);
+	qglLineWidth(5.0);
 	qglMatrixMode(GL_PROJECTION);
 	qglPushMatrix();
 	qglLoadIdentity();
@@ -770,20 +720,21 @@ void R_DrawLightInteractions(void)
 	qglLoadIdentity();
 	
 	qglDisable(GL_DEPTH_TEST);
-			qglBegin(GL_LINE_LOOP);
-			qglVertex2i(currentShadowLight->scissor[0], currentShadowLight->scissor[1]);
-			qglVertex2i(currentShadowLight->scissor[0] + currentShadowLight->scissor[2], currentShadowLight->scissor[1]);
-			qglVertex2i(currentShadowLight->scissor[0] + currentShadowLight->scissor[2], currentShadowLight->scissor[1] + currentShadowLight->scissor[3]);
-			qglVertex2i(currentShadowLight->scissor[0], currentShadowLight->scissor[1] + currentShadowLight->scissor[3]);
-			qglEnd();
-			qglEnable(GL_DEPTH_TEST);
+	qglBegin(GL_LINE_LOOP);
+	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1]);
+	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1]);
+	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1] + currentShadowLight->scissor[3]);
+	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1] +	currentShadowLight->scissor[3]);
+	qglEnd();
+	qglEnable(GL_DEPTH_TEST);
 
 	qglMatrixMode(GL_PROJECTION);
 	qglPopMatrix();
 	qglMatrixMode(GL_MODELVIEW);
 	qglPopMatrix();
-	qglColor3f(1,1,1);
-*/
+	qglDisable(GL_LINE_SMOOTH);
+	GL_BindNullProgram();
+	}
 
 	qglClearStencil(128);
 	qglStencilMask(255);
@@ -851,7 +802,7 @@ void R_DrawLightInteractions(void)
 	if(r_useLightScissors->value)
 		qglDisable(GL_SCISSOR_TEST);
 
-	if(gl_state.depthBoundsTest)
+	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	qglDisable(GL_BLEND);
@@ -1319,7 +1270,9 @@ void R_RegisterCvars(void)
 
 	r_pplWorld =						Cvar_Get("r_pplWorld", "1", CVAR_ARCHIVE);
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "1.0", CVAR_ARCHIVE);
-	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", CVAR_ARCHIVE);
+	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
+	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
+	r_debugLightScissors =				Cvar_Get("r_debugLightScissors", "0", 0);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
@@ -1371,6 +1324,7 @@ bind PGDN		"moveLight_z       -1"
 bind KP_MINUS	"changeLightRadius -5"
 bind KP_PLUS	"changeLightRadius  5"
 bind KP_INS		"copyLight"
+bind KP_DEL		"unselectLight"
 */
 
 	Cmd_AddCommand("saveLights",				R_SaveLights_f);
@@ -1384,6 +1338,8 @@ bind KP_INS		"copyLight"
 	Cmd_AddCommand("changeLightRadius",			R_ChangeLightRadius_f);
 	Cmd_AddCommand("copyLight",					R_Light_Copy_f);
 	Cmd_AddCommand("changeLightCone",			R_ChangeLightCone_f);
+	Cmd_AddCommand("clearWorldLights",          R_ClearWorldLights);
+	Cmd_AddCommand("unselectLight",				R_Light_UnSelect_f);
 }
 
 /*
@@ -1916,6 +1872,8 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("changeLightRadius");
 	Cmd_RemoveCommand("copyLight");
 	Cmd_RemoveCommand("changeLightCone");
+	Cmd_RemoveCommand("clearWorldLights");
+	Cmd_RemoveCommand("unselectLight");
 
 	Mod_FreeAll();
 	GL_ShutdownImages();

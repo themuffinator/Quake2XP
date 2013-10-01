@@ -1038,6 +1038,7 @@ void R_BlobShadow(void){
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, bsTextCoord);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, bsColor);
 
+	defBits = worldDefs.AttribColorBits;
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
