@@ -544,9 +544,6 @@ void R_DrawEntitiesOnList(void)
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 
-//		if (currententity->flags & RF_WEAPONMODEL)
-//			continue;
-
 		if (currententity->flags & RF_TRANSLUCENT)
 			continue;			// solid
 
@@ -588,8 +585,6 @@ jump:
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
-//		if (currententity->flags & RF_WEAPONMODEL)
-//			continue;
 
 		if (!(currententity->flags & RF_TRANSLUCENT))
 			continue;			// solid
@@ -635,11 +630,12 @@ void R_DrawPlayerWeaponLightPass(void)
 {
 	int i;
 
-	if (!r_drawEntities->value)
+	if (!r_drawEntities->value || !r_pplWorld->value)
 		return;
 
-	if(!r_pplWorld->value)
-		return;
+	qglStencilFunc(GL_EQUAL, 128, 255);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	qglStencilMask(0);
 
 		for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
 		{
@@ -658,8 +654,6 @@ void R_DrawPlayerWeaponLightPass(void)
 		}
 
 }
-
-
 
 void R_DrawLightInteractions(void)
 {
@@ -681,7 +675,7 @@ void R_DrawLightInteractions(void)
 		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	if(r_shadows->value)
-			qglEnable(GL_STENCIL_TEST);
+		qglEnable(GL_STENCIL_TEST);
 	
 	R_PrepareShadowLightFrame();
 	
@@ -702,69 +696,16 @@ void R_DrawLightInteractions(void)
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
-	if(r_debugLightScissors->value){
-	int			id;
-	unsigned	defBits = 0;
-	// setup program
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2]);
-	qglEnable(GL_LINE_SMOOTH);
-	qglLineWidth(5.0);
-	qglMatrixMode(GL_PROJECTION);
-	qglPushMatrix();
-	qglLoadIdentity();
-	qglOrtho(r_newrefdef.viewport[0], r_newrefdef.viewport[0] + r_newrefdef.viewport[2], r_newrefdef.viewport[1], r_newrefdef.viewport[1] +r_newrefdef.viewport[3], -1.0, 1.0);
-	qglMatrixMode(GL_MODELVIEW);
-	qglPushMatrix();
-	qglLoadIdentity();
-	
-	qglDisable(GL_DEPTH_TEST);
-	qglBegin(GL_LINE_LOOP);
-	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1]);
-	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1]);
-	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1] + currentShadowLight->scissor[3]);
-	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1] +	currentShadowLight->scissor[3]);
-	qglEnd();
-	qglEnable(GL_DEPTH_TEST);
-
-	qglMatrixMode(GL_PROJECTION);
-	qglPopMatrix();
-	qglMatrixMode(GL_MODELVIEW);
-	qglPopMatrix();
-	qglDisable(GL_LINE_SMOOTH);
-	GL_BindNullProgram();
-	}
-
 	qglClearStencil(128);
 	qglStencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
-		
-	qglStencilMask(255);
-	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
-	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
-	R_CastBspShadowVolumes(); // bsp and bmodels shadows
-	
-	qglStencilFunc(GL_EQUAL, 128, 255);
-	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	qglStencilMask(0);
-	
-	R_DrawPlayerWeaponLightPass(); // shade player weapon only from bsp!
-	
-	qglStencilMask(255);
-	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
-	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
-	
-	R_CastAliasShadowVolumes(); // alias models shadows
+	R_DebugScissors();
 
-	qglStencilFunc(GL_EQUAL, 128, 255);
-	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	qglStencilMask(0);
-	
-	R_DrawLightWorld(); //light world
+	R_CastBspShadowVolumes();		// bsp and bmodels shadows
+	R_DrawPlayerWeaponLightPass();	// shade player weapon only from bsp!
+	R_CastAliasShadowVolumes();		// alias models shadows
+	R_DrawLightWorld();				//light world
 	
 	//entities lightpass w/o player weapon
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -780,14 +721,15 @@ void R_DrawLightInteractions(void)
 				continue;
 
 		currentmodel = currententity->model;
-			if (!currentmodel) {
-				R_DrawNullModel();
-				continue;
-			}
-			if (currentmodel->type == mod_brush) 
-				R_DrawLightBrushModel(currententity);
-			if(currentmodel->type == mod_alias)
-				R_DrawAliasModelLightPass(false);
+
+		if (!currentmodel) {
+			R_DrawNullModel();
+			continue;
+		}
+		if (currentmodel->type == mod_brush) 
+			R_DrawLightBrushModel(currententity);
+		if(currentmodel->type == mod_alias)
+			R_DrawAliasModelLightPass(false);
 		}
 	
 	num_visLights++;
@@ -795,16 +737,10 @@ void R_DrawLightInteractions(void)
 	}
 	
 	qglDepthMask(1);
-
-	if(r_shadows->value)
-		qglDisable(GL_STENCIL_TEST);
-	
-	if(r_useLightScissors->value)
-		qglDisable(GL_SCISSOR_TEST);
-
-	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
+	qglDisable(GL_STENCIL_TEST);
+	qglDisable(GL_SCISSOR_TEST);
+	if(gl_state.depthBoundsTest)
 		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
-
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -978,6 +914,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 
 	// post processing - cut off if player camera out map bounds
 	if(!outMap){
+	R_FXAA();
 	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();

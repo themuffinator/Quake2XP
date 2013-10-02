@@ -440,7 +440,7 @@ hack:
 	if (r_newrefdef.rdflags & RDF_PAIN)
 		blur = 0.01;
 		else if (r_newrefdef.rdflags & RDF_UNDERWATER)
-					blur = 0.0075;
+					blur = 0.0085;
 					else
 						blur = 0.01;
 
@@ -450,7 +450,6 @@ hack:
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram();
-	GL_SelectTexture(GL_TEXTURE0_ARB);
 	}
 }
 
@@ -501,6 +500,9 @@ void R_FXAA (void) {
 	if(!r_fxaa->value)
 		return;
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+            return;
+
 	// setup program
 	GL_BindProgram(fxaaProgram, defBits);
 	id = fxaaProgram->id[defBits];
@@ -514,14 +516,14 @@ void R_FXAA (void) {
 	qglTexParameteri		(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	qglCopyTexImage2D		(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
 	}
-	GL_Bind				(fxaatex);
-    qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i(qglGetUniformLocation(id, "u_ScreenTex"), 0);
-	qglUniform2f(qglGetUniformLocation(id, "u_ScreenSize"), vid.width, vid.height);
+	GL_Bind					(fxaatex);
+    qglCopyTexSubImage2D	(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+	qglUniform2f			(qglGetUniformLocation(id, "u_ScreenSize"), vid.width, vid.height);
 
-	R_DrawFullScreenQuad();
+	R_DrawFullScreenQuad	();
 
-	GL_BindNullProgram	();
+	GL_BindNullProgram		();
 
 }
 
@@ -549,7 +551,6 @@ void R_FilmGrain (void) {
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram		();
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 }
 
 void R_GammaRamp (void) {
@@ -570,7 +571,6 @@ void R_GammaRamp (void) {
 	R_DrawFullScreenQuad();
 	
 	GL_BindNullProgram		();
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 }
 
 void R_MotionBlur (void) {

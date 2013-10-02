@@ -1797,14 +1797,14 @@ static void R_ClipLightPlane (const mat4_t mvpMatrix, vec3_t mins, vec3_t maxs, 
 }
 
 void R_SetViewLightScreenBounds () {
-	int			cornerIndices[6][4] = {{3, 2, 6, 7}, {0, 1, 5, 4}, {2, 3, 1, 0}, {4, 5, 7, 6}, {1, 3, 7, 5}, {2, 0, 4, 6}};
-	vec3_t		points[5];
-	vec3_t		mins = {Q_INFINITY, Q_INFINITY, Q_INFINITY};
-	vec3_t		maxs = {-Q_INFINITY, -Q_INFINITY, -Q_INFINITY};
+	int			i, scissor[4], 
+				cornerIndices[6][4] = {{3, 2, 6, 7}, {0, 1, 5, 4}, {2, 3, 1, 0}, {4, 5, 7, 6}, {1, 3, 7, 5}, {2, 0, 4, 6}};
+	vec3_t		mins = {Q_INFINITY, Q_INFINITY, Q_INFINITY},
+				maxs = {-Q_INFINITY, -Q_INFINITY, -Q_INFINITY},
+				points[5];
 	mat4_t		tmpMatrix, mvpMatrix;
-	int			scissor[4];
 	float		depth[2];
-	int			i;
+
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 
@@ -1904,4 +1904,43 @@ void R_SetViewLightScreenBounds () {
 			currentShadowLight->depthBounds[1] = depth[1];
 		}
 	}
+}
+
+void R_DebugScissors(void)
+{
+	int			id;
+	unsigned	defBits = 0;
+	
+	if(!r_debugLightScissors->value)
+		return;
+
+	// setup program
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2]);
+	qglEnable(GL_LINE_SMOOTH);
+	qglLineWidth(5.0);
+	qglMatrixMode(GL_PROJECTION);
+	qglPushMatrix();
+	qglLoadIdentity();
+	qglOrtho(r_newrefdef.viewport[0], r_newrefdef.viewport[0] + r_newrefdef.viewport[2], r_newrefdef.viewport[1], r_newrefdef.viewport[1] +r_newrefdef.viewport[3], -1.0, 1.0);
+	qglMatrixMode(GL_MODELVIEW);
+	qglPushMatrix();
+	qglLoadIdentity();
+	
+	qglDisable(GL_DEPTH_TEST);
+	qglBegin(GL_LINE_LOOP);
+	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1]);
+	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1]);
+	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1] + currentShadowLight->scissor[3]);
+	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1] +	currentShadowLight->scissor[3]);
+	qglEnd();
+	qglEnable(GL_DEPTH_TEST);
+
+	qglMatrixMode(GL_PROJECTION);
+	qglPopMatrix();
+	qglMatrixMode(GL_MODELVIEW);
+	qglPopMatrix();
+	qglDisable(GL_LINE_SMOOTH);
+	GL_BindNullProgram();
 }

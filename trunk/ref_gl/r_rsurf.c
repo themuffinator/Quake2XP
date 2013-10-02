@@ -1093,6 +1093,10 @@ void R_DrawLightWorld(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
+	qglStencilFunc(GL_EQUAL, 128, 255);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	qglStencilMask(0);
+
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
 	qglEnableVertexAttribArray(ATRB_TEX0);

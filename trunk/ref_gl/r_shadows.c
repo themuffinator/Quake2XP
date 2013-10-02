@@ -294,6 +294,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 	}
 	
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
+
 	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
 		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shadow_vert, index, GL_UNSIGNED_INT, ShadowIndex);
 		else
@@ -883,10 +884,7 @@ void R_CastBspShadowVolumes(void)
 	int			id, i;
 	unsigned	defBits = 0;
 
-	if (!r_shadows->value && !r_pplWorld->value)
-		return;
-	
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+	if (!r_shadows->value || !r_pplWorld->value)
 		return;
 			
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -898,6 +896,11 @@ void R_CastBspShadowVolumes(void)
 	// setup program
 	GL_BindProgram(nullProgram, defBits);
 	id = nullProgram->id[defBits];
+
+	qglStencilMask(255);
+	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
+	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
 	qglDisable(GL_CULL_FACE);
 	qglDisable(GL_TEXTURE_2D);
@@ -953,10 +956,7 @@ void R_CastAliasShadowVolumes(void)
 	int			id, i;
 	unsigned	defBits = 0;
 
-	if (!r_shadows->value && !r_pplWorld->value)
-		return;
-	
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+	if (!r_shadows->value || !r_pplWorld->value)
 		return;
 			
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -968,6 +968,11 @@ void R_CastAliasShadowVolumes(void)
 	// setup program
 	GL_BindProgram(nullProgram, defBits);
 	id = nullProgram->id[defBits];
+
+	qglStencilMask(255);
+	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
+	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
 	qglDisable(GL_CULL_FACE);
 	qglDisable(GL_TEXTURE_2D);
