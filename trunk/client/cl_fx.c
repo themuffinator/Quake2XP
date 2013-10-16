@@ -695,6 +695,7 @@ void CL_ParseMuzzleFlash(void)
 	}
 }
 
+void CL_GunFire(vec3_t start, vec3_t end);
 
 /*
 ==============
@@ -708,7 +709,7 @@ void CL_ParseMuzzleFlash2(void)
 	vec3_t origin, dlorg;
 	int flash_number;
 	cdlight_t *dl;
-	vec3_t forward, right, up, dir, shell;
+	vec3_t forward, right, up, dir, shell, end;
 	char soundname[64];
 
 	ent = MSG_ReadShort(&net_message);
@@ -736,6 +737,7 @@ void CL_ParseMuzzleFlash2(void)
 	VectorMA(origin, -5, forward, shell);
 	VectorMA(origin,  15, forward, dlorg);
 	VectorMA(dlorg,  35, up, dlorg);
+	VectorMA(origin, 15, forward, end);
 
 	for (j = 0; j < 3; j++)
 		dir[j] = forward[j] + right[j] + up[j] * 3;
@@ -766,6 +768,7 @@ void CL_ParseMuzzleFlash2(void)
 		dl->color[2] = 0;
 		CL_BrassShells(shell, dir, 1, true);
 		CL_ParticleSmoke(origin, vec3_origin, 3);
+		CL_GunFire(origin, end);
 
 		S_fastsound(NULL, ent, CHAN_WEAPON,
 					S_RegisterSound("infantry/infatck1.wav"), 1,
@@ -785,6 +788,7 @@ void CL_ParseMuzzleFlash2(void)
 		dl->color[2] = 0;
 		CL_BrassShells(shell, dir, 1, true);
 		CL_ParticleSmoke(origin, vec3_origin, 1);
+		CL_GunFire(origin, end);
 		S_fastsound(NULL, ent, CHAN_WEAPON,
 					S_RegisterSound("soldier/solatck3.wav"), 1,
 					MONSTERS_ATTACK_ATTENUATION);
@@ -806,7 +810,7 @@ void CL_ParseMuzzleFlash2(void)
 		// CL_SmokeAndFlash(origin);
 
 		CL_ParticleSmoke(origin, vec3_origin, 3);
-
+		CL_GunFire(origin, end);
 		S_fastsound(NULL, ent, CHAN_WEAPON,
 					S_RegisterSound("gunner/gunatck2.wav"), 1,
 					MONSTERS_ATTACK_ATTENUATION);
@@ -828,7 +832,8 @@ void CL_ParseMuzzleFlash2(void)
 		// CL_SmokeAndFlash(origin);
 
 		CL_ParticleSmoke(origin, vec3_origin, 3);
-
+		CL_GunFire(origin, end);
+		
 		S_fastsound(NULL, ent, CHAN_WEAPON,
 					S_RegisterSound("infantry/infatck1.wav"), 1,
 					MONSTERS_ATTACK_ATTENUATION);
@@ -849,7 +854,7 @@ void CL_ParseMuzzleFlash2(void)
 		// CL_SmokeAndFlash(origin);
 
 		CL_ParticleSmoke(origin, vec3_origin, 3);
-
+		CL_GunFire(origin, end);
 		S_fastsound(NULL, ent, CHAN_WEAPON,
 					S_RegisterSound("infantry/infatck1.wav"), 1,
 					MONSTERS_ATTACK_ATTENUATION);
@@ -923,7 +928,7 @@ void CL_ParseMuzzleFlash2(void)
 		// CL_SmokeAndFlash(origin);
 		CL_BrassShells(shell, dir, 1, false);
 		CL_ParticleSmoke(origin, vec3_origin, 2);
-
+		CL_GunFire(origin, end);
 		S_fastsound(NULL, ent, CHAN_WEAPON,
 					S_RegisterSound("soldier/solatck1.wav"), 1,
 					MONSTERS_ATTACK_ATTENUATION);
@@ -966,7 +971,7 @@ void CL_ParseMuzzleFlash2(void)
 		// CL_SmokeAndFlash(origin);
 		CL_BrassShells(shell, dir, 1, true);
 		CL_ParticleSmoke(origin, vec3_origin, 3);
-
+		CL_GunFire(origin, end);
 		Com_sprintf(soundname, sizeof(soundname), "tank/tnkatk2%c.wav",
 					'a' + rand() % 5);
 		S_fastsound(NULL, ent, CHAN_WEAPON, S_RegisterSound(soundname), 1,
@@ -1087,7 +1092,7 @@ void CL_ParseMuzzleFlash2(void)
 //      CL_SmokeAndFlash(origin);
 		CL_BrassShells(shell, dir, 1, true);
 		CL_ParticleSmoke(origin, vec3_origin, 3);
-
+		CL_GunFire(origin, end);
 		S_fastsound(NULL, ent, CHAN_WEAPON,
 					S_RegisterSound("boss3/xfire.wav"), 1,
 					MONSTERS_ATTACK_ATTENUATION);
@@ -1106,7 +1111,7 @@ void CL_ParseMuzzleFlash2(void)
 //      CL_SmokeAndFlash(origin);
 		CL_BrassShells(shell, dir, 1, true);
 		CL_ParticleSmoke(origin, vec3_origin, 3);
-
+		CL_GunFire(origin, end);
 		break;
 
 	case MZ2_JORG_BFG_1:

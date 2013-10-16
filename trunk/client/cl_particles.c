@@ -2819,6 +2819,68 @@ void MakeNormalVectors(vec3_t forward, vec3_t right, vec3_t up)
 	CrossProduct(right, forward, up);
 }
 
+void CL_GunFire(vec3_t start, vec3_t end)
+{
+	vec3_t move;
+	vec3_t vec;
+	float len;
+	int j;
+	cparticle_t *p;
+	int dec;
+
+
+	VectorCopy(start, move);
+	VectorSubtract(end, start, vec);
+	len = VectorNormalize(vec);
+
+	dec = 1;
+	VectorScale(vec, dec, vec);
+
+	// FIXME: this is a really silly way to have a loop
+	while (len > 0) {
+		len -= dec;
+
+		if (!free_particles)
+			return;
+		p = free_particles;
+		free_particles = p->next;
+		p->next = active_particles;
+		active_particles = p;
+		VectorClear(p->accel);
+		p->orient = 0;
+		p->flags = PARTICLE_DEFAULT;
+
+		p->time = cl.time;
+		p->endTime = cl.time + 14000;
+		p->sFactor = GL_ONE;
+		p->dFactor = GL_ONE;
+		p->alpha = 1.0;
+		p->alphavel = -2.0 / (0.2 + frand() * 0.1);
+
+		p->color[0] = 1;
+		p->color[1] = 1;
+		p->color[2] = 1;
+
+		p->colorVel[0] = 0;
+		p->colorVel[1] = 0;
+		p->colorVel[2] = 0;
+
+		p->type = PT_FLAME;
+		p->size = 4;
+		p->sizeVel = -35;
+
+		for (j = 0; j < 3; j++) {
+			p->org[j] = move[j] + crand();
+			p->accel[j] = 0;
+			p->vel[j] = crand() * 5;
+		}
+
+		VectorAdd(move, vec, move);
+
+	}
+
+}
+
 /*
 ===============
 CL_RocketTrail

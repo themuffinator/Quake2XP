@@ -1316,8 +1316,8 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		iAttributes[12] = arbMultisampleSupported ? WGL_SAMPLES_ARB : 0;
 		iAttributes[13] = arbMultisampleSupported ? (int)r_arbSamples->value : 0;
 		}
-		iAttributes[14] = 0;
-		iAttributes[15] = 0;
+//		iAttributes[14] = WGL_SWAP_METHOD_ARB;
+	//	iAttributes[15] = WGL_SWAP_EXCHANGE_ARB;
 
 		// First attempt...
 		status = qwglChoosePixelFormatARB(hDC, iAttributes, fAttributes, 1, &pixelFormat, &numFormats);

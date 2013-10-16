@@ -687,9 +687,7 @@ void CL_ParseTEnt(void)
 	int r;
 	int ent;
 	int magnitude;
-
 	
-
 	type = MSG_ReadByte(&net_message);
 		
 	switch (type) {
