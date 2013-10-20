@@ -47,7 +47,7 @@ cubeFilter *= 2;
 
 #ifdef AMBIENT
 
-gl_FragColor = diffuseMap * u_LightColor *att;
+gl_FragColor = diffuseMap * u_LightColor * att;
 
 #else
 
