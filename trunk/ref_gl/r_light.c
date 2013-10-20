@@ -413,6 +413,7 @@ void R_LightColor(vec3_t org, vec3_t color)
 		if(color[i] <= 0.35)
 			color[i] = 0.35;
 
+		VectorScale(color, 0.5, color);
 
 	}
 

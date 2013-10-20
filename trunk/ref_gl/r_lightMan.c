@@ -275,6 +275,23 @@ static void DeleteCurrentLight(worldShadowLight_t *l) {
 	free(l);
 }
 
+void UpdateLightBounds(worldShadowLight_t *light)
+{
+	int i;
+	mat3_t lightAxis;
+	vec3_t tmp;
+
+	for (i=0; i<8; i++) {
+	tmp[0] = (i & 1) ? -light->radius : light->radius;
+	tmp[1] = (i & 2) ? -light->radius : light->radius;
+	tmp[2] = (i & 4) ? -light->radius : light->radius;
+
+	AnglesToMat3(light->angles, lightAxis);
+	Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
+	VectorAdd(light->corners[i], light->origin, light->corners[i]);
+	}
+}
+
 void R_Light_Spawn_f(void) {
 	vec3_t color = {1.0, 1.0, 1.0}, end, spawn;
 	trace_t trace;
@@ -379,6 +396,7 @@ void R_EditSelectedLight_f(void) {
 		origin[2] = atof(Cmd_Argv(4));
 		VectorCopy(origin, selectedShadowLight->origin);
 		R_DrawBspModelVolumes(true, selectedShadowLight);
+		UpdateLightBounds(selectedShadowLight);
 	} 
 	else
 	if (!strcmp(Cmd_Argv(1), "color")) {
@@ -418,6 +436,7 @@ void R_EditSelectedLight_f(void) {
 		radius = atof(Cmd_Argv(2));
 		selectedShadowLight->radius = radius;
 		R_DrawBspModelVolumes(true, selectedShadowLight);
+		UpdateLightBounds(selectedShadowLight);
 	 } 
 	else
 	if (!strcmp(Cmd_Argv(1), "cone")) {
@@ -429,6 +448,7 @@ void R_EditSelectedLight_f(void) {
 		_cone = atof(Cmd_Argv(2));
 		selectedShadowLight->_cone = _cone;
 		R_DrawBspModelVolumes(true, selectedShadowLight);
+		UpdateLightBounds(selectedShadowLight);
 	 } 
 	else
 	 if (!strcmp(Cmd_Argv(1), "style")) {
@@ -536,6 +556,7 @@ void R_MoveLightToRight_f(void) {
 
 	VectorCopy(origin, selectedShadowLight->origin);
 	R_DrawBspModelVolumes(true, selectedShadowLight);
+	UpdateLightBounds(selectedShadowLight);
 }
 
 void R_MoveLightForward_f(void) {
@@ -574,6 +595,7 @@ void R_MoveLightForward_f(void) {
 
 	VectorCopy(origin, selectedShadowLight->origin);
 	R_DrawBspModelVolumes(true, selectedShadowLight);
+	UpdateLightBounds(selectedShadowLight);
 }
 
 void R_MoveLightUpDown_f(void) {
@@ -606,6 +628,7 @@ void R_MoveLightUpDown_f(void) {
 
 	VectorCopy(origin, selectedShadowLight->origin);
 	R_DrawBspModelVolumes(true, selectedShadowLight);
+	UpdateLightBounds(selectedShadowLight);
 }
 
 void R_ChangeLightRadius_f(void) {
@@ -639,6 +662,7 @@ void R_ChangeLightRadius_f(void) {
 
 	selectedShadowLight->radius = radius;
 	R_DrawBspModelVolumes(true, selectedShadowLight);
+	UpdateLightBounds(selectedShadowLight);
 
 }
 
@@ -676,6 +700,7 @@ void R_ChangeLightCone_f(void) {
 
 	selectedShadowLight->_cone = cone;
 	R_DrawBspModelVolumes(true, selectedShadowLight);
+	UpdateLightBounds(selectedShadowLight);
 
 }
 
@@ -754,6 +779,9 @@ void UpdateLightEditor(void){
 
 	qglDisable(GL_BLEND);
 	qglDisable(GL_STENCIL_TEST);
+	qglDisable(GL_TEXTURE_2D);
+	qglDisable(GL_CULL_FACE);
+	qglColor4f(1,1,1,1);
 
 	// stupid player camera and angles corruption, fixed
 	VectorCopy(r_origin, player_org);
@@ -773,9 +801,6 @@ void UpdateLightEditor(void){
 		selectedShadowLight = currentShadowLight;
 		fraction = trace_light.fraction;
 	}
-
-	qglDisable(GL_TEXTURE_2D);
-	qglDisable(GL_CULL_FACE);
 
 	// setup program
 	GL_BindProgram(genericProgram, defBits);
@@ -819,8 +844,6 @@ void UpdateLightEditor(void){
 	qglVertex3fv(corners[7]);
 	qglEnd();
 	qglDisable(GL_LINE_SMOOTH);
-	qglColor3f(1,1,1);
-
 	}
 
 	if(selectedShadowLight){	
@@ -831,6 +854,7 @@ void UpdateLightEditor(void){
 	VectorCopy(selectedShadowLight->origin, tmpOrg);
 	tmpRad = selectedShadowLight->radius;
 	qglUniform3f(qglGetUniformLocation(id, "u_color"),	selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2]);
+	
 	rad = tmpRad;
 	sprintf(buff0,	"Origin: %.3f %.3f %.3f",	selectedShadowLight->origin[0], 
 												selectedShadowLight->origin[1], 
@@ -887,7 +911,6 @@ void UpdateLightEditor(void){
 	qglDisable(GL_LINE_SMOOTH);
 	
 	// draw small light box
-	qglDisable(GL_DEPTH_TEST);
 	VectorSet(v[0], tmpOrg[0]-5, tmpOrg[1]-5, tmpOrg[2]-5);
 	VectorSet(v[1], tmpOrg[0]-5, tmpOrg[1]-5, tmpOrg[2]+5);
 	VectorSet(v[2], tmpOrg[0]-5, tmpOrg[1]+5, tmpOrg[2]-5);
@@ -920,11 +943,7 @@ void UpdateLightEditor(void){
 	qglVertex3fv(v[0]);
 	qglEnd();
 
-	qglColor3f(1,1,1);
-	qglEnable(GL_DEPTH_TEST);
-
 }
-	qglColor3f(1.0, 1.0, 1.0);
 	qglEnable(GL_TEXTURE_2D);
 	qglEnable(GL_CULL_FACE);
 	qglEnable(GL_BLEND);

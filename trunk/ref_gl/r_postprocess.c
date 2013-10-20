@@ -147,6 +147,7 @@ void R_RenderFlares(void)
 
 	qglDepthMask(0);
 	qglEnable(GL_BLEND);
+	qglBlendFunc(GL_ONE, GL_ONE);
 
 	GL_BindProgram(particlesProgram, defBits);
 	id = particlesProgram->id[defBits];
@@ -158,10 +159,8 @@ void R_RenderFlares(void)
 	GL_BindRect				(depthMap->texnum);
     qglUniform1i			(qglGetUniformLocation(id, "u_depthBufferMap"), 1);
 	qglUniform2f			(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f			(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0);
+	qglUniform2f			(qglGetUniformLocation(id, "u_mask"), 1.0, 0.0);
 	qglUniform1f			(qglGetUniformLocation(id, "u_colorScale"), 1.0);
-
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	fl = r_flares;
 	for (i = 0; i < r_numflares; i++, fl++) {
@@ -185,8 +184,12 @@ void R_RenderFlares(void)
 
 		if ((fl->surf->flags & SURF_PLANEBACK) != sidebit)
 			continue;			// wrong light poly side!
-
-		qglUniform1f(qglGetUniformLocation(id, "u_thickness"), fl->size * 0.5);
+		
+		if(r_softParticles->value)
+			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), fl->size * 1.5);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), 0.0);
+		
 		R_BuildFlares(fl);
 
 	}

@@ -196,13 +196,19 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	glpoly_t	*p, *bp;
 	float		*v, dstscroll;
 	int			id, i, nv = fa->polys->numverts;
-	unsigned	defBits = 0;
+	unsigned	defBits = 0, texture = -1;
 	
 		
 	qglDisable(GL_BLEND);
 
-	if (fa->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66))
+	if (fa->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66)){
 		defBits = worldDefs.WaterTransBits;
+	
+	if (texture != fa->texinfo->image->texnum){
+		R_CaptureColorBuffer();
+		texture = fa->texinfo->image->texnum;
+	}
+	}
 	else
 		defBits = 0;
 

@@ -97,19 +97,19 @@ void R_DrawParticles(qboolean WaterCheck)
 
 	for (p = r_newrefdef.particles, i = 0; i < r_newrefdef.num_particles; i++, p++) {
 		
-		if (WaterCheck) {
+		//if (WaterCheck) {
 
-			if (!(CL_PMpointcontents(p->origin) & MASK_WATER)) { //in water
-				continue;
-			}
-		}
+		//	if (!(CL_PMpointcontents(p->origin) & MASK_WATER)) { //in water
+		//		continue;
+		//	}
+		//}
 
-		if (!WaterCheck) { // on air :-)
+		//if (!WaterCheck) { // on air :-)
 
-			if (CL_PMpointcontents(p->origin) & MASK_WATER) {
-				continue;
-			}
-		}
+		//	if (CL_PMpointcontents(p->origin) & MASK_WATER) {
+		//		continue;
+		//	}
+		//}
 				
 		switch (p->type) {
 

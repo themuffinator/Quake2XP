@@ -160,12 +160,17 @@ void DrawGLPolyGLSL(msurface_t * fa)
 	glpoly_t *p;
 	int	id, nv = fa->polys->numverts;
 	unsigned	defBits = 0;
+	unsigned	texture = -1;
 	
 	if (fa->texinfo->flags & SURF_TRANS33)
 		alpha = 0.33;
 	else 
 		alpha = 0.66;
-	
+	if (texture != fa->texinfo->image->texnum){
+		R_CaptureColorBuffer();
+		texture = fa->texinfo->image->texnum;
+	}
+
 	// setup program
 	GL_BindProgram(refractProgram, defBits);
 	id = refractProgram->id[defBits];
@@ -241,12 +246,17 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 	float alpha, scroll;
 	glpoly_t *p;
 	int	id, nv = fa->polys->numverts;
-	unsigned	defBits = 0;
+	unsigned	defBits = 0, texture = -1;
 
 	if (fa->texinfo->flags & SURF_TRANS33)
 		alpha = 0.33;
 	else 
 		alpha = 0.66;
+	
+	if (texture != fa->texinfo->image->texnum){
+		R_CaptureColorBuffer();
+		texture = fa->texinfo->image->texnum;
+	}
 
 	// setup program
 	GL_BindProgram(refractProgram, defBits);
@@ -352,8 +362,6 @@ void R_DrawAlphaPoly(void)
 	//
 	// go back to the world matrix
 	//
-
-//	qglLoadMatrixf(r_world_matrix);
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
 	qglDepthMask(0);
 	
