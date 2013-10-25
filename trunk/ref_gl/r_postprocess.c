@@ -576,8 +576,12 @@ void R_GammaRamp (void) {
 	GL_BindNullProgram		();
 }
 
+qboolean Mat4_Invert(const mat4_t in, mat4_t out);
+unsigned int mbtex = 0;
+
 void R_MotionBlur (void) {
 	
+	mat4_t invMVP, pMVP, tmpMVP, tmp1MVP; 
 	unsigned	defBits = 0;
 	int			id;
 
@@ -589,9 +593,16 @@ void R_MotionBlur (void) {
 	// setup program
 	GL_BindProgram(motionBlurProgram, defBits);
 	id = motionBlurProgram->id[defBits];
+	
+	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, pMVP);
 
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_ProjMat"), 1,	GL_FALSE, r_project_matrix);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_ModelViewProj"), 1,	GL_FALSE, r_modelViewProjection);
+	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, tmpMVP);
+	Mat4_Invert(tmpMVP, tmp1MVP);
+	Mat4_Transpose(tmp1MVP, invMVP);
+
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_PrevModelViewProj"), 1,	GL_FALSE, (const GLfloat*)pMVP);
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_InverseModelViewMat"), 1,	GL_FALSE, (const GLfloat*)invMVP);
+	
 	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
 
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
