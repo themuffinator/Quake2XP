@@ -31,7 +31,7 @@ void main(void)
     //   0.50 - lower limit (sharper, less sub-pixel aliasing removal)
     //   0.25 - almost off
     //   0.00 - completely off
-    float QualitySubpix = 0.75;
+    float QualitySubpix = 0.0;
 
     // The minimum amount of local contrast required to apply algorithm.
     //   0.333 - too little (faster)
