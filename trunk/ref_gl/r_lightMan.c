@@ -1541,7 +1541,7 @@ qboolean R_DrawLightOccluders()
 	VectorSet(v[6], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]-radius);
 	VectorSet(v[7], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]+radius);
 
-	currentShadowLight->occ_frame = r_visframecount;
+//	currentShadowLight->occ_frame = r_visframecount;
 	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
 
 	qglBegin(GL_TRIANGLE_FAN);
@@ -1575,7 +1575,7 @@ qboolean R_DrawLightOccluders()
 	qglEnable(GL_STENCIL_TEST);
 	GL_BindNullProgram();
 
-	if(currentShadowLight->occ_frame == lightVissFrame - 1)
+//	if(currentShadowLight->occ_frame == lightVissFrame - 1)
 		qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
 
 	if (!sampleCount) 

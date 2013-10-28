@@ -577,7 +577,6 @@ void R_GammaRamp (void) {
 }
 
 qboolean Mat4_Invert(const mat4_t in, mat4_t out);
-unsigned int mbtex = 0;
 
 void R_MotionBlur (void) {
 	
@@ -593,8 +592,6 @@ void R_MotionBlur (void) {
 	// setup program
 	GL_BindProgram(motionBlurProgram, defBits);
 	id = motionBlurProgram->id[defBits];
-	
-	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, pMVP);
 
 	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, tmpMVP);
 	Mat4_Invert(tmpMVP, tmp1MVP);
@@ -618,4 +615,6 @@ void R_MotionBlur (void) {
 
 	GL_BindNullProgram		();
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+		
+	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, pMVP);
 }

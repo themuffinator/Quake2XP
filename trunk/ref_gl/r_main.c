@@ -684,9 +684,6 @@ void R_DrawLightInteractions(void)
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
 	UpdateLightEditor();
-
-	if(!R_DrawLightOccluders())
-		continue;
 	
 	R_SetViewLightScreenBounds();
 
@@ -695,6 +692,9 @@ void R_DrawLightInteractions(void)
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
+
+	if(!R_DrawLightOccluders())
+		continue;
 
 	qglClearStencil(128);
 	qglStencilMask(255);
@@ -917,7 +917,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();
-	R_MotionBlur();
+//	R_MotionBlur();
 	R_Bloom();
 	R_FilmGrain();
 	}
