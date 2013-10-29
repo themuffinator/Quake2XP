@@ -655,6 +655,8 @@ void R_DrawPlayerWeaponLightPass(void)
 
 }
 
+void R_DrawLightOccluders2();
+
 void R_DrawLightInteractions(void)
 {
 	int i;
@@ -692,9 +694,14 @@ void R_DrawLightInteractions(void)
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
-
-	if(!R_DrawLightOccluders())
-		continue;
+	
+	if(!r_useConditionalRender->value){
+		
+		if(!R_DrawLightOccluders())
+			continue;
+	}
+	else
+		R_DrawLightOccluders2();
 
 	qglClearStencil(128);
 	qglStencilMask(255);
@@ -705,7 +712,7 @@ void R_DrawLightInteractions(void)
 	R_CastBspShadowVolumes();		// bsp and bmodels shadows
 	R_DrawPlayerWeaponLightPass();	// shade player weapon only from bsp!
 	R_CastAliasShadowVolumes();		// alias models shadows
-	R_DrawLightWorld();				//light world
+	R_DrawLightWorld();				// light world
 	
 	//entities lightpass w/o player weapon
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -733,6 +740,9 @@ void R_DrawLightInteractions(void)
 		}
 	
 	num_visLights++;
+
+	if(r_useConditionalRender->value && gl_state.conditional_render)
+		glEndConditionalRender();
 	}
 	}
 	

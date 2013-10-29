@@ -796,6 +796,10 @@ void UpdateLightEditor(void){
 	// light in focus?
 	trace_light = CM_TransformedBoxTrace(	r_origin, trace_bsp.endpos, vec3_origin, vec3_origin, headNode, MASK_ALL, 
 											currentShadowLight->origin, vec3_origin); // find light
+	
+	if(trace_light.surface->name && trace_light.surface->name[0])
+		if((int)trace_light.ent>1)
+		Com_Printf("bmodel nane is \n");
 
 	if(trace_light.fraction  < fraction){
 		selectedShadowLight = currentShadowLight;
@@ -1516,7 +1520,7 @@ qboolean R_DrawLightOccluders()
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return true;
 		
-	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0))
+	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
 		return true;
 	
 	// setup program
@@ -1584,6 +1588,85 @@ qboolean R_DrawLightOccluders()
 		return true;
 
 }
+
+void R_DrawLightOccluders2()
+{
+	vec3_t		v[8];
+	vec3_t		tmpOrg;
+	float		radius;
+	int			id;
+	unsigned	defBits = 0;
+
+	if(!r_useConditionalRender->value || !gl_state.conditional_render)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
+		return;
+	}
+
+	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0)){
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
+		return;
+	}
+
+	// setup program
+	GL_BindProgram(nullProgram, defBits);
+	id = nullProgram->id[defBits];
+
+	qglColorMask(0,0,0,0);
+	qglDisable(GL_TEXTURE_2D);
+	qglDisable(GL_CULL_FACE);
+	qglDisable(GL_BLEND);
+	qglDisable(GL_STENCIL_TEST);
+	
+	VectorCopy(currentShadowLight->origin, tmpOrg);
+	radius = currentShadowLight->radius * r_occLightBoundsSize->value;
+
+	VectorSet(v[0], tmpOrg[0]-radius, tmpOrg[1]-radius, tmpOrg[2]-radius);
+	VectorSet(v[1], tmpOrg[0]-radius, tmpOrg[1]-radius, tmpOrg[2]+radius);
+	VectorSet(v[2], tmpOrg[0]-radius, tmpOrg[1]+radius, tmpOrg[2]-radius);
+	VectorSet(v[3], tmpOrg[0]-radius, tmpOrg[1]+radius, tmpOrg[2]+radius);
+	VectorSet(v[4], tmpOrg[0]+radius, tmpOrg[1]-radius, tmpOrg[2]-radius);
+	VectorSet(v[5], tmpOrg[0]+radius, tmpOrg[1]-radius, tmpOrg[2]+radius);
+	VectorSet(v[6], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]-radius);
+	VectorSet(v[7], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]+radius);
+
+	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
+
+	qglBegin(GL_TRIANGLE_FAN);
+	qglVertex3fv(v[4]);
+	qglVertex3fv(v[0]);
+	qglVertex3fv(v[1]);
+	qglVertex3fv(v[5]);
+	qglVertex3fv(v[7]);
+	qglVertex3fv(v[6]);
+	qglVertex3fv(v[2]);
+	qglVertex3fv(v[0]);
+	qglEnd();
+
+	qglBegin(GL_TRIANGLE_FAN);
+	qglVertex3fv(v[3]);
+	qglVertex3fv(v[0]);
+	qglVertex3fv(v[1]);
+	qglVertex3fv(v[5]);
+	qglVertex3fv(v[7]);
+	qglVertex3fv(v[6]);
+	qglVertex3fv(v[2]);
+	qglVertex3fv(v[0]);
+	qglEnd();
+	
+	qglEndQueryARB(gl_state.query_passed);
+
+	qglColorMask(1,1,1,1);
+	qglEnable(GL_TEXTURE_2D);
+	qglEnable(GL_CULL_FACE);
+	qglEnable(GL_BLEND);
+	qglEnable(GL_STENCIL_TEST);
+	GL_BindNullProgram();
+	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
+}
+
 
 void R_LightScale(void) {
 	float	val;
