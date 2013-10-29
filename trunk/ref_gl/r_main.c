@@ -332,7 +332,7 @@ void R_SetupFrame(void)
 	mleaf_t *leaf;
 
 	r_framecount++;
-	lightVissFrame++;
+
 	// build the transformation matrix for the given view angles
 	VectorCopy(r_newrefdef.vieworg, r_origin);
 
@@ -655,8 +655,6 @@ void R_DrawPlayerWeaponLightPass(void)
 
 }
 
-void R_DrawLightOccluders2();
-
 void R_DrawLightInteractions(void)
 {
 	int i;
@@ -694,15 +692,10 @@ void R_DrawLightInteractions(void)
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
-	
-	if(!r_useConditionalRender->value){
-		
-		if(!R_DrawLightOccluders())
-			continue;
-	}
-	else
-		R_DrawLightOccluders2();
 
+	if(!R_DrawLightOccluders())
+			continue;
+	
 	qglClearStencil(128);
 	qglStencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
@@ -741,8 +734,6 @@ void R_DrawLightInteractions(void)
 	
 	num_visLights++;
 
-	if(r_useConditionalRender->value && gl_state.conditional_render)
-		glEndConditionalRender();
 	}
 	}
 	
@@ -1197,7 +1188,7 @@ void R_RegisterCvars(void)
 	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
 	r_flaresIntens =					Cvar_Get("r_flaresIntens", "3", CVAR_ARCHIVE);
 	r_flareWeldThreshold =				Cvar_Get("r_flareWeldThreshold", "32", CVAR_ARCHIVE);
-	r_useConditionalRender =			Cvar_Get("r_useConditionalRender", "1", CVAR_ARCHIVE); // Fucking Ati! Nv conditional render dont work on radeons... Set to zero, force old, slow Occlusion Query test
+//	r_useConditionalRender =			Cvar_Get("r_useConditionalRender", "1", CVAR_ARCHIVE); // Fucking Ati! Nv conditional render dont work on radeons... Set to zero, force old, slow Occlusion Query test
 
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
@@ -1664,7 +1655,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 
 	gl_state.conditional_render = false;
 			
-	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
+/*	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
 	glEndConditionalRenderNV	= (PFNGLENDCONDITIONALRENDERNVPROC)		qwglGetProcAddress("glEndConditionalRenderNV");
 
 	glBeginConditionalRender	= (PFNGLBEGINCONDITIONALRENDERPROC)		qwglGetProcAddress("glBeginConditionalRender");
@@ -1678,7 +1669,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED"...GL_conditional_render not found\n");
 		gl_state.conditional_render = false;		
 	}
-
+*/
 
 	gl_state.glsl = false;	
 	if ( strstr( gl_config.extensions_string, "GL_ARB_shading_language_100" ) )

@@ -114,7 +114,6 @@ void R_AddNoWorldModelLight() {
 	light->isNoWorldModel = 1;
 }
 
-int lightVissFrame;
 
 void R_PrepareShadowLightFrame(void) {
 	
@@ -139,15 +138,17 @@ void R_PrepareShadowLightFrame(void) {
 
 	// add tempory lights
 	for(i=0;i<r_newrefdef.num_dlights;i++) {
+
 		if(num_dlits > MAX_WORLD_SHADOW_LIHGTS)
 			break;
+
 		R_AddDynamicLight(&r_newrefdef.dlights[i]);
 	}
 
 
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		R_AddNoWorldModelLight();
-	}
+	
 
 	if(!shadowLight_frame) 
 		return;
@@ -1545,7 +1546,6 @@ qboolean R_DrawLightOccluders()
 	VectorSet(v[6], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]-radius);
 	VectorSet(v[7], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]+radius);
 
-//	currentShadowLight->occ_frame = r_visframecount;
 	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
 
 	qglBegin(GL_TRIANGLE_FAN);
@@ -1579,8 +1579,7 @@ qboolean R_DrawLightOccluders()
 	qglEnable(GL_STENCIL_TEST);
 	GL_BindNullProgram();
 
-//	if(currentShadowLight->occ_frame == lightVissFrame - 1)
-		qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
+	qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
 
 	if (!sampleCount) 
 		return false;
@@ -1589,6 +1588,7 @@ qboolean R_DrawLightOccluders()
 
 }
 
+/*
 void R_DrawLightOccluders2()
 {
 	vec3_t		v[8];
@@ -1666,7 +1666,7 @@ void R_DrawLightOccluders2()
 	GL_BindNullProgram();
 	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
 }
-
+*/
 
 void R_LightScale(void) {
 	float	val;

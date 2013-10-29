@@ -56,7 +56,6 @@ typedef struct worldShadowLight_s {
 	int		isNoWorldModel;
 	int		isAmbient;
 	int		linkedSurf;
-	int		occ_frame;
 	int		scissor[4];
 
 	unsigned int	occQ;

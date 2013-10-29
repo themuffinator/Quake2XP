@@ -346,7 +346,7 @@ extern qboolean inwaterfognode;
 extern int r_visframecount;
 
 extern int radarOldTime;
-extern int lightVissFrame;
+
 extern qboolean spacebox;
 
 extern qboolean arbMultisampleSupported;
