@@ -1,45 +1,48 @@
 uniform sampler2DRect 	u_ScreenTex;
 uniform sampler2DRect 	u_DepthTex;
-uniform vec2 			u_screenSize;
 uniform mat4 			u_InverseModelViewMat;
 uniform mat4 			u_PrevModelViewProj;
 
 void main(void) 
 {
-	vec4 tmp1,tmp2; 
-	vec2 UV = gl_FragCoord.xy;
-	//Retrieve depth of pixel  
-	float z = texture2DRect(u_DepthTex, UV).z;  
-	
-	//Simplified equation of GluUnproject
-	vec4 currentPos = vec4(gl_FragCoord.x / u_screenSize.x * 2 - 1, gl_FragCoord.y / u_screenSize.y * 2 - 1, z , 1);
-//	vec4 currentPos = vec4( 2.0* (gl_FragCoord.x/u_screenSize.x)  - 1.0, 2.0* (gl_FragCoord.y/u_screenSize.y) - 1.0, 2.0*z -1.0 , 1.0);
+	float depth = texture2DRect(u_DepthTex, gl_FragCoord.xy).r;
+	vec4 v = u_InverseModelViewMat * vec4(gl_FragCoord.xy, depth, 1.0);
+	vec3 worldPos = v.xyz / v.w;
 
-	//Back into the worldSpace 
-	tmp1 =  currentPos  * u_InverseModelViewMat;  
-	
-	//Homogenous value 
-	vec4 posInWorldSpace = tmp1/tmp1.w;  
-	
-	//Using the world coordinate, we transform those into the previous frame
-	tmp2 =  u_PrevModelViewProj *posInWorldSpace;  
-	vec4 previousPos = tmp2/tmp2.w;  
-	
-	//Compute the frame velocity using the difference 
-	vec2 velocity = ((currentPos - previousPos)/10.0).xy;
+	  // Current viewport position  
+	vec4 currentPos = v;  
+	// Use the world position, and transform by the previous view-  
+	// projection matrix.  
+	vec4 previousPos = vec4(worldPos, 1.0) * u_PrevModelViewProj;  
+	// Convert to nonhomogeneous points [-1,1] by dividing by w.  
+	previousPos /= previousPos.w;  
+	// Use this frame's position and last frame's to compute the pixel  
+	// velocity.  
+	vec2 velocity = (currentPos - previousPos)/3000.0;  
 
-	//Get the initial color at this pixel.  
-	vec4 originalColor = texture2DRect(u_ScreenTex, UV);
-	UV += velocity.xy;  
-	for(int i = 1; i < 20.0; ++i)  
-	{  
-		//Sample the color buffer along the velocity vector.  
-		vec4 currentColor = texture2DRect(u_ScreenTex, UV);  
-		//Add the current color to our color sum.  
-		originalColor += currentColor;  
-		UV.x += velocity.x;
-		UV.y += velocity.y;
-	}  
-	//Average all of the samples to get the final blur color.  
-	gl_FragColor = originalColor / 20.0;
+	// Get the initial color at this pixel.  
+	//vec4 color = vec4(0.0, 0.0, 0.0, 0.0); 
+   
+	//for(int i = 0; i < 16; ++i)  
+ //     {  
+ //     // Sample the color buffer along the velocity vector.  
+ //     vec4 currentColor = texture2DRect(u_ScreenTex, gl_FragCoord.xy + vec2(velocity)*i);  
+ //     // Add the current color to our color sum.  
+ //     color += currentColor;  
+	//}  
+
+	vec4 color = texture2DRect(u_ScreenTex, gl_FragCoord.xy);  
+	vec2 texCoord = gl_FragCoord.xy;
+	
+	texCoord += velocity;  
+	
+	for(int i = 1; i < 32; ++i, texCoord += velocity)  
+		{  
+		// Sample the color buffer along the velocity vector.  
+		vec4 currentColor = texture2DRect(u_ScreenTex, texCoord);  
+		// Add the current color to our color sum.  
+		color += currentColor;  
+		}  
+   // Average all of the samples to get the final blur color.  
+   gl_FragColor = color / 32.0;  
 }
