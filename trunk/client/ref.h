@@ -428,6 +428,7 @@ typedef struct {
 	mat3_t			axis;
 	mat4_t			projectionMatrix;
 	mat4_t			modelViewMatrix;
+	mat4_t			unprojMatrix;
 
 	int num_entities;
 	entity_t *entities;

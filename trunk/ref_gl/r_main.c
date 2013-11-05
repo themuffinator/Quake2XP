@@ -421,6 +421,7 @@ static void R_SetupViewMatrices (void) {
 	float	xMin, xMax, xDiv;
 	float	yMin, yMax, yDiv;
 	float	zNear, zFar, zDiv;
+	mat4_t	tmpMatrix;
 
 	// setup perspective projection matrix
 	zNear = max(r_zNear->value, 3.0);
@@ -483,6 +484,16 @@ static void R_SetupViewMatrices (void) {
 	r_newrefdef.modelViewMatrix[3][1] = -DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[2]);
 	r_newrefdef.modelViewMatrix[3][2] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[0]);
 	r_newrefdef.modelViewMatrix[3][3] = 1.0;
+	
+	// setup unprojection matrix
+	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, tmpMatrix);
+	Mat4_Invert(tmpMatrix, r_newrefdef.unprojMatrix);
+	Mat4_Translate(	r_newrefdef.unprojMatrix, -(float)vid.width / (float)r_newrefdef.viewport[2],
+					-(float)vid.height / (float)r_newrefdef.viewport[3],
+					-1.f);
+	Mat4_Scale(r_newrefdef.unprojMatrix, 2.f / (float)r_newrefdef.viewport[2],
+					2.f / (float)r_newrefdef.viewport[3],
+					2.f);
 
 	// load matrices
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix); // q2 r_project_matrix

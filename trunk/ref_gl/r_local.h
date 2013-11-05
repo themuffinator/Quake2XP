@@ -460,6 +460,10 @@ void Mat4_Multiply(const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_Copy(const mat4_t in, mat4_t out);
 void Mat4_Transpose(const mat4_t in, mat4_t out);
 void Mat4_MultiplyVector(const mat4_t m, const vec3_t in, vec3_t out);
+void Mat4_Translate(mat4_t m, float x, float y, float z);
+void Mat4_Scale(mat4_t m, float x, float y, float z) ;
+qboolean Mat4_Invert(const mat4_t in, mat4_t out);
+
 //====================================================================
 
 #define MAX_POLY_VERT		128
