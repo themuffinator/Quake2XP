@@ -48,7 +48,7 @@ void R_SetCacheState(msurface_t * surf)
 R_AddDynamicLights
 ===============
 */
-void R_AddDynamicLights(msurface_t * surf)
+void R_AddDynamicLights(msurface_t * surf, qboolean loadModel)
 {
 	int lnum;
 	int sd, td;
@@ -62,9 +62,13 @@ void R_AddDynamicLights(msurface_t * surf)
 	float *pfBL;
 	float fsacc, ftacc;
 
-
+	if(loadModel){
+	smax = (surf->extents[0] / loadmodel->lightmap_scale) + 1;
+	tmax = (surf->extents[1] / loadmodel->lightmap_scale) + 1;
+	}else{
 	smax = (surf->extents[0] / r_worldmodel->lightmap_scale) + 1;
 	tmax = (surf->extents[1] / r_worldmodel->lightmap_scale) + 1;
+	}
 	tex = surf->texinfo;
 
 	for (lnum = 0; lnum < r_newrefdef.num_dlights; lnum++) {
@@ -241,7 +245,7 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 	if(!r_pplWorld->value){
 
 		if (surf->dlightframe == r_framecount)
-			R_AddDynamicLights(surf);
+			R_AddDynamicLights(surf, loadModel);
 	}
 
 // put into texture format
