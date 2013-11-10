@@ -578,7 +578,7 @@ void R_GammaRamp (void) {
 
 void R_MotionBlur (void) {
 	
-	mat4_t pMVP, tmpMatrix; 
+	mat4_t pMVP; 
 	unsigned	defBits = 0;
 	int			id;
 

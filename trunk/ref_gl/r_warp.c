@@ -133,12 +133,8 @@ void RenderLavaSurfaces(msurface_t * fa)
 			bTexArray[i][0] = v[13];
 			bTexArray[i][1] = v[14];
 			bTexArray[i][2] = v[15];
-			//set vertex lighting
-			R_LightColor	(v, shadelight_surface);
-			VA_SetElem4		(WarpColorArray[i],	shadelight_surface[0], 
-												shadelight_surface[1], 
-												shadelight_surface[2], 
-												1);	
+//		R_LightColor	(v, shadelight_surface);
+		VA_SetElem4		(WarpColorArray[i],	1.0, 1.0, 1.0, 1.0);	
 		}
 		
 		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
@@ -269,11 +265,8 @@ void R_DrawWaterPolygons(msurface_t * fa)
 		wTmu2Array[i][0] = (v[3] + dstscroll);
 		wTmu2Array[i][1] = (v[4] + dstscroll);
 
-		R_LightColor	(v, shadelight_surface);
-		VA_SetElem4		(WarpColorArray[i],	shadelight_surface[0], 
-											shadelight_surface[1], 
-											shadelight_surface[2], 
-											1.0);	
+//		R_LightColor	(v, shadelight_surface);
+		VA_SetElem4		(WarpColorArray[i],	0.75, 0.75, 0.75, 0.75);	
 		}
 
 		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
