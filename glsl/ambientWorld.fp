@@ -71,8 +71,11 @@ bumpLight = (Es.x * diffuseMap * v_color) + (Es.y * specular * v_color); //via l
 diffuseMap += bumpLight;
 #endif
 
+vec4 tmp = causticsMap * diffuseMap;
+
 #ifdef LIGHTMAP
-diffuseMap *= lightMap * u_ambientScale;
+lightMap *= u_ambientScale;
+diffuseMap *= lightMap;
 #endif
 
 vec4 finalColor = diffuseMap + glowMap;
@@ -85,8 +88,6 @@ finalColor +=envMap;
 }
 
 if (u_isCaustics == 1){
-vec4 tmp;
-tmp = causticsMap * finalColor;
 tmp *= u_CausticsModulate;
 finalColor = tmp + finalColor;
 }

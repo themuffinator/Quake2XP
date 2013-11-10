@@ -47,11 +47,11 @@ N *= clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
 N *= v_deformMul * u_viewport.xy;
 
 // chromatic aberration approximation coefficients
-gl_FragColor.x = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).x;
-gl_FragColor.y = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.0).y;
-gl_FragColor.z = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).z;
+gl_FragColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
+gl_FragColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.0).g;
+gl_FragColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 //blend water texture
-gl_FragColor.xyz += diffuse.xyz * u_alpha;
+gl_FragColor += vec4(diffuse.xyz * u_alpha, 1.0);
 
 #else
 
