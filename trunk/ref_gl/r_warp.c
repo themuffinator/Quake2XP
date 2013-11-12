@@ -200,10 +200,10 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	if (fa->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66)){
 		defBits = worldDefs.WaterTransBits;
 	
-	if (texture != fa->texinfo->image->texnum){
-		R_CaptureColorBuffer();
-		texture = fa->texinfo->image->texnum;
-	}
+	//if (texture != fa->texinfo->image->texnum){
+	//	R_CaptureColorBuffer();
+	//	texture = fa->texinfo->image->texnum;
+	//}
 	}
 	else
 		defBits = 0;
@@ -265,8 +265,8 @@ void R_DrawWaterPolygons(msurface_t * fa)
 		wTmu2Array[i][0] = (v[3] + dstscroll);
 		wTmu2Array[i][1] = (v[4] + dstscroll);
 
-//		R_LightColor	(v, shadelight_surface);
-		VA_SetElem4		(WarpColorArray[i],	0.75, 0.75, 0.75, 0.75);	
+		R_LightColor	(v, shadelight_surface);
+		VA_SetElem4		(WarpColorArray[i],	shadelight_surface[0], shadelight_surface[1], shadelight_surface[2], 1);	
 		}
 
 		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);

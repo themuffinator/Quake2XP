@@ -409,7 +409,7 @@ void R_LightColor(vec3_t org, vec3_t color)
 	  + x * ((1 - y) * ((1 - z) * b[4][i] + (z) * b[5][i]) +
 	    y * ((1 - z) * b[6][i] + (z) * b[7][i]));
 		color[i] *= f;
-		VectorScale(color, 0.5, color);
+
 		if(color[i] <= 0.35)
 			color[i] = 0.35;
 	}

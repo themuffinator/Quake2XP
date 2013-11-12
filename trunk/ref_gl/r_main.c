@@ -834,7 +834,8 @@ if (r_noRefresh->value)
 
 	R_RenderFlares();
 	R_LightScale();
-//	R_DrawParticles(true); //underwater particles
+	R_DrawParticles(true); //underwater particles
+	R_CaptureColorBuffer();
 	R_DrawAlphaPoly();
 	R_DrawParticles(false); // air particles
 	R_CaptureColorBuffer();

@@ -166,10 +166,10 @@ void DrawGLPolyGLSL(msurface_t * fa)
 		alpha = 0.33;
 	else 
 		alpha = 0.66;
-	if (texture != fa->texinfo->image->texnum){
+	/*if (texture != fa->texinfo->image->texnum){
 		R_CaptureColorBuffer();
 		texture = fa->texinfo->image->texnum;
-	}
+	}*/
 
 	// setup program
 	GL_BindProgram(refractProgram, defBits);
@@ -253,10 +253,10 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 	else 
 		alpha = 0.66;
 	
-	if (texture != fa->texinfo->image->texnum){
+	/*if (texture != fa->texinfo->image->texnum){
 		R_CaptureColorBuffer();
 		texture = fa->texinfo->image->texnum;
-	}
+	}*/
 
 	// setup program
 	GL_BindProgram(refractProgram, defBits);
