@@ -3,6 +3,8 @@ varying vec2				v_diffuseTexCoord;
 varying float				v_depth;
 varying vec2				v_deformMul;
 varying vec4				v_color;
+varying vec3				v_normal;
+varying vec4				v_viewVec;
 
 uniform float				u_thickness;
 uniform float				u_alpha;
@@ -15,6 +17,7 @@ uniform sampler2D			u_colorMap;
 uniform sampler2D			u_dstMap;
 uniform	sampler2DRect		g_depthBufferMap;
 uniform	sampler2DRect		g_colorBufferMap;
+uniform samplerCube			g_CubeMap;
 
 #include depth.inc
 
@@ -32,10 +35,16 @@ coord.y = v_diffuseTexCoord.y + offset.w;
 //load diffuse map
 vec4 diffuse  = texture2D (u_colorMap, coord.xy);  
 
+// load sky cubemap for reflection
+vec3 reflectedDirection = normalize(reflect(v_viewVec.xyz, normalize(v_normal)));
+reflectedDirection.y = -reflectedDirection.y;
+vec4 skyCube = textureCube(g_CubeMap, reflectedDirection);
+
 // set vertex lighting
 diffuse *= v_color;
 diffuse = clamp(diffuse, 0.0, 1.0); 
-
+diffuse +=skyCube;
+ 
 #ifdef TRANS
 vec2 N = offset.xy; // use autogen dst texture
 
@@ -57,6 +66,5 @@ gl_FragColor += vec4(diffuse.xyz * u_alpha, 1.0);
 
 // final color with out refract
 gl_FragColor = vec4(diffuse.rgb, 1.0);
-
 #endif
 }
