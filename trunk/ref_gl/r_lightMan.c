@@ -56,6 +56,24 @@ qboolean R_AddLightToFrame(worldShadowLight_t *light) {
 	 return true;
 }
 
+void UpdateLightBounds(worldShadowLight_t *light)
+{
+	int i;
+	mat3_t lightAxis;
+	vec3_t tmp;
+
+	for (i=0; i<8; i++) {
+	tmp[0] = (i & 1) ? -light->radius : light->radius;
+	tmp[1] = (i & 2) ? -light->radius : light->radius;
+	tmp[2] = (i & 4) ? -light->radius : light->radius;
+
+	AnglesToMat3(light->angles, lightAxis);
+	Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
+	VectorAdd(light->corners[i], light->origin, light->corners[i]);
+	}
+}
+
+
 void R_AddDynamicLight(dlight_t *dl) {
 	
 	worldShadowLight_t *light;
@@ -85,6 +103,8 @@ void R_AddDynamicLight(dlight_t *dl) {
 	light->_cone = dl->_cone;
 	light->isNoWorldModel = 0;
 	light->isShadow = 1;
+
+	UpdateLightBounds(light);
 }
 
 void R_AddNoWorldModelLight() {
@@ -96,10 +116,10 @@ void R_AddNoWorldModelLight() {
 	memset(light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet(light->origin, -100, 76, 76);
+	VectorSet(light->origin, -70, 70, 56);
 	VectorSet(light->startColor, 1.0, 1.0, 1.0);
 	VectorSet(light->angles, 0, 0, 0);
-	light->radius = 256;
+	light->radius = 300;
 
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - light->radius;
@@ -112,6 +132,7 @@ void R_AddNoWorldModelLight() {
 	light->isShadow = 0;
 	light->_cone = 0;
 	light->isNoWorldModel = 1;
+	UpdateLightBounds(light);
 }
 
 
@@ -274,23 +295,6 @@ static void DeleteCurrentLight(worldShadowLight_t *l) {
 	}
 
 	free(l);
-}
-
-void UpdateLightBounds(worldShadowLight_t *light)
-{
-	int i;
-	mat3_t lightAxis;
-	vec3_t tmp;
-
-	for (i=0; i<8; i++) {
-	tmp[0] = (i & 1) ? -light->radius : light->radius;
-	tmp[1] = (i & 2) ? -light->radius : light->radius;
-	tmp[2] = (i & 4) ? -light->radius : light->radius;
-
-	AnglesToMat3(light->angles, lightAxis);
-	Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
-	VectorAdd(light->corners[i], light->origin, light->corners[i]);
-	}
 }
 
 void R_Light_Spawn_f(void) {
@@ -1908,16 +1912,16 @@ void R_SetViewLightScreenBounds () {
 	float		depth[2];
 
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+	//if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 
-		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
-		currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
-		currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
-		currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
-		currentShadowLight->depthBounds[0] = 0.0f;
-		currentShadowLight->depthBounds[1] = 1.0f;
-		return;
-	}
+	//	currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
+	//	currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
+	//	currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
+	//	currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
+	//	currentShadowLight->depthBounds[0] = 0.0f;
+	//	currentShadowLight->depthBounds[1] = 1.0f;
+	//	return;
+	//}
 
 	if (!r_useLightScissors->value) {
 
