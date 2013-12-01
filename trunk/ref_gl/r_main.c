@@ -1661,6 +1661,10 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_quarterScreenQuad);
 			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+			qglGenBuffers(1, &gl_state.vbo_Dynamic);
+			qglGenBuffers(1, &gl_state.ibo_Dynamic);
+	
 		}
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
@@ -1845,6 +1849,8 @@ void R_Shutdown(void)
 	qglDeleteBuffers(1, &gl_state.vbo_fullScreenQuad);
 	qglDeleteBuffers(1, &gl_state.vbo_halfScreenQuad);
 	qglDeleteBuffers(1, &gl_state.vbo_quarterScreenQuad);
+	qglDeleteBuffers(1, &gl_state.vbo_Dynamic);
+	qglDeleteBuffers(1, &gl_state.ibo_Dynamic);
 }
 
 

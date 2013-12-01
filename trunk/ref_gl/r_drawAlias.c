@@ -427,9 +427,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 			return;
 	}
 
-	if(!InLightVISEntity())
-		return;
-
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;

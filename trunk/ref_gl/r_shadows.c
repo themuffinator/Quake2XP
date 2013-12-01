@@ -32,22 +32,11 @@ float shadelight[3];
 SHADOW VOLUMES
 ===============
 */
-vec3_t		ShadowArray[MAX_SHADOW_VERTS];
-unsigned	ShadowIndex[MAX_INDICES];
+vec3_t			ShadowArray[MAX_SHADOW_VERTS];
+unsigned		ShadowIndex[MAX_INDICES];
+unsigned int	shadowVbo, shadowIbo;
 
-qboolean	triangleFacingLight	[MAX_INDICES / 3];
-
-
-void GL_LerpVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3])
-{
-	int i;
-
-		for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {
-			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0];
-			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1];
-			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2];
-		}
-}
+char	triangleFacingLight	[MAX_INDICES / 3];
 
 void R_MarkShadowTriangles(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg){
 	
@@ -113,15 +102,10 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 				offset0[j] = v0[j] - light[j];
 				offset1[j] = v1[j] - light[j];
 			}
-
-			VectorNormalize(offset0);
-			VectorNormalize(offset1);
 			VectorMA(v0, cap_offset, offset0, v0);	
 			VectorMA(v1, cap_offset, offset1, v1);	
 			VectorSubtract(v1, light, l2);
 			VectorSubtract(v0, light, l3);
-			VectorNormalize(l2);
-			VectorNormalize(l3);
 			VectorMA(v1, projectdistance, l2, v2);
 			VectorMA(v0, projectdistance, l3, v3);
 
@@ -150,15 +134,10 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 				offset0[j] = v0[j] - light[j];
 				offset1[j] = v1[j] - light[j];
 			}
-
-			VectorNormalize(offset0);
-			VectorNormalize(offset1);
 			VectorMA(v0, cap_offset, offset0, v0);					
 			VectorMA(v1, cap_offset, offset1, v1);	
 			VectorSubtract(v1, light, l2);
 			VectorSubtract(v0, light, l3);
-			VectorNormalize(l2);
-			VectorNormalize(l3);
 			VectorMA(v1, projectdistance, l2, v2);
 			VectorMA(v0, projectdistance, l3, v3);
 
@@ -188,14 +167,10 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 				offset1[j] = v1[j] - light[j];
 			}
 
-			VectorNormalize(offset0);
-			VectorNormalize(offset1);
 			VectorMA(v0, cap_offset, offset0, v0);					
 			VectorMA(v1, cap_offset, offset1, v1);	
 			VectorSubtract(v1, light, l2);
 			VectorSubtract(v0, light, l3);
-			VectorNormalize(l2);
-			VectorNormalize(l3);
 			VectorMA(v1, projectdistance, l2, v2);
 			VectorMA(v0, projectdistance, l3, v3);
 	
@@ -234,10 +209,6 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 				offset2[j] = v2[j] - light[j];
 			}
 
-			VectorNormalize(offset0);
-			VectorNormalize(offset1);
-			VectorNormalize(offset2);
-
 			for (j = 0; j < 3; j++)
 			{
 				v0[j] += offset0[j] * cap_offset;
@@ -266,18 +237,12 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 				offset2[j] = v2[j] - light[j];
 			}
 
-			VectorNormalize(offset0);
-			VectorNormalize(offset1);
-			VectorNormalize(offset2);
 			VectorMA(v0, cap_offset, offset0, v0);					
 			VectorMA(v1, cap_offset, offset1, v1);					
 			VectorMA(v2, cap_offset, offset2, v2);				
 			VectorSubtract(v0, light, l0);
 			VectorSubtract(v1, light, l1);
 			VectorSubtract(v2, light, l2);
-			VectorNormalize(l0);
-			VectorNormalize(l1);
-			VectorNormalize(l2);
 			VectorMA(v0, projectdistance, l0, v0);
 			VectorMA(v1, projectdistance, l1, v1);
 			VectorMA(v2, projectdistance, l2, v2);
@@ -292,14 +257,26 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		ShadowIndex[index++] = shadow_vert+0; 
 		shadow_vert +=3;
 	}
+
+	qglBindBuffer(GL_ARRAY_BUFFER, gl_state.vbo_Dynamic);
+	qglBufferData(GL_ARRAY_BUFFER, shadow_vert * sizeof(vec3_t), ShadowArray, GL_DYNAMIC_DRAW_ARB);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_Dynamic);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, index * sizeof(GL_UNSIGNED_INT), ShadowIndex, GL_DYNAMIC_DRAW_ARB);
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
+	qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
 	
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+/*	
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
 
 	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
 		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shadow_vert, index, GL_UNSIGNED_INT, ShadowIndex);
 		else
 		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, ShadowIndex);
-			
+*/			
 	c_shadow_tris += index/3;
 	c_shadow_volumes++;
 }
@@ -315,9 +292,6 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic shadows if we don't relight
 		return;
 	
-	if(!InLightVISEntity())
-		return;
-
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -336,6 +310,9 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 	if(VectorCompare(currentShadowLight->origin, currententity->origin))
 		return;
 
+	if(!InLightVISEntity())
+		return;
+
 	projdist = currentShadowLight->radius * 2.5;
 
 	AnglesToMat3(currententity->angles, entityAxis);
@@ -346,6 +323,16 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 	c_shadow_volumes++;
 }
 
+void GL_LerpVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3])
+{
+	int i;
+
+		for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {
+			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0];
+			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1];
+			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2];
+		}
+}
 
 void R_DrawShadowVolume(entity_t * e)
 {

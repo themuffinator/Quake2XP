@@ -649,7 +649,8 @@ typedef struct {
 	GLuint	vbo_fullScreenQuad;
 	GLuint	vbo_halfScreenQuad;
 	GLuint	vbo_quarterScreenQuad;
-
+	GLuint	vbo_Dynamic;
+	GLuint	ibo_Dynamic;
 	mat4_t			projectionMatrix;
 	mat4_t			modelViewMatrix;		// ready to load
 // ----------------------------------------------------------------

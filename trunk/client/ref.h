@@ -71,9 +71,8 @@ typedef vec_t vec2_t[2];
 
 #define	GL_INDEX_TYPE		GL_UNSIGNED_SHORT
 typedef unsigned short		ushort;
-typedef ushort		index_t;
-
-
+typedef ushort				index_t;
+typedef unsigned int		uint;
 
 typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh
@@ -114,6 +113,10 @@ typedef struct entity_s {
 	vec3_t maxs;
 	qboolean lightVised;
 	byte vis[MAX_MAP_LEAFS / 8];
+	
+	uint	vboId;
+	uint	iboId;
+	int		iboNumIndices;
 
 } entity_t;
 
