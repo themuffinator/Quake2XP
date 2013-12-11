@@ -439,9 +439,14 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
 	}
 	
-	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
+	if(currentShadowLight->spherical){
+	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
 		return;
-
+	}else
+	{
+	if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
+			return;
+	}
 
 	paliashdr = (dmdl_t *)currentmodel->extradata;
 	

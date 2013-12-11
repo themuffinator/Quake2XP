@@ -576,8 +576,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	// setup program
 	GL_BindProgram(aliasBumpProgram, defBits);
 	id = aliasBumpProgram->id[defBits];
-		
-	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), currentShadowLight->radius);
+
 	qglUniform3fv(qglGetUniformLocation(id, "u_LightColor"), 1 , currentShadowLight->color);
 	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , currentShadowLight->origin);
 	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , r_origin);
@@ -597,7 +596,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	qglMatrixMode(GL_TEXTURE);
 	qglLoadIdentity();
 	qglTranslatef(0.5,0.5,0.5);
-	qglScalef(0.5/currentShadowLight->radius, 0.5/currentShadowLight->radius, 0.5/currentShadowLight->radius);
+	qglScalef(0.5/currentShadowLight->radius[0], 0.5/currentShadowLight->radius[1], 0.5/currentShadowLight->radius[2]);
 	qglTranslatef(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
 	qglMatrixMode(GL_MODELVIEW);
 

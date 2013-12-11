@@ -46,9 +46,10 @@ typedef struct worldShadowLight_s {
 	vec3_t	maxs_cone;
 	vec3_t	corners[8];
 	
-	float	radius;
+	float	radius[3];
 	float	_cone;
 	float	depthBounds[2];
+	float	len;
 
 	int		filter, style, area;
 	int		isShadow;
@@ -57,7 +58,7 @@ typedef struct worldShadowLight_s {
 	int		isAmbient;
 	int		linkedSurf;
 	int		scissor[4];
-
+	qboolean spherical;
 	unsigned int	occQ;
 	cplane_t		frust[4];
 

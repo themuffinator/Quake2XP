@@ -367,7 +367,7 @@ void R_InitLightgrid(void);
 void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
-worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius,  int style, int filter, vec3_t angles, vec3_t speed, 
+worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3],  int style, int filter, vec3_t angles, vec3_t speed, 
 									   qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
@@ -439,21 +439,17 @@ void UpdateLightEditor(void);
 void Load_LightFile();
 void R_SetViewLightDepthBounds(); 
 void R_DebugScissors(void);
-__inline qboolean BBoxIntersectBBox(float *bbox0, float *bbox1);
-void boxScreenSpaceRect(worldShadowLight_t *light, int *rect);
-void R_ProjectSphere (worldShadowLight_t *light, int *rect);
 qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p);
 extern int num_visLights;
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
-extern int vboPos;
 extern int numFlareOcc;
 extern qboolean FoundReLight;
 qboolean PF_inPVS(vec3_t p1, vec3_t p2);
 void R_SetFrustum(void);
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
 void R_SetViewLightScreenBounds ();
-
+qboolean BoundsIntersect(const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 
 void GL_LoadMatrix(GLenum mode, const mat4_t matrix);
 void Mat4_Multiply(const mat4_t a, const mat4_t b, mat4_t out);

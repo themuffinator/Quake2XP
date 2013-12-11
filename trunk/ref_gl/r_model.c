@@ -85,7 +85,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 	byte *p;
 	float *v, surf_bound;
 	vec3_t origin = { 0, 0, 0 }, color = {1, 1, 1}, tmp, rgbSum;
-	vec3_t poly_center, mins, maxs, tmp1, lightOffset;
+	vec3_t poly_center, mins, maxs, tmp1, lightOffset, radius;
 	int leafnum;
 	int cluster;
 
@@ -202,10 +202,12 @@ void GL_AddFlareSurface(msurface_t * surf)
 	cluster = CM_LeafCluster(leafnum);
 	r_flares[r_numflares].area = CM_LeafArea(leafnum);
 	Q_memcpy(r_flares[r_numflares].vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
-
+	VectorSet(radius,	r_flares[r_numflares].size	*	r_shadowWorldLightScale->value,
+						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value,
+						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value);
 	if(!FoundReLight)
 	R_AddNewWorldLight(	lightOffset, r_flares[r_numflares].color, 
-						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false);
+						radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false);
 
 	r_numflares++;
 	free(buffer);

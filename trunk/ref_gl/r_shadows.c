@@ -258,25 +258,25 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		shadow_vert +=3;
 	}
 
-	qglBindBuffer(GL_ARRAY_BUFFER, gl_state.vbo_Dynamic);
-	qglBufferData(GL_ARRAY_BUFFER, shadow_vert * sizeof(vec3_t), ShadowArray, GL_DYNAMIC_DRAW_ARB);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_Dynamic);
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, index * sizeof(GL_UNSIGNED_INT), ShadowIndex, GL_DYNAMIC_DRAW_ARB);
+	//qglBindBuffer(GL_ARRAY_BUFFER, gl_state.vbo_Dynamic);
+	//qglBufferData(GL_ARRAY_BUFFER, shadow_vert * sizeof(vec3_t), ShadowArray, GL_DYNAMIC_DRAW_ARB);
+	//qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_Dynamic);
+	//qglBufferData(GL_ELEMENT_ARRAY_BUFFER, index * sizeof(GL_UNSIGNED_INT), ShadowIndex, GL_DYNAMIC_DRAW_ARB);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
-	qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
+	//qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
+	//qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
+	//
+	//qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	//qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-/*	
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
 
 	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
 		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shadow_vert, index, GL_UNSIGNED_INT, ShadowIndex);
 		else
 		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, ShadowIndex);
-*/			
+			
 	c_shadow_tris += index/3;
 	c_shadow_volumes++;
 }
@@ -304,16 +304,23 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
 	}
 	
-	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
-		return;
+	if(currentShadowLight->spherical){
 
+	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
+		return;
+	}
+	else
+	{
+		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
+			return;
+	}
 	if(VectorCompare(currentShadowLight->origin, currententity->origin))
 		return;
 
 	if(!InLightVISEntity())
 		return;
 
-	projdist = currentShadowLight->radius * 2.5;
+	projdist = currentShadowLight->len * 2.5;
 
 	AnglesToMat3(currententity->angles, entityAxis);
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
@@ -531,7 +538,18 @@ void R_DrawBrushModelVolumes()
 	if(!InLightVISEntity())
 		return;
 
-	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
+	if(currentShadowLight->spherical){
+
+		if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
+			return;
+		}
+		else
+		{
+		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
+			return;
+		}
+	
+	if(VectorCompare(currentShadowLight->origin, currententity->origin))
 		return;
 
 	VectorCopy (currentShadowLight->origin, oldLightOrigin);
@@ -542,10 +560,10 @@ void R_DrawBrushModelVolumes()
 	
 	qglPushMatrix();
 	R_RotateForLightEntity(currententity);
+	
+	scale = currentShadowLight->len * 10;
 
-	scale = 10 * currentShadowLight->radius;
-
-		for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
+	for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
 		{
 
 
@@ -661,15 +679,15 @@ hack:
 			return false;
 
 	//the normals are flipped when surf_planeback is 1
-	if (abs(dist) > currentShadowLight->radius)
+	if (abs(dist) > currentShadowLight->len)
 		return false;
 
-		lbbox[0] = currentShadowLight->origin[0] - currentShadowLight->radius;
-		lbbox[1] = currentShadowLight->origin[1] - currentShadowLight->radius;
-		lbbox[2] = currentShadowLight->origin[2] - currentShadowLight->radius;
-		lbbox[3] = currentShadowLight->origin[0] + currentShadowLight->radius;
-		lbbox[4] = currentShadowLight->origin[1] + currentShadowLight->radius;
-		lbbox[5] = currentShadowLight->origin[2] + currentShadowLight->radius;
+		lbbox[0] = currentShadowLight->origin[0] - currentShadowLight->radius[0];
+		lbbox[1] = currentShadowLight->origin[1] - currentShadowLight->radius[1];
+		lbbox[2] = currentShadowLight->origin[2] - currentShadowLight->radius[2];
+		lbbox[3] = currentShadowLight->origin[0] + currentShadowLight->radius[0];
+		lbbox[4] = currentShadowLight->origin[1] + currentShadowLight->radius[1];
+		lbbox[5] = currentShadowLight->origin[2] + currentShadowLight->radius[2];
 
 		// surface bounding box
 		pbbox[0] = surf->mins[0];
@@ -679,7 +697,7 @@ hack:
 		pbbox[4] = surf->maxs[1];
 		pbbox[5] = surf->maxs[2];
 
-		if(!BBoxIntersectBBox(lbbox, pbbox))
+		if(!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
 			return false;
 		
 		if(currentShadowLight->_cone && R_CullBox_(&pbbox[0], &pbbox[3], currentShadowLight->frust))
@@ -698,6 +716,7 @@ void R_MarkShadowCasting (mnode_t *node)
 	int			c;
 	int cluster;
 	
+
 	if (node->contents != -1)
 	{
 		//we are in a leaf
@@ -722,16 +741,17 @@ void R_MarkShadowCasting (mnode_t *node)
 	plane = node->plane;
 	dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
 
-	if (dist > currentShadowLight->radius)
+	if (dist > currentShadowLight->len)
 	{
 		R_MarkShadowCasting (node->children[0]);
 		return;
 	}
-	if (dist < -currentShadowLight->radius)
+	if (dist < -currentShadowLight->len)
 	{
 		R_MarkShadowCasting ( node->children[1]);
 		return;
 	}
+
 
 	R_MarkShadowCasting (node->children[0]);
 	R_MarkShadowCasting (node->children[1]);
@@ -748,8 +768,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
 	glpoly_t	*poly;
 	vec3_t		v1;
 	qboolean	shadow;
-	;
-
+	
 	if(precalc)
 		currentShadowLight = light;
 	else 
@@ -759,7 +778,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
 	num_shadow_surfaces = 0;
 	R_MarkShadowCasting (r_worldmodel->nodes);
 
-	scale = 10 * currentShadowLight->radius;
+	scale = currentShadowLight->len * 10;
 	
 	// generate vertex buffer
 	for (i=0 ; i<num_shadow_surfaces; i++)

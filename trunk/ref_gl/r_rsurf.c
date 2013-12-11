@@ -757,7 +757,6 @@ static void GL_BatchLightPass(qboolean bmodel)
 	
 	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1, currentShadowLight->origin);
 	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniform1f(qglGetUniformLocation(id, "u_LightRadius"), currentShadowLight->radius);
 
 	if(r_parallax->value)
 		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
@@ -815,6 +814,16 @@ static void GL_BatchLightPass(qboolean bmodel)
 		GL_MBindCube(GL_TEXTURE2_ARB, filtercube_texture_object[currentShadowLight->filter]->texnum);
 		qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"), 2);
 		GL_SetupCubeMapMatrix(bmodel);
+
+		GL_MBind3d(GL_TEXTURE3_ARB, atten3d_texture_object->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_attenMap"), 3);
+		qglMatrixMode(GL_TEXTURE);
+		qglLoadIdentity();
+		qglTranslatef(0.5,0.5,0.5);
+		qglScalef(0.5/currentShadowLight->radius[0], 0.5/currentShadowLight->radius[1], 0.5/currentShadowLight->radius[2]);
+		qglTranslatef(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
+		qglMatrixMode(GL_MODELVIEW);
+
 		}
 
 		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
@@ -952,17 +961,6 @@ static void R_RecursiveWorldNode(mnode_t * node)
 }
 
 
-__inline qboolean BBoxIntersectBBox(float *bbox0, float *bbox1)
-{
-	if ( bbox0[0] >= bbox1[3] )	return false;
-	if ( bbox0[3] <= bbox1[0] )	return false;
-	if ( bbox0[1] >= bbox1[4] )	return false;
-	if ( bbox0[4] <= bbox1[1] )	return false;
-	if ( bbox0[2] >= bbox1[5] )	return false;
-	if ( bbox0[5] <= bbox1[2] )	return false;
-	return true;
-}
-
 qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean world)
 {
 	cplane_t	*plane;
@@ -977,7 +975,7 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 	
 	if (poly->lightTimestamp == r_lightTimestamp)
 		return false;
-
+	
 	switch (plane->type)
 	{
 	case PLANE_X:
@@ -1000,19 +998,19 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 		return false;
 
 	//the normals are flipped when surf_planeback is 1
-	if (abs(dist) > light->radius)
+	if (abs(dist) > light->len)
 		return false;
 
 	if(world)
 	{
 		float	lbbox[6], pbbox[6];
 
-		lbbox[0] = light->origin[0] - light->radius;
-		lbbox[1] = light->origin[1] - light->radius;
-		lbbox[2] = light->origin[2] - light->radius;
-		lbbox[3] = light->origin[0] + light->radius;
-		lbbox[4] = light->origin[1] + light->radius;
-		lbbox[5] = light->origin[2] + light->radius;
+		lbbox[0] = light->origin[0] - light->radius[0];
+		lbbox[1] = light->origin[1] - light->radius[1];
+		lbbox[2] = light->origin[2] - light->radius[2];
+		lbbox[3] = light->origin[0] + light->radius[0];
+		lbbox[4] = light->origin[1] + light->radius[1];
+		lbbox[5] = light->origin[2] + light->radius[2];
 
 		// surface bounding box
 		pbbox[0] = surf->mins[0];
@@ -1022,7 +1020,7 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 		pbbox[4] = surf->maxs[1];
 		pbbox[5] = surf->maxs[2];
 
-		if(!BBoxIntersectBBox(lbbox, pbbox))
+		if(!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
 			return false;
 
 		if(currentShadowLight->_cone && R_CullBox_(&pbbox[0], &pbbox[3], currentShadowLight->frust))
@@ -1065,12 +1063,12 @@ void R_MarkLightCasting (worldShadowLight_t *light, mnode_t *node)
 	plane = node->plane;
 	dist = DotProduct (light->origin, plane->normal) - plane->dist;
 
-	if (dist > light->radius)
+	if (dist > light->len)
 	{
 		R_MarkLightCasting (light, node->children[0]);
 		return;
 	}
-	if (dist < -light->radius)
+	if (dist < -light->len)
 	{
 		R_MarkLightCasting (light, node->children[1]);
 		return;
@@ -1129,10 +1127,16 @@ void R_DrawLightWorld(void)
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 	
+	GL_SelectTexture(GL_TEXTURE3_ARB);
+	qglMatrixMode(GL_TEXTURE);
+	qglLoadIdentity();
+	qglMatrixMode(GL_MODELVIEW);
+
 	GL_SelectTexture(GL_TEXTURE2_ARB);
 	qglMatrixMode(GL_TEXTURE);
 	qglLoadIdentity();
 	qglMatrixMode(GL_MODELVIEW);
+	
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	
 }
@@ -1520,10 +1524,14 @@ void R_DrawLightBrushModel(entity_t * e)
 
 	if(!InLightVISEntity())
 		return;
-	
-	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius))
-		return;
 
+	if(currentShadowLight->spherical){
+		if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
+			return;
+	}else{
+		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
+			return;
+	}
 	VectorSubtract(r_newrefdef.vieworg, e->origin, modelorg);
 
 	if (rotated) {

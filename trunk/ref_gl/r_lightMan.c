@@ -30,7 +30,7 @@ static int num_dlits;
 int num_nwmLights;
 int num_visLights;
 int numLightQ;
-int vboPos, iboPos;
+
 vec3_t player_org, v_forward, v_right, v_up;
 trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask);
 qboolean R_MarkLightLeaves (worldShadowLight_t *light);
@@ -38,7 +38,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light);
 
 qboolean R_AddLightToFrame(worldShadowLight_t *light) {
 	
-	if(r_pplWorldAmbient->value > 0.01 && light->isAmbient) //skip ambient lights if we use lightmaps
+	if(r_pplWorldAmbient->value > 0.1 && light->isAmbient) //skip ambient lights if we use lightmaps
 		return false;
 
 	if (r_newrefdef.areabits){
@@ -50,9 +50,16 @@ qboolean R_AddLightToFrame(worldShadowLight_t *light) {
 	if(!HasSharedLeafs(light->vis, viewvis))
 		return false;
 
-	 if(!SphereInFrustum(light->origin, light->radius))
+	if(light->spherical){
+		
+	if(!SphereInFrustum(light->origin, light->radius[0]))
 		 return false;
-	 
+	}
+	else
+	{
+	if(R_CullBox(light->mins, light->maxs))
+		return false;
+	}
 	 return true;
 }
 
@@ -61,11 +68,30 @@ void UpdateLightBounds(worldShadowLight_t *light)
 	int i;
 	mat3_t lightAxis;
 	vec3_t tmp;
+				
+	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
+		light->spherical = true;
+	else
+		light->spherical = false;
+
+	for (i = 0; i < 3; i++) {
+		light->mins[i] = light->origin[i] - light->radius[i];
+		light->maxs[i] = light->origin[i] + light->radius[i];
+	}
+	
+	if(light->spherical){
+		light->len = light->radius[0];
+	}
+	else
+	{
+		VectorSubtract(light->origin, light->maxs, tmp);
+		light->len = VectorLength(tmp);
+	}
 
 	for (i=0; i<8; i++) {
-	tmp[0] = (i & 1) ? -light->radius : light->radius;
-	tmp[1] = (i & 2) ? -light->radius : light->radius;
-	tmp[2] = (i & 4) ? -light->radius : light->radius;
+	tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
+	tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
+	tmp[2] = (i & 4) ? -light->radius[2] : light->radius[2];
 
 	AnglesToMat3(light->angles, lightAxis);
 	Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
@@ -90,6 +116,7 @@ void R_AddDynamicLight(dlight_t *dl) {
 	VectorCopy(dl->origin, light->origin);
 	VectorCopy(dl->color, light->startColor);
 	VectorCopy(dl->angles, light->angles);
+	VectorSet(light->radius, dl->intensity, dl->intensity, dl->intensity);
 
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - dl->intensity;
@@ -98,12 +125,11 @@ void R_AddDynamicLight(dlight_t *dl) {
 
 	light->style = 0;
 	light->filter = dl->filter;
-	light->radius = dl->intensity;
 	light->isStatic = 0;
 	light->_cone = dl->_cone;
 	light->isNoWorldModel = 0;
 	light->isShadow = 1;
-
+	light->spherical = true;
 	UpdateLightBounds(light);
 }
 
@@ -119,11 +145,11 @@ void R_AddNoWorldModelLight() {
 	VectorSet(light->origin, -70, 70, 56);
 	VectorSet(light->startColor, 1.0, 1.0, 1.0);
 	VectorSet(light->angles, 0, 0, 0);
-	light->radius = 300;
+	VectorSet(light->radius, 300, 300, 300);
 
 	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - light->radius;
-		light->maxs[i] = light->origin[i] + light->radius;
+		light->mins[i] = light->origin[i] - light->radius[i];
+		light->maxs[i] = light->origin[i] + light->radius[i];
 	}
 
 	light->style = 0;
@@ -132,6 +158,7 @@ void R_AddNoWorldModelLight() {
 	light->isShadow = 0;
 	light->_cone = 0;
 	light->isNoWorldModel = 1;
+	light->spherical = true;
 	UpdateLightBounds(light);
 }
 
@@ -257,7 +284,7 @@ void R_SaveLights_f(void) {
 		fprintf(f, "{\n");
 		fprintf(f, "\"classname\" \"light\"\n");
 		fprintf(f, "\"origin\" \"%i %i %i\"\n", (int)currentShadowLight->origin[0], (int)currentShadowLight->origin[1], (int)currentShadowLight->origin[2]);
-		fprintf(f, "\"radius\" \"%i\"\n",		(int)currentShadowLight->radius);
+		fprintf(f, "\"radius\" \"%i %i %i\"\n",	(int)currentShadowLight->radius[0], (int)currentShadowLight->radius[1], (int)currentShadowLight->radius[2]);
 		fprintf(f, "\"color\" \"%f %f %f\"\n",		 currentShadowLight->startColor[0],	 currentShadowLight->startColor[1],	 currentShadowLight->startColor[2]);
 		fprintf(f, "\"style\" \"%i\"\n",		(int)currentShadowLight->style);
 		fprintf(f, "\"filter\" \"%i\"\n",		(int)currentShadowLight->filter);
@@ -298,7 +325,7 @@ static void DeleteCurrentLight(worldShadowLight_t *l) {
 }
 
 void R_Light_Spawn_f(void) {
-	vec3_t color = {1.0, 1.0, 1.0}, end, spawn;
+	vec3_t color = {1.0, 1.0, 1.0}, end, spawn, radius={300,300,300};
 	trace_t trace;
 
 	if(!r_lightEditor->value){
@@ -311,24 +338,24 @@ void R_Light_Spawn_f(void) {
 	
 	if (trace.fraction != 1.0){
 		VectorMA(trace.endpos, -10, v_forward, spawn);
-		R_AddNewWorldLight(spawn, color, 300, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true);
+		R_AddNewWorldLight(spawn, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true);
 	}
 }
 
 void R_Light_SpawnToCamera_f(void) {
-	vec3_t color = {1.0, 1.0, 1.0};
+	vec3_t color = {1.0, 1.0, 1.0}, radius={300,300,300};
 
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
 
-	R_AddNewWorldLight(player_org, color, 300, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true);
+	R_AddNewWorldLight(player_org, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true);
 }
 
 void R_Light_Copy_f(void) {
-	vec3_t color, spawn, origin, angles, speed;
-	float radius, _cone;
+	vec3_t color, spawn, origin, angles, speed, radius;
+	float _cone;
 	int style, filter, shadow, ambient;
 
 	if(!r_lightEditor->value){
@@ -346,7 +373,8 @@ void R_Light_Copy_f(void) {
 	VectorCopy(selectedShadowLight->color, color);
 	VectorCopy(selectedShadowLight->angles, angles);
 	VectorCopy(selectedShadowLight->speed, speed);
-	radius = selectedShadowLight->radius;
+	VectorCopy(selectedShadowLight->radius, radius);
+
 	style = selectedShadowLight->style;
 	filter = selectedShadowLight->filter;
 	shadow = selectedShadowLight->isShadow;
@@ -363,8 +391,8 @@ void R_Light_Copy_f(void) {
 
 void R_EditSelectedLight_f(void) {
 	
-	vec3_t color, origin, angles, speed;
-	float radius, _cone;
+	vec3_t color, origin, angles, speed, radius;
+	float _cone;
 	int style, filter, shadow, ambient;
 	
 	if(!r_lightEditor->value){
@@ -381,7 +409,8 @@ void R_EditSelectedLight_f(void) {
 	VectorCopy(selectedShadowLight->origin, origin);
 	VectorCopy(selectedShadowLight->color, color);
 	VectorCopy(selectedShadowLight->angles, angles);
-	radius = selectedShadowLight->radius;
+	VectorCopy(selectedShadowLight->radius, radius);
+
 	style = selectedShadowLight->style;
 	filter = selectedShadowLight->filter;
 	shadow = selectedShadowLight->isShadow;
@@ -433,13 +462,15 @@ void R_EditSelectedLight_f(void) {
 	} 
 	else
 	if (!strcmp(Cmd_Argv(1), "radius")) {
-		if(Cmd_Argc() != 3) {
-			Com_Printf("usage: editLight: %s value\nCurrent Radius: %.1f\n", Cmd_Argv(0), 
-			selectedShadowLight->radius);
+		if(Cmd_Argc() != 5) {
+			Com_Printf("usage: editLight: %s value\nCurrent Radius: %.1f %.1f %.1f\n", Cmd_Argv(0), 
+			selectedShadowLight->radius[0], selectedShadowLight->radius[1], selectedShadowLight->radius[2]);
 			return;
 		}
-		radius = atof(Cmd_Argv(2));
-		selectedShadowLight->radius = radius;
+		radius[0] = atof(Cmd_Argv(2));
+		radius[1] = atof(Cmd_Argv(3));
+		radius[2] = atof(Cmd_Argv(4));
+		VectorCopy(radius, selectedShadowLight->radius);
 		R_DrawBspModelVolumes(true, selectedShadowLight);
 		UpdateLightBounds(selectedShadowLight);
 	 } 
@@ -510,10 +541,10 @@ void R_EditSelectedLight_f(void) {
 		selectedShadowLight->isAmbient = ambient;
 	 }
 	else{
-		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\nSpeed: %.4f %.4f %.4f\nShadows %i\nAmbient %i\nCone %f\n",
+		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f %.1f %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\nSpeed: %.4f %.4f %.4f\nShadows %i\nAmbient %i\nCone %f\n",
 		 selectedShadowLight->origin[0],	selectedShadowLight->origin[1], selectedShadowLight->origin[2],
 		 selectedShadowLight->color[0],		selectedShadowLight->color[1], selectedShadowLight->color[2], 
-		 selectedShadowLight->radius,
+		 selectedShadowLight->radius[0],	selectedShadowLight->radius[1], selectedShadowLight->radius[2],
 		 selectedShadowLight->style,
 		 selectedShadowLight->filter,
 		 selectedShadowLight->angles[0],	selectedShadowLight->angles[1], selectedShadowLight->angles[2],
@@ -638,8 +669,9 @@ void R_MoveLightUpDown_f(void) {
 
 void R_ChangeLightRadius_f(void) {
 	
-	float radius, offset;
-	
+	float offset;
+	vec3_t rad;
+
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
 		return;
@@ -653,19 +685,28 @@ void R_ChangeLightRadius_f(void) {
 
 	if( Cmd_Argc() != 2 )
 	{
-		Com_Printf("Usage: ajustSelectedLightRadius: <value>\n");
+		Com_Printf("Usage: ajustSelectedLightRadius: X Y Z\n");
 		return;
 	}
 
-	radius = selectedShadowLight->radius;
+	VectorCopy(selectedShadowLight->radius, rad);
 
 	offset = atof(Cmd_Argv(1));
 	
-	radius += offset;
-	if(radius <10)
-		radius = 10;
+	rad[0] += offset;
+	rad[1] += offset;
+	rad[2] += offset;
+	
+	if(rad[0] <10)
+		rad[0] = 10;
 
-	selectedShadowLight->radius = radius;
+	if(rad[1] <10)
+		rad[1] = 10;
+
+	if(rad[2] <10)
+		rad[2] = 10;
+	
+	VectorCopy(rad, selectedShadowLight->radius);
 	R_DrawBspModelVolumes(true, selectedShadowLight);
 	UpdateLightBounds(selectedShadowLight);
 
@@ -758,13 +799,11 @@ void UpdateLightEditor(void){
 	vec3_t		end_trace, mins = { -5.0f, -5.0f, -5.0f }, maxs = { 5.0f, 5.0f, 5.0f };
 	vec3_t		corners[8], tmp;
 	int			j;
-	float		rad;
 	float		fraction = 1.0;
 	vec3_t		v[8];
 	trace_t		trace_light, trace_bsp;
 	unsigned	headNode;
-	vec3_t		tmpOrg;
-	float		tmpRad;
+	vec3_t		tmpOrg, tmpRad;
 	int			id;
 	unsigned	defBits = 0;
 
@@ -856,22 +895,24 @@ void UpdateLightEditor(void){
 	}
 
 	if(selectedShadowLight){	
-
+	
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
 	VectorCopy(selectedShadowLight->origin, tmpOrg);
-	tmpRad = selectedShadowLight->radius;
+	VectorCopy(selectedShadowLight->radius, tmpRad);
+
 	qglUniform3f(qglGetUniformLocation(id, "u_color"),	selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2]);
-	
-	rad = tmpRad;
+
 	sprintf(buff0,	"Origin: %.3f %.3f %.3f",	selectedShadowLight->origin[0], 
 												selectedShadowLight->origin[1], 
 												selectedShadowLight->origin[2]);
 	sprintf(buff1,	"Color: %.3f %.3f %.3f",	selectedShadowLight->color[0], 
 												selectedShadowLight->color[1], 
 												selectedShadowLight->color[2]);
-	sprintf(buff2,	"Radius: %.3f",				selectedShadowLight->radius);		
+	sprintf(buff2,	"Radius: %.3f %.3f %.3f",	selectedShadowLight->radius[0],
+												selectedShadowLight->radius[1],
+												selectedShadowLight->radius[2]);		
 	sprintf(buff3,	"Style: %i",				selectedShadowLight->style);
 	sprintf(buff4,	"Filter: %i",				selectedShadowLight->filter);
 	sprintf(buff5,	"Angles: %.3f %.3f %.3f",	selectedShadowLight->angles[0], 
@@ -884,14 +925,14 @@ void UpdateLightEditor(void){
 	sprintf(buff8,	"Ambient: %i",				selectedShadowLight->isAmbient);
 	sprintf(buff9,	"Cone: %f",					selectedShadowLight->_cone);
 
-	VectorSet(v[0], tmpOrg[0]-rad, tmpOrg[1]-rad, tmpOrg[2]-rad);
-	VectorSet(v[1], tmpOrg[0]-rad, tmpOrg[1]-rad, tmpOrg[2]+rad);
-	VectorSet(v[2], tmpOrg[0]-rad, tmpOrg[1]+rad, tmpOrg[2]-rad);
-	VectorSet(v[3], tmpOrg[0]-rad, tmpOrg[1]+rad, tmpOrg[2]+rad);
-	VectorSet(v[4], tmpOrg[0]+rad, tmpOrg[1]-rad, tmpOrg[2]-rad);
-	VectorSet(v[5], tmpOrg[0]+rad, tmpOrg[1]-rad, tmpOrg[2]+rad);
-	VectorSet(v[6], tmpOrg[0]+rad, tmpOrg[1]+rad, tmpOrg[2]-rad);
-	VectorSet(v[7], tmpOrg[0]+rad, tmpOrg[1]+rad, tmpOrg[2]+rad);
+	VectorSet(v[0], tmpOrg[0]-tmpRad[0], tmpOrg[1]-tmpRad[1], tmpOrg[2]-tmpRad[2]);
+	VectorSet(v[1], tmpOrg[0]-tmpRad[0], tmpOrg[1]-tmpRad[1], tmpOrg[2]+tmpRad[2]);
+	VectorSet(v[2], tmpOrg[0]-tmpRad[0], tmpOrg[1]+tmpRad[1], tmpOrg[2]-tmpRad[2]);
+	VectorSet(v[3], tmpOrg[0]-tmpRad[0], tmpOrg[1]+tmpRad[1], tmpOrg[2]+tmpRad[2]);
+	VectorSet(v[4], tmpOrg[0]+tmpRad[0], tmpOrg[1]-tmpRad[1], tmpOrg[2]-tmpRad[2]);
+	VectorSet(v[5], tmpOrg[0]+tmpRad[0], tmpOrg[1]-tmpRad[1], tmpOrg[2]+tmpRad[2]);
+	VectorSet(v[6], tmpOrg[0]+tmpRad[0], tmpOrg[1]+tmpRad[1], tmpOrg[2]-tmpRad[2]);
+	VectorSet(v[7], tmpOrg[0]+tmpRad[0], tmpOrg[1]+tmpRad[1], tmpOrg[2]+tmpRad[2]);
 
 
 	qglBegin(GL_TRIANGLE_FAN);
@@ -915,7 +956,7 @@ void UpdateLightEditor(void){
 	qglVertex3fv(v[2]);
 	qglVertex3fv(v[0]);
 	qglEnd();
-	
+
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	qglDisable(GL_LINE_SMOOTH);
 	
@@ -1061,7 +1102,7 @@ void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame)
 }
 
 
-worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius, int style, 
+worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3], int style, 
 									   int filter, vec3_t angles, vec3_t speed, qboolean isStatic, 
 									   int isShadow, int isAmbient, float cone, qboolean ingame) {
 	
@@ -1083,10 +1124,15 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	VectorCopy(color, light->startColor);
 	VectorCopy(angles, light->angles);
 	VectorCopy(speed, light->speed);
+	VectorCopy(radius, light->radius);
+
+	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
+		light->spherical = true;
+	else
+		light->spherical = false;
 
 	Clamp2RGB(light->color);
-
-	light->radius = radius;
+	
 	light->_cone = cone;
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
@@ -1098,20 +1144,25 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->vboId = light->iboId = light->iboNumIndices = 0;
 	light->depthBounds[0] = 0.0;
 	light->depthBounds[1] = 1.0;
+	light->len = 0;
 
 	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - light->radius;
-		light->maxs[i] = light->origin[i] + light->radius;
+		light->mins[i] = light->origin[i] - light->radius[i];
+		light->maxs[i] = light->origin[i] + light->radius[i];
+	}
 
-		light->mins_cone[i] = light->origin[i] - light->radius;
-		light->maxs_cone[i] = light->origin[i] + light->radius;
-
+	if(light->spherical){
+		light->len = light->radius[0];
+	}else
+	{
+		VectorSubtract(light->origin, light->maxs, tmp);
+		light->len = VectorLength(tmp);
 	}
 
 	 for (i=0; i<8; i++) {
-		tmp[0] = (i & 1) ? -light->radius : light->radius;
-		tmp[1] = (i & 2) ? -light->radius : light->radius;
-		tmp[2] = (i & 4) ? -light->radius : light->radius;
+		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
+		tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
+		tmp[2] = (i & 4) ? -light->radius[2] : light->radius[2];
 
 		AnglesToMat3(light->angles, lightAxis);
 		Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
@@ -1144,7 +1195,7 @@ void Load_BspLights() {
 	
 	int addLight, style, numlights, addLight_mine, numLightStyles, filter;
 	char *c, *token, key[256], *value;
-	float color[3], origin[3], radius, cone;
+	float color[3], origin[3], radius[3], cone;
 
 	if(!loadmodel) {
 		Com_Printf("No map loaded.\n");
@@ -1162,7 +1213,7 @@ void Load_BspLights() {
 
 		VectorClear(origin);
 		VectorClear(color);
-		radius = 0;
+		VectorClear(radius);
 		style = 0;
 		filter = 0;
 		cone = 0;
@@ -1189,8 +1240,8 @@ void Load_BspLights() {
 				}
 			}
 
-			if(!Q_stricmp(key, "light"))
-				radius = atof(value);
+			if(!Q_stricmp(key, "radius"))
+				VectorSet(radius, atoi(value), atoi(value), atoi(value));
 			else if(!Q_stricmp(key, "origin"))
 				sscanf(value, "%f %f %f", &origin[0], &origin[1], &origin[2]);
 			else if(!Q_stricmp(key, "_color"))
@@ -1217,7 +1268,7 @@ void Load_LightFile() {
 	int		style, numLights = 0, filter, shadow, ambient;
 	vec3_t	angles, speed, color, origin, lOrigin;
 	char	*c, *token, key[256], *value;
-	float	radius, cone;
+	float	radius[3], cone;
 	char	name[MAX_QPATH], path[MAX_QPATH];
 
 	if(!loadmodel) {
@@ -1244,13 +1295,13 @@ void Load_LightFile() {
 		if(!c)
 			break;
 
-		radius = 0;
 		style = 0;
 		filter = 0;
 		shadow = 0;
 		ambient = 0;
 		cone = 0;
 
+		VectorClear(radius);
 		VectorClear(angles);
 		VectorClear(speed);
 		VectorClear(origin);
@@ -1267,7 +1318,7 @@ void Load_LightFile() {
 			value = COM_Parse(&c);
 			
 			if(!Q_stricmp(key, "radius"))
-				radius = atof(value);
+				sscanf(value, "%f %f %f", &radius[0], &radius[1], &radius[2]);
 			else if(!Q_stricmp(key, "origin"))
 				sscanf(value, "%f %f %f", &origin[0], &origin[1], &origin[2]);
 			else if(!Q_stricmp(key, "color"))
@@ -1329,8 +1380,8 @@ skip:	Com_DPrintf("Out of BSP, rejected light at %f %f %f\n", light->origin[0], 
 
 	for (i=0 ; i<3 ; i++)
 	{
-		mins[i] = light->origin[i] - light->radius;
-		maxs[i] = light->origin[i] + light->radius;
+		mins[i] = light->origin[i] - light->radius[i];
+		maxs[i] = light->origin[i] + light->radius[i];
 	}
 
 	count = CM_BoxLeafnums (mins, maxs, leafs, r_worldmodel->numleafs, NULL);
@@ -1514,7 +1565,7 @@ qboolean R_DrawLightOccluders()
 {
 	vec3_t		v[8];
 	vec3_t		tmpOrg;
-	float		radius;
+	vec3_t		radius;
 	int			sampleCount, id;
 	unsigned	defBits = 0;
 
@@ -1539,16 +1590,16 @@ qboolean R_DrawLightOccluders()
 	qglDisable(GL_STENCIL_TEST);
 	
 	VectorCopy(currentShadowLight->origin, tmpOrg);
-	radius = currentShadowLight->radius * r_occLightBoundsSize->value;
+	VectorScale(currentShadowLight->radius, r_occLightBoundsSize->value, radius);
 
-	VectorSet(v[0], tmpOrg[0]-radius, tmpOrg[1]-radius, tmpOrg[2]-radius);
-	VectorSet(v[1], tmpOrg[0]-radius, tmpOrg[1]-radius, tmpOrg[2]+radius);
-	VectorSet(v[2], tmpOrg[0]-radius, tmpOrg[1]+radius, tmpOrg[2]-radius);
-	VectorSet(v[3], tmpOrg[0]-radius, tmpOrg[1]+radius, tmpOrg[2]+radius);
-	VectorSet(v[4], tmpOrg[0]+radius, tmpOrg[1]-radius, tmpOrg[2]-radius);
-	VectorSet(v[5], tmpOrg[0]+radius, tmpOrg[1]-radius, tmpOrg[2]+radius);
-	VectorSet(v[6], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]-radius);
-	VectorSet(v[7], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]+radius);
+	VectorSet(v[0], tmpOrg[0]-radius[0], tmpOrg[1]-radius[1], tmpOrg[2]-radius[2]);
+	VectorSet(v[1], tmpOrg[0]-radius[0], tmpOrg[1]-radius[1], tmpOrg[2]+radius[2]);
+	VectorSet(v[2], tmpOrg[0]-radius[0], tmpOrg[1]+radius[1], tmpOrg[2]-radius[2]);
+	VectorSet(v[3], tmpOrg[0]-radius[0], tmpOrg[1]+radius[1], tmpOrg[2]+radius[2]);
+	VectorSet(v[4], tmpOrg[0]+radius[0], tmpOrg[1]-radius[1], tmpOrg[2]-radius[2]);
+	VectorSet(v[5], tmpOrg[0]+radius[0], tmpOrg[1]-radius[1], tmpOrg[2]+radius[2]);
+	VectorSet(v[6], tmpOrg[0]+radius[0], tmpOrg[1]+radius[1], tmpOrg[2]-radius[2]);
+	VectorSet(v[7], tmpOrg[0]+radius[0], tmpOrg[1]+radius[1], tmpOrg[2]+radius[2]);
 
 	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
 
@@ -1592,85 +1643,6 @@ qboolean R_DrawLightOccluders()
 
 }
 
-/*
-void R_DrawLightOccluders2()
-{
-	vec3_t		v[8];
-	vec3_t		tmpOrg;
-	float		radius;
-	int			id;
-	unsigned	defBits = 0;
-
-	if(!r_useConditionalRender->value || !gl_state.conditional_render)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
-		return;
-	}
-
-	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0)){
-		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
-		return;
-	}
-
-	// setup program
-	GL_BindProgram(nullProgram, defBits);
-	id = nullProgram->id[defBits];
-
-	qglColorMask(0,0,0,0);
-	qglDisable(GL_TEXTURE_2D);
-	qglDisable(GL_CULL_FACE);
-	qglDisable(GL_BLEND);
-	qglDisable(GL_STENCIL_TEST);
-	
-	VectorCopy(currentShadowLight->origin, tmpOrg);
-	radius = currentShadowLight->radius * r_occLightBoundsSize->value;
-
-	VectorSet(v[0], tmpOrg[0]-radius, tmpOrg[1]-radius, tmpOrg[2]-radius);
-	VectorSet(v[1], tmpOrg[0]-radius, tmpOrg[1]-radius, tmpOrg[2]+radius);
-	VectorSet(v[2], tmpOrg[0]-radius, tmpOrg[1]+radius, tmpOrg[2]-radius);
-	VectorSet(v[3], tmpOrg[0]-radius, tmpOrg[1]+radius, tmpOrg[2]+radius);
-	VectorSet(v[4], tmpOrg[0]+radius, tmpOrg[1]-radius, tmpOrg[2]-radius);
-	VectorSet(v[5], tmpOrg[0]+radius, tmpOrg[1]-radius, tmpOrg[2]+radius);
-	VectorSet(v[6], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]-radius);
-	VectorSet(v[7], tmpOrg[0]+radius, tmpOrg[1]+radius, tmpOrg[2]+radius);
-
-	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[4]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[3]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
-	
-	qglEndQueryARB(gl_state.query_passed);
-
-	qglColorMask(1,1,1,1);
-	qglEnable(GL_TEXTURE_2D);
-	qglEnable(GL_CULL_FACE);
-	qglEnable(GL_BLEND);
-	qglEnable(GL_STENCIL_TEST);
-	GL_BindNullProgram();
-	glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
-}
-*/
 
 void R_LightScale(void) {
 	float	val;
