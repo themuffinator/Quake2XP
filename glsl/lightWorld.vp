@@ -6,6 +6,7 @@ varying vec3			v_viewVecTS;
 varying vec3 			v_lightVec;
 varying vec2			v_colorCoord; 
 varying vec4			v_CubeCoord;
+varying vec3			v_AttenCoord;
 
 attribute vec3			a_tangent;
 attribute vec3			a_binormal;
@@ -18,6 +19,7 @@ void main ()
 // setup tex coords
 v_colorCoord = a_texCoord;  // diffuse & bump
 v_CubeCoord = gl_TextureMatrix[2] * vec4(a_vertArray, 1.0);
+v_AttenCoord = gl_TextureMatrix[3] * vec4(a_vertArray, 1.0);
 
 // calculate tangent space view vector for parallax
 vec3 tmp = u_viewOriginES - a_vertArray;
@@ -31,5 +33,4 @@ v_lightVec.y = dot(a_binormal, LV);
 v_lightVec.z = dot(a_normArray, LV); 
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1);
-
 }

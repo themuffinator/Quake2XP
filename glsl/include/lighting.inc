@@ -9,3 +9,14 @@ vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const flo
 	E.y *= E.x;
 	return E;
 }
+
+/*
+==============
+PointAttenuation
+
+'p' - position in unit light space.
+==============
+*/
+float PointAttenuation (const in vec3 p, const in float e) {
+	return pow(max(1.0 - dot(p, p), 0.0), e);
+}

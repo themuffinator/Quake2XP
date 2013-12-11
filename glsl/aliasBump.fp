@@ -16,7 +16,12 @@ varying vec3			v_AttenCoord;
 
 void main(){
 
-vec3 N =  normalize(texture2D(u_bumpMap, v_texCoord).rgb * 2.0 - 1.0);
+// compute the light vector
+vec3 L = normalize(v_lightVec);
+// compute the view vector
+vec3 V = normalize(v_viewVec);
+
+vec3 N =  normalize(texture2D(u_bumpMap, v_texCoord).rgb * 0.5);
 float tmp = texture2D(u_bumpMap,   v_texCoord.xy).a;
 vec4 specular = vec4(tmp);
 vec4 diffuse  = texture2D(u_diffuseMap,  v_texCoord.xy);
@@ -31,13 +36,7 @@ gl_FragColor = diffuse * vec4(u_LightColor, 1) * u_attenMap;
 
 #else
 
-// compute the light vector
-vec3 L = normalize(v_lightVec);
-// compute the view vector
-vec3 V = normalize(v_viewVec);
 vec2 E = PhongLighting(N, L, V, 16.0);
-
-
 gl_FragColor = (E.x * diffuse + E.y * specular) * cubeFilter * vec4(u_LightColor, 1) * u_attenMap;
 
 #endif

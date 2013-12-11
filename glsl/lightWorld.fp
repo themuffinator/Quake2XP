@@ -2,6 +2,7 @@
 uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_NormalMap;
 uniform samplerCube 	u_CubeFilterMap;
+uniform sampler3D	 	u_attenMap;
 
 uniform float      		u_ColorModulate;
 uniform float			u_specularScale;
@@ -13,6 +14,8 @@ varying vec3			v_viewVecTS;
 varying vec3			v_lightVec;
 varying vec2			v_colorCoord;
 varying vec4			v_CubeCoord;
+varying vec4			v_lightCoord;
+varying vec3			v_AttenCoord;
 
 #include lighting.inc
 #include parallax.inc
@@ -36,10 +39,7 @@ float specTmp = texture2D(u_NormalMap, v_colorCoord).a;
 
 vec4 specular = vec4(specTmp) * u_specularScale;
 
-// compute the atten
-vec3 tmp1 = v_lightVec;
-tmp1 /= u_LightRadius;
-float att = max(1.0 - dot(tmp1, tmp1), 0.0);
+vec4 u_attenMap = texture3D(u_attenMap ,v_AttenCoord);
 
 // light filter
 vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
@@ -47,12 +47,12 @@ cubeFilter *= 2;
 
 #ifdef AMBIENT
 
-gl_FragColor = diffuseMap * u_LightColor * att;
+gl_FragColor = diffuseMap * u_LightColor * u_attenMap;
 
 #else
 
 vec2 Es = PhongLighting(normalMap, L, V, u_specularExp);
-gl_FragColor = cubeFilter * u_LightColor * att * (Es.x * diffuseMap + Es.y * specular);
+gl_FragColor = cubeFilter * u_LightColor * u_attenMap * (Es.x * diffuseMap + Es.y * specular);
 
 #endif
 }

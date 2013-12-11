@@ -43,7 +43,6 @@ vec4 skyCube = textureCube(g_CubeMap, reflectedDirection);
 // set vertex lighting
 diffuse *= v_color;
 diffuse = clamp(diffuse, 0.0, 1.0); 
-diffuse +=skyCube;
  
 #ifdef TRANS
 vec2 N = offset.xy; // use autogen dst texture
