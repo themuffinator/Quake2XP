@@ -40,6 +40,9 @@ void R_BuildFlares(flare_t * light){
 	unsigned	flareIndex[MAX_INDICES];
 	int			flareVert=0, index=0;
 	
+	if(r_pplWorld->value && !light->surf->ent)
+		return;
+
 	if (light->surf->ent) {
 		
 		if (!VectorCompare(light->surf->ent->angles, vec3_origin))

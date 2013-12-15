@@ -368,7 +368,7 @@ void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3],  int style, int filter, vec3_t angles, vec3_t speed, 
-									   qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame);
+									   qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH]);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
@@ -423,6 +423,8 @@ void R_ChangeLightRadius_f(void);
 void R_Light_Copy_f(void);
 void R_ChangeLightCone_f(void);
 void R_Light_UnSelect_f(void);
+void R_FlareEdit_f(void);
+extern qboolean flareEdit;
 
 void GL_SetupCubeMapMatrix(qboolean model);
 void DeleteShadowVertexBuffers(void);
@@ -450,7 +452,7 @@ void R_SetFrustum(void);
 qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs);
 void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect(const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
-
+void R_DrawLightFlare();
 void GL_LoadMatrix(GLenum mode, const mat4_t matrix);
 void Mat4_Multiply(const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_Copy(const mat4_t in, mat4_t out);

@@ -46,6 +46,10 @@ typedef struct worldShadowLight_s {
 	vec3_t	maxs_cone;
 	vec3_t	corners[8];
 	
+	vec3_t	flareOrigin;
+	float	flareSize;
+	int		flare;
+
 	float	radius[3];
 	float	_cone;
 	float	depthBounds[2];
@@ -59,12 +63,12 @@ typedef struct worldShadowLight_s {
 	int		linkedSurf;
 	int		scissor[4];
 	qboolean spherical;
+
 	unsigned int	occQ;
 	cplane_t		frust[4];
+	char		targetname[MAX_QPATH];
 
 	byte vis[MAX_MAP_LEAFS / 8];
-	
-	msurface_t		*surf;
 
 	GLuint			vboId;
 	GLuint			iboId;

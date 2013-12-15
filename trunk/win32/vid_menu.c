@@ -372,7 +372,8 @@ void VID_MenuInit( void )
 {
 
 	
-	static char *resolutions[] = {		"[800 600][4:3]",   
+	static char *resolutions[] = {		"[Desktop]",
+										"[800 600][4:3]",   
 										"[1024 768][4:3]",  
 										"[1152 864][4:3]",  
 										"[1280 1024][5:4]", 
@@ -388,7 +389,7 @@ void VID_MenuInit( void )
 										"[1920 1080][1080p full HDTV]", 
 										"[1920 1200][16:10]", 
 										"[2560 1600][16:10]", 
-										"[custom]", 0};
+										"[Custom]", 0};
 	
 	static char	*yesno_names[]	=	{"no", "yes", 0};
 	static char	*adaptive_vc[]	=	{"no", "default", "adaptive", 0};

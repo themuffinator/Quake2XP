@@ -419,8 +419,8 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 			return;
 	}
 	
-	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic lighting if we don't relight
-		return;
+//	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic lighting if we don't relight
+//		return;
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 		if(!currentShadowLight->isNoWorldModel)

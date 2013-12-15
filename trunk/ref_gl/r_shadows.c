@@ -34,9 +34,7 @@ SHADOW VOLUMES
 */
 vec3_t			ShadowArray[MAX_SHADOW_VERTS];
 unsigned		ShadowIndex[MAX_INDICES];
-unsigned int	shadowVbo, shadowIbo;
-
-char	triangleFacingLight	[MAX_INDICES / 3];
+char			triangleFacingLight	[MAX_INDICES / 3];
 
 void R_MarkShadowTriangles(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg){
 	
@@ -289,8 +287,8 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 	mat3_t	entityAxis;
 	int		i;
 
-	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic shadows if we don't relight
-		return;
+//	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic shadows if we don't relight
+//		return;
 	
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {

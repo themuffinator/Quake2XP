@@ -518,7 +518,7 @@ vec2_t SkyTexCoordArray [2 * MAX_TRIANGLES];
 vec3_t SkyVertexArray	[3 * MAX_TRIANGLES];
 vec4_t SkyColorArray	[4 * MAX_TRIANGLES];
 unsigned	skyIndex[MAX_INDICES];
-static int numVerts, myindex;
+static int numVerts, index;
 
 void MakeSkyVec(float s, float t, int axis)
 {
@@ -556,12 +556,12 @@ void MakeSkyVec(float s, float t, int axis)
 	VA_SetElem2(SkyTexCoordArray[numVerts], s, t);
 	VA_SetElem4(SkyColorArray[numVerts],	1, 1, 1, 1);
 
-	skyIndex[myindex++] = numVerts+0;
-	skyIndex[myindex++] = numVerts+1;
-	skyIndex[myindex++] = numVerts+3;
-	skyIndex[myindex++] = numVerts+3;
-	skyIndex[myindex++] = numVerts+1;
-	skyIndex[myindex++] = numVerts+2;
+	skyIndex[index++] = numVerts+0;
+	skyIndex[index++] = numVerts+1;
+	skyIndex[index++] = numVerts+3;
+	skyIndex[index++] = numVerts+3;
+	skyIndex[index++] = numVerts+1;
+	skyIndex[index++] = numVerts+2;
 
 	numVerts++;
 
@@ -622,14 +622,14 @@ void R_DrawSkyBox(void)
 
 		GL_MBind(GL_TEXTURE0_ARB, sky_images[skytexorder[i]]->texnum);
 		
-		numVerts = myindex = 0;
+		numVerts = index = 0;
 		
 		MakeSkyVec(skymins[0][i], skymins[1][i], i);
 		MakeSkyVec(skymins[0][i], skymaxs[1][i], i);
 		MakeSkyVec(skymaxs[0][i], skymaxs[1][i], i);
 		MakeSkyVec(skymaxs[0][i], skymins[1][i], i);
 
-		qglDrawElements(GL_TRIANGLES, myindex, GL_UNSIGNED_INT, skyIndex);
+		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, skyIndex);
 	}
 
 	qglDisableVertexAttribArray(ATRB_POSITION);

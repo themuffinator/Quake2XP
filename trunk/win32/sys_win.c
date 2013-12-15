@@ -681,16 +681,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
    			DispatchMessage (&msg);
 		}
 
-	/*	// DarkOne's CPU usage fix
-		while (1)
-		{
-			newtime = Sys_Milliseconds();
-			time = newtime - oldtime;
-			if (time > 0) break;
-			Sleep(0); // may also use Speep(1); to free more CPU, but it can lower your fps
-		}
-*/
-
 		do
 		{
 			newtime = Sys_Milliseconds ();

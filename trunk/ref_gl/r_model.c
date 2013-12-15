@@ -88,6 +88,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 	vec3_t poly_center, mins, maxs, tmp1, lightOffset, radius;
 	int leafnum;
 	int cluster;
+	char target[MAX_QPATH];
 
 	if (surf->texinfo->
 		flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_FLOWING |
@@ -205,9 +206,11 @@ void GL_AddFlareSurface(msurface_t * surf)
 	VectorSet(radius,	r_flares[r_numflares].size	*	r_shadowWorldLightScale->value,
 						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value,
 						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value);
-	if(!FoundReLight)
-	R_AddNewWorldLight(	lightOffset, r_flares[r_numflares].color, 
-						radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false);
+	
+	memset(target, 0, sizeof(target));
+//	if(!FoundReLight)
+//	R_AddNewWorldLight(	lightOffset, r_flares[r_numflares].color, 
+//						radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false, 1, origin, r_flares[r_numflares].size, target);
 
 	r_numflares++;
 	free(buffer);
@@ -1632,7 +1635,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadFaces(&header->lumps[LUMP_FACES]);	
 
 	CleanDuplicateFlares();
-	CleanDuplicateLights();
+//	CleanDuplicateLights();
 
 	Mod_LoadMarksurfaces(&header->lumps[LUMP_LEAFFACES]);
 	Mod_LoadVisibility(&header->lumps[LUMP_VISIBILITY]);
@@ -2471,6 +2474,7 @@ void R_BeginRegistration(char *model)
 
 	r_viewcluster = -1;
 	numPreCachedLights = 0;
+	flareEdit = (qboolean)false;
 }
 
 

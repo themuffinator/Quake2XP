@@ -866,7 +866,9 @@ void GL_SetDefaultState(void)
 	qglDisable			(GL_STENCIL_TEST);
 	qglDisable			(GL_BLEND);
 	gl_state.blend		= (qboolean)false;
-
+	
+	flareEdit			= (qboolean)false;
+	
 	qglColor4f			(1, 1, 1, 1);
 	qglColorMask		(1, 1, 1, 1);
 

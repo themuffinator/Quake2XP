@@ -1386,28 +1386,30 @@ void CL_AddViewWeapon(player_state_t * ps, player_state_t * ops)
 			cl.refdef.viewangles[i] + LerpAngle(ops->gunangles[i],
 												ps->gunangles[i],
 												cl.lerpfrac);
+	}
 	AngleVectors(gun.angles, fv, rv, up);
 	VectorMA(gun.origin, 10, fv, smoke_puff);
 	VectorMA(gun.origin, 6.7, fv, shell_puff);
-		
-	}
 
 	VectorMA(smoke_puff, 3, rv, smoke_puff);
 	VectorMA(shell_puff, 5, rv, shell_puff);
 
 
 	if(dm_flag & DF_FLASHLIGHT){
+	
 	// set up flashlight position
 	for (i=0 ; i<3 ; i++)
-	{
-		if (hand->value==2)	// center
-			flOrg[i] = cl.refdef.vieworg[i] + ops->gunoffset[i] + cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]) - vup[i]*3;
-		else if (hand->value==1)	// left
-			flOrg[i] = cl.refdef.vieworg[i] + ops->gunoffset[i] + cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]) - vright[i]*3 - vup[i]*3;
-		else   // otherwise right
-		flOrg[i] = cl.refdef.vieworg[i] + ops->gunoffset[i] + cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]) + vright[i]*3 - vup[i]*3;
 		lAngles[i] = cl.refdef.viewangles[i] + LerpAngle (ops->gunangles[i], ps->gunangles[i], cl.lerpfrac);
-	}
+	
+	VectorMA(cl.refdef.vieworg, 25, fv, flOrg);
+
+	if (hand->value==2)// center
+		VectorMA(flOrg, 1, rv, flOrg);
+	else
+	if (hand->value==1)//left
+		VectorMA(flOrg, -10, rv, flOrg);
+	else
+		VectorMA(flOrg, 10, rv, flOrg); //right
 
 	V_AddLight (flOrg, 1024, 1,1,1, lAngles, 0.5, 33);	
 	}

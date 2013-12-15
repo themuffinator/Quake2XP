@@ -173,7 +173,6 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 /*
 ** GLimp_SetMode
 */
-void GL_UpdateSwapInterval();
 
 rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean fullscreen )
 {
@@ -194,6 +193,11 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		return rserr_invalid_mode;
 	}
 	
+	if(mode == 0){
+	width = glw_state.desktopWidth;
+	height = glw_state.desktopHeight;
+	}
+
 	Com_Printf ("...setting mode "S_COLOR_YELLOW"%d"S_COLOR_WHITE":"S_COLOR_YELLOW"[%ix%i]", mode , width, height);
 
 	if(width > glw_state.desktopWidth || height > glw_state.desktopHeight){
@@ -319,7 +323,6 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		if ( !VID_CreateWindow (width, height, false) )
 			return rserr_invalid_mode;
 	}
-//	GL_UpdateSwapInterval();
 
 	return rserr_ok;
 }
@@ -512,8 +515,6 @@ int CPUCount( int logicalNum, int physicalNum ) {
 			if ( dwAffinityMask & dwProcessAffinity ) {
 				if ( SetProcessAffinityMask( hCurrentProcessHandle, dwAffinityMask ) ) {
 					unsigned char APIC_ID, LOG_ID, PHY_ID;
-
-					Sleep( 0 ); // Give OS time to switch CPU
 
 					APIC_ID = GetAPIC_ID();
 					LOG_ID  = APIC_ID & ~PHY_ID_MASK;
@@ -1492,7 +1493,6 @@ void GLimp_EndFrame (void)
 
 	r_newrefdef.time=Sys_Milliseconds() * 0.001f;
 	ref_realtime=Sys_Milliseconds() * 0.0005f;
-	Sleep(0);	// fixes a few problems ive been having
 }
 
 

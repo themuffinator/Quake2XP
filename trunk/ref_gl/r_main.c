@@ -717,7 +717,8 @@ void R_DrawLightInteractions(void)
 	R_DrawPlayerWeaponLightPass();	// shade player weapon only from bsp!
 	R_CastAliasShadowVolumes();		// alias models shadows
 	R_DrawLightWorld();				// light world
-	
+	R_DrawLightFlare();				// light flare
+
 	//entities lightpass w/o player weapon
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -742,7 +743,6 @@ void R_DrawLightInteractions(void)
 		if(currentmodel->type == mod_alias)
 			R_DrawAliasModelLightPass(false);
 		}
-	
 	num_visLights++;
 
 	}
@@ -913,6 +913,9 @@ extern char buff6[128];
 extern char buff7[128];
 extern char buff8[128];
 extern char buff9[128];
+extern char buff10[128];
+extern char buff11[128];
+extern char buff12[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
@@ -969,6 +972,9 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	Draw_StringScaled(0, vid.height*0.5+145, 2, 2, buff7);
 	Draw_StringScaled(0, vid.height*0.5+165, 2, 2, buff8);
 	Draw_StringScaled(0, vid.height*0.5+185, 2, 2, buff9);
+	Draw_StringScaled(0, vid.height*0.5+205, 2, 2, buff12);
+	Draw_StringScaled(0, vid.height*0.5+225, 2, 2, buff10);
+	Draw_StringScaled(0, vid.height*0.5+245, 2, 2, buff11);
 	qglColor3f(1,1,1);
 	}
 
@@ -1248,7 +1254,7 @@ void R_RegisterCvars(void)
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 	
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
-	r_CameraSpaceLightMove =			Cvar_Get("r_CameraSpaceLightMove", "1", CVAR_ARCHIVE);
+	r_CameraSpaceLightMove =			Cvar_Get("r_CameraSpaceLightMove", "0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
@@ -1291,6 +1297,7 @@ bind KP_DEL		"unselectLight"
 	Cmd_AddCommand("changeLightCone",			R_ChangeLightCone_f);
 	Cmd_AddCommand("clearWorldLights",          R_ClearWorldLights);
 	Cmd_AddCommand("unselectLight",				R_Light_UnSelect_f);
+	Cmd_AddCommand("editFlare",					R_FlareEdit_f);
 }
 
 /*
@@ -1301,7 +1308,7 @@ R_SetMode
 qboolean R_SetMode(void)
 {
 	rserr_t err;
-	const qboolean fullscreen = r_fullScreen->value;
+	const qboolean fullscreen = (qboolean)r_fullScreen->value;
 
 	r_fullScreen->modified = false;
 	r_mode->modified = false;
@@ -1829,7 +1836,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("changeLightCone");
 	Cmd_RemoveCommand("clearWorldLights");
 	Cmd_RemoveCommand("unselectLight");
-
+	Cmd_RemoveCommand("editFlare");
 	Mod_FreeAll();
 	GL_ShutdownImages();
 
@@ -1860,8 +1867,6 @@ void R_Shutdown(void)
 R_BeginFrame
 @@@@@@@@@@@@@@@@@@@@@
 */
-//void UpdateGamma();
-
 void R_BeginFrame()
 {
 #ifndef _WIN32
@@ -1894,8 +1899,7 @@ void R_BeginFrame()
 	if(r_pplWorldAmbient->value < 0)
 		Cvar_SetValue("r_pplWorldAmbient", 0);
 
-	qglDrawBuffer( GL_BACK );
-	
+
 	/* 
 	 ** go into 2D mode
 	 */
@@ -1909,6 +1913,8 @@ void R_BeginFrame()
 	qglDisable(GL_CULL_FACE);
 	GLSTATE_DISABLE_BLEND 
 	qglColor4f(1, 1, 1, 1);
+
+	qglDrawBuffer( GL_BACK );
 
 	/* 
 	 ** texturemode stuff

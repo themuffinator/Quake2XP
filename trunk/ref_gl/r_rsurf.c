@@ -1110,16 +1110,16 @@ void R_DrawLightWorld(void)
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
 				
-		if(!FoundReLight){
-		if(!currentShadowLight->isStatic){
+//		if(!FoundReLight){
+//		if(!currentShadowLight->isStatic){
 
 			if(R_FillLightChain(currentShadowLight))
 				GL_BatchLightPass(false);
-			}
-		}else{
-			if(R_FillLightChain(currentShadowLight))
-				GL_BatchLightPass(false);
-		}
+//			}
+//		}else{
+//			if(R_FillLightChain(currentShadowLight))
+//				GL_BatchLightPass(false);
+//		}
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -1575,18 +1575,18 @@ void R_DrawLightBrushModel(entity_t * e)
 		AnglesToMat3(currententity->angles, entityAxis);
 		Mat3_TransposeMultiplyVector(entityAxis, tmp, currentShadowLight->origin);
 		
-		if(!FoundReLight){
+//		if(!FoundReLight){
 				
-			if(!currentShadowLight->isStatic){
+//			if(!currentShadowLight->isStatic){
 			if(R_MarkBrushModelSurfaces(currentShadowLight))
 				GL_BatchLightPass(true);
-			}
+//			}
 
-		} else{
+//		} else{
 
-			if(R_MarkBrushModelSurfaces(currentShadowLight))
-				GL_BatchLightPass(true);
-		}
+//			if(R_MarkBrushModelSurfaces(currentShadowLight))
+//				GL_BatchLightPass(true);
+//		}
 
 		VectorCopy(oldLight, currentShadowLight->origin);
 	
