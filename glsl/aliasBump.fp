@@ -32,7 +32,8 @@ vec4 u_attenMap = texture3D(u_attenMap ,v_AttenCoord);
 
 #ifdef AMBIENT
 
-gl_FragColor = diffuse * vec4(u_LightColor, 1) * u_attenMap;
+vec4 ambient = u_attenMap * (N.z * N.z);
+gl_FragColor = diffuse * ambient * vec4(u_LightColor, 1);
 
 #else
 
