@@ -207,7 +207,7 @@ void turret_breach_finish_init (edict_t *self)
 	}
 	else
 	{
-		self->target_ent = G_PickTarget (self->target);
+		self->target_ent = G_PickTarget (self->target, NULL);
 		VectorSubtract (self->target_ent->s.origin, self->s.origin, self->move_origin);
 		G_FreeEdict(self->target_ent);
 	}
@@ -359,7 +359,7 @@ void turret_driver_link (edict_t *self)
 	self->think = turret_driver_think;
 	self->nextthink = level.time + FRAMETIME;
 
-	self->target_ent = G_PickTarget (self->target);
+	self->target_ent = G_PickTarget (self->target, NULL);
 	self->target_ent->owner = self;
 	self->target_ent->teammaster->owner = self;
 	VectorCopy (self->target_ent->s.angles, self->s.angles);

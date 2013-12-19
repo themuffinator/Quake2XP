@@ -72,7 +72,7 @@ void PF_dprintf(char *fmt, ...)
 	vsnprintf(msg, sizeof(msg), fmt, argptr);
 	va_end(argptr);
 
-	Com_Printf("%s", msg);
+	Com_DPrintf("%s", msg);
 }
 
 

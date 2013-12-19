@@ -916,6 +916,7 @@ extern char buff9[128];
 extern char buff10[128];
 extern char buff11[128];
 extern char buff12[128];
+extern char buff13[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
@@ -973,8 +974,9 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	Draw_StringScaled(0, vid.height*0.5+165, 2, 2, buff8);
 	Draw_StringScaled(0, vid.height*0.5+185, 2, 2, buff9);
 	Draw_StringScaled(0, vid.height*0.5+205, 2, 2, buff12);
-	Draw_StringScaled(0, vid.height*0.5+225, 2, 2, buff10);
-	Draw_StringScaled(0, vid.height*0.5+245, 2, 2, buff11);
+	Draw_StringScaled(0, vid.height*0.5+225, 2, 2, buff13);
+	Draw_StringScaled(0, vid.height*0.5+245, 2, 2, buff10);
+	Draw_StringScaled(0, vid.height*0.5+265, 2, 2, buff11);
 	qglColor3f(1,1,1);
 	}
 

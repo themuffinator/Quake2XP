@@ -368,7 +368,8 @@ void R_RenderFlares(void);
 
 void R_DrawShadowVolume(entity_t * e);
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3],  int style, int filter, vec3_t angles, vec3_t speed, 
-									   qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH]);
+									   qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg, 
+									   float flareSize, char target[MAX_QPATH], int start_off);
 void R_DrawParticles(qboolean WaterCheck);
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);

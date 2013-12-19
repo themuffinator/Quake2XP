@@ -62,9 +62,11 @@ typedef struct worldShadowLight_s {
 	int		isAmbient;
 	int		linkedSurf;
 	int		scissor[4];
-	qboolean spherical;
+	int		start_off;
 
-	unsigned int	occQ;
+	qboolean spherical;
+	
+	uint	occQ;
 	cplane_t		frust[4];
 	char		targetname[MAX_QPATH];
 

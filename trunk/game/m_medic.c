@@ -89,7 +89,7 @@ void medic_idle (edict_t *self)
 		self->enemy = ent;
 		self->enemy->owner = self;
 		self->monsterinfo.aiflags |= AI_MEDIC;
-		FoundTarget (self);
+		FoundTarget (self, NULL);
 	}
 }
 
@@ -108,7 +108,7 @@ void medic_search (edict_t *self)
 			self->enemy = ent;
 			self->enemy->owner = self;
 			self->monsterinfo.aiflags |= AI_MEDIC;
-			FoundTarget (self);
+			FoundTarget (self, NULL);
 		}
 	}
 }
@@ -269,7 +269,7 @@ void medic_run (edict_t *self)
 			self->enemy = ent;
 			self->enemy->owner = self;
 			self->monsterinfo.aiflags |= AI_MEDIC;
-			FoundTarget (self);
+			FoundTarget (self, NULL);
 			return;
 		}
 	}
@@ -636,7 +636,7 @@ void medic_cable_attack (edict_t *self)
 		if (self->oldenemy && self->oldenemy->client)
 		{
 			self->enemy->enemy = self->oldenemy;
-			FoundTarget (self->enemy);
+			FoundTarget (self->enemy, NULL);
 		}
 	}
 	else

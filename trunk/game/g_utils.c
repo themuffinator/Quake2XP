@@ -42,9 +42,15 @@ NULL will be returned if the end of the list is reached.
 
 =============
 */
-edict_t *G_Find (edict_t *from, int fieldofs, char *match)
+edict_t *G_Find (edict_t *from, int fieldofs, char *match, char *func)
 {
 	char	*s;
+	qboolean	target;
+
+	if (func)
+		target = (fieldofs == FOFS(targetname));		// отслеживать будем обращения к TargetName
+	else
+		target = false;
 
 	if (!from)
 		from = g_edicts;
@@ -58,8 +64,13 @@ edict_t *G_Find (edict_t *from, int fieldofs, char *match)
 		s = *(char **) ((byte *)from + fieldofs);
 		if (!s)
 			continue;
-		if (!Q_stricmp (s, match))
-			return from;
+		if (!Q_stricmp (s, match)){
+		
+		if(target)
+			gi.dprintf/*Com_Printf*/ ("\"%s\" activated \"%s\"\n", func, s);
+			
+		return from;
+		}
 	}
 
 	return NULL;
@@ -115,7 +126,7 @@ NULL will be returned if the end of the list is reached.
 */
 #define MAXCHOICES	8
 
-edict_t *G_PickTarget (char *targetname)
+edict_t *G_PickTarget (char *targetname, char *func)
 {
 	edict_t	*ent = NULL;
 	int		num_choices = 0;
@@ -129,7 +140,7 @@ edict_t *G_PickTarget (char *targetname)
 
 	while(1)
 	{
-		ent = G_Find (ent, FOFS(targetname), targetname);
+		ent = G_Find (ent, FOFS(targetname), targetname, func);
 		if (!ent)
 			break;
 		choice[num_choices++] = ent;
@@ -170,7 +181,7 @@ match (string)self.target and call their .use function
 
 ==============================
 */
-void G_UseTargets (edict_t *ent, edict_t *activator)
+void G_UseTargets (edict_t *ent, edict_t *activator, char *func)
 {
 	edict_t		*t;
 
@@ -212,7 +223,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator)
 	if (ent->killtarget)
 	{
 		t = NULL;
-		while ((t = G_Find (t, FOFS(targetname), ent->killtarget)))
+		while ((t = G_Find (t, FOFS(targetname), ent->killtarget, func)))
 		{
 			G_FreeEdict (t);
 			if (!ent->inuse)
@@ -229,7 +240,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator)
 	if (ent->target)
 	{
 		t = NULL;
-		while ((t = G_Find (t, FOFS(targetname), ent->target)))
+		while ((t = G_Find (t, FOFS(targetname), ent->target, func)))
 		{
 			// doors fire area portals in a specific way
 			if (!Q_stricmp(t->classname, "func_areaportal") &&

@@ -127,21 +127,21 @@ void BeginIntermission (edict_t *targ)
 	level.exitintermission = 0;
 
 	// find an intermission spot
-	ent = G_Find (NULL, FOFS(classname), "info_player_intermission");
+	ent = G_Find (NULL, FOFS(classname), "info_player_intermission", NULL);
 	if (!ent)
 	{	// the map creator forgot to put in an intermission point...
-		ent = G_Find (NULL, FOFS(classname), "info_player_start");
+		ent = G_Find (NULL, FOFS(classname), "info_player_start", NULL);
 		if (!ent)
-			ent = G_Find (NULL, FOFS(classname), "info_player_deathmatch");
+			ent = G_Find (NULL, FOFS(classname), "info_player_deathmatch", NULL);
 	}
 	else
 	{	// chose one of four spots
 		i = rand() & 3;
 		while (i--)
 		{
-			ent = G_Find (ent, FOFS(classname), "info_player_intermission");
+			ent = G_Find (ent, FOFS(classname), "info_player_intermission", NULL);
 			if (!ent)	// wrap around the list
-				ent = G_Find (ent, FOFS(classname), "info_player_intermission");
+				ent = G_Find (ent, FOFS(classname), "info_player_intermission", NULL);
 		}
 	}
 
