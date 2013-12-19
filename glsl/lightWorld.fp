@@ -46,7 +46,7 @@ vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
 cubeFilter *= 2;
 
 #ifdef AMBIENT
-vec4 ambient = u_attenMap * (N.z * N.z);
+vec4 ambient = u_attenMap * (normalMap.z * normalMap.z);
 gl_FragColor = diffuseMap * ambient * u_LightColor;
 
 #else
