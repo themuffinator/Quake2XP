@@ -29,11 +29,11 @@ vec3 L = normalize(v_lightVec);
 #ifdef PARALLAX
 vec2 P = CalcParallaxOffset(u_Diffuse, v_colorCoord.xy, V);
 vec4 diffuseMap = texture2D(u_Diffuse, P);
-vec3 normalMap =  normalize(texture2D(u_NormalMap, P).rgb - 0.5);
+vec3 normalMap =  normalize(texture2D(u_NormalMap, P).rgb * 2.0 - 1.0);
 float specTmp = texture2D(u_NormalMap, P).a;
 #else
 vec4 diffuseMap = texture2D(u_Diffuse,  v_colorCoord.xy);
-vec3 normalMap =  normalize(texture2D(u_NormalMap, v_colorCoord.xy).rgb - 0.5);
+vec3 normalMap =  normalize(texture2D(u_NormalMap, v_colorCoord.xy).rgb * 2.0 - 1.0);
 float specTmp = texture2D(u_NormalMap, v_colorCoord).a;
 #endif
 
@@ -52,7 +52,7 @@ gl_FragColor = diffuseMap * ambient * u_LightColor;
 #else
 
 vec2 Es = PhongLighting(normalMap, L, V, u_specularExp);
-gl_FragColor = cubeFilter * u_LightColor * u_attenMap * (Es.x * diffuseMap + Es.y * specular);
+gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * cubeFilter * u_attenMap * u_LightColor;
 
 #endif
 }
