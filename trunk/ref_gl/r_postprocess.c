@@ -40,7 +40,7 @@ void R_BuildFlares(flare_t * light){
 	unsigned	flareIndex[MAX_INDICES];
 	int			flareVert=0, index=0;
 	
-	if(r_pplWorld->value && !light->surf->ent)
+	if(r_pplWorld->value > 1 && !light->surf->ent)
 		return;
 
 	if (light->surf->ent) {
@@ -71,7 +71,7 @@ void R_BuildFlares(flare_t * light){
 	dist = VectorLength(v) * (light->size * 0.01);
 	dist2 = VectorLength(v);
 
-	scale = ((2048 - dist2) / 2048) * 0.5;
+	scale = ((1024 - dist2) / 1024) * 0.5;
 	if(r_lightScale->value)
 		scale /= r_lightScale->value;
 

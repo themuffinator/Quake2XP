@@ -694,6 +694,9 @@ void R_DrawLightInteractions(void)
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
+	if(r_pplWorld->value < 2 && currentShadowLight->isStatic && !currentShadowLight->isNoWorldModel)
+		continue;
+
 	UpdateLightEditor();
 	
 	R_SetViewLightScreenBounds();

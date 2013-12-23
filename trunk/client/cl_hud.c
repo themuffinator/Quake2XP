@@ -267,7 +267,7 @@ void LoadHudEnts(void)
 void SCR_DrawHudModel(float x, float y, struct model_s *model)
 {
 	refdef_t refdef;
-	vec3_t center, rad, tmp, tmp2;
+	vec3_t center, rad;
 	float scale, hud_sx, hud_sy;
 	float screenAspect, scaledHeight;
 	entity_t entity;
@@ -291,8 +291,6 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 
 	R_ModelRadius(model, rad);
 	R_ModelCenter(model, center);
-	VectorCopy(refdef.vieworg, tmp);
-	VectorCopy(refdef.viewangles, tmp2);
 
 	refdef.x = x;
 	refdef.y = y;
@@ -307,8 +305,8 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	refdef.entities = &entity;
 	refdef.lightstyles = 0;
 	refdef.rdflags = RDF_NOWORLDMODEL | RDF_NOCLEAR;
-	
-	VectorCopy(entity.origin, entity.oldorigin);
+	VectorSet(refdef.vieworg, -rad[0]*1.5, 0, rad[0]*1.5*0.39);
+
 	entity.model = model;
 	entity.flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DEPTHHACK;
 	entity.frame = 0;
@@ -318,16 +316,12 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 
 	if ( entity.angles[1] > 360 )	
 		entity.angles[1] -= 360;
-	
-	VectorSet(refdef.vieworg, -rad[0]*1.5, 0, rad[0]*1.5*0.39);
+
 	VectorNegate(center, entity.origin);
 
 	// Draw it
 	R_RenderFrame(&refdef, true);
 	refdef.num_entities++;
-
-	VectorCopy(tmp2, refdef.viewangles);
-	VectorCopy(tmp, refdef.vieworg);
 }
 
 

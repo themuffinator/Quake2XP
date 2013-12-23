@@ -418,9 +418,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		if (r_leftHand->value == 2)
 			return;
 	}
-	
-//	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic lighting if we don't relight
-//		return;
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 		if(!currentShadowLight->isNoWorldModel)
@@ -483,21 +480,22 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		qglCullFace(GL_BACK);
 	}
 	
-	qglPushMatrix ();
-	
-	R_RotateForLightEntity(currententity);
-
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 	VectorCopy(r_origin, tmpView);
 
 	AnglesToMat3(currententity->angles, entityAxis);
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
+	
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		VectorSet(r_origin, currententity->origin[0]-100, currententity->origin[1]+100, currententity->origin[2]-100);
 
-	// move view org to modelspace
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	AnglesToMat3(currententity->angles, entityAxis);
 	Mat3_TransposeMultiplyVector(entityAxis, tmp, r_origin);
+
+	qglPushMatrix ();
+	R_RotateForLightEntity(currententity);
 
 	GL_DrawAliasFrameLerpLight(paliashdr);
 

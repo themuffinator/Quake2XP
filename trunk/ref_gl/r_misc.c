@@ -472,7 +472,7 @@ void CreateAttenuation ()
 	int		s, t, r, offs = 0;
 	byte	data[ATTEN_VOLUME_SIZE*ATTEN_VOLUME_SIZE*ATTEN_VOLUME_SIZE];
 
-	power = 1.0;
+	power = 1;
 	if (power < 0.25)
 		power = 0.25;
 	else if (power > 2)

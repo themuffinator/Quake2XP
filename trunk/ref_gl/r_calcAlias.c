@@ -135,7 +135,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	if(r_pplWorld->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.33, 0.33, 0.33);
+			VectorSet(lightColor, 0.1, 0.1, 0.1);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
@@ -583,8 +583,8 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 
 	GL_MBind(GL_TEXTURE0_ARB, skinNormalmap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), 0);
+	
 	GL_MBind(GL_TEXTURE1_ARB, skin->texnum);
-
 	qglUniform1i(qglGetUniformLocation(id, "u_diffuseMap"), 1);
 
 	GL_MBindCube(GL_TEXTURE2_ARB, filtercube_texture_object[currentShadowLight->filter]->texnum);

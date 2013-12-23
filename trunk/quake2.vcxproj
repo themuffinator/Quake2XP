@@ -1316,8 +1316,8 @@
     <ClInclude Include="client\sound.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\baseq2\glsl\aliasBump.fp" />
-    <None Include="..\baseq2\glsl\aliasBump.vp" />
+    <None Include="..\baseq2\glsl\lightAlias.fp" />
+    <None Include="..\baseq2\glsl\lightAlias.vp" />
     <None Include="..\baseq2\glsl\ambientAlias.defs" />
     <None Include="..\baseq2\glsl\ambientAlias.fp" />
     <None Include="..\baseq2\glsl\ambientAlias.vp" />

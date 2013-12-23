@@ -966,7 +966,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 			
 			}
 			
-			GLimp_DesktopComposition(false);
+		//	GLimp_DesktopComposition(false);
 			}
 	
 
@@ -1119,8 +1119,10 @@ qboolean GLimp_InitGL (void)
 		
 		if (!pixelFormat)
 		{
-			Com_Printf (S_COLOR_RED "GLimp_Init() - ChoosePixelFormat (%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n", (int)temppfd.cColorBits, (int)temppfd.cColorBits, (int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
-			VID_Error (ERR_FATAL,  "GLimp_Init() - ChoosePixelFormat ((%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n", (int)temppfd.cColorBits, (int)temppfd.cColorBits, (int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
+			Com_Printf (S_COLOR_RED "GLimp_Init() - ChoosePixelFormat (%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n",	(int)temppfd.cColorBits, (int)temppfd.cColorBits, 
+																																				(int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
+			VID_Error (ERR_FATAL,  "GLimp_Init() - ChoosePixelFormat ((%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n",	(int)temppfd.cColorBits, (int)temppfd.cColorBits, 
+																																				(int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
 			
 		}
 
@@ -1276,11 +1278,9 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 			VID_Error (ERR_FATAL,  "GLimp_InitGL() - wglGetPixelFormatAttribivARB failed\n");
 			
 		}
-		
-		
+				
 		// Choose a Pixel Format Descriptor (PFD) with multisampling support.
-
-		
+				
 		iAttributes[0] = WGL_DOUBLE_BUFFER_ARB;
 		iAttributes[1] = TRUE;
 		

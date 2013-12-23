@@ -498,8 +498,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	float		scale[2];
 	qboolean	is_dynamic = false;
 
-//	if(r_pplWorldAmbient->value || !r_pplWorld->value)
-		defBits = worldDefs.LightmapBits;
+	defBits = worldDefs.LightmapBits;
 
 	if (r_parallax->value)
 		defBits |= worldDefs.ParallaxBit;
@@ -517,7 +516,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
 	}
 
-	if(r_pplWorld->value)
+	if(r_pplWorld->value >1)
 	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 	else
 	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
@@ -571,9 +570,9 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 		GL_CreateParallaxLmPoly(s);
 
-	if(!r_pplWorld->value || !FoundReLight){
+		if(!r_pplWorld->value || r_pplWorld->value < 2){
 
-	for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
+		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
 			if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
 				goto dynamic;
 		}
@@ -1110,16 +1109,8 @@ void R_DrawLightWorld(void)
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
 				
-//		if(!FoundReLight){
-//		if(!currentShadowLight->isStatic){
-
-			if(R_FillLightChain(currentShadowLight))
-				GL_BatchLightPass(false);
-//			}
-//		}else{
-//			if(R_FillLightChain(currentShadowLight))
-//				GL_BatchLightPass(false);
-//		}
+	if(R_FillLightChain(currentShadowLight))
+		GL_BatchLightPass(false);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -1519,12 +1510,6 @@ void R_DrawLightBrushModel(entity_t * e)
 		VectorAdd(e->origin, currentmodel->maxs, maxs);
 	}
 
-	if (R_CullBox(mins, maxs))
-		return;
-
-	if(!InLightVISEntity())
-		return;
-
 	if(currentShadowLight->spherical){
 		if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
 			return;
@@ -1532,6 +1517,10 @@ void R_DrawLightBrushModel(entity_t * e)
 		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 			return;
 	}
+	
+	if(!InLightVISEntity())
+		return;
+
 	VectorSubtract(r_newrefdef.vieworg, e->origin, modelorg);
 
 	if (rotated) {
@@ -1545,14 +1534,18 @@ void R_DrawLightBrushModel(entity_t * e)
 		modelorg[2] = DotProduct(temp, up);
 	}
 
-	qglPushMatrix();
-	R_RotateForLightEntity(e);
-
 	//Put camera into model space view angle for bmodels parallax
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	AnglesToMat3(currententity->angles, entityAxis);
 	Mat3_TransposeMultiplyVector(entityAxis, tmp, BmodelViewOrg);
 
+	VectorCopy(currentShadowLight->origin, oldLight);
+	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
+	AnglesToMat3(currententity->angles, entityAxis);
+	Mat3_TransposeMultiplyVector(entityAxis, tmp, currentShadowLight->origin);
+
+	qglPushMatrix();
+	R_RotateForLightEntity(e);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
@@ -1568,27 +1561,11 @@ void R_DrawLightBrushModel(entity_t * e)
 	
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
-		
-		VectorCopy(currentShadowLight->origin, oldLight);
+	
+	if(R_MarkBrushModelSurfaces(currentShadowLight))
+		GL_BatchLightPass(true);
 
-		VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
-		AnglesToMat3(currententity->angles, entityAxis);
-		Mat3_TransposeMultiplyVector(entityAxis, tmp, currentShadowLight->origin);
-		
-//		if(!FoundReLight){
-				
-//			if(!currentShadowLight->isStatic){
-			if(R_MarkBrushModelSurfaces(currentShadowLight))
-				GL_BatchLightPass(true);
-//			}
-
-//		} else{
-
-//			if(R_MarkBrushModelSurfaces(currentShadowLight))
-//				GL_BatchLightPass(true);
-//		}
-
-		VectorCopy(oldLight, currentShadowLight->origin);
+	VectorCopy(oldLight, currentShadowLight->origin);
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);

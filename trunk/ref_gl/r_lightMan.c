@@ -143,14 +143,14 @@ void R_AddNoWorldModelLight() {
 	memset(light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet(light->origin, -70, 70, 56);
+	VectorSet(light->origin, -100, 0, 100);
 	VectorSet(light->startColor, 1.0, 1.0, 1.0);
 	VectorSet(light->angles, 0, 0, 0);
-	VectorSet(light->radius, 300, 300, 300);
+	VectorSet(light->radius, 600, 600, 600);
 
 	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - light->radius[i];
-		light->maxs[i] = light->origin[i] + light->radius[i];
+		light->mins[i] = light->origin[i] - 600;
+		light->maxs[i] = light->origin[i] + 600;
 	}
 
 	light->style = 0;
@@ -1413,7 +1413,7 @@ void Load_BspLights() {
 			numlights++;
 		}
 	}
-	Com_Printf("Loaded %i bsp lights\n", numlights);
+	Com_Printf("Loaded "S_COLOR_GREEN"%i"S_COLOR_WHITE" bsp lights\n", numlights);
 
 }
 
@@ -1425,12 +1425,12 @@ void Load_LightFile() {
 	float	radius[3], cone, fSize;
 	char	name[MAX_QPATH], path[MAX_QPATH];
 
-	if(!loadmodel) {
+	if(!r_worldmodel) {
 		Com_Printf("No map loaded.\n");
 		return;
 	}
 
-	FS_StripExtension(loadmodel->name, name, sizeof (name));
+	FS_StripExtension(r_worldmodel->name, name, sizeof (name));
 	Com_sprintf(path, sizeof(path),"%s.xplit", name);
 	FS_LoadFile (path, (void **)&c);
 
@@ -1744,7 +1744,6 @@ qboolean R_DrawLightOccluders()
 
 	if(!r_useLightOccluders->value)
 		return true;
-
 	
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return true;
@@ -1842,9 +1841,6 @@ void R_LightScale(void) {
 	qglColorMask(1, 1, 1, 0);
 	qglDepthMask(0);
 
-//
-// first get power-of-two scale
-//
 	val = max(r_lightScale->value, 0.0);
 
 	qglColor3f(1, 1, 1);
@@ -1857,24 +1853,6 @@ void R_LightScale(void) {
 		qglVertex2f(1, 1);
 		qglVertex2f(1, 0);
 	}
-
-//
-// apply the remainder
-//
-	// val	=5
-	// i	=8
-	// R	=4
-	// 
-	// 2*src*dst = val
-	// 2*src*R = val
-	// 2*src*4 = 5
-	// src = 5/8
-
-	// val	=0.9
-	// i	=1
-	// R	=1
-	// 2*src*1 = 0.9
-	// src = 0.9/2 (need shl'ed i)
 	val /= (float)(i << 1);
 	qglColor3f(val, val, val);
 
@@ -2056,17 +2034,18 @@ void R_SetViewLightScreenBounds () {
 	mat4_t		tmpMatrix, mvpMatrix;
 	float		depth[2];
 
-	//if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+/*
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 
-	//	currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
-	//	currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
-	//	currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
-	//	currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
-	//	currentShadowLight->depthBounds[0] = 0.0f;
-	//	currentShadowLight->depthBounds[1] = 1.0f;
-	//	return;
-	//}
-
+		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
+		currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
+		currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
+		currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
+		currentShadowLight->depthBounds[0] = 0.0f;
+		currentShadowLight->depthBounds[1] = 1.0f;
+		return;
+	}
+*/
 	if (!r_useLightScissors->value) {
 
 		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
