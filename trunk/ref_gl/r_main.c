@@ -1137,7 +1137,7 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "2");
-Cvar_Set("r_pplWorld", "1");
+Cvar_Set("r_pplWorld", "2");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "1");
 Cvar_Set("r_radialBlur", "1");
@@ -1185,7 +1185,7 @@ void R_RegisterCvars(void)
 	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "12", CVAR_ARCHIVE);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
-	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "1", CVAR_ARCHIVE);
+	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
@@ -1230,12 +1230,12 @@ void R_RegisterCvars(void)
 	r_parallax=							Cvar_Get("r_parallax", "2", CVAR_ARCHIVE);
 	r_parallaxScale=					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
 
-	r_pplWorld =						Cvar_Get("r_pplWorld", "1", CVAR_ARCHIVE);
-	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "1.0", CVAR_ARCHIVE);
+	r_pplWorld =						Cvar_Get("r_pplWorld", "2", CVAR_ARCHIVE);
+	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
 	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
 	r_debugLightScissors =				Cvar_Get("r_debugLightScissors", "0", 0);
-	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
+	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "0", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
 	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);

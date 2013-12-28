@@ -41,6 +41,7 @@ model_t mod_inline[MAX_MOD_KNOWN];
 
 int registration_sequence;
 extern char map_entitystring[MAX_MAP_ENTSTRING];
+extern qboolean relightMap;
 
 byte Normal2Index(const vec3_t vec);
 
@@ -203,14 +204,17 @@ void GL_AddFlareSurface(msurface_t * surf)
 	cluster = CM_LeafCluster(leafnum);
 	r_flares[r_numflares].area = CM_LeafArea(leafnum);
 	Q_memcpy(r_flares[r_numflares].vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
+	
+	if(relightMap){
 	VectorSet(radius,	r_flares[r_numflares].size	*	r_shadowWorldLightScale->value,
 						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value,
 						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value);
-	
+		
 	memset(target, 0, sizeof(target));
-//	if(!FoundReLight)
-//	R_AddNewWorldLight(	lightOffset, r_flares[r_numflares].color, 
-//						radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false, 1, origin, r_flares[r_numflares].size, target, 0);
+	
+	R_AddNewWorldLight(	lightOffset, r_flares[r_numflares].color, 
+						radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false, 1, origin, r_flares[r_numflares].size, target, 0);
+	}
 
 	r_numflares++;
 	free(buffer);
@@ -1596,6 +1600,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	radarOldTime = 0;
 	
 	R_ClearFlares();
+	DeleteShadowVertexBuffers();
 	R_ClearWorldLights();
 	numLightQ = 0;
 	numFlareOcc = 0;
@@ -1633,7 +1638,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadFaces(&header->lumps[LUMP_FACES]);	
 
 	CleanDuplicateFlares();
-//	CleanDuplicateLights();
+	CleanDuplicateLights();
 
 	Mod_LoadMarksurfaces(&header->lumps[LUMP_LEAFFACES]);
 	Mod_LoadVisibility(&header->lumps[LUMP_VISIBILITY]);
@@ -1641,8 +1646,10 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadNodes(&header->lumps[LUMP_NODES]);
 	Mod_LoadSubmodels(&header->lumps[LUMP_MODELS]);
 	Mod_GenerateLights(mod);
+	
 	Load_LightFile();
 	R_PreCalcLightData();
+	
 	mod->numframes = 2;			// regular and alternate animation
 
 //
@@ -2607,6 +2614,7 @@ void R_EndRegistration(void)
 	spriteSize =	0;
 	qglClear(GL_COLOR_BUFFER_BIT);
 	qglClearColor(0.0, 0.0, 0.0, 1);
+	relightMap = false;
 }
 
 

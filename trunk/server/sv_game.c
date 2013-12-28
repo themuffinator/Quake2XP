@@ -63,18 +63,19 @@ PF_dprintf
 Debug print to server console
 ===============
 */
-void PF_dprintf(char *fmt, ...)
+void PF_dprintf (char *fmt, ...)
 {
-	char msg[1024];
-	va_list argptr;
+	char		msg[1024];
+	va_list		argptr;
+	
+	memset(msg, 0, sizeof(msg));
 
-	va_start(argptr, fmt);
-	vsnprintf(msg, sizeof(msg), fmt, argptr);
-	va_end(argptr);
+	va_start (argptr,fmt);
+	vsprintf (msg, fmt, argptr);
+	va_end (argptr);
 
-	Com_DPrintf("%s", msg);
+	Com_DPrintf ("%s", msg);
 }
-
 
 /*
 ===============

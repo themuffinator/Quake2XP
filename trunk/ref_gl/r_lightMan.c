@@ -38,9 +38,6 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine();
 
 qboolean R_AddLightToFrame(worldShadowLight_t *light) {
-	
-	if(r_pplWorldAmbient->value > 0.1 && light->isAmbient) //skip ambient lights if we use lightmaps
-		return false;
 
 	if (r_newrefdef.areabits){
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))){
@@ -315,7 +312,6 @@ static void DeleteCurrentLight(worldShadowLight_t *l) {
 			}
 		}
 	}
-
 	free(l);
 }
 
@@ -337,7 +333,7 @@ void R_Light_Spawn_f(void) {
 	if (trace.fraction != 1.0){
 		VectorMA(trace.endpos, -10, v_forward, spawn);
 		R_AddNewWorldLight(spawn, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true, 0, spawn, 10.0, target, 0);
-	}
+		}
 }
 
 void R_Light_SpawnToCamera_f(void) {
@@ -391,10 +387,6 @@ void R_Light_Copy_f(void) {
 
 	VectorMA(origin, -50, v_forward, spawn);
 	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, _cone, true, flare, flareOrg, flareSize, target, flag);
-	R_MarkLightLeaves(selectedShadowLight);
-	MakeFrustum4Light(selectedShadowLight, true);
-	R_DrawBspModelVolumes(true, selectedShadowLight);
-
 }
 
 void R_EditSelectedLight_f(void) {
@@ -447,8 +439,9 @@ void R_EditSelectedLight_f(void) {
 		origin[1] = atof(Cmd_Argv(3));
 		origin[2] = atof(Cmd_Argv(4));
 		VectorCopy(origin, selectedShadowLight->origin);
-		R_DrawBspModelVolumes(true, selectedShadowLight);
 		UpdateLightBounds(selectedShadowLight);
+		R_MarkLightLeaves(selectedShadowLight);
+		R_DrawBspModelVolumes(true, selectedShadowLight);
 	} 
 	else
 	if (!strcmp(Cmd_Argv(1), "color")) {
@@ -489,8 +482,9 @@ void R_EditSelectedLight_f(void) {
 		radius[1] = atof(Cmd_Argv(3));
 		radius[2] = atof(Cmd_Argv(4));
 		VectorCopy(radius, selectedShadowLight->radius);
-		R_DrawBspModelVolumes(true, selectedShadowLight);
 		UpdateLightBounds(selectedShadowLight);
+		R_MarkLightLeaves(selectedShadowLight);
+		R_DrawBspModelVolumes(true, selectedShadowLight);
 	 } 
 	else
 	if (!strcmp(Cmd_Argv(1), "cone")) {
@@ -501,9 +495,10 @@ void R_EditSelectedLight_f(void) {
 		}
 		_cone = atof(Cmd_Argv(2));
 		selectedShadowLight->_cone = _cone;
-		R_DrawBspModelVolumes(true, selectedShadowLight);
 		UpdateLightBounds(selectedShadowLight);
-	 } 
+		R_MarkLightLeaves(selectedShadowLight);
+		R_DrawBspModelVolumes(true, selectedShadowLight);
+	} 
 	else
 	 if (!strcmp(Cmd_Argv(1), "style")) {
 		if(Cmd_Argc() != 3) {
@@ -687,8 +682,9 @@ void R_MoveLightToRight_f(void) {
 	else
 	{
 	VectorCopy(origin, selectedShadowLight->origin);
-	R_DrawBspModelVolumes(true, selectedShadowLight);
 	UpdateLightBounds(selectedShadowLight);
+	R_MarkLightLeaves(selectedShadowLight);
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 	}
 }
 
@@ -734,8 +730,9 @@ void R_MoveLightForward_f(void) {
 	else
 	{
 	VectorCopy(origin, selectedShadowLight->origin);
-	R_DrawBspModelVolumes(true, selectedShadowLight);
 	UpdateLightBounds(selectedShadowLight);
+	R_MarkLightLeaves(selectedShadowLight);
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 	}
 }
 
@@ -775,8 +772,9 @@ void R_MoveLightUpDown_f(void) {
 	else
 	{
 	VectorCopy(origin, selectedShadowLight->origin);
-	R_DrawBspModelVolumes(true, selectedShadowLight);
 	UpdateLightBounds(selectedShadowLight);
+	R_MarkLightLeaves(selectedShadowLight);
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 	}
 }
 
@@ -826,8 +824,9 @@ void R_ChangeLightRadius_f(void) {
 		rad[2] = 10;
 	
 	VectorCopy(rad, selectedShadowLight->radius);
-	R_DrawBspModelVolumes(true, selectedShadowLight);
 	UpdateLightBounds(selectedShadowLight);
+	R_MarkLightLeaves(selectedShadowLight);
+	R_DrawBspModelVolumes(true, selectedShadowLight);
 	}
 
 }
@@ -866,8 +865,8 @@ void R_ChangeLightCone_f(void) {
 
 	selectedShadowLight->_cone = cone;
 	R_DrawBspModelVolumes(true, selectedShadowLight);
+	R_MarkLightLeaves(selectedShadowLight);
 	UpdateLightBounds(selectedShadowLight);
-
 }
 
 
@@ -988,10 +987,7 @@ void UpdateLightEditor(void){
 
 	VectorAdd(tmp, currentShadowLight->origin, corners[j]);
 	}
-//	if(selectedShadowLight->start_off)
-//		qglUniform3f(qglGetUniformLocation(id, "u_color"),	0.1, 0.1, 0.1);
-//	else
-		qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2]);
+	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2]);
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
 
@@ -1321,14 +1317,19 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	}
 
 	MakeFrustum4Light(light, false);
-	if(ingame)
-	R_DrawBspModelVolumes(true, light);
 
+	if(ingame){
+	R_MarkLightLeaves(light);
+	R_DrawBspModelVolumes(true, light);
+	}
+	else
+	{
 	//// simple cull info for new light 
 	leafnum = CM_PointLeafnum(light->origin);
 	cluster = CM_LeafCluster(leafnum);
 	light->area = CM_LeafArea(leafnum);
 	Q_memcpy(light->vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
+	}
 	light->occQ = numLightQ;
 	numLightQ++;
 
@@ -1340,8 +1341,6 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 }
 
 model_t *loadmodel;
-qboolean FoundReLight;
-
 
 void Load_BspLights() {
 	
@@ -1407,13 +1406,13 @@ void Load_BspLights() {
 				flag = atoi(value);
 		}
 
-		if(addLight) {
+		if(addLight && style > 0) {
 			VectorSet(radius, radius[0], radius[0], radius[0]);
 			R_AddNewWorldLight(origin, color, radius, style, 0, vec3_origin, vec3_origin, true, 1, 0, cone, false, 0, origin, 10.0, target, flag);
 			numlights++;
 		}
 	}
-	Com_Printf("Loaded "S_COLOR_GREEN"%i"S_COLOR_WHITE" bsp lights\n", numlights);
+	Com_Printf(""S_COLOR_MAGENTA"Loaded "S_COLOR_GREEN"%i"S_COLOR_WHITE" bsp lights\n", numlights);
 
 }
 
@@ -1435,20 +1434,16 @@ void Load_LightFile() {
 	FS_LoadFile (path, (void **)&c);
 
 	if(!c){
-		FoundReLight = false;
 		Load_BspLights();
 		return;
 	}
 	
-	FoundReLight = true;
-
 	Com_Printf("Load lights from "S_COLOR_GREEN"%s"S_COLOR_WHITE".\n", path);
 
 	while(1) {
 		token = COM_Parse(&c);
 		
 		if(!c){
-		FoundReLight = false;
 		break;
 		}
 
@@ -1642,27 +1637,23 @@ void DeleteShadowVertexBuffers(void){
 	numPreCachedLights = 0;
 }
 
+extern qboolean relightMap;
 
 void CleanDuplicateLights(void){
 
 	worldShadowLight_t *light1, *light2, *plug;
 	vec3_t tmp;
 
-	if(FoundReLight)
+	if(!relightMap)
 		return;
 
 	for(light1 = shadowLight_static; light1; light1 = light1->s_next) {
 	
-		if(light1->style || light1->_cone)
-			continue;
-
+		
 	for(light2 = light1->s_next; light2; light2 = plug) {
 		
 		plug = light2->s_next;
-
-		if(light2->style || light2->_cone)
-			continue;
-
+				
 		VectorSubtract(light2->origin, light1->origin, tmp);
   
 		if ((VectorLength(tmp) < r_lightsWeldThreshold->value)){
@@ -2193,6 +2184,12 @@ void R_DrawLightFlare(){
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+	
+	if (!r_drawFlares->value)
+		return;
+
+	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
+		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -2221,7 +2218,7 @@ void R_DrawLightFlare(){
 	dist = VectorLength(v) * (currentShadowLight->flareSize * 0.01);
 	dist2 = VectorLength(v);
 
-	scale = ((2048 - dist2) / 2048) * 0.5;
+	scale = ((1024 - dist2) / 1024) * 0.5;
 	if(r_lightScale->value)
 		scale /= r_lightScale->value;
 
@@ -2268,6 +2265,8 @@ void R_DrawLightFlare(){
 	}
 
 	GL_BindNullProgram();
+	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
+		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -2306,7 +2305,9 @@ void R_LightFlareOutLine(){ //flare editing highlights
 	// setup program
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
-	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2]);
+	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0],
+														currentShadowLight->color[1], 
+														currentShadowLight->color[2]);
 	
 	// draw flare polygon
 	VectorMA (currentShadowLight->flareOrigin, -1-currentShadowLight->flareSize, vup, vert_array[flareVert+0]);

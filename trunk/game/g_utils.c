@@ -66,8 +66,8 @@ edict_t *G_Find (edict_t *from, int fieldofs, char *match, char *func)
 			continue;
 		if (!Q_stricmp (s, match)){
 		
-		if(target)
-			gi.dprintf/*Com_Printf*/ ("\"%s\" activated \"%s\"\n", func, s);
+//		if(target)
+	//		gi.dprintf/*Com_Printf*/ ("\"%s\" activated \"%s\"\n", func, s);
 			
 		return from;
 		}

@@ -237,7 +237,7 @@ void SV_UserinfoChanged(client_t * cl);
 
 void Master_Heartbeat(void);
 void Master_Packet(void);
-
+void SV_ReLightMap_f(void);
 //
 // sv_init.c
 //
