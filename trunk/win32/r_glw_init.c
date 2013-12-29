@@ -1119,10 +1119,8 @@ qboolean GLimp_InitGL (void)
 		
 		if (!pixelFormat)
 		{
-			Com_Printf (S_COLOR_RED "GLimp_Init() - ChoosePixelFormat (%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n",	(int)temppfd.cColorBits, (int)temppfd.cColorBits, 
-																																				(int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
-			VID_Error (ERR_FATAL,  "GLimp_Init() - ChoosePixelFormat ((%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n",	(int)temppfd.cColorBits, (int)temppfd.cColorBits, 
-																																				(int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
+			Com_Printf (S_COLOR_RED "GLimp_Init() - ChoosePixelFormat (%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n", (int)temppfd.cColorBits, (int)temppfd.cColorBits, (int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
+			VID_Error (ERR_FATAL,  "GLimp_Init() - ChoosePixelFormat ((%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n", (int)temppfd.cColorBits, (int)temppfd.cColorBits, (int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
 			
 		}
 
@@ -1138,7 +1136,7 @@ qboolean GLimp_InitGL (void)
 			Com_Printf (S_COLOR_RED "GLimp_Init() - qwglCreateContext failed\n");
 			VID_Error (ERR_FATAL,  "GLimp_Init() - qwglCreateContext failed\n");
 		}
-		
+
 		// Make the rendering context current
 		if (!(qwglMakeCurrent(hDC, hGLRC))) {
 			
@@ -1188,24 +1186,9 @@ qboolean GLimp_InitGL (void)
 		Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_pixel_format not found\nOpenGL subsystem not initiation\n");
 		VID_Error (ERR_FATAL, "WGL_ARB_pixel_format not found!");
 		}
-	
-		if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control")) {
-		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) qwglGetProcAddress("wglSwapIntervalEXT");
-		Com_Printf("...using WGL_EXT_swap_control\n");
-		} else 
-		Com_Printf(S_COLOR_RED"...WGL_EXT_swap_control not found\n");
 
-		gl_state.wgl_swap_control_tear = false;
-		if ( strstr( glw_state.wglExtsString, "WGL_EXT_swap_control_tear" ) )
-		{
-		Com_Printf("...using WGL_EXT_swap_control_tear\n");
-		gl_state.wgl_swap_control_tear = true;
-		} 
-		else {
-		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
-		}
-	
-		gl_state.wgl_nv_multisample_coverage = false;
+		
+	gl_state.wgl_nv_multisample_coverage = false;
 		if (strstr(glw_state.wglExtsString, "WGL_NV_multisample_coverage")) {
 		
 		if(r_arbSamples->value < 2){
@@ -1278,9 +1261,11 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 			VID_Error (ERR_FATAL,  "GLimp_InitGL() - wglGetPixelFormatAttribivARB failed\n");
 			
 		}
-				
+		
+		
 		// Choose a Pixel Format Descriptor (PFD) with multisampling support.
-				
+
+		
 		iAttributes[0] = WGL_DOUBLE_BUFFER_ARB;
 		iAttributes[1] = TRUE;
 		
@@ -1317,8 +1302,8 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		iAttributes[12] = arbMultisampleSupported ? WGL_SAMPLES_ARB : 0;
 		iAttributes[13] = arbMultisampleSupported ? (int)r_arbSamples->value : 0;
 		}
-//		iAttributes[14] = WGL_SWAP_METHOD_ARB;
-	//	iAttributes[15] = WGL_SWAP_EXCHANGE_ARB;
+		iAttributes[14] = 0;
+		iAttributes[15] = 0;
 
 		// First attempt...
 		status = qwglChoosePixelFormatARB(hDC, iAttributes, fAttributes, 1, &pixelFormat, &numFormats);
@@ -1457,7 +1442,6 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 
 	}
 
-
 GL_MsgGLError("Init PFD: ");
 	return true;
 
@@ -1475,6 +1459,7 @@ fail:
 	}
 	return false;
 }
+
 
 
 /*
