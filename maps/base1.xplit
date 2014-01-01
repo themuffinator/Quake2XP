@@ -2565,7 +2565,7 @@
 //Light 142
 {
 "classname" "light"
-"origin" "-151 782 349"
+"origin" "-221 885 339"
 "radius" "1000 1000 1000"
 "color" "0.990 0.400 0.100"
 "style" "0"
