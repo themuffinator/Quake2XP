@@ -543,7 +543,7 @@ void GL_CreateSurfaceLightmap(msurface_t * surf)
 	R_BuildLightMap(surf, base, LIGHTMAP_SIZE * LIGHTMAP_BYTES, true);
 }
 
-
+extern int occ_framecount;
 /*
 ==================
 GL_BeginBuildingLightmaps
@@ -558,6 +558,8 @@ void GL_BeginBuildingLightmaps(model_t * m)
 	memset(gl_lms.allocated, 0, sizeof(gl_lms.allocated));
 	
 	dummy = (byte*)Z_Malloc(LIGHTMAP_BYTES * LIGHTMAP_SIZE * LIGHTMAP_SIZE);
+	
+//	occ_framecount = r_framecount = 1;
 
 	GL_SelectTexture( GL_TEXTURE1 );
 	qglEnable( GL_TEXTURE_2D );

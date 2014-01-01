@@ -219,7 +219,7 @@ void R_DrawFullScreenQuad()
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
 	
-	qglDrawArrays (GL_QUADS, 0, 4);
+	qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
@@ -231,7 +231,7 @@ void R_DrawHalfScreenQuad()
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
 	
-	qglDrawArrays (GL_QUADS, 0, 4);
+	qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
@@ -243,7 +243,7 @@ void R_DrawQuarterScreenQuad()
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
 	
-	qglDrawArrays (GL_QUADS, 0, 4);
+	qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
@@ -576,7 +576,7 @@ void R_GammaRamp (void) {
 
 	R_DrawFullScreenQuad();
 	
-	GL_BindNullProgram		();
+	GL_BindNullProgram();
 }
 
 void R_MotionBlur (void) {
@@ -610,8 +610,8 @@ void R_MotionBlur (void) {
 
 	R_DrawFullScreenQuad();
 
-	GL_BindNullProgram		();
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+	GL_BindNullProgram();
+	GL_SelectTexture(GL_TEXTURE0_ARB);	
 		
 	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, pMVP);
 }

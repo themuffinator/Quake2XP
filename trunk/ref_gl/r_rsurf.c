@@ -359,25 +359,20 @@ void R_DrawAlphaPoly(void)
 	
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
 
-		// moving trans brushes - spaz
-		if (s->ent)
-			R_RotateForLightEntity(s->ent);
+	if (s->texinfo->flags & SURF_TRANS33) 
+		shadelight_surface[3] = 0.33;
+	else	
+	if (s->texinfo->flags & SURF_TRANS66) 
+		shadelight_surface[3] = 0.66;
+	else
+		shadelight_surface[3] = 1.0;
 
-		if (s->texinfo->flags & SURF_TRANS33) 
-			shadelight_surface[3] = 0.33;
-		else	
-		if (s->texinfo->flags & SURF_TRANS66) 
-			shadelight_surface[3] = 0.66;
-		else
-			shadelight_surface[3] = 1.0;
-		
-
-		if (s->flags & SURF_DRAWTURB)
-			R_DrawWaterPolygons(s);
-		else if (s->texinfo->flags & SURF_FLOWING)
-			DrawGLFlowingPolyGLSL(s);
-		else
-			DrawGLPolyGLSL(s);
+	if (s->flags & SURF_DRAWTURB)
+		R_DrawWaterPolygons(s);
+	else if (s->texinfo->flags & SURF_FLOWING)
+		DrawGLFlowingPolyGLSL(s);
+	else
+		DrawGLPolyGLSL(s);
 
 	}
 
@@ -570,8 +565,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 		GL_CreateParallaxLmPoly(s);
 
-		if(!r_pplWorld->value || r_pplWorld->value < 2){
-
 		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
 			if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
 				goto dynamic;
@@ -610,21 +603,18 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 								s->light_s, s->light_t,
 								smax, tmax,
 								GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
-
+	
 			} else {
+				
+				if(!r_pplWorld->value || r_pplWorld->value < 2){
 
-				smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
-				tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;
-
-				R_BuildLightMap(s, (byte *) temp, smax * 4, false);
-
-				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + 0);
-
-				lmtex = 0;
-
-				qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
+					smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
+					tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;
+					R_BuildLightMap(s, (byte *) temp, smax * 4, false);
+					GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + 0);
+					lmtex = 0;
+					qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); }
 			}
-		}
 
 			if(texture != image->texnum || ltmp != gl_state.lightmap_textures + lmtex) 
 			{
@@ -960,7 +950,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 }
 
 
-qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean world)
+qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 {
 	cplane_t	*plane;
 	float		dist;
@@ -978,16 +968,16 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 	switch (plane->type)
 	{
 	case PLANE_X:
-		dist = light->origin[0] - plane->dist;
+		dist = currentShadowLight->origin[0] - plane->dist;
 		break;
 	case PLANE_Y:
-		dist = light->origin[1] - plane->dist;
+		dist = currentShadowLight->origin[1] - plane->dist;
 		break;
 	case PLANE_Z:
-		dist = light->origin[2] - plane->dist;
+		dist = currentShadowLight->origin[2] - plane->dist;
 		break;
 	default:
-		dist = DotProduct (light->origin, plane->normal) - plane->dist;
+		dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
 		break;
 	}
 
@@ -997,19 +987,19 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 		return false;
 
 	//the normals are flipped when surf_planeback is 1
-	if (abs(dist) > light->len)
+	if (abs(dist) > currentShadowLight->len)
 		return false;
 
 	if(world)
 	{
 		float	lbbox[6], pbbox[6];
 
-		lbbox[0] = light->origin[0] - light->radius[0];
-		lbbox[1] = light->origin[1] - light->radius[1];
-		lbbox[2] = light->origin[2] - light->radius[2];
-		lbbox[3] = light->origin[0] + light->radius[0];
-		lbbox[4] = light->origin[1] + light->radius[1];
-		lbbox[5] = light->origin[2] + light->radius[2];
+		lbbox[0] = currentShadowLight->origin[0] - currentShadowLight->radius[0];
+		lbbox[1] = currentShadowLight->origin[1] - currentShadowLight->radius[1];
+		lbbox[2] = currentShadowLight->origin[2] - currentShadowLight->radius[2];
+		lbbox[3] = currentShadowLight->origin[0] + currentShadowLight->radius[0];
+		lbbox[4] = currentShadowLight->origin[1] + currentShadowLight->radius[1];
+		lbbox[5] = currentShadowLight->origin[2] + currentShadowLight->radius[2];
 
 		// surface bounding box
 		pbbox[0] = surf->mins[0];
@@ -1030,7 +1020,7 @@ qboolean R_MarkLightSurf(msurface_t *surf, worldShadowLight_t *light, qboolean w
 	return true;
 }
 
-void R_MarkLightCasting (worldShadowLight_t *light, mnode_t *node)
+void R_MarkLightCasting (mnode_t *node)
 {
 	cplane_t	*plane;
 	float		dist;
@@ -1044,14 +1034,14 @@ void R_MarkLightCasting (worldShadowLight_t *light, mnode_t *node)
 		leaf = (mleaf_t *)node;
 		cluster = leaf->cluster;
 
-		if (!(light->vis[cluster>>3] & (1<<(cluster&7))))
+		if (!(currentShadowLight->vis[cluster>>3] & (1<<(cluster&7))))
 			return;
 
 		surf = leaf->firstmarksurface;
 
 		for (c=0; c<leaf->nummarksurfaces; c++, surf++)
 		{
-			if (R_MarkLightSurf ((*surf), light, true))
+			if (R_MarkLightSurf ((*surf), true))
 			{
 				light_surfaces[num_light_surfaces++] = (*surf);
 			}
@@ -1060,26 +1050,26 @@ void R_MarkLightCasting (worldShadowLight_t *light, mnode_t *node)
 	}
 
 	plane = node->plane;
-	dist = DotProduct (light->origin, plane->normal) - plane->dist;
+	dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
 
-	if (dist > light->len)
+	if (dist > currentShadowLight->len)
 	{
-		R_MarkLightCasting (light, node->children[0]);
+		R_MarkLightCasting (node->children[0]);
 		return;
 	}
-	if (dist < -light->len)
+	if (dist < -currentShadowLight->len)
 	{
-		R_MarkLightCasting (light, node->children[1]);
+		R_MarkLightCasting (node->children[1]);
 		return;
 	}
 
-	R_MarkLightCasting (light, node->children[0]);
-	R_MarkLightCasting (light, node->children[1]);
+	R_MarkLightCasting (node->children[0]);
+	R_MarkLightCasting (node->children[1]);
 }
 
-qboolean R_FillLightChain (worldShadowLight_t *light)
+qboolean R_FillLightChain ()
 {
-	R_MarkLightCasting (light, r_worldmodel->nodes);
+	R_MarkLightCasting (r_worldmodel->nodes);
 	return num_light_surfaces;
 }
 
@@ -1109,7 +1099,7 @@ void R_DrawLightWorld(void)
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
 				
-	if(R_FillLightChain(currentShadowLight))
+	if(R_FillLightChain())
 		GL_BatchLightPass(false);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
@@ -1459,7 +1449,7 @@ void R_DrawBrushModel(entity_t * e)
 
 
 
-qboolean R_MarkBrushModelSurfaces(worldShadowLight_t *shadowLight)
+qboolean R_MarkBrushModelSurfaces()
 {
 	int			i;
 	msurface_t	*psurf;
@@ -1472,7 +1462,7 @@ qboolean R_MarkBrushModelSurfaces(worldShadowLight_t *shadowLight)
 	for (i=0 ; i<clmodel->nummodelsurfaces ; i++, psurf++)
 	{
 
-		if (R_MarkLightSurf (psurf, shadowLight, false))
+		if (R_MarkLightSurf (psurf, false))
 			{
 				light_surfaces[num_light_surfaces++] = psurf;
 			}
@@ -1562,7 +1552,7 @@ void R_DrawLightBrushModel(entity_t * e)
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
 	
-	if(R_MarkBrushModelSurfaces(currentShadowLight))
+	if(R_MarkBrushModelSurfaces())
 		GL_BatchLightPass(true);
 
 	VectorCopy(oldLight, currentShadowLight->origin);

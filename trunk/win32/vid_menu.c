@@ -229,7 +229,7 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		}else
 		if (s_samples_list.curvalue == 0){ //off
 			Cvar_SetValue("r_arbSamples", 0);
-			Cvar_SetValue("r_nvSamplesCoverange", 8);
+			Cvar_SetValue("r_nvSamplesCoverange", 4);
 		}
 	}else if(!gl_state.wgl_nv_multisample_coverage){
 	// Multisampling
@@ -721,6 +721,7 @@ void VID_MenuInit( void )
 	s_finish_box.itemnames = yesno_names;
 	s_finish_box.generic.statusbar = "Off - On";
 	}
+
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x    = 0;

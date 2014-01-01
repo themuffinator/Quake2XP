@@ -63,6 +63,7 @@ typedef struct worldShadowLight_s {
 	int		linkedSurf;
 	int		scissor[4];
 	int		start_off;
+	int		framecount;
 
 	qboolean spherical;
 	

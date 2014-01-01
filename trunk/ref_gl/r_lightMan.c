@@ -1529,6 +1529,9 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light)
 	vec3_t	mins, maxs;
 	byte	vis[MAX_MAP_LEAFS/8];
 
+	if(!r_worldmodel)
+		return false;
+
 	contents = CL_PMpointcontents(light->origin);
 	if (contents & CONTENTS_SOLID)
 		goto skip;
@@ -1724,13 +1727,16 @@ void GL_SetupCubeMapMatrix(qboolean model)
 	qglMatrixMode(GL_MODELVIEW);
 }
 
+/*
+extern int	occ_framecount;
 
 qboolean R_DrawLightOccluders()
 {
 	vec3_t		v[8];
 	vec3_t		tmpOrg;
 	vec3_t		radius;
-	int			sampleCount, id;
+	int			sampleCount;
+	int			id;
 	unsigned	defBits = 0;
 
 	if(!r_useLightOccluders->value)
@@ -1738,7 +1744,10 @@ qboolean R_DrawLightOccluders()
 	
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return true;
-		
+	
+	if(!currentShadowLight->isStatic)
+		return true;
+	
 	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0))
 		return true;
 	
@@ -1752,6 +1761,8 @@ qboolean R_DrawLightOccluders()
 	qglDisable(GL_BLEND);
 	qglDisable(GL_STENCIL_TEST);
 	
+	currentShadowLight->framecount = occ_framecount;
+
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 	VectorScale(currentShadowLight->radius, r_occLightBoundsSize->value, radius);
 
@@ -1797,7 +1808,8 @@ qboolean R_DrawLightOccluders()
 	qglEnable(GL_STENCIL_TEST);
 	GL_BindNullProgram();
 
-	qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
+//	if (currentShadowLight->framecount == occ_framecount-1)
+		qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
 
 	if (!sampleCount) 
 		return false;
@@ -1805,7 +1817,7 @@ qboolean R_DrawLightOccluders()
 		return true;
 
 }
-
+*/
 
 void R_LightScale(void) {
 	float	val;

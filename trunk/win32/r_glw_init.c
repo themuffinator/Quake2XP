@@ -1039,8 +1039,6 @@ THX, RICHARD!!!
 ==============================
 */
 
-qboolean	arbMultisampleSupported	= false;
-
 // don't do anything
 static LRESULT CALLBACK StupidOpenGLProc(HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
@@ -1187,9 +1185,23 @@ qboolean GLimp_InitGL (void)
 		VID_Error (ERR_FATAL, "WGL_ARB_pixel_format not found!");
 		}
 
-		
+	if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control")) {
+		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) qwglGetProcAddress("wglSwapIntervalEXT");
+		Com_Printf("...using WGL_EXT_swap_control\n");
+	} else 
+		Com_Printf(S_COLOR_RED"...WGL_EXT_swap_control not found\n");
+
+	gl_state.wgl_swap_control_tear = false;
+	if ( strstr( glw_state.wglExtsString, "WGL_EXT_swap_control_tear")){
+		Com_Printf("...using WGL_EXT_swap_control_tear\n");
+		gl_state.wgl_swap_control_tear = true;
+	} 
+	else {
+		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
+	}
+
 	gl_state.wgl_nv_multisample_coverage = false;
-		if (strstr(glw_state.wglExtsString, "WGL_NV_multisample_coverage")) {
+/*		if (strstr(glw_state.wglExtsString, "WGL_NV_multisample_coverage")) {
 		
 		if(r_arbSamples->value < 2){
 		Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_NV_multisample_coverage\n");
@@ -1211,25 +1223,22 @@ qboolean GLimp_InitGL (void)
 			gl_state.wgl_nv_multisample_coverage = false;
 			gl_state.wgl_nv_multisample_coverage_aviable = false;
 		}
-
+*/
 	gl_state.arb_multisample = false;
 	if ( strstr(  glw_state.wglExtsString, "WGL_ARB_multisample" ) )
 	if(r_arbSamples->value < 2)
 		{
 			Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_ARB_multisample\n");
-			arbMultisampleSupported = false;
 			gl_state.arb_multisample = false;
 		}else
 	{
 			Com_Printf("...using WGL_ARB_multisample\n");
-			arbMultisampleSupported = true;
 			gl_state.arb_multisample = true;
 		
 	}
 	else
 	{
 		Com_Printf("...WGL_ARB_multisample not found\n");
-		arbMultisampleSupported = false;
 		gl_state.arb_multisample = false;
 	}
 	
@@ -1264,7 +1273,6 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		
 		
 		// Choose a Pixel Format Descriptor (PFD) with multisampling support.
-
 		
 		iAttributes[0] = WGL_DOUBLE_BUFFER_ARB;
 		iAttributes[1] = TRUE;
@@ -1289,18 +1297,18 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		iAttributes[8] = WGL_STENCIL_BITS_ARB;
 		iAttributes[9] = 8;
 		
-		iAttributes[10] = arbMultisampleSupported ? WGL_SAMPLE_BUFFERS_ARB : 0;
-		iAttributes[11] = arbMultisampleSupported ? TRUE : 0;
+		iAttributes[10] = gl_state.arb_multisample ? WGL_SAMPLE_BUFFERS_ARB : 0;
+		iAttributes[11] = gl_state.arb_multisample ? TRUE : 0;
 		
 		if(gl_state.wgl_nv_multisample_coverage){
 							
-		iAttributes[12] = arbMultisampleSupported ? WGL_COVERAGE_SAMPLES_NV : 0;
-		iAttributes[13] = arbMultisampleSupported ? (int)r_nvSamplesCoverange->value : 0;
+		iAttributes[12] = gl_state.arb_multisample ? WGL_COVERAGE_SAMPLES_NV : 0;
+		iAttributes[13] = gl_state.arb_multisample ? (int)r_nvSamplesCoverange->value : 0;
 		}
 		else
 		{
-		iAttributes[12] = arbMultisampleSupported ? WGL_SAMPLES_ARB : 0;
-		iAttributes[13] = arbMultisampleSupported ? (int)r_arbSamples->value : 0;
+		iAttributes[12] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : 0;
+		iAttributes[13] = gl_state.arb_multisample ? (int)r_arbSamples->value : 0;
 		}
 		iAttributes[14] = 0;
 		iAttributes[15] = 0;
@@ -1330,9 +1338,9 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 			// Since WGL_ARB_multisample and WGL_pbuffer are extensions, we must check if
 			// those extensions are supported before passing the corresponding enums
 			// to the driver. This could cause an error if they are not supported.
-			iAttributes[8 ] = arbMultisampleSupported ? WGL_SAMPLE_BUFFERS_ARB : WGL_PIXEL_TYPE_ARB;
+			iAttributes[8 ] = gl_state.arb_multisample ? WGL_SAMPLE_BUFFERS_ARB : WGL_PIXEL_TYPE_ARB;
 			
-			if (arbMultisampleSupported)
+			if (gl_state.arb_multisample)
 			iAttributes[9] = gl_state.wgl_nv_multisample_coverage ? WGL_COVERAGE_SAMPLES_NV : WGL_SAMPLES_ARB;
 			else
 			iAttributes[9] = WGL_PIXEL_TYPE_ARB;

@@ -61,7 +61,7 @@ refdef_t r_newrefdef;
 glwstate_t glw_state;
 
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
-
+int			occ_framecount;
 
 int GL_MsgGLError(char* Info)
 {
@@ -332,6 +332,7 @@ void R_SetupFrame(void)
 	mleaf_t *leaf;
 
 	r_framecount++;
+//	occ_framecount++;
 
 	// build the transformation matrix for the given view angles
 	VectorCopy(r_newrefdef.vieworg, r_origin);
@@ -707,8 +708,8 @@ void R_DrawLightInteractions(void)
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
-	if(!R_DrawLightOccluders())
-			continue;
+//	if(!R_DrawLightOccluders())
+//			continue;
 	
 	qglClearStencil(128);
 	qglStencilMask(255);
@@ -1118,7 +1119,7 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "1");
-Cvar_Set("r_pplWorld", "0");
+Cvar_Set("r_pplWorld", "1");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "1");
@@ -1184,7 +1185,7 @@ void R_RegisterCvars(void)
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
 	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "12", CVAR_ARCHIVE);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
-	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0.1", CVAR_ARCHIVE);
+	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0", 0);
 	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
@@ -1260,6 +1261,8 @@ void R_RegisterCvars(void)
 	
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
 	r_CameraSpaceLightMove =			Cvar_Get("r_CameraSpaceLightMove", "0", CVAR_ARCHIVE);
+
+	r_allowIntel =						Cvar_Get("r_allowIntel", "0", 0);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
@@ -1437,19 +1440,6 @@ int R_Init(void *hinstance, void *hWnd)
 	
 	strcpy(vendor_buffer, gl_config.vendor_string);
 	strlwr(vendor_buffer);
-
-	if (strstr(vendor_buffer, "intel")) // fuck the intel lol
-		{
-		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
-		VID_Error(ERR_FATAL,  "Intel graphics card is unsupported.\n");
-		}
-	
-	if (strstr(vendor_buffer, "sis")) // fuck the SiS too
-		{
-		Com_Printf(S_COLOR_RED"SiS graphics card is unsupported.\n");
-		VID_Error(ERR_FATAL,  "SiS graphics card is unsupported.\n");
-		}
-	
 	
 	{
 	// check GL version /:-#)
@@ -1460,7 +1450,17 @@ int R_Init(void *hinstance, void *hWnd)
 		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		}
 	}
-	
+
+	if (strstr(vendor_buffer, "intel")) // fuck the intel lol
+		{
+		if(r_allowIntel->value){
+		Com_Printf(S_COLOR_RED"Intel graphics card detected. Renderer may be unstable and slow.\n");
+		}else{
+		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
+		VID_Error(ERR_FATAL,  "Intel graphics card is unsupported.\n");
+		}
+	}
+
 	Com_DPrintf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
 	Com_DPrintf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
 	
@@ -1472,8 +1472,8 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf("=====================================\n");
 	Com_Printf("\n");
 
-if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
-	Com_Printf("...using GL_ARB_multitexture\n");
+	if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
+		Com_Printf("...using GL_ARB_multitexture\n");
 
 		qglActiveTextureARB =		(PFNGLACTIVETEXTUREARBPROC)			qwglGetProcAddress("glActiveTextureARB");
 		qglClientActiveTextureARB =	(PFNGLCLIENTACTIVETEXTUREARBPROC)	qwglGetProcAddress("glClientActiveTextureARB");
@@ -1566,7 +1566,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 	gl_state.depthBoundsTest = false;
 	}
 
-
+/*
 	gl_state.arb_occlusion = false;
 	gl_state.arb_occlusion2 = false;
 	if (strstr(gl_config.extensions_string, "GL_ARB_occlusion_query")) {
@@ -1608,6 +1608,7 @@ if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
 		Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query not found\n");
 		gl_state.arb_occlusion = false;
 	}
+*/
 
 	gl_state.nPot = false;
 	if (strstr

@@ -327,6 +327,7 @@ cvar_t	*r_ignoreGlErrors;
 cvar_t	*r_lightEditor;
 cvar_t	*r_CameraSpaceLightMove;
 
+cvar_t	*r_allowIntel;
 //cvar_t	*r_stereoVision;
 //cvar_t	*r_stereoSeparation;
 
