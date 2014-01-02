@@ -22,7 +22,7 @@ varying vec3			v_AttenCoord;
 
 void main ()
 {
-
+ 
 vec3 V = normalize(v_viewVecTS);
 vec3 L = normalize(v_lightVec);
 
@@ -45,7 +45,7 @@ vec4 u_attenMap = texture3D(u_attenMap ,v_AttenCoord);
 vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
 cubeFilter *= 2;
 
-#ifdef AMBIENT
+#ifdef AMBIENT   
 vec4 ambient = u_attenMap * (normalMap.z * normalMap.z);
 gl_FragColor = diffuseMap * ambient * u_LightColor;
 
@@ -54,5 +54,5 @@ gl_FragColor = diffuseMap * ambient * u_LightColor;
 vec2 Es = PhongLighting(normalMap, L, V, u_specularExp);
 gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * cubeFilter * u_attenMap * u_LightColor;
 
-#endif
+#endif 
 }
