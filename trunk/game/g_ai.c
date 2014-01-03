@@ -344,7 +344,7 @@ void HuntTarget (edict_t *self)
 		AttackFinished (self, 1);
 }
 
-void FoundTarget (edict_t *self, char *func)
+void FoundTarget (edict_t *self)
 {
 	// let other monsters see this monster for a while
 	if (self->enemy->client)
@@ -365,7 +365,7 @@ void FoundTarget (edict_t *self, char *func)
 		return;
 	}
 
-	self->goalentity = self->movetarget = G_PickTarget(self->combattarget, func);
+	self->goalentity = self->movetarget = G_PickTarget(self->combattarget);
 	if (!self->movetarget)
 	{
 		self->goalentity = self->movetarget = self->enemy;
@@ -574,7 +574,7 @@ qboolean FindTarget (edict_t *self)
 //
 // got one
 //
-	FoundTarget (self, NULL);
+	FoundTarget (self);
 
 	if (!(self->monsterinfo.aiflags & AI_SOUND_TARGET) && (self->monsterinfo.sight))
 		self->monsterinfo.sight (self, self->enemy);

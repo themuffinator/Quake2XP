@@ -328,7 +328,7 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker)
 		}
 		targ->enemy = attacker;
 		if (!(targ->monsterinfo.aiflags & AI_DUCKED))
-			FoundTarget (targ, NULL);
+			FoundTarget (targ);
 		return;
 	}
 
@@ -345,7 +345,7 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker)
 			targ->oldenemy = targ->enemy;
 		targ->enemy = attacker;
 		if (!(targ->monsterinfo.aiflags & AI_DUCKED))
-			FoundTarget (targ, NULL);
+			FoundTarget (targ);
 	}
 	// if they *meant* to shoot us, then shoot back
 	else if (attacker->enemy == targ)
@@ -354,7 +354,7 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker)
 			targ->oldenemy = targ->enemy;
 		targ->enemy = attacker;
 		if (!(targ->monsterinfo.aiflags & AI_DUCKED))
-			FoundTarget (targ, NULL);
+			FoundTarget (targ);
 	}
 	// otherwise get mad at whoever they are mad at (help our buddy) unless it is us!
 	else if (attacker->enemy && attacker->enemy != targ)
@@ -363,7 +363,7 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker)
 			targ->oldenemy = targ->enemy;
 		targ->enemy = attacker->enemy;
 		if (!(targ->monsterinfo.aiflags & AI_DUCKED))
-			FoundTarget (targ, NULL);
+			FoundTarget (targ);
 	}
 }
 

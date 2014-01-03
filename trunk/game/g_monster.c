@@ -173,7 +173,7 @@ void monster_respawn(edict_t *self)
 	gi.multicast (self->s.origin, MULTICAST_PVS);
 
     monster_start_go (self);
-    FoundTarget (self, NULL);
+    FoundTarget (self);
 	level.killed_monsters--;     // fixed by Berserker: монстр воскрес, вычтем из списка убитых
     level.total_monsters--;      // fixed by Berserker: monster_start_go прибавляет 1 к списку живых монстров, но это не верно в данном случае. Поправим
 	}
@@ -529,7 +529,7 @@ void monster_use (edict_t *self, edict_t *other, edict_t *activator)
 	
 // delay reaction so if the monster is teleported, its sound is still heard
 	self->enemy = activator;
-	FoundTarget (self, NULL);
+	FoundTarget (self);
 }
 
 
@@ -551,7 +551,7 @@ void monster_triggered_spawn (edict_t *self)
 
 	if (self->enemy && !(self->spawnflags & 1) && !(self->enemy->flags & FL_NOTARGET))
 	{
-		FoundTarget (self, NULL);
+		FoundTarget (self);
 	}
 	else
 	{
@@ -692,7 +692,7 @@ void monster_start_go (edict_t *self)
 		target = NULL;
 		notcombat = false;
 		fixup = false;
-		while ((target = G_Find (target, FOFS(targetname), self->target, NULL)) != NULL)
+		while ((target = G_Find (target, FOFS(targetname), self->target)) != NULL)
 		{
 			if (strcmp(target->classname, "point_combat") == 0)
 			{
@@ -716,7 +716,7 @@ void monster_start_go (edict_t *self)
 		edict_t		*target;
 
 		target = NULL;
-		while ((target = G_Find (target, FOFS(targetname), self->combattarget, NULL)) != NULL)
+		while ((target = G_Find (target, FOFS(targetname), self->combattarget)) != NULL)
 		{
 			if (strcmp(target->classname, "point_combat") != 0)
 			{
@@ -730,7 +730,7 @@ void monster_start_go (edict_t *self)
 
 	if (self->target)
 	{
-		self->goalentity = self->movetarget = G_PickTarget(self->target, NULL);
+		self->goalentity = self->movetarget = G_PickTarget(self->target);
 		if (!self->movetarget)
 		{
 			gi.dprintf ("%s can't find target %s at %s\n", self->classname, self->target, vtos(self->s.origin));

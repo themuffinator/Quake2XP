@@ -1742,7 +1742,7 @@ void Qcommon_Init(int argc, char **argv)
 	if (!Cbuf_AddLateCommands()) {
 		// if the user didn't give any commands, run default action
 		if (!dedicated->value)
-			Cbuf_AddText("menu_main\n");
+			Cbuf_AddText("d1\n");
 		else
 			Cbuf_AddText("dedicated_start\n");
 		Cbuf_Execute();

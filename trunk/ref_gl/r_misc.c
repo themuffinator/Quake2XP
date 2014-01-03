@@ -855,7 +855,7 @@ void GL_SetDefaultState(void)
 	thermaltex = 0;
 	fxaatex = 0;
 	
-	qglClearColor		(0.35, 0.35, 0.35, 1);
+	qglClearColor		(0, 0, 0, 1);
 	qglCullFace			(GL_FRONT);
 	qglEnable			(GL_TEXTURE_2D);
 

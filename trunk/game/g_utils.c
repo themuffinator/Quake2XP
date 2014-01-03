@@ -42,15 +42,9 @@ NULL will be returned if the end of the list is reached.
 
 =============
 */
-edict_t *G_Find (edict_t *from, int fieldofs, char *match, char *func)
+edict_t *G_Find (edict_t *from, int fieldofs, char *match)
 {
 	char	*s;
-	qboolean	target;
-
-	if (func)
-		target = (fieldofs == FOFS(targetname));		// отслеживать будем обращения к TargetName
-	else
-		target = false;
 
 	if (!from)
 		from = g_edicts;
@@ -64,13 +58,8 @@ edict_t *G_Find (edict_t *from, int fieldofs, char *match, char *func)
 		s = *(char **) ((byte *)from + fieldofs);
 		if (!s)
 			continue;
-		if (!Q_stricmp (s, match)){
-		
-//		if(target)
-	//		gi.dprintf/*Com_Printf*/ ("\"%s\" activated \"%s\"\n", func, s);
-			
-		return from;
-		}
+		if (!Q_stricmp (s, match))
+			return from;
 	}
 
 	return NULL;
@@ -126,7 +115,7 @@ NULL will be returned if the end of the list is reached.
 */
 #define MAXCHOICES	8
 
-edict_t *G_PickTarget (char *targetname, char *func)
+edict_t *G_PickTarget (char *targetname)
 {
 	edict_t	*ent = NULL;
 	int		num_choices = 0;
@@ -140,7 +129,7 @@ edict_t *G_PickTarget (char *targetname, char *func)
 
 	while(1)
 	{
-		ent = G_Find (ent, FOFS(targetname), targetname, func);
+		ent = G_Find (ent, FOFS(targetname), targetname);
 		if (!ent)
 			break;
 		choice[num_choices++] = ent;
@@ -181,7 +170,7 @@ match (string)self.target and call their .use function
 
 ==============================
 */
-void G_UseTargets (edict_t *ent, edict_t *activator, char *func)
+void G_UseTargets (edict_t *ent, edict_t *activator)
 {
 	edict_t		*t;
 
@@ -223,7 +212,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator, char *func)
 	if (ent->killtarget)
 	{
 		t = NULL;
-		while ((t = G_Find (t, FOFS(targetname), ent->killtarget, func)))
+		while ((t = G_Find (t, FOFS(targetname), ent->killtarget)))
 		{
 			G_FreeEdict (t);
 			if (!ent->inuse)
@@ -240,7 +229,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator, char *func)
 	if (ent->target)
 	{
 		t = NULL;
-		while ((t = G_Find (t, FOFS(targetname), ent->target, func)))
+		while ((t = G_Find (t, FOFS(targetname), ent->target)))
 		{
 			// doors fire area portals in a specific way
 			if (!Q_stricmp(t->classname, "func_areaportal") &&

@@ -45,7 +45,7 @@ static void SP_FixCoopSpots (edict_t *self)
 
 	while(1)
 	{
-		spot = G_Find(spot, FOFS(classname), "info_player_start", NULL);
+		spot = G_Find(spot, FOFS(classname), "info_player_start");
 		if (!spot)
 			return;
 		if (!spot->targetname)
@@ -745,7 +745,7 @@ edict_t *SelectRandomDeathmatchSpawnPoint (void)
 	range1 = range2 = 99999;
 	spot1 = spot2 = NULL;
 
-	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch", NULL)) != NULL)
+	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
 	{
 		count++;
 		range = PlayersRangeFromSpot(spot);
@@ -776,7 +776,7 @@ edict_t *SelectRandomDeathmatchSpawnPoint (void)
 	spot = NULL;
 	do
 	{
-		spot = G_Find (spot, FOFS(classname), "info_player_deathmatch", NULL);
+		spot = G_Find (spot, FOFS(classname), "info_player_deathmatch");
 		if (spot == spot1 || spot == spot2)
 			selection++;
 	} while(selection--);
@@ -800,7 +800,7 @@ edict_t *SelectFarthestDeathmatchSpawnPoint (void)
 	spot = NULL;
 	bestspot = NULL;
 	bestdistance = 0;
-	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch", NULL)) != NULL)
+	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
 	{
 		bestplayerdistance = PlayersRangeFromSpot (spot);
 
@@ -818,7 +818,7 @@ edict_t *SelectFarthestDeathmatchSpawnPoint (void)
 
 	// if there is a player just spawned on each and every start spot
 	// we have no choice to turn one into a telefrag meltdown
-	spot = G_Find (NULL, FOFS(classname), "info_player_deathmatch", NULL);
+	spot = G_Find (NULL, FOFS(classname), "info_player_deathmatch");
 
 	return spot;
 }
@@ -849,7 +849,7 @@ edict_t *SelectCoopSpawnPoint (edict_t *ent)
 	// assume there are four coop spots at each spawnpoint
 	while (1)
 	{
-		spot = G_Find (spot, FOFS(classname), "info_player_coop", NULL);
+		spot = G_Find (spot, FOFS(classname), "info_player_coop");
 		if (!spot)
 			return NULL;	// we didn't have enough...
 
@@ -888,7 +888,7 @@ void	SelectSpawnPoint (edict_t *ent, vec3_t origin, vec3_t angles)
 	// find a single player start spot
 	if (!spot)
 	{
-		while ((spot = G_Find (spot, FOFS(classname), "info_player_start", NULL)) != NULL)
+		while ((spot = G_Find (spot, FOFS(classname), "info_player_start")) != NULL)
 		{
 			if (!game.spawnpoint[0] && !spot->targetname)
 				break;
@@ -904,7 +904,7 @@ void	SelectSpawnPoint (edict_t *ent, vec3_t origin, vec3_t angles)
 		{
 			if (!game.spawnpoint[0])
 			{	// there wasn't a spawnpoint without a target, so use any
-				spot = G_Find (spot, FOFS(classname), "info_player_start", NULL);
+				spot = G_Find (spot, FOFS(classname), "info_player_start");
 			}
 			if (!spot)
 				gi.error (""S_COLOR_RED"Couldn't find spawn point %s\n", game.spawnpoint);

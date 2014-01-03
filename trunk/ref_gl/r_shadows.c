@@ -286,9 +286,6 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 	float	projdist;
 	mat3_t	entityAxis;
 	int		i;
-
-//	if(!FoundReLight && currentShadowLight->isStatic) // only dynamic shadows if we don't relight
-//		return;
 	
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {

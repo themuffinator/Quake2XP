@@ -736,7 +736,7 @@ void Key_Event(int key, qboolean down, unsigned time)
 																		// Quake2Max
 		{
 			SCR_EndLoadingPlaque();	// get rid of loading plaque
-			Cbuf_AddText("menu_main\n");
+			Cbuf_AddText("d1\n");
 
 			cls.consoleActive = false;
 

@@ -1529,9 +1529,6 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light)
 	vec3_t	mins, maxs;
 	byte	vis[MAX_MAP_LEAFS/8];
 
-	if(!r_worldmodel)
-		return false;
-
 	contents = CL_PMpointcontents(light->origin);
 	if (contents & CONTENTS_SOLID)
 		goto skip;
@@ -1585,6 +1582,10 @@ qboolean InLightVISEntity()
 
 	if (!r_worldmodel)
 		return false;
+	
+	if(r_newrefdef.areabits)
+		return false;
+
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
