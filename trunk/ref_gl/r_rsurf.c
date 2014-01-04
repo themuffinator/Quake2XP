@@ -1508,8 +1508,6 @@ void R_DrawLightBrushModel(entity_t * e)
 			return;
 	}
 	
-	if(!InLightVISEntity())
-		return;
 
 	VectorSubtract(r_newrefdef.vieworg, e->origin, modelorg);
 

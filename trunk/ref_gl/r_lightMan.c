@@ -1583,7 +1583,7 @@ qboolean InLightVISEntity()
 	if (!r_worldmodel)
 		return false;
 	
-	if(r_newrefdef.areabits)
+	if(!r_newrefdef.areabits)
 		return false;
 
 

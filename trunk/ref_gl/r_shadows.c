@@ -312,8 +312,6 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 	if(VectorCompare(currentShadowLight->origin, currententity->origin))
 		return;
 
-	if(!InLightVISEntity())
-		return;
 
 	projdist = currentShadowLight->len * 2.5;
 
@@ -530,8 +528,6 @@ void R_DrawBrushModelVolumes()
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
 	}
 
-	if(!InLightVISEntity())
-		return;
 
 	if(currentShadowLight->spherical){
 
