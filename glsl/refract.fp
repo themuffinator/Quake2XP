@@ -22,6 +22,11 @@ uniform vec2			u_depthParms;
 
 void main (void) {
 
+	float cutoff = texture2DRect(g_weaponHackMap, gl_FragCoord.xy).a;
+	if (cutoff == 0.0) {
+		discard;
+		return;
+	}
 
 	vec2 N = texture2D(u_deformMap, v_deformTexCoord).xy * 2.0 - 1.0;
 	vec4 diffuse  = texture2D(u_colorMap,  v_deformTexCoord.xy);
@@ -52,10 +57,13 @@ void main (void) {
 	diffuse *= v_color;
 	diffuse = clamp(diffuse, 0.0, 1.0);
 	// chromatic aberration approximation
-	gl_FragColor.x = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).x;
-	gl_FragColor.y = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.0).y;
-	gl_FragColor.z = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).z;
+	diffuse*= cutoff;
+	N *= cutoff;
+	gl_FragColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
+	gl_FragColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
+	gl_FragColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 	// blend glass texture
 	gl_FragColor.xyz += diffuse.xyz * u_alpha;
+
 	#endif
 }

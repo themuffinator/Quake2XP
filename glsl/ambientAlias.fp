@@ -21,10 +21,13 @@ uniform float      u_CausticsModulate;
 
 uniform float       u_ColorModulate;  
 uniform float       u_AddShift; 
-uniform int			u_weaponHack;
 
 void main ()
 {
+#ifdef WEAPON
+gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+#endif
+
 #ifdef SHELL
 vec4 r0 = texture2D(u_Diffuse,  v_shellCoord);
 gl_FragColor = r0 * u_ColorModulate;
@@ -58,11 +61,5 @@ color = tmp + color;
 #endif
 
 gl_FragColor = color * u_ColorModulate;
-
-if(u_weaponHack == 1)
-	gl_FragColor.a = 0.0;
-else
-	gl_FragColor.a = 1.0;
-
 #endif
 }
