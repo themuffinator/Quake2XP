@@ -301,17 +301,17 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 	
 	if(currentShadowLight->spherical){
 
-	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
-		return;
+		if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
+			return;
 	}
 	else
 	{
 		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 			return;
 	}
+	
 	if(VectorCompare(currentShadowLight->origin, currententity->origin))
 		return;
-
 
 	projdist = currentShadowLight->len * 2.5;
 
@@ -354,7 +354,7 @@ void R_DrawShadowVolume(entity_t * e)
 		
 	if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
 		return;
-
+	
 	paliashdr = (dmdl_t *) currentmodel->extradata;
 
 	frame = (daliasframe_t *) ((byte *) paliashdr   + paliashdr->ofs_frames

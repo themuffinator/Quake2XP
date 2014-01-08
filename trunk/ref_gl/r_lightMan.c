@@ -140,7 +140,7 @@ void R_AddNoWorldModelLight() {
 	memset(light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet(light->origin, -100, 0, 100);
+	VectorSet(light->origin, -100, 0, 25);
 	VectorSet(light->startColor, 1.0, 1.0, 1.0);
 	VectorSet(light->angles, 0, 0, 0);
 	VectorSet(light->radius, 600, 600, 600);
@@ -562,6 +562,7 @@ void R_EditSelectedLight_f(void) {
 		}
 		flare = atoi(Cmd_Argv(2)); 
 		selectedShadowLight->flare = flare;
+		VectorCopy(selectedShadowLight->origin, selectedShadowLight->flareOrigin);
 	 }
 	else
 		if (!strcmp(Cmd_Argv(1), "flareSize")) {
@@ -641,6 +642,23 @@ void R_FlareEdit_f(void) {
 		flareEdit = true;
 	else
 		flareEdit = false;
+}
+
+void R_ResetFlarePos_f(void){
+
+	if(!r_lightEditor->value){
+		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
+		return;
+	}
+	
+	if(!selectedShadowLight)
+	{
+	Com_Printf("No selected light.\n");
+		return;
+	}
+
+	VectorCopy(selectedShadowLight->origin, selectedShadowLight->flareOrigin);
+
 }
 
 void R_MoveLightToRight_f(void) {
@@ -1166,18 +1184,20 @@ void Clamp2RGB(vec3_t color)
 
 void CreateNormal(vec3_t dst, vec3_t xyz0, vec3_t xyz1, vec3_t xyz2)
 {
-	float x10,y10,z10;
-	float x20,y20,z20;
+	float x10, y10, z10;
+	float x20, y20, z20;
 
-	x10=xyz1[0]-xyz0[0];
-	x20=xyz2[0]-xyz0[0];
-	y10=xyz1[1]-xyz0[1];
-	y20=xyz2[1]-xyz0[1];
-	z10=xyz1[2]-xyz0[2];
-	z20=xyz2[2]-xyz0[2];
-	dst[0]=y10*z20-y20*z10;
-	dst[1]=z10*x20-z20*x10;
-	dst[2]=x10*y20-x20*y10;
+	x10 = xyz1[0] - xyz0[0];
+	x20 = xyz2[0] - xyz0[0];
+	y10 = xyz1[1] - xyz0[1];
+	y20 = xyz2[1] - xyz0[1];
+	z10 = xyz1[2] - xyz0[2];
+	z20 = xyz2[2] - xyz0[2];
+
+	dst[0] = y10 * z20 - y20 * z10;
+	dst[1] = z10 * x20 - z20 * x10;
+	dst[2] = x10 * y20 - x20 * y10;
+	
 	VectorNormalize(dst);
 }
 
@@ -1583,10 +1603,6 @@ qboolean InLightVISEntity()
 	if (!r_worldmodel)
 		return false;
 	
-	if(!r_newrefdef.areabits)
-		return false;
-
-
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -1605,9 +1621,9 @@ qboolean InLightVISEntity()
 	longs = (CM_NumClusters()+31)>>5;
 
 	// convert leafs to clusters
-	for (i=0 ; i<count ; i++)
+	for (i=0 ; i<count ; i++){
 		leafs[i] = CM_LeafCluster(leafs[i]);
-
+	}
 	memset(&currententity->vis, 0, (((r_worldmodel->numleafs+31)>>5)<<2));
 	for (i=0 ; i<count ; i++)
 		currententity->vis[leafs[i]>>3] |= (1<<(leafs[i]&7));

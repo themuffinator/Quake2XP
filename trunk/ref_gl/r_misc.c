@@ -180,6 +180,30 @@ void CreateScreenRect(void){
 
 }
 
+void R_CheckFBO()
+{
+	int	code;
+
+	code = qglCheckFramebufferStatus(GL_FRAMEBUFFER);
+	switch (code)
+	{
+		case GL_FRAMEBUFFER_COMPLETE:
+			break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:
+			Com_Printf( S_COLOR_RED, "R_CheckFBO: Unsupported framebuffer format");
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+			Com_Printf( S_COLOR_RED, "R_CheckFBO: Framebuffer incomplete, missing attachment");
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+			Com_Printf( S_COLOR_RED, "R_CheckFBO: Framebuffer incomplete, missing draw buffer");
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+			Com_Printf( S_COLOR_RED, "R_CheckFBO: Framebuffer incomplete, missing read buffer");
+		default:
+			Com_Printf( S_COLOR_RED, "R_CheckFBO: unknown status %i", code);
+	}
+}
+
+static GLenum drawbuffer[] = { GL_COLOR_ATTACHMENT0};
+
 void CreateWeaponRect(void){
 
 	
@@ -212,17 +236,19 @@ void CreateWeaponRect(void){
 
 	weaponHack = image;
 
+    qglBindTexture			(GL_TEXTURE_RECTANGLE_ARB, weaponHack->texnum);
+	qglTexImage2D		    (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	 // create screen texture
-   
-    qglBindTexture   (GL_TEXTURE_RECTANGLE_ARB, weaponHack->texnum);
-    qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0,
-                       GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+	qglGenFramebuffers		(1, &gl_state.fbo_weaponMask);
+	qglBindFramebuffer		(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
+	qglFramebufferTexture2D	(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, weaponHack->texnum, 0);
+	qglDrawBuffers			(1, drawbuffer);
+	qglBindFramebuffer		(GL_FRAMEBUFFER, 0);
+	R_CheckFBO();
 
 }
 image_t *shadowMask;

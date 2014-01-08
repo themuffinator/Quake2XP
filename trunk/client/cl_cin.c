@@ -496,7 +496,7 @@ void SCR_RunCinematic(void)
 	if (frame <= cl.cinematicframe)
 		return;
 	if (frame > cl.cinematicframe + 1) {
-		Com_Printf("Dropped frame: %i > %i\n", frame,
+		Com_DPrintf("Dropped frame: %i > %i\n", frame,
 				   cl.cinematicframe + 1);
 		cl.cinematictime = cls.realtime - cl.cinematicframe * 1000 / 14;
 	}

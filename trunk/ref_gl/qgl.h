@@ -733,6 +733,32 @@ extern	PFNGLUNIFORMMATRIX2FVPROC				qglUniformMatrix2fv;
 extern	PFNGLUNIFORMMATRIX3FVPROC				qglUniformMatrix3fv;
 extern	PFNGLUNIFORMMATRIX4FVPROC				qglUniformMatrix4fv;
 
+//
+// GL_ARB_framebuffer_object
+//
+
+extern	PFNGLISRENDERBUFFERPROC								qglIsRenderbuffer;
+extern	PFNGLBINDRENDERBUFFERPROC							qglBindRenderbuffer;
+extern	PFNGLDELETERENDERBUFFERSPROC						qglDeleteRenderbuffers;
+extern	PFNGLGENRENDERBUFFERSPROC							qglGenRenderbuffers;
+extern	PFNGLRENDERBUFFERSTORAGEPROC						qglRenderbufferStorage;
+extern	PFNGLGETRENDERBUFFERPARAMETERIVPROC					qglGetRenderbufferParameteriv;
+extern	PFNGLISFRAMEBUFFERPROC								qglIsFramebuffer;
+extern	PFNGLBINDFRAMEBUFFERPROC							qglBindFramebuffer;
+extern	PFNGLDELETEFRAMEBUFFERSPROC							qglDeleteFramebuffers;
+extern	PFNGLGENFRAMEBUFFERSPROC							qglGenFramebuffers;
+extern	PFNGLCHECKFRAMEBUFFERSTATUSPROC						qglCheckFramebufferStatus;
+extern	PFNGLFRAMEBUFFERTEXTURE1DPROC						qglFramebufferTexture1D;
+extern	PFNGLFRAMEBUFFERTEXTURE2DPROC						qglFramebufferTexture2D;
+extern	PFNGLFRAMEBUFFERTEXTURE3DPROC						qglFramebufferTexture3D;
+extern	PFNGLFRAMEBUFFERRENDERBUFFERPROC					qglFramebufferRenderbuffer;
+extern	PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC		qglGetFramebufferAttachmentParameteriv;
+extern	PFNGLGENERATEMIPMAPPROC								qglGenerateMipmap;
+extern	PFNGLBLITFRAMEBUFFERPROC							qglBlitFramebuffer;
+extern	PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC				qglRenderbufferStorageMultisample;
+extern	PFNGLFRAMEBUFFERTEXTURELAYERPROC					qglFramebufferTextureLayer;
+
+extern	PFNGLDRAWBUFFERSARBPROC								qglDrawBuffers;
 
 #ifdef _WIN32
 

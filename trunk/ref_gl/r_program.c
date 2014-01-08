@@ -580,6 +580,7 @@ void R_InitPrograms(void) {
 		worldDefs.CausticsBit	= R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
 		worldDefs.ShellBits		= R_GetProgramDefBits(aliasAmbientProgram, "SHELL");
 		worldDefs.EnvBits		= R_GetProgramDefBits(aliasAmbientProgram, "ENVMAP");
+		worldDefs.WeaponBits	= R_GetProgramDefBits(aliasAmbientProgram, "WEAPON");
 
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");

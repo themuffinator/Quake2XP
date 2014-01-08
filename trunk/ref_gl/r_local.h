@@ -371,7 +371,7 @@ void R_DrawShadowVolume(entity_t * e);
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3],  int style, int filter, vec3_t angles, vec3_t speed, 
 									   qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg, 
 									   float flareSize, char target[MAX_QPATH], int start_off);
-void R_DrawParticles(qboolean WaterCheck);
+void R_DrawParticles();
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
 void R_RenderDecals(void);
@@ -426,6 +426,7 @@ void R_Light_Copy_f(void);
 void R_ChangeLightCone_f(void);
 void R_Light_UnSelect_f(void);
 void R_FlareEdit_f(void);
+void R_ResetFlarePos_f(void);
 extern qboolean flareEdit;
 
 void GL_SetupCubeMapMatrix(qboolean model);
@@ -464,6 +465,7 @@ void Mat4_Translate(mat4_t m, float x, float y, float z);
 void Mat4_Scale(mat4_t m, float x, float y, float z) ;
 qboolean Mat4_Invert(const mat4_t in, mat4_t out);
 
+void R_CheckFBO();
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -653,6 +655,14 @@ typedef struct {
 	GLuint	ibo_Dynamic;
 	mat4_t			projectionMatrix;
 	mat4_t			modelViewMatrix;		// ready to load
+	
+	// frame buffer
+	int			maxRenderBufferSize;
+	int			maxColorAttachments;
+	int			maxSamples;
+	int			maxDrawBuffers;
+	GLuint		fbo_weaponMask;
+
 // ----------------------------------------------------------------
 } glstate_t;
 
@@ -803,6 +813,7 @@ typedef struct {
 	unsigned	ShellBits;
 	unsigned	EnvBits;
 	unsigned	AttribColorBits;
+	unsigned	WeaponBits;
 } 
 worldDefs_t;
 

@@ -637,6 +637,36 @@ next:
 	
 }
 
+void R_DrawPlayerWeaponFBO(void)
+{
+	int i;
+
+	if (!r_drawEntities->value)
+		return;
+
+	qglBindFramebuffer	(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
+	qglClear			(GL_COLOR_BUFFER_BIT);
+
+	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
+		{
+		currententity = &r_newrefdef.entities[i];
+		currentmodel = currententity->model;
+		
+		if (!currentmodel)
+			continue;
+		
+		if (currentmodel->type != mod_alias)
+			continue;
+		
+		if (!(currententity->flags & RF_WEAPONMODEL))
+			continue;
+		
+		R_DrawAliasModel(currententity, true);
+		}
+
+	qglBindFramebuffer	(GL_FRAMEBUFFER, 0);
+
+}
 
 void R_DrawPlayerWeaponLightPass(void)
 {
@@ -707,9 +737,6 @@ void R_DrawLightInteractions(void)
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
-
-//	if(!R_DrawLightOccluders())
-//			continue;
 	
 	qglClearStencil(128);
 	qglStencilMask(255);
@@ -838,11 +865,10 @@ if (r_noRefresh->value)
 
 	R_RenderFlares();
 	R_LightScale();
-	R_DrawParticles(true); //underwater particles
-	R_CaptureColorBuffer();
+	R_DrawPlayerWeaponFBO();
 	R_CaptureColorBuffer();
 	R_DrawAlphaPoly();
-	R_DrawParticles(false); // air particles
+	R_DrawParticles();
 	R_CaptureColorBuffer();
 	R_RenderDistortModels();
 	R_CaptureColorBuffer();
@@ -1306,6 +1332,7 @@ bind KP_DEL		"unselectLight"
 	Cmd_AddCommand("clearWorldLights",          R_ClearWorldLights);
 	Cmd_AddCommand("unselectLight",				R_Light_UnSelect_f);
 	Cmd_AddCommand("editFlare",					R_FlareEdit_f);
+	Cmd_AddCommand("resetFlarePos",				R_ResetFlarePos_f);
 }
 
 /*
@@ -1385,10 +1412,9 @@ static void DevIL_Init() {
 R_Init
 ===============
 */
-int GL_QueryBits;
-int flareQueries[MAX_WORLD_SHADOW_LIHGTS];
-int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
-
+//int GL_QueryBits;
+//int flareQueries[MAX_WORLD_SHADOW_LIHGTS];
+//int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 
 int R_Init(void *hinstance, void *hWnd)
 {
@@ -1700,6 +1726,51 @@ int R_Init(void *hinstance, void *hWnd)
 		gl_state.conditional_render = false;		
 	}
 */
+	if (strstr(gl_config.extensions_string, "GL_ARB_framebuffer_object")) {
+		Com_Printf("...using GL_ARB_framebuffer_object\n");  
+
+		qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &gl_state.maxRenderBufferSize);
+		qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &gl_state.maxColorAttachments);
+		qglGetIntegerv(GL_MAX_SAMPLES, &gl_state.maxSamples);
+
+		Com_Printf(S_COLOR_YELLOW"   Max Render Buffer Size:  "S_COLOR_GREEN"%i\n", gl_state.maxRenderBufferSize);
+		Com_Printf(S_COLOR_YELLOW"   Max Color Attachments:   "S_COLOR_GREEN"%i\n", gl_state.maxColorAttachments);
+		Com_Printf(S_COLOR_YELLOW"   Max Buffer Samples:      "S_COLOR_GREEN"%i\n", gl_state.maxSamples);
+
+		qglIsRenderbuffer =							(PFNGLISRENDERBUFFERPROC) qwglGetProcAddress("glIsRenderbuffer");
+		qglBindRenderbuffer =						(PFNGLBINDRENDERBUFFERPROC) qwglGetProcAddress("glBindRenderbuffer");
+		qglDeleteRenderbuffers =					(PFNGLDELETERENDERBUFFERSPROC) qwglGetProcAddress("glDeleteRenderbuffers");
+		qglGenRenderbuffers =						(PFNGLGENRENDERBUFFERSPROC) qwglGetProcAddress("glGenRenderbuffers");
+		qglRenderbufferStorage =					(PFNGLRENDERBUFFERSTORAGEPROC) qwglGetProcAddress("glRenderbufferStorage");
+		qglGetRenderbufferParameteriv =				(PFNGLGETRENDERBUFFERPARAMETERIVPROC) qwglGetProcAddress("glGetRenderbufferParameteriv");
+		qglRenderbufferStorageMultisample =			(PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC) qwglGetProcAddress("glRenderbufferStorageMultisample");
+
+		qglIsFramebuffer =							(PFNGLISFRAMEBUFFERPROC) qwglGetProcAddress("glIsFramebuffer");
+		qglBindFramebuffer =						(PFNGLBINDFRAMEBUFFERPROC) qwglGetProcAddress("glBindFramebuffer");
+		qglDeleteFramebuffers =						(PFNGLDELETEFRAMEBUFFERSPROC) qwglGetProcAddress("glDeleteFramebuffers");
+		qglGenFramebuffers =						(PFNGLGENFRAMEBUFFERSPROC) qwglGetProcAddress("glGenFramebuffers");
+		qglCheckFramebufferStatus =					(PFNGLCHECKFRAMEBUFFERSTATUSPROC) qwglGetProcAddress("glCheckFramebufferStatus");
+		qglFramebufferTexture1D =					(PFNGLFRAMEBUFFERTEXTURE1DPROC) qwglGetProcAddress("glFramebufferTexture1D");
+		qglFramebufferTexture2D =					(PFNGLFRAMEBUFFERTEXTURE2DPROC) qwglGetProcAddress("glFramebufferTexture2D");
+		qglFramebufferTexture3D =					(PFNGLFRAMEBUFFERTEXTURE3DPROC) qwglGetProcAddress("glFramebufferTexture3D");
+		qglFramebufferRenderbuffer =				(PFNGLFRAMEBUFFERRENDERBUFFERPROC) qwglGetProcAddress("glFramebufferRenderbuffer");
+		qglGetFramebufferAttachmentParameteriv =	(PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC) qwglGetProcAddress("glGetFramebufferAttachmentParameteriv");
+		qglGenerateMipmap =							(PFNGLGENERATEMIPMAPPROC) qwglGetProcAddress("glGenerateMipmap");
+		qglBlitFramebuffer =						(PFNGLBLITFRAMEBUFFERPROC) qwglGetProcAddress("glBlitFramebuffer");
+		
+	}
+	else {
+		Com_Printf(S_COLOR_RED"...GL_ARB_framebuffer_object not found\n");
+	}
+
+	if (strstr(gl_config.extensions_string, "GL_ARB_draw_buffers")) {
+		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
+		
+	if (qglDrawBuffers)
+		Com_Printf("...using GL_ARB_draw_buffers\n");
+	else
+		Com_Printf(S_COLOR_RED"...using GL_ARB_draw_buffers not found\n");
+	}
 
 	gl_state.glsl = false;	
 	if ( strstr( gl_config.extensions_string, "GL_ARB_shading_language_100" ) )
@@ -1843,6 +1914,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("clearWorldLights");
 	Cmd_RemoveCommand("unselectLight");
 	Cmd_RemoveCommand("editFlare");
+	Cmd_RemoveCommand("resetFlarePos");
 	Mod_FreeAll();
 	GL_ShutdownImages();
 
@@ -1852,10 +1924,10 @@ void R_Shutdown(void)
 	ilShutDown();
 	R_ShutdownPrograms();
 		    
-	if(qglDeleteQueriesARB){
-	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
-	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
-	}
+//	if(qglDeleteQueriesARB){
+//	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
+//	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
+//	}
 	
 	DeleteShadowVertexBuffers();
 
@@ -1864,6 +1936,8 @@ void R_Shutdown(void)
 	qglDeleteBuffers(1, &gl_state.vbo_quarterScreenQuad);
 	qglDeleteBuffers(1, &gl_state.vbo_Dynamic);
 	qglDeleteBuffers(1, &gl_state.ibo_Dynamic);
+
+	qglDeleteFramebuffers(1, &gl_state.fbo_weaponMask);
 }
 
 

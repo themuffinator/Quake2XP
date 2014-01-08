@@ -54,7 +54,7 @@ int SortPart(particle_t *a, particle_t *b ){
 	return (a->type + a->flags) - (b->type + b->flags);
 }
 
-void R_DrawParticles(qboolean WaterCheck)
+void R_DrawParticles()
 {
 	particle_t *p;
 	unsigned	ParticleIndex[MAX_INDICES];
@@ -97,20 +97,6 @@ void R_DrawParticles(qboolean WaterCheck)
 
 	for (p = r_newrefdef.particles, i = 0; i < r_newrefdef.num_particles; i++, p++) {
 		
-		//if (WaterCheck) {
-
-		//	if (!(CL_PMpointcontents(p->origin) & MASK_WATER)) { //in water
-		//		continue;
-		//	}
-		//}
-
-		//if (!WaterCheck) { // on air :-)
-
-		//	if (CL_PMpointcontents(p->origin) & MASK_WATER) {
-		//		continue;
-		//	}
-		//}
-				
 		switch (p->type) {
 
 		case PT_BUBBLE:

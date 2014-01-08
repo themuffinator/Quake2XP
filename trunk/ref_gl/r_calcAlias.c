@@ -93,6 +93,49 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale)
 
 int CL_PMpointcontents(vec3_t point);
 
+void GL_DrawAliasFrameLerpWeapon(dmdl_t *paliashdr)
+{
+	vec3_t		vertexArray[3*MAX_TRIANGLES];
+	int			index_xyz;
+	int			i, j, jj =0;
+	dtriangle_t	*tris;
+	unsigned	defBits = 0;
+	int			id;
+
+		
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	R_CalcAliasFrameLerp(paliashdr, 0);			
+
+	qglEnableVertexAttribArray	(ATRB_POSITION);
+	qglVertexAttribPointer		(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
+
+	c_alias_polys += paliashdr->num_tris;
+	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
+	jj = 0;
+	
+	for (i=0; i<paliashdr->num_tris; i++)
+		{
+			for (j=0; j<3; j++, jj++)
+			{
+			index_xyz = tris[i].index_xyz[j];
+			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+			}
+		}
+
+	defBits = worldDefs.WeaponBits;
+	// setup program
+	GL_BindProgram(aliasAmbientProgram, defBits);
+	id = aliasAmbientProgram->id[defBits];
+
+	qglDrawArrays(GL_TRIANGLES, 0, jj);
+
+	qglDisableVertexAttribArray	(ATRB_POSITION);
+	GL_BindNullProgram			();
+	
+}
+
 void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 {
 	vec3_t		vertexArray[3*MAX_TRIANGLES];
@@ -135,7 +178,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	if(r_pplWorld->value){
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.1, 0.1, 0.1);
+			VectorSet(lightColor, 0.35, 0.35, 0.35);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
@@ -264,10 +307,6 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	GL_SelectTexture			(GL_TEXTURE0_ARB);
 	GL_BindNullProgram			();
 	
-	if (currententity->flags & RF_WEAPONMODEL) {
-		R_CapturePlayerWeapon();
-	}
-
 }
 
 

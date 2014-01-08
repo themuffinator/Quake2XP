@@ -229,12 +229,14 @@ R_DrawAliasModel
 */
 
 int  radarOldTime = 0;
+void GL_DrawAliasFrameLerpWeapon(dmdl_t *paliashdr);
+
 void R_DrawAliasModel (entity_t *e, qboolean weapon_model)
 {
 	dmdl_t		*paliashdr;
 	float		diffuseLight[3];
 	vec3_t		bbox[8];
-	
+
 	if ( r_newrefdef.rdflags & RDF_IRGOGGLES) 
 		goto next;
 
@@ -246,11 +248,7 @@ next:
 		if (R_CullAliasModel(bbox, e))
 			return;
 	}
-	
-//	if (e->flags & RF_WEAPONMODEL) {
-//		if (!weapon_model)
-//			return;
-//	}
+
 
 	if (e->flags & RF_WEAPONMODEL) {
 		if (r_leftHand->value == 2)
@@ -312,13 +310,14 @@ next:
     qglPushMatrix ();
 
 	R_RotateForLightEntity(e);
-	
 
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) 
 		GL_DrawAliasFrameLerpAmbientShell(paliashdr);
 	else 
 		GL_DrawAliasFrameLerpAmbient(paliashdr, shadelight);
 
+	if(weapon_model)	
+		GL_DrawAliasFrameLerpWeapon(paliashdr);
 
 	if (!(currententity->flags & RF_TRANSLUCENT)){
 	if(r_pplWorld->value)
@@ -487,8 +486,10 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
 	
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		VectorSet(r_origin, currententity->origin[0]-100, currententity->origin[1]+100, currententity->origin[2]-100);
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+		VectorCopy (currententity->origin, r_origin);
+		r_origin[2]+=70;
+	}
 
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	AnglesToMat3(currententity->angles, entityAxis);
