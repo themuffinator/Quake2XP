@@ -1128,10 +1128,19 @@ void Mod_LoadFaces(lump_t * l)
 			CalcSurfaceBounds(out);
 			GL_CalcBspIndeces(out);
 		
+			// normal
+		if (out->flags & SURF_PLANEBACK)
+			VectorNegate(out->plane->normal, out->normal);
+		else
+			VectorCopy(out->plane->normal, out->normal);
+
+		VectorNormalize(out->normal);
+		VectorNormalize2(out->texinfo->vecs[0], out->tangent);
+		VectorNormalize2(out->texinfo->vecs[1], out->binormal);
 	}
 	
 	// Build TBN for smoothing bump mapping (Berserker)
-	GL_BuildTBN(count);
+//	GL_BuildTBN(count);
 
 	GL_EndBuildingLightmaps();
 

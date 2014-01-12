@@ -419,7 +419,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	}
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		if(!currentShadowLight->isNoWorldModel)
+//		if(!currentShadowLight->isNoWorldModel)
 			return;
 	}
 
@@ -486,11 +486,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
 	
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		VectorCopy (currententity->origin, r_origin);
-		r_origin[2]+=70;
-	}
-
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	AnglesToMat3(currententity->angles, entityAxis);
 	Mat3_TransposeMultiplyVector(entityAxis, tmp, r_origin);

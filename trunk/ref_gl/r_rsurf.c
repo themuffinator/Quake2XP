@@ -453,18 +453,17 @@ void GL_CreateParallaxLmPoly(msurface_t * surf)
 				wLMArray[i][1]  = v[6];
 
 				if(r_parallax->value){
-				//normals
-				nTexArray[i][0] = v[7];
-				nTexArray[i][1] = v[8];
-				nTexArray[i][2] = v[9];
+				nTexArray[i][0] = surf->normal[0];
+				nTexArray[i][1] = surf->normal[1];
+				nTexArray[i][2] = surf->normal[2];
 				//tangents
-				tTexArray[i][0] = v[10];
-				tTexArray[i][1] = v[11];
-				tTexArray[i][2] = v[12];
+				tTexArray[i][0] = surf->tangent[0];
+				tTexArray[i][1] = surf->tangent[1];
+				tTexArray[i][2] = surf->tangent[2];
 				//binormals
-				bTexArray[i][0] = v[13];
-				bTexArray[i][1] = v[14];
-				bTexArray[i][2] = v[15];
+				bTexArray[i][0] = surf->binormal[0];
+				bTexArray[i][1] = surf->binormal[1];
+				bTexArray[i][2] = surf->binormal[2];
 				}
 			}
 	
@@ -700,17 +699,17 @@ void GL_CreateLightPoly(msurface_t * surf)
 		}
 		wTexArray[i][1] = v[4];
 		//normals
-		nTexArray[i][0] = v[7];
-		nTexArray[i][1] = v[8];
-		nTexArray[i][2] = v[9];
+		nTexArray[i][0] = surf->normal[0];
+		nTexArray[i][1] = surf->normal[1];
+		nTexArray[i][2] = surf->normal[2];
 		//tangents
-		tTexArray[i][0] = v[10];
-		tTexArray[i][1] = v[11];
-		tTexArray[i][2] = v[12];
+		tTexArray[i][0] = surf->tangent[0];
+		tTexArray[i][1] = surf->tangent[1];
+		tTexArray[i][2] = surf->tangent[2];
 		//binormals
-		bTexArray[i][0] = v[13];
-		bTexArray[i][1] = v[14];
-		bTexArray[i][2] = v[15];
+		bTexArray[i][0] = surf->binormal[0];
+		bTexArray[i][1] = surf->binormal[1];
+		bTexArray[i][2] = surf->binormal[2];
 	}
 	
 }

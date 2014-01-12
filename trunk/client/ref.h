@@ -327,6 +327,7 @@ typedef struct msurface_s {
 	index_t	*indices;
 	unsigned int sort;
 
+	vec3_t	normal, tangent, binormal;
 		//vbo
 	size_t vbo_pos;
 	int	xyz_size;
