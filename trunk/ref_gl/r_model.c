@@ -1053,15 +1053,94 @@ void SetupSurfaceConnectivity(msurface_t *surf)
 Mod_LoadFaces
 =================
 */
-static vec3_t	vbo[MAX_MAP_TEXINFO * MAX_POLY_VERT];
+
+void Mod_BuildVertexCache()
+{
+	msurface_t	*surf;
+	int         i, vbo_size, vb;
+	int         xyz_size, st_size, lm_size, nm_size, tg_size, bn_size;
+	float	*buf;
+
+	// calc vbo buffer size
+	vb = 0;
+	for( i = 0, surf = currentmodel->surfaces; i < currentmodel->numsurfaces; i++, surf++ )
+		vb += surf->polys->numverts;
+
+	// and offsets...
+	gl_state.xyz_offset = 0;
+	xyz_size = vb * sizeof(vec3_t);
+
+	gl_state.st_offset = gl_state.xyz_offset + xyz_size;
+	st_size  = vb * sizeof(vec2_t);
+
+	gl_state.lm_offset = gl_state.st_offset + st_size;
+	lm_size  = vb * sizeof(vec2_t);
+
+	gl_state.nm_offset = gl_state.lm_offset + lm_size;
+	nm_size  = vb * sizeof(vec3_t); 
+
+	gl_state.tg_offset = gl_state.nm_offset + nm_size;
+	tg_size  = vb * sizeof(vec3_t); 
+
+	gl_state.bn_offset = gl_state.tg_offset + tg_size;
+	bn_size  = vb * sizeof(vec3_t);
+
+	vbo_size =  gl_state.bn_offset + bn_size;
+ 
+	buf = (float*)malloc(vbo_size);
+	if (!buf)
+		Com_Error(ERR_DROP,""S_COLOR_RED"Create vertex buffer - FALED!\n");   // wtf, man??? drop to console
+
+	// fill vbo
+	vb = 0;		
+	for( i = 0, surf = currentmodel->surfaces; i < currentmodel->numsurfaces; i++, surf++ ) {
+		int			jj, nv = surf->polys->numverts; 
+		glpoly_t	*p = surf->polys;
+		float		*v;
+		
+		v = p->verts[0];
+		for (jj = 0; jj < nv; jj++, v += VERTEXSIZE)
+		{
+			// vertex data
+			buf[vb++] = v[0];
+			buf[vb++] = v[1];
+			buf[vb++] = v[2];
+			// st coords
+			buf[vb++] = v[3];
+			buf[vb++] = v[4];
+			// lm coords
+			buf[vb++] = v[5];
+			buf[vb++] = v[6];
+			// normals
+			buf[vb++] = surf->normal[0];
+			buf[vb++] = surf->normal[1];
+			buf[vb++] = surf->normal[2];
+			// tangents
+			buf[vb++] = surf->tangent[0];
+			buf[vb++] = surf->tangent[1];
+			buf[vb++] = surf->tangent[2];
+			// binormals
+			buf[vb++] = surf->binormal[0];
+			buf[vb++] = surf->binormal[1];
+			buf[vb++] = surf->binormal[2];
+		}
+    }
+
+    qglGenBuffers(1, &gl_state.vbo_BSP);
+    qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+    qglBufferData(GL_ARRAY_BUFFER_ARB, vbo_size, buf, GL_STATIC_DRAW_ARB);
+    qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	Com_Printf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
+    free(buf);
+}
+
 
 void Mod_LoadFaces(lump_t * l)
 {
 	dface_t		*in;
 	msurface_t *out;
-	msurface_t	*surf, *surfaces;
-	int			i, count, surfnum, 
-				vSize, vb;
+	msurface_t	*surf;
+	int			i, count, surfnum;
 
 	in = (dface_t *) (mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -1147,31 +1226,6 @@ void Mod_LoadFaces(lump_t * l)
 	// Build TBN for smoothing bump mapping (Berserker)
 //	GL_BuildTBN(count);
 
-	vSize = 0;
-	vb = 0;
-	for( i = 0, surfaces = currentmodel->surfaces; i < currentmodel->numsurfaces; i++, surfaces++ ) {
-		int			jj, nv = surfaces->polys->numverts; 
-		glpoly_t	*p = surfaces->polys;
-		float		*v;
-		
-		v = p->verts[0];
-		for (jj = 0; jj < nv; jj++, v += VERTEXSIZE)
-		{
-			// copy in vertex data
-			vbo[vb++][0] = v[0];
-			vbo[vb++][1] = v[1];
-			vbo[vb++][2] = v[2];
-			vb++; 
-		}
-	vSize += surfaces->numedges;
-    }
-
-	qglGenBuffers(1, &gl_state.vbo_BSP);
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
-    qglBufferData(GL_ARRAY_BUFFER_ARB, vSize * sizeof(vec3_t), vbo, GL_STATIC_DRAW_ARB);
-	Com_Printf( "%d kbytes of VBO vertex data\n", vSize / 1024);
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-
 	GL_EndBuildingLightmaps();
 
 	// calc neighbours for shadow volumes
@@ -1184,7 +1238,7 @@ void Mod_LoadFaces(lump_t * l)
 
 	Z_Free (tempEdges);
 
-
+	Mod_BuildVertexCache();
 }
 
 // Mini cache abstraction, don't touch these varibles directly!

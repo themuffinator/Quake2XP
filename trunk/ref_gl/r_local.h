@@ -654,6 +654,13 @@ typedef struct {
 	GLuint	vbo_Dynamic;
 	GLuint	ibo_Dynamic;
 	GLuint	vbo_BSP;
+	int xyz_offset;
+	int st_offset;
+	int lm_offset;
+	int nm_offset;
+	int tg_offset;
+	int bn_offset;
+
 	mat4_t			projectionMatrix;
 	mat4_t			modelViewMatrix;		// ready to load
 	
