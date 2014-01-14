@@ -884,9 +884,6 @@ void R_CastBspShadowVolumes(void)
 	if (!r_shadows->value || !r_pplWorld->value)
 		return;
 			
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
 	if(!currentShadowLight->isShadow || currentShadowLight->isAmbient)
 		return;
 
@@ -954,9 +951,6 @@ void R_CastAliasShadowVolumes(void)
 	unsigned	defBits = 0;
 
 	if (!r_shadows->value || !r_pplWorld->value)
-		return;
-			
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
 	if(!currentShadowLight->isShadow || currentShadowLight->isAmbient)
@@ -1030,6 +1024,9 @@ void R_BlobShadow(void){
 	vec2_t			bsTextCoord[MAX_BLOB_SHADOW_VERT];
 	
 	if(!r_shadows->value || r_pplWorld->value)
+		return;
+	
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
 	qglEnableVertexAttribArray(ATRB_POSITION);

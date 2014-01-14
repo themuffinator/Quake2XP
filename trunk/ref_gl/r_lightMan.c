@@ -191,11 +191,6 @@ void R_PrepareShadowLightFrame(void) {
 		R_AddDynamicLight(&r_newrefdef.dlights[i]);
 	}
 
-
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		R_AddNoWorldModelLight();
-	
-
 	if(!shadowLight_frame) 
 		return;
 		
@@ -208,12 +203,11 @@ void R_PrepareShadowLightFrame(void) {
 	MakeFrustum4Light(light, true);
 
 	VectorCopy(light->startColor, light->color);
-		
-	if(!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
-		light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
-		light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
-		light->color[2] *= r_newrefdef.lightstyles[light->style].rgb[2];
-		}
+
+	light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
+	light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
+	light->color[2] *= r_newrefdef.lightstyles[light->style].rgb[2];
+
 
 	}
 

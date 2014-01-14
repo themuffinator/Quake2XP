@@ -303,6 +303,7 @@ next:
 	
 		if(r_pplWorld->value){
 		VectorCopy(shadelight, diffuseLight);
+		if(r_pplWorld->value == 2)
 		VectorScale(shadelight, r_pplWorldAmbient->value, shadelight);
 		}	
 	}

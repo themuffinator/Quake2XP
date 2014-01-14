@@ -704,6 +704,9 @@ void R_DrawLightInteractions(void)
 	if(!r_pplWorld->value)
 		return;
 	
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
 	num_visLights = 0;
 
 	qglDepthMask(0);
@@ -1936,6 +1939,7 @@ void R_Shutdown(void)
 	qglDeleteBuffers(1, &gl_state.vbo_quarterScreenQuad);
 	qglDeleteBuffers(1, &gl_state.vbo_Dynamic);
 	qglDeleteBuffers(1, &gl_state.ibo_Dynamic);
+	qglDeleteBuffers(1, &gl_state.vbo_BSP);
 
 	qglDeleteFramebuffers(1, &gl_state.fbo_weaponMask);
 }

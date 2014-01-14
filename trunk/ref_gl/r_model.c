@@ -1053,12 +1053,15 @@ void SetupSurfaceConnectivity(msurface_t *surf)
 Mod_LoadFaces
 =================
 */
+static vec3_t	vbo[MAX_MAP_TEXINFO * MAX_POLY_VERT];
+
 void Mod_LoadFaces(lump_t * l)
 {
 	dface_t		*in;
 	msurface_t *out;
-	msurface_t	*surf;
-	int			i, count, surfnum;
+	msurface_t	*surf, *surfaces;
+	int			i, count, surfnum, 
+				vSize, vb;
 
 	in = (dface_t *) (mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -1137,10 +1140,37 @@ void Mod_LoadFaces(lump_t * l)
 		VectorNormalize(out->normal);
 		VectorNormalize2(out->texinfo->vecs[0], out->tangent);
 		VectorNormalize2(out->texinfo->vecs[1], out->binormal);
+
+	
 	}
 	
 	// Build TBN for smoothing bump mapping (Berserker)
 //	GL_BuildTBN(count);
+
+	vSize = 0;
+	vb = 0;
+	for( i = 0, surfaces = currentmodel->surfaces; i < currentmodel->numsurfaces; i++, surfaces++ ) {
+		int			jj, nv = surfaces->polys->numverts; 
+		glpoly_t	*p = surfaces->polys;
+		float		*v;
+		
+		v = p->verts[0];
+		for (jj = 0; jj < nv; jj++, v += VERTEXSIZE)
+		{
+			// copy in vertex data
+			vbo[vb++][0] = v[0];
+			vbo[vb++][1] = v[1];
+			vbo[vb++][2] = v[2];
+			vb++; 
+		}
+	vSize += surfaces->numedges;
+    }
+
+	qglGenBuffers(1, &gl_state.vbo_BSP);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+    qglBufferData(GL_ARRAY_BUFFER_ARB, vSize * sizeof(vec3_t), vbo, GL_STATIC_DRAW_ARB);
+	Com_Printf( "%d kbytes of VBO vertex data\n", vSize / 1024);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 	GL_EndBuildingLightmaps();
 
