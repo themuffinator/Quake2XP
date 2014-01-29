@@ -4,7 +4,7 @@ uniform sampler2D		u_NormalMap;
 uniform samplerCube 	u_CubeFilterMap;
 uniform sampler3D	 	u_attenMap;
 
-uniform float      		u_ColorModulate;
+uniform float			u_ColorModulate;
 uniform float			u_specularScale;
 uniform float			u_specularExp;
 uniform vec4 			u_LightColor;

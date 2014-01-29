@@ -43,7 +43,6 @@ vec2 P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
 diffuseMap = texture2D(u_Diffuse, P);
 glowMap = texture2D(u_Add, P);
 causticsMap = texture2D(u_Caustics, P);
-normalMap =  normalize(texture2D(u_NormalMap, P.xy).rgb - 0.5);
 specTmp = texture2D(u_NormalMap,   P.xy).a;
 envMask =  texture2D(u_envMap, P.xy).a;
 
@@ -52,7 +51,6 @@ envMask =  texture2D(u_envMap, P.xy).a;
 diffuseMap = texture2D(u_Diffuse,  v_wTexCoord.xy);
 glowMap = texture2D(u_Add,  v_wTexCoord.xy);
 causticsMap = texture2D(u_Caustics, v_wTexCoord.xy);
-normalMap =  normalize(texture2D(u_NormalMap, v_wTexCoord.xy).rgb - 0.5);
 specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 envMask =  texture2D(u_envMap, v_wTexCoord.xy).a;
 
@@ -77,7 +75,7 @@ vec4 tmp = causticsMap * diffuseMap;
 lightMap *= u_ambientScale;
 diffuseMap *= lightMap;
 #endif
-
+diffuseMap *= u_ambientScale;
 vec4 finalColor = diffuseMap + glowMap;
 
 if(u_envPass == 1)

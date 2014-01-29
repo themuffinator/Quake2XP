@@ -37,11 +37,6 @@ gl_FragColor = r0 * u_ColorModulate;
 vec4 r0 = texture2D(u_Diffuse,  v_texCoord);
 vec4 r1 = texture2D(u_Add,      v_texCoord);
 
-#ifdef CAUSTICS
-vec4 r2 = texture2D(u_Caustics, v_texCoord);
-vec4 tmp;
-#endif
-
 vec4 color;
 r0 *= v_color;
 r1.rgb *= u_AddShift;
@@ -55,6 +50,9 @@ color += r3;
 #endif
 
 #ifdef CAUSTICS
+vec4 r2 = texture2D(u_Caustics, v_texCoord);
+vec4 tmp;
+
 tmp = r2 * color;
 tmp *= u_CausticsModulate;
 color = tmp + color;

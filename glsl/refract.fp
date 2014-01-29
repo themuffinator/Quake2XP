@@ -22,12 +22,6 @@ uniform vec2			u_depthParms;
 
 void main (void) {
 
-	float cutoff = texture2DRect(g_weaponHackMap, gl_FragCoord.xy).a;
-	if (cutoff == 0.0) {
-		discard;
-		return;
-	}
-
 	vec2 N = texture2D(u_deformMap, v_deformTexCoord).xy * 2.0 - 1.0;
 	vec4 diffuse  = texture2D(u_colorMap,  v_deformTexCoord.xy);
   
@@ -54,6 +48,11 @@ void main (void) {
 
 	#else
 	// world refracted surfaces
+	float cutoff = texture2DRect(g_weaponHackMap, gl_FragCoord.xy).a;
+	if (cutoff == 0.0) {
+		discard;
+		return;
+	}
 	diffuse *= v_color;
 	diffuse = clamp(diffuse, 0.0, 1.0);
 	// chromatic aberration approximation
