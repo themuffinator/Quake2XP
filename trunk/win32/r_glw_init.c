@@ -966,7 +966,8 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 			
 			}
 			
-		//	GLimp_DesktopComposition(false);
+			if(!r_fullScreen->value)
+				GLimp_DesktopComposition(false);
 			}
 	
 

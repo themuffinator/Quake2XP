@@ -298,15 +298,6 @@ next:
 		currententity->frame = 0;
 		currententity->oldframe = 0;
 	}
-	
-	if (!(currententity->flags & RF_TRANSLUCENT)){
-	
-		if(r_pplWorld->value){
-		VectorCopy(shadelight, diffuseLight);
-		if(r_pplWorld->value == 2)
-		VectorScale(shadelight, r_pplWorldAmbient->value, shadelight);
-		}	
-	}
 
     qglPushMatrix ();
 
@@ -320,10 +311,6 @@ next:
 	if(weapon_model)	
 		GL_DrawAliasFrameLerpWeapon(paliashdr);
 
-	if (!(currententity->flags & RF_TRANSLUCENT)){
-	if(r_pplWorld->value)
-		VectorCopy(diffuseLight, shadelight);
-	}
 	qglPopMatrix();
 
 	if ((currententity->flags & RF_WEAPONMODEL) && (r_leftHand->value == 1.0F)) {

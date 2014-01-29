@@ -155,9 +155,9 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*verts, *oldverts;
 
-	alphaShift =			sin (ref_realtime * currentmodel->glowCfg[2]); 
-	alphaShift =			(alphaShift + 1) * 0.5f;
-	alphaShift =			clamp(alphaShift, currentmodel->glowCfg[0], currentmodel->glowCfg[1]);
+	alphaShift =	sin (ref_realtime * currentmodel->glowCfg[2]); 
+	alphaShift =	(alphaShift + 1) * 0.5f;
+	alphaShift =	clamp(alphaShift, currentmodel->glowCfg[0], currentmodel->glowCfg[1]);
 	
 	if (currententity->flags & RF_TRANSLUCENT)
 		alpha = currententity->alpha;
@@ -246,14 +246,12 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 				VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], 0.0);
 			else
 				VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], alpha);
-			if(currentmodel->envmap){
+
 			index2 = verts[index_xyz].lightnormalindex;
 			oldindex2 = oldverts[index_xyz].lightnormalindex;
 			normalArray[jj][0] = r_avertexnormals[oldindex2][0]*backlerp + r_avertexnormals[index2][0]*frontlerp;
 			normalArray[jj][1] = r_avertexnormals[oldindex2][1]*backlerp + r_avertexnormals[index2][1]*frontlerp;
 			normalArray[jj][2] = r_avertexnormals[oldindex2][2]*backlerp + r_avertexnormals[index2][2]*frontlerp;
-			}
-			
 			}
 		}
 
@@ -278,17 +276,17 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	
 	GL_MBind				(GL_TEXTURE0_ARB, skin->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Diffuse"), 0);
+
 	GL_MBind				(GL_TEXTURE1_ARB, glowskin->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Add"), 1);	
-	if(caustics){
+
 	GL_MBind				(GL_TEXTURE2_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_Caustics"), 2);
-	}
-	if(currentmodel->envmap){
-	GL_MBind				(GL_TEXTURE6_ARB, r_envTex->texnum);
-	qglUniform1i			(qglGetUniformLocation(id, "u_env"), 6);
+
+	GL_MBind				(GL_TEXTURE3_ARB, r_envTex->texnum);
+	qglUniform1i			(qglGetUniformLocation(id, "u_env"), 3);
 	qglUniform1f			(qglGetUniformLocation(id, "u_envScale"), currentmodel->envScale);
-	}
+
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 

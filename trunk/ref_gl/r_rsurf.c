@@ -618,7 +618,8 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 			if(texture != image->texnum || ltmp != gl_state.lightmap_textures + lmtex) 
 			{
 				
-				if(texture != image->texnum){ 
+				if(texture != image->texnum){
+
 				GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 				qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
@@ -628,10 +629,9 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 				GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 				qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
 
-				if(caustics || (s->flags & SURF_WATER)){
-					GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
-				}
+				GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+				qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
+
 				GL_MBind(GL_TEXTURE4_ARB, env->texnum);
 				qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
 				}
@@ -646,17 +646,18 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 			{
 				GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 				qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
+
 				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
 				qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
+
 				GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 				qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
-				
-				if(caustics || (s->flags & SURF_WATER)){
-					GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
-				}
-					GL_MBind(GL_TEXTURE4_ARB, env->texnum);
-					qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
+
+				GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+				qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
+
+				GL_MBind(GL_TEXTURE4_ARB, env->texnum);
+				qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
 			}
 			qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
 		}

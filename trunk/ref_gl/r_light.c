@@ -95,7 +95,7 @@ void R_PushDlights(void)
 	int i;
 	dlight_t *l;
 
-	if(r_pplWorld->value && !r_pplWorldAmbient->value)
+	if(r_pplWorld->value)
 		return;
 
 	r_dlightframecount = r_framecount + 1;	// because the count hasn't
@@ -197,17 +197,23 @@ int RecursiveLightPoint(mnode_t * node, vec3_t start, vec3_t end)
 			vec3_t scale;
 
 			lightmap += 3 * (dt * ((surf->extents[0] / r_worldmodel->lightmap_scale) + 1) + ds);
-			for (maps = 0;
-				 maps < MAXLIGHTMAPS && surf->styles[maps] != 255;
-				 maps++) {
+			
+			for (maps = 0; maps < MAXLIGHTMAPS && surf->styles[maps] != 255; maps++) {
 				
-			//	if(!r_pplWorld->value){
-					for (i = 0; i < 3; i++)
-						scale[i] = r_newrefdef.lightstyles[surf->styles[maps]].rgb[i];
-			//			}
-			//	else
-			//		VectorSet (scale, 1,1,1);
-
+				for (i = 0; i < 3; i++)
+					scale[i] = r_newrefdef.lightstyles[surf->styles[maps]].rgb[i];
+			
+			if(r_pplWorld->value == 2){
+				pointcolor[0] +=
+					lightmap[0] * scale[0] *
+					0.003921568627450980392156862745098 * r_pplWorldAmbient->value;
+				pointcolor[1] +=
+					lightmap[1] * scale[1] *
+					0.003921568627450980392156862745098 * r_pplWorldAmbient->value;
+				pointcolor[2] +=
+					lightmap[2] * scale[2] *
+					0.003921568627450980392156862745098 * r_pplWorldAmbient->value;
+			}else{
 				pointcolor[0] +=
 					lightmap[0] * scale[0] *
 					0.003921568627450980392156862745098;
@@ -217,6 +223,7 @@ int RecursiveLightPoint(mnode_t * node, vec3_t start, vec3_t end)
 				pointcolor[2] +=
 					lightmap[2] * scale[2] *
 					0.003921568627450980392156862745098;
+			}
 				lightmap +=
 					3 * ((surf->extents[0] / r_worldmodel->lightmap_scale) +
 						 1) * ((surf->extents[1] / r_worldmodel->lightmap_scale) + 1);
@@ -261,7 +268,6 @@ void R_LightPoint(vec3_t p, vec3_t color, qboolean bump)
 	end[2] = p[2] - 8192;
 
 	r = RecursiveLightPoint(r_worldmodel->nodes, p, end);
-	
 
 	if (r == -1) {
 		VectorCopy(vec3_origin, color);
@@ -273,6 +279,7 @@ void R_LightPoint(vec3_t p, vec3_t color, qboolean bump)
 	for (i = 0; i < 3; i++)
 		if (color[i] > 1)
 			color[i] = 1;
+
 	
 	if(!bump){
 	
