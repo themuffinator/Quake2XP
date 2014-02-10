@@ -268,7 +268,6 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 	//qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
 
 	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
 		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shadow_vert, index, GL_UNSIGNED_INT, ShadowIndex);
@@ -971,6 +970,7 @@ void R_CastAliasShadowVolumes(void)
 	qglEnable(GL_POLYGON_OFFSET_FILL);
 	qglColorMask(0, 0, 0, 0);
 	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
 	qglPolygonOffset(0.1, 1);
 
 

@@ -234,7 +234,6 @@ void GL_DrawAliasFrameLerpWeapon(dmdl_t *paliashdr);
 void R_DrawAliasModel (entity_t *e, qboolean weapon_model)
 {
 	dmdl_t		*paliashdr;
-	float		diffuseLight[3];
 	vec3_t		bbox[8];
 
 	if ( r_newrefdef.rdflags & RDF_IRGOGGLES) 
