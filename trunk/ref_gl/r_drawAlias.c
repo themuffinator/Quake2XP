@@ -151,7 +151,7 @@ qboolean R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 	}
 }
 
-void SetModelsLight (qboolean ppl)
+void SetModelsLight ()
 {
 	int i;
 	
@@ -162,16 +162,16 @@ void SetModelsLight (qboolean ppl)
 			shadelight[i] = 1.0;
 	} 
 	else
-		R_LightPoint (currententity->origin, shadelight, ppl);
+		R_LightPoint (currententity->origin, shadelight);
 
 	if (currententity->flags & RF_MINLIGHT) {
 		for (i = 0; i < 3; i++)
-			if (shadelight[i] > 0.1)
+			if (shadelight[i] > 0.01)
 				break;
 		if (i == 3) {
-			shadelight[0] = 0.1;
-			shadelight[1] = 0.1;
-			shadelight[2] = 0.1;
+			shadelight[0] = 0.01;
+			shadelight[1] = 0.01;
+			shadelight[2] = 0.01;
 		}
 	}
 
@@ -270,11 +270,7 @@ next:
 		qglCullFace(GL_BACK);
 	}
 	
-
-	if(!r_pplWorld->value)
-		SetModelsLight(false);
-	else
-		SetModelsLight(true);
+SetModelsLight();
 
 
 	if (currententity->flags & RF_TRANSLUCENT) {

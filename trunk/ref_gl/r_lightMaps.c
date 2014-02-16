@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_local.h"
 
 model_t *loadmodel;
-static float s_blocklights[1024 * 1024 * 3];
+static float s_blocklights[128 * 128 * 4];
 /*
 =============================================================================
 LIGHTMAP ALLOCATION
@@ -61,6 +61,9 @@ void R_AddDynamicLights(msurface_t * surf, qboolean loadModel)
 	dlight_t *dl;
 	float *pfBL;
 	float fsacc, ftacc;
+
+	if(r_pplWorld->value)
+		return;
 
 	if(loadModel){
 	smax = (surf->extents[0] / loadmodel->lightmap_scale) + 1;
@@ -242,11 +245,8 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 	}
 
 	// add all the dynamic lights for non bumped sufaces
-	if(!r_pplWorld->value){
-
-		if (surf->dlightframe == r_framecount)
-			R_AddDynamicLights(surf, loadModel);
-	}
+	if (surf->dlightframe == r_framecount)
+		R_AddDynamicLights(surf, loadModel);
 
 // put into texture format
   store:
@@ -256,16 +256,9 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 	for (i = 0; i < tmax; i++, dest += stride) {
 			for (j = 0; j < smax; j++) {
 
-				/*
 				r = Q_ftol(bl[0]);
 				g = Q_ftol(bl[1]);
 				b = Q_ftol(bl[2]);
-				*/
-
-				// swap color data to GL_BGRA for fast lightmaps upload
-				r = Q_ftol(bl[2]);
-				g = Q_ftol(bl[1]);
-				b = Q_ftol(bl[0]);
 
 				// catch negative lights
 				if (r < 0)
@@ -351,7 +344,7 @@ static void LM_UploadBlock(qboolean dynamic)
 						 0, 0,
 						 LIGHTMAP_SIZE, height,
 						 GL_LIGHTMAP_FORMAT,
-						 GL_UNSIGNED_INT_8_8_8_8_REV, gl_lms.lightmap_buffer);
+						 GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer);
 	} else {
 		qglTexImage2D(GL_TEXTURE_2D,
 					  0,
@@ -359,7 +352,7 @@ static void LM_UploadBlock(qboolean dynamic)
 					  LIGHTMAP_SIZE, LIGHTMAP_SIZE,
 					  0,
 					  GL_LIGHTMAP_FORMAT,
-					  GL_UNSIGNED_INT_8_8_8_8_REV, gl_lms.lightmap_buffer);
+					  GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer);
 		if (++gl_lms.current_lightmap_texture == MAX_LIGHTMAPS)
 			VID_Error(ERR_DROP,
 					  "LM_UploadBlock() - MAX_LIGHTMAPS exceeded\n");
@@ -593,7 +586,7 @@ void GL_BeginBuildingLightmaps(model_t * m)
 				  0,
 				  gl_lms.internal_format,
 				  LIGHTMAP_SIZE, LIGHTMAP_SIZE,
-				  0, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, dummy);
+				  0, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, dummy);
 	
 	Z_Free(dummy);
 }

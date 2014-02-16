@@ -247,9 +247,7 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
-
-		
-	c_brush_polys += (nv-2);
+		c_brush_polys += (nv-2);
 
 	for (i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE) {
 		

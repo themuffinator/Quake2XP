@@ -241,11 +241,8 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			{
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
-			
-			if (currententity->flags & RF_WEAPONMODEL)
-				VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], 0.0);
-			else
-				VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], alpha);
+
+			VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], alpha);
 
 			index2 = verts[index_xyz].lightnormalindex;
 			oldindex2 = oldverts[index_xyz].lightnormalindex;

@@ -359,7 +359,7 @@ void GL_EnableMultitexture(qboolean enable);
 void GL_SelectTexture(GLenum);
 void GL_MBindCube(GLenum target, int texnum);
 
-void R_LightPoint(vec3_t p, vec3_t color, qboolean bump);
+void R_LightPoint(vec3_t p, vec3_t color);
 void R_PushDlights(void);
 
 
@@ -717,8 +717,8 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 
 
 #define LIGHTMAP_BYTES 4
-#define	LIGHTMAP_SIZE	1024 //was 128
-#define	MAX_LIGHTMAPS	8 //was 128
+#define	LIGHTMAP_SIZE	128
+#define	MAX_LIGHTMAPS	128
 
 
 typedef struct {
@@ -739,9 +739,7 @@ typedef struct {
 
 gllightmapstate_t gl_lms;
 
-
-// set GL_BGRA for fastest lightmaps upload
-#define GL_LIGHTMAP_FORMAT GL_BGRA
+#define GL_LIGHTMAP_FORMAT GL_RGBA
 
 /*
 ====================================================================

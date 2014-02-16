@@ -243,7 +243,7 @@ R_LightPoint
 ===============
 */
 
-void R_LightPoint(vec3_t p, vec3_t color, qboolean bump)
+void R_LightPoint(vec3_t p, vec3_t color)
 {
 	vec3_t end;
 	float r;
@@ -281,7 +281,7 @@ void R_LightPoint(vec3_t p, vec3_t color, qboolean bump)
 			color[i] = 1;
 
 	
-	if(!bump){
+	if(!r_pplWorld->value){
 	
 	dl = r_newrefdef.dlights;
 	for (i=0; i<r_newrefdef.num_dlights; i++, dl++){
@@ -417,12 +417,16 @@ void R_LightColor(vec3_t org, vec3_t color)
 	    y * ((1 - z) * b[6][i] + (z) * b[7][i]));
 		color[i] *= f;
 	
-		if(color[i] <= 0.35)
-			color[i] = 0.35;
+		if(color[i] <= 0.1)
+			color[i] = 0.1;
+
+//		if(color[i] >= 0.75)
+//			color[i] = 0.75;
 	}
 
 	// add dynamic light
 	light = 0;
+	if(!r_pplWorld->value){	
 	dl = r_newrefdef.dlights;
 	for (lnum = 0; lnum < r_newrefdef.num_dlights; lnum++, dl++) {
 		VectorSubtract(org, dl->origin, dist);
@@ -434,5 +438,7 @@ void R_LightColor(vec3_t org, vec3_t color)
 		if (add > 0.01) {
 			VectorMA(color, add, dl->color, color);
 		}
+	}
+	
 	}
 }

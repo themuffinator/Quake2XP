@@ -1068,9 +1068,6 @@ void R_BlobShadow(void){
 				 RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
 				 RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
 				 continue;
-		
-		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			continue;
 	
 		if (R_CullSphere(currententity->origin, 35))
 			continue;

@@ -912,7 +912,7 @@ void R_SetLightLevel(void)
 		return;
 
 	// save off light value for server to look at (BIG HACK!)
-	R_LightPoint(r_newrefdef.vieworg, shadelight, false);
+	R_LightPoint(r_newrefdef.vieworg, shadelight);
 
 	// pick the greatest component, which should be the same
 	// as the mono value returned by software

@@ -487,7 +487,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	image_t		*image, *fx, *env;
 	unsigned	lmtex;
 	unsigned	defBits = 0;
-	unsigned	texture = -1, ltmp;
+	unsigned	texture = -1;
 	int		id, i, map;
 	float		scale[2];
 	qboolean	is_dynamic = false;
@@ -524,46 +524,14 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 	for (i=0; i<num_scene_surfaces; i++)
 	{
-		s		= scene_surfaces[i];
+		s = scene_surfaces[i];
 		image	= R_TextureAnimation(s->texinfo);
 		fx		= R_TextureAnimationFx(s->texinfo);
 		env		= R_TextureAnimationEnv(s->texinfo);
 		lmtex	= s->lightmaptexturenum;
 
-		if(image->envMap){
-			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 1);
-			if(image->envScale)
-				qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), image->envScale);
-			else
-				qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), 0.5);
-		}else
-			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 0);
-
-		if(r_parallax->value){
-			
-			if(!image->parallaxScale){
-
-			scale[0] = r_parallaxScale->value / image->width;
-			scale[1] = r_parallaxScale->value / image->height;
-			}
-			else
-			{
-			scale[0] = image->parallaxScale / image->width;
-			scale[1] = image->parallaxScale / image->height;
-			}
-			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
-			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
-		}
-
-
-		if(caustics || (s->flags & SURF_WATER)){
-			qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
-			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 1);
-		}else
-			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 0);
-
 		GL_CreateParallaxLmPoly(s);
-
+			
 		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
 			if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
 				goto dynamic;
@@ -597,11 +565,11 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
 
 				lmtex = s->lightmaptexturenum;
-
+				
 				qglTexSubImage2D(GL_TEXTURE_2D, 0,
 								s->light_s, s->light_t,
 								smax, tmax,
-								GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); 
+								GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, temp); 
 	
 			} else {
 				
@@ -612,58 +580,61 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 					R_BuildLightMap(s, (byte *) temp, smax * 4, false);
 					GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + 0);
 					lmtex = 0;
-					qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_INT_8_8_8_8_REV, temp); }
-			}
-
-			if(texture != image->texnum || ltmp != gl_state.lightmap_textures + lmtex) 
-			{
-				
-				if(texture != image->texnum){
-
-				GL_MBind(GL_TEXTURE0_ARB, image->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
-
-				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
-				qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
-
-				GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
-
-				GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
-
-				GL_MBind(GL_TEXTURE4_ARB, env->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
+					qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, temp); 
 				}
-
 			}
+		}
 
-			qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);
+		if(texture != image->texnum) {
+								
+		if(image->envMap){
+			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 1);
+		if(image->envScale)
+			qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), image->envScale);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), 0.5);
+		}else
+			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 0);
+
+		if(r_parallax->value){
+			
+		if(!image->parallaxScale){
+			scale[0] = r_parallaxScale->value / image->width;
+			scale[1] = r_parallaxScale->value / image->height;
+		}
+		else
+		{
+			scale[0] = image->parallaxScale / image->width;
+			scale[1] = image->parallaxScale / image->height;
+		}
+			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
+			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
+		}	
 		
-		} else {
-		
-			if(texture != image->texnum) 
-			{
-				GL_MBind(GL_TEXTURE0_ARB, image->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
+		if(caustics || (s->flags & SURF_WATER)){
+			qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
+			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 1);
+		}else
+			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 0);
 
-				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
-				qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
+			GL_MBind(GL_TEXTURE0_ARB, image->texnum);
+			qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
-				GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
+			GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
+			qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
 
-				GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
+			GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
+			qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
 
-				GL_MBind(GL_TEXTURE4_ARB, env->texnum);
-				qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
+			GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+			qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
+
+			GL_MBind(GL_TEXTURE4_ARB, env->texnum);
+			qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
 			}
-			qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
+		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
 		}
 		texture = image->texnum;
-		ltmp = gl_state.lightmap_textures + lmtex;
-	}
 	
 	GL_BindNullProgram();
 }
