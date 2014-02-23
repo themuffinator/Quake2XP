@@ -488,7 +488,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	unsigned	lmtex;
 	unsigned	defBits = 0;
 	unsigned	texture = -1;
-	int		id, i, map;
+	int			id, i, map;
 	float		scale[2];
 	qboolean	is_dynamic = false;
 
@@ -519,7 +519,6 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
 	}
 
-
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
 
 	for (i=0; i<num_scene_surfaces; i++)
@@ -531,7 +530,37 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		lmtex	= s->lightmaptexturenum;
 
 		GL_CreateParallaxLmPoly(s);
+		
+		if(caustics || (s->flags & SURF_WATER)){
+			qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
+			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 1);
+		}else
+			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 0);
+
+		if(image->envMap){
+			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 1);
+		if(image->envScale)
+			qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), image->envScale);
+		else
+			qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), 0.5);
+		}else
+			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 0);
+
+		if(r_parallax->value){
 			
+		if(!image->parallaxScale){
+			scale[0] = r_parallaxScale->value / image->width;
+			scale[1] = r_parallaxScale->value / image->height;
+		}
+		else
+		{
+			scale[0] = image->parallaxScale / image->width;
+			scale[1] = image->parallaxScale / image->height;
+		}
+			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
+			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
+		}	
+
 		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
 			if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
 				goto dynamic;
@@ -586,37 +615,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 		}
 
 		if(texture != image->texnum) {
-								
-		if(image->envMap){
-			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 1);
-		if(image->envScale)
-			qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), image->envScale);
-		else
-			qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), 0.5);
-		}else
-			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 0);
-
-		if(r_parallax->value){
-			
-		if(!image->parallaxScale){
-			scale[0] = r_parallaxScale->value / image->width;
-			scale[1] = r_parallaxScale->value / image->height;
-		}
-		else
-		{
-			scale[0] = image->parallaxScale / image->width;
-			scale[1] = image->parallaxScale / image->height;
-		}
-			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
-			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
-		}	
 		
-		if(caustics || (s->flags & SURF_WATER)){
-			qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
-			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 1);
-		}else
-			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 0);
-
 			GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 			qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
@@ -631,11 +630,11 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 			GL_MBind(GL_TEXTURE4_ARB, env->texnum);
 			qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
-			}
-		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
+			
 		}
+		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
 		texture = image->texnum;
-	
+	}
 	GL_BindNullProgram();
 }
 

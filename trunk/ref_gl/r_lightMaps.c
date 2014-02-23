@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_local.h"
 
 model_t *loadmodel;
-static float s_blocklights[128 * 128 * 4];
+static float s_blocklights[1024 * 1024 * 4];
 /*
 =============================================================================
 LIGHTMAP ALLOCATION

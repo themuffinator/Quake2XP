@@ -226,15 +226,13 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
 	jj = 0;
 	
-	if(currentmodel->envmap){
 	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
 	oldverts = oldframe->verts;
 	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts = frame->verts;
 	backlerp = currententity->backlerp;
 	frontlerp = 1 - backlerp;
-	}
-	
+
 	for (i=0; i<paliashdr->num_tris; i++)
 		{
 			for (j=0; j<3; j++, jj++)

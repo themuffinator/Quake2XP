@@ -717,8 +717,8 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 
 
 #define LIGHTMAP_BYTES 4
-#define	LIGHTMAP_SIZE	128
-#define	MAX_LIGHTMAPS	128
+#define	LIGHTMAP_SIZE	1024
+#define	MAX_LIGHTMAPS	4
 
 
 typedef struct {
