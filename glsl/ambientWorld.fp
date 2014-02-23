@@ -73,10 +73,13 @@ vec4 tmp = causticsMap * diffuseMap;
 
 #ifdef LIGHTMAP
 lightMap *= u_ambientScale;
+diffuseMap += glowMap;
 diffuseMap *= lightMap;
-#endif
+#else
 diffuseMap *= u_ambientScale;
-vec4 finalColor = diffuseMap + glowMap;
+#endif
+
+vec4 finalColor = diffuseMap;
 
 if(u_envPass == 1)
 {
