@@ -274,7 +274,7 @@ void R_Bloom (void) {
 		GL_BindProgram			(bloomdsProgram, defBits);
 		id = bloomdsProgram->id[defBits];
 
-		qglUniform1f			(qglGetUniformLocation(id, "threshold"), r_bloomThreshold->value);
+		qglUniform1f			(qglGetUniformLocation(id, "u_BloomThreshold"), r_bloomThreshold->value);
 		qglUniform1i			(qglGetUniformLocation(id, "u_map"), 0);
 			
 		R_DrawQuarterScreenQuad();
@@ -321,8 +321,9 @@ void R_Bloom (void) {
 		GL_SelectTexture	(GL_TEXTURE1_ARB);
 		GL_BindRect			(bloomtex);
 		qglUniform1i		(qglGetUniformLocation(id, "u_map1"), 1);
-		
-		qglUniform1f		(qglGetUniformLocation(id, "u_bloomAlpha"), r_bloomIntens->value);
+		//cvar_t	*r_bloomBright;
+		//cvar_t	*r_bloomExposure;
+		qglUniform3f		(qglGetUniformLocation(id, "u_bloomParams"), r_bloomIntens->value, r_bloomBright->value, r_bloomExposure->value);
 		
 		R_DrawFullScreenQuad();
 						

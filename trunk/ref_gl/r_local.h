@@ -285,6 +285,8 @@ cvar_t	*r_customHeight;
 cvar_t	*r_bloom;
 cvar_t	*r_bloomThreshold;
 cvar_t	*r_bloomIntens;
+cvar_t	*r_bloomBright;
+cvar_t	*r_bloomExposure;
 
 cvar_t	*sys_priority;
 
