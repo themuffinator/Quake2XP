@@ -782,6 +782,7 @@
     </ClCompile>
     <ClCompile Include="qcommon\q_parser.c" />
     <ClCompile Include="ref_gl\r_cull.c" />
+    <ClCompile Include="ref_gl\r_fbo.c" />
     <ClCompile Include="ref_gl\r_lightMan.c" />
     <ClCompile Include="ref_gl\r_lightMaps.c" />
     <ClCompile Include="ref_gl\r_program.c" />
@@ -1316,6 +1317,8 @@
     <ClInclude Include="client\sound.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\baseq2\glsl\fbo.fp" />
+    <None Include="..\baseq2\glsl\fbo.vp" />
     <None Include="..\baseq2\glsl\lightAlias.fp" />
     <None Include="..\baseq2\glsl\lightAlias.vp" />
     <None Include="..\baseq2\glsl\ambientAlias.defs" />

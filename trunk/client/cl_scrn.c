@@ -1196,6 +1196,6 @@ next:
 	
 		}
 	
-	R_GammaRamp (); 
+//	R_GammaRamp (); 
 	GLimp_EndFrame();
 }

@@ -858,23 +858,27 @@ if (r_noRefresh->value)
 	R_SetupViewMatrices();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
+	
+	qglBindFramebuffer	(GL_FRAMEBUFFER, gl_state.fbo_base);
+	qglClear			(GL_COLOR_BUFFER_BIT);
 
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
-	R_CaptureDepthBuffer();
-	R_DrawLightInteractions();
+//	R_CaptureDepthBuffer();
+//	R_DrawLightInteractions();
 	R_BlobShadow();
 	R_RenderDecals();
 
 	R_RenderFlares();
-	R_LightScale();
-	R_DrawPlayerWeaponFBO();
-	R_CaptureColorBuffer();
-	R_DrawAlphaPoly();
+//	R_LightScale();
+//	R_DrawPlayerWeaponFBO();
+//	R_CaptureColorBuffer();
+//	R_DrawAlphaPoly();
 	R_DrawParticles();
-	R_CaptureColorBuffer();
-	R_RenderDistortModels();
-	R_CaptureColorBuffer();
+//	R_CaptureColorBuffer();
+//	R_RenderDistortModels();
+//	R_CaptureColorBuffer();
+	qglBindFramebuffer	(GL_FRAMEBUFFER, 0);
 
 }
 
@@ -954,6 +958,25 @@ extern char buff13[128];
 extern worldShadowLight_t *selectedShadowLight;
 
 void R_MotionBlur (void);
+void R_DrawFullScreenQuad();
+
+void R_DrawFbo (void) {
+	
+	unsigned	defBits = 0;
+	int			id;
+
+	// setup program
+	GL_BindProgram(FboProgram, defBits);
+	id = FboProgram->id[defBits];
+
+	qglUniform1i			(qglGetUniformLocation(id, "u_fboTex"), 0);
+	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+	GL_BindRect				(gl_state.fbo_color0->texnum);
+
+	R_DrawFullScreenQuad();
+	
+	GL_BindNullProgram();
+}
 
 void R_RenderFrame(refdef_t * fd, qboolean client)
 {
@@ -961,17 +984,17 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_SetLightLevel();
 	R_RenderView(fd);
 	R_SetGL2D();
-
+	R_DrawFbo();
 	// post processing - cut off if player camera out map bounds
-	if(!outMap){
-	R_FXAA();
-	R_RadialBlur();
-	R_ThermalVision();
-	R_DofBlur();
-//	R_MotionBlur();
-	R_Bloom();
-	R_FilmGrain();
-	}
+//	if(!outMap){
+//	R_FXAA();
+//	R_RadialBlur();
+//	R_ThermalVision();
+//	R_DofBlur();
+////	R_MotionBlur();
+//	R_Bloom();
+//	R_FilmGrain();
+//	}
 
 	if (v_blend[3] && r_polyBlend->value) {
 		
@@ -1670,7 +1693,6 @@ int R_Init(void *hinstance, void *hWnd)
 		qglBufferSubData =	(PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
 		qglMapBuffer =		(PFNGLMAPBUFFERPROC)		qwglGetProcAddress("glMapBuffer");
 		qglUnmapBuffer =	(PFNGLUNMAPBUFFERPROC)		qwglGetProcAddress("glUnmapBuffer");
-		qglBufferSubData =	(PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
 
 		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData){
 			vec2_t		tmpVerts[4];	
@@ -1731,12 +1753,27 @@ int R_Init(void *hinstance, void *hWnd)
 		gl_state.conditional_render = false;		
 	}
 */
+	if (strstr(gl_config.extensions_string, "GL_ARB_draw_buffers")) {
+		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
+		
+	if (qglDrawBuffers)
+		Com_Printf("...using GL_ARB_draw_buffers\n");
+	else
+		Com_Printf(S_COLOR_RED"...using GL_ARB_draw_buffers not found\n");
+	}
+
+	if (strstr(gl_config.extensions_string, "GL_ARB_texture_float")) 
+		Com_Printf("...using GL_ARB_texture_float\n");
+	else
+		Com_Printf(S_COLOR_RED"...using GL_ARB_texture_float not found\n");
+	
+
 	if (strstr(gl_config.extensions_string, "GL_ARB_framebuffer_object")) {
 		Com_Printf("...using GL_ARB_framebuffer_object\n");  
 
-		qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &gl_state.maxRenderBufferSize);
-		qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &gl_state.maxColorAttachments);
-		qglGetIntegerv(GL_MAX_SAMPLES, &gl_state.maxSamples);
+		qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE,	&gl_state.maxRenderBufferSize);
+		qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS,	&gl_state.maxColorAttachments);
+		qglGetIntegerv(GL_MAX_SAMPLES,				&gl_state.maxSamples);
 
 		Com_Printf(S_COLOR_YELLOW"   Max Render Buffer Size:  "S_COLOR_GREEN"%i\n", gl_state.maxRenderBufferSize);
 		Com_Printf(S_COLOR_YELLOW"   Max Color Attachments:   "S_COLOR_GREEN"%i\n", gl_state.maxColorAttachments);
@@ -1762,19 +1799,10 @@ int R_Init(void *hinstance, void *hWnd)
 		qglGetFramebufferAttachmentParameteriv =	(PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC) qwglGetProcAddress("glGetFramebufferAttachmentParameteriv");
 		qglGenerateMipmap =							(PFNGLGENERATEMIPMAPPROC) qwglGetProcAddress("glGenerateMipmap");
 		qglBlitFramebuffer =						(PFNGLBLITFRAMEBUFFERPROC) qwglGetProcAddress("glBlitFramebuffer");
-		
+		Create_FBO();
 	}
 	else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_framebuffer_object not found\n");
-	}
-
-	if (strstr(gl_config.extensions_string, "GL_ARB_draw_buffers")) {
-		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
-		
-	if (qglDrawBuffers)
-		Com_Printf("...using GL_ARB_draw_buffers\n");
-	else
-		Com_Printf(S_COLOR_RED"...using GL_ARB_draw_buffers not found\n");
 	}
 
 	gl_state.glsl = false;	
@@ -1879,7 +1907,7 @@ int R_Init(void *hinstance, void *hWnd)
 	Mod_Init();
 	R_InitEngineTextures();
 	R_LoadFont();
-
+	
 	GL_MsgGLError("Init GL Errors: ");
 
 	return 0;
@@ -1944,6 +1972,9 @@ void R_Shutdown(void)
 	qglDeleteBuffers(1, &gl_state.vbo_BSP);
 
 	qglDeleteFramebuffers(1, &gl_state.fbo_weaponMask);
+	qglDeleteFramebuffers(1, &gl_state.fbo_base);
+	
+	qglDeleteRenderbuffers(1, &gl_state.rbo_depthStencil);
 }
 
 

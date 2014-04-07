@@ -255,17 +255,22 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		ShadowIndex[index++] = shadow_vert+0; 
 		shadow_vert +=3;
 	}
-
-	//qglBindBuffer(GL_ARRAY_BUFFER, gl_state.vbo_Dynamic);
+	
+	qglBindBuffer(GL_ARRAY_BUFFER, gl_state.vbo_Dynamic);
+	qglMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 	//qglBufferData(GL_ARRAY_BUFFER, shadow_vert * sizeof(vec3_t), ShadowArray, GL_DYNAMIC_DRAW_ARB);
-	//qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_Dynamic);
-	//qglBufferData(GL_ELEMENT_ARRAY_BUFFER, index * sizeof(GL_UNSIGNED_INT), ShadowIndex, GL_DYNAMIC_DRAW_ARB);
+	qglUnmapBuffer(GL_ARRAY_BUFFER);
 
-	//qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
-	//qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
-	//
-	//qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-	//qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_Dynamic);
+	qglMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+	//qglBufferData(GL_ELEMENT_ARRAY_BUFFER, index * sizeof(GL_UNSIGNED_INT), ShadowIndex, GL_DYNAMIC_DRAW_ARB);
+	qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
+	qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
+	
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	
 

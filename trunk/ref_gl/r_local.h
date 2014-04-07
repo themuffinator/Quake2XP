@@ -564,6 +564,8 @@ void R_TransformToScreen_Vec3(vec3_t in, vec3_t out);
 void GL_Blend(qboolean on, int dst, int src);
 
 int GL_MsgGLError(char* Info);
+void CreateWeaponRect(void);
+void Create_FBO(void);
 /*
 ** GL config stuff
 */
@@ -672,6 +674,9 @@ typedef struct {
 	int			maxSamples;
 	int			maxDrawBuffers;
 	GLuint		fbo_weaponMask;
+
+	GLuint		rbo_depthStencil, rbo_depth, rbo_stencil, fbo_base;
+	image_t		*fbo_color0;
 
 // ----------------------------------------------------------------
 } glstate_t;
@@ -802,6 +807,7 @@ glslProgram_t		*filmGrainProgram;
 glslProgram_t		*nullProgram;
 glslProgram_t		*gammaProgram;
 glslProgram_t		*motionBlurProgram;
+glslProgram_t		*FboProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer();
