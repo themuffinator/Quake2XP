@@ -238,6 +238,13 @@ extern long Q_ftol( float f );
 
 #define VectorAverage(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5f,(o)[1]=((a)[1]+(b)[1])*0.5f,(o)[2]=((a)[2]+(b)[2])*0.5f)
 
+#ifndef min 
+#define min(a,b)        (((a) < (b)) ? (a) : (b)) 
+#endif 
+#ifndef max 
+#define max(a,b)        (((a) > (b)) ? (a) : (b)) 
+#endif 
+
 
 void Com_DefaultPath (char *path, int maxSize, const char *newPath);
 void Com_DefaultExtension (char *path, int maxSize, const char *newExtension);

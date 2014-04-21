@@ -241,12 +241,13 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
 
 			VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], alpha);
-
+			if(currentmodel->envmap){
 			index2 = verts[index_xyz].lightnormalindex;
 			oldindex2 = oldverts[index_xyz].lightnormalindex;
 			normalArray[jj][0] = r_avertexnormals[oldindex2][0]*backlerp + r_avertexnormals[index2][0]*frontlerp;
 			normalArray[jj][1] = r_avertexnormals[oldindex2][1]*backlerp + r_avertexnormals[index2][1]*frontlerp;
 			normalArray[jj][2] = r_avertexnormals[oldindex2][2]*backlerp + r_avertexnormals[index2][2]*frontlerp;
+			}
 			}
 		}
 

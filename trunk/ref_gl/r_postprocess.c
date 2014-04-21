@@ -557,7 +557,7 @@ void R_FilmGrain (void) {
 
 	R_DrawFullScreenQuad();
 
-	GL_BindNullProgram		();
+	GL_BindNullProgram();
 }
 
 void R_GammaRamp (void) {

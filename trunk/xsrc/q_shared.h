@@ -202,6 +202,13 @@ extern long Q_ftol( float f );
 #define VectorNegate(a,b)		(b[0]=-a[0],b[1]=-a[1],b[2]=-a[2])
 #define VectorSet(v, x, y, z)	(v[0]=(x), v[1]=(y), v[2]=(z))
 
+#ifndef min 
+#define min(a,b)        (((a) < (b)) ? (a) : (b)) 
+#endif 
+#ifndef max 
+#define max(a,b)        (((a) > (b)) ? (a) : (b)) 
+#endif
+
 void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc);
 
 // just in case you do't want to use the macros

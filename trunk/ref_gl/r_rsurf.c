@@ -583,7 +583,7 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 				unsigned	temp[128 * 128];
 				int			smax, tmax;
 
-			if ((s->styles[map] >= 32 || s->styles[map] == 0)
+				if ((s->styles[map] >= 32 || s->styles[map] == 0)
 				&& (s->dlightframe != r_framecount)) {
 				smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
 				tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;

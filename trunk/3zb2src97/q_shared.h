@@ -328,6 +328,13 @@ void Info_RemoveKey(char *s, char *key);
 void Info_SetValueForKey(char *s, char *key, char *value);
 qboolean Info_Validate(char *s);
 
+#ifndef min 
+#define min(a,b)        (((a) < (b)) ? (a) : (b)) 
+#endif 
+#ifndef max 
+#define max(a,b)        (((a) > (b)) ? (a) : (b)) 
+#endif
+
 /*
 ==============================================================
 
