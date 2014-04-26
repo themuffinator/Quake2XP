@@ -460,11 +460,17 @@ hack:
 	}
 }
 
+float DecodeDepth (float d, vec2_t parms) {
+	return parms[0] / (parms[1] - d);
+}
 
 void R_DofBlur (void) {
-	
-	unsigned	defBits = 0;
-	int			id;
+	unsigned		defBits = 0;
+	int				id, i, probeSize = 32;
+    float			delta, bias, nearestDepth = 1.0, depth[4096];
+	static float    dofDepth = 0;
+    static int      dofFadeTime = 0;
+	vec2_t          dofParams;
 
 	if(!r_dof->value)
 		return;
@@ -474,13 +480,36 @@ void R_DofBlur (void) {
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
             return;
 
+	// berserker's dof autofocus
+	if(!r_dofFocus->value){
+	qglReadPixels((vid.width - probeSize) / 2, (vid.height - probeSize) / 2, probeSize, probeSize, GL_DEPTH_COMPONENT, GL_FLOAT, &depth[0]);
+
+	for (i = 0; i < probeSize * probeSize; i++)
+		if (nearestDepth > depth[i])
+			nearestDepth = depth[i];
+
+	nearestDepth = DecodeDepth(nearestDepth, r_newrefdef.depthParms);
+
+	delta = (nearestDepth - dofDepth) * (r_dofAdjust->value * (Sys_Milliseconds() - dofFadeTime) / 1000.0f);
+    dofDepth += delta;
+    // auto bias
+    bias = min(1 / nearestDepth, r_dofBias->value);
+
+	dofParams[0] = max(dofDepth, 0);
+	dofParams[1] = bias;
+	} 
+	else
+	{
+	dofParams[0] = r_dofFocus->value;
+	dofParams[1] = r_dofBias->value;
+	}
+
 	// setup program
 	GL_BindProgram(dofProgram, defBits);
 	id = dofProgram->id[defBits];
 	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
-	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(qglGetUniformLocation(id, "u_focus"), r_dofFocus->value);
-	qglUniform1f(qglGetUniformLocation(id, "u_bias"), r_dofBias->value);
+	qglUniform4f(qglGetUniformLocation(id, "u_dofParams"), dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+
 
 	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 	GL_BindRect				(ScreenMap->texnum);

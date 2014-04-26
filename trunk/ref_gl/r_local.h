@@ -316,6 +316,7 @@ cvar_t	*r_parallaxScale;
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;
 cvar_t	*r_dofFocus;
+cvar_t	*r_dofAdjust;
 
 cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;

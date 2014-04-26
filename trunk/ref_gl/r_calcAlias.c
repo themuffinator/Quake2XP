@@ -39,6 +39,9 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale)
 	float	*lerp;
 	float	backlerp;
 
+	if(paliashdr->num_frames < 1)
+		return;
+
 	backlerp = currententity->backlerp;
 	
 	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);

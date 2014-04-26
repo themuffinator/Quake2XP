@@ -489,12 +489,10 @@ static void R_SetupViewMatrices (void) {
 	// setup unprojection matrix
 	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, tmpMatrix);
 	Mat4_Invert(tmpMatrix, r_newrefdef.unprojMatrix);
-	Mat4_Translate(	r_newrefdef.unprojMatrix, -(float)vid.width / (float)r_newrefdef.viewport[2],
-					-(float)vid.height / (float)r_newrefdef.viewport[3],
-					-1.f);
-	Mat4_Scale(r_newrefdef.unprojMatrix, 2.f / (float)r_newrefdef.viewport[2],
-					2.f / (float)r_newrefdef.viewport[3],
-					2.f);
+	Mat4_Translate(	r_newrefdef.unprojMatrix,	-(float)vid.width / (float)r_newrefdef.viewport[2],
+												-(float)vid.height / (float)r_newrefdef.viewport[3], -1.f);
+	Mat4_Scale(r_newrefdef.unprojMatrix,	2.f / (float)r_newrefdef.viewport[2],
+											2.f / (float)r_newrefdef.viewport[3], 2.f);
 
 	// load matrices
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix); // q2 r_project_matrix
@@ -535,7 +533,7 @@ R_Clear
 
 void R_Clear(void)
 {
-	qglClear(GL_DEPTH_BUFFER_BIT);
+	qglClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
 	gldepthmin = 0;
 	gldepthmax = 1;
 	qglDepthFunc(GL_LEQUAL);
@@ -858,28 +856,23 @@ if (r_noRefresh->value)
 	R_SetupViewMatrices();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
-	
-	qglBindFramebuffer	(GL_FRAMEBUFFER, gl_state.fbo_base);
-	qglClear			(GL_COLOR_BUFFER_BIT);
 
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
-//	R_CaptureDepthBuffer();
-//	R_DrawLightInteractions();
+	R_CaptureDepthBuffer();
+	R_DrawLightInteractions();
 	R_BlobShadow();
 	R_RenderDecals();
 
 	R_RenderFlares();
-//	R_LightScale();
-//	R_DrawPlayerWeaponFBO();
-//	R_CaptureColorBuffer();
-//	R_DrawAlphaPoly();
+	R_LightScale();
+	R_DrawPlayerWeaponFBO();
+	R_CaptureColorBuffer();
+	R_DrawAlphaPoly();
 	R_DrawParticles();
-//	R_CaptureColorBuffer();
-//	R_RenderDistortModels();
-//	R_CaptureColorBuffer();
-	qglBindFramebuffer	(GL_FRAMEBUFFER, 0);
-
+	R_CaptureColorBuffer();
+	R_RenderDistortModels();
+	R_CaptureColorBuffer();
 }
 
 
@@ -984,17 +977,17 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_SetLightLevel();
 	R_RenderView(fd);
 	R_SetGL2D();
-	R_DrawFbo();
+
 	// post processing - cut off if player camera out map bounds
-//	if(!outMap){
-//	R_FXAA();
-//	R_RadialBlur();
-//	R_ThermalVision();
-//	R_DofBlur();
-////	R_MotionBlur();
-//	R_Bloom();
-//	R_FilmGrain();
-//	}
+	if(!outMap){
+	R_FXAA();
+	R_RadialBlur();
+	R_ThermalVision();
+	R_DofBlur();
+//	R_MotionBlur();
+	R_Bloom();
+	R_FilmGrain();
+	}
 
 	if (v_blend[3] && r_polyBlend->value) {
 		
@@ -1306,6 +1299,7 @@ void R_RegisterCvars(void)
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
 	r_dofFocus =						Cvar_Get("r_dofFocus", "512.0", CVAR_ARCHIVE);
+	r_dofAdjust =						Cvar_Get("r_dofAdjust", "4.0", CVAR_ARCHIVE);
 
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);

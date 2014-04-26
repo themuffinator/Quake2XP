@@ -256,24 +256,6 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		shadow_vert +=3;
 	}
 	
-	qglBindBuffer(GL_ARRAY_BUFFER, gl_state.vbo_Dynamic);
-	qglMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-	//qglBufferData(GL_ARRAY_BUFFER, shadow_vert * sizeof(vec3_t), ShadowArray, GL_DYNAMIC_DRAW_ARB);
-	qglUnmapBuffer(GL_ARRAY_BUFFER);
-
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_Dynamic);
-	qglMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
-	//qglBufferData(GL_ELEMENT_ARRAY_BUFFER, index * sizeof(GL_UNSIGNED_INT), ShadowIndex, GL_DYNAMIC_DRAW_ARB);
-	qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
-	qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, NULL);
-	
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	
-
 	if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
 		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, shadow_vert, index, GL_UNSIGNED_INT, ShadowIndex);
 		else
@@ -330,6 +312,9 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 void GL_LerpVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3])
 {
 	int i;
+
+	if(nverts < 1)
+		return;
 
 		for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {
 			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0];
