@@ -48,16 +48,18 @@ void main (void) {
 
 	#else
 	// world refracted surfaces
-	float cutoff = texture2DRect(g_weaponHackMap, gl_FragCoord.xy).a;
-	if (cutoff == 0.0) {
-		discard;
-		return;
-	}
+//	float cutoff = texture2DRect(g_weaponHackMap, gl_FragCoord.xy).a;
+//	if (cutoff == 0.0) {
+//		discard;
+//		return;
+//	}
+
 	diffuse *= v_color;
 	diffuse = clamp(diffuse, 0.0, 1.0);
 	// chromatic aberration approximation
-	diffuse*= cutoff;
-	N *= cutoff;
+//	diffuse*= cutoff;
+//	N *= cutoff;
+
 	gl_FragColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
 	gl_FragColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
 	gl_FragColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
