@@ -854,7 +854,7 @@ void Mod_LoadTexinfo (lump_t * l) {
 
 				char bak=buff[i];
 				buff[x]=0;
-				Com_Printf("_Found texture script of %s\n", name);
+				Com_Printf("Found material for "S_COLOR_GREEN"%s\n", purename);
 				Mod_LoadTextureFx(image, buff);
 				buff[x]=bak;
 				FS_FreeFile (buff);
@@ -1023,18 +1023,18 @@ void GL_BuildTBN(int count);
 
 /*
 ================
-SetupSurfaceConnectivity
+SetupSurfaceNeighbors
 
 Setup the neighour pointers of this surface's polygon.
 ================
 */
-void SetupSurfaceConnectivity(msurface_t *surf)
+void BuildSurfaceNeighbors(msurface_t *surf)
 {
 	int				i, j, lindex;
 	temp_connect_t	*tempEdge;
 
 	if (surf->numedges > MAX_POLY_VERT)
-		Com_DPrintf ("SetupSurfaceConnectivity: too many edges %i\n", surf->numedges);
+		Com_DPrintf ("BuildSurfaceNeighbors: too many edges %i\n", surf->numedges);
 
 	for (i=0 ; i<surf->numedges ; i++)
 	{
@@ -1130,7 +1130,7 @@ void Mod_BuildVertexCache()
     qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
     qglBufferData(GL_ARRAY_BUFFER_ARB, vbo_size, buf, GL_STATIC_DRAW_ARB);
     qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-	Com_Printf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
+	Com_DPrintf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
     free(buf);
 }
 
@@ -1233,7 +1233,7 @@ void Mod_LoadFaces(lump_t * l)
 	{
 		if ( surf->flags & (SURF_DRAWTURB|SURF_DRAWSKY) )
 			continue;
-			SetupSurfaceConnectivity (surf);
+		BuildSurfaceNeighbors(surf);
 	}
 
 	Z_Free (tempEdges);

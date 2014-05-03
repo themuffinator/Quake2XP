@@ -783,7 +783,7 @@ void R_DrawLightInteractions(void)
 	qglDepthMask(1);
 	qglDisable(GL_STENCIL_TEST);
 	qglDisable(GL_SCISSOR_TEST);
-	if(gl_state.depthBoundsTest)
+	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -830,7 +830,8 @@ r_newrefdef must be set before the first call
 
 void R_RenderView(refdef_t * fd)
 {
-if (r_noRefresh->value)
+
+	if (r_noRefresh->value)
 		return;
 
 	// calc gl viewport
@@ -866,7 +867,7 @@ if (r_noRefresh->value)
 
 	R_RenderFlares();
 	R_LightScale();
-	R_DrawPlayerWeaponFBO();
+//	R_DrawPlayerWeaponFBO();
 	R_CaptureColorBuffer();
 	R_DrawAlphaPoly();
 	R_DrawParticles();
@@ -1146,6 +1147,7 @@ Cvar_Set("r_shadows", "0");
 Cvar_Set("r_drawFlares", "0");
 Cvar_Set("r_parallax", "0");
 Cvar_Set("r_pplWorld", "0");
+Cvar_Set("r_pplWorldAmbient", "1.0");
 Cvar_Set("r_bloom", "0");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "0");
@@ -1165,6 +1167,7 @@ Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "1");
 Cvar_Set("r_pplWorld", "1");
+Cvar_Set("r_pplWorldAmbient", "1.0");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "1");
@@ -1184,6 +1187,7 @@ Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "2");
 Cvar_Set("r_pplWorld", "2");
+Cvar_Set("r_pplWorldAmbient", "0.5");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "1");
 Cvar_Set("r_radialBlur", "1");
@@ -1281,11 +1285,11 @@ void R_RegisterCvars(void)
 	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
 	r_debugLightScissors =				Cvar_Get("r_debugLightScissors", "0", 0);
-	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "0", CVAR_ARCHIVE);
+//	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "0", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
-	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
-	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
-	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
+//	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
+//	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
+//	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 	r_lightScale =						Cvar_Get("r_lightScale", "1", CVAR_ARCHIVE);
 
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
@@ -1298,7 +1302,7 @@ void R_RegisterCvars(void)
 
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
-	r_dofFocus =						Cvar_Get("r_dofFocus", "512.0", CVAR_ARCHIVE);
+	r_dofFocus =						Cvar_Get("r_dofFocus", "0.0", CVAR_ARCHIVE);
 	r_dofAdjust =						Cvar_Get("r_dofAdjust", "4.0", CVAR_ARCHIVE);
 
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);

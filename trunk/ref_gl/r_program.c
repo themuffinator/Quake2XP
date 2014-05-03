@@ -764,7 +764,7 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
+/*
 	Com_Printf("Load "S_COLOR_YELLOW"fbo program"S_COLOR_WHITE" ");
 	FboProgram = R_FindProgram("fbo", true, true);
 	if(FboProgram->valid){
@@ -773,7 +773,7 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
+*/
 	loadingTime2 = Sys_Milliseconds ();
 	sec = (float)loadingTime2 - (float)loadingTime;
 	sec *=0.001;

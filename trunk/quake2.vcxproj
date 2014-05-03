@@ -52,7 +52,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>NotSet</CharacterSet>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <ProfileGuidedOptimization>Disabled</ProfileGuidedOptimization>
     <CodeCoverageOperations>Disabled</CodeCoverageOperations>
     <UseIntelIPP>false</UseIntelIPP>

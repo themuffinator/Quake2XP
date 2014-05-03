@@ -39,7 +39,7 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale)
 	float	*lerp;
 	float	backlerp;
 
-	if(paliashdr->num_frames < 1)
+	if(paliashdr->num_frames < 1 && currententity->flags || !(RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
 		return;
 
 	backlerp = currententity->backlerp;
