@@ -2,7 +2,6 @@
 uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_LightMap;
 uniform sampler2D		u_Add;
-uniform sampler2D		u_NormalMap; // lava
 uniform sampler2D		u_Caustics;
 uniform sampler2D		u_envMap;
 
@@ -12,15 +11,12 @@ uniform float       	u_CausticsModulate;
 uniform int				u_isCaustics;
 uniform int				u_envPass;
 uniform float			u_envPassScale;
-uniform float			u_specularScale; // for lava
-uniform float			u_specularExp;   // for lava
 
 varying vec3			v_viewVecTS;
-varying vec3			t, b, n;
+
 varying vec2			v_wTexCoord;
 varying vec2			v_lTexCoord;
 varying vec2			v_envCoord;
-varying vec4			v_color;
 
  
 #include parallax.inc
@@ -33,9 +29,6 @@ vec4 envMap = texture2D(u_envMap, v_envCoord.xy);
 vec4 diffuseMap;
 vec4 glowMap;
 vec4 causticsMap;
-vec4 bumpLight;
-vec3 normalMap;
-float specTmp;
 float envMask;
 
 #ifdef PARALLAX
@@ -43,7 +36,6 @@ vec2 P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
 diffuseMap = texture2D(u_Diffuse, P);
 glowMap = texture2D(u_Add, P);
 causticsMap = texture2D(u_Caustics, P);
-specTmp = texture2D(u_NormalMap,   P.xy).a;
 envMask =  texture2D(u_envMap, P.xy).a;
 
 #else
@@ -51,23 +43,9 @@ envMask =  texture2D(u_envMap, P.xy).a;
 diffuseMap = texture2D(u_Diffuse,  v_wTexCoord.xy);
 glowMap = texture2D(u_Add,  v_wTexCoord.xy);
 causticsMap = texture2D(u_Caustics, v_wTexCoord.xy);
-specTmp = texture2D(u_NormalMap, v_wTexCoord).a;
 envMask =  texture2D(u_envMap, v_wTexCoord.xy).a;
 
 #endif 
-
-
-#ifdef VERTEXLIGHT
-vec4 specular = vec4(specTmp) * u_specularScale;
-diffuseMap *= clamp(v_color, 0.0, 0.666);
-vec3 tbnDelux;
-tbnDelux.x = abs(dot(n, t));
-tbnDelux.y = abs(dot(n, b));
-tbnDelux.z = 1.0;
-vec2 Es = PhongLighting(normalMap, tbnDelux, V, u_specularExp);
-bumpLight = (Es.x * diffuseMap * v_color) + (Es.y * specular * v_color); //via lava surfaces 
-diffuseMap += bumpLight;
-#endif
 
 vec4 tmp = causticsMap * diffuseMap;
 

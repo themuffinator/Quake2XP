@@ -1,0 +1,32 @@
+uniform vec3			u_viewOrigin;
+
+varying vec2	  		v_diffuseTexCoord;
+
+varying vec3			v_viewVec;
+varying vec3  			v_lightVec;
+
+attribute	vec3		a_vertArray;
+attribute	vec2		a_texCoord;
+attribute vec3			a_normArray;
+attribute vec3			a_tangent;
+attribute vec3			a_binormal;
+
+
+
+void main ()
+{
+v_diffuseTexCoord = a_texCoord;
+
+vec3 tmp = u_viewOrigin - a_vertArray;
+v_viewVec.x = dot(a_tangent, tmp);
+v_viewVec.y = dot(a_binormal, tmp);
+v_viewVec.z = dot(a_normArray, tmp);
+
+vec3 light = vec3(0.0, 0.0, 8000.0);
+vec3 tmpL = light - a_vertArray;
+v_lightVec.x = dot(a_tangent, tmpL);
+v_lightVec.y = dot(a_binormal, tmpL);
+v_lightVec.z = dot(a_normArray, tmpL);
+
+gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+}

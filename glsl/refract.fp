@@ -2,11 +2,12 @@ varying float			v_depth;
 varying float			v_depthS;
 varying vec2			v_deformMul;
 varying vec2			v_deformTexCoord;
-varying	vec4			v_color;
 
 uniform float			u_thickness;
 uniform float			u_thickness2;
 uniform float			u_alpha;
+uniform float			u_ambientScale;
+
 uniform vec2			u_viewport;
 uniform vec2			u_mask;
 uniform sampler2D		u_deformMap;
@@ -24,7 +25,7 @@ void main (void) {
 
 	vec2 N = texture2D(u_deformMap, v_deformTexCoord).xy * 2.0 - 1.0;
 	vec4 diffuse  = texture2D(u_colorMap,  v_deformTexCoord.xy);
-  
+
 	// Z-feather
 	float depth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 	N *= clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
@@ -48,22 +49,13 @@ void main (void) {
 
 	#else
 	// world refracted surfaces
-//	float cutoff = texture2DRect(g_weaponHackMap, gl_FragCoord.xy).a;
-//	if (cutoff == 0.0) {
-//		discard;
-//		return;
-//	}
-
-	diffuse *= v_color;
-	diffuse = clamp(diffuse, 0.0, 1.0);
 	// chromatic aberration approximation
-//	diffuse*= cutoff;
-//	N *= cutoff;
 
 	gl_FragColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
 	gl_FragColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
 	gl_FragColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 	// blend glass texture
+//	diffuse *= u_ambientScale;
 	gl_FragColor.xyz += diffuse.xyz * u_alpha;
 
 	#endif

@@ -1,7 +1,6 @@
 varying vec2			v_deformTexCoord;
 varying vec2			v_diffuseTexCoord;
 varying vec2			v_deformMul;
-varying vec4			v_color;
 varying float			v_depth;
 varying vec3			v_normal;
 varying vec4			v_viewVec;
@@ -11,7 +10,6 @@ attribute	vec3		a_vertArray;
 attribute	vec3		a_normArray;
 attribute	vec2		a_texCoord;
 attribute	vec2		a_2texCoord;
-attribute	vec4		a_colorArray;
 
 void main ()
 {
@@ -30,12 +28,6 @@ d.x /= max(d.y, 1.0);
 
 v_deformMul = min(d.xx, 0.02) * u_deformMul;
 #endif
-	 
-v_color = a_colorArray;
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
-
-v_viewVec    = gl_ModelViewProjectionMatrix/*gl_ModelViewMatrix*/  * vec4(a_vertArray, 1.0);
-v_normal    = gl_NormalMatrix * a_normArray;
-
 }

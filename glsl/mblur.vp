@@ -1,7 +1,4 @@
-varying vec3 v_viewRay; 
-
-void main (void) {
-
-v_viewRay = gl_Normal;
-gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+void main (void) 
+{
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 }

@@ -9,6 +9,7 @@ varying vec4				v_viewVec;
 uniform float				u_thickness;
 uniform float				u_alpha;
 uniform float				u_ColorModulate;
+uniform float				u_ambientScale;
 uniform vec2				u_viewport;
 uniform vec2				u_depthParms;
 
@@ -34,15 +35,6 @@ coord.y = v_diffuseTexCoord.y + offset.w;
 
 //load diffuse map
 vec4 diffuse  = texture2D (u_colorMap, coord.xy);  
-
-// load sky cubemap for reflection
-vec3 reflectedDirection = normalize(reflect(v_viewVec.xyz, normalize(v_normal)));
-reflectedDirection.y = -reflectedDirection.y;
-vec4 skyCube = textureCube(g_CubeMap, reflectedDirection);
-
-// set vertex lighting
-diffuse *= v_color;
-diffuse = clamp(diffuse, 0.0, 1.0); 
  
 #ifdef TRANS
 vec2 N = offset.xy; // use autogen dst texture
@@ -59,7 +51,8 @@ gl_FragColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
 gl_FragColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.0).g;
 gl_FragColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 //blend water texture
-gl_FragColor += vec4(diffuse.xyz * u_alpha, 1.0);
+//diffuse *= u_ambientScale;
+gl_FragColor += vec4(diffuse.xyz , 1.0);
 
 #else
 
