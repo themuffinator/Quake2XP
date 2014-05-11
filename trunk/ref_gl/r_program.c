@@ -554,7 +554,6 @@ void R_InitPrograms(void) {
 
 		worldDefs.ParallaxBit		= R_GetProgramDefBits(ambientWorldProgram, "PARALLAX");
 		worldDefs.LightmapBits		= R_GetProgramDefBits(ambientWorldProgram, "LIGHTMAP");
-		worldDefs.VertexLightBits	= R_GetProgramDefBits(ambientWorldProgram, "VERTEXLIGHT");
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
@@ -681,6 +680,17 @@ void R_InitPrograms(void) {
 	if(waterProgram->valid){
 		Com_Printf("succeeded\n");
 	}else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"lava program"S_COLOR_WHITE" ");
+	lavaProgram = R_FindProgram("lava", true, true);
+
+	if (lavaProgram->valid){
+		Com_Printf("succeeded\n");
+	}
+	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}

@@ -796,6 +796,7 @@ glslProgram_t		*refractProgram;
 glslProgram_t		*thermalProgram;
 glslProgram_t		*thermalfpProgram;
 glslProgram_t		*waterProgram;
+glslProgram_t		*lavaProgram;
 glslProgram_t		*radialProgram;
 glslProgram_t		*dofProgram;
 glslProgram_t		*particlesProgram;
@@ -822,7 +823,6 @@ typedef struct {
 	unsigned	AmbientBits;
 	unsigned	AmbientAliasBits;
 	unsigned	LightmapBits;
-	unsigned	VertexLightBits;
 	unsigned	AlphaMaskBits;
 	unsigned	WaterTransBits;
 	unsigned	ShellBits;

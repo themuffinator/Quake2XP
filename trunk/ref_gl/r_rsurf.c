@@ -173,11 +173,9 @@ void DrawGLPolyGLSL(msurface_t * fa)
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_COLOR);
 
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, SurfColorArray);
 
 	GL_MBind(GL_TEXTURE0_ARB, fa->texinfo->normalmap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
@@ -195,6 +193,11 @@ void DrawGLPolyGLSL(msurface_t * fa)
 	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	150.0);
 	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	if (r_pplWorld->value >1)
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+	else
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
+
 	
 	p = fa->polys;
 	v = p->verts[0];
@@ -207,19 +210,11 @@ void DrawGLPolyGLSL(msurface_t * fa)
 			
 		wTexArray[i][0] = v[3];
 		wTexArray[i][1] = v[4];
-
-		R_LightColor	(v, shadelight_surface);
-		VA_SetElem4		(SurfColorArray[i],	shadelight_surface[0], 
-											shadelight_surface[1], 
-											shadelight_surface[2], 
-											alpha);	
-
 	}
 	qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);	
 			
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
 	
@@ -256,11 +251,9 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_COLOR);
 
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, SurfColorArray);
 
 	GL_MBind(GL_TEXTURE0_ARB, fa->texinfo->normalmap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
@@ -276,6 +269,11 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	300.000);
 	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	if (r_pplWorld->value >1)
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+	else
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
+
 		
 
 	p = fa->polys;
@@ -305,7 +303,6 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 		
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
 }

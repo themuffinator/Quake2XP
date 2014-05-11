@@ -37,118 +37,80 @@ R_DrawWaterPolygons
 Does a water warp on the pre-fragmented glpoly_t chain
 =============
 */
-float WarpColorArray[MAX_BATCH_SURFS][4];
 
-void RenderLavaSurfaces(msurface_t * fa)
+void  RenderLavaSurfaces(msurface_t * surf)
 {
-	int			i, nv = fa->polys->numverts;
-	float		*v;
 	glpoly_t	*p, *bp;
-	float		scale[2];
-	int			id;
+	float		*v;
+	vec2_t		scale;
+	int			id, i, nv = surf->polys->numverts;
 	unsigned	defBits = 0;
 
-	defBits = worldDefs.VertexLightBits;
-	
-	if (fa->texinfo->image->has_alpha && r_parallax->value)
-		defBits |= worldDefs.ParallaxBit;
-
 	// setup program
-	GL_BindProgram(ambientWorldProgram, defBits);
-	id = ambientWorldProgram->id[defBits];
+	GL_BindProgram(lavaProgram, defBits);
+	id = lavaProgram->id[defBits];
+
+	scale[0] = 4.0 / surf->texinfo->image->width;
+	scale[1] = 4.0 / surf->texinfo->image->height;
+	qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
+	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), surf->texinfo->image->upload_width, surf->texinfo->image->upload_height);
+	qglUniform3fv(qglGetUniformLocation(id, "u_viewOrigin"), 1, r_origin);
 
 
-	if(!fa->texinfo->image->specularScale)
-			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), 1.0);
-		else
-			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), fa->texinfo->image->specularScale);
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	GL_Bind(surf->texinfo->image->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 0);
+	GL_MBind(GL_TEXTURE1_ARB, surf->texinfo->normalmap->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 1);
 
-		if(!fa->texinfo->image->SpecularExp)
-			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), 16.0);
-		else
-			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), fa->texinfo->image->SpecularExp);
-
-		if(r_parallax->value){
-			
-			if(!fa->texinfo->image->parallaxScale){
-
-			scale[0] = 7.0 / fa->texinfo->image->width;
-			scale[1] = 7.0 / fa->texinfo->image->height;
-			}
-			else
-			{
-			scale[0] = fa->texinfo->image->parallaxScale / fa->texinfo->image->width;
-			scale[1] = fa->texinfo->image->parallaxScale / fa->texinfo->image->height;
-			}
-			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
-			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), fa->texinfo->image->upload_width, fa->texinfo->image->upload_height);
-		}
-
-	qglUniform1f	(qglGetUniformLocation(id, "u_ColorModulate"),	1.0);
-	qglUniform3fv	(qglGetUniformLocation(id, "u_viewOriginES"),	1 , r_origin);
-	qglUniform1i	(qglGetUniformLocation(id, "u_parallaxType"),	(int)r_parallax->value);
-	qglUniform1f	(qglGetUniformLocation(id, "u_ambientScale"),	0.0);
-
-
-	GL_MBind		(GL_TEXTURE0_ARB, fa->texinfo->image->texnum);
-	qglUniform1i	(qglGetUniformLocation(id, "u_Diffuse"), 0);
-	GL_MBind		(GL_TEXTURE1_ARB, fa->texinfo->normalmap->texnum);
-	qglUniform1i	(qglGetUniformLocation(id, "u_NormalMap"), 1);
-
+	
 	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_NORMAL);
 	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
 	qglEnableVertexAttribArray(ATRB_TANGENT);
 	qglEnableVertexAttribArray(ATRB_BINORMAL);
-	qglEnableVertexAttribArray(ATRB_COLOR);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, wVertexArray);	
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false,		0, nTexArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, wTexArray);
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false,	0, tTexArray);
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false,	0, bTexArray);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, WarpColorArray);
-	
-	for (bp = fa->polys; bp; bp = bp->next) {
+	qglVertexAttribPointer(ATRB_POSITION,	3, GL_FLOAT, false, 0, wVertexArray);
+	qglVertexAttribPointer(ATRB_TEX0,		2, GL_FLOAT, false, 0, wTexArray);
+	qglVertexAttribPointer(ATRB_NORMAL,		3, GL_FLOAT, false, 0, nTexArray);
+	qglVertexAttribPointer(ATRB_TANGENT,	3, GL_FLOAT, false, 0, tTexArray);
+	qglVertexAttribPointer(ATRB_BINORMAL,	3, GL_FLOAT, false, 0, bTexArray);
+
+	for (bp = surf->polys; bp; bp = bp->next) {
 		p = bp;
+		c_brush_polys += (nv - 2);
 
-	c_brush_polys += (nv-2);
+		for (i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE) {
 
-	for (i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE) {
-			
 			VectorCopy(v, wVertexArray[i]);
-			
-			// diffuse
+
 			wTexArray[i][0] = v[3];
 			wTexArray[i][1] = v[4];
 			//normals
-			nTexArray[i][0] = v[7];
-			nTexArray[i][1] = v[8];
-			nTexArray[i][2] = v[9];
+			nTexArray[i][0] = surf->normal[0];
+			nTexArray[i][1] = surf->normal[1];
+			nTexArray[i][2] = surf->normal[2];
 			//tangents
-			tTexArray[i][0] = v[10];
-			tTexArray[i][1] = v[11];
-			tTexArray[i][2] = v[12];
+			tTexArray[i][0] = surf->tangent[0];
+			tTexArray[i][1] = surf->tangent[1];
+			tTexArray[i][2] = surf->tangent[2];
 			//binormals
-			bTexArray[i][0] = v[13];
-			bTexArray[i][1] = v[14];
-			bTexArray[i][2] = v[15];
-		R_LightColor	(v, shadelight_surface);
-		VA_SetElem4		(WarpColorArray[i],	shadelight_surface[0], shadelight_surface[1], shadelight_surface[2], 1.0);		
+			bTexArray[i][0] = surf->binormal[0];
+			bTexArray[i][1] = surf->binormal[1];
+			bTexArray[i][2] = surf->binormal[2];
 		}
-		
-		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
+
+		qglDrawElements(GL_TRIANGLES, surf->numIndices, GL_UNSIGNED_SHORT, surf->indices);
 	}
-	
+
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_NORMAL);
 	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_NORMAL);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
-	qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_BindNullProgram();
-
 }
 
 
@@ -232,18 +194,20 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
+	if (r_pplWorld->value >1)
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+	else
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
 			
 	dstscroll = ((r_newrefdef.time * 0.15f) - (int) (r_newrefdef.time * 0.15f));
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_TEX2);
-	qglEnableVertexAttribArray(ATRB_COLOR);
 
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, wVertexArray);	
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, wTexArray);
 	qglVertexAttribPointer(ATRB_TEX2, 2, GL_FLOAT, false,		0, wTmu2Array);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, WarpColorArray);
 	
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
@@ -258,9 +222,6 @@ void R_DrawWaterPolygons(msurface_t * fa)
 
 		wTmu2Array[i][0] = (v[3] + dstscroll);
 		wTmu2Array[i][1] = (v[4] + dstscroll);
-
-		R_LightColor	(v, shadelight_surface);
-		VA_SetElem4		(WarpColorArray[i],	shadelight_surface[0], shadelight_surface[1], shadelight_surface[2], 1.0);	
 		}
 
 		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
@@ -270,7 +231,6 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_TEX2);
-	qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_BindNullProgram();
 }
 

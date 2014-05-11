@@ -433,6 +433,8 @@ typedef struct {
 	mat4_t			projectionMatrix;
 	mat4_t			modelViewMatrix;
 	mat4_t			unprojMatrix;
+	mat4_t			oldMvpMatrix;
+	mat4_t			inverseMvpMatrix;
 
 	int num_entities;
 	entity_t *entities;

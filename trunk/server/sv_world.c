@@ -401,6 +401,9 @@ SV_AreaEdicts
 int SV_AreaEdicts(vec3_t mins, vec3_t maxs, edict_t ** list,
 				  int maxcount, int areatype)
 {
+	if (sv.state == ss_dead)	
+		return 0;				
+
 	area_mins = mins;
 	area_maxs = maxs;
 	area_list = list;

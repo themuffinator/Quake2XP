@@ -609,9 +609,10 @@ void R_GammaRamp (void) {
 	GL_BindNullProgram();
 }
 
+unsigned int mbtex = 0;
+
 void R_MotionBlur (void) {
 	
-	mat4_t pMVP; 
 	unsigned	defBits = 0;
 	int			id;
 
@@ -623,16 +624,22 @@ void R_MotionBlur (void) {
 	// setup program
 	GL_BindProgram(motionBlurProgram, defBits);
 	id = motionBlurProgram->id[defBits];
-
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_PrevModelViewProj"), 1,	GL_FALSE, (const GLfloat*)pMVP);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_InverseModelViewMat"), 1,	GL_FALSE, (const GLfloat*)r_newrefdef.unprojMatrix);
 	
-	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
+	qglUniformMatrix4fv	(qglGetUniformLocation(id, "u_PrevModelViewProj"), 1, GL_FALSE, (const GLfloat*)r_newrefdef.oldMvpMatrix);
+	qglUniformMatrix4fv	(qglGetUniformLocation(id, "u_InverseModelViewMat"), 1, GL_FALSE, (const GLfloat*)r_newrefdef.inverseMvpMatrix);
+	qglUniform2f		(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
+	qglUniform2f		(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-	GL_BindRect				(ScreenMap->texnum);
-    qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+	if (!mbtex) {
+		qglGenTextures(1, &mbtex);
+		GL_Bind(mbtex);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
+	}
+	GL_Bind(mbtex);
+	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1i		(qglGetUniformLocation(id, "u_ScreenTex"), 0);
 
 	GL_SelectTexture		(GL_TEXTURE1_ARB);	
 	GL_BindRect				(depthMap->texnum);
@@ -642,6 +649,4 @@ void R_MotionBlur (void) {
 
 	GL_BindNullProgram();
 	GL_SelectTexture(GL_TEXTURE0_ARB);	
-		
-	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, pMVP);
 }

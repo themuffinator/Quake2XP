@@ -380,6 +380,9 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	vec3_t		mins, maxs;
 	int			i;
 
+	if (!r_drawEntities->value || !r_pplWorld->value)
+		return;
+
 	if (currententity->flags & RF_DISTORT)
 			return;
 	

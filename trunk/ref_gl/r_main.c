@@ -422,7 +422,10 @@ static void R_SetupViewMatrices (void) {
 	float	xMin, xMax, xDiv;
 	float	yMin, yMax, yDiv;
 	float	zNear, zFar, zDiv;
-	mat4_t	tmpMatrix;
+	mat4_t	tmpMatrix, tmpMatrix1;
+
+	// motion blur store old mvp matrix
+	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.oldMvpMatrix);
 
 	// setup perspective projection matrix
 	zNear = max(r_zNear->value, 3.0);
@@ -497,6 +500,9 @@ static void R_SetupViewMatrices (void) {
 	// load matrices
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix); // q2 r_project_matrix
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix); // q2 r_world_matrix
+
+	Mat4_Invert(tmpMatrix, tmpMatrix1);
+	Mat4_Transpose(tmpMatrix1, r_newrefdef.inverseMvpMatrix);
 
 }
 

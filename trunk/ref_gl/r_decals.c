@@ -80,7 +80,7 @@ void R_RenderDecals(void)
     unsigned    tex, texture = 0;
     int			x, i, id;
     int			numIndices = 0, numVertices = 0;
-    int			indices[MAX_DECAL_INDICES];
+    WORD		indices[MAX_DECAL_INDICES];
     float		endLerp, decalAlpha;
 	unsigned	defBits = 0;
 	
@@ -146,7 +146,7 @@ void R_RenderDecals(void)
         if (texture != tex) {
         // flush array if new texture/blend
         if (numIndices) {
-			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indices);
+			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 			c_decal_tris += numIndices/3;
 			numVertices = 0;
 			numIndices = 0;
@@ -169,7 +169,7 @@ void R_RenderDecals(void)
      if ((numIndices >= MAX_DECAL_INDICES - (dl->numverts - 2) * 3) || 
 		 (numVertices >= MAX_DECAL_ARRAY_VERTS - dl->numverts)) {
           
-		 qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indices);
+		 qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
          c_decal_tris = numIndices/3;
 		 numVertices = 0;
          numIndices = 0;
@@ -202,7 +202,7 @@ void R_RenderDecals(void)
 
      // draw the rest
 	 if (numIndices){
-          qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indices);
+		 qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 		c_decal_tris += numIndices/3;
 	 }
 
