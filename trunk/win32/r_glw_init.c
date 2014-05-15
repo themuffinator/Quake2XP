@@ -696,11 +696,13 @@ void GLimp_CpuID(void)
 			}
 		}
 		numPhysicalCores = numProcessCPU;
-		if(HasHTT())
-			numPhysicalCores *=0.5;
+
+	//	if(HasHTT())
+	//		numPhysicalCores *=0.5;
 
 		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", CPUBrandString);
-		Com_Printf ("Number of Cpu Cores: "S_COLOR_GREEN"%i"S_COLOR_WHITE", Threads: "S_COLOR_GREEN"%i\n", numPhysicalCores, numProcessCPU);
+//		Com_Printf ("Number of Cpu Cores: "S_COLOR_GREEN"%i"S_COLOR_WHITE", Threads: "S_COLOR_GREEN"%i\n", numPhysicalCores, numProcessCPU);
+		Com_Printf("Number of Cpu Cores/Threads: "S_COLOR_GREEN"%i"S_COLOR_WHITE"\n", numPhysicalCores);
 		Com_Printf ("CPU Speed: "S_COLOR_GREEN"~%d"S_COLOR_WHITE"MHz\n", dwCPUSpeed);
 		Com_Printf ("Supported Extensions: ");
 				
@@ -723,8 +725,8 @@ void GLimp_CpuID(void)
 	            Com_Printf (S_COLOR_YELLOW"SSE3 ");
 			if  (SSE4)
 	            Com_Printf (S_COLOR_YELLOW"SSE4 ");
-			if(HasHTT())
-			     Com_Printf (S_COLOR_YELLOW"HTT ");
+	//		if(HasHTT())
+	//		     Com_Printf (S_COLOR_YELLOW"HTT ");
 			if (EM64T)
 				Com_Printf (S_COLOR_YELLOW"EM64T");
 			Com_Printf("\n");
@@ -986,8 +988,8 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 			
 			}
 
-			if(!r_fullScreen->value)
-				GLimp_DesktopComposition(false);
+		//	if(!r_fullScreen->value)
+		//		GLimp_DesktopComposition(false);
 			}
 	
 
