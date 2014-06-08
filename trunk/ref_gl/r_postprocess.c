@@ -287,7 +287,19 @@ void R_Bloom (void) {
 		qglTexParameteri		(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglCopyTexImage2D		(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width*0.25, vid.height*0.25, 0);
 		}
-		
+
+		// star blur
+		GL_BindRect(bloomtex);
+		qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+
+		GL_BindProgram(blurStarProgram, defBits);
+		id = blurStarProgram->id[defBits];
+		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+		qglUniform1f(qglGetUniformLocation(id, "u_starIntens"), r_bloomStarIntens->value);
+
+		R_DrawQuarterScreenQuad();
+		qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+
 		// blur x
 		GL_BindRect				(bloomtex);
 		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
@@ -297,7 +309,7 @@ void R_Bloom (void) {
 		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 	
 		R_DrawQuarterScreenQuad();
-
+		
 		// blur y
 		GL_BindRect				(bloomtex);
 		qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
@@ -321,8 +333,6 @@ void R_Bloom (void) {
 		GL_SelectTexture	(GL_TEXTURE1_ARB);
 		GL_BindRect			(bloomtex);
 		qglUniform1i		(qglGetUniformLocation(id, "u_map1"), 1);
-		//cvar_t	*r_bloomBright;
-		//cvar_t	*r_bloomExposure;
 		qglUniform3f		(qglGetUniformLocation(id, "u_bloomParams"), r_bloomIntens->value, r_bloomBright->value, r_bloomExposure->value);
 		
 		R_DrawFullScreenQuad();

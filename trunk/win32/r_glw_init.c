@@ -735,21 +735,22 @@ void GLimp_CpuID(void)
     }	
 
 }
+#define WIDTH 7
 
 void GLimp_GetMemorySize(){
 
-MEMORYSTATUS		ramcheck;
+	MEMORYSTATUSEX		ramcheck;
+	ramcheck.dwLength = sizeof (ramcheck);
+	GlobalMemoryStatusEx(&ramcheck);
 
 	Con_Printf (PRINT_ALL, "\n");
-
-	GlobalMemoryStatus	(&ramcheck);	
-	Com_Printf("Total physical RAM:       "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalPhys >> 20);
-	Com_Printf("Available physical RAM:   "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailPhys >> 20);
-	Com_Printf("Total PageFile:           "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalPageFile >> 20);
-	Com_Printf("Available PageFile:       "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailPageFile >> 20);
-	Com_Printf("Total Virtual Memory:     "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwTotalVirtual >> 20);
-	Com_Printf("Available Virtual Memory: "S_COLOR_GREEN"%u"S_COLOR_WHITE" MB\n", ramcheck.dwAvailVirtual >> 20);
-
+	Com_Printf("Memory loaded:            "S_COLOR_GREEN"%*ld"S_COLOR_WHITE" PCT\n",  WIDTH, ramcheck.dwMemoryLoad);
+	Com_Printf("Total physical RAM:       "S_COLOR_GREEN"%*I64d"S_COLOR_WHITE" MB\n", WIDTH, ramcheck.ullTotalPhys >> 20);
+	Com_Printf("Available physical RAM:   "S_COLOR_GREEN"%*I64d"S_COLOR_WHITE" MB\n", WIDTH, ramcheck.ullAvailPhys >> 20);
+	Com_Printf("Total PageFile:           "S_COLOR_GREEN"%*I64d"S_COLOR_WHITE" MB\n", WIDTH, ramcheck.ullTotalPageFile >> 20);
+	Com_Printf("Available PageFile:       "S_COLOR_GREEN"%*I64d"S_COLOR_WHITE" MB\n", WIDTH, ramcheck.ullAvailPageFile >> 20);
+	Com_Printf("Total Virtual Memory:     "S_COLOR_GREEN"%*I64d"S_COLOR_WHITE" MB\n", WIDTH, ramcheck.ullTotalVirtual >> 20);
+	Com_Printf("Available Virtual Memory: "S_COLOR_GREEN"%*I64d"S_COLOR_WHITE" MB\n", WIDTH, ramcheck.ullAvailVirtual >> 20);
 	Con_Printf (PRINT_ALL, "\n");
 }
 

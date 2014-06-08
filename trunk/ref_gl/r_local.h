@@ -287,6 +287,7 @@ cvar_t	*r_bloomThreshold;
 cvar_t	*r_bloomIntens;
 cvar_t	*r_bloomBright;
 cvar_t	*r_bloomExposure;
+cvar_t	*r_bloomStarIntens;
 
 cvar_t	*sys_priority;
 
@@ -791,6 +792,7 @@ glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*bloomdsProgram;
 glslProgram_t		*gaussXProgram;
 glslProgram_t		*gaussYProgram;
+glslProgram_t		*blurStarProgram;
 glslProgram_t		*bloomfpProgram;
 glslProgram_t		*refractProgram;
 glslProgram_t		*thermalProgram;

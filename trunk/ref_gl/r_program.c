@@ -610,6 +610,17 @@ void R_InitPrograms(void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"star blur program"S_COLOR_WHITE" ");
+	blurStarProgram = R_FindProgram("blurStar", true, true);
+
+	if (blurStarProgram)
+		Com_Printf("succeeded\n");
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+
 	Com_Printf("Load "S_COLOR_YELLOW"radial blur program"S_COLOR_WHITE" ");
 	radialProgram = R_FindProgram("radialBlur", true, true);
 	if(radialProgram->valid)

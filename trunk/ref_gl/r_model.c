@@ -1678,6 +1678,13 @@ void Mod_GenerateLights(model_t * mod)
 }
 
 void R_PreCalcLightData(void);
+void R_InitLightgrid2(void);
+
+void Mod_GenerateAmbientLights(model_t * mod)
+{
+	r_worldmodel = mod;
+	R_InitLightgrid2();
+}
 
 /*
 =================
@@ -1742,7 +1749,8 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	
 	Load_LightFile();
 	R_PreCalcLightData();
-	
+	Mod_GenerateAmbientLights(mod);
+
 	mod->numframes = 2;			// regular and alternate animation
 
 //

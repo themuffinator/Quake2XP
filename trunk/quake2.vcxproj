@@ -1317,6 +1317,8 @@
     <ClInclude Include="client\sound.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\baseq2\glsl\blurStar.fp" />
+    <None Include="..\baseq2\glsl\blurStar.vp" />
     <None Include="..\baseq2\glsl\fbo.fp" />
     <None Include="..\baseq2\glsl\fbo.vp" />
     <None Include="..\baseq2\glsl\lightAlias.fp" />

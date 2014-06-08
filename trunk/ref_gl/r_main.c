@@ -1305,6 +1305,7 @@ void R_RegisterCvars(void)
 	r_bloomIntens =						Cvar_Get("r_bloomIntens", "2.0", CVAR_ARCHIVE);
 	r_bloomBright =						Cvar_Get("r_bloomBright", "0.9", CVAR_ARCHIVE);
 	r_bloomExposure =					Cvar_Get("r_bloomExposure", "0.86", CVAR_ARCHIVE);
+	r_bloomStarIntens =					Cvar_Get("r_bloomStarIntens", "3.0", CVAR_ARCHIVE);
 
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
