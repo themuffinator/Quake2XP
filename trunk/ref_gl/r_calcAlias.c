@@ -599,16 +599,21 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 		}
 	}
 	
-	if(currentShadowLight->isAmbient)
+	if(currentShadowLight->isAmbient || currentShadowLight->isFog)
 		defBits = worldDefs.AmbientAliasBits;
 
 	// setup program
 	GL_BindProgram(aliasBumpProgram, defBits);
 	id = aliasBumpProgram->id[defBits];
 
-	qglUniform3fv(qglGetUniformLocation(id, "u_LightColor"), 1 , currentShadowLight->color);
+	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , currentShadowLight->origin);
 	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , r_origin);
+
+	if(currentShadowLight->isFog){
+	qglUniform1i(qglGetUniformLocation(id, "u_fog"), (int)currentShadowLight->isFog);
+	qglUniform1f(qglGetUniformLocation(id, "u_fogDensity"), currentShadowLight->fogDensity);
+	}
 
 	GL_MBind(GL_TEXTURE0_ARB, skinNormalmap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), 0);

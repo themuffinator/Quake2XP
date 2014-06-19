@@ -282,6 +282,10 @@ void R_SaveLights_f(void) {
 		fprintf(f, "\"flareSize\" \"%i\"\n",			(int)currentShadowLight->flareSize);
 		fprintf(f, "\"flareOrigin\" \"%i %i %i\"\n",	(int)currentShadowLight->flareOrigin[0], (int)currentShadowLight->flareOrigin[1], (int)currentShadowLight->flareOrigin[2]);
 		fprintf(f, "\"flare\" \"%i\"\n",					currentShadowLight->flare);
+		if(currentShadowLight->isFog){
+		fprintf(f, "\"fogLight\" \"%i\"\n",					currentShadowLight->isFog);
+		fprintf(f, "\"fogDensity\" \"%.6f\"\n",				currentShadowLight->fogDensity);
+		}
 		fprintf(f, "}\n");
 		i++;
 	}
@@ -326,7 +330,7 @@ void R_Light_Spawn_f(void) {
 	
 	if (trace.fraction != 1.0){
 		VectorMA(trace.endpos, -10, v_forward, spawn);
-		R_AddNewWorldLight(spawn, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true, 0, spawn, 10.0, target, 0);
+		R_AddNewWorldLight(spawn, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true, 0, spawn, 10.0, target, 0, 0, 0.0);
 		}
 }
 
@@ -339,13 +343,13 @@ void R_Light_SpawnToCamera_f(void) {
 		return;
 	}
 	memset(target, 0, sizeof(target));
-	R_AddNewWorldLight(player_org, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true, 0, player_org, 10.0, target, 0);
+	R_AddNewWorldLight(player_org, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true, 0, player_org, 10.0, target, 0, 0, 0.0);
 }
 
 void R_Light_Copy_f(void) {
 	vec3_t color, spawn, origin, angles, speed, radius, flareOrg;
-	float _cone, flareSize;
-	int style, filter, shadow, ambient, flare, flag;
+	float _cone, flareSize, fogDensity;
+	int style, filter, shadow, ambient, flare, flag, fog;
 	char target[MAX_QPATH];
 
 	if(!r_lightEditor->value){
@@ -378,16 +382,17 @@ void R_Light_Copy_f(void) {
 	flare = selectedShadowLight->flare;
 	flareSize = selectedShadowLight->flareSize;
 	flag = selectedShadowLight->start_off;
-
+	fog = selectedShadowLight->isFog;
+	fogDensity = selectedShadowLight->fogDensity;
 	VectorMA(origin, -50, v_forward, spawn);
-	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, _cone, true, flare, flareOrg, flareSize, target, flag);
+	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, _cone, true, flare, flareOrg, flareSize, target, flag, fog, fogDensity);
 }
 
 void R_EditSelectedLight_f(void) {
 	
 	vec3_t color, origin, angles, speed, radius, fOrg;
-	float _cone, fSize;
-	int style, filter, shadow, ambient, flare, start_off;
+	float _cone, fSize, fogDensity;
+	int style, filter, shadow, ambient, flare, start_off, fog;
 	char *target[MAX_QPATH];
 
 	if(!r_lightEditor->value){
@@ -412,14 +417,16 @@ void R_EditSelectedLight_f(void) {
 	memcpy(target, selectedShadowLight->targetname, sizeof(target));
 	}
 
-	style = selectedShadowLight->style;
-	filter = selectedShadowLight->filter;
-	shadow = selectedShadowLight->isShadow;
-	ambient = selectedShadowLight->isAmbient;
-	_cone = selectedShadowLight->_cone;
-	flare = selectedShadowLight->flare;
-	fSize = selectedShadowLight->flareSize;
+	style =		selectedShadowLight->style;
+	filter =	selectedShadowLight->filter;
+	shadow =	selectedShadowLight->isShadow;
+	ambient =	selectedShadowLight->isAmbient;
+	_cone =		selectedShadowLight->_cone;
+	flare =		selectedShadowLight->flare;
+	fSize =		selectedShadowLight->flareSize;
 	start_off = selectedShadowLight->start_off;
+	fog =		selectedShadowLight->isFog;
+	fogDensity = selectedShadowLight->fogDensity;
 
 	if (!strcmp(Cmd_Argv(1), "origin")) {
 		if(Cmd_Argc() != 5) {
@@ -599,9 +606,27 @@ void R_EditSelectedLight_f(void) {
 		}
 		start_off = atoi(Cmd_Argv(2)); 
 		selectedShadowLight->start_off = start_off;
+	 }else
+		 if (!strcmp(Cmd_Argv(1), "fog")) {
+		if(Cmd_Argc() != 3) {
+			Com_Printf("usage: editLight %s value\nCurrent Fog Light Flag is %i\n", Cmd_Argv(0),
+				selectedShadowLight->isFog);
+			return;
+		}
+		fog = atoi(Cmd_Argv(2)); 
+		selectedShadowLight->isFog = fog;
+	 }else
+		 if (!strcmp(Cmd_Argv(1), "fogDensity")) {
+		if(Cmd_Argc() != 3) {
+			Com_Printf("usage: editLight %s value\nCurrent Fog Light Flag is %f\n", Cmd_Argv(0),
+				selectedShadowLight->fogDensity);
+			return;
+		}
+		fogDensity = atof(Cmd_Argv(2)); 
+		selectedShadowLight->fogDensity = fogDensity;
 	 }
 	{
-		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f %.1f %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\nSpeed: %.4f %.4f %.4f\nShadows %i\nAmbient %i\nCone %f\nFlare %i\nFlare Size %f\nTargetname %s\nStart Off %i\n",
+		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f %.1f %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\nSpeed: %.4f %.4f %.4f\nShadows %i\nAmbient %i\nCone %f\nFlare %i\nFlare Size %f\nTargetname %s\nStart Off %i\nFog Light %i\nFog Density %f\n",
 		 selectedShadowLight->origin[0],	selectedShadowLight->origin[1], selectedShadowLight->origin[2],
 		 selectedShadowLight->color[0],		selectedShadowLight->color[1], selectedShadowLight->color[2], 
 		 selectedShadowLight->radius[0],	selectedShadowLight->radius[1], selectedShadowLight->radius[2],
@@ -615,7 +640,9 @@ void R_EditSelectedLight_f(void) {
 		 selectedShadowLight->flare,
 		 selectedShadowLight->flareSize,
 		 selectedShadowLight->targetname,
-		 selectedShadowLight->start_off);
+		 selectedShadowLight->start_off,
+		 selectedShadowLight->isFog,
+		 selectedShadowLight->fogDensity);
 
 	}
 
@@ -929,6 +956,8 @@ char buff10[128];
 char buff11[128];
 char buff12[128];
 char buff13[128];
+char buff14[128];
+char buff15[128];
 
 void UpdateLightEditor(void){
 
@@ -1065,6 +1094,8 @@ void UpdateLightEditor(void){
 	sprintf(buff11,	"Flare Size: %i",			(int)selectedShadowLight->flareSize);
 	sprintf(buff12,	"Target Name: %s",			selectedShadowLight->targetname);
 	sprintf(buff13,	"Start Off: %i",			selectedShadowLight->start_off);
+	sprintf(buff14,	"Fog Light: %i",			selectedShadowLight->isFog);
+	sprintf(buff15,	"Fog Density: %5f",			selectedShadowLight->fogDensity);
 
 	VectorSet(v[0], tmpOrg[0]-tmpRad[0], tmpOrg[1]-tmpRad[1], tmpOrg[2]-tmpRad[2]);
 	VectorSet(v[1], tmpOrg[0]-tmpRad[0], tmpOrg[1]-tmpRad[1], tmpOrg[2]+tmpRad[2]);
@@ -1252,7 +1283,7 @@ void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame)
 
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3], int style, 
 									   int filter, vec3_t angles, vec3_t speed, qboolean isStatic, 
-									   int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH], int flags) {
+									   int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH], int flags, int fog, float fogDensity) {
 	
 	worldShadowLight_t *light;
 	int i, leafnum, cluster;
@@ -1295,6 +1326,8 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
 	light->isAmbient = isAmbient;
+	light->isFog = fog;
+	light->fogDensity = fogDensity;
 	light->isNoWorldModel = 0;
 	light->next = NULL;
 	light->style = style;
@@ -1305,6 +1338,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	light->depthBounds[0] = 0.0;
 	light->depthBounds[1] = 1.0;
 	light->len = 0;
+	
 	memcpy(light->targetname, target, sizeof(light->targetname));
 
 	for (i = 0; i < 3; i++) {
@@ -1413,7 +1447,7 @@ void Load_BspLights() {
 			if(!Q_stricmp(key, "style"))
 				style = atoi(value);
 			if(!Q_stricmp(key, "_cone"))
-				cone = atoi(value);
+				cone = atof(value);
 			if(!Q_stricmp(key, "targetname"))
 				Q_strncpyz(target, value, sizeof(target));
 			if(!Q_stricmp(key, "spawnflags"))
@@ -1422,7 +1456,7 @@ void Load_BspLights() {
 
 		if(addLight && style > 0) {
 			VectorSet(radius, radius[0], radius[0], radius[0]);
-			R_AddNewWorldLight(origin, color, radius, style, 0, vec3_origin, vec3_origin, true, 1, 0, cone, false, 0, origin, 10.0, target, flag);
+			R_AddNewWorldLight(origin, color, radius, style, 0, vec3_origin, vec3_origin, true, 1, 0, cone, false, 0, origin, 10.0, target, flag, 0, 0.0);
 			numlights++;
 		}
 	}
@@ -1432,10 +1466,10 @@ void Load_BspLights() {
 
 void Load_LightFile() {
 	
-	int		style, numLights = 0, filter, shadow, ambient, flare, flag;
+	int		style, numLights = 0, filter, shadow, ambient, flare, flag, fog;
 	vec3_t	angles, speed, color, origin, lOrigin, fOrg;
 	char	*c, *token, key[256], *value, target[MAX_QPATH];
-	float	radius[3], cone, fSize;
+	float	radius[3], cone, fSize, fogDensity;
 	char	name[MAX_QPATH], path[MAX_QPATH];
 
 	if(!r_worldmodel) {
@@ -1469,6 +1503,8 @@ void Load_LightFile() {
 		fSize = 0;
 		flare = 0;
 		flag = 0;
+		fog = 0;
+		fogDensity = 0.0;
 
 		memset(target, 0, sizeof(target));
 		VectorClear(radius);
@@ -1518,10 +1554,14 @@ void Load_LightFile() {
 				Q_strncpyz(target, value, sizeof(target));
 			else if(!Q_stricmp(key, "spawnflags"))
 				flag = atoi(value);
+			else if(!Q_stricmp(key, "fogLight"))
+				fog = atof(value);
+			else if(!Q_stricmp(key, "fogDensity"))
+				fogDensity = atof(value);
 
 		}
 	
-		R_AddNewWorldLight(origin, color, radius, style, filter, angles, speed, true, shadow, ambient, cone, false, flare, fOrg, fSize, target, flag);
+		R_AddNewWorldLight(origin, color, radius, style, filter, angles, speed, true, shadow, ambient, cone, false, flare, fOrg, fSize, target, flag, fog, fogDensity);
 		numLights++;
 		}
 	Com_Printf(""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights\n", numLights);
@@ -2048,18 +2088,7 @@ void R_SetViewLightScreenBounds () {
 	mat4_t		tmpMatrix, mvpMatrix;
 	float		depth[2];
 
-/*
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 
-		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
-		currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
-		currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
-		currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
-		currentShadowLight->depthBounds[0] = 0.0f;
-		currentShadowLight->depthBounds[1] = 1.0f;
-		return;
-	}
-*/
 	if (!r_useLightScissors->value) {
 
 		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];

@@ -213,7 +213,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 	memset(target, 0, sizeof(target));
 	
 	R_AddNewWorldLight(	lightOffset, r_flares[r_numflares].color, 
-						radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false, 1, origin, r_flares[r_numflares].size, target, 0);
+						radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false, 1, origin, r_flares[r_numflares].size, target, 0, 0, 0.0);
 	}
 
 	r_numflares++;

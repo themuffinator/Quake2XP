@@ -697,7 +697,7 @@ static void GL_BatchLightPass(qboolean bmodel)
 	if (r_parallax->value)
 		defBits = worldDefs.LightParallaxBit;
 
-	if(currentShadowLight->isAmbient)
+	if(currentShadowLight->isAmbient || currentShadowLight->isFog)
 		defBits |= worldDefs.AmbientBits;
 	// setup program
 	GL_BindProgram(lightWorldProgram, defBits);
@@ -717,6 +717,10 @@ static void GL_BatchLightPass(qboolean bmodel)
 	if(r_parallax->value)
 		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
 	
+	if(currentShadowLight->isFog){
+	qglUniform1i(qglGetUniformLocation(id, "u_fog"), (int)currentShadowLight->isFog);
+	qglUniform1f(qglGetUniformLocation(id, "u_fogDensity"), currentShadowLight->fogDensity);
+	}
 
 	qsort(light_surfaces, num_light_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))lightSurfSort);
 
@@ -948,10 +952,12 @@ qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 		break;
 	}
 
+	if(!currentShadowLight->isFog){
 	//the normals are flipped when surf_planeback is 1
 	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
 		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
 		return false;
+	}
 
 	//the normals are flipped when surf_planeback is 1
 	if (abs(dist) > currentShadowLight->len)

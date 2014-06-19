@@ -54,12 +54,14 @@ typedef struct worldShadowLight_s {
 	float		_cone;
 	float		depthBounds[2];
 	float		len;
+	float		fogDensity;
 
 	int			filter, style, area;
 	int			isShadow;
 	int			isStatic;
 	int			isNoWorldModel;
 	int			isAmbient;
+	int			isFog;
 	int			linkedSurf;
 	int			scissor[4];
 	int			start_off;

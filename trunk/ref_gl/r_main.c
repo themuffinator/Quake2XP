@@ -734,6 +734,13 @@ void R_DrawLightInteractions(void)
 
 	if(r_pplWorld->value < 2 && currentShadowLight->isStatic && !currentShadowLight->isNoWorldModel)
 		continue;
+	
+	if(currentShadowLight->isFog){
+		qglDisable(GL_STENCIL_TEST);
+		qglDisable(GL_SCISSOR_TEST);
+		if(gl_state.depthBoundsTest && r_useDepthBounds->value)
+		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
+	}
 
 	UpdateLightEditor();
 	
@@ -954,6 +961,8 @@ extern char buff10[128];
 extern char buff11[128];
 extern char buff12[128];
 extern char buff13[128];
+extern char buff14[128];
+extern char buff15[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
@@ -1033,6 +1042,9 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	Draw_StringScaled(0, vid.height*0.5+225, 2, 2, buff13);
 	Draw_StringScaled(0, vid.height*0.5+245, 2, 2, buff10);
 	Draw_StringScaled(0, vid.height*0.5+265, 2, 2, buff11);
+	Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14);
+	Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15);
+
 	qglColor3f(1,1,1);
 	}
 
