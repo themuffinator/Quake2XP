@@ -9,6 +9,7 @@ uniform float			u_specularScale;
 uniform float			u_specularExp;
 uniform vec4 			u_LightColor;
 uniform float 			u_LightRadius;
+uniform float			u_fogDensity;
 uniform int				u_fog;
 
 varying vec3			v_viewVecTS;
@@ -26,12 +27,6 @@ void main ()
  
 vec3 V = normalize(v_viewVecTS);
 vec3 L = normalize(v_lightVec);
-
-float density = 0.008;
-const float LOG2 = 1.442695;
-
-float z = gl_FragCoord.z / gl_FragCoord.w;
-float fogFactor = exp2(-density * density * z * z * LOG2);
 
 #ifdef PARALLAX
 vec2 P = CalcParallaxOffset(u_Diffuse, v_colorCoord.xy, V);
@@ -53,11 +48,25 @@ vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
 cubeFilter *= 2;
 
 #ifdef AMBIENT   
+
+if(u_fog == 1){
+
+const float LOG2 = 1.442695;
+float z = gl_FragCoord.z / gl_FragCoord.w;
+float fogFactor = exp2(-u_fogDensity * u_fogDensity * z * z * LOG2);
+
+vec4 temp = diffuseMap * u_LightColor;
+gl_FragColor = (mix(u_LightColor, temp, fogFactor)) * u_attenMap;
+
+}else{
+
 vec4 ambient = u_attenMap * (normalMap.z * normalMap.z);
-gl_FragColor = diffuseMap * ambient * u_LightColor;
 vec4 temp = diffuseMap * ambient * u_LightColor;
-//if(u_fog == 2)
-gl_FragColor = (mix(u_LightColor, temp, fogFactor)) *u_attenMap;
+
+gl_FragColor = temp;
+
+}
+
 #else
 
 vec2 Es = PhongLighting(normalMap, L, V, u_specularExp);
