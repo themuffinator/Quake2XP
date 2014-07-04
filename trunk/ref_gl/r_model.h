@@ -286,7 +286,7 @@ typedef struct model_s {
 	void *extradata;
 	int triangles[MAX_TRIANGLES];
 	float	*st;
-	neighbors_t *neighbors;
+	neighbors_t *neighbours;
 	
 	float ambient;
 	float diffuse;

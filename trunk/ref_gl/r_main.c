@@ -1266,7 +1266,9 @@ void R_RegisterCvars(void)
 
 	r_screenShot =						Cvar_Get("r_screenShot", "jpg", CVAR_ARCHIVE);
 	r_screenShotJpegQuality =			Cvar_Get("r_screenShotJpegQuality", "99", CVAR_ARCHIVE);
-		
+	r_screenShotGamma =					Cvar_Get("r_screenShotGamma", "1.0", CVAR_ARCHIVE);
+	r_screenShotContrast =				Cvar_Get("r_screenShotContrast", "1.0", CVAR_ARCHIVE);
+
 	r_radarSize =						Cvar_Get("r_radarSize", "256", CVAR_ARCHIVE);
 	r_radarZoom =						Cvar_Get("r_radarZoom", "1", CVAR_ARCHIVE);
 	r_radar =							Cvar_Get("r_radar", "0", CVAR_ARCHIVE);
@@ -1452,6 +1454,7 @@ static void DevIL_Init() {
     init = true;
 }
 
+
 /*
 ===============
 R_Init
@@ -1463,8 +1466,8 @@ R_Init
 
 int R_Init(void *hinstance, void *hWnd)
 {
-	char			vendor_buffer[1000];
-	int				aniso_level, max_aniso;
+	char	vendor_buffer[1000];
+	int		aniso_level, max_aniso;
 
 	Draw_GetPalette();
 
@@ -1493,7 +1496,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED "ref_xpgl::R_Init() - could not R_SetMode()\n");
 		return -1;
 	}
-	
+
 	VID_MenuInit();
 
 	/* 
@@ -1924,7 +1927,7 @@ int R_Init(void *hinstance, void *hWnd)
 	Mod_Init();
 	R_InitEngineTextures();
 	R_LoadFont();
-	
+
 	GL_MsgGLError("Init GL Errors: ");
 
 	return 0;
@@ -2001,8 +2004,10 @@ void R_Shutdown(void)
 R_BeginFrame
 @@@@@@@@@@@@@@@@@@@@@
 */
+
 void R_BeginFrame()
 {
+	
 #ifndef _WIN32
     // there is no need to restart video mode with SDL
     if (r_fullScreen->modified) {
@@ -2030,12 +2035,8 @@ void R_BeginFrame()
 	if(r_pplWorldAmbient->value >1)
 		Cvar_SetValue("r_pplWorldAmbient", 1);
 
-	if(r_pplWorldAmbient->value < 0)
-		Cvar_SetValue("r_pplWorldAmbient", 0);
-
-
 	/* 
-	 ** go into 2D mode
+	** go into 2D mode
 	 */
 	qglViewport(0, 0, vid.width, vid.height);
 	qglMatrixMode(GL_PROJECTION);

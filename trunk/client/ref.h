@@ -81,9 +81,9 @@ typedef struct entity_s {
 	/*
 	 ** most recent data
 	 */
-	float origin[3];			// also used as RF_BEAM's "from"
-	int frame;					// also used as RF_BEAM's diameter
-
+	float	origin[3];				// also used as RF_BEAM's "from"
+	int		frame;					// also used as RF_BEAM's diameter
+	int		framecount;				// for vis calc
 //  float   model_scale;
 
 	/*

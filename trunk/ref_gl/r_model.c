@@ -2160,8 +2160,8 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	}
 
 	// find neighbours
-	mod->neighbors = (neighbors_t*)malloc(pheader->num_tris * sizeof(neighbors_t));
-	Mod_BuildTriangleNeighbors(mod->neighbors, pouttri, pheader->num_tris);
+	mod->neighbours = (neighbors_t*)malloc(pheader->num_tris * sizeof(neighbors_t));
+	Mod_BuildTriangleNeighbors(mod->neighbours, pouttri, pheader->num_tris);
 	mod->memorySize += pheader->num_tris * sizeof(neighbors_t);
 //
 // load the frames
@@ -2730,8 +2730,8 @@ void Mod_Free(model_t * mod)
 {
 	Hunk_Free(mod->extradata);
 	
-	if (mod->neighbors)
-		free(mod->neighbors);
+	if (mod->neighbours)
+		free(mod->neighbours);
 	
 	if(mod->type == mod_alias)
 		qglDeleteBuffers(1, &mod->vboId);

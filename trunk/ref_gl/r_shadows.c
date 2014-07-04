@@ -28,10 +28,11 @@ vec4_t s_lerped[MAX_VERTS];
 float shadelight[3];
 
 /*
-===============
-SHADOW VOLUMES
-===============
+=====================
+Alias Shadow Volumes
+=====================
 */
+
 vec3_t			ShadowArray[MAX_SHADOW_VERTS];
 unsigned		ShadowIndex[MAX_INDICES];
 char			triangleFacingLight	[MAX_INDICES / 3];
@@ -69,15 +70,15 @@ void R_MarkShadowTriangles(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg
 
 void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistance)
 {
-	dtriangle_t *ot, *tris;
-	neighbors_t *neighbors;
-	int i, j, shadow_vert = 0, index = 0;
-	vec3_t v0, v1, v2, v3, l0, l1, l2, l3;
-	daliasframe_t *frame;
-	dtrivertx_t *verts;
-	vec3_t	offset0, offset1, offset2;
-	float cap_offset = r_shadowCapOffset->value;
-	
+	dtriangle_t		*ot, *tris;
+	neighbors_t		*neighbours;
+	vec3_t			v0, v1, v2, v3, l0, l1, l2, l3;
+	daliasframe_t	*frame;
+	dtrivertx_t		*verts;
+	vec3_t			offset0, offset1, offset2;
+	float			cap_offset = r_shadowCapOffset->value;
+	int				i, j, shadow_vert = 0, index = 0;
+
 	frame = (daliasframe_t *) ((byte *) hdr + hdr->ofs_frames
 							   + currententity->frame * hdr->framesize);
 	verts = frame->verts;
@@ -86,12 +87,12 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 	
 	R_MarkShadowTriangles(hdr, tris, light);
 
-	for (i = 0, tris = ot, neighbors = currentmodel->neighbors; i < hdr->num_tris; i++, tris++, neighbors++) {
+	for (i = 0, tris = ot, neighbours = currentmodel->neighbours; i < hdr->num_tris; i++, tris++, neighbours++) {
 		
 		if (!triangleFacingLight[i])
 			continue;
 	
-		if (neighbors->n[0] < 0 || !triangleFacingLight[neighbors->n[0]]) {
+		if (neighbours->n[0] < 0 || !triangleFacingLight[neighbours->n[0]]) {
 			
 			for (j = 0; j < 3; j++) {
 				v0[j] = s_lerped[tris->index_xyz[1]][j];
@@ -123,7 +124,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		shadow_vert +=4;
 		}
 
-		if (neighbors->n[1] < 0 || !triangleFacingLight[neighbors->n[1]]) {
+		if (neighbours->n[1] < 0 || !triangleFacingLight[neighbours->n[1]]) {
 			
 			for (j = 0; j < 3; j++) {
 				v0[j] = s_lerped[tris->index_xyz[2]][j];
@@ -155,7 +156,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 		shadow_vert +=4;
 		}
 
-		if (neighbors->n[2] < 0 || !triangleFacingLight[neighbors->n[2]]) {
+		if (neighbours->n[2] < 0 || !triangleFacingLight[neighbours->n[2]]) {
 			
 			for (j = 0; j < 3; j++) {
 				v0[j] = s_lerped[tris->index_xyz[0]][j];
@@ -266,13 +267,24 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float projectdistanc
 }
 
 
-void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
+void GL_AddAliasShadowVolume(dmdl_t * paliashdr)
 {
 	vec3_t	light, temp, mins, maxs;
 	float	projdist;
 	mat3_t	entityAxis;
 	int		i;
 	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	if (currententity->flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED |
+								RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
+								RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
+								return;
+
+	if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
+		return;
+
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -299,17 +311,17 @@ void GL_DrawAliasShadowVolumeTriangles(dmdl_t * paliashdr)
 	if(VectorCompare(currentShadowLight->origin, currententity->origin))
 		return;
 
-	projdist = currentShadowLight->len * 2.5;
+	projdist = currentShadowLight->len * 10;
 
 	AnglesToMat3(currententity->angles, entityAxis);
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector(entityAxis, temp, light);	
 		
 	BuildShadowVolumeTriangles(paliashdr, light, projdist);
-	c_shadow_volumes++;
+
 }
 
-void GL_LerpVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3])
+void GL_LerpShadowVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3])
 {
 	int i;
 
@@ -323,7 +335,7 @@ void GL_LerpVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *vert
 		}
 }
 
-void R_DrawShadowVolume(entity_t * e)
+void R_DeformShadowVolume(entity_t * e)
 {
 	dmdl_t			*paliashdr;
 	daliasframe_t	*frame, *oldframe;
@@ -332,18 +344,6 @@ void R_DrawShadowVolume(entity_t * e)
 	float			frontlerp;
 	vec3_t			move, delta, vectors[3], frontv, backv;
 
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-	
-	if (currententity->
-		flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED |
-				 RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
-				 RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
-				 return;
-		
-	if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
-		return;
-	
 	paliashdr = (dmdl_t *) currentmodel->extradata;
 
 	frame = (daliasframe_t *) ((byte *) paliashdr   + paliashdr->ofs_frames
@@ -379,16 +379,67 @@ void R_DrawShadowVolume(entity_t * e)
 		backv[i] = currententity->backlerp * oldframe->scale[i];
 	}
 
-	GL_LerpVerts(paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
+	GL_LerpShadowVerts(paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
 		
 	qglPushMatrix();
 	R_RotateForLightEntity (e);
 
-	GL_DrawAliasShadowVolumeTriangles(paliashdr);
-
+	GL_AddAliasShadowVolume(paliashdr);
+	
 	qglPopMatrix();
 }
 
+void R_CastAliasShadowVolumes(void)
+{
+	int			id, i;
+	unsigned	defBits = 0;
+
+	if (!r_shadows->value || !r_pplWorld->value)
+		return;
+
+	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->isFog)
+		return;
+
+	// setup program
+	GL_BindProgram(nullProgram, defBits);
+	id = nullProgram->id[defBits];
+
+	qglStencilMask(255);
+	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	qglStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP_EXT, GL_KEEP);
+	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+
+	qglDisable(GL_CULL_FACE);
+	qglDisable(GL_TEXTURE_2D);
+	qglDepthFunc(GL_LESS);
+	qglEnable(GL_POLYGON_OFFSET_FILL);
+	qglColorMask(0, 0, 0, 0);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
+	qglPolygonOffset(0.1, 1);
+
+
+	for (i = 0; i < r_newrefdef.num_entities; i++)
+	{
+		currententity = &r_newrefdef.entities[i];
+		currentmodel = currententity->model;
+
+		if (!currentmodel)
+			continue;
+
+		if (currentmodel->type == mod_alias){
+			R_DeformShadowVolume(currententity);
+		}
+	}
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglPolygonOffset(0, 0);
+	qglEnable(GL_TEXTURE_2D);
+	qglEnable(GL_CULL_FACE);
+	qglDepthFunc(GL_LEQUAL);
+	qglColorMask(1, 1, 1, 1);
+	GL_BindNullProgram();
+}
 
 /*
 ===================
@@ -541,7 +592,7 @@ void R_DrawBrushModelVolumes()
 	qglPushMatrix();
 	R_RotateForLightEntity(currententity);
 	
-	scale = currentShadowLight->len * 10;
+	scale = currentShadowLight->len * 32;
 
 	for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
 		{
@@ -758,7 +809,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
 	num_shadow_surfaces = 0;
 	R_MarkShadowCasting (r_worldmodel->nodes);
 
-	scale = currentShadowLight->len * 10;
+	scale = currentShadowLight->len * 32;
 	
 	// generate vertex buffer
 	for (i=0 ; i<num_shadow_surfaces; i++)
@@ -862,6 +913,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
 		}
 		}
 	c_shadow_volumes++;
+	c_shadow_tris += ib / 3;
 }
 
 
@@ -932,63 +984,6 @@ void R_CastBspShadowVolumes(void)
 	qglColorMask(1, 1, 1, 1);
 	GL_BindNullProgram();
 }
-
-
-void R_CastAliasShadowVolumes(void)
-{
-	int			id, i;
-	unsigned	defBits = 0;
-
-	if (!r_shadows->value || !r_pplWorld->value)
-		return;
-
-	if(!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->isFog)
-		return;
-
-	// setup program
-	GL_BindProgram(nullProgram, defBits);
-	id = nullProgram->id[defBits];
-
-	qglStencilMask(255);
-	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
-	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
-
-	qglDisable(GL_CULL_FACE);
-	qglDisable(GL_TEXTURE_2D);
-	qglDepthFunc(GL_LESS);
-	qglEnable(GL_POLYGON_OFFSET_FILL);
-	qglColorMask(0, 0, 0, 0);
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
-	qglPolygonOffset(0.1, 1);
-
-
-	for (i = 0; i < r_newrefdef.num_entities; i++) 
-	{
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		
-		if (!currentmodel)
-			continue;
-
-		if (currentmodel->type != mod_alias)
-			continue;
-
-		if (currentmodel->type == mod_alias){
-			R_DrawShadowVolume(currententity);
-		}
-	}
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisable(GL_POLYGON_OFFSET_FILL);
-	qglPolygonOffset(0, 0);
-	qglEnable(GL_TEXTURE_2D);
-	qglEnable(GL_CULL_FACE);
-	qglDepthFunc(GL_LEQUAL);
-	qglColorMask(1, 1, 1, 1);
-	GL_BindNullProgram();
-}
-
 
 /*
 ==================

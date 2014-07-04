@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 #include "../ref_gl/r_particle.h"
+#include "../ref_gl/r_local.h"
 //=============
 //
 // development tools for weapons
@@ -371,28 +372,6 @@ void CL_PrepRefresh(void)
 		Cvar_Set("paused", "0");
 }
 
-/*
-====================
-CalcFov
-====================
-*/
-float CalcFov(float fov_x, float width, float height)
-{
-	float a;
-	float x;
-
-	if (fov_x < 1 || fov_x > 179)
-		Com_Error(ERR_DROP, "Bad fov: %f", fov_x);
-
-	x = width / tan(fov_x * (0.002777777777778 * M_PI));
-
-	a = atan(height / x);
-
-	a = a * 114.59165581759554875079179651068;
-
-	return a;
-}
-
 //============================================================================
 
 // gun frame debugging functions
@@ -456,6 +435,62 @@ void SCR_DrawCrosshair(void)
 
 }
 
+/*
+====================
+CalcFov
+====================
+*/
+float CalcFov(float fov_x, float width, float height) // fov for noWorldModels
+{
+	float a;
+	float x;
+
+	if (fov_x < 1 || fov_x > 179)
+		Com_Error(ERR_DROP, "Bad fov: %f", fov_x);
+
+	x = width / tan(fov_x * (0.002777777777778 * M_PI));
+
+	a = atan(height / x);
+
+	a = a * 114.59165581759554875079179651068;
+
+	return a;
+}
+
+#define AR_4x3	4.0f / 3.0f 
+
+void CalcFovForScreen(float ingameFOV)
+{
+	float	x, y, ratio_x, ratio_y;
+	float	screenAspect = (float)vid.width / (float)vid.height;
+
+	if (ingameFOV < 1 || ingameFOV > 135)
+		ingameFOV = 91;
+
+	// calc FOV for 640x480 view (4x3 aspect ratio)
+	x = 640.0f / tan(ingameFOV / 360.0f * M_PI);
+	y = atan2(480.0f, x);
+	cl.refdef.fov_y = y * 360.0f / M_PI;
+
+	if (screenAspect == AR_4x3){
+		cl.refdef.fov_x = ingameFOV;
+		return;
+	}
+	// calc FOV for widescreen
+	ratio_x = (float)vid.width;
+	ratio_y = (float)vid.height;
+
+	y = ratio_y / tan(cl.refdef.fov_y / 360.0f * M_PI);
+	cl.refdef.fov_x = atan2(ratio_x, y) * 360.0f / M_PI;
+
+	if (cl.refdef.fov_x < ingameFOV) {
+		cl.refdef.fov_x = ingameFOV;
+		x = ratio_x / tan(cl.refdef.fov_x / 360.0f * M_PI);
+		cl.refdef.fov_y = atan2(ratio_y, x) * 360.0f / M_PI;
+	}
+
+}
+
 
 /*
 ==================
@@ -504,8 +539,9 @@ void V_RenderView()
 		cl.refdef.y = scr_vrect.y;
 		cl.refdef.width = scr_vrect.width;
 		cl.refdef.height = scr_vrect.height;
-       	cl.refdef.fov_y = CalcFov(cl.refdef.fov_x, cl.refdef.width, cl.refdef.height);
-		
+
+		CalcFovForScreen(cl.refdef.fov_x);
+
 		cl.refdef.time = cl.time * 0.001;
 		
 		if(cl_fontScale->value < 1)

@@ -518,45 +518,47 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
 
-	for (i=0; i<num_scene_surfaces; i++)
+	for (i = 0; i < num_scene_surfaces; i++)
 	{
 		s = scene_surfaces[i];
-		image	= R_TextureAnimation(s->texinfo);
-		fx		= R_TextureAnimationFx(s->texinfo);
-		env		= R_TextureAnimationEnv(s->texinfo);
-		lmtex	= s->lightmaptexturenum;
+		image = R_TextureAnimation(s->texinfo);
+		fx = R_TextureAnimationFx(s->texinfo);
+		env = R_TextureAnimationEnv(s->texinfo);
+		lmtex = s->lightmaptexturenum;
 
 		GL_CreateParallaxLmPoly(s);
-		
-		if(caustics || (s->flags & SURF_WATER)){
+
+		if (caustics || (s->flags & SURF_WATER)){
 			qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
 			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 1);
-		}else
+		}
+		else
 			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 0);
 
-		if(image->envMap){
+		if (image->envMap){
 			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 1);
-		if(image->envScale)
-			qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), image->envScale);
+			if (image->envScale)
+				qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), image->envScale);
+			else
+				qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), 0.5);
+		}
 		else
-			qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), 0.5);
-		}else
 			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 0);
 
-		if(r_parallax->value){
-			
-		if(!image->parallaxScale){
-			scale[0] = r_parallaxScale->value / image->width;
-			scale[1] = r_parallaxScale->value / image->height;
-		}
-		else
-		{
-			scale[0] = image->parallaxScale / image->width;
-			scale[1] = image->parallaxScale / image->height;
-		}
+		if (r_parallax->value){
+
+			if (!image->parallaxScale){
+				scale[0] = r_parallaxScale->value / image->width;
+				scale[1] = r_parallaxScale->value / image->height;
+			}
+			else
+			{
+				scale[0] = image->parallaxScale / image->width;
+				scale[1] = image->parallaxScale / image->height;
+			}
 			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
 			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
-		}	
+		}
 
 		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
 			if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])

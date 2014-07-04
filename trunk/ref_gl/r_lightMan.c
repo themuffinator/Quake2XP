@@ -1630,39 +1630,38 @@ qboolean InLightVISEntity()
 	int		i, count;
 	int		longs;
 	vec3_t	mins, maxs;
-		
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return true;
 
-	if (!r_worldmodel)
-		return false;
-	
-	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		for (i = 0; i < 3; i++) {
-			mins[i] = currententity->origin[i] - currentmodel->radius;
-			maxs[i] = currententity->origin[i] + currentmodel->radius;
-		}
-	}
-	else
+	if (currententity->framecount != r_framecount)
 	{
-	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
-	VectorAdd(currententity->origin, currententity->model->mins, mins);
+		currententity->framecount = r_framecount;
+
+		if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
+			for (i = 0; i < 3; i++) {
+				mins[i] = currententity->origin[i] - currentmodel->radius;
+				maxs[i] = currententity->origin[i] + currentmodel->radius;
+			}
+		}
+		else
+		{
+			VectorAdd(currententity->origin, currententity->model->maxs, maxs);
+			VectorAdd(currententity->origin, currententity->model->mins, mins);
+		}
+
+		count = CM_BoxLeafnums(mins, maxs, leafs, r_worldmodel->numleafs, NULL);
+		if (count < 1)
+			Com_Error(ERR_FATAL, "InLightVISEntity: count < 1");
+		longs = (CM_NumClusters() + 31) >> 5;
+
+		// convert leafs to clusters
+		for (i = 0; i < count; i++){
+			leafs[i] = CM_LeafCluster(leafs[i]);
+		}
+		memset(&currententity->vis, 0, (((r_worldmodel->numleafs + 31) >> 5) << 2));
+		for (i = 0; i < count; i++)
+			currententity->vis[leafs[i] >> 3] |= (1 << (leafs[i] & 7));
 	}
-
-	count = CM_BoxLeafnums (mins, maxs, leafs, r_worldmodel->numleafs, NULL);
-	if (count < 1)
-		Com_Error (ERR_FATAL, "InLightVISEntity: count < 1");
-	longs = (CM_NumClusters()+31)>>5;
-
-	// convert leafs to clusters
-	for (i=0 ; i<count ; i++){
-		leafs[i] = CM_LeafCluster(leafs[i]);
-	}
-	memset(&currententity->vis, 0, (((r_worldmodel->numleafs+31)>>5)<<2));
-	for (i=0 ; i<count ; i++)
-		currententity->vis[leafs[i]>>3] |= (1<<(leafs[i]&7));
-
-	return HasSharedLeafs (currentShadowLight->vis, currententity->vis);
+		return HasSharedLeafs(currentShadowLight->vis, currententity->vis);
+	
 }
 
 

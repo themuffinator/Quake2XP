@@ -252,6 +252,8 @@ cvar_t	*r_displayRefresh;
 
 cvar_t	*r_screenShot;
 cvar_t	*r_screenShotJpegQuality;
+cvar_t	*r_screenShotGamma;
+cvar_t	*r_screenShotContrast;
 
 cvar_t	*r_worldColorScale;
 cvar_t	*r_picsColorScale;

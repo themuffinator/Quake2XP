@@ -768,7 +768,8 @@ void GL_ScreenShot_f(void)
 	ilBindImage(ImagesToSave[0]);
 
 	if (ilutGLScreen()) {
-		iluGammaCorrect(r_gamma->value-0.6);
+		iluGammaCorrect(r_screenShotGamma->value);
+		iluContrast(r_screenShotContrast->value);
 		ilSave(image, checkname);
 	}
 
