@@ -59,12 +59,7 @@ vec4 temp = diffuseMap * u_LightColor;
 gl_FragColor = (mix(u_LightColor, temp, fogFactor)) * u_attenMap;
 
 }else{
-
-vec4 ambient = u_attenMap * (normalMap.z * normalMap.z);
-vec4 temp = diffuseMap * ambient * u_LightColor;
-
-gl_FragColor = temp;
-
+gl_FragColor = diffuseMap * LambertLighting(normalMap, L) * u_LightColor * u_attenMap;
 }
 
 #else

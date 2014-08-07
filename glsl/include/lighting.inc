@@ -8,3 +8,13 @@ vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const flo
 	E.y *= E.x;
 	return E;
 }
+
+float halfLambert(in vec3 N, in vec3 L )  
+{  
+     return dot ( N, L ) * 0.5 + 2.0;
+} 
+
+float LambertLighting(const in vec3 N, const in vec3 L) {
+	float E;
+	return E = max(dot (N, L), 0.0);
+}
