@@ -759,6 +759,7 @@ extern	PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC				qglRenderbufferStorageMultisam
 extern	PFNGLFRAMEBUFFERTEXTURELAYERPROC					qglFramebufferTextureLayer;
 
 extern	PFNGLDRAWBUFFERSARBPROC								qglDrawBuffers;
+extern	PFNGLCLAMPCOLORARBPROC								qglClampColorARB;
 
 #ifdef _WIN32
 

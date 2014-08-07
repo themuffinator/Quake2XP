@@ -488,13 +488,8 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	if (take)
 	{  
 		
-		if ((targ->svflags & SVF_MONSTER) || (client)){
-			if(deathmatch->value && ((int)dmflags->value & DF_FLASHLIGHT))
-
-			SpawnDamage (TE_GREENBLOOD, point, normal, take);
-			else
-				SpawnDamage (TE_BLOOD, point, normal, take);
-		}
+		if ((targ->svflags & SVF_MONSTER) || (client))
+			SpawnDamage (TE_BLOOD, point, normal, take);
 		else
 			SpawnDamage (te_sparks, point, normal, take);
 

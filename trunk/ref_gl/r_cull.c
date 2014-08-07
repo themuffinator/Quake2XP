@@ -163,7 +163,7 @@ qboolean R_CullSphere( const vec3_t centre, const float radius)
 	return false;
 }
 
-qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p)
+qboolean BoundsIntersectsPoint(vec3_t mins, vec3_t maxs, vec3_t p)
 {
 	if (p[0] > maxs[0]) return false;
 	if (p[1] > maxs[1]) return false;

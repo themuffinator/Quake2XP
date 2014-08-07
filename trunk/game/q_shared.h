@@ -719,7 +719,7 @@ typedef struct
 //ROGUE
 
 
-#define EF_DISTORT			0x80000000
+#define EF_FLASHLIGHT		0x80000000
 
 
 // entity_state_t->renderfx flags
@@ -1200,7 +1200,7 @@ typedef enum
 #define DF_NO_NUKES			0x00080000
 #define DF_NO_SPHERES		0x00100000
 //ROGUE
-#define DF_FLASHLIGHT			0x00800000
+#define DF_FLASHLIGHT		0x00800000
 #define DF_UT_DOUBLE_JUMP	0x01000000
 
 /*

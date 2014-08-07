@@ -59,7 +59,7 @@
     <UseIntelTBB>true</UseIntelTBB>
     <InstrumentIntelTBB>true</InstrumentIntelTBB>
     <UseIntelMKL>Parallel</UseIntelMKL>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -782,7 +782,6 @@
     </ClCompile>
     <ClCompile Include="qcommon\q_parser.c" />
     <ClCompile Include="ref_gl\r_cull.c" />
-    <ClCompile Include="ref_gl\r_fbo.c" />
     <ClCompile Include="ref_gl\r_lightMan.c" />
     <ClCompile Include="ref_gl\r_lightMaps.c" />
     <ClCompile Include="ref_gl\r_program.c" />

@@ -1777,53 +1777,47 @@ void GL_SetupCubeMapMatrix(qboolean model)
 	qglMatrixMode(GL_MODELVIEW);
 }
 
-/*
-extern int	occ_framecount;
 
 qboolean R_DrawLightOccluders()
 {
 	vec3_t		v[8];
 	vec3_t		tmpOrg;
 	vec3_t		radius;
-	int			sampleCount;
+	int			sampleCount, ready;
 	int			id;
 	unsigned	defBits = 0;
 
-	if(!r_useLightOccluders->value)
+	if (!r_useLightOccluders->value)
 		return true;
 	
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if (!currentShadowLight->isStatic)
 		return true;
 	
-	if(!currentShadowLight->isStatic)
-		return true;
-	
-	if(BoundsAndSphereIntersect (currentShadowLight->mins, currentShadowLight->maxs, r_origin, 0))
+	if (BoundsIntersectsPoint(currentShadowLight->mins, currentShadowLight->maxs, r_origin))
 		return true;
 	
 	// setup program
 	GL_BindProgram(nullProgram, defBits);
 	id = nullProgram->id[defBits];
 
-	qglColorMask(0,0,0,0);
+	qglColorMask(0, 0, 0, 0);
 	qglDisable(GL_TEXTURE_2D);
 	qglDisable(GL_CULL_FACE);
 	qglDisable(GL_BLEND);
-	qglDisable(GL_STENCIL_TEST);
-	
-	currentShadowLight->framecount = occ_framecount;
 
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 	VectorScale(currentShadowLight->radius, r_occLightBoundsSize->value, radius);
 
-	VectorSet(v[0], tmpOrg[0]-radius[0], tmpOrg[1]-radius[1], tmpOrg[2]-radius[2]);
-	VectorSet(v[1], tmpOrg[0]-radius[0], tmpOrg[1]-radius[1], tmpOrg[2]+radius[2]);
-	VectorSet(v[2], tmpOrg[0]-radius[0], tmpOrg[1]+radius[1], tmpOrg[2]-radius[2]);
-	VectorSet(v[3], tmpOrg[0]-radius[0], tmpOrg[1]+radius[1], tmpOrg[2]+radius[2]);
-	VectorSet(v[4], tmpOrg[0]+radius[0], tmpOrg[1]-radius[1], tmpOrg[2]-radius[2]);
-	VectorSet(v[5], tmpOrg[0]+radius[0], tmpOrg[1]-radius[1], tmpOrg[2]+radius[2]);
-	VectorSet(v[6], tmpOrg[0]+radius[0], tmpOrg[1]+radius[1], tmpOrg[2]-radius[2]);
-	VectorSet(v[7], tmpOrg[0]+radius[0], tmpOrg[1]+radius[1], tmpOrg[2]+radius[2]);
+	VectorSet(v[0], tmpOrg[0] - radius[0], tmpOrg[1] - radius[1], tmpOrg[2] - radius[2]);
+	VectorSet(v[1], tmpOrg[0] - radius[0], tmpOrg[1] - radius[1], tmpOrg[2] + radius[2]);
+	VectorSet(v[2], tmpOrg[0] - radius[0], tmpOrg[1] + radius[1], tmpOrg[2] - radius[2]);
+	VectorSet(v[3], tmpOrg[0] - radius[0], tmpOrg[1] + radius[1], tmpOrg[2] + radius[2]);
+	VectorSet(v[4], tmpOrg[0] + radius[0], tmpOrg[1] - radius[1], tmpOrg[2] - radius[2]);
+	VectorSet(v[5], tmpOrg[0] + radius[0], tmpOrg[1] - radius[1], tmpOrg[2] + radius[2]);
+	VectorSet(v[6], tmpOrg[0] + radius[0], tmpOrg[1] + radius[1], tmpOrg[2] - radius[2]);
+	VectorSet(v[7], tmpOrg[0] + radius[0], tmpOrg[1] + radius[1], tmpOrg[2] + radius[2]);
+	
+	currentShadowLight->framecount = occ_framecount;
 
 	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
 
@@ -1848,26 +1842,30 @@ qboolean R_DrawLightOccluders()
 	qglVertex3fv(v[2]);
 	qglVertex3fv(v[0]);
 	qglEnd();
-	
+
 	qglEndQueryARB(gl_state.query_passed);
 
-	qglColorMask(1,1,1,1);
+	qglColorMask(1, 1, 1, 1);
 	qglEnable(GL_TEXTURE_2D);
 	qglEnable(GL_CULL_FACE);
 	qglEnable(GL_BLEND);
-	qglEnable(GL_STENCIL_TEST);
 	GL_BindNullProgram();
+	
+	if (currentShadowLight->framecount == occ_framecount - 1)
+	do{
+		qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_AVAILABLE_ARB, &ready);
+	} while (!ready);
 
-//	if (currentShadowLight->framecount == occ_framecount-1)
-		qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
+	if (ready)
+	qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
 
-	if (!sampleCount) 
+	if (!sampleCount)
 		return false;
 	else 
 		return true;
 
 }
-*/
+
 
 void R_LightScale(void) {
 	float	val;

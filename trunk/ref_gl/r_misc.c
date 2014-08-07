@@ -118,8 +118,7 @@ void CreateDepthTexture(void){
 
 	depthMap = image;
 
-
-	 // create depth texture
+	// create depth texture
    
     qglBindTexture   ( GL_TEXTURE_RECTANGLE_ARB, depthMap->texnum );
     qglTexParameteri ( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -127,8 +126,8 @@ void CreateDepthTexture(void){
 	qglTexParameteri ( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST ); // rectangle!
     qglTexParameteri ( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); // rectangle!
 
-    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_DEPTH_COMPONENT, vid.width, vid.height, 0,
-                       GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL );
+	qglTexImage2D(	GL_TEXTURE_RECTANGLE_ARB, 0, GL_DEPTH_COMPONENT24, vid.width, vid.height, 0,
+                    GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL );
 
 }
 
@@ -176,10 +175,123 @@ void CreateScreenRect(void){
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0,
+    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA16F, vid.width, vid.height, 0,
                        GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
 }
+
+#define _R_FB_Check();		FB_Check(__FILE__, __LINE__);
+
+/*
+=============
+R_FB_Check
+
+Framebuffer must be bound.
+=============
+*/
+/*
+static void FB_Check(const char *file, const int line) {
+	const char	*s;
+	GLenum		code;
+
+	code = qglCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	// an error occured
+	switch (code) {
+	case GL_FRAMEBUFFER_COMPLETE:
+		return;
+	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+		s = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+		s = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+		s = "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+		s = "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+		s = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+		break;
+	case GL_FRAMEBUFFER_UNSUPPORTED:
+		s = "GL_FRAMEBUFFER_UNSUPPORTED";
+		break;
+	case GL_FRAMEBUFFER_UNDEFINED:
+		s = "GL_FRAMEBUFFER_UNDEFINED";
+		break;
+	}
+
+	Com_Printf("R_FB_Check: %s, line %i: %s\n", file, line, s);
+}
+image_t *occlusionMap;
+static GLenum drawbuffer[] = {GL_COLOR_ATTACHMENT0};
+
+void CreateOcclusionBuffer(void){
+
+	int			i;
+	char		name[19] = "***occlusionMap***";
+	image_t		*image;
+	qboolean	statusOK;
+	uint		rb;
+	// find a free image_t
+	for (i = 0, image = gltextures; i<numgltextures; i++, image++)
+	{
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures)
+	{
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy(image->name, name);
+
+	image->width = vid.width;
+	image->height = vid.height;
+	image->upload_width = vid.width;
+	image->upload_height = vid.height;
+	image->type = it_pic;
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+
+	occlusionMap = image;
+
+	// attach screen texture
+
+	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, occlusionMap->texnum);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width / 4, vid.height / 4, 0,
+					GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	qglGenRenderbuffers(1, &rb);
+	qglBindRenderbuffer(GL_RENDERBUFFER, rb);
+	qglRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width , vid.height);
+	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	qglGenFramebuffers(1, &gl_state.fboId);
+	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
+	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb);
+//	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gl_state.dpsId);
+//	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, occlusionMap->texnum, 0);
+
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (statusOK)
+		Com_Printf(""S_COLOR_YELLOW"create depth-stencil FBO\n");
+
+	qglDrawBuffers(1, drawbuffer);
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+*/
 
 image_t *shadowMask;
 
@@ -696,7 +808,6 @@ void R_InitEngineTextures(void)
 	CreateScreenRect();
 	CreateShadowMask();
 	CreateAttenuation();
-	CreateWeaponRect();
 }
 
 

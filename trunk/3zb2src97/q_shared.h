@@ -673,8 +673,6 @@ typedef struct {
 #define EF_TRACKERTRAIL		0x80000000
 //ROGUE
 
-#define EF_DISTORT			0x80000000
-
 // entity_state_t->renderfx flags
 #define	RF_MINLIGHT			1		// allways have some light (viewmodel)
 #define	RF_VIEWERMODEL		2		// don't draw through eyes, only mirrors

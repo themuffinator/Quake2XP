@@ -491,7 +491,7 @@ void R_InitLightgrid2(void)
 					goto next;
 			}
 
-			if (intersectsBoxPoint(light->mins, light->maxs, point)) {
+			if (BoundsIntersectsPoint(light->mins, light->maxs, point)) {
 				
 				for (i = 0; i < 3; i++) {
 					

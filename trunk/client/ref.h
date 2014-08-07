@@ -74,6 +74,7 @@ typedef unsigned short		ushort;
 typedef ushort				index_t;
 typedef unsigned int		uint;
 
+
 typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh
 	float angles[3];
@@ -218,8 +219,11 @@ typedef struct image_s {
 	float		picScale_w;		
 	float		picScale_h;		
 	index_t		*index;	
-	
-	float parallaxScale, specularScale, SpecularExp, envScale;
+	uint		target, id;
+	float		parallaxScale, 
+				specularScale, 
+				SpecularExp, 
+				envScale;
 
 } image_t;
 
@@ -410,6 +414,24 @@ typedef struct {
 typedef vec3_t	mat3_t[3];		// column-major (axis)
 typedef vec4_t	mat4_t[4];		// row-major
 
+
+#define	MAX_FRAME_BUFFERS	32
+
+typedef struct {
+	unsigned int	format;
+	unsigned int	id;
+	int				width;
+	int				height;
+
+} rbo_t;
+
+typedef struct {
+	char			name[MAX_QPATH];
+	int				index;	// in rg.fbs
+	unsigned int	id;
+
+} fbo_t;
+
 typedef struct {
 	vec2_t	depthParms;
 	int		x, y, width, height;	// in virtual screen coordinates
@@ -447,6 +469,13 @@ typedef struct {
 
 	int numDecals;
 	decals_t *decals;
+
+	int			numFBs;
+	fbo_t		*fbs[MAX_FRAME_BUFFERS];
+	fbo_t		*screenFB;
+	fbo_t		*hdrFB;
+	image_t		*depthBufferImage;	// depth24-stencil8 format
+	image_t		*colorBufferImage; //  screen texture
 
 } refdef_t;
 

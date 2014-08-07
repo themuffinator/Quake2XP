@@ -61,7 +61,7 @@ refdef_t r_newrefdef;
 glwstate_t glw_state;
 
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
-int			occ_framecount;
+int	occ_framecount;
 
 int GL_MsgGLError(char* Info)
 {
@@ -332,7 +332,7 @@ void R_SetupFrame(void)
 	mleaf_t *leaf;
 
 	r_framecount++;
-//	occ_framecount++;
+	occ_framecount++;
 
 	// build the transformation matrix for the given view angles
 	VectorCopy(r_newrefdef.vieworg, r_origin);
@@ -641,36 +641,6 @@ next:
 	
 }
 
-void R_DrawPlayerWeaponFBO(void)
-{
-	int i;
-
-	if (!r_drawEntities->value)
-		return;
-
-	qglBindFramebuffer	(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
-	qglClear			(GL_COLOR_BUFFER_BIT);
-
-	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
-		{
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		
-		if (!currentmodel)
-			continue;
-		
-		if (currentmodel->type != mod_alias)
-			continue;
-		
-		if (!(currententity->flags & RF_WEAPONMODEL))
-			continue;
-		
-		R_DrawAliasModel(currententity, true);
-		}
-
-	qglBindFramebuffer	(GL_FRAMEBUFFER, 0);
-
-}
 
 void R_DrawPlayerWeaponLightPass(void)
 {
@@ -734,7 +704,7 @@ void R_DrawLightInteractions(void)
 
 	if(r_pplWorld->value < 2 && currentShadowLight->isStatic && !currentShadowLight->isNoWorldModel)
 		continue;
-	
+
 	if(currentShadowLight->isFog){
 		qglDisable(GL_STENCIL_TEST);
 		qglDisable(GL_SCISSOR_TEST);
@@ -755,6 +725,9 @@ void R_DrawLightInteractions(void)
 	qglClearStencil(128);
 	qglStencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
+
+//	if (!R_DrawLightOccluders())
+//		continue;
 
 	R_DebugScissors();
 
@@ -789,7 +762,6 @@ void R_DrawLightInteractions(void)
 			R_DrawAliasModelLightPass(false);
 		}
 	num_visLights++;
-
 	}
 	}
 	
@@ -880,7 +852,6 @@ void R_RenderView(refdef_t * fd)
 
 	R_RenderFlares();
 	R_LightScale();
-//	R_DrawPlayerWeaponFBO();
 	R_CaptureColorBuffer();
 	R_DrawAlphaPoly();
 	R_DrawParticles();
@@ -969,23 +940,6 @@ extern worldShadowLight_t *selectedShadowLight;
 void R_MotionBlur (void);
 void R_DrawFullScreenQuad();
 
-void R_DrawFbo (void) {
-	
-	unsigned	defBits = 0;
-	int			id;
-
-	// setup program
-	GL_BindProgram(FboProgram, defBits);
-	id = FboProgram->id[defBits];
-
-	qglUniform1i			(qglGetUniformLocation(id, "u_fboTex"), 0);
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-	GL_BindRect				(gl_state.fbo_color0->texnum);
-
-	R_DrawFullScreenQuad();
-	
-	GL_BindNullProgram();
-}
 
 void R_RenderFrame(refdef_t * fd, qboolean client)
 {
@@ -1253,7 +1207,6 @@ void R_RegisterCvars(void)
 	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "12", CVAR_ARCHIVE);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0", 0);
-	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
@@ -1274,7 +1227,7 @@ void R_RegisterCvars(void)
 	r_radar =							Cvar_Get("r_radar", "0", CVAR_ARCHIVE);
 	
 	r_arbSamples =						Cvar_Get("r_arbSamples", "1", CVAR_ARCHIVE);
-	r_nvSamplesCoverange =				Cvar_Get("r_nvSamplesCoverange", "8", CVAR_ARCHIVE);
+//	r_nvSamplesCoverange =				Cvar_Get("r_nvSamplesCoverange", "8", CVAR_ARCHIVE);
 	r_fxaa =							Cvar_Get("r_fxaa", "0", CVAR_ARCHIVE);
 
 	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);
@@ -1460,9 +1413,9 @@ static void DevIL_Init() {
 R_Init
 ===============
 */
-//int GL_QueryBits;
+int GL_QueryBits;
 //int flareQueries[MAX_WORLD_SHADOW_LIHGTS];
-//int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
+int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 
 int R_Init(void *hinstance, void *hWnd)
 {
@@ -1639,8 +1592,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 	gl_state.depthBoundsTest = false;
 	}
-
-/*
+	/*
 	gl_state.arb_occlusion = false;
 	gl_state.arb_occlusion2 = false;
 	if (strstr(gl_config.extensions_string, "GL_ARB_occlusion_query")) {
@@ -1659,7 +1611,7 @@ int R_Init(void *hinstance, void *hWnd)
 		qglGetQueryivARB(GL_SAMPLES_PASSED_ARB, GL_QUERY_COUNTER_BITS_ARB, &GL_QueryBits);
 		
 		if (GL_QueryBits) {
-			qglGenQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
+	//		qglGenQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
 			qglGenQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
 
 			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " occlusion query bits\n", GL_QueryBits);
@@ -1682,8 +1634,8 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query not found\n");
 		gl_state.arb_occlusion = false;
 	}
-*/
 
+*/
 	gl_state.nPot = false;
 	if (strstr
 		(gl_config.extensions_string, "GL_ARB_texture_non_power_of_two")) {
@@ -1756,9 +1708,9 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 	}
 
-	gl_state.conditional_render = false;
+/*	gl_state.conditional_render = false;
 			
-/*	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
+	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
 	glEndConditionalRenderNV	= (PFNGLENDCONDITIONALRENDERNVPROC)		qwglGetProcAddress("glEndConditionalRenderNV");
 
 	glBeginConditionalRender	= (PFNGLBEGINCONDITIONALRENDERPROC)		qwglGetProcAddress("glBeginConditionalRender");
@@ -1772,7 +1724,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_conditional_render not found\n");
 		gl_state.conditional_render = false;		
 	}
-*/
+
 	if (strstr(gl_config.extensions_string, "GL_ARB_draw_buffers")) {
 		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
 		
@@ -1819,12 +1771,11 @@ int R_Init(void *hinstance, void *hWnd)
 		qglGetFramebufferAttachmentParameteriv =	(PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC) qwglGetProcAddress("glGetFramebufferAttachmentParameteriv");
 		qglGenerateMipmap =							(PFNGLGENERATEMIPMAPPROC) qwglGetProcAddress("glGenerateMipmap");
 		qglBlitFramebuffer =						(PFNGLBLITFRAMEBUFFERPROC) qwglGetProcAddress("glBlitFramebuffer");
-		Create_FBO();
 	}
 	else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_framebuffer_object not found\n");
 	}
-
+*/
 	gl_state.glsl = false;	
 	if ( strstr( gl_config.extensions_string, "GL_ARB_shading_language_100" ) )
 	{
@@ -1904,11 +1855,8 @@ int R_Init(void *hinstance, void *hWnd)
 	qglUniformMatrix2fv =			(PFNGLUNIFORMMATRIX2FVPROC)			qwglGetProcAddress("glUniformMatrix2fv");
 	qglUniformMatrix3fv =			(PFNGLUNIFORMMATRIX3FVPROC)         qwglGetProcAddress("glUniformMatrix3fv");
 	qglUniformMatrix4fv =			(PFNGLUNIFORMMATRIX4FVPROC)			qwglGetProcAddress("glUniformMatrix4fv");
-	
 
 	R_InitPrograms();
-	
-		
 	}
 
 	}
@@ -1968,6 +1916,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("unselectLight");
 	Cmd_RemoveCommand("editFlare");
 	Cmd_RemoveCommand("resetFlarePos");
+
 	Mod_FreeAll();
 	GL_ShutdownImages();
 
@@ -1990,11 +1939,6 @@ void R_Shutdown(void)
 	qglDeleteBuffers(1, &gl_state.vbo_Dynamic);
 	qglDeleteBuffers(1, &gl_state.ibo_Dynamic);
 	qglDeleteBuffers(1, &gl_state.vbo_BSP);
-
-	qglDeleteFramebuffers(1, &gl_state.fbo_weaponMask);
-	qglDeleteFramebuffers(1, &gl_state.fbo_base);
-	
-	qglDeleteRenderbuffers(1, &gl_state.rbo_depthStencil);
 }
 
 

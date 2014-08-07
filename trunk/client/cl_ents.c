@@ -932,6 +932,66 @@ void CL_AddPacketEntities(frame_t * frame)
 			}
 		}
 
+		if (effects & EF_FLASHLIGHT){
+			entity_t		player_gun;
+			static vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, right, up;
+			frame_t			*oldframe;
+			player_state_t	*ps, *ops;
+			extern cvar_t	*hand;
+			int				y, z;
+
+			if (s1->number == cl.playernum + 1)
+			{
+				// dublicate player weapon info here
+				ps = &cl.frame.playerstate;
+				y = (cl.frame.serverframe - 1) & UPDATE_MASK;
+				oldframe = &cl.frames[y];
+				if (oldframe->serverframe != cl.frame.serverframe - 1 || !oldframe->valid)
+					oldframe = &cl.frame;		// previous frame was dropped or invalid
+				ops = &oldframe->playerstate;
+
+				memset(&player_gun, 0, sizeof(player_gun));
+				if (gun_model)
+					player_gun.model = gun_model;	// development tool
+				else
+					player_gun.model = cl.model_draw[ps->gunindex];
+
+				for (z = 0; z < 3; z++) {
+					player_gun.origin[z] = cl.refdef.vieworg[z] + ops->gunoffset[z] + cl.lerpfrac * (ps->gunoffset[z] - ops->gunoffset[z]);
+					player_gun.angles[z] = cl.refdef.viewangles[z] + LerpAngle(ops->gunangles[z], ps->gunangles[z], cl.lerpfrac);
+				}
+
+				AngleVectors(player_gun.angles, forward, right, up);
+
+				// set up flashlight position
+				for (i = 0; i < 3; i++)
+					flashlightDirection[i] = cl.refdef.viewangles[i] + LerpAngle(ops->gunangles[i], ps->gunangles[i], cl.lerpfrac);
+
+				VectorMA(cl.refdef.vieworg, 25, forward, flashLightOrigin);
+
+				if (hand->value == 2)
+					VectorMA(flashLightOrigin, 1, right, flashLightOrigin); //center
+				else
+				if (hand->value == 1)
+					VectorMA(flashLightOrigin, -10, right, flashLightOrigin); //left
+				else
+					VectorMA(flashLightOrigin, 10, right, flashLightOrigin); //right
+
+				V_AddLight(flashLightOrigin, 1024, 1, 1, 1, flashlightDirection, 0.5, 33);
+			}
+			else{
+			
+				VectorCopy(ent.angles, tmpAngles);
+				AngleVectors(tmpAngles, forward, up, NULL);
+
+				VectorMA(ent.origin, 6, forward, flashLightOrigin);
+				VectorMA(flashLightOrigin, -6, up, flashLightOrigin);
+
+				V_AddLight(flashLightOrigin, 1024, 0.9, 0.9, 0.2, tmpAngles, 0.5, 33);
+
+			}
+		}
+
 		// ***It's Me!!!!!!***//
 		if (s1->number == cl.playernum + 1) {
 			ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
@@ -961,12 +1021,32 @@ void CL_AddPacketEntities(frame_t * frame)
 				V_AddLight(ent.origin, 225, 1.0, 0.1, 0.1, vec3_origin, 0 ,0);
 			else if (effects & EF_FLAG2)
 				V_AddLight(ent.origin, 225, 0.1, 0.1, 1.0, vec3_origin, 0 ,0);
-			else if (effects & EF_TAGTRAIL)
-				V_AddLight(ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0 ,0);
-			else if (effects & EF_TRACKERTRAIL)
-				V_AddLight(ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0 ,0);
-
+			
+			if (net_compatibility->value){
+				if (effects & EF_TAGTRAIL)
+					V_AddLight(ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
+				else if (effects & EF_TRACKERTRAIL)
+					V_AddLight(ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+			}
 		}
+	/*	else{
+		
+			if (effects & EF_FLASHLIGHT){
+				static vec3_t	tmpAngles, flashlightDirection, flashLightOrigin, forward, up;
+				
+				VectorCopy(ent.angles, tmpAngles);
+				AngleVectors(tmpAngles, forward, up, NULL);
+
+				VectorMA(ent.origin, 16, forward, flashlightDirection);
+				VectorMA(flashlightDirection, -8, up, flashlightDirection);
+
+				V_AddLight(flashLightOrigin, 1024, 0.7, 1, 0.7, flashlightDirection, 0.5, 33);
+			}
+
+		} */
+
+
+
 		// if set to invisible, skip
 		if (!s1->modelindex)
 			continue;
@@ -985,14 +1065,15 @@ void CL_AddPacketEntities(frame_t * frame)
 			ent.alpha = 0.6;
 		}
 
-		
-		if (effects & EF_SPHERETRANS) {
-			ent.flags |= RF_TRANSLUCENT;
-			// PMM - *sigh* yet more EF overloading
-			if (effects & EF_TRACKERTRAIL)
-				ent.alpha = 0.6;
-			else
-				ent.alpha = 0.3;
+		if (net_compatibility->value){
+			if (effects & EF_SPHERETRANS) {
+				ent.flags |= RF_TRANSLUCENT;
+				// PMM - *sigh* yet more EF overloading
+				if (effects & EF_TRACKERTRAIL)
+					ent.alpha = 0.6;
+				else
+					ent.alpha = 0.3;
+			}
 		}
 //pmm
 
@@ -1032,10 +1113,12 @@ next:
 				V_AddLight(ent.origin, 225, 1.0, 0.1, 0.1, vec3_origin, 0 ,0);
 			else if (effects & EF_FLAG2)
 				V_AddLight(ent.origin, 225, 0.1, 0.1, 1.0, vec3_origin, 0 ,0);
-			else if (effects & EF_TAGTRAIL)
-				V_AddLight(ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0 ,0);
-			else if (effects & EF_TRACKERTRAIL)
-				V_AddLight(ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0 ,0);
+			if (net_compatibility->value){
+				if (effects & EF_TAGTRAIL)
+					V_AddLight(ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
+				else if (effects & EF_TRACKERTRAIL)
+					V_AddLight(ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+			}
 		//	ent.origin[2]-=56;
 			if (renderfx & RF_SHELL_HALF_DAM) {
 				if (Developer_searchpath(2) == 2) {
@@ -1130,16 +1213,6 @@ next:
 				ent.flags = RF_TRANSLUCENT;
 			}
 			
-			if(cl_thirdPerson->value && dm_flag & DF_FLASHLIGHT){
-			vec3_t	frw,up, flOrg, lAngles;
-			
-			VectorCopy(ent.angles, lAngles);
-			AngleVectors(lAngles, frw, up, NULL);
-			VectorMA(ent.origin, 16, frw, flOrg);
-			VectorMA(flOrg, -8, up, flOrg);
-			V_AddLight (flOrg, 1024, 1,1,1, lAngles, 0.5, 33);	
-			}
-
 			// pmm
 			V_AddEntity(&ent);
 
@@ -1215,20 +1288,24 @@ next:
 			else if (effects & EF_BLASTER) {
 //              CL_BlasterTrail (cent->lerp_origin, ent.origin);
 //PGM
-				if (effects & EF_TRACKER)	// lame... problematic?
-				{
-					CL_BlasterTrail(cent->lerp_origin, ent.origin);
-					V_AddLight(ent.origin, 200, 0, 1, 0, vec3_origin, 0 ,0);
-				} else {
+				if (net_compatibility->value){
+					if (effects & EF_TRACKER)	// lame... problematic?
+					{
+						CL_BlasterTrail(cent->lerp_origin, ent.origin);
+						V_AddLight(ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0);
+					}
+				}
+				else {
 					CL_BlasterTrail(cent->lerp_origin, ent.origin);
 					CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
 					V_AddLight(ent.origin, 200, 1, 1, 0, vec3_origin, 0 ,0);
 				}
 //PGM
 			} else if (effects & EF_HYPERBLASTER) {
-				if (effects & EF_TRACKER)	// PGM overloaded for
-											// blaster2.
-					V_AddLight(ent.origin, 200, 0, 1, 0, vec3_origin, 0 ,0);	// PGM
+				if (net_compatibility->value){
+					if (effects & EF_TRACKER)	// PGM overloaded for blaster2.
+						V_AddLight(ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0);	// PGM
+					}
 				else			// PGM
 					V_AddLight(ent.origin, 200, 1, 1, 0, vec3_origin, 0 ,0);
 
@@ -1271,32 +1348,30 @@ next:
 			}
 //======
 //ROGUE
-			else if (effects & EF_TAGTRAIL) {
-				CL_TagTrail(cent->lerp_origin, ent.origin, 220);
-				V_AddLight(ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0 ,0);
-			} else if (effects & EF_TRACKERTRAIL) {
-				if (effects & EF_TRACKER) {
-					float intensity;
+			if (net_compatibility->value){
 
-					intensity = 50 + (500 * (sin(cl.time / 500.0) + 1.0));
-					// FIXME - check out this effect in rendition
-					if (vidref_val == VIDREF_GL)
-						V_AddLight(ent.origin, intensity, -1.0, -1.0,
-								   -1.0, vec3_origin, 0 ,0);
-					else
-						V_AddLight(ent.origin, -1.0 * intensity, 1.0, 1.0,
-								   1.0, vec3_origin, 0 ,0);
-				} else {
-					CL_Tracker_Shell(cent->lerp_origin);
-					V_AddLight(ent.origin, 155, -1.0, -1.0, -1.0, vec3_origin, 0 ,0);
+				if (effects & EF_TAGTRAIL) {
+					CL_TagTrail(cent->lerp_origin, ent.origin, 220);
+					V_AddLight(ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
 				}
-			} else if (effects & EF_TRACKER) {
-				CL_TrackerTrail(cent->lerp_origin, ent.origin, 0);
-				// FIXME - check out this effect in rendition
-				if (vidref_val == VIDREF_GL)
-					V_AddLight(ent.origin, 200, -1, -1, -1, vec3_origin, 0 ,0);
-				else
-					V_AddLight(ent.origin, -200, 1, 1, 1, vec3_origin, 0 ,0);
+				if (effects & EF_TRACKERTRAIL) {
+					if (effects & EF_TRACKER) {
+						float intensity;
+
+						intensity = 50 + (500 * (sin(cl.time / 500.0) + 1.0));
+						// FIXME - check out this effect in rendition
+							V_AddLight(ent.origin, intensity, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+					}
+					else {
+						CL_Tracker_Shell(cent->lerp_origin);
+						V_AddLight(ent.origin, 155, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+					}
+				}
+				if (effects & EF_TRACKER) {
+					CL_TrackerTrail(cent->lerp_origin, ent.origin, 0);
+					// FIXME - check out this effect in rendition
+					V_AddLight(ent.origin, 200, -1, -1, -1, vec3_origin, 0, 0);
+				}
 			}
 //ROGUE
 //======
@@ -1352,7 +1427,6 @@ void CL_AddViewWeapon(player_state_t * ps, player_state_t * ops)
 	int i;
 	vec3_t fv, rv, up;
 	int pnum;					// c14 add shell to view model
-	vec3_t flOrg, lAngles;
 	entity_state_t *s1;
 	int dm_flag;
 	dm_flag = Cvar_VariableValue("dmflags");
@@ -1393,27 +1467,7 @@ void CL_AddViewWeapon(player_state_t * ps, player_state_t * ops)
 
 	VectorMA(smoke_puff, 3, rv, smoke_puff);
 	VectorMA(shell_puff, 5, rv, shell_puff);
-
-
-	if(dm_flag & DF_FLASHLIGHT){
 	
-	// set up flashlight position
-	for (i=0 ; i<3 ; i++)
-		lAngles[i] = cl.refdef.viewangles[i] + LerpAngle (ops->gunangles[i], ps->gunangles[i], cl.lerpfrac);
-	
-	VectorMA(cl.refdef.vieworg, 25, fv, flOrg);
-
-	if (hand->value==2)// center
-		VectorMA(flOrg, 1, rv, flOrg);
-	else
-	if (hand->value==1)//left
-		VectorMA(flOrg, -10, rv, flOrg);
-	else
-		VectorMA(flOrg, 10, rv, flOrg); //right
-
-	V_AddLight (flOrg, 1024, 1,1,1, lAngles, 0.5, 33);	
-	}
-
 	if (gun_frame) {
 		gun.frame = gun_frame;	// development tool
 		gun.oldframe = gun_frame;	// development tool

@@ -552,7 +552,7 @@ void GL_BeginBuildingLightmaps(model_t * m)
 	
 	dummy = (byte*)Z_Malloc(LIGHTMAP_BYTES * LIGHTMAP_SIZE * LIGHTMAP_SIZE);
 	
-//	occ_framecount = r_framecount = 1;
+	occ_framecount = r_framecount = 1;
 
 	GL_SelectTexture( GL_TEXTURE1 );
 	qglEnable( GL_TEXTURE_2D );

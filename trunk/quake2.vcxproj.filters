@@ -282,9 +282,6 @@
     <ClCompile Include="ref_gl\r_lightMan.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_fbo.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\anorms.h">

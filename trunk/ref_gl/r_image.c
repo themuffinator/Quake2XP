@@ -1605,8 +1605,6 @@ void GL_FreeUnusedImages(void)
 	r_envTex->registration_sequence = registration_sequence;
 	atten3d_texture_object->registration_sequence = registration_sequence;
 
-	gl_state.fbo_color0->registration_sequence = registration_sequence;
-
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)
 			continue;			// used this sequence

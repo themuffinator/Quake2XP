@@ -828,13 +828,6 @@ void G_SetClientEffects (edict_t *ent)
 	if (ent->health <= 0 || level.intermissiontime)
 		return;
 	
-	if(deathmatch->value && ((int)dmflags->value & DF_FLASHLIGHT)){
-		if (!ent->waterlevel) 
-		ent->s.effects |= EF_DISTORT;
-		if(ent->health <= 20)
-		ent->s.effects &= ~EF_DISTORT;
-	} else{
-
 	if (ent->powerarmor_time > level.time)
 	{
 		pa_type = PowerArmorType (ent);
@@ -872,8 +865,21 @@ void G_SetClientEffects (edict_t *ent)
 	ent->s.renderfx |= RF_SHELL_GOD;
     
 	}
+
+	if (!net_compatibility->value){
 	
+		if (ent->flags & FL_FLASHLIGHT){
+
+			if (deathmatch->value){
+
+				if ((int)dmflags->value & DF_FLASHLIGHT)						
+					ent->s.effects |= EF_FLASHLIGHT;	
+			}
+			else															
+				ent->s.effects |= EF_FLASHLIGHT;
+		}
 	}
+	
 }
 
 

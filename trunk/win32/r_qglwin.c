@@ -622,7 +622,7 @@ PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC				qglRenderbufferStorageMultisample = N
 PFNGLFRAMEBUFFERTEXTURELAYERPROC					qglFramebufferTextureLayer = NULL;
 
 PFNGLDRAWBUFFERSARBPROC								qglDrawBuffers = NULL;
-
+PFNGLCLAMPCOLORARBPROC								qglClampColorARB = NULL;
 /*
 ** QGL_Shutdown
 **

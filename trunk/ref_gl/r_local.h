@@ -163,25 +163,26 @@ extern image_t *depthMap;
 image_t *r_particletexture[PT_MAX];
 image_t *r_decaltexture[DECAL_MAX];
 
-extern image_t *r_radarmap;
-extern image_t *r_around;
-extern image_t *r_flare;
+extern	image_t *r_radarmap;
+extern	image_t *r_around;
+extern	image_t *r_flare;
 
-extern image_t *draw_chars;
-extern image_t *r_DSTTex;
-extern image_t *r_blackTexture;
+extern	image_t *draw_chars;
+extern	image_t *r_DSTTex;
+extern	image_t *r_blackTexture;
 
-extern image_t	*r_defBump;
-extern image_t	*ScreenMap;
-extern image_t	*r_envTex;
-extern image_t	*shadowMask;
-extern image_t	*r_scanline;
-extern image_t	*atten3d_texture_object;
-extern image_t	*weaponHack;
-extern image_t *fxaaMap;
+extern	image_t	*r_defBump;
+extern	image_t	*ScreenMap;
+extern	image_t	*r_envTex;
+extern	image_t	*shadowMask;
+extern	image_t	*r_scanline;
+extern	image_t	*atten3d_texture_object;
+extern	image_t	*weaponHack;
+extern	image_t *fxaaMap;
+extern	image_t *occlusionMap;
 
 #define MAX_FILTERS 256
-extern image_t	*filtercube_texture_object[MAX_FILTERS];
+extern	image_t	*filtercube_texture_object[MAX_FILTERS];
 #define	MAX_GLOBAL_FILTERS	128
 
 extern entity_t *currententity;
@@ -450,7 +451,7 @@ void UpdateLightEditor(void);
 void Load_LightFile();
 void R_SetViewLightDepthBounds(); 
 void R_DebugScissors(void);
-qboolean intersectsBoxPoint(vec3_t mins, vec3_t maxs, vec3_t p);
+qboolean BoundsIntersectsPoint(vec3_t mins, vec3_t maxs, vec3_t p);
 extern int num_visLights;
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
@@ -471,7 +472,7 @@ void Mat4_Translate(mat4_t m, float x, float y, float z);
 void Mat4_Scale(mat4_t m, float x, float y, float z) ;
 qboolean Mat4_Invert(const mat4_t in, mat4_t out);
 
-void R_CheckFBO();
+extern int	occ_framecount;
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -677,13 +678,15 @@ typedef struct {
 	int			maxColorAttachments;
 	int			maxSamples;
 	int			maxDrawBuffers;
-	GLuint		fbo_weaponMask;
-
-	GLuint		rbo_depthStencil, rbo_depth, rbo_stencil, fbo_base;
-	image_t		*fbo_color0;
+	uint		fboId, dpsId;
 
 // ----------------------------------------------------------------
 } glstate_t;
+
+void GL_BindFB(fbo_t *fb);
+void R_FB_Init(void);
+void R_FB_Shutdown(void);
+void R_FB_List_f(void);
 
 #ifndef BIT
 #define BIT(num)				(1 << (num))

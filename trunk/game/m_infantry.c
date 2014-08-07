@@ -408,6 +408,8 @@ void infantry_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int dam
 {
 	int		n;
 
+	self->s.effects &= ~EF_FLASHLIGHT;		// заберем у монстра фонарик, ибо он разбился ))))
+
 // check for gib
 	if (self->health <= self->gib_health)
 	{
@@ -585,6 +587,10 @@ void SP_monster_infantry (edict_t *self)
 		G_FreeEdict (self);
 		return;
 	}
+	
+//	if (!net_compatibility->value)
+//	if ((int)dmflags->value & DF_FLASHLIGHT)	
+//		self->s.effects = EF_FLASHLIGHT;		
 
 	sound_pain1 = gi.soundindex ("infantry/infpain1.wav");
 	sound_pain2 = gi.soundindex ("infantry/infpain2.wav");

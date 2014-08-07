@@ -883,11 +883,6 @@ void G_SetClientEffects(edict_t * ent)
 	if (ent->health <= 0 || level.intermissiontime)
 		return;
 
-	if(deathmatch->value && ((int)dmflags->value & DF_FLASHLIGHT)){
-		if (!ent->waterlevel) 
-		ent->s.effects |= EF_DISTORT;
-	} else{
-
 	if (ent->powerarmor_time > level.time) {
 		pa_type = PowerArmorType(ent);
 		if (pa_type == POWER_ARMOR_SCREEN) {
@@ -943,7 +938,6 @@ void G_SetClientEffects(edict_t * ent)
 	if (ent->flags & FL_GODMODE) {
 		ent->s.effects |= EF_COLOR_SHELL;
 		ent->s.renderfx |= (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE);
-	}
 	}
 }
 
