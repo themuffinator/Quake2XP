@@ -39,7 +39,8 @@ vec3 normalMap =  normalize(texture2D(u_NormalMap, v_colorCoord.xy).rgb * 2.0 - 
 float specTmp = texture2D(u_NormalMap, v_colorCoord).a;
 #endif
 
-vec4 specular = vec4(specTmp) * u_specularScale;
+float specular = specTmp * u_specularScale;
+specular /= mix(0.5, 1.0, specular);
 
 vec4 u_attenMap = texture3D(u_attenMap ,v_AttenCoord);
 

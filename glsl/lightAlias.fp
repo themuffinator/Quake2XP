@@ -4,6 +4,7 @@ uniform samplerCube 	u_CubeFilterMap;
 uniform sampler3D	 	u_attenMap;
 
 uniform float           u_LightRadius;
+uniform float			u_specularScale;
 uniform vec4			u_LightColor;
 
 uniform float			u_fogDensity;
@@ -26,7 +27,10 @@ vec3 V = normalize(v_viewVec);
 
 vec3 N =  normalize(texture2D(u_bumpMap, v_texCoord).rgb * 2.0 - 1.0);
 float tmp = texture2D(u_bumpMap,   v_texCoord.xy).a;
-vec4 specular = vec4(tmp);
+
+float specular = tmp * u_specularScale;
+specular /= mix(0.5, 1.0, specular);
+
 vec4 diffuse  = texture2D(u_diffuseMap,  v_texCoord.xy);
 vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
 cubeFilter *= 2;

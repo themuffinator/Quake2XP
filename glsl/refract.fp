@@ -55,7 +55,7 @@ void main (void) {
 	gl_FragColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
 	gl_FragColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 	// blend glass texture
-//	diffuse *= u_ambientScale;
+	diffuse *= u_ambientScale;
 	gl_FragColor.xyz += diffuse.xyz * u_alpha;
 
 	#endif

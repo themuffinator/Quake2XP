@@ -51,12 +51,12 @@ gl_FragColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
 gl_FragColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.0).g;
 gl_FragColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 //blend water texture
-//diffuse *= u_ambientScale;
+diffuse *= u_ambientScale;
 gl_FragColor += vec4(diffuse.xyz , 1.0);
 
 #else
 
 // final color with out refract
-gl_FragColor = vec4(diffuse.rgb, 1.0);
+gl_FragColor = vec4(diffuse.rgb * u_ambientScale, 1.0);
 #endif
 }
