@@ -135,8 +135,8 @@ void R_DrawSpriteModel(entity_t * e)
 	// don't even bother culling, because it's just a single
 	// polygon without a surface cache
 
-	psprite = (dsprite_t *) currentmodel->extradata;
-	e->frame %= psprite->numframes;
+	psprite = (dsprite_t *) currentmodel->extraData;
+	e->frame %= psprite->numFrames;
 	frame = &psprite->frames[e->frame];
 
 	// normal sprite
@@ -198,8 +198,8 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	vec3_t		dist;
 	float		len;
 	
-	psprite = (dsprite_t *) currentmodel->extradata;
-	e->frame %= psprite->numframes;
+	psprite = (dsprite_t *) currentmodel->extraData;
+	e->frame %= psprite->numFrames;
 	frame = &psprite->frames[e->frame];
 
 	VectorSubtract(e->origin, r_origin, dist);
@@ -1258,12 +1258,13 @@ void R_RegisterCvars(void)
 	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
 	r_debugLightScissors =				Cvar_Get("r_debugLightScissors", "0", 0);
-//	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "0", CVAR_ARCHIVE);
+	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "0", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 //	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
 //	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
 //	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 	r_lightScale =						Cvar_Get("r_lightScale", "1", CVAR_ARCHIVE);
+	r_specularScale =					Cvar_Get("r_specularScale", "1", CVAR_ARCHIVE);
 
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 

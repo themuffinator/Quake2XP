@@ -43,25 +43,25 @@ void  RenderLavaSurfaces(msurface_t * surf)
 	glpoly_t	*p, *bp;
 	float		*v;
 	vec2_t		scale;
-	int			id, i, nv = surf->polys->numverts;
+	int			id, i, nv = surf->polys->numVerts;
 	unsigned	defBits = 0;
 
 	// setup program
 	GL_BindProgram(lavaProgram, defBits);
 	id = lavaProgram->id[defBits];
 
-	scale[0] = 4.0 / surf->texinfo->image->width;
-	scale[1] = 4.0 / surf->texinfo->image->height;
+	scale[0] = 4.0 / surf->texInfo->image->width;
+	scale[1] = 4.0 / surf->texInfo->image->height;
 	qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
-	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), surf->texinfo->image->upload_width, surf->texinfo->image->upload_height);
+	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), surf->texInfo->image->upload_width, surf->texInfo->image->upload_height);
 	qglUniform3fv(qglGetUniformLocation(id, "u_viewOrigin"), 1, r_origin);
 
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
-	GL_Bind(surf->texinfo->image->texnum);
+	GL_Bind(surf->texInfo->image->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 0);
-	GL_MBind(GL_TEXTURE1_ARB, surf->texinfo->normalmap->texnum);
+	GL_MBind(GL_TEXTURE1_ARB, surf->texInfo->normalmap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 1);
 
 	
@@ -81,24 +81,24 @@ void  RenderLavaSurfaces(msurface_t * surf)
 		p = bp;
 		c_brush_polys += (nv - 2);
 
-		for (i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE) {
+		for (i = 0, v = p->verts[0]; i < p->numVerts; i++, v += VERTEXSIZE) {
 
 			VectorCopy(v, wVertexArray[i]);
 
 			wTexArray[i][0] = v[3];
 			wTexArray[i][1] = v[4];
 			//normals
-			nTexArray[i][0] = surf->normal[0];
-			nTexArray[i][1] = surf->normal[1];
-			nTexArray[i][2] = surf->normal[2];
+			nTexArray[i][0] = v[7];
+			nTexArray[i][1] = v[8];
+			nTexArray[i][2] = v[9];
 			//tangents
-			tTexArray[i][0] = surf->tangent[0];
-			tTexArray[i][1] = surf->tangent[1];
-			tTexArray[i][2] = surf->tangent[2];
+			tTexArray[i][0] = v[10];
+			tTexArray[i][1] = v[11];
+			tTexArray[i][2] = v[12];
 			//binormals
-			bTexArray[i][0] = surf->binormal[0];
-			bTexArray[i][1] = surf->binormal[1];
-			bTexArray[i][2] = surf->binormal[2];
+			bTexArray[i][0] = v[13];
+			bTexArray[i][1] = v[14];
+			bTexArray[i][2] = v[15];
 		}
 
 		qglDrawElements(GL_TRIANGLES, surf->numIndices, GL_UNSIGNED_SHORT, surf->indices);
@@ -153,13 +153,13 @@ void R_DrawWaterPolygons(msurface_t * fa)
 {
 	glpoly_t	*p, *bp;
 	float		*v, dstscroll;
-	int			id, i, nv = fa->polys->numverts;
+	int			id, i, nv = fa->polys->numVerts;
 	unsigned	defBits = 0, texture = -1;
 	
 		
 	qglDisable(GL_BLEND);
 
-	if (fa->texinfo->flags & (SURF_TRANS33 | SURF_TRANS66)){
+	if (fa->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)){
 		defBits = worldDefs.WaterTransBits;
 	
 	}
@@ -171,7 +171,7 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	id = waterProgram->id[defBits];
 
 	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	GL_Bind						(fa->texinfo->image->texnum);
+	GL_Bind						(fa->texInfo->image->texnum);
 	qglUniform1i				(qglGetUniformLocation(id, "u_colorMap"), 0);
 
 	GL_SelectTexture			(GL_TEXTURE1_ARB);
@@ -213,7 +213,7 @@ void R_DrawWaterPolygons(msurface_t * fa)
 		p = bp;
 		c_brush_polys += (nv-2);
 
-	for (i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE) {
+	for (i = 0, v = p->verts[0]; i < p->numVerts; i++, v += VERTEXSIZE) {
 		
 		VectorCopy(v, wVertexArray[i]);
 			
@@ -448,10 +448,10 @@ void R_AddSkySurface(msurface_t * fa)
 
 	// calculate vertex values for sky box
 	for (p = fa->polys; p; p = p->next) {
-		for (i = 0; i < p->numverts; i++) {
+		for (i = 0; i < p->numVerts; i++) {
 			VectorSubtract(p->verts[i], r_origin, verts[i]);
 		}
-		ClipSkyPolygon(p->numverts, verts[0], 0);
+		ClipSkyPolygon(p->numVerts, verts[0], 0);
 	}
 }
 

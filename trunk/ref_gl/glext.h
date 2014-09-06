@@ -4519,7 +4519,7 @@ extern "C" {
 #define GL_DEPTH_STENCIL_TO_BGRA_NV       0x886F
 #endif
 
-#ifndef GL_ATI_envmap_bumpmap
+#ifndef GL_ATI_envMap_bumpmap
 #define GL_BUMP_ROT_MATRIX_ATI            0x8775
 #define GL_BUMP_ROT_MATRIX_SIZE_ATI       0x8776
 #define GL_BUMP_NUM_TEX_UNITS_ATI         0x8777
@@ -10381,8 +10381,8 @@ typedef void (APIENTRYP PFNGLVERTEXATTRIBS4UBVNVPROC) (GLuint index, GLsizei cou
 #define GL_NV_copy_depth_to_color 1
 #endif
 
-#ifndef GL_ATI_envmap_bumpmap
-#define GL_ATI_envmap_bumpmap 1
+#ifndef GL_ATI_envMap_bumpmap
+#define GL_ATI_envMap_bumpmap 1
 #ifdef GL_GLEXT_PROTOTYPES
 GLAPI void APIENTRY glTexBumpParameterivATI (GLenum pname, const GLint *param);
 GLAPI void APIENTRY glTexBumpParameterfvATI (GLenum pname, const GLfloat *param);

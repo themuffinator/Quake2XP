@@ -294,7 +294,7 @@ void R_DeformShadowVolume(entity_t * e)
 	if (!R_EntityInLightBounds())
 		return;
 
-	paliashdr = (dmdl_t *) currentmodel->extradata;
+	paliashdr = (dmdl_t *) currentmodel->extraData;
 
 	frame = (daliasframe_t *) ((byte *) paliashdr   + paliashdr->ofs_frames
 						        + currententity->frame *
@@ -508,7 +508,7 @@ void R_DrawBrushModelVolumes()
 	qboolean	shadow;
 
 	clmodel = currententity->model;
-	surf = &clmodel->surfaces[clmodel->firstmodelsurface];
+	surf = &clmodel->surfaces[clmodel->firstModelSurface];
 
 	if (!R_EntityInLightBounds())
 		return;
@@ -524,11 +524,11 @@ void R_DrawBrushModelVolumes()
 	
 	scale = currentShadowLight->len * 32;
 
-	for (i=0 ; i<clmodel->nummodelsurfaces ; i++, surf++)
+	for (i=0 ; i<clmodel->numModelSurfaces ; i++, surf++)
 		{
 
 
-		if (surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_FLOWING|SURF_DRAWTURB))
+		if (surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_FLOWING|SURF_DRAWTURB))
 			return;
 
 		dot = DotProduct(currentShadowLight->origin, surf->plane->normal) - surf->plane->dist;
@@ -545,7 +545,7 @@ void R_DrawBrushModelVolumes()
 		}
 			poly = surf->polys;
 
-				for (j=0 ; j<surf->numedges ; j++)
+				for (j=0 ; j<surf->numEdges ; j++)
 				{
 					VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
 					sca = scale/VectorLength(v1);
@@ -555,7 +555,7 @@ void R_DrawBrushModelVolumes()
 				}
 
 			//check if neighbouring polygons are shadowed
-			for (j=0 ; j<surf->numedges ; j++){
+			for (j=0 ; j<surf->numEdges ; j++){
 				shadow = false;
 
 				if (poly->neighbours[j] != NULL)
@@ -567,7 +567,7 @@ void R_DrawBrushModelVolumes()
 					shadow = true;
 
 				if(shadow){
-				jj = (j+1)%poly->numverts;
+				jj = (j+1)%poly->numVerts;
 				//we extend the shadow volumes by projecting 
 				//them on the light's sphere.
 				qglBegin(GL_QUADS);
@@ -582,13 +582,13 @@ void R_DrawBrushModelVolumes()
 
 			//Draw near light cap
 			qglBegin(GL_TRIANGLE_FAN);
-			for (j=0; j<surf->numedges ; j++)
+			for (j=0; j<surf->numEdges ; j++)
 				qglVertex3fv(poly->verts[j]);
 			qglEnd();
 
 			//Draw extruded cap
 			qglBegin(GL_TRIANGLE_FAN);
-			for (j=surf->numedges-1; j>=0 ; j--)
+			for (j=surf->numEdges-1; j>=0 ; j--)
 				qglVertex3fv(bcache[i][j]);
 			qglEnd();
 		}
@@ -605,11 +605,11 @@ qboolean R_MarkShadowSurf(msurface_t *surf)
 	glpoly_t	*poly;
 	float	lbbox[6], pbbox[6];
 
-	if (surf->texinfo->flags & (SURF_SKY))
+	if (surf->texInfo->flags & (SURF_SKY))
 		goto hack;
 
 	// add sky surfaces to shadow marking
-	if ((surf->texinfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
+	if ((surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
 		return false;
 hack:
 	plane = surf->plane;
@@ -689,7 +689,7 @@ void R_MarkShadowCasting (mnode_t *node)
 
 		surf = leaf->firstmarksurface;
 
-		for (c=0; c<leaf->nummarksurfaces; c++, surf++)
+		for (c=0; c<leaf->numMarkSurfaces; c++, surf++)
 		{
 			if (R_MarkShadowSurf ((*surf)))
 			{
@@ -750,7 +750,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
 			if (surf->polys->shadowTimestamp != shadowTimestamp)
                continue;
 			
-			for (j=0 ; j<surf->numedges ; j++)
+			for (j=0 ; j<surf->numEdges ; j++)
                 {
                 VectorCopy(poly->verts[j], vcache[vb*2+0]);
                 VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
@@ -772,7 +772,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
 		if (surf->polys->shadowTimestamp != shadowTimestamp)
                continue;
 
-		for (j=0 ; j<surf->numedges ; j++){
+		for (j=0 ; j<surf->numEdges ; j++){
                 shadow = false;
                 if (poly->neighbours[j] != NULL)
                 {
@@ -784,7 +784,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
  
                 if (shadow)
                 {
-                        int jj = (j+1)%poly->numverts;
+                        int jj = (j+1)%poly->numVerts;
  
                         icache[ib++] = j*2+0    +surfBase;
                         icache[ib++] = j*2+1    +surfBase;
@@ -797,7 +797,7 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
         }
  
         //Draw near light cap
-        for (j=0; j<surf->numedges-2 ; j++)
+        for (j=0; j<surf->numEdges-2 ; j++)
         {
                 icache[ib++] = 0         +surfBase;
                 icache[ib++] = (j+1)*2+0 +surfBase;
@@ -805,14 +805,14 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
         }
  
         //Draw extruded cap
-        for (j=0; j<surf->numedges-2 ; j++)
+        for (j=0; j<surf->numEdges-2 ; j++)
         {
                 icache[ib++] = 1         +surfBase;
                 icache[ib++] = (j+2)*2+1 +surfBase;
                 icache[ib++] = (j+1)*2+1 +surfBase;
         }
  
-                surfBase += surf->numedges*2;
+                surfBase += surf->numEdges*2;
         }
 
 

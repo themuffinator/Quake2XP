@@ -127,7 +127,7 @@ int RecursiveLightPoint(mnode_t * node, vec3_t start, vec3_t end)
 	msurface_t *surf;
 	int s, t, ds, dt;
 	int i;
-	mtexinfo_t *tex;
+	mtexInfo_t *tex;
 	byte *lightmap;
 	int maps;
 	int r;
@@ -171,7 +171,7 @@ int RecursiveLightPoint(mnode_t * node, vec3_t start, vec3_t end)
 		if (surf->flags & (SURF_DRAWTURB | SURF_DRAWSKY))
 			continue;			// no lightmaps
 
-		tex = surf->texinfo;
+		tex = surf->texInfo;
 
 		s = DotProduct(mid, tex->vecs[0]) + tex->vecs[0][3];
 		t = DotProduct(mid, tex->vecs[1]) + tex->vecs[1][3];;
@@ -254,7 +254,7 @@ void R_LightPoint(vec3_t p, vec3_t color)
 	trace_t trace;
 
 
-	if ((r_worldmodel && !r_worldmodel->lightdata) || !r_worldmodel)
+	if ((r_worldmodel && !r_worldmodel->lightData) || !r_worldmodel)
 	{
           color[0] = color[1] = color[2] = 1.0;
           return;
@@ -294,7 +294,7 @@ void R_LightPoint(vec3_t p, vec3_t color)
 
 	// dlight behind the wall
 	if (r_newrefdef.areabits){
-			trace = CM_BoxTrace(dl->origin, p, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+			trace = CM_BoxTrace(dl->origin, p, vec3_origin, vec3_origin, r_worldmodel->firstNode, MASK_OPAQUE);
 			if(trace.fraction != 1.0)
 			continue;
 	}
@@ -322,7 +322,7 @@ void R_InitLightgrid(void)
 
 	memset(r_lightgrid, 0, sizeof(r_lightgrid));
 
-	if (!r_worldmodel->lightdata)
+	if (!r_worldmodel->lightData)
 		return;
 
 	b = &r_lightgrid[0][0];
@@ -485,7 +485,7 @@ void R_InitLightgrid2(void)
 				goto next;
 
 			if (r_newrefdef.areabits){
-				trace = CM_BoxTrace(light->origin, point, vec3_origin, vec3_origin, r_worldmodel->firstnode, MASK_OPAQUE);
+				trace = CM_BoxTrace(light->origin, point, vec3_origin, vec3_origin, r_worldmodel->firstNode, MASK_OPAQUE);
 
 				if (trace.fraction != 1.0)
 					goto next;

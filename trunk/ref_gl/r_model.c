@@ -91,15 +91,15 @@ void GL_AddFlareSurface(msurface_t * surf)
 	int cluster;
 	char target[MAX_QPATH];
 
-	if (surf->texinfo->
+	if (surf->texInfo->
 		flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_FLOWING |
 				 SURF_DRAWTURB | SURF_WARP))
 		return;
 
-	if (!(surf->texinfo->flags & (SURF_LIGHT)))
+	if (!(surf->texInfo->flags & (SURF_LIGHT)))
 		return;
 
-	intens = surf->texinfo->value;
+	intens = surf->texInfo->value;
 
 	if (r_numflares == MAX_FLARES)
 		return;
@@ -113,7 +113,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 	VectorSet(maxs, -999999, -999999, -999999);
 
 	for (poly = surf->polys; poly; poly = poly->chain) {
-		for (i = 0, v = poly->verts[0]; i < poly->numverts;
+		for (i = 0, v = poly->verts[0]; i < poly->numVerts;
 			 i++, v += VERTEXSIZE) {
 
 			if (v[0] > maxs[0])
@@ -159,9 +159,9 @@ void GL_AddFlareSurface(msurface_t * surf)
 
 	/* =================== calc texture color =================== */
 
-	GL_Bind(surf->texinfo->image->texnum);
-	width = surf->texinfo->image->upload_width;
-	height = surf->texinfo->image->upload_height;
+	GL_Bind(surf->texInfo->image->texnum);
+	width = surf->texInfo->image->upload_width;
+	height = surf->texInfo->image->upload_height;
 
 	buffer = (byte*)malloc(width * height * 3);
 	qglGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
@@ -289,7 +289,7 @@ void CalcSurfaceBounds (msurface_t *s)
 		maxs[0] = maxs[1] = maxs[2] = -999999;
 
 		for (p=s->polys ; p ; p=p->next)
-			for (i=0, v=p->verts[0] ; i<p->numverts ; i++, v+=VERTEXSIZE)
+			for (i=0, v=p->verts[0] ; i<p->numVerts ; i++, v+=VERTEXSIZE)
 				for(j=0; j<3; j++)
 				{
 					if(mins[j] > v[j])
@@ -409,8 +409,8 @@ void Mod_Modellist_f(void)
 	for (i = 0, mod = mod_known; i < mod_numknown; i++, mod++) {
 		if (!mod->name[0])
 			continue;
-		Com_Printf("%8i : %s\n", mod->extradatasize, mod->name);
-		total += mod->extradatasize;
+		Com_Printf("%8i : %s\n", mod->extraDataSize, mod->name);
+		total += mod->extraDataSize;
 	}
 	Com_Printf("Total resident: %i\n", total);
 }
@@ -451,7 +451,7 @@ model_t *Mod_ForName(char *name, qboolean crash)
 	// 
 	if (name[0] == '*') {
 		i = atoi(name + 1);
-		if (i < 1 || !r_worldmodel || i >= r_worldmodel->numsubmodels)
+		if (i < 1 || !r_worldmodel || i >= r_worldmodel->numSubModels)
 			VID_Error(ERR_DROP, "bad inline model number");
 		return &mod_inline[i];
 	}
@@ -508,18 +508,18 @@ model_t *Mod_ForName(char *name, qboolean crash)
 
 	switch (LittleLong(*(unsigned *) buf)) {
 	case IDALIASHEADER:
-		loadmodel->extradata = Hunk_Begin(hunk_model->value*1048576, name);
+		loadmodel->extraData = Hunk_Begin(hunk_model->value*1048576, name);
 		Mod_LoadAliasModel(mod, buf);
 		break;
 
 	case IDSPRITEHEADER:
-		loadmodel->extradata = Hunk_Begin(hunk_sprite->value*1048576, name);
+		loadmodel->extraData = Hunk_Begin(hunk_sprite->value*1048576, name);
 		Mod_LoadSpriteModel(mod, buf);
 		break;
 
 	
 	case IDBSPHEADER:
-		loadmodel->extradata = Hunk_Begin(hunk_bsp->value*1048576, name);
+		loadmodel->extraData = Hunk_Begin(hunk_bsp->value*1048576, name);
 		Mod_LoadBrushModel(mod, buf);
 		break;
 
@@ -530,7 +530,7 @@ model_t *Mod_ForName(char *name, qboolean crash)
 	}
 
 
-	loadmodel->extradatasize = Hunk_End();
+	loadmodel->extraDataSize = Hunk_End();
 
 	FS_FreeFile(buf);
 
@@ -559,12 +559,12 @@ void Mod_LoadLighting(lump_t * l)
 	char *s, *c;
 
 	if (!l->filelen) {
-		loadmodel->lightdata = NULL;
+		loadmodel->lightData = NULL;
 		loadmodel->lightmap_scale = 16;
 		return;
 	}
-	loadmodel->lightdata = (byte*)Hunk_Alloc(l->filelen);
-	Q_memcpy(loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
+	loadmodel->lightData = (byte*)Hunk_Alloc(l->filelen);
+	Q_memcpy(loadmodel->lightData, mod_base + l->fileofs, l->filelen);
 	
 	loadmodel->memorySize += l->filelen;
 
@@ -632,7 +632,7 @@ void Mod_LoadVertexes(lump_t * l)
 	out = (mvertex_t*)Hunk_Alloc(count * sizeof(*out));
 	
 	loadmodel->vertexes = out;
-	loadmodel->numvertexes = count;
+	loadmodel->numVertexes = count;
 	
 	loadmodel->memorySize += count * sizeof(*out);
 
@@ -664,10 +664,10 @@ float RadiusFromBounds(vec3_t mins, vec3_t maxs)
 
 /*
 =================
-Mod_LoadSubmodels
+Mod_LoadsubModels
 =================
 */
-void Mod_LoadSubmodels(lump_t * l)
+void Mod_LoadsubModels(lump_t * l)
 {
 	dmodel_t *in;
 	mmodel_t *out;
@@ -680,8 +680,8 @@ void Mod_LoadSubmodels(lump_t * l)
 	count = l->filelen / sizeof(*in);
 	out = (mmodel_t*)Hunk_Alloc(count * sizeof(*out));
 
-	loadmodel->submodels = out;
-	loadmodel->numsubmodels = count;
+	loadmodel->subModels = out;
+	loadmodel->numSubModels = count;
 	
 	loadmodel->memorySize += count * sizeof(*out);
 
@@ -717,7 +717,7 @@ void Mod_LoadEdges(lump_t * l)
 	out = (medge_t*)Hunk_Alloc((count + 1) * sizeof(*out));
 
 	loadmodel->edges = out;
-	loadmodel->numedges = count;
+	loadmodel->numEdges = count;
 	
 	loadmodel->memorySize += count * sizeof(*out);
 
@@ -773,8 +773,8 @@ void Mod_LoadTextureFx(image_t *tex, char *s){
 }
 
 void Mod_LoadTexinfo (lump_t * l) {
-     texinfo_t  *in;
-     mtexinfo_t *out, *step;
+     texInfo_t  *in;
+     mtexInfo_t *out, *step;
      image_t    *image;
      char       name[MAX_QPATH];
      char       *purename;
@@ -782,15 +782,15 @@ void Mod_LoadTexinfo (lump_t * l) {
      int        i, j, k, x;
 	 char		*buff;
 
-     in = (texinfo_t *) (mod_base + l->fileofs);
+     in = (texInfo_t *) (mod_base + l->fileofs);
 
      if (l->filelen % sizeof(*in))
           VID_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
 
      count = l->filelen / sizeof(*in);
 
-     loadmodel->numtexinfo = count;
-     loadmodel->texinfo = out = (mtexinfo_t*)Hunk_Alloc(count * sizeof(*out));
+     loadmodel->numTexInfo = count;
+     loadmodel->texInfo = out = (mtexInfo_t*)Hunk_Alloc(count * sizeof(*out));
      loadmodel->memorySize += count * sizeof(*out);
 
     
@@ -802,10 +802,10 @@ void Mod_LoadTexinfo (lump_t * l) {
              out->value = LittleLong(in->value);
              out->flags = LittleLong(in->flags);
 
-             next = LittleLong(in->nexttexinfo);
+             next = LittleLong(in->nexttexInfo);
 
              if (next > 0)
-                 out->next = loadmodel->texinfo + next;
+                 out->next = loadmodel->texInfo + next;
              else
                  out->next = NULL;
         
@@ -945,11 +945,11 @@ void Mod_LoadTexinfo (lump_t * l) {
      
 
      // count animation frames
-     for (i = 0, out = loadmodel->texinfo; i < count; i++, out++) {
-          out->numframes = 1;
+     for (i = 0, out = loadmodel->texInfo; i < count; i++, out++) {
+          out->numFrames = 1;
 
           for (step = out->next; step && step != out; step = step->next)
-               out->numframes++;
+               out->numFrames++;
      }
 }
 /*
@@ -964,16 +964,16 @@ void CalcSurfaceExtents(msurface_t * s)
 	float mins[2], maxs[2], val;
 	int i, j, e;
 	mvertex_t *v;
-	mtexinfo_t *tex;
+	mtexInfo_t *tex;
 	int bmins[2], bmaxs[2];
 
 	mins[0] = mins[1] = 999999;
 	maxs[0] = maxs[1] = -99999;
 
-	tex = s->texinfo;
+	tex = s->texInfo;
 
-	for (i = 0; i < s->numedges; i++) {
-		e = loadmodel->surfedges[s->firstedge + i];
+	for (i = 0; i < s->numEdges; i++) {
+		e = loadmodel->surfEdges[s->firstedge + i];
 		if (e >= 0)
 			v = &loadmodel->vertexes[loadmodel->edges[e].v[0]];
 		else
@@ -1028,17 +1028,17 @@ SetupSurfaceNeighbors
 Setup the neighour pointers of this surface's polygon.
 ================
 */
-void BuildSurfaceNeighbors(msurface_t *surf)
+void BuildSurfaceNeighours(msurface_t *surf)
 {
 	int				i, j, lindex;
 	temp_connect_t	*tempEdge;
 
-	if (surf->numedges > MAX_POLY_VERT)
-		Com_DPrintf ("BuildSurfaceNeighbors: too many edges %i\n", surf->numedges);
+	if (surf->numEdges > MAX_POLY_VERT)
+		Com_DPrintf ("BuildSurfaceNeighbors: too many edges %i\n", surf->numEdges);
 
-	for (i=0 ; i<surf->numedges ; i++)
+	for (i=0 ; i<surf->numEdges ; i++)
 	{
-		lindex = currentmodel->surfedges[surf->firstedge + i];
+		lindex = currentmodel->surfEdges[surf->firstedge + i];
 		tempEdge = tempEdges+abs(lindex);
 
 		surf->polys->neighbours[i] = NULL;
@@ -1063,8 +1063,8 @@ void Mod_BuildVertexCache()
 
 	// calc vbo buffer size
 	vb = 0;
-	for( i = 0, surf = currentmodel->surfaces; i < currentmodel->numsurfaces; i++, surf++ )
-		vb += surf->polys->numverts;
+	for( i = 0, surf = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surf++ )
+		vb += surf->polys->numVerts;
 
 	// and offsets...
 	gl_state.xyz_offset = 0;
@@ -1093,8 +1093,8 @@ void Mod_BuildVertexCache()
 
 	// fill vbo
 	vb = 0;		
-	for( i = 0, surf = currentmodel->surfaces; i < currentmodel->numsurfaces; i++, surf++ ) {
-		int			jj, nv = surf->polys->numverts; 
+	for( i = 0, surf = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surf++ ) {
+		int			jj, nv = surf->polys->numVerts; 
 		glpoly_t	*p = surf->polys;
 		float		*v;
 		
@@ -1112,17 +1112,17 @@ void Mod_BuildVertexCache()
 			buf[vb++] = v[5];
 			buf[vb++] = v[6];
 			// normals
-			buf[vb++] = surf->normal[0];
-			buf[vb++] = surf->normal[1];
-			buf[vb++] = surf->normal[2];
+			buf[vb++] = v[7];
+			buf[vb++] = v[8];
+			buf[vb++] = v[9];
 			// tangents
-			buf[vb++] = surf->tangent[0];
-			buf[vb++] = surf->tangent[1];
-			buf[vb++] = surf->tangent[2];
+			buf[vb++] = v[10];
+			buf[vb++] = v[11];
+			buf[vb++] = v[12];
 			// binormals
-			buf[vb++] = surf->binormal[0];
-			buf[vb++] = surf->binormal[1];
-			buf[vb++] = surf->binormal[2];
+			buf[vb++] = v[13];
+			buf[vb++] = v[14];
+			buf[vb++] = v[15];
 		}
     }
 
@@ -1134,6 +1134,52 @@ void Mod_BuildVertexCache()
     free(buf);
 }
 
+void R_SmoothWorldSurfaces(void) {
+	float threshold;
+	float *vi, *vj;
+	msurface_t *surfA, *surfB;
+	int i, j;
+
+	if (r_tbnSmoothAngle->value <= 0.f)
+		return;
+
+	threshold = cos(DEG2RAD(r_tbnSmoothAngle->value));
+
+	for (i = 0, surfA = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surfA++) {
+
+		vi = surfA->polys->verts[0];
+
+		if (surfA->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP | SURF_NODRAW | SURF_WARP))
+			continue;
+
+		// collect coincident surfaces' TBN
+		for (j = 0, surfB = currentmodel->surfaces; j < currentmodel->numSurfaces; j++, surfB++) {
+
+			vj = surfB->polys->verts[0];
+
+			if (surfB->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP | SURF_NODRAW | SURF_WARP))
+				continue;
+
+			if (surfA->texInfo->image->texnum != surfB->texInfo->image->texnum)
+				continue; // don't interact with other materials
+
+			if (DotProduct(surfA->normal, surfB->normal) < threshold)
+				continue;
+
+			if (!VectorCompare(vi, vj))
+				continue;
+
+			VectorAdd(surfA->normal, surfB->normal, surfA->normal);
+			VectorAdd(surfA->tangent, surfB->tangent, surfA->tangent);
+			VectorAdd(surfA->binormal, surfB->binormal, surfA->binormal);
+		}
+
+		// renormalize them
+		VectorNormalize(surfA->normal);
+		VectorNormalize(surfA->tangent);
+		VectorNormalize(surfA->binormal);
+	}
+}
 
 void Mod_LoadFaces(lump_t * l)
 {
@@ -1150,14 +1196,14 @@ void Mod_LoadFaces(lump_t * l)
 	out = (msurface_t*) Hunk_Alloc(count * sizeof(*out));
 	
 	loadmodel->surfaces = out;
-	loadmodel->numsurfaces = count;
+	loadmodel->numSurfaces = count;
 	
 	loadmodel->memorySize += count * sizeof(*out);
 
 	currentmodel = loadmodel;
 	surf = currentmodel->surfaces;
 
-	tempEdges = (temp_connect_t *)Z_Malloc(currentmodel->numedges * sizeof(temp_connect_t));
+	tempEdges = (temp_connect_t *)Z_Malloc(currentmodel->numEdges * sizeof(temp_connect_t));
 
 	GL_BeginBuildingLightmaps(loadmodel);
 
@@ -1167,7 +1213,7 @@ void Mod_LoadFaces(lump_t * l)
 		int			planenum, side;
 
 		out->firstedge = LittleLong(in->firstedge);
-		out->numedges = LittleShort(in->numedges);		
+		out->numEdges = LittleShort(in->numEdges);		
 		out->flags = 0;
 		out->polys = NULL;
 
@@ -1178,10 +1224,10 @@ void Mod_LoadFaces(lump_t * l)
 
 		out->plane = loadmodel->planes + planenum;
 
-		ti = LittleShort (in->texinfo);
-		if (ti < 0 || ti >= loadmodel->numtexinfo)
-			Sys_Error ("MOD_LoadBmodel: bad texinfo number");
-		out->texinfo = loadmodel->texinfo + ti;
+		ti = LittleShort (in->texInfo);
+		if (ti < 0 || ti >= loadmodel->numTexInfo)
+			Sys_Error ("MOD_LoadBmodel: bad texInfo number");
+		out->texInfo = loadmodel->texInfo + ti;
 
 		CalcSurfaceExtents (out);
 				
@@ -1193,16 +1239,16 @@ void Mod_LoadFaces(lump_t * l)
 		if (i == -1)
 			out->samples = NULL;
 		else
-			out->samples = loadmodel->lightdata + i;
+			out->samples = loadmodel->lightData + i;
 		
 	// set the drawing flags
 		
-		if (out->texinfo->flags & SURF_WARP)
+		if (out->texInfo->flags & SURF_WARP)
 				out->flags |= SURF_DRAWTURB;
 
 		
 		// create lightmaps and polygons
-		if ( !(out->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_WARP) ) )
+		if ( !(out->texInfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_WARP) ) )
 			GL_CreateSurfaceLightmap (out);
 
 			GL_BuildPolygonFromSurface(out);
@@ -1217,15 +1263,15 @@ void Mod_LoadFaces(lump_t * l)
 			VectorCopy(out->plane->normal, out->normal);
 
 		VectorNormalize(out->normal);
-		VectorNormalize2(out->texinfo->vecs[0], out->tangent);
-		VectorNormalize2(out->texinfo->vecs[1], out->binormal);
+		VectorNormalize2(out->texInfo->vecs[0], out->tangent);
+		VectorNormalize2(out->texInfo->vecs[1], out->binormal);
 
 	
 	}
 	
 	// Build TBN for smoothing bump mapping (Berserker)
-//	GL_BuildTBN(count);
-
+	GL_BuildTBN(count);
+//	R_SmoothWorldSurfaces();
 	GL_EndBuildingLightmaps();
 
 	// calc neighbours for shadow volumes
@@ -1233,7 +1279,7 @@ void Mod_LoadFaces(lump_t * l)
 	{
 		if ( surf->flags & (SURF_DRAWTURB|SURF_DRAWSKY) )
 			continue;
-		BuildSurfaceNeighbors(surf);
+		BuildSurfaceNeighours(surf);
 	}
 
 	Z_Free (tempEdges);
@@ -1271,8 +1317,9 @@ static qboolean cache_Fetch(void *dst, int size) {
 void GL_BuildTBN(int count) {
 	int			ci, cj, i, j;
 	float		*vi, *vj;
+	float		threshold = cos(DEG2RAD(r_tbnSmoothAngle->value));
 	msurface_t	*si, *sj;
-	vec3_t		ni, nj;
+	vec3_t		normal_i, normal_j, t_i, b_i;
 
 	// TBN cache
 	char		cacheName[MAX_QPATH];
@@ -1294,12 +1341,12 @@ void GL_BuildTBN(int count) {
 		for (i=0 ; i<count ; i++) {
 			si = &currentmodel->surfaces[i];
 
-			if (si->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
+			if (si->texInfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
 				continue;
 
 			vi = si->polys->verts[0];
 
-			for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+			for (ci=0; ci<si->numEdges; ci++, vi+=VERTEXSIZE)
 			{
                 if (!cache_Fetch(vi+7, 9*sizeof(*vi))) {
 					Com_Printf(S_COLOR_RED "GL_BuildTBN: insufficient data in %s\n", cacheName);
@@ -1330,39 +1377,48 @@ recreate:
 	{
 		si = &currentmodel->surfaces[i];
 
-		if (si->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
+		if (si->texInfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
 			continue;
 
 		vi = si->polys->verts[0];
-		for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+		
+		for (ci=0; ci<si->numEdges; ci++, vi+=VERTEXSIZE)
 			vi[7] = vi[8] = vi[9] = vi[10] = vi[11] = vi[12] = vi[13] = vi[14] = vi[15] = 0;
+		
 		if (si->flags & SURF_PLANEBACK)
-			VectorNegate(si->plane->normal, ni);
+			VectorNegate(si->plane->normal, normal_i);
 		else
-			VectorCopy(si->plane->normal, ni);
+			VectorCopy(si->plane->normal, normal_i);
+		
+		VectorNormalize(normal_i);
+		VectorNormalize2(si->texInfo->vecs[0], t_i);
+		VectorNormalize2(si->texInfo->vecs[1], b_i);
+
+
 		for (j=0 ; j<count ; j++)
 		{
 			sj = &currentmodel->surfaces[j];
-			if (!(sj->texinfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW)))
+			if (!(sj->texInfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW)))
 			{
 				if (sj->flags & SURF_PLANEBACK)
-					VectorNegate(sj->plane->normal, nj);
+					VectorNegate(sj->plane->normal, normal_j);
 				else
-					VectorCopy(sj->plane->normal, nj);
-				if(DotProduct(ni, nj)>=cos(DEG2RAD(r_tbnSmoothAngle->value)))
+					VectorCopy(sj->plane->normal, normal_j);
+
+				if (DotProduct(normal_i, normal_j) > threshold)
 				{
 					vi = si->polys->verts[0];
-					for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+					for (ci=0; ci<si->numEdges; ci++, vi+=VERTEXSIZE)
 					{
 						vj = sj->polys->verts[0];
-						for (cj=0; cj<sj->numedges; cj++, vj+=VERTEXSIZE)
+						for (cj=0; cj<sj->numEdges; cj++, vj+=VERTEXSIZE)
 						{
 
 							if (VectorCompare(vi, vj))
 							{
-								vi[7] += nj[0];
-								vi[8] += nj[1];
-								vi[9] += nj[2];
+								vi[7] += normal_j[0];
+								vi[8] += normal_j[1];
+								vi[9] += normal_j[2];
 							}
 						}
 					}
@@ -1371,17 +1427,17 @@ recreate:
 		}
 
 		vi = si->polys->verts[0];
-		for (ci=0; ci<si->numedges; ci++, vi+=VERTEXSIZE)
+		for (ci=0; ci<si->numEdges; ci++, vi+=VERTEXSIZE)
 		{
 			vec3_t ttt, tttt, ttttt;
 			VectorSet(ttt, vi[7], vi[8], vi[9]);
 			VectorNormalize(ttt);
 
-			if(DotProduct(ttt, ni)<cos(DEG2RAD(r_tbnSmoothAngle->value)))
+			if (DotProduct(ttt, normal_i) < threshold)
 			{
-				vi[7] = ttt[0] = ni[0];
-				vi[8] = ttt[1] = ni[1];
-				vi[9] = ttt[2] = ni[2];
+				vi[7] = ttt[0] + normal_i[0];
+				vi[8] = ttt[1] + normal_i[1];
+				vi[9] = ttt[2] + normal_i[2];
 			}
 			else
 			{
@@ -1390,14 +1446,21 @@ recreate:
 				vi[9] = ttt[2];
 			}
 
-			CrossProduct(ttt, si->texinfo->vecs[0], tttt);
-			CrossProduct(ttt, tttt, ttttt);
-			VectorNormalize(ttttt);
-			if (DotProduct(ttttt, si->texinfo->vecs[0])<0)
-			{
-				vi[10] = -ttttt[0];
-				vi[11] = -ttttt[1];
-				vi[12] = -ttttt[2];
+	//		CrossProduct(ttt, si->texInfo->vecs[0], tttt);
+	//		CrossProduct(ttt, tttt, ttttt);
+	//		VectorNormalize(ttttt);
+			VectorNormalize2(si->texInfo->vecs[0], ttttt);
+
+	//		if (DotProduct(ttttt, si->texInfo->vecs[0]) < 0)
+	//		{
+	//			vi[10] = -ttttt[0];
+	//			vi[11] = -ttttt[1];
+	//			vi[12] = -ttttt[2];
+	//		}
+			if (DotProduct(ttttt, t_i) < threshold){
+				vi[10] = ttttt[0] = t_i[0];
+				vi[11] = ttttt[1] = t_i[1];
+				vi[12] = ttttt[2] = t_i[2];
 			}
 			else
 			{
@@ -1406,14 +1469,20 @@ recreate:
 				vi[12] = ttttt[2];
 			}
 
-			CrossProduct(ttt, si->texinfo->vecs[1], tttt);
-			CrossProduct(ttt, tttt, ttttt);
-			VectorNormalize(ttttt);
-			if (DotProduct(ttttt, si->texinfo->vecs[1])<0)
-			{
-				vi[13] = -ttttt[0];
-				vi[14] = -ttttt[1];
-				vi[15] = -ttttt[2];
+		//	CrossProduct(ttt, si->texInfo->vecs[1], tttt);
+		//	CrossProduct(ttt, tttt, ttttt);
+		//	VectorNormalize(ttttt);
+			VectorNormalize2(si->texInfo->vecs[1], ttttt);
+		//	if (DotProduct(ttttt, si->texInfo->vecs[1]) < 0)
+		//	{
+		//		vi[13] = -ttttt[0];
+		//		vi[14] = -ttttt[1];
+		//		vi[15] = -ttttt[2];
+		//	}
+			if (DotProduct(ttttt, t_i) < threshold){
+				vi[13] = ttttt[0] = b_i[0];
+				vi[14] = ttttt[1] = b_i[1];
+				vi[15] = ttttt[2] = b_i[2];
 			}
 			else
 			{
@@ -1465,7 +1534,7 @@ void Mod_LoadNodes(lump_t * l)
 	loadmodel->memorySize += count * sizeof(*out);
 
 	loadmodel->nodes = out;
-	loadmodel->numnodes = count;
+	loadmodel->numNodes = count;
 
 	for (i = 0; i < count; i++, in++, out++) {
 		for (j = 0; j < 3; j++) {
@@ -1515,7 +1584,7 @@ void Mod_LoadLeafs(lump_t * l)
 	loadmodel->memorySize += count * sizeof(*out);
 
 	loadmodel->leafs = out;
-	loadmodel->numleafs = count;
+	loadmodel->numLeafs = count;
 
 	for (i = 0; i < count; i++, in++, out++) {
 		for (j = 0; j < 3; j++) {
@@ -1529,14 +1598,14 @@ void Mod_LoadLeafs(lump_t * l)
 		out->cluster = LittleShort(in->cluster);
 		out->area = LittleShort(in->area);
 
-		out->firstmarksurface = loadmodel->marksurfaces +
+		out->firstmarksurface = loadmodel->markSurfaces +
 			LittleShort(in->firstleafface);
-		out->nummarksurfaces = LittleShort(in->numleaffaces);
+		out->numMarkSurfaces = LittleShort(in->numleaffaces);
 
 
 		if (out->contents & (MASK_WATER)) {
 
-			for (j = 0; j < out->nummarksurfaces; j++) {
+			for (j = 0; j < out->numMarkSurfaces; j++) {
 				out->firstmarksurface[j]->flags |= SURF_UNDERWATER;
 				for (poly = out->firstmarksurface[j]->polys; poly;
 					 poly = poly->next)
@@ -1586,14 +1655,14 @@ void Mod_LoadMarksurfaces(lump_t * l)
 	count = l->filelen / sizeof(*in);
 	out = (msurface_t**)Hunk_Alloc(count * sizeof(*out));
 
-	loadmodel->marksurfaces = out;
-	loadmodel->nummarksurfaces = count;
+	loadmodel->markSurfaces = out;
+	loadmodel->numMarkSurfaces = count;
 	
 	loadmodel->memorySize += count * sizeof(*out);
 
 	for (i = 0; i < count; i++) {
 		j = LittleShort(in[i]);
-		if (j < 0 || j >= loadmodel->numsurfaces)
+		if (j < 0 || j >= loadmodel->numSurfaces)
 			VID_Error(ERR_DROP,
 					  "Mod_ParseMarksurfaces: bad surface number");
 		out[i] = loadmodel->surfaces + j;
@@ -1617,15 +1686,15 @@ void Mod_LoadSurfedges(lump_t * l)
 	count = l->filelen / sizeof(*in);
 	if (count < 1 || count >= MAX_MAP_SURFEDGES)
 		VID_Error(ERR_DROP,
-				  "MOD_LoadBmodel: bad surfedges count in %s: %i",
+				  "MOD_LoadBmodel: bad surfEdges count in %s: %i",
 				  loadmodel->name, count);
 
 	out = (int*)Hunk_Alloc(count * sizeof(*out));
 	
 	loadmodel->memorySize += count * sizeof(*out);
 
-	loadmodel->surfedges = out;
-	loadmodel->numsurfedges = count;
+	loadmodel->surfEdges = out;
+	loadmodel->numSurfEdges = count;
 
 	for (i = 0; i < count; i++)
 		out[i] = LittleLong(in[i]);
@@ -1653,7 +1722,7 @@ void Mod_LoadPlanes(lump_t * l)
 	out = (cplane_t*)Hunk_Alloc(count * 2 * sizeof(*out));
 
 	loadmodel->planes = out;
-	loadmodel->numplanes = count;
+	loadmodel->numPlanes = count;
 	
 	loadmodel->memorySize += count * sizeof(*out);
 
@@ -1744,31 +1813,31 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadVisibility(&header->lumps[LUMP_VISIBILITY]);
 	Mod_LoadLeafs(&header->lumps[LUMP_LEAFS]);
 	Mod_LoadNodes(&header->lumps[LUMP_NODES]);
-	Mod_LoadSubmodels(&header->lumps[LUMP_MODELS]);
+	Mod_LoadsubModels(&header->lumps[LUMP_MODELS]);
 	Mod_GenerateLights(mod);
 	
 	Load_LightFile();
 	R_PreCalcLightData();
 	Mod_GenerateAmbientLights(mod);
 
-	mod->numframes = 2;			// regular and alternate animation
+	mod->numFrames = 2;			// regular and alternate animation
 
 //
-// set up the submodels
+// set up the subModels
 //
-	for (i = 0; i < mod->numsubmodels; i++) {
+	for (i = 0; i < mod->numSubModels; i++) {
 		model_t *starmod;
 
-		bm = &mod->submodels[i];
+		bm = &mod->subModels[i];
 		starmod = &mod_inline[i];
 
 		*starmod = *loadmodel;
 
-		starmod->firstmodelsurface = bm->firstface;
-		starmod->nummodelsurfaces = bm->numfaces;
-		starmod->firstnode = bm->headnode;
-		if (starmod->firstnode >= loadmodel->numnodes)
-			VID_Error(ERR_DROP, "Inline model %i has bad firstnode", i);
+		starmod->firstModelSurface = bm->firstface;
+		starmod->numModelSurfaces = bm->numfaces;
+		starmod->firstNode = bm->headnode;
+		if (starmod->firstNode >= loadmodel->numNodes)
+			VID_Error(ERR_DROP, "Inline model %i has bad firstNode", i);
 
 		VectorCopy(bm->maxs, starmod->maxs);
 		VectorCopy(bm->mins, starmod->mins);
@@ -1777,7 +1846,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 		if (i == 0)
 			*loadmodel = *starmod;
 
-		starmod->numleafs = bm->visleafs;
+		starmod->numLeafs = bm->visleafs;
 	}
 	bspSize += loadmodel->memorySize;
 	
@@ -2033,14 +2102,14 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s){
 			mod->glowCfg[2] = atof(COM_Parse(&s)); // time scale
 			continue;
 		}	
-		if (!Q_strcasecmp(token, "noselfshadow"))
+		if (!Q_strcasecmp(token, "noSelfShadow"))
 		{
-			mod->noselfshadow = true;
+			mod->noSelfShadow = true;
 			continue;
 		}	
-		if (!Q_strcasecmp(token, "envmap"))
+		if (!Q_strcasecmp(token, "envMap"))
 		{
-			mod->envmap = true;
+			mod->envMap = true;
 			mod->envScale = atof(COM_Parse(&s));
 			continue;
 		}	
@@ -2125,9 +2194,9 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer)
 	mod->glowCfg[0] = 0.3;
 	mod->glowCfg[1] = 1.0;
 	mod->glowCfg[2] = 5.666;
-	mod->noselfshadow = (qboolean)false;
+	mod->noSelfShadow = (qboolean)false;
 	mod->modelScale = 1.0;
-	mod->envmap = (qboolean)false;
+	mod->envMap = (qboolean)false;
 	mod->envScale = 0.1;
 	i = strlen(mod->name);
 	memcpy(nam, mod->name, i);
@@ -2525,16 +2594,16 @@ void Mod_LoadSpriteModel(model_t * mod, void *buffer)
 
 	sprout->ident = LittleLong(sprin->ident);
 	sprout->version = LittleLong(sprin->version);
-	sprout->numframes = LittleLong(sprin->numframes);
+	sprout->numFrames = LittleLong(sprin->numFrames);
 
 	if (sprout->version != SPRITE_VERSION)
 		VID_Error(ERR_DROP, "%s has wrong version number (%i should be %i)", mod->name, sprout->version, SPRITE_VERSION);
 
-	if (sprout->numframes > MAX_MD2SKINS)
-		VID_Error(ERR_DROP, "%s has too many frames (%i > %i)", mod->name, sprout->numframes, MAX_MD2SKINS);
+	if (sprout->numFrames > MAX_MD2SKINS)
+		VID_Error(ERR_DROP, "%s has too many frames (%i > %i)", mod->name, sprout->numFrames, MAX_MD2SKINS);
 
 	// byte swap everything
-	for (i = 0; i < sprout->numframes; i++) {
+	for (i = 0; i < sprout->numFrames; i++) {
 		sprout->frames[i].width = LittleLong(sprin->frames[i].width);
 		sprout->frames[i].height = LittleLong(sprin->frames[i].height);
 		sprout->frames[i].origin_x = LittleLong(sprin->frames[i].origin_x);
@@ -2601,12 +2670,12 @@ struct model_s *R_RegisterModel(char *name)
 
 		// register any images used by the models
 		if (mod->type == mod_sprite) {
-			sprout = (dsprite_t *) mod->extradata;
-			for (i = 0; i < sprout->numframes; i++)
+			sprout = (dsprite_t *) mod->extraData;
+			for (i = 0; i < sprout->numFrames; i++)
 				mod->skins[i] =
 					GL_FindImage(sprout->frames[i].name, it_sprite);
 		} else if (mod->type == mod_alias) {
-			pheader = (dmdl_t *) mod->extradata;
+			pheader = (dmdl_t *) mod->extraData;
 
 			for (i = 0; i < pheader->num_skins; i++) {
 				char *pname;
@@ -2650,22 +2719,22 @@ struct model_s *R_RegisterModel(char *name)
 		
 		}
 //PGM
-			mod->numframes = pheader->num_frames;
+			mod->numFrames = pheader->num_frames;
 //PGM
 //         
 		}
 		else if (mod->type == mod_brush) {
-			for (i = 0; i < mod->numtexinfo; i++){
-				mod->texinfo[i].image->registration_sequence		= registration_sequence;
+			for (i = 0; i < mod->numTexInfo; i++){
+				mod->texInfo[i].image->registration_sequence		= registration_sequence;
 
-				if(mod->texinfo[i].normalmap != NULL)
-				mod->texinfo[i].normalmap->registration_sequence	= registration_sequence;
+				if(mod->texInfo[i].normalmap != NULL)
+				mod->texInfo[i].normalmap->registration_sequence	= registration_sequence;
 
-				if(mod->texinfo[i].addTexture != NULL)
-					mod->texinfo[i].addTexture->registration_sequence	= registration_sequence;
+				if(mod->texInfo[i].addTexture != NULL)
+					mod->texInfo[i].addTexture->registration_sequence	= registration_sequence;
 
-					if(mod->texinfo[i].envTexture != NULL)
-						mod->texinfo[i].envTexture->registration_sequence	= registration_sequence;
+					if(mod->texInfo[i].envTexture != NULL)
+						mod->texInfo[i].envTexture->registration_sequence	= registration_sequence;
 			}
 		}
 	}
@@ -2728,7 +2797,7 @@ Mod_Free
 
 void Mod_Free(model_t * mod)
 {
-	Hunk_Free(mod->extradata);
+	Hunk_Free(mod->extraData);
 	
 	if (mod->neighbours)
 		free(mod->neighbours);
@@ -2749,7 +2818,7 @@ void Mod_FreeAll(void)
 	int i;
 
 	for (i = 0; i < mod_numknown; i++) {
-		if (mod_known[i].extradatasize)
+		if (mod_known[i].extraDataSize)
 			Mod_Free(&mod_known[i]);
 	}
 
@@ -2760,7 +2829,7 @@ void Mod_FreeAll(void)
 qboolean HasSharedLeafs(byte *v1, byte *v2)
 {
 
-	int numleafs__ = r_worldmodel->numleafs;
+	int numleafs__ = r_worldmodel->numLeafs;
 	_asm
 	{
 		mov edx, numleafs__
@@ -2808,21 +2877,21 @@ l3:
 
 // optimized version based on previous assembly one
 qboolean HasSharedLeafs(byte *v1, byte *v2) {
-	int numleafs = r_worldmodel->numleafs;
+	int numLeafs = r_worldmodel->numLeafs;
     int i;
 
-    while (numleafs > 32) {
+    while (numLeafs > 32) {
         uint32_t *v1_x4 = (uint32_t*)v1;
         uint32_t *v2_x4 = (uint32_t*)v2;
         if (*v1_x4 & *v2_x4)
             return true;
 
-        numleafs -= 32;
+        numLeafs -= 32;
         v1 += 4;
         v2 += 4;
     }
 
-    for (i = 0; i < numleafs; i++) {
+    for (i = 0; i < numLeafs; i++) {
         if (v1[i>>3] & (1<<(i&7)))
             if (v2[i>>3] & (1<<(i&7)))
                 return true;

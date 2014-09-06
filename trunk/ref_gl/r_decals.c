@@ -80,7 +80,7 @@ void R_RenderDecals(void)
     unsigned    tex, texture = 0;
     int			x, i, id;
     int			numIndices = 0, numVertices = 0;
-    WORD		indices[MAX_DECAL_INDICES];
+	index_t		indices[MAX_DECAL_INDICES];
     float		endLerp, decalAlpha;
 	unsigned	defBits = 0;
 	
@@ -339,7 +339,7 @@ static void R_PlanarSurfClipFragment(mnode_t * node, msurface_t * surf,
 	vec4_t verts[MAX_DECAL_VERTS];
 
 	// bogus face
-	if (surf->numedges < 3)
+	if (surf->numEdges < 3)
 		return;
 
 	// greater than 60 degrees
@@ -353,7 +353,7 @@ static void R_PlanarSurfClipFragment(mnode_t * node, msurface_t * surf,
 
 	v = surf->polys->verts[0];
 	// copy vertex data and clip to each triangle
-	for (i = 0; i < surf->polys->numverts - 2; i++) {
+	for (i = 0; i < surf->polys->numVerts - 2; i++) {
 		fr = &clippedFragments[numClippedFragments];
 		fr->numverts = 0;
 		fr->node = node;
@@ -406,7 +406,7 @@ static void R_RecursiveFragmentNode(mnode_t * node, vec3_t origin,
 		msurface_t *surf, **mark;
 
 		leaf = (mleaf_t *) node;
-		if (!(c = leaf->nummarksurfaces))
+		if (!(c = leaf->numMarkSurfaces))
 			return;
 
 		mark = leaf->firstmarksurface;
@@ -420,7 +420,7 @@ static void R_RecursiveFragmentNode(mnode_t * node, vec3_t origin,
 				continue;
 
 			surf->fragmentframe = fragmentFrame;
-			if ((surf->texinfo->
+			if ((surf->texInfo->
 				 flags & (SURF_SKY | SURF_WARP | SURF_NODRAW)))
 				continue;
 

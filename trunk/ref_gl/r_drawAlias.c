@@ -62,7 +62,7 @@ qboolean R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 	daliasframe_t *pframe, *poldframe;
 	vec3_t tmp;
 
-	paliashdr = (dmdl_t *)currentmodel->extradata;
+	paliashdr = (dmdl_t *)currentmodel->extraData;
 
 	if ((e->frame >= paliashdr->num_frames) || (e->frame < 0)) {
 		Com_Printf("R_CullAliasModel %s: no such frame %d\n",
@@ -254,7 +254,7 @@ next:
 			return;
 	}
 	
-	paliashdr = (dmdl_t *)currentmodel->extradata;
+	paliashdr = (dmdl_t *)currentmodel->extraData;
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		qglDepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
@@ -430,7 +430,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 			return;
 	}
 
-	paliashdr = (dmdl_t *)currentmodel->extradata;
+	paliashdr = (dmdl_t *)currentmodel->extraData;
 	
 	c_alias_polys += paliashdr->num_tris;
 
@@ -510,7 +510,7 @@ void R_DrawAliasDistortModel (entity_t *e)
 		return;
 	
 	
-		paliashdr = (dmdl_t *)currentmodel->extradata;
+		paliashdr = (dmdl_t *)currentmodel->extraData;
 
 		SetModelsLight(false);
 

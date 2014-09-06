@@ -57,7 +57,7 @@ void R_AddDynamicLights(msurface_t * surf, qboolean loadModel)
 	int s, t;
 	int i;
 	int smax, tmax;
-	mtexinfo_t *tex;
+	mtexInfo_t *tex;
 	dlight_t *dl;
 	float *pfBL;
 	float fsacc, ftacc;
@@ -72,7 +72,7 @@ void R_AddDynamicLights(msurface_t * surf, qboolean loadModel)
 	smax = (surf->extents[0] / r_worldmodel->lightmap_scale) + 1;
 	tmax = (surf->extents[1] / r_worldmodel->lightmap_scale) + 1;
 	}
-	tex = surf->texinfo;
+	tex = surf->texInfo;
 
 	for (lnum = 0; lnum < r_newrefdef.num_dlights; lnum++) {
 		if (!(surf->dlightbits & (1 << lnum)))
@@ -150,7 +150,7 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 	float *bl;
 	lightstyle_t *style;
 	
-	if (surf->texinfo->
+	if (surf->texInfo->
 		flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP))
 		VID_Error(ERR_DROP, "R_BuildLightMap called for non-lit surface");
 
@@ -408,12 +408,12 @@ void GL_BuildPolygonFromSurface(msurface_t * fa)
 	vec3_t		total;
 	temp_connect_t *tempEdge;
 
-	fa->numVertices = fa->numedges;
+	fa->numVertices = fa->numEdges;
     fa->numIndices = (fa->numVertices - 2) * 3;
 
 	// reconstruct the polygon
 	pedges = currentmodel->edges;
-	lnumverts = fa->numedges;
+	lnumverts = fa->numEdges;
 	vertpage = 0;
 
 	VectorClear(total);
@@ -424,7 +424,7 @@ void GL_BuildPolygonFromSurface(msurface_t * fa)
 	poly->next = fa->polys;
 	poly->flags = fa->flags;
 	fa->polys = poly;
-	poly->numverts = lnumverts;
+	poly->numVerts = lnumverts;
 
 	currentmodel->memorySize += sizeof(glpoly_t) + (lnumverts - 4) * VERTEXSIZE * sizeof(float);
 
@@ -433,7 +433,7 @@ void GL_BuildPolygonFromSurface(msurface_t * fa)
 	poly->neighbours = (glpoly_t **)Hunk_Alloc (lnumverts*4);
 
 	for (i = 0; i < lnumverts; i++) {
-		lindex = currentmodel->surfedges[fa->firstedge + i];
+		lindex = currentmodel->surfEdges[fa->firstedge + i];
 
 		if (lindex > 0) {
 			r_pedge = &pedges[lindex];
@@ -443,12 +443,12 @@ void GL_BuildPolygonFromSurface(msurface_t * fa)
 			vec = currentmodel->vertexes[r_pedge->v[1]].position;
 		}
 		s = DotProduct(vec,
-					   fa->texinfo->vecs[0]) + fa->texinfo->vecs[0][3];
-		s /= fa->texinfo->image->width;
+					   fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
+		s /= fa->texInfo->image->width;
 
 		t = DotProduct(vec,
-					   fa->texinfo->vecs[1]) + fa->texinfo->vecs[1][3];
-		t /= fa->texinfo->image->height;
+					   fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
+		t /= fa->texInfo->image->height;
 
 		VectorAdd(total, vec, total);
 		VectorCopy(vec, poly->verts[i]);
@@ -458,13 +458,13 @@ void GL_BuildPolygonFromSurface(msurface_t * fa)
 		//
 		// lightmap texture coordinates
 		//
-		  s = DotProduct(vec, fa->texinfo->vecs[0]) + fa->texinfo->vecs[0][3];
+		  s = DotProduct(vec, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
           s -= fa->texturemins[0];
           s += fa->light_s * loadmodel->lightmap_scale;
           s += loadmodel->lightmap_scale / 2;
           s /= LIGHTMAP_SIZE * loadmodel->lightmap_scale;
 
-          t = DotProduct(vec, fa->texinfo->vecs[1]) + fa->texinfo->vecs[1][3];
+          t = DotProduct(vec, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
           t -= fa->texturemins[1];
           t += fa->light_t * loadmodel->lightmap_scale;
           t += loadmodel->lightmap_scale / 2;
@@ -485,16 +485,16 @@ void GL_BuildPolygonFromSurface(msurface_t * fa)
 		
 	}
 
-	poly->numverts = lnumverts;
+	poly->numVerts = lnumverts;
 
 	VectorScale(total, 1.0f / (float) lnumverts, total);
 
 	fa->c_s =
-		(DotProduct(total, fa->texinfo->vecs[0]) + fa->texinfo->vecs[0][3])
-		/ fa->texinfo->image->width;
+		(DotProduct(total, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3])
+		/ fa->texInfo->image->width;
 	fa->c_t =
-		(DotProduct(total, fa->texinfo->vecs[1]) + fa->texinfo->vecs[1][3])
-		/ fa->texinfo->image->height;
+		(DotProduct(total, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3])
+		/ fa->texInfo->image->height;
 }
 
 /*

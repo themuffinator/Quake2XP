@@ -1606,7 +1606,7 @@ skip:	Com_DPrintf("Out of BSP, rejected light at %f %f %f\n", light->origin[0], 
 		maxs[i] = light->origin[i] + light->radius[i];
 	}
 
-	count = CM_BoxLeafnums (mins, maxs, leafs, r_worldmodel->numleafs, NULL);
+	count = CM_BoxLeafnums (mins, maxs, leafs, r_worldmodel->numLeafs, NULL);
 	if (count < 1)
 		Com_Error (ERR_FATAL, "R_MarkLightLeaves: count < 1");
 
@@ -1614,11 +1614,11 @@ skip:	Com_DPrintf("Out of BSP, rejected light at %f %f %f\n", light->origin[0], 
 	for (i=0 ; i<count ; i++)
 		leafs[i] = CM_LeafCluster(leafs[i]);
 
-	memset(&vis, 0, (((r_worldmodel->numleafs+31)>>5)<<2));
+	memset(&vis, 0, (((r_worldmodel->numLeafs+31)>>5)<<2));
 	for (i=0 ; i<count ; i++)
 		vis[leafs[i]>>3] |= (1<<(leafs[i]&7));
 
-	for (i=0 ; i<((r_worldmodel->numleafs+31)>>5); i++)
+	for (i=0 ; i<((r_worldmodel->numLeafs+31)>>5); i++)
 		((long *)light->vis)[i] &= ((long *)vis)[i];
 
 	return true;
@@ -1647,7 +1647,7 @@ qboolean InLightVISEntity()
 			VectorAdd(currententity->origin, currententity->model->mins, mins);
 		}
 
-		count = CM_BoxLeafnums(mins, maxs, leafs, r_worldmodel->numleafs, NULL);
+		count = CM_BoxLeafnums(mins, maxs, leafs, r_worldmodel->numLeafs, NULL);
 		if (count < 1)
 			Com_Error(ERR_FATAL, "InLightVISEntity: count < 1");
 		longs = (CM_NumClusters() + 31) >> 5;
@@ -1656,7 +1656,7 @@ qboolean InLightVISEntity()
 		for (i = 0; i < count; i++){
 			leafs[i] = CM_LeafCluster(leafs[i]);
 		}
-		memset(&currententity->vis, 0, (((r_worldmodel->numleafs + 31) >> 5) << 2));
+		memset(&currententity->vis, 0, (((r_worldmodel->numLeafs + 31) >> 5) << 2));
 		for (i = 0; i < count; i++)
 			currententity->vis[leafs[i] >> 3] |= (1 << (leafs[i] & 7));
 	}

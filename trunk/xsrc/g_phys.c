@@ -167,7 +167,7 @@ int SV_FlyMove (edict_t *ent, float time, int mask)
 	int			bumpcount, numbumps;
 	vec3_t		dir;
 	float		d;
-	int			numplanes;
+	int			numPlanes;
 	vec3_t		planes[MAX_CLIP_PLANES];
 	vec3_t		primal_velocity, original_velocity, new_velocity;
 	int			i, j;
@@ -181,7 +181,7 @@ int SV_FlyMove (edict_t *ent, float time, int mask)
 	blocked = 0;
 	VectorCopy (ent->velocity, original_velocity);
 	VectorCopy (ent->velocity, primal_velocity);
-	numplanes = 0;
+	numPlanes = 0;
 	
 	time_left = time;
 
@@ -203,7 +203,7 @@ int SV_FlyMove (edict_t *ent, float time, int mask)
 		{	// actually covered some distance
 			VectorCopy (trace.endpos, ent->s.origin);
 			VectorCopy (ent->velocity, original_velocity);
-			numplanes = 0;
+			numPlanes = 0;
 		}
 
 		if (trace.fraction == 1)
@@ -236,41 +236,41 @@ int SV_FlyMove (edict_t *ent, float time, int mask)
 		time_left -= time_left * trace.fraction;
 		
 	// cliped to another plane
-		if (numplanes >= MAX_CLIP_PLANES)
+		if (numPlanes >= MAX_CLIP_PLANES)
 		{	// this shouldn't really happen
 			VectorCopy (vec3_origin, ent->velocity);
 			return 3;
 		}
 
-		VectorCopy (trace.plane.normal, planes[numplanes]);
-		numplanes++;
+		VectorCopy (trace.plane.normal, planes[numPlanes]);
+		numPlanes++;
 
 //
 // modify original_velocity so it parallels all of the clip planes
 //
-		for (i=0 ; i<numplanes ; i++)
+		for (i=0 ; i<numPlanes ; i++)
 		{
 			ClipVelocity (original_velocity, planes[i], new_velocity, 1);
 
-			for (j=0 ; j<numplanes ; j++)
+			for (j=0 ; j<numPlanes ; j++)
 				if ((j != i) && !VectorCompare (planes[i], planes[j]))
 				{
 					if (DotProduct (new_velocity, planes[j]) < 0)
 						break;	// not ok
 				}
-			if (j == numplanes)
+			if (j == numPlanes)
 				break;
 		}
 		
-		if (i != numplanes)
+		if (i != numPlanes)
 		{	// go along this plane
 			VectorCopy (new_velocity, ent->velocity);
 		}
 		else
 		{	// go along the crease
-			if (numplanes != 2)
+			if (numPlanes != 2)
 			{
-//				gi.dprintf ("clip velocity, numplanes == %i\n",numplanes);
+//				gi.dprintf ("clip velocity, numPlanes == %i\n",numPlanes);
 				VectorCopy (vec3_origin, ent->velocity);
 				return 7;
 			}

@@ -244,7 +244,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
 
 			VA_SetElem4(colorArray[jj], lightColor[0],lightColor[1],lightColor[2], alpha);
-			if(currentmodel->envmap){
+			if(currentmodel->envMap){
 			index2 = verts[index_xyz].lightnormalindex;
 			oldindex2 = oldverts[index_xyz].lightnormalindex;
 			normalArray[jj][0] = r_avertexnormals[oldindex2][0]*backlerp + r_avertexnormals[index2][0]*frontlerp;
@@ -259,7 +259,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	if(caustics)
 	defBits = worldDefs.CausticsBit;
 
-	if(currentmodel->envmap)
+	if(currentmodel->envMap)
 		defBits |= worldDefs.EnvBits;
 
 	// setup program
@@ -512,7 +512,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	if (currententity->flags & (RF_VIEWERMODEL))
 			return;
 	
-	if(currentmodel->noselfshadow && r_shadows->value)
+	if(currentmodel->noSelfShadow && r_shadows->value)
 		qglDisable(GL_STENCIL_TEST);
 	
 	backlerp = currententity->backlerp;
@@ -609,6 +609,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , currentShadowLight->origin);
 	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , r_origin);
+	qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), r_specularScale->value);
 
 	if(currentShadowLight->isFog){
 	qglUniform1i(qglGetUniformLocation(id, "u_fog"), (int)currentShadowLight->isFog);
@@ -665,7 +666,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	
-	if(currentmodel->noselfshadow && r_shadows->value)
+	if(currentmodel->noSelfShadow && r_shadows->value)
 		qglEnable(GL_STENCIL_TEST);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);

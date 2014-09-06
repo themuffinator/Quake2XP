@@ -114,7 +114,7 @@ void PM_StepSlideMove_(void)
 	int bumpcount, numbumps;
 	vec3_t dir;
 	float d;
-	int numplanes;
+	int numPlanes;
 	vec3_t planes[MAX_CLIP_PLANES];
 	vec3_t primal_velocity;
 	int i, j;
@@ -125,7 +125,7 @@ void PM_StepSlideMove_(void)
 	numbumps = 4;
 
 	VectorCopy(pml.velocity, primal_velocity);
-	numplanes = 0;
+	numPlanes = 0;
 
 	time_left = pml.frametime;
 
@@ -142,7 +142,7 @@ void PM_StepSlideMove_(void)
 
 		if (trace.fraction > 0) {	// actually covered some distance
 			VectorCopy(trace.endpos, pml.origin);
-			numplanes = 0;
+			numPlanes = 0;
 		}
 
 		if (trace.fraction == 1)
@@ -157,14 +157,14 @@ void PM_StepSlideMove_(void)
 		time_left -= time_left * trace.fraction;
 
 		// slide along this plane
-		if (numplanes >= MAX_CLIP_PLANES) {	// this shouldn't really
+		if (numPlanes >= MAX_CLIP_PLANES) {	// this shouldn't really
 											// happen
 			VectorCopy(vec3_origin, pml.velocity);
 			break;
 		}
 
-		VectorCopy(trace.plane.normal, planes[numplanes]);
-		numplanes++;
+		VectorCopy(trace.plane.normal, planes[numPlanes]);
+		numPlanes++;
 
 #if 0
 		float rub;
@@ -172,7 +172,7 @@ void PM_StepSlideMove_(void)
 		// 
 		// modify velocity so it parallels all of the clip planes
 		// 
-		if (numplanes == 1) {	// go along this plane
+		if (numPlanes == 1) {	// go along this plane
 			VectorCopy(pml.velocity, dir);
 			VectorNormalize(dir);
 			rub = 1.0 + 0.5 * DotProduct(dir, planes[0]);
@@ -184,7 +184,7 @@ void PM_StepSlideMove_(void)
 			pml.velocity[0] *= rub;
 			pml.velocity[1] *= rub;
 			pml.velocity[2] *= rub;
-		} else if (numplanes == 2) {	// go along the crease
+		} else if (numPlanes == 2) {	// go along the crease
 			VectorCopy(pml.velocity, dir);
 			VectorNormalize(dir);
 			rub = 1.0 + 0.5 * DotProduct(dir, planes[0]);
@@ -197,7 +197,7 @@ void PM_StepSlideMove_(void)
 			// rub some extra speed off
 			VectorScale(pml.velocity, rub, pml.velocity);
 		} else {
-//          Con_Printf ("clip velocity, numplanes == %i\n",numplanes);
+//          Con_Printf ("clip velocity, numPlanes == %i\n",numPlanes);
 			VectorCopy(vec3_origin, pml.velocity);
 			break;
 		}
@@ -206,21 +206,21 @@ void PM_StepSlideMove_(void)
 //
 // modify original_velocity so it parallels all of the clip planes
 //
-		for (i = 0; i < numplanes; i++) {
+		for (i = 0; i < numPlanes; i++) {
 			PM_ClipVelocity(pml.velocity, planes[i], pml.velocity, 1.01);
-			for (j = 0; j < numplanes; j++)
+			for (j = 0; j < numPlanes; j++)
 				if (j != i) {
 					if (DotProduct(pml.velocity, planes[j]) < 0)
 						break;	// not ok
 				}
-			if (j == numplanes)
+			if (j == numPlanes)
 				break;
 		}
 
-		if (i != numplanes) {	// go along this plane
+		if (i != numPlanes) {	// go along this plane
 		} else {				// go along the crease
-			if (numplanes != 2) {
-//              Con_Printf ("clip velocity, numplanes == %i\n",numplanes);
+			if (numPlanes != 2) {
+//              Con_Printf ("clip velocity, numPlanes == %i\n",numPlanes);
 				VectorCopy(vec3_origin, pml.velocity);
 				break;
 			}

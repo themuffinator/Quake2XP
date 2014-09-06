@@ -228,11 +228,11 @@ typedef struct image_s {
 } image_t;
 
 
-typedef struct mtexinfo_s {
+typedef struct mtexInfo_s {
 	float vecs[2][4];
 	int flags;
-	int numframes;
-	struct mtexinfo_s *next;	// animation chain
+	int numFrames;
+	struct mtexInfo_s *next;	// animation chain
 
 	image_t *image;
 	image_t *normalmap;
@@ -242,7 +242,7 @@ typedef struct mtexinfo_s {
 
 	int value;
 
-} mtexinfo_t;
+} mtexInfo_t;
 
 extern int	c_brush_polys,
 			c_alias_polys,
@@ -259,19 +259,19 @@ extern int	c_brush_polys,
 #define	VERTEXSIZE	16
 
 typedef struct glpoly_s {
-	struct glpoly_s *next;
-	struct glpoly_s *chain;
+	
+	struct	glpoly_s	*next;
+	struct	glpoly_s	*chain;
 	struct	glpoly_s	**neighbours;
-	vec3_t normal;
-
-	vec3_t center;
+	
+	vec3_t	normal;
+	vec3_t	center;
 	int		lightTimestamp;
 	int		shadowTimestamp;
 	int		ShadowedFace;
-	int numverts;
-	int flags;					// for SURF_UNDERWATER (not needed
-								// anymore?)
-	float verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
+	int		numVerts;
+	int		flags;												
+	float	verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
 } glpoly_t;
 
 //temporaly storage for polygons that use an edge
@@ -289,9 +289,9 @@ typedef struct msurface_s {
 	cplane_t *plane;
 	int flags;
 
-	int firstedge;				// look up in model->surfedges[], negative
+	int firstedge;				// look up in model->surfEdges[], negative
 								// numbers
-	int numedges;				// are backwards edges
+	int numEdges;				// are backwards edges
 
 	short texturemins[2];
 	short extents[2];
@@ -304,7 +304,7 @@ typedef struct msurface_s {
 	struct msurface_s *texturechain;
 	struct msurface_s *lightmapchain;
 
-	mtexinfo_t *texinfo;
+	mtexInfo_t *texInfo;
 
 	float c_s, c_t;
 

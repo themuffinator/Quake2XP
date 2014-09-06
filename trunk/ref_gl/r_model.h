@@ -170,7 +170,7 @@ typedef struct mleaf_s {
 	int area;
 
 	msurface_t **firstmarksurface;
-	int nummarksurfaces;
+	int numMarkSurfaces;
 } mleaf_t;
 
 
@@ -210,93 +210,89 @@ typedef struct {
 */
 
 typedef struct model_s {
-	char name[MAX_QPATH];
-
-	int registration_sequence;
-
-	modtype_t type;
-	int numframes;
-
-	int flags;
+	
+	char		name[MAX_QPATH];
+	int			registration_sequence;
+	modtype_t	type;
+	int			numFrames;
+	int			flags;
 
 	//
 	// volume occupied by the model graphics
 	//
-	vec3_t mins, maxs, center;
-	float radius;
-
+	vec3_t		mins, maxs, 
+				center;
+	float		radius;
 	//
 	// solid volume for clipping
 	//
-	qboolean clipbox;
-	vec3_t clipmins, clipmaxs;
-	
+	qboolean	clipbox;
+	vec3_t		clipmins, clipmaxs;
 	//
 	// brush model
 	//
-	int firstmodelsurface, nummodelsurfaces;
-	int lightmap;				// only for submodels
+	int			firstModelSurface, 
+				numModelSurfaces,
+				lightmap;				// only for subModels
 
-	int numsubmodels;
-	mmodel_t *submodels;
+	int			numSubModels;
+	mmodel_t	*subModels;
 
-	int numplanes;
-	cplane_t *planes;
+	int			numPlanes;
+	cplane_t	*planes;
 
-	int numleafs;				// number of visible leafs, not counting 0
-	mleaf_t *leafs;
+	int			numLeafs;				// number of visible leafs, not counting 0
+	mleaf_t		*leafs;
 
-	int numvertexes;
-	mvertex_t *vertexes;
+	int			numVertexes;
+	mvertex_t	*vertexes;
 
-	int numedges;
-	medge_t *edges;
+	int			numEdges;
+	medge_t		*edges;
 
-	int numnodes;
-	int firstnode;
-	mnode_t *nodes;
+	int			numNodes;
+	int			firstNode;
+	mnode_t		*nodes;
 
-	int numtexinfo;
-	mtexinfo_t *texinfo;
+	int			numTexInfo;
+	mtexInfo_t	*texInfo;
 
-	int numsurfaces;
-	msurface_t *surfaces;
+	int			numSurfaces;
+	msurface_t	*surfaces;
 
-	int numsurfedges;
-	int *surfedges;
+	int			numSurfEdges;
+	int			*surfEdges;
 
-	int nummarksurfaces;
-	msurface_t **marksurfaces;
+	int			numMarkSurfaces;
+	msurface_t	**markSurfaces;
 	
-	int lightmap_scale;
-
-	dvis_t *vis;
-
-	byte *lightdata;
+	int			lightmap_scale;
+	dvis_t		*vis;
+	byte		*lightData;
 
 
 	// for alias models and skins
-	image_t *skins[MAX_MD2SKINS];
-	image_t *skins_normal[MAX_MD2SKINS];
-	image_t *skins_specular[MAX_MD2SKINS];
-	image_t	*glowtexture[MAX_MD2SKINS];
-	image_t	*skin_env[MAX_MD2SKINS];
+	image_t		*skins[MAX_MD2SKINS];
+	image_t		*skins_normal[MAX_MD2SKINS];
+	image_t		*skins_specular[MAX_MD2SKINS];
+	image_t		*glowtexture[MAX_MD2SKINS];
+	image_t		*skin_env[MAX_MD2SKINS];
 	
-	int extradatasize;
-	void *extradata;
-	int triangles[MAX_TRIANGLES];
-	float	*st;
+	int			extraDataSize;
+	void		*extraData;
+	int			triangles[MAX_TRIANGLES];
+	float		*st;
 	neighbors_t *neighbours;
 	
-	float ambient;
-	float diffuse;
-	float specular;
-	float alphaShift;
-	float glowCfg[3];
-	float envScale;
-	float modelScale;
-	qboolean noselfshadow;
-	qboolean envmap;
+	float		ambient;
+	float		diffuse;
+	float		specular;
+	float		alphaShift;
+	float		glowCfg[3];
+	float		envScale;
+	float		modelScale;
+	qboolean	noSelfShadow;
+	qboolean	envMap;
 
 	byte		*normals;
 	byte		*binormals;
@@ -308,7 +304,7 @@ typedef struct model_s {
 	int			*indexArray2;
 	int			numIndices2;
 	GLuint		vboId;
-	int memorySize;
+	int			memorySize;
 
 } model_t;
 

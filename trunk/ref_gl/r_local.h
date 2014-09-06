@@ -306,6 +306,8 @@ cvar_t	*r_useLightScissors;
 cvar_t	*r_useDepthBounds;
 cvar_t	*r_debugLightScissors;
 cvar_t	*r_lightScale;
+cvar_t	*r_specularScale;
+
 cvar_t	*r_zNear;
 cvar_t	*hunk_bsp;
 cvar_t	*hunk_model;

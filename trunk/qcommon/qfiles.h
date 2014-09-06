@@ -175,7 +175,7 @@ typedef struct {
 typedef struct {
 	int ident;
 	int version;
-	int numframes;
+	int numFrames;
 	dsprframe_t frames[1];		// variable sized
 } dsprite_t;
 
@@ -282,7 +282,7 @@ typedef struct {
 	float mins[3], maxs[3];
 	float origin[3];			// for sounds or lights
 	int headnode;
-	int firstface, numfaces;	// submodels just draw faces
+	int firstface, numfaces;	// subModels just draw faces
 	// without walking the bsp tree
 } dmodel_t;
 
@@ -382,13 +382,13 @@ typedef struct {
 } dnode_t;
 
 
-typedef struct texinfo_s {
+typedef struct texInfo_s {
 	float vecs[2][4];			// [s/t][xyz offset]
 	int flags;					// miptex flags + overrides
 	int value;					// light emission, etc
 	char texture[32];			// texture name (textures/*.wal)
-	int nexttexinfo;			// for animations, -1 = end of chain
-} texinfo_t;
+	int nexttexInfo;			// for animations, -1 = end of chain
+} texInfo_t;
 
 
 // note that edge 0 is never used, because negative edge nums are used for
@@ -403,8 +403,8 @@ typedef struct {
 	short side;
 
 	int firstedge;				// we must support > 64k edges
-	short numedges;
-	short texinfo;
+	short numEdges;
+	short texInfo;
 
 // lighting info
 	byte styles[MAXLIGHTMAPS];
@@ -429,7 +429,7 @@ typedef struct {
 
 typedef struct {
 	unsigned short planenum;	// facing out of the leaf
-	short texinfo;
+	short texInfo;
 } dbrushside_t;
 
 typedef struct {
