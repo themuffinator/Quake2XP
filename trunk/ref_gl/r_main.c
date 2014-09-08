@@ -1265,6 +1265,7 @@ void R_RegisterCvars(void)
 //	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 	r_lightScale =						Cvar_Get("r_lightScale", "1", CVAR_ARCHIVE);
 	r_specularScale =					Cvar_Get("r_specularScale", "1", CVAR_ARCHIVE);
+	r_toksvigFactor =					Cvar_Get("r_toksvigFactor", "0.5", CVAR_ARCHIVE);
 
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 

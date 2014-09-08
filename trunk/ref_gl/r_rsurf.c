@@ -713,6 +713,7 @@ static void GL_BatchLightPass(qboolean bmodel)
 	
 	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1, currentShadowLight->origin);
 	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_toksvigFactor"), r_toksvigFactor->value);
 
 	if(r_parallax->value)
 		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);

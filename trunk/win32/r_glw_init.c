@@ -1095,6 +1095,8 @@ qboolean RegisterOpenGLWindow(HINSTANCE hInst)
   return RegisterClassEx(&wcex);
 }
 
+#define WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB             0x20A9
+#define FRAMEBUFFER_SRGB                             0x8DB9
 
 qboolean GLimp_InitGL (void)
 {
@@ -1384,13 +1386,14 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 			iAttributes[22] = WGL_TRANSPARENT_ARB;
 			iAttributes[23] = WGL_SUPPORT_GDI_ARB;
 			iAttributes[24] = WGL_SUPPORT_OPENGL_ARB;
+		//	iAttributes[25] = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
 
 			if (qwglGetPixelFormatAttribivARB(hDC, pixelFormat, 0, 25, iAttributes, iResults) == GL_FALSE) {
 				Com_Printf (S_COLOR_RED	"GLimp_InitGL() wglGetPixelFormatAttribivARB failed\n");
 				VID_Error (ERR_FATAL,	"GLimp_InitGL() wglGetPixelFormatAttribivARB failed\n"); 
 				
 			}
-            
+		//	qglEnable(FRAMEBUFFER_SRGB);
 
 			Com_Printf ("WGL_PFD: Color "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Stencil "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits\n",
 									iResults[1], iResults[6], iResults[5], iResults[7]);

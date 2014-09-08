@@ -610,6 +610,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , currentShadowLight->origin);
 	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , r_origin);
 	qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), r_specularScale->value);
+	qglUniform1f(qglGetUniformLocation(id, "u_toksvigFactor"), r_toksvigFactor->value);
 
 	if(currentShadowLight->isFog){
 	qglUniform1i(qglGetUniformLocation(id, "u_fog"), (int)currentShadowLight->isFog);

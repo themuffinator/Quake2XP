@@ -1445,7 +1445,7 @@ recreate:
 				vi[8] = ttt[1];
 				vi[9] = ttt[2];
 			}
-
+			
 	//		CrossProduct(ttt, si->texInfo->vecs[0], tttt);
 	//		CrossProduct(ttt, tttt, ttttt);
 	//		VectorNormalize(ttttt);
