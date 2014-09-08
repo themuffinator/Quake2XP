@@ -1,4 +1,4 @@
-#define	CUTOFF_EPSILON		0.01		// light intensity below which fragment is discarded
+#define	CUTOFF_EPSILON		1.0/255.0		// light intensity below which fragment is discarded
 
 vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const float sExp) {
 	vec2 E;
@@ -17,4 +17,9 @@ float halfLambert(in vec3 N, in vec3 L )
 float LambertLighting(const in vec3 N, const in vec3 L) {
 	float E;
 	return E = max(dot (N, L), 0.0);
+}
+
+float saturate(float v)
+{
+    return clamp(v, 0.0, 1.0);
 }
