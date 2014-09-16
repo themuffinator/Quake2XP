@@ -2,13 +2,10 @@
 uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_LightMap;
 uniform sampler2D		u_Add;
-uniform sampler2D		u_Caustics;
 uniform sampler2D		u_envMap;
 
 uniform float       	u_ColorModulate;
 uniform float       	u_ambientScale;    
-uniform float       	u_CausticsModulate; 
-uniform int				u_isCaustics;
 uniform int				u_envPass;
 uniform float			u_envPassScale;
 
@@ -28,26 +25,23 @@ vec4 lightMap = texture2D(u_LightMap, v_lTexCoord.xy);
 vec4 envMap = texture2D(u_envMap, v_envCoord.xy);
 vec4 diffuseMap;
 vec4 glowMap;
-vec4 causticsMap;
 float envMask;
 
 #ifdef PARALLAX
 vec2 P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
 diffuseMap = texture2D(u_Diffuse, P);
 glowMap = texture2D(u_Add, P);
-causticsMap = texture2D(u_Caustics, P);
 envMask =  texture2D(u_envMap, P.xy).a;
 
 #else
 
 diffuseMap = texture2D(u_Diffuse,  v_wTexCoord.xy);
 glowMap = texture2D(u_Add,  v_wTexCoord.xy);
-causticsMap = texture2D(u_Caustics, v_wTexCoord.xy);
 envMask =  texture2D(u_envMap, v_wTexCoord.xy).a;
 
 #endif 
 
-vec4 tmp = causticsMap * diffuseMap;
+//vec4 tmp = causticsMap * diffuseMap;
 
 #ifdef LIGHTMAP
 lightMap *= u_ambientScale;
@@ -66,10 +60,10 @@ envMap *= u_envPassScale;
 finalColor +=envMap;
 }
 
-if (u_isCaustics == 1){
-tmp *= u_CausticsModulate;
-finalColor = tmp + finalColor;
-}
+//if (u_isCaustics == 1){
+//tmp *= u_CausticsModulate;
+//finalColor = tmp + finalColor;
+//}
 
 gl_FragColor = vec4(finalColor.rgb, 1.0) * u_ColorModulate;
 

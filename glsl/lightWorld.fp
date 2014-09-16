@@ -3,6 +3,7 @@ uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_NormalMap;
 uniform samplerCube 	u_CubeFilterMap;
 uniform sampler3D	 	u_attenMap;
+uniform sampler2D		u_Caustics;
 
 uniform float			u_ColorModulate;
 uniform float			u_specularScale;
@@ -12,6 +13,8 @@ uniform vec4 			u_LightColor;
 uniform float 			u_LightRadius;
 uniform float			u_fogDensity;
 uniform int				u_fog;
+uniform float       	u_CausticsModulate; 
+uniform int				u_isCaustics;
 
 varying vec3			v_viewVecTS;
 varying vec3			v_lightVec;
@@ -37,14 +40,16 @@ vec3 V = normalize(v_viewVecTS);
 vec3 L = normalize(v_lightVec);
 
 #ifdef PARALLAX
-vec2 P = CalcParallaxOffset(u_Diffuse, v_colorCoord.xy, V);
-vec4 diffuseMap = texture2D(u_Diffuse, P);
-vec3 normalMap =  normalize(texture2D(u_NormalMap, P).rgb * 2.0 - 1.0);
-float specTmp = texture2D(u_NormalMap, P).a;
+vec2	P = CalcParallaxOffset(u_Diffuse, v_colorCoord.xy, V);
+vec4	diffuseMap = texture2D(u_Diffuse, P);
+vec3	normalMap =  normalize(texture2D(u_NormalMap, P).rgb * 2.0 - 1.0);
+float	specTmp = texture2D(u_NormalMap, P).a;
+vec4	causticsMap = texture2D(u_Caustics, P);
 #else
-vec4 diffuseMap = texture2D(u_Diffuse,  v_colorCoord.xy);
-vec3 normalMap =  normalize(texture2D(u_NormalMap, v_colorCoord.xy).rgb * 2.0 - 1.0);
-float specTmp = texture2D(u_NormalMap, v_colorCoord).a;
+vec4	diffuseMap = texture2D(u_Diffuse,  v_colorCoord.xy);
+vec3	normalMap =  normalize(texture2D(u_NormalMap, v_colorCoord.xy).rgb * 2.0 - 1.0);
+float	specTmp = texture2D(u_NormalMap, v_colorCoord).a;
+vec4	causticsMap = texture2D(u_Caustics, v_colorCoord.xy);
 #endif
 
 float specular = specTmp * u_specularScale;
@@ -70,6 +75,12 @@ gl_FragColor = diffuseMap * LambertLighting(normalMap, L) * u_LightColor * atten
 }
 
 #else
+
+if (u_isCaustics == 1){
+vec4 tmp = causticsMap * diffuseMap;
+tmp *= u_CausticsModulate;
+diffuseMap = tmp + diffuseMap;
+}
 
 vec2 Es = PhongLighting(normalMap, L, V, u_specularExp);
 gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * cubeFilter * attenMap * u_LightColor;
