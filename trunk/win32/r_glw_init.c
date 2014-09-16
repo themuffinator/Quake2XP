@@ -1095,8 +1095,8 @@ qboolean RegisterOpenGLWindow(HINSTANCE hInst)
   return RegisterClassEx(&wcex);
 }
 
-#define WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB             0x20A9
-#define FRAMEBUFFER_SRGB                             0x8DB9
+#define  WGL_FRAMEBUFFER_SRGB_CAPABLE_EXT            0x20A9
+#define FRAMEBUFFER_SRGB_EXT                         0x8DB9
 
 qboolean GLimp_InitGL (void)
 {
@@ -1210,6 +1210,11 @@ qboolean GLimp_InitGL (void)
 		Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_pixel_format not found\nOpenGL subsystem not initiation\n");
 		VID_Error (ERR_FATAL, "WGL_ARB_pixel_format not found!");
 		}
+
+	if (strstr(glw_state.wglExtsString, "WGL_EXT_framebuffer_sRGB"))
+		Com_Printf("...using WGL_EXT_framebuffer_sRGB\n");
+	else
+		Com_Printf(S_COLOR_RED"...WGL_EXT_framebuffer_sRGB not found\n");
 
 	if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control")) {
 		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) qwglGetProcAddress("wglSwapIntervalEXT");
@@ -1386,17 +1391,15 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 			iAttributes[22] = WGL_TRANSPARENT_ARB;
 			iAttributes[23] = WGL_SUPPORT_GDI_ARB;
 			iAttributes[24] = WGL_SUPPORT_OPENGL_ARB;
-		//	iAttributes[25] = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
 
 			if (qwglGetPixelFormatAttribivARB(hDC, pixelFormat, 0, 25, iAttributes, iResults) == GL_FALSE) {
 				Com_Printf (S_COLOR_RED	"GLimp_InitGL() wglGetPixelFormatAttribivARB failed\n");
 				VID_Error (ERR_FATAL,	"GLimp_InitGL() wglGetPixelFormatAttribivARB failed\n"); 
 				
 			}
-		//	qglEnable(FRAMEBUFFER_SRGB);
 
-			Com_Printf ("WGL_PFD: Color "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Stencil "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits\n",
-									iResults[1], iResults[6], iResults[5], iResults[7]);
+			Com_Printf ("WGL_PFD: Color "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Stencil "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits \n",
+				iResults[1], iResults[6], iResults[5], iResults[7]);
      /*	
 Nvidia Coverange AA
 	

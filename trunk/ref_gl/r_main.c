@@ -1552,6 +1552,17 @@ int R_Init(void *hinstance, void *hWnd)
 		r_textureCompression = Cvar_Set("r_textureCompression", "0");
 	}
 
+	if (strstr(gl_config.extensions_string, "GL_ARB_texture_cube_map"))
+		Com_Printf("...using GL_ARB_texture_cube_map\n");
+	else 
+		Com_Printf(S_COLOR_RED"...GL_ARB_texture_cube_map not found\n");
+
+	if (strstr(gl_config.extensions_string, "GL_ARB_seamless_cube_map")){
+		Com_Printf("...using GL_ARB_seamless_cube_map\n");
+		qglEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	}
+	else
+		Com_Printf(S_COLOR_RED"...GL_ARB_seamless_cube_map not found\n");
 
 	// ===========================================================================================================================
 

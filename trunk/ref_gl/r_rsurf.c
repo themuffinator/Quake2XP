@@ -47,6 +47,7 @@ float   wTmu5Array[MAX_BATCH_SURFS][2];
 float   wTmu6Array[MAX_BATCH_SURFS][2];
 float	SurfColorArray[MAX_BATCH_SURFS][4];
 
+index_t	indexArray[MAX_BATCH_SURFS * 3];
 vec3_t	nTexArray[MAX_BATCH_SURFS];
 vec3_t	tTexArray[MAX_BATCH_SURFS];
 vec3_t	bTexArray[MAX_BATCH_SURFS];
@@ -410,82 +411,135 @@ void DrawTextureChains(void)
 
 }
 
-
 /*
 ===============
 SORT AND BATCH 
 BSP SURFACES
 ===============
 */
+qboolean R_FillAmbientBatch(msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces, int shaderId)
+{
+	unsigned	numVertices, numIndices;
+	int			i, nv = surf->numEdges;
+	float		*v, scroll, scale[2];
+	glpoly_t	*p;
 
-void GL_CreateParallaxLmPoly(msurface_t * surf)
+	numVertices = *vertices;
+	numIndices	= *indeces;
+
+	if (numVertices + nv > MAX_BATCH_SURFS)
+		return false;	// force the start new batch
+
+	c_brush_polys++;
+
+	if (newBatch)
 	{
-	int i, nv = surf->polys->numVerts;
-	float *v;
-	glpoly_t *p = surf->polys;
-	float scroll;
+		image_t	*image, *fx, *env;
+		image	= R_TextureAnimation(surf->texInfo);
+		fx		= R_TextureAnimationFx(surf->texInfo);
+		env		= R_TextureAnimationEnv(surf->texInfo);
 	
-	scroll = -64 * ((r_newrefdef.time / 40.0) - (int) (r_newrefdef.time / 40.0));
-		
-	if (scroll == 0.0)
-		scroll = -64.0;
+		if (r_parallax->value){
 
-			v = p->verts[0];
-			c_brush_polys += (nv-2);
-
-			for (i = 0; i < nv; i++, v += VERTEXSIZE) 
-				{
-				VectorCopy(v, wVertexArray[i]);
-				//baseTex
-				if (surf->texInfo->flags & SURF_FLOWING){
-				wTexArray[i][0] = v[3]+scroll;
-				}else{
-				wTexArray[i][0] = v[3];
-				}
-				wTexArray[i][1] = v[4];
-				//lightMap
-				wLMArray[i][0]  = v[5];
-				wLMArray[i][1]  = v[6];
-
-				if(r_parallax->value){
-				nTexArray[i][0] = v[7];
-				nTexArray[i][1] = v[8];
-				nTexArray[i][2] = v[9];
-				//tangents
-				tTexArray[i][0] = v[10];
-				tTexArray[i][1] = v[11];
-				tTexArray[i][2] = v[12];
-				//binormals
-				bTexArray[i][0] = v[13];
-				bTexArray[i][1] = v[14];
-				bTexArray[i][2] = v[15];
-				}
+			if (!image->parallaxScale){
+				scale[0] = r_parallaxScale->value / image->width;
+				scale[1] = r_parallaxScale->value / image->height;
 			}
-	
+			else
+			{
+				scale[0] = image->parallaxScale / image->width;
+				scale[1] = image->parallaxScale / image->height;
+			}
+			qglUniform4f(qglGetUniformLocation(shaderId, "u_parallaxParams"), scale[0], scale[1], image->upload_width, image->upload_height);
+		}
+		if (image->envMap){
+			qglUniform1i(qglGetUniformLocation(shaderId, "u_envPass"), 1);
+			
+			if (image->envScale)
+				qglUniform1f(qglGetUniformLocation(shaderId, "u_envPassScale"), image->envScale);
+			else
+				qglUniform1f(qglGetUniformLocation(shaderId, "u_envPassScale"), 0.5);
+		}
+		else
+			qglUniform1i(qglGetUniformLocation(shaderId, "u_envPass"), 0);
+
+		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
+		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
+		GL_MBind(GL_TEXTURE3_ARB, env->texnum);
+
+	}
+		if (surf->texInfo->flags & SURF_FLOWING)
+		{
+			scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
+			if (scroll == 0.0)
+				scroll = -64.0;
+		}
+		else
+			scroll = 0;
+
+		// create indexes
+		if (numIndices == 0xffffffff)
+			numIndices = 0;
+
+		for (i = 0; i < nv - 2; i++)
+		{
+			indexArray[numIndices++] = numVertices;
+			indexArray[numIndices++] = numVertices + i + 1;
+			indexArray[numIndices++] = numVertices + i + 2;
+		}
+
+		p = surf->polys;
+		v = p->verts[0];
+		for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++)
+		{
+			VectorCopy(v, wVertexArray[numVertices]);
+
+			wTexArray[numVertices][0] = v[3] + scroll;
+			wTexArray[numVertices][1] = v[4];
+			wLMArray[numVertices][0]  = v[5];
+			wLMArray[numVertices][1]  = v[6];
+			
+			if (r_parallax->value){
+				nTexArray[numVertices][0] = v[7];
+				nTexArray[numVertices][1] = v[8];
+				nTexArray[numVertices][2] = v[9];
+
+				tTexArray[numVertices][0] = v[10];
+				tTexArray[numVertices][1] = v[11];
+				tTexArray[numVertices][2] = v[12];
+
+				bTexArray[numVertices][0] = v[13];
+				bTexArray[numVertices][1] = v[14];
+				bTexArray[numVertices][2] = v[15];
+			}
+		}
+
+		*vertices	= numVertices;
+		*indeces	= numIndices;
+
+	return true;	
 }
 
-vec3_t BmodelViewOrg;
-
- int SurfSort( const msurface_t **a, const msurface_t **b )
+int SurfSort( const msurface_t **a, const msurface_t **b )
 {
 	return	(((*a)->lightmaptexturenum<<26)+((*a)->texInfo->image->texnum<<13)) - 
 			(((*b)->lightmaptexturenum<<26)+((*b)->texInfo->image->texnum<<13));
 }
 
-
-int	num_scene_surfaces;
+vec3_t		BmodelViewOrg;
+int			num_scene_surfaces;
 msurface_t	*scene_surfaces[MAX_MAP_FACES];
 
-static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
+static void GL_DrawLightmappedPoly(qboolean bmodel)
 {
 	msurface_t	*s;
-	image_t		*image, *fx, *env;
-	unsigned	lmtex;
 	unsigned	defBits = 0;
-	unsigned	texture = -1;
-	int			id, i, map;
-	float		scale[2];
-	qboolean	is_dynamic = false;
+	int			id, i;
+	qboolean	newBatch;
+	unsigned	oldTex		= 0xffffffff;
+	unsigned	oldFlag		= 0xffffffff;
+	unsigned	numIndices	= 0xffffffff,
+				numVertices = 0;
 
 	defBits = worldDefs.LightmapBits;
 
@@ -506,46 +560,121 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 	}
 
 	if(r_pplWorld->value >1)
-	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 	else
-	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
 	
-	if(r_parallax->value){
-	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
-	}
+	if(r_parallax->value)
+		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+	
 
-	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))SurfSort);
+	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"),	0);
+	qglUniform1i(qglGetUniformLocation(id, "u_LightMap"),	1);
+	qglUniform1i(qglGetUniformLocation(id, "u_Add"),		2);
+	qglUniform1i(qglGetUniformLocation(id, "u_envMap"),		3);
 
-	for (i = 0; i < num_scene_surfaces; i++)
-	{
+	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
+
+	for (i = 0; i < num_scene_surfaces; i++){
 		s = scene_surfaces[i];
-		image = R_TextureAnimation(s->texInfo);
-		fx = R_TextureAnimationFx(s->texInfo);
-		env = R_TextureAnimationEnv(s->texInfo);
-		lmtex = s->lightmaptexturenum;
 
-		GL_CreateParallaxLmPoly(s);
-
-		if (caustics || (s->flags & SURF_WATER)){
-			qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
-			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 1);
+	//update lightmaps
+		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
+		{
+			if (numIndices != 0xffffffff){
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+				numVertices = 0;
+				numIndices = 0xffffffff;
+				}
+		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
 		}
-		else
-			qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 0);
 
-		if (image->envMap){
-			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 1);
-			if (image->envScale)
-				qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), image->envScale);
+	// flush batch (new texture)
+		if (s->texInfo->image->texnum != oldTex)
+		{
+			if (numIndices != 0xffffffff){
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+				numVertices = 0;
+				numIndices = 0xffffffff;
+			}
+		oldTex = s->texInfo->image->texnum;
+		newBatch = true;
+		}
+	else
+		newBatch = false;
+	
+	// fill new batch
+	repeat:	
+		if (!R_FillAmbientBatch(s, newBatch, &numVertices, &numIndices, id))
+		{
+			if (numIndices != 0xffffffff){
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+				numVertices = 0;
+				numIndices = 0xffffffff;
+				}
+			goto repeat;
+		}
+	}
+	
+	// draw the rest
+	if (numIndices != 0xffffffff)
+		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+	
+
+	GL_BindNullProgram();
+}
+
+
+int	r_lightTimestamp;
+int	num_light_surfaces;
+msurface_t	*light_surfaces[MAX_MAP_FACES];
+
+qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces, int shaderId, qboolean bmodel, qboolean caustics)
+{
+	unsigned	numVertices, numIndices;
+	int			i, nv = surf->numEdges;
+	float		*v, scroll, scale[2];
+	glpoly_t	*p;
+	qboolean	cont;
+
+	numVertices = *vertices;
+	numIndices = *indeces;
+
+	if (numVertices + nv > MAX_BATCH_SURFS)
+		return false;	// force the start new batch
+
+	c_brush_polys++;
+
+	if (newBatch)
+	{
+		image_t		*image, *normalMap;
+		image		= R_TextureAnimation		(surf->texInfo);
+		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
+
+		if (!image->specularScale)
+			qglUniform1f(qglGetUniformLocation(shaderId, "u_specularScale"), r_specularScale->value);
+		else
+			qglUniform1f(qglGetUniformLocation(shaderId, "u_specularScale"), image->specularScale);
+
+		if (!image->SpecularExp)
+			qglUniform1f(qglGetUniformLocation(shaderId, "u_specularExp"), 16.0);
+		else
+			qglUniform1f(qglGetUniformLocation(shaderId, "u_specularExp"), image->SpecularExp);
+		
+		
+	//	if (!CL_PMpointcontents(currentShadowLight->origin) & MASK_WATER){
+			if (caustics || surf->flags & SURF_WATER)
+				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 1);
 			else
-				qglUniform1f(qglGetUniformLocation(id, "u_envPassScale"), 0.5);
-		}
-		else
-			qglUniform1i(qglGetUniformLocation(id, "u_envPass"), 0);
+				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 0);
+	//	}
+	//	else
+	//		qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 0);
 
 		if (r_parallax->value){
 
 			if (!image->parallaxScale){
+
 				scale[0] = r_parallaxScale->value / image->width;
 				scale[1] = r_parallaxScale->value / image->height;
 			}
@@ -554,151 +683,102 @@ static void GL_BatchLightmappedPoly(qboolean bmodel, qboolean caustics)
 				scale[0] = image->parallaxScale / image->width;
 				scale[1] = image->parallaxScale / image->height;
 			}
-			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
-			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
+			qglUniform4f(qglGetUniformLocation(shaderId, "u_parallaxParams"), scale[0], scale[1], image->upload_width, image->upload_height);
 		}
 
-		for (map = 0; map < MAXLIGHTMAPS && s->styles[map] != 255; map++) {
-			if (r_newrefdef.lightstyles[s->styles[map]].white != s->cached_light[map])
-				goto dynamic;
-		}
 
-		// dynamic this frame or dynamic previously
-		if ((s->dlightframe == r_framecount)) {
- 	
-		dynamic:
-			if (r_dynamic->value) {
-                
-                if (!(s->texInfo-> flags &
-				  (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP))) {
-					is_dynamic = true;
-				}
-			}
-		}
-
-		if (is_dynamic) {
-				unsigned	temp[128 * 128];
-				int			smax, tmax;
-
-				if ((s->styles[map] >= 32 || s->styles[map] == 0)
-				&& (s->dlightframe != r_framecount)) {
-				smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
-				tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;
-
-				R_BuildLightMap(s, (byte *) temp, smax * 4, false);
-				R_SetCacheState(s);
-
-				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
-
-				lmtex = s->lightmaptexturenum;
-				
-				qglTexSubImage2D(GL_TEXTURE_2D, 0,
-								s->light_s, s->light_t,
-								smax, tmax,
-								GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, temp); 
-	
-			} else {
-				
-				if(!r_pplWorld->value || r_pplWorld->value < 2){
-
-					smax = (s->extents[0] / r_worldmodel->lightmap_scale) + 1;
-					tmax = (s->extents[1] / r_worldmodel->lightmap_scale) + 1;
-					R_BuildLightMap(s, (byte *) temp, smax * 4, false);
-					GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + 0);
-					lmtex = 0;
-					qglTexSubImage2D(GL_TEXTURE_2D, 0, s->light_s, s->light_t, smax, tmax, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, temp); 
-				}
-			}
-		}
-
-		if(texture != image->texnum) {
+		GL_MBind		(GL_TEXTURE0_ARB, image->texnum);
+		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);
 		
-			GL_MBind(GL_TEXTURE0_ARB, image->texnum);
-			qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
+		GL_MBindCube	(GL_TEXTURE2_ARB, filtercube_texture_object[currentShadowLight->filter]->texnum);
+		GL_SetupCubeMapMatrix(bmodel);
 
-			GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + lmtex);
-			qglUniform1i(qglGetUniformLocation(id, "u_LightMap"), 1);
+		GL_MBind3d		(GL_TEXTURE3_ARB, atten3d_texture_object->texnum);
+		qglMatrixMode	(GL_TEXTURE);
+		qglLoadIdentity	();
+		qglTranslatef	(0.5, 0.5, 0.5);
+		qglScalef		(0.5 / currentShadowLight->radius[0], 0.5 / currentShadowLight->radius[1], 0.5 / currentShadowLight->radius[2]);
+		qglTranslatef	(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
+		qglMatrixMode	(GL_MODELVIEW);
 
-			GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
-			qglUniform1i(qglGetUniformLocation(id, "u_Add"), 2);
-
-			GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int) (r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-			qglUniform1i(qglGetUniformLocation(id, "u_Caustics"), 3);
-
-			GL_MBind(GL_TEXTURE4_ARB, env->texnum);
-			qglUniform1i(qglGetUniformLocation(id, "u_envMap"), 4);
-			
-		}
-		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
-		texture = image->texnum;
+		GL_MBind(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	}
-	GL_BindNullProgram();
-}
 
-int	r_lightTimestamp;
-int	num_light_surfaces;
-msurface_t	*light_surfaces[MAX_MAP_FACES];
+	if (surf->texInfo->flags & SURF_FLOWING)
+	{
+		scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
+		if (scroll == 0.0)
+			scroll = -64.0;
+	}
+	else
+		scroll = 0;
+
+	// create indexes
+	if (numIndices == 0xffffffff)
+		numIndices = 0;
+
+	for (i = 0; i < nv - 2; i++)
+	{
+		indexArray[numIndices++] = numVertices;
+		indexArray[numIndices++] = numVertices + i + 1;
+		indexArray[numIndices++] = numVertices + i + 2;
+	}
+
+	p = surf->polys;
+	v = p->verts[0];
+	for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++)
+	{
+		VectorCopy(v, wVertexArray[numVertices]);
+
+		wTexArray[numVertices][0] = v[3] + scroll;
+		wTexArray[numVertices][1] = v[4];
+		wLMArray[numVertices][0]  = v[5];
+		wLMArray[numVertices][1]  = v[6];
+
+		if (r_parallax->value){
+			nTexArray[numVertices][0] = v[7];
+			nTexArray[numVertices][1] = v[8];
+			nTexArray[numVertices][2] = v[9];
+
+			tTexArray[numVertices][0] = v[10];
+			tTexArray[numVertices][1] = v[11];
+			tTexArray[numVertices][2] = v[12];
+
+			bTexArray[numVertices][0] = v[13];
+			bTexArray[numVertices][1] = v[14];
+			bTexArray[numVertices][2] = v[15];
+		}
+	}
+
+	*vertices = numVertices;
+	*indeces = numIndices;
+
+	return true;
+}
 
  int lightSurfSort( const msurface_t **a, const msurface_t **b )
 {
 	return	(*a)->texInfo->image->texnum - (*b)->texInfo->image->texnum;
 }
-
-void GL_CreateLightPoly(msurface_t * surf)
-	{
-	int			i, nv = surf->polys->numVerts;
-	float		*v;
-	glpoly_t	*p = surf->polys;
-		float scroll;
-	
-	scroll = -64 * ((r_newrefdef.time / 40.0) - (int) (r_newrefdef.time / 40.0));
-
-	v = p->verts[0];
-	c_brush_polys += (nv-2);
-
-	for (i = 0; i < nv; i++, v += VERTEXSIZE) 
-		{
-		VectorCopy(v, wVertexArray[i]);
-		//baseTex
-		if (surf->texInfo->flags & SURF_FLOWING){
-		wTexArray[i][0] = v[3]+scroll;
-		}else{
-		wTexArray[i][0] = v[3];
-		}
-		wTexArray[i][1] = v[4];
-		//normals
-		nTexArray[i][0] = v[7];
-		nTexArray[i][1] = v[8];
-		nTexArray[i][2] = v[9];
-		//tangents
-		tTexArray[i][0] = v[10];
-		tTexArray[i][1] = v[11];
-		tTexArray[i][2] = v[12];
-		//binormals
-		bTexArray[i][0] = v[13];
-		bTexArray[i][1] = v[14];
-		bTexArray[i][2] = v[15];
-	}
-	
-}
-
-
-static void GL_BatchLightPass(qboolean bmodel)
+ 
+static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
-	image_t		*image, *nm;
 	unsigned	defBits = 0;
-	unsigned	texture = -1;
 	int			id, i;
-	float		scale[2];
 	glpoly_t	*poly;
-
+	qboolean	newBatch, oldCaust;
+	unsigned	oldTex		= 0xffffffff;
+	unsigned	oldFlag		= 0xffffffff;
+	unsigned	numIndices	= 0xffffffff,
+				numVertices = 0;
 
 	if (r_parallax->value)
 		defBits = worldDefs.LightParallaxBit;
 
 	if(currentShadowLight->isAmbient || currentShadowLight->isFog)
 		defBits |= worldDefs.AmbientBits;
+
 	// setup program
 	GL_BindProgram(lightWorldProgram, defBits);
 	id = lightWorldProgram->id[defBits];
@@ -722,76 +802,55 @@ static void GL_BatchLightPass(qboolean bmodel)
 	qglUniform1i(qglGetUniformLocation(id, "u_fog"), (int)currentShadowLight->isFog);
 	qglUniform1f(qglGetUniformLocation(id, "u_fogDensity"), currentShadowLight->fogDensity);
 	}
+	
+	qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
+
+	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"),		0);
+	qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"),		1);
+	qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"),	2);
+	qglUniform1i(qglGetUniformLocation(id, "u_attenMap"),		3);
+	qglUniform1i(qglGetUniformLocation(id, "u_Caustics"),		4);
 
 	qsort(light_surfaces, num_light_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))lightSurfSort);
 
-	for (i=0; i<num_light_surfaces; i++)
-	{
-		s		= light_surfaces[i];
-		poly	= s->polys;
-		
+	for (i = 0; i < num_light_surfaces; i++){
+		s = light_surfaces[i];
+		poly = s->polys;
+
 		if (poly->lightTimestamp != r_lightTimestamp)
 			continue;
-		
-		GL_CreateLightPoly(s);
 
-		image = R_TextureAnimation(s->texInfo);
-		nm    = R_TextureAnimationNormal(s->texInfo);
-
-		
-		if(texture != image->texnum){
-
-		if(!image->specularScale)
-			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), r_specularScale->value);
-		else
-			qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), image->specularScale);
-
-		if(!image->SpecularExp)
-			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), 16.0);
-		else
-			qglUniform1f(qglGetUniformLocation(id, "u_specularExp"), image->SpecularExp);
-
-		if(r_parallax->value){
-			
-			if(!image->parallaxScale){
-
-			scale[0] = r_parallaxScale->value / image->width;
-			scale[1] = r_parallaxScale->value / image->height;
+		// flush batch (new texture or flag)
+		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust)
+		{
+			if (numIndices != 0xffffffff){
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+				numVertices = 0;
+				numIndices = 0xffffffff;
 			}
-			else
-			{
-			scale[0] = image->parallaxScale / image->width;
-			scale[1] = image->parallaxScale / image->height;
+			oldTex = s->texInfo->image->texnum;
+			oldFlag = s->flags;
+			oldCaust = caustics;
+			newBatch = true;
+		}
+		else
+			newBatch = false;
+
+	// fill new batch
+	repeat:
+		if (!R_FillLightBatch(s, newBatch, &numVertices, &numIndices, id, bmodel, caustics))
+		{
+			if (numIndices != 0xffffffff){
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+				numVertices = 0;
+				numIndices = 0xffffffff;
 			}
-			qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
-			qglUniform2f(qglGetUniformLocation(id, "u_texSize"), image->upload_width, image->upload_height);
+			goto repeat;
 		}
-
-		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
-		GL_MBind(GL_TEXTURE1_ARB, nm->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 1);
-	
-		GL_MBindCube(GL_TEXTURE2_ARB, filtercube_texture_object[currentShadowLight->filter]->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"), 2);
-		GL_SetupCubeMapMatrix(bmodel);
-
-		GL_MBind3d(GL_TEXTURE3_ARB, atten3d_texture_object->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_attenMap"), 3);
-		qglMatrixMode(GL_TEXTURE);
-		qglLoadIdentity();
-		qglTranslatef(0.5,0.5,0.5);
-		qglScalef(0.5/currentShadowLight->radius[0], 0.5/currentShadowLight->radius[1], 0.5/currentShadowLight->radius[2]);
-		qglTranslatef(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
-		qglMatrixMode(GL_MODELVIEW);
-
-		}
-
-		qglDrawElements(GL_TRIANGLES, s->numIndices, GL_UNSIGNED_SHORT, s->indices);	
-		texture = image->texnum;
-
 	}
-	
+	// draw the rest
+	if (numIndices != 0xffffffff)
+		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
 
 	GL_BindNullProgram();
 }
@@ -897,9 +956,9 @@ static void R_RecursiveWorldNode(mnode_t * node)
 		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {	// add to the translucent chain
 			surf->texturechain = r_alpha_surfaces;
 			r_alpha_surfaces = surf;
-		} else {
+		}
+		else {
 			if (!(surf->flags & SURF_DRAWTURB)) {
-		
 				scene_surfaces[num_scene_surfaces++] = surf;
 
 			} else {
@@ -920,7 +979,6 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	// recurse down the back side
 	R_RecursiveWorldNode(node->children[!side]);
 }
-
 
 qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 {
@@ -1074,7 +1132,7 @@ void R_DrawLightWorld(void)
 	num_light_surfaces = 0;
 				
 	if(R_FillLightChain())
-		GL_BatchLightPass(false);
+		GL_DrawLightPass(false, false);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -1127,6 +1185,7 @@ void R_DrawBSP(void)
 	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 		
 	R_ClearSkyBox();
+	
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
@@ -1135,7 +1194,15 @@ void R_DrawBSP(void)
 	qglEnableVertexAttribArray(ATRB_TANGENT);
 	qglEnableVertexAttribArray(ATRB_BINORMAL);
 	
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
+/*	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);	
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, gl_state.nm_offset, 0);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, gl_state.st_offset, 0);
+	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, gl_state.lm_offset, 0);
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, gl_state.tg_offset, 0);
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, gl_state.bn_offset, 0);
+*/
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
 	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
 	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
@@ -1144,7 +1211,7 @@ void R_DrawBSP(void)
 
 	num_scene_surfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
-	GL_BatchLightmappedPoly(false, false);
+	GL_DrawLightmappedPoly(false);
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -1152,6 +1219,8 @@ void R_DrawBSP(void)
 	qglDisableVertexAttribArray(ATRB_TEX1);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
+	
+//	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	DrawTextureChains();
@@ -1265,7 +1334,6 @@ static void R_DrawInlineBModel2(void)
 						
 		}
 	}
-
 	qglDisable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -1280,12 +1348,9 @@ int CL_PMpointcontents(vec3_t point);
 
 void R_DrawBrushModel(entity_t * e)
 {
-	vec3_t		mins, maxs;
+	vec3_t		mins, maxs, tmp;
 	int			i;
-	int         contentsAND, contentsOR; 
-    qboolean	rotated, viewInWater;
-	int			cont[5];
-	vec3_t		org, tmp;
+    qboolean	rotated;
 	mat3_t		entityAxis;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -1332,34 +1397,6 @@ void R_DrawBrushModel(entity_t * e)
 	qglPushMatrix();
 	R_RotateForLightEntity(e);
 
-	// ================================== 
-    // detect underwater position 
-    // for bmodels caustics by Berserker 
-    // modified a bit by reckless. 
-    // ================================== 
-    currententity->minmax[0] = mins[0]; 
-    currententity->minmax[1] = mins[1]; 
-    currententity->minmax[2] = mins[2]; 
-    currententity->minmax[3] = maxs[0]; 
-    currententity->minmax[4] = maxs[1]; 
-    currententity->minmax[5] = maxs[2]; 
-
-    VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]); 
-    cont[0] = CL_PMpointcontents2(org, currentmodel); 
-    VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]); 
-    cont[1] = CL_PMpointcontents2(org, currentmodel); 
-    VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]); 
-    cont[2] = CL_PMpointcontents2(org, currentmodel); 
-    VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]); 
-    cont[3] = CL_PMpointcontents2(org, currentmodel); 
-    org[0] = (currententity->minmax[0] + currententity->minmax[3]) * 0.5; 
-    org[1] = (currententity->minmax[1] + currententity->minmax[4]) * 0.5; 
-    org[2] = (currententity->minmax[2] + currententity->minmax[5]) * 0.5; 
-    cont[4] = CL_PMpointcontents2(org, currentmodel); 
-    contentsAND = (cont[0] & cont[1] & cont[2] & cont[3] & cont[4]); 
-    contentsOR = (cont[0] | cont[1] | cont[2] | cont[3] | cont[4]); 
-    viewInWater = (qboolean)(CL_PMpointcontents(r_newrefdef.vieworg) & MASK_WATER);
-
 	//Put camera into model space view angle for bmodels parallax
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
 		{
@@ -1378,8 +1415,8 @@ void R_DrawBrushModel(entity_t * e)
 	qglEnableVertexAttribArray(ATRB_TEX1);
 	qglEnableVertexAttribArray(ATRB_TANGENT);
 	qglEnableVertexAttribArray(ATRB_BINORMAL);
-	
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
 	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
 	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, wLMArray);
@@ -1388,24 +1425,7 @@ void R_DrawBrushModel(entity_t * e)
 	
 	num_scene_surfaces = 0;
 	R_DrawInlineBModel();
-	
-	// all types = valid if one or all of these match 
-    if ((contentsAND & MASK_WATER) || ((contentsOR & MASK_WATER) && viewInWater)) 
-    { 
-       // sanity checking since we newer have all the types above. 
-       if (contentsOR & CONTENTS_WATER) 
-       { 
-          GL_BatchLightmappedPoly(true, true); 
-       } 
-       else 
-       { 
-          GL_BatchLightmappedPoly(true, false); 
-       } 
-    } 
-    else 
-    { 
-       GL_BatchLightmappedPoly(true, false); 
-    }
+	GL_DrawLightmappedPoly(true);
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -1445,15 +1465,65 @@ qboolean R_MarkBrushModelSurfaces()
 	return num_light_surfaces;
 }
 
+qboolean R_CheckForBmodelCaustics(void){
+	vec3_t		mins, maxs, org;
+	int         contentsAND, contentsOR;
+	qboolean	viewInWater;
+	int			cont[5];
+
+	// ================================== 
+	// detect underwater position 
+	// for bmodels caustics by Berserker 
+	// modified a bit by reckless. 
+	// ================================== 
+	currententity->minmax[0] = mins[0];
+	currententity->minmax[1] = mins[1];
+	currententity->minmax[2] = mins[2];
+	currententity->minmax[3] = maxs[0];
+	currententity->minmax[4] = maxs[1];
+	currententity->minmax[5] = maxs[2];
+
+	VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]);
+	cont[0] = CL_PMpointcontents2(org, currentmodel);
+	VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]);
+	cont[1] = CL_PMpointcontents2(org, currentmodel);
+	VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]);
+	cont[2] = CL_PMpointcontents2(org, currentmodel);
+	VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]);
+	cont[3] = CL_PMpointcontents2(org, currentmodel);
+	org[0] = (currententity->minmax[0] + currententity->minmax[3]) * 0.5;
+	org[1] = (currententity->minmax[1] + currententity->minmax[4]) * 0.5;
+	org[2] = (currententity->minmax[2] + currententity->minmax[5]) * 0.5;
+	cont[4] = CL_PMpointcontents2(org, currentmodel);
+	contentsAND = (cont[0] & cont[1] & cont[2] & cont[3] & cont[4]);
+	contentsOR = (cont[0] | cont[1] | cont[2] | cont[3] | cont[4]);
+	viewInWater = (qboolean)(CL_PMpointcontents(r_newrefdef.vieworg) & MASK_WATER);
+
+	if ((contentsAND & MASK_WATER) || ((contentsOR & MASK_WATER) && viewInWater))
+	{
+		// sanity checking since we newer have all the types above. 
+		if (contentsOR & CONTENTS_WATER){
+			Com_Printf("add bmodel caustics\n");
+			return true;
+		}
+		else
+			return false;
+	}
+	return false;
+}
+
 void R_DrawLightBrushModel(entity_t * e)
 {
 
-	vec3_t				mins, maxs;
-	int					i;
-    qboolean			rotated;
-	vec3_t				tmp, oldLight;
-	mat3_t				entityAxis;
-	
+	vec3_t		mins, maxs, org;
+	int			i;
+    qboolean	rotated;
+	vec3_t		tmp, oldLight;
+	mat3_t		entityAxis;
+	int			contentsAND, contentsOR;
+	qboolean	viewInWater, caustics;
+	int			cont[5];
+
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
@@ -1509,6 +1579,45 @@ void R_DrawLightBrushModel(entity_t * e)
 	qglPushMatrix();
 	R_RotateForLightEntity(e);
 
+	// ================================== 
+	// detect underwater position 
+	// for bmodels caustics by Berserker 
+	// modified a bit by reckless. 
+	// ================================== 
+	currententity->minmax[0] = mins[0];
+	currententity->minmax[1] = mins[1];
+	currententity->minmax[2] = mins[2];
+	currententity->minmax[3] = maxs[0];
+	currententity->minmax[4] = maxs[1];
+	currententity->minmax[5] = maxs[2];
+
+	VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]);
+	cont[0] = CL_PMpointcontents2(org, currentmodel);
+	VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]);
+	cont[1] = CL_PMpointcontents2(org, currentmodel);
+	VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]);
+	cont[2] = CL_PMpointcontents2(org, currentmodel);
+	VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]);
+	cont[3] = CL_PMpointcontents2(org, currentmodel);
+	org[0] = (currententity->minmax[0] + currententity->minmax[3]) * 0.5;
+	org[1] = (currententity->minmax[1] + currententity->minmax[4]) * 0.5;
+	org[2] = (currententity->minmax[2] + currententity->minmax[5]) * 0.5;
+	cont[4] = CL_PMpointcontents2(org, currentmodel);
+	contentsAND = (cont[0] & cont[1] & cont[2] & cont[3] & cont[4]);
+	contentsOR = (cont[0] | cont[1] | cont[2] | cont[3] | cont[4]);
+	viewInWater = (qboolean)(CL_PMpointcontents(r_newrefdef.vieworg) & MASK_WATER);
+
+	if ((contentsAND & MASK_WATER) || ((contentsOR & MASK_WATER) && viewInWater))
+	{
+		// sanity checking since we newer have all the types above. 
+		if (contentsOR & CONTENTS_WATER)
+			caustics = true;
+		else
+			caustics = false;
+	}
+	else
+		caustics = false;
+
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -1525,7 +1634,7 @@ void R_DrawLightBrushModel(entity_t * e)
 	num_light_surfaces = 0;
 	
 	if(R_MarkBrushModelSurfaces())
-		GL_BatchLightPass(true);
+		GL_DrawLightPass(true, caustics);
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 	

@@ -950,18 +950,18 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 
 	if (samples == 3){
 
-	if (gl_state.texture_compression_arb && mipmap)
-		comp = GL_COMPRESSED_RGB_ARB;
-	else 
-		comp = gl_tex_solid_format;
+		if (gl_state.texture_compression_arb && mipmap)
+			comp = GL_COMPRESSED_RGB_ARB;
+		else
+			comp = gl_tex_solid_format;
 	}
 
 	if (samples == 4){
 
-	if (gl_state.texture_compression_arb && mipmap)
-		comp = GL_COMPRESSED_RGBA_ARB;
-	else 
-		comp = gl_tex_alpha_format;
+		if (gl_state.texture_compression_arb && mipmap)
+			comp = GL_COMPRESSED_RGBA_ARB;
+		else
+			comp = gl_tex_alpha_format;
 	}
 
 

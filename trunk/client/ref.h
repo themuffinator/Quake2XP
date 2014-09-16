@@ -301,6 +301,7 @@ typedef struct msurface_s {
 								// lightmaps
 
 	glpoly_t *polys;			// multiple if warped
+	
 	struct msurface_s *texturechain;
 	struct msurface_s *lightmapchain;
 
@@ -340,8 +341,6 @@ typedef struct msurface_s {
 	int has_vbo;
 
 } msurface_t;
-
-
 
 typedef struct mnode_s {
 // common with leaf
