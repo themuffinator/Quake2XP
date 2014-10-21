@@ -539,6 +539,7 @@ typedef struct cplane_s
 	byte	type;			// for fast side tests
 	byte	signbits;		// signx + (signy<<1) + (signz<<1)
 	byte	pad[2];
+
 } cplane_t;
 
 // structure offset for asm code

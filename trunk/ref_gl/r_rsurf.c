@@ -31,9 +31,6 @@ msurface_t *r_alpha_surfaces;
 
 float color_black[4] = {0.0, 0.0, 0.0, 0.0};
 
-extern void R_SetCacheState(msurface_t * surf);
-extern void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadModel);
-
 vec3_t  wVertexArray[MAX_BATCH_SURFS];
 float   wTexArray[MAX_BATCH_SURFS][2];
 float   wLMArray[MAX_BATCH_SURFS][2];
@@ -192,10 +189,8 @@ void DrawGLPolyGLSL(msurface_t * fa)
 	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	150.0);
 	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	if (r_pplWorld->value >1)
-		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-	else
-		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+
 
 	
 	p = fa->polys;
@@ -268,10 +263,7 @@ void DrawGLFlowingPolyGLSL(msurface_t * fa)
 	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	300.000);
 	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	if (r_pplWorld->value >1)
-		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-	else
-		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
+	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 
 		
 
@@ -499,19 +491,17 @@ qboolean R_FillAmbientBatch(msurface_t *surf, qboolean newBatch, unsigned *verti
 			wLMArray[numVertices][0]  = v[5];
 			wLMArray[numVertices][1]  = v[6];
 			
-			if (r_parallax->value){
-				nTexArray[numVertices][0] = v[7];
-				nTexArray[numVertices][1] = v[8];
-				nTexArray[numVertices][2] = v[9];
+			nTexArray[numVertices][0] = v[7];
+			nTexArray[numVertices][1] = v[8];
+			nTexArray[numVertices][2] = v[9];
 
-				tTexArray[numVertices][0] = v[10];
-				tTexArray[numVertices][1] = v[11];
-				tTexArray[numVertices][2] = v[12];
+			tTexArray[numVertices][0] = v[10];
+			tTexArray[numVertices][1] = v[11];
+			tTexArray[numVertices][2] = v[12];
 
-				bTexArray[numVertices][0] = v[13];
-				bTexArray[numVertices][1] = v[14];
-				bTexArray[numVertices][2] = v[15];
-			}
+			bTexArray[numVertices][0] = v[13];
+			bTexArray[numVertices][1] = v[14];
+			bTexArray[numVertices][2] = v[15];
 		}
 
 		*vertices	= numVertices;
@@ -541,10 +531,8 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	unsigned	numIndices	= 0xffffffff,
 				numVertices = 0;
 
-	defBits = worldDefs.LightmapBits;
-
 	if (r_parallax->value)
-		defBits |= worldDefs.ParallaxBit;
+		defBits = worldDefs.ParallaxBit;
 
 	// setup program
 	GL_BindProgram(ambientWorldProgram, defBits);
@@ -557,15 +545,12 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
 	else
 		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
+	
+	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
 	}
 
-	if(r_pplWorld->value >1)
-		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-	else
-		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
-	
-	if(r_parallax->value)
-		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+
 	
 
 	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"),	0);
@@ -735,19 +720,17 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		wLMArray[numVertices][0]  = v[5];
 		wLMArray[numVertices][1]  = v[6];
 
-		if (r_parallax->value){
-			nTexArray[numVertices][0] = v[7];
-			nTexArray[numVertices][1] = v[8];
-			nTexArray[numVertices][2] = v[9];
+		nTexArray[numVertices][0] = v[7];
+		nTexArray[numVertices][1] = v[8];
+		nTexArray[numVertices][2] = v[9];
 
-			tTexArray[numVertices][0] = v[10];
-			tTexArray[numVertices][1] = v[11];
-			tTexArray[numVertices][2] = v[12];
+		tTexArray[numVertices][0] = v[10];
+		tTexArray[numVertices][1] = v[11];
+		tTexArray[numVertices][2] = v[12];
 
-			bTexArray[numVertices][0] = v[13];
-			bTexArray[numVertices][1] = v[14];
-			bTexArray[numVertices][2] = v[15];
-		}
+		bTexArray[numVertices][0] = v[13];
+		bTexArray[numVertices][1] = v[14];
+		bTexArray[numVertices][2] = v[15];
 	}
 
 	*vertices = numVertices;
@@ -776,6 +759,7 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	if (r_parallax->value)
 		defBits = worldDefs.LightParallaxBit;
 
+
 	if(currentShadowLight->isAmbient || currentShadowLight->isFog)
 		defBits |= worldDefs.AmbientBits;
 
@@ -795,8 +779,8 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform1f(qglGetUniformLocation(id, "u_toksvigFactor"), r_toksvigFactor->value);
 
-	if(r_parallax->value)
-		qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+	if (r_parallax->value)
+	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
 	
 	if(currentShadowLight->isFog){
 	qglUniform1i(qglGetUniformLocation(id, "u_fog"), (int)currentShadowLight->isFog);
@@ -1241,19 +1225,10 @@ void R_DrawBrushModel(entity_t * e);
 
 static void R_DrawInlineBModel(void)
 {
-	int i, k;
+	int i;
 	cplane_t *pplane;
 	float dot;
 	msurface_t *psurf;
-	dlight_t *lt;
-	
-	// calculate dynamic lighting for bmodel
-	lt = r_newrefdef.dlights;
-		for (k = 0; k < r_newrefdef.num_dlights; k++, lt++) {
-			R_MarkLights(lt, 1 << k,
-						 currentmodel->nodes + currentmodel->firstNode);
-		}
-	
 
 	psurf = &currentmodel->surfaces[currentmodel->firstModelSurface];
 

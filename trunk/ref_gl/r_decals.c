@@ -105,10 +105,8 @@ void R_RenderDecals(void)
 	
 	qglEnable(GL_POLYGON_OFFSET_FILL);
     qglPolygonOffset(-1, -1);
-	qglStencilMask(0);
     qglDepthMask(0);
     qglEnable(GL_BLEND);
-	qglColorMask(1, 1, 1, 0);
 
 	active = &active_decals;
 
@@ -206,7 +204,6 @@ void R_RenderDecals(void)
 		c_decal_tris += numIndices/3;
 	 }
 
-	qglColorMask(1, 1, 1, 1);
     qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     qglDisable(GL_BLEND);
     qglDisableVertexAttribArray(ATRB_POSITION);

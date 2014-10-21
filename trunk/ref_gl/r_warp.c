@@ -194,10 +194,7 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
-	if (r_pplWorld->value >1)
-		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-	else
-		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), 1.0);
+	qglUniform1f				(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
 			
 	dstscroll = ((r_newrefdef.time * 0.15f) - (int) (r_newrefdef.time * 0.15f));
 

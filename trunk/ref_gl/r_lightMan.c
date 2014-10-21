@@ -1283,12 +1283,14 @@ void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame)
 
 worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius[3], int style, 
 									   int filter, vec3_t angles, vec3_t speed, qboolean isStatic, 
-									   int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH], int flags, int fog, float fogDensity) {
+									   int isShadow, int isAmbient, float cone, qboolean ingame, 
+									   int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH], 
+									   int flags, int fog, float fogDensity) {
 	
-	worldShadowLight_t *light;
-	int i, leafnum, cluster;
-	mat3_t lightAxis;
-	vec3_t tmp;
+	worldShadowLight_t	*light;
+	cplane_t			*plane;
+	int					i, leafnum, cluster;
+	vec3_t				tmp;
 
 	light = (worldShadowLight_t*)malloc(sizeof(worldShadowLight_t));
 	light->s_next = shadowLight_static;
@@ -1359,11 +1361,31 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 		tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
 		tmp[2] = (i & 4) ? -light->radius[2] : light->radius[2];
 
-		AnglesToMat3(light->angles, lightAxis);
-		Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
+		AnglesToMat3(light->angles, light->axis);
+		Mat3_TransposeMultiplyVector(light->axis, tmp, light->corners[i]);
 		VectorAdd(light->corners[i], light->origin, light->corners[i]);
 	}
+		
+		
+	// compute the frustum planes for non cone lights
+	if (!light->_cone){
+		for (i=0, plane=light->frust; i<6; i++, plane++) {
+			float d = DotProduct(light->origin, light->axis[i >> 1]);
 
+			if (i & 1) {
+				VectorNegate(light->axis[i >> 1], plane->normal);
+				plane->dist = -d - light->radius[i >> 1];
+			}
+			else {
+				VectorCopy(light->axis[i >> 1], plane->normal);
+				plane->dist = d - light->radius[i >> 1];
+			}
+
+		SetPlaneType(plane);
+		SetPlaneSignBits(plane);
+		}
+	}
+	
 	MakeFrustum4Light(light, false);
 
 	if(ingame){
@@ -1389,6 +1411,22 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 }
 
 model_t *loadmodel;
+
+void R_SetLightPlanes(){
+	
+	vec4_t	clipPlane[6];
+	int		i;
+
+	for (i = 0; i < 6; i++)
+	{
+	clipPlane[i][0] = -DotProduct(r_newrefdef.axis[1], currentShadowLight->frust[i].normal);
+	clipPlane[i][1] = DotProduct(r_newrefdef.axis[2], currentShadowLight->frust[i].normal);
+	clipPlane[i][2] = -DotProduct(r_newrefdef.axis[0], currentShadowLight->frust[i].normal);
+	clipPlane[i][3] = DotProduct(r_newrefdef.vieworg, currentShadowLight->frust[i].normal) - currentShadowLight->frust[i].dist;
+
+	qglClipPlane(GL_CLIP_PLANE0+i, (double*)clipPlane[i]);
+	}
+}
 
 void Load_BspLights() {
 	
@@ -1871,7 +1909,7 @@ void R_LightScale(void) {
 	float	val;
 	int		i;
 
-	if (!r_lightScale->value || !r_pplWorld->value)
+	if (!r_lightScale->value)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)

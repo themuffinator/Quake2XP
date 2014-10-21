@@ -784,7 +784,9 @@
     <ClCompile Include="ref_gl\r_cull.c" />
     <ClCompile Include="ref_gl\r_lightMan.c" />
     <ClCompile Include="ref_gl\r_lightMaps.c" />
+    <ClCompile Include="ref_gl\r_main.c" />
     <ClCompile Include="ref_gl\r_program.c" />
+    <ClCompile Include="ref_gl\r_shadows.c" />
     <ClCompile Include="ref_gl\r_zprepass.c" />
     <ClCompile Include="server\sv_ccmds.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -1162,10 +1164,8 @@
     <ClCompile Include="ref_gl\r_particles.c" />
     <ClCompile Include="ref_gl\r_postprocess.c" />
     <ClCompile Include="win32\r_qglwin.c" />
-    <ClCompile Include="ref_gl\r_main.c" />
     <ClCompile Include="ref_gl\r_misc.c" />
     <ClCompile Include="ref_gl\r_rsurf.c" />
-    <ClCompile Include="ref_gl\r_shadows.c" />
     <ClCompile Include="ref_gl\r_warp.c" />
     <ClCompile Include="ref_gl\r_math.c" />
     <ClCompile Include="client\cl_cin.c">

@@ -345,3 +345,38 @@ void Mat4_Translate(mat4_t m, float x, float y, float z) {
 	m[3][2] += m[0][2]*x + m[1][2]*y + m[2][2]*z;
 	m[3][3] += m[0][3]*x + m[1][3]*y + m[2][3]*z;
 }
+
+/*
+===============
+SetPlaneType
+
+===============
+*/
+void SetPlaneType (cplane_t *plane) {
+	if (plane->normal[0] == 1.0)
+		plane->type = PLANE_X;
+	else if (plane->normal[1] == 1.0)
+		plane->type = PLANE_Y;
+	else if (plane->normal[2] == 1.0)
+		plane->type = PLANE_Z;
+	else
+		plane->type = PLANE_NON_AXIAL;
+}
+
+/*
+===============
+SetPlaneSignBits
+
+For fast box on planeside test.
+===============
+*/
+void SetPlaneSignBits (cplane_t *plane) {
+	plane->signbits = 0;
+
+	if (plane->normal[0] < 0)
+		plane->signbits |= 1;
+	if (plane->normal[1] < 0)
+		plane->signbits |= 2;
+	if (plane->normal[2] < 0)
+		plane->signbits |= 4;
+}

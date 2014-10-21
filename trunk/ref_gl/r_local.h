@@ -95,6 +95,8 @@ extern viddef_t vid;
 #define	TEXNUM_LIGHTMAPS	8192
 #define	MAX_GLTEXTURES		8192 
 
+#define BUFFER_OFFSET(i) ((byte *)NULL + (i))
+
 
  // ===================================================================
 
@@ -296,7 +298,7 @@ cvar_t	*sys_priority;
 
 cvar_t	*r_DrawRangeElements;
 
-cvar_t	*r_pplWorld;
+cvar_t	*r_skipStaticLights;
 cvar_t	*r_pplWorldAmbient;
 cvar_t	*r_lightsWeldThreshold;
 cvar_t	*r_debugLights;
@@ -370,8 +372,6 @@ void GL_SelectTexture(GLenum);
 void GL_MBindCube(GLenum target, int texnum);
 
 void R_LightPoint(vec3_t p, vec3_t color);
-void R_PushDlights(void);
-
 
 void GL_PicsColorScaleARB(qboolean enable);
 void R_InitLightgrid(void);
@@ -474,6 +474,9 @@ void Mat4_MultiplyVector(const mat4_t m, const vec3_t in, vec3_t out);
 void Mat4_Translate(mat4_t m, float x, float y, float z);
 void Mat4_Scale(mat4_t m, float x, float y, float z) ;
 qboolean Mat4_Invert(const mat4_t in, mat4_t out);
+void SetPlaneType (cplane_t *plane);
+void SetPlaneSignBits (cplane_t *plane);
+void R_SetLightPlanes();
 
 extern int	occ_framecount;
 //====================================================================
@@ -638,8 +641,6 @@ typedef struct {
 	qboolean	arb_occlusion2;
 	unsigned	query_passed;
 	qboolean	arb_multisample;
-	qboolean	wgl_nv_multisample_coverage;
-	qboolean	wgl_nv_multisample_coverage_aviable;
 	qboolean	wgl_swap_control_tear;
 	qboolean	conditional_render;
 	qboolean	glsl;
@@ -672,6 +673,7 @@ typedef struct {
 	int nm_offset;
 	int tg_offset;
 	int bn_offset;
+	int vertex_size;
 
 	mat4_t			projectionMatrix;
 	mat4_t			modelViewMatrix;		// ready to load

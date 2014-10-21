@@ -296,6 +296,7 @@ typedef struct {
 #define	PLANE_X			0
 #define	PLANE_Y			1
 #define	PLANE_Z			2
+#define	PLANE_NON_AXIAL	3
 
 // 3-5 are non-axial planes snapped to the nearest
 #define	PLANE_ANYX		3

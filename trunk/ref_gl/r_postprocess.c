@@ -40,7 +40,7 @@ void R_BuildFlares(flare_t * light){
 	unsigned	flareIndex[MAX_INDICES];
 	int			flareVert=0, index=0;
 	
-	if(r_pplWorld->value > 1 && !light->surf->ent)
+	if(!r_skipStaticLights->value && !light->surf->ent)
 		return;
 
 	if (light->surf->ent) {

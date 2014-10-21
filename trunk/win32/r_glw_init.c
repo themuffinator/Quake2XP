@@ -1095,9 +1095,6 @@ qboolean RegisterOpenGLWindow(HINSTANCE hInst)
   return RegisterClassEx(&wcex);
 }
 
-#define  WGL_FRAMEBUFFER_SRGB_CAPABLE_EXT            0x20A9
-#define FRAMEBUFFER_SRGB_EXT                         0x8DB9
-
 qboolean GLimp_InitGL (void)
 {
 	RegisterOpenGLWindow (glw_state.hInstance);
@@ -1203,7 +1200,6 @@ qboolean GLimp_InitGL (void)
 		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribivARB");
         qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
         qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)qwglGetProcAddress("wglChoosePixelFormatARB");
-        // glSampleCoverageARB was here, but was moved to r_qglwin.c which is also used in Linux
 	
 	} 
 	else {
@@ -1231,30 +1227,6 @@ qboolean GLimp_InitGL (void)
 		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
 	}
 
-	gl_state.wgl_nv_multisample_coverage = false;
-/*		if (strstr(glw_state.wglExtsString, "WGL_NV_multisample_coverage")) {
-		
-		if(r_arbSamples->value < 2){
-		Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_NV_multisample_coverage\n");
-		gl_state.wgl_nv_multisample_coverage = false;
-		gl_state.wgl_nv_multisample_coverage_aviable = true;
-		}else{
-		Com_Printf("...using WGL_NV_multisample_coverage\n");
-		gl_state.wgl_nv_multisample_coverage = true;
-		gl_state.wgl_nv_multisample_coverage_aviable = true;
-		
-		if(r_arbSamples->value >=16){ // clamp regular msaa 16x value to csaa 16q 
-		Cvar_SetValue("r_arbSamples", 8);
-		Cvar_SetValue("r_nvSamplesCoverange", 16);
-		}
-		
-		}
-		} else {
-			Com_Printf(S_COLOR_RED"...WGL_NV_multisample_coverage not found\n");
-			gl_state.wgl_nv_multisample_coverage = false;
-			gl_state.wgl_nv_multisample_coverage_aviable = false;
-		}
-*/
 	gl_state.arb_multisample = false;
 	if ( strstr(  glw_state.wglExtsString, "WGL_ARB_multisample" ) )
 	if(r_arbSamples->value < 2)
@@ -1275,17 +1247,7 @@ qboolean GLimp_InitGL (void)
 	
 	Com_Printf ("\n=============================\n\n");
 
-/*	
-Nvidia Coverange AA
-	
-Samples						# of Color/Z/Stencil	# of Coverage Samples
-8x	                                4						8
-8xQ (Quality)						8						8
-16x									4						16
-16xQ (Quality)						8						16
-*/	
-	
-		// make no rendering context current
+	// make no rendering context current
 		qwglMakeCurrent(NULL, NULL);
 
 		// Destroy the rendering context...
@@ -1308,16 +1270,8 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		iAttributes[0] = WGL_DOUBLE_BUFFER_ARB;
 		iAttributes[1] = TRUE;
 		
-		if(gl_state.wgl_nv_multisample_coverage){
-		
-		iAttributes[2] = WGL_COLOR_SAMPLES_NV;
-		iAttributes[3] = (int)r_arbSamples->value;
-		
-		}else{
-		
 		iAttributes[2] = WGL_COLOR_BITS_ARB;
 		iAttributes[3] = 32;
-		}
 
 		iAttributes[4] = WGL_DEPTH_BITS_ARB;
 		iAttributes[5] = 24;
@@ -1331,16 +1285,9 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		iAttributes[10] = gl_state.arb_multisample ? WGL_SAMPLE_BUFFERS_ARB : 0;
 		iAttributes[11] = gl_state.arb_multisample ? TRUE : 0;
 		
-		if(gl_state.wgl_nv_multisample_coverage){
-							
-		iAttributes[12] = gl_state.arb_multisample ? WGL_COVERAGE_SAMPLES_NV : 0;
-		iAttributes[13] = gl_state.arb_multisample ? (int)r_nvSamplesCoverange->value : 0;
-		}
-		else
-		{
 		iAttributes[12] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : 0;
 		iAttributes[13] = gl_state.arb_multisample ? (int)r_arbSamples->value : 0;
-		}
+
 		iAttributes[14] = 0;
 		iAttributes[15] = 0;
 
@@ -1370,11 +1317,7 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 			// those extensions are supported before passing the corresponding enums
 			// to the driver. This could cause an error if they are not supported.
 			iAttributes[8 ] = gl_state.arb_multisample ? WGL_SAMPLE_BUFFERS_ARB : WGL_PIXEL_TYPE_ARB;
-			
-			if (gl_state.arb_multisample)
-			iAttributes[9] = gl_state.wgl_nv_multisample_coverage ? WGL_COVERAGE_SAMPLES_NV : WGL_SAMPLES_ARB;
-			else
-			iAttributes[9] = WGL_PIXEL_TYPE_ARB;
+			iAttributes[9 ] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : WGL_PIXEL_TYPE_ARB;
 			
 			iAttributes[10] = WGL_DRAW_TO_WINDOW_ARB;
 			iAttributes[11] = WGL_DRAW_TO_BITMAP_ARB;
@@ -1400,45 +1343,14 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 
 			Com_Printf ("WGL_PFD: Color "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Stencil "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits \n",
 				iResults[1], iResults[6], iResults[5], iResults[7]);
-     /*	
-Nvidia Coverange AA
-	
-Samples						# of Color/Z/Stencil	# of Coverage Samples
-8x	                                4						8
-8xQ (Quality)						8						8
-16x									4						16
-16xQ (Quality)						8						16
-*/	      
-		
-				if (iResults[8])
-				{					
-					if(gl_state.wgl_nv_multisample_coverage_aviable && r_arbSamples->value >1 && r_nvSamplesCoverange->value >7){
-						
-						if(r_arbSamples->value == 2 && r_nvSamplesCoverange->value == 8)
-							Com_Printf("using "S_COLOR_GREEN"8x"S_COLOR_WHITE" CSAA multisampling");
 
-						if(r_arbSamples->value == 4 && r_nvSamplesCoverange->value == 8)
-							Com_Printf("using "S_COLOR_GREEN"8x"S_COLOR_WHITE" CSAA multisampling");
-
-						if(r_arbSamples->value == 8 && r_nvSamplesCoverange->value == 8)
-							Com_Printf("using "S_COLOR_GREEN"8xQ"S_COLOR_WHITE" (Quality) CSAA multisampling");
-
-						if(r_arbSamples->value == 4 && r_nvSamplesCoverange->value == 16)
-							Com_Printf("using "S_COLOR_GREEN"16x"S_COLOR_WHITE" CSAA multisampling");
-						
-						if(r_arbSamples->value == 8 && r_nvSamplesCoverange->value == 16)
-							Com_Printf("using "S_COLOR_GREEN"16xQ"S_COLOR_WHITE" (Quality) CSAA multisampling");
-
-					}else
-						if(!gl_state.wgl_nv_multisample_coverage_aviable && r_arbSamples->value >1) 
+			if (iResults[8])
+				if (gl_state.arb_multisample && r_arbSamples->value >1)
 							Com_Printf ( "using multisampling, "S_COLOR_GREEN"%d"S_COLOR_WHITE" samples per pixel\n", iResults[9]);
-				  
-			}
 
-			if (iResults[15] != WGL_FULL_ACCELERATION_ARB) {
+			if (iResults[15] != WGL_FULL_ACCELERATION_ARB)
 				Com_Printf ( S_COLOR_RED "********** WARNING **********\npixelformat %d is NOT hardware accelerated!\n*****************************\n", pixelFormat);
-			}
-
+			
 			ReleaseDC (temphwnd, hDC);
 			DestroyWindow (temphwnd);
 			temphwnd = NULL;

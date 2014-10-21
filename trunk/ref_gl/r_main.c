@@ -646,7 +646,7 @@ void R_DrawPlayerWeaponLightPass(void)
 {
 	int i;
 
-	if (!r_drawEntities->value || !r_pplWorld->value)
+	if (!r_drawEntities->value)
 		return;
 
 	qglStencilFunc(GL_EQUAL, 128, 255);
@@ -674,9 +674,6 @@ void R_DrawPlayerWeaponLightPass(void)
 void R_DrawLightInteractions(void)
 {
 	int i;
-
-	if(!r_pplWorld->value)
-		return;
 	
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -702,7 +699,7 @@ void R_DrawLightInteractions(void)
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
-	if(r_pplWorld->value < 2 && currentShadowLight->isStatic && !currentShadowLight->isNoWorldModel)
+	if (r_skipStaticLights->value && currentShadowLight->isStatic)
 		continue;
 
 	if(currentShadowLight->isFog){
@@ -831,8 +828,6 @@ void R_RenderView(refdef_t * fd)
 	
 	if (!r_worldmodel && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel");
-		
-	R_PushDlights();
 
 	if (r_finish->value)
 		qglFinish();
@@ -847,7 +842,6 @@ void R_RenderView(refdef_t * fd)
 	R_DrawEntitiesOnList();
 	R_CaptureDepthBuffer();
 	R_DrawLightInteractions();
-	R_BlobShadow();
 	R_RenderDecals();
 
 	R_RenderFlares();
@@ -1116,9 +1110,9 @@ Cvar_Set("r_anisotropic", "1");
 Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_NEAREST");
 
 Cvar_Set("r_shadows", "0");
-Cvar_Set("r_drawFlares", "0");
+Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "0");
-Cvar_Set("r_pplWorld", "0");
+Cvar_Set("r_skipStaticLights", "1");
 Cvar_Set("r_pplWorldAmbient", "1.0");
 Cvar_Set("r_bloom", "0");
 Cvar_Set("r_dof", "0");
@@ -1138,7 +1132,7 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "1");
-Cvar_Set("r_pplWorld", "1");
+Cvar_Set("r_skipStaticLights", "0");
 Cvar_Set("r_pplWorldAmbient", "1.0");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "0");
@@ -1158,7 +1152,7 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "2");
-Cvar_Set("r_pplWorld", "2");
+Cvar_Set("r_skipStaticLights", "0");
 Cvar_Set("r_pplWorldAmbient", "0.5");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "1");
@@ -1206,7 +1200,6 @@ void R_RegisterCvars(void)
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
 	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "12", CVAR_ARCHIVE);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
-	r_shadowCapOffset =					Cvar_Get("r_shadowCapOffset", "0", 0);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
@@ -1227,7 +1220,6 @@ void R_RegisterCvars(void)
 	r_radar =							Cvar_Get("r_radar", "0", CVAR_ARCHIVE);
 	
 	r_arbSamples =						Cvar_Get("r_arbSamples", "1", CVAR_ARCHIVE);
-//	r_nvSamplesCoverange =				Cvar_Get("r_nvSamplesCoverange", "8", CVAR_ARCHIVE);
 	r_fxaa =							Cvar_Get("r_fxaa", "0", CVAR_ARCHIVE);
 
 	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);
@@ -1235,7 +1227,6 @@ void R_RegisterCvars(void)
 	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
 	r_flaresIntens =					Cvar_Get("r_flaresIntens", "3", CVAR_ARCHIVE);
 	r_flareWeldThreshold =				Cvar_Get("r_flareWeldThreshold", "32", CVAR_ARCHIVE);
-//	r_useConditionalRender =			Cvar_Get("r_useConditionalRender", "1", CVAR_ARCHIVE); // Fucking Ati! Nv conditional render dont work on radeons... Set to zero, force old, slow Occlusion Query test
 
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
@@ -1253,7 +1244,7 @@ void R_RegisterCvars(void)
 	r_parallax=							Cvar_Get("r_parallax", "2", CVAR_ARCHIVE);
 	r_parallaxScale=					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
 
-	r_pplWorld =						Cvar_Get("r_pplWorld", "2", CVAR_ARCHIVE);
+	r_skipStaticLights =				Cvar_Get("r_skipStaticLights", "0", CVAR_ARCHIVE);
 	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
 	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);

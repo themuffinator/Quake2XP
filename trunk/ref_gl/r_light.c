@@ -23,89 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int r_dlightframecount;
 
-
-/*
-=============
-R_MarkLights
-=============
-*/
-
-void R_MarkLights(dlight_t * light, int bit, mnode_t * node)
-{
-	cplane_t *splitplane;
-	float dist;
-	msurface_t *surf;
-	int i, sidebit;
-
-	if (node->contents != -1)
-		return;
-
-	splitplane = node->plane;
-	dist =
-		DotProduct(light->origin, splitplane->normal) - splitplane->dist;
-
-	if (dist > light->intensity) {
-		R_MarkLights(light, bit, node->children[0]);
-		return;
-	}
-	if (dist < -light->intensity) {
-		R_MarkLights(light, bit, node->children[1]);
-		return;
-	}
-// mark the polygons
-	surf = r_worldmodel->surfaces + node->firstsurface;
-	for (i = 0; i < node->numsurfaces; i++, surf++) {
-	
-	if (!BoundsAndSphereIntersect(surf->mins, surf->maxs, light->origin, light->intensity))
-			continue;		// No intersection
-
-
-		dist = DotProduct(light->origin, surf->plane->normal) - surf->plane->dist;
-		if (dist >= 0)
-			sidebit = 0;
-		else
-		sidebit = SURF_PLANEBACK;
-
-		if ((surf->flags & SURF_PLANEBACK) != sidebit)	// Discoloda
-			continue;			
-
-		if (surf->dlightframe != r_dlightframecount) {
-			surf->dlightbits = 0;
-			surf->dlightframe = r_dlightframecount;
-		}
-		surf->dlightbits |= bit;
-				
-	}
-
-	R_MarkLights(light, bit, node->children[0]);
-	R_MarkLights(light, bit, node->children[1]);
-
-}
-
-
-
-
-/*
-=============
-R_PushDlights
-=============
-*/
-void R_PushDlights(void)
-{
-	int i;
-	dlight_t *l;
-
-	if(r_pplWorld->value)
-		return;
-
-	r_dlightframecount = r_framecount + 1;	// because the count hasn't
-	// advanced yet for this frame
-	l = r_newrefdef.dlights;
-	for (i = 0; i < r_newrefdef.num_dlights; i++, l++)
-		R_MarkLights(l, 1 << i, r_worldmodel->nodes);
-}
-
-
 /*
 =============================================================================
 
@@ -202,8 +119,7 @@ int RecursiveLightPoint(mnode_t * node, vec3_t start, vec3_t end)
 				
 				for (i = 0; i < 3; i++)
 					scale[i] = r_newrefdef.lightstyles[surf->styles[maps]].rgb[i];
-			
-			if(r_pplWorld->value == 2){
+
 				pointcolor[0] +=
 					lightmap[0] * scale[0] *
 					0.003921568627450980392156862745098 * r_pplWorldAmbient->value;
@@ -213,18 +129,7 @@ int RecursiveLightPoint(mnode_t * node, vec3_t start, vec3_t end)
 				pointcolor[2] +=
 					lightmap[2] * scale[2] *
 					0.003921568627450980392156862745098 * r_pplWorldAmbient->value;
-			}else{
-				pointcolor[0] +=
-					lightmap[0] * scale[0] *
-					0.003921568627450980392156862745098;
-				pointcolor[1] +=
-					lightmap[1] * scale[1] *
-					0.003921568627450980392156862745098;
-				pointcolor[2] +=
-					lightmap[2] * scale[2] *
-					0.003921568627450980392156862745098;
-			}
-				lightmap +=
+					lightmap +=
 					3 * ((surf->extents[0] / r_worldmodel->lightmap_scale) +
 						 1) * ((surf->extents[1] / r_worldmodel->lightmap_scale) + 1);
 			}
@@ -248,11 +153,6 @@ void R_LightPoint(vec3_t p, vec3_t color)
 	vec3_t end;
 	float r;
 	int i;
-	dlight_t *dl;
-	vec3_t dir;
-	float add, dst;
-	trace_t trace;
-
 
 	if ((r_worldmodel && !r_worldmodel->lightData) || !r_worldmodel)
 	{
@@ -279,30 +179,6 @@ void R_LightPoint(vec3_t p, vec3_t color)
 	for (i = 0; i < 3; i++)
 		if (color[i] > 1)
 			color[i] = 1;
-
-	
-	if(!r_pplWorld->value){
-	
-	dl = r_newrefdef.dlights;
-	for (i=0; i<r_newrefdef.num_dlights; i++, dl++){
-	
-	VectorSubtract(dl->origin, p, dir);
-	dst = VectorLength(dir);
-	
-	if (!dst || dst > dl->intensity)
-		continue;
-
-	// dlight behind the wall
-	if (r_newrefdef.areabits){
-			trace = CM_BoxTrace(dl->origin, p, vec3_origin, vec3_origin, r_worldmodel->firstNode, MASK_OPAQUE);
-			if(trace.fraction != 1.0)
-			continue;
-	}
-
-	add = (dl->intensity - dst) * (1.0/255);
-	VectorMA(color, add, dl->color, color);
-	}
-	}
 }
 
 
@@ -352,7 +228,7 @@ void R_LightColor(vec3_t org, vec3_t color)
 	byte *b[8];
 	int i, lnum;
 	dlight_t *dl;
-	float f, light, add;
+	float f, add;
 	vec3_t dist;
 	float x = (4096 + org[0]) / LIGHTGRID_STEP;
 	float y = (4096 + org[1]) / LIGHTGRID_STEP;
@@ -419,14 +295,9 @@ void R_LightColor(vec3_t org, vec3_t color)
 	
 		if(color[i] <= 0.1)
 			color[i] = 0.1;
-
-//		if(color[i] >= 0.75)
-//			color[i] = 0.75;
 	}
 
 	// add dynamic light
-	light = 0;
-	if(!r_pplWorld->value){	
 	dl = r_newrefdef.dlights;
 	for (lnum = 0; lnum < r_newrefdef.num_dlights; lnum++, dl++) {
 		VectorSubtract(org, dl->origin, dist);
@@ -438,8 +309,6 @@ void R_LightColor(vec3_t org, vec3_t color)
 		if (add > 0.01) {
 			VectorMA(color, add, dl->color, color);
 		}
-	}
-	
 	}
 }
 

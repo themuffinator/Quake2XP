@@ -11,4 +11,7 @@
     <LocalDebuggerCommandArguments>+set r_mode 1 +set r_fullScreen 0  +map q2dm1</LocalDebuggerCommandArguments>
     <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
   </PropertyGroup>
+  <PropertyGroup>
+    <ShowAllFiles>false</ShowAllFiles>
+  </PropertyGroup>
 </Project>

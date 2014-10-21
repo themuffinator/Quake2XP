@@ -198,40 +198,7 @@ static void ApplyChanges( void *unused )
 	Cvar_SetValue( "r_vsync",				s_finish_box.curvalue);
 	Cvar_SetValue( "r_filmGrain",			s_film_grain.curvalue);
 	
-/*	
-Nvidia Coverange AA
-	
-Samples						# of Color/Z/Stencil	# of Coverage Samples
-8x	                                4						8
-8xQ (Quality)						8						8
-16x									4						16
-16xQ (Quality)						8						16
-{"[off]", "[8x]", "[8xQ]", "[16x]", "[16xQ]", 0};
-*/
-
-	if(gl_state.wgl_nv_multisample_coverage_aviable){
-	
-		if (s_samples_list.curvalue == 1){//8x
-		Cvar_SetValue("r_arbSamples", 4);
-		Cvar_SetValue("r_nvSamplesCoverange", 8);
-		}else
-		if (s_samples_list.curvalue == 2){//8xQ
-		Cvar_SetValue("r_arbSamples", 8);
-		Cvar_SetValue("r_nvSamplesCoverange", 8);
-		}else
-		if (s_samples_list.curvalue == 3){//16x
-		Cvar_SetValue("r_arbSamples", 4);
-		Cvar_SetValue("r_nvSamplesCoverange", 16);
-		}else
-		if (s_samples_list.curvalue == 4){//16xQ
-		Cvar_SetValue("r_arbSamples", 8);
-		Cvar_SetValue("r_nvSamplesCoverange", 16);
-		}else
-		if (s_samples_list.curvalue == 0){ //off
-			Cvar_SetValue("r_arbSamples", 0);
-			Cvar_SetValue("r_nvSamplesCoverange", 4);
-		}
-	}else if(!gl_state.wgl_nv_multisample_coverage){
+	if (gl_state.arb_multisample){
 	// Multisampling
 	if (s_samples_list.curvalue == 1)
 		Cvar_SetValue("r_arbSamples", 2);
@@ -316,9 +283,6 @@ Samples						# of Color/Z/Stencil	# of Coverage Samples
 		if ( r_arbSamples->modified )
 			vid_ref->modified = true;
 
-		if ( r_nvSamplesCoverange->modified )
-			vid_ref->modified = true;
-
 		if ( r_radar->modified )
 			vid_ref->modified = true;
 		
@@ -349,13 +313,11 @@ static void CancelChanges( void *unused )
 }
 
 
-
-
 static void pplWorldCallBack (void *s)
 {
 	menulist_s *box = ( menulist_s * ) s;
 
-	Cvar_SetValue( "r_pplWorld", box->curvalue * 1 );
+	Cvar_SetValue( "r_skipStaticLights", box->curvalue * 1 );
 }
 
 static void vSyncCallBack (void *s)
@@ -394,13 +356,13 @@ void VID_MenuInit( void )
 	static char	*yesno_names[]	=	{"no", "yes", 0};
 	static char	*adaptive_vc[]	=	{"no", "default", "adaptive", 0};
 	static char	*refresh[]		=	{"desktop", "60hz", "75hz", "85hz", "100hz", "120hz", 0};
-	static char *ppl[]			=	{"off", "Performance", "Full", 0};
+	static char *ppl[]			=	{"Full", "Performance", 0};
 #ifdef __linux__
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", 0}; // sdl bug work only 2 and 4 samples per pixel
 #else
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", "[8x]", "[16x]", 0};
-	static char	*samplesNV[]	=	{"[off]", "[8x]", "[8xQ]", "[16x]", "[16xQ]", 0};
 #endif
+
 	static char	*parallax[]		=	{"off", "Performance", "Quality", 0};
 	static char	*radar[]		=	{"off", "map only", "map and entities", "move detector", 0};
 
@@ -432,8 +394,8 @@ void VID_MenuInit( void )
 	if(!r_radialBlur->value)
 		r_radialBlur = Cvar_Get ("r_radialBlur", "0", CVAR_ARCHIVE);
 
-	if (!r_pplWorld)
-		r_pplWorld = Cvar_Get("r_pplWorld", "0", CVAR_ARCHIVE);
+	if (!r_skipStaticLights)
+		r_skipStaticLights = Cvar_Get("r_skipStaticLights", "0", CVAR_ARCHIVE);
 
 	if ( !r_vsync )
 		r_vsync = Cvar_Get( "r_vsync", "0", CVAR_ARCHIVE );
@@ -469,48 +431,11 @@ void VID_MenuInit( void )
 	s_mode_list.generic.statusbar = "Requires Restart Video Sub-System";
 
 	s_samples_list.generic.type = MTYPE_SPINCONTROL;
-	if(gl_state.wgl_nv_multisample_coverage_aviable)
-	s_samples_list.generic.name = "CSAA Multisampling";
-	else
 	s_samples_list.generic.name = "Multisampling";
 	s_samples_list.generic.x = 0;
 	s_samples_list.generic.y = 20*cl_fontScale->value;
-
-#ifdef WIN32
-	if(gl_state.wgl_nv_multisample_coverage_aviable)
-        s_samples_list.itemnames = samplesNV;
-	else
-        s_samples_list.itemnames = samples;
-#else
     s_samples_list.itemnames = samples;
-#endif
 
-#ifdef WIN32
-	r_nvSamplesCoverange = Cvar_Get("r_nvSamplesCoverange", "8",  CVAR_ARCHIVE);
-	r_arbSamples = Cvar_Get("r_arbSamples", "0",  CVAR_ARCHIVE);
-	s_samples_list.generic.statusbar = "Requires Restart Video Sub-System";
-
-	if(gl_state.wgl_nv_multisample_coverage_aviable){
-	
-	if (r_arbSamples->value == 8 && r_nvSamplesCoverange->value == 16) // 16xQ
-		s_samples_list.curvalue = 4;
-	else 
-	if (r_arbSamples->value == 4 && r_nvSamplesCoverange->value == 16) //16x
-		s_samples_list.curvalue = 3;
-	else 
-	if (r_arbSamples->value == 8 && r_nvSamplesCoverange->value == 8) //8xQ
-		s_samples_list.curvalue = 2;
-	else 
-		if (r_arbSamples->value == 4 && r_nvSamplesCoverange->value == 8) //8x
-		s_samples_list.curvalue = 1;
-	else
-	if (r_arbSamples->value == 2 && r_nvSamplesCoverange->value == 8) //8x
-		s_samples_list.curvalue = 1;
-	else
-		s_samples_list.curvalue = 0; //off
-	}
-	else 
-	if(!gl_state.wgl_nv_multisample_coverage){
 	if (r_arbSamples->value == 16)
 		s_samples_list.curvalue = 4;
 	else 
@@ -524,22 +449,6 @@ void VID_MenuInit( void )
 		s_samples_list.curvalue = 1;
 	else
 		s_samples_list.curvalue = 0;
-	}
-#else
-		if (r_arbSamples->value == 16)
-		s_samples_list.curvalue = 4;
-	else 
-	if (r_arbSamples->value == 8)
-		s_samples_list.curvalue = 3;
-	else 
-	if (r_arbSamples->value == 4)
-		s_samples_list.curvalue = 2;
-	else 
-		if (r_arbSamples->value == 2)
-		s_samples_list.curvalue = 1;
-	else
-		s_samples_list.curvalue = 0;
-#endif
 
 	// displayrefresh
 	r_displayRefresh = Cvar_Get("r_displayRefresh", "0",  CVAR_ARCHIVE);
@@ -609,33 +518,32 @@ void VID_MenuInit( void )
 	s_tc_box.generic.statusbar = "Requires Restart Video Sub-System";
 	
 	// -----------------------------------------------------------------------
-	
 
-	s_shadow_box.generic.type		= MTYPE_SPINCONTROL;
-	s_shadow_box.generic.x			= 0;
-	s_shadow_box.generic.y			= 120*cl_fontScale->value;
-	s_shadow_box.generic.name		= "Shadows";
-    s_shadow_box.itemnames			= yesno_names;
-	s_shadow_box.curvalue			= r_shadows->value;
-    s_shadow_box.generic.callback	= ShadowsCallback;
+	a_pplWorld_list.generic.type		= MTYPE_SPINCONTROL;
+	a_pplWorld_list.generic.name		= "Realtime Lighting";
+	a_pplWorld_list.generic.x			= 0;
+	a_pplWorld_list.generic.y			= 120 * cl_fontScale->value;
+	a_pplWorld_list.itemnames			= ppl;
+	a_pplWorld_list.curvalue			= r_skipStaticLights->value;
+	a_pplWorld_list.generic.callback	= pplWorldCallBack;
+	a_pplWorld_list.generic.statusbar	= "Full Lighting or Dynamic Lights Only";
+	
+	s_shadow_box.generic.type			= MTYPE_SPINCONTROL;
+	s_shadow_box.generic.x				= 0;
+	s_shadow_box.generic.y				= 130 * cl_fontScale->value;
+	s_shadow_box.generic.name			= "Shadows";
+	s_shadow_box.itemnames				= yesno_names;
+	s_shadow_box.curvalue				= r_shadows->value;
+	s_shadow_box.generic.callback		= ShadowsCallback;
 
 	s_parallax_box.generic.type			= MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x			= 0;
-	s_parallax_box.generic.y			= 130*cl_fontScale->value;
+	s_parallax_box.generic.y			= 140*cl_fontScale->value;
 	s_parallax_box.generic.name			= "Parallax";
     s_parallax_box.itemnames			= parallax;
 	s_parallax_box.curvalue				= r_parallax->value;
 	s_parallax_box.generic.callback		= ParallaxCallback;
 	s_parallax_box.generic.statusbar	= "Sample Parallax Mapping - Parallax Relief Mapping";
-
-	a_pplWorld_list.generic.type = MTYPE_SPINCONTROL;
-	a_pplWorld_list.generic.name = "Realtime Lighting";
-	a_pplWorld_list.generic.x = 0;
-	a_pplWorld_list.generic.y = 140*cl_fontScale->value;
-	a_pplWorld_list.itemnames = ppl;
-	a_pplWorld_list.curvalue = r_pplWorld->value;
-	a_pplWorld_list.generic.callback = pplWorldCallBack;
-	a_pplWorld_list.generic.statusbar	= "Enable Per-Pixel Lighting";	
 
 	s_ambientLevel_slider.generic.type		= MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x			= 0;
@@ -745,10 +653,10 @@ void VID_MenuInit( void )
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_aniso_slider);
 	
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_tc_box );
-    	
+
+	Menu_AddItem(&s_opengl_menu,  ( void * ) &a_pplWorld_list);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_shadow_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_parallax_box );
-	Menu_AddItem( &s_opengl_menu, ( void * ) &a_pplWorld_list);
     Menu_AddItem( &s_opengl_menu, ( void * ) &s_ambientLevel_slider);
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_flare_box );
 	Menu_AddItem( &s_opengl_menu, ( void * ) &s_bloom_box );

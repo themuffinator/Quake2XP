@@ -348,7 +348,7 @@ void R_CastAliasShadowVolumes(void)
 	int			id, i;
 	unsigned	defBits = 0;
 
-	if (!r_shadows->value || !r_pplWorld->value)
+	if (!r_shadows->value)
 		return;
 
 	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->isFog)
@@ -395,89 +395,6 @@ void R_CastAliasShadowVolumes(void)
 	GL_BindNullProgram();
 }
 
-/*
-===================
-Soft shadow volumes
-===================
-*/
-void R_ShadowBlend()
-{
-	float shadowalpha;
-	int id;
-	unsigned	defBits = 0;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	if (!r_shadows->value)
-		return;
-
-	shadowalpha = 1.0 - r_pplWorldAmbient->value;
-	
-	qglMatrixMode(GL_PROJECTION);
-	qglPushMatrix();
-	qglLoadIdentity();
-	qglOrtho(0, 1, 1, 0, -99999, 99999);
-	qglMatrixMode(GL_MODELVIEW);
-	qglPushMatrix();
-	qglLoadIdentity();
-
-	qglDepthMask(0);
-	qglDepthFunc(GL_ALWAYS);
-
-	qglEnable(GL_STENCIL_TEST);
-	qglStencilFunc(GL_EQUAL, 128, 255);
-	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	qglStencilMask(0);
-
-	qglColorMask(0, 0, 0, 1);
-	qglColor4f(0.0, 0.0, 0.0, 0.0);
-
-	// bind shadow mask texture and render stencil marks in to alpha chanel
-	GL_SelectTexture(GL_TEXTURE0_ARB);	
-	GL_BindRect(shadowMask->texnum);
-    
-	qglBegin(GL_TRIANGLES);
-	qglVertex2f(-5, -5);
-	qglVertex2f(10, -5);
-	qglVertex2f(-5, 10);
-	qglEnd();
-	
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	
-	qglDisable(GL_STENCIL_TEST);
-	qglColorMask(1.0, 1.0, 1.0, 1.0);
-	qglColor4f(1.0, 1.0, 1.0, 1.0);
-		
-	//blur alpha mask and visualize it!
-	GL_Blend(true, GL_DST_COLOR, GL_ZERO);
-	GL_BindProgram(shadowProgram, defBits);
-	id = shadowProgram->id[defBits];
-	
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	GL_BindRect(shadowMask->texnum);
-	
-	qglUniform1i(qglGetUniformLocation(id, "u_mask"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_alpha"), 0.4);
-	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
-
-	qglBegin(GL_TRIANGLES);
-	qglVertex2f(-5, -5);
-	qglVertex2f(10, -5);
-	qglVertex2f(-5, 10);
-	qglEnd();
-	
-	GL_Blend(false, 0, 0);
-	GL_BindNullProgram();
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	qglDepthFunc(GL_LEQUAL);
-	qglDepthMask(1);
-	qglMatrixMode(GL_PROJECTION);
-	qglPopMatrix();
-	qglMatrixMode(GL_MODELVIEW);
-	qglPopMatrix();
-
-}
 
 /*
 ======================================
@@ -852,7 +769,7 @@ void R_CastBspShadowVolumes(void)
 	int			id, i;
 	unsigned	defBits = 0;
 
-	if (!r_shadows->value || !r_pplWorld->value)
+	if (!r_shadows->value)
 		return;
 			
 	if(!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->isFog)
@@ -913,163 +830,4 @@ void R_CastBspShadowVolumes(void)
 	qglDepthFunc(GL_LEQUAL);
 	qglColorMask(1, 1, 1, 1);
 	GL_BindNullProgram();
-}
-
-/*
-==================
-Simple blob shadow
-==================
-*/
-
-void MakeNormalVectors(vec3_t forward, vec3_t right, vec3_t up);
-trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask);
-#define MAX_BLOB_SHADOW_VERT 4096*4
-
-void R_BlobShadow(void){
-
-	vec3_t			end, mins = {-15, -15, 0}, maxs = {15, 15, 2};
-	trace_t			trace;
-	float			alpha, dist;
-	int				sVert=0, index=0, i, id;
-	unsigned		sIndex[MAX_INDICES], defBits = 0;
-	vec3_t			axis[3];
-	vec3_t			bbox[8], temp;
-	vec4_t			bsColor[MAX_BLOB_SHADOW_VERT];
-	vec3_t			bsVert[MAX_BLOB_SHADOW_VERT];
-	vec2_t			bsTextCoord[MAX_BLOB_SHADOW_VERT];
-	
-	if(!r_shadows->value || r_pplWorld->value)
-		return;
-	
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_COLOR);
-
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, bsVert);	
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, bsTextCoord);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, bsColor);
-
-	defBits = worldDefs.AttribColorBits;
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
-
-	qglEnable(GL_POLYGON_OFFSET_FILL);
-    qglPolygonOffset(-2, -2);
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDepthMask(0);
-	GL_MBind(GL_TEXTURE0_ARB, r_particletexture[PT_DEFAULT]->texnum);
-	
-
-	for (i = 0; i < r_newrefdef.num_entities; i++)	
-	{
-		
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-		
-		if (!currentmodel)
-			continue;
-		
-		if (currentmodel->type != mod_alias)
-			continue;
-
-		if (currententity->
-		flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED |
-				 RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
-				 RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
-				 continue;
-	
-		if (R_CullSphere(currententity->origin, 35))
-			continue;
-		
-		VectorCopy(currententity->origin, end);
-		end[2] -= 128;
-
-		trace = CL_PMTraceWorld (currententity->origin, vec3_origin, vec3_origin, end, MASK_SOLID);
-				
-		if (trace.fraction > 0 && trace.fraction < 1){
-				
-		if(sVert){
-		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
-			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, sVert, index, GL_UNSIGNED_INT, sIndex);
-		else
-			qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, sIndex);
-
-		index = 0;
-		sVert = 0;
-		}
-			alpha = 0.7 - trace.fraction; 
-						
-			// Find axes
-			VectorCopy(trace.plane.normal, axis[0]);
-			MakeNormalVectors(axis[0], axis[1], axis[2]);
-			
-			//find model radiuse
-			R_CullAliasModel(bbox, currententity);
-			VectorSubtract(bbox[0], bbox[2], temp);
-			dist = VectorNormalize(temp);
-
-			// Scale the axes by radius
-			VectorScale(axis[1], dist, axis[1]);
-			VectorScale(axis[2], dist, axis[2]);
-
-			// Build by surface aligned quad
-			VA_SetElem2(bsTextCoord[sVert+0],0, 1);
-			VA_SetElem3(bsVert[sVert+0],	trace.endpos[0] + axis[1][0] + axis[2][0],
-											trace.endpos[1] + axis[1][1] + axis[2][1],
-											trace.endpos[2] + axis[1][2] + axis[2][2]);
-			VA_SetElem4(bsColor[sVert+0],	0.0, 0.0, 0.0, alpha);
-
-			VA_SetElem2(bsTextCoord[sVert+1],0, 0);
-			VA_SetElem3(bsVert[sVert+1],	trace.endpos[0] - axis[1][0] + axis[2][0],
-											trace.endpos[1] - axis[1][1] + axis[2][1],
-											trace.endpos[2] - axis[1][2] + axis[2][2]);
-			VA_SetElem4(bsColor[sVert+1],	0.0, 0.0, 0.0, alpha);
-
-			VA_SetElem2(bsTextCoord[sVert+2],1, 0);
-			VA_SetElem3(bsVert[sVert+2],	trace.endpos[0] - axis[1][0] - axis[2][0],
-											trace.endpos[1] - axis[1][1] - axis[2][1],
-											trace.endpos[2] - axis[1][2] - axis[2][2]);
-			VA_SetElem4(bsColor[sVert+2],	0.0, 0.0, 0.0, alpha);
-
-			VA_SetElem2(bsTextCoord[sVert+3],1, 1);
-			VA_SetElem3(bsVert[sVert+3],	trace.endpos[0] + axis[1][0] - axis[2][0],
-											trace.endpos[1] + axis[1][1] - axis[2][1],
-											trace.endpos[2] + axis[1][2] - axis[2][2]);
-			VA_SetElem4(bsColor[sVert+3],	0.0, 0.0, 0.0, alpha);
-			
-			sIndex[index++] = sVert+0;
-			sIndex[index++] = sVert+1;
-			sIndex[index++] = sVert+3;
-			sIndex[index++] = sVert+3;
-			sIndex[index++] = sVert+1;
-			sIndex[index++] = sVert+2;
-
-			sVert+=4;
-	}
-
-	if(sVert)
-	{
-		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
-			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, sVert, index, GL_UNSIGNED_INT, sIndex);
-		else
-			qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, sIndex);
-	}
-	
-	}
-
-	qglDisable(GL_POLYGON_OFFSET_FILL);
-	qglPolygonOffset(0, 0);
-	qglDisable(GL_BLEND);
-	qglDepthMask(1);
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_COLOR);
-	GL_BindNullProgram();
-	
 }

@@ -45,94 +45,6 @@ void R_SetCacheState(msurface_t * surf)
 
 /*
 ===============
-R_AddDynamicLights
-===============
-*/
-void R_AddDynamicLights(msurface_t * surf, qboolean loadModel)
-{
-	int lnum;
-	int sd, td;
-	float fdist, frad, fminlight;
-	vec3_t impact, local;
-	int s, t;
-	int i;
-	int smax, tmax;
-	mtexInfo_t *tex;
-	dlight_t *dl;
-	float *pfBL;
-	float fsacc, ftacc;
-
-	if(r_pplWorld->value)
-		return;
-
-	if(loadModel){
-	smax = (surf->extents[0] / loadmodel->lightmap_scale) + 1;
-	tmax = (surf->extents[1] / loadmodel->lightmap_scale) + 1;
-	}else{
-	smax = (surf->extents[0] / r_worldmodel->lightmap_scale) + 1;
-	tmax = (surf->extents[1] / r_worldmodel->lightmap_scale) + 1;
-	}
-	tex = surf->texInfo;
-
-	for (lnum = 0; lnum < r_newrefdef.num_dlights; lnum++) {
-		if (!(surf->dlightbits & (1 << lnum)))
-			continue;			// not lit by this light
-
-		dl = &r_newrefdef.dlights[lnum];
-		frad = dl->intensity;
-		fdist = DotProduct(dl->origin, surf->plane->normal) -
-			surf->plane->dist;
-		frad -= fabs(fdist);
-		// rad is now the highest intensity on the plane
-
-		fminlight = 0;
-		if (frad < fminlight)
-			continue;
-		fminlight = frad - fminlight;
-
-		for (i = 0; i < 3; i++) {
-			impact[i] = dl->origin[i] - surf->plane->normal[i] * fdist;
-		}
-
-		local[0] =
-			DotProduct(impact,
-					   tex->vecs[0]) + tex->vecs[0][3] -
-			surf->texturemins[0];
-		local[1] =
-			DotProduct(impact,
-					   tex->vecs[1]) + tex->vecs[1][3] -
-			surf->texturemins[1];
-
-		pfBL = s_blocklights;
-		for (t = 0, ftacc = 0; t < tmax; t++, ftacc += r_worldmodel->lightmap_scale) {
-			td = local[1] - ftacc;
-			if (td < 0)
-				td = -td;
-
-			for (s = 0, fsacc = 0; s < smax; s++, fsacc += r_worldmodel->lightmap_scale, pfBL += 3) {
-				sd = Q_ftol(local[0] - fsacc);
-
-				if (sd < 0)
-					sd = -sd;
-
-				if (sd > td)
-					fdist = sd + (td >> 1);
-				else
-					fdist = td + (sd >> 1);
-
-				if (fdist < fminlight) {
-					pfBL[0] += (fminlight - fdist) * dl->color[0];
-					pfBL[1] += (fminlight - fdist) * dl->color[1];
-					pfBL[2] += (fminlight - fdist) * dl->color[2];
-				}
-			}
-		}
-	}
-}
-
-
-/*
-===============
 R_BuildLightMap
 
 Combine and scale multiple lightmaps into the floating format in blocklights
@@ -243,10 +155,6 @@ void R_BuildLightMap(msurface_t * surf, byte * dest, int stride, qboolean loadMo
 		}
 	
 	}
-
-	// add all the dynamic lights for non bumped sufaces
-	if (surf->dlightframe == r_framecount)
-		R_AddDynamicLights(surf, loadModel);
 
 // put into texture format
   store:

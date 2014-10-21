@@ -1056,14 +1056,14 @@ Mod_LoadFaces
 
 void Mod_BuildVertexCache()
 {
-	msurface_t	*surf;
+	msurface_t      *surf;
 	int         i, vbo_size, vb;
 	int         xyz_size, st_size, lm_size, nm_size, tg_size, bn_size;
-	float	*buf;
+	float   *buf;
 
 	// calc vbo buffer size
 	vb = 0;
-	for( i = 0, surf = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surf++ )
+	for (i = 0, surf = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surf++)
 		vb += surf->polys->numVerts;
 
 	// and offsets...
@@ -1071,69 +1071,68 @@ void Mod_BuildVertexCache()
 	xyz_size = vb * sizeof(vec3_t);
 
 	gl_state.st_offset = gl_state.xyz_offset + xyz_size;
-	st_size  = vb * sizeof(vec2_t);
+	st_size = vb * sizeof(vec2_t);
 
 	gl_state.lm_offset = gl_state.st_offset + st_size;
-	lm_size  = vb * sizeof(vec2_t);
+	lm_size = vb * sizeof(vec2_t);
 
 	gl_state.nm_offset = gl_state.lm_offset + lm_size;
-	nm_size  = vb * sizeof(vec3_t); 
+	nm_size = vb * sizeof(vec3_t);
 
 	gl_state.tg_offset = gl_state.nm_offset + nm_size;
-	tg_size  = vb * sizeof(vec3_t); 
+	tg_size = vb * sizeof(vec3_t);
 
 	gl_state.bn_offset = gl_state.tg_offset + tg_size;
-	bn_size  = vb * sizeof(vec3_t);
+	bn_size = vb * sizeof(vec3_t);
 
-	vbo_size =  gl_state.bn_offset + bn_size;
- 
+	vbo_size = gl_state.bn_offset + bn_size;
+
 	buf = (float*)malloc(vbo_size);
 	if (!buf)
-		Com_Error(ERR_DROP,""S_COLOR_RED"Create vertex buffer - FALED!\n");   // wtf, man??? drop to console
+		Com_Error(ERR_DROP, ""S_COLOR_RED"Create vertex buffer - FALED!\n");   // wtf, man??? drop to console
 
 	// fill vbo
-	vb = 0;		
-	for( i = 0, surf = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surf++ ) {
-		int			jj, nv = surf->polys->numVerts; 
-		glpoly_t	*p = surf->polys;
-		float		*v;
-		
+	vb = 0;
+	for (i = 0, surf = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surf++) {
+		int                     jj, nv = surf->polys->numVerts;
+		glpoly_t        *p = surf->polys;
+		float           *v;
+
 		v = p->verts[0];
-		for (jj = 0; jj < nv; jj++, v += VERTEXSIZE)
+		for (jj = 0; jj < nv; jj++, v += VERTEXSIZE, vb++)
 		{
 			// vertex data
-			buf[vb++] = v[0];
-			buf[vb++] = v[1];
-			buf[vb++] = v[2];
+			buf[gl_state.xyz_offset/4 + vb * 3 + 0] = v[0];
+			buf[gl_state.xyz_offset/4 + vb * 3 + 1] = v[1];
+			buf[gl_state.xyz_offset/4 + vb * 3 + 2] = v[2];
 			// st coords
-			buf[vb++] = v[3];
-			buf[vb++] = v[4];
+			buf[gl_state.st_offset/4 + vb * 2 + 0] = v[3];
+			buf[gl_state.st_offset/4 + vb * 2 + 1] = v[4];
 			// lm coords
-			buf[vb++] = v[5];
-			buf[vb++] = v[6];
+			buf[gl_state.lm_offset/4 + vb * 2 + 0] = v[5];
+			buf[gl_state.lm_offset/4 + vb * 2 + 1] = v[6];
 			// normals
-			buf[vb++] = v[7];
-			buf[vb++] = v[8];
-			buf[vb++] = v[9];
+			buf[gl_state.nm_offset/4 + vb * 3 + 0] = v[7];
+			buf[gl_state.nm_offset/4 + vb * 3 + 1] = v[8];
+			buf[gl_state.nm_offset/4 + vb * 3 + 2] = v[9];
 			// tangents
-			buf[vb++] = v[10];
-			buf[vb++] = v[11];
-			buf[vb++] = v[12];
+			buf[gl_state.tg_offset/4 + vb * 3 + 0] = v[10];
+			buf[gl_state.tg_offset/4 + vb * 3 + 1] = v[11];
+			buf[gl_state.tg_offset/4 + vb * 3 + 2] = v[12];
 			// binormals
-			buf[vb++] = v[13];
-			buf[vb++] = v[14];
-			buf[vb++] = v[15];
+			buf[gl_state.bn_offset/4 + vb * 3 + 0] = v[13];
+			buf[gl_state.bn_offset/4 + vb * 3 + 1] = v[14];
+			buf[gl_state.bn_offset/4 + vb * 3 + 2] = v[15];
 		}
-    }
+	}
 
-    qglGenBuffers(1, &gl_state.vbo_BSP);
-    qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
-    qglBufferData(GL_ARRAY_BUFFER_ARB, vbo_size, buf, GL_STATIC_DRAW_ARB);
-    qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglGenBuffers(1, &gl_state.vbo_BSP);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglBufferData(GL_ARRAY_BUFFER_ARB, vbo_size, buf, GL_STATIC_DRAW_ARB);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	Com_DPrintf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
-    free(buf);
+	free(buf);
 }
-
 void R_SmoothWorldSurfaces(void) {
 	float threshold;
 	float *vi, *vj;
