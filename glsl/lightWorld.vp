@@ -4,7 +4,7 @@ uniform vec3 			u_LightOrg;
 
 varying vec3			v_viewVecTS;
 varying vec3 			v_lightVec;
-varying vec2			v_colorCoord; 
+varying vec2			v_texCoord; 
 varying vec4			v_CubeCoord;
 varying vec3			v_AttenCoord;
 
@@ -17,7 +17,7 @@ attribute vec2			a_texCoord;
 void main ()
 {
 // setup tex coords
-v_colorCoord = a_texCoord;  // diffuse & bump
+v_texCoord = a_texCoord;  // diffuse & bump
 v_CubeCoord = gl_TextureMatrix[2] * vec4(a_vertArray, 1.0);
 v_AttenCoord = gl_TextureMatrix[3] * vec4(a_vertArray, 1.0);
 

@@ -43,13 +43,9 @@ envMask =  texture2D(u_envMap, v_wTexCoord.xy).a;
 
 //vec4 tmp = causticsMap * diffuseMap;
 
-#ifdef LIGHTMAP
 lightMap *= u_ambientScale;
 diffuseMap += glowMap;
 diffuseMap *= lightMap;
-#else
-diffuseMap *= u_ambientScale;
-#endif
 
 vec4 finalColor = diffuseMap;
 

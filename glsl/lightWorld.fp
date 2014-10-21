@@ -18,7 +18,7 @@ uniform int				u_isCaustics;
 
 varying vec3			v_viewVecTS;
 varying vec3			v_lightVec;
-varying vec2			v_colorCoord;
+varying vec2			v_texCoord;
 varying vec4			v_CubeCoord;
 varying vec4			v_lightCoord;
 varying vec3			v_AttenCoord;
@@ -40,16 +40,16 @@ vec3 V = normalize(v_viewVecTS);
 vec3 L = normalize(v_lightVec);
 
 #ifdef PARALLAX
-vec2	P = CalcParallaxOffset(u_Diffuse, v_colorCoord.xy, V);
+vec2	P = CalcParallaxOffset(u_Diffuse, v_texCoord.xy, V);
 vec4	diffuseMap = texture2D(u_Diffuse, P);
 vec3	normalMap =  normalize(texture2D(u_NormalMap, P).rgb * 2.0 - 1.0);
 float	specTmp = texture2D(u_NormalMap, P).a;
 vec4	causticsMap = texture2D(u_Caustics, P);
 #else
-vec4	diffuseMap = texture2D(u_Diffuse,  v_colorCoord.xy);
-vec3	normalMap =  normalize(texture2D(u_NormalMap, v_colorCoord.xy).rgb * 2.0 - 1.0);
-float	specTmp = texture2D(u_NormalMap, v_colorCoord).a;
-vec4	causticsMap = texture2D(u_Caustics, v_colorCoord.xy);
+vec4	diffuseMap = texture2D(u_Diffuse,  v_texCoord.xy);
+vec3	normalMap =  normalize(texture2D(u_NormalMap, v_texCoord.xy).rgb * 2.0 - 1.0);
+float	specTmp = texture2D(u_NormalMap, v_texCoord).a;
+vec4	causticsMap = texture2D(u_Caustics, v_texCoord.xy);
 #endif
 
 float specular = specTmp * u_specularScale;
