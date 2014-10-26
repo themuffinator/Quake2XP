@@ -11,7 +11,6 @@ uniform float			u_specularExp;
 uniform float			u_toksvigFactor;
 uniform vec4 			u_LightColor;
 uniform float 			u_LightRadius;
-uniform float			u_fogDensity;
 uniform int				u_fog;
 uniform float       	u_CausticsModulate; 
 uniform int				u_isCaustics;
@@ -22,6 +21,7 @@ varying vec2			v_texCoord;
 varying vec4			v_CubeCoord;
 varying vec4			v_lightCoord;
 varying vec3			v_AttenCoord;
+varying float			v_fogFactor;
 
 #include lighting.inc
 #include parallax.inc
@@ -59,31 +59,27 @@ specular /= mix(u_toksvigFactor, 1.0, specular);
 vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz);
 cubeFilter *= 2;
 
-#ifdef AMBIENT   
-
-if(u_fog == 1){
-
-const float LOG2 = 1.442695;
-float z = gl_FragCoord.z / gl_FragCoord.w;
-float fogFactor = exp2(-u_fogDensity * u_fogDensity * z * z * LOG2);
-
-vec4 temp = diffuseMap * u_LightColor;
-gl_FragColor = (mix(u_LightColor, temp, fogFactor)) * attenMap;
-
-}else{
-gl_FragColor = diffuseMap * LambertLighting(normalMap, L) * u_LightColor * attenMap;
-}
-
-#else
-
 if (u_isCaustics == 1){
 vec4 tmp = causticsMap * diffuseMap;
 tmp *= u_CausticsModulate;
 diffuseMap = tmp + diffuseMap;
 }
 
+#ifdef AMBIENT   
+
+gl_FragColor = diffuseMap * LambertLighting(normalMap, L) * u_LightColor * attenMap;
+
+#else
+
 vec2 Es = PhongLighting(normalMap, L, V, u_specularExp);
-gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * cubeFilter * attenMap * u_LightColor;
+
+if(u_fog == 1){
+
+vec4 color = (Es.x * diffuseMap + Es.y * specular) * cubeFilter * attenMap;
+gl_FragColor = mix(u_LightColor, color, v_fogFactor) * attenMap;
+}
+else
+gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
 
 #endif 
 }

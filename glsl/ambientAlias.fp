@@ -49,15 +49,6 @@ r3*= u_envScale;
 color += r3;
 #endif
 
-#ifdef CAUSTICS
-vec4 r2 = texture2D(u_Caustics, v_texCoord);
-vec4 tmp;
-
-tmp = r2 * color;
-tmp *= u_CausticsModulate;
-color = tmp + color;
-#endif
-
 gl_FragColor = color * u_ColorModulate;
 #endif
 }
