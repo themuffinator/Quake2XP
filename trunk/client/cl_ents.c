@@ -907,6 +907,13 @@ void CL_AddPacketEntities(frame_t * frame)
 			ent.angles[1] = autorotate;
 			ent.angles[2] = 0;
 			ent.angleMod = true;
+			if (cl_itemsBobbing->value) {
+				//bobbing items, q3 style
+				float scale = 0.005 + s1->number * 0.00001;
+				float bob = 4 + cos((cl.time + 1000) * scale) * 4;
+				ent.oldorigin[2] += bob;
+				ent.origin[2] += bob;
+			}
 		}
 		// RAFAEL
 		else if (effects & EF_SPINNINGLIGHTS) {
