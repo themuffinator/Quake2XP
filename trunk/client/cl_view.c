@@ -195,17 +195,16 @@ CL_PrepRefresh
 Call before entering a new level, or after changing dlls
 =================
 */
-void R_ClearSLights();
 qboolean needLoadingPlaque(void);
 
 void CL_PrepRefresh(void)
 {
-	char mapname[32];
-	int i, loadingTime=0, loadingTime2=0, sec;
-	char name[MAX_QPATH];
-	float rotate;
-	vec3_t axis;
-	qboolean newPlaque = needLoadingPlaque();
+	char		mapname[32];
+	int			i, start = 0, stop = 0;
+	char		name[MAX_QPATH];
+	float		rotate, sec;
+	vec3_t		axis;
+	qboolean	newPlaque = needLoadingPlaque();
 
 	if (!cl.configstrings[CS_MODELS + 1][0])
 		return;					// no map loaded
@@ -216,7 +215,7 @@ void CL_PrepRefresh(void)
 	SCR_AddDirtyPoint(0, 0);
 	SCR_AddDirtyPoint(viddef.width - 1, viddef.height - 1);
 	
-	loadingTime = Sys_Milliseconds ();
+	start = Sys_Milliseconds ();
 	
 	loadScreenColorFade = 0.35;
 
@@ -358,10 +357,10 @@ void CL_PrepRefresh(void)
 	Music_Play();
 
 	loadingMessage = false;
-	loadingTime2 = Sys_Milliseconds ();
-	sec = loadingTime2-loadingTime;
-	sec *=0.001;
-	Com_Printf("level loading time = %i sec\n",sec);
+	stop = Sys_Milliseconds ();
+	sec = (float)stop - (float)start;
+	sec *= 0.001;
+	Com_Printf("level loading time = %5.4f sec\n",sec);
 
 	// the renderer can now free unneeded stuff
 	R_EndRegistration();

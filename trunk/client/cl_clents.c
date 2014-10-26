@@ -45,8 +45,9 @@ void CL_ClipMoveToEntitiesWorld(vec3_t start, vec3_t mins, vec3_t maxs,
 		if (!ent->solid)
 			continue;
 
-		if (ent->solid != 31)	// special value for bmodel
-			continue;
+		
+			if (ent->solid != 31)	// special value for bmodel
+				continue;
 
 		cmodel = cl.model_clip[ent->modelindex];
 		if (!cmodel)
@@ -74,9 +75,11 @@ void CL_ClipMoveToEntitiesWorld(vec3_t start, vec3_t mins, vec3_t maxs,
 	}
 }
 
+void CL_ClipMoveToEntities(vec3_t start, vec3_t mins, vec3_t maxs,
+							vec3_t end, trace_t * tr);
 
 trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
-						int mask)
+						int mask, qboolean checkAliases)
 {
 	trace_t t;
 
@@ -86,7 +89,10 @@ trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
 		t.ent = (struct edict_s *) 1;
 
 	// check all other solid models
-	CL_ClipMoveToEntitiesWorld(start, mins, maxs, end, &t, mask);
+	if (checkAliases)
+		CL_ClipMoveToEntities(start, mins, maxs, end, &t);
+	else
+		CL_ClipMoveToEntitiesWorld(start, mins, maxs, end, &t, mask);
 
 	return t;
 }
@@ -228,7 +234,7 @@ void CL_AddClEntities()
 	
 		if (le->flags & CLM_BOUNCE)
 		{
-			trace_t trace = CL_PMTraceWorld (le->lastOrg, ent.mins, ent.maxs, org, MASK_SOLID);
+			trace_t trace = CL_PMTraceWorld (le->lastOrg, ent.mins, ent.maxs, org, MASK_SOLID, false);
 
 			if (trace.fraction > 0 && trace.fraction < 1)
 			{

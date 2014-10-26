@@ -349,7 +349,7 @@ void CL_AddParticles(void)
 			VectorScale(mins, 2, mins);
 			VectorScale(maxs, 2, maxs);
 
-			trace = CL_PMTraceWorld (p->oldOrg, mins, maxs, org, MASK_SOLID);
+			trace = CL_PMTraceWorld (p->oldOrg, mins, maxs, org, MASK_SOLID, false);
 							
 			if (trace.fraction > 0 && trace.fraction < 1)
 			{

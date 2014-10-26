@@ -620,7 +620,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	int			i, nv = surf->numEdges;
 	float		*v, scroll, scale[2];
 	glpoly_t	*p;
-	qboolean	cont;
 
 	numVertices = *vertices;
 	numIndices = *indeces;
@@ -646,15 +645,18 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		else
 			qglUniform1f(qglGetUniformLocation(shaderId, "u_specularExp"), image->SpecularExp);
 		
-		
-	//	if (!CL_PMpointcontents(currentShadowLight->origin) & MASK_WATER){
-			if (caustics || surf->flags & SURF_WATER)
+		if (bmodel){
+			if (caustics && currentShadowLight->castCaustics)
 				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 1);
 			else
 				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 0);
-	//	}
-	//	else
-	//		qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 0);
+		}
+		else{
+			if ((surf->flags & SURF_WATER) && currentShadowLight->castCaustics)
+				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 1);
+			else
+				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 0);
+		}
 
 		if (r_parallax->value){
 
@@ -760,7 +762,7 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 		defBits = worldDefs.LightParallaxBit;
 
 
-	if(currentShadowLight->isAmbient || currentShadowLight->isFog)
+	if(currentShadowLight->isAmbient)
 		defBits |= worldDefs.AmbientBits;
 
 	// setup program
@@ -785,7 +787,8 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	if(currentShadowLight->isFog){
 	qglUniform1i(qglGetUniformLocation(id, "u_fog"), (int)currentShadowLight->isFog);
 	qglUniform1f(qglGetUniformLocation(id, "u_fogDensity"), currentShadowLight->fogDensity);
-	}
+	}else
+		qglUniform1i(qglGetUniformLocation(id, "u_fog"), 0);
 	
 	qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
 
@@ -995,12 +998,12 @@ qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 		break;
 	}
 
-	if(!currentShadowLight->isFog){
+//	if(!currentShadowLight->isFog){
 	//the normals are flipped when surf_planeback is 1
 	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
 		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
 		return false;
-	}
+//	}
 
 	//the normals are flipped when surf_planeback is 1
 	if (abs(dist) > currentShadowLight->len)
@@ -1495,9 +1498,7 @@ void R_DrawLightBrushModel(entity_t * e)
     qboolean	rotated;
 	vec3_t		tmp, oldLight;
 	mat3_t		entityAxis;
-	int			contentsAND, contentsOR;
-	qboolean	viewInWater, caustics;
-	int			cont[5];
+	qboolean	caustics;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -1554,11 +1555,7 @@ void R_DrawLightBrushModel(entity_t * e)
 	qglPushMatrix();
 	R_RotateForLightEntity(e);
 
-	// ================================== 
-	// detect underwater position 
-	// for bmodels caustics by Berserker 
-	// modified a bit by reckless. 
-	// ================================== 
+	caustics = false;
 	currententity->minmax[0] = mins[0];
 	currententity->minmax[1] = mins[1];
 	currententity->minmax[2] = mins[2];
@@ -1567,31 +1564,26 @@ void R_DrawLightBrushModel(entity_t * e)
 	currententity->minmax[5] = maxs[2];
 
 	VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]);
-	cont[0] = CL_PMpointcontents2(org, currentmodel);
-	VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]);
-	cont[1] = CL_PMpointcontents2(org, currentmodel);
-	VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]);
-	cont[2] = CL_PMpointcontents2(org, currentmodel);
-	VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]);
-	cont[3] = CL_PMpointcontents2(org, currentmodel);
-	org[0] = (currententity->minmax[0] + currententity->minmax[3]) * 0.5;
-	org[1] = (currententity->minmax[1] + currententity->minmax[4]) * 0.5;
-	org[2] = (currententity->minmax[2] + currententity->minmax[5]) * 0.5;
-	cont[4] = CL_PMpointcontents2(org, currentmodel);
-	contentsAND = (cont[0] & cont[1] & cont[2] & cont[3] & cont[4]);
-	contentsOR = (cont[0] | cont[1] | cont[2] | cont[3] | cont[4]);
-	viewInWater = (qboolean)(CL_PMpointcontents(r_newrefdef.vieworg) & MASK_WATER);
-
-	if ((contentsAND & MASK_WATER) || ((contentsOR & MASK_WATER) && viewInWater))
+	if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
+		caustics = true;
+	else
 	{
-		// sanity checking since we newer have all the types above. 
-		if (contentsOR & CONTENTS_WATER)
+		VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]);
+		if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
 			caustics = true;
 		else
-			caustics = false;
+		{
+			VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]);
+			if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
+				caustics = true;
+			else
+			{
+				VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]);
+				if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
+					caustics = true;
+			}
+		}
 	}
-	else
-		caustics = false;
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);

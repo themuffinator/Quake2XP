@@ -528,12 +528,12 @@ R_InitPrograms
 
 
 void R_InitPrograms(void) {
-	int missing = 0, loadingTime=0, loadingTime2=0;
+	int missing = 0, start = 0, stop = 0;
 	float sec;
 
 	Com_Printf("\nInitializing programs...\n\n");
 	
-	loadingTime = Sys_Milliseconds ();
+	start = Sys_Milliseconds ();
 
 	memset(programHashTable, 0, sizeof(programHashTable));
 	memset(&r_nullProgram, 0, sizeof(glslProgram_t));
@@ -551,9 +551,7 @@ void R_InitPrograms(void) {
 	ambientWorldProgram = R_FindProgram("ambientWorld", true, true);
 	if(ambientWorldProgram->valid){
 		Com_Printf("succeeded\n");
-
 		worldDefs.ParallaxBit		= R_GetProgramDefBits(ambientWorldProgram, "PARALLAX");
-		worldDefs.LightmapBits		= R_GetProgramDefBits(ambientWorldProgram, "LIGHTMAP");
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
@@ -639,7 +637,7 @@ void R_InitPrograms(void) {
 		missing++;
 	}
 
-		Com_Printf("Load "S_COLOR_YELLOW"motion blur program"S_COLOR_WHITE" ");
+/*	Com_Printf("Load "S_COLOR_YELLOW"motion blur program"S_COLOR_WHITE" ");
 	motionBlurProgram = R_FindProgram("mblur", true, true);
 	if(motionBlurProgram->valid)
 		Com_Printf("succeeded\n");
@@ -647,7 +645,7 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
+*/
 	Com_Printf("Load "S_COLOR_YELLOW"bloom program"S_COLOR_WHITE" ");
 	bloomdsProgram = R_FindProgram("bloomds", true, true);
 	bloomfpProgram = R_FindProgram("bloomfp", true, true);
@@ -715,7 +713,7 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
+	/*
 	Com_Printf("Load "S_COLOR_YELLOW"shadow program"S_COLOR_WHITE" ");
 	shadowProgram =  R_FindProgram("shadow", true, true);
 	
@@ -725,7 +723,7 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
+	*/
 	Com_Printf("Load "S_COLOR_YELLOW"generic program"S_COLOR_WHITE" ");
 	genericProgram =  R_FindProgram("generic", true, true);
 	worldDefs.AttribColorBits = R_GetProgramDefBits(genericProgram, "ATTRIB_COLORS");
@@ -786,7 +784,7 @@ void R_InitPrograms(void) {
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"fbo program"S_COLOR_WHITE" ");
+/*	Com_Printf("Load "S_COLOR_YELLOW"fbo program"S_COLOR_WHITE" ");
 	FboProgram = R_FindProgram("fbo", true, true);
 	if(FboProgram->valid){
 		Com_Printf("succeeded\n");
@@ -794,15 +792,12 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
-	loadingTime2 = Sys_Milliseconds ();
-	sec = (float)loadingTime2 - (float)loadingTime;
-	sec *=0.001;
-	Com_Printf("Programs loading time = %0.4f sec\n",sec);
+*/
+	stop = Sys_Milliseconds ();
+	sec = (float)stop - (float)start;
+	Com_Printf("\nGLSL shaders loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);
 
 	Com_Printf("\n");
-//	if (missing > 0)
-//		Com_Error(ERR_FATAL, "%d programs couldn't be found\n", missing);
 }
 
 /*

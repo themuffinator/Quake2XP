@@ -69,6 +69,7 @@ typedef struct worldShadowLight_s {
 	int			framecount;
 
 	qboolean	spherical;
+	qboolean	castCaustics;
 
 	uint		occQ;
 	cplane_t	frust[6];
@@ -85,8 +86,8 @@ typedef struct worldShadowLight_s {
 
 } worldShadowLight_t;
 
-#define Q_INFINITY					1e30f
-#define		MAX_WORLD_SHADOW_LIHGTS 1024
+#define		Q_INFINITY	1e30f
+#define		MAX_WORLD_SHADOW_LIHGTS	1024
 int			r_numWorlsShadowLights;
 extern		worldShadowLight_t *currentShadowLight;
 extern int	numPreCachedLights;

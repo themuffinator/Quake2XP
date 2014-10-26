@@ -470,17 +470,13 @@ hack:
 	}
 }
 
-float DecodeDepth (float d, vec2_t parms) {
-	return parms[0] / (parms[1] - d);
-}
-
 void R_DofBlur (void) {
 	unsigned		defBits = 0;
-	int				id, i, probeSize = 32;
-    float			delta, bias, nearestDepth = 1.0, depth[4096];
-	static float    dofDepth = 0;
-    static int      dofFadeTime = 0;
+	int				id;
+	float			tmpDist[5], tmpMins[3];
 	vec2_t          dofParams;
+	trace_t			trace;
+	vec3_t			end_trace, v_f, v_r, v_up, tmp, left, right, up, dn;
 
 	if(!r_dof->value)
 		return;
@@ -490,23 +486,43 @@ void R_DofBlur (void) {
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
             return;
 
-	// berserker's dof autofocus
-	if(!r_dofFocus->value){
-	qglReadPixels((vid.width - probeSize) / 2, (vid.height - probeSize) / 2, probeSize, probeSize, GL_DEPTH_COMPONENT, GL_FLOAT, &depth[0]);
+	//dof autofocus
+	if (!r_dofFocus->value){
+	
+	AngleVectors(r_newrefdef.viewangles, v_f, v_r, v_up);
+	VectorMA(r_newrefdef.vieworg, 4096, v_f, end_trace);
 
-	for (i = 0; i < probeSize * probeSize; i++)
-		if (nearestDepth > depth[i])
-			nearestDepth = depth[i];
+	VectorMA(end_trace,  96, v_r, right);
+	VectorMA(end_trace, -96, v_r, left);
+	VectorMA(end_trace,  96, v_up, up);
+	VectorMA(end_trace, -96, v_up, dn);
 
-	nearestDepth = DecodeDepth(nearestDepth, r_newrefdef.depthParms);
+	trace = CL_PMTraceWorld(r_newrefdef.vieworg, vec3_origin, vec3_origin, right, MASK_SHOT, true);
+	VectorSubtract(trace.endpos, r_newrefdef.vieworg, tmp);
+	tmpDist[0] = VectorLength(tmp);
 
-	delta = (nearestDepth - dofDepth) * (r_dofAdjust->value * (Sys_Milliseconds() - dofFadeTime) / 1000.0f);
-    dofDepth += delta;
-    // auto bias
-    bias = min(1 / nearestDepth, r_dofBias->value);
+	trace = CL_PMTraceWorld(r_newrefdef.vieworg, vec3_origin, vec3_origin, left, MASK_SHOT, true);
+	VectorSubtract(trace.endpos, r_newrefdef.vieworg, tmp);
+	tmpDist[1] = VectorLength(tmp);
 
-	dofParams[0] = max(dofDepth, 0);
-	dofParams[1] = bias;
+	trace = CL_PMTraceWorld(r_newrefdef.vieworg, vec3_origin, vec3_origin, up, MASK_SHOT, true);
+	VectorSubtract(trace.endpos, r_newrefdef.vieworg, tmp);
+	tmpDist[2] = VectorLength(tmp);
+
+	trace = CL_PMTraceWorld(r_newrefdef.vieworg, vec3_origin, vec3_origin, dn, MASK_SHOT, true);
+	VectorSubtract(trace.endpos, r_newrefdef.vieworg, tmp);
+	tmpDist[3] = VectorLength(tmp);
+
+	trace = CL_PMTraceWorld(r_newrefdef.vieworg, vec3_origin, vec3_origin, end_trace, MASK_SHOT, true);
+	VectorSubtract(trace.endpos, r_newrefdef.vieworg, tmp);
+	tmpDist[4] = VectorLength(tmp);
+
+	tmpMins[0] = min(tmpDist[0], tmpDist[1]);
+	tmpMins[1] = min(tmpDist[2], tmpDist[3]); 
+	tmpMins[2] = min(tmpMins[0], tmpMins[1]); 
+
+	dofParams[0] = min(tmpMins[2], tmpDist[4]);
+	dofParams[1] = r_dofBias->value;
 	} 
 	else
 	{

@@ -1133,52 +1133,6 @@ void Mod_BuildVertexCache()
 	Com_DPrintf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
 	free(buf);
 }
-void R_SmoothWorldSurfaces(void) {
-	float threshold;
-	float *vi, *vj;
-	msurface_t *surfA, *surfB;
-	int i, j;
-
-	if (r_tbnSmoothAngle->value <= 0.f)
-		return;
-
-	threshold = cos(DEG2RAD(r_tbnSmoothAngle->value));
-
-	for (i = 0, surfA = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surfA++) {
-
-		vi = surfA->polys->verts[0];
-
-		if (surfA->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP | SURF_NODRAW | SURF_WARP))
-			continue;
-
-		// collect coincident surfaces' TBN
-		for (j = 0, surfB = currentmodel->surfaces; j < currentmodel->numSurfaces; j++, surfB++) {
-
-			vj = surfB->polys->verts[0];
-
-			if (surfB->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP | SURF_NODRAW | SURF_WARP))
-				continue;
-
-			if (surfA->texInfo->image->texnum != surfB->texInfo->image->texnum)
-				continue; // don't interact with other materials
-
-			if (DotProduct(surfA->normal, surfB->normal) < threshold)
-				continue;
-
-			if (!VectorCompare(vi, vj))
-				continue;
-
-			VectorAdd(surfA->normal, surfB->normal, surfA->normal);
-			VectorAdd(surfA->tangent, surfB->tangent, surfA->tangent);
-			VectorAdd(surfA->binormal, surfB->binormal, surfA->binormal);
-		}
-
-		// renormalize them
-		VectorNormalize(surfA->normal);
-		VectorNormalize(surfA->tangent);
-		VectorNormalize(surfA->binormal);
-	}
-}
 
 void Mod_LoadFaces(lump_t * l)
 {
@@ -1270,7 +1224,6 @@ void Mod_LoadFaces(lump_t * l)
 	
 	// Build TBN for smoothing bump mapping (Berserker)
 	GL_BuildTBN(count);
-//	R_SmoothWorldSurfaces();
 	GL_EndBuildingLightmaps();
 
 	// calc neighbours for shadow volumes
@@ -1315,47 +1268,46 @@ static qboolean cache_Fetch(void *dst, int size) {
 
 void GL_BuildTBN(int count) {
 	int			ci, cj, i, j;
-	float		*vi, *vj;
-	float		threshold = cos(DEG2RAD(r_tbnSmoothAngle->value));
+	float		*vi, *vj, threshold;
 	msurface_t	*si, *sj;
-	vec3_t		normal_i, normal_j, t_i, b_i;
-
-	// TBN cache
+	vec3_t		ni, nj;
 	char		cacheName[MAX_QPATH];
 	FILE		*cacheFile = NULL;
-    int         smoothAng = (int)r_tbnSmoothAngle->value;
+	int         smoothAng = (int)r_tbnSmoothAngle->value;
+
+	threshold = cos(DEG2RAD(r_tbnSmoothAngle->value));
 
 	// Check for existing data
 	Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
 	if (cache_Open(cacheName)) {
-        int angle;
+		int angle;
 
-        if (!cache_Fetch(&angle, sizeof(angle)) || angle != smoothAng) {
-            Com_Printf(S_COLOR_RED "GL_BuildTBN: ignoring data for %s with angle %d (need %d)\n",
-              cacheName, angle, smoothAng);
-            cache_Close();
-            goto recreate;
-        }
+		if (!cache_Fetch(&angle, sizeof(angle)) || angle != smoothAng) {
+			Com_Printf(S_COLOR_RED "GL_BuildTBN: ignoring data for %s with angle %d (need %d)\n",
+				cacheName, angle, smoothAng);
+			cache_Close();
+			goto recreate;
+		}
 
-		for (i=0 ; i<count ; i++) {
+		for (i = 0; i<count; i++) {
 			si = &currentmodel->surfaces[i];
 
-			if (si->texInfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
+			if (si->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW))
 				continue;
 
 			vi = si->polys->verts[0];
 
-			for (ci=0; ci<si->numEdges; ci++, vi+=VERTEXSIZE)
+			for (ci = 0; ci<si->numEdges; ci++, vi += VERTEXSIZE)
 			{
-                if (!cache_Fetch(vi+7, 9*sizeof(*vi))) {
+				if (!cache_Fetch(vi + 7, 9 * sizeof(*vi))) {
 					Com_Printf(S_COLOR_RED "GL_BuildTBN: insufficient data in %s\n", cacheName);
-                    cache_Close();
+					cache_Close();
 					goto recreate;
 				}
 			}
 		}
 		Com_DPrintf(S_COLOR_GREEN "GL_BuildTBN: using cached data from %s\n", cacheName);
-        cache_Close();
+		cache_Close();
 		return;
 	}
 
@@ -1368,56 +1320,55 @@ recreate:
 		Com_Printf(S_COLOR_RED "GL_BuildTBN: could't open %s for writing\n", currentmodel->name);
 	else {
 		Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating %s, with angle %d\n",
-          currentmodel->name, smoothAng);
-        fwrite(&smoothAng, sizeof(smoothAng), 1, cacheFile);
-    }
+			currentmodel->name, smoothAng);
+		fwrite(&smoothAng, sizeof(smoothAng), 1, cacheFile);
+	}
 
-	for (i=0 ; i<count ; i++)
+	for (i = 0; i<count; i++)
 	{
 		si = &currentmodel->surfaces[i];
 
-		if (si->texInfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW))
+		if (si->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW))
 			continue;
 
 		vi = si->polys->verts[0];
 		
-		for (ci=0; ci<si->numEdges; ci++, vi+=VERTEXSIZE)
+		for (ci = 0; ci<si->numEdges; ci++, vi += VERTEXSIZE)
 			vi[7] = vi[8] = vi[9] = vi[10] = vi[11] = vi[12] = vi[13] = vi[14] = vi[15] = 0;
 		
 		if (si->flags & SURF_PLANEBACK)
-			VectorNegate(si->plane->normal, normal_i);
+			VectorNegate(si->plane->normal, ni);
 		else
-			VectorCopy(si->plane->normal, normal_i);
-		
-		VectorNormalize(normal_i);
-		VectorNormalize2(si->texInfo->vecs[0], t_i);
-		VectorNormalize2(si->texInfo->vecs[1], b_i);
+			VectorCopy(si->plane->normal, ni);
 
-
-		for (j=0 ; j<count ; j++)
+		for (j = 0; j<count; j++)
 		{
 			sj = &currentmodel->surfaces[j];
-			if (!(sj->texInfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_NODRAW)))
-			{
-				if (sj->flags & SURF_PLANEBACK)
-					VectorNegate(sj->plane->normal, normal_j);
-				else
-					VectorCopy(sj->plane->normal, normal_j);
 
-				if (DotProduct(normal_i, normal_j) > threshold)
+			if (!(sj->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW)))
+			{
+				if (si->texInfo->image->texnum != sj->texInfo->image->texnum)
+					continue;
+
+				if (sj->flags & SURF_PLANEBACK)
+					VectorNegate(sj->plane->normal, nj);
+				else
+					VectorCopy(sj->plane->normal, nj);
+
+				if (DotProduct(ni, nj) >= threshold)
 				{
 					vi = si->polys->verts[0];
-					for (ci=0; ci<si->numEdges; ci++, vi+=VERTEXSIZE)
+					for (ci = 0; ci<si->numEdges; ci++, vi += VERTEXSIZE)
 					{
 						vj = sj->polys->verts[0];
-						for (cj=0; cj<sj->numEdges; cj++, vj+=VERTEXSIZE)
+						for (cj = 0; cj<sj->numEdges; cj++, vj += VERTEXSIZE)
 						{
 
 							if (VectorCompare(vi, vj))
 							{
-								vi[7] += normal_j[0];
-								vi[8] += normal_j[1];
-								vi[9] += normal_j[2];
+								vi[7] += nj[0];
+								vi[8] += nj[1];
+								vi[9] += nj[2];
 							}
 						}
 					}
@@ -1426,76 +1377,65 @@ recreate:
 		}
 
 		vi = si->polys->verts[0];
-		for (ci=0; ci<si->numEdges; ci++, vi+=VERTEXSIZE)
+		for (ci = 0; ci<si->numEdges; ci++, vi += VERTEXSIZE)
 		{
-			vec3_t ttt, tttt, ttttt;
-			VectorSet(ttt, vi[7], vi[8], vi[9]);
-			VectorNormalize(ttt);
+			vec3_t normal, biTangent, tmp;
+			VectorSet(normal, vi[7], vi[8], vi[9]);
+			VectorNormalize(normal);
 
-			if (DotProduct(ttt, normal_i) < threshold)
+			if (DotProduct(normal, ni) < threshold)
 			{
-				vi[7] = ttt[0] + normal_i[0];
-				vi[8] = ttt[1] + normal_i[1];
-				vi[9] = ttt[2] + normal_i[2];
+				vi[7] = normal[0] = ni[0];
+				vi[8] = normal[1] = ni[1];
+				vi[9] = normal[2] = ni[2];
 			}
 			else
 			{
-				vi[7] = ttt[0];
-				vi[8] = ttt[1];
-				vi[9] = ttt[2];
+				vi[7] = normal[0];
+				vi[8] = normal[1];
+				vi[9] = normal[2];
 			}
-			
-	//		CrossProduct(ttt, si->texInfo->vecs[0], tttt);
-	//		CrossProduct(ttt, tttt, ttttt);
-	//		VectorNormalize(ttttt);
-			VectorNormalize2(si->texInfo->vecs[0], ttttt);
 
-	//		if (DotProduct(ttttt, si->texInfo->vecs[0]) < 0)
-	//		{
-	//			vi[10] = -ttttt[0];
-	//			vi[11] = -ttttt[1];
-	//			vi[12] = -ttttt[2];
-	//		}
-			if (DotProduct(ttttt, t_i) < threshold){
-				vi[10] = ttttt[0] = t_i[0];
-				vi[11] = ttttt[1] = t_i[1];
-				vi[12] = ttttt[2] = t_i[2];
+			CrossProduct(normal, si->texInfo->vecs[0], tmp);
+			CrossProduct(normal, tmp, biTangent);
+			VectorNormalize(biTangent);
+			if (DotProduct(biTangent, si->texInfo->vecs[0]) < 0)
+			{
+				vi[10] = -biTangent[0];
+				vi[11] = -biTangent[1];
+				vi[12] = -biTangent[2];
 			}
 			else
 			{
-				vi[10] = ttttt[0];
-				vi[11] = ttttt[1];
-				vi[12] = ttttt[2];
+				vi[10] = biTangent[0];
+				vi[11] = biTangent[1];
+				vi[12] = biTangent[2];
 			}
 
-		//	CrossProduct(ttt, si->texInfo->vecs[1], tttt);
-		//	CrossProduct(ttt, tttt, ttttt);
-		//	VectorNormalize(ttttt);
-			VectorNormalize2(si->texInfo->vecs[1], ttttt);
-		//	if (DotProduct(ttttt, si->texInfo->vecs[1]) < 0)
-		//	{
-		//		vi[13] = -ttttt[0];
-		//		vi[14] = -ttttt[1];
-		//		vi[15] = -ttttt[2];
-		//	}
-			if (DotProduct(ttttt, t_i) < threshold){
-				vi[13] = ttttt[0] = b_i[0];
-				vi[14] = ttttt[1] = b_i[1];
-				vi[15] = ttttt[2] = b_i[2];
+			CrossProduct(normal, si->texInfo->vecs[1], tmp);
+			CrossProduct(normal, tmp, biTangent);
+			VectorNormalize(biTangent);
+			if (DotProduct(biTangent, si->texInfo->vecs[1]) < 0)
+			{
+				vi[13] = -biTangent[0];
+				vi[14] = -biTangent[1];
+				vi[15] = -biTangent[2];
 			}
 			else
 			{
-				vi[13] = ttttt[0];
-				vi[14] = ttttt[1];
-				vi[15] = ttttt[2];
+				vi[13] = biTangent[0];
+				vi[14] = biTangent[1];
+				vi[15] = biTangent[2];
 			}
+
 			if (cacheFile != NULL)
-				fwrite(vi+7, sizeof(*vi), 9, cacheFile);
+				fwrite(vi + 7, sizeof(*vi), 9, cacheFile);
 		}
 	}
 	if (cacheFile != NULL)
 		fclose(cacheFile);
 }
+
 
 
 /*
@@ -1817,7 +1757,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	
 	Load_LightFile();
 	R_PreCalcLightData();
-	Mod_GenerateAmbientLights(mod);
+//	Mod_GenerateAmbientLights(mod);
 
 	mod->numFrames = 2;			// regular and alternate animation
 
@@ -2508,7 +2448,6 @@ bad:
 
 		fclose(f);
 	}
-
 exit:
 
 	ClearBounds(mod->mins, mod->maxs);

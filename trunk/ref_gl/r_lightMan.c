@@ -32,7 +32,6 @@ int num_visLights;
 int numLightQ;
 
 vec3_t player_org, v_forward, v_right, v_up;
-trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask);
 qboolean R_MarkLightLeaves (worldShadowLight_t *light);
 void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine();
@@ -202,14 +201,18 @@ void R_PrepareShadowLightFrame(void) {
 
 	MakeFrustum4Light(light, true);
 
+	if (CL_PMpointcontents(light->origin) & MASK_WATER)
+		light->castCaustics = false;
+	else
+		light->castCaustics = true;
+
 	VectorCopy(light->startColor, light->color);
 
 	light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
 	light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
 	light->color[2] *= r_newrefdef.lightstyles[light->style].rgb[2];
-
-
 	}
+
 
 }
 
@@ -326,7 +329,7 @@ void R_Light_Spawn_f(void) {
 	memset(target, 0, sizeof(target));
 
 	VectorMA(player_org, 1024, v_forward, end);
-	trace = CL_PMTraceWorld(player_org, vec3_origin, vec3_origin, end, MASK_SOLID);
+	trace = CL_PMTraceWorld(player_org, vec3_origin, vec3_origin, end, MASK_SOLID, false);
 	
 	if (trace.fraction != 1.0){
 		VectorMA(trace.endpos, -10, v_forward, spawn);
@@ -1000,7 +1003,7 @@ void UpdateLightEditor(void){
 	headNode = CM_HeadnodeForBox (mins, maxs);
 	VectorMA(r_origin, 1024, v_forward, end_trace);
 
-	trace_bsp = CL_PMTraceWorld(r_origin, vec3_origin, vec3_origin, end_trace, MASK_SOLID); //bsp collision with bmodels
+	trace_bsp = CL_PMTraceWorld(r_origin, vec3_origin, vec3_origin, end_trace, MASK_SOLID, false); //bsp collision with bmodels
 
 	// light in focus?
 	trace_light = CM_TransformedBoxTrace(	r_origin, trace_bsp.endpos, vec3_origin, vec3_origin, headNode, MASK_ALL, 
@@ -1535,7 +1538,7 @@ void Load_LightFile() {
 
 		style = 0;
 		filter = 0;
-		shadow = 0;
+		shadow = 1;
 		ambient = 0;
 		cone = 0;
 		fSize = 0;

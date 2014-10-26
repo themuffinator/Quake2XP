@@ -743,7 +743,7 @@ int GetClippedFragments(vec3_t origin, float radius, mat3_t axis,
 						fragment_t * fragments);
 
 trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
-						int mask);
+						int mask, qboolean checkAliases);
 
 void CL_NewDlight(int key, vec3_t org, float r, float g, float b,  
 				  float radius, float time);

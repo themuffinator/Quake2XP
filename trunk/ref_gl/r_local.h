@@ -325,7 +325,6 @@ cvar_t	*r_parallaxScale;
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;
 cvar_t	*r_dofFocus;
-cvar_t	*r_dofAdjust;
 
 cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;
@@ -477,6 +476,7 @@ qboolean Mat4_Invert(const mat4_t in, mat4_t out);
 void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
 void R_SetLightPlanes();
+trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
 
 extern int	occ_framecount;
 //====================================================================

@@ -702,12 +702,12 @@ void R_DrawLightInteractions(void)
 	if (r_skipStaticLights->value && currentShadowLight->isStatic)
 		continue;
 
-	if(currentShadowLight->isFog){
+/*	if(currentShadowLight->isFog){
 		qglDisable(GL_STENCIL_TEST);
 		qglDisable(GL_SCISSOR_TEST);
 		if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
-	}
+	}*/
 
 	UpdateLightEditor();
 	
@@ -1270,7 +1270,6 @@ void R_RegisterCvars(void)
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
 	r_dofFocus =						Cvar_Get("r_dofFocus", "0.0", CVAR_ARCHIVE);
-	r_dofAdjust =						Cvar_Get("r_dofAdjust", "4.0", CVAR_ARCHIVE);
 
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
