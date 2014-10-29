@@ -1542,7 +1542,7 @@ void CL_CalcViewValues(void)
 	frame_t *oldframe;
 	player_state_t *ps, *ops;
 
-	VectorCopy(cl.refdef.viewangles, cl.refdef.oldViewAngles);
+	VectorCopy(cl.refdef.viewangles, cl.refdef.viewangles_old);
 
 	// find the previous frame to interpolate from
 	ps = &cl.frame.playerstate;

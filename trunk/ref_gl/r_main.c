@@ -948,7 +948,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();
-//	R_MotionBlur();
+	R_MotionBlur();
 	R_Bloom();
 	R_FilmGrain();
 	}

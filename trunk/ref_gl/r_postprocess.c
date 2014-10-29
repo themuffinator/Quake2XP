@@ -641,6 +641,7 @@ void R_MotionBlur (void) {
 	
 	unsigned	defBits = 0;
 	int			id;
+	float		temp_x, temp_y, delta_x, delta_y;
 
     if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
             return;
@@ -651,25 +652,17 @@ void R_MotionBlur (void) {
 	GL_BindProgram(motionBlurProgram, defBits);
 	id = motionBlurProgram->id[defBits];
 	
-	qglUniformMatrix4fv	(qglGetUniformLocation(id, "u_PrevModelViewProj"), 1, GL_FALSE, (const GLfloat*)r_newrefdef.oldMvpMatrix);
-	qglUniformMatrix4fv	(qglGetUniformLocation(id, "u_InverseModelViewMat"), 1, GL_FALSE, (const GLfloat*)r_newrefdef.inverseMvpMatrix);
-	qglUniform2f		(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
-	qglUniform2f		(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	temp_y = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0];
+	temp_x = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1];
+	delta_x = (temp_x * 2.0 / r_newrefdef.fov_x) * 10.0;
+	delta_y = (temp_y * 2.0 / r_newrefdef.fov_y) * 10.0;
 
-	if (!mbtex) {
-		qglGenTextures(1, &mbtex);
-		GL_Bind(mbtex);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
-	}
-	GL_Bind(mbtex);
-	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i		(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+	qglUniform2f(qglGetUniformLocation(id, "u_velocity"), delta_x, delta_y);
 
-	GL_SelectTexture		(GL_TEXTURE1_ARB);	
-	GL_BindRect				(depthMap->texnum);
-    qglUniform1i			(qglGetUniformLocation(id, "u_DepthTex"), 1);
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	GL_BindRect(ScreenMap->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1i(qglGetUniformLocation(id, "u_ScreenTex"), 0);
 
 	R_DrawFullScreenQuad();
 
