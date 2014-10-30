@@ -683,7 +683,7 @@ typedef struct {
 	int			maxColorAttachments;
 	int			maxSamples;
 	int			maxDrawBuffers;
-	uint		fboId, dpsId;
+	uint		fboId, dpsId, fbo_weaponMask;
 
 // ----------------------------------------------------------------
 } glstate_t;

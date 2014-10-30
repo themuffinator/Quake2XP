@@ -180,8 +180,6 @@ void CreateScreenRect(void){
 
 }
 
-#define _R_FB_Check();		FB_Check(__FILE__, __LINE__);
-
 /*
 =============
 R_FB_Check
@@ -189,7 +187,7 @@ R_FB_Check
 Framebuffer must be bound.
 =============
 */
-/*
+
 static void FB_Check(const char *file, const int line) {
 	const char	*s;
 	GLenum		code;
@@ -225,8 +223,61 @@ static void FB_Check(const char *file, const int line) {
 
 	Com_Printf("R_FB_Check: %s, line %i: %s\n", file, line, s);
 }
+
+#define _R_FB_Check();		FB_Check(__FILE__, __LINE__);
+
+static GLenum drawbuffer[] = { GL_COLOR_ATTACHMENT0};
+void CreateWeaponRect(void){
+
+
+	int		i;
+	char	name[17] = "***weaponHack***";
+	image_t	*image;
+
+	// find a free image_t
+	for (i = 0, image = gltextures; i<numgltextures; i++, image++)
+	{
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures)
+	{
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy(image->name, name);
+
+	image->width = vid.width;
+	image->height = vid.height;
+	image->upload_width = vid.width;
+	image->upload_height = vid.height;
+	image->type = it_pic;
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+
+	weaponHack = image;
+
+	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, weaponHack->texnum);
+	qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	qglGenFramebuffers(1, &gl_state.fbo_weaponMask);
+	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, weaponHack->texnum, 0);
+	qglDrawBuffers(1, drawbuffer);
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+	_R_FB_Check();
+
+}
+/*
 image_t *occlusionMap;
 static GLenum drawbuffer[] = {GL_COLOR_ATTACHMENT0};
+
 
 void CreateOcclusionBuffer(void){
 
@@ -808,6 +859,7 @@ void R_InitEngineTextures(void)
 	CreateScreenRect();
 	CreateShadowMask();
 	CreateAttenuation();
+	CreateWeaponRect();
 }
 
 

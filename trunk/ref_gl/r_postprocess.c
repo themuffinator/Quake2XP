@@ -641,7 +641,8 @@ void R_MotionBlur (void) {
 	
 	unsigned	defBits = 0;
 	int			id;
-	float		temp_x, temp_y, delta_x, delta_y;
+	float		temp_x, temp_y, delta_x, delta_y,
+				temp1_x, temp1_y, delta1_x, delta1_y;
 
     if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
             return;
@@ -652,10 +653,18 @@ void R_MotionBlur (void) {
 	GL_BindProgram(motionBlurProgram, defBits);
 	id = motionBlurProgram->id[defBits];
 	
-	temp_y = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0];
-	temp_x = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1];
+	// mouse
+	temp_y = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
+	temp_x = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
 	delta_x = (temp_x * 2.0 / r_newrefdef.fov_x) * 10.0;
 	delta_y = (temp_y * 2.0 / r_newrefdef.fov_y) * 10.0;
+	 
+	temp1_x = r_newrefdef.vieworg_old[0] - r_newrefdef.vieworg[0];
+	temp1_y = r_newrefdef.vieworg_old[1] - r_newrefdef.vieworg[1];
+	delta1_x = (temp1_x * cos(DEG2RAD(r_newrefdef.viewangles[1])) + temp1_x * sin(DEG2RAD(r_newrefdef.viewangles[1]))) * 10.0;
+
+
+//	delta_x += delta1_x;
 
 	qglUniform2f(qglGetUniformLocation(id, "u_velocity"), delta_x, delta_y);
 
@@ -663,6 +672,10 @@ void R_MotionBlur (void) {
 	GL_BindRect(ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglUniform1i(qglGetUniformLocation(id, "u_ScreenTex"), 0);
+
+	GL_SelectTexture(GL_TEXTURE1_ARB);
+	GL_BindRect(weaponHack->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_MaskTex"), 1);
 
 	R_DrawFullScreenQuad();
 

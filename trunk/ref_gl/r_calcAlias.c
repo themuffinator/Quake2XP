@@ -99,12 +99,10 @@ int CL_PMpointcontents(vec3_t point);
 void GL_DrawAliasFrameLerpWeapon(dmdl_t *paliashdr)
 {
 	vec3_t		vertexArray[3*MAX_TRIANGLES];
+	vec4_t		colorArray[4 * MAX_TRIANGLES];
 	int			index_xyz;
 	int			i, j, jj =0;
 	dtriangle_t	*tris;
-	unsigned	defBits = 0;
-	int			id;
-
 		
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -124,19 +122,14 @@ void GL_DrawAliasFrameLerpWeapon(dmdl_t *paliashdr)
 			{
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+			VA_SetElem4(colorArray[jj], 0.0, 0.0, 0.0, 1.0);
 			}
 		}
-
-	defBits = worldDefs.WeaponBits;
-	// setup program
-	GL_BindProgram(aliasAmbientProgram, defBits);
-	id = aliasAmbientProgram->id[defBits];
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 
 	qglDisableVertexAttribArray	(ATRB_POSITION);
-	GL_BindNullProgram			();
-	
+	qglDisableVertexAttribArray	(ATRB_COLOR);
 }
 
 void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)

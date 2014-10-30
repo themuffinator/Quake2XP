@@ -641,6 +641,36 @@ next:
 	
 }
 
+void R_DrawPlayerWeaponFBO(void)
+{
+	int i;
+
+	if (!r_drawEntities->value)
+		return;
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
+	qglClear(GL_COLOR_BUFFER_BIT);
+	qglClearColor(0, 0, 0, 0);
+
+	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
+	{
+		currententity = &r_newrefdef.entities[i];
+		currentmodel = currententity->model;
+
+		if (!currentmodel)
+			continue;
+
+		if (currentmodel->type != mod_alias)
+			continue;
+
+		if (!(currententity->flags & RF_WEAPONMODEL))
+			continue;
+
+		R_DrawAliasModel(currententity, true);
+	}
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 void R_DrawPlayerWeaponLightPass(void)
 {
@@ -701,13 +731,6 @@ void R_DrawLightInteractions(void)
 
 	if (r_skipStaticLights->value && currentShadowLight->isStatic)
 		continue;
-
-/*	if(currentShadowLight->isFog){
-		qglDisable(GL_STENCIL_TEST);
-		qglDisable(GL_SCISSOR_TEST);
-		if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
-	}*/
 
 	UpdateLightEditor();
 	
@@ -852,6 +875,7 @@ void R_RenderView(refdef_t * fd)
 	R_CaptureColorBuffer();
 	R_RenderDistortModels();
 	R_CaptureColorBuffer();
+	R_DrawPlayerWeaponFBO();
 }
 
 
@@ -1727,7 +1751,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_conditional_render not found\n");
 		gl_state.conditional_render = false;		
 	}
-
+	*/
 	if (strstr(gl_config.extensions_string, "GL_ARB_draw_buffers")) {
 		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
 		
@@ -1741,7 +1765,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf("...using GL_ARB_texture_float\n");
 	else
 		Com_Printf(S_COLOR_RED"...using GL_ARB_texture_float not found\n");
-	
+
 
 	if (strstr(gl_config.extensions_string, "GL_ARB_framebuffer_object")) {
 		Com_Printf("...using GL_ARB_framebuffer_object\n");  
@@ -1778,7 +1802,7 @@ int R_Init(void *hinstance, void *hWnd)
 	else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_framebuffer_object not found\n");
 	}
-*/
+
 	gl_state.glsl = false;	
 	if ( strstr( gl_config.extensions_string, "GL_ARB_shading_language_100" ) )
 	{

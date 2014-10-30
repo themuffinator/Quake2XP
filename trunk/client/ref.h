@@ -436,6 +436,7 @@ typedef struct {
 	int		x, y, width, height;	// in virtual screen coordinates
 	float	fov_x, fov_y;
 	float	vieworg[3];
+	float	vieworg_old[3];
 	float	viewangles[3];
 	float	viewangles_old[3];
 

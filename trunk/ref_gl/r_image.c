@@ -1604,6 +1604,7 @@ void GL_FreeUnusedImages(void)
 	r_scanline->registration_sequence = registration_sequence;
 	r_envTex->registration_sequence = registration_sequence;
 	atten3d_texture_object->registration_sequence = registration_sequence;
+	weaponHack->registration_sequence = registration_sequence;
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)
