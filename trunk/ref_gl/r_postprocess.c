@@ -641,8 +641,7 @@ void R_MotionBlur (void) {
 	
 	unsigned	defBits = 0;
 	int			id;
-	float		temp_x, temp_y, delta_x, delta_y,
-				temp1_x, temp1_y, delta1_x, delta1_y;
+	mat4_t		tmp1, tmp2, tmp3;
 
     if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
             return;
@@ -653,21 +652,15 @@ void R_MotionBlur (void) {
 	GL_BindProgram(motionBlurProgram, defBits);
 	id = motionBlurProgram->id[defBits];
 	
-	// mouse
-	temp_y = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
-	temp_x = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
-	delta_x = (temp_x * 2.0 / r_newrefdef.fov_x) * 10.0;
-	delta_y = (temp_y * 2.0 / r_newrefdef.fov_y) * 10.0;
-	 
-	temp1_x = r_newrefdef.vieworg_old[0] - r_newrefdef.vieworg[0];
-	temp1_y = r_newrefdef.vieworg_old[1] - r_newrefdef.vieworg[1];
-	delta1_x = (temp1_x * cos(DEG2RAD(r_newrefdef.viewangles[1])) + temp1_x * sin(DEG2RAD(r_newrefdef.viewangles[1]))) * 10.0;
+	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, tmp1);
+	Mat4_Invert(tmp1, tmp2);
+	Mat4_Transpose(tmp2, tmp3);
 
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_PrevModelViewProj"), 1, GL_FALSE, (const GLfloat*)r_newrefdef.oldMvpMatrix);
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_InverseModelViewMat"), 1, GL_FALSE, (const GLfloat*)tmp3);
 
-//	delta_x += delta1_x;
-
-	qglUniform2f(qglGetUniformLocation(id, "u_velocity"), delta_x, delta_y);
-
+	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
+	
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindRect(ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -677,8 +670,13 @@ void R_MotionBlur (void) {
 	GL_BindRect(weaponHack->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_MaskTex"), 1);
 
+	GL_SelectTexture(GL_TEXTURE2_ARB);
+	GL_BindRect(depthMap->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_DepthTex"), 2);
+
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram();
 	GL_SelectTexture(GL_TEXTURE0_ARB);	
+	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.oldMvpMatrix);
 }
