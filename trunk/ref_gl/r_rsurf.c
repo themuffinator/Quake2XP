@@ -970,8 +970,11 @@ static void R_RecursiveWorldNode(mnode_t * node)
 qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 {
 	cplane_t	*plane;
-	float		dist;
+	float		dist, dot;
 	glpoly_t	*poly;
+	
+	if (!SurfInFrustum(surf))
+		return false;
 
 	if ((surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
 		return false;
@@ -981,7 +984,7 @@ qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 	
 	if (poly->lightTimestamp == r_lightTimestamp)
 		return false;
-	
+
 	switch (plane->type)
 	{
 	case PLANE_X:
@@ -997,15 +1000,31 @@ qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 		dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
 		break;
 	}
-
-//	if(!currentShadowLight->isFog){
 	//the normals are flipped when surf_planeback is 1
 	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
 		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
 		return false;
-//	}
 
-	//the normals are flipped when surf_planeback is 1
+	switch (plane->type) //now check surf_planeback for camera pos
+	{
+	case PLANE_X:
+		dot = r_origin[0] - plane->dist;
+		break;
+	case PLANE_Y:
+		dot = r_origin[1] - plane->dist;
+		break;
+	case PLANE_Z:
+		dot = r_origin[2] - plane->dist;
+		break;
+	default:
+		dot = DotProduct(r_origin, plane->normal) - plane->dist;
+		break;
+	}
+
+	if (((surf->flags & SURF_PLANEBACK) && (dot > 0)) ||
+		(!(surf->flags & SURF_PLANEBACK) && (dot < 0)))
+		return false;
+
 	if (abs(dist) > currentShadowLight->len)
 		return false;
 
@@ -1441,53 +1460,6 @@ qboolean R_MarkBrushModelSurfaces()
 	}
 
 	return num_light_surfaces;
-}
-
-qboolean R_CheckForBmodelCaustics(void){
-	vec3_t		mins, maxs, org;
-	int         contentsAND, contentsOR;
-	qboolean	viewInWater;
-	int			cont[5];
-
-	// ================================== 
-	// detect underwater position 
-	// for bmodels caustics by Berserker 
-	// modified a bit by reckless. 
-	// ================================== 
-	currententity->minmax[0] = mins[0];
-	currententity->minmax[1] = mins[1];
-	currententity->minmax[2] = mins[2];
-	currententity->minmax[3] = maxs[0];
-	currententity->minmax[4] = maxs[1];
-	currententity->minmax[5] = maxs[2];
-
-	VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]);
-	cont[0] = CL_PMpointcontents2(org, currentmodel);
-	VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]);
-	cont[1] = CL_PMpointcontents2(org, currentmodel);
-	VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]);
-	cont[2] = CL_PMpointcontents2(org, currentmodel);
-	VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]);
-	cont[3] = CL_PMpointcontents2(org, currentmodel);
-	org[0] = (currententity->minmax[0] + currententity->minmax[3]) * 0.5;
-	org[1] = (currententity->minmax[1] + currententity->minmax[4]) * 0.5;
-	org[2] = (currententity->minmax[2] + currententity->minmax[5]) * 0.5;
-	cont[4] = CL_PMpointcontents2(org, currentmodel);
-	contentsAND = (cont[0] & cont[1] & cont[2] & cont[3] & cont[4]);
-	contentsOR = (cont[0] | cont[1] | cont[2] | cont[3] | cont[4]);
-	viewInWater = (qboolean)(CL_PMpointcontents(r_newrefdef.vieworg) & MASK_WATER);
-
-	if ((contentsAND & MASK_WATER) || ((contentsOR & MASK_WATER) && viewInWater))
-	{
-		// sanity checking since we newer have all the types above. 
-		if (contentsOR & CONTENTS_WATER){
-			Com_Printf("add bmodel caustics\n");
-			return true;
-		}
-		else
-			return false;
-	}
-	return false;
 }
 
 void R_DrawLightBrushModel(entity_t * e)
