@@ -14,18 +14,13 @@ varying		vec2	v_envCoord;
 varying		vec2	v_shellCoord;
 #endif
 
-#ifdef CAUSTICS
-uniform sampler2D  u_Caustics;
-uniform float      u_CausticsModulate;
-#endif
-
 uniform float       u_ColorModulate;  
 uniform float       u_AddShift; 
 
 void main ()
 {
 #ifdef WEAPON
-gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // weapon mask
 #endif
 
 #ifdef SHELL
