@@ -598,7 +598,6 @@ extern cvar_t *autospawn;
 extern cvar_t *zigmode;
 extern float spawncycle;
 //ponpoko
-extern cvar_t *r_motionblur;
 extern cvar_t *cl_3dhud;
 extern cvar_t *net_compatibility;
 //ZOID

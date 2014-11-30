@@ -143,7 +143,6 @@ void R_DrawSpriteModel(entity_t * e)
 	up = vup;
 	right = vright;
 
-
 	qglDepthMask(false);
 	qglDepthFunc(GL_LEQUAL);
 	
@@ -152,8 +151,6 @@ void R_DrawSpriteModel(entity_t * e)
 	qglColor4f(1, 1, 1, 1);
 
 	GL_Bind(currentmodel->skins[e->frame]->texnum);
-
-	GL_PicsColorScaleARB(true);
 
 	qglBegin(GL_QUADS);
 
@@ -422,10 +419,7 @@ static void R_SetupViewMatrices (void) {
 	float	xMin, xMax, xDiv;
 	float	yMin, yMax, yDiv;
 	float	zNear, zFar, zDiv;
-	mat4_t	tmpMatrix, tmpMatrix1;
-
-	// motion blur store old mvp matrix
-	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.oldMvpMatrix);
+	mat4_t	tmpMatrix;
 
 	// setup perspective projection matrix
 	zNear = max(r_zNear->value, 3.0);
@@ -500,10 +494,6 @@ static void R_SetupViewMatrices (void) {
 	// load matrices
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix); // q2 r_project_matrix
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix); // q2 r_world_matrix
-
-	Mat4_Invert(tmpMatrix, tmpMatrix1);
-	Mat4_Transpose(tmpMatrix1, r_newrefdef.inverseMvpMatrix);
-
 }
 
 
@@ -526,7 +516,6 @@ void R_SetupGL(void)
 		qglDisable(GL_CULL_FACE);
 
 	GLSTATE_DISABLE_BLEND
-	GLSTATE_DISABLE_ALPHATEST 
 	qglEnable(GL_DEPTH_TEST);
 
 }
@@ -972,8 +961,8 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_RadialBlur();
 	R_ThermalVision();
 	R_DofBlur();
-//	R_MotionBlur();
 	R_Bloom();
+	R_MotionBlur();
 	R_FilmGrain();
 	}
 
@@ -1142,6 +1131,7 @@ Cvar_Set("r_bloom", "0");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "0");
 Cvar_Set("r_softParticles", "0");
+Cvar_Set("r_motionBlur", "0");
 
 vid_ref->modified = true;
 }
@@ -1157,11 +1147,12 @@ Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "1");
 Cvar_Set("r_skipStaticLights", "0");
-Cvar_Set("r_pplWorldAmbient", "1.0");
+Cvar_Set("r_pplWorldAmbient", "0.5");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "1");
 Cvar_Set("r_softParticles", "1");
+Cvar_Set("r_motionBlur", "0");
 
 vid_ref->modified = true;
 }
@@ -1183,6 +1174,7 @@ Cvar_Set("r_dof", "1");
 Cvar_Set("r_radialBlur", "1");
 Cvar_Set("r_softParticles", "1");
 Cvar_Set("r_fxaa", "1");
+Cvar_Set("r_motionBlur", "1");
 
 vid_ref->modified = true;
 }
@@ -1273,7 +1265,7 @@ void R_RegisterCvars(void)
 	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
 	r_debugLightScissors =				Cvar_Get("r_debugLightScissors", "0", 0);
-	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "0", CVAR_ARCHIVE);
+	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "65", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 //	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
 //	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
@@ -1294,6 +1286,10 @@ void R_RegisterCvars(void)
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
 	r_dofFocus =						Cvar_Get("r_dofFocus", "0.0", CVAR_ARCHIVE);
+
+	r_motionBlur =						Cvar_Get("r_motionBlur", "1", CVAR_ARCHIVE);
+	r_motionBlurSamples	=				Cvar_Get("r_motionBlurSamples", "16", CVAR_ARCHIVE);
+	r_motionBlurFrameLerp =				Cvar_Get("r_motionBlurFrameLerp", "10", CVAR_ARCHIVE);
 
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);

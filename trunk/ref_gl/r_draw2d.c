@@ -75,7 +75,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	frow = row * 0.0625;
 	fcol = col * 0.0625;
 	size = 0.0625;
-	GL_PicsColorScaleARB(true);
+
 	GL_Blend(true, 0, 0);
 	GL_Bind(draw_chars->texnum);
 
@@ -91,7 +91,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	qglEnd();
 
 	GL_Blend(false, 0, 0);
-	GL_PicsColorScaleARB(false);
+
 }
 
 
@@ -145,7 +145,6 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		GL_Bind(draw_chars->texnum);
 	}
 
-	GL_PicsColorScaleARB(true);
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -186,7 +185,6 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 	qglEnd();
 
 	qglDisable(GL_BLEND);
-	GL_PicsColorScaleARB(false);
 }
 
 
@@ -308,13 +306,8 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl, qboolean cons)
 	if (cons) {
 
 		qglColor4f(1, 1, 1, 0.55);
-		GL_PicsColorScaleARB(false);
-		qglDepthMask(GL_FALSE);	
 	} else {
 		qglColor4f(1, 1, 1, 1);
-		GL_PicsColorScaleARB(true);
-		qglDepthMask(GL_TRUE);	
-
 	}
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -351,7 +344,6 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl, qboolean cons)
 	}
 	qglColor4f(1, 1, 1, 1);
 	GL_Blend(false, 0, 0);
-	GL_PicsColorScaleARB(false);
 	qglDepthMask(GL_TRUE);	
 }
 
@@ -361,17 +353,13 @@ void Draw_StretchPic(int x, int y, int w, int h, char *pic)
 	qboolean cons = 0;
 	image_t *gl;
 
-	GL_PicsColorScaleARB(true);
 	gl = Draw_FindPic(pic);
 
 	if (!gl) {
 		Com_Printf("Can't find pic: %s\n", pic);
 		return;
 	}
-
-
 	Draw_StretchPic2(x, y, w, h, gl, cons);
-	GL_PicsColorScaleARB(false);
 }
 
 float loadScreenColorFade;

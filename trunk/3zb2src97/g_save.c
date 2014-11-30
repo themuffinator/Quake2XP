@@ -214,7 +214,6 @@ void InitGame(void)
 	maxspectators = gi.cvar("maxspectators", "4", CVAR_SERVERINFO);
 	g_select_empty = gi.cvar("g_select_empty", "0", CVAR_ARCHIVE);
 
-	r_motionblur = gi.cvar("r_motionblur", "0", CVAR_ARCHIVE);
 	filterban = gi.cvar("filterban", "1", 0);
 	cl_3dhud = gi.cvar("cl_3dhud", "1", CVAR_ARCHIVE);
 	net_compatibility = gi.cvar("net_compatibility", "0", CVAR_SERVERINFO | CVAR_NOSET);

@@ -553,7 +553,6 @@ extern	cvar_t	*sv_maplist;
 
 
 extern cvar_t	*cl_3dhud;
-extern cvar_t	*r_motionblur;
 extern cvar_t   *sv_solidcorpse;
 extern cvar_t	*net_compatibility;
 

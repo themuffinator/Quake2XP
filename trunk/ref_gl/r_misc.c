@@ -979,13 +979,12 @@ void GL_SetDefaultState(void)
 	qglCullFace			(GL_FRONT);
 	qglEnable			(GL_TEXTURE_2D);
 
-	qglAlphaFunc		(GL_GREATER, 0.6f);
+	qglAlphaFunc		(GL_GREATER, 0.666);
 
 	qglDisable			(GL_DEPTH_TEST);
 	qglDisable			(GL_CULL_FACE);
 	qglDisable			(GL_STENCIL_TEST);
 	qglDisable			(GL_BLEND);
-	gl_state.blend		= (qboolean)false;
 	
 	flareEdit			= (qboolean)false;
 	
@@ -1007,14 +1006,16 @@ void GL_SetDefaultState(void)
 
 	qglBlendFunc		(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	GL_PicsColorScaleARB(false);
-	GL_TexEnv			(GL_REPLACE);
+	GL_TexEnv(GL_COMBINE_ARB);
+	qglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);
+	qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_TEXTURE);
+	qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_PREVIOUS_ARB);
+	qglTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, (int)r_picsColorScale->value);
 
-	gl_state.texgen		= (qboolean)false;
-	qglDisable			(GL_TEXTURE_GEN_S);
-	qglDisable			(GL_TEXTURE_GEN_T);
-	qglDisable			(GL_TEXTURE_GEN_R);
-	qglDisable			(GL_TEXTURE_GEN_Q);
+	qglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_ARB, GL_MODULATE);
+	qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_TEXTURE);
+	qglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_ARB, GL_PREVIOUS_ARB);
+	qglTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
 	
 	GL_UpdateSwapInterval();
 

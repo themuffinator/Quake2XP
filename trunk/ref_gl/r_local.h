@@ -326,8 +326,13 @@ cvar_t	*r_dof;
 cvar_t	*r_dofBias;
 cvar_t	*r_dofFocus;
 
+cvar_t	*r_motionBlur;
+cvar_t	*r_motionBlurSamples;
+cvar_t	*r_motionBlurFrameLerp;
+
 cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;
+
 cvar_t	*r_tbnSmoothAngle;
 
 cvar_t	*r_filmGrain;
@@ -372,7 +377,6 @@ void GL_MBindCube(GLenum target, int texnum);
 
 void R_LightPoint(vec3_t p, vec3_t color);
 
-void GL_PicsColorScaleARB(qboolean enable);
 void R_InitLightgrid(void);
 void R_RenderFlares(void);
 
@@ -629,7 +633,6 @@ typedef struct {
 	qboolean alpha_test;
 	qboolean blend;
 	qboolean texgen;
-	qboolean gammaramp;
 // End - MrG
 
 	qboolean	DrawRangeElements;
