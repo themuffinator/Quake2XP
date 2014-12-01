@@ -678,30 +678,29 @@ Draw_Fill
 Fills a box of pixels with a single color
 =============
 */
-void Draw_Fill(int x, int y, int w, int h, int c)
+void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 {
+	unsigned	defBits;
+	int			id;
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
+
+	defBits = 0;
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+	qglUniform4f(qglGetUniformLocation(id, "u_color"), r, g, b, a);
+	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+
+	VA_SetElem2(vertCoord[0], x, y);
+	VA_SetElem2(vertCoord[1], x + w, y);
+	VA_SetElem2(vertCoord[2], x + w, y + h);
+	VA_SetElem2(vertCoord[3], x, y + h);
+
+	qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	
-	qglDisable(GL_TEXTURE_2D);
-	
-	if (c > 255)
-		goto nocolor;
-
-	qglColor3f(d_8to24tablef[c][0], d_8to24tablef[c][1],
-			   d_8to24tablef[c][2]);
-	
-nocolor:
-
-	qglBegin(GL_QUADS);
-
-	qglVertex2f(x, y);
-	qglVertex2f(x + w, y);
-	qglVertex2f(x + w, y + h);
-	qglVertex2f(x, y + h);
-
-	qglEnd();
-
-	qglColor3f(1, 1, 1);
-	qglEnable(GL_TEXTURE_2D);
+	GL_BindNullProgram();
+	qglDisableVertexAttribArray(ATRB_POSITION);
 }
 
 //=============================================================================
@@ -714,22 +713,29 @@ Draw_FadeScreen
 */
 void Draw_FadeScreen(void)
 {
+	unsigned	defBits;
+	int			id;
+
 	GL_Blend(true, 0, 0);
-	qglDisable(GL_TEXTURE_2D);
-	qglColor4f(0, 0, 0, 0.5);
 
-	qglBegin(GL_QUADS);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
 
-	qglVertex2f(0, 0);
-	qglVertex2f(vid.width, 0);
-	qglVertex2f(vid.width, vid.height);
-	qglVertex2f(0, vid.height);
+	defBits = 0;
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+	qglUniform4f(qglGetUniformLocation(id, "u_color"), 0, 0, 0, 0.5);
+	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
 
-	qglEnd();
+	VA_SetElem2(vertCoord[0], 0, 0);
+	VA_SetElem2(vertCoord[1], vid.width, 0);
+	VA_SetElem2(vertCoord[2], vid.width, vid.height);
+	VA_SetElem2(vertCoord[3], 0, vid.height);
 
+	qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	qglColor4f(1, 1, 1, 1);
-	qglEnable(GL_TEXTURE_2D);
+	GL_BindNullProgram();
+	qglDisableVertexAttribArray(ATRB_POSITION);
 	GL_Blend(false, 0, 0);
 
 }

@@ -442,11 +442,11 @@ void Menu_DrawStatusBar(const char *string)
 		int maxcol = VID_WIDTH / 8;
 		int col = maxcol / 2 - l / 2;
 
-		Draw_Fill(0, VID_HEIGHT - 8 - (fontscale-1)*4, VID_WIDTH, 8*fontscale, 4);
+		Draw_Fill(0, VID_HEIGHT - 8 - (fontscale-1)*4, VID_WIDTH, 8*fontscale, 0.3, 0.3, 0.3, 1.0);
 		Menu_DrawStringScaled((col * 8) / fontscale*(1+(fontscale-1)*0.5), VID_HEIGHT - 8*fontscale, fontscale, fontscale, string);
 
 	} else {
-			Draw_Fill(0, VID_HEIGHT - 8 - (fontscale-1)*4, VID_WIDTH, 8*fontscale, 0);
+			Draw_Fill(0, VID_HEIGHT - 8 - (fontscale-1)*4, VID_WIDTH, 8*fontscale, 0.0, 0.0, 0.0, 0.0);
 	}
 }
 
@@ -579,7 +579,7 @@ void MenuList_Draw(menulist_s * l)
 
 	Draw_Fill(l->generic.x - 112 + l->generic.parent->x,
 			  l->generic.parent->y + l->generic.y + l->curvalue * 10 + 10,
-			  128, 10, 16);
+			  128, 10, 1.0, 0.0, 1.0, 1.0);
 	while (*n) {
 		Menu_DrawStringR2LDark(l->generic.x + l->generic.parent->x +
 							   LCOLUMN_OFFSET,

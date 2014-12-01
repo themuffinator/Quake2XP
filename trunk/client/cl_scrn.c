@@ -368,11 +368,8 @@ SCR_DrawLoading
 
 void SCR_DrawLoadingBar(float percent, float scale)
 {
-	//	RE_SetColor(NULL);
-		Draw_Fill(0, viddef.height - scale * 10 + 1, viddef.width, scale * 3 - 2, 0xffffff);
-	//	RE_SetColor(colorGreen);
-		Draw_Fill(2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 0x00ff00);
-	//	RE_SetColor(NULL);
+		Draw_Fill(0, viddef.height - scale * 10 + 1, viddef.width, scale * 3 - 2, 1.0, 1.0, 1.0, 1.0);
+		Draw_Fill(2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 0.0, 1.0, 0.0, 1.0);
 }
 
 void Draw_LoadingScreen(int x, int y, int w, int h, char *pic);
@@ -394,7 +391,7 @@ void SCR_DrawLoading(void)
 		if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
 			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
 		else
-			Draw_Fill(0, 0, viddef.width, viddef.height, 0);
+			Draw_Fill(0, 0, viddef.width, viddef.height, 0.33, 0.33, 0.33, 1.0);
 
 		scaled = 4*fontscale;
 		SCR_DrawLoadingBar(loadingPercent, scaled);
@@ -470,7 +467,7 @@ void SCR_DrawConsole(void)
 															// render
 		Con_DrawConsole(0.5);
 		Draw_Fill(0, viddef.height * 0.5f, viddef.width,
-				  viddef.height * 0.5f, 0);
+				  viddef.height * 0.5f, 0.0, 0.0, 0.0, 1.0);
 		return;
 	}
 

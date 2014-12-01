@@ -542,7 +542,7 @@ void Draw_GetPicSize(int *w, int *h, char *name);
 void Draw_Pic(int x, int y, char *name);
 void Draw_StretchPic(int x, int y, int w, int h, char *name);
 void Draw_TileClear(int x, int y, int w, int h, char *name);
-void Draw_Fill(int x, int y, int w, int h, int c);
+void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a);
 void Draw_FadeScreen(void);
 void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows,
 					 byte * data);
