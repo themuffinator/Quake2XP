@@ -843,6 +843,7 @@ typedef struct {
 	unsigned	ShellBits;
 	unsigned	EnvBits;
 	unsigned	AttribColorBits;
+	unsigned	ConsoleBits;
 	unsigned	WeaponBits;
 } 
 worldDefs_t;

@@ -119,7 +119,6 @@ void R_BuildFlares(flare_t * light){
 	if (light->surf->ent)
 		qglPopMatrix();
 
-	qglColor4f(1, 1, 1, 1);
 	c_flares++;
 }
 
@@ -640,6 +639,9 @@ void R_MotionBlur (void) {
 	unsigned	defBits = 0;
 	int			id;
 	float		temp_x, temp_y, delta_x, delta_y;
+
+	if (!r_motionBlur->value)
+		return;
 
     if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
             return;

@@ -53,7 +53,6 @@ cvar_t *scr_printspeed;
 
 cvar_t *scr_netgraph;
 cvar_t *scr_timegraph;
-cvar_t *scr_debuggraph;
 cvar_t *scr_graphheight;
 cvar_t *scr_graphscale;
 cvar_t *scr_graphshift;
@@ -72,105 +71,6 @@ int crosshair_width, crosshair_height;
 
 void SCR_TimeRefresh_f(void);
 void SCR_Loading_f(void);
-
-
-/*
-===============================================================================
-
-BAR GRAPHS
-
-===============================================================================
-*/
-
-/*
-==============
-CL_AddNetgraph
-
-A new packet was just parsed
-==============
-*/
-void CL_AddNetgraph(void)
-{
-	int i;
-	int in;
-	int ping;
-
-	// if using the debuggraph for something else, don't
-	// add the net lines
-	if (scr_debuggraph->value || scr_timegraph->value)
-		return;
-
-	for (i = 0; i < cls.netchan.dropped; i++)
-		SCR_DebugGraph(30, 0x40);
-
-	for (i = 0; i < cl.surpressCount; i++)
-		SCR_DebugGraph(30, 0xdf);
-
-	// see what the latency was on this packet
-	in = cls.netchan.incoming_acknowledged & (CMD_BACKUP - 1);
-	ping = cls.realtime - cl.cmd_time[in];
-	ping /= 30;
-	if (ping > 30)
-		ping = 30;
-	SCR_DebugGraph(ping, 0xd0);
-}
-
-
-typedef struct {
-	float value;
-	int color;
-} graphsamp_t;
-
-static int current;
-static graphsamp_t values[1024];
-
-/*
-==============
-SCR_DebugGraph
-==============
-*/
-void SCR_DebugGraph(float value, int color)
-{
-	values[current & 1023].value = value;
-	values[current & 1023].color = color;
-	current++;
-}
-
-/*
-==============
-SCR_DrawDebugGraph
-==============
-*/
-void SCR_DrawDebugGraph(void)
-{
-	int a, x, y, w, i, h;
-	float v;
-	int color;
-
-	//
-	// draw the graph
-	//
-	w = scr_vrect.width;
-
-	x = scr_vrect.x;
-	y = scr_vrect.y + scr_vrect.height;
-	Draw_Fill(x, y - scr_graphheight->value, w, scr_graphheight->value, 8);
-
-	for (a = 0; a < w; a++) {
-		i = (current - 1 - a + 1024) & 1023;
-		v = values[i].value;
-		color = values[i].color;
-		v = v * scr_graphscale->value + scr_graphshift->value;
-
-		if (v < 0)
-			v += scr_graphheight->value * (1 +
-										   (int) (-v /
-												  scr_graphheight->value));
-		h = (int) v % (int) scr_graphheight->value;
-		Draw_Fill(x + w - 1 - a, y - h, 1, h, color);
-	}
-}
-
 /*
 ===============================================================================
 
@@ -408,7 +308,6 @@ void SCR_Init(void)
 	scr_printspeed = Cvar_Get("scr_printspeed", "8", 0);
 	scr_netgraph = Cvar_Get("netgraph", "0", 0);
 	scr_timegraph = Cvar_Get("timegraph", "0", 0);
-	scr_debuggraph = Cvar_Get("debuggraph", "0", 0);
 	scr_graphheight = Cvar_Get("graphheight", "32", 0);
 	scr_graphscale = Cvar_Get("graphscale", "1", 0);
 	scr_graphshift = Cvar_Get("graphshift", "0", 0);
@@ -469,11 +368,11 @@ SCR_DrawLoading
 
 void SCR_DrawLoadingBar(float percent, float scale)
 {
-		RE_SetColor(NULL);
-		Draw_Fill(0, viddef.height - scale * 10 + 1, viddef.width, scale * 3 - 2, 256);
-		RE_SetColor(colorGreen);
-		Draw_Fill(2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 256);
-		RE_SetColor(NULL);
+	//	RE_SetColor(NULL);
+		Draw_Fill(0, viddef.height - scale * 10 + 1, viddef.width, scale * 3 - 2, 0xffffff);
+	//	RE_SetColor(colorGreen);
+		Draw_Fill(2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 0x00ff00);
+	//	RE_SetColor(NULL);
 }
 
 void Draw_LoadingScreen(int x, int y, int w, int h, char *pic);
@@ -1173,12 +1072,6 @@ next:
 			SCR_DrawNet();
 			SCR_CheckDrawCenterString();
 						
-			if (scr_timegraph->value)
-				SCR_DebugGraph(cls.frametime * 300, 0);
-
-			if (scr_debuggraph->value || scr_timegraph->value || scr_netgraph->value)
-				SCR_DrawDebugGraph();
-
 			SCR_DrawPause();
 
 			SCR_DrawSpeeds();

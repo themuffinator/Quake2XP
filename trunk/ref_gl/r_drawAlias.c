@@ -367,7 +367,6 @@ SetModelsLight();
 		}
 		numRadarEnts++;
 	}
-	qglColor4f(1, 1, 1, 1);
 }
 
 
@@ -497,7 +496,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	VectorCopy(tmpOrg, currentShadowLight->origin);
 	VectorCopy(tmpView, r_origin);
 
-	qglColor4f(1, 1, 1, 1);
 }
 
 

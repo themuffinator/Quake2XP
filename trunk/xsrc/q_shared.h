@@ -1273,15 +1273,6 @@ typedef struct
 } player_state_t;
 
 
-// ==================
-// PGM 
-#define VIDREF_GL		1
-#define VIDREF_SOFT		2
-#define VIDREF_OTHER	3
-
-extern int vidref_val;
-// PGM
-// ==================
 #define PARTICLE_BOUNCE					1
 #define PARTICLE_FRICTION				2
 #define PARTICLE_DIRECTIONAL			4

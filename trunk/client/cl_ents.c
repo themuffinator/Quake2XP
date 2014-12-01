@@ -41,12 +41,6 @@ void ClipCam(vec3_t start, vec3_t end, vec3_t newpos)
 
 extern struct model_s *cl_mod_powerscreen;
 extern cparticle_t *active_particles, *free_particles;
-//PGM
-int vidref_val;
-//PGM
-
-
-
 
 /*
 =================

@@ -209,7 +209,6 @@ void R_RenderDecals(void)
     qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
     qglDisableVertexAttribArray(ATRB_COLOR);
-	qglColor4f(1, 1, 1, 1);
     qglDepthMask(1);
     qglDisable(GL_POLYGON_OFFSET_FILL);
 	qglPolygonOffset(0, 0);

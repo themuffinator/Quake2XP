@@ -28,6 +28,7 @@ extern qboolean scrap_dirty;
 void Scrap_Upload(void);
 
 vec2_t texCoord[MAX_VERTEX_ARRAY];
+vec2_t texCoord1[MAX_VERTEX_ARRAY];
 vec3_t vertCoord[MAX_VERTEX_ARRAY];
 vec4_t colorCoord[MAX_VERTEX_ARRAY];
 
@@ -99,6 +100,8 @@ void Draw_CharScaledShadow(int x, int y, float scale_x, float scale_y, unsigned 
 {
 	int row, col;
 	float frow, fcol, size;
+	
+	return;
 
 	num &= 255;
 
@@ -193,6 +196,8 @@ void Draw_StringScaledShadow(int x, int y, float scale_x, float scale_y, const c
 	int px, py, row, col, num;
 	float frow, fcol, size;
 	unsigned char *s = (unsigned char *) str;
+	
+	return;
 
 	if (gl_state.currenttextures[gl_state.currenttmu] !=
 		draw_chars->texnum) {
@@ -296,55 +301,75 @@ Draw_StretchPic
 
 void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl, qboolean cons)
 {
-	float scroll = -13 * (r_newrefdef.time / 40.0);
+	int			id;
+	unsigned	defBits = 0;
+	float		scroll = -13 * (r_newrefdef.time / 40.0);
+	qboolean	console;
+
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_StretchPic\n");
 		return;
 	}
-	GL_Blend(true, 0, 0);
+	if (strstr(gl->name, "conback"))
+		console = true;
+	else
+		console = false;
 
-	if (cons) {
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TEX2);
+	qglEnableVertexAttribArray(ATRB_COLOR);
 
-		qglColor4f(1, 1, 1, 0.55);
-	} else {
-		qglColor4f(1, 1, 1, 1);
-	}
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
+	qglVertexAttribPointer(ATRB_TEX2, 2, GL_FLOAT, false, 0, texCoord1);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
+	
+	VA_SetElem2(vertCoord[0], x, y);
+	VA_SetElem2(vertCoord[1], x + w, y);
+	VA_SetElem2(vertCoord[2], x + w, y + h);
+	VA_SetElem2(vertCoord[3], x, y + h);
+
+	VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
+	VA_SetElem4(colorCoord[1], 1.0, 1.0, 1.0, 1.0);
+	VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
+	VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
+
+	if (console)
+		defBits = worldDefs.ConsoleBits;
+	else
+		defBits = worldDefs.AttribColorBits;
+
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+
 	if (scrap_dirty)
 		Scrap_Upload();
 
-	
-		GL_Bind(gl->texnum);
-		qglBegin(GL_QUADS);
-		qglTexCoord2f(gl->sl, gl->tl);
-		qglVertex2f(x, y);
-		qglTexCoord2f(gl->sh, gl->tl);
-		qglVertex2f(x + w, y);
-		qglTexCoord2f(gl->sh, gl->th);
-		qglVertex2f(x + w, y + h);
-		qglTexCoord2f(gl->sl, gl->th);
-		qglVertex2f(x, y + h);
-		qglEnd();
+		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+		VA_SetElem2(texCoord[0], gl->sl, gl->tl);
+		VA_SetElem2(texCoord[1], gl->sh, gl->tl);
+		VA_SetElem2(texCoord[2], gl->sh, gl->th);
+		VA_SetElem2(texCoord[3], gl->sl, gl->th);
 
-	if (strstr(gl->name, "conback")){
+		GL_MBind(GL_TEXTURE1_ARB, r_scanline->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_map1"), 1);
+		VA_SetElem2(texCoord1[0], gl->sl, gl->tl - scroll);
+		VA_SetElem2(texCoord1[1], gl->sh, gl->tl - scroll);
+		VA_SetElem2(texCoord1[2], gl->sh, gl->th - scroll);
+		VA_SetElem2(texCoord1[3], gl->sl, gl->th - scroll);
 
-		qglColor4f(1, 1, 1, 0.05);
+		qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-		GL_Bind(r_scanline->texnum);
-		qglBegin(GL_QUADS);
-		qglTexCoord2f(gl->sl, gl->tl-scroll);
-		qglVertex2f(x, y);
-		qglTexCoord2f(gl->sh, gl->tl-scroll);
-		qglVertex2f(x + w, y);
-		qglTexCoord2f(gl->sh, gl->th-scroll);
-		qglVertex2f(x + w, y + h);
-		qglTexCoord2f(gl->sl, gl->th-scroll);
-		qglVertex2f(x, y + h);
-		qglEnd();
-	
-	}
-	qglColor4f(1, 1, 1, 1);
-	GL_Blend(false, 0, 0);
-	qglDepthMask(GL_TRUE);	
+		GL_BindNullProgram();
+		GL_SelectTexture(GL_TEXTURE0_ARB);
+
+		qglDisableVertexAttribArray(ATRB_POSITION);
+		qglDisableVertexAttribArray(ATRB_TEX0);
+		qglDisableVertexAttribArray(ATRB_TEX2);
+		qglDisableVertexAttribArray(ATRB_COLOR);
 }
 
 
@@ -367,31 +392,39 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 {
 	int id;
 	unsigned defBits = 0;
-	
 
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_LoadingScreen2\n");
 		return;
 	}
 
-		GL_MBind(GL_TEXTURE0_ARB,gl->texnum);
 		GL_BindProgram(loadingProgram, defBits);
 		id = loadingProgram->id[defBits];
 		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), loadScreenColorFade);
+		
+		qglEnableVertexAttribArray(ATRB_POSITION);
+		qglEnableVertexAttribArray(ATRB_TEX0);
+		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
+		qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
 
-		qglBegin(GL_QUADS);
-		qglTexCoord2f(gl->sl, gl->tl);
-		qglVertex2f(x, y);
-		qglTexCoord2f(gl->sh, gl->tl);
-		qglVertex2f(x + w, y);
-		qglTexCoord2f(gl->sh, gl->th);
-		qglVertex2f(x + w, y + h);
-		qglTexCoord2f(gl->sl, gl->th);
-		qglVertex2f(x, y + h);
-		qglEnd();
+		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
+
+		VA_SetElem2(texCoord[0], gl->sl, gl->tl);
+		VA_SetElem2(texCoord[1], gl->sh, gl->tl);
+		VA_SetElem2(texCoord[2], gl->sh, gl->th);
+		VA_SetElem2(texCoord[3], gl->sl, gl->th);
+
+		VA_SetElem2(vertCoord[0], x, y);
+		VA_SetElem2(vertCoord[1], x + w, y);
+		VA_SetElem2(vertCoord[2], x + w, y + h);
+		VA_SetElem2(vertCoord[3], x, y + h);
+
+		qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
 		GL_BindNullProgram();
-
+		qglDisableVertexAttribArray(ATRB_POSITION);
+		qglDisableVertexAttribArray(ATRB_TEX0);
 }
 
 void Draw_LoadingScreen(int x, int y, int w, int h, char *pic)
@@ -462,7 +495,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 		VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
 		VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
 
-		qglDrawArrays (GL_QUADS, 0, 4);
+		qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
 
 	
 	GL_Blend(false, 0, 0);
@@ -472,9 +505,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	qglDisableVertexAttribArray(ATRB_COLOR);
 }
 
-
-// fix strange ViPeR_2540 bug 
-void Draw_Pic2S(int x, int y, float sX, float sY, image_t * gl)
+void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 {
 	int w, h, id;
 	unsigned	defBits = 0;
@@ -509,7 +540,6 @@ void Draw_Pic2S(int x, int y, float sX, float sY, image_t * gl)
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_gammaControl"), r_gamma->value);
 	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
 
 	if (scrap_dirty)
@@ -532,7 +562,7 @@ void Draw_Pic2S(int x, int y, float sX, float sY, image_t * gl)
 		VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
 		VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
 
-		qglDrawArrays (GL_QUADS, 0, 4);
+		qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
 
 	
 	GL_Blend(false, 0, 0);
@@ -542,69 +572,6 @@ void Draw_Pic2S(int x, int y, float sX, float sY, image_t * gl)
 	qglDisableVertexAttribArray(ATRB_COLOR);
 }
 
-
-void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl)
-{
-	int w, h, id;
-	unsigned defBits = 0;
-
-	if (!gl) {
-		Com_Printf("NULL pic in Draw_Pic\n");
-		return;
-	}
-	
-	w = gl->width*gl->picScale_w*scale_x;
-	h = gl->height*gl->picScale_h*scale_y;
-
-	if(gl->has_alpha)
-		GL_Blend(true, 0, 0);
-	
-	if (strstr(gl->name, "chxp"))
-		GL_Blend(true, GL_ONE, GL_ONE);
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_COLOR);
-	
-    qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
-	
-	defBits = worldDefs.AttribColorBits;
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_gammaControl"), r_gamma->value);
-	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
-
-	if (scrap_dirty)
-		Scrap_Upload();
-
-		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
-				
-		VA_SetElem2(texCoord[0],gl->sl, gl->tl);
-		VA_SetElem2(texCoord[1],gl->sh, gl->tl);
-		VA_SetElem2(texCoord[2],gl->sh, gl->th);
-		VA_SetElem2(texCoord[3],gl->sl, gl->th);
-		
-		VA_SetElem2(vertCoord[0],x, y);
-		VA_SetElem2(vertCoord[1],x + w, y);
-		VA_SetElem2(vertCoord[2],x + w, y + h);
-		VA_SetElem2(vertCoord[3],x, y + h);
-		
-		VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
-		VA_SetElem4(colorCoord[1], 1.0, 1.0, 1.0, 1.0);
-		VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
-		VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
-
-		qglDrawArrays (GL_QUADS, 0, 4);
-	
-	GL_Blend(false, 0, 0);	
-	GL_BindNullProgram();
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_COLOR);
-}
 
 void Draw_Pic(int x, int y, char *pic)
 {
@@ -628,9 +595,7 @@ void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char *pic)
 		Com_Printf("Can't find pic: %s\n", pic);
 		return;
 	}
-//	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
-	Draw_Pic2S(x, y, scale_x, scale_y, gl);
-
+	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
 }
 
 
@@ -644,25 +609,51 @@ refresh window.
 */
 void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 {
+	int			id;
+	unsigned	defBits = 0;
+
 	if (!image) {
 		Com_Printf("NULL pic in Draw_TileClear\n");
 		return;
 	}
 
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_COLOR);
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
+	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
+
+	defBits = worldDefs.AttribColorBits;
+	GL_BindProgram(genericProgram, defBits);
+	id = genericProgram->id[defBits];
+	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
 
 	GL_Bind(image->texnum);
-	qglBegin(GL_QUADS);
-	qglTexCoord2f(x / 64.0, y / 64.0);
-	qglVertex2f(x, y);
-	qglTexCoord2f((x + w) / 64.0, y / 64.0);
-	qglVertex2f(x + w, y);
-	qglTexCoord2f((x + w) / 64.0, (y + h) / 64.0);
-	qglVertex2f(x + w, y + h);
-	qglTexCoord2f(x / 64.0, (y + h) / 64.0);
-	qglVertex2f(x, y + h);
-	qglEnd();
 
+	VA_SetElem2(texCoord[0], x / 64.0, y / 64.0);
+	VA_SetElem2(texCoord[1], (x + w) / 64.0, y / 64.0);
+	VA_SetElem2(texCoord[2], (x + w) / 64.0, y / 64.0);
+	VA_SetElem2(texCoord[3], x / 64.0, (y + h) / 64.0);
 
+	VA_SetElem2(vertCoord[0], x, y);
+	VA_SetElem2(vertCoord[1], x + w, y);
+	VA_SetElem2(vertCoord[2], x + w, y + h);
+	VA_SetElem2(vertCoord[3], x, y + h);
+
+	VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
+	VA_SetElem4(colorCoord[1], 1.0, 1.0, 1.0, 1.0);
+	VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
+	VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
+
+	qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	GL_BindNullProgram();
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATRB_COLOR);
 
 
 }
@@ -811,16 +802,25 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	x1 = sw+w;
 	y1 = sh+h;
 
-	qglBegin (GL_QUADS);
-	qglTexCoord2f (0, 0);
-	qglVertex2f (x0, y0);
-	qglTexCoord2f (1, 0);
-	qglVertex2f (x1, y0);
-	qglTexCoord2f (1, 1);
-	qglVertex2f (x1, y1);
-	qglTexCoord2f (0, 1);
-	qglVertex2f (x0, y1);
-	qglEnd ();
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
+
+	VA_SetElem2(texCoord[0], 0, 0);
+	VA_SetElem2(texCoord[1], 1, 0);
+	VA_SetElem2(texCoord[2], 1, 1);
+	VA_SetElem2(texCoord[3], 0, 1);
+
+	VA_SetElem2(vertCoord[0], x0, y0);
+	VA_SetElem2(vertCoord[1], x1, y0);
+	VA_SetElem2(vertCoord[2], x1, y1);
+	VA_SetElem2(vertCoord[3], x0, y1);
+
+	qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	
 	GL_BindNullProgram();
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
 }

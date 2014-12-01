@@ -144,11 +144,9 @@ void R_DrawSpriteModel(entity_t * e)
 	right = vright;
 
 	qglDepthMask(false);
-	qglDepthFunc(GL_LEQUAL);
 	
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglColor4f(1, 1, 1, 1);
 
 	GL_Bind(currentmodel->skins[e->frame]->texnum);
 
@@ -178,7 +176,6 @@ void R_DrawSpriteModel(entity_t * e)
 
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisable(GL_BLEND);
-	qglColor4f(1, 1, 1, 1);
 	qglDepthMask(true);
 }
 
@@ -419,7 +416,6 @@ static void R_SetupViewMatrices (void) {
 	float	xMin, xMax, xDiv;
 	float	yMin, yMax, yDiv;
 	float	zNear, zFar, zDiv;
-	mat4_t	tmpMatrix;
 
 	// setup perspective projection matrix
 	zNear = max(r_zNear->value, 3.0);
@@ -483,14 +479,6 @@ static void R_SetupViewMatrices (void) {
 	r_newrefdef.modelViewMatrix[3][2] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[0]);
 	r_newrefdef.modelViewMatrix[3][3] = 1.0;
 	
-	// setup unprojection matrix
-	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, tmpMatrix);
-	Mat4_Invert(tmpMatrix, r_newrefdef.unprojMatrix);
-	Mat4_Translate(	r_newrefdef.unprojMatrix,	-(float)vid.width / (float)r_newrefdef.viewport[2],
-												-(float)vid.height / (float)r_newrefdef.viewport[3], -1.f);
-	Mat4_Scale(r_newrefdef.unprojMatrix,	2.f / (float)r_newrefdef.viewport[2],
-											2.f / (float)r_newrefdef.viewport[3], 2.f);
-
 	// load matrices
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix); // q2 r_project_matrix
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix); // q2 r_world_matrix
@@ -505,19 +493,11 @@ R_SetupGL
 
 void R_SetupGL(void)
 {
- 
 	// set drawing parms
-	
 	qglCullFace(GL_FRONT);
-
-	if (r_cull->value)
-		qglEnable(GL_CULL_FACE);
-	else
-		qglDisable(GL_CULL_FACE);
-
+	qglEnable(GL_CULL_FACE);
 	GLSTATE_DISABLE_BLEND
 	qglEnable(GL_DEPTH_TEST);
-
 }
 
 /*
@@ -824,26 +804,22 @@ r_newrefdef must be set before the first call
 
 void R_RenderView(refdef_t * fd)
 {
-
 	if (r_noRefresh->value)
 		return;
-
-	// calc gl viewport
+	
 	r_newrefdef = *fd;
 	r_newrefdef.viewport[0] = fd->x;
 	r_newrefdef.viewport[1] = vid.height - fd->height - fd->y;
 	r_newrefdef.viewport[2] = fd->width;
 	r_newrefdef.viewport[3] = fd->height;
-
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
-	
 	if (!r_worldmodel && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel");
 
 	if (r_finish->value)
 		qglFinish();
-	
+
 	R_SetupFrame();
 	R_SetFrustum();
 	R_SetupViewMatrices();
@@ -880,10 +856,7 @@ void R_SetGL2D(void)
 	qglMatrixMode(GL_MODELVIEW);
 	qglLoadIdentity();
 	qglDisable(GL_DEPTH_TEST);
-	qglDisable(GL_CULL_FACE);
-	
-	qglColor4f(1, 1, 1, 1);
-	
+	qglDisable(GL_CULL_FACE);	
 }
 
 
@@ -1196,7 +1169,6 @@ void R_RegisterCvars(void)
 	r_mode =							Cvar_Get("r_mode", "0", CVAR_ARCHIVE);
 	r_dynamic =							Cvar_Get("r_dynamic", "1", 0);
 	r_noBind =							Cvar_Get("r_noBind", "0", 0);
-	r_cull =							Cvar_Get("r_cull", "1", 0);
 	r_polyBlend =						Cvar_Get("r_polyBlend", "1", CVAR_ARCHIVE);
 	r_lockPvs =							Cvar_Get("r_lockPvs", "0", 0);
 
@@ -2014,7 +1986,6 @@ void R_BeginFrame()
 	qglDisable(GL_DEPTH_TEST);
 	qglDisable(GL_CULL_FACE);
 	GLSTATE_DISABLE_BLEND 
-	qglColor4f(1, 1, 1, 1);
 
 	qglDrawBuffer( GL_BACK );
 

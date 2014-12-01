@@ -364,7 +364,6 @@ void R_DrawAlphaPoly(void)
 
 	}
 
-	qglColor4f(1, 1, 1, 1);
 	qglDepthMask(1);
 	r_alpha_surfaces = NULL;
 }
@@ -1066,6 +1065,9 @@ void R_MarkLightCasting (mnode_t *node)
 	mleaf_t		*leaf;
 	int			c, cluster;
 
+	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
+		return;
+
 	if (node->contents != -1)
 	{
 		//we are in a leaf
@@ -1077,7 +1079,7 @@ void R_MarkLightCasting (mnode_t *node)
 
 		surf = leaf->firstmarksurface;
 
-		for (c=0; c<leaf->numMarkSurfaces; c++, surf++)
+		for (c = 0; c < leaf->numMarkSurfaces; c++, surf++)
 		{
 			if (R_MarkLightSurf ((*surf), true))
 			{
@@ -1187,7 +1189,6 @@ void R_DrawBSP(void)
 
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
 
-	qglColor3f(1, 1, 1);
 	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 		
 	R_ClearSkyBox();
@@ -1291,7 +1292,6 @@ static void R_DrawInlineBModel(void)
 	if (!(currententity->flags & RF_TRANSLUCENT)) {
 		
 		qglDisable(GL_BLEND); 
-		qglColor4f(1, 1, 1, 1);
 	}
 
 	qglDisable(GL_BLEND);
@@ -1374,7 +1374,6 @@ void R_DrawBrushModel(entity_t * e)
 	if (R_CullBox(mins, maxs))
 		return;
 
-	qglColor3f(1, 1, 1);
 	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 
 

@@ -592,7 +592,7 @@ void R_MarkShadowCasting (mnode_t *node)
 	msurface_t	**surf;
 	mleaf_t		*leaf;
 	int			c;
-	int cluster;
+	int			cluster;
 	
 
 	if (node->contents != -1)

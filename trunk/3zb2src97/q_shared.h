@@ -1275,16 +1275,6 @@ typedef struct {
 	short stats[MAX_STATS];		// fast status bar updates
 } player_state_t;
 
-// ==================
-// PGM
-#define VIDREF_GL		1
-#define VIDREF_SOFT		2
-#define VIDREF_OTHER	3
-
-extern int vidref_val;
-// PGM
-// ==================
-
 #endif
 
 #define PARTICLE_BOUNCE					1

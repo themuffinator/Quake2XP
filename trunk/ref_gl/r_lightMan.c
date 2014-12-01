@@ -993,7 +993,6 @@ void UpdateLightEditor(void){
 	qglDisable(GL_STENCIL_TEST);
 	qglDisable(GL_TEXTURE_2D);
 	qglDisable(GL_CULL_FACE);
-	qglColor4f(1,1,1,1);
 
 	// stupid player camera and angles corruption, fixed
 	VectorCopy(r_origin, player_org);

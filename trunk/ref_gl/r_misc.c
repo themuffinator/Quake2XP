@@ -757,9 +757,9 @@ void R_InitEngineTextures(void)
 		char name[MAX_QPATH];
 
 		if (i < 10)
-			Com_sprintf(name, sizeof(name), "gfx/caust/caust_0%i.jpg", i);
+			Com_sprintf(name, sizeof(name), "gfx/caust/caust_0%i.tga", i);
 		else
-			Com_sprintf(name, sizeof(name), "gfx/caust/caust_%i.jpg", i);
+			Com_sprintf(name, sizeof(name), "gfx/caust/caust_%i.tga", i);
 		r_caustic[i] = GL_FindImage(name, it_wall);
 		if (!r_caustic[i])
 			r_caustic[i] = r_notexture;
@@ -985,7 +985,8 @@ void GL_SetDefaultState(void)
 	qglDisable			(GL_CULL_FACE);
 	qglDisable			(GL_STENCIL_TEST);
 	qglDisable			(GL_BLEND);
-	
+	qglBlendFunc		(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	flareEdit			= (qboolean)false;
 	
 	qglColor4f			(1, 1, 1, 1);
@@ -1003,8 +1004,6 @@ void GL_SetDefaultState(void)
 
 	qglTexParameterf	(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameterf	(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	qglBlendFunc		(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	GL_TexEnv(GL_COMBINE_ARB);
 	qglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE);

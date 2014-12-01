@@ -590,18 +590,13 @@ qboolean VID_StartRefresh( void )
 
 	Swap_Init();
 
-
 	if ( R_Init( global_hInstance, MainWndProc ) == -1 )
 	{
 		R_Shutdown();
 		VID_FreeReflib ();
 		return false;
 	}
-
-//	Com_Printf( "------------------------------------\n");
 	reflib_active = true;
-
-	vidref_val = VIDREF_GL;
 	return true;
 }
 
@@ -650,20 +645,10 @@ void VID_CheckChanges (void)
 		cl.refresh_prepped = false;
 		cls.disable_screen = true;
 		CL_ClearDecals();
+		
 		if ( !VID_StartRefresh( ) )
-		{
-			if ( strcmp (vid_ref->string, "soft") == 0 )
-				Com_Error (ERR_FATAL, "Couldn't fall back to software refresh!");
-			Cvar_Set( "vid_ref", "xpgl" );
-
-			/*
-			** drop the console if we fail to load a refresh
-			*/
-			if ( cls.key_dest != key_console )
-			{
-				Con_ToggleConsole_f();
-			}
-		}
+			Com_Error (ERR_FATAL, "Error during initialization video");
+	
 		cls.disable_screen = false;
 		CL_InitImages();
 	}

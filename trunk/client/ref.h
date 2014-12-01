@@ -451,12 +451,9 @@ typedef struct {
 
 		// viewport
 	int		viewport[4];
-	mat3_t			axis;
-	mat4_t			projectionMatrix;
-	mat4_t			modelViewMatrix;
-	mat4_t			unprojMatrix;
-	mat4_t			oldMvpMatrix;
-	mat4_t			inverseMvpMatrix;
+	mat3_t	axis;
+	mat4_t	projectionMatrix;
+	mat4_t	modelViewMatrix;
 
 	int num_entities;
 	entity_t *entities;

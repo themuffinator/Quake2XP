@@ -727,6 +727,7 @@ void R_InitPrograms(void) {
 	Com_Printf("Load "S_COLOR_YELLOW"generic program"S_COLOR_WHITE" ");
 	genericProgram =  R_FindProgram("generic", true, true);
 	worldDefs.AttribColorBits = R_GetProgramDefBits(genericProgram, "ATTRIB_COLORS");
+	worldDefs.ConsoleBits = R_GetProgramDefBits(genericProgram, "CONSOLE");
 	if(genericProgram->valid){
 		Com_Printf("succeeded\n");
 

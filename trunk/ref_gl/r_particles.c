@@ -589,8 +589,6 @@ void R_DrawParticles()
 	}
 
 	qglDisable(GL_BLEND);
-	qglColor4f(1, 1, 1, 1);
-	qglDepthRange(0, 1);
 	qglDepthMask(1);			// back to normal Z buffering
 
 	GL_BindNullProgram();
