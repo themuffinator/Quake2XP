@@ -978,12 +978,13 @@ void GL_SetDefaultState(void)
 	qglClearColor		(0, 0, 0, 1);
 	qglCullFace			(GL_FRONT);
 	qglEnable			(GL_TEXTURE_2D);
-
-	qglAlphaFunc		(GL_GREATER, 0.666);
+	qglEnable			(GL_ALPHA_TEST);
+	qglAlphaFunc		(GL_GREATER, 0.5);
 
 	qglDisable			(GL_DEPTH_TEST);
 	qglDisable			(GL_CULL_FACE);
 	qglDisable			(GL_STENCIL_TEST);
+	
 	qglDisable			(GL_BLEND);
 	qglBlendFunc		(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

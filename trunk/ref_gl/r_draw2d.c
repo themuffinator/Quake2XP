@@ -77,7 +77,6 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	fcol = col * 0.0625;
 	size = 0.0625;
 
-	GL_Blend(true, 0, 0);
 	GL_Bind(draw_chars->texnum);
 
 	qglBegin(GL_QUADS);
@@ -90,9 +89,6 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	qglTexCoord2f(fcol, frow + size);
 	qglVertex2f(x, y + 8*scale_y);
 	qglEnd();
-
-	GL_Blend(false, 0, 0);
-
 }
 
 
@@ -117,7 +113,7 @@ void Draw_CharScaledShadow(int x, int y, float scale_x, float scale_y, unsigned 
 	frow = row * 0.0625;
 	fcol = col * 0.0625;
 	size = 0.0625;
-	GL_Blend(true, 0, 0);
+
 	GL_Bind(draw_chars->texnum);
 
 	qglColor3f(0.0, 0.0, 0.0);
@@ -133,7 +129,6 @@ void Draw_CharScaledShadow(int x, int y, float scale_x, float scale_y, unsigned 
 	qglEnd();
 
 	qglColor3f(1.0, 1.0, 1.0);
-	GL_Blend(false, 0, 0);
 }
 
 
@@ -147,9 +142,6 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		draw_chars->texnum) {
 		GL_Bind(draw_chars->texnum);
 	}
-
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	px = x;
 	py = y;
@@ -186,8 +178,6 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		px += 8*scale_x;
 	}
 	qglEnd();
-
-	qglDisable(GL_BLEND);
 }
 
 
@@ -204,8 +194,6 @@ void Draw_StringScaledShadow(int x, int y, float scale_x, float scale_y, const c
 		GL_Bind(draw_chars->texnum);
 	}
 
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglColor3f(0.0, 0.0, 0.0);
 
 	px = x;
@@ -245,7 +233,6 @@ void Draw_StringScaledShadow(int x, int y, float scale_x, float scale_y, const c
 	qglEnd();
 
 	qglColor3f(1.0, 1.0, 1.0);
-	qglDisable(GL_BLEND);
 }
 
 
@@ -458,8 +445,8 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	w = gl->width;
 	h = gl->height;
 	
-	if(gl->has_alpha)
-		GL_Blend(true, 0, 0);
+	if (!gl->has_alpha)
+		qglDisable(GL_ALPHA_TEST);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -498,7 +485,8 @@ void Draw_Pic2(int x, int y, image_t * gl)
 		qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
 
 	
-	GL_Blend(false, 0, 0);
+	if (!gl->has_alpha)
+		qglEnable(GL_ALPHA_TEST);
 	GL_BindNullProgram();
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -518,12 +506,13 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	w = gl->width * sX *gl->picScale_w;
 	h = gl->height * sY *gl->picScale_h;
 
-	if(gl->has_alpha)
-		GL_Blend(true, 0, 0);
+	if (!gl->has_alpha)
+		qglDisable(GL_ALPHA_TEST);
 	
 	
 	if (strstr(gl->name, "chxp")){ // crosshair hack
-		GL_Blend(true, GL_ONE, GL_ONE);
+		qglEnable(GL_BLEND);
+		qglBlendFunc(GL_ONE, GL_ONE);
 		w = gl->width * sX;
 		h = gl->height * sY;
 	}
@@ -565,7 +554,13 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 		qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
 
 	
-	GL_Blend(false, 0, 0);
+	if (!gl->has_alpha)
+		qglEnable(GL_ALPHA_TEST);
+
+	if (strstr(gl->name, "chxp")){
+		qglDisable(GL_BLEND);
+		qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 	GL_BindNullProgram();
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);

@@ -263,7 +263,7 @@ void R_Bloom (void) {
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
 		return;
-
+		
 		// downsample and cut color
 		GL_SelectTexture		(GL_TEXTURE0_ARB);
 		GL_BindRect				(ScreenMap->texnum);

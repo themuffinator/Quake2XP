@@ -1030,7 +1030,7 @@ void UpdateLightEditor(void){
 
 	VectorAdd(tmp, currentShadowLight->origin, corners[j]);
 	}
-	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2]);
+	qglUniform4f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
 
@@ -1069,7 +1069,7 @@ void UpdateLightEditor(void){
 	VectorCopy(selectedShadowLight->origin, tmpOrg);
 	VectorCopy(selectedShadowLight->radius, tmpRad);
 
-	qglUniform3f(qglGetUniformLocation(id, "u_color"),	selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2]);
+	qglUniform4f(qglGetUniformLocation(id, "u_color"),	selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
 
 	sprintf(buff0,	"Origin: %i %i %i",	(int)selectedShadowLight->origin[0], 
 												(int)selectedShadowLight->origin[1], 

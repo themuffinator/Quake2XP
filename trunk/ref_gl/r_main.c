@@ -496,8 +496,9 @@ void R_SetupGL(void)
 	// set drawing parms
 	qglCullFace(GL_FRONT);
 	qglEnable(GL_CULL_FACE);
-	GLSTATE_DISABLE_BLEND
+	qglDisable(GL_BLEND);
 	qglEnable(GL_DEPTH_TEST);
+	qglDisable(GL_ALPHA_TEST);
 }
 
 /*
@@ -856,7 +857,7 @@ void R_SetGL2D(void)
 	qglMatrixMode(GL_MODELVIEW);
 	qglLoadIdentity();
 	qglDisable(GL_DEPTH_TEST);
-	qglDisable(GL_CULL_FACE);	
+	qglDisable(GL_CULL_FACE);
 }
 
 
@@ -938,13 +939,13 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_MotionBlur();
 	R_FilmGrain();
 	}
+	qglEnable(GL_ALPHA_TEST);
 
 	if (v_blend[3] && r_polyBlend->value) {
 		
-		GL_Blend(true, 0, 0);
 		qglDisable(GL_TEXTURE_2D);
 		qglColor4f(v_blend[0],v_blend[1],v_blend[2], 0.15);
-
+		qglEnable(GL_BLEND);
 		qglBegin(GL_QUADS);
 		qglVertex2f(0, 0);
 		qglVertex2f(vid.width, 0);
@@ -954,11 +955,8 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 
 		qglColor4f(1, 1, 1, 1);
 		qglEnable(GL_TEXTURE_2D);
-		GL_Blend(false, 0, 0);
+		qglDisable(GL_BLEND);
 		}
-	
-	GL_DrawRadar();	// GLOOM RADAR !!!
-	numRadarEnts = 0;
 
 	if(selectedShadowLight && r_lightEditor->value){
 	qglColor3f(0,1,1);
@@ -1985,7 +1983,7 @@ void R_BeginFrame()
 	qglLoadIdentity();
 	qglDisable(GL_DEPTH_TEST);
 	qglDisable(GL_CULL_FACE);
-	GLSTATE_DISABLE_BLEND 
+	qglEnable(GL_ALPHA_TEST);
 
 	qglDrawBuffer( GL_BACK );
 
