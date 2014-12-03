@@ -343,7 +343,7 @@ void R_DrawAlphaPoly(void)
 	// go back to the world matrix
 	//
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
-	qglDepthMask(0);
+	GL_DepthMask(0);
 	
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
 
@@ -364,7 +364,7 @@ void R_DrawAlphaPoly(void)
 
 	}
 
-	qglDepthMask(1);
+	GL_DepthMask(1);
 	r_alpha_surfaces = NULL;
 }
 
@@ -1120,9 +1120,10 @@ void R_DrawLightWorld(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	qglStencilFunc(GL_EQUAL, 128, 255);
-	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	qglStencilMask(0);
+	GL_StencilFunc(GL_EQUAL, 128, 255);
+	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	GL_StencilMask(0);
+	qglDepthFunc(GL_LEQUAL);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
@@ -1289,13 +1290,6 @@ static void R_DrawInlineBModel(void)
 		}
 	}
 
-	if (!(currententity->flags & RF_TRANSLUCENT)) {
-		
-		qglDisable(GL_BLEND); 
-	}
-
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 
@@ -1331,8 +1325,6 @@ static void R_DrawInlineBModel2(void)
 						
 		}
 	}
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 
@@ -1432,9 +1424,6 @@ void R_DrawBrushModel(entity_t * e)
 
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	qglPopMatrix();
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 }
 
 
@@ -1555,6 +1544,11 @@ void R_DrawLightBrushModel(entity_t * e)
 			}
 		}
 	}
+	
+	GL_StencilFunc(GL_EQUAL, 128, 255);
+	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	GL_StencilMask(0);
+	qglDepthFunc(GL_LEQUAL);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
@@ -1660,258 +1654,4 @@ void R_MarkLeaves ()
 			} while (node);
 		}
 	}
-}
-
-
-/*=====================
-GLOOM MINI MAP !!!
-======================*/
-
-
-//sul's minimap thing
-void R_RecursiveRadarNode(mnode_t * node)
-{
-	int c, side, sidebit;
-	cplane_t *plane;
-	msurface_t *surf, **mark;
-	mleaf_t *pleaf;
-	float dot, distance;
-	glpoly_t *p;
-	float *v;
-	int i;
-
-	if (node->contents == CONTENTS_SOLID)
-		return;					// solid
-
-	if (r_radarZoom->value >= 0.1) {
-		distance = 1024.0 / r_radarZoom->value;
-	} else {
-		distance = 1024.0;
-	}
-
-	if (r_origin[0] + distance < node->minmaxs[0] ||
-		r_origin[0] - distance > node->minmaxs[3] ||
-		r_origin[1] + distance < node->minmaxs[1] ||
-		r_origin[1] - distance > node->minmaxs[4] ||
-		r_origin[2] + 256 < node->minmaxs[2] ||
-		r_origin[2] - 256 > node->minmaxs[5])
-		return;
-
-	// if a leaf node, draw stuff
-	if (node->contents != -1) {
-		pleaf = (mleaf_t *) node;
-		// check for door connected areas
-		if (r_newrefdef.areabits) {
-			// not visible
-			if (!(r_newrefdef.areabits[pleaf->area >> 3] & (1 << (pleaf->area & 7))))
-				return;
-		}
-		mark = pleaf->firstmarksurface;
-		c = pleaf->numMarkSurfaces;
-
-		if (c) {
-			do {
-				(*mark)->visframe = r_framecount;
-				mark++;
-			} while (--c);
-		}
-		return;
-	}
-	// node is just a decision point, so go down the apropriate sides
-	// find which side of the node we are on
-	plane = node->plane;
-
-	switch (plane->type) {
-	case PLANE_X:
-		dot = modelorg[0] - plane->dist;
-		break;
-	case PLANE_Y:
-		dot = modelorg[1] - plane->dist;
-		break;
-	case PLANE_Z:
-		dot = modelorg[2] - plane->dist;
-		break;
-	default:
-		dot = DotProduct(modelorg, plane->normal) - plane->dist;
-		break;
-	}
-
-	if (dot >= 0) {
-		side = 0;
-		sidebit = 0;
-	} else {
-		side = 1;
-		sidebit = SURF_PLANEBACK;
-	}
-
-	// recurse down the children, front side first
-	R_RecursiveRadarNode(node->children[side]);
-
-	if (plane->normal[2]) {
-		// draw stuff
-		if (plane->normal[2] > 0)
-			for (c = node->numsurfaces, surf =
-				 r_worldmodel->surfaces + node->firstsurface; c;
-				 c--, surf++) {
-				if (surf->texInfo->flags & SURF_SKY) {
-					continue;
-				}
-                
-				if (surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66) && !(surf->texInfo->flags & (SURF_WARP|SURF_FLOWING))) 
-				{
-					qglColor4f(0,1,0,0.7);
-				} else 
-				if (surf->texInfo->flags & (SURF_WARP|SURF_FLOWING)) 
-				{
-				qglColor4f(0,0,1,0.7);
-				} 
-				else 
-				{
-				qglColor4f(0.7,0.7,0.7,0.7);
-				}
-
-			for ( p = surf->polys; p; p = p->chain ) {
-				v = p->verts[0];
-				qglBegin (GL_TRIANGLE_FAN);
-				for (i=0 ; i< p->numVerts; i++, v+= VERTEXSIZE) {
-					qglVertex3fv (v);
-				}
-				qglEnd ();
-			}
-			}
-	}
-	// recurse down the back side
-	R_RecursiveRadarNode(node->children[!side]);
-}
-
-
-
-int numRadarEnts = 0;
-RadarEnt_t RadarEnts[MAX_RADAR_ENTS];
-
-void GL_DrawRadar(void)
-{
-	int i;
-	float fS[4] = { 0, 0, -1.0 / 512.0, 0 };
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-	if (!r_radar->value)
-		return;
-
-	qglViewport(vid.width - r_radarSize->value, vid.height*0.6 - r_radarSize->value, r_radarSize->value, r_radarSize->value);
-
-	qglMatrixMode(GL_PROJECTION);
-	qglPushMatrix();
-	qglLoadIdentity();
-
-	qglOrtho(-1024, 1024, -512, 1536, -256, 256);
-	
-
-	qglMatrixMode(GL_MODELVIEW);
-	qglPushMatrix();
-	qglLoadIdentity();
-
-	{
-		qglStencilMask(255);
-		qglClear(GL_STENCIL_BUFFER_BIT);
-		qglEnable(GL_STENCIL_TEST);
-		qglStencilFunc(GL_ALWAYS, 4, 4);
-		qglStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-
-		qglEnable(GL_ALPHA_TEST);
-		qglAlphaFunc(GL_LESS, 0.1);
-		qglColorMask(0, 0, 0, 0);
-                
-		
-		GL_Bind(r_around->texnum);
-		
-        qglBegin(GL_TRIANGLE_FAN);
-	        
-        qglTexCoord2f(0, 1);
-		qglVertex3f(1024, -512, 1);
-		qglTexCoord2f(1, 1);
-		qglVertex3f(-1024, -512, 1);
-		qglTexCoord2f(1, 0);
-		qglVertex3f(-1024, 1536, 1);
-		qglTexCoord2f(0, 0);
-		qglVertex3f(1024, 1536, 1);
-		
-		qglEnd();
-
-		qglColorMask(1, 1, 1, 1);
-		qglDisable(GL_ALPHA_TEST);
-		qglAlphaFunc(GL_GREATER, 0.5);
-		qglStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-		qglStencilFunc(GL_NOTEQUAL, 4, 4);
-
-	}
-
-	if (r_radarZoom->value >= 0.1) {
-		qglScalef(r_radarZoom->value, r_radarZoom->value,
-				  r_radarZoom->value);
-	}
-	//draw player origin
-        qglDisable(GL_TEXTURE_2D);
-		qglBegin(GL_TRIANGLES);
-		qglColor4f(1, 1, 0, 1);
-		qglVertex3f(0, 32, 0);
-		qglColor4f(1, 1, 0, 1);
-		qglVertex3f(24, -32, 0);
-		qglColor4f(1, 1, 0, 1);
-        qglVertex3f(-24,-32, 0);
-		qglEnd();
-
-	qglRotatef(90 - r_newrefdef.viewangles[1], 0, 0, 1);
-	
-	qglTranslatef(-r_newrefdef.vieworg[0], -r_newrefdef.vieworg[1], -r_newrefdef.vieworg[2]);
-
-	if (!deathmatch->value) {
-		qglBegin(GL_QUADS);
-		for (i = 0; i < numRadarEnts; i++) {
-			float x = RadarEnts[i].org[0];
-			float y = RadarEnts[i].org[1];
-			float z = RadarEnts[i].org[2];
-			qglColor3fv(RadarEnts[i].color);
-
-			qglVertex3f(x + 9, y + 9, z);
-			qglVertex3f(x + 9, y - 9, z);
-			qglVertex3f(x - 9, y - 9, z);
-			qglVertex3f(x - 9, y + 9, z);
-		}
-		qglEnd();
-		qglColor4f(1, 1, 1, 1);
-	}
-
-	qglEnable(GL_TEXTURE_2D);
-
-	GL_Bind(r_radarmap->texnum);
-	qglBlendFunc(GL_SRC_ALPHA,GL_ONE);
-	qglEnable(GL_BLEND);
-	qglColor4f(1, 1, 0, 1);
-
-	fS[3] = 0.5 + r_newrefdef.vieworg[2] / 512.0;
-	qglTexGenf(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-
-	GLSTATE_ENABLE_TEXGEN;
-	qglTexGenfv(GL_S, GL_OBJECT_PLANE, fS);
-
-	// draw the stuff
-	R_RecursiveRadarNode(r_worldmodel->nodes);
-
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	GLSTATE_DISABLE_TEXGEN;
-                     
-        qglPopMatrix();
-        
-	qglViewport(0, 0, vid.width, vid.height);
-
-	qglMatrixMode(GL_PROJECTION);
-	qglPopMatrix();
-	qglMatrixMode(GL_MODELVIEW);
-	qglDisable(GL_STENCIL_TEST);
-	qglStencilMask(0);
-	qglDisable(GL_BLEND);
-	qglColor4f(1, 1, 1, 1);
 }

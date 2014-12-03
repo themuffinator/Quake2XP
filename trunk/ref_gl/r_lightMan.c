@@ -984,15 +984,15 @@ void UpdateLightEditor(void){
 	if(!currentShadowLight->isStatic)
 		return;
 
-	qglDisable(GL_SCISSOR_TEST);
+	GL_Disable(GL_SCISSOR_TEST);
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
+		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 
-	qglDisable(GL_BLEND);
-	qglDisable(GL_STENCIL_TEST);
-	qglDisable(GL_TEXTURE_2D);
-	qglDisable(GL_CULL_FACE);
+	GL_Disable(GL_BLEND);
+	GL_Disable(GL_STENCIL_TEST);
+	GL_Disable(GL_TEXTURE_2D);
+	GL_Disable(GL_CULL_FACE);
 
 	// stupid player camera and angles corruption, fixed
 	VectorCopy(r_origin, player_org);
@@ -1171,18 +1171,18 @@ void UpdateLightEditor(void){
 	}
 
 }
-	qglEnable(GL_TEXTURE_2D);
-	qglEnable(GL_CULL_FACE);
-	qglEnable(GL_BLEND);
+	GL_Enable(GL_TEXTURE_2D);
+	GL_Enable(GL_CULL_FACE);
+	GL_Enable(GL_BLEND);
 
 	if(r_shadows->value)
-		qglEnable(GL_STENCIL_TEST);
+		GL_Enable(GL_STENCIL_TEST);
 
 	if(r_useLightScissors->value)
-		qglEnable(GL_SCISSOR_TEST);
+		GL_Enable(GL_SCISSOR_TEST);
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
+		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	GL_BindNullProgram();
 
@@ -1840,10 +1840,10 @@ qboolean R_DrawLightOccluders()
 	GL_BindProgram(nullProgram, defBits);
 	id = nullProgram->id[defBits];
 
-	qglColorMask(0, 0, 0, 0);
-	qglDisable(GL_TEXTURE_2D);
-	qglDisable(GL_CULL_FACE);
-	qglDisable(GL_BLEND);
+	GL_ColorMask(0, 0, 0, 0);
+	GL_Disable(GL_TEXTURE_2D);
+	GL_Disable(GL_CULL_FACE);
+	GL_Disable(GL_BLEND);
 
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 	VectorScale(currentShadowLight->radius, r_occLightBoundsSize->value, radius);
@@ -1885,10 +1885,10 @@ qboolean R_DrawLightOccluders()
 
 	qglEndQueryARB(gl_state.query_passed);
 
-	qglColorMask(1, 1, 1, 1);
-	qglEnable(GL_TEXTURE_2D);
-	qglEnable(GL_CULL_FACE);
-	qglEnable(GL_BLEND);
+	GL_ColorMask(1, 1, 1, 1);
+	GL_Enable(GL_TEXTURE_2D);
+	GL_Enable(GL_CULL_FACE);
+	GL_Enable(GL_BLEND);
 	GL_BindNullProgram();
 	
 	if (currentShadowLight->framecount == occ_framecount - 1)
@@ -1926,11 +1926,11 @@ void R_LightScale(void) {
 
 	GL_MBind(GL_TEXTURE0, 0);
 
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);	// multiply by two every pass
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_DST_COLOR, GL_SRC_COLOR);	// multiply by two every pass
 
-	qglColorMask(1, 1, 1, 0);
-	qglDepthMask(0);
+	GL_ColorMask(1, 1, 1, 0);
+	GL_DepthMask(0);
 
 	val = max(r_lightScale->value, 0.0);
 
@@ -1958,9 +1958,9 @@ void R_LightScale(void) {
 	qglMatrixMode(GL_MODELVIEW);
 
 	qglColor3f(1, 1, 1);
-	qglColorMask(1, 1, 1, 1);
-	qglDepthMask(1);
-	qglDisable(GL_BLEND);
+	GL_ColorMask(1, 1, 1, 1);
+	GL_DepthMask(1);
+	GL_Disable(GL_BLEND);
 }
 
 /*
@@ -2237,14 +2237,14 @@ void R_DebugScissors(void)
 	qglPushMatrix();
 	qglLoadIdentity();
 	
-	qglDisable(GL_DEPTH_TEST);
+	GL_Disable(GL_DEPTH_TEST);
 	qglBegin(GL_LINE_LOOP);
 	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1]);
 	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1]);
 	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1] + currentShadowLight->scissor[3]);
 	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1] +	currentShadowLight->scissor[3]);
 	qglEnd();
-	qglEnable(GL_DEPTH_TEST);
+	GL_Enable(GL_DEPTH_TEST);
 
 	qglMatrixMode(GL_PROJECTION);
 	qglPopMatrix();
@@ -2278,7 +2278,7 @@ void R_DrawLightFlare(){
 		return;
 
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
+		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -2355,7 +2355,7 @@ void R_DrawLightFlare(){
 
 	GL_BindNullProgram();
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
+		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -2379,11 +2379,11 @@ void R_LightFlareOutLine(){ //flare editing highlights
 		return;
 		
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-	qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
-	qglDisable(GL_SCISSOR_TEST);
-	qglDisable(GL_STENCIL_TEST);
-	qglDisable(GL_TEXTURE_2D);
-	qglDisable(GL_CULL_FACE);
+	GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
+	GL_Disable(GL_SCISSOR_TEST);
+	GL_Disable(GL_STENCIL_TEST);
+	GL_Disable(GL_TEXTURE_2D);
+	GL_Disable(GL_CULL_FACE);
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
@@ -2475,11 +2475,11 @@ void R_LightFlareOutLine(){ //flare editing highlights
 	GL_BindNullProgram();
 	
 	if(r_useLightScissors->value)
-		qglEnable(GL_SCISSOR_TEST);
+		GL_Enable(GL_SCISSOR_TEST);
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
-	qglEnable(GL_STENCIL_TEST);
-	qglEnable(GL_TEXTURE_2D);
-	qglEnable(GL_CULL_FACE);
+		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
+	GL_Enable(GL_STENCIL_TEST);
+	GL_Enable(GL_TEXTURE_2D);
+	GL_Enable(GL_CULL_FACE);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 }

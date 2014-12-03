@@ -103,10 +103,10 @@ void R_RenderDecals(void)
 	id = genericProgram->id[defBits];
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 	
-	qglEnable(GL_POLYGON_OFFSET_FILL);
-    qglPolygonOffset(-1, -1);
-    qglDepthMask(0);
-    qglEnable(GL_BLEND);
+	GL_Enable(GL_POLYGON_OFFSET_FILL);
+    GL_PolygonOffset(-1, -1);
+    GL_DepthMask(0);
+    GL_Enable(GL_BLEND);
 
 	active = &active_decals;
 
@@ -152,7 +152,7 @@ void R_RenderDecals(void)
 
 		texture = tex;
         GL_MBind(GL_TEXTURE0_ARB, texture);
-        qglBlendFunc(dl->sFactor, dl->dFactor);
+        GL_BlendFunc(dl->sFactor, dl->dFactor);
 
 		if (dl->flags == DF_OVERBRIGHT)
 			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);
@@ -204,14 +204,12 @@ void R_RenderDecals(void)
 		c_decal_tris += numIndices/3;
 	 }
 
-    qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    qglDisable(GL_BLEND);
+    GL_Disable(GL_BLEND);
     qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
     qglDisableVertexAttribArray(ATRB_COLOR);
-    qglDepthMask(1);
-    qglDisable(GL_POLYGON_OFFSET_FILL);
-	qglPolygonOffset(0, 0);
+    GL_DepthMask(1);
+    GL_Disable(GL_POLYGON_OFFSET_FILL);
 	GL_BindNullProgram();
 }
 

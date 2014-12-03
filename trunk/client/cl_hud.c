@@ -263,6 +263,7 @@ void LoadHudEnts(void)
 		R_RegisterModel("models/items/dopple/tris.md2");
 }
 
+void R_FXAA(void);
 
 void SCR_DrawHudModel(float x, float y, struct model_s *model)
 {

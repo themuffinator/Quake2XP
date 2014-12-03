@@ -147,9 +147,9 @@ void R_RenderFlares(void)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, tex_array);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, color_array);
 
-	qglDepthMask(0);
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_ONE, GL_ONE);
+	GL_DepthMask(0);
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_ONE, GL_ONE);
 
 	GL_BindProgram(particlesProgram, defBits);
 	id = particlesProgram->id[defBits];
@@ -199,9 +199,8 @@ void R_RenderFlares(void)
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
     qglDisableVertexAttribArray(ATRB_COLOR);
-	qglDisable(GL_BLEND);
-	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDepthMask(1);
+	GL_Disable(GL_BLEND);
+	GL_DepthMask(1);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 }
 
@@ -562,7 +561,7 @@ void R_FXAA (void) {
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-            return;
+           return;
 
 	// setup program
 	GL_BindProgram(fxaaProgram, defBits);

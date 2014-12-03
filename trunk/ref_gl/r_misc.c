@@ -974,24 +974,83 @@ void GL_SetDefaultState(void)
 	bloomtex = 0;
 	thermaltex = 0;
 	fxaatex = 0;
-	
-	qglClearColor		(0, 0, 0, 1);
-	qglCullFace			(GL_FRONT);
-	qglEnable			(GL_TEXTURE_2D);
-	qglEnable			(GL_ALPHA_TEST);
-	qglAlphaFunc		(GL_GREATER, 0.5);
+	flareEdit = (qboolean)false;
 
-	qglDisable			(GL_DEPTH_TEST);
-	qglDisable			(GL_CULL_FACE);
-	qglDisable			(GL_STENCIL_TEST);
-	
-	qglDisable			(GL_BLEND);
-	qglBlendFunc		(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	flareEdit			= (qboolean)false;
-	
 	qglColor4f			(1, 1, 1, 1);
-	qglColorMask		(1, 1, 1, 1);
+	qglClearColor		(0, 0, 0, 1);
+	qglEnable			(GL_TEXTURE_2D);
+
+	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglPolygonOffset(0.f, 1.f);
+	gl_state.polygonOffsetFill = false;
+	gl_state.polygonOffsetFactor = 0.f;
+	gl_state.polygonOffsetUnits = 1.f;
+
+	qglDepthRange(0.f, 1.f);
+	gl_state.depthRange[0] = 0.f;
+	gl_state.depthRange[1] = 1.f;
+
+	// scissor
+	qglDisable(GL_SCISSOR_TEST);
+	qglScissor(0, 0, vid.width, vid.height);
+	gl_state.scissorTest = false;
+	gl_state.scissor[0] = 0;
+	gl_state.scissor[1] = 0;
+	gl_state.scissor[2] = vid.width;
+	gl_state.scissor[3] = vid.height;
+
+	// color mask
+	qglColorMask(1, 1, 1, 1);
+	gl_state.colorMask[0] = GL_TRUE;
+	gl_state.colorMask[1] = GL_TRUE;
+	gl_state.colorMask[2] = GL_TRUE;
+	gl_state.colorMask[3] = GL_TRUE;
+
+	// depth test
+	qglDisable(GL_DEPTH_TEST);
+	qglDepthFunc(GL_LEQUAL);
+	qglDepthMask(1);
+	gl_state.depthTest = false;
+	gl_state.depthFunc = GL_LEQUAL;
+	gl_state.depthMask = true;
+
+	// stencil test
+	qglDisable(GL_STENCIL_TEST);
+	qglStencilMask(255);
+	qglStencilFunc(GL_ALWAYS, 128, 255);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	qglStencilOpSeparate(GL_FRONT_AND_BACK, GL_KEEP, GL_KEEP, GL_KEEP);
+	gl_state.stencilTest = false;
+	gl_state.stencilMask = 255;
+	gl_state.stencilFunc = GL_ALWAYS;
+	gl_state.stencilRef = 128;
+	gl_state.stencilRefMask = 255;
+	gl_state.stencilFace = GL_FRONT_AND_BACK;
+	gl_state.stencilFail = GL_KEEP;
+	gl_state.stencilZFail = GL_KEEP;
+	gl_state.stencilZPass = GL_KEEP;
+
+	// blending
+	qglDisable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	gl_state.blend = false;
+	gl_state.blendSrc = GL_SRC_ALPHA;
+	gl_state.blendDst = GL_ONE_MINUS_SRC_ALPHA;
+
+	// face culling
+	qglDisable(GL_CULL_FACE);
+	qglCullFace(GL_FRONT);
+	qglFrontFace(GL_CCW);
+	gl_state.cullFace = false;
+	gl_state.cullMode = GL_FRONT;
+	gl_state.frontFace = GL_CCW;
+
+	// depth bounds test
+	if (gl_state.depthBoundsTest){
+		gl_state.glDepthBoundsTest = false;
+		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
+		glDepthBoundsEXT(0.f, 1.f);
+	}
 
 	qglHint				(GL_GENERATE_MIPMAP_HINT,			GL_NICEST);
 	qglHint				(GL_TEXTURE_COMPRESSION_HINT_ARB,	GL_NICEST);

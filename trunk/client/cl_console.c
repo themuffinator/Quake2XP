@@ -635,12 +635,8 @@ void Con_DrawConsole(float frac)
 		lines = viddef.height;
 	
 	// draw the background
-	if (cls.state == ca_active || cl.refresh_prepped)
-		Draw_StretchPic2(0, lines - viddef.height, viddef.width,
-						 viddef.height, i_conback, true);
-	else
-		Draw_StretchPic2(0, lines - viddef.height, viddef.width,
-						 viddef.height, i_conback, false);
+	Draw_StretchPic2(0, lines - viddef.height, viddef.width,
+								viddef.height, i_conback);
 	SCR_AddDirtyPoint(0, 0);
 	SCR_AddDirtyPoint(viddef.width - 1, lines - 1);
 

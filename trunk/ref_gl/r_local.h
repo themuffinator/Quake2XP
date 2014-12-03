@@ -610,9 +610,6 @@ typedef struct {
 #define GLSTATE_DISABLE_ALPHATEST	if (gl_state.alpha_test) { qglDisable(GL_ALPHA_TEST); gl_state.alpha_test=(qboolean)false; }
 #define GLSTATE_ENABLE_ALPHATEST	if (!gl_state.alpha_test) { qglEnable(GL_ALPHA_TEST); gl_state.alpha_test=(qboolean)true; }
 
-#define GLSTATE_DISABLE_BLEND		if (gl_state.blend) { qglDisable(GL_BLEND); gl_state.blend=(qboolean)false; }
-#define GLSTATE_ENABLE_BLEND		if (!gl_state.blend) { qglEnable(GL_BLEND); gl_state.blend=(qboolean)true; }
-
 #define GLSTATE_DISABLE_TEXGEN		if (gl_state.texgen) { qglDisable(GL_TEXTURE_GEN_S); qglDisable(GL_TEXTURE_GEN_T); qglDisable(GL_TEXTURE_GEN_R); qglDisable(GL_TEXTURE_GEN_Q); gl_state.texgen=(qboolean)false; }
 #define GLSTATE_ENABLE_TEXGEN		if (!gl_state.texgen) { qglEnable(GL_TEXTURE_GEN_S); qglEnable(GL_TEXTURE_GEN_T); qglEnable(GL_TEXTURE_GEN_R); qglEnable(GL_TEXTURE_GEN_Q); gl_state.texgen=(qboolean)true; }
 
@@ -631,7 +628,6 @@ typedef struct {
 
 // advanced state manager - MrG
 	qboolean alpha_test;
-	qboolean blend;
 	qboolean texgen;
 // End - MrG
 
@@ -687,9 +683,69 @@ typedef struct {
 	int			maxSamples;
 	int			maxDrawBuffers;
 	uint		fboId, dpsId, fbo_weaponMask;
+	
+	// gl state cache
+
+	qboolean		cullFace;
+	GLenum			cullMode;
+	GLenum			frontFace;
+
+	qboolean		blend;
+	GLenum			blendSrc;
+	GLenum			blendDst;
+
+	GLboolean		colorMask[4];
+
+	qboolean		depthTest;
+	GLenum			depthFunc;
+	GLboolean		depthMask;
+	GLclampd		depthRange[2];
+
+	qboolean		polygonOffsetFill;
+	GLfloat			polygonOffsetFactor;
+	GLfloat			polygonOffsetUnits;
+
+	qboolean		stencilTest;
+	GLenum			stencilFunc;
+	GLenum			stencilFace;
+	GLuint			stencilMask;
+	GLint			stencilRef;
+	GLuint			stencilRefMask;
+	GLenum			stencilFail;
+	GLenum			stencilZFail;
+	GLenum			stencilZPass;
+
+	qboolean		scissorTest;
+	GLint			scissor[4];
+
+	qboolean		glDepthBoundsTest;
+	GLfloat			depthBoundsMins;
+	GLfloat			depthBoundsMax;
 
 // ----------------------------------------------------------------
 } glstate_t;
+
+void GL_CullFace(GLenum mode);
+void GL_FrontFace(GLenum mode);
+
+void GL_DepthFunc(GLenum func);
+void GL_DepthMask(GLboolean flag);
+void GL_BlendFunc(GLenum src, GLenum dst);
+void GL_ColorMask(qboolean red, qboolean green, qboolean blue, qboolean alpha);
+
+void GL_StencilMask(GLuint mask);
+void GL_StencilFunc(GLenum func, GLint ref, GLuint mask);
+void GL_StencilOp(GLenum fail, GLenum zFail, GLenum zPass);
+void GL_StencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask);
+void GL_StencilOpSeparate(GLenum face, GLenum fail, GLenum zFail, GLenum zPass);
+
+void GL_Scissor(GLint x, GLint y, GLint width, GLint height);
+void GL_DepthRange(GLclampd n, GLclampd f);
+void GL_PolygonOffset(GLfloat factor, GLfloat units);
+void GL_DepthBoundsTest(GLfloat mins, GLfloat maxs);
+
+void GL_Enable(GLenum cap);
+void GL_Disable(GLenum cap);
 
 void GL_BindFB(fbo_t *fb);
 void R_FB_Init(void);

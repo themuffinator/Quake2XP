@@ -192,7 +192,6 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
-
 	qglEnableVertexAttribArray	(ATRB_POSITION);
 	qglVertexAttribPointer		(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
 	
@@ -371,8 +370,8 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 	
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_ONE, GL_ONE);
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_ONE, GL_ONE);
 
 	scroll = r_newrefdef.time *0.45;
 
@@ -446,8 +445,7 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_Disable(GL_BLEND);
 
 	qglDisableVertexAttribArray	(ATRB_POSITION);
 	qglDisableVertexAttribArray	(ATRB_NORMAL);
@@ -485,7 +483,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 			return;
 	
 	if(currentmodel->noSelfShadow && r_shadows->value)
-		qglDisable(GL_STENCIL_TEST);
+		GL_Disable(GL_STENCIL_TEST);
 	
 	backlerp = currententity->backlerp;
 	frontlerp = 1 - backlerp;
@@ -657,7 +655,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	
 	if(currentmodel->noSelfShadow && r_shadows->value)
-		qglEnable(GL_STENCIL_TEST);
+		GL_Enable(GL_STENCIL_TEST);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TANGENT);

@@ -248,7 +248,6 @@ next:
 			return;
 	}
 
-
 	if (e->flags & RF_WEAPONMODEL) {
 		if (r_leftHand->value == 2)
 			return;
@@ -257,7 +256,7 @@ next:
 	paliashdr = (dmdl_t *)currentmodel->extraData;
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
-		qglDepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
+		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
 	if ((currententity->flags & RF_WEAPONMODEL ) && ( r_leftHand->value == 1.0F)) {
 		extern void GL_OldPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
@@ -267,14 +266,14 @@ next:
 		qglScalef(-1, 1, 1);
 		GL_OldPerspective(r_newrefdef.fov_y, (float) r_newrefdef.width / r_newrefdef.height, 4, 4096);
 		qglMatrixMode(GL_MODELVIEW);
-		qglCullFace(GL_BACK);
+		GL_CullFace(GL_BACK);
 	}
 	
 SetModelsLight();
 
 
 	if (currententity->flags & RF_TRANSLUCENT) {
-		GLSTATE_ENABLE_BLEND
+		GL_Enable(GL_BLEND);
 	}
 
 
@@ -312,61 +311,16 @@ SetModelsLight();
 		qglMatrixMode(GL_PROJECTION);
 		qglPopMatrix();
 		qglMatrixMode(GL_MODELVIEW);
-		qglCullFace(GL_FRONT);
+		GL_CullFace(GL_FRONT);
 	}
 
 	if (currententity->flags & RF_TRANSLUCENT) {
-		GLSTATE_DISABLE_BLEND
+		GL_Disable(GL_BLEND);
 	}
 
 	if (currententity->flags & RF_DEPTHHACK)
-		qglDepthRange(gldepthmin, gldepthmax);
+		GL_DepthRange(gldepthmin, gldepthmax);
 
-	if (r_radar->value >1 && (!deathmatch->value)) {
-		
-			RadarEnts[numRadarEnts].color[0]= 1.0;
-			RadarEnts[numRadarEnts].color[1]= 1.0;
-			RadarEnts[numRadarEnts].color[2]= 1.0;
-
-		if (numRadarEnts>=MAX_RADAR_ENTS)
-			return;
-		
-		if (currententity->flags & RF_WEAPONMODEL)
-			return;
-		if (currententity->flags & RF_NOSHADOW)
-			return;
-
-		if (currententity->flags & RF_GLOW) {
-			RadarEnts[numRadarEnts].color[0]= 0.0;
-			RadarEnts[numRadarEnts].color[1]= 1.0;
-			RadarEnts[numRadarEnts].color[2]= 0.0;
-		}	else
-		if ( currententity->flags & RF_MONSTER) {
-			RadarEnts[numRadarEnts].color[0]= 1.0;
-			RadarEnts[numRadarEnts].color[1]= 0.0;
-			RadarEnts[numRadarEnts].color[2]= 1.0;
-		} 
-		else {
-			RadarEnts[numRadarEnts].color[0]= 0.0;
-			RadarEnts[numRadarEnts].color[1]= 1.0;
-			RadarEnts[numRadarEnts].color[2]= 1.0;
-		}
-		VectorCopy(currententity->origin,RadarEnts[numRadarEnts].org);
-		
-//		==========================================
-//		add sound tracker @ALIENS RADAR STYLE@
-//		==========================================
-		
-		if (r_radar->value > 2) {
-			if(!VectorCompare (currententity->origin, currententity->oldorigin)) {
-				if (r_newrefdef.time > radarOldTime) {
-					S_StartLocalSound (fastsound_descriptor[id_radar_sound]);
-					radarOldTime = r_newrefdef.time+1;
-				}
-			}
-		}
-		numRadarEnts++;
-	}
 }
 
 
@@ -435,7 +389,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 
 	
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
-		qglDepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
+		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
 		if ((currententity->frame >= paliashdr->num_frames)
 		|| (currententity->frame < 0)) {
@@ -461,7 +415,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		qglScalef(-1, 1, 1);
 		GL_OldPerspective(r_newrefdef.fov_y, (float) r_newrefdef.width / r_newrefdef.height, 4, 4096);
 		qglMatrixMode(GL_MODELVIEW);
-		qglCullFace(GL_BACK);
+		GL_CullFace(GL_BACK);
 	}
 	
 	VectorCopy(currentShadowLight->origin, tmpOrg);
@@ -487,11 +441,11 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		qglMatrixMode(GL_PROJECTION);
 		qglPopMatrix();
 		qglMatrixMode(GL_MODELVIEW);
-		qglCullFace(GL_FRONT);
+		GL_CullFace(GL_FRONT);
 	}
 
 	if (currententity->flags & RF_DEPTHHACK)
-		qglDepthRange(gldepthmin, gldepthmax);
+		GL_DepthRange(gldepthmin, gldepthmax);
 		
 	VectorCopy(tmpOrg, currentShadowLight->origin);
 	VectorCopy(tmpView, r_origin);
@@ -516,7 +470,7 @@ void R_DrawAliasDistortModel (entity_t *e)
 		// draw all the triangles
 		//
 		if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
-			qglDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
+			GL_DepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
 
 		if ( (currententity->frame >= paliashdr->num_frames)
 			|| (currententity->frame < 0) ) {
@@ -543,5 +497,5 @@ void R_DrawAliasDistortModel (entity_t *e)
 		qglPopMatrix();
 
 		if (currententity->flags & RF_DEPTHHACK)
-			qglDepthRange (gldepthmin, gldepthmax);
+			GL_DepthRange (gldepthmin, gldepthmax);
 }

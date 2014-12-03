@@ -501,8 +501,7 @@ int R_GetClippedFragments(vec3_t origin, float radius, mat3_t axis,
 						  fragment_t * fragments);
 void Draw_Pic(int x, int y, char *name);
 void Draw_Pic2(int x, int y, image_t * gl);
-void Draw_StretchPic2(int x, int y, int w, int h, image_t * gl,
-					  qboolean cons);
+void Draw_StretchPic2(int x, int y, int w, int h, image_t * gl);
 void Draw_StretchPic(int x, int y, int w, int h, char *name);
 
 

@@ -90,8 +90,8 @@ void R_DrawParticles()
     qglUniform1i			(qglGetUniformLocation(id, "u_depthBufferMap"), 1);
 	qglUniform2f			(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
-	qglDepthMask(0);		// no z buffering
-	qglEnable(GL_BLEND);
+	GL_DepthMask(0);		// no z buffering
+	GL_Enable(GL_BLEND);
 
 	
 	qsort(r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
@@ -200,9 +200,9 @@ void R_DrawParticles()
         partVert = 0;
         index = 0;
 
-		GL_SelectTexture		(GL_TEXTURE0_ARB);
-		GL_Bind					(texId);
-		qglBlendFunc			(p->sFactor, p->dFactor);
+		GL_SelectTexture	(GL_TEXTURE0_ARB);
+		GL_Bind				(texId);
+		GL_BlendFunc		(p->sFactor, p->dFactor);
 
 		if(r_softParticles->value){
 		if(p->sFactor == GL_ONE && p->dFactor == GL_ONE)
@@ -588,12 +588,11 @@ void R_DrawParticles()
 		c_part_tris += index/3;
 	}
 
-	qglDisable(GL_BLEND);
-	qglDepthMask(1);			// back to normal Z buffering
+	GL_Disable(GL_BLEND);
+	GL_DepthMask(1);			// back to normal Z buffering
 
 	GL_BindNullProgram();
 	GL_SelectTexture(GL_TEXTURE0_ARB);	
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_COLOR);

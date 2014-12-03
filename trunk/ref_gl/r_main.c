@@ -143,10 +143,10 @@ void R_DrawSpriteModel(entity_t * e)
 	up = vup;
 	right = vright;
 
-	qglDepthMask(false);
+	GL_DepthMask(false);
 	
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	GL_Bind(currentmodel->skins[e->frame]->texnum);
 
@@ -174,9 +174,8 @@ void R_DrawSpriteModel(entity_t * e)
 
 	qglEnd();
 
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	qglDisable(GL_BLEND);
-	qglDepthMask(true);
+	GL_Disable(GL_BLEND);
+	GL_DepthMask(true);
 }
 
 
@@ -203,7 +202,9 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	up = vup;
 	right = vright;
 
-	qglEnable(GL_BLEND);
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	defBits = worldDefs.AlphaMaskBits;
 
 	// setup program
@@ -271,7 +272,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
-	qglDisable(GL_BLEND);
+	GL_Disable(GL_BLEND);
 }
 
 //==================================================================================
@@ -376,8 +377,8 @@ void R_SetupFrame(void)
 
 	// clear out the portion of the screen that the NOWORLDMODEL defines
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
-		qglEnable(GL_SCISSOR_TEST);
-		qglScissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+		GL_Enable(GL_SCISSOR_TEST);
+		GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
 			qglClearColor(0.35, 0.35, 0.35, 1);
@@ -385,26 +386,11 @@ void R_SetupFrame(void)
 			qglClearColor(0.35, 0.35, 0.35, 1);
 		} else
 			qglClear(GL_DEPTH_BUFFER_BIT);
-		qglDisable(GL_SCISSOR_TEST);
+		GL_Disable(GL_SCISSOR_TEST);
 	}
 
 	
 }
-
-void GL_LoadMatrix(GLenum mode, const mat4_t matrix) {
-	
-	if (gl_state.matrixMode != mode) {
-		qglMatrixMode(mode);
-		gl_state.matrixMode = mode;
-	}
-
-	if (!matrix)
-		qglLoadIdentity();
-	else
-		qglLoadMatrixf((const float *)matrix);
-}
-
-
 
 /*
 =============
@@ -494,11 +480,10 @@ R_SetupGL
 void R_SetupGL(void)
 {
 	// set drawing parms
-	qglCullFace(GL_FRONT);
-	qglEnable(GL_CULL_FACE);
-	qglDisable(GL_BLEND);
-	qglEnable(GL_DEPTH_TEST);
-	qglDisable(GL_ALPHA_TEST);
+	GL_CullFace(GL_FRONT);
+	GL_Enable(GL_CULL_FACE);
+	GL_Disable(GL_BLEND);
+	GL_Enable(GL_DEPTH_TEST);
 }
 
 /*
@@ -512,8 +497,8 @@ void R_Clear(void)
 	qglClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
 	gldepthmin = 0;
 	gldepthmax = 1;
-	qglDepthFunc(GL_LEQUAL);
-	qglDepthRange(gldepthmin, gldepthmax);
+	GL_DepthFunc(GL_LEQUAL);
+	GL_DepthRange(gldepthmin, gldepthmax);
 }
 
 
@@ -567,7 +552,7 @@ jump:
 
 	// draw transparent entities
 	// we could sort these if it ever becomes a problem...
-	qglDepthMask(0);			// no z writes
+	GL_DepthMask(0);			// no z writes
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -607,7 +592,7 @@ next:
 			}
 		}
 	}
-	qglDepthMask(1);			// back to writing
+	GL_DepthMask(1);			// back to writing
 	
 }
 
@@ -649,9 +634,10 @@ void R_DrawPlayerWeaponLightPass(void)
 	if (!r_drawEntities->value)
 		return;
 
-	qglStencilFunc(GL_EQUAL, 128, 255);
-	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	qglStencilMask(0);
+	GL_DepthFunc(GL_LEQUAL);
+	GL_StencilFunc(GL_EQUAL, 128, 255);
+	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	GL_StencilMask(0);
 
 		for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
 		{
@@ -680,18 +666,18 @@ void R_DrawLightInteractions(void)
 
 	num_visLights = 0;
 
-	qglDepthMask(0);
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_ONE, GL_ONE);
+	GL_DepthMask(0);
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_ONE, GL_ONE);
 
 	if(r_useLightScissors->value)
-		qglEnable(GL_SCISSOR_TEST);
+		GL_Enable(GL_SCISSOR_TEST);
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		qglEnable(GL_DEPTH_BOUNDS_TEST_EXT);
+		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	if(r_shadows->value)
-		qglEnable(GL_STENCIL_TEST);
+		GL_Enable(GL_STENCIL_TEST);
 	
 	R_PrepareShadowLightFrame();
 	
@@ -707,13 +693,13 @@ void R_DrawLightInteractions(void)
 	R_SetViewLightScreenBounds();
 
 	if(r_useLightScissors->value)
-		qglScissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
+		GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		glDepthBoundsEXT(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
+		GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 	
 	qglClearStencil(128);
-	qglStencilMask(255);
+	GL_StencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
 
 //	if (!R_DrawLightOccluders())
@@ -755,20 +741,19 @@ void R_DrawLightInteractions(void)
 	}
 	}
 	
-	qglDepthMask(1);
-	qglDisable(GL_STENCIL_TEST);
-	qglDisable(GL_SCISSOR_TEST);
+	GL_DepthMask(1);
+	GL_Disable(GL_STENCIL_TEST);
+	GL_Disable(GL_SCISSOR_TEST);
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
-	qglDisable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
+	GL_Disable(GL_BLEND);
 }
 
 void R_RenderDistortModels(void)
 {
 	int i;
 
-	qglDepthMask(0);
+	GL_DepthMask(0);
 	
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -790,7 +775,7 @@ void R_RenderDistortModels(void)
 
 
 	}
-	qglDepthMask(1);
+	GL_DepthMask(1);
 
 }
 
@@ -856,8 +841,8 @@ void R_SetGL2D(void)
 	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
 	qglMatrixMode(GL_MODELVIEW);
 	qglLoadIdentity();
-	qglDisable(GL_DEPTH_TEST);
-	qglDisable(GL_CULL_FACE);
+	GL_Disable(GL_DEPTH_TEST);
+	GL_Disable(GL_CULL_FACE);
 }
 
 
@@ -939,13 +924,16 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	R_MotionBlur();
 	R_FilmGrain();
 	}
-	qglEnable(GL_ALPHA_TEST);
+	
+	// set alpha blend for 2d mode
+	GL_Enable(GL_BLEND); 
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (v_blend[3] && r_polyBlend->value) {
 		
 		qglDisable(GL_TEXTURE_2D);
 		qglColor4f(v_blend[0],v_blend[1],v_blend[2], 0.15);
-		qglEnable(GL_BLEND);
+
 		qglBegin(GL_QUADS);
 		qglVertex2f(0, 0);
 		qglVertex2f(vid.width, 0);
@@ -955,7 +943,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 
 		qglColor4f(1, 1, 1, 1);
 		qglEnable(GL_TEXTURE_2D);
-		qglDisable(GL_BLEND);
+
 		}
 
 	if(selectedShadowLight && r_lightEditor->value){
@@ -1981,10 +1969,10 @@ void R_BeginFrame()
 	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
 	qglMatrixMode(GL_MODELVIEW);
 	qglLoadIdentity();
-	qglDisable(GL_DEPTH_TEST);
-	qglDisable(GL_CULL_FACE);
-	qglEnable(GL_ALPHA_TEST);
-
+	GL_Disable(GL_DEPTH_TEST);
+	GL_Disable(GL_CULL_FACE);
+	GL_Enable(GL_BLEND); // alpha blend for chars
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDrawBuffer( GL_BACK );
 
 	/* 

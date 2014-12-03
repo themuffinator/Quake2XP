@@ -4493,16 +4493,8 @@ void M_Draw(void)
 	// repaint everything next frame
 	SCR_DirtyScreen();
 
-	// dim everything behind it down
-	if (cl.cinematictime > 0)
-	{
-		Draw_StretchPic (0, 0, viddef.width, viddef.height, "menuback");
-	}
-	else
-	{
-		Draw_StretchPic (0, 0, viddef.width, viddef.height, "menuback");
-		Draw_FadeScreen();
-	}
+	Draw_StretchPic (0, 0, viddef.width, viddef.height, "menuback");
+
 	m_drawfunc();
 
 	// delay playing the enter sound until after the

@@ -981,12 +981,10 @@ void SCR_DrawClock(void)
 	}
 }
 
-void R_FXAA(void);
-void R_GammaRamp (void) ;
+void R_GammaRamp (void);
 
 void SCR_UpdateScreen(void)
 {
-
 	// if the screen is disabled (loading plaque is up, or vid mode
 	// changing)
 	// do nothing at all

@@ -42,7 +42,7 @@ R_LoadFont
 void R_LoadFont(void)
 {
 
-	draw_chars = GL_FindImage("gfx/fonts/q3ext.pcx", it_pic);
+	draw_chars = GL_FindImage("gfx/fonts/q3ext.tga", it_pic);
 	if(!draw_chars)
 		draw_chars = GL_FindImage("pics/conchars.pcx", it_pic);
 	if(!draw_chars)
@@ -286,7 +286,7 @@ Draw_StretchPic
 =============
 */
 
-void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl, qboolean cons)
+void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 {
 	int			id;
 	unsigned	defBits = 0;
@@ -329,7 +329,11 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl, qboolean cons)
 
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
-	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+
+	if (strstr(gl->name, "menuback"))
+		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1);
+	else
+		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
 
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -371,7 +375,7 @@ void Draw_StretchPic(int x, int y, int w, int h, char *pic)
 		Com_Printf("Can't find pic: %s\n", pic);
 		return;
 	}
-	Draw_StretchPic2(x, y, w, h, gl, cons);
+	Draw_StretchPic2(x, y, w, h, gl);
 }
 
 float loadScreenColorFade;
@@ -446,7 +450,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	h = gl->height;
 	
 	if (!gl->has_alpha)
-		qglDisable(GL_ALPHA_TEST);
+		GL_Disable(GL_BLEND);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -486,7 +490,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 
 	
 	if (!gl->has_alpha)
-		qglEnable(GL_ALPHA_TEST);
+		GL_Enable(GL_BLEND);
 	GL_BindNullProgram();
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -507,12 +511,12 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	h = gl->height * sY *gl->picScale_h;
 
 	if (!gl->has_alpha)
-		qglDisable(GL_ALPHA_TEST);
+		GL_Disable(GL_BLEND);
 	
 	
 	if (strstr(gl->name, "chxp")){ // crosshair hack
-		qglEnable(GL_BLEND);
-		qglBlendFunc(GL_ONE, GL_ONE);
+		GL_Enable(GL_BLEND);
+		GL_BlendFunc(GL_ONE, GL_ONE);
 		w = gl->width * sX;
 		h = gl->height * sY;
 	}
@@ -555,11 +559,10 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 
 	
 	if (!gl->has_alpha)
-		qglEnable(GL_ALPHA_TEST);
+		GL_Enable(GL_BLEND);
 
 	if (strstr(gl->name, "chxp")){
-		qglDisable(GL_BLEND);
-		qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 	GL_BindNullProgram();
 	qglDisableVertexAttribArray(ATRB_POSITION);
@@ -697,44 +700,6 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	GL_BindNullProgram();
 	qglDisableVertexAttribArray(ATRB_POSITION);
 }
-
-//=============================================================================
-
-/*
-================
-Draw_FadeScreen
-
-================
-*/
-void Draw_FadeScreen(void)
-{
-	unsigned	defBits;
-	int			id;
-
-	GL_Blend(true, 0, 0);
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
-
-	defBits = 0;
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform4f(qglGetUniformLocation(id, "u_color"), 0, 0, 0, 0.5);
-	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
-
-	VA_SetElem2(vertCoord[0], 0, 0);
-	VA_SetElem2(vertCoord[1], vid.width, 0);
-	VA_SetElem2(vertCoord[2], vid.width, vid.height);
-	VA_SetElem2(vertCoord[3], 0, vid.height);
-
-	qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	GL_BindNullProgram();
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	GL_Blend(false, 0, 0);
-
-}
-
 
 /*
 =================================

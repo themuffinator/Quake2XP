@@ -358,20 +358,20 @@ void R_CastAliasShadowVolumes(void)
 	GL_BindProgram(nullProgram, defBits);
 	id = nullProgram->id[defBits];
 
-	qglStencilMask(255);
-	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	qglStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP_EXT, GL_KEEP);
-	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+	GL_StencilMask(255);
+	GL_StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	GL_StencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP_EXT, GL_KEEP);
+	GL_StencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
-	qglDisable(GL_CULL_FACE);
+	GL_Disable(GL_CULL_FACE);
 	qglDisable(GL_TEXTURE_2D);
-	qglDepthFunc(GL_LESS);
-	qglEnable(GL_POLYGON_OFFSET_FILL);
-	qglColorMask(0, 0, 0, 0);
+	GL_DepthFunc(GL_LESS);
+	GL_Enable(GL_POLYGON_OFFSET_FILL);
+	GL_PolygonOffset(0.1, 1);
+	GL_ColorMask(0, 0, 0, 0);
+
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, ShadowArray);
-	qglPolygonOffset(0.1, 1);
-
 
 	for (i = 0; i < r_newrefdef.num_entities; i++)
 	{
@@ -386,12 +386,11 @@ void R_CastAliasShadowVolumes(void)
 		}
 	}
 	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisable(GL_POLYGON_OFFSET_FILL);
-	qglPolygonOffset(0, 0);
+	GL_Disable(GL_POLYGON_OFFSET_FILL);
+	GL_PolygonOffset(0, 0);
 	qglEnable(GL_TEXTURE_2D);
-	qglEnable(GL_CULL_FACE);
-	qglDepthFunc(GL_LEQUAL);
-	qglColorMask(1, 1, 1, 1);
+	GL_Enable(GL_CULL_FACE);
+	GL_ColorMask(1, 1, 1, 1);
 	GL_BindNullProgram();
 }
 
@@ -779,18 +778,18 @@ void R_CastBspShadowVolumes(void)
 	GL_BindProgram(nullProgram, defBits);
 	id = nullProgram->id[defBits];
 
-	qglStencilMask(255);
-	qglStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	qglStencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
-	qglStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+	GL_StencilMask(255);
+	GL_StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	GL_StencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
+	GL_StencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
-	qglDisable(GL_CULL_FACE);
+	GL_Disable(GL_CULL_FACE);
 	qglDisable(GL_TEXTURE_2D);
-	qglDepthFunc(GL_LESS);
-	qglEnable(GL_POLYGON_OFFSET_FILL);
-	qglColorMask(0, 0, 0, 0);
+	GL_DepthFunc(GL_LESS);
+	GL_Enable(GL_POLYGON_OFFSET_FILL);
+	GL_PolygonOffset(0.1, 1);
+	GL_ColorMask(0, 0, 0, 0);
 	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglPolygonOffset(0.1, 1);
 
 	if(currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic){ // draw vbo shadow
 		
@@ -823,11 +822,9 @@ void R_CastBspShadowVolumes(void)
 	}
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisable(GL_POLYGON_OFFSET_FILL);
-	qglPolygonOffset(0, 0);
+	GL_Disable(GL_POLYGON_OFFSET_FILL);
 	qglEnable(GL_TEXTURE_2D);
-	qglEnable(GL_CULL_FACE);
-	qglDepthFunc(GL_LEQUAL);
-	qglColorMask(1, 1, 1, 1);
+	GL_Enable(GL_CULL_FACE);
+	GL_ColorMask(1, 1, 1, 1);
 	GL_BindNullProgram();
 }
