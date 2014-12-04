@@ -12,6 +12,11 @@ void main(void)
 vec4 diffuse = texture2D(u_map, v_texCoord.xy);
 vec4 diffuse1 = texture2D(u_map1, v_texCoord1.xy);
 
+#ifdef TEXTURE
+	gl_FragColor = diffuse * u_colorScale;
+	return;
+#endif
+
 #ifdef CONSOLE
 	gl_FragColor = diffuse * diffuse1 * v_colorArray * u_colorScale;
 	return;
