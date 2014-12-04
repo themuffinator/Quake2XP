@@ -57,9 +57,7 @@ void  RenderLavaSurfaces(msurface_t * surf)
 	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), surf->texInfo->image->upload_width, surf->texInfo->image->upload_height);
 	qglUniform3fv(qglGetUniformLocation(id, "u_viewOrigin"), 1, r_origin);
 
-
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	GL_Bind(surf->texInfo->image->texnum);
+	GL_MBind(GL_TEXTURE0_ARB, surf->texInfo->image->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 0);
 	GL_MBind(GL_TEXTURE1_ARB, surf->texInfo->normalmap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 1);
@@ -167,22 +165,16 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	GL_BindProgram(waterProgram, defBits);
 	id = waterProgram->id[defBits];
 
-	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	GL_Bind						(fa->texInfo->image->texnum);
-	qglUniform1i				(qglGetUniformLocation(id, "u_colorMap"), 0);
-
-	GL_SelectTexture			(GL_TEXTURE1_ARB);
-	GL_Bind						(r_DSTTex->texnum);
-	qglUniform1i				(qglGetUniformLocation(id, "u_dstMap"), 1);
+	GL_MBind			(GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
+	qglUniform1i		(qglGetUniformLocation(id, "u_colorMap"), 0);
+	GL_MBind			(GL_TEXTURE1_ARB, r_DSTTex->texnum);
+	qglUniform1i		(qglGetUniformLocation(id, "u_dstMap"), 1);
 	
-	if(defBits >0){
-	GL_SelectTexture			(GL_TEXTURE2_ARB);
-	GL_BindRect					(ScreenMap->texnum);
-	qglUniform1i				(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
-	
-	GL_SelectTexture			(GL_TEXTURE3_ARB);
-	GL_BindRect					(depthMap->texnum);
-	qglUniform1i				(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
+	if(defBits > 0){
+	GL_MBindRect		(GL_TEXTURE2_ARB, ScreenMap->texnum);
+	qglUniform1i		(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
+	GL_MBindRect		(GL_TEXTURE3_ARB, depthMap->texnum);
+	qglUniform1i		(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
 	}
 	
 	qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	1.0);

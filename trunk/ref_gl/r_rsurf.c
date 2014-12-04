@@ -150,49 +150,69 @@ DrawGLPoly
 ================
 */
 
-void DrawGLPolyGLSL(msurface_t * fa)
+void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
 {
 	int i;
 	float *v;
-	float alpha;
+	float alpha, scroll;
 	glpoly_t *p;
 	int	id, nv = fa->polys->numVerts;
 	unsigned	defBits = 0;
 	unsigned	texture = -1;
-	
-	if (fa->texInfo->flags & SURF_TRANS33)
-		alpha = 0.33;
-	else 
-		alpha = 0.66;
-
-	// setup program
-	GL_BindProgram(refractProgram, defBits);
-	id = refractProgram->id[defBits];
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-
-	GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
-	GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 1);
-	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
-	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
-
-	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	1.0);
-	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	alpha);
-	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	150.0);
-	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
-	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-
-
 	
+	if (fa->texInfo->flags & SURF_TRANS33 || SURF_TRANS66) {
+
+		if (fa->texInfo->flags & SURF_TRANS33)
+			alpha = 0.33;
+		else
+			alpha = 0.66;
+
+		// setup program
+		GL_BindProgram(refractProgram, defBits);
+		id = refractProgram->id[defBits];
+
+		GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
+		GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 1);
+		GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
+		GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
+
+		qglUniform1f(qglGetUniformLocation(id, "u_deformMul"), 1.0);
+		qglUniform1f(qglGetUniformLocation(id, "u_alpha"), alpha);
+		qglUniform1f(qglGetUniformLocation(id, "u_thickness"), 150.0);
+		qglUniform2f(qglGetUniformLocation(id, "u_viewport"), vid.width, vid.height);
+		qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
+	}  
+	else 
+	{
+		defBits = worldDefs.AttribColorBits;
+		GL_BindProgram(genericProgram, defBits);
+		id = genericProgram->id[defBits];
+
+		GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
+		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_pplWorldAmbient->value);
+	}
+
+
+	if (scrolling){
+		scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
+
+		if (scroll == 0.0)
+			scroll = -64.0;
+	} else
+		scroll = 0;
+
 	p = fa->polys;
 	v = p->verts[0];
 
@@ -202,7 +222,7 @@ void DrawGLPolyGLSL(msurface_t * fa)
 		
 		VectorCopy(v, wVertexArray[i]);
 			
-		wTexArray[i][0] = v[3];
+		wTexArray[i][0] = v[3] + scroll;
 		wTexArray[i][1] = v[4];
 	}
 	qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);	
@@ -213,92 +233,6 @@ void DrawGLPolyGLSL(msurface_t * fa)
 	GL_BindNullProgram();
 	
 }
-
-
-
-
-//============
-//PGM
-/*
-================
-DrawGLFlowingPoly -- version of DrawGLPoly that handles scrolling texture
-================
-*/
-void DrawGLFlowingPolyGLSL(msurface_t * fa)
-{
-	int i;
-	float *v;
-	float alpha, scroll;
-	glpoly_t *p;
-	int	id, nv = fa->polys->numVerts;
-	unsigned	defBits = 0, texture = -1;
-
-	if (fa->texInfo->flags & SURF_TRANS33)
-		alpha = 0.33;
-	else 
-		alpha = 0.66;
-	
-
-	// setup program
-	GL_BindProgram(refractProgram, defBits);
-	id = refractProgram->id[defBits];
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-
-	GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
-	GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 1);
-	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
-	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
-
-	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	1.0);
-	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	alpha);
-	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	300.000);
-	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
-	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-
-		
-
-	p = fa->polys;
-	v = p->verts[0];
-
-	c_brush_polys += (nv-2);
-	
-	scroll =-64 * ((r_newrefdef.time / 40.0) - (int) (r_newrefdef.time / 40.0));
-
-	if (scroll == 0.0)
-		scroll = -64.0;
-
-	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE) {
-		
-		VectorCopy(v, wVertexArray[i]);
-			
-		wTexArray[i][0] = v[3]+scroll;
-		wTexArray[i][1] = v[4];
-
-		R_LightColor	(v, shadelight_surface);
-		VA_SetElem4		(SurfColorArray[i],	shadelight_surface[0], 
-											shadelight_surface[1], 
-											shadelight_surface[2], 
-											alpha);	
-	}
-	qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
-		
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	GL_BindNullProgram();
-}
-
-
 
 
 /*
@@ -328,9 +262,9 @@ void R_RenderBrushPoly (msurface_t *fa)
 	}
 
 	if(fa->texInfo->flags & SURF_FLOWING)
-		DrawGLFlowingPolyGLSL(fa);
+		DrawGLPolyGLSL(fa, true);
 	else
-		DrawGLPolyGLSL(fa);
+		DrawGLPolyGLSL(fa, false);
 
 }
 
@@ -358,9 +292,9 @@ void R_DrawAlphaPoly(void)
 	if (s->flags & SURF_DRAWTURB)
 		R_DrawWaterPolygons(s);
 	else if (s->texInfo->flags & SURF_FLOWING)
-		DrawGLFlowingPolyGLSL(s);
+		DrawGLPolyGLSL(s, true);
 	else
-		DrawGLPolyGLSL(s);
+		DrawGLPolyGLSL(s, false);
 
 	}
 
@@ -972,8 +906,10 @@ qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 	float		dist, dot;
 	glpoly_t	*poly;
 	
-	if (!SurfInFrustum(surf))
-		return false;
+	if (world){
+		if (!SurfInFrustum(surf))
+			return false;
+	}
 
 	if ((surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
 		return false;
@@ -1003,26 +939,28 @@ qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
 		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
 		return false;
+	
+	if (world){
+		switch (plane->type) //now check surf_planeback for camera pos
+		{
+		case PLANE_X:
+			dot = r_origin[0] - plane->dist;
+			break;
+		case PLANE_Y:
+			dot = r_origin[1] - plane->dist;
+			break;
+		case PLANE_Z:
+			dot = r_origin[2] - plane->dist;
+			break;
+		default:
+			dot = DotProduct(r_origin, plane->normal) - plane->dist;
+			break;
+		}
 
-	switch (plane->type) //now check surf_planeback for camera pos
-	{
-	case PLANE_X:
-		dot = r_origin[0] - plane->dist;
-		break;
-	case PLANE_Y:
-		dot = r_origin[1] - plane->dist;
-		break;
-	case PLANE_Z:
-		dot = r_origin[2] - plane->dist;
-		break;
-	default:
-		dot = DotProduct(r_origin, plane->normal) - plane->dist;
-		break;
+		if (((surf->flags & SURF_PLANEBACK) && (dot > 0)) ||
+			(!(surf->flags & SURF_PLANEBACK) && (dot < 0)))
+			return false;
 	}
-
-	if (((surf->flags & SURF_PLANEBACK) && (dot > 0)) ||
-		(!(surf->flags & SURF_PLANEBACK) && (dot < 0)))
-		return false;
 
 	if (abs(dist) > currentShadowLight->len)
 		return false;
@@ -1123,7 +1061,7 @@ void R_DrawLightWorld(void)
 	GL_StencilFunc(GL_EQUAL, 128, 255);
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	GL_StencilMask(0);
-	qglDepthFunc(GL_LEQUAL);
+	GL_DepthFunc(GL_LEQUAL);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
@@ -1548,7 +1486,7 @@ void R_DrawLightBrushModel(entity_t * e)
 	GL_StencilFunc(GL_EQUAL, 128, 255);
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	GL_StencilMask(0);
-	qglDepthFunc(GL_LEQUAL);
+	GL_DepthFunc(GL_LEQUAL);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
@@ -1575,6 +1513,11 @@ void R_DrawLightBrushModel(entity_t * e)
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
+
+	GL_SelectTexture(GL_TEXTURE3_ARB);
+	qglMatrixMode(GL_TEXTURE);
+	qglLoadIdentity();
+	qglMatrixMode(GL_MODELVIEW);
 
 	GL_SelectTexture(GL_TEXTURE2_ARB);
 	qglMatrixMode(GL_TEXTURE);

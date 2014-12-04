@@ -263,8 +263,7 @@ void CL_AddParticles(void)
 		{ 
 			vec3_t maxs = {1, 1, 1};
 			vec3_t mins = {-1, -1, -1};
-			trace_t trace = SV_Trace (p->oldOrg, mins, maxs, org, 0, MASK_SOLID);
-			
+			trace_t trace = CL_PMTraceWorld(p->oldOrg, mins, maxs, org, MASK_SHOT, true);
 			if(trace.fraction != 1.0){
 				p->next = free_particles;
 				free_particles = p;

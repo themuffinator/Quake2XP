@@ -230,17 +230,18 @@ void R_DrawParticles()
 		a = p->alpha;
 
 		if (p->flags & PARTICLE_VERTEXLIGHT) {
-			outcolor[0] = shadelight_surface[0] * r - r;
-			outcolor[1] = shadelight_surface[1] * g - g;
-			outcolor[2] = shadelight_surface[2] * b - b;
-			VectorScale(outcolor, 0.3, outcolor);
-			outcolor[3] = a;
+			
 			R_LightColor(p->origin, outcolor);
+
+			outcolor[0] *=  r - r;
+			outcolor[1] *=  g - g;
+			outcolor[2] *=  b - b;
+
+			VectorScale(outcolor, 0.3, outcolor);
 			ClampVertexColor(outcolor);
 			r = outcolor[0];
 			g = outcolor[1];
 			b = outcolor[2];
-			a = outcolor[3];
 		}
 
 		if (p->flags & PARTICLE_STRETCH) {

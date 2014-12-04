@@ -771,7 +771,7 @@ void R_CastBspShadowVolumes(void)
 	if (!r_shadows->value)
 		return;
 			
-	if(!currentShadowLight->isShadow || currentShadowLight->isAmbient /*|| currentShadowLight->isFog*/)
+	if(!currentShadowLight->isShadow || currentShadowLight->isAmbient)
 		return;
 
 	// setup program

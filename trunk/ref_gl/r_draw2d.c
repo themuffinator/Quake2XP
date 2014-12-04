@@ -48,7 +48,7 @@ void R_LoadFont(void)
 	if(!draw_chars)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
-	GL_Bind(draw_chars->texnum);
+	GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -77,7 +77,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	fcol = col * 0.0625;
 	size = 0.0625;
 
-	GL_Bind(draw_chars->texnum);
+	GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
 
 	qglBegin(GL_QUADS);
 	qglTexCoord2f(fcol, frow);
@@ -140,7 +140,7 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 
 	if (gl_state.currenttextures[gl_state.currenttmu] !=
 		draw_chars->texnum) {
-		GL_Bind(draw_chars->texnum);
+		GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
 	}
 
 	px = x;
@@ -491,6 +491,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	
 	if (!gl->has_alpha)
 		GL_Enable(GL_BLEND);
+
 	GL_BindNullProgram();
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -561,9 +562,9 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	if (!gl->has_alpha)
 		GL_Enable(GL_BLEND);
 
-	if (strstr(gl->name, "chxp")){
+	if (strstr(gl->name, "chxp"))
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	}
+	
 	GL_BindNullProgram();
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -629,7 +630,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
 
-	GL_Bind(image->texnum);
+	GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 
 	VA_SetElem2(texCoord[0], x / 64.0, y / 64.0);
 	VA_SetElem2(texCoord[1], (x + w) / 64.0, y / 64.0);

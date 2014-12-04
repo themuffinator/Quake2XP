@@ -900,6 +900,7 @@ typedef struct {
 	unsigned	EnvBits;
 	unsigned	AttribColorBits;
 	unsigned	ConsoleBits;
+	unsigned	TextureBits;
 	unsigned	WeaponBits;
 } 
 worldDefs_t;

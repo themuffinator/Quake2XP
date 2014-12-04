@@ -35,8 +35,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern vec3_t r_origin;
 
 
-typedef vec3_t mat3_t[3];
+
 typedef vec_t vec2_t[2];
+
+typedef vec3_t	mat3_t[3];		// column-major (axis)
+typedef vec4_t	mat4_t[4];		// row-major
 
 #define DEG2RAD(v) ((v) * (M_PI / 180.0f))
 #define RAD2DEG(v) ((v) * (180.0f / M_PI))
@@ -86,7 +89,7 @@ typedef struct entity_s {
 	int		frame;					// also used as RF_BEAM's diameter
 	int		framecount;				// for vis calc
 //  float   model_scale;
-
+	mat4_t	orMatrix;				// orientation matrix
 	/*
 	 ** previous data for lerping
 	 */
@@ -410,8 +413,7 @@ typedef struct {
 // end decals
 //================
 
-typedef vec3_t	mat3_t[3];		// column-major (axis)
-typedef vec4_t	mat4_t[4];		// row-major
+
 
 
 #define	MAX_FRAME_BUFFERS	32

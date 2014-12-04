@@ -37,20 +37,13 @@ void GL_SelectTexture(GLenum texture)
 {
 	int tmu;
 
-	if (!qglActiveTextureARB)
-		return;
-
 	tmu = texture - GL_TEXTURE0_ARB;
 
 	if (tmu == gl_state.currenttmu)
 		return;
-
+	
+	qglActiveTextureARB(texture);
 	gl_state.currenttmu = tmu;
-
-	if (qglActiveTextureARB) {
-		qglActiveTextureARB(texture);
-		qglClientActiveTextureARB(texture);
-	}
 }
 
 void GL_TexEnv(GLenum mode)
@@ -65,50 +58,38 @@ void GL_TexEnv(GLenum mode)
 
 void GL_Bind(int texnum)
 {
-	extern image_t *draw_chars;
-
-	if (r_noBind->value && draw_chars)	// performance evaluation option
-		texnum = draw_chars->texnum;
 	if (gl_state.currenttextures[gl_state.currenttmu] == texnum)
 		return;
-	gl_state.currenttextures[gl_state.currenttmu] = texnum;
+
 	qglBindTexture(GL_TEXTURE_2D, texnum);
+	gl_state.currenttextures[gl_state.currenttmu] = texnum;
 }
 
 void GL_Bind3d(int texnum)
 {
-	extern image_t *draw_chars;
-
-	if (r_noBind->value && draw_chars)	// performance evaluation option
-		texnum = draw_chars->texnum;
 	if (gl_state.currenttextures[gl_state.currenttmu] == texnum)
 		return;
-	gl_state.currenttextures[gl_state.currenttmu] = texnum;
+	
 	qglBindTexture(GL_TEXTURE_3D, texnum);
+	gl_state.currenttextures[gl_state.currenttmu] = texnum;
 }
 
 void GL_BindCube(int texnum)
 {
-	extern image_t *draw_chars;
-
-	if (r_noBind->value && draw_chars)	// performance evaluation option
-		texnum = draw_chars->texnum;
 	if (gl_state.currenttextures[gl_state.currenttmu] == texnum)
 		return;
-	gl_state.currenttextures[gl_state.currenttmu] = texnum;
+	
 	qglBindTexture(GL_TEXTURE_CUBE_MAP_ARB, texnum);
+	gl_state.currenttextures[gl_state.currenttmu] = texnum;
 }
 
 void GL_BindRect(int texnum)
 {
-	extern image_t *draw_chars;
-
-	if (r_noBind->value && draw_chars)	// performance evaluation option
-		texnum = draw_chars->texnum;
 	if (gl_state.currenttextures[gl_state.currenttmu] == texnum)
 		return;
-	gl_state.currenttextures[gl_state.currenttmu] = texnum;
+
 	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, texnum);
+	gl_state.currenttextures[gl_state.currenttmu] = texnum;
 }
 
 void GL_MBind(GLenum target, int texnum)

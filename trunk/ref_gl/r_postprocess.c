@@ -156,9 +156,8 @@ void R_RenderFlares(void)
 
 	GL_MBind				(GL_TEXTURE0_ARB, r_flare->texnum);
 	qglUniform1i			(qglGetUniformLocation(id, "u_map0"), 0);
-
-	GL_SelectTexture		(GL_TEXTURE1_ARB);	
-	GL_BindRect				(depthMap->texnum);
+	
+	GL_MBindRect			(GL_TEXTURE1_ARB, depthMap->texnum);
     qglUniform1i			(qglGetUniformLocation(id, "u_depthBufferMap"), 1);
 	qglUniform2f			(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform2f			(qglGetUniformLocation(id, "u_mask"), 1.0, 0.0);
@@ -201,7 +200,7 @@ void R_RenderFlares(void)
     qglDisableVertexAttribArray(ATRB_COLOR);
 	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
-	GL_SelectTexture(GL_TEXTURE0_ARB);
+//	GL_SelectTexture(GL_TEXTURE0_ARB);
 }
 
 /*
@@ -264,8 +263,7 @@ void R_Bloom (void) {
 		return;
 		
 		// downsample and cut color
-		GL_SelectTexture		(GL_TEXTURE0_ARB);
-		GL_BindRect				(ScreenMap->texnum);
+		GL_MBindRect			(GL_TEXTURE0_ARB, ScreenMap->texnum);
         qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 		
 		// setup program
@@ -325,18 +323,17 @@ void R_Bloom (void) {
 		GL_BindProgram(bloomfpProgram, defBits);
 		id = bloomfpProgram->id[defBits];
 		
-		GL_BindRect			(ScreenMap->texnum);
+		GL_MBindRect		(GL_TEXTURE0_ARB, ScreenMap->texnum);
 		qglUniform1i		(qglGetUniformLocation(id, "u_map0"), 0);
 
-		GL_SelectTexture	(GL_TEXTURE1_ARB);
-		GL_BindRect			(bloomtex);
+		GL_MBindRect		(GL_TEXTURE1_ARB, bloomtex);
 		qglUniform1i		(qglGetUniformLocation(id, "u_map1"), 1);
 		qglUniform3f		(qglGetUniformLocation(id, "u_bloomParams"), r_bloomIntens->value, r_bloomBright->value, r_bloomExposure->value);
 		
 		R_DrawFullScreenQuad();
 						
 		GL_BindNullProgram();
-		GL_SelectTexture		(GL_TEXTURE0_ARB);
+//		GL_SelectTexture		(GL_TEXTURE0_ARB);
 }
 
 
@@ -418,7 +415,7 @@ void R_ThermalVision (void) {
 		R_DrawFullScreenQuad();
 							
 		GL_BindNullProgram();
-		GL_SelectTexture(GL_TEXTURE0_ARB);
+//		GL_SelectTexture(GL_TEXTURE0_ARB);
 }
 
 
@@ -443,8 +440,7 @@ void R_RadialBlur (void) {
 
 hack:
 
-	GL_SelectTexture		(GL_TEXTURE0_ARB);
-	GL_BindRect				(ScreenMap->texnum);
+	GL_MBindRect			(GL_TEXTURE0_ARB, ScreenMap->texnum);
     qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	// setup program
@@ -534,20 +530,17 @@ void R_DofBlur (void) {
 	qglUniform2f(qglGetUniformLocation(id, "u_screenSize"), vid.width, vid.height);
 	qglUniform4f(qglGetUniformLocation(id, "u_dofParams"), dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
-
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-	GL_BindRect				(ScreenMap->texnum);
+	GL_MBindRect			(GL_TEXTURE0_ARB, ScreenMap->texnum);
     qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
-
-	GL_SelectTexture		(GL_TEXTURE1_ARB);	
-	GL_BindRect				(depthMap->texnum);
+	
+	GL_MBindRect			(GL_TEXTURE1_ARB, depthMap->texnum);
     qglUniform1i			(qglGetUniformLocation(id, "u_DepthTex"), 1);
 
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram		();
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
+//	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 }
 
 unsigned int fxaatex = 0;
@@ -567,16 +560,14 @@ void R_FXAA (void) {
 	GL_BindProgram(fxaaProgram, defBits);
 	id = fxaaProgram->id[defBits];
 	
-	GL_SelectTexture	(GL_TEXTURE0_ARB);	
-
 	if (!fxaatex) {
 	qglGenTextures			(1, &fxaatex);
-	GL_Bind					(fxaatex);
+	GL_MBind				(GL_TEXTURE0_ARB, fxaatex);
 	qglTexParameteri		(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameteri		(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	qglCopyTexImage2D		(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
 	}
-	GL_Bind					(fxaatex);
+	GL_MBind				(GL_TEXTURE0_ARB, fxaatex);
     qglCopyTexSubImage2D	(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
 	qglUniform2f			(qglGetUniformLocation(id, "u_ScreenSize"), vid.width, vid.height);
@@ -602,8 +593,7 @@ void R_FilmGrain (void) {
 	GL_BindProgram(filmGrainProgram, defBits);
 	id = filmGrainProgram->id[defBits];
 
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-	GL_BindRect				(ScreenMap->texnum);
+	GL_MBindRect			(GL_TEXTURE0_ARB, ScreenMap->texnum);
     qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
 	qglUniform1f			(qglGetUniformLocation(id, "u_scroll"), -3 * (r_newrefdef.time / 40.0));
@@ -622,8 +612,7 @@ void R_GammaRamp (void) {
 	GL_BindProgram(gammaProgram, defBits);
 	id = gammaProgram->id[defBits];
 
-	GL_SelectTexture		(GL_TEXTURE0_ARB);	
-	GL_BindRect				(ScreenMap->texnum);
+	GL_MBindRect			(GL_TEXTURE0_ARB, ScreenMap->texnum);
     qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
 	qglUniform4f			(qglGetUniformLocation(id, "u_control"), r_brightness->value, r_contrast->value, r_saturation->value, 1 / r_gamma->value);
@@ -659,17 +648,15 @@ void R_MotionBlur (void) {
 	qglUniform2f(qglGetUniformLocation(id, "u_velocity"), delta_x, delta_y);
 	qglUniform1i(qglGetUniformLocation(id, "u_numSamples"), r_motionBlurSamples->value);
 
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	GL_BindRect(ScreenMap->texnum);
+	GL_MBindRect(GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	qglUniform1i(qglGetUniformLocation(id, "u_ScreenTex"), 0);
 
-	GL_SelectTexture(GL_TEXTURE1_ARB);
-	GL_BindRect(weaponHack->texnum);
+	GL_MBindRect(GL_TEXTURE1_ARB, weaponHack->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_MaskTex"), 1);
 
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram();
-	GL_SelectTexture(GL_TEXTURE0_ARB);	
+//	GL_SelectTexture(GL_TEXTURE0_ARB);	
 }
