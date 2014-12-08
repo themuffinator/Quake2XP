@@ -66,7 +66,6 @@ void R_DrawParticles()
 	vec3_t		up, right;
 	vec3_t		axis[3];
 	vec3_t		oldOrigin;
-	vec3_t		outcolor;
 	float		scale, r, g, b, a;
 	float		c, d, s;
 
@@ -229,22 +228,7 @@ void R_DrawParticles()
 		b = p->color[2];
 		a = p->alpha;
 
-		if (p->flags & PARTICLE_VERTEXLIGHT) {
-			
-			R_LightColor(p->origin, outcolor);
-
-			outcolor[0] *=  r - r;
-			outcolor[1] *=  g - g;
-			outcolor[2] *=  b - b;
-
-			VectorScale(outcolor, 0.3, outcolor);
-			ClampVertexColor(outcolor);
-			r = outcolor[0];
-			g = outcolor[1];
-			b = outcolor[2];
-		}
-
-		if (p->flags & PARTICLE_STRETCH) {
+	if (p->flags & PARTICLE_STRETCH) {
 			
 				VectorSubtract (p->origin, r_newrefdef.vieworg, point);
 				CrossProduct (point, p->length, width);
@@ -593,7 +577,6 @@ void R_DrawParticles()
 	GL_DepthMask(1);			// back to normal Z buffering
 
 	GL_BindNullProgram();
-	GL_SelectTexture(GL_TEXTURE0_ARB);	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_COLOR);

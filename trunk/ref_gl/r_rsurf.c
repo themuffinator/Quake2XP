@@ -229,7 +229,6 @@ void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
 			
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
-	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
 	
 }
@@ -1086,19 +1085,6 @@ void R_DrawLightWorld(void)
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
-	
-	GL_SelectTexture(GL_TEXTURE3_ARB);
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
-	qglMatrixMode(GL_MODELVIEW);
-
-	GL_SelectTexture(GL_TEXTURE2_ARB);
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
-	qglMatrixMode(GL_MODELVIEW);
-	
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	
 }
 
 
@@ -1168,7 +1154,6 @@ void R_DrawBSP(void)
 	
 //	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
-	GL_SelectTexture(GL_TEXTURE0_ARB);
 	DrawTextureChains();
 
 	R_DrawSkyBox();
@@ -1426,20 +1411,6 @@ void R_DrawLightBrushModel(entity_t * e)
 			return;
 	}
 	
-
-	VectorSubtract(r_newrefdef.vieworg, e->origin, modelorg);
-
-	if (rotated) {
-		vec3_t temp;
-		vec3_t forward, right, up;
-
-		VectorCopy(modelorg, temp);
-		AngleVectors(e->angles, forward, right, up);
-		modelorg[0] = DotProduct(temp, forward);
-		modelorg[1] = -DotProduct(temp, right);
-		modelorg[2] = DotProduct(temp, up);
-	}
-
 	//Put camera into model space view angle for bmodels parallax
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	AnglesToMat3(currententity->angles, entityAxis);
@@ -1513,19 +1484,6 @@ void R_DrawLightBrushModel(entity_t * e)
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
-
-	GL_SelectTexture(GL_TEXTURE3_ARB);
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
-	qglMatrixMode(GL_MODELVIEW);
-
-	GL_SelectTexture(GL_TEXTURE2_ARB);
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
-	qglMatrixMode(GL_MODELVIEW);
-
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-
 	qglPopMatrix();
 }
 

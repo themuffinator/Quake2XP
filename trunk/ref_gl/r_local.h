@@ -718,11 +718,12 @@ typedef struct {
 	qboolean		scissorTest;
 	GLint			scissor[4];
 
+	GLfloat			rgba[4];
+
 	qboolean		glDepthBoundsTest;
 	GLfloat			depthBoundsMins;
 	GLfloat			depthBoundsMax;
 
-// ----------------------------------------------------------------
 } glstate_t;
 
 void GL_CullFace(GLenum mode);
@@ -743,6 +744,11 @@ void GL_Scissor(GLint x, GLint y, GLint width, GLint height);
 void GL_DepthRange(GLclampd n, GLclampd f);
 void GL_PolygonOffset(GLfloat factor, GLfloat units);
 void GL_DepthBoundsTest(GLfloat mins, GLfloat maxs);
+void GL_Color4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+void GL_Color3f(GLfloat r, GLfloat g, GLfloat b);
+void GL_Color4fv(vec4_t rgba);
+void GL_Color3fv(vec3_t rgb);
+void GL_LoadIdentity(GLenum mode);
 
 void GL_Enable(GLenum cap);
 void GL_Disable(GLenum cap);

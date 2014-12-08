@@ -35,17 +35,23 @@ color4ub_t	ColorTable[8] = {
 	{ 255, 255, 255, 255 },
 };
 
+
+color4ub_t		colorDefault;
+
 void RE_SetColor(const color4ub_t color) {
 	
-	color4ub_t	null = { 255, 255, 255, 255 };
+	
+	if (color[0] != colorDefault[0] ||
+		color[1] != colorDefault[1] ||
+		color[2] != colorDefault[2] ||
+		color[3] != colorDefault[3]) {
 
-	if (color) 
-	{
 		qglColor4ubv(color);
-	}
-	else 
-	{
-		qglColor4ubv(null);
+
+		colorDefault[0] = color[0];
+		colorDefault[1] = color[1];
+		colorDefault[2] = color[2];
+		colorDefault[3] = color[3];
 	}
 }
 
@@ -514,7 +520,7 @@ void Con_DrawInput (void) {
 		text += 1 + key_linepos - con.lineWidth;
 		
 	// draw it
-	RE_SetColor(NULL);
+	RE_SetColor(colorWhite);
 
 	for (i=0; i<con.lineWidth; i++)
 	//	Draw_Char ((i + 1) << 3, con.vislines - 15, text[i]);
@@ -576,7 +582,7 @@ void Con_DrawNotify (void)
 		v += 8*fontscale;
 	}
 
-	RE_SetColor(NULL);
+	RE_SetColor(colorWhite);
 
 	if (cls.key_dest == key_message) {
 		if (chat_team) {
@@ -643,8 +649,7 @@ void Con_DrawConsole(float frac)
 	Com_sprintf(version, sizeof(version), "q2xp 1.26.4 (%s)", __DATE__);
 	for (x = 0; x < strlen(version); x++)
 		version[x] += 128;
-	
-	Draw_StringScaledShadow(viddef.width - 185*fontscale, lines - 12*fontscale, fontscale, fontscale, version);
+
 	Draw_StringScaled(viddef.width - 185*fontscale, lines - 12*fontscale, fontscale, fontscale, version);
 
 // draw the text
@@ -667,7 +672,7 @@ void Con_DrawConsole(float frac)
 		for (x = 0; x < con.lineWidth; x += 4)
 			Draw_CharScaled((x*fontscale + 1) * 8, y, fontscale, fontscale, '^');
 
-		RE_SetColor(NULL);
+		RE_SetColor(colorWhite);
 		y -= 8*fontscale;
 		rows--;
 	}
@@ -695,8 +700,6 @@ void Con_DrawConsole(float frac)
 				currentColor = (text[x] >> 8) & 7;
 				RE_SetColor(ColorTable[currentColor]);
 				}
-			//Draw console font shadow 
-			Draw_CharScaledShadow((x*fontscale + 1) * 8, y, fontscale, fontscale, text[x] & 0xFF);
 
 			//Reset Current font color
 			RE_SetColor(ColorTable[currentColor]);
@@ -756,6 +759,6 @@ void Con_DrawConsole(float frac)
 // draw the input prompt, user text, and cursor if desired
 	Con_DrawInput();
 
-	RE_SetColor(NULL);
+	RE_SetColor(colorWhite);
 }
 

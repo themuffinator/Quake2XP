@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // cl_particles.c -- client side particle effects
 
 #include "client.h"
-
+#include "..\ref_gl\r_local.h"	
 
 static vec3_t avelocities[NUMVERTEXNORMALS];
 
@@ -258,6 +258,18 @@ void CL_AddParticles(void)
 			}
 		}
 		
+		if (p->flags & PARTICLE_VERTEXLIGHT) {
+			vec3_t lmColor;
+			int i;
+			VectorClear(lmColor);
+			R_LightColor(org, lmColor);
+			VectorScale(lmColor, 2.0, lmColor);
+			VectorMul(color, lmColor, color);
+		
+			for (i = 0; i < 3; i++)
+				if (color[i] > 1)
+					color[i] = 1;
+		}
 
 		if (p->flags & PARTICLE_NONSOLID) 
 		{ 

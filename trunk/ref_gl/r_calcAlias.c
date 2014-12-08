@@ -263,7 +263,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	qglDisableVertexAttribArray	(ATRB_COLOR);
 	qglDisableVertexAttribArray	(ATRB_TEX0);
 	qglBindBuffer				(GL_ARRAY_BUFFER_ARB, 0);
-	GL_SelectTexture			(GL_TEXTURE0_ARB);
+//	GL_SelectTexture			(GL_TEXTURE0_ARB);
 	GL_BindNullProgram			();
 	
 }
@@ -350,7 +350,7 @@ void GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr, vec4_t color)
 	qglDisableVertexAttribArray	(ATRB_COLOR);
 	qglDisableVertexAttribArray	(ATRB_TEX0);
 	qglBindBuffer				(GL_ARRAY_BUFFER_ARB, 0);
-	GL_SelectTexture			(GL_TEXTURE0_ARB);
+//	GL_SelectTexture			(GL_TEXTURE0_ARB);
 	GL_BindNullProgram			();
 }
 
@@ -641,19 +641,6 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 
 	qglDrawArrays	(GL_TRIANGLES, 0, jj);
 
-	GL_SelectTexture(GL_TEXTURE4_ARB);
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
-	qglMatrixMode(GL_MODELVIEW);
-
-
-	GL_SelectTexture(GL_TEXTURE3_ARB);
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
-	qglMatrixMode(GL_MODELVIEW);
-
-	GL_SelectTexture(GL_TEXTURE0_ARB);
-	
 	if(currentmodel->noSelfShadow && r_shadows->value)
 		GL_Enable(GL_STENCIL_TEST);
 

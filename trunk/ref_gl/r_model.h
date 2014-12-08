@@ -308,6 +308,7 @@ typedef struct model_s {
 	GLuint		vboId;
 	int			memorySize;
 
+	mat3_t		axis;
 } model_t;
 
 

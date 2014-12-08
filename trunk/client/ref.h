@@ -81,6 +81,9 @@ typedef unsigned int		uint;
 typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh
 	float angles[3];
+	mat3_t	axis;
+	mat4_t	orMatrix;				// orientation matrix  - todo!
+
 	qboolean angleMod;
 	/*
 	 ** most recent data
@@ -89,7 +92,7 @@ typedef struct entity_s {
 	int		frame;					// also used as RF_BEAM's diameter
 	int		framecount;				// for vis calc
 //  float   model_scale;
-	mat4_t	orMatrix;				// orientation matrix
+
 	/*
 	 ** previous data for lerping
 	 */

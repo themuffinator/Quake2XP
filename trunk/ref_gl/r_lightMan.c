@@ -1934,7 +1934,7 @@ void R_LightScale(void) {
 
 	val = max(r_lightScale->value, 0.0);
 
-	qglColor3f(1, 1, 1);
+	GL_Color3f(1, 1, 1);
 
 	qglBegin(GL_QUADS);
 
@@ -1945,7 +1945,7 @@ void R_LightScale(void) {
 		qglVertex2f(1, 0);
 	}
 	val /= (float)(i << 1);
-	qglColor3f(val, val, val);
+	GL_Color3f(val, val, val);
 
 	qglVertex2f(0, 0);
 	qglVertex2f(0, 1);
@@ -1957,7 +1957,7 @@ void R_LightScale(void) {
 	qglPopMatrix();
 	qglMatrixMode(GL_MODELVIEW);
 
-	qglColor3f(1, 1, 1);
+	GL_Color3f(1, 1, 1);
 	GL_ColorMask(1, 1, 1, 1);
 	GL_DepthMask(1);
 	GL_Disable(GL_BLEND);

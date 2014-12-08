@@ -270,7 +270,6 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
-	GL_SelectTexture(GL_TEXTURE0_ARB);
 	GL_BindNullProgram();
 	GL_Disable(GL_BLEND);
 }
@@ -293,7 +292,7 @@ void R_DrawNullModel(void)
 	R_RotateForLightEntity(currententity);
 
 	qglDisable(GL_TEXTURE_2D);
-	qglColor3f(1, 0, 1);
+	GL_Color3f(1, 0, 1);
 
 	qglBegin(GL_TRIANGLE_FAN);
 	qglVertex3f(0, 0, -8);
@@ -309,7 +308,7 @@ void R_DrawNullModel(void)
 					0);
 	qglEnd();
 
-	qglColor3f(1, 1, 1);
+	GL_Color3f(1, 1, 1);
 	qglPopMatrix();
 	qglEnable(GL_TEXTURE_2D);
 }
@@ -495,8 +494,8 @@ R_Clear
 void R_Clear(void)
 {
 	qglClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
-	gldepthmin = 0;
-	gldepthmax = 1;
+	gldepthmin = 0.0;
+	gldepthmax = 1.0;
 	GL_DepthFunc(GL_LEQUAL);
 	GL_DepthRange(gldepthmin, gldepthmax);
 }
@@ -932,7 +931,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	if (v_blend[3] && r_polyBlend->value) {
 		
 		qglDisable(GL_TEXTURE_2D);
-		qglColor4f(v_blend[0],v_blend[1],v_blend[2], 0.15);
+		GL_Color4f(v_blend[0],v_blend[1],v_blend[2], 0.15);
 
 		qglBegin(GL_QUADS);
 		qglVertex2f(0, 0);
@@ -941,13 +940,13 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 		qglVertex2f(0, vid.height);
 		qglEnd();
 
-		qglColor4f(1, 1, 1, 1);
+		GL_Color4f(1, 1, 1, 1);
 		qglEnable(GL_TEXTURE_2D);
 
 		}
 
 	if(selectedShadowLight && r_lightEditor->value){
-	qglColor3f(0,1,1);
+	GL_Color3f(0,1,1);
 	Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0);
 	Draw_StringScaled(0, vid.height*0.5+25,  2, 2, buff1);
 	Draw_StringScaled(0, vid.height*0.5+45,  2, 2, buff2);
@@ -965,7 +964,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14);
 	Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15);
 
-	qglColor3f(1,1,1);
+	GL_Color3f(1,1,1);
 	}
 
 	GL_MsgGLError("R_RenderFrame: ");

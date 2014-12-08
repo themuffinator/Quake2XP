@@ -292,23 +292,7 @@ void R_LightColor(vec3_t org, vec3_t color)
 	  + x * ((1 - y) * ((1 - z) * b[4][i] + (z) * b[5][i]) +
 	    y * ((1 - z) * b[6][i] + (z) * b[7][i]));
 		color[i] *= f;
-	
-		if(color[i] <= 0.1)
-			color[i] = 0.1;
-	}
 
-	// add dynamic light
-	dl = r_newrefdef.dlights;
-	for (lnum = 0; lnum < r_newrefdef.num_dlights; lnum++, dl++) {
-		VectorSubtract(org, dl->origin, dist);
-		f = ((dl->intensity * 2) -
-			 VectorLength(dist)) / (dl->intensity * 2);
-		if (f <= 0)
-			continue;
-		add = f * (0.2 + (0.8 * f));
-		if (add > 0.01) {
-			VectorMA(color, add, dl->color, color);
-		}
 	}
 }
 

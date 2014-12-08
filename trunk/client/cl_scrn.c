@@ -409,7 +409,7 @@ void SCR_DrawLoading(void)
 					va("%s", loadingMessages[2]));
 		Draw_StringScaled(0, 48*fontscale, fontscale, fontscale,
 					va("%s", loadingMessages[3]));
-		RE_SetColor(NULL);
+		RE_SetColor(colorWhite);
 	}
 }
 
@@ -944,7 +944,7 @@ void SCR_DrawFPS(void)
 
 	if (cl_drawfps->value && (cls.state == ca_active)) {
 		Draw_StringScaled(viddef.width - 65*fontscale, viddef.height*0.65, fontscale, fontscale, str);
-		RE_SetColor(NULL);
+		RE_SetColor(colorWhite);
 	}
 }
 

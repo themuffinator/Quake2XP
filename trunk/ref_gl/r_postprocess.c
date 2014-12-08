@@ -333,7 +333,6 @@ void R_Bloom (void) {
 		R_DrawFullScreenQuad();
 						
 		GL_BindNullProgram();
-//		GL_SelectTexture		(GL_TEXTURE0_ARB);
 }
 
 
@@ -415,7 +414,6 @@ void R_ThermalVision (void) {
 		R_DrawFullScreenQuad();
 							
 		GL_BindNullProgram();
-//		GL_SelectTexture(GL_TEXTURE0_ARB);
 }
 
 
@@ -540,7 +538,6 @@ void R_DofBlur (void) {
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram		();
-//	GL_SelectTexture		(GL_TEXTURE0_ARB);	
 }
 
 unsigned int fxaatex = 0;
@@ -658,5 +655,4 @@ void R_MotionBlur (void) {
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram();
-//	GL_SelectTexture(GL_TEXTURE0_ARB);	
 }

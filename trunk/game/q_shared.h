@@ -131,6 +131,7 @@ typedef int intptr_t;
 
 typedef byte	color4ub_t[4];
 
+extern color4ub_t	colorDefault;
 extern color4ub_t	colorBlack;
 extern color4ub_t	colorRed;
 extern color4ub_t	colorGreen;
@@ -228,13 +229,14 @@ extern long Q_ftol( float f );
 
 
 
-#define DotProduct(x,y)			(x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
-#define VectorSubtract(a,b,c)	(c[0]=a[0]-b[0],c[1]=a[1]-b[1],c[2]=a[2]-b[2])
-#define VectorAdd(a,b,c)		(c[0]=a[0]+b[0],c[1]=a[1]+b[1],c[2]=a[2]+b[2])
-#define VectorCopy(a,b)			(b[0]=a[0],b[1]=a[1],b[2]=a[2])
-#define VectorClear(a)			(a[0]=a[1]=a[2]=0)
-#define VectorNegate(a,b)		(b[0]=-a[0],b[1]=-a[1],b[2]=-a[2])
-#define VectorSet(v, x, y, z)	(v[0]=(x), v[1]=(y), v[2]=(z))
+#define DotProduct(x,y)					(x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
+#define VectorSubtract(a,b,c)			(c[0]=a[0]-b[0],c[1]=a[1]-b[1],c[2]=a[2]-b[2])
+#define VectorAdd(a,b,c)				(c[0]=a[0]+b[0],c[1]=a[1]+b[1],c[2]=a[2]+b[2])
+#define VectorCopy(a,b)					(b[0]=a[0],b[1]=a[1],b[2]=a[2])
+#define VectorMul(in1, in2, out)		(out[0] = in1[0] * in2[0], out[1] = in1[1] * in2[1], out[2] = in1[2] * in2[2])
+#define VectorClear(a)					(a[0]=a[1]=a[2]=0)
+#define VectorNegate(a,b)				(b[0]=-a[0],b[1]=-a[1],b[2]=-a[2])
+#define VectorSet(v, x, y, z)			(v[0]=(x), v[1]=(y), v[2]=(z))
 
 #define VectorAverage(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5f,(o)[1]=((a)[1]+(b)[1])*0.5f,(o)[2]=((a)[2]+(b)[2])*0.5f)
 

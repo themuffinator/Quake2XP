@@ -968,7 +968,7 @@ void CL_AddPacketEntities(frame_t * frame)
 				for (i = 0; i < 3; i++)
 					flashlightDirection[i] = cl.refdef.viewangles[i] + LerpAngle(ops->gunangles[i], ps->gunangles[i], cl.lerpfrac);
 
-				VectorMA(cl.refdef.vieworg, 25, forward, flashLightOrigin);
+				VectorMA(cl.refdef.vieworg, 30, forward, flashLightOrigin);
 
 				if (hand->value == 2)
 					VectorMA(flashLightOrigin, 1, right, flashLightOrigin); //center
@@ -988,7 +988,7 @@ void CL_AddPacketEntities(frame_t * frame)
 				VectorMA(ent.origin, 6, forward, flashLightOrigin);
 				VectorMA(flashLightOrigin, -6, up, flashLightOrigin);
 
-				V_AddLight(flashLightOrigin, 1024, 0.9, 0.9, 0.2, tmpAngles, 0.5, 33);
+				V_AddLight(flashLightOrigin, 1024, 0.9, 0.9, 0.3, tmpAngles, 0.5, 33);
 
 			}
 		}
@@ -1029,24 +1029,8 @@ void CL_AddPacketEntities(frame_t * frame)
 				else if (effects & EF_TRACKERTRAIL)
 					V_AddLight(ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
 			}
+
 		}
-	/*	else{
-		
-			if (effects & EF_FLASHLIGHT){
-				static vec3_t	tmpAngles, flashlightDirection, flashLightOrigin, forward, up;
-				
-				VectorCopy(ent.angles, tmpAngles);
-				AngleVectors(tmpAngles, forward, up, NULL);
-
-				VectorMA(ent.origin, 16, forward, flashlightDirection);
-				VectorMA(flashlightDirection, -8, up, flashlightDirection);
-
-				V_AddLight(flashLightOrigin, 1024, 0.7, 1, 0.7, flashlightDirection, 0.5, 33);
-			}
-
-		} */
-
-
 
 		// if set to invisible, skip
 		if (!s1->modelindex)
@@ -1077,7 +1061,6 @@ void CL_AddPacketEntities(frame_t * frame)
 			}
 		}
 //pmm
-
 		if (ent.model) // hack for blaster bolt particle
 		{
 			if (!Q_strcasecmp(ent.model->name, "models/objects/laser/tris.md2") && !(effects & EF_BLASTER)){	
