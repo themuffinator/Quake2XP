@@ -694,7 +694,7 @@ typedef struct {
 	GLenum			blendSrc;
 	GLenum			blendDst;
 
-	boolean			colorMask[4];
+	qboolean		colorMask[4];
 
 	qboolean		depthTest;
 	GLenum			depthFunc;

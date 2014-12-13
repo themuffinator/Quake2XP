@@ -269,7 +269,7 @@ GL_ColorMask
 
 =============
 */
-void GL_ColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
+void GL_ColorMask(qboolean red, qboolean green, qboolean blue, qboolean alpha) {
 	if (gl_state.colorMask[0] != red || gl_state.colorMask[1] != green || gl_state.colorMask[2] != blue || gl_state.colorMask[3] != alpha) {
 		qglColorMask(red, green, blue, alpha);
 
