@@ -226,10 +226,8 @@ void R_InitLightgrid(void)
 void R_LightColor(vec3_t org, vec3_t color)
 {
 	byte *b[8];
-	int i, lnum;
-	dlight_t *dl;
-	float f, add;
-	vec3_t dist;
+	int i;
+	float f;
 	float x = (4096 + org[0]) / LIGHTGRID_STEP;
 	float y = (4096 + org[1]) / LIGHTGRID_STEP;
 	float z = (4096 + org[2]) / LIGHTGRID_STEP;

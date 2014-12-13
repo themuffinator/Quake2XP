@@ -694,7 +694,7 @@ typedef struct {
 	GLenum			blendSrc;
 	GLenum			blendDst;
 
-	GLboolean		colorMask[4];
+	boolean			colorMask[4];
 
 	qboolean		depthTest;
 	GLenum			depthFunc;
@@ -723,7 +723,6 @@ typedef struct {
 	qboolean		glDepthBoundsTest;
 	GLfloat			depthBoundsMins;
 	GLfloat			depthBoundsMax;
-
 } glstate_t;
 
 void GL_CullFace(GLenum mode);
