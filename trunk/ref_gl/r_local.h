@@ -694,7 +694,7 @@ typedef struct {
 	GLenum			blendSrc;
 	GLenum			blendDst;
 
-	qboolean		colorMask[4];
+	GLboolean		colorMask[4];
 
 	qboolean		depthTest;
 	GLenum			depthFunc;
@@ -731,7 +731,7 @@ void GL_FrontFace(GLenum mode);
 void GL_DepthFunc(GLenum func);
 void GL_DepthMask(GLboolean flag);
 void GL_BlendFunc(GLenum src, GLenum dst);
-void GL_ColorMask(qboolean red, qboolean green, qboolean blue, qboolean alpha);
+void GL_ColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
 
 void GL_StencilMask(GLuint mask);
 void GL_StencilFunc(GLenum func, GLint ref, GLuint mask);
