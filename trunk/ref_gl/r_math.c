@@ -181,6 +181,45 @@ void Mat4_Transpose(const mat4_t in, mat4_t out) {
 }
 
 /*
+===========
+Mat4_TransposeMultiply
+
+===========
+*/
+void Mat4_TransposeMultiply(const mat4_t a, const mat4_t b, mat4_t out) {
+
+	const float	a00 = a[0][0], a01 = a[0][1], a02 = a[0][2], a03 = a[0][3];
+	const float	a10 = a[1][0], a11 = a[1][1], a12 = a[1][2], a13 = a[1][3];
+	const float	a20 = a[2][0], a21 = a[2][1], a22 = a[2][2], a23 = a[2][3];
+	const float	a30 = a[3][0], a31 = a[3][1], a32 = a[3][2], a33 = a[3][3];
+
+	const float	b00 = b[0][0], b01 = b[0][1], b02 = b[0][2], b03 = b[0][3];
+	const float	b10 = b[1][0], b11 = b[1][1], b12 = b[1][2], b13 = b[1][3];
+	const float	b20 = b[2][0], b21 = b[2][1], b22 = b[2][2], b23 = b[2][3];
+	const float	b30 = b[3][0], b31 = b[3][1], b32 = b[3][2], b33 = b[3][3];
+
+	out[0][0] = a00 * b00 + a10 * b10 + a20 * b20 + a30 * b30;
+	out[0][1] = a00 * b01 + a10 * b11 + a20 * b21 + a30 * b31;
+	out[0][2] = a00 * b02 + a10 * b12 + a20 * b22 + a30 * b32;
+	out[0][3] = a00 * b03 + a10 * b13 + a20 * b23 + a30 * b33;
+
+	out[1][0] = a01 * b00 + a11 * b10 + a21 * b20 + a31 * b30;
+	out[1][1] = a01 * b01 + a11 * b11 + a21 * b21 + a31 * b31;
+	out[1][2] = a01 * b02 + a11 * b12 + a21 * b22 + a31 * b32;
+	out[1][3] = a01 * b03 + a11 * b13 + a21 * b23 + a31 * b33;
+
+	out[2][0] = a02 * b00 + a12 * b10 + a22 * b20 + a32 * b30;
+	out[2][1] = a02 * b01 + a12 * b11 + a22 * b21 + a32 * b31;
+	out[2][2] = a02 * b02 + a12 * b12 + a22 * b22 + a32 * b32;
+	out[2][3] = a02 * b03 + a12 * b13 + a22 * b23 + a32 * b33;
+
+	out[3][0] = a03 * b00 + a13 * b10 + a23 * b20 + a33 * b30;
+	out[3][1] = a03 * b01 + a13 * b11 + a23 * b21 + a33 * b31;
+	out[3][2] = a03 * b02 + a13 * b12 + a23 * b22 + a33 * b32;
+	out[3][3] = a03 * b03 + a13 * b13 + a23 * b23 + a33 * b33;
+}
+
+/*
 ===============
 Mat4_MultiplyVector
 
@@ -375,6 +414,34 @@ void Mat4_SetupTransform(mat4_t m, const mat3_t rotation, const vec3_t translati
 	m[3][3] = 1.0f;
 }
 
+/*
+=================
+Mat4_SetOrientation
+
+'rotation' is transposed.
+=================
+*/
+void Mat4_SetOrientation(mat4_t m, const mat3_t rotation, const vec3_t translation) {
+	m[0][0] = rotation[0][0];
+	m[0][1] = rotation[1][0];
+	m[0][2] = rotation[2][0];
+	m[0][3] = translation[0];
+
+	m[1][0] = rotation[0][1];
+	m[1][1] = rotation[1][1];
+	m[1][2] = rotation[2][1];
+	m[1][3] = translation[1];
+
+	m[2][0] = rotation[0][2];
+	m[2][1] = rotation[1][2];
+	m[2][2] = rotation[2][2];
+	m[2][3] = translation[2];
+
+	m[3][0] = 0.0f;
+	m[3][1] = 0.0f;
+	m[3][2] = 0.0f;
+	m[3][3] = 1.0f;
+}
 /*
 ===============
 SetPlaneType

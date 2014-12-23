@@ -49,7 +49,7 @@ void R_BuildFlares(flare_t * light){
 		return;
 
 		qglPushMatrix();
-		R_RotateForLightEntity(light->surf->ent);
+		R_RotateForEntity(light->surf->ent);
 		
 	}
 	

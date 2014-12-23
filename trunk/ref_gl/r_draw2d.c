@@ -51,11 +51,7 @@ void R_LoadFont(void)
 	GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-
 }
-
-
 
 void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char num)
 {
@@ -77,59 +73,29 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	fcol = col * 0.0625;
 	size = 0.0625;
 
+	qglEnableClientState(GL_VERTEX_ARRAY);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer(2, GL_FLOAT, sizeof(texCoord[0]), texCoord[0]);
+	qglVertexPointer(3, GL_FLOAT, sizeof(vertCoord[0]), vertCoord[0]);
+
 	GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
 
-	qglBegin(GL_QUADS);
-	qglTexCoord2f(fcol, frow);
-	qglVertex2f(x, y);
-	qglTexCoord2f(fcol + size, frow);
-	qglVertex2f(x + 8*scale_x, y);
-	qglTexCoord2f(fcol + size, frow + size);
-	qglVertex2f(x + 8*scale_x, y + 8*scale_y);
-	qglTexCoord2f(fcol, frow + size);
-	qglVertex2f(x, y + 8*scale_y);
-	qglEnd();
-}
+	VA_SetElem2(texCoord[0], fcol, frow);
+	VA_SetElem2(texCoord[1], fcol + size, frow);
+	VA_SetElem2(texCoord[2], fcol + size, frow + size);
+	VA_SetElem2(texCoord[3], fcol, frow + size);
 
-
-void Draw_CharScaledShadow(int x, int y, float scale_x, float scale_y, unsigned char num)
-{
-	int row, col;
-	float frow, fcol, size;
+	VA_SetElem2(vertCoord[0], x, y);
+	VA_SetElem2(vertCoord[1], x + 8 * scale_x, y);
+	VA_SetElem2(vertCoord[2], x + 8 * scale_x, y + 8 * scale_y);
+	VA_SetElem2(vertCoord[3], x, y + 8 * scale_y);
 	
-	return;
+	qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	num &= 255;
-
-	if ((num & 127) == 32)
-		return;					// space
-
-	if (y <= -8*scale_y)
-		return;					// totally off screen
-
-	row = num >> 4;
-	col = num & 15;
-
-	frow = row * 0.0625;
-	fcol = col * 0.0625;
-	size = 0.0625;
-
-	GL_Bind(draw_chars->texnum);
-
-	qglColor3f(0.0, 0.0, 0.0);
-	qglBegin(GL_QUADS);
-	qglTexCoord2f(fcol, frow);
-	qglVertex2f(x, y);
-	qglTexCoord2f(fcol + size, frow);
-	qglVertex2f(x + 9*scale_x, y);
-	qglTexCoord2f(fcol + size, frow + size);
-	qglVertex2f(x + 9*scale_x, y + 9*scale_y);
-	qglTexCoord2f(fcol, frow + size);
-	qglVertex2f(x, y + 9*scale_y);
-	qglEnd();
-
-	qglColor3f(1.0, 1.0, 1.0);
+	qglDisableClientState(GL_VERTEX_ARRAY);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
+
 
 
 void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *str)
@@ -147,7 +113,11 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 	py = y;
 	size = 0.0625;
 	
-	qglBegin(GL_QUADS);
+	qglEnableClientState(GL_VERTEX_ARRAY);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglTexCoordPointer(2, GL_FLOAT, sizeof(texCoord[0]), texCoord[0]);
+	qglVertexPointer(3, GL_FLOAT, sizeof(vertCoord[0]), vertCoord[0]);
+
 	while (*s) {
 		num = *s++;
 
@@ -167,74 +137,23 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		frow = row * 0.0625;
 		fcol = col * 0.0625;
 
-		qglTexCoord2f(fcol, frow);
-		qglVertex2f(px, py);
-		qglTexCoord2f(fcol + size, frow);
-		qglVertex2f(px + 8*scale_x, py);
-		qglTexCoord2f(fcol + size, frow + size);
-		qglVertex2f(px + 8*scale_x, py + 8*scale_y);
-		qglTexCoord2f(fcol, frow + size);
-		qglVertex2f(px, py + 8*scale_y);
-		px += 8*scale_x;
+		VA_SetElem2(texCoord[0], fcol, frow);
+		VA_SetElem2(texCoord[1], fcol + size, frow);
+		VA_SetElem2(texCoord[2], fcol + size, frow + size);
+		VA_SetElem2(texCoord[3], fcol, frow + size);
+
+		VA_SetElem2(vertCoord[0], px, py);
+		VA_SetElem2(vertCoord[1], px + 8 * scale_x, py);
+		VA_SetElem2(vertCoord[2], px + 8 * scale_x, py + 8 * scale_y);
+		VA_SetElem2(vertCoord[3], px, py + 8 * scale_y);
+		px += 8 * scale_x;
+		qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
-	qglEnd();
-}
-
-
-void Draw_StringScaledShadow(int x, int y, float scale_x, float scale_y, const char *str)
-{
-	int px, py, row, col, num;
-	float frow, fcol, size;
-	unsigned char *s = (unsigned char *) str;
 	
-	return;
+	qglDisableClientState(GL_VERTEX_ARRAY);
+	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	if (gl_state.currenttextures[gl_state.currenttmu] !=
-		draw_chars->texnum) {
-		GL_Bind(draw_chars->texnum);
-	}
-
-	qglColor3f(0.0, 0.0, 0.0);
-
-	px = x;
-	py = y;
-	size = 0.0625;
-	
-	qglBegin(GL_QUADS);
-	while (*s) {
-		num = *s++;
-
-		if ((num & 127) == 32) {	// space
-			px += 8;
-			continue;
-		}
-
-		if (y <= -8) {			// totally off screen
-			px += 8;
-			continue;
-		}
-
-		row = num >> 4;
-		col = num & 15;
-
-		frow = row * 0.0625;
-		fcol = col * 0.0625;
-
-		qglTexCoord2f(fcol, frow);
-		qglVertex2f(px, py);
-		qglTexCoord2f(fcol + size, frow);
-		qglVertex2f(px + 9*scale_x, py);
-		qglTexCoord2f(fcol + size, frow + size);
-		qglVertex2f(px + 9*scale_x, py + 9*scale_y);
-		qglTexCoord2f(fcol, frow + size);
-		qglVertex2f(px, py + 9*scale_y);
-		px += 8*scale_x;
-	}
-	qglEnd();
-
-	qglColor3f(1.0, 1.0, 1.0);
 }
-
 
 /*
 =============

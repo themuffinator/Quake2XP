@@ -103,12 +103,13 @@ int GL_MsgGLError(char* Info)
 }
 
 
-void R_RotateForLightEntity(entity_t * e) {
-	// fixed stupig quake bug, lol)))
-	qglTranslatef	(e->origin[0], e->origin[1], e->origin[2]);
-    qglRotatef		(e->angles[1],  0, 0, 1);
-    qglRotatef		(e->angles[0],  0, 1, 0);
-    qglRotatef		(e->angles[2],  1, 0, 0);
+void R_RotateForEntity(entity_t * e) {
+	mat4_t entViewMatrix;
+
+	AnglesToMat3(e->angles, e->axis);
+	Mat4_SetOrientation(e->matrix, e->axis, e->origin);
+	Mat4_TransposeMultiply(e->matrix, r_newrefdef.modelViewMatrix, entViewMatrix);
+	GL_LoadMatrix(GL_MODELVIEW, entViewMatrix);
 }
 
 
@@ -289,7 +290,7 @@ void R_DrawNullModel(void)
 		return;
 
 	qglPushMatrix();
-	R_RotateForLightEntity(currententity);
+	R_RotateForEntity(currententity);
 
 	qglDisable(GL_TEXTURE_2D);
 	GL_Color3f(1, 0, 1);
@@ -537,7 +538,7 @@ jump:
 				R_DrawAliasModel(currententity, false);
 				break;
 			case mod_brush:
-				R_DrawBrushModel(currententity);
+				R_DrawBrushModel();
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
@@ -580,7 +581,7 @@ next:
 				R_DrawAliasModel(currententity, false);
 				break;
 			case mod_brush:
-				R_DrawBrushModel(currententity);
+				R_DrawBrushModel();
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
@@ -732,7 +733,7 @@ void R_DrawLightInteractions(void)
 			continue;
 		}
 		if (currentmodel->type == mod_brush) 
-			R_DrawLightBrushModel(currententity);
+			R_DrawLightBrushModel();
 		if(currentmodel->type == mod_alias)
 			R_DrawAliasModelLightPass(false);
 		}

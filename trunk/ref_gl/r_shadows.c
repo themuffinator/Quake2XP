@@ -289,7 +289,6 @@ void R_DeformShadowVolume(entity_t * e)
 	int				*order, i;
 	float			frontlerp;
 	vec3_t			move, delta, vectors[3], frontv, backv, light, temp;
-	mat3_t			entityAxis;
 
 	if (!R_EntityInLightBounds())
 		return;
@@ -332,11 +331,10 @@ void R_DeformShadowVolume(entity_t * e)
 	GL_LerpShadowVerts(paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
 		
 	qglPushMatrix();
-	R_RotateForLightEntity (e);
+	R_RotateForEntity (e);
 
-	AnglesToMat3(currententity->angles, entityAxis);
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-	Mat3_TransposeMultiplyVector(entityAxis, temp, light);
+	Mat3_TransposeMultiplyVector(currententity->axis, temp, light);
 
 	BuildShadowVolumeTriangles(paliashdr, light, currentShadowLight->len * 10);
 	
@@ -420,7 +418,6 @@ void R_DrawBrushModelVolumes()
 	glpoly_t	*poly;
 	vec3_t		v1, temp;
 	vec3_t		oldLightOrigin;
-	mat3_t		entityAxis;
 	qboolean	shadow;
 
 	clmodel = currententity->model;
@@ -429,15 +426,13 @@ void R_DrawBrushModelVolumes()
 	if (!R_EntityInLightBounds())
 		return;
 
-	VectorCopy (currentShadowLight->origin, oldLightOrigin);
-	
-	AnglesToMat3(currententity->angles, entityAxis);
-	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);
-	
 	qglPushMatrix();
-	R_RotateForLightEntity(currententity);
-	
+	R_RotateForEntity(currententity);
+
+	VectorCopy(currentShadowLight->origin, oldLightOrigin);
+	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector(currententity->axis, temp, currentShadowLight->origin);
+
 	scale = currentShadowLight->len * 32;
 
 	for (i=0 ; i<clmodel->numModelSurfaces ; i++, surf++)

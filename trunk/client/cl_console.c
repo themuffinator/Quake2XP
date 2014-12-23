@@ -620,18 +620,20 @@ Draws the console with the solid background
 ================
 */
 
+extern vec2_t texFontCoord[MAX_VERTEX_ARRAY];
+extern vec3_t vertFontCoord[MAX_VERTEX_ARRAY];
 
 void Con_DrawConsole(float frac)
 {
-	int i, j, x, y, n;
-	int rows;
-	short *text;
-	int row;
-	int lines;
-	char version[64];
-	char dlbar[1024];
-	int		currentColor;
-	float	fontscale = cl_fontScale->value;
+	int			i, j, x, y, n;
+	int			rows;
+	short		*text;
+	int			row;
+	int			lines;
+	char		version[64];
+	char		dlbar[1024];
+	int			currentColor;
+	float		fontscale = cl_fontScale->value;
 
 	lines = viddef.height * frac;
 	if (lines <= 0)
@@ -760,5 +762,6 @@ void Con_DrawConsole(float frac)
 	Con_DrawInput();
 
 	RE_SetColor(colorWhite);
+
 }
 

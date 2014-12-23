@@ -1168,7 +1168,7 @@ R_DrawInlineBModel
 */
 extern qboolean bmodelcaust = false;
 
-void R_DrawBrushModel(entity_t * e);
+void R_DrawBrushModel();
 
 static void R_DrawInlineBModel(void)
 {
@@ -1258,32 +1258,30 @@ R_DrawBrushModel
 */
 int CL_PMpointcontents(vec3_t point);
 
-void R_DrawBrushModel(entity_t * e)
+void R_DrawBrushModel()
 {
 	vec3_t		mins, maxs, tmp;
 	int			i;
     qboolean	rotated;
-	mat3_t		entityAxis;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
 	if (currentmodel->numModelSurfaces == 0)
 		return;
-
-	currententity = e;
+	
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
 
-	if (e->angles[0] || e->angles[1] || e->angles[2]) {
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		rotated = true;
 		for (i = 0; i < 3; i++) {
-			mins[i] = e->origin[i] - currentmodel->radius;
-			maxs[i] = e->origin[i] + currentmodel->radius;
+			mins[i] = currententity->origin[i] - currentmodel->radius;
+			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
 	} else {
 		rotated = false;
-		VectorAdd(e->origin, currentmodel->mins, mins);
-		VectorAdd(e->origin, currentmodel->maxs, maxs);
+		VectorAdd(currententity->origin, currentmodel->mins, mins);
+		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
 	}
 
 	if (R_CullBox(mins, maxs))
@@ -1292,31 +1290,25 @@ void R_DrawBrushModel(entity_t * e)
 	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 
 
-	VectorSubtract(r_newrefdef.vieworg, e->origin, modelorg);
+	VectorSubtract(r_newrefdef.vieworg, currententity->origin, modelorg);
 
 	if (rotated) {
 		vec3_t temp;
 		vec3_t forward, right, up;
 
 		VectorCopy(modelorg, temp);
-		AngleVectors(e->angles, forward, right, up);
+		AngleVectors(currententity->angles, forward, right, up);
 		modelorg[0] = DotProduct(temp, forward);
 		modelorg[1] = -DotProduct(temp, right);
 		modelorg[2] = DotProduct(temp, up);
 	}
 
 	qglPushMatrix();
-	R_RotateForLightEntity(e);
+	R_RotateForEntity(currententity);
 
 	//Put camera into model space view angle for bmodels parallax
-	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
-		{
-		VectorSubtract(r_origin, currententity->origin, tmp);
-		AnglesToMat3(currententity->angles, entityAxis);
-		Mat3_TransposeMultiplyVector(entityAxis, tmp, BmodelViewOrg);
-		}
-	else
-		VectorSubtract(r_origin, currententity->origin, BmodelViewOrg);
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
 
 	R_DrawInlineBModel2();
 
@@ -1373,14 +1365,13 @@ qboolean R_MarkBrushModelSurfaces()
 	return num_light_surfaces;
 }
 
-void R_DrawLightBrushModel(entity_t * e)
+void R_DrawLightBrushModel()
 {
 
 	vec3_t		mins, maxs, org;
 	int			i;
     qboolean	rotated;
 	vec3_t		tmp, oldLight;
-	mat3_t		entityAxis;
 	qboolean	caustics;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -1389,18 +1380,16 @@ void R_DrawLightBrushModel(entity_t * e)
 	if (currentmodel->numModelSurfaces == 0)
 		return;
 
-	currententity = e;
-
-	if (e->angles[0] || e->angles[1] || e->angles[2]) {
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		rotated = true;
 		for (i = 0; i < 3; i++) {
-			mins[i] = e->origin[i] - currentmodel->radius;
-			maxs[i] = e->origin[i] + currentmodel->radius;
+			mins[i] = currententity->origin[i] - currentmodel->radius;
+			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
 	} else {
 		rotated = false;
-		VectorAdd(e->origin, currentmodel->mins, mins);
-		VectorAdd(e->origin, currentmodel->maxs, maxs);
+		VectorAdd(currententity->origin, currentmodel->mins, mins);
+		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
 	}
 
 	if(currentShadowLight->spherical){
@@ -1411,18 +1400,16 @@ void R_DrawLightBrushModel(entity_t * e)
 			return;
 	}
 	
+	qglPushMatrix();
+	R_RotateForEntity(currententity);
+	
 	//Put camera into model space view angle for bmodels parallax
 	VectorSubtract(r_origin, currententity->origin, tmp);
-	AnglesToMat3(currententity->angles, entityAxis);
-	Mat3_TransposeMultiplyVector(entityAxis, tmp, BmodelViewOrg);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
 
 	VectorCopy(currentShadowLight->origin, oldLight);
 	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
-	AnglesToMat3(currententity->angles, entityAxis);
-	Mat3_TransposeMultiplyVector(entityAxis, tmp, currentShadowLight->origin);
-
-	qglPushMatrix();
-	R_RotateForLightEntity(e);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
 
 	caustics = false;
 	currententity->minmax[0] = mins[0];

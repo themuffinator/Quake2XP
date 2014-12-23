@@ -295,7 +295,7 @@ SetModelsLight();
 
     qglPushMatrix ();
 
-	R_RotateForLightEntity(e);
+	R_RotateForEntity(e);
 
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) 
 		GL_DrawAliasFrameLerpAmbientShell(paliashdr);
@@ -328,8 +328,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 {
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
-	vec3_t		tmpOrg, tmpView, tmp, temp;
-	mat3_t		entityAxis;
+	vec3_t		tmpOrg, tmpView, tmp;
 	vec3_t		mins, maxs;
 	int			i;
 
@@ -418,21 +417,23 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		GL_CullFace(GL_BACK);
 	}
 	
+	qglPushMatrix ();
+	R_RotateForEntity(currententity);
+
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 	VectorCopy(r_origin, tmpView);
 
-	AnglesToMat3(currententity->angles, entityAxis);
-	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-	Mat3_TransposeMultiplyVector(entityAxis, temp, currentShadowLight->origin);	
-	
-	VectorSubtract(r_origin, currententity->origin, tmp);
-	AnglesToMat3(currententity->angles, entityAxis);
-	Mat3_TransposeMultiplyVector(entityAxis, tmp, r_origin);
+	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
 
-	qglPushMatrix ();
-	R_RotateForLightEntity(currententity);
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
+
 
 	GL_DrawAliasFrameLerpLight(paliashdr);
+	
+	VectorCopy(tmpOrg, currentShadowLight->origin);
+	VectorCopy(tmpView, r_origin);
 
 	qglPopMatrix();
 
@@ -446,10 +447,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
-		
-	VectorCopy(tmpOrg, currentShadowLight->origin);
-	VectorCopy(tmpView, r_origin);
-
 }
 
 
@@ -490,7 +487,7 @@ void R_DrawAliasDistortModel (entity_t *e)
 		
 		qglPushMatrix ();
 
-		R_RotateForLightEntity(e);
+		R_RotateForEntity(e);
 
 		GL_DrawAliasFrameLerpAmbientDistort(paliashdr, shadelight);
 		

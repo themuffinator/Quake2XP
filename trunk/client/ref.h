@@ -82,7 +82,7 @@ typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh
 	float angles[3];
 	mat3_t	axis;
-	mat4_t	orMatrix;				// orientation matrix  - todo!
+	mat4_t	orMatrix, matrix;
 
 	qboolean angleMod;
 	/*
@@ -91,7 +91,6 @@ typedef struct entity_s {
 	float	origin[3];				// also used as RF_BEAM's "from"
 	int		frame;					// also used as RF_BEAM's diameter
 	int		framecount;				// for vis calc
-//  float   model_scale;
 
 	/*
 	 ** previous data for lerping
@@ -120,10 +119,6 @@ typedef struct entity_s {
 	vec3_t maxs;
 	qboolean lightVised;
 	byte vis[MAX_MAP_LEAFS / 8];
-	
-	uint	vboId;
-	uint	iboId;
-	int		iboNumIndices;
 
 } entity_t;
 
