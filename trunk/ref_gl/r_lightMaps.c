@@ -432,7 +432,6 @@ void GL_CreateSurfaceLightmap(msurface_t * surf)
 	}
 
 	surf->lightmaptexturenum = gl_lms.current_lightmap_texture;
-	surf->deluxemap_texnum = gl_state.deluxemap_texnum; 
 
 	base = gl_lms.lightmap_buffer;
 	base += (surf->light_t * LIGHTMAP_SIZE + surf->light_s) * LIGHTMAP_BYTES;

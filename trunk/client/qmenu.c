@@ -57,6 +57,8 @@ void Action_DoEnter(menuaction_s * a)
 void Action_Draw(menuaction_s * a)
 {
 	float	fontscale = cl_fontScale->value;
+	
+	Set_FontShader(true);
 
 	if (a->generic.flags & QMF_LEFT_JUSTIFY) {
 		if (a->generic.flags & QMF_GRAYED)
@@ -83,6 +85,9 @@ void Action_Draw(menuaction_s * a)
 	}
 	if (a->generic.ownerdraw)
 		a->generic.ownerdraw(a);
+	
+	Set_FontShader(false);
+
 }
 
 qboolean Field_DoEnter(menufield_s * f)
@@ -99,7 +104,9 @@ void Field_Draw(menufield_s * f)
 	int i;
 	char tempbuffer[128] = "";
 	float fontscale = cl_fontScale->value;
-
+	
+	Set_FontShader(true);
+	
 	if (f->generic.name)
 		Menu_DrawStringR2LDark(f->generic.x + f->generic.parent->x +
 							   LCOLUMN_OFFSET,
@@ -171,8 +178,8 @@ void Field_Draw(menufield_s * f)
 
 
 	}
-
-	}
+	Set_FontShader(false);
+}
 
 qboolean Field_Key(menufield_s * f, int key)
 {
@@ -401,7 +408,9 @@ void Menu_Draw(menuframework_s * menu)
 	}
 
 	item = Menu_ItemAtCursor(menu);
-
+	
+	Set_FontShader(true);
+	
 	if (item && item->cursordraw) {
 		item->cursordraw(item);
 	} else if (menu->cursordraw) {
@@ -420,6 +429,7 @@ void Menu_Draw(menuframework_s * menu)
 		}
 	}
 
+	Set_FontShader(false);
 	if (item) {
 		if (item->statusbarfunc)
 			item->statusbarfunc((void *) item);
@@ -443,8 +453,9 @@ void Menu_DrawStatusBar(const char *string)
 		int col = maxcol / 2 - l / 2;
 
 		Draw_Fill(0, VID_HEIGHT - 8 - (fontscale-1)*4, VID_WIDTH, 8*fontscale, 0.3, 0.3, 0.3, 1.0);
+		Set_FontShader(true);
 		Menu_DrawStringScaled((col * 8) / fontscale*(1+(fontscale-1)*0.5), VID_HEIGHT - 8*fontscale, fontscale, fontscale, string);
-
+		Set_FontShader(false);
 	} else {
 			Draw_Fill(0, VID_HEIGHT - 8 - (fontscale-1)*4, VID_WIDTH, 8*fontscale, 0.0, 0.0, 0.0, 0.0);
 	}
@@ -570,16 +581,19 @@ void MenuList_Draw(menulist_s * l)
 	char **n;
 	int y = 0;
 
+	Set_FontShader(true);
 	Menu_DrawStringR2LDark(l->generic.x + l->generic.parent->x +
 						   LCOLUMN_OFFSET,
 						   l->generic.y + l->generic.parent->y,
 						   l->generic.name);
 
+	Set_FontShader(false);
 	n = l->itemnames;
 
 	Draw_Fill(l->generic.x - 112 + l->generic.parent->x,
 			  l->generic.parent->y + l->generic.y + l->curvalue * 10 + 10,
 			  128, 10, 1.0, 0.0, 1.0, 1.0);
+	Set_FontShader(true);
 	while (*n) {
 		Menu_DrawStringR2LDark(l->generic.x + l->generic.parent->x +
 							   LCOLUMN_OFFSET,
@@ -589,14 +603,17 @@ void MenuList_Draw(menulist_s * l)
 		n++;
 		y += 10;
 	}
+	Set_FontShader(false);
 }
 
 void Separator_Draw(menuseparator_s * s)
 {
+	Set_FontShader(true);
 	if (s->generic.name)
 		Menu_DrawStringR2LDark(s->generic.x + s->generic.parent->x,
 							   s->generic.y + s->generic.parent->y,
 							   s->generic.name);
+	Set_FontShader(false);
 }
 
 void Slider_DoSlide(menuslider_s * s, int dir)
@@ -620,7 +637,9 @@ void Slider_Draw(menuslider_s * s)
 	float	fontscale = cl_fontScale->value;
 
 	shift = (cl_fontScale->value-1)*8;
-
+	
+	Set_FontShader(true);
+	
 	Menu_DrawStringR2LDark(s->generic.x + s->generic.parent->x +
 						   LCOLUMN_OFFSET,
 						   s->generic.y + s->generic.parent->y,
@@ -653,6 +672,8 @@ void Slider_Draw(menuslider_s * s)
 	Draw_CharScaled((int)(RCOLUMN_OFFSET + s->generic.parent->x + s->generic.x +
 					(SLIDER_RANGE - 1) * 8 * s->range*fontscale),
 					 s->generic.y + s->generic.parent->y, fontscale, fontscale, 131);
+
+	Set_FontShader(false);
 }
 
 void SpinControl_DoEnter(menulist_s * s)
@@ -682,7 +703,9 @@ void SpinControl_Draw(menulist_s * s)
 {
 	char	buffer[100];
 	float	fontscale = cl_fontScale->value;
-
+	
+	Set_FontShader(true);
+	
 	if (s->generic.name) {
 		Menu_DrawStringR2LDark(s->generic.x + s->generic.parent->x +
 							   LCOLUMN_OFFSET,
@@ -708,4 +731,6 @@ void SpinControl_Draw(menulist_s * s)
 								fontscale, fontscale,
 								buffer);
 	}
+
+	Set_FontShader(false);
 }

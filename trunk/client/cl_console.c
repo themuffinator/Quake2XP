@@ -46,7 +46,10 @@ void RE_SetColor(const color4ub_t color) {
 		color[2] != colorDefault[2] ||
 		color[3] != colorDefault[3]) {
 
-		qglColor4ubv(color);
+		gl_state.fontColor[0] = color[0] / 255;
+		gl_state.fontColor[1] = color[1] / 255;
+		gl_state.fontColor[2] = color[2] / 255;
+		gl_state.fontColor[3] = color[3] / 255;
 
 		colorDefault[0] = color[0];
 		colorDefault[1] = color[1];
@@ -78,18 +81,6 @@ cvar_t *con_notifytime;
 extern char key_lines[32][MAXCMDLINE];
 extern int edit_line;
 extern int key_linepos;
-
-
-
-void DrawAltStringScaled(int x, int y, float scale_x, float scale_y, char *s)
-{
-	while (*s) {
-
-		Draw_CharScaled(x, y, scale_x, scale_y, *s ^ 0x80);
-		x += 8*scale_x;
-		s++;
-	}
-}
 
 void Key_ClearTyping(void)
 {
@@ -553,7 +544,9 @@ void Con_DrawNotify (void)
 
 	currentColor = 7;
 	RE_SetColor(ColorTable[currentColor]);
-
+	
+	Set_FontShader(true);
+	
 	v = 0;
 	for (i= con.current-NUM_CON_TIMES+1 ; i<=con.current ; i++) {
 		if (i < 0)
@@ -608,6 +601,7 @@ void Con_DrawNotify (void)
 
 		v += 8;
 	}
+	Set_FontShader(false);
 }
 
 
@@ -647,6 +641,8 @@ void Con_DrawConsole(float frac)
 								viddef.height, i_conback);
 	SCR_AddDirtyPoint(0, 0);
 	SCR_AddDirtyPoint(viddef.width - 1, lines - 1);
+
+	Set_FontShader(true);
 
 	Com_sprintf(version, sizeof(version), "q2xp 1.26.4 (%s)", __DATE__);
 	for (x = 0; x < strlen(version); x++)
@@ -762,6 +758,8 @@ void Con_DrawConsole(float frac)
 	Con_DrawInput();
 
 	RE_SetColor(colorWhite);
+
+	Set_FontShader(false);
 
 }
 

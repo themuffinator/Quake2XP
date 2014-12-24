@@ -411,7 +411,7 @@ unsigned	icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 
 void R_DrawBrushModelVolumes()
 {
-	int			i, j, sidebit, jj, index = 0, shadow_vert = 0;
+	int			i, j, sidebit, jj;
 	float		scale, sca, dot;
 	msurface_t	*surf;
 	model_t		*clmodel;
@@ -435,9 +435,7 @@ void R_DrawBrushModelVolumes()
 
 	scale = currentShadowLight->len * 32;
 
-	for (i=0 ; i<clmodel->numModelSurfaces ; i++, surf++)
-		{
-
+	for (i=0 ; i<clmodel->numModelSurfaces ; i++, surf++){
 
 		if (surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_FLOWING|SURF_DRAWTURB))
 			return;
@@ -447,7 +445,7 @@ void R_DrawBrushModelVolumes()
 		if (dot >= 0)
 			sidebit = 0;
 		else
-		sidebit = SURF_PLANEBACK;
+			sidebit = SURF_PLANEBACK;
 
 		if ((surf->flags & SURF_PLANEBACK) != sidebit){
 			FaceInShadow++;

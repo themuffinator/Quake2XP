@@ -947,7 +947,8 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 		}
 
 	if(selectedShadowLight && r_lightEditor->value){
-	GL_Color3f(0,1,1);
+	Set_FontShader(true);
+	RE_SetColor(colorCyan);
 	Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0);
 	Draw_StringScaled(0, vid.height*0.5+25,  2, 2, buff1);
 	Draw_StringScaled(0, vid.height*0.5+45,  2, 2, buff2);
@@ -964,8 +965,8 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 	Draw_StringScaled(0, vid.height*0.5+265, 2, 2, buff11);
 	Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14);
 	Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15);
-
-	GL_Color3f(1,1,1);
+	RE_SetColor(colorWhite);
+	Set_FontShader(false);
 	}
 
 	GL_MsgGLError("R_RenderFrame: ");
@@ -1179,7 +1180,6 @@ void R_RegisterCvars(void)
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
 	r_worldColorScale =					Cvar_Get("r_worldColorScale", "2", CVAR_ARCHIVE);
-	r_picsColorScale =					Cvar_Get("r_picsColorScale", "2", CVAR_ARCHIVE);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
 	r_causticIntens =					Cvar_Get("r_causticIntens", "2.0", CVAR_ARCHIVE);
 	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);

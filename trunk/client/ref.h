@@ -77,6 +77,7 @@ typedef unsigned short		ushort;
 typedef ushort				index_t;
 typedef unsigned int		uint;
 
+void Set_FontShader(qboolean enable);
 
 typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh

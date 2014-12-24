@@ -326,7 +326,17 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 }
 
 
-void DrawAltStringScaled(int x, int y, float scale_x, float scale_y, char *s);
+void DrawAltStringScaled(int x, int y, float scale_x, float scale_y, char *s)
+{
+	Set_FontShader(true);
+	while (*s) {
+
+		Draw_CharScaled(x, y, scale_x, scale_y, *s ^ 0x80);
+		x += 8 * scale_x;
+		s++;
+	}
+	Set_FontShader(false);
+}
 
 
 /*
@@ -456,13 +466,15 @@ void SCR_ExecuteLayoutString(char *s)
 			token = COM_Parse(&s);
 			time = atoi(token);
 
-			DrawAltStringScaled(x + 32*hud_sx, y, hud_sx, hud_sy, ci->name);
-		
-			Draw_StringScaled  (x + 32*hud_sx, y +  8*hud_sy, hud_sx, hud_sy, va("Score:  %i", score));
-
-			Draw_StringScaled  (x + 32*hud_sx, y + 16*hud_sy, hud_sx, hud_sy, va("Ping:  %i", ping));
 			
+			
+			DrawAltStringScaled(x + 32*hud_sx, y, hud_sx, hud_sy, ci->name);
+			
+			Set_FontShader(true);
+			Draw_StringScaled  (x + 32*hud_sx, y +  8*hud_sy, hud_sx, hud_sy, va("Score:  %i", score));
+			Draw_StringScaled  (x + 32*hud_sx, y + 16*hud_sy, hud_sx, hud_sy, va("Ping:  %i", ping));
 			Draw_StringScaled  (x + 32*hud_sx, y + 24*hud_sy, hud_sx, hud_sy, va("Time:  %i", time));
+			Set_FontShader(false);
 
 			if (!ci->icon)
 				ci = &cl.baseclientinfo;
@@ -499,9 +511,12 @@ void SCR_ExecuteLayoutString(char *s)
 
 			if (value == cl.playernum)
 				DrawAltStringScaled(x, y, hud_sx, hud_sy, block);
-			else
+			else{
+				Set_FontShader(true);
 				Draw_StringScaled(x, y, hud_sx, hud_sy, block);
-			continue;
+				Set_FontShader(false);
+				continue;
+			}
 		}
 
 		if (!strcmp(token, "picn")) {	// draw a pic from a name
@@ -586,8 +601,9 @@ void SCR_ExecuteLayoutString(char *s)
 			index = cl.frame.playerstate.stats[index];
 			if (index < 0 || index >= MAX_CONFIGSTRINGS)
 				Com_Error(ERR_DROP, "Bad stat_string index");
-
+			Set_FontShader(true);
 			Draw_StringScaled(x, y, hud_sx, hud_sy, cl.configstrings[index]);
+			Set_FontShader(false);
 			continue;
 		}
 
@@ -599,7 +615,9 @@ void SCR_ExecuteLayoutString(char *s)
 
 		if (!strcmp(token, "string")) {
 			token = COM_Parse(&s);
+			Set_FontShader(true);
 			Draw_StringScaled(x, y, hud_sx, hud_sy, token);
+			Set_FontShader(false);
 			continue;
 		}
 
@@ -1149,6 +1167,8 @@ void CL_DrawInventory(void)
 	y += 24*cl_fontScale->value;
 	x += 24*cl_fontScale->value;
 	
+	Set_FontShader(true);
+
 	Inv_DrawString(x, y, "hotkey ### item");
 	
 	Inv_DrawString(x, y + 8*cl_fontScale->value, "------ --- ----");
@@ -1174,12 +1194,13 @@ void CL_DrawInventory(void)
 		else					// draw a blinky cursor by the selected
 								// item
 		{
-			if ((int) (cls.realtime * 10) & 1)
-				Draw_CharScaled(x - 8, y, cl_fontScale->value, cl_fontScale->value, 15);
+			if ((int)(cls.realtime * 10) & 1)
+					Draw_CharScaled(x - 8, y, cl_fontScale->value, cl_fontScale->value, 15);
+			
 		}
 		Inv_DrawString(x, y, string);
 		y += 8*cl_fontScale->value;
 	}
 
-
+	Set_FontShader(false);
 }

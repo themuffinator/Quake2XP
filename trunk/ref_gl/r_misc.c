@@ -1079,9 +1079,6 @@ void GL_SetDefaultState(void)
 	qglTexParameterf	(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameterf	(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	GL_TexEnv(GL_COMBINE_ARB);
-	qglTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 2);
-
 	GL_UpdateSwapInterval();
 
 }

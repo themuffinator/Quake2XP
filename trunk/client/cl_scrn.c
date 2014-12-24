@@ -165,6 +165,8 @@ void SCR_DrawCenterString(void)
 		y = viddef.height * 0.35;
 	else
 		y = 48;
+	
+	Set_FontShader(true);
 
 	do {
 		// scan the width of the line
@@ -189,6 +191,8 @@ void SCR_DrawCenterString(void)
 			break;
 		start++;				// skip the \n
 	} while (1);
+
+	Set_FontShader(false);
 }
 
 void SCR_CheckDrawCenterString(void)
@@ -398,6 +402,7 @@ void SCR_DrawLoading(void)
 
 		mapname = cl.configstrings[CS_NAME];
 		
+		Set_FontShader(true);
 		RE_SetColor(colorGreen);
 		Draw_StringScaled(0, fontscale*scaled,  fontscale, fontscale, mapname);
 		RE_SetColor(colorYellow);
@@ -410,6 +415,7 @@ void SCR_DrawLoading(void)
 		Draw_StringScaled(0, 48*fontscale, fontscale, fontscale,
 					va("%s", loadingMessages[3]));
 		RE_SetColor(colorWhite);
+		Set_FontShader(false);
 	}
 }
 
@@ -762,6 +768,8 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 	int		i;
 
 	margin = x;
+	
+	Set_FontShader(true);
 
 	while (*string)
 	{
@@ -787,6 +795,7 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 			y += 8*scale_y;
 		}
 	}
+	Set_FontShader(false);
 }
 
 /*
@@ -910,6 +919,7 @@ void SCR_DrawSpeeds(void){
 	sprintf(decals,		"%i decals",	c_decals);
 	sprintf(dtr,		"%i d_tris",	c_decal_tris);
 	
+	Set_FontShader(true);
 	RE_SetColor(colorCyan);
 	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5,	fontscale, fontscale, bsp);
 	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+10*fontscale, fontscale, fontscale, alias);
@@ -919,6 +929,7 @@ void SCR_DrawSpeeds(void){
 	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+50*fontscale, fontscale, fontscale, shadow);
 	Draw_StringScaled(viddef.width - 95*fontscale, viddef.height*0.5+60*fontscale, fontscale, fontscale, dtr);
 	RE_SetColor(colorWhite);
+	Set_FontShader(false);
 }
 
 void SCR_DrawFPS(void)
@@ -943,8 +954,10 @@ void SCR_DrawFPS(void)
 	}
 
 	if (cl_drawfps->value && (cls.state == ca_active)) {
+		Set_FontShader(true);
 		Draw_StringScaled(viddef.width - 65*fontscale, viddef.height*0.65, fontscale, fontscale, str);
 		RE_SetColor(colorWhite);
+		Set_FontShader(false);
 	}
 }
 
@@ -971,7 +984,9 @@ void SCR_DrawClock(void)
 
 	sprintf(tmpbuf, "Time %s", timebuf);
 	sprintf(tmpdatebuf, "Date %s", datebuf);
-
+	
+	Set_FontShader(true);
+	
 	if (!cl_drawfps->value) {
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.65+10*fontscale, fontscale, fontscale, tmpdatebuf);
@@ -979,6 +994,8 @@ void SCR_DrawClock(void)
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.65+10*fontscale , fontscale, fontscale, tmpbuf);
 		Draw_StringScaled(viddef.width - 105*fontscale, viddef.height*0.65+20*fontscale, fontscale, fontscale, tmpdatebuf);
 	}
+
+	Set_FontShader(false);
 }
 
 void R_GammaRamp (void);

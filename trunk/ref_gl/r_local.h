@@ -259,7 +259,6 @@ cvar_t	*r_screenShotGamma;
 cvar_t	*r_screenShotContrast;
 
 cvar_t	*r_worldColorScale;
-cvar_t	*r_picsColorScale;
 cvar_t	*r_textureCompression;
 cvar_t	*r_anisotropic;
 cvar_t	*r_maxAnisotropy;
@@ -609,12 +608,6 @@ typedef struct {
 } glconfig_t;
 
 
-#define GLSTATE_DISABLE_ALPHATEST	if (gl_state.alpha_test) { qglDisable(GL_ALPHA_TEST); gl_state.alpha_test=(qboolean)false; }
-#define GLSTATE_ENABLE_ALPHATEST	if (!gl_state.alpha_test) { qglEnable(GL_ALPHA_TEST); gl_state.alpha_test=(qboolean)true; }
-
-#define GLSTATE_DISABLE_TEXGEN		if (gl_state.texgen) { qglDisable(GL_TEXTURE_GEN_S); qglDisable(GL_TEXTURE_GEN_T); qglDisable(GL_TEXTURE_GEN_R); qglDisable(GL_TEXTURE_GEN_Q); gl_state.texgen=(qboolean)false; }
-#define GLSTATE_ENABLE_TEXGEN		if (!gl_state.texgen) { qglEnable(GL_TEXTURE_GEN_S); qglEnable(GL_TEXTURE_GEN_T); qglEnable(GL_TEXTURE_GEN_R); qglEnable(GL_TEXTURE_GEN_Q); gl_state.texgen=(qboolean)true; }
-
 typedef struct {
 	qboolean fullscreen;
 
@@ -622,16 +615,10 @@ typedef struct {
 
 
 	int lightmap_textures;
-	int deluxemap_texnum;
 
 	int currenttextures[4];
 	int num_tmu;
 	int currenttmu;
-
-// advanced state manager - MrG
-	qboolean alpha_test;
-	qboolean texgen;
-// End - MrG
 
 	qboolean	DrawRangeElements;
 	qboolean	separateStencil;
@@ -725,7 +712,10 @@ typedef struct {
 	qboolean		glDepthBoundsTest;
 	GLfloat			depthBoundsMins;
 	GLfloat			depthBoundsMax;
+
+	vec4_t			fontColor;
 } glstate_t;
+
 
 void GL_CullFace(GLenum mode);
 void GL_FrontFace(GLenum mode);
@@ -783,6 +773,11 @@ extern	vec3_t	lightspot;
 #define MAX_INDICES		MAX_VERTICES * 4
 #define MAX_VERTEX_ARRAY	8192
 #define MAX_SHADOW_VERTS	16384
+
+extern vec2_t texCoord[MAX_VERTEX_ARRAY];
+extern vec2_t texCoord1[MAX_VERTEX_ARRAY];
+extern vec3_t vertCoord[MAX_VERTEX_ARRAY];
+extern vec4_t colorCoord[MAX_VERTEX_ARRAY];
 
 
 extern vec3_t ShadowArray[MAX_SHADOW_VERTS];

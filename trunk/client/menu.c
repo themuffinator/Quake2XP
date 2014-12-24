@@ -233,20 +233,24 @@ void M_DrawCharacter(int cx, int cy, int num)
 
 void M_Print(int cx, int cy, char *str)
 {
+	Set_FontShader(true);
 	while (*str) {
 		M_DrawCharacter(cx, cy, (*str) + 128);
 		str++;
 		cx += 8*cl_fontScale->value;
 	}
+	Set_FontShader(false);
 }
 
 void M_PrintWhite(int cx, int cy, char *str)
 {
+	Set_FontShader(true);
 	while (*str) {
 		M_DrawCharacter(cx, cy, *str);
 		str++;
 		cx += 8*cl_fontScale->value;
 	}
+	Set_FontShader(false);
 }
 
 
@@ -254,7 +258,8 @@ void M_DrawTextBox(int x, int y, int width, int lines)
 {
 	int cx, cy;
 	int n;
-	
+
+	Set_FontShader(true);
 	// draw left side
 	cx = x;
 	cy = y;
@@ -287,6 +292,7 @@ void M_DrawTextBox(int x, int y, int width, int lines)
 		M_DrawCharacter(cx, cy, 6);
 	}
 	M_DrawCharacter(cx, cy + 8, 9);
+	Set_FontShader(false);
 }
 
 
@@ -2310,6 +2316,9 @@ void M_Credits_MenuDraw(void)
 	/*
 	 ** draw the credits
 	 */
+	
+	Set_FontShader(true);
+
 	for (i = 0, y =
 		 viddef.height - ((cls.realtime - credits_start_time) / 40.0F);
 		 credits[i] && y < viddef.height; y += 10*cl_fontScale->value, i++) {
@@ -2342,6 +2351,8 @@ void M_Credits_MenuDraw(void)
 
 	if (y < 0)
 		credits_start_time = cls.realtime;
+	Set_FontShader(false);
+
 }
 
 int M_Credits_Key(int key)

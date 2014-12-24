@@ -38,7 +38,6 @@ R_LoadFont
 ===============
 */
 
-
 void R_LoadFont(void)
 {
 
@@ -51,6 +50,36 @@ void R_LoadFont(void)
 	GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
+
+void Set_FontShader(qboolean enable){
+	int id;
+	unsigned defBits;
+
+	if (enable){
+
+		qglEnableVertexAttribArray(ATRB_POSITION);
+		qglEnableVertexAttribArray(ATRB_TEX0);
+		qglEnableVertexAttribArray(ATRB_COLOR);
+
+		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
+		qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
+		qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
+
+		defBits = worldDefs.AttribColorBits;
+		GL_BindProgram(genericProgram, defBits);
+		id = genericProgram->id[defBits];
+		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+	}
+	else{
+
+		GL_BindNullProgram();
+		qglDisableVertexAttribArray(ATRB_POSITION);
+		qglDisableVertexAttribArray(ATRB_TEX0);
+		qglDisableVertexAttribArray(ATRB_COLOR);
+	}
+
 }
 
 void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char num)
@@ -73,11 +102,6 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	fcol = col * 0.0625;
 	size = 0.0625;
 
-	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, sizeof(texCoord[0]), texCoord[0]);
-	qglVertexPointer(3, GL_FLOAT, sizeof(vertCoord[0]), vertCoord[0]);
-
 	GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
 
 	VA_SetElem2(texCoord[0], fcol, frow);
@@ -89,11 +113,13 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	VA_SetElem2(vertCoord[1], x + 8 * scale_x, y);
 	VA_SetElem2(vertCoord[2], x + 8 * scale_x, y + 8 * scale_y);
 	VA_SetElem2(vertCoord[3], x, y + 8 * scale_y);
-	
-	qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	qglDisableClientState(GL_VERTEX_ARRAY);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	VA_SetElem4(colorCoord[0], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+	VA_SetElem4(colorCoord[1], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+	VA_SetElem4(colorCoord[2], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+	VA_SetElem4(colorCoord[3], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+
+	qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 
@@ -113,11 +139,6 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 	py = y;
 	size = 0.0625;
 	
-	qglEnableClientState(GL_VERTEX_ARRAY);
-	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	qglTexCoordPointer(2, GL_FLOAT, sizeof(texCoord[0]), texCoord[0]);
-	qglVertexPointer(3, GL_FLOAT, sizeof(vertCoord[0]), vertCoord[0]);
-
 	while (*s) {
 		num = *s++;
 
@@ -146,13 +167,15 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		VA_SetElem2(vertCoord[1], px + 8 * scale_x, py);
 		VA_SetElem2(vertCoord[2], px + 8 * scale_x, py + 8 * scale_y);
 		VA_SetElem2(vertCoord[3], px, py + 8 * scale_y);
+
+		VA_SetElem4(colorCoord[0], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+		VA_SetElem4(colorCoord[1], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+		VA_SetElem4(colorCoord[2], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+		VA_SetElem4(colorCoord[3], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+
 		px += 8 * scale_x;
 		qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
-	
-	qglDisableClientState(GL_VERTEX_ARRAY);
-	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
-
 }
 
 /*
