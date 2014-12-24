@@ -23,7 +23,7 @@ vec4 diffuse1 = texture2D(u_map1, v_texCoord1.xy);
 #endif
 
 #ifdef ATTRIB_COLORS
-	gl_FragColor =  diffuse * v_colorArray * u_colorScale;
+	gl_FragColor =  vec4(diffuse.rgb * v_colorArray.rgb * u_colorScale, diffuse.a);
 	return;
 #endif
 
