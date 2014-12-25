@@ -779,9 +779,6 @@ extern vec2_t texCoord1[MAX_VERTEX_ARRAY];
 extern vec3_t vertCoord[MAX_VERTEX_ARRAY];
 extern vec4_t colorCoord[MAX_VERTEX_ARRAY];
 
-
-extern vec3_t ShadowArray[MAX_SHADOW_VERTS];
-
 void R_PrepareShadowLightFrame(void);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;
 qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius);
