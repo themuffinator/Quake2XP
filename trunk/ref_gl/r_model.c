@@ -1705,7 +1705,6 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	int i;
 	dheader_t *header;
 	mmodel_t *bm;
-	radarOldTime = 0;
 	
 	R_ClearFlares();
 	DeleteShadowVertexBuffers();

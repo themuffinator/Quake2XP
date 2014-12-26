@@ -139,14 +139,14 @@ void R_AddNoWorldModelLight() {
 	memset(light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet(light->origin, -100, 0, 25);
-	VectorSet(light->startColor, 1.0, 1.0, 1.0);
+	VectorSet(light->origin, 0, r_origin[1], r_origin[2]);
+	VectorSet(light->startColor, 0.8, 0.8, 0.8);
 	VectorSet(light->angles, 0, 0, 0);
-	VectorSet(light->radius, 600, 600, 600);
+	VectorSet(light->radius, 256, 256, 256);
 
 	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - 600;
-		light->maxs[i] = light->origin[i] + 600;
+		light->mins[i] = light->origin[i] - 256;
+		light->maxs[i] = light->origin[i] + 256;
 	}
 
 	light->style = 0;
@@ -155,6 +155,7 @@ void R_AddNoWorldModelLight() {
 	light->isShadow = 0;
 	light->_cone = 0;
 	light->isNoWorldModel = 1;
+	light->isAmbient = 0;
 	light->spherical = true;
 	UpdateLightBounds(light);
 }
@@ -190,6 +191,9 @@ void R_PrepareShadowLightFrame(void) {
 		R_AddDynamicLight(&r_newrefdef.dlights[i]);
 	}
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		R_AddNoWorldModelLight();
+
 	if(!shadowLight_frame) 
 		return;
 		
@@ -207,7 +211,10 @@ void R_PrepareShadowLightFrame(void) {
 		light->castCaustics = true;
 
 	VectorCopy(light->startColor, light->color);
-
+	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		continue;
+	
 	light->color[0] *= r_newrefdef.lightstyles[light->style].rgb[0];
 	light->color[1] *= r_newrefdef.lightstyles[light->style].rgb[1];
 	light->color[2] *= r_newrefdef.lightstyles[light->style].rgb[2];

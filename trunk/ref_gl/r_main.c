@@ -661,8 +661,8 @@ void R_DrawLightInteractions(void)
 {
 	int i;
 	
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
+//	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+//		return;
 
 	num_visLights = 0;
 

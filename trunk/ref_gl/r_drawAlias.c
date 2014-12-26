@@ -208,27 +208,12 @@ void SetModelsLight ()
 	shadedots = r_avertexnormal_dots[((int)(currententity->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
 }
 
-
-void GL_OldPerspective (GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
-{
-   GLdouble		xmin, xmax, ymin, ymax;
-
-   ymax = zNear * tan ((fovy * M_PI) / 360.0);
-   ymin = -ymax;
-
-   xmin = ymin * aspect;
-   xmax = ymax * aspect;
-   
-   qglFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
-}
-
 /*
 =================
 R_DrawAliasModel
 =================
 */
 
-int  radarOldTime = 0;
 void GL_DrawAliasFrameLerpWeapon(dmdl_t *paliashdr);
 
 void R_DrawAliasModel (entity_t *e, qboolean weapon_model)
@@ -257,26 +242,12 @@ next:
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
-
-	if ((currententity->flags & RF_WEAPONMODEL ) && ( r_leftHand->value == 1.0F)) {
-		extern void GL_OldPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
-		qglMatrixMode(GL_PROJECTION);
-		qglPushMatrix();
-		qglLoadIdentity();
-		qglScalef(-1, 1, 1);
-		GL_OldPerspective(r_newrefdef.fov_y, (float) r_newrefdef.width / r_newrefdef.height, 4, 4096);
-		qglMatrixMode(GL_MODELVIEW);
-		GL_CullFace(GL_BACK);
-	}
+		
+	SetModelsLight();
 	
-SetModelsLight();
-
-
-	if (currententity->flags & RF_TRANSLUCENT) {
+	if (currententity->flags & RF_TRANSLUCENT)
 		GL_Enable(GL_BLEND);
-	}
-
-
+	
 	if ((currententity->frame >= paliashdr->num_frames)
 		|| (currententity->frame < 0)) {
 		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
@@ -307,16 +278,8 @@ SetModelsLight();
 
 	qglPopMatrix();
 
-	if ((currententity->flags & RF_WEAPONMODEL) && (r_leftHand->value == 1.0F)) {
-		qglMatrixMode(GL_PROJECTION);
-		qglPopMatrix();
-		qglMatrixMode(GL_MODELVIEW);
-		GL_CullFace(GL_FRONT);
-	}
-
-	if (currententity->flags & RF_TRANSLUCENT) {
+	if (currententity->flags & RF_TRANSLUCENT)
 		GL_Disable(GL_BLEND);
-	}
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
@@ -357,7 +320,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	}
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-//		if(!currentShadowLight->isNoWorldModel)
+		if(!currentShadowLight->isNoWorldModel)
 			return;
 	}
 
@@ -406,23 +369,12 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		currententity->oldframe = 0;
 	}
 	
-	if ((currententity->flags & RF_WEAPONMODEL ) && ( r_leftHand->value == 1.0F)) {
-		extern void GL_OldPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
-		qglMatrixMode(GL_PROJECTION);
-		qglPushMatrix();
-		qglLoadIdentity();
-		qglScalef(-1, 1, 1);
-		GL_OldPerspective(r_newrefdef.fov_y, (float) r_newrefdef.width / r_newrefdef.height, 4, 4096);
-		qglMatrixMode(GL_MODELVIEW);
-		GL_CullFace(GL_BACK);
-	}
-	
 	qglPushMatrix ();
 	R_RotateForEntity(currententity);
 
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 	VectorCopy(r_origin, tmpView);
-
+	
 	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
 
@@ -436,14 +388,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	VectorCopy(tmpView, r_origin);
 
 	qglPopMatrix();
-
-	
-	if ((currententity->flags & RF_WEAPONMODEL) && (r_leftHand->value == 1.0F)) {
-		qglMatrixMode(GL_PROJECTION);
-		qglPopMatrix();
-		qglMatrixMode(GL_MODELVIEW);
-		GL_CullFace(GL_FRONT);
-	}
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
