@@ -196,6 +196,7 @@ Call before entering a new level, or after changing dlls
 =================
 */
 qboolean needLoadingPlaque(void);
+void R_GenSkyCubeMap(char *name);
 
 void CL_PrepRefresh(void)
 {
@@ -337,7 +338,7 @@ void CL_PrepRefresh(void)
 	sscanf(cl.configstrings[CS_SKYAXIS], "%f %f %f",
 		   &axis[0], &axis[1], &axis[2]);
 	R_SetSky(cl.configstrings[CS_SKY], rotate, axis);
-
+	R_GenSkyCubeMap(cl.configstrings[CS_SKY]);
 	Com_Printf("                                     \r");
 
 	

@@ -139,8 +139,8 @@ void R_AddNoWorldModelLight() {
 	memset(light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet(light->origin, 0, r_origin[1], r_origin[2]);
-	VectorSet(light->startColor, 0.8, 0.8, 0.8);
+	VectorSet(light->origin, r_newrefdef.vieworg[0], r_newrefdef.vieworg[1], r_newrefdef.vieworg[2]);
+	VectorSet(light->startColor, 0.5, 0.5, 0.5);
 	VectorSet(light->angles, 0, 0, 0);
 	VectorSet(light->radius, 256, 256, 256);
 
@@ -247,9 +247,9 @@ void FS_StripExtension (const char *in, char *out, size_t size_out)
 
 void R_SaveLights_f(void) {
 	
-	char				name[MAX_QPATH], path[MAX_QPATH];
-	FILE				*f;
-	int					i=0;
+	char	name[MAX_QPATH], path[MAX_QPATH];
+	FILE	*f;
+	int		i = 0;
 	
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
@@ -324,9 +324,9 @@ static void DeleteCurrentLight(worldShadowLight_t *l) {
 }
 
 void R_Light_Spawn_f(void) {
-	vec3_t color = {1.0, 1.0, 1.0}, end, spawn, radius={300,300,300};
+	vec3_t	color = {1.0, 1.0, 1.0}, end, spawn, radius={300,300,300};
 	trace_t trace;
-	char target[MAX_QPATH];
+	char	target[MAX_QPATH];
 
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
@@ -345,8 +345,8 @@ void R_Light_Spawn_f(void) {
 }
 
 void R_Light_SpawnToCamera_f(void) {
-	vec3_t color = {1.0, 1.0, 1.0}, radius={300,300,300};
-	char target[MAX_QPATH];
+	vec3_t	color = {1.0, 1.0, 1.0}, radius={300,300,300};
+	char	target[MAX_QPATH];
 
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
@@ -356,11 +356,14 @@ void R_Light_SpawnToCamera_f(void) {
 	R_AddNewWorldLight(player_org, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true, 0, player_org, 10.0, target, 0, 0, 0.0);
 }
 
-void R_Light_Copy_f(void) {
-	vec3_t color, spawn, origin, angles, speed, radius, flareOrg;
-	float _cone, flareSize, fogDensity;
-	int style, filter, shadow, ambient, flare, flag, fog;
-	char target[MAX_QPATH];
+void R_Light_Clone_f(void) {
+	vec3_t	color, spawn, origin, angles, 
+			speed, radius, flareOrg, end;
+	float	_cone, flareSize, fogDensity;
+	int		style, filter, shadow, ambient,	
+			flare, flag, fog;
+	char	target[MAX_QPATH];
+	trace_t trace;
 
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
@@ -394,16 +397,116 @@ void R_Light_Copy_f(void) {
 	flag = selectedShadowLight->start_off;
 	fog = selectedShadowLight->isFog;
 	fogDensity = selectedShadowLight->fogDensity;
-	VectorMA(origin, -50, v_forward, spawn);
-	selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, _cone, true, flare, flareOrg, flareSize, target, flag, fog, fogDensity);
+	VectorMA(player_org, 1024, v_forward, end);
+	
+	trace = CL_PMTraceWorld(player_org, vec3_origin, vec3_origin, end, MASK_SOLID, false);
+	if (trace.fraction != 1.0){
+		VectorMA(trace.endpos, -10, v_forward, spawn);
+		selectedShadowLight = R_AddNewWorldLight(spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, _cone, true, flare, flareOrg, flareSize, target, flag, fog, fogDensity);
+	}
+}
+
+/*===========================
+Copy - Paste Light Properties
+===========================*/
+
+typedef struct {
+	float	angles[3];
+	float	speed[3];
+	float	color[3];
+	float	radius[3];
+	float	fogDensity;
+	float	flareSize;
+	int		flare;
+	int		style;
+	float	cone;
+	int		filter;
+	int		isShadow;
+	int		isAmbient;
+	int		isFog;
+	int		start_off;
+	char	targetname[MAX_QPATH];
+}lightClipboard_t;
+
+lightClipboard_t lightClipBoard;
+
+void R_Copy_Light_Properties_f(void) {
+
+	if (!r_lightEditor->value){
+		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
+		return;
+	}
+
+	if (!selectedShadowLight)
+	{
+		Com_Printf("No selected light.\n");
+		return;
+	}
+
+	memset(&lightClipBoard, 0, sizeof(lightClipboard_t));
+	
+	VectorCopy(selectedShadowLight->color,	lightClipBoard.color);
+	VectorCopy(selectedShadowLight->angles, lightClipBoard.angles);
+	VectorCopy(selectedShadowLight->speed,	lightClipBoard.speed);
+	VectorCopy(selectedShadowLight->radius, lightClipBoard.radius);
+
+	memset(lightClipBoard.targetname, 0, sizeof(lightClipBoard.targetname));
+	if (selectedShadowLight->targetname[0])
+		memcpy(lightClipBoard.targetname, selectedShadowLight->targetname, sizeof(lightClipBoard.targetname));
+
+	lightClipBoard.style		= selectedShadowLight->style;
+	lightClipBoard.filter		= selectedShadowLight->filter;
+	lightClipBoard.isShadow		= selectedShadowLight->isShadow;
+	lightClipBoard.isAmbient	= selectedShadowLight->isAmbient;
+	lightClipBoard.cone			= selectedShadowLight->_cone;
+	lightClipBoard.flare		= selectedShadowLight->flare;
+	lightClipBoard.flareSize	= selectedShadowLight->flareSize;
+	lightClipBoard.start_off	= selectedShadowLight->start_off;
+	lightClipBoard.isFog		= selectedShadowLight->isFog;
+	lightClipBoard.fogDensity	= selectedShadowLight->fogDensity;
+}
+
+void R_Paste_Light_Properties_f(void) {
+
+	if (!r_lightEditor->value){
+		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
+		return;
+	}
+
+	if (!lightClipBoard.radius[0])
+	{
+		Com_Printf("No light clipboard data.\n");
+		return;
+	}
+
+	VectorCopy(lightClipBoard.color,	selectedShadowLight->startColor);
+	VectorCopy(lightClipBoard.angles,	selectedShadowLight->angles);
+	VectorCopy(lightClipBoard.speed,	selectedShadowLight->speed);
+	VectorCopy(lightClipBoard.radius,	selectedShadowLight->radius);
+
+	if (lightClipBoard.targetname[0])
+		memcpy(selectedShadowLight->targetname, lightClipBoard.targetname, sizeof(selectedShadowLight->targetname));
+
+	selectedShadowLight->style		= lightClipBoard.style;
+	selectedShadowLight->filter		= lightClipBoard.filter;
+	selectedShadowLight->isShadow	= lightClipBoard.isShadow;
+	selectedShadowLight->isAmbient	= lightClipBoard.isAmbient;
+	selectedShadowLight->_cone		= lightClipBoard.cone;
+	selectedShadowLight->flare		= lightClipBoard.flare;
+	selectedShadowLight->flareSize	= lightClipBoard.flareSize;
+	selectedShadowLight->start_off	= lightClipBoard.start_off;
+	selectedShadowLight->isFog		= lightClipBoard.isFog;
+	selectedShadowLight->fogDensity = lightClipBoard.fogDensity;
 }
 
 void R_EditSelectedLight_f(void) {
 	
-	vec3_t color, origin, angles, speed, radius, fOrg;
-	float _cone, fSize, fogDensity;
-	int style, filter, shadow, ambient, flare, start_off, fog;
-	char *target[MAX_QPATH];
+	vec3_t	color, origin, angles, 
+			speed, radius, fOrg;
+	float	_cone, fSize, fogDensity;
+	int		style, filter, shadow, 
+			ambient, flare, start_off, fog;
+	char	target[MAX_QPATH];
 
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
@@ -635,27 +738,6 @@ void R_EditSelectedLight_f(void) {
 		fogDensity = atof(Cmd_Argv(2)); 
 		selectedShadowLight->fogDensity = fogDensity;
 	 }
-	{
-		 Com_Printf("Light Properties: Origin: %.4f %.4f %.4f\nColor: %.4f %.4f %.4f\nRadius %.1f %.1f %.1f\nStyle %i\nFilter Cube %i\nAngles: %.4f %.4f %.4f\nSpeed: %.4f %.4f %.4f\nShadows %i\nAmbient %i\nCone %f\nFlare %i\nFlare Size %f\nTargetname %s\nStart Off %i\nFog Light %i\nFog Density %f\n",
-		 selectedShadowLight->origin[0],	selectedShadowLight->origin[1], selectedShadowLight->origin[2],
-		 selectedShadowLight->color[0],		selectedShadowLight->color[1], selectedShadowLight->color[2], 
-		 selectedShadowLight->radius[0],	selectedShadowLight->radius[1], selectedShadowLight->radius[2],
-		 selectedShadowLight->style,
-		 selectedShadowLight->filter,
-		 selectedShadowLight->angles[0],	selectedShadowLight->angles[1], selectedShadowLight->angles[2],
-		 selectedShadowLight->speed[0],		selectedShadowLight->speed[1], selectedShadowLight->speed[2],
-		 selectedShadowLight->isShadow, 
-		 selectedShadowLight->isAmbient,
-		 selectedShadowLight->_cone,
-		 selectedShadowLight->flare,
-		 selectedShadowLight->flareSize,
-		 selectedShadowLight->targetname,
-		 selectedShadowLight->start_off,
-		 selectedShadowLight->isFog,
-		 selectedShadowLight->fogDensity);
-
-	}
-
 }
 
 qboolean flareEdit;
@@ -694,8 +776,8 @@ void R_ResetFlarePos_f(void){
 
 void R_MoveLightToRight_f(void) {
 	
-	vec3_t origin;
-	float offset;
+	vec3_t	origin;
+	float	offset;
 	
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
@@ -787,8 +869,8 @@ void R_MoveLightForward_f(void) {
 
 void R_MoveLightUpDown_f(void) {
 	
-	vec3_t origin;
-	float offset;
+	vec3_t	origin;
+	float	offset;
 	
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
@@ -829,8 +911,8 @@ void R_MoveLightUpDown_f(void) {
 
 void R_ChangeLightRadius_f(void) {
 	
-	float offset, fRad;
-	vec3_t rad;
+	float	offset, fRad;
+	vec3_t	rad;
 
 	if(!r_lightEditor->value){
 		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
@@ -969,9 +1051,13 @@ char buff13[128];
 char buff14[128];
 char buff15[128];
 
+
+vec3_t	vCache[MAX_VERTEX_ARRAY];
+
 void UpdateLightEditor(void){
 
-	vec3_t		end_trace, mins = { -5.0f, -5.0f, -5.0f }, maxs = { 5.0f, 5.0f, 5.0f };
+	vec3_t		end_trace, mins = { -5.0f, -5.0f, -5.0f }, 
+				maxs = { 5.0f, 5.0f, 5.0f };
 	vec3_t		corners[8], tmp;
 	int			j;
 	float		fraction = 1.0;
@@ -1015,10 +1101,6 @@ void UpdateLightEditor(void){
 	trace_light = CM_TransformedBoxTrace(	r_origin, trace_bsp.endpos, vec3_origin, vec3_origin, headNode, MASK_ALL, 
 											currentShadowLight->origin, vec3_origin); // find light
 	
-	if(trace_light.surface->name && trace_light.surface->name[0])
-		if((int)trace_light.ent>1)
-		Com_Printf("bmodel nane is \n");
-
 	if(trace_light.fraction  < fraction){
 		selectedShadowLight = currentShadowLight;
 		fraction = trace_light.fraction;
@@ -1027,6 +1109,9 @@ void UpdateLightEditor(void){
 	// setup program
 	GL_BindProgram(genericProgram, defBits);
 	id = genericProgram->id[defBits];
+	
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
 
 	if(currentShadowLight != selectedShadowLight){
 
@@ -1041,42 +1126,47 @@ void UpdateLightEditor(void){
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
 
-	qglBegin(GL_LINE_LOOP);
-	qglVertex3fv(corners[0]);
-	qglVertex3fv(corners[2]);
-	qglVertex3fv(corners[3]);
-	qglVertex3fv(corners[1]);
-	qglEnd();
+	// top quad
+	VA_SetElem3(vCache[0], corners[0][0], corners[0][1], corners[0][2]);
+	VA_SetElem3(vCache[1], corners[1][0], corners[1][1], corners[1][2]);
+	VA_SetElem3(vCache[2], corners[2][0], corners[2][1], corners[2][2]);
+	VA_SetElem3(vCache[3], corners[3][0], corners[3][1], corners[3][2]);
+	VA_SetElem3(vCache[4], corners[3][0], corners[3][1], corners[3][2]);
+	VA_SetElem3(vCache[5], corners[1][0], corners[1][1], corners[1][2]);
+	VA_SetElem3(vCache[6], corners[2][0], corners[2][1], corners[2][2]);
+	VA_SetElem3(vCache[7], corners[0][0], corners[0][1], corners[0][2]);
+	// bottom quad
+	VA_SetElem3(vCache[8],	corners[4][0], corners[4][1], corners[4][2]);
+	VA_SetElem3(vCache[9],	corners[5][0], corners[5][1], corners[5][2]);
+	VA_SetElem3(vCache[10], corners[6][0], corners[6][1], corners[6][2]);
+	VA_SetElem3(vCache[11], corners[7][0], corners[7][1], corners[7][2]);
+	VA_SetElem3(vCache[12], corners[7][0], corners[7][1], corners[7][2]);
+	VA_SetElem3(vCache[13], corners[5][0], corners[5][1], corners[5][2]);
+	VA_SetElem3(vCache[14], corners[6][0], corners[6][1], corners[6][2]);
+	VA_SetElem3(vCache[15], corners[4][0], corners[4][1], corners[4][2]);
+	// connectors
+	VA_SetElem3(vCache[16], corners[0][0], corners[0][1], corners[0][2]);
+	VA_SetElem3(vCache[17], corners[4][0], corners[4][1], corners[4][2]);
+	VA_SetElem3(vCache[18], corners[1][0], corners[1][1], corners[1][2]);
+	VA_SetElem3(vCache[19], corners[5][0], corners[5][1], corners[5][2]);
+	VA_SetElem3(vCache[20], corners[2][0], corners[2][1], corners[2][2]);
+	VA_SetElem3(vCache[21], corners[6][0], corners[6][1], corners[6][2]);
+	VA_SetElem3(vCache[22], corners[3][0], corners[3][1], corners[3][2]);
+	VA_SetElem3(vCache[23], corners[7][0], corners[7][1], corners[7][2]);
+	qglDrawArrays(GL_LINES, 0, 24);
 
-	qglBegin(GL_LINE_LOOP);
-	qglVertex3fv(corners[4]);
-	qglVertex3fv(corners[6]);
-	qglVertex3fv(corners[7]);
-	qglVertex3fv(corners[5]);
-	qglEnd();
-
-	qglBegin(GL_LINES);
-	qglVertex3fv(corners[0]);
-	qglVertex3fv(corners[4]);
-	qglVertex3fv(corners[1]);
-	qglVertex3fv(corners[5]);
-	qglVertex3fv(corners[2]);
-	qglVertex3fv(corners[6]);
-	qglVertex3fv(corners[3]);
-	qglVertex3fv(corners[7]);
-	qglEnd();
 	qglDisable(GL_LINE_SMOOTH);
 	}
 
 	if(selectedShadowLight){	
 	
+	qglUniform4f(qglGetUniformLocation(id, "u_color"), selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
+
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
 	VectorCopy(selectedShadowLight->origin, tmpOrg);
 	VectorCopy(selectedShadowLight->radius, tmpRad);
-
-	qglUniform4f(qglGetUniformLocation(id, "u_color"),	selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
 
 	sprintf(buff0,	"Origin: %i %i %i",	(int)selectedShadowLight->origin[0], 
 												(int)selectedShadowLight->origin[1], 
@@ -1115,28 +1205,50 @@ void UpdateLightEditor(void){
 	VectorSet(v[6], tmpOrg[0]+tmpRad[0], tmpOrg[1]+tmpRad[1], tmpOrg[2]-tmpRad[2]);
 	VectorSet(v[7], tmpOrg[0]+tmpRad[0], tmpOrg[1]+tmpRad[1], tmpOrg[2]+tmpRad[2]);
 
+	//front
+	VA_SetElem3(vCache[0], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[1], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[2], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[3], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[4], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[5], v[3][0], v[3][1], v[3][2]);
+	//right
+	VA_SetElem3(vCache[6], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[7], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[8], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[9], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[10], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[11], v[5][0], v[5][1], v[5][2]);
+	//bottom
+	VA_SetElem3(vCache[12], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[13], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[14], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[15], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[16], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[17], v[6][0], v[6][1], v[6][2]);
+	//top
+	VA_SetElem3(vCache[18], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[19], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[20], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[21], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[22], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[23], v[7][0], v[7][1], v[7][2]);
+	//left
+	VA_SetElem3(vCache[24], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[25], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[26], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[27], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[28], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[29], v[7][0], v[7][1], v[7][2]);
+	//back
+	VA_SetElem3(vCache[30], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[31], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[32], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[33], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[34], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[35], v[7][0], v[7][1], v[7][2]);
 
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[4]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[3]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
+	qglDrawArrays(GL_TRIANGLES, 0, 36);
 
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	qglDisable(GL_LINE_SMOOTH);
@@ -1153,31 +1265,55 @@ void UpdateLightEditor(void){
 	VectorSet(v[6], tmpOrg[0]+5, tmpOrg[1]+5, tmpOrg[2]-5);
 	VectorSet(v[7], tmpOrg[0]+5, tmpOrg[1]+5, tmpOrg[2]+5);
 
+	//front
+	VA_SetElem3(vCache[0], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[1], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[2], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[3], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[4], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[5], v[3][0], v[3][1], v[3][2]);
+	//right
+	VA_SetElem3(vCache[6], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[7], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[8], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[9], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[10], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[11], v[5][0], v[5][1], v[5][2]);
+	//bottom
+	VA_SetElem3(vCache[12], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[13], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[14], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[15], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[16], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[17], v[6][0], v[6][1], v[6][2]);
+	//top
+	VA_SetElem3(vCache[18], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[19], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[20], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[21], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[22], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[23], v[7][0], v[7][1], v[7][2]);
+	//left
+	VA_SetElem3(vCache[24], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[25], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[26], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[27], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[28], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[29], v[7][0], v[7][1], v[7][2]);
+	//back
+	VA_SetElem3(vCache[30], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[31], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[32], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[33], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[34], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[35], v[7][0], v[7][1], v[7][2]);
 
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[4]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[3]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
+	qglDrawArrays(GL_TRIANGLES, 0, 36);
 	}
-
 }
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	GL_BindNullProgram();
 	GL_Enable(GL_TEXTURE_2D);
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_BLEND);
@@ -1190,8 +1326,6 @@ void UpdateLightEditor(void){
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
-
-	GL_BindNullProgram();
 
 	R_LightFlareOutLine();
 }
@@ -1737,37 +1871,6 @@ void DeleteShadowVertexBuffers(void){
 	numPreCachedLights = 0;
 }
 
-extern qboolean relightMap;
-
-void CleanDuplicateLights(void){
-
-	worldShadowLight_t *light1, *light2, *plug;
-	vec3_t tmp;
-
-	if(!relightMap)
-		return;
-
-	for(light1 = shadowLight_static; light1; light1 = light1->s_next) {
-	
-		
-	for(light2 = light1->s_next; light2; light2 = plug) {
-		
-		plug = light2->s_next;
-				
-		VectorSubtract(light2->origin, light1->origin, tmp);
-  
-		if ((VectorLength(tmp) < r_lightsWeldThreshold->value)){
-						
-			VectorAdd(light1->origin, light2->origin, tmp);
-			VectorScale(tmp, 0.5f, light1->origin);
-			DeleteCurrentLight(light2);
-			
-		}
-	}
-}
-}
-
-
 void R_ClearWorldLights(void)
 {
 	worldShadowLight_t *light, *next;
@@ -1847,6 +1950,9 @@ qboolean R_DrawLightOccluders()
 	GL_BindProgram(nullProgram, defBits);
 	id = nullProgram->id[defBits];
 
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
+
 	GL_ColorMask(0, 0, 0, 0);
 	GL_Disable(GL_TEXTURE_2D);
 	GL_Disable(GL_CULL_FACE);
@@ -1868,27 +1974,50 @@ qboolean R_DrawLightOccluders()
 
 	qglBeginQueryARB(gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
 
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[4]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
+	//front
+	VA_SetElem3(vCache[0], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[1], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[2], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[3], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[4], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[5], v[3][0], v[3][1], v[3][2]);
+	//right
+	VA_SetElem3(vCache[6], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[7], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[8], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[9], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[10], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[11], v[5][0], v[5][1], v[5][2]);
+	//bottom
+	VA_SetElem3(vCache[12], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[13], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[14], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[15], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[16], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[17], v[6][0], v[6][1], v[6][2]);
+	//top
+	VA_SetElem3(vCache[18], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[19], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[20], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[21], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[22], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[23], v[7][0], v[7][1], v[7][2]);
+	//left
+	VA_SetElem3(vCache[24], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[25], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[26], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[27], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[28], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[29], v[7][0], v[7][1], v[7][2]);
+	//back
+	VA_SetElem3(vCache[30], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[31], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[32], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[33], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[34], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[35], v[7][0], v[7][1], v[7][2]);
 
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[3]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
+	qglDrawArrays(GL_TRIANGLES, 0, 36);
 
 	qglEndQueryARB(gl_state.query_passed);
 
@@ -1897,7 +2026,8 @@ qboolean R_DrawLightOccluders()
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_BLEND);
 	GL_BindNullProgram();
-	
+	qglDisableVertexAttribArray(ATRB_POSITION);
+
 	if (currentShadowLight->framecount == occ_framecount - 1)
 	do{
 		qglGetQueryObjectivARB(lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_AVAILABLE_ARB, &ready);
@@ -1911,63 +2041,6 @@ qboolean R_DrawLightOccluders()
 	else 
 		return true;
 
-}
-
-
-void R_LightScale(void) {
-	float	val;
-	int		i;
-
-	if (!r_lightScale->value)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-         return;
-
-	qglLoadIdentity();
-
-	qglMatrixMode(GL_PROJECTION);
-	qglPushMatrix();
-	qglLoadIdentity();
-	qglOrtho(0, 1, 0, 1, -1, 1);
-
-	GL_MBind(GL_TEXTURE0, 0);
-
-	GL_Enable(GL_BLEND);
-	GL_BlendFunc(GL_DST_COLOR, GL_SRC_COLOR);	// multiply by two every pass
-
-	GL_ColorMask(1, 1, 1, 0);
-	GL_DepthMask(0);
-
-	val = max(r_lightScale->value, 0.0);
-
-	GL_Color3f(1, 1, 1);
-
-	qglBegin(GL_QUADS);
-
-	for(i=1; i<val; i<<=1) {
-		qglVertex2f(0, 0);
-		qglVertex2f(0, 1);
-		qglVertex2f(1, 1);
-		qglVertex2f(1, 0);
-	}
-	val /= (float)(i << 1);
-	GL_Color3f(val, val, val);
-
-	qglVertex2f(0, 0);
-	qglVertex2f(0, 1);
-	qglVertex2f(1, 1);
-	qglVertex2f(1, 0);
-
-	qglEnd();
-
-	qglPopMatrix();
-	qglMatrixMode(GL_MODELVIEW);
-
-	GL_Color3f(1, 1, 1);
-	GL_ColorMask(1, 1, 1, 1);
-	GL_DepthMask(1);
-	GL_Disable(GL_BLEND);
 }
 
 /*
@@ -2222,45 +2295,6 @@ void R_SetViewLightScreenBounds () {
 	}
 }
 
-void R_DebugScissors(void)
-{
-	int			id;
-	unsigned	defBits = 0;
-	
-	if(!r_debugLightScissors->value)
-		return;
-
-	// setup program
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2]);
-	qglEnable(GL_LINE_SMOOTH);
-	qglLineWidth(5.0);
-	qglMatrixMode(GL_PROJECTION);
-	qglPushMatrix();
-	qglLoadIdentity();
-	qglOrtho(r_newrefdef.viewport[0], r_newrefdef.viewport[0] + r_newrefdef.viewport[2], r_newrefdef.viewport[1], r_newrefdef.viewport[1] +r_newrefdef.viewport[3], -1.0, 1.0);
-	qglMatrixMode(GL_MODELVIEW);
-	qglPushMatrix();
-	qglLoadIdentity();
-	
-	GL_Disable(GL_DEPTH_TEST);
-	qglBegin(GL_LINE_LOOP);
-	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1]);
-	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1]);
-	qglVertex2i(currentShadowLight->scissor[0] +	currentShadowLight->scissor[2],		currentShadowLight->scissor[1] + currentShadowLight->scissor[3]);
-	qglVertex2i(currentShadowLight->scissor[0],		currentShadowLight->scissor[1] +	currentShadowLight->scissor[3]);
-	qglEnd();
-	GL_Enable(GL_DEPTH_TEST);
-
-	qglMatrixMode(GL_PROJECTION);
-	qglPopMatrix();
-	qglMatrixMode(GL_MODELVIEW);
-	qglPopMatrix();
-	qglDisable(GL_LINE_SMOOTH);
-	GL_BindNullProgram();
-}
-
 
 void R_DrawLightFlare(){
 	
@@ -2315,8 +2349,6 @@ void R_DrawLightFlare(){
 	dist2 = VectorLength(v);
 
 	scale = ((1024 - dist2) / 1024) * 0.5;
-	if(r_lightScale->value)
-		scale /= r_lightScale->value;
 
 	VectorScale(currentShadowLight->color, scale, tmp);
 
@@ -2396,7 +2428,7 @@ void R_LightFlareOutLine(){ //flare editing highlights
 	qglLineWidth(3.0);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vert_array);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
 
 	// setup program
 	GL_BindProgram(genericProgram, defBits);
@@ -2407,16 +2439,16 @@ void R_LightFlareOutLine(){ //flare editing highlights
 	
 	// draw flare polygon
 	VectorMA (currentShadowLight->flareOrigin, -1-currentShadowLight->flareSize, vup, vert_array[flareVert+0]);
-	VectorMA (vert_array[flareVert+0], 1+currentShadowLight->flareSize, vright, vert_array[flareVert+0]);
+	VectorMA(vCache[flareVert + 0], 1 + currentShadowLight->flareSize, vright, vert_array[flareVert + 0]);
 
 	VectorMA (currentShadowLight->flareOrigin, -1-currentShadowLight->flareSize, vup, vert_array[flareVert+1]);
-	VectorMA (vert_array[flareVert+1], -1-currentShadowLight->flareSize, vright, vert_array[flareVert+1]);
+	VectorMA(vCache[flareVert + 1], -1 - currentShadowLight->flareSize, vright, vert_array[flareVert + 1]);
 
     VectorMA (currentShadowLight->flareOrigin, 1+currentShadowLight->flareSize, vup, vert_array[flareVert+2]);
-	VectorMA (vert_array[flareVert+2], -1-currentShadowLight->flareSize, vright, vert_array[flareVert+2]);
+	VectorMA(vCache[flareVert + 2], -1 - currentShadowLight->flareSize, vright, vert_array[flareVert + 2]);
 
 	VectorMA (currentShadowLight->flareOrigin, 1+currentShadowLight->flareSize, vup, vert_array[flareVert+3]);
-	VectorMA (vert_array[flareVert+3], 1+currentShadowLight->flareSize, vright, vert_array[flareVert+3]);
+	VectorMA(vCache[flareVert + 3], 1 + currentShadowLight->flareSize, vright, vert_array[flareVert + 3]);
 	
 	flareIndex[index++] = flareVert+0;
 	flareIndex[index++] = flareVert+1;
@@ -2438,8 +2470,8 @@ void R_LightFlareOutLine(){ //flare editing highlights
 	index = 0;
 	}
 	// draw light to flare connector
-	VA_SetElem3(vert_array[0],currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
-	VA_SetElem3(vert_array[1],currentShadowLight->flareOrigin[0], currentShadowLight->flareOrigin[1], currentShadowLight->flareOrigin[2]);
+	VA_SetElem3(vCache[0], currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
+	VA_SetElem3(vCache[1], currentShadowLight->flareOrigin[0], currentShadowLight->flareOrigin[1], currentShadowLight->flareOrigin[2]);
 	qglDrawArrays (GL_LINES, 0, 2);
 
 	qglDisable(GL_LINE_SMOOTH);
@@ -2457,27 +2489,50 @@ void R_LightFlareOutLine(){ //flare editing highlights
 	VectorSet(v[7], tmpOrg[0]+1, tmpOrg[1]+1, tmpOrg[2]+1);
 
 
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[4]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
+	//front
+	VA_SetElem3(vCache[0], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[1], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[2], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[3], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[4], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[5], v[3][0], v[3][1], v[3][2]);
+	//right
+	VA_SetElem3(vCache[6], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[7], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[8], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[9], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[10], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[11], v[5][0], v[5][1], v[5][2]);
+	//bottom
+	VA_SetElem3(vCache[12], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[13], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[14], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[15], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[16], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[17], v[6][0], v[6][1], v[6][2]);
+	//top
+	VA_SetElem3(vCache[18], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[19], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[20], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[21], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[22], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[23], v[7][0], v[7][1], v[7][2]);
+	//left
+	VA_SetElem3(vCache[24], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[25], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[26], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[27], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[28], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[29], v[7][0], v[7][1], v[7][2]);
+	//back
+	VA_SetElem3(vCache[30], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[31], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[32], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[33], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[34], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[35], v[7][0], v[7][1], v[7][2]);
 
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3fv(v[3]);
-	qglVertex3fv(v[0]);
-	qglVertex3fv(v[1]);
-	qglVertex3fv(v[5]);
-	qglVertex3fv(v[7]);
-	qglVertex3fv(v[6]);
-	qglVertex3fv(v[2]);
-	qglVertex3fv(v[0]);
-	qglEnd();
+	qglDrawArrays(GL_TRIANGLES, 0, 36);
 
 	GL_BindNullProgram();
 	

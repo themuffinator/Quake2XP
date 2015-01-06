@@ -162,7 +162,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			return;
 
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.1, 0.1, 0.1);
+			VectorSet(lightColor, 0.333, 0.333, 0.333);
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES) 
 		VectorSet(lightColor, 1,1,1);
@@ -610,11 +610,11 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	GL_MBind(GL_TEXTURE2_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_causticMap"), 2);
 
-	GL_MBindCube(GL_TEXTURE3_ARB, filtercube_texture_object[currentShadowLight->filter]->texnum);
+	GL_MBindCube(GL_TEXTURE3_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"), 3);
 	GL_SetupCubeMapMatrix(true);
 
-	GL_MBind3d(GL_TEXTURE4_ARB, atten3d_texture_object->texnum);
+	GL_MBind3d(GL_TEXTURE4_ARB, r_lightAttenMap->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_attenMap"), 4);
 	qglMatrixMode(GL_TEXTURE);
 	qglLoadIdentity();

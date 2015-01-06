@@ -238,8 +238,8 @@ typedef struct mtexInfo_s {
 
 	image_t *image;
 	image_t *normalmap;
+	image_t	*csmMap;
 	image_t *addTexture;
-	image_t *hiMap;
 	image_t *envTexture;
 
 	int value;
@@ -334,8 +334,7 @@ typedef struct msurface_s {
 	index_t	*indices;
 	unsigned int sort;
 
-	vec3_t	normal, tangent, binormal;
-		//vbo
+	//vbo
 	size_t vbo_pos;
 	int	xyz_size;
 	int st_size;

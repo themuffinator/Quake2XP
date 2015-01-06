@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 2004-2015 Quake2xp Team.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -29,14 +30,8 @@ float skyrotate;
 vec3_t skyaxis;
 image_t *sky_images[6];
 static float shadelight[3];
-
-/*
-=============
-R_DrawWaterPolygons
-
-Does a water warp on the pre-fragmented glpoly_t chain
-=============
-*/
+void IL_LoadImage(char *filename, byte ** pic, int *width, int *height, ILenum type);
+unsigned int	skyCube = -1;
 
 void  RenderLavaSurfaces(msurface_t * surf)
 {
@@ -49,18 +44,27 @@ void  RenderLavaSurfaces(msurface_t * surf)
 	// setup program
 	GL_BindProgram(lavaProgram, defBits);
 	id = lavaProgram->id[defBits];
+	
+	if (!surf->texInfo->image->parallaxScale){
 
-	scale[0] = 4.0 / surf->texInfo->image->width;
-	scale[1] = 4.0 / surf->texInfo->image->height;
-	qglUniform2f(qglGetUniformLocation(id, "u_parallaxScale"), scale[0], scale[1]);
+		scale[0] = r_parallaxScale->value / surf->texInfo->image->width;
+		scale[1] = r_parallaxScale->value / surf->texInfo->image->height;
+	}
+	else
+	{
+		scale[0] = surf->texInfo->image->parallaxScale / surf->texInfo->image->width;
+		scale[1] = surf->texInfo->image->parallaxScale / surf->texInfo->image->height;
+	}
+
+	qglUniform4f(qglGetUniformLocation(id, "u_parallaxParams"), scale[0], scale[1], surf->texInfo->image->upload_width, surf->texInfo->image->upload_height);
 	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
 	qglUniform2f(qglGetUniformLocation(id, "u_texSize"), surf->texInfo->image->upload_width, surf->texInfo->image->upload_height);
 	qglUniform3fv(qglGetUniformLocation(id, "u_viewOrigin"), 1, r_origin);
 
 	GL_MBind(GL_TEXTURE0_ARB, surf->texInfo->image->texnum);
 	qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 0);
-	GL_MBind(GL_TEXTURE1_ARB, surf->texInfo->normalmap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"), 1);
+	GL_MBind(GL_TEXTURE2_ARB, surf->texInfo->csmMap->texnum);
+	qglUniform1i(qglGetUniformLocation(id, "u_csmMap"), 1);
 
 	
 	qglEnableVertexAttribArray(ATRB_POSITION);
@@ -102,7 +106,6 @@ void  RenderLavaSurfaces(msurface_t * surf)
 		qglDrawElements(GL_TRIANGLES, surf->numIndices, GL_UNSIGNED_SHORT, surf->indices);
 	}
 
-	GL_SelectTexture(GL_TEXTURE0_ARB);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -176,15 +179,15 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	GL_MBindRect		(GL_TEXTURE3_ARB, depthMap->texnum);
 	qglUniform1i		(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
 	}
-	
+
 	qglUniform1f				(qglGetUniformLocation(id, "u_deformMul"),	1.0);
 	qglUniform1f				(qglGetUniformLocation(id, "u_alpha"),	0.499);
 	qglUniform1f				(qglGetUniformLocation(id, "u_thickness"),	150.0);
 	qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
-	qglUniform1f				(qglGetUniformLocation(id, "u_ambientScale"), r_pplWorldAmbient->value);
-			
+	qglUniform1f				(qglGetUniformLocation(id, "u_ambientScale"), r_ambientLevel->value);
+
 	dstscroll = ((r_newrefdef.time * 0.15f) - (int) (r_newrefdef.time * 0.15f));
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
@@ -194,7 +197,7 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false,	0, wVertexArray);	
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, wTexArray);
 	qglVertexAttribPointer(ATRB_TEX2, 2, GL_FLOAT, false,		0, wTmu2Array);
-	
+
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
 		c_brush_polys += (nv-2);
@@ -208,6 +211,11 @@ void R_DrawWaterPolygons(msurface_t * fa)
 
 		wTmu2Array[i][0] = (v[3] + dstscroll);
 		wTmu2Array[i][1] = (v[4] + dstscroll);
+
+		//normals
+		nTexArray[i][0] = v[7];
+		nTexArray[i][1] = v[8];
+		nTexArray[i][2] = v[9];
 		}
 
 		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
@@ -618,3 +626,35 @@ void R_SetSky(char *name, float rotate, vec3_t axis)
 	}
 }
 
+void R_GenSkyCubeMap(char *name) {
+	int		i, w, h;
+	char	pathname[MAX_QPATH];
+	byte	*pic;
+
+	strncpy(skyname, name, sizeof(skyname)-1);
+
+	qglDisable(GL_TEXTURE_2D);
+	qglEnable(GL_TEXTURE_CUBE_MAP_ARB);
+
+	qglGenTextures(1, &skyCube);
+	qglBindTexture(GL_TEXTURE_CUBE_MAP_ARB, skyCube);
+
+	for (i = 0; i<6; i++) {
+		Com_sprintf(pathname, sizeof(pathname), "env/%s%s.tga", skyname, suf[i]);
+
+		IL_LoadImage(pathname, &pic, &w, &h, IL_TGA);
+		if (pic) {
+			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + i, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic);
+			free(pic);
+		}
+	}
+
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	qglDisable(GL_TEXTURE_CUBE_MAP_ARB);
+	qglEnable(GL_TEXTURE_2D);
+}

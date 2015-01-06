@@ -122,13 +122,13 @@ int RecursiveLightPoint(mnode_t * node, vec3_t start, vec3_t end)
 
 				pointcolor[0] +=
 					lightmap[0] * scale[0] *
-					0.003921568627450980392156862745098 * r_pplWorldAmbient->value;
+					0.003921568627450980392156862745098 * r_ambientLevel->value;
 				pointcolor[1] +=
 					lightmap[1] * scale[1] *
-					0.003921568627450980392156862745098 * r_pplWorldAmbient->value;
+					0.003921568627450980392156862745098 * r_ambientLevel->value;
 				pointcolor[2] +=
 					lightmap[2] * scale[2] *
-					0.003921568627450980392156862745098 * r_pplWorldAmbient->value;
+					0.003921568627450980392156862745098 * r_ambientLevel->value;
 					lightmap +=
 					3 * ((surf->extents[0] / r_worldmodel->lightmap_scale) +
 						 1) * ((surf->extents[1] / r_worldmodel->lightmap_scale) + 1);

@@ -92,7 +92,7 @@ static void ScreenSizeCallback(void *s)
 static void ambientLevelCallback(void *s)
 {
 	float ambient = s_ambientLevel_slider.curvalue / 20;
-	Cvar_SetValue( "r_pplWorldAmbient", ambient );
+	Cvar_SetValue( "r_ambientLevel", ambient );
 }
 
 static void RadarCallback( void *s )
@@ -291,8 +291,6 @@ static void ApplyChanges( void *unused )
 		if ( r_arbSamples->modified )
 			vid_ref->modified = true;
 
-		if ( r_radar->modified )
-			vid_ref->modified = true;
 		
 		if(r_dof->modified)
 			vid_ref->modified = true;
@@ -306,7 +304,7 @@ static void ApplyChanges( void *unused )
 		if(r_fxaa->modified)
 			vid_ref->modified = true;
 
-		if(r_pplWorldAmbient->modified)
+		if(r_ambientLevel->modified)
 			vid_ref->modified = true;
 
 		if (r_motionBlur->modified)
@@ -374,7 +372,7 @@ void VID_MenuInit( void )
 	static char	*samples[]		=	{"[off]", "[2x]", "[4x]", "[8x]", "[16x]", 0};
 #endif
 
-	static char	*parallax[]		=	{"off", "Performance", "Quality", 0};
+	static char	*parallax[]		=	{"off", "Cone Step", "Relief", 0};
 	static char	*radar[]		=	{"off", "map only", "map and entities", "move detector", 0};
 
 	if (!r_mode)
@@ -414,9 +412,6 @@ void VID_MenuInit( void )
 	if ( !scr_viewsize )
 		scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);
 
-	if (!r_radar)
-		r_radar = Cvar_Get ("r_radar", "0", CVAR_ARCHIVE);
-
 	
 	if (!cl_fontScale)
 		cl_fontScale = Cvar_Get ("cl_fontScale", "1", CVAR_ARCHIVE);
@@ -427,8 +422,8 @@ void VID_MenuInit( void )
 	if(!r_fxaa->value)
 		r_fxaa = Cvar_Get ("r_fxaa", 0, CVAR_ARCHIVE);
 
-	if(!r_pplWorldAmbient->value)
-		r_pplWorldAmbient = Cvar_Get ("r_pplWorldAmbient", "0", CVAR_ARCHIVE);
+	if(!r_ambientLevel->value)
+		r_ambientLevel = Cvar_Get ("r_ambientLevel", "0", CVAR_ARCHIVE);
 
 	if (!r_motionBlur->value)
 		r_motionBlur = Cvar_Get("r_motionBlur", "0", CVAR_ARCHIVE);
@@ -557,7 +552,7 @@ void VID_MenuInit( void )
     s_parallax_box.itemnames				= parallax;
 	s_parallax_box.curvalue					= r_parallax->value;
 	s_parallax_box.generic.callback			= ParallaxCallback;
-	s_parallax_box.generic.statusbar		= "Sample Parallax Mapping - Parallax Relief Mapping";
+	s_parallax_box.generic.statusbar		= "Cone Step Parallax Mapping - Relief Parallax Mapping";
 
 	s_ambientLevel_slider.generic.type		= MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x			= 0;
@@ -566,7 +561,7 @@ void VID_MenuInit( void )
 	s_ambientLevel_slider.generic.callback	= ambientLevelCallback;
 	s_ambientLevel_slider.minvalue			= 0;
 	s_ambientLevel_slider.maxvalue			= 20;
-	s_ambientLevel_slider.curvalue			= r_pplWorldAmbient->value * 20;
+	s_ambientLevel_slider.curvalue			= r_ambientLevel->value * 20;
 	s_ambientLevel_slider.generic.statusbar	= "Realtime World Ambient Lighting Level";
 
 	s_flare_box.generic.type				= MTYPE_SPINCONTROL;

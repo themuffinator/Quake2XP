@@ -1407,8 +1407,6 @@ void GL_FreeUnusedImages(void)
 
 	// never free r_notexture or particle texture
 	r_notexture->registration_sequence = registration_sequence;
-	r_radarmap->registration_sequence = registration_sequence;
-	r_around->registration_sequence = registration_sequence;
 	r_flare->registration_sequence = registration_sequence;
 
 	for (i = 0; i < PT_MAX; i++) {
@@ -1452,14 +1450,14 @@ void GL_FreeUnusedImages(void)
 	}
 	
 	for(i=0; i<MAX_GLOBAL_FILTERS; i++)
-			filtercube_texture_object[i]->registration_sequence = registration_sequence;
+			r_lightCubeMap[i]->registration_sequence = registration_sequence;
 
 	r_distort->registration_sequence = registration_sequence;
 	r_blackTexture->registration_sequence = registration_sequence;
 	r_defBump->registration_sequence = registration_sequence;
 	r_scanline->registration_sequence = registration_sequence;
 	r_envTex->registration_sequence = registration_sequence;
-	atten3d_texture_object->registration_sequence = registration_sequence;
+	r_lightAttenMap->registration_sequence = registration_sequence;
 	weaponHack->registration_sequence = registration_sequence;
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {

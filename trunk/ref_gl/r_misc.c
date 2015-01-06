@@ -50,11 +50,10 @@ image_t *r_blackTexture;
 image_t *r_DSTTex;
 image_t *r_scanline;
 image_t	*r_envTex;
-image_t	*filtercube_texture_object[MAX_FILTERS];
-image_t *atten3d_texture_object;
+image_t	*r_lightCubeMap[MAX_FILTERS];
+image_t *r_lightAttenMap;
 image_t	*weaponHack;
 image_t *fbo_color0;
-
 
 void CreateDSTTex_ARB (void)
 {
@@ -649,8 +648,8 @@ void CreateAttenuation ()
 	
 	glTexImage3DEXT = (PFNGLTEXIMAGE3DEXTPROC) qwglGetProcAddress("glTexImage3DEXT");
 	
-	atten3d_texture_object = image;
-	qglBindTexture(GL_TEXTURE_3D, atten3d_texture_object->texnum);
+	r_lightAttenMap = image;
+	qglBindTexture(GL_TEXTURE_3D, r_lightAttenMap->texnum);
 	glTexImage3DEXT(GL_TEXTURE_3D, 0, GL_INTENSITY, ATTEN_VOLUME_SIZE, ATTEN_VOLUME_SIZE, ATTEN_VOLUME_SIZE, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
 	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -824,12 +823,6 @@ void R_InitEngineTextures(void)
 	r_flare = GL_FindImage("gfx/flares/flare0.tga", it_wall);
 	if(!r_flare)
 		r_flare = r_notexture;
-	r_radarmap = GL_FindImage("gfx/radar/radarmap.tga", it_wall);
-	if(!r_radarmap)
-		r_radarmap = r_notexture;
-	r_around = GL_FindImage("gfx/radar/around.tga", it_wall);
-	if(!r_around)
-		r_around = r_notexture;
 		
 	r_distort = GL_FindImage("gfx/distort/explosion.tga", it_wall);
 	if(!r_distort)
@@ -852,7 +845,7 @@ void R_InitEngineTextures(void)
 			r_envTex = r_notexture;
 
 	for(i=0; i<MAX_GLOBAL_FILTERS; i++)
-			filtercube_texture_object[i] = R_LoadLightFilter (i);
+			r_lightCubeMap[i] = R_LoadLightFilter (i);
 
 	CreateDSTTex_ARB();
 	CreateDepthTexture();
@@ -870,76 +863,84 @@ void R_InitEngineTextures(void)
 TGA JPG PNG BMP PCX support
 ============================= 
 */
-
 void GL_ScreenShot_f(void)
 {
-	FILE *file;
-	char picname[80], checkname[MAX_OSPATH];
-	int i, image = 0;
-	ILuint ImagesToSave[1];
+	FILE	*file;
+	char	picname[80], checkname[MAX_OSPATH];
+	int		i, image = 0;
+	ILuint	ImagesToSave[1];
+	int		startTime, endTime;
+	float	sec;
 
-	if (Q_stricmp(r_screenShot->string, "jpg") != 0 &&
-		Q_stricmp(r_screenShot->string, "tga") != 0 &&
-		Q_stricmp(r_screenShot->string, "png") != 0 &&
-		Q_stricmp(r_screenShot->string, "bmp") != 0 &&
-		Q_stricmp(r_screenShot->string, "tif") != 0 &&
-		Q_stricmp(r_screenShot->string, "pcx") != 0)
+	startTime = Sys_Milliseconds();
+
+		if (Q_stricmp(r_screenShot->string, "jpg") != 0 &&
+			Q_stricmp(r_screenShot->string, "tga") != 0 &&
+			Q_stricmp(r_screenShot->string, "png") != 0 &&
+			Q_stricmp(r_screenShot->string, "bmp") != 0 &&
+			Q_stricmp(r_screenShot->string, "tif") != 0 &&
+			Q_stricmp(r_screenShot->string, "pcx") != 0)
 			Cvar_Set("r_screenShot", "jpg");
 
-	if (!Q_stricmp(r_screenShot->string, "tga"))
-		image = IL_TGA;
-	if (!Q_stricmp(r_screenShot->string, "png"))
-		image = IL_PNG;
-	if (!Q_stricmp(r_screenShot->string, "bmp"))
-		image = IL_BMP;
-	if (!Q_stricmp(r_screenShot->string, "pcx"))
-		image = IL_PCX;
-	if (!Q_stricmp(r_screenShot->string, "jpg"))
-		image = IL_JPG;
-	if (!Q_stricmp(r_screenShot->string, "tif"))
-		image = IL_TIF;
+		if (!Q_stricmp(r_screenShot->string, "tga"))
+			image = IL_TGA;
+		if (!Q_stricmp(r_screenShot->string, "png"))
+			image = IL_PNG;
+		if (!Q_stricmp(r_screenShot->string, "bmp"))
+			image = IL_BMP;
+		if (!Q_stricmp(r_screenShot->string, "pcx"))
+			image = IL_PCX;
+		if (!Q_stricmp(r_screenShot->string, "jpg"))
+			image = IL_JPG;
+		if (!Q_stricmp(r_screenShot->string, "tif"))
+			image = IL_TIF;
 
-	// Create the scrnshots directory if it doesn't exist
-	Com_sprintf(checkname, sizeof(checkname), "%s/screenshots", FS_Gamedir());
-	Sys_Mkdir(checkname);
-	
-	for (i = 0; i <= 999; i++) {
-		Com_sprintf(picname, sizeof(picname), "q2xp%04i.%s", i,
-					r_screenShot->string);
-		Com_sprintf(checkname, sizeof(checkname), "%s/screenshots/%s",
-					FS_Gamedir(), picname);
+		// Create the scrnshots directory if it doesn't exist
+		Com_sprintf(checkname, sizeof(checkname), "%s/screenshots", FS_Gamedir());
+		Sys_Mkdir(checkname);
 
-		file = fopen(checkname, "rb");
-		if (!file)
-			break;				// file doesn't exist
-		fclose(file);
-	}
+		for (i = 0; i <= 999; i++) {
+			Com_sprintf(picname, sizeof(picname), "q2xp%04i.%s", i,
+				r_screenShot->string);
+			Com_sprintf(checkname, sizeof(checkname), "%s/screenshots/%s",
+				FS_Gamedir(), picname);
 
-	if (i == 1000) {
-		Com_Printf("GL_ScreenShot_f: Couldn't create a file\n");
-		return;
-	}
-	
-	
-	if ((r_screenShotJpegQuality->value >= 99) || (r_screenShotJpegQuality->value <= 0))
-		Cvar_SetValue("r_screenShotJpegQuality", 99);
+			file = fopen(checkname, "rb");
+			if (!file)
+				break;				// file doesn't exist
+			fclose(file);
+		}
 
-	ilHint(IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
-	ilSetInteger(IL_JPG_QUALITY, (int)r_screenShotJpegQuality->value);
-	
-	ilGenImages(1, ImagesToSave);
-	ilBindImage(ImagesToSave[0]);
+		if (i == 1000) {
+			Com_Printf("GL_ScreenShot_f: Couldn't create a file\n");
+			return;
+		}
 
-	if (ilutGLScreen()) {
-		iluGammaCorrect(r_screenShotGamma->value);
-		iluContrast(r_screenShotContrast->value);
-		ilSave(image, checkname);
-	}
 
-	ilDeleteImages(1, ImagesToSave);
+		if ((r_screenShotJpegQuality->value >= 99) || (r_screenShotJpegQuality->value <= 0))
+			Cvar_SetValue("r_screenShotJpegQuality", 99);
 
-	// Done!
-	Com_Printf("Wrote %s\n", picname);
+		ilHint(IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
+		ilSetInteger(IL_JPG_QUALITY, (int)r_screenShotJpegQuality->value);
+
+		ilGenImages(1, ImagesToSave);
+		ilBindImage(ImagesToSave[0]);
+
+		if (ilutGLScreen()) {
+			iluGammaCorrect(r_screenShotGamma->value);
+			iluContrast(r_screenShotContrast->value);
+			ilSave(image, checkname);
+			}
+		
+
+		ilDeleteImages(1, ImagesToSave);
+
+		// Done!
+		Com_Printf("Wrote %s\n", picname);
+		
+		endTime = Sys_Milliseconds();
+		sec = (float)endTime - (float)startTime;
+		Com_DPrintf("Screenshot time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);
 }
 
 

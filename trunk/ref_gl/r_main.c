@@ -661,9 +661,6 @@ void R_DrawLightInteractions(void)
 {
 	int i;
 	
-//	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-//		return;
-
 	num_visLights = 0;
 
 	GL_DepthMask(0);
@@ -704,8 +701,6 @@ void R_DrawLightInteractions(void)
 
 //	if (!R_DrawLightOccluders())
 //		continue;
-
-	R_DebugScissors();
 
 	R_CastBspShadowVolumes();		// bsp and bmodels shadows
 	R_DrawPlayerWeaponLightPass();	// shade player weapon only from bsp!
@@ -819,7 +814,6 @@ void R_RenderView(refdef_t * fd)
 	R_RenderDecals();
 
 	R_RenderFlares();
-	R_LightScale();
 	R_CaptureColorBuffer();
 	R_DrawAlphaPoly();
 	R_DrawParticles();
@@ -1086,7 +1080,7 @@ Cvar_Set("r_shadows", "0");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "0");
 Cvar_Set("r_skipStaticLights", "1");
-Cvar_Set("r_pplWorldAmbient", "1.0");
+Cvar_Set("r_ambientLevel", "1.0");
 Cvar_Set("r_bloom", "0");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "0");
@@ -1105,9 +1099,9 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 
 Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
-Cvar_Set("r_parallax", "1");
+Cvar_Set("r_parallax", "0");
 Cvar_Set("r_skipStaticLights", "0");
-Cvar_Set("r_pplWorldAmbient", "0.5");
+Cvar_Set("r_ambientLevel", "0.5");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "1");
@@ -1126,9 +1120,9 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 
 Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
-Cvar_Set("r_parallax", "2");
+Cvar_Set("r_parallax", "1");
 Cvar_Set("r_skipStaticLights", "0");
-Cvar_Set("r_pplWorldAmbient", "0.5");
+Cvar_Set("r_ambientLevel", "0.5");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "1");
 Cvar_Set("r_radialBlur", "1");
@@ -1154,7 +1148,6 @@ void R_RegisterCvars(void)
 	r_lightLevel =						Cvar_Get("r_lightLevel", "0", 0);
 
 	r_mode =							Cvar_Get("r_mode", "0", CVAR_ARCHIVE);
-	r_dynamic =							Cvar_Get("r_dynamic", "1", 0);
 	r_noBind =							Cvar_Get("r_noBind", "0", 0);
 	r_polyBlend =						Cvar_Get("r_polyBlend", "1", CVAR_ARCHIVE);
 	r_lockPvs =							Cvar_Get("r_lockPvs", "0", 0);
@@ -1172,10 +1165,6 @@ void R_RegisterCvars(void)
 	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 
-	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
-	r_shadowWorldLightScale =			Cvar_Get("r_shadowWorldLightScale", "12", CVAR_ARCHIVE);
-	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
-
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
@@ -1189,10 +1178,6 @@ void R_RegisterCvars(void)
 	r_screenShotGamma =					Cvar_Get("r_screenShotGamma", "1.0", CVAR_ARCHIVE);
 	r_screenShotContrast =				Cvar_Get("r_screenShotContrast", "1.0", CVAR_ARCHIVE);
 
-	r_radarSize =						Cvar_Get("r_radarSize", "256", CVAR_ARCHIVE);
-	r_radarZoom =						Cvar_Get("r_radarZoom", "1", CVAR_ARCHIVE);
-	r_radar =							Cvar_Get("r_radar", "0", CVAR_ARCHIVE);
-	
 	r_arbSamples =						Cvar_Get("r_arbSamples", "1", CVAR_ARCHIVE);
 	r_fxaa =							Cvar_Get("r_fxaa", "0", CVAR_ARCHIVE);
 
@@ -1215,20 +1200,21 @@ void R_RegisterCvars(void)
 	
 //	r_vbo=								Cvar_Get("r_vbo", "1", CVAR_ARCHIVE);
 
-	r_parallax=							Cvar_Get("r_parallax", "2", CVAR_ARCHIVE);
-	r_parallaxScale=					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
+	r_parallax=							Cvar_Get("r_parallax", "1", CVAR_ARCHIVE);
+	r_parallaxScale=					Cvar_Get("r_parallaxScale", "1.0", CVAR_ARCHIVE);
+
+	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
+	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 
 	r_skipStaticLights =				Cvar_Get("r_skipStaticLights", "0", CVAR_ARCHIVE);
-	r_pplWorldAmbient =					Cvar_Get("r_pplWorldAmbient", "0.5", CVAR_ARCHIVE);
+	r_ambientLevel =					Cvar_Get("r_ambientLevel", "0.5", CVAR_ARCHIVE);
 	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
-	r_debugLightScissors =				Cvar_Get("r_debugLightScissors", "0", 0);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "65", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 //	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
 //	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
 //	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
-	r_lightScale =						Cvar_Get("r_lightScale", "1", CVAR_ARCHIVE);
 	r_specularScale =					Cvar_Get("r_specularScale", "1", CVAR_ARCHIVE);
 	r_toksvigFactor =					Cvar_Get("r_toksvigFactor", "0.5", CVAR_ARCHIVE);
 
@@ -1297,12 +1283,14 @@ bind KP_DEL		"unselectLight"
 	Cmd_AddCommand("moveLight_forward",			R_MoveLightForward_f);
 	Cmd_AddCommand("moveLight_z",				R_MoveLightUpDown_f);
 	Cmd_AddCommand("changeLightRadius",			R_ChangeLightRadius_f);
-	Cmd_AddCommand("copyLight",					R_Light_Copy_f);
+	Cmd_AddCommand("cloneLight",				R_Light_Clone_f);
 	Cmd_AddCommand("changeLightCone",			R_ChangeLightCone_f);
 	Cmd_AddCommand("clearWorldLights",          R_ClearWorldLights);
 	Cmd_AddCommand("unselectLight",				R_Light_UnSelect_f);
 	Cmd_AddCommand("editFlare",					R_FlareEdit_f);
 	Cmd_AddCommand("resetFlarePos",				R_ResetFlarePos_f);
+	Cmd_AddCommand("copy",						R_Copy_Light_Properties_f);
+	Cmd_AddCommand("paste",						R_Paste_Light_Properties_f);
 }
 
 /*
@@ -1648,7 +1636,10 @@ int R_Init(void *hinstance, void *hWnd)
 		qglUnmapBuffer =	(PFNGLUNMAPBUFFERPROC)		qwglGetProcAddress("glUnmapBuffer");
 
 		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData){
-			vec2_t		tmpVerts[4];	
+			vec2_t		tmpVerts[4];
+			index_t	iCache[6];
+			int		idx = 0, numVerts = 0;
+
 			Com_Printf("...using GL_ARB_vertex_buffer_object\n");
 			// precalc screen quads for postprocessing
 			// full quad
@@ -1680,6 +1671,17 @@ int R_Init(void *hinstance, void *hWnd)
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_quarterScreenQuad);
 			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+			iCache[idx++] = numVerts + 0;
+			iCache[idx++] = numVerts + 1;
+			iCache[idx++] = numVerts + 2;
+			iCache[idx++] = numVerts + 0;
+			iCache[idx++] = numVerts + 2;
+			iCache[idx++] = numVerts + 3;
+			qglGenBuffers(1, &gl_state.ibo_quadTris);
+			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(GL_UNSIGNED_INT), iCache, GL_STATIC_DRAW_ARB);
+			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 			qglGenBuffers(1, &gl_state.vbo_Dynamic);
 			qglGenBuffers(1, &gl_state.ibo_Dynamic);
@@ -1891,12 +1893,14 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("moveSelectedLight_z");
 	Cmd_RemoveCommand("spawnLightToCamera");
 	Cmd_RemoveCommand("changeLightRadius");
-	Cmd_RemoveCommand("copyLight");
+	Cmd_RemoveCommand("cloneLight");
 	Cmd_RemoveCommand("changeLightCone");
 	Cmd_RemoveCommand("clearWorldLights");
 	Cmd_RemoveCommand("unselectLight");
 	Cmd_RemoveCommand("editFlare");
 	Cmd_RemoveCommand("resetFlarePos");
+	Cmd_RemoveCommand("copy");
+	Cmd_RemoveCommand("paste");
 
 	Mod_FreeAll();
 	GL_ShutdownImages();
@@ -1954,11 +1958,11 @@ void R_BeginFrame()
 	if(r_dof->modified)
 		r_dof->modified = false;
 
-	if(r_pplWorldAmbient->modified)
-		r_pplWorldAmbient->modified = false;
+	if(r_ambientLevel->modified)
+		r_ambientLevel->modified = false;
 
-	if(r_pplWorldAmbient->value >1)
-		Cvar_SetValue("r_pplWorldAmbient", 1);
+	if(r_ambientLevel->value >1)
+		Cvar_SetValue("r_ambientLevel", 1);
 
 	/* 
 	** go into 2D mode

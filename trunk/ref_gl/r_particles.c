@@ -69,6 +69,9 @@ void R_DrawParticles()
 	float		scale, r, g, b, a;
 	float		c, d, s;
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
 	// setup program
 	GL_BindProgram(particlesProgram, defBits);
 	id = particlesProgram->id[defBits];

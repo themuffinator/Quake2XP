@@ -1322,6 +1322,8 @@
     <None Include="..\baseq2\glsl\blurStar.vp" />
     <None Include="..\baseq2\glsl\fbo.fp" />
     <None Include="..\baseq2\glsl\fbo.vp" />
+    <None Include="..\baseq2\glsl\lava.fp" />
+    <None Include="..\baseq2\glsl\lava.vp" />
     <None Include="..\baseq2\glsl\lightAlias.fp" />
     <None Include="..\baseq2\glsl\lightAlias.vp" />
     <None Include="..\baseq2\glsl\ambientAlias.defs" />

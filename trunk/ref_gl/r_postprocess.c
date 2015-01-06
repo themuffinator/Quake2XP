@@ -72,8 +72,6 @@ void R_BuildFlares(flare_t * light){
 	dist2 = VectorLength(v);
 
 	scale = ((1024 - dist2) / 1024) * 0.5;
-	if(r_lightScale->value)
-		scale /= r_lightScale->value;
 
 	VectorScale(light->color, scale, tmp);
 

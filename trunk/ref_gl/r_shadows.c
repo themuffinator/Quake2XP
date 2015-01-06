@@ -293,13 +293,13 @@ void R_DeformShadowVolume()
 	paliashdr = (dmdl_t *) currentmodel->extraData;
 
 	frame = (daliasframe_t *) ((byte *) paliashdr   + paliashdr->ofs_frames
-						        + currententity->frame *
-							  paliashdr->framesize);
+			+ currententity->frame * paliashdr->framesize);
+	
 	verts = v = frame->verts;
 
-	oldframe =
-		(daliasframe_t *) ((byte *) paliashdr + paliashdr->ofs_frames +
-						   currententity->oldframe * paliashdr->framesize);
+	oldframe = (daliasframe_t *) ((byte *) paliashdr + paliashdr->ofs_frames +
+				currententity->oldframe * paliashdr->framesize);
+	
 	ov = oldframe->verts;
 
 	order = (int *) ((byte *) paliashdr + paliashdr->ofs_glcmds);

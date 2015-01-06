@@ -178,13 +178,13 @@ extern	image_t	*ScreenMap;
 extern	image_t	*r_envTex;
 extern	image_t	*shadowMask;
 extern	image_t	*r_scanline;
-extern	image_t	*atten3d_texture_object;
+extern	image_t	*r_lightAttenMap;
 extern	image_t	*weaponHack;
 extern	image_t *fxaaMap;
 extern	image_t *occlusionMap;
 
 #define MAX_FILTERS 256
-extern	image_t	*filtercube_texture_object[MAX_FILTERS];
+extern	image_t	*r_lightCubeMap[MAX_FILTERS];
 #define	MAX_GLOBAL_FILTERS	128
 
 extern entity_t *currententity;
@@ -232,7 +232,6 @@ cvar_t *r_noCull;
 cvar_t *r_leftHand;
 cvar_t *r_lightLevel;	
 cvar_t *r_mode;
-cvar_t *r_dynamic;
 cvar_t *r_noBind;
 cvar_t *r_cull;
 cvar_t *r_polyBlend;
@@ -264,14 +263,8 @@ cvar_t	*r_anisotropic;
 cvar_t	*r_maxAnisotropy;
 
 cvar_t	*r_shadows;
-cvar_t	*r_shadowWorldLightScale;
 cvar_t	*r_playerShadow;
-cvar_t	*r_shadowCapOffset;
 cvar_t	*r_useLightOccluders;
-
-cvar_t	*r_radarSize;			// GLOOM radar
-cvar_t	*r_radarZoom;
-cvar_t	*r_radar;
 
 cvar_t	*r_arbSamples;
 cvar_t	*r_nvSamplesCoverange;
@@ -298,15 +291,13 @@ cvar_t	*sys_priority;
 cvar_t	*r_DrawRangeElements;
 
 cvar_t	*r_skipStaticLights;
-cvar_t	*r_pplWorldAmbient;
+cvar_t	*r_ambientLevel;
 cvar_t	*r_lightsWeldThreshold;
 cvar_t	*r_debugLights;
 cvar_t	*r_occLightBoundsSize;
 cvar_t	*r_debugOccLightBoundsSize;
 cvar_t	*r_useLightScissors;
 cvar_t	*r_useDepthBounds;
-cvar_t	*r_debugLightScissors;
-cvar_t	*r_lightScale;
 cvar_t	*r_specularScale;
 cvar_t	*r_toksvigFactor;
 
@@ -414,7 +405,6 @@ void R_FilmGrain (void);
 void R_ListPrograms_f(void);
 void R_InitPrograms(void);
 void R_ClearWorldLights(void);
-void CleanDuplicateLights(void);
 qboolean R_CullSphere( const vec3_t centre, const float radius);
 void R_DebugLights (vec3_t lightOrg);
 void R_CastBspShadowVolumes(void);
@@ -434,11 +424,14 @@ void R_MoveLightForward_f(void);
 void R_MoveLightUpDown_f(void);
 void R_Light_SpawnToCamera_f(void);
 void R_ChangeLightRadius_f(void);
-void R_Light_Copy_f(void);
+void R_Light_Clone_f(void);
 void R_ChangeLightCone_f(void);
 void R_Light_UnSelect_f(void);
 void R_FlareEdit_f(void);
 void R_ResetFlarePos_f(void);
+void R_Copy_Light_Properties_f(void);
+void R_Paste_Light_Properties_f(void);
+
 extern qboolean flareEdit;
 
 void GL_SetupCubeMapMatrix(qboolean model);
@@ -455,7 +448,6 @@ qboolean R_DrawLightOccluders();
 void UpdateLightEditor(void);
 void Load_LightFile();
 void R_SetViewLightDepthBounds(); 
-void R_DebugScissors(void);
 qboolean BoundsIntersectsPoint(vec3_t mins, vec3_t maxs, vec3_t p);
 extern int num_visLights;
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
@@ -652,6 +644,7 @@ typedef struct {
 	GLuint	vbo_fullScreenQuad;
 	GLuint	vbo_halfScreenQuad;
 	GLuint	vbo_quarterScreenQuad;
+	GLuint	ibo_quadTris;
 	GLuint	vbo_Dynamic;
 	GLuint	ibo_Dynamic;
 	GLuint	vbo_BSP;
@@ -863,6 +856,7 @@ glslProgram_t		*gaussYProgram;
 glslProgram_t		*blurStarProgram;
 glslProgram_t		*bloomfpProgram;
 glslProgram_t		*refractProgram;
+glslProgram_t		*lightGlassProgram;
 glslProgram_t		*thermalProgram;
 glslProgram_t		*thermalfpProgram;
 glslProgram_t		*waterProgram;

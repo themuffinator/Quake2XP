@@ -206,14 +206,14 @@ void GL_AddFlareSurface(msurface_t * surf)
 	Q_memcpy(r_flares[r_numflares].vis, CM_ClusterPVS(cluster), (CM_NumClusters() + 7) >> 3);
 	
 	if(relightMap){
-	VectorSet(radius,	r_flares[r_numflares].size	*	r_shadowWorldLightScale->value,
-						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value,
-						r_flares[r_numflares].size	*	r_shadowWorldLightScale->value);
+	VectorSet(radius,	r_flares[r_numflares].size * 10.0,
+						r_flares[r_numflares].size * 10.0,
+						r_flares[r_numflares].size * 10.0);
 		
 	memset(target, 0, sizeof(target));
 	
-	R_AddNewWorldLight(	lightOffset, r_flares[r_numflares].color, 
-						radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, false, 1, origin, r_flares[r_numflares].size, target, 0, 0, 0.0);
+	R_AddNewWorldLight(	lightOffset, r_flares[r_numflares].color, radius, 0, 0, vec3_origin, 
+						vec3_origin, true, 1, 0, 0, false, 1, origin, r_flares[r_numflares].size, target, 0, 0, 0.0);
 	}
 
 	r_numflares++;
@@ -845,26 +845,11 @@ void Mod_LoadTexinfo (lump_t * l) {
 			
 				// use override instead of WAL
 				out->image = image;
-			}
+			 }
 
-			 // load texture configuration file
-			 Com_sprintf (name, sizeof(name), "materials/%s.mtr", purename);
-             x = FS_LoadFile (name, (void **)&buff);
-			 if (buff){
-
-				char bak=buff[i];
-				buff[x]=0;
-				Com_Printf("Found material for "S_COLOR_GREEN"%s\n", purename);
-				Mod_LoadTextureFx(image, buff);
-				buff[x]=bak;
-				FS_FreeFile (buff);
-
-             }
-			 
-        
-          //
-             // Normal Maps Loading
-          //
+		//
+        // Normal Maps Loading
+        //
 
           Com_sprintf(name, sizeof(name), "overrides/%s_bump.tga", purename);
              out->normalmap = GL_FindImage(name, it_bump);
@@ -888,7 +873,32 @@ void Mod_LoadTexinfo (lump_t * l) {
 							// don't care if it's NULL
 							}	
 						}
-}
+					}
+
+			 // Cone Step Maps
+			 Com_sprintf(name, sizeof(name), "overrides/%s_step.tga", purename);
+			 out->csmMap = GL_FindImage(name, it_bump);
+
+			 if (!out->csmMap) {
+				 Com_sprintf(name, sizeof(name), "overrides/%s_step.dds", purename);
+				 out->csmMap = GL_FindImage(name, it_bump);
+
+
+				 if (!out->csmMap) {
+					 Com_sprintf(name, sizeof(name), "textures/%s_step.tga", in->texture);
+					 out->csmMap = GL_FindImage(name, it_bump);
+
+					 if (!out->csmMap) {
+						 Com_sprintf(name, sizeof(name), "textures/%s_step.dds", in->texture);
+						 out->csmMap = GL_FindImage(name, it_bump);
+
+
+						 if (!out->csmMap)
+							 out->csmMap = r_notexture;
+						 // don't care if it's NULL
+					 }
+				 }
+			 }
           //
           // Glow Maps Loading
           //
@@ -936,9 +946,21 @@ void Mod_LoadTexinfo (lump_t * l) {
                                     out->envTexture = r_notexture;
                     }
                }
-}
+			}
 
+			 // load texture configuration file
+			 Com_sprintf(name, sizeof(name), "materials/%s.mtr", purename);
+			 x = FS_LoadFile(name, (void **)&buff);
+			 if (buff){
 
+				 char bak = buff[i];
+				 buff[x] = 0;
+				 Com_DPrintf("Loading material for "S_COLOR_GREEN"%s\n", purename);
+				 Mod_LoadTextureFx(out->image, buff);
+				 buff[x] = bak;
+				 FS_FreeFile(buff);
+
+			 }
 }
 
       
@@ -1208,18 +1230,6 @@ void Mod_LoadFaces(lump_t * l)
 			GL_AddFlareSurface(out);
 			CalcSurfaceBounds(out);
 			GL_CalcBspIndeces(out);
-		
-			// normal
-		if (out->flags & SURF_PLANEBACK)
-			VectorNegate(out->plane->normal, out->normal);
-		else
-			VectorCopy(out->plane->normal, out->normal);
-
-		VectorNormalize(out->normal);
-		VectorNormalize2(out->texInfo->vecs[0], out->tangent);
-		VectorNormalize2(out->texInfo->vecs[1], out->binormal);
-
-	
 	}
 	
 	// Build TBN for smoothing bump mapping (Berserker)
@@ -1385,9 +1395,9 @@ recreate:
 
 			if (DotProduct(normal, ni) < threshold)
 			{
-				vi[7] = normal[0] = ni[0];
-				vi[8] = normal[1] = ni[1];
-				vi[9] = normal[2] = ni[2];
+				vi[7] = normal[0] + ni[0];
+				vi[8] = normal[1] + ni[1];
+				vi[9] = normal[2] + ni[2];
 			}
 			else
 			{
@@ -1745,7 +1755,6 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadFaces(&header->lumps[LUMP_FACES]);	
 
 	CleanDuplicateFlares();
-	CleanDuplicateLights();
 
 	Mod_LoadMarksurfaces(&header->lumps[LUMP_LEAFFACES]);
 	Mod_LoadVisibility(&header->lumps[LUMP_VISIBILITY]);

@@ -528,8 +528,8 @@ R_InitPrograms
 
 
 void R_InitPrograms(void) {
-	int missing = 0, start = 0, stop = 0;
-	float sec;
+	int			missing = 0, start = 0, stop = 0;
+	float		sec;
 
 	Com_Printf("\nInitializing programs...\n\n");
 	
@@ -551,7 +551,7 @@ void R_InitPrograms(void) {
 	ambientWorldProgram = R_FindProgram("ambientWorld", true, true);
 	if(ambientWorldProgram->valid){
 		Com_Printf("succeeded\n");
-		worldDefs.ParallaxBit		= R_GetProgramDefBits(ambientWorldProgram, "PARALLAX");
+		worldDefs.ParallaxBit			= R_GetProgramDefBits(ambientWorldProgram, "PARALLAX");
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
@@ -563,7 +563,6 @@ void R_InitPrograms(void) {
 		Com_Printf("succeeded\n");
 		worldDefs.LightParallaxBit	= R_GetProgramDefBits(lightWorldProgram, "PARALLAX");
 		worldDefs.AmbientBits		= R_GetProgramDefBits(lightWorldProgram, "AMBIENT");
-
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
@@ -574,7 +573,6 @@ void R_InitPrograms(void) {
 	if(aliasAmbientProgram->valid){
 		Com_Printf("succeeded\n");
 
-		worldDefs.CausticsBit	= R_GetProgramDefBits(aliasAmbientProgram, "CAUSTICS");
 		worldDefs.ShellBits		= R_GetProgramDefBits(aliasAmbientProgram, "SHELL");
 		worldDefs.EnvBits		= R_GetProgramDefBits(aliasAmbientProgram, "ENVMAP");
 		worldDefs.WeaponBits	= R_GetProgramDefBits(aliasAmbientProgram, "WEAPON");
@@ -669,6 +667,16 @@ void R_InitPrograms(void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"glass lighting program"S_COLOR_WHITE" ");
+	lightGlassProgram = R_FindProgram("lightGlass", true, true);
+
+	if (lightGlassProgram->valid){
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 		
 	Com_Printf("Load "S_COLOR_YELLOW"thermal vision program"S_COLOR_WHITE" ");
 	thermalProgram = R_FindProgram("thermal", true, true);

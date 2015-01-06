@@ -313,10 +313,7 @@ void SCR_DrawHudModel(float x, float y, struct model_s *model)
 	entity.frame = 0;
 	entity.oldframe = 0;
 	entity.backlerp = 0.0;
-	entity.angles[1] = anglemod(refdef.time*48);
-
-	if ( entity.angles[1] > 360 )	
-		entity.angles[1] -= 360;
+	entity.angles[1] = anglemod(cl.time / 16);
 
 	VectorNegate(center, entity.origin);
 
