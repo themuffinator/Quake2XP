@@ -5716,7 +5716,7 @@
 {
 "classname" "light"
 "origin" "-604 735 -579"
-"radius" "40 40 40"
+"radius" "41 41 41"
 "color" "1.000 0.000 0.000"
 "style" "6"
 "filter" "0"
