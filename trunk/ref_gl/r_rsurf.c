@@ -591,7 +591,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 				}
 		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
 		}
-
+		
 	// flush batch (new texture)
 		if (s->texInfo->image->texnum != oldTex)
 		{
@@ -1044,11 +1044,16 @@ hack:
 		dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
 		break;
 	}
-	//the normals are flipped when surf_planeback is 1
-	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
-		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
-		return false;
 	
+	if (currentShadowLight->isFog && !currentShadowLight->isShadow)
+		goto next;
+
+		//the normals are flipped when surf_planeback is 1
+		if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
+			(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
+			return false;
+next:
+
 	if (world){
 		switch (plane->type) //now check surf_planeback for camera pos
 		{
@@ -1065,11 +1070,15 @@ hack:
 			dot = DotProduct(r_origin, plane->normal) - plane->dist;
 			break;
 		}
+	
+	if (currentShadowLight->isFog && !currentShadowLight->isShadow)
+			goto next2;
 
 		if (((surf->flags & SURF_PLANEBACK) && (dot > 0)) ||
 			(!(surf->flags & SURF_PLANEBACK) && (dot < 0)))
 			return false;
-	}
+		}
+next2:
 
 	if (abs(dist) > currentShadowLight->len)
 		return false;

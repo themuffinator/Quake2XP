@@ -910,18 +910,28 @@ void Mod_LoadTexinfo (lump_t * l) {
                Com_sprintf(name, sizeof(name), "overrides/%s_light.dds", purename);
                   out->addTexture = GL_FindImage(name, it_wall);
 
-                  if (!out->addTexture) {
-                    Com_sprintf(name, sizeof(name), "textures/%s_light.tga", in->texture);
-                       out->addTexture = GL_FindImage(name, it_wall);
+				  if (!out->addTexture) {
+					  Com_sprintf(name, sizeof(name), "overrides/%s_light.jpg", purename);
+					  out->addTexture = GL_FindImage(name, it_wall);
 
-                       if (!out->addTexture) {
-                         Com_sprintf(name, sizeof(name), "textures/%s_light.dds", in->texture);
-                            out->addTexture = GL_FindImage(name, it_wall);
+					  if (!out->addTexture) {
+						  Com_sprintf(name, sizeof(name), "textures/%s_light.tga", in->texture);
+						  out->addTexture = GL_FindImage(name, it_wall);
 
-                            if (!out->addTexture)
-                                    out->addTexture = r_notexture;
-                    }
-               }
+						  if (!out->addTexture) {
+							  Com_sprintf(name, sizeof(name), "textures/%s_light.dds", in->texture);
+							  out->addTexture = GL_FindImage(name, it_wall);
+
+							  if (!out->addTexture) {
+								  Com_sprintf(name, sizeof(name), "textures/%s_light.jpg", in->texture);
+								  out->addTexture = GL_FindImage(name, it_wall);
+
+								  if (!out->addTexture)
+									  out->addTexture = r_notexture;
+							  }
+						  }
+					  }
+				  }
 }
           //
           // Env Maps Loading
@@ -930,23 +940,33 @@ void Mod_LoadTexinfo (lump_t * l) {
           Com_sprintf(name, sizeof(name), "overrides/%s_env.tga", purename);
              out->envTexture = GL_FindImage(name, it_wall);
 
-             if (!out->envTexture) {
-               Com_sprintf(name, sizeof(name), "overrides/%s_env.dds", purename);
-                  out->envTexture = GL_FindImage(name, it_wall);
+			 if (!out->envTexture) {
+				 Com_sprintf(name, sizeof(name), "overrides/%s_env.dds", purename);
+				 out->envTexture = GL_FindImage(name, it_wall);
 
-                  if (!out->envTexture) {
-                    Com_sprintf(name, sizeof(name), "textures/%s_env.tga", in->texture);
-                       out->envTexture = GL_FindImage(name, it_wall);
+				 if (!out->envTexture) {
+					 Com_sprintf(name, sizeof(name), "overrides/%s_env.jpg", purename);
+					 out->envTexture = GL_FindImage(name, it_wall);
 
-                       if (!out->envTexture) {
-                         Com_sprintf(name, sizeof(name), "textures/%s_env.dds", in->texture);
-                            out->envTexture = GL_FindImage(name, it_wall);
+					 if (!out->envTexture) {
+						 Com_sprintf(name, sizeof(name), "textures/%s_env.tga", in->texture);
+						 out->envTexture = GL_FindImage(name, it_wall);
 
-                            if (!out->envTexture)
-                                    out->envTexture = r_notexture;
-                    }
-               }
-			}
+						 if (!out->envTexture) {
+							 Com_sprintf(name, sizeof(name), "textures/%s_env.dds", in->texture);
+							 out->envTexture = GL_FindImage(name, it_wall);
+
+							 if (!out->envTexture) {
+								 Com_sprintf(name, sizeof(name), "textures/%s_env.jpg", in->texture);
+								 out->envTexture = GL_FindImage(name, it_wall);
+
+								 if (!out->envTexture)
+									 out->envTexture = r_notexture;
+							 }
+						 }
+					 }
+				 }
+			 }
 
 			 // load texture configuration file
 			 Com_sprintf(name, sizeof(name), "materials/%s.mtr", purename);

@@ -552,7 +552,7 @@ extern  cvar_t  *g_monsterRespawn;
 extern	cvar_t	*sv_maplist;
 
 
-extern cvar_t	*cl_3dhud;
+extern cvar_t	*sv_stopClock;
 extern cvar_t   *sv_solidcorpse;
 extern cvar_t	*net_compatibility;
 

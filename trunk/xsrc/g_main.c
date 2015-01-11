@@ -49,15 +49,14 @@ cvar_t	*sv_cheats;
 cvar_t	*flood_msgs;
 cvar_t	*flood_persecond;
 cvar_t	*flood_waitdelay;
-cvar_t	*cl_3dhud;
 cvar_t  *g_monsterRespawn;
 cvar_t	*sv_maplist;
 
 
 cvar_t  *sv_solidcorpse;
-cvar_t	*r_motionblur;
 cvar_t	*net_compatibility;
-cvar_t	r_radialBlur;
+cvar_t	*r_radialBlur;
+cvar_t  *sv_stopClock;
 
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
 void ClientThink (edict_t *ent, usercmd_t *cmd);
@@ -343,7 +342,9 @@ void G_RunFrame (void)
 	int		i;
 	edict_t	*ent;
 
+	if (sv_stopClock->value == 0)
 	level.framenum++;
+
 	level.time = level.framenum*FRAMETIME;
 
 	// choose a client for monsters to target this frame

@@ -1272,6 +1272,8 @@ bind KP_MINUS	"changeLightRadius -5"
 bind KP_PLUS	"changeLightRadius  5"
 bind KP_INS		"copyLight"
 bind KP_DEL		"unselectLight"
+bind c			"copy"
+bind v			"paste"
 */
 
 	Cmd_AddCommand("saveLights",				R_SaveLights_f);

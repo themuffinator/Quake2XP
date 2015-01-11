@@ -186,7 +186,6 @@ void InitGame (void)
 
 	g_monsterRespawn = gi.cvar ("g_monsterRespawn", "0.5", CVAR_ARCHIVE);
 	sv_solidcorpse = gi.cvar ("sv_solidcorpse", "1", CVAR_ARCHIVE);
-	cl_3dhud		= gi.cvar ("cl_3dhud", "1", CVAR_ARCHIVE);
 	net_compatibility	= gi.cvar ("net_compatibility", "0", CVAR_SERVERINFO|CVAR_NOSET);
 	r_radialBlur		= gi.cvar ("r_radialBlur", "1", CVAR_ARCHIVE);
 
