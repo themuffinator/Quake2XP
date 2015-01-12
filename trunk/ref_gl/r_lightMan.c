@@ -1342,18 +1342,12 @@ void Clamp2RGB(vec3_t color)
 {
 	if (color[0] > 1.0)
 		color[0] = 1.0;
-	if (color[0] < 0.0)
-		color[0] = 0.0;
 
 	if (color[1] > 1.0)
 		color[1] = 1.0;
-	if (color[1] < 0.0)
-		color[1] = 0.0;
 
 	if (color[2] > 1.0)
 		color[2] = 1.0;
-	if (color[2] < 0.0)
-		color[2] = 0.0;
 }
 
 
@@ -1473,7 +1467,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	else
 		light->spherical = false;
 
-	Clamp2RGB(light->color);
+	Clamp2RGB(light->startColor);
 	
 	light->_cone = cone;
 	light->isStatic = isStatic;
