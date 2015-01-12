@@ -1,15 +1,16 @@
 uniform sampler2D		u_bumpMap;
 uniform sampler2D		u_diffuseMap;
-uniform sampler2D       u_causticMap;
-uniform samplerCube 	u_CubeFilterMap;
+uniform sampler2D   u_causticMap;
+uniform samplerCube u_CubeFilterMap;
 uniform sampler3D	 	u_attenMap;
 
-uniform float           u_LightRadius;
+uniform float     u_LightRadius;
 uniform float			u_specularScale;
 uniform float			u_toksvigFactor;
 uniform float			u_CausticsModulate;
 uniform vec4			u_LightColor;
 uniform int				u_fog;
+uniform float			u_fogDensity;
 uniform int				u_isCaustics;
 
 varying vec2			v_texCoord;
@@ -17,7 +18,7 @@ varying vec3			v_viewVec;
 varying vec3			v_lightVec;
 varying vec4			v_CubeCoord;
 varying vec3			v_AttenCoord;
-varying float			v_fogFactor;
+varying vec4		  v_viewPos;
 
 #include lighting.inc
 
@@ -59,10 +60,13 @@ gl_FragColor = diffuseMap * LambertLighting(normalMap, V) * u_LightColor * atten
 
 vec2 Es = PhongLighting(normalMap, L, V, 16.0);
 
-if(u_fog == 1){
+if(u_fog == 1){  
+float fogCoord = abs(v_viewPos.z / v_viewPos.w); // = gl_FragCoord.z / gl_FragCoord.w;
+float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
+//float fogFactor = exp(-pow(u_fogDensity * fogCoord, 2.0)); //exp2
 
-vec4 color = (Es.x * diffuseMap + Es.y * specular) * cubeFilter * attenMap;
-gl_FragColor = mix(u_LightColor, color, v_fogFactor) * attenMap;
+vec4 color = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
+gl_FragColor = mix(u_LightColor, color, fogFactor) * attenMap; // u_LightColor == fogColor
 }
 else
 gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;

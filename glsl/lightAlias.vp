@@ -6,14 +6,13 @@ attribute vec3		a_binormal;
 
 uniform vec3		u_LightOrg;
 uniform vec3		u_ViewOrigin; 		
-uniform float		u_fogDensity;
 
 varying vec2		v_texCoord;
 varying vec4		v_CubeCoord;
 varying vec3		v_AttenCoord;
 varying vec3		v_viewVec;
 varying vec3		v_lightVec;
-varying float		v_fogFactor;
+varying vec4		v_viewPos;
 
 void main (void) {
 	
@@ -33,12 +32,5 @@ v_viewVec.z = dot(a_normArray, VV);
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 
-const float LOG2 = 1.442695;
-gl_FogFragCoord = length(gl_Position);
-v_fogFactor = exp2(-u_fogDensity * 
-					u_fogDensity * 
-					gl_FogFragCoord * 
-					gl_FogFragCoord * 
-					LOG2);
-v_fogFactor = clamp(v_fogFactor, 0.0, 1.0);
+v_viewPos = gl_ModelViewMatrix * vec4(a_vertArray, 1);
 }

@@ -18,8 +18,3 @@ float LambertLighting(const in vec3 N, const in vec3 L) {
 	float E;
 	return E = max(dot (N, L), 0.0);
 }
-
-float saturate(float v)
-{
-    return clamp(v, 0.0, 1.0);
-}

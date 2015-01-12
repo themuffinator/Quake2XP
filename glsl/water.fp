@@ -3,8 +3,6 @@ varying vec2				v_diffuseTexCoord;
 varying float				v_depth;
 varying vec2				v_deformMul;
 varying vec4				v_color;
-varying vec3				v_normal;
-varying vec4				v_viewVec;
 
 uniform float				u_thickness;
 uniform float				u_alpha;
@@ -13,18 +11,15 @@ uniform float				u_ambientScale;
 uniform vec2				u_viewport;
 uniform vec2				u_depthParms;
 
-
 uniform sampler2D			u_colorMap;
 uniform sampler2D			u_dstMap;
 uniform	sampler2DRect		g_depthBufferMap;
 uniform	sampler2DRect		g_colorBufferMap;
-uniform samplerCube			g_CubeMap;
 
 #include depth.inc
 
 void main()
 {
-
 //load dst texture
 vec4 offset	= texture2D (u_dstMap, v_deformTexCoord.xy);
 
@@ -35,7 +30,7 @@ coord.y = v_diffuseTexCoord.y + offset.w;
 
 //load diffuse map
 vec4 diffuse  = texture2D (u_colorMap, coord.xy);  
- 
+    
 #ifdef TRANS
 vec2 N = offset.xy; // use autogen dst texture
 
