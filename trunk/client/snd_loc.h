@@ -51,7 +51,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "AL/EFX-Util.h"
 
 #include "AL/xram.h"
-#define _WITH_XRAM
+#define _WITH_XRAM 0
 
 extern LPALCOPENDEVICE alcOpenDevice;
 extern LPALCCLOSEDEVICE alcCloseDevice;

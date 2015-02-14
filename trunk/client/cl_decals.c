@@ -111,8 +111,38 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 		return;
 
 	// invalid decal
-	if (size <= 0 || VectorCompare(dir, vec3_origin))
+	if (size <= 0)
 		return;
+
+	// a hack to produce decals from explosions etc.
+	if (VectorCompare(dir, vec3_origin)){
+
+		float	scale = 1.5 * size;
+		trace_t	trace;
+		vec3_t	end, 
+				dirs[6] = {
+			{ 1.0,  0.0,  0.0 },
+			{-1.0,  0.0,  0.0 },
+			{ 0.0,  1.0,  0.0 },
+			{ 0.0, -1.0,  0.0 },
+			{ 0.0,  0.0,  1.0 },
+			{ 0.0,  0.0, -1.0 }
+		};
+
+		for (i = 0; i < 6; i++){
+
+			VectorMA(origin, scale, dirs[i], end);
+			trace = CL_PMTraceWorld(origin, vec3_origin, vec3_origin, end, MASK_SOLID, false);
+			if (trace.fraction != 1.0)
+				CL_AddDecalToScene(	origin, trace.plane.normal,
+									red, green, blue, alpha,
+									endRed, endGreen, endBlue,
+									endAlpha, size,
+									endTime, type, flags, angle,
+									sFactor, dFactor);
+		}
+		return;
+	}
 
 	// calculate orientation matrix
 	VectorNormalize2(dir, axis[0]);
@@ -131,8 +161,7 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 	VectorScale(axis[1], 0.5f / size, axis[1]);
 	VectorScale(axis[2], 0.5f / size, axis[2]);
 
-	for (i = 0, fr = fragments; i < numfragments; i++, fr++) {
-	
+	for (i = 0, fr = fragments; i < numfragments; i++, fr++) {	
 	
 		if (fr->numverts > MAX_DECAL_VERTS)
 			fr->numverts = MAX_DECAL_VERTS;
@@ -152,18 +181,15 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 		d->sFactor = sFactor;
 		d->dFactor = dFactor;
 
-
 		VectorCopy(fr->surf->plane->normal, d->direction);
+
 		// reverse direction
-		if (!(fr->surf->flags & SURF_PLANEBACK)) {
+		if (!(fr->surf->flags & SURF_PLANEBACK)) 
 			VectorNegate(d->direction, d->direction);
 
-		}
 		VectorCopy(origin, d->org);
-
 		VectorSet(d->color, red, green, blue);
 		VectorSet(d->endColor, endRed, endGreen, endBlue);
-
 		
 		for (j = 0; j < fr->numverts; j++) {
 			vec3_t v;
@@ -172,10 +198,7 @@ void CL_AddDecalToScene(vec3_t origin, vec3_t dir,
 			VectorSubtract(d->verts[j], origin, v);
 			d->stcoords[j][0] = DotProduct(v, axis[1]) + 0.5f;
 			d->stcoords[j][1] = DotProduct(v, axis[2]) + 0.5f;
-
 		}
-
-
 	}
 }
 

@@ -2701,6 +2701,10 @@ struct model_s *R_RegisterModel(char *name)
 
 					if(mod->texInfo[i].envTexture != NULL)
 						mod->texInfo[i].envTexture->registration_sequence	= registration_sequence;
+
+					if (mod->texInfo[i].csmMap != NULL)
+						mod->texInfo[i].csmMap->registration_sequence = registration_sequence;
+
 			}
 		}
 	}

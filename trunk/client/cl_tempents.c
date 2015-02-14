@@ -617,41 +617,6 @@ void CL_FindRailedSurface(vec3_t start, vec3_t end, vec3_t dir)
 	}
 }
 
-/*
- =================
- CL_FindExplosionPlane
-
- Disgusting hack
- =================
-*/
-void CL_FindExplosionPlane(vec3_t org, float radius, vec3_t dir)
-{
-
-	static vec3_t planes[6] =
-		{ {0, 0, 1}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0, -1, 0}, {-1, 0, 0} };
-	trace_t trace;
-	vec3_t point;
-	float best = 1.0;
-	int i;
-
-	VectorClear(dir);
-
-	for (i = 0; i < 6; i++) {
-		VectorMA(org, radius, planes[i], point);
-
-		trace =
-			CM_BoxTrace(org, point, vec3_origin, vec3_origin, 0,
-						MASK_SOLID);
-		if (trace.allsolid || trace.fraction == 1.0)
-			continue;
-
-		if (trace.fraction < best) {
-			best = trace.fraction;
-			VectorCopy(trace.plane.normal, dir);
-		}
-	}
-}
-
 
 void CL_ParticleSplashLava(vec3_t org, vec3_t dir);
 void CL_ParticleSplashSlime(vec3_t org, vec3_t dir);
@@ -778,11 +743,10 @@ void CL_ParseTEnt(void)
 				CL_ParticleSplash(pos, dir, 0.9, 0.9, 0.9);
 
 			} else if (r == SPLASH_LAVA) {
-				//CL_ParticleSplashLava(pos, dir);
-                                        CL_ParticleSmoke2(pos, dir, 1, 0.3, 0, 15, true);
+                       CL_ParticleSmoke2(pos, dir, 1, 0.3, 0, 15, true);
 
 			} else if (r == SPLASH_SLIME) {
-				CL_ParticleSplashSlime(pos, dir);
+						CL_ParticleSplashSlime(pos, dir);
 
 			}
 
@@ -803,7 +767,7 @@ void CL_ParseTEnt(void)
 		MSG_ReadPos(&net_message, pos);
 		MSG_ReadDir(&net_message, dir);
 		color = MSG_ReadByte(&net_message);
-		// CL_LaserParticle (pos, dir, cnt*2);
+
 		CL_AddDecalToScene(pos, dir,
 						   1, 1, 0, 1,
 						   0, -0.1, 0, 1,
@@ -875,10 +839,8 @@ void CL_ParseTEnt(void)
 				CL_Debris(pos, dir);
 		}
 		
-		if (net_compatibility->value)
-			CL_FindExplosionPlane(pos, 100, dir);
-
-		CL_AddDecalToScene(pos, dir,
+		pos[2] += 3.0; // grenade explosion decal hack
+		CL_AddDecalToScene(pos, vec3_origin,
 						   0.1, 0.1, 0.1, 1,
 						   0, 0, 0, 1,
 						   45, 60000,
@@ -915,12 +877,8 @@ void CL_ParseTEnt(void)
 
 		if (!net_compatibility->value)
 			MSG_ReadDir(&net_message, dir);
-		
-		if (net_compatibility->value)
-			CL_FindExplosionPlane(pos, 100, dir);
 
-
-		CL_AddDecalToScene(pos, dir,
+		CL_AddDecalToScene(pos, vec3_origin,
 						   0.1, 0.1, 0.1, 1,
 						   0, 0, 0, 1,
 						   45, 60000,
@@ -958,16 +916,8 @@ void CL_ParseTEnt(void)
 				MSG_ReadDir(&net_message, dir);
 
 		}
-		
-		if (!net_compatibility->value) {
-			if (type != TE_ROCKET_EXPLOSION
-				&& type != TE_ROCKET_EXPLOSION_WATER)
-				CL_FindExplosionPlane(pos, 100, dir);
 
-		} else if (net_compatibility->value)
-			CL_FindExplosionPlane(pos, 25, dir);
-		VectorNormalize(dir);
-		CL_AddDecalToScene(pos, dir,
+		CL_AddDecalToScene(pos, vec3_origin,
 						   0.1, 0.1, 0.1, 1,
 						   0, 0, 0, 1,
 						   45, 60000,
@@ -1018,35 +968,11 @@ void CL_ParseTEnt(void)
 
 	case TE_BFG_BIGEXPLOSION:
 		MSG_ReadPos(&net_message, pos);
+
 		if (!net_compatibility->value)
 			MSG_ReadDir(&net_message, dir); 
-		
-		if (net_compatibility->value)
-			CL_FindExplosionPlane(pos, 100, dir);
-		
-		VectorNormalize(dir);
-	/*	
-		ex = CL_AllocExplosion();
-		VectorCopy(pos, ex->ent.origin);
-		ex->type = ex_poly;
-		
-		ex->ent.flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DISTORT;
-		ex->ent.alpha = 0.0;
-		ex->start = cl.frame.servertime - 100;
 
-		ex->ent.model = cl_mod_distort;
-		ex->frames = 5;
-		ex->baseframe = 0;
-
-		ex->ent.angles[1] = rand() % 360;
-		
-		
-		ex->light = 350;
-		ex->lightcolor[0] = 0.0;
-		ex->lightcolor[1] = 1.0;
-		ex->lightcolor[2] = 0.0;
-*/
-		CL_AddDecalToScene(pos, dir,
+		CL_AddDecalToScene(pos, vec3_origin,
 						   0.1, 0.1, 0.1, 1,
 						   0.1, 0.1, 0.1, 1,
 						   45, 60000,
@@ -1094,30 +1020,12 @@ void CL_ParseTEnt(void)
 
 		CL_ParticleSmoke(pos, dir, 3);
 		CL_ParticleSpark(pos, dir, 25);
-/*
-		ex = CL_AllocExplosion();
-		VectorCopy(pos, ex->ent.origin);
-		ex->type = ex_flash;
-		// note to self
-		// we need a better no draw flag
-		ex->ent.flags = RF_BEAM;
-		ex->start = cl.frame.servertime - 0.1;
-		ex->light = 100 + (rand() % 75);
-		ex->lightcolor[0] = 1.0;
-		ex->lightcolor[1] = 1.0;
-		ex->lightcolor[2] = 0.3;
-		ex->ent.model = cl_mod_flash;
-		ex->frames = 2;
-		*/
 		break;
 
 	case TE_GREENBLOOD:
 		MSG_ReadPos(&net_message, pos);
 		MSG_ReadDir(&net_message, dir);
 		CL_ParticleBlood2(pos, dir, 1);
-
-
-
 		break;
 
 		// RAFAEL
@@ -1184,7 +1092,6 @@ void CL_ParseTEnt(void)
 
 		}
 
-
 		CL_Explosion(pos);
 		ex = CL_AllocExplosion();
 		VectorCopy(pos, ex->ent.origin);
@@ -1204,15 +1111,7 @@ void CL_ParseTEnt(void)
 		else
 			S_StartSound(pos, 0, 0, cl_sfx_rockexp, 1, 0.08, 0);
 
-		if (!net_compatibility->value) {
-			if (type != TE_ROCKET_EXPLOSION
-				&& type != TE_ROCKET_EXPLOSION_WATER)
-				CL_FindExplosionPlane(pos, 40, dir);
-
-		} else if (net_compatibility->value)
-			CL_FindExplosionPlane(pos, 40, dir);
-
-		CL_AddDecalToScene(pos, dir,
+		CL_AddDecalToScene(pos, vec3_origin,
 						   0.1, 0.1, 0.1, 1,
 						   0, 0, 0, 1,
 						   56, 60000,
@@ -1308,8 +1207,6 @@ void CL_ParseTEnt(void)
 	case TE_ELECTRIC_SPARKS:
 		MSG_ReadPos(&net_message, pos);
 		MSG_ReadDir(&net_message, dir);
-//      CL_ParticleEffect (pos, dir, 109, 40);
-//      CL_ParticleEffect (pos, dir, 0x75, 40);
 		CL_ParticleSmoke(pos, dir, 3);
 		CL_ParticleSpark(pos, dir, 25);
 		// FIXME : replace or remove this sound

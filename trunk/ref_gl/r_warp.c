@@ -153,9 +153,9 @@ void CreateDSTTex()
 void R_DrawWaterPolygons(msurface_t * fa)
 {
 	glpoly_t	*p, *bp;
-	float		*v, dstscroll;
+	float		*v, dstscroll, ambient;
 	int			id, i, nv = fa->polys->numVerts;
-	unsigned	defBits = 0, texture = -1;
+	unsigned	defBits = 0;
 
 	if (fa->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)){
 		defBits = worldDefs.WaterTransBits;
@@ -164,6 +164,10 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	else
 		defBits = 0;
 
+	if (r_ambientLevel->value < 0.3)
+		ambient = 0.3;
+	else
+		ambient = r_ambientLevel->value;
 	// setup program
 	GL_BindProgram(waterProgram, defBits);
 	id = waterProgram->id[defBits];
@@ -186,7 +190,7 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	qglUniform2f				(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
 	qglUniform2f				(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1f				(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
-	qglUniform1f				(qglGetUniformLocation(id, "u_ambientScale"), r_ambientLevel->value);
+	qglUniform1f				(qglGetUniformLocation(id, "u_ambientScale"), ambient);
 
 	dstscroll = ((r_newrefdef.time * 0.15f) - (int) (r_newrefdef.time * 0.15f));
 
