@@ -175,13 +175,14 @@ extern	image_t *r_blackTexture;
 
 extern	image_t	*r_defBump;
 extern	image_t	*ScreenMap;
+extern	image_t	*sslrMap;
 extern	image_t	*r_envTex;
 extern	image_t	*shadowMask;
 extern	image_t	*r_scanline;
 extern	image_t	*r_lightAttenMap;
 extern	image_t	*weaponHack;
 extern	image_t *fxaaMap;
-extern	image_t *occlusionMap;
+extern	image_t *fboScreen;
 
 #define MAX_FILTERS 256
 extern	image_t	*r_lightCubeMap[MAX_FILTERS];
@@ -474,6 +475,7 @@ void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
 void R_SetLightPlanes();
 trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
+void DrawTextureChains2();
 
 extern int	occ_framecount;
 //====================================================================
@@ -485,6 +487,7 @@ extern vec3_t	wVertexArray[MAX_BATCH_SURFS];
 
 extern float	wTexArray[MAX_BATCH_SURFS][2];
 extern float	wLMArray[MAX_BATCH_SURFS][2];
+extern vec4_t   wColorArray[MAX_BATCH_SURFS];
 
 
 extern vec3_t	nTexArray[MAX_BATCH_SURFS];
@@ -574,6 +577,7 @@ void GL_Blend(qboolean on, int dst, int src);
 int GL_MsgGLError(char* Info);
 void CreateWeaponRect(void);
 void Create_FBO(void);
+void CreateFboBuffer(void);
 /*
 ** GL config stuff
 */
@@ -772,7 +776,7 @@ extern vec2_t texCoord1[MAX_VERTEX_ARRAY];
 extern vec3_t vertCoord[MAX_VERTEX_ARRAY];
 extern vec4_t colorCoord[MAX_VERTEX_ARRAY];
 
-void R_PrepareShadowLightFrame(void);
+void R_PrepareShadowLightFrame(qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;
 qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius);
 
@@ -919,6 +923,17 @@ typedef enum glsl_attribute
 
 }
 glsl_attrib;
+
+uint ambientWorld_diffuse;
+uint ambientWorld_lightmap;
+uint ambientWorld_fx;
+uint ambientWorld_csm;
+uint ambientWorld_parallaxParams;
+uint ambientWorld_colorModulate;
+uint ambientWorld_viewOrigin;
+uint ambientWorld_parallaxType;
+uint ambientWorld_ambientScale;
+
 
 #define	MAX_VERTEX_CACHES	4096
 

@@ -174,8 +174,8 @@ void CreateScreenRect(void){
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA16F, vid.width, vid.height, 0,
-                       GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+    qglTexImage2D     ( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, vid.width, vid.height, 0,
+                       GL_RGB, GL_UNSIGNED_BYTE, NULL );
 
 }
 

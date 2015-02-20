@@ -451,6 +451,7 @@ typedef struct {
 
 		// viewport
 	int		viewport[4];
+	vec3_t	cornerRays[4];
 	mat3_t	axis;
 	mat4_t	projectionMatrix;
 	mat4_t	modelViewMatrix;

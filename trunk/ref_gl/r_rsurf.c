@@ -34,6 +34,7 @@ float color_black[4] = {0.0, 0.0, 0.0, 0.0};
 vec3_t  wVertexArray[MAX_BATCH_SURFS];
 float   wTexArray[MAX_BATCH_SURFS][2];
 float   wLMArray[MAX_BATCH_SURFS][2];
+vec4_t   wColorArray[MAX_BATCH_SURFS];
 
 float   wTmu0Array[MAX_BATCH_SURFS][2];
 float   wTmu1Array[MAX_BATCH_SURFS][2];
@@ -1272,10 +1273,11 @@ void R_DrawBSP(void)
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 	
 //	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-
+	R_DrawSkyBox();
+	R_CaptureColorBuffer();
 	DrawTextureChains();
 
-	R_DrawSkyBox();
+
 
 			
 }

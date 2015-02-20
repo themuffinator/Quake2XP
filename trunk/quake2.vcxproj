@@ -788,7 +788,6 @@
     <ClCompile Include="ref_gl\r_main.c" />
     <ClCompile Include="ref_gl\r_program.c" />
     <ClCompile Include="ref_gl\r_shadows.c" />
-    <ClCompile Include="ref_gl\r_zprepass.c" />
     <ClCompile Include="server\sv_ccmds.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|x64'">EnableFastChecks</BasicRuntimeChecks>

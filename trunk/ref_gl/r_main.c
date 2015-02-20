@@ -517,6 +517,9 @@ void R_DrawEntitiesOnList(void)
 
 		if (currententity->flags & RF_TRANSLUCENT)
 			continue;			// solid
+		
+		if (currententity->flags & RF_WEAPONMODEL)
+			continue;
 
 		if ( r_newrefdef.rdflags & RDF_IRGOGGLES) 
 				goto jump;
@@ -559,7 +562,10 @@ jump:
 
 		if (!(currententity->flags & RF_TRANSLUCENT))
 			continue;			// solid
-
+		
+		if (currententity->flags & RF_WEAPONMODEL)
+			continue;
+		
 		if ( r_newrefdef.rdflags & RDF_IRGOGGLES) 
 				goto next;
 
@@ -652,9 +658,52 @@ void R_DrawPlayerWeaponLightPass(void)
 				continue;
 			if (!(currententity->flags & RF_WEAPONMODEL))
 				continue;
+
 			R_DrawAliasModelLightPass(true);
 		}
 
+}
+
+void R_DrawPlayerWeaponAmbient(void)
+{
+	int i;
+
+	if (!r_drawEntities->value)
+		return;
+
+	// draw non-transparent first
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+
+		if (currententity->flags & RF_TRANSLUCENT)
+			continue;
+
+		currentmodel = currententity->model;
+
+		if (!(currententity->flags & RF_WEAPONMODEL))
+			continue;
+
+		if (currentmodel->type == mod_alias)
+			R_DrawAliasModel(currententity, false);
+
+	}
+	// draw transluscent shells
+	GL_DepthMask(0);
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+
+		if (!(currententity->flags & RF_TRANSLUCENT))
+			continue;
+
+		currentmodel = currententity->model;
+
+		if (!(currententity->flags & RF_WEAPONMODEL))
+			continue;
+
+		if (currentmodel->type == mod_alias)
+			R_DrawAliasModel(currententity, false);
+	}
+	GL_DepthMask(0);
 }
 
 void R_DrawLightInteractions(void)
@@ -676,7 +725,7 @@ void R_DrawLightInteractions(void)
 	if(r_shadows->value)
 		GL_Enable(GL_STENCIL_TEST);
 	
-	R_PrepareShadowLightFrame();
+	R_PrepareShadowLightFrame(false);
 	
 	if(shadowLight_frame) {
 
@@ -699,11 +748,7 @@ void R_DrawLightInteractions(void)
 	GL_StencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
 
-//	if (!R_DrawLightOccluders())
-//		continue;
-
 	R_CastBspShadowVolumes();		// bsp and bmodels shadows
-	R_DrawPlayerWeaponLightPass();	// shade player weapon only from bsp!
 	R_CastAliasShadowVolumes();		// alias models shadows
 	R_DrawLightWorld();				// light world
 	R_DrawLightFlare();				// light flare
@@ -740,6 +785,58 @@ void R_DrawLightInteractions(void)
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
+		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
+	GL_Disable(GL_BLEND);
+}
+
+void R_DrawPlayerWeapon(void)
+{
+
+	R_DrawPlayerWeaponAmbient();
+
+	GL_DepthMask(0);
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_ONE, GL_ONE);
+
+	if (r_useLightScissors->value)
+		GL_Enable(GL_SCISSOR_TEST);
+
+	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
+
+	if (r_shadows->value)
+		GL_Enable(GL_STENCIL_TEST);
+
+	R_PrepareShadowLightFrame(true);
+
+	if (shadowLight_frame) {
+
+		for (currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
+
+			if (r_skipStaticLights->value && currentShadowLight->isStatic)
+				continue;
+
+			R_SetViewLightScreenBounds();
+
+			if (r_useLightScissors->value)
+				GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
+
+			if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+				GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
+
+			qglClearStencil(128);
+			GL_StencilMask(255);
+			qglClear(GL_STENCIL_BUFFER_BIT);
+			
+			R_CastBspShadowVolumes();
+			R_DrawPlayerWeaponLightPass();
+		}
+	}
+
+	GL_DepthMask(1);
+	GL_Disable(GL_STENCIL_TEST);
+	GL_Disable(GL_SCISSOR_TEST);
+	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 	GL_Disable(GL_BLEND);
 }
@@ -783,8 +880,7 @@ r_newrefdef must be set before the first call
 ================
 */
 
-void R_RenderView(refdef_t * fd)
-{
+void R_RenderView (refdef_t *fd) {
 	if (r_noRefresh->value)
 		return;
 	
@@ -812,29 +908,29 @@ void R_RenderView(refdef_t * fd)
 	R_CaptureDepthBuffer();
 	R_DrawLightInteractions();
 	R_RenderDecals();
-
 	R_RenderFlares();
 	R_CaptureColorBuffer();
 	R_DrawAlphaPoly();
+	R_DrawPlayerWeapon();
 	R_DrawParticles();
 	R_CaptureColorBuffer();
+
 	R_RenderDistortModels();
 	R_CaptureColorBuffer();
 	R_DrawPlayerWeaponFBO();
 }
 
-
-void R_SetGL2D(void)
-{
+void R_SetGL2D (void) {
 	// set 2D virtual screen size
-
 	qglViewport(0, 0, vid.width, vid.height);
-	qglMatrixMode(GL_PROJECTION);
 
+	qglMatrixMode(GL_PROJECTION);
 	qglLoadIdentity();
 	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
+
 	qglMatrixMode(GL_MODELVIEW);
 	qglLoadIdentity();
+
 	GL_Disable(GL_DEPTH_TEST);
 	GL_Disable(GL_CULL_FACE);
 }
@@ -846,8 +942,7 @@ R_SetLightLevel
 
 ====================
 */
-void R_SetLightLevel(void)
-{
+void R_SetLightLevel (void) {
 	vec3_t shadelight;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -1756,6 +1851,7 @@ int R_Init(void *hinstance, void *hWnd)
 		qglGetFramebufferAttachmentParameteriv =	(PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC) qwglGetProcAddress("glGetFramebufferAttachmentParameteriv");
 		qglGenerateMipmap =							(PFNGLGENERATEMIPMAPPROC) qwglGetProcAddress("glGenerateMipmap");
 		qglBlitFramebuffer =						(PFNGLBLITFRAMEBUFFERPROC) qwglGetProcAddress("glBlitFramebuffer");
+	
 	}
 	else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_framebuffer_object not found\n");

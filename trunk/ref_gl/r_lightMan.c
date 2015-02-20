@@ -36,7 +36,7 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light);
 void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine();
 
-qboolean R_AddLightToFrame(worldShadowLight_t *light) {
+qboolean R_AddLightToFrame(worldShadowLight_t *light, qboolean weapon) {
 
 	if (r_newrefdef.areabits){
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))){
@@ -56,6 +56,10 @@ qboolean R_AddLightToFrame(worldShadowLight_t *light) {
 	{
 	if(R_CullBox(light->mins, light->maxs))
 		return false;
+	}
+	if (weapon){
+		if (!BoundsAndSphereIntersect(light->mins, light->maxs, r_origin, 25.0))
+			return false;
 	}
 	 return true;
 }
@@ -161,7 +165,7 @@ void R_AddNoWorldModelLight() {
 }
 
 
-void R_PrepareShadowLightFrame(void) {
+void R_PrepareShadowLightFrame(qboolean weapon) {
 	
 	int i;
 	worldShadowLight_t *light;
@@ -174,7 +178,7 @@ void R_PrepareShadowLightFrame(void) {
 	if(shadowLight_static) {
 		for(light = shadowLight_static; light; light = light->s_next) {
 
-			if(!R_AddLightToFrame(light))
+			if(!R_AddLightToFrame(light, weapon))
 				continue;
 
 			light->next = shadowLight_frame;

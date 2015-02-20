@@ -240,10 +240,10 @@ int SignbitsForPlane(cplane_t * out)
 }
 
 
-void R_SetFrustum(void)
-{
+void R_SetFrustum (void) {
 	int i;
-
+	float tx, ty;
+	vec3_t axis[3];
 	
 	VectorCopy(vpn, frustum[4].normal);
 
@@ -273,7 +273,30 @@ void R_SetFrustum(void)
 		frustum[i].dist = DotProduct(r_origin, frustum[i].normal);
 		frustum[i].signbits = SignbitsForPlane(&frustum[i]);
 	}
+
 	frustum[4].dist += r_zNear->value; // near clip plane
 
+	// compute the world-space rays to the far plane corners
+	tx = tan(DEG2RAD(r_newrefdef.fov_x * 0.5f));
+	ty = tan(DEG2RAD(r_newrefdef.fov_y * 0.5f));
+
+/*
+	// view space
+	VectorSet(axis[0], 1.f, 0.f, 0.f);
+	VectorSet(axis[1], 0.f, -tx, 0.f);
+	VectorSet(axis[2], 0.f, 0.f, ty);
+*/
+	for (i = 0; i < 3; i++) {
+		// world space
+		axis[0][i] = vpn[i];
+		axis[1][i] = -vright[i] * tx;
+		axis[2][i] = vup[i] * ty;
+
+		// counter-clockwise order
+		r_newrefdef.cornerRays[0][i] = axis[0][i] + axis[1][i] + axis[2][i];	// top left
+		r_newrefdef.cornerRays[1][i] = axis[0][i] + axis[1][i] - axis[2][i];	// bottom left
+		r_newrefdef.cornerRays[2][i] = axis[0][i] - axis[1][i] - axis[2][i];	// bottom right
+		r_newrefdef.cornerRays[3][i] = axis[0][i] - axis[1][i] + axis[2][i];	// top right
+	}
 }
 
