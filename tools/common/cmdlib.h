@@ -109,11 +109,11 @@ int		LittleLong (int l);
 float	BigFloat (float l);
 float	LittleFloat (float l);
 
+#define	MAX_TOKEN_CHARS		128		// max length of an individual token
+char *COM_Parse (char **data_p);
 
-char *COM_Parse (char *data);
-
-extern	char		com_token[1024];
-extern	qboolean	com_eof;
+//extern	char		com_token[MAX_TOKEN_CHARS];
+//extern	qboolean	com_eof;
 
 char *copystring(char *s);
 

@@ -173,11 +173,8 @@ void BaseLightForFace (dface_t *f, vec3_t color)
 	tx = &texinfo[f->texinfo];
 	if (!(tx->flags & SURF_LIGHT) || tx->value == 0)
 		return;
-
-	if (q2xp2_lightmaps) {
-		if (!(tx->flags & (SURF_SKY | SURF_WARP)))
-			return;
-	}
+	if (useXPLights && !(tx->flags & (SURF_SKY | SURF_WARP)))
+		return;		// leave only potentially big area lights
 
 	VectorScale (texture_reflectivity[f->texinfo], tx->value, color);
 }

@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include "qrad.h"
 
-#define	MAX_LSTYLES	256
-
 typedef struct
 {
 	dface_t		*faces[2];
@@ -34,8 +32,11 @@ edgeshare_t	edgeshare[MAX_MAP_EDGES];
 int			facelinks[MAX_MAP_FACES];
 int			planelinks[2][MAX_MAP_PLANES];
 
+facelight_t		facelight[MAX_MAP_FACES];
+directlight_t	*directlights[MAX_MAP_LEAFS];
+int				numdlights;
+
 int			lightmap_scale;
-qboolean		q2xp2_lightmaps;	// leave only skies and lava illumination
 
 /*
 ============
@@ -469,32 +470,6 @@ void SampleTriangulation (vec3_t point, triangulation_t *trian, vec3_t color)
 
 =================================================================
 */
-
-
-#define	SINGLEMAP	(64*64*4)
-
-typedef struct
-{
-	vec_t	facedist;
-	vec3_t	facenormal;
-
-	int		numsurfpt;
-	vec3_t	surfpt[SINGLEMAP];
-
-	vec3_t	modelorg;		// for origined bmodels
-
-	vec3_t	texorg;
-	vec3_t	worldtotex[2];	// s = (world - texorg) . worldtotex[0]
-	vec3_t	textoworld[2];	// world = texorg + s * textoworld[0]
-
-	vec_t	exactmins[2], exactmaxs[2];
-	
-	int		texmins[2], texsize[2];
-	int		surfnum;
-	dface_t	*face;
-} lightinfo_t;
-
-
 /*
 ================
 CalcFaceExtents
@@ -719,23 +694,6 @@ void CalcPoints (lightinfo_t *l, float sofs, float tofs) {
 
 //==============================================================
 
-
-
-#define	MAX_STYLES	32
-typedef struct
-{
-	int			numsamples;
-	float		*origins;
-	int			numstyles;
-	int			stylenums[MAX_STYLES];
-	float		*samples[MAX_STYLES];
-	float		*directions;
-} facelight_t;
-
-directlight_t	*directlights[MAX_MAP_LEAFS];
-facelight_t		facelight[MAX_MAP_FACES];
-int				numdlights;
-
 /*
 ==================
 FindTargetEntity
@@ -755,9 +713,6 @@ entity_t *FindTargetEntity (char *target)
 
 	return NULL;
 }
-
-//#define	DIRECT_LIGHT	3000
-#define	DIRECT_LIGHT	3
 
 /*
 =============
@@ -782,6 +737,7 @@ void CreateDirectLights (void)
 	//
 	// surfaces
 	//
+
 	for (i=0, p=patches ; i<num_patches ; i++, p++)
 	{
 		if (p->totallight[0] < DIRECT_LIGHT
@@ -808,22 +764,57 @@ void CreateDirectLights (void)
 		VectorClear (p->totallight);	// all sent now
 	}
 
-	if (q2xp2_lightmaps) {
-		qprintf ("%i direct lights\n", numdlights);
-		return;
+	if (useXPLights) {
+		//
+		// external relight file
+		//
+
+		xpLight_t *l;
+
+		for (i = 0, l = xpLights; i < numXPLights; i++, l++) {
+			numdlights++;
+
+			dl = malloc(sizeof(directlight_t));
+			memset (dl, 0, sizeof(*dl));
+
+			VectorCopy(l->origin, dl->origin);
+
+			dl->style = l->style;
+			if (dl->style < 0 || dl->style >= MAX_LSTYLES)
+				dl->style = 0;
+
+			leaf = PointInLeaf (dl->origin);
+			cluster = leaf->cluster;
+
+			dl->next = directlights[cluster];
+			directlights[cluster] = dl;
+
+			// TODO: make qrad use 3D radius
+			intensity = (l->radius[0] + l->radius[1] + l->radius[2]) * 0.333333f;
+			dl->intensity = max(intensity, 0.f) * entity_scale;
+
+			VectorCopy(l->color, dl->color);
+//			ColorNormalize (l->color, dl->color);
+
+			dl->type = l->type + 1;
+
+			VectorCopy(l->dir, dl->normal);
+			dl->stopdot = cosf(l->cone * Q_PI / 180.f);
+		}
 	}
+	else {
 
 	//
 	// entities
 	//
-	for (i=0 ; i<num_entities ; i++)
-	{
-		e = &entities[i];
+
+	for (i = 0, e = entities; i < num_entities ; i++, e++) {
 		name = ValueForKey (e, "classname");
 		if (strncmp (name, "light", 5))
 			continue;
 
 		numdlights++;
+
 		dl = malloc(sizeof(directlight_t));
 		memset (dl, 0, sizeof(*dl));
 
@@ -845,6 +836,7 @@ void CreateDirectLights (void)
 			intensity = FloatForKey (e, "_light");
 		if (!intensity)
 			intensity = 300;
+
 		_color = ValueForKey (e, "_color");
 		if (_color && _color[1])
 		{
@@ -863,8 +855,8 @@ void CreateDirectLights (void)
 			dl->type = emit_spotlight;
 			dl->stopdot = FloatForKey (e, "_cone");
 			if (!dl->stopdot)
-				dl->stopdot = 10;
-			dl->stopdot = cos(dl->stopdot/180*3.14159);
+				dl->stopdot = 10.f;
+			dl->stopdot = cos(dl->stopdot / 180.f * Q_PI);
 			if (target[0])
 			{	// point towards target
 				e2 = FindTargetEntity (target);
@@ -899,6 +891,8 @@ void CreateDirectLights (void)
 				}
 			}
 		}
+	}
+
 	}
 
 	qprintf ("%i direct lights\n", numdlights);
@@ -1049,16 +1043,14 @@ nextpatch:;
 /*
 =============
 BuildFacelights
+
 =============
 */
-float	sampleofs[5][2] = 
-{  {0,0}, {-0.25, -0.25}, {0.25, -0.25}, {0.25, 0.25}, {-0.25, 0.25} };
+static const float sampleofs[5][2] = { {0, 0},{-0.25, -0.25}, {0.25, -0.25}, {0.25, 0.25}, {-0.25, 0.25} };
 
-
-void BuildFacelights (int facenum)
-{
+void BuildFacelights (int facenum) {
 	dface_t	*f;
-	lightinfo_t	l[5];
+	lightinfo_t	*l;
 	float		*styletable[MAX_LSTYLES];
 	int			i, j;
 	float		*spot, *direction;
@@ -1080,6 +1072,9 @@ void BuildFacelights (int facenum)
 		numsamples = extrasamplesvalue;
 	else
 		numsamples = 1;
+
+	l = malloc (numsamples * sizeof(lightinfo_t));
+
 	for (i=0 ; i<numsamples ; i++)
 	{
 		memset (&l[i], 0, sizeof(l[i]));
@@ -1175,6 +1170,8 @@ void BuildFacelights (int facenum)
 			VectorAdd (spot, face_patches[facenum]->baselight, spot);
 		}
 	}
+
+	free(l);
 }
 
 

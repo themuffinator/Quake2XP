@@ -26,34 +26,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "polylib.h"
 #include "threads.h"
 #include "lbmlib.h"
+#include "xplit.h"
+#include "xplm.h"
+#include "lightmap.h"
 
 #ifdef WIN32
 #include <windows.h>
 #endif
 
-typedef enum
-{
-	emit_surface,
-	emit_point,
-	emit_spotlight
-} emittype_t;
-
-
-extern int extrasamplesvalue;
-
-typedef struct directlight_s
-{
-	struct directlight_s *next;
-	emittype_t	type;
-
-	float		intensity;
-	int			style;
-	vec3_t		origin;
-	vec3_t		color;
-	vec3_t		normal;		// for surfaces and spotlights
-	float		stopdot;		// for spotlights
-} directlight_t;
-
+#define	MAX_PATCHES	65000			// larger will cause 32 bit overflows
 
 // the sum of all tranfer->transfer values for a given patch
 // should equal exactly 0x10000, showing that all radiance
@@ -63,9 +44,6 @@ typedef struct
 	unsigned short	patch;
 	unsigned short	transfer;
 } transfer_t;
-
-
-#define	MAX_PATCHES	65000			// larger will cause 32 bit overflows
 
 typedef struct patch_s
 {
@@ -101,13 +79,9 @@ extern	vec3_t		face_offset[MAX_MAP_FACES];		// for rotating bmodels
 extern	patch_t		patches[MAX_PATCHES];
 extern	unsigned	num_patches;
 
-extern	int		leafparents[MAX_MAP_LEAFS];
-extern	int		nodeparents[MAX_MAP_NODES];
-
 extern	float	lightscale;
 
 extern int	lightmap_scale;
-extern qboolean	q2xp2_lightmaps;
 extern qboolean deluxeMapping;
 
 void MakeShadowSplits (void);
@@ -124,10 +98,13 @@ extern	float ambient, maxlight;
 
 void LinkPlaneFaces (void);
 
-extern	qboolean	extrasamples;
+extern qboolean	extrasamples;
+extern int extrasamplesvalue;
+
 extern int numbounce;
 
-extern	directlight_t	*directlights[MAX_MAP_LEAFS];
+extern qboolean	useXPLights;
+extern qboolean	bakeXPLM;
 
 extern	byte	nodehit[MAX_MAP_NODES];
 
@@ -154,7 +131,12 @@ extern	float	subdiv;
 extern	float	direct_scale;
 extern	float	entity_scale;
 
-int	PointInLeafnum (vec3_t point);
+// for MakeTransfers
+extern int	total_transfer;
+
+void MakeBackplanes (void);
+void MakeParents (int nodenum, int parent);
+int PointInLeafnum (vec3_t point);
 void MakeTnodes (dmodel_t *bm);
 void MakePatches (void);
 void SubdividePatches (void);

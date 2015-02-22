@@ -641,8 +641,7 @@ qboolean ParseEntity (void) {
 	if (num_entities == MAX_MAP_ENTITIES)
 		Error ("num_entities == MAX_MAP_ENTITIES");
 
-	mapent = &entities[num_entities];
-	num_entities++;
+	mapent = &entities[num_entities++];
 
 	do
 	{

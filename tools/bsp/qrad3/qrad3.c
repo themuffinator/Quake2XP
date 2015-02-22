@@ -38,6 +38,9 @@ entity_t	*face_entity[MAX_MAP_FACES];
 patch_t		patches[MAX_PATCHES];
 unsigned	num_patches;
 
+static int		leafparents[MAX_MAP_LEAFS];
+static int		nodeparents[MAX_MAP_NODES];
+
 vec3_t		radiosity[MAX_PATCHES];		// light leaving a patch
 vec3_t		illumination[MAX_PATCHES];	// light arriving at a patch
 
@@ -48,19 +51,25 @@ char		inbase[32], outbase[32];
 
 int			fakeplanes;					// created planes for origin offset 
 
-int		numbounce = 8;
+int			numbounce = 8;
+
 qboolean	extrasamples;
 int		extrasamplesvalue;
-float	subdiv = 64;
+
+float		subdiv = 64;
+
 qboolean	dumppatches;
+
+qboolean	useXPLights = false;
+qboolean	bakeXPLM = false;
 
 void BuildLightmaps (void);
 int TestLine (vec3_t start, vec3_t stop);
 
 int		junk;
 
-float	ambient = 0;
-float	maxlight = 196;
+float	ambient = 0.f;
+float	maxlight = 196.f;
 
 float	lightscale = 1.0;
 
@@ -75,6 +84,9 @@ char		source[1024];
 float	direct_scale =	0.4;
 float	entity_scale =	1.0;
 
+// for MakeTransfers
+int	total_transfer;
+
 /*
 ===================================================================
 
@@ -83,10 +95,10 @@ MISC
 ===================================================================
 */
 
-
 /*
 =============
 MakeBackplanes
+
 =============
 */
 void MakeBackplanes (void)
@@ -99,9 +111,6 @@ void MakeBackplanes (void)
 		VectorSubtract (vec3_origin, dplanes[i].normal, backplanes[i].normal);
 	}
 }
-
-int		leafparents[MAX_MAP_LEAFS];
-int		nodeparents[MAX_MAP_NODES];
 
 /*
 =============
@@ -126,7 +135,6 @@ void MakeParents (int nodenum, int parent)
 	}
 }
 
-
 /*
 ===================================================================
 
@@ -135,8 +143,7 @@ TRANSFER SCALES
 ===================================================================
 */
 
-int	PointInLeafnum (vec3_t point)
-{
+int PointInLeafnum (vec3_t point) {
 	int		nodenum;
 	vec_t	dist;
 	dnode_t	*node;
@@ -157,15 +164,12 @@ int	PointInLeafnum (vec3_t point)
 	return -nodenum - 1;
 }
 
-
-dleaf_t		*PointInLeaf (vec3_t point)
-{
+dleaf_t *PointInLeaf (vec3_t point) {
 	int		num;
 
 	num = PointInLeafnum (point);
 	return &dleafs[num];
 }
-
 
 qboolean PvsForOrigin (vec3_t org, byte *pvs)
 {
@@ -192,8 +196,6 @@ MakeTransfers
 
 =============
 */
-int	total_transfer;
-
 void MakeTransfers (int i)
 {
 	int			j;
@@ -733,15 +735,9 @@ int main (int argc, char **argv) {
 			maxlight = atof (argv[i+1]) * 128;
 			i++;
 		}
-
-		// KRIGSSVIN: added two keys
-		else if (!strcmp(argv[i],"-q2xp2"))
-		{
-			q2xp2_lightmaps = true;
-		}
 		else if (!strcmp(argv[i],"-lightmap_scale"))
 		{
-			lightmap_scale = atof (argv[i+1]);
+			lightmap_scale = min(4, atoi(argv[i+1]));
 			i++;
 		}
 		else if (!strcmp(argv[i],"-deluxe"))
@@ -752,6 +748,10 @@ int main (int argc, char **argv) {
 			strcpy (inbase, "/tmp");
 		else if (!strcmp (argv[i],"-tmpout"))
 			strcpy (outbase, "/tmp");
+		else if (!strcmp(argv[i], "-xp_lights"))
+			useXPLights = true;
+		else if (!strcmp(argv[i], "-xp_lightmaps"))
+			bakeXPLM = true;
 		else
 			break;
 	}
@@ -765,7 +765,7 @@ int main (int argc, char **argv) {
 		maxlight = 255;
 
 	if (i != argc - 1)
-		Error ("usage: q2xprad [-v] [-chop num] [-scale num] [-ambient num] [-maxlight num] [-threads num] [-lightmap_scale num] [-q2xp2] bspfile");
+		Error ("usage: q2xprad [-v] [-chop num] [-scale num] [-ambient num] [-maxlight num] [-threads num] [-lightmap_scale num] [-xp_lights] [-xp_lightmaps] bspfile");
 
 	start = I_FloatTime ();
 
@@ -773,14 +773,28 @@ int main (int argc, char **argv) {
 	strcpy (source, ExpandArg(argv[i]));
 	StripExtension (source);
 	DefaultExtension (source, ".bsp");
-
-//	ReadLightFile ();
-
 	sprintf (name, "%s%s", inbase, source);
 	printf ("reading %s\n", name);
 	LoadBSPFile (name);
+
 	ParseEntities ();
 	CalcTextureReflectivity ();
+
+	if (useXPLights) {
+		//
+		// load lights from .xplit file instead
+		//
+
+		char	source2[1024];
+		char	name2[1024];
+
+		strcpy (source2, source);
+		StripExtension (source2);
+		DefaultExtension (source2, ".xplit");
+		sprintf (name2, "%s%s", inbase, source2);
+		printf ("reading %s\n", name2);
+		LoadXPLights (name2);
+	}
 
 	if (!visdatasize) {
 		printf ("No vis information, direct lighting only.\n");
@@ -788,25 +802,45 @@ int main (int argc, char **argv) {
 		ambient = 0.1;
 	}
 
-	RadWorld ();
+	if (bakeXPLM) {
+		//
+		// Q2XP126 SH lightmaps
+		//
 
-	// add 'lightmap_scale' key to worldspawn
-	AddLightmapScaleKey();
+		XP_BakeLightmaps();
 
-	// add deluxe key to worldspawn
-	if(deluxeMapping)
-		AddDeluxeKey();
+		StripExtension(source);
+		DefaultExtension(source, ".xplm");
+		sprintf(name, "%s%s", outbase, source);
+		printf("writing %s\n", name);
 
-	// write new entity string
-	UnparseEntities();
+		XP_WriteXPLM (name);
+	}
+	else {
+		//
+		// normal Q2 lightmaps
+		//
 
-	sprintf (name, "%s%s", outbase, source);
-	printf ("writing %s\n", name);
-	WriteBSPFile (name);
+		RadWorld();
+
+		// add 'lightmap_scale' key to worldspawn
+		AddLightmapScaleKey();
+
+		// add deluxe key to worldspawn
+		if(deluxeMapping)
+			AddDeluxeKey();
+
+		// write new entity string
+		UnparseEntities();
+
+		sprintf(name, "%s%s", outbase, source);
+		printf("writing %s\n", name);
+
+		WriteBSPFile (name);
+	}
 
 	end = I_FloatTime ();
 	printf ("%5.0f seconds elapsed\n", end-start);
 	
 	return 0;
 }
-

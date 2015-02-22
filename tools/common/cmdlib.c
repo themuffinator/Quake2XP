@@ -41,8 +41,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 int myargc;
 char **myargv;
 
-char		com_token[1024];
-qboolean	com_eof;
+//char		com_token[MAX_TOKEN_CHARS];
+//qboolean	com_eof;
 
 qboolean		archive;
 char			archivedir[1024];
@@ -354,7 +354,7 @@ COM_Parse
 Parse a token out of a string
 ==============
 */
-char *COM_Parse (char *data)
+/*char *COM_Parse (char *data)
 {
 	int		c;
 	int		len;
@@ -426,7 +426,90 @@ skipwhite:
 	com_token[len] = 0;
 	return data;
 }
+*/
+/*
+==============
+COM_Parse
 
+Parse a token out of a string.
+Keep it for old mods.
+==============
+*/
+char *COM_Parse (char **data_p) {
+	static char	token[MAX_TOKEN_CHARS];
+	int		c, len;
+	char	*data;
+
+	data = *data_p;
+	len = 0;
+	token[0] = 0;
+	
+	if (!data) {
+		*data_p = NULL;
+		return "";
+	}
+		
+skipWhite:
+	// skip whitespace
+	while ((c = *data) <= ' ') {
+		if (c == 0) {
+			*data_p = NULL;
+			return "";
+		}
+
+		data++;
+	}
+	
+	// skip // comments
+	if (c=='/' && data[1] == '/') {
+		while (*data && *data != '\n')
+			data++;
+
+		goto skipWhite;
+	}
+
+	// handle quoted strings specially
+	if (c == '\"') {
+		data++;
+
+		while (1) {
+			c = *data++;
+
+			if (c=='\"' || !c) {
+				token[len] = 0;
+				*data_p = data;
+				return token;
+			}
+
+			if (len < MAX_TOKEN_CHARS) {
+				token[len] = c;
+				len++;
+			}
+		}
+	}
+
+	// parse a regular word
+	do {
+		if (len < MAX_TOKEN_CHARS) {
+			token[len] = c;
+			len++;
+		}
+
+		data++;
+
+		c = *data;
+	} while (c > ' ');
+
+	if (len == MAX_TOKEN_CHARS) {
+		printf("COM_Parse: token length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
+		len = 0;
+	}
+
+	token[len] = 0;
+	*data_p = data;
+
+	return token;
+}
 
 int Q_strncasecmp (char *s1, char *s2, int n)
 {

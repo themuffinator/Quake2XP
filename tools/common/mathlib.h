@@ -42,6 +42,13 @@ typedef vec_t vec4_t[4];
 
 #define	Q_PI	3.14159265358979323846
 
+#ifndef min 
+#define min(a,b)        (((a) < (b)) ? (a) : (b)) 
+#endif 
+#ifndef max 
+#define max(a,b)        (((a) > (b)) ? (a) : (b)) 
+#endif 
+
 extern vec3_t vec3_origin;
 
 #define	EQUAL_EPSILON	0.001

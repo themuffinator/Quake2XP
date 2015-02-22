@@ -78,7 +78,7 @@ void ThreadWorkerFunction (int threadnum)
 		work = GetThreadWork ();
 		if (work == -1)
 			break;
-printf ("thread %i, work %i\n", threadnum, work);
+//printf ("thread %i, work %i\n", threadnum, work);
 		workfunction(work);
 	}
 }
