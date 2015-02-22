@@ -150,12 +150,11 @@ void CreateDSTTex()
 
 }
 
-void R_DrawWaterPolygons(msurface_t * fa)
-{
+void R_DrawWaterPolygons (msurface_t *fa) {
 	glpoly_t	*p, *bp;
 	float		*v, dstscroll, ambient, alpha;
 	int			id, i, nv = fa->polys->numVerts;
-	unsigned	defBits = 0;
+	unsigned	defBits;
 
 	if (fa->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)){
 		defBits = worldDefs.WaterTransBits;
@@ -163,13 +162,10 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	}
 	else {
 		defBits = 0;
-		alpha = 0.5f;
+		alpha = 1.f;
 	}
 
-	if (r_ambientLevel->value < 0.3)
-		ambient = 0.3;
-	else
-		ambient = r_ambientLevel->value;
+	ambient = min(r_ambientLevel->value, 0.3f);
 
 	// setup program
 	GL_BindProgram(waterProgram, defBits);
@@ -192,13 +188,16 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	qglUniform1f		(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
 	qglUniform1f		(qglGetUniformLocation(id, "u_ambientScale"), ambient);
 
+	qglUniformMatrix3fv(qglGetUniformLocation(id, "g_entityToWorldRot"), 1, false, (const float *)currententity->axis);
 
-	dstscroll = ((r_newrefdef.time * 0.15f) - (int) (r_newrefdef.time * 0.15f));
+	dstscroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_TEX2);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
+	qglEnableVertexAttribArray(ATRB_TANGENT);
+	qglEnableVertexAttribArray(ATRB_BINORMAL);
 
 	if (defBits) {
 		qglEnableVertexAttribArray(ATRB_COLOR);
@@ -209,6 +208,8 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, wTexArray);
 	qglVertexAttribPointer(ATRB_TEX2, 2, GL_FLOAT, false,		0, wTmu2Array);
 	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false,		0, nTexArray);
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
 
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
@@ -228,7 +229,16 @@ void R_DrawWaterPolygons(msurface_t * fa)
 			nTexArray[i][1] = v[8];
 			nTexArray[i][2] = v[9];
 
-			wColorArray[i][3] = alpha;
+			tTexArray[i][0] = v[10];
+			tTexArray[i][1] = v[11];
+			tTexArray[i][2] = v[12];
+
+			bTexArray[i][0] = v[13];
+			bTexArray[i][1] = v[14];
+			bTexArray[i][2] = v[15];
+
+			if (defBits)
+				wColorArray[i][3] = alpha;
 		}
 
 		qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
@@ -240,6 +250,8 @@ void R_DrawWaterPolygons(msurface_t * fa)
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_TEX2);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
+	qglDisableVertexAttribArray(ATRB_TANGENT);
+	qglDisableVertexAttribArray(ATRB_BINORMAL);
 
 	if (defBits)
 		qglDisableVertexAttribArray(ATRB_COLOR);
@@ -496,9 +508,9 @@ void MakeSkyVec(float s, float t, int axis)
 	vec3_t v, b;
 	int j, k;
 
-	b[0] = s * 16384;// 2300;
-	b[1] = t * 16384;//2300;
-	b[2] = 16384;//2300;
+	b[0] = s * 2300;// 2300;
+	b[1] = t * 2300;//2300;
+	b[2] = 2300;//2300;
 
 	for (j = 0; j < 3; j++) {
 		k = st_to_vec[axis][j];

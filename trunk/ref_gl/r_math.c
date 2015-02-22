@@ -20,6 +20,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
+mat3_t mat3_identity = {
+	{ 1, 0, 0 },
+	{ 0, 1, 0 },
+	{ 0, 0, 1 }
+};
+
+mat4_t mat4_identity = {
+	{ 1, 0, 0, 0 },
+	{ 0, 1, 0, 0 },
+	{ 0, 0, 1, 0 },
+	{ 0, 0, 0, 1 }
+};
+
 /*
 ===========
 Q_sincos
@@ -69,6 +82,35 @@ void AnglesToMat3(const vec3_t angles, mat3_t m) {
      m[2][2] = cr * cp;
 }
 
+/*
+================
+Mat3_Identity
+
+================
+*/
+void Mat3_Identity (mat3_t mat) {
+	mat[0][0] = 1;
+	mat[0][1] = 0;
+	mat[0][2] = 0;
+	mat[1][0] = 0;
+	mat[1][1] = 1;
+	mat[1][2] = 0;
+	mat[2][0] = 0;
+	mat[2][1] = 0;
+	mat[2][2] = 1;
+}
+
+/*
+================
+Mat3_Copy
+
+================
+*/
+void Mat3_Copy (const mat3_t in, mat3_t out) {
+	VectorCopy(in[0], out[0]);
+	VectorCopy(in[1], out[1]);
+	VectorCopy(in[2], out[2]);
+}
 
 /*
 ================

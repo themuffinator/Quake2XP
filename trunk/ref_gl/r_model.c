@@ -93,7 +93,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 
 	if (surf->texInfo->
 		flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_FLOWING |
-				 SURF_DRAWTURB | SURF_WARP))
+				 MSURF_DRAWTURB | SURF_WARP))
 		return;
 
 	if (!(surf->texInfo->flags & (SURF_LIGHT)))
@@ -185,7 +185,7 @@ void GL_AddFlareSurface(msurface_t * surf)
 
 	/* ============== move flare origin in to map bounds ============ */
 
-	if (surf->flags & SURF_PLANEBACK)
+	if (surf->flags & MSURF_PLANEBACK)
 		VectorNegate(surf->plane->normal, tmp);
 	else
 		VectorCopy(surf->plane->normal, tmp);
@@ -493,7 +493,7 @@ model_t *Mod_ForName(char *name, qboolean crash)
 	modfilelen =  FS_LoadFile(mod->name, (void**)&buf);
 	if (!buf) {
 		if (crash)
-			VID_Error(ERR_DROP, "Mod_NumForName: %s not found", mod->name);
+			VID_Error(ERR_DROP, "Mod_ForName: %s not found", mod->name);
 		memset(mod->name, 0, sizeof(mod->name));
 		return NULL;
 	}
@@ -1215,7 +1215,7 @@ void Mod_LoadFaces(lump_t * l)
 		planenum = LittleShort(in->planenum);
 		side = LittleShort(in->side);
 		if (side)
-			out->flags |= SURF_PLANEBACK;			
+			out->flags |= MSURF_PLANEBACK;			
 
 		out->plane = loadmodel->planes + planenum;
 
@@ -1239,7 +1239,7 @@ void Mod_LoadFaces(lump_t * l)
 	// set the drawing flags
 		
 		if (out->texInfo->flags & SURF_WARP)
-				out->flags |= SURF_DRAWTURB;
+				out->flags |= MSURF_DRAWTURB;
 
 		
 		// create lightmaps and polygons
@@ -1259,7 +1259,7 @@ void Mod_LoadFaces(lump_t * l)
 	// calc neighbours for shadow volumes
 	for (surfnum=0 ; surfnum<count ; surfnum++, surf++)
 	{
-		if ( surf->flags & (SURF_DRAWTURB|SURF_DRAWSKY) )
+		if ( surf->flags & (MSURF_DRAWTURB|MSURF_DRAWSKY) )
 			continue;
 		BuildSurfaceNeighours(surf);
 	}
@@ -1305,7 +1305,7 @@ void GL_BuildTBN(int count) {
 	FILE		*cacheFile = NULL;
 	int         smoothAng = (int)r_tbnSmoothAngle->value;
 
-	threshold = cos(DEG2RAD(r_tbnSmoothAngle->value));
+	threshold = cosf(DEG2RAD(r_tbnSmoothAngle->value));
 
 	// Check for existing data
 	Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
@@ -1322,7 +1322,7 @@ void GL_BuildTBN(int count) {
 		for (i = 0; i<count; i++) {
 			si = &currentmodel->surfaces[i];
 
-			if (si->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW))
+			if (si->texInfo->flags & (SURF_SKY | /*SURF_TRANS33 | SURF_TRANS66 | */SURF_NODRAW))
 				continue;
 
 			vi = si->polys->verts[0];
@@ -1358,7 +1358,7 @@ recreate:
 	{
 		si = &currentmodel->surfaces[i];
 
-		if (si->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW))
+		if (si->texInfo->flags & (SURF_SKY | /*SURF_TRANS33 | SURF_TRANS66 | */SURF_NODRAW))
 			continue;
 
 		vi = si->polys->verts[0];
@@ -1366,7 +1366,7 @@ recreate:
 		for (ci = 0; ci<si->numEdges; ci++, vi += VERTEXSIZE)
 			vi[7] = vi[8] = vi[9] = vi[10] = vi[11] = vi[12] = vi[13] = vi[14] = vi[15] = 0;
 		
-		if (si->flags & SURF_PLANEBACK)
+		if (si->flags & MSURF_PLANEBACK)
 			VectorNegate(si->plane->normal, ni);
 		else
 			VectorCopy(si->plane->normal, ni);
@@ -1375,12 +1375,12 @@ recreate:
 		{
 			sj = &currentmodel->surfaces[j];
 
-			if (!(sj->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_NODRAW)))
+			if (!(sj->texInfo->flags & (SURF_SKY | /*SURF_TRANS33 | SURF_TRANS66 | */SURF_NODRAW)))
 			{
 				if (si->texInfo->image->texnum != sj->texInfo->image->texnum)
 					continue;
 
-				if (sj->flags & SURF_PLANEBACK)
+				if (sj->flags & MSURF_PLANEBACK)
 					VectorNegate(sj->plane->normal, nj);
 				else
 					VectorCopy(sj->plane->normal, nj);
@@ -1536,8 +1536,7 @@ void Mod_LoadNodes(lump_t * l)
 Mod_LoadLeafs
 =================
 */
-void Mod_LoadLeafs(lump_t * l)
-{
+void Mod_LoadLeafs (lump_t *l) {
 	dleaf_t *in;
 	mleaf_t *out;
 	int i, j, count, p;
@@ -1545,8 +1544,8 @@ void Mod_LoadLeafs(lump_t * l)
 
 	in = (dleaf_t *) (mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		VID_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size in %s",
-				  loadmodel->name);
+		VID_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+
 	count = l->filelen / sizeof(*in);
 	out = (mleaf_t *)Hunk_Alloc(count * sizeof(*out));
 	
@@ -1567,42 +1566,39 @@ void Mod_LoadLeafs(lump_t * l)
 		out->cluster = LittleShort(in->cluster);
 		out->area = LittleShort(in->area);
 
-		out->firstmarksurface = loadmodel->markSurfaces +
-			LittleShort(in->firstleafface);
+		out->firstmarksurface = loadmodel->markSurfaces + LittleShort(in->firstleafface);
 		out->numMarkSurfaces = LittleShort(in->numleaffaces);
 
-
-		if (out->contents & (MASK_WATER)) {
-
+		if (out->contents & MASK_WATER) {
 			for (j = 0; j < out->numMarkSurfaces; j++) {
-				out->firstmarksurface[j]->flags |= SURF_UNDERWATER;
-				for (poly = out->firstmarksurface[j]->polys; poly;
-					 poly = poly->next)
-					poly->flags |= SURF_UNDERWATER;
+				out->firstmarksurface[j]->flags |= MSURF_UNDERWATER;
+
+				for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
+					poly->flags |= MSURF_UNDERWATER;
 
 				if (out->contents & CONTENTS_LAVA) {
-					out->firstmarksurface[j]->flags |= SURF_LAVA;
-					for (poly = out->firstmarksurface[j]->polys; poly;
-						 poly = poly->next)
-						poly->flags |= SURF_LAVA;
+					out->firstmarksurface[j]->flags |= MSURF_LAVA;
+
+					for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
+						poly->flags |= MSURF_LAVA;
 				}
+
 				if (out->contents & CONTENTS_SLIME) {
-					out->firstmarksurface[j]->flags |= SURF_SLIME;
-					for (poly = out->firstmarksurface[j]->polys; poly;
-						 poly = poly->next)
-						poly->flags |= SURF_SLIME;
+					out->firstmarksurface[j]->flags |= MSURF_SLIME;
+
+					for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
+						poly->flags |= MSURF_SLIME;
 				}
+
 				if (out->contents & CONTENTS_WATER) {
-					out->firstmarksurface[j]->flags |= SURF_WATER;
-					for (poly = out->firstmarksurface[j]->polys; poly;
-						 poly = poly->next)
-						poly->flags |= SURF_WATER;
+					out->firstmarksurface[j]->flags |= MSURF_WATER;
+
+					for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
+						poly->flags |= MSURF_WATER;
 				}
 			}
 
 		}
-
-
 	}
 }
 
@@ -1724,12 +1720,57 @@ void Mod_GenerateAmbientLights(model_t * mod)
 	R_InitLightgrid2();
 }
 
+
 /*
 =================
 Mod_LoadBrushModel
+
 =================
 */
+static qboolean R_LoadXPLM (void) {
+//	char *s, *c;
+	char tmp[MAX_QPATH], name[MAX_QPATH];
+	char *buf;
+	int len;
 
+	FS_StripExtension(loadmodel->name, tmp, sizeof(tmp));
+	Com_sprintf(name, sizeof(name),"%s.xplm", tmp);
+
+	len =  FS_LoadFile(name, (void**)&buf);
+
+	if (!buf) {
+//		Com_DPrintf("R_LoadXPLM: external lightmaps for '%s' not found", loadmodel->name);
+		return false;
+	}
+
+	len--;
+
+	if (len <= 0) {
+		Com_Printf("R_LoadXPLM: file too small", loadmodel->name);
+		FS_FreeFile(buf);
+
+		return false;
+	}
+
+	loadmodel->lightmap_scale = max(4, *buf);
+	loadmodel->lightData = (byte *)Hunk_Alloc(len);
+	Q_memcpy(loadmodel->lightData, buf + 1, len);
+	
+	loadmodel->memorySize += len;
+
+	FS_FreeFile(buf);
+
+	Com_Printf("Loaded lightmaps from "S_COLOR_GREEN"%s"S_COLOR_WHITE".\n", name);
+
+	return true;
+}
+
+/*
+=================
+Mod_LoadBrushModel
+
+=================
+*/
 void Mod_LoadBrushModel(model_t * mod, void *buffer)
 {
 	int i;
@@ -1743,8 +1784,8 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	numFlareOcc = 0;
 
 	loadmodel->memorySize = 0;
-	
 	loadmodel->type = mod_brush;
+
 	if (loadmodel != mod_known)
 		VID_Error(ERR_DROP, "Loaded a brush model after the world");
 
@@ -1756,19 +1797,22 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 				  "Mod_LoadBrushModel: %s has wrong version number (%i should be %i)",
 				  mod->name, i, BSPVERSION);
 
-// swap all the lumps
+	// swap all the lumps
 	mod_base = (byte *) header;
 
 	for (i = 0; i < sizeof(dheader_t) * 0.25; i++)
 		((int *) header)[i] = LittleLong(((int *) header)[i]);
 
 
-// load into heap
+	// load into heap
 	Mod_LoadEntityString(&header->lumps[LUMP_ENTITIES]);
 	Mod_LoadVertexes(&header->lumps[LUMP_VERTEXES]);
 	Mod_LoadEdges(&header->lumps[LUMP_EDGES]);
 	Mod_LoadSurfedges(&header->lumps[LUMP_SURFEDGES]);
-	Mod_LoadLighting(&header->lumps[LUMP_LIGHTING]);
+
+	if (!R_LoadXPLM())
+		Mod_LoadLighting(&header->lumps[LUMP_LIGHTING]);
+
 	Mod_LoadPlanes(&header->lumps[LUMP_PLANES]);
 	Mod_LoadTexinfo(&header->lumps[LUMP_TEXINFO]);
 
@@ -1789,9 +1833,10 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 
 	mod->numFrames = 2;			// regular and alternate animation
 
-//
-// set up the subModels
-//
+	//
+	// set up the subModels
+	//
+
 	for (i = 0; i < mod->numSubModels; i++) {
 		model_t *starmod;
 
@@ -1815,9 +1860,8 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 
 		starmod->numLeafs = bm->visleafs;
 	}
+
 	bspSize += loadmodel->memorySize;
-	
-	
 }
 
 /*

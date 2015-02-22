@@ -227,28 +227,6 @@ void R_PrepareShadowLightFrame(qboolean weapon) {
 
 }
 
-void FS_StripExtension (const char *in, char *out, size_t size_out)
-{
-	char *last = NULL;
-
-	if (size_out == 0)
-		return;
-
-	while (*in && size_out > 1)
-	{
-		if (*in == '.')
-			last = out;
-		else if (*in == '/' || *in == '\\' || *in == ':')
-			last = NULL;
-		*out++ = *in++;
-		size_out--;
-	}
-	if (last)
-		*last = 0;
-	else
-		*out = 0;
-}
-
 void R_SaveLights_f(void) {
 	
 	char	name[MAX_QPATH], path[MAX_QPATH];
@@ -1673,7 +1651,7 @@ void Load_LightFile() {
 		return;
 	}
 	
-	Com_Printf("Load lights from "S_COLOR_GREEN"%s"S_COLOR_WHITE".\n", path);
+	Com_Printf("Loaded lights from "S_COLOR_GREEN"%s"S_COLOR_WHITE".\n", path);
 
 	while(1) {
 		token = COM_Parse(&c);

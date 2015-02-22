@@ -84,7 +84,7 @@ int RecursiveLightPoint(mnode_t * node, vec3_t start, vec3_t end)
 	surf = r_worldmodel->surfaces + node->firstsurface;
 
 	for (i = 0; i < node->numsurfaces; i++, surf++) {
-		if (surf->flags & (SURF_DRAWTURB | SURF_DRAWSKY))
+		if (surf->flags & (MSURF_DRAWTURB | MSURF_DRAWSKY))
 			continue;			// no lightmaps
 
 		tex = surf->texInfo;

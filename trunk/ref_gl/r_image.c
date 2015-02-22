@@ -1460,6 +1460,7 @@ void GL_FreeUnusedImages(void)
 	r_lightAttenMap->registration_sequence = registration_sequence;
 	weaponHack->registration_sequence = registration_sequence;
 
+
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)
 			continue;			// used this sequence

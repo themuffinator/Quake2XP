@@ -337,7 +337,7 @@ static void R_PlanarSurfClipFragment(mnode_t * node, msurface_t * surf,
 		return;
 
 	// greater than 60 degrees
-	if (surf->flags & SURF_PLANEBACK) {
+	if (surf->flags & MSURF_PLANEBACK) {
 		if (-DotProduct(normal, surf->plane->normal) < 0.5)
 			return;
 	} else {

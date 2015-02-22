@@ -179,9 +179,9 @@ void R_RenderFlares(void)
 		if (viewplane >= 0)
 			sidebit = 0;
 		else
-			sidebit = SURF_PLANEBACK;
+			sidebit = MSURF_PLANEBACK;
 
-		if ((fl->surf->flags & SURF_PLANEBACK) != sidebit)
+		if ((fl->surf->flags & MSURF_PLANEBACK) != sidebit)
 			continue;			// wrong light poly side!
 		
 		if(r_softParticles->value)

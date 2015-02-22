@@ -404,7 +404,7 @@ qboolean R_MarkShadowSurf(msurface_t *surf)
 		goto hack;
 
 	// add sky surfaces to shadow marking
-	if ((surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_WARP | SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
+	if ((surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_WARP | SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
 		return false;
 hack:
 	plane = surf->plane;
@@ -430,8 +430,8 @@ hack:
 	}
 
 	//the normals are flipped when surf_planeback is 1
-	if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
-		(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
+	if (((surf->flags & MSURF_PLANEBACK) && (dist > 0)) ||
+		(!(surf->flags & MSURF_PLANEBACK) && (dist < 0)))
 		return false;
 
 	//the normals are flipped when surf_planeback is 1

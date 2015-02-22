@@ -415,7 +415,7 @@ void GL_CreateSurfaceLightmap(msurface_t * surf)
 	int smax, tmax;
 	byte *base, *directions;
 
-	if (surf->flags & (SURF_DRAWSKY | SURF_DRAWTURB))
+	if (surf->flags & (MSURF_DRAWSKY | MSURF_DRAWTURB))
 		return;
 
 	smax = (surf->extents[0] / loadmodel->lightmap_scale) + 1; 

@@ -97,7 +97,6 @@ extern viddef_t vid;
 
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
-
  // ===================================================================
 
 typedef enum {
@@ -462,6 +461,14 @@ void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect(const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare();
 void GL_LoadMatrix(GLenum mode, const mat4_t matrix);
+
+// TODO: move to common/q_math.h
+extern mat3_t	mat3_identity;
+extern mat4_t	mat4_identity;
+
+void Mat3_Identity(mat3_t m);
+void Mat3_Copy(const mat3_t in, mat3_t out);
+
 void Mat4_Multiply(const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_Copy(const mat4_t in, mat4_t out);
 void Mat4_Transpose(const mat4_t in, mat4_t out);

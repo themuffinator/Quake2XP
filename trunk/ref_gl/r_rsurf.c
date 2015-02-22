@@ -27,7 +27,7 @@ void R_LightColor(vec3_t org, vec3_t color);
 
 static vec3_t modelorg;			// relative to viewpoint
 
-msurface_t *r_alpha_surfaces;
+msurface_t *r_alpha_surfaces;		// all BSP surfaces with TRANS33/66
 
 float color_black[4] = {0.0, 0.0, 0.0, 0.0};
 
@@ -342,7 +342,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 	purename = COM_SkipPath(image->name);
 	COM_StripExtension(purename, noext);
 
-	if (fa->flags & SURF_DRAWTURB)
+	if (fa->flags & MSURF_DRAWTURB)
 	{	
 		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
 			RenderLavaSurfaces(fa);
@@ -372,13 +372,12 @@ void R_DrawAlphaPoly(void)
 
 	if (s->texInfo->flags & SURF_TRANS33) 
 		shadelight_surface[3] = 0.33;
-	else	
-	if (s->texInfo->flags & SURF_TRANS66) 
+	else if (s->texInfo->flags & SURF_TRANS66) 
 		shadelight_surface[3] = 0.66;
 	else
 		shadelight_surface[3] = 1.0;
 
-	if (s->flags & SURF_DRAWTURB)
+	if (s->flags & MSURF_DRAWTURB)
 		R_DrawWaterPolygons(s);
 	else if (s->texInfo->flags & SURF_FLOWING)
 		DrawGLPolyGLSL(s, true);
@@ -386,6 +385,7 @@ void R_DrawAlphaPoly(void)
 		DrawGLPolyGLSL(s, false);
 
 	}
+
 	r_alpha_surfaces = NULL;
 }
 
@@ -398,8 +398,7 @@ void R_DrawAlphaPoly(void)
 DrawTextureChains
 ================
 */
-void DrawTextureChains()
-{
+void DrawTextureChains (void) {
 	int i;
 	msurface_t *s;
 	image_t *image;
@@ -407,19 +406,18 @@ void DrawTextureChains()
 	c_visible_textures = 0;
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
-			if (!image->registration_sequence)
-				continue;
-			s = image->texturechain;
-			if (!s)
-				continue;
+		if (!image->registration_sequence)
+			continue;
 
-			for (; s; s = s->texturechain) {
-					R_RenderBrushPoly(s);
-			}
+		s = image->texturechain;
+		if (!s)
+			continue;
+
+		for (; s; s = s->texturechain)
+			R_RenderBrushPoly(s);
 		
-			image->texturechain = NULL;
-		}
-
+		image->texturechain = NULL;
+	}
 }
 
 /*
@@ -677,7 +675,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 0);
 		}
 		else{
-			if ((surf->flags & SURF_WATER) && currentShadowLight->castCaustics)
+			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics)
 				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 1);
 			else
 				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 0);
@@ -950,7 +948,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 		sidebit = 0;
 	} else {
 		side = 1;
-		sidebit = SURF_PLANEBACK;
+		sidebit = MSURF_PLANEBACK;
 	}
 
 	// recurse down the children, front side first
@@ -962,35 +960,34 @@ static void R_RecursiveWorldNode(mnode_t * node)
 		if (surf->visframe != r_framecount)
 			continue;
 
-		if ((surf->flags & SURF_PLANEBACK) != sidebit)
+		if ((surf->flags & MSURF_PLANEBACK) != sidebit)
 			continue;			// wrong side
 
 		if (surf->texInfo->flags & SURF_SKY) {	// just adds to visible sky bounds
 			R_AddSkySurface(surf);
 		} else if (surf->texInfo->flags & SURF_NODRAW)
 			continue;
-		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {	// add to the translucent chain
+		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
+			// add to the translucent chain
 			surf->texturechain = r_alpha_surfaces;
 			r_alpha_surfaces = surf;
 		}
 		else {
-			if (!(surf->flags & SURF_DRAWTURB)) {
-				scene_surfaces[num_scene_surfaces++] = surf;
-
-			} else {
+			if (surf->flags & MSURF_DRAWTURB) {
 				// the polygon is visible, so add it to the texture
 				// sorted chain
 				// FIXME: this is a hack for animation
-				image	= R_TextureAnimation(surf->texInfo);
-				fx		= R_TextureAnimationFx(surf->texInfo); // fix glow hack
-				env		= R_TextureAnimationEnv(surf->texInfo);
-				csm		= R_TextureAnimationCSM(surf->texInfo);
+				image = R_TextureAnimation(surf->texInfo);
+				fx = R_TextureAnimationFx(surf->texInfo); // fix glow hack
+				env = R_TextureAnimationEnv(surf->texInfo);
+				csm = R_TextureAnimationCSM(surf->texInfo);
 
 				surf->texturechain = image->texturechain;
 				image->texturechain = surf;
 
 			}
-		
+			else
+				scene_surfaces[num_scene_surfaces++] = surf;
 		}
 	}
 
@@ -1011,7 +1008,7 @@ qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 	purename = COM_SkipPath(image->name);
 	COM_StripExtension(purename, noext);
 
-	if (surf->flags & SURF_DRAWTURB)
+	if (surf->flags & MSURF_DRAWTURB)
 	if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
 		goto hack;
 
@@ -1020,7 +1017,7 @@ qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
 			return false;
 	}
 
-	if ((surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & SURF_DRAWTURB))
+	if ((surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
 		return false;
 hack:
 
@@ -1050,8 +1047,8 @@ hack:
 		goto next;
 
 		//the normals are flipped when surf_planeback is 1
-		if (((surf->flags & SURF_PLANEBACK) && (dist > 0)) ||
-			(!(surf->flags & SURF_PLANEBACK) && (dist < 0)))
+		if (((surf->flags & MSURF_PLANEBACK) && (dist > 0)) ||
+			(!(surf->flags & MSURF_PLANEBACK) && (dist < 0)))
 			return false;
 next:
 
@@ -1075,8 +1072,8 @@ next:
 	if (currentShadowLight->isFog && !currentShadowLight->isShadow)
 			goto next2;
 
-		if (((surf->flags & SURF_PLANEBACK) && (dot > 0)) ||
-			(!(surf->flags & SURF_PLANEBACK) && (dot < 0)))
+		if (((surf->flags & MSURF_PLANEBACK) && (dot > 0)) ||
+			(!(surf->flags & MSURF_PLANEBACK) && (dot < 0)))
 			return false;
 		}
 next2:
@@ -1105,12 +1102,12 @@ next2:
 
 		if(!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
 			return false;
-
 		if(currentShadowLight->_cone && R_CullBox_(&pbbox[0], &pbbox[3], currentShadowLight->frust))
 			return false;
 	}
 
 	poly->lightTimestamp = r_lightTimestamp;
+
 	return true;
 }
 
@@ -1230,6 +1227,7 @@ void R_DrawBSP(void)
 	// auto cycle the world frame for texture animation
 	memset(&ent, 0, sizeof(ent));
 	ent.frame = (int) (r_newrefdef.time * 2);
+	Mat3_Identity(ent.axis);
 	currententity = &ent;
 
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
@@ -1273,13 +1271,9 @@ void R_DrawBSP(void)
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 	
 //	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-	R_DrawSkyBox();
-	R_CaptureColorBuffer();
+//	R_CaptureColorBuffer();
 	DrawTextureChains();
-
-
-
-			
+	R_DrawSkyBox();
 }
 
 /*
@@ -1309,8 +1303,8 @@ static void R_DrawInlineBModel(void)
 		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
 
 		// draw the polygon
-		if (((psurf->flags & SURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
-			|| (!(psurf->flags & SURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
+			|| (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
 
 			if (psurf->visframe == r_framecount) //reckless fix
 				continue;
@@ -1322,18 +1316,14 @@ static void R_DrawInlineBModel(void)
 			psurf->ent = currententity;
 			// ================================
 
-			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {	
+			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 				psurf->texturechain = r_alpha_surfaces;
 				r_alpha_surfaces = psurf;
-
-			} else if (!(psurf->flags & SURF_DRAWTURB)) {
-				
+			}
+			else if (!(psurf->flags & MSURF_DRAWTURB))
 				scene_surfaces[num_scene_surfaces++] = psurf;
-								
-			} 
 		}
 	}
-
 }
 
 
@@ -1354,8 +1344,8 @@ static void R_DrawInlineBModel2(void)
 		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
 
 		// draw the polygon
-		if (((psurf->flags & SURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
-			|| (!(psurf->flags & SURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
+			|| (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
 
 			if (psurf->visframe == r_framecount) //reckless fix
 				continue;
@@ -1364,7 +1354,7 @@ static void R_DrawInlineBModel2(void)
 				continue;
 			} 
 			else 
-				if (psurf->flags & SURF_DRAWTURB)
+				if (psurf->flags & MSURF_DRAWTURB)
 						R_RenderBrushPoly(psurf);
 						
 		}
@@ -1604,7 +1594,7 @@ Mark the leaves and nodes that are in the PVS for the current
 cluster
 ===============
 */
-void R_MarkLeaves ()
+void R_MarkLeaves (void)
 {
 	byte	*vis;
 	byte	fatvis[MAX_MAP_LEAFS/8];

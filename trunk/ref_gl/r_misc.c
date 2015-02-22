@@ -273,15 +273,13 @@ void CreateWeaponRect(void){
 	_R_FB_Check();
 
 }
-/*
-image_t *occlusionMap;
-static GLenum drawbuffer[] = {GL_COLOR_ATTACHMENT0};
 
+image_t *fboScreen;
 
-void CreateOcclusionBuffer(void){
+void CreateFboBuffer(void){
 
 	int			i;
-	char		name[19] = "***occlusionMap***";
+	char		name[15] = "***fboScreen***";
 	image_t		*image;
 	qboolean	statusOK;
 	uint		rb;
@@ -308,18 +306,18 @@ void CreateOcclusionBuffer(void){
 	image->type = it_pic;
 	image->texnum = TEXNUM_IMAGES + (image - gltextures);
 
-	occlusionMap = image;
+	fboScreen = image;
 
 	// attach screen texture
 
-	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, occlusionMap->texnum);
+	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, fboScreen->texnum);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width / 4, vid.height / 4, 0,
-					GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, vid.width, vid.height, 0,
+					GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	qglGenRenderbuffers(1, &rb);
 	qglBindRenderbuffer(GL_RENDERBUFFER, rb);
@@ -329,19 +327,18 @@ void CreateOcclusionBuffer(void){
 	qglGenFramebuffers(1, &gl_state.fboId);
 	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
 	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb);
-//	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gl_state.dpsId);
-//	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, occlusionMap->texnum, 0);
+	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gl_state.dpsId);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboScreen->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (statusOK)
-		Com_Printf(""S_COLOR_YELLOW"create depth-stencil FBO\n");
+		Com_Printf(""S_COLOR_YELLOW"...Create depth-stencil FBO\n");
 
 	qglDrawBuffers(1, drawbuffer);
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
 
-*/
 
 image_t *shadowMask;
 

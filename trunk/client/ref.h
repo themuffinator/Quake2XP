@@ -44,14 +44,19 @@ typedef vec4_t	mat4_t[4];		// row-major
 #define DEG2RAD(v) ((v) * (M_PI / 180.0f))
 #define RAD2DEG(v) ((v) * (180.0f / M_PI))
 
-#define	SURF_PLANEBACK		2
-#define	SURF_DRAWSKY		4
-#define SURF_DRAWTURB		0x10
-#define SURF_DRAWBACKGROUND	0x40
-#define SURF_UNDERWATER		0x80
-#define SURF_ENVMAP		0x100
-
-#define SURF_DETAIL			1024
+//
+// msurface_t->flags
+//
+#define	MSURF_PLANEBACK		0x2
+#define	MSURF_DRAWSKY		0x4
+#define MSURF_DRAWTURB		0x10
+//#define MSURF_DRAWBACKGROUND	0x40
+#define MSURF_UNDERWATER		0x80
+//#define MSURF_ENVMAP		0x100
+//#define MSURF_DETAIL		0x200
+#define MSURF_WATER      	0x400
+#define MSURF_SLIME      	0x800
+#define MSURF_LAVA       	0x1000
 
 #define POWERSUIT_SCALE		4.0F
 
@@ -82,7 +87,7 @@ void Set_FontShader(qboolean enable);
 typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh
 	float angles[3];
-	mat3_t	axis;
+	mat3_t	axis;			// entity -> world space
 	mat4_t	orMatrix, matrix;
 
 	qboolean angleMod;
