@@ -3,14 +3,21 @@
 varying vec2		v_deformTexCoord;
 varying vec2		v_diffuseTexCoord;
 varying vec2		v_deformMul;
-varying vec4		v_color;
 varying vec3		v_positionVS;
-varying vec3		v_normalVS;
+//varying vec3		v_normalVS;
+varying mat3		v_tangentToView;
+
+#ifdef TRANS
+varying vec4		v_color;
+#endif
 
 uniform float		u_deformMul;
+uniform mat3		g_entityToWorldRot;
 
 attribute vec3		a_vertArray;
 attribute vec3		a_normArray;
+attribute vec3		a_tangent;
+attribute vec3		a_binormal;
 attribute vec2		a_texCoord;
 attribute vec2		a_2texCoord;
 attribute vec4		a_colorArray;
@@ -20,10 +27,11 @@ void main (void) {
 	v_deformTexCoord = a_2texCoord;
 
 	vec4 pos = gl_ModelViewMatrix * vec4(a_vertArray, 1.0);
-
 	v_positionVS = pos.xyz;
-	v_normalVS = mat3(gl_ModelViewMatrix) * vec3(0.0, 0.0, 1.0);
-	//v_normalVS = mat3(gl_ModelViewMatrix) * a_normArray;
+
+	mat3 m = mat3(gl_ModelViewMatrix);
+
+//	v_normalVS = m * a_normArray;
 
 	#ifdef TRANS
 		// compute view space depth
@@ -37,5 +45,15 @@ void main (void) {
 		v_color = a_colorArray;
 	#endif
 
+	// calculate tangent to view space transform
+	v_tangentToView[0] = m * a_tangent;
+	v_tangentToView[1] = m * a_binormal;
+	v_tangentToView[2] = m * a_normArray;
+/*
+TODO: uncomment when currententity in r_warp.c/R_DrawWaterPolys is set correctly
+	v_tangentToView[0] = m * (g_entityToWorldRot * a_tangent);
+	v_tangentToView[1] = m * (g_entityToWorldRot * a_binormal);
+	v_tangentToView[2] = m * (g_entityToWorldRot * a_normArray);
+*/
 	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 }

@@ -51,10 +51,10 @@ return vec3(pow(newcur.r, power), pow(newcur.g, power), pow(newcur.b, power));
 void main(void) 
 {
  vec3 color = texture2DRect(u_fboTex, gl_FragCoord.xy).rgb;
- color = performTonemap(color.rgb);
+// color = performTonemap(color.rgb);
 
- color = BrightnesContrastSaturation(color, u_control.x, u_control.y, u_control.z);
- color = pow(color, vec3(u_control.w));
+ //color = BrightnesContrastSaturation(color, u_control.x, u_control.y, u_control.z);
+ //color = pow(color, vec3(u_control.w));
  gl_FragColor.rgb = color;
  gl_FragColor.a = 1.0;
 }
