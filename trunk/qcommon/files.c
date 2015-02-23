@@ -1029,6 +1029,34 @@ void FS_Path_f (void)
 	}
 }
 
+
+/*
+============
+FS_StripExtension
+============
+*/
+void FS_StripExtension(const char *in, char *out, size_t size_out)
+{
+	char *last = NULL;
+
+	if (size_out == 0)
+		return;
+
+	while (*in && size_out > 1)
+	{
+		if (*in == '.')
+			last = out;
+		else if (*in == '/' || *in == '\\' || *in == ':')
+			last = NULL;
+		*out++ = *in++;
+		size_out--;
+	}
+	if (last)
+		*last = 0;
+	else
+		*out = 0;
+}
+
 /*
 ================
 FS_NextPath

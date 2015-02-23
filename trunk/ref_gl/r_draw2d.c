@@ -54,8 +54,6 @@ void R_LoadFont(void)
 }
 
 void Set_FontShader(qboolean enable){
-	int id;
-	unsigned defBits;
 
 	if (enable){
 
@@ -67,11 +65,11 @@ void Set_FontShader(qboolean enable){
 		qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
 		qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
 
-		defBits = worldDefs.AttribColorBits;
-		GL_BindProgram(genericProgram, defBits);
-		id = genericProgram->id[defBits];
-		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+		GL_BindProgram(genericProgram, 0);
+		qglUniform1i(gen_attribColors, 1);
+		qglUniform1i(gen_attribConsole, 0);
+		qglUniform1i(gen_tex, 0);
+		qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 	}
 	else{
 
@@ -248,8 +246,6 @@ Draw_StretchPic
 
 void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 {
-	int			id;
-	unsigned	defBits = 0;
 	float		scroll = -13 * (r_newrefdef.time / 40.0);
 	qboolean	console;
 
@@ -282,31 +278,34 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
 	VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
 
-	if (console)
-		defBits = worldDefs.ConsoleBits;
-	else
-		defBits = worldDefs.AttribColorBits;
-
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-
+	GL_BindProgram(genericProgram, 0);
+	
+	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_attribColors, 0);
+	
+	if (console){
+		qglUniform1i(gen_attribConsole, 1);
+	}
+	else{
+		qglUniform1i(gen_attribColors, 1);
+	}
 	if (strstr(gl->name, "menuback"))
-		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1);
+		qglUniform1f(gen_colorModulate, 1);
 	else
-		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+		qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 
 	if (scrap_dirty)
 		Scrap_Upload();
 
 		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+		qglUniform1i(gen_tex, 0);
 		VA_SetElem2(texCoord[0], gl->sl, gl->tl);
 		VA_SetElem2(texCoord[1], gl->sh, gl->tl);
 		VA_SetElem2(texCoord[2], gl->sh, gl->th);
 		VA_SetElem2(texCoord[3], gl->sl, gl->th);
 
 		GL_MBind(GL_TEXTURE1_ARB, r_scanline->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_map1"), 1);
+		qglUniform1i(gen_tex1, 1);
 		VA_SetElem2(texCoord1[0], gl->sl, gl->tl - scroll);
 		VA_SetElem2(texCoord1[1], gl->sh, gl->tl - scroll);
 		VA_SetElem2(texCoord1[2], gl->sh, gl->th - scroll);
@@ -414,8 +413,7 @@ Draw_Pic
 
 void Draw_Pic2(int x, int y, image_t * gl)
 {
-	int w, h, id;
-	unsigned defBits = 0;
+	int w, h;
 
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_Pic\n");
@@ -436,11 +434,11 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
 	
-	defBits = worldDefs.AttribColorBits;
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+	GL_BindProgram(genericProgram, 0);
+	qglUniform1i(gen_attribColors, 1);
+	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_tex, 0);
+	qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -484,8 +482,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 
 void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 {
-	int w, h, id;
-	unsigned	defBits = 0;
+	int w, h;
 
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_Pic\n");
@@ -514,11 +511,11 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
 	
-	defBits = worldDefs.AttribColorBits;
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+	GL_BindProgram(genericProgram, 0);
+	qglUniform1i(gen_attribColors, 1);
+	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_tex, 0);
+	qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -600,9 +597,6 @@ refresh window.
 */
 void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 {
-	int			id;
-	unsigned	defBits = 0;
-
 	if (!image) {
 		Com_Printf("NULL pic in Draw_TileClear\n");
 		return;
@@ -616,11 +610,11 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, texCoord);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, colorCoord);
 
-	defBits = worldDefs.AttribColorBits;
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+	GL_BindProgram(genericProgram, 0);
+	qglUniform1i(gen_attribColors, 1);
+	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_tex, 0);
+	qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 
 	GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 
@@ -679,17 +673,15 @@ Fills a box of pixels with a single color
 */
 void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 {
-	unsigned	defBits;
-	int			id;
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
 
-	defBits = 0;
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform4f(qglGetUniformLocation(id, "u_color"), r, g, b, a);
-	qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_worldColorScale->value);
+	GL_BindProgram(genericProgram, 0);
+	qglUniform1i(gen_attribColors, 0);
+	qglUniform1i(gen_attribConsole, 0);
+	qglUniform4f(gen_color, r, g, b, a);
+	qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 
 	VA_SetElem2(vertCoord[0], x, y);
 	VA_SetElem2(vertCoord[1], x + w, y);

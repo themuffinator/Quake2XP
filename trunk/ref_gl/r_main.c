@@ -185,8 +185,6 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	dsprframe_t *frame;
 	float		*up, *right;
 	dsprite_t	*psprite;
-	int			id;
-	unsigned	defBits = 0;
 	unsigned	Index[MAX_INDICES];
 	int			vert=0, index=0;
 	vec3_t		dist;
@@ -206,34 +204,32 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	defBits = worldDefs.AlphaMaskBits;
-
 	// setup program
-	GL_BindProgram(refractProgram, defBits);
-	id = refractProgram->id[defBits];
+	GL_BindProgram(refractProgram, 0);
 		
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-	
+
 	GL_MBind(GL_TEXTURE0_ARB, r_distort->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
+	qglUniform1i(refract_normalMap, 0);
 	GL_MBind(GL_TEXTURE1_ARB, currentmodel->skins[e->frame]->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 1);
+	qglUniform1i(refract_baseMap, 1);
 	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
+	qglUniform1i(refract_screenMap, 2);
 	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
-			
-	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	2.5);
-	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	e->alpha);
-	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	len*0.5);
-	qglUniform1f(qglGetUniformLocation(id, "u_thickness2"),	frame->height * 0.5);
-	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
-	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f(qglGetUniformLocation(id, "u_mask"),	0.0, 1.0);
+	qglUniform1i(refract_depthMap, 3);
+
+	qglUniform1f(refract_deformMul, 2.5);
+	qglUniform1f(refract_alpha, e->alpha);
+	qglUniform1f(refract_thickness, len * 0.5);
+	qglUniform1f(refract_thickness2, frame->height * 0.5);
+	qglUniform2f(refract_screenSize, vid.width, vid.height);
+	qglUniform2f(refract_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform1i(refract_alphaMask, 1);
+	qglUniform2f(refract_mask, 0.0, 1.0);
 
 	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+0]);
 	VectorMA (wVertexArray[vert+0], -frame->origin_x, right, wVertexArray[vert+0]);
@@ -859,13 +855,9 @@ void R_RenderDistortModels(void)
 
 		if (!(currententity->flags & RF_DISTORT))
 			continue;
-
-		if (currentmodel->type == mod_alias)
-			R_DrawAliasDistortModel(currententity);
-		else if (currentmodel->type == mod_sprite)
+		
+		if (currentmodel->type == mod_sprite)
 			R_DrawDistortSpriteModel(currententity);
-
-
 	}
 	GL_DepthMask(1);
 
@@ -1265,7 +1257,7 @@ void R_RegisterCvars(void)
 	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
 	r_worldColorScale =					Cvar_Get("r_worldColorScale", "2", CVAR_ARCHIVE);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
-	r_causticIntens =					Cvar_Get("r_causticIntens", "2.0", CVAR_ARCHIVE);
+	r_causticIntens =					Cvar_Get("r_causticIntens", "5.0", CVAR_ARCHIVE);
 	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
 
 	r_screenShot =						Cvar_Get("r_screenShot", "jpg", CVAR_ARCHIVE);
@@ -1296,7 +1288,7 @@ void R_RegisterCvars(void)
 //	r_vbo=								Cvar_Get("r_vbo", "1", CVAR_ARCHIVE);
 
 	r_parallax=							Cvar_Get("r_parallax", "1", CVAR_ARCHIVE);
-	r_parallaxScale=					Cvar_Get("r_parallaxScale", "1.0", CVAR_ARCHIVE);
+	r_parallaxScale=					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);

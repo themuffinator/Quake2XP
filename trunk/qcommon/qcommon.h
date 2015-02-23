@@ -778,7 +778,7 @@ char **FS_ListFiles ( char *findname, int *numfiles, unsigned musthave, unsigned
 char **FS_ListFilesAll ( char *findname, int *numfiles, unsigned musthave, unsigned canthave );
 void FS_FreeList (char **list, int nfiles);
 qboolean FS_MatchPath(const char *findname, const char *name, char **output, unsigned musthave, unsigned canthave);
-
+void FS_StripExtension(const char *in, char *out, size_t size_out);
 /*
 ==============================================================
 

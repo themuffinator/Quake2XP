@@ -78,11 +78,10 @@ void R_RenderDecals(void)
     decals_t    *dl, *next, *active; 
     vec3_t		v, decalColor;
     unsigned    tex, texture = 0;
-    int			x, i, id;
+    int			x, i;
     int			numIndices = 0, numVertices = 0;
 	index_t		indices[MAX_DECAL_INDICES];
     float		endLerp, decalAlpha;
-	unsigned	defBits = 0;
 	
 	if (!cl_decals->value)
 		return;
@@ -98,10 +97,11 @@ void R_RenderDecals(void)
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, DecalTexCoordArray);
     qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, DecalColorArray);
      
-	defBits = worldDefs.AttribColorBits; 
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
+
+	GL_BindProgram(genericProgram, 0);
+	qglUniform1i(gen_attribColors, 1);
+	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_tex, 0);
 	
 	GL_Enable(GL_POLYGON_OFFSET_FILL);
     GL_PolygonOffset(-1, -1);
@@ -155,9 +155,9 @@ void R_RenderDecals(void)
         GL_BlendFunc(dl->sFactor, dl->dFactor);
 
 		if (dl->flags == DF_OVERBRIGHT)
-			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);
+			qglUniform1f(gen_colorModulate, 2.0);
 		else
-			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
+			qglUniform1f(gen_colorModulate, 1.0);
 
           }
 

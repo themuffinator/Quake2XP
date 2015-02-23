@@ -47,7 +47,6 @@ float	ref_realtime =0;
 
 void	GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t color);
 void	GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr);
-void	GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr, vec4_t color);
 
 /*
 ** R_CullAliasModel
@@ -404,52 +403,4 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
-}
-
-
-void R_DrawAliasDistortModel (entity_t *e)
-{
-	dmdl_t		*paliashdr;
-	vec3_t		bbox[8];
-
-	if ( R_CullAliasModel( bbox, e ) )
-		return;
-	
-	
-		paliashdr = (dmdl_t *)currentmodel->extraData;
-
-		SetModelsLight(false);
-
-		//
-		// draw all the triangles
-		//
-		if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
-			GL_DepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
-
-		if ( (currententity->frame >= paliashdr->num_frames)
-			|| (currententity->frame < 0) ) {
-			Con_Printf (PRINT_ALL, "R_DrawAliasDistortModel %s: no such frame %d\n",
-				currentmodel->name, currententity->frame);
-			currententity->frame = 0;
-			currententity->oldframe = 0;
-		}
-
-		if ( (currententity->oldframe >= paliashdr->num_frames)
-			|| (currententity->oldframe < 0)) {
-			Con_Printf (PRINT_ALL, "R_DrawAliasDistortModel %s: no such oldframe %d\n",
-				currentmodel->name, currententity->oldframe);
-			currententity->frame = 0;
-			currententity->oldframe = 0;
-		}
-		
-		qglPushMatrix ();
-
-		R_RotateForEntity(e);
-
-		GL_DrawAliasFrameLerpAmbientDistort(paliashdr, shadelight);
-		
-		qglPopMatrix();
-
-		if (currententity->flags & RF_DEPTHHACK)
-			GL_DepthRange (gldepthmin, gldepthmax);
 }

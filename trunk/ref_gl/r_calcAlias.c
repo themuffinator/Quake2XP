@@ -142,7 +142,6 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	image_t		*skin, *glowskin;
 	float		alphaShift, alpha;
 	unsigned	defBits = 0;
-	int			id;
 	vec3_t		normalArray[3*MAX_TRIANGLES];
 	float		backlerp, frontlerp;
 	int			index2, oldindex2;
@@ -235,25 +234,27 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			}
 		}
 
-	if(currentmodel->envMap)
-		defBits |= worldDefs.EnvBits;
-
 	// setup program
 	GL_BindProgram(aliasAmbientProgram, defBits);
-	id = aliasAmbientProgram->id[defBits];
-	
-	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"),	r_worldColorScale->value);
-	qglUniform1f(qglGetUniformLocation(id, "u_AddShift"),		alphaShift);
-	
-	GL_MBind				(GL_TEXTURE0_ARB, skin->texnum);
-	qglUniform1i			(qglGetUniformLocation(id, "u_Diffuse"), 0);
 
-	GL_MBind				(GL_TEXTURE1_ARB, glowskin->texnum);
-	qglUniform1i			(qglGetUniformLocation(id, "u_Add"), 1);	
+	if (currentmodel->envMap)
+		qglUniform1i(ambientAlias_isEnvMaping, 1);
+	else
+		qglUniform1i(ambientAlias_isEnvMaping, 0);
 
-	GL_MBind				(GL_TEXTURE2_ARB, r_envTex->texnum);
-	qglUniform1i			(qglGetUniformLocation(id, "u_env"), 2);
-	qglUniform1f			(qglGetUniformLocation(id, "u_envScale"), currentmodel->envScale);
+	qglUniform1i(ambientAlias_isShell, 0);
+	qglUniform1f(ambientAlias_colorModulate, r_worldColorScale->value);
+	qglUniform1f(ambientAlias_addShift, alphaShift);
+	
+	GL_MBind	(GL_TEXTURE0_ARB, skin->texnum);
+	qglUniform1i(ambientAlias_diffuse, 0);
+
+	GL_MBind	(GL_TEXTURE1_ARB, glowskin->texnum);
+	qglUniform1i(ambientAlias_add, 1);
+
+	GL_MBind	(GL_TEXTURE2_ARB, r_envTex->texnum);
+	qglUniform1i(ambientAlias_env, 2);
+	qglUniform1f(ambientAlias_envScale, currentmodel->envScale);
 
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
@@ -263,101 +264,13 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	qglDisableVertexAttribArray	(ATRB_COLOR);
 	qglDisableVertexAttribArray	(ATRB_TEX0);
 	qglBindBuffer				(GL_ARRAY_BUFFER_ARB, 0);
-//	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	GL_BindNullProgram			();
-	
-}
-
-
-void GL_DrawAliasFrameLerpAmbientDistort(dmdl_t *paliashdr, vec4_t color)
-{
-	vec3_t		vertexArray[3*MAX_TRIANGLES];
-	vec4_t		colorArray[4*MAX_TRIANGLES];
-	int			index_xyz;
-	int			i, j, jj =0;
-	dtriangle_t	*tris;
-	image_t		*bump;
-	unsigned	defBits = 0;
-	int			id;
-
-	if (currententity->flags & (RF_VIEWERMODEL))
-		return;
-	
-	// select skin
-		if (currententity->bump)
-		bump = currententity->bump;	// custom player skin
-		else {
-		if (currententity->skinnum >= MAX_MD2SKINS) {
-			bump = currentmodel->skins_normal[0];
-			currententity->skinnum = 0;
-		} else {
-			bump	= currentmodel->skins_normal[currententity->skinnum];
-			if (!bump) {
-				bump = currentmodel->skins_normal[0];
-				currententity->skinnum = 0;
-			}
-		}
-	}
-	if (!bump)
-		bump = r_predator;
-
-	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
-	
-	c_alias_polys += paliashdr->num_tris;
-	tris = (dtriangle_t *) ((byte *)paliashdr + paliashdr->ofs_tris);
-	jj = 0;
-
-	for (i=0; i<paliashdr->num_tris; i++)
-		{
-			for (j=0; j<3; j++, jj++)
-			{
-			index_xyz = tris[i].index_xyz[j];
-			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
-			VA_SetElem4(colorArray[jj], color[0], color[1], color[2], 1.0);
-			}
-		}
-
-	// setup program
-	GL_BindProgram(refractProgram, defBits);
-	id = refractProgram->id[defBits];
-
-	GL_MBind(GL_TEXTURE0_ARB, bump->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
-	GL_MBindRect(GL_TEXTURE1_ARB, ScreenMap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "g_colorBufferMap"), 1);
-	GL_MBindRect(GL_TEXTURE2_ARB, depthMap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 2);
-		
-	qglUniform1f(qglGetUniformLocation(id, "u_deformMul"),	2.0);
-	qglUniform1f(qglGetUniformLocation(id, "u_alpha"),	0.0);
-	qglUniform1f(qglGetUniformLocation(id, "u_thickness"),	0.0);
-	qglUniform2f(qglGetUniformLocation(id, "u_viewport"),	vid.width, vid.height);
-	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	
-	qglEnableVertexAttribArray	(ATRB_POSITION);
-	qglVertexAttribPointer		(ATRB_POSITION, 3, GL_FLOAT, false,	0, vertexArray);
-
-	qglEnableVertexAttribArray	(ATRB_COLOR);
-	qglVertexAttribPointer		(ATRB_COLOR, 4, GL_FLOAT, false,	0, colorArray);
-
-	qglBindBuffer				(GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
-	qglEnableVertexAttribArray	(ATRB_TEX0);
-	qglVertexAttribPointer		(ATRB_TEX0, 2, GL_FLOAT, false,		0, 0);
-
-	qglDrawArrays(GL_TRIANGLES, 0, jj);
-
-	qglDisableVertexAttribArray	(ATRB_POSITION);
-	qglDisableVertexAttribArray	(ATRB_COLOR);
-	qglDisableVertexAttribArray	(ATRB_TEX0);
-	qglBindBuffer				(GL_ARRAY_BUFFER_ARB, 0);
-//	GL_SelectTexture			(GL_TEXTURE0_ARB);
-	GL_BindNullProgram			();
+	GL_BindNullProgram			();	
 }
 
 void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 {
 	vec3_t		vertexArray[3 * MAX_TRIANGLES];
-	int			index_xyz, id, i, j, jj = 0;
+	int			index_xyz, i, j, jj = 0;
 	dtriangle_t	*tris;
 	unsigned	defBits = 0;
 	float		scroll = 0.0;
@@ -411,12 +324,12 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 	}
 		
 	// setup program
-	defBits |= worldDefs.ShellBits;
 	GL_BindProgram(aliasAmbientProgram, defBits);
-	id = aliasAmbientProgram->id[defBits];
-	
-	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
-	qglUniform1f(qglGetUniformLocation(id, "u_scroll"), scroll);
+
+	qglUniform1i(ambientAlias_isShell, 1);
+	qglUniform1i(ambientAlias_isEnvMaping, 0);
+	qglUniform1f(ambientAlias_colorModulate, r_worldColorScale->value);
+	qglUniform1f(ambientAlias_scroll, scroll);
 
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_MBind(GL_TEXTURE0_ARB, r_texshell[0]->texnum);
@@ -430,7 +343,7 @@ void GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr)
 		GL_MBind(GL_TEXTURE0_ARB, r_texshell[4]->texnum);
 	if (currententity->flags & RF_SHELL_DOUBLE)
 		GL_MBind(GL_TEXTURE0_ARB, r_texshell[5]->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"), 0);
+	qglUniform1i(ambientAlias_diffuse, 0);
 
 
 	qglEnableVertexAttribArray	(ATRB_POSITION);
@@ -569,8 +482,6 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 		}
 	}
 	
-	if(currentShadowLight->isAmbient)
-		defBits = worldDefs.AmbientAliasBits;
 
 	// setup program
 	GL_BindProgram(aliasBumpProgram, defBits);
@@ -581,41 +492,46 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 		inWater = true;
 	else
 		inWater = false;
+	
+	if (currentShadowLight->isAmbient)
+		qglUniform1i(lightAlias_ambient, 1);
+	else
+		qglUniform1i(lightAlias_ambient, 0);
 
 	if (inWater && currentShadowLight->castCaustics){
-		qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 1);
-		qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
+		qglUniform1i(lightAlias_isCaustics, 1);
+		qglUniform1f(lightAlias_causticsIntens, r_causticIntens->value);
 	}
 	else
-		qglUniform1i(qglGetUniformLocation(id, "u_isCaustics"), 0);
+		qglUniform1i(lightAlias_isCaustics, 0);
 	
-	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1 , currentShadowLight->origin);
-	qglUniform3fv(qglGetUniformLocation(id, "u_ViewOrigin"), 1 , r_origin);
-	qglUniform1f(qglGetUniformLocation(id, "u_specularScale"), r_specularScale->value);
-	qglUniform1f(qglGetUniformLocation(id, "u_toksvigFactor"), r_toksvigFactor->value);
+	qglUniform4f	(lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniform3fv	(lightAlias_lightOrigin, 1, currentShadowLight->origin);
+	qglUniform3fv	(lightAlias_viewOrigin, 1, r_origin);
+	qglUniform1f	(lightAlias_specularScale, r_specularScale->value);
+	qglUniform1f	(lightAlias_toksvigFactor, r_toksvigFactor->value);
 
 	if(currentShadowLight->isFog){
-	qglUniform1i(qglGetUniformLocation(id, "u_fog"), (int)currentShadowLight->isFog);
-	qglUniform1f(qglGetUniformLocation(id, "u_fogDensity"), currentShadowLight->fogDensity);
+		qglUniform1i(lightAlias_fog, (int)currentShadowLight->isFog);
+		qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity);
 	}else
-		qglUniform1i(qglGetUniformLocation(id, "u_fog"), 0);
+		qglUniform1i(lightAlias_fog, 0);
 
 	GL_MBind(GL_TEXTURE0_ARB, skinNormalmap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_bumpMap"), 0);
+	qglUniform1i(lightAlias_normal, 0);
 	
 	GL_MBind(GL_TEXTURE1_ARB, skin->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_diffuseMap"), 1);
+	qglUniform1i(lightAlias_diffuse, 1);
 
 	GL_MBind(GL_TEXTURE2_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_causticMap"), 2);
+	qglUniform1i(lightAlias_caustic, 2);
 
 	GL_MBindCube(GL_TEXTURE3_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"), 3);
+	qglUniform1i(lightAlias_cube, 3);
 	GL_SetupCubeMapMatrix(true);
 
 	GL_MBind3d(GL_TEXTURE4_ARB, r_lightAttenMap->texnum);
-	qglUniform1i(qglGetUniformLocation(id, "u_attenMap"), 4);
+	qglUniform1i(lightAlias_atten, 4);
 	qglMatrixMode(GL_TEXTURE);
 	qglLoadIdentity();
 	qglTranslatef(0.5,0.5,0.5);

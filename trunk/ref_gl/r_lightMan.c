@@ -1055,8 +1055,6 @@ void UpdateLightEditor(void){
 	trace_t		trace_light, trace_bsp;
 	unsigned	headNode;
 	vec3_t		tmpOrg, tmpRad;
-	int			id;
-	unsigned	defBits = 0;
 
 	if(!r_lightEditor->value)
 		return;
@@ -1097,9 +1095,10 @@ void UpdateLightEditor(void){
 	}
 
 	// setup program
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	
+	GL_BindProgram(genericProgram, 0);
+	qglUniform1i(gen_attribColors, 0);
+	qglUniform1i(gen_attribConsole, 0);
+
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
 
@@ -1112,7 +1111,7 @@ void UpdateLightEditor(void){
 
 	VectorAdd(tmp, currentShadowLight->origin, corners[j]);
 	}
-	qglUniform4f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniform4f(gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
 
@@ -1150,7 +1149,7 @@ void UpdateLightEditor(void){
 
 	if(selectedShadowLight){	
 	
-	qglUniform4f(qglGetUniformLocation(id, "u_color"), selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
+	qglUniform4f(gen_color, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
 
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	qglEnable(GL_LINE_SMOOTH);
@@ -2388,8 +2387,8 @@ void R_DrawLightFlare(){
 
 void R_LightFlareOutLine(){ //flare editing highlights
 
-	unsigned	flareIndex[MAX_INDICES], defBits = 0;
-	int			flareVert=0, index=0, id;
+	unsigned	flareIndex[MAX_INDICES];
+	int			flareVert=0, index=0;
 	vec3_t		vert_array[MAX_FLARES_VERTEX], v[8], tmpOrg;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -2415,11 +2414,13 @@ void R_LightFlareOutLine(){ //flare editing highlights
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
 
 	// setup program
-	GL_BindProgram(genericProgram, defBits);
-	id = genericProgram->id[defBits];
-	qglUniform3f(qglGetUniformLocation(id, "u_color"),	currentShadowLight->color[0],
-														currentShadowLight->color[1], 
-														currentShadowLight->color[2]);
+	GL_BindProgram(genericProgram, 0);
+	qglUniform1i(gen_attribColors, 0);
+	qglUniform1i(gen_attribConsole, 0);
+	qglUniform4f(gen_color, currentShadowLight->color[0],
+							currentShadowLight->color[1], 
+							currentShadowLight->color[2],
+							1.0);
 	
 	// draw flare polygon
 	VectorMA (currentShadowLight->flareOrigin, -1-currentShadowLight->flareSize, vup, vert_array[flareVert+0]);

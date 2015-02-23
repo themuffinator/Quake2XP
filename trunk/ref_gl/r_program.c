@@ -528,7 +528,7 @@ R_InitPrograms
 
 
 void R_InitPrograms(void) {
-	int			missing = 0, start = 0, stop = 0;
+	int			missing = 0, start = 0, stop = 0, id;
 	float		sec;
 
 	Com_Printf("\nInitializing programs...\n\n");
@@ -551,7 +551,17 @@ void R_InitPrograms(void) {
 	ambientWorldProgram = R_FindProgram("ambientWorld", true, true);
 	if(ambientWorldProgram->valid){
 		Com_Printf("succeeded\n");
-		worldDefs.ParallaxBit			= R_GetProgramDefBits(ambientWorldProgram, "PARALLAX");
+		id = ambientWorldProgram->id[0];
+
+		ambientWorld_diffuse		= qglGetUniformLocation(id, "u_Diffuse");
+		ambientWorld_lightmap		= qglGetUniformLocation(id, "u_LightMap");
+		ambientWorld_csm			= qglGetUniformLocation(id, "u_csmMap");
+		ambientWorld_parallaxParams = qglGetUniformLocation(id, "u_parallaxParams");
+		ambientWorld_colorScale		= qglGetUniformLocation(id, "u_ColorModulate");
+		ambientWorld_viewOrigin		= qglGetUniformLocation(id, "u_viewOriginES");
+		ambientWorld_parallaxType	= qglGetUniformLocation(id, "u_parallaxType");
+		ambientWorld_ambientLevel	= qglGetUniformLocation(id, "u_ambientScale");
+
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
@@ -561,8 +571,33 @@ void R_InitPrograms(void) {
 	lightWorldProgram = R_FindProgram("lightWorld", true, true);
 	if(lightWorldProgram->valid){
 		Com_Printf("succeeded\n");
-		worldDefs.LightParallaxBit	= R_GetProgramDefBits(lightWorldProgram, "PARALLAX");
-		worldDefs.AmbientBits		= R_GetProgramDefBits(lightWorldProgram, "AMBIENT");
+		id = lightWorldProgram->id[0];
+		
+		lightWorld_diffuse	= qglGetUniformLocation(id, "u_Diffuse");
+		lightWorld_normal	= qglGetUniformLocation(id, "u_NormalMap");
+		lightWorld_csm		= qglGetUniformLocation(id, "u_csmMap");
+		lightWorld_cube		= qglGetUniformLocation(id, "u_CubeFilterMap");
+		lightWorld_atten	= qglGetUniformLocation(id, "u_attenMap");
+		lightWorld_caustic	= qglGetUniformLocation(id, "u_Caustics");
+
+		lightWorld_parallaxParams	= qglGetUniformLocation(id, "u_parallaxParams");
+		lightWorld_colorScale		= qglGetUniformLocation(id, "u_ColorModulate");
+		lightWorld_viewOrigin		= qglGetUniformLocation(id, "u_viewOriginES");
+		lightWorld_parallaxType		= qglGetUniformLocation(id, "u_parallaxType");
+		
+		lightWorld_lightOrigin		= qglGetUniformLocation(id, "u_LightOrg");
+		lightWorld_lightColor		= qglGetUniformLocation(id, "u_LightColor");
+		lightWorld_toksvigFactor	= qglGetUniformLocation(id, "u_toksvigFactor");
+		lightWorld_fog				= qglGetUniformLocation(id, "u_fog");
+		lightWorld_fogDensity		= qglGetUniformLocation(id, "u_fogDensity");
+
+		lightWorld_causticsIntens	= qglGetUniformLocation(id, "u_CausticsModulate");
+		lightWorld_caustics			= qglGetUniformLocation(id, "u_isCaustics");
+
+		lightWorld_specularScale	= qglGetUniformLocation(id, "u_specularScale");
+		lightWorld_specularExp		= qglGetUniformLocation(id, "u_specularExp");
+		lightWorld_ambient			= qglGetUniformLocation(id, "u_isAmbient");
+
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
@@ -572,10 +607,17 @@ void R_InitPrograms(void) {
 	aliasAmbientProgram  = R_FindProgram("ambientAlias", true, true);
 	if(aliasAmbientProgram->valid){
 		Com_Printf("succeeded\n");
-
-		worldDefs.ShellBits		= R_GetProgramDefBits(aliasAmbientProgram, "SHELL");
-		worldDefs.EnvBits		= R_GetProgramDefBits(aliasAmbientProgram, "ENVMAP");
-		worldDefs.WeaponBits	= R_GetProgramDefBits(aliasAmbientProgram, "WEAPON");
+		id = aliasAmbientProgram->id[0];
+		
+		ambientAlias_diffuse		= qglGetUniformLocation(id, "u_Diffuse");
+		ambientAlias_add			= qglGetUniformLocation(id, "u_Add");
+		ambientAlias_env			= qglGetUniformLocation(id, "u_env");
+		ambientAlias_isEnvMaping	= qglGetUniformLocation(id, "u_isEnvMap");
+		ambientAlias_colorModulate	= qglGetUniformLocation(id, "u_ColorModulate");
+		ambientAlias_addShift		= qglGetUniformLocation(id, "u_AddShift");
+		ambientAlias_envScale		= qglGetUniformLocation(id, "u_envScale");
+		ambientAlias_isShell		= qglGetUniformLocation(id, "u_isShell");
+		ambientAlias_scroll			= qglGetUniformLocation(id, "u_scroll");
 
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -588,7 +630,24 @@ void R_InitPrograms(void) {
 
 	if(aliasBumpProgram->valid){
 		Com_Printf("succeeded\n");
-		worldDefs.AmbientAliasBits	= R_GetProgramDefBits(aliasBumpProgram, "AMBIENT");
+		id = aliasBumpProgram->id[0];
+
+		lightAlias_diffuse		= qglGetUniformLocation(id, "u_diffuseMap");
+		lightAlias_normal		= qglGetUniformLocation(id, "u_bumpMap");
+		lightAlias_cube			= qglGetUniformLocation(id, "u_CubeFilterMap");
+		lightAlias_atten		= qglGetUniformLocation(id, "u_attenMap");
+		lightAlias_caustic		= qglGetUniformLocation(id, "u_causticMap");
+
+		lightAlias_viewOrigin		= qglGetUniformLocation(id, "u_ViewOrigin");
+		lightAlias_lightOrigin		= qglGetUniformLocation(id, "u_LightOrg");
+		lightAlias_lightColor		= qglGetUniformLocation(id, "u_LightColor");
+		lightAlias_toksvigFactor	= qglGetUniformLocation(id, "u_toksvigFactor");
+		lightAlias_fog				= qglGetUniformLocation(id, "u_fog");
+		lightAlias_fogDensity		= qglGetUniformLocation(id, "u_fogDensity");
+		lightAlias_causticsIntens	= qglGetUniformLocation(id, "u_CausticsModulate");
+		lightAlias_isCaustics		= qglGetUniformLocation(id, "u_isCaustics");
+		lightAlias_specularScale	= qglGetUniformLocation(id, "u_specularScale");
+		lightAlias_ambient			= qglGetUniformLocation(id, "u_isAmbient");;
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -659,14 +718,28 @@ void R_InitPrograms(void) {
 	refractProgram = R_FindProgram("refract", true, true);
 	
 	if(refractProgram->valid){
-
-		worldDefs.AlphaMaskBits	 = R_GetProgramDefBits(refractProgram, "ALPHAMASK");
 		Com_Printf("succeeded\n");
+		id = refractProgram->id[0];
+
+		refract_normalMap	= qglGetUniformLocation(id, "u_deformMap");
+		refract_baseMap		= qglGetUniformLocation(id, "u_colorMap");
+		refract_screenMap	= qglGetUniformLocation(id, "g_colorBufferMap");
+		refract_depthMap	= qglGetUniformLocation(id, "g_depthBufferMap");
+		refract_deformMul	= qglGetUniformLocation(id, "u_deformMul");
+		refract_alpha		= qglGetUniformLocation(id, "u_alpha");
+		refract_thickness	= qglGetUniformLocation(id, "u_thickness");
+		refract_screenSize	= qglGetUniformLocation(id, "u_viewport");
+		refract_depthParams = qglGetUniformLocation(id, "u_depthParms");
+		refract_ambient		= qglGetUniformLocation(id, "u_ambientScale");
+		refract_alphaMask	= qglGetUniformLocation(id, "u_ALPHAMASK");
+		refract_mask		= qglGetUniformLocation(id, "u_mask");
+		refract_thickness2	= qglGetUniformLocation(id, "u_thickness2");
+
 	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
+	/*
 	Com_Printf("Load "S_COLOR_YELLOW"glass lighting program"S_COLOR_WHITE" ");
 	lightGlassProgram = R_FindProgram("lightGlass", true, true);
 
@@ -677,7 +750,7 @@ void R_InitPrograms(void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-		
+	*/
 	Com_Printf("Load "S_COLOR_YELLOW"thermal vision program"S_COLOR_WHITE" ");
 	thermalProgram = R_FindProgram("thermal", true, true);
 	
@@ -692,10 +765,23 @@ void R_InitPrograms(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW"water program"S_COLOR_WHITE" ");
 	waterProgram = R_FindProgram("water", true, true);
-	worldDefs.WaterTransBits = R_GetProgramDefBits(waterProgram, "TRANS");
-
 	if(waterProgram->valid){
 		Com_Printf("succeeded\n");
+		id = waterProgram->id[0];
+
+		water_deformMap		= qglGetUniformLocation(id, "u_dstMap");
+		water_baseMap		= qglGetUniformLocation(id, "u_colorMap");
+		water_screenMap		= qglGetUniformLocation(id, "g_colorBufferMap");
+		water_depthMap		= qglGetUniformLocation(id, "g_depthBufferMap");
+		water_deformMul		= qglGetUniformLocation(id, "u_deformMul");
+		water_thickness		= qglGetUniformLocation(id, "u_thickness");
+		water_screenSize	= qglGetUniformLocation(id, "u_viewport");
+		water_depthParams	= qglGetUniformLocation(id, "u_depthParms");
+		water_colorModulate = qglGetUniformLocation(id, "u_ColorModulate");
+		water_ambient		= qglGetUniformLocation(id, "u_ambientScale");
+		water_trans			= qglGetUniformLocation(id, "u_TRANS");
+		water_entity2world	= qglGetUniformLocation(id, "g_entityToWorldRot");
+
 	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
@@ -706,6 +792,13 @@ void R_InitPrograms(void) {
 
 	if (lavaProgram->valid){
 		Com_Printf("succeeded\n");
+		id = lavaProgram->id[0];
+
+		lava_diffuse		= qglGetUniformLocation(id, "u_colorMap");
+		lava_csm			= qglGetUniformLocation(id, "u_csmMap");
+		lava_parallaxParams = qglGetUniformLocation(id, "u_parallaxParams");
+		lava_viewOrigin		= qglGetUniformLocation(id, "u_viewOrigin");
+		lava_parallaxType	= qglGetUniformLocation(id, "u_parallaxType");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -717,6 +810,15 @@ void R_InitPrograms(void) {
 
 	if(particlesProgram->valid){
 		Com_Printf("succeeded\n");
+		id = particlesProgram->id[0];
+		
+		particle_texMap			= qglGetUniformLocation(id, "u_map0");
+		particle_depthMap		= qglGetUniformLocation(id, "u_depthBufferMap");
+		particle_depthParams	= qglGetUniformLocation(id, "u_depthParms");
+		particle_mask			= qglGetUniformLocation(id, "u_mask");
+		particle_thickness		= qglGetUniformLocation(id, "u_thickness");
+		particle_colorModulate	= qglGetUniformLocation(id, "u_colorScale");
+
 	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
@@ -734,11 +836,17 @@ void R_InitPrograms(void) {
 	*/
 	Com_Printf("Load "S_COLOR_YELLOW"generic program"S_COLOR_WHITE" ");
 	genericProgram =  R_FindProgram("generic", true, true);
-	worldDefs.AttribColorBits = R_GetProgramDefBits(genericProgram, "ATTRIB_COLORS");
-	worldDefs.ConsoleBits = R_GetProgramDefBits(genericProgram, "CONSOLE");
-	worldDefs.TextureBits = R_GetProgramDefBits(genericProgram, "TEXTURE");
+
 	if(genericProgram->valid){
 		Com_Printf("succeeded\n");
+
+		id = genericProgram->id[0];
+		gen_attribConsole	= qglGetUniformLocation(id, "u_ATTRIB_CONSOLE");
+		gen_attribColors	= qglGetUniformLocation(id, "u_ATTRIB_COLORS");
+		gen_tex				= qglGetUniformLocation(id, "u_map");
+		gen_tex1			= qglGetUniformLocation(id, "u_map1");
+		gen_colorModulate	= qglGetUniformLocation(id, "u_colorScale");
+		gen_color			= qglGetUniformLocation(id, "u_color");
 
 	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -789,6 +897,9 @@ void R_InitPrograms(void) {
 	gammaProgram = R_FindProgram("gamma", true, true);
 	if(gammaProgram->valid){
 		Com_Printf("succeeded\n");
+		id = gammaProgram->id[0];
+		gamma_screenMap = qglGetUniformLocation(id, "u_ScreenTex");
+		gamma_control	= qglGetUniformLocation(id, "u_control");
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;

@@ -609,8 +609,8 @@ void R_GammaRamp (void) {
 
 	GL_MBindRect			(GL_TEXTURE0_ARB, ScreenMap->texnum);
     qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i			(qglGetUniformLocation(id, "u_ScreenTex"), 0);
-	qglUniform4f			(qglGetUniformLocation(id, "u_control"), r_brightness->value, r_contrast->value, r_saturation->value, 1 / r_gamma->value);
+	qglUniform1i			(gamma_screenMap, 0);
+	qglUniform4f			(gamma_control, r_brightness->value, r_contrast->value, r_saturation->value, 1 / r_gamma->value);
 
 	R_DrawFullScreenQuad();
 	

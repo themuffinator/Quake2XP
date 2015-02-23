@@ -904,8 +904,6 @@ typedef struct {
 	unsigned	EnvBits;
 	unsigned	AttribColorBits;
 	unsigned	ConsoleBits;
-	unsigned	TextureBits;
-	unsigned	WeaponBits;
 } 
 worldDefs_t;
 
@@ -936,11 +934,112 @@ uint ambientWorld_lightmap;
 uint ambientWorld_fx;
 uint ambientWorld_csm;
 uint ambientWorld_parallaxParams;
-uint ambientWorld_colorModulate;
+uint ambientWorld_colorScale;
 uint ambientWorld_viewOrigin;
 uint ambientWorld_parallaxType;
-uint ambientWorld_ambientScale;
+uint ambientWorld_ambientLevel;
 
+uint lightWorld_diffuse;
+uint lightWorld_normal;
+uint lightWorld_csm;
+uint lightWorld_cube;
+uint lightWorld_atten;
+uint lightWorld_caustic;
+uint lightWorld_parallaxParams;
+uint lightWorld_colorScale;
+uint lightWorld_viewOrigin;
+uint lightWorld_parallaxType;
+uint lightWorld_lightOrigin;
+uint lightWorld_lightColor;
+uint lightWorld_toksvigFactor;
+uint lightWorld_fog;
+uint lightWorld_fogDensity;
+uint lightWorld_causticsIntens;
+uint lightWorld_caustics;
+uint lightWorld_specularScale;
+uint lightWorld_specularExp;
+uint lightWorld_ambient;
+
+uint ambientAlias_diffuse;
+uint ambientAlias_add;
+uint ambientAlias_env;
+uint ambientAlias_colorModulate;
+uint ambientAlias_addShift;
+uint ambientAlias_isEnvMaping;
+uint ambientAlias_envScale;
+uint ambientAlias_isShell;
+uint ambientAlias_scroll;
+
+uint lightAlias_diffuse;
+uint lightAlias_normal;
+uint lightAlias_cube;
+uint lightAlias_atten;
+uint lightAlias_caustic;
+uint lightAlias_colorScale;
+uint lightAlias_viewOrigin;
+uint lightAlias_lightOrigin;
+uint lightAlias_lightColor;
+uint lightAlias_toksvigFactor;
+uint lightAlias_fog;
+uint lightAlias_fogDensity;
+uint lightAlias_causticsIntens;
+uint lightAlias_isCaustics;
+uint lightAlias_specularScale;
+uint lightAlias_specularExp;
+uint lightAlias_ambient;
+
+uint gen_attribConsole;
+uint gen_attribColors;
+uint gen_tex;
+uint gen_tex1;
+uint gen_colorModulate;
+uint gen_color;
+
+uint gamma_screenMap;
+uint gamma_control;
+
+uint particle_texMap;
+uint particle_depthMap;
+uint particle_depthParams;
+uint particle_mask;
+uint particle_thickness;
+uint particle_colorModulate;
+
+uint refract_normalMap;
+uint refract_baseMap;
+uint refract_screenMap;
+uint refract_depthMap;
+uint refract_deformMul;
+uint refract_alpha;
+uint refract_thickness;
+uint refract_screenSize;
+uint refract_depthParams;
+uint refract_thickness;
+uint refract_thickness2;
+uint refract_ambient;
+uint refract_alphaMask;
+uint refract_mask;
+
+uint lava_diffuse;
+uint lava_csm;
+uint lava_parallaxParams;
+uint lava_viewOrigin;
+uint lava_parallaxType;
+
+uint water_deformMap;
+uint water_baseMap;
+uint water_screenMap;
+uint water_depthMap;
+uint water_deformMul;
+uint water_alpha;
+uint water_thickness;
+uint water_screenSize;
+uint water_depthParams;
+uint water_thickness;
+uint water_colorModulate;
+uint water_ambient;
+uint water_trans;
+uint water_entity2world;
 
 #define	MAX_VERTEX_CACHES	4096
 

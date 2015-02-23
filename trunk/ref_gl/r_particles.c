@@ -84,17 +84,16 @@ void R_DrawParticles()
 	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false,		0, ParticleTextCoord);
 	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false,		0, ParticleColor);
 
-	GL_SelectTexture		(GL_TEXTURE0_ARB);
-	qglUniform1i			(qglGetUniformLocation(id, "u_map0"), 0);
+	GL_SelectTexture(GL_TEXTURE0_ARB);
+	qglUniform1i	(particle_texMap, 0);
 
-	GL_SelectTexture		(GL_TEXTURE1_ARB);	
-	GL_BindRect				(depthMap->texnum);
-    qglUniform1i			(qglGetUniformLocation(id, "u_depthBufferMap"), 1);
-	qglUniform2f			(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	GL_SelectTexture(GL_TEXTURE1_ARB);	
+	GL_BindRect		(depthMap->texnum);
+	qglUniform1i	(particle_depthMap, 1);
+	qglUniform2f	(particle_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
 	GL_DepthMask(0);		// no z buffering
 	GL_Enable(GL_BLEND);
-
 	
 	qsort(r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
 
@@ -208,21 +207,21 @@ void R_DrawParticles()
 
 		if(r_softParticles->value){
 		if(p->sFactor == GL_ONE && p->dFactor == GL_ONE)
-			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 1.0, 0.0); //color
+			qglUniform2f(particle_mask, 1.0, 0.0); //color
 		else
-			qglUniform2f(qglGetUniformLocation(id, "u_mask"), 0.0, 1.0); //alpha
+			qglUniform2f(particle_mask, 0.0, 1.0); //alpha
 		}
 
 		if(p->flags & PARTICLE_NOFADE || !r_softParticles->value)
-			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), 0.0);
+			qglUniform1f(particle_thickness, 0.0);
 		else
-			qglUniform1f(qglGetUniformLocation(id, "u_thickness"), scale*0.75); // soft blend scale
+			qglUniform1f(particle_thickness, scale*0.75); // soft blend scale
 
 
 		if (p->flags & PARTICLE_OVERBRIGHT)
-			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 2.0);
+			qglUniform1f(particle_colorModulate, 2.0);
 		else
-			qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), 1.0);
+			qglUniform1f(particle_colorModulate, 1.0);
 		
 		}
 		

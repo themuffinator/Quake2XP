@@ -157,8 +157,7 @@ void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
 	float *v;
 	float alpha, scroll;
 	glpoly_t *p;
-	int	id, nv = fa->polys->numVerts;
-	unsigned	defBits = 0;
+	int	nv = fa->polys->numVerts;
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -174,34 +173,34 @@ void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
 			alpha = 0.66;
 
 		// setup program
-		GL_BindProgram(refractProgram, defBits);
-		id = refractProgram->id[defBits];
+		GL_BindProgram(refractProgram, 0);
 
 		GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_deformMap"), 0);
+		qglUniform1i(refract_normalMap, 0);
 		GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 1);
+		qglUniform1i(refract_baseMap, 1);
 		GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "g_colorBufferMap"), 2);
+		qglUniform1i(refract_screenMap, 2);
 		GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "g_depthBufferMap"), 3);
+		qglUniform1i(refract_depthMap, 3);
 
-		qglUniform1f(qglGetUniformLocation(id, "u_deformMul"), 1.0);
-		qglUniform1f(qglGetUniformLocation(id, "u_alpha"), alpha);
-		qglUniform1f(qglGetUniformLocation(id, "u_thickness"), 150.0);
-		qglUniform2f(qglGetUniformLocation(id, "u_viewport"), vid.width, vid.height);
-		qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-		qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_ambientLevel->value);
-	}  
+		qglUniform1f(refract_deformMul, 1.0);
+		qglUniform1f(refract_alpha, alpha);
+		qglUniform1f(refract_thickness, 150.0);
+		qglUniform2f(refract_screenSize, vid.width, vid.height);
+		qglUniform2f(refract_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+		qglUniform1f(refract_ambient, r_ambientLevel->value);
+		qglUniform1i(refract_alphaMask, 0);
+		}  
 	else 
 	{
-		defBits = worldDefs.AttribColorBits;
-		GL_BindProgram(genericProgram, defBits);
-		id = genericProgram->id[defBits];
+		GL_BindProgram(genericProgram, 0);
+		qglUniform1i(gen_attribColors, 1);
+		qglUniform1i(gen_attribConsole, 0);
 
 		GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
-		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
-		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), r_ambientLevel->value);
+		qglUniform1i(gen_tex, 0);
+		qglUniform1f(gen_colorModulate, r_ambientLevel->value);
 	}
 
 
@@ -426,7 +425,7 @@ SORT AND BATCH
 BSP SURFACES
 ===============
 */
-qboolean R_FillAmbientBatch(msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces, int shaderId)
+qboolean R_FillAmbientBatch(msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces)
 {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->numEdges;
@@ -460,23 +459,12 @@ qboolean R_FillAmbientBatch(msurface_t *surf, qboolean newBatch, unsigned *verti
 				scale[0] = image->parallaxScale / image->width;
 				scale[1] = image->parallaxScale / image->height;
 			}
-			qglUniform4f(qglGetUniformLocation(shaderId, "u_parallaxParams"), scale[0], scale[1], image->upload_width, image->upload_height);
+			qglUniform4f(ambientWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
 		}
-		if (image->envMap){
-			qglUniform1i(qglGetUniformLocation(shaderId, "u_envPass"), 1);
-			
-			if (image->envScale)
-				qglUniform1f(qglGetUniformLocation(shaderId, "u_envPassScale"), image->envScale);
-			else
-				qglUniform1f(qglGetUniformLocation(shaderId, "u_envPassScale"), 0.5);
-		}
-		else
-			qglUniform1i(qglGetUniformLocation(shaderId, "u_envPass"), 0);
 
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
-		GL_MBind(GL_TEXTURE3_ARB, env->texnum);
-		GL_MBind(GL_TEXTURE4_ARB, csm->texnum);
+		GL_MBind(GL_TEXTURE3_ARB, csm->texnum);
 
 	}
 		if (surf->texInfo->flags & SURF_FLOWING)
@@ -543,37 +531,36 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 {
 	msurface_t	*s;
 	unsigned	defBits = 0;
-	int			id, i;
+	int			i;
 	qboolean	newBatch;
 	unsigned	oldTex		= 0xffffffff;
 	unsigned	oldFlag		= 0xffffffff;
 	unsigned	numIndices	= 0xffffffff,
 				numVertices = 0;
 
-	if (r_parallax->value)
-		defBits = worldDefs.ParallaxBit;
-
 	// setup program
 	GL_BindProgram(ambientWorldProgram, defBits);
-	id = ambientWorldProgram->id[defBits];
 
-	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
+	qglUniform1f(ambientWorld_colorScale, r_worldColorScale->value);
 
 	if(r_parallax->value){
 	if(bmodel)
-		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
+		qglUniform3fv(ambientWorld_viewOrigin, 1, BmodelViewOrg);
 	else
-		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
-	
-	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+		qglUniform3fv(ambientWorld_viewOrigin, 1, r_origin);
 	}
-	qglUniform1f(qglGetUniformLocation(id, "u_ambientScale"), r_ambientLevel->value);
 	
-	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"),	0);
-	qglUniform1i(qglGetUniformLocation(id, "u_LightMap"),	1);
-	qglUniform1i(qglGetUniformLocation(id, "u_Add"),		2);
-	qglUniform1i(qglGetUniformLocation(id, "u_envMap"),		3);
-	qglUniform1i(qglGetUniformLocation(id, "u_csmMap"),		4);
+	if (r_parallax->value)
+		qglUniform1i(ambientWorld_parallaxType, (int)r_parallax->value);
+	else
+		qglUniform1i(ambientWorld_parallaxType, 0);
+
+	qglUniform1f(ambientWorld_ambientLevel, r_ambientLevel->value);
+	
+	qglUniform1i(ambientWorld_diffuse, 0);
+	qglUniform1i(ambientWorld_lightmap, 1);
+	qglUniform1i(ambientWorld_fx, 2);
+	qglUniform1i(ambientWorld_csm, 3);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
 
@@ -607,7 +594,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	
 	// fill new batch
 	repeat:	
-		if (!R_FillAmbientBatch(s, newBatch, &numVertices, &numIndices, id))
+		if (!R_FillAmbientBatch(s, newBatch, &numVertices, &numIndices))
 		{
 			if (numIndices != 0xffffffff){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
@@ -631,7 +618,7 @@ int	r_lightTimestamp;
 int	num_light_surfaces;
 msurface_t	*light_surfaces[MAX_MAP_FACES];
 
-qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces, int shaderId, qboolean bmodel, qboolean caustics)
+qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces, qboolean bmodel, qboolean caustics)
 {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->numEdges;
@@ -659,26 +646,26 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		COM_StripExtension(purename, noext);
 
 		if (!image->specularScale)
-			qglUniform1f(qglGetUniformLocation(shaderId, "u_specularScale"), r_specularScale->value);
+			qglUniform1f(lightWorld_specularScale, r_specularScale->value);
 		else
-			qglUniform1f(qglGetUniformLocation(shaderId, "u_specularScale"), image->specularScale);
+			qglUniform1f(lightWorld_specularScale, image->specularScale);
 
 		if (!image->SpecularExp)
-			qglUniform1f(qglGetUniformLocation(shaderId, "u_specularExp"), 16.0);
+			qglUniform1f(lightWorld_specularExp, 16.0);
 		else
-			qglUniform1f(qglGetUniformLocation(shaderId, "u_specularExp"), image->SpecularExp);
+			qglUniform1f(lightWorld_specularExp, image->SpecularExp);
 		
 		if (bmodel){
 			if (caustics && currentShadowLight->castCaustics)
-				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 1);
+				qglUniform1i(lightWorld_caustics, 1);
 			else
-				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 0);
+				qglUniform1i(lightWorld_caustics, 0);
 		}
 		else{
 			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics)
-				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 1);
+				qglUniform1i(lightWorld_caustics, 1);
 			else
-				qglUniform1i(qglGetUniformLocation(shaderId, "u_isCaustics"), 0);
+				qglUniform1i(lightWorld_caustics, 0);
 		}
 
 		if (r_parallax->value){
@@ -694,7 +681,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 				scale[1] = image->parallaxScale / image->height;
 			}
 
-			qglUniform4f(qglGetUniformLocation(shaderId, "u_parallaxParams"), scale[0], scale[1], image->upload_width, image->upload_height);
+			qglUniform4f(lightWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
 
 		}
 
@@ -776,7 +763,7 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
 	unsigned	defBits = 0;
-	int			id, i;
+	int			i;
 	glpoly_t	*poly;
 	qboolean	newBatch, oldCaust;
 	unsigned	oldTex		= 0xffffffff;
@@ -784,46 +771,47 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	unsigned	numIndices	= 0xffffffff,
 				numVertices = 0;
 
-	if (r_parallax->value)
-		defBits = worldDefs.LightParallaxBit;
-
-
-	if(currentShadowLight->isAmbient)
-		defBits |= worldDefs.AmbientBits;
 
 	// setup program
 	GL_BindProgram(lightWorldProgram, defBits);
-	id = lightWorldProgram->id[defBits];
 
-	qglUniform1f(qglGetUniformLocation(id, "u_ColorModulate"), r_worldColorScale->value);
+	qglUniform1f(lightWorld_colorScale, r_worldColorScale->value);
+
+	if (currentShadowLight->isAmbient)
+		qglUniform1i(lightWorld_ambient, 1);
+	else
+		qglUniform1i(lightWorld_ambient, 0);
 
 	if(bmodel)
-		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , BmodelViewOrg);
+		qglUniform3fv(lightWorld_viewOrigin, 1, BmodelViewOrg);
 	else
-		qglUniform3fv(qglGetUniformLocation(id, "u_viewOriginES"), 1 , r_origin);
+		qglUniform3fv(lightWorld_viewOrigin, 1, r_origin);
 
 	
-	qglUniform3fv(qglGetUniformLocation(id, "u_LightOrg"), 1, currentShadowLight->origin);
-	qglUniform4f(qglGetUniformLocation(id, "u_LightColor"), currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniform1f(qglGetUniformLocation(id, "u_toksvigFactor"), r_toksvigFactor->value);
+	qglUniform3fv(lightWorld_lightOrigin, 1, currentShadowLight->origin);
+	qglUniform4f(lightWorld_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniform1f(lightWorld_toksvigFactor, r_toksvigFactor->value);
 
 	if (r_parallax->value)
-	qglUniform1i(qglGetUniformLocation(id, "u_parallaxType"), (int)r_parallax->value);
+		qglUniform1i(lightWorld_parallaxType, (int)r_parallax->value);
+	else
+		qglUniform1i(lightWorld_parallaxType, 0);
 	
-	if(currentShadowLight->isFog){
-	qglUniform1i(qglGetUniformLocation(id, "u_fog"), (int)currentShadowLight->isFog);
-	qglUniform1f(qglGetUniformLocation(id, "u_fogDensity"), currentShadowLight->fogDensity);
-	}else
-		qglUniform1i(qglGetUniformLocation(id, "u_fog"), 0);
-	
-	qglUniform1f(qglGetUniformLocation(id, "u_CausticsModulate"), r_causticIntens->value);
 
-	qglUniform1i(qglGetUniformLocation(id, "u_Diffuse"),		0);
-	qglUniform1i(qglGetUniformLocation(id, "u_NormalMap"),		1);
-	qglUniform1i(qglGetUniformLocation(id, "u_CubeFilterMap"),	2);
-	qglUniform1i(qglGetUniformLocation(id, "u_attenMap"),		3);
-	qglUniform1i(qglGetUniformLocation(id, "u_Caustics"),		4);
-	qglUniform1i(qglGetUniformLocation(id, "u_csmMap"),			5);
+	if(currentShadowLight->isFog){
+		qglUniform1i(lightWorld_fog, (int)currentShadowLight->isFog);
+		qglUniform1f(lightWorld_fogDensity, currentShadowLight->fogDensity);
+	}else
+		qglUniform1i(lightWorld_fog, 0);
+	
+	qglUniform1f(lightWorld_causticsIntens, r_causticIntens->value);
+
+	qglUniform1i(lightWorld_diffuse, 0);
+	qglUniform1i(lightWorld_normal, 1);
+	qglUniform1i(lightWorld_cube, 2);
+	qglUniform1i(lightWorld_atten, 3);
+	qglUniform1i(lightWorld_caustic, 4);
+	qglUniform1i(lightWorld_csm, 5);
 
 	qsort(light_surfaces, num_light_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))lightSurfSort);
 
@@ -852,7 +840,7 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 
 	// fill new batch
 	repeat:
-		if (!R_FillLightBatch(s, newBatch, &numVertices, &numIndices, id, bmodel, caustics))
+		if (!R_FillLightBatch(s, newBatch, &numVertices, &numIndices, bmodel, caustics))
 		{
 			if (numIndices != 0xffffffff){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
@@ -889,7 +877,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	msurface_t *surf, **mark;
 	mleaf_t *pleaf;
 	float dot;
-	image_t *fx, *image, *env, *csm;
+	image_t *fx, *image, *csm;
 	
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
@@ -979,7 +967,6 @@ static void R_RecursiveWorldNode(mnode_t * node)
 				// FIXME: this is a hack for animation
 				image = R_TextureAnimation(surf->texInfo);
 				fx = R_TextureAnimationFx(surf->texInfo); // fix glow hack
-				env = R_TextureAnimationEnv(surf->texInfo);
 				csm = R_TextureAnimationCSM(surf->texInfo);
 
 				surf->texturechain = image->texturechain;
