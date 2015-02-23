@@ -18,7 +18,7 @@ uniform	sampler2DRect	g_colorBufferMap;
 uniform sampler2DRect	g_weaponHackMap;
 
 uniform vec2			u_depthParms;
-
+uniform int				u_ALPHAMASK;
 #include depth.inc
 
 void main (void) {
@@ -32,22 +32,23 @@ void main (void) {
 	// scale by the deform multiplier and the viewport size
 	N *= v_deformMul * u_viewport.xy;
 	
-	#ifdef ALPHAMASK
-	float A = texture2D(u_deformMap, v_deformTexCoord).a;
-	float softness = clamp((depth - v_depthS) / u_thickness2, 0.0, 1.0);
-	// refracted sprites with soft edges
-	if (A == 0.004) {
-		discard;
-		return;
+	if(u_ALPHAMASK == 1){
+		float A = texture2D(u_deformMap, v_deformTexCoord).a;
+		float softness = clamp((depth - v_depthS) / u_thickness2, 0.0, 1.0);
+		// refracted sprites with soft edges
+		if (A == 0.004) {
+			discard;
+				return;
+			}
+		N *= A;
+		N *= softness;
+		vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
+		diffuse *= A;
+		gl_FragColor = vec4(deform, 1.0) + diffuse;
+		gl_FragColor *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
+			return;
 	}
-	N *= A;
-	N *= softness;
-	vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
-	diffuse *= A;
-	gl_FragColor = vec4(deform, 1.0) + diffuse;
-	gl_FragColor *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
 
-	#else
 	// world refracted surfaces
 	// chromatic aberration approximation
 
@@ -57,6 +58,4 @@ void main (void) {
 	// blend glass texture
 	diffuse *= u_ambientScale;
 	gl_FragColor.xyz += diffuse.xyz * u_alpha;
-
-	#endif
 }

@@ -4,15 +4,12 @@ varying vec2		v_deformTexCoord;
 varying vec2		v_diffuseTexCoord;
 varying vec2		v_deformMul;
 varying vec3		v_positionVS;
-//varying vec3		v_normalVS;
 varying mat3		v_tangentToView;
-
-#ifdef TRANS
 varying vec4		v_color;
-#endif
 
 uniform float		u_deformMul;
 uniform mat3		g_entityToWorldRot;
+uniform int			u_TRANS;
 
 attribute vec3		a_vertArray;
 attribute vec3		a_normArray;
@@ -31,9 +28,7 @@ void main (void) {
 
 	mat3 m = mat3(gl_ModelViewMatrix);
 
-//	v_normalVS = m * a_normArray;
-
-	#ifdef TRANS
+	if(u_TRANS == 1){
 		// compute view space depth
 		pos = vec4(1.0, 0.0, pos.z, 1.0);
 
@@ -43,7 +38,7 @@ void main (void) {
 
 		v_deformMul = min(d.xx, 0.02) * u_deformMul;
 		v_color = a_colorArray;
-	#endif
+	}
 
 	// calculate tangent to view space transform
 	v_tangentToView[0] = m * a_tangent;

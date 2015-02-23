@@ -16,7 +16,7 @@ vec3 Vp = normalize(v_positionVS);
 vec3 T = normalize(v_tbn[0]);
 vec3 B = normalize(v_tbn[1]);
 vec3 N = normalize(v_tbn[2]);
-vec2 texCoord;
+vec2 texCoord = v_diffuseTexCoord;
 vec2 P;
 
 if(u_parallaxType == 1){
@@ -35,8 +35,6 @@ if(u_parallaxType == 2)
 
 if (u_parallaxType >=1)
 	texCoord = P;
-else
-	texCoord = v_diffuseTexCoord;
 
 //load diffuse map
 vec4 diffuse  = texture2D (u_colorMap, texCoord.xy);

@@ -6,26 +6,24 @@ uniform sampler2D	u_map;
 uniform sampler2D	u_map1;
 uniform vec4		u_color;
 uniform float		u_colorScale;
+
+uniform int			u_ATTRIB_COLORS, u_ATTRIB_CONSOLE;
  
 void main(void) 
 {
 vec4 diffuse = texture2D(u_map, v_texCoord.xy);
 vec4 diffuse1 = texture2D(u_map1, v_texCoord1.xy);
 
-#ifdef TEXTURE
-	gl_FragColor = diffuse * u_colorScale;
-	return;
-#endif
-
-#ifdef CONSOLE
+if(u_ATTRIB_CONSOLE == 1){
 	gl_FragColor = diffuse * diffuse1 * v_colorArray * u_colorScale;
 	return;
-#endif
+}
 
-#ifdef ATTRIB_COLORS
+if(u_ATTRIB_COLORS == 1){
 	gl_FragColor =  vec4(diffuse.rgb * v_colorArray.rgb * u_colorScale, diffuse.a);
 	return;
-#endif
+}
 
-gl_FragColor =  u_color;
+if(u_ATTRIB_COLORS != 1 && u_ATTRIB_CONSOLE != 1)
+	gl_FragColor =  u_color;
 }

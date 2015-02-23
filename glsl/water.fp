@@ -3,15 +3,15 @@
 #include depth.inc
 
 #define MAX_STEPS			40
-#define MAX_STEPS_BACK			20
+#define MAX_STEPS_BACK		20
 
 #define STEP_SIZE			4.0
-#define STEP_SIZE_MUL			1.15
+#define STEP_SIZE_MUL		1.15
 
-#define DEPTH_THRESHOLD			1.0			// sufficient difference to stop tracing
+#define DEPTH_THRESHOLD		1.0			// sufficient difference to stop tracing
 
-#define	FOREGROUND_FALLOFF		0.25
-#define SCREEN_FALLOFF			6.0			// fall-off to screen edge, the higher the sharper
+#define	FOREGROUND_FALLOFF	0.25
+#define SCREEN_FALLOFF		6.0			// fall-off to screen edge, the higher the sharper
 
 #define	FRESNEL_MUL			1.0
 #define FRESNEL_EXP			1.6
@@ -22,12 +22,8 @@ varying vec2				v_deformTexCoord;
 varying vec2				v_diffuseTexCoord;
 varying vec2				v_deformMul;
 varying vec3				v_positionVS;
-//varying vec3				v_normalVS;
 varying mat3				v_tangentToView;
-
-#ifdef TRANS
 varying vec4				v_color;
-#endif
 
 uniform float				u_deformMul;		// for normal w/o depth falloff
 uniform float				u_thickness;
@@ -36,11 +32,12 @@ uniform float				u_ColorModulate;
 uniform float				u_ambientScale;
 uniform vec2				u_viewport;
 uniform vec2				u_depthParms;
+uniform int					u_TRANS;
 
 uniform sampler2D			u_colorMap;
 uniform sampler2D			u_dstMap;
-uniform	sampler2DRect			g_depthBufferMap;
-uniform	sampler2DRect			g_colorBufferMap;
+uniform	sampler2DRect		g_depthBufferMap;
+uniform	sampler2DRect		g_colorBufferMap;
 
 //
 // view space to viewport
@@ -67,7 +64,7 @@ void main (void) {
 	// scale by the deform multiplier
 	N.xy = offset.xy * clamp((depth + v_positionVS.z) / u_thickness, 0.0, 1.0);
 
-	#ifdef TRANS
+	if(u_TRANS == 1){
 		// scale by the viewport size
 		tc = N.xy * v_deformMul * u_viewport;
 
@@ -79,11 +76,13 @@ void main (void) {
 
 		// blend water texture
 		gl_FragColor = vec4(mix(refractColor, diffuse, v_color.a), 1.0);
-	#else
+	}
+	
+	if(u_TRANS != 1){
 		// non-transparent
 		gl_FragColor = vec4(diffuse, 1.0);
 		return;
-	#endif
+	}
 
 	//
 	// screen-space local reflections
@@ -93,7 +92,6 @@ void main (void) {
 	N.z = 1.0;
 
 	N = normalize(v_tangentToView * N);
-//	N = normalize(v_normalVS);
 
 	vec3 V = normalize(v_positionVS);
 	vec3 R = reflect(V, N);

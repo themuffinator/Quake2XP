@@ -22,14 +22,6 @@ void main ()
 v_wTexCoord = a_texCoord;  // diffuse, addative, caustics
 v_lTexCoord = a_LtexCoord; // lightmap only
 
-
-vec3 u = normalize( vec3(gl_ModelViewMatrix * vec4(a_vertArray, 1.0)) );
-vec3 n = normalize(gl_NormalMatrix * a_normArray);
-vec3 r = reflect( u, n );
-float m = 2.0 * sqrt( r.x*r.x + r.y*r.y + (r.z+1.0)*(r.z+1.0) );
-v_envCoord.x = r.x/m + 0.5;
-v_envCoord.y = r.y/m + 0.5;
-
 // calculate tangent space view vector for parallax
 vec3 tmp = u_viewOriginES - a_vertArray;
 v_viewVecTS.x = dot(tmp, a_tangent);
