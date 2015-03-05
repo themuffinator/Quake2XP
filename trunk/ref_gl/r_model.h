@@ -81,6 +81,8 @@ typedef struct worldShadowLight_s {
 	GLuint			iboId;
 	int				iboNumIndices;
 
+	mat4_t			attenMapMatrix;
+
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
 

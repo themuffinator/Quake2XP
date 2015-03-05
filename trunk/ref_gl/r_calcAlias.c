@@ -391,6 +391,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	unsigned		defBits = 0;
 	int				id;
 	qboolean		inWater;
+	mat4_t			entAttenMatrix;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 			return;
@@ -505,11 +506,14 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	else
 		qglUniform1i(lightAlias_isCaustics, 0);
 	
-	qglUniform4f	(lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniform3fv	(lightAlias_lightOrigin, 1, currentShadowLight->origin);
-	qglUniform3fv	(lightAlias_viewOrigin, 1, r_origin);
-	qglUniform1f	(lightAlias_specularScale, r_specularScale->value);
-	qglUniform1f	(lightAlias_toksvigFactor, r_toksvigFactor->value);
+	qglUniform4f		(lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniform3fv		(lightAlias_lightOrigin, 1, currentShadowLight->origin);
+	qglUniform3fv		(lightAlias_viewOrigin, 1, r_origin);
+	qglUniform1f		(lightAlias_specularScale, r_specularScale->value);
+	qglUniform1f		(lightAlias_toksvigFactor, r_toksvigFactor->value);
+	
+	Mat4_TransposeMultiply	(currententity->matrix, currentShadowLight->attenMapMatrix, entAttenMatrix);
+	qglUniformMatrix4fv		(lightAlias_attenMatrix, 1, false, (const float *)entAttenMatrix);
 
 	if(currentShadowLight->isFog){
 		qglUniform1i(lightAlias_fog, (int)currentShadowLight->isFog);
@@ -532,12 +536,6 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 
 	GL_MBind3d(GL_TEXTURE4_ARB, r_lightAttenMap->texnum);
 	qglUniform1i(lightAlias_atten, 4);
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
-	qglTranslatef(0.5,0.5,0.5);
-	qglScalef(0.5/currentShadowLight->radius[0], 0.5/currentShadowLight->radius[1], 0.5/currentShadowLight->radius[2]);
-	qglTranslatef(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
-	qglMatrixMode(GL_MODELVIEW);
 
 	qglEnableVertexAttribArray	(ATRB_POSITION);
 	qglVertexAttribPointer		(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertexArray);

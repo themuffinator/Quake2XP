@@ -688,20 +688,13 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
 		GL_MBind		(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);
-		
+
 		GL_MBindCube	(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
 		GL_SetupCubeMapMatrix(bmodel);
 
 		GL_MBind3d		(GL_TEXTURE3_ARB, r_lightAttenMap->texnum);
-		qglMatrixMode	(GL_TEXTURE);
-		qglLoadIdentity	();
-		qglTranslatef	(0.5, 0.5, 0.5);
-		qglScalef		(0.5 / currentShadowLight->radius[0], 0.5 / currentShadowLight->radius[1], 0.5 / currentShadowLight->radius[2]);
-		qglTranslatef	(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
-		qglMatrixMode	(GL_MODELVIEW);
-
-		GL_MBind(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-		GL_MBind(GL_TEXTURE5_ARB, csm->texnum);
+		GL_MBind		(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+		GL_MBind		(GL_TEXTURE5_ARB, csm->texnum);
 	}
 
 	if (surf->texInfo->flags & SURF_FLOWING)
@@ -770,6 +763,7 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	unsigned	oldFlag		= 0xffffffff;
 	unsigned	numIndices	= 0xffffffff,
 				numVertices = 0;
+	mat4_t		entAttenMatrix;
 
 
 	// setup program
@@ -791,6 +785,13 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	qglUniform3fv(lightWorld_lightOrigin, 1, currentShadowLight->origin);
 	qglUniform4f(lightWorld_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform1f(lightWorld_toksvigFactor, r_toksvigFactor->value);
+
+	if (!bmodel)
+		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, false, (const float *)currentShadowLight->attenMapMatrix);
+	else{
+		Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMapMatrix, entAttenMatrix);
+		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, false, (const float *)entAttenMatrix);
+	}
 
 	if (r_parallax->value)
 		qglUniform1i(lightWorld_parallaxType, (int)r_parallax->value);

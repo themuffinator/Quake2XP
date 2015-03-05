@@ -68,6 +68,7 @@ void UpdateLightBounds(worldShadowLight_t *light)
 {
 	int i;
 	mat3_t lightAxis;
+	mat4_t temp;
 	vec3_t tmp;
 				
 	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
@@ -98,6 +99,12 @@ void UpdateLightBounds(worldShadowLight_t *light)
 	Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
 	VectorAdd(light->corners[i], light->origin, light->corners[i]);
 	}
+
+	Mat4_Identity(temp);
+	Mat4_Translate(temp, 0.5, 0.5, 0.5);
+	Mat4_Scale(temp, 0.5 / light->radius[0], 0.5 / light->radius[1], 0.5 / light->radius[2]);
+	Mat4_Translate(temp, -light->origin[0], -light->origin[1], -light->origin[2]);
+	Mat4_Copy(temp, light->attenMapMatrix);
 }
 
 
@@ -1417,6 +1424,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 	cplane_t			*plane;
 	int					i, leafnum, cluster;
 	vec3_t				tmp;
+	mat4_t				temp;
 
 	light = (worldShadowLight_t*)malloc(sizeof(worldShadowLight_t));
 	light->s_next = shadowLight_static;
@@ -1531,6 +1539,13 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 
 	#define START_OFF	1
 	light->start_off = (flags & START_OFF);
+
+	// calc atten tex coord
+	Mat4_Identity(temp);
+	Mat4_Translate(temp, 0.5, 0.5, 0.5);
+	Mat4_Scale(temp, 0.5 / light->radius[0], 0.5 / light->radius[1], 0.5 / light->radius[2]);
+	Mat4_Translate(temp, -light->origin[0], -light->origin[1], -light->origin[2]);
+	Mat4_Copy(temp, light->attenMapMatrix);
 
 	r_numWorlsShadowLights++;
 	return light;

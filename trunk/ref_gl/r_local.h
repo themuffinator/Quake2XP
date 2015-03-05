@@ -463,8 +463,8 @@ void R_DrawLightFlare();
 void GL_LoadMatrix(GLenum mode, const mat4_t matrix);
 
 // TODO: move to common/q_math.h
-extern mat3_t	mat3_identity;
-extern mat4_t	mat4_identity;
+extern const mat3_t	mat3_identity;
+extern const mat4_t	mat4_identity;
 
 void Mat3_Identity(mat3_t m);
 void Mat3_Copy(const mat3_t in, mat3_t out);
@@ -478,6 +478,7 @@ void Mat4_Scale(mat4_t m, float x, float y, float z) ;
 qboolean Mat4_Invert(const mat4_t in, mat4_t out);
 void Mat4_TransposeMultiply(const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_SetOrientation(mat4_t m, const mat3_t rotation, const vec3_t translation);
+void Mat4_Identity(mat4_t mat);
 void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
 void R_SetLightPlanes();
@@ -959,6 +960,7 @@ uint lightWorld_caustics;
 uint lightWorld_specularScale;
 uint lightWorld_specularExp;
 uint lightWorld_ambient;
+uint lightWorld_attenMatrix;
 
 uint ambientAlias_diffuse;
 uint ambientAlias_add;
@@ -987,6 +989,7 @@ uint lightAlias_isCaustics;
 uint lightAlias_specularScale;
 uint lightAlias_specularExp;
 uint lightAlias_ambient;
+uint lightAlias_attenMatrix;
 
 uint gen_attribConsole;
 uint gen_attribColors;

@@ -20,13 +20,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-mat3_t mat3_identity = {
+const mat3_t mat3_identity = {
 	{ 1, 0, 0 },
 	{ 0, 1, 0 },
 	{ 0, 0, 1 }
 };
 
-mat4_t mat4_identity = {
+const mat4_t mat4_identity = {
 	{ 1, 0, 0, 0 },
 	{ 0, 1, 0, 0 },
 	{ 0, 0, 1, 0 },
@@ -427,6 +427,24 @@ void Mat4_Translate(mat4_t m, float x, float y, float z) {
 	m[3][3] += m[0][3]*x + m[1][3]*y + m[2][3]*z;
 }
 
+void Mat4_Identity(mat4_t mat) {
+	mat[0][0] = 1.0f;
+	mat[0][1] = 0.0f;
+	mat[0][2] = 0.0f;
+	mat[0][3] = 0.0f;
+	mat[1][0] = 0.0f;
+	mat[1][1] = 1.0f;
+	mat[1][2] = 0.0f;
+	mat[1][3] = 0.0f;
+	mat[2][0] = 0.0f;
+	mat[2][1] = 0.0f;
+	mat[2][2] = 1.0f;
+	mat[2][3] = 0.0f;
+	mat[3][0] = 0.0f;
+	mat[3][1] = 0.0f;
+	mat[3][2] = 0.0f;
+	mat[3][3] = 1.0f;
+}
 
 /*
 =================

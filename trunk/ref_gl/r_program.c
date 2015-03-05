@@ -597,6 +597,7 @@ void R_InitPrograms(void) {
 		lightWorld_specularScale	= qglGetUniformLocation(id, "u_specularScale");
 		lightWorld_specularExp		= qglGetUniformLocation(id, "u_specularExp");
 		lightWorld_ambient			= qglGetUniformLocation(id, "u_isAmbient");
+		lightWorld_attenMatrix		= qglGetUniformLocation(id, "u_attenMatrix");
 
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -647,7 +648,8 @@ void R_InitPrograms(void) {
 		lightAlias_causticsIntens	= qglGetUniformLocation(id, "u_CausticsModulate");
 		lightAlias_isCaustics		= qglGetUniformLocation(id, "u_isCaustics");
 		lightAlias_specularScale	= qglGetUniformLocation(id, "u_specularScale");
-		lightAlias_ambient			= qglGetUniformLocation(id, "u_isAmbient");;
+		lightAlias_ambient			= qglGetUniformLocation(id, "u_isAmbient");
+		lightAlias_attenMatrix		= qglGetUniformLocation(id, "u_attenMatrix");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
