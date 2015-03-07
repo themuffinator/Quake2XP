@@ -391,7 +391,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	unsigned		defBits = 0;
 	int				id;
 	qboolean		inWater;
-	mat4_t			entAttenMatrix;
+	mat4_t			entAttenMatrix, entCubeMatrix;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 			return;
@@ -515,6 +515,9 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	Mat4_TransposeMultiply	(currententity->matrix, currentShadowLight->attenMapMatrix, entAttenMatrix);
 	qglUniformMatrix4fv		(lightAlias_attenMatrix, 1, false, (const float *)entAttenMatrix);
 
+	R_CalcCubeMapMatrix	(true);
+	qglUniformMatrix4fv	(lightAlias_cubeMatrix, 1, false, (const float *)currentShadowLight->cubeMapMatrix);
+
 	if(currentShadowLight->isFog){
 		qglUniform1i(lightAlias_fog, (int)currentShadowLight->isFog);
 		qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity);
@@ -532,7 +535,6 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 
 	GL_MBindCube(GL_TEXTURE3_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
 	qglUniform1i(lightAlias_cube, 3);
-	GL_SetupCubeMapMatrix(true);
 
 	GL_MBind3d(GL_TEXTURE4_ARB, r_lightAttenMap->texnum);
 	qglUniform1i(lightAlias_atten, 4);

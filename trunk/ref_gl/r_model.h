@@ -82,6 +82,7 @@ typedef struct worldShadowLight_s {
 	int				iboNumIndices;
 
 	mat4_t			attenMapMatrix;
+	mat4_t			cubeMapMatrix;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;

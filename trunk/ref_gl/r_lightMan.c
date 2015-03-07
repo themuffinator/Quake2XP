@@ -43,10 +43,6 @@ qboolean R_AddLightToFrame(worldShadowLight_t *light, qboolean weapon) {
 			return false;
 		}
 	}
-
-	if(!HasSharedLeafs(light->vis, viewvis))
-		return false;
-
 	if(light->spherical){
 		
 	if(!SphereInFrustum(light->origin, light->radius[0]))
@@ -54,13 +50,17 @@ qboolean R_AddLightToFrame(worldShadowLight_t *light, qboolean weapon) {
 	}
 	else
 	{
-	if(R_CullBox(light->mins, light->maxs))
+	if (BoxOutsideFrustum(light->mins, light->maxs))
 		return false;
 	}
 	if (weapon){
 		if (!BoundsAndSphereIntersect(light->mins, light->maxs, r_origin, 25.0))
 			return false;
 	}
+	
+	if (!HasSharedLeafs(light->vis, viewvis))
+		return false;
+
 	 return true;
 }
 
@@ -1888,41 +1888,40 @@ void R_ClearWorldLights(void)
 
 /*
 =============
-GL_SetupCubeMapMatrix
+R_CalcCubeMapMatrix
 
 Loads the current matrix with a tranformation used for light filters
 =============
 */
-void GL_SetupCubeMapMatrix(qboolean model)
+void R_CalcCubeMapMatrix(qboolean model)
 {
-	float	a, b, c;
-
-	qglMatrixMode(GL_TEXTURE);
-	qglLoadIdentity();
+	float   a, b, c;
+	mat4_t  m;
 
 	a = currentShadowLight->angles[2] + (currentShadowLight->speed[2] * r_newrefdef.time * 1000);
 	b = currentShadowLight->angles[0] + (currentShadowLight->speed[0] * r_newrefdef.time * 1000);
 	c = currentShadowLight->angles[1] + (currentShadowLight->speed[1] * r_newrefdef.time * 1000);
 
+	Mat4_Identity(m);
+
 	if (a)
-		qglRotatef ( -a,  1, 0, 0);
+		Mat4_Rotate(m, -a, 1.f, 0.f, 0.f);
 	if (b)
-		qglRotatef ( -b,  0, 1, 0);
+		Mat4_Rotate(m, -b, 0.f, 1.f, 0.f);
 	if (c)
-		qglRotatef ( -c,  0, 0, 1);
+		Mat4_Rotate(m, -c, 0.f, 0.f, 1.f);
 
 	if (model){
-
-	if (currententity->angles[1])
-		qglRotatef (currententity->angles[1],  0, 0, 1);
-	if (currententity->angles[0])
-		qglRotatef (currententity->angles[0],  0, 1, 0);		/// fixed "stupid quake bug" ;)
-	if (currententity->angles[2])
-		qglRotatef (currententity->angles[2],  1, 0, 0);
-	
+		if (currententity->angles[1])
+			Mat4_Rotate(m, currententity->angles[1], 0, 0, 1);
+		if (currententity->angles[0])
+			Mat4_Rotate(m, currententity->angles[0], 0, 1, 0);
+		if (currententity->angles[2])
+			Mat4_Rotate(m, currententity->angles[2], 1, 0, 0);
 	}
-	qglTranslatef(-currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
-	qglMatrixMode(GL_MODELVIEW);
+
+	Mat4_Translate(m, -currentShadowLight->origin[0], -currentShadowLight->origin[1], -currentShadowLight->origin[2]);
+	Mat4_Copy(m, currentShadowLight->cubeMapMatrix);
 }
 
 

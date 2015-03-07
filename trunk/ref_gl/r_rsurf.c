@@ -263,7 +263,7 @@ void R_GlassLightPass(msurface_t * fa, qboolean scrolling)
 		qglUniform1i(qglGetUniformLocation(id, "u_colorMap"), 1);
 
 		GL_MBindCube(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
-		GL_SetupCubeMapMatrix(false);
+		R_CalcCubeMapMatrix(false);
 		qglUniform1i(qglGetUniformLocation(id, "u_cubeMap"), 2);
 
 		GL_MBind3d(GL_TEXTURE3_ARB, r_lightAttenMap->texnum);
@@ -688,10 +688,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
 		GL_MBind		(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);
-
 		GL_MBindCube	(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
-		GL_SetupCubeMapMatrix(bmodel);
-
 		GL_MBind3d		(GL_TEXTURE3_ARB, r_lightAttenMap->texnum);
 		GL_MBind		(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		GL_MBind		(GL_TEXTURE5_ARB, csm->texnum);
@@ -786,9 +783,14 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	qglUniform4f(lightWorld_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform1f(lightWorld_toksvigFactor, r_toksvigFactor->value);
 
-	if (!bmodel)
+	R_CalcCubeMapMatrix(bmodel);
+	qglUniformMatrix4fv(lightWorld_cubeMatrix, 1, false, (const float *)currentShadowLight->cubeMapMatrix);
+
+	if (!bmodel){
 		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, false, (const float *)currentShadowLight->attenMapMatrix);
-	else{
+	}
+	else
+	{
 		Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMapMatrix, entAttenMatrix);
 		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, false, (const float *)entAttenMatrix);
 	}
@@ -821,6 +823,9 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 		poly = s->polys;
 
 		if (poly->lightTimestamp != r_lightTimestamp)
+			continue;
+		
+		if (s->visframe != r_framecount)
 			continue;
 
 		// flush batch (new texture or flag)

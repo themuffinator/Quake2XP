@@ -434,7 +434,7 @@ void R_Paste_Light_Properties_f(void);
 
 extern qboolean flareEdit;
 
-void GL_SetupCubeMapMatrix(qboolean model);
+void R_CalcCubeMapMatrix(qboolean model);
 void DeleteShadowVertexBuffers(void);
 void MakeFrustum4Light(worldShadowLight_t *light, qboolean ingame);
 qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust);
@@ -479,6 +479,8 @@ qboolean Mat4_Invert(const mat4_t in, mat4_t out);
 void Mat4_TransposeMultiply(const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_SetOrientation(mat4_t m, const mat3_t rotation, const vec3_t translation);
 void Mat4_Identity(mat4_t mat);
+void Mat4_Rotate(mat4_t m, float angle, float x, float y, float z);
+
 void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
 void R_SetLightPlanes();
@@ -961,6 +963,7 @@ uint lightWorld_specularScale;
 uint lightWorld_specularExp;
 uint lightWorld_ambient;
 uint lightWorld_attenMatrix;
+uint lightWorld_cubeMatrix;
 
 uint ambientAlias_diffuse;
 uint ambientAlias_add;
@@ -990,6 +993,7 @@ uint lightAlias_specularScale;
 uint lightAlias_specularExp;
 uint lightAlias_ambient;
 uint lightAlias_attenMatrix;
+uint lightAlias_cubeMatrix;
 
 uint gen_attribConsole;
 uint gen_attribColors;

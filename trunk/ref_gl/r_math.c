@@ -502,6 +502,85 @@ void Mat4_SetOrientation(mat4_t m, const mat3_t rotation, const vec3_t translati
 	m[3][2] = 0.0f;
 	m[3][3] = 1.0f;
 }
+
+/*
+===============
+Mat4_Rotate
+
+===============
+*/
+#define	EQUAL_EPSILON		0.000001f
+void Mat4_Rotate(mat4_t m, float angle, float x, float y, float z) {
+	vec4_t	mx, my, mz;
+	vec3_t	rx, ry, rz;
+	float	len, rad, s, c, i;
+	float	xx, yy, zz, xy, yz, zx, xs, ys, zs;
+
+	len = sqrt(x*x + y*y + z*z);
+	if (len < EQUAL_EPSILON)
+		return;
+
+	len = 1.0 / len;
+
+	x *= len;
+	y *= len;
+	z *= len;
+
+	rad = DEG2RAD(angle);
+	s = sin(rad);
+	c = cos(rad);
+
+	i = 1.0 - c;
+
+	xx = (x * x) * i;
+	yy = (y * y) * i;
+	zz = (z * z) * i;
+	xy = (x * y) * i;
+	yz = (y * z) * i;
+	zx = (z * x) * i;
+
+	xs = x * s;
+	ys = y * s;
+	zs = z * s;
+
+	mx[0] = m[0][0];
+	mx[1] = m[0][1];
+	mx[2] = m[0][2];
+	mx[3] = m[0][3];
+	my[0] = m[1][0];
+	my[1] = m[1][1];
+	my[2] = m[1][2];
+	my[3] = m[1][3];
+	mz[0] = m[2][0];
+	mz[1] = m[2][1];
+	mz[2] = m[2][2];
+	mz[3] = m[2][3];
+
+	rx[0] = xx + c;
+	rx[1] = xy + zs;
+	rx[2] = zx - ys;
+	ry[0] = xy - zs;
+	ry[1] = yy + c;
+	ry[2] = yz + xs;
+	rz[0] = zx + ys;
+	rz[1] = yz - xs;
+	rz[2] = zz + c;
+
+	m[0][0] = mx[0] * rx[0] + my[0] * rx[1] + mz[0] * rx[2];
+	m[0][1] = mx[1] * rx[0] + my[1] * rx[1] + mz[1] * rx[2];
+	m[0][2] = mx[2] * rx[0] + my[2] * rx[1] + mz[2] * rx[2];
+	m[0][3] = mx[3] * rx[0] + my[3] * rx[1] + mz[3] * rx[2];
+	m[1][0] = mx[0] * ry[0] + my[0] * ry[1] + mz[0] * ry[2];
+	m[1][1] = mx[1] * ry[0] + my[1] * ry[1] + mz[1] * ry[2];
+	m[1][2] = mx[2] * ry[0] + my[2] * ry[1] + mz[2] * ry[2];
+	m[1][3] = mx[3] * ry[0] + my[3] * ry[1] + mz[3] * ry[2];
+	m[2][0] = mx[0] * rz[0] + my[0] * rz[1] + mz[0] * rz[2];
+	m[2][1] = mx[1] * rz[0] + my[1] * rz[1] + mz[1] * rz[2];
+	m[2][2] = mx[2] * rz[0] + my[2] * rz[1] + mz[2] * rz[2];
+	m[2][3] = mx[3] * rz[0] + my[3] * rz[1] + mz[3] * rz[2];
+}
+
+
 /*
 ===============
 SetPlaneType

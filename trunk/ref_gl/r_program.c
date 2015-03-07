@@ -598,6 +598,7 @@ void R_InitPrograms(void) {
 		lightWorld_specularExp		= qglGetUniformLocation(id, "u_specularExp");
 		lightWorld_ambient			= qglGetUniformLocation(id, "u_isAmbient");
 		lightWorld_attenMatrix		= qglGetUniformLocation(id, "u_attenMatrix");
+		lightWorld_cubeMatrix		= qglGetUniformLocation(id, "u_cubeMatrix");
 
 	} else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -650,6 +651,7 @@ void R_InitPrograms(void) {
 		lightAlias_specularScale	= qglGetUniformLocation(id, "u_specularScale");
 		lightAlias_ambient			= qglGetUniformLocation(id, "u_isAmbient");
 		lightAlias_attenMatrix		= qglGetUniformLocation(id, "u_attenMatrix");
+		lightAlias_cubeMatrix		= qglGetUniformLocation(id, "u_cubeMatrix");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
