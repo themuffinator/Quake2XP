@@ -1,6 +1,8 @@
 uniform vec3			u_viewOriginES;
 uniform vec3 			u_LightOrg;
 uniform float			u_fogDensity;
+uniform mat4			u_attenMatrix;
+uniform mat4			u_cubeMatrix;
 
 varying vec3			v_viewVecTS;
 varying vec3 			v_lightVec;
@@ -20,8 +22,8 @@ void main ()
 {
 // setup tex coords
 v_texCoord = a_texCoord;  // diffuse & bump
-v_CubeCoord = gl_TextureMatrix[2] * vec4(a_vertArray, 1.0);
-v_AttenCoord = gl_TextureMatrix[3] * vec4(a_vertArray, 1.0);
+v_CubeCoord = u_cubeMatrix * vec4(a_vertArray, 1.0);
+v_AttenCoord = u_attenMatrix * vec4(a_vertArray, 1.0);
 
 // calculate tangent space view vector for parallax
 vec3 tmp = u_viewOriginES - a_vertArray;

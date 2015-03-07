@@ -18,3 +18,14 @@ float LambertLighting(const in vec3 N, const in vec3 L) {
 	float E;
 	return E = max(dot (N, L), 0.0);
 }
+
+/*
+==============
+PointAttenuation
+
+'p' - position in unit light space.
+==============
+*/
+float PointAttenuation (const in vec3 p, const in float e) {
+	return pow(max(1.0 - dot(p, p), 0.0), e);
+}
