@@ -553,7 +553,8 @@ void R_DrawSkyBox(void)
 	int i;
 
 	GL_BindProgram(genericProgram, 0);
-	qglUniform1i(gen_attribColors, 1);
+	qglUniform1i(gen_sky, 1);
+	qglUniform1i(gen_attribColors, 0);
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_tex, 0);
 	qglUniform1f(gen_colorModulate, 1.0);

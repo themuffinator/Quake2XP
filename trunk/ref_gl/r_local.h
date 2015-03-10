@@ -1001,6 +1001,7 @@ uint gen_tex;
 uint gen_tex1;
 uint gen_colorModulate;
 uint gen_color;
+uint gen_sky;
 
 uint gamma_screenMap;
 uint gamma_control;

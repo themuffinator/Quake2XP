@@ -851,6 +851,7 @@ void R_InitPrograms(void) {
 		gen_tex1			= qglGetUniformLocation(id, "u_map1");
 		gen_colorModulate	= qglGetUniformLocation(id, "u_colorScale");
 		gen_color			= qglGetUniformLocation(id, "u_color");
+		gen_sky				= qglGetUniformLocation(id, "u_isSky");
 
 	}else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
