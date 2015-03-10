@@ -7,7 +7,7 @@ uniform sampler2D	u_map1;
 uniform vec4		u_color;
 uniform float		u_colorScale;
 
-uniform int			u_ATTRIB_COLORS, u_ATTRIB_CONSOLE;
+uniform int			u_ATTRIB_COLORS, u_ATTRIB_CONSOLE, u_isSky;
  
 void main(void) 
 {
@@ -24,6 +24,11 @@ if(u_ATTRIB_COLORS == 1){
 	return;
 }
 
+if(u_isSky == 1){
+	gl_FragColor =  vec4(diffuse.rgb * u_colorScale, 1);
+	gl_FragDepth = 1.0;
+	return;
+}
 if(u_ATTRIB_COLORS != 1 && u_ATTRIB_CONSOLE != 1)
 	gl_FragColor =  u_color;
 }
