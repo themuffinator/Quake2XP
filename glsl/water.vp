@@ -28,17 +28,13 @@ void main (void) {
 
 	mat3 m = mat3(gl_ModelViewMatrix);
 
-	if(u_TRANS == 1){
-		// compute view space depth
+	// compute view space depth
 		pos = vec4(1.0, 0.0, pos.z, 1.0);
-
-		// compute the deform strength
+	// compute the deform strength
 		vec2 d = (gl_ProjectionMatrix * pos).xw;
 		d.x /= max(d.y, 1.0);
-
 		v_deformMul = min(d.xx, 0.02) * u_deformMul;
 		v_color = a_colorArray;
-	}
 
 	// calculate tangent to view space transform
 	v_tangentToView[0] = m * a_tangent;

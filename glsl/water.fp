@@ -6,7 +6,7 @@
 #define MAX_STEPS_BACK		20
 
 #define STEP_SIZE			4.0
-#define STEP_SIZE_MUL		1.15
+#define STEP_SIZE_MUL		1.19
 
 #define DEPTH_THRESHOLD		1.0			// sufficient difference to stop tracing
 
@@ -54,20 +54,19 @@ void main (void) {
 	vec3 N;
 	vec2 tc;
 
-	//
-	// Z-feather
-	// negative view-space Z is the fragment depth
-	//
-
-	float depth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
-
 	// scale by the deform multiplier
-	N.xy = offset.xy * clamp((depth + v_positionVS.z) / u_thickness, 0.0, 1.0);
-
 	if(u_TRANS == 1){
+		float depth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+		N.xy = offset.xy * clamp((depth + v_positionVS.z) / u_thickness, 0.0, 1.0);
+	}
+
+	if(u_TRANS != 1)
+		N.xy = offset.xy;
+
 		// scale by the viewport size
 		tc = N.xy * v_deformMul * u_viewport;
-
+	
+	if(u_TRANS == 1){
 		// chromatic aberration approximation
 		vec3 refractColor;
 		refractColor.x = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 0.85).x;
@@ -81,7 +80,7 @@ void main (void) {
 	if(u_TRANS != 1){
 		// non-transparent
 		gl_FragColor = vec4(diffuse, 1.0);
-		return;
+	//	return;
 	}
 
 	//
