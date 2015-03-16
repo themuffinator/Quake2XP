@@ -26,7 +26,6 @@ if(u_ATTRIB_COLORS == 1){
 
 if(u_isSky == 1){
 	gl_FragColor =  vec4(diffuse.rgb * u_colorScale, 1);
-	//gl_FragDepth = 1.0;
 	return;
 }
 if(u_ATTRIB_COLORS != 1 && u_ATTRIB_CONSOLE != 1)

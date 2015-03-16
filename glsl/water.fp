@@ -2,13 +2,16 @@
 
 #include depth.inc
 
-#define MAX_STEPS			40
-#define MAX_STEPS_BACK		20
+#define MAX_STEPS			20
+#define MAX_STEPS_BINARY	10
 
-#define STEP_SIZE			4.0
-#define STEP_SIZE_MUL		1.19
+//#define STEP_SIZE			3.4
+//#define STEP_SIZE_MUL		1.35			// steps=20, dist=3917
 
-#define DEPTH_THRESHOLD		1.0			// sufficient difference to stop tracing
+#define STEP_SIZE			10.0
+#define STEP_SIZE_MUL		1.35
+
+#define Z_THRESHOLD			1.0			// sufficient difference to stop tracing
 
 #define	FOREGROUND_FALLOFF	0.25
 #define SCREEN_FALLOFF		6.0			// fall-off to screen edge, the higher the sharper
@@ -17,6 +20,9 @@
 #define FRESNEL_EXP			1.6
 
 #define NORMAL_MUL			-0.02
+
+#define OPAQUE_OFFSET		4.0
+#define OPAQUE_MUL			(-1.0 / 512.0)
 
 varying vec2				v_deformTexCoord;
 varying vec2				v_diffuseTexCoord;
@@ -53,20 +59,15 @@ void main (void) {
 	vec3 diffuse = texture2D(u_colorMap, v_diffuseTexCoord.xy + offset.zw).xyz * u_ambientScale;  
 	vec3 N;
 	vec2 tc;
+	float sceneDepth;
 
-	// scale by the deform multiplier
-	if(u_TRANS == 1){
-		float depth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
-		N.xy = offset.xy * clamp((depth + v_positionVS.z) / u_thickness, 0.0, 1.0);
-	}
+	if (u_TRANS == 1) {
+		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+		N.xy = offset.xy * clamp((sceneDepth + v_positionVS.z) / u_thickness, 0.0, 1.0);
 
-	if(u_TRANS != 1)
-		N.xy = offset.xy;
-
-		// scale by the viewport size
+		// scale by the deform multiplier & viewport size
 		tc = N.xy * v_deformMul * u_viewport;
-	
-	if(u_TRANS == 1){
+
 		// chromatic aberration approximation
 		vec3 refractColor;
 		refractColor.x = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 0.85).x;
@@ -77,10 +78,11 @@ void main (void) {
 		gl_FragColor = vec4(mix(refractColor, diffuse, v_color.a), 1.0);
 	}
 	
-	if(u_TRANS != 1){
+	if (u_TRANS != 1) {
 		// non-transparent
+		N.xy = offset.xy;
 		gl_FragColor = vec4(diffuse, 1.0);
-	//	return;
+//		return;
 	}
 
 	//
@@ -102,18 +104,25 @@ void main (void) {
 	if (scale < 0.05 || dot(R, V) < 0.0)
 		return;
 
-	vec3 currentPos = v_positionVS;
-	float sceneDepth;
-
 	// follow the reflected ray in increasing steps
+	vec3 rayPos = v_positionVS;
+
+	// FIXME: only temporary solution to self-intersection issue
+	// NOTE: offset must be done using undistorted surface normal,
+	// but since the distortion is weak, this works too
+	if (u_TRANS == 0)
+		rayPos += N * v_positionVS.z * OPAQUE_MUL * OPAQUE_OFFSET;
+
 	float stepSize = STEP_SIZE;
 	int i;
 
 	for (i = 0; i < MAX_STEPS; i++, stepSize *= STEP_SIZE_MUL) {
-		currentPos += R * stepSize;
-		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, VS2UV(currentPos).xy).x, u_depthParms);
+		rayPos += R * stepSize;
 
-		if (sceneDepth <= -currentPos.z)
+		tc = VS2UV(rayPos).xy;
+		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+
+		if (sceneDepth <= -rayPos.z)
 			break;	// intersection
 	}
 
@@ -128,31 +137,27 @@ void main (void) {
 
 	// go back to the middle
 	stepSize *= 0.5;
-	currentPos -= R * stepSize;
-
-	tc = VS2UV(currentPos).xy;
+	rayPos -= R * stepSize;
+	tc = VS2UV(rayPos).xy;
 	sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
 
-	for (int j = 0; j < MAX_STEPS_BACK; j++, stepSize *= 0.5) {
-		currentPos += R * stepSize * (step(-currentPos.z, sceneDepth) - 0.5);
+	for (int j = 0; j < MAX_STEPS_BINARY; j++, stepSize *= 0.5) {
+		rayPos += R * stepSize * (step(-rayPos.z, sceneDepth) - 0.5);
 
-		tc = VS2UV(currentPos).xy;
+		tc = VS2UV(rayPos).xy;
 		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
 
-#if true
-//		float delta = sceneDepth + currentPos.z;
-		float delta = -currentPos.z - sceneDepth;
+		float delta = -rayPos.z - sceneDepth;
 
-		if (delta > 0.0 && delta < DEPTH_THRESHOLD)
+		if (abs(delta) < Z_THRESHOLD)
 			break;	// found it
-//		if (abs(delta) < DEPTH_THRESHOLD)
-//			break;	// found it
-#endif
 	}
 
 	// fade depending on the ray length
-	scale *= 1.0 - float(i) / float(MAX_STEPS);
-		
+	float f = float(i) / float(MAX_STEPS);
+	f *= f;
+	scale *= 1.0 - f * f;
+	
 	// fade on screen border
 	// avoids abrupt reflection disappearing
 	vec2 a = tc / u_viewport;
@@ -161,12 +166,11 @@ void main (void) {
 		
 	scale *= clamp(a.x * SCREEN_FALLOFF, 0.0, 1.0);
 	scale *= clamp(a.y * SCREEN_FALLOFF, 0.0, 1.0);
-		
+
 	// avoid reflection of objects in foreground 
 	// TODO: upgrade
-	scale /= 1.0 + abs(sceneDepth + currentPos.z) * FOREGROUND_FALLOFF;
-//	scale /= 1.0 + max(sceneDepth + currentPos.z, 0.0) * FOREGROUND_FALLOFF;
-		
+	scale /= 1.0 + abs(sceneDepth + rayPos.z) * FOREGROUND_FALLOFF;
+
 	// combine
 	gl_FragColor.xyz = mix(gl_FragColor.xyz, texture2DRect(g_colorBufferMap, tc).xyz, scale);
 }
