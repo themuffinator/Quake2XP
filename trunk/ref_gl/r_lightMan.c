@@ -43,6 +43,9 @@ qboolean R_AddLightToFrame(worldShadowLight_t *light, qboolean weapon) {
 			return false;
 		}
 	}
+	if (!HasSharedLeafs(light->vis, viewvis))
+		return false;
+
 	if(light->spherical){
 		
 	if(!SphereInFrustum(light->origin, light->radius[0]))
@@ -58,9 +61,6 @@ qboolean R_AddLightToFrame(worldShadowLight_t *light, qboolean weapon) {
 			return false;
 	}
 	
-	if (!HasSharedLeafs(light->vis, viewvis))
-		return false;
-
 	 return true;
 }
 
@@ -1105,6 +1105,7 @@ void UpdateLightEditor(void){
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 0);
 	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_sky, 0);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);

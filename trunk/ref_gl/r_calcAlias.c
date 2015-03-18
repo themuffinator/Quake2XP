@@ -391,7 +391,7 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	unsigned		defBits = 0;
 	int				id;
 	qboolean		inWater;
-	mat4_t			entAttenMatrix, entCubeMatrix;
+	mat4_t			entAttenMatrix;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 			return;
