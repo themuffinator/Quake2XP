@@ -19,7 +19,7 @@ uniform int				u_isCaustics;
 uniform int				u_isAmbient;
 
 varying vec3			v_tbn[3];
-varying vec4			v_positionVS;
+varying vec3			v_positionVS;
 varying vec3			v_viewVecTS;
 varying vec3			v_lightVec;
 varying vec2			v_texCoord;

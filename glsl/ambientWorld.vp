@@ -31,7 +31,7 @@ v_viewVecTS.z = dot(tmp, a_normArray);
 v_tbn[0] = (gl_ModelViewMatrix * vec4(a_tangent, 0.0)).xyz;
 v_tbn[1] = (gl_ModelViewMatrix * vec4(a_binormal, 0.0)).xyz;
 v_tbn[2] = (gl_ModelViewMatrix * vec4(a_normArray, 0.0)).xyz;
-v_positionVS = gl_ModelViewMatrix * vec4(a_vertArray, 1.0);
+v_positionVS = (gl_ModelViewMatrix * vec4(a_vertArray, 1.0)).xyz;
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 }
