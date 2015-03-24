@@ -461,6 +461,8 @@ void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect(const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare();
 void GL_LoadMatrix(GLenum mode, const mat4_t matrix);
+void R_CaptureColorBuffer2();
+extern uint	screenMap;
 
 // TODO: move to common/q_math.h
 extern const mat3_t	mat3_identity;

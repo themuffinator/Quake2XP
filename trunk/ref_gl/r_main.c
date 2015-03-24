@@ -901,7 +901,7 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawLightInteractions();
 	R_RenderDecals();
 	R_RenderFlares();
-	R_CaptureColorBuffer();
+	R_CaptureColorBuffer2();
 	R_DrawAlphaPoly();
 	R_DrawPlayerWeapon();
 	R_DrawParticles();

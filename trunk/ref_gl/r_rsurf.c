@@ -179,7 +179,7 @@ void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
 		qglUniform1i(refract_normalMap, 0);
 		GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
 		qglUniform1i(refract_baseMap, 1);
-		GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
+		GL_MBindRect(GL_TEXTURE2_ARB, screenMap);
 		qglUniform1i(refract_screenMap, 2);
 		GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 		qglUniform1i(refract_depthMap, 3);

@@ -174,7 +174,7 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 	GL_MBind	(GL_TEXTURE1_ARB, r_DSTTex->texnum);
 	qglUniform1i(water_deformMap, 1);
 
-	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
+	GL_MBindRect(GL_TEXTURE2_ARB, screenMap);
 	qglUniform1i(water_screenMap, 2);
 	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 	qglUniform1i(water_depthMap, 3);

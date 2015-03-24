@@ -972,6 +972,8 @@ void GL_SetDefaultState(void)
 	bloomtex = 0;
 	thermaltex = 0;
 	fxaatex = 0;
+	screenMap = 0;
+
 	flareEdit = (qboolean)false;
 
 	qglClearColor(0, 0, 0, 1);

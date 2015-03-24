@@ -153,6 +153,24 @@ void R_CaptureColorBuffer()
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
+uint screenMap;
+void R_CaptureColorBuffer2()
+{
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	if (!screenMap) {
+		qglGenTextures(1, &screenMap);
+		GL_BindRect(screenMap);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglCopyTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
+	}
+
+	GL_MBindRect(GL_TEXTURE0_ARB, screenMap);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+}
+
 void R_CaptureDepthBuffer()
 {
 		
