@@ -1,5 +1,3 @@
-#extension GL_ARB_texture_rectangle : enable
-
 #include depth.inc
 
 #define MAX_STEPS			20

@@ -3,6 +3,7 @@ uniform vec3 			u_LightOrg;
 uniform float			u_fogDensity;
 uniform mat4			u_attenMatrix;
 uniform mat4			u_cubeMatrix;
+uniform int			u_parallaxType;
 
 varying vec3			v_viewVecTS;
 varying vec3 			v_lightVec;
@@ -18,28 +19,30 @@ attribute vec3			a_normArray;
 attribute vec3			a_vertArray;
 attribute vec2			a_texCoord;
 
-void main ()
-{
-// setup tex coords
-v_texCoord = a_texCoord;  // diffuse & bump
-v_CubeCoord = u_cubeMatrix * vec4(a_vertArray, 1.0);
-v_AttenCoord = u_attenMatrix * vec4(a_vertArray, 1.0);
+void main (void) {
+	// setup tex coords
+	v_texCoord = a_texCoord;  // diffuse & bump
+	v_CubeCoord = u_cubeMatrix * vec4(a_vertArray, 1.0);
+	v_AttenCoord = u_attenMatrix * vec4(a_vertArray, 1.0);
 
-// calculate tangent space view vector for parallax
-vec3 tmp = u_viewOriginES - a_vertArray;
-v_viewVecTS.x = dot(tmp, a_tangent);
-v_viewVecTS.y = dot(tmp, a_binormal);
-v_viewVecTS.z = dot(tmp, a_normArray);
+	// calculate tangent space view vector for parallax
+	vec3 tmp = u_viewOriginES - a_vertArray;
+	v_viewVecTS.x = dot(tmp, a_tangent);
+	v_viewVecTS.y = dot(tmp, a_binormal);
+	v_viewVecTS.z = dot(tmp, a_normArray);
 
-vec3 LV = u_LightOrg - a_vertArray;
-v_lightVec.x = dot(a_tangent, LV);
-v_lightVec.y = dot(a_binormal, LV);
-v_lightVec.z = dot(a_normArray, LV); 
+	vec3 LV = u_LightOrg - a_vertArray;
+	v_lightVec.x = dot(a_tangent, LV);
+	v_lightVec.y = dot(a_binormal, LV);
+	v_lightVec.z = dot(a_normArray, LV); 
 
-v_tbn[0] = (gl_ModelViewMatrix * vec4(a_tangent, 0.0)).xyz;
-v_tbn[1] = (gl_ModelViewMatrix * vec4(a_binormal, 0.0)).xyz;
-v_tbn[2] = (gl_ModelViewMatrix * vec4(a_normArray, 0.0)).xyz;
-v_positionVS = (gl_ModelViewMatrix * vec4(a_vertArray, 1.0)).xyz;
+	if (u_parallaxType == 1) {
+		v_tbn[0] = (gl_ModelViewMatrix * vec4(a_tangent, 0.0)).xyz;
+		v_tbn[1] = (gl_ModelViewMatrix * vec4(a_binormal, 0.0)).xyz;
+		v_tbn[2] = (gl_ModelViewMatrix * vec4(a_normArray, 0.0)).xyz;
 
-gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1);
+		v_positionVS = (gl_ModelViewMatrix * vec4(a_vertArray, 1.0)).xyz;
+	}
+
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1);
 }

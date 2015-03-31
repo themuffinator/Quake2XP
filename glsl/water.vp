@@ -1,5 +1,3 @@
-#version 120
-
 varying vec2		v_deformTexCoord;
 varying vec2		v_diffuseTexCoord;
 varying vec2		v_deformMul;
