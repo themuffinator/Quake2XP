@@ -25,8 +25,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "cmdlib.h"
 #include "mathlib.h"
 
+vec2_t vec2_origin = {0,0};
 vec3_t vec3_origin = {0,0,0};
-
+vec4_t vec4_origin = {0,0,0,0};
 
 double VectorLength(vec3_t v)
 {
@@ -57,7 +58,7 @@ vec_t Q_rint (vec_t in)
 	return floor (in + 0.5);
 }
 
-void VectorMA (vec3_t va, double scale, vec3_t vb, vec3_t vc)
+void _VectorMA (vec3_t va, double scale, vec3_t vb, vec3_t vc)
 {
 	vc[0] = va[0] + scale*vb[0];
 	vc[1] = va[1] + scale*vb[1];

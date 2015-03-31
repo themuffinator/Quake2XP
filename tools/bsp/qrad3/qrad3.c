@@ -41,8 +41,8 @@ unsigned	num_patches;
 static int		leafparents[MAX_MAP_LEAFS];
 static int		nodeparents[MAX_MAP_NODES];
 
-vec3_t		radiosity[MAX_PATCHES];		// light leaving a patch
-vec3_t		illumination[MAX_PATCHES];	// light arriving at a patch
+vec3_t		radiosity[MAX_PATCHES];		// light leaving a patch, single value
+vec3_t		illumination[MAX_PATCHES][XPLM_NUMVECS];	// light arriving at a patch, for each basis vector
 
 vec3_t		face_offset[MAX_MAP_FACES];		// for rotating bmodels
 dplane_t	backplanes[MAX_MAP_PLANES];
@@ -60,8 +60,10 @@ float		subdiv = 64;
 
 qboolean	dumppatches;
 
-qboolean	useXPLights = false;
-qboolean	bakeXPLM = false;
+qboolean	qrad_xplit = false;
+qboolean	qrad_xplm = false;
+int		qrad_numBasisVecs = 1;					// 3 for XPLM
+int		qrad_dlMode = 2;
 
 void BuildLightmaps (void);
 int TestLine (vec3_t start, vec3_t stop);
@@ -74,23 +76,20 @@ float	maxlight = 196.f;
 float	lightscale = 1.0;
 
 qboolean	glview;
-
 qboolean	nopvs;
-
-qboolean deluxeMapping;
+qboolean	deluxeMapping;
 
 char		source[1024];
 
-float	direct_scale =	0.4;
-float	entity_scale =	1.0;
+float	direct_scale =	0.4f;
+float	entity_scale =	1.f;
 
-// for MakeTransfers
-int	total_transfer;
+int	total_transfer;		// for MakeTransfers
 
 /*
 ===================================================================
 
-MISC
+	MISC
 
 ===================================================================
 */
@@ -138,24 +137,25 @@ void MakeParents (int nodenum, int parent)
 /*
 ===================================================================
 
-TRANSFER SCALES
+	TRANSFER SCALES
 
 ===================================================================
 */
-
-int PointInLeafnum (vec3_t point) {
-	int		nodenum;
-	vec_t	dist;
-	dnode_t	*node;
+int PointInLeafnum (const vec3_t point) {
+	int			nodenum;
+	float		dist;
+	dnode_t		*node;
 	dplane_t	*plane;
 
 	nodenum = 0;
-	while (nodenum >= 0)
-	{
+
+	while (nodenum >= 0) {
 		node = &dnodes[nodenum];
 		plane = &dplanes[node->planenum];
+
 		dist = DotProduct (point, plane->normal) - plane->dist;
-		if (dist > 0)
+
+		if (dist > 0.f)
 			nodenum = node->children[0];
 		else
 			nodenum = node->children[1];
@@ -164,28 +164,25 @@ int PointInLeafnum (vec3_t point) {
 	return -nodenum - 1;
 }
 
-dleaf_t *PointInLeaf (vec3_t point) {
-	int		num;
-
-	num = PointInLeafnum (point);
-	return &dleafs[num];
+dleaf_t *PointInLeaf (const vec3_t point) {
+	return &dleafs[PointInLeafnum(point)];
 }
 
-qboolean PvsForOrigin (vec3_t org, byte *pvs)
-{
+qboolean PvsForOrigin (const vec3_t org, byte *pvs) {
 	dleaf_t	*leaf;
 
-	if (!visdatasize)
-	{
+	if (!visdatasize) {
 		memset (pvs, 255, (numleafs+7)/8 );
 		return true;
 	}
 
 	leaf = PointInLeaf (org);
+
 	if (leaf->cluster == -1)
 		return false;		// in solid leaf
 
 	DecompressVis (dvisdata + dvis->bitofs[leaf->cluster][DVIS_PVS], pvs);
+
 	return true;
 }
 
@@ -207,8 +204,7 @@ void MakeTransfers (int i)
 	float		total;
 	dplane_t	plane;
 	vec3_t		origin;
-	float		transfers[MAX_PATCHES], *all_transfers;
-	int			s;
+	float		transfers[MAX_PATCHES];
 	int			itotal;
 	byte		pvs[(MAX_MAP_LEAFS+7)/8];
 	int			cluster;
@@ -225,8 +221,8 @@ void MakeTransfers (int i)
 	// find out which patch2s will collect light
 	// from patch
 
-	all_transfers = transfers;
 	patch->numtransfers = 0;
+
 	for (j=0, patch2 = patches ; j<num_patches ; j++, patch2++)
 	{
 		transfers[j] = 0;
@@ -241,51 +237,59 @@ void MakeTransfers (int i)
 			if (cluster == -1)
 				continue;
 			if ( ! ( pvs[cluster>>3] & (1<<(cluster&7)) ) )
-				continue;		// not in pvs
+				continue;	// not in pvs
 		}
 
 		// calculate vector
 		VectorSubtract (patch2->origin, origin, delta);
+
 		dist = VectorNormalize (delta, delta);
+
 		if (!dist)
 			continue;	// should never happen
 
-		// reletive angles
+		// relative angles
 		scale = DotProduct (delta, plane.normal);
 		scale *= -DotProduct (delta, patch2->plane->normal);
-		if (scale <= 0)
+
+		if (scale <= 0.f)
 			continue;
 
-		// check exact tramsfer
+		// check exact transfer
 		if (TestLine_r (0, patch->origin, patch2->origin) )
 			continue;
 
-		trans = scale * patch2->area / (dist*dist);
+		trans = scale * patch2->area / (dist * dist);
 
 		if (trans < 0)
 			trans = 0;		// rounding errors...
 
 		transfers[j] = trans;
-		if (trans > 0)
+
+		if (trans > 0.f)
 		{
 			total += trans;
 			patch->numtransfers++;
 		}
 	}
 
+	//
 	// copy the transfers out and normalize
 	// total should be somewhere near PI if everything went right
 	// because partial occlusion isn't accounted for, and nearby
 	// patches have underestimated form factors, it will usually
 	// be higher than PI
+	//
+
 	if (patch->numtransfers)
 	{
 		transfer_t	*t;
 		
 		if (patch->numtransfers < 0 || patch->numtransfers > MAX_PATCHES)
 			Error ("Weird numtransfers");
-		s = patch->numtransfers * sizeof(transfer_t);
-		patch->transfers = malloc (s);
+
+		patch->transfers = malloc (patch->numtransfers * sizeof(transfer_t));
+
 		if (!patch->transfers)
 			Error ("Memory allocation failure");
 
@@ -293,32 +297,34 @@ void MakeTransfers (int i)
 		// normalize all transfers so all of the light
 		// is transfered to the surroundings
 		//
+
 		t = patch->transfers;
 		itotal = 0;
+
 		for (j=0 ; j<num_patches ; j++)
 		{
-			if (transfers[j] <= 0)
+			if (transfers[j] <= 0.f)
 				continue;
-			itrans = transfers[j]*0x10000 / total;
+
+			itrans = transfers[j] * 0x10000 / total;
 			itotal += itrans;
-			t->transfer = itrans;
+			t->transfer[0] = itrans;
 			t->patch = j;
 			t++;
 		}
 	}
 
-	// don't bother locking around this.  not that important.
+	// don't bother locking around this, not that important
 	total_transfer += patch->numtransfers;
 }
-
 
 /*
 =============
 FreeTransfers
+
 =============
 */
-void FreeTransfers (void)
-{
+void FreeTransfers (void) {
 	int		i;
 
 	for (i=0 ; i<num_patches ; i++)
@@ -334,10 +340,10 @@ void FreeTransfers (void)
 /*
 =============
 WriteWorld
+
 =============
 */
-void WriteWorld (char *name)
-{
+void WriteWorld (char *name) {
 	int		i, j;
 	FILE		*out;
 	patch_t		*patch;
@@ -353,13 +359,30 @@ void WriteWorld (char *name)
 		fprintf (out, "%i\n", w->numpoints);
 		for (i=0 ; i<w->numpoints ; i++)
 		{
-			fprintf (out, "%5.2f %5.2f %5.2f %5.3f %5.3f %5.3f\n",
-				w->p[i][0],
-				w->p[i][1],
-				w->p[i][2],
-				patch->totallight[0],
-				patch->totallight[1],
-				patch->totallight[2]);
+			if (qrad_xplm) {
+				fprintf (out, "%5.2f %5.2f %5.2f: %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f\n",
+					w->p[i][0],
+					w->p[i][1],
+					w->p[i][2],
+					patch->totallight[0][0],
+					patch->totallight[0][1],
+					patch->totallight[0][2],
+					patch->totallight[1][0],
+					patch->totallight[1][1],
+					patch->totallight[1][2],
+					patch->totallight[2][0],
+					patch->totallight[2][1],
+					patch->totallight[2][2]);
+			}
+			else {
+				fprintf (out, "%5.2f %5.2f %5.2f: %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f\n",
+					w->p[i][0],
+					w->p[i][1],
+					w->p[i][2],
+					patch->totallight[0][0],
+					patch->totallight[0][1],
+					patch->totallight[0][2]);
+			}
 		}
 		fprintf (out, "\n");
 	}
@@ -370,10 +393,10 @@ void WriteWorld (char *name)
 /*
 =============
 WriteGlView
+
 =============
 */
-void WriteGlView (void)
-{
+void WriteGlView (void) {
 	char	name[1024];
 	FILE	*f;
 	int		i, j;
@@ -395,13 +418,30 @@ void WriteGlView (void)
 		fprintf (f, "%i\n", w->numpoints);
 		for (i=0 ; i<w->numpoints ; i++)
 		{
-			fprintf (f, "%5.2f %5.2f %5.2f %5.3f %5.3f %5.3f\n",
-				w->p[i][0],
-				w->p[i][1],
-				w->p[i][2],
-				p->totallight[0]/128,
-				p->totallight[1]/128,
-				p->totallight[2]/128);
+			if (qrad_xplm) {
+				fprintf (f, "%5.2f %5.2f %5.2f: %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f\n",
+					w->p[i][0],
+					w->p[i][1],
+					w->p[i][2],
+					p->totallight[0][0] / 128,
+					p->totallight[0][1] / 128,
+					p->totallight[0][2] / 128,
+					p->totallight[1][0] / 128,
+					p->totallight[1][1] / 128,
+					p->totallight[1][2] / 128,
+					p->totallight[2][0] / 128,
+					p->totallight[2][1] / 128,
+					p->totallight[2][2] / 128);
+			}
+			else {
+				fprintf (f, "%5.2f %5.2f %5.2f: %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f\n",
+					w->p[i][0],
+					w->p[i][1],
+					w->p[i][2],
+					p->totallight[0][0] / 128,
+					p->totallight[0][1] / 128,
+					p->totallight[0][2] / 128);
+			}
 		}
 		fprintf (f, "\n");
 	}
@@ -409,141 +449,147 @@ void WriteGlView (void)
 	fclose (f);
 }
 
-
 //==============================================================
 
 /*
 =============
 CollectLight
+
 =============
 */
-float CollectLight (void)
-{
-	int		i, j;
+float CollectLight (void) {
+	int		i, j, k;
 	patch_t	*patch;
-	vec_t	total;
+	float f, total = 0.f;
 
-	total = 0;
+	for (i=0, patch=patches ; i<num_patches ; i++, patch++) {
+		// clear outgoing light
+		VectorClear (radiosity[i]);
 
-	for (i=0, patch=patches ; i<num_patches ; i++, patch++)
-	{
-		// skys never collect light, it is just dropped
-		if (patch->sky)
-		{
-			VectorClear (radiosity[i]);
-			VectorClear (illumination[i]);
+		// sky's never collect light, it is just dropped
+		if (patch->sky) {
+			for (k = 0; k < qrad_numBasisVecs; k++)
+				VectorClear (illumination[i][k]);
+
 			continue;
 		}
 
-		for (j=0 ; j<3 ; j++)
-		{
-			patch->totallight[j] += illumination[i][j] / patch->area;
-			radiosity[i][j] = illumination[i][j] * patch->reflectivity[j];
+		for (k = 0; k < qrad_numBasisVecs; k++) {
+			for (j=0 ; j<3 ; j++) {
+				// receive incoming light
+				patch->totallight[k][j] += illumination[i][k][j] / patch->area;
+
+				// get ready for the next bounce
+				f = illumination[i][k][j] * patch->reflectivity[j];
+
+				// for XP lightmaps, express outgoing diffuse light by single RGB color,
+				// summing up all incoming light by combining dot products
+				// of each basis vector with tangent space normal N={0,0,1}
+				if (qrad_xplm)
+					f *= xplm_basisVecs[k][2];
+
+				radiosity[i][j] += f;
+			}
+
+			// collected now
+			VectorClear (illumination[i][k]);
 		}
 
 		total += radiosity[i][0] + radiosity[i][1] + radiosity[i][2];
-		VectorClear (illumination[i]);
 	}
 
 	return total;
 }
 
-
 /*
 =============
 ShootLight
 
-Send light out to other patches
-  Run multi-threaded
+Send light out to other patches.
+Runs multi-threaded.
 =============
 */
-void ShootLight (int patchnum)
-{
-	int			k, l;
+void ShootLight (int patchnum) {
+	int			i, k, l;
+	patch_t		*patch = &patches[patchnum];
 	transfer_t	*trans;
-	int			num;
-	patch_t		*patch;
 	vec3_t		send;
 
+	//
 	// this is the amount of light we are distributing
 	// prescale it so that multiplying by the 16 bit
 	// transfer values gives a proper output value
-	for (k=0 ; k<3 ; k++)
-		send[k] = radiosity[patchnum][k] / 0x10000;
-	patch = &patches[patchnum];
+	//
 
-	trans = patch->transfers;
-	num = patch->numtransfers;
+	for (l=0 ; l<3 ; l++)
+		send[l] = radiosity[patchnum][l] / 0x10000;
 
-	for (k=0 ; k<num ; k++, trans++)
-	{
-		for (l=0 ; l<3 ; l++)
-			illumination[trans->patch][l] += send[l]*trans->transfer;
-	}
+	for (k=0, trans=patch->transfers; k<patch->numtransfers ; k++, trans++)
+		for (i=0 ; i<qrad_numBasisVecs ; i++)
+			for (l=0 ; l<3 ; l++)
+				illumination[trans->patch][i][l] += send[l] * trans->transfer[i];
 }
 
 /*
 =============
 BounceLight
+
 =============
 */
-void BounceLight (void)
-{
+void BounceLight (void) {
 	int		i, j;
-	float	added;
 	char	name[64];
+	float	f;
 	patch_t	*p;
 
-	for (i=0 ; i<num_patches ; i++)
-	{
-		p = &patches[i];
+	for (i=0, p = patches ; i<num_patches ; i++, p++)
 		for (j=0 ; j<3 ; j++)
-		{
-//			p->totallight[j] = p->samplelight[j];
 			radiosity[i][j] = p->samplelight[j] * p->reflectivity[j] * p->area;
-		}
-	}
 
-	for (i=0 ; i<numbounce ; i++)
-	{
+	for (i=0 ; i<numbounce ; i++) {
 		RunThreadsOnIndividual (num_patches, false, ShootLight);
-		added = CollectLight ();
 
-		qprintf ("bounce:%i added:%f\n", i, added);
-		if ( dumppatches && (i==0 || i == numbounce-1) )
-		{
+		f = CollectLight();
+
+		qprintf ("bounce: %i added: %.2f \n", i, f);
+
+		if (dumppatches && (i == 0 || i == numbounce - 1)) {
 			sprintf (name, "bounce%i.txt", i);
 			WriteWorld (name);
 		}
 	}
 }
 
-
-
 //==============================================================
 
-void CheckPatches (void)
-{
-	int		i;
+/*
+=============
+CheckPatches
+
+=============
+*/
+void CheckPatches (void) {
+	int		i, k;
 	patch_t	*patch;
 
-	for (i=0 ; i<num_patches ; i++)
-	{
-		patch = &patches[i];
-		if (patch->totallight[0] < 0 || patch->totallight[1] < 0 || patch->totallight[2] < 0)
-			Error ("negative patch totallight\n");
+	for (i=0, patch = patches ; i<num_patches ; i++, patch++) {
+		for (k = 0; k < qrad_numBasisVecs; k++) {
+			if (patch->totallight[k][0] < 0 || patch->totallight[k][1] < 0 || patch->totallight[k][2] < 0)
+				Error ("CheckPatches(): negative patch %i totallight.\n", i);
+		}
 	}
 }
 
 /*
 =============
 RadWorld
+
 =============
 */
-void RadWorld (void)
-{
+void RadWorld (void) {
 	if (numnodes == 0 || numfaces == 0)
-		Error ("Empty map");
+		Error ("Empty map.");
+
 	MakeBackplanes ();
 	MakeParents (0, -1);
 	MakeTnodes (&dmodels[0]);
@@ -564,8 +610,8 @@ void RadWorld (void)
 	{
 		// build transfer lists
 		RunThreadsOnIndividual (num_patches, true, MakeTransfers);
-		qprintf ("transfer lists: %5.1f megs\n"
-		, (float)total_transfer * sizeof(transfer_t) / (1024*1024));
+
+		qprintf ("transfer lists: %i total, %5.2f MB\n", total_transfer, (float)total_transfer * sizeof(transfer_t) / (1024*1024));
 
 		// spread light around
 		BounceLight ();
@@ -657,9 +703,10 @@ Light model file.
 ========
 */
 int main (int argc, char **argv) {
-	int		i;
+	int			i;
 	double		start, end;
 	char		name[1024];
+	float		f;
 
 	printf ("----- Radiosity ----\n");
 
@@ -672,46 +719,54 @@ int main (int argc, char **argv) {
 		else if (!strcmp(argv[i],"-bounce"))
 		{
 			numbounce = atoi (argv[i+1]);
+			numbounce = Q_clamp(numbounce, 0, 20);
 			i++;
+
 		}
 		else if (!strcmp(argv[i],"-v"))
 		{
 			verbose = true;
 		}
-		else if (!strcmp(argv[i],"-extra"))
+		else if (!strcmp(argv[i],"-samples") || !strcmp(argv[i],"-extra"))
 		{
 			extrasamples = true;
 			extrasamplesvalue = atoi (argv[i+1]);
-			if(!extrasamplesvalue)
-				extrasamplesvalue = 5;
+			extrasamplesvalue = Q_clamp(extrasamplesvalue, 1, MAX_SAMPLES);
+
 			i++;
-			printf ("extra samples = %i samples\n", extrasamplesvalue);
+
+			printf ("using %i samples\n", extrasamplesvalue);
 		}
 		else if (!strcmp(argv[i],"-threads"))
 		{
 			numthreads = atoi (argv[i+1]);
+			numthreads = Q_clamp(numthreads, 1, 32);
 			i++;
 		}
 		
 		else if (!strcmp(argv[i],"-chop"))
 		{
 			subdiv = atoi (argv[i+1]);
+			subdiv = Q_clamp(subdiv, 32, 256);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-scale"))
+		else if (!strcmp(argv[i],"-lightscale") || !strcmp(argv[i],"-scale"))
 		{
 			lightscale = atof (argv[i+1]);
+			lightscale = max(0.f, lightscale);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-direct"))
+		else if (!strcmp(argv[i],"-directscale") || !strcmp(argv[i],"-direct"))
 		{
-			direct_scale *= atof(argv[i+1]);
+			f = atof(argv[i+1]);
+			direct_scale *= max(0.f, f);
 			printf ("direct light scaling at %f\n", direct_scale);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-entity"))
+		else if (!strcmp(argv[i],"-entityscale") || !strcmp(argv[i],"-entity"))
 		{
-			entity_scale *= atof(argv[i+1]);
+			f = atof(argv[i+1]);
+			entity_scale *= max(0.f, f);
 			printf ("entity light scaling at %f\n", entity_scale);
 			i++;
 		}
@@ -727,31 +782,40 @@ int main (int argc, char **argv) {
 		}
 		else if (!strcmp(argv[i],"-ambient"))
 		{
-			ambient = atof (argv[i+1]) * 128;
+			ambient = atof (argv[i+1]);
+			ambient = Q_clamp(ambient, 0.f, 1.f);
+			ambient *= 255.f;
 			i++;
 		}
 		else if (!strcmp(argv[i],"-maxlight"))
 		{
-			maxlight = atof (argv[i+1]) * 128;
+			maxlight = atof (argv[i+1]);
+			maxlight = Q_clamp(maxlight, 0.f, 1.f);
+			maxlight *= 255.f;
 			i++;
 		}
 		else if (!strcmp(argv[i],"-lightmap_scale"))
 		{
-			lightmap_scale = min(4, atoi(argv[i+1]));
+			lightmap_scale = atoi(argv[i+1]);
+			lightmap_scale = Q_clamp(lightmap_scale, 4, 128);
 			i++;
 		}
 		else if (!strcmp(argv[i],"-deluxe"))
-		{
 			deluxeMapping = true;
-		}
 		else if (!strcmp (argv[i],"-tmpin"))
 			strcpy (inbase, "/tmp");
 		else if (!strcmp (argv[i],"-tmpout"))
 			strcpy (outbase, "/tmp");
-		else if (!strcmp(argv[i], "-xp_lights"))
-			useXPLights = true;
-		else if (!strcmp(argv[i], "-xp_lightmaps"))
-			bakeXPLM = true;
+		else if (!strcmp(argv[i], "-xplit"))
+			qrad_xplit = true;
+		else if (!strcmp(argv[i], "-xplm"))
+			qrad_xplm = true;
+		else if (!strcmp(argv[i],"-xpdlmode"))
+		{
+			qrad_dlMode = atoi (argv[i+1]);
+			qrad_dlMode = Q_clamp(qrad_dlMode, 0, 4);
+			i++;
+		}
 		else
 			break;
 	}
@@ -761,11 +825,60 @@ int main (int argc, char **argv) {
 
 	ThreadSetDefault ();
 
-	if (maxlight > 255)
-		maxlight = 255;
+	if (maxlight > 255.f)
+		maxlight = 255.f;
 
-	if (i != argc - 1)
-		Error ("usage: q2xprad [-v] [-chop num] [-scale num] [-ambient num] [-maxlight num] [-threads num] [-lightmap_scale num] [-xp_lights] [-xp_lightmaps] bspfile");
+	if (i != argc - 1) {
+		printf ("USAGE: q2xprad.exe [OPTIONS] FILENAME.bsp\n\n"
+
+			"	Options:\n\n"
+
+			"[-v]\n"
+			"	verbose\n"
+			"[-chop 32-256] (%i)\n"
+			"	maximum patch size\n"
+			"[-bounce 0-20] (%i)\n"
+			"	number of light bounces\n"
+			"[-samples 1-%i] (1)\n"
+			"	number of light samples\n"
+			"[-lightscale 0-N] (%.1f)\n"
+			"	light scale overall\n"
+			"[-directscale 0-N] (%.1f)\n"
+			"	light scale from direct (surface) lights\n"
+			"[-entityscale 0-N] (%.1f)\n"
+			"	light scale from entity (level) lights\n"
+			"[-ambient 0-1] (%.1f)\n"
+			"	flat lighting added\n"
+			"[-maxlight 0-1] (%.5f)\n"
+			"	maximum lighting value stored\n"
+			"[-threads 1-32] (max)\n"
+			"	CPU cores to use\n"
+			"[-lightmap_scale 4-128] (%i)\n"
+			"	lightmap texel size\n"
+			"[-xplit]\n"
+			"	load lights from FILENAME.xplit\n"
+			"[-xplm]\n"
+			"	bake Q2XP126 format lightmaps into FILENAME.xplm\n"
+			"[-xpdlmode 0-4 (2)]\n"
+			"	store direct lighting from:\n\n"
+
+			"	0 - all light surfaces, all lights\n"
+			"	1 - all light surfaces, lights with 'lm_only' '1' keyword\n"
+			"	2 - only sky surfaces, all lights\n"
+			"	3 - only sky surfaces, lights with 'lm_only' '1' keyword\n"
+			"	4 - none\n",
+			64,		// subdiv
+			8,		// numbounce
+			MAX_SAMPLES,	// extrasamples (max)
+			1.f,		// lightscale
+			0.4f,		// direct_scale
+			1.f,		// entity_scale
+			0.f,		// ambient
+			196.f / 255.f,	// maxlight
+			16);		// lightmap_scale
+
+		exit (1);
+	}
 
 	start = I_FloatTime ();
 
@@ -780,7 +893,7 @@ int main (int argc, char **argv) {
 	ParseEntities ();
 	CalcTextureReflectivity ();
 
-	if (useXPLights) {
+	if (qrad_xplit) {
 		//
 		// load lights from .xplit file instead
 		//
@@ -802,12 +915,14 @@ int main (int argc, char **argv) {
 		ambient = 0.1;
 	}
 
-	if (bakeXPLM) {
+	if (qrad_xplm) {
+		qrad_numBasisVecs = XPLM_NUMVECS;
+
 		//
 		// Q2XP126 SH lightmaps
 		//
 
-		XP_BakeLightmaps();
+		XP_RadWorld();
 
 		StripExtension(source);
 		DefaultExtension(source, ".xplm");
@@ -840,7 +955,8 @@ int main (int argc, char **argv) {
 	}
 
 	end = I_FloatTime ();
-	printf ("%5.0f seconds elapsed\n", end-start);
+
+	printf ("%5.0f seconds elapsed\n", end - start);
 	
 	return 0;
 }

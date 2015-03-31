@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "xplit.h"
 #include "xplm.h"
 #include "lightmap.h"
+#include "sh.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -36,41 +37,47 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	MAX_PATCHES	65000			// larger will cause 32 bit overflows
 
-// the sum of all tranfer->transfer values for a given patch
+// the sum of all transfer->transfer values for a given patch
 // should equal exactly 0x10000, showing that all radiance
 // reaches other patches
 typedef struct
 {
 	unsigned short	patch;
-	unsigned short	transfer;
+	unsigned short	transfer[3];
 } transfer_t;
 
-typedef struct patch_s
-{
-	winding_t	*winding;
+typedef struct patch_s {
 	struct patch_s		*next;		// next in face
+	winding_t	*winding;
+
 	int			numtransfers;
 	transfer_t	*transfers;
 
 	int			cluster;			// for pvs checking
 	vec3_t		origin;
+
 	dplane_t	*plane;
+	vec3_t		tangents[2];				// for XPLM
 
-	qboolean	sky;
-
-	vec3_t		totallight;			// accumulated by radiosity
-									// does NOT include light
-									// accounted for by direct lighting
 	float		area;
 
+	// accumulated by radiosity
+	// does NOT include light accounted for by direct lighting
+	vec3_t			totallight[3];
+
 	// illuminance * reflectivity = radiosity
-	vec3_t		reflectivity;
-	vec3_t		baselight;			// emissivity only
+	vec3_t			reflectivity;
+
+	// emissivity only
+	vec3_t			baselight;
 
 	// each style 0 lightmap sample in the patch will be
 	// added up to get the average illuminance of the entire patch
-	vec3_t		samplelight;
+	vec3_t			samplelight;
+
 	int			samples;		// for averaging direct light
+
+	qboolean	sky;
 } patch_t;
 
 extern	patch_t		*face_patches[MAX_MAP_FACES];
@@ -103,8 +110,10 @@ extern int extrasamplesvalue;
 
 extern int numbounce;
 
-extern qboolean	useXPLights;
-extern qboolean	bakeXPLM;
+extern qboolean	qrad_xplit;
+extern qboolean	qrad_xplm;
+extern int qrad_numBasisVecs;
+extern int qrad_dlMode;
 
 extern	byte	nodehit[MAX_MAP_NODES];
 
@@ -114,29 +123,30 @@ void BuildFacelights (int facenum);
 
 void FinalLightFace (int facenum);
 
-qboolean PvsForOrigin (vec3_t org, byte *pvs);
+qboolean PvsForOrigin (const vec3_t org, byte *pvs);
 
-int TestLine_r (int node, vec3_t start, vec3_t stop);
+int TestLine_r (int node, const vec3_t start, const vec3_t stop);
 
 void CreateDirectLights (void);
 
-dleaf_t		*PointInLeaf (vec3_t point);
+dleaf_t		*PointInLeaf (const vec3_t point);
 
 
-extern	dplane_t	backplanes[MAX_MAP_PLANES];
-extern	int			fakeplanes;					// created planes for origin offset 
+extern dplane_t	backplanes[MAX_MAP_PLANES];
+extern int			fakeplanes;					// created planes for origin offset 
 
-extern	float	subdiv;
+extern float	subdiv;
+extern qboolean	nopvs;
 
-extern	float	direct_scale;
-extern	float	entity_scale;
+extern float	direct_scale;
+extern float	entity_scale;
 
 // for MakeTransfers
 extern int	total_transfer;
 
 void MakeBackplanes (void);
 void MakeParents (int nodenum, int parent);
-int PointInLeafnum (vec3_t point);
+int PointInLeafnum (const vec3_t point);
 void MakeTnodes (dmodel_t *bm);
 void MakePatches (void);
 void SubdividePatches (void);

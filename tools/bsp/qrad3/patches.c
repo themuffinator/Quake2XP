@@ -173,7 +173,7 @@ void BaseLightForFace (dface_t *f, vec3_t color)
 	tx = &texinfo[f->texinfo];
 	if (!(tx->flags & SURF_LIGHT) || tx->value == 0)
 		return;
-	if (useXPLights && !(tx->flags & (SURF_SKY | SURF_WARP)))
+	if (qrad_xplit && !(tx->flags & (SURF_SKY | SURF_WARP)))
 		return;		// leave only potentially big area lights
 
 	VectorScale (texture_reflectivity[f->texinfo], tx->value, color);
@@ -190,22 +190,23 @@ qboolean IsSky (dface_t *f)
 }
 
 /*
-=============
+===================
 MakePatchForFace
-=============
+
+===================
 */
 float	totalarea;
+
 void MakePatchForFace (int fn, winding_t *w)
 {
-	dface_t *f;
+	dface_t *f = &dfaces[fn];
+	texinfo_t *tex = &texinfo[f->texinfo];
 	float	area;
 	patch_t		*patch;
 	dplane_t	*pl;
 	int			i;
 	vec3_t		color;
 	dleaf_t		*leaf;
-
-	f = &dfaces[fn];
 
 	area = WindingArea (w);
 	totalarea += area;
@@ -222,6 +223,14 @@ void MakePatchForFace (int fn, winding_t *w)
 		patch->plane = &backplanes[f->planenum];
 	else
 		patch->plane = &dplanes[f->planenum];
+
+	if (qrad_xplm) {
+		// construct the first two parts of the world space -> tangent space matrix
+		VectorNormalize(tex->vecs[0], patch->tangents[0]);
+		VectorNormalize(tex->vecs[1], patch->tangents[1]);
+		// 3rd one is plane normal
+	}
+
 	if (face_offset[fn][0] || face_offset[fn][1] || face_offset[fn][2] )
 	{	// origin offset faces must create new planes
 		if (numplanes + fakeplanes >= MAX_MAP_PLANES)
@@ -258,8 +267,17 @@ void MakePatchForFace (int fn, winding_t *w)
 		for (i=0 ; i<3 ; i++)
 			patch->baselight[i] *= color[i];
 
-		VectorCopy (patch->baselight, patch->totallight);
+/*
+		// not used, direct lights are created from baselight value now
+		if (qrad_xplm) {
+			for (i = 0; i < 3; i++)
+				VectorScale (patch->baselight, xplm_basisVecs[i][2], patch->totallight[i]);
+		}
+		else
+			VectorCopy (patch->baselight, patch->totallight[0]);
+*/
 	}
+
 	num_patches++;
 }
 
@@ -285,6 +303,7 @@ entity_t *EntityForModel (int modnum)
 /*
 =============
 MakePatches
+
 =============
 */
 void MakePatches (void)
@@ -313,34 +332,45 @@ void MakePatches (void)
 			fn = mod->firstface + j;
 			face_entity[fn] = ent;
 			VectorCopy (origin, face_offset[fn]);
+
 			f = &dfaces[fn];
 			w = WindingFromFace (f);
+
 			for (k=0 ; k<w->numpoints ; k++)
-			{
 				VectorAdd (w->p[k], origin, w->p[k]);
-			}
+
 			MakePatchForFace (fn, w);
 		}
 	}
 
-	qprintf ("%i sqaure feet\n", (int)(totalarea/64));
+	qprintf ("%i square feet\n", (int)(totalarea / 64.f));
 }
 
 /*
 =======================================================================
 
-SUBDIVIDE
+	SUBDIVISION
 
 =======================================================================
 */
+/*
+=============
+FinishSplit
 
-void FinishSplit (patch_t *patch, patch_t *newp)
-{
+=============
+*/
+void FinishSplit (patch_t *patch, patch_t *newp) {
 	dleaf_t		*leaf;
+	int			i;
 
 	VectorCopy (patch->baselight, newp->baselight);
-	VectorCopy (patch->totallight, newp->totallight);
+
+	for (i = 0; i < qrad_numBasisVecs; i++)
+		VectorCopy (patch->totallight[i], newp->totallight[i]);
+
 	VectorCopy (patch->reflectivity, newp->reflectivity);
+	VectorCopy(patch->tangents[0], newp->tangents[0]);
+	VectorCopy(patch->tangents[1], newp->tangents[1]);
 	newp->plane = patch->plane;
 	newp->sky = patch->sky;
 
@@ -371,10 +401,10 @@ void FinishSplit (patch_t *patch, patch_t *newp)
 =============
 SubdividePatch
 
-Chops the patch only if its local bounds exceed the max size
+Chops the patch only if its local bounds exceed the max size.
 =============
 */
-void	SubdividePatch (patch_t *patch)
+void SubdividePatch (patch_t *patch)
 {
 	winding_t *w, *o1, *o2;
 	vec3_t	mins, maxs, total;
@@ -385,8 +415,10 @@ void	SubdividePatch (patch_t *patch)
 	patch_t	*newp;
 
 	w = patch->winding;
+
 	mins[0] = mins[1] = mins[2] = 99999;
 	maxs[0] = maxs[1] = maxs[2] = -99999;
+
 	for (i=0 ; i<w->numpoints ; i++)
 	{
 		for (j=0 ; j<3 ; j++)
@@ -398,29 +430,33 @@ void	SubdividePatch (patch_t *patch)
 				maxs[j] = v;
 		}
 	}
+
 	VectorSubtract (maxs, mins, total);
+
 	for (i=0 ; i<3 ; i++)
 		if (total[i] > (subdiv+1) )
 			break;
-	if (i == 3)
-	{
-		// no splitting needed
-		return;		
-	}
+
+	if (i == 3)	// no splitting needed
+		return;
 
 	//
 	// split the winding
 	//
+
 	VectorCopy (vec3_origin, split);
 	split[i] = 1;
-	dist = (mins[i] + maxs[i])*0.5;
+	dist = (mins[i] + maxs[i])*0.5f;
+
 	ClipWindingEpsilon (w, split, dist, ON_EPSILON, &o1, &o2);
 
 	//
 	// create a new patch
+
 	//
 	if (num_patches == MAX_PATCHES)
-		Error ("MAX_PATCHES");
+		Error ("SubdividePatch(): MAX_PATCHES exceeded.");
+
 	newp = &patches[num_patches];
 	num_patches++;
 
@@ -455,18 +491,18 @@ void	DicePatch (patch_t *patch)
 
 	w = patch->winding;
 	WindingBounds (w, mins, maxs);
+
 	for (i=0 ; i<3 ; i++)
-		if (floor((mins[i]+1)/subdiv) < floor((maxs[i]-1)/subdiv))
+		if (floorf((mins[i]+1)/subdiv) < floorf((maxs[i]-1)/subdiv))
 			break;
-	if (i == 3)
-	{
-		// no splitting needed
+
+	if (i == 3)	// no splitting needed
 		return;		
-	}
 
 	//
 	// split the winding
 	//
+
 	VectorCopy (vec3_origin, split);
 	split[i] = 1;
 	dist = subdiv*(1+floor((mins[i]+1)/subdiv));
@@ -475,8 +511,10 @@ void	DicePatch (patch_t *patch)
 	//
 	// create a new patch
 	//
+
 	if (num_patches == MAX_PATCHES)
-		Error ("MAX_PATCHES");
+		Error ("DicePatch(): MAX_PATCHES exceeded.");
+
 	newp = &patches[num_patches];
 	num_patches++;
 
@@ -494,24 +532,21 @@ void	DicePatch (patch_t *patch)
 
 
 /*
-=============
+===================
 SubdividePatches
-=============
+
+===================
 */
-void SubdividePatches (void)
-{
+void SubdividePatches (void) {
 	int		i, num;
 
 	if (subdiv < 1)
 		return;
 
-	num = num_patches;	// because the list will grow
-	for (i=0 ; i<num ; i++)
-	{
+	for (i=0, num=num_patches ; i<num ; i++) {
 //		SubdividePatch (&patches[i]);
 		DicePatch (&patches[i]);
 	}
+
 	qprintf ("%i patches after subdivision\n", num_patches);
 }
-
-//=====================================================================

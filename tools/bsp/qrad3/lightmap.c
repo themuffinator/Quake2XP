@@ -35,8 +35,15 @@ int			planelinks[2][MAX_MAP_PLANES];
 facelight_t		facelight[MAX_MAP_FACES];
 directlight_t	*directlights[MAX_MAP_LEAFS];
 int				numdlights;
+int				lightmap_scale;
 
-int			lightmap_scale;
+const float sampleofs[MAX_SAMPLES][2] = {
+	{ 0    , 0     }, {-0.25   , -0.25   }, { 0.25   , -0.25   }, { 0.25   , 0.25   }, {-0.25   , 0.25   },
+	{-0.1  , 0     }, {-0.25   ,  0      }, { 0      , -0.25   }, { 0.25   , 0      }, { 0      , 0.25   },
+	{ 0    ,-0.1   }, {-0.175  , -0.175  }, { 0.175  , -0.175  }, { 0.175  , 0.175  }, {-0.175  , 0.175  },
+	{ 0.1  , 0     }, {-0.175  ,  0      }, { 0      , -0.175  }, { 0.175  , 0      }, { 0      , 0.175  },
+	{ 0    , 0.1   }, {-0.1    , -0.1    }, { 0.1    , -0.1    }, { 0.1    , 0.1    }, {-0.1    , 0.1    }
+};
 
 /*
 ============
@@ -46,9 +53,8 @@ LinkPlaneFaces
 void LinkPlaneFaces (void)
 {
 	int		i;
-	dface_t	*f;
+	dface_t	*f = dfaces;
 
-	f = dfaces;
 	for (i=0 ; i<numfaces ; i++, f++)
 	{
 		facelinks[i] = planelinks[f->side][f->planenum];
@@ -101,36 +107,6 @@ void PairEdges (void)
 
 =================================================================
 */
-
-typedef struct triedge_s
-{
-	int			p0, p1;
-	vec3_t		normal;
-	vec_t		dist;
-	struct triangle_s	*tri;
-} triedge_t;
-
-typedef struct triangle_s
-{
-	triedge_t	*edges[3];
-} triangle_t;
-
-#define	MAX_TRI_POINTS		1024
-#define	MAX_TRI_EDGES		(MAX_TRI_POINTS*6)
-#define	MAX_TRI_TRIS		(MAX_TRI_POINTS*2)
-
-typedef struct
-{
-	int			numpoints;
-	int			numedges;
-	int			numtris;
-	dplane_t	*plane;
-	triedge_t	*edgematrix[MAX_TRI_POINTS][MAX_TRI_POINTS];
-	patch_t		*points[MAX_TRI_POINTS];
-	triedge_t	edges[MAX_TRI_EDGES];
-	triangle_t	tris[MAX_TRI_TRIS];
-} triangulation_t;
-
 /*
 ===============
 AllocTriangulation
@@ -328,10 +304,10 @@ void AddPointToTriangulation (patch_t *patch, triangulation_t *trian)
 /*
 ===============
 LerpTriangle
+
 ===============
 */
-void	LerpTriangle (triangulation_t *trian, triangle_t *t, vec3_t point, vec3_t color)
-{
+void LerpTriangle (triangulation_t *trian, triangle_t *t, vec3_t point, vec3_t color) {
 	patch_t		*p1, *p2, *p3;
 	vec3_t		base, d1, d2;
 	float		x, y, x1, y1, x2, y2;
@@ -340,9 +316,9 @@ void	LerpTriangle (triangulation_t *trian, triangle_t *t, vec3_t point, vec3_t c
 	p2 = trian->points[t->edges[1]->p0];
 	p3 = trian->points[t->edges[2]->p0];
 
-	VectorCopy (p1->totallight, base);
-	VectorSubtract (p2->totallight, base, d1);
-	VectorSubtract (p3->totallight, base, d2);
+	VectorCopy (p1->totallight[0], base);
+	VectorSubtract (p2->totallight[0], base, d1);
+	VectorSubtract (p3->totallight[0], base, d2);
 
 	x = DotProduct (point, t->edges[0]->normal) - t->edges[0]->dist;
 	y = DotProduct (point, t->edges[2]->normal) - t->edges[2]->dist;
@@ -363,7 +339,7 @@ void	LerpTriangle (triangulation_t *trian, triangle_t *t, vec3_t point, vec3_t c
 	VectorMA (color, y/y1, d1, color);
 }
 
-qboolean PointInTriangle (vec3_t point, triangle_t *t)
+qboolean PointInTriangle (const vec3_t point, triangle_t *t)
 {
 	int		i;
 	triedge_t	*e;
@@ -401,7 +377,7 @@ void SampleTriangulation (vec3_t point, triangulation_t *trian, vec3_t color)
 	}
 	if (trian->numpoints == 1)
 	{
-		VectorCopy (trian->points[0]->totallight, color);
+		VectorCopy (trian->points[0]->totallight[0], color);
 		return;
 	}
 
@@ -438,7 +414,7 @@ void SampleTriangulation (vec3_t point, triangulation_t *trian, vec3_t color)
 		if (d > 1)
 			continue;
 		for (i=0 ; i<3 ; i++)
-			color[i] = p0->totallight[i] + d * (p1->totallight[i] - p0->totallight[i]);
+			color[i] = p0->totallight[0][i] + d * (p1->totallight[0][i] - p0->totallight[0][i]);
 		return;
 	}
 
@@ -460,7 +436,7 @@ void SampleTriangulation (vec3_t point, triangulation_t *trian, vec3_t color)
 	if (!p1)
 		Error ("SampleTriangulation: no points");
 
-	VectorCopy (p1->totallight, color);
+	VectorCopy (p1->totallight[0], color);
 }
 
 /*
@@ -603,8 +579,8 @@ void CalcFaceVectors (lightinfo_t *l)
 	VectorAdd (l->texorg, l->modelorg, l->texorg);
 
 	// total sample count
-	h = l->texsize[1]+1;
 	w = l->texsize[0]+1;
+	h = l->texsize[1]+1;
 	l->numsurfpt = w * h;
 }
 
@@ -717,6 +693,7 @@ entity_t *FindTargetEntity (char *target)
 /*
 =============
 CreateDirectLights
+
 =============
 */
 void CreateDirectLights (void)
@@ -740,9 +717,15 @@ void CreateDirectLights (void)
 
 	for (i=0, p=patches ; i<num_patches ; i++, p++)
 	{
-		if (p->totallight[0] < DIRECT_LIGHT
-			&& p->totallight[1] < DIRECT_LIGHT
-			&& p->totallight[2] < DIRECT_LIGHT)
+/*
+		if (p->totallight[0][0] < DIRECT_LIGHT
+			&& p->totallight[0][1] < DIRECT_LIGHT
+			&& p->totallight[0][2] < DIRECT_LIGHT)
+			continue;
+*/
+		if (p->baselight[0] < DIRECT_LIGHT &&
+			p->baselight[1] < DIRECT_LIGHT &&
+			p->baselight[2] < DIRECT_LIGHT)
 			continue;
 
 		numdlights++;
@@ -751,6 +734,7 @@ void CreateDirectLights (void)
 
 		VectorCopy (p->origin, dl->origin);
 
+		// link into the leaf cluster
 		leaf = PointInLeaf (dl->origin);
 		cluster = leaf->cluster;
 		dl->next = directlights[cluster];
@@ -759,12 +743,14 @@ void CreateDirectLights (void)
 		dl->type = emit_surface;
 		VectorCopy (p->plane->normal, dl->normal);
 
-		dl->intensity = ColorNormalize (p->totallight, dl->color);
+//		dl->intensity = ColorNormalize (p->totallight[0], dl->color);
+		dl->intensity = ColorNormalize (p->baselight, dl->color);
 		dl->intensity *= p->area * direct_scale;
-		VectorClear (p->totallight);	// all sent now
+
+//		VectorClear (p->totallight[0]);		// all sent now
 	}
 
-	if (useXPLights) {
+	if (qrad_xplit) {
 		//
 		// external relight file
 		//
@@ -861,7 +847,7 @@ void CreateDirectLights (void)
 			{	// point towards target
 				e2 = FindTargetEntity (target);
 				if (!e2)
-					printf ("WARNING: light at (%i %i %i) has missing target\n",
+					printf ("WARNING: light at (%i %i %i) has missing target.\n",
 					(int)dl->origin[0], (int)dl->origin[1], (int)dl->origin[2]);
 				else
 				{
@@ -956,7 +942,7 @@ void GatherSampleLight (vec3_t pos, vec3_t normal, float **styletable, int offse
 				dot2 = -DotProduct (delta, l->normal);
 				if (dot2 <= 0.001)
 					goto skipadd;	// behind light surface
-				scale = (l->intensity / (dist*dist) ) * dot * dot2;
+				scale = l->intensity / (dist*dist) * dot * dot2;
 				break;
 
 			case emit_spotlight:
@@ -970,11 +956,10 @@ void GatherSampleLight (vec3_t pos, vec3_t normal, float **styletable, int offse
 				Error ("Bad l->type");
 			}
 
-			if (TestLine_r (0, pos, l->origin))
-				continue;	// occluded
-
 			if (scale <= 0)
 				continue;
+			if (TestLine_r (0, pos, l->origin))
+				continue;	// occluded
 
 			// if this style doesn't have a table yet, allocate one
 			if (!styletable[l->style])
@@ -998,17 +983,17 @@ skipadd: ;
 }
 
 /*
-=============
+==========================
 AddSampleToPatch
 
 Take the sample's collected light and
-add it back into the apropriate patch
+add it back into the appropriate patch
 for the radiosity pass.
 
 The sample is added to all patches that might include
 any part of it.  They are counted and averaged, so it
 doesn't generate extra light.
-=============
+==========================
 */
 void AddSampleToPatch (vec3_t pos, vec3_t color, int facenum)
 {
@@ -1046,8 +1031,6 @@ BuildFacelights
 
 =============
 */
-static const float sampleofs[5][2] = { {0, 0},{-0.25, -0.25}, {0.25, -0.25}, {0.25, 0.25}, {-0.25, 0.25} };
-
 void BuildFacelights (int facenum) {
 	dface_t	*f;
 	lightinfo_t	*l;
@@ -1068,10 +1051,7 @@ void BuildFacelights (int facenum) {
 	
 	fl = &facelight[facenum];
 
-	if (extrasamples)
-		numsamples = extrasamplesvalue;
-	else
-		numsamples = 1;
+	numsamples = extrasamples ? extrasamplesvalue : 1;
 
 	l = malloc (numsamples * sizeof(lightinfo_t));
 
@@ -1112,8 +1092,7 @@ void BuildFacelights (int facenum) {
 				
 		for (j=0 ; j<numsamples ; j++)
 		{
-		direction = fl->directions + i * 3;  // accumulate direction here 
-
+			direction = fl->directions + i * 3;  // accumulate direction here 
 			GatherSampleLight (l[j].surfpt[i], l[0].facenormal, styletable, i*3, tablesize, 1.0/numsamples, direction);
 		}
 
@@ -1137,7 +1116,7 @@ void BuildFacelights (int facenum) {
 	{
 		if (patch->samples)
 		{
-			VectorScale (patch->samplelight, 1.0/patch->samples, patch->samplelight);
+			VectorScale (patch->samplelight, 1.f / patch->samples, patch->samplelight);
 		}
 		else
 		{
@@ -1173,7 +1152,6 @@ void BuildFacelights (int facenum) {
 
 	free(l);
 }
-
 
 /*
 =============

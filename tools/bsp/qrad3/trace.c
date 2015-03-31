@@ -95,7 +95,7 @@ void MakeTnodes (dmodel_t *bm)
 //==========================================================
 
 
-int TestLine_r (int node, vec3_t start, vec3_t stop)
+int TestLine_r (int node, const vec3_t start, const vec3_t stop)
 {
 	tnode_t	*tnode;
 	float	front, back;

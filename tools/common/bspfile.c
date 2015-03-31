@@ -486,11 +486,10 @@ void AddLump (int lumpnum, void *data, int len)
 =============
 WriteBSPFile
 
-Swaps the bsp file in place, so it should not be referenced again
+Swaps the bsp file in place, so it should not be referenced again.
 =============
 */
-void	WriteBSPFile (char *filename)
-{
+void WriteBSPFile (char *filename) {
 	header = &outheader;
 	memset (header, 0, sizeof(dheader_t));
 

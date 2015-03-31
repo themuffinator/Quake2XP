@@ -32,6 +32,7 @@ typedef double vec_t;
 #else
 typedef float vec_t;
 #endif
+typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
 
@@ -49,20 +50,32 @@ typedef vec_t vec4_t[4];
 #define max(a,b)        (((a) > (b)) ? (a) : (b)) 
 #endif 
 
+#define Q_clamp(a,b,c)	((a) < (b) ? (b) : (a) > (c) ? (c) : (a))
+
+extern vec2_t vec2_origin;
 extern vec3_t vec3_origin;
+extern vec4_t vec4_origin;
 
 #define	EQUAL_EPSILON	0.001
 
 qboolean VectorCompare (vec3_t v1, vec3_t v2);
 
-#define DotProduct(x,y)			(x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
-#define VectorSubtract(a,b,c)	{c[0]=a[0]-b[0];c[1]=a[1]-b[1];c[2]=a[2]-b[2];}
-#define VectorAdd(a,b,c)		{c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];}
-#define VectorCopy(a,b)			{b[0]=a[0];b[1]=a[1];b[2]=a[2];}
-#define VectorScale(a,b,c)		{c[0]=b*a[0];c[1]=b*a[1];c[2]=b*a[2];}
-#define VectorClear(x)			{x[0] = x[1] = x[2] = 0;}
-#define	VectorNegate(x)			{x[0]=-x[0];x[1]=-x[1];x[2]=-x[2];}
-#define VectorSet(v, x, y, z)	{v[0]=(x), v[1]=(y), v[2]=(z);}
+#define DotProduct(x,y)		((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
+#define VectorSubtract(a,b,c)	((c)[0]=(a)[0]-(b)[0],(c)[1]=(a)[1]-(b)[1],(c)[2]=(a)[2]-(b)[2])
+#define VectorAdd(a,b,c)	((c)[0]=(a)[0]+(b)[0],(c)[1]=(a)[1]+(b)[1],(c)[2]=(a)[2]+(b)[2])
+#define VectorCopy(a,b)		((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2])
+#define VectorClear(a)		((a)[0]=(a)[1]=(a)[2]=0)
+#define VectorNegate(a,b)	((b)[0]=-(a)[0],(b)[1]=-(a)[1],b[2]=-(a)[2])
+#define VectorSet(v,x,y,z)	((v)[0]=(x), (v)[1]=(y), (v)[2]=(z))
+#define VectorInvert(v)		((v)[0]=-(v)[0], (v)[1]=-(v)[1], (v)[2]=-(v)[2])
+#define VectorScale(a,b,c)	((c)[0]=(a)[0]*(b), (c)[1]=(a)[1]*(b), (c)[2]=(a)[2]*(b))
+
+#define VectorMA(a,b,c,d)	((d)[0]=(a)[0]+(c)[0]*(b),(d)[1]=(a)[1]+(c)[1]*(b),(d)[2]=(a)[2]+(c)[2]*(b))
+
+//#define VectorMin(a,b,o)	((o)[0]=((a)[0]<(b)[0])?(a)[0]:(b)[0],(o)[1]=((a)[1]<(b)[1])?(a)[1]:(b)[1],(o)[2]=((a)[2]<(b)[2])?(a)[2]:(b)[2])
+//#define VectorMax(a,b,o)	((o)[0]=((a)[0]>(b)[0])?(a)[0]:(b)[0],(o)[1]=((a)[1]>(b)[1])?(a)[1]:(b)[1],(o)[2]=((a)[2]>(b)[2])?(a)[2]:(b)[2])
+//#define VectorMul(in1, in2, out)		((out)[0] = (in1)[0] * (in2)[0], (out)[1] = (in1)[1] * (in2)[1], (out)[2] = (in1)[2] * (in2)[2])
+//#define VectorAverage(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5f,(o)[1]=((a)[1]+(b)[1])*0.5f,(o)[2]=((a)[2]+(b)[2])*0.5f)
 
 vec_t Q_rint (vec_t in);
 vec_t _DotProduct (vec3_t v1, vec3_t v2);
@@ -73,7 +86,7 @@ void _VectorScale (vec3_t v, vec_t scale, vec3_t out);
 
 double VectorLength(vec3_t v);
 
-void VectorMA (vec3_t va, double scale, vec3_t vb, vec3_t vc);
+void _VectorMA (vec3_t va, double scale, vec3_t vb, vec3_t vc);
 
 void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross);
 vec_t VectorNormalize (vec3_t in, vec3_t out);
