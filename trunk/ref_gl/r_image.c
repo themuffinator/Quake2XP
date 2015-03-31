@@ -94,6 +94,9 @@ image_t *r_lblendimage;
 int numgltextures;
 int base_textureid;				// gltextures[i] = base_textureid+i
 
+image_t *r_particletexture[PT_MAX];
+image_t *r_decaltexture[DECAL_MAX];
+
 static byte intensitytable[256];
 static unsigned char gammatable[256];
 
@@ -150,24 +153,6 @@ void R_CaptureColorBuffer()
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 	GL_MBindRect(GL_TEXTURE0_ARB, ScreenMap->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-}
-
-uint screenMap;
-void R_CaptureColorBuffer2()
-{
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	if (!screenMap) {
-		qglGenTextures(1, &screenMap);
-		GL_BindRect(screenMap);
-		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglCopyTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
-	}
-
-	GL_MBindRect(GL_TEXTURE0_ARB, screenMap);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
@@ -1548,11 +1533,9 @@ GL_ShutdownImages
 ===============
 */
 
-void GL_ShutdownImages(void)
-{
+void GL_ShutdownImages(void) {
 	int i;
 	image_t *image;
-	GLuint t;
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (!image->registration_sequence)
@@ -1565,10 +1548,18 @@ void GL_ShutdownImages(void)
 
 	// Berserker's fix for old Q2 bug:
 	// free lightmaps
-	if (gl_lms.current_lightmap_texture)
-	{
-		t = TEXNUM_LIGHTMAPS;
-		qglDeleteTextures (gl_lms.current_lightmap_texture, &t);
-	}
+	if (gl_lms.current_lightmap_texture) {
+		// no dynamic lightmap
+		GLuint ids[MAX_LIGHTMAPS * 3];
 
+		for (i = 0; i < gl_lms.current_lightmap_texture; i++) {
+			ids[i * 3 + 0] = TEXNUM_LIGHTMAPS + i + 1;
+
+			// FIXME: include XPLM ones only when necessary
+			ids[i * 3 + 1] = TEXNUM_LIGHTMAPS + i + 1 + MAX_LIGHTMAPS;
+			ids[i * 3 + 2] = TEXNUM_LIGHTMAPS + i + 1 + MAX_LIGHTMAPS * 2;
+		}
+
+		qglDeleteTextures (i * 3, ids);
+	}
 }

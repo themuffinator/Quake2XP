@@ -336,7 +336,6 @@ void CreateFboBuffer(void){
 
 	qglDrawBuffers(1, drawbuffer);
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 
 
@@ -972,8 +971,6 @@ void GL_SetDefaultState(void)
 	bloomtex = 0;
 	thermaltex = 0;
 	fxaatex = 0;
-	screenMap = 0;
-
 	flareEdit = (qboolean)false;
 
 	qglClearColor(0, 0, 0, 1);

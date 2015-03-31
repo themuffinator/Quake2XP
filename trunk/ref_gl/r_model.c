@@ -52,6 +52,7 @@ static float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 int bspSize, aliasSize, spriteSize;
 int numentitychars;
 byte *mod_base;
+int *mod_xplmOffsets;		// face light offsets from .xplm file, freed after level is loaded
 
 /*
 =================
@@ -476,25 +477,35 @@ model_t *Mod_ForName(char *name, qboolean crash)
 	// 
 	// find a free model slot spot
 	// 
+
 	for (i = 0, mod = mod_known; i < mod_numknown; i++, mod++) {
 		if (!mod->name[0])
 			break;				// free spot
 	}
+
 	if (i == mod_numknown) {
 		if (mod_numknown == MAX_MOD_KNOWN)
 			VID_Error(ERR_DROP, "mod_numknown == MAX_MOD_KNOWN");
+
 		mod_numknown++;
 	}
+
+	memset(mod, 0, sizeof(model_t));
+
 	strcpy(mod->name, name);
 
 	// 
 	// load the file
 	// 
+
 	modfilelen =  FS_LoadFile(mod->name, (void**)&buf);
+
 	if (!buf) {
 		if (crash)
 			VID_Error(ERR_DROP, "Mod_ForName: %s not found", mod->name);
+
 		memset(mod->name, 0, sizeof(mod->name));
+
 		return NULL;
 	}
 
@@ -524,8 +535,7 @@ model_t *Mod_ForName(char *name, qboolean crash)
 		break;
 
 	default:
-		VID_Error(ERR_DROP, "Mod_NumForName: unknown fileid for %s",
-				  mod->name);
+		VID_Error(ERR_DROP, "Mod_NumForName: unknown fileid for %s", mod->name);
 		break;
 	}
 
@@ -553,10 +563,10 @@ byte *mod_base;
 Mod_LoadLighting
 =================
 */
-
-void Mod_LoadLighting(lump_t * l)
-{
+void Mod_LoadLighting(lump_t * l) {
 	char *s, *c;
+
+	loadmodel->useXPLM = false;
 
 	if (!l->filelen) {
 		loadmodel->lightData = NULL;
@@ -1185,14 +1195,13 @@ void Mod_LoadFaces(lump_t * l)
 
 	in = (dface_t *) (mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		VID_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size in %s",
-				  loadmodel->name);
+		VID_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+
 	count = l->filelen / sizeof(*in);
 	out = (msurface_t*) Hunk_Alloc(count * sizeof(*out));
 	
 	loadmodel->surfaces = out;
 	loadmodel->numSurfaces = count;
-	
 	loadmodel->memorySize += count * sizeof(*out);
 
 	currentmodel = loadmodel;
@@ -1220,36 +1229,38 @@ void Mod_LoadFaces(lump_t * l)
 		out->plane = loadmodel->planes + planenum;
 
 		ti = LittleShort (in->texInfo);
+
 		if (ti < 0 || ti >= loadmodel->numTexInfo)
-			Sys_Error ("MOD_LoadBmodel: bad texInfo number");
+			VID_Error(ERR_DROP, "Mod_LoadFaces(): bad texInfo number (%i).", ti);
+
 		out->texInfo = loadmodel->texInfo + ti;
 
 		CalcSurfaceExtents (out);
 				
-	// lighting info
-
+		// lighting info
 		for (i=0 ; i<MAXLIGHTMAPS ; i++)
 			out->styles[i] = in->styles[i];
-		i = LittleLong(in->lightofs);
+
+		// KRIGSSVIN: .xplm light offsets
+		i = loadmodel->useXPLM ? mod_xplmOffsets[surfnum] : LittleLong(in->lightofs);
+
 		if (i == -1)
 			out->samples = NULL;
 		else
 			out->samples = loadmodel->lightData + i;
-		
-	// set the drawing flags
-		
-		if (out->texInfo->flags & SURF_WARP)
-				out->flags |= MSURF_DRAWTURB;
 
+		// set the drawing flags
+		if (out->texInfo->flags & SURF_WARP)
+			out->flags |= MSURF_DRAWTURB;
 		
 		// create lightmaps and polygons
 		if ( !(out->texInfo->flags & (SURF_SKY|SURF_TRANS33|SURF_TRANS66|SURF_WARP) ) )
 			GL_CreateSurfaceLightmap (out);
 
-			GL_BuildPolygonFromSurface(out);
-			GL_AddFlareSurface(out);
-			CalcSurfaceBounds(out);
-			GL_CalcBspIndeces(out);
+		GL_BuildPolygonFromSurface(out);
+		GL_AddFlareSurface(out);
+		CalcSurfaceBounds(out);
+		GL_CalcBspIndeces(out);
 	}
 	
 	// Build TBN for smoothing bump mapping (Berserker)
@@ -1257,8 +1268,7 @@ void Mod_LoadFaces(lump_t * l)
 	GL_EndBuildingLightmaps();
 
 	// calc neighbours for shadow volumes
-	for (surfnum=0 ; surfnum<count ; surfnum++, surf++)
-	{
+	for (surfnum=0 ; surfnum<count ; surfnum++, surf++) {
 		if ( surf->flags & (MSURF_DRAWTURB|MSURF_DRAWSKY) )
 			continue;
 		BuildSurfaceNeighours(surf);
@@ -1728,35 +1738,61 @@ Mod_LoadBrushModel
 =================
 */
 static qboolean R_LoadXPLM (void) {
-//	char *s, *c;
 	char tmp[MAX_QPATH], name[MAX_QPATH];
-	char *buf;
-	int len;
+	char *pB, *buf;
+	int *pIB;
+	int i, len, numFaces;
 
 	FS_StripExtension(loadmodel->name, tmp, sizeof(tmp));
 	Com_sprintf(name, sizeof(name),"%s.xplm", tmp);
 
-	len =  FS_LoadFile(name, (void**)&buf);
+	len = FS_LoadFile(name, (void**)&buf);
 
 	if (!buf) {
-//		Com_DPrintf("R_LoadXPLM: external lightmaps for '%s' not found", loadmodel->name);
+//		Com_DPrintf("R_LoadXPLM(): external lightmaps for '%s' not found.\n", loadmodel->name);
 		return false;
 	}
 
+	//
+	// face count & light offsets
+	//
+
+	pB = buf;
+	pIB = (int *)buf;
+
+	numFaces = LittleLong(*pIB++);
+	pB += 4;
+	len -= 4;
+
+	mod_xplmOffsets = Z_Malloc(numFaces * 4);
+	
+	for (i = 0; i < numFaces; i++, pIB++)
+		mod_xplmOffsets[i] = LittleLong(*pIB);
+
+	pB += numFaces * 4;
+	len -= numFaces * 4;
+
+	//
+	// face style counts
+	//
+
+	//
+	// lightmap scale
+	//
+
+	loadmodel->lightmap_scale = *pB++;
 	len--;
 
-	if (len <= 0) {
-		Com_Printf("R_LoadXPLM: file too small", loadmodel->name);
-		FS_FreeFile(buf);
+	//
+	// lightmap data
+	//
 
-		return false;
-	}
+//	Com_Printf("^1NUMFACES ^7%i ^1LM_DATA ^7%i ^1LM_SCALE ^7%i\n", numFaces, len, loadmodel->lightmap_scale);
 
-	loadmodel->lightmap_scale = max(4, *buf);
 	loadmodel->lightData = (byte *)Hunk_Alloc(len);
-	Q_memcpy(loadmodel->lightData, buf + 1, len);
-	
+	Q_memcpy(loadmodel->lightData, pB, len);
 	loadmodel->memorySize += len;
+	loadmodel->useXPLM = true;
 
 	FS_FreeFile(buf);
 
@@ -1817,6 +1853,9 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer)
 	Mod_LoadTexinfo(&header->lumps[LUMP_TEXINFO]);
 
 	Mod_LoadFaces(&header->lumps[LUMP_FACES]);	
+
+	if (loadmodel->useXPLM)
+		Z_Free(mod_xplmOffsets);
 
 	CleanDuplicateFlares();
 

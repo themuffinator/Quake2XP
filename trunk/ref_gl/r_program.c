@@ -554,10 +554,19 @@ void R_InitPrograms(void) {
 		id = ambientWorldProgram->id[0];
 
 		ambientWorld_diffuse		= qglGetUniformLocation(id, "u_Diffuse");
-		ambientWorld_lightmap		= qglGetUniformLocation(id, "u_LightMap");
+		ambientWorld_add		= qglGetUniformLocation(id, "u_Add");
+		ambientWorld_lightmap[0]		= qglGetUniformLocation(id, "u_LightMap0");
+		ambientWorld_lightmap[1]		= qglGetUniformLocation(id, "u_LightMap1");
+		ambientWorld_lightmap[2]		= qglGetUniformLocation(id, "u_LightMap2");
+		ambientWorld_lightmapType		= qglGetUniformLocation(id, "u_LightMapType");
 		ambientWorld_csm			= qglGetUniformLocation(id, "u_csmMap");
+		ambientWorld_normalmap			= qglGetUniformLocation(id, "u_NormalMap");
+		ambientWorld_ssao			= qglGetUniformLocation(id, "u_ssao");
+		ambientWorld_ssaomap			= qglGetUniformLocation(id, "u_ssaoMap");
 		ambientWorld_parallaxParams = qglGetUniformLocation(id, "u_parallaxParams");
 		ambientWorld_colorScale		= qglGetUniformLocation(id, "u_ColorModulate");
+		ambientWorld_specularScale	= qglGetUniformLocation(id, "u_specularScale");
+		ambientWorld_specularExp	= qglGetUniformLocation(id, "u_specularExp");
 		ambientWorld_viewOrigin		= qglGetUniformLocation(id, "u_viewOriginES");
 		ambientWorld_parallaxType	= qglGetUniformLocation(id, "u_parallaxType");
 		ambientWorld_ambientLevel	= qglGetUniformLocation(id, "u_ambientScale");
@@ -587,7 +596,6 @@ void R_InitPrograms(void) {
 		
 		lightWorld_lightOrigin		= qglGetUniformLocation(id, "u_LightOrg");
 		lightWorld_lightColor		= qglGetUniformLocation(id, "u_LightColor");
-		lightWorld_toksvigFactor	= qglGetUniformLocation(id, "u_toksvigFactor");
 		lightWorld_fog				= qglGetUniformLocation(id, "u_fog");
 		lightWorld_fogDensity		= qglGetUniformLocation(id, "u_fogDensity");
 
@@ -612,6 +620,7 @@ void R_InitPrograms(void) {
 		id = aliasAmbientProgram->id[0];
 		
 		ambientAlias_diffuse		= qglGetUniformLocation(id, "u_Diffuse");
+		ambientAlias_normalmap			= qglGetUniformLocation(id, "u_NormalMap");
 		ambientAlias_add			= qglGetUniformLocation(id, "u_Add");
 		ambientAlias_env			= qglGetUniformLocation(id, "u_env");
 		ambientAlias_isEnvMaping	= qglGetUniformLocation(id, "u_isEnvMap");
@@ -643,12 +652,12 @@ void R_InitPrograms(void) {
 		lightAlias_viewOrigin		= qglGetUniformLocation(id, "u_ViewOrigin");
 		lightAlias_lightOrigin		= qglGetUniformLocation(id, "u_LightOrg");
 		lightAlias_lightColor		= qglGetUniformLocation(id, "u_LightColor");
-		lightAlias_toksvigFactor	= qglGetUniformLocation(id, "u_toksvigFactor");
 		lightAlias_fog				= qglGetUniformLocation(id, "u_fog");
 		lightAlias_fogDensity		= qglGetUniformLocation(id, "u_fogDensity");
 		lightAlias_causticsIntens	= qglGetUniformLocation(id, "u_CausticsModulate");
 		lightAlias_isCaustics		= qglGetUniformLocation(id, "u_isCaustics");
 		lightAlias_specularScale	= qglGetUniformLocation(id, "u_specularScale");
+		lightAlias_specularExp		= qglGetUniformLocation(id, "u_specularExp");
 		lightAlias_ambient			= qglGetUniformLocation(id, "u_isAmbient");
 		lightAlias_attenMatrix		= qglGetUniformLocation(id, "u_attenMatrix");
 		lightAlias_cubeMatrix		= qglGetUniformLocation(id, "u_cubeMatrix");
@@ -707,11 +716,20 @@ void R_InitPrograms(void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"ssao program"S_COLOR_WHITE" ");
+	ssaoProgram = R_FindProgram("ssao", true, true);
+	if(ssaoProgram->valid)
+		Com_Printf("succeeded\n");
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	Com_Printf("Load "S_COLOR_YELLOW"bloom program"S_COLOR_WHITE" ");
 	bloomdsProgram = R_FindProgram("bloomds", true, true);
 	bloomfpProgram = R_FindProgram("bloomfp", true, true);
 
-	if(bloomfpProgram->valid)
+	if(bloomdsProgram->valid && bloomfpProgram->valid)
 		Com_Printf("succeeded\n");
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");

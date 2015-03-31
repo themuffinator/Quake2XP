@@ -871,6 +871,7 @@ R_RenderView
 r_newrefdef must be set before the first call
 ================
 */
+void R_SSAO (void);
 
 void R_RenderView (refdef_t *fd) {
 	if (r_noRefresh->value)
@@ -897,17 +898,24 @@ void R_RenderView (refdef_t *fd) {
 
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
+
 	R_CaptureDepthBuffer();
+
+	R_SSAO();
+
 	R_DrawLightInteractions();
 	R_RenderDecals();
 	R_RenderFlares();
-	R_CaptureColorBuffer2();
+
+	R_CaptureColorBuffer();
+	R_DrawReflectivePoly();
 	R_DrawAlphaPoly();
 	R_DrawPlayerWeapon();
 	R_DrawParticles();
-	R_CaptureColorBuffer();
 
+	R_CaptureColorBuffer();
 	R_RenderDistortModels();
+
 	R_CaptureColorBuffer();
 	R_DrawPlayerWeaponFBO();
 }
@@ -985,33 +993,29 @@ extern char buff15[128];
 extern worldShadowLight_t *selectedShadowLight;
 
 void R_MotionBlur (void);
-void R_DrawFullScreenQuad();
+void R_DrawFullScreenQuad (void);
 
-
-void R_RenderFrame(refdef_t * fd, qboolean client)
-{
-	
+void R_RenderFrame(refdef_t * fd, qboolean client) {
 	R_SetLightLevel();
 	R_RenderView(fd);
 	R_SetGL2D();
 
-	// post processing - cut off if player camera out map bounds
-	if(!outMap){
-	R_FXAA();
-	R_RadialBlur();
-	R_ThermalVision();
-	R_DofBlur();
-	R_Bloom();
-	R_MotionBlur();
-	R_FilmGrain();
+	// post processing - cut off if player camera is out of map bounds
+	if (!outMap) {
+		R_FXAA();
+		R_RadialBlur();
+		R_ThermalVision();
+		R_DofBlur();
+		R_Bloom();
+		R_MotionBlur();
+		R_FilmGrain();
 	}
 	
-	// set alpha blend for 2d mode
+	// set alpha blend for 2D mode
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (v_blend[3] && r_polyBlend->value) {
-		
 		qglDisable(GL_TEXTURE_2D);
 		GL_Color4f(v_blend[0],v_blend[1],v_blend[2], 0.15);
 
@@ -1024,30 +1028,29 @@ void R_RenderFrame(refdef_t * fd, qboolean client)
 
 		GL_Color4f(1, 1, 1, 1);
 		qglEnable(GL_TEXTURE_2D);
+	}
 
-		}
-
-	if(selectedShadowLight && r_lightEditor->value){
-	Set_FontShader(true);
-	RE_SetColor(colorCyan);
-	Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0);
-	Draw_StringScaled(0, vid.height*0.5+25,  2, 2, buff1);
-	Draw_StringScaled(0, vid.height*0.5+45,  2, 2, buff2);
-	Draw_StringScaled(0, vid.height*0.5+65,  2, 2, buff3);
-	Draw_StringScaled(0, vid.height*0.5+85,  2, 2, buff4);
-	Draw_StringScaled(0, vid.height*0.5+105, 2, 2, buff5);
-	Draw_StringScaled(0, vid.height*0.5+125, 2, 2, buff6);
-	Draw_StringScaled(0, vid.height*0.5+145, 2, 2, buff7);
-	Draw_StringScaled(0, vid.height*0.5+165, 2, 2, buff8);
-	Draw_StringScaled(0, vid.height*0.5+185, 2, 2, buff9);
-	Draw_StringScaled(0, vid.height*0.5+205, 2, 2, buff12);
-	Draw_StringScaled(0, vid.height*0.5+225, 2, 2, buff13);
-	Draw_StringScaled(0, vid.height*0.5+245, 2, 2, buff10);
-	Draw_StringScaled(0, vid.height*0.5+265, 2, 2, buff11);
-	Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14);
-	Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15);
-	RE_SetColor(colorWhite);
-	Set_FontShader(false);
+	if (selectedShadowLight && r_lightEditor->value){
+		Set_FontShader(true);
+		RE_SetColor(colorCyan);
+		Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0);
+		Draw_StringScaled(0, vid.height*0.5+25,  2, 2, buff1);
+		Draw_StringScaled(0, vid.height*0.5+45,  2, 2, buff2);
+		Draw_StringScaled(0, vid.height*0.5+65,  2, 2, buff3);
+		Draw_StringScaled(0, vid.height*0.5+85,  2, 2, buff4);
+		Draw_StringScaled(0, vid.height*0.5+105, 2, 2, buff5);
+		Draw_StringScaled(0, vid.height*0.5+125, 2, 2, buff6);
+		Draw_StringScaled(0, vid.height*0.5+145, 2, 2, buff7);
+		Draw_StringScaled(0, vid.height*0.5+165, 2, 2, buff8);
+		Draw_StringScaled(0, vid.height*0.5+185, 2, 2, buff9);
+		Draw_StringScaled(0, vid.height*0.5+205, 2, 2, buff12);
+		Draw_StringScaled(0, vid.height*0.5+225, 2, 2, buff13);
+		Draw_StringScaled(0, vid.height*0.5+245, 2, 2, buff10);
+		Draw_StringScaled(0, vid.height*0.5+265, 2, 2, buff11);
+		Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14);
+		Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15);
+		RE_SetColor(colorWhite);
+		Set_FontShader(false);
 	}
 
 	GL_MsgGLError("R_RenderFrame: ");
@@ -1303,7 +1306,6 @@ void R_RegisterCvars(void)
 //	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
 //	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 	r_specularScale =					Cvar_Get("r_specularScale", "1", CVAR_ARCHIVE);
-	r_toksvigFactor =					Cvar_Get("r_toksvigFactor", "0.5", CVAR_ARCHIVE);
 
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 
@@ -1313,6 +1315,12 @@ void R_RegisterCvars(void)
 	r_bloomBright =						Cvar_Get("r_bloomBright", "0.9", CVAR_ARCHIVE);
 	r_bloomExposure =					Cvar_Get("r_bloomExposure", "0.86", CVAR_ARCHIVE);
 	r_bloomStarIntens =					Cvar_Get("r_bloomStarIntens", "3.0", CVAR_ARCHIVE);
+
+	r_ssao = Cvar_Get ("r_ssao", "1", CVAR_ARCHIVE);
+	r_ssaoQuality = Cvar_Get ("r_ssaoQuality", "1", CVAR_ARCHIVE);
+	r_ssaoIntensity = Cvar_Get ("r_ssaoIntensity", "1.0", CVAR_ARCHIVE);
+	r_ssaoScale = Cvar_Get ("r_ssaoScale", "80.0", CVAR_ARCHIVE);
+	r_ssaoBlur = Cvar_Get ("r_ssaoBlur", "4", CVAR_ARCHIVE);
 
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);

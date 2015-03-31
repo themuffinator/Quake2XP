@@ -194,8 +194,7 @@ typedef enum { mod_bad, mod_brush, mod_sprite, mod_alias,
 
 typedef struct
 {
-	float s;
-	float t;
+	float s, t;
 } fstvert_t;
 
 
@@ -271,10 +270,11 @@ typedef struct model_s {
 	int			numMarkSurfaces;
 	msurface_t	**markSurfaces;
 	
-	int			lightmap_scale;
 	dvis_t		*vis;
-	byte		*lightData;
 
+	int			lightmap_scale;
+	byte		*lightData;
+	qboolean	useXPLM;	// 3-vector basis lightmap
 
 	// for alias models and skins
 	image_t		*skins[MAX_MD2SKINS];

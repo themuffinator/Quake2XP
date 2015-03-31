@@ -321,11 +321,12 @@ typedef struct msurface_s {
 	int dlightbits;
 
 	int lightmaptexturenum;
-	int deluxemap_texnum;
+
 	byte styles[MAXLIGHTMAPS];
 	float cached_light[MAXLIGHTMAPS];	// values currently used in
 										// lightmap
-	byte *samples;				// [numstyles*surfsize]
+	byte *samples;				// [numstyles * surfsize * 3] for vanilla or [numstyles * 3 * surfsize * 3] for XP lightmaps
+
 	int checkCount;
 	vec3_t center;
 	

@@ -227,17 +227,20 @@ extern long Q_ftol( float f );
 #define Q_ftol( f ) ( long ) (f)
 #endif
 
-
-
-#define DotProduct(x,y)					(x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
-#define VectorSubtract(a,b,c)			(c[0]=a[0]-b[0],c[1]=a[1]-b[1],c[2]=a[2]-b[2])
-#define VectorAdd(a,b,c)				(c[0]=a[0]+b[0],c[1]=a[1]+b[1],c[2]=a[2]+b[2])
-#define VectorCopy(a,b)					(b[0]=a[0],b[1]=a[1],b[2]=a[2])
-#define VectorMul(in1, in2, out)		(out[0] = in1[0] * in2[0], out[1] = in1[1] * in2[1], out[2] = in1[2] * in2[2])
-#define VectorClear(a)					(a[0]=a[1]=a[2]=0)
-#define VectorNegate(a,b)				(b[0]=-a[0],b[1]=-a[1],b[2]=-a[2])
-#define VectorSet(v, x, y, z)			(v[0]=(x), v[1]=(y), v[2]=(z))
-
+#define DotProduct(x,y)		((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
+#define VectorSubtract(a,b,c)	((c)[0]=(a)[0]-(b)[0],(c)[1]=(a)[1]-(b)[1],(c)[2]=(a)[2]-(b)[2])
+#define VectorAdd(a,b,c)	((c)[0]=(a)[0]+(b)[0],(c)[1]=(a)[1]+(b)[1],(c)[2]=(a)[2]+(b)[2])
+#define VectorCopy(a,b)		((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2])
+#define VectorClear(a)		((a)[0]=(a)[1]=(a)[2]=0)
+#define VectorNegate(a,b)	((b)[0]=-(a)[0],(b)[1]=-(a)[1],b[2]=-(a)[2])
+#define VectorSet(v,x,y,z)	((v)[0]=(x), (v)[1]=(y), (v)[2]=(z))
+// don't fucking uncomment
+//#define VectorInvert(v)		((v)[0]=-(v)[0], (v)[1]=-(v)[1], (v)[2]=-(v)[2])
+//#define VectorScale(a,b,c)	((c)[0]=(a)[0]*(b), (c)[1]=(a)[1]*(b), (c)[2]=(a)[2]*(b))
+//#define VectorMA(a,b,c,d)	((d)[0]=(a)[0]+(c)[0]*(b), (d)[1]=(a)[1]+(c)[1]*(b), (d)[2]=(a)[2]+(c)[2]*(b))
+#define VectorMin(a,b,o)	((o)[0]=((a)[0]<(b)[0])?(a)[0]:(b)[0],(o)[1]=((a)[1]<(b)[1])?(a)[1]:(b)[1],(o)[2]=((a)[2]<(b)[2])?(a)[2]:(b)[2])
+#define VectorMax(a,b,o)	((o)[0]=((a)[0]>(b)[0])?(a)[0]:(b)[0],(o)[1]=((a)[1]>(b)[1])?(a)[1]:(b)[1],(o)[2]=((a)[2]>(b)[2])?(a)[2]:(b)[2])
+#define VectorMul(in1, in2, out)		((out)[0] = (in1)[0] * (in2)[0], (out)[1] = (in1)[1] * (in2)[1], (out)[2] = (in1)[2] * (in2)[2])
 #define VectorAverage(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5f,(o)[1]=((a)[1]+(b)[1])*0.5f,(o)[2]=((a)[2]+(b)[2])*0.5f)
 
 #ifndef min 

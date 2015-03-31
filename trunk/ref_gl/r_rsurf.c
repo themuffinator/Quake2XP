@@ -28,6 +28,7 @@ void R_LightColor(vec3_t org, vec3_t color);
 static vec3_t modelorg;			// relative to viewpoint
 
 msurface_t *r_alpha_surfaces;		// all BSP surfaces with TRANS33/66
+msurface_t *r_reflective_surfaces;	// all BSP surfaces with WARP (for now)
 
 float color_black[4] = {0.0, 0.0, 0.0, 0.0};
 
@@ -179,7 +180,7 @@ void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
 		qglUniform1i(refract_normalMap, 0);
 		GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
 		qglUniform1i(refract_baseMap, 1);
-		GL_MBindRect(GL_TEXTURE2_ARB, screenMap);
+		GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
 		qglUniform1i(refract_screenMap, 2);
 		GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 		qglUniform1i(refract_depthMap, 3);
@@ -279,7 +280,6 @@ void R_GlassLightPass(msurface_t * fa, qboolean scrolling)
 		qglUniform3fv	(qglGetUniformLocation(id, "u_viewOriginES"),	1, r_origin);
 		qglUniform3fv	(qglGetUniformLocation(id, "u_LightOrg"),		1, currentShadowLight->origin);
 		qglUniform4f	(qglGetUniformLocation(id, "u_LightColor"),		currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-		qglUniform1f	(qglGetUniformLocation(id, "u_toksvigFactor"),	r_toksvigFactor->value);
 
 	if (scrolling){
 		scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
@@ -328,11 +328,10 @@ void R_GlassLightPass(msurface_t * fa, qboolean scrolling)
 /*
 ================
 R_RenderBrushPoly
+
 ================
 */
-
-void R_RenderBrushPoly (msurface_t *fa)
-{
+void R_RenderBrushPoly (msurface_t *fa) {
 	image_t *image;
 	char *purename;
 	char noext[MAX_QPATH];
@@ -357,9 +356,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 
 }
 
-
-void R_DrawAlphaPoly(void)
-{
+void R_DrawAlphaPoly (void) {
 	msurface_t *s;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -368,33 +365,57 @@ void R_DrawAlphaPoly(void)
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
 	
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
+		if (s->texInfo->flags & SURF_TRANS33) 
+			shadelight_surface[3] = 0.33f;
+		else if (s->texInfo->flags & SURF_TRANS66) 
+			shadelight_surface[3] = 0.66f;
+		else
+			shadelight_surface[3] = 1.f;
 
-	if (s->texInfo->flags & SURF_TRANS33) 
-		shadelight_surface[3] = 0.33;
-	else if (s->texInfo->flags & SURF_TRANS66) 
-		shadelight_surface[3] = 0.66;
-	else
-		shadelight_surface[3] = 1.0;
-
-	if (s->flags & MSURF_DRAWTURB)
-		R_DrawWaterPolygons(s);
-	else if (s->texInfo->flags & SURF_FLOWING)
-		DrawGLPolyGLSL(s, true);
-	else
-		DrawGLPolyGLSL(s, false);
+		if (s->texInfo->flags & SURF_WARP)
+			R_DrawWaterPolygons(s);
+		else if (s->texInfo->flags & SURF_FLOWING)
+			DrawGLPolyGLSL(s, true);
+		else
+			DrawGLPolyGLSL(s, false);
 
 	}
 
 	r_alpha_surfaces = NULL;
 }
 
+void R_DrawReflectivePoly (void) {
+	msurface_t *s;
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
 
+	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
+	
+	for (s = r_reflective_surfaces; s; s = s->texturechain) {
+/*
+// KRIGS: at the moment only opaque WARP surfaces go to this list
 
+		if (s->texInfo->flags & SURF_TRANS33) 
+			shadelight_surface[3] = 0.33f;
+		else if (s->texInfo->flags & SURF_TRANS66) 
+			shadelight_surface[3] = 0.66f;
+		else
+*/
+			shadelight_surface[3] = 1.f;
+
+// KRIGS: rename from Water to Reflective or smth
+//		if (s->texInfo->flags & SURF_WARP)
+			R_DrawWaterPolygons(s);
+	}
+
+	r_reflective_surfaces = NULL;
+}
 
 /*
 ================
 DrawTextureChains
+
 ================
 */
 void DrawTextureChains (void) {
@@ -423,10 +444,10 @@ void DrawTextureChains (void) {
 ===============
 SORT AND BATCH 
 BSP SURFACES
+
 ===============
 */
-qboolean R_FillAmbientBatch(msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces)
-{
+qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces) {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->numEdges;
 	float		*v, scroll, scale[2];
@@ -440,13 +461,18 @@ qboolean R_FillAmbientBatch(msurface_t *surf, qboolean newBatch, unsigned *verti
 
 	c_brush_polys++;
 
-	if (newBatch)
-	{
-		image_t	*image, *fx, *env, *csm;
+	if (newBatch) {
+		image_t	*image, *fx, *env, *csm, *normal;
+
 		image	= R_TextureAnimation(surf->texInfo);
 		fx		= R_TextureAnimationFx(surf->texInfo);
 		env		= R_TextureAnimationEnv(surf->texInfo);
 		csm		= R_TextureAnimationCSM(surf->texInfo);
+		normal		= R_TextureAnimationNormal(surf->texInfo);
+
+		qglUniform1f(ambientWorld_specularScale,
+			image->specularScale ? r_specularScale->value * image->specularScale : r_specularScale->value);
+		qglUniform1f(ambientWorld_specularExp, image->SpecularExp ? image->SpecularExp : 16.f);
 
 		if (r_parallax->value){
 
@@ -465,7 +491,10 @@ qboolean R_FillAmbientBatch(msurface_t *surf, qboolean newBatch, unsigned *verti
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		GL_MBind(GL_TEXTURE3_ARB, csm->texnum);
+		GL_MBind(GL_TEXTURE4_ARB, normal->texnum);
 
+//		if (r_ssao->value)
+//			GL_MBindRect(GL_TEXTURE7_ARB, fboScreen->texnum);
 	}
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -543,24 +572,35 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 
 	qglUniform1f(ambientWorld_colorScale, r_worldColorScale->value);
 
-	if(r_parallax->value){
-	if(bmodel)
-		qglUniform3fv(ambientWorld_viewOrigin, 1, BmodelViewOrg);
-	else
-		qglUniform3fv(ambientWorld_viewOrigin, 1, r_origin);
-	}
+	if (r_parallax->value > 0 || r_worldmodel->useXPLM)
+		qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
 	
-	if (r_parallax->value)
-		qglUniform1i(ambientWorld_parallaxType, (int)r_parallax->value);
-	else
-		qglUniform1i(ambientWorld_parallaxType, 0);
+	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_parallax->value, 0, 2));
 
 	qglUniform1f(ambientWorld_ambientLevel, r_ambientLevel->value);
 	
 	qglUniform1i(ambientWorld_diffuse, 0);
-	qglUniform1i(ambientWorld_lightmap, 1);
-	qglUniform1i(ambientWorld_fx, 2);
+	qglUniform1i(ambientWorld_lightmap[0], 1);
+
+	if (r_worldmodel->useXPLM) {
+		qglUniform1i(ambientWorld_lightmap[1], 5);
+		qglUniform1i(ambientWorld_lightmap[2], 6);
+		qglUniform1i(ambientWorld_lightmapType, 1);
+	}
+	else
+		qglUniform1i(ambientWorld_lightmapType, 0);
+
+/*
+	if (r_ssao->value) {
+		qglUniform1i(ambientWorld_ssaomap, 7);
+		qglUniform1i(ambientWorld_ssao, 1);
+	}
+	else
+		qglUniform1i(ambientWorld_ssao, 0);
+*/
+	qglUniform1i(ambientWorld_add, 2);
 	qglUniform1i(ambientWorld_csm, 3);
+	qglUniform1i(ambientWorld_normalmap, 4);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
 
@@ -570,24 +610,31 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	//update lightmaps
 		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
 		{
-			if (numIndices != 0xffffffff){
+			if (numIndices != 0xFFFFFFFF){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
 				numVertices = 0;
-				numIndices = 0xffffffff;
-				}
-		GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
+				numIndices = 0xFFFFFFFF;
+			}
+
+			GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
+
+			if (r_worldmodel->useXPLM) {
+				GL_MBind(GL_TEXTURE5_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
+				GL_MBind(GL_TEXTURE6_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
+			}
 		}
 		
 	// flush batch (new texture)
 		if (s->texInfo->image->texnum != oldTex)
 		{
-			if (numIndices != 0xffffffff){
+			if (numIndices != 0xFFFFFFFF){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
 				numVertices = 0;
-				numIndices = 0xffffffff;
+				numIndices = 0xFFFFFFFF;
 			}
-		oldTex = s->texInfo->image->texnum;
-		newBatch = true;
+
+			oldTex = s->texInfo->image->texnum;
+			newBatch = true;
 		}
 	else
 		newBatch = false;
@@ -596,20 +643,19 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	repeat:	
 		if (!R_FillAmbientBatch(s, newBatch, &numVertices, &numIndices))
 		{
-			if (numIndices != 0xffffffff){
+			if (numIndices != 0xFFFFFFFF){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
 				numVertices = 0;
-				numIndices = 0xffffffff;
+				numIndices = 0xFFFFFFFF;
 				}
 			goto repeat;
 		}
 	}
 	
 	// draw the rest
-	if (numIndices != 0xffffffff)
+	if (numIndices != 0xFFFFFFFF)
 		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
 	
-
 	GL_BindNullProgram();
 }
 
@@ -645,15 +691,10 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		purename = COM_SkipPath(image->name);
 		COM_StripExtension(purename, noext);
 
-		if (!image->specularScale)
-			qglUniform1f(lightWorld_specularScale, r_specularScale->value);
-		else
-			qglUniform1f(lightWorld_specularScale, image->specularScale);
+		qglUniform1f(lightWorld_specularScale,
+			image->specularScale ? r_specularScale->value * image->specularScale : r_specularScale->value);
 
-		if (!image->SpecularExp)
-			qglUniform1f(lightWorld_specularExp, 16.0);
-		else
-			qglUniform1f(lightWorld_specularExp, image->SpecularExp);
+		qglUniform1f(lightWorld_specularExp, image->SpecularExp ? image->SpecularExp : 16.f);
 		
 		if (bmodel){
 			if (caustics && currentShadowLight->castCaustics)
@@ -767,21 +808,10 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	GL_BindProgram(lightWorldProgram, defBits);
 
 	qglUniform1f(lightWorld_colorScale, r_worldColorScale->value);
-
-	if (currentShadowLight->isAmbient)
-		qglUniform1i(lightWorld_ambient, 1);
-	else
-		qglUniform1i(lightWorld_ambient, 0);
-
-	if(bmodel)
-		qglUniform3fv(lightWorld_viewOrigin, 1, BmodelViewOrg);
-	else
-		qglUniform3fv(lightWorld_viewOrigin, 1, r_origin);
-
-	
+	qglUniform1i(lightWorld_ambient, (int)currentShadowLight->isAmbient);
+	qglUniform3fv(lightWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
 	qglUniform3fv(lightWorld_lightOrigin, 1, currentShadowLight->origin);
 	qglUniform4f(lightWorld_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniform1f(lightWorld_toksvigFactor, r_toksvigFactor->value);
 
 	R_CalcCubeMapMatrix(bmodel);
 	qglUniformMatrix4fv(lightWorld_cubeMatrix, 1, false, (const float *)currentShadowLight->cubeMapMatrix);
@@ -795,11 +825,7 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, false, (const float *)entAttenMatrix);
 	}
 
-	if (r_parallax->value)
-		qglUniform1i(lightWorld_parallaxType, (int)r_parallax->value);
-	else
-		qglUniform1i(lightWorld_parallaxType, 0);
-	
+	qglUniform1i(lightWorld_parallaxType, (int)clamp(r_parallax->value, 0, 2));
 
 	if(currentShadowLight->isFog){
 		qglUniform1i(lightWorld_fog, (int)currentShadowLight->isFog);
@@ -863,17 +889,17 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	GL_BindNullProgram();
 }
 
-
-qboolean SurfInFrustum(msurface_t *s)
-{
+qboolean SurfInFrustum (msurface_t *s) {
 	if (s->polys)
 		return !R_CullBox(s->mins, s->maxs);
+
 	return true;
 }
 
 /*
 ================
 R_RecursiveWorldNode
+
 ================
 */
 static void R_RecursiveWorldNode(mnode_t * node)
@@ -884,7 +910,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	mleaf_t *pleaf;
 	float dot;
 	image_t *fx, *image, *csm;
-	
+
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
 
@@ -896,7 +922,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 
 	// if a leaf node, draw stuff
 	if (node->contents != -1) {
-		pleaf = (mleaf_t *) node;
+		pleaf = (mleaf_t *)node;
 
 		// check for door connected areas
 		if (r_newrefdef.areabits) {
@@ -909,7 +935,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 
 		if (c) {
 			do {
-			if (SurfInFrustum(*mark))
+				if (SurfInFrustum(*mark))
 					(*mark)->visframe = r_framecount;
 				(*mark)->ent = NULL;
 				mark++;
@@ -940,7 +966,8 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	if (dot >= 0) {
 		side = 0;
 		sidebit = 0;
-	} else {
+	}
+	else {
 		side = 1;
 		sidebit = MSURF_PLANEBACK;
 	}
@@ -950,7 +977,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 
 	// draw stuff
 	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
-		
+
 		if (surf->visframe != r_framecount)
 			continue;
 
@@ -959,8 +986,10 @@ static void R_RecursiveWorldNode(mnode_t * node)
 
 		if (surf->texInfo->flags & SURF_SKY) {	// just adds to visible sky bounds
 			R_AddSkySurface(surf);
-		} else if (surf->texInfo->flags & SURF_NODRAW)
+		}
+		else if (surf->texInfo->flags & SURF_NODRAW)
 			continue;
+
 		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 			// add to the translucent chain
 			surf->texturechain = r_alpha_surfaces;
@@ -974,7 +1003,9 @@ static void R_RecursiveWorldNode(mnode_t * node)
 				image = R_TextureAnimation(surf->texInfo);
 				fx = R_TextureAnimationFx(surf->texInfo); // fix glow hack
 				csm = R_TextureAnimationCSM(surf->texInfo);
-
+				
+				surf->texturechain = r_reflective_surfaces;
+				r_reflective_surfaces = surf;
 				surf->texturechain = image->texturechain;
 				image->texturechain = surf;
 
@@ -988,8 +1019,8 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	R_RecursiveWorldNode(node->children[!side]);
 }
 
-qboolean R_MarkLightSurf(msurface_t *surf, qboolean world)
-{
+
+qboolean R_MarkLightSurf (msurface_t *surf, qboolean world) {
 	cplane_t	*plane;
 	float		dist, dot;
 	glpoly_t	*poly;
@@ -1154,8 +1185,7 @@ void R_MarkLightCasting (mnode_t *node)
 	R_MarkLightCasting (node->children[1]);
 }
 
-qboolean R_FillLightChain ()
-{
+qboolean R_FillLightChain (void) {
 	R_MarkLightCasting (r_worldmodel->nodes);
 	return num_light_surfaces;
 }
@@ -1200,11 +1230,11 @@ void R_DrawLightWorld(void)
 
 /*
 =============
-r_drawWorld
+R_DrawBSP
+
 =============
 */
-void R_DrawBSP(void)
-{
+void R_DrawBSP (void) {
 	entity_t ent;
 
 	if (!r_drawWorld->value)
@@ -1227,8 +1257,7 @@ void R_DrawBSP(void)
 
 	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 		
-	R_ClearSkyBox();
-	
+	R_ClearSkyBox();	
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_NORMAL);
@@ -1264,7 +1293,7 @@ void R_DrawBSP(void)
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 	
 //	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-//	R_CaptureColorBuffer();
+
 	DrawTextureChains();
 	R_DrawSkyBox();
 }
@@ -1272,14 +1301,14 @@ void R_DrawBSP(void)
 /*
 =================
 R_DrawInlineBModel
+
 =================
 */
 extern qboolean bmodelcaust = false;
 
 void R_DrawBrushModel();
 
-static void R_DrawInlineBModel(void)
-{
+static void R_DrawInlineBModel(void) {
 	int i;
 	cplane_t *pplane;
 	float dot;
@@ -1290,6 +1319,7 @@ static void R_DrawInlineBModel(void)
 	//
 	// draw texture
 	//
+
 	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
 		// find which side of the node we are on
 		pplane = psurf->plane;
@@ -1299,7 +1329,7 @@ static void R_DrawInlineBModel(void)
 		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
 			|| (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
 
-			if (psurf->visframe == r_framecount) //reckless fix
+			if (psurf->visframe == r_framecount)	// reckless fix
 				continue;
 
 			/*===============================
@@ -1312,9 +1342,16 @@ static void R_DrawInlineBModel(void)
 			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 				psurf->texturechain = r_alpha_surfaces;
 				r_alpha_surfaces = psurf;
+				continue;
 			}
-			else if (!(psurf->flags & MSURF_DRAWTURB))
+
+			if (!(psurf->texInfo->flags & SURF_WARP))
 				scene_surfaces[num_scene_surfaces++] = psurf;
+			else {
+				// KRIGS: reflection pass
+				psurf->texturechain = r_reflective_surfaces;
+				r_reflective_surfaces = psurf;
+			}
 		}
 	}
 }
@@ -1358,12 +1395,12 @@ static void R_DrawInlineBModel2(void)
 /*
 =================
 R_DrawBrushModel
+
 =================
 */
 int CL_PMpointcontents(vec3_t point);
 
-void R_DrawBrushModel()
-{
+void R_DrawBrushModel (void) {
 	vec3_t		mins, maxs, tmp;
 	int			i;
     qboolean	rotated;

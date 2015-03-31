@@ -130,11 +130,7 @@ void R_RenderFlares(void)
 
 	if (!r_drawFlares->value)
 		return;
-	
-	if ( r_newrefdef.rdflags & RDF_IRGOGGLES)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
@@ -253,11 +249,7 @@ void R_Bloom (void) {
 
 	if(!r_bloom->value)
 		return;
-		
-    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-          return;
-
-	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 		
 		// downsample and cut color
@@ -343,7 +335,6 @@ void R_ThermalVision (void) {
 		
     if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
             return;
-
     if (!(r_newrefdef.rdflags & RDF_IRGOGGLES))
             return;
 	
@@ -470,11 +461,8 @@ void R_DofBlur (void) {
 
 	if(!r_dof->value)
 		return;
-
-    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-            return;
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
-            return;
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
+		return;
 
 	//dof autofocus
 	if (!r_dofFocus->value){
@@ -626,9 +614,7 @@ void R_MotionBlur (void) {
 	if (!r_motionBlur->value)
 		return;
 
-    if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-            return;
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
             return;
 
 	// setup program
@@ -653,4 +639,62 @@ void R_MotionBlur (void) {
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram();
+}
+
+void R_SSAO (void) {
+	int id;
+
+	if (!r_ssao->value)
+		return;
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
+		return;
+		
+	// set 2D virtual screen size
+	qglViewport(0, 0, vid.width, vid.height);
+
+	qglMatrixMode(GL_PROJECTION);
+	qglPushMatrix();
+	qglLoadIdentity();
+	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
+
+	qglMatrixMode(GL_MODELVIEW);
+	qglPushMatrix();
+	qglLoadIdentity();
+
+	GL_Disable(GL_DEPTH_TEST);
+	GL_Disable(GL_CULL_FACE);
+
+	GL_MBindRect(GL_TEXTURE0_ARB, depthMap->texnum);
+		
+	GL_BindProgram(ssaoProgram, 0);
+	id = ssaoProgram->id[0];
+
+	qglUniform1i(qglGetUniformLocation(id, "u_depthBufferMap"), 0);
+	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f(qglGetUniformLocation(id, "u_ssaoParms"), max(r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
+	qglUniform2f(qglGetUniformLocation(id, "u_viewport"), vid.width, vid.height);
+			
+//	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
+		
+	// temporary until Z & ambient pass separation
+	if (r_ssao->value > 1)
+		GL_Disable(GL_BLEND);
+	else
+		GL_Enable(GL_BLEND);
+
+	GL_BlendFunc(GL_DST_COLOR, GL_ZERO);
+
+	R_DrawFullScreenQuad();
+
+//	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	GL_BindNullProgram();
+
+	qglPopMatrix();
+	qglMatrixMode(GL_PROJECTION);
+	qglPopMatrix();
+	qglMatrixMode(GL_MODELVIEW);
+
+	GL_Enable(GL_CULL_FACE);
+	GL_Enable(GL_DEPTH_TEST);
 }

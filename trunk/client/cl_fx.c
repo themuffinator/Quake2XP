@@ -92,8 +92,7 @@ void CL_RunLightStyles(void)
 		if (ls->length == 1)
 			ls->value[0] = ls->value[1] = ls->value[2] = ls->map[0];
 		else
-			ls->value[0] = ls->value[1] = ls->value[2] =
-				ls->map[ofs % ls->length];
+			ls->value[0] = ls->value[1] = ls->value[2] = ls->map[ofs % ls->length];
 	}
 }
 

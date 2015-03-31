@@ -161,8 +161,8 @@ extern image_t *r_distort;
 extern image_t *r_predator;
 extern image_t *depthMap;
 
-image_t *r_particletexture[PT_MAX];
-image_t *r_decaltexture[DECAL_MAX];
+extern image_t *r_particletexture[PT_MAX];
+extern image_t *r_decaltexture[DECAL_MAX];
 
 extern	image_t *r_radarmap;
 extern	image_t *r_around;
@@ -174,7 +174,6 @@ extern	image_t *r_blackTexture;
 
 extern	image_t	*r_defBump;
 extern	image_t	*ScreenMap;
-extern	image_t	*sslrMap;
 extern	image_t	*r_envTex;
 extern	image_t	*shadowMask;
 extern	image_t	*r_scanline;
@@ -286,6 +285,12 @@ cvar_t	*r_bloomBright;
 cvar_t	*r_bloomExposure;
 cvar_t	*r_bloomStarIntens;
 
+cvar_t	*r_ssao;
+cvar_t	*r_ssaoIntensity;
+cvar_t	*r_ssaoQuality;
+cvar_t	*r_ssaoScale;
+cvar_t	*r_ssaoBlur;
+
 cvar_t	*sys_priority;
 
 cvar_t	*r_DrawRangeElements;
@@ -299,7 +304,6 @@ cvar_t	*r_debugOccLightBoundsSize;
 cvar_t	*r_useLightScissors;
 cvar_t	*r_useDepthBounds;
 cvar_t	*r_specularScale;
-cvar_t	*r_toksvigFactor;
 
 cvar_t	*r_zNear;
 cvar_t	*hunk_bsp;
@@ -377,6 +381,7 @@ worldShadowLight_t *R_AddNewWorldLight(vec3_t origin, vec3_t color, float radius
 void R_DrawParticles();
 void GL_DrawRadar(void);
 void R_DrawAlphaPoly(void);
+void R_DrawReflectivePoly (void);
 void R_RenderDecals(void);
 void R_LightColor(vec3_t org, vec3_t color);
 void MyGlPerspective(GLdouble fov, GLdouble aspectr, GLdouble zNear);
@@ -461,8 +466,6 @@ void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect(const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare();
 void GL_LoadMatrix(GLenum mode, const mat4_t matrix);
-void R_CaptureColorBuffer2();
-extern uint	screenMap;
 
 // TODO: move to common/q_math.h
 extern const mat3_t	mat3_identity;
@@ -680,6 +683,8 @@ typedef struct {
 	int			maxColorAttachments;
 	int			maxSamples;
 	int			maxDrawBuffers;
+
+	// FIXME: move somewhere else
 	uint		fboId, dpsId, fbo_weaponMask;
 	
 	// gl state cache
@@ -801,11 +806,11 @@ typedef byte color4ub_t[4];
 
 void Q_strncatz (char *dst, int dstSize, const char *src);
 
+#define	MAX_LIGHTMAPS		4		// max number of atlases
 
-#define LIGHTMAP_BYTES 4
-#define	LIGHTMAP_SIZE	1024
-#define	MAX_LIGHTMAPS	4
+#define	LIGHTMAP_SIZE		1024
 
+#define GL_LIGHTMAP_FORMAT	GL_RGB
 
 typedef struct {
 	int internal_format;
@@ -817,15 +822,10 @@ typedef struct {
 	
 	// the lightmap texture data needs to be kept in
 	// main memory so texsubimage can update properly
-	
-	byte lightmap_buffer[LIGHTMAP_BYTES * LIGHTMAP_SIZE * LIGHTMAP_SIZE];
-	byte *direction_buffer;
-
+	byte lightmap_buffer[3][LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3];
 } gllightmapstate_t;
 
 gllightmapstate_t gl_lms;
-
-#define GL_LIGHTMAP_FORMAT GL_RGBA
 
 /*
 ====================================================================
@@ -866,11 +866,13 @@ glslProgram_t		*ambientWorldProgram;
 glslProgram_t		*lightWorldProgram;
 glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*aliasBumpProgram;
-glslProgram_t		*bloomdsProgram;
 glslProgram_t		*gaussXProgram;
 glslProgram_t		*gaussYProgram;
 glslProgram_t		*blurStarProgram;
+glslProgram_t		*bloomdsProgram;
 glslProgram_t		*bloomfpProgram;
+glslProgram_t		*motionBlurProgram;
+glslProgram_t		*ssaoProgram;
 glslProgram_t		*refractProgram;
 glslProgram_t		*lightGlassProgram;
 glslProgram_t		*thermalProgram;
@@ -888,7 +890,6 @@ glslProgram_t		*fxaaProgram;
 glslProgram_t		*filmGrainProgram;
 glslProgram_t		*nullProgram;
 glslProgram_t		*gammaProgram;
-glslProgram_t		*motionBlurProgram;
 glslProgram_t		*FboProgram;
 
 void GL_BindProgram(glslProgram_t *program, int defBits);
@@ -935,11 +936,17 @@ typedef enum glsl_attribute
 glsl_attrib;
 
 uint ambientWorld_diffuse;
-uint ambientWorld_lightmap;
-uint ambientWorld_fx;
+uint ambientWorld_add;
+uint ambientWorld_lightmap[3];
+uint ambientWorld_lightmapType;
 uint ambientWorld_csm;
+uint ambientWorld_normalmap;
+uint ambientWorld_ssao;
+uint ambientWorld_ssaomap;
 uint ambientWorld_parallaxParams;
 uint ambientWorld_colorScale;
+uint ambientWorld_specularScale;
+uint ambientWorld_specularExp;
 uint ambientWorld_viewOrigin;
 uint ambientWorld_parallaxType;
 uint ambientWorld_ambientLevel;
@@ -956,7 +963,6 @@ uint lightWorld_viewOrigin;
 uint lightWorld_parallaxType;
 uint lightWorld_lightOrigin;
 uint lightWorld_lightColor;
-uint lightWorld_toksvigFactor;
 uint lightWorld_fog;
 uint lightWorld_fogDensity;
 uint lightWorld_causticsIntens;
@@ -968,6 +974,7 @@ uint lightWorld_attenMatrix;
 uint lightWorld_cubeMatrix;
 
 uint ambientAlias_diffuse;
+uint ambientAlias_normalmap;
 uint ambientAlias_add;
 uint ambientAlias_env;
 uint ambientAlias_colorModulate;
@@ -986,7 +993,6 @@ uint lightAlias_colorScale;
 uint lightAlias_viewOrigin;
 uint lightAlias_lightOrigin;
 uint lightAlias_lightColor;
-uint lightAlias_toksvigFactor;
 uint lightAlias_fog;
 uint lightAlias_fogDensity;
 uint lightAlias_causticsIntens;

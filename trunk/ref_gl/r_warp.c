@@ -57,7 +57,7 @@ void  RenderLavaSurfaces(msurface_t * surf)
 	}
 
 	qglUniform4f(lava_parallaxParams, scale[0], scale[1], surf->texInfo->image->upload_width, surf->texInfo->image->upload_height);
-	qglUniform1i(lava_parallaxType, (int)r_parallax->value);
+	qglUniform1i(lava_parallaxType, (int)clamp(r_parallax->value, 0, 2));
 	qglUniform3fv(lava_viewOrigin, 1, r_origin);
 
 	GL_MBind(GL_TEXTURE0_ARB, surf->texInfo->image->texnum);
@@ -174,7 +174,7 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 	GL_MBind	(GL_TEXTURE1_ARB, r_DSTTex->texnum);
 	qglUniform1i(water_deformMap, 1);
 
-	GL_MBindRect(GL_TEXTURE2_ARB, screenMap);
+	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
 	qglUniform1i(water_screenMap, 2);
 	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 	qglUniform1i(water_depthMap, 3);

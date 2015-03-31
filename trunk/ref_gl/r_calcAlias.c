@@ -139,7 +139,7 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	int			index_xyz;
 	int			i, j, jj =0;
 	dtriangle_t	*tris;
-	image_t		*skin, *glowskin;
+	image_t		*skin, *skinNormalmap, *glowskin;
 	float		alphaShift, alpha;
 	unsigned	defBits = 0;
 	vec3_t		normalArray[3*MAX_TRIANGLES];
@@ -181,6 +181,28 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 			}
 		}
 	}
+
+	if (!skin)
+		skin = r_notexture;
+
+	// select skin
+	if (currententity->bump)
+		skinNormalmap = currententity->bump;	// custom player skin
+	else {
+		if (currententity->skinnum >= MAX_MD2SKINS) {
+			skinNormalmap = currentmodel->skins_normal[0];
+			currententity->skinnum = 0;
+		} else {
+			skinNormalmap	= currentmodel->skins_normal[currententity->skinnum];
+			if (!skin) {
+				skinNormalmap = currentmodel->skins_normal[0];
+				currententity->skinnum = 0;
+			}
+		}
+	}
+	if (!skinNormalmap)
+		skinNormalmap = r_defBump;
+
 	glowskin	= currentmodel->glowtexture[currententity->skinnum];
 
 	if (!glowskin)
@@ -256,6 +278,8 @@ void GL_DrawAliasFrameLerpAmbient(dmdl_t *paliashdr, vec3_t lightColor)
 	qglUniform1i(ambientAlias_env, 2);
 	qglUniform1f(ambientAlias_envScale, currentmodel->envScale);
 
+	GL_MBind	(GL_TEXTURE3_ARB, skinNormalmap->texnum);
+	qglUniform1i(ambientAlias_normalmap, 3);
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 
@@ -509,8 +533,8 @@ void GL_DrawAliasFrameLerpLight(dmdl_t *paliashdr)
 	qglUniform4f		(lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform3fv		(lightAlias_lightOrigin, 1, currentShadowLight->origin);
 	qglUniform3fv		(lightAlias_viewOrigin, 1, r_origin);
-	qglUniform1f		(lightAlias_specularScale, r_specularScale->value);
-	qglUniform1f		(lightAlias_toksvigFactor, r_toksvigFactor->value);
+	qglUniform1f		(lightAlias_specularScale, skin->specularScale * r_specularScale->value);
+	qglUniform1f		(lightAlias_specularExp, skin->SpecularExp ? skin->SpecularExp : 16.f);
 	
 	Mat4_TransposeMultiply	(currententity->matrix, currentShadowLight->attenMapMatrix, entAttenMatrix);
 	qglUniformMatrix4fv		(lightAlias_attenMatrix, 1, false, (const float *)entAttenMatrix);
