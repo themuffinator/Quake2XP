@@ -548,24 +548,28 @@ R_DrawSkyBox
 ==============
 */
 int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
-void R_DrawSkyBox(void)
+void R_DrawSkyBox(qboolean color)
 {
 	int i;
 
-	GL_BindProgram(genericProgram, 0);
-	qglUniform1i(gen_sky, 1);
-	qglUniform1i(gen_attribColors, 0);
-	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1i(gen_tex, 0);
-	qglUniform1f(gen_colorModulate, 1.0);
+	if (color){
+		GL_BindProgram(genericProgram, 0);
+		qglUniform1i(gen_sky, 1);
+		qglUniform1i(gen_attribColors, 0);
+		qglUniform1i(gen_attribConsole, 0);
+		qglUniform1i(gen_tex, 0);
+		qglUniform1f(gen_colorModulate, 1.0);
+		
+		qglEnableVertexAttribArray(ATRB_TEX0);
+		qglEnableVertexAttribArray(ATRB_COLOR);
+		qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, SkyTexCoordArray);
+		qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, SkyColorArray);
 
+	}
 	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_COLOR);
-
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, SkyTexCoordArray);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, SkyVertexArray);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, SkyColorArray);
+
+
 	
 	if (skyrotate) {			// check for no sky at all
 		for (i = 0; i < 6; i++)
@@ -595,7 +599,8 @@ void R_DrawSkyBox(void)
 			|| skymins[1][i] >= skymaxs[1][i])
 			continue;
 
-		GL_MBind(GL_TEXTURE0_ARB, sky_images[skytexorder[i]]->texnum);
+		if (color)
+			GL_MBind(GL_TEXTURE0_ARB, sky_images[skytexorder[i]]->texnum);
 		
 		numVerts = myIndex = 0;
 		
@@ -608,9 +613,11 @@ void R_DrawSkyBox(void)
 	}
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-    qglDisableVertexAttribArray(ATRB_COLOR);
-	GL_BindNullProgram();
+	if (color){
+		qglDisableVertexAttribArray(ATRB_TEX0);
+		qglDisableVertexAttribArray(ATRB_COLOR);
+		GL_BindNullProgram();
+	}
 	qglPopMatrix();
 }
 

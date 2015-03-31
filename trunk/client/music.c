@@ -22,7 +22,7 @@ void Music_Init(void) {
 	music_type = s_musicsrc->value;
 	mstat = MSTAT_STOPPED;
 
-	Com_Printf("\n======== Init Music subsistem =======\n\n");
+	Com_Printf("\n======== Init Music subsystem =======\n\n");
 
 	switch (music_type) {
 		case MUSIC_NONE:

@@ -104,7 +104,7 @@ if ((k == 0) && ((surf - loadmodel->surfaces) == 94)) {
 }
 */
 //		Com_Printf("nummaps %i\n", numMaps);
-		if (numMaps == 1) {
+		if (/*numMaps == 1*/ 1 || numMaps == 1) {
 			// copy the lightmap
 			bl = s_blocklights;
 

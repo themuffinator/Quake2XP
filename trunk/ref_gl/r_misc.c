@@ -225,7 +225,7 @@ static void FB_Check(const char *file, const int line) {
 
 #define _R_FB_Check();		FB_Check(__FILE__, __LINE__);
 
-static GLenum drawbuffer[] = { GL_COLOR_ATTACHMENT0};
+static GLenum drawbuffer[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 void CreateWeaponRect(void){
 
 
@@ -316,7 +316,7 @@ void CreateFboBuffer(void){
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, vid.width, vid.height, 0,
+	qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, vid.width, vid.height, 0,
 					GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	qglGenRenderbuffers(1, &rb);
@@ -338,6 +338,60 @@ void CreateFboBuffer(void){
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+uint fboDepth = 0;
+uint fboColor0 = 0;
+uint fboColor1 = 0;
+
+void CreateSSAOBuffer(void){
+
+	qboolean	statusOK;
+	
+	if (!fboDepth){
+		qglGenTextures(1, &fboDepth);
+		GL_BindRect(fboDepth);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		qglTexImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, GL_DEPTH_COMPONENT24, vid.width / 2, vid.height / 2, 0,
+						GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+	}
+
+	if (!fboColor0){
+		qglGenTextures(1, &fboColor0);
+		GL_BindRect(fboColor0);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0,
+						GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	}
+
+	if (!fboColor1){
+		qglGenTextures(1, &fboColor1);
+		GL_BindRect(fboColor1);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexImage2D	(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0,
+						GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	}
+
+
+	qglGenFramebuffers(1, &gl_state.fboId);
+	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_RECTANGLE_ARB, fboDepth, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboColor0, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE_ARB, fboColor1, 0);
+
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (statusOK)
+		Com_Printf(""S_COLOR_YELLOW"...Create SSAO FBO\n");
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 image_t *shadowMask;
 
@@ -849,6 +903,7 @@ void R_InitEngineTextures(void)
 	CreateShadowMask();
 	CreateAttenuation();
 	CreateWeaponRect();
+	CreateSSAOBuffer();
 }
 
 
@@ -972,6 +1027,10 @@ void GL_SetDefaultState(void)
 	thermaltex = 0;
 	fxaatex = 0;
 	flareEdit = (qboolean)false;
+
+	fboDepth = 0;
+	fboColor0 = 0;
+	fboColor1 = 0;
 
 	qglClearColor(0, 0, 0, 1);
 	qglEnable(GL_TEXTURE_2D);

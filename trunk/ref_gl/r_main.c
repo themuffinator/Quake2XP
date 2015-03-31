@@ -872,6 +872,7 @@ r_newrefdef must be set before the first call
 ================
 */
 void R_SSAO (void);
+void R_DrawDepthScene(void);
 
 void R_RenderView (refdef_t *fd) {
 	if (r_noRefresh->value)
@@ -895,7 +896,11 @@ void R_RenderView (refdef_t *fd) {
 	R_SetupViewMatrices();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
-
+	R_DrawDepthScene();
+	
+	R_CaptureDepthBuffer();
+	R_DrawParticles();
+	/*
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
 
@@ -918,6 +923,7 @@ void R_RenderView (refdef_t *fd) {
 
 	R_CaptureColorBuffer();
 	R_DrawPlayerWeaponFBO();
+	*/
 }
 
 void R_SetGL2D (void) {

@@ -1295,7 +1295,7 @@ void R_DrawBSP (void) {
 //	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 	DrawTextureChains();
-	R_DrawSkyBox();
+	R_DrawSkyBox(true);
 }
 
 /*
