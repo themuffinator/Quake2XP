@@ -193,8 +193,9 @@ MakeTransfers
 
 =============
 */
-void MakeTransfers (int i)
-{
+void MakeTransfers (int i) {
+	float		transfers[MAX_PATCHES];
+	byte		pvs[(MAX_MAP_LEAFS+7)/8];
 	int			j;
 	vec3_t		delta;
 	vec_t		dist, scale;
@@ -204,9 +205,7 @@ void MakeTransfers (int i)
 	float		total;
 	dplane_t	plane;
 	vec3_t		origin;
-	float		transfers[MAX_PATCHES];
-	int			itotal;
-	byte		pvs[(MAX_MAP_LEAFS+7)/8];
+//	int			itotal;
 	int			cluster;
 
 	patch = patches + i;
@@ -299,7 +298,7 @@ void MakeTransfers (int i)
 		//
 
 		t = patch->transfers;
-		itotal = 0;
+//		itotal = 0;
 
 		for (j=0 ; j<num_patches ; j++)
 		{
@@ -307,11 +306,13 @@ void MakeTransfers (int i)
 				continue;
 
 			itrans = transfers[j] * 0x10000 / total;
-			itotal += itrans;
+//			itotal += itrans;
 			t->transfer[0] = itrans;
 			t->patch = j;
 			t++;
 		}
+
+//		qprintf("patch %i transfer sum: %i\n", i, itotal);
 	}
 
 	// don't bother locking around this, not that important
@@ -482,7 +483,7 @@ float CollectLight (void) {
 				// get ready for the next bounce
 				f = illumination[i][k][j] * patch->reflectivity[j];
 
-				// for XP lightmaps, express outgoing diffuse light by single RGB color,
+				// for XP lightmaps, express outgoing diffuse light by a single RGB color,
 				// summing up all incoming light by combining dot products
 				// of each basis vector with tangent space normal N={0,0,1}
 				if (qrad_xplm)
@@ -541,17 +542,22 @@ void BounceLight (void) {
 	char	name[64];
 	float	f;
 	patch_t	*p;
+	float initial = 0.f;
 
 	for (i=0, p = patches ; i<num_patches ; i++, p++)
-		for (j=0 ; j<3 ; j++)
+		for (j=0 ; j<3 ; j++) {
 			radiosity[i][j] = p->samplelight[j] * p->reflectivity[j] * p->area;
+			initial += radiosity[i][j];
+		}
+
+	qprintf ("initial: %.2f\n", initial);
 
 	for (i=0 ; i<numbounce ; i++) {
 		RunThreadsOnIndividual (num_patches, false, ShootLight);
 
 		f = CollectLight();
 
-		qprintf ("bounce: %i added: %.2f \n", i, f);
+		qprintf ("bounce: %i added: %.2f\n", i, f);
 
 		if (dumppatches && (i == 0 || i == numbounce - 1)) {
 			sprintf (name, "bounce%i.txt", i);

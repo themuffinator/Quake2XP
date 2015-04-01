@@ -37,13 +37,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	MAX_PATCHES	65000			// larger will cause 32 bit overflows
 
-// the sum of all transfer->transfer values for a given patch
-// should equal exactly 0x10000, showing that all radiance
-// reaches other patches
+// the sum of all transfer->transfer[0] values (for vanilla)
+// or sum[i=0 to 3](transfer->transfer[i] * xplm_basisVecs[i][2]) values (for XP)
+// for a given patch should equal exactly 0x10000,
+// showing that all radiance reaches other patches
 typedef struct
 {
 	unsigned short	patch;
-	unsigned short	transfer[3];
+	unsigned short	transfer[XPLM_NUMVECS];
 } transfer_t;
 
 typedef struct patch_s {

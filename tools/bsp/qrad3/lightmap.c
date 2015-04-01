@@ -859,6 +859,7 @@ void CreateDirectLights (void)
 			else
 			{	// point down angle
 				angle = FloatForKey (e, "angle");
+
 				if (angle == ANGLE_UP)
 				{
 					dl->normal[0] = dl->normal[1] = 0;
@@ -872,8 +873,8 @@ void CreateDirectLights (void)
 				else
 				{
 					dl->normal[2] = 0;
-					dl->normal[0] = cos (angle/180*3.14159);
-					dl->normal[1] = sin (angle/180*3.14159);
+					dl->normal[0] = cosf (angle/180*3.14159);
+					dl->normal[1] = sinf (angle/180*3.14159);
 				}
 			}
 		}
