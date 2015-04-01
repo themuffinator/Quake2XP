@@ -1,5 +1,5 @@
-#define MAX_XPLM_SIZE	(MAX_MAP_LIGHTING * 3)
 #define XPLM_NUMVECS	3
+#define MAX_XPLM_SIZE	(MAX_MAP_LIGHTING * XPLM_NUMVECS)
 
 typedef struct {
 	int			dataSize;

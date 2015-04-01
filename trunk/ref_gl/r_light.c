@@ -41,17 +41,17 @@ RecursiveLightPoint
 ======================
 */
 int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
-	float front, back, frac;
-	int side;//, size;
+	const float ambientScale = max(r_ambientLevel->value, 0.f) * (1.f / 255.f);
+	float front, back, f;
+	int side, size;
 	int smax, tmax;
 	cplane_t *plane;
 	vec3_t mid;
 	msurface_t *surf;
 	int s, t, ds, dt;
-	int i;
+	int i, j, r;
 	mtexInfo_t *tex;
-	byte *lightmap;
-	int r;
+	byte *lm;
 
 	if (node->contents != -1)
 		return -1;				// didn't hit anything
@@ -63,16 +63,16 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 	plane = node->plane;
 	front = DotProduct(start, plane->normal) - plane->dist;
 	back = DotProduct(end, plane->normal) - plane->dist;
-	side = front < 0;
+	side = front < 0.f;
 
-	if ((back < 0) == side)
+	if ((back < 0.f) == side)
 		return RecursiveLightPoint(node->children[side], start, end);
 
-	frac = front / (front - back);
+	f = front / (front - back);
 
-	mid[0] = start[0] + (end[0] - start[0]) * frac;
-	mid[1] = start[1] + (end[1] - start[1]) * frac;
-	mid[2] = start[2] + (end[2] - start[2]) * frac;
+	mid[0] = start[0] + (end[0] - start[0]) * f;
+	mid[1] = start[1] + (end[1] - start[1]) * f;
+	mid[2] = start[2] + (end[2] - start[2]) * f;
 
 	// go down front side   
 	r = RecursiveLightPoint(node->children[side], start, mid);
@@ -89,13 +89,9 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 	surf = r_worldmodel->surfaces + node->firstsurface;
 	tex = surf->texInfo;
 
-	smax = (surf->extents[0] / (int)r_worldmodel->lightmap_scale) + 1;
-	tmax = (surf->extents[1] / (int)r_worldmodel->lightmap_scale) + 1;
-//	size = smax * tmax;
-
 	for (i = 0; i < node->numsurfaces; i++, surf++) {
 		if (surf->flags & (MSURF_DRAWTURB | MSURF_DRAWSKY))
-			continue;			// no lightmaps
+			continue;	// no lightmaps
 
 		s = DotProduct(mid, tex->vecs[0]) + tex->vecs[0][3];
 		t = DotProduct(mid, tex->vecs[1]) + tex->vecs[1][3];;
@@ -114,13 +110,28 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 		ds /= r_worldmodel->lightmap_scale;
 		dt /= r_worldmodel->lightmap_scale;
 
-		VectorCopy(vec3_origin, pointcolor);
+		smax = (surf->extents[0] / (int)r_worldmodel->lightmap_scale) + 1;
+		tmax = (surf->extents[1] / (int)r_worldmodel->lightmap_scale) + 1;
+		size = smax * tmax * 3;
 
-		lightmap = surf->samples + (dt * smax + ds) * 3;
+		lm = surf->samples + (dt * smax + ds) * 3;
 
-		pointcolor[0] += lightmap[0] * r_ambientLevel->value * (1.f / 255.f);
-		pointcolor[1] += lightmap[1] * r_ambientLevel->value * (1.f / 255.f);
-		pointcolor[2] += lightmap[2] * r_ambientLevel->value * (1.f / 255.f);
+		if (r_worldmodel->useXPLM) {
+			VectorClear(pointcolor);
+
+			for (j = 0; j < XPLM_NUMVECS; j++, lm += size) {
+				pointcolor[0] += lm[0] * r_xplmBasisVecs[j][2];
+				pointcolor[1] += lm[1] * r_xplmBasisVecs[j][2];
+				pointcolor[2] += lm[2] * r_xplmBasisVecs[j][2];
+			}
+		}
+		else {
+			pointcolor[0] = lm[0];
+			pointcolor[1] = lm[1];
+			pointcolor[2] = lm[2];
+		}
+
+		VectorScale(pointcolor, ambientScale, pointcolor);
 
 		return 1;
 	}
