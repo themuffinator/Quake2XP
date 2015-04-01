@@ -1,3 +1,6 @@
+#version 120
+#extension GL_ARB_texture_rectangle : enable
+
 #include depth.inc
 
 //uniform	sampler2D		g_randomNormalMap;

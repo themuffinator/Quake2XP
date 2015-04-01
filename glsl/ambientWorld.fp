@@ -30,9 +30,9 @@ varying vec3			v_tbn[3];
 // 3-vector radiosity basis for normal mapping
 //
 const vec3 s_basisVecs[3] = {
-	vec3( 0.816497,  0.0,      0.57735),
-	vec3(-0.408248,  0.707107, 0.57735),
-	vec3(-0.408248, -0.707107, 0.57735)
+	vec3( 0.81649658092772603273242802490196,  0.                                , 0.57735026918962576450914878050195),
+	vec3(-0.40824829046386301636621401245098,  0.70710678118654752440084436210485, 0.57735026918962576450914878050195),
+	vec3(-0.40824829046386301636621401245098, -0.70710678118654752440084436210485, 0.57735026918962576450914878050195)
 };
 
 #include lighting.inc
@@ -88,6 +88,7 @@ void main (void) {
 		normalMap.xyz /= len;
 */
 		normalMap.xyz = normalize(normalMap.xyz);
+//		normalMap.xyz = vec3(0.0, 0.0, 1.0);
 
 		vec3 lm0 = texture2D(u_LightMap0, v_lTexCoord.xy).rgb;
 		vec3 lm1 = texture2D(u_LightMap1, v_lTexCoord.xy).rgb;
@@ -105,6 +106,7 @@ void main (void) {
 #if 0
 		// reflection vector, unstable highlight, tends to jump in & out
 		vec3 R = reflect(-V, normalMap.xyz);
+
 		vec3 S = vec3(
 			dot(R, s_basisVecs[0]),
 			dot(R, s_basisVecs[1]),
@@ -114,6 +116,7 @@ void main (void) {
 		vec3 H0 = normalize(V + s_basisVecs[0]);
 		vec3 H1 = normalize(V + s_basisVecs[1]);
 		vec3 H2 = normalize(V + s_basisVecs[2]);
+
 		vec3 S = vec3(
 			dot(normalMap.xyz, H0),
 			dot(normalMap.xyz, H1),
