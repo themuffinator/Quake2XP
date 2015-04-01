@@ -60,6 +60,7 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 	vec3_t scale;
 	float *bl;
 	byte *lm, *dest;
+	int numMaps;
 
 	if (surf->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP))
 		VID_Error(ERR_DROP, "R_BuildLightMap(): called for non-lit surface.");
@@ -76,35 +77,18 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 	if (size > (sizeof(s_blocklights) / (int)loadmodel->lightmap_scale))
 		VID_Error(ERR_DROP, "R_BuildLightMap(): bad s_blocklights size.");
 
+	// count maps
+	if (surf->samples)
+		for (numMaps = 0; numMaps < MAXLIGHTMAPS && surf->styles[numMaps] != 255; numMaps++);
+
 for (k = 0; k < numVecs; k++) {
 	if (surf->samples) {
-		int numMaps;
-
-		// count maps
-		for (numMaps = 0; numMaps < MAXLIGHTMAPS && surf->styles[numMaps] != 255; numMaps++);
-		
 		lm = surf->samples + k * size * 3;
-/*
-if ((k == 0) && ((surf - loadmodel->surfaces) == 94)) {
-		int n;
 
-		Com_Printf("face %i lightofs: %i\n", surf - loadmodel->surfaces, mod_xplmOffsets[surf - loadmodel->surfaces]);
-
-		Com_Printf("lightmap0:\n");
-		for (n = 0; n < size; n++)
-			Com_Printf("%i %i %i\n", lm[(0*size+n)*3+0],lm[(0*size+n)*3+1],lm[(0*size+n)*3+2]);
-
-		Com_Printf("lightmap1:\n");
-		for (n = 0; n < size; n++)
-			Com_Printf("%i %i %i\n", lm[(1*size+n)*3+0],lm[(1*size+n)*3+1],lm[(1*size+n)*3+2]);
-
-		Com_Printf("lightmap2:\n");
-		for (n = 0; n < size; n++)
-			Com_Printf("%i %i %i\n", lm[(2*size+n)*3+0],lm[(2*size+n)*3+1],lm[(2*size+n)*3+2]);
-}
-*/
-//		Com_Printf("nummaps %i\n", numMaps);
-		if (/*numMaps == 1*/ 1 || numMaps == 1) {
+		// KRIGS:
+		// we don't refresh lightmaps at runtime anymore, so load only the first map
+		// use real-time lights for styling instead
+		if (1||numMaps == 1) {
 			// copy the lightmap
 			bl = s_blocklights;
 
