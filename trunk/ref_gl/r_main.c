@@ -886,7 +886,7 @@ void R_RenderView (refdef_t *fd) {
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 	if (!r_worldmodel && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
-		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel");
+		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel.");
 
 	if (r_finish->value)
 		qglFinish();
@@ -896,11 +896,11 @@ void R_RenderView (refdef_t *fd) {
 	R_SetupViewMatrices();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
-	R_DrawDepthScene();
+//	R_DrawDepthScene();
 	
 	R_CaptureDepthBuffer();
 	R_DrawParticles();
-	/*
+
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
 
@@ -923,7 +923,6 @@ void R_RenderView (refdef_t *fd) {
 
 	R_CaptureColorBuffer();
 	R_DrawPlayerWeaponFBO();
-	*/
 }
 
 void R_SetGL2D (void) {

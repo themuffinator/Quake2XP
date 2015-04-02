@@ -79,19 +79,18 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 	if (r >= 0)
 		return r;	// hit something
 
-	if ((back < 0) == side)
+	if ((back < 0.f) == side)
 		return -1;	// didn't hit anuthing
 
 	// check for impact on this node
 	VectorCopy(mid, lightspot);
 	lightplane = plane;
 
-	surf = r_worldmodel->surfaces + node->firstsurface;
-	tex = surf->texInfo;
-
-	for (i = 0; i < node->numsurfaces; i++, surf++) {
+	for (i = 0, surf = &r_worldmodel->surfaces[node->firstsurface]; i < node->numsurfaces; i++, surf++) {
 		if (surf->flags & (MSURF_DRAWTURB | MSURF_DRAWSKY))
 			continue;	// no lightmaps
+
+		tex = surf->texInfo;
 
 		s = DotProduct(mid, tex->vecs[0]) + tex->vecs[0][3];
 		t = DotProduct(mid, tex->vecs[1]) + tex->vecs[1][3];;
@@ -111,12 +110,13 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 		dt /= r_worldmodel->lightmap_scale;
 
 		smax = (surf->extents[0] / (int)r_worldmodel->lightmap_scale) + 1;
-		tmax = (surf->extents[1] / (int)r_worldmodel->lightmap_scale) + 1;
-		size = smax * tmax * 3;
 
 		lm = surf->samples + (dt * smax + ds) * 3;
 
 		if (r_worldmodel->useXPLM) {
+			tmax = (surf->extents[1] / (int)r_worldmodel->lightmap_scale) + 1;
+			size = smax * tmax * 3;
+
 			VectorClear(pointcolor);
 
 			for (j = 0; j < XPLM_NUMVECS; j++, lm += size) {
@@ -143,11 +143,10 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 /*
 ===============
 R_LightPoint
+
 ===============
 */
-
-void R_LightPoint(vec3_t p, vec3_t color)
-{
+void R_LightPoint (vec3_t p, vec3_t color) {
 	vec3_t end;
 	float r;
 	int i;
