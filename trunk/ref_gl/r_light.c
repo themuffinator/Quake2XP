@@ -54,7 +54,7 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 	byte *lm;
 
 	if (node->contents != -1)
-		return -1;				// didn't hit anything
+		return -1;	// didn't hit anything
 
 	// calculate mid point
 
@@ -151,26 +151,24 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 	float r;
 	int i;
 
-	if ((r_worldmodel && !r_worldmodel->lightData) || !r_worldmodel)
-	{
-          color[0] = color[1] = color[2] = 1.0;
-          return;
-     }
+	if ((r_worldmodel && !r_worldmodel->lightData) || !r_worldmodel) {
+		color[0] = color[1] = color[2] = 1.0;
+		return;
+	}
 	
 	if (!r_newrefdef.areabits)
 		return;
 
 	end[0] = p[0];
 	end[1] = p[1];
-	end[2] = p[2] - 8192;
+	end[2] = p[2] - 8192.f;
 
 	r = RecursiveLightPoint(r_worldmodel->nodes, p, end);
 
-	if (r == -1) {
-		VectorCopy(vec3_origin, color);
-	} else {
+	if (r == -1)
+		VectorClear(color);
+	else
 		VectorCopy(pointcolor, color);
-	}
 
 	// this catches too bright modulated color
 	for (i = 0; i < 3; i++)
@@ -182,12 +180,10 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 #define LIGHTGRID_STEP 128
 #define LIGHTGRID_NUM_STEPS (8192/LIGHTGRID_STEP)	// 64
 
-byte r_lightgrid[LIGHTGRID_NUM_STEPS * LIGHTGRID_NUM_STEPS *
-				 LIGHTGRID_NUM_STEPS][3];
+byte r_lightgrid[LIGHTGRID_NUM_STEPS * LIGHTGRID_NUM_STEPS * LIGHTGRID_NUM_STEPS][3];
 
 
-void R_InitLightgrid(void)
-{
+void R_InitLightgrid (void) {
 	int i, x, y, z;
 	vec3_t p, end;
 	float r;
@@ -199,6 +195,7 @@ void R_InitLightgrid(void)
 		return;
 
 	b = &r_lightgrid[0][0];
+
 	// Huh ?
 	for (x = 0; x < 8192; x += LIGHTGRID_STEP)
 		for (y = 0; y < 8192; y += LIGHTGRID_STEP)
@@ -220,14 +217,13 @@ void R_InitLightgrid(void)
 }
 
 //___________________________________________________________
-void R_LightColor(vec3_t org, vec3_t color)
-{
+void R_LightColor (vec3_t org, vec3_t color) {
 	byte *b[8];
 	int i;
 	float f;
-	float x = (4096 + org[0]) / LIGHTGRID_STEP;
-	float y = (4096 + org[1]) / LIGHTGRID_STEP;
-	float z = (4096 + org[2]) / LIGHTGRID_STEP;
+	float x = (4096.f + org[0]) / LIGHTGRID_STEP;
+	float y = (4096.f + org[1]) / LIGHTGRID_STEP;
+	float z = (4096.f + org[2]) / LIGHTGRID_STEP;
 	int s = x;
 	int t = y;
 	int r = z;
@@ -261,7 +257,7 @@ void R_LightColor(vec3_t org, vec3_t color)
 		&r_lightgrid[((((s + 1) * LIGHTGRID_NUM_STEPS) + t +
 					   1) * LIGHTGRID_NUM_STEPS) + r + 1][0];
 
-	f = ((float) 4 / (float) (255));
+	f = 4.f / 255.f;
 
 	if (!(b[0][0] && b[0][1] && b[0][2]))
 		f -= (1.0 / (510.0)) * (1 - x) * (1 - y) * (1 - z);
@@ -287,7 +283,6 @@ void R_LightColor(vec3_t org, vec3_t color)
 	  + x * ((1 - y) * ((1 - z) * b[4][i] + (z) * b[5][i]) +
 	    y * ((1 - z) * b[6][i] + (z) * b[7][i]));
 		color[i] *= f;
-
 	}
 }
 

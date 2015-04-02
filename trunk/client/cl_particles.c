@@ -257,19 +257,6 @@ void CL_AddParticles(void)
 				continue;
 			}
 		}
-		
-		if (p->flags & PARTICLE_VERTEXLIGHT) {
-			vec3_t lmColor;
-			int i;
-			VectorClear(lmColor);
-			R_LightColor(org, lmColor);
-			VectorScale(lmColor, 2.0, lmColor);
-			VectorMul(color, lmColor, color);
-		
-			for (i = 0; i < 3; i++)
-				if (color[i] > 1)
-					color[i] = 1;
-		}
 
 		if (p->flags & PARTICLE_NONSOLID) 
 		{ 
@@ -3135,8 +3122,7 @@ void CL_ParticleRick(vec3_t org, vec3_t dir)
 		VectorClear(p->accel);
 		VectorClear(p->vel);
 		p->orient = 0;
-		p->flags  = PARTICLE_DIRECTIONAL;
-		p->flags |= PARTICLE_AIRONLY;
+		p->flags  = PARTICLE_DIRECTIONAL | PARTICLE_AIRONLY;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->sFactor = GL_SRC_ALPHA;
@@ -3175,7 +3161,7 @@ void CL_ParticleRick(vec3_t org, vec3_t dir)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = frand() * 360;
-		p->flags = PARTICLE_AIRONLY;
+		p->flags = PARTICLE_AIRONLY | PARTICLE_VERTEXLIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 
@@ -3311,7 +3297,7 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 		p->next = active_particles;
 		active_particles = p;
 		p->orient = frand() * 360;
-		p->flags = PARTICLE_AIRONLY;
+		p->flags = PARTICLE_AIRONLY | PARTICLE_VERTEXLIGHT;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 
@@ -3355,9 +3341,7 @@ void CL_ParticleRailRick(vec3_t org, vec3_t dir)
 	VectorCopy(dir, p->dir);
 	VectorNormalize(p->dir);
 	p->orient = 0;
-	p->flags  = PARTICLE_ALIGNED;
-	p->flags |= PARTICLE_AIRONLY;
-	p->flags |= PARTICLE_NOFADE;
+	p->flags  = PARTICLE_ALIGNED | PARTICLE_AIRONLY | PARTICLE_NOFADE | PARTICLE_VERTEXLIGHT;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->sFactor = GL_SRC_ALPHA;

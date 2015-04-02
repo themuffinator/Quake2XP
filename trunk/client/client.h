@@ -603,9 +603,16 @@ typedef struct particle_s {
 	float endLen;
 	
 } cparticle_t;
+/*
+typedef struct {
+	qboolean	isactive;
 
-
-// Berserker client entyties code
+	vec3_t		lightcol;
+	float		light;
+	float		lightvel;
+} cplight_t;
+*/
+// Berserker client entities code
 #define     MAX_CLENTITIES     256
 
 typedef struct clentity_s {
@@ -626,10 +633,10 @@ typedef struct clentity_s {
 
 
 
-#define	PARTICLE_GRAVITY	40
+#define	PARTICLE_GRAVITY	40.f
 
 // PMM
-#define INSTANT_PARTICLE	-10000.0
+#define INSTANT_PARTICLE	-10000.f
 // PGM
 // ========
 

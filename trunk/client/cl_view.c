@@ -111,14 +111,13 @@ V_AddParticle
 
 =====================
 */
-
-void V_AddParticle(vec3_t org, vec3_t length, vec3_t color, float alpha,
+void V_AddParticle (vec3_t org, vec3_t length, vec3_t color, float alpha,
 				   int type, float size, int sFactor, int dFactor,
 				   int flags, int time, float orient, float len,
-				   vec3_t oldOrg, vec3_t dir)
-{
+				   vec3_t oldOrg, vec3_t dir) {
 	particle_t *p;
-
+//	int i;
+	vec3_t lm;
 
 	if (r_numparticles >= MAX_PARTICLES)
 		return;
@@ -134,10 +133,20 @@ void V_AddParticle(vec3_t org, vec3_t length, vec3_t color, float alpha,
 	p->sFactor = sFactor;
 	p->dFactor = dFactor;
 	p->flags = flags;
-	p->time = (float) time *0.001;
+	p->time = (float)time * 0.001f;
 	p->orient = orient;
 	p->len = len;
 	VectorCopy(oldOrg, p->oldOrg);
+
+	if (p->flags & PARTICLE_VERTEXLIGHT) {
+		R_LightColor(org, lm);
+		VectorMul(p->color, lm, p->color);
+/*		
+		for (i = 0; i < 3; i++)
+			if (color[i] > 1)
+				color[i] = 1;
+*/
+	}
 }
 
 
@@ -147,8 +156,7 @@ V_AddLight
 
 =====================
 */
-void V_AddLight(vec3_t org, float intensity, float r, float g, float b, vec3_t ang, float cone, int filter)
-{
+void V_AddLight(vec3_t org, float intensity, float r, float g, float b, vec3_t ang, float cone, int filter) {
 	dlight_t *dl;
 
 	if (r_numdlights >= MAX_DLIGHTS)

@@ -176,8 +176,8 @@ void CL_AddClEntities()
 			le->flags &= ~CLM_ROTATE;
 			le->avel = 0;
 		} else 
-			if (le->flags & CLM_STOPED) {
-			le->flags &= ~CLM_STOPED;
+			if (le->flags & CLM_STOPPED) {
+			le->flags &= ~CLM_STOPPED;
 			le->flags |= CLM_BOUNCE;
 			le->accel[2] = -15 * PARTICLE_GRAVITY;
 			// Reset
@@ -272,7 +272,7 @@ void CL_AddClEntities()
 						le->avel = 0;
 						le->alpha = 1;
 						le->flags &= ~CLM_BOUNCE;
-						le->flags |= CLM_STOPED;
+						le->flags |= CLM_STOPPED;
 					}
 					else
 					{

@@ -1771,7 +1771,6 @@ void CL_AddLasers (void)
 	}
 }
 */
-extern particle_t *active_particles, *free_particles;
 
 
 /* PMM - CL_Sustains */

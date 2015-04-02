@@ -138,7 +138,6 @@ typedef struct {
 
 } dlight_t;
 
-
 typedef struct {
 	vec3_t origin;
 	vec3_t mins;
@@ -160,6 +159,32 @@ typedef struct {
 
 
 } particle_t;
+
+#define PARTICLE_BOUNCE					1
+#define PARTICLE_FRICTION				2
+#define PARTICLE_DIRECTIONAL			4
+#define PARTICLE_VERTEXLIGHT			8
+#define PARTICLE_STRETCH				16
+#define PARTICLE_UNDERWATER				32
+#define PARTICLE_OVERBRIGHT				64
+#define PARTICLE_SPIRAL					128
+#define PARTICLE_AIRONLY				256
+#define PARTICLE_LIGHTING				512
+#define PARTICLE_ALIGNED				1024
+#define PARTICLE_NONSOLID				2048
+#define PARTICLE_STOPED					4096
+#define PARTICLE_CLAMP					8192
+#define PARTICLE_NOFADE					16384
+#define PARTICLE_DEFAULT				32768
+
+#define CLM_BOUNCE			1
+#define CLM_FRICTION		2
+#define CLM_DIRECTIONAL		4
+#define CLM_ROTATE			8
+#define CLM_STOPPED			16
+#define CLM_STRETCH			32
+#define CLM_MSHELL			64
+#define CLM_NOSHADOW		128
 
 typedef struct {
 	float rgb[3];				// 0.0 - 2.0
@@ -369,6 +394,7 @@ typedef struct mnode_s {
 /*
 =====================
 DECALS
+
 =====================
 */
 
@@ -410,8 +436,6 @@ typedef struct {
 	int firstvert;
 	int numverts;
 } fragment_t;
-
-
 
 //================
 // end decals

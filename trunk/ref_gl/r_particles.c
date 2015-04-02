@@ -55,8 +55,7 @@ int SortPart(particle_t *a, particle_t *b ){
 }
 void R_AmbientColor(vec3_t org, vec3_t color);
 
-void R_DrawParticles()
-{
+void R_DrawParticles (void) {
 	particle_t *p;
 	unsigned	ParticleIndex[MAX_INDICES];
 	unsigned	texId, texture = -1, flagId, flags = -1;
