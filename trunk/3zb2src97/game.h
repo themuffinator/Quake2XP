@@ -27,13 +27,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // edict->svflags
 
 #define	SVF_NOCLIENT			0x00000001	// don't send entity to
-											// clients, even if it has
-											// effects
+// clients, even if it has
+// effects
 #define	SVF_DEADMONSTER			0x00000002	// treat as
-											// CONTENTS_DEADMONSTER for
-											// collision
+// CONTENTS_DEADMONSTER for
+// collision
 #define	SVF_MONSTER				0x00000004	// treat as CONTENTS_MONSTER
-											// for collision
+// for collision
 
 // edict->solid values
 
@@ -85,7 +85,7 @@ struct edict_s {
 	// ================================
 
 	int svflags;				// SVF_NOCLIENT, SVF_DEADMONSTER,
-								// SVF_MONSTER, etc
+	// SVF_MONSTER, etc
 	vec3_t mins, maxs;
 	vec3_t absmin, absmax, size;
 	solid_t solid;
@@ -110,10 +110,10 @@ typedef struct {
 	void (*cprintf) (edict_t * ent, int printlevel, char *fmt, ...);
 	void (*centerprintf) (edict_t * ent, char *fmt, ...);
 	void (*sound) (edict_t * ent, int channel, int soundindex,
-				   float volume, float attenuation, float timeofs);
+		float volume, float attenuation, float timeofs);
 	void (*positioned_sound) (vec3_t origin, edict_t * ent, int channel,
-							  int soundinedex, float volume,
-							  float attenuation, float timeofs);
+		int soundinedex, float volume,
+		float attenuation, float timeofs);
 
 	// config strings hold all the index strings, the lightstyles,
 	// and misc data like the sky definition and cdtrack.
@@ -132,24 +132,24 @@ typedef struct {
 	void (*setmodel) (edict_t * ent, char *name);
 
 	// collision detection
-	trace_t(*trace) (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
-					  edict_t * passent, int contentmask);
+	trace_t (*trace) (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
+		edict_t * passent, int contentmask);
 	int (*pointcontents) (vec3_t point);
-	qboolean(*inPVS) (vec3_t p1, vec3_t p2);
-	qboolean(*inPHS) (vec3_t p1, vec3_t p2);
+	qboolean (*inPVS) (vec3_t p1, vec3_t p2);
+	qboolean (*inPHS) (vec3_t p1, vec3_t p2);
 	void (*SetAreaPortalState) (int portalnum, qboolean open);
-	qboolean(*AreasConnected) (int area1, int area2);
+	qboolean (*AreasConnected) (int area1, int area2);
 
 	// an entity will never be sent to a client or used for collision
 	// if it is not passed to linkentity.  If the size, position, or
 	// solidity changes, it must be relinked.
 	void (*linkentity) (edict_t * ent);
 	void (*unlinkentity) (edict_t * ent);	// call before removing an
-											// interactive edict
+	// interactive edict
 	int (*BoxEdicts) (vec3_t mins, vec3_t maxs, edict_t ** list,
-					  int maxcount, int areatype);
+		int maxcount, int areatype);
 	void (*Pmove) (pmove_t * pmove);	// player movement code common
-										// with client prediction
+	// with client prediction
 
 	// network messaging
 	void (*multicast) (vec3_t origin, multicast_t to);
@@ -200,7 +200,7 @@ typedef struct {
 
 	// each new level entered will cause a call to SpawnEntities
 	void (*SpawnEntities) (char *mapname, char *entstring,
-						   char *spawnpoint);
+		char *spawnpoint);
 
 	// Read/Write Game is for storing persistant cross level information
 	// about the world state and the clients.
@@ -215,8 +215,8 @@ typedef struct {
 	void (*WriteLevel) (char *filename);
 	void (*ReadLevel) (char *filename);
 
-	qboolean(*ClientConnect) (edict_t * ent, char *userinfo,
-							   qboolean loadgame);
+	qboolean (*ClientConnect) (edict_t * ent, char *userinfo,
+		qboolean loadgame);
 	void (*ClientBegin) (edict_t * ent, qboolean loadgame);
 	void (*ClientUserinfoChanged) (edict_t * ent, char *userinfo);
 	void (*ClientDisconnect) (edict_t * ent);
@@ -246,5 +246,5 @@ typedef struct {
 	int max_edicts;
 } game_export_t;
 
-game_export_t *GetGameApi(game_import_t * import);
+game_export_t *GetGameApi (game_import_t * import);
 #endif

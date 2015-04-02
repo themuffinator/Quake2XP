@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -34,17 +34,19 @@ qboolean	in_appactive;
 /*
 ============================================================
 
-  MOUSE CONTROL
+MOUSE CONTROL
 
 ============================================================
 */
 
 qboolean	mlooking;
 
-void IN_MLookDown (void) { mlooking = true; }
+void IN_MLookDown (void) {
+	mlooking = true;
+}
 void IN_MLookUp (void) {
-mlooking = false;
-if (!freelook->value && lookspring->value)
+	mlooking = false;
+	if (!freelook->value && lookspring->value)
 		IN_CenterView ();
 }
 
@@ -59,7 +61,7 @@ qboolean	mouseactive;	// false when not focus app
 
 qboolean	restore_spi;
 qboolean	mouseinitialized;
-int		originalmouseparms[3], newmouseparms[3] = {0, 0, 1};
+int		originalmouseparms[3], newmouseparms[3] = { 0, 0, 1 };
 qboolean	mouseparmsvalid;
 
 int			window_center_x, window_center_y;
@@ -73,14 +75,12 @@ IN_ActivateMouse
 Called when the window gains focus or changes in some way
 ===========
 */
-void IN_ActivateMouse (void)
-{
+void IN_ActivateMouse (void) {
 	int		width, height;
 
 	if (!mouseinitialized)
 		return;
-	if (!in_mouse->value)
-	{
+	if (!in_mouse->value) {
 		mouseactive = false;
 		return;
 	}
@@ -95,15 +95,15 @@ void IN_ActivateMouse (void)
 	width = GetSystemMetrics (SM_CXSCREEN);
 	height = GetSystemMetrics (SM_CYSCREEN);
 
-	GetWindowRect ( cl_hwnd, &window_rect);
+	GetWindowRect (cl_hwnd, &window_rect);
 	if (window_rect.left < 0)
 		window_rect.left = 0;
 	if (window_rect.top < 0)
 		window_rect.top = 0;
 	if (window_rect.right >= width)
-		window_rect.right = width-1;
-	if (window_rect.bottom >= height-1)
-		window_rect.bottom = height-1;
+		window_rect.right = width - 1;
+	if (window_rect.bottom >= height - 1)
+		window_rect.bottom = height - 1;
 
 	window_center_x = (window_rect.right + window_rect.left)*0.5;
 	window_center_y = (window_rect.top + window_rect.bottom)*0.5;
@@ -113,7 +113,7 @@ void IN_ActivateMouse (void)
 	old_x = window_center_x;
 	old_y = window_center_y;
 
-	SetCapture ( cl_hwnd );
+	SetCapture (cl_hwnd);
 	ClipCursor (&window_rect);
 	while (ShowCursor (FALSE) >= 0)
 		;
@@ -127,8 +127,7 @@ IN_DeactivateMouse
 Called when the window loses focus
 ===========
 */
-void IN_DeactivateMouse (void)
-{
+void IN_DeactivateMouse (void) {
 	if (!mouseinitialized)
 		return;
 	if (!mouseactive)
@@ -152,13 +151,12 @@ void IN_DeactivateMouse (void)
 IN_StartupMouse
 ===========
 */
-void IN_StartupMouse (void)
-{
+void IN_StartupMouse (void) {
 	cvar_t		*cv;
 
 	cv = Cvar_Get ("in_initmouse", "1", CVAR_NOSET);
-	if ( !cv->value ) 
-		return; 
+	if (!cv->value)
+		return;
 
 	mouseinitialized = true;
 	mouseparmsvalid = SystemParametersInfo (SPI_GETMOUSE, 0, originalmouseparms, 0);
@@ -170,29 +168,25 @@ void IN_StartupMouse (void)
 IN_MouseEvent
 ===========
 */
-void IN_MouseEvent (int mstate)
-{
+void IN_MouseEvent (int mstate) {
 	int		i;
 
 	if (!mouseinitialized)
 		return;
 
-// perform button actions
-	for (i=0 ; i<mouse_buttons ; i++)
-	{
-		if ( (mstate & (1<<i)) &&
-			!(mouse_oldbuttonstate & (1<<i)) )
-		{
+	// perform button actions
+	for (i = 0; i < mouse_buttons; i++) {
+		if ((mstate & (1 << i)) &&
+			!(mouse_oldbuttonstate & (1 << i))) {
 			Key_Event (K_MOUSE1 + i, true, sys_msg_time);
 		}
 
-		if ( !(mstate & (1<<i)) &&
-			(mouse_oldbuttonstate & (1<<i)) )
-		{
-				Key_Event (K_MOUSE1 + i, false, sys_msg_time);
+		if (!(mstate & (1 << i)) &&
+			(mouse_oldbuttonstate & (1 << i))) {
+			Key_Event (K_MOUSE1 + i, false, sys_msg_time);
 		}
-	}	
-		
+	}
+
 	mouse_oldbuttonstate = mstate;
 }
 
@@ -206,8 +200,7 @@ IN_MouseMove
 cvar_t	*m_filter;
 cvar_t	*m_accel;
 
-void IN_MouseMove (usercmd_t *cmd)
-{
+void IN_MouseMove (usercmd_t *cmd) {
 	int		mx, my;
 	float sens;
 
@@ -221,13 +214,11 @@ void IN_MouseMove (usercmd_t *cmd)
 	mx = current_pos.x - window_center_x;
 	my = current_pos.y - window_center_y;
 
-	if (m_filter->value)
-	{
+	if (m_filter->value) {
 		mouse_x = (mx + old_mouse_x) * 0.5;
 		mouse_y = (my + old_mouse_y) * 0.5;
 	}
-	else
-	{
+	else {
 		mouse_x = mx;
 		mouse_y = my;
 	}
@@ -235,26 +226,24 @@ void IN_MouseMove (usercmd_t *cmd)
 	old_mouse_x = mx;
 	old_mouse_y = my;
 
-	if( m_accel->value < 0 )
-		Cvar_Set( "m_accel", "0" );
+	if (m_accel->value < 0)
+		Cvar_Set ("m_accel", "0");
 
 	/// Berserker: коррекция чуствительности от FOV
-	sens = (sensitivity->value + sqrt(mouse_x * mouse_x + mouse_y * mouse_y) * m_accel->value) * cl.refdef.fov_x / 90.0f;
+	sens = (sensitivity->value + sqrt (mouse_x * mouse_x + mouse_y * mouse_y) * m_accel->value) * cl.refdef.fov_x / 90.0f;
 	mouse_x *= sens;
 	mouse_y *= sens;
 
-// add mouse X/Y movement to cmd
-	if ( (in_strafe.state & 1) || (lookstrafe->value && mlooking ))
+	// add mouse X/Y movement to cmd
+	if ((in_strafe.state & 1) || (lookstrafe->value && mlooking))
 		cmd->sidemove += m_side->value * mouse_x;
 	else
 		cl.viewangles[YAW] -= m_yaw->value * mouse_x;
 
-	if ( (mlooking || freelook->value) && !(in_strafe.state & 1))
-	{
+	if ((mlooking || freelook->value) && !(in_strafe.state & 1)) {
 		cl.viewangles[PITCH] += m_pitch->value * mouse_y;
 	}
-	else
-	{
+	else {
 		cmd->forwardmove -= m_forward->value * mouse_y;
 	}
 
@@ -281,16 +270,15 @@ cvar_t	*v_centerspeed;
 IN_Init
 ===========
 */
-void IN_Init (void)
-{
+void IN_Init (void) {
 	// mouse variables
-	m_filter				= Cvar_Get ("m_filter",					"0",		CVAR_ARCHIVE);
-    in_mouse				= Cvar_Get ("in_mouse",					"1",		CVAR_ARCHIVE);
-	m_accel					= Cvar_Get( "m_accel",					"0",		CVAR_ARCHIVE);
+	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
+	in_mouse = Cvar_Get ("in_mouse", "1", CVAR_ARCHIVE);
+	m_accel = Cvar_Get ("m_accel", "0", CVAR_ARCHIVE);
 
 	// centering
-	v_centermove			= Cvar_Get ("v_centermove",				"0.15",		0);
-	v_centerspeed			= Cvar_Get ("v_centerspeed",			"500",		0);
+	v_centermove = Cvar_Get ("v_centermove", "0.15", 0);
+	v_centerspeed = Cvar_Get ("v_centerspeed", "500", 0);
 
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
@@ -305,8 +293,7 @@ void IN_Init (void)
 IN_Shutdown
 ===========
 */
-void IN_Shutdown (void)
-{
+void IN_Shutdown (void) {
 	IN_DeactivateMouse ();
 }
 
@@ -320,8 +307,7 @@ The window may have been destroyed and recreated
 between a deactivate and an activate.
 ===========
 */
-void IN_Activate (qboolean active)
-{
+void IN_Activate (qboolean active) {
 	in_appactive = active;
 	mouseactive = !active;		// force a new window check or turn off
 }
@@ -334,24 +320,20 @@ IN_Frame
 Called every frame, even if not generating commands
 ==================
 */
-void IN_Frame (void)
-{
+void IN_Frame (void) {
 	if (!mouseinitialized)
 		return;
 
-	if (!in_mouse || !in_appactive)
-	{
+	if (!in_mouse || !in_appactive) {
 		IN_DeactivateMouse ();
 		return;
 	}
 
-	if ( !cl.refresh_prepped
+	if (!cl.refresh_prepped
 		|| cls.key_dest == key_console
-		|| cls.key_dest == key_menu)
-	{
+		|| cls.key_dest == key_menu) {
 		// temporarily deactivate if in fullscreen
-		if (Cvar_VariableValue ("r_fullScreen") == 0)
-		{
+		if (Cvar_VariableValue ("r_fullScreen") == 0) {
 			IN_DeactivateMouse ();
 			return;
 		}
@@ -365,8 +347,7 @@ void IN_Frame (void)
 IN_Move
 ===========
 */
-void IN_Move (usercmd_t *cmd)
-{
+void IN_Move (usercmd_t *cmd) {
 	IN_MouseMove (cmd);
 
 
@@ -378,8 +359,7 @@ void IN_Move (usercmd_t *cmd)
 IN_ClearStates
 ===================
 */
-void IN_ClearStates (void)
-{
+void IN_ClearStates (void) {
 	mx_accum = 0;
 	my_accum = 0;
 	mouse_oldbuttonstate = 0;

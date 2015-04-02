@@ -18,106 +18,107 @@ static char **fsList;
 static int fsIndex;
 static int fsNumFiles;
 
-void Music_Init(void) {
+void Music_Init (void) {
 	music_type = s_musicsrc->value;
 	mstat = MSTAT_STOPPED;
 
-	Com_Printf("\n======== Init Music subsystem =======\n\n");
+	Com_Printf ("\n======== Init Music subsystem =======\n\n");
 
 	switch (music_type) {
 		case MUSIC_NONE:
 			return;
 		case MUSIC_CD:
-			CDAudio_Init();
-	Com_Printf("=====================================\n\n");
+			CDAudio_Init ();
+			Com_Printf ("=====================================\n\n");
 			break;
 		case MUSIC_CD_FILES:
-	Com_Printf("=====================================\n\n");
+			Com_Printf ("=====================================\n\n");
 			break;
 		case MUSIC_OTHER_FILES:
-			fsList = FS_ListFilesAll("music/*", &fsNumFiles, 0, SFF_SUBDIR);
+			fsList = FS_ListFilesAll ("music/*", &fsNumFiles, 0, SFF_SUBDIR);
 			fsIndex = -1;
 
 			if (fsList != NULL)
-				Com_DPrintf(S_COLOR_YELLOW "found "S_COLOR_GREEN"%d "S_COLOR_YELLOW"music files\n\n", fsNumFiles);
-			Com_Printf("====================================\n\n");
+				Com_DPrintf (S_COLOR_YELLOW "found "S_COLOR_GREEN"%d "S_COLOR_YELLOW"music files\n\n", fsNumFiles);
+			Com_Printf ("====================================\n\n");
 			break;
 		default:
-			Cvar_SetValue("s_musicsrc", MUSIC_NONE);
+			Cvar_SetValue ("s_musicsrc", MUSIC_NONE);
 			music_type = MUSIC_NONE;
 			return;
 	}
 }
 
-void Music_Shutdown(void) {
+void Music_Shutdown (void) {
 	if (music_type == MUSIC_NONE)
 		return;
 
-	Com_Printf("Music shutdown\n");
-	Music_Stop();
+	Com_Printf ("Music shutdown\n");
+	Music_Stop ();
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Shutdown();
+			CDAudio_Shutdown ();
 			break;
 		case MUSIC_CD_FILES:
 			break;
 		case MUSIC_OTHER_FILES:
-			FS_FreeList(fsList, fsNumFiles);
+			FS_FreeList (fsList, fsNumFiles);
 			break;
 	}
 	music_type = MUSIC_NONE;
 }
 
 // only to be called inside Music_Play
-static qboolean Music_PlayFile(const char *name, qboolean hasExt) {
+static qboolean Music_PlayFile (const char *name, qboolean hasExt) {
 	soundparams_t sp;
 
 	if (hasExt)
-		music_handle = Gen_Open(name, &sp);
+		music_handle = Gen_Open (name, &sp);
 	else
-		music_handle = Gen_OpenAny(name, &sp);
+		music_handle = Gen_OpenAny (name, &sp);
 
 	if (music_handle != NULL) {
 		if (hasExt)
-			Com_DPrintf(S_COLOR_GREEN "Music_Play: playing \"%s\"\n", name);
+			Com_DPrintf (S_COLOR_GREEN "Music_Play: playing \"%s\"\n", name);
 		else
-			Com_DPrintf(S_COLOR_GREEN "Music_Play: playing \"%s.%s\"\n", name, music_handle->ext);
+			Com_DPrintf (S_COLOR_GREEN "Music_Play: playing \"%s.%s\"\n", name, music_handle->ext);
 
-		S_Streaming_Start(sp.bits, sp.channels, sp.rate, s_musicvolume->value);
-        mstat = cl_paused->value ? MSTAT_PAUSED : MSTAT_PLAYING;
+		S_Streaming_Start (sp.bits, sp.channels, sp.rate, s_musicvolume->value);
+		mstat = cl_paused->value ? MSTAT_PAUSED : MSTAT_PLAYING;
 		return true;
-	} else {
-		Com_Printf(S_COLOR_YELLOW "Music_Play: unable to load \"%s\"\n", name);
+	}
+	else {
+		Com_Printf (S_COLOR_YELLOW "Music_Play: unable to load \"%s\"\n", name);
 		return false;
 	}
 }
 
-void Music_Play(void) {
+void Music_Play (void) {
 	int track, count;
 	char name[MAX_QPATH];
 
-	Music_Stop();
+	Music_Stop ();
 
 	if (s_musicrandom->value != 0)
 		// original soundtrack has tracks 2 to 11
-		track = 2 + rand()%10;
+		track = 2 + rand () % 10;
 	else
-		track = atoi(cl.configstrings[CS_CDTRACK]);
+		track = atoi (cl.configstrings[CS_CDTRACK]);
 
 	if (music_type != MUSIC_OTHER_FILES &&
-	  track == 0 && s_musicrandom->value == 0)
+		track == 0 && s_musicrandom->value == 0)
 		return;
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Play(track, true);
+			CDAudio_Play (track, true);
 			mstat = MSTAT_PLAYING;
 			break;
 
 		case MUSIC_CD_FILES:
-			Q_snprintfz(name, sizeof(name), "music/track%02i", track);
-			Music_PlayFile(name, false);
+			Q_snprintfz (name, sizeof(name), "music/track%02i", track);
+			Music_PlayFile (name, false);
 			break;
 
 		case MUSIC_OTHER_FILES:
@@ -125,74 +126,74 @@ void Music_Play(void) {
 				return;
 
 			if (s_musicrandom->value != 0)
-				fsIndex = rand() % fsNumFiles;
+				fsIndex = rand () % fsNumFiles;
 			else
-				fsIndex = (fsIndex+1) % fsNumFiles;
+				fsIndex = (fsIndex + 1) % fsNumFiles;
 			count = fsNumFiles;
 			while (count-- > 0) {
-				if (Music_PlayFile(fsList[fsIndex], true))
+				if (Music_PlayFile (fsList[fsIndex], true))
 					return;
-				fsIndex = (fsIndex+1) % fsNumFiles;
+				fsIndex = (fsIndex + 1) % fsNumFiles;
 			}
 			break;
 	}
 }
 
-void Music_Stop(void) {
+void Music_Stop (void) {
 	if (mstat == MSTAT_STOPPED)
 		return;
 
-	Com_DPrintf(S_COLOR_GREEN "Stopped playing music\n");
+	Com_DPrintf (S_COLOR_GREEN "Stopped playing music\n");
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Stop();
+			CDAudio_Stop ();
 			break;
 		case MUSIC_CD_FILES:
 		case MUSIC_OTHER_FILES:
-			music_handle->close(music_handle->f);
-			S_Streaming_Stop();
+			music_handle->close (music_handle->f);
+			S_Streaming_Stop ();
 			break;
 	}
 
 	mstat = MSTAT_STOPPED;
 }
 
-void Music_Pause(void) {
+void Music_Pause (void) {
 	if (mstat != MSTAT_PLAYING)
 		return;
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Activate(false);
+			CDAudio_Activate (false);
 			break;
 		case MUSIC_CD_FILES:
 		case MUSIC_OTHER_FILES:
-			alSourcePause(source_name[CH_STREAMING]);
+			alSourcePause (source_name[CH_STREAMING]);
 			break;
 	}
 
 	mstat = MSTAT_PAUSED;
 }
 
-void Music_Resume(void) {
+void Music_Resume (void) {
 	if (mstat != MSTAT_PAUSED)
 		return;
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Activate(true);
+			CDAudio_Activate (true);
 			break;
 		case MUSIC_CD_FILES:
 		case MUSIC_OTHER_FILES:
-			alSourcePlay(source_name[CH_STREAMING]);
+			alSourcePlay (source_name[CH_STREAMING]);
 			break;
 	}
 
 	mstat = MSTAT_PLAYING;
 }
 
-void Music_Update(void) {
+void Music_Update (void) {
 	int n;
 
 	// if we are in the configuration menu, or paused we don't do anything
@@ -200,11 +201,11 @@ void Music_Update(void) {
 		return;
 
 	// Check for configuration changes
-	
+
 	if (s_musicsrc->modified) {
-		Music_Shutdown();
-		Music_Init();
-		Music_Play();
+		Music_Shutdown ();
+		Music_Init ();
+		Music_Play ();
 		s_musicsrc->modified = false;
 		s_musicvolume->modified = false;
 		s_musicrandom->modified = false;
@@ -216,18 +217,18 @@ void Music_Update(void) {
 
 	if (s_musicrandom->modified) {
 		s_musicrandom->modified = false;
-		Music_Play();
+		Music_Play ();
 		return;
 	}
 
 	if (s_musicvolume->modified) {
 		switch (music_type) {
 			case MUSIC_CD:
-				Cvar_SetValue("cd_volume", s_musicvolume->value);
+				Cvar_SetValue ("cd_volume", s_musicvolume->value);
 				break;
 			case MUSIC_CD_FILES:
 			case MUSIC_OTHER_FILES:
-				alSourcef(source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
+				alSourcef (source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
 				break;
 		}
 		s_musicvolume->modified = false;
@@ -238,51 +239,51 @@ void Music_Update(void) {
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Update();
+			CDAudio_Update ();
 			break;
 
 		case MUSIC_CD_FILES:
 		case MUSIC_OTHER_FILES:
-			if (mstat != MSTAT_PLAYING || S_Streaming_NumFreeBufs() == 0)
+			if (mstat != MSTAT_PLAYING || S_Streaming_NumFreeBufs () == 0)
 				return;
 
 			// Play a portion of the current file
-			n = music_handle->read(music_handle->f, music_buffer, sizeof(music_buffer));
+			n = music_handle->read (music_handle->f, music_buffer, sizeof(music_buffer));
 			if (n == 0) {
-				Music_Play();
-			} else {
+				Music_Play ();
+			}
+			else {
 				// don't check return value as the buffer is guaranteed to fit
-				S_Streaming_Add(music_buffer, n);
+				S_Streaming_Add (music_buffer, n);
 			}
 			break;
 	}
 }
 
-void S_Music_f(void)
-{
+void S_Music_f (void) {
 	// CD: uses the level track, or another one if s_musicrandom
 	// Other: advances to the next, or random if s_musircandom
-	Music_Play();
+	Music_Play ();
 }
 
 // Generic interface and type specific implementations
 
 supported_exts_t supported_exts[] = {
-	{"wav", (openFunc_t)MC_OpenWAV},
-	{"ogg", (openFunc_t)MC_OpenVorbis}
+	{ "wav", (openFunc_t)MC_OpenWAV },
+	{ "ogg", (openFunc_t)MC_OpenVorbis }
 };
 
 // Gen_OpenAny: try all possible extensions of filename in sequence
-static Gen_Interface_t *Gen_OpenAny(const char *name, soundparams_t *sp) {
+static Gen_Interface_t *Gen_OpenAny (const char *name, soundparams_t *sp) {
 	// check all supported extensions, or better try in a loop somewhere else?
 	int i;
 
-	for (i = 0; i < sizeof(supported_exts)/sizeof(supported_exts[0]); i++) {
+	for (i = 0; i < sizeof(supported_exts) / sizeof(supported_exts[0]); i++) {
 		char path[MAX_QPATH];
 		Gen_Interface_t *res;
 
-		Q_snprintfz(path, sizeof(path), "%s.%s", name, supported_exts[i].name);
-		res = supported_exts[i].openFunc(path, sp);
+		Q_snprintfz (path, sizeof(path), "%s.%s", name, supported_exts[i].name);
+		res = supported_exts[i].openFunc (path, sp);
 		if (res != NULL)
 			return res;
 	}
@@ -290,30 +291,30 @@ static Gen_Interface_t *Gen_OpenAny(const char *name, soundparams_t *sp) {
 }
 
 // Gen_Open: check given filename and call appropiate routine
-static Gen_Interface_t *Gen_Open(const char *name, soundparams_t *sp) {
+static Gen_Interface_t *Gen_Open (const char *name, soundparams_t *sp) {
 	int i;
-	const char *ext = strrchr(name, '.');
+	const char *ext = strrchr (name, '.');
 
 	if (ext == NULL)
 		return NULL;
 
-	Com_DPrintf("trying to load %s\n", name);
+	Com_DPrintf ("trying to load %s\n", name);
 
-	for (i = 0; i < sizeof(supported_exts)/sizeof(supported_exts[0]); i++)
-		if (Q_strcasecmp(ext + 1, supported_exts[i].name) == 0)
-			return supported_exts[i].openFunc(name, sp);
+	for (i = 0; i < sizeof(supported_exts) / sizeof(supported_exts[0]); i++)
+	if (Q_strcasecmp (ext + 1, supported_exts[i].name) == 0)
+		return supported_exts[i].openFunc (name, sp);
 
 	return NULL;
 }
 
-static int MC_ReadVorbis(MC_Vorbis_t *f, char *buffer, int n) {
+static int MC_ReadVorbis (MC_Vorbis_t *f, char *buffer, int n) {
 	int total = 0;
-	const int step = 1024*64;
+	const int step = 1024 * 64;
 
-	assert(step < n);
+	assert (step < n);
 	while (total + step < n) {
 		// FIXME: check endianess
-		int cur = ov_read(&f->ovFile, buffer + total, step, 0, 2, 1, &f->pos);
+		int cur = ov_read (&f->ovFile, buffer + total, step, 0, 2, 1, &f->pos);
 		if (cur < 0)
 			return 0;
 		if (cur == 0)
@@ -323,25 +324,25 @@ static int MC_ReadVorbis(MC_Vorbis_t *f, char *buffer, int n) {
 	return total;
 }
 
-static void MC_RewindVorbis(MC_Vorbis_t *f) {
+static void MC_RewindVorbis (MC_Vorbis_t *f) {
 	f->pos = 0;
 }
 
-static void MC_CloseVorbis(MC_Vorbis_t *f) {
-	ov_clear(&f->ovFile);
-	FS_FreeFile(f->ovRawFile);
+static void MC_CloseVorbis (MC_Vorbis_t *f) {
+	ov_clear (&f->ovFile);
+	FS_FreeFile (f->ovRawFile);
 }
 
-static Gen_Interface_t *MC_OpenVorbis(const char *name, soundparams_t *sp) {
+static Gen_Interface_t *MC_OpenVorbis (const char *name, soundparams_t *sp) {
 	static MC_Vorbis_t f;
 	static Gen_Interface_t res;
 
-	f.size = FS_LoadFile(name, &f.ovRawFile);
+	f.size = FS_LoadFile (name, &f.ovRawFile);
 	if (f.size < 0)
 		return NULL;
 
-	if (ov_open(NULL, &f.ovFile, f.ovRawFile, f.size) == 0) {
-		f.info = ov_info(&f.ovFile, 0);
+	if (ov_open (NULL, &f.ovFile, f.ovRawFile, f.size) == 0) {
+		f.info = ov_info (&f.ovFile, 0);
 		f.pos = 0;
 		sp->bits = 16;
 		sp->channels = f.info->channels;
@@ -354,36 +355,37 @@ static Gen_Interface_t *MC_OpenVorbis(const char *name, soundparams_t *sp) {
 		res.ext = "ogg";
 
 		return &res;
-	} else {
-		FS_FreeFile(f.ovRawFile);
+	}
+	else {
+		FS_FreeFile (f.ovRawFile);
 		return NULL;
 	}
 }
 
-static int MC_ReadWAV(MC_WAV_t *f, void *buffer, int n) {
-	const int r = MIN(n, f->size - f->pos);
+static int MC_ReadWAV (MC_WAV_t *f, void *buffer, int n) {
+	const int r = MIN (n, f->size - f->pos);
 
 	if (r > 0) {
-		memcpy(buffer, f->start + f->pos, r);
+		memcpy (buffer, f->start + f->pos, r);
 		f->pos += r;
 	}
 
 	return r;
 }
 
-static void MC_RewindWAV(MC_WAV_t *f) {
+static void MC_RewindWAV (MC_WAV_t *f) {
 	f->pos = 0;
 }
 
-static void MC_CloseWAV(MC_WAV_t *f) {
-	FS_FreeFile(f->data);
+static void MC_CloseWAV (MC_WAV_t *f) {
+	FS_FreeFile (f->data);
 }
 
-static Gen_Interface_t *MC_OpenWAV(const char *name, soundparams_t *sp) {
+static Gen_Interface_t *MC_OpenWAV (const char *name, soundparams_t *sp) {
 	static MC_WAV_t f;
 	static Gen_Interface_t res;
 
-	if (S_LoadWAV(name, &f.data, &f.start, &sp->bits, &sp->channels, &sp->rate, &f.size)) {
+	if (S_LoadWAV (name, &f.data, &f.start, &sp->bits, &sp->channels, &sp->rate, &f.size)) {
 		f.pos = 0;
 
 		res.read = (readFunc_t)MC_ReadWAV;

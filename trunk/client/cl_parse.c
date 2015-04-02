@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -49,12 +49,11 @@ char *svc_strings[256] = {
 
 //=============================================================================
 
-void CL_DownloadFileName(char *dest, int destlen, char *fn)
-{
-	if (strncmp(fn, "players", 7) == 0)
-		Com_sprintf(dest, destlen, "%s/%s", BASEDIRNAME, fn);
+void CL_DownloadFileName (char *dest, int destlen, char *fn) {
+	if (strncmp (fn, "players", 7) == 0)
+		Com_sprintf (dest, destlen, "%s/%s", BASEDIRNAME, fn);
 	else
-		Com_sprintf(dest, destlen, "%s/%s", FS_Gamedir(), fn);
+		Com_sprintf (dest, destlen, "%s/%s", FS_Gamedir (), fn);
 }
 
 /*
@@ -65,55 +64,55 @@ Returns true if the file exists, otherwise it attempts
 to start a download from the server.
 ===============
 */
-qboolean CL_CheckOrDownloadFile(char *filename)
-{
+qboolean CL_CheckOrDownloadFile (char *filename) {
 	FILE *fp;
 	char name[MAX_OSPATH];
 
-	if (strstr(filename, "..")) {
-		Com_Printf("Refusing to download a path with ..\n");
+	if (strstr (filename, "..")) {
+		Com_Printf ("Refusing to download a path with ..\n");
 		return true;
 	}
 
-	if (FS_LoadFile(filename, NULL) != -1) {	// it exists, no need to
-												// download
+	if (FS_LoadFile (filename, NULL) != -1) {	// it exists, no need to
+		// download
 		return true;
 	}
 
-	strcpy(cls.downloadname, filename);
+	strcpy (cls.downloadname, filename);
 
 	// download to a temp name, and only rename
 	// to the real name when done, so if interrupted
 	// a runt file wont be left
-	COM_StripExtension(cls.downloadname, cls.downloadtempname);
-	strcat(cls.downloadtempname, ".tmp");
+	COM_StripExtension (cls.downloadname, cls.downloadtempname);
+	strcat (cls.downloadtempname, ".tmp");
 
-//ZOID
+	//ZOID
 	// check to see if we already have a tmp for this file, if so, try to
 	// resume
 	// open the file if not opened yet
-	CL_DownloadFileName(name, sizeof(name), cls.downloadtempname);
+	CL_DownloadFileName (name, sizeof(name), cls.downloadtempname);
 
-//  FS_CreatePath (name);
+	//  FS_CreatePath (name);
 
-	fp = fopen(name, "r+b");
+	fp = fopen (name, "r+b");
 	if (fp) {					// it exists
 		int len;
-		fseek(fp, 0, SEEK_END);
-		len = ftell(fp);
+		fseek (fp, 0, SEEK_END);
+		len = ftell (fp);
 
 		cls.download = fp;
 
 		// give the server an offset to start the download
-		Com_Printf("Resuming %s\n", cls.downloadname);
-		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString(&cls.netchan.message,
-						va("download %s %i", cls.downloadname, len));
-	} else {
-		Com_Printf("Downloading %s\n", cls.downloadname);
-		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString(&cls.netchan.message,
-						va("download %s", cls.downloadname));
+		Com_Printf ("Resuming %s\n", cls.downloadname);
+		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+		MSG_WriteString (&cls.netchan.message,
+			va ("download %s %i", cls.downloadname, len));
+	}
+	else {
+		Com_Printf ("Downloading %s\n", cls.downloadname);
+		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+		MSG_WriteString (&cls.netchan.message,
+			va ("download %s", cls.downloadname));
 	}
 
 	cls.downloadnumber++;
@@ -128,46 +127,44 @@ CL_Download_f
 Request a download from the server
 ===============
 */
-void CL_Download_f(void)
-{
+void CL_Download_f (void) {
 	char filename[MAX_OSPATH];
 
-	if (Cmd_Argc() != 2) {
-		Com_Printf("Usage: download <filename>\n");
+	if (Cmd_Argc () != 2) {
+		Com_Printf ("Usage: download <filename>\n");
 		return;
 	}
 
-	Com_sprintf(filename, sizeof(filename), "%s", Cmd_Argv(1));
+	Com_sprintf (filename, sizeof(filename), "%s", Cmd_Argv (1));
 
-	if (strstr(filename, "..")) {
-		Com_Printf("Refusing to download a path with ..\n");
+	if (strstr (filename, "..")) {
+		Com_Printf ("Refusing to download a path with ..\n");
 		return;
 	}
 
-	if (FS_LoadFile(filename, NULL) != -1) {	// it exists, no need to
-												// download
-		Com_Printf("File already exists.\n");
+	if (FS_LoadFile (filename, NULL) != -1) {	// it exists, no need to
+		// download
+		Com_Printf ("File already exists.\n");
 		return;
 	}
 
-	strcpy(cls.downloadname, filename);
-	Com_Printf("Downloading %s\n", cls.downloadname);
+	strcpy (cls.downloadname, filename);
+	Com_Printf ("Downloading %s\n", cls.downloadname);
 
 	// download to a temp name, and only rename
 	// to the real name when done, so if interrupted
 	// a runt file wont be left
-	COM_StripExtension(cls.downloadname, cls.downloadtempname);
-	strcat(cls.downloadtempname, ".tmp");
+	COM_StripExtension (cls.downloadname, cls.downloadtempname);
+	strcat (cls.downloadtempname, ".tmp");
 
-	MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
-	MSG_WriteString(&cls.netchan.message,
-					va("download %s", cls.downloadname));
+	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+	MSG_WriteString (&cls.netchan.message,
+		va ("download %s", cls.downloadname));
 
 	cls.downloadnumber++;
 }
 
-void WILLOW_HACK_SOUND(int i)
-{
+void WILLOW_HACK_SOUND (int i) {
 	// At first, make sure we set default values to hacking database
 	cl.sound_precache_hacks[i] = 0;
 	cl.sound_precache_rolloff_factor[i] = 1.0f;
@@ -175,30 +172,32 @@ void WILLOW_HACK_SOUND(int i)
 
 	// willow: World mentor hack! TO DO: find a solution to call mentor
 	// proper way
-	if (!strncmp(cl.configstrings[CS_SOUNDS + i], "world/voice", 11)
-		|| !strncmp(cl.configstrings[CS_SOUNDS + i], "world/v_", 8)) {
+	if (!strncmp (cl.configstrings[CS_SOUNDS + i], "world/voice", 11)
+		|| !strncmp (cl.configstrings[CS_SOUNDS + i], "world/v_", 8)) {
 		cl.sound_precache_hacks[i] = sound_precache_hacks_FLAT2D;
 	}
 	// willow: TO DO: "misc/secret.wav" hide this sound from other
 	// players!
-	else if (!strncmp(cl.configstrings[CS_SOUNDS + i], "misc/secret", 11)) {
+	else if (!strncmp (cl.configstrings[CS_SOUNDS + i], "misc/secret", 11)) {
 		cl.sound_precache_hacks[i] = sound_precache_hacks_FLAT2D;
 	}
 	// willow: Battle backgrounds hacks! TO DO: find a proper solution
-	else if (!strncmp(cl.configstrings[CS_SOUNDS + i], "world/battle", 12)) {
+	else if (!strncmp (cl.configstrings[CS_SOUNDS + i], "world/battle", 12)) {
 		cl.sound_precache_hacks[i] =
 			sound_precache_hacks_AUTOFIX_gain |
 			sound_precache_hacks_AUTOFIX_rolloff_factor;
 		cl.sound_precache_gain[i] = 0.56;
 		cl.sound_precache_rolloff_factor[i] = 0.08;
-	} else
-		if (!strncmp(cl.configstrings[CS_SOUNDS + i], "world/flyby", 11)) {
+	}
+	else
+	if (!strncmp (cl.configstrings[CS_SOUNDS + i], "world/flyby", 11)) {
 		cl.sound_precache_hacks[i] =
 			sound_precache_hacks_AUTOFIX_gain |
 			sound_precache_hacks_AUTOFIX_rolloff_factor;
 		cl.sound_precache_gain[i] = 1;
 		cl.sound_precache_rolloff_factor[i] = 0.05;
-	} else if (!strncmp(cl.configstrings[CS_SOUNDS + i], "misc/ar", 7)) {
+	}
+	else if (!strncmp (cl.configstrings[CS_SOUNDS + i], "misc/ar", 7)) {
 		cl.sound_precache_hacks[i] =
 			sound_precache_hacks_AUTOFIX_gain |
 			sound_precache_hacks_AUTOFIX_rolloff_factor;
@@ -207,23 +206,25 @@ void WILLOW_HACK_SOUND(int i)
 	}
 	// Hack railgun background noise
 	else if (!strcmp
-			 (cl.configstrings[CS_SOUNDS + i], "weapons/rg_hum.wav")) {
+		(cl.configstrings[CS_SOUNDS + i], "weapons/rg_hum.wav")) {
 		cl.sound_precache_hacks[i] = sound_precache_hacks_AUTOFIX_gain;
 		cl.sound_precache_gain[i] = 0.2f;
 	}
 	// Hack hyperblaster drum rotation noise
 	else if (!strcmp
-			 (cl.configstrings[CS_SOUNDS + i], "weapons/hyprbl1a.wav")) {
+		(cl.configstrings[CS_SOUNDS + i], "weapons/hyprbl1a.wav")) {
 		cl.sound_precache_hacks[i] = sound_precache_hacks_AUTOFIX_gain;
 		cl.sound_precache_gain[i] = 0.7f;
-	} else
-		if (!strcmp
-			(cl.configstrings[CS_SOUNDS + i], "weapons/hyprbu1a.wav")) {
+	}
+	else
+	if (!strcmp
+		(cl.configstrings[CS_SOUNDS + i], "weapons/hyprbu1a.wav")) {
 		cl.sound_precache_hacks[i] = sound_precache_hacks_AUTOFIX_gain;
 		cl.sound_precache_gain[i] = 0.7f;
-	} else
-		if (!strcmp
-			(cl.configstrings[CS_SOUNDS + i], "infantry/inflies1.wav")) {
+	}
+	else
+	if (!strcmp
+		(cl.configstrings[CS_SOUNDS + i], "infantry/inflies1.wav")) {
 		cl.sound_precache_hacks[i] =
 			sound_precache_hacks_AUTOFIX_gain |
 			sound_precache_hacks_AUTOFIX_rolloff_factor;
@@ -232,17 +233,19 @@ void WILLOW_HACK_SOUND(int i)
 	}
 	// grenades timer countdown
 	else if (!strcmp
-			 (cl.configstrings[CS_SOUNDS + i], "weapons/hgrenc1b.wav")) {
+		(cl.configstrings[CS_SOUNDS + i], "weapons/hgrenc1b.wav")) {
 		cl.sound_precache_hacks[i] = sound_precache_hacks_AUTOFIX_gain;
 		cl.sound_precache_gain[i] = 0.2f;
-	} else if (!strcmp(cl.configstrings[CS_SOUNDS + i], "world/wind2.wav")) {
+	}
+	else if (!strcmp (cl.configstrings[CS_SOUNDS + i], "world/wind2.wav")) {
 		cl.sound_precache_hacks[i] =
 			sound_precache_hacks_AUTOFIX_gain |
 			sound_precache_hacks_AUTOFIX_rolloff_factor;
 		cl.sound_precache_gain[i] = 0.55f;
 		cl.sound_precache_rolloff_factor[i] = 0.888f;
-	} else
-		if (!strncmp(cl.configstrings[CS_SOUNDS + i], "world/radio", 11)) {
+	}
+	else
+	if (!strncmp (cl.configstrings[CS_SOUNDS + i], "world/radio", 11)) {
 		cl.sound_precache_hacks[i] =
 			sound_precache_hacks_AUTOFIX_gain |
 			sound_precache_hacks_AUTOFIX_rolloff_factor;
@@ -256,14 +259,13 @@ void WILLOW_HACK_SOUND(int i)
 CL_RegisterSounds
 ======================
 */
-void CL_RegisterSounds(void)
-{
+void CL_RegisterSounds (void) {
 	int i = 1;
 
 	while (i < MAX_SOUNDS && cl.configstrings[CS_SOUNDS + i][0]) {
-		WILLOW_HACK_SOUND(i);
+		WILLOW_HACK_SOUND (i);
 
-		cl.sound_precache[i] = S_RegisterSound(cl.configstrings[CS_SOUNDS + i]);
+		cl.sound_precache[i] = S_RegisterSound (cl.configstrings[CS_SOUNDS + i]);
 
 		if (cl.configstrings[CS_SOUNDS + i][0] == '*')
 			cl.sound_sexedname[i] = cl.configstrings[CS_SOUNDS + i];
@@ -285,79 +287,79 @@ CL_ParseDownload
 A download message has been received from the server
 =====================
 */
-void CL_ParseDownload(void)
-{
+void CL_ParseDownload (void) {
 	int size, percent;
 	char name[MAX_OSPATH];
 	int r;
 
 	// read the data
-	size = MSG_ReadShort(&net_message);
-	percent = MSG_ReadByte(&net_message);
+	size = MSG_ReadShort (&net_message);
+	percent = MSG_ReadByte (&net_message);
 	if (size == -1) {
-		Com_Printf("Server does not have this file.\n");
+		Com_Printf ("Server does not have this file.\n");
 		if (cls.download) {
 			// if here, we tried to resume a file but the server said no
-			fclose(cls.download);
+			fclose (cls.download);
 			cls.download = NULL;
 		}
-		CL_RequestNextDownload();
+		CL_RequestNextDownload ();
 		return;
 	}
 	// open the file if not opened yet
 	if (!cls.download) {
-		CL_DownloadFileName(name, sizeof(name), cls.downloadtempname);
+		CL_DownloadFileName (name, sizeof(name), cls.downloadtempname);
 
-		FS_CreatePath(name);
+		FS_CreatePath (name);
 
-		cls.download = fopen(name, "wb");
+		cls.download = fopen (name, "wb");
 		if (!cls.download) {
 			net_message.readcount += size;
-			Com_Printf("Failed to open %s\n", cls.downloadtempname);
-			CL_RequestNextDownload();
+			Com_Printf ("Failed to open %s\n", cls.downloadtempname);
+			CL_RequestNextDownload ();
 			return;
 		}
 	}
 
-	fwrite(net_message.data + net_message.readcount, 1, size,
-		   cls.download);
+	fwrite (net_message.data + net_message.readcount, 1, size,
+		cls.download);
 	net_message.readcount += size;
 
 	if (percent != 100) {
 		// request next block
-// change display routines by zoid
+		// change display routines by zoid
 #if 0
-		Com_Printf(".");
+		Com_Printf (".");
 		if (10 * (percent / 10) != cls.downloadpercent) {
 			cls.downloadpercent = 10 * (percent / 10);
-			Com_Printf("%i%%", cls.downloadpercent);
+			Com_Printf ("%i%%", cls.downloadpercent);
 		}
 #endif
 		cls.downloadpercent = percent;
 
-		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
-		SZ_Print(&cls.netchan.message, "nextdl");
-	} else {
+		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+		SZ_Print (&cls.netchan.message, "nextdl");
+	}
+	else {
 		char oldn[MAX_OSPATH];
 		char newn[MAX_OSPATH];
 
-//      Com_Printf ("100%%\n");
+		//      Com_Printf ("100%%\n");
 
-		fclose(cls.download);
+		fclose (cls.download);
 
 		// rename the temp file to it's final name
-		CL_DownloadFileName(oldn, sizeof(oldn), cls.downloadtempname);
-		CL_DownloadFileName(newn, sizeof(newn), cls.downloadname);
-		r = rename(oldn, newn);
+		CL_DownloadFileName (oldn, sizeof(oldn), cls.downloadtempname);
+		CL_DownloadFileName (newn, sizeof(newn), cls.downloadname);
+		r = rename (oldn, newn);
 		if (r)
-			Com_Printf("failed to rename.\n");
+			Com_Printf ("failed to rename.\n");
 
 		cls.download = NULL;
 		cls.downloadpercent = 0;
 
 		// get another file if needed
 
-		CL_RequestNextDownload();
+		CL_RequestNextDownload ();
 	}
 }
 
@@ -365,15 +367,14 @@ void CL_ParseDownload(void)
 /*
 =====================================================================
 
-  SERVER CONNECTING MESSAGES
+SERVER CONNECTING MESSAGES
 
 =====================================================================
 */
-qboolean LegacyProtocol(void)
-{
+qboolean LegacyProtocol (void) {
 	// if (dedicated->value) // Server always uses new protocol
 	// return false;
-	if ((Com_ServerState() && cls.serverProtocol < PROTOCOL_VERSION)
+	if ((Com_ServerState () && cls.serverProtocol < PROTOCOL_VERSION)
 		|| (cls.serverProtocol == OLD_PROTOCOL_VERSION))
 		return true;
 	return false;
@@ -384,77 +385,77 @@ qboolean LegacyProtocol(void)
 CL_ParseServerData
 ==================
 */
-void CL_ParseServerData(void)
-{
+void CL_ParseServerData (void) {
 	extern cvar_t *fs_gamedirvar;
 	char *str;
 	int i;
 
-	Com_DPrintf("Serverdata packet received.\n");
-//
-// wipe the client_state_t struct
-//
-	CL_ClearState();
+	Com_DPrintf ("Serverdata packet received.\n");
+	//
+	// wipe the client_state_t struct
+	//
+	CL_ClearState ();
 	cls.state = ca_connected;
 
-// parse protocol version number
-	i = MSG_ReadLong(&net_message);
+	// parse protocol version number
+	i = MSG_ReadLong (&net_message);
 	cls.serverProtocol = i;
 
 	// BIG HACK to let demos from release work with the 3.0x patch!!!
 	// if (Com_ServerState() && PROTOCOL_VERSION == 34)
-	
-	if(!net_compatibility->value)
-	{
-	if (LegacyProtocol())		// do nothing
-	{
-	} else if (i != PROTOCOL_VERSION)
-		Com_Error(ERR_DROP, "Server returned version %i, not %i", i,
-				  PROTOCOL_VERSION);
+
+	if (!net_compatibility->value) {
+		if (LegacyProtocol ())		// do nothing
+		{
+		}
+		else if (i != PROTOCOL_VERSION)
+			Com_Error (ERR_DROP, "Server returned version %i, not %i", i,
+			PROTOCOL_VERSION);
 	}
 	else
-		if(net_compatibility->value)
-	{
-	if (LegacyProtocol())		// do nothing
-	{
-	} else if (i != OLD_PROTOCOL_VERSION)
-		Com_Error(ERR_DROP, "Server returned version %i, not %i", i,
-				  OLD_PROTOCOL_VERSION);
+	if (net_compatibility->value) {
+		if (LegacyProtocol ())		// do nothing
+		{
+		}
+		else if (i != OLD_PROTOCOL_VERSION)
+			Com_Error (ERR_DROP, "Server returned version %i, not %i", i,
+			OLD_PROTOCOL_VERSION);
 	}
 
-	cl.servercount = MSG_ReadLong(&net_message);
-	cl.attractloop = MSG_ReadByte(&net_message);
+	cl.servercount = MSG_ReadLong (&net_message);
+	cl.attractloop = MSG_ReadByte (&net_message);
 
 	// game directory
-	str = MSG_ReadString(&net_message);
-	strncpy(cl.gamedir, str, sizeof(cl.gamedir) - 1);
+	str = MSG_ReadString (&net_message);
+	strncpy (cl.gamedir, str, sizeof(cl.gamedir) - 1);
 
 	// set gamedir
 	if ((*str
-		 && (!fs_gamedirvar->string || !*fs_gamedirvar->string
-			 || strcmp(fs_gamedirvar->string, str))) || (!*str
-														 &&
-														 (fs_gamedirvar->
-														  string
-														  ||
-														  *fs_gamedirvar->
-														  string)))
-		Cvar_Set("game", str);
+		&& (!fs_gamedirvar->string || !*fs_gamedirvar->string
+		|| strcmp (fs_gamedirvar->string, str))) || (!*str
+		&&
+		(fs_gamedirvar->
+		string
+		||
+		*fs_gamedirvar->
+		string)))
+		Cvar_Set ("game", str);
 
 	// parse player entity number
-	cl.playernum = MSG_ReadShort(&net_message);
+	cl.playernum = MSG_ReadShort (&net_message);
 
 	// get the full level name
-	str = MSG_ReadString(&net_message);
+	str = MSG_ReadString (&net_message);
 
 	if (cl.playernum == -1) {	// playing a cinematic or showing a pic,
-								// not a level
-		SCR_PlayCinematic(str);
-	} else {
+		// not a level
+		SCR_PlayCinematic (str);
+	}
+	else {
 		// seperate the printfs so the server message can have a color
 		Com_Printf
 			("\n\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\37\n\n");
-		Com_Printf("%c%s\n", 2, str);
+		Com_Printf ("%c%s\n", 2, str);
 
 		// need to prep refresh at next oportunity
 		cl.refresh_prepped = false;
@@ -466,18 +467,17 @@ void CL_ParseServerData(void)
 CL_ParseBaseline
 ==================
 */
-void CL_ParseBaseline(void)
-{
+void CL_ParseBaseline (void) {
 	entity_state_t *es;
 	int bits;
 	int newnum;
 	entity_state_t nullstate;
 
-	memset(&nullstate, 0, sizeof(nullstate));
+	memset (&nullstate, 0, sizeof(nullstate));
 
-	newnum = CL_ParseEntityBits(&bits);
+	newnum = CL_ParseEntityBits (&bits);
 	es = &cl_entities[newnum].baseline;
-	CL_ParseDelta(&nullstate, es, newnum, bits);
+	CL_ParseDelta (&nullstate, es, newnum, bits);
 }
 
 struct image_s *R_RegisterPlayerBump (char *name, struct image_s *tex);
@@ -489,10 +489,9 @@ CL_LoadClientinfo
 ================
 */
 char	gender_model[MAX_QPATH];
-extern ALuint S_RegisterPlayerSound(char *name);
+extern ALuint S_RegisterPlayerSound (char *name);
 
-void CL_LoadClientinfo(clientinfo_t * ci, char *s)
-{
+void CL_LoadClientinfo (clientinfo_t * ci, char *s) {
 	int i;
 	char *t;
 	char model_name[MAX_QPATH];
@@ -501,75 +500,76 @@ void CL_LoadClientinfo(clientinfo_t * ci, char *s)
 	char skin_filename[MAX_QPATH];
 	char weapon_filename[MAX_QPATH];
 
-	strncpy(ci->cinfo, s, sizeof(ci->cinfo));
+	strncpy (ci->cinfo, s, sizeof(ci->cinfo));
 	ci->cinfo[sizeof(ci->cinfo) - 1] = 0;
 
 	// isolate the player's name
-	strncpy(ci->name, s, sizeof(ci->name));
+	strncpy (ci->name, s, sizeof(ci->name));
 	ci->name[sizeof(ci->name) - 1] = 0;
-	t = strstr(s, "\\");
+	t = strstr (s, "\\");
 	if (t) {
 		ci->name[t - s] = 0;
 		s = t + 1;
 	}
 
 	if (cl_noskins->value || *s == 0) {
-		Com_sprintf(model_filename, sizeof(model_filename),
-					"players/male/tris.md2");
-		Com_sprintf(weapon_filename, sizeof(weapon_filename),
-					"players/male/weapon.md2");
-		Com_sprintf(skin_filename, sizeof(skin_filename),
-					"players/male/grunt.pcx");
-		Com_sprintf(ci->iconname, sizeof(ci->iconname),
-					"/players/male/grunt_i.pcx");
-		ci->model = R_RegisterModel(model_filename);
-		memset(ci->weaponmodel, 0, sizeof(ci->weaponmodel));
-		ci->weaponmodel[0] = R_RegisterModel(weapon_filename);
-		ci->skin = R_RegisterSkin(skin_filename);
+		Com_sprintf (model_filename, sizeof(model_filename),
+			"players/male/tris.md2");
+		Com_sprintf (weapon_filename, sizeof(weapon_filename),
+			"players/male/weapon.md2");
+		Com_sprintf (skin_filename, sizeof(skin_filename),
+			"players/male/grunt.pcx");
+		Com_sprintf (ci->iconname, sizeof(ci->iconname),
+			"/players/male/grunt_i.pcx");
+		ci->model = R_RegisterModel (model_filename);
+		memset (ci->weaponmodel, 0, sizeof(ci->weaponmodel));
+		ci->weaponmodel[0] = R_RegisterModel (weapon_filename);
+		ci->skin = R_RegisterSkin (skin_filename);
 		ci->bump = R_RegisterPlayerBump (skin_filename, ci->skin);
-		ci->icon = Draw_FindPic(ci->iconname);
-	} else {
+		ci->icon = Draw_FindPic (ci->iconname);
+	}
+	else {
 		// isolate the model name
-		strcpy(model_name, s);
-		t = strstr(model_name, "/");
+		strcpy (model_name, s);
+		t = strstr (model_name, "/");
 		if (!t)
-			t = strstr(model_name, "\\");
+			t = strstr (model_name, "\\");
 		if (!t)
 			t = model_name;
 		*t = 0;
 
 		// isolate the skin name
-		strcpy(skin_name, s + strlen(model_name) + 1);
+		strcpy (skin_name, s + strlen (model_name) + 1);
 
 		// model file
-		Com_sprintf(model_filename, sizeof(model_filename),
-					"players/%s/tris.md2", model_name);
-		ci->model = R_RegisterModel(model_filename);
+		Com_sprintf (model_filename, sizeof(model_filename),
+			"players/%s/tris.md2", model_name);
+		ci->model = R_RegisterModel (model_filename);
 		if (!ci->model) {
-			strcpy(model_name, "male");
-			Com_sprintf(model_filename, sizeof(model_filename),
-						"players/male/tris.md2");
-			ci->model = R_RegisterModel(model_filename);
+			strcpy (model_name, "male");
+			Com_sprintf (model_filename, sizeof(model_filename),
+				"players/male/tris.md2");
+			ci->model = R_RegisterModel (model_filename);
 		}
 		// skin file
-		Com_sprintf(skin_filename, sizeof(skin_filename),
-					"players/%s/%s.pcx", model_name, skin_name);
-		ci->skin = R_RegisterSkin(skin_filename);
+		Com_sprintf (skin_filename, sizeof(skin_filename),
+			"players/%s/%s.pcx", model_name, skin_name);
+		ci->skin = R_RegisterSkin (skin_filename);
 		ci->bump = R_RegisterPlayerBump (skin_filename, ci->skin);
 
 		// if we don't have the skin and the model wasn't male,
 		// see if the male has it (this is for CTF's skins)
-		if ((!ci->skin || !ci->bump)&& Q_stricmp(model_name, "male")) {
+		if ((!ci->skin || !ci->bump) && Q_stricmp (model_name, "male")) {
 			// change model to male
-			strcpy(model_name, "male");
-			Com_sprintf(model_filename, sizeof(model_filename),
-						"players/male/tris.md2");
-			ci->model = R_RegisterModel(model_filename);
+			strcpy (model_name, "male");
+			Com_sprintf (model_filename, sizeof(model_filename),
+				"players/male/tris.md2");
+			ci->model = R_RegisterModel (model_filename);
 
 			// see if the skin exists for the male model
-			Com_sprintf(skin_filename, sizeof(skin_filename),
-						"players/%s/%s.pcx", model_name, skin_name);
-			ci->skin = R_RegisterSkin(skin_filename);
+			Com_sprintf (skin_filename, sizeof(skin_filename),
+				"players/%s/%s.pcx", model_name, skin_name);
+			ci->skin = R_RegisterSkin (skin_filename);
 			ci->bump = R_RegisterPlayerBump (skin_filename, ci->skin);
 		}
 		// if we still don't have a skin, it means that the male model
@@ -577,42 +577,42 @@ void CL_LoadClientinfo(clientinfo_t * ci, char *s)
 		// it, so default to grunt
 		if (!ci->skin || !ci->bump) {
 			// see if the skin exists for the male model
-			Com_sprintf(skin_filename, sizeof(skin_filename),
-						"players/%s/grunt.pcx", model_name, skin_name);
-			ci->skin = R_RegisterSkin(skin_filename);
+			Com_sprintf (skin_filename, sizeof(skin_filename),
+				"players/%s/grunt.pcx", model_name, skin_name);
+			ci->skin = R_RegisterSkin (skin_filename);
 			ci->bump = R_RegisterPlayerBump (skin_filename, ci->skin);
 		}
 		// weapon file
 		for (i = 0; i < num_cl_weaponmodels; i++) {
-			Com_sprintf(weapon_filename, sizeof(weapon_filename), "players/%s/%s", model_name, cl_weaponmodels[i]);
-			ci->weaponmodel[i] = R_RegisterModel(weapon_filename);
+			Com_sprintf (weapon_filename, sizeof(weapon_filename), "players/%s/%s", model_name, cl_weaponmodels[i]);
+			ci->weaponmodel[i] = R_RegisterModel (weapon_filename);
 
-			if (!ci->weaponmodel[i] && strcmp(model_name, "cyborg") == 0) {
+			if (!ci->weaponmodel[i] && strcmp (model_name, "cyborg") == 0) {
 				// try male
-				Com_sprintf(weapon_filename, sizeof(weapon_filename), "players/male/%s", cl_weaponmodels[i]);
-				ci->weaponmodel[i] = R_RegisterModel(weapon_filename);
+				Com_sprintf (weapon_filename, sizeof(weapon_filename), "players/male/%s", cl_weaponmodels[i]);
+				ci->weaponmodel[i] = R_RegisterModel (weapon_filename);
 			}
 			if (!cl_vwep->value)
 				break;			// only one when vwep is off
 		}
 		// icon file
-		Com_sprintf(ci->iconname, sizeof(ci->iconname),
-					"/players/%s/%s_i.pcx", model_name, skin_name);
-		ci->icon = Draw_FindPic(ci->iconname);
+		Com_sprintf (ci->iconname, sizeof(ci->iconname),
+			"/players/%s/%s_i.pcx", model_name, skin_name);
+		ci->icon = Draw_FindPic (ci->iconname);
 	}
-	if (!strcmp(model_name, "cyborg")|| !strcmp(model_name, "male") || !strcmp(model_name, "female"))
-	{
-        strncpy(ci->sex, model_name, sizeof(ci->sex));
-        Cvar_ForceSet ("gender", ci->sex);
-	} else
-        strncpy(ci->sex, "null", sizeof(ci->sex));
-	
-	
+	if (!strcmp (model_name, "cyborg") || !strcmp (model_name, "male") || !strcmp (model_name, "female")) {
+		strncpy (ci->sex, model_name, sizeof(ci->sex));
+		Cvar_ForceSet ("gender", ci->sex);
+	}
+	else
+		strncpy (ci->sex, "null", sizeof(ci->sex));
+
+
 	// must have loaded all data types to be valud
 	if (!ci->skin || !ci->bump || !ci->icon || !ci->model || !ci->weaponmodel[0]) {
-		ci->skin = 
-		ci->bump = 
-		ci->icon = NULL;
+		ci->skin =
+			ci->bump =
+			ci->icon = NULL;
 		ci->model = NULL;
 		ci->weaponmodel[0] = NULL;
 		return;
@@ -626,8 +626,7 @@ CL_ParseClientinfo
 Load the skin, icon, and model for a client
 ================
 */
-void CL_ParseClientinfo(int player)
-{
+void CL_ParseClientinfo (int player) {
 	char *s;
 	clientinfo_t *ci;
 
@@ -635,7 +634,7 @@ void CL_ParseClientinfo(int player)
 
 	ci = &cl.clientinfo[player];
 
-	CL_LoadClientinfo(ci, s);
+	CL_LoadClientinfo (ci, s);
 }
 
 
@@ -649,53 +648,56 @@ void CL_ParseClientinfo(int player)
 CL_ParseConfigString
 ================
 */
-void CL_ParseConfigString(void)
-{
+void CL_ParseConfigString (void) {
 	int i;
 	char *s;
 	char olds[MAX_QPATH];
 
-	i = MSG_ReadShort(&net_message);
+	i = MSG_ReadShort (&net_message);
 	if (i < 0 || i >= MAX_CONFIGSTRINGS)
-		Com_Error(ERR_DROP, "configstring > MAX_CONFIGSTRINGS");
-	s = MSG_ReadString(&net_message);
+		Com_Error (ERR_DROP, "configstring > MAX_CONFIGSTRINGS");
+	s = MSG_ReadString (&net_message);
 
-	strncpy(olds, cl.configstrings[i], sizeof(olds));
-	olds[sizeof(olds) - 1] = 0;
+	strncpy (olds, cl.configstrings[i], sizeof(olds));
+	olds[sizeof(olds)-1] = 0;
 
-	strcpy(cl.configstrings[i], s);
+	strcpy (cl.configstrings[i], s);
 
 	// do something apropriate 
 
 	if (i >= CS_LIGHTS && i < CS_LIGHTS + MAX_LIGHTSTYLES)
-		CL_SetLightstyle(i - CS_LIGHTS);
+		CL_SetLightstyle (i - CS_LIGHTS);
 	else if (i == CS_CDTRACK) {
 		if (cl.refresh_prepped)
-			Music_Play();
+			Music_Play ();
 
-	} else if (i >= CS_MODELS && i < CS_MODELS + MAX_MODELS) {
+	}
+	else if (i >= CS_MODELS && i < CS_MODELS + MAX_MODELS) {
 		if (cl.refresh_prepped) {
 			cl.model_draw[i - CS_MODELS] =
-				R_RegisterModel(cl.configstrings[i]);
+				R_RegisterModel (cl.configstrings[i]);
 			if (cl.configstrings[i][0] == '*')
 				cl.model_clip[i - CS_MODELS] =
-					CM_InlineModel(cl.configstrings[i]);
+				CM_InlineModel (cl.configstrings[i]);
 			else
 				cl.model_clip[i - CS_MODELS] = NULL;
 		}
-	} else if (i >= CS_SOUNDS && i < CS_SOUNDS + MAX_MODELS) {
+	}
+	else if (i >= CS_SOUNDS && i < CS_SOUNDS + MAX_MODELS) {
 		if (cl.refresh_prepped) {
-			WILLOW_HACK_SOUND(i - CS_SOUNDS);
+			WILLOW_HACK_SOUND (i - CS_SOUNDS);
 			cl.sound_precache[i - CS_SOUNDS] =
-				S_RegisterSound(cl.configstrings[i]);
+				S_RegisterSound (cl.configstrings[i]);
 		}
-	} else if (i >= CS_IMAGES && i < CS_IMAGES + MAX_MODELS) {
+	}
+	else if (i >= CS_IMAGES && i < CS_IMAGES + MAX_MODELS) {
 		if (cl.refresh_prepped)
 			cl.image_precache[i - CS_IMAGES] =
-				Draw_FindPic(cl.configstrings[i]);
-	} else if (i >= CS_PLAYERSKINS && i < CS_PLAYERSKINS + MAX_CLIENTS) {
-		if (cl.refresh_prepped && strcmp(olds, s))
-			CL_ParseClientinfo(i - CS_PLAYERSKINS);
+			Draw_FindPic (cl.configstrings[i]);
+	}
+	else if (i >= CS_PLAYERSKINS && i < CS_PLAYERSKINS + MAX_CLIENTS) {
+		if (cl.refresh_prepped && strcmp (olds, s))
+			CL_ParseClientinfo (i - CS_PLAYERSKINS);
 	}
 
 }
@@ -714,8 +716,7 @@ ACTION MESSAGES
 CL_ParseStartSoundPacket
 ==================
 */
-void CL_ParseStartSoundPacket(void)
-{
+void CL_ParseStartSoundPacket (void) {
 	vec3_t pos_v;
 	float *pos;
 	int channel, ent;
@@ -724,37 +725,39 @@ void CL_ParseStartSoundPacket(void)
 	float attenuation;
 	unsigned ofs;
 	int id;
-	int flags = MSG_ReadByte(&net_message);
+	int flags = MSG_ReadByte (&net_message);
 
-	sound_num = MSG_ReadByte(&net_message);
+	sound_num = MSG_ReadByte (&net_message);
 	volume =
-		(flags & SND_VOLUME) ? MSG_ReadByte(&net_message) /
+		(flags & SND_VOLUME) ? MSG_ReadByte (&net_message) /
 		255.0 : DEFAULT_SOUND_PACKET_VOLUME;
 	attenuation =
-		(flags & SND_ATTENUATION) ? MSG_ReadByte(&net_message) /
+		(flags & SND_ATTENUATION) ? MSG_ReadByte (&net_message) /
 		64.0 : DEFAULT_SOUND_PACKET_ATTENUATION;
-	ofs = (flags & SND_OFFSET) ? MSG_ReadByte(&net_message) : 0;
+	ofs = (flags & SND_OFFSET) ? MSG_ReadByte (&net_message) : 0;
 
 	if (flags & SND_ENT) {		// entity reletive
-		channel = MSG_ReadShort(&net_message);
+		channel = MSG_ReadShort (&net_message);
 		ent = channel >> 3;
 		if (ent > MAX_EDICTS)
-			Com_Error(ERR_DROP, "CL_ParseStartSoundPacket: ent = %i", ent);
+			Com_Error (ERR_DROP, "CL_ParseStartSoundPacket: ent = %i", ent);
 
 		channel &= 7;
-	} else {
+	}
+	else {
 		ent = 0;
 		channel = 0;
 	}
 
 	if (flags & SND_POS) {		// positioned in space
-		MSG_ReadPos(&net_message, pos_v);
+		MSG_ReadPos (&net_message, pos_v);
 		pos = pos_v;
-	} else						// use entity number
+	}
+	else						// use entity number
 		pos = NULL;
 
 	if (cl.sound_sexedname[sound_num])
-		id = S_RegisterSexedSound(&cl_entities[ent].current, cl.sound_sexedname[sound_num]);
+		id = S_RegisterSexedSound (&cl_entities[ent].current, cl.sound_sexedname[sound_num]);
 	else
 		id = cl.sound_precache[sound_num];
 
@@ -762,9 +765,8 @@ void CL_ParseStartSoundPacket(void)
 	// stuff
 	if (!attenuation
 		&& (cl.
-			sound_precache_hacks[sound_num] & sound_precache_hacks_FLAT2D))
-	{
-		S_StartLocalSound(id);
+		sound_precache_hacks[sound_num] & sound_precache_hacks_FLAT2D)) {
+		S_StartLocalSound (id);
 		return;
 	}
 
@@ -772,21 +774,20 @@ void CL_ParseStartSoundPacket(void)
 		sound_precache_hacks[sound_num] &
 		sound_precache_hacks_AUTOFIX_gain)
 		volume = cl.sound_precache_gain[sound_num];
-		
+
 	if (cl.
 		sound_precache_hacks[sound_num] &
 		sound_precache_hacks_AUTOFIX_rolloff_factor)
 		attenuation = cl.sound_precache_rolloff_factor[sound_num];
 
 	// willow: simple as it should be ^_^
-	S_StartSound(pos, ent, channel, id, volume,
-				 attenuation, ofs);
+	S_StartSound (pos, ent, channel, id, volume,
+		attenuation, ofs);
 }
 
-void SHOWNET(char *s)
-{
+void SHOWNET (char *s) {
 	if (cl_shownet->value >= 2)
-		Com_Printf("%3i:%s\n", net_message.readcount - 1, s);
+		Com_Printf ("%3i:%s\n", net_message.readcount - 1, s);
 }
 
 /*
@@ -794,143 +795,142 @@ void SHOWNET(char *s)
 CL_ParseServerMessage
 =====================
 */
-void CL_ParseServerMessage(void)
-{
+void CL_ParseServerMessage (void) {
 	int cmd;
 	char *s;
 	int i;
 
-//
-// if recording demos, copy the message out
-//
+	//
+	// if recording demos, copy the message out
+	//
 	if (cl_shownet->value == 1)
-		Com_Printf("%i ", net_message.cursize);
+		Com_Printf ("%i ", net_message.cursize);
 	else if (cl_shownet->value >= 2)
-		Com_Printf("------------------\n");
+		Com_Printf ("------------------\n");
 
 
-//
-// parse the message
-//
+	//
+	// parse the message
+	//
 	while (1) {
 		if (net_message.readcount > net_message.cursize) {
-			Com_Error(ERR_DROP,
-					  "CL_ParseServerMessage: Bad server message");
+			Com_Error (ERR_DROP,
+				"CL_ParseServerMessage: Bad server message");
 			break;
 		}
 
-		cmd = MSG_ReadByte(&net_message);
+		cmd = MSG_ReadByte (&net_message);
 
 		if (cmd == -1) {
-			SHOWNET("END OF MESSAGE");
+			SHOWNET ("END OF MESSAGE");
 			break;
 		}
 
 		if (cl_shownet->value >= 2) {
 			if (!svc_strings[cmd])
-				Com_Printf("%3i:BAD CMD %i\n", net_message.readcount - 1,
-						   cmd);
+				Com_Printf ("%3i:BAD CMD %i\n", net_message.readcount - 1,
+				cmd);
 			else
-				SHOWNET(svc_strings[cmd]);
+				SHOWNET (svc_strings[cmd]);
 		}
 		// other commands
 		switch (cmd) {
-		default:
-			Com_Error(ERR_DROP,
-					  "CL_ParseServerMessage: Illegible server message\n");
-			break;
+			default:
+				Com_Error (ERR_DROP,
+					"CL_ParseServerMessage: Illegible server message\n");
+				break;
 
-		case svc_nop:
-//          Com_Printf ("svc_nop\n");
-			break;
+			case svc_nop:
+				//          Com_Printf ("svc_nop\n");
+				break;
 
-		case svc_disconnect:
-			Com_Error(ERR_DISCONNECT, "Server disconnected\n");
-			break;
+			case svc_disconnect:
+				Com_Error (ERR_DISCONNECT, "Server disconnected\n");
+				break;
 
-		case svc_reconnect:
-			Com_Printf("Server disconnected, reconnecting\n");
-			if (cls.download) {
-				// ZOID, close download
-				fclose(cls.download);
-				cls.download = NULL;
-			}
-			cls.state = ca_connecting;
-			cls.connect_time = -99999;	// CL_CheckForResend() will fire
-										// immediately
-			break;
+			case svc_reconnect:
+				Com_Printf ("Server disconnected, reconnecting\n");
+				if (cls.download) {
+					// ZOID, close download
+					fclose (cls.download);
+					cls.download = NULL;
+				}
+				cls.state = ca_connecting;
+				cls.connect_time = -99999;	// CL_CheckForResend() will fire
+				// immediately
+				break;
 
-		case svc_print:
-			i = MSG_ReadByte(&net_message);
-			if (i == PRINT_CHAT) {
-				S_StartLocalSound(fastsound_descriptor[misc_talk]);
-				con.ormask = 128;
-			}
-			Com_Printf("%s", MSG_ReadString(&net_message));
-			con.ormask = 0;
-			break;
+			case svc_print:
+				i = MSG_ReadByte (&net_message);
+				if (i == PRINT_CHAT) {
+					S_StartLocalSound (fastsound_descriptor[misc_talk]);
+					con.ormask = 128;
+				}
+				Com_Printf ("%s", MSG_ReadString (&net_message));
+				con.ormask = 0;
+				break;
 
-		case svc_centerprint:
-			SCR_CenterPrint(MSG_ReadString(&net_message));
-			break;
+			case svc_centerprint:
+				SCR_CenterPrint (MSG_ReadString (&net_message));
+				break;
 
-		case svc_stufftext:
-			s = MSG_ReadString(&net_message);
-			Com_DPrintf("stufftext: %s\n", s);
-			Cbuf_AddText(s);
-			break;
+			case svc_stufftext:
+				s = MSG_ReadString (&net_message);
+				Com_DPrintf ("stufftext: %s\n", s);
+				Cbuf_AddText (s);
+				break;
 
-		case svc_serverdata:
-			Cbuf_Execute();		// make sure any stuffed commands are done
-			CL_ParseServerData();
-			break;
+			case svc_serverdata:
+				Cbuf_Execute ();		// make sure any stuffed commands are done
+				CL_ParseServerData ();
+				break;
 
-		case svc_configstring:
-			CL_ParseConfigString();
-			break;
+			case svc_configstring:
+				CL_ParseConfigString ();
+				break;
 
-		case svc_sound:
-			CL_ParseStartSoundPacket();
-			break;
+			case svc_sound:
+				CL_ParseStartSoundPacket ();
+				break;
 
-		case svc_spawnbaseline:
-			CL_ParseBaseline();
-			break;
+			case svc_spawnbaseline:
+				CL_ParseBaseline ();
+				break;
 
-		case svc_temp_entity:
-			CL_ParseTEnt();
-			break;
+			case svc_temp_entity:
+				CL_ParseTEnt ();
+				break;
 
-		case svc_muzzleflash:
-			CL_ParseMuzzleFlash();
-			break;
+			case svc_muzzleflash:
+				CL_ParseMuzzleFlash ();
+				break;
 
-		case svc_muzzleflash2:
-			CL_ParseMuzzleFlash2();
-			break;
+			case svc_muzzleflash2:
+				CL_ParseMuzzleFlash2 ();
+				break;
 
-		case svc_download:
-			CL_ParseDownload();
-			break;
+			case svc_download:
+				CL_ParseDownload ();
+				break;
 
-		case svc_frame:
-			CL_ParseFrame();
-			break;
+			case svc_frame:
+				CL_ParseFrame ();
+				break;
 
-		case svc_inventory:
-			CL_ParseInventory();
-			break;
+			case svc_inventory:
+				CL_ParseInventory ();
+				break;
 
-		case svc_layout:
-			s = MSG_ReadString(&net_message);
-			strncpy(cl.layout, s, sizeof(cl.layout) - 1);
-			break;
+			case svc_layout:
+				s = MSG_ReadString (&net_message);
+				strncpy (cl.layout, s, sizeof(cl.layout) - 1);
+				break;
 
-		case svc_playerinfo:
-		case svc_packetentities:
-		case svc_deltapacketentities:
-			Com_Error(ERR_DROP, "Out of place frame data");
-			break;
+			case svc_playerinfo:
+			case svc_packetentities:
+			case svc_deltapacketentities:
+				Com_Error (ERR_DROP, "Out of place frame data");
+				break;
 		}
 	}
 
@@ -939,6 +939,6 @@ void CL_ParseServerMessage(void)
 	// after we have parsed the frame
 	// 
 	if (cls.demorecording && !cls.demowaiting)
-		CL_WriteDemoMessage();
+		CL_WriteDemoMessage ();
 
 }

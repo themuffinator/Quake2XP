@@ -1,6 +1,6 @@
 #include "../game/q_shared.h"
 
-void Com_Error(int code, const char *fmt, ...);
+void Com_Error (int code, const char *fmt, ...);
 
 
 static const char *com_defaultPunctuationTable[] = {
@@ -60,10 +60,10 @@ static const char *com_defaultPunctuationTable[] = {
 };
 
 static void Parser_UpdateNumber (token_t *token) {
-	token->integerValue = (int)atoi(token->text);
-	token->unsignedValue = (unsigned)atoi(token->text);
-	token->floatValue = (float)atof(token->text);
-	token->doubleValue = (double)atof(token->text);
+	token->integerValue = (int)atoi (token->text);
+	token->unsignedValue = (unsigned)atoi (token->text);
+	token->floatValue = (float)atof (token->text);
+	token->doubleValue = (double)atof (token->text);
 }
 
 /*
@@ -73,8 +73,8 @@ Parser_Reset
 ===================
 */
 void Parser_Reset (parser_t *parser, const char *name, const char *text) {
-	memset(parser, 0, sizeof(parser_t));
-	Q_strncpyz(parser->name, name ? name : "noname", sizeof(parser->name));
+	memset (parser, 0, sizeof(parser_t));
+	Q_strncpyz (parser->name, name ? name : "noname", sizeof(parser->name));
 
 	parser->line = 1;
 	parser->text = text;
@@ -114,11 +114,11 @@ void Parser_Error (parser_t *parser, const char *msg, ...) {
 	if (parser->flags & PF_NOERRORS)
 		return;
 
-	va_start(argptr, msg);
-	vsnprintf(string, sizeof(string), msg, argptr);
-	va_end(argptr);
+	va_start (argptr, msg);
+	vsnprintf (string, sizeof(string), msg, argptr);
+	va_end (argptr);
 
-	Com_Error(ERR_DROP, "%s, line %i: %s", parser->name, parser->line, string);
+	Com_Error (ERR_DROP, "%s, line %i: %s", parser->name, parser->line, string);
 }
 
 /*
@@ -134,11 +134,11 @@ void Parser_Warning (parser_t *parser, const char *msg, ...) {
 	if (parser->flags & PF_NOWARNINGS)
 		return;
 
-	va_start(argptr, msg);
-	vsnprintf(string, sizeof(string), msg, argptr);
-	va_end(argptr);
+	va_start (argptr, msg);
+	vsnprintf (string, sizeof(string), msg, argptr);
+	va_end (argptr);
 
-	Com_Printf("%s, line %i: %s", parser->name, parser->line, string);
+	Com_Printf ("%s, line %i: %s", parser->name, parser->line, string);
 }
 
 /*
@@ -220,7 +220,7 @@ static qboolean Parser_ReadString (parser_t *parser, token_t *token) {
 
 	while (1) {
 		if (!*parser->text) {
-			Parser_Warning(parser, "missing trailing quote\n");
+			Parser_Warning (parser, "missing trailing quote\n");
 			return false;
 		}
 
@@ -242,7 +242,7 @@ static qboolean Parser_ReadString (parser_t *parser, token_t *token) {
 		}
 
 		if (token->length == MAX_TOKEN_CHARS - 1) {
-			Parser_Warning(parser, "string length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
+			Parser_Warning (parser, "string length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
 			return false;
 		}
 
@@ -251,7 +251,7 @@ static qboolean Parser_ReadString (parser_t *parser, token_t *token) {
 
 	token->text[token->length] = 0;
 
-	Parser_UpdateNumber(token);
+	Parser_UpdateNumber (token);
 
 	return true;
 }
@@ -273,18 +273,18 @@ static qboolean Parser_ReadNumber (parser_t *parser, token_t *token) {
 	token->linesCrossed = parser->line - parser->lastLine;
 
 	while (1) {
-//		if ((*parser->text < '0' || *parser->text > '9') && *parser->text != '.')
-//			break;
+		//		if ((*parser->text < '0' || *parser->text > '9') && *parser->text != '.')
+		//			break;
 
 		c = *parser->text;
 
 		if ((c < '0' || c > '9') &&
 			(c != '-' || parser->text[1] < '0' || parser->text[1] > '9') &&
 			(c != '.' || parser->text[1] < '0' || parser->text[1] > '9'))
-				break;
+			break;
 
 		if (token->length == MAX_TOKEN_CHARS - 1) {
-			Parser_Warning(parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
+			Parser_Warning (parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
 			return false;
 		}
 
@@ -294,7 +294,7 @@ static qboolean Parser_ReadNumber (parser_t *parser, token_t *token) {
 	// parse the exponent
 	if (*parser->text == 'e' || *parser->text == 'E') {
 		if (token->length == MAX_TOKEN_CHARS - 1) {
-			Parser_Warning(parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
+			Parser_Warning (parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
 			return false;
 		}
 
@@ -302,19 +302,19 @@ static qboolean Parser_ReadNumber (parser_t *parser, token_t *token) {
 
 		if (*parser->text == '-' || *parser->text == '+') {
 			if (token->length == MAX_TOKEN_CHARS - 1) {
-				Parser_Warning(parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
+				Parser_Warning (parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
 				return false;
 			}
 
 			token->text[token->length++] = *parser->text++;
 		}
 
-		while(1) {
+		while (1) {
 			if (*parser->text < '0' || *parser->text > '9')
 				break;
 
 			if (token->length == MAX_TOKEN_CHARS - 1) {
-				Parser_Warning(parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
+				Parser_Warning (parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
 				return false;
 			}
 
@@ -324,7 +324,7 @@ static qboolean Parser_ReadNumber (parser_t *parser, token_t *token) {
 
 	token->text[token->length] = 0;
 
-	Parser_UpdateNumber(token);
+	Parser_UpdateNumber (token);
 
 	return true;
 }
@@ -335,7 +335,7 @@ Parser_ReadWord
 
 ===================
 */
-static qboolean Parser_ReadWord(parser_t *parser, token_t *token) {
+static qboolean Parser_ReadWord (parser_t *parser, token_t *token) {
 	char	c;
 
 	token->type = TT_STRING;
@@ -358,7 +358,7 @@ static qboolean Parser_ReadWord(parser_t *parser, token_t *token) {
 		}
 
 		if (token->length == MAX_TOKEN_CHARS - 1) {
-			Parser_Warning(parser, "word length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
+			Parser_Warning (parser, "word length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
 			return false;
 		}
 
@@ -367,7 +367,7 @@ static qboolean Parser_ReadWord(parser_t *parser, token_t *token) {
 
 	token->text[token->length] = 0;
 
-	Parser_UpdateNumber(token);
+	Parser_UpdateNumber (token);
 
 	return true;
 }
@@ -384,7 +384,7 @@ static qboolean Parser_ReadPunctuation (parser_t *parser, token_t *token) {
 
 	// check for multi-character punctuation token
 	for (punc = com_defaultPunctuationTable; *punc; punc++) {
-		for (i=0; (*punc)[i] && parser->text[i]; i++) {
+		for (i = 0; (*punc)[i] && parser->text[i]; i++) {
 			if (parser->text[i] != (*punc)[i])
 				break;
 		}
@@ -396,7 +396,7 @@ static qboolean Parser_ReadPunctuation (parser_t *parser, token_t *token) {
 
 		// a valid multi-character punctuation
 		if (i > MAX_TOKEN_CHARS - 1) {
-			Parser_Warning(parser, "punctuation length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
+			Parser_Warning (parser, "punctuation length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
 			return false;
 		}
 
@@ -407,10 +407,10 @@ static qboolean Parser_ReadPunctuation (parser_t *parser, token_t *token) {
 		token->line = parser->line;
 		token->linesCrossed = parser->line - parser->lastLine;
 
-		Q_memcpy(token->text, *punc, token->length);
+		Q_memcpy (token->text, *punc, token->length);
 		token->text[token->length] = 0;
 
-		Parser_UpdateNumber(token);
+		Parser_UpdateNumber (token);
 
 		return true;
 	}
@@ -432,7 +432,7 @@ static qboolean Parser_GetTokenExt (parser_t *parser, token_t *token, qboolean a
 
 	if (parser->ungetToken) {
 		parser->ungetToken = false;
-		Q_memcpy(token, &parser->token, sizeof(token_t));
+		Q_memcpy (token, &parser->token, sizeof(token_t));
 		return true;
 	}
 
@@ -443,44 +443,44 @@ static qboolean Parser_GetTokenExt (parser_t *parser, token_t *token, qboolean a
 	parser->lastLine = parser->line;
 	parser->lastText = parser->text;
 
-	memset(token, 0, sizeof(token_t));
+	memset (token, 0, sizeof(token_t));
 
 	// skip any leading whitespace
-	if (!Parser_SkipWhiteSpace(parser, allowLineBreaks))
+	if (!Parser_SkipWhiteSpace (parser, allowLineBreaks))
 		return false;
 
 	c = *parser->text;
 
 	// handle quoted strings
 	if (c == '\"') {
-		if (Parser_ReadString(parser, token))
+		if (Parser_ReadString (parser, token))
 			return true;
 	}
 
 	// check for a number
 	// is this parsing of negative numbers going to cause expression problems
 	else if ((c >= '0' && c <= '9') ||
-		(c == '-' && parser->text[1] >= '0' && parser->text[1] <= '9') || 
+		(c == '-' && parser->text[1] >= '0' && parser->text[1] <= '9') ||
 		(c == '.' && parser->text[1] >= '0' && parser->text[1] <= '9')) {
-		if (Parser_ReadNumber(parser, token))
+		if (Parser_ReadNumber (parser, token))
 			return true;
-   	}
+	}
 
 	// check for a regular word
 	// we still allow forward and back slashes in name tokens for pathnames
 	// and also colons for drive letters
 	else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
-		if (Parser_ReadWord(parser, token))
+		if (Parser_ReadWord (parser, token))
 			return true;
 	}
 
 	// check for punctuation
-	else if (Parser_ReadPunctuation(parser, token))
+	else if (Parser_ReadPunctuation (parser, token))
 		return true;
 
-	Parser_Warning(parser, "Parser_GetToken: couldn't read token\n");
+	Parser_Warning (parser, "Parser_GetToken: couldn't read token\n");
 
-	memset(token, 0, sizeof(token_t));
+	memset (token, 0, sizeof(token_t));
 
 	return false;
 }
@@ -492,7 +492,7 @@ Parser_GetToken
 ===================
 */
 qboolean Parser_GetToken (parser_t *parser, token_t *token) {
-	if (!Parser_GetTokenExt(parser, token, true))
+	if (!Parser_GetTokenExt (parser, token, true))
 		return false;
 
 	return true;
@@ -505,7 +505,7 @@ Parser_GetTokenOnLine
 ===================
 */
 qboolean Parser_GetTokenOnLine (parser_t *parser, token_t *token) {
-	if (!Parser_GetTokenExt(parser, token, false))
+	if (!Parser_GetTokenExt (parser, token, false))
 		return false;
 
 	return true;
@@ -526,7 +526,7 @@ qboolean Parser_GetRestOfLine (parser_t *parser, token_t *token) {
 	token->linesCrossed = parser->line - parser->lastLine;
 
 	while (1) {
-		if (!Parser_GetTokenOnLine(parser, &tok)) {
+		if (!Parser_GetTokenOnLine (parser, &tok)) {
 			if (!token->length)
 				return false;	// the rest of the line is empty
 
@@ -534,9 +534,9 @@ qboolean Parser_GetRestOfLine (parser_t *parser, token_t *token) {
 		}
 
 		if (!token->length)
-			Q_strncatz(token->text, sizeof(token->text), " ");
+			Q_strncatz (token->text, sizeof(token->text), " ");
 
-		Q_strncatz(token->text, sizeof(token->text), tok.text);
+		Q_strncatz (token->text, sizeof(token->text), tok.text);
 
 		token->length += tok.length;
 	}
@@ -554,7 +554,7 @@ the current token instead of advancing the pointer.
 */
 void Parser_UngetToken (parser_t *parser, token_t *token) {
 	parser->ungetToken = true;
-	Q_memcpy(&parser->token, token, sizeof(token_t));
+	Q_memcpy (&parser->token, token, sizeof(token_t));
 }
 
 /*
@@ -566,14 +566,14 @@ Parser_CheckToken
 qboolean Parser_CheckToken (parser_t *parser, const char *match, qboolean warning) {
 	token_t		token;
 
-	if (!Parser_GetToken(parser, &token))
+	if (!Parser_GetToken (parser, &token))
 		return false;
 
-	if (Q_stricmp(token.text, (char*)match)) {
+	if (Q_stricmp (token.text, (char*)match)) {
 		if (warning)
-			Parser_Warning(parser, "expected '%s', found '%s'\n", match, token.text);
+			Parser_Warning (parser, "expected '%s', found '%s'\n", match, token.text);
 		else
-			Parser_Error(parser, "expected '%s', found '%s'\n", match, token.text);
+			Parser_Error (parser, "expected '%s', found '%s'\n", match, token.text);
 
 		return false;
 	}
@@ -590,33 +590,33 @@ Parser_CheckTokenType
 qboolean Parser_CheckTokenType (parser_t *parser, tokenType_t type, qboolean warning) {
 	token_t		token;
 
-	if (!Parser_GetToken(parser, &token))
+	if (!Parser_GetToken (parser, &token))
 		return false;
 
 	if (token.type != type) {
 		if (warning) {
 			switch (type) {
 				case TT_STRING:
-					Parser_Warning(parser, "expected string, found '%s'", token.text);
+					Parser_Warning (parser, "expected string, found '%s'", token.text);
 					break;
 				case TT_NUMBER:
-					Parser_Warning(parser, "expected number, found '%s'", token.text);
+					Parser_Warning (parser, "expected number, found '%s'", token.text);
 					break;
 				case TT_PUNCTUATION:
-					Parser_Warning(parser, "expected punctuation, found '%s'", token.text);
+					Parser_Warning (parser, "expected punctuation, found '%s'", token.text);
 					break;
 			}
 		}
 		else {
 			switch (type) {
 				case TT_STRING:
-					Parser_Error(parser, "expected string, found '%s'", token.text);
+					Parser_Error (parser, "expected string, found '%s'", token.text);
 					break;
 				case TT_NUMBER:
-					Parser_Error(parser, "expected number, found '%s'", token.text);
+					Parser_Error (parser, "expected number, found '%s'", token.text);
 					break;
 				case TT_PUNCTUATION:
-					Parser_Error(parser, "expected punctuation, found '%s'", token.text);
+					Parser_Error (parser, "expected punctuation, found '%s'", token.text);
 					break;
 			}
 		}
@@ -640,13 +640,13 @@ qboolean Parser_SkipBracedSection (parser_t *parser, int depth) {
 	token_t	token;
 
 	do {
-		if (!Parser_GetToken(parser, &token))
+		if (!Parser_GetToken (parser, &token))
 			return false;
 
 		if (token.type == TT_PUNCTUATION) {
-			if (!Q_stricmp(token.text, "{"))
+			if (!Q_stricmp (token.text, "{"))
 				depth++;
-			else if (!Q_stricmp(token.text, "}"))
+			else if (!Q_stricmp (token.text, "}"))
 				depth--;
 		}
 	} while (depth);

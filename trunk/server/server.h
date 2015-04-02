@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -42,12 +42,12 @@ typedef enum {
 
 typedef struct {
 	server_state_t state;		// precache commands are only valid during 
-								// load
+	// load
 
 	qboolean attractloop;		// running cinematics and demos for the
-								// local system only
+	// local system only
 	qboolean loadgame;			// client begins should reuse existing
-								// entity
+	// entity
 
 	unsigned time;				// always sv.framenum * 100 msec
 	int framenum;
@@ -75,10 +75,10 @@ typedef struct {
 typedef enum {
 	cs_free,					// can be reused for a new connection
 	cs_zombie,					// client has been disconnected, but don't 
-								// reuse
+	// reuse
 	// connection for a couple seconds
 	cs_connected,				// has been assigned to a client_t, but
-								// not in game yet
+	// not in game yet
 	cs_spawned					// client is fully in game
 } client_state_t;
 
@@ -114,7 +114,7 @@ typedef struct client_s {
 
 	edict_t *edict;				// EDICT_NUM(clientnum+1)
 	char name[32];				// extracted from userinfo, high bits
-								// masked
+	// masked
 	int messagelevel;			// for filtering printed messages
 
 	// The datagram is written to by sound calls, prints, temp ents, etc.
@@ -123,19 +123,19 @@ typedef struct client_s {
 	byte datagram_buf[MAX_MSGLEN];
 
 	client_frame_t frames[UPDATE_BACKUP];	// updates can be delta'd from 
-											// here
+	// here
 
 	byte *download;				// file being downloaded
 	int downloadsize;			// total bytes (can't use EOF because of
-								// paks)
+	// paks)
 	int downloadcount;			// bytes sent
 
 	int lastmessage;			// sv.framenum when packet was last
-								// received
+	// received
 	int lastconnect;
 
 	int challenge;				// challenge of this user, randomly
-								// generated
+	// generated
 
 	netchan_t netchan;
 } client_t;
@@ -177,7 +177,7 @@ typedef struct {
 	int last_heartbeat;
 
 	challenge_t challenges[MAX_CHALLENGES];	// to prevent invalid IPs from 
-											// connecting
+	// connecting
 
 	// serverrecord values
 	FILE *demofile;
@@ -191,7 +191,7 @@ extern netadr_t net_from;
 extern sizebuf_t net_message;
 
 extern netadr_t master_adr[MAX_MASTERS];	// address of the master
-											// server
+// server
 
 extern server_static_t svs;		// persistant server info
 extern server_t sv;				// local server
@@ -199,16 +199,16 @@ extern server_t sv;				// local server
 extern cvar_t *sv_paused;
 extern cvar_t *maxclients;
 extern cvar_t *sv_noreload;		// don't reload level state when
-								// reentering
+// reentering
 extern cvar_t *sv_airaccelerate;	// don't reload level state when
-									// reentering
-											// development tool
+// reentering
+// development tool
 extern cvar_t *sv_enforcetime;
 
 extern client_t *sv_client;
 extern edict_t *sv_player;
 extern cvar_t *sv_unlimited_ambient;	// disables entities clipping with 
-										// sound flag active
+// sound flag active
 
 extern cvar_t *sv_solidcorpse;
 
@@ -218,89 +218,91 @@ extern cvar_t *net_compatibility;
 //
 // sv_main.c
 //
-void SV_FinalMessage(char *message, qboolean reconnect);
-void SV_DropClient(client_t * drop);
+void SV_FinalMessage (char *message, qboolean reconnect);
+void SV_DropClient (client_t * drop);
 
-int SV_ModelIndex(char *name);
-int SV_SoundIndex(char *name);
-int SV_ImageIndex(char *name);
+int SV_ModelIndex (char *name);
+int SV_SoundIndex (char *name);
+int SV_ImageIndex (char *name);
 
-void SV_WriteClientdataToMessage(client_t * client, sizebuf_t * msg);
+void SV_WriteClientdataToMessage (client_t * client, sizebuf_t * msg);
 
-void SV_ExecuteUserCommand(char *s);
-void SV_InitOperatorCommands(void);
+void SV_ExecuteUserCommand (char *s);
+void SV_InitOperatorCommands (void);
 
-void SV_SendServerinfo(client_t * client);
-void SV_UserinfoChanged(client_t * cl);
+void SV_SendServerinfo (client_t * client);
+void SV_UserinfoChanged (client_t * cl);
 
 //void V_AddLight (vec3_t org, float intensity, float r, float g, float b); 
 
-void Master_Heartbeat(void);
-void Master_Packet(void);
-void SV_ReLightMap_f(void);
+void Master_Heartbeat (void);
+void Master_Packet (void);
+void SV_ReLightMap_f (void);
 //
 // sv_init.c
 //
-void SV_InitGame(void);
-void SV_Map(qboolean attractloop, char *levelstring, qboolean loadgame);
+void SV_InitGame (void);
+void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame);
 
 
 //
 // sv_phys.c
 //
-void SV_PrepWorldFrame(void);
+void SV_PrepWorldFrame (void);
 
 //
 // sv_send.c
 //
-typedef enum { RD_NONE, RD_CLIENT, RD_PACKET } redirect_t;
+typedef enum {
+	RD_NONE, RD_CLIENT, RD_PACKET
+} redirect_t;
 #define	SV_OUTPUTBUF_LENGTH	(MAX_MSGLEN - 16)
 
 extern char sv_outputbuf[SV_OUTPUTBUF_LENGTH];
 
-void SV_FlushRedirect(int sv_redirected, char *outputbuf);
+void SV_FlushRedirect (int sv_redirected, char *outputbuf);
 
-void SV_DemoCompleted(void);
-void SV_SendClientMessages(void);
+void SV_DemoCompleted (void);
+void SV_SendClientMessages (void);
 
-void SV_Multicast(vec3_t origin, multicast_t to);
-void SV_StartSound(vec3_t origin, edict_t * entity, int channel,
-				   int soundindex, float volume,
-				   float attenuation, float timeofs);
-void SV_ClientPrintf(client_t * cl, int level, char *fmt, ...);
-void SV_BroadcastPrintf(int level, char *fmt, ...);
-void SV_BroadcastCommand(char *fmt, ...);
+void SV_Multicast (vec3_t origin, multicast_t to);
+void SV_StartSound (vec3_t origin, edict_t * entity, int channel,
+	int soundindex, float volume,
+	float attenuation, float timeofs);
+void SV_ClientPrintf (client_t * cl, int level, char *fmt, ...);
+void SV_BroadcastPrintf (int level, char *fmt, ...);
+void SV_BroadcastCommand (char *fmt, ...);
 
 //
 // sv_user.c
 //
-void SV_Nextserver(void);
-void SV_ExecuteClientMessage(client_t * cl);
+void SV_Nextserver (void);
+void SV_ExecuteClientMessage (client_t * cl);
 
 //
 // sv_ccmds.c
 //
-void SV_ReadLevelFile(void);
-void SV_Status_f(void);
+void SV_ReadLevelFile (void);
+void SV_Status_f (void);
 
 //
 // sv_ents.c
 //
-void SV_WriteFrameToClient(client_t * client, sizebuf_t * msg);
-void SV_RecordDemoMessage(void);
-void SV_BuildClientFrame(client_t * client);
+void SV_WriteFrameToClient (client_t * client, sizebuf_t * msg);
+void SV_RecordDemoMessage (void);
+void SV_BuildClientFrame (client_t * client);
 
 
-void SV_Error(char *error, ...);
+void SV_Error (char *error, ...);
 
 //
 // sv_game.c
 //
 extern game_export_t *ge;
 
-void SV_InitGameProgs(void);
-void SV_ShutdownGameProgs(void);
-void SV_InitEdict(edict_t * e);
+void SV_InitGameProgs (void);
+void SV_ShutdownGameProgs (void);
+void SV_InitEdict (edict_t * e);
 
 
 
@@ -310,22 +312,22 @@ void SV_InitEdict(edict_t * e);
 // high level object sorting to reduce interaction tests
 //
 
-void SV_ClearWorld(void);
+void SV_ClearWorld (void);
 // called after the world model has been loaded, before linking any entities
 
-void SV_UnlinkEdict(edict_t * ent);
+void SV_UnlinkEdict (edict_t * ent);
 // call before removing an entity, and before trying to move one,
 // so it doesn't clip against itself
 
-void SV_LinkEdict(edict_t * ent);
+void SV_LinkEdict (edict_t * ent);
 // Needs to be called any time an entity changes origin, mins, maxs,
 // or solid.  Automatically unlinks if needed.
 // sets ent->v.absmin and ent->v.absmax
 // sets ent->leafnums[] for pvs determination even if the entity
 // is not solid
 
-int SV_AreaEdicts(vec3_t mins, vec3_t maxs, edict_t ** list, int maxcount,
-				  int areatype);
+int SV_AreaEdicts (vec3_t mins, vec3_t maxs, edict_t ** list, int maxcount,
+	int areatype);
 // fills in a table of edict pointers with edicts that have bounding boxes
 // that intersect the given area.  It is possible for a non-axial bmodel
 // to be returned that doesn't actually intersect the area on an exact
@@ -338,13 +340,13 @@ int SV_AreaEdicts(vec3_t mins, vec3_t maxs, edict_t ** list, int maxcount,
 //
 // functions that interact with everything apropriate
 //
-int SV_PointContents(vec3_t p);
+int SV_PointContents (vec3_t p);
 // returns the CONTENTS_* value from the world at the given point.
 // Quake 2 extends this to also check entities, to allow moving liquids
 
 
-trace_t SV_Trace(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
-				 edict_t * passedict, int contentmask);
+trace_t SV_Trace (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
+	edict_t * passedict, int contentmask);
 // mins and maxs are relative
 
 // if the entire move stays in a solid volume, trace.allsolid will be set,

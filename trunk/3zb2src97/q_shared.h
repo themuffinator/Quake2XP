@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning(disable : 4305)	// truncation from const double to float
 #pragma warning(disable : 4996)	// vs 2005 security warnings
 
-/* x64 warning dont need 
+/* x64 warning dont need
    on win32 platform*/
 #pragma warning(disable : 4267) 
 #pragma warning(disable : 4311)
@@ -72,7 +72,9 @@ typedef int intptr_t;
 #endif
 
 typedef unsigned char byte;
-typedef enum { false, true } qboolean;
+typedef enum {
+	false, true
+} qboolean;
 
 
 #ifndef NULL
@@ -85,9 +87,9 @@ typedef enum { false, true } qboolean;
 #define	ROLL				2	// fall over
 
 #define	MAX_STRING_CHARS	1024	// max length of a string passed to
-									// Cmd_TokenizeString
+// Cmd_TokenizeString
 #define	MAX_STRING_TOKENS	80	// max tokens resulting from
-								// Cmd_TokenizeString
+// Cmd_TokenizeString
 #define	MAX_TOKEN_CHARS		128	// max length of an individual token
 
 #define	MAX_QPATH			64	// max length of a quake game pathname
@@ -98,7 +100,7 @@ typedef enum { false, true } qboolean;
 //
 #define	MAX_CLIENTS			256	// absolute limit
 #define	MAX_EDICTS			1024	// must change protocol to increase
-									// more
+// more
 #define	MAX_LIGHTSTYLES		256
 #define	MAX_MODELS			256	// these are sent over the net as bytes
 #define	MAX_SOUNDS			256	// so they cannot be blindly increased
@@ -116,9 +118,9 @@ typedef enum { false, true } qboolean;
 
 
 #define	ERR_FATAL			0	// exit the entire game with a popup
-								// window
+// window
 #define	ERR_DROP			1	// print to console and disconnect from
-								// game
+// game
 #define	ERR_DISCONNECT		2	// don't kill server
 
 #define	PRINT_ALL			0
@@ -166,7 +168,7 @@ extern color4ub_t	ColorTable[8];
 #define IsColorString(p)	(p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE)
 #define ColorIndex(c)		(((c) - '0') & 7)
 
-void RE_SetColor(const color4ub_t color);
+void RE_SetColor (const color4ub_t color);
 
 // destination class for gi.multicast()
 typedef enum {
@@ -197,7 +199,7 @@ typedef int fixed16_t;
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846	// matches value in gcc v2
-											// math.h
+// math.h
 #endif
 
 struct cplane_s;
@@ -212,7 +214,7 @@ extern vec3_t vec3_origin;
 //float Q_fabs (float f);
 //#define   fabs(f) Q_fabs(f)
 #if !defined C_ONLY
-extern long Q_ftol(float f);
+extern long Q_ftol (float f);
 #else
 #define Q_ftol( f ) ( long ) (f)
 #endif
@@ -225,77 +227,77 @@ extern long Q_ftol(float f);
 #define VectorNegate(a,b)		(b[0]=-a[0],b[1]=-a[1],b[2]=-a[2])
 #define VectorSet(v, x, y, z)	(v[0]=(x), v[1]=(y), v[2]=(z))
 
-void VectorMA(vec3_t veca, float scale, vec3_t vecb, vec3_t vecc);
+void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc);
 
 // just in case you do't want to use the macros
-vec_t _DotProduct(vec3_t v1, vec3_t v2);
-void _VectorSubtract(vec3_t veca, vec3_t vecb, vec3_t out);
-void _VectorAdd(vec3_t veca, vec3_t vecb, vec3_t out);
-void _VectorCopy(vec3_t in, vec3_t out);
+vec_t _DotProduct (vec3_t v1, vec3_t v2);
+void _VectorSubtract (vec3_t veca, vec3_t vecb, vec3_t out);
+void _VectorAdd (vec3_t veca, vec3_t vecb, vec3_t out);
+void _VectorCopy (vec3_t in, vec3_t out);
 
-void ClearBounds(vec3_t mins, vec3_t maxs);
-void AddPointToBounds(vec3_t v, vec3_t mins, vec3_t maxs);
-int VectorCompare(vec3_t v1, vec3_t v2);
-vec_t VectorLength(vec3_t v);
-void CrossProduct(vec3_t v1, vec3_t v2, vec3_t cross);
-vec_t VectorNormalize(vec3_t v);	// returns vector length
-vec_t VectorNormalize2(vec3_t v, vec3_t out);
-void VectorInverse(vec3_t v);
-void VectorScale(vec3_t in, vec_t scale, vec3_t out);
-int Q_log2(int val);
+void ClearBounds (vec3_t mins, vec3_t maxs);
+void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs);
+int VectorCompare (vec3_t v1, vec3_t v2);
+vec_t VectorLength (vec3_t v);
+void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross);
+vec_t VectorNormalize (vec3_t v);	// returns vector length
+vec_t VectorNormalize2 (vec3_t v, vec3_t out);
+void VectorInverse (vec3_t v);
+void VectorScale (vec3_t in, vec_t scale, vec3_t out);
+int Q_log2 (int val);
 
-void R_ConcatRotations(float in1[3][3], float in2[3][3], float out[3][3]);
-void R_ConcatTransforms(float in1[3][4], float in2[3][4], float out[3][4]);
+void R_ConcatRotations (float in1[3][3], float in2[3][3], float out[3][3]);
+void R_ConcatTransforms (float in1[3][4], float in2[3][4], float out[3][4]);
 
-void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
-float anglemod(float a);
-float LerpAngle(float a1, float a2, float frac);
+void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
+int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
+float anglemod (float a);
+float LerpAngle (float a1, float a2, float frac);
 
 #define BOX_ON_PLANE_SIDE(emins, emaxs, p)	\
-	(((p)->type < 3)?						\
-	(										\
-		((p)->dist <= (emins)[(p)->type])?	\
-			1								\
-		:									\
-		(									\
-			((p)->dist >= (emaxs)[(p)->type])?\
-				2							\
-			:								\
-				3							\
-		)									\
+	(((p)->type < 3) ? \
+	(\
+	((p)->dist <= (emins)[(p)->type]) ? \
+	1								\
+	:									\
+	(\
+	((p)->dist >= (emaxs)[(p)->type]) ? \
+	2							\
+	:								\
+	3							\
+	)									\
 	)										\
 	:										\
-		BoxOnPlaneSide( (emins), (emaxs), (p)))
+	BoxOnPlaneSide ((emins), (emaxs), (p)))
 
-void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal);
-void PerpendicularVector(vec3_t dst, const vec3_t src);
-void RotatePointAroundVector(vec3_t dst, const vec3_t dir,
-							 const vec3_t point, float degrees);
+void ProjectPointOnPlane (vec3_t dst, const vec3_t p, const vec3_t normal);
+void PerpendicularVector (vec3_t dst, const vec3_t src);
+void RotatePointAroundVector (vec3_t dst, const vec3_t dir,
+	const vec3_t point, float degrees);
 
 
 //=============================================
 
-char *COM_SkipPath(char *pathname);
-void COM_StripExtension(char *in, char *out);
-void COM_FileBase(char *in, char *out);
-void COM_FilePath(char *in, char *out);
-void COM_DefaultExtension(char *path, char *extension);
+char *COM_SkipPath (char *pathname);
+void COM_StripExtension (char *in, char *out);
+void COM_FileBase (char *in, char *out);
+void COM_FilePath (char *in, char *out);
+void COM_DefaultExtension (char *path, char *extension);
 
-char *COM_Parse(char **data_p);
+char *COM_Parse (char **data_p);
 // data is an in/out parm, returns a parsed out token
 
-void Com_sprintf(char *dest, int size, char *fmt, ...);
+void Com_sprintf (char *dest, int size, char *fmt, ...);
 
-void Com_PageInMemory(byte * buffer, int size);
+void Com_PageInMemory (byte * buffer, int size);
 
 //=============================================
 
 // portable case insensitive compare
 #ifdef _WIN32
-int Q_stricmp(const char *s1, const char *s2);
-int Q_strcasecmp(const char *s1, const char *s2);
-int Q_strncasecmp(const char *s1, const char *s2, int n);
+int Q_stricmp (const char *s1, const char *s2);
+int Q_strcasecmp (const char *s1, const char *s2);
+int Q_strncasecmp (const char *s1, const char *s2, int n);
 #else
 #define Q_stricmp strcasecmp
 #define Q_strcasecmp strcasecmp
@@ -304,15 +306,15 @@ int Q_strncasecmp(const char *s1, const char *s2, int n);
 
 //=============================================
 
-short BigShort(short l);
-short LittleShort(short l);
-int BigLong(int l);
-int LittleLong(int l);
-float BigFloat(float l);
-float LittleFloat(float l);
+short BigShort (short l);
+short LittleShort (short l);
+int BigLong (int l);
+int LittleLong (int l);
+float BigFloat (float l);
+float LittleFloat (float l);
 
-void Swap_Init(void);
-char *va(char *format, ...);
+void Swap_Init (void);
+char *va (char *format, ...);
 
 //=============================================
 
@@ -323,10 +325,10 @@ char *va(char *format, ...);
 #define	MAX_INFO_VALUE		64
 #define	MAX_INFO_STRING		512
 
-char *Info_ValueForKey(char *s, char *key);
-void Info_RemoveKey(char *s, char *key);
-void Info_SetValueForKey(char *s, char *key, char *value);
-qboolean Info_Validate(char *s);
+char *Info_ValueForKey (char *s, char *key);
+void Info_RemoveKey (char *s, char *key);
+void Info_SetValueForKey (char *s, char *key, char *value);
+qboolean Info_Validate (char *s);
 
 #ifndef min 
 #define min(a,b)        (((a) < (b)) ? (a) : (b)) 
@@ -345,14 +347,14 @@ SYSTEM SPECIFIC
 
 extern int curtime;				// time returned by last Sys_Milliseconds
 
-int Sys_Milliseconds(void);
-void Sys_Mkdir(char *path);
+int Sys_Milliseconds (void);
+void Sys_Mkdir (char *path);
 
 // large block stack allocation routines
-void *Hunk_Begin(int maxsize, char *name);
-void *Hunk_Alloc(int size, char *name);
-void Hunk_Free(void *buf);
-int Hunk_End(void);
+void *Hunk_Begin (int maxsize, char *name);
+void *Hunk_Alloc (int size, char *name);
+void Hunk_Free (void *buf);
+int Hunk_End (void);
 
 // directory searching
 #define SFF_ARCH    0x01
@@ -364,14 +366,14 @@ int Hunk_End(void);
 /*
 ** pass in an attribute mask of things you wish to REJECT
 */
-char *Sys_FindFirst(char *path, unsigned musthave, unsigned canthave);
-char *Sys_FindNext(unsigned musthave, unsigned canthave);
-void Sys_FindClose(void);
+char *Sys_FindFirst (char *path, unsigned musthave, unsigned canthave);
+char *Sys_FindNext (unsigned musthave, unsigned canthave);
+void Sys_FindClose (void);
 
 
 // this is only here so the functions in q_shared.c and q_shwin.c can link
-void Sys_Error(char *error, ...);
-void Com_Printf(char *msg, ...);
+void Sys_Error (char *error, ...);
+void Com_Printf (char *msg, ...);
 
 
 /*
@@ -389,7 +391,7 @@ CVARS (console variables)
 #define	CVAR_USERINFO	2		// added to userinfo when changed
 #define	CVAR_SERVERINFO	4		// added to serverinfo when changed
 #define	CVAR_NOSET		8		// don't allow change from console at all,
-							// but can be set from the command line
+// but can be set from the command line
 #define	CVAR_LATCH		16		// save changes until server restart
 
 // nothing outside the Cvar_*() functions should modify these fields!
@@ -439,15 +441,15 @@ COLLISION DETECTION
 #define	CONTENTS_CURRENT_DOWN	0x800000
 
 #define	CONTENTS_ORIGIN			0x1000000	// removed before bsping an
-											// entity
+// entity
 
 #define	CONTENTS_MONSTER		0x2000000	// should never be on a brush,
-											// only in game
+// only in game
 #define	CONTENTS_DEADMONSTER	0x4000000
 #define	CONTENTS_DETAIL			0x8000000	// brushes to be added after
-											// vis leafs
+// vis leafs
 #define	CONTENTS_TRANSLUCENT	0x10000000	// auto set if any surface has
-											// trans
+// trans
 #define	CONTENTS_LADDER			0x20000000
 
 
@@ -518,7 +520,7 @@ typedef struct csurface_s {
 } csurface_t;
 
 typedef struct mapsurface_s		// used internally due to name len probs
-								// //ZOID
+// //ZOID
 {
 	csurface_t c;
 	char rname[32];
@@ -528,9 +530,9 @@ typedef struct mapsurface_s		// used internally due to name len probs
 typedef struct {
 	qboolean allsolid;			// if true, plane is not valid
 	qboolean startsolid;		// if true, the initial point was in a
-								// solid area
+	// solid area
 	float fraction;				// time completed, 1.0 = didn't hit
-								// anything
+	// anything
 	vec3_t endpos;				// final position
 	cplane_t plane;				// surface normal at impact
 	csurface_t *surface;		// surface hit
@@ -560,7 +562,7 @@ typedef enum {
 #define	PMF_TIME_LAND		16	// pm_time is time before rejump
 #define	PMF_TIME_TELEPORT	32	// pm_time is non-moving time
 #define PMF_NO_PREDICTION	64	// temporarily disables prediction (used
-								// for grappling hook)
+// for grappling hook)
 #define PMF_DOUBLE_JUMP		128
 // this structure needs to be communicated bit-accurate
 // from the server to the client to guarantee that
@@ -576,7 +578,7 @@ typedef struct {
 	byte pm_time;				// each unit = 8 ms
 	short gravity;
 	short delta_angles[3];		// add to command angles to get view
-								// direction
+	// direction
 	// changed by spawns, rotating objects, and teleporters
 } pmove_state_t;
 
@@ -623,7 +625,7 @@ typedef struct {
 	int waterlevel;
 
 	// callbacks to test the world
-	 trace_t(*trace) (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
+	trace_t (*trace) (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
 	int (*pointcontents) (vec3_t point);
 } pmove_t;
 
@@ -643,13 +645,13 @@ typedef struct {
 #define EF_COLOR_SHELL		0x00000100
 #define EF_POWERSCREEN		0x00000200
 #define	EF_ANIM01			0x00000400	// automatically cycle between
-										// frames 0 and 1 at 2 hz
+// frames 0 and 1 at 2 hz
 #define	EF_ANIM23			0x00000800	// automatically cycle between
-										// frames 2 and 3 at 2 hz
+// frames 2 and 3 at 2 hz
 #define EF_ANIM_ALL			0x00001000	// automatically cycle through all
-										// frames at 2hz
+// frames at 2hz
 #define EF_ANIM_ALLFAST		0x00002000	// automatically cycle through all
-										// frames at 10hz
+// frames at 10hz
 #define	EF_FLIES			0x00004000
 #define	EF_QUAD				0x00008000
 #define	EF_PENT				0x00010000
@@ -741,7 +743,7 @@ typedef struct {
 #define MZ_BLUEHYPERBLASTER 17
 #define MZ_PHALANX			18
 #define MZ_SILENCED			128	// bit flag ORed with one of the above
-								// numbers
+// numbers
 
 //ROGUE
 #define MZ_ETF_RIFLE		30
@@ -757,7 +759,7 @@ typedef struct {
 //ROGUE
 
 #define MZ_SILENCED			128	// bit flag ORed with one of the above
-								// numbers
+// numbers
 
 //
 // monster muzzle flashes
@@ -1025,7 +1027,7 @@ typedef enum {
 	TE_BFG_EXPLOSION,
 	TE_BFG_BIGEXPLOSION,
 	TE_BOSSTPORT,				// used as '22' in a map, so DON'T
-								// RENUMBER!!!
+	// RENUMBER!!!
 	TE_BFG_LASER,
 	TE_GRAPPLE_CABLE,
 	TE_WELDING_SPARKS,
@@ -1033,7 +1035,7 @@ typedef enum {
 	TE_BLUEHYPERBLASTER,
 	TE_PLASMA_EXPLOSION,
 	TE_TUNNEL_SPARKS,
-//ROGUE
+	//ROGUE
 	TE_BLASTER2,
 	TE_RAILTRAIL2,
 	TE_FLAME,
@@ -1063,7 +1065,7 @@ typedef enum {
 	TE_UNHEAD,
 	TE_REBORN,
 	TE_GIB
-//ROGUE
+	//ROGUE
 } temp_event_t;
 
 #define SPLASH_UNKNOWN		0
@@ -1085,9 +1087,9 @@ typedef enum {
 #define	CHAN_BODY               4
 // modifier flags
 #define	CHAN_NO_PHS_ADD			8	// send to all clients, not just ones
-									// in PHS (ATTN 0 will also do this)
+// in PHS (ATTN 0 will also do this)
 #define	CHAN_RELIABLE			16	// send by reliable message, not
-									// datagram
+// datagram
 
 
 // sound attenuation values
@@ -1117,7 +1119,7 @@ typedef enum {
 #define	STAT_LAYOUTS			13
 #define	STAT_FRAGS				14
 #define	STAT_FLASHES			15	// cleared each frame, 1 = health, 2 =
-									// armor
+// armor
 #define STAT_CHASE				16
 #define STAT_SPECTATOR			17
 
@@ -1161,7 +1163,7 @@ typedef enum {
 /*
 ==========================================================
 
-  ELEMENTS COMMUNICATED ACROSS THE NET
+ELEMENTS COMMUNICATED ACROSS THE NET
 
 ==========================================================
 */
@@ -1229,16 +1231,16 @@ typedef struct entity_state_s {
 	int frame;
 	int skinnum;
 	unsigned int effects;		// PGM - we're filling it, so it needs to
-								// be unsigned
+	// be unsigned
 	int renderfx;
 	int solid;					// for client side prediction, 8*(bits
-								// 0-4) is x/y radius
+	// 0-4) is x/y radius
 	// 8*(bits 5-9) is z down distance, 8(bits10-15) is z up
 	// gi.linkentity sets this properly
 	int sound;					// for looping sounds, to guarantee
-								// shutoff
+	// shutoff
 	int event;					// impulse events -- muzzle flashes,
-								// footsteps, etc
+	// footsteps, etc
 	// events only go out for a single frame, they
 	// are automatically cleared each frame
 } entity_state_t;
@@ -1258,7 +1260,7 @@ typedef struct {
 	vec3_t viewangles;			// for fixed views
 	vec3_t viewoffset;			// add to pmovestate->origin
 	vec3_t kick_angles;			// add to view direction to get render
-								// angles
+	// angles
 	// set by weapon kicks, pain effects, etc
 
 	vec3_t gunangles;

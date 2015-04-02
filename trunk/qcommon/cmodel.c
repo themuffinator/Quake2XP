@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -50,7 +50,7 @@ typedef struct {
 	int numareaportals;
 	int firstareaportal;
 	int floodnum;				// if two areas have equal floodnums, they 
-								// are connected
+	// are connected
 	int floodvalid;
 } carea_t;
 
@@ -71,7 +71,7 @@ int numNodes;
 cnode_t map_nodes[MAX_MAP_NODES + 6];	// extra for box hull
 
 int numLeafs = 1;				// allow leaf funcs to be called without a 
-								// map
+// map
 cleaf_t map_leafs[MAX_MAP_LEAFS];
 int emptyleaf, solidleaf;
 
@@ -86,7 +86,7 @@ cbrush_t map_brushes[MAX_MAP_BRUSHES];
 
 int numvisibility;
 byte map_visibility[MAX_MAP_VISIBILITY];
-dvis_t *map_vis = (dvis_t *) map_visibility;
+dvis_t *map_vis = (dvis_t *)map_visibility;
 
 int numentitychars;
 char map_entitystring[MAX_MAP_ENTSTRING];
@@ -108,8 +108,8 @@ qboolean portalopen[MAX_MAP_AREAPORTALS];
 
 cvar_t *map_noareas;
 
-void CM_InitBoxHull(void);
-void FloodAreaConnections(void);
+void CM_InitBoxHull (void);
+void FloodAreaConnections (void);
 
 
 int c_pointcontents;
@@ -119,7 +119,7 @@ int c_traces, c_brush_traces;
 /*
 ===============================================================================
 
-					MAP LOADING
+MAP LOADING
 
 ===============================================================================
 */
@@ -131,21 +131,20 @@ byte *cmod_base;
 CMod_LoadsubModels
 =================
 */
-void CMod_LoadsubModels(lump_t * l)
-{
+void CMod_LoadsubModels (lump_t * l) {
 	dmodel_t *in;
 	cmodel_t *out;
 	int i, j, count;
 
-	in = (dmodel_t *) (cmod_base + l->fileofs);
+	in = (dmodel_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "CMod_LoadsubModels: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadsubModels: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "CMod_LoadsubModels: map with no models");
+		Com_Error (ERR_DROP, "CMod_LoadsubModels: map with no models");
 	if (count > MAX_MAP_MODELS)
-		Com_Error(ERR_DROP, "CMod_LoadsubModels: map has too many models");
+		Com_Error (ERR_DROP, "CMod_LoadsubModels: map has too many models");
 
 	numcmodels = count;
 
@@ -153,11 +152,11 @@ void CMod_LoadsubModels(lump_t * l)
 		out = &map_cmodels[i];
 
 		for (j = 0; j < 3; j++) {	// spread the mins / maxs by a pixel
-			out->mins[j] = LittleFloat(in->mins[j]) - 1;
-			out->maxs[j] = LittleFloat(in->maxs[j]) + 1;
-			out->origin[j] = LittleFloat(in->origin[j]);
+			out->mins[j] = LittleFloat (in->mins[j]) - 1;
+			out->maxs[j] = LittleFloat (in->maxs[j]) + 1;
+			out->origin[j] = LittleFloat (in->origin[j]);
 		}
-		out->headnode = LittleLong(in->headnode);
+		out->headnode = LittleLong (in->headnode);
 	}
 }
 
@@ -167,29 +166,28 @@ void CMod_LoadsubModels(lump_t * l)
 CMod_LoadSurfaces
 =================
 */
-void CMod_LoadSurfaces(lump_t * l)
-{
+void CMod_LoadSurfaces (lump_t * l) {
 	texInfo_t *in;
 	mapsurface_t *out;
 	int i, count;
 
-	in = (texInfo_t *) (cmod_base + l->fileofs);
+	in = (texInfo_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "CMod_LoadSurfaces: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadSurfaces: funny lump size");
 	count = l->filelen / sizeof(*in);
 	if (count < 1)
-		Com_Error(ERR_DROP, "CMod_LoadSurfaces: map with no surfaces");
+		Com_Error (ERR_DROP, "CMod_LoadSurfaces: map with no surfaces");
 	if (count > MAX_MAP_TEXINFO)
-		Com_Error(ERR_DROP, "CMod_LoadSurfaces: map has too many surfaces");
+		Com_Error (ERR_DROP, "CMod_LoadSurfaces: map has too many surfaces");
 
 	numTexInfo = count;
 	out = map_surfaces;
 
 	for (i = 0; i < count; i++, in++, out++) {
-		strncpy(out->c.name, in->texture, sizeof(out->c.name) - 1);
-		strncpy(out->rname, in->texture, sizeof(out->rname) - 1);
-		out->c.flags = LittleLong(in->flags);
-		out->c.value = LittleLong(in->value);
+		strncpy (out->c.name, in->texture, sizeof(out->c.name) - 1);
+		strncpy (out->rname, in->texture, sizeof(out->rname) - 1);
+		out->c.flags = LittleLong (in->flags);
+		out->c.value = LittleLong (in->value);
 	}
 }
 
@@ -200,31 +198,30 @@ CMod_LoadNodes
 
 =================
 */
-void CMod_LoadNodes(lump_t * l)
-{
+void CMod_LoadNodes (lump_t * l) {
 	dnode_t *in;
 	int child;
 	cnode_t *out;
 	int i, j, count;
 
-	in = (dnode_t *) (cmod_base + l->fileofs);
+	in = (dnode_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "CMod_LoadNodes: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadNodes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "CMod_LoadNodes: map has no nodes");
+		Com_Error (ERR_DROP, "CMod_LoadNodes: map has no nodes");
 	if (count > MAX_MAP_NODES)
-		Com_Error(ERR_DROP, "CMod_LoadNodes: map has too many nodes");
+		Com_Error (ERR_DROP, "CMod_LoadNodes: map has too many nodes");
 
 	out = map_nodes;
 
 	numNodes = count;
 
 	for (i = 0; i < count; i++, out++, in++) {
-		out->plane = map_planes + LittleLong(in->planenum);
+		out->plane = map_planes + LittleLong (in->planenum);
 		for (j = 0; j < 2; j++) {
-			child = LittleLong(in->children[j]);
+			child = LittleLong (in->children[j]);
 			out->children[j] = child;
 		}
 	}
@@ -237,28 +234,27 @@ CMod_LoadBrushes
 
 =================
 */
-void CMod_LoadBrushes(lump_t * l)
-{
+void CMod_LoadBrushes (lump_t * l) {
 	dbrush_t *in;
 	cbrush_t *out;
 	int i, count;
 
-	in = (dbrush_t *) (cmod_base + l->fileofs);
+	in = (dbrush_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "CMod_LoadBrushes: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadBrushes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count > MAX_MAP_BRUSHES)
-		Com_Error(ERR_DROP, "CMod_LoadBrushes: map has too many brushes");
+		Com_Error (ERR_DROP, "CMod_LoadBrushes: map has too many brushes");
 
 	out = map_brushes;
 
 	numbrushes = count;
 
 	for (i = 0; i < count; i++, out++, in++) {
-		out->firstbrushside = LittleLong(in->firstside);
-		out->numsides = LittleLong(in->numsides);
-		out->contents = LittleLong(in->contents);
+		out->firstbrushside = LittleLong (in->firstside);
+		out->numsides = LittleLong (in->numsides);
+		out->contents = LittleLong (in->contents);
 	}
 
 }
@@ -268,41 +264,40 @@ void CMod_LoadBrushes(lump_t * l)
 CMod_LoadLeafs
 =================
 */
-void CMod_LoadLeafs(lump_t * l)
-{
+void CMod_LoadLeafs (lump_t * l) {
 	int i;
 	cleaf_t *out;
 	dleaf_t *in;
 	int count;
 
-	in = (dleaf_t *) (cmod_base + l->fileofs);
+	in = (dleaf_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "CMod_LoadLeafs: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadLeafs: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "CMod_LoadLeafs: map with no leafs");
+		Com_Error (ERR_DROP, "CMod_LoadLeafs: map with no leafs");
 	// need to save space for box planes
 	if (count > MAX_MAP_LEAFS)
-		Com_Error(ERR_DROP, "Map has too many planes");
+		Com_Error (ERR_DROP, "Map has too many planes");
 
 	out = map_leafs;
 	numLeafs = count;
 	numclusters = 0;
 
 	for (i = 0; i < count; i++, in++, out++) {
-		out->contents = LittleLong(in->contents);
-		out->cluster = LittleShort(in->cluster);
-		out->area = LittleShort(in->area);
-		out->firstleafbrush = LittleShort(in->firstleafbrush);
-		out->numleafbrushes = LittleShort(in->numleafbrushes);
+		out->contents = LittleLong (in->contents);
+		out->cluster = LittleShort (in->cluster);
+		out->area = LittleShort (in->area);
+		out->firstleafbrush = LittleShort (in->firstleafbrush);
+		out->numleafbrushes = LittleShort (in->numleafbrushes);
 
 		if (out->cluster >= numclusters)
 			numclusters = out->cluster + 1;
 	}
 
 	if (map_leafs[0].contents != CONTENTS_SOLID)
-		Com_Error(ERR_DROP, "Map leaf 0 is not CONTENTS_SOLID");
+		Com_Error (ERR_DROP, "Map leaf 0 is not CONTENTS_SOLID");
 	solidleaf = 0;
 	emptyleaf = -1;
 	for (i = 1; i < numLeafs; i++) {
@@ -312,7 +307,7 @@ void CMod_LoadLeafs(lump_t * l)
 		}
 	}
 	if (emptyleaf == -1)
-		Com_Error(ERR_DROP, "Map does not have an empty leaf");
+		Com_Error (ERR_DROP, "Map does not have an empty leaf");
 }
 
 /*
@@ -320,24 +315,23 @@ void CMod_LoadLeafs(lump_t * l)
 CMod_LoadPlanes
 =================
 */
-void CMod_LoadPlanes(lump_t * l)
-{
+void CMod_LoadPlanes (lump_t * l) {
 	int i, j;
 	cplane_t *out;
 	dplane_t *in;
 	int count;
 	int bits;
 
-	in = (dplane_t *) (cmod_base + l->fileofs);
+	in = (dplane_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "CMod_LoadPlanes: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadPlanes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "CMod_LoadPlanes :map with no planes");
+		Com_Error (ERR_DROP, "CMod_LoadPlanes :map with no planes");
 	// need to save space for box planes
 	if (count > MAX_MAP_PLANES)
-		Com_Error(ERR_DROP, "CMod_LoadPlanes: map has too many planes");
+		Com_Error (ERR_DROP, "CMod_LoadPlanes: map has too many planes");
 
 	out = map_planes;
 	numPlanes = count;
@@ -345,13 +339,13 @@ void CMod_LoadPlanes(lump_t * l)
 	for (i = 0; i < count; i++, in++, out++) {
 		bits = 0;
 		for (j = 0; j < 3; j++) {
-			out->normal[j] = LittleFloat(in->normal[j]);
+			out->normal[j] = LittleFloat (in->normal[j]);
 			if (out->normal[j] < 0)
 				bits |= 1 << j;
 		}
 
-		out->dist = LittleFloat(in->dist);
-		out->type = LittleLong(in->type);
+		out->dist = LittleFloat (in->dist);
+		out->type = LittleLong (in->type);
 		out->signbits = bits;
 	}
 }
@@ -361,29 +355,28 @@ void CMod_LoadPlanes(lump_t * l)
 CMod_LoadLeafBrushes
 =================
 */
-void CMod_LoadLeafBrushes(lump_t * l)
-{
+void CMod_LoadLeafBrushes (lump_t * l) {
 	int i;
 	unsigned short *out;
 	unsigned short *in;
 	int count;
 
-	in = (unsigned short *) (cmod_base + l->fileofs);
+	in = (unsigned short *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "CMod_LoadLeafBrushes: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadLeafBrushes: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count < 1)
-		Com_Error(ERR_DROP, "CMod_LoadLeafBrushes: map with no planes");
+		Com_Error (ERR_DROP, "CMod_LoadLeafBrushes: map with no planes");
 	// need to save space for box planes
 	if (count > MAX_MAP_LEAFBRUSHES)
-		Com_Error(ERR_DROP, "CMod_LoadLeafBrushes: map has too many leafbrushes");
+		Com_Error (ERR_DROP, "CMod_LoadLeafBrushes: map has too many leafbrushes");
 
 	out = map_leafbrushes;
 	numleafbrushes = count;
 
 	for (i = 0; i < count; i++, in++, out++)
-		*out = LittleShort(*in);
+		*out = LittleShort (*in);
 }
 
 /*
@@ -391,32 +384,31 @@ void CMod_LoadLeafBrushes(lump_t * l)
 CMod_LoadBrushSides
 =================
 */
-void CMod_LoadBrushSides(lump_t * l)
-{
+void CMod_LoadBrushSides (lump_t * l) {
 	int i, j;
 	cbrushside_t *out;
 	dbrushside_t *in;
 	int count;
 	int num;
 
-	in = (dbrushside_t *) (cmod_base + l->fileofs);
+	in = (dbrushside_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "MOD_LoadBmodel: funny lump size");
+		Com_Error (ERR_DROP, "MOD_LoadBmodel: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	// need to save space for box planes
 	if (count > MAX_MAP_BRUSHSIDES)
-		Com_Error(ERR_DROP, "Map has too many planes");
+		Com_Error (ERR_DROP, "Map has too many planes");
 
 	out = map_brushsides;
 	numbrushsides = count;
 
 	for (i = 0; i < count; i++, in++, out++) {
-		num = LittleShort(in->planenum);
+		num = LittleShort (in->planenum);
 		out->plane = &map_planes[num];
-		j = LittleShort(in->texInfo);
+		j = LittleShort (in->texInfo);
 		if (j >= numTexInfo)
-			Com_Error(ERR_DROP, "Bad brushside texInfo");
+			Com_Error (ERR_DROP, "Bad brushside texInfo");
 		out->surface = &map_surfaces[j];
 	}
 }
@@ -426,27 +418,26 @@ void CMod_LoadBrushSides(lump_t * l)
 CMod_LoadAreas
 =================
 */
-void CMod_LoadAreas(lump_t * l)
-{
+void CMod_LoadAreas (lump_t * l) {
 	int i;
 	carea_t *out;
 	darea_t *in;
 	int count;
 
-	in = (darea_t *) (cmod_base + l->fileofs);
+	in = (darea_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "CMod_LoadAreas: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadAreas: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count > MAX_MAP_AREAS)
-		Com_Error(ERR_DROP, "CMod_LoadAreas: map has too many areas %i\n", count);
+		Com_Error (ERR_DROP, "CMod_LoadAreas: map has too many areas %i\n", count);
 
 	out = map_areas;
 	numareas = count;
 
 	for (i = 0; i < count; i++, in++, out++) {
-		out->numareaportals = LittleLong(in->numareaportals);
-		out->firstareaportal = LittleLong(in->firstareaportal);
+		out->numareaportals = LittleLong (in->numareaportals);
+		out->firstareaportal = LittleLong (in->firstareaportal);
 		out->floodvalid = 0;
 		out->floodnum = 0;
 	}
@@ -457,27 +448,26 @@ void CMod_LoadAreas(lump_t * l)
 CMod_LoadAreaPortals
 =================
 */
-void CMod_LoadAreaPortals(lump_t * l)
-{
+void CMod_LoadAreaPortals (lump_t * l) {
 	int i;
 	dareaportal_t *out;
 	dareaportal_t *in;
 	int count;
 
-	in = (dareaportal_t *) (cmod_base + l->fileofs);
+	in = (dareaportal_t *)(cmod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error(ERR_DROP, "CMod_LoadAreaPortals: funny lump size");
+		Com_Error (ERR_DROP, "CMod_LoadAreaPortals: funny lump size");
 	count = l->filelen / sizeof(*in);
 
 	if (count > MAX_MAP_AREAPORTALS)
-		Com_Error(ERR_DROP, "CMod_LoadAreaPortals: map has too many areaportals");
+		Com_Error (ERR_DROP, "CMod_LoadAreaPortals: map has too many areaportals");
 
 	out = map_areaportals;
 	numareaportals = count;
 
 	for (i = 0; i < count; i++, in++, out++) {
-		out->portalnum = LittleLong(in->portalnum);
-		out->otherarea = LittleLong(in->otherarea);
+		out->portalnum = LittleLong (in->portalnum);
+		out->otherarea = LittleLong (in->otherarea);
 	}
 }
 
@@ -486,20 +476,19 @@ void CMod_LoadAreaPortals(lump_t * l)
 CMod_LoadVisibility
 =================
 */
-void CMod_LoadVisibility(lump_t * l)
-{
+void CMod_LoadVisibility (lump_t * l) {
 	int i;
 
 	numvisibility = l->filelen;
 	if (l->filelen > MAX_MAP_VISIBILITY)
-		Com_Error(ERR_DROP, "CMod_LoadVisibility: map has too large visibility lump");
+		Com_Error (ERR_DROP, "CMod_LoadVisibility: map has too large visibility lump");
 
-	memcpy(map_visibility, cmod_base + l->fileofs, l->filelen);
+	memcpy (map_visibility, cmod_base + l->fileofs, l->filelen);
 
-	map_vis->numclusters = LittleLong(map_vis->numclusters);
+	map_vis->numclusters = LittleLong (map_vis->numclusters);
 	for (i = 0; i < map_vis->numclusters; i++) {
-		map_vis->bitofs[i][0] = LittleLong(map_vis->bitofs[i][0]);
-		map_vis->bitofs[i][1] = LittleLong(map_vis->bitofs[i][1]);
+		map_vis->bitofs[i][0] = LittleLong (map_vis->bitofs[i][0]);
+		map_vis->bitofs[i][1] = LittleLong (map_vis->bitofs[i][1]);
 	}
 }
 
@@ -509,13 +498,12 @@ void CMod_LoadVisibility(lump_t * l)
 CMod_LoadEntityString
 =================
 */
-void CMod_LoadEntityString(lump_t * l)
-{
+void CMod_LoadEntityString (lump_t * l) {
 	numentitychars = l->filelen;
 	if (l->filelen > MAX_MAP_ENTSTRING)
-		Com_Error(ERR_DROP, "CMod_LoadEntityString: map has too large entity lump");
+		Com_Error (ERR_DROP, "CMod_LoadEntityString: map has too large entity lump");
 
-	memcpy(map_entitystring, cmod_base + l->fileofs, l->filelen);
+	memcpy (map_entitystring, cmod_base + l->fileofs, l->filelen);
 }
 
 
@@ -529,108 +517,107 @@ Loads in the map and all subModels
 
 cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum)
 {
-	unsigned		*buf;
-	int				i;
-	dheader_t		header;
-	int				length;
-	static unsigned	last_checksum;
+unsigned		*buf;
+int				i;
+dheader_t		header;
+int				length;
+static unsigned	last_checksum;
 
-	map_noareas = Cvar_Get ("map_noareas", "0", 0);
+map_noareas = Cvar_Get ("map_noareas", "0", 0);
 
-	if (  !strcmp (map_name, name) && (clientload || !Cvar_VariableValue ("flushmap")) )
-	{
-		*checksum = last_checksum;
-		if (!clientload)
-		{
-			memset (portalopen, 0, sizeof(portalopen));
-			FloodAreaConnections ();
-		}
-		return &map_cmodels[0];		// still have the right version
-	}
+if (  !strcmp (map_name, name) && (clientload || !Cvar_VariableValue ("flushmap")) )
+{
+*checksum = last_checksum;
+if (!clientload)
+{
+memset (portalopen, 0, sizeof(portalopen));
+FloodAreaConnections ();
+}
+return &map_cmodels[0];		// still have the right version
+}
 
-	// free old stuff
-	numPlanes = 0;
-	numNodes = 0;
-	numLeafs = 0;
-	numcmodels = 0;
-	numvisibility = 0;
-	numentitychars = 0;
-	map_entitystring[0] = 0;
-	map_name[0] = 0;
+// free old stuff
+numPlanes = 0;
+numNodes = 0;
+numLeafs = 0;
+numcmodels = 0;
+numvisibility = 0;
+numentitychars = 0;
+map_entitystring[0] = 0;
+map_name[0] = 0;
 
-	if (!name || !name[0])
-	{
-		numLeafs = 1;
-		numclusters = 1;
-		numareas = 1;
-		*checksum = 0;
-		return &map_cmodels[0];			// cinematic servers won't have anything at all
-	}
+if (!name || !name[0])
+{
+numLeafs = 1;
+numclusters = 1;
+numareas = 1;
+*checksum = 0;
+return &map_cmodels[0];			// cinematic servers won't have anything at all
+}
 
-	//
-	// load the file
-	//
-	length = FS_LoadFile (name, (void **)&buf);
-	if (!buf)
-		Com_Error (ERR_DROP, "Couldn't load %s", name);
+//
+// load the file
+//
+length = FS_LoadFile (name, (void **)&buf);
+if (!buf)
+Com_Error (ERR_DROP, "Couldn't load %s", name);
 
-	last_checksum = LittleLong (Com_BlockChecksum (buf, length));
-	*checksum = last_checksum;
+last_checksum = LittleLong (Com_BlockChecksum (buf, length));
+*checksum = last_checksum;
 
-	header = *(dheader_t *)buf;
-	for (i=0 ; i<sizeof(dheader_t)/4 ; i++)
-		((int *)&header)[i] = LittleLong ( ((int *)&header)[i]);
+header = *(dheader_t *)buf;
+for (i=0 ; i<sizeof(dheader_t)/4 ; i++)
+((int *)&header)[i] = LittleLong ( ((int *)&header)[i]);
 
-	if (header.version != BSPVERSION)
-		Com_Error (ERR_DROP, "CMod_LoadBrushModel: %s has wrong version number (%i should be %i)"
-		, name, header.version, BSPVERSION);
+if (header.version != BSPVERSION)
+Com_Error (ERR_DROP, "CMod_LoadBrushModel: %s has wrong version number (%i should be %i)"
+, name, header.version, BSPVERSION);
 
-	cmod_base = (byte *)buf;
+cmod_base = (byte *)buf;
 
-	// load into heap
-	CMod_LoadSurfaces (&header.lumps[LUMP_TEXINFO]);
-	CMod_LoadLeafs (&header.lumps[LUMP_LEAFS]);
-	CMod_LoadLeafBrushes (&header.lumps[LUMP_LEAFBRUSHES]);
-	CMod_LoadPlanes (&header.lumps[LUMP_PLANES]);
-	CMod_LoadBrushes (&header.lumps[LUMP_BRUSHES]);
-	CMod_LoadBrushSides (&header.lumps[LUMP_BRUSHSIDES]);
-	CMod_LoadsubModels (&header.lumps[LUMP_MODELS]);
-	CMod_LoadNodes (&header.lumps[LUMP_NODES]);
-	CMod_LoadAreas (&header.lumps[LUMP_AREAS]);
-	CMod_LoadAreaPortals (&header.lumps[LUMP_AREAPORTALS]);
-	CMod_LoadVisibility (&header.lumps[LUMP_VISIBILITY]);
-	CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES]);
+// load into heap
+CMod_LoadSurfaces (&header.lumps[LUMP_TEXINFO]);
+CMod_LoadLeafs (&header.lumps[LUMP_LEAFS]);
+CMod_LoadLeafBrushes (&header.lumps[LUMP_LEAFBRUSHES]);
+CMod_LoadPlanes (&header.lumps[LUMP_PLANES]);
+CMod_LoadBrushes (&header.lumps[LUMP_BRUSHES]);
+CMod_LoadBrushSides (&header.lumps[LUMP_BRUSHSIDES]);
+CMod_LoadsubModels (&header.lumps[LUMP_MODELS]);
+CMod_LoadNodes (&header.lumps[LUMP_NODES]);
+CMod_LoadAreas (&header.lumps[LUMP_AREAS]);
+CMod_LoadAreaPortals (&header.lumps[LUMP_AREAPORTALS]);
+CMod_LoadVisibility (&header.lumps[LUMP_VISIBILITY]);
+CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES]);
 
-	FS_FreeFile (buf);
+FS_FreeFile (buf);
 
-	CM_InitBoxHull ();
+CM_InitBoxHull ();
 
-	memset (portalopen, 0, sizeof(portalopen));
-	FloodAreaConnections ();
+memset (portalopen, 0, sizeof(portalopen));
+FloodAreaConnections ();
 
-	strcpy (map_name, name);
+strcpy (map_name, name);
 
-	return &map_cmodels[0];
+return &map_cmodels[0];
 }
 */
 
 
-cmodel_t *CM_LoadMap(char *name, qboolean clientload, unsigned *checksum)
-{
+cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum) {
 	unsigned *buf, *entbuf;
 	int i;
 	dheader_t header;
 	int entlength, length;
 	static unsigned last_checksum;
 	char entfile[MAX_QPATH];
-	map_noareas = Cvar_Get("map_noareas", "0", 0);
+	map_noareas = Cvar_Get ("map_noareas", "0", 0);
 
-	if (!strcmp(map_name, name)
-		&& (clientload || !Cvar_VariableValue("flushmap"))) {
+	if (!strcmp (map_name, name)
+		&& (clientload || !Cvar_VariableValue ("flushmap"))) {
 		*checksum = last_checksum;
 		if (!clientload) {
-			memset(portalopen, 0, sizeof(portalopen));
-			FloodAreaConnections();
+			memset (portalopen, 0, sizeof(portalopen));
+			FloodAreaConnections ();
 		}
 		return &map_cmodels[0];	// still have the right version
 	}
@@ -650,72 +637,72 @@ cmodel_t *CM_LoadMap(char *name, qboolean clientload, unsigned *checksum)
 		numareas = 1;
 		*checksum = 0;
 		return &map_cmodels[0];	// cinematic servers won't have anything
-								// at all
+		// at all
 	}
 	// 
 	// load the file
 	// 
-	length = FS_LoadFile(name, (void **) &buf);
+	length = FS_LoadFile (name, (void **)&buf);
 	if (!buf)
-		Com_Error(ERR_DROP, "Couldn't load %s", name);
+		Com_Error (ERR_DROP, "Couldn't load %s", name);
 
-	last_checksum = LittleLong(Com_BlockChecksum(buf, length));
+	last_checksum = LittleLong (Com_BlockChecksum (buf, length));
 	*checksum = last_checksum;
 
-	header = *(dheader_t *) buf;
+	header = *(dheader_t *)buf;
 	for (i = 0; i < sizeof(dheader_t) / 4; i++)
-		((int *) &header)[i] = LittleLong(((int *) &header)[i]);
+		((int *)&header)[i] = LittleLong (((int *)&header)[i]);
 
 	if (header.version != BSPVERSION)
-		Com_Error(ERR_DROP,
-				  "CMod_LoadBrushModel: %s has wrong version number (%i should be %i)",
-				  name, header.version, BSPVERSION);
+		Com_Error (ERR_DROP,
+		"CMod_LoadBrushModel: %s has wrong version number (%i should be %i)",
+		name, header.version, BSPVERSION);
 
-	cmod_base = (byte *) buf;
+	cmod_base = (byte *)buf;
 
 	// load into heap
-	CMod_LoadSurfaces(&header.lumps[LUMP_TEXINFO]);
-	CMod_LoadLeafs(&header.lumps[LUMP_LEAFS]);
-	CMod_LoadLeafBrushes(&header.lumps[LUMP_LEAFBRUSHES]);
-	CMod_LoadPlanes(&header.lumps[LUMP_PLANES]);
-	CMod_LoadBrushes(&header.lumps[LUMP_BRUSHES]);
-	CMod_LoadBrushSides(&header.lumps[LUMP_BRUSHSIDES]);
-	CMod_LoadsubModels(&header.lumps[LUMP_MODELS]);
-	CMod_LoadNodes(&header.lumps[LUMP_NODES]);
-	CMod_LoadAreas(&header.lumps[LUMP_AREAS]);
-	CMod_LoadAreaPortals(&header.lumps[LUMP_AREAPORTALS]);
-	CMod_LoadVisibility(&header.lumps[LUMP_VISIBILITY]);
-	
+	CMod_LoadSurfaces (&header.lumps[LUMP_TEXINFO]);
+	CMod_LoadLeafs (&header.lumps[LUMP_LEAFS]);
+	CMod_LoadLeafBrushes (&header.lumps[LUMP_LEAFBRUSHES]);
+	CMod_LoadPlanes (&header.lumps[LUMP_PLANES]);
+	CMod_LoadBrushes (&header.lumps[LUMP_BRUSHES]);
+	CMod_LoadBrushSides (&header.lumps[LUMP_BRUSHSIDES]);
+	CMod_LoadsubModels (&header.lumps[LUMP_MODELS]);
+	CMod_LoadNodes (&header.lumps[LUMP_NODES]);
+	CMod_LoadAreas (&header.lumps[LUMP_AREAS]);
+	CMod_LoadAreaPortals (&header.lumps[LUMP_AREAPORTALS]);
+	CMod_LoadVisibility (&header.lumps[LUMP_VISIBILITY]);
+
 
 	// VorteX: try to load entity replacement file
-	strcpy(entfile, name);
-	entfile[strlen(entfile) - 4] = 0;	// cut off ".bsp" Kirk Barnes
-	strcat(entfile, ".ent");
-	entlength = FS_LoadFile(entfile, (void **) &entbuf);
+	strcpy (entfile, name);
+	entfile[strlen (entfile) - 4] = 0;	// cut off ".bsp" Kirk Barnes
+	strcat (entfile, ".ent");
+	entlength = FS_LoadFile (entfile, (void **)&entbuf);
 	if (entbuf) {
 		map_entitystring[0] = 0;
 		numentitychars = entlength;
-		Com_Printf("Parsing entities from %s\n", entfile);
+		Com_Printf ("Parsing entities from %s\n", entfile);
 		if (entlength > MAX_MAP_ENTSTRING)
-			Com_Error(ERR_DROP, "Map has too large entity lump - %i",
-					  entlength);
-		memcpy(map_entitystring, entbuf, numentitychars);
+			Com_Error (ERR_DROP, "Map has too large entity lump - %i",
+			entlength);
+		memcpy (map_entitystring, entbuf, numentitychars);
 		map_entitystring[numentitychars] = 0;
 
-		FS_FreeFile(entbuf);
+		FS_FreeFile (entbuf);
 	}
-	if (!entbuf){
-		Com_Printf("External entities not found. Use bsp entities\n");
-		CMod_LoadEntityString(&header.lumps[LUMP_ENTITIES]);
+	if (!entbuf) {
+		Com_Printf ("External entities not found. Use bsp entities\n");
+		CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES]);
 	}
-	FS_FreeFile(buf);
+	FS_FreeFile (buf);
 
-	CM_InitBoxHull();
+	CM_InitBoxHull ();
 
-	memset(portalopen, 0, sizeof(portalopen));
-	FloodAreaConnections();
+	memset (portalopen, 0, sizeof(portalopen));
+	FloodAreaConnections ();
 
-	strcpy(map_name, name);
+	strcpy (map_name, name);
 
 	return &map_cmodels[0];
 }
@@ -729,52 +716,45 @@ cmodel_t *CM_LoadMap(char *name, qboolean clientload, unsigned *checksum)
 CM_InlineModel
 ==================
 */
-cmodel_t *CM_InlineModel(char *name)
-{
+cmodel_t *CM_InlineModel (char *name) {
 	int num;
 
 	if (!name || name[0] != '*')
-		Com_Error(ERR_DROP, "CM_InlineModel: bad name");
-	num = atoi(name + 1);
+		Com_Error (ERR_DROP, "CM_InlineModel: bad name");
+	num = atoi (name + 1);
 	if (num < 1 || num >= numcmodels)
-		Com_Error(ERR_DROP, "CM_InlineModel: bad number");
+		Com_Error (ERR_DROP, "CM_InlineModel: bad number");
 
 	return &map_cmodels[num];
 }
 
-int CM_NumClusters(void)
-{
+int CM_NumClusters (void) {
 	return numclusters;
 }
 
-int CM_NumInlineModels(void)
-{
+int CM_NumInlineModels (void) {
 	return numcmodels;
 }
 
-char *CM_EntityString(void)
-{
+char *CM_EntityString (void) {
 	return map_entitystring;
 }
 
-int CM_LeafContents(int leafnum)
-{
+int CM_LeafContents (int leafnum) {
 	if (leafnum < 0 || leafnum >= numLeafs)
-		Com_Error(ERR_DROP, "CM_LeafContents: bad number");
+		Com_Error (ERR_DROP, "CM_LeafContents: bad number");
 	return map_leafs[leafnum].contents;
 }
 
-int CM_LeafCluster(int leafnum)
-{
+int CM_LeafCluster (int leafnum) {
 	if (leafnum < 0 || leafnum >= numLeafs)
-		Com_Error(ERR_DROP, "CM_LeafCluster: bad number");
+		Com_Error (ERR_DROP, "CM_LeafCluster: bad number");
 	return map_leafs[leafnum].cluster;
 }
 
-int CM_LeafArea(int leafnum)
-{
+int CM_LeafArea (int leafnum) {
 	if (leafnum < 0 || leafnum >= numLeafs)
-		Com_Error(ERR_DROP, "CM_LeafArea: bad number");
+		Com_Error (ERR_DROP, "CM_LeafArea: bad number");
 	return map_leafs[leafnum].area;
 }
 
@@ -794,8 +774,7 @@ Set up the planes and nodes so that the six floats of a bounding box
 can just be stored out and get a proper clipping hull structure.
 ===================
 */
-void CM_InitBoxHull(void)
-{
+void CM_InitBoxHull (void) {
 	int i;
 	int side;
 	cnode_t *c;
@@ -809,7 +788,7 @@ void CM_InitBoxHull(void)
 		|| numleafbrushes + 1 > MAX_MAP_LEAFBRUSHES
 		|| numbrushsides + 6 > MAX_MAP_BRUSHSIDES
 		|| numPlanes + 12 > MAX_MAP_PLANES)
-		Com_Error(ERR_DROP, "Not enough room for box tree");
+		Com_Error (ERR_DROP, "Not enough room for box tree");
 
 	box_brush = &map_brushes[numbrushes];
 	box_brush->numsides = 6;
@@ -844,13 +823,13 @@ void CM_InitBoxHull(void)
 		p = &box_planes[i * 2];
 		p->type = i >> 1;
 		p->signbits = 0;
-		VectorClear(p->normal);
+		VectorClear (p->normal);
 		p->normal[i >> 1] = 1;
 
 		p = &box_planes[i * 2 + 1];
 		p->type = 3 + (i >> 1);
 		p->signbits = 0;
-		VectorClear(p->normal);
+		VectorClear (p->normal);
 		p->normal[i >> 1] = -1;
 	}
 }
@@ -864,8 +843,7 @@ To keep everything totally uniform, bounding boxes are turned into small
 BSP trees instead of being compared directly.
 ===================
 */
-int CM_HeadnodeForBox(vec3_t mins, vec3_t maxs)
-{
+int CM_HeadnodeForBox (vec3_t mins, vec3_t maxs) {
 	box_planes[0].dist = maxs[0];
 	box_planes[1].dist = -maxs[0];
 	box_planes[2].dist = mins[0];
@@ -889,8 +867,7 @@ CM_PointLeafnum_r
 
 ==================
 */
-int CM_PointLeafnum_r(vec3_t p, int num)
-{
+int CM_PointLeafnum_r (vec3_t p, int num) {
 	float d;
 	cnode_t *node;
 	cplane_t *plane;
@@ -902,7 +879,7 @@ int CM_PointLeafnum_r(vec3_t p, int num)
 		if (plane->type < 3)
 			d = p[plane->type] - plane->dist;
 		else
-			d = DotProduct(plane->normal, p) - plane->dist;
+			d = DotProduct (plane->normal, p) - plane->dist;
 		if (d < 0)
 			num = node->children[1];
 		else
@@ -914,11 +891,10 @@ int CM_PointLeafnum_r(vec3_t p, int num)
 	return -1 - num;
 }
 
-int CM_PointLeafnum(vec3_t p)
-{
+int CM_PointLeafnum (vec3_t p) {
 	if (!numPlanes)
 		return 0;				// sound may call this without map loaded
-	return CM_PointLeafnum_r(p, 0);
+	return CM_PointLeafnum_r (p, 0);
 }
 
 
@@ -935,8 +911,7 @@ int *leaf_list;
 float *leaf_mins, *leaf_maxs;
 int leaf_topnode;
 
-void CM_BoxLeafnums_r(int nodenum)
-{
+void CM_BoxLeafnums_r (int nodenum) {
 	cplane_t *plane;
 	cnode_t *node;
 	int s;
@@ -944,7 +919,7 @@ void CM_BoxLeafnums_r(int nodenum)
 	while (1) {
 		if (nodenum < 0) {
 			if (leaf_count >= leaf_maxcount) {
-//              Com_Printf ("CM_BoxLeafnums_r: overflow\n");
+				//              Com_Printf ("CM_BoxLeafnums_r: overflow\n");
 				return;
 			}
 			leaf_list[leaf_count++] = -1 - nodenum;
@@ -953,8 +928,8 @@ void CM_BoxLeafnums_r(int nodenum)
 
 		node = &map_nodes[nodenum];
 		plane = node->plane;
-//      s = BoxOnPlaneSide (leaf_mins, leaf_maxs, plane);
-		s = BOX_ON_PLANE_SIDE(leaf_mins, leaf_maxs, plane);
+		//      s = BoxOnPlaneSide (leaf_mins, leaf_maxs, plane);
+		s = BOX_ON_PLANE_SIDE (leaf_mins, leaf_maxs, plane);
 		if (s == 1)
 			nodenum = node->children[0];
 		else if (s == 2)
@@ -962,16 +937,15 @@ void CM_BoxLeafnums_r(int nodenum)
 		else {					// go down both
 			if (leaf_topnode == -1)
 				leaf_topnode = nodenum;
-			CM_BoxLeafnums_r(node->children[0]);
+			CM_BoxLeafnums_r (node->children[0]);
 			nodenum = node->children[1];
 		}
 
 	}
 }
 
-int CM_BoxLeafnums_headnode(vec3_t mins, vec3_t maxs, int *list,
-							int listsize, int headnode, int *topnode)
-{
+int CM_BoxLeafnums_headnode (vec3_t mins, vec3_t maxs, int *list,
+	int listsize, int headnode, int *topnode) {
 	leaf_list = list;
 	leaf_count = 0;
 	leaf_maxcount = listsize;
@@ -980,7 +954,7 @@ int CM_BoxLeafnums_headnode(vec3_t mins, vec3_t maxs, int *list,
 
 	leaf_topnode = -1;
 
-	CM_BoxLeafnums_r(headnode);
+	CM_BoxLeafnums_r (headnode);
 
 	if (topnode)
 		*topnode = leaf_topnode;
@@ -988,12 +962,11 @@ int CM_BoxLeafnums_headnode(vec3_t mins, vec3_t maxs, int *list,
 	return leaf_count;
 }
 
-int CM_BoxLeafnums(vec3_t mins, vec3_t maxs, int *list, int listsize,
-				   int *topnode)
-{
-	return CM_BoxLeafnums_headnode(mins, maxs, list,
-								   listsize, map_cmodels[0].headnode,
-								   topnode);
+int CM_BoxLeafnums (vec3_t mins, vec3_t maxs, int *list, int listsize,
+	int *topnode) {
+	return CM_BoxLeafnums_headnode (mins, maxs, list,
+		listsize, map_cmodels[0].headnode,
+		topnode);
 }
 
 
@@ -1004,14 +977,13 @@ CM_PointContents
 
 ==================
 */
-int CM_PointContents(vec3_t p, int headnode)
-{
+int CM_PointContents (vec3_t p, int headnode) {
 	int l;
 
 	if (!numNodes)				// map not loaded
 		return 0;
 
-	l = CM_PointLeafnum_r(p, headnode);
+	l = CM_PointLeafnum_r (p, headnode);
 
 	return map_leafs[l].contents;
 }
@@ -1025,28 +997,27 @@ Handles offseting and rotation of the end points for moving and
 rotating entities
 ==================
 */
-int CM_TransformedPointContents(vec3_t p, int headnode, vec3_t origin,
-								vec3_t angles)
-{
+int CM_TransformedPointContents (vec3_t p, int headnode, vec3_t origin,
+	vec3_t angles) {
 	vec3_t p_l;
 	vec3_t temp;
 	vec3_t forward, right, up;
 	int l;
 
 	// subtract origin offset
-	VectorSubtract(p, origin, p_l);
+	VectorSubtract (p, origin, p_l);
 
 	// rotate start and end into the models frame of reference
 	if (headnode != box_headnode && (angles[0] || angles[1] || angles[2])) {
-		AngleVectors(angles, forward, right, up);
+		AngleVectors (angles, forward, right, up);
 
-		VectorCopy(p_l, temp);
-		p_l[0] = DotProduct(temp, forward);
-		p_l[1] = -DotProduct(temp, right);
-		p_l[2] = DotProduct(temp, up);
+		VectorCopy (p_l, temp);
+		p_l[0] = DotProduct (temp, forward);
+		p_l[1] = -DotProduct (temp, right);
+		p_l[2] = DotProduct (temp, up);
 	}
 
-	l = CM_PointLeafnum_r(p_l, headnode);
+	l = CM_PointLeafnum_r (p_l, headnode);
 
 	return map_leafs[l].contents;
 }
@@ -1076,9 +1047,8 @@ qboolean trace_ispoint;			// optimized case
 CM_ClipBoxToBrush
 ================
 */
-void CM_ClipBoxToBrush(vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
-					   trace_t * trace, cbrush_t * brush)
-{
+void CM_ClipBoxToBrush (vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
+	trace_t * trace, cbrush_t * brush) {
 	int i, j;
 	cplane_t *plane, *clipplane;
 	float dist;
@@ -1119,14 +1089,15 @@ void CM_ClipBoxToBrush(vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
 				else
 					ofs[j] = mins[j];
 			}
-			dist = DotProduct(ofs, plane->normal);
+			dist = DotProduct (ofs, plane->normal);
 			dist = plane->dist - dist;
-		} else {				// special point case
+		}
+		else {				// special point case
 			dist = plane->dist;
 		}
 
-		d1 = DotProduct(p1, plane->normal) - dist;
-		d2 = DotProduct(p2, plane->normal) - dist;
+		d1 = DotProduct (p1, plane->normal) - dist;
+		d2 = DotProduct (p2, plane->normal) - dist;
 
 		if (d2 > 0)
 			getout = true;		// endpoint is not in solid
@@ -1148,7 +1119,8 @@ void CM_ClipBoxToBrush(vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
 				clipplane = plane;
 				leadside = side;
 			}
-		} else {				// leave
+		}
+		else {				// leave
 			f = (d1 + DIST_EPSILON) / (d1 - d2);
 			if (f < leavefrac)
 				leavefrac = f;
@@ -1178,9 +1150,8 @@ void CM_ClipBoxToBrush(vec3_t mins, vec3_t maxs, vec3_t p1, vec3_t p2,
 CM_TestBoxInBrush
 ================
 */
-void CM_TestBoxInBrush(vec3_t mins, vec3_t maxs, vec3_t p1,
-					   trace_t * trace, cbrush_t * brush)
-{
+void CM_TestBoxInBrush (vec3_t mins, vec3_t maxs, vec3_t p1,
+	trace_t * trace, cbrush_t * brush) {
 	int i, j;
 	cplane_t *plane;
 	float dist;
@@ -1208,10 +1179,10 @@ void CM_TestBoxInBrush(vec3_t mins, vec3_t maxs, vec3_t p1,
 			else
 				ofs[j] = mins[j];
 		}
-		dist = DotProduct(ofs, plane->normal);
+		dist = DotProduct (ofs, plane->normal);
 		dist = plane->dist - dist;
 
-		d1 = DotProduct(p1, plane->normal) - dist;
+		d1 = DotProduct (p1, plane->normal) - dist;
 
 		// if completely in front of face, no intersection
 		if (d1 > 0)
@@ -1231,8 +1202,7 @@ void CM_TestBoxInBrush(vec3_t mins, vec3_t maxs, vec3_t p1,
 CM_TraceToLeaf
 ================
 */
-void CM_TraceToLeaf(int leafnum)
-{
+void CM_TraceToLeaf (int leafnum) {
 	int k;
 	int brushnum;
 	cleaf_t *leaf;
@@ -1247,13 +1217,13 @@ void CM_TraceToLeaf(int leafnum)
 		b = &map_brushes[brushnum];
 		if (b->checkcount == checkcount)
 			continue;			// already checked this brush in another
-								// leaf
+		// leaf
 		b->checkcount = checkcount;
 
 		if (!(b->contents & trace_contents))
 			continue;
-		CM_ClipBoxToBrush(trace_mins, trace_maxs, trace_start, trace_end,
-						  &trace_trace, b);
+		CM_ClipBoxToBrush (trace_mins, trace_maxs, trace_start, trace_end,
+			&trace_trace, b);
 		if (!trace_trace.fraction)
 			return;
 	}
@@ -1266,8 +1236,7 @@ void CM_TraceToLeaf(int leafnum)
 CM_TestInLeaf
 ================
 */
-void CM_TestInLeaf(int leafnum)
-{
+void CM_TestInLeaf (int leafnum) {
 	int k;
 	int brushnum;
 	cleaf_t *leaf;
@@ -1282,13 +1251,13 @@ void CM_TestInLeaf(int leafnum)
 		b = &map_brushes[brushnum];
 		if (b->checkcount == checkcount)
 			continue;			// already checked this brush in another
-								// leaf
+		// leaf
 		b->checkcount = checkcount;
 
 		if (!(b->contents & trace_contents))
 			continue;
-		CM_TestBoxInBrush(trace_mins, trace_maxs, trace_start,
-						  &trace_trace, b);
+		CM_TestBoxInBrush (trace_mins, trace_maxs, trace_start,
+			&trace_trace, b);
 		if (!trace_trace.fraction)
 			return;
 	}
@@ -1302,9 +1271,8 @@ CM_RecursiveHullCheck
 
 ==================
 */
-void CM_RecursiveHullCheck(int num, float p1f, float p2f, vec3_t p1,
-						   vec3_t p2)
-{
+void CM_RecursiveHullCheck (int num, float p1f, float p2f, vec3_t p1,
+	vec3_t p2) {
 	cnode_t *node;
 	cplane_t *plane;
 	float t1, t2, offset;
@@ -1320,7 +1288,7 @@ void CM_RecursiveHullCheck(int num, float p1f, float p2f, vec3_t p1,
 
 	// if < 0, we are in a leaf node
 	if (num < 0) {
-		CM_TraceToLeaf(-1 - num);
+		CM_TraceToLeaf (-1 - num);
 		return;
 	}
 	// 
@@ -1334,31 +1302,32 @@ void CM_RecursiveHullCheck(int num, float p1f, float p2f, vec3_t p1,
 		t1 = p1[plane->type] - plane->dist;
 		t2 = p2[plane->type] - plane->dist;
 		offset = trace_extents[plane->type];
-	} else {
-		t1 = DotProduct(plane->normal, p1) - plane->dist;
-		t2 = DotProduct(plane->normal, p2) - plane->dist;
+	}
+	else {
+		t1 = DotProduct (plane->normal, p1) - plane->dist;
+		t2 = DotProduct (plane->normal, p2) - plane->dist;
 		if (trace_ispoint)
 			offset = 0;
 		else
-			offset = fabs(trace_extents[0] * plane->normal[0]) +
-				fabs(trace_extents[1] * plane->normal[1]) +
-				fabs(trace_extents[2] * plane->normal[2]);
+			offset = fabs (trace_extents[0] * plane->normal[0]) +
+			fabs (trace_extents[1] * plane->normal[1]) +
+			fabs (trace_extents[2] * plane->normal[2]);
 	}
 
 
 #if 0
-	CM_RecursiveHullCheck(node->children[0], p1f, p2f, p1, p2);
-	CM_RecursiveHullCheck(node->children[1], p1f, p2f, p1, p2);
+	CM_RecursiveHullCheck (node->children[0], p1f, p2f, p1, p2);
+	CM_RecursiveHullCheck (node->children[1], p1f, p2f, p1, p2);
 	return;
 #endif
 
 	// see which sides we need to consider
 	if (t1 >= offset && t2 >= offset) {
-		CM_RecursiveHullCheck(node->children[0], p1f, p2f, p1, p2);
+		CM_RecursiveHullCheck (node->children[0], p1f, p2f, p1, p2);
 		return;
 	}
 	if (t1 < -offset && t2 < -offset) {
-		CM_RecursiveHullCheck(node->children[1], p1f, p2f, p1, p2);
+		CM_RecursiveHullCheck (node->children[1], p1f, p2f, p1, p2);
 		return;
 	}
 	// put the crosspoint DIST_EPSILON pixels on the near side
@@ -1367,12 +1336,14 @@ void CM_RecursiveHullCheck(int num, float p1f, float p2f, vec3_t p1,
 		side = 1;
 		frac2 = (t1 + offset + DIST_EPSILON) * idist;
 		frac = (t1 - offset + DIST_EPSILON) * idist;
-	} else if (t1 > t2) {
+	}
+	else if (t1 > t2) {
 		idist = 1.0 / (t1 - t2);
 		side = 0;
 		frac2 = (t1 - offset - DIST_EPSILON) * idist;
 		frac = (t1 + offset + DIST_EPSILON) * idist;
-	} else {
+	}
+	else {
 		side = 0;
 		frac = 1;
 		frac2 = 0;
@@ -1388,7 +1359,7 @@ void CM_RecursiveHullCheck(int num, float p1f, float p2f, vec3_t p1,
 	for (i = 0; i < 3; i++)
 		mid[i] = p1[i] + frac * (p2[i] - p1[i]);
 
-	CM_RecursiveHullCheck(node->children[side], p1f, midf, p1, mid);
+	CM_RecursiveHullCheck (node->children[side], p1f, midf, p1, mid);
 
 
 	// go past the node
@@ -1401,7 +1372,7 @@ void CM_RecursiveHullCheck(int num, float p1f, float p2f, vec3_t p1,
 	for (i = 0; i < 3; i++)
 		mid[i] = p1[i] + frac2 * (p2[i] - p1[i]);
 
-	CM_RecursiveHullCheck(node->children[side ^ 1], midf, p2f, mid, p2);
+	CM_RecursiveHullCheck (node->children[side ^ 1], midf, p2f, mid, p2);
 }
 
 
@@ -1413,9 +1384,8 @@ void CM_RecursiveHullCheck(int num, float p1f, float p2f, vec3_t p1,
 CM_BoxTrace
 ==================
 */
-trace_t CM_BoxTrace(vec3_t start, vec3_t end,
-					vec3_t mins, vec3_t maxs, int headnode, int brushmask)
-{
+trace_t CM_BoxTrace (vec3_t start, vec3_t end,
+	vec3_t mins, vec3_t maxs, int headnode, int brushmask) {
 	int i;
 
 	checkcount++;				// for multi-check avoidance
@@ -1423,7 +1393,7 @@ trace_t CM_BoxTrace(vec3_t start, vec3_t end,
 	c_traces++;					// for statistics, may be zeroed
 
 	// fill in a default trace
-	memset(&trace_trace, 0, sizeof(trace_trace));
+	memset (&trace_trace, 0, sizeof(trace_trace));
 	trace_trace.fraction = 1;
 	trace_trace.surface = &(nullsurface.c);
 
@@ -1431,10 +1401,10 @@ trace_t CM_BoxTrace(vec3_t start, vec3_t end,
 		return trace_trace;
 
 	trace_contents = brushmask;
-	VectorCopy(start, trace_start);
-	VectorCopy(end, trace_end);
-	VectorCopy(mins, trace_mins);
-	VectorCopy(maxs, trace_maxs);
+	VectorCopy (start, trace_start);
+	VectorCopy (end, trace_end);
+	VectorCopy (mins, trace_mins);
+	VectorCopy (maxs, trace_maxs);
 
 	// 
 	// check for position test special case
@@ -1445,22 +1415,22 @@ trace_t CM_BoxTrace(vec3_t start, vec3_t end,
 		vec3_t c1, c2;
 		int topnode;
 
-		VectorAdd(start, mins, c1);
-		VectorAdd(start, maxs, c2);
+		VectorAdd (start, mins, c1);
+		VectorAdd (start, maxs, c2);
 		for (i = 0; i < 3; i++) {
 			c1[i] -= 1;
 			c2[i] += 1;
 		}
 
 		numLeafs =
-			CM_BoxLeafnums_headnode(c1, c2, leafs, 1024, headnode,
-									&topnode);
+			CM_BoxLeafnums_headnode (c1, c2, leafs, 1024, headnode,
+			&topnode);
 		for (i = 0; i < numLeafs; i++) {
-			CM_TestInLeaf(leafs[i]);
+			CM_TestInLeaf (leafs[i]);
 			if (trace_trace.allsolid)
 				break;
 		}
-		VectorCopy(start, trace_trace.endpos);
+		VectorCopy (start, trace_trace.endpos);
 		return trace_trace;
 	}
 	// 
@@ -1469,8 +1439,9 @@ trace_t CM_BoxTrace(vec3_t start, vec3_t end,
 	if (mins[0] == 0 && mins[1] == 0 && mins[2] == 0
 		&& maxs[0] == 0 && maxs[1] == 0 && maxs[2] == 0) {
 		trace_ispoint = true;
-		VectorClear(trace_extents);
-	} else {
+		VectorClear (trace_extents);
+	}
+	else {
 		trace_ispoint = false;
 		trace_extents[0] = -mins[0] > maxs[0] ? -mins[0] : maxs[0];
 		trace_extents[1] = -mins[1] > maxs[1] ? -mins[1] : maxs[1];
@@ -1481,14 +1452,15 @@ trace_t CM_BoxTrace(vec3_t start, vec3_t end,
 	// general sweeping through world
 	// 
 
-	CM_RecursiveHullCheck(headnode, 0, 1, start, end);
+	CM_RecursiveHullCheck (headnode, 0, 1, start, end);
 
 	if (trace_trace.fraction == 1) {
-		VectorCopy(end, trace_trace.endpos);
-	} else {
+		VectorCopy (end, trace_trace.endpos);
+	}
+	else {
 		for (i = 0; i < 3; i++)
 			trace_trace.endpos[i] =
-				start[i] + trace_trace.fraction * (end[i] - start[i]);
+			start[i] + trace_trace.fraction * (end[i] - start[i]);
 	}
 	return trace_trace;
 }
@@ -1503,11 +1475,10 @@ rotating entities
 ==================
 */
 
-trace_t CM_TransformedBoxTrace(vec3_t start, vec3_t end,
-							   vec3_t mins, vec3_t maxs,
-							   int headnode, int brushmask,
-							   vec3_t origin, vec3_t angles)
-{
+trace_t CM_TransformedBoxTrace (vec3_t start, vec3_t end,
+	vec3_t mins, vec3_t maxs,
+	int headnode, int brushmask,
+	vec3_t origin, vec3_t angles) {
 	trace_t trace;
 	vec3_t start_l, end_l;
 	vec3_t a;
@@ -1516,8 +1487,8 @@ trace_t CM_TransformedBoxTrace(vec3_t start, vec3_t end,
 	qboolean rotated;
 
 	// subtract origin offset
-	VectorSubtract(start, origin, start_l);
-	VectorSubtract(end, origin, end_l);
+	VectorSubtract (start, origin, start_l);
+	VectorSubtract (end, origin, end_l);
 
 	// rotate start and end into the models frame of reference
 	if (headnode != box_headnode && (angles[0] || angles[1] || angles[2]))
@@ -1526,30 +1497,30 @@ trace_t CM_TransformedBoxTrace(vec3_t start, vec3_t end,
 		rotated = false;
 
 	if (rotated) {
-		AngleVectors(angles, forward, right, up);
+		AngleVectors (angles, forward, right, up);
 
-		VectorCopy(start_l, temp);
-		start_l[0] = DotProduct(temp, forward);
-		start_l[1] = -DotProduct(temp, right);
-		start_l[2] = DotProduct(temp, up);
+		VectorCopy (start_l, temp);
+		start_l[0] = DotProduct (temp, forward);
+		start_l[1] = -DotProduct (temp, right);
+		start_l[2] = DotProduct (temp, up);
 
-		VectorCopy(end_l, temp);
-		end_l[0] = DotProduct(temp, forward);
-		end_l[1] = -DotProduct(temp, right);
-		end_l[2] = DotProduct(temp, up);
+		VectorCopy (end_l, temp);
+		end_l[0] = DotProduct (temp, forward);
+		end_l[1] = -DotProduct (temp, right);
+		end_l[2] = DotProduct (temp, up);
 	}
 	// sweep the box through the model
-	trace = CM_BoxTrace(start_l, end_l, mins, maxs, headnode, brushmask);
+	trace = CM_BoxTrace (start_l, end_l, mins, maxs, headnode, brushmask);
 
 	if (rotated && trace.fraction != 1.0) {
 		// FIXME: figure out how to do this with existing angles
-		VectorNegate(angles, a);
-		AngleVectors(a, forward, right, up);
+		VectorNegate (angles, a);
+		AngleVectors (a, forward, right, up);
 
-		VectorCopy(trace.plane.normal, temp);
-		trace.plane.normal[0] = DotProduct(temp, forward);
-		trace.plane.normal[1] = -DotProduct(temp, right);
-		trace.plane.normal[2] = DotProduct(temp, up);
+		VectorCopy (trace.plane.normal, temp);
+		trace.plane.normal[0] = DotProduct (temp, forward);
+		trace.plane.normal[1] = -DotProduct (temp, right);
+		trace.plane.normal[2] = DotProduct (temp, up);
 	}
 
 	trace.endpos[0] = start[0] + trace.fraction * (end[0] - start[0]);
@@ -1573,8 +1544,7 @@ PVS / PHS
 CM_DecompressVis
 ===================
 */
-void CM_DecompressVis(byte * in, byte * out)
-{
+void CM_DecompressVis (byte * in, byte * out) {
 	int c;
 	byte *out_p;
 	int row;
@@ -1600,7 +1570,7 @@ void CM_DecompressVis(byte * in, byte * out)
 		in += 2;
 		if ((out_p - out) + c > row) {
 			c = row - (out_p - out);
-			Com_DPrintf("warning: Vis decompression overrun\n");
+			Com_DPrintf ("warning: Vis decompression overrun\n");
 		}
 		while (c) {
 			*out_p++ = 0;
@@ -1612,23 +1582,21 @@ void CM_DecompressVis(byte * in, byte * out)
 byte pvsrow[MAX_MAP_LEAFS / 8];
 byte phsrow[MAX_MAP_LEAFS / 8];
 
-byte *CM_ClusterPVS(int cluster)
-{
+byte *CM_ClusterPVS (int cluster) {
 	if (cluster == -1)
-		memset(pvsrow, 0, (numclusters + 7) >> 3);
+		memset (pvsrow, 0, (numclusters + 7) >> 3);
 	else
-		CM_DecompressVis(map_visibility +
-						 map_vis->bitofs[cluster][DVIS_PVS], pvsrow);
+		CM_DecompressVis (map_visibility +
+		map_vis->bitofs[cluster][DVIS_PVS], pvsrow);
 	return pvsrow;
 }
 
-byte *CM_ClusterPHS(int cluster)
-{
+byte *CM_ClusterPHS (int cluster) {
 	if (cluster == -1)
-		memset(phsrow, 0, (numclusters + 7) >> 3);
+		memset (phsrow, 0, (numclusters + 7) >> 3);
 	else
-		CM_DecompressVis(map_visibility +
-						 map_vis->bitofs[cluster][DVIS_PHS], phsrow);
+		CM_DecompressVis (map_visibility +
+		map_vis->bitofs[cluster][DVIS_PHS], phsrow);
 	return phsrow;
 }
 
@@ -1641,15 +1609,14 @@ AREAPORTALS
 ===============================================================================
 */
 
-void FloodArea_r(carea_t * area, int floodnum)
-{
+void FloodArea_r (carea_t * area, int floodnum) {
 	int i;
 	dareaportal_t *p;
 
 	if (area->floodvalid == floodvalid) {
 		if (area->floodnum == floodnum)
 			return;
-		Com_Error(ERR_DROP, "FloodArea_r: reflooded");
+		Com_Error (ERR_DROP, "FloodArea_r: reflooded");
 	}
 
 	area->floodnum = floodnum;
@@ -1657,7 +1624,7 @@ void FloodArea_r(carea_t * area, int floodnum)
 	p = &map_areaportals[area->firstareaportal];
 	for (i = 0; i < area->numareaportals; i++, p++) {
 		if (portalopen[p->portalnum])
-			FloodArea_r(&map_areas[p->otherarea], floodnum);
+			FloodArea_r (&map_areas[p->otherarea], floodnum);
 	}
 }
 
@@ -1668,8 +1635,7 @@ FloodAreaConnections
 
 ====================
 */
-void FloodAreaConnections(void)
-{
+void FloodAreaConnections (void) {
 	int i;
 	carea_t *area;
 	int floodnum;
@@ -1684,27 +1650,25 @@ void FloodAreaConnections(void)
 		if (area->floodvalid == floodvalid)
 			continue;			// already flooded into
 		floodnum++;
-		FloodArea_r(area, floodnum);
+		FloodArea_r (area, floodnum);
 	}
 
 }
 
-void CM_SetAreaPortalState(int portalnum, qboolean open)
-{
+void CM_SetAreaPortalState (int portalnum, qboolean open) {
 	if (portalnum > numareaportals)
-		Com_Error(ERR_DROP, "areaportal > numareaportals");
+		Com_Error (ERR_DROP, "areaportal > numareaportals");
 
 	portalopen[portalnum] = open;
-	FloodAreaConnections();
+	FloodAreaConnections ();
 }
 
-qboolean CM_AreasConnected(int area1, int area2)
-{
+qboolean CM_AreasConnected (int area1, int area2) {
 	if (map_noareas->value)
 		return true;
 
 	if (area1 > numareas || area2 > numareas)
-		Com_Error(ERR_DROP, "area > numareas");
+		Com_Error (ERR_DROP, "area > numareas");
 
 	if (map_areas[area1].floodnum == map_areas[area2].floodnum)
 		return true;
@@ -1722,8 +1686,7 @@ that area in the same flood as the area parameter
 This is used by the client refreshes to cull visibility
 =================
 */
-int CM_WriteAreaBits(byte * buffer, int area)
-{
+int CM_WriteAreaBits (byte * buffer, int area) {
 	int i;
 	int floodnum;
 	int bytes;
@@ -1731,9 +1694,10 @@ int CM_WriteAreaBits(byte * buffer, int area)
 	bytes = (numareas + 7) >> 3;
 
 	if (map_noareas->value) {	// for debugging, send everything
-		memset(buffer, 255, bytes);
-	} else {
-		memset(buffer, 0, bytes);
+		memset (buffer, 255, bytes);
+	}
+	else {
+		memset (buffer, 0, bytes);
 
 		floodnum = map_areas[area].floodnum;
 		for (i = 0; i < numareas; i++) {
@@ -1753,9 +1717,8 @@ CM_WritePortalState
 Writes the portal state to a savegame file
 ===================
 */
-void CM_WritePortalState(FILE * f)
-{
-	fwrite(portalopen, sizeof(portalopen), 1, f);
+void CM_WritePortalState (FILE * f) {
+	fwrite (portalopen, sizeof(portalopen), 1, f);
 }
 
 /*
@@ -1766,10 +1729,9 @@ Reads the portal state from a savegame file
 and recalculates the area connections
 ===================
 */
-void CM_ReadPortalState(FILE * f)
-{
-	fread(portalopen, sizeof(portalopen),1, f);
-	FloodAreaConnections();
+void CM_ReadPortalState (FILE * f) {
+	fread (portalopen, sizeof(portalopen), 1, f);
+	FloodAreaConnections ();
 }
 
 /*
@@ -1780,8 +1742,7 @@ Returns true if any leaf under headnode has a cluster that
 is potentially visible
 =============
 */
-qboolean CM_HeadnodeVisible(int nodenum, byte * visbits)
-{
+qboolean CM_HeadnodeVisible (int nodenum, byte * visbits) {
 	int leafnum;
 	int cluster;
 	cnode_t *node;
@@ -1797,7 +1758,7 @@ qboolean CM_HeadnodeVisible(int nodenum, byte * visbits)
 	}
 
 	node = &map_nodes[nodenum];
-	if (CM_HeadnodeVisible(node->children[0], visbits))
+	if (CM_HeadnodeVisible (node->children[0], visbits))
 		return true;
-	return CM_HeadnodeVisible(node->children[1], visbits);
+	return CM_HeadnodeVisible (node->children[1], visbits);
 }

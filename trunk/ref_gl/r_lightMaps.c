@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -27,15 +27,15 @@ extern model_t *loadmodel;
 // need high precision to lower error on further bounces
 //
 const vec3_t r_xplmBasisVecs[XPLM_NUMVECS] = {
-	{  0.81649658092772603273242802490196f,  0.f                                , 0.57735026918962576450914878050195f },
-	{ -0.40824829046386301636621401245098f,  0.70710678118654752440084436210485f, 0.57735026918962576450914878050195f },
+	{ 0.81649658092772603273242802490196f, 0.f, 0.57735026918962576450914878050195f },
+	{ -0.40824829046386301636621401245098f, 0.70710678118654752440084436210485f, 0.57735026918962576450914878050195f },
 	{ -0.40824829046386301636621401245098f, -0.70710678118654752440084436210485f, 0.57735026918962576450914878050195f }
 };
 
 /*
 =============================================================================
 
-	LIGHTMAP ALLOCATION
+LIGHTMAP ALLOCATION
 
 =============================================================================
 */
@@ -73,7 +73,7 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 	int numMaps;
 
 	if (surf->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP))
-		VID_Error(ERR_DROP, "R_BuildLightMap(): called for non-lit surface.");
+		VID_Error (ERR_DROP, "R_BuildLightMap(): called for non-lit surface.");
 
 	surf->lightmaptexturenum = gl_lms.current_lightmap_texture;
 
@@ -85,120 +85,120 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 	stride -= smax * 3;
 
 	if (size > (sizeof(s_blocklights) / (int)loadmodel->lightmap_scale))
-		VID_Error(ERR_DROP, "R_BuildLightMap(): bad s_blocklights size.");
+		VID_Error (ERR_DROP, "R_BuildLightMap(): bad s_blocklights size.");
 
 	// count maps
 	if (surf->samples)
-		for (numMaps = 0; numMaps < MAXLIGHTMAPS && surf->styles[numMaps] != 255; numMaps++);
+	for (numMaps = 0; numMaps < MAXLIGHTMAPS && surf->styles[numMaps] != 255; numMaps++);
 
-for (k = 0; k < numVecs; k++) {
-	if (surf->samples) {
-		lm = surf->samples + k * size * 3;
+	for (k = 0; k < numVecs; k++) {
+		if (surf->samples) {
+			lm = surf->samples + k * size * 3;
 
-		// KRIGS:
-		// we don't refresh lightmaps at runtime anymore, so load only the first map
-		// use real-time lights for styling instead
-		if (1||numMaps == 1) {
-			// copy the lightmap
-			bl = s_blocklights;
-
-			for (i = 0; i < 3; i++)
-				scale[i] = r_newrefdef.lightstyles[surf->styles[0]].rgb[i];
-
-			if (scale[0] == 1.f && scale[1] == 1.f && scale[2] == 1.f) {
-				for (i = 0; i < size; i++, bl += 3, lm += 3) {
-					bl[0] = lm[0];
-					bl[1] = lm[1];
-					bl[2] = lm[2];
-				}
-			}
-			else {
-				for (i = 0; i < size; i++, bl += 3, lm += 3) {
-					bl[0] = lm[0] * scale[0];
-					bl[1] = lm[1] * scale[1];
-					bl[2] = lm[2] * scale[2];
-				}
-			}
-		}
-		else {
-			// add all the lightmaps
-			memset(s_blocklights, 0, sizeof(s_blocklights[0]) * size * 3);
-	
-			for (j = 0; j < numMaps; j++) {
+			// KRIGS:
+			// we don't refresh lightmaps at runtime anymore, so load only the first map
+			// use real-time lights for styling instead
+			if (1 || numMaps == 1) {
+				// copy the lightmap
 				bl = s_blocklights;
 
 				for (i = 0; i < 3; i++)
-					scale[i] = r_newrefdef.lightstyles[surf->styles[j]].rgb[i];
+					scale[i] = r_newrefdef.lightstyles[surf->styles[0]].rgb[i];
 
 				if (scale[0] == 1.f && scale[1] == 1.f && scale[2] == 1.f) {
 					for (i = 0; i < size; i++, bl += 3, lm += 3) {
-						bl[0] += lm[0];
-						bl[1] += lm[1];
-						bl[2] += lm[2];
+						bl[0] = lm[0];
+						bl[1] = lm[1];
+						bl[2] = lm[2];
 					}
 				}
 				else {
 					for (i = 0; i < size; i++, bl += 3, lm += 3) {
-						bl[0] += lm[0] * scale[0];
-						bl[1] += lm[1] * scale[1];
-						bl[2] += lm[2] * scale[2];
+						bl[0] = lm[0] * scale[0];
+						bl[1] = lm[1] * scale[1];
+						bl[2] = lm[2] * scale[2];
 					}
 				}
+			}
+			else {
+				// add all the lightmaps
+				memset (s_blocklights, 0, sizeof(s_blocklights[0]) * size * 3);
 
-				if (loadmodel->useXPLM)
-					lm += size * 6;	// skip the rest 6/9 to the next style's lightmap
+				for (j = 0; j < numMaps; j++) {
+					bl = s_blocklights;
+
+					for (i = 0; i < 3; i++)
+						scale[i] = r_newrefdef.lightstyles[surf->styles[j]].rgb[i];
+
+					if (scale[0] == 1.f && scale[1] == 1.f && scale[2] == 1.f) {
+						for (i = 0; i < size; i++, bl += 3, lm += 3) {
+							bl[0] += lm[0];
+							bl[1] += lm[1];
+							bl[2] += lm[2];
+						}
+					}
+					else {
+						for (i = 0; i < size; i++, bl += 3, lm += 3) {
+							bl[0] += lm[0] * scale[0];
+							bl[1] += lm[1] * scale[1];
+							bl[2] += lm[2] * scale[2];
+						}
+					}
+
+					if (loadmodel->useXPLM)
+						lm += size * 6;	// skip the rest 6/9 to the next style's lightmap
+				}
 			}
 		}
-	}
-	else {
-		// set to full bright if no light data
-		for (i = 0; i < size * 3; i++)
-			s_blocklights[i] = 255.f;
-	}
-
-	//
-	// put into texture format
-	//
-
-	bl = s_blocklights;
-
-	dest = gl_lms.lightmap_buffer[k];
-	dest += (surf->light_t * LIGHTMAP_SIZE + surf->light_s) * 3;
-
-	for (i = 0; i < tmax; i++, dest += stride) {
-		for (j = 0; j < smax; j++, bl += 3, dest += 3) {
-			r = Q_ftol(bl[0]);
-			g = Q_ftol(bl[1]);
-			b = Q_ftol(bl[2]);
-
-			// catch negative lights
-			r = max(r, 0);
-			g = max(g, 0);
-			b = max(b, 0);
-
-			// determine the brightest of the three color components
-			cmax = max(r, max(g, b));
-
-			// rescale all the color components if the intensity of the greatest channel exceeds 1.0
-			if (cmax > 255) {
-				float t = 255.f / cmax;
-
-				r *= t;
-				g *= t;
-				b *= t;
-			}
-
-			dest[0] = r;
-			dest[1] = g;
-			dest[2] = b;
+		else {
+			// set to full bright if no light data
+			for (i = 0; i < size * 3; i++)
+				s_blocklights[i] = 255.f;
 		}
-	}
-}	// for k
+
+		//
+		// put into texture format
+		//
+
+		bl = s_blocklights;
+
+		dest = gl_lms.lightmap_buffer[k];
+		dest += (surf->light_t * LIGHTMAP_SIZE + surf->light_s) * 3;
+
+		for (i = 0; i < tmax; i++, dest += stride) {
+			for (j = 0; j < smax; j++, bl += 3, dest += 3) {
+				r = Q_ftol (bl[0]);
+				g = Q_ftol (bl[1]);
+				b = Q_ftol (bl[2]);
+
+				// catch negative lights
+				r = max (r, 0);
+				g = max (g, 0);
+				b = max (b, 0);
+
+				// determine the brightest of the three color components
+				cmax = max (r, max (g, b));
+
+				// rescale all the color components if the intensity of the greatest channel exceeds 1.0
+				if (cmax > 255) {
+					float t = 255.f / cmax;
+
+					r *= t;
+					g *= t;
+					b *= t;
+				}
+
+				dest[0] = r;
+				dest[1] = g;
+				dest[2] = b;
+			}
+		}
+	}	// for k
 
 }
 
 static void LM_InitBlock (void) {
-	memset(gl_lms.allocated, 0, sizeof(gl_lms.allocated));
+	memset (gl_lms.allocated, 0, sizeof(gl_lms.allocated));
 }
 
 // FIXME: remove dynamic completely
@@ -207,31 +207,31 @@ static void LM_UploadBlock (qboolean dynamic) {
 	int texture = /*dynamic ? 0 : */gl_lms.current_lightmap_texture;
 	int height = 0;
 	int i;
-/*
-	if (dynamic) {
+	/*
+		if (dynamic) {
 		for (i = 0; i < LIGHTMAP_SIZE; i++) {
-			if (gl_lms.allocated[i] > height)
-				height = gl_lms.allocated[i];
+		if (gl_lms.allocated[i] > height)
+		height = gl_lms.allocated[i];
 		}
-	}
-*/
+		}
+		*/
 	// upload the finished atlas
 	for (i = 0; i < numVecs; i++) {
-		GL_Bind(gl_state.lightmap_textures + texture + i * MAX_LIGHTMAPS);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-/*
-		if (dynamic) {
-			qglTexSubImage2D(GL_TEXTURE_2D,
+		GL_Bind (gl_state.lightmap_textures + texture + i * MAX_LIGHTMAPS);
+		qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		/*
+				if (dynamic) {
+				qglTexSubImage2D(GL_TEXTURE_2D,
 				0,
 				0, 0,
 				LIGHTMAP_SIZE, height,
 				GL_LIGHTMAP_FORMAT,
 				GL_UNSIGNED_BYTE,
 				gl_lms.lightmap_buffer[i]);
-		}
-		else {
-*/			qglTexImage2D(GL_TEXTURE_2D,
+				}
+				else {
+				*/			qglTexImage2D (GL_TEXTURE_2D,
 				0,
 				gl_lms.internal_format,
 				LIGHTMAP_SIZE, LIGHTMAP_SIZE,
@@ -239,15 +239,15 @@ static void LM_UploadBlock (qboolean dynamic) {
 				GL_LIGHTMAP_FORMAT,
 				GL_UNSIGNED_BYTE,
 				gl_lms.lightmap_buffer[i]);
-//		}
+		//		}
 	}
 
 	// start new one
-//	if (!dynamic) {
-		// check if atlas limit is exceeded
-		if (++gl_lms.current_lightmap_texture == MAX_LIGHTMAPS)
-			VID_Error(ERR_DROP, "LM_UploadBlock(): MAX_LIGHTMAPS (%i) exceeded.\n", MAX_LIGHTMAPS);
-//	}
+	//	if (!dynamic) {
+	// check if atlas limit is exceeded
+	if (++gl_lms.current_lightmap_texture == MAX_LIGHTMAPS)
+		VID_Error (ERR_DROP, "LM_UploadBlock(): MAX_LIGHTMAPS (%i) exceeded.\n", MAX_LIGHTMAPS);
+	//	}
 }
 
 // returns a texture number and the position inside it
@@ -305,21 +305,21 @@ void GL_BuildPolygonFromSurface (msurface_t * fa) {
 	lnumverts = fa->numEdges;
 	vertpage = 0;
 
-	VectorClear(total);
+	VectorClear (total);
 	//
 	// draw texture
 	//
-	poly = (glpoly_t*)Hunk_Alloc(sizeof(glpoly_t) + (lnumverts - 4) * VERTEXSIZE * sizeof(float));
+	poly = (glpoly_t*)Hunk_Alloc (sizeof(glpoly_t)+(lnumverts - 4) * VERTEXSIZE * sizeof(float));
 	poly->next = fa->polys;
 	poly->flags = fa->flags;
 	fa->polys = poly;
 	poly->numVerts = lnumverts;
 
-	currentmodel->memorySize += sizeof(glpoly_t) + (lnumverts - 4) * VERTEXSIZE * sizeof(float);
+	currentmodel->memorySize += sizeof(glpoly_t)+(lnumverts - 4) * VERTEXSIZE * sizeof(float);
 
 	// reserve space for neighbour pointers
 	// FIXME: pointers don't need to be 4 bytes
-	poly->neighbours = (glpoly_t **)Hunk_Alloc (lnumverts*4);
+	poly->neighbours = (glpoly_t **)Hunk_Alloc (lnumverts * 4);
 
 	for (i = 0; i < lnumverts; i++) {
 		lindex = currentmodel->surfEdges[fa->firstedge + i];
@@ -327,62 +327,62 @@ void GL_BuildPolygonFromSurface (msurface_t * fa) {
 		if (lindex > 0) {
 			r_pedge = &pedges[lindex];
 			vec = currentmodel->vertexes[r_pedge->v[0]].position;
-		} else {
+		}
+		else {
 			r_pedge = &pedges[-lindex];
 			vec = currentmodel->vertexes[r_pedge->v[1]].position;
 		}
-		s = DotProduct(vec,
-					   fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
+		s = DotProduct (vec,
+			fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
 		s /= fa->texInfo->image->width;
 
-		t = DotProduct(vec,
-					   fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
+		t = DotProduct (vec,
+			fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
 		t /= fa->texInfo->image->height;
 
-		VectorAdd(total, vec, total);
-		VectorCopy(vec, poly->verts[i]);
+		VectorAdd (total, vec, total);
+		VectorCopy (vec, poly->verts[i]);
 		poly->verts[i][3] = s;
 		poly->verts[i][4] = t;
 
 		//
 		// lightmap texture coordinates
 		//
-		  s = DotProduct(vec, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
-          s -= fa->texturemins[0];
-          s += fa->light_s * loadmodel->lightmap_scale;
-          s += loadmodel->lightmap_scale / 2;
-          s /= LIGHTMAP_SIZE * loadmodel->lightmap_scale;
+		s = DotProduct (vec, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
+		s -= fa->texturemins[0];
+		s += fa->light_s * loadmodel->lightmap_scale;
+		s += loadmodel->lightmap_scale / 2;
+		s /= LIGHTMAP_SIZE * loadmodel->lightmap_scale;
 
-          t = DotProduct(vec, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
-          t -= fa->texturemins[1];
-          t += fa->light_t * loadmodel->lightmap_scale;
-          t += loadmodel->lightmap_scale / 2;
-          t /= LIGHTMAP_SIZE * loadmodel->lightmap_scale;
+		t = DotProduct (vec, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
+		t -= fa->texturemins[1];
+		t += fa->light_t * loadmodel->lightmap_scale;
+		t += loadmodel->lightmap_scale / 2;
+		t /= LIGHTMAP_SIZE * loadmodel->lightmap_scale;
 
 		poly->verts[i][5] = s;
 		poly->verts[i][6] = t;
 
 		// Store in the tempedges table that this polygon uses the edge
-		tempEdge = tempEdges+abs(lindex);
-		if (tempEdge->used < 2)
-			{
-				tempEdge->poly[tempEdge->used]  = poly;
-				tempEdge->used++;
-			}
-			else
-				Com_DPrintf ("GL_BuildPolygonFromSurface: Edge used by more than 2 surfaces\n");
-		
+		tempEdge = tempEdges + abs (lindex);
+		if (tempEdge->used < 2) {
+			tempEdge->poly[tempEdge->used] = poly;
+			tempEdge->used++;
+		}
+		else
+			Com_DPrintf ("GL_BuildPolygonFromSurface: Edge used by more than 2 surfaces\n");
+
 	}
 
 	poly->numVerts = lnumverts;
 
-	VectorScale(total, 1.0f / (float) lnumverts, total);
+	VectorScale (total, 1.0f / (float)lnumverts, total);
 
 	fa->c_s =
-		(DotProduct(total, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3])
+		(DotProduct (total, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3])
 		/ fa->texInfo->image->width;
 	fa->c_t =
-		(DotProduct(total, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3])
+		(DotProduct (total, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3])
 		/ fa->texInfo->image->height;
 }
 
@@ -398,19 +398,19 @@ void GL_CreateSurfaceLightmap (msurface_t * surf) {
 	if (surf->flags & (MSURF_DRAWSKY | MSURF_DRAWTURB))
 		return;
 
-	smax = (surf->extents[0] / loadmodel->lightmap_scale) + 1; 
+	smax = (surf->extents[0] / loadmodel->lightmap_scale) + 1;
 	tmax = (surf->extents[1] / loadmodel->lightmap_scale) + 1;
-	
-	if (!LM_AllocBlock(smax, tmax, &surf->light_s, &surf->light_t)) {
-		LM_UploadBlock(false);
-		LM_InitBlock();
 
-		if (!LM_AllocBlock(smax, tmax, &surf->light_s, &surf->light_t))
-			VID_Error(ERR_FATAL, "GL_CreateSurfaceLightmap(): consecutive calls to LM_AllocBlock(%d, %d) failed.\n", smax, tmax);
+	if (!LM_AllocBlock (smax, tmax, &surf->light_s, &surf->light_t)) {
+		LM_UploadBlock (false);
+		LM_InitBlock ();
+
+		if (!LM_AllocBlock (smax, tmax, &surf->light_s, &surf->light_t))
+			VID_Error (ERR_FATAL, "GL_CreateSurfaceLightmap(): consecutive calls to LM_AllocBlock(%d, %d) failed.\n", smax, tmax);
 	}
 
-	R_SetCacheState(surf);
-	R_BuildLightMap(surf, LIGHTMAP_SIZE * 3);
+	R_SetCacheState (surf);
+	R_BuildLightMap (surf, LIGHTMAP_SIZE * 3);
 }
 
 extern int occ_framecount;
@@ -424,16 +424,16 @@ GL_BeginBuildingLightmaps
 void GL_BeginBuildingLightmaps (model_t *m) {
 	static lightstyle_t lightstyles[MAX_LIGHTSTYLES];
 	int i;
-//	byte *dummy;
+	//	byte *dummy;
 
-	memset(gl_lms.allocated, 0, sizeof(gl_lms.allocated));
-	
-//	dummy = (byte*)Z_Malloc(LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3);
-	
+	memset (gl_lms.allocated, 0, sizeof(gl_lms.allocated));
+
+	//	dummy = (byte*)Z_Malloc(LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3);
+
 	occ_framecount = r_framecount = 1;
 
-	GL_SelectTexture( GL_TEXTURE1 );
-	qglEnable( GL_TEXTURE_2D );
+	GL_SelectTexture (GL_TEXTURE1);
+	qglEnable (GL_TEXTURE_2D);
 
 	/*
 	 ** setup the base lightstyles so the lightmaps won't have to be regenerated
@@ -456,17 +456,17 @@ void GL_BeginBuildingLightmaps (model_t *m) {
 	/*
 	 ** initialize the dynamic lightmap texture
 	 */
-/*
-	GL_Bind(gl_state.lightmap_textures + 0);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexImage2D(GL_TEXTURE_2D,
-				  0,
-				  gl_lms.internal_format,
-				  LIGHTMAP_SIZE, LIGHTMAP_SIZE,
-				  0, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, dummy);
-*/	
-//	Z_Free(dummy);
+	/*
+		GL_Bind(gl_state.lightmap_textures + 0);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglTexImage2D(GL_TEXTURE_2D,
+		0,
+		gl_lms.internal_format,
+		LIGHTMAP_SIZE, LIGHTMAP_SIZE,
+		0, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, dummy);
+		*/
+	//	Z_Free(dummy);
 }
 
 /*
@@ -474,12 +474,11 @@ void GL_BeginBuildingLightmaps (model_t *m) {
 GL_EndBuildingLightmaps
 =======================
 */
-void GL_EndBuildingLightmaps(void)
-{
-	LM_UploadBlock(false);
+void GL_EndBuildingLightmaps (void) {
+	LM_UploadBlock (false);
 
-	GL_SelectTexture( GL_TEXTURE1 );
-	qglDisable( GL_TEXTURE_2D );
-	GL_SelectTexture( GL_TEXTURE0 );
+	GL_SelectTexture (GL_TEXTURE1);
+	qglDisable (GL_TEXTURE_2D);
+	GL_SelectTexture (GL_TEXTURE0);
 }
 

@@ -88,23 +88,23 @@ cvar_t *net_compatibility;
 cvar_t *r_radialBlur;
 
 
-void SpawnEntities(char *mapname, char *entities, char *spawnpoint);
-void ClientThink(edict_t * ent, usercmd_t * cmd);
-qboolean ClientConnect(edict_t * ent, char *userinfo, qboolean loadgame);
-void ClientUserinfoChanged(edict_t * ent, char *userinfo);
-void ClientDisconnect(edict_t * ent);
-void ClientBegin(edict_t * ent, qboolean loadgame);
-void ClientCommand(edict_t * ent);
-void RunEntity(edict_t * ent);
-void WriteGame(char *filename);
-void ReadGame(char *filename);
-void WriteLevel(char *filename);
-void ReadLevel(char *filename);
-void InitGame(void);
-void G_RunFrame(void);
+void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
+void ClientThink (edict_t * ent, usercmd_t * cmd);
+qboolean ClientConnect (edict_t * ent, char *userinfo, qboolean loadgame);
+void ClientUserinfoChanged (edict_t * ent, char *userinfo);
+void ClientDisconnect (edict_t * ent);
+void ClientBegin (edict_t * ent, qboolean loadgame);
+void ClientCommand (edict_t * ent);
+void RunEntity (edict_t * ent);
+void WriteGame (char *filename);
+void ReadGame (char *filename);
+void WriteLevel (char *filename);
+void ReadLevel (char *filename);
+void InitGame (void);
+void G_RunFrame (void);
 
-void SetBotFlag1(edict_t * ent);
-void SetBotFlag2(edict_t * ent);
+void SetBotFlag1 (edict_t * ent);
+void SetBotFlag2 (edict_t * ent);
 
 //===================================================================
 
@@ -117,22 +117,20 @@ Returns a pointer to the structure with all entry points
 and global variables
 =================
 */
-void ShutdownGame(void)
-{
-	gi.dprintf("==== ShutdownGame ====\n");
+void ShutdownGame (void) {
+	gi.dprintf ("==== ShutdownGame ====\n");
 
-//  Bot_LevelChange();
+	//  Bot_LevelChange();
 
-	gi.FreeTags(TAG_LEVEL);
-	gi.FreeTags(TAG_GAME);
-	SetBotFlag1(NULL);
-	SetBotFlag2(NULL);
+	gi.FreeTags (TAG_LEVEL);
+	gi.FreeTags (TAG_GAME);
+	SetBotFlag1 (NULL);
+	SetBotFlag2 (NULL);
 }
 
 //void Dummy (void) {};
 
-game_export_t *GetGameAPI(game_import_t * import)
-{
+game_export_t *GetGameAPI (game_import_t * import) {
 	gi = *import;
 
 	globals.apiversion = GAME_API_VERSION;
@@ -163,28 +161,26 @@ game_export_t *GetGameAPI(game_import_t * import)
 
 #ifndef GAME_HARD_LINKED
 // this is only here so the functions in q_shared.c and q_shwin.c can link
-void Sys_Error(char *error, ...)
-{
+void Sys_Error (char *error, ...) {
 	va_list argptr;
 	char text[1024];
 
-	va_start(argptr, error);
-	vsnprintf(text, sizeof(text), error, argptr);
-	va_end(argptr);
+	va_start (argptr, error);
+	vsnprintf (text, sizeof(text), error, argptr);
+	va_end (argptr);
 
-	gi.error(ERR_FATAL, "%s", text);
+	gi.error (ERR_FATAL, "%s", text);
 }
 
-void Com_Printf(char *msg, ...)
-{
+void Com_Printf (char *msg, ...) {
 	va_list argptr;
 	char text[1024];
 
-	va_start(argptr, msg);
-	vsnprintf(text, sizeof(text), msg, argptr);
-	va_end(argptr);
+	va_start (argptr, msg);
+	vsnprintf (text, sizeof(text), msg, argptr);
+	va_end (argptr);
 
-	gi.dprintf("%s", text);
+	gi.dprintf ("%s", text);
 }
 
 #endif
@@ -197,8 +193,7 @@ void Com_Printf(char *msg, ...)
 ClientEndServerFrames
 =================
 */
-void ClientEndServerFrames(void)
-{
+void ClientEndServerFrames (void) {
 	int i;
 	edict_t *ent;
 
@@ -209,7 +204,7 @@ void ClientEndServerFrames(void)
 		if (!ent->inuse || !ent->client)
 			continue;
 		if (!(ent->svflags & SVF_MONSTER))
-			ClientEndServerFrame(ent);
+			ClientEndServerFrame (ent);
 	}
 
 }
@@ -222,8 +217,7 @@ GetNextMap
 get next map's file name
 =================
 */
-void Get_NextMap()
-{
+void Get_NextMap () {
 	FILE *fp;
 	qboolean firstflag = false;
 	char Buff[MAX_QPATH];
@@ -234,14 +228,14 @@ void Get_NextMap()
 	if (!maplist->string)
 		return;
 
-	sprintf(Buff, ".\\%s\\3ZBMAPS.LST", gamepath->string);
-	fp = fopen(Buff, "r");
+	sprintf (Buff, ".\\%s\\3ZBMAPS.LST", gamepath->string);
+	fp = fopen (Buff, "r");
 	if (fp == NULL)
 		return;
 
 	// search section
 	while (1) {
-		if (fgets(Buff, sizeof(Buff), fp) == NULL)
+		if (fgets (Buff, sizeof(Buff), fp) == NULL)
 			goto NONEXTMAP;
 
 		if (Buff[0] != '[')
@@ -261,67 +255,70 @@ void Get_NextMap()
 			}
 		}
 		// compare map section name
-		if (Q_stricmp(&Buff[1], maplist->string) == 0)
+		if (Q_stricmp (&Buff[1], maplist->string) == 0)
 			break;
 	}
 
 	// search current mapname
 	while (1) {
-		if (fgets(Buff, sizeof(Buff), fp) == NULL)
+		if (fgets (Buff, sizeof(Buff), fp) == NULL)
 			goto NONEXTMAP;
 
 		if (Buff[0] == '[') {
 			if (firstflag) {
-				strcpy(nextmap, top);
+				strcpy (nextmap, top);
 				goto SETNEXTMAP;
-			} else
+			}
+			else
 				goto NONEXTMAP;
 		}
 
 		if (Buff[0] == '\n')
 			continue;
 
-		sscanf(Buff, "%s", nextmap);
+		sscanf (Buff, "%s", nextmap);
 
 		if (!firstflag) {
 			firstflag = true;
-			strcpy(top, nextmap);
+			strcpy (top, nextmap);
 		}
 
-		if (Q_stricmp(level.mapname, nextmap) == 0)
+		if (Q_stricmp (level.mapname, nextmap) == 0)
 			break;
 	}
 
 	// search nextmap
 	while (1) {
-		if (fgets(Buff, sizeof(Buff), fp) == NULL) {
+		if (fgets (Buff, sizeof(Buff), fp) == NULL) {
 			if (firstflag) {
-				strcpy(nextmap, top);
+				strcpy (nextmap, top);
 				goto SETNEXTMAP;
-			} else
+			}
+			else
 				goto NONEXTMAP;
 		}
 
 		if (Buff[0] == '[') {
 			if (firstflag) {
-				strcpy(nextmap, top);
+				strcpy (nextmap, top);
 				goto SETNEXTMAP;
-			} else
+			}
+			else
 				goto NONEXTMAP;
 		}
 
 		if (Buff[0] == '\n')
 			continue;
 
-		sscanf(Buff, "%s", nextmap);
+		sscanf (Buff, "%s", nextmap);
 		break;
 	}
-  SETNEXTMAP:
+SETNEXTMAP:
 
-	strcpy(level.nextmap, nextmap);
+	strcpy (level.nextmap, nextmap);
 
-  NONEXTMAP:
-	fclose(fp);
+NONEXTMAP:
+	fclose (fp);
 
 }
 
@@ -332,37 +329,38 @@ EndDMLevel
 The timelimit or fraglimit has been exceeded
 =================
 */
-void EndDMLevel(void)
-{
+void EndDMLevel (void) {
 	edict_t *ent;
 
-	Get_NextMap();
+	Get_NextMap ();
 
 	// stay on same level flag
-	if ((int) dmflags->value & DF_SAME_LEVEL) {
-		ent = G_Spawn();
+	if ((int)dmflags->value & DF_SAME_LEVEL) {
+		ent = G_Spawn ();
 		ent->classname = "target_changelevel";
 		ent->map = level.mapname;
-	} else if (level.nextmap) {	// go to a specific map
-		ent = G_Spawn();
+	}
+	else if (level.nextmap) {	// go to a specific map
+		ent = G_Spawn ();
 		ent->classname = "target_changelevel";
 		ent->map = level.nextmap;
-	} else {					// search for a changeleve
-		ent = G_Find(NULL, FOFS(classname), "target_changelevel");
+	}
+	else {					// search for a changeleve
+		ent = G_Find (NULL, FOFS (classname), "target_changelevel");
 		if (!ent) {				// the map designer didn't include a
-								// changelevel,
+			// changelevel,
 			// so create a fake ent that goes back to the same level
-			ent = G_Spawn();
+			ent = G_Spawn ();
 			ent->classname = "target_changelevel";
 			ent->map = level.mapname;
 		}
 	}
 
-	BeginIntermission(ent);
+	BeginIntermission (ent);
 
-//PONKO
-	Bot_LevelChange();
-//PONKO
+	//PONKO
+	Bot_LevelChange ();
+	//PONKO
 }
 
 /*
@@ -370,8 +368,7 @@ void EndDMLevel(void)
 CheckNeedPass
 =================
 */
-void CheckNeedPass(void)
-{
+void CheckNeedPass (void) {
 	int need;
 
 	// if password or spectator_password has changed, update needpass
@@ -381,13 +378,13 @@ void CheckNeedPass(void)
 
 		need = 0;
 
-		if (*password->string && Q_stricmp(password->string, "none"))
+		if (*password->string && Q_stricmp (password->string, "none"))
 			need |= 1;
 		if (*spectator_password->string
-			&& Q_stricmp(spectator_password->string, "none"))
+			&& Q_stricmp (spectator_password->string, "none"))
 			need |= 2;
 
-		gi.cvar_set("needpass", va("%d", need));
+		gi.cvar_set ("needpass", va ("%d", need));
 	}
 }
 
@@ -396,8 +393,7 @@ void CheckNeedPass(void)
 CheckDMRules
 =================
 */
-void CheckDMRules(void)
-{
+void CheckDMRules (void) {
 	int i;
 	gclient_t *cl;
 
@@ -409,28 +405,28 @@ void CheckDMRules(void)
 
 	if (timelimit->value) {
 		if (level.time >= timelimit->value * 60) {
-			gi.bprintf(PRINT_HIGH, "Timelimit hit.\n");
-			EndDMLevel();
+			gi.bprintf (PRINT_HIGH, "Timelimit hit.\n");
+			EndDMLevel ();
 			return;
 		}
 	}
 
 	if (fraglimit->value) {
-//ZOID
+		//ZOID
 		if (ctf->value) {
-			if (CTFCheckRules()) {
-				EndDMLevel();
+			if (CTFCheckRules ()) {
+				EndDMLevel ();
 			}
 		}
-//ZOID
+		//ZOID
 		for (i = 0; i < maxclients->value; i++) {
 			cl = game.clients + i;
 			if (!g_edicts[i + 1].inuse)
 				continue;
 
 			if (cl->resp.score >= fraglimit->value) {
-				gi.bprintf(PRINT_HIGH, "Fraglimit hit.\n");
-				EndDMLevel();
+				gi.bprintf (PRINT_HIGH, "Fraglimit hit.\n");
+				EndDMLevel ();
 				return;
 			}
 		}
@@ -443,19 +439,18 @@ void CheckDMRules(void)
 ExitLevel
 =============
 */
-void ExitLevel(void)
-{
+void ExitLevel (void) {
 	int i;
 	edict_t *ent;
 	char command[256];
 
-	Com_sprintf(command, sizeof(command), "gamemap \"%s\"\n",
-				level.changemap);
-	gi.AddCommandString(command);
+	Com_sprintf (command, sizeof(command), "gamemap \"%s\"\n",
+		level.changemap);
+	gi.AddCommandString (command);
 	level.changemap = NULL;
 	level.exitintermission = 0;
 	level.intermissiontime = 0;
-	ClientEndServerFrames();
+	ClientEndServerFrames ();
 
 	// clear some things before going to next level
 	for (i = 0; i < maxclients->value; i++) {
@@ -466,12 +461,12 @@ void ExitLevel(void)
 			ent->health = ent->client->pers.max_health;
 	}
 
-	SetBotFlag1(NULL);
-	SetBotFlag2(NULL);
+	SetBotFlag1 (NULL);
+	SetBotFlag2 (NULL);
 
-//ZOID
-	CTFInit();
-//ZOID
+	//ZOID
+	CTFInit ();
+	//ZOID
 }
 
 /*
@@ -482,10 +477,9 @@ Advances the world by 0.1 seconds
 ================
 */
 
-void G_InitEdict(edict_t * e);
+void G_InitEdict (edict_t * e);
 
-void G_RunFrame(void)
-{
+void G_RunFrame (void) {
 	int i, j;
 	static int ofs;
 	static float next_fragadd = 0;
@@ -493,30 +487,31 @@ void G_RunFrame(void)
 
 	vec3_t v, vv;
 	qboolean haveflag;
-	
+
 
 	level.framenum++;
 	level.time = level.framenum * FRAMETIME;
 
 	// choose a client for monsters to target this frame
-//  AI_SetSightClient ();
+	//  AI_SetSightClient ();
 
 	// exit intermissions
 
 	if (level.exitintermission) {
-		ExitLevel();
+		ExitLevel ();
 		return;
 	}
-//
-// Bot Spawning
-//
+	//
+	// Bot Spawning
+	//
 	if (SpawnWaitingBots && !level.intermissiontime) {
 		if (spawncycle < level.time) {
-			Bot_SpawnCall();
+			Bot_SpawnCall ();
 			spawncycle =
 				level.time + FRAMETIME * 10 + 0.01 * SpawnWaitingBots;
 		}
-	} else {
+	}
+	else {
 		if (spawncycle < level.time)
 			spawncycle = level.time + FRAMETIME * 10;
 	}
@@ -532,23 +527,23 @@ void G_RunFrame(void)
 
 		level.current_entity = ent;
 
-		VectorCopy(ent->s.origin, ent->s.old_origin);
+		VectorCopy (ent->s.origin, ent->s.old_origin);
 
 		// if the ground entity moved, make sure we are still on it
 		if ((ent->groundentity)
 			&& (ent->groundentity->linkcount !=
-				ent->groundentity_linkcount)) {
+			ent->groundentity_linkcount)) {
 			ent->groundentity = NULL;
 			if (!(ent->flags & (FL_SWIM | FL_FLY))
 				&& (ent->svflags & SVF_MONSTER)) {
-				M_CheckGround(ent);
+				M_CheckGround (ent);
 			}
 		}
 		// ctf job assign
 		if (ctf->value) {
 			if (ctfjob_update < level.time) {
-//gi.bprintf(PRINT_HIGH,"Assigned!!!\n");
-				CTFJobAssign();
+				//gi.bprintf(PRINT_HIGH,"Assigned!!!\n");
+				CTFJobAssign ();
 				ctfjob_update = level.time + FRAMETIME * 2;
 			}
 		}
@@ -557,15 +552,15 @@ void G_RunFrame(void)
 			if (next_fragadd < level.time) {
 				if (i > 0 && i <= maxclients->value && g_edicts[i].client) {
 					if (g_edicts[i].client->pers.
-						inventory[ITEM_INDEX(zflag_item)]) {
+						inventory[ITEM_INDEX (zflag_item)]) {
 						zflag_ent = NULL;
 						haveflag = true;
-						gi.sound(ent, CHAN_VOICE,
-								 gi.soundindex("misc/secret.wav"), 1,
-								 ATTN_NORM, 0);
+						gi.sound (ent, CHAN_VOICE,
+							gi.soundindex ("misc/secret.wav"), 1,
+							ATTN_NORM, 0);
 						if (!
-							((int) (dmflags->value) &
-							 (DF_MODELTEAMS | DF_SKINTEAMS)))
+							((int)(dmflags->value) &
+							(DF_MODELTEAMS | DF_SKINTEAMS)))
 							g_edicts[i].client->resp.score += 1;
 						else {
 							for (j = 1; j <= maxclients->value; j++) {
@@ -573,7 +568,7 @@ void G_RunFrame(void)
 									if (OnSameTeam
 										(&g_edicts[i], &g_edicts[j]))
 										g_edicts[j].client->resp.score +=
-											1;
+										1;
 								}
 							}
 						}
@@ -582,10 +577,10 @@ void G_RunFrame(void)
 				if (zflag_ent != NULL) {
 					if (!zflag_ent->inuse) {
 						// item = FindItem("Zig Flag");
-						SelectSpawnPoint(ent, v, vv);
+						SelectSpawnPoint (ent, v, vv);
 						// VectorCopy (v, ent->s.origin);
-						if (ZIGDrop_Flag(ent, zflag_item)) {
-							VectorCopy(v, zflag_ent->s.origin);
+						if (ZIGDrop_Flag (ent, zflag_item)) {
+							VectorCopy (v, zflag_ent->s.origin);
 						}
 					}
 				}
@@ -593,31 +588,31 @@ void G_RunFrame(void)
 		}
 		if (i > 0 && i <= maxclients->value
 			&& !(ent->svflags & SVF_MONSTER)) {
-			ClientBeginServerFrame(ent);
+			ClientBeginServerFrame (ent);
 			continue;
 		}
 
-		G_RunEntity(ent);
+		G_RunEntity (ent);
 	}
 
 	if (next_fragadd < level.time) {
 		if (zflag_ent == NULL && !haveflag && !ctf->value
 			&& zigmode->value == 1 && zigflag_spawn == 2) {
-			SelectSpawnPoint(ent, v, vv);
+			SelectSpawnPoint (ent, v, vv);
 			// VectorCopy (v, ent->s.origin);
-			if (ZIGDrop_Flag(ent, zflag_item)) {
-				VectorCopy(v, zflag_ent->s.origin);
+			if (ZIGDrop_Flag (ent, zflag_item)) {
+				VectorCopy (v, zflag_ent->s.origin);
 			}
 		}
 
 		next_fragadd = level.time + FRAMETIME * 100;
 	}
 	// see if it is time to end a deathmatch
-	CheckDMRules();
+	CheckDMRules ();
 
 	// see if needpass needs updated
-	CheckNeedPass();
+	CheckNeedPass ();
 
 	// build the playerstate_t structures for all players
-	ClientEndServerFrames();
+	ClientEndServerFrames ();
 }

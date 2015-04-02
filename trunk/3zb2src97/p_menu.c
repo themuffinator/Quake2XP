@@ -19,8 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "g_local.h"
 
-void PMenu_Open(edict_t * ent, pmenu_t * entries, int cur, int num)
-{
+void PMenu_Open (edict_t * ent, pmenu_t * entries, int cur, int num) {
 	pmenuhnd_t *hnd;
 	pmenu_t *p;
 	int i;
@@ -29,20 +28,21 @@ void PMenu_Open(edict_t * ent, pmenu_t * entries, int cur, int num)
 		return;
 
 	if (ent->client->menu) {
-		gi.dprintf("warning, ent already has a menu\n");
-		PMenu_Close(ent);
+		gi.dprintf ("warning, ent already has a menu\n");
+		PMenu_Close (ent);
 	}
 
-	hnd = malloc(sizeof(*hnd));
+	hnd = malloc (sizeof(*hnd));
 
 	hnd->entries = entries;
 	hnd->num = num;
 
 	if (cur < 0 || !entries[cur].SelectFunc) {
 		for (i = 0, p = entries; i < num; i++, p++)
-			if (p->SelectFunc)
-				break;
-	} else
+		if (p->SelectFunc)
+			break;
+	}
+	else
 		i = cur;
 
 	if (i >= num)
@@ -55,23 +55,21 @@ void PMenu_Open(edict_t * ent, pmenu_t * entries, int cur, int num)
 	ent->client->menu = hnd;
 
 	if (!(ent->svflags & SVF_MONSTER)) {
-		PMenu_Update(ent);
-		gi.unicast(ent, true);
+		PMenu_Update (ent);
+		gi.unicast (ent, true);
 	}
 }
 
-void PMenu_Close(edict_t * ent)
-{
+void PMenu_Close (edict_t * ent) {
 	if (!ent->client->menu)
 		return;
 
-	free(ent->client->menu);
+	free (ent->client->menu);
 	ent->client->menu = NULL;
 	ent->client->showscores = false;
 }
 
-void PMenu_Update(edict_t * ent)
-{
+void PMenu_Update (edict_t * ent) {
 	char string[1400];
 	int i;
 	pmenu_t *p;
@@ -81,13 +79,13 @@ void PMenu_Update(edict_t * ent)
 	qboolean alt = false;
 
 	if (!ent->client->menu) {
-		gi.dprintf("warning:  ent has no menu\n");
+		gi.dprintf ("warning:  ent has no menu\n");
 		return;
 	}
 
 	hnd = ent->client->menu;
 
-	strcpy(string, "xv 32 yv 8 picn inventory ");
+	strcpy (string, "xv 32 yv 8 picn inventory ");
 
 	for (i = 0, p = hnd->entries; i < hnd->num; i++, p++) {
 		if (!p->text || !*(p->text))
@@ -97,38 +95,37 @@ void PMenu_Update(edict_t * ent)
 			alt = true;
 			t++;
 		}
-		sprintf(string + strlen(string), "yv %d ", 32 + i * 8);
+		sprintf (string + strlen (string), "yv %d ", 32 + i * 8);
 		if (p->align == PMENU_ALIGN_CENTER)
-			x = 196 / 2 - strlen(t) * 4 + 64;
+			x = 196 / 2 - strlen (t) * 4 + 64;
 		else if (p->align == PMENU_ALIGN_RIGHT)
-			x = 64 + (196 - strlen(t) * 8);
+			x = 64 + (196 - strlen (t) * 8);
 		else
 			x = 64;
 
-		sprintf(string + strlen(string), "xv %d ",
-				x - ((hnd->cur == i) ? 8 : 0));
+		sprintf (string + strlen (string), "xv %d ",
+			x - ((hnd->cur == i) ? 8 : 0));
 
 		if (hnd->cur == i)
-			sprintf(string + strlen(string), "string2 \"\x0d%s\" ", t);
+			sprintf (string + strlen (string), "string2 \"\x0d%s\" ", t);
 		else if (alt)
-			sprintf(string + strlen(string), "string2 \"%s\" ", t);
+			sprintf (string + strlen (string), "string2 \"%s\" ", t);
 		else
-			sprintf(string + strlen(string), "string \"%s\" ", t);
+			sprintf (string + strlen (string), "string \"%s\" ", t);
 		alt = false;
 	}
 
-	gi.WriteByte(svc_layout);
-	gi.WriteString(string);
+	gi.WriteByte (svc_layout);
+	gi.WriteString (string);
 }
 
-void PMenu_Next(edict_t * ent)
-{
+void PMenu_Next (edict_t * ent) {
 	pmenuhnd_t *hnd;
 	int i;
 	pmenu_t *p;
 
 	if (!ent->client->menu) {
-		gi.dprintf("warning:  ent has no menu\n");
+		gi.dprintf ("warning:  ent has no menu\n");
 		return;
 	}
 
@@ -149,19 +146,18 @@ void PMenu_Next(edict_t * ent)
 
 	hnd->cur = i;
 	if (!(ent->svflags & SVF_MONSTER)) {
-		PMenu_Update(ent);
-		gi.unicast(ent, true);
+		PMenu_Update (ent);
+		gi.unicast (ent, true);
 	}
 }
 
-void PMenu_Prev(edict_t * ent)
-{
+void PMenu_Prev (edict_t * ent) {
 	pmenuhnd_t *hnd;
 	int i;
 	pmenu_t *p;
 
 	if (!ent->client->menu) {
-		gi.dprintf("warning:  ent has no menu\n");
+		gi.dprintf ("warning:  ent has no menu\n");
 		return;
 	}
 
@@ -176,7 +172,8 @@ void PMenu_Prev(edict_t * ent)
 		if (i == 0) {
 			i = hnd->num - 1;
 			p = hnd->entries + i;
-		} else
+		}
+		else
 			i--, p--;
 		if (p->SelectFunc)
 			break;
@@ -185,18 +182,17 @@ void PMenu_Prev(edict_t * ent)
 	hnd->cur = i;
 
 	if (!(ent->svflags & SVF_MONSTER)) {
-		PMenu_Update(ent);
-		gi.unicast(ent, true);
+		PMenu_Update (ent);
+		gi.unicast (ent, true);
 	}
 }
 
-void PMenu_Select(edict_t * ent)
-{
+void PMenu_Select (edict_t * ent) {
 	pmenuhnd_t *hnd;
 	pmenu_t *p;
 
 	if (!ent->client->menu) {
-		gi.dprintf("warning:  ent has no menu\n");
+		gi.dprintf ("warning:  ent has no menu\n");
 		return;
 	}
 
@@ -208,5 +204,5 @@ void PMenu_Select(edict_t * ent)
 	p = hnd->entries + hnd->cur;
 
 	if (p->SelectFunc)
-		p->SelectFunc(ent, p);
+		p->SelectFunc (ent, p);
 }

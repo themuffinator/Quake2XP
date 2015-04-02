@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -43,20 +43,20 @@ typedef struct {
 	int vislines;
 
 	float times[NUM_CON_TIMES];	// cls.realtime time the line was
-								// generated
+	// generated
 	// for transparent notify lines
 } console_t;
 
 extern console_t con;
 
-void Con_DrawCharacter(int cx, int line, int num);
+void Con_DrawCharacter (int cx, int line, int num);
 
-void Con_CheckResize(void);
-void Con_Init(void);
-void Con_DrawConsole(float frac);
-void Con_Print(char *txt);
-void Con_CenteredPrint(char *text);
-void Con_Clear_f(void);
-void Con_DrawNotify(void);
-void Con_ClearNotify(void);
-void Con_ToggleConsole_f(void);
+void Con_CheckResize (void);
+void Con_Init (void);
+void Con_DrawConsole (float frac);
+void Con_Print (char *txt);
+void Con_CenteredPrint (char *text);
+void Con_Clear_f (void);
+void Con_DrawNotify (void);
+void Con_ClearNotify (void);
+void Con_ToggleConsole_f (void);

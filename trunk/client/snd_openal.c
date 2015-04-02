@@ -75,30 +75,30 @@ typedef struct {
 
 streaming_t streaming;
 
-static __inline void sq_add(ALuint x) {
+static __inline void sq_add (ALuint x) {
 	int tail = (streaming.bFirst + streaming.bNumAvail) % NUM_STRBUF;
 
 	// assuming non-full queue
-	assert(streaming.bNumAvail < NUM_STRBUF);
+	assert (streaming.bNumAvail < NUM_STRBUF);
 
 	streaming.buffers[tail] = x;
 	streaming.bNumAvail++;
 }
 
-static __inline ALuint sq_remove(void) {
+static __inline ALuint sq_remove (void) {
 	ALuint r;
 
 	// assuming non-empty queue
-	assert(streaming.bNumAvail > 0);
+	assert (streaming.bNumAvail > 0);
 
 	r = streaming.buffers[streaming.bFirst];
-	streaming.bFirst = (streaming.bFirst+1) % NUM_STRBUF;
+	streaming.bFirst = (streaming.bFirst + 1) % NUM_STRBUF;
 	streaming.bNumAvail--;
 
 	return r;
 }
 
-static void S_Streaming_RecycleBuffers(void);
+static void S_Streaming_RecycleBuffers (void);
 
 /*
 ===============================================================================
@@ -106,60 +106,58 @@ console functions
 ===============================================================================
 */
 
-void S_Play(void)
-{
+void S_Play (void) {
 	int i = 1;
 	char name[256];
 
-	while (i < Cmd_Argc()) {
-		if (!strrchr(Cmd_Argv(i), '.')) {
-			strcpy(name, Cmd_Argv(i));
-			strcat(name, ".wav");
-		} else
-			strcpy(name, Cmd_Argv(i));
+	while (i < Cmd_Argc ()) {
+		if (!strrchr (Cmd_Argv (i), '.')) {
+			strcpy (name, Cmd_Argv (i));
+			strcat (name, ".wav");
+		}
+		else
+			strcpy (name, Cmd_Argv (i));
 
 		// TO DO - willow: do not cache this data to onboard memory!
 		// this seems to be just any random file, we do no need to store
 		// it in valuable memory.
-		S_StartLocalSound(S_FindName(name, true));
+		S_StartLocalSound (S_FindName (name, true));
 		i++;
 	}
 }
 
-void S_SoundInfo_f(void)
-{
+void S_SoundInfo_f (void) {
 	if (!alConfig.hALC) {
-		Com_Printf(S_COLOR_RED"Cannot provide OpenAL information\n");
+		Com_Printf (S_COLOR_RED"Cannot provide OpenAL information\n");
 		return;
 	}
 
-	Com_Printf("\n");
-	Com_Printf("AL_VENDOR:     "S_COLOR_GREEN"%s\n", alGetString(AL_VENDOR));
-	Com_Printf("AL_RENDERER:   "S_COLOR_GREEN"%s\n", alGetString(AL_RENDERER));
-	Com_Printf("AL_VERSION:    "S_COLOR_GREEN"%s\n", alGetString(AL_VERSION));
-	Com_Printf("AL_EXTENSIONS:\n"S_COLOR_GREEN"%s\n", alGetString(AL_EXTENSIONS));
+	Com_Printf ("\n");
+	Com_Printf ("AL_VENDOR:     "S_COLOR_GREEN"%s\n", alGetString (AL_VENDOR));
+	Com_Printf ("AL_RENDERER:   "S_COLOR_GREEN"%s\n", alGetString (AL_RENDERER));
+	Com_Printf ("AL_VERSION:    "S_COLOR_GREEN"%s\n", alGetString (AL_VERSION));
+	Com_Printf ("AL_EXTENSIONS:\n"S_COLOR_GREEN"%s\n", alGetString (AL_EXTENSIONS));
 
-	Com_Printf("\n");
-	Com_Printf("DEVICE: "S_COLOR_GREEN"%s\n",
-			   alcGetString(alConfig.hDevice, ALC_DEVICE_SPECIFIER));
-	Com_Printf("\n");
+	Com_Printf ("\n");
+	Com_Printf ("DEVICE: "S_COLOR_GREEN"%s\n",
+		alcGetString (alConfig.hDevice, ALC_DEVICE_SPECIFIER));
+	Com_Printf ("\n");
 }
 
-static void AllocChannels(void)
-{
+static void AllocChannels (void) {
 	s_openal_numChannels = MAX_CHANNELS + 1;	// +1 streaming channel
 
 	while (s_openal_numChannels > MIN_CHANNELS) {
-		alGenSources(s_openal_numChannels, source_name);
+		alGenSources (s_openal_numChannels, source_name);
 		--s_openal_numChannels;
-		if (alGetError() == AL_NO_ERROR) {
-			Com_Printf("%i mix channels allocated.\n", s_openal_numChannels);
-			Com_Printf("streaming channel allocated.\n");
+		if (alGetError () == AL_NO_ERROR) {
+			Com_Printf ("%i mix channels allocated.\n", s_openal_numChannels);
+			Com_Printf ("streaming channel allocated.\n");
 			return;
 		}
 	}
 
-	Com_Printf("Not enough mix channels!\n");
+	Com_Printf ("Not enough mix channels!\n");
 	s_openal_numChannels = 0;
 }
 
@@ -168,39 +166,38 @@ static void AllocChannels(void)
 S_Init
 ================
 */
-void CL_fast_sound_init(void);
-void S_Music_f(void);
-void S_Play(void);
+void CL_fast_sound_init (void);
+void S_Music_f (void);
+void S_Play (void);
 
-void S_Init(int hardreset)
-{
+void S_Init (int hardreset) {
 	if (hardreset) {
-		s_volume			=	Cvar_Get("s_volume", "1", CVAR_ARCHIVE);
-		s_show				=	Cvar_Get("s_show", "0", 0);
-		s_musicvolume		=	Cvar_Get("s_musicvolume", "0.8", CVAR_ARCHIVE);
-		s_musicsrc			=	Cvar_Get("s_musicsrc", "1", CVAR_ARCHIVE);
-		s_musicrandom		=	Cvar_Get("s_musicrandom", "0", CVAR_ARCHIVE);
-		s_openal_device		=	Cvar_Get("s_openal_device", "", CVAR_ARCHIVE);
-		s_openal_efx		=	Cvar_Get("s_openal_efx", "1", CVAR_ARCHIVE);
-		s_quality			=	Cvar_Get("s_quality", "0", CVAR_ARCHIVE);
-		s_distance_model	=	Cvar_Get("s_distance_model", "0", CVAR_ARCHIVE);
-		s_initsound			=	Cvar_Get("s_initsound", "1", CVAR_NOSET);
+		s_volume = Cvar_Get ("s_volume", "1", CVAR_ARCHIVE);
+		s_show = Cvar_Get ("s_show", "0", 0);
+		s_musicvolume = Cvar_Get ("s_musicvolume", "0.8", CVAR_ARCHIVE);
+		s_musicsrc = Cvar_Get ("s_musicsrc", "1", CVAR_ARCHIVE);
+		s_musicrandom = Cvar_Get ("s_musicrandom", "0", CVAR_ARCHIVE);
+		s_openal_device = Cvar_Get ("s_openal_device", "", CVAR_ARCHIVE);
+		s_openal_efx = Cvar_Get ("s_openal_efx", "1", CVAR_ARCHIVE);
+		s_quality = Cvar_Get ("s_quality", "0", CVAR_ARCHIVE);
+		s_distance_model = Cvar_Get ("s_distance_model", "0", CVAR_ARCHIVE);
+		s_initsound = Cvar_Get ("s_initsound", "1", CVAR_NOSET);
 	}
 
-	if (!s_initsound->value || openalStop)
-	{
-		Com_Printf("\n");
-		Com_Printf(S_COLOR_YELLOW"=======Sound not initializing.=======\n");
-		Com_Printf("\n");
+	if (!s_initsound->value || openalStop) {
+		Com_Printf ("\n");
+		Com_Printf (S_COLOR_YELLOW"=======Sound not initializing.=======\n");
+		Com_Printf ("\n");
 		return;
-	} else {
-		if (AL_Init(hardreset)) {
-			AllocChannels();
+	}
+	else {
+		if (AL_Init (hardreset)) {
+			AllocChannels ();
 			if (s_openal_numChannels) {
-				S_SoundInfo_f();
+				S_SoundInfo_f ();
 
 				if (s_distance_model->value)	// OpenAL using the best
-												// selection by default
+					// selection by default
 				{
 					// AL_NONE bypasses all distance
 					// attenuation calculation for all sources. The
@@ -228,73 +225,71 @@ void S_Init(int hardreset)
 						AL_EXPONENT_DISTANCE_CLAMPED
 					};
 
-					alDistanceModel(modelName [(int) s_distance_model->value - 1]);
+					alDistanceModel (modelName[(int)s_distance_model->value - 1]);
 				}
 
-				alListenerf(AL_GAIN, clamp(s_volume->value, 0, 1));
-				
-				if (hardreset) {
-					Cmd_AddCommand("play", S_Play);
-					Cmd_AddCommand("stopsound", S_StopAllSounds);
-					Cmd_AddCommand("music", S_Music_f);
-					Cmd_AddCommand("s_info", S_SoundInfo_f);
+				alListenerf (AL_GAIN, clamp (s_volume->value, 0, 1));
 
-					CL_fast_sound_init();
+				if (hardreset) {
+					Cmd_AddCommand ("play", S_Play);
+					Cmd_AddCommand ("stopsound", S_StopAllSounds);
+					Cmd_AddCommand ("music", S_Music_f);
+					Cmd_AddCommand ("s_info", S_SoundInfo_f);
+
+					CL_fast_sound_init ();
 
 					// Generate some AL Buffers for streaming
-					alGenBuffers(NUM_STRBUF, streaming.buffers);
+					alGenBuffers (NUM_STRBUF, streaming.buffers);
 
 #ifdef _WITH_XRAM
 					if (!eaxSetBufferMode
 						(NUM_STRBUF, streaming.buffers,
-						 alGetEnumValue(" AL_STORAGE_ACCESSIBLE"))) {
+						alGetEnumValue (" AL_STORAGE_ACCESSIBLE"))) {
 						Com_DPrintf ("music: unable to set X-RAM mode\n");
-					} 
+					}
 #endif
 
 					if (alConfig.efx)
-						EFX_RvbInit();
+						EFX_RvbInit ();
 				}
 
-				S_StopAllSounds();	// inits freeplays
-			} else
-				AL_Shutdown();
+				S_StopAllSounds ();	// inits freeplays
+			}
+			else
+				AL_Shutdown ();
 		}
 
-		if (!s_openal_numChannels)
-		{
+		if (!s_openal_numChannels) {
 			Com_Printf (S_COLOR_RED"OpenAL failed to initialize; no sound available\n");
-			Cvar_ForceSet("s_initsound", "0");	/// Berserker's FIX: устранён крэш если OpenAL не может запуститься
-			AL_Shutdown();
+			Cvar_ForceSet ("s_initsound", "0");	/// Berserker's FIX: устранён крэш если OpenAL не может запуститься
+			AL_Shutdown ();
 		}
 	}
 
-	Com_Printf("-------------------------------------\n");
+	Com_Printf ("-------------------------------------\n");
 }
 
 
 
 
-static void FreeChannels(void)
-{
-	alDeleteSources(s_openal_numChannels + 1, source_name);
-	memset(s_openal_channels, 0, sizeof(openal_channel_t) * MAX_CHANNELS);
+static void FreeChannels (void) {
+	alDeleteSources (s_openal_numChannels + 1, source_name);
+	memset (s_openal_channels, 0, sizeof(openal_channel_t)* MAX_CHANNELS);
 
 	s_openal_numChannels = 0;
 }
 
 
-void FreeSounds(void)
-{
+void FreeSounds (void) {
 	// Stop all sounds
-	S_StopAllSounds();
+	S_StopAllSounds ();
 
 	// Free all sounds
-	alDeleteBuffers(num_sfx, known_sfx_bufferNum);
+	alDeleteBuffers (num_sfx, known_sfx_bufferNum);
 
 	// Clean up
-	memset(known_sfx_name, 0, sizeof(known_sfx_name));
-	memset(known_sfx_bufferNum, 0, sizeof(known_sfx_bufferNum));
+	memset (known_sfx_name, 0, sizeof(known_sfx_name));
+	memset (known_sfx_bufferNum, 0, sizeof(known_sfx_bufferNum));
 	num_sfx = 0;
 }
 
@@ -304,24 +299,23 @@ void FreeSounds(void)
 // =======================================================================
 // Shutdown sound engine
 // =======================================================================
-void CL_fast_sound_close(void);
+void CL_fast_sound_close (void);
 
-void S_Shutdown(void)
-{
+void S_Shutdown (void) {
 	if (s_openal_numChannels) {
-		CL_fast_sound_close();
-		FreeSounds();
+		CL_fast_sound_close ();
+		FreeSounds ();
 
-		Cmd_RemoveCommand("play");
-		Cmd_RemoveCommand("stopsound");
-		Cmd_RemoveCommand("music");
-		Cmd_RemoveCommand("s_info");
+		Cmd_RemoveCommand ("play");
+		Cmd_RemoveCommand ("stopsound");
+		Cmd_RemoveCommand ("music");
+		Cmd_RemoveCommand ("s_info");
 
 		if (alConfig.efx)
-			EFX_RvbShutdown();
+			EFX_RvbShutdown ();
 
-		FreeChannels();
-		AL_Shutdown();
+		FreeChannels ();
+		AL_Shutdown ();
 	}
 }
 
@@ -333,24 +327,21 @@ void S_Shutdown(void)
 // Buffers are referenced by sources. A single buffer can be referred to by multiple sources.
 // This separation allows drivers and hardware to optimize storage and processing where applicable.
 // =======================================================================
-void S_Restart(void)
-{
-	S_Shutdown();
-	S_Init(1);
+void S_Restart (void) {
+	S_Shutdown ();
+	S_Init (1);
 }
 
 
-ALuint S_RegisterSound(const char *name)
-{
+ALuint S_RegisterSound (const char *name) {
 	if (name[0] == '*')
-		return S_RegisterSexedSound(&cl_entities[cl.playernum + 1].current, name);
+		return S_RegisterSexedSound (&cl_entities[cl.playernum + 1].current, name);
 	else
-		return S_FindName((char*)name, s_openal_numChannels);
+		return S_FindName ((char*)name, s_openal_numChannels);
 }
 
 
-playsound_t *S_AllocPlaysound(void)
-{
+playsound_t *S_AllocPlaysound (void) {
 	playsound_t *ps = s_freeplays.next;
 
 	if (ps == &s_freeplays)
@@ -369,8 +360,7 @@ playsound_t *S_AllocPlaysound(void)
 S_FreePlaysound
 =================
 */
-void S_FreePlaysound(playsound_t * ps)
-{
+void S_FreePlaysound (playsound_t * ps) {
 	// unlink from channel
 	ps->prev->next = ps->next;
 	ps->next->prev = ps->prev;
@@ -390,8 +380,7 @@ S_RegisterSexedSound
 */
 extern cvar_t *gender;
 
-ALuint S_RegisterSexedSound(entity_state_t * ent, const char *base)
-{
+ALuint S_RegisterSexedSound (entity_state_t * ent, const char *base) {
 	int n;
 	char *p;
 	char model[MAX_QPATH];
@@ -401,33 +390,33 @@ ALuint S_RegisterSexedSound(entity_state_t * ent, const char *base)
 	model[0] = 0;
 	n = CS_PLAYERSKINS + ent->number - 1;
 	if (cl.configstrings[n][0]) {
-		p = strchr(cl.configstrings[n], '\\');
+		p = strchr (cl.configstrings[n], '\\');
 		if (p) {
 			p += 1;
-			strcpy(model, p);
-			p = strchr(model, '/');
+			strcpy (model, p);
+			p = strchr (model, '/');
 			if (p)
 				*p = 0;
 		}
 	}
-	
+
 	// if we can't figure it out, they're male
-	if (!model[0]){
-		if (!strcmp(cl.clientinfo->sex, "cyborg"))
-			strcpy(model, "cyborg");
-		else if (!strcmp(cl.clientinfo->sex, "female"))
-			strcpy(model, "female");
-		else if (!strcmp(cl.clientinfo->sex, "male"))
-			strcpy(model, "male");
+	if (!model[0]) {
+		if (!strcmp (cl.clientinfo->sex, "cyborg"))
+			strcpy (model, "cyborg");
+		else if (!strcmp (cl.clientinfo->sex, "female"))
+			strcpy (model, "female");
+		else if (!strcmp (cl.clientinfo->sex, "male"))
+			strcpy (model, "male");
 		else
-			strcpy(model, gender->string);
-		
+			strcpy (model, gender->string);
+
 	}
 
 	// see if we already know of the model specific sound
-	Com_sprintf(sexedFilename, sizeof(sexedFilename), "#players/%s/%s", model, base + 1);
+	Com_sprintf (sexedFilename, sizeof(sexedFilename), "#players/%s/%s", model, base + 1);
 
-	return S_FindName(sexedFilename, true);
+	return S_FindName (sexedFilename, true);
 
 }
 
@@ -450,90 +439,80 @@ typedef struct {
 	unsigned long flags;
 } channel_task_t;
 
-void Flag_set(channel_task_t * task, unsigned long flags_collection)
-{
+void Flag_set (channel_task_t * task, unsigned long flags_collection) {
 	task->flags |= flags_collection;
 }
 
-void Flag_clear(channel_task_t * task, unsigned long flags_collection)
-{
+void Flag_clear (channel_task_t * task, unsigned long flags_collection) {
 	task->flags &= ~flags_collection;
 }
 
-qboolean Flag_check(channel_task_t * task, unsigned long flags_collection)
-{
+qboolean Flag_check (channel_task_t * task, unsigned long flags_collection) {
 	return task->flags & flags_collection;
 }
 
-ALuint Flag_checkAL(channel_task_t * task, unsigned long flags_collection)
-{
+ALuint Flag_checkAL (channel_task_t * task, unsigned long flags_collection) {
 	return task->flags & flags_collection ? AL_TRUE : AL_FALSE;
 }
 
-void FlagAL_set(openal_channel_t * ch, unsigned long flags_collection)
-{
+void FlagAL_set (openal_channel_t * ch, unsigned long flags_collection) {
 	ch->flags |= flags_collection;
 }
 
-void FlagAL_clear(openal_channel_t * ch, unsigned long flags_collection)
-{
+void FlagAL_clear (openal_channel_t * ch, unsigned long flags_collection) {
 	ch->flags &= ~flags_collection;
 }
 
-qboolean FlagAL_check(openal_channel_t * ch,
-					  unsigned long flags_collection)
-{
+qboolean FlagAL_check (openal_channel_t * ch,
+	unsigned long flags_collection) {
 	return ch->flags & flags_collection;
 }
 
-ALuint FlagAL_checkAL(openal_channel_t * ch,
-					  unsigned long flags_collection)
-{
+ALuint FlagAL_checkAL (openal_channel_t * ch,
+	unsigned long flags_collection) {
 	return ch->flags & flags_collection ? AL_TRUE : AL_FALSE;
 }
 
-void TASK_TerminateChannel(channel_task_t * task, openal_channel_t * ch)
-{
-	Flag_set(task, AL_TASK_MANAGER__TERMINATE);
+void TASK_TerminateChannel (channel_task_t * task, openal_channel_t * ch) {
+	Flag_set (task, AL_TASK_MANAGER__TERMINATE);
 	ch->bufferNum = 0;			// ch->sfx = NULL;
 
-//  alSourceStop(ch->sourceNum);
-//  alSourcei(ch->sourceNum, AL_BUFFER, 0);
+	//  alSourceStop(ch->sourceNum);
+	//  alSourcei(ch->sourceNum, AL_BUFFER, 0);
 }
 
 // picks a channel based on priorities, empty slots, number of channels
-openal_channel_t *PickChannel_NEW(unsigned int entNum,
-								  unsigned int entChannel, vec3_t new_vec,
-								  ALuint * return_index)
-{
+openal_channel_t *PickChannel_NEW (unsigned int entNum,
+	unsigned int entChannel, vec3_t new_vec,
+	ALuint * return_index) {
 	openal_channel_t *ch;
 	int i;
 	int firstToDie = -1;
-//  int                 oldestTime = cl.time;
+	//  int                 oldestTime = cl.time;
 	qboolean is_terminate = true;
 
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-		 i++, ch++) {
+		i++, ch++) {
 		// Don't let game sounds override streaming sounds
 		/* if (!i && streaming) continue; */
 
 		// Check if this channel is active
-/*		if (!ch->sfx)							// found free channel
-		{
-			firstToDie = i;
-			is_terminate = false;
-			break;
-		} else {*/
+		/*		if (!ch->sfx)							// found free channel
+				{
+				firstToDie = i;
+				is_terminate = false;
+				break;
+				} else {*/
 		ALuint SourceState;
 
-		alGetSourcei(source_name[i], AL_SOURCE_STATE, &SourceState);
+		alGetSourcei (source_name[i], AL_SOURCE_STATE, &SourceState);
 
 		if (SourceState == AL_STOPPED || SourceState == AL_INITIAL)	// The
-																	// source
-																	// already
-																	// out
-																	// of
-																	// processing.
+			// source
+			// already
+			// out
+			// of
+			// processing.
 		{
 			ch->bufferNum = 0;	// ch->sfx = NULL;
 			firstToDie = i;
@@ -554,30 +533,30 @@ openal_channel_t *PickChannel_NEW(unsigned int entNum,
 		float len, max;
 		vec3_t delta;
 
-		VectorSubtract(cl.refdef.vieworg, new_vec, delta);
-		max = VectorLength_Squared(delta);
+		VectorSubtract (cl.refdef.vieworg, new_vec, delta);
+		max = VectorLength_Squared (delta);
 
 		for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-			 i++, ch++)
-			if (!FlagAL_check(ch, AL_FLAGS_FLAT2D)	// Don't touch FLAT 2D
-													// samples!
-				&& FlagAL_check(ch, AL_FLAGS_AL_LOOPING)
-				) {
-				// ch->_AL_POSITION must have same data:
-				// alGetSourcefv(ch->sourceNum, AL_POSITION, (ALfloat
-				// *)&al_position);
-				// willow: i assume cl.refdef.vieworg always have the last
-				// listener position
-				VectorSubtract(cl.refdef.vieworg, ch->_AL_POSITION, delta);
-				// willow:
-				// actually we need vector length here, but squared length
-				// can do the same job faster.
-				len = VectorLength_Squared(delta);
-				if (len > max) {
-					firstToDie = i;
-					max = len;
-				}
+			i++, ch++)
+		if (!FlagAL_check (ch, AL_FLAGS_FLAT2D)	// Don't touch FLAT 2D
+			// samples!
+			&& FlagAL_check (ch, AL_FLAGS_AL_LOOPING)
+			) {
+			// ch->_AL_POSITION must have same data:
+			// alGetSourcefv(ch->sourceNum, AL_POSITION, (ALfloat
+			// *)&al_position);
+			// willow: i assume cl.refdef.vieworg always have the last
+			// listener position
+			VectorSubtract (cl.refdef.vieworg, ch->_AL_POSITION, delta);
+			// willow:
+			// actually we need vector length here, but squared length
+			// can do the same job faster.
+			len = VectorLength_Squared (delta);
+			if (len > max) {
+				firstToDie = i;
+				max = len;
 			}
+		}
 
 		if (firstToDie == -1) {
 			return NULL;
@@ -586,8 +565,8 @@ openal_channel_t *PickChannel_NEW(unsigned int entNum,
 
 	ch = &s_openal_channels[firstToDie];
 
-	memcpy(ch->_AL_POSITION, new_vec, sizeof(vec3_t));
-	FlagAL_clear(ch, AL_FLAGS_FLAT2D);
+	memcpy (ch->_AL_POSITION, new_vec, sizeof(vec3_t));
+	FlagAL_clear (ch, AL_FLAGS_FLAT2D);
 	// Flag_clear
 	// (&Channels_TODO[firstToDie],AL_TASK_MANAGER__IS_SOURCE_RELATIVE);
 
@@ -600,7 +579,7 @@ openal_channel_t *PickChannel_NEW(unsigned int entNum,
 	// TERMINATE CHANNEL (stop working channel)
 	// TASK_TerminateChannel (&Channels_TODO[firstToDie], ch);
 	if (is_terminate) {
-		alSourceStop(source_name[firstToDie]);
+		alSourceStop (source_name[firstToDie]);
 		// alSourceStop(ch->sourceNum);
 		// alSourcei(ch->sourceNum, AL_BUFFER, 0);
 	}
@@ -608,9 +587,8 @@ openal_channel_t *PickChannel_NEW(unsigned int entNum,
 	return ch;
 }
 
-void S_fastsound(vec3_t origin, int entnum, int entchannel,
-				 ALuint bufferNum, ALfloat gain, ALfloat rolloff_factor)
-{
+void S_fastsound (vec3_t origin, int entnum, int entchannel,
+	ALuint bufferNum, ALfloat gain, ALfloat rolloff_factor) {
 	openal_channel_t *ch;
 	ALuint sourceNum;
 
@@ -619,55 +597,55 @@ void S_fastsound(vec3_t origin, int entnum, int entchannel,
 
 	// Pick a channel and start the sound effect
 	if (origin)
-		ch = PickChannel_NEW(entnum, entchannel, origin, &sourceNum);
+		ch = PickChannel_NEW (entnum, entchannel, origin, &sourceNum);
 	else {
 		vec3_t position;
-		CL_GetEntityOrigin(entnum, position);
-		ch = PickChannel_NEW(entnum, entchannel, position, &sourceNum);
+		CL_GetEntityOrigin (entnum, position);
+		ch = PickChannel_NEW (entnum, entchannel, position, &sourceNum);
 	}
 
 	if (ch) {
-//      VectorCopy(ps->origin, ch->position);
+		//      VectorCopy(ps->origin, ch->position);
 		ch->bufferNum = bufferNum;	// ch->sfx = sfx;
 
 		// Update min/max distance
-		alSourcef(sourceNum, AL_REFERENCE_DISTANCE, 28);
+		alSourcef (sourceNum, AL_REFERENCE_DISTANCE, 28);
 		// Set max distance really far away (default)
 		// alSourcef(ch->sourceNum, AL_MAX_DISTANCE, 65536);
 
-		alSourcefv(sourceNum, AL_POSITION, ch->_AL_POSITION);
+		alSourcefv (sourceNum, AL_POSITION, ch->_AL_POSITION);
 
 		if (origin) {
-			FlagAL_clear(ch, AL_FLAGS_AL_LOOPING);
-			FlagAL_set(ch, AL_FLAGS_FIXED_POSITION);
-			alSource3f(sourceNum, AL_VELOCITY, 0, 0, 0);
-		} else {
-			FlagAL_clear(ch,
-						 AL_FLAGS_FIXED_POSITION | AL_FLAGS_AL_LOOPING);
+			FlagAL_clear (ch, AL_FLAGS_AL_LOOPING);
+			FlagAL_set (ch, AL_FLAGS_FIXED_POSITION);
+			alSource3f (sourceNum, AL_VELOCITY, 0, 0, 0);
+		}
+		else {
+			FlagAL_clear (ch,
+				AL_FLAGS_FIXED_POSITION | AL_FLAGS_AL_LOOPING);
 			// willow: TO DO.
 			// alSourcefv(sourceNum, AL_VELOCITY,
 			// current_task->TASK_AL_VELOCITY);
-			alSource3f(sourceNum, AL_VELOCITY, 0, 0, 0);
+			alSource3f (sourceNum, AL_VELOCITY, 0, 0, 0);
 		}
 
-		alSourcei(sourceNum, AL_BUFFER, bufferNum);
-		alSourcei(sourceNum, AL_SOURCE_RELATIVE, AL_FALSE);
-		alSourcei(sourceNum, AL_LOOPING,
-				  FlagAL_checkAL(ch, AL_FLAGS_AL_LOOPING));
-		alSourcef(sourceNum, AL_ROLLOFF_FACTOR, rolloff_factor);
-		alSourcef(sourceNum, AL_GAIN, gain);
+		alSourcei (sourceNum, AL_BUFFER, bufferNum);
+		alSourcei (sourceNum, AL_SOURCE_RELATIVE, AL_FALSE);
+		alSourcei (sourceNum, AL_LOOPING,
+			FlagAL_checkAL (ch, AL_FLAGS_AL_LOOPING));
+		alSourcef (sourceNum, AL_ROLLOFF_FACTOR, rolloff_factor);
+		alSourcef (sourceNum, AL_GAIN, gain);
 
 		if (alConfig.efx)
-			EFX_RvbProcSrc(ch, sourceNum, true);
+			EFX_RvbProcSrc (ch, sourceNum, true);
 
-		alSourcePlay(sourceNum);
+		alSourcePlay (sourceNum);
 	}
 }
 
-void S_fastsound_queue(vec3_t origin, int entnum, int entchannel,
-					   ALuint bufferNum, float fvol, float attenuation,
-					   unsigned timeofs)
-{
+void S_fastsound_queue (vec3_t origin, int entnum, int entchannel,
+	ALuint bufferNum, float fvol, float attenuation,
+	unsigned timeofs) {
 	playsound_t *ps, *sort;
 
 	if (!s_openal_numChannels || !bufferNum)
@@ -677,14 +655,14 @@ void S_fastsound_queue(vec3_t origin, int entnum, int entchannel,
 	// provided.
 	// This is shortcut, just call "S_fastsound" call instead
 	if (!timeofs) {
-		S_fastsound(origin, entnum, entchannel, bufferNum, fvol,
-					attenuation);
+		S_fastsound (origin, entnum, entchannel, bufferNum, fvol,
+			attenuation);
 		return;
 	}
 	// Allocate a playSound
-	ps = S_AllocPlaysound();
+	ps = S_AllocPlaysound ();
 	if (!ps) {
-		Com_Printf("S_StartSound: active-task queue fault\n");
+		Com_Printf ("S_StartSound: active-task queue fault\n");
 		return;
 	}
 
@@ -692,12 +670,13 @@ void S_fastsound_queue(vec3_t origin, int entnum, int entchannel,
 	ps->entnum = entnum;
 	ps->entchannel = entchannel;
 
-//  ps->flat = is_flat;
+	//  ps->flat = is_flat;
 
 	if (origin) {
 		ps->fixed_origin = true;
-		VectorCopy(origin, ps->origin);
-	} else
+		VectorCopy (origin, ps->origin);
+	}
+	else
 		ps->fixed_origin = false;
 
 	ps->volume = fvol;
@@ -706,8 +685,8 @@ void S_fastsound_queue(vec3_t origin, int entnum, int entchannel,
 
 	// Sort into the pending playSounds list
 	for (sort = s_pendingplays.next;
-		 sort != &s_pendingplays && sort->begin < ps->begin;
-		 sort = sort->next);
+		sort != &s_pendingplays && sort->begin < ps->begin;
+		sort = sort->next);
 
 	ps->next = sort;
 	ps->prev = sort->prev;
@@ -717,25 +696,24 @@ void S_fastsound_queue(vec3_t origin, int entnum, int entchannel,
 }
 
 // picks a channel based on priorities, empty slots, number of channels
-openal_channel_t *PickChannel_lite(ALuint * sourceNum)
-{
+openal_channel_t *PickChannel_lite (ALuint * sourceNum) {
 	openal_channel_t *ch;
 	int i;
 	int firstToDie = -1;
 	qboolean terminate = true;
 
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-		 i++, ch++) {
+		i++, ch++) {
 		// Check if this channel is active
-/*		if (!ch->sfx)							// found free channel
-		{
-			firstToDie = i;
-			terminate = false;
-			break;
-		} else {*/
+		/*		if (!ch->sfx)							// found free channel
+				{
+				firstToDie = i;
+				terminate = false;
+				break;
+				} else {*/
 		ALuint SourceState;
 
-		alGetSourcei(source_name[i], AL_SOURCE_STATE, &SourceState);
+		alGetSourcei (source_name[i], AL_SOURCE_STATE, &SourceState);
 
 		// The source already out of processing.
 		if (SourceState == AL_STOPPED || SourceState == AL_INITIAL) {
@@ -743,7 +721,7 @@ openal_channel_t *PickChannel_lite(ALuint * sourceNum)
 			terminate = false;
 			break;
 		}
-/*		}*/
+		/*		}*/
 	}
 
 	// Emergency channel re-caption. Issue 2
@@ -755,26 +733,26 @@ openal_channel_t *PickChannel_lite(ALuint * sourceNum)
 		// alGetListenerfv(AL_POSITION, (ALfloat *)&listener);
 
 		for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-			 i++, ch++)
-			if (!FlagAL_check(ch, AL_FLAGS_FLAT2D)	// Don't touch FLAT 2D
-													// samples!
-				&& FlagAL_check(ch, AL_FLAGS_AL_LOOPING)
-				) {
-				// ch->_AL_POSITION must have same data:
-				// alGetSourcefv(ch->sourceNum, AL_POSITION, (ALfloat
-				// *)&al_position);
-				// willow: i am assume cl.refdef.vieworg always have the
-				// last listener position
-				VectorSubtract(cl.refdef.vieworg, ch->_AL_POSITION, delta);
-				// willow:
-				// actually we need vector length here, but squared length
-				// can do the same job faster.
-				len = VectorLength_Squared(delta);
-				if (len > max) {
-					firstToDie = i;
-					max = len;
-				}
+			i++, ch++)
+		if (!FlagAL_check (ch, AL_FLAGS_FLAT2D)	// Don't touch FLAT 2D
+			// samples!
+			&& FlagAL_check (ch, AL_FLAGS_AL_LOOPING)
+			) {
+			// ch->_AL_POSITION must have same data:
+			// alGetSourcefv(ch->sourceNum, AL_POSITION, (ALfloat
+			// *)&al_position);
+			// willow: i am assume cl.refdef.vieworg always have the
+			// last listener position
+			VectorSubtract (cl.refdef.vieworg, ch->_AL_POSITION, delta);
+			// willow:
+			// actually we need vector length here, but squared length
+			// can do the same job faster.
+			len = VectorLength_Squared (delta);
+			if (len > max) {
+				firstToDie = i;
+				max = len;
 			}
+		}
 
 		if (firstToDie == -1) {
 			return NULL;
@@ -783,7 +761,7 @@ openal_channel_t *PickChannel_lite(ALuint * sourceNum)
 
 	ch = &s_openal_channels[firstToDie];
 
-	memset(ch->_AL_POSITION, 0, sizeof(vec3_t));
+	memset (ch->_AL_POSITION, 0, sizeof(vec3_t));
 
 	ch->entNum = -1;
 	ch->entChannel = 0;
@@ -793,7 +771,7 @@ openal_channel_t *PickChannel_lite(ALuint * sourceNum)
 
 	// TERMINATE CHANNEL (stop working channel)
 	if (terminate) {
-		alSourceStop(*sourceNum);
+		alSourceStop (*sourceNum);
 	}
 
 	return ch;
@@ -804,34 +782,34 @@ openal_channel_t *PickChannel_lite(ALuint * sourceNum)
 S_StartLocalSound
 ==================
 */
-void S_StartLocalSound(ALuint bufferNum)
-{
+void S_StartLocalSound (ALuint bufferNum) {
 	if (s_openal_numChannels && bufferNum) {
 		ALuint sourceNum;
 		// Pick a channel and start the sound effect
-		openal_channel_t *ch = PickChannel_lite(&sourceNum);
+		openal_channel_t *ch = PickChannel_lite (&sourceNum);
 
 		if (ch) {
-			FlagAL_clear(ch, AL_FLAGS_AL_LOOPING);
+			FlagAL_clear (ch, AL_FLAGS_AL_LOOPING);
 			ch->bufferNum = bufferNum;
-			FlagAL_set(ch, AL_FLAGS_FLAT2D | AL_FLAGS_FIXED_POSITION);
-			alSourcef(sourceNum, AL_PITCH, 1);
-			alSource3f(sourceNum, AL_DIRECTION, 0, 0, 0);
-			alSourcef(sourceNum, AL_REFERENCE_DISTANCE, 0);
-			alSourcef(sourceNum, AL_ROLLOFF_FACTOR, 0);
-			alSource3f(sourceNum, AL_POSITION, 0, 0, 0);
-			alSource3f(sourceNum, AL_VELOCITY, 0, 0, 0);
-			alSourcei(sourceNum, AL_BUFFER, bufferNum);
-			alSourcei(sourceNum, AL_SOURCE_RELATIVE, AL_TRUE);
-			alSourcei(sourceNum, AL_LOOPING, AL_FALSE);
-			alSourcef(sourceNum, AL_GAIN, 0.47);
+			FlagAL_set (ch, AL_FLAGS_FLAT2D | AL_FLAGS_FIXED_POSITION);
+			alSourcef (sourceNum, AL_PITCH, 1);
+			alSource3f (sourceNum, AL_DIRECTION, 0, 0, 0);
+			alSourcef (sourceNum, AL_REFERENCE_DISTANCE, 0);
+			alSourcef (sourceNum, AL_ROLLOFF_FACTOR, 0);
+			alSource3f (sourceNum, AL_POSITION, 0, 0, 0);
+			alSource3f (sourceNum, AL_VELOCITY, 0, 0, 0);
+			alSourcei (sourceNum, AL_BUFFER, bufferNum);
+			alSourcei (sourceNum, AL_SOURCE_RELATIVE, AL_TRUE);
+			alSourcei (sourceNum, AL_LOOPING, AL_FALSE);
+			alSourcef (sourceNum, AL_GAIN, 0.47);
 
 			if (alConfig.efx)
-				EFX_RvbProcSrc(ch, sourceNum, false);
+				EFX_RvbProcSrc (ch, sourceNum, false);
 
-			alSourcePlay(sourceNum);
-		} else {
-			Com_Printf("S_StartLocalSound: Dropped sound\n");
+			alSourcePlay (sourceNum);
+		}
+		else {
+			Com_Printf ("S_StartLocalSound: Dropped sound\n");
 		}
 	}
 }
@@ -842,8 +820,7 @@ void S_StartLocalSound(ALuint bufferNum)
 S_StopAllSounds
 ==================
 */
-void S_StopAllSounds(void)
-{
+void S_StopAllSounds (void) {
 	unsigned i;
 	openal_channel_t *ch;
 
@@ -851,7 +828,7 @@ void S_StopAllSounds(void)
 		return;
 
 	// clear all the playsounds
-	memset(s_playsounds, 0, sizeof(s_playsounds));
+	memset (s_playsounds, 0, sizeof(s_playsounds));
 	s_freeplays.next = s_freeplays.prev = &s_freeplays;
 	s_pendingplays.next = s_pendingplays.prev = &s_pendingplays;
 
@@ -863,34 +840,33 @@ void S_StopAllSounds(void)
 	}
 
 	// Stop all the channels
-	alSourceStopv(s_openal_numChannels, source_name);
+	alSourceStopv (s_openal_numChannels, source_name);
 
 	// Mark all the channels free
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-		 i++, ch++) {
+		i++, ch++) {
 		ch->bufferNum = AL_NONE;
-		alSourcei(source_name[i], AL_BUFFER, AL_NONE);
+		alSourcei (source_name[i], AL_BUFFER, AL_NONE);
 	}
 
 
 	// clear all the channels
 	// memset(s_openal_channels, 0, sizeof(s_openal_channels));
 
-	S_Streaming_Stop();
+	S_Streaming_Stop ();
 }
 
-openal_channel_t *PickChannel(channel_task_t * Channels_TODO,
-							  unsigned int entNum, unsigned int entChannel,
-							  vec3_t new_vec, int *return_index,
-							  vec3_t listener)
-{
+openal_channel_t *PickChannel (channel_task_t * Channels_TODO,
+	unsigned int entNum, unsigned int entChannel,
+	vec3_t new_vec, int *return_index,
+	vec3_t listener) {
 	openal_channel_t *ch;
 	int i;
 	int firstToDie = -1;
 	qboolean terminate = false;
 
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-		 i++, ch++) {
+		i++, ch++) {
 		// Don't let game sounds override streaming sounds
 		/* if (!i && streaming) continue; */
 
@@ -901,23 +877,23 @@ openal_channel_t *PickChannel(channel_task_t * Channels_TODO,
 			firstToDie = i;
 			break;
 		}
-/*		if (Flag_checkAL (&Channels_TODO[i], AL_TASK_MANAGER__TERMINATE))
-		{
-			firstToDie = i;
-			terminate = false;
-			break;
-		}*/
+		/*		if (Flag_checkAL (&Channels_TODO[i], AL_TASK_MANAGER__TERMINATE))
+				{
+				firstToDie = i;
+				terminate = false;
+				break;
+				}*/
 		else {
 			ALuint SourceState;
 
-			alGetSourcei(source_name[i], AL_SOURCE_STATE, &SourceState);
+			alGetSourcei (source_name[i], AL_SOURCE_STATE, &SourceState);
 
 			if (SourceState == AL_STOPPED || SourceState == AL_INITIAL)	// The
-																		// source
-																		// already
-																		// out
-																		// of
-																		// processing.
+				// source
+				// already
+				// out
+				// of
+				// processing.
 			{
 				firstToDie = i;
 				break;
@@ -940,30 +916,31 @@ openal_channel_t *PickChannel(channel_task_t * Channels_TODO,
 
 		terminate = true;		// we need to eat weakest now :)
 		if (new_vec) {
-			VectorSubtract(listener, new_vec, delta);
-			max = VectorLength_Squared(delta);
-		} else
+			VectorSubtract (listener, new_vec, delta);
+			max = VectorLength_Squared (delta);
+		}
+		else
 			max = 0;
 
 		for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-			 i++, ch++)
-			if (!FlagAL_check(ch, AL_FLAGS_FLAT2D)	// Don't touch FLAT 2D
-													// samples!
-				&& FlagAL_check(ch, AL_FLAGS_AL_LOOPING)
-				) {
-				// ch->_AL_POSITION must have same data:
-				// alGetSourcefv(ch->sourceNum, AL_POSITION, (ALfloat
-				// *)&al_position);
-				VectorSubtract(listener, ch->_AL_POSITION, delta);
-				// willow:
-				// actually we need vector length here, but squared length
-				// can do the same job faster.
-				len = VectorLength_Squared(delta);
-				if (len > max) {
-					firstToDie = i;
-					max = len;
-				}
+			i++, ch++)
+		if (!FlagAL_check (ch, AL_FLAGS_FLAT2D)	// Don't touch FLAT 2D
+			// samples!
+			&& FlagAL_check (ch, AL_FLAGS_AL_LOOPING)
+			) {
+			// ch->_AL_POSITION must have same data:
+			// alGetSourcefv(ch->sourceNum, AL_POSITION, (ALfloat
+			// *)&al_position);
+			VectorSubtract (listener, ch->_AL_POSITION, delta);
+			// willow:
+			// actually we need vector length here, but squared length
+			// can do the same job faster.
+			len = VectorLength_Squared (delta);
+			if (len > max) {
+				firstToDie = i;
+				max = len;
 			}
+		}
 
 		if (firstToDie == -1) {
 			return NULL;
@@ -973,13 +950,14 @@ openal_channel_t *PickChannel(channel_task_t * Channels_TODO,
 	ch = &s_openal_channels[firstToDie];
 
 	if (new_vec) {
-		memcpy(ch->_AL_POSITION, new_vec, sizeof(vec3_t));
-		FlagAL_clear(ch, AL_FLAGS_FLAT2D);
-//      Flag_clear (&Channels_TODO[firstToDie],AL_TASK_MANAGER__IS_SOURCE_RELATIVE);
-	} else {
-		memset(ch->_AL_POSITION, 0, sizeof(vec3_t));
-		FlagAL_set(ch, AL_FLAGS_FLAT2D);
-//      Flag_set (&Channels_TODO[firstToDie],AL_TASK_MANAGER__IS_SOURCE_RELATIVE);
+		memcpy (ch->_AL_POSITION, new_vec, sizeof(vec3_t));
+		FlagAL_clear (ch, AL_FLAGS_FLAT2D);
+		//      Flag_clear (&Channels_TODO[firstToDie],AL_TASK_MANAGER__IS_SOURCE_RELATIVE);
+	}
+	else {
+		memset (ch->_AL_POSITION, 0, sizeof(vec3_t));
+		FlagAL_set (ch, AL_FLAGS_FLAT2D);
+		//      Flag_set (&Channels_TODO[firstToDie],AL_TASK_MANAGER__IS_SOURCE_RELATIVE);
 	}
 
 	ch->entNum = entNum;
@@ -990,7 +968,7 @@ openal_channel_t *PickChannel(channel_task_t * Channels_TODO,
 
 	// TERMINATE CHANNEL (stop working channel)
 	if (terminate)
-		TASK_TerminateChannel(&Channels_TODO[firstToDie], ch);
+		TASK_TerminateChannel (&Channels_TODO[firstToDie], ch);
 	// alSourceStop(ch->sourceNum);
 	// alSourcei(ch->sourceNum, AL_BUFFER, 0);
 
@@ -1004,9 +982,8 @@ S_Update
 Called once each time through the main loop
 ============
 */
-void S_Update(vec3_t listener_position, vec3_t velocity,
-			  float orientation[6])
-{
+void S_Update (vec3_t listener_position, vec3_t velocity,
+	float orientation[6]) {
 	entity_state_t *ent;
 	int i, j;
 	byte cl_parse_entities_goodjob[MAX_PARSE_ENTITIES];
@@ -1017,29 +994,29 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 
 	if (!s_openal_numChannels)
 		return;
-	
-	// Set up listener
-	alListenerfv(AL_POSITION, listener_position);
-	alListenerfv(AL_VELOCITY, velocity);
-	alListenerfv(AL_ORIENTATION, orientation);
 
-	if((CL_PMpointcontents(listener_position) & MASK_WATER))
-		alSpeedOfSound(59000);
+	// Set up listener
+	alListenerfv (AL_POSITION, listener_position);
+	alListenerfv (AL_VELOCITY, velocity);
+	alListenerfv (AL_ORIENTATION, orientation);
+
+	if ((CL_PMpointcontents (listener_position) & MASK_WATER))
+		alSpeedOfSound (59000);
 	else
-		alSpeedOfSound(13515);
+		alSpeedOfSound (13515);
 
 
 	if (alConfig.efx)
-		EFX_RvbUpdate(listener_position);
+		EFX_RvbUpdate (listener_position);
 
-	memset(Channels_TODO, 0, sizeof(Channels_TODO));
+	memset (Channels_TODO, 0, sizeof(Channels_TODO));
 
 	// Add looping sounds
 	if (!(cls.state != ca_active || cl_paused->value)) {
-		memset(cl_parse_entities_goodjob, 0, MAX_PARSE_ENTITIES);
+		memset (cl_parse_entities_goodjob, 0, MAX_PARSE_ENTITIES);
 
 		for (i = cl.frame.parse_entities;
-			 i < cl.frame.num_entities + cl.frame.parse_entities; i++) {
+			i < cl.frame.num_entities + cl.frame.parse_entities; i++) {
 			int idx = i & (MAX_PARSE_ENTITIES - 1);
 			ALuint sfx_numm;
 			ent = &cl_parse_entities[idx];
@@ -1057,33 +1034,33 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 			// an
 			// active channel, then simply update it
 			for (j = 0, ch = s_openal_channels; j < s_openal_numChannels;
-				 j++, ch++) {
-//              if (ch->sfx != sfx) continue;
+				j++, ch++) {
+				//              if (ch->sfx != sfx) continue;
 				if (ch->bufferNum != sfx_numm)
 					continue;
 
 				if (ch->entNum != ent->number)
 					continue;
 
-				if (!FlagAL_check(ch, AL_FLAGS_AL_LOOPING))
+				if (!FlagAL_check (ch, AL_FLAGS_AL_LOOPING))
 					continue;
 
-				Flag_set(&Channels_TODO[j],
-						 AL_TASK_MANAGER__IS_LOOP_ACTIVE);
+				Flag_set (&Channels_TODO[j],
+					AL_TASK_MANAGER__IS_LOOP_ACTIVE);
 
 				{
 					vec3_t position;
 					vec3_t delta;
-					CL_GetEntityOrigin(ch->entNum, position);
+					CL_GetEntityOrigin (ch->entNum, position);
 
-					VectorSubtract(position, ch->_AL_POSITION, delta);
-					VectorScale(delta, 1 / 30, delta);
+					VectorSubtract (position, ch->_AL_POSITION, delta);
+					VectorScale (delta, 1 / 30, delta);
 
-					alSourcefv(source_name[j], AL_VELOCITY, delta);
-					alSourcefv(source_name[j], AL_POSITION, position);
+					alSourcefv (source_name[j], AL_VELOCITY, delta);
+					alSourcefv (source_name[j], AL_POSITION, position);
 					// memcpy(Channels_TODO[j].TASK_AL_VELOCITY, delta,
 					// sizeof(vec3_t));
-					memcpy(ch->_AL_POSITION, position, sizeof(vec3_t));
+					memcpy (ch->_AL_POSITION, position, sizeof(vec3_t));
 				}
 
 				cl_parse_entities_goodjob[idx] = 1;
@@ -1094,40 +1071,42 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 	}
 	// Check for stop, no-loops spatialization
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-		 i++, ch++) {
+		i++, ch++) {
 		if (ch->bufferNum)		// (ch->sfx)
 		{
 			ALuint SourceState;
 
-			alGetSourcei(source_name[i], AL_SOURCE_STATE, &SourceState);
+			alGetSourcei (source_name[i], AL_SOURCE_STATE, &SourceState);
 
 			if (SourceState == AL_STOPPED || SourceState == AL_INITIAL)	// The
-																		// source
-																		// already
-																		// out
-																		// of
-																		// processing.
+				// source
+				// already
+				// out
+				// of
+				// processing.
 			{
 				ch->bufferNum = 0;
 				// alSourcei(ch->sourceNum, AL_BUFFER, 0);
-			} else {
+			}
+			else {
 				// Kill some loops
-				if (FlagAL_check(ch, AL_FLAGS_AL_LOOPING)) {
+				if (FlagAL_check (ch, AL_FLAGS_AL_LOOPING)) {
 					if (!Flag_check
 						(&Channels_TODO[i],
-						 AL_TASK_MANAGER__IS_LOOP_ACTIVE)) {
-						TASK_TerminateChannel(&Channels_TODO[i], ch);
+						AL_TASK_MANAGER__IS_LOOP_ACTIVE)) {
+						TASK_TerminateChannel (&Channels_TODO[i], ch);
 					}
-				} else if (!FlagAL_check(ch, AL_FLAGS_FIXED_POSITION)) {
+				}
+				else if (!FlagAL_check (ch, AL_FLAGS_FIXED_POSITION)) {
 					vec3_t velocity, position;
 
-					CL_GetEntityOrigin(ch->entNum, position);
-					VectorSubtract(position, ch->_AL_POSITION, velocity);
-					VectorScale(velocity, 1 / 30, velocity);
+					CL_GetEntityOrigin (ch->entNum, position);
+					VectorSubtract (position, ch->_AL_POSITION, velocity);
+					VectorScale (velocity, 1 / 30, velocity);
 
-					alSourcefv(source_name[i], AL_VELOCITY, velocity);
-					alSourcefv(source_name[i], AL_POSITION, position);
-					memcpy(ch->_AL_POSITION, position, sizeof(vec3_t));
+					alSourcefv (source_name[i], AL_VELOCITY, velocity);
+					alSourcefv (source_name[i], AL_POSITION, position);
+					memcpy (ch->_AL_POSITION, position, sizeof(vec3_t));
 					// memcpy(Channels_TODO[i].TASK_AL_VELOCITY, velocity,
 					// sizeof(vec3_t));
 					// alSourcefv(ch->sourceNum, AL_DIRECTION, direction);
@@ -1137,64 +1116,64 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 	}
 
 	if (!(cls.state != ca_active || cl_paused->value))
-		for (i = cl.frame.parse_entities;
-			 i < cl.frame.num_entities + cl.frame.parse_entities; i++) {
-			if (!cl_parse_entities_goodjob[i & (MAX_PARSE_ENTITIES - 1)]) {
-				vec3_t position;
+	for (i = cl.frame.parse_entities;
+		i < cl.frame.num_entities + cl.frame.parse_entities; i++) {
+		if (!cl_parse_entities_goodjob[i & (MAX_PARSE_ENTITIES - 1)]) {
+			vec3_t position;
 
-				ent = &cl_parse_entities[i & (MAX_PARSE_ENTITIES - 1)];
+			ent = &cl_parse_entities[i & (MAX_PARSE_ENTITIES - 1)];
 
-				// Pick a channel and start the sound effect
-				CL_GetEntityOrigin(ent->number, position);
-			
-			
-				//          ????? ps->entnum, ps->entchannel ?????
-				if ((ch = PickChannel(Channels_TODO, ent->number, 0, position,
-						&logical_channel_index, listener_position))) {
-					channel_task_t *current_task = &Channels_TODO[logical_channel_index];
+			// Pick a channel and start the sound effect
+			CL_GetEntityOrigin (ent->number, position);
 
-					ch->bufferNum = cl.sound_precache[ent->sound];
-					ch->entNum = ent->number;	// loopNum
 
-					// ch->loopSound = AL_TRUE;
-					FlagAL_set(ch, AL_FLAGS_AL_LOOPING);
-					FlagAL_clear(ch, AL_FLAGS_FIXED_POSITION);
+			//          ????? ps->entnum, ps->entchannel ?????
+			if ((ch = PickChannel (Channels_TODO, ent->number, 0, position,
+				&logical_channel_index, listener_position))) {
+				channel_task_t *current_task = &Channels_TODO[logical_channel_index];
 
-					// ch->distanceMult = 0.3f;
-					// Update min/max distance
-					current_task->TASK_AL_REFERENCE_DISTANCE = 27;	// willow:
-																	// Player
-																	// unit
-																	// width
-																	// * 3
-																	// /
-																	// 4;
-					// Set max distance really far away (default)
-					// alSourcef(ch->sourceNum, AL_MAX_DISTANCE, 65536);
+				ch->bufferNum = cl.sound_precache[ent->sound];
+				ch->entNum = ent->number;	// loopNum
 
-					// Update volume and rolloff factor from hacking
-					// database, the only decent source :(
-					current_task->TASK_AL_ROLLOFF_FACTOR =
-						cl.sound_precache_rolloff_factor[ent->sound];
-					current_task->TASK_AL_GAIN =
-						cl.sound_precache_gain[ent->sound];
+				// ch->loopSound = AL_TRUE;
+				FlagAL_set (ch, AL_FLAGS_AL_LOOPING);
+				FlagAL_clear (ch, AL_FLAGS_FIXED_POSITION);
 
-//              alSourcefv(ch->sourceNum, AL_DIRECTION, ent->angles);
-					{
-						vec3_t delta, delta2;
-						VectorSubtract(position, ent->old_origin, delta2);
-						VectorScale(delta2, 1 / 30, delta);
-						memcpy(current_task->TASK_AL_VELOCITY, delta,
-							   sizeof(vec3_t));
-						// memcpy(current_task->TASK_AL_VELOCITY,
-						// ent->delta, sizeof(vec3_t));
-					}
+				// ch->distanceMult = 0.3f;
+				// Update min/max distance
+				current_task->TASK_AL_REFERENCE_DISTANCE = 27;	// willow:
+				// Player
+				// unit
+				// width
+				// * 3
+				// /
+				// 4;
+				// Set max distance really far away (default)
+				// alSourcef(ch->sourceNum, AL_MAX_DISTANCE, 65536);
 
-//              current_task->TASK_AL_SOURCE_RELATIVE = AL_FALSE;
-					Flag_set(current_task, AL_TASK_MANAGER__EXECUTE);
+				// Update volume and rolloff factor from hacking
+				// database, the only decent source :(
+				current_task->TASK_AL_ROLLOFF_FACTOR =
+					cl.sound_precache_rolloff_factor[ent->sound];
+				current_task->TASK_AL_GAIN =
+					cl.sound_precache_gain[ent->sound];
+
+				//              alSourcefv(ch->sourceNum, AL_DIRECTION, ent->angles);
+				{
+					vec3_t delta, delta2;
+					VectorSubtract (position, ent->old_origin, delta2);
+					VectorScale (delta2, 1 / 30, delta);
+					memcpy (current_task->TASK_AL_VELOCITY, delta,
+						sizeof(vec3_t));
+					// memcpy(current_task->TASK_AL_VELOCITY,
+					// ent->delta, sizeof(vec3_t));
 				}
+
+				//              current_task->TASK_AL_SOURCE_RELATIVE = AL_FALSE;
+				Flag_set (current_task, AL_TASK_MANAGER__EXECUTE);
 			}
 		}
+	}
 	// Issue playSounds
 	for (;;) {
 		ps = s_pendingplays.next;
@@ -1206,15 +1185,15 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 			break;				// No more pending playSounds this frame
 
 		if (ps->fixed_origin)
-			ch = PickChannel(Channels_TODO, ps->entnum, ps->entchannel,
-							 ps->origin, &logical_channel_index,
-							 listener_position);
+			ch = PickChannel (Channels_TODO, ps->entnum, ps->entchannel,
+			ps->origin, &logical_channel_index,
+			listener_position);
 		else {
 			vec3_t position;
-			CL_GetEntityOrigin(ps->entnum, position);
-			ch = PickChannel(Channels_TODO, ps->entnum, ps->entchannel,
-							 position, &logical_channel_index,
-							 listener_position);
+			CL_GetEntityOrigin (ps->entnum, position);
+			ch = PickChannel (Channels_TODO, ps->entnum, ps->entchannel,
+				position, &logical_channel_index,
+				listener_position);
 		}
 
 
@@ -1242,62 +1221,63 @@ void S_Update(vec3_t listener_position, vec3_t velocity,
 				// alSource3f(ch->sourceNum, AL_VELOCITY, 0, 0, 0);
 
 				if (ps->fixed_origin) {
-					FlagAL_clear(ch, AL_FLAGS_AL_LOOPING);
-					FlagAL_set(ch, AL_FLAGS_FIXED_POSITION);
-					memset(current_task->TASK_AL_VELOCITY, 0,
-						   sizeof(vec3_t));
-				} else {
-					FlagAL_clear(ch,
-								 AL_FLAGS_FIXED_POSITION |
-								 AL_FLAGS_AL_LOOPING);
+					FlagAL_clear (ch, AL_FLAGS_AL_LOOPING);
+					FlagAL_set (ch, AL_FLAGS_FIXED_POSITION);
+					memset (current_task->TASK_AL_VELOCITY, 0,
+						sizeof(vec3_t));
+				}
+				else {
+					FlagAL_clear (ch,
+						AL_FLAGS_FIXED_POSITION |
+						AL_FLAGS_AL_LOOPING);
 					// willow: TO DO.
-					memset(current_task->TASK_AL_VELOCITY, 0,
-						   sizeof(vec3_t));
+					memset (current_task->TASK_AL_VELOCITY, 0,
+						sizeof(vec3_t));
 				}
 
-//              current_task->TASK_AL_SOURCE_RELATIVE = AL_FALSE;
+				//              current_task->TASK_AL_SOURCE_RELATIVE = AL_FALSE;
 			}
-			Flag_set(current_task, AL_TASK_MANAGER__EXECUTE);
+			Flag_set (current_task, AL_TASK_MANAGER__EXECUTE);
 		}
 		// Free the playSound
-		S_FreePlaysound(ps);
+		S_FreePlaysound (ps);
 	}
 
 	// Direct access to OpenAL layer
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-		 i++, ch++) {
+		i++, ch++) {
 		channel_task_t *current_task = &Channels_TODO[i];
 
-		if (Flag_check(current_task, AL_TASK_MANAGER__TERMINATE)) {
-			alSourceStop(source_name[i]);
+		if (Flag_check (current_task, AL_TASK_MANAGER__TERMINATE)) {
+			alSourceStop (source_name[i]);
 		}
 
-		if (Flag_check(current_task, AL_TASK_MANAGER__EXECUTE)) {
+		if (Flag_check (current_task, AL_TASK_MANAGER__EXECUTE)) {
 			ALuint sourceNum = source_name[i];
-			alSourcef(sourceNum, AL_PITCH, 1);
-			alSource3f(sourceNum, AL_DIRECTION, 0, 0, 0);
-			alSourcef(sourceNum, AL_REFERENCE_DISTANCE,
-					  current_task->TASK_AL_REFERENCE_DISTANCE);
-			alSourcef(sourceNum, AL_ROLLOFF_FACTOR,
-					  current_task->TASK_AL_ROLLOFF_FACTOR);
-			alSourcefv(sourceNum, AL_POSITION, ch->_AL_POSITION);
-			alSourcefv(sourceNum, AL_VELOCITY,
-					   current_task->TASK_AL_VELOCITY);
-			alSourcei(sourceNum, AL_BUFFER, ch->bufferNum);
-			alSourcei(sourceNum, AL_SOURCE_RELATIVE, FlagAL_checkAL(ch, AL_FLAGS_FLAT2D));	// Flag_checkAL
-																							// (current_task,
-																							// AL_TASK_MANAGER__IS_SOURCE_RELATIVE));
-			alSourcei(sourceNum, AL_LOOPING, FlagAL_checkAL(ch, AL_FLAGS_AL_LOOPING));	// ch->loopSound);
-			alSourcef(sourceNum, AL_GAIN, current_task->TASK_AL_GAIN);
+			alSourcef (sourceNum, AL_PITCH, 1);
+			alSource3f (sourceNum, AL_DIRECTION, 0, 0, 0);
+			alSourcef (sourceNum, AL_REFERENCE_DISTANCE,
+				current_task->TASK_AL_REFERENCE_DISTANCE);
+			alSourcef (sourceNum, AL_ROLLOFF_FACTOR,
+				current_task->TASK_AL_ROLLOFF_FACTOR);
+			alSourcefv (sourceNum, AL_POSITION, ch->_AL_POSITION);
+			alSourcefv (sourceNum, AL_VELOCITY,
+				current_task->TASK_AL_VELOCITY);
+			alSourcei (sourceNum, AL_BUFFER, ch->bufferNum);
+			alSourcei (sourceNum, AL_SOURCE_RELATIVE, FlagAL_checkAL (ch, AL_FLAGS_FLAT2D));	// Flag_checkAL
+			// (current_task,
+			// AL_TASK_MANAGER__IS_SOURCE_RELATIVE));
+			alSourcei (sourceNum, AL_LOOPING, FlagAL_checkAL (ch, AL_FLAGS_AL_LOOPING));	// ch->loopSound);
+			alSourcef (sourceNum, AL_GAIN, current_task->TASK_AL_GAIN);
 
 			if (alConfig.efx)
-				EFX_RvbProcSrc(ch, sourceNum, true);
+				EFX_RvbProcSrc (ch, sourceNum, true);
 
-			alSourcePlay(sourceNum);
+			alSourcePlay (sourceNum);
 		}
 	}
 
-	S_Streaming_RecycleBuffers();
+	S_Streaming_RecycleBuffers ();
 }
 
 /*
@@ -1306,10 +1286,10 @@ Music Streaming
 ===============================================================================
 */
 
-qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float volume) {
+qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume) {
 	if (streaming.enabled) {
-		Com_Printf(S_COLOR_YELLOW "S_Streaming_Start: interrupting active stream\n");
-		S_Streaming_Stop();
+		Com_Printf (S_COLOR_YELLOW "S_Streaming_Start: interrupting active stream\n");
+		S_Streaming_Stop ();
 	}
 
 	if (num_bits == 8 && num_channels == 1)
@@ -1321,11 +1301,11 @@ qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float v
 	else if (num_bits == 16 && num_channels == 2)
 		streaming.sound_format = AL_FORMAT_STEREO16;
 	else {
-		Com_Printf(S_COLOR_RED "S_StreamingStart: unsupported format (%d bits and %d channels)\n", num_bits, num_channels);
+		Com_Printf (S_COLOR_RED "S_StreamingStart: unsupported format (%d bits and %d channels)\n", num_bits, num_channels);
 		return false;
 	}
 
-	alSourcef(source_name[CH_STREAMING], AL_GAIN, volume);
+	alSourcef (source_name[CH_STREAMING], AL_GAIN, volume);
 	streaming.sound_rate = rate;
 	streaming.bFirst = 0;
 	streaming.bNumAvail = NUM_STRBUF;
@@ -1334,61 +1314,61 @@ qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float v
 	return true;
 }
 
-void S_Streaming_Stop(void) {
+void S_Streaming_Stop (void) {
 	if (streaming.enabled) {
 		// Stop the Source and clear the Queue
-		alSourceStop(source_name[CH_STREAMING]);
-		alSourcei(source_name[CH_STREAMING], AL_BUFFER, 0);
+		alSourceStop (source_name[CH_STREAMING]);
+		alSourcei (source_name[CH_STREAMING], AL_BUFFER, 0);
 
 		streaming.enabled = false;
 	}
 }
 
-int S_Streaming_NumFreeBufs(void) {
+int S_Streaming_NumFreeBufs (void) {
 	return streaming.bNumAvail;
 }
 
-static void S_Streaming_RecycleBuffers(void) {
+static void S_Streaming_RecycleBuffers (void) {
 	// Reclaim buffers that have been played, and keep them in a queue
 	if (streaming.bNumAvail < NUM_STRBUF) {
 		int recycled, i;
-		alGetSourcei(source_name[CH_STREAMING], AL_BUFFERS_PROCESSED, &recycled);
+		alGetSourcei (source_name[CH_STREAMING], AL_BUFFERS_PROCESSED, &recycled);
 
 		for (i = 0; i < recycled; i++) {
 			ALuint buf;
-			alSourceUnqueueBuffers(source_name[CH_STREAMING], 1, &buf);
-			sq_add(buf);
+			alSourceUnqueueBuffers (source_name[CH_STREAMING], 1, &buf);
+			sq_add (buf);
 		}
 	}
 
 
 }
 
-int S_Streaming_Add(const byte *buffer, int num_bytes) {
+int S_Streaming_Add (const byte *buffer, int num_bytes) {
 	// TODO: add comments
 
 	ALint iState;
 	int readacc = 0;
 
 	if (!streaming.enabled) {
-		Com_DPrintf("S_Streaming_Add: called with %d bytes when disabled\n", num_bytes);
+		Com_DPrintf ("S_Streaming_Add: called with %d bytes when disabled\n", num_bytes);
 		return 0;
 	}
 
 	if (num_bytes == 0) {
-		Com_DPrintf("S_Streaming_Add: called with empty buffer\n");
+		Com_DPrintf ("S_Streaming_Add: called with empty buffer\n");
 		return 0;
 	}
 
 	// If there is data to play and free buffers,
 	// copy the data and enqueue them.
 	while (num_bytes > 0 && streaming.bNumAvail > 0) {
-		int readcur = MIN(MAX_STRBUF_SIZE, num_bytes);
-		const ALuint buf = sq_remove();
+		int readcur = MIN (MAX_STRBUF_SIZE, num_bytes);
+		const ALuint buf = sq_remove ();
 
-		alBufferData(buf, streaming.sound_format,
+		alBufferData (buf, streaming.sound_format,
 			buffer + readacc, readcur, streaming.sound_rate);
-		alSourceQueueBuffers(source_name[CH_STREAMING], 1, &buf);
+		alSourceQueueBuffers (source_name[CH_STREAMING], 1, &buf);
 
 		num_bytes -= readcur;
 		readacc += readcur;
@@ -1396,25 +1376,26 @@ int S_Streaming_Add(const byte *buffer, int num_bytes) {
 
 	// Check if we have stopped or starved and should restart
 	// (the latter includes the case right afer initialization)
-	alGetSourcei(source_name[CH_STREAMING], AL_SOURCE_STATE, &iState);
+	alGetSourcei (source_name[CH_STREAMING], AL_SOURCE_STATE, &iState);
 	if (iState != AL_PLAYING) {
 		ALint iQueuedBuffers;
-		alGetSourcei(source_name[CH_STREAMING], AL_BUFFERS_QUEUED, &iQueuedBuffers);
+		alGetSourcei (source_name[CH_STREAMING], AL_BUFFERS_QUEUED, &iQueuedBuffers);
 
 		if (iQueuedBuffers > 0) {
 			// If we are not playing but there are still enqueued buffers,
 			// restart the audio because it starved of data to play
-			alSourcePlay(source_name[CH_STREAMING]);
-			Com_DPrintf("S_Streaming_Add: restarting stream, starved\n");
-		} else {
+			alSourcePlay (source_name[CH_STREAMING]);
+			Com_DPrintf ("S_Streaming_Add: restarting stream, starved\n");
+		}
+		else {
 			// Finished playing
-			Com_DPrintf("S_Streaming_Add: no more buffers to play, stopping\n");
-			S_Streaming_Stop();
+			Com_DPrintf ("S_Streaming_Add: no more buffers to play, stopping\n");
+			S_Streaming_Stop ();
 		}
 	}
 
 	if (readacc == 0)
-		Com_DPrintf("S_Streaming_Add: added 0 samples to queue but %d given\n", num_bytes);
+		Com_DPrintf ("S_Streaming_Add: added 0 samples to queue but %d given\n", num_bytes);
 
 	return readacc;
 }

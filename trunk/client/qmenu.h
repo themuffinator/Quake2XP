@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -113,21 +113,21 @@ typedef struct {
 	menucommon_s generic;
 } menuseparator_s;
 
-qboolean Field_Key(menufield_s * field, int key);
+qboolean Field_Key (menufield_s * field, int key);
 
-void Menu_AddItem(menuframework_s * menu, void *item);
-void Menu_AdjustCursor(menuframework_s * menu, int dir);
-void Menu_Center(menuframework_s * menu);
-void Menu_Draw(menuframework_s * menu);
-void *Menu_ItemAtCursor(menuframework_s * m);
-qboolean Menu_SelectItem(menuframework_s * s);
-void Menu_SetStatusBar(menuframework_s * s, const char *string);
-void Menu_SlideItem(menuframework_s * s, int dir);
-int Menu_TallySlots(menuframework_s * menu);
+void Menu_AddItem (menuframework_s * menu, void *item);
+void Menu_AdjustCursor (menuframework_s * menu, int dir);
+void Menu_Center (menuframework_s * menu);
+void Menu_Draw (menuframework_s * menu);
+void *Menu_ItemAtCursor (menuframework_s * m);
+qboolean Menu_SelectItem (menuframework_s * s);
+void Menu_SetStatusBar (menuframework_s * s, const char *string);
+void Menu_SlideItem (menuframework_s * s, int dir);
+int Menu_TallySlots (menuframework_s * menu);
 
-void Menu_DrawStringDark(int, int, const char *);
-void Menu_DrawStringR2L(int, int, const char *);
-void Menu_DrawStringR2LDark(int, int, const char *);
+void Menu_DrawStringDark (int, int, const char *);
+void Menu_DrawStringR2L (int, int, const char *);
+void Menu_DrawStringR2LDark (int, int, const char *);
 
 #define Menu_DrawStringScaled(x, y, sx, sy, z) Draw_StringScaled(x,y, sx, sy, z);
 

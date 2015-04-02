@@ -27,9 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ClipMoveEntitiesWorld
 -----------------------------
 */
-void CL_ClipMoveToEntitiesWorld(vec3_t start, vec3_t mins, vec3_t maxs,
-								vec3_t end, trace_t * tr, int mask)
-{
+void CL_ClipMoveToEntitiesWorld (vec3_t start, vec3_t mins, vec3_t maxs,
+	vec3_t end, trace_t * tr, int mask) {
 	int i;
 	trace_t trace;
 	int headnode;
@@ -45,9 +44,9 @@ void CL_ClipMoveToEntitiesWorld(vec3_t start, vec3_t mins, vec3_t maxs,
 		if (!ent->solid)
 			continue;
 
-		
-			if (ent->solid != 31)	// special value for bmodel
-				continue;
+
+		if (ent->solid != 31)	// special value for bmodel
+			continue;
 
 		cmodel = cl.model_clip[ent->modelindex];
 		if (!cmodel)
@@ -59,8 +58,8 @@ void CL_ClipMoveToEntitiesWorld(vec3_t start, vec3_t mins, vec3_t maxs,
 			return;
 
 		trace =
-			CM_TransformedBoxTrace(start, end, mins, maxs, headnode, mask,
-								   ent->origin, angles);
+			CM_TransformedBoxTrace (start, end, mins, maxs, headnode, mask,
+			ent->origin, angles);
 
 		if (trace.allsolid || trace.startsolid
 			|| trace.fraction < tr->fraction) {
@@ -68,31 +67,32 @@ void CL_ClipMoveToEntitiesWorld(vec3_t start, vec3_t mins, vec3_t maxs,
 			if (tr->startsolid) {
 				*tr = trace;
 				tr->startsolid = true;
-			} else
+			}
+			else
 				*tr = trace;
-		} else if (trace.startsolid)
+		}
+		else if (trace.startsolid)
 			tr->startsolid = true;
 	}
 }
 
-void CL_ClipMoveToEntities(vec3_t start, vec3_t mins, vec3_t maxs,
-							vec3_t end, trace_t * tr);
+void CL_ClipMoveToEntities (vec3_t start, vec3_t mins, vec3_t maxs,
+	vec3_t end, trace_t * tr);
 
-trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
-						int mask, qboolean checkAliases)
-{
+trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
+	int mask, qboolean checkAliases) {
 	trace_t t;
 
 	// check against world
-	t = CM_BoxTrace(start, end, mins, maxs, 0, mask);
+	t = CM_BoxTrace (start, end, mins, maxs, 0, mask);
 	if (t.fraction < 1.0)
 		t.ent = (struct edict_s *) 1;
 
 	// check all other solid models
 	if (checkAliases)
-		CL_ClipMoveToEntities(start, mins, maxs, end, &t);
+		CL_ClipMoveToEntities (start, mins, maxs, end, &t);
 	else
-		CL_ClipMoveToEntitiesWorld(start, mins, maxs, end, &t, mask);
+		CL_ClipMoveToEntitiesWorld (start, mins, maxs, end, &t, mask);
 
 	return t;
 }
@@ -122,8 +122,7 @@ clentity_t clentities[MAX_CLENTITIES];
 
 extern int m_menudepth;
 
-void CL_AddClEntities()
-{
+void CL_AddClEntities () {
 	entity_t ent;
 	clentity_t *le, *next;
 	clentity_t *active, *tail;
@@ -132,7 +131,7 @@ void CL_AddClEntities()
 	float alpha, bak;
 	int contents;
 	qboolean onground = (qboolean)false;
-	float time, time2, dst, grav = Cvar_VariableValue("sv_gravity");
+	float time, time2, dst, grav = Cvar_VariableValue ("sv_gravity");
 	vec3_t tmpSize;
 	float entSize;
 	dst = cl_brass->value * cl_brass->value;
@@ -145,8 +144,8 @@ void CL_AddClEntities()
 	active = NULL;
 	tail = NULL;
 
-	memset(&ent, 0, sizeof(ent));
-	
+	memset (&ent, 0, sizeof(ent));
+
 
 	for (le = active_clentities; le; le = next) {
 		next = le->next;
@@ -166,24 +165,25 @@ void CL_AddClEntities()
 		bak = le->org[2] + le->vel[2] * time + le->accel[2] * time2 * grav;
 
 		org[2] = bak - 1;
-		contents = CL_PMpointcontents(org);
+		contents = CL_PMpointcontents (org);
 		org[2] = bak;
 
-		if(contents & MASK_SOLID)
+		if (contents & MASK_SOLID)
 			onground = (qboolean)true;
 
 		if (onground) {
 			le->flags &= ~CLM_ROTATE;
 			le->avel = 0;
-		} else 
-			if (le->flags & CLM_STOPPED) {
+		}
+		else
+		if (le->flags & CLM_STOPPED) {
 			le->flags &= ~CLM_STOPPED;
 			le->flags |= CLM_BOUNCE;
 			le->accel[2] = -15 * PARTICLE_GRAVITY;
 			// Reset
 			le->alpha = 1;
 			le->time = cl.time;
-			VectorCopy(org, le->org);
+			VectorCopy (org, le->org);
 		}
 
 		le->next = NULL;
@@ -196,30 +196,31 @@ void CL_AddClEntities()
 
 		if (alpha > 1.0)
 			alpha = 1;
-		
-		if(le->flags & CLM_NOSHADOW)
+
+		if (le->flags & CLM_NOSHADOW)
 			ent.flags |= RF_NOSHADOW;
 
 		if (le->flags & CLM_FRICTION) {
 			// Water friction affected cl model
 			if (contents & MASK_WATER) {
 				if (contents & CONTENTS_LAVA) {	// kill entity in lava
-					VectorSet(dir, 0, 0, 1);
-					S_fastsound(org, 0, CHAN_AUTO, cl_sfx_lava, 1, ATTN_NORM);
-					CL_ParticleSmoke2(org, dir, 1, 0.3, 0, 6, true);
+					VectorSet (dir, 0, 0, 1);
+					S_fastsound (org, 0, CHAN_AUTO, cl_sfx_lava, 1, ATTN_NORM);
+					CL_ParticleSmoke2 (org, dir, 1, 0.3, 0, 6, true);
 					le->alpha = 0;
 					continue;
-				} else {
+				}
+				else {
 					// Add friction
-					VectorScale(le->vel, 0.25, le->vel);
-					VectorScale(le->accel, 0.25, le->accel);
+					VectorScale (le->vel, 0.25, le->vel);
+					VectorScale (le->accel, 0.25, le->accel);
 
 					// Don't add friction again
 					le->flags &= ~(CLM_FRICTION | CLM_ROTATE);
 
 					// Reset
 					le->time = cl.time;
-					VectorCopy(org, le->org);
+					VectorCopy (org, le->org);
 
 					// Don't stretch
 					le->flags &= ~CLM_STRETCH;
@@ -229,149 +230,146 @@ void CL_AddClEntities()
 		}
 		//calc model radius and bbox
 		ent.model = le->model;
-		VectorSubtract(ent.maxs, ent.mins, tmpSize);
-		entSize = VectorLength(tmpSize);
-	
-		if (le->flags & CLM_BOUNCE)
-		{
+		VectorSubtract (ent.maxs, ent.mins, tmpSize);
+		entSize = VectorLength (tmpSize);
+
+		if (le->flags & CLM_BOUNCE) {
 			trace_t trace = CL_PMTraceWorld (le->lastOrg, ent.mins, ent.maxs, org, MASK_SOLID, false);
 
-			if (trace.fraction > 0 && trace.fraction < 1)
-			{
+			if (trace.fraction > 0 && trace.fraction < 1) {
 				vec3_t	vel;
 				// Reflect velocity
 				float time = cl.time - (cls.frametime + cls.frametime * trace.fraction) * 1000;
 				time = (time - le->time) * 0.001;
 
-				VectorSet(vel, le->vel[0], le->vel[1], le->vel[2] + le->accel[2] * time * grav);
-				VectorReflect(vel, trace.plane.normal, le->vel);
-							
-				if ((	le->model == cl_mod_debris1)
+				VectorSet (vel, le->vel[0], le->vel[1], le->vel[2] + le->accel[2] * time * grav);
+				VectorReflect (vel, trace.plane.normal, le->vel);
+
+				if ((le->model == cl_mod_debris1)
 					|| (le->model == cl_mod_debris2)
 					|| (le->model == cl_mod_debris3)
 					|| (le->model == cl_mod_debris0))
-					VectorScale(le->vel, 0.2, le->vel);	
+					VectorScale (le->vel, 0.2, le->vel);
 				else
-				if ((	le->model == cl_mod_gib0)
+				if ((le->model == cl_mod_gib0)
 					|| (le->model == cl_mod_gib1)
 					|| (le->model == cl_mod_gib2)
 					|| (le->model == cl_mod_gib3)
 					|| (le->model == cl_mod_gib4)
 					|| (le->model == cl_mod_gib5))
-					VectorScale(le->vel, 0.3, le->vel);
+					VectorScale (le->vel, 0.3, le->vel);
 				else
-					VectorScale(le->vel, 0.8, le->vel);
-				
+					VectorScale (le->vel, 0.8, le->vel);
+
 				// Check for stop or slide along the plane
-				if (trace.plane.normal[2] > 0 && le->vel[2] < 1)
-				{
-					if (trace.plane.normal[2] > 0.9)
-					{
-						VectorClear(le->vel);
-						VectorClear(le->accel);
+				if (trace.plane.normal[2] > 0 && le->vel[2] < 1) {
+					if (trace.plane.normal[2] > 0.9) {
+						VectorClear (le->vel);
+						VectorClear (le->accel);
 						le->avel = 0;
 						le->alpha = 1;
 						le->flags &= ~CLM_BOUNCE;
 						le->flags |= CLM_STOPPED;
 					}
-					else
-					{
+					else {
 						// FIXME: check for new plane or free fall
-						float dot = DotProduct(le->vel, trace.plane.normal);
-						VectorMA(le->vel, -dot, trace.plane.normal, le->vel);
-						dot = DotProduct(le->accel, trace.plane.normal);
-						VectorMA(le->accel, -dot, trace.plane.normal, le->accel);
+						float dot = DotProduct (le->vel, trace.plane.normal);
+						VectorMA (le->vel, -dot, trace.plane.normal, le->vel);
+						dot = DotProduct (le->accel, trace.plane.normal);
+						VectorMA (le->accel, -dot, trace.plane.normal, le->accel);
 					}
 				}
 
-				VectorCopy(trace.endpos, org);
+				VectorCopy (trace.endpos, org);
 
 
 				// Reset
 				le->time = cl.time;
-				VectorCopy(org, le->org);
+				VectorCopy (org, le->org);
 
 				// Don't stretch
 				le->flags &= ~CLM_STRETCH;
 
 				// Nightmare stuff
-				if(cl_blood->value){
-					
-				if (	le->model == cl_mod_gib0 
-					||	le->model == cl_mod_gib1
-					||	le->model == cl_mod_gib2
-					||	le->model == cl_mod_gib3
-					||	le->model == cl_mod_gib4
-					||	le->model == cl_mod_gib5) {
-															
-					if(!cl_blood->value) 
-						return;
-					
-					trace2 = CL_Trace(le->lastOrg, org, entSize, MASK_SOLID);
-					VectorNormalize(trace.plane.normal);
-					
+				if (cl_blood->value) {
 
-					if (trace.fraction > 0 && trace.fraction < 1)
-						CL_AddDecalToScene(trace.endpos,
-										   trace.plane.normal,	1, 1, 1, 1,
-																1, 1, 1, 1, 20, 12000,
-																DECAL_BLOOD9, 0,
-																rand() % 360, GL_ZERO,
-																GL_ONE_MINUS_SRC_COLOR);
-				
-				}
-				
+					if (le->model == cl_mod_gib0
+						|| le->model == cl_mod_gib1
+						|| le->model == cl_mod_gib2
+						|| le->model == cl_mod_gib3
+						|| le->model == cl_mod_gib4
+						|| le->model == cl_mod_gib5) {
+
+						if (!cl_blood->value)
+							return;
+
+						trace2 = CL_Trace (le->lastOrg, org, entSize, MASK_SOLID);
+						VectorNormalize (trace.plane.normal);
+
+
+						if (trace.fraction > 0 && trace.fraction < 1)
+							CL_AddDecalToScene (trace.endpos,
+							trace.plane.normal, 1, 1, 1, 1,
+							1, 1, 1, 1, 20, 12000,
+							DECAL_BLOOD9, 0,
+							rand () % 360, GL_ZERO,
+							GL_ONE_MINUS_SRC_COLOR);
+
+					}
+
 				}
 
 				if (le->model == cl_mod_debris1)
-					S_fastsound(org, 0, CHAN_AUTO, cl_sfx_debris, 1, ATTN_NORM);
+					S_fastsound (org, 0, CHAN_AUTO, cl_sfx_debris, 1, ATTN_NORM);
 
-				else if (	le->model == cl_mod_mshell
-						 || le->model == cl_mod_sshell
-						 || le->model == cl_mod_debris3)
-					S_fastsound(org, 0, CHAN_AUTO, cl_sfx_shell, 0.8, ATTN_NORM);
+				else if (le->model == cl_mod_mshell
+					|| le->model == cl_mod_sshell
+					|| le->model == cl_mod_debris3)
+					S_fastsound (org, 0, CHAN_AUTO, cl_sfx_shell, 0.8, ATTN_NORM);
 
 			}
 		}
 		// Save current origin if needed
 		if (le->flags & (CLM_BOUNCE | CLM_STRETCH)) {
-			VectorCopy(le->lastOrg, ent.origin);
-			VectorCopy(org, le->lastOrg);	// FIXME: pause
-		} else
-			VectorCopy(org, ent.origin);
-
-		if (CL_PMpointcontents(ent.origin) & MASK_SOLID) {	
-		
-		if (le->model == cl_mod_mshell || le->model == cl_mod_sshell){ // kill gun shells in solid only!
-			le->alpha = 0;
-				continue;
-		}else{
-		VectorClear(le->vel);     
-        VectorClear(le->accel);
-        le->avel = 0;
-        le->flags &= ~PARTICLE_BOUNCE;
-        le->flags |= PARTICLE_STOPED;
-		le->org[2] += entSize;
+			VectorCopy (le->lastOrg, ent.origin);
+			VectorCopy (org, le->lastOrg);	// FIXME: pause
 		}
+		else
+			VectorCopy (org, ent.origin);
+
+		if (CL_PMpointcontents (ent.origin) & MASK_SOLID) {
+
+			if (le->model == cl_mod_mshell || le->model == cl_mod_sshell) { // kill gun shells in solid only!
+				le->alpha = 0;
+				continue;
+			}
+			else {
+				VectorClear (le->vel);
+				VectorClear (le->accel);
+				le->avel = 0;
+				le->flags &= ~PARTICLE_BOUNCE;
+				le->flags |= PARTICLE_STOPED;
+				le->org[2] += entSize;
+			}
 		}
 
 		// add model to scene
 		if (!ent.model)
 			continue;
 
-			if ((le->model == cl_mod_debris1)
-				|| (le->model == cl_mod_debris2)
-				|| (le->model == cl_mod_debris3)
-				|| (le->model == cl_mod_debris0))
-				ent.angles[0] = ent.angles[1] = ent.angles[2] = le->ang + ((le->flags & CLM_ROTATE) ? (time * le->avel) : 0);
-			else {
-				ent.angles[0] = 0;
-				ent.angles[2] = 0;
-				ent.angles[1] = le->ang + ((le->flags & CLM_ROTATE) ? (time * le->avel) : 0);
-			}
-			V_AddEntity(&ent);
+		if ((le->model == cl_mod_debris1)
+			|| (le->model == cl_mod_debris2)
+			|| (le->model == cl_mod_debris3)
+			|| (le->model == cl_mod_debris0))
+			ent.angles[0] = ent.angles[1] = ent.angles[2] = le->ang + ((le->flags & CLM_ROTATE) ? (time * le->avel) : 0);
+		else {
+			ent.angles[0] = 0;
+			ent.angles[2] = 0;
+			ent.angles[1] = le->ang + ((le->flags & CLM_ROTATE) ? (time * le->avel) : 0);
 		}
-	
+		V_AddEntity (&ent);
+	}
+
 
 	active_clentities = active;
 }
@@ -383,8 +381,7 @@ brass effect. No change
 =======================
 */
 
-void CL_BrassShells(vec3_t org, vec3_t dir, int count, qboolean mshell)
-{
+void CL_BrassShells (vec3_t org, vec3_t dir, int count, qboolean mshell) {
 	int i, j;
 	clentity_t *le;
 	float d;
@@ -393,9 +390,9 @@ void CL_BrassShells(vec3_t org, vec3_t dir, int count, qboolean mshell)
 	if (!cl_brass->value || !count)
 		return;
 
-	VectorSubtract(cl.refdef.vieworg, org, tmp);
+	VectorSubtract (cl.refdef.vieworg, org, tmp);
 
-	if (DotProduct(tmp, tmp) >= (cl_brass->value * cl_brass->value))
+	if (DotProduct (tmp, tmp) >= (cl_brass->value * cl_brass->value))
 		return;
 
 
@@ -408,9 +405,9 @@ void CL_BrassShells(vec3_t org, vec3_t dir, int count, qboolean mshell)
 		le->next = active_clentities;
 		active_clentities = le;
 		le->time = cl.time;
-		d = (192 + rand()) & 63;
-		VectorClear(le->accel);
-		VectorClear(le->vel);
+		d = (192 + rand ()) & 63;
+		VectorClear (le->accel);
+		VectorClear (le->vel);
 		le->accel[0] = le->accel[1] = 0;
 		le->accel[2] = -6 * PARTICLE_GRAVITY;
 		le->alpha = 1.0;
@@ -420,12 +417,12 @@ void CL_BrassShells(vec3_t org, vec3_t dir, int count, qboolean mshell)
 			le->model = cl_mod_mshell;
 		else
 			le->model = cl_mod_sshell;
-		le->ang = crand() * 360;
-		le->avel = crand() * 500;
+		le->ang = crand () * 360;
+		le->avel = crand () * 500;
 
 		for (j = 0; j < 3; j++) {
 			le->lastOrg[j] = le->org[j] = org[j];
-			le->vel[j] = crand() * 24 + d * dir[j];
+			le->vel[j] = crand () * 24 + d * dir[j];
 		}
 	}
 }
@@ -436,8 +433,7 @@ Use client side debris effect
 no "get space overflow" error
 =============================
 */
-void CL_Debris(vec3_t org, vec3_t dir)
-{
+void CL_Debris (vec3_t org, vec3_t dir) {
 	int i, j;
 	clentity_t *le;
 	float d;
@@ -451,29 +447,29 @@ void CL_Debris(vec3_t org, vec3_t dir)
 		le->next = active_clentities;
 		active_clentities = le;
 		le->time = cl.time;
-		VectorClear(le->accel);
-		VectorClear(le->vel);
+		VectorClear (le->accel);
+		VectorClear (le->vel);
 		le->flags = CLM_BOUNCE;
 		le->flags |= CLM_FRICTION | CLM_ROTATE | CLM_NOSHADOW;
 		le->model = cl_mod_debris1;
 
 
-		d = (192 + rand()) & 63;
+		d = (192 + rand ()) & 63;
 
 		for (j = 0; j < 3; j++) {
 			le->lastOrg[j] = le->org[j] = org[j];
-			le->vel[j] = crand() * 200 + d * dir[j];
+			le->vel[j] = crand () * 200 + d * dir[j];
 		}
 
 		le->accel[0] = le->accel[1] = 0;
 		le->accel[2] = -PARTICLE_GRAVITY * 6;
 		le->alpha = 1.0;
 
-		le->alphavel = -1.0 / (1.5 + frand() * 2.666);
-		le->ang = crand() * 360;
-		le->avel = crand() * 500;
+		le->alphavel = -1.0 / (1.5 + frand () * 2.666);
+		le->ang = crand () * 360;
+		le->avel = crand () * 500;
 	}
-// 2
+	// 2
 	for (i = 0; i < 5; i++) {
 		if (!free_clentities)
 			return;
@@ -483,29 +479,29 @@ void CL_Debris(vec3_t org, vec3_t dir)
 		le->next = active_clentities;
 		active_clentities = le;
 		le->time = cl.time;
-		VectorClear(le->accel);
-		VectorClear(le->vel);
+		VectorClear (le->accel);
+		VectorClear (le->vel);
 		le->flags = CLM_BOUNCE;
 		le->flags |= CLM_FRICTION | CLM_ROTATE | CLM_NOSHADOW;
 		le->model = cl_mod_debris2;
 
 
-		d = (192 + rand()) & 63;
+		d = (192 + rand ()) & 63;
 
 		for (j = 0; j < 3; j++) {
 			le->lastOrg[j] = le->org[j] = org[j];
-			le->vel[j] = crand() * 500 + d * dir[j];
+			le->vel[j] = crand () * 500 + d * dir[j];
 		}
 
 		le->accel[0] = le->accel[1] = 0;
 		le->accel[2] = -PARTICLE_GRAVITY * 6;
 		le->alpha = 1.0;
 
-		le->alphavel = -1.0 / (1.5 + frand() * 2.666);
-		le->ang = crand() * 360;
-		le->avel = crand() * 500;
+		le->alphavel = -1.0 / (1.5 + frand () * 2.666);
+		le->ang = crand () * 360;
+		le->avel = crand () * 500;
 	}
-//3
+	//3
 	for (i = 0; i < 3; i++) {
 		if (!free_clentities)
 			return;
@@ -515,27 +511,27 @@ void CL_Debris(vec3_t org, vec3_t dir)
 		le->next = active_clentities;
 		active_clentities = le;
 		le->time = cl.time;
-		VectorClear(le->accel);
-		VectorClear(le->vel);
+		VectorClear (le->accel);
+		VectorClear (le->vel);
 		le->flags = CLM_BOUNCE;
 		le->flags |= CLM_FRICTION | CLM_ROTATE | CLM_NOSHADOW;
 		le->model = cl_mod_debris3;
 
 
-		d = (192 + rand()) & 63;
+		d = (192 + rand ()) & 63;
 
 		for (j = 0; j < 3; j++) {
 			le->lastOrg[j] = le->org[j] = org[j];
-			le->vel[j] = crand() * 250 + d * dir[j];
+			le->vel[j] = crand () * 250 + d * dir[j];
 		}
 
 		le->accel[0] = le->accel[1] = 0;
 		le->accel[2] = -PARTICLE_GRAVITY * 6;
 		le->alpha = 1.0;
 
-		le->alphavel = -1.0 / (1.5 + frand() * 2.666);
-		le->ang = crand() * 360;
-		le->avel = crand() * 500;
+		le->alphavel = -1.0 / (1.5 + frand () * 2.666);
+		le->ang = crand () * 360;
+		le->avel = crand () * 500;
 	}
 
 }
@@ -550,44 +546,11 @@ heh! is very bloody
 ====================
 */
 
-void CL_GibExplosion(vec3_t org, vec3_t dir)
-{
+void CL_GibExplosion (vec3_t org, vec3_t dir) {
 	int j;
 	clentity_t *le;
 	float d;
 
-	
-		if (!free_clentities)
-			return;
-
-		le = free_clentities;
-		free_clentities = le->next;
-		le->next = active_clentities;
-		active_clentities = le;
-		le->time = cl.time;
-		VectorClear(le->accel);
-		VectorClear(le->vel);
-		le->flags = CLM_BOUNCE;
-		le->flags |= CLM_FRICTION | CLM_ROTATE;
-		le->model = cl_mod_gib0;
-
-
-		d = (192 + rand()) & 63;
-
-		for (j = 0; j < 3; j++) {
-			le->lastOrg[j] = le->org[j] = org[j];
-			le->vel[j] = crand() * 200 + d * dir[j];
-		}
-
-		le->accel[0] = le->accel[1] = 0;
-		le->accel[2] = -PARTICLE_GRAVITY * 6;
-		le->alpha = 1.0;
-
-		le->alphavel = -0.1;
-		le->ang = crand() * 360;
-		le->avel = crand() * 500;
-	
-// 2
 
 	if (!free_clentities)
 		return;
@@ -597,18 +560,50 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
+	le->flags = CLM_BOUNCE;
+	le->flags |= CLM_FRICTION | CLM_ROTATE;
+	le->model = cl_mod_gib0;
+
+
+	d = (192 + rand ()) & 63;
+
+	for (j = 0; j < 3; j++) {
+		le->lastOrg[j] = le->org[j] = org[j];
+		le->vel[j] = crand () * 200 + d * dir[j];
+	}
+
+	le->accel[0] = le->accel[1] = 0;
+	le->accel[2] = -PARTICLE_GRAVITY * 6;
+	le->alpha = 1.0;
+
+	le->alphavel = -0.1;
+	le->ang = crand () * 360;
+	le->avel = crand () * 500;
+
+	// 2
+
+	if (!free_clentities)
+		return;
+
+	le = free_clentities;
+	free_clentities = le->next;
+	le->next = active_clentities;
+	active_clentities = le;
+	le->time = cl.time;
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = CLM_BOUNCE;
 	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib1;
 
 
-	d = (192 + rand()) & 63;
+	d = (192 + rand ()) & 63;
 
 	for (j = 0; j < 3; j++) {
 		le->lastOrg[j] = le->org[j] = org[j];
-		le->vel[j] = crand() * 500 + d * dir[j];
+		le->vel[j] = crand () * 500 + d * dir[j];
 	}
 
 	le->accel[0] = le->accel[1] = 0;
@@ -616,10 +611,10 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->alpha = 1.0;
 
 	le->alphavel = -0.08;
-	le->ang = crand() * 360;
-	le->avel = crand() * 500;
+	le->ang = crand () * 360;
+	le->avel = crand () * 500;
 
-//3
+	//3
 
 	if (!free_clentities)
 		return;
@@ -629,18 +624,18 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = CLM_BOUNCE;
 	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib2;
 
 
-	d = (192 + rand()) & 63;
+	d = (192 + rand ()) & 63;
 
 	for (j = 0; j < 3; j++) {
 		le->lastOrg[j] = le->org[j] = org[j];
-		le->vel[j] = crand() * 250 + d * dir[j];
+		le->vel[j] = crand () * 250 + d * dir[j];
 	}
 
 	le->accel[0] = le->accel[1] = 0;
@@ -648,8 +643,8 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->alpha = 1.0;
 
 	le->alphavel = -0.09;
-	le->ang = crand() * 360;
-	le->avel = crand() * 500;
+	le->ang = crand () * 360;
+	le->avel = crand () * 500;
 
 	if (!free_clentities)
 		return;
@@ -659,18 +654,18 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = CLM_BOUNCE;
 	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib3;
 
 
-	d = (192 + rand()) & 63;
+	d = (192 + rand ()) & 63;
 
 	for (j = 0; j < 3; j++) {
 		le->lastOrg[j] = le->org[j] = org[j];
-		le->vel[j] = crand() * 250 + d * dir[j];
+		le->vel[j] = crand () * 250 + d * dir[j];
 	}
 
 	le->accel[0] = le->accel[1] = 0;
@@ -678,8 +673,8 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->alpha = 1.0;
 
 	le->alphavel = -0.09;
-	le->ang = crand() * 360;
-	le->avel = crand() * 500;
+	le->ang = crand () * 360;
+	le->avel = crand () * 500;
 
 	if (!free_clentities)
 		return;
@@ -689,18 +684,18 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = CLM_BOUNCE;
 	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib4;
 
 
-	d = (192 + rand()) & 63;
+	d = (192 + rand ()) & 63;
 
 	for (j = 0; j < 3; j++) {
 		le->lastOrg[j] = le->org[j] = org[j];
-		le->vel[j] = crand() * 250 + d * dir[j];
+		le->vel[j] = crand () * 250 + d * dir[j];
 	}
 
 	le->accel[0] = le->accel[1] = 0;
@@ -708,8 +703,8 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->alpha = 1.0;
 
 	le->alphavel = -0.09;
-	le->ang = crand() * 360;
-	le->avel = crand() * 500;
+	le->ang = crand () * 360;
+	le->avel = crand () * 500;
 
 	if (!free_clentities)
 		return;
@@ -719,18 +714,18 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = CLM_BOUNCE;
 	le->flags |= CLM_FRICTION | CLM_ROTATE;
 	le->model = cl_mod_gib5;
 
 
-	d = (192 + rand()) & 63;
+	d = (192 + rand ()) & 63;
 
 	for (j = 0; j < 3; j++) {
 		le->lastOrg[j] = le->org[j] = org[j];
-		le->vel[j] = crand() * 250 + d * dir[j];
+		le->vel[j] = crand () * 250 + d * dir[j];
 	}
 
 	le->accel[0] = le->accel[1] = 0;
@@ -738,19 +733,18 @@ void CL_GibExplosion(vec3_t org, vec3_t dir)
 	le->alpha = 1.0;
 
 	le->alphavel = -0.09;
-	le->ang = crand() * 360;
-	le->avel = crand() * 500;
+	le->ang = crand () * 360;
+	le->avel = crand () * 500;
 
 
 }
 
-void CL_ClientGibs(vec3_t org, vec3_t velocity)
-{
+void CL_ClientGibs (vec3_t org, vec3_t velocity) {
 	clentity_t     *le;
 	int i;
-	
+
 	//0	
-   if (!free_clentities)
+	if (!free_clentities)
 		return;
 
 	le = free_clentities;
@@ -758,46 +752,45 @@ void CL_ClientGibs(vec3_t org, vec3_t velocity)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = 0;
 
 	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
-	
+
 	le->model = cl_mod_gib0;
 
-	for(i =0; i<3; i++)
-	{
-    le->lastOrg[i]	= le->org[i] = org[i];
-    le->vel[i]		= velocity[i] + random()*64;
-   	}
+	for (i = 0; i < 3; i++) {
+		le->lastOrg[i] = le->org[i] = org[i];
+		le->vel[i] = velocity[i] + random () * 64;
+	}
 
-    if (le->vel[0] < -300)
-         le->vel[0] = -300;
-    else if (le->vel[0] > 300)
-         le->vel[0] = 300;
-    if (le->vel[1] < -300)
-         le->vel[1] = -300;
-    else if (le->vel[1] > 300)
-         le->vel[1] = 300;
-   
-         if (le->vel[2] < 200)
-              le->vel[2] = 200;     // always some upwards
-         else if (le->vel[2] > 500)
-              le->vel[2] = 500;
-   
+	if (le->vel[0] < -300)
+		le->vel[0] = -300;
+	else if (le->vel[0] > 300)
+		le->vel[0] = 300;
+	if (le->vel[1] < -300)
+		le->vel[1] = -300;
+	else if (le->vel[1] > 300)
+		le->vel[1] = 300;
 
-    le->accel[0] = le->accel[1] = 0;
-    le->accel[2] = -PARTICLE_GRAVITY*9;
+	if (le->vel[2] < 200)
+		le->vel[2] = 200;     // always some upwards
+	else if (le->vel[2] > 500)
+		le->vel[2] = 500;
 
-    le->alpha = 1.0;
-    le->alphavel = -0.09;
 
-    le->ang = crand()*360;
-    le->avel = crand()*256-128;
-	
+	le->accel[0] = le->accel[1] = 0;
+	le->accel[2] = -PARTICLE_GRAVITY * 9;
+
+	le->alpha = 1.0;
+	le->alphavel = -0.09;
+
+	le->ang = crand () * 360;
+	le->avel = crand () * 256 - 128;
+
 	//1	
-   if (!free_clentities)
+	if (!free_clentities)
 		return;
 
 	le = free_clentities;
@@ -805,46 +798,45 @@ void CL_ClientGibs(vec3_t org, vec3_t velocity)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = 0;
 
 	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
-	
+
 	le->model = cl_mod_gib1;
 
-    for(i =0; i<3; i++)
-	{
-    le->lastOrg[i]	= le->org[i] = org[i];
-    le->vel[i]		= velocity[i] + random()*64;
-   	}
+	for (i = 0; i < 3; i++) {
+		le->lastOrg[i] = le->org[i] = org[i];
+		le->vel[i] = velocity[i] + random () * 64;
+	}
 
-    if (le->vel[0] < -300)
-         le->vel[0] = -300;
-    else if (le->vel[0] > 300)
-         le->vel[0] = 300;
-    if (le->vel[1] < -300)
-         le->vel[1] = -300;
-    else if (le->vel[1] > 300)
-         le->vel[1] = 300;
-   
-         if (le->vel[2] < 200)
-              le->vel[2] = 200;     // always some upwards
-         else if (le->vel[2] > 500)
-              le->vel[2] = 500;
-   
+	if (le->vel[0] < -300)
+		le->vel[0] = -300;
+	else if (le->vel[0] > 300)
+		le->vel[0] = 300;
+	if (le->vel[1] < -300)
+		le->vel[1] = -300;
+	else if (le->vel[1] > 300)
+		le->vel[1] = 300;
 
-    le->accel[0] = le->accel[1] = 0;
-    le->accel[2] = -PARTICLE_GRAVITY*9;
+	if (le->vel[2] < 200)
+		le->vel[2] = 200;     // always some upwards
+	else if (le->vel[2] > 500)
+		le->vel[2] = 500;
 
-    le->alpha = 1.0;
-    le->alphavel = -0.09;
 
-    le->ang = crand()*360;
-    le->avel = crand()*256-128;
+	le->accel[0] = le->accel[1] = 0;
+	le->accel[2] = -PARTICLE_GRAVITY * 9;
+
+	le->alpha = 1.0;
+	le->alphavel = -0.09;
+
+	le->ang = crand () * 360;
+	le->avel = crand () * 256 - 128;
 
 	//2	
-   if (!free_clentities)
+	if (!free_clentities)
 		return;
 
 	le = free_clentities;
@@ -852,47 +844,46 @@ void CL_ClientGibs(vec3_t org, vec3_t velocity)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = 0;
 
 	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
-	
+
 	le->model = cl_mod_gib2;
 
-    for(i =0; i<3; i++)
-	{
-    le->lastOrg[i]	= le->org[i] = org[i];
-    le->vel[i]		= velocity[i] + random()*64;
-   	}
+	for (i = 0; i < 3; i++) {
+		le->lastOrg[i] = le->org[i] = org[i];
+		le->vel[i] = velocity[i] + random () * 64;
+	}
 
-    if (le->vel[0] < -300)
-         le->vel[0] = -300;
-    else if (le->vel[0] > 300)
-         le->vel[0] = 300;
-    if (le->vel[1] < -300)
-         le->vel[1] = -300;
-    else if (le->vel[1] > 300)
-         le->vel[1] = 300;
-   
-         if (le->vel[2] < 200)
-              le->vel[2] = 200;     // always some upwards
-         else if (le->vel[2] > 500)
-              le->vel[2] = 500;
-   
+	if (le->vel[0] < -300)
+		le->vel[0] = -300;
+	else if (le->vel[0] > 300)
+		le->vel[0] = 300;
+	if (le->vel[1] < -300)
+		le->vel[1] = -300;
+	else if (le->vel[1] > 300)
+		le->vel[1] = 300;
 
-    le->accel[0] = le->accel[1] = 0;
-    le->accel[2] = -PARTICLE_GRAVITY*9;
+	if (le->vel[2] < 200)
+		le->vel[2] = 200;     // always some upwards
+	else if (le->vel[2] > 500)
+		le->vel[2] = 500;
 
-    le->alpha = 1.0;
-    le->alphavel = -0.09;
 
-    le->ang = crand()*360;
-    le->avel = crand()*256-128;
+	le->accel[0] = le->accel[1] = 0;
+	le->accel[2] = -PARTICLE_GRAVITY * 9;
+
+	le->alpha = 1.0;
+	le->alphavel = -0.09;
+
+	le->ang = crand () * 360;
+	le->avel = crand () * 256 - 128;
 
 
 	//3	
-   if (!free_clentities)
+	if (!free_clentities)
 		return;
 
 	le = free_clentities;
@@ -900,46 +891,45 @@ void CL_ClientGibs(vec3_t org, vec3_t velocity)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = 0;
 
 	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
-	
+
 	le->model = cl_mod_gib3;
 
-    for(i =0; i<3; i++)
-	{
-    le->lastOrg[i]	= le->org[i] = org[i];
-    le->vel[i]		= velocity[i] + random()*64;
-   	}
+	for (i = 0; i < 3; i++) {
+		le->lastOrg[i] = le->org[i] = org[i];
+		le->vel[i] = velocity[i] + random () * 64;
+	}
 
-    if (le->vel[0] < -300)
-         le->vel[0] = -300;
-    else if (le->vel[0] > 300)
-         le->vel[0] = 300;
-    if (le->vel[1] < -300)
-         le->vel[1] = -300;
-    else if (le->vel[1] > 300)
-         le->vel[1] = 300;
-   
-         if (le->vel[2] < 200)
-              le->vel[2] = 200;     // always some upwards
-         else if (le->vel[2] > 500)
-              le->vel[2] = 500;
-   
+	if (le->vel[0] < -300)
+		le->vel[0] = -300;
+	else if (le->vel[0] > 300)
+		le->vel[0] = 300;
+	if (le->vel[1] < -300)
+		le->vel[1] = -300;
+	else if (le->vel[1] > 300)
+		le->vel[1] = 300;
 
-    le->accel[0] = le->accel[1] = 0;
-    le->accel[2] = -PARTICLE_GRAVITY*9;
+	if (le->vel[2] < 200)
+		le->vel[2] = 200;     // always some upwards
+	else if (le->vel[2] > 500)
+		le->vel[2] = 500;
 
-    le->alpha = 1.0;
-    le->alphavel = -0.09;
 
-    le->ang = crand()*360;
-    le->avel = crand()*256-128;
+	le->accel[0] = le->accel[1] = 0;
+	le->accel[2] = -PARTICLE_GRAVITY * 9;
+
+	le->alpha = 1.0;
+	le->alphavel = -0.09;
+
+	le->ang = crand () * 360;
+	le->avel = crand () * 256 - 128;
 
 	//4	
-   if (!free_clentities)
+	if (!free_clentities)
 		return;
 
 	le = free_clentities;
@@ -947,46 +937,45 @@ void CL_ClientGibs(vec3_t org, vec3_t velocity)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = 0;
 
 	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
-	
+
 	le->model = cl_mod_gib4;
 
-    for(i =0; i<3; i++)
-	{
-    le->lastOrg[i]	= le->org[i] = org[i];
-    le->vel[i]		= velocity[i] + random()*64;
-   	}
+	for (i = 0; i < 3; i++) {
+		le->lastOrg[i] = le->org[i] = org[i];
+		le->vel[i] = velocity[i] + random () * 64;
+	}
 
-    if (le->vel[0] < -300)
-         le->vel[0] = -300;
-    else if (le->vel[0] > 300)
-         le->vel[0] = 300;
-    if (le->vel[1] < -300)
-         le->vel[1] = -300;
-    else if (le->vel[1] > 300)
-         le->vel[1] = 300;
-   
-         if (le->vel[2] < 200)
-              le->vel[2] = 200;     // always some upwards
-         else if (le->vel[2] > 500)
-              le->vel[2] = 500;
-   
+	if (le->vel[0] < -300)
+		le->vel[0] = -300;
+	else if (le->vel[0] > 300)
+		le->vel[0] = 300;
+	if (le->vel[1] < -300)
+		le->vel[1] = -300;
+	else if (le->vel[1] > 300)
+		le->vel[1] = 300;
 
-    le->accel[0] = le->accel[1] = 0;
-    le->accel[2] = -PARTICLE_GRAVITY*9;
+	if (le->vel[2] < 200)
+		le->vel[2] = 200;     // always some upwards
+	else if (le->vel[2] > 500)
+		le->vel[2] = 500;
 
-    le->alpha = 1.0;
-    le->alphavel = -0.09;
 
-    le->ang = crand()*360;
-    le->avel = crand()*256-128;
+	le->accel[0] = le->accel[1] = 0;
+	le->accel[2] = -PARTICLE_GRAVITY * 9;
+
+	le->alpha = 1.0;
+	le->alphavel = -0.09;
+
+	le->ang = crand () * 360;
+	le->avel = crand () * 256 - 128;
 
 	//5	
-   if (!free_clentities)
+	if (!free_clentities)
 		return;
 
 	le = free_clentities;
@@ -994,47 +983,45 @@ void CL_ClientGibs(vec3_t org, vec3_t velocity)
 	le->next = active_clentities;
 	active_clentities = le;
 	le->time = cl.time;
-	VectorClear(le->accel);
-	VectorClear(le->vel);
+	VectorClear (le->accel);
+	VectorClear (le->vel);
 	le->flags = 0;
 
 	le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
-	
+
 	le->model = cl_mod_gib5;
 
-    for(i =0; i<3; i++)
-	{
-    le->lastOrg[i]	= le->org[i] = org[i];
-    le->vel[i]		= velocity[i] + random()*64;
-   	}
+	for (i = 0; i < 3; i++) {
+		le->lastOrg[i] = le->org[i] = org[i];
+		le->vel[i] = velocity[i] + random () * 64;
+	}
 
-    if (le->vel[0] < -300)
-         le->vel[0] = -300;
-    else if (le->vel[0] > 300)
-         le->vel[0] = 300;
-    if (le->vel[1] < -300)
-         le->vel[1] = -300;
-    else if (le->vel[1] > 300)
-         le->vel[1] = 300;
-   
-         if (le->vel[2] < 200)
-              le->vel[2] = 200;     // always some upwards
-         else if (le->vel[2] > 500)
-              le->vel[2] = 500;
-   
+	if (le->vel[0] < -300)
+		le->vel[0] = -300;
+	else if (le->vel[0] > 300)
+		le->vel[0] = 300;
+	if (le->vel[1] < -300)
+		le->vel[1] = -300;
+	else if (le->vel[1] > 300)
+		le->vel[1] = 300;
 
-    le->accel[0] = le->accel[1] = 0;
-    le->accel[2] = -PARTICLE_GRAVITY*9;
+	if (le->vel[2] < 200)
+		le->vel[2] = 200;     // always some upwards
+	else if (le->vel[2] > 500)
+		le->vel[2] = 500;
 
-    le->alpha = 1.0;
-    le->alphavel = -0.09;
 
-    le->ang = crand()*360;
-    le->avel = crand()*256-128;
+	le->accel[0] = le->accel[1] = 0;
+	le->accel[2] = -PARTICLE_GRAVITY * 9;
+
+	le->alpha = 1.0;
+	le->alphavel = -0.09;
+
+	le->ang = crand () * 360;
+	le->avel = crand () * 256 - 128;
 }
 
-void CL_ClearClEntities()
-{
+void CL_ClearClEntities () {
 	int i;
 
 	free_clentities = &clentities[0];

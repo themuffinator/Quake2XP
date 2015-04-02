@@ -82,7 +82,7 @@ typedef unsigned short		ushort;
 typedef ushort				index_t;
 typedef unsigned int		uint;
 
-void Set_FontShader(qboolean enable);
+void Set_FontShader (qboolean enable);
 
 typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh
@@ -215,7 +215,7 @@ typedef struct {
   wall texture
   pic
 
-*/
+  */
 
 typedef enum {
 	it_skin,
@@ -230,7 +230,7 @@ typedef enum {
 
 typedef struct image_s {
 
-	
+
 	char		name[MAX_QPATH];		// game path, including extension
 	char		bare_name[MAX_QPATH];	// filename only, as called when searching
 	imagetype_t type;
@@ -238,24 +238,24 @@ typedef struct image_s {
 	int			upload_width, upload_height;	// after power of two and picmip
 	int			registration_sequence;	// 0 = free
 	struct		msurface_s *texturechain;	// for sort-by-texture world
-										// drawing
+	// drawing
 	int			texnum;					// gl texture binding
 	float		sl, tl, sh, th;		// 0,0 - 1,1 unless part of the scrap
 	qboolean	scrap;
 	qboolean	has_alpha;
 	qboolean	autobump;
 	qboolean	paletted;
-	qboolean	is_cin;			
+	qboolean	is_cin;
 	qboolean	envMap;
 
-	float		picScale_w;		
-	float		picScale_h;		
-	index_t		*index;	
+	float		picScale_w;
+	float		picScale_h;
+	index_t		*index;
 	uint		target, id;
-	float		parallaxScale, 
-				specularScale, 
-				SpecularExp, 
-				envScale;
+	float		parallaxScale,
+		specularScale,
+		SpecularExp,
+		envScale;
 
 } image_t;
 
@@ -277,38 +277,37 @@ typedef struct mtexInfo_s {
 } mtexInfo_t;
 
 extern int	c_brush_polys,
-			c_alias_polys,
-			c_visible_textures, 
-			c_visible_lightmaps, 
-			c_flares, 
-			c_shadow_volumes, 
-			c_decals,
-			c_shadow_tris,
-			c_part_tris,
-			c_decal_tris;
+c_alias_polys,
+c_visible_textures,
+c_visible_lightmaps,
+c_flares,
+c_shadow_volumes,
+c_decals,
+c_shadow_tris,
+c_part_tris,
+c_decal_tris;
 
 
 #define	VERTEXSIZE	16
 
 typedef struct glpoly_s {
-	
+
 	struct	glpoly_s	*next;
 	struct	glpoly_s	*chain;
 	struct	glpoly_s	**neighbours;
-	
+
 	vec3_t	normal;
 	vec3_t	center;
 	int		lightTimestamp;
 	int		shadowTimestamp;
 	int		ShadowedFace;
 	int		numVerts;
-	int		flags;												
+	int		flags;
 	float	verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
 } glpoly_t;
 
 //temporaly storage for polygons that use an edge
-typedef struct
-{
+typedef struct {
 	byte		used;		//how many polygons use this edge
 	glpoly_t	*poly[2];	//pointer to the polygons who use this edge
 } temp_connect_t;
@@ -322,7 +321,7 @@ typedef struct msurface_s {
 	int flags;
 
 	int firstedge;				// look up in model->surfEdges[], negative
-								// numbers
+	// numbers
 	int numEdges;				// are backwards edges
 
 	short texturemins[2];
@@ -330,10 +329,10 @@ typedef struct msurface_s {
 
 	int light_s, light_t;		// gl lightmap coordinates
 	int dlight_s, dlight_t;		// gl lightmap coordinates for dynamic
-								// lightmaps
+	// lightmaps
 
 	glpoly_t *polys;			// multiple if warped
-	
+
 	struct msurface_s *texturechain;
 	struct msurface_s *lightmapchain;
 
@@ -349,12 +348,12 @@ typedef struct msurface_s {
 
 	byte styles[MAXLIGHTMAPS];
 	float cached_light[MAXLIGHTMAPS];	// values currently used in
-										// lightmap
+	// lightmap
 	byte *samples;				// [numstyles * surfsize * 3] for vanilla or [numstyles * 3 * surfsize * 3] for XP lightmaps
 
 	int checkCount;
 	vec3_t center;
-	
+
 	struct msurface_s *fogchain;
 	int fragmentframe;
 	entity_t *ent;
@@ -375,7 +374,7 @@ typedef struct msurface_s {
 } msurface_t;
 
 typedef struct mnode_s {
-// common with leaf
+	// common with leaf
 	int contents;				// -1, to differentiate from leafs
 	int visframe;				// node needs to be traversed if current
 
@@ -411,7 +410,7 @@ typedef struct decals_t {
 	int numverts;
 	int numIndices;
 	index_t	*indices;
-	
+
 	vec3_t verts[MAX_DECAL_VERTS];
 	vec2_t stcoords[MAX_DECAL_VERTS];
 	vec3_t direction;
@@ -475,11 +474,11 @@ typedef struct {
 	int rdflags;				// RDF_UNDERWATER, etc
 	qboolean mirrorView;
 	byte *areabits;				// if not NULL, only areas with set bits
-								// will be drawn
+	// will be drawn
 
 	lightstyle_t *lightstyles;	// [MAX_LIGHTSTYLES]
 
-		// viewport
+	// viewport
 	int		viewport[4];
 	vec3_t	cornerRays[4];
 	mat3_t	axis;
@@ -527,53 +526,53 @@ extern RadarEnt_t RadarEnts[MAX_RADAR_ENTS];
 // these are the functions exported by the refresh module
 //
 
-int R_GetClippedFragments(vec3_t origin, float radius, mat3_t axis,
-						  int maxfverts, vec3_t * fverts, int maxfragments,
-						  fragment_t * fragments);
-void Draw_Pic(int x, int y, char *name);
-void Draw_Pic2(int x, int y, image_t * gl);
-void Draw_StretchPic2(int x, int y, int w, int h, image_t * gl);
-void Draw_StretchPic(int x, int y, int w, int h, char *name);
+int R_GetClippedFragments (vec3_t origin, float radius, mat3_t axis,
+	int maxfverts, vec3_t * fverts, int maxfragments,
+	fragment_t * fragments);
+void Draw_Pic (int x, int y, char *name);
+void Draw_Pic2 (int x, int y, image_t * gl);
+void Draw_StretchPic2 (int x, int y, int w, int h, image_t * gl);
+void Draw_StretchPic (int x, int y, int w, int h, char *name);
 
 
-void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char *pic);
-void Draw_ScaledPic(int x, int y, float scale_x, float scale_y, image_t * gl);
+void Draw_PicScaled (int x, int y, float scale_x, float scale_y, char *pic);
+void Draw_ScaledPic (int x, int y, float scale_x, float scale_y, image_t * gl);
 
-void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char num);
-void Draw_CharScaledShadow(int x, int y, float scale_x, float scale_y, unsigned char num);
+void Draw_CharScaled (int x, int y, float scale_x, float scale_y, unsigned char num);
+void Draw_CharScaledShadow (int x, int y, float scale_x, float scale_y, unsigned char num);
 
-void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *str);
-void Draw_StringScaledShadow(int x, int y, float scale_x, float scale_y, const char *str);
+void Draw_StringScaled (int x, int y, float scale_x, float scale_y, const char *str);
+void Draw_StringScaledShadow (int x, int y, float scale_x, float scale_y, const char *str);
 
-void Draw_TileClear(int x, int y, int w, int h, char *name);
-void Draw_TileClear2(int x, int y, int w, int h, image_t * image);
-void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a);
-void Draw_FadeScreen(void);
-void Draw_String(int x, int y, const char *str);
-void R_BeginRegistration(char *map);
-void R_SetSky(char *name, float rotate, vec3_t axis);
-void R_EndRegistration(void);
-void R_RenderFrame(refdef_t * fd, qboolean client);
-void Draw_GetPicSize(int *w, int *h, char *name);	// will return 0 0 if
-													// not found
-void R_ModelBounds(struct model_s * model, vec3_t mins, vec3_t maxs);
-void R_ModelRadius(struct model_s * model, vec3_t rad);
-void R_ModelCenter(struct model_s * model, vec3_t center);
+void Draw_TileClear (int x, int y, int w, int h, char *name);
+void Draw_TileClear2 (int x, int y, int w, int h, image_t * image);
+void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a);
+void Draw_FadeScreen (void);
+void Draw_String (int x, int y, const char *str);
+void R_BeginRegistration (char *map);
+void R_SetSky (char *name, float rotate, vec3_t axis);
+void R_EndRegistration (void);
+void R_RenderFrame (refdef_t * fd, qboolean client);
+void Draw_GetPicSize (int *w, int *h, char *name);	// will return 0 0 if
+// not found
+void R_ModelBounds (struct model_s * model, vec3_t mins, vec3_t maxs);
+void R_ModelRadius (struct model_s * model, vec3_t rad);
+void R_ModelCenter (struct model_s * model, vec3_t center);
 
 
-void R_Shutdown(void);
-qboolean R_CullPoint(vec3_t org);
-int R_Init(void *hinstance, void *wndproc);
-image_t *Draw_FindPic(char *name);
-struct model_s *R_RegisterModel(char *name);
-struct image_s *R_RegisterSkin(char *name);
-image_t *Draw_FindPic(char *name);
-void R_SetPalette(const unsigned char *palette);
-void R_BeginFrame();
+void R_Shutdown (void);
+qboolean R_CullPoint (vec3_t org);
+int R_Init (void *hinstance, void *wndproc);
+image_t *Draw_FindPic (char *name);
+struct model_s *R_RegisterModel (char *name);
+struct image_s *R_RegisterSkin (char *name);
+image_t *Draw_FindPic (char *name);
+void R_SetPalette (const unsigned char *palette);
+void R_BeginFrame ();
 void GLimp_EndFrame (void);
-void GLimp_AppActivate( qboolean active );
-void VID_NewWindow ( int width, int height);
-qboolean VID_GetModeInfo( int *width, int *height, int mode );
+void GLimp_AppActivate (qboolean active);
+void VID_NewWindow (int width, int height);
+qboolean VID_GetModeInfo (int *width, int *height, int mode);
 
 struct sfx_s;
 
@@ -581,18 +580,18 @@ struct sfx_s;
 // these are the functions imported by the refresh module
 //
 
-void Con_Printf(int print_level, char *str, ...);
-cvar_t *Cvar_Get(char *name, char *value, int flags);
-void Cvar_SetValue(char *name, float value);
-cvar_t *Cvar_Set(char *name, char *value);
-void Cmd_AddCommand(char *name, void (*cmd) (void));
-void Cmd_RemoveCommand(char *name);
-int Cmd_Argc(void);
-char *Cmd_Argv(int i);
-void VID_Error(int err_level, char *str, ...);
-void Cbuf_ExecuteText(int exec_when, char *text);
-int FS_LoadFile(const char *name, void **buf);
-void FS_FreeFile(void *buf);
-char *FS_Gamedir(void);
+void Con_Printf (int print_level, char *str, ...);
+cvar_t *Cvar_Get (char *name, char *value, int flags);
+void Cvar_SetValue (char *name, float value);
+cvar_t *Cvar_Set (char *name, char *value);
+void Cmd_AddCommand (char *name, void (*cmd) (void));
+void Cmd_RemoveCommand (char *name);
+int Cmd_Argc (void);
+char *Cmd_Argv (int i);
+void VID_Error (int err_level, char *str, ...);
+void Cbuf_ExecuteText (int exec_when, char *text);
+int FS_LoadFile (const char *name, void **buf);
+void FS_FreeFile (void *buf);
+char *FS_Gamedir (void);
 
 #endif							// __REF_H

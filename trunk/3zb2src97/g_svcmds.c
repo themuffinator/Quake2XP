@@ -70,8 +70,7 @@ int numipfilters;
 StringToFilter
 =================
 */
-static qboolean StringToFilter(char *s, ipfilter_t * f)
-{
+static qboolean StringToFilter (char *s, ipfilter_t * f) {
 	char num[128];
 	int i, j;
 	byte b[4];
@@ -84,7 +83,7 @@ static qboolean StringToFilter(char *s, ipfilter_t * f)
 
 	for (i = 0; i < 4; i++) {
 		if (*s < '0' || *s > '9') {
-			gi.cprintf(NULL, PRINT_HIGH, "Bad filter address: %s\n", s);
+			gi.cprintf (NULL, PRINT_HIGH, "Bad filter address: %s\n", s);
 			return false;
 		}
 
@@ -93,7 +92,7 @@ static qboolean StringToFilter(char *s, ipfilter_t * f)
 			num[j++] = *s++;
 		}
 		num[j] = 0;
-		b[i] = atoi(num);
+		b[i] = atoi (num);
 		if (b[i] != 0)
 			m[i] = 255;
 
@@ -102,8 +101,8 @@ static qboolean StringToFilter(char *s, ipfilter_t * f)
 		s++;
 	}
 
-	f->mask = *(unsigned *) m;
-	f->compare = *(unsigned *) b;
+	f->mask = *(unsigned *)m;
+	f->compare = *(unsigned *)b;
 
 	return true;
 }
@@ -113,8 +112,7 @@ static qboolean StringToFilter(char *s, ipfilter_t * f)
 SV_FilterPacket
 =================
 */
-qboolean SV_FilterPacket(char *from)
-{
+qboolean SV_FilterPacket (char *from) {
 	int i;
 	unsigned in;
 	byte m[4];
@@ -133,13 +131,13 @@ qboolean SV_FilterPacket(char *from)
 		i++, p++;
 	}
 
-	in = *(unsigned *) m;
+	in = *(unsigned *)m;
 
 	for (i = 0; i < numipfilters; i++)
-		if ((in & ipfilters[i].mask) == ipfilters[i].compare)
-			return (int) filterban->value;
+	if ((in & ipfilters[i].mask) == ipfilters[i].compare)
+		return (int)filterban->value;
 
-	return (int) !filterban->value;
+	return (int)!filterban->value;
 }
 
 
@@ -148,27 +146,26 @@ qboolean SV_FilterPacket(char *from)
 SV_AddIP_f
 =================
 */
-void SVCmd_AddIP_f(void)
-{
+void SVCmd_AddIP_f (void) {
 	int i;
 
-	if (gi.argc() < 3) {
-		gi.cprintf(NULL, PRINT_HIGH, "Usage:  addip <ip-mask>\n");
+	if (gi.argc () < 3) {
+		gi.cprintf (NULL, PRINT_HIGH, "Usage:  addip <ip-mask>\n");
 		return;
 	}
 
 	for (i = 0; i < numipfilters; i++)
-		if (ipfilters[i].compare == 0xffffffff)
-			break;				// free spot
+	if (ipfilters[i].compare == 0xffffffff)
+		break;				// free spot
 	if (i == numipfilters) {
 		if (numipfilters == MAX_IPFILTERS) {
-			gi.cprintf(NULL, PRINT_HIGH, "IP filter list is full\n");
+			gi.cprintf (NULL, PRINT_HIGH, "IP filter list is full\n");
 			return;
 		}
 		numipfilters++;
 	}
 
-	if (!StringToFilter(gi.argv(2), &ipfilters[i]))
+	if (!StringToFilter (gi.argv (2), &ipfilters[i]))
 		ipfilters[i].compare = 0xffffffff;
 }
 
@@ -177,29 +174,28 @@ void SVCmd_AddIP_f(void)
 SV_RemoveIP_f
 =================
 */
-void SVCmd_RemoveIP_f(void)
-{
+void SVCmd_RemoveIP_f (void) {
 	ipfilter_t f;
 	int i, j;
 
-	if (gi.argc() < 3) {
-		gi.cprintf(NULL, PRINT_HIGH, "Usage:  sv removeip <ip-mask>\n");
+	if (gi.argc () < 3) {
+		gi.cprintf (NULL, PRINT_HIGH, "Usage:  sv removeip <ip-mask>\n");
 		return;
 	}
 
-	if (!StringToFilter(gi.argv(2), &f))
+	if (!StringToFilter (gi.argv (2), &f))
 		return;
 
 	for (i = 0; i < numipfilters; i++)
-		if (ipfilters[i].mask == f.mask
-			&& ipfilters[i].compare == f.compare) {
-			for (j = i + 1; j < numipfilters; j++)
-				ipfilters[j - 1] = ipfilters[j];
-			numipfilters--;
-			gi.cprintf(NULL, PRINT_HIGH, "Removed.\n");
-			return;
-		}
-	gi.cprintf(NULL, PRINT_HIGH, "Didn't find %s.\n", gi.argv(2));
+	if (ipfilters[i].mask == f.mask
+		&& ipfilters[i].compare == f.compare) {
+		for (j = i + 1; j < numipfilters; j++)
+			ipfilters[j - 1] = ipfilters[j];
+		numipfilters--;
+		gi.cprintf (NULL, PRINT_HIGH, "Removed.\n");
+		return;
+	}
+	gi.cprintf (NULL, PRINT_HIGH, "Didn't find %s.\n", gi.argv (2));
 }
 
 /*
@@ -207,16 +203,15 @@ void SVCmd_RemoveIP_f(void)
 SV_ListIP_f
 =================
 */
-void SVCmd_ListIP_f(void)
-{
+void SVCmd_ListIP_f (void) {
 	int i;
 	byte b[4];
 
-	gi.cprintf(NULL, PRINT_HIGH, "Filter list:\n");
+	gi.cprintf (NULL, PRINT_HIGH, "Filter list:\n");
 	for (i = 0; i < numipfilters; i++) {
-		*(unsigned *) b = ipfilters[i].compare;
-		gi.cprintf(NULL, PRINT_HIGH, "%3i.%3i.%3i.%3i\n", b[0], b[1], b[2],
-				   b[3]);
+		*(unsigned *)b = ipfilters[i].compare;
+		gi.cprintf (NULL, PRINT_HIGH, "%3i.%3i.%3i.%3i\n", b[0], b[1], b[2],
+			b[3]);
 	}
 }
 
@@ -225,41 +220,39 @@ void SVCmd_ListIP_f(void)
 SV_WriteIP_f
 =================
 */
-void SVCmd_WriteIP_f(void)
-{
+void SVCmd_WriteIP_f (void) {
 	FILE *f;
 	char name[MAX_OSPATH];
 	byte b[4];
 	int i;
 	cvar_t *game;
 
-	game = gi.cvar("game", "", 0);
+	game = gi.cvar ("game", "", 0);
 
 	if (!*game->string)
-		sprintf(name, "%s/listip.cfg", GAMEVERSION);
+		sprintf (name, "%s/listip.cfg", GAMEVERSION);
 	else
-		sprintf(name, "%s/listip.cfg", game->string);
+		sprintf (name, "%s/listip.cfg", game->string);
 
-	gi.cprintf(NULL, PRINT_HIGH, "Writing %s.\n", name);
+	gi.cprintf (NULL, PRINT_HIGH, "Writing %s.\n", name);
 
-	f = fopen(name, "wb");
+	f = fopen (name, "wb");
 	if (!f) {
-		gi.cprintf(NULL, PRINT_HIGH, "Couldn't open %s\n", name);
+		gi.cprintf (NULL, PRINT_HIGH, "Couldn't open %s\n", name);
 		return;
 	}
 
-	fprintf(f, "set filterban %d\n", (int) filterban->value);
+	fprintf (f, "set filterban %d\n", (int)filterban->value);
 
 	for (i = 0; i < numipfilters; i++) {
-		*(unsigned *) b = ipfilters[i].compare;
-		fprintf(f, "sv addip %i.%i.%i.%i\n", b[0], b[1], b[2], b[3]);
+		*(unsigned *)b = ipfilters[i].compare;
+		fprintf (f, "sv addip %i.%i.%i.%i\n", b[0], b[1], b[2], b[3]);
 	}
 
-	fclose(f);
+	fclose (f);
 }
 
-void Move_LastRouteIndex()
-{
+void Move_LastRouteIndex () {
 	int i;
 
 	for (i = CurrentIndex - 1; i >= 0; i--) {
@@ -274,14 +267,13 @@ void Move_LastRouteIndex()
 		CurrentIndex = i + 1;
 
 	if (CurrentIndex < MAXNODES) {
-		memset(&Route[CurrentIndex], 0, sizeof(route_t));
+		memset (&Route[CurrentIndex], 0, sizeof(route_t));
 		if (CurrentIndex > 0)
 			Route[CurrentIndex].index = Route[CurrentIndex - 1].index + 1;
 	}
 }
 
-void RouteTreepointSet()
-{
+void RouteTreepointSet () {
 #if 0
 	int i;
 
@@ -292,83 +284,79 @@ void RouteTreepointSet()
 #endif
 }
 
-void Svcmd_Test_f(void)
-{
-	gi.cprintf(NULL, PRINT_HIGH, "Svcmd_Test_f()\n");
+void Svcmd_Test_f (void) {
+	gi.cprintf (NULL, PRINT_HIGH, "Svcmd_Test_f()\n");
 }
 
-void SaveChain(void)
-{
+void SaveChain (void) {
 	char name[256];
 	FILE *fpout;
 	unsigned int size;
 
 	if (!chedit->value) {
-		gi.cprintf(NULL, PRINT_HIGH, "Not a chaining mode.\n");
+		gi.cprintf (NULL, PRINT_HIGH, "Not a chaining mode.\n");
 		return;
 	}
 	if (ctf->value)
-		sprintf(name, ".\\%s\\chctf\\%s.chf", gamepath->string,
-				level.mapname);
+		sprintf (name, ".\\%s\\chctf\\%s.chf", gamepath->string,
+		level.mapname);
 	else
-		sprintf(name, ".\\%s\\chdtm\\%s.chn", gamepath->string,
-				level.mapname);
+		sprintf (name, ".\\%s\\chdtm\\%s.chn", gamepath->string,
+		level.mapname);
 
-	fpout = fopen(name, "wb");
+	fpout = fopen (name, "wb");
 	if (fpout == NULL)
-		gi.cprintf(NULL, PRINT_HIGH, "Can't open %s\n", name);
+		gi.cprintf (NULL, PRINT_HIGH, "Can't open %s\n", name);
 	else {
 		if (!ctf->value)
-			fwrite("3ZBRGDTM", sizeof(char), 8, fpout);
+			fwrite ("3ZBRGDTM", sizeof(char), 8, fpout);
 		else
-			fwrite("3ZBRGCTF", sizeof(char), 8, fpout);
+			fwrite ("3ZBRGCTF", sizeof(char), 8, fpout);
 
-		fwrite(&CurrentIndex, sizeof(int), 1, fpout);
+		fwrite (&CurrentIndex, sizeof(int), 1, fpout);
 
-		size = (unsigned int) CurrentIndex *sizeof(route_t);
+		size = (unsigned int)CurrentIndex *sizeof(route_t);
 
-		fwrite(Route, size, 1, fpout);
+		fwrite (Route, size, 1, fpout);
 
-		gi.cprintf(NULL, PRINT_HIGH, "%s Saving done.\n", name);
-		fclose(fpout);
+		gi.cprintf (NULL, PRINT_HIGH, "%s Saving done.\n", name);
+		fclose (fpout);
 	}
 }
 
 //Spawn Command
-void SpawnCommand(int i)
-{
+void SpawnCommand (int i) {
 	int j;
 
 	if (chedit->value) {
-		gi.cprintf(NULL, PRINT_HIGH, "Can't spawn.");
+		gi.cprintf (NULL, PRINT_HIGH, "Can't spawn.");
 		return;
 	}
 
 	if (i <= 0) {
-		gi.cprintf(NULL, PRINT_HIGH, "Specify num of bots.");
+		gi.cprintf (NULL, PRINT_HIGH, "Specify num of bots.");
 		return;
 	}
 
 	for (j = 0; j < i; j++) {
-		SpawnBotReserving();
+		SpawnBotReserving ();
 	}
 }
 
 //Random Spawn Command
 
-void RandomSpawnCommand(int i)
-{
+void RandomSpawnCommand (int i) {
 	int j, k, red = 0, blue = 0;
 
 	edict_t *e;
 
 	if (chedit->value) {
-		gi.cprintf(NULL, PRINT_HIGH, "Can't spawn.");
+		gi.cprintf (NULL, PRINT_HIGH, "Can't spawn.");
 		return;
 	}
 
 	if (i <= 0) {
-		gi.cprintf(NULL, PRINT_HIGH, "Specify num of bots.");
+		gi.cprintf (NULL, PRINT_HIGH, "Specify num of bots.");
 		return;
 	}
 	// count current teams
@@ -383,36 +371,34 @@ void RandomSpawnCommand(int i)
 	}
 
 	for (j = 0; j < i; j++) {
-		SpawnBotReserving2(&red, &blue);
-//gi.cprintf(NULL,PRINT_HIGH,"R B %i %i\n",red,blue);
+		SpawnBotReserving2 (&red, &blue);
+		//gi.cprintf(NULL,PRINT_HIGH,"R B %i %i\n",red,blue);
 	}
 }
 
 //Remove Command
-void RemoveCommand(int i)
-{
+void RemoveCommand (int i) {
 	int j;
 
 	if (i <= 0)
 		i = 1;					// gi.cprintf(NULL,PRINT_HIGH,"Specify num
-								// of bots.");
+	// of bots.");
 
 
 	for (j = 0; j < i; j++) {
-		RemoveBot();
+		RemoveBot ();
 	}
 }
 
 //Debug Spawn Command
-void DebugSpawnCommand(int i)
-{
+void DebugSpawnCommand (int i) {
 	if (!chedit->value) {
-		gi.cprintf(NULL, PRINT_HIGH, "Can't debug.");
+		gi.cprintf (NULL, PRINT_HIGH, "Can't debug.");
 		return;
 	}
 
 	if (targetindex) {
-		gi.cprintf(NULL, PRINT_HIGH, "Now debugging.");
+		gi.cprintf (NULL, PRINT_HIGH, "Now debugging.");
 		return;
 	}
 
@@ -421,7 +407,7 @@ void DebugSpawnCommand(int i)
 
 	targetindex = i;
 
-	SpawnBotReserving();
+	SpawnBotReserving ();
 }
 
 
@@ -434,44 +420,47 @@ The game can issue gi.argc() / gi.argv() commands to get the rest
 of the parameters
 =================
 */
-void ServerCommand(void)
-{
+void ServerCommand (void) {
 	char *cmd;
 
-	cmd = gi.argv(1);
-	if (Q_stricmp(cmd, "test") == 0)
-		Svcmd_Test_f();
-	else if (Q_stricmp(cmd, "savechain") == 0)
-		SaveChain();
-	else if (Q_stricmp(cmd, "spb") == 0) {
-		if (gi.argc() <= 1)
-			SpawnCommand(1);
+	cmd = gi.argv (1);
+	if (Q_stricmp (cmd, "test") == 0)
+		Svcmd_Test_f ();
+	else if (Q_stricmp (cmd, "savechain") == 0)
+		SaveChain ();
+	else if (Q_stricmp (cmd, "spb") == 0) {
+		if (gi.argc () <= 1)
+			SpawnCommand (1);
 		else
-			SpawnCommand(atoi(gi.argv(2)));
-	} else if (Q_stricmp(cmd, "rspb") == 0) {
-		if (gi.argc() <= 1)
-			RandomSpawnCommand(1);
+			SpawnCommand (atoi (gi.argv (2)));
+	}
+	else if (Q_stricmp (cmd, "rspb") == 0) {
+		if (gi.argc () <= 1)
+			RandomSpawnCommand (1);
 		else
-			RandomSpawnCommand(atoi(gi.argv(2)));
-	} else if (Q_stricmp(cmd, "rmb") == 0) {
-		if (gi.argc() <= 1)
-			RemoveCommand(1);
+			RandomSpawnCommand (atoi (gi.argv (2)));
+	}
+	else if (Q_stricmp (cmd, "rmb") == 0) {
+		if (gi.argc () <= 1)
+			RemoveCommand (1);
 		else
-			RemoveCommand(atoi(gi.argv(2)));
-	} else if (Q_stricmp(cmd, "dsp") == 0) {
-		if (gi.argc() <= 1)
-			DebugSpawnCommand(1);
+			RemoveCommand (atoi (gi.argv (2)));
+	}
+	else if (Q_stricmp (cmd, "dsp") == 0) {
+		if (gi.argc () <= 1)
+			DebugSpawnCommand (1);
 		else
-			DebugSpawnCommand(atoi(gi.argv(2)));
-	} else if (Q_stricmp(cmd, "addip") == 0)
-		SVCmd_AddIP_f();
-	else if (Q_stricmp(cmd, "removeip") == 0)
-		SVCmd_RemoveIP_f();
-	else if (Q_stricmp(cmd, "listip") == 0)
-		SVCmd_ListIP_f();
-	else if (Q_stricmp(cmd, "writeip") == 0)
-		SVCmd_WriteIP_f();
+			DebugSpawnCommand (atoi (gi.argv (2)));
+	}
+	else if (Q_stricmp (cmd, "addip") == 0)
+		SVCmd_AddIP_f ();
+	else if (Q_stricmp (cmd, "removeip") == 0)
+		SVCmd_RemoveIP_f ();
+	else if (Q_stricmp (cmd, "listip") == 0)
+		SVCmd_ListIP_f ();
+	else if (Q_stricmp (cmd, "writeip") == 0)
+		SVCmd_WriteIP_f ();
 	else
-		gi.cprintf(NULL, PRINT_HIGH, "Unknown server command \"%s\"\n",
-				   cmd);
+		gi.cprintf (NULL, PRINT_HIGH, "Unknown server command \"%s\"\n",
+		cmd);
 }

@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -39,13 +39,12 @@ char	hunk_name[MAX_OSPATH];
 
 #define	VIRTUAL_ALLOC
 
-void *Hunk_Begin (int maxsize, char *name)
-{
+void *Hunk_Begin (int maxsize, char *name) {
 	// reserve a huge chunk of memory, but don't commit any yet
 	cursize = 0;
 	hunkmaxsize = maxsize;
-	memset(hunk_name, 0, strlen(name)+1);
-	strcpy(hunk_name, name);
+	memset (hunk_name, 0, strlen (name) + 1);
+	strcpy (hunk_name, name);
 
 #ifdef VIRTUAL_ALLOC
 	membase = VirtualAlloc (NULL, maxsize, MEM_RESERVE, PAGE_NOACCESS);
@@ -61,20 +60,18 @@ void *Hunk_Begin (int maxsize, char *name)
 
 }
 
-void *Hunk_Alloc (int size)
-{
+void *Hunk_Alloc (int size) {
 	void	*buf;
 
 	// round to cacheline
-	size = (size+31)&~31;
+	size = (size + 31)&~31;
 
 #ifdef VIRTUAL_ALLOC
 	// commit pages as needed
-//	buf = VirtualAlloc (membase+cursize, size, MEM_COMMIT, PAGE_READWRITE);
-	buf = VirtualAlloc (membase, cursize+size, MEM_COMMIT, PAGE_READWRITE);
-	if (!buf)
-	{
-		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &buf, 0, NULL);
+	//	buf = VirtualAlloc (membase+cursize, size, MEM_COMMIT, PAGE_READWRITE);
+	buf = VirtualAlloc (membase, cursize + size, MEM_COMMIT, PAGE_READWRITE);
+	if (!buf) {
+		FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError (), MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&buf, 0, NULL);
 		Sys_Error ("VirtualAlloc commit failed.\n%s", buf);
 	}
 #endif
@@ -82,48 +79,46 @@ void *Hunk_Alloc (int size)
 	if (cursize > hunkmaxsize)
 		Sys_Error ("Hunk_Alloc overflow");
 
-	return (void *)(membase+cursize-size);
+	return (void *)(membase + cursize - size);
 }
 
 /*
 int Hunk_End (void)
 {
 
-	// free the remaining unused virtual memory
+// free the remaining unused virtual memory
 #if 0
-	void	*buf;
+void	*buf;
 
-	// write protect it
-	buf = VirtualAlloc (membase, cursize, MEM_COMMIT, PAGE_READONLY);
-	if (!buf)
-		Sys_Error ("VirtualAlloc commit failed");
+// write protect it
+buf = VirtualAlloc (membase, cursize, MEM_COMMIT, PAGE_READONLY);
+if (!buf)
+Sys_Error ("VirtualAlloc commit failed");
 #endif
 
-	hunkcount++;
+hunkcount++;
 //Com_Printf ("hunkcount: %i\n", hunkcount);
-	return cursize;
+return cursize;
 }
 */
 
-int Hunk_End ()
-{
-/// Berserker: освободим неиспользуемые, но зарезервированные блоки памяти!
+int Hunk_End () {
+	/// Berserker: освободим неиспользуемые, но зарезервированные блоки памяти!
 #ifdef VIRTUAL_ALLOC
-         int size;
-         size = ceil(cursize/4096.0f) * 4096;     // page size always is 4096, 8192, etc...
-         if (hunkmaxsize > size)
-              VirtualFree (membase + size, hunkmaxsize - size, MEM_RELEASE);
-         hunkmaxsize = 0;
+	int size;
+	size = ceil (cursize / 4096.0f) * 4096;     // page size always is 4096, 8192, etc...
+	if (hunkmaxsize > size)
+		VirtualFree (membase + size, hunkmaxsize - size, MEM_RELEASE);
+	hunkmaxsize = 0;
 #endif
-///     hunkcount++;
-    return cursize;
+	///     hunkcount++;
+	return cursize;
 }
 
 
 
-void Hunk_Free (void *base)
-{
-	if ( base )
+void Hunk_Free (void *base) {
+	if (base)
 #ifdef VIRTUAL_ALLOC
 		VirtualFree (base, 0, MEM_RELEASE);
 #else
@@ -144,14 +139,12 @@ Sys_Milliseconds
 //Heffo - AVI EXPORT
 cvar_t	*avi_fps;
 int	curtime;
-int Sys_Milliseconds (void)
-{
+int Sys_Milliseconds (void) {
 	static int		base;
 	static qboolean	initialized = false;
 
-	if (!initialized)
-	{	// let base retain 16 bits of effectively random data
-		base = timeGetTime() & 0xffff0000;
+	if (!initialized) {	// let base retain 16 bits of effectively random data
+		base = timeGetTime () & 0xffff0000;
 		initialized = true;
 	}
 
@@ -159,20 +152,18 @@ int Sys_Milliseconds (void)
 	// I don't think I really need this, but if I don't
 	// put it here for some reason the demo doesn't start
 	// I havn't looked much into it though, lazy me ;)
-	if(avi_fps && avi_fps->value)
+	if (avi_fps && avi_fps->value)
 		return (curtime++) - base;
 
-	curtime = timeGetTime() - base;
+	curtime = timeGetTime () - base;
 
 	return curtime;
 }
 
-void Sys_Mkdir (char *path)
-{
+void Sys_Mkdir (char *path) {
 	_mkdir (path);
 }
-void Sys_ChDir(char *path)
-{
+void Sys_ChDir (char *path) {
 	_chdir (path);
 }
 //============================================
@@ -181,35 +172,33 @@ char	findbase[MAX_OSPATH];
 char	findpath[MAX_OSPATH];
 int		findhandle;
 
-static qboolean CompareAttributes( unsigned found, unsigned musthave, unsigned canthave )
-{
-	if ( ( found & _A_RDONLY ) && ( canthave & SFF_RDONLY ) )
+static qboolean CompareAttributes (unsigned found, unsigned musthave, unsigned canthave) {
+	if ((found & _A_RDONLY) && (canthave & SFF_RDONLY))
 		return false;
-	if ( ( found & _A_HIDDEN ) && ( canthave & SFF_HIDDEN ) )
+	if ((found & _A_HIDDEN) && (canthave & SFF_HIDDEN))
 		return false;
-	if ( ( found & _A_SYSTEM ) && ( canthave & SFF_SYSTEM ) )
+	if ((found & _A_SYSTEM) && (canthave & SFF_SYSTEM))
 		return false;
-	if ( ( found & _A_SUBDIR ) && ( canthave & SFF_SUBDIR ) )
+	if ((found & _A_SUBDIR) && (canthave & SFF_SUBDIR))
 		return false;
-	if ( ( found & _A_ARCH ) && ( canthave & SFF_ARCH ) )
+	if ((found & _A_ARCH) && (canthave & SFF_ARCH))
 		return false;
 
-	if ( ( musthave & SFF_RDONLY ) && !( found & _A_RDONLY ) )
+	if ((musthave & SFF_RDONLY) && !(found & _A_RDONLY))
 		return false;
-	if ( ( musthave & SFF_HIDDEN ) && !( found & _A_HIDDEN ) )
+	if ((musthave & SFF_HIDDEN) && !(found & _A_HIDDEN))
 		return false;
-	if ( ( musthave & SFF_SYSTEM ) && !( found & _A_SYSTEM ) )
+	if ((musthave & SFF_SYSTEM) && !(found & _A_SYSTEM))
 		return false;
-	if ( ( musthave & SFF_SUBDIR ) && !( found & _A_SUBDIR ) )
+	if ((musthave & SFF_SUBDIR) && !(found & _A_SUBDIR))
 		return false;
-	if ( ( musthave & SFF_ARCH ) && !( found & _A_ARCH ) )
+	if ((musthave & SFF_ARCH) && !(found & _A_ARCH))
 		return false;
 
 	return true;
 }
 
-char *Sys_FindFirst (char *path, unsigned musthave, unsigned canthave )
-{
+char *Sys_FindFirst (char *path, unsigned musthave, unsigned canthave) {
 	struct _finddata_t findinfo;
 
 	if (findhandle)
@@ -217,47 +206,40 @@ char *Sys_FindFirst (char *path, unsigned musthave, unsigned canthave )
 	findhandle = 0;
 
 	COM_FilePath (path, findbase);
-	findhandle = _findfirst(path, &findinfo);
+	findhandle = _findfirst (path, &findinfo);
 
-	while ((findhandle != -1))
-	{
-		if (CompareAttributes(findinfo.attrib, musthave, canthave))
-		{
+	while ((findhandle != -1)) {
+		if (CompareAttributes (findinfo.attrib, musthave, canthave)) {
 			Com_sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
 			return findpath;
 		}
-		else if (_findnext(findhandle, &findinfo) == -1)
-		{
-			_findclose(findhandle);
+		else if (_findnext (findhandle, &findinfo) == -1) {
+			_findclose (findhandle);
 			findhandle = -1;
 		}
 	}
 
-	return NULL; 
+	return NULL;
 }
 
-char *Sys_FindNext ( unsigned musthave, unsigned canthave )
-{
+char *Sys_FindNext (unsigned musthave, unsigned canthave) {
 	struct _finddata_t findinfo;
 
 	if (findhandle == -1)
 		return NULL;
 
-	
-	while (_findnext(findhandle, &findinfo) != -1)
-	{
-		if (CompareAttributes(findinfo.attrib, musthave, canthave))
-		{
+
+	while (_findnext (findhandle, &findinfo) != -1) {
+		if (CompareAttributes (findinfo.attrib, musthave, canthave)) {
 			Com_sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
 			return findpath;
 		}
 	}
 
-	return NULL; 
+	return NULL;
 }
 
-void Sys_FindClose (void)
-{
+void Sys_FindClose (void) {
 	if (findhandle != -1)
 		_findclose (findhandle);
 	findhandle = 0;

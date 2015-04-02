@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -23,22 +23,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 float frustumPlanes[6][4];
 
 // this is the slow, general version
-int BoxOnPlaneSide22 (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
-{
+int BoxOnPlaneSide22 (vec3_t emins, vec3_t emaxs, struct cplane_s *p) {
 	int		i;
 	float	dist1, dist2;
 	int		sides;
 	vec3_t	corners[2];
 
-	for (i=0 ; i<3 ; i++)
-	{
-		if (p->normal[i] < 0)
-		{
+	for (i = 0; i < 3; i++) {
+		if (p->normal[i] < 0) {
 			corners[0][i] = emins[i];
 			corners[1][i] = emaxs[i];
 		}
-		else
-		{
+		else {
 			corners[1][i] = emins[i];
 			corners[0][i] = emaxs[i];
 		}
@@ -59,8 +55,8 @@ int BoxOnPlaneSide22 (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
  =================
  BoundsAndSphereIntersect
  =================
-*/
-qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius){
+ */
+qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius) {
 
 	if (mins[0] > origin[0] + radius || mins[1] > origin[1] + radius || mins[2] > origin[2] + radius)
 		return false;
@@ -76,7 +72,7 @@ BoundsIntersect
 
 ===========
 */
-qboolean BoundsIntersect(const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2) {
+qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2) {
 	if (mins1[0] > maxs2[0] || mins1[1] > maxs2[1] || mins1[2] > maxs2[2])
 		return false;
 	if (maxs1[0] < mins2[0] || maxs1[1] < mins2[1] || maxs1[2] < mins2[2])
@@ -91,26 +87,24 @@ R_CullBox
 Returns true if the box is completely outside the frustom
 =================
 */
-qboolean R_CullBox(vec3_t mins, vec3_t maxs)
-{
+qboolean R_CullBox (vec3_t mins, vec3_t maxs) {
 	int i;
 
 	if (r_noCull->value)
 		return false;
 
 	for (i = 0; i < 4; i++)
-		if (BOX_ON_PLANE_SIDE(mins, maxs, &frustum[i]) == 2)
-			return true;
+	if (BOX_ON_PLANE_SIDE (mins, maxs, &frustum[i]) == 2)
+		return true;
 	return false;
 }
 
-qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust)
-{
+qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust) {
 	int		i;
 
-	for (i=0 ; i<4 ; i++)
-		if ( BoxOnPlaneSide22(mins, maxs, &frust[i]) == 2)
-			return true;
+	for (i = 0; i < 4; i++)
+	if (BoxOnPlaneSide22 (mins, maxs, &frust[i]) == 2)
+		return true;
 	return false;
 }
 
@@ -121,54 +115,49 @@ R_CullOrigin
 Returns true if the origin is completely outside the frustom
 =================
 */
-qboolean R_CullOrigin(vec3_t origin)
-{
+qboolean R_CullOrigin (vec3_t origin) {
 	int i;
-	
+
 	if (r_noCull->value)
 		return false;
 
 	for (i = 0; i < 4; i++)
-		if (BOX_ON_PLANE_SIDE(origin, origin, &frustum[i]) == 2)
-			return true;
+	if (BOX_ON_PLANE_SIDE (origin, origin, &frustum[i]) == 2)
+		return true;
 	return false;
 }
 
 
-qboolean R_CullPoint(vec3_t org)
-{
+qboolean R_CullPoint (vec3_t org) {
 	int i;
 
 	for (i = 0; i < 4; i++)
-		if (DotProduct(org, frustum[i].normal) > frustum[i].dist)
-			return true;
+	if (DotProduct (org, frustum[i].normal) > frustum[i].dist)
+		return true;
 
 	return false;
 }
 
-qboolean R_CullSphere( const vec3_t centre, const float radius)
-{
+qboolean R_CullSphere (const vec3_t centre, const float radius) {
 	int		i;
 	cplane_t *p;
 
 	if (r_noCull->value)
 		return false;
 
-	for (i=0,p=frustum ; i<4; i++,p++)
-	{
-	if ( DotProduct ( centre, p->normal ) - p->dist <= -radius )
+	for (i = 0, p = frustum; i < 4; i++, p++) {
+		if (DotProduct (centre, p->normal) - p->dist <= -radius)
 			return true;
 	}
 
 	return false;
 }
 
-qboolean BoundsIntersectsPoint(vec3_t mins, vec3_t maxs, vec3_t p)
-{
+qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p) {
 	if (p[0] > maxs[0]) return false;
 	if (p[1] > maxs[1]) return false;
 	if (p[2] > maxs[2]) return false;
- 
+
 	if (p[0] < mins[0]) return false;
 	if (p[1] < mins[1]) return false;
 	if (p[2] < mins[2]) return false;
@@ -178,24 +167,19 @@ qboolean BoundsIntersectsPoint(vec3_t mins, vec3_t maxs, vec3_t p)
 
 
 
-qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs)
-{
+qboolean BoxOutsideFrustum (vec3_t mins, vec3_t maxs) {
 	int		i, j;
 	float	dist1, dist2;
 	vec3_t	corners[2];
 
 
-	for (i=0 ; i<6 ; i++)
-	{
-		for (j=0 ; j<3 ; j++)
-		{
-			if (frustumPlanes[i][j] < 0)
-			{
+	for (i = 0; i < 6; i++) {
+		for (j = 0; j < 3; j++) {
+			if (frustumPlanes[i][j] < 0) {
 				corners[0][j] = mins[j];
 				corners[1][j] = maxs[j];
 			}
-			else
-			{
+			else {
 				corners[1][j] = mins[j];
 				corners[0][j] = maxs[j];
 			}
@@ -210,23 +194,20 @@ qboolean BoxOutsideFrustum(vec3_t mins, vec3_t maxs)
 	return false;
 }
 
-float SphereInFrustum( vec3_t o, float radius )
-{
-   int p;
-   float d = 0;
+float SphereInFrustum (vec3_t o, float radius) {
+	int p;
+	float d = 0;
 
-   for( p = 0; p < 6; p++ )
-   {
-      d = frustumPlanes[p][0] * o[0] + frustumPlanes[p][1] * o[1] + frustumPlanes[p][2] * o[2] + frustumPlanes[p][3];
-      if( d <= -radius )
-         return 0;
-   }
-   return d + radius;
+	for (p = 0; p < 6; p++) {
+		d = frustumPlanes[p][0] * o[0] + frustumPlanes[p][1] * o[1] + frustumPlanes[p][2] * o[2] + frustumPlanes[p][3];
+		if (d <= -radius)
+			return 0;
+	}
+	return d + radius;
 }
 
 
-int SignbitsForPlane(cplane_t * out)
-{
+int SignbitsForPlane (cplane_t * out) {
 	int bits, j;
 
 	// for fast box on planeside test
@@ -244,48 +225,49 @@ void R_SetFrustum (void) {
 	int i;
 	float tx, ty;
 	vec3_t axis[3];
-	
-	VectorCopy(vpn, frustum[4].normal);
+
+	VectorCopy (vpn, frustum[4].normal);
 
 	if (r_newrefdef.fov_x == 90) {
 		// front side is visible
 
-		VectorAdd(vpn, vright, frustum[0].normal);
-		VectorSubtract(vpn, vright, frustum[1].normal);
+		VectorAdd (vpn, vright, frustum[0].normal);
+		VectorSubtract (vpn, vright, frustum[1].normal);
 
-		VectorAdd(vpn, vup, frustum[2].normal);
-		VectorSubtract(vpn, vup, frustum[3].normal);
+		VectorAdd (vpn, vup, frustum[2].normal);
+		VectorSubtract (vpn, vup, frustum[3].normal);
 
-	} else {
+	}
+	else {
 		// Speedup Small Calculations - Eradicator
-		RotatePointAroundVector(frustum[0].normal, vup, vpn,
-								-(90 - r_newrefdef.fov_x * 0.5));
-		RotatePointAroundVector(frustum[1].normal, vup, vpn,
-								90 - r_newrefdef.fov_x * 0.5);
-		RotatePointAroundVector(frustum[2].normal, vright, vpn,
-								90 - r_newrefdef.fov_y * 0.5);
-		RotatePointAroundVector(frustum[3].normal, vright, vpn,
-								-(90 - r_newrefdef.fov_y * 0.5));
+		RotatePointAroundVector (frustum[0].normal, vup, vpn,
+			-(90 - r_newrefdef.fov_x * 0.5));
+		RotatePointAroundVector (frustum[1].normal, vup, vpn,
+			90 - r_newrefdef.fov_x * 0.5);
+		RotatePointAroundVector (frustum[2].normal, vright, vpn,
+			90 - r_newrefdef.fov_y * 0.5);
+		RotatePointAroundVector (frustum[3].normal, vright, vpn,
+			-(90 - r_newrefdef.fov_y * 0.5));
 	}
 
 	for (i = 0; i < 5; i++) {
 		frustum[i].type = PLANE_ANYZ;
-		frustum[i].dist = DotProduct(r_origin, frustum[i].normal);
-		frustum[i].signbits = SignbitsForPlane(&frustum[i]);
+		frustum[i].dist = DotProduct (r_origin, frustum[i].normal);
+		frustum[i].signbits = SignbitsForPlane (&frustum[i]);
 	}
 
 	frustum[4].dist += r_zNear->value; // near clip plane
 
 	// compute the world-space rays to the far plane corners
-	tx = tan(DEG2RAD(r_newrefdef.fov_x * 0.5f));
-	ty = tan(DEG2RAD(r_newrefdef.fov_y * 0.5f));
+	tx = tan (DEG2RAD (r_newrefdef.fov_x * 0.5f));
+	ty = tan (DEG2RAD (r_newrefdef.fov_y * 0.5f));
 
-/*
-	// view space
-	VectorSet(axis[0], 1.f, 0.f, 0.f);
-	VectorSet(axis[1], 0.f, -tx, 0.f);
-	VectorSet(axis[2], 0.f, 0.f, ty);
-*/
+	/*
+		// view space
+		VectorSet(axis[0], 1.f, 0.f, 0.f);
+		VectorSet(axis[1], 0.f, -tx, 0.f);
+		VectorSet(axis[2], 0.f, 0.f, ty);
+		*/
 	for (i = 0; i < 3; i++) {
 		// world space
 		axis[0][i] = vpn[i];

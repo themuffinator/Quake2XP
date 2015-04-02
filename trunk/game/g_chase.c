@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -19,8 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "g_local.h"
 
-void UpdateChaseCam(edict_t *ent)
-{
+void UpdateChaseCam (edict_t *ent) {
 	vec3_t o, ownerv, goal;
 	edict_t *targ;
 	vec3_t forward, right;
@@ -33,7 +32,7 @@ void UpdateChaseCam(edict_t *ent)
 	if (!ent->client->chase_target->inuse
 		|| ent->client->chase_target->client->resp.spectator) {
 		edict_t *old = ent->client->chase_target;
-		ChaseNext(ent);
+		ChaseNext (ent);
 		if (ent->client->chase_target == old) {
 			ent->client->chase_target = NULL;
 			ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
@@ -43,17 +42,17 @@ void UpdateChaseCam(edict_t *ent)
 
 	targ = ent->client->chase_target;
 
-	VectorCopy(targ->s.origin, ownerv);
-	VectorCopy(ent->s.origin, oldgoal);
+	VectorCopy (targ->s.origin, ownerv);
+	VectorCopy (ent->s.origin, oldgoal);
 
 	ownerv[2] += targ->viewheight;
 
-	VectorCopy(targ->client->v_angle, angles);
+	VectorCopy (targ->client->v_angle, angles);
 	if (angles[PITCH] > 56)
 		angles[PITCH] = 56;
 	AngleVectors (angles, forward, right, NULL);
-	VectorNormalize(forward);
-	VectorMA(ownerv, -30, forward, o);
+	VectorNormalize (forward);
+	VectorMA (ownerv, -30, forward, o);
 
 	if (o[2] < targ->s.origin[2] + 20)
 		o[2] = targ->s.origin[2] + 20;
@@ -62,26 +61,26 @@ void UpdateChaseCam(edict_t *ent)
 	if (!targ->groundentity)
 		o[2] += 16;
 
-	trace = gi.trace(ownerv, vec3_origin, vec3_origin, o, targ, MASK_SOLID);
+	trace = gi.trace (ownerv, vec3_origin, vec3_origin, o, targ, MASK_SOLID);
 
-	VectorCopy(trace.endpos, goal);
+	VectorCopy (trace.endpos, goal);
 
-	VectorMA(goal, 2, forward, goal);
+	VectorMA (goal, 2, forward, goal);
 
 	// pad for floors and ceilings
-	VectorCopy(goal, o);
+	VectorCopy (goal, o);
 	o[2] += 6;
-	trace = gi.trace(goal, vec3_origin, vec3_origin, o, targ, MASK_SOLID);
+	trace = gi.trace (goal, vec3_origin, vec3_origin, o, targ, MASK_SOLID);
 	if (trace.fraction < 1) {
-		VectorCopy(trace.endpos, goal);
+		VectorCopy (trace.endpos, goal);
 		goal[2] -= 6;
 	}
 
-	VectorCopy(goal, o);
+	VectorCopy (goal, o);
 	o[2] -= 6;
-	trace = gi.trace(goal, vec3_origin, vec3_origin, o, targ, MASK_SOLID);
+	trace = gi.trace (goal, vec3_origin, vec3_origin, o, targ, MASK_SOLID);
 	if (trace.fraction < 1) {
-		VectorCopy(trace.endpos, goal);
+		VectorCopy (trace.endpos, goal);
 		goal[2] += 6;
 	}
 
@@ -90,26 +89,26 @@ void UpdateChaseCam(edict_t *ent)
 	else
 		ent->client->ps.pmove.pm_type = PM_FREEZE;
 
-	VectorCopy(goal, ent->s.origin);
-	for (i=0 ; i<3 ; i++)
-		ent->client->ps.pmove.delta_angles[i] = ANGLE2SHORT(targ->client->v_angle[i] - ent->client->resp.cmd_angles[i]);
+	VectorCopy (goal, ent->s.origin);
+	for (i = 0; i < 3; i++)
+		ent->client->ps.pmove.delta_angles[i] = ANGLE2SHORT (targ->client->v_angle[i] - ent->client->resp.cmd_angles[i]);
 
 	if (targ->deadflag) {
 		ent->client->ps.viewangles[ROLL] = 40;
 		ent->client->ps.viewangles[PITCH] = -15;
 		ent->client->ps.viewangles[YAW] = targ->client->killer_yaw;
-	} else {
-		VectorCopy(targ->client->v_angle, ent->client->ps.viewangles);
-		VectorCopy(targ->client->v_angle, ent->client->v_angle);
+	}
+	else {
+		VectorCopy (targ->client->v_angle, ent->client->ps.viewangles);
+		VectorCopy (targ->client->v_angle, ent->client->v_angle);
 	}
 
 	ent->viewheight = 0;
 	ent->client->ps.pmove.pm_flags |= PMF_NO_PREDICTION;
-	gi.linkentity(ent);
+	gi.linkentity (ent);
 }
 
-void ChaseNext(edict_t *ent)
-{
+void ChaseNext (edict_t *ent) {
 	int i;
 	edict_t *e;
 
@@ -132,8 +131,7 @@ void ChaseNext(edict_t *ent)
 	ent->client->update_chase = true;
 }
 
-void ChasePrev(edict_t *ent)
-{
+void ChasePrev (edict_t *ent) {
 	int i;
 	edict_t *e;
 
@@ -156,8 +154,7 @@ void ChasePrev(edict_t *ent)
 	ent->client->update_chase = true;
 }
 
-void GetChaseTarget(edict_t *ent)
-{
+void GetChaseTarget (edict_t *ent) {
 	int i;
 	edict_t *other;
 
@@ -166,10 +163,10 @@ void GetChaseTarget(edict_t *ent)
 		if (other->inuse && !other->client->resp.spectator) {
 			ent->client->chase_target = other;
 			ent->client->update_chase = true;
-			UpdateChaseCam(ent);
+			UpdateChaseCam (ent);
 			return;
 		}
 	}
-	gi.centerprintf(ent, "No other players to chase.");
+	gi.centerprintf (ent, "No other players to chase.");
 }
 

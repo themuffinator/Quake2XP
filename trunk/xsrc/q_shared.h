@@ -1,4 +1,4 @@
-	
+
 // q_shared.h -- included first by ALL program modules
 
 #ifdef _WIN32
@@ -11,7 +11,7 @@
 #pragma warning(disable : 4305)		// truncation from const double to float
 #pragma warning(disable : 4996)		// vs 2005 security warnings
 
-/* x64 warning dont need 
+/* x64 warning dont need
    on win32 platform*/
 
 #pragma warning(disable : 4267) 
@@ -51,7 +51,9 @@ typedef int intptr_t;
 #endif
 
 typedef unsigned char 		byte;
-typedef enum {false, true}	qboolean;
+typedef enum {
+	false, true
+}	qboolean;
 
 
 #ifndef NULL
@@ -142,18 +144,17 @@ extern color4ub_t	ColorTable[8];
 #define IsColorString(p)	(p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE)
 #define ColorIndex(c)		(((c) - '0') & 7)
 
-void RE_SetColor(const color4ub_t color);
+void RE_SetColor (const color4ub_t color);
 
 
 // destination class for gi.multicast()
-typedef enum
-{
-MULTICAST_ALL,
-MULTICAST_PHS,
-MULTICAST_PVS,
-MULTICAST_ALL_R,
-MULTICAST_PHS_R,
-MULTICAST_PVS_R
+typedef enum {
+	MULTICAST_ALL,
+	MULTICAST_PHS,
+	MULTICAST_PVS,
+	MULTICAST_ALL_R,
+	MULTICAST_PHS_R,
+	MULTICAST_PVS_R
 } multicast_t;
 
 
@@ -189,7 +190,7 @@ extern vec3_t vec3_origin;
 //float Q_fabs (float f);
 //#define	fabs(f) Q_fabs(f)
 #if !defined C_ONLY && !defined __linux__ && !defined __sgi
-extern long Q_ftol( float f );
+extern long Q_ftol (float f);
 #else
 #define Q_ftol( f ) ( long ) (f)
 #endif
@@ -226,35 +227,35 @@ vec_t VectorNormalize (vec3_t v);		// returns vector length
 vec_t VectorNormalize2 (vec3_t v, vec3_t out);
 void VectorInverse (vec3_t v);
 void VectorScale (vec3_t in, vec_t scale, vec3_t out);
-int Q_log2(int val);
+int Q_log2 (int val);
 
 void R_ConcatRotations (float in1[3][3], float in2[3][3], float out[3][3]);
 void R_ConcatTransforms (float in1[3][4], float in2[3][4], float out[3][4]);
 
 void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
 int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
-float	anglemod(float a);
+float	anglemod (float a);
 float LerpAngle (float a1, float a2, float frac);
 
 #define BOX_ON_PLANE_SIDE(emins, emaxs, p)	\
-	(((p)->type < 3)?						\
-	(										\
-		((p)->dist <= (emins)[(p)->type])?	\
-			1								\
-		:									\
-		(									\
-			((p)->dist >= (emaxs)[(p)->type])?\
-				2							\
-			:								\
-				3							\
-		)									\
+	(((p)->type < 3) ? \
+	(\
+	((p)->dist <= (emins)[(p)->type]) ? \
+	1								\
+	:									\
+	(\
+	((p)->dist >= (emaxs)[(p)->type]) ? \
+	2							\
+	:								\
+	3							\
+	)									\
 	)										\
 	:										\
-		BoxOnPlaneSide( (emins), (emaxs), (p)))
+	BoxOnPlaneSide ((emins), (emaxs), (p)))
 
-void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
-void PerpendicularVector( vec3_t dst, const vec3_t src );
-void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees );
+void ProjectPointOnPlane (vec3_t dst, const vec3_t p, const vec3_t normal);
+void PerpendicularVector (vec3_t dst, const vec3_t src);
+void RotatePointAroundVector (vec3_t dst, const vec3_t dir, const vec3_t point, float degrees);
 
 
 //=============================================
@@ -287,15 +288,15 @@ int Q_strncasecmp (char *s1, char *s2, int n);
 
 //=============================================
 
-short	BigShort(short l);
-short	LittleShort(short l);
+short	BigShort (short l);
+short	LittleShort (short l);
 int		BigLong (int l);
 int		LittleLong (int l);
 float	BigFloat (float l);
 float	LittleFloat (float l);
 
 void	Swap_Init (void);
-char	*va(char *format, ...);
+char	*va (char *format, ...);
 
 //=============================================
 
@@ -340,8 +341,8 @@ int		Hunk_End (void);
 /*
 ** pass in an attribute mask of things you wish to REJECT
 */
-char	*Sys_FindFirst (char *path, unsigned musthave, unsigned canthave );
-char	*Sys_FindNext ( unsigned musthave, unsigned canthave );
+char	*Sys_FindFirst (char *path, unsigned musthave, unsigned canthave);
+char	*Sys_FindNext (unsigned musthave, unsigned canthave);
 void	Sys_FindClose (void);
 
 
@@ -365,12 +366,11 @@ CVARS (console variables)
 #define	CVAR_USERINFO	2	// added to userinfo  when changed
 #define	CVAR_SERVERINFO	4	// added to serverinfo when changed
 #define	CVAR_NOSET		8	// don't allow change from console at all,
-							// but can be set from the command line
+// but can be set from the command line
 #define	CVAR_LATCH		16	// save changes until server restart
 
 // nothing outside the Cvar_*() functions should modify these fields!
-typedef struct cvar_s
-{
+typedef struct cvar_s {
 	char		*name;
 	char		*string;
 	char		*latched_string;	// for CVAR_LATCH vars
@@ -458,8 +458,7 @@ COLLISION DETECTION
 
 // plane_t structure
 // !!! if this is changed, it must be changed in asm code too !!!
-typedef struct cplane_s
-{
+typedef struct cplane_s {
 	vec3_t	normal;
 	float	dist;
 	byte	type;			// for fast side tests
@@ -477,15 +476,13 @@ typedef struct cplane_s
 #define CPLANE_PAD0				18
 #define CPLANE_PAD1				19
 
-typedef struct cmodel_s
-{
+typedef struct cmodel_s {
 	vec3_t		mins, maxs;
 	vec3_t		origin;		// for sounds or lights
 	int			headnode;
 } cmodel_t;
 
-typedef struct csurface_s
-{
+typedef struct csurface_s {
 	char		name[16];
 	int			flags;
 	int			value;
@@ -498,8 +495,7 @@ typedef struct mapsurface_s  // used internally due to name len probs //ZOID
 } mapsurface_t;
 
 // a trace is returned when a box is swept through the world
-typedef struct
-{
+typedef struct {
 	qboolean	allsolid;	// if true, plane is not valid
 	qboolean	startsolid;	// if true, the initial point was in a solid area
 	float		fraction;	// time completed, 1.0 = didn't hit anything
@@ -514,8 +510,7 @@ typedef struct
 
 // pmove_state_t is the information necessary for client side movement
 // prediction
-typedef enum 
-{
+typedef enum {
 	// can accelerate and turn
 	PM_NORMAL,
 	PM_SPECTATOR,
@@ -539,8 +534,7 @@ typedef enum
 // prediction stays in sync, so no floats are used.
 // if any part of the game code modifies this struct, it
 // will result in a prediction error of some degree.
-typedef struct
-{
+typedef struct {
 	pmtype_t	pm_type;
 
 	short		origin[3];		// 12.3
@@ -549,7 +543,7 @@ typedef struct
 	byte		pm_time;		// each unit = 8 ms
 	short		gravity;
 	short		delta_angles[3];	// add to command angles to get view direction
-									// changed by spawns, rotating objects, and teleporters
+	// changed by spawns, rotating objects, and teleporters
 } pmove_state_t;
 
 
@@ -562,8 +556,7 @@ typedef struct
 
 
 // usercmd_t is sent to the server each client frame
-typedef struct usercmd_s
-{
+typedef struct usercmd_s {
 	byte	msec;
 	byte	buttons;
 	short	angles[3];
@@ -574,8 +567,7 @@ typedef struct usercmd_s
 
 
 #define	MAXTOUCH	32
-typedef struct
-{
+typedef struct {
 	// state (in / out)
 	pmove_state_t	s;
 
@@ -597,8 +589,8 @@ typedef struct
 	int			waterlevel;
 
 	// callbacks to test the world
-	trace_t		(*trace) (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
-	int			(*pointcontents) (vec3_t point);
+	trace_t (*trace) (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
+	int (*pointcontents) (vec3_t point);
 } pmove_t;
 
 
@@ -963,7 +955,7 @@ typedef struct
 
 // ROGUE
 
-extern	vec3_t monster_flash_offset [];
+extern	vec3_t monster_flash_offset[];
 
 
 // temp entity events
@@ -972,8 +964,7 @@ extern	vec3_t monster_flash_offset [];
 // at a location seperate from any existing entity.
 // Temporary entity messages are explicitly constructed
 // and broadcast.
-typedef enum
-{
+typedef enum {
 	TE_GUNSHOT,
 	TE_BLOOD,
 	TE_BLASTER,
@@ -1004,7 +995,7 @@ typedef enum
 	TE_BLUEHYPERBLASTER,
 	TE_PLASMA_EXPLOSION,
 	TE_TUNNEL_SPARKS,
-//ROGUE
+	//ROGUE
 	TE_BLASTER2,
 	TE_RAILTRAIL2,
 	TE_FLAME,
@@ -1031,12 +1022,12 @@ typedef enum
 	TE_EXPLOSION1_BIG,
 	TE_EXPLOSION1_NP,
 	TE_FLECHETTE,
-// Q2xp
+	// Q2xp
 	TE_UNHEAD,
 	TE_REBORN,
 	TE_GIB
 
-//ROGUE
+	//ROGUE
 } temp_event_t;
 
 #define SPLASH_UNKNOWN		0
@@ -1160,7 +1151,7 @@ ROGUE - VERSIONS
 /*
 ==========================================================
 
-  ELEMENTS COMMUNICATED ACROSS THE NET
+ELEMENTS COMMUNICATED ACROSS THE NET
 
 ==========================================================
 */
@@ -1202,8 +1193,7 @@ ROGUE - VERSIONS
 // ertity events are for effects that take place reletive
 // to an existing entities origin.  Very network efficient.
 // All muzzle flashes really should be converted to events...
-typedef enum
-{
+typedef enum {
 	EV_NONE,
 	EV_ITEM_RESPAWN,
 	EV_FOOTSTEP,
@@ -1218,8 +1208,7 @@ typedef enum
 // entity_state_t is the information conveyed from the server
 // in an update message about entities that the client will
 // need to render in some way
-typedef struct entity_state_s
-{
+typedef struct entity_state_s {
 	int		number;			// edict index
 
 	vec3_t	origin;
@@ -1232,12 +1221,12 @@ typedef struct entity_state_s
 	unsigned int		effects;		// PGM - we're filling it, so it needs to be unsigned
 	int		renderfx;
 	int		solid;			// for client side prediction, 8*(bits 0-4) is x/y radius
-							// 8*(bits 5-9) is z down distance, 8(bits10-15) is z up
-							// gi.linkentity sets this properly
+	// 8*(bits 5-9) is z down distance, 8(bits10-15) is z up
+	// gi.linkentity sets this properly
 	int		sound;			// for looping sounds, to guarantee shutoff
 	int		event;			// impulse events -- muzzle flashes, footsteps, etc
-							// events only go out for a single frame, they
-							// are automatically cleared each frame
+	// events only go out for a single frame, they
+	// are automatically cleared each frame
 } entity_state_t;
 
 //==============================================
@@ -1247,8 +1236,7 @@ typedef struct entity_state_s
 // to rendered a view.  There will only be 10 player_state_t sent each second,
 // but the number of pmove_state_t changes will be reletive to client
 // frame rates
-typedef struct
-{
+typedef struct {
 	pmove_state_t	pmove;		// for prediction
 
 	// these fields do not need to be communicated bit-precise
@@ -1256,7 +1244,7 @@ typedef struct
 	vec3_t		viewangles;		// for fixed views
 	vec3_t		viewoffset;		// add to pmovestate->origin
 	vec3_t		kick_angles;	// add to view direction to get render angles
-								// set by weapon kicks, pain effects, etc
+	// set by weapon kicks, pain effects, etc
 
 	vec3_t		gunangles;
 	vec3_t		gunoffset;
@@ -1264,7 +1252,7 @@ typedef struct
 	int			gunframe;
 
 	float		blend[4];		// rgba full screen effect
-	
+
 	float		fov;			// horizontal field of view
 
 	int			rdflags;		// refdef flags

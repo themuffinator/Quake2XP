@@ -77,8 +77,7 @@ void G_RunFrame (void);
 //===================================================================
 
 
-void ShutdownGame (void)
-{
+void ShutdownGame (void) {
 	gi.dprintf ("==== ShutdownGame ====\n");
 
 	gi.FreeTags (TAG_LEVEL);
@@ -94,8 +93,7 @@ Returns a pointer to the structure with all entry points
 and global variables
 =================
 */
-game_export_t *GetGameAPI (game_import_t *import)
-{
+game_export_t *GetGameAPI (game_import_t *import) {
 	gi = *import;
 
 	globals.apiversion = GAME_API_VERSION;
@@ -126,8 +124,7 @@ game_export_t *GetGameAPI (game_import_t *import)
 
 #ifndef GAME_HARD_LINKED
 // this is only here so the functions in q_shared.c and q_shwin.c can link
-void Sys_Error (char *error, ...)
-{
+void Sys_Error (char *error, ...) {
 	va_list		argptr;
 	char		text[1024];
 
@@ -138,8 +135,7 @@ void Sys_Error (char *error, ...)
 	gi.error (ERR_FATAL, "%s", text);
 }
 
-void Com_Printf (char *msg, ...)
-{
+void Com_Printf (char *msg, ...) {
 	va_list		argptr;
 	char		text[1024];
 
@@ -160,15 +156,13 @@ void Com_Printf (char *msg, ...)
 ClientEndServerFrames
 =================
 */
-void ClientEndServerFrames (void)
-{
+void ClientEndServerFrames (void) {
 	int		i;
 	edict_t	*ent;
 
 	// calc the player views now that all pushing
 	// and damage has been added
-	for (i=0 ; i<maxclients->value ; i++)
-	{
+	for (i = 0; i < maxclients->value; i++) {
 		ent = g_edicts + 1 + i;
 		if (!ent->inuse || !ent->client)
 			continue;
@@ -184,13 +178,12 @@ CreateTargetChangeLevel
 Returns the created target changelevel
 =================
 */
-edict_t *CreateTargetChangeLevel(char *map)
-{
+edict_t *CreateTargetChangeLevel (char *map) {
 	edict_t *ent;
 
 	ent = G_Spawn ();
 	ent->classname = "target_changelevel";
-	Com_sprintf(level.nextmap, sizeof(level.nextmap), "%s", map);
+	Com_sprintf (level.nextmap, sizeof(level.nextmap), "%s", map);
 	ent->map = level.nextmap;
 	return ent;
 }
@@ -202,53 +195,51 @@ EndDMLevel
 The timelimit or fraglimit has been exceeded
 =================
 */
-void EndDMLevel (void)
-{
+void EndDMLevel (void) {
 	edict_t		*ent;
 	char *s, *t, *f;
 	static const char *seps = " ,\n\r";
 
 	// stay on same level flag
-	if ((int)dmflags->value & DF_SAME_LEVEL)
-	{
-		BeginIntermission (CreateTargetChangeLevel (level.mapname) );
+	if ((int)dmflags->value & DF_SAME_LEVEL) {
+		BeginIntermission (CreateTargetChangeLevel (level.mapname));
 		return;
 	}
 
 	// see if it's in the map list
 	if (*sv_maplist->string) {
-		s = strdup(sv_maplist->string);
+		s = strdup (sv_maplist->string);
 		f = NULL;
-		t = strtok(s, seps);
+		t = strtok (s, seps);
 		while (t != NULL) {
-			if (Q_stricmp(t, level.mapname) == 0) {
+			if (Q_stricmp (t, level.mapname) == 0) {
 				// it's in the list, go to the next one
-				t = strtok(NULL, seps);
+				t = strtok (NULL, seps);
 				if (t == NULL) { // end of list, go to first one
 					if (f == NULL) // there isn't a first one, same level
-						BeginIntermission (CreateTargetChangeLevel (level.mapname) );
+						BeginIntermission (CreateTargetChangeLevel (level.mapname));
 					else
-						BeginIntermission (CreateTargetChangeLevel (f) );
-				} else
-					BeginIntermission (CreateTargetChangeLevel (t) );
-				free(s);
+						BeginIntermission (CreateTargetChangeLevel (f));
+				}
+				else
+					BeginIntermission (CreateTargetChangeLevel (t));
+				free (s);
 				return;
 			}
 			if (!f)
 				f = t;
-			t = strtok(NULL, seps);
+			t = strtok (NULL, seps);
 		}
-		free(s);
+		free (s);
 	}
 
 	if (level.nextmap[0]) // go to a specific map
-		BeginIntermission (CreateTargetChangeLevel (level.nextmap) );
+		BeginIntermission (CreateTargetChangeLevel (level.nextmap));
 	else {	// search for a changelevel
-		ent = G_Find (NULL, FOFS(classname), "target_changelevel");
-		if (!ent)
-		{	// the map designer didn't include a changelevel,
+		ent = G_Find (NULL, FOFS (classname), "target_changelevel");
+		if (!ent) {	// the map designer didn't include a changelevel,
 			// so create a fake ent that goes back to the same level
-			BeginIntermission (CreateTargetChangeLevel (level.mapname) );
+			BeginIntermission (CreateTargetChangeLevel (level.mapname));
 			return;
 		}
 		BeginIntermission (ent);
@@ -260,8 +251,7 @@ void EndDMLevel (void)
 CheckDMRules
 =================
 */
-void CheckDMRules (void)
-{
+void CheckDMRules (void) {
 	int			i;
 	gclient_t	*cl;
 
@@ -271,26 +261,21 @@ void CheckDMRules (void)
 	if (!deathmatch->value)
 		return;
 
-	if (timelimit->value)
-	{
-		if (level.time >= timelimit->value*60)
-		{
+	if (timelimit->value) {
+		if (level.time >= timelimit->value * 60) {
 			gi.bprintf (PRINT_HIGH, "Timelimit hit.\n");
 			EndDMLevel ();
 			return;
 		}
 	}
 
-	if (fraglimit->value)
-	{
-		for (i=0 ; i<maxclients->value ; i++)
-		{
+	if (fraglimit->value) {
+		for (i = 0; i < maxclients->value; i++) {
 			cl = game.clients + i;
-			if (!g_edicts[i+1].inuse)
+			if (!g_edicts[i + 1].inuse)
 				continue;
 
-			if (cl->resp.score >= fraglimit->value)
-			{
+			if (cl->resp.score >= fraglimit->value) {
 				gi.bprintf (PRINT_HIGH, "Fraglimit hit.\n");
 				EndDMLevel ();
 				return;
@@ -305,11 +290,10 @@ void CheckDMRules (void)
 ExitLevel
 =============
 */
-void ExitLevel (void)
-{
+void ExitLevel (void) {
 	int		i;
 	edict_t	*ent;
-	char	command [256];
+	char	command[256];
 
 	Com_sprintf (command, sizeof(command), "gamemap \"%s\"\n", level.changemap);
 	gi.AddCommandString (command);
@@ -319,8 +303,7 @@ void ExitLevel (void)
 	ClientEndServerFrames ();
 
 	// clear some things before going to next level
-	for (i=0 ; i<maxclients->value ; i++)
-	{
+	for (i = 0; i<maxclients->value; i++) {
 		ent = g_edicts + 1 + i;
 		if (!ent->inuse)
 			continue;
@@ -337,13 +320,12 @@ G_RunFrame
 Advances the world by 0.1 seconds
 ================
 */
-void G_RunFrame (void)
-{
+void G_RunFrame (void) {
 	int		i;
 	edict_t	*ent;
 
 	if (sv_stopClock->value == 0)
-	level.framenum++;
+		level.framenum++;
 
 	level.time = level.framenum*FRAMETIME;
 
@@ -352,8 +334,7 @@ void G_RunFrame (void)
 
 	// exit intermissions
 
-	if (level.exitintermission)
-	{
+	if (level.exitintermission) {
 		ExitLevel ();
 		return;
 	}
@@ -363,8 +344,7 @@ void G_RunFrame (void)
 	// even the world gets a chance to think
 	//
 	ent = &g_edicts[0];
-	for (i=0 ; i<globals.num_edicts ; i++, ent++)
-	{
+	for (i = 0; i < globals.num_edicts; i++, ent++) {
 		if (!ent->inuse)
 			continue;
 
@@ -373,17 +353,14 @@ void G_RunFrame (void)
 		VectorCopy (ent->s.origin, ent->s.old_origin);
 
 		// if the ground entity moved, make sure we are still on it
-		if ((ent->groundentity) && (ent->groundentity->linkcount != ent->groundentity_linkcount))
-		{
+		if ((ent->groundentity) && (ent->groundentity->linkcount != ent->groundentity_linkcount)) {
 			ent->groundentity = NULL;
-			if ( !(ent->flags & (FL_SWIM|FL_FLY)) && (ent->svflags & SVF_MONSTER) )
-			{
+			if (!(ent->flags & (FL_SWIM | FL_FLY)) && (ent->svflags & SVF_MONSTER)) {
 				M_CheckGround (ent);
 			}
 		}
 
-		if (i > 0 && i <= maxclients->value)
-		{
+		if (i > 0 && i <= maxclients->value) {
 			ClientBeginServerFrame (ent);
 			continue;
 		}

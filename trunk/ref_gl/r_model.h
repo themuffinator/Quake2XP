@@ -101,11 +101,11 @@ typedef struct {
 	float outcolor[4];
 	float size;
 	float sizefull;
-	
+
 	int style;
 	int occId;
 	int	occ_frame;
-	
+
 	float lightIntens;
 	msurface_t *surf;
 	vec3_t lightsurf_origin;
@@ -121,7 +121,7 @@ flare_t r_flares[MAX_FLARES];
 #define MAX_FLARES_VERTEX MAX_FLARES*4
 
 
-byte	viewvis[MAX_MAP_LEAFS/8];
+byte	viewvis[MAX_MAP_LEAFS / 8];
 
 /*
 ==============================================================================
@@ -162,7 +162,7 @@ typedef struct {
 #define CONTENTS_NODE -1
 
 typedef struct mleaf_s {
-// common with node
+	// common with node
 	int contents;				// wil be a negative contents number
 	int visframe;				// node needs to be traversed if current
 
@@ -170,7 +170,7 @@ typedef struct mleaf_s {
 
 	struct mnode_s *parent;
 
-// leaf specific
+	// leaf specific
 	int cluster;
 	int area;
 
@@ -186,14 +186,15 @@ typedef struct mleaf_s {
 //
 
 
-typedef enum { mod_bad, mod_brush, mod_sprite, mod_alias,
-		mod_lensflare, mod_p_shadow } modtype_t;
+typedef enum {
+	mod_bad, mod_brush, mod_sprite, mod_alias,
+	mod_lensflare, mod_p_shadow
+} modtype_t;
 
 
 // typedef enum {mod_bad, mod_brush, mod_sprite, mod_alias } modtype_t;
 
-typedef struct
-{
+typedef struct {
 	float s, t;
 } fstvert_t;
 
@@ -208,13 +209,13 @@ typedef struct {
 /*
 ====================================================================
 
-  VERTEX BUFFERS
+VERTEX BUFFERS
 
 ====================================================================
 */
 
 typedef struct model_s {
-	
+
 	char		name[MAX_QPATH];
 	int			registration_sequence;
 	modtype_t	type;
@@ -224,8 +225,8 @@ typedef struct model_s {
 	//
 	// volume occupied by the model graphics
 	//
-	vec3_t		mins, maxs, 
-				center;
+	vec3_t		mins, maxs,
+		center;
 	float		radius;
 	//
 	// solid volume for clipping
@@ -235,9 +236,9 @@ typedef struct model_s {
 	//
 	// brush model
 	//
-	int			firstModelSurface, 
-				numModelSurfaces,
-				lightmap;				// only for subModels
+	int			firstModelSurface,
+		numModelSurfaces,
+		lightmap;				// only for subModels
 
 	int			numSubModels;
 	mmodel_t	*subModels;
@@ -269,7 +270,7 @@ typedef struct model_s {
 
 	int			numMarkSurfaces;
 	msurface_t	**markSurfaces;
-	
+
 	dvis_t		*vis;
 
 	int			lightmap_scale;
@@ -282,13 +283,13 @@ typedef struct model_s {
 	image_t		*skins_specular[MAX_MD2SKINS];
 	image_t		*glowtexture[MAX_MD2SKINS];
 	image_t		*skin_env[MAX_MD2SKINS];
-	
+
 	int			extraDataSize;
 	void		*extraData;
 	int			triangles[MAX_TRIANGLES];
 	float		*st;
 	neighbors_t *neighbours;
-	
+
 	float		ambient;
 	float		diffuse;
 	float		specular;
@@ -322,18 +323,18 @@ typedef struct model_s {
 
 //============================================================================
 
-void Mod_Init(void);
-void Mod_ClearAll(void);
-model_t *Mod_ForName(char *name, qboolean crash);
-mleaf_t *Mod_PointInLeaf(float *p, model_t * model);
-byte *Mod_ClusterPVS(int cluster, model_t * model);
+void Mod_Init (void);
+void Mod_ClearAll (void);
+model_t *Mod_ForName (char *name, qboolean crash);
+mleaf_t *Mod_PointInLeaf (float *p, model_t * model);
+byte *Mod_ClusterPVS (int cluster, model_t * model);
 
-void Mod_Modellist_f(void);
+void Mod_Modellist_f (void);
 
-void *Hunk_Begin(int maxsize, char *name);
-void *Hunk_Alloc(int size);
-int Hunk_End(void);
-void Hunk_Free(void *base);
+void *Hunk_Begin (int maxsize, char *name);
+void *Hunk_Alloc (int size);
+int Hunk_End (void);
+void Hunk_Free (void *base);
 
-void Mod_FreeAll(void);
-void Mod_Free(model_t * mod);
+void Mod_FreeAll (void);
+void Mod_Free (model_t * mod);

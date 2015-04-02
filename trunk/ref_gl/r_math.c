@@ -41,20 +41,20 @@ Q_sincos
 */
 
 #if defined _WIN32 && defined ASM_X86
-__forceinline void Q_sincos(float a, float *s, float *c) {
+__forceinline void Q_sincos (float a, float *s, float *c) {
 	__asm {
 		fld	a
-		mov	ecx, s
-		mov	edx, c
-		fsincos
-		fstp	dword ptr [edx]
-		fstp	dword ptr [ecx]
+			mov	ecx, s
+			mov	edx, c
+			fsincos
+			fstp	dword ptr[edx]
+			fstp	dword ptr[ecx]
 	}
 }
 #else
-__inline void Q_sincos(float a, float *s, float *c) {
-	*s = (float)sin(a);
-	*c = (float)cos(a);
+__inline void Q_sincos (float a, float *s, float *c) {
+	*s = (float)sin (a);
+	*c = (float)cos (a);
 }
 #endif
 
@@ -64,22 +64,22 @@ AnglesToMat3
 
 =================
 */
-void AnglesToMat3(const vec3_t angles, mat3_t m) {
-     float     sp, sy, sr, cp, cy, cr;
+void AnglesToMat3 (const vec3_t angles, mat3_t m) {
+	float     sp, sy, sr, cp, cy, cr;
 
-     Q_sincos(DEG2RAD(angles[PITCH]), &sp, &cp);
-     Q_sincos(DEG2RAD(angles[YAW]), &sy, &cy);
-     Q_sincos(DEG2RAD(angles[ROLL]), &sr, &cr);
+	Q_sincos (DEG2RAD (angles[PITCH]), &sp, &cp);
+	Q_sincos (DEG2RAD (angles[YAW]), &sy, &cy);
+	Q_sincos (DEG2RAD (angles[ROLL]), &sr, &cr);
 
-     m[0][0] = cp * cy;
-     m[0][1] = cp * sy;
-     m[0][2] = -sp;
-     m[1][0] = sr * sp * cy - cr * sy;
-     m[1][1] = sr * sp * sy + cr * cy;
-     m[1][2] = sr * cp;
-     m[2][0] = cr * sp * cy + sr * sy;
-     m[2][1] = cr * sp * sy - sr * cy;
-     m[2][2] = cr * cp;
+	m[0][0] = cp * cy;
+	m[0][1] = cp * sy;
+	m[0][2] = -sp;
+	m[1][0] = sr * sp * cy - cr * sy;
+	m[1][1] = sr * sp * sy + cr * cy;
+	m[1][2] = sr * cp;
+	m[2][0] = cr * sp * cy + sr * sy;
+	m[2][1] = cr * sp * sy - sr * cy;
+	m[2][2] = cr * cp;
 }
 
 /*
@@ -107,9 +107,9 @@ Mat3_Copy
 ================
 */
 void Mat3_Copy (const mat3_t in, mat3_t out) {
-	VectorCopy(in[0], out[0]);
-	VectorCopy(in[1], out[1]);
-	VectorCopy(in[2], out[2]);
+	VectorCopy (in[0], out[0]);
+	VectorCopy (in[1], out[1]);
+	VectorCopy (in[2], out[2]);
 }
 
 /*
@@ -132,13 +132,13 @@ Mat4_Multiply
 
 ===========
 */
-void Mat4_Multiply(const mat4_t a, const mat4_t b, mat4_t out) {
+void Mat4_Multiply (const mat4_t a, const mat4_t b, mat4_t out) {
 #if 0
 	int		i, j;
 
-	for (i=0; i<4; i++)
-		for (j=0; j<4; j++)
-			out[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j] + a[i][3] * b[3][j];
+	for (i = 0; i < 4; i++)
+	for (j = 0; j < 4; j++)
+		out[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j] + a[i][3] * b[3][j];
 #else
 	const float	a00 = a[0][0], a01 = a[0][1], a02 = a[0][2], a03 = a[0][3];
 	const float	a10 = a[1][0], a11 = a[1][1], a12 = a[1][2], a13 = a[1][3];
@@ -178,7 +178,7 @@ Mat4_Copy
 
 =================
 */
-void Mat4_Copy(const mat4_t in, mat4_t out) {
+void Mat4_Copy (const mat4_t in, mat4_t out) {
 	out[0][0] = in[0][0];
 	out[0][1] = in[0][1];
 	out[0][2] = in[0][2];
@@ -203,7 +203,7 @@ Mat4_Transpose
 
 =================
 */
-void Mat4_Transpose(const mat4_t in, mat4_t out) {
+void Mat4_Transpose (const mat4_t in, mat4_t out) {
 	out[0][0] = in[0][0];
 	out[0][1] = in[1][0];
 	out[0][2] = in[2][0];
@@ -228,7 +228,7 @@ Mat4_TransposeMultiply
 
 ===========
 */
-void Mat4_TransposeMultiply(const mat4_t a, const mat4_t b, mat4_t out) {
+void Mat4_TransposeMultiply (const mat4_t a, const mat4_t b, mat4_t out) {
 
 	const float	a00 = a[0][0], a01 = a[0][1], a02 = a[0][2], a03 = a[0][3];
 	const float	a10 = a[1][0], a11 = a[1][1], a12 = a[1][2], a13 = a[1][3];
@@ -267,13 +267,13 @@ Mat4_MultiplyVector
 
 ===============
 */
-void Mat4_MultiplyVector(const mat4_t m, const vec3_t in, vec3_t out) {
+void Mat4_MultiplyVector (const mat4_t m, const vec3_t in, vec3_t out) {
 	float	s;
 
 	s = m[3][0] * in[0] + m[3][1] * in[1] + m[3][2] * in[2] + m[3][3];
 
 	if (s == 0.0)
-		VectorClear(out);
+		VectorClear (out);
 	else if (s == 1.0) {
 		out[0] = m[0][0] * in[0] + m[0][1] * in[1] + m[0][2] * in[2] + m[0][3];
 		out[1] = m[1][0] * in[0] + m[1][1] * in[1] + m[1][2] * in[2] + m[1][3];
@@ -299,7 +299,7 @@ Mat4_Invert
 #define MATRIX_EPSILON				1e-6
 float Q_fabs (float f);
 
-qboolean Mat4_Invert(const mat4_t in, mat4_t out) {
+qboolean Mat4_Invert (const mat4_t in, mat4_t out) {
 	float	det2_01_01, det2_01_02, det2_01_03;
 	float	det2_01_12, det2_01_13, det2_01_23;
 
@@ -332,7 +332,7 @@ qboolean Mat4_Invert(const mat4_t in, mat4_t out) {
 
 	det = -det3_201_123 * in[3][0] + det3_201_023 * in[3][1] - det3_201_013 * in[3][2] + det3_201_012 * in[3][3];
 
-	if (Q_fabs(det) < MATRIX_INVERSE_EPSILON)
+	if (Q_fabs (det) < MATRIX_INVERSE_EPSILON)
 		return false;
 
 	invDet = 1.0f / det;
@@ -369,24 +369,24 @@ qboolean Mat4_Invert(const mat4_t in, mat4_t out) {
 	det3_301_123 = in[3][1] * det2_01_23 - in[3][2] * det2_01_13 + in[3][3] * det2_01_12;
 
 	out[0][0] = -det3_213_123 * invDet;
-	out[1][0] =  det3_213_023 * invDet;
+	out[1][0] = det3_213_023 * invDet;
 	out[2][0] = -det3_213_013 * invDet;
-	out[3][0] =  det3_213_012 * invDet;
+	out[3][0] = det3_213_012 * invDet;
 
-	out[0][1] =  det3_203_123 * invDet;
+	out[0][1] = det3_203_123 * invDet;
 	out[1][1] = -det3_203_023 * invDet;
-	out[2][1] =  det3_203_013 * invDet;
+	out[2][1] = det3_203_013 * invDet;
 	out[3][1] = -det3_203_012 * invDet;
 
-	out[0][2] =  det3_301_123 * invDet;
+	out[0][2] = det3_301_123 * invDet;
 	out[1][2] = -det3_301_023 * invDet;
-	out[2][2] =  det3_301_013 * invDet;
+	out[2][2] = det3_301_013 * invDet;
 	out[3][2] = -det3_301_012 * invDet;
 
 	out[0][3] = -det3_201_123 * invDet;
-	out[1][3] =  det3_201_023 * invDet;
+	out[1][3] = det3_201_023 * invDet;
 	out[2][3] = -det3_201_013 * invDet;
-	out[3][3] =  det3_201_012 * invDet;
+	out[3][3] = det3_201_012 * invDet;
 
 	return true;
 }
@@ -397,7 +397,7 @@ Mat4_Scale
 
 ===============
 */
-void Mat4_Scale(mat4_t m, float x, float y, float z) {
+void Mat4_Scale (mat4_t m, float x, float y, float z) {
 	m[0][0] *= x;
 	m[0][1] *= x;
 	m[0][2] *= x;
@@ -420,14 +420,14 @@ Mat4_Translate
 
 ===============
 */
-void Mat4_Translate(mat4_t m, float x, float y, float z) {
-	m[3][0] += m[0][0]*x + m[1][0]*y + m[2][0]*z;
-	m[3][1] += m[0][1]*x + m[1][1]*y + m[2][1]*z;
-	m[3][2] += m[0][2]*x + m[1][2]*y + m[2][2]*z;
-	m[3][3] += m[0][3]*x + m[1][3]*y + m[2][3]*z;
+void Mat4_Translate (mat4_t m, float x, float y, float z) {
+	m[3][0] += m[0][0] * x + m[1][0] * y + m[2][0] * z;
+	m[3][1] += m[0][1] * x + m[1][1] * y + m[2][1] * z;
+	m[3][2] += m[0][2] * x + m[1][2] * y + m[2][2] * z;
+	m[3][3] += m[0][3] * x + m[1][3] * y + m[2][3] * z;
 }
 
-void Mat4_Identity(mat4_t mat) {
+void Mat4_Identity (mat4_t mat) {
 	mat[0][0] = 1.0f;
 	mat[0][1] = 0.0f;
 	mat[0][2] = 0.0f;
@@ -452,7 +452,7 @@ Mat4_SetupTransform
 
 =================
 */
-void Mat4_SetupTransform(mat4_t m, const mat3_t rotation, const vec3_t translation) {
+void Mat4_SetupTransform (mat4_t m, const mat3_t rotation, const vec3_t translation) {
 	m[0][0] = rotation[0][0];
 	m[0][1] = rotation[0][1];
 	m[0][2] = rotation[0][2];
@@ -481,7 +481,7 @@ Mat4_SetOrientation
 'rotation' is transposed.
 =================
 */
-void Mat4_SetOrientation(mat4_t m, const mat3_t rotation, const vec3_t translation) {
+void Mat4_SetOrientation (mat4_t m, const mat3_t rotation, const vec3_t translation) {
 	m[0][0] = rotation[0][0];
 	m[0][1] = rotation[1][0];
 	m[0][2] = rotation[2][0];
@@ -510,13 +510,13 @@ Mat4_Rotate
 ===============
 */
 #define	EQUAL_EPSILON		0.000001f
-void Mat4_Rotate(mat4_t m, float angle, float x, float y, float z) {
+void Mat4_Rotate (mat4_t m, float angle, float x, float y, float z) {
 	vec4_t	mx, my, mz;
 	vec3_t	rx, ry, rz;
 	float	len, rad, s, c, i;
 	float	xx, yy, zz, xy, yz, zx, xs, ys, zs;
 
-	len = sqrt(x*x + y*y + z*z);
+	len = sqrt (x*x + y*y + z*z);
 	if (len < EQUAL_EPSILON)
 		return;
 
@@ -526,9 +526,9 @@ void Mat4_Rotate(mat4_t m, float angle, float x, float y, float z) {
 	y *= len;
 	z *= len;
 
-	rad = DEG2RAD(angle);
-	s = sin(rad);
-	c = cos(rad);
+	rad = DEG2RAD (angle);
+	s = sin (rad);
+	c = cos (rad);
 
 	i = 1.0 - c;
 

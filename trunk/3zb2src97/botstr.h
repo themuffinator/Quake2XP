@@ -62,7 +62,7 @@ typedef struct zgcl_s {
 	float gren_time;			// grenade time
 
 	// contents
-//  int         front_contents;
+	//  int         front_contents;
 	int ground_contents;
 	float ground_slope;
 
@@ -79,9 +79,9 @@ typedef struct zgcl_s {
 
 
 	edict_t *sighten;			// sighting enemy to me info from entity
-								// sight
+	// sight
 	edict_t *locked;			// locking enemy to me info from lockon
-								// missile
+	// missile
 
 	// waterstate
 	int waterstate;

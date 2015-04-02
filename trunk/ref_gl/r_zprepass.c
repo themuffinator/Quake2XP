@@ -5,7 +5,7 @@ extern msurface_t	*scene_surfaces[MAX_MAP_FACES];
 static int			num_depth_surfaces;
 static vec3_t		modelorg;			// relative to viewpoint
 
-qboolean R_FillDepthBatch(msurface_t *surf, unsigned *vertices, unsigned *indeces) {
+qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->numEdges;
 	float		*v;
@@ -23,8 +23,7 @@ qboolean R_FillDepthBatch(msurface_t *surf, unsigned *vertices, unsigned *indece
 	if (numIndices == 0xffffffff)
 		numIndices = 0;
 
-	for (i = 0; i < nv - 2; i++)
-	{
+	for (i = 0; i < nv - 2; i++) {
 		indexArray[numIndices++] = numVertices;
 		indexArray[numIndices++] = numVertices + i + 1;
 		indexArray[numIndices++] = numVertices + i + 2;
@@ -33,9 +32,8 @@ qboolean R_FillDepthBatch(msurface_t *surf, unsigned *vertices, unsigned *indece
 	p = surf->polys;
 	v = p->verts[0];
 
-	for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++)
-	{
-		VectorCopy(v, wVertexArray[numVertices]);
+	for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++) {
+		VectorCopy (v, wVertexArray[numVertices]);
 	}
 
 	*vertices = numVertices;
@@ -44,8 +42,7 @@ qboolean R_FillDepthBatch(msurface_t *surf, unsigned *vertices, unsigned *indece
 	return true;
 }
 
-static void GL_DrawDepthPoly()
-{
+static void GL_DrawDepthPoly () {
 	msurface_t	*s;
 	int			i;
 
@@ -54,14 +51,13 @@ static void GL_DrawDepthPoly()
 	unsigned	numIndices = 0xffffffff;
 	unsigned	numVertices = 0;
 
-	for (i = 0; i < num_depth_surfaces; i++){
+	for (i = 0; i < num_depth_surfaces; i++) {
 		s = scene_surfaces[i];
 
 	repeat:
-		if (!R_FillDepthBatch(s, &numVertices, &numIndices))
-		{
-			if (numIndices != 0xFFFFFFFF){
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
+			if (numIndices != 0xFFFFFFFF) {
+				qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 			}
@@ -71,11 +67,10 @@ static void GL_DrawDepthPoly()
 
 	// draw the rest
 	if (numIndices != 0xFFFFFFFF)
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+		qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
 }
 
-static void R_RecursiveDepthWorldNode(mnode_t * node)
-{
+static void R_RecursiveDepthWorldNode (mnode_t * node) {
 	int c, side, sidebit;
 	cplane_t *plane;
 	msurface_t *surf, **mark;
@@ -88,7 +83,7 @@ static void R_RecursiveDepthWorldNode(mnode_t * node)
 	if (node->visframe != r_visframecount)
 		return;
 
-	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
+	if (R_CullBox (node->minmaxs, node->minmaxs + 3))
 		return;
 
 	// if a leaf node, draw stuff
@@ -106,7 +101,7 @@ static void R_RecursiveDepthWorldNode(mnode_t * node)
 
 		if (c) {
 			do {
-				if (SurfInFrustum(*mark))
+				if (SurfInFrustum (*mark))
 					(*mark)->visframe = r_framecount;
 				(*mark)->ent = NULL;
 				mark++;
@@ -120,18 +115,18 @@ static void R_RecursiveDepthWorldNode(mnode_t * node)
 	plane = node->plane;
 
 	switch (plane->type) {
-	case PLANE_X:
-		dot = modelorg[0] - plane->dist;
-		break;
-	case PLANE_Y:
-		dot = modelorg[1] - plane->dist;
-		break;
-	case PLANE_Z:
-		dot = modelorg[2] - plane->dist;
-		break;
-	default:
-		dot = DotProduct(modelorg, plane->normal) - plane->dist;
-		break;
+		case PLANE_X:
+			dot = modelorg[0] - plane->dist;
+			break;
+		case PLANE_Y:
+			dot = modelorg[1] - plane->dist;
+			break;
+		case PLANE_Z:
+			dot = modelorg[2] - plane->dist;
+			break;
+		default:
+			dot = DotProduct (modelorg, plane->normal) - plane->dist;
+			break;
 	}
 
 	if (dot >= 0) {
@@ -144,7 +139,7 @@ static void R_RecursiveDepthWorldNode(mnode_t * node)
 	}
 
 	// recurse down the children, front side first
-	R_RecursiveDepthWorldNode(node->children[side]);
+	R_RecursiveDepthWorldNode (node->children[side]);
 
 	// draw stuff
 	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
@@ -156,7 +151,7 @@ static void R_RecursiveDepthWorldNode(mnode_t * node)
 			continue;			// wrong side
 
 		if (surf->texInfo->flags & SURF_SKY) {	// just adds to visible sky bounds
-			R_AddSkySurface(surf);
+			R_AddSkySurface (surf);
 		}
 		else if (surf->texInfo->flags & SURF_NODRAW)
 			continue;
@@ -164,13 +159,13 @@ static void R_RecursiveDepthWorldNode(mnode_t * node)
 			continue;
 		else
 			scene_surfaces[num_depth_surfaces++] = surf;
-		}
+	}
 
 	// recurse down the back side
-	R_RecursiveDepthWorldNode(node->children[!side]);
+	R_RecursiveDepthWorldNode (node->children[!side]);
 }
 
-static void R_AddBModelDepthPolys(void) {
+static void R_AddBModelDepthPolys (void) {
 	int i;
 	cplane_t *pplane;
 	float dot;
@@ -185,7 +180,7 @@ static void R_AddBModelDepthPolys(void) {
 	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
 		// find which side of the node we are on
 		pplane = psurf->plane;
-		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
+		dot = DotProduct (modelorg, pplane->normal) - pplane->dist;
 
 		// draw the polygon
 		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
@@ -198,12 +193,12 @@ static void R_AddBModelDepthPolys(void) {
 				continue;
 			}
 
-	//		if (!(psurf->texInfo->flags & SURF_WARP))
-				scene_surfaces[num_depth_surfaces++] = psurf;
+			//		if (!(psurf->texInfo->flags & SURF_WARP))
+			scene_surfaces[num_depth_surfaces++] = psurf;
 		}
 	}
 }
-void R_DrawDepthBrushModel(void) {
+void R_DrawDepthBrushModel (void) {
 	vec3_t		mins, maxs;
 	int			i;
 	qboolean	rotated;
@@ -225,45 +220,44 @@ void R_DrawDepthBrushModel(void) {
 	}
 	else {
 		rotated = false;
-		VectorAdd(currententity->origin, currentmodel->mins, mins);
-		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
+		VectorAdd (currententity->origin, currentmodel->mins, mins);
+		VectorAdd (currententity->origin, currentmodel->maxs, maxs);
 	}
 
-	if (R_CullBox(mins, maxs))
+	if (R_CullBox (mins, maxs))
 		return;
 
-	VectorSubtract(r_newrefdef.vieworg, currententity->origin, modelorg);
+	VectorSubtract (r_newrefdef.vieworg, currententity->origin, modelorg);
 
 	if (rotated) {
 		vec3_t temp;
 		vec3_t forward, right, up;
 
-		VectorCopy(modelorg, temp);
-		AngleVectors(currententity->angles, forward, right, up);
-		modelorg[0] = DotProduct(temp, forward);
-		modelorg[1] = -DotProduct(temp, right);
-		modelorg[2] = DotProduct(temp, up);
+		VectorCopy (modelorg, temp);
+		AngleVectors (currententity->angles, forward, right, up);
+		modelorg[0] = DotProduct (temp, forward);
+		modelorg[1] = -DotProduct (temp, right);
+		modelorg[2] = DotProduct (temp, up);
 	}
 
-	qglPushMatrix();
-	R_RotateForEntity(currententity);
+	qglPushMatrix ();
+	R_RotateForEntity (currententity);
 
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
+	qglEnableVertexAttribArray (ATRB_POSITION);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
 
 	num_depth_surfaces = 0;
-	R_AddBModelDepthPolys();
-	GL_DrawDepthPoly();
+	R_AddBModelDepthPolys ();
+	GL_DrawDepthPoly ();
 
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglPopMatrix();
+	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglPopMatrix ();
 }
 
-void R_CalcAliasFrameLerp(dmdl_t *paliashdr, float shellScale);
+void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
 static vec3_t	tempVertexArray[MAX_VERTICES * 4];
 
-void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr)
-{
+void GL_DrawAliasFrameLerpDepth (dmdl_t *paliashdr) {
 	int				index_xyz;
 	int				i, j, jj = 0;
 	dtriangle_t		*tris;
@@ -275,8 +269,8 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr)
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	R_CalcAliasFrameLerp(paliashdr, 0);
-	
+	R_CalcAliasFrameLerp (paliashdr, 0);
+
 	c_alias_polys += paliashdr->num_tris;
 
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
@@ -287,35 +281,32 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr)
 	backlerp = currententity->backlerp;
 	frontlerp = 1 - backlerp;
 
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertexArray);
+	qglEnableVertexAttribArray (ATRB_POSITION);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vertexArray);
 
-	for (i = 0; i<paliashdr->num_tris; i++)
-	{
-		for (j = 0; j<3; j++, jj++)
-		{
+	for (i = 0; i < paliashdr->num_tris; i++) {
+		for (j = 0; j < 3; j++, jj++) {
 			index_xyz = tris[i].index_xyz[j];
-			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
+			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
 
 		}
-	}	
-	qglDrawArrays(GL_TRIANGLES, 0, jj);
-	qglDisableVertexAttribArray(ATRB_POSITION);
+	}
+	qglDrawArrays (GL_TRIANGLES, 0, jj);
+	qglDisableVertexAttribArray (ATRB_POSITION);
 }
 
-void R_DrawDepthAliasModel(void)
-{
+void R_DrawDepthAliasModel (void) {
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
 
-	if (R_CullAliasModel(bbox, currententity))
+	if (R_CullAliasModel (bbox, currententity))
 		return;
 
 	paliashdr = (dmdl_t *)currentmodel->extraData;
 
 	if ((currententity->frame >= paliashdr->num_frames)
 		|| (currententity->frame < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
+		Com_Printf ("R_DrawAliasModel %s: no such frame %d\n",
 			currentmodel->name, currententity->frame);
 		currententity->frame = 0;
 		currententity->oldframe = 0;
@@ -323,21 +314,21 @@ void R_DrawDepthAliasModel(void)
 
 	if ((currententity->oldframe >= paliashdr->num_frames)
 		|| (currententity->oldframe < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n",
+		Com_Printf ("R_DrawAliasModel %s: no such oldframe %d\n",
 			currentmodel->name, currententity->oldframe);
 		currententity->frame = 0;
 		currententity->oldframe = 0;
 	}
 
-	qglPushMatrix();
-	R_RotateForEntity(currententity);
+	qglPushMatrix ();
+	R_RotateForEntity (currententity);
 
-	GL_DrawAliasFrameLerpDepth(paliashdr);
+	GL_DrawAliasFrameLerpDepth (paliashdr);
 
-	qglPopMatrix();
+	qglPopMatrix ();
 }
 
-void R_DrawDepthScene(void) {
+void R_DrawDepthScene (void) {
 	entity_t ent;
 	int i;
 
@@ -349,28 +340,27 @@ void R_DrawDepthScene(void) {
 
 	currentmodel = r_worldmodel;
 
-	VectorCopy(r_newrefdef.vieworg, modelorg);
+	VectorCopy (r_newrefdef.vieworg, modelorg);
 
-	R_ClearSkyBox();
+	R_ClearSkyBox ();
 
-//	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
+	//	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
 
-	GL_BindProgram(nullProgram, 0);
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
-	
-//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	GL_BindProgram (nullProgram, 0);
+	qglEnableVertexAttribArray (ATRB_POSITION);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
+
+	//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	num_depth_surfaces = 0;
-	R_RecursiveDepthWorldNode(r_worldmodel->nodes);
-	GL_DrawDepthPoly();
-	
-	qglDisableVertexAttribArray(ATRB_POSITION);
+	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
+	GL_DrawDepthPoly ();
 
-	R_DrawSkyBox(false);
+	qglDisableVertexAttribArray (ATRB_POSITION);
 
-	for (i = 0; i < r_newrefdef.num_entities; i++)
-	{
+	R_DrawSkyBox (false);
+
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		currentmodel = currententity->model;
 
@@ -379,18 +369,18 @@ void R_DrawDepthScene(void) {
 
 		if (currententity->flags & RF_TRANSLUCENT)
 			continue;
-		
+
 		if (currententity->flags & RF_WEAPONMODEL)
 			continue;
 
 		if (currentmodel->type == mod_brush)
-			R_DrawDepthBrushModel();
+			R_DrawDepthBrushModel ();
 
 		if (currentmodel->type == mod_alias)
-			R_DrawDepthAliasModel();
+			R_DrawDepthAliasModel ();
 	}
 
-//	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-//	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	GL_BindNullProgram();
+	//	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	GL_BindNullProgram ();
 }

@@ -2,7 +2,7 @@
 ===========================================================================
 Copyright (C) 1997-2001 Id Software, Inc.
 Copyright (C) 2004-2008 Serge Borodulin aka Berserker (tm)
-                         <http://berserker.quakegate.net>
+<http://berserker.quakegate.net>
 
 This file is part of Berserker@Quake2 source code.
 

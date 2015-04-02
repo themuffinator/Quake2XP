@@ -38,7 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  OpenAL framework
 
  =======================================================================
-*/
+ */
 
 //main OpenAL framework (Creative's hardware)
 #ifdef _WIN32
@@ -168,11 +168,11 @@ extern LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
 extern LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 
 // XRAM Extension function pointer variables and enum values
-typedef ALboolean(AL_APIENTRY * LPEAXSETBUFFERMODE) (ALsizei n,
-												 ALuint * buffers,
-												 ALint value);
-typedef ALenum(AL_APIENTRY * LPEAXGETBUFFERMODE) (ALuint buffer,
-											  ALint * value);
+typedef ALboolean (AL_APIENTRY * LPEAXSETBUFFERMODE) (ALsizei n,
+	ALuint * buffers,
+	ALint value);
+typedef ALenum (AL_APIENTRY * LPEAXGETBUFFERMODE) (ALuint buffer,
+	ALint * value);
 extern LPEAXSETBUFFERMODE eaxSetBufferMode;
 extern LPEAXGETBUFFERMODE eaxGetBufferMode;
 
@@ -190,8 +190,8 @@ extern LPEAXGETBUFFERMODE eaxGetBufferMode;
  IMPLEMENTATION SPECIFIC FUNCTIONS
 
  =======================================================================
-*/
-void QAL_Shutdown(void);
+ */
+void QAL_Shutdown (void);
 
 #define		MAX_SFX 4096
 
@@ -202,7 +202,7 @@ typedef struct {
 	int entNum;					// To allow overriding a specific sound
 	int entChannel;
 	ALuint bufferNum;			// willow: "0" is an undocumented "free
-								// state" descriptor, i believe.
+	// state" descriptor, i believe.
 
 	// int startTime; // For overriding oldest sounds
 	// float distanceMult; //willow: It's wrong!
@@ -233,7 +233,7 @@ typedef struct playsound_s {
 	int entnum;
 	int entchannel;
 	qboolean fixed_origin;		// use origin field instead of entnum's
-								// origin
+	// origin
 	vec3_t origin;
 	vec3_t velocity;			// willow: TO DO!
 	unsigned begin;				// begin on this sample
@@ -243,15 +243,15 @@ typedef struct playsound_s {
 /*
 ====================================================================
 
-  SYSTEM SPECIFIC FUNCTIONS
+SYSTEM SPECIFIC FUNCTIONS
 
 ====================================================================
 */
 
 #define MAX_CHANNELS 126		// Creative X-Fi limits (126, except the 1
-								// streaming channel)
+// streaming channel)
 #define MIN_CHANNELS 13			// NVidia onboard audio. (WIN x64
-								// defaults) (13+1)
+// defaults) (13+1)
 
 #define CH_STREAMING s_openal_numChannels
 
@@ -270,33 +270,33 @@ extern cvar_t *s_openal_device;
 extern cvar_t *s_quality;
 extern cvar_t *s_distance_model;
 
-void EFX_RvbInit(void);
-void EFX_RvbUpdate(vec3_t listener_position);
-void EFX_RvbProcSrc(openal_channel_t *ch, ALuint source, qboolean enabled);
-void EFX_RvbShutdown(void);
+void EFX_RvbInit (void);
+void EFX_RvbUpdate (vec3_t listener_position);
+void EFX_RvbProcSrc (openal_channel_t *ch, ALuint source, qboolean enabled);
+void EFX_RvbShutdown (void);
 
 // Streaming and music definitions
 
 #define NUM_STRBUF 8
 #define MAX_STRBUF_SIZE (1024*256)
 
-qboolean S_Streaming_Start(int num_bits, int num_channels, ALsizei rate, float volume);
-int S_Streaming_Add(const byte *buffer, int num_bytes);
-int S_Streaming_NumFreeBufs(void);
-void S_Streaming_Stop(void);
+qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume);
+int S_Streaming_Add (const byte *buffer, int num_bytes);
+int S_Streaming_NumFreeBufs (void);
+void S_Streaming_Stop (void);
 
 typedef enum {
 	MUSIC_NONE, MUSIC_CD, MUSIC_CD_FILES, MUSIC_OTHER_FILES
 } music_type_t;
 
-void Music_Init(void);
-void Music_Shutdown(void);
-void Music_Play(void);
-void Music_Stop(void);
-void Music_Pause(void);
-void Music_Resume(void);
-void Music_Update(void);
+void Music_Init (void);
+void Music_Shutdown (void);
+void Music_Play (void);
+void Music_Stop (void);
+void Music_Pause (void);
+void Music_Resume (void);
+void Music_Update (void);
 
-qboolean S_LoadWAV(const char *name, byte **oWav, byte **oStart, int *oBits, int *oChans, int *oRate, int *oSize);
+qboolean S_LoadWAV (const char *name, byte **oWav, byte **oStart, int *oBits, int *oChans, int *oRate, int *oSize);
 
 #endif /* __SND_LOC_H */

@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -28,7 +28,7 @@ vec4_t		s_lerped[MAX_VERTS];
 vec3_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 unsigned	icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 msurface_t	*shadow_surfaces[MAX_MAP_FACES];
-char		triangleFacingLight	[MAX_INDICES / 3];
+char		triangleFacingLight[MAX_INDICES / 3];
 
 /*
 =====================
@@ -36,36 +36,35 @@ Alias Shadow Volumes
 =====================
 */
 
-void R_MarkShadowTriangles(dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg){
-	
+void R_MarkShadowTriangles (dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg) {
+
 	vec3_t	r_triangleNormals[MAX_INDICES / 3];
 	vec3_t	temp, dir0, dir1;
 	int		i;
 	float	f;
 	float	*v0, *v1, *v2;
-		
+
 	for (i = 0; i < paliashdr->num_tris; i++, tris++) {
-		
+
 		v0 = (float*)s_lerped[tris->index_xyz[0]];
 		v1 = (float*)s_lerped[tris->index_xyz[1]];
 		v2 = (float*)s_lerped[tris->index_xyz[2]];
-		
+
 		//Calculate shadow volume triangle normals
-		VectorSubtract( v0, v1, dir0 );
-		VectorSubtract( v2, v1, dir1 );
-		
-		CrossProduct( dir0, dir1, r_triangleNormals[i] );
+		VectorSubtract (v0, v1, dir0);
+		VectorSubtract (v2, v1, dir1);
+
+		CrossProduct (dir0, dir1, r_triangleNormals[i]);
 
 		// Find front facing triangles
-		VectorSubtract(lightOrg, v0, temp);
-		f = DotProduct(temp, r_triangleNormals[i]);
+		VectorSubtract (lightOrg, v0, temp);
+		f = DotProduct (temp, r_triangleNormals[i]);
 
-		triangleFacingLight[i] = f > 0;			
+		triangleFacingLight[i] = f > 0;
 	}
 }
 
-void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float lightRadius)
-{
+void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) {
 	dtriangle_t		*ot, *tris;
 	neighbors_t		*neighbours;
 	vec4_t			v0, v1, v2, v3, l0, l1, l2, l3;
@@ -73,112 +72,111 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float lightRadius)
 	dtrivertx_t		*verts;
 	int				i, j, numVerts = 0, id = 0;
 
-	frame	= (daliasframe_t *) ((byte *) hdr + hdr->ofs_frames + currententity->frame * hdr->framesize);
-	verts	= frame->verts;
-	ot		= tris = (dtriangle_t *) ((unsigned char *) hdr + hdr->ofs_tris);
-	
-	R_MarkShadowTriangles(hdr, tris, light);
+	frame = (daliasframe_t *)((byte *)hdr + hdr->ofs_frames + currententity->frame * hdr->framesize);
+	verts = frame->verts;
+	ot = tris = (dtriangle_t *)((unsigned char *)hdr + hdr->ofs_tris);
+
+	R_MarkShadowTriangles (hdr, tris, light);
 
 	for (i = 0, tris = ot, neighbours = currentmodel->neighbours; i < hdr->num_tris; i++, tris++, neighbours++) {
-		
+
 		if (!triangleFacingLight[i])
 			continue;
-	
-		if (neighbours->n[0] < 0 || !triangleFacingLight[neighbours->n[0]]) {
-			
-		for (j = 0; j < 3; j++) {
-			v0[j] = s_lerped[tris->index_xyz[1]][j];
-			v1[j] = s_lerped[tris->index_xyz[0]][j];
-		}
 
-		VectorSubtract(v1, light, l2);
-		VectorSubtract(v0, light, l3);
-		VectorMA(v1, lightRadius, l2, v2);
-		VectorMA(v0, lightRadius, l3, v3);
-		
-		VA_SetElem3(vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-		VA_SetElem3(vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-		VA_SetElem3(vcache[numVerts + 2], v2[0], v2[1], v2[2]);
-		VA_SetElem3(vcache[numVerts + 3], v3[0], v3[1], v3[2]);
-        
-		icache[id++] = numVerts + 0;
-		icache[id++] = numVerts + 1;
-		icache[id++] = numVerts + 3;
-		icache[id++] = numVerts + 3;
-		icache[id++] = numVerts + 1;
-		icache[id++] = numVerts + 2;
-		numVerts += 4;
+		if (neighbours->n[0] < 0 || !triangleFacingLight[neighbours->n[0]]) {
+
+			for (j = 0; j < 3; j++) {
+				v0[j] = s_lerped[tris->index_xyz[1]][j];
+				v1[j] = s_lerped[tris->index_xyz[0]][j];
+			}
+
+			VectorSubtract (v1, light, l2);
+			VectorSubtract (v0, light, l3);
+			VectorMA (v1, lightRadius, l2, v2);
+			VectorMA (v0, lightRadius, l3, v3);
+
+			VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
+			VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
+			VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
+			VA_SetElem3 (vcache[numVerts + 3], v3[0], v3[1], v3[2]);
+
+			icache[id++] = numVerts + 0;
+			icache[id++] = numVerts + 1;
+			icache[id++] = numVerts + 3;
+			icache[id++] = numVerts + 3;
+			icache[id++] = numVerts + 1;
+			icache[id++] = numVerts + 2;
+			numVerts += 4;
 		}
 
 		if (neighbours->n[1] < 0 || !triangleFacingLight[neighbours->n[1]]) {
-			
-		for (j = 0; j < 3; j++) {
-			v0[j] = s_lerped[tris->index_xyz[2]][j];
-			v1[j] = s_lerped[tris->index_xyz[1]][j];
-		}
 
-		VectorSubtract(v1, light, l2);
-		VectorSubtract(v0, light, l3);
-		VectorMA(v1, lightRadius, l2, v2);
-		VectorMA(v0, lightRadius, l3, v3);
-		
-		VA_SetElem3(vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-		VA_SetElem3(vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-		VA_SetElem3(vcache[numVerts + 2], v2[0], v2[1], v2[2]);
-		VA_SetElem3(vcache[numVerts + 3], v3[0], v3[1], v3[2]);
-        
-		icache[id++] = numVerts + 0;
-		icache[id++] = numVerts + 1;
-		icache[id++] = numVerts + 3;
-		icache[id++] = numVerts + 3;
-		icache[id++] = numVerts + 1;
-		icache[id++] = numVerts + 2;
-		numVerts += 4;
+			for (j = 0; j < 3; j++) {
+				v0[j] = s_lerped[tris->index_xyz[2]][j];
+				v1[j] = s_lerped[tris->index_xyz[1]][j];
+			}
+
+			VectorSubtract (v1, light, l2);
+			VectorSubtract (v0, light, l3);
+			VectorMA (v1, lightRadius, l2, v2);
+			VectorMA (v0, lightRadius, l3, v3);
+
+			VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
+			VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
+			VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
+			VA_SetElem3 (vcache[numVerts + 3], v3[0], v3[1], v3[2]);
+
+			icache[id++] = numVerts + 0;
+			icache[id++] = numVerts + 1;
+			icache[id++] = numVerts + 3;
+			icache[id++] = numVerts + 3;
+			icache[id++] = numVerts + 1;
+			icache[id++] = numVerts + 2;
+			numVerts += 4;
 		}
 
 		if (neighbours->n[2] < 0 || !triangleFacingLight[neighbours->n[2]]) {
-			
-		for (j = 0; j < 3; j++) {
-			v0[j] = s_lerped[tris->index_xyz[0]][j];
-			v1[j] = s_lerped[tris->index_xyz[2]][j];
-		}
 
-		VectorSubtract(v1, light, l2);
-		VectorSubtract(v0, light, l3);
-		VectorMA(v1, lightRadius, l2, v2);
-		VectorMA(v0, lightRadius, l3, v3);
-		
-		VA_SetElem3(vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-		VA_SetElem3(vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-		VA_SetElem3(vcache[numVerts + 2], v2[0], v2[1], v2[2]);
-		VA_SetElem3(vcache[numVerts + 3], v3[0], v3[1], v3[2]);
-    
-		icache[id++] = numVerts + 0;
-		icache[id++] = numVerts + 1;
-		icache[id++] = numVerts + 3;
-		icache[id++] = numVerts + 3;
-		icache[id++] = numVerts + 1;
-		icache[id++] = numVerts + 2;
-		numVerts += 4;
+			for (j = 0; j < 3; j++) {
+				v0[j] = s_lerped[tris->index_xyz[0]][j];
+				v1[j] = s_lerped[tris->index_xyz[2]][j];
+			}
+
+			VectorSubtract (v1, light, l2);
+			VectorSubtract (v0, light, l3);
+			VectorMA (v1, lightRadius, l2, v2);
+			VectorMA (v0, lightRadius, l3, v3);
+
+			VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
+			VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
+			VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
+			VA_SetElem3 (vcache[numVerts + 3], v3[0], v3[1], v3[2]);
+
+			icache[id++] = numVerts + 0;
+			icache[id++] = numVerts + 1;
+			icache[id++] = numVerts + 3;
+			icache[id++] = numVerts + 3;
+			icache[id++] = numVerts + 1;
+			icache[id++] = numVerts + 2;
+			numVerts += 4;
 		}
 	}
 
-	 // build shadows caps
-	for (i = 0, tris = ot; i < hdr->num_tris; i++, tris++)
-	{
+	// build shadows caps
+	for (i = 0, tris = ot; i < hdr->num_tris; i++, tris++) {
 		if (!triangleFacingLight[i])
 			continue;
-		
-		for (j = 0; j < 3; j++){
+
+		for (j = 0; j < 3; j++) {
 			v0[j] = s_lerped[tris->index_xyz[0]][j];
 			v1[j] = s_lerped[tris->index_xyz[1]][j];
 			v2[j] = s_lerped[tris->index_xyz[2]][j];
 		}
 
-		VA_SetElem3(vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-		VA_SetElem3(vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-		VA_SetElem3(vcache[numVerts + 2], v2[0], v2[1], v2[2]);
-			
+		VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
+		VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
+		VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
+
 		icache[id++] = numVerts + 0;
 		icache[id++] = numVerts + 1;
 		icache[id++] = numVerts + 2;
@@ -192,37 +190,37 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t light, float lightRadius)
 			v2[j] = s_lerped[tris->index_xyz[2]][j];
 		}
 
-		VectorSubtract(v0, light, l0);
-		VectorSubtract(v1, light, l1);
-		VectorSubtract(v2, light, l2);
-		VectorMA(v0, lightRadius, l0, v0);
-		VectorMA(v1, lightRadius, l1, v1);
-		VectorMA(v2, lightRadius, l2, v2);
-			
-		VA_SetElem3(vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-		VA_SetElem3(vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-		VA_SetElem3(vcache[numVerts + 2], v2[0], v2[1], v2[2]);
-				 
+		VectorSubtract (v0, light, l0);
+		VectorSubtract (v1, light, l1);
+		VectorSubtract (v2, light, l2);
+		VectorMA (v0, lightRadius, l0, v0);
+		VectorMA (v1, lightRadius, l1, v1);
+		VectorMA (v2, lightRadius, l2, v2);
+
+		VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
+		VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
+		VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
+
 		icache[id++] = numVerts + 2;
 		icache[id++] = numVerts + 1;
 		icache[id++] = numVerts + 0;
 		numVerts += 3;
 	}
-	
+
 	if (gl_state.DrawRangeElements && r_DrawRangeElements->value)
-		qglDrawRangeElementsEXT(GL_TRIANGLES, 0, numVerts, id, GL_UNSIGNED_INT, icache);
+		qglDrawRangeElementsEXT (GL_TRIANGLES, 0, numVerts, id, GL_UNSIGNED_INT, icache);
 	else
-		qglDrawElements(GL_TRIANGLES, id, GL_UNSIGNED_INT, icache);
-			
+		qglDrawElements (GL_TRIANGLES, id, GL_UNSIGNED_INT, icache);
+
 	c_shadow_tris += id / 3;
 	c_shadow_volumes++;
 }
 
-qboolean R_EntityInLightBounds(){
+qboolean R_EntityInLightBounds () {
 
 	int		i;
 	vec3_t	mins, maxs;
-	
+
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return false;
 
@@ -240,46 +238,43 @@ qboolean R_EntityInLightBounds(){
 			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
 	}
-	else
-	{
-		VectorAdd(currententity->origin, currententity->model->maxs, maxs);
-		VectorAdd(currententity->origin, currententity->model->mins, mins);
+	else {
+		VectorAdd (currententity->origin, currententity->model->maxs, maxs);
+		VectorAdd (currententity->origin, currententity->model->mins, mins);
 	}
 
-	if (currentShadowLight->spherical){
+	if (currentShadowLight->spherical) {
 
-	if (!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
-		return false;
+		if (!BoundsAndSphereIntersect (mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
+			return false;
 	}
 	else {
 
-	if (!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
-		return false;
+		if (!BoundsIntersect (mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
+			return false;
 	}
 
-	if (VectorCompare(currentShadowLight->origin, currententity->origin))
+	if (VectorCompare (currentShadowLight->origin, currententity->origin))
 		return false;
 
 	return true;
 }
 
 
-void GL_LerpShadowVerts(int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3])
-{
+void GL_LerpShadowVerts (int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3]) {
 	int i;
 
-	if(nverts < 1)
+	if (nverts < 1)
 		return;
 
-		for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {
-			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0];
-			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1];
-			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2];
-		}
+	for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {
+		lerp[0] = move[0] + ov->v[0] * backv[0] + v->v[0] * frontv[0];
+		lerp[1] = move[1] + ov->v[1] * backv[1] + v->v[1] * frontv[1];
+		lerp[2] = move[2] + ov->v[2] * backv[2] + v->v[2] * frontv[2];
+	}
 }
 
-void R_DeformShadowVolume()
-{
+void R_DeformShadowVolume () {
 	dmdl_t			*paliashdr;
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*v, *ov, *verts;
@@ -287,35 +282,35 @@ void R_DeformShadowVolume()
 	float			frontlerp;
 	vec3_t			move, delta, vectors[3], frontv, backv, light, temp;
 
-	if (!R_EntityInLightBounds())
+	if (!R_EntityInLightBounds ())
 		return;
 
-	paliashdr = (dmdl_t *) currentmodel->extraData;
+	paliashdr = (dmdl_t *)currentmodel->extraData;
 
-	frame = (daliasframe_t *) ((byte *) paliashdr   + paliashdr->ofs_frames
-			+ currententity->frame * paliashdr->framesize);
-	
+	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames
+		+ currententity->frame * paliashdr->framesize);
+
 	verts = v = frame->verts;
 
-	oldframe = (daliasframe_t *) ((byte *) paliashdr + paliashdr->ofs_frames +
-				currententity->oldframe * paliashdr->framesize);
-	
+	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames +
+		currententity->oldframe * paliashdr->framesize);
+
 	ov = oldframe->verts;
 
-	order = (int *) ((byte *) paliashdr + paliashdr->ofs_glcmds);
+	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
 
 	frontlerp = 1.0 - currententity->backlerp;
 
 	// move should be the delta back to the previous frame * backlerp
-	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
-	AngleVectors(currententity->angles, vectors[0], vectors[1],
-				 vectors[2]);
+	VectorSubtract (currententity->oldorigin, currententity->origin, delta);
+	AngleVectors (currententity->angles, vectors[0], vectors[1],
+		vectors[2]);
 
-	move[0] = DotProduct(delta, vectors[0]);	// forward
-	move[1] = -DotProduct(delta, vectors[1]);	// left
-	move[2] = DotProduct(delta, vectors[2]);	// up
+	move[0] = DotProduct (delta, vectors[0]);	// forward
+	move[1] = -DotProduct (delta, vectors[1]);	// left
+	move[2] = DotProduct (delta, vectors[2]);	// up
 
-	VectorAdd(move, oldframe->translate, move);
+	VectorAdd (move, oldframe->translate, move);
 
 	for (i = 0; i < 3; i++) {
 		move[i] = currententity->backlerp * move[i] + frontlerp * frame->translate[i];
@@ -323,21 +318,20 @@ void R_DeformShadowVolume()
 		backv[i] = currententity->backlerp * oldframe->scale[i];
 	}
 
-	GL_LerpShadowVerts(paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
-		
-	qglPushMatrix();
+	GL_LerpShadowVerts (paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
+
+	qglPushMatrix ();
 	R_RotateForEntity (currententity);
 
-	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-	Mat3_TransposeMultiplyVector(currententity->axis, temp, light);
+	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector (currententity->axis, temp, light);
 
-	BuildShadowVolumeTriangles(paliashdr, light, currentShadowLight->len * 10);
-	
-	qglPopMatrix();
+	BuildShadowVolumeTriangles (paliashdr, light, currentShadowLight->len * 10);
+
+	qglPopMatrix ();
 }
 
-void R_CastAliasShadowVolumes(void)
-{
+void R_CastAliasShadowVolumes (void) {
 	int			id, i;
 	unsigned	defBits = 0;
 
@@ -348,25 +342,25 @@ void R_CastAliasShadowVolumes(void)
 		return;
 
 	// setup program
-	GL_BindProgram(nullProgram, defBits);
+	GL_BindProgram (nullProgram, defBits);
 	id = nullProgram->id[defBits];
 
-	GL_StencilMask(255);
-	GL_StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	GL_StencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP_EXT, GL_KEEP);
-	GL_StencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+	GL_StencilMask (255);
+	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	GL_StencilOpSeparate (GL_BACK, GL_KEEP, GL_INCR_WRAP_EXT, GL_KEEP);
+	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
-	GL_Disable(GL_CULL_FACE);
-	qglDisable(GL_TEXTURE_2D);
-	GL_DepthFunc(GL_LESS);
-	GL_Enable(GL_POLYGON_OFFSET_FILL);
-	GL_PolygonOffset(0.1, 1);
-	GL_ColorMask(0, 0, 0, 0);
+	GL_Disable (GL_CULL_FACE);
+	qglDisable (GL_TEXTURE_2D);
+	GL_DepthFunc (GL_LESS);
+	GL_Enable (GL_POLYGON_OFFSET_FILL);
+	GL_PolygonOffset (0.1, 1);
+	GL_ColorMask (0, 0, 0, 0);
 
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
+	qglEnableVertexAttribArray (ATRB_POSITION);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
 
-	for (i = 0; i < r_newrefdef.num_entities; i++){
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		currentmodel = currententity->model;
 
@@ -374,28 +368,27 @@ void R_CastAliasShadowVolumes(void)
 			continue;
 
 		if (currentmodel->type == mod_alias)
-			R_DeformShadowVolume();
-		
+			R_DeformShadowVolume ();
+
 	}
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	GL_Disable(GL_POLYGON_OFFSET_FILL);
-	GL_PolygonOffset(0, 0);
-	qglEnable(GL_TEXTURE_2D);
-	GL_Enable(GL_CULL_FACE);
-	GL_ColorMask(1, 1, 1, 1);
-	GL_BindNullProgram();
+	qglDisableVertexAttribArray (ATRB_POSITION);
+	GL_Disable (GL_POLYGON_OFFSET_FILL);
+	GL_PolygonOffset (0, 0);
+	qglEnable (GL_TEXTURE_2D);
+	GL_Enable (GL_CULL_FACE);
+	GL_ColorMask (1, 1, 1, 1);
+	GL_BindNullProgram ();
 }
 
 
 /*
 ======================================
 BSP SHADOW VOLUMES
-EASY VERSION FROM TENEBRAE AND BERS@Q2 
+EASY VERSION FROM TENEBRAE AND BERS@Q2
 ======================================
 */
 
-qboolean R_MarkShadowSurf(msurface_t *surf)
-{
+qboolean R_MarkShadowSurf (msurface_t *surf) {
 	cplane_t	*plane;
 	glpoly_t	*poly;
 	float		dist, lbbox[6], pbbox[6];
@@ -413,20 +406,19 @@ hack:
 	if (poly->shadowTimestamp == shadowTimeStamp)
 		return false;
 
-	switch (plane->type)
-	{
-	case PLANE_X:
-		dist = currentShadowLight->origin[0] - plane->dist;
-		break;
-	case PLANE_Y:
-		dist = currentShadowLight->origin[1] - plane->dist;
-		break;
-	case PLANE_Z:
-		dist = currentShadowLight->origin[2] - plane->dist;
-		break;
-	default:
-		dist = DotProduct(currentShadowLight->origin, plane->normal) - plane->dist;
-		break;
+	switch (plane->type) {
+		case PLANE_X:
+			dist = currentShadowLight->origin[0] - plane->dist;
+			break;
+		case PLANE_Y:
+			dist = currentShadowLight->origin[1] - plane->dist;
+			break;
+		case PLANE_Z:
+			dist = currentShadowLight->origin[2] - plane->dist;
+			break;
+		default:
+			dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
+			break;
 	}
 
 	//the normals are flipped when surf_planeback is 1
@@ -435,7 +427,7 @@ hack:
 		return false;
 
 	//the normals are flipped when surf_planeback is 1
-	if (abs(dist) > currentShadowLight->len)
+	if (abs (dist) > currentShadowLight->len)
 		return false;
 
 	lbbox[0] = currentShadowLight->origin[0] - currentShadowLight->radius[0];
@@ -453,10 +445,10 @@ hack:
 	pbbox[4] = surf->maxs[1];
 	pbbox[5] = surf->maxs[2];
 
-	if (!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
+	if (!BoundsIntersect (&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
 		return false;
 
-	if (currentShadowLight->_cone && R_CullBox_(&pbbox[0], &pbbox[3], currentShadowLight->frust))
+	if (currentShadowLight->_cone && R_CullBox_ (&pbbox[0], &pbbox[3], currentShadowLight->frust))
 		return false;
 
 	poly->shadowTimestamp = shadowTimeStamp;
@@ -464,8 +456,7 @@ hack:
 	return true;
 }
 
-void R_MarkBrushModelShadowSurfaces()
-{
+void R_MarkBrushModelShadowSurfaces () {
 	int			i;
 	msurface_t	*psurf;
 	model_t		*clmodel;
@@ -473,15 +464,14 @@ void R_MarkBrushModelShadowSurfaces()
 	clmodel = currententity->model;
 	psurf = &clmodel->surfaces[clmodel->firstModelSurface];
 
-	for (i = 0; i<clmodel->numModelSurfaces; i++, psurf++){
-		
-		if (R_MarkShadowSurf(psurf))
+	for (i = 0; i < clmodel->numModelSurfaces; i++, psurf++) {
+
+		if (R_MarkShadowSurf (psurf))
 			shadow_surfaces[num_shadow_surfaces++] = psurf;
 	}
 }
 
-void R_DrawBrushModelVolumes()
-{
+void R_DrawBrushModelVolumes () {
 	int			i, j, vb = 0, ib = 0, surfBase = 0;
 	float		scale, sca;
 	msurface_t	*surf;
@@ -493,36 +483,36 @@ void R_DrawBrushModelVolumes()
 	clmodel = currententity->model;
 	surf = &clmodel->surfaces[clmodel->firstModelSurface];
 
-	if (!R_EntityInLightBounds())
+	if (!R_EntityInLightBounds ())
 		return;
 
-	qglPushMatrix();
-	R_RotateForEntity(currententity);
+	qglPushMatrix ();
+	R_RotateForEntity (currententity);
 
-	VectorCopy(currentShadowLight->origin, oldLightOrigin);
-	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-	Mat3_TransposeMultiplyVector(currententity->axis, temp, currentShadowLight->origin);
+	VectorCopy (currentShadowLight->origin, oldLightOrigin);
+	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector (currententity->axis, temp, currentShadowLight->origin);
 
 	shadowTimeStamp++;
 	num_shadow_surfaces = 0;
-	R_MarkBrushModelShadowSurfaces();
+	R_MarkBrushModelShadowSurfaces ();
 
 	scale = currentShadowLight->len * 32;
 
 	// generate vertex buffer
-	for (i = 0; i < num_shadow_surfaces; i++){
+	for (i = 0; i < num_shadow_surfaces; i++) {
 		surf = shadow_surfaces[i];
 		poly = surf->polys;
 
 		if (surf->polys->shadowTimestamp != shadowTimeStamp)
 			continue;
 
-		for (j = 0; j < surf->numEdges; j++){
+		for (j = 0; j < surf->numEdges; j++) {
 
-			VectorCopy(poly->verts[j], vcache[vb * 2 + 0]);
-			VectorSubtract(poly->verts[j], currentShadowLight->origin, v1);
-			
-			sca = scale / VectorLength(v1);
+			VectorCopy (poly->verts[j], vcache[vb * 2 + 0]);
+			VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
+
+			sca = scale / VectorLength (v1);
 			vcache[vb * 2 + 1][0] = v1[0] * sca + poly->verts[j][0];
 			vcache[vb * 2 + 1][1] = v1[1] * sca + poly->verts[j][1];
 			vcache[vb * 2 + 1][2] = v1[2] * sca + poly->verts[j][2];
@@ -531,17 +521,17 @@ void R_DrawBrushModelVolumes()
 	}
 
 	// generate index buffer
-	for (i = 0; i < num_shadow_surfaces; i++){
+	for (i = 0; i < num_shadow_surfaces; i++) {
 		surf = shadow_surfaces[i];
 		poly = surf->polys;
 
 		if (surf->polys->shadowTimestamp != shadowTimeStamp)
 			continue;
 
-		for (j = 0; j < surf->numEdges; j++){
+		for (j = 0; j < surf->numEdges; j++) {
 			shadow = false;
-			
-			if (poly->neighbours[j] != NULL){
+
+			if (poly->neighbours[j] != NULL) {
 
 				if (poly->neighbours[j]->shadowTimestamp != poly->shadowTimestamp)
 					shadow = true;
@@ -549,28 +539,28 @@ void R_DrawBrushModelVolumes()
 			else
 				shadow = true;
 
-			if (shadow){
+			if (shadow) {
 				int jj = (j + 1) % poly->numVerts;
 
-				icache[ib++] = j  * 2 + 0 + surfBase;
-				icache[ib++] = j  * 2 + 1 + surfBase;
+				icache[ib++] = j * 2 + 0 + surfBase;
+				icache[ib++] = j * 2 + 1 + surfBase;
 				icache[ib++] = jj * 2 + 1 + surfBase;
 
-				icache[ib++] = j  * 2 + 0 + surfBase;
+				icache[ib++] = j * 2 + 0 + surfBase;
 				icache[ib++] = jj * 2 + 1 + surfBase;
 				icache[ib++] = jj * 2 + 0 + surfBase;
 			}
 		}
 
 		//Draw near light cap
-		for (j = 0; j < surf->numEdges - 2; j++){
+		for (j = 0; j < surf->numEdges - 2; j++) {
 			icache[ib++] = 0 + surfBase;
 			icache[ib++] = (j + 1) * 2 + 0 + surfBase;
 			icache[ib++] = (j + 2) * 2 + 0 + surfBase;
 		}
 
 		//Draw extruded cap
-		for (j = 0; j<surf->numEdges - 2; j++){
+		for (j = 0; j < surf->numEdges - 2; j++) {
 			icache[ib++] = 1 + surfBase;
 			icache[ib++] = (j + 2) * 2 + 1 + surfBase;
 			icache[ib++] = (j + 1) * 2 + 1 + surfBase;
@@ -578,41 +568,40 @@ void R_DrawBrushModelVolumes()
 		surfBase += surf->numEdges * 2;
 	}
 
-	if (ib){
-		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
-		qglDrawElements(GL_TRIANGLES, ib, GL_UNSIGNED_INT, icache);
+	if (ib) {
+		qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
+		qglDrawElements (GL_TRIANGLES, ib, GL_UNSIGNED_INT, icache);
 	}
 
 	c_shadow_volumes++;
 	c_shadow_tris += ib / 3;
 
-	VectorCopy(oldLightOrigin, currentShadowLight->origin);
-	qglPopMatrix();
+	VectorCopy (oldLightOrigin, currentShadowLight->origin);
+	qglPopMatrix ();
 }
 
 
-void R_MarkShadowCasting (mnode_t *node)
-{
+void R_MarkShadowCasting (mnode_t *node) {
 	cplane_t	*plane;
 	int			c, cluster;
 	float		dist;
 	msurface_t	**surf;
 	mleaf_t		*leaf;
 
-	if (node->contents != -1){
+	if (node->contents != -1) {
 
 		//we are in a leaf
 		leaf = (mleaf_t *)node;
 		cluster = leaf->cluster;
-		
-		if (!(currentShadowLight->vis[cluster>>3] & (1<<(cluster&7))))
+
+		if (!(currentShadowLight->vis[cluster >> 3] & (1 << (cluster & 7))))
 			return;
 
 		surf = leaf->firstmarksurface;
 
-		for (c = 0; c < leaf->numMarkSurfaces; c++, surf++){
+		for (c = 0; c < leaf->numMarkSurfaces; c++, surf++) {
 
-			if (R_MarkShadowSurf ((*surf))){
+			if (R_MarkShadowSurf ((*surf))) {
 
 				shadow_surfaces[num_shadow_surfaces++] = (*surf);
 			}
@@ -623,14 +612,14 @@ void R_MarkShadowCasting (mnode_t *node)
 	plane = node->plane;
 	dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
 
-	if (dist > currentShadowLight->len){
+	if (dist > currentShadowLight->len) {
 		R_MarkShadowCasting (node->children[0]);
-			return;
+		return;
 	}
 
-	if (dist < -currentShadowLight->len){
-		R_MarkShadowCasting ( node->children[1]);
-			return;
+	if (dist < -currentShadowLight->len) {
+		R_MarkShadowCasting (node->children[1]);
+		return;
 	}
 
 	R_MarkShadowCasting (node->children[0]);
@@ -640,119 +629,119 @@ void R_MarkShadowCasting (mnode_t *node)
 model_t *loadmodel;
 int numPreCachedLights;
 
-void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
-{
+void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	int			i, j, vb = 0, ib = 0, surfBase = 0;
 	float		scale, sca;
 	msurface_t	*surf;
 	glpoly_t	*poly;
 	vec3_t		v1;
 	qboolean	shadow;
-	
-	if(precalc)
+
+	if (precalc)
 		currentShadowLight = light;
-	else 
+	else
 		light = NULL;
 
 	shadowTimeStamp++;
 	num_shadow_surfaces = 0;
-	R_MarkShadowCasting(r_worldmodel->nodes);
+	R_MarkShadowCasting (r_worldmodel->nodes);
 
 	scale = currentShadowLight->len * 32;
-	
+
 	// generate vertex buffer
-	for (i = 0; i < num_shadow_surfaces; i++){
+	for (i = 0; i < num_shadow_surfaces; i++) {
 		surf = shadow_surfaces[i];
 		poly = surf->polys;
 
 		if (surf->polys->shadowTimestamp != shadowTimeStamp)
-           continue;
-			
-		for (j = 0 ; j < surf->numEdges; j++){
+			continue;
 
-            VectorCopy(poly->verts[j], vcache[vb*2+0]);
-            VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
+		for (j = 0; j < surf->numEdges; j++) {
 
-			sca = scale/VectorLength(v1);
-            
-			vcache[vb*2+1][0] = v1[0] * sca + poly->verts[j][0];
-            vcache[vb*2+1][1] = v1[1] * sca + poly->verts[j][1];
-            vcache[vb*2+1][2] = v1[2] * sca + poly->verts[j][2];
-            vb++;
-            }
+			VectorCopy (poly->verts[j], vcache[vb * 2 + 0]);
+			VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
+
+			sca = scale / VectorLength (v1);
+
+			vcache[vb * 2 + 1][0] = v1[0] * sca + poly->verts[j][0];
+			vcache[vb * 2 + 1][1] = v1[1] * sca + poly->verts[j][1];
+			vcache[vb * 2 + 1][2] = v1[2] * sca + poly->verts[j][2];
+			vb++;
 		}
+	}
 
-        // generate index buffer
-		for (i = 0; i < num_shadow_surfaces; i++){
-			surf = shadow_surfaces[i];
-			poly = surf->polys;
+	// generate index buffer
+	for (i = 0; i < num_shadow_surfaces; i++) {
+		surf = shadow_surfaces[i];
+		poly = surf->polys;
 
 		if (surf->polys->shadowTimestamp != shadowTimeStamp)
-            continue;
+			continue;
 
-		for (j = 0; j < surf->numEdges; j++){
-             shadow = false;
-             
-			 if (poly->neighbours[j] != NULL){
+		for (j = 0; j < surf->numEdges; j++) {
+			shadow = false;
+
+			if (poly->neighbours[j] != NULL) {
 
 				if (poly->neighbours[j]->shadowTimestamp != poly->shadowTimestamp)
 					shadow = true;
-             }else
-					shadow = true;
- 
-        if (shadow){
-           int jj = (j+1)%poly->numVerts;
+			}
+			else
+				shadow = true;
 
-		   icache[ib++] = j*2+0    +surfBase;
-           icache[ib++] = j*2+1    +surfBase;
-           icache[ib++] = jj*2+1   +surfBase;
- 
-           icache[ib++] = j*2+0    +surfBase;
-           icache[ib++] = jj*2+1   +surfBase;
-           icache[ib++] = jj*2+0	+surfBase;
-           }
-        }
- 
-        //Draw near light cap
-        for (j = 0; j < surf->numEdges - 2 ; j++){
-            icache[ib++] = 0         +surfBase;
-			icache[ib++] = (j+1)*2+0 +surfBase;
-            icache[ib++] = (j+2)*2+0 +surfBase;
+			if (shadow) {
+				int jj = (j + 1) % poly->numVerts;
+
+				icache[ib++] = j * 2 + 0 + surfBase;
+				icache[ib++] = j * 2 + 1 + surfBase;
+				icache[ib++] = jj * 2 + 1 + surfBase;
+
+				icache[ib++] = j * 2 + 0 + surfBase;
+				icache[ib++] = jj * 2 + 1 + surfBase;
+				icache[ib++] = jj * 2 + 0 + surfBase;
+			}
 		}
- 
-        //Draw extruded cap
-        for (j = 0; j < surf->numEdges - 2 ; j++){
-            icache[ib++] = 1         +surfBase;
-            icache[ib++] = (j+2)*2+1 +surfBase;
-            icache[ib++] = (j+1)*2+1 +surfBase;
+
+		//Draw near light cap
+		for (j = 0; j < surf->numEdges - 2; j++) {
+			icache[ib++] = 0 + surfBase;
+			icache[ib++] = (j + 1) * 2 + 0 + surfBase;
+			icache[ib++] = (j + 2) * 2 + 0 + surfBase;
 		}
-			surfBase += surf->numEdges*2;
+
+		//Draw extruded cap
+		for (j = 0; j < surf->numEdges - 2; j++) {
+			icache[ib++] = 1 + surfBase;
+			icache[ib++] = (j + 2) * 2 + 1 + surfBase;
+			icache[ib++] = (j + 1) * 2 + 1 + surfBase;
+		}
+		surfBase += surf->numEdges * 2;
 	}
-	
-		if(precalc){
-			
-		if(currentShadowLight->vboId)
-			qglDeleteBuffers(1, &currentShadowLight->vboId);
 
-			qglGenBuffers(1, &currentShadowLight->vboId);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, surfBase*sizeof(vec3_t), vcache, GL_STATIC_DRAW_ARB);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	if (precalc) {
 
-			if(currentShadowLight->iboId)
-					qglDeleteBuffers(1, &currentShadowLight->iboId);
+		if (currentShadowLight->vboId)
+			qglDeleteBuffers (1, &currentShadowLight->vboId);
 
-			qglGenBuffers(1, &currentShadowLight->iboId);
-			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
-			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, ib*sizeof(GL_UNSIGNED_INT), icache, GL_STATIC_DRAW_ARB);
-			currentShadowLight->iboNumIndices = ib;
-			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-			numPreCachedLights++;
-			}else
-		{
-		if(ib){
-			qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
-			qglDrawElements(GL_TRIANGLES, ib, GL_UNSIGNED_INT, icache);
+		qglGenBuffers (1, &currentShadowLight->vboId);
+		qglBindBuffer (GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
+		qglBufferData (GL_ARRAY_BUFFER_ARB, surfBase*sizeof(vec3_t), vcache, GL_STATIC_DRAW_ARB);
+		qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
+
+		if (currentShadowLight->iboId)
+			qglDeleteBuffers (1, &currentShadowLight->iboId);
+
+		qglGenBuffers (1, &currentShadowLight->iboId);
+		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
+		qglBufferData (GL_ELEMENT_ARRAY_BUFFER, ib*sizeof(GL_UNSIGNED_INT), icache, GL_STATIC_DRAW_ARB);
+		currentShadowLight->iboNumIndices = ib;
+		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
+		numPreCachedLights++;
+	}
+	else {
+		if (ib) {
+			qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
+			qglDrawElements (GL_TRIANGLES, ib, GL_UNSIGNED_INT, icache);
 		}
 	}
 	c_shadow_volumes++;
@@ -760,64 +749,63 @@ void R_DrawBspModelVolumes(qboolean precalc, worldShadowLight_t *light)
 }
 
 
-void R_CastBspShadowVolumes(void)
-{
+void R_CastBspShadowVolumes (void) {
 	int			id, i;
 	unsigned	defBits = 0;
 
 	if (!r_shadows->value)
 		return;
-			
-	if(!currentShadowLight->isShadow || currentShadowLight->isAmbient)
+
+	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient)
 		return;
 
 	// setup program
-	GL_BindProgram(nullProgram, defBits);
+	GL_BindProgram (nullProgram, defBits);
 	id = nullProgram->id[defBits];
 
-	GL_StencilMask(255);
-	GL_StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	GL_StencilOpSeparate(GL_BACK, GL_KEEP,  GL_INCR_WRAP_EXT, GL_KEEP);
-	GL_StencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+	GL_StencilMask (255);
+	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	GL_StencilOpSeparate (GL_BACK, GL_KEEP, GL_INCR_WRAP_EXT, GL_KEEP);
+	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
-	GL_Disable(GL_CULL_FACE);
-	qglDisable(GL_TEXTURE_2D);
-	GL_DepthFunc(GL_LESS);
-	GL_Enable(GL_POLYGON_OFFSET_FILL);
-	GL_PolygonOffset(0.1, 1);
-	GL_ColorMask(0, 0, 0, 0);
-	qglEnableVertexAttribArray(ATRB_POSITION);
+	GL_Disable (GL_CULL_FACE);
+	qglDisable (GL_TEXTURE_2D);
+	GL_DepthFunc (GL_LESS);
+	GL_Enable (GL_POLYGON_OFFSET_FILL);
+	GL_PolygonOffset (0.1, 1);
+	GL_ColorMask (0, 0, 0, 0);
+	qglEnableVertexAttribArray (ATRB_POSITION);
 
-	if (currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic){ // draw vbo shadow
-		
-		qglBindBuffer(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
+	if (currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic) { // draw vbo shadow
 
-		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
-		qglDrawElements(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_INT, NULL);
+		qglBindBuffer (GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
+		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
 
-		qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
+		qglDrawElements (GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_INT, NULL);
+
+		qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
+		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	if (!currentShadowLight->isStatic)
-		R_DrawBspModelVolumes(false, NULL); //dlights have't vbo data
+		R_DrawBspModelVolumes (false, NULL); //dlights have't vbo data
 
-	for (i = 0; i < r_newrefdef.num_entities; i++){
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		currentmodel = currententity->model;
-		
+
 		if (!currentmodel)
 			continue;
 
 		if (currentmodel->type == mod_brush)
-			R_DrawBrushModelVolumes();
+			R_DrawBrushModelVolumes ();
 	}
 
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	GL_Disable(GL_POLYGON_OFFSET_FILL);
-	qglEnable(GL_TEXTURE_2D);
-	GL_Enable(GL_CULL_FACE);
-	GL_ColorMask(1, 1, 1, 1);
-	GL_BindNullProgram();
+	qglDisableVertexAttribArray (ATRB_POSITION);
+	GL_Disable (GL_POLYGON_OFFSET_FILL);
+	qglEnable (GL_TEXTURE_2D);
+	GL_Enable (GL_CULL_FACE);
+	GL_ColorMask (1, 1, 1, 1);
+	GL_BindNullProgram ();
 }

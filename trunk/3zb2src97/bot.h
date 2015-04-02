@@ -23,99 +23,99 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "g_local.h"
 
 //general func
-void player_die(edict_t * self, edict_t * inflictor, edict_t * attacker,
-				int damage, vec3_t point);
+void player_die (edict_t * self, edict_t * inflictor, edict_t * attacker,
+	int damage, vec3_t point);
 
 //bot spawn & remove
-qboolean SpawnBot(int i);
-void Bot_LevelChange();
-void Load_BotInfo();
-void Bot_SpawnCall();
-void RemoveBot();
-void SpawnBotReserving();
+qboolean SpawnBot (int i);
+void Bot_LevelChange ();
+void Load_BotInfo ();
+void Bot_SpawnCall ();
+void RemoveBot ();
+void SpawnBotReserving ();
 
 //weapon
-void Weapon_Blaster(edict_t * ent);
-void Weapon_Shotgun(edict_t * ent);
-void Weapon_SuperShotgun(edict_t * ent);
-void Weapon_Machinegun(edict_t * ent);
-void Weapon_Chaingun(edict_t * ent);
-void Weapon_HyperBlaster(edict_t * ent);
-void Weapon_RocketLauncher(edict_t * ent);
-void Weapon_Grenade(edict_t * ent);
-void Weapon_GrenadeLauncher(edict_t * ent);
-void Weapon_Railgun(edict_t * ent);
-void Weapon_BFG(edict_t * ent);
-void CTFWeapon_Grapple(edict_t * ent);
+void Weapon_Blaster (edict_t * ent);
+void Weapon_Shotgun (edict_t * ent);
+void Weapon_SuperShotgun (edict_t * ent);
+void Weapon_Machinegun (edict_t * ent);
+void Weapon_Chaingun (edict_t * ent);
+void Weapon_HyperBlaster (edict_t * ent);
+void Weapon_RocketLauncher (edict_t * ent);
+void Weapon_Grenade (edict_t * ent);
+void Weapon_GrenadeLauncher (edict_t * ent);
+void Weapon_Railgun (edict_t * ent);
+void Weapon_BFG (edict_t * ent);
+void CTFWeapon_Grapple (edict_t * ent);
 
 // RAFAEL
-void Weapon_Ionripper(edict_t * ent);
-void Weapon_Phalanx(edict_t * ent);
-void Weapon_Trap(edict_t * ent);
+void Weapon_Ionripper (edict_t * ent);
+void Weapon_Phalanx (edict_t * ent);
+void Weapon_Trap (edict_t * ent);
 
 // wideuse
-qboolean Bot_trace(edict_t * ent, edict_t * other);
-qboolean Bot_trace2(edict_t * ent, vec3_t ttz);
-float Get_yaw(vec3_t vec);		//
-float Get_pitch(vec3_t vec);	//
-float Get_vec_yaw(vec3_t vec, float yaw);
-void ShowGun(edict_t * ent);
-void SpawnItem3(edict_t * ent, gitem_t * item);
-int Bot_moveT(edict_t * ent, float ryaw, vec3_t pos, float dist,
-			  float *bottom);
-void Set_BotAnim(edict_t * ent, int anim, int frame, int end);
-void plat_go_up(edict_t * ent);
-int Get_KindWeapon(gitem_t * it);
-qboolean TargetJump(edict_t * ent, vec3_t tpos);
-qboolean Bot_traceS(edict_t * ent, edict_t * other);
-qboolean Bot_Fall(edict_t * ent, vec3_t pos, float dist);
+qboolean Bot_trace (edict_t * ent, edict_t * other);
+qboolean Bot_trace2 (edict_t * ent, vec3_t ttz);
+float Get_yaw (vec3_t vec);		//
+float Get_pitch (vec3_t vec);	//
+float Get_vec_yaw (vec3_t vec, float yaw);
+void ShowGun (edict_t * ent);
+void SpawnItem3 (edict_t * ent, gitem_t * item);
+int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
+	float *bottom);
+void Set_BotAnim (edict_t * ent, int anim, int frame, int end);
+void plat_go_up (edict_t * ent);
+int Get_KindWeapon (gitem_t * it);
+qboolean TargetJump (edict_t * ent, vec3_t tpos);
+qboolean Bot_traceS (edict_t * ent, edict_t * other);
+qboolean Bot_Fall (edict_t * ent, vec3_t pos, float dist);
 
-void SelectSpawnPoint(edict_t * ent, vec3_t origin, vec3_t angles);
-void ClientUserinfoChanged(edict_t * ent, char *userinfo);
-void CopyToBodyQue(edict_t * ent);
+void SelectSpawnPoint (edict_t * ent, vec3_t origin, vec3_t angles);
+void ClientUserinfoChanged (edict_t * ent, char *userinfo);
+void CopyToBodyQue (edict_t * ent);
 
 //route util
-qboolean TraceX(edict_t * ent, vec3_t p2);
-void Move_LastRouteIndex();
-void Get_RouteOrigin(int index, vec3_t pos);
+qboolean TraceX (edict_t * ent, vec3_t p2);
+void Move_LastRouteIndex ();
+void Get_RouteOrigin (int index, vec3_t pos);
 
 //Bot Func
-void ZigockJoinMenu(edict_t * ent);
-qboolean ZigockStartClient(edict_t * ent);
-void Cmd_AirStrike(edict_t * ent);
-void BotEndServerFrame(edict_t * ent);
-void SpawnItem2(edict_t * ent, gitem_t * item);
-void Get_WaterState(edict_t * ent);
-void Bot_Think(edict_t * self);
-void PutBotInServer(edict_t * ent);
-void SpawnBotReserving2(int *red, int *blue);
+void ZigockJoinMenu (edict_t * ent);
+qboolean ZigockStartClient (edict_t * ent);
+void Cmd_AirStrike (edict_t * ent);
+void BotEndServerFrame (edict_t * ent);
+void SpawnItem2 (edict_t * ent, gitem_t * item);
+void Get_WaterState (edict_t * ent);
+void Bot_Think (edict_t * self);
+void PutBotInServer (edict_t * ent);
+void SpawnBotReserving2 (int *red, int *blue);
 
 //Combat AI
-void Combat_Level0(edict_t * ent, int foundedenemy, int enewep, float aim,
-				   float distance, int skill);
-void Combat_LevelX(edict_t * ent, int foundedenemy, int enewep, float aim,
-				   float distance, int skill);
-void UsePrimaryWeapon(edict_t * ent);
+void Combat_Level0 (edict_t * ent, int foundedenemy, int enewep, float aim,
+	float distance, int skill);
+void Combat_LevelX (edict_t * ent, int foundedenemy, int enewep, float aim,
+	float distance, int skill);
+void UsePrimaryWeapon (edict_t * ent);
 
 //Explotion Index
-void UpdateExplIndex(edict_t * ent);
+void UpdateExplIndex (edict_t * ent);
 
 //flag
-qboolean ZIGDrop_Flag(edict_t * ent, gitem_t * item);
+qboolean ZIGDrop_Flag (edict_t * ent, gitem_t * item);
 
 //p_view.c
-void BotEndServerFrame(edict_t * ent);
+void BotEndServerFrame (edict_t * ent);
 
 //Bot AI routine
-void Bots_Move_NORM(edict_t * ent);	// normal AI
+void Bots_Move_NORM (edict_t * ent);	// normal AI
 
 //spawn
-void SetBotFlag1(edict_t * ent);
-void SetBotFlag2(edict_t * ent);
-void CTFSetupNavSpawn();
+void SetBotFlag1 (edict_t * ent);
+void SetBotFlag2 (edict_t * ent);
+void CTFSetupNavSpawn ();
 
 //ctf
-void CTFJobAssign(void);		// job assign
+void CTFJobAssign (void);		// job assign
 
 //VWep
 // ### Hentai ### BEGIN
@@ -249,7 +249,7 @@ void CTFJobAssign(void);		// job assign
 #define FIRE_SHIFT_L		0x00040000	// X ���X���C�h
 
 #define FIRE_SHIFT			(FIRE_SHIFT_R | FIRE_SHIFT_L)	// X
-															// �E�X���C�h
+// �E�X���C�h
 
 #define FIRE_REFLECT		0x00080000	// �ǂɔ��˂�����
 
@@ -273,10 +273,10 @@ void CTFJobAssign(void);		// job assign
 #define STS_WATERJ		0x00000010	// turbo jump
 
 #define STS_SJMASK		(STS_ROCJ | STS_TURBOJ | STS_WATERJ)	// special
-																// jump
-																// mask
+// jump
+// mask
 #define STS_SJMASKEXW	(STS_ROCJ | STS_TURBOJ )	// special jump mask
-													// ex. water
+// ex. water
 
 
 #define STS_TALKING		0x00000200	// talking
@@ -288,13 +288,13 @@ void CTFJobAssign(void);		// job assign
 //wait
 #define STS_W_DONT		0x00001000	// don't wait door or plat
 #define STS_W_DOOROPEN	0x00002000	// wait for door open or down to
-									// bottom
+// bottom
 #define STS_W_ONPLAT	0x00004000	// wait for plat or door reach to da
-									// top
+// top
 #define STS_W_ONDOORUP	0x00008000	// wait for door reach to da top
 #define STS_W_ONDOORDWN	0x00010000	// wait for door reach to da bottom
 #define STS_W_ONTRAIN	0x00020000	// wait for plat or door reach to da
-									// top
+// top
 #define STS_W_COMETRAIN	0x00040000	// wait for train come
 #define STS_W_COMEPLAT	0x00080000	// wait for plat come
 
@@ -329,9 +329,9 @@ typedef struct {
 	vec3_t Pt;					// target point
 	union {
 		vec3_t Tcourner;		// target courner(train and grap-shot
-								// only)
+		// only)
 		unsigned short linkpod[MAXLINKPOD];	// (GRS_NORMAL,GRS_ITEMS only
-											// 0 = do not select pod)
+		// 0 = do not select pod)
 	};
 	edict_t *ent;				// target ent
 	short index;				// index num

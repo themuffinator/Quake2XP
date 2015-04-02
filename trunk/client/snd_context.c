@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -27,35 +27,34 @@ qboolean	openalStop = false;
  =================
  AL_InitDriver
  =================
-*/
-static qboolean AL_InitDriver(void)
-{
+ */
+static qboolean AL_InitDriver (void) {
 	char *deviceName = s_openal_device->string;
 
-	Com_DPrintf("Initializing OpenAL driver\n");
+	Com_DPrintf ("Initializing OpenAL driver\n");
 
 	if (!deviceName[0])
 		deviceName = NULL;
 
 	if (deviceName)
-		Com_Printf("...opening device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName);
+		Com_Printf ("...opening device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName);
 	else
-		Com_Printf("...opening default device: ");
+		Com_Printf ("...opening default device: ");
 
 	// Open the device
-	if ((alConfig.hDevice = alcOpenDevice(deviceName)) == NULL) {
-		Com_Printf("failed\n");
+	if ((alConfig.hDevice = alcOpenDevice (deviceName)) == NULL) {
+		Com_Printf ("failed\n");
 		return false;
 	}
 
 	if (!deviceName)
-		Com_Printf("succeeded ("S_COLOR_GREEN"%s"S_COLOR_WHITE")\n",
-				   alcGetString(alConfig.hDevice, ALC_DEVICE_SPECIFIER));
+		Com_Printf ("succeeded ("S_COLOR_GREEN"%s"S_COLOR_WHITE")\n",
+		alcGetString (alConfig.hDevice, ALC_DEVICE_SPECIFIER));
 	else
-		Com_Printf("succeeded\n");
+		Com_Printf ("succeeded\n");
 
 	// Create the AL context and make it current
-	Com_DPrintf("...creating AL context: ");
+	Com_DPrintf ("...creating AL context: ");
 	{
 		// Setup context attributes at context creation time:
 		// ALC_FREQUENCY, ALC_REFRESH, ALC_SYNC, ALC_MONO_SOURCES,
@@ -66,54 +65,54 @@ static qboolean AL_InitDriver(void)
 		if (!(s_quality->value))
 			attrlist_p = NULL;
 		else {
-			switch ((int) s_quality->value) {
-			case 1:
-				attrlist[1] = 44100;
-			case 2:
-				attrlist[1] = 48000;
-			case 3:
-				attrlist[1] = 88200;
-			case 4:
-				attrlist[1] = 96000;
-			case 5:
-				attrlist[1] = 176400;
-			case 6:
-				attrlist[1] = 192000;
+			switch ((int)s_quality->value) {
+				case 1:
+					attrlist[1] = 44100;
+				case 2:
+					attrlist[1] = 48000;
+				case 3:
+					attrlist[1] = 88200;
+				case 4:
+					attrlist[1] = 96000;
+				case 5:
+					attrlist[1] = 176400;
+				case 6:
+					attrlist[1] = 192000;
 			}
 			attrlist_p = attrlist;
 		}
 
 
 		if ((alConfig.hALC =
-			 alcCreateContext(alConfig.hDevice, attrlist_p)) == NULL) {
-			Com_DPrintf("failed\n");
+			alcCreateContext (alConfig.hDevice, attrlist_p)) == NULL) {
+			Com_DPrintf ("failed\n");
 			goto failed;
 		}
 	}
-	Com_DPrintf("succeeded\n");
+	Com_DPrintf ("succeeded\n");
 
-	Com_DPrintf("...making context current: ");
-	if (!alcMakeContextCurrent(alConfig.hALC)) {
-		Com_DPrintf("failed\n");
+	Com_DPrintf ("...making context current: ");
+	if (!alcMakeContextCurrent (alConfig.hALC)) {
+		Com_DPrintf ("failed\n");
 		goto failed;
 	}
-	Com_DPrintf("succeeded\n");
+	Com_DPrintf ("succeeded\n");
 
 	return true;
 
-  failed:
+failed:
 
-	Com_Printf(S_COLOR_RED"...failed hard\n");
-	
+	Com_Printf (S_COLOR_RED"...failed hard\n");
+
 	openalStop = true;
 
 	if (alConfig.hALC) {
-		alcDestroyContext(alConfig.hALC);
+		alcDestroyContext (alConfig.hALC);
 		alConfig.hALC = NULL;
 	}
 
 	if (alConfig.hDevice) {
-		alcCloseDevice(alConfig.hDevice);
+		alcCloseDevice (alConfig.hDevice);
 		alConfig.hDevice = NULL;
 	}
 
@@ -124,29 +123,29 @@ static qboolean AL_InitDriver(void)
  =================
  AL_StartOpenAL
  =================
-*/
-qboolean AL_StartOpenAL(void)
-{
+ */
+qboolean AL_StartOpenAL (void) {
 	extern const char *al_device[];
 
 	// Get device list
-	if (alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT")) {
+	if (alcIsExtensionPresent (NULL, "ALC_ENUMERATION_EXT")) {
 		unsigned i = 0;
-		const char *a = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+		const char *a = alcGetString (NULL, ALC_DEVICE_SPECIFIER);
 		if (!a) {
 			// We have no audio output devices. No hope.
-			QAL_Shutdown();
+			QAL_Shutdown ();
 			return false;
 		}
 		while (*a) {
 			al_device[++i] = a;
-			Com_DPrintf("Device species %i: %s\n", i, a);
+			Com_DPrintf ("Device species %i: %s\n", i, a);
 			while (*a)
 				a++;
 			a++;
 		}
 		alConfig.device_count = i;
-	} else {
+	}
+	else {
 		// OS Specific devices. We are here, because device enumeration
 		// failed!
 #ifdef _WIN32
@@ -155,16 +154,17 @@ qboolean AL_StartOpenAL(void)
 		al_device[3] = "MMSYSTEM";
 		alConfig.device_count = 3;
 #else
-		QAL_Shutdown();
+		QAL_Shutdown ();
 		return false;
 #endif
 	}
 
 	// Initialize the device, context, etc...
-	if (AL_InitDriver()) {
+	if (AL_InitDriver ()) {
 		return true;
-	} else {
-		QAL_Shutdown();
+	}
+	else {
+		QAL_Shutdown ();
 		return false;
 	}
 }
@@ -173,23 +173,22 @@ qboolean AL_StartOpenAL(void)
  =================
  AL_Shutdown
  =================
-*/
-void AL_Shutdown(void)
-{
-	Com_Printf("Shutting down OpenAL subsystem\n");
+ */
+void AL_Shutdown (void) {
+	Com_Printf ("Shutting down OpenAL subsystem\n");
 
 	if (alConfig.hALC) {
 		if (alcMakeContextCurrent) {
-			Com_Printf("...alcMakeContextCurrent( NULL ): ");
-			if (!alcMakeContextCurrent(NULL))
-				Com_Printf("failed\n");
+			Com_Printf ("...alcMakeContextCurrent( NULL ): ");
+			if (!alcMakeContextCurrent (NULL))
+				Com_Printf ("failed\n");
 			else
-				Com_Printf("succeeded\n");
+				Com_Printf ("succeeded\n");
 		}
 
 		if (alcDestroyContext) {
-			Com_Printf("...destroying AL context\n");
-			alcDestroyContext(alConfig.hALC);
+			Com_Printf ("...destroying AL context\n");
+			alcDestroyContext (alConfig.hALC);
 		}
 
 		alConfig.hALC = NULL;
@@ -197,12 +196,12 @@ void AL_Shutdown(void)
 
 	if (alConfig.hDevice) {
 		if (alcCloseDevice) {
-			Com_Printf("...closing device\n");
-			alcCloseDevice(alConfig.hDevice);
+			Com_Printf ("...closing device\n");
+			alcCloseDevice (alConfig.hDevice);
 		}
 
 		alConfig.hDevice = NULL;
 	}
 
-	QAL_Shutdown();
+	QAL_Shutdown ();
 }

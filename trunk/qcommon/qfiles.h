@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -163,7 +163,7 @@ typedef struct {
 */
 
 #define IDSPRITEHEADER	(('2'<<24)+('S'<<16)+('D'<<8)+'I')
-		// little-endian "IDS2"
+// little-endian "IDS2"
 #define SPRITE_VERSION	2
 
 typedef struct {
@@ -182,7 +182,7 @@ typedef struct {
 /*
 ==============================================================================
 
-  .WAL texture file format
+.WAL texture file format
 
 ==============================================================================
 */
@@ -204,13 +204,13 @@ typedef struct miptex_s {
 /*
 ==============================================================================
 
-  .BSP file format
+.BSP file format
 
 ==============================================================================
 */
 
 #define IDBSPHEADER	(('P'<<24)+('S'<<16)+('B'<<8)+'I')
-		// little-endian "IBSP"
+// little-endian "IBSP"
 
 #define BSPVERSION	38
 
@@ -309,7 +309,7 @@ typedef struct {
 	float normal[3];
 	float dist;
 	int type;					// PLANE_X - PLANE_ANYZ ?remove? trivial
-								// to regenerate
+	// to regenerate
 } dplane_t;
 
 
@@ -345,15 +345,15 @@ typedef struct {
 #define	CONTENTS_CURRENT_DOWN	0x800000
 
 #define	CONTENTS_ORIGIN			0x1000000	// removed before bsping an
-											// entity
+// entity
 
 #define	CONTENTS_MONSTER		0x2000000	// should never be on a brush, 
-											// only in game
+// only in game
 #define	CONTENTS_DEADMONSTER	0x4000000
 #define	CONTENTS_DETAIL			0x8000000	// brushes to be added after
-											// vis leafs
+// vis leafs
 #define	CONTENTS_TRANSLUCENT	0x10000000	// auto set if any surface has 
-											// trans
+// trans
 #define	CONTENTS_LADDER			0x20000000
 
 
@@ -375,7 +375,7 @@ typedef struct {
 typedef struct {
 	int planenum;
 	int children[2];			// negative numbers are -(leafs+1), not
-								// nodes
+	// nodes
 	short mins[3];				// for frustom culling
 	short maxs[3];
 	unsigned short firstface;
@@ -407,7 +407,7 @@ typedef struct {
 	short numEdges;
 	short texInfo;
 
-// lighting info
+	// lighting info
 	byte styles[MAXLIGHTMAPS];
 	int lightofs;				// start of [numstyles*surfsize] samples
 } dface_t;
