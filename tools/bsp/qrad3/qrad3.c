@@ -81,15 +81,15 @@ qboolean	deluxeMapping;
 
 char		source[1024];
 
-float	direct_scale =	0.4f;
-float	entity_scale =	1.f;
+float	direct_scale = 0.4f;
+float	entity_scale = 1.f;
 
 int	total_transfer;		// for MakeTransfers
 
 /*
 ===================================================================
 
-	MISC
+MISC
 
 ===================================================================
 */
@@ -100,12 +100,10 @@ MakeBackplanes
 
 =============
 */
-void MakeBackplanes (void)
-{
+void MakeBackplanes (void) {
 	int		i;
 
-	for (i=0 ; i<numplanes ; i++)
-	{
+	for (i = 0; i < numplanes; i++) {
 		backplanes[i].dist = -dplanes[i].dist;
 		VectorSubtract (vec3_origin, dplanes[i].normal, backplanes[i].normal);
 	}
@@ -116,16 +114,14 @@ void MakeBackplanes (void)
 MakeParents
 =============
 */
-void MakeParents (int nodenum, int parent)
-{
+void MakeParents (int nodenum, int parent) {
 	int		i, j;
 	dnode_t	*node;
 
 	nodeparents[nodenum] = parent;
 	node = &dnodes[nodenum];
 
-	for (i=0 ; i<2 ; i++)
-	{
+	for (i = 0; i < 2; i++) {
 		j = node->children[i];
 		if (j < 0)
 			leafparents[-j - 1] = nodenum;
@@ -137,7 +133,7 @@ void MakeParents (int nodenum, int parent)
 /*
 ===================================================================
 
-	TRANSFER SCALES
+TRANSFER SCALES
 
 ===================================================================
 */
@@ -165,14 +161,14 @@ int PointInLeafnum (const vec3_t point) {
 }
 
 dleaf_t *PointInLeaf (const vec3_t point) {
-	return &dleafs[PointInLeafnum(point)];
+	return &dleafs[PointInLeafnum (point)];
 }
 
 qboolean PvsForOrigin (const vec3_t org, byte *pvs) {
 	dleaf_t	*leaf;
 
 	if (!visdatasize) {
-		memset (pvs, 255, (numleafs+7)/8 );
+		memset (pvs, 255, (numleafs + 7) / 8);
 		return true;
 	}
 
@@ -195,7 +191,7 @@ MakeTransfers
 */
 void MakeTransfers (int i) {
 	float		transfers[MAX_PATCHES];
-	byte		pvs[(MAX_MAP_LEAFS+7)/8];
+	byte		pvs[(MAX_MAP_LEAFS + 7) / 8];
 	int			j;
 	vec3_t		delta;
 	vec_t		dist, scale;
@@ -205,7 +201,7 @@ void MakeTransfers (int i) {
 	float		total;
 	dplane_t	plane;
 	vec3_t		origin;
-//	int			itotal;
+	//	int			itotal;
 	int			cluster;
 
 	patch = patches + i;
@@ -222,20 +218,18 @@ void MakeTransfers (int i) {
 
 	patch->numtransfers = 0;
 
-	for (j=0, patch2 = patches ; j<num_patches ; j++, patch2++)
-	{
+	for (j = 0, patch2 = patches; j < num_patches; j++, patch2++) {
 		transfers[j] = 0;
 
 		if (j == i)
 			continue;
 
 		// check pvs bit
-		if (!nopvs)
-		{
+		if (!nopvs) {
 			cluster = patch2->cluster;
 			if (cluster == -1)
 				continue;
-			if ( ! ( pvs[cluster>>3] & (1<<(cluster&7)) ) )
+			if (!(pvs[cluster >> 3] & (1 << (cluster & 7))))
 				continue;	// not in pvs
 		}
 
@@ -255,7 +249,7 @@ void MakeTransfers (int i) {
 			continue;
 
 		// check exact transfer
-		if (TestLine_r (0, patch->origin, patch2->origin) )
+		if (TestLine_r (0, patch->origin, patch2->origin))
 			continue;
 
 		trans = scale * patch2->area / (dist * dist);
@@ -265,8 +259,7 @@ void MakeTransfers (int i) {
 
 		transfers[j] = trans;
 
-		if (trans > 0.f)
-		{
+		if (trans > 0.f) {
 			total += trans;
 			patch->numtransfers++;
 		}
@@ -280,10 +273,9 @@ void MakeTransfers (int i) {
 	// be higher than PI
 	//
 
-	if (patch->numtransfers)
-	{
+	if (patch->numtransfers) {
 		transfer_t	*t;
-		
+
 		if (patch->numtransfers < 0 || patch->numtransfers > MAX_PATCHES)
 			Error ("Weird numtransfers");
 
@@ -298,21 +290,20 @@ void MakeTransfers (int i) {
 		//
 
 		t = patch->transfers;
-//		itotal = 0;
+		//		itotal = 0;
 
-		for (j=0 ; j<num_patches ; j++)
-		{
+		for (j = 0; j < num_patches; j++) {
 			if (transfers[j] <= 0.f)
 				continue;
 
 			itrans = transfers[j] * 0x10000 / total;
-//			itotal += itrans;
+			//			itotal += itrans;
 			t->transfer[0] = itrans;
 			t->patch = j;
 			t++;
 		}
 
-//		qprintf("patch %i transfer sum: %i\n", i, itotal);
+		//		qprintf("patch %i transfer sum: %i\n", i, itotal);
 	}
 
 	// don't bother locking around this, not that important
@@ -328,8 +319,7 @@ FreeTransfers
 void FreeTransfers (void) {
 	int		i;
 
-	for (i=0 ; i<num_patches ; i++)
-	{
+	for (i = 0; i < num_patches; i++) {
 		free (patches[i].transfers);
 		patches[i].transfers = NULL;
 	}
@@ -354,12 +344,10 @@ void WriteWorld (char *name) {
 	if (!out)
 		Error ("Couldn't open %s", name);
 
-	for (j=0, patch=patches ; j<num_patches ; j++, patch++)
-	{
+	for (j = 0, patch = patches; j < num_patches; j++, patch++) {
 		w = patch->winding;
 		fprintf (out, "%i\n", w->numpoints);
-		for (i=0 ; i<w->numpoints ; i++)
-		{
+		for (i = 0; i < w->numpoints; i++) {
 			if (qrad_xplm) {
 				fprintf (out, "%5.2f %5.2f %5.2f: %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f\n",
 					w->p[i][0],
@@ -412,13 +400,11 @@ void WriteGlView (void) {
 	if (!f)
 		Error ("Couldn't open %s", f);
 
-	for (j=0 ; j<num_patches ; j++)
-	{
+	for (j = 0; j < num_patches; j++) {
 		p = &patches[j];
 		w = p->winding;
 		fprintf (f, "%i\n", w->numpoints);
-		for (i=0 ; i<w->numpoints ; i++)
-		{
+		for (i = 0; i < w->numpoints; i++) {
 			if (qrad_xplm) {
 				fprintf (f, "%5.2f %5.2f %5.2f: %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f, %5.3f %5.3f %5.3f\n",
 					w->p[i][0],
@@ -463,7 +449,7 @@ float CollectLight (void) {
 	patch_t	*patch;
 	float f, total = 0.f;
 
-	for (i=0, patch=patches ; i<num_patches ; i++, patch++) {
+	for (i = 0, patch = patches; i < num_patches; i++, patch++) {
 		// clear outgoing light
 		VectorClear (radiosity[i]);
 
@@ -476,7 +462,7 @@ float CollectLight (void) {
 		}
 
 		for (k = 0; k < qrad_numBasisVecs; k++) {
-			for (j=0 ; j<3 ; j++) {
+			for (j = 0; j < 3; j++) {
 				// receive incoming light
 				patch->totallight[k][j] += illumination[i][k][j] / patch->area;
 
@@ -522,13 +508,13 @@ void ShootLight (int patchnum) {
 	// transfer values gives a proper output value
 	//
 
-	for (l=0 ; l<3 ; l++)
+	for (l = 0; l < 3; l++)
 		send[l] = radiosity[patchnum][l] / 0x10000;
 
-	for (k=0, trans=patch->transfers; k<patch->numtransfers ; k++, trans++)
-		for (i=0 ; i<qrad_numBasisVecs ; i++)
-			for (l=0 ; l<3 ; l++)
-				illumination[trans->patch][i][l] += send[l] * trans->transfer[i];
+	for (k = 0, trans = patch->transfers; k < patch->numtransfers; k++, trans++)
+	for (i = 0; i < qrad_numBasisVecs; i++)
+	for (l = 0; l < 3; l++)
+		illumination[trans->patch][i][l] += send[l] * trans->transfer[i];
 }
 
 /*
@@ -544,18 +530,18 @@ void BounceLight (void) {
 	patch_t	*p;
 	float initial = 0.f;
 
-	for (i=0, p = patches ; i<num_patches ; i++, p++)
-		for (j=0 ; j<3 ; j++) {
-			radiosity[i][j] = p->samplelight[j] * p->reflectivity[j] * p->area;
-			initial += radiosity[i][j];
-		}
+	for (i = 0, p = patches; i < num_patches; i++, p++)
+	for (j = 0; j < 3; j++) {
+		radiosity[i][j] = p->samplelight[j] * p->reflectivity[j] * p->area;
+		initial += radiosity[i][j];
+	}
 
 	qprintf ("initial: %.2f\n", initial);
 
-	for (i=0 ; i<numbounce ; i++) {
+	for (i = 0; i < numbounce; i++) {
 		RunThreadsOnIndividual (num_patches, false, ShootLight);
 
-		f = CollectLight();
+		f = CollectLight ();
 
 		qprintf ("bounce: %i added: %.2f\n", i, f);
 
@@ -578,7 +564,7 @@ void CheckPatches (void) {
 	int		i, k;
 	patch_t	*patch;
 
-	for (i=0, patch = patches ; i<num_patches ; i++, patch++) {
+	for (i = 0, patch = patches; i < num_patches; i++, patch++) {
 		for (k = 0; k < qrad_numBasisVecs; k++) {
 			if (patch->totallight[k][0] < 0 || patch->totallight[k][1] < 0 || patch->totallight[k][2] < 0)
 				Error ("CheckPatches(): negative patch %i totallight.\n", i);
@@ -612,16 +598,15 @@ void RadWorld (void) {
 	// build initial facelights
 	RunThreadsOnIndividual (numfaces, true, BuildFacelights);
 
-	if (numbounce > 0)
-	{
+	if (numbounce > 0) {
 		// build transfer lists
 		RunThreadsOnIndividual (num_patches, true, MakeTransfers);
 
-		qprintf ("transfer lists: %i total, %5.2f MB\n", total_transfer, (float)total_transfer * sizeof(transfer_t) / (1024*1024));
+		qprintf ("transfer lists: %i total, %5.2f MB\n", total_transfer, (float)total_transfer * sizeof(transfer_t) / (1024 * 1024));
 
 		// spread light around
 		BounceLight ();
-		
+
 		FreeTransfers ();
 
 		CheckPatches ();
@@ -645,18 +630,18 @@ AddLightmapScaleKey
 
 ===============
 */
-static void AddLightmapScaleKey(void) {
+static void AddLightmapScaleKey (void) {
 	epair_t	*w, *e, *last;
 	char	s[256];
 
 	// convert value into string
-	sprintf(s, "%d", lightmap_scale);
+	sprintf (s, "%d", lightmap_scale);
 
 	// search for it in entity string, moving to the end of the list
 	for (w = entities->epairs; w; w = w->next) {
-		if (!stricmp(w->key, "lightmap_scale")) {
+		if (!stricmp (w->key, "lightmap_scale")) {
 			// found it already there, give it a new value and bye-bye
-			w->value = copystring(s);
+			w->value = copystring (s);
 			return;
 		}
 
@@ -665,26 +650,26 @@ static void AddLightmapScaleKey(void) {
 	}
 
 	// create a new key and link it into the chain
-	e = malloc(sizeof(epair_t));
-	memset(e, 0, sizeof(epair_t));
+	e = malloc (sizeof(epair_t));
+	memset (e, 0, sizeof(epair_t));
 	e->key = "lightmap_scale";
-	e->value = copystring(s);
+	e->value = copystring (s);
 
 	last->next = e;
 }
 
-static void AddDeluxeKey(void) {
+static void AddDeluxeKey (void) {
 	epair_t	*w, *e, *last;
 	char	s[256];
 
 	// convert value into string
-	sprintf(s, "%d", 1);
+	sprintf (s, "%d", 1);
 
 	// search for it in entity string, moving to the end of the list
 	for (w = entities->epairs; w; w = w->next) {
-		if (!stricmp(w->key, "deluxe")) {
+		if (!stricmp (w->key, "deluxe")) {
 			// found it already there, give it a new value and bye-bye
-			w->value = copystring(s);
+			w->value = copystring (s);
 			return;
 		}
 
@@ -693,10 +678,10 @@ static void AddDeluxeKey(void) {
 	}
 
 	// create a new key and link it into the chain
-	e = malloc(sizeof(epair_t));
-	memset(e, 0, sizeof(epair_t));
+	e = malloc (sizeof(epair_t));
+	memset (e, 0, sizeof(epair_t));
 	e->key = "deluxe";
-	e->value = copystring(s);
+	e->value = copystring (s);
 
 	last->next = e;
 }
@@ -718,108 +703,93 @@ int main (int argc, char **argv) {
 
 	verbose = false;
 
-	for (i=1 ; i<argc ; i++)
-	{
-		if (!strcmp(argv[i],"-dump"))
+	for (i = 1; i < argc; i++) {
+		if (!strcmp (argv[i], "-dump"))
 			dumppatches = true;
-		else if (!strcmp(argv[i],"-bounce"))
-		{
-			numbounce = atoi (argv[i+1]);
-			numbounce = Q_clamp(numbounce, 0, 20);
+		else if (!strcmp (argv[i], "-bounce")) {
+			numbounce = atoi (argv[i + 1]);
+			numbounce = Q_clamp (numbounce, 0, 20);
 			i++;
 
 		}
-		else if (!strcmp(argv[i],"-v"))
-		{
+		else if (!strcmp (argv[i], "-v")) {
 			verbose = true;
 		}
-		else if (!strcmp(argv[i],"-samples") || !strcmp(argv[i],"-extra"))
-		{
+		else if (!strcmp (argv[i], "-samples") || !strcmp (argv[i], "-extra")) {
 			extrasamples = true;
-			extrasamplesvalue = atoi (argv[i+1]);
-			extrasamplesvalue = Q_clamp(extrasamplesvalue, 1, MAX_SAMPLES);
+			extrasamplesvalue = atoi (argv[i + 1]);
+			extrasamplesvalue = Q_clamp (extrasamplesvalue, 1, MAX_SAMPLES);
 
 			i++;
 
 			printf ("using %i samples\n", extrasamplesvalue);
 		}
-		else if (!strcmp(argv[i],"-threads"))
-		{
-			numthreads = atoi (argv[i+1]);
-			numthreads = Q_clamp(numthreads, 1, 32);
+		else if (!strcmp (argv[i], "-threads")) {
+			numthreads = atoi (argv[i + 1]);
+			numthreads = Q_clamp (numthreads, 1, 32);
 			i++;
 		}
-		
-		else if (!strcmp(argv[i],"-chop"))
-		{
-			subdiv = atoi (argv[i+1]);
-			subdiv = Q_clamp(subdiv, 32, 256);
+
+		else if (!strcmp (argv[i], "-chop")) {
+			subdiv = atoi (argv[i + 1]);
+			subdiv = Q_clamp (subdiv, 32, 256);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-lightscale") || !strcmp(argv[i],"-scale"))
-		{
-			lightscale = atof (argv[i+1]);
-			lightscale = max(0.f, lightscale);
+		else if (!strcmp (argv[i], "-lightscale") || !strcmp (argv[i], "-scale")) {
+			lightscale = atof (argv[i + 1]);
+			lightscale = max (0.f, lightscale);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-directscale") || !strcmp(argv[i],"-direct"))
-		{
-			f = atof(argv[i+1]);
-			direct_scale *= max(0.f, f);
+		else if (!strcmp (argv[i], "-directscale") || !strcmp (argv[i], "-direct")) {
+			f = atof (argv[i + 1]);
+			direct_scale *= max (0.f, f);
 			printf ("direct light scaling at %f\n", direct_scale);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-entityscale") || !strcmp(argv[i],"-entity"))
-		{
-			f = atof(argv[i+1]);
-			entity_scale *= max(0.f, f);
+		else if (!strcmp (argv[i], "-entityscale") || !strcmp (argv[i], "-entity")) {
+			f = atof (argv[i + 1]);
+			entity_scale *= max (0.f, f);
 			printf ("entity light scaling at %f\n", entity_scale);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-glview"))
-		{
+		else if (!strcmp (argv[i], "-glview")) {
 			glview = true;
 			printf ("glview = true\n");
 		}
-		else if (!strcmp(argv[i],"-nopvs"))
-		{
+		else if (!strcmp (argv[i], "-nopvs")) {
 			nopvs = true;
 			printf ("nopvs = true\n");
 		}
-		else if (!strcmp(argv[i],"-ambient"))
-		{
-			ambient = atof (argv[i+1]);
-			ambient = Q_clamp(ambient, 0.f, 1.f);
+		else if (!strcmp (argv[i], "-ambient")) {
+			ambient = atof (argv[i + 1]);
+			ambient = Q_clamp (ambient, 0.f, 1.f);
 			ambient *= 255.f;
 			i++;
 		}
-		else if (!strcmp(argv[i],"-maxlight"))
-		{
-			maxlight = atof (argv[i+1]);
-			maxlight = Q_clamp(maxlight, 0.f, 1.f);
+		else if (!strcmp (argv[i], "-maxlight")) {
+			maxlight = atof (argv[i + 1]);
+			maxlight = Q_clamp (maxlight, 0.f, 1.f);
 			maxlight *= 255.f;
 			i++;
 		}
-		else if (!strcmp(argv[i],"-lightmap_scale"))
-		{
-			lightmap_scale = atoi(argv[i+1]);
-			lightmap_scale = Q_clamp(lightmap_scale, 4, 128);
+		else if (!strcmp (argv[i], "-lightmap_scale")) {
+			lightmap_scale = atoi (argv[i + 1]);
+			lightmap_scale = Q_clamp (lightmap_scale, 4, 128);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-deluxe"))
+		else if (!strcmp (argv[i], "-deluxe"))
 			deluxeMapping = true;
-		else if (!strcmp (argv[i],"-tmpin"))
+		else if (!strcmp (argv[i], "-tmpin"))
 			strcpy (inbase, "/tmp");
-		else if (!strcmp (argv[i],"-tmpout"))
+		else if (!strcmp (argv[i], "-tmpout"))
 			strcpy (outbase, "/tmp");
-		else if (!strcmp(argv[i], "-xplit"))
+		else if (!strcmp (argv[i], "-xplit"))
 			qrad_xplit = true;
-		else if (!strcmp(argv[i], "-xplm"))
+		else if (!strcmp (argv[i], "-xplm"))
 			qrad_xplm = true;
-		else if (!strcmp(argv[i],"-xpdlmode"))
-		{
-			qrad_dlMode = atoi (argv[i+1]);
-			qrad_dlMode = Q_clamp(qrad_dlMode, 0, 4);
+		else if (!strcmp (argv[i], "-xpdlmode")) {
+			qrad_dlMode = atoi (argv[i + 1]);
+			qrad_dlMode = Q_clamp (qrad_dlMode, 0, 4);
 			i++;
 		}
 		else
@@ -888,8 +858,8 @@ int main (int argc, char **argv) {
 
 	start = I_FloatTime ();
 
-	SetQdirFromPath (argv[i]);	
-	strcpy (source, ExpandArg(argv[i]));
+	SetQdirFromPath (argv[i]);
+	strcpy (source, ExpandArg (argv[i]));
 	StripExtension (source);
 	DefaultExtension (source, ".bsp");
 	sprintf (name, "%s%s", inbase, source);
@@ -928,12 +898,12 @@ int main (int argc, char **argv) {
 		// Q2XP126 SH lightmaps
 		//
 
-		XP_RadWorld();
+		XP_RadWorld ();
 
-		StripExtension(source);
-		DefaultExtension(source, ".xplm");
-		sprintf(name, "%s%s", outbase, source);
-		printf("writing %s\n", name);
+		StripExtension (source);
+		DefaultExtension (source, ".xplm");
+		sprintf (name, "%s%s", outbase, source);
+		printf ("writing %s\n", name);
 
 		XP_WriteXPLM (name);
 	}
@@ -942,20 +912,20 @@ int main (int argc, char **argv) {
 		// normal Q2 lightmaps
 		//
 
-		RadWorld();
+		RadWorld ();
 
 		// add 'lightmap_scale' key to worldspawn
-		AddLightmapScaleKey();
+		AddLightmapScaleKey ();
 
 		// add deluxe key to worldspawn
-		if(deluxeMapping)
-			AddDeluxeKey();
+		if (deluxeMapping)
+			AddDeluxeKey ();
 
 		// write new entity string
-		UnparseEntities();
+		UnparseEntities ();
 
-		sprintf(name, "%s%s", outbase, source);
-		printf("writing %s\n", name);
+		sprintf (name, "%s%s", outbase, source);
+		printf ("writing %s\n", name);
 
 		WriteBSPFile (name);
 	}
@@ -963,6 +933,6 @@ int main (int argc, char **argv) {
 	end = I_FloatTime ();
 
 	printf ("%5.0f seconds elapsed\n", end - start);
-	
+
 	return 0;
 }

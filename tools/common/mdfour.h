@@ -20,10 +20,10 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to:
 
-		Free Software Foundation, Inc.
-		59 Temple Place - Suite 330
-		Boston, MA  02111-1307, USA
-*/
+	Free Software Foundation, Inc.
+	59 Temple Place - Suite 330
+	Boston, MA  02111-1307, USA
+	*/
 
 #ifndef _MDFOUR_H
 #define _MDFOUR_H
@@ -45,10 +45,10 @@ struct mdfour {
 	uint32 totalN;
 };
 
-void mdfour_begin(struct mdfour *md); // old: MD4Init
-void mdfour_update(struct mdfour *md, unsigned char *in, int n); //old: MD4Update
-void mdfour_result(struct mdfour *md, unsigned char *out); // old: MD4Final
-void mdfour(unsigned char *out, unsigned char *in, int n);
+void mdfour_begin (struct mdfour *md); // old: MD4Init
+void mdfour_update (struct mdfour *md, unsigned char *in, int n); //old: MD4Update
+void mdfour_result (struct mdfour *md, unsigned char *out); // old: MD4Final
+void mdfour (unsigned char *out, unsigned char *in, int n);
 
 #endif	// _MDFOUR_H
 

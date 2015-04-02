@@ -32,9 +32,9 @@ void WritePCXfile (char *filename, byte *data, int width, int height
 
 // loads / saves either lbm or pcx, depending on extension
 void Load256Image (char *name, byte **pixels, byte **palette,
-				   int *width, int *height);
+	int *width, int *height);
 void Save256Image (char *name, byte *pixels, byte *palette,
-				   int width, int height);
+	int width, int height);
 
 
 void LoadTGA (char *filename, byte **pixels, int *width, int *height);

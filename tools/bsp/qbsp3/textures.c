@@ -28,25 +28,22 @@ textureref_t	textureref[MAX_MAP_TEXTURES];
 //==========================================================================
 
 
-int	FindMiptex (char *name)
-{
+int	FindMiptex (char *name) {
 	int		i;
 	char	path[1024];
 	miptex_t	*mt;
 
-	for (i=0 ; i<nummiptex ; i++)
-		if (!strcmp (name, textureref[i].name))
-		{
-			return i;
-		}
+	for (i = 0; i < nummiptex; i++)
+	if (!strcmp (name, textureref[i].name)) {
+		return i;
+	}
 	if (nummiptex == MAX_MAP_TEXTURES)
 		Error ("MAX_MAP_TEXTURES");
 	strcpy (textureref[i].name, name);
 
 	// load the miptex to get the flags and values
 	sprintf (path, "%stextures/%s.wal", gamedir, name);
-	if (TryLoadFile (path, (void **)&mt) != -1)
-	{
+	if (TryLoadFile (path, (void **)&mt) != -1) {
 		textureref[i].value = LittleLong (mt->value);
 		textureref[i].flags = LittleLong (mt->flags);
 		textureref[i].contents = LittleLong (mt->contents);
@@ -69,42 +66,38 @@ textureAxisFromPlane
 */
 vec3_t	baseaxis[18] =
 {
-{0,0,1}, {1,0,0}, {0,-1,0},			// floor
-{0,0,-1}, {1,0,0}, {0,-1,0},		// ceiling
-{1,0,0}, {0,1,0}, {0,0,-1},			// west wall
-{-1,0,0}, {0,1,0}, {0,0,-1},		// east wall
-{0,1,0}, {1,0,0}, {0,0,-1},			// south wall
-{0,-1,0}, {1,0,0}, {0,0,-1}			// north wall
+	{ 0, 0, 1 }, { 1, 0, 0 }, { 0, -1, 0 },			// floor
+	{ 0, 0, -1 }, { 1, 0, 0 }, { 0, -1, 0 },		// ceiling
+	{ 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, -1 },			// west wall
+	{ -1, 0, 0 }, { 0, 1, 0 }, { 0, 0, -1 },		// east wall
+	{ 0, 1, 0 }, { 1, 0, 0 }, { 0, 0, -1 },			// south wall
+	{ 0, -1, 0 }, { 1, 0, 0 }, { 0, 0, -1 }			// north wall
 };
 
-void TextureAxisFromPlane(plane_t *pln, vec3_t xv, vec3_t yv)
-{
+void TextureAxisFromPlane (plane_t *pln, vec3_t xv, vec3_t yv) {
 	int		bestaxis;
-	vec_t	dot,best;
+	vec_t	dot, best;
 	int		i;
-	
+
 	best = 0;
 	bestaxis = 0;
-	
-	for (i=0 ; i<6 ; i++)
-	{
-		dot = DotProduct (pln->normal, baseaxis[i*3]);
-		if (dot > best)
-		{
+
+	for (i = 0; i<6; i++) {
+		dot = DotProduct (pln->normal, baseaxis[i * 3]);
+		if (dot > best) {
 			best = dot;
 			bestaxis = i;
 		}
 	}
-	
-	VectorCopy (baseaxis[bestaxis*3+1], xv);
-	VectorCopy (baseaxis[bestaxis*3+2], yv);
+
+	VectorCopy (baseaxis[bestaxis * 3 + 1], xv);
+	VectorCopy (baseaxis[bestaxis * 3 + 2], yv);
 }
 
 
 
 
-int TexinfoForBrushTexture (plane_t *plane, brush_texture_t *bt, vec3_t origin)
-{
+int TexinfoForBrushTexture (plane_t *plane, brush_texture_t *bt, vec3_t origin) {
 	vec3_t	vecs[2];
 	int		sv, tv;
 	vec_t	ang, sinv, cosv;
@@ -121,7 +114,7 @@ int TexinfoForBrushTexture (plane_t *plane, brush_texture_t *bt, vec3_t origin)
 	memset (&tx, 0, sizeof(tx));
 	strcpy (tx.texture, bt->name);
 
-	TextureAxisFromPlane(plane, vecs[0], vecs[1]);
+	TextureAxisFromPlane (plane, vecs[0], vecs[1]);
 
 	shift[0] = DotProduct (origin, vecs[0]);
 	shift[1] = DotProduct (origin, vecs[1]);
@@ -132,9 +125,9 @@ int TexinfoForBrushTexture (plane_t *plane, brush_texture_t *bt, vec3_t origin)
 		bt->scale[1] = 1;
 
 
-// rotate axis
-	if (bt->rotate == 0)
-		{ sinv = 0 ; cosv = 1; }
+	// rotate axis
+	if (bt->rotate == 0)                                                                                       {
+ sinv = 0 ; cosv = 1; }
 	else if (bt->rotate == 90)
 		{ sinv = 1 ; cosv = 0; }
 	else if (bt->rotate == 180)

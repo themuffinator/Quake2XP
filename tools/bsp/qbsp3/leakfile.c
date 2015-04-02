@@ -41,8 +41,7 @@ that leads from the outside leaf to a specifically
 occupied leaf
 =============
 */
-void LeakFile (tree_t *tree)
-{
+void LeakFile (tree_t *tree) {
 	vec3_t	mid;
 	FILE	*linefile;
 	char	filename[1024];
@@ -64,8 +63,7 @@ void LeakFile (tree_t *tree)
 
 	count = 0;
 	node = &tree->outside_node;
-	while (node->occupied > 1)
-	{
+	while (node->occupied > 1) {
 		int			next;
 		portal_t	*p, *nextportal;
 		node_t		*nextnode;
@@ -73,12 +71,10 @@ void LeakFile (tree_t *tree)
 
 		// find the best portal exit
 		next = node->occupied;
-		for (p=node->portals ; p ; p = p->next[!s])
-		{
+		for (p = node->portals; p; p = p->next[!s]) {
 			s = (p->nodes[0] == node);
 			if (p->nodes[s]->occupied
-				&& p->nodes[s]->occupied < next)
-			{
+				&& p->nodes[s]->occupied < next) {
 				nextportal = p;
 				nextnode = p->nodes[s];
 				next = nextnode->occupied;
@@ -93,7 +89,7 @@ void LeakFile (tree_t *tree)
 	GetVectorForKey (node->occupant, "origin", mid);
 
 	fprintf (linefile, "%f %f %f\n", mid[0], mid[1], mid[2]);
-	qprintf ("%5i point linefile\n", count+1);
+	qprintf ("%5i point linefile\n", count + 1);
 
 	fclose (linefile);
 }

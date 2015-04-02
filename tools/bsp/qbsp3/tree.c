@@ -25,13 +25,11 @@ extern	int	c_nodes;
 
 void RemovePortalFromNode (portal_t *portal, node_t *l);
 
-node_t *NodeForPoint (node_t *node, vec3_t origin)
-{
+node_t *NodeForPoint (node_t *node, vec3_t origin) {
 	plane_t	*plane;
 	vec_t	d;
 
-	while (node->planenum != PLANENUM_LEAF)
-	{
+	while (node->planenum != PLANENUM_LEAF) {
 		plane = &mapplanes[node->planenum];
 		d = DotProduct (origin, plane->normal) - plane->dist;
 		if (d >= 0)
@@ -50,21 +48,18 @@ node_t *NodeForPoint (node_t *node, vec3_t origin)
 FreeTreePortals_r
 =============
 */
-void FreeTreePortals_r (node_t *node)
-{
+void FreeTreePortals_r (node_t *node) {
 	portal_t	*p, *nextp;
 	int			s;
 
 	// free children
-	if (node->planenum != PLANENUM_LEAF)
-	{
+	if (node->planenum != PLANENUM_LEAF) {
 		FreeTreePortals_r (node->children[0]);
 		FreeTreePortals_r (node->children[1]);
 	}
 
 	// free portals
-	for (p=node->portals ; p ; p=nextp)
-	{
+	for (p = node->portals; p; p = nextp) {
 		s = (p->nodes[1] == node);
 		nextp = p->next[s];
 
@@ -79,13 +74,11 @@ void FreeTreePortals_r (node_t *node)
 FreeTree_r
 =============
 */
-void FreeTree_r (node_t *node)
-{
+void FreeTree_r (node_t *node) {
 	face_t		*f, *nextf;
 
 	// free children
-	if (node->planenum != PLANENUM_LEAF)
-	{
+	if (node->planenum != PLANENUM_LEAF) {
 		FreeTree_r (node->children[0]);
 		FreeTree_r (node->children[1]);
 	}
@@ -94,8 +87,7 @@ void FreeTree_r (node_t *node)
 	FreeBrushList (node->brushlist);
 
 	// free faces
-	for (f=node->faces ; f ; f=nextf)
-	{
+	for (f = node->faces; f; f = nextf) {
 		nextf = f->next;
 		FreeFace (f);
 	}
@@ -115,8 +107,7 @@ void FreeTree_r (node_t *node)
 FreeTree
 =============
 */
-void FreeTree (tree_t *tree)
-{
+void FreeTree (tree_t *tree) {
 	FreeTreePortals_r (tree->headnode);
 	FreeTree_r (tree->headnode);
 	free (tree);
@@ -124,21 +115,18 @@ void FreeTree (tree_t *tree)
 
 //===============================================================
 
-void PrintTree_r (node_t *node, int depth)
-{
+void PrintTree_r (node_t *node, int depth) {
 	int		i;
 	plane_t	*plane;
 	bspbrush_t	*bb;
 
-	for (i=0 ; i<depth ; i++)
+	for (i = 0; i < depth; i++)
 		printf ("  ");
-	if (node->planenum == PLANENUM_LEAF)
-	{
+	if (node->planenum == PLANENUM_LEAF) {
 		if (!node->brushlist)
 			printf ("NULL\n");
-		else
-		{
-			for (bb=node->brushlist ; bb ; bb=bb->next)
+		else {
+			for (bb = node->brushlist; bb; bb = bb->next)
 				printf ("%i ", bb->original->brushnum);
 			printf ("\n");
 		}
@@ -149,8 +137,8 @@ void PrintTree_r (node_t *node, int depth)
 	printf ("#%i (%5.2f %5.2f %5.2f):%5.2f\n", node->planenum,
 		plane->normal[0], plane->normal[1], plane->normal[2],
 		plane->dist);
-	PrintTree_r (node->children[0], depth+1);
-	PrintTree_r (node->children[1], depth+1);
+	PrintTree_r (node->children[0], depth + 1);
+	PrintTree_r (node->children[1], depth + 1);
 }
 
 /*
@@ -168,8 +156,7 @@ int	c_pruned;
 PruneNodes_r
 ============
 */
-void PruneNodes_r (node_t *node)
-{
+void PruneNodes_r (node_t *node) {
 	bspbrush_t		*b, *next;
 
 	if (node->planenum == PLANENUM_LEAF)
@@ -177,9 +164,8 @@ void PruneNodes_r (node_t *node)
 	PruneNodes_r (node->children[0]);
 	PruneNodes_r (node->children[1]);
 
-	if ( (node->children[0]->contents & CONTENTS_SOLID)
-	&& (node->children[1]->contents & CONTENTS_SOLID) )
-	{
+	if ((node->children[0]->contents & CONTENTS_SOLID)
+		&& (node->children[1]->contents & CONTENTS_SOLID)) {
 		if (node->faces)
 			Error ("node->faces seperating CONTENTS_SOLID");
 		if (node->children[0]->faces || node->children[1]->faces)
@@ -196,8 +182,7 @@ void PruneNodes_r (node_t *node)
 		// combine brush lists
 		node->brushlist = node->children[1]->brushlist;
 
-		for (b=node->children[0]->brushlist ; b ; b=next)
-		{
+		for (b = node->children[0]->brushlist; b; b = next) {
 			next = b->next;
 			b->next = node->brushlist;
 			node->brushlist = b;
@@ -208,8 +193,7 @@ void PruneNodes_r (node_t *node)
 }
 
 
-void PruneNodes (node_t *node)
-{
+void PruneNodes (node_t *node) {
 	qprintf ("--- PruneNodes ---\n");
 	c_pruned = 0;
 	PruneNodes_r (node);

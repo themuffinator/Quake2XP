@@ -34,16 +34,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	TEXINFO_NODE		-1		// side is allready on a node
 
-typedef struct plane_s
-{
+typedef struct plane_s {
 	vec3_t	normal;
 	vec_t	dist;
 	int		type;
 	struct plane_s	*hash_chain;
 } plane_t;
 
-typedef struct
-{
+typedef struct {
 	vec_t	shift[2];
 	vec_t	rotate;
 	vec_t	scale[2];
@@ -52,8 +50,7 @@ typedef struct
 	int		value;
 } brush_texture_t;
 
-typedef struct side_s
-{
+typedef struct side_s {
 	int			planenum;
 	int			texinfo;
 	winding_t	*winding;
@@ -65,8 +62,7 @@ typedef struct side_s
 	qboolean	bevel;			// don't ever use for bsp splitting
 } side_t;
 
-typedef struct brush_s
-{
+typedef struct brush_s {
 	int		entitynum;
 	int		brushnum;
 
@@ -82,8 +78,7 @@ typedef struct brush_s
 
 #define	MAXEDGES		20
 
-typedef struct face_s
-{
+typedef struct face_s {
 	struct face_s	*next;		// on node
 
 	// the chain of faces off of a node can be merged or split,
@@ -105,8 +100,7 @@ typedef struct face_s
 
 
 
-typedef struct bspbrush_s
-{
+typedef struct bspbrush_s {
 	struct bspbrush_s	*next;
 	vec3_t	mins, maxs;
 	int		side, testside;		// side of node during construction
@@ -118,8 +112,7 @@ typedef struct bspbrush_s
 
 
 #define	MAX_NODE_BRUSHES	8
-typedef struct node_s
-{
+typedef struct node_s {
 	// both leafs and nodes
 	int				planenum;	// -1 = leaf node
 	struct node_s	*parent;
@@ -142,8 +135,7 @@ typedef struct node_s
 	struct portal_s	*portals;	// also on nodes during construction
 } node_t;
 
-typedef struct portal_s
-{
+typedef struct portal_s {
 	plane_t		plane;
 	node_t		*onnode;		// NULL = outside box
 	node_t		*nodes[2];		// [0] = front side of plane
@@ -155,8 +147,7 @@ typedef struct portal_s
 	face_t		*face[2];		// output face in bsp file
 } portal_t;
 
-typedef struct
-{
+typedef struct {
 	node_t		*headnode;
 	node_t		outside_node;
 	vec3_t		mins, maxs;
@@ -200,8 +191,7 @@ int		FindFloatPlane (vec3_t normal, vec_t dist);
 
 // textures.c
 
-typedef struct
-{
+typedef struct {
 	char	name[64];
 	int		flags;
 	int		value;
@@ -247,7 +237,7 @@ void GLS_EndScene (void);
 // csg
 
 bspbrush_t *MakeBspBrushList (int startbrush, int endbrush,
-		vec3_t clipmins, vec3_t clipmaxs);
+	vec3_t clipmins, vec3_t clipmaxs);
 bspbrush_t *ChopBrushes (bspbrush_t *head);
 bspbrush_t *InitialBrushList (bspbrush_t *list);
 bspbrush_t *OptimizedBrushList (bspbrush_t *list);
@@ -336,7 +326,7 @@ void EndModel (void);
 
 void MakeFaces (node_t *headnode);
 void FixTjuncs (node_t *headnode);
-int GetEdge2 (int v1, int v2,  face_t *f);
+int GetEdge2 (int v1, int v2, face_t *f);
 
 face_t	*AllocFace (void);
 void FreeFace (face_t *f);

@@ -41,8 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // or sum[i=0 to 3](transfer->transfer[i] * xplm_basisVecs[i][2]) values (for XP)
 // for a given patch should equal exactly 0x10000,
 // showing that all radiance reaches other patches
-typedef struct
-{
+typedef struct {
 	unsigned short	patch;
 	unsigned short	transfer[XPLM_NUMVECS];
 } transfer_t;

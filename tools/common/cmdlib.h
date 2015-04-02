@@ -45,7 +45,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef __BYTEBOOL__
 #define __BYTEBOOL__
-typedef enum {false, true} qboolean;
+typedef enum {
+	false, true
+} qboolean;
 typedef unsigned char byte;
 #endif
 
@@ -115,12 +117,12 @@ char *COM_Parse (char **data_p);
 //extern	char		com_token[MAX_TOKEN_CHARS];
 //extern	qboolean	com_eof;
 
-char *copystring(char *s);
+char *copystring (char *s);
 
 
-void CRC_Init(unsigned short *crcvalue);
-void CRC_ProcessByte(unsigned short *crcvalue, byte data);
-unsigned short CRC_Value(unsigned short crcvalue);
+void CRC_Init (unsigned short *crcvalue);
+void CRC_ProcessByte (unsigned short *crcvalue, byte data);
+unsigned short CRC_Value (unsigned short crcvalue);
 
 void	CreatePath (char *path);
 void	QCopyFile (char *from, char *to);
@@ -136,8 +138,7 @@ void ExpandWildcards (int *argc, char ***argv);
 
 
 // for compression routines
-typedef struct
-{
+typedef struct {
 	byte	*data;
 	int		count;
 } cblock_t;

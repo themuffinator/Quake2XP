@@ -42,8 +42,7 @@ typedef struct {
 	float v[3];
 } vector;
 
-typedef struct
-{
+typedef struct {
 	vector n;    /* normal */
 	vector p;    /* point */
 	vector c;    /* color */
@@ -56,18 +55,15 @@ typedef struct {
 } tf_triangle;
 
 
-void ByteSwapTri (tf_triangle *tri)
-{
+void ByteSwapTri (tf_triangle *tri) {
 	int		i;
 
-	for (i=0 ; i<sizeof(tf_triangle)/4 ; i++)
-	{
+	for (i = 0; i < sizeof(tf_triangle) / 4; i++) {
 		((int *)tri)[i] = BigLong (((int *)tri)[i]);
 	}
 }
 
-void LoadTriangleList (char *filename, triangle_t **pptri, int *numtriangles)
-{
+void LoadTriangleList (char *filename, triangle_t **pptri, int *numtriangles) {
 	FILE        *input;
 	float       start;
 	char        name[256], tex[256];
@@ -84,25 +80,24 @@ void LoadTriangleList (char *filename, triangle_t **pptri, int *numtriangles)
 	*((unsigned char *)&exitpattern + 2) = *((unsigned char *)&t + 1);
 	*((unsigned char *)&exitpattern + 3) = *((unsigned char *)&t + 0);
 
-	if ((input = fopen(filename, "rb")) == 0)
+	if ((input = fopen (filename, "rb")) == 0)
 		Error ("reader: could not open file '%s'", filename);
 
 	iLevel = 0;
 
-	fread(&magic, sizeof(int), 1, input);
-	if (BigLong(magic) != MAGIC)
+	fread (&magic, sizeof(int), 1, input);
+	if (BigLong (magic) != MAGIC)
 		Error ("%s is not a Alias object separated triangle file, magic number is wrong.", filename);
 
 	ptri = malloc (MAXTRIANGLES * sizeof(triangle_t));
 
 	*pptri = ptri;
 
-	while (feof(input) == 0) {
-		if (fread(&start,  sizeof(float), 1, input) < 1)
+	while (feof (input) == 0) {
+		if (fread (&start, sizeof(float), 1, input) < 1)
 			break;
-		*(int *)&start = BigLong(*(int *)&start);
-		if (*(int *)&start != exitpattern)
-		{
+		*(int *)&start = BigLong (*(int *)&start);
+		if (*(int *)&start != exitpattern) {
 			if (start == FLOAT_START) {
 				/* Start of an object or group of objects. */
 				i = -1;
@@ -111,26 +106,26 @@ void LoadTriangleList (char *filename, triangle_t **pptri, int *numtriangles)
 					/* a file, but this does allow you to do error checking */
 					/* (which I'm not doing) on a per character basis.      */
 					++i;
-					fread( &(name[i]), sizeof( char ), 1, input);
-				} while( name[i] != '\0' );
+					fread (&(name[i]), sizeof(char), 1, input);
+				} while (name[i] != '\0');
 
-//				indent();
-//				fprintf(stdout,"OBJECT START: %s\n",name);
-				fread( &count, sizeof(int), 1, input);
-				count = BigLong(count);
+				//				indent();
+				//				fprintf(stdout,"OBJECT START: %s\n",name);
+				fread (&count, sizeof(int), 1, input);
+				count = BigLong (count);
 				++iLevel;
 				if (count != 0) {
-//					indent();
-//					fprintf(stdout,"NUMBER OF TRIANGLES: %d\n",count);
+					//					indent();
+					//					fprintf(stdout,"NUMBER OF TRIANGLES: %d\n",count);
 
 					i = -1;
 					do {
 						++i;
-						fread( &(tex[i]), sizeof( char ), 1, input);
-					} while( tex[i] != '\0' );
+						fread (&(tex[i]), sizeof(char), 1, input);
+					} while (tex[i] != '\0');
 
-//					indent();
-//					fprintf(stdout,"  Object texture name: '%s'\n",tex);
+					//					indent();
+					//					fprintf(stdout,"  Object texture name: '%s'\n",tex);
 				}
 
 				/* Else (count == 0) this is the start of a group, and */
@@ -146,29 +141,27 @@ void LoadTriangleList (char *filename, triangle_t **pptri, int *numtriangles)
 				i = -1;
 				do {
 					++i;
-					fread( &(name[i]), sizeof( char ), 1, input);
-				} while( name[i] != '\0' );
+					fread (&(name[i]), sizeof(char), 1, input);
+				} while (name[i] != '\0');
 
-//				indent();
-//				fprintf(stdout,"OBJECT END: %s\n",name);
+				//				indent();
+				//				fprintf(stdout,"OBJECT END: %s\n",name);
 				continue;
 			}
 		}
 
-//
-// read the triangles
-//
+		//
+		// read the triangles
+		//
 		for (i = 0; i < count; ++i) {
 			int		j;
 
-			fread( &tri, sizeof(tf_triangle), 1, input );
+			fread (&tri, sizeof(tf_triangle), 1, input);
 			ByteSwapTri (&tri);
-			for (j=0 ; j<3 ; j++)
-			{
+			for (j = 0; j < 3; j++) {
 				int		k;
 
-				for (k=0 ; k<3 ; k++)
-				{
+				for (k = 0; k < 3; k++) {
 					ptri->verts[j][k] = tri.pt[j].p.v[k];
 				}
 			}

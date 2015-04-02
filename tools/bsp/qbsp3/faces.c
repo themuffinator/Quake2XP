@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   the insides of sky volumes
   meeting planes of different water current volumes
 
-*/
+  */
 
 // undefine for dumb linear searches
 #define	USE_HASHING
@@ -74,8 +74,7 @@ face_t *NewFaceFromFace (face_t *f);
 
 //===========================================================================
 
-typedef struct hashvert_s
-{
+typedef struct hashvert_s {
 	struct hashvert_s	*next;
 	int		num;
 } hashvert_t;
@@ -92,16 +91,15 @@ face_t		*edgefaces[MAX_MAP_EDGES][2];
 //============================================================================
 
 
-unsigned HashVec (vec3_t vec)
-{
+unsigned HashVec (vec3_t vec) {
 	int			x, y;
 
-	x = (4096 + (int)(vec[0]+0.5)) >> 7;
-	y = (4096 + (int)(vec[1]+0.5)) >> 7;
+	x = (4096 + (int)(vec[0] + 0.5)) >> 7;
+	y = (4096 + (int)(vec[1] + 0.5)) >> 7;
 
-	if ( x < 0 || x >= HASH_SIZE || y < 0 || y >= HASH_SIZE )
+	if (x < 0 || x >= HASH_SIZE || y < 0 || y >= HASH_SIZE)
 		Error ("HashVec: point outside valid range");
-	
+
 	return y*HASH_SIZE + x;
 }
 
@@ -113,8 +111,7 @@ GetVertex
 Uses hashing
 =============
 */
-int	GetVertexnum (vec3_t in)
-{
+int	GetVertexnum (vec3_t in) {
 	int			h;
 	int			i;
 	float		*p;
@@ -123,26 +120,24 @@ int	GetVertexnum (vec3_t in)
 
 	c_totalverts++;
 
-	for (i=0 ; i<3 ; i++)
-	{
-		if ( fabs(in[i] - Q_rint(in[i])) < INTEGRAL_EPSILON)
-			vert[i] = Q_rint(in[i]);
+	for (i = 0; i < 3; i++) {
+		if (fabs (in[i] - Q_rint (in[i])) < INTEGRAL_EPSILON)
+			vert[i] = Q_rint (in[i]);
 		else
 			vert[i] = in[i];
 	}
-	
+
 	h = HashVec (vert);
-	
-	for (vnum=hashverts[h] ; vnum ; vnum=vertexchain[vnum])
-	{
+
+	for (vnum = hashverts[h]; vnum; vnum = vertexchain[vnum]) {
 		p = dvertexes[vnum].point;
-		if ( fabs(p[0]-vert[0])<POINT_EPSILON
-		&& fabs(p[1]-vert[1])<POINT_EPSILON
-		&& fabs(p[2]-vert[2])<POINT_EPSILON )
+		if (fabs (p[0] - vert[0]) < POINT_EPSILON
+			&& fabs (p[1] - vert[1]) < POINT_EPSILON
+			&& fabs (p[2] - vert[2]) < POINT_EPSILON)
 			return vnum;
 	}
-	
-// emit a vertex
+
+	// emit a vertex
 	if (numvertexes == MAX_MAP_VERTS)
 		Error ("numvertexes == MAX_MAP_VERTS");
 
@@ -156,8 +151,8 @@ int	GetVertexnum (vec3_t in)
 	c_uniqueverts++;
 
 	numvertexes++;
-		
-	return numvertexes-1;
+
+	return numvertexes - 1;
 }
 #else
 /*
@@ -167,8 +162,7 @@ GetVertexnum
 Dumb linear search
 ==================
 */
-int	GetVertexnum (vec3_t v)
-{
+int	GetVertexnum (vec3_t v) {
 	int			i, j;
 	dvertex_t	*dv;
 	vec_t		d;
@@ -176,21 +170,18 @@ int	GetVertexnum (vec3_t v)
 	c_totalverts++;
 
 	// make really close values exactly integral
-	for (i=0 ; i<3 ; i++)
-	{
-		if ( fabs(v[i] - (int)(v[i]+0.5)) < INTEGRAL_EPSILON )
-			v[i] = (int)(v[i]+0.5);
+	for (i = 0; i < 3; i++) {
+		if (fabs (v[i] - (int)(v[i] + 0.5)) < INTEGRAL_EPSILON)
+			v[i] = (int)(v[i] + 0.5);
 		if (v[i] < -4096 || v[i] > 4096)
 			Error ("GetVertexnum: outside +/- 4096");
 	}
 
 	// search for an existing vertex match
-	for (i=0, dv=dvertexes ; i<numvertexes ; i++, dv++)
-	{
-		for (j=0 ; j<3 ; j++)
-		{
+	for (i = 0, dv = dvertexes; i < numvertexes; i++, dv++) {
+		for (j = 0; j<3; j++) {
 			d = v[j] - dv->point[j];
-			if ( d > POINT_EPSILON || d < -POINT_EPSILON)
+			if (d > POINT_EPSILON || d < -POINT_EPSILON)
 				break;
 		}
 		if (j == 3)
@@ -204,7 +195,7 @@ int	GetVertexnum (vec3_t v)
 	numvertexes++;
 	c_uniqueverts++;
 
-	return numvertexes-1;
+	return numvertexes - 1;
 }
 #endif
 
@@ -224,15 +215,13 @@ superverts[base] will become face->vertexnums[0], and the others
 will be circularly filled in.
 ==================
 */
-void FaceFromSuperverts (node_t *node, face_t *f, int base)
-{
+void FaceFromSuperverts (node_t *node, face_t *f, int base) {
 	face_t	*newf;
 	int		remaining;
 	int		i;
 
 	remaining = numsuperverts;
-	while (remaining > MAXEDGES)
-	{	// must split into two faces, because of vertex overload
+	while (remaining > MAXEDGES) {	// must split into two faces, because of vertex overload
 		c_faceoverflows++;
 
 		newf = f->split[0] = NewFaceFromFace (f);
@@ -241,22 +230,22 @@ void FaceFromSuperverts (node_t *node, face_t *f, int base)
 		node->faces = newf;
 
 		newf->numpoints = MAXEDGES;
-		for (i=0 ; i<MAXEDGES ; i++)
-			newf->vertexnums[i] = superverts[(i+base)%numsuperverts];
+		for (i = 0; i < MAXEDGES; i++)
+			newf->vertexnums[i] = superverts[(i + base) % numsuperverts];
 
 		f->split[1] = NewFaceFromFace (f);
 		f = f->split[1];
 		f->next = node->faces;
 		node->faces = f;
 
-		remaining -= (MAXEDGES-2);
-		base = (base+MAXEDGES-1)%numsuperverts;
+		remaining -= (MAXEDGES - 2);
+		base = (base + MAXEDGES - 1) % numsuperverts;
 	}
 
 	// copy the vertexes back to the face
 	f->numpoints = remaining;
-	for (i=0 ; i<remaining ; i++)
-		f->vertexnums[i] = superverts[(i+base)%numsuperverts];
+	for (i = 0; i < remaining; i++)
+		f->vertexnums[i] = superverts[(i + base) % numsuperverts];
 }
 
 
@@ -265,8 +254,7 @@ void FaceFromSuperverts (node_t *node, face_t *f, int base)
 EmitFaceVertexes
 ==================
 */
-void EmitFaceVertexes (node_t *node, face_t *f)
-{
+void EmitFaceVertexes (node_t *node, face_t *f) {
 	winding_t	*w;
 	int			i;
 
@@ -274,10 +262,8 @@ void EmitFaceVertexes (node_t *node, face_t *f)
 		return;
 
 	w = f->w;
-	for (i=0 ; i<w->numpoints ; i++)
-	{
-		if (noweld)
-		{	// make every point unique
+	for (i = 0; i < w->numpoints; i++) {
+		if (noweld) {	// make every point unique
 			if (numvertexes == MAX_MAP_VERTS)
 				Error ("MAX_MAP_VERTS");
 			superverts[i] = numvertexes;
@@ -300,20 +286,18 @@ void EmitFaceVertexes (node_t *node, face_t *f)
 EmitVertexes_r
 ==================
 */
-void EmitVertexes_r (node_t *node)
-{
+void EmitVertexes_r (node_t *node) {
 	int		i;
 	face_t	*f;
 
 	if (node->planenum == PLANENUM_LEAF)
 		return;
 
-	for (f=node->faces ; f ; f=f->next)
-	{
+	for (f = node->faces; f; f = f->next) {
 		EmitFaceVertexes (node, f);
 	}
 
-	for (i=0 ; i<2 ; i++)
+	for (i = 0; i < 2; i++)
 		EmitVertexes_r (node->children[i]);
 }
 
@@ -326,34 +310,31 @@ FindEdgeVerts
 Uses the hash tables to cut down to a small number
 ==========
 */
-void FindEdgeVerts (vec3_t v1, vec3_t v2)
-{
+void FindEdgeVerts (vec3_t v1, vec3_t v2) {
 	int		x1, x2, y1, y2, t;
 	int		x, y;
 	int		vnum;
 
 #if 0
-{
-	int		i;
-	num_edge_verts = numvertexes-1;
-	for (i=0 ; i<numvertexes-1 ; i++)
-		edge_verts[i] = i+1;
-}
+	{
+		int		i;
+		num_edge_verts = numvertexes - 1;
+		for (i = 0; i<numvertexes - 1; i++)
+			edge_verts[i] = i + 1;
+	}
 #endif
 
-	x1 = (4096 + (int)(v1[0]+0.5)) >> 7;
-	y1 = (4096 + (int)(v1[1]+0.5)) >> 7;
-	x2 = (4096 + (int)(v2[0]+0.5)) >> 7;
-	y2 = (4096 + (int)(v2[1]+0.5)) >> 7;
+	x1 = (4096 + (int)(v1[0] + 0.5)) >> 7;
+	y1 = (4096 + (int)(v1[1] + 0.5)) >> 7;
+	x2 = (4096 + (int)(v2[0] + 0.5)) >> 7;
+	y2 = (4096 + (int)(v2[1] + 0.5)) >> 7;
 
-	if (x1 > x2)
-	{
+	if (x1 > x2) {
 		t = x1;
 		x1 = x2;
 		x2 = t;
 	}
-	if (y1 > y2)
-	{
+	if (y1 > y2) {
 		t = y1;
 		y1 = y2;
 		y2 = t;
@@ -373,12 +354,9 @@ void FindEdgeVerts (vec3_t v1, vec3_t v2)
 		y2 = HASH_SIZE;
 #endif
 	num_edge_verts = 0;
-	for (x=x1 ; x <= x2 ; x++)
-	{
-		for (y=y1 ; y <= y2 ; y++)
-		{
-			for (vnum=hashverts[y*HASH_SIZE+x] ; vnum ; vnum=vertexchain[vnum])
-			{
+	for (x = x1; x <= x2; x++) {
+		for (y = y1; y <= y2; y++) {
+			for (vnum = hashverts[y*HASH_SIZE + x]; vnum; vnum = vertexchain[vnum]) {
 				edge_verts[num_edge_verts++] = vnum;
 			}
 		}
@@ -393,13 +371,12 @@ FindEdgeVerts
 Forced a dumb check of everything
 ==========
 */
-void FindEdgeVerts (vec3_t v1, vec3_t v2)
-{
+void FindEdgeVerts (vec3_t v1, vec3_t v2) {
 	int		i;
 
-	num_edge_verts = numvertexes-1;
-	for (i=0 ; i<num_edge_verts ; i++)
-		edge_verts[i] = i+1;
+	num_edge_verts = numvertexes - 1;
+	for (i = 0; i < num_edge_verts; i++)
+		edge_verts[i] = i + 1;
 }
 #endif
 
@@ -410,8 +387,7 @@ TestEdge
 Can be recursively reentered
 ==========
 */
-void TestEdge (vec_t start, vec_t end, int p1, int p2, int startvert)
-{
+void TestEdge (vec_t start, vec_t end, int p1, int p2, int startvert) {
 	int		j, k;
 	vec_t	dist;
 	vec3_t	delta;
@@ -420,35 +396,33 @@ void TestEdge (vec_t start, vec_t end, int p1, int p2, int startvert)
 	vec_t	error;
 	vec3_t	p;
 
-	if (p1 == p2)
-	{
+	if (p1 == p2) {
 		c_degenerate++;
 		return;		// degenerate edge
 	}
 
-	for (k=startvert ; k<num_edge_verts ; k++)
-	{
+	for (k = startvert; k < num_edge_verts; k++) {
 		j = edge_verts[k];
-		if (j==p1 || j == p2)
+		if (j == p1 || j == p2)
 			continue;
 
 		VectorCopy (dvertexes[j].point, p);
 
 		VectorSubtract (p, edge_start, delta);
 		dist = DotProduct (delta, edge_dir);
-		if (dist <=start || dist >= end)
+		if (dist <= start || dist >= end)
 			continue;		// off an end
 		VectorMA (edge_start, dist, edge_dir, exact);
 		VectorSubtract (p, exact, off);
 		error = VectorLength (off);
 
-		if (fabs(error) > OFF_EPSILON)
+		if (fabs (error) > OFF_EPSILON)
 			continue;		// not on the edge
 
 		// break the edge
 		c_tjunctions++;
-		TestEdge (start, dist, p1, j, k+1);
-		TestEdge (dist, end, j, p2, k+1);
+		TestEdge (start, dist, p1, j, k + 1);
+		TestEdge (dist, end, j, p2, k + 1);
 		return;
 	}
 
@@ -465,8 +439,7 @@ FixFaceEdges
 
 ==================
 */
-void FixFaceEdges (node_t *node, face_t *f)
-{
+void FixFaceEdges (node_t *node, face_t *f) {
 	int		p1, p2;
 	int		i;
 	vec3_t	e2;
@@ -479,10 +452,9 @@ void FixFaceEdges (node_t *node, face_t *f)
 
 	numsuperverts = 0;
 
-	for (i=0 ; i<f->numpoints ; i++)
-	{
+	for (i = 0; i < f->numpoints; i++) {
 		p1 = f->vertexnums[i];
-		p2 = f->vertexnums[(i+1)%f->numpoints];
+		p2 = f->vertexnums[(i + 1) % f->numpoints];
 
 		VectorCopy (dvertexes[p1].point, edge_start);
 		VectorCopy (dvertexes[p2].point, e2);
@@ -498,8 +470,7 @@ void FixFaceEdges (node_t *node, face_t *f)
 		count[i] = numsuperverts - start[i];
 	}
 
-	if (numsuperverts < 3)
-	{	// entire face collapsed
+	if (numsuperverts < 3) {	// entire face collapsed
 		f->numpoints = 0;
 		c_facecollapse++;
 		return;
@@ -508,19 +479,16 @@ void FixFaceEdges (node_t *node, face_t *f)
 	// we want to pick a vertex that doesn't have tjunctions
 	// on either side, which can cause artifacts on trifans,
 	// especially underwater
-	for (i=0 ; i<f->numpoints ; i++)
-	{
-		if (count[i] == 1 && count[(i+f->numpoints-1)%f->numpoints] == 1)
+	for (i = 0; i < f->numpoints; i++) {
+		if (count[i] == 1 && count[(i + f->numpoints - 1) % f->numpoints] == 1)
 			break;
 	}
-	if (i == f->numpoints)
-	{
+	if (i == f->numpoints) {
 		f->badstartvert = true;
 		c_badstartverts++;
 		base = 0;
 	}
-	else
-	{	// rotate the vertex order
+	else {	// rotate the vertex order
 		base = start[i];
 	}
 
@@ -533,18 +501,17 @@ void FixFaceEdges (node_t *node, face_t *f)
 FixEdges_r
 ==================
 */
-void FixEdges_r (node_t *node)
-{
+void FixEdges_r (node_t *node) {
 	int		i;
 	face_t	*f;
 
 	if (node->planenum == PLANENUM_LEAF)
 		return;
 
-	for (f=node->faces ; f ; f=f->next)
+	for (f = node->faces; f; f = f->next)
 		FixFaceEdges (node, f);
 
-	for (i=0 ; i<2 ; i++)
+	for (i = 0; i < 2; i++)
 		FixEdges_r (node->children[i]);
 }
 
@@ -554,8 +521,7 @@ FixTjuncs
 
 ===========
 */
-void FixTjuncs (node_t *headnode)
-{
+void FixTjuncs (node_t *headnode) {
 	// snap and merge all vertexes
 	qprintf ("---- snap verts ----\n");
 	memset (hashverts, 0, sizeof(hashverts));
@@ -585,19 +551,17 @@ void FixTjuncs (node_t *headnode)
 
 int		c_faces;
 
-face_t	*AllocFace (void)
-{
+face_t	*AllocFace (void) {
 	face_t	*f;
 
-	f = malloc(sizeof(*f));
+	f = malloc (sizeof(*f));
 	memset (f, 0, sizeof(*f));
 	c_faces++;
 
 	return f;
 }
 
-face_t *NewFaceFromFace (face_t *f)
-{
+face_t *NewFaceFromFace (face_t *f) {
 	face_t	*newf;
 
 	newf = AllocFace ();
@@ -608,8 +572,7 @@ face_t *NewFaceFromFace (face_t *f)
 	return newf;
 }
 
-void FreeFace (face_t *f)
-{
+void FreeFace (face_t *f) {
 	if (f->w)
 		FreeWinding (f->w);
 	free (f);
@@ -626,47 +589,42 @@ Called by writebsp.
 Don't allow four way edges
 ==================
 */
-int GetEdge2 (int v1, int v2,  face_t *f)
-{
+int GetEdge2 (int v1, int v2, face_t *f) {
 	dedge_t	*edge;
 	int		i;
 
 	c_tryedges++;
 
-	if (!noshare)
-	{
-		for (i=firstmodeledge ; i < numedges ; i++)
-		{
+	if (!noshare) {
+		for (i = firstmodeledge; i < numedges; i++) {
 			edge = &dedges[i];
 			if (v1 == edge->v[1] && v2 == edge->v[0]
-			&& edgefaces[i][0]->contents == f->contents)
-			{
+				&& edgefaces[i][0]->contents == f->contents) {
 				if (edgefaces[i][1])
-	//				printf ("WARNING: multiple backward edge\n");
+					//				printf ("WARNING: multiple backward edge\n");
 					continue;
 				edgefaces[i][1] = f;
 				return -i;
 			}
-	#if 0
-			if (v1 == edge->v[0] && v2 == edge->v[1])
-			{
+#if 0
+			if (v1 == edge->v[0] && v2 == edge->v[1]) {
 				printf ("WARNING: multiple forward edge\n");
 				return i;
 			}
-	#endif
+#endif
 		}
 	}
 
-// emit an edge
+	// emit an edge
 	if (numedges >= MAX_MAP_EDGES)
 		Error ("numedges == MAX_MAP_EDGES");
 	edge = &dedges[numedges];
 	numedges++;
 	edge->v[0] = v1;
 	edge->v[1] = v2;
-	edgefaces[numedges-1][0] = f;
-	
-	return numedges-1;
+	edgefaces[numedges - 1][0] = f;
+
+	return numedges - 1;
 }
 
 /*
@@ -690,44 +648,40 @@ Returns NULL if the faces couldn't be merged, or the new face.
 The originals will NOT be freed.
 =============
 */
-winding_t *TryMergeWinding (winding_t *f1, winding_t *f2, vec3_t planenormal)
-{
+winding_t *TryMergeWinding (winding_t *f1, winding_t *f2, vec3_t planenormal) {
 	vec_t		*p1, *p2, *p3, *p4, *back;
 	winding_t	*newf;
 	int			i, j, k, l;
 	vec3_t		normal, delta;
 	vec_t		dot;
 	qboolean	keep1, keep2;
-	
+
 
 	//
 	// find a common edge
 	//	
 	p1 = p2 = NULL;	// stop compiler warning
 	j = 0;			// 
-	
-	for (i=0 ; i<f1->numpoints ; i++)
-	{
+
+	for (i = 0; i < f1->numpoints; i++) {
 		p1 = f1->p[i];
-		p2 = f1->p[(i+1)%f1->numpoints];
-		for (j=0 ; j<f2->numpoints ; j++)
-		{
+		p2 = f1->p[(i + 1) % f1->numpoints];
+		for (j = 0; j<f2->numpoints; j++) {
 			p3 = f2->p[j];
-			p4 = f2->p[(j+1)%f2->numpoints];
-			for (k=0 ; k<3 ; k++)
-			{
-				if (fabs(p1[k] - p4[k]) > EQUAL_EPSILON)
+			p4 = f2->p[(j + 1) % f2->numpoints];
+			for (k = 0; k<3; k++) {
+				if (fabs (p1[k] - p4[k]) > EQUAL_EPSILON)
 					break;
-				if (fabs(p2[k] - p3[k]) > EQUAL_EPSILON)
+				if (fabs (p2[k] - p3[k]) > EQUAL_EPSILON)
 					break;
 			}
-			if (k==3)
+			if (k == 3)
 				break;
 		}
 		if (j < f2->numpoints)
 			break;
 	}
-	
+
 	if (i == f1->numpoints)
 		return NULL;			// no matching edges
 
@@ -735,24 +689,24 @@ winding_t *TryMergeWinding (winding_t *f1, winding_t *f2, vec3_t planenormal)
 	// check slope of connected lines
 	// if the slopes are colinear, the point can be removed
 	//
-	back = f1->p[(i+f1->numpoints-1)%f1->numpoints];
+	back = f1->p[(i + f1->numpoints - 1) % f1->numpoints];
 	VectorSubtract (p1, back, delta);
 	CrossProduct (planenormal, delta, normal);
 	VectorNormalize (normal, normal);
-	
-	back = f2->p[(j+2)%f2->numpoints];
+
+	back = f2->p[(j + 2) % f2->numpoints];
 	VectorSubtract (back, p1, delta);
 	dot = DotProduct (delta, normal);
 	if (dot > CONTINUOUS_EPSILON)
 		return NULL;			// not a convex polygon
 	keep1 = (qboolean)(dot < -CONTINUOUS_EPSILON);
-	
-	back = f1->p[(i+2)%f1->numpoints];
+
+	back = f1->p[(i + 2) % f1->numpoints];
 	VectorSubtract (back, p2, delta);
 	CrossProduct (planenormal, delta, normal);
 	VectorNormalize (normal, normal);
 
-	back = f2->p[(j+f2->numpoints-1)%f2->numpoints];
+	back = f2->p[(j + f2->numpoints - 1) % f2->numpoints];
 	VectorSubtract (back, p2, delta);
 	dot = DotProduct (delta, normal);
 	if (dot > CONTINUOUS_EPSILON)
@@ -763,21 +717,19 @@ winding_t *TryMergeWinding (winding_t *f1, winding_t *f2, vec3_t planenormal)
 	// build the new polygon
 	//
 	newf = AllocWinding (f1->numpoints + f2->numpoints);
-	
+
 	// copy first polygon
-	for (k=(i+1)%f1->numpoints ; k != i ; k=(k+1)%f1->numpoints)
-	{
-		if (k==(i+1)%f1->numpoints && !keep2)
+	for (k = (i + 1) % f1->numpoints; k != i; k = (k + 1) % f1->numpoints) {
+		if (k == (i + 1) % f1->numpoints && !keep2)
 			continue;
-		
+
 		VectorCopy (f1->p[k], newf->p[newf->numpoints]);
 		newf->numpoints++;
 	}
-	
+
 	// copy second polygon
-	for (l= (j+1)%f2->numpoints ; l != j ; l=(l+1)%f2->numpoints)
-	{
-		if (l==(j+1)%f2->numpoints && !keep1)
+	for (l = (j + 1) % f2->numpoints; l != j; l = (l + 1) % f2->numpoints) {
+		if (l == (j + 1) % f2->numpoints && !keep1)
 			continue;
 		VectorCopy (f2->p[l], newf->p[newf->numpoints]);
 		newf->numpoints++;
@@ -797,8 +749,7 @@ Returns NULL if the faces couldn't be merged, or the new face.
 The originals will NOT be freed.
 =============
 */
-face_t *TryMerge (face_t *f1, face_t *f2, vec3_t planenormal)
-{
+face_t *TryMerge (face_t *f1, face_t *f2, vec3_t planenormal) {
 	face_t		*newf;
 	winding_t	*nw;
 
@@ -810,7 +761,7 @@ face_t *TryMerge (face_t *f1, face_t *f2, vec3_t planenormal)
 		return NULL;
 	if (f1->contents != f2->contents)
 		return NULL;
-		
+
 
 	nw = TryMergeWinding (f1->w, f2->w, planenormal);
 	if (!nw)
@@ -831,21 +782,18 @@ face_t *TryMerge (face_t *f1, face_t *f2, vec3_t planenormal)
 MergeNodeFaces
 ===============
 */
-void MergeNodeFaces (node_t *node)
-{
+void MergeNodeFaces (node_t *node) {
 	face_t	*f1, *f2, *end;
 	face_t	*merged;
 	plane_t	*plane;
 
 	plane = &mapplanes[node->planenum];
 	merged = NULL;
-	
-	for (f1 = node->faces ; f1 ; f1 = f1->next)
-	{
+
+	for (f1 = node->faces; f1; f1 = f1->next) {
 		if (f1->merged || f1->split[0] || f1->split[1])
 			continue;
-		for (f2 = node->faces ; f2 != f1 ; f2=f2->next)
-		{
+		for (f2 = node->faces; f2 != f1; f2 = f2->next) {
 			if (f2->merged || f2->split[0] || f2->split[1])
 				continue;
 			merged = TryMerge (f1, f2, plane->normal);
@@ -854,8 +802,8 @@ void MergeNodeFaces (node_t *node)
 
 			// add merged to the end of the node face list 
 			// so it will be checked against all the faces again
-			for (end = node->faces ; end->next ; end = end->next)
-			;
+			for (end = node->faces; end->next; end = end->next)
+				;
 			merged->next = NULL;
 			end->next = merged;
 			break;
@@ -872,8 +820,7 @@ SubdivideFace
 Chop up faces that are larger than we want in the surface cache
 ===============
 */
-void SubdivideFace (node_t *node, face_t *f)
-{
+void SubdivideFace (node_t *node, face_t *f) {
 	float		mins, maxs;
 	vec_t		v;
 	int			axis, i;
@@ -885,25 +832,21 @@ void SubdivideFace (node_t *node, face_t *f)
 	if (f->merged)
 		return;
 
-// special (non-surface cached) faces don't need subdivision
+	// special (non-surface cached) faces don't need subdivision
 	tex = &texinfo[f->texinfo];
 
-	if ( tex->flags & (SURF_WARP|SURF_SKY) )
-	{
+	if (tex->flags & (SURF_WARP | SURF_SKY)) {
 		return;
 	}
 
-	for (axis = 0 ; axis < 2 ; axis++)
-	{
-		while (1)
-		{
+	for (axis = 0; axis < 2; axis++) {
+		while (1) {
 			mins = 999999;
 			maxs = -999999;
-			
+
 			VectorCopy (tex->vecs[axis], temp);
 			w = f->w;
-			for (i=0 ; i<w->numpoints ; i++)
-			{
+			for (i = 0; i < w->numpoints; i++) {
 				v = DotProduct (w->p[i], temp);
 				if (v < mins)
 					mins = v;
@@ -914,20 +857,19 @@ void SubdivideFace (node_t *node, face_t *f)
 			if (maxs - mins <= 0)
 				Error ("zero extents");
 #endif
-			if (axis == 2)
-			{	// allow double high walls
+			if (axis == 2) {	// allow double high walls
 				if (maxs - mins <= subdivide_size/* *2 */)
 					break;
 			}
 			else if (maxs - mins <= subdivide_size)
 				break;
-			
-		// split it
-			c_subdivide++;
-			
-			v = VectorNormalize (temp, temp);	
 
-			dist = (mins + subdivide_size - 16)/v;
+			// split it
+			c_subdivide++;
+
+			v = VectorNormalize (temp, temp);
+
+			dist = (mins + subdivide_size - 16) / v;
 
 			ClipWindingEpsilon (w, temp, dist, ON_EPSILON, &frontw, &backw);
 			if (!frontw || !backw)
@@ -950,12 +892,10 @@ void SubdivideFace (node_t *node, face_t *f)
 	}
 }
 
-void SubdivideNodeFaces (node_t *node)
-{
+void SubdivideNodeFaces (node_t *node) {
 	face_t	*f;
 
-	for (f = node->faces ; f ; f=f->next)
-	{
+	for (f = node->faces; f; f = f->next) {
 		SubdivideFace (node, f);
 	}
 }
@@ -971,8 +911,7 @@ FaceFromPortal
 
 ============
 */
-face_t *FaceFromPortal (portal_t *p, int pside)
-{
+face_t *FaceFromPortal (portal_t *p, int pside) {
 	face_t	*f;
 	side_t	*side;
 
@@ -986,18 +925,16 @@ face_t *FaceFromPortal (portal_t *p, int pside)
 	f->planenum = (side->planenum & ~1) | pside;
 	f->portal = p;
 
-	if ( (p->nodes[pside]->contents & CONTENTS_WINDOW)
-		&& VisibleContents(p->nodes[!pside]->contents^p->nodes[pside]->contents) == CONTENTS_WINDOW )
+	if ((p->nodes[pside]->contents & CONTENTS_WINDOW)
+		&& VisibleContents (p->nodes[!pside]->contents^p->nodes[pside]->contents) == CONTENTS_WINDOW)
 		return NULL;	// don't show insides of windows
 
-	if (pside)
-	{
-		f->w = ReverseWinding(p->winding);
+	if (pside) {
+		f->w = ReverseWinding (p->winding);
 		f->contents = p->nodes[1]->contents;
 	}
-	else
-	{
-		f->w = CopyWinding(p->winding);
+	else {
+		f->w = CopyWinding (p->winding);
 		f->contents = p->nodes[0]->contents;
 	}
 	return f;
@@ -1011,20 +948,18 @@ MakeFaces_r
 If a portal will make a visible face,
 mark the side that originally created it
 
-  solid / empty : solid
-  solid / water : solid
-  water / empty : water
-  water / water : none
+solid / empty : solid
+solid / water : solid
+water / empty : water
+water / water : none
 ===============
 */
-void MakeFaces_r (node_t *node)
-{
+void MakeFaces_r (node_t *node) {
 	portal_t	*p;
 	int			s;
 
 	// recurse down to leafs
-	if (node->planenum != PLANENUM_LEAF)
-	{
+	if (node->planenum != PLANENUM_LEAF) {
 		MakeFaces_r (node->children[0]);
 		MakeFaces_r (node->children[1]);
 
@@ -1042,13 +977,11 @@ void MakeFaces_r (node_t *node)
 		return;
 
 	// see which portals are valid
-	for (p=node->portals ; p ; p = p->next[s])
-	{
+	for (p = node->portals; p; p = p->next[s]) {
 		s = (p->nodes[1] == node);
 
 		p->face[s] = FaceFromPortal (p, s);
-		if (p->face[s])
-		{
+		if (p->face[s]) {
 			c_nodefaces++;
 			p->face[s]->next = p->onnode->faces;
 			p->onnode->faces = p->face[s];
@@ -1061,8 +994,7 @@ void MakeFaces_r (node_t *node)
 MakeFaces
 ============
 */
-void MakeFaces (node_t *node)
-{
+void MakeFaces (node_t *node) {
 	qprintf ("--- MakeFaces ---\n");
 	c_merge = 0;
 	c_subdivide = 0;

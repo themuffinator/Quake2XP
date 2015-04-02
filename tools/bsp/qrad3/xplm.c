@@ -7,8 +7,8 @@ static xplm_t	xplm;
 // need high precision to lower error on further bounces
 //
 const vec3_t xplm_basisVecs[XPLM_NUMVECS] = {
-	{  0.81649658092772603273242802490196f,  0.f                                , 0.57735026918962576450914878050195f },
-	{ -0.40824829046386301636621401245098f,  0.70710678118654752440084436210485f, 0.57735026918962576450914878050195f },
+	{ 0.81649658092772603273242802490196f, 0.f, 0.57735026918962576450914878050195f },
+	{ -0.40824829046386301636621401245098f, 0.70710678118654752440084436210485f, 0.57735026918962576450914878050195f },
 	{ -0.40824829046386301636621401245098f, -0.70710678118654752440084436210485f, 0.57735026918962576450914878050195f }
 };
 
@@ -34,13 +34,13 @@ static void XP_MakeTransfers (const int patchIndex) {
 	// KRIGS: might want to increase stack reserve size in linker settings
 	float		dots[MAX_PATCHES];
 	float		transfers[MAX_PATCHES][XPLM_NUMVECS];
-	byte		pvs[(MAX_MAP_LEAFS+7)/8];
+	byte		pvs[(MAX_MAP_LEAFS + 7) / 8];
 	int			i, j;
 	vec3_t		delta, deltaTS;
 	float		dist, scale, trans;
 	patch_t		*patch = &patches[patchIndex], *patch2;
 	float		total;
-//	int			itotal;
+	//	int			itotal;
 	int			cluster;
 
 	if (!PvsForOrigin (patch->origin, pvs))
@@ -50,7 +50,7 @@ static void XP_MakeTransfers (const int patchIndex) {
 	total = 0.f;
 	patch->numtransfers = 0;
 
-	for (j=0, patch2 = patches ; j<num_patches ; j++, patch2++) {
+	for (j = 0, patch2 = patches; j < num_patches; j++, patch2++) {
 		dots[j] = 0.f;
 
 		for (i = 0; i < XPLM_NUMVECS; i++)
@@ -70,7 +70,7 @@ static void XP_MakeTransfers (const int patchIndex) {
 		}
 
 		// calculate vector
-		VectorSubtract(patch->origin, patch2->origin, delta);
+		VectorSubtract (patch->origin, patch2->origin, delta);
 
 		dist = VectorNormalize (delta, delta);
 
@@ -78,14 +78,14 @@ static void XP_MakeTransfers (const int patchIndex) {
 			continue;	// should never happen
 
 		// relative angles
-		deltaTS[2] = DotProduct(delta, patch2->plane->normal);
-		scale = deltaTS[2] * -DotProduct(delta, patch->plane->normal);
+		deltaTS[2] = DotProduct (delta, patch2->plane->normal);
+		scale = deltaTS[2] * -DotProduct (delta, patch->plane->normal);
 
 		if (scale <= 0.f)
 			continue;
 
 		// check exact transfer
-		if (TestLine_r(0, patch->origin, patch2->origin))
+		if (TestLine_r (0, patch->origin, patch2->origin))
 			continue;
 
 		scale *= patch2->area / (dist * dist);
@@ -93,11 +93,11 @@ static void XP_MakeTransfers (const int patchIndex) {
 		if (scale > 0.f) {
 			// transform delta into tangent space
 			// FIXME: transform basis into world space outside of the loop instead
-			deltaTS[0] = DotProduct(delta, patch2->tangents[0]);
-			deltaTS[1] = DotProduct(delta, patch2->tangents[1]);
+			deltaTS[0] = DotProduct (delta, patch2->tangents[0]);
+			deltaTS[1] = DotProduct (delta, patch2->tangents[1]);
 
 			for (i = 0; i < XPLM_NUMVECS; i++) {
-				trans = DotProduct(deltaTS, xplm_basisVecs[i]);
+				trans = DotProduct (deltaTS, xplm_basisVecs[i]);
 
 				if (trans > 0.f) {
 					transfers[j][i] = trans * scale;
@@ -121,38 +121,38 @@ static void XP_MakeTransfers (const int patchIndex) {
 
 	if (patch->numtransfers) {
 		transfer_t *t;
-		
+
 		if (patch->numtransfers < 0 || patch->numtransfers > MAX_PATCHES)
 			Error ("XP_MakeTransfers(): weird numtransfers (%i).", patch->numtransfers);
 
-		patch->transfers = malloc(patch->numtransfers * sizeof(transfer_t));
+		patch->transfers = malloc (patch->numtransfers * sizeof(transfer_t));
 
 		if (!patch->transfers)
 			Error ("XP_MakeTransfers(): memory allocation failure.");
 
-//		memset(patch->transfers, 0, patch->numtransfers * sizeof(transfer_t));
+		//		memset(patch->transfers, 0, patch->numtransfers * sizeof(transfer_t));
 
 		//
 		// normalize all transfers so all of the light
 		// is transfered to the surroundings
 		//
 
-//		itotal = 0;
+		//		itotal = 0;
 
-		for (j=0, t = patch->transfers; j<num_patches ; j++) {
+		for (j = 0, t = patch->transfers; j < num_patches; j++) {
 			if (dots[j] <= 0.f)
 				continue;
 
-			for (i=0; i<XPLM_NUMVECS; i++) {
+			for (i = 0; i < XPLM_NUMVECS; i++) {
 				t->transfer[i] = transfers[j][i] * 0x10000 / total;
-//				itotal += t->transfer[i] * xplm_basisVecs[i][2];
+				//				itotal += t->transfer[i] * xplm_basisVecs[i][2];
 			}
 
 			t->patch = j;
 			t++;
 		}
 
-//		qprintf("patch %i transfer sum: %i\n", patchIndex, itotal);
+		//		qprintf("patch %i transfer sum: %i\n", patchIndex, itotal);
 	}
 
 	// don't bother locking around this, not that important
@@ -190,7 +190,7 @@ static void XP_LerpTriangle (triangulation_t *trian, triangle_t *t, vec3_t point
 	x2 = DotProduct (p3->origin, t->edges[0]->normal) - t->edges[0]->dist;
 	y2 = 0.f;
 
-	if (fabsf(y1)<ON_EPSILON || fabsf(x2)<ON_EPSILON) {
+	if (fabsf (y1) < ON_EPSILON || fabsf (x2) < ON_EPSILON) {
 		for (i = 0; i < XPLM_NUMVECS; i++)
 			VectorCopy (base[i], colors[i]);
 
@@ -198,8 +198,8 @@ static void XP_LerpTriangle (triangulation_t *trian, triangle_t *t, vec3_t point
 	}
 
 	for (i = 0; i < XPLM_NUMVECS; i++) {
-		VectorMA (base[i], x/x2, d2[i], colors[i]);
-		VectorMA (colors[i], y/y1, d1[i], colors[i]);
+		VectorMA (base[i], x / x2, d2[i], colors[i]);
+		VectorMA (colors[i], y / y1, d1[i], colors[i]);
 	}
 }
 
@@ -217,16 +217,14 @@ static void XP_SampleTriangulation (vec3_t point, triangulation_t *trian, vec3_t
 	vec3_t		v1, v2;
 	int			i, j;
 
-	if (trian->numpoints == 0)
-	{
+	if (trian->numpoints == 0) {
 		for (i = 0; i < XPLM_NUMVECS; i++)
 			VectorClear (colors[i]);
 
 		return;
 	}
 
-	if (trian->numpoints == 1)
-	{
+	if (trian->numpoints == 1) {
 		for (i = 0; i < XPLM_NUMVECS; i++)
 			VectorCopy (trian->points[0]->totallight[i], colors[i]);
 
@@ -234,8 +232,7 @@ static void XP_SampleTriangulation (vec3_t point, triangulation_t *trian, vec3_t
 	}
 
 	// search for triangles
-	for (t = trian->tris, j=0 ; j < trian->numtris ; t++, j++)
-	{
+	for (t = trian->tris, j = 0; j < trian->numtris; t++, j++) {
 		if (!PointInTriangle (point, t))
 			continue;
 
@@ -244,21 +241,20 @@ static void XP_SampleTriangulation (vec3_t point, triangulation_t *trian, vec3_t
 
 		return;
 	}
-	
+
 	// search for exterior edge
-	for (e=trian->edges, j=0 ; j< trian->numedges ; e++, j++)
-	{
+	for (e = trian->edges, j = 0; j < trian->numedges; e++, j++) {
 		if (e->tri)
 			continue;	// not an exterior edge
 
-		d = DotProduct(point, e->normal) - e->dist;
+		d = DotProduct (point, e->normal) - e->dist;
 
 		if (d < 0.f)
 			continue;	// not in front of edge
 
 		p0 = trian->points[e->p0];
 		p1 = trian->points[e->p1];
-	
+
 		VectorSubtract (p1->origin, p0->origin, v1);
 		VectorNormalize (v1, v1);
 		VectorSubtract (point, p0->origin, v2);
@@ -269,8 +265,8 @@ static void XP_SampleTriangulation (vec3_t point, triangulation_t *trian, vec3_t
 			continue;
 
 		for (i = 0; i < XPLM_NUMVECS; i++)
-			for (j = 0; j < 3; j++)
-				colors[i][j] = p0->totallight[i][j] + d * (p1->totallight[i][j] - p0->totallight[i][j]);
+		for (j = 0; j < 3; j++)
+			colors[i][j] = p0->totallight[i][j] + d * (p1->totallight[i][j] - p0->totallight[i][j]);
 
 		return;
 	}
@@ -279,7 +275,7 @@ static void XP_SampleTriangulation (vec3_t point, triangulation_t *trian, vec3_t
 	best = 99999;
 	p1 = NULL;
 
-	for (j=0 ; j<trian->numpoints ; j++) {
+	for (j = 0; j < trian->numpoints; j++) {
 		p0 = trian->points[j];
 		VectorSubtract (point, p0->origin, v1);
 
@@ -316,7 +312,7 @@ static void XP_GatherSampleLight (const vec3_t pos, const vec3_t tbnMatrix[3], f
 	float			*dest;
 
 	// get the PVS for the pos to limit the number of checks
-	if (!PvsForOrigin(pos, pvs))
+	if (!PvsForOrigin (pos, pvs))
 		return;
 
 	for (i = 0; i < dvis->numclusters; i++) {
@@ -324,45 +320,45 @@ static void XP_GatherSampleLight (const vec3_t pos, const vec3_t tbnMatrix[3], f
 			continue;
 
 		for (l = directlights[i]; l; l = l->next) {
-			VectorSubtract(l->origin, pos, delta);
-			dist = VectorNormalize(delta, delta);
+			VectorSubtract (l->origin, pos, delta);
+			dist = VectorNormalize (delta, delta);
 
 			// check against surface plane
-			deltaTS[2] = DotProduct(delta, tbnMatrix[2]);
+			deltaTS[2] = DotProduct (delta, tbnMatrix[2]);
 			if (deltaTS[2] <= 0.001f)
 				continue;	// behind sample surface
 
 			switch (l->type) {
-			case emit_point:
-				// linear falloff
-				scale = l->intensity - dist;
-				break;
-			case emit_surface:
-				dot = -DotProduct (delta, l->normal);
-				if (dot <= 0.001f)
-					goto skipadd;	// behind light surface
+				case emit_point:
+					// linear falloff
+					scale = l->intensity - dist;
+					break;
+				case emit_surface:
+					dot = -DotProduct (delta, l->normal);
+					if (dot <= 0.001f)
+						goto skipadd;	// behind light surface
 
-				// quadratic falloff
-				scale = l->intensity / (dist * dist) * dot;
-				break;
-			case emit_spotlight:
-				dot = -DotProduct (delta, l->normal);
-				if (dot <= l->stopdot)
-					goto skipadd;	// outside light cone
+					// quadratic falloff
+					scale = l->intensity / (dist * dist) * dot;
+					break;
+				case emit_spotlight:
+					dot = -DotProduct (delta, l->normal);
+					if (dot <= l->stopdot)
+						goto skipadd;	// outside light cone
 
-				// linear falloff
-				scale = l->intensity - dist;
+					// linear falloff
+					scale = l->intensity - dist;
 
-				// cone falloff
-//				scale /= 1.f - l->stopdot;
-				break;
-			default:
-				Error ("XP_GatherSampleLight(): bad l->type.");
+					// cone falloff
+					//				scale /= 1.f - l->stopdot;
+					break;
+				default:
+					Error ("XP_GatherSampleLight(): bad l->type.");
 			}
 
 			if (scale <= 0.f)
 				continue;
-			if (TestLine_r(0, pos, l->origin))
+			if (TestLine_r (0, pos, l->origin))
 				continue;	// occluded
 
 			scale *= deltaTS[2] * weight;
@@ -375,23 +371,23 @@ static void XP_GatherSampleLight (const vec3_t pos, const vec3_t tbnMatrix[3], f
 
 			// accumulate the sample for patch
 			if (l->style == 0)
-				VectorMA(patchSample, scale, l->color, patchSample);
+				VectorMA (patchSample, scale, l->color, patchSample);
 
 			// transform delta into tangent space
 			// FIXME: transform basis into world space outside of the loops instead
-			deltaTS[0] = DotProduct(delta, tbnMatrix[0]);
-			deltaTS[1] = DotProduct(delta, tbnMatrix[1]);
+			deltaTS[0] = DotProduct (delta, tbnMatrix[0]);
+			deltaTS[1] = DotProduct (delta, tbnMatrix[1]);
 
 			// calc contribution for each basis vector
 			dest = styleTables[l->style] + sampleIndex * 3;
 
 			for (j = 0; j < XPLM_NUMVECS; j++, dest += numPoints * 3) {
-				scale2 = scale * DotProduct(deltaTS, xplm_basisVecs[j]);
+				scale2 = scale * DotProduct (deltaTS, xplm_basisVecs[j]);
 
 				if (scale2 > 0.f)
-					VectorMA(dest, scale2, l->color, dest);
+					VectorMA (dest, scale2, l->color, dest);
 			}
-skipadd:;
+		skipadd:;
 		}
 	}
 }
@@ -415,12 +411,12 @@ static void XP_BuildFaceLights (int facenum) {
 	int			numsamples = extrasamples ? extrasamplesvalue : 1;
 	int			size;
 	int			i, j;
- 
+
 	if (tex->flags & (SURF_WARP | SURF_SKY))
 		return;		// non-lit texture
 
 	memset (styleTables, 0, sizeof(styleTables));
-	
+
 	l = malloc (numsamples * sizeof(lightinfo_t));
 
 	for (i = 0; i < numsamples; i++) {
@@ -444,23 +440,23 @@ static void XP_BuildFaceLights (int facenum) {
 	}
 
 	// construct the world space -> tangent space matrix
-	VectorNormalize(tex->vecs[0], tbnMatrix[0]);
-	VectorNormalize(tex->vecs[1], tbnMatrix[1]);
-	VectorCopy(l[0].facenormal, tbnMatrix[2]);
+	VectorNormalize (tex->vecs[0], tbnMatrix[0]);
+	VectorNormalize (tex->vecs[1], tbnMatrix[1]);
+	VectorCopy (l[0].facenormal, tbnMatrix[2]);
 
 	// RGB float buffer
 	size = l[0].numsurfpt * sizeof(vec3_t);
 
 	fl->numsamples = l[0].numsurfpt;
 	fl->origins = malloc (size);
-	memcpy(fl->origins, l[0].surfpt, size);
+	memcpy (fl->origins, l[0].surfpt, size);
 
 	// each style table contains several pages (one for each basis vector) of RGB sample sets
-	styleTables[0] = malloc(size * XPLM_NUMVECS);
-	memset(styleTables[0], 0, size * XPLM_NUMVECS);
+	styleTables[0] = malloc (size * XPLM_NUMVECS);
+	memset (styleTables[0], 0, size * XPLM_NUMVECS);
 
 	for (i = 0; i < l[0].numsurfpt; i++) {
-		VectorClear(patchSample);
+		VectorClear (patchSample);
 
 		// FIXME: refine
 		for (j = 0; j < numsamples; j++)
@@ -474,8 +470,8 @@ static void XP_BuildFaceLights (int facenum) {
 	for (patch = face_patches[facenum]; patch; patch = patch->next) {
 		if (patch->samples)
 			VectorScale (patch->samplelight, 1.f / patch->samples, patch->samplelight);
-//		else
-//			printf ("patch with no samples\n");
+		//		else
+		//			printf ("patch with no samples\n");
 	}
 
 	for (i = 0; i < MAX_LSTYLES; i++) {
@@ -506,7 +502,7 @@ static void XP_BuildFaceLights (int facenum) {
 		}
 	}
 
-	free(l);
+	free (l);
 }
 
 /*
@@ -533,7 +529,7 @@ static void XP_FinalLightFaces (int facenum) {
 	f = &dfaces[facenum];
 	fl = &facelight[facenum];
 
-	if ( texinfo[f->texinfo].flags & (SURF_WARP | SURF_SKY) )
+	if (texinfo[f->texinfo].flags & (SURF_WARP | SURF_SKY))
 		return;		// non-lit texture
 
 	ThreadLock ();
@@ -556,10 +552,10 @@ static void XP_FinalLightFaces (int facenum) {
 	if (numbounce > 0) {
 		ClearBounds (facemins, facemaxs);
 
-		for (i=0 ; i<f->numedges ; i++) {
+		for (i = 0; i < f->numedges; i++) {
 			int		ednum;
 
-			ednum = dsurfedges[f->firstedge+i];
+			ednum = dsurfedges[f->firstedge + i];
 			if (ednum >= 0)
 				AddPointToBounds (dvertexes[dedges[ednum].v[0]].point, facemins, facemaxs);
 			else
@@ -570,12 +566,12 @@ static void XP_FinalLightFaces (int facenum) {
 
 		// for all faces on the plane, add the nearby patches
 		// to the triangulation
-		for (pfacenum = planelinks[f->side][f->planenum]; pfacenum ; pfacenum = facelinks[pfacenum]) {
-			for (patch = face_patches[pfacenum] ; patch ; patch=patch->next) {
-				for (i=0 ; i < 3 ; i++) {
-					if (facemins[i] - patch->origin[i] > subdiv*2)
+		for (pfacenum = planelinks[f->side][f->planenum]; pfacenum; pfacenum = facelinks[pfacenum]) {
+			for (patch = face_patches[pfacenum]; patch; patch = patch->next) {
+				for (i = 0; i < 3; i++) {
+					if (facemins[i] - patch->origin[i] > subdiv * 2)
 						break;
-					if (patch->origin[i] - facemaxs[i] > subdiv*2)
+					if (patch->origin[i] - facemaxs[i] > subdiv * 2)
 						break;
 				}
 
@@ -586,18 +582,18 @@ static void XP_FinalLightFaces (int facenum) {
 			}
 		}
 
-		for (i=0 ; i<trian->numpoints ; i++)
-			memset(trian->edgematrix[i], 0, trian->numpoints*sizeof(trian->edgematrix[0][0]) );
+		for (i = 0; i < trian->numpoints; i++)
+			memset (trian->edgematrix[i], 0, trian->numpoints*sizeof(trian->edgematrix[0][0]));
 
 		TriangulatePoints (trian);
 
 		// precache interpolated indirect lighting samples
-		adds = malloc(fl->numsamples * XPLM_NUMVECS * sizeof(vec3_t));
+		adds = malloc (fl->numsamples * XPLM_NUMVECS * sizeof(vec3_t));
 
 		for (j = 0; j < fl->numsamples; j++)
-			XP_SampleTriangulation(fl->origins + j * 3, trian, adds[j]);
+			XP_SampleTriangulation (fl->origins + j * 3, trian, adds[j]);
 	}
-	
+
 	//
 	// sample the triangulation
 	//
@@ -630,24 +626,24 @@ static void XP_FinalLightFaces (int facenum) {
 			for (j = 0; j < fl->numsamples; j++, smp += 3) {
 				// direct lighting
 				if (qrad_dlMode == 4)
-					VectorClear(lb);
+					VectorClear (lb);
 				else
 					VectorCopy (smp, lb);
 
 				// indirect lighting
 				if (numbounce > 0 && i == 0)
-					VectorAdd(lb, adds[j][l], lb);
+					VectorAdd (lb, adds[j][l], lb);
 
 				// add an ambient term if desired
 				for (k = 0; k < 3; k++)
-					lb[k] += ambient * xplm_basisVecs[l][2]; 
+					lb[k] += ambient * xplm_basisVecs[l][2];
 
 				VectorScale (lb, lightscale, lb);
 
 				// we need to clamp without allowing hue to change
 				for (k = 0; k < 3; k++)
-					if (lb[k] < xplm_basisVecs[l][2])
-						lb[k] = xplm_basisVecs[l][2];
+				if (lb[k] < xplm_basisVecs[l][2])
+					lb[k] = xplm_basisVecs[l][2];
 
 				cmax = lb[0];
 
@@ -659,7 +655,7 @@ static void XP_FinalLightFaces (int facenum) {
 				newmax = cmax;
 
 				if (newmax < minl[l])
-					newmax = minl[l] + (rand() % 48) * xplm_basisVecs[l][2];
+					newmax = minl[l] + (rand () % 48) * xplm_basisVecs[l][2];
 				if (newmax > maxl[l])
 					newmax = maxl[l];
 
@@ -671,7 +667,7 @@ static void XP_FinalLightFaces (int facenum) {
 
 	if (numbounce > 0) {
 		FreeTriangulation (trian);
-		free(adds);
+		free (adds);
 	}
 }
 
@@ -715,8 +711,8 @@ void XP_RadWorld (void) {
 		CheckPatches ();
 	}
 
-//	if (glview)
-//		WriteGlView ();
+	//	if (glview)
+	//		WriteGlView ();
 
 	// blend bounced light into direct light and save
 	PairEdges ();
@@ -738,40 +734,40 @@ void XP_WriteXPLM (char *filename) {
 	byte b;
 	int i, j;
 
-	f = SafeOpenWrite(filename);
+	f = SafeOpenWrite (filename);
 
-/*
-	//
-	// write id & version
-	//
+	/*
+		//
+		// write id & version
+		//
 
-	//
-	// write BSP stats
-	//
+		//
+		// write BSP stats
+		//
 
-	j = LittleLong(nummodels); SafeWrite(f, &j, 4);
-	j = LittleLong(numbrushsides); SafeWrite(f, &j, 4);
-	j = LittleLong(numplanes); SafeWrite(f, &j, 4);
-	j = LittleLong(numtexinfo); SafeWrite(f, &j, 4);
-	j = LittleLong(numvertexes); SafeWrite(f, &j, 4);
-	j = LittleLong(numfaces); SafeWrite(f, &j, 4);
-	j = LittleLong(numleafs); SafeWrite(f, &j, 4);
-	j = LittleLong(numleaffaces); SafeWrite(f, &j, 4);
-	j = LittleLong(numleafbrushes); SafeWrite(f, &j, 4);
-	j = LittleLong(numsurfedges); SafeWrite(f, &j, 4);
-	j = LittleLong(numedges); SafeWrite(f, &j, 4);
-*/
+		j = LittleLong(nummodels); SafeWrite(f, &j, 4);
+		j = LittleLong(numbrushsides); SafeWrite(f, &j, 4);
+		j = LittleLong(numplanes); SafeWrite(f, &j, 4);
+		j = LittleLong(numtexinfo); SafeWrite(f, &j, 4);
+		j = LittleLong(numvertexes); SafeWrite(f, &j, 4);
+		j = LittleLong(numfaces); SafeWrite(f, &j, 4);
+		j = LittleLong(numleafs); SafeWrite(f, &j, 4);
+		j = LittleLong(numleaffaces); SafeWrite(f, &j, 4);
+		j = LittleLong(numleafbrushes); SafeWrite(f, &j, 4);
+		j = LittleLong(numsurfedges); SafeWrite(f, &j, 4);
+		j = LittleLong(numedges); SafeWrite(f, &j, 4);
+		*/
 
 	//
 	// face count & offsets
 	//
 
-	j = LittleLong(numfaces);
-	SafeWrite(f, &j, 4);
+	j = LittleLong (numfaces);
+	SafeWrite (f, &j, 4);
 
 	for (i = 0; i < numfaces; i++) {
-		j = LittleLong(dfaces[i].lightofs);
-		SafeWrite(f, &j, 4);
+		j = LittleLong (dfaces[i].lightofs);
+		SafeWrite (f, &j, 4);
 	}
 
 	//
@@ -783,13 +779,13 @@ void XP_WriteXPLM (char *filename) {
 	//
 
 	b = (byte)lightmap_scale;
-	SafeWrite(f, &b, 1);
+	SafeWrite (f, &b, 1);
 
 	//
 	// data
 	//
 
-	SafeWrite(f, xplm.data, (xplm.dataSize + 3) & ~3);
+	SafeWrite (f, xplm.data, (xplm.dataSize + 3) & ~3);
 
-	fclose(f);
+	fclose (f);
 }

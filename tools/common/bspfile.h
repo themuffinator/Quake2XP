@@ -91,21 +91,19 @@ void	PrintBSPFileSizes (void);
 //===============
 
 
-typedef struct epair_s
-{
+typedef struct epair_s {
 	struct epair_s	*next;
 	char	*key;
 	char	*value;
 } epair_t;
 
-typedef struct
-{
+typedef struct {
 	vec3_t		origin;
 	int			firstbrush;
 	int			numbrushes;
 	epair_t		*epairs;
 
-// only valid for func_areaportals
+	// only valid for func_areaportals
 	int			areaportalnum;
 	int			portalareas[2];
 } entity_t;
