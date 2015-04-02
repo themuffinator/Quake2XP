@@ -156,6 +156,7 @@
     <ClInclude Include="..\..\common\lbmlib.h" />
     <ClInclude Include="..\..\common\mathlib.h" />
     <ClInclude Include="..\..\common\polylib.h" />
+    <ClInclude Include="glaux.h" />
     <ClInclude Include="qbsp.h" />
     <ClInclude Include="..\..\common\qfiles.h" />
     <ClInclude Include="..\..\common\scriplib.h" />

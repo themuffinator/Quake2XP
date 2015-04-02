@@ -152,7 +152,11 @@
     <ClCompile Include="xplm.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lightmap.h" />
     <ClInclude Include="qrad.h" />
+    <ClInclude Include="sh.h" />
+    <ClInclude Include="xplit.h" />
+    <ClInclude Include="xplm.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

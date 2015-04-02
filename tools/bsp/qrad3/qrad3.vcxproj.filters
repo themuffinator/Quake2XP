@@ -54,5 +54,17 @@
     <ClInclude Include="qrad.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="lightmap.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sh.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xplit.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xplm.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

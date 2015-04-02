@@ -108,5 +108,8 @@
     <ClInclude Include="..\..\common\l3dslib.h" />
     <ClInclude Include="..\..\common\mdfour.h" />
     <ClInclude Include="..\..\common\trilib.h" />
+    <ClInclude Include="glaux.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

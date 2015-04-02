@@ -130,6 +130,12 @@
     <ClCompile Include="..\..\common\mathlib.c" />
     <ClCompile Include="..\..\common\scriplib.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\qbsp3\qbsp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="bspinfo3.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

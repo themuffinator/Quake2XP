@@ -14,8 +14,7 @@ typedef enum {
 	emit_spotlight
 } emittype_t;
 
-typedef struct directlight_s
-{
+typedef struct directlight_s {
 	struct directlight_s *next;
 	emittype_t	type;
 
@@ -38,8 +37,7 @@ typedef struct {
 	float		*samples[MAX_STYLES];
 } facelight_t;
 
-typedef struct
-{
+typedef struct {
 	vec_t	facedist;
 	vec3_t	facenormal;
 
@@ -53,7 +51,7 @@ typedef struct
 	vec3_t	textoworld[2];	// world = texorg + s * textoworld[0]
 
 	vec_t	exactmins[2], exactmaxs[2];
-	
+
 	int		texmins[2], texsize[2];
 	int		surfnum;
 	dface_t	*face;
@@ -73,21 +71,19 @@ void CalcPoints (lightinfo_t *l, float sofs, float tofs);
 /*
 =================================================================
 
-  POINT TRIANGULATION
+POINT TRIANGULATION
 
 =================================================================
 */
 
-typedef struct triedge_s
-{
+typedef struct triedge_s {
 	int			p0, p1;
 	vec3_t		normal;
 	vec_t		dist;
 	struct triangle_s	*tri;
 } triedge_t;
 
-typedef struct triangle_s
-{
+typedef struct triangle_s {
 	triedge_t	*edges[3];
 } triangle_t;
 
@@ -95,8 +91,7 @@ typedef struct triangle_s
 #define	MAX_TRI_EDGES		(MAX_TRI_POINTS*6)
 #define	MAX_TRI_TRIS		(MAX_TRI_POINTS*2)
 
-typedef struct
-{
+typedef struct {
 	int			numpoints;
 	int			numedges;
 	int			numtris;
