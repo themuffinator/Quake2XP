@@ -68,14 +68,14 @@ void main (void) {
 	if(u_parallaxType == 2)
 		P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
 
-	vec4 diffuseMap = texture2D(u_Diffuse, P);
-	vec4 glowMap = texture2D(u_Add, P);
+	vec3 diffuseMap = texture2D(u_Diffuse, P).xyz;
+	vec3 glowMap = texture2D(u_Add, P).xyz;
 	vec4 normalMap = texture2D(u_NormalMap, P);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
 
 	if (u_LightMapType == 0)
-		gl_FragColor.xyz = diffuseMap.rgb * texture2D(u_LightMap0, v_lTexCoord.xy).rgb;
+		gl_FragColor.xyz = diffuseMap * texture2D(u_LightMap0, v_lTexCoord.xy).rgb;
 
 	if (u_LightMapType == 1) {
 /*
@@ -100,7 +100,8 @@ void main (void) {
 			dot(normalMap.xyz, s_basisVecs[1]),
 			dot(normalMap.xyz, s_basisVecs[2]));
 
-		gl_FragColor.xyz = diffuseMap.rgb * (lm0 * D.x + lm1 * D.y + lm2 * D.z);
+		// Omit energy-conserving division by PI here.
+		D = lm0 * D.x + lm1 * D.y + lm2 * D.z;
 
 		// approximate specular
 #if 0
@@ -124,8 +125,24 @@ void main (void) {
 #endif
 //		S = scale * pow(max(S, 0.0), fts);
 		S = pow(max(S, 0.0), u_specularExp);
+		S = (lm0 * S.x + lm1 * S.y + lm2 * S.z);
 
-		gl_FragColor.xyz += normalMap.a * (lm0 * S.x + lm1 * S.y + lm2 * S.z);
+#if 1
+		// Approximate energy conservation.
+		// Omit division by PI on both diffuse & specular,
+		// dividing the latter by 8 instead of (8 * PI).
+		// After this, scale by PI because after multiplying by lightmap
+		// we actually get N.L * N.H here, not N.H.
+		S *= (u_specularExp + 8.0) / (8.0 / PI);
+
+		// The more material is specular, the less it is diffuse.
+		// Assume all shiny materials are metals of the same moderate roughness in Q2,
+		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
+		gl_FragColor.xyz = diffuseMap * mix(D, S, normalMap.w * u_specularScale);
+#else
+		// Non-conserving sum, with normal map alpha channel holding specular brightness.
+		gl_FragColor.xyz = diffuseMap * D + normalMap.w * u_specularScale * S;
+#endif
 	}
 
 //	if (u_ssao == 1)
@@ -134,7 +151,7 @@ void main (void) {
 	// fake AO/cavity, don't care about re-normalization
 	gl_FragColor.xyz *= normalMap.z * 0.5 + 0.5;
 
-	gl_FragColor.xyz += glowMap.rgb;
+	gl_FragColor.xyz += glowMap;
 	gl_FragColor.xyz *= u_ColorModulate * u_ambientScale;
 	gl_FragColor.w = 1.0;
 }
