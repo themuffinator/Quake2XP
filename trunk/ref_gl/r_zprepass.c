@@ -255,58 +255,52 @@ void R_DrawDepthBrushModel (void) {
 }
 
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
-static vec3_t	tempVertexArray[MAX_VERTICES * 4];
+extern vec3_t	tempVertexArray[MAX_VERTICES * 4];
 
-void GL_DrawAliasFrameLerpDepth (dmdl_t *paliashdr) {
-	int				index_xyz;
-	int				i, j, jj = 0;
-	dtriangle_t		*tris;
-	float			backlerp, frontlerp;
-	daliasframe_t	*frame;
-	dtrivertx_t		*verts;
-	vec3_t			vertexArray[3 * MAX_TRIANGLES];
+void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
+	vec3_t		vertexArray[3 * MAX_TRIANGLES];
+	int			index_xyz;
+	int			i, j, jj = 0;
+	dtriangle_t	*tris;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	R_CalcAliasFrameLerp (paliashdr, 0);
+
+	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertexArray);
 
 	c_alias_polys += paliashdr->num_tris;
-
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 	jj = 0;
-
-	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
-	verts = frame->verts;
-	backlerp = currententity->backlerp;
-	frontlerp = 1 - backlerp;
-
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vertexArray);
 
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {
 			index_xyz = tris[i].index_xyz[j];
-			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
-
+			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
 		}
 	}
-	qglDrawArrays (GL_TRIANGLES, 0, jj);
-	qglDisableVertexAttribArray (ATRB_POSITION);
+
+	qglDrawArrays(GL_TRIANGLES, 0, jj);
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
 }
 
-void R_DrawDepthAliasModel (void) {
+void R_DrawDepthAliasModel(void){
+
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
 
-	if (R_CullAliasModel (bbox, currententity))
+	if (R_CullAliasModel(bbox, currententity))
 		return;
 
 	paliashdr = (dmdl_t *)currentmodel->extraData;
 
 	if ((currententity->frame >= paliashdr->num_frames)
 		|| (currententity->frame < 0)) {
-		Com_Printf ("R_DrawAliasModel %s: no such frame %d\n",
+		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
 			currentmodel->name, currententity->frame);
 		currententity->frame = 0;
 		currententity->oldframe = 0;
@@ -314,22 +308,23 @@ void R_DrawDepthAliasModel (void) {
 
 	if ((currententity->oldframe >= paliashdr->num_frames)
 		|| (currententity->oldframe < 0)) {
-		Com_Printf ("R_DrawAliasModel %s: no such oldframe %d\n",
+		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n",
 			currentmodel->name, currententity->oldframe);
 		currententity->frame = 0;
 		currententity->oldframe = 0;
 	}
 
-	qglPushMatrix ();
-	R_RotateForEntity (currententity);
+	qglPushMatrix();
 
-	GL_DrawAliasFrameLerpDepth (paliashdr);
+	R_RotateForEntity(currententity);
 
-	qglPopMatrix ();
+	GL_DrawAliasFrameLerpDepth(paliashdr);
+
+	qglPopMatrix();
 }
 
 void R_DrawDepthScene (void) {
-	entity_t ent;
+
 	int i;
 
 	if (!r_drawWorld->value)
@@ -344,14 +339,13 @@ void R_DrawDepthScene (void) {
 
 	R_ClearSkyBox ();
 
-	//	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
-
 	GL_BindProgram (nullProgram, 0);
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
 
-	//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+	//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //bebug tool
+	GL_DepthFunc(GL_LESS);
+	GL_DepthMask(1);
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
 	GL_DrawDepthPoly ();
@@ -369,8 +363,11 @@ void R_DrawDepthScene (void) {
 
 		if (currententity->flags & RF_TRANSLUCENT)
 			continue;
-
 		if (currententity->flags & RF_WEAPONMODEL)
+			continue;
+		if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
+			continue;
+		if (currententity->flags & RF_DISTORT)
 			continue;
 
 		if (currentmodel->type == mod_brush)
@@ -380,7 +377,7 @@ void R_DrawDepthScene (void) {
 			R_DrawDepthAliasModel ();
 	}
 
-	//	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	GL_DepthFunc(GL_LEQUAL);
 	GL_BindNullProgram ();
 }
