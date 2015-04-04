@@ -1,4 +1,5 @@
 #define	CUTOFF_EPSILON		1.0/255.0		// light intensity below which fragment is discarded
+#define PI			3.14159265358979323846
 
 vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const float sExp) {
 	vec2 E;

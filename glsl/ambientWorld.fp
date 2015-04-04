@@ -1,5 +1,3 @@
-#extension GL_ARB_texture_rectangle : enable
-
 uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_NormalMap;
 uniform sampler2D		u_Add;

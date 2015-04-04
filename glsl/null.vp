@@ -1,7 +1,3 @@
-varying vec3 color;
- attribute	vec3			a_vertArray;
 void main (void) {
-	 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);//gl_Vertex;
-	 color = a_vertArray;
-	 color = clamp(color, 0.33, 0.88);
+	 gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 }
