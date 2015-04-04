@@ -90,6 +90,7 @@
       </GenerateMapFile>
       <AssemblyDebug>
       </AssemblyDebug>
+      <StackReserveSize>1310720</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
