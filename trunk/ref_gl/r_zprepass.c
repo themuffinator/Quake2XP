@@ -344,8 +344,7 @@ void R_DrawDepthScene (void) {
 	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
 
 	//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //bebug tool
-	GL_DepthFunc(GL_LESS);
-	GL_DepthMask(1);
+
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
 	GL_DrawDepthPoly ();
@@ -378,6 +377,5 @@ void R_DrawDepthScene (void) {
 	}
 
 	//	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	GL_DepthFunc(GL_LEQUAL);
 	GL_BindNullProgram ();
 }
