@@ -10,7 +10,7 @@ void main(void)
 	vec4 color = texture2DRect(u_ScreenTex, uv);
 	
 	float mask = texture2DRect(u_MaskTex, gl_FragCoord.xy).a;
-	if(mask == 1.0){
+	if(mask == 0.0){
 		gl_FragColor =  color;
 		return;
 	}
