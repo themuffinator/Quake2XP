@@ -335,7 +335,7 @@ void R_CastAliasShadowVolumes (void) {
 	int			id, i;
 	unsigned	defBits = 0;
 
-	if (!r_shadows->value)
+	if (!r_shadows->value || !r_drawEntities->value)
 		return;
 
 	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient /*|| currentShadowLight->isFog*/)

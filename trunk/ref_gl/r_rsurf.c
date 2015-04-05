@@ -640,7 +640,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		newBatch = false;
 	
 	// fill new batch
-//	repeat:	
+	repeat:	
 		if (!R_FillAmbientBatch(s, newBatch, &numVertices, &numIndices))
 		{
 			if (numIndices != 0xFFFFFFFF){
@@ -648,7 +648,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 				}
-		//	goto repeat;
+			goto repeat;
 		}
 	}
 	
@@ -871,7 +871,7 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 			newBatch = false;
 
 	// fill new batch
-//	repeat:
+	repeat:
 		if (!R_FillLightBatch(s, newBatch, &numVertices, &numIndices, bmodel, caustics))
 		{
 			if (numIndices != 0xffffffff){
@@ -879,7 +879,7 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 				numVertices = 0;
 				numIndices = 0xffffffff;
 			}
-	//		goto repeat;
+			goto repeat;
 		}
 	}
 	// draw the rest

@@ -220,10 +220,8 @@ static void FB_Check (const char *file, const int line) {
 
 #define _R_FB_Check();		FB_Check(__FILE__, __LINE__);
 
-static GLenum drawbuffer[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+static GLenum drawbuffer[] = { GL_COLOR_ATTACHMENT0 };
 void CreateWeaponRect (void) {
-
-
 	int		i;
 	char	name[17] = "***weaponHack***";
 	image_t	*image;
@@ -255,8 +253,8 @@ void CreateWeaponRect (void) {
 	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	qglGenFramebuffers (1, &gl_state.fbo_weaponMask);
 	qglBindFramebuffer (GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
@@ -264,7 +262,6 @@ void CreateWeaponRect (void) {
 	qglDrawBuffers (1, drawbuffer);
 	qglBindFramebuffer (GL_FRAMEBUFFER, 0);
 	_R_FB_Check ();
-
 }
 
 image_t *fboScreen;

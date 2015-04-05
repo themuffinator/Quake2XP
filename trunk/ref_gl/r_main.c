@@ -607,7 +607,7 @@ void R_DrawPlayerWeaponFBO(void)
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
 	qglClear(GL_COLOR_BUFFER_BIT);
-	qglClearColor(0, 0, 0, 0);
+	qglClearColor(0.0, 0.0, 0.0, 1.0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
 	{
@@ -787,6 +787,8 @@ void R_DrawLightInteractions(void)
 
 void R_DrawPlayerWeapon(void)
 {
+	if (!r_drawEntities->value)
+		return;
 
 	R_DrawPlayerWeaponAmbient();
 

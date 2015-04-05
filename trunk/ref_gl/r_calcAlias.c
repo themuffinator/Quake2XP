@@ -94,7 +94,6 @@ int CL_PMpointcontents (vec3_t point);
 
 void GL_DrawAliasFrameLerpWeapon (dmdl_t *paliashdr) {
 	vec3_t		vertexArray[3 * MAX_TRIANGLES];
-	vec4_t		colorArray[4 * MAX_TRIANGLES];
 	int			index_xyz;
 	int			i, j, jj = 0;
 	dtriangle_t	*tris;
@@ -106,6 +105,7 @@ void GL_DrawAliasFrameLerpWeapon (dmdl_t *paliashdr) {
 
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vertexArray);
+	GL_BindProgram(nullProgram, 0);
 
 	c_alias_polys += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
@@ -115,14 +115,13 @@ void GL_DrawAliasFrameLerpWeapon (dmdl_t *paliashdr) {
 		for (j = 0; j < 3; j++, jj++) {
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
-			VA_SetElem4 (colorArray[jj], 0.0, 0.0, 0.0, 1.0);
 		}
 	}
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
 	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglDisableVertexAttribArray (ATRB_COLOR);
+	GL_BindNullProgram();
 }
 
 void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {

@@ -206,6 +206,9 @@ void R_DrawDepthBrushModel (void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
+	if (!r_drawEntities->value)
+		return;
+
 	if (currentmodel->numModelSurfaces == 0)
 		return;
 
@@ -292,7 +295,10 @@ void R_DrawDepthAliasModel(void){
 
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
-
+	
+	if (!r_drawEntities->value)
+		return;
+	
 	if (R_CullAliasModel(bbox, currententity))
 		return;
 
@@ -343,7 +349,7 @@ void R_DrawDepthScene (void) {
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
 
-	//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //bebug tool
+//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //bebug tool
 
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
@@ -375,7 +381,6 @@ void R_DrawDepthScene (void) {
 		if (currentmodel->type == mod_alias)
 			R_DrawDepthAliasModel ();
 	}
-
-	//	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	GL_BindNullProgram ();
 }
