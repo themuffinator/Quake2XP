@@ -633,6 +633,51 @@ void R_MotionBlur (void) {
 	GL_BindNullProgram ();
 }
 
+extern uint fboDepth;
+
+void R_DownsampleDepth(void) {
+
+	int	id;
+	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	qglViewport(0, 0, vid.width / 2 , vid.height / 2);
+
+	GL_LoadIdentity(GL_MODELVIEW);
+	GL_LoadIdentity(GL_PROJECTION);
+
+	qglOrtho(0, 1, 0, 1, -1, 1);
+	GL_DepthRange(0.0, 1.0);
+
+	GL_DepthFunc(GL_ALWAYS);
+	GL_ColorMask(0, 0, 0, 0);
+	GL_Disable(GL_CULL_FACE);
+
+	// downsample the depth buffer
+	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
+	GL_BindProgram(depthDownsampleProgram, 0);
+	id = depthDownsampleProgram->id[0];
+	GL_MBindRect(GL_TEXTURE0_ARB, depthMap->texnum);
+
+	qglUniform1i(qglGetUniformLocation(id, "u_depthBufferMap"), 0);
+	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+
+	R_DrawFullScreenQuad();
+
+	// restore settings
+	GL_BindNullProgram();
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+	GL_ColorMask(1, 1, 1, 1);
+	GL_DepthFunc(GL_LEQUAL);
+	GL_Enable(GL_CULL_FACE);
+	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
+	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
+	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+	
+}
+
+
 void R_SSAO (void) {
 	int id;
 
@@ -656,7 +701,7 @@ void R_SSAO (void) {
 	GL_Disable (GL_DEPTH_TEST);
 	GL_Disable (GL_CULL_FACE);
 
-	GL_MBindRect (GL_TEXTURE0_ARB, depthMap->texnum);
+	GL_MBindRect(GL_TEXTURE0_ARB, /*depthMap->texnum*/fboDepth);
 
 	GL_BindProgram (ssaoProgram, 0);
 	id = ssaoProgram->id[0];

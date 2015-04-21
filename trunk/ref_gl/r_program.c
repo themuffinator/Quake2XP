@@ -716,7 +716,8 @@ void R_InitPrograms (void) {
 
 	Com_Printf ("Load "S_COLOR_YELLOW"ssao program"S_COLOR_WHITE" ");
 	ssaoProgram = R_FindProgram ("ssao", true, true);
-	if (ssaoProgram->valid)
+	depthDownsampleProgram = R_FindProgram("depthDownsample", true, true);
+	if (ssaoProgram->valid && depthDownsampleProgram->valid)
 		Com_Printf ("succeeded\n");
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

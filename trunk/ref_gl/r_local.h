@@ -873,6 +873,7 @@ glslProgram_t		*bloomdsProgram;
 glslProgram_t		*bloomfpProgram;
 glslProgram_t		*motionBlurProgram;
 glslProgram_t		*ssaoProgram;
+glslProgram_t		*depthDownsampleProgram;
 glslProgram_t		*refractProgram;
 glslProgram_t		*lightGlassProgram;
 glslProgram_t		*thermalProgram;
