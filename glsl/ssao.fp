@@ -29,7 +29,7 @@ void ViewSpaceNormal(const vec3 p) {
 }
 */
 /*
-mat2 Mat2_RandomRotation (const in vec2 p) {
+mat2 RandomRotation (const in vec2 p) {
 	// We need irrationals for pseudo randomness.
 	// Most (all?) known transcendental numbers will (generally) work.
 	const vec2 v = vec2(
@@ -41,7 +41,7 @@ mat2 Mat2_RandomRotation (const in vec2 p) {
 	return mat2(cosr, sinr, -sinr, cosr);
 }
 */
-vec3 Vec3_RandomNormal (const in vec2 p) {
+vec3 RandomNormal (const in vec2 p) {
 	// We need irrationals for pseudo randomness.
 	// Most (all?) known transcendental numbers will (generally) work.
 	const vec2 v = vec2(
@@ -72,6 +72,7 @@ void main (void) {
 	kernel[5] = normalize(vec3( 1,-1,-1))*fScale*(n+=step);
 	kernel[6] = normalize(vec3( 1,-1, 1))*fScale*(n+=step);
 	kernel[7] = normalize(vec3( 1, 1,-1))*fScale*(n+=step);
+
 /*
 	vec3 kernel[8] = {
 #if 1
@@ -107,9 +108,10 @@ void main (void) {
 #endif
 	};
 */
+
 	// create random rotation matrix
 //	const vec3 randomNormal = texture2D(u_randomNormalMap, gl_FragCoord.xy * (1.0 / 4.0)).xyz * 2.0 - 1.0;
-	vec3 randomNormal = Vec3_RandomNormal(mod(gl_FragCoord.xy, vec2(16.0)));
+	vec3 randomNormal = RandomNormal(mod(gl_FragCoord.xy, vec2(16.0)));
 
 	// get fragment depth
 	float centerDepth = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
@@ -161,6 +163,34 @@ void main (void) {
 			bias *= HQ_SCALE;
 			depths[1].w = DecodeDepth(texture2DRect(u_depthBufferMiniMap, (gl_FragCoord.xy + bias.xy) * 0.5).x, u_depthParms) + bias.z;
 		#endif
+/*
+		depths[0].x = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+		#ifdef HQ
+			bias *= HQ_SCALE;
+			depths[1].x = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+		#endif
+
+		bias = reflect(kernel[i*4+1], randomNormal) * scale;
+		depths[0].y = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+		#ifdef HQ
+			bias *= HQ_SCALE;
+			depths[1].y = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+		#endif
+
+		bias = reflect(kernel[i*4+2], randomNormal) * scale;
+		depths[0].z = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+		#ifdef HQ
+			bias *= HQ_SCALE;
+			depths[1].z = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+		#endif
+
+		bias = reflect(kernel[i*4+3], randomNormal) * scale;
+		depths[0].w = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+		#ifdef HQ
+			bias *= HQ_SCALE;
+			depths[1].w = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+		#endif
+*/
 
 	#ifdef HQ
 		for (int j = 0; j < 2; j++) {
@@ -181,5 +211,5 @@ void main (void) {
 		float occ = dot(sum, vec4((1.0 / 8.0) * 2.0)) - 0.075;
 	#endif
 
-	gl_FragColor = vec4(DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy).x, u_depthParms));//vec4(min(mix(1.0, occ, u_ssaoParms.x), 1.0));
+	gl_FragColor = vec4(min(mix(1.0, occ, u_ssaoParms.x), 1.0));
 }

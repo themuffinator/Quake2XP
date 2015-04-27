@@ -1,5 +1,5 @@
 //
-// this downsamples the depth buffer
+// this quarters the depth buffer
 //
 
 #include depth.inc
@@ -7,17 +7,13 @@
 uniform	sampler2DRect	u_depthBufferMap;
 uniform vec2			u_depthParms;
 
-#define OFS		1.0
+void main (void) {
+	vec2 tc = gl_FragCoord.xy * 2.0;
 
-void main(void) {
-	
-	vec2 ts = gl_FragCoord.xy * 2;
-	float sum = DecodeDepth(texture2DRect(u_depthBufferMap, ts).x, u_depthParms);
+	float sum = DecodeDepth(texture2DRect(u_depthBufferMap, tc).x, u_depthParms);
+	sum += DecodeDepth(texture2DRect(u_depthBufferMap, tc + vec2(1.0, 0.0)).x, u_depthParms);
+	sum += DecodeDepth(texture2DRect(u_depthBufferMap, tc + vec2(1.0, 1.0)).x, u_depthParms);
+	sum += DecodeDepth(texture2DRect(u_depthBufferMap, tc + vec2(0.0, 1.0)).x, u_depthParms);
 
-	sum += DecodeDepth(texture2DRect(u_depthBufferMap, ts + vec2(-OFS, -OFS)).x, u_depthParms);
-	sum += DecodeDepth(texture2DRect(u_depthBufferMap, ts + vec2( OFS, -OFS)).x, u_depthParms);
-	sum += DecodeDepth(texture2DRect(u_depthBufferMap, ts + vec2(-OFS,  OFS)).x, u_depthParms);
-	sum += DecodeDepth(texture2DRect(u_depthBufferMap, ts + vec2( OFS,  OFS)).x, u_depthParms);
-
-	gl_FragDepth = EncodeDepth(sum * 0.2, u_depthParms);
+	gl_FragDepth = EncodeDepth(sum * 0.25, u_depthParms);
 }
