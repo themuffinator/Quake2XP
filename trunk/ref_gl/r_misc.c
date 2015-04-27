@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /*
 ==================
 R_InitEngineTextures
+
 ==================
 */
 
@@ -54,6 +55,19 @@ image_t	*r_lightCubeMap[MAX_FILTERS];
 image_t *r_lightAttenMap;
 image_t	*weaponHack;
 image_t *fbo_color0;
+
+image_t *depthMap;
+image_t *ScreenMap;
+image_t *shadowMask;
+
+// TODO use image array
+unsigned int thermaltex;
+unsigned int bloomtex;
+unsigned int fxaatex;
+
+uint fboDepth;
+uint fboColor0;
+uint fboColor1;
 
 void CreateDSTTex_ARB (void) {
 	unsigned char	dist[16][16][4];
@@ -81,8 +95,6 @@ void CreateDSTTex_ARB (void) {
 	qglHint (GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
 	qglTexParameteri (GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 }
-
-image_t *depthMap;
 
 void CreateDepthTexture (void) {
 
@@ -123,12 +135,9 @@ void CreateDepthTexture (void) {
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // rectangle!
 
 	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_DEPTH_COMPONENT24, vid.width, vid.height, 0,
-		GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+		GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 
 }
-
-
-image_t *ScreenMap;
 
 void CreateScreenRect (void) {
 
@@ -181,7 +190,6 @@ R_FB_Check
 Framebuffer must be bound.
 =============
 */
-
 static void FB_Check (const char *file, const int line) {
 	const char	*s;
 	GLenum		code;
@@ -220,8 +228,8 @@ static void FB_Check (const char *file, const int line) {
 
 #define _R_FB_Check();		FB_Check(__FILE__, __LINE__);
 
-static GLenum drawbuffer[] = { GL_COLOR_ATTACHMENT0 };
 void CreateWeaponRect (void) {
+	GLenum drawbuffer[] = { GL_COLOR_ATTACHMENT0 };
 	int		i;
 	char	name[17] = "***weaponHack***";
 	image_t	*image;
@@ -264,6 +272,7 @@ void CreateWeaponRect (void) {
 	_R_FB_Check ();
 }
 
+/*
 image_t *fboScreen;
 
 void CreateFboBuffer (void) {
@@ -325,13 +334,9 @@ void CreateFboBuffer (void) {
 	qglDrawBuffers (1, drawbuffer);
 	qglBindFramebuffer (GL_FRAMEBUFFER, 0);
 }
-
-uint fboDepth = 0;
-uint fboColor0 = 0;
-uint fboColor1 = 0;
+*/
 
 void CreateSSAOBuffer (void) {
-
 	qboolean	statusOK;
 
 	if (!fboDepth) {
@@ -342,7 +347,7 @@ void CreateSSAOBuffer (void) {
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_DEPTH_COMPONENT24, vid.width / 2, vid.height / 2, 0,
-			GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+			GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 	}
 
 	if (!fboColor0) {
@@ -367,7 +372,6 @@ void CreateSSAOBuffer (void) {
 			GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	}
 
-
 	qglGenFramebuffers (1, &gl_state.fboId);
 	qglBindFramebuffer (GL_FRAMEBUFFER, gl_state.fboId);
 	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_RECTANGLE_ARB, fboDepth, 0);
@@ -381,11 +385,7 @@ void CreateSSAOBuffer (void) {
 	qglBindFramebuffer (GL_FRAMEBUFFER, 0);
 }
 
-image_t *shadowMask;
-
 void CreateShadowMask (void) {
-
-
 	int		i;
 	char	name[17] = "***shadowMask***";
 	image_t	*image;
@@ -854,6 +854,14 @@ void R_InitEngineTextures (void) {
 	for (i = 0; i < MAX_GLOBAL_FILTERS; i++)
 		r_lightCubeMap[i] = R_LoadLightFilter (i);
 
+	bloomtex = 0;
+	thermaltex = 0;
+	fxaatex = 0;
+
+	fboDepth = 0;
+	fboColor0 = 0;
+	fboColor1 = 0;
+
 	CreateDSTTex_ARB ();
 	CreateDepthTexture ();
 	CreateScreenRect ();
@@ -971,21 +979,8 @@ void GL_Strings_f (void) {
 /*
 ** GL_SetDefaultState
 */
-extern unsigned int bloomtex;
-extern unsigned int thermaltex;
-extern unsigned int fxaatex;
 
 void GL_SetDefaultState (void) {
-
-	bloomtex = 0;
-	thermaltex = 0;
-	fxaatex = 0;
-	flareEdit = (qboolean)false;
-
-	fboDepth = 0;
-	fboColor0 = 0;
-	fboColor1 = 0;
-
 	qglClearColor (0, 0, 0, 1);
 	qglEnable (GL_TEXTURE_2D);
 
@@ -1090,5 +1085,4 @@ void GL_SetDefaultState (void) {
 	qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	GL_UpdateSwapInterval ();
-
 }

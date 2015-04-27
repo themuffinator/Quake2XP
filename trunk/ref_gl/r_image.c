@@ -1530,9 +1530,9 @@ void GL_InitImages(void)
 /*
 ===============
 GL_ShutdownImages
+
 ===============
 */
-
 void GL_ShutdownImages(void) {
 	int i;
 	image_t *image;
@@ -1562,4 +1562,18 @@ void GL_ShutdownImages(void) {
 
 		qglDeleteTextures (i * 3, ids);
 	}
+
+	// TODO use image array
+	if (thermaltex)
+		qglDeleteTextures (1, &thermaltex);
+	if (bloomtex)
+		qglDeleteTextures (1, &bloomtex);
+	if (fxaatex)
+		qglDeleteTextures (1, &fxaatex);
+	if (fboDepth)
+		qglDeleteTextures (1, &fboDepth);
+	if (fboColor0)
+		qglDeleteTextures (1, &fboColor0);
+	if (fboColor1)
+		qglDeleteTextures (1, &fboColor1);
 }

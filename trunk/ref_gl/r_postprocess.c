@@ -235,8 +235,6 @@ void R_DrawQuarterScreenQuad () {
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
 }
 
-unsigned int bloomtex = 0;
-
 void R_Bloom (void) {
 
 	unsigned	defBits = 0;
@@ -321,7 +319,6 @@ void R_Bloom (void) {
 }
 
 
-unsigned int thermaltex = 0;
 
 void R_ThermalVision (void) {
 
@@ -518,8 +515,6 @@ void R_DofBlur (void) {
 	GL_BindNullProgram ();
 }
 
-unsigned int fxaatex = 0;
-
 void R_FXAA (void) {
 
 	unsigned	defBits = 0;
@@ -633,26 +628,26 @@ void R_MotionBlur (void) {
 	GL_BindNullProgram ();
 }
 
-extern uint fboDepth;
-
 void R_DownsampleDepth(void) {
-
+	mat4_t	m;
 	int	id;
 	
+	if (!r_ssao->value)
+		return;
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	qglViewport(0, 0, vid.width / 2 , vid.height / 2);
+	qglViewport (0, 0, vid.width, vid.height);
 
 	GL_LoadIdentity(GL_MODELVIEW);
 	GL_LoadIdentity(GL_PROJECTION);
-
 	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
-	GL_DepthRange(0.0, 1.0);
 
-	GL_DepthFunc(GL_ALWAYS);
+	GL_DepthRange(0.0, 1.0);
+	GL_DepthMask(1);
 	GL_ColorMask(0, 0, 0, 0);
 	GL_Disable(GL_CULL_FACE);
+	GL_DepthFunc(GL_ALWAYS);
 
 	// downsample the depth buffer
 	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
@@ -663,22 +658,25 @@ void R_DownsampleDepth(void) {
 	qglUniform1i(qglGetUniformLocation(id, "u_depthBufferMap"), 0);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
-	R_DrawFullScreenQuad();
+	R_DrawHalfScreenQuad();
 
 	// restore settings
 	GL_BindNullProgram();
+
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	GL_ColorMask(1, 1, 1, 1);
-	GL_DepthFunc(GL_LEQUAL);
+	GL_DepthMask(0);
 	GL_Enable(GL_CULL_FACE);
+	GL_DepthFunc(GL_LEQUAL);
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
+
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
-	
 }
 
-
 void R_SSAO (void) {
+	extern uint fboDepth;
 	int id;
 
 	if (!r_ssao->value)
@@ -707,25 +705,25 @@ void R_SSAO (void) {
 	GL_BindProgram (ssaoProgram, 0);
 	id = ssaoProgram->id[0];
 
-	qglUniform1i(qglGetUniformLocation(id, "u_depthBufferMiniMap"), 0);
+	qglUniform1i (qglGetUniformLocation (id, "u_depthBufferMiniMap"), 0);
 	qglUniform1i (qglGetUniformLocation (id, "u_depthBufferMap"), 1);
 	qglUniform2f (qglGetUniformLocation (id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform2f (qglGetUniformLocation (id, "u_ssaoParms"), max (r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
 	qglUniform2f (qglGetUniformLocation (id, "u_viewport"), vid.width, vid.height);
 
-	//	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
+//	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
 	
 	// temporary until Z & ambient pass separation
 	if (r_ssao->value > 1)
 		GL_Disable (GL_BLEND);
-	else{
+	else {
 		GL_Enable(GL_BLEND);
 		GL_BlendFunc(GL_DST_COLOR, GL_ZERO);
 	}
 	
 	R_DrawFullScreenQuad ();
 
-	//	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+//	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	GL_BindNullProgram ();
 
@@ -734,7 +732,9 @@ void R_SSAO (void) {
 	qglPopMatrix ();
 	qglMatrixMode (GL_MODELVIEW);
 	
-	GL_Disable(GL_BLEND);
+	if (r_ssao->value <= 1)
+		GL_Disable (GL_BLEND);
+
 	GL_Enable (GL_CULL_FACE);
 	GL_Enable (GL_DEPTH_TEST);
 }

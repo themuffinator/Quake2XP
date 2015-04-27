@@ -448,6 +448,33 @@ void Mat4_Identity (mat4_t mat) {
 
 /*
 =================
+Mat4_SetOrtho
+
+Native OpenGL bottom-up Y axis orientation.
+=================
+*/
+void Mat4_SetOrtho (mat4_t m, const int w, const int h) {
+	// setup orthographic projection
+	m[0][0] = 2.f / (float)w;
+	m[0][1] = 0.f;
+	m[0][2] = 0.f;
+	m[0][3] = 0.f;
+	m[1][0] = 0.f;
+	m[1][1] = 2.f / (float)h;
+	m[1][2] = 0.f;
+	m[1][3] = 0.f;
+	m[2][0] = 0.f;
+	m[2][1] = 0.f;
+	m[2][2] = -1.f;
+	m[2][3] = 0.f;
+	m[3][0] = -1.f;
+	m[3][1] = -1.f;
+	m[3][2] = 0.f;
+	m[3][3] = 1.f;
+}
+
+/*
+=================
 Mat4_SetupTransform
 
 =================

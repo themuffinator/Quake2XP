@@ -942,7 +942,6 @@ void R_SetGL2D (void) {
 	GL_Disable(GL_CULL_FACE);
 }
 
-
 /*
 ====================
 R_SetLightLevel
@@ -1965,6 +1964,8 @@ int R_Init(void *hinstance, void *hWnd)
 	R_LoadFont();
 
 	GL_MsgGLError("Init GL Errors: ");
+
+	flareEdit = (qboolean)false;
 
 	return 0;
 }

@@ -186,6 +186,13 @@ extern	image_t *fboScreen;
 extern	image_t	*r_lightCubeMap[MAX_FILTERS];
 #define	MAX_GLOBAL_FILTERS	128
 
+extern unsigned int bloomtex;
+extern unsigned int thermaltex;
+extern unsigned int fxaatex;
+extern uint fboDepth;
+extern uint fboColor0;
+extern uint fboColor1;
+
 extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;
@@ -592,7 +599,7 @@ void GL_Blend (qboolean on, int dst, int src);
 int GL_MsgGLError (char* Info);
 void CreateWeaponRect (void);
 void Create_FBO (void);
-void CreateFboBuffer (void);
+//void CreateFboBuffer (void);
 /*
 ** GL config stuff
 */
