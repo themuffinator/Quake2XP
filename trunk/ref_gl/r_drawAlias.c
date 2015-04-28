@@ -308,6 +308,9 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 			return;
 	}
 
+	if (!InLightVISEntity())
+		return;
+
 	if (currententity->flags & RF_WEAPONMODEL) {
 		if (!weapon_model)
 			return;

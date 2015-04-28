@@ -748,8 +748,9 @@ int CM_LeafContents (int leafnum) {
 
 int CM_LeafCluster (int leafnum) {
 	if (leafnum < 0 || leafnum >= numLeafs)
-		Com_Error (ERR_DROP, "CM_LeafCluster: bad number");
-	return map_leafs[leafnum].cluster;
+			Com_Error (ERR_DROP, "CM_LeafCluster: bad number");
+//		return 1;
+return map_leafs[leafnum].cluster;
 }
 
 int CM_LeafArea (int leafnum) {

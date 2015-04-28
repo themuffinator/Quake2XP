@@ -52,7 +52,7 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 			return false;
 	}
 	else {
-		if (BoxOutsideFrustum (light->mins, light->maxs))
+		if (R_CullBox (light->mins, light->maxs))
 			return false;
 	}
 	if (weapon) {
@@ -1774,6 +1774,7 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
 
 	return true;
 }
+extern qboolean cinServer;
 
 qboolean InLightVISEntity () {
 	int		leafs[MAX_MAP_LEAFS];
@@ -1781,6 +1782,15 @@ qboolean InLightVISEntity () {
 	int		longs;
 	vec3_t	mins, maxs;
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return true;
+	
+	if (cinServer)
+		return true;
+
+	if (!r_worldmodel)
+		return false;
+	
 	if (currententity->framecount != r_framecount) {
 		currententity->framecount = r_framecount;
 

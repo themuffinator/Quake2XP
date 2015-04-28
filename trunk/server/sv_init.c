@@ -479,6 +479,7 @@ void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
 	SV_BroadcastCommand("reconnect\n");
 }
 #endif
+qboolean cinServer;
 
 void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
 	char level[MAX_QPATH];
@@ -526,16 +527,19 @@ void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
 		SV_BroadcastCommand ("changing\n");
 		SV_SpawnServer (level, spawnpoint, ss_cinematic, attractloop,
 			loadgame);
+		cinServer = true;
 	}
 	else if (l > 4 && !strcmp (level + l - 4, ".dm2")) {
 		SCR_BeginLoadingPlaque ();	// for local system
 		SV_BroadcastCommand ("changing\n");
 		SV_SpawnServer (level, spawnpoint, ss_demo, attractloop, loadgame);
+		cinServer = false;
 	}
 	else if (l > 4 && !strcmp (level + l - 4, ".pcx")) {
 		SCR_BeginLoadingPlaque ();	// for local system
 		SV_BroadcastCommand ("changing\n");
 		SV_SpawnServer (level, spawnpoint, ss_pic, attractloop, loadgame);
+		cinServer = true;
 	}
 	else {
 		SCR_BeginLoadingPlaque ();	// for local system
@@ -543,6 +547,7 @@ void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
 		SV_SendClientMessages ();
 		SV_SpawnServer (level, spawnpoint, ss_game, attractloop, loadgame);
 		Cbuf_CopyToDefer ();
+		cinServer = false;
 	}
 
 	SV_BroadcastCommand ("reconnect\n");

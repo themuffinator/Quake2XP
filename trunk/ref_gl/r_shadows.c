@@ -257,6 +257,9 @@ qboolean R_EntityInLightBounds () {
 	if (VectorCompare (currentShadowLight->origin, currententity->origin))
 		return false;
 
+	if (!InLightVISEntity())
+		return false;
+
 	return true;
 }
 
@@ -497,7 +500,7 @@ void R_DrawBrushModelVolumes () {
 	num_shadow_surfaces = 0;
 	R_MarkBrushModelShadowSurfaces ();
 
-	scale = currentShadowLight->len * 32;
+	scale = currentShadowLight->len * 10;
 
 	// generate vertex buffer
 	for (i = 0; i < num_shadow_surfaces; i++) {
@@ -646,7 +649,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	num_shadow_surfaces = 0;
 	R_MarkShadowCasting (r_worldmodel->nodes);
 
-	scale = currentShadowLight->len * 32;
+	scale = currentShadowLight->len * 10;
 
 	// generate vertex buffer
 	for (i = 0; i < num_shadow_surfaces; i++) {
