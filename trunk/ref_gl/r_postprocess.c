@@ -629,11 +629,11 @@ void R_MotionBlur (void) {
 }
 
 void R_DownsampleDepth(void) {
-	mat4_t	m;
 	int	id;
 	
 	if (!r_ssao->value)
 		return;
+
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 

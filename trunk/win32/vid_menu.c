@@ -346,7 +346,6 @@ void VID_MenuInit (void) {
 	static char	*samples[] = { "[off]", "[2x]", "[4x]", "[8x]", "[16x]", 0 };
 #endif
 
-	static char	*parallax[] = { "off", "Cone Step", "Relief", 0 };
 	static char	*radar[] = { "off", "map only", "map and entities", "move detector", 0 };
 
 	if (!r_mode)
@@ -370,6 +369,9 @@ void VID_MenuInit (void) {
 
 	if (!r_parallax)
 		r_parallax = Cvar_Get ("r_parallax", "0", CVAR_ARCHIVE);
+
+	if (r_parallax->value > 1)
+		r_parallax = Cvar_Get("r_parallax", "1", CVAR_ARCHIVE);
 
 	if (!r_dof)
 		r_dof = Cvar_Get ("r_dof", "0", CVAR_ARCHIVE);
@@ -523,7 +525,7 @@ void VID_MenuInit (void) {
 	s_parallax_box.generic.x = 0;
 	s_parallax_box.generic.y = 140 * cl_fontScale->value;
 	s_parallax_box.generic.name = "Parallax";
-	s_parallax_box.itemnames = parallax;
+	s_parallax_box.itemnames = yesno_names;
 	s_parallax_box.curvalue = r_parallax->value;
 	s_parallax_box.generic.callback = ParallaxCallback;
 	s_parallax_box.generic.statusbar = "Cone Step Parallax Mapping - Relief Parallax Mapping";

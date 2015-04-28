@@ -462,12 +462,11 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 	c_brush_polys++;
 
 	if (newBatch) {
-		image_t	*image, *fx, *env, *csm, *normal;
+		image_t	*image, *fx, *env, *normal;
 
 		image	= R_TextureAnimation(surf->texInfo);
 		fx		= R_TextureAnimationFx(surf->texInfo);
 		env		= R_TextureAnimationEnv(surf->texInfo);
-		csm		= R_TextureAnimationCSM(surf->texInfo);
 		normal		= R_TextureAnimationNormal(surf->texInfo);
 
 		qglUniform1f(ambientWorld_specularScale,
@@ -490,8 +489,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
-		GL_MBind(GL_TEXTURE3_ARB, csm->texnum);
-		GL_MBind(GL_TEXTURE4_ARB, normal->texnum);
+		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
 
 //		if (r_ssao->value)
 //			GL_MBindRect(GL_TEXTURE7_ARB, fboScreen->texnum);
@@ -583,8 +581,8 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qglUniform1i(ambientWorld_lightmap[0], 1);
 
 	if (r_worldmodel->useXPLM) {
-		qglUniform1i(ambientWorld_lightmap[1], 5);
-		qglUniform1i(ambientWorld_lightmap[2], 6);
+		qglUniform1i(ambientWorld_lightmap[1], 4);
+		qglUniform1i(ambientWorld_lightmap[2], 5);
 		qglUniform1i(ambientWorld_lightmapType, 1);
 	}
 	else
@@ -599,8 +597,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglUniform1i(ambientWorld_ssao, 0);
 */
 	qglUniform1i(ambientWorld_add, 2);
-	qglUniform1i(ambientWorld_csm, 3);
-	qglUniform1i(ambientWorld_normalmap, 4);
+	qglUniform1i(ambientWorld_normalmap, 3);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
 
@@ -619,8 +616,8 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 			GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
 
 			if (r_worldmodel->useXPLM) {
-				GL_MBind(GL_TEXTURE5_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
-				GL_MBind(GL_TEXTURE6_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
+				GL_MBind(GL_TEXTURE4_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
+				GL_MBind(GL_TEXTURE5_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
 			}
 		}
 		
@@ -681,12 +678,11 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
 	if (newBatch)
 	{
-		image_t		*image, *normalMap, *csm;
+		image_t		*image, *normalMap;
 		char		*purename;
 		char		noext[MAX_QPATH];
 		image		= R_TextureAnimation		(surf->texInfo);
 		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
-		csm			= R_TextureAnimationCSM		(surf->texInfo);
 
 		purename = COM_SkipPath(image->name);
 		COM_StripExtension(purename, noext);
@@ -726,13 +722,11 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
 		}
 
-
 		GL_MBind		(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);
 		GL_MBindCube	(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
 		GL_MBind3d		(GL_TEXTURE3_ARB, r_lightAttenMap->texnum);
 		GL_MBind		(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-		GL_MBind		(GL_TEXTURE5_ARB, csm->texnum);
 	}
 
 	if (surf->texInfo->flags & SURF_FLOWING)
@@ -840,7 +834,6 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	qglUniform1i(lightWorld_cube, 2);
 	qglUniform1i(lightWorld_atten, 3);
 	qglUniform1i(lightWorld_caustic, 4);
-	qglUniform1i(lightWorld_csm, 5);
 
 	qsort(light_surfaces, num_light_surfaces, sizeof(msurface_t*), (int (*)(const void *, const void *))lightSurfSort);
 
@@ -909,7 +902,7 @@ static void R_RecursiveWorldNode(mnode_t * node)
 	msurface_t *surf, **mark;
 	mleaf_t *pleaf;
 	float dot;
-	image_t *fx, *image, *csm;
+	image_t *fx, *image;
 
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
@@ -1002,7 +995,6 @@ static void R_RecursiveWorldNode(mnode_t * node)
 				// FIXME: this is a hack for animation
 				image = R_TextureAnimation(surf->texInfo);
 				fx = R_TextureAnimationFx(surf->texInfo); // fix glow hack
-				csm = R_TextureAnimationCSM(surf->texInfo);
 				
 				surf->texturechain = r_reflective_surfaces;
 				r_reflective_surfaces = surf;
