@@ -12,32 +12,6 @@ float ComputeLOD( vec2 tc, vec2 texSize ) {
  return lod; 
 } 
 
-void IntersectConeExp (in sampler2D csmMap, inout vec3 dp, in vec3 ds, in float distFactor) {
-	
-	// conestep parallax mapping
-	// improved fastest shader
-	float lod = ComputeLOD(dp, u_parallaxParams.zw);
-	float iz = length(ds.xy);
-	float ht, old_ht, cr = 0.0;
-	int limit = 16;
-	vec2 t = texture2DLod(csmMap, dp.xy, lod).rg;
-
-	while (t.r > dp.z && limit > 0) {     
-		cr = t.g * t.g;
-		dp += ds * (distFactor + (t.r - dp.z) * cr) / (iz + cr);
-		t = texture2DLod(csmMap, dp.xy, lod).rg;
-		limit--;
-	}
-
-	ht = t.r - dp.z;
-	distFactor /= (iz + cr);
-	dp -= ds * distFactor;
-
-	t = texture2DLod(csmMap, dp.xy, lod).rg;
-	old_ht = t.r - dp.z;
-
-	dp += ds * distFactor * (1.0 - clamp(ht / (ht - old_ht), 0.0, 1.0));
-}
 
 vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) {
 	

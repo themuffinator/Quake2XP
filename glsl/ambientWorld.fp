@@ -46,26 +46,7 @@ void main (void) {
 
 	vec2 P = v_wTexCoord.xy;
 
-	if(u_parallaxType == 1) {
-		vec3 Vp = normalize(v_positionVS);
-		vec3 T = normalize(v_tbn[0]);
-		vec3 B = normalize(v_tbn[1]);
-		vec3 N = normalize(v_tbn[2]);
-
-		// ray intersection in view direction
-		float a = abs(dot(N, Vp));
-		a = sin(clamp(a, 0.0, 1.0) * HALF_PI) / a;	// thx Berserker for corner artifact correction
-
-		vec3 dp = vec3(v_wTexCoord, 0.0);
-		vec3 ds = vec3(a * u_parallaxParams.x * dot(T, Vp), a * u_parallaxParams.y * dot(B, Vp), 1.0);
-		float distFactor = 0.05 * sqrt(length(fwidth(v_wTexCoord)));
-
-		IntersectConeExp(u_csmMap, dp, ds, distFactor);
-
-		P = dp.xy;
-	}
-
-	if(u_parallaxType == 2)
+	if(u_parallaxType >= 1)
 		P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
 
 	vec3 diffuseMap = texture2D(u_Diffuse, P).xyz;
@@ -78,17 +59,8 @@ void main (void) {
 		gl_FragColor.xyz = diffuseMap * texture2D(u_LightMap0, v_lTexCoord.xy).rgb;
 
 	if (u_LightMapType == 1) {
-/*
-		// calculate Toksvig factor
-		// FIXME: need to precompute
-		float len = length(normalMap.xyz);
-		float ft = len / mix(u_specularExp, 1.0, len);
-		float fts = ft * u_specularExp;
-		float scale = (1.0 + fts) / (1.0 + u_specularExp);
-		normalMap.xyz /= len;
-*/
+
 		normalMap.xyz = normalize(normalMap.xyz);
-//		normalMap.xyz = vec3(0.0, 0.0, 1.0);
 
 		vec3 lm0 = texture2D(u_LightMap0, v_lTexCoord.xy).rgb;
 		vec3 lm1 = texture2D(u_LightMap1, v_lTexCoord.xy).rgb;

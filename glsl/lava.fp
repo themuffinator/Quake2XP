@@ -17,24 +17,10 @@ vec3 T = normalize(v_tbn[0]);
 vec3 B = normalize(v_tbn[1]);
 vec3 N = normalize(v_tbn[2]);
 vec2 texCoord = v_diffuseTexCoord;
-vec2 P;
+vec2 P = texCoord;
 
-if(u_parallaxType == 1){
-	// ray intersection in view direction
-	float a = abs(dot(N, Vp));
-	a = sin(clamp(a, 0.0, 1.0) * HALF_PI) / a;	// thx Berserker for corner artifact correction
-	vec3 dp = vec3(v_diffuseTexCoord, 0.0);
-	vec3 ds = vec3(a * u_parallaxParams.x * dot(T, Vp), a * u_parallaxParams.y * dot(B, Vp), 1.0);
-	float distFactor = 0.05 * sqrt(length(fwidth(v_diffuseTexCoord)));
-	IntersectConeExp(u_csmMap, dp, ds, distFactor);
-	P = dp.xy;
-}
-
-if(u_parallaxType == 2)	
+if(u_parallaxType >= 1)	
 	P = CalcParallaxOffset(u_colorMap, v_diffuseTexCoord.xy, V);
-
-if (u_parallaxType >=1)
-	texCoord = P;
 
 //load diffuse map
 vec4 diffuse  = texture2D (u_colorMap, texCoord.xy);
