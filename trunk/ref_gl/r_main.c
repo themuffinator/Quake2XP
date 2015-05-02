@@ -907,7 +907,7 @@ void R_RenderView (refdef_t *fd) {
 
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
-	
+
 	R_DrawLightInteractions();
 	R_RenderDecals();
 	R_RenderFlares();
@@ -1321,11 +1321,11 @@ void R_RegisterCvars(void)
 	r_bloomExposure =					Cvar_Get("r_bloomExposure", "0.86", CVAR_ARCHIVE);
 	r_bloomStarIntens =					Cvar_Get("r_bloomStarIntens", "3.0", CVAR_ARCHIVE);
 
-	r_ssao = Cvar_Get ("r_ssao", "1", CVAR_ARCHIVE);
-	r_ssaoQuality = Cvar_Get ("r_ssaoQuality", "1", CVAR_ARCHIVE);
-	r_ssaoIntensity = Cvar_Get ("r_ssaoIntensity", "1.0", CVAR_ARCHIVE);
-	r_ssaoScale = Cvar_Get ("r_ssaoScale", "80.0", CVAR_ARCHIVE);
-	r_ssaoBlur = Cvar_Get ("r_ssaoBlur", "4", CVAR_ARCHIVE);
+	r_ssao =							Cvar_Get ("r_ssao", "1", CVAR_ARCHIVE);
+	r_ssaoQuality =						Cvar_Get ("r_ssaoQuality", "1", CVAR_ARCHIVE);
+	r_ssaoIntensity =					Cvar_Get ("r_ssaoIntensity", "1.0", CVAR_ARCHIVE);
+	r_ssaoScale =						Cvar_Get ("r_ssaoScale", "80.0", CVAR_ARCHIVE);
+	r_ssaoBlur	=						Cvar_Get ("r_ssaoBlur", "4", CVAR_ARCHIVE);
 
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
@@ -2068,6 +2068,9 @@ void R_BeginFrame()
 
 	if(r_ambientLevel->value >1)
 		Cvar_SetValue("r_ambientLevel", 1);
+
+	if (r_ssao->modified)
+		r_ssao->modified = false;
 
 	/* 
 	** go into 2D mode

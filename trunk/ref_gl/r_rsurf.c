@@ -490,9 +490,8 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
-
 		if (r_ssao->value)
-			GL_MBindRect(GL_TEXTURE7_ARB, fboColor1);
+			GL_MBindRect(GL_TEXTURE6_ARB, fboColor1);
 	}
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -557,7 +556,6 @@ msurface_t	*scene_surfaces[MAX_MAP_FACES];
 static void GL_DrawLightmappedPoly(qboolean bmodel)
 {
 	msurface_t	*s;
-	unsigned	defBits = 0;
 	int			i;
 	qboolean	newBatch;
 	unsigned	oldTex		= 0xffffffff;
@@ -566,38 +564,34 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 				numVertices = 0;
 
 	// setup program
-	GL_BindProgram(ambientWorldProgram, defBits);
+	GL_BindProgram(ambientWorldProgram, 0);
 
 	qglUniform1f(ambientWorld_colorScale, r_worldColorScale->value);
 
 	if (r_parallax->value > 0 || r_worldmodel->useXPLM)
 		qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
 	
-	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_parallax->value, 0, 2));
+	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_parallax->value, 0, 1));
 
 	qglUniform1f(ambientWorld_ambientLevel, r_ambientLevel->value);
 	
-	qglUniform1i(ambientWorld_diffuse, 0);
-	qglUniform1i(ambientWorld_lightmap[0], 1);
+	qglUniform1i(ambientWorld_diffuse,		0);
+	qglUniform1i(ambientWorld_lightmap[0],	1);
+	qglUniform1i(ambientWorld_add,			2);
+	qglUniform1i(ambientWorld_normalmap,	3);
+	qglUniform1i(ambientWorld_lightmap[1],	4);
+	qglUniform1i(ambientWorld_lightmap[2],	5);
+	qglUniform1i(ambientWorld_ssaoMap,		6);
 
-	if (r_worldmodel->useXPLM) {
-		qglUniform1i(ambientWorld_lightmap[1], 4);
-		qglUniform1i(ambientWorld_lightmap[2], 5);
+	if (r_worldmodel->useXPLM)
 		qglUniform1i(ambientWorld_lightmapType, 1);
-	}
 	else
 		qglUniform1i(ambientWorld_lightmapType, 0);
 
-
-	if (r_ssao->value) {
-		qglUniform1i(ambientWorld_ssaomap, 7);
+	if (r_ssao->value)
 		qglUniform1i(ambientWorld_ssao, 1);
-	}
 	else
 		qglUniform1i(ambientWorld_ssao, 0);
-
-	qglUniform1i(ambientWorld_add, 2);
-	qglUniform1i(ambientWorld_normalmap, 3);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
 
@@ -819,7 +813,7 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, false, (const float *)entAttenMatrix);
 	}
 
-	qglUniform1i(lightWorld_parallaxType, (int)clamp(r_parallax->value, 0, 2));
+	qglUniform1i(lightWorld_parallaxType, (int)clamp(r_parallax->value, 0, 1));
 
 	if(currentShadowLight->isFog){
 		qglUniform1i(lightWorld_fog, (int)currentShadowLight->isFog);

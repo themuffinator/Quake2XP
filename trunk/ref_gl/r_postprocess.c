@@ -651,6 +651,8 @@ void R_DownsampleDepth(void) {
 
 	// downsample the depth buffer
 	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
+	qglDrawBuffer(GL_DEPTH_ATTACHMENT);
+
 	GL_BindProgram(depthDownsampleProgram, 0);
 	id = depthDownsampleProgram->id[0];
 	GL_MBindRect(GL_TEXTURE0_ARB, depthMap->texnum);
@@ -659,11 +661,10 @@ void R_DownsampleDepth(void) {
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
 	R_DrawHalfScreenQuad();
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// restore settings
 	GL_BindNullProgram();
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	GL_ColorMask(1, 1, 1, 1);
 	GL_DepthMask(0);
@@ -681,6 +682,7 @@ void R_SSAO (void) {
 
 	if (!r_ssao->value)
 		return;
+
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
@@ -700,6 +702,9 @@ void R_SSAO (void) {
 	GL_Disable (GL_CULL_FACE);
 
 	// ssao process
+	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+
 	GL_BindProgram (ssaoProgram, 0);
 	id = ssaoProgram->id[0];
 	GL_MBindRect(GL_TEXTURE0_ARB, fboDepth);
@@ -710,12 +715,13 @@ void R_SSAO (void) {
 	qglUniform2f (qglGetUniformLocation (id, "u_ssaoParms"), max (r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
 	qglUniform2f (qglGetUniformLocation (id, "u_viewport"), vid.width, vid.height);
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 	R_DrawHalfScreenQuad();
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// ssao blur
+	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT1);
+
 	GL_BindProgram(ssaoBlurProgram, 0);
 	id = ssaoBlurProgram->id[0];
 	qglUniform1i(qglGetUniformLocation(id, "u_colorMiniMap"), 0);
@@ -725,8 +731,6 @@ void R_SSAO (void) {
 	GL_MBindRect(GL_TEXTURE0_ARB, fboColor0);
 	GL_MBindRect(GL_TEXTURE1_ARB, fboDepth);
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT1);
 	R_DrawHalfScreenQuad();
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 

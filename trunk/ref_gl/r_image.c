@@ -1576,6 +1576,4 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures (1, &fboColor0);
 	if (fboColor1)
 		qglDeleteTextures (1, &fboColor1);
-	if (fboColor2)
-		qglDeleteTextures(1, &fboColor2);
 }

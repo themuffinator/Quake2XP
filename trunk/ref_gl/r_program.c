@@ -548,23 +548,22 @@ void R_InitPrograms (void) {
 		Com_Printf ("succeeded\n");
 		id = ambientWorldProgram->id[0];
 
-		ambientWorld_diffuse = qglGetUniformLocation (id, "u_Diffuse");
-		ambientWorld_add = qglGetUniformLocation (id, "u_Add");
-		ambientWorld_lightmap[0] = qglGetUniformLocation (id, "u_LightMap0");
-		ambientWorld_lightmap[1] = qglGetUniformLocation (id, "u_LightMap1");
-		ambientWorld_lightmap[2] = qglGetUniformLocation (id, "u_LightMap2");
-		ambientWorld_lightmapType = qglGetUniformLocation (id, "u_LightMapType");
-		ambientWorld_csm = qglGetUniformLocation (id, "u_csmMap");
-		ambientWorld_normalmap = qglGetUniformLocation (id, "u_NormalMap");
-		ambientWorld_ssao = qglGetUniformLocation (id, "u_ssao");
-		ambientWorld_ssaomap = qglGetUniformLocation (id, "u_ssaoMap");
+		ambientWorld_diffuse		= qglGetUniformLocation (id, "u_Diffuse");
+		ambientWorld_add			= qglGetUniformLocation (id, "u_Add");
+		ambientWorld_lightmap[0]	= qglGetUniformLocation (id, "u_LightMap0");
+		ambientWorld_lightmap[1]	= qglGetUniformLocation (id, "u_LightMap1");
+		ambientWorld_lightmap[2]	= qglGetUniformLocation (id, "u_LightMap2");
+		ambientWorld_lightmapType	= qglGetUniformLocation (id, "u_LightMapType");
+		ambientWorld_normalmap		= qglGetUniformLocation (id, "u_NormalMap");
+		ambientWorld_ssao			= qglGetUniformLocation (id, "u_ssao");
+		ambientWorld_ssaoMap		= qglGetUniformLocation (id, "u_ssaoMap");
 		ambientWorld_parallaxParams = qglGetUniformLocation (id, "u_parallaxParams");
-		ambientWorld_colorScale = qglGetUniformLocation (id, "u_ColorModulate");
-		ambientWorld_specularScale = qglGetUniformLocation (id, "u_specularScale");
-		ambientWorld_specularExp = qglGetUniformLocation (id, "u_specularExp");
-		ambientWorld_viewOrigin = qglGetUniformLocation (id, "u_viewOriginES");
-		ambientWorld_parallaxType = qglGetUniformLocation (id, "u_parallaxType");
-		ambientWorld_ambientLevel = qglGetUniformLocation (id, "u_ambientScale");
+		ambientWorld_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
+		ambientWorld_specularScale	= qglGetUniformLocation (id, "u_specularScale");
+		ambientWorld_specularExp	= qglGetUniformLocation (id, "u_specularExp");
+		ambientWorld_viewOrigin		= qglGetUniformLocation (id, "u_viewOriginES");
+		ambientWorld_parallaxType	= qglGetUniformLocation (id, "u_parallaxType");
+		ambientWorld_ambientLevel	= qglGetUniformLocation (id, "u_ambientScale");
 
 	}
 	else {
@@ -718,7 +717,6 @@ void R_InitPrograms (void) {
 	ssaoProgram = R_FindProgram ("ssao", true, true);
 	depthDownsampleProgram = R_FindProgram("depthDownsample", true, true);
 	ssaoBlurProgram = R_FindProgram("ssaoBlur", true, true);
-
 	if (ssaoProgram->valid && depthDownsampleProgram->valid && ssaoBlurProgram->valid)
 		Com_Printf ("succeeded\n");
 	else {
