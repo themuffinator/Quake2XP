@@ -491,8 +491,8 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
 
-//		if (r_ssao->value)
-//			GL_MBindRect(GL_TEXTURE7_ARB, fboScreen->texnum);
+		if (r_ssao->value)
+			GL_MBindRect(GL_TEXTURE7_ARB, fboColor1);
 	}
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -588,14 +588,14 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	else
 		qglUniform1i(ambientWorld_lightmapType, 0);
 
-/*
+
 	if (r_ssao->value) {
 		qglUniform1i(ambientWorld_ssaomap, 7);
 		qglUniform1i(ambientWorld_ssao, 1);
 	}
 	else
 		qglUniform1i(ambientWorld_ssao, 0);
-*/
+
 	qglUniform1i(ambientWorld_add, 2);
 	qglUniform1i(ambientWorld_normalmap, 3);
 

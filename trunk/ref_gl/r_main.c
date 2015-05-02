@@ -903,12 +903,11 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawDepthScene();
 	R_CaptureDepthBuffer();
 	R_DownsampleDepth();
+	R_SSAO();
 
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
-
-	R_SSAO();
-
+	
 	R_DrawLightInteractions();
 	R_RenderDecals();
 	R_RenderFlares();

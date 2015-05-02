@@ -699,31 +699,36 @@ void R_SSAO (void) {
 	GL_Disable (GL_DEPTH_TEST);
 	GL_Disable (GL_CULL_FACE);
 
+	// ssao process
+	GL_BindProgram (ssaoProgram, 0);
+	id = ssaoProgram->id[0];
 	GL_MBindRect(GL_TEXTURE0_ARB, fboDepth);
 	GL_MBindRect(GL_TEXTURE1_ARB, depthMap->texnum);
 
-	GL_BindProgram (ssaoProgram, 0);
-	id = ssaoProgram->id[0];
-
 	qglUniform1i (qglGetUniformLocation (id, "u_depthBufferMiniMap"), 0);
-	qglUniform1i (qglGetUniformLocation (id, "u_depthBufferMap"), 1);
 	qglUniform2f (qglGetUniformLocation (id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform2f (qglGetUniformLocation (id, "u_ssaoParms"), max (r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
 	qglUniform2f (qglGetUniformLocation (id, "u_viewport"), vid.width, vid.height);
 
-//	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
-	
-	// temporary until Z & ambient pass separation
-	if (r_ssao->value > 1)
-		GL_Disable (GL_BLEND);
-	else {
-		GL_Enable(GL_BLEND);
-		GL_BlendFunc(GL_DST_COLOR, GL_ZERO);
-	}
-	
-	R_DrawFullScreenQuad ();
+	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+	R_DrawHalfScreenQuad();
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-//	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// ssao blur
+	GL_BindProgram(ssaoBlurProgram, 0);
+	id = ssaoBlurProgram->id[0];
+	qglUniform1i(qglGetUniformLocation(id, "u_colorMiniMap"), 0);
+	qglUniform1i(qglGetUniformLocation(id, "u_depthBufferMiniMap"), 1);
+	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+
+	GL_MBindRect(GL_TEXTURE0_ARB, fboColor0);
+	GL_MBindRect(GL_TEXTURE1_ARB, fboDepth);
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT1);
+	R_DrawHalfScreenQuad();
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	GL_BindNullProgram ();
 
@@ -731,9 +736,6 @@ void R_SSAO (void) {
 	qglMatrixMode (GL_PROJECTION);
 	qglPopMatrix ();
 	qglMatrixMode (GL_MODELVIEW);
-	
-	if (r_ssao->value <= 1)
-		GL_Disable (GL_BLEND);
 
 	GL_Enable (GL_CULL_FACE);
 	GL_Enable (GL_DEPTH_TEST);

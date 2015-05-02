@@ -718,6 +718,7 @@ void R_InitPrograms (void) {
 	ssaoProgram = R_FindProgram ("ssao", true, true);
 	depthDownsampleProgram = R_FindProgram("depthDownsample", true, true);
 	ssaoBlurProgram = R_FindProgram("ssaoBlur", true, true);
+
 	if (ssaoProgram->valid && depthDownsampleProgram->valid && ssaoBlurProgram->valid)
 		Com_Printf ("succeeded\n");
 	else {

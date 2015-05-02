@@ -1379,6 +1379,8 @@
     <None Include="..\baseq2\glsl\shadow.vp" />
     <None Include="..\baseq2\glsl\ssao.fp" />
     <None Include="..\baseq2\glsl\ssao.vp" />
+    <None Include="..\baseq2\glsl\ssaoBlur.fp" />
+    <None Include="..\baseq2\glsl\ssaoBlur.vp" />
     <None Include="..\baseq2\glsl\thermal.fp" />
     <None Include="..\baseq2\glsl\thermal.vp" />
     <None Include="..\baseq2\glsl\thermalfp.fp" />

@@ -68,6 +68,7 @@ unsigned int fxaatex;
 uint fboDepth;
 uint fboColor0;
 uint fboColor1;
+uint fboColor2;
 
 void CreateDSTTex_ARB (void) {
 	unsigned char	dist[16][16][4];

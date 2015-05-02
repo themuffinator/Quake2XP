@@ -192,6 +192,7 @@ extern unsigned int fxaatex;
 extern uint fboDepth;
 extern uint fboColor0;
 extern uint fboColor1;
+extern uint fboColor2;
 
 extern entity_t *currententity;
 extern model_t *currentmodel;
@@ -882,6 +883,7 @@ glslProgram_t		*motionBlurProgram;
 glslProgram_t		*ssaoProgram;
 glslProgram_t		*depthDownsampleProgram;
 glslProgram_t		*ssaoBlurProgram;
+glslProgram_t		*ssaoFinalProgram;
 glslProgram_t		*refractProgram;
 glslProgram_t		*lightGlassProgram;
 glslProgram_t		*thermalProgram;
