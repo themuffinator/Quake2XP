@@ -10,8 +10,8 @@ uniform sampler2D		u_LightMap1;
 uniform sampler2D		u_LightMap2;
 uniform int			u_LightMapType;
 
-//uniform int			u_ssao;
-//uniform sampler2DRect		u_ssaoMap;
+uniform int			u_ssao;
+uniform sampler2DRect		u_ssaoMap;
 
 uniform float			u_ColorModulate;
 uniform float			u_ambientScale;    
@@ -117,8 +117,8 @@ void main (void) {
 #endif
 	}
 
-//	if (u_ssao == 1)
-//		gl_FragColor.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy).x;
+	if (u_ssao == 1)
+		gl_FragColor.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).x;
 
 	// fake AO/cavity, don't care about re-normalization
 	gl_FragColor.xyz *= normalMap.z * 0.5 + 0.5;

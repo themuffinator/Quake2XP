@@ -2,10 +2,7 @@
 
 #include depth.inc
 
-varying vec2			v_texCoord;
-uniform vec2			u_screenSize;
 uniform	sampler2DRect	u_colorMiniMap;
-
 uniform	sampler2DRect	u_depthMiniMap;
 uniform vec2			u_depthParms;
 
