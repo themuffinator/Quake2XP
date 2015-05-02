@@ -36,7 +36,7 @@ void main(void)
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( -0.29,-0.29 )*aspectcorrect) * dofblur);       
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( 0.15,-0.37 )*aspectcorrect) * dofblur);
         // extra 41
-/*		col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( 0.15,0.37 )*aspectcorrect) * dofblur*0.9);
+	/*	col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( 0.15,0.37 )*aspectcorrect) * dofblur*0.9);
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( -0.37,0.15 )*aspectcorrect) * dofblur*0.9);            
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( 0.37,-0.15 )*aspectcorrect) * dofblur*0.9);            
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( -0.15,-0.37 )*aspectcorrect) * dofblur*0.9);
@@ -62,7 +62,7 @@ void main(void)
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( -0.4,0.0 )*aspectcorrect) * dofblur*0.4);      
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( -0.29,-0.29 )*aspectcorrect) * dofblur*0.4);   
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( 0.0,0.4 )*aspectcorrect) * dofblur*0.4);       	               
-  */      
+   */     
 		gl_FragColor = col/17.0;
 		
 }
