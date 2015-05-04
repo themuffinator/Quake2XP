@@ -813,7 +813,7 @@ typedef byte color4ub_t[4];
 
 void Q_strncatz (char *dst, int dstSize, const char *src);
 
-#define	MAX_LIGHTMAPS		4		// max number of atlases
+#define	MAX_LIGHTMAPS		8		// max number of atlases
 #define	LIGHTMAP_SIZE		1024
 #define GL_LIGHTMAP_FORMAT	GL_RGB
 #define XPLM_NUMVECS		3
