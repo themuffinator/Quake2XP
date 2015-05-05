@@ -677,12 +677,10 @@ void R_DownsampleDepth(void) {
 }
 
 void R_SSAO (void) {
-	extern uint fboDepth;
-	int id;
+	int id, numSamples;
 
 	if (!r_ssao->value)
 		return;
-
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
@@ -700,6 +698,8 @@ void R_SSAO (void) {
 
 	GL_Disable (GL_DEPTH_TEST);
 	GL_Disable (GL_CULL_FACE);
+	GL_DepthMask(0);
+	GL_ColorMask(1, 1, 1, 1);
 
 	// ssao process
 	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
@@ -708,19 +708,19 @@ void R_SSAO (void) {
 	GL_BindProgram (ssaoProgram, 0);
 	id = ssaoProgram->id[0];
 	GL_MBindRect(GL_TEXTURE0_ARB, fboDepth);
-	GL_MBindRect(GL_TEXTURE1_ARB, depthMap->texnum);
+	GL_MBind(GL_TEXTURE1_ARB, r_randomNormalTex->texnum);
 
 	qglUniform1i (qglGetUniformLocation (id, "u_depthBufferMiniMap"), 0);
+	qglUniform1i (qglGetUniformLocation (id, "u_randomNormalMap"), 1);
 	qglUniform2f (qglGetUniformLocation (id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f (qglGetUniformLocation (id, "u_ssaoParms"), max (r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
+	qglUniform2f (qglGetUniformLocation (id, "u_ssaoParms"), max(r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
 	qglUniform2f (qglGetUniformLocation (id, "u_viewport"), vid.width, vid.height);
 
 	R_DrawHalfScreenQuad();
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// ssao blur
 	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fboId);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT1);
+	GL_MBindRect(GL_TEXTURE1_ARB, fboDepth);
 
 	GL_BindProgram(ssaoBlurProgram, 0);
 	id = ssaoBlurProgram->id[0];
@@ -728,12 +728,48 @@ void R_SSAO (void) {
 	qglUniform1i(qglGetUniformLocation(id, "u_depthBufferMiniMap"), 1);
 	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
-	GL_MBindRect(GL_TEXTURE0_ARB, fboColor0);
-	GL_MBindRect(GL_TEXTURE1_ARB, fboDepth);
+	numSamples = 4 * vid.height / 1080;
+	qglUniform1i(qglGetUniformLocation(id, "u_numSamples"), numSamples);
 
-	R_DrawHalfScreenQuad();
+	// two-pass shader
+	if (r_ssaoBlur->value) {
+		// horizontal
+		GL_MBindRect(GL_TEXTURE0_ARB, fboColor[0]);
+		qglDrawBuffer(GL_COLOR_ATTACHMENT1);
+		qglUniform2f(qglGetUniformLocation(id, "u_axisMask"), 1.f, 0.f);
+
+		R_DrawHalfScreenQuad();
+
+		// vertical
+		GL_MBindRect(GL_TEXTURE0_ARB, fboColor[1]);
+		qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+		qglUniform2f(qglGetUniformLocation(id, "u_axisMask"), 0.f, 1.f);
+
+		R_DrawHalfScreenQuad();
+	}
+
+	fboColorIndex = 0;
+
+/*
+	// for 4 sample shader, multi-pass
+	if (r_ssaoBlur->value) {
+		GL_MBindRect(GL_TEXTURE0_ARB, fboColor1);
+		qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+		R_DrawHalfScreenQuad();
+		GL_MBindRect(GL_TEXTURE0_ARB, fboColor0);
+		qglDrawBuffer(GL_COLOR_ATTACHMENT1);
+		R_DrawHalfScreenQuad();
+		GL_MBindRect(GL_TEXTURE0_ARB, fboColor1);
+		qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+		R_DrawHalfScreenQuad();
+		GL_MBindRect(GL_TEXTURE0_ARB, fboColor0);
+		qglDrawBuffer(GL_COLOR_ATTACHMENT1);
+		R_DrawHalfScreenQuad();
+	}
+*/
+
+	// restore
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	GL_BindNullProgram ();
 
 	qglPopMatrix ();

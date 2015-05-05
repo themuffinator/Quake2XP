@@ -51,6 +51,7 @@ image_t *r_blackTexture;
 image_t *r_DSTTex;
 image_t *r_scanline;
 image_t	*r_envTex;
+image_t	*r_randomNormalTex;
 image_t	*r_lightCubeMap[MAX_FILTERS];
 image_t *r_lightAttenMap;
 image_t	*weaponHack;
@@ -66,9 +67,8 @@ unsigned int bloomtex;
 unsigned int fxaatex;
 
 uint fboDepth;
-uint fboColor0;
-uint fboColor1;
-uint fboColor2;
+uint fboColor[2];
+byte fboColorIndex;
 
 void CreateDSTTex_ARB (void) {
 	unsigned char	dist[16][16][4];
@@ -338,6 +338,7 @@ void CreateFboBuffer (void) {
 */
 
 void CreateSSAOBuffer (void) {
+	int i;
 	qboolean	statusOK;
 
 	if (!fboDepth) {
@@ -351,9 +352,12 @@ void CreateSSAOBuffer (void) {
 			GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 	}
 
-	if (!fboColor0) {
-		qglGenTextures (1, &fboColor0);
-		GL_BindRect (fboColor0);
+	for (i = 0; i < 2; i++) {
+		if (fboColor[i])
+			continue;
+
+		qglGenTextures (1, &fboColor[i]);
+		GL_BindRect (fboColor[i]);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -362,22 +366,13 @@ void CreateSSAOBuffer (void) {
 			GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	}
 
-	if (!fboColor1) {
-		qglGenTextures (1, &fboColor1);
-		GL_BindRect (fboColor1);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0,
-			GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	}
+	fboColorIndex = 0;
 
 	qglGenFramebuffers (1, &gl_state.fboId);
 	qglBindFramebuffer (GL_FRAMEBUFFER, gl_state.fboId);
 	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_RECTANGLE_ARB, fboDepth, 0);
-	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboColor0, 0);
-	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE_ARB, fboColor1, 0);
+	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboColor[0], 0);
+	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE_ARB, fboColor[1], 0);
 
 	statusOK = qglCheckFramebufferStatus (GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (statusOK)
@@ -852,6 +847,11 @@ void R_InitEngineTextures (void) {
 	if (!r_envTex)
 		r_envTex = r_notexture;
 
+	r_randomNormalTex = GL_FindImage ("gfx/randomNormal.png", it_pic);
+	if (!r_randomNormalTex)
+		r_randomNormalTex = r_notexture;
+//		VID_Error(ERR_DROP, "R_InitEngineTextures: 'gfx/randomNormal.png' is missing.");
+
 	for (i = 0; i < MAX_GLOBAL_FILTERS; i++)
 		r_lightCubeMap[i] = R_LoadLightFilter (i);
 
@@ -860,8 +860,8 @@ void R_InitEngineTextures (void) {
 	fxaatex = 0;
 
 	fboDepth = 0;
-	fboColor0 = 0;
-	fboColor1 = 0;
+	fboColor[0] = 0;
+	fboColor[1] = 0;
 
 	CreateDSTTex_ARB ();
 	CreateDepthTexture ();

@@ -256,6 +256,7 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 		qglUniform1i (ambientAlias_isEnvMaping, 0);
 
 	qglUniform1i (ambientAlias_isShell, 0);
+
 	qglUniform1f (ambientAlias_colorModulate, r_worldColorScale->value);
 	qglUniform1f (ambientAlias_addShift, alphaShift);
 
@@ -271,6 +272,14 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	GL_MBind (GL_TEXTURE3_ARB, skinNormalmap->texnum);
 	qglUniform1i (ambientAlias_normalmap, 3);
+
+	if (r_ssao->value) {
+		GL_MBindRect (GL_TEXTURE4_ARB, fboColor[fboColorIndex]);
+		qglUniform1i(ambientAlias_ssaoMap, 4);
+		qglUniform1i(ambientAlias_ssao, 1);
+	}
+	else
+		qglUniform1i(ambientAlias_ssao, 0);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 

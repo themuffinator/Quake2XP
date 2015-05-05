@@ -620,6 +620,8 @@ void R_InitPrograms (void) {
 		ambientAlias_add = qglGetUniformLocation (id, "u_Add");
 		ambientAlias_env = qglGetUniformLocation (id, "u_env");
 		ambientAlias_isEnvMaping = qglGetUniformLocation (id, "u_isEnvMap");
+		ambientAlias_ssao			= qglGetUniformLocation (id, "u_ssao");
+		ambientAlias_ssaoMap		= qglGetUniformLocation (id, "u_ssaoMap");
 		ambientAlias_colorModulate = qglGetUniformLocation (id, "u_ColorModulate");
 		ambientAlias_addShift = qglGetUniformLocation (id, "u_AddShift");
 		ambientAlias_envScale = qglGetUniformLocation (id, "u_envScale");

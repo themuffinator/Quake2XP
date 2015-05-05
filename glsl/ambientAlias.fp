@@ -14,6 +14,9 @@ uniform	int			u_isShell;
 varying		vec2	v_envCoord;
 varying		vec2	v_shellCoord;
 
+uniform int			u_ssao;
+uniform sampler2DRect		u_ssaoMap;
+
 uniform float       u_ColorModulate;
 //uniform float       u_ambientScale;    
 uniform float       u_AddShift; 
@@ -34,6 +37,9 @@ void main ()
 //	gl_FragColor.xyz = diffuse.xyz;
 	gl_FragColor.xyz = diffuse.xyz * (normalMap.z * 0.5 + 0.5);
 //	gl_FragColor.xyz = diffuse.xyz * normalMap.z;
+
+	if (u_ssao == 1)
+		gl_FragColor.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).x;
 
 	gl_FragColor.xyz += glow * u_AddShift;
 

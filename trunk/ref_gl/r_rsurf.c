@@ -490,8 +490,9 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
+
 		if (r_ssao->value)
-			GL_MBindRect(GL_TEXTURE6_ARB, fboColor1);
+			GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
 	}
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -572,24 +573,20 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
 	
 	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_parallax->value, 0, 1));
-
 	qglUniform1f(ambientWorld_ambientLevel, r_ambientLevel->value);
-	
+
 	qglUniform1i(ambientWorld_diffuse,		0);
 	qglUniform1i(ambientWorld_lightmap[0],	1);
 	qglUniform1i(ambientWorld_add,			2);
 	qglUniform1i(ambientWorld_normalmap,	3);
 	qglUniform1i(ambientWorld_lightmap[1],	4);
 	qglUniform1i(ambientWorld_lightmap[2],	5);
-	qglUniform1i(ambientWorld_ssaoMap,		6);
+	qglUniform1i(ambientWorld_lightmapType, r_worldmodel->useXPLM ? 1 : 0);
 
-	if (r_worldmodel->useXPLM)
-		qglUniform1i(ambientWorld_lightmapType, 1);
-	else
-		qglUniform1i(ambientWorld_lightmapType, 0);
-
-	if (r_ssao->value)
+	if (r_ssao->value) {
+		qglUniform1i(ambientWorld_ssaoMap, 6);
 		qglUniform1i(ambientWorld_ssao, 1);
+	}
 	else
 		qglUniform1i(ambientWorld_ssao, 0);
 

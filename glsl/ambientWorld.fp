@@ -120,10 +120,14 @@ void main (void) {
 	if (u_ssao == 1)
 		gl_FragColor.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).x;
 
-	// fake AO/cavity, don't care about re-normalization
+	// fake AO/cavity
 	gl_FragColor.xyz *= normalMap.z * 0.5 + 0.5;
 
 	gl_FragColor.xyz += glowMap;
 	gl_FragColor.xyz *= u_ColorModulate * u_ambientScale;
 	gl_FragColor.w = 1.0;
+
+// DEBUG
+//	if (u_ssao == 1)
+//		gl_FragColor.xyz = texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
 }

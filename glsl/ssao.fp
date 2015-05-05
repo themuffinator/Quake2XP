@@ -1,7 +1,6 @@
 #include depth.inc
 
-//uniform	sampler2D		g_randomNormalMap;
-uniform	sampler2DRect		u_depthBufferMap;
+uniform	sampler2D		u_randomNormalMap;
 uniform	sampler2DRect		u_depthBufferMiniMap;
 
 uniform vec2			u_depthParms;
@@ -41,6 +40,7 @@ mat2 RandomRotation (const in vec2 p) {
 	return mat2(cosr, sinr, -sinr, cosr);
 }
 */
+/*
 vec3 RandomNormal (const in vec2 p) {
 	// We need irrationals for pseudo randomness.
 	// Most (all?) known transcendental numbers will (generally) work.
@@ -56,7 +56,7 @@ vec3 RandomNormal (const in vec2 p) {
 
 	return n;
 }
-
+*/
 void main (void) {
 	// define kernel
 	const float step = 1.0 - 1.0 / 8.0;
@@ -110,16 +110,16 @@ void main (void) {
 */
 
 	// create random rotation matrix
-//	const vec3 randomNormal = texture2D(u_randomNormalMap, gl_FragCoord.xy * (1.0 / 4.0)).xyz * 2.0 - 1.0;
-	vec3 randomNormal = RandomNormal(mod(gl_FragCoord.xy, vec2(16.0)));
+	vec3 randomNormal = texture2D(u_randomNormalMap, gl_FragCoord.xy * (1.0 / 4.0)).xyz * 2.0 - 1.0;
+//	vec3 randomNormal = RandomNormal(mod(gl_FragCoord.xy, vec2(16.0)));
 
 	// get fragment depth
 	float centerDepth = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy).x, u_depthParms);
 
 	// compute sample scale
 	vec3 scale = vec3(u_ssaoParms.y *
-		min(centerDepth / 212.0, 1.0) *		// make area smaller if distance less than 5 meters
-		(1.0 + centerDepth / 320.0));		// make area bigger if distance more than 32 meters
+		min(centerDepth / 212.0, 1.0) *		// make area smaller if distance is less than 5 meters
+		(1.0 + centerDepth / 320.0));		// make area bigger if distance is more than 32 meters
 
 	float depthRangeScale = FARCLIP / scale.z * 0.85;
 
@@ -163,46 +163,18 @@ void main (void) {
 			bias *= HQ_SCALE;
 			depths[1].w = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
 		#endif
-/*
-		depths[0].x = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+
 		#ifdef HQ
-			bias *= HQ_SCALE;
-			depths[1].x = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
+			for (int j = 0; j < 2; j++) {
+		#else
+			for (int j = 0; j < 1; j++) {
 		#endif
+				vec4 diff = (vec4(centerDepth) - depths[j]) * (1.0 / FARCLIP);
+				vec4 diffScaled = diff * depthRangeScale;
+				vec4 rangeIsInvalid = (min(abs(diffScaled), 1.0) + clamp(diffScaled, 0.0, 1.0)) * 0.5;
 
-		bias = reflect(kernel[i*4+1], randomNormal) * scale;
-		depths[0].y = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
-		#ifdef HQ
-			bias *= HQ_SCALE;
-			depths[1].y = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
-		#endif
-
-		bias = reflect(kernel[i*4+2], randomNormal) * scale;
-		depths[0].z = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
-		#ifdef HQ
-			bias *= HQ_SCALE;
-			depths[1].z = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
-		#endif
-
-		bias = reflect(kernel[i*4+3], randomNormal) * scale;
-		depths[0].w = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
-		#ifdef HQ
-			bias *= HQ_SCALE;
-			depths[1].w = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy + bias.xy).x, u_depthParms) + bias.z;
-		#endif
-*/
-
-	#ifdef HQ
-		for (int j = 0; j < 2; j++) {
-	#else
-		for (int j = 0; j < 1; j++) {
-	#endif
-			vec4 diff = (vec4(centerDepth) - depths[j]) * (1.0 / FARCLIP);
-			vec4 diffScaled = diff * depthRangeScale;
-			vec4 rangeIsInvalid = (min(abs(diffScaled), 1.0) + clamp(diffScaled, 0.0, 1.0)) * 0.5;
-
-			sum += mix(clamp(-diff * depthTestSoftness, 0.0, 1.0), vec4(0.55), rangeIsInvalid);
-		}
+				sum += mix(clamp(-diff * depthTestSoftness, 0.0, 1.0), vec4(0.55), rangeIsInvalid);
+			}
 	}
 
 	#ifdef HQ

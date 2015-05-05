@@ -903,8 +903,7 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	s = width * height;
 
 	if (s > sizeof(trans) / 4)
-		VID_Error(ERR_DROP, "GL_Upload8: too large %d width %d height",
-				  width, height);
+		VID_Error(ERR_DROP, "GL_Upload8: too large %d width %d height.", width, height);
 
 	for (i = 0; i < s; i++) {
 		p = data[i];
@@ -1460,6 +1459,7 @@ void GL_FreeUnusedImages(void)
 	r_defBump->registration_sequence = registration_sequence;
 	r_scanline->registration_sequence = registration_sequence;
 	r_envTex->registration_sequence = registration_sequence;
+	r_randomNormalTex->registration_sequence = registration_sequence;
 	r_lightAttenMap->registration_sequence = registration_sequence;
 	weaponHack->registration_sequence = registration_sequence;
 
@@ -1572,8 +1572,9 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures (1, &fxaatex);
 	if (fboDepth)
 		qglDeleteTextures (1, &fboDepth);
-	if (fboColor0)
-		qglDeleteTextures (1, &fboColor0);
-	if (fboColor1)
-		qglDeleteTextures (1, &fboColor1);
+
+	for (i = 0; i < 2; i++) {
+		if (fboColor[i])
+			qglDeleteTextures (1, &fboColor[i]);
+	}
 }
