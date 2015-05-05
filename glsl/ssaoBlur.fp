@@ -2,8 +2,7 @@
 #include depth.inc
 
 uniform	sampler2DRect	u_colorMiniMap;
-uniform	sampler2DRect		u_depthBufferMiniMap;
-uniform vec2			u_depthParms;
+uniform	sampler2DRect		u_DNMiniMap;
 
 #if 1
 
@@ -14,7 +13,7 @@ uniform int			u_numSamples;		// to each side, without central one
 
 void main (void) {
 	vec2 centerTC = gl_FragCoord.xy;
-	float centerDepth = DecodeDepth(texture2DRect(u_depthBufferMiniMap, centerTC).x, u_depthParms);
+	float centerDepth = texture2DRect(u_DNMiniMap, centerTC).x;
 	float sum = float(u_numSamples) + 1.0;
 	vec4 color = texture2DRect(u_colorMiniMap, centerTC) * sum;
 
@@ -25,8 +24,8 @@ void main (void) {
 		vec2 sampleTC0 = centerTC + u_axisMask * f;
 		vec2 sampleTC1 = centerTC - u_axisMask * f;
 
-		float depth0 = DecodeDepth(texture2DRect(u_depthBufferMiniMap, sampleTC0).r, u_depthParms);
-		float depth1 = DecodeDepth(texture2DRect(u_depthBufferMiniMap, sampleTC1).r, u_depthParms);
+		float depth0 = texture2DRect(u_DNMiniMap, sampleTC0).x;
+		float depth1 = texture2DRect(u_DNMiniMap, sampleTC1).x;
 
 		float diff0 = 8.0 * (1.0 - depth0 / centerDepth);
 		float diff1 = 8.0 * (1.0 - depth1 / centerDepth);
@@ -45,14 +44,14 @@ void main (void) {
 
 #else
 
-// multi-pass blur
+// single-pass blur
 
 void main (void) {
 	// low weight center sample, will be used on edges
 	float sum = 0.0125;
 	vec4 color = texture2DRect(u_colorMiniMap, gl_FragCoord.xy) * sum;
 
-	float centerDepth = DecodeDepth(texture2DRect(u_depthBufferMiniMap, gl_FragCoord.xy).r, u_depthParms);
+	float centerDepth = texture2DRect(u_DNMiniMap, gl_FragCoord.xy).x;
 
 	vec2 arrOffsets[4] = {
 		vec2( 1.0,-1.0),
@@ -64,7 +63,7 @@ void main (void) {
 	for (int i = 0; i < 4; i++) {
 		vec2 sampleTC = gl_FragCoord.xy + arrOffsets[i];
 
-		float depth = DecodeDepth(texture2DRect(u_depthBufferMiniMap, sampleTC).r, u_depthParms);
+		float depth = texture2DRect(u_DNMiniMap, sampleTC).x;
 		float diff = 8.0 * (1.0 - depth / centerDepth);
 		float w = max(0.5 - 0.75 * abs(diff) - 0.25 * diff, 0.0);
 
@@ -74,4 +73,5 @@ void main (void) {
 
 	gl_FragColor = color / sum;
 }
+
 #endif

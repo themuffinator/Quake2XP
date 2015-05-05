@@ -582,20 +582,15 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qglUniform1i(ambientWorld_lightmap[1],	4);
 	qglUniform1i(ambientWorld_lightmap[2],	5);
 	qglUniform1i(ambientWorld_lightmapType, r_worldmodel->useXPLM ? 1 : 0);
-
-	if (r_ssao->value) {
-		qglUniform1i(ambientWorld_ssaoMap, 6);
-		qglUniform1i(ambientWorld_ssao, 1);
-	}
-	else
-		qglUniform1i(ambientWorld_ssao, 0);
+	qglUniform1i(ambientWorld_ssaoMap, 6);
+	qglUniform1i(ambientWorld_ssao, r_ssao->value ? 1 : 0);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
 
 	for (i = 0; i < num_scene_surfaces; i++){
 		s = scene_surfaces[i];
 
-	//update lightmaps
+		// update lightmaps
 		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
 		{
 			if (numIndices != 0xFFFFFFFF){
@@ -612,7 +607,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 			}
 		}
 		
-	// flush batch (new texture)
+		// flush batch (new texture)
 		if (s->texInfo->image->texnum != oldTex)
 		{
 			if (numIndices != 0xFFFFFFFF){

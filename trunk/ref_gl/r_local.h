@@ -187,10 +187,12 @@ extern	image_t *fboScreen;
 extern	image_t	*r_lightCubeMap[MAX_FILTERS];
 #define	MAX_GLOBAL_FILTERS	128
 
-extern unsigned int bloomtex;
-extern unsigned int thermaltex;
-extern unsigned int fxaatex;
-extern uint fboDepth;
+extern uint bloomtex;
+extern uint thermaltex;
+extern uint fxaatex;
+
+extern uint fboId, fbo_weaponMask;
+extern uint fboDN;
 extern uint fboColor[2];
 extern byte fboColorIndex;
 
@@ -692,11 +694,7 @@ typedef struct {
 	int			maxSamples;
 	int			maxDrawBuffers;
 
-	// FIXME: move somewhere else
-	uint		fboId, dpsId, fbo_weaponMask;
-
 	// gl state cache
-
 	qboolean		cullFace;
 	GLenum			cullMode;
 	GLenum			frontFace;

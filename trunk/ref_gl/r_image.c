@@ -1570,8 +1570,8 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures (1, &bloomtex);
 	if (fxaatex)
 		qglDeleteTextures (1, &fxaatex);
-	if (fboDepth)
-		qglDeleteTextures (1, &fboDepth);
+	if (fboDN)
+		qglDeleteTextures (1, &fboDN);
 
 	for (i = 0; i < 2; i++) {
 		if (fboColor[i])

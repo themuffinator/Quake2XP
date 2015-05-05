@@ -605,7 +605,7 @@ void R_DrawPlayerWeaponFBO(void)
 	if (!r_drawEntities->value)
 		return;
 
-	qglBindFramebuffer(GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_weaponMask);
 	qglClear(GL_COLOR_BUFFER_BIT);
 	qglClearColor(0.0, 0.0, 0.0, 1.0);
 
@@ -902,8 +902,11 @@ void R_RenderView (refdef_t *fd) {
 	
 	R_DrawDepthScene();
 	R_CaptureDepthBuffer();
-	R_DownsampleDepth();
-	R_SSAO();
+
+	if (r_ssao->value && !(r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))) {
+		R_DownsampleDepth();
+		R_SSAO();
+	}
 
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
@@ -1993,9 +1996,6 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("spawnLight");
 	Cmd_RemoveCommand("removeLight");
 	Cmd_RemoveCommand("editLight");
-	Cmd_RemoveCommand("moveSelectedLight_right");
-	Cmd_RemoveCommand("moveSelectedLight_forward");
-	Cmd_RemoveCommand("moveSelectedLight_z");
 	Cmd_RemoveCommand("spawnLightToCamera");
 	Cmd_RemoveCommand("changeLightRadius");
 	Cmd_RemoveCommand("cloneLight");
@@ -2009,6 +2009,11 @@ void R_Shutdown(void)
 
 	Mod_FreeAll();
 	GL_ShutdownImages();
+
+	if (fboId)
+		qglDeleteFramebuffers (1, &fboId);
+	if (fbo_weaponMask)
+		qglDeleteFramebuffers (1, &fbo_weaponMask);
 
 	R_ClearWorldLights();
 	GLimp_Shutdown();

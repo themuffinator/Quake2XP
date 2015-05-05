@@ -62,11 +62,12 @@ image_t *ScreenMap;
 image_t *shadowMask;
 
 // TODO use image array
-unsigned int thermaltex;
-unsigned int bloomtex;
-unsigned int fxaatex;
+uint thermaltex;
+uint bloomtex;
+uint fxaatex;
 
-uint fboDepth;
+uint fboId, fbo_weaponMask;
+uint fboDN;
 uint fboColor[2];
 byte fboColorIndex;
 
@@ -265,8 +266,8 @@ void CreateWeaponRect (void) {
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	qglGenFramebuffers (1, &gl_state.fbo_weaponMask);
-	qglBindFramebuffer (GL_FRAMEBUFFER, gl_state.fbo_weaponMask);
+	qglGenFramebuffers (1, &fbo_weaponMask);
+	qglBindFramebuffer (GL_FRAMEBUFFER, fbo_weaponMask);
 	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, weaponHack->texnum, 0);
 	qglDrawBuffers (1, drawbuffer);
 	qglBindFramebuffer (GL_FRAMEBUFFER, 0);
@@ -322,8 +323,8 @@ void CreateFboBuffer (void) {
 	qglRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width, vid.height);
 	qglBindRenderbuffer (GL_RENDERBUFFER, 0);
 
-	qglGenFramebuffers (1, &gl_state.fboId);
-	qglBindFramebuffer (GL_FRAMEBUFFER, gl_state.fboId);
+	qglGenFramebuffers (1, &fboId);
+	qglBindFramebuffer (GL_FRAMEBUFFER, fboId);
 	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb);
 	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gl_state.dpsId);
 	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboScreen->texnum, 0);
@@ -339,46 +340,41 @@ void CreateFboBuffer (void) {
 
 void CreateSSAOBuffer (void) {
 	int i;
-	qboolean	statusOK;
+	qboolean statusOK;
 
-	if (!fboDepth) {
-		qglGenTextures (1, &fboDepth);
-		GL_BindRect (fboDepth);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_DEPTH_COMPONENT24, vid.width / 2, vid.height / 2, 0,
-			GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
-	}
+	qglGenTextures (1, &fboDN);
+	GL_BindRect (fboDN);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA16F, vid.width / 2, vid.height / 2, 0, GL_RGBA, GL_FLOAT, NULL);
 
 	for (i = 0; i < 2; i++) {
-		if (fboColor[i])
-			continue;
-
 		qglGenTextures (1, &fboColor[i]);
 		GL_BindRect (fboColor[i]);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0,
-			GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	}
 
 	fboColorIndex = 0;
 
-	qglGenFramebuffers (1, &gl_state.fboId);
-	qglBindFramebuffer (GL_FRAMEBUFFER, gl_state.fboId);
-	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_RECTANGLE_ARB, fboDepth, 0);
+	qglGenFramebuffers (1, &fboId);
+	qglBindFramebuffer (GL_FRAMEBUFFER, fboId);
 	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboColor[0], 0);
 	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE_ARB, fboColor[1], 0);
+	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE_ARB, fboDN, 0);
 
-	statusOK = qglCheckFramebufferStatus (GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
-	if (statusOK)
-		Com_Printf (""S_COLOR_YELLOW"...Create SSAO FBO\n");
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (!statusOK)
+		VID_Error(ERR_DROP, "Couldn't create SSAO FBO.");
 
 	qglBindFramebuffer (GL_FRAMEBUFFER, 0);
+
+	Com_Printf (""S_COLOR_YELLOW"...Created SSAO FBO.\n");
 }
 
 void CreateShadowMask (void) {
@@ -386,7 +382,7 @@ void CreateShadowMask (void) {
 	char	name[17] = "***shadowMask***";
 	image_t	*image;
 
-	// find a free image_t
+	// find a free image
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (!image->texnum)
 			break;
@@ -411,16 +407,13 @@ void CreateShadowMask (void) {
 
 
 	// create shadow mask texture
-
 	qglBindTexture (GL_TEXTURE_RECTANGLE_ARB, shadowMask->texnum);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0,
-		GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
+	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
 
 typedef struct img_s {
@@ -858,10 +851,6 @@ void R_InitEngineTextures (void) {
 	bloomtex = 0;
 	thermaltex = 0;
 	fxaatex = 0;
-
-	fboDepth = 0;
-	fboColor[0] = 0;
-	fboColor[1] = 0;
 
 	CreateDSTTex_ARB ();
 	CreateDepthTexture ();

@@ -273,9 +273,10 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 	GL_MBind (GL_TEXTURE3_ARB, skinNormalmap->texnum);
 	qglUniform1i (ambientAlias_normalmap, 3);
 
+	qglUniform1i(ambientAlias_ssaoMap, 4);
+
 	if (r_ssao->value && !(currententity->flags & RF_WEAPONMODEL)) {
 		GL_MBindRect (GL_TEXTURE4_ARB, fboColor[fboColorIndex]);
-		qglUniform1i(ambientAlias_ssaoMap, 4);
 		qglUniform1i(ambientAlias_ssao, 1);
 	}
 	else
