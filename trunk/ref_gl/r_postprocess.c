@@ -667,7 +667,6 @@ void R_DownsampleDepth(void) {
 	GL_BindNullProgram();
 
 	GL_ColorMask(1, 1, 1, 1);
-	GL_DepthMask(0);
 	GL_Enable(GL_CULL_FACE);
 	GL_DepthFunc(GL_LEQUAL);
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
@@ -776,7 +775,7 @@ void R_SSAO (void) {
 	qglMatrixMode (GL_PROJECTION);
 	qglPopMatrix ();
 	qglMatrixMode (GL_MODELVIEW);
-
+	GL_DepthMask(1);
 	GL_Enable (GL_CULL_FACE);
 	GL_Enable (GL_DEPTH_TEST);
 }

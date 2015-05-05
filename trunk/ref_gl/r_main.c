@@ -699,7 +699,7 @@ void R_DrawPlayerWeaponAmbient(void)
 		if (currentmodel->type == mod_alias)
 			R_DrawAliasModel(currententity, false);
 	}
-	GL_DepthMask(0);
+	GL_DepthMask(1);
 }
 
 void R_DrawLightInteractions(void)
