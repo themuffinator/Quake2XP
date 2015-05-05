@@ -348,7 +348,7 @@ void CreateSSAOBuffer (void) {
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA16F, vid.width / 2, vid.height / 2, 0, GL_RGBA, GL_FLOAT, NULL);
+	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_R16F, vid.width / 2, vid.height / 2, 0, GL_RED, GL_FLOAT, NULL);
 
 	for (i = 0; i < 2; i++) {
 		qglGenTextures (1, &fboColor[i]);

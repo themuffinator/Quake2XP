@@ -297,7 +297,6 @@ cvar_t	*r_bloomStarIntens;
 
 cvar_t	*r_ssao;
 cvar_t	*r_ssaoIntensity;
-cvar_t	*r_ssaoQuality;
 cvar_t	*r_ssaoScale;
 cvar_t	*r_ssaoBlur;
 

@@ -14,10 +14,10 @@ uniform vec2			u_viewport;
 
 /*
 // reconstructs normal from position
-// has ugly artifacts on surface edges
-void ViewSpaceNormal(const vec3 p) {
-	vec3 b = normalize(ddx(p));
-	vec3 t = normalize(ddy(p));
+// creates artifacts on surface edges
+vec3 ViewSpaceNormal (const vec3 p) {
+	vec3 b = normalize(dFdx(p));
+	vec3 t = normalize(dFdy(p));
 
 	return cross(t, b);
 }

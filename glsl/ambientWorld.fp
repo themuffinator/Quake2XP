@@ -128,6 +128,6 @@ void main (void) {
 	gl_FragColor.w = 1.0;
 
 // DEBUG
-	if (u_ssao == 1)
-		gl_FragColor.xyz = texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
+//	if (u_ssao == 1)
+//		gl_FragColor.xyz = texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
 }

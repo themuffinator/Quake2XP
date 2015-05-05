@@ -1325,10 +1325,9 @@ void R_RegisterCvars(void)
 	r_bloomStarIntens =					Cvar_Get("r_bloomStarIntens", "3.0", CVAR_ARCHIVE);
 
 	r_ssao =							Cvar_Get ("r_ssao", "1", CVAR_ARCHIVE);
-	r_ssaoQuality =						Cvar_Get ("r_ssaoQuality", "1", CVAR_ARCHIVE);
 	r_ssaoIntensity =					Cvar_Get ("r_ssaoIntensity", "1.0", CVAR_ARCHIVE);
 	r_ssaoScale =						Cvar_Get ("r_ssaoScale", "80.0", CVAR_ARCHIVE);
-	r_ssaoBlur	=						Cvar_Get ("r_ssaoBlur", "4", CVAR_ARCHIVE);
+	r_ssaoBlur	=						Cvar_Get ("r_ssaoBlur", "2", CVAR_ARCHIVE);
 
 	r_dof =								Cvar_Get("r_dof", "1", CVAR_ARCHIVE);
 	r_dofBias =							Cvar_Get("r_dofBias", "0.002", CVAR_ARCHIVE);
