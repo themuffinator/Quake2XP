@@ -2355,9 +2355,6 @@ void R_DrawLightFlare () {
 	flareVert += 4;
 
 	if (flareVert) {
-		if (gl_state.DrawRangeElements && r_DrawRangeElements->value)
-			qglDrawRangeElementsEXT (GL_TRIANGLES, 0, flareVert, index, GL_UNSIGNED_INT, flareIndex);
-		else
 			qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
 
 		flareVert = 0;
@@ -2434,9 +2431,6 @@ void R_LightFlareOutLine () { //flare editing highlights
 	flareVert += 4;
 
 	if (flareVert) {
-		if (gl_state.DrawRangeElements && r_DrawRangeElements->value)
-			qglDrawRangeElementsEXT (GL_TRIANGLES, 0, flareVert, index, GL_UNSIGNED_INT, flareIndex);
-		else
 			qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
 
 		flareVert = 0;

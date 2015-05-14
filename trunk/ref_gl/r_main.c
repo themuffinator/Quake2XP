@@ -258,12 +258,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 
 	
 	if(vert)
-	{
-		if(gl_state.DrawRangeElements && r_DrawRangeElements->value)
-			qglDrawRangeElementsEXT(GL_TRIANGLES, 0, vert, index, GL_UNSIGNED_INT, Index);
-		else
-			qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, Index);
-	}
+		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, Index);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -1290,8 +1285,6 @@ void R_RegisterCvars(void)
 
 	sys_priority =						Cvar_Get("sys_priority", "0", CVAR_ARCHIVE);
 		
-	r_DrawRangeElements	=				Cvar_Get("r_DrawRangeElements","1",CVAR_ARCHIVE);
-			
 	hunk_bsp=							Cvar_Get("hunk_bsp", "20", CVAR_ARCHIVE);
 	hunk_model=							Cvar_Get("hunk_model", "2.4", CVAR_ARCHIVE);
 	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
@@ -1625,22 +1618,6 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_ARB_seamless_cube_map not found\n");
 
 	// ===========================================================================================================================
-
-		gl_state.DrawRangeElements = false;
-	if (strstr(gl_config.extensions_string, "GL_EXT_draw_range_elements")) {
-		gl_state.DrawRangeElements = true;
-		qglDrawRangeElementsEXT = (PFNGLDRAWRANGEELEMENTSEXTPROC) qwglGetProcAddress("glDrawRangeElementsEXT");
-		
-		if(!r_DrawRangeElements->value)
-		Com_Printf(S_COLOR_YELLOW"...ignoring GL_EXT_draw_range_elements\n");
-		else
-		Com_Printf("...using GL_EXT_draw_range_elements\n");
-				
-		} else {
-		Com_Printf(S_COLOR_RED"...GL_EXT_draw_range_elements not found\n");
-		gl_state.DrawRangeElements = false;
-		r_DrawRangeElements = Cvar_Set("r_DrawRangeElements", "0");
-		}
 
 	// openGL 2.0 Unified Separate Stencil
 	qglStencilFuncSeparate		= (PFNGLSTENCILFUNCSEPARATEPROC)	qwglGetProcAddress("glStencilFuncSeparate");

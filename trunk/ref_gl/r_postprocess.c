@@ -56,12 +56,7 @@ void R_BuildFlares (flare_t * light) {
 	light->surf->visframe = r_framecount;
 
 	if (flareVert) {
-
-		if (gl_state.DrawRangeElements && r_DrawRangeElements->value)
-			qglDrawRangeElementsEXT (GL_TRIANGLES, 0, flareVert, index, GL_UNSIGNED_INT, flareIndex);
-		else
-			qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
-
+		qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
 		flareVert = 0;
 		index = 0;
 	}
@@ -105,13 +100,8 @@ void R_BuildFlares (flare_t * light) {
 	flareVert += 4;
 
 
-	if (flareVert) {
-		if (gl_state.DrawRangeElements && r_DrawRangeElements->value)
-			qglDrawRangeElementsEXT (GL_TRIANGLES, 0, flareVert, index, GL_UNSIGNED_INT, flareIndex);
-		else
-			qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
-
-	}
+	if (flareVert)
+		qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
 
 	if (light->surf->ent)
 		qglPopMatrix ();

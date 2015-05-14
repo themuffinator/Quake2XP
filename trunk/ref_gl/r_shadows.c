@@ -207,10 +207,7 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 		numVerts += 3;
 	}
 
-	if (gl_state.DrawRangeElements && r_DrawRangeElements->value)
-		qglDrawRangeElementsEXT (GL_TRIANGLES, 0, numVerts, id, GL_UNSIGNED_INT, icache);
-	else
-		qglDrawElements (GL_TRIANGLES, id, GL_UNSIGNED_INT, icache);
+	qglDrawElements (GL_TRIANGLES, id, GL_UNSIGNED_INT, icache);
 
 	c_shadow_tris += id / 3;
 	c_shadow_volumes++;
@@ -341,7 +338,7 @@ void R_CastAliasShadowVolumes (void) {
 	if (!r_shadows->value || !r_drawEntities->value)
 		return;
 
-	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient /*|| currentShadowLight->isFog*/)
+	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient)
 		return;
 
 	// setup program

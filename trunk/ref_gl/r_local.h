@@ -302,8 +302,6 @@ cvar_t	*r_ssaoBlur;
 
 cvar_t	*sys_priority;
 
-cvar_t	*r_DrawRangeElements;
-
 cvar_t	*r_skipStaticLights;
 cvar_t	*r_ambientLevel;
 cvar_t	*r_lightsWeldThreshold;
