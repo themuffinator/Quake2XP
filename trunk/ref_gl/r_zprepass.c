@@ -35,7 +35,7 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++) {
 		VectorCopy (v, wVertexArray[numVertices]);
 	}
-
+	
 	*vertices = numVertices;
 	*indeces = numIndices;
 
@@ -346,8 +346,10 @@ void R_DrawDepthScene (void) {
 	R_ClearSkyBox ();
 
 	GL_BindProgram (nullProgram, 0);
+
+//	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
 	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0/*gl_state.xyz_offset*/, wVertexArray/*NULL*/);
 
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //bebug tool
 
@@ -355,6 +357,7 @@ void R_DrawDepthScene (void) {
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
 	GL_DrawDepthPoly ();
 
+//	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	qglDisableVertexAttribArray (ATRB_POSITION);
 
 	R_DrawSkyBox (false);

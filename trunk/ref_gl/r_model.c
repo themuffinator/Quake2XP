@@ -859,30 +859,6 @@ void Mod_LoadTexinfo (lump_t * l) {
 			}
 		}
 
-		// Cone Step Maps
-		Com_sprintf (name, sizeof(name), "overrides/%s_step.tga", purename);
-		out->csmMap = GL_FindImage (name, it_bump);
-
-		if (!out->csmMap) {
-			Com_sprintf (name, sizeof(name), "overrides/%s_step.dds", purename);
-			out->csmMap = GL_FindImage (name, it_bump);
-
-
-			if (!out->csmMap) {
-				Com_sprintf (name, sizeof(name), "textures/%s_step.tga", in->texture);
-				out->csmMap = GL_FindImage (name, it_bump);
-
-				if (!out->csmMap) {
-					Com_sprintf (name, sizeof(name), "textures/%s_step.dds", in->texture);
-					out->csmMap = GL_FindImage (name, it_bump);
-
-
-					if (!out->csmMap)
-						out->csmMap = r_notexture;
-					// don't care if it's NULL
-				}
-			}
-		}
 		//
 		// Glow Maps Loading
 		//
@@ -1052,7 +1028,7 @@ SetupSurfaceNeighbors
 Setup the neighour pointers of this surface's polygon.
 ================
 */
-void BuildSurfaceNeighours (msurface_t *surf) {
+void BuildSurfaceNeighbours(msurface_t *surf) {
 	int				i, j, lindex;
 	temp_connect_t	*tempEdge;
 
@@ -1237,7 +1213,7 @@ void Mod_LoadFaces (lump_t * l) {
 	for (surfnum = 0; surfnum < count; surfnum++, surf++) {
 		if (surf->flags & (MSURF_DRAWTURB | MSURF_DRAWSKY))
 			continue;
-		BuildSurfaceNeighours (surf);
+		BuildSurfaceNeighbours(surf);
 	}
 
 	Z_Free (tempEdges);

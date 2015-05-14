@@ -55,14 +55,11 @@ void  RenderLavaSurfaces (msurface_t * surf) {
 	}
 
 	qglUniform4f (lava_parallaxParams, scale[0], scale[1], surf->texInfo->image->upload_width, surf->texInfo->image->upload_height);
-	qglUniform1i (lava_parallaxType, (int)clamp (r_parallax->value, 0, 2));
+	qglUniform1i (lava_parallaxType, (int)clamp (r_parallax->value, 0, 1));
 	qglUniform3fv (lava_viewOrigin, 1, r_origin);
 
 	GL_MBind (GL_TEXTURE0_ARB, surf->texInfo->image->texnum);
 	qglUniform1i (lava_diffuse, 0);
-	GL_MBind (GL_TEXTURE2_ARB, surf->texInfo->csmMap->texnum);
-	qglUniform1i (lava_csm, 1);
-
 
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglEnableVertexAttribArray (ATRB_TEX0);
