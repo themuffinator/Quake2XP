@@ -2273,7 +2273,7 @@ void R_DrawLightFlare () {
 
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
-	unsigned	flareIndex[MAX_INDICES], defBits = 0;
+	index_t		flareIndex[MAX_INDICES];
 	int			flareVert = 0, index = 0, id;
 	vec3_t		vert_array[MAX_FLARES_VERTEX];
 	vec2_t		tex_array[MAX_FLARES_VERTEX];
@@ -2302,8 +2302,8 @@ void R_DrawLightFlare () {
 	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, false, 0, tex_array);
 	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, false, 0, color_array);
 
-	GL_BindProgram (particlesProgram, defBits);
-	id = particlesProgram->id[defBits];
+	GL_BindProgram (particlesProgram, 0);
+	id = particlesProgram->id[0];
 
 	GL_MBind (GL_TEXTURE0_ARB, r_flare->texnum);
 	qglUniform1i (qglGetUniformLocation (id, "u_map0"), 0);
@@ -2355,7 +2355,7 @@ void R_DrawLightFlare () {
 	flareVert += 4;
 
 	if (flareVert) {
-			qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
+		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, flareIndex);
 
 		flareVert = 0;
 		index = 0;
@@ -2373,7 +2373,7 @@ void R_DrawLightFlare () {
 
 void R_LightFlareOutLine () { //flare editing highlights
 
-	unsigned	flareIndex[MAX_INDICES];
+	index_t		flareIndex[MAX_INDICES];
 	int			flareVert = 0, index = 0;
 	vec3_t		vert_array[MAX_FLARES_VERTEX], v[8], tmpOrg;
 
@@ -2431,7 +2431,7 @@ void R_LightFlareOutLine () { //flare editing highlights
 	flareVert += 4;
 
 	if (flareVert) {
-			qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
+		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, flareIndex);
 
 		flareVert = 0;
 		index = 0;

@@ -483,11 +483,11 @@ void R_ClearSkyBox (void) {
 }
 
 
-vec2_t SkyTexCoordArray[2 * MAX_TRIANGLES];
-vec3_t SkyVertexArray[3 * MAX_TRIANGLES];
-vec4_t SkyColorArray[4 * MAX_TRIANGLES];
-unsigned	skyIndex[MAX_INDICES];
-static int numVerts, myIndex;
+vec2_t		SkyTexCoordArray[2 * MAX_TRIANGLES];
+vec3_t		SkyVertexArray[3 * MAX_TRIANGLES];
+vec4_t		SkyColorArray[4 * MAX_TRIANGLES];
+index_t		skyIndex[MAX_INDICES];
+static int	numVerts, myIndex;
 
 void MakeSkyVec (float s, float t, int axis) {
 	vec3_t v, b;
@@ -601,7 +601,7 @@ void R_DrawSkyBox (qboolean color) {
 		MakeSkyVec (skymaxs[0][i], skymaxs[1][i], i);
 		MakeSkyVec (skymaxs[0][i], skymins[1][i], i);
 
-		qglDrawElements (GL_TRIANGLES, myIndex, GL_UNSIGNED_INT, skyIndex);
+		qglDrawElements (GL_TRIANGLES, myIndex, GL_UNSIGNED_SHORT, skyIndex);
 	}
 
 	qglDisableVertexAttribArray (ATRB_POSITION);

@@ -37,7 +37,7 @@ void R_BuildFlares (flare_t * light) {
 
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
-	unsigned	flareIndex[MAX_INDICES];
+	index_t		flareIndex[MAX_INDICES];
 	int			flareVert = 0, index = 0;
 
 	if (!r_skipStaticLights->value)
@@ -56,7 +56,7 @@ void R_BuildFlares (flare_t * light) {
 	light->surf->visframe = r_framecount;
 
 	if (flareVert) {
-		qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
+		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, flareIndex);
 		flareVert = 0;
 		index = 0;
 	}
@@ -101,7 +101,7 @@ void R_BuildFlares (flare_t * light) {
 
 
 	if (flareVert)
-		qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, flareIndex);
+		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, flareIndex);
 
 	if (light->surf->ent)
 		qglPopMatrix ();

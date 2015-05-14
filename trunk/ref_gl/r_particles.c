@@ -45,9 +45,9 @@ void ClampVertexColor (vec4_t color) {
 
 #define MAX_PARTICLE_VERT 4096*4
 
-vec4_t ParticleColor[MAX_PARTICLE_VERT];
-vec3_t ParticleVert[MAX_PARTICLE_VERT];
-vec2_t ParticleTextCoord[MAX_PARTICLE_VERT];
+vec4_t		ParticleColor[MAX_PARTICLE_VERT];
+vec3_t		ParticleVert[MAX_PARTICLE_VERT];
+vec2_t		ParticleTextCoord[MAX_PARTICLE_VERT];
 
 int SortPart (particle_t *a, particle_t *b) {
 	return (a->type + a->flags) - (b->type + b->flags);
@@ -56,8 +56,8 @@ void R_AmbientColor (vec3_t org, vec3_t color);
 
 void R_DrawParticles (void) {
 	particle_t *p;
-	unsigned	ParticleIndex[MAX_INDICES];
 	unsigned	texId, texture = -1, flagId, flags = -1;
+	index_t		ParticleIndex[MAX_INDICES];
 	int			i, len, loc, partVert = 0, index = 0, id, defBits = 0;
 	vec3_t		point, width;
 	vec3_t		move, vec, dir1, dir2, dir3, spdir;
@@ -188,7 +188,7 @@ void R_DrawParticles (void) {
 		if (texture != texId || flags != flagId) {
 
 			if (partVert) {
-				qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, ParticleIndex);
+				qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, ParticleIndex);
 				c_part_tris += index / 3;
 			}
 			texture = texId;
@@ -562,7 +562,7 @@ void R_DrawParticles (void) {
 	}
 
 	if (partVert) {
-		qglDrawElements (GL_TRIANGLES, index, GL_UNSIGNED_INT, ParticleIndex);
+		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, ParticleIndex);
 		c_part_tris += index / 3;
 	}
 

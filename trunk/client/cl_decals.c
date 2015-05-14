@@ -146,9 +146,7 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 	RotatePointAroundVector (axis[2], axis[0], axis[1], angle);
 	CrossProduct (axis[0], axis[2], axis[1]);
 
-	numfragments = R_GetClippedFragments (origin, size, axis,	// clip it
-		MAX_DECAL_VERTS, verts,
-		MAX_DECAL_FRAGMENTS, fragments);
+	numfragments = R_GetClippedFragments (origin, size, axis, MAX_DECAL_VERTS, verts, MAX_DECAL_FRAGMENTS, fragments);
 
 	// no valid fragments
 	if (!numfragments)
