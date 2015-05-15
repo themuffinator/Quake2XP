@@ -786,6 +786,7 @@ void DeathmatchScoreboardMessage (edict_t *client, edict_t *killer);
 //
 void PlayerNoise (edict_t *who, vec3_t where, int type);
 
+void Coop_Respawn_Items(edict_t *ent);
 //
 // m_move.c
 //

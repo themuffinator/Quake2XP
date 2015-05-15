@@ -54,6 +54,15 @@ static int	quad_drop_timeout_hack;
 
 //======================================================================
 
+void Coop_Respawn_Items(edict_t *ent){
+
+	if (!coop->value)
+		return;
+
+	if (!(ent->spawnflags & (DROPPED_ITEM | DROPPED_PLAYER_ITEM)))
+		SetRespawn(ent, 30);
+}
+
 /*
 ===============
 GetItemByIndex
@@ -170,6 +179,8 @@ qboolean Pickup_Powerup (edict_t *ent, edict_t *other) {
 		}
 	}
 
+	Coop_Respawn_Items(ent);
+	
 	return true;
 }
 
@@ -192,6 +203,8 @@ qboolean Pickup_Adrenaline (edict_t *ent, edict_t *other) {
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
 
+	Coop_Respawn_Items(ent);
+
 	return true;
 }
 
@@ -200,6 +213,8 @@ qboolean Pickup_AncientHead (edict_t *ent, edict_t *other) {
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
+	
+	Coop_Respawn_Items(ent);
 
 	return true;
 }
@@ -235,6 +250,8 @@ qboolean Pickup_Bandolier (edict_t *ent, edict_t *other) {
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
+
+	Coop_Respawn_Items(ent);
 
 	return true;
 }
@@ -306,6 +323,8 @@ qboolean Pickup_Pack (edict_t *ent, edict_t *other) {
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
+	
+	Coop_Respawn_Items(ent);
 
 	return true;
 }
@@ -470,6 +489,9 @@ qboolean Pickup_Ammo (edict_t *ent, edict_t *other) {
 
 	if (!(ent->spawnflags & (DROPPED_ITEM | DROPPED_PLAYER_ITEM)) && (deathmatch->value))
 		SetRespawn (ent, 30);
+
+	Coop_Respawn_Items(ent);
+
 	return true;
 }
 
@@ -536,6 +558,9 @@ qboolean Pickup_Health (edict_t *ent, edict_t *other) {
 	else {
 		if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 			SetRespawn (ent, 30);
+		
+		Coop_Respawn_Items(ent);
+
 	}
 
 	return true;
@@ -628,6 +653,8 @@ qboolean Pickup_Armor (edict_t *ent, edict_t *other) {
 
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, 20);
+	
+	Coop_Respawn_Items(ent);
 
 	return true;
 }
@@ -682,6 +709,8 @@ qboolean Pickup_PowerArmor (edict_t *ent, edict_t *other) {
 		if (!quantity)
 			ent->item->use (other, ent->item);
 	}
+	
+	Coop_Respawn_Items(ent);
 
 	return true;
 }
