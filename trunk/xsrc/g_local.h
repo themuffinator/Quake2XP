@@ -439,6 +439,7 @@ extern	int	jacket_armor_index;
 extern	int	combat_armor_index;
 extern	int	body_armor_index;
 
+extern cvar_t *sv_stopClock;
 
 // means of death
 #define MOD_UNKNOWN			0

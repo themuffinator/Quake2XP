@@ -188,6 +188,7 @@ void InitGame (void) {
 	net_compatibility = gi.cvar ("net_compatibility", "0", CVAR_SERVERINFO | CVAR_NOSET);
 	r_radialBlur = gi.cvar ("r_radialBlur", "1", CVAR_ARCHIVE);
 
+	sv_stopClock = gi.cvar("sv_stopClock", "0", 0);
 	// items
 	InitItems ();
 
