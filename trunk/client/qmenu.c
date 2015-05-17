@@ -449,13 +449,13 @@ void Menu_DrawStatusBar (const char *string) {
 		int maxcol = VID_WIDTH / 8;
 		int col = maxcol / 2 - l / 2;
 
-		Draw_Fill (0, VID_HEIGHT - 8 - (fontscale - 1) * 4, VID_WIDTH, 8 * fontscale, 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill (0, VID_HEIGHT - 8 - (fontscale* 2 - 1) * 4, VID_WIDTH, 9 * fontscale, 0.3, 0.3, 0.3, 1.0);
 		Set_FontShader (true);
-		Menu_DrawStringScaled ((col * 8) / fontscale*(1 + (fontscale - 1)*0.5), VID_HEIGHT - 8 * fontscale, fontscale, fontscale, string);
+		Menu_DrawStringScaled ((col * 8) / fontscale*(1 + (fontscale - 1)*0.5), VID_HEIGHT - 10 * fontscale, fontscale, fontscale, string);
 		Set_FontShader (false);
 	}
 	else {
-		Draw_Fill (0, VID_HEIGHT - 8 - (fontscale - 1) * 4, VID_WIDTH, 8 * fontscale, 0.0, 0.0, 0.0, 0.0);
+		Draw_Fill (0, VID_HEIGHT - 8 - (fontscale - 1) * 4, VID_WIDTH, 9 * fontscale, 0.0, 0.0, 0.0, 0.0);
 	}
 }
 

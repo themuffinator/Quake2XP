@@ -307,8 +307,6 @@ typedef struct model_s {
 	int			*indexArray;
 	int			numIndices;
 
-	int			*indexArray2;
-	int			numIndices2;
 	GLuint		vboId;
 	int			memorySize;
 

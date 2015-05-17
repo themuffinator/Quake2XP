@@ -240,6 +240,9 @@ qboolean R_EntityInLightBounds () {
 		VectorAdd (currententity->origin, currententity->model->mins, mins);
 	}
 
+	if (!InLightVISEntity())
+		return false;
+
 	if (currentShadowLight->spherical) {
 
 		if (!BoundsAndSphereIntersect (mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
@@ -252,9 +255,6 @@ qboolean R_EntityInLightBounds () {
 	}
 
 	if (VectorCompare (currentShadowLight->origin, currententity->origin))
-		return false;
-
-	if (!InLightVISEntity())
 		return false;
 
 	return true;

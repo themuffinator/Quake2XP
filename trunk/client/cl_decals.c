@@ -175,12 +175,6 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 		d->sFactor = sFactor;
 		d->dFactor = dFactor;
 
-		VectorCopy (fr->surf->plane->normal, d->direction);
-
-		// reverse direction
-		if (!(fr->surf->flags & MSURF_PLANEBACK))
-			VectorNegate (d->direction, d->direction);
-
 		VectorCopy (origin, d->org);
 		VectorSet (d->color, red, green, blue);
 		VectorSet (d->endColor, endRed, endGreen, endBlue);

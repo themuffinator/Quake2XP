@@ -23,18 +23,16 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	if (numIndices == 0xffffffff)
 		numIndices = 0;
 
-	for (i = 0; i < nv - 2; i++) {
-		indexArray[numIndices++] = numVertices;
-		indexArray[numIndices++] = numVertices + i + 1;
-		indexArray[numIndices++] = numVertices + i + 2;
+	for (i = 0; i < nv - 2; i++)
+	{
+		indexArray[numIndices++] = surf->baseIndex;
+		indexArray[numIndices++] = surf->baseIndex + i + 1;
+		indexArray[numIndices++] = surf->baseIndex + i + 2;
 	}
 
 	p = surf->polys;
 	v = p->verts[0];
 
-	for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++) {
-		VectorCopy (v, wVertexArray[numVertices]);
-	}
 	
 	*vertices = numVertices;
 	*indeces = numIndices;
@@ -54,14 +52,14 @@ static void GL_DrawDepthPoly () {
 	for (i = 0; i < num_depth_surfaces; i++) {
 		s = scene_surfaces[i];
 
-	repeat:
+//	repeat:
 		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
 			if (numIndices != 0xFFFFFFFF) {
 				qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 			}
-			goto repeat;
+//			goto repeat;
 		}
 	}
 
@@ -246,14 +244,16 @@ void R_DrawDepthBrushModel (void) {
 	qglPushMatrix ();
 	R_RotateForEntity (currententity);
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.xyz_offset));
 
 	num_depth_surfaces = 0;
 	R_AddBModelDepthPolys ();
 	GL_DrawDepthPoly ();
 
 	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	qglPopMatrix ();
 }
 
@@ -347,17 +347,17 @@ void R_DrawDepthScene (void) {
 
 	GL_BindProgram (nullProgram, 0);
 
-//	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
 	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0/*gl_state.xyz_offset*/, wVertexArray/*NULL*/);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.xyz_offset));
 
-//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //bebug tool
+//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
 	GL_DrawDepthPoly ();
-
-//	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	qglDisableVertexAttribArray (ATRB_POSITION);
 
 	R_DrawSkyBox (false);

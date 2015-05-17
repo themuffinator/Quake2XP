@@ -1051,10 +1051,11 @@ void BuildSurfaceNeighbours(msurface_t *surf) {
 Mod_LoadFaces
 =================
 */
+extern index_t	indexArray[MAX_BATCH_SURFS * 3];
 
 void Mod_BuildVertexCache () {
 	msurface_t      *surf;
-	int         i, vbo_size, vb;
+	int         i, vbo_size, vb, idx = 0, numIndices = 0;
 	int         xyz_size, st_size, lm_size, nm_size, tg_size, bn_size;
 	float   *buf;
 
@@ -1091,9 +1092,11 @@ void Mod_BuildVertexCache () {
 	// fill vbo
 	vb = 0;
 	for (i = 0, surf = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surf++) {
-		int                     jj, nv = surf->polys->numVerts;
-		glpoly_t        *p = surf->polys;
-		float           *v;
+		int         jj, nv = surf->polys->numVerts;
+		glpoly_t    *p = surf->polys;
+		float       *v;
+		
+		surf->baseIndex = idx;
 
 		v = p->verts[0];
 		for (jj = 0; jj < nv; jj++, v += VERTEXSIZE, vb++) {
@@ -1119,7 +1122,10 @@ void Mod_BuildVertexCache () {
 			buf[gl_state.bn_offset / 4 + vb * 3 + 0] = v[13];
 			buf[gl_state.bn_offset / 4 + vb * 3 + 1] = v[14];
 			buf[gl_state.bn_offset / 4 + vb * 3 + 2] = v[15];
+			
+			idx++;
 		}
+
 	}
 
 	qglGenBuffers (1, &gl_state.vbo_BSP);
@@ -1129,6 +1135,8 @@ void Mod_BuildVertexCache () {
 	Com_DPrintf (""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
 	free (buf);
 }
+
+
 
 void Mod_LoadFaces (lump_t * l) {
 	dface_t		*in;

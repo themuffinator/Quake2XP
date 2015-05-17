@@ -1360,6 +1360,8 @@ PARSER
 #define BIT(num)				(1 << (num))
 #endif
 
+#define BUFFER_OFFSET(i) ((byte *)NULL + (i))
+
 typedef enum {
 	PF_NOERRORS = BIT (0),
 	PF_NOWARNINGS = BIT (1),

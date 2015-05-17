@@ -76,7 +76,7 @@ vec3_t DecalVertexArray [MAX_DECAL_ARRAY_VERTS];
 void R_RenderDecals(void)
 {
     decals_t    *dl, *next, *active; 
-    vec3_t		v, decalColor;
+    vec3_t		decalColor;
     unsigned    tex, texture = 0;
     int			x, i;
     int			numIndices = 0, numVertices = 0;
@@ -123,10 +123,6 @@ void R_RenderDecals(void)
 			  CL_FreeDecal(dl);
               continue;
 		  }
-
-          VectorSubtract(dl->org, r_origin, v);
-          if (DotProduct(dl->direction, v) < 0.0)
-               continue;
        	
 		  if( R_CullSphere(dl->org, dl->size*1.3) )
 				continue;

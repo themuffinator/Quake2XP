@@ -680,6 +680,8 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 0);
 	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_sky, 0);
+	qglUniform1i(gen_tex, 0);
 	qglUniform4f(gen_color, r, g, b, a);
 	qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 

@@ -909,7 +909,7 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawLightInteractions();
 	R_RenderDecals();
 	R_RenderFlares();
-
+	
 	R_CaptureColorBuffer();
 	R_DrawReflectivePoly();
 	R_DrawAlphaPoly();
@@ -1179,6 +1179,7 @@ Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "0");
 Cvar_Set("r_softParticles", "0");
 Cvar_Set("r_motionBlur", "0");
+Cvar_Set("r_ssao", "0");
 
 vid_ref->modified = true;
 }
@@ -1200,6 +1201,7 @@ Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "1");
 Cvar_Set("r_softParticles", "1");
 Cvar_Set("r_motionBlur", "0");
+Cvar_Set("r_ssao", "0");
 
 vid_ref->modified = true;
 }
@@ -1222,6 +1224,7 @@ Cvar_Set("r_radialBlur", "1");
 Cvar_Set("r_softParticles", "1");
 Cvar_Set("r_fxaa", "1");
 Cvar_Set("r_motionBlur", "1");
+Cvar_Set("r_ssao", "1");
 
 vid_ref->modified = true;
 }
@@ -1285,11 +1288,9 @@ void R_RegisterCvars(void)
 
 	sys_priority =						Cvar_Get("sys_priority", "0", CVAR_ARCHIVE);
 		
-	hunk_bsp=							Cvar_Get("hunk_bsp", "20", CVAR_ARCHIVE);
+	hunk_bsp=							Cvar_Get("hunk_bsp", "70", CVAR_ARCHIVE);
 	hunk_model=							Cvar_Get("hunk_model", "2.4", CVAR_ARCHIVE);
 	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
-	
-//	r_vbo=								Cvar_Get("r_vbo", "1", CVAR_ARCHIVE);
 
 	r_parallax=							Cvar_Get("r_parallax", "1", CVAR_ARCHIVE);
 	r_parallaxScale=					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);

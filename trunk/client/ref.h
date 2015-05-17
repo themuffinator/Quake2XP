@@ -369,7 +369,9 @@ typedef struct msurface_s {
 	int	xyz_size;
 	int st_size;
 	int lm_size;
-	int has_vbo;
+
+	int	baseIndex;
+	int numIdx;
 
 } msurface_t;
 
@@ -413,7 +415,6 @@ typedef struct decals_t {
 
 	vec3_t verts[MAX_DECAL_VERTS];
 	vec2_t stcoords[MAX_DECAL_VERTS];
-	vec3_t direction;
 	vec3_t color;
 	vec3_t endColor;
 	float alpha;

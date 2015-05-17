@@ -674,6 +674,8 @@ typedef struct {
 	GLuint	vbo_Dynamic;
 	GLuint	ibo_Dynamic;
 	GLuint	vbo_BSP;
+	GLuint	ibo_BSP;
+
 	int xyz_offset;
 	int st_offset;
 	int lm_offset;
