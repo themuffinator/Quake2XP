@@ -876,10 +876,11 @@ c_decal_tris;
 
 extern cvar_t *cl_drawfps;
 extern cvar_t *cl_hudScale;
+extern int num_visLights;
 
 void SCR_DrawSpeeds (void) {
 
-	char	bsp[18], alias[18], st[18], partTris[18], flares[18], shadow[18], decals[18], dtr[18];
+	char	bsp[18], alias[18], st[18], partTris[18], flares[18], shadow[18], decals[18], dtr[18], lt[18];
 	float	fontscale = cl_fontScale->value;
 
 	if (!r_speeds->value)
@@ -893,6 +894,7 @@ void SCR_DrawSpeeds (void) {
 	sprintf (shadow, "%i shadows", c_shadow_volumes);
 	sprintf (decals, "%i decals", c_decals);
 	sprintf (dtr, "%i d_tris", c_decal_tris);
+	sprintf(lt, "%i vis lights", num_visLights);
 
 	Set_FontShader (true);
 	RE_SetColor (colorCyan);
@@ -903,6 +905,7 @@ void SCR_DrawSpeeds (void) {
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 40 * fontscale, fontscale, fontscale, flares);
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 50 * fontscale, fontscale, fontscale, shadow);
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 60 * fontscale, fontscale, fontscale, dtr);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 70 * fontscale, fontscale, fontscale, lt);
 	RE_SetColor (colorWhite);
 	Set_FontShader (false);
 }
