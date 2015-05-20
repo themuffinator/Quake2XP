@@ -1902,27 +1902,16 @@ void R_CalcCubeMapMatrix (qboolean model) {
 }
 
 
-qboolean R_DrawLightOccluders () {
+void R_DrawLightOccluders () {
 	vec3_t		v[8];
 	vec3_t		tmpOrg;
 	vec3_t		radius;
-	int			sampleCount, ready;
-	int			id;
-	unsigned	defBits = 0;
 
-	if (!r_useLightOccluders->value)
-		return true;
-
-	if (!currentShadowLight->isStatic)
-		return true;
-
-	if (BoundsIntersectsPoint (currentShadowLight->mins, currentShadowLight->maxs, r_origin))
-		return true;
+	if (!r_useLightOccluders->value || currentShadowLight->isNoWorldModel || !currentShadowLight->isStatic)
+		return;
 
 	// setup program
-	GL_BindProgram (nullProgram, defBits);
-	id = nullProgram->id[defBits];
-
+	GL_BindProgram (nullProgram, 0);
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
 
@@ -1930,6 +1919,12 @@ qboolean R_DrawLightOccluders () {
 	GL_Disable (GL_TEXTURE_2D);
 	GL_Disable (GL_CULL_FACE);
 	GL_Disable (GL_BLEND);
+	GL_Disable(GL_SCISSOR_TEST);
+	GL_Disable(GL_STENCIL_TEST);
+
+	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
+
 
 	VectorCopy (currentShadowLight->origin, tmpOrg);
 	VectorScale (currentShadowLight->radius, r_occLightBoundsSize->value, radius);
@@ -1942,8 +1937,6 @@ qboolean R_DrawLightOccluders () {
 	VectorSet (v[5], tmpOrg[0] + radius[0], tmpOrg[1] - radius[1], tmpOrg[2] + radius[2]);
 	VectorSet (v[6], tmpOrg[0] + radius[0], tmpOrg[1] + radius[1], tmpOrg[2] - radius[2]);
 	VectorSet (v[7], tmpOrg[0] + radius[0], tmpOrg[1] + radius[1], tmpOrg[2] + radius[2]);
-
-	currentShadowLight->framecount = occ_framecount;
 
 	qglBeginQueryARB (gl_state.query_passed, lightsQueries[currentShadowLight->occQ]);
 
@@ -1998,22 +1991,22 @@ qboolean R_DrawLightOccluders () {
 	GL_Enable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);
 	GL_Enable (GL_BLEND);
+	if (r_shadows->value)
+		GL_Enable(GL_STENCIL_TEST);
+
+	if (r_useLightScissors->value)
+		GL_Enable(GL_SCISSOR_TEST);
+
+	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
+
 	GL_BindNullProgram ();
 	qglDisableVertexAttribArray (ATRB_POSITION);
 
-	if (currentShadowLight->framecount == occ_framecount - 1)
-	do {
-		qglGetQueryObjectivARB (lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_AVAILABLE_ARB, &ready);
-	} while (!ready);
-
-	if (ready)
-		qglGetQueryObjectivARB (lightsQueries[currentShadowLight->occQ], GL_QUERY_RESULT_ARB, &sampleCount);
-
-	if (!sampleCount)
-		return false;
+	if (BoundsAndSphereIntersect(currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
 	else
-		return true;
-
+		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_WAIT);
 }
 
 /*
@@ -2511,4 +2504,118 @@ void R_LightFlareOutLine () { //flare editing highlights
 	GL_Enable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);
 	qglDisableVertexAttribArray (ATRB_POSITION);
+}
+
+
+void R_DrawLightBounds(void) {
+
+	vec3_t		v[8];
+	vec3_t		tmpOrg;
+
+	if (!r_debugLights->value)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	if (!currentShadowLight->isStatic)
+		return;
+
+	GL_Disable(GL_SCISSOR_TEST);
+
+	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
+
+	GL_Disable(GL_BLEND);
+	GL_Disable(GL_STENCIL_TEST);
+	GL_Disable(GL_TEXTURE_2D);
+	GL_Disable(GL_CULL_FACE);
+
+	if (r_debugLights->value == 2)
+		GL_Disable(GL_DEPTH_TEST);
+
+	// setup program
+	GL_BindProgram(genericProgram, 0);
+	qglUniform1i(gen_attribColors, 0);
+	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_sky, 0);
+	qglUniform4f(gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
+		
+	VectorCopy(currentShadowLight->origin, tmpOrg);
+
+
+	VectorSet(v[0], tmpOrg[0] - 5, tmpOrg[1] - 5, tmpOrg[2] - 5);
+	VectorSet(v[1], tmpOrg[0] - 5, tmpOrg[1] - 5, tmpOrg[2] + 5);
+	VectorSet(v[2], tmpOrg[0] - 5, tmpOrg[1] + 5, tmpOrg[2] - 5);
+	VectorSet(v[3], tmpOrg[0] - 5, tmpOrg[1] + 5, tmpOrg[2] + 5);
+	VectorSet(v[4], tmpOrg[0] + 5, tmpOrg[1] - 5, tmpOrg[2] - 5);
+	VectorSet(v[5], tmpOrg[0] + 5, tmpOrg[1] - 5, tmpOrg[2] + 5);
+	VectorSet(v[6], tmpOrg[0] + 5, tmpOrg[1] + 5, tmpOrg[2] - 5);
+	VectorSet(v[7], tmpOrg[0] + 5, tmpOrg[1] + 5, tmpOrg[2] + 5);
+
+	//front
+	VA_SetElem3(vCache[0], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[1], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[2], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[3], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[4], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[5], v[3][0], v[3][1], v[3][2]);
+	//right
+	VA_SetElem3(vCache[6], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[7], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[8], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[9], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[10], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[11], v[5][0], v[5][1], v[5][2]);
+	//bottom
+	VA_SetElem3(vCache[12], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[13], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[14], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[15], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(vCache[16], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[17], v[6][0], v[6][1], v[6][2]);
+	//top
+	VA_SetElem3(vCache[18], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[19], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[20], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[21], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(vCache[22], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[23], v[7][0], v[7][1], v[7][2]);
+	//left
+	VA_SetElem3(vCache[24], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[25], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(vCache[26], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[27], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(vCache[28], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[29], v[7][0], v[7][1], v[7][2]);
+	//back
+	VA_SetElem3(vCache[30], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[31], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(vCache[32], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(vCache[33], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(vCache[34], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(vCache[35], v[7][0], v[7][1], v[7][2]);
+
+	qglDrawArrays(GL_TRIANGLES, 0, 36);
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	GL_BindNullProgram();
+	GL_Enable(GL_TEXTURE_2D);
+	GL_Enable(GL_CULL_FACE);
+	GL_Enable(GL_BLEND);
+
+	if (r_debugLights->value == 2)
+		GL_Enable(GL_DEPTH_TEST);
+
+	if (r_shadows->value)
+		GL_Enable(GL_STENCIL_TEST);
+
+	if (r_useLightScissors->value)
+		GL_Enable(GL_SCISSOR_TEST);
+
+	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 }

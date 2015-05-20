@@ -2715,7 +2715,7 @@ void R_EndRegistration (void) {
 	aliasSize = 0;
 	spriteSize = 0;
 	qglClear (GL_COLOR_BUFFER_BIT);
-	qglClearColor (0.0, 0.0, 0.0, 1);
+	qglClearColor (0.0, 0.0, 0.0, 0.0);
 
 	GL_SetDefaultState ();
 

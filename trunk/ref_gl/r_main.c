@@ -275,34 +275,7 @@ R_DrawNullModel
 */
 void R_DrawNullModel(void)
 {
-	int i;
-
-	if (currententity->flags & (RF_VIEWERMODEL))
-		return;
-
-	qglPushMatrix();
-	R_RotateForEntity(currententity);
-
-	qglDisable(GL_TEXTURE_2D);
-	GL_Color3f(1, 0, 1);
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3f(0, 0, -8);
-	for (i = 0; i <= 4; i++)
-		qglVertex3f(8 * cos(i * M_PI * 0.5f), 8 * sin(i * M_PI * 0.5f),
-					0);
-	qglEnd();
-
-	qglBegin(GL_TRIANGLE_FAN);
-	qglVertex3f(0, 0, 8);
-	for (i = 4; i >= 0; i--)
-		qglVertex3f(8 * cos(i * M_PI * 0.5f), 8 * sin(i * M_PI * 0.5f),
-					0);
-	qglEnd();
-
-	GL_Color3f(1, 1, 1);
-	qglPopMatrix();
-	qglEnable(GL_TEXTURE_2D);
+	return;
 }
 
 //=======================================================================
@@ -331,9 +304,6 @@ void R_SetupFrame(void)
 		r_oldviewcluster2 = r_viewcluster2;
 		leaf = Mod_PointInLeaf(r_origin, r_worldmodel);
 		r_viewcluster = r_viewcluster2 = leaf->cluster;
-		
-		if (r_viewcluster == -1)
-			qglClear(GL_COLOR_BUFFER_BIT);
 		
 		// check above and below so crossing solid water doesn't draw
 		// wrong
@@ -372,9 +342,8 @@ void R_SetupFrame(void)
 		GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
-			qglClearColor(0.35, 0.35, 0.35, 1);
+			qglClearColor(0.0, 0.0, 0.0, 0.0);
 			qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			qglClearColor(0.35, 0.35, 0.35, 1);
 		} else
 			qglClear(GL_DEPTH_BUFFER_BIT);
 		GL_Disable(GL_SCISSOR_TEST);
@@ -724,7 +693,7 @@ void R_DrawLightInteractions(void)
 
 	if (r_skipStaticLights->value && currentShadowLight->isStatic)
 		continue;
-
+	
 	UpdateLightEditor();
 	
 	R_SetViewLightScreenBounds();
@@ -734,15 +703,16 @@ void R_DrawLightInteractions(void)
 	
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
-	
+
 	qglClearStencil(128);
 	GL_StencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
-
+	
 	R_CastBspShadowVolumes();		// bsp and bmodels shadows
 	R_CastAliasShadowVolumes();		// alias models shadows
 	R_DrawLightWorld();				// light world
 	R_DrawLightFlare();				// light flare
+	R_DrawLightBounds();			// debug stuff
 
 	//entities lightpass w/o player weapon
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -769,6 +739,7 @@ void R_DrawLightInteractions(void)
 			R_DrawAliasModelLightPass(false);
 		}
 	num_visLights++;
+
 	}
 	}
 	
@@ -873,9 +844,10 @@ void R_DrawDepthScene(void);
 void R_DownsampleDepth(void);
 
 void R_RenderView (refdef_t *fd) {
+
 	if (r_noRefresh->value)
 		return;
-	
+
 	r_newrefdef = *fd;
 	r_newrefdef.viewport[0] = fd->x;
 	r_newrefdef.viewport[1] = vid.height - fd->height - fd->y;
@@ -907,6 +879,7 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawEntitiesOnList();
 
 	R_DrawLightInteractions();
+
 	R_RenderDecals();
 	R_RenderFlares();
 	
@@ -921,7 +894,6 @@ void R_RenderView (refdef_t *fd) {
 
 	R_CaptureColorBuffer();
 	R_DrawPlayerWeaponFBO();
-	
 }
 
 void R_SetGL2D (void) {
@@ -1304,7 +1276,8 @@ void R_RegisterCvars(void)
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "65", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
-//	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
+	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
+//	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
 //	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
 //	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 	r_specularScale =					Cvar_Get("r_specularScale", "1", CVAR_ARCHIVE);
@@ -1643,7 +1616,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 	gl_state.depthBoundsTest = false;
 	}
-	/*
+	
 	gl_state.arb_occlusion = false;
 	gl_state.arb_occlusion2 = false;
 	if (strstr(gl_config.extensions_string, "GL_ARB_occlusion_query")) {
@@ -1686,7 +1659,7 @@ int R_Init(void *hinstance, void *hWnd)
 		gl_state.arb_occlusion = false;
 	}
 
-*/
+
 	gl_state.nPot = false;
 	if (strstr
 		(gl_config.extensions_string, "GL_ARB_texture_non_power_of_two")) {
@@ -1773,7 +1746,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 	}
 
-/*	gl_state.conditional_render = false;
+	gl_state.conditional_render = false;
 			
 	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
 	glEndConditionalRenderNV	= (PFNGLENDCONDITIONALRENDERNVPROC)		qwglGetProcAddress("glEndConditionalRenderNV");
@@ -1789,7 +1762,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_conditional_render not found\n");
 		gl_state.conditional_render = false;		
 	}
-	*/
+	
 	if (strstr(gl_config.extensions_string, "GL_ARB_draw_buffers")) {
 		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
 		
@@ -1998,10 +1971,9 @@ void R_Shutdown(void)
 	ilShutDown();
 	R_ShutdownPrograms();
 		    
-//	if(qglDeleteQueriesARB){
-//	qglDeleteQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
-//	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
-//	}
+	if(qglDeleteQueriesARB){
+	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
+	}
 	
 	DeleteShadowVertexBuffers();
 
@@ -2122,10 +2094,8 @@ void R_SetPalette(const unsigned char *palette)
 			rp[i * 4 + 3] = 0xff;
 		}
 	}
-	qglClearColor(0.35, 0.35, 0.35, 1);
+	qglClearColor(0, 0, 0, 0);
 	qglClear(GL_COLOR_BUFFER_BIT);
-	qglClearColor(0.35, 0.35, 0.35, 1);
-	
 }
 
 /*

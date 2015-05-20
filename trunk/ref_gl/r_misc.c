@@ -971,7 +971,7 @@ void GL_Strings_f (void) {
 */
 
 void GL_SetDefaultState (void) {
-	qglClearColor (0, 0, 0, 1);
+
 	qglEnable (GL_TEXTURE_2D);
 
 	// font color

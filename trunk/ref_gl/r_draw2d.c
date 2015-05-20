@@ -725,8 +725,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	int			id;
 	unsigned	defBits = 0;
 
-	qglClear(GL_COLOR_BUFFER_BIT);
-	qglClearColor(0.0, 0.0, 0.0, 1);
+	qglClearColor(0.0, 0.0, 0.0, 1.0);
 
 	// setup program
 	GL_BindProgram(cinProgram, defBits);

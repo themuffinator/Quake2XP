@@ -1084,7 +1084,7 @@ void R_DrawBSP (void) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-
+	
 	currentmodel = r_worldmodel;
 
 	VectorCopy(r_newrefdef.vieworg, modelorg);

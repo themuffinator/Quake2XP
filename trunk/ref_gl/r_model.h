@@ -70,7 +70,7 @@ typedef struct worldShadowLight_s {
 
 	qboolean	spherical;
 	qboolean	castCaustics;
-
+	qboolean	visible;
 	uint		occQ;
 	cplane_t	frust[6];
 	char		targetname[MAX_QPATH];

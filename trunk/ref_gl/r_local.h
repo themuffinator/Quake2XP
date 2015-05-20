@@ -456,7 +456,7 @@ qboolean HasSharedLeafs (byte *v1, byte *v2);
 qboolean InLightVISEntity ();
 float SphereInFrustum (vec3_t o, float radius);
 void R_DrawLightBrushModel ();
-qboolean R_DrawLightOccluders ();
+void R_DrawLightOccluders ();
 void UpdateLightEditor (void);
 void Load_LightFile ();
 void R_SetViewLightDepthBounds ();
@@ -472,6 +472,8 @@ qboolean BoxOutsideFrustum (vec3_t mins, vec3_t maxs);
 void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare ();
+void R_DrawLightBounds(void);
+
 void GL_LoadMatrix (GLenum mode, const mat4_t matrix);
 
 // TODO: move to common/q_math.h
