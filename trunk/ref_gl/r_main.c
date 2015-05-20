@@ -1616,7 +1616,8 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 	gl_state.depthBoundsTest = false;
 	}
-	
+
+	/*
 	gl_state.arb_occlusion = false;
 	gl_state.arb_occlusion2 = false;
 	if (strstr(gl_config.extensions_string, "GL_ARB_occlusion_query")) {
@@ -1658,7 +1659,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query not found\n");
 		gl_state.arb_occlusion = false;
 	}
-
+*/
 
 	gl_state.nPot = false;
 	if (strstr
@@ -1745,7 +1746,7 @@ int R_Init(void *hinstance, void *hWnd)
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 	}
-
+	/*
 	gl_state.conditional_render = false;
 			
 	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
@@ -1762,7 +1763,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_conditional_render not found\n");
 		gl_state.conditional_render = false;		
 	}
-	
+*/	
 	if (strstr(gl_config.extensions_string, "GL_ARB_draw_buffers")) {
 		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
 		
@@ -1771,12 +1772,12 @@ int R_Init(void *hinstance, void *hWnd)
 	else
 		Com_Printf(S_COLOR_RED"...using GL_ARB_draw_buffers not found\n");
 	}
-
+	/*
 	if (strstr(gl_config.extensions_string, "GL_ARB_texture_float")) 
 		Com_Printf("...using GL_ARB_texture_float\n");
 	else
 		Com_Printf(S_COLOR_RED"...using GL_ARB_texture_float not found\n");
-
+*/
 
 	if (strstr(gl_config.extensions_string, "GL_ARB_framebuffer_object")) {
 		Com_Printf("...using GL_ARB_framebuffer_object\n");  
