@@ -31,8 +31,7 @@ vec2_t	texCoord[MAX_VERTEX_ARRAY];
 vec2_t	texCoord1[MAX_VERTEX_ARRAY];
 vec3_t	vertCoord[MAX_VERTEX_ARRAY];
 vec4_t	colorCoord[MAX_VERTEX_ARRAY];
-index_t	iCache[MAX_INDICES];
-int		idx, numVerts;
+
 /*
 ===============
 R_LoadFont
@@ -56,7 +55,7 @@ void R_LoadFont(void)
 void Set_FontShader(qboolean enable){
 
 	if (enable){
-
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
 		qglEnableVertexAttribArray(ATRB_POSITION);
 		qglEnableVertexAttribArray(ATRB_TEX0);
 		qglEnableVertexAttribArray(ATRB_COLOR);
@@ -68,6 +67,7 @@ void Set_FontShader(qboolean enable){
 		GL_BindProgram(genericProgram, 0);
 		qglUniform1i(gen_attribColors, 1);
 		qglUniform1i(gen_attribConsole, 0);
+		qglUniform1i(gen_sky, 0);
 		qglUniform1i(gen_tex, 0);
 		qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 	}
@@ -77,6 +77,7 @@ void Set_FontShader(qboolean enable){
 		qglDisableVertexAttribArray(ATRB_POSITION);
 		qglDisableVertexAttribArray(ATRB_TEX0);
 		qglDisableVertexAttribArray(ATRB_COLOR);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 }
@@ -118,15 +119,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	VA_SetElem4(colorCoord[2], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 	VA_SetElem4(colorCoord[3], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 
-	idx = numVerts = 0;
-	iCache[idx++] = numVerts + 0;
-	iCache[idx++] = numVerts + 1;
-	iCache[idx++] = numVerts + 2;
-	iCache[idx++] = numVerts + 0;
-	iCache[idx++] = numVerts + 2;
-	iCache[idx++] = numVerts + 3;
-
-	qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, iCache);
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 }
 
 
@@ -182,15 +175,7 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 
 		px += 8 * scale_x;
 
-		idx = numVerts = 0;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 1;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 3;
-
-		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, iCache);
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	}
 }
 
@@ -258,6 +243,8 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	else
 		console = false;
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_TEX2);
@@ -282,7 +269,8 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_attribColors, 0);
-	
+	qglUniform1i(gen_sky, 0);
+
 	if (console){
 		qglUniform1i(gen_attribConsole, 1);
 	}
@@ -311,18 +299,11 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 		VA_SetElem2(texCoord1[2], gl->sh, gl->th - scroll);
 		VA_SetElem2(texCoord1[3], gl->sl, gl->th - scroll);
 
-		idx = numVerts = 0;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 1;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 3;
-
-		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, iCache);
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 		GL_BindNullProgram();
 		GL_SelectTexture(GL_TEXTURE0_ARB);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		qglDisableVertexAttribArray(ATRB_POSITION);
 		qglDisableVertexAttribArray(ATRB_TEX0);
@@ -361,6 +342,8 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), loadScreenColorFade);
 		
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+
 		qglEnableVertexAttribArray(ATRB_POSITION);
 		qglEnableVertexAttribArray(ATRB_TEX0);
 		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
@@ -378,17 +361,10 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		VA_SetElem2(vertCoord[2], x + w, y + h);
 		VA_SetElem2(vertCoord[3], x, y + h);
 
-		idx = numVerts = 0;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 1;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 3;
-
-		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, iCache);
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 		GL_BindNullProgram();
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		qglDisableVertexAttribArray(ATRB_POSITION);
 		qglDisableVertexAttribArray(ATRB_TEX0);
 }
@@ -426,6 +402,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	if (!gl->has_alpha)
 		GL_Disable(GL_BLEND);
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_COLOR);
@@ -437,6 +414,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_tex, 0);
 	qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 
@@ -460,21 +438,14 @@ void Draw_Pic2(int x, int y, image_t * gl)
 		VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
 		VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
 
-		idx = numVerts = 0;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 1;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 3;
-
-		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, iCache);
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	
 	if (!gl->has_alpha)
 		GL_Enable(GL_BLEND);
 
 	GL_BindNullProgram();
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_COLOR);
@@ -503,6 +474,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 		h = gl->height * sY;
 	}
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_COLOR);
@@ -514,6 +486,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_tex, 0);
 	qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 
@@ -537,15 +510,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 		VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
 		VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
 
-		idx = numVerts = 0;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 1;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 0;
-		iCache[idx++] = numVerts + 2;
-		iCache[idx++] = numVerts + 3;
-
-		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, iCache);
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	
 	if (!gl->has_alpha)
@@ -555,6 +520,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	GL_BindNullProgram();
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_COLOR);
@@ -602,6 +568,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 		return;
 	}
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_COLOR);
@@ -613,6 +580,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_tex, 0);
 	qglUniform1f(gen_colorModulate, r_worldColorScale->value);
 
@@ -633,17 +601,10 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
 	VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
 
-	idx = numVerts = 0;
-	iCache[idx++] = numVerts + 0;
-	iCache[idx++] = numVerts + 1;
-	iCache[idx++] = numVerts + 2;
-	iCache[idx++] = numVerts + 0;
-	iCache[idx++] = numVerts + 2;
-	iCache[idx++] = numVerts + 3;
-
-	qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, iCache);
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	GL_BindNullProgram();
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 	qglDisableVertexAttribArray(ATRB_COLOR);
@@ -674,6 +635,7 @@ Fills a box of pixels with a single color
 void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 {
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertCoord);
 
@@ -690,17 +652,10 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	VA_SetElem2(vertCoord[2], x + w, y + h);
 	VA_SetElem2(vertCoord[3], x, y + h);
 
-	idx = numVerts = 0;
-	iCache[idx++] = numVerts + 0;
-	iCache[idx++] = numVerts + 1;
-	iCache[idx++] = numVerts + 2;
-	iCache[idx++] = numVerts + 0;
-	iCache[idx++] = numVerts + 2;
-	iCache[idx++] = numVerts + 3;
-
-	qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, iCache);
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	
 	GL_BindNullProgram();
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 }
 
@@ -723,13 +678,12 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	float		t;
 	unsigned	*dest;
 	int			id;
-	unsigned	defBits = 0;
 
 	qglClearColor(0.0, 0.0, 0.0, 1.0);
 
 	// setup program
-	GL_BindProgram(cinProgram, defBits);
-	id = cinProgram->id[defBits];
+	GL_BindProgram(cinProgram, 0);
+	id = cinProgram->id[0];
 
 	GL_MBind(GL_TEXTURE0, 0);
 	qglUniform1i(qglGetUniformLocation(id, "u_cinMap"), 0);
@@ -770,6 +724,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	x1 = sw+w;
 	y1 = sh+h;
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 
@@ -786,17 +741,10 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	VA_SetElem2(vertCoord[2], x1, y1);
 	VA_SetElem2(vertCoord[3], x0, y1);
 
-	idx = numVerts = 0;
-	iCache[idx++] = numVerts + 0;
-	iCache[idx++] = numVerts + 1;
-	iCache[idx++] = numVerts + 2;
-	iCache[idx++] = numVerts + 0;
-	iCache[idx++] = numVerts + 2;
-	iCache[idx++] = numVerts + 3;
-
-	qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, iCache);
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	
 	GL_BindNullProgram();
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
 }

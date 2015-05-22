@@ -124,59 +124,7 @@ void R_RotateForEntity(entity_t * e) {
 
 void R_DrawSpriteModel(entity_t * e)
 {
-
-	vec3_t point;
-	dsprframe_t *frame;
-	float *up, *right;
-	dsprite_t *psprite;
-
-	if (e->flags & RF_DISTORT)
-		return;
-
-	// don't even bother culling, because it's just a single
-	// polygon without a surface cache
-
-	psprite = (dsprite_t *) currentmodel->extraData;
-	e->frame %= psprite->numFrames;
-	frame = &psprite->frames[e->frame];
-
-	// normal sprite
-	up = vup;
-	right = vright;
-
-	GL_DepthMask(false);
-	
-	GL_Enable(GL_BLEND);
-	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	GL_Bind(currentmodel->skins[e->frame]->texnum);
-
-	qglBegin(GL_QUADS);
-
-	qglTexCoord2f(0, 1);
-	VectorMA(e->origin, -frame->origin_y, up, point);
-	VectorMA(point, -frame->origin_x, right, point);
-	qglVertex3fv(point);
-
-	qglTexCoord2f(0, 0);
-	VectorMA(e->origin, frame->height - frame->origin_y, up, point);
-	VectorMA(point, -frame->origin_x, right, point);
-	qglVertex3fv(point);
-
-	qglTexCoord2f(1, 0);
-	VectorMA(e->origin, frame->height - frame->origin_y, up, point);
-	VectorMA(point, frame->width - frame->origin_x, right, point);
-	qglVertex3fv(point);
-
-	qglTexCoord2f(1, 1);
-	VectorMA(e->origin, -frame->origin_y, up, point);
-	VectorMA(point, frame->width - frame->origin_x, right, point);
-	qglVertex3fv(point);
-
-	qglEnd();
-
-	GL_Disable(GL_BLEND);
-	GL_DepthMask(true);
+	return;
 }
 
 
@@ -185,8 +133,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	dsprframe_t *frame;
 	float		*up, *right;
 	dsprite_t	*psprite;
-	unsigned	Index[MAX_INDICES];
-	int			vert=0, index=0;
+	int			vert=0;
 	vec3_t		dist;
 	float		len;
 	
@@ -201,17 +148,8 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	up = vup;
 	right = vright;
 
-	GL_Enable(GL_BLEND);
-	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	// setup program
 	GL_BindProgram(refractProgram, 0);
-		
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);	
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
 
 	GL_MBind(GL_TEXTURE0_ARB, r_distort->texnum);
 	qglUniform1i(refract_normalMap, 0);
@@ -222,10 +160,10 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 	qglUniform1i(refract_depthMap, 3);
 
-	qglUniform1f(refract_deformMul, 2.5);
+	qglUniform1f(refract_deformMul, 9.5);
 	qglUniform1f(refract_alpha, e->alpha);
 	qglUniform1f(refract_thickness, len * 0.5);
-	qglUniform1f(refract_thickness2, frame->height * 0.5);
+	qglUniform1f(refract_thickness2, 0.0); //disable softeness
 	qglUniform2f(refract_screenSize, vid.width, vid.height);
 	qglUniform2f(refract_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1i(refract_alphaMask, 1);
@@ -247,23 +185,12 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	VectorMA (wVertexArray[vert+3],frame->width - frame->origin_x, right, wVertexArray[vert+3]);
     VA_SetElem2(wTexArray[vert+3], 1, 1);
 
-	Index[index++] = vert+0;
-	Index[index++] = vert+1;
-	Index[index++] = vert+3;
-	Index[index++] = vert+3;
-	Index[index++] = vert+1;
-	Index[index++] = vert+2;
-			
 	vert+=4;
-
 	
 	if(vert)
-		qglDrawElements(GL_TRIANGLES, index, GL_UNSIGNED_INT, Index);
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
 	GL_BindNullProgram();
-	GL_Disable(GL_BLEND);
 }
 
 //==================================================================================
@@ -805,12 +732,21 @@ void R_DrawPlayerWeapon(void)
 	GL_Disable(GL_BLEND);
 }
 
-void R_RenderDistortModels(void)
+void R_RenderSprites(void)
 {
 	int i;
 
 	GL_DepthMask(0);
-	
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
+
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		currentmodel = currententity->model;
@@ -820,15 +756,17 @@ void R_RenderDistortModels(void)
 
 		if ( r_newrefdef.rdflags & RDF_IRGOGGLES) 
 				continue;
-
-		if (!(currententity->flags & RF_DISTORT))
-			continue;
 		
 		if (currentmodel->type == mod_sprite)
 			R_DrawDistortSpriteModel(currententity);
 	}
-	GL_DepthMask(1);
 
+
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	GL_Disable(GL_BLEND);
+	GL_DepthMask(1);
 }
 
 
@@ -890,7 +828,7 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawParticles();
 
 	R_CaptureColorBuffer();
-	R_RenderDistortModels();
+	R_RenderSprites();
 
 	R_CaptureColorBuffer();
 	R_DrawPlayerWeaponFBO();
@@ -1306,7 +1244,6 @@ void R_RegisterCvars(void)
 
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
-	r_softParticles =					Cvar_Get("r_softParticles", "1", CVAR_ARCHIVE);
 	r_filmGrain = 						Cvar_Get("r_filmGrain", "0", CVAR_ARCHIVE);
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 	
@@ -1728,15 +1665,15 @@ int R_Init(void *hinstance, void *hWnd)
 			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
-			iCache[idx++] = numVerts + 0;
-			iCache[idx++] = numVerts + 1;
-			iCache[idx++] = numVerts + 2;
-			iCache[idx++] = numVerts + 0;
-			iCache[idx++] = numVerts + 2;
-			iCache[idx++] = numVerts + 3;
+			iCache[idx++] = 0;
+			iCache[idx++] = 1;
+			iCache[idx++] = 2;
+			iCache[idx++] = 0;
+			iCache[idx++] = 2;
+			iCache[idx++] = 3;
 			qglGenBuffers(1, &gl_state.ibo_quadTris);
 			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
-			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(GL_UNSIGNED_INT), iCache, GL_STATIC_DRAW_ARB);
+			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(GL_UNSIGNED_SHORT), iCache, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 			qglGenBuffers(1, &gl_state.vbo_Dynamic);
@@ -1972,15 +1909,16 @@ void R_Shutdown(void)
 	ilShutDown();
 	R_ShutdownPrograms();
 		    
-	if(qglDeleteQueriesARB){
-	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
-	}
+//	if(qglDeleteQueriesARB){
+//	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
+//	}
 	
 	DeleteShadowVertexBuffers();
 
 	qglDeleteBuffers(1, &gl_state.vbo_fullScreenQuad);
 	qglDeleteBuffers(1, &gl_state.vbo_halfScreenQuad);
 	qglDeleteBuffers(1, &gl_state.vbo_quarterScreenQuad);
+	qglDeleteBuffers(1, &gl_state.ibo_quadTris);
 	qglDeleteBuffers(1, &gl_state.vbo_Dynamic);
 	qglDeleteBuffers(1, &gl_state.ibo_Dynamic);
 	qglDeleteBuffers(1, &gl_state.vbo_BSP);
@@ -2010,10 +1948,6 @@ void R_BeginFrame()
 	 */
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = true;
-
-	// realtime update
-	if(r_softParticles->modified)
-		r_softParticles->modified = false;
 	
 	if(r_dof->modified)
 		r_dof->modified = false;

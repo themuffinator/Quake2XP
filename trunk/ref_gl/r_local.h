@@ -338,7 +338,6 @@ cvar_t	*r_tbnSmoothAngle;
 
 cvar_t	*r_filmGrain;
 
-cvar_t	*r_softParticles;
 cvar_t	*r_ignoreGlErrors;
 
 cvar_t	*r_lightEditor;
@@ -957,6 +956,7 @@ uint ambientWorld_specularExp;
 uint ambientWorld_viewOrigin;
 uint ambientWorld_parallaxType;
 uint ambientWorld_ambientLevel;
+uint ambientWorld_scroll;
 
 uint lightWorld_diffuse;
 uint lightWorld_normal;
@@ -979,6 +979,7 @@ uint lightWorld_specularExp;
 uint lightWorld_ambient;
 uint lightWorld_attenMatrix;
 uint lightWorld_cubeMatrix;
+uint lightWorld_scroll;
 
 uint ambientAlias_diffuse;
 uint ambientAlias_normalmap;

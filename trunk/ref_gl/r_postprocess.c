@@ -37,8 +37,7 @@ void R_BuildFlares (flare_t * light) {
 
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
-	index_t		flareIndex[MAX_INDICES];
-	int			flareVert = 0, index = 0;
+	int			flareVert = 0;
 
 	if (!r_skipStaticLights->value)
 		return;
@@ -54,12 +53,6 @@ void R_BuildFlares (flare_t * light) {
 	}
 
 	light->surf->visframe = r_framecount;
-
-	if (flareVert) {
-		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, flareIndex);
-		flareVert = 0;
-		index = 0;
-	}
 
 	// Color Fade
 	VectorSubtract (light->origin, r_origin, v);
@@ -90,18 +83,10 @@ void R_BuildFlares (flare_t * light) {
 	VA_SetElem2 (tex_array[flareVert + 3], 1, 1);
 	VA_SetElem4 (color_array[flareVert + 3], tmp[0], tmp[1], tmp[2], 1);
 
-	flareIndex[index++] = flareVert + 0;
-	flareIndex[index++] = flareVert + 1;
-	flareIndex[index++] = flareVert + 3;
-	flareIndex[index++] = flareVert + 3;
-	flareIndex[index++] = flareVert + 1;
-	flareIndex[index++] = flareVert + 2;
-
 	flareVert += 4;
 
-
 	if (flareVert)
-		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, flareIndex);
+		qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	if (light->surf->ent)
 		qglPopMatrix ();
@@ -121,6 +106,7 @@ void R_RenderFlares (void) {
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglEnableVertexAttribArray (ATRB_TEX0);
 	qglEnableVertexAttribArray (ATRB_COLOR);
@@ -168,21 +154,18 @@ void R_RenderFlares (void) {
 		if ((fl->surf->flags & MSURF_PLANEBACK) != sidebit)
 			continue;			// wrong light poly side!
 
-		if (r_softParticles->value)
-			qglUniform1f (qglGetUniformLocation (id, "u_thickness"), fl->size * 1.5);
-		else
-			qglUniform1f (qglGetUniformLocation (id, "u_thickness"), 0.0);
+		qglUniform1f (qglGetUniformLocation (id, "u_thickness"), fl->size * 1.5);
 
 		R_BuildFlares (fl);
 
 	}
 	GL_BindNullProgram ();
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray (ATRB_POSITION);
 	qglDisableVertexAttribArray (ATRB_TEX0);
 	qglDisableVertexAttribArray (ATRB_COLOR);
 	GL_Disable (GL_BLEND);
 	GL_DepthMask (1);
-	//	GL_SelectTexture(GL_TEXTURE0_ARB);
 }
 
 /*
@@ -193,36 +176,51 @@ Post Process Effects
 */
 
 void R_DrawFullScreenQuad () {
+
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, gl_state.vbo_fullScreenQuad);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglVertexAttribPointer (ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
 
-	qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	qglDisableVertexAttribArray (ATRB_POSITION);
+	
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void R_DrawHalfScreenQuad () {
+
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, gl_state.vbo_halfScreenQuad);
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
 
-	qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void R_DrawQuarterScreenQuad () {
+	
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, gl_state.vbo_quarterScreenQuad);
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
 
-	qglDrawArrays (GL_TRIANGLE_FAN, 0, 4);
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
+	qglDisableVertexAttribArray(ATRB_POSITION);
+	
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void R_Bloom (void) {

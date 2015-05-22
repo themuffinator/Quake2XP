@@ -1004,10 +1004,6 @@ void SCR_UpdateScreen (void) {
 
 	if (cl_fontScale->value < 1)
 		Cvar_SetValue ("cl_fontScale", 1);
-	else
-	if (cl_fontScale->value > 2)
-		Cvar_SetValue ("cl_fontScale", 2);
-
 
 	R_BeginFrame ();
 

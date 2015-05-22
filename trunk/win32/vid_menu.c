@@ -42,7 +42,6 @@ static menuframework_s *s_current_menu;
 
 static menulist_s		s_mode_list;
 static menuslider_s		s_aniso_slider;
-static menuslider_s		s_screensize_slider;
 static menuslider_s		s_brightness_slider;
 static menulist_s  		s_fs_box;
 
@@ -62,11 +61,11 @@ static menuaction_s		s_defaults_action;
 
 static	menulist_s			a_pplWorld_list;
 static	menulist_s			s_radBlur_box;
-static	menulist_s			s_softParticles;
+static	menulist_s			s_ssao;
 static	menulist_s			s_fxaa_box;
 static	menulist_s			s_film_grain;
 static	menulist_s			s_mb_box;
-static menuslider_s		s_ambientLevel_slider;
+static menuslider_s			s_ambientLevel_slider;
 
 
 /////////////////////////////////////////////////////////
@@ -81,11 +80,6 @@ static float ClampCvar (float min, float max, float value) {
 	return value;
 }
 
-static void ScreenSizeCallback (void *s) {
-	menuslider_s *slider = (menuslider_s*)s;
-
-	Cvar_SetValue ("viewsize", slider->curvalue * 10);
-}
 
 static void ambientLevelCallback (void *s) {
 	float ambient = s_ambientLevel_slider.curvalue / 20;
@@ -149,10 +143,10 @@ static void RBCallback (void *s) {
 	Cvar_SetValue ("r_radialBlur", box->curvalue * 1);
 }
 
-static void softPartCallback (void *s) {
+static void ssaoCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_softParticles", box->curvalue * 1);
+	Cvar_SetValue ("r_ssao", box->curvalue * 1);
 }
 
 static void fxaaCallback (void *s) {
@@ -183,53 +177,11 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_bloom", s_bloom_box.curvalue);
 	Cvar_SetValue ("r_dof", s_dof_box.curvalue);
 	Cvar_SetValue ("r_radialBlur", s_radBlur_box.curvalue);
-	Cvar_SetValue ("r_softParticles", s_softParticles.curvalue);
+	Cvar_SetValue ("r_ssao", s_ssao.curvalue);
 	Cvar_SetValue ("r_fxaa", s_fxaa_box.curvalue);
 	Cvar_SetValue ("r_vsync", s_finish_box.curvalue);
 	Cvar_SetValue ("r_filmGrain", s_film_grain.curvalue);
 	Cvar_SetValue ("r_motionBlur", s_mb_box.curvalue);
-
-	if (gl_state.arb_multisample) {
-		// Multisampling
-		if (s_samples_list.curvalue == 1)
-			Cvar_SetValue ("r_arbSamples", 2);
-		else
-		if (s_samples_list.curvalue == 2)
-			Cvar_SetValue ("r_arbSamples", 4);
-		else
-		if (s_samples_list.curvalue == 3)
-			Cvar_SetValue ("r_arbSamples", 8);
-		else
-		if (s_samples_list.curvalue == 4)
-			Cvar_SetValue ("r_arbSamples", 16);
-		else
-		if (s_samples_list.curvalue == 0)
-			Cvar_SetValue ("r_arbSamples", 0);
-	}
-	// displayrefresh
-	if (s_refresh_box.curvalue == 1) {
-		if (r_displayRefresh->value < 60 || r_displayRefresh->value > 75)
-			Cvar_SetValue ("r_displayRefresh", 60);
-	}
-	else if (s_refresh_box.curvalue == 2) {
-		if (r_displayRefresh->value < 70 || r_displayRefresh->value > 85)
-			Cvar_SetValue ("r_displayRefresh", 75);
-	}
-	else if (s_refresh_box.curvalue == 3) {
-		if (r_displayRefresh->value < 85 || r_displayRefresh->value > 100)
-			Cvar_SetValue ("r_displayRefresh", 85);
-	}
-	else if (s_refresh_box.curvalue == 4) {
-		if (r_displayRefresh->value < 100 || r_displayRefresh->value > 120)
-			Cvar_SetValue ("r_displayRefresh", 100);
-	}
-	else if (s_refresh_box.curvalue == 5) {
-		if (r_displayRefresh->value < 120)
-			Cvar_SetValue ("r_displayRefresh", 120);
-	}
-	else
-		Cvar_SetValue ("r_displayRefresh", 0);
-
 
 	/*
 	** update appropriate stuff if we're running OpenGL and gamma
@@ -240,7 +192,6 @@ static void ApplyChanges (void *unused) {
 
 	if (r_anisotropic->modified)
 		vid_ref->modified = true;
-
 
 	if (r_shadows->modified)
 		vid_ref->modified = true;
@@ -266,17 +217,13 @@ static void ApplyChanges (void *unused) {
 	if (r_vsync->modified)
 		vid_ref->modified = true;
 
-	if (r_arbSamples->modified)
-		vid_ref->modified = true;
-
-
 	if (r_dof->modified)
 		vid_ref->modified = true;
 
 	if (r_radialBlur->modified)
 		vid_ref->modified = true;
 
-	if (r_softParticles->modified)
+	if (r_ssao->modified)
 		vid_ref->modified = true;
 
 	if (r_fxaa->modified)
@@ -338,7 +285,6 @@ void VID_MenuInit (void) {
 
 	static char	*yesno_names[] = { "no", "yes", 0 };
 	static char	*adaptive_vc[] = { "no", "default", "adaptive", 0 };
-	static char	*refresh[] = { "desktop", "60hz", "75hz", "85hz", "100hz", "120hz", 0 };
 	static char *ppl[] = { "Full", "Performance", 0 };
 #ifdef __linux__
 	static char	*samples[] = { "[off]", "[2x]", "[4x]", 0 }; // sdl bug work only 2 and 4 samples per pixel
@@ -385,15 +331,11 @@ void VID_MenuInit (void) {
 	if (!r_vsync)
 		r_vsync = Cvar_Get ("r_vsync", "0", CVAR_ARCHIVE);
 
-	if (!scr_viewsize)
-		scr_viewsize = Cvar_Get ("viewsize", "100", CVAR_ARCHIVE);
-
-
 	if (!cl_fontScale)
 		cl_fontScale = Cvar_Get ("cl_fontScale", "1", CVAR_ARCHIVE);
 
-	if (!r_softParticles->value)
-		r_softParticles = Cvar_Get ("r_softParticles", 0, CVAR_ARCHIVE);
+	if (!r_ssao->value)
+		r_ssao = Cvar_Get ("r_ssao", 0, CVAR_ARCHIVE);
 
 	if (!r_fxaa->value)
 		r_fxaa = Cvar_Get ("r_fxaa", 0, CVAR_ARCHIVE);
@@ -415,79 +357,29 @@ void VID_MenuInit (void) {
 	s_mode_list.curvalue = r_mode->value;
 	s_mode_list.generic.statusbar = "Requires Restart Video Sub-System";
 
-	s_samples_list.generic.type = MTYPE_SPINCONTROL;
-	s_samples_list.generic.name = "Multisampling";
-	s_samples_list.generic.x = 0;
-	s_samples_list.generic.y = 20 * cl_fontScale->value;
-	s_samples_list.itemnames = samples;
+	s_fs_box.generic.type = MTYPE_SPINCONTROL;
+	s_fs_box.generic.x = 0;
+	s_fs_box.generic.y = 20 * cl_fontScale->value;
+	s_fs_box.generic.name = "Fullscreen";
+	s_fs_box.itemnames = yesno_names;
+	s_fs_box.curvalue = r_fullScreen->value;
+	s_fs_box.generic.statusbar = "Requires Restart Video Sub-System";
 
-	if (r_arbSamples->value == 16)
-		s_samples_list.curvalue = 4;
-	else
-	if (r_arbSamples->value == 8)
-		s_samples_list.curvalue = 3;
-	else
-	if (r_arbSamples->value == 4)
-		s_samples_list.curvalue = 2;
-	else
-	if (r_arbSamples->value == 2)
-		s_samples_list.curvalue = 1;
-	else
-		s_samples_list.curvalue = 0;
-
-	// displayrefresh
-	r_displayRefresh = Cvar_Get ("r_displayRefresh", "0", CVAR_ARCHIVE);
-	if (r_displayRefresh->value >= 120)
-		s_refresh_box.curvalue = 5;
-	else if (r_displayRefresh->value >= 100)
-		s_refresh_box.curvalue = 4;
-	else if (r_displayRefresh->value >= 85)
-		s_refresh_box.curvalue = 3;
-	else if (r_displayRefresh->value >= 75)
-		s_refresh_box.curvalue = 2;
-	else if (r_displayRefresh->value >= 60)
-		s_refresh_box.curvalue = 1;
-	else
-		s_refresh_box.curvalue = 0;
-
-	s_screensize_slider.generic.type = MTYPE_SLIDER;
-	s_screensize_slider.generic.x = 0;
-	s_screensize_slider.generic.y = 40 * cl_fontScale->value;
-	s_screensize_slider.generic.name = "Screen Size";
-	s_screensize_slider.curvalue = scr_viewsize->value / 10;
-	s_screensize_slider.minvalue = 3;
-	s_screensize_slider.maxvalue = 12;
-	s_screensize_slider.generic.callback = ScreenSizeCallback;
 
 	s_brightness_slider.generic.type = MTYPE_SLIDER;
 	s_brightness_slider.generic.x = 0;
-	s_brightness_slider.generic.y = 50 * cl_fontScale->value;
+	s_brightness_slider.generic.y = 30 * cl_fontScale->value;
 	s_brightness_slider.generic.name = "Gamma";
 	s_brightness_slider.generic.callback = BrightnessCallback;
 	s_brightness_slider.minvalue = 20;
 	s_brightness_slider.maxvalue = 40;
 	s_brightness_slider.curvalue = r_gamma->value * 20;
 
-	s_refresh_box.generic.type = MTYPE_SPINCONTROL;
-	s_refresh_box.generic.x = 0;
-	s_refresh_box.generic.y = 60 * cl_fontScale->value;
-	s_refresh_box.generic.name = "Monitor Refresh";
-	s_refresh_box.itemnames = refresh;
-	s_refresh_box.generic.statusbar = "Requires Restart Video Sub-System";
-
-	s_fs_box.generic.type = MTYPE_SPINCONTROL;
-	s_fs_box.generic.x = 0;
-	s_fs_box.generic.y = 70 * cl_fontScale->value;
-	s_fs_box.generic.name = "Fullscreen";
-	s_fs_box.itemnames = yesno_names;
-	s_fs_box.curvalue = r_fullScreen->value;
-	s_fs_box.generic.statusbar = "Requires Restart Video Sub-System";
-
 	// -----------------------------------------------------------------------
 
 	s_aniso_slider.generic.type = MTYPE_SLIDER;
 	s_aniso_slider.generic.x = 0;
-	s_aniso_slider.generic.y = 90 * cl_fontScale->value;
+	s_aniso_slider.generic.y = 50 * cl_fontScale->value;
 	s_aniso_slider.generic.name = "Texture Anisotropy Level";
 	s_aniso_slider.minvalue = 1;
 	s_aniso_slider.maxvalue = 16;
@@ -496,7 +388,7 @@ void VID_MenuInit (void) {
 
 	s_tc_box.generic.type = MTYPE_SPINCONTROL;
 	s_tc_box.generic.x = 0;
-	s_tc_box.generic.y = 100 * cl_fontScale->value;
+	s_tc_box.generic.y = 60 * cl_fontScale->value;
 	s_tc_box.generic.name = "Texture Compression";
 	s_tc_box.itemnames = yesno_names;
 	s_tc_box.curvalue = r_textureCompression->value;
@@ -507,7 +399,7 @@ void VID_MenuInit (void) {
 	a_pplWorld_list.generic.type = MTYPE_SPINCONTROL;
 	a_pplWorld_list.generic.name = "Realtime Lighting";
 	a_pplWorld_list.generic.x = 0;
-	a_pplWorld_list.generic.y = 120 * cl_fontScale->value;
+	a_pplWorld_list.generic.y = 80 * cl_fontScale->value;
 	a_pplWorld_list.itemnames = ppl;
 	a_pplWorld_list.curvalue = r_skipStaticLights->value;
 	a_pplWorld_list.generic.callback = pplWorldCallBack;
@@ -515,7 +407,7 @@ void VID_MenuInit (void) {
 
 	s_shadow_box.generic.type = MTYPE_SPINCONTROL;
 	s_shadow_box.generic.x = 0;
-	s_shadow_box.generic.y = 130 * cl_fontScale->value;
+	s_shadow_box.generic.y = 90 * cl_fontScale->value;
 	s_shadow_box.generic.name = "Shadows";
 	s_shadow_box.itemnames = yesno_names;
 	s_shadow_box.curvalue = r_shadows->value;
@@ -523,26 +415,26 @@ void VID_MenuInit (void) {
 
 	s_parallax_box.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x = 0;
-	s_parallax_box.generic.y = 140 * cl_fontScale->value;
+	s_parallax_box.generic.y = 100 * cl_fontScale->value;
 	s_parallax_box.generic.name = "Parallax";
 	s_parallax_box.itemnames = yesno_names;
 	s_parallax_box.curvalue = r_parallax->value;
 	s_parallax_box.generic.callback = ParallaxCallback;
-	s_parallax_box.generic.statusbar = "Cone Step Parallax Mapping - Relief Parallax Mapping";
+	s_parallax_box.generic.statusbar = "Relief Parallax Mapping";
 
 	s_ambientLevel_slider.generic.type = MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x = 0;
-	s_ambientLevel_slider.generic.y = 150 * cl_fontScale->value;
+	s_ambientLevel_slider.generic.y = 110 * cl_fontScale->value;
 	s_ambientLevel_slider.generic.name = "Ambient Level";
 	s_ambientLevel_slider.generic.callback = ambientLevelCallback;
 	s_ambientLevel_slider.minvalue = 0;
 	s_ambientLevel_slider.maxvalue = 20;
 	s_ambientLevel_slider.curvalue = r_ambientLevel->value * 20;
-	s_ambientLevel_slider.generic.statusbar = "Realtime World Ambient Lighting Level";
+	s_ambientLevel_slider.generic.statusbar = "Ambient Lighting Level";
 
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;
 	s_flare_box.generic.x = 0;
-	s_flare_box.generic.y = 170 * cl_fontScale->value;
+	s_flare_box.generic.y = 130 * cl_fontScale->value;
 	s_flare_box.generic.name = "Flares";
 	s_flare_box.itemnames = yesno_names;
 	s_flare_box.curvalue = r_drawFlares->value;
@@ -550,7 +442,7 @@ void VID_MenuInit (void) {
 
 	s_bloom_box.generic.type = MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x = 0;
-	s_bloom_box.generic.y = 180 * cl_fontScale->value;
+	s_bloom_box.generic.y = 140 * cl_fontScale->value;
 	s_bloom_box.generic.name = "Light Blooms";
 	s_bloom_box.itemnames = yesno_names;
 	s_bloom_box.curvalue = r_bloom->value;
@@ -558,7 +450,7 @@ void VID_MenuInit (void) {
 
 	s_dof_box.generic.type = MTYPE_SPINCONTROL;
 	s_dof_box.generic.x = 0;
-	s_dof_box.generic.y = 190 * cl_fontScale->value;
+	s_dof_box.generic.y = 150 * cl_fontScale->value;
 	s_dof_box.generic.name = "Depth of Field";
 	s_dof_box.itemnames = yesno_names;
 	s_dof_box.curvalue = r_dof->value;
@@ -566,7 +458,7 @@ void VID_MenuInit (void) {
 
 	s_radBlur_box.generic.type = MTYPE_SPINCONTROL;
 	s_radBlur_box.generic.x = 0;
-	s_radBlur_box.generic.y = 200 * cl_fontScale->value;
+	s_radBlur_box.generic.y = 160 * cl_fontScale->value;
 	s_radBlur_box.generic.name = "Radial Blur";
 	s_radBlur_box.itemnames = yesno_names;
 	s_radBlur_box.curvalue = r_radialBlur->value;
@@ -574,23 +466,24 @@ void VID_MenuInit (void) {
 
 	s_mb_box.generic.type = MTYPE_SPINCONTROL;
 	s_mb_box.generic.x = 0;
-	s_mb_box.generic.y = 210 * cl_fontScale->value;
+	s_mb_box.generic.y = 170 * cl_fontScale->value;
 	s_mb_box.generic.name = "Motion Blur";
 	s_mb_box.itemnames = yesno_names;
 	s_mb_box.curvalue = r_motionBlur->value;
 	s_mb_box.generic.callback = mbCallback;
 
-	s_softParticles.generic.type = MTYPE_SPINCONTROL;
-	s_softParticles.generic.x = 0;
-	s_softParticles.generic.y = 220 * cl_fontScale->value;
-	s_softParticles.generic.name = "Soft Particles";
-	s_softParticles.itemnames = yesno_names;
-	s_softParticles.curvalue = r_softParticles->value;
-	s_softParticles.generic.callback = softPartCallback;
+	s_ssao.generic.type = MTYPE_SPINCONTROL;
+	s_ssao.generic.x = 0;
+	s_ssao.generic.y = 180 * cl_fontScale->value;
+	s_ssao.generic.name = "SSAO";
+	s_ssao.itemnames = yesno_names;
+	s_ssao.curvalue = r_ssao->value;
+	s_ssao.generic.callback = ssaoCallback;
+	s_ssao.generic.statusbar = "Screen Space Ambient Occlusion";
 
 	s_fxaa_box.generic.type = MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x = 0;
-	s_fxaa_box.generic.y = 230 * cl_fontScale->value;
+	s_fxaa_box.generic.y = 190 * cl_fontScale->value;
 	s_fxaa_box.generic.name = "FXAA";
 	s_fxaa_box.itemnames = yesno_names;
 	s_fxaa_box.curvalue = r_fxaa->value;
@@ -599,7 +492,7 @@ void VID_MenuInit (void) {
 
 	s_film_grain.generic.type = MTYPE_SPINCONTROL;
 	s_film_grain.generic.x = 0;
-	s_film_grain.generic.y = 240 * cl_fontScale->value;
+	s_film_grain.generic.y = 200 * cl_fontScale->value;
 	s_film_grain.generic.name = "Film Grain";
 	s_film_grain.itemnames = yesno_names;
 	s_film_grain.curvalue = r_filmGrain->value;
@@ -607,7 +500,7 @@ void VID_MenuInit (void) {
 
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x = 0;
-	s_finish_box.generic.y = 250 * cl_fontScale->value;
+	s_finish_box.generic.y = 210 * cl_fontScale->value;
 	s_finish_box.generic.name = "Vertical Sync";
 	s_finish_box.generic.callback = vSyncCallBack;
 	s_finish_box.curvalue = r_vsync->value;
@@ -627,23 +520,21 @@ void VID_MenuInit (void) {
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x = 0;
-	s_defaults_action.generic.y = 270 * cl_fontScale->value;
+	s_defaults_action.generic.y = 230 * cl_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x = 0;
-	s_apply_action.generic.y = 280 * cl_fontScale->value;
+	s_apply_action.generic.y = 240 * cl_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 
-	menuSize = 320;
+	menuSize = 250;
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_mode_list);
-	Menu_AddItem (&s_opengl_menu, (void *)&s_samples_list);
-	Menu_AddItem (&s_opengl_menu, (void *)&s_screensize_slider);
-	Menu_AddItem (&s_opengl_menu, (void *)&s_brightness_slider);
-	Menu_AddItem (&s_opengl_menu, (void *)&s_refresh_box);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_fs_box);
+	Menu_AddItem (&s_opengl_menu, (void *)&s_brightness_slider);
+
 	Menu_AddItem (&s_opengl_menu, (void *)&s_aniso_slider);
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_tc_box);
@@ -657,7 +548,7 @@ void VID_MenuInit (void) {
 	Menu_AddItem (&s_opengl_menu, (void *)&s_dof_box);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_radBlur_box);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_mb_box);
-	Menu_AddItem (&s_opengl_menu, (void *)&s_softParticles);
+	Menu_AddItem (&s_opengl_menu, (void *)&s_ssao);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_fxaa_box);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_film_grain);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_finish_box);

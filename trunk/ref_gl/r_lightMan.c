@@ -2266,8 +2266,7 @@ void R_DrawLightFlare () {
 
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
-	index_t		flareIndex[MAX_INDICES];
-	int			flareVert = 0, index = 0, id;
+	int			flareVert = 0, id;
 	vec3_t		vert_array[MAX_FLARES_VERTEX];
 	vec2_t		tex_array[MAX_FLARES_VERTEX];
 	vec4_t		color_array[MAX_FLARES_VERTEX];
@@ -2286,7 +2285,8 @@ void R_DrawLightFlare () {
 
 	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_Disable (GL_DEPTH_BOUNDS_TEST_EXT);
-
+	
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglEnableVertexAttribArray (ATRB_TEX0);
 	qglEnableVertexAttribArray (ATRB_COLOR);
@@ -2338,26 +2338,18 @@ void R_DrawLightFlare () {
 	VA_SetElem2 (tex_array[flareVert + 3], 1, 1);
 	VA_SetElem4 (color_array[flareVert + 3], tmp[0], tmp[1], tmp[2], 1);
 
-	flareIndex[index++] = flareVert + 0;
-	flareIndex[index++] = flareVert + 1;
-	flareIndex[index++] = flareVert + 3;
-	flareIndex[index++] = flareVert + 3;
-	flareIndex[index++] = flareVert + 1;
-	flareIndex[index++] = flareVert + 2;
-
 	flareVert += 4;
 
 	if (flareVert) {
-		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, flareIndex);
-
+		qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 		flareVert = 0;
-		index = 0;
 	}
 
 	GL_BindNullProgram ();
 	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray (ATRB_POSITION);
 	qglDisableVertexAttribArray (ATRB_TEX0);
 	qglDisableVertexAttribArray (ATRB_COLOR);
@@ -2366,9 +2358,8 @@ void R_DrawLightFlare () {
 
 void R_LightFlareOutLine () { //flare editing highlights
 
-	index_t		flareIndex[MAX_INDICES];
-	int			flareVert = 0, index = 0;
-	vec3_t		vert_array[MAX_FLARES_VERTEX], v[8], tmpOrg;
+	int			flareVert = 0;
+	vec3_t		v[8], tmpOrg;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -2385,9 +2376,6 @@ void R_LightFlareOutLine () { //flare editing highlights
 	GL_Disable (GL_STENCIL_TEST);
 	GL_Disable (GL_TEXTURE_2D);
 	GL_Disable (GL_CULL_FACE);
-	qglPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-	qglEnable (GL_LINE_SMOOTH);
-	qglLineWidth (3.0);
 
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
@@ -2396,57 +2384,30 @@ void R_LightFlareOutLine () { //flare editing highlights
 	GL_BindProgram (genericProgram, 0);
 	qglUniform1i (gen_attribColors, 0);
 	qglUniform1i (gen_attribConsole, 0);
-	qglUniform4f (gen_color, currentShadowLight->color[0],
-		currentShadowLight->color[1],
-		currentShadowLight->color[2],
-		1.0);
-
-	// draw flare polygon
-	VectorMA (currentShadowLight->flareOrigin, -1 - currentShadowLight->flareSize, vup, vert_array[flareVert + 0]);
-	VectorMA (vCache[flareVert + 0], 1 + currentShadowLight->flareSize, vright, vert_array[flareVert + 0]);
-
-	VectorMA (currentShadowLight->flareOrigin, -1 - currentShadowLight->flareSize, vup, vert_array[flareVert + 1]);
-	VectorMA (vCache[flareVert + 1], -1 - currentShadowLight->flareSize, vright, vert_array[flareVert + 1]);
-
-	VectorMA (currentShadowLight->flareOrigin, 1 + currentShadowLight->flareSize, vup, vert_array[flareVert + 2]);
-	VectorMA (vCache[flareVert + 2], -1 - currentShadowLight->flareSize, vright, vert_array[flareVert + 2]);
-
-	VectorMA (currentShadowLight->flareOrigin, 1 + currentShadowLight->flareSize, vup, vert_array[flareVert + 3]);
-	VectorMA (vCache[flareVert + 3], 1 + currentShadowLight->flareSize, vright, vert_array[flareVert + 3]);
-
-	flareIndex[index++] = flareVert + 0;
-	flareIndex[index++] = flareVert + 1;
-	flareIndex[index++] = flareVert + 3;
-	flareIndex[index++] = flareVert + 3;
-	flareIndex[index++] = flareVert + 1;
-	flareIndex[index++] = flareVert + 2;
-
-	flareVert += 4;
-
-	if (flareVert) {
-		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, flareIndex);
-
-		flareVert = 0;
-		index = 0;
-	}
+	qglUniform1i (gen_sky, 0);
+	qglUniform4f (gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	
 	// draw light to flare connector
 	VA_SetElem3 (vCache[0], currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
 	VA_SetElem3 (vCache[1], currentShadowLight->flareOrigin[0], currentShadowLight->flareOrigin[1], currentShadowLight->flareOrigin[2]);
+
+	qglEnable(GL_LINE_SMOOTH);
+	qglLineWidth(3.0);
+
 	qglDrawArrays (GL_LINES, 0, 2);
 
 	qglDisable (GL_LINE_SMOOTH);
-	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
 	// draw center of flare
 	VectorCopy (currentShadowLight->flareOrigin, tmpOrg);
-	VectorSet (v[0], tmpOrg[0] - 1, tmpOrg[1] - 1, tmpOrg[2] - 1);
-	VectorSet (v[1], tmpOrg[0] - 1, tmpOrg[1] - 1, tmpOrg[2] + 1);
-	VectorSet (v[2], tmpOrg[0] - 1, tmpOrg[1] + 1, tmpOrg[2] - 1);
-	VectorSet (v[3], tmpOrg[0] - 1, tmpOrg[1] + 1, tmpOrg[2] + 1);
-	VectorSet (v[4], tmpOrg[0] + 1, tmpOrg[1] - 1, tmpOrg[2] - 1);
-	VectorSet (v[5], tmpOrg[0] + 1, tmpOrg[1] - 1, tmpOrg[2] + 1);
-	VectorSet (v[6], tmpOrg[0] + 1, tmpOrg[1] + 1, tmpOrg[2] - 1);
-	VectorSet (v[7], tmpOrg[0] + 1, tmpOrg[1] + 1, tmpOrg[2] + 1);
+	VectorSet (v[0], tmpOrg[0] - 2, tmpOrg[1] - 1, tmpOrg[2] - 2);
+	VectorSet (v[1], tmpOrg[0] - 2, tmpOrg[1] - 1, tmpOrg[2] + 2);
+	VectorSet (v[2], tmpOrg[0] - 2, tmpOrg[1] + 1, tmpOrg[2] - 2);
+	VectorSet (v[3], tmpOrg[0] - 2, tmpOrg[1] + 1, tmpOrg[2] + 2);
+	VectorSet (v[4], tmpOrg[0] + 2, tmpOrg[1] - 1, tmpOrg[2] - 2);
+	VectorSet (v[5], tmpOrg[0] + 2, tmpOrg[1] - 1, tmpOrg[2] + 2);
+	VectorSet (v[6], tmpOrg[0] + 2, tmpOrg[1] + 1, tmpOrg[2] - 2);
+	VectorSet (v[7], tmpOrg[0] + 2, tmpOrg[1] + 1, tmpOrg[2] + 2);
 
 
 	//front

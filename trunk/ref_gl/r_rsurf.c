@@ -400,7 +400,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 
 		if (r_ssao->value)
 			GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
-	}
+
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
 			scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
@@ -408,7 +408,11 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 				scroll = -64.0;
 		}
 		else
-			scroll = 0;
+			scroll = 0.0;
+
+		qglUniform1f(ambientWorld_scroll, scroll);
+	}
+
 
 		// create indexes
 		if (numIndices == 0xffffffff)
@@ -595,16 +599,18 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		GL_MBindCube	(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
 		GL_MBind3d		(GL_TEXTURE3_ARB, r_lightAttenMap->texnum);
 		GL_MBind		(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-	}
 
-	if (surf->texInfo->flags & SURF_FLOWING)
-	{
-		scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
-		if (scroll == 0.0)
-			scroll = -64.0;
+		if (surf->texInfo->flags & SURF_FLOWING)
+		{
+			scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
+			if (scroll == 0.0)
+				scroll = -64.0;
+		}
+		else
+			scroll = 0.0;
+
+		qglUniform1f(lightWorld_scroll, scroll);
 	}
-	else
-		scroll = 0;
 
 	// create indexes
 	if (numIndices == 0xffffffff)

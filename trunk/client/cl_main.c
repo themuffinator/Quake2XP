@@ -1582,13 +1582,12 @@ void CL_InitLocal (void) {
 	cl_blood = Cvar_Get ("cl_blood", "1", CVAR_ARCHIVE);
 	cl_bigHud = Cvar_Get ("cl_bigHud", "1", CVAR_ARCHIVE);
 	cl_hudScale = Cvar_Get ("cl_hudScale", "0.7", CVAR_ARCHIVE);
-	cl_fontScale = Cvar_Get ("cl_fontScale", "1.5", CVAR_ARCHIVE);
+	cl_fontScale = Cvar_Get ("cl_fontScale", "2", CVAR_ARCHIVE);
 	cl_itemsBobbing = Cvar_Get ("cl_itemsBobbing", "1", CVAR_ARCHIVE);
 
 	if (cl_fontScale->value < 1)
 		Cvar_Set ("cl_fontScale", "1");
-	if (cl_fontScale->value > 2)
-		Cvar_Set ("cl_fontScale", "2");
+
 	//
 	// userinfo
 	//

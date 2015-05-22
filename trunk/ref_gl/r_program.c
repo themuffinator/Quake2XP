@@ -564,6 +564,7 @@ void R_InitPrograms (void) {
 		ambientWorld_viewOrigin		= qglGetUniformLocation (id, "u_viewOriginES");
 		ambientWorld_parallaxType	= qglGetUniformLocation (id, "u_parallaxType");
 		ambientWorld_ambientLevel	= qglGetUniformLocation (id, "u_ambientScale");
+		ambientWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
 
 	}
 	else {
@@ -577,32 +578,32 @@ void R_InitPrograms (void) {
 		Com_Printf ("succeeded\n");
 		id = lightWorldProgram->id[0];
 
-		lightWorld_diffuse = qglGetUniformLocation (id, "u_Diffuse");
-		lightWorld_normal = qglGetUniformLocation (id, "u_NormalMap");
-		lightWorld_csm = qglGetUniformLocation (id, "u_csmMap");
-		lightWorld_cube = qglGetUniformLocation (id, "u_CubeFilterMap");
-		lightWorld_atten = qglGetUniformLocation (id, "u_attenMap");
-		lightWorld_caustic = qglGetUniformLocation (id, "u_Caustics");
+		lightWorld_diffuse			= qglGetUniformLocation (id, "u_Diffuse");
+		lightWorld_normal			= qglGetUniformLocation (id, "u_NormalMap");
+		lightWorld_csm				= qglGetUniformLocation (id, "u_csmMap");
+		lightWorld_cube				= qglGetUniformLocation (id, "u_CubeFilterMap");
+		lightWorld_atten			= qglGetUniformLocation (id, "u_attenMap");
+		lightWorld_caustic			= qglGetUniformLocation (id, "u_Caustics");
 
-		lightWorld_parallaxParams = qglGetUniformLocation (id, "u_parallaxParams");
-		lightWorld_colorScale = qglGetUniformLocation (id, "u_ColorModulate");
-		lightWorld_viewOrigin = qglGetUniformLocation (id, "u_viewOriginES");
-		lightWorld_parallaxType = qglGetUniformLocation (id, "u_parallaxType");
+		lightWorld_parallaxParams	= qglGetUniformLocation (id, "u_parallaxParams");
+		lightWorld_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
+		lightWorld_viewOrigin		= qglGetUniformLocation (id, "u_viewOriginES");
+		lightWorld_parallaxType		= qglGetUniformLocation (id, "u_parallaxType");
 
-		lightWorld_lightOrigin = qglGetUniformLocation (id, "u_LightOrg");
-		lightWorld_lightColor = qglGetUniformLocation (id, "u_LightColor");
-		lightWorld_fog = qglGetUniformLocation (id, "u_fog");
-		lightWorld_fogDensity = qglGetUniformLocation (id, "u_fogDensity");
+		lightWorld_lightOrigin		= qglGetUniformLocation (id, "u_LightOrg");
+		lightWorld_lightColor		= qglGetUniformLocation (id, "u_LightColor");
+		lightWorld_fog				= qglGetUniformLocation (id, "u_fog");
+		lightWorld_fogDensity		= qglGetUniformLocation (id, "u_fogDensity");
 
-		lightWorld_causticsIntens = qglGetUniformLocation (id, "u_CausticsModulate");
-		lightWorld_caustics = qglGetUniformLocation (id, "u_isCaustics");
+		lightWorld_causticsIntens	= qglGetUniformLocation (id, "u_CausticsModulate");
+		lightWorld_caustics			= qglGetUniformLocation (id, "u_isCaustics");
 
-		lightWorld_specularScale = qglGetUniformLocation (id, "u_specularScale");
-		lightWorld_specularExp = qglGetUniformLocation (id, "u_specularExp");
-		lightWorld_ambient = qglGetUniformLocation (id, "u_isAmbient");
-		lightWorld_attenMatrix = qglGetUniformLocation (id, "u_attenMatrix");
-		lightWorld_cubeMatrix = qglGetUniformLocation (id, "u_cubeMatrix");
-
+		lightWorld_specularScale	= qglGetUniformLocation (id, "u_specularScale");
+		lightWorld_specularExp		= qglGetUniformLocation (id, "u_specularExp");
+		lightWorld_ambient			= qglGetUniformLocation (id, "u_isAmbient");
+		lightWorld_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
+		lightWorld_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
+		lightWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

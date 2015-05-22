@@ -200,14 +200,12 @@ void R_DrawParticles (void) {
 			GL_Bind (texId);
 			GL_BlendFunc (p->sFactor, p->dFactor);
 
-			if (r_softParticles->value) {
-				if (p->sFactor == GL_ONE && p->dFactor == GL_ONE)
-					qglUniform2f (particle_mask, 1.0, 0.0); //color
-				else
-					qglUniform2f (particle_mask, 0.0, 1.0); //alpha
-			}
-
-			if (p->flags & PARTICLE_NOFADE || !r_softParticles->value)
+			if (p->sFactor == GL_ONE && p->dFactor == GL_ONE)
+				qglUniform2f (particle_mask, 1.0, 0.0); //color
+			else
+				qglUniform2f (particle_mask, 0.0, 1.0); //alpha
+			
+			if (p->flags & PARTICLE_NOFADE)
 				qglUniform1f (particle_thickness, 0.0);
 			else
 				qglUniform1f (particle_thickness, scale*0.75); // soft blend scale
