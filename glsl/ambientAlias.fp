@@ -34,9 +34,8 @@ void main ()
 	vec3 normalMap = normalize(texture2D(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
 
 	// fake AO/cavity
-//	gl_FragColor.xyz = diffuse.xyz;
 	gl_FragColor.xyz = diffuse.xyz * (normalMap.z * 0.5 + 0.5);
-//	gl_FragColor.xyz = diffuse.xyz * normalMap.z;
+
 
 	if (u_ssao == 1)
 		gl_FragColor.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).x;

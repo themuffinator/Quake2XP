@@ -54,6 +54,7 @@ void main (void) {
 	vec4 normalMap = texture2D(u_NormalMap, P);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
+	diffuseMap += glowMap;
 
 	if (u_LightMapType == 0)
 		gl_FragColor.xyz = diffuseMap * texture2D(u_LightMap0, v_lTexCoord.xy).rgb;
@@ -122,8 +123,6 @@ void main (void) {
 
 	// fake AO/cavity
 	gl_FragColor.xyz *= normalMap.z * 0.5 + 0.5;
-
-	gl_FragColor.xyz += glowMap;
 	gl_FragColor.xyz *= u_ColorModulate * u_ambientScale;
 	gl_FragColor.w = 1.0;
 
