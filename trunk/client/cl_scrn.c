@@ -349,7 +349,7 @@ void SCR_DrawPause (void) {
 	if (!cl_paused->value)
 		return;
 
-	Draw_ScaledPic ((viddef.width - (i_pause->width * cl_fontScale->value)) * 0.5f,
+	Draw_ScaledPic((viddef.width - (i_pause->width - i_pause->width * 0.25)) * 0.5f,
 		viddef.height * 0.5f + 8.0f,
 		cl_fontScale->value, cl_fontScale->value,
 		i_pause);
@@ -1002,8 +1002,11 @@ void SCR_UpdateScreen (void) {
 	if (cl_hudScale->value < 0.1)
 		Cvar_SetValue ("cl_hudScale", 0.1);
 
-	if (cl_fontScale->value < 1)
-		Cvar_SetValue ("cl_fontScale", 1);
+	if (cl_fontScale->value < 2)
+		Cvar_SetValue ("cl_fontScale", 2);
+
+	if (cl_fontScale->value > 2)
+		Cvar_SetValue("cl_fontScale", 2);
 
 	R_BeginFrame ();
 

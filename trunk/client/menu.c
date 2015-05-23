@@ -75,7 +75,7 @@ static void M_Banner (char *name) {
 	int w, h;
 
 	Draw_GetPicSize (&w, &h, name);
-	Draw_PicScaled ((viddef.width / 2) - (w * cl_fontScale->value / 2), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
+	Draw_PicScaled ((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
 }
 
 void M_PushMenu (void (*draw) (void), int (*key) (int k)) {
@@ -387,9 +387,9 @@ void M_Main_Draw (void) {
 	Draw_PicScaled (xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, litname);
 
 	Draw_GetPicSize (&w, &h, "m_main_plaque");
-	Draw_PicScaled ((xoffset - 30) - (w * fontscale), ystart, fontscale, fontscale, "m_main_plaque");
+	Draw_PicScaled ((xoffset - 30) - w, ystart, fontscale, fontscale, "m_main_plaque");
 
-	Draw_PicScaled ((xoffset - 30) - (w * fontscale), ystart + (h * fontscale) + 5, fontscale, fontscale, "m_main_logo");
+	Draw_PicScaled ((xoffset - 30) - w , ystart + h + 20, fontscale, fontscale, "m_main_logo");
 
 	M_Main_DrawQuad (xoffset - 45, ystart + (m_main_cursor * 40 + 5)* fontscale);
 }
@@ -1813,7 +1813,7 @@ void M_Option_Banner (char *name) {
 
 	Draw_GetPicSize (&w, &h, name);
 	move += h;
-	Draw_PicScaled (viddef.width / 2 - (w * cl_fontScale->value) / 2, viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
+	Draw_PicScaled (viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
 }
 
 void Options_MenuDraw (void) {
