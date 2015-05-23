@@ -311,6 +311,7 @@ cvar_t	*r_debugOccLightBoundsSize;
 cvar_t	*r_useLightScissors;
 cvar_t	*r_useDepthBounds;
 cvar_t	*r_specularScale;
+cvar_t	*r_ambientSpecularScale;
 
 cvar_t	*r_zNear;
 cvar_t	*hunk_bsp;

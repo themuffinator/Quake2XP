@@ -2274,10 +2274,7 @@ void R_DrawLightFlare () {
 	if (!currentShadowLight->flare)
 		return;
 
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if (currentShadowLight->isNoWorldModel)
 		return;
 
 	if (!r_drawFlares->value)
@@ -2318,32 +2315,27 @@ void R_DrawLightFlare () {
 
 	VectorScale (currentShadowLight->color, scale, tmp);
 
-	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, vert_array[flareVert + 0]);
-	VectorMA (vert_array[flareVert + 0], 1 + dist, vright, vert_array[flareVert + 0]);
-	VA_SetElem2 (tex_array[flareVert + 0], 0, 1);
-	VA_SetElem4 (color_array[flareVert + 0], tmp[0], tmp[1], tmp[2], 1);
+	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, vert_array[0]);
+	VectorMA (vert_array[0], 1 + dist, vright, vert_array[0]);
+	VA_SetElem2 (tex_array[0], 0, 1);
+	VA_SetElem4 (color_array[0], tmp[0], tmp[1], tmp[2], 1);
 
-	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, vert_array[flareVert + 1]);
-	VectorMA (vert_array[flareVert + 1], -1 - dist, vright, vert_array[flareVert + 1]);
-	VA_SetElem2 (tex_array[flareVert + 1], 0, 0);
-	VA_SetElem4 (color_array[flareVert + 1], tmp[0], tmp[1], tmp[2], 1);
+	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, vert_array[1]);
+	VectorMA (vert_array[1], -1 - dist, vright, vert_array[1]);
+	VA_SetElem2 (tex_array[1], 0, 0);
+	VA_SetElem4 (color_array[1], tmp[0], tmp[1], tmp[2], 1);
 
-	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, vert_array[flareVert + 2]);
-	VectorMA (vert_array[flareVert + 2], -1 - dist, vright, vert_array[flareVert + 2]);
-	VA_SetElem2 (tex_array[flareVert + 2], 1, 0);
-	VA_SetElem4 (color_array[flareVert + 2], tmp[0], tmp[1], tmp[2], 1);
+	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, vert_array[2]);
+	VectorMA (vert_array[2], -1 - dist, vright, vert_array[2]);
+	VA_SetElem2 (tex_array[2], 1, 0);
+	VA_SetElem4 (color_array[2], tmp[0], tmp[1], tmp[2], 1);
 
-	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, vert_array[flareVert + 3]);
-	VectorMA (vert_array[flareVert + 3], 1 + dist, vright, vert_array[flareVert + 3]);
-	VA_SetElem2 (tex_array[flareVert + 3], 1, 1);
-	VA_SetElem4 (color_array[flareVert + 3], tmp[0], tmp[1], tmp[2], 1);
+	VectorMA (currentShadowLight->flareOrigin, 1 + dist, vup, vert_array[3]);
+	VectorMA (vert_array[3], 1 + dist, vright, vert_array[3]);
+	VA_SetElem2 (tex_array[3], 1, 1);
+	VA_SetElem4 (color_array[3], tmp[0], tmp[1], tmp[2], 1);
 
-	flareVert += 4;
-
-	if (flareVert) {
-		qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-		flareVert = 0;
-	}
+	qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	GL_BindNullProgram ();
 	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
@@ -2353,7 +2345,6 @@ void R_DrawLightFlare () {
 	qglDisableVertexAttribArray (ATRB_POSITION);
 	qglDisableVertexAttribArray (ATRB_TEX0);
 	qglDisableVertexAttribArray (ATRB_COLOR);
-	GL_SelectTexture (GL_TEXTURE0_ARB);
 }
 
 void R_LightFlareOutLine () { //flare editing highlights
@@ -2388,11 +2379,11 @@ void R_LightFlareOutLine () { //flare editing highlights
 	qglUniform4f (gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	
 	// draw light to flare connector
-	VA_SetElem3 (vCache[0], currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
-	VA_SetElem3 (vCache[1], currentShadowLight->flareOrigin[0], currentShadowLight->flareOrigin[1], currentShadowLight->flareOrigin[2]);
-
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
+
+	VA_SetElem3 (vCache[0], currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
+	VA_SetElem3 (vCache[1], currentShadowLight->flareOrigin[0], currentShadowLight->flareOrigin[1], currentShadowLight->flareOrigin[2]);
 
 	qglDrawArrays (GL_LINES, 0, 2);
 
@@ -2400,14 +2391,14 @@ void R_LightFlareOutLine () { //flare editing highlights
 
 	// draw center of flare
 	VectorCopy (currentShadowLight->flareOrigin, tmpOrg);
-	VectorSet (v[0], tmpOrg[0] - 2, tmpOrg[1] - 1, tmpOrg[2] - 2);
-	VectorSet (v[1], tmpOrg[0] - 2, tmpOrg[1] - 1, tmpOrg[2] + 2);
-	VectorSet (v[2], tmpOrg[0] - 2, tmpOrg[1] + 1, tmpOrg[2] - 2);
-	VectorSet (v[3], tmpOrg[0] - 2, tmpOrg[1] + 1, tmpOrg[2] + 2);
-	VectorSet (v[4], tmpOrg[0] + 2, tmpOrg[1] - 1, tmpOrg[2] - 2);
-	VectorSet (v[5], tmpOrg[0] + 2, tmpOrg[1] - 1, tmpOrg[2] + 2);
-	VectorSet (v[6], tmpOrg[0] + 2, tmpOrg[1] + 1, tmpOrg[2] - 2);
-	VectorSet (v[7], tmpOrg[0] + 2, tmpOrg[1] + 1, tmpOrg[2] + 2);
+	VectorSet (v[0], tmpOrg[0] - 1, tmpOrg[1] - 1, tmpOrg[2] - 1);
+	VectorSet (v[1], tmpOrg[0] - 1, tmpOrg[1] - 1, tmpOrg[2] + 1);
+	VectorSet (v[2], tmpOrg[0] - 1, tmpOrg[1] + 1, tmpOrg[2] - 1);
+	VectorSet (v[3], tmpOrg[0] - 1, tmpOrg[1] + 1, tmpOrg[2] + 1);
+	VectorSet (v[4], tmpOrg[0] + 1, tmpOrg[1] - 1, tmpOrg[2] - 1);
+	VectorSet (v[5], tmpOrg[0] + 1, tmpOrg[1] - 1, tmpOrg[2] + 1);
+	VectorSet (v[6], tmpOrg[0] + 1, tmpOrg[1] + 1, tmpOrg[2] - 1);
+	VectorSet (v[7], tmpOrg[0] + 1, tmpOrg[1] + 1, tmpOrg[2] + 1);
 
 
 	//front

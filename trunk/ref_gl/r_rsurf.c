@@ -369,15 +369,13 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 	c_brush_polys++;
 
 	if (newBatch) {
-		image_t	*image, *fx, *env, *normal;
+		image_t	*image, *fx, *normal;
 
 		image	= R_TextureAnimation(surf->texInfo);
 		fx		= R_TextureAnimationFx(surf->texInfo);
-		env		= R_TextureAnimationEnv(surf->texInfo);
-		normal		= R_TextureAnimationNormal(surf->texInfo);
+		normal	= R_TextureAnimationNormal(surf->texInfo);
 
-		qglUniform1f(ambientWorld_specularScale,
-			image->specularScale ? r_specularScale->value * image->specularScale : r_specularScale->value);
+		qglUniform1f(ambientWorld_specularScale, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
 		qglUniform1f(ambientWorld_specularExp, image->SpecularExp ? image->SpecularExp : 16.f);
 
 		if (r_parallax->value){
@@ -559,8 +557,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		purename = COM_SkipPath(image->name);
 		COM_StripExtension(purename, noext);
 
-		qglUniform1f(lightWorld_specularScale,
-			image->specularScale ? r_specularScale->value * image->specularScale : r_specularScale->value);
+		qglUniform1f(lightWorld_specularScale, image->specularScale ? image->specularScale : r_specularScale->value);
 
 		qglUniform1f(lightWorld_specularExp, image->SpecularExp ? image->SpecularExp : 16.f);
 		

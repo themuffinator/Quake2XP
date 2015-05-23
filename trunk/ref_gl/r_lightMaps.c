@@ -98,6 +98,7 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 			// KRIGS:
 			// we don't refresh lightmaps at runtime anymore, so load only the first map
 			// use real-time lights for styling instead
+			// 0 or 1
 			if (1 || numMaps == 1) {
 				// copy the lightmap
 				bl = s_blocklights;

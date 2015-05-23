@@ -63,30 +63,27 @@ void R_BuildFlares (flare_t * light) {
 
 	VectorScale (light->color, scale, tmp);
 
-	VectorMA (light->origin, -1 - dist, vup, vert_array[flareVert + 0]);
-	VectorMA (vert_array[flareVert + 0], 1 + dist, vright, vert_array[flareVert + 0]);
-	VA_SetElem2 (tex_array[flareVert + 0], 0, 1);
-	VA_SetElem4 (color_array[flareVert + 0], tmp[0], tmp[1], tmp[2], 1);
+	VectorMA (light->origin, -1 - dist, vup, vert_array[0]);
+	VectorMA (vert_array[0], 1 + dist, vright, vert_array[0]);
+	VA_SetElem2 (tex_array[0], 0, 1);
+	VA_SetElem4 (color_array[0], tmp[0], tmp[1], tmp[2], 1);
 
-	VectorMA (light->origin, -1 - dist, vup, vert_array[flareVert + 1]);
-	VectorMA (vert_array[flareVert + 1], -1 - dist, vright, vert_array[flareVert + 1]);
-	VA_SetElem2 (tex_array[flareVert + 1], 0, 0);
-	VA_SetElem4 (color_array[flareVert + 1], tmp[0], tmp[1], tmp[2], 1);
+	VectorMA (light->origin, -1 - dist, vup, vert_array[1]);
+	VectorMA (vert_array[1], -1 - dist, vright, vert_array[1]);
+	VA_SetElem2 (tex_array[1], 0, 0);
+	VA_SetElem4 (color_array[1], tmp[0], tmp[1], tmp[2], 1);
 
-	VectorMA (light->origin, 1 + dist, vup, vert_array[flareVert + 2]);
-	VectorMA (vert_array[flareVert + 2], -1 - dist, vright, vert_array[flareVert + 2]);
-	VA_SetElem2 (tex_array[flareVert + 2], 1, 0);
-	VA_SetElem4 (color_array[flareVert + 2], tmp[0], tmp[1], tmp[2], 1);
+	VectorMA (light->origin, 1 + dist, vup, vert_array[2]);
+	VectorMA (vert_array[2], -1 - dist, vright, vert_array[2]);
+	VA_SetElem2 (tex_array[2], 1, 0);
+	VA_SetElem4 (color_array[2], tmp[0], tmp[1], tmp[2], 1);
 
-	VectorMA (light->origin, 1 + dist, vup, vert_array[flareVert + 3]);
-	VectorMA (vert_array[flareVert + 3], 1 + dist, vright, vert_array[flareVert + 3]);
-	VA_SetElem2 (tex_array[flareVert + 3], 1, 1);
-	VA_SetElem4 (color_array[flareVert + 3], tmp[0], tmp[1], tmp[2], 1);
+	VectorMA (light->origin, 1 + dist, vup, vert_array[3]);
+	VectorMA (vert_array[3], 1 + dist, vright, vert_array[3]);
+	VA_SetElem2 (tex_array[3], 1, 1);
+	VA_SetElem4 (color_array[3], tmp[0], tmp[1], tmp[2], 1);
 
-	flareVert += 4;
-
-	if (flareVert)
-		qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	if (light->surf->ent)
 		qglPopMatrix ();
@@ -99,7 +96,6 @@ qboolean PF_inPVS (vec3_t p1, vec3_t p2);
 void R_RenderFlares (void) {
 	int i, id;
 	flare_t *fl;
-	unsigned defBits = 0;
 
 	if (!r_drawFlares->value)
 		return;
@@ -119,8 +115,8 @@ void R_RenderFlares (void) {
 	GL_Enable (GL_BLEND);
 	GL_BlendFunc (GL_ONE, GL_ONE);
 
-	GL_BindProgram (particlesProgram, defBits);
-	id = particlesProgram->id[defBits];
+	GL_BindProgram (particlesProgram, 0);
+	id = particlesProgram->id[0];
 
 	GL_MBind (GL_TEXTURE0_ARB, r_flare->texnum);
 	qglUniform1i (qglGetUniformLocation (id, "u_map0"), 0);
