@@ -343,6 +343,7 @@ SCR_DrawPause
 */
 void SCR_DrawPause (void) {
 
+	int w, h;
 	if (!scr_showpause->value)	// turn off for screenshots
 		return;
 
@@ -350,9 +351,9 @@ void SCR_DrawPause (void) {
 		return;
 
 	Draw_ScaledPic((viddef.width - (i_pause->width - i_pause->width * 0.25)) * 0.5f,
-		viddef.height * 0.5f + 8.0f,
-		cl_fontScale->value, cl_fontScale->value,
-		i_pause);
+					viddef.height * 0.5f + 8.0f,
+					cl_fontScale->value, cl_fontScale->value,
+					i_pause);
 }
 
 /*

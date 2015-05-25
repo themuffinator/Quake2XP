@@ -243,6 +243,9 @@ qboolean R_EntityInLightBounds () {
 	if (!InLightVISEntity())
 		return false;
 
+	if (R_CullBox(currentShadowLight->mins, currentShadowLight->maxs))
+		return false;
+	
 	if (currentShadowLight->spherical) {
 
 		if (!BoundsAndSphereIntersect (mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))

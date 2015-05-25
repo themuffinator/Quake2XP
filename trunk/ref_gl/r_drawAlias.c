@@ -346,6 +346,10 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 			return;
 	}
+	
+	if (R_CullBox(currentShadowLight->mins, currentShadowLight->maxs))
+		return;
+
 
 	paliashdr = (dmdl_t *)currentmodel->extraData;
 	
