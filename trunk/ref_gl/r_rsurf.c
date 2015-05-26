@@ -366,7 +366,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 	if (numVertices + nv > MAX_BATCH_SURFS)
 		return false;	// force the start new batch
 
-	c_brush_polys++;
+
 
 	if (newBatch) {
 		image_t	*image, *fx, *normal;
@@ -416,6 +416,8 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		if (numIndices == 0xffffffff)
 			numIndices = 0;
 
+		c_brush_polys += (nv - 2);
+		
 		for (i = 0; i < nv - 2; i++)
 		{
 			indexArray[numIndices++] = surf->baseIndex;
@@ -544,7 +546,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	if (numVertices + nv > MAX_BATCH_SURFS)
 		return false;	// force the start new batch
 
-	c_brush_polys++;
 
 	if (newBatch)
 	{
@@ -612,6 +613,8 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	// create indexes
 	if (numIndices == 0xffffffff)
 		numIndices = 0;
+
+	c_brush_polys += (nv - 2);
 
 	for (i = 0; i < nv - 2; i++)
 	{

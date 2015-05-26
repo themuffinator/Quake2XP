@@ -339,17 +339,13 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	}
 	
 	if(currentShadowLight->spherical){
-	if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
-		return;
-	}else
-	{
-	if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
+		if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
+			return;
+	}else{
+
+		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 			return;
 	}
-	
-	if (R_CullBox(currentShadowLight->mins, currentShadowLight->maxs))
-		return;
-
 
 	paliashdr = (dmdl_t *)currentmodel->extraData;
 	

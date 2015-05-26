@@ -199,8 +199,8 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 		R_AddDynamicLight (&r_newrefdef.dlights[i]);
 	}
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		R_AddNoWorldModelLight ();
+//	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+//		R_AddNoWorldModelLight ();
 
 	if (!shadowLight_frame)
 		return;
