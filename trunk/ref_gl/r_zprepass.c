@@ -17,8 +17,6 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	if (numVertices + nv > MAX_BATCH_SURFS)
 		return false;
 
-	c_brush_polys++;
-
 	// create indexes
 	if (numIndices == 0xffffffff)
 		numIndices = 0;
@@ -29,6 +27,8 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 		indexArray[numIndices++] = surf->baseIndex + i + 1;
 		indexArray[numIndices++] = surf->baseIndex + i + 2;
 	}
+
+	c_brush_polys += (nv - 2);
 
 	p = surf->polys;
 	v = p->verts[0];
@@ -43,9 +43,6 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 static void GL_DrawDepthPoly () {
 	msurface_t	*s;
 	int			i;
-
-	unsigned	oldTex = 0xffffffff;
-	unsigned	oldFlag = 0xffffffff;
 	unsigned	numIndices = 0xffffffff;
 	unsigned	numVertices = 0;
 

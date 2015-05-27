@@ -56,7 +56,7 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 			return false;
 	}
 	if (weapon) {
-		if (!BoundsAndSphereIntersect (light->mins, light->maxs, r_origin, 25.0))
+		if (!BoundsAndSphereIntersect (light->mins, light->maxs, r_origin, currententity->model->radius))
 			return false;
 	}
 
@@ -184,7 +184,6 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 
 			if (!R_AddLightToFrame (light, weapon))
 				continue;
-
 			light->next = shadowLight_frame;
 			shadowLight_frame = light;
 		}
@@ -199,8 +198,8 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 		R_AddDynamicLight (&r_newrefdef.dlights[i]);
 	}
 
-//	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-//		R_AddNoWorldModelLight ();
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		R_AddNoWorldModelLight ();
 
 	if (!shadowLight_frame)
 		return;

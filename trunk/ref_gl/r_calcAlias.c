@@ -524,13 +524,13 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	else
 		qglUniform1i (lightAlias_ambient, 0);
 
-	if (inWater && currentShadowLight->castCaustics) {
+	if (inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		qglUniform1i (lightAlias_isCaustics, 1);
 		qglUniform1f (lightAlias_causticsIntens, r_causticIntens->value);
 	}
 	else
 		qglUniform1i (lightAlias_isCaustics, 0);
-
+	
 	qglUniform4f (lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform3fv (lightAlias_lightOrigin, 1, currentShadowLight->origin);
 	qglUniform3fv (lightAlias_viewOrigin, 1, r_origin);

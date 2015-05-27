@@ -666,7 +666,6 @@ void R_DrawLightInteractions(void)
 			R_DrawAliasModelLightPass(false);
 		}
 	num_visLights++;
-
 	}
 	}
 	
