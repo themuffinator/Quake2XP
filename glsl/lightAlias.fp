@@ -42,7 +42,7 @@ void main (void) {
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
 
-    int SSS = int(diffuseMap.a);
+  float SSS = diffuseMap.a;
 
 	vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 
@@ -75,7 +75,7 @@ void main (void) {
 
 		if(u_fog == 0) {
 
-			if(SSS == 0){
+			if(SSS <= 0.00392){
 					gl_FragColor = subScatterFS(V, L, normalize(normalMap.xyz), u_LightColor, diffuseMap, attenMap, specular) * cubeFilter;
 					return;
 			}
