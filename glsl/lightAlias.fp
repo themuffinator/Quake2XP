@@ -42,6 +42,8 @@ void main (void) {
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
 
+    int SSS = int(diffuseMap.a);
+
 	vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 
 	if (u_isCaustics == 1){
@@ -56,18 +58,6 @@ void main (void) {
 	}
 
 	if (u_isAmbient == 0) {
-/*
-		// calculate Toksvig factor
-		// FIXME: need to precompute
-		float len = length(normalMap.xyz);
-		float ft = len / mix(u_specularExp, 1.0, len);
-		float fts = ft * u_specularExp;
-		float specular = (1.0 + fts) / (1.0 + u_specularExp) * normalMap.a * u_specularScale;
-
-		normalMap.xyz /= len;
-
-		vec2 Es = PhongLighting(normalMap.xyz, L, V, fts);
-*/
 
 		float specular = normalMap.a * u_specularScale;
 		vec2 Es = PhongLighting(normalize(normalMap.xyz), L, V, u_specularExp);
@@ -83,7 +73,14 @@ void main (void) {
 			return;
 		}
 
-		if(u_fog == 0)
-			gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
+		if(u_fog == 0) {
+
+			if(SSS == 0){
+					gl_FragColor = subScatterFS(V, L, normalize(normalMap.xyz), u_LightColor, diffuseMap, attenMap, specular) * cubeFilter;
+					return;
+			}
+			else	
+					gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
 	}
+}
 }
