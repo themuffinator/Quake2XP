@@ -92,6 +92,8 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 
 			VectorSubtract (v1, light, l2);
 			VectorSubtract (v0, light, l3);
+			VectorNormalize(l2);
+			VectorNormalize(l3);
 			VectorMA (v1, lightRadius, l2, v2);
 			VectorMA (v0, lightRadius, l3, v3);
 
@@ -118,6 +120,8 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 
 			VectorSubtract (v1, light, l2);
 			VectorSubtract (v0, light, l3);
+			VectorNormalize(l2);
+			VectorNormalize(l3);
 			VectorMA (v1, lightRadius, l2, v2);
 			VectorMA (v0, lightRadius, l3, v3);
 
@@ -144,6 +148,8 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 
 			VectorSubtract (v1, light, l2);
 			VectorSubtract (v0, light, l3);
+			VectorNormalize(l2);
+			VectorNormalize(l3);
 			VectorMA (v1, lightRadius, l2, v2);
 			VectorMA (v0, lightRadius, l3, v3);
 
@@ -193,6 +199,9 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 		VectorSubtract (v0, light, l0);
 		VectorSubtract (v1, light, l1);
 		VectorSubtract (v2, light, l2);
+		VectorNormalize(l0);
+		VectorNormalize(l1);
+		VectorNormalize(l2);
 		VectorMA (v0, lightRadius, l0, v0);
 		VectorMA (v1, lightRadius, l1, v1);
 		VectorMA (v2, lightRadius, l2, v2);
@@ -282,7 +291,7 @@ void R_DeformShadowVolume () {
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*v, *ov, *verts;
 	int				*order, i;
-	float			frontlerp;
+	float			frontlerp, dist;
 	vec3_t			move, delta, vectors[3], frontv, backv, light, temp;
 
 	if (!R_EntityInLightBounds ())
@@ -328,8 +337,11 @@ void R_DeformShadowVolume () {
 
 	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector (currententity->axis, temp, light);
-
-	BuildShadowVolumeTriangles (paliashdr, light, currentShadowLight->len * 10);
+	
+	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
+	dist = (currentShadowLight->len + 50.0) - VectorLength(temp);
+	if (dist > 0.0)
+		BuildShadowVolumeTriangles (paliashdr, light, dist);
 
 	qglPopMatrix ();
 }
@@ -500,7 +512,7 @@ void R_DrawBrushModelVolumes () {
 	num_shadow_surfaces = 0;
 	R_MarkBrushModelShadowSurfaces ();
 
-	scale = currentShadowLight->len * 10;
+	scale = currentShadowLight->len * 2;
 
 	// generate vertex buffer
 	for (i = 0; i < num_shadow_surfaces; i++) {
@@ -514,7 +526,7 @@ void R_DrawBrushModelVolumes () {
 
 			VectorCopy (poly->verts[j], vcache[vb * 2 + 0]);
 			VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
-
+			VectorNormalize(v1);
 			sca = scale / VectorLength (v1);
 			vcache[vb * 2 + 1][0] = v1[0] * sca + poly->verts[j][0];
 			vcache[vb * 2 + 1][1] = v1[1] * sca + poly->verts[j][1];
@@ -663,7 +675,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 
 			VectorCopy (poly->verts[j], vcache[vb * 2 + 0]);
 			VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
-
+			VectorNormalize(v1);
 			sca = scale / VectorLength (v1);
 
 			vcache[vb * 2 + 1][0] = v1[0] * sca + poly->verts[j][0];

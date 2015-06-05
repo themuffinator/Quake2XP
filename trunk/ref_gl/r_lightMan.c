@@ -79,14 +79,11 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 		light->maxs[i] = light->origin[i] + light->radius[i];
 	}
 
-	if (light->spherical) {
+	if (light->spherical) 
 		light->len = light->radius[0];
-	}
-	else {
-		VectorSubtract (light->origin, light->maxs, tmp);
-		light->len = VectorLength (tmp);
-	}
-
+	else 
+		light->len = max(max(light->radius[0], light->radius[1]), light->radius[2]);
+	
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
 		tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
@@ -1458,14 +1455,11 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 		light->maxs[i] = light->origin[i] + light->radius[i];
 	}
 
-	if (light->spherical) {
+	if (light->spherical)
 		light->len = light->radius[0];
-	}
-	else {
-		VectorSubtract (light->origin, light->maxs, tmp);
-		light->len = VectorLength (tmp);
-	}
-
+	else 
+		light->len = max(max(light->radius[0], light->radius[1]), light->radius[2]);
+	
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
 		tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
