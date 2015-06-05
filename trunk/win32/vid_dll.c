@@ -456,25 +456,24 @@ typedef struct vidmode_s {
 } vidmode_t;
 
 static vidmode_t vid_modes[] = {
-	{ "Desktop", 800, 600, 0 },      // desktop native
+	{ "Desktop",	1024, 768, 0 },		// desktop native
 	// generic screen
-	{ "800x600", 800, 600, 1 },      // 4:3
-	{ "1024x768", 1024, 768, 2 },      // 4:3
-	{ "1152x864", 1152, 864, 3 },      // 4:3
-	{ "1280x1024", 1280, 1024, 4 },      // 5:4
-	{ "1600x1200", 1600, 1200, 5 },      // 4:3
-	{ "2048x1536", 2048, 1536, 6 },      // 4:3
+	{ "1024x768",	1024, 768, 1 },     // 4:3
+	{ "1152x864",	1152, 864, 2 },     // 4:3
+	{ "1280x1024",	1280, 1024, 3 },    // 5:4
+	{ "1600x1200",	1600, 1200, 4 },    // 4:3
+	{ "2048x1536",	2048, 1536, 5 },    // 4:3
 	// wide screen
-	{ "1280x720", 1280, 720, 7 },      // 16:9 720p HDTV
-	{ "1280x800", 1280, 800, 8 },      // 16:10
-	{ "1366x768", 1366, 768, 9 },      // 16:9, plasma & LCD TV
-	{ "1440x900", 1440, 900, 10 },      // 16:10
-	{ "1600x900", 1600, 900, 11 },     // 16:9 TV
-	{ "1680x1050", 1680, 1050, 12 },     // 16:10
-	{ "1920x1080", 1920, 1080, 13 },     // 16:9 1080p full HDTV
-	{ "1920x1200", 1920, 1200, 14 },     // 16:10
-	{ "2560x1600", 2560, 1600, 15 },     // 16:10
-	{ "Custom", 800, 600, 16 }      // custom
+	{ "1280x720",	1280, 720, 6 },     // 16:9 720p HDTV
+	{ "1280x800",	1280, 800, 7 },     // 16:10
+	{ "1366x768",	1366, 768, 8 },     // 16:9, plasma & LCD TV
+	{ "1440x900",	1440, 900, 9 },     // 16:10
+	{ "1600x900",	1600, 900, 10 },    // 16:9 TV
+	{ "1680x1050",	1680, 1050, 11 },   // 16:10
+	{ "1920x1080",	1920, 1080, 12 },   // 16:9 1080p full HDTV
+	{ "1920x1200",	1920, 1200, 13 },   // 16:10
+	{ "2560x1600",	2560, 1600, 14 },   // 16:10
+	{ "Custom",		-1, -1, 15 }		// custom
 };
 
 
@@ -483,7 +482,7 @@ qboolean VID_GetModeInfo (int *width, int *height, int mode) {
 	if (mode < 0 || mode >= VID_NUM_MODES)
 		return false;
 
-	if (mode == 17) {
+	if (mode == 15) {
 		*width = r_customWidth->value;
 		*height = r_customHeight->value;
 	}
@@ -630,8 +629,8 @@ void VID_Init (void) {
 	vid_xpos = Cvar_Get ("vid_xpos", "3", CVAR_ARCHIVE);
 	vid_ypos = Cvar_Get ("vid_ypos", "22", CVAR_ARCHIVE);
 	r_fullScreen = Cvar_Get ("r_fullScreen", "0", CVAR_ARCHIVE);
-	r_customWidth = Cvar_Get ("r_customWidth", "800", CVAR_ARCHIVE);
-	r_customHeight = Cvar_Get ("r_customHeight", "600", CVAR_ARCHIVE);
+	r_customWidth = Cvar_Get ("r_customWidth", "1024", CVAR_ARCHIVE);
+	r_customHeight = Cvar_Get ("r_customHeight", "768", CVAR_ARCHIVE);
 	win_noalttab = Cvar_Get ("win_noalttab", "0", CVAR_ARCHIVE);
 
 

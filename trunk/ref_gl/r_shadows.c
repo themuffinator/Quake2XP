@@ -256,10 +256,10 @@ qboolean R_EntityInLightBounds () {
 		if (!BoundsIntersect (mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 			return false;
 	}
-
-	if (VectorCompare (currentShadowLight->origin, currententity->origin))
+	
+	if (VectorCompare(currentShadowLight->origin, currententity->origin))
 		return false;
-
+	
 	return true;
 }
 

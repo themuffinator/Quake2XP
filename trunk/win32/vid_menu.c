@@ -263,9 +263,27 @@ static void vSyncCallBack (void *s) {
 */
 void VID_MenuInit (void) {
 
+#ifdef __linux__
+	static char *resolutions[] = { 
+		"[1024 768][4:3]",
+		"[1152 864][4:3]",
+		"[1280 1024][5:4]",
+		"[1600 1200][4:3]",
+		"[2048 1536][4:3]",
 
+		"[1280 720][720p HDTV]",
+		"[1280 800][16:10]",
+		"[1366 768][16:9 Plasma and LCD TV]",
+		"[1440 900][16:10]",
+		"[1600 900][16:9 LCD]",
+		"[1680 1050][16:10]",
+		"[1920 1080][1080p full HDTV]",
+		"[1920 1200][16:10]",
+		"[2560 1600][16:10]",
+		"[Custom]", 0
+	};
+#else
 	static char *resolutions[] = { "[Desktop]",
-		"[800 600][4:3]",
 		"[1024 768][4:3]",
 		"[1152 864][4:3]",
 		"[1280 1024][5:4]",
@@ -282,6 +300,7 @@ void VID_MenuInit (void) {
 		"[1920 1200][16:10]",
 		"[2560 1600][16:10]",
 		"[Custom]", 0 };
+#endif
 
 	static char	*yesno_names[] = { "no", "yes", 0 };
 	static char	*adaptive_vc[] = { "no", "default", "adaptive", 0 };

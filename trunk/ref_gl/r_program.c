@@ -850,7 +850,7 @@ void R_InitPrograms (void) {
 		Com_Printf (S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-	/*
+	
 	Com_Printf("Load "S_COLOR_YELLOW"shadow program"S_COLOR_WHITE" ");
 	shadowProgram =  R_FindProgram("shadow", true, true);
 
@@ -860,7 +860,7 @@ void R_InitPrograms (void) {
 	Com_Printf(S_COLOR_RED"Failed!\n");
 	missing++;
 	}
-	*/
+	
 	Com_Printf ("Load "S_COLOR_YELLOW"generic program"S_COLOR_WHITE" ");
 	genericProgram = R_FindProgram ("generic", true, true);
 

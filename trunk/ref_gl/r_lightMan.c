@@ -52,7 +52,7 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 			return false;
 	}
 	else {
-		if (R_CullBox (light->mins, light->maxs))
+		if (BoxOutsideFrustum(light->mins, light->maxs))
 			return false;
 	}
 	if (weapon) {
@@ -1790,15 +1790,12 @@ qboolean InLightVISEntity () {
 	if (!r_worldmodel)
 		return false;
 	
-	if (currententity->framecount != r_framecount) {
-		currententity->framecount = r_framecount;
-
-		if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-			for (i = 0; i < 3; i++) {
-				mins[i] = currententity->origin[i] - currentmodel->radius;
-				maxs[i] = currententity->origin[i] + currentmodel->radius;
-			}
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
+		for (i = 0; i < 3; i++) {
+			mins[i] = currententity->origin[i] - currentmodel->radius;
+			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
+	}
 		else {
 			VectorAdd (currententity->origin, currententity->model->maxs, maxs);
 			VectorAdd (currententity->origin, currententity->model->mins, mins);
@@ -1816,7 +1813,7 @@ qboolean InLightVISEntity () {
 		memset (&currententity->vis, 0, (((r_worldmodel->numLeafs + 31) >> 5) << 2));
 		for (i = 0; i < count; i++)
 			currententity->vis[leafs[i] >> 3] |= (1 << (leafs[i] & 7));
-	}
+
 	return HasSharedLeafs (currentShadowLight->vis, currententity->vis);
 
 }
