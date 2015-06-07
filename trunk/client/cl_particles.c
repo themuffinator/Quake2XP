@@ -1062,13 +1062,13 @@ void CL_ParticleTracer (vec3_t start, vec3_t end) {
 	active_particles = p;
 	p->orient = 0;
 	p->flags = PARTICLE_DIRECTIONAL;
-	p->flags |= PARTICLE_NONSOLID;
+//	p->flags |= PARTICLE_NONSOLID;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->sFactor = GL_SRC_ALPHA;
 	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
-	p->len = 20;
-	p->endLen = 0;
+	p->len = 100;
+	p->endLen = 200;
 	p->color[0] = 1;
 	p->color[1] = 0.35;
 	p->color[2] = 0;
@@ -1078,7 +1078,7 @@ void CL_ParticleTracer (vec3_t start, vec3_t end) {
 	p->colorVel[2] = 0;
 
 	p->type = PT_BLASTER;
-	p->size = 0.15;
+	p->size = 0.3;
 	p->sizeVel = 0;
 	d = rand () & 7;
 	for (j = 0; j < 3; j++) {
@@ -3119,6 +3119,7 @@ void CL_ParticleRick (vec3_t org, vec3_t dir) {
 		p->accel[0] = p->accel[1] = 0;
 		p->accel[2] = -PARTICLE_GRAVITY;
 	}
+	
 	//SMOKE
 	for (i = 0; i < 6; i++) {
 		if (!free_particles)
