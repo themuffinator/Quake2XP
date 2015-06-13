@@ -723,6 +723,8 @@ static void R_DrawAmbientScene (void) {
 static void R_DrawRAScene (void) {
 	int i;
 
+	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
+
 	R_DrawChainsRA();
 
 	if (!r_drawEntities->value)
@@ -730,12 +732,12 @@ static void R_DrawRAScene (void) {
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
-//		currentmodel = currententity->model;
+		currentmodel = currententity->model;
 
-//		if (currentmodel && currentmodel->type == mod_brush) {
-//			R_DrawBrushModelRA();
-//			continue;
-//		}
+		if (currentmodel && currentmodel->type == mod_brush) {
+			R_DrawBrushModelRA();
+			continue;
+		}
 
 		if (!(currententity->flags & RF_TRANSLUCENT))
 			continue;
@@ -747,7 +749,7 @@ static void R_DrawRAScene (void) {
 			continue;
 		}
 
-		currentmodel = currententity->model;
+//		currentmodel = currententity->model;
 
 		if (!currentmodel) {
 			R_DrawNullModel();
@@ -759,7 +761,7 @@ static void R_DrawRAScene (void) {
 				R_DrawAliasModel(currententity, false);
 				break;
 			case mod_brush:
-				R_DrawBrushModelRA();
+//				R_DrawBrushModelRA();
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);

@@ -268,8 +268,6 @@ void R_DrawChainsRA (void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
-	
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
 		if (s->texInfo->flags & SURF_TRANS33) 
 			shadelight_surface[3] = 0.33f;
@@ -1204,7 +1202,7 @@ static void R_DrawInlineBModel2 (void) {
 		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
 			if (psurf->visframe == r_framecount) // reckless fix
 				continue;
-			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
+			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_WARP))
 				continue;
 
 			if (psurf->flags & MSURF_DRAWTURB)
@@ -1232,8 +1230,7 @@ static void R_DrawInlineBModel3 (void) {
 
 		// draw the polygon
 		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
-
-			if (psurf->visframe == r_framecount)	// reckless fix
+			if (psurf->visframe != r_framecount)
 				continue;
 
 			/*===============================
@@ -1270,7 +1267,6 @@ void R_DrawBrushModel (void) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-
 	if (currentmodel->numModelSurfaces == 0)
 		return;
 	
@@ -1278,11 +1274,13 @@ void R_DrawBrushModel (void) {
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		rotated = true;
+
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
 			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
-	} else {
+	}
+	else {
 		rotated = false;
 		VectorAdd(currententity->origin, currentmodel->mins, mins);
 		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
@@ -1333,6 +1331,7 @@ void R_DrawBrushModel (void) {
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.bn_offset));
 	
 	num_scene_surfaces = 0;
+
 	R_DrawInlineBModel();
 	GL_DrawLightmappedPoly(true);
 	
