@@ -388,107 +388,6 @@ void R_Clear(void)
 	GL_DepthRange(gldepthmin, gldepthmax);
 }
 
-
-
-
-void R_DrawEntitiesOnList(void)
-{
-	int i;
-
-	if (!r_drawEntities->value)
-		return;
-
-	// draw non-transparent first
-	for (i = 0; i < r_newrefdef.num_entities; i++) {
-		currententity = &r_newrefdef.entities[i];
-
-		if (currententity->flags & RF_TRANSLUCENT)
-			continue;			// solid
-		
-		if (currententity->flags & RF_WEAPONMODEL)
-			continue;
-
-		if ( r_newrefdef.rdflags & RDF_IRGOGGLES) 
-				goto jump;
-
-			if (currententity->flags & RF_DISTORT)
-				continue;
-jump:
-
-		if (currententity->flags & RF_BEAM) {
-			R_DrawBeam();
-		} else {
-			currentmodel = currententity->model;
-			if (!currentmodel) {
-				R_DrawNullModel();
-				continue;
-			}
-			switch (currentmodel->type) {
-			case mod_alias:
-				R_DrawAliasModel(currententity, false);
-				break;
-			case mod_brush:
-				R_DrawBrushModel();
-				break;
-			case mod_sprite:
-				R_DrawSpriteModel(currententity);
-				break;
-			default:
-				VID_Error(ERR_DROP, "Bad modeltype");
-				break;
-			}
-		}
-	}
-
-	// draw transparent entities
-	// we could sort these if it ever becomes a problem...
-	GL_DepthMask(0);			// no z writes
-
-	for (i = 0; i < r_newrefdef.num_entities; i++) {
-		currententity = &r_newrefdef.entities[i];
-
-		if (!(currententity->flags & RF_TRANSLUCENT))
-			continue;			// solid
-		
-		if (currententity->flags & RF_WEAPONMODEL)
-			continue;
-		
-		if ( r_newrefdef.rdflags & RDF_IRGOGGLES) 
-				goto next;
-
-			if (currententity->flags & RF_DISTORT)
-				continue;
-next:
-
-		if (currententity->flags & RF_BEAM) {
-			R_DrawBeam();
-		} else {
-			currentmodel = currententity->model;
-
-			if (!currentmodel) {
-				R_DrawNullModel();
-				continue;
-			}
-			switch (currentmodel->type) {
-			case mod_alias:
-				R_DrawAliasModel(currententity, false);
-				break;
-			case mod_brush:
-				R_DrawBrushModel();
-				break;
-			case mod_sprite:
-				R_DrawSpriteModel(currententity);
-				break;
-			default:
-				VID_Error(ERR_DROP, "Bad modeltype");
-				break;
-			}
-		}
-	}
-	GL_DepthMask(1);			// back to writing
-	
-}
-
 void R_DrawPlayerWeaponFBO(void)
 {
 	int i;
@@ -593,7 +492,7 @@ void R_DrawPlayerWeaponAmbient(void)
 	GL_DepthMask(1);
 }
 
-void R_DrawLightInteractions(void)
+void R_DrawLightScene (void)
 {
 	int i;
 	
@@ -768,20 +667,122 @@ void R_RenderSprites(void)
 	GL_DepthMask(1);
 }
 
+// draws ambient opaque entities
+static void R_DrawEntitiesOnList (void) {
+	int i;
+
+	if (!r_drawEntities->value)
+		return;
+
+	// draw non-transparent first
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+
+		if (currententity->flags & (RF_TRANSLUCENT | RF_WEAPONMODEL) || ((currententity->flags & RF_DISTORT) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)))
+			continue;
+
+		if (currententity->flags & RF_BEAM) {
+			R_DrawBeam();
+			continue;
+		}
+
+		currentmodel = currententity->model;
+
+		if (!currentmodel) {
+			R_DrawNullModel();
+			continue;
+		}
+
+		switch (currentmodel->type) {
+			case mod_alias:
+				R_DrawAliasModel(currententity, false);
+				break;
+			case mod_brush:
+				R_DrawBrushModel();
+				break;
+			case mod_sprite:
+				R_DrawSpriteModel(currententity);
+				break;
+			default:
+				VID_Error(ERR_DROP, "Bad modeltype");
+				break;
+		}
+	}
+}
+
+// draw all opaque, non-reflective stuff
+// fills reflective & alpha chains from world model
+static void R_DrawAmbientScene (void) {
+	R_DrawBSP();
+	R_DrawEntitiesOnList();
+}
+
+// draws reflective & alpha chains from world model
+// draws reflective surfaces from brush models
+// draws translucent entities
+static void R_DrawRAScene (void) {
+	int i;
+
+	R_DrawChainsRA();
+
+	if (!r_drawEntities->value)
+		return;
+
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+//		currentmodel = currententity->model;
+
+//		if (currentmodel && currentmodel->type == mod_brush) {
+//			R_DrawBrushModelRA();
+//			continue;
+//		}
+
+		if (!(currententity->flags & RF_TRANSLUCENT))
+			continue;
+		if ((currententity->flags & RF_WEAPONMODEL) || ((currententity->flags & RF_DISTORT) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)))
+			continue;
+
+		if (currententity->flags & RF_BEAM) {
+			R_DrawBeam();
+			continue;
+		}
+
+		currentmodel = currententity->model;
+
+		if (!currentmodel) {
+			R_DrawNullModel();
+			continue;
+		}
+
+		switch (currentmodel->type) {
+			case mod_alias:
+				R_DrawAliasModel(currententity, false);
+				break;
+			case mod_brush:
+				R_DrawBrushModelRA();
+				break;
+			case mod_sprite:
+				R_DrawSpriteModel(currententity);
+				break;
+			default:
+				VID_Error(ERR_DROP, "Bad modeltype");
+				break;
+		}
+	}
+}
 
 /*
 ================
 R_RenderView
 
-r_newrefdef must be set before the first call
+r_newrefdef must be set before the first call.
 ================
 */
 void R_SSAO (void);
-void R_DrawDepthScene(void);
-void R_DownsampleDepth(void);
+void R_DrawDepthScene (void);
+void R_DownsampleDepth (void);
 
 void R_RenderView (refdef_t *fd) {
-
 	if (r_noRefresh->value)
 		return;
 
@@ -793,7 +794,7 @@ void R_RenderView (refdef_t *fd) {
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 	if (!r_worldmodel && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
-		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel");
+		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel.");
 
 	if (r_finish->value)
 		qglFinish();
@@ -812,17 +813,16 @@ void R_RenderView (refdef_t *fd) {
 		R_SSAO();
 	}
 
-	R_DrawBSP();
-	R_DrawEntitiesOnList();
-
-	R_DrawLightInteractions();
+	R_DrawAmbientScene();
+	R_DrawLightScene();
 
 	R_RenderDecals();
 	R_RenderFlares();
 	
 	R_CaptureColorBuffer();
-	R_DrawReflectivePoly();
-	R_DrawAlphaPoly();
+
+	R_DrawRAScene();
+
 	R_DrawPlayerWeapon();
 	R_DrawParticles();
 

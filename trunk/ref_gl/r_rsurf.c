@@ -23,19 +23,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_local.h"
 
 vec4_t shadelight_surface;
-void R_LightColor(vec3_t org, vec3_t color);
+void R_LightColor (vec3_t org, vec3_t color);
 
 static vec3_t modelorg;			// relative to viewpoint
 
-msurface_t *r_alpha_surfaces;		// all BSP surfaces with TRANS33/66
-msurface_t *r_reflective_surfaces;	// all BSP surfaces with WARP (for now)
+msurface_t *r_alpha_surfaces;		// all non-entity BSP surfaces with TRANS33/66
+msurface_t *r_reflective_surfaces;	// all non-entity BSP surfaces with WARP
 
-float color_black[4] = {0.0, 0.0, 0.0, 0.0};
+vec4_t	color_black = { 0.f, 0.f, 0.f, 0.f };
 
-vec3_t  wVertexArray[MAX_BATCH_SURFS];
-float   wTexArray[MAX_BATCH_SURFS][2];
-float   wLMArray[MAX_BATCH_SURFS][2];
-vec4_t   wColorArray[MAX_BATCH_SURFS];
+vec3_t	wVertexArray[MAX_BATCH_SURFS];
+float	wTexArray[MAX_BATCH_SURFS][2];
+float	wLMArray[MAX_BATCH_SURFS][2];
+vec4_t	wColorArray[MAX_BATCH_SURFS];
 
 float   wTmu0Array[MAX_BATCH_SURFS][2];
 float   wTmu1Array[MAX_BATCH_SURFS][2];
@@ -58,7 +58,6 @@ vec3_t	bTexArray[MAX_BATCH_SURFS];
 
 =============================================================
 */
-
 /*
 ===============
 R_TextureAnimation
@@ -149,16 +148,15 @@ image_t *R_TextureAnimationEnv(mtexInfo_t * tex)
 /*
 ================
 DrawGLPoly
+
 ================
 */
-
-void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
-{
+void DrawGLPolyGLSL (msurface_t * fa, qboolean scrolling) {
 	int i;
 	float *v;
 	float alpha, scroll;
 	glpoly_t *p;
-	int	nv = fa->polys->numVerts;
+	int nv = fa->polys->numVerts;
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -169,9 +167,9 @@ void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
 	if (fa->texInfo->flags & SURF_TRANS33 || SURF_TRANS66) {
 
 		if (fa->texInfo->flags & SURF_TRANS33)
-			alpha = 0.33;
+			alpha = 0.33f;
 		else
-			alpha = 0.66;
+			alpha = 0.66f;
 
 		// setup program
 		GL_BindProgram(refractProgram, 0);
@@ -216,7 +214,7 @@ void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
 	p = fa->polys;
 	v = p->verts[0];
 
-	c_brush_polys += (nv-2);
+	c_brush_polys += nv - 2;
 
 	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE) {
 		
@@ -225,12 +223,13 @@ void DrawGLPolyGLSL(msurface_t * fa, qboolean scrolling)
 		wTexArray[i][0] = v[3] + scroll;
 		wTexArray[i][1] = v[4];
 	}
+
 	qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);	
 			
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
+
 	GL_BindNullProgram();
-	
 }
 
 /*
@@ -248,23 +247,22 @@ void R_RenderBrushPoly (msurface_t *fa) {
 	purename = COM_SkipPath(image->name);
 	COM_StripExtension(purename, noext);
 
-	if (fa->flags & MSURF_DRAWTURB)
-	{	
+	if (fa->flags & MSURF_DRAWTURB) {	
 		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
 			RenderLavaSurfaces(fa);
 		else
 			R_DrawWaterPolygons(fa);
+
 		return;
 	}
 
-	if(fa->texInfo->flags & SURF_FLOWING)
+	if (fa->texInfo->flags & SURF_FLOWING)
 		DrawGLPolyGLSL(fa, true);
 	else
 		DrawGLPolyGLSL(fa, false);
-
 }
 
-void R_DrawAlphaPoly (void) {
+void R_DrawChainsRA (void) {
 	msurface_t *s;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -290,16 +288,7 @@ void R_DrawAlphaPoly (void) {
 	}
 
 	r_alpha_surfaces = NULL;
-}
 
-void R_DrawReflectivePoly (void) {
-	msurface_t *s;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
-	
 	for (s = r_reflective_surfaces; s; s = s->texturechain) {
 /*
 // KRIGS: at the moment only opaque WARP surfaces go to this list
@@ -746,21 +735,18 @@ R_RecursiveWorldNode
 
 ================
 */
-static void R_RecursiveWorldNode(mnode_t * node)
-{
+static void R_RecursiveWorldNode (mnode_t * node) {
 	int c, side, sidebit;
 	cplane_t *plane;
 	msurface_t *surf, **mark;
 	mleaf_t *pleaf;
 	float dot;
-	image_t *fx, *image;
+//	image_t *fx, *image;
 
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
-
 	if (node->visframe != r_visframecount)
 		return;
-
 	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
 		return;
 
@@ -821,47 +807,44 @@ static void R_RecursiveWorldNode(mnode_t * node)
 
 	// draw stuff
 	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
-
 		if (surf->visframe != r_framecount)
 			continue;
-
 		if ((surf->flags & MSURF_PLANEBACK) != sidebit)
 			continue;			// wrong side
 
-		if (surf->texInfo->flags & SURF_SKY) {	// just adds to visible sky bounds
+		if (surf->texInfo->flags & SURF_SKY)	// just adds to visible sky bounds
 			R_AddSkySurface(surf);
-		}
 		else if (surf->texInfo->flags & SURF_NODRAW)
 			continue;
-
-		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
+		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66) && !(surf->flags & MSURF_LAVA)) {
 			// add to the translucent chain
 			surf->texturechain = r_alpha_surfaces;
 			r_alpha_surfaces = surf;
 		}
 		else {
-			if (surf->flags & MSURF_DRAWTURB) {
-				// the polygon is visible, so add it to the texture
-				// sorted chain
-				// FIXME: this is a hack for animation
-				image = R_TextureAnimation(surf->texInfo);
-				fx = R_TextureAnimationFx(surf->texInfo); // fix glow hack
-				
+			if ((surf->flags & MSURF_DRAWTURB) && !(surf->flags & MSURF_LAVA)) {
+				// add to the reflective chain
 				surf->texturechain = r_reflective_surfaces;
 				r_reflective_surfaces = surf;
-				surf->texturechain = image->texturechain;
-				image->texturechain = surf;
 
+				// FIXME: this is a hack for animation
+//				image = R_TextureAnimation(surf->texInfo);
+//				fx = R_TextureAnimationFx(surf->texInfo); // fix glow hack
+
+				// the polygon is visible, so add it to the texture sorted chain
+//				surf->texturechain = image->texturechain;
+//				image->texturechain = surf;
 			}
-			else
+			else {
+				// add to the ambient batch
 				scene_surfaces[num_scene_surfaces++] = surf;
+			}
 		}
 	}
 
 	// recurse down the back side
 	R_RecursiveWorldNode(node->children[!side]);
 }
-
 
 qboolean R_MarkLightSurf (msurface_t *surf, qboolean world) {
 	cplane_t	*plane;
@@ -1124,7 +1107,9 @@ void R_DrawBSP (void) {
 	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.bn_offset));
 
 	num_scene_surfaces = 0;
+
 	R_RecursiveWorldNode(r_worldmodel->nodes);
+
 	GL_DrawLightmappedPoly(false);
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
@@ -1137,6 +1122,7 @@ void R_DrawBSP (void) {
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
 	DrawTextureChains();
+
 	R_DrawSkyBox(true);
 }
 
@@ -1150,7 +1136,7 @@ extern qboolean bmodelcaust = false;
 
 void R_DrawBrushModel();
 
-static void R_DrawInlineBModel(void) {
+static void R_DrawInlineBModel (void) {
 	int i;
 	cplane_t *pplane;
 	float dot;
@@ -1182,57 +1168,92 @@ static void R_DrawInlineBModel(void) {
 			// ================================
 
 			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
-				psurf->texturechain = r_alpha_surfaces;
-				r_alpha_surfaces = psurf;
+//				psurf->texturechain = r_alpha_surfaces;
+//				r_alpha_surfaces = psurf;
 				continue;
 			}
 
 			if (!(psurf->texInfo->flags & SURF_WARP))
 				scene_surfaces[num_scene_surfaces++] = psurf;
-			else {
-				// KRIGS: reflection pass
-				psurf->texturechain = r_reflective_surfaces;
-				r_reflective_surfaces = psurf;
-			}
+//			else {
+//				psurf->texturechain = r_reflective_surfaces;
+//				r_reflective_surfaces = psurf;
+//			}
 		}
 	}
 }
 
-
-static void R_DrawInlineBModel2(void)
-{
+static void R_DrawInlineBModel2 (void) {
 	int i;
 	cplane_t *pplane;
 	float dot;
 	msurface_t *psurf;
 		
 	psurf = &currentmodel->surfaces[currentmodel->firstModelSurface];
+
 	//
 	// draw texture
 	//
+
 	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
 		// find which side of the node we are on
 		pplane = psurf->plane;
 		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
 
 		// draw the polygon
-		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
-			|| (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+			if (psurf->visframe == r_framecount) // reckless fix
+				continue;
+			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
+				continue;
 
-			if (psurf->visframe == r_framecount) //reckless fix
-				continue;
-		
-			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {	
-				continue;
-			} 
-			else 
-				if (psurf->flags & MSURF_DRAWTURB)
-						R_RenderBrushPoly(psurf);
-						
+			if (psurf->flags & MSURF_DRAWTURB)
+				R_RenderBrushPoly(psurf);
 		}
 	}
 }
 
+static void R_DrawInlineBModel3 (void) {
+	int i;
+	cplane_t *pplane;
+	float dot;
+	msurface_t *psurf;
+
+	psurf = &currentmodel->surfaces[currentmodel->firstModelSurface];
+
+	//
+	// draw texture
+	//
+
+	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
+		// find which side of the node we are on
+		pplane = psurf->plane;
+		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
+
+		// draw the polygon
+		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+
+			if (psurf->visframe == r_framecount)	// reckless fix
+				continue;
+
+			/*===============================
+			berserker - flares for brushmodels
+			=================================*/
+			psurf->visframe = r_framecount;
+			psurf->ent = currententity;
+			// ================================
+
+			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
+				psurf->texturechain = r_alpha_surfaces;
+				r_alpha_surfaces = psurf;
+			}
+			else if (psurf->texInfo->flags & SURF_WARP) {
+				psurf->texturechain = r_reflective_surfaces;
+				r_reflective_surfaces = psurf;
+			}
+		}
+	}
+}
 
 /*
 =================
@@ -1245,7 +1266,7 @@ int CL_PMpointcontents(vec3_t point);
 void R_DrawBrushModel (void) {
 	vec3_t		mins, maxs, tmp;
 	int			i;
-    qboolean	rotated;
+	qboolean	rotated;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -1326,10 +1347,70 @@ void R_DrawBrushModel (void) {
 	qglPopMatrix();
 }
 
+/*
+=================
+R_DrawBrushModelRA
 
+=================
+*/
+void R_DrawBrushModelRA (void) {
+	vec3_t		mins, maxs, tmp;
+	int			i;
+	qboolean	rotated;
 
-qboolean R_MarkBrushModelSurfaces()
-{
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+	if (currentmodel->numModelSurfaces == 0)
+		return;
+	
+	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
+
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
+		rotated = true;
+
+		for (i = 0; i < 3; i++) {
+			mins[i] = currententity->origin[i] - currentmodel->radius;
+			maxs[i] = currententity->origin[i] + currentmodel->radius;
+		}
+	}
+	else {
+		rotated = false;
+		VectorAdd(currententity->origin, currentmodel->mins, mins);
+		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
+	}
+
+	if (R_CullBox(mins, maxs))
+		return;
+
+	VectorSubtract(r_newrefdef.vieworg, currententity->origin, modelorg);
+
+	if (rotated) {
+		vec3_t temp;
+		vec3_t forward, right, up;
+
+		VectorCopy(modelorg, temp);
+		AngleVectors(currententity->angles, forward, right, up);
+
+		modelorg[0] = DotProduct(temp, forward);
+		modelorg[1] = -DotProduct(temp, right);
+		modelorg[2] = DotProduct(temp, up);
+	}
+
+	qglPushMatrix();
+
+	R_RotateForEntity(currententity);
+
+	// put camera into model space view angle for bmodels parallax
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
+
+	R_DrawInlineBModel3();
+	R_DrawChainsRA();
+
+	qglPopMatrix();
+}
+
+qboolean R_MarkBrushModelSurfaces (void) {
 	int			i;
 	msurface_t	*psurf;
 	model_t		*clmodel;
@@ -1350,12 +1431,10 @@ qboolean R_MarkBrushModelSurfaces()
 	return num_light_surfaces;
 }
 
-void R_DrawLightBrushModel()
-{
-
+void R_DrawLightBrushModel (void) {
 	vec3_t		mins, maxs, org;
 	int			i;
-    qboolean	rotated;
+	qboolean	rotated;
 	vec3_t		tmp, oldLight;
 	qboolean	caustics;
 
@@ -1463,6 +1542,7 @@ void R_DrawLightBrushModel()
 }
 
 
+
 /*
 ===============
 R_MarkLeaves
@@ -1471,8 +1551,7 @@ Mark the leaves and nodes that are in the PVS for the current
 cluster
 ===============
 */
-void R_MarkLeaves (void)
-{
+void R_MarkLeaves (void) {
 	byte	*vis;
 	byte	fatvis[MAX_MAP_LEAFS/8];
 	mnode_t	*node;
