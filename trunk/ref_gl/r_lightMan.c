@@ -2256,7 +2256,7 @@ void R_DrawLightFlare () {
 
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
-	int			flareVert = 0, id;
+	int			id;
 	vec3_t		vert_array[MAX_FLARES_VERTEX];
 	vec2_t		tex_array[MAX_FLARES_VERTEX];
 	vec4_t		color_array[MAX_FLARES_VERTEX];
@@ -2276,6 +2276,9 @@ void R_DrawLightFlare () {
 	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_Disable (GL_DEPTH_BOUNDS_TEST_EXT);
 	
+	if (r_useLightScissors->value)
+		GL_Disable (GL_SCISSOR_TEST);
+
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglEnableVertexAttribArray (ATRB_TEX0);
@@ -2331,8 +2334,12 @@ void R_DrawLightFlare () {
 	qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	GL_BindNullProgram ();
+
 	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
+	
+	if (r_useLightScissors->value)
+		GL_Enable(GL_SCISSOR_TEST);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray (ATRB_POSITION);
@@ -2342,7 +2349,6 @@ void R_DrawLightFlare () {
 
 void R_LightFlareOutLine () { //flare editing highlights
 
-	int			flareVert = 0;
 	vec3_t		v[8], tmpOrg;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -2356,6 +2362,8 @@ void R_LightFlareOutLine () { //flare editing highlights
 
 	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_Disable (GL_DEPTH_BOUNDS_TEST_EXT);
+
+
 	GL_Disable (GL_SCISSOR_TEST);
 	GL_Disable (GL_STENCIL_TEST);
 	GL_Disable (GL_TEXTURE_2D);

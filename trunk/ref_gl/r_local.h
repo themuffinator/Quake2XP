@@ -243,7 +243,6 @@ cvar_t *r_lightLevel;
 cvar_t *r_mode;
 cvar_t *r_noBind;
 cvar_t *r_cull;
-cvar_t *r_polyBlend;
 cvar_t *r_vsync;
 cvar_t *r_textureMode;
 cvar_t *r_lockPvs;

@@ -749,8 +749,6 @@ static void R_DrawRAScene (void) {
 			continue;
 		}
 
-//		currentmodel = currententity->model;
-
 		if (!currentmodel) {
 			R_DrawNullModel();
 			continue;
@@ -761,7 +759,6 @@ static void R_DrawRAScene (void) {
 				R_DrawAliasModel(currententity, false);
 				break;
 			case mod_brush:
-//				R_DrawBrushModelRA();
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
@@ -928,21 +925,6 @@ void R_RenderFrame(refdef_t * fd, qboolean client) {
 	// set alpha blend for 2D mode
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	if (v_blend[3] && r_polyBlend->value) {
-		qglDisable(GL_TEXTURE_2D);
-		GL_Color4f(v_blend[0],v_blend[1],v_blend[2], 0.15);
-
-		qglBegin(GL_QUADS);
-		qglVertex2f(0, 0);
-		qglVertex2f(vid.width, 0);
-		qglVertex2f(vid.width, vid.height);
-		qglVertex2f(0, vid.height);
-		qglEnd();
-
-		GL_Color4f(1, 1, 1, 1);
-		qglEnable(GL_TEXTURE_2D);
-	}
 
 	if (selectedShadowLight && r_lightEditor->value){
 		Set_FontShader(true);
@@ -1156,7 +1138,6 @@ void R_RegisterCvars(void)
 
 	r_mode =							Cvar_Get("r_mode", "0", CVAR_ARCHIVE);
 	r_noBind =							Cvar_Get("r_noBind", "0", 0);
-	r_polyBlend =						Cvar_Get("r_polyBlend", "1", CVAR_ARCHIVE);
 	r_lockPvs =							Cvar_Get("r_lockPvs", "0", 0);
 
 	r_vsync =							Cvar_Get("r_vsync", "0", CVAR_ARCHIVE);

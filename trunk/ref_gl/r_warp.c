@@ -37,12 +37,10 @@ void  RenderLavaSurfaces (msurface_t * surf) {
 	glpoly_t	*p, *bp;
 	float		*v;
 	vec2_t		scale;
-	int			id, i, nv = surf->polys->numVerts;
-	unsigned	defBits = 0;
+	int			i, nv = surf->polys->numVerts;
 
 	// setup program
-	GL_BindProgram (lavaProgram, defBits);
-	id = lavaProgram->id[defBits];
+	GL_BindProgram (lavaProgram, 0);
 
 	if (!surf->texInfo->image->parallaxScale) {
 
