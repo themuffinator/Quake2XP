@@ -1,4 +1,4 @@
-#define PI			3.14159265358979323846
+#define PI				3.14159265358979323846
 #define HALF_PI			1.57079632679489661923
 
 uniform vec4			u_parallaxParams; // x = scale[0] y = scale[1] z = tex_w[2] w = tex_h
