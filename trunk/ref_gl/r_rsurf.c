@@ -188,7 +188,7 @@ void DrawGLPolyGLSL (msurface_t * fa, qboolean scrolling) {
 		qglUniform1f(refract_thickness, 150.0);
 		qglUniform2f(refract_screenSize, vid.width, vid.height);
 		qglUniform2f(refract_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-		qglUniform1f(refract_ambient, r_ambientLevel->value);
+		qglUniform1f(refract_ambient, r_lightmapScale->value);
 		qglUniform1i(refract_alphaMask, 0);
 		}  
 	else 
@@ -199,7 +199,7 @@ void DrawGLPolyGLSL (msurface_t * fa, qboolean scrolling) {
 
 		GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
 		qglUniform1i(gen_tex, 0);
-		qglUniform1f(gen_colorModulate, r_ambientLevel->value);
+		qglUniform1f(gen_colorModulate, r_lightmapScale->value);
 	}
 
 
@@ -242,24 +242,15 @@ void R_RenderBrushPoly (msurface_t *fa) {
 	image_t *image;
 	char *purename;
 	char noext[MAX_QPATH];
-	
+
 	image = R_TextureAnimation(fa->texInfo);
 	purename = COM_SkipPath(image->name);
 	COM_StripExtension(purename, noext);
 
-	if (fa->flags & MSURF_DRAWTURB) {	
-		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
-			RenderLavaSurfaces(fa);
-		else
-			R_DrawWaterPolygons(fa);
-
-		return;
-	}
-
-	if (fa->texInfo->flags & SURF_FLOWING)
-		DrawGLPolyGLSL(fa, true);
+	if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
+		RenderLavaSurfaces(fa);
 	else
-		DrawGLPolyGLSL(fa, false);
+		R_DrawWaterPolygons(fa);
 }
 
 void R_DrawChainsRA (void) {
@@ -288,20 +279,9 @@ void R_DrawChainsRA (void) {
 	r_alpha_surfaces = NULL;
 
 	for (s = r_reflective_surfaces; s; s = s->texturechain) {
-/*
-// KRIGS: at the moment only opaque WARP surfaces go to this list
+		shadelight_surface[3] = 1.f;
 
-		if (s->texInfo->flags & SURF_TRANS33) 
-			shadelight_surface[3] = 0.33f;
-		else if (s->texInfo->flags & SURF_TRANS66) 
-			shadelight_surface[3] = 0.66f;
-		else
-*/
-			shadelight_surface[3] = 1.f;
-
-// KRIGS: rename from Water to Reflective or smth
-//		if (s->texInfo->flags & SURF_WARP)
-			R_DrawWaterPolygons(s);
+		R_DrawWaterPolygons(s);
 	}
 
 	r_reflective_surfaces = NULL;
@@ -447,7 +427,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
 	
 	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_parallax->value, 0, 1));
-	qglUniform1f(ambientWorld_ambientLevel, r_ambientLevel->value);
+	qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
 
 	qglUniform1i(ambientWorld_diffuse,		0);
 	qglUniform1i(ambientWorld_lightmap[0],	1);
@@ -739,7 +719,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 	msurface_t *surf, **mark;
 	mleaf_t *pleaf;
 	float dot;
-//	image_t *fx, *image;
+	image_t *fx, *image;
 
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
@@ -824,19 +804,20 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 				// add to the reflective chain
 				surf->texturechain = r_reflective_surfaces;
 				r_reflective_surfaces = surf;
-
-				// FIXME: this is a hack for animation
-//				image = R_TextureAnimation(surf->texInfo);
-//				fx = R_TextureAnimationFx(surf->texInfo); // fix glow hack
-
-				// the polygon is visible, so add it to the texture sorted chain
-//				surf->texturechain = image->texturechain;
-//				image->texturechain = surf;
 			}
 			else {
 				// add to the ambient batch
 				scene_surfaces[num_scene_surfaces++] = surf;
 			}
+		}
+		if (surf->flags & MSURF_LAVA){
+			// FIXME: this is a hack for animation
+			image = R_TextureAnimation(surf->texInfo);
+			fx = R_TextureAnimationFx(surf->texInfo); // fix glow hack
+
+			// the polygon is visible, so add it to the texture sorted chain
+			surf->texturechain = image->texturechain;
+			image->texturechain = surf;
 		}
 	}
 
@@ -1165,18 +1146,11 @@ static void R_DrawInlineBModel (void) {
 			psurf->ent = currententity;
 			// ================================
 
-			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
-//				psurf->texturechain = r_alpha_surfaces;
-//				r_alpha_surfaces = psurf;
+			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) 
 				continue;
-			}
-
+			
 			if (!(psurf->texInfo->flags & SURF_WARP))
 				scene_surfaces[num_scene_surfaces++] = psurf;
-//			else {
-//				psurf->texturechain = r_reflective_surfaces;
-//				r_reflective_surfaces = psurf;
-//			}
 		}
 	}
 }
@@ -1200,9 +1174,11 @@ static void R_DrawInlineBModel2 (void) {
 
 		// draw the polygon
 		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
+			
 			if (psurf->visframe == r_framecount) // reckless fix
 				continue;
-			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_WARP))
+
+			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
 				continue;
 
 			if (psurf->flags & MSURF_DRAWTURB)

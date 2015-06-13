@@ -303,7 +303,7 @@ cvar_t	*r_ssaoBlur;
 cvar_t	*sys_priority;
 
 cvar_t	*r_skipStaticLights;
-cvar_t	*r_ambientLevel;
+cvar_t	*r_lightmapScale;
 cvar_t	*r_lightsWeldThreshold;
 cvar_t	*r_debugLights;
 cvar_t	*r_occLightBoundsSize;
@@ -501,6 +501,8 @@ void R_SetLightPlanes ();
 trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
 void DrawTextureChains2 ();
 
+void R_DrawChainsRA(void);
+void R_DrawBrushModelRA(void);
 extern int	occ_framecount;
 //====================================================================
 
@@ -1052,6 +1054,7 @@ uint lava_csm;
 uint lava_parallaxParams;
 uint lava_viewOrigin;
 uint lava_parallaxType;
+uint lava_ambient;
 
 uint water_deformMap;
 uint water_baseMap;

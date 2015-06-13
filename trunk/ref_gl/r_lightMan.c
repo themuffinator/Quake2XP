@@ -2267,6 +2267,9 @@ void R_DrawLightFlare () {
 	if (currentShadowLight->isNoWorldModel)
 		return;
 
+	if (currentShadowLight->isAmbient)
+		return;
+
 	if (!r_drawFlares->value)
 		return;
 

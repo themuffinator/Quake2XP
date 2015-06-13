@@ -1143,6 +1143,9 @@ void Mod_LoadFaces (lump_t * l) {
 	msurface_t *out;
 	msurface_t	*surf;
 	int			i, count, surfnum;
+	image_t *image;
+	char *purename;
+	char noext[MAX_QPATH];
 
 	in = (dface_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -1202,6 +1205,13 @@ void Mod_LoadFaces (lump_t * l) {
 		// set the drawing flags
 		if (out->texInfo->flags & SURF_WARP)
 			out->flags |= MSURF_DRAWTURB;
+
+		image = out->texInfo->image;
+		purename = COM_SkipPath(image->name);
+		COM_StripExtension(purename, noext);
+
+		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
+			out->flags |= MSURF_LAVA;
 
 		// create lightmaps and polygons
 		if (!(out->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP)))
@@ -1520,7 +1530,7 @@ void Mod_LoadLeafs (lump_t *l) {
 				for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
 					poly->flags |= MSURF_UNDERWATER;
 
-				if (out->contents & CONTENTS_LAVA) {
+			/*	if (out->contents & CONTENTS_LAVA) {
 					out->firstmarksurface[j]->flags |= MSURF_LAVA;
 
 					for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
@@ -1533,13 +1543,14 @@ void Mod_LoadLeafs (lump_t *l) {
 					for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
 						poly->flags |= MSURF_SLIME;
 				}
-
+*/
 				if (out->contents & CONTENTS_WATER) {
 					out->firstmarksurface[j]->flags |= MSURF_WATER;
 
 					for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
 						poly->flags |= MSURF_WATER;
 				}
+				
 			}
 
 		}

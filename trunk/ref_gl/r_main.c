@@ -1084,7 +1084,7 @@ Cvar_Set("r_shadows", "0");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "0");
 Cvar_Set("r_skipStaticLights", "1");
-Cvar_Set("r_ambientLevel", "1.0");
+Cvar_Set("r_lightmapScale", "1.0");
 Cvar_Set("r_bloom", "0");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "0");
@@ -1106,7 +1106,7 @@ Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "0");
 Cvar_Set("r_skipStaticLights", "0");
-Cvar_Set("r_ambientLevel", "0.5");
+Cvar_Set("r_lightmapScale", "0.5");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "0");
 Cvar_Set("r_radialBlur", "1");
@@ -1128,7 +1128,7 @@ Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
 Cvar_Set("r_parallax", "1");
 Cvar_Set("r_skipStaticLights", "0");
-Cvar_Set("r_ambientLevel", "0.5");
+Cvar_Set("r_lightmapScale", "0.5");
 Cvar_Set("r_bloom", "1");
 Cvar_Set("r_dof", "1");
 Cvar_Set("r_radialBlur", "1");
@@ -1210,7 +1210,7 @@ void R_RegisterCvars(void)
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 
 	r_skipStaticLights =				Cvar_Get("r_skipStaticLights", "0", CVAR_ARCHIVE);
-	r_ambientLevel =					Cvar_Get("r_ambientLevel", "0.5", CVAR_ARCHIVE);
+	r_lightmapScale =					Cvar_Get("r_lightmapScale", "0.5", CVAR_ARCHIVE);
 	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "65", CVAR_ARCHIVE);
@@ -1954,11 +1954,11 @@ void R_BeginFrame()
 	if(r_dof->modified)
 		r_dof->modified = false;
 
-	if(r_ambientLevel->modified)
-		r_ambientLevel->modified = false;
+	if(r_lightmapScale->modified)
+		r_lightmapScale->modified = false;
 
-	if(r_ambientLevel->value >1)
-		Cvar_SetValue("r_ambientLevel", 1);
+	if(r_lightmapScale->value >1)
+		Cvar_SetValue("r_lightmapScale", 1);
 
 	if (r_ssao->modified)
 		r_ssao->modified = false;

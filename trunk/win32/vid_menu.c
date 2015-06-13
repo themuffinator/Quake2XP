@@ -83,7 +83,7 @@ static float ClampCvar (float min, float max, float value) {
 
 static void ambientLevelCallback (void *s) {
 	float ambient = s_ambientLevel_slider.curvalue / 20;
-	Cvar_SetValue ("r_ambientLevel", ambient);
+	Cvar_SetValue ("r_lightmapScale", ambient);
 }
 
 static void RadarCallback (void *s) {
@@ -229,7 +229,7 @@ static void ApplyChanges (void *unused) {
 	if (r_fxaa->modified)
 		vid_ref->modified = true;
 
-	if (r_ambientLevel->modified)
+	if (r_lightmapScale->modified)
 		vid_ref->modified = true;
 
 	if (r_motionBlur->modified)
@@ -359,8 +359,8 @@ void VID_MenuInit (void) {
 	if (!r_fxaa->value)
 		r_fxaa = Cvar_Get ("r_fxaa", 0, CVAR_ARCHIVE);
 
-	if (!r_ambientLevel->value)
-		r_ambientLevel = Cvar_Get ("r_ambientLevel", "0", CVAR_ARCHIVE);
+	if (!r_lightmapScale->value)
+		r_lightmapScale = Cvar_Get ("r_lightmapScale", "0", CVAR_ARCHIVE);
 
 	if (!r_motionBlur->value)
 		r_motionBlur = Cvar_Get ("r_motionBlur", "0", CVAR_ARCHIVE);
@@ -444,12 +444,12 @@ void VID_MenuInit (void) {
 	s_ambientLevel_slider.generic.type = MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x = 0;
 	s_ambientLevel_slider.generic.y = 110 * cl_fontScale->value;
-	s_ambientLevel_slider.generic.name = "Ambient Level";
+	s_ambientLevel_slider.generic.name = "Lightmap Scale";
 	s_ambientLevel_slider.generic.callback = ambientLevelCallback;
 	s_ambientLevel_slider.minvalue = 0;
 	s_ambientLevel_slider.maxvalue = 20;
-	s_ambientLevel_slider.curvalue = r_ambientLevel->value * 20;
-	s_ambientLevel_slider.generic.statusbar = "Ambient Lighting Level";
+	s_ambientLevel_slider.curvalue = r_lightmapScale->value * 20;
+	s_ambientLevel_slider.generic.statusbar = "Precomputed Lighting Level";
 
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;
 	s_flare_box.generic.x = 0;
