@@ -1941,8 +1941,21 @@ void R_BeginFrame()
 	if(r_lightmapScale->value >1)
 		Cvar_SetValue("r_lightmapScale", 1);
 
+	if (r_lightmapScale->value < 0)
+		Cvar_SetValue("r_lightmapScale", 0);
+
 	if (r_ssao->modified)
 		r_ssao->modified = false;
+
+	if (r_textureMode->modified || r_anisotropic->modified) {
+		GL_TextureMode(r_textureMode->string);
+
+		if (r_textureMode->modified)
+			r_textureMode->modified = false;
+
+		if (r_anisotropic->modified)
+			r_anisotropic->modified = false;
+	}
 
 	/* 
 	** go into 2D mode
@@ -1959,28 +1972,8 @@ void R_BeginFrame()
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDrawBuffer( GL_BACK );
 
-	/* 
-	 ** texturemode stuff
-	 */
-	// Realtime set level of anisotropy filtering
-	if (r_textureMode->modified || r_anisotropic->modified) {
-		GL_TextureMode(r_textureMode->string);
-
-		if (r_textureMode->modified)
-			r_textureMode->modified = false;
-
-		if (r_anisotropic->modified)
-			r_anisotropic->modified = false;
-	}
-	
-	/* 
-	 ** swapinterval stuff
-	 */
 	GL_UpdateSwapInterval();
 
-	// 
-	// clear screen if desired
-	// 
 	R_Clear();
 }
 
