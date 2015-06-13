@@ -410,7 +410,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 					tangentArray[3 * MAX_TRIANGLES],
 					binormalArray[3 * MAX_TRIANGLES],
 					vertexArray[3 * MAX_TRIANGLES],
-					maxs;
+					maxs, light;
 	image_t			*skin, *skinNormalmap;
 	int				index2, oldindex2;
 	unsigned		defBits = 0;

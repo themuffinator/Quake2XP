@@ -377,25 +377,12 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 	VectorCopy(r_origin, tmpView);
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		VectorSubtract(currentShadowLight->origin, currententity->origin, currentShadowLight->origin);
-		VectorSubtract(r_origin, currententity->origin, r_origin);
+	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
 
-		if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]){
-			VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
-			Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
 
-			VectorSubtract(r_origin, currententity->origin, tmp);
-			Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
-		}
-	}
-	else{
-		VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
-		Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
-
-		VectorSubtract(r_origin, currententity->origin, tmp);
-		Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
-	}
 
 	GL_DrawAliasFrameLerpLight(paliashdr);
 	

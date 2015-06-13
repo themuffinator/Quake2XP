@@ -105,6 +105,9 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 void R_AddDynamicLight (dlight_t *dl) {
 
 	worldShadowLight_t *light;
+	mat3_t lightAxis;
+	mat4_t temp;
+	vec3_t tmp;
 	int i;
 
 	if (!SphereInFrustum (dl->origin, dl->intensity))
@@ -132,12 +135,31 @@ void R_AddDynamicLight (dlight_t *dl) {
 	light->isNoWorldModel = 0;
 	light->isShadow = 1;
 	light->spherical = true;
-	UpdateLightBounds (light);
+	light->len = dl->intensity;
+
+	for (i = 0; i < 8; i++) {
+		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
+		tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
+		tmp[2] = (i & 4) ? -light->radius[2] : light->radius[2];
+
+		AnglesToMat3(light->angles, lightAxis);
+		Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
+		VectorAdd(light->corners[i], light->origin, light->corners[i]);
+	}
+
+	Mat4_Identity(temp);
+	Mat4_Translate(temp, 0.5, 0.5, 0.5);
+	Mat4_Scale(temp, 0.5 / light->radius[0], 0.5 / light->radius[1], 0.5 / light->radius[2]);
+	Mat4_Translate(temp, -light->origin[0], -light->origin[1], -light->origin[2]);
+	Mat4_Copy(temp, light->attenMapMatrix);
 }
 
 void R_AddNoWorldModelLight () {
 
 	worldShadowLight_t *light;
+	mat3_t lightAxis;
+	mat4_t temp;
+	vec3_t tmp;
 	int i;
 
 	light = &shadowLightsBlock[num_nwmLights++];
@@ -145,7 +167,7 @@ void R_AddNoWorldModelLight () {
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
 	VectorSet (light->origin, r_newrefdef.vieworg[0], r_newrefdef.vieworg[1], r_newrefdef.vieworg[2]);
-	VectorSet (light->startColor, 0.5, 0.5, 0.5);
+	VectorSet (light->startColor, 1.0, 1.0, 1.0);
 	VectorSet (light->angles, 0, 0, 0);
 	VectorSet (light->radius, 256, 256, 256);
 
@@ -160,9 +182,26 @@ void R_AddNoWorldModelLight () {
 	light->isShadow = 0;
 	light->_cone = 0;
 	light->isNoWorldModel = 1;
+	light->flare = 0;
 	light->isAmbient = 0;
 	light->spherical = true;
-	UpdateLightBounds (light);
+	light->len = light->radius[0];
+
+	for (i = 0; i < 8; i++) {
+		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
+		tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
+		tmp[2] = (i & 4) ? -light->radius[2] : light->radius[2];
+
+		AnglesToMat3(light->angles, lightAxis);
+		Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
+		VectorAdd(light->corners[i], light->origin, light->corners[i]);
+	}
+
+	Mat4_Identity(temp);
+	Mat4_Translate(temp, 0.5, 0.5, 0.5);
+	Mat4_Scale(temp, 0.5 / light->radius[0], 0.5 / light->radius[1], 0.5 / light->radius[2]);
+	Mat4_Translate(temp, -light->origin[0], -light->origin[1], -light->origin[2]);
+	Mat4_Copy(temp, light->attenMapMatrix);
 }
 
 
@@ -2260,6 +2299,9 @@ void R_DrawLightFlare () {
 	vec3_t		vert_array[MAX_FLARES_VERTEX];
 	vec2_t		tex_array[MAX_FLARES_VERTEX];
 	vec4_t		color_array[MAX_FLARES_VERTEX];
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
 
 	if (!currentShadowLight->flare)
 		return;

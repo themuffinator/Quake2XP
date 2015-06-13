@@ -1530,20 +1530,6 @@ void Mod_LoadLeafs (lump_t *l) {
 				for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
 					poly->flags |= MSURF_UNDERWATER;
 
-			/*	if (out->contents & CONTENTS_LAVA) {
-					out->firstmarksurface[j]->flags |= MSURF_LAVA;
-
-					for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
-						poly->flags |= MSURF_LAVA;
-				}
-
-				if (out->contents & CONTENTS_SLIME) {
-					out->firstmarksurface[j]->flags |= MSURF_SLIME;
-
-					for (poly = out->firstmarksurface[j]->polys; poly; poly = poly->next)
-						poly->flags |= MSURF_SLIME;
-				}
-*/
 				if (out->contents & CONTENTS_WATER) {
 					out->firstmarksurface[j]->flags |= MSURF_WATER;
 
