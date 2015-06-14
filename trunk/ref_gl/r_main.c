@@ -517,7 +517,7 @@ void R_DrawLightScene (void)
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
-	if (r_skipStaticLights->value && currentShadowLight->isStatic)
+	if (r_skipStaticLights->value && currentShadowLight->isStatic && currentShadowLight->style == 0)
 		continue;
 	
 	UpdateLightEditor();
@@ -602,7 +602,7 @@ void R_DrawPlayerWeapon(void)
 
 		for (currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
-			if (r_skipStaticLights->value && currentShadowLight->isStatic)
+			if (r_skipStaticLights->value && currentShadowLight->isStatic && currentShadowLight->style == 0)
 				continue;
 
 			R_SetViewLightScreenBounds();
@@ -1176,7 +1176,7 @@ void R_RegisterCvars(void)
 	r_flareWeldThreshold =				Cvar_Get("r_flareWeldThreshold", "32", CVAR_ARCHIVE);
 
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
-	r_customHeight =					Cvar_Get("r_customHeight", "500", CVAR_ARCHIVE);
+	r_customHeight =					Cvar_Get("r_customHeight", "768", CVAR_ARCHIVE);
 
 	sys_priority =						Cvar_Get("sys_priority", "0", CVAR_ARCHIVE);
 		
@@ -1213,7 +1213,7 @@ void R_RegisterCvars(void)
 	r_bloomStarIntens =					Cvar_Get("r_bloomStarIntens", "3.0", CVAR_ARCHIVE);
 
 	r_ssao =							Cvar_Get ("r_ssao", "1", CVAR_ARCHIVE);
-	r_ssaoIntensity =					Cvar_Get ("r_ssaoIntensity", "1.0", CVAR_ARCHIVE);
+	r_ssaoIntensity =					Cvar_Get ("r_ssaoIntensity", "2.0", CVAR_ARCHIVE);
 	r_ssaoScale =						Cvar_Get ("r_ssaoScale", "80.0", CVAR_ARCHIVE);
 	r_ssaoBlur	=						Cvar_Get ("r_ssaoBlur", "2", CVAR_ARCHIVE);
 
@@ -1421,22 +1421,18 @@ int R_Init(void *hinstance, void *hWnd)
 	// check GL version /:-#)
 	float version = atof(gl_config.version_string);
 
+	if (strstr(vendor_buffer, "intel")) // fuck the intel lol
+	{
+		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
+		VID_Error(ERR_FATAL, "Intel graphics card is unsupported.\n");
+	}
+
 	if (version < 2.0){
 		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
 		}
 	}
-/*
-	if (strstr(vendor_buffer, "intel")) // fuck the intel lol
-		{
-		if(r_allowIntel->value){
-		Com_Printf(S_COLOR_RED"Intel graphics card detected. Renderer may be unstable and slow.\n");
-		}else{
-		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
-		VID_Error(ERR_FATAL,  "Intel graphics card is unsupported.\n");
-		}
-	}
-*/
+
 	Com_DPrintf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
 	Com_DPrintf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
 	
@@ -1456,7 +1452,7 @@ int R_Init(void *hinstance, void *hWnd)
 	
 	} else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_multitexture not found\n");
-		VID_Error(ERR_FATAL, "GL_ARB_multitexture not found!");
+		VID_Error(ERR_FATAL, "GL_ARB_multitexture not found!");  //wtf????!!!! kill!
 	}
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
