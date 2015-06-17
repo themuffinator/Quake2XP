@@ -818,6 +818,7 @@ void R_RenderView (refdef_t *fd) {
 	R_RenderDecals();
 	R_RenderFlares();
 	
+	R_DrawParticles();
 	R_CaptureColorBuffer();
 
 	R_DrawRAScene();
