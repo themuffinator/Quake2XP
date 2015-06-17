@@ -1,4 +1,3 @@
-
 varying float			v_depth;
 varying	vec4			v_color;
 uniform sampler2D		u_map0;

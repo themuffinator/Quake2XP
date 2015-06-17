@@ -21,5 +21,5 @@ float lum = dot(vec4(0.30, 0.59, 0.11, 0.0), tex);
 if (lum > u_BloomThreshold)
     gl_FragColor = tex;
 else
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+    gl_FragColor = vec4(0.0);
 }

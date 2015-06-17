@@ -44,5 +44,5 @@ void main (void) {
 		v_positionVS = (gl_ModelViewMatrix * vec4(a_vertArray, 1.0)).xyz;
 	}
 
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1);
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 }

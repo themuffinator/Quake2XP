@@ -42,10 +42,10 @@ void main(void)
     float QualityEdgeThreshold = 0.033;
     float QualityEdgeThresholdMin = 0.0;
 
-    vec4 ConsolePosPos = vec4(0.0,0.0,0.0,0.0);
-    vec4 ConsoleRcpFrameOpt = vec4(0.0,0.0,0.0,0.0);
-    vec4 ConsoleRcpFrameOpt2 = vec4(0.0,0.0,0.0,0.0);
-    vec4 Console360RcpFrameOpt2 = vec4(0.0,0.0,0.0,0.0);
+    vec4 ConsolePosPos = vec4(0.0);
+    vec4 ConsoleRcpFrameOpt = vec4(0.0);
+    vec4 ConsoleRcpFrameOpt2 = vec4(0.0);
+    vec4 Console360RcpFrameOpt2 = vec4(0.0);
     float ConsoleEdgeSharpness = 8.0;
     float ConsoleEdgeThreshold = 0.125;
     float ConsoleEdgeThresholdMin = 0.05;

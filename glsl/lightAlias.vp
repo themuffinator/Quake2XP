@@ -34,5 +34,5 @@ v_viewVec.z = dot(a_normArray, VV);
 
 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 
-v_viewPos = gl_ModelViewMatrix * vec4(a_vertArray, 1);
+v_viewPos = gl_ModelViewMatrix * vec4(a_vertArray, 1.0);
 }

@@ -97,7 +97,7 @@ void main (void) {
 			dot(normalMap.xyz, H2));
 #endif
 //		S = scale * pow(max(S, 0.0), fts);
-		S = pow(max(S, 0.0), u_specularExp);
+		S = pow(max(S, 0.0), vec3(u_specularExp));
 		S = (lm0 * S.x + lm1 * S.y + lm2 * S.z);
 
 #if 1

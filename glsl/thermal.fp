@@ -8,7 +8,6 @@ void main()
 {
  vec2 ds = gl_FragCoord.xy * 2.0; 
  vec4 pixcol = texture2DRect(u_screenTex, ds);
- 
  pixcol += texture2DRect( u_screenTex, ds + vec2(1.0, 0.0)); 
  pixcol += texture2DRect( u_screenTex, ds + vec2(0.0, 1.0)); 
  pixcol += texture2DRect( u_screenTex, ds + vec2(1.0, 1.0)); 

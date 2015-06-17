@@ -17,7 +17,7 @@ vec4 Desaturate(vec3 color, float Desaturation)
 void main(void) 
 {
 vec4 color =  texture2D(u_map, v_texCoord.xy);
-vec4 mono = Desaturate(color.rgb, 1); 
+vec4 mono = Desaturate(color.rgb, 1.0); 
 vec4 deltas = color - mono;
 gl_FragColor = mono + u_colorScale * deltas;
 }

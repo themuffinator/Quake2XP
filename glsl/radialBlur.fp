@@ -19,15 +19,24 @@ void main (void) {
 
 	float weight = 0.125;
   
-	vec4 accum = vec4(0.0);   
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 0.0 * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 1.0 * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 2.0 * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 3.0 * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 4.0 * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 5.0 * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 6.0 * strength);
-	accum += texture2DRect(u_screenMap, gl_FragCoord.xy + blurVec.xy * 7.0 * strength);
+	vec4 accum = vec4(0.0);
+	vec2 add = blurVec.xy * strength;
+	vec2 st = gl_FragCoord.xy;
+	accum += texture2DRect(u_screenMap, st);
+	st += add;
+	accum += texture2DRect(u_screenMap, st);
+	st += add;
+	accum += texture2DRect(u_screenMap, st);
+	st += add;
+	accum += texture2DRect(u_screenMap, st);
+	st += add;
+	accum += texture2DRect(u_screenMap, st);
+	st += add;
+	accum += texture2DRect(u_screenMap, st);
+	st += add;
+	accum += texture2DRect(u_screenMap, st);
+	st += add;
+	accum += texture2DRect(u_screenMap, st);
 
 	gl_FragColor = accum * weight;
 }

@@ -59,37 +59,37 @@ void main (void) {
 	float n = 0.0;
 
 	vec3 kernel[8];
-	kernel[0] = normalize(vec3( 1, 1, 1))*fScale*(n+=step);
-	kernel[1] = normalize(vec3(-1,-1,-1))*fScale*(n+=step);
-	kernel[2] = normalize(vec3(-1,-1, 1))*fScale*(n+=step);
-	kernel[3] = normalize(vec3(-1, 1,-1))*fScale*(n+=step);
-	kernel[4] = normalize(vec3(-1, 1 ,1))*fScale*(n+=step);
-	kernel[5] = normalize(vec3( 1,-1,-1))*fScale*(n+=step);
-	kernel[6] = normalize(vec3( 1,-1, 1))*fScale*(n+=step);
-	kernel[7] = normalize(vec3( 1, 1,-1))*fScale*(n+=step);
+	kernel[0] = normalize(vec3( 1.0, 1.0, 1.0))*fScale*(n+=step);
+	kernel[1] = normalize(vec3(-1.0,-1.0,-1.0))*fScale*(n+=step);
+	kernel[2] = normalize(vec3(-1.0,-1.0, 1.0))*fScale*(n+=step);
+	kernel[3] = normalize(vec3(-1.0, 1.0,-1.0))*fScale*(n+=step);
+	kernel[4] = normalize(vec3(-1.0, 1.0 ,1.0))*fScale*(n+=step);
+	kernel[5] = normalize(vec3( 1.0,-1.0,-1.0))*fScale*(n+=step);
+	kernel[6] = normalize(vec3( 1.0,-1.0, 1.0))*fScale*(n+=step);
+	kernel[7] = normalize(vec3( 1.0, 1.0,-1.0))*fScale*(n+=step);
 
 /*
 	vec3 kernel[8] = {
 #if 1
-		normalize(vec3( 1, 1, 1))*fScale*(n+=step),
-		normalize(vec3(-1,-1,-1))*fScale*(n+=step),
-		normalize(vec3(-1,-1, 1))*fScale*(n+=step),
-		normalize(vec3(-1, 1,-1))*fScale*(n+=step),
+		normalize(vec3( 1.0, 1.0, 1.0))*fScale*(n+=step),
+		normalize(vec3(-1.0,-1.0,-1.0))*fScale*(n+=step),
+		normalize(vec3(-1.0,-1.0, 1.0))*fScale*(n+=step),
+		normalize(vec3(-1.0, 1.0,-1.0))*fScale*(n+=step),
 
-		normalize(vec3(-1, 1 ,1))*fScale*(n+=step),
-		normalize(vec3( 1,-1,-1))*fScale*(n+=step),
-		normalize(vec3( 1,-1, 1))*fScale*(n+=step),
-		normalize(vec3( 1, 1,-1))*fScale*(n+=step)
+		normalize(vec3(-1.0, 1.0 ,1.0))*fScale*(n+=step),
+		normalize(vec3( 1.0,-1.0,-1.0))*fScale*(n+=step),
+		normalize(vec3( 1.0,-1.0, 1.0))*fScale*(n+=step),
+		normalize(vec3( 1.0, 1.0,-1.0))*fScale*(n+=step)
 #elif 1
-		vec3( 1, 1, 1),
-		vec3(-1,-1,-1),
-		vec3(-1,-1, 1),
-		vec3(-1, 1,-1),
+		vec3( 1.0, 1.0, 1.0),
+		vec3(-1.0,-1.0,-1.0),
+		vec3(-1.0,-1.0, 1.0),
+		vec3(-1.0, 1.0,-1.0),
 
-		vec3(-1, 1 ,1),
-		vec3( 1,-1,-1),
-		vec3( 1,-1, 1),
-		vec3( 1, 1,-1)
+		vec3(-1.0, 1.0 ,1.0),
+		vec3( 1.0,-1.0,-1.0),
+		vec3( 1.0,-1.0, 1.0),
+		vec3( 1.0, 1.0,-1.0)
 #else
 		vec3(0.717887, 0.271767, 0.539537),
 		vec3(-0.974975, 0.470748, 0.120884),

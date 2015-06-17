@@ -21,7 +21,7 @@ float halfLambert(in vec3 N, in vec3 L )
 float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower)
 {
     vec3 halfAngle = normalize(normalVec + lightVec);
-    return pow(clamp(dot(normalVec,halfAngle),0.0,1.0),specPower);
+    return pow(clamp(dot(normalVec,halfAngle),0.0,1.0), specPower);
 }
 
 vec4 subScatterFS(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
