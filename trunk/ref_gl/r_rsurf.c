@@ -363,9 +363,6 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
 
-		if (r_ssao->value)
-			GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
-
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
 			scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
@@ -437,7 +434,12 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qglUniform1i(ambientWorld_lightmap[2],	5);
 	qglUniform1i(ambientWorld_lightmapType, r_worldmodel->useXPLM ? 1 : 0);
 	qglUniform1i(ambientWorld_ssaoMap, 6);
-	qglUniform1i(ambientWorld_ssao, r_ssao->value ? 1 : 0);
+
+	if (r_ssao->value){
+		GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
+		qglUniform1i(ambientWorld_ssao, 1);
+	} else
+		qglUniform1i(ambientWorld_ssao, 0);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
 
