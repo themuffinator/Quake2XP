@@ -38,14 +38,6 @@ void R_LightFlareOutLine ();
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
-	if (r_newrefdef.areabits) {
-		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))) {
-			return false;
-		}
-	}
-	if (!HasSharedLeafs (light->vis, viewvis))
-		return false;
-
 	if (light->spherical) {
 
 		if (!SphereInFrustum (light->origin, light->radius[0]))
@@ -59,6 +51,14 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 		if (!BoundsAndSphereIntersect (light->mins, light->maxs, r_origin, currententity->model->radius))
 			return false;
 	}
+
+	if (r_newrefdef.areabits) {
+		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))) {
+			return false;
+		}
+	}
+	if (!HasSharedLeafs(light->vis, viewvis))
+		return false;
 
 	return true;
 }

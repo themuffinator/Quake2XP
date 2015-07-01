@@ -36,7 +36,7 @@ glstate_t gl_state;
 entity_t *currententity;
 model_t *currentmodel;
 
-cplane_t frustum[5];
+cplane_t frustum[6];
 
 int r_visframecount;			// bumped when going to a new PVS
 int r_framecount;				// used for dlight push checking
@@ -1205,6 +1205,7 @@ void R_RegisterCvars(void)
 	r_ambientSpecularScale =			Cvar_Get("r_ambientSpecularScale", "0.3", CVAR_ARCHIVE);
 
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
+	r_zFar =							Cvar_Get("r_zFar", "4096", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);
