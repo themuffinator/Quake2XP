@@ -223,35 +223,23 @@ int SignbitsForPlane (cplane_t * out) {
 
 void R_SetFrustum (void) {
 	int i;
-//	float tx, ty;
-//	vec3_t axis[3];
 
 	VectorCopy (vpn, frustum[4].normal);
 	VectorNegate (vpn, frustum[5].normal);
 
-	if (r_newrefdef.fov_x == 90) {
-		// front side is visible
+	// Speedup Small Calculations - Eradicator
+	RotatePointAroundVector (frustum[0].normal, vup, vpn,
+		-(90 - r_newrefdef.fov_x * 0.5));
+	RotatePointAroundVector (frustum[1].normal, vup, vpn,
+		90 - r_newrefdef.fov_x * 0.5);
+	RotatePointAroundVector (frustum[2].normal, vright, vpn,
+		90 - r_newrefdef.fov_y * 0.5);
+	RotatePointAroundVector (frustum[3].normal, vright, vpn,
+		-(90 - r_newrefdef.fov_y * 0.5));
 
-		VectorAdd (vpn, vright, frustum[0].normal);
-		VectorSubtract (vpn, vright, frustum[1].normal);
+	for (i = 0; i < 6; i++) {
+		VectorNormalize(frustum[i].normal);
 
-		VectorAdd (vpn, vup, frustum[2].normal);
-		VectorSubtract (vpn, vup, frustum[3].normal);
-
-	}
-	else {
-		// Speedup Small Calculations - Eradicator
-		RotatePointAroundVector (frustum[0].normal, vup, vpn,
-			-(90 - r_newrefdef.fov_x * 0.5));
-		RotatePointAroundVector (frustum[1].normal, vup, vpn,
-			90 - r_newrefdef.fov_x * 0.5);
-		RotatePointAroundVector (frustum[2].normal, vright, vpn,
-			90 - r_newrefdef.fov_y * 0.5);
-		RotatePointAroundVector (frustum[3].normal, vright, vpn,
-			-(90 - r_newrefdef.fov_y * 0.5));
-	}
-
-	for (i = 0; i < 5; i++) {
 		frustum[i].type = PLANE_ANYZ;
 		frustum[i].dist = DotProduct (r_origin, frustum[i].normal);
 		frustum[i].signbits = SignbitsForPlane (&frustum[i]);
@@ -259,26 +247,5 @@ void R_SetFrustum (void) {
 
 	frustum[4].dist += r_zNear->value; // near clip plane
 	frustum[5].dist += r_zFar->value;  // far clip plane
-
-	for (i = 0; i < 6 ; i++)
-		VectorNormalize(frustum[i].normal);
-	/*
-	// compute the world-space rays to the far plane corners
-	tx = tan (DEG2RAD (r_newrefdef.fov_x * 0.5f));
-	ty = tan (DEG2RAD (r_newrefdef.fov_y * 0.5f));
-
-	for (i = 0; i < 3; i++) {
-		// world space
-		axis[0][i] = vpn[i];
-		axis[1][i] = -vright[i] * tx;
-		axis[2][i] = vup[i] * ty;
-
-		// counter-clockwise order
-		r_newrefdef.cornerRays[0][i] = axis[0][i] + axis[1][i] + axis[2][i];	// top left
-		r_newrefdef.cornerRays[1][i] = axis[0][i] + axis[1][i] - axis[2][i];	// bottom left
-		r_newrefdef.cornerRays[2][i] = axis[0][i] - axis[1][i] - axis[2][i];	// bottom right
-		r_newrefdef.cornerRays[3][i] = axis[0][i] - axis[1][i] + axis[2][i];	// top right
-	}
-	*/
 }
 

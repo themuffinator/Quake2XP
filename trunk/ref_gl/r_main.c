@@ -398,6 +398,7 @@ void R_DrawPlayerWeaponFBO(void)
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_weaponMask);
 	qglClear(GL_COLOR_BUFFER_BIT);
 	qglClearColor(0.0, 0.0, 0.0, 1.0);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
 	{
@@ -496,7 +497,7 @@ void R_DrawLightScene (void)
 {
 	int i;
 	
-	num_visLights = 0;
+
 
 	GL_DepthMask(0);
 	GL_Enable(GL_BLEND);
@@ -519,7 +520,7 @@ void R_DrawLightScene (void)
 
 	if (r_skipStaticLights->value && currentShadowLight->isStatic && currentShadowLight->style == 0)
 		continue;
-	
+
 	UpdateLightEditor();
 	
 	R_SetViewLightScreenBounds();
@@ -539,6 +540,8 @@ void R_DrawLightScene (void)
 	R_DrawLightWorld();				// light world
 	R_DrawLightFlare();				// light flare
 	R_DrawLightBounds();			// debug stuff
+	
+	num_visLights++;
 
 	//entities lightpass w/o player weapon
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -564,7 +567,6 @@ void R_DrawLightScene (void)
 		if(currentmodel->type == mod_alias)
 			R_DrawAliasModelLightPass(false);
 		}
-	num_visLights++;
 	}
 	}
 	
@@ -1703,6 +1705,8 @@ int R_Init(void *hinstance, void *hWnd)
 		qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE,	&gl_state.maxRenderBufferSize);
 		qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS,	&gl_state.maxColorAttachments);
 		qglGetIntegerv(GL_MAX_SAMPLES,				&gl_state.maxSamples);
+		
+		Com_Printf("\n");
 
 		Com_Printf(S_COLOR_YELLOW"   Max Render Buffer Size:  "S_COLOR_GREEN"%i\n", gl_state.maxRenderBufferSize);
 		Com_Printf(S_COLOR_YELLOW"   Max Color Attachments:   "S_COLOR_GREEN"%i\n", gl_state.maxColorAttachments);
@@ -1728,7 +1732,11 @@ int R_Init(void *hinstance, void *hWnd)
 		qglGetFramebufferAttachmentParameteriv =	(PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC) qwglGetProcAddress("glGetFramebufferAttachmentParameteriv");
 		qglGenerateMipmap =							(PFNGLGENERATEMIPMAPPROC) qwglGetProcAddress("glGenerateMipmap");
 		qglBlitFramebuffer =						(PFNGLBLITFRAMEBUFFERPROC) qwglGetProcAddress("glBlitFramebuffer");
-	
+		
+		Com_Printf("\n");
+		CreateWeaponFboMask ();
+		CreateSSAOBuffer ();
+		Com_Printf("\n");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_framebuffer_object not found\n");

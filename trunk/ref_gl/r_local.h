@@ -602,6 +602,9 @@ void GL_Blend (qboolean on, int dst, int src);
 int GL_MsgGLError (char* Info);
 void CreateWeaponRect (void);
 void Create_FBO (void);
+
+void 	CreateWeaponFboMask();
+void	CreateSSAOBuffer();
 //void CreateFboBuffer (void);
 /*
 ** GL config stuff

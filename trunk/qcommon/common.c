@@ -23,16 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MAX_NUM_ARGVS	50
 
-
-
-
-
-
-
 vec3_t vec3_identity = {
 	0, 0, 0
 };
-
 
 int com_argc;
 char *com_argv[MAX_NUM_ARGVS + 1];

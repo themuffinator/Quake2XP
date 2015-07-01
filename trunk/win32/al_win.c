@@ -313,14 +313,14 @@ qboolean AL_Init (int hardreset) {
 		Com_Printf ("\n");
 
 		if (!SearchPath (NULL, "OpenAL32.dll", NULL, sizeof(path), path, NULL)) {
-			Com_Printf (S_COLOR_RED"...WARNING: couldn't find OpenAL driver 'OpenAL32.dll'\n");
+			Sys_Error("...ERROR: couldn't find OpenAL driver 'OpenAL32.dll'\n");
 			openalStop = true;
 			return false;
 		}
 
 		Com_DPrintf ("...LoadLibrary( '%s' ) \n", path);
 		if ((alConfig.hInstOpenAL = LoadLibrary (path)) == NULL) {
-			Com_Printf (S_COLOR_RED"...WARNING: couldn't load OpenAL driver 'OpenAL32.dll'\n");
+			Sys_Error("...ERROR: couldn't load OpenAL driver 'OpenAL32.dll'\n");
 			openalStop = true;
 			return false;
 		}

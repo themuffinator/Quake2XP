@@ -40,11 +40,11 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
 	if (light->spherical) {
 
-		if (!SphereInFrustum (light->origin, light->radius[0]))
+		if (R_CullSphere(light->origin, light->radius[0]))
 			return false;
 	}
 	else {
-		if (BoxOutsideFrustum(light->mins, light->maxs))
+		if (R_CullBox(light->mins, light->maxs))
 			return false;
 	}
 	if (weapon) {
@@ -2193,10 +2193,10 @@ static void R_ClipLightPlane (const mat4_t mvpMatrix, vec3_t mins, vec3_t maxs, 
 
 void R_SetViewLightScreenBounds () {
 	int			i, scissor[4],
-		cornerIndices[6][4] = { { 3, 2, 6, 7 }, { 0, 1, 5, 4 }, { 2, 3, 1, 0 }, { 4, 5, 7, 6 }, { 1, 3, 7, 5 }, { 2, 0, 4, 6 } };
+				cornerIndices[6][4] = { { 3, 2, 6, 7 }, { 0, 1, 5, 4 }, { 2, 3, 1, 0 }, { 4, 5, 7, 6 }, { 1, 3, 7, 5 }, { 2, 0, 4, 6 } };
 	vec3_t		mins = { Q_INFINITY, Q_INFINITY, Q_INFINITY },
-		maxs = { -Q_INFINITY, -Q_INFINITY, -Q_INFINITY },
-		points[5];
+				maxs = { -Q_INFINITY, -Q_INFINITY, -Q_INFINITY },
+				points[5];
 	mat4_t		tmpMatrix, mvpMatrix;
 	float		depth[2];
 
