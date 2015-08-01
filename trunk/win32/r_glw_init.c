@@ -44,35 +44,6 @@ qboolean GLimp_InitGL (void);
 
 glwstate_t glw_state;
 
-// Disable win aero desktop
-void GLimp_DesktopComposition(qboolean enable)
-{
-    static HMODULE	dwmApi = NULL;
-    static HRESULT	(WINAPI *dwmEnableComposition)(UINT);
-
-    if (!dwmApi && (dwmApi = LoadLibrary("dwmapi.dll")))
-        dwmEnableComposition = (HRESULT(WINAPI *)(UINT))GetProcAddress(dwmApi, "DwmEnableComposition");
-
-    if (dwmEnableComposition)
-    {
-        dwmEnableComposition(enable);
-		Com_Printf("...disabling Aero desktop: "S_COLOR_GREEN"ok\n");
-    }else
-		Com_Printf("...disabling Aero desktop: "S_COLOR_YELLOW"false\n");
-}
-
-static qboolean VerifyDriver( void )
-{
-	char buffer[1024];
-
-	strcpy( buffer, (const char*)qglGetString( GL_RENDERER ) );
-	strlwr( buffer );
-	if ( strcmp( buffer, "gdi generic" ) == 0 )
-		if ( !glw_state.mcd_accelerated )
-			return false;
-	return true;
-}
-
 /*
 ** VID_CreateWindow
 */
@@ -988,10 +959,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 			}
 			
 			}
-
-		//	if(!r_fullScreen->value)
-		//		GLimp_DesktopComposition(false);
-			}
+		}
 	
 
 		 if ( winver.dwMajorVersion == 5 && winver.dwMinorVersion == 2 )
@@ -1097,41 +1065,47 @@ qboolean RegisterOpenGLWindow(HINSTANCE hInst)
 
 qboolean GLimp_InitGL (void)
 {
-	RegisterOpenGLWindow (glw_state.hInstance);
-
-	if (1) {
-		int     iAttributes[30];
-		float   fAttributes[] = {0, 0};
-		int     iResults[30];
-		int     pixelFormat;
-		unsigned int numFormats;
-		int		status;
+		int			iAttributes[30];
+		float		fAttributes[] = {0, 0};
+		int			iResults[30];
+		int			pixelFormat;
+		uint		numFormats;
+		int			status;
+		int			major, minor;
+		int			attribs[] =
+		{
+			WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+			WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+			WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB/*WGL_CONTEXT_CORE_PROFILE_BIT_ARB*/,
+			0
+		};
 
 		PIXELFORMATDESCRIPTOR temppfd = { 
 			sizeof(PIXELFORMATDESCRIPTOR),   // size of this pfd 
-			1,                     // version number 
-			PFD_DRAW_TO_WINDOW |   // support window 
-			PFD_GENERIC_ACCELERATED | // accelerated
-			PFD_SUPPORT_OPENGL |   // support OpenGL 
-			PFD_DOUBLEBUFFER,      // double buffered 
-			PFD_TYPE_RGBA,         // RGBA type 
-			32,                    // desktop color depth 
-			0, 0, 0, 0, 0, 0,      // color bits ignored 
-			8,                     // alpha buffer 
-			0,                     // shift bit ignored 
-			0,                     // no accumulation buffer 
-			0, 0, 0, 0,            // accum bits ignored 
-			24,                    // z-buffer 
-			8,                     // no stencil buffer 
-			0,                     // no auxiliary buffer 
-			PFD_MAIN_PLANE,        // main layer 
-			0,                     // reserved 
-			0, 0, 0                // layer masks ignored 
+			1,								// version number
+			PFD_DRAW_TO_WINDOW |			// support window
+			PFD_SUPPORT_OPENGL |			// support OpenGL
+			PFD_DOUBLEBUFFER,				// double buffered
+			PFD_TYPE_RGBA,					// RGBA type
+			32,								// 32-bit color depth	FOREVER :)
+			0, 0, 0, 0, 0, 0,				// color bits ignored
+			0,								// no alpha buffer
+			0,								// shift bit ignored
+			0,								// no accumulation buffer
+			0, 0, 0, 0, 					// accum bits ignored
+			24,								// 24-bit z-buffer		FOREVER :)
+			0,								/// Berserker: нам уже не нужен stencil		// 8-bit stencil buffer	FOREVER :)
+			0,								// no auxiliary buffer
+			PFD_MAIN_PLANE,					// main layer
+			0,								// reserved
+			0, 0, 0							// layer masks ignored
 		};
+
+		RegisterOpenGLWindow(glw_state.hInstance);
+
 		HGLRC hGLRC;
-
 		HWND temphwnd = CreateWindowEx(0L,OPENGL_CLASS,"Quake2xp OpenGL PFD Detection Window",WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,0,0,1,1,glw_state.hWnd,0,glw_state.hInstance,NULL);
-
 		HDC hDC = GetDC (temphwnd);
 
 		// Set up OpenGL
@@ -1164,16 +1138,6 @@ qboolean GLimp_InitGL (void)
 			Com_Printf (S_COLOR_RED	"GLimp_Init() - qwglMakeCurrent failed\n");
 			VID_Error (ERR_FATAL,	"GLimp_Init() - qwglMakeCurrent failed\n");
 		}
-
-		{
-			char buffer[4096];
-			strncpy( buffer, (const char*)qglGetString( GL_RENDERER ), sizeof(buffer)-1 );
-			if (strcmp (buffer, "GDI Generic") == 0) {
-				Com_Printf (S_COLOR_RED "GLimp_Init() - no hardware accelerated pixelformats matching your system\n");
-				VID_Error (ERR_FATAL,  "GLimp_Init() - no hardware accelerated pixelformats matching your system\n");
-			}
-			
-		}
 		
 		qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)qwglGetProcAddress("wglGetExtensionsStringARB");
 		
@@ -1197,20 +1161,15 @@ qboolean GLimp_InitGL (void)
 	if ( strstr( glw_state.wglExtsString, "WGL_ARB_pixel_format" ) )
 	{
 		Com_Printf("...using WGL_ARB_pixel_format\n");
-		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribivARB");
-        qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
-        qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)qwglGetProcAddress("wglChoosePixelFormatARB");
+		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)	qwglGetProcAddress("wglGetPixelFormatAttribivARB");
+        qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)	qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
+        qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)		qwglGetProcAddress("wglChoosePixelFormatARB");
 	
 	} 
 	else {
 		Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_pixel_format not found\nOpenGL subsystem not initiation\n");
 		VID_Error (ERR_FATAL, "WGL_ARB_pixel_format not found!");
 		}
-
-	if (strstr(glw_state.wglExtsString, "WGL_EXT_framebuffer_sRGB"))
-		Com_Printf("...using WGL_EXT_framebuffer_sRGB\n");
-	else
-		Com_Printf(S_COLOR_RED"...WGL_EXT_framebuffer_sRGB not found\n");
 
 	if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control")) {
 		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) qwglGetProcAddress("wglSwapIntervalEXT");
@@ -1244,17 +1203,43 @@ qboolean GLimp_InitGL (void)
 		Com_Printf("...WGL_ARB_multisample not found\n");
 		gl_state.arb_multisample = false;
 	}
+
+	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")){
+		qwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)qwglGetProcAddress("wglCreateContextAttribsARB");
+		
+		if (qwglCreateContextAttribsARB)
+			Com_Printf("...using WGL_ARB_create_context\n");
+		else
+		{
+			Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_create_context not found\nOpenGL subsystem not initiation\n");
+			VID_Error(ERR_FATAL, "WGL_ARB_create_context not found!");
+		}
+
+	}
 	
-	Com_Printf ("\n=============================\n\n");
+	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_profile"))
+		Com_Printf("...using WGL_ARB_create_context_profile\n");
+	
 
-	// make no rendering context current
-		qwglMakeCurrent(NULL, NULL);
+	qglGetIntegerv(GL_MAJOR_VERSION, &major);
+	qglGetIntegerv(GL_MINOR_VERSION, &minor);
 
-		// Destroy the rendering context...
-		qwglDeleteContext(hGLRC);
-		hGLRC = NULL;
+	if (major < 3 || minor < 3){
+		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 3.3 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %i.%i\n", major);
+		VID_Error(ERR_FATAL, "Quake2xp requires OpenGL version 3.3 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %i.%i\n", minor);
+	}
+	glGetStringi = (PFNGLGETSTRINGIPROC)qwglGetProcAddress("glGetStringi");
+	if (!glGetStringi)
+		Com_Printf(S_COLOR_RED"glGetStringi: bad getprocaddress\n");
 
-		// Get the number of pixel format available
+	// Make no rendering context current and destroy the rendering context...
+	qwglMakeCurrent(NULL, NULL);
+	qwglDeleteContext(hGLRC);
+	hGLRC = NULL;
+
+	Com_Printf("\n=============================\n\n");
+
+	// Get the number of pixel format available
 		iAttributes[0] = WGL_NUMBER_PIXEL_FORMATS_ARB;
 
 		if (qwglGetPixelFormatAttribivARB(hDC, 0, 0, 1, iAttributes, iResults) == GL_FALSE) {
@@ -1263,7 +1248,6 @@ qboolean GLimp_InitGL (void)
 			VID_Error (ERR_FATAL,  "GLimp_InitGL() - wglGetPixelFormatAttribivARB failed\n");
 			
 		}
-		
 		
 		// Choose a Pixel Format Descriptor (PFD) with multisampling support.
 		
@@ -1288,8 +1272,8 @@ qboolean GLimp_InitGL (void)
 		iAttributes[12] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : 0;
 		iAttributes[13] = gl_state.arb_multisample ? (int)r_arbSamples->value : 0;
 
-		iAttributes[14] = 0;
-		iAttributes[15] = 0;
+		iAttributes[14] = WGL_SWAP_EXCHANGE_ARB;
+		iAttributes[15] = TRUE;
 
 		// First attempt...
 		status = qwglChoosePixelFormatARB(hDC, iAttributes, fAttributes, 1, &pixelFormat, &numFormats);
@@ -1355,7 +1339,7 @@ qboolean GLimp_InitGL (void)
 			DestroyWindow (temphwnd);
 			temphwnd = NULL;
 
-			//glw_state.hDC = GetDC (glw_state.hWnd);
+
 			if ( ( glw_state.hDC = GetDC( glw_state.hWnd ) ) == NULL )
 			{
 				Com_Printf(S_COLOR_RED "GLimp_InitGL() GetDC failed\n" );
@@ -1364,13 +1348,9 @@ qboolean GLimp_InitGL (void)
 
 			SetPixelFormat (glw_state.hDC, pixelFormat, &temppfd);
 
-			/*
-			** startup the OpenGL subsystem by creating a context and making
-			** it current
-			*/
-			if ( ( glw_state.hGLRC = qwglCreateContext( glw_state.hDC ) ) == 0 )
+			if ((glw_state.hGLRC = /*qwglCreateContext( glw_state.hDC )*/qwglCreateContextAttribsARB(glw_state.hDC, 0, attribs)) == 0) // create compatibility gl 3.3 context
 			{
-				Com_Printf (S_COLOR_RED "GLimp_InitGL() qwglCreateContext failed (%d)\n", GetLastError());
+				Com_Printf (S_COLOR_RED "GLimp_InitGL() qwglCreateContextAttribsARB failed (%d)\n", GetLastError());
 				goto fail;
 			}
 
@@ -1382,18 +1362,9 @@ qboolean GLimp_InitGL (void)
 
 		
 		}
-	} else {
-
-		if ( !VerifyDriver() )
-		{
-			Com_Printf(S_COLOR_RED "GLimp_InitGL() no hardware acceleration detected\n" );
-			goto fail;
-		}
-
-	}
 
 GL_MsgGLError("Init PFD: ");
-	return true;
+return true;
 
 fail:
 	if ( glw_state.hGLRC )

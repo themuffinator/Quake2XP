@@ -93,7 +93,7 @@ qboolean R_CullBox (vec3_t mins, vec3_t maxs) {
 	if (r_noCull->value)
 		return false;
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 5; i++)
 	if (BOX_ON_PLANE_SIDE (mins, maxs, &frustum[i]) == 2)
 		return true;
 	return false;
@@ -121,7 +121,7 @@ qboolean R_CullOrigin (vec3_t origin) {
 	if (r_noCull->value)
 		return false;
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 5; i++)
 	if (BOX_ON_PLANE_SIDE (origin, origin, &frustum[i]) == 2)
 		return true;
 	return false;
@@ -131,7 +131,7 @@ qboolean R_CullOrigin (vec3_t origin) {
 qboolean R_CullPoint (vec3_t org) {
 	int i;
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 5; i++)
 	if (DotProduct (org, frustum[i].normal) > frustum[i].dist)
 		return true;
 
@@ -145,7 +145,7 @@ qboolean R_CullSphere (const vec3_t centre, const float radius) {
 	if (r_noCull->value)
 		return false;
 
-	for (i = 0, p = frustum; i < 4; i++, p++) {
+	for (i = 0, p = frustum; i < 5; i++, p++) {
 		if (DotProduct (centre, p->normal) - p->dist <= -radius)
 			return true;
 	}
@@ -225,7 +225,6 @@ void R_SetFrustum (void) {
 	int i;
 
 	VectorCopy (vpn, frustum[4].normal);
-	VectorNegate (vpn, frustum[5].normal);
 
 	// Speedup Small Calculations - Eradicator
 	RotatePointAroundVector (frustum[0].normal, vup, vpn,
@@ -237,7 +236,7 @@ void R_SetFrustum (void) {
 	RotatePointAroundVector (frustum[3].normal, vright, vpn,
 		-(90 - r_newrefdef.fov_y * 0.5));
 
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < 5; i++) {
 		VectorNormalize(frustum[i].normal);
 
 		frustum[i].type = PLANE_ANYZ;
@@ -246,6 +245,5 @@ void R_SetFrustum (void) {
 	}
 
 	frustum[4].dist += r_zNear->value; // near clip plane
-	frustum[5].dist += r_zFar->value;  // far clip plane
 }
 

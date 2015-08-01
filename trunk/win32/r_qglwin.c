@@ -623,6 +623,9 @@ PFNGLFRAMEBUFFERTEXTURELAYERPROC					qglFramebufferTextureLayer = NULL;
 
 PFNGLDRAWBUFFERSARBPROC								qglDrawBuffers = NULL;
 PFNGLCLAMPCOLORARBPROC								qglClampColorARB = NULL;
+
+PFNWGLCREATECONTEXTATTRIBSARBPROC					qwglCreateContextAttribsARB = NULL;
+
 /*
 ** QGL_Shutdown
 **

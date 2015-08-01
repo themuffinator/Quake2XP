@@ -761,8 +761,11 @@ extern	PFNGLFRAMEBUFFERTEXTURELAYERPROC					qglFramebufferTextureLayer;
 extern	PFNGLDRAWBUFFERSARBPROC								qglDrawBuffers;
 extern	PFNGLCLAMPCOLORARBPROC								qglClampColorARB;
 
-#ifdef _WIN32
+extern	PFNWGLCREATECONTEXTATTRIBSARBPROC					qwglCreateContextAttribsARB;
 
+const GLubyte * (WINAPI* glGetStringi) (GLenum, GLuint);
+
+#ifdef _WIN32
 
 extern PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
 

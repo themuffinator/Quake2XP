@@ -415,9 +415,6 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 			qglDeleteShader (fragmentId);
 		}
 
-		if (gl_state.glslBinary)
-			glProgramParameteri (id, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
-
 		qglLinkProgram (id);
 		qglGetProgramiv (id, GL_LINK_STATUS, &status);
 
@@ -628,7 +625,7 @@ void R_InitPrograms (void) {
 		ambientAlias_envScale = qglGetUniformLocation (id, "u_envScale");
 		ambientAlias_isShell = qglGetUniformLocation (id, "u_isShell");
 		ambientAlias_scroll = qglGetUniformLocation (id, "u_scroll");
-
+		ambientAlias_mvp = qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -661,6 +658,7 @@ void R_InitPrograms (void) {
 		lightAlias_ambient = qglGetUniformLocation (id, "u_isAmbient");
 		lightAlias_attenMatrix = qglGetUniformLocation (id, "u_attenMatrix");
 		lightAlias_cubeMatrix = qglGetUniformLocation (id, "u_cubeMatrix");
+		lightAlias_mvp = qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -878,7 +876,7 @@ void R_InitPrograms (void) {
 		gen_colorModulate = qglGetUniformLocation (id, "u_colorScale");
 		gen_color = qglGetUniformLocation (id, "u_color");
 		gen_sky = qglGetUniformLocation (id, "u_isSky");
-
+		gen_skyMatrix = qglGetUniformLocation(id, "u_SkyMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

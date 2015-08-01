@@ -200,7 +200,7 @@ extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;
 extern int r_framecount;
-extern cplane_t frustum[6];
+extern cplane_t frustum[5];
 
 extern	int gl_filter_min, gl_filter_max;
 extern	int flareQueries[MAX_WORLD_SHADOW_LIHGTS];
@@ -591,6 +591,7 @@ void GL_ShutdownImages (void);
 
 void GL_FreeUnusedImages (void);
 qboolean R_CullOrigin (vec3_t origin);
+qboolean IsExtensionSupported(const char *name);
 
 /*
 ** GL extension emulation functions
@@ -616,7 +617,7 @@ typedef struct {
 	const char	*renderer_string;
 	const char	*vendor_string;
 	const char	*version_string;
-	const char	*extensions_string;
+	const char	*extensions3_string;
 	int		screenTextureSize;
 	const char	*wglExtensionsString;
 
@@ -640,15 +641,11 @@ typedef struct {
 
 	int lightmap_textures;
 
-	int currenttextures[4];
-	int num_tmu;
+	int currenttextures[32]; // max gl_texturesXX
 	int currenttmu;
 
-	qboolean	DrawRangeElements;
-	qboolean	separateStencil;
-	qboolean	texture_compression_arb;
+	qboolean	texture_compression_bptc;
 	int			displayrefresh;
-	qboolean	nv_multisample_hint;
 	qboolean	arb_occlusion;
 	qboolean	arb_occlusion2;
 	unsigned	query_passed;
@@ -656,22 +653,10 @@ typedef struct {
 	qboolean	wgl_swap_control_tear;
 	qboolean	conditional_render;
 	qboolean	glsl;
-	qboolean	nPot;
-	qboolean	glslBinary;
 	qboolean	depthBoundsTest;
 	qboolean	shader5;
 	int			programId;
-	int			lastdFactor;
-	int			lastsFactor;
-	float		color[4];
-	int			x, y, w, h;
-	int			numFormats;
-	GLenum		binaryFormats;
 	GLenum		matrixMode;
-
-	unsigned char originalRedGammaTable[256];
-	unsigned char originalGreenGammaTable[256];
-	unsigned char originalBlueGammaTable[256];
 
 	GLuint	vbo_fullScreenQuad;
 	GLuint	vbo_halfScreenQuad;
@@ -962,6 +947,7 @@ uint ambientWorld_viewOrigin;
 uint ambientWorld_parallaxType;
 uint ambientWorld_ambientLevel;
 uint ambientWorld_scroll;
+uint ambientWorld_mvp;
 
 uint lightWorld_diffuse;
 uint lightWorld_normal;
@@ -985,6 +971,7 @@ uint lightWorld_ambient;
 uint lightWorld_attenMatrix;
 uint lightWorld_cubeMatrix;
 uint lightWorld_scroll;
+uint lightWorld_mvp;
 
 uint ambientAlias_diffuse;
 uint ambientAlias_normalmap;
@@ -998,6 +985,7 @@ uint ambientAlias_isEnvMaping;
 uint ambientAlias_envScale;
 uint ambientAlias_isShell;
 uint ambientAlias_scroll;
+uint ambientAlias_mvp;
 
 uint lightAlias_diffuse;
 uint lightAlias_normal;
@@ -1017,6 +1005,7 @@ uint lightAlias_specularExp;
 uint lightAlias_ambient;
 uint lightAlias_attenMatrix;
 uint lightAlias_cubeMatrix;
+uint lightAlias_mvp;
 
 uint gen_attribConsole;
 uint gen_attribColors;
@@ -1025,6 +1014,7 @@ uint gen_tex1;
 uint gen_colorModulate;
 uint gen_color;
 uint gen_sky;
+uint gen_skyMatrix;
 
 uint gamma_screenMap;
 uint gamma_control;

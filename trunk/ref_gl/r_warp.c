@@ -542,6 +542,7 @@ R_DrawSkyBox
 int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox (qboolean color) {
 	int i;
+	mat4_t m;
 
 	if (color) {
 		GL_BindProgram (genericProgram, 0);
@@ -572,9 +573,11 @@ void R_DrawSkyBox (qboolean color) {
 	}
 
 	qglPushMatrix ();
-	qglTranslatef (r_origin[0], r_origin[1], r_origin[2]);
-	qglRotatef (r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1],
-		skyaxis[2]);
+	Mat4_Copy(r_newrefdef.modelViewMatrix, m);
+	Mat4_Translate(m, r_origin[0], r_origin[1], r_origin[2]);
+	if (skyrotate)
+		Mat4_Rotate(m, r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
+	GL_LoadMatrix(GL_MODELVIEW, m);
 
 	for (i = 0; i < 6; i++) {
 

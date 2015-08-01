@@ -81,21 +81,6 @@ image_t *R_TextureAnimation(mtexInfo_t * tex)
 	return tex->image;
 }
 
-image_t *R_TextureAnimationCSM(mtexInfo_t * tex)
-{
-	int c;
-
-	if (!tex->next)
-		return tex->csmMap;
-
-	c = currententity->frame % tex->numFrames;
-	while (c) {
-		tex = tex->next;
-		c--;
-	}
-
-	return tex->csmMap;
-}
 
 image_t *R_TextureAnimationFx(mtexInfo_t * tex)
 {
@@ -151,7 +136,7 @@ DrawGLPoly
 
 ================
 */
-void DrawGLPolyGLSL (msurface_t * fa, qboolean scrolling) {
+void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	int i;
 	float *v;
 	float alpha, scroll;
@@ -270,9 +255,9 @@ void R_DrawChainsRA (void) {
 		if (s->texInfo->flags & SURF_WARP)
 			R_DrawWaterPolygons(s);
 		else if (s->texInfo->flags & SURF_FLOWING)
-			DrawGLPolyGLSL(s, true);
+			DrawGLPoly(s, true);
 		else
-			DrawGLPolyGLSL(s, false);
+			DrawGLPoly(s, false);
 
 	}
 

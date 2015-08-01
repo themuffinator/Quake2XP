@@ -347,8 +347,7 @@ void R_DeformShadowVolume () {
 }
 
 void R_CastAliasShadowVolumes (void) {
-	int			id, i;
-	unsigned	defBits = 0;
+	int	i;
 
 	if (!r_shadows->value || !r_drawEntities->value)
 		return;
@@ -357,8 +356,7 @@ void R_CastAliasShadowVolumes (void) {
 		return;
 
 	// setup program
-	GL_BindProgram (nullProgram, defBits);
-	id = nullProgram->id[defBits];
+	GL_BindProgram (nullProgram, 0);
 
 	GL_StencilMask (255);
 	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
@@ -557,11 +555,11 @@ void R_DrawBrushModelVolumes () {
 			if (shadow) {
 				int jj = (j + 1) % poly->numVerts;
 
-				icache[ib++] = j * 2 + 0 + surfBase;
-				icache[ib++] = j * 2 + 1 + surfBase;
+				icache[ib++] = j  * 2 + 0 + surfBase;
+				icache[ib++] = j  * 2 + 1 + surfBase;
 				icache[ib++] = jj * 2 + 1 + surfBase;
 
-				icache[ib++] = j * 2 + 0 + surfBase;
+				icache[ib++] = j  * 2 + 0 + surfBase;
 				icache[ib++] = jj * 2 + 1 + surfBase;
 				icache[ib++] = jj * 2 + 0 + surfBase;
 			}
@@ -707,11 +705,11 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 			if (shadow) {
 				int jj = (j + 1) % poly->numVerts;
 
-				icache[ib++] = j * 2 + 0 + surfBase;
-				icache[ib++] = j * 2 + 1 + surfBase;
+				icache[ib++] = j  * 2 + 0 + surfBase;
+				icache[ib++] = j  * 2 + 1 + surfBase;
 				icache[ib++] = jj * 2 + 1 + surfBase;
 
-				icache[ib++] = j * 2 + 0 + surfBase;
+				icache[ib++] = j  * 2 + 0 + surfBase;
 				icache[ib++] = jj * 2 + 1 + surfBase;
 				icache[ib++] = jj * 2 + 0 + surfBase;
 			}
@@ -765,8 +763,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 
 
 void R_CastBspShadowVolumes (void) {
-	int			id, i;
-	unsigned	defBits = 0;
+	int	i;
 
 	if (!r_shadows->value)
 		return;
@@ -775,8 +772,7 @@ void R_CastBspShadowVolumes (void) {
 		return;
 
 	// setup program
-	GL_BindProgram (nullProgram, defBits);
-	id = nullProgram->id[defBits];
+	GL_BindProgram (nullProgram, 0);
 
 	GL_StencilMask (255);
 	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);

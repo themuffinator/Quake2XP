@@ -272,7 +272,7 @@ void CreateWeaponFboMask (void) {
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
-		VID_Error(ERR_DROP, "Couldn't create Motion Blur Mask FBO.");
+		Com_Printf(S_COLOR_RED, "Couldn't create Motion Blur Mask FBO.");
 	else
 		Com_Printf(""S_COLOR_MAGENTA"...Created Motion Blur Mask FBO.\n");
 
@@ -376,7 +376,7 @@ void CreateSSAOBuffer(void) {
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
-		VID_Error(ERR_DROP, "Couldn't create SSAO FBO.");
+		Com_Printf(S_COLOR_RED, "Couldn't create SSAO FBO.");
 	else
 		Com_Printf(""S_COLOR_MAGENTA"...Created SSAO FBO.\n");
 
@@ -958,16 +958,30 @@ void GL_ScreenShot_f (void) {
 ** GL_Strings_f
 */
 void GL_Strings_f (void) {
-	char *string = "";
+	int			profile, i;
+	uint		n;
+	const char	*profileName[] = { "core", "compatibility" };
+	char		*string = "";
+
 #ifdef _WIN32
 	string = (char*)glw_state.wglExtsString;
 #endif
+	
+	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
+
 	Com_Printf ("\n");
-	Com_Printf ("GL_VENDOR:   "S_COLOR_GREEN"%s\n", gl_config.vendor_string);
-	Com_Printf ("GL_RENDERER: "S_COLOR_GREEN"%s\n", gl_config.renderer_string);
-	Com_Printf ("GL_VERSION:  "S_COLOR_GREEN"%s\n\n", gl_config.version_string);
+	Com_Printf ("GL_VENDOR:    "S_COLOR_GREEN"%s\n", gl_config.vendor_string);
+	Com_Printf ("GL_RENDERER:  "S_COLOR_GREEN"%s\n", gl_config.renderer_string);
+	Com_Printf ("GL_VERSION:   "S_COLOR_GREEN"%s\n", gl_config.version_string);
+	Com_Printf ("Using OpenGL: "S_COLOR_GREEN"3.3"S_COLOR_WHITE" %s profile context\n\n", profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
 	Com_Printf ("WGL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n", string);
-	Com_Printf ("GL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n", gl_config.extensions_string);
+
+	qglGetIntegerv(GL_NUM_EXTENSIONS, &n);
+	Com_Printf("GL_EXTENSIONS:\n");
+	for (i = 0; i<n; i++){
+		gl_config.extensions3_string = (const char*)glGetStringi(GL_EXTENSIONS, i);
+		Com_Printf(S_COLOR_YELLOW"%s\n", gl_config.extensions3_string);
+	}
 }
 
 
@@ -1067,7 +1081,6 @@ void GL_SetDefaultState (void) {
 	}
 
 	qglHint (GL_GENERATE_MIPMAP_HINT, GL_NICEST);
-	qglHint (GL_TEXTURE_COMPRESSION_HINT_ARB, GL_NICEST);
 
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 

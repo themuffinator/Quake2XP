@@ -116,36 +116,11 @@ qboolean uploaded_paletted;
 image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 					imagetype_t type, int bits);
 
-int gl_solid_format =  GL_RGBA;
-int gl_alpha_format = GL_RGBA;
-
 int gl_tex_solid_format = GL_RGBA;
 int gl_tex_alpha_format = GL_RGBA;
 
-int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;	// default to trilinear
-												// filtering - MrG
+int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;	
 int gl_filter_max = GL_LINEAR;
-
-
-void GL_Blend(qboolean on, int src, int dst)
-{
-	if (on) {
-		qglEnable(GL_BLEND);
-		if (dst == 0 || src == 0)
-			qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else
-			qglBlendFunc(src, dst);
-	}
-
-	else
-	{
-		qglDisable(GL_BLEND);
-		qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		dst = 0;
-		src = 0;
-	}
-
-}
 
 void R_CaptureColorBuffer()
 {
@@ -225,7 +200,6 @@ void GL_TextureMode(char *string)
 }
 
 
-
 /*
 ===============
 GL_ImageList_f
@@ -299,7 +273,6 @@ void GL_ImageList_f(void)
 
 #define	MAX_SCRAPS		1
 #define	BLOCK_SIZE		256
-
 
 int scrap_allocated[MAX_SCRAPS][BLOCK_SIZE];
 byte scrap_texels[MAX_SCRAPS][BLOCK_SIZE * BLOCK_SIZE];
@@ -756,6 +729,7 @@ void R_MipNormalMap (byte *in, int width, int height)
 	}
 }
 
+
 unsigned	scaled[4096*4096];
 qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean bump)
 {
@@ -805,20 +779,19 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 
 	upload_width = scaled_width;
 	upload_height = scaled_height;
-
-
+	
 	if (samples == 3){
 
-		if (gl_state.texture_compression_arb && mipmap)
-			comp = GL_COMPRESSED_RGB_ARB;
+		if (gl_state.texture_compression_bptc && mipmap)
+			comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 		else
 			comp = gl_tex_solid_format;
 	}
 
 	if (samples == 4){
 
-		if (gl_state.texture_compression_arb && mipmap)
-			comp = GL_COMPRESSED_RGBA_ARB;
+		if (gl_state.texture_compression_bptc && mipmap)
+			comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 		else
 			comp = gl_tex_alpha_format;
 	}
@@ -1062,15 +1035,10 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_bump);
 					
 		}
-		if(gl_state.nPot){
+
 		image->upload_width = width;	
 		image->upload_height = height;
-		}
-		else
-		{
-		image->upload_width = upload_width;	// after power of 2 and scales
-		image->upload_height = upload_height;
-		}
+
 		image->paletted = uploaded_paletted;
 		image->sl = 0;
 		image->sh = 1;
@@ -1083,9 +1051,9 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 }
 
 
-
-
-
+/*=====================
+DevIL Stuff
+=====================*/
 
 void LoadImageErrors(void)
 {
@@ -1303,8 +1271,6 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 
 
 	} else if (!strcmp(name + len - 4, ".tga")) {
-
-		//	LoadTGA(name, &pic, &width, &height);
 		IL_LoadImage(name, &pic, &width, &height, IL_TGA);
 
 		if (!pic)
@@ -1326,12 +1292,15 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 
 	else if (!strcmp(name + len - 4, ".jpg")) {
 		IL_LoadImage(name, &pic, &width, &height, IL_JPG);
+
 		if (!pic)
 			return NULL;
 
 		image = GL_LoadPic(name, pic, width, height, type, 24);
-	} else if (!strcmp(name + len - 4, ".png")) {
+	} 
+	else if (!strcmp(name + len - 4, ".png")) {
 		IL_LoadImage(name, &pic, &width, &height, IL_PNG);
+	
 		if (!pic)
 			return NULL;
 
@@ -1407,7 +1376,6 @@ void GL_FreeUnusedImages(void)
 	int i;
 	image_t *image;
 
-	// never free r_notexture or particle texture
 	r_notexture->registration_sequence = registration_sequence;
 	r_flare->registration_sequence = registration_sequence;
 

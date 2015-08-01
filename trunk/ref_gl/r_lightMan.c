@@ -59,6 +59,9 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 	}
 	if (!HasSharedLeafs(light->vis, viewvis))
 		return false;
+	
+	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[0] <= 0.01 && !r_lightEditor->value)
+		return false;
 
 	return true;
 }
@@ -2016,6 +2019,9 @@ void R_DrawLightOccluders () {
 
 	qglEndQueryARB (gl_state.query_passed);
 
+	GL_BindNullProgram();
+	qglDisableVertexAttribArray(ATRB_POSITION);
+
 	GL_ColorMask (1, 1, 1, 1);
 	GL_Enable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);
@@ -2028,9 +2034,6 @@ void R_DrawLightOccluders () {
 
 	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
-
-	GL_BindNullProgram ();
-	qglDisableVertexAttribArray (ATRB_POSITION);
 
 	if (BoundsAndSphereIntersect(currentShadowLight->mins, currentShadowLight->maxs, r_origin, 25))
 		glBeginConditionalRender(lightsQueries[currentShadowLight->occQ], GL_QUERY_NO_WAIT);
@@ -2197,7 +2200,6 @@ void R_SetViewLightScreenBounds () {
 	vec3_t		mins = { Q_INFINITY, Q_INFINITY, Q_INFINITY },
 				maxs = { -Q_INFINITY, -Q_INFINITY, -Q_INFINITY },
 				points[5];
-	mat4_t		tmpMatrix, mvpMatrix;
 	float		depth[2];
 
 
@@ -2215,10 +2217,6 @@ void R_SetViewLightScreenBounds () {
 	}
 
 	if (r_useLightScissors->value || (gl_state.depthBoundsTest && r_useDepthBounds->value)) {
-		// compute modelview-projection matrix
-		Mat4_Multiply (r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, tmpMatrix);
-		Mat4_Transpose (tmpMatrix, mvpMatrix);
-
 		// copy the corner points of each plane and clip to the frustum
 		for (i = 0; i < 6; i++) {
 			VectorCopy (currentShadowLight->corners[cornerIndices[i][0]], points[0]);
@@ -2226,7 +2224,7 @@ void R_SetViewLightScreenBounds () {
 			VectorCopy (currentShadowLight->corners[cornerIndices[i][2]], points[2]);
 			VectorCopy (currentShadowLight->corners[cornerIndices[i][3]], points[3]);
 
-			R_ClipLightPlane (mvpMatrix, mins, maxs, 4, points, 0);
+			R_ClipLightPlane(r_newrefdef.modelViewProjectionMatrixTranspose, mins, maxs, 4, points, 0);
 		}
 
 		// check if any corner point is not in front of the near plane

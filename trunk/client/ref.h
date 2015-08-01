@@ -268,7 +268,6 @@ typedef struct mtexInfo_s {
 
 	image_t *image;
 	image_t *normalmap;
-	image_t	*csmMap;
 	image_t *addTexture;
 	image_t *envTexture;
 
@@ -485,6 +484,9 @@ typedef struct {
 	mat3_t	axis;
 	mat4_t	projectionMatrix;
 	mat4_t	modelViewMatrix;
+	mat4_t	entModelViewMatrix;
+	mat4_t	modelViewProjectionMatrix;
+	mat4_t	modelViewProjectionMatrixTranspose;
 
 	int num_entities;
 	entity_t *entities;

@@ -36,7 +36,7 @@ glstate_t gl_state;
 entity_t *currententity;
 model_t *currentmodel;
 
-cplane_t frustum[6];
+cplane_t frustum[5];
 
 int r_visframecount;			// bumped when going to a new PVS
 int r_framecount;				// used for dlight push checking
@@ -285,6 +285,7 @@ R_SetupViewMatrices
 
 =============
 */
+
 static void R_SetupViewMatrices (void) {
 	float	xMin, xMax, xDiv;
 	float	yMin, yMax, yDiv;
@@ -355,6 +356,9 @@ static void R_SetupViewMatrices (void) {
 	// load matrices
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix); // q2 r_project_matrix
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix); // q2 r_world_matrix
+
+	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.modelViewProjectionMatrix);
+	Mat4_Transpose(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.modelViewProjectionMatrixTranspose);
 }
 
 
@@ -497,7 +501,7 @@ void R_DrawLightScene (void)
 {
 	int i;
 	
-
+	num_visLights = 0;
 
 	GL_DepthMask(0);
 	GL_Enable(GL_BLEND);
@@ -520,7 +524,7 @@ void R_DrawLightScene (void)
 
 	if (r_skipStaticLights->value && currentShadowLight->isStatic && currentShadowLight->style == 0)
 		continue;
-
+	
 	UpdateLightEditor();
 	
 	R_SetViewLightScreenBounds();
@@ -535,6 +539,8 @@ void R_DrawLightScene (void)
 	GL_StencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
 	
+	R_DrawLightOccluders();
+
 	R_CastBspShadowVolumes();		// bsp and bmodels shadows
 	R_CastAliasShadowVolumes();		// alias models shadows
 	R_DrawLightWorld();				// light world
@@ -567,6 +573,8 @@ void R_DrawLightScene (void)
 		if(currentmodel->type == mod_alias)
 			R_DrawAliasModelLightPass(false);
 		}
+	if (r_useLightOccluders->value)
+		glEndConditionalRender();
 	}
 	}
 	
@@ -1011,7 +1019,7 @@ void R_VideoInfo_f(void){
 #ifdef _WIN32
 	int mem[4];
 	
-	if (strstr(gl_config.extensions_string, "GL_NVX_gpu_memory_info")) {
+	if (IsExtensionSupported("GL_NVX_gpu_memory_info")) {
 						
 		Com_Printf("\nNvidia specific memory info:\n");
 		Com_Printf("\n");
@@ -1031,7 +1039,7 @@ void R_VideoInfo_f(void){
 		Com_Printf("total video memory evicted %i MB\n", mem[0] >>10);
 
 	} else 
-		if (strstr(gl_config.extensions_string, "GL_ATI_meminfo")) {
+	if (IsExtensionSupported("GL_ATI_meminfo")) {
 		
         Com_Printf("\nATI/AMD specific memory info:\n");
 		Com_Printf("\n");
@@ -1200,8 +1208,8 @@ void R_RegisterCvars(void)
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "65", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
-//	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
-//	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", CVAR_ARCHIVE);
+	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
+	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", 0);
 //	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 	r_specularScale =					Cvar_Get("r_specularScale", "1", CVAR_ARCHIVE);
 	r_ambientSpecularScale =			Cvar_Get("r_ambientSpecularScale", "0.3", CVAR_ARCHIVE);
@@ -1370,13 +1378,30 @@ int GL_QueryBits;
 //int flareQueries[MAX_WORLD_SHADOW_LIHGTS];
 int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 
+qboolean IsExtensionSupported(const char *name)
+{
+	int			i;
+	uint		n = 0;
+	const char	*extension;
+
+	qglGetIntegerv(GL_NUM_EXTENSIONS, &n);
+	
+	for (i = 0; i<n; i++){
+		extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
+		if (!strcmp(name, extension))
+			return true;		
+	}
+	return false;
+}
+
 int R_Init(void *hinstance, void *hWnd)
 {
 	char	vendor_buffer[1000];
 	int		aniso_level, max_aniso;
+	int			profile;
+	const char *profileName[] = { "core", "compatibility" };
 
 	Draw_GetPalette();
-
 	R_RegisterCvars();
 
 	// initialize our QGL dynamic bindings
@@ -1410,35 +1435,23 @@ int R_Init(void *hinstance, void *hWnd)
 	 */
 	Com_Printf( "\n");
 	gl_config.vendor_string = (const char*)qglGetString(GL_VENDOR);
-	Com_Printf(S_COLOR_WHITE "GL_VENDOR:" S_COLOR_GREEN "   %s\n", gl_config.vendor_string);
+	Com_Printf(S_COLOR_WHITE "GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
 	gl_config.renderer_string = (const char*)qglGetString(GL_RENDERER);
-	Com_Printf(S_COLOR_WHITE "GL_RENDERER:" S_COLOR_GREEN " %s\n", gl_config.renderer_string);
+	Com_Printf(S_COLOR_WHITE "GL_RENDERER:" S_COLOR_GREEN "  %s\n", gl_config.renderer_string);
 	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
-	Com_Printf(S_COLOR_WHITE "GL_VERSION:" S_COLOR_GREEN "  %s\n", gl_config.version_string);
-	gl_config.extensions_string = (const char*)qglGetString(GL_EXTENSIONS);
+	Com_Printf(S_COLOR_WHITE "GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
 	
-	
+	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
+	Com_Printf("Using OpenGL: "S_COLOR_GREEN"3.3"S_COLOR_WHITE" %s profile context\n", profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+
 	strcpy(vendor_buffer, gl_config.vendor_string);
 	strlwr(vendor_buffer);
-	
-	{
-	// check GL version /:-#)
-	float version = atof(gl_config.version_string);
 
 	if (strstr(vendor_buffer, "intel")) // fuck the intel lol
 	{
 		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
 		VID_Error(ERR_FATAL, "Intel graphics card is unsupported.\n");
 	}
-
-	if (version < 2.0){
-		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
-		VID_Error(ERR_FATAL,  "Quake2xp requires OpenGL version 2.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %3.1f\n", version);
-		}
-	}
-
-	Com_DPrintf(S_COLOR_WHITE "GL_EXTENSIONS:\n"); 
-	Com_DPrintf(S_COLOR_YELLOW"%s\n", gl_config.extensions_string);
 	
 	Cvar_Set("scr_drawall", "0");
 
@@ -1448,7 +1461,7 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf("=====================================\n");
 	Com_Printf("\n");
 
-	if (strstr(gl_config.extensions_string, "GL_ARB_multitexture")) {
+	if (IsExtensionSupported("GL_ARB_multitexture")) {
 		Com_Printf("...using GL_ARB_multitexture\n");
 
 		qglActiveTextureARB =		(PFNGLACTIVETEXTUREARBPROC)			qwglGetProcAddress("glActiveTextureARB");
@@ -1465,9 +1478,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->value);
 
 	aniso_level = r_anisotropic->value;
-	if (strstr
-		(gl_config.extensions_string,
-		 "GL_EXT_texture_filter_anisotropic")) {
+	if (IsExtensionSupported("GL_EXT_texture_filter_anisotropic")) {
 		if (r_anisotropic->value == 1) {
 			Com_Printf(S_COLOR_YELLOW"...ignoring GL_EXT_texture_filter_anisotropic\n");
 
@@ -1483,28 +1494,29 @@ int R_Init(void *hinstance, void *hWnd)
 		r_maxAnisotropy = Cvar_Set("r_maxAnisotropy", "0");
 	}
 
-
-	gl_state.texture_compression_arb = false;
-	if (strstr(gl_config.extensions_string, "GL_ARB_texture_compression"))
+	gl_state.texture_compression_bptc = false;
+	if (IsExtensionSupported("GL_ARB_texture_compression_bptc"))
 		if (!r_textureCompression->value) {
-			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_compression\n");
-			gl_state.texture_compression_arb = false;
-		} else {
-			Com_Printf("...using GL_ARB_texture_compression\n");
-			gl_state.texture_compression_arb = true;
+			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_compression_bptc\n");
+			gl_state.texture_compression_bptc = false;
+		}
+		else {
+			Com_Printf("...using GL_ARB_texture_compression_bptc\n");
+			gl_state.texture_compression_bptc = true;
 
-	} else {
-		Com_Printf(S_COLOR_RED"...GL_ARB_texture_compression not found\n");
-		gl_state.texture_compression_arb = false;
-		r_textureCompression = Cvar_Set("r_textureCompression", "0");
-	}
+		}
+		else {
+			Com_Printf(S_COLOR_RED"...GL_ARB_texture_compression_bptc not found\n");
+			gl_state.texture_compression_bptc = false;
+			r_textureCompression = Cvar_Set("r_textureCompression", "0");
+		}
 
-	if (strstr(gl_config.extensions_string, "GL_ARB_texture_cube_map"))
+	if (IsExtensionSupported("GL_ARB_texture_cube_map"))
 		Com_Printf("...using GL_ARB_texture_cube_map\n");
 	else 
 		Com_Printf(S_COLOR_RED"...GL_ARB_texture_cube_map not found\n");
 
-	if (strstr(gl_config.extensions_string, "GL_ARB_seamless_cube_map")){
+	if (IsExtensionSupported("GL_ARB_seamless_cube_map")){
 		Com_Printf("...using GL_ARB_seamless_cube_map\n");
 		qglEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	}
@@ -1517,17 +1529,14 @@ int R_Init(void *hinstance, void *hWnd)
 	qglStencilFuncSeparate		= (PFNGLSTENCILFUNCSEPARATEPROC)	qwglGetProcAddress("glStencilFuncSeparate");
 	qglStencilOpSeparate		= (PFNGLSTENCILOPSEPARATEPROC)		qwglGetProcAddress("glStencilOpSeparate");
 	qglStencilMaskSeparate		= (PFNGLSTENCILMASKSEPARATEPROC)	qwglGetProcAddress("glStencilMaskSeparate");
-	
-	gl_state.separateStencil = false;
+
 	if(qglStencilFuncSeparate && qglStencilOpSeparate && qglStencilMaskSeparate){
 			Com_Printf("...using GL_EXT_stencil_two_side\n");
-			gl_state.separateStencil = true;
-	
 	}else
 		Com_Printf(S_COLOR_RED"...GL_EXT_stencil_two_side not found\n");
 
 	gl_state.depthBoundsTest = false;
-	if (strstr(gl_config.extensions_string, "GL_EXT_depth_bounds_test")) {
+	if (IsExtensionSupported("GL_EXT_depth_bounds_test")) {
 	Com_Printf("...using GL_EXT_depth_bounds_test\n");
 
 	glDepthBoundsEXT = (PFNGLDEPTHBOUNDSEXTPROC) qwglGetProcAddress("glDepthBoundsEXT");
@@ -1537,10 +1546,10 @@ int R_Init(void *hinstance, void *hWnd)
 	gl_state.depthBoundsTest = false;
 	}
 
-	/*
+	
 	gl_state.arb_occlusion = false;
 	gl_state.arb_occlusion2 = false;
-	if (strstr(gl_config.extensions_string, "GL_ARB_occlusion_query")) {
+	if (IsExtensionSupported("GL_ARB_occlusion_query")) {
 		Com_Printf("...using GL_ARB_occlusion_query\n");
 		gl_state.arb_occlusion = true;
 		
@@ -1561,7 +1570,7 @@ int R_Init(void *hinstance, void *hWnd)
 
 			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " occlusion query bits\n", GL_QueryBits);
 
-			if (strstr(gl_config.extensions_string, "GL_ARB_occlusion_query2")){
+			if (IsExtensionSupported("GL_ARB_occlusion_query2")){
 				Com_Printf("...using GL_ARB_occlusion_query2\n");
 				gl_state.arb_occlusion2 = true;
 			}
@@ -1579,29 +1588,22 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query not found\n");
 		gl_state.arb_occlusion = false;
 	}
-*/
 
-	gl_state.nPot = false;
-	if (strstr
-		(gl_config.extensions_string, "GL_ARB_texture_non_power_of_two")) {
+
+	if (IsExtensionSupported("GL_ARB_texture_non_power_of_two")) {
 		Com_Printf("...using GL_ARB_texture_non_power_of_two\n");
-		gl_state.nPot = true;
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_texture_non_power_of_two not found\n");
-		gl_state.nPot = false;
 	}
 	
 	
-	if (strstr (gl_config.extensions_string, "GL_ARB_texture_rectangle")) {
+	if (IsExtensionSupported("GL_ARB_texture_rectangle")) 
 		Com_Printf("...using GL_ARB_texture_rectangle\n");
-		
-		} else {
+	else 
 		Com_Printf(S_COLOR_RED "...GL_ARB_texture_rectangle not found\n");
 		
-	}
-	
 
-	if (strstr(gl_config.extensions_string, "GL_ARB_vertex_buffer_object")) {
+	if (IsExtensionSupported("GL_ARB_vertex_buffer_object")) {
 			
 		qglBindBuffer =		(PFNGLBINDBUFFERPROC)		qwglGetProcAddress("glBindBuffer");
 		qglDeleteBuffers =	(PFNGLDELETEBUFFERSPROC)	qwglGetProcAddress("glDeleteBuffers");
@@ -1666,7 +1668,7 @@ int R_Init(void *hinstance, void *hWnd)
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 	}
-	/*
+	
 	gl_state.conditional_render = false;
 			
 	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
@@ -1683,8 +1685,8 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_conditional_render not found\n");
 		gl_state.conditional_render = false;		
 	}
-*/	
-	if (strstr(gl_config.extensions_string, "GL_ARB_draw_buffers")) {
+	
+	if (IsExtensionSupported("GL_ARB_draw_buffers")) {
 		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
 		
 	if (qglDrawBuffers)
@@ -1693,13 +1695,13 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...using GL_ARB_draw_buffers not found\n");
 	}
 	/*
-	if (strstr(gl_config.extensions_string, "GL_ARB_texture_float")) 
+	if (IsExtensionSupported("GL_ARB_texture_float")) 
 		Com_Printf("...using GL_ARB_texture_float\n");
 	else
 		Com_Printf(S_COLOR_RED"...using GL_ARB_texture_float not found\n");
 */
 
-	if (strstr(gl_config.extensions_string, "GL_ARB_framebuffer_object")) {
+	if (IsExtensionSupported("GL_ARB_framebuffer_object")) {
 		Com_Printf("...using GL_ARB_framebuffer_object\n");  
 
 		qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE,	&gl_state.maxRenderBufferSize);
@@ -1743,21 +1745,20 @@ int R_Init(void *hinstance, void *hWnd)
 	}
 
 	gl_state.glsl = false;	
-	if ( strstr( gl_config.extensions_string, "GL_ARB_shading_language_100" ) )
+	if (IsExtensionSupported("GL_ARB_shading_language_100"))
 	{
-	if ( strstr( gl_config.extensions_string, "GL_ARB_fragment_shader" ) )
+		if (IsExtensionSupported("GL_ARB_fragment_shader"))
 		{
 		Com_Printf("...using GL_ARB_fragment_shader\n");
 
-		if ( strstr( gl_config.extensions_string, "GL_ARB_vertex_shader" ) ){
+		if (IsExtensionSupported("GL_ARB_vertex_shader")){
 			Com_Printf("...using GL_ARB_vertex_shader\n");
 	gl_state.glsl = true;	
 	
 	gl_state.shader5= false;
-
-	if ( strstr( gl_config.extensions_string, "GL_ARB_gpu_shader5" ) ){
-			Com_Printf("...using GL_ARB_gpu_shader5\n");
-	gl_state.shader5= true;
+	if (IsExtensionSupported("GL_ARB_gpu_shader5")){
+		Com_Printf("...using GL_ARB_gpu_shader5\n");
+		gl_state.shader5= true;
 	}
 
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
