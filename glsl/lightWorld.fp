@@ -38,10 +38,7 @@ void main (void) {
  
 	vec3	V = normalize(v_viewVecTS);
 	vec3	L = normalize(v_lightVec);
-	vec2	P = v_texCoord;
-
-	if(u_parallaxType >= 1)
-		P = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
+	vec2  P = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
 
 	vec4 diffuseMap = texture2D(u_Diffuse,  P);
 	vec4 normalMap =  texture2D(u_NormalMap, P);

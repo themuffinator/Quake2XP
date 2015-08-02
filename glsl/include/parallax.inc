@@ -18,8 +18,11 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	// 14 sample relief mapping: linear search and then binary search, 
 	// improved qfusion shader
 	float lod = ComputeLOD(texCoord, u_parallaxParams.zw);
-	vec3 offsetVector = vec3(viewVec.xy * u_parallaxParams.xy * vec2(-1.0, -1.0), -1.0);
-	vec3 offsetBest = vec3(texCoord, 1.0);
+	vec3 offsetBest;
+  
+  if(u_parallaxType >= 1) {
+  vec3 offsetVector = vec3(viewVec.xy * u_parallaxParams.xy * vec2(-1.0, -1.0), -1.0);
+	offsetBest = vec3(texCoord, 1.0);
 	offsetVector *= 0.1;
 
 	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
@@ -37,5 +40,14 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.125  - 0.0625);
 	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.0625 - 0.03125);
 	
-	return offsetBest.xy;
+	return offsetBest.xy;  
+}
+
+ if(u_parallaxType == 0){
+  // simple fastest parallax mapping
+	float offset = texture2DLod( hiMap, texCoord.xy, lod ).a;
+	offset = offset * 0.04 - 0.02;
+	offsetBest.xy = offset * viewVec.xy + texCoord.xy;
+	return offsetBest.xy;  
+  }
 }

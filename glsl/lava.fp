@@ -11,11 +11,8 @@ void main()
 {
 vec3 V = normalize(v_viewVec);
 vec2 texCoord = v_diffuseTexCoord;
-vec2 P = texCoord;
+vec2 P = CalcParallaxOffset(u_colorMap, v_diffuseTexCoord.xy, V);
 float scale = clamp(u_ambient, 0.33, 1.0);
-
-if(u_parallaxType >= 1)	
-	P = CalcParallaxOffset(u_colorMap, v_diffuseTexCoord.xy, V);
 
 //load diffuse map
 vec4 diffuse  = texture2D (u_colorMap, P);

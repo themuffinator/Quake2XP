@@ -39,15 +39,9 @@ const vec3 s_basisVecs[3] = {
 #include parallax.inc
 
 void main (void) {
-	vec3 V;
 
-	if (u_parallaxType > 0 || u_LightMapType == 1)
-		V = normalize(v_viewVecTS);
-
-	vec2 P = v_wTexCoord.xy;
-
-	if(u_parallaxType >= 1)
-		P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
+	vec3 V = normalize(v_viewVecTS);
+	vec2 P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
 
 	vec3 diffuseMap = texture2D(u_Diffuse, P).xyz;
 	vec3 glowMap = texture2D(u_Add, P).xyz;
