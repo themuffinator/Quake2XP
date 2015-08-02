@@ -51,7 +51,7 @@ bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 ============
 */
 void Cmd_Wait_f (void) {
-	cmd_wait = true;
+	cmd_wait = qtrue;
 }
 
 
@@ -223,7 +223,7 @@ void Cbuf_Execute (void) {
 		if (cmd_wait) {
 			// skip out while text still remains in buffer, leaving it
 			// for next frame
-			cmd_wait = false;
+			cmd_wait = qfalse;
 			break;
 		}
 	}
@@ -269,7 +269,7 @@ Adds command line parameters as script statements
 Commands lead with a + and continue until another + or -
 quake +vid_ref gl +map amlev1
 
-Returns true if any late commands were added, which
+Returns qtrue if any late commands were added, which
 will keep the demoloop from immediately starting
 =================
 */
@@ -287,7 +287,7 @@ qboolean Cbuf_AddLateCommands (void) {
 		s += strlen (COM_Argv (i)) + 1;
 	}
 	if (!s)
-		return false;
+		return qfalse;
 
 	text = Z_Malloc (s + 1);
 	text[0] = 0;
@@ -507,7 +507,7 @@ char *Cmd_MacroExpandString (char *text) {
 	char temporary[MAX_STRING_CHARS];
 	char *token, *start;
 
-	inquote = false;
+	inquote = qfalse;
 	scan = text;
 
 	len = strlen (scan);
@@ -697,10 +697,10 @@ qboolean Cmd_Exists (char *cmd_name) {
 
 	for (cmd = cmd_functions; cmd; cmd = cmd->next) {
 		if (!strcmp (cmd_name, cmd->name))
-			return true;
+			return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 
@@ -718,7 +718,7 @@ char *Cmd_CompleteCommand (char *partial) {
 	cmdalias_t *a;
 	cvar_t *cvar;
 	char *pmatch[1024];
-	qboolean diff = false;
+	qboolean diff = qfalse;
 
 	len = strlen (partial);
 
@@ -774,7 +774,7 @@ char *Cmd_CompleteCommand (char *partial) {
 					continue;
 				if (retval[p] != pmatch[o][p]) {
 					retval[p] = 0;
-					diff = false;
+					diff = qfalse;
 				}
 			}
 			p++;
@@ -794,15 +794,15 @@ qboolean Cmd_IsComplete (char *command) {
 	// check for exact match
 	for (cmd = cmd_functions; cmd; cmd = cmd->next)
 	if (!Q_stricmp (command, cmd->name))
-		return true;
+		return qtrue;
 	for (a = cmd_alias; a; a = a->next)
 	if (!Q_stricmp (command, a->name))
-		return true;
+		return qtrue;
 	for (cvar = cvar_vars; cvar; cvar = cvar->next)
 	if (!Q_stricmp (command, cvar->name))
-		return true;
+		return qtrue;
 
-	return false;
+	return qfalse;
 }
 
 
@@ -818,7 +818,7 @@ void Cmd_ExecuteString (char *text) {
 	cmd_function_t *cmd;
 	cmdalias_t *a;
 
-	Cmd_TokenizeString (text, true);
+	Cmd_TokenizeString (text, qtrue);
 
 	// execute the command line
 	if (!Cmd_Argc ())

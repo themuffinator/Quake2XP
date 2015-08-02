@@ -228,15 +228,15 @@ qboolean R_EntityInLightBounds () {
 	vec3_t	mins, maxs;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return false;
+		return qfalse;
 
 	if (currententity->flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED |
 		RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_GOD |
 		RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
-		return false;
+		return qfalse;
 
 	if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
-		return false;
+		return qfalse;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
@@ -250,26 +250,26 @@ qboolean R_EntityInLightBounds () {
 	}
 
 	if (!InLightVISEntity())
-		return false;
+		return qfalse;
 
 	if (R_CullBox(currentShadowLight->mins, currentShadowLight->maxs))
-		return false;
+		return qfalse;
 	
 	if (currentShadowLight->spherical) {
 
 		if (!BoundsAndSphereIntersect (mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
-			return false;
+			return qfalse;
 	}
 	else {
 
 		if (!BoundsIntersect (mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
-			return false;
+			return qfalse;
 	}
 	
 	if (VectorCompare(currentShadowLight->origin, currententity->origin))
-		return false;
+		return qfalse;
 	
-	return true;
+	return qtrue;
 }
 
 
@@ -371,7 +371,7 @@ void R_CastAliasShadowVolumes (void) {
 	GL_ColorMask (0, 0, 0, 0);
 
 	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -411,13 +411,13 @@ qboolean R_MarkShadowSurf (msurface_t *surf) {
 
 	// add sky surfaces to shadow marking
 	if ((surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_WARP | SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
-		return false;
+		return qfalse;
 hack:
 	plane = surf->plane;
 	poly = surf->polys;
 
 	if (poly->shadowTimestamp == shadowTimeStamp)
-		return false;
+		return qfalse;
 
 	switch (plane->type) {
 		case PLANE_X:
@@ -437,11 +437,11 @@ hack:
 	//the normals are flipped when surf_planeback is 1
 	if (((surf->flags & MSURF_PLANEBACK) && (dist > 0)) ||
 		(!(surf->flags & MSURF_PLANEBACK) && (dist < 0)))
-		return false;
+		return qfalse;
 
 	//the normals are flipped when surf_planeback is 1
 	if (abs (dist) > currentShadowLight->len)
-		return false;
+		return qfalse;
 
 	lbbox[0] = currentShadowLight->origin[0] - currentShadowLight->radius[0];
 	lbbox[1] = currentShadowLight->origin[1] - currentShadowLight->radius[1];
@@ -459,14 +459,14 @@ hack:
 	pbbox[5] = surf->maxs[2];
 
 	if (!BoundsIntersect (&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
-		return false;
+		return qfalse;
 
 	if (currentShadowLight->_cone && R_CullBox_ (&pbbox[0], &pbbox[3], currentShadowLight->frust))
-		return false;
+		return qfalse;
 
 	poly->shadowTimestamp = shadowTimeStamp;
 
-	return true;
+	return qtrue;
 }
 
 void R_MarkBrushModelShadowSurfaces () {
@@ -542,15 +542,15 @@ void R_DrawBrushModelVolumes () {
 			continue;
 
 		for (j = 0; j < surf->numEdges; j++) {
-			shadow = false;
+			shadow = qfalse;
 
 			if (poly->neighbours[j] != NULL) {
 
 				if (poly->neighbours[j]->shadowTimestamp != poly->shadowTimestamp)
-					shadow = true;
+					shadow = qtrue;
 			}
 			else
-				shadow = true;
+				shadow = qtrue;
 
 			if (shadow) {
 				int jj = (j + 1) % poly->numVerts;
@@ -582,7 +582,7 @@ void R_DrawBrushModelVolumes () {
 	}
 
 	if (ib) {
-		qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
+		qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
 		qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_SHORT, icache);
 	}
 
@@ -692,15 +692,15 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 			continue;
 
 		for (j = 0; j < surf->numEdges; j++) {
-			shadow = false;
+			shadow = qfalse;
 
 			if (poly->neighbours[j] != NULL) {
 
 				if (poly->neighbours[j]->shadowTimestamp != poly->shadowTimestamp)
-					shadow = true;
+					shadow = qtrue;
 			}
 			else
-				shadow = true;
+				shadow = qtrue;
 
 			if (shadow) {
 				int jj = (j + 1) % poly->numVerts;
@@ -753,7 +753,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	}
 	else {
 		if (ib) {
-			qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vcache);
+			qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
 			qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_SHORT, icache);
 		}
 	}
@@ -792,7 +792,7 @@ void R_CastBspShadowVolumes (void) {
 		qglBindBuffer (GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
 		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
 
-		qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, 0);
+		qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 		qglDrawElements	(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_SHORT, NULL);
 
 		qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
@@ -800,7 +800,7 @@ void R_CastBspShadowVolumes (void) {
 	}
 
 	if (!currentShadowLight->isStatic)
-		R_DrawBspModelVolumes (false, NULL); //dlights have't vbo data
+		R_DrawBspModelVolumes (qfalse, NULL); //dlights have't vbo data
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];

@@ -41,29 +41,29 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 	if (light->spherical) {
 
 		if (R_CullSphere(light->origin, light->radius[0]))
-			return false;
+			return qfalse;
 	}
 	else {
 		if (R_CullBox(light->mins, light->maxs))
-			return false;
+			return qfalse;
 	}
 	if (weapon) {
 		if (!BoundsAndSphereIntersect (light->mins, light->maxs, r_origin, currententity->model->radius))
-			return false;
+			return qfalse;
 	}
 
 	if (r_newrefdef.areabits) {
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))) {
-			return false;
+			return qfalse;
 		}
 	}
 	if (!HasSharedLeafs(light->vis, viewvis))
-		return false;
+		return qfalse;
 	
 	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[0] <= 0.01 && !r_lightEditor->value)
-		return false;
+		return qfalse;
 
-	return true;
+	return qtrue;
 }
 
 void UpdateLightBounds (worldShadowLight_t *light) {
@@ -73,9 +73,9 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	vec3_t tmp;
 
 	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
-		light->spherical = true;
+		light->spherical = qtrue;
 	else
-		light->spherical = false;
+		light->spherical = qfalse;
 
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - light->radius[i];
@@ -137,7 +137,7 @@ void R_AddDynamicLight (dlight_t *dl) {
 	light->_cone = dl->_cone;
 	light->isNoWorldModel = 0;
 	light->isShadow = 1;
-	light->spherical = true;
+	light->spherical = qtrue;
 	light->len = dl->intensity;
 
 	for (i = 0; i < 8; i++) {
@@ -187,7 +187,7 @@ void R_AddNoWorldModelLight () {
 	light->isNoWorldModel = 1;
 	light->flare = 0;
 	light->isAmbient = 0;
-	light->spherical = true;
+	light->spherical = qtrue;
 	light->len = light->radius[0];
 
 	for (i = 0; i < 8; i++) {
@@ -249,12 +249,12 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 		if (!R_MarkLightLeaves (light))
 			return;
 
-		MakeFrustum4Light (light, true);
+		MakeFrustum4Light (light, qtrue);
 
 		if (CL_PMpointcontents (light->origin) & MASK_WATER)
-			light->castCaustics = false;
+			light->castCaustics = qfalse;
 		else
-			light->castCaustics = true;
+			light->castCaustics = qtrue;
 
 		VectorCopy (light->startColor, light->color);
 
@@ -360,11 +360,11 @@ void R_Light_Spawn_f (void) {
 	memset (target, 0, sizeof(target));
 
 	VectorMA (player_org, 1024, v_forward, end);
-	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, false);
+	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
 
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		R_AddNewWorldLight (spawn, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true, 0, spawn, 10.0, target, 0, 0, 0.0);
+		R_AddNewWorldLight (spawn, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, 0, qtrue, 0, spawn, 10.0, target, 0, 0, 0.0);
 	}
 }
 
@@ -377,7 +377,7 @@ void R_Light_SpawnToCamera_f (void) {
 		return;
 	}
 	memset (target, 0, sizeof(target));
-	R_AddNewWorldLight (player_org, color, radius, 0, 0, vec3_origin, vec3_origin, true, 1, 0, 0, true, 0, player_org, 10.0, target, 0, 0, 0.0);
+	R_AddNewWorldLight (player_org, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, 0, qtrue, 0, player_org, 10.0, target, 0, 0, 0.0);
 }
 
 void R_Light_Clone_f (void) {
@@ -422,10 +422,10 @@ void R_Light_Clone_f (void) {
 	fogDensity = selectedShadowLight->fogDensity;
 	VectorMA (player_org, 1024, v_forward, end);
 
-	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, false);
+	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, true, shadow, ambient, _cone, true, flare, flareOrg, flareSize, target, flag, fog, fogDensity);
+		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, qtrue, shadow, ambient, _cone, qtrue, flare, flareOrg, flareSize, target, flag, fog, fogDensity);
 	}
 }
 
@@ -523,7 +523,7 @@ void R_Paste_Light_Properties_f (void) {
 
 	UpdateLightBounds (selectedShadowLight);
 	R_MarkLightLeaves (selectedShadowLight);
-	R_DrawBspModelVolumes (true, selectedShadowLight);
+	R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 
 	Com_Printf ("Paste light properties from clipboard.\n");
 }
@@ -583,7 +583,7 @@ void R_EditSelectedLight_f (void) {
 		VectorCopy (origin, selectedShadowLight->origin);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (true, selectedShadowLight);
+		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "color")) {
@@ -626,7 +626,7 @@ void R_EditSelectedLight_f (void) {
 		VectorCopy (radius, selectedShadowLight->radius);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (true, selectedShadowLight);
+		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "cone")) {
@@ -639,7 +639,7 @@ void R_EditSelectedLight_f (void) {
 		selectedShadowLight->_cone = _cone;
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (true, selectedShadowLight);
+		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "style")) {
@@ -782,9 +782,9 @@ void R_FlareEdit_f (void) {
 	}
 	mode = atoi (Cmd_Argv (1));
 	if (mode > 0)
-		flareEdit = true;
+		flareEdit = qtrue;
 	else
-		flareEdit = false;
+		flareEdit = qfalse;
 }
 
 void R_ResetFlarePos_f (void) {
@@ -841,7 +841,7 @@ void R_MoveLightToRight_f (void) {
 		VectorCopy (origin, selectedShadowLight->origin);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (true, selectedShadowLight);
+		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
 }
 
@@ -886,7 +886,7 @@ void R_MoveLightForward_f (void) {
 		VectorCopy (origin, selectedShadowLight->origin);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (true, selectedShadowLight);
+		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
 }
 
@@ -925,7 +925,7 @@ void R_MoveLightUpDown_f (void) {
 		VectorCopy (origin, selectedShadowLight->origin);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (true, selectedShadowLight);
+		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
 }
 
@@ -975,7 +975,7 @@ void R_ChangeLightRadius_f (void) {
 		VectorCopy (rad, selectedShadowLight->radius);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (true, selectedShadowLight);
+		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
 
 }
@@ -1011,7 +1011,7 @@ void R_ChangeLightCone_f (void) {
 		cone = 0;
 
 	selectedShadowLight->_cone = cone;
-	R_DrawBspModelVolumes (true, selectedShadowLight);
+	R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	R_MarkLightLeaves (selectedShadowLight);
 	UpdateLightBounds (selectedShadowLight);
 }
@@ -1107,7 +1107,7 @@ void UpdateLightEditor (void) {
 	headNode = CM_HeadnodeForBox (mins, maxs);
 	VectorMA (r_origin, 1024, v_forward, end_trace);
 
-	trace_bsp = CL_PMTraceWorld (r_origin, vec3_origin, vec3_origin, end_trace, MASK_SOLID, false); //bsp collision with bmodels
+	trace_bsp = CL_PMTraceWorld (r_origin, vec3_origin, vec3_origin, end_trace, MASK_SOLID, qfalse); //bsp collision with bmodels
 
 	// light in focus?
 	trace_light = CM_TransformedBoxTrace (r_origin, trace_bsp.endpos, vec3_origin, vec3_origin, headNode, MASK_ALL,
@@ -1125,7 +1125,7 @@ void UpdateLightEditor (void) {
 	qglUniform1i (gen_sky, 0);
 
 	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
 
 	if (currentShadowLight != selectedShadowLight) {
 
@@ -1467,9 +1467,9 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	VectorCopy (flareOrg, light->flareOrigin);
 
 	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
-		light->spherical = true;
+		light->spherical = qtrue;
 	else
-		light->spherical = false;
+		light->spherical = qfalse;
 
 	Clamp2RGB (light->startColor);
 
@@ -1532,11 +1532,11 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 		}
 	}
 
-	MakeFrustum4Light (light, false);
+	MakeFrustum4Light (light, qfalse);
 
 	if (ingame) {
 		R_MarkLightLeaves (light);
-		R_DrawBspModelVolumes (true, light);
+		R_DrawBspModelVolumes (qtrue, light);
 	}
 	else {
 		//// simple cull info for new light 
@@ -1606,7 +1606,7 @@ void Load_BspLights () {
 		cone = 0;
 		flag = 0;
 
-		addLight = false;
+		addLight = qfalse;
 
 		while (1) {
 			token = COM_Parse (&c);
@@ -1618,12 +1618,12 @@ void Load_BspLights () {
 			value = COM_Parse (&c);
 			if (!Q_stricmp (key, "classname")) {
 				if (!Q_stricmp (value, "light"))
-					addLight = true;
+					addLight = qtrue;
 				if (!Q_stricmp (value, "light_mine1")) {
-					addLight = true;
+					addLight = qtrue;
 				}
 				if (!Q_stricmp (value, "light_mine2")) {
-					addLight = true;
+					addLight = qtrue;
 				}
 			}
 
@@ -1645,7 +1645,7 @@ void Load_BspLights () {
 
 		if (addLight && style > 0) {
 			VectorSet (radius, radius[0], radius[0], radius[0]);
-			R_AddNewWorldLight (origin, color, radius, style, 0, vec3_origin, vec3_origin, true, 1, 0, cone, false, 0, origin, 10.0, target, flag, 0, 0.0);
+			R_AddNewWorldLight (origin, color, radius, style, 0, vec3_origin, vec3_origin, qtrue, 1, 0, cone, qfalse, 0, origin, 10.0, target, flag, 0, 0.0);
 			numlights++;
 		}
 	}
@@ -1750,7 +1750,7 @@ void Load_LightFile () {
 
 		}
 
-		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, true, shadow, ambient, cone, false, flare, fOrg, fSize, target, flag, fog, fogDensity);
+		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, qtrue, shadow, ambient, cone, qfalse, flare, fOrg, fSize, target, flag, fog, fogDensity);
 		numLights++;
 	}
 	Com_Printf (""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights\n", numLights);
@@ -1781,7 +1781,7 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
 
 	if (!light->area) {
 	skip:	Com_DPrintf ("Out of BSP, rejected light at %f %f %f\n", light->origin[0], light->origin[1], light->origin[2]);
-		return false;
+		return qfalse;
 	}
 
 	// build vis-data
@@ -1807,7 +1807,7 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
 	for (i = 0; i < ((r_worldmodel->numLeafs + 31) >> 5); i++)
 		((long *)light->vis)[i] &= ((long *)vis)[i];
 
-	return true;
+	return qtrue;
 }
 extern qboolean cinServer;
 
@@ -1818,13 +1818,13 @@ qboolean InLightVISEntity () {
 	vec3_t	mins, maxs;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return true;
+		return qtrue;
 	
 	if (cinServer)
-		return true;
+		return qtrue;
 
 	if (!r_worldmodel)
-		return false;
+		return qfalse;
 	
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
@@ -1863,7 +1863,7 @@ void R_PreCalcLightData (void) {
 		if (!R_MarkLightLeaves (light))
 			continue;
 
-		R_DrawBspModelVolumes (true, light);
+		R_DrawBspModelVolumes (qtrue, light);
 	}
 	Com_Printf (""S_COLOR_MAGENTA"R_PreCalcLightData: "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", numPreCachedLights);
 }
@@ -1945,7 +1945,7 @@ void R_DrawLightOccluders () {
 	// setup program
 	GL_BindProgram (nullProgram, 0);
 	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
 
 	GL_ColorMask (0, 0, 0, 0);
 	GL_Disable (GL_TEXTURE_2D);
@@ -2125,24 +2125,24 @@ static void R_ClipLightPlane (const mat4_t mvpMatrix, vec3_t mins, vec3_t maxs, 
 	}
 
 	if (numPoints > MAX_LIGHT_PLANE_VERTICES - 2)
-		Com_Error (false, "R_ClipLightPlane: MAX_LIGHT_PLANE_VERTICES hit");
+		Com_Error (qfalse, "R_ClipLightPlane: MAX_LIGHT_PLANE_VERTICES hit");
 
 	// determine sides for each point
-	front = false;
-	back = false;
+	front = qfalse;
+	back = qfalse;
 
 	for (i = 0; i < numPoints; i++) {
 		dists[i] = DotProduct (points[i], frustum[stage].normal) - frustum[stage].dist;
 
 		if (dists[i] > ON_EPSILON) {
 			sides[i] = SIDE_FRONT;
-			front = true;
+			front = qtrue;
 			continue;
 		}
 
 		if (dists[i] < -ON_EPSILON) {
 			sides[i] = SIDE_BACK;
-			back = true;
+			back = qtrue;
 			continue;
 		}
 
@@ -2319,14 +2319,14 @@ void R_DrawLightFlare () {
 	if (r_useLightScissors->value)
 		GL_Disable (GL_SCISSOR_TEST);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglEnableVertexAttribArray (ATRB_TEX0);
 	qglEnableVertexAttribArray (ATRB_COLOR);
 
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vert_array);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, false, 0, tex_array);
-	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, false, 0, color_array);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vert_array);
+	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, tex_array);
+	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, color_array);
 
 	GL_BindProgram (particlesProgram, 0);
 	id = particlesProgram->id[0];
@@ -2410,7 +2410,7 @@ void R_LightFlareOutLine () { //flare editing highlights
 	GL_Disable (GL_CULL_FACE);
 
 	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
 
 	// setup program
 	GL_BindProgram (genericProgram, 0);
@@ -2535,7 +2535,7 @@ void R_DrawLightBounds(void) {
 	qglUniform4f(gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vCache);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
 		
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 

@@ -59,7 +59,7 @@ float SV_CalcRoll (vec3_t angles, vec3_t velocity) {
 
 }
 
-qboolean blooddamage = false;
+qboolean blooddamage = qfalse;
 
 
 void ClientAutoGenHealth (edict_t *ent) {
@@ -177,7 +177,7 @@ void P_DamageFeedback (edict_t *player) {
 		VectorMA (v, (float)client->damage_blood / realcount, bcolor, v);
 	VectorCopy (v, client->damage_blend);
 
-	if (client->damage_blood) blooddamage = true;
+	if (client->damage_blood) blooddamage = qtrue;
 
 	//
 	// calculate view angle kicks
@@ -887,13 +887,13 @@ void G_SetClientFrame (edict_t *ent) {
 	client = ent->client;
 
 	if (client->ps.pmove.pm_flags & PMF_DUCKED)
-		duck = true;
+		duck = qtrue;
 	else
-		duck = false;
+		duck = qfalse;
 	if (xyspeed)
-		run = true;
+		run = qtrue;
 	else
-		run = false;
+		run = qfalse;
 
 	// check for stand/duck and stop/go transitions
 	if (duck != client->anim_duck && client->anim_priority < ANIM_DEATH)
@@ -1091,7 +1091,7 @@ void ClientEndServerFrame (edict_t *ent) {
 	// if the scoreboard is up, update it
 	if (ent->client->showscores && !(level.framenum & 31)) {
 		DeathmatchScoreboardMessage (ent, ent->enemy);
-		gi.unicast (ent, false);
+		gi.unicast (ent, qfalse);
 	}
 }
 

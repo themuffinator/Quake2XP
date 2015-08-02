@@ -50,11 +50,11 @@ void EFX_RvbInit (void) {
 
 	if (alGetError () == AL_NO_ERROR) {
 		Com_Printf (S_COLOR_YELLOW "EFX initialized\n");
-		efx.on = true;
+		efx.on = qtrue;
 	}
 	else {
 		Com_Printf (S_COLOR_RED "EFX init failed\n");
-		efx.on = false;
+		efx.on = qfalse;
 	}
 }
 
@@ -88,7 +88,7 @@ void EFX_RvbShutdown (void) {
 	alDeleteEffects (1, &efx.rvbRoomEffect);
 	alDeleteEffects (1, &efx.rvbUnderwaterEffect);
 	alDeleteEffects (1, &efx.rvbLevelEffect);
-	efx.on = false;
+	efx.on = qfalse;
 }
 
 void EFX_RvbProcSrc (openal_channel_t *ch, ALuint source, qboolean enabled) {

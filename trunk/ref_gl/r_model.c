@@ -211,7 +211,7 @@ void GL_AddFlareSurface (msurface_t * surf) {
 		memset (target, 0, sizeof(target));
 
 		R_AddNewWorldLight (lightOffset, r_flares[r_numflares].color, radius, 0, 0, vec3_origin,
-			vec3_origin, true, 1, 0, 0, false, 1, origin, r_flares[r_numflares].size, target, 0, 0, 0.0);
+			vec3_origin, qtrue, 1, 0, 0, qfalse, 1, origin, r_flares[r_numflares].size, target, 0, 0, 0.0);
 	}
 
 	r_numflares++;
@@ -239,7 +239,7 @@ void CleanDuplicateFlares () {
 
 			if (VectorLength (tmp) < r_flareWeldThreshold->value) {
 
-				f2->ignore = true;
+				f2->ignore = qtrue;
 				VectorAdd (f1->origin, f2->origin, tmp);
 				VectorScale (tmp, 0.5f, f1->origin);
 				r_numIgnoreflares++;
@@ -551,7 +551,7 @@ Mod_LoadLighting
 void Mod_LoadLighting (lump_t * l) {
 	char *s, *c;
 
-	loadmodel->useXPLM = false;
+	loadmodel->useXPLM = qfalse;
 
 	if (!l->filelen) {
 		loadmodel->lightData = NULL;
@@ -750,7 +750,7 @@ void Mod_LoadTextureFx (image_t *tex, char *s) {
 		}
 
 		if (!Q_strcasecmp (token, "envMap")) {
-			tex->envMap = true;
+			tex->envMap = qtrue;
 			continue;
 		}
 	}
@@ -1065,25 +1065,25 @@ void Mod_BuildVertexCache () {
 		vb += surf->polys->numVerts;
 
 	// and offsets...
-	gl_state.xyz_offset = 0;
+	vbo.xyz_offset = 0;
 	xyz_size = vb * sizeof(vec3_t);
 
-	gl_state.st_offset = gl_state.xyz_offset + xyz_size;
+	vbo.st_offset = vbo.xyz_offset + xyz_size;
 	st_size = vb * sizeof(vec2_t);
 
-	gl_state.lm_offset = gl_state.st_offset + st_size;
+	vbo.lm_offset = vbo.st_offset + st_size;
 	lm_size = vb * sizeof(vec2_t);
 
-	gl_state.nm_offset = gl_state.lm_offset + lm_size;
+	vbo.nm_offset = vbo.lm_offset + lm_size;
 	nm_size = vb * sizeof(vec3_t);
 
-	gl_state.tg_offset = gl_state.nm_offset + nm_size;
+	vbo.tg_offset = vbo.nm_offset + nm_size;
 	tg_size = vb * sizeof(vec3_t);
 
-	gl_state.bn_offset = gl_state.tg_offset + tg_size;
+	vbo.bn_offset = vbo.tg_offset + tg_size;
 	bn_size = vb * sizeof(vec3_t);
 
-	vbo_size = gl_state.bn_offset + bn_size;
+	vbo_size = vbo.bn_offset + bn_size;
 
 	buf = (float*)malloc (vbo_size);
 	if (!buf)
@@ -1101,35 +1101,35 @@ void Mod_BuildVertexCache () {
 		v = p->verts[0];
 		for (jj = 0; jj < nv; jj++, v += VERTEXSIZE, vb++) {
 			// vertex data
-			buf[gl_state.xyz_offset / 4 + vb * 3 + 0] = v[0];
-			buf[gl_state.xyz_offset / 4 + vb * 3 + 1] = v[1];
-			buf[gl_state.xyz_offset / 4 + vb * 3 + 2] = v[2];
+			buf[vbo.xyz_offset / 4 + vb * 3 + 0] = v[0];
+			buf[vbo.xyz_offset / 4 + vb * 3 + 1] = v[1];
+			buf[vbo.xyz_offset / 4 + vb * 3 + 2] = v[2];
 			// st coords
-			buf[gl_state.st_offset / 4 + vb * 2 + 0] = v[3];
-			buf[gl_state.st_offset / 4 + vb * 2 + 1] = v[4];
+			buf[vbo.st_offset / 4 + vb * 2 + 0] = v[3];
+			buf[vbo.st_offset / 4 + vb * 2 + 1] = v[4];
 			// lm coords
-			buf[gl_state.lm_offset / 4 + vb * 2 + 0] = v[5];
-			buf[gl_state.lm_offset / 4 + vb * 2 + 1] = v[6];
+			buf[vbo.lm_offset / 4 + vb * 2 + 0] = v[5];
+			buf[vbo.lm_offset / 4 + vb * 2 + 1] = v[6];
 			// normals
-			buf[gl_state.nm_offset / 4 + vb * 3 + 0] = v[7];
-			buf[gl_state.nm_offset / 4 + vb * 3 + 1] = v[8];
-			buf[gl_state.nm_offset / 4 + vb * 3 + 2] = v[9];
+			buf[vbo.nm_offset / 4 + vb * 3 + 0] = v[7];
+			buf[vbo.nm_offset / 4 + vb * 3 + 1] = v[8];
+			buf[vbo.nm_offset / 4 + vb * 3 + 2] = v[9];
 			// tangents
-			buf[gl_state.tg_offset / 4 + vb * 3 + 0] = v[10];
-			buf[gl_state.tg_offset / 4 + vb * 3 + 1] = v[11];
-			buf[gl_state.tg_offset / 4 + vb * 3 + 2] = v[12];
+			buf[vbo.tg_offset / 4 + vb * 3 + 0] = v[10];
+			buf[vbo.tg_offset / 4 + vb * 3 + 1] = v[11];
+			buf[vbo.tg_offset / 4 + vb * 3 + 2] = v[12];
 			// binormals
-			buf[gl_state.bn_offset / 4 + vb * 3 + 0] = v[13];
-			buf[gl_state.bn_offset / 4 + vb * 3 + 1] = v[14];
-			buf[gl_state.bn_offset / 4 + vb * 3 + 2] = v[15];
+			buf[vbo.bn_offset / 4 + vb * 3 + 0] = v[13];
+			buf[vbo.bn_offset / 4 + vb * 3 + 1] = v[14];
+			buf[vbo.bn_offset / 4 + vb * 3 + 2] = v[15];
 			
 			idx++;
 		}
 
 	}
 
-	qglGenBuffers (1, &gl_state.vbo_BSP);
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglGenBuffers (1, &vbo.vbo_BSP);
+	qglBindBuffer (GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 	qglBufferData (GL_ARRAY_BUFFER_ARB, vbo_size, buf, GL_STATIC_DRAW_ARB);
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
 	Com_DPrintf (""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
@@ -1256,12 +1256,12 @@ static void cache_Close () {
 
 static qboolean cache_Fetch (void *dst, int size) {
 	if (_cacheSize - _cachePos < size) {
-		return false;
+		return qfalse;
 	}
 	else {
 		memcpy (dst, _cacheData + _cachePos, size);
 		_cachePos += size;
-		return true;
+		return qtrue;
 	}
 }
 
@@ -1676,7 +1676,7 @@ static qboolean R_LoadXPLM (void) {
 
 	if (!buf) {
 		//		Com_DPrintf("R_LoadXPLM(): external lightmaps for '%s' not found.\n", loadmodel->name);
-		return false;
+		return qfalse;
 	}
 
 	//
@@ -1718,13 +1718,13 @@ static qboolean R_LoadXPLM (void) {
 	loadmodel->lightData = (byte *)Hunk_Alloc (len);
 	Q_memcpy (loadmodel->lightData, pB, len);
 	loadmodel->memorySize += len;
-	loadmodel->useXPLM = true;
+	loadmodel->useXPLM = qtrue;
 
 	FS_FreeFile (buf);
 
 	Com_Printf ("Loaded lightmaps from "S_COLOR_GREEN"%s"S_COLOR_WHITE".\n", name);
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -1863,7 +1863,7 @@ static int Mod_FindTriangleWithEdge (neighbors_t * neighbors, dtriangle_t * tris
 
 	int i, j, found = -1, foundj = 0;
 	dtriangle_t *current = &tris[triIndex];
-	qboolean dup = false;
+	qboolean dup = qfalse;
 
 	for (i = 0; i < numtris; i++) {
 		if (i == triIndex)
@@ -1884,7 +1884,7 @@ static int Mod_FindTriangleWithEdge (neighbors_t * neighbors, dtriangle_t * tris
 					foundj = j;
 				}
 				else
-					dup = true;	// the three edges story
+					dup = qtrue;	// the three edges story
 			}
 		}
 	}
@@ -2059,11 +2059,11 @@ void Mod_LoadAliasModelFx (model_t *mod, char *s) {
 			continue;
 		}
 		if (!Q_strcasecmp (token, "noSelfShadow")) {
-			mod->noSelfShadow = true;
+			mod->noSelfShadow = qtrue;
 			continue;
 		}
 		if (!Q_strcasecmp (token, "envMap")) {
-			mod->envMap = true;
+			mod->envMap = qtrue;
 			mod->envScale = atof (COM_Parse (&s));
 			continue;
 		}
@@ -2103,7 +2103,7 @@ void Mod_LoadAliasModel (model_t * mod, void *buffer) {
 	char			cachename[MAX_OSPATH];
 	FILE			*f;
 	unsigned		checksum, cs_binormals, cs_tangents;
-	qboolean		success = false, err = true;;
+	qboolean		success = qfalse, err = qtrue;;
 
 	mod->memorySize = 0;
 
@@ -2146,9 +2146,9 @@ void Mod_LoadAliasModel (model_t * mod, void *buffer) {
 	mod->glowCfg[0] = 0.3;
 	mod->glowCfg[1] = 1.0;
 	mod->glowCfg[2] = 5.666;
-	mod->noSelfShadow = (qboolean)false;
+	mod->noSelfShadow = (qboolean)qfalse;
 	mod->modelScale = 1.0;
-	mod->envMap = (qboolean)false;
+	mod->envMap = (qboolean)qfalse;
 	mod->envScale = 0.1;
 	i = strlen (mod->name);
 	memcpy (nam, mod->name, i);
@@ -2572,11 +2572,11 @@ void R_BeginRegistration (char *model) {
 	flushmap = Cvar_Get ("flushmap", "0", 0);
 	if (strcmp (mod_known[0].name, fullname) || flushmap->value)
 		Mod_Free (&mod_known[0]);
-	r_worldmodel = Mod_ForName (fullname, true);
+	r_worldmodel = Mod_ForName (fullname, qtrue);
 
 	r_viewcluster = -1;
 	numPreCachedLights = 0;
-	flareEdit = (qboolean)false;
+	flareEdit = (qboolean)qfalse;
 }
 
 
@@ -2594,7 +2594,7 @@ struct model_s *R_RegisterModel (char *name) {
 	dmdl_t *pheader;
 	int len = strlen (name);
 
-	mod = Mod_ForName (name, false);
+	mod = Mod_ForName (name, qfalse);
 	if (mod) {
 		mod->registration_sequence = registration_sequence;
 
@@ -2712,7 +2712,7 @@ void R_EndRegistration (void) {
 
 	GL_SetDefaultState ();
 
-	relightMap = false;
+	relightMap = qfalse;
 }
 
 
@@ -2791,12 +2791,12 @@ qboolean HasSharedLeafs (byte *v1, byte *v2) {
 				cmp edx, numleafs__
 				jc short l1
 	}
-l5:	return false;
+l5:	return qfalse;
 	_asm
 	{
 	l3:
 	}
-	return true;
+	return qtrue;
 
 }
 
@@ -2811,7 +2811,7 @@ qboolean HasSharedLeafs (byte *v1, byte *v2) {
 		uint32_t *v1_x4 = (uint32_t*)v1;
 		uint32_t *v2_x4 = (uint32_t*)v2;
 		if (*v1_x4 & *v2_x4)
-			return true;
+			return qtrue;
 
 		numLeafs -= 32;
 		v1 += 4;
@@ -2821,10 +2821,10 @@ qboolean HasSharedLeafs (byte *v1, byte *v2) {
 	for (i = 0; i < numLeafs; i++) {
 		if (v1[i >> 3] & (1 << (i & 7)))
 		if (v2[i >> 3] & (1 << (i & 7)))
-			return true;
+			return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 #endif
 

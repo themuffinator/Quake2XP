@@ -181,11 +181,11 @@ qboolean Pickup_Powerup (edict_t * ent, edict_t * other) {
 	quantity = other->client->pers.inventory[ITEM_INDEX (ent->item)];
 	if ((skill->value == 1 && quantity >= 2)
 		|| (skill->value >= 2 && quantity >= 1))
-		return false;
+		return qfalse;
 
 	if ((coop->value) && (ent->item->flags & IT_STAY_COOP)
 		&& (quantity > 0))
-		return false;
+		return qfalse;
 
 	other->client->pers.inventory[ITEM_INDEX (ent->item)]++;
 
@@ -213,7 +213,7 @@ qboolean Pickup_Powerup (edict_t * ent, edict_t * other) {
 		}
 	}
 
-	return true;
+	return qtrue;
 }
 
 void Drop_General (edict_t * ent, gitem_t * item) {
@@ -274,7 +274,7 @@ qboolean Pickup_Navi (edict_t * ent, edict_t * other) {
 					&& Route[j].ent == ent->union_ent)
 					|| Route[j].state == GRS_PUSHBUTTON) {
 					k = 1;
-					flg = false;
+					flg = qfalse;
 					while (1) {
 						if ((j + k) >= CurrentIndex) {
 							//gi.bprintf(PRINT_HIGH,"overflow!!!\n");
@@ -290,10 +290,10 @@ qboolean Pickup_Navi (edict_t * ent, edict_t * other) {
 										(Route[j].ent->union_ent->s.
 										origin[2] + 8 -
 										other->s.origin[2]) < JumpMax)
-										flg = true;
+										flg = qtrue;
 								}
 								else
-									flg = true;
+									flg = qtrue;
 								//gi.bprintf(PRINT_HIGH,"hoooo!!!\n");
 								break;
 							}
@@ -336,7 +336,7 @@ qboolean Pickup_Navi (edict_t * ent, edict_t * other) {
 	}
 
 	if (!ctf->value || ent->classname[6] != 'F')
-		return true;
+		return qtrue;
 	// ctf navi
 	if (ctf->value && ent->classname[6] == 'F') {
 		if (other->client->resp.ctf_team == CTF_TEAM1) {
@@ -388,7 +388,7 @@ qboolean Pickup_Navi (edict_t * ent, edict_t * other) {
 	}
 
 
-	return true;
+	return qtrue;
 }
 
 qboolean Pickup_Adrenaline (edict_t * ent, edict_t * other) {
@@ -401,7 +401,7 @@ qboolean Pickup_Adrenaline (edict_t * ent, edict_t * other) {
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
 
-	return true;
+	return qtrue;
 }
 
 qboolean Pickup_AncientHead (edict_t * ent, edict_t * other) {
@@ -410,7 +410,7 @@ qboolean Pickup_AncientHead (edict_t * ent, edict_t * other) {
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
 
-	return true;
+	return qtrue;
 }
 
 qboolean Pickup_Bandolier (edict_t * ent, edict_t * other) {
@@ -452,7 +452,7 @@ qboolean Pickup_Bandolier (edict_t * ent, edict_t * other) {
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
 
-	return true;
+	return qtrue;
 }
 
 qboolean Pickup_Pack (edict_t * ent, edict_t * other) {
@@ -548,7 +548,7 @@ qboolean Pickup_Pack (edict_t * ent, edict_t * other) {
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
 
-	return true;
+	return qtrue;
 }
 
 //======================================================================
@@ -659,7 +659,7 @@ void Use_Silencer (edict_t * ent, gitem_t * item) {
 
 qboolean Pickup_Key (edict_t * ent, edict_t * other) {
 	other->client->pers.inventory[ITEM_INDEX (ent->item)]++;
-	return true;
+	return qtrue;
 }
 
 //======================================================================
@@ -669,7 +669,7 @@ qboolean Add_Ammo (edict_t * ent, gitem_t * item, int count) {
 	int max;
 
 	if (!ent->client)
-		return false;
+		return qfalse;
 
 	if (item->tag == AMMO_BULLETS)
 		max = ent->client->pers.max_bullets;
@@ -690,12 +690,12 @@ qboolean Add_Ammo (edict_t * ent, gitem_t * item, int count) {
 	else if (item->tag == AMMO_TRAP)
 		max = ent->client->pers.max_trap;
 	else
-		return false;
+		return qfalse;
 
 	index = ITEM_INDEX (item);
 
 	if (ent->client->pers.inventory[index] == max)
-		return false;
+		return qfalse;
 
 	ent->client->pers.inventory[index] += count;
 
@@ -707,7 +707,7 @@ qboolean Add_Ammo (edict_t * ent, gitem_t * item, int count) {
 	if (ent->client->pers.inventory[index] > max)
 		ent->client->pers.inventory[index] = max;
 
-	return true;
+	return qtrue;
 }
 
 qboolean Pickup_Ammo (edict_t * ent, edict_t * other) {
@@ -719,12 +719,12 @@ qboolean Pickup_Ammo (edict_t * ent, edict_t * other) {
 		count = ent->item->quantity;
 
 	if (!Add_Ammo (other, ent->item, count))
-		return false;
+		return qfalse;
 
 	if (!(ent->spawnflags & (DROPPED_ITEM | DROPPED_PLAYER_ITEM))
 		&& (deathmatch->value))
 		SetRespawn (ent, 30);
-	return true;
+	return qtrue;
 }
 
 void Drop_Ammo (edict_t * ent, gitem_t * item) {
@@ -764,11 +764,11 @@ void MegaHealth_think (edict_t * self) {
 qboolean Pickup_Health (edict_t * ent, edict_t * other) {
 	if (!(ent->style & HEALTH_IGNORE_MAX))
 	if (other->health >= other->max_health)
-		return false;
+		return qfalse;
 
 	//ZOID
 	if (other->health >= 250 && ent->count > 25)
-		return false;
+		return qfalse;
 	//ZOID
 
 	other->health += ent->count;
@@ -808,7 +808,7 @@ qboolean Pickup_Health (edict_t * ent, edict_t * other) {
 			SetRespawn (ent, 30);
 	}
 
-	return true;
+	return qtrue;
 }
 
 //======================================================================
@@ -898,7 +898,7 @@ qboolean Pickup_Armor (edict_t * ent, edict_t * other) {
 
 			// if we're already maxed out then we don't need the new armor
 			if (other->client->pers.inventory[old_armor_index] >= newcount)
-				return false;
+				return qfalse;
 
 			// update current armor value
 			other->client->pers.inventory[old_armor_index] = newcount;
@@ -912,7 +912,7 @@ qboolean Pickup_Armor (edict_t * ent, edict_t * other) {
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, 20);
 
-	return true;
+	return qtrue;
 }
 
 //======================================================================
@@ -978,7 +978,7 @@ qboolean Pickup_PowerArmor (edict_t * ent, edict_t * other) {
 			ent->item->use (other, ent->item);
 	}
 
-	return true;
+	return qtrue;
 }
 
 void Drop_PowerArmor (edict_t * ent, gitem_t * item) {
@@ -1066,11 +1066,11 @@ void Touch_Item (edict_t * ent, edict_t * other, cplane_t * plane,
 	}
 	//  else gi.bprintf(PRINT_HIGH,"get %s %x inv %i!\n",ent->classname,ent->spawnflags,other->client->pers.inventory[ITEM_INDEX(ent->item)]);
 
-	k = false;
+	k = qfalse;
 	// flag set
 	if (ent->groundentity)
 	if (ent->groundentity->union_ent)
-		k = true;
+		k = qtrue;
 
 	// route update
 	if (!k && chedit->value && CurrentIndex < MAXNODES
@@ -1640,7 +1640,7 @@ qboolean ZIGDrop_Flag (edict_t * ent, gitem_t * item) {
 	edict_t *tech;
 
 	if (zflag_ent)
-		return false;
+		return qfalse;
 
 	tech = Drop_Item (ent, item);
 	tech->nextthink = level.time + FRAMETIME * 10;	// level.time +
@@ -1650,8 +1650,8 @@ qboolean ZIGDrop_Flag (edict_t * ent, gitem_t * item) {
 		ent->client->pers.inventory[ITEM_INDEX (item)] = 0;
 	/* ent */ tech->s.frame = 173;
 	zflag_ent = tech;
-	tech->inuse = true;
-	return true;
+	tech->inuse = qtrue;
+	return qtrue;
 }
 
 qboolean ZIGPickup_Flag (edict_t * ent, edict_t * other) {
@@ -1663,7 +1663,7 @@ qboolean ZIGPickup_Flag (edict_t * ent, edict_t * other) {
 	//  other->client->resp.score += 1;
 	other->s.modelindex3 = gi.modelindex ("models/zflag.md2"	/* item->world_model
 															 */);
-	return true;
+	return qtrue;
 }
 
 void SetBotFlag1 (edict_t * ent);

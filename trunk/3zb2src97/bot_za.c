@@ -31,7 +31,7 @@ route_t Route[MAXNODES];
 int CurrentIndex;
 int SpawnWaitingBots;
 float JumpMax = 0;
-qboolean JmpTableChk = false;
+qboolean JmpTableChk = qfalse;
 float JumpTable[FALLCHK_LOOPMAX];
 int botskill;
 int trace_priority;
@@ -118,9 +118,9 @@ qboolean BotApplyStrength (edict_t * ent) {
 		tech = FindItemByClassname ("item_tech2");
 	if (tech && ent->client
 		&& ent->client->pers.inventory[ITEM_INDEX (tech)])
-		return true;
+		return qtrue;
 
-	return false;
+	return qfalse;
 }
 
 qboolean BotApplyResistance (edict_t * ent) {
@@ -130,9 +130,9 @@ qboolean BotApplyResistance (edict_t * ent) {
 		tech = FindItemByClassname ("item_tech1");
 	if (tech && ent->client
 		&& ent->client->pers.inventory[ITEM_INDEX (tech)])
-		return true;
+		return qtrue;
 
-	return false;
+	return qfalse;
 }
 
 //return foundedenemy
@@ -170,10 +170,10 @@ int Bot_SearchEnemy (edict_t * ent) {
 	foundedenemy = 0;
 	target = NULL;
 
-	tmpflg = false;				// viewable flag
+	tmpflg = qfalse;				// viewable flag
 	if (zc->first_target != NULL) {
 		if (Bot_trace (ent, zc->first_target)) {
-			tmpflg = true;
+			tmpflg = qtrue;
 			foundedenemy++;
 		}
 	}
@@ -452,7 +452,7 @@ void Bot_SearchItems (edict_t * ent) {
 		return;
 
 	j = 0;
-	q = false;					// rocket jump needed
+	q = qfalse;					// rocket jump needed
 	// search Items
 	if (ctf->value) {
 		if (ent->moveinfo.state == SUPPORTER)
@@ -484,9 +484,9 @@ void Bot_SearchItems (edict_t * ent) {
 
 	if (j == 0) {
 		if ((int)(dmflags->value) & DF_WEAPONS_STAY)
-			wstayf = true;
+			wstayf = qtrue;
 		else
-			wstayf = false;
+			wstayf = qfalse;
 
 		target = NULL;
 		VectorCopy (ent->absmin, touchmin);
@@ -519,7 +519,7 @@ void Bot_SearchItems (edict_t * ent) {
 				i = ITEM_INDEX (Fdi_ROCKETS /* FindItem("Rockets") */);
 
 				if (ent->client->pers.inventory[i] > 0) {
-					q = true;
+					q = qtrue;
 					touchmax[2] += 290;
 				}
 			}
@@ -588,7 +588,7 @@ void Bot_SearchItems (edict_t * ent) {
 								ent->s.angles[YAW] = Get_yaw (trmin);
 								ent->s.angles[PITCH] = Get_pitch (trmin);
 								ent->client->buttons |= BUTTON_ATTACK;
-								ent->client->zc.objshot = true;
+								ent->client->zc.objshot = qtrue;
 							}
 						}
 					}
@@ -1033,11 +1033,11 @@ qboolean Bot_ExploAvoid (edict_t * ent, vec3_t v) {
 	vec3_t msmax, msmin;
 
 	if (ent->groundentity == NULL && !ent->waterlevel)
-		return true;
+		return qtrue;
 	if (!
 		(FFlg[Bot[ent->client->zc.botindex].param[BOP_COMBATSKILL]] &
 		FIRE_EXPAVOID))
-		return true;
+		return qtrue;
 
 	VectorCopy (v, msmax);
 	VectorCopy (v, msmin);
@@ -1050,7 +1050,7 @@ qboolean Bot_ExploAvoid (edict_t * ent, vec3_t v) {
 
 	for (i = 0; i < MAX_EXPLINDEX; i++) {
 		if (ExplIndex[i] != NULL) {
-			if (ExplIndex[i]->inuse == false)
+			if (ExplIndex[i]->inuse == qfalse)
 				ExplIndex[i] = NULL;
 		}
 		if (ExplIndex[i] != NULL) {
@@ -1076,10 +1076,10 @@ qboolean Bot_ExploAvoid (edict_t * ent, vec3_t v) {
 			if (msmax[2] < absmin[2])
 				continue;
 
-			return false;
+			return qfalse;
 		}
 	}
-	return true;
+	return qtrue;
 }
 
 
@@ -1093,7 +1093,7 @@ qboolean CheckLaser (vec3_t pos, vec3_t maxs, vec3_t mins) {
 
 	for (i = 0; i < MAX_LASERINDEX; i++) {
 		if (LaserIndex[i] == NULL)
-			return false;
+			return qfalse;
 		if (!(LaserIndex[i]->spawnflags & 1))
 			continue;
 
@@ -1131,16 +1131,16 @@ qboolean CheckLaser (vec3_t pos, vec3_t maxs, vec3_t mins) {
 		if (absmax[2] < end[2])
 			continue;
 		//		gi.bprintf(PRINT_HIGH,"Laser Checked! %f\n",L3);
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //-----------------------------------------------------------------------------------------
 // BOT new
 // bot move test
-//  return  false   can't
-//          true    stand
+//  return  qfalse   can't
+//          qtrue    stand
 //          2       duck
 int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 	float *bottom) {
@@ -1205,7 +1205,7 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 
 	trmax[2] += 1;
 	if (rs_trace.allsolid || rs_trace.startsolid || rs_trace.fraction != 1.0) {
-		moveok = false;
+		moveok = qfalse;
 		VectorCopy (trstart, trend);
 
 		for (i = 4; i < (tracelimit + 4); i += 4) {
@@ -1216,7 +1216,7 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 			//          rs_trace = gi.trace (trstart, trmin, trmax, trstart,ent, tcontents );
 			if (!rs_trace.allsolid && !rs_trace.startsolid
 				&& rs_trace.fraction > 0) {
-				moveok = true;
+				moveok = qtrue;
 				break;
 			}
 		}
@@ -1224,7 +1224,7 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 		if (!moveok /* i >= tracelimit+4 */) {
 			//			gi.bprintf(PRINT_HIGH,"apooX %f >= %f\n",i ,tracelimit);
 			//			if(ent->client->ps.pmove.pm_flags & PMF_DUCKED) gi.bprintf(PRINT_HIGH,"apoo1 %f %f \n",i,trmax[2]);
-			return false;
+			return qfalse;
 		}
 		//      rs_trace = gi.trace (trstart, trmin, trmax, trend,ent, tcontents );
 		*bottom = rs_trace.endpos[2] - ent->s.origin[2];
@@ -1235,12 +1235,12 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 			//				gi.bprintf(PRINT_HIGH,"apoo2\n");
 			if (rs_trace.plane.normal[2] < 0.7
 				&& (!ent->client->zc.waterstate && ent->groundentity))
-				return false;
+				return qfalse;
 		}
 		else {
 			Get_RouteOrigin (ent->client->zc.routeindex, v);
 			if (rs_trace.plane.normal[2] < 0.7 && v[2] < ent->s.origin[2])
-				return false;
+				return qfalse;
 		}
 
 		if (*bottom > /*=*/ tracelimit - 5) {
@@ -1248,7 +1248,7 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 			//			gi.bprintf(PRINT_HIGH,"apoo3\n");
 			//			if(ent->client->zc.waterstate == 1 && ryaw == ent->client->zc.moveyaw)
 			//				gi.bprintf(PRINT_HIGH,"apoo3\n");
-			return false;
+			return qfalse;
 		}
 		pos[0] = rs_trace.endpos[0];
 		pos[1] = rs_trace.endpos[1];
@@ -1257,9 +1257,9 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 		if (trmax[2] == 32) {
 			if (Bot_ExploAvoid (ent, pos)) {
 				if (!CheckLaser (pos, trmax, trmin))
-					return true;
+					return qtrue;
 			}
-			return false;
+			return qfalse;
 		}
 		//      trmax[2] = 32;
 		VectorCopy (pos, trend);
@@ -1269,20 +1269,20 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 			&& rs_trace.fraction == 1.0) {
 			if (Bot_ExploAvoid (ent, pos)) {
 				if (!CheckLaser (pos, trmax, trmin))
-					return true;
+					return qtrue;
 			}
-			return false;
+			return qfalse;
 		}
 		if (Bot_ExploAvoid (ent, pos)) {
 			if (!CheckLaser (pos, trmax, trmin))
 				return 2;
 		}
-		return false;
+		return qfalse;
 
 
 		/*		trmax[2] = 32;
 				rs_trace = gi.trace (pos, trmin, trmax, pos,ent, tcontents );
-				if(!rs_trace.allsolid && !rs_trace.startsolid)	return true;
+				if(!rs_trace.allsolid && !rs_trace.startsolid)	return qtrue;
 				return 2;*/
 	}
 	else {
@@ -1310,7 +1310,7 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 				//					gi.bprintf(PRINT_HIGH,"apoo2\n");
 				//				if (ent->client->zc.waterstate == WAS_FLOAT && ryaw == ent->client->zc.moveyaw)
 				//					gi.bprintf(PRINT_HIGH,"apooX\n");
-				return false;
+				return qfalse;
 			}
 		}
 		if (0 /* !ent->client->zc.route_trace */) {
@@ -1327,7 +1327,7 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 				contents = (CONTENTS_LAVA | CONTENTS_SLIME);
 		}
 		if (rs_trace.contents & contents)
-			*bottom = -9999;	/* return false; */
+			*bottom = -9999;	/* return qfalse; */
 		else if (rs_trace.surface->flags & SURF_SKY)
 			*bottom = -9999;
 
@@ -1341,9 +1341,9 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 		if (trmax[2] == 32) {
 			if (Bot_ExploAvoid (ent, pos)) {
 				if (!CheckLaser (pos, trmax, trmin))
-					return true;
+					return qtrue;
 			}
-			return false;
+			return qfalse;
 		}
 		//      trmax[2] = 32;
 		VectorCopy (pos, trend);
@@ -1353,15 +1353,15 @@ int Bot_moveT (edict_t * ent, float ryaw, vec3_t pos, float dist,
 			&& rs_trace.fraction == 1.0) {
 			if (Bot_ExploAvoid (ent, pos)) {
 				if (!CheckLaser (pos, trmax, trmin))
-					return true;
+					return qtrue;
 			}
-			return false;
+			return qfalse;
 		}
 		if (Bot_ExploAvoid (ent, pos)) {
 			if (!CheckLaser (pos, trmax, trmin))
 				return 2;
 		}
-		return false;
+		return qfalse;
 	}
 }
 
@@ -1382,15 +1382,15 @@ int Bot_Watermove (edict_t * ent, vec3_t pos, float dist, float upd) {
 	if (!rs_trace.allsolid && !rs_trace.startsolid) {
 		if (rs_trace.fraction > 0) {
 			VectorCopy (rs_trace.endpos, pos);
-			return true;
+			return qtrue;
 			if (upd < 0)
 				ent->velocity[2] = 0;
 		}
 	}
 	//	gi.bprintf(PRINT_HIGH,"Water MOVE NG %f %f!\n",dist,upd);
-	//	return false;
+	//	return qfalse;
 	//	if (upd > -7 && upd < 7)
-	//		return false;
+	//		return qfalse;
 
 	VectorCopy (ent->s.origin, trmin);
 	trmin[2] += upd;
@@ -1440,13 +1440,13 @@ int Bot_Watermove (edict_t * ent, vec3_t pos, float dist, float upd) {
 
 	if (vec == -1) {
 		//		gi.bprintf(PRINT_HIGH,"Water MOVE NG %f %f!\n",dist,upd);
-		return false;
+		return qfalse;
 	}
 	//	gi.bprintf(PRINT_HIGH,"Water MOVE OK %f %f!\n",dist,upd);
 	VectorCopy (trmax, pos);
 	if (upd < 0)
 		ent->velocity[2] = 0;
-	return true;
+	return qtrue;
 
 	touchmin[0] = cos (vec) * 16;	// dist ;
 	touchmin[1] = sin (vec) * 16;	// dist ;
@@ -1459,11 +1459,11 @@ int Bot_Watermove (edict_t * ent, vec3_t pos, float dist, float upd) {
 		gi.trace (trmin, ent->mins, ent->maxs, trmax, ent, MASK_BOTSOLIDX);
 
 	if (rs_trace.allsolid || rs_trace.startsolid) {
-		return false;
+		return qfalse;
 	}
 
 	VectorCopy (rs_trace.endpos, pos);
-	return true;
+	return qtrue;
 
 
 	VectorCopy (rs_trace.plane.normal, trmin);
@@ -1475,12 +1475,12 @@ int Bot_Watermove (edict_t * ent, vec3_t pos, float dist, float upd) {
 																					 */);
 		if (!rs_trace.allsolid && !rs_trace.startsolid) {
 			VectorCopy (trmax, pos);
-			return true;
+			return qtrue;
 		}
 		VectorAdd (trmax, trmin, trmax);
 	}
 	//  gi.bprintf(PRINT_HIGH,"failed2\n");
-	return false;
+	return qfalse;
 }
 
 int Bot_moveW (edict_t * ent, float ryaw, vec3_t pos, float dist,
@@ -1517,21 +1517,21 @@ int Bot_moveW (edict_t * ent, float ryaw, vec3_t pos, float dist,
 		gi.trace (trend, ent->mins, ent->maxs, trstart, ent, tcontents);
 
 	if ((trend[2] - rs_trace.endpos[2]) >= 95)
-		return false;
+		return qfalse;
 
 	if (rs_trace.contents & contents)
-		return false;
+		return qfalse;
 	if (!(rs_trace.contents & CONTENTS_WATER))
-		return false;
+		return qfalse;
 
 	*bottom = rs_trace.endpos[2] - ent->s.origin[2];
-	return true;
+	return qtrue;
 }
 
 //-----------------------------------------------------------------------------------------
 // Bank check
-//  true    safe
-//  false   danger
+//  qtrue    safe
+//  qfalse   danger
 qboolean BankCheck (edict_t * ent, vec3_t pos) {
 	trace_t rs_trace;
 	vec3_t end, v1, v2;
@@ -1546,17 +1546,17 @@ qboolean BankCheck (edict_t * ent, vec3_t pos) {
 	rs_trace = gi.trace (pos, v1, v2, end, ent, MASK_BOTSOLIDX	/* MASK_PLAYERSOLID */);
 
 	if (rs_trace.startsolid || rs_trace.allsolid)
-		return false;
+		return qfalse;
 	if (rs_trace.plane.normal[2] < 0.8)
-		return false;
-	return true;
+		return qfalse;
+	return qtrue;
 }
 
 
 //-----------------------------------------------------------------------------------------
 // hazard check
-//  true    safe
-//  false   danger
+//  qtrue    safe
+//  qfalse   danger
 qboolean HazardCheck (edict_t * ent, vec3_t pos) {
 	trace_t rs_trace;
 	vec3_t end, v1, v2;
@@ -1577,8 +1577,8 @@ qboolean HazardCheck (edict_t * ent, vec3_t pos) {
 	rs_trace = gi.trace (pos, v1, v2, end, ent, MASK_OPAQUE);
 
 	if (rs_trace.contents & contents)
-		return false;
-	return true;
+		return qfalse;
+	return qtrue;
 }
 
 #if 0
@@ -1604,7 +1604,7 @@ qboolean Bot_Shot (void) {
 			ent->s.angles[YAW] = Get_yaw (trmin);
 			ent->s.angles[PITCH] = Get_pitch (trmin);
 			ent->client->buttons |= BUTTON_ATTACK;
-			ent->client->zc.objshot = true;
+			ent->client->zc.objshot = qtrue;
 		}
 	}
 }
@@ -1692,75 +1692,75 @@ void Set_Combatstate (edict_t * ent, int foundedenemy) {
 
 //-----------------------------------------------------------------------------------------
 // Bot Jump
-// return true      sequaense done
-// return false     failed
+// return qtrue      sequaense done
+// return qfalse     failed
 qboolean Get_FlyingSpeed (float bottom, float block, float dist,
 	float *speed) {
 	float tdist;
 
 	if (bottom >= 40) {
 		if (block > 4)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 4;
 	}
 	else if (bottom >= 35) {
 		if (block > 5)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 5;
 	}
 	else if (bottom >= 30) {
 		if (block > 6)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 6;
 	}
 	else if (bottom >= 20) {
 		if (block > 7)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 7;
 	}
 	else if (bottom >= -5) {
 		if (block > 8)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 8;
 	}
 	else if (bottom >= -20) {
 		if (block > 9)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 7;
 	}
 	else if (bottom >= -35) {
 		if (block > 10)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 6;
 	}
 	else if (bottom >= -52) {
 		if (block > 11)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 5;
 	}
 	else if (bottom >= -75) {
 		if (block > 12)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 4;
 	}
 	else if (bottom >= -95) {
 		if (block > 13)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 3;
 	}
 	else if (bottom >= -125) {
 		if (block > 14)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 2;
 	}
 	else {
 		if (block > 15)
-			return false;
+			return qfalse;
 		tdist = (dist * block) / 2;
 	}
 
 	*speed = tdist / MOVE_SPD_RUN;
-	return true;
+	return qtrue;
 }
 
 qboolean Bot_Jump (edict_t * ent, vec3_t pos, float dist) {
@@ -1774,14 +1774,14 @@ qboolean Bot_Jump (edict_t * ent, vec3_t pos, float dist) {
 
 	Bot_moveT (ent, yaw, temppos, dist, &bottom);
 	if (bottom > -JumpMax)
-		return false;
+		return qfalse;
 
 	for (x = 2; x <= 16; x += 1) {
 		tdist = dist * x;
-		if (Bot_moveT (ent, yaw, temppos, tdist, &bottom) == true) {
+		if (Bot_moveT (ent, yaw, temppos, tdist, &bottom) == qtrue) {
 			if (x == 2 && (bottom > -JumpMax) && bottom <= 0) {
 				VectorCopy (pos, ent->s.origin);
-				return true;
+				return qtrue;
 			}
 			if (bottom <= JumpMax && bottom > -JumpMax) {
 				if (Get_FlyingSpeed (bottom, x, dist, &speed)) {
@@ -1798,27 +1798,27 @@ qboolean Bot_Jump (edict_t * ent, vec3_t pos, float dist) {
 					//                  ent->s.frame = FRAME_jump1-1;
 					//                  ent->client->anim_end = FRAME_jump6;
 					//                  ent->client->anim_priority = ANIM_JUMP;
-					return true;
+					return qtrue;
 				}
 			}
 			continue;
 		}
 		else
-			return false;
+			return qfalse;
 	}
-	return false;
+	return qfalse;
 }
 
 //-----------------------------------------------------------------------------------------
 // Bot Fall
-// return true      sequaense done
-// return false     failed
+// return qtrue      sequaense done
+// return qfalse     failed
 
 qboolean Bot_Fall (edict_t * ent, vec3_t pos, float dist) {
 	zgcl_t *zc;
 	float x, l, speed, grav, vel, ypos, yori;
 	vec3_t v, vv;
-	int mf = false;
+	int mf = qfalse;
 	short mode = 0;
 
 	zc = &ent->client->zc;
@@ -1831,7 +1831,7 @@ qboolean Bot_Fall (edict_t * ent, vec3_t pos, float dist) {
 		// if on hazard object cause error
 		if (!HazardCheck (ent, zc->second_target->s.origin)) {
 			zc->second_target = NULL;
-			return false;
+			return qfalse;
 		}
 
 		yori = ent->s.origin[2];
@@ -1848,7 +1848,7 @@ qboolean Bot_Fall (edict_t * ent, vec3_t pos, float dist) {
 			vel -= grav;		// * l;
 			yori += vel * FRAMETIME;
 			if (ypos >= yori) {
-				mf = true;
+				mf = qtrue;
 				break;
 			}
 		}
@@ -1859,7 +1859,7 @@ qboolean Bot_Fall (edict_t * ent, vec3_t pos, float dist) {
 		if (speed <= MOVE_SPD_RUN && mf) {
 			ent->moveinfo.speed = speed / MOVE_SPD_RUN;
 			VectorCopy (pos, ent->s.origin);
-			return true;
+			return qtrue;
 		}
 		goto JUMPCATCH;
 	}
@@ -1876,8 +1876,8 @@ qboolean Bot_Fall (edict_t * ent, vec3_t pos, float dist) {
 
 			//gi.bprintf(PRINT_HIGH,"OFF 1\n"); //ppx
 			//gi.bprintf(PRINT_HIGH,"hazard out\n");
-			//          zc->route_trace = false;
-			return false;
+			//          zc->route_trace = qfalse;
+			return qfalse;
 		}
 
 		yori = pos[2];
@@ -1894,7 +1894,7 @@ qboolean Bot_Fall (edict_t * ent, vec3_t pos, float dist) {
 			vel -= grav;		// * l;
 			yori += vel * FRAMETIME;
 			if (ypos >= yori) {
-				mf = true;
+				mf = qtrue;
 				break;
 			}
 		}
@@ -1917,7 +1917,7 @@ qboolean Bot_Fall (edict_t * ent, vec3_t pos, float dist) {
 			//			gi.bprintf(PRINT_HIGH,"fall do\n");
 			ent->moveinfo.speed = speed / MOVE_SPD_RUN;
 			VectorCopy (pos, ent->s.origin);
-			return true;
+			return qtrue;
 		}
 		goto JUMPCATCH;
 	}
@@ -1931,13 +1931,13 @@ JUMPCATCH:
 	//  vv[2] = 0;
 	//  l = VectorLength(vv);
 	//gi.bprintf(PRINT_HIGH,"J fall\n");
-	mf = false;
+	mf = qfalse;
 	for (x = 1; x <= FALLCHK_LOOPMAX; ++x /* ,l += x */) {
 		vel -= grav;
 		yori += vel * FRAMETIME;
 
 		if (vel > 0) {
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 				//gi.bprintf(PRINT_HIGH,"pre ok\n");
@@ -1945,14 +1945,14 @@ JUMPCATCH:
 			/*			else if(mf == 2) {
 							if(ypos >= yori)
 							if ((l / x) < MOVE_SPD_RUN) {
-							mf = true;
+							mf = qtrue;
 							break;
 							}
 							}*/
 		}
 		else if (x > 1) {
 			//gi.bprintf(PRINT_HIGH,"oops\n");
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 			}
@@ -1962,7 +1962,7 @@ JUMPCATCH:
 					/*					if((l / (x - 1)) <= MOVE_SPD_RUN)
 										{*/
 					//gi.bprintf(PRINT_HIGH,"Go %f\n",l / x);
-					mf = true;
+					mf = qtrue;
 					break;
 					//                  }
 				}
@@ -1988,7 +1988,7 @@ JUMPCATCH:
 
 	if (x > 1)
 		l = l / (x - 1);
-	if (l < MOVE_SPD_RUN && mf == true) {
+	if (l < MOVE_SPD_RUN && mf == qtrue) {
 		ent->moveinfo.speed = l / MOVE_SPD_RUN;
 		VectorCopy (pos, ent->s.origin);
 
@@ -2001,22 +2001,22 @@ JUMPCATCH:
 		//      ent->client->anim_end = FRAME_jump6;
 		//      ent->client->anim_priority = ANIM_JUMP;
 		//gi.bprintf(PRINT_HIGH,"j fall do\n");
-		return true;
+		return qtrue;
 	}
 
 	if (mode == 1)
 		goto JMPCHK;			// zc->second_target = NULL;
-	//ponko else zc->route_trace = false;
-	//gi.bprintf(PRINT_HIGH,"j fall false\n");
-	//  return false;
+	//ponko else zc->route_trace = qfalse;
+	//gi.bprintf(PRINT_HIGH,"j fall qfalse\n");
+	//  return qfalse;
 JMPCHK:
 	//gi.bprintf(PRINT_HIGH,"NJ \n");
 	if (Bot_Jump (ent, pos, dist))
-		return true;
+		return qtrue;
 
 	//gi.bprintf(PRINT_HIGH,"NJ FAIL\n");
 	zc->second_target = NULL;
-	return false;
+	return qfalse;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -2026,7 +2026,7 @@ qboolean TargetJump (edict_t * ent, vec3_t tpos) {
 	zgcl_t *zc;
 	float x, l, grav, vel, ypos, yori;
 	vec3_t v, vv;
-	int mf = false;
+	int mf = qfalse;
 
 	zc = &ent->client->zc;
 	grav = ent->gravity * sv_gravity->value * FRAMETIME;
@@ -2037,7 +2037,7 @@ qboolean TargetJump (edict_t * ent, vec3_t tpos) {
 
 	// if on hazard object cause error
 	if (!HazardCheck (ent, tpos))
-		return false;
+		return qfalse;
 
 	VectorSubtract (tpos, ent->s.origin, v);
 
@@ -2046,20 +2046,20 @@ qboolean TargetJump (edict_t * ent, vec3_t tpos) {
 		yori += vel * FRAMETIME;
 
 		if (vel > 0) {
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 			}
 		}
 		else if (x > 1) {
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 			}
 
 			else if (mf == 2) {
 				if (ypos >= yori) {
-					mf = true;
+					mf = qtrue;
 					break;
 				}
 			}
@@ -2072,7 +2072,7 @@ qboolean TargetJump (edict_t * ent, vec3_t tpos) {
 
 	if (x > 1)
 		l = l / (x - 1);
-	if (l < MOVE_SPD_RUN && mf == true) {
+	if (l < MOVE_SPD_RUN && mf == qtrue) {
 		ent->moveinfo.speed = l / MOVE_SPD_RUN;
 
 		ent->velocity[2] += VEL_BOT_JUMP;
@@ -2080,16 +2080,16 @@ qboolean TargetJump (edict_t * ent, vec3_t tpos) {
 			ATTN_NORM, 0);
 		PlayerNoise (ent, ent->s.origin, PNOISE_SELF);	// pon
 		Set_BotAnim (ent, ANIM_JUMP, FRAME_jump1 - 1, FRAME_jump6);
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 qboolean TargetJump_Turbo (edict_t * ent, vec3_t tpos) {
 	zgcl_t *zc;
 	float x, l, grav, vel, ypos, yori;
 	vec3_t v, vv;
-	int mf = false;
+	int mf = qfalse;
 	float jvel;
 
 	zc = &ent->client->zc;
@@ -2106,7 +2106,7 @@ qboolean TargetJump_Turbo (edict_t * ent, vec3_t tpos) {
 
 	// if on hazard object cause error
 	if (!HazardCheck (ent, tpos))
-		return false;
+		return qfalse;
 
 	VectorSubtract (tpos, ent->s.origin, v);
 
@@ -2115,20 +2115,20 @@ qboolean TargetJump_Turbo (edict_t * ent, vec3_t tpos) {
 		yori += vel * FRAMETIME;
 
 		if (vel > 0) {
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 			}
 		}
 		else if (x > 1) {
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 			}
 
 			else if (mf == 2) {
 				if (ypos >= yori) {
-					mf = true;
+					mf = qtrue;
 					break;
 				}
 			}
@@ -2141,7 +2141,7 @@ qboolean TargetJump_Turbo (edict_t * ent, vec3_t tpos) {
 
 	if (x > 1)
 		l = l / (x - 1);
-	if (l < MOVE_SPD_RUN && mf == true) {
+	if (l < MOVE_SPD_RUN && mf == qtrue) {
 		ent->moveinfo.speed = l / MOVE_SPD_RUN;
 		//      VectorCopy(pos,ent->s.origin);
 
@@ -2153,16 +2153,16 @@ qboolean TargetJump_Turbo (edict_t * ent, vec3_t tpos) {
 		//      ent->s.frame = FRAME_jump1-1;
 		//      ent->client->anim_end = FRAME_jump6;
 		//      ent->client->anim_priority = ANIM_JUMP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 qboolean TargetJump_Chk (edict_t * ent, vec3_t tpos, float defvel) {
 	zgcl_t *zc;
 	float x, l, grav, vel, ypos, yori;
 	vec3_t v, vv;
-	int mf = false;
+	int mf = qfalse;
 
 	zc = &ent->client->zc;
 	grav = ent->gravity * sv_gravity->value * FRAMETIME;
@@ -2173,7 +2173,7 @@ qboolean TargetJump_Chk (edict_t * ent, vec3_t tpos, float defvel) {
 
 	// if on hazard object cause error
 	if (!HazardCheck (ent, tpos))
-		return false;
+		return qfalse;
 
 	VectorSubtract (tpos, ent->s.origin, v);
 
@@ -2182,20 +2182,20 @@ qboolean TargetJump_Chk (edict_t * ent, vec3_t tpos, float defvel) {
 		yori += vel * FRAMETIME;
 
 		if (vel > 0) {
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 			}
 		}
 		else if (x > 1) {
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 			}
 
 			else if (mf == 2) {
 				if (ypos >= yori) {
-					mf = true;
+					mf = qtrue;
 					break;
 				}
 			}
@@ -2208,10 +2208,10 @@ qboolean TargetJump_Chk (edict_t * ent, vec3_t tpos, float defvel) {
 
 	if (x > 1)
 		l = l / (x - 1);
-	if (l < MOVE_SPD_RUN && mf == true) {
-		return true;
+	if (l < MOVE_SPD_RUN && mf == qtrue) {
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -2468,7 +2468,7 @@ void Bots_Move_NORM (edict_t * ent) {
 
 	zc = &ent->client->zc;		// client add
 
-	ent->client->zc.objshot = false;	// object shot clear
+	ent->client->zc.objshot = qfalse;	// object shot clear
 
 	ent->client->buttons &= ~BUTTON_ATTACK;
 
@@ -2498,18 +2498,18 @@ void Bots_Move_NORM (edict_t * ent) {
 	// --------------------------------------------------------------------------------------
 	// Check Debug mode
 	if (chedit->value) {
-		j = false;
+		j = qfalse;
 		if (!zc->route_trace) {
 			//gi.bprintf(PRINT_HIGH,"route off\n");
-			j = true;
+			j = qtrue;
 		}
 		if (zc->routeindex >= CurrentIndex) {
 			//gi.bprintf(PRINT_HIGH,"index overflow\n");
-			j = true;
+			j = qtrue;
 		}
 		else if (Route[zc->routeindex].index == 0 && zc->routeindex > 0) {
 			//gi.bprintf(PRINT_HIGH,"index end\n");
-			j = true;
+			j = qtrue;
 		}
 
 		if (j) {
@@ -2565,7 +2565,7 @@ void Bots_Move_NORM (edict_t * ent) {
 					it = bot_team_flag1->item;
 			}
 			if (it) {
-				k = true;
+				k = qtrue;
 			}
 		}
 		if (ctf->value)
@@ -2582,7 +2582,7 @@ void Bots_Move_NORM (edict_t * ent) {
 				if (Route[i].state == GRS_ITEMS) {
 					if (Route[i].ent->item == it) {
 						//gi.bprintf(PRINT_HIGH,"Target Flag On\n");
-						zc->havetarget = true;
+						zc->havetarget = qtrue;
 						break;
 					}
 					else if (!ctf->value
@@ -2590,19 +2590,19 @@ void Bots_Move_NORM (edict_t * ent) {
 						// Quad
 						if (j = mpindex[MPI_QUAD])
 						if (Route[i].ent->item == &itemlist[j]) {
-							zc->havetarget = true;
+							zc->havetarget = qtrue;
 							break;
 						}
 						// Quad fire
 						if (j = mpindex[MPI_QUADF])
 						if (Route[i].ent->item == &itemlist[j]) {
-							zc->havetarget = true;
+							zc->havetarget = qtrue;
 							break;
 						}
 						// Quad fire
 						if (j = mpindex[MPI_PENTA])
 						if (Route[i].ent->item == &itemlist[j]) {
-							zc->havetarget = true;
+							zc->havetarget = qtrue;
 							break;
 						}
 					}
@@ -2629,7 +2629,7 @@ void Bots_Move_NORM (edict_t * ent) {
 					if (Route[i].state == GRS_ITEMS) {
 						if (Route[i].ent->item == it) {
 							if (Route[i].ent->solid == SOLID_TRIGGER) {
-								zc->havetarget = true;
+								zc->havetarget = qtrue;
 								break;
 							}
 						}
@@ -2641,7 +2641,7 @@ void Bots_Move_NORM (edict_t * ent) {
 	}
 	else if (zc->havetarget) {
 		if (zc->targetindex < zc->routeindex) {
-			zc->havetarget = false;
+			zc->havetarget = qfalse;
 			zc->targetindex = zc->routeindex;
 		}
 
@@ -2662,7 +2662,7 @@ void Bots_Move_NORM (edict_t * ent) {
 					it = bot_team_flag1->item;
 			}
 			if (Route[zc->targetindex].ent->item != it) {
-				zc->havetarget = false;
+				zc->havetarget = qfalse;
 				zc->targetindex = zc->routeindex;
 			}
 		}
@@ -2674,11 +2674,11 @@ void Bots_Move_NORM (edict_t * ent) {
 
 	if (ent->client->pers.inventory[ITEM_INDEX (it)]
 		&& ent->client->pers.inventory[i] > 0)
-		canrocj = true;
+		canrocj = qtrue;
 	else
-		canrocj = false;
+		canrocj = qfalse;
 	if (!Bot[zc->botindex].param[BOP_ROCJ])
-		canrocj = false;
+		canrocj = qfalse;
 
 	// --------------------------------------------------------------------------------------
 	// ducking check
@@ -2799,19 +2799,19 @@ DCHCANC:
 				temppos);
 			x = zc->second_target->moveinfo.start_origin[2] -
 				ent->s.origin[2];
-			k = false;
+			k = qfalse;
 			if (temppos[2] > 32) {
 				if (!canrocj) {
 					if (x < 0 || x > 32)
-						k = true;
+						k = qtrue;
 					else if (!Bot_trace2
 						(ent,
 						zc->second_target->moveinfo.start_origin))
-						k = true;
+						k = qtrue;
 				}
 				else {
 					if (temppos[2] > 300)
-						k = true;
+						k = qtrue;
 				}
 			}
 			else {
@@ -2821,7 +2821,7 @@ DCHCANC:
 					&& temppos[1] >= (ent->absmin[1] + 32))
 				if (temppos[2] <= (ent->absmax[2] + 32)
 					&& temppos[2] >= (ent->absmin[2] + 32))
-					k = true;
+					k = qtrue;
 			}
 			if (k) {
 				zc->second_target = NULL;
@@ -2897,7 +2897,7 @@ DCHCANC:
 						temppos);
 					if (VectorLength (temppos) < 64) {
 						if (zc->route_trace) {
-							zc->route_trace = false;
+							zc->route_trace = qfalse;
 							zc->routeindex++;
 							ent->client->buttons &= ~BUTTON_ATTACK;
 						}
@@ -2984,7 +2984,7 @@ DCHCANC:
 							item->use (ent, item);
 							ent->client->buttons &= ~BUTTON_ATTACK;
 							zc->routeindex++;
-							k = true;
+							k = qtrue;
 							//gi.bprintf(PRINT_HIGH,"Groff 1!\n");
 						}
 						else if (!ent->waterlevel)
@@ -2998,12 +2998,12 @@ DCHCANC:
 										{
 										if(Route[zc->routeindex + 1].state == GRS_GRAPSHOT)
 										{
-										if(TraceX(ent,Route[zc->routeindex + 1].Tcourner)) k = true;
+										if(TraceX(ent,Route[zc->routeindex + 1].Tcourner)) k = qtrue;
 										}
-										else k = true;
+										else k = qtrue;
 										}*/
 					ent->moveinfo.speed = 0;
-					k = true;
+					k = qtrue;
 					if (k) {
 						item = Fdi_GRAPPLE;	// FindItem("Grapple");
 						item->use (ent, item);
@@ -3053,7 +3053,7 @@ DCHCANC:
 #ifdef _DEBUG
 				gi.bprintf (PRINT_HIGH, "OFF 2\n");	// ppx
 #endif
-				zc->route_trace = false;
+				zc->route_trace = qfalse;
 				zc->rt_releasetime =
 					level.time + FRAMETIME * POD_RELEFRAME;
 			}
@@ -3061,14 +3061,14 @@ DCHCANC:
 		else if (!TraceX (ent, v)	/* && ent->client->ctf_grapple == NULL
 								  */
 								  ) {
-			k = false;
+			k = qfalse;
 			if (ent->groundentity) {
 				if (ent->groundentity->classname[0] == 'f') {
 					if (/* !Q_stricmp(ent->groundentity->classname, "func_plat") || */
 						!Q_stricmp (ent->groundentity->classname, "func_train")) {
 						zc->rt_locktime =
 							level.time + FRAMETIME * POD_LOCKFRAME;
-						k = true;
+						k = qtrue;
 					}
 				}
 			}
@@ -3085,7 +3085,7 @@ DCHCANC:
 #ifdef _DEBUG
 				gi.bprintf (PRINT_HIGH, "OFF 3\n");	// ppx
 #endif
-				zc->route_trace = false;
+				zc->route_trace = qfalse;
 				zc->rt_releasetime =
 					level.time + FRAMETIME * POD_RELEFRAME;
 			}
@@ -3101,7 +3101,7 @@ DCHCANC:
 #ifdef _DEBUG
 					gi.bprintf (PRINT_HIGH, "OFF 4\n");	// ppx
 #endif
-					zc->route_trace = false;
+					zc->route_trace = qfalse;
 					zc->rt_releasetime =
 						level.time + FRAMETIME * POD_RELEFRAME;
 				}
@@ -3112,7 +3112,7 @@ DCHCANC:
 #ifdef _DEBUG
 					gi.bprintf (PRINT_HIGH, "OFF 5\n");	// ppx
 #endif
-					zc->route_trace = false;
+					zc->route_trace = qfalse;
 					zc->rt_releasetime =
 						level.time + FRAMETIME * POD_RELEFRAME;
 				}
@@ -3147,8 +3147,8 @@ DCHCANC:
 	// --------------------------------------------------------------------------------------
 	// search for items
 	if (!chedit->value && zc->second_target == NULL) {
-		pickup_pri = false;		// pickup priority off
-		k = false;
+		pickup_pri = qfalse;		// pickup priority off
+		k = qfalse;
 
 		zc->secondinterval++;
 		// when tracing routes
@@ -3158,7 +3158,7 @@ DCHCANC:
 					break;
 				if (Route[i].state == GRS_ITEMS) {
 					if (Route[i].ent->solid == SOLID_TRIGGER) {
-						pickup_pri = true;
+						pickup_pri = qtrue;
 						break;
 					}
 				}
@@ -3349,7 +3349,7 @@ DCHCANC:
 					if (e) {
 						if (Q_stricmp (e->classname, "func_door") == 0) {
 							if (e->moveinfo.state == PSTATE_UP)
-								k = true;
+								k = qtrue;
 						}
 					}
 					if (!k) {
@@ -3381,7 +3381,7 @@ DCHCANC:
 		}
 	}
 	// --------------------------------------------------------------------------------------
-	// bot's true moving yaw,yaw pitch set
+	// bot's qtrue moving yaw,yaw pitch set
 	// j is used ground entity check section
 	// --------------------------------------------------------------------------------------
 	j = 0;
@@ -3398,13 +3398,13 @@ DCHCANC:
 				zc->second_target->moveinfo.start_origin)) {
 				VectorSubtract (zc->second_target->moveinfo.start_origin,
 					ent->s.origin, temppos);
-				k = false;
+				k = qfalse;
 				yaw = temppos[2];
 				temppos[2] = 0;
 				x = VectorLength (temppos);
 
 				if (yaw < -32 && x < 32)
-					k = true;
+					k = qtrue;
 
 				if (!k) {
 					if (!ent->groundentity && !ent->waterlevel) {
@@ -3440,13 +3440,13 @@ DCHCANC:
 				}
 			}
 			else if (ent->groundentity || ent->waterlevel) {
-				k = false;
+				k = qfalse;
 				yaw = temppos[2];
 				temppos[2] = 0;
 				x = VectorLength (temppos);
 
 				if (yaw < -32 && x < 32)
-					k = true;
+					k = qtrue;
 
 				if (!k) {
 					if (trace_priority < TRP_MOVEKEEP)
@@ -3523,7 +3523,7 @@ DCHCANC:
 							2) > 0 && (ent->svflags & SVF_MONSTER)) {
 							zc->routeindex =
 								zc->followmate->client->zc.routeindex - 2;
-							zc->route_trace = true;
+							zc->route_trace = qtrue;
 							if (zc->followmate->client->zc.havetarget) {
 								zc->targetindex =
 									zc->followmate->client->zc.targetindex;
@@ -3614,15 +3614,15 @@ DCHCANC:
 							if (!(k & CTF_FLAG2_FLAG)) {
 								zc->routeindex = Route[zc->routeindex].linkpod[i];	// zc->route_trace
 								// =
-								// false;
-								zc->havetarget = false;
+								// qfalse;
+								zc->havetarget = qfalse;
 								//gi.bprintf(PRINT_HIGH,"fixed for flag 1\n");
 							}
 						}
 					}
 					else if (!zc->havetarget
 						&& zc->ctfstate == CTFS_CARRIER) {
-						zc->havetarget = true;
+						zc->havetarget = qtrue;
 						zc->targetindex =
 							Route[zc->routeindex].linkpod[MAXLINKPOD -
 							1] & 0x7FFF;
@@ -3639,15 +3639,15 @@ DCHCANC:
 							if (k & CTF_FLAG2_FLAG) {
 								zc->routeindex = Route[zc->routeindex].linkpod[i];	// zc->route_trace
 								// =
-								// false;
-								zc->havetarget = false;
+								// qfalse;
+								zc->havetarget = qfalse;
 								//gi.bprintf(PRINT_HIGH,"fixed for flag 2\n");
 							}
 						}
 					}
 					else if (!zc->havetarget
 						&& zc->ctfstate == CTFS_CARRIER) {
-						zc->havetarget = true;
+						zc->havetarget = qtrue;
 						zc->targetindex =
 							Route[zc->routeindex].linkpod[MAXLINKPOD -
 							1] & 0x7FFF;
@@ -3706,7 +3706,7 @@ DCHCANC:
 					&& TraceX (ent, v)) {
 					if (fabs (v[2] - ent->s.origin[2]) <= JumpMax
 						|| zc->waterstate == WAS_IN) {
-						zc->route_trace = true;
+						zc->route_trace = qtrue;
 						zc->rt_locktime =
 							level.time + FRAMETIME * POD_LOCKFRAME;
 						break;
@@ -3722,16 +3722,16 @@ DCHCANC:
 					it_ent = Route[zc->routeindex].ent;
 					if (zc->routeindex + 1 < CurrentIndex) {
 						Get_RouteOrigin (zc->routeindex + 1, v);
-						zc->route_trace = false;
+						zc->route_trace = qfalse;
 						j = TraceX (ent, v);
-						zc->route_trace = true;
+						zc->route_trace = qtrue;
 						if ((!j || (v[2] - ent->s.origin[2]) > JumpMax)
 							&& it_ent->union_ent) {
 
-							k = false;
+							k = qfalse;
 							if ((it_ent->union_ent->s.origin[2] -
 								ent->s.origin[2]) > JumpMax)
-								k = true;
+								k = qtrue;
 
 							VectorSubtract (it_ent->union_ent->s.origin,
 								ent->s.origin, temppos);
@@ -3777,7 +3777,7 @@ DCHCANC:
 								if(Route[zc->routeindex].ent->solid == SOLID
 								}*/
 
-				k = false;
+				k = qfalse;
 				if (Route[zc->routeindex].state == GRS_PUSHBUTTON) {
 					it_ent = Route[zc->routeindex].ent;
 					if (it_ent->health
@@ -3808,7 +3808,7 @@ DCHCANC:
 							zc->rt_locktime =
 								level.time + FRAMETIME * POD_LOCKFRAME;
 							it_ent = rs_trace.ent;
-							k = true;
+							k = qtrue;
 						}
 					}
 				}
@@ -3871,7 +3871,7 @@ DCHCANC:
 					if ((trmin[2] - ent->s.origin[2]) > /* 2 */ JumpMax
 						&& (v[2] - ent->s.origin[2]) > JumpMax
 						&& ent->waterlevel < 3) {
-						zc->route_trace = false;
+						zc->route_trace = qfalse;
 #ifdef _DEBUG
 						gi.bprintf (PRINT_HIGH, "OFF 10\n");
 #endif
@@ -4001,23 +4001,23 @@ DCHCANC:
 						if (trace_priority < TRP_ANGLEKEEP)
 							ent->s.angles[PITCH] = Get_pitch (temppos);
 
-						k = false;
-						//                      if(zc->waterstate != WAS_IN && temppos[2] < 32) k = true;
-						//                      else if(zc->waterstate == WAS_IN) k = true;
+						k = qfalse;
+						//                      if(zc->waterstate != WAS_IN && temppos[2] < 32) k = qtrue;
+						//                      else if(zc->waterstate == WAS_IN) k = qtrue;
 
 						if (ent->groundentity	/* || ent->waterlevel ) &&
 												   /*temppos[2] < 32 ||
 												   zc->waterstate !=
 												   WAS_IN) */
 												   || ent->waterlevel /* zc->waterstate */) {
-							k = false;
+							k = qfalse;
 							yaw = temppos[2];
 							temppos[2] = 0;
 							x = VectorLength (temppos);
-							//                          if(yaw > JumpMax) k = true;
+							//                          if(yaw > JumpMax) k = qtrue;
 
 							if (!k) {
-								k = false;
+								k = qfalse;
 								if (trace_priority < TRP_MOVEKEEP)
 									zc->moveyaw = Get_yaw (temppos);	// set
 								// the
@@ -4026,7 +4026,7 @@ DCHCANC:
 								if ((ent->groundentity || ent->waterlevel)
 									&& trace_priority < TRP_ANGLEKEEP) {
 									ent->s.angles[YAW] = zc->moveyaw;
-									k = true;
+									k = qtrue;
 								}
 
 								if (x < dist && fabs (yaw) < 20	/* JumpMax
@@ -4059,13 +4059,13 @@ DCHCANC:
 										/* && rs_trace.fraction ==
 										   1.0 */
 										   ) {
-										j = false;
+										j = qfalse;
 										if (v[2] < ent->s.origin[2]
 											&& bottom < 0)
-											j = true;
+											j = qtrue;
 										else if (v[2] >= ent->s.origin[2]
 											&& bottom >= 0)
-											j = true;
+											j = qtrue;
 										if (j) {
 											VectorCopy (temppos,
 												ent->s.origin);
@@ -4110,13 +4110,13 @@ DCHCANC:
 										/* && !(zc->zcstate &
 										   STS_LADDERUP) */
 										   ) {
-										j = false;
+										j = qfalse;
 										if (v[2] < ent->s.origin[2]
 											&& bottom < 0)
-											j = true;
+											j = qtrue;
 										else if (v[2] >= ent->s.origin[2]
 											&& bottom >= 0)
-											j = true;
+											j = qtrue;
 										if (j) {
 											VectorCopy (temppos,
 												ent->s.origin);
@@ -4153,7 +4153,7 @@ DCHCANC:
 									dist = x;
 							}
 
-							k = false;
+							k = qfalse;
 							if ((zc->routeindex - 1) >= 0 &&
 								(Route[zc->routeindex].state == GRS_ONPLAT
 								|| Route[zc->routeindex].state ==
@@ -4167,7 +4167,7 @@ DCHCANC:
 										   == NULL */
 										   && Route[zc->routeindex].ent->
 										   nextthink > level.time)
-										   k = true;
+										   k = qtrue;
 								}
 
 							}
@@ -4183,7 +4183,7 @@ DCHCANC:
 											zc->waitin_obj =
 												Route[zc->routeindex].ent;
 											zc->zcstate |= STS_W_COMEPLAT;
-											k = false;
+											k = qfalse;
 											for (i = 1; i <= 3; i++) {
 												if (zc->routeindex - i >=
 													0) {
@@ -4195,28 +4195,28 @@ DCHCANC:
 														absmax[0] <
 														(v[0] +
 														ent->mins[0]))
-														k = true;
+														k = qtrue;
 													else if (zc->
 														waitin_obj->
 														absmax[1] <
 														(v[1] +
 														ent->
 														mins[1]))
-														k = true;
+														k = qtrue;
 													else if (zc->
 														waitin_obj->
 														absmin[0] >
 														(v[0] +
 														ent->
 														maxs[0]))
-														k = true;
+														k = qtrue;
 													else if (zc->
 														waitin_obj->
 														absmin[1] >
 														(v[1] +
 														ent->
 														maxs[1]))
-														k = true;
+														k = qtrue;
 													if (k)
 														break;
 												}
@@ -4247,7 +4247,7 @@ DCHCANC:
 					gi.bprintf (PRINT_HIGH, "OFF 6\n");	// ppx
 #endif
 					zc->routeindex = 0;
-					zc->route_trace = false;
+					zc->route_trace = qfalse;
 				}
 			}
 			else {
@@ -4255,7 +4255,7 @@ DCHCANC:
 				gi.bprintf (PRINT_HIGH, "OFF 7\n");	// ppx
 #endif
 				zc->routeindex = 0;
-				zc->route_trace = false;
+				zc->route_trace = qfalse;
 			}
 		}
 	}
@@ -4263,7 +4263,7 @@ DCHCANC:
 #ifdef _DEBUG
 		gi.bprintf (PRINT_HIGH, "OFF 8\n");	// ppx
 #endif
-		zc->route_trace = false;
+		zc->route_trace = qfalse;
 	}
 
 	// --------------------------------------------------------------------------------------
@@ -4272,10 +4272,10 @@ DCHCANC:
 
 	if (!(zc->zcstate & STS_W_DOOROPEN)
 		&& (!ent->groundentity || ent->groundentity != zc->waitin_obj)) {
-		k = false;
+		k = qfalse;
 		if (zc->waitin_obj)
 		if (Q_stricmp (zc->waitin_obj->classname, "func_door"))
-			k = true;
+			k = qtrue;
 
 		if (!k) {
 			zc->zcstate &= ~STS_WAITS;
@@ -4332,13 +4332,13 @@ DCHCANC:
 				//gi.bprintf(PRINT_HIGH,"challenge!!\n");
 				// route trace on
 				if (zc->route_trace && zc->routeindex > 0) {
-					j = false;
+					j = qfalse;
 					k = zc->routeindex - 1;
 					for (i = 0; i < 3; i++) {
 						if ((k + i) < CurrentIndex) {
 							if (Route[k + i].state == GRS_ONTRAIN) {
 								if (Route[k + i].ent == it_ent)
-									j = true;
+									j = qtrue;
 								else if (it_ent->trainteam != NULL) {
 									e = it_ent->trainteam;
 									while (1) {
@@ -4346,7 +4346,7 @@ DCHCANC:
 											break;
 										}
 										if (e == Route[k + i].ent) {
-											j = true;
+											j = qtrue;
 											it_ent = e;
 											Route[k + i].ent = e;
 											break;
@@ -4359,7 +4359,7 @@ DCHCANC:
 																				 */
 																				 it_ent->target_ent->
 																				 s.origin)) {
-										j = true;
+										j = qtrue;
 										// it_ent = e;
 										break;
 									}
@@ -4404,14 +4404,14 @@ DCHCANC:
 				Get_RouteOrigin(zc->routeindex + 1,v);
 				if(!TraceX(ent,v))
 				{
-				k = false;
+				k = qfalse;
 				e = it_ent->trainteam;
 				while(1)
 				{
 				if(e == it_ent) break;
 				if(e == Route[zc->routeindex].ent)
 				{
-				k = true;
+				k = qtrue;
 				break;
 				}
 				e = e->trainteam;
@@ -4484,20 +4484,20 @@ DCHCANC:
 		|| (zc->zcstate & STS_W_ONDOORUP)
 		|| (zc->zcstate & STS_W_ONDOORDWN))
 		&& !(zc->zcstate & STS_W_DONT)) {
-		k = false;
+		k = qfalse;
 		// if door
 		if (zc->zcstate & (STS_W_ONDOORUP | STS_W_ONDOORDWN)) {
 			// up
 			if (zc->zcstate & STS_W_ONDOORUP) {
 				if (zc->waitin_obj->moveinfo.state == PSTATE_UP
 					|| zc->waitin_obj->moveinfo.state == PSTATE_BOTTOM)
-					k = true;
+					k = qtrue;
 			}
 			// down
 			else {
 				if (zc->waitin_obj->moveinfo.state == PSTATE_TOP
 					|| zc->waitin_obj->moveinfo.state == PSTATE_DOWN)
-					k = true;
+					k = qtrue;
 			}
 		}
 		else if (zc->zcstate & STS_W_COMEPLAT) {
@@ -4505,31 +4505,31 @@ DCHCANC:
 				if (!TraceX (ent,	/* zc->waitin_obj */
 					Route[zc->routeindex].ent->union_ent->s.
 					origin))
-					k = true;
+					k = qtrue;
 				if (( /* zc->waitin_obj */ Route[zc->routeindex].ent->
 					union_ent->s.origin[2]
 					+ 8 - ent->s.origin[2]) > JumpMax)
-					k = true;
+					k = qtrue;
 			}
 			else {
 				if ((zc->waitin_obj->union_ent->s.origin[2]
 					- ent->s.origin[2]) > JumpMax)
-					k = true;
+					k = qtrue;
 			}
-			//          if(zc->waitin_obj->velocity[2] == 0) k = false;
+			//          if(zc->waitin_obj->velocity[2] == 0) k = qfalse;
 			if (zc->routeindex - 1 > 0 && zc->waterstate < WAS_IN) {
 				Get_RouteOrigin (zc->routeindex - 1, trmin);
 				if ((trmin[2] - ent->s.origin[2]) > JumpMax
 					&& (v[2] - ent->s.origin[2]) > JumpMax)
 					//              Get_RouteOrigin(zc->routeindex - 1,v);
 					//              if((v[2] - ent->s.origin[2]) > JumpMax)
-					k = false;
+					k = qfalse;
 			}
 		}
 		else {
 			if ( /* !k && */ zc->waitin_obj->moveinfo.state == PSTATE_UP
 				|| zc->waitin_obj->moveinfo.state == PSTATE_BOTTOM)
-				k = true;
+				k = qtrue;
 
 			if (zc->waitin_obj->moveinfo.state == PSTATE_BOTTOM)
 				plat_go_up (zc->waitin_obj);
@@ -4541,7 +4541,7 @@ DCHCANC:
 			}
 		}
 		// have target
-		if ( /* j || */ k != true) {
+		if ( /* j || */ k != qtrue) {
 			if (k == 2)
 				zc->zcstate |= STS_W_DONT;
 			else {
@@ -4551,7 +4551,7 @@ DCHCANC:
 		}
 		else {
 			if (zc->zcstate & STS_W_COMEPLAT) {
-				k = false;
+				k = qfalse;
 				if (zc->routeindex - 1 > 0) {
 					if (1		/* Route[zc->routeindex - 1].state <=
 								   GRS_ITEMS */
@@ -4559,7 +4559,7 @@ DCHCANC:
 						// Get_RouteOrigin(zc->routeindex - 1,trmax);
 						VectorCopy (zc->movtarget_pt, trmax);
 						trmax[2] = 0;
-						k = true;
+						k = qtrue;
 					}
 				}
 				if (!k)
@@ -4589,17 +4589,17 @@ DCHCANC:
 	}
 	// on train
 	else if (zc->zcstate & STS_W_ONTRAIN) {
-		i = false;
+		i = qfalse;
 
 		if (zc->route_trace) {
 			Get_RouteOrigin (zc->routeindex, v);
 
 			if ((zc->routeindex - 1) >= 0) {
 				if (Route[zc->routeindex - 1].state != GRS_ONTRAIN)
-					i = true;
+					i = qtrue;
 			}
 			else
-				i = true;
+				i = qtrue;
 
 			if (TraceX (ent, v)) {
 				x = v[2] -
@@ -4607,7 +4607,7 @@ DCHCANC:
 					ent->s.origin[2];
 				if (x <= JumpMax) {
 					//gi.bprintf(PRINT_HIGH,"released!!! %f %i\n",x,Route[zc->routeindex].state);
-					i = true;
+					i = qtrue;
 				}
 				else
 					zc->rt_locktime =
@@ -4619,7 +4619,7 @@ DCHCANC:
 		else if (j
 			|| (zc->waitin_obj->s.origin[2] -
 			zc->waitin_obj->s.old_origin[2]) <= 0)
-			i = true;
+			i = qtrue;
 
 		if (i) {
 			zc->zcstate |= STS_W_DONT;
@@ -4627,7 +4627,7 @@ DCHCANC:
 			//          zc->waitin_obj = NULL;
 		}
 		else {
-			k = false;
+			k = qfalse;
 			if (zc->route_trace) {
 				rs_trace = gi.trace (ent->s.origin, NULL, NULL, v, ent, MASK_BOTSOLIDX	/* MASK_PLAYERSOLID
 																						 */);
@@ -4636,7 +4636,7 @@ DCHCANC:
 																							 */);
 					if (rs_trace.ent == zc->waitin_obj) {
 						VectorSubtract (v, ent->s.origin, temppos);
-						k = true;
+						k = qtrue;
 					}
 				}
 			}
@@ -4737,16 +4737,16 @@ DCHCANC:
 	// --------------------------------------------------------------------------------------
 	// ladder check
 	/*	front = NULL, left = NULL, right = NULL;
-		k = false;
+		k = qfalse;
 		if(zc->route_trace)
 		{
 		Get_RouteOrigin(zc->routeindex,v);
-		if((v[2] - ent->s.origin[2]) >= 32) k = true;
+		if((v[2] - ent->s.origin[2]) >= 32) k = qtrue;
 
 		}
 		if(k && !zc->first_target && !zc->second_target && !(ent->client->ps.pmove.pm_flags & PMF_DUCKED))
 		{
-		tempflag = false;
+		tempflag = qfalse;
 
 		VectorCopy(ent->mins,trmin);
 		VectorCopy(ent->maxs,trmax);
@@ -4767,7 +4767,7 @@ DCHCANC:
 		rs_trace = gi.trace (ent->s.origin, trmin,ent->maxs, touchmax,ent, MASK_BOTSOLID );
 		front = rs_trace.ent;
 
-		if(rs_trace.contents & CONTENTS_LADDER) tempflag = true;
+		if(rs_trace.contents & CONTENTS_LADDER) tempflag = qtrue;
 
 		//right
 		if(!tempflag)
@@ -4783,7 +4783,7 @@ DCHCANC:
 		rs_trace = gi.trace (ent->s.origin, trmin,ent->maxs, touchmax,ent,  MASK_BOTSOLID );
 		right = rs_trace.ent;
 
-		if(rs_trace.contents & CONTENTS_LADDER) tempflag = true;
+		if(rs_trace.contents & CONTENTS_LADDER) tempflag = qtrue;
 		}
 		//left
 		if(!tempflag)
@@ -4799,7 +4799,7 @@ DCHCANC:
 		rs_trace = gi.trace (ent->s.origin, trmin,ent->maxs, touchmax,ent, MASK_BOTSOLID );
 		left = rs_trace.ent;
 
-		if(rs_trace.contents & CONTENTS_LADDER)	tempflag = true;
+		if(rs_trace.contents & CONTENTS_LADDER)	tempflag = qtrue;
 		}
 
 		//ladder
@@ -4864,7 +4864,7 @@ DCHCANC:
 		&& zc->second_target && trace_priority < TRP_ANGLEKEEP) {
 		if ((zc->second_target->s.origin[2] - ent->s.origin[2]) > 100
 			&& ent->health > 70 && ent->waterlevel <= 1) {
-			j = false;
+			j = qfalse;
 			v[0] = ent->s.origin[0];
 			v[1] = ent->s.origin[1];
 			v[2] = zc->second_target->s.origin[2];
@@ -4872,7 +4872,7 @@ DCHCANC:
 				gi.trace (v, NULL, NULL, zc->second_target->s.origin,
 				zc->second_target, MASK_SOLID);
 			if (rs_trace.fraction == 1.0)
-				j = true;
+				j = qtrue;
 
 			VectorSubtract (zc->second_target->s.origin, ent->s.origin,
 				trmin);
@@ -4922,9 +4922,9 @@ GOMOVE:
 			&& !(zc->zcstate & STS_SJMASKEXW))
 			ent->velocity[2] = VEL_BOT_JUMP;
 
-		k = false;
+		k = qfalse;
 		if (ent->client->ps.pmove.pm_flags & PMF_DUCKED)
-			k = true;
+			k = qtrue;
 		for (x = 0; x < 90; x += 10) {
 			dist = MOVE_SPD_RUN * ent->moveinfo.speed;
 			// right trace
@@ -4932,7 +4932,7 @@ GOMOVE:
 			if (yaw > 180)
 				yaw -= 360;
 			i = Bot_moveT (ent, yaw, temppos, dist, &bottom);
-			if (i)				// true || (i == 2 && ent->velocity > 0))
+			if (i)				// qtrue || (i == 2 && ent->velocity > 0))
 			{
 				if (bottom <= 24 && bottom > 0 && ent->velocity[2] <= 10) {
 					// if(ent->velocity[2] > 0 || bottom >= 0)
@@ -5011,8 +5011,8 @@ GOMOVE:
 			if (yaw < -180)
 				yaw += 360;
 			i = Bot_moveT (ent, yaw, temppos, dist, &bottom);
-			if (i)	/* == true || (i == 2 && ent->velocity > 0)) */ {
-				if (bottom <= 24 && bottom > 0 && ent->velocity[2] <= 10 /* && i == true */) {
+			if (i)	/* == qtrue || (i == 2 && ent->velocity > 0)) */ {
+				if (bottom <= 24 && bottom > 0 && ent->velocity[2] <= 10 /* && i == qtrue */) {
 					// if(ent->velocity[2] > 0 || bottom >= 0)
 					VectorCopy (temppos, ent->s.origin);
 					break;
@@ -5093,7 +5093,7 @@ GOMOVE:
 	}
 	// on ground or in water
 	// ======================================================
-	waterjumped = false;
+	waterjumped = qfalse;
 	if (ent->groundentity || ent->waterlevel) {
 		if (ent->groundentity
 			&& /* zc->waterstate == WAS_NONE */ ent->waterlevel <= 0)
@@ -5128,7 +5128,7 @@ GOMOVE:
 			if (VectorLength (temppos) < 64) {
 				if (zc->route_trace) {
 					if (!chedit->value) {
-						zc->route_trace = false;
+						zc->route_trace = qfalse;
 						zc->routeindex++;
 					}
 					zc->second_target = NULL;
@@ -5166,7 +5166,7 @@ GOMOVE:
 		}
 
 		//if(ent->client->ps.pmove.pm_flags & PMF_DUCKED) gi.bprintf(PRINT_HIGH,"cycle!\n");
-		ladderdrop = true;
+		ladderdrop = qtrue;
 		for (x = 0; x <= 180 && dist != 0; x += 10) {
 			// right trace
 			yaw = zc->moveyaw + x;
@@ -5191,7 +5191,7 @@ GOMOVE:
 						//                      FRAMETIME * (ent->velocity[2] - ent->gravity * sv_gravity->value * FRAMETIME)
 						if ((v[2] - (ent->s.origin[2] + bottom)) > f2 ||
 							(bottom > 20 && v[2] > ent->s.origin[2])) {
-							ladderdrop = false;
+							ladderdrop = qfalse;
 							if (Bot_Fall (ent, temppos, dist)
 								&& !zc->waterstate) {
 								ent->client->ps.pmove.pm_flags &=
@@ -5257,7 +5257,7 @@ GOMOVE:
 								   (ent->waterlevel == 1 &&
 								   ent->groundentity == NULL)))) */
 								   bottom > 20
-								   && bottom <= f2 && j == true && k
+								   && bottom <= f2 && j == qtrue && k
 								   && !(ent->client->ps.pmove.pm_flags & PMF_DUCKED)) {
 					ent->moveinfo.speed = 0.15;
 					if (k == 1 /* !ent->waterlevel */) {
@@ -5269,7 +5269,7 @@ GOMOVE:
 					}
 					else {
 						ent->moveinfo.speed = 0.1;
-						// waterjumped = true;
+						// waterjumped = qtrue;
 						if (ent->velocity[2] < VEL_BOT_WJUMP /*=1*/
 							|| VectorCompare (ent->s.origin,
 							ent->s.old_origin)) {
@@ -5308,7 +5308,7 @@ GOMOVE:
 					VectorCopy (temppos, ent->s.origin);
 					if (f1 > BOTTOM_LIMIT)
 						ent->moveinfo.speed = 0.25;
-					if (j != true) {
+					if (j != qtrue) {
 						//gi.bprintf(PRINT_HIGH,"ducked1!!\n");
 						ent->client->ps.pmove.pm_flags |= PMF_DUCKED;
 					}
@@ -5380,7 +5380,7 @@ GOMOVE:
 								   (ent->waterlevel == 1 &&
 								   ent->groundentity == NULL))) ) */
 								   bottom > 20
-								   && bottom <= f2 && j == true && k
+								   && bottom <= f2 && j == qtrue && k
 								   && !(ent->client->ps.pmove.pm_flags & PMF_DUCKED)) {
 					ent->moveinfo.speed = 0.15;
 					if (k == 1 /* !ent->waterlevel */) {
@@ -5392,7 +5392,7 @@ GOMOVE:
 					}
 					else {
 						ent->moveinfo.speed = 0.1;
-						// waterjumped = true;
+						// waterjumped = qtrue;
 						if (ent->velocity[2] < VEL_BOT_WJUMP /*= 1*/
 							|| VectorCompare (ent->s.origin,
 							ent->s.old_origin)) {
@@ -5431,7 +5431,7 @@ GOMOVE:
 					VectorCopy (temppos, ent->s.origin);
 					if (f1 > BOTTOM_LIMIT)
 						ent->moveinfo.speed = 0.25;
-					if (j != true) {
+					if (j != qtrue) {
 						//gi.bprintf(PRINT_HIGH,"ducked2!!\n");
 						ent->client->ps.pmove.pm_flags |= PMF_DUCKED;
 					}
@@ -5497,15 +5497,15 @@ GOMOVE:
 						}*/
 			else if (0 /* zc->route_trace */) {
 				//gi.bprintf(PRINT_HIGH,"OFF 9\n"); //ppx
-				k = false;
+				k = qfalse;
 				if (x > 90 && ent->groundentity) {
 					if (!Q_stricmp
 						(ent->groundentity->classname, "func_train"))
-						k = true;
+						k = qtrue;
 				}
 				else if (x > 90
 					&& Route[zc->routeindex].state == GRS_ONTRAIN)
-					k = true;
+					k = qtrue;
 				if (k && trace_priority < TRP_ANGLEKEEP) {
 					VectorCopy (Origin, ent->s.origin);
 					VectorCopy (Velocity, ent->velocity);
@@ -5515,13 +5515,13 @@ GOMOVE:
 				/*				if(!k)
 								{
 								if(++zc->routeindex >= CurrentIndex) zc->routeindex = 0;
-								zc->route_trace = false;
+								zc->route_trace = qfalse;
 								}*/
 			}
 		}
 
 		if ( /* zc->waterstate */ ent->waterlevel && !waterjumped) {
-			k = false;
+			k = qfalse;
 			VectorCopy (ent->s.origin, temppos);
 			//          temppos[2] += 26;
 			//          i = gi.pointcontents (temppos);
@@ -5535,7 +5535,7 @@ GOMOVE:
 				if (x < 0) {
 					if (Bot_Watermove (ent, temppos, dist, x)) {
 						VectorCopy (temppos, ent->s.origin);
-						k = true;
+						k = qtrue;
 					}
 				}
 				else if (x > 0 && zc->waterstate == WAS_IN && !(ent->client->ps.pmove.pm_flags & PMF_DUCKED)) {
@@ -5543,7 +5543,7 @@ GOMOVE:
 						ent->velocity[2] = 0;
 					if (Bot_Watermove (ent, temppos, dist, x)) {
 						VectorCopy (temppos, ent->s.origin);
-						k = true;
+						k = qtrue;
 					}
 				}
 			}
@@ -5560,7 +5560,7 @@ GOMOVE:
 					if (Bot_Watermove (ent, temppos, dist, x)) {
 						//gi.bprintf(PRINT_HIGH,"Down! %f\n",x);
 						VectorCopy (temppos, ent->s.origin);
-						k = true;
+						k = qtrue;
 					}
 				}
 				else if (x > 0 && zc->waterstate == WAS_IN && !(ent->client->ps.pmove.pm_flags & PMF_DUCKED)) {
@@ -5569,7 +5569,7 @@ GOMOVE:
 						ent->velocity[2] = 0;
 					if (Bot_Watermove (ent, temppos, dist, x)) {
 						VectorCopy (temppos, ent->s.origin);
-						k = true;
+						k = qtrue;
 					}
 				}
 				else if (x == 0) {
@@ -5582,13 +5582,13 @@ GOMOVE:
 				&& zc->waterstate == WAS_IN) {
 				if (Bot_Watermove (ent, temppos, dist, 13 /* 8 */)) {
 					VectorCopy (temppos, ent->s.origin);
-					k = true;
+					k = qtrue;
 				}
 				else
 					k = 2;
 			}
 
-			if (k == true)
+			if (k == qtrue)
 				Get_WaterState (ent);
 			if (zc->route_trace && v[2] == ent->s.origin[2])
 				k = 3;
@@ -5729,21 +5729,21 @@ GOMOVE:
 	if (it_ent != NULL && k == 1) {
 		if (it_ent->use && it_ent->moveinfo.state == PSTATE_BOTTOM
 			&& !it_ent->health) {
-			k = false;
+			k = qfalse;
 			if (zc->route_trace && zc->routeindex - 1 > 0) {
-				k = true;
+				k = qtrue;
 				i = zc->routeindex;
 				if (Route[i].state == GRS_PUSHBUTTON)
-					k = false;
+					k = qfalse;
 				else if (Route[--i].state == GRS_PUSHBUTTON)
-					k = false;
+					k = qfalse;
 
 				if (!k && Route[i].ent == it_ent)
 					zc->routeindex = i + 1;
 				else
-					k = true;
+					k = qtrue;
 			}
-			//          if(!k) buttonuse = true;//it_ent->use(it_ent,ent,it_ent/*ent*/);
+			//          if(!k) buttonuse = qtrue;//it_ent->use(it_ent,ent,it_ent/*ent*/);
 			if (!k && it_ent->target) {
 				string = it_ent->target;
 				e = &g_edicts[(int)maxclients->value + 1];
@@ -5784,8 +5784,8 @@ GOMOVE:
 								   // ((e->moveinfo.start_origin[2] -
 								   // e->moveinfo.end_origin[2])) > 54 )
 							{
-								k = false;
-								// return true;
+								k = qfalse;
+								// return qtrue;
 								if (!zc->route_trace	/* || zc->routeindex <= 0 */
 									) {
 									v[0] =
@@ -5858,7 +5858,7 @@ GOMOVE:
 										f1 = e->moveinfo.start_origin[2] -
 											e->moveinfo.end_origin[2];
 										if (f1 > 0) {
-											k = true;
+											k = qtrue;
 											if (e->moveinfo.state ==
 												PSTATE_BOTTOM
 												|| e->moveinfo.state ==
@@ -5882,7 +5882,7 @@ GOMOVE:
 											}
 										}
 										else {
-											k = true;
+											k = qtrue;
 											if (e->moveinfo.state ==
 												PSTATE_TOP
 												|| e->moveinfo.state ==
@@ -5918,7 +5918,7 @@ GOMOVE:
 													(trent->s.origin[2] -
 													ent->s.origin[2]) <
 													JumpMax)
-													k = true;
+													k = qtrue;
 											}
 										}
 										else {
@@ -5930,11 +5930,11 @@ GOMOVE:
 													(trent->s.origin[2] -
 													ent->s.origin[2]) <
 													JumpMax)
-													k = true;
+													k = qtrue;
 											}
 										}
 									}
-									//                                  if(Bot_trace (ent,zc->second_target)) k = true;
+									//                                  if(Bot_trace (ent,zc->second_target)) k = qtrue;
 								}
 								if (!k) {
 									// gi.bprintf(PRINT_HIGH,"waitset
@@ -5946,7 +5946,7 @@ GOMOVE:
 								else {
 									if ((e->union_ent->s.origin[2] + 8
 										- ent->s.origin[2]) > JumpMax) {
-										zc->route_trace = false;
+										zc->route_trace = qfalse;
 										zc->zcstate &= ~STS_WAITS;
 									}
 								}
@@ -6012,15 +6012,15 @@ VCHCANSEL:
 	// --------------------------------------------------------------------------------------
 	// ladder check
 	front = NULL, left = NULL, right = NULL;
-	k = false;
+	k = qfalse;
 	if (zc->route_trace && (zc->routeindex + 1) < CurrentIndex) {
 		Get_RouteOrigin (zc->routeindex + 1, v);
 		if ((v[2] - ent->s.origin[2]) >= 32 /* || ent->waterlevel */)
-			k = true;
+			k = qtrue;
 	}
 	if (k && trace_priority && !zc->second_target
 		&& !(ent->client->ps.pmove.pm_flags & PMF_DUCKED)) {
-		tempflag = false;
+		tempflag = qfalse;
 
 		VectorCopy (ent->mins, trmin);
 		VectorCopy (ent->maxs, trmax);
@@ -6045,7 +6045,7 @@ VCHCANSEL:
 		front = rs_trace.ent;
 
 		if (rs_trace.contents & CONTENTS_LADDER)
-			tempflag = true;
+			tempflag = qtrue;
 
 		// upper
 		if (!tempflag && !zc->waterstate) {
@@ -6082,7 +6082,7 @@ VCHCANSEL:
 			right = rs_trace.ent;
 
 			if (rs_trace.contents & CONTENTS_LADDER)
-				tempflag = true;
+				tempflag = qtrue;
 		}
 		// left
 		if (!tempflag) {
@@ -6101,7 +6101,7 @@ VCHCANSEL:
 			left = rs_trace.ent;
 
 			if (rs_trace.contents & CONTENTS_LADDER)
-				tempflag = true;
+				tempflag = qtrue;
 		}
 		// ladder
 		if (tempflag) {
@@ -6127,7 +6127,7 @@ VCHCANSEL:
 
 			if (e) {
 				if (Q_stricmp (e->classname, "func_door") == 0) {
-					k = true;
+					k = qtrue;
 				}
 			}
 
@@ -6292,7 +6292,7 @@ VCHCANSEL_L:
 
 	ent->client->ps.pmove.pm_flags |= PMF_DUCKED;
 	*/
-	ent->client->zc.trapped = false;	// trapcatch clear
+	ent->client->zc.trapped = qfalse;	// trapcatch clear
 
 	gi.linkentity (ent);
 	G_TouchTriggers (ent);

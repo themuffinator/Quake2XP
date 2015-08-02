@@ -60,7 +60,7 @@ void CL_DownloadFileName (char *dest, int destlen, char *fn) {
 ===============
 CL_CheckOrDownloadFile
 
-Returns true if the file exists, otherwise it attempts
+Returns qtrue if the file exists, otherwise it attempts
 to start a download from the server.
 ===============
 */
@@ -70,12 +70,12 @@ qboolean CL_CheckOrDownloadFile (char *filename) {
 
 	if (strstr (filename, "..")) {
 		Com_Printf ("Refusing to download a path with ..\n");
-		return true;
+		return qtrue;
 	}
 
 	if (FS_LoadFile (filename, NULL) != -1) {	// it exists, no need to
 		// download
-		return true;
+		return qtrue;
 	}
 
 	strcpy (cls.downloadname, filename);
@@ -117,7 +117,7 @@ qboolean CL_CheckOrDownloadFile (char *filename) {
 
 	cls.downloadnumber++;
 
-	return false;
+	return qfalse;
 }
 
 /*
@@ -373,11 +373,11 @@ SERVER CONNECTING MESSAGES
 */
 qboolean LegacyProtocol (void) {
 	// if (dedicated->value) // Server always uses new protocol
-	// return false;
+	// return qfalse;
 	if ((Com_ServerState () && cls.serverProtocol < PROTOCOL_VERSION)
 		|| (cls.serverProtocol == OLD_PROTOCOL_VERSION))
-		return true;
-	return false;
+		return qtrue;
+	return qfalse;
 }
 
 /*
@@ -458,7 +458,7 @@ void CL_ParseServerData (void) {
 		Com_Printf ("%c%s\n", 2, str);
 
 		// need to prep refresh at next oportunity
-		cl.refresh_prepped = false;
+		cl.refresh_prepped = qfalse;
 	}
 }
 

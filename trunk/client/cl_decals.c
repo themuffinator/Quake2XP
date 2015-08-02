@@ -128,7 +128,7 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 		for (i = 0; i < 6; i++) {
 
 			VectorMA (origin, scale, dirs[i], end);
-			trace = CL_PMTraceWorld (origin, vec3_origin, vec3_origin, end, MASK_SOLID, false);
+			trace = CL_PMTraceWorld (origin, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
 			if (trace.fraction != 1.0)
 				CL_AddDecalToScene (origin, trace.plane.normal,
 				red, green, blue, alpha,

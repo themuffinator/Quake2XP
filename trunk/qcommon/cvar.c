@@ -29,12 +29,12 @@ Cvar_InfoValidate
 */
 static qboolean Cvar_InfoValidate (char *s) {
 	if (strstr (s, "\\"))
-		return false;
+		return qfalse;
 	if (strstr (s, "\""))
-		return false;
+		return qfalse;
 	if (strstr (s, ";"))
-		return false;
-	return true;
+		return qfalse;
+	return qtrue;
 }
 
 /*
@@ -119,7 +119,7 @@ cvar_t *Cvar_Get (char *var_name, char *var_value, int flags) {
 	var = (cvar_t*)Z_Malloc (sizeof(*var));
 	var->name = CopyString (var_name);
 	var->string = CopyString (var_value);
-	var->modified = true;
+	var->modified = qtrue;
 	var->value = atof (var->string);
 
 	// link the variable in
@@ -195,10 +195,10 @@ cvar_t *Cvar_Set2 (char *var_name, char *value, qboolean force) {
 	if (!strcmp (value, var->string))
 		return var;				// not changed
 
-	var->modified = true;
+	var->modified = qtrue;
 
 	if (var->flags & CVAR_USERINFO)
-		userinfo_modified = true;	// transmit at next oportunity
+		userinfo_modified = qtrue;	// transmit at next oportunity
 
 	Z_Free (var->string);		// free the old value string
 
@@ -214,7 +214,7 @@ Cvar_ForceSet
 ============
 */
 cvar_t *Cvar_ForceSet (char *var_name, char *value) {
-	return Cvar_Set2 (var_name, value, true);
+	return Cvar_Set2 (var_name, value, qtrue);
 }
 
 /*
@@ -223,7 +223,7 @@ Cvar_Set
 ============
 */
 cvar_t *Cvar_Set (char *var_name, char *value) {
-	return Cvar_Set2 (var_name, value, false);
+	return Cvar_Set2 (var_name, value, qfalse);
 }
 
 /*
@@ -239,10 +239,10 @@ cvar_t *Cvar_FullSet (char *var_name, char *value, int flags) {
 		return Cvar_Get (var_name, value, flags);
 	}
 
-	var->modified = true;
+	var->modified = qtrue;
 
 	if (var->flags & CVAR_USERINFO)
-		userinfo_modified = true;	// transmit at next oportunity
+		userinfo_modified = qtrue;	// transmit at next oportunity
 
 	Z_Free (var->string);		// free the old value string
 
@@ -321,7 +321,7 @@ qboolean Cvar_Command (void) {
 	// check variables
 	v = Cvar_FindVar (Cmd_Argv (0));
 	if (!v)
-		return false;
+		return qfalse;
 
 	// perform a variable print or set
 	if (Cmd_Argc () == 1) {
@@ -344,11 +344,11 @@ qboolean Cvar_Command (void) {
 		Com_Printf ("\n");
 
 		Com_Printf ("["S_COLOR_YELLOW"%s"S_COLOR_WHITE"]\n", v->help);
-		return true;
+		return qtrue;
 	}
 
 	Cvar_Set (v->name, Cmd_Argv (1));
-	return true;
+	return qtrue;
 }
 
 
@@ -390,7 +390,7 @@ void Cvar_Set_f (void) {
 Cvar_WriteVariables
 
 Appends lines containing "set variable value" for all variables
-with the archive flag set to true.
+with the archive flag set to qtrue.
 ============
 */
 void Cvar_WriteVariables (char *path) {
@@ -427,7 +427,7 @@ void Cvar_List_f (void) {
 	cvar_t		*var, *cvar, *sortedList;
 	int			i, num;
 	char		*hlp;
-	qboolean	help = false;
+	qboolean	help = qfalse;
 
 	for (var = cvar_vars, num = 0; var; var = var->next, num++);
 	sortedList = (cvar_t *)Z_Malloc (num * sizeof(cvar_t));
@@ -440,7 +440,7 @@ void Cvar_List_f (void) {
 	if (Cmd_Argc () == 2) {
 		hlp = Cmd_Argv (1);
 		if (!Q_strcasecmp (hlp, "?") || !Q_strcasecmp (hlp, "h") || !Q_strcasecmp (hlp, "help"))
-			help = true;
+			help = qtrue;
 	}
 
 	for (cvar = cvar_vars, i = 0; cvar; cvar = cvar->next, i++) {

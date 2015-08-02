@@ -143,10 +143,10 @@ qboolean R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 		}
 
 		if (aggregatemask) {
-			return true;
+			return qtrue;
 		}
 
-		return false;
+		return qfalse;
 	}
 }
 

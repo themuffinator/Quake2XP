@@ -49,9 +49,9 @@ edict_t *GetBotFlag2 ()			// �`�[��2�̊�
 
 qboolean ChkTFlg (void) {
 	if (bot_team_flag1 != NULL && bot_team_flag2 != NULL)
-		return true;
+		return qtrue;
 	else
-		return false;
+		return qfalse;
 }
 
 void SpawnItem2 (edict_t * ent, gitem_t * item) {
@@ -99,9 +99,9 @@ qboolean Bot_trace (edict_t * ent, edict_t * other) {
 																														   */);
 	if (rs_trace.fraction == 1.0 && !rs_trace.allsolid
 		&& !rs_trace.startsolid)
-		return true;
+		return qtrue;
 	if (ent->maxs[2] < 32)
-		return false;
+		return qfalse;
 
 	if (other->classname[6] == 'F' || other->classname[0] == 'w') {
 	}
@@ -113,29 +113,29 @@ qboolean Bot_trace (edict_t * ent, edict_t * other) {
 			|| other->classname[5] == 'h' || other->classname[5] == 'a') {
 		}
 		else
-			return false;
+			return qfalse;
 	}
 	else
-		return false;
+		return qfalse;
 
 	if (rs_trace.ent != NULL) {
 		if (rs_trace.ent->classname[0] == 'f'
 			&& rs_trace.ent->classname[5] == 'd'
 			&& rs_trace.ent->targetname == NULL)
-			return true;
+			return qtrue;
 	}
 
 	if (ent->s.origin[2] < other->s.origin[2]
 		|| ent->s.origin[2] - 24 > other->s.origin[2])
-		return false;
+		return qfalse;
 
 	ttx[2] -= 36;
 	rs_trace = gi.trace (ttx, NULL, NULL, other->s.origin, ent, CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_LAVA | CONTENTS_SLIME	/* |CONTENTS_TRANSLUCENT
 																																	 */);
 	if (rs_trace.fraction == 1.0 && !rs_trace.allsolid
 		&& !rs_trace.startsolid)
-		return true;
-	return false;
+		return qtrue;
+	return qfalse;
 }
 
 
@@ -152,8 +152,8 @@ qboolean Bot_traceX (edict_t * ent, edict_t * other) {
 		CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_LAVA |
 		CONTENTS_SLIME);
 	if (rs_trace.fraction == 1.0)
-		return true;
-	return false;
+		return qtrue;
+	return qfalse;
 }
 
 qboolean Bot_traceY (edict_t * ent, edict_t * other) {
@@ -173,8 +173,8 @@ qboolean Bot_traceY (edict_t * ent, edict_t * other) {
 		CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_LAVA |
 		CONTENTS_SLIME);
 	if (rs_trace.fraction == 1.0)
-		return true;
-	return false;
+		return qtrue;
+	return qfalse;
 }
 
 //
@@ -195,8 +195,8 @@ qboolean Bot_trace2 (edict_t * ent, vec3_t ttz) {
 		CONTENTS_SOLID | CONTENTS_LAVA | CONTENTS_SLIME
 		/* | CONTENTS_TRANSLUCENT */);
 	if (rs_trace.fraction != 1.0)
-		return false;
-	return true;
+		return qfalse;
+	return qtrue;
 }
 
 //
@@ -224,8 +224,8 @@ qboolean Bot_traceS (edict_t * ent, edict_t * other) {
 		CONTENTS_SLIME);
 
 	if (rs_trace.fraction != 1.0)
-		return false;
-	return true;
+		return qfalse;
+	return qtrue;
 
 WATERMODE:
 	mycont = gi.pointcontents (start);
@@ -237,15 +237,15 @@ WATERMODE:
 			CONTENTS_SLIME | CONTENTS_WATER);
 		if (rs_trace.surface) {
 			if (rs_trace.surface->flags & SURF_WARP)
-				return false;
+				return qfalse;
 		}
 		rs_trace =
 			gi.trace (start, NULL, NULL, end, ent,
 			CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_LAVA |
 			CONTENTS_SLIME);
 		if (rs_trace.fraction != 1.0)
-			return false;
-		return true;
+			return qfalse;
+		return qtrue;
 	}
 	else if ((mycont & CONTENTS_WATER) && other->waterlevel) {
 		VectorCopy (other->s.origin, end);
@@ -254,8 +254,8 @@ WATERMODE:
 			gi.trace (start, NULL, NULL, end, ent,
 			CONTENTS_SOLID | CONTENTS_WINDOW);
 		if (rs_trace.fraction != 1.0)
-			return false;
-		return true;
+			return qfalse;
+		return qtrue;
 	}
 
 	if (other->waterlevel) {
@@ -266,10 +266,10 @@ WATERMODE:
 			CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_WATER);
 		if (rs_trace.surface) {
 			if (rs_trace.surface->flags & SURF_WARP)
-				return false;
+				return qfalse;
 		}
-		//      if(rs_trace.fraction != 1.0 ) return false;
-		//      return true;
+		//      if(rs_trace.fraction != 1.0 ) return qfalse;
+		//      return qtrue;
 	}
 
 	rs_trace =
@@ -277,8 +277,8 @@ WATERMODE:
 		CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_LAVA |
 		CONTENTS_SLIME);
 	if (rs_trace.fraction != 1.0)
-		return false;
-	return true;
+		return qfalse;
+	return qtrue;
 }
 
 

@@ -93,9 +93,9 @@ void R_RenderDecals(void)
 	qglEnableVertexAttribArray(ATRB_TEX0);
 	qglEnableVertexAttribArray(ATRB_COLOR);
 
-    qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, DecalVertexArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, DecalTexCoordArray);
-    qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, false, 0, DecalColorArray);
+    qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, DecalVertexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, DecalTexCoordArray);
+    qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, DecalColorArray);
      
 
 	GL_BindProgram(genericProgram, 0);
@@ -260,15 +260,15 @@ static void R_ClipPoly(int nump, vec4_t vecs, int stage, fragment_t * fr)
 		return;
 	}
 
-	front = back = false;
+	front = back = qfalse;
 	plane = &fragmentPlanes[stage];
 	for (i = 0, v = vecs; i < nump; i++, v += 4) {
 		d = PlaneDiff(v, plane);
 		if (d > ON_EPSILON) {
-			front = true;
+			front = qtrue;
 			sides[i] = SIDE_FRONT;
 		} else if (d < -ON_EPSILON) {
-			back = true;
+			back = qtrue;
 			sides[i] = SIDE_BACK;
 		} else {
 			sides[i] = SIDE_ON;

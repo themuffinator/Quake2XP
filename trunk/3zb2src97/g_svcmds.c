@@ -84,7 +84,7 @@ static qboolean StringToFilter (char *s, ipfilter_t * f) {
 	for (i = 0; i < 4; i++) {
 		if (*s < '0' || *s > '9') {
 			gi.cprintf (NULL, PRINT_HIGH, "Bad filter address: %s\n", s);
-			return false;
+			return qfalse;
 		}
 
 		j = 0;
@@ -104,7 +104,7 @@ static qboolean StringToFilter (char *s, ipfilter_t * f) {
 	f->mask = *(unsigned *)m;
 	f->compare = *(unsigned *)b;
 
-	return true;
+	return qtrue;
 }
 
 /*

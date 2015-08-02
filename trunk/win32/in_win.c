@@ -42,10 +42,10 @@ MOUSE CONTROL
 qboolean	mlooking;
 
 void IN_MLookDown (void) {
-	mlooking = true;
+	mlooking = qtrue;
 }
 void IN_MLookUp (void) {
-	mlooking = false;
+	mlooking = qfalse;
 	if (!freelook->value && lookspring->value)
 		IN_CenterView ();
 }
@@ -57,7 +57,7 @@ int			mouse_x, mouse_y, old_mouse_x, old_mouse_y, mx_accum, my_accum;
 
 int			old_x, old_y;
 
-qboolean	mouseactive;	// false when not focus app
+qboolean	mouseactive;	// qfalse when not focus app
 
 qboolean	restore_spi;
 qboolean	mouseinitialized;
@@ -81,13 +81,13 @@ void IN_ActivateMouse (void) {
 	if (!mouseinitialized)
 		return;
 	if (!in_mouse->value) {
-		mouseactive = false;
+		mouseactive = qfalse;
 		return;
 	}
 	if (mouseactive)
 		return;
 
-	mouseactive = true;
+	mouseactive = qtrue;
 
 	if (mouseparmsvalid)
 		restore_spi = SystemParametersInfo (SPI_SETMOUSE, 0, newmouseparms, 0);
@@ -136,7 +136,7 @@ void IN_DeactivateMouse (void) {
 	if (restore_spi)
 		SystemParametersInfo (SPI_SETMOUSE, 0, originalmouseparms, 0);
 
-	mouseactive = false;
+	mouseactive = qfalse;
 
 	ClipCursor (NULL);
 	ReleaseCapture ();
@@ -158,7 +158,7 @@ void IN_StartupMouse (void) {
 	if (!cv->value)
 		return;
 
-	mouseinitialized = true;
+	mouseinitialized = qtrue;
 	mouseparmsvalid = SystemParametersInfo (SPI_GETMOUSE, 0, originalmouseparms, 0);
 	mouse_buttons = 8;
 }
@@ -178,12 +178,12 @@ void IN_MouseEvent (int mstate) {
 	for (i = 0; i < mouse_buttons; i++) {
 		if ((mstate & (1 << i)) &&
 			!(mouse_oldbuttonstate & (1 << i))) {
-			Key_Event (K_MOUSE1 + i, true, sys_msg_time);
+			Key_Event (K_MOUSE1 + i, qtrue, sys_msg_time);
 		}
 
 		if (!(mstate & (1 << i)) &&
 			(mouse_oldbuttonstate & (1 << i))) {
-			Key_Event (K_MOUSE1 + i, false, sys_msg_time);
+			Key_Event (K_MOUSE1 + i, qfalse, sys_msg_time);
 		}
 	}
 

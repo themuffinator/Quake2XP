@@ -1631,7 +1631,7 @@ void soldierh_fire (edict_t *self, int flash_number) {
 	vec3_t	end;
 	float	r, u;
 	int		flash_index;
-	qboolean tone = true;
+	qboolean tone = qtrue;
 
 	if (self->s.skinnum < 2)
 		flash_index = blaster_flash[flash_number]; // ripper

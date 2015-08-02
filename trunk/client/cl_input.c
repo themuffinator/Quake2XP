@@ -551,7 +551,7 @@ void CL_SendCmd (void) {
 	// send a userinfo update if needed
 	if (userinfo_modified) {
 		CL_FixUpGender ();
-		userinfo_modified = false;
+		userinfo_modified = qfalse;
 		MSG_WriteByte (&cls.netchan.message, clc_userinfo);
 		MSG_WriteString (&cls.netchan.message, Cvar_Userinfo ());
 	}

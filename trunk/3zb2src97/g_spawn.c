@@ -490,7 +490,7 @@ char *ED_ParseEdict (char *data, edict_t * ent) {
 	char keyname[256];
 	char *com_token;
 
-	init = false;
+	init = qfalse;
 	memset (&st, 0, sizeof(st));
 
 	// go through all the dictionary pairs
@@ -512,7 +512,7 @@ char *ED_ParseEdict (char *data, edict_t * ent) {
 		if (com_token[0] == '}')
 			gi.error ("ED_ParseEntity: closing brace without data");
 
-		init = true;
+		init = qtrue;
 
 		// keynames with a leading underscore are used for utility
 		// comments,
@@ -611,7 +611,7 @@ void G_FindTrainTeam () {
 
 				memset (&teamlist, 0, sizeof(teamlist));
 				memset (&targethist, 0, sizeof(targethist));
-				findteam = false;
+				findteam = qfalse;
 
 				loopindex = 0;
 				targethist[0] = e->targetname;
@@ -647,13 +647,13 @@ void G_FindTrainTeam () {
 							break;
 					}
 					if (k < loopindex) {
-						findteam = true;
+						findteam = qtrue;
 						break;
 					}
 					targethist[loopindex] = currtargetname;
 					loopindex++;
 					/* if(!Q_stricmp(currtarget,orgtargetname)) { findteam
-					   = true; break; } */
+					   = qtrue; break; } */
 				}
 				if (findteam && lc > 0) {
 					gi.dprintf ("%i train chaining founded.\n", lc);
@@ -716,7 +716,7 @@ RTJump_Chk
 qboolean RTJump_Chk (vec3_t apos, vec3_t tpos) {
 	float x, l, grav, vel, ypos, yori;
 	vec3_t v, vv;
-	int mf = false;
+	int mf = qfalse;
 
 	grav = 1.0 * sv_gravity->value * FRAMETIME;
 
@@ -731,20 +731,20 @@ qboolean RTJump_Chk (vec3_t apos, vec3_t tpos) {
 		yori += vel * FRAMETIME;
 
 		if (vel > 0) {
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 			}
 		}
 		else if (x > 1) {
-			if (mf == false) {
+			if (mf == qfalse) {
 				if (ypos < yori)
 					mf = 2;
 			}
 
 			else if (mf == 2) {
 				if (ypos >= yori) {
-					mf = true;
+					mf = qtrue;
 					break;
 				}
 			}
@@ -757,10 +757,10 @@ qboolean RTJump_Chk (vec3_t apos, vec3_t tpos) {
 
 	if (x > 1)
 		l = l / (x - 1);
-	if (l < MOVE_SPD_RUN && mf == true) {
-		return true;
+	if (l < MOVE_SPD_RUN && mf == qtrue) {
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 /*
@@ -821,7 +821,7 @@ void G_FindRouteLink (edict_t * ent) {
 						continue;
 				}
 
-				tpbool = false;
+				tpbool = qfalse;
 				for (l = -5; l < 6; l++) {
 					if ((i + l) < 0 || (i + l) >= CurrentIndex)
 						continue;
@@ -830,7 +830,7 @@ void G_FindRouteLink (edict_t * ent) {
 						if (!Route[i + l].linkpod[k])
 							break;
 						if (abs (Route[i + l].linkpod[k] - j) < 50) {
-							tpbool = true;
+							tpbool = qtrue;
 							break;
 						}
 					}
@@ -1203,7 +1203,7 @@ pic < stat > num < fieldwidth > <stat > string < stat >
 	void SP_worldspawn (edict_t * ent) {
 		ent->movetype = MOVETYPE_PUSH;
 		ent->solid = SOLID_BSP;
-		ent->inuse = true;			// since the world doesn't use G_Spawn()
+		ent->inuse = qtrue;			// since the world doesn't use G_Spawn()
 		ent->s.modelindex = 1;		// world model is always index 1
 
 		// ---------------

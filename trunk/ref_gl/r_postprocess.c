@@ -102,14 +102,14 @@ void R_RenderFlares (void) {
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglEnableVertexAttribArray (ATRB_TEX0);
 	qglEnableVertexAttribArray (ATRB_COLOR);
 
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, vert_array);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, false, 0, tex_array);
-	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, false, 0, color_array);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vert_array);
+	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, tex_array);
+	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, color_array);
 
 	GL_DepthMask (0);
 	GL_Enable (GL_BLEND);
@@ -173,11 +173,11 @@ Post Process Effects
 
 void R_DrawFullScreenQuad () {
 
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, gl_state.vbo_fullScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	qglBindBuffer (GL_ARRAY_BUFFER_ARB, vbo.vbo_fullScreenQuad);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	
 	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
+	qglVertexAttribPointer (ATRB_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -189,11 +189,11 @@ void R_DrawFullScreenQuad () {
 
 void R_DrawHalfScreenQuad () {
 
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, gl_state.vbo_halfScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	qglBindBuffer (GL_ARRAY_BUFFER_ARB, vbo.vbo_halfScreenQuad);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	
 	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
+	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -205,11 +205,11 @@ void R_DrawHalfScreenQuad () {
 
 void R_DrawQuarterScreenQuad () {
 	
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, gl_state.vbo_quarterScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	qglBindBuffer (GL_ARRAY_BUFFER_ARB, vbo.vbo_quarterScreenQuad);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	
 	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, false, 0, 0);
+	qglVertexAttribPointer(ATRB_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -449,23 +449,23 @@ void R_DofBlur (void) {
 		VectorMA (end_trace, 96, v_up, up);
 		VectorMA (end_trace, -96, v_up, dn);
 
-		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, right, MASK_SHOT, true);
+		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, right, MASK_SHOT, qtrue);
 		VectorSubtract (trace.endpos, r_newrefdef.vieworg, tmp);
 		tmpDist[0] = VectorLength (tmp);
 
-		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, left, MASK_SHOT, true);
+		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, left, MASK_SHOT, qtrue);
 		VectorSubtract (trace.endpos, r_newrefdef.vieworg, tmp);
 		tmpDist[1] = VectorLength (tmp);
 
-		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, up, MASK_SHOT, true);
+		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, up, MASK_SHOT, qtrue);
 		VectorSubtract (trace.endpos, r_newrefdef.vieworg, tmp);
 		tmpDist[2] = VectorLength (tmp);
 
-		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, dn, MASK_SHOT, true);
+		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, dn, MASK_SHOT, qtrue);
 		VectorSubtract (trace.endpos, r_newrefdef.vieworg, tmp);
 		tmpDist[3] = VectorLength (tmp);
 
-		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, end_trace, MASK_SHOT, true);
+		trace = CL_PMTraceWorld (r_newrefdef.vieworg, vec3_origin, vec3_origin, end_trace, MASK_SHOT, qtrue);
 		VectorSubtract (trace.endpos, r_newrefdef.vieworg, tmp);
 		tmpDist[4] = VectorLength (tmp);
 

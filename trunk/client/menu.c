@@ -102,7 +102,7 @@ void M_PushMenu (void (*draw) (void), int (*key) (int k)) {
 	m_drawfunc = draw;
 	m_keyfunc = key;
 
-	m_entersound = true;
+	m_entersound = qtrue;
 
 	cls.key_dest = key_menu;
 }
@@ -226,23 +226,23 @@ void M_DrawCharacter (int cx, int cy, int num) {
 }
 
 void M_Print (int cx, int cy, char *str) {
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 	while (*str) {
 		M_DrawCharacter (cx, cy, (*str) + 128);
 		str++;
 		cx += 8 * cl_fontScale->value;
 	}
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 void M_PrintWhite (int cx, int cy, char *str) {
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 	while (*str) {
 		M_DrawCharacter (cx, cy, *str);
 		str++;
 		cx += 8 * cl_fontScale->value;
 	}
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 
@@ -250,7 +250,7 @@ void M_DrawTextBox (int x, int y, int width, int lines) {
 	int cx, cy;
 	int n;
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 	// draw left side
 	cx = x;
 	cy = y;
@@ -283,7 +283,7 @@ void M_DrawTextBox (int x, int y, int width, int lines) {
 		M_DrawCharacter (cx, cy, 6);
 	}
 	M_DrawCharacter (cx, cy + 8, 9);
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 
@@ -341,7 +341,7 @@ void M_Main_DrawQuad (float x, float y) {
 	refdef.lightstyles = 0;
 	refdef.rdflags = RDF_NOWORLDMODEL | RDF_NOCLEAR;
 
-	R_RenderFrame (&refdef, true);
+	R_RenderFrame (&refdef, qtrue);
 	refdef.num_entities++;
 }
 
@@ -415,7 +415,7 @@ int M_Main_Key (int key) {
 
 		case K_KP_ENTER:
 		case K_ENTER:
-			m_entersound = true;
+			m_entersound = qtrue;
 
 			switch (m_main_cursor) {
 				case 0:
@@ -684,7 +684,7 @@ static void KeyBindingFunc (void *self) {
 	if (keys[1] != -1)
 		M_UnbindCommand (bindnames[a->generic.localdata[0]][0]);
 
-	bind_grab = true;
+	bind_grab = qtrue;
 
 	Menu_SetStatusBar (&s_keys_menu,
 		"press a key or button for this action");
@@ -974,7 +974,7 @@ int Keys_MenuKey (int key) {
 
 		Menu_SetStatusBar (&s_keys_menu,
 			"enter to change, backspace to clear");
-		bind_grab = false;
+		bind_grab = qfalse;
 		return menu_out_sound;
 	}
 
@@ -2244,23 +2244,23 @@ void M_Credits_MenuDraw (void) {
 	 ** draw the credits
 	 */
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	for (i = 0, y =
 		viddef.height - ((cls.realtime - credits_start_time) / 40.0F);
 		credits[i] && y < viddef.height; y += 10 * cl_fontScale->value, i++) {
 		int j, stringoffset = 0;
-		int bold = false;
+		int bold = qfalse;
 
 		if (y <= -8)
 			continue;
 
 		if (credits[i][0] == '+') {
-			bold = true;
+			bold = qtrue;
 			stringoffset = 1;
 		}
 		else {
-			bold = false;
+			bold = qfalse;
 			stringoffset = 0;
 		}
 
@@ -2279,7 +2279,7 @@ void M_Credits_MenuDraw (void) {
 
 	if (y < 0)
 		credits_start_time = cls.realtime;
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 
 }
 
@@ -2529,12 +2529,12 @@ void Create_Savestrings (void) {
 		f = fopen (name, "rb");
 		if (!f) {
 			strcpy (m_savestrings[i], "<EMPTY>");
-			m_savevalid[i] = false;
+			m_savevalid[i] = qfalse;
 		}
 		else {
 			fread (m_savestrings[i], sizeof(m_savestrings[i]), 1, f);
 			fclose (f);
-			m_savevalid[i] = true;
+			m_savevalid[i] = qtrue;
 		}
 	}
 }
@@ -2915,7 +2915,7 @@ void StartServerActionFunc (void *self) {
 		Cvar_SetValue ("gamerules", 0);
 	}
 	else {
-		Cvar_SetValue ("deathmatch", 1);	// deathmatch is always true for rogue games, right?
+		Cvar_SetValue ("deathmatch", 1);	// deathmatch is always qtrue for rogue games, right?
 		Cvar_SetValue ("coop", 0);			// FIXME - this might need to depend on which game we're running
 		Cvar_SetValue ("gamerules", s_rules_box.curvalue);
 	}
@@ -3837,10 +3837,10 @@ static qboolean IconOfSkinExists (char *skin, char **pcxfiles,
 
 	for (i = 0; i < npcxfiles; i++) {
 		if (strcmp (pcxfiles[i], scratch) == 0)
-			return true;
+			return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 static qboolean
@@ -3862,7 +3862,7 @@ PlayerConfig_ScanDirectories (void) {
 	dirnames = FS_ListFilesAll ("players/*", &ndirs, SFF_SUBDIR, 0);
 
 	if (dirnames == NULL)
-		return (false);
+		return (qfalse);
 
 	/* Go through the subdirectories. */
 	npms = ndirs;
@@ -3927,7 +3927,7 @@ PlayerConfig_ScanDirectories (void) {
 
 	FS_FreeList (dirnames, ndirs);
 
-	return (true);
+	return (qtrue);
 }
 
 static int pmicmpfnc (const void *_a, const void *_b) {
@@ -3970,7 +3970,7 @@ qboolean PlayerConfig_MenuInit (void) {
 	offcet = (cl_fontScale->value - 1) * 16;
 
 	if (s_numplayermodels == 0)
-		return false;
+		return qfalse;
 
 	if (hand->value < 0 || hand->value > 2)
 		Cvar_SetValue ("hand", 0);
@@ -4105,7 +4105,7 @@ qboolean PlayerConfig_MenuInit (void) {
 	Menu_AddItem (&s_player_config_menu, &s_player_rate_box);
 	Menu_AddItem (&s_player_config_menu, &s_player_download_action);
 
-	return true;
+	return qtrue;
 }
 
 #include "m_frames.h"
@@ -4216,7 +4216,7 @@ void PlayerConfig_MenuDraw (void) {
 		//				  refdef.width / 8, refdef.height / 8);
 		refdef.height += 4;
 
-		R_RenderFrame (&refdef, true);
+		R_RenderFrame (&refdef, qtrue);
 
 		Com_sprintf (scratch, sizeof(scratch), "/players/%s/%s_i.pcx",
 			s_pmi[s_player_model_box.curvalue].directory,
@@ -4382,7 +4382,7 @@ void M_Draw (void) {
 	// caching images
 	if (m_entersound) {
 		S_StartLocalSound (fastsound_descriptor[menu_in_sound]);
-		m_entersound = false;
+		m_entersound = qfalse;
 	}
 }
 

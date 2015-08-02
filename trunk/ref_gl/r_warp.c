@@ -44,8 +44,8 @@ void  RenderLavaSurfaces (msurface_t * surf) {
 
 	if (!surf->texInfo->image->parallaxScale) {
 
-		scale[0] = r_parallaxScale->value / surf->texInfo->image->width;
-		scale[1] = r_parallaxScale->value / surf->texInfo->image->height;
+		scale[0] = r_reliefScale->value / surf->texInfo->image->width;
+		scale[1] = r_reliefScale->value / surf->texInfo->image->height;
 	}
 	else {
 		scale[0] = surf->texInfo->image->parallaxScale / surf->texInfo->image->width;
@@ -53,7 +53,7 @@ void  RenderLavaSurfaces (msurface_t * surf) {
 	}
 
 	qglUniform4f	(lava_parallaxParams, scale[0], scale[1], surf->texInfo->image->upload_width, surf->texInfo->image->upload_height);
-	qglUniform1i	(lava_parallaxType, (int)clamp (r_parallax->value, 0, 1));
+	qglUniform1i	(lava_parallaxType, (int)clamp (r_reliefMapping->value, 0, 1));
 	qglUniform3fv	(lava_viewOrigin, 1, r_origin);
 	qglUniform1f	(lava_ambient, r_lightmapScale->value);
 
@@ -66,11 +66,11 @@ void  RenderLavaSurfaces (msurface_t * surf) {
 	qglEnableVertexAttribArray (ATRB_TANGENT);
 	qglEnableVertexAttribArray (ATRB_BINORMAL);
 
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-	qglVertexAttribPointer (ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
-	qglVertexAttribPointer (ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
-	qglVertexAttribPointer (ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+	qglVertexAttribPointer (ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
+	qglVertexAttribPointer (ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
+	qglVertexAttribPointer (ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
 
 	for (bp = surf->polys; bp; bp = bp->next) {
 		p = bp;
@@ -176,10 +176,10 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 	qglUniform1f (water_thickness, 150.0);
 	qglUniform2f (water_screenSize, vid.width, vid.height);
 	qglUniform2f (water_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f (water_colorModulate, r_worldColorScale->value);
+	qglUniform1f (water_colorModulate, r_textureColorScale->value);
 	qglUniform1f (water_ambient, ambient);
 
-	qglUniformMatrix3fv (water_entity2world, 1, false, (const float *)currententity->axis);
+	qglUniformMatrix3fv (water_entity2world, 1, qfalse, (const float *)currententity->axis);
 
 	dstscroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
 
@@ -191,13 +191,13 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 	qglEnableVertexAttribArray (ATRB_BINORMAL);
 	qglEnableVertexAttribArray (ATRB_COLOR);
 
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
-	qglVertexAttribPointer (ATRB_TEX2, 2, GL_FLOAT, false, 0, wTmu2Array);
-	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, false, 0, wColorArray);
-	qglVertexAttribPointer (ATRB_NORMAL, 3, GL_FLOAT, false, 0, nTexArray);
-	qglVertexAttribPointer (ATRB_TANGENT, 3, GL_FLOAT, false, 0, tTexArray);
-	qglVertexAttribPointer (ATRB_BINORMAL, 3, GL_FLOAT, false, 0, bTexArray);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+	qglVertexAttribPointer (ATRB_TEX2, 2, GL_FLOAT, qfalse, 0, wTmu2Array);
+	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, wColorArray);
+	qglVertexAttribPointer (ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
+	qglVertexAttribPointer (ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
+	qglVertexAttribPointer (ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
 
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
@@ -383,16 +383,16 @@ void ClipSkyPolygon (int nump, vec3_t vecs, int stage) {
 		return;
 	}
 
-	front = back = false;
+	front = back = qfalse;
 	norm = skyclip[stage];
 	for (i = 0, v = vecs; i < nump; i++, v += 3) {
 		d = DotProduct (v, norm);
 		if (d > ON_EPSILON) {
-			front = true;
+			front = qtrue;
 			sides[i] = SIDE_FRONT;
 		}
 		else if (d < -ON_EPSILON) {
-			back = true;
+			back = qtrue;
 			sides[i] = SIDE_BACK;
 		}
 		else
@@ -554,12 +554,12 @@ void R_DrawSkyBox (qboolean color) {
 
 		qglEnableVertexAttribArray (ATRB_TEX0);
 		qglEnableVertexAttribArray (ATRB_COLOR);
-		qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, false, 0, SkyTexCoordArray);
-		qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, false, 0, SkyColorArray);
+		qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, SkyTexCoordArray);
+		qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, SkyColorArray);
 
 	}
 	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, SkyVertexArray);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
 
 
 

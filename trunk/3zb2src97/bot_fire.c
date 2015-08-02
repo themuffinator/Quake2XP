@@ -270,7 +270,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -286,7 +286,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -303,7 +303,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -322,11 +322,11 @@ int CanUsewep (edict_t * ent, int weapon) {
 				if (mywep == WEAP_MACHINEGUN
 					|| client->weaponstate == WEAPON_READY
 					|| client->weaponstate == WEAPON_FIRING) {
-					//				if (client->pers.weapon == item) return true;
+					//				if (client->pers.weapon == item) return qtrue;
 					//				else { item->use(ent,item); return 2; }
 					if (client->weaponstate == WEAPON_READY
 						|| client->weaponstate == WEAPON_FIRING)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -344,7 +344,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY
 						|| client->weaponstate == WEAPON_FIRING)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -360,7 +360,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -376,7 +376,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -393,7 +393,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -410,7 +410,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -428,7 +428,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY
 						|| client->weaponstate == WEAPON_FIRING)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -446,7 +446,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY
 						|| client->weaponstate == WEAPON_FIRING)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -463,7 +463,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -480,7 +480,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -496,7 +496,7 @@ int CanUsewep (edict_t * ent, int weapon) {
 				if (mywep == WEAP_BFG || client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
@@ -509,14 +509,14 @@ int CanUsewep (edict_t * ent, int weapon) {
 					|| client->weaponstate == WEAPON_READY) {
 					item->use (ent, item);
 					if (client->weaponstate == WEAPON_READY)
-						return true;
+						return qtrue;
 					else
 						return 2;
 				}
 			}
 			break;
 	}
-	return false;
+	return qfalse;
 }
 
 //------------------------------------------------------------
@@ -545,7 +545,7 @@ qboolean B_UseBfg (edict_t * ent, edict_t * target, int enewep, float aim,
 				zc->battlemode |= FIRE_STAYFIRE;
 				zc->battlecount = 8 + (int)(10 * random ());
 				trace_priority = TRP_ALLKEEP;
-				return true;
+				return qtrue;
 			}
 		}
 		else if ((FFlg[skill] & FIRE_EXPAVOID)
@@ -555,7 +555,7 @@ qboolean B_UseBfg (edict_t * ent, edict_t * target, int enewep, float aim,
 				zc->battlemode |= FIRE_EXPAVOID;
 				zc->battlecount = 6 + (int)(6 * random ());
 				trace_priority = TRP_ALLKEEP;
-				return true;
+				return qtrue;
 			}
 		}
 		else if (!(FFlg[skill] & (FIRE_STAYFIRE | FIRE_EXPAVOID))) {
@@ -563,7 +563,7 @@ qboolean B_UseBfg (edict_t * ent, edict_t * target, int enewep, float aim,
 				zc->battlemode |= FIRE_BFG;
 				zc->battlecount = 6 + (int)(6 * random ());
 				trace_priority = TRP_ANGLEKEEP;
-				return true;
+				return qtrue;
 			}
 		}
 		else if ((FFlg[skill] & FIRE_EXPAVOID)
@@ -572,11 +572,11 @@ qboolean B_UseBfg (edict_t * ent, edict_t * target, int enewep, float aim,
 				zc->battlemode |= FIRE_BFG;
 				zc->battlecount = 6 + (int)(6 * random ());
 				trace_priority = TRP_ANGLEKEEP;
-				return true;
+				return qtrue;
 			}
 		}
 	}
-	return false;
+	return qfalse;
 }
 
 //------------------------------------------------------------
@@ -597,9 +597,9 @@ qboolean B_UseHyperBlaster (edict_t * ent, edict_t * target, int enewep,
 		client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //------------------------------------------------------------
@@ -628,7 +628,7 @@ qboolean B_UsePhalanx (edict_t * ent, edict_t * target, int enewep,
 				zc->battlemode |= FIRE_PRESTAYFIRE;
 				zc->battlecount = 2 + (int)(6 * random ());
 				trace_priority = TRP_ALLKEEP;
-				return true;
+				return qtrue;
 			}
 		}
 		if ((FFlg[skill] & FIRE_JUMPROC) && random () < 0.3
@@ -640,7 +640,7 @@ qboolean B_UsePhalanx (edict_t * ent, edict_t * target, int enewep,
 						trace_priority = TRP_ALLKEEP;
 						if (Bot_traceS (ent, target))
 							client->buttons |= BUTTON_ATTACK;
-						return true;
+						return qtrue;
 					}
 				}
 				else {
@@ -654,7 +654,7 @@ qboolean B_UsePhalanx (edict_t * ent, edict_t * target, int enewep,
 					trace_priority = TRP_ALLKEEP;
 					if (Bot_traceS (ent, target))
 						client->buttons |= BUTTON_ATTACK;
-					return true;
+					return qtrue;
 				}
 			}
 		}
@@ -665,14 +665,14 @@ qboolean B_UsePhalanx (edict_t * ent, edict_t * target, int enewep,
 				zc->battlemode |= FIRE_EXPAVOID;
 				zc->battlecount = 4 + (int)(6 * random ());
 				trace_priority = TRP_ALLKEEP;
-				return true;
+				return qtrue;
 			}
 		}
 		if (Bot_traceS (ent, target))
 			client->buttons |= BUTTON_ATTACK;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 
@@ -702,7 +702,7 @@ qboolean B_UseRocket (edict_t * ent, edict_t * target, int enewep,
 				zc->battlemode |= FIRE_PRESTAYFIRE;
 				zc->battlecount = 2 + (int)(6 * random ());
 				trace_priority = TRP_ALLKEEP;
-				return true;
+				return qtrue;
 			}
 		}
 		if ((FFlg[skill] & FIRE_JUMPROC) && random () < 0.3
@@ -714,7 +714,7 @@ qboolean B_UseRocket (edict_t * ent, edict_t * target, int enewep,
 						trace_priority = TRP_ALLKEEP;
 						if (Bot_traceS (ent, target))
 							client->buttons |= BUTTON_ATTACK;
-						return true;
+						return qtrue;
 					}
 				}
 				else {
@@ -729,7 +729,7 @@ qboolean B_UseRocket (edict_t * ent, edict_t * target, int enewep,
 					trace_priority = TRP_ALLKEEP;
 					if (Bot_traceS (ent, target))
 						client->buttons |= BUTTON_ATTACK;
-					return true;
+					return qtrue;
 				}
 			}
 		}
@@ -740,14 +740,14 @@ qboolean B_UseRocket (edict_t * ent, edict_t * target, int enewep,
 				zc->battlemode |= FIRE_EXPAVOID;
 				zc->battlecount = 4 + (int)(6 * random ());
 				trace_priority = TRP_ALLKEEP;
-				return true;
+				return qtrue;
 			}
 		}
 		if (Bot_traceS (ent, target))
 			client->buttons |= BUTTON_ATTACK;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 
@@ -770,9 +770,9 @@ qboolean B_UseBoomer (edict_t * ent, edict_t * target, int enewep,
 		client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //------------------------------------------------------------
@@ -793,9 +793,9 @@ qboolean B_UseRailgun (edict_t * ent, edict_t * target, int enewep,
 		client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //------------------------------------------------------------
@@ -821,7 +821,7 @@ qboolean B_UseGrenadeLauncher (edict_t * ent, edict_t * target, int enewep,
 					zc->battlecount = 5 + (int)(10 * random ());
 					trace_priority = TRP_ALLKEEP;
 					client->buttons |= BUTTON_ATTACK;
-					return true;
+					return qtrue;
 				}
 			}
 		}
@@ -832,15 +832,15 @@ qboolean B_UseGrenadeLauncher (edict_t * ent, edict_t * target, int enewep,
 				zc->battlemode |= FIRE_EXPAVOID;
 				zc->battlecount = 2 + (int)(6 * random ());
 				trace_priority = TRP_ALLKEEP;
-				return true;
+				return qtrue;
 			}
 		}
 		client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 
 }
 
@@ -862,9 +862,9 @@ qboolean B_UseChainGun (edict_t * ent, edict_t * target, int enewep,
 		client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 
@@ -883,13 +883,13 @@ qboolean B_UseMachineGun (edict_t * ent, edict_t * target, int enewep,
 	if (k = CanUsewep (ent, WEAP_MACHINEGUN)) {
 		mywep = Get_KindWeapon (client->pers.weapon);
 		Get_AimAngle (ent, aim, distance, mywep);
-		if (k == true)
+		if (k == qtrue)
 			client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //------------------------------------------------------------
@@ -910,9 +910,9 @@ qboolean B_UseSuperShotgun (edict_t * ent, edict_t * target, int enewep,
 		client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //------------------------------------------------------------
@@ -933,9 +933,9 @@ qboolean B_UseShotgun (edict_t * ent, edict_t * target, int enewep,
 		client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //------------------------------------------------------------
@@ -957,9 +957,9 @@ qboolean B_UseHandGrenade (edict_t * ent, edict_t * target, int enewep,
 			client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //------------------------------------------------------------
@@ -981,9 +981,9 @@ qboolean B_UseTrap (edict_t * ent, edict_t * target, int enewep, float aim,
 			client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 
@@ -1005,9 +1005,9 @@ qboolean B_UseBlaster (edict_t * ent, edict_t * target, int enewep,
 		client->buttons |= BUTTON_ATTACK;
 		if (trace_priority < TRP_ANGLEKEEP)
 			trace_priority = TRP_ANGLEKEEP;
-		return true;;
+		return qtrue;;
 	}
-	return false;
+	return qfalse;
 }
 
 //return weapon
@@ -1018,7 +1018,7 @@ void Combat_LevelX (edict_t * ent, int foundedenemy, int enewep, float aim,
 	edict_t *target;
 	int mywep, k;
 	vec3_t v;
-	qboolean mod = false;
+	qboolean mod = qfalse;
 
 	client = ent->client;
 	zc = &client->zc;
@@ -1027,37 +1027,37 @@ void Combat_LevelX (edict_t * ent, int foundedenemy, int enewep, float aim,
 	// -----------------------------------------------------------------------
 	//
 	// -----------------------------------------------------------------------
-	k = false;
+	k = qfalse;
 	//
 	if (zc->battlemode & FIRE_ESTIMATE) {
 		mywep = Get_KindWeapon (client->pers.weapon);
 		// Phalanx
 		if (distance > 100 || mywep == WEAP_PHALANX) {
 			if (B_UsePhalanx (ent, target, enewep, aim, distance, skill))
-				k = true;
+				k = qtrue;
 		}
 		// Rocket
 		if (distance > 100 || mywep == WEAP_ROCKETLAUNCHER) {
 			if (B_UseRocket (ent, target, enewep, aim, distance, skill))
-				k = true;
+				k = qtrue;
 		}
 		// Boomer
 		if (distance < 1200) {
 			if (B_UseBoomer (ent, target, enewep, aim, distance, skill))
-				k = true;
+				k = qtrue;
 		}
 		// Grenade Launcher
 		if (distance > 100 && distance < 400
 			&& (target->s.origin[2] - ent->s.origin[2]) < 200) {
 			if (B_UseGrenadeLauncher
 				(ent, target, enewep, aim, distance, skill))
-				k = true;
+				k = qtrue;
 		}
 		// Hand Grenade
 		if (distance < 1200) {
 			if (B_UseHandGrenade
 				(ent, target, enewep, aim, distance, skill))
-				k = true;
+				k = qtrue;
 		}
 		VectorSubtract (zc->vtemp, ent->s.origin, v);
 		ent->s.angles[YAW] = Get_yaw (v);
@@ -1084,7 +1084,7 @@ void Combat_Level0 (edict_t * ent, int foundedenemy, int enewep, float aim,
 	edict_t *target;
 	int mywep, i, j, k;
 	vec3_t v, vv, v1, v2;
-	qboolean mod = false;
+	qboolean mod = qfalse;
 
 	trace_t rs_trace;
 
@@ -1341,14 +1341,14 @@ void Combat_Level0 (edict_t * ent, int foundedenemy, int enewep, float aim,
 	if (!(zc->battlemode & FIRE_SHIFT) && skill > (random () * skill)
 		/* && distance < 250 */
 		&& (30 * random ()) < Bot[zc->botindex].param[BOP_OFFENCE]) {
-		k = false;
+		k = qfalse;
 		if (zc->route_trace && enewep != WEAP_RAILGUN) {
 			for (i = zc->routeindex; i < (zc->routeindex + 10); i++) {
 				if (i >= CurrentIndex)
 					break;
 				if (Route[i].state == GRS_ITEMS) {
 					if (Route[i].ent->solid == SOLID_TRIGGER) {
-						k = true;
+						k = qtrue;
 						break;
 					}
 				}
@@ -1387,9 +1387,9 @@ void Combat_Level0 (edict_t * ent, int foundedenemy, int enewep, float aim,
 	if ((FFlg[skill] & FIRE_QUADUSE)
 		&& (ent->client->quad_framenum > level.framenum)
 		&& distance < 300) {
-		j = false;
+		j = qfalse;
 		if (enewep < WEAP_MACHINEGUN || enewep == WEAP_GRENADES)
-			j = true;
+			j = qtrue;
 
 		// Hyper Blaster
 		if (k = CanUsewep (ent, WEAP_HYPERBLASTER)) {
@@ -1442,9 +1442,9 @@ void Combat_Level0 (edict_t * ent, int foundedenemy, int enewep, float aim,
 	}
 	if ((FFlg[skill] & FIRE_REFUGE)
 		&& zc->battlemode == 0 && zc->route_trace && zc->routeindex > 1) {
-		j = false;
+		j = qfalse;
 		if (enewep >= WEAP_CHAINGUN && enewep != WEAP_GRENADES)
-			j = true;
+			j = qtrue;
 
 
 		Get_RouteOrigin (zc->routeindex - 2, v);
@@ -1764,16 +1764,16 @@ void UsePrimaryWeapon (edict_t * ent) {
 
 void UpdateExplIndex (edict_t * ent) {
 	int i;
-	qboolean mod = false;
+	qboolean mod = qfalse;
 
 	for (i = 0; i < MAX_EXPLINDEX; i++) {
 		if (ExplIndex[i] != NULL) {
-			if (ExplIndex[i]->inuse == false)
+			if (ExplIndex[i]->inuse == qfalse)
 				ExplIndex[i] = NULL;
 		}
 		if (!mod && ExplIndex[i] == NULL) {
 			ExplIndex[i] = ent;
-			mod = true;
+			mod = qtrue;
 		}
 	}
 }

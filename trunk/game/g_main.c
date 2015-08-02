@@ -276,7 +276,7 @@ void CheckNeedPass (void) {
 	// if password or spectator_password has changed, update needpass
 	// as needed
 	if (password->modified || spectator_password->modified) {
-		password->modified = spectator_password->modified = false;
+		password->modified = spectator_password->modified = qfalse;
 
 		need = 0;
 

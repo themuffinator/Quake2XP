@@ -214,15 +214,6 @@ extern vec3_t vright;
 extern vec3_t r_origin;
 extern entity_t r_worldentity;
 
-typedef vec_t mat4x4_t[16];
-
-
-mat4x4_t r_world_matrix;
-mat4x4_t r_project_matrix;
-mat4x4_t r_modelViewInv;
-mat4x4_t r_modelViewProjection;
-mat4x4_t r_oldModelViewProjection;
-
 //
 // screen size info
 //
@@ -263,7 +254,7 @@ cvar_t	*r_screenShotJpegQuality;
 cvar_t	*r_screenShotGamma;
 cvar_t	*r_screenShotContrast;
 
-cvar_t	*r_worldColorScale;
+cvar_t	*r_textureColorScale;
 cvar_t	*r_textureCompression;
 cvar_t	*r_anisotropic;
 cvar_t	*r_maxAnisotropy;
@@ -320,8 +311,8 @@ cvar_t	*hunk_sprite;
 //cvar_t	*r_vbo;
 cvar_t	*r_maxTextureSize;
 
-cvar_t	*r_parallax;
-cvar_t	*r_parallaxScale;
+cvar_t	*r_reliefMapping;
+cvar_t	*r_reliefScale;
 
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;
@@ -402,9 +393,6 @@ void R_ShutdownPrograms (void);
 void GL_BindNullProgram (void);
 void GL_BindRect (int texnum);
 void GL_MBindRect (GLenum target, int texnum);
-void Matrix4_Multiply (const mat4x4_t m1, const mat4x4_t m2, mat4x4_t out);
-void Matrix4_Copy (const mat4x4_t m1, mat4x4_t m2);
-qboolean InvertMatrix (const mat4x4_t m, mat4x4_t invOut);
 void R_BlobShadow (void);
 void R_ShadowBlend ();
 void R_Bloom (void);
@@ -652,28 +640,10 @@ typedef struct {
 	qboolean	arb_multisample;
 	qboolean	wgl_swap_control_tear;
 	qboolean	conditional_render;
-	qboolean	glsl;
 	qboolean	depthBoundsTest;
 	qboolean	shader5;
 	int			programId;
 	GLenum		matrixMode;
-
-	GLuint	vbo_fullScreenQuad;
-	GLuint	vbo_halfScreenQuad;
-	GLuint	vbo_quarterScreenQuad;
-	GLuint	ibo_quadTris;
-	GLuint	vbo_Dynamic;
-	GLuint	ibo_Dynamic;
-	GLuint	vbo_BSP;
-	GLuint	ibo_BSP;
-
-	int xyz_offset;
-	int st_offset;
-	int lm_offset;
-	int nm_offset;
-	int tg_offset;
-	int bn_offset;
-	int vertex_size;
 
 	mat4_t			projectionMatrix;
 	mat4_t			modelViewMatrix;		// ready to load
@@ -726,6 +696,27 @@ typedef struct {
 	vec4_t			fontColor;
 } glstate_t;
 
+typedef struct {
+
+GLuint	vbo_fullScreenQuad;
+GLuint	vbo_halfScreenQuad;
+GLuint	vbo_quarterScreenQuad;
+GLuint	ibo_quadTris;
+GLuint	vbo_Dynamic;
+GLuint	ibo_Dynamic;
+GLuint	vbo_BSP;
+GLuint	ibo_BSP;
+
+int xyz_offset;
+int st_offset;
+int lm_offset;
+int nm_offset;
+int tg_offset;
+int bn_offset;
+int vertex_size;
+}vbo_t;
+
+vbo_t vbo;
 
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);
@@ -852,7 +843,7 @@ typedef struct glslProgram_s {
 	char			defStrings[MAX_PROGRAM_DEFS][MAX_DEF_NAME];
 	int				numId;
 	int				id[MAX_PROGRAM_ID];
-	qboolean		valid;		// true if all permutations linked successfully
+	qboolean		valid;		// qtrue if all permutations linked successfully
 
 } glslProgram_t;
 

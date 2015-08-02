@@ -986,12 +986,12 @@ typedef struct zgcl_s
 {
 int			zclass;			//class no.
 
-// true clientp zoom
+// qtrue clientp zoom
 int			aiming;			//0-not 1-aiming  2-firing zoomingflag
 float		distance;		//zoomFOV
 float		olddistance;	//zooming FOV
 qboolean	autozoom;		//autozoom
-qboolean	lockon;			//lockon flag false-not true-locking
+qboolean	lockon;			//lockon flag qfalse-not qtrue-locking
 
 // botp
 int			zcstate;		//status
@@ -1009,7 +1009,7 @@ vec3_t		movtarget_pt;	//moving target waiting point
 edict_t		*waitin_obj;	//for waiting sequence complete
 
 //basical moving
-float		moveyaw;		//true moving yaw
+float		moveyaw;		//qtrue moving yaw
 
 //camp & aiming
 float		preaimingtime;
@@ -1141,7 +1141,7 @@ struct gclient_s {
 
 	//ZOID
 	void *ctf_grapple;			// entity of grapple
-	int ctf_grapplestate;		// true if pulling
+	int ctf_grapplestate;		// qtrue if pulling
 	float ctf_grapplereleasetime;	// time of grapple release
 	float ctf_regentime;		// regen tech
 	float ctf_techsndtime;

@@ -66,13 +66,13 @@ void CL_ClipMoveToEntitiesWorld (vec3_t start, vec3_t mins, vec3_t maxs,
 			trace.ent = (struct edict_s *) ent;
 			if (tr->startsolid) {
 				*tr = trace;
-				tr->startsolid = true;
+				tr->startsolid = qtrue;
 			}
 			else
 				*tr = trace;
 		}
 		else if (trace.startsolid)
-			tr->startsolid = true;
+			tr->startsolid = qtrue;
 	}
 }
 
@@ -130,7 +130,7 @@ void CL_AddClEntities () {
 	trace_t trace2;
 	float alpha, bak;
 	int contents;
-	qboolean onground = (qboolean)false;
+	qboolean onground = (qboolean)qfalse;
 	float time, time2, dst, grav = Cvar_VariableValue ("sv_gravity");
 	vec3_t tmpSize;
 	float entSize;
@@ -169,7 +169,7 @@ void CL_AddClEntities () {
 		org[2] = bak;
 
 		if (contents & MASK_SOLID)
-			onground = (qboolean)true;
+			onground = (qboolean)qtrue;
 
 		if (onground) {
 			le->flags &= ~CLM_ROTATE;
@@ -206,7 +206,7 @@ void CL_AddClEntities () {
 				if (contents & CONTENTS_LAVA) {	// kill entity in lava
 					VectorSet (dir, 0, 0, 1);
 					S_fastsound (org, 0, CHAN_AUTO, cl_sfx_lava, 1, ATTN_NORM);
-					CL_ParticleSmoke2 (org, dir, 1, 0.3, 0, 6, true);
+					CL_ParticleSmoke2 (org, dir, 1, 0.3, 0, 6, qtrue);
 					le->alpha = 0;
 					continue;
 				}
@@ -234,7 +234,7 @@ void CL_AddClEntities () {
 		entSize = VectorLength (tmpSize);
 
 		if (le->flags & CLM_BOUNCE) {
-			trace_t trace = CL_PMTraceWorld (le->lastOrg, ent.mins, ent.maxs, org, MASK_SOLID, false);
+			trace_t trace = CL_PMTraceWorld (le->lastOrg, ent.mins, ent.maxs, org, MASK_SOLID, qfalse);
 
 			if (trace.fraction > 0 && trace.fraction < 1) {
 				vec3_t	vel;

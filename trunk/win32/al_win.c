@@ -314,15 +314,15 @@ qboolean AL_Init (int hardreset) {
 
 		if (!SearchPath (NULL, "OpenAL32.dll", NULL, sizeof(path), path, NULL)) {
 			Sys_Error("...ERROR: couldn't find OpenAL driver 'OpenAL32.dll'\n");
-			openalStop = true;
-			return false;
+			openalStop = qtrue;
+			return qfalse;
 		}
 
 		Com_DPrintf ("...LoadLibrary( '%s' ) \n", path);
 		if ((alConfig.hInstOpenAL = LoadLibrary (path)) == NULL) {
 			Sys_Error("...ERROR: couldn't load OpenAL driver 'OpenAL32.dll'\n");
-			openalStop = true;
-			return false;
+			openalStop = qtrue;
+			return qfalse;
 		}
 
 		// Binds our AL function pointers to the appropriate AL stuff
@@ -405,12 +405,12 @@ qboolean AL_Init (int hardreset) {
 	if (!AL_StartOpenAL ()) {
 		// Let the user continue without sound
 		Com_Printf (S_COLOR_RED"WARNING: OpenAL initialization failed\n");
-		openalStop = true;
-		return false;
+		openalStop = qtrue;
+		return qfalse;
 	}
 
 	// Initialize extensions
-	alConfig.efx = false;
+	alConfig.efx = qfalse;
 
 	// X-RAM
 	if (alIsExtensionPresent ((ALubyte *)"EAX-RAM")) {
@@ -442,7 +442,7 @@ qboolean AL_Init (int hardreset) {
 			ALint		iEffectSlotsGenerated;
 			ALint		iSends;
 
-			alConfig.efx = true;
+			alConfig.efx = qtrue;
 
 			// Imported EFX functions; Get function pointers
 			// Effect objects
@@ -562,5 +562,5 @@ qboolean AL_Init (int hardreset) {
 	if (alIsExtensionPresent ("AL_EXT_EXPONENT_DISTANCE") == AL_TRUE)
 		Com_Printf ("...unlocked exponent distance preset.\n");
 
-	return true;
+	return qtrue;
 }

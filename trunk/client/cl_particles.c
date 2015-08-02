@@ -258,7 +258,7 @@ void CL_AddParticles (void) {
 		if (p->flags & PARTICLE_NONSOLID) {
 			vec3_t maxs = { 1, 1, 1 };
 			vec3_t mins = { -1, -1, -1 };
-			trace_t trace = CL_PMTraceWorld (p->oldOrg, mins, maxs, org, MASK_SHOT, true);
+			trace_t trace = CL_PMTraceWorld (p->oldOrg, mins, maxs, org, MASK_SHOT, qtrue);
 			if (trace.fraction != 1.0) {
 				p->next = free_particles;
 				free_particles = p;
@@ -346,7 +346,7 @@ void CL_AddParticles (void) {
 			VectorScale (mins, 2, mins);
 			VectorScale (maxs, 2, maxs);
 
-			trace = CL_PMTraceWorld (p->oldOrg, mins, maxs, org, MASK_SOLID, false);
+			trace = CL_PMTraceWorld (p->oldOrg, mins, maxs, org, MASK_SOLID, qfalse);
 
 			if (trace.fraction > 0 && trace.fraction < 1) {
 				vec3_t	vel;
@@ -2723,7 +2723,7 @@ void CL_DiminishingTrail (vec3_t start, vec3_t end, centity_t * old,
 							DECAL_ACIDMARK, DF_OVERBRIGHT,
 							frand () * 360, GL_ONE, GL_ONE);
 						CL_ParticleSmoke2 (trace.endpos, trace.plane.normal, 1,
-							1, 0, 8, true);
+							1, 0, 8, qtrue);
 						VectorClear (trace.plane.normal);
 						p->alpha = 0;
 						return;

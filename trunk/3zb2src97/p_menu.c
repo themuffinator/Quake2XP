@@ -50,13 +50,13 @@ void PMenu_Open (edict_t * ent, pmenu_t * entries, int cur, int num) {
 	else
 		hnd->cur = i;
 
-	ent->client->showscores = true;
-	ent->client->inmenu = true;
+	ent->client->showscores = qtrue;
+	ent->client->inmenu = qtrue;
 	ent->client->menu = hnd;
 
 	if (!(ent->svflags & SVF_MONSTER)) {
 		PMenu_Update (ent);
-		gi.unicast (ent, true);
+		gi.unicast (ent, qtrue);
 	}
 }
 
@@ -66,7 +66,7 @@ void PMenu_Close (edict_t * ent) {
 
 	free (ent->client->menu);
 	ent->client->menu = NULL;
-	ent->client->showscores = false;
+	ent->client->showscores = qfalse;
 }
 
 void PMenu_Update (edict_t * ent) {
@@ -76,7 +76,7 @@ void PMenu_Update (edict_t * ent) {
 	int x;
 	pmenuhnd_t *hnd;
 	char *t;
-	qboolean alt = false;
+	qboolean alt = qfalse;
 
 	if (!ent->client->menu) {
 		gi.dprintf ("warning:  ent has no menu\n");
@@ -92,7 +92,7 @@ void PMenu_Update (edict_t * ent) {
 			continue;			// blank line
 		t = p->text;
 		if (*t == '*') {
-			alt = true;
+			alt = qtrue;
 			t++;
 		}
 		sprintf (string + strlen (string), "yv %d ", 32 + i * 8);
@@ -112,7 +112,7 @@ void PMenu_Update (edict_t * ent) {
 			sprintf (string + strlen (string), "string2 \"%s\" ", t);
 		else
 			sprintf (string + strlen (string), "string \"%s\" ", t);
-		alt = false;
+		alt = qfalse;
 	}
 
 	gi.WriteByte (svc_layout);
@@ -147,7 +147,7 @@ void PMenu_Next (edict_t * ent) {
 	hnd->cur = i;
 	if (!(ent->svflags & SVF_MONSTER)) {
 		PMenu_Update (ent);
-		gi.unicast (ent, true);
+		gi.unicast (ent, qtrue);
 	}
 }
 
@@ -183,7 +183,7 @@ void PMenu_Prev (edict_t * ent) {
 
 	if (!(ent->svflags & SVF_MONSTER)) {
 		PMenu_Update (ent);
-		gi.unicast (ent, true);
+		gi.unicast (ent, qtrue);
 	}
 }
 

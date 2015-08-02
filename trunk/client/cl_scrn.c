@@ -164,7 +164,7 @@ void SCR_DrawCenterString (void) {
 	else
 		y = 48;
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	do {
 		// scan the width of the line
@@ -190,7 +190,7 @@ void SCR_DrawCenterString (void) {
 		start++;				// skip the \n
 	} while (1);
 
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 void SCR_CheckDrawCenterString (void) {
@@ -319,7 +319,7 @@ void SCR_Init (void) {
 	Cmd_AddCommand ("sizedown", SCR_SizeDown_f);
 	Cmd_AddCommand ("sky", SCR_Sky_f);
 
-	scr_initialized = true;
+	scr_initialized = qtrue;
 }
 
 
@@ -391,7 +391,7 @@ void SCR_DrawLoading (void) {
 
 		mapname = cl.configstrings[CS_NAME];
 
-		Set_FontShader (true);
+		Set_FontShader (qtrue);
 		RE_SetColor (colorGreen);
 		Draw_StringScaled (0, fontscale*scaled, fontscale, fontscale, mapname);
 		RE_SetColor (colorYellow);
@@ -404,7 +404,7 @@ void SCR_DrawLoading (void) {
 		Draw_StringScaled (0, 48 * fontscale, fontscale, fontscale,
 			va ("%s", loadingMessages[3]));
 		RE_SetColor (colorWhite);
-		Set_FontShader (false);
+		Set_FontShader (qfalse);
 	}
 }
 
@@ -484,14 +484,14 @@ SCR_BeginLoadingPlaque
 
 qboolean needLoadingPlaque (void) {
 	if (!cls.disable_screen || !scr_draw_loading)
-		return true;
-	return false;
+		return qtrue;
+	return qfalse;
 }
 
 
 void SCR_BeginLoadingPlaque (void) {
 	S_StopAllSounds ();
-	cl.sound_prepped = false;	// don't play ambients
+	cl.sound_prepped = qfalse;	// don't play ambients
 	Music_Stop ();
 	if (cls.disable_screen)
 		return;
@@ -563,7 +563,7 @@ void SCR_TimeRefresh_f (void) {
 		R_BeginFrame ();
 		for (i = 0; i < 128; i++) {
 			cl.refdef.viewangles[1] = i / 128.0 * 360.0;
-			R_RenderFrame (&cl.refdef, false);
+			R_RenderFrame (&cl.refdef, qfalse);
 		}
 		GLimp_EndFrame ();
 	}
@@ -572,7 +572,7 @@ void SCR_TimeRefresh_f (void) {
 			cl.refdef.viewangles[1] = i / 128.0 * 360.0;
 
 			R_BeginFrame ();
-			R_RenderFrame (&cl.refdef, false);
+			R_RenderFrame (&cl.refdef, qfalse);
 			GLimp_EndFrame ();
 		}
 	}
@@ -750,7 +750,7 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 
 	margin = x;
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	while (*string) {
 		// scan out one line of text from the string
@@ -773,7 +773,7 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 			y += 8 * scale_y;
 		}
 	}
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 /*
@@ -896,7 +896,7 @@ void SCR_DrawSpeeds (void) {
 	sprintf (dtr, "%i d_tris", c_decal_tris);
 	sprintf(lt, "%i vis lights", num_visLights);
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 	RE_SetColor (colorCyan);
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5, fontscale, fontscale, bsp);
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 10 * fontscale, fontscale, fontscale, alias);
@@ -907,7 +907,7 @@ void SCR_DrawSpeeds (void) {
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 60 * fontscale, fontscale, fontscale, dtr);
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 70 * fontscale, fontscale, fontscale, lt);
 	RE_SetColor (colorWhite);
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 void SCR_DrawFPS (void) {
@@ -931,10 +931,10 @@ void SCR_DrawFPS (void) {
 	}
 
 	if (cl_drawfps->value && (cls.state == ca_active)) {
-		Set_FontShader (true);
+		Set_FontShader (qtrue);
 		Draw_StringScaled (viddef.width - 65 * fontscale, viddef.height*0.65, fontscale, fontscale, str);
 		RE_SetColor (colorWhite);
-		Set_FontShader (false);
+		Set_FontShader (qfalse);
 	}
 }
 
@@ -961,7 +961,7 @@ void SCR_DrawClock (void) {
 	sprintf (tmpbuf, "Time %s", timebuf);
 	sprintf (tmpdatebuf, "Date %s", datebuf);
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	if (!cl_drawfps->value) {
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
@@ -972,7 +972,7 @@ void SCR_DrawClock (void) {
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65 + 20 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}
 
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 void R_GammaRamp (void);
@@ -1027,7 +1027,7 @@ void SCR_UpdateScreen (void) {
 		if (cls.key_dest == key_menu) {
 			if (cl.cinematicpalette_active) {
 				R_SetPalette (NULL);
-				cl.cinematicpalette_active = false;
+				cl.cinematicpalette_active = qfalse;
 			}
 			M_Draw ();
 		}
@@ -1040,7 +1040,7 @@ void SCR_UpdateScreen (void) {
 		// make sure the game palette is active
 		if (cl.cinematicpalette_active) {
 			R_SetPalette (NULL);
-			cl.cinematicpalette_active = false;
+			cl.cinematicpalette_active = qfalse;
 		}
 	next:
 

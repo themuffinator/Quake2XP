@@ -275,12 +275,12 @@ static qboolean LM_AllocBlock (int w, int h, int *x, int *y) {
 	}
 
 	if (best + h > LIGHTMAP_SIZE)
-		return false;
+		return qfalse;
 
 	for (i = 0; i < w; i++)
 		gl_lms.allocated[*x + i] = best + h;
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -403,7 +403,7 @@ void GL_CreateSurfaceLightmap (msurface_t * surf) {
 	tmax = (surf->extents[1] / loadmodel->lightmap_scale) + 1;
 
 	if (!LM_AllocBlock (smax, tmax, &surf->light_s, &surf->light_t)) {
-		LM_UploadBlock (false);
+		LM_UploadBlock (qfalse);
 		LM_InitBlock ();
 
 		if (!LM_AllocBlock (smax, tmax, &surf->light_s, &surf->light_t))
@@ -476,7 +476,7 @@ GL_EndBuildingLightmaps
 =======================
 */
 void GL_EndBuildingLightmaps (void) {
-	LM_UploadBlock (false);
+	LM_UploadBlock (qfalse);
 
 	GL_SelectTexture (GL_TEXTURE1);
 	qglDisable (GL_TEXTURE_2D);

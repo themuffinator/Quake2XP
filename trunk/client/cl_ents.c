@@ -521,9 +521,9 @@ void CL_ParseFrame (void) {
 	// the frame, but not use it, then ask for a non-compressed
 	// message
 	if (cl.frame.deltaframe <= 0) {
-		cl.frame.valid = true;	// uncompressed frame
+		cl.frame.valid = qtrue;	// uncompressed frame
 		old = NULL;
-		cls.demowaiting = false;	// we can start recording now
+		cls.demowaiting = qfalse;	// we can start recording now
 	}
 	else {
 		old = &cl.frames[cl.frame.deltaframe & UPDATE_MASK];
@@ -542,7 +542,7 @@ void CL_ParseFrame (void) {
 			Com_Printf ("Delta parse_entities too old.\n");
 		}
 		else
-			cl.frame.valid = true;	// valid delta parse
+			cl.frame.valid = qtrue;	// valid delta parse
 	}
 
 	// clamp time
@@ -578,7 +578,7 @@ void CL_ParseFrame (void) {
 		// getting a valid frame message ends the connection process
 		if (cls.state != ca_active) {
 			cls.state = ca_active;
-			cl.force_refdef = true;
+			cl.force_refdef = qtrue;
 			cl.predicted_origin[0] =
 				cl.frame.playerstate.pmove.origin[0] * 0.125;
 			cl.predicted_origin[1] =
@@ -591,7 +591,7 @@ void CL_ParseFrame (void) {
 				&& cl.refresh_prepped)
 				SCR_EndLoadingPlaque ();	// get rid of loading plaque
 		}
-		cl.sound_prepped = true;	// can start mixing ambient sounds
+		cl.sound_prepped = qtrue;	// can start mixing ambient sounds
 
 		// fire entity events
 		CL_FireEntityEvents (&cl.frame);
@@ -683,7 +683,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 	int autoanim;
 	clientinfo_t *ci;
 	unsigned int effects, renderfx;
-	qboolean predator = false;
+	qboolean predator = qfalse;
 	int dm_flag;
 	dm_flag = Cvar_VariableValue ("dmflags");
 
@@ -697,7 +697,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 	currentPlayerWeapon = NULL;
 
 	for (pnum = 0; pnum < frame->num_entities; pnum++) {
-		qboolean player_camera = false;
+		qboolean player_camera = qfalse;
 		s1 = &cl_parse_entities[(frame->parse_entities +
 			pnum) & (MAX_PARSE_ENTITIES - 1)];
 
@@ -722,7 +722,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 		/*		if(effects & EF_DISTORT){
 				effects &= ~EF_DISTORT;
 				renderfx |= RF_DISTORT;
-				predator = true;
+				predator = qtrue;
 				}
 				*/
 		// quad and pent can do different things on client
@@ -891,14 +891,14 @@ void CL_AddPacketEntities (frame_t * frame) {
 		else
 			ent.flags = renderfx;
 
-		ent.angleMod = false;
+		ent.angleMod = qfalse;
 
 		// calculate angles
 		if (effects & EF_ROTATE) {	// some bonus items auto-rotate
 			ent.angles[0] = 0;
 			ent.angles[1] = autorotate;
 			ent.angles[2] = 0;
-			ent.angleMod = true;
+			ent.angleMod = qtrue;
 			if (cl_itemsBobbing->value) {
 				//bobbing items, q3 style
 				float scale = 0.005 + s1->number * 0.00001;
@@ -912,7 +912,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			ent.angles[0] = 0;
 			ent.angles[1] = anglemod (cl.time / 2) + s1->angles[1];
 			ent.angles[2] = 180;
-			ent.angleMod = true;
+			ent.angleMod = qtrue;
 			{
 				vec3_t forward;
 				vec3_t start;
@@ -994,7 +994,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 		// ***It's Me!!!!!!***//
 		if (s1->number == cl.playernum + 1) {
 			ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
-			player_camera = true;	// set filter for power shells and over
+			player_camera = qtrue;	// set filter for power shells and over
 
 			// fixed player origin from EGL
 			if ((cl_predict->value)

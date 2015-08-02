@@ -224,7 +224,7 @@ void CL_PrepRefresh (void) {
 
 	loadScreenColorFade = 0.35;
 
-	loadingMessage = true;
+	loadingMessage = qtrue;
 	Com_sprintf (loadingMessages[0], sizeof(loadingMessages[0]),
 		"Loading Map...");
 	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]),
@@ -351,8 +351,8 @@ void CL_PrepRefresh (void) {
 	Con_ClearNotify ();
 
 	SCR_UpdateScreen ();
-	cl.refresh_prepped = true;
-	cl.force_refdef = true;		// make sure we have a valid refdef
+	cl.refresh_prepped = qtrue;
+	cl.force_refdef = qtrue;		// make sure we have a valid refdef
 
 	Com_sprintf (loadingMessages[0], sizeof(loadingMessages[0]), "");
 	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]), "");
@@ -362,7 +362,7 @@ void CL_PrepRefresh (void) {
 	// start the cd track
 	Music_Play ();
 
-	loadingMessage = false;
+	loadingMessage = qfalse;
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	sec *= 0.001;
@@ -419,7 +419,7 @@ void SCR_DrawCrosshair (void) {
 		return;
 
 	if (crosshair->modified) {
-		crosshair->modified = false;
+		crosshair->modified = qfalse;
 		SCR_TouchPics ();
 	}
 
@@ -516,7 +516,7 @@ void V_RenderView () {
 	// an invalid frame will just use the exact previous refdef
 	// we can't use the old frame if the video mode has changed, though...
 	if (cl.frame.valid && (cl.force_refdef || !cl_paused->value)) {
-		cl.force_refdef = false;
+		cl.force_refdef = qfalse;
 
 		V_ClearScene ();
 
@@ -599,7 +599,7 @@ void V_RenderView () {
 	c_shadow_volumes = 0;
 	c_decal_tris = 0;
 
-	R_RenderFrame (&cl.refdef, false);
+	R_RenderFrame (&cl.refdef, qfalse);
 
 
 	if (cl_stats->value)

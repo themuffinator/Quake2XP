@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ============
 CanDamage
 
-Returns true if the inflictor can directly damage the target.  Used for
+Returns qtrue if the inflictor can directly damage the target.  Used for
 explosions and melee attacks.
 ============
 */
@@ -42,17 +42,17 @@ qboolean CanDamage (edict_t * targ, edict_t * inflictor) {
 			gi.trace (inflictor->s.origin, vec3_origin, vec3_origin, dest,
 			inflictor, MASK_SOLID);
 		if (trace.fraction == 1.0)
-			return true;
+			return qtrue;
 		if (trace.ent == targ)
-			return true;
-		return false;
+			return qtrue;
+		return qfalse;
 	}
 
 	trace =
 		gi.trace (inflictor->s.origin, vec3_origin, vec3_origin,
 		targ->s.origin, inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return true;
+		return qtrue;
 
 	VectorCopy (targ->s.origin, dest);
 	dest[0] += 15.0;
@@ -61,7 +61,7 @@ qboolean CanDamage (edict_t * targ, edict_t * inflictor) {
 		gi.trace (inflictor->s.origin, vec3_origin, vec3_origin, dest,
 		inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return true;
+		return qtrue;
 
 	VectorCopy (targ->s.origin, dest);
 	dest[0] += 15.0;
@@ -70,7 +70,7 @@ qboolean CanDamage (edict_t * targ, edict_t * inflictor) {
 		gi.trace (inflictor->s.origin, vec3_origin, vec3_origin, dest,
 		inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return true;
+		return qtrue;
 
 	VectorCopy (targ->s.origin, dest);
 	dest[0] -= 15.0;
@@ -79,7 +79,7 @@ qboolean CanDamage (edict_t * targ, edict_t * inflictor) {
 		gi.trace (inflictor->s.origin, vec3_origin, vec3_origin, dest,
 		inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return true;
+		return qtrue;
 
 	VectorCopy (targ->s.origin, dest);
 	dest[0] -= 15.0;
@@ -88,10 +88,10 @@ qboolean CanDamage (edict_t * targ, edict_t * inflictor) {
 		gi.trace (inflictor->s.origin, vec3_origin, vec3_origin, dest,
 		inflictor, MASK_SOLID);
 	if (trace.fraction == 1.0)
-		return true;
+		return qtrue;
 
 
-	return false;
+	return qfalse;
 }
 
 
@@ -305,13 +305,13 @@ qboolean CheckTeamDamage (edict_t * targ, edict_t * attacker) {
 	if (ctf->value && targ->client && attacker->client)
 	if (targ->client->resp.ctf_team == attacker->client->resp.ctf_team
 		&& targ != attacker)
-		return true;
+		return qtrue;
 	//ZOID
 
 	// FIXME make the next line real and uncomment this block
 	// if ((ability to damage a teammate == OFF) && (targ's team ==
 	// attacker's team))
-	return false;
+	return qfalse;
 }
 
 void T_Damage (edict_t * targ, edict_t * inflictor, edict_t * attacker,

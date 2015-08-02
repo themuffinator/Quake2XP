@@ -322,8 +322,8 @@ void Scrap_Upload(void)
 {
 	scrap_uploads++;
 	GL_Bind(TEXNUM_SCRAPS);
-	GL_Upload8(scrap_texels[0], BLOCK_SIZE, BLOCK_SIZE, false, false);
-	scrap_dirty = false;
+	GL_Upload8(scrap_texels[0], BLOCK_SIZE, BLOCK_SIZE, qfalse, qfalse);
+	scrap_dirty = qfalse;
 }
 
 /*
@@ -808,9 +808,9 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 	}
 	else{
 		if(bump)
-			GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height, true);
+			GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height, qtrue);
 		else
-			GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height, false);
+			GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height, qfalse);
 	}
 	qglTexImage2D( GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaled );
 
@@ -904,7 +904,7 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	}
 
 
-	return GL_Upload32(trans, width, height, mipmap, false);
+	return GL_Upload32(trans, width, height, mipmap, qfalse);
 }
 
 
@@ -1007,7 +1007,7 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		texnum = Scrap_AllocBlock(image->width, image->height, &x, &y);
 		if (texnum == -1)
 			goto nonscrap;
-		scrap_dirty = true;
+		scrap_dirty = qtrue;
 
 		// copy the texels into the scrap block
 		k = 0;
@@ -1016,15 +1016,15 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 				scrap_texels[texnum][(y + i) * BLOCK_SIZE + x + j] =
 					pic[k];
 		image->texnum = TEXNUM_SCRAPS + texnum;
-		image->scrap = true;
-		image->has_alpha = true;
+		image->scrap = qtrue;
+		image->has_alpha = qtrue;
 		image->sl = (x + 0.01) / (float) BLOCK_SIZE;
 		image->sh = (x + image->width - 0.01) / (float) BLOCK_SIZE;
 		image->tl = (y + 0.01) / (float) BLOCK_SIZE;
 		image->th = (y + image->height - 0.01) / (float) BLOCK_SIZE;
 	} else {
 	  nonscrap:
-		image->scrap = false;
+		image->scrap = qfalse;
 		image->texnum = TEXNUM_IMAGES + (image - gltextures);
 		GL_Bind(image->texnum);
 		if (bits == 8)

@@ -154,7 +154,7 @@ drive[1] = ':';
 drive[2] = '\\';
 drive[3] = 0;
 
-done = true;
+done = qtrue;
 
 // scan the drives
 for (drive[0] = 'c' ; drive[0] <= 'z' ; drive[0]++)
@@ -184,7 +184,7 @@ char *Sys_ScanForCD (void) {
 	char		drive[4];
 	FILE		*f;
 	char		test[MAX_QPATH];
-	qboolean	missionpack = false; // Knightmare added
+	qboolean	missionpack = qfalse; // Knightmare added
 	int			i; // Knightmare added
 
 	if (done)		// don't re-check
@@ -198,13 +198,13 @@ char *Sys_ScanForCD (void) {
 	drive[2] = '\\';
 	drive[3] = 0;
 
-	done = true;
+	done = qtrue;
 
 	// Knightmare- check if mission pack gamedir is set
 	for (i = 0; i < argc; i++)
 	if (!strcmp (argv[i], "game") && (i + 1 < argc)) {
 		if (!strcmp (argv[i + 1], "rogue") || !strcmp (argv[i + 1], "xatrix"))
-			missionpack = true;
+			missionpack = qtrue;
 		break; // game parameter only appears once in command line
 	}
 
@@ -293,7 +293,7 @@ void Sys_Init (void) {
 	if (vinfo.dwPlatformId == VER_PLATFORM_WIN32s)
 		Sys_Error ("Quake2 doesn't run on Win32s");
 	else if (vinfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-		s_win95 = true;
+		s_win95 = qtrue;
 
 	if (dedicated->value) {
 		if (!AllocConsole ())

@@ -999,7 +999,7 @@ void Swap_Init (void) {
 
 	// set the byte swapping variables in a portable manner
 	if (*(short *)swaptest == 1) {
-		bigendien = false;
+		bigendien = qfalse;
 		_BigShort = ShortSwap;
 		_LittleShort = ShortNoSwap;
 		_BigLong = LongSwap;
@@ -1008,7 +1008,7 @@ void Swap_Init (void) {
 		_LittleFloat = FloatNoSwap;
 	}
 	else {
-		bigendien = true;
+		bigendien = qtrue;
 		_BigShort = ShortNoSwap;
 		_LittleShort = ShortSwap;
 		_BigLong = LongNoSwap;
@@ -1299,10 +1299,10 @@ can mess up the server's parsing
 */
 qboolean Info_Validate (char *s) {
 	if (strstr (s, "\""))
-		return false;
+		return qfalse;
 	if (strstr (s, ";"))
-		return false;
-	return true;
+		return qfalse;
+	return qtrue;
 }
 
 void Info_SetValueForKey (char *s, char *key, char *value) {

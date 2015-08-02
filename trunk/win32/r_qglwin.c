@@ -1034,12 +1034,12 @@ qboolean QGL_Init () {
 
 		FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError (), MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&buf, 0, NULL);
 		Con_Printf (PRINT_ALL, "%s\n", buf);
-		return false;
+		return qfalse;
 	}
 #else
 	if ((glw_state.hinstOpenGL = dlopen ("libGL.so.1", RTLD_LAZY)) == 0) {
 		Con_Printf (PRINT_ALL, "%s\n", dlerror ());
-		return false;
+		return qfalse;
 	}
 #endif
 
@@ -1412,7 +1412,7 @@ qboolean QGL_Init () {
 	qglMultiTexCoord3fvARB = 0;
 
 
-	return true;
+	return qtrue;
 }
 
 #pragma warning (default : 4113 4133 4047 )

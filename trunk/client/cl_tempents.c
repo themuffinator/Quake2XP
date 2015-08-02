@@ -676,9 +676,9 @@ void CL_ParseTEnt (void) {
 			MSG_ReadPos (&net_message, pos);
 			MSG_ReadDir (&net_message, dir);
 			if (type == TE_SCREEN_SPARKS)
-				CL_ParticleArmorSpark (pos, dir, 3, false);
+				CL_ParticleArmorSpark (pos, dir, 3, qfalse);
 			else
-				CL_ParticleArmorSpark (pos, dir, 3, true);
+				CL_ParticleArmorSpark (pos, dir, 3, qtrue);
 			// FIXME : replace or remove this sound
 			S_StartSound (pos, 0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
 			break;
@@ -733,7 +733,7 @@ void CL_ParseTEnt (void) {
 
 				}
 				else if (r == SPLASH_LAVA) {
-					CL_ParticleSmoke2 (pos, dir, 1, 0.3, 0, 15, true);
+					CL_ParticleSmoke2 (pos, dir, 1, 0.3, 0, 15, qtrue);
 
 				}
 				else if (r == SPLASH_SLIME) {
@@ -787,7 +787,7 @@ void CL_ParseTEnt (void) {
 				DECAL_BLASTER, 0, frand () * 360,
 				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			CL_ParticleSmoke2 (pos, dir, 0.97, 0.46, 0.14, 16, true);
+			CL_ParticleSmoke2 (pos, dir, 0.97, 0.46, 0.14, 16, qtrue);
 			CL_BlasterParticles (pos, dir);
 			S_StartSound (pos, 0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
 			break;
@@ -1143,7 +1143,7 @@ void CL_ParseTEnt (void) {
 			magnitude = 60;
 			color = r & 0xff;
 			CL_ParticleSteamEffect (pos, dir, color, cnt, magnitude);
-			CL_ParticleSmoke2 (pos, dir, 1, 0.5, 0, 6, true);
+			CL_ParticleSmoke2 (pos, dir, 1, 0.5, 0, 6, qtrue);
 
 			S_StartSound (pos, 0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
 			break;
@@ -1155,7 +1155,7 @@ void CL_ParseTEnt (void) {
 
 			color = 0xe0;
 			magnitude = 60;
-			CL_ParticleSmoke2 (pos, dir, 1, 0.5, 0, 6, true);
+			CL_ParticleSmoke2 (pos, dir, 1, 0.5, 0, 6, qtrue);
 			CL_BlasterParticles (pos, dir);
 
 			CL_AddDecalToScene (pos, dir,

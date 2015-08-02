@@ -160,7 +160,7 @@ void Netchan_Setup (netsrc_t sock, netchan_t * chan, netadr_t adr,
 	chan->outgoing_sequence = 1;
 
 	SZ_Init (&chan->message, chan->message_buf, sizeof(chan->message_buf));
-	chan->message.allowoverflow = true;
+	chan->message.allowoverflow = qtrue;
 }
 
 
@@ -168,13 +168,13 @@ void Netchan_Setup (netsrc_t sock, netchan_t * chan, netadr_t adr,
 ===============
 Netchan_CanReliable
 
-Returns true if the last reliable message has acked
+Returns qtrue if the last reliable message has acked
 ================
 */
 qboolean Netchan_CanReliable (netchan_t * chan) {
 	if (chan->reliable_length)
-		return false;			// waiting for ack
-	return true;
+		return qfalse;			// waiting for ack
+	return qtrue;
 }
 
 
@@ -182,15 +182,15 @@ qboolean Netchan_NeedReliable (netchan_t * chan) {
 	qboolean send_reliable;
 
 	// if the remote side dropped the last reliable message, resend it
-	send_reliable = false;
+	send_reliable = qfalse;
 
 	if (chan->incoming_acknowledged > chan->last_reliable_sequence
 		&& chan->incoming_reliable_acknowledged != chan->reliable_sequence)
-		send_reliable = true;
+		send_reliable = qtrue;
 
 	// if the reliable transmit buffer is empty, copy the current message out
 	if (!chan->reliable_length && chan->message.cursize) {
-		send_reliable = true;
+		send_reliable = qtrue;
 	}
 
 	return send_reliable;
@@ -214,7 +214,7 @@ void Netchan_Transmit (netchan_t * chan, int length, byte * data) {
 
 	// check for message overflow
 	if (chan->message.overflowed) {
-		chan->fatal_error = true;
+		chan->fatal_error = qtrue;
 		Com_Printf ("%s:Outgoing message overflow\n",
 			NET_AdrToString (chan->remote_address));
 		return;
@@ -323,7 +323,7 @@ qboolean Netchan_Process (netchan_t * chan, sizebuf_t * msg) {
 			Com_Printf ("%s:Out of order packet %i at %i\n",
 			NET_AdrToString (chan->remote_address)
 			, sequence, chan->incoming_sequence);
-		return false;
+		return qfalse;
 	}
 	//
 	// dropped packets don't keep the message from being used
@@ -356,5 +356,5 @@ qboolean Netchan_Process (netchan_t * chan, sizebuf_t * msg) {
 	//
 	chan->last_received = curtime;
 
-	return true;
+	return qtrue;
 }

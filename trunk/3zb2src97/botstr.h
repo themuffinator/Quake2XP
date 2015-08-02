@@ -29,12 +29,12 @@ typedef struct zgcl_s {
 
 	int botindex;				// botlist's index NO.
 
-	// true clientp zoom
+	// qtrue clientp zoom
 	int aiming;					// 0-not 1-aiming 2-firing zoomingflag
 	float distance;				// zoom
 	float olddistance;			// zooming FOV
 	qboolean autozoom;			// autozoom
-	qboolean lockon;			// lockon flag false-not true-locking
+	qboolean lockon;			// lockon flag qfalse-not qtrue-locking
 
 	// botp
 	int zcstate;				// status
@@ -55,7 +55,7 @@ typedef struct zgcl_s {
 	edict_t *waitin_obj;		// for waiting sequence complete
 
 	// basical moving
-	float moveyaw;				// true moving yaw
+	float moveyaw;				// qtrue moving yaw
 
 	// combat
 	int total_bomb;				// total put bomb

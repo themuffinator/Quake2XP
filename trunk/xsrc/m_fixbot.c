@@ -329,7 +329,7 @@ void blastoff (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick,
 	float		r;
 	float		u;
 	vec3_t		water_start;
-	qboolean	water = false;
+	qboolean	water = qfalse;
 	int			content_mask = MASK_SHOT | MASK_WATER;
 
 	hspread += (self->s.frame - FRAME_takeoff_01);
@@ -347,7 +347,7 @@ void blastoff (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick,
 		VectorMA (end, u, up, end);
 
 		if (gi.pointcontents (start) & MASK_WATER) {
-			water = true;
+			water = qtrue;
 			VectorCopy (start, water_start);
 			content_mask &= ~MASK_WATER;
 		}
@@ -358,7 +358,7 @@ void blastoff (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick,
 		if (tr.contents & MASK_WATER) {
 			int		color;
 
-			water = true;
+			water = qtrue;
 			VectorCopy (tr.endpos, water_start);
 
 			if (!VectorCompare (start, tr.endpos)) {

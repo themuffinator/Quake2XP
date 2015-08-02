@@ -82,7 +82,7 @@ static void WIN_DisableAltTab (void) {
 		RegisterHotKey (0, 0, MOD_ALT, VK_TAB);
 		RegisterHotKey (0, 1, MOD_ALT, VK_RETURN);
 	}
-	s_alttab_disabled = true;
+	s_alttab_disabled = qtrue;
 }
 
 static void WIN_EnableAltTab (void) {
@@ -97,7 +97,7 @@ static void WIN_EnableAltTab (void) {
 			UnregisterHotKey (0, 1);
 		}
 
-		s_alttab_disabled = false;
+		s_alttab_disabled = qfalse;
 	}
 }
 
@@ -178,13 +178,13 @@ Map from windows to quake keynums
 int MapKey (int key) {
 	int result;
 	int modified = (key >> 16) & 255;
-	qboolean is_extended = false;
+	qboolean is_extended = qfalse;
 
 	if (modified > 127)
 		return 0;
 
 	if (key & (1 << 24))
-		is_extended = true;
+		is_extended = qtrue;
 
 	result = scantokey[modified];
 
@@ -237,8 +237,8 @@ void AppActivate (BOOL fActive, BOOL minimize) {
 	// we don't want to act like we're active if we're minimized
 	// minimize/restore mouse-capture on demand
 	if (!fActive || Minimized) {
-		ActiveApp = false;
-		IN_Activate (false);
+		ActiveApp = qfalse;
+		IN_Activate (qfalse);
 		Music_Pause ();
 		if (win_noalttab->value) {
 			WIN_EnableAltTab ();
@@ -246,8 +246,8 @@ void AppActivate (BOOL fActive, BOOL minimize) {
 		if (alConfig.hALC) alcSuspendContext (alConfig.hALC); //willow: Have no success??
 	}
 	else {
-		ActiveApp = true;
-		IN_Activate (true);
+		ActiveApp = qtrue;
+		IN_Activate (qtrue);
 		Music_Resume ();
 		if (win_noalttab->value) {
 			WIN_DisableAltTab ();
@@ -281,12 +281,12 @@ LONG WINAPI MainWndProc (
 
 	if (uMsg == MSH_MOUSEWHEEL) {
 		if (((int)wParam) > 0) {
-			Key_Event (K_MWHEELUP, true, sys_msg_time);
-			Key_Event (K_MWHEELUP, false, sys_msg_time);
+			Key_Event (K_MWHEELUP, qtrue, sys_msg_time);
+			Key_Event (K_MWHEELUP, qfalse, sys_msg_time);
 		}
 		else {
-			Key_Event (K_MWHEELDOWN, true, sys_msg_time);
-			Key_Event (K_MWHEELDOWN, false, sys_msg_time);
+			Key_Event (K_MWHEELDOWN, qtrue, sys_msg_time);
+			Key_Event (K_MWHEELDOWN, qfalse, sys_msg_time);
 		}
 		return DefWindowProc (hWnd, uMsg, wParam, lParam);
 	}
@@ -298,12 +298,12 @@ LONG WINAPI MainWndProc (
 			** since this message doesn't exist under Win95
 			*/
 			if ((short)HIWORD (wParam) > 0) {
-				Key_Event (K_MWHEELUP, true, sys_msg_time);
-				Key_Event (K_MWHEELUP, false, sys_msg_time);
+				Key_Event (K_MWHEELUP, qtrue, sys_msg_time);
+				Key_Event (K_MWHEELUP, qfalse, sys_msg_time);
 			}
 			else {
-				Key_Event (K_MWHEELDOWN, true, sys_msg_time);
-				Key_Event (K_MWHEELDOWN, false, sys_msg_time);
+				Key_Event (K_MWHEELDOWN, qtrue, sys_msg_time);
+				Key_Event (K_MWHEELDOWN, qfalse, sys_msg_time);
 			}
 			break;
 
@@ -360,10 +360,10 @@ LONG WINAPI MainWndProc (
 
 							Cvar_SetValue ("vid_xpos", xPos + r.left);
 							Cvar_SetValue ("vid_ypos", yPos + r.top);
-							vid_xpos->modified = false;
-							vid_ypos->modified = false;
+							vid_xpos->modified = qfalse;
+							vid_ypos->modified = qfalse;
 							if (ActiveApp)
-								IN_Activate (true);
+								IN_Activate (qtrue);
 						}
 		}
 			return DefWindowProc (hWnd, uMsg, wParam, lParam);
@@ -405,12 +405,12 @@ LONG WINAPI MainWndProc (
 			}
 			// fall through
 		case WM_KEYDOWN:
-			Key_Event (MapKey (lParam), true, sys_msg_time);
+			Key_Event (MapKey (lParam), qtrue, sys_msg_time);
 			break;
 
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
-			Key_Event (MapKey (lParam), false, sys_msg_time);
+			Key_Event (MapKey (lParam), qfalse, sys_msg_time);
 			break;
 
 		case MM_MCINOTIFY:
@@ -438,7 +438,7 @@ cause the entire video mode and refresh DLL to be reset on the next frame.
 ============
 */
 void VID_Restart_f (void) {
-	vid_ref->modified = true;
+	vid_ref->modified = qtrue;
 }
 
 void VID_Front_f (void) {
@@ -480,7 +480,7 @@ static vidmode_t vid_modes[] = {
 
 qboolean VID_GetModeInfo (int *width, int *height, int mode) {
 	if (mode < 0 || mode >= VID_NUM_MODES)
-		return false;
+		return qfalse;
 
 	if (mode == 15) {
 		*width = r_customWidth->value;
@@ -491,7 +491,7 @@ qboolean VID_GetModeInfo (int *width, int *height, int mode) {
 		*height = vid_modes[mode].height;
 	}
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -523,12 +523,12 @@ void VID_NewWindow (int width, int height) {
 	viddef.width = width;
 	viddef.height = height;
 
-	cl.force_refdef = true;		// can't use a paused refdef
+	cl.force_refdef = qtrue;		// can't use a paused refdef
 }
 
 void VID_FreeReflib (void) {
 	//	memset (&re, 0, sizeof(re));
-	reflib_active = false;
+	reflib_active = qfalse;
 }
 
 /*
@@ -552,10 +552,10 @@ qboolean VID_StartRefresh (void) {
 	if (R_Init (global_hInstance, MainWndProc) == -1) {
 		R_Shutdown ();
 		VID_FreeReflib ();
-		return false;
+		return qfalse;
 	}
-	reflib_active = true;
-	return true;
+	reflib_active = qtrue;
+	return qtrue;
 }
 
 /*
@@ -576,12 +576,12 @@ void VID_CheckChanges (void) {
 		else {
 			WIN_EnableAltTab ();
 		}
-		win_noalttab->modified = false;
+		win_noalttab->modified = qfalse;
 	}
 
 	/*	if ( vid_ref->modified )
 		{
-		cl.force_refdef = true;		// can't use a paused refdef
+		cl.force_refdef = qtrue;		// can't use a paused refdef
 		S_StopAllSounds();
 		}
 		*/
@@ -590,19 +590,19 @@ void VID_CheckChanges (void) {
 		** refresh has changed
 		*/
 
-		cl.force_refdef = true;		// can't use a paused refdef
+		cl.force_refdef = qtrue;		// can't use a paused refdef
 		S_StopAllSounds ();
 
-		vid_ref->modified = false;
-		r_fullScreen->modified = true;
-		cl.refresh_prepped = false;
-		cls.disable_screen = true;
+		vid_ref->modified = qfalse;
+		r_fullScreen->modified = qtrue;
+		cl.refresh_prepped = qfalse;
+		cls.disable_screen = qtrue;
 		CL_ClearDecals ();
 
 		if (!VID_StartRefresh ())
 			Com_Error (ERR_FATAL, "Error during initialization video");
 
-		cls.disable_screen = false;
+		cls.disable_screen = qfalse;
 		CL_InitImages ();
 	}
 
@@ -613,8 +613,8 @@ void VID_CheckChanges (void) {
 		if (!r_fullScreen->value)
 			VID_UpdateWindowPosAndSize (vid_xpos->value, vid_ypos->value);
 
-		vid_xpos->modified = false;
-		vid_ypos->modified = false;
+		vid_xpos->modified = qfalse;
+		vid_ypos->modified = qfalse;
 	}
 }
 

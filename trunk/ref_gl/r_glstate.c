@@ -447,37 +447,37 @@ void GL_Enable(GLenum cap) {
 	case GL_BLEND:
 		if (gl_state.blend)
 			return;
-		gl_state.blend = true;
+		gl_state.blend = qtrue;
 		break;
 	case GL_CULL_FACE:
 		if (gl_state.cullFace)
 			return;
-		gl_state.cullFace = true;
+		gl_state.cullFace = qtrue;
 		break;
 	case GL_DEPTH_TEST:
 		if (gl_state.depthTest)
 			return;
-		gl_state.depthTest = true;
+		gl_state.depthTest = qtrue;
 		break;
 	case GL_DEPTH_BOUNDS_TEST_EXT:
 		if (gl_state.glDepthBoundsTest)
 		return;
-		gl_state.glDepthBoundsTest = true;
+		gl_state.glDepthBoundsTest = qtrue;
 		break;
 	case GL_SCISSOR_TEST:
 		if (gl_state.scissorTest)
 			return;
-		gl_state.scissorTest = true;
+		gl_state.scissorTest = qtrue;
 		break;
 	case GL_STENCIL_TEST:
 		if (gl_state.stencilTest)
 			return;
-		gl_state.stencilTest = true;
+		gl_state.stencilTest = qtrue;
 		break;
 	case GL_POLYGON_OFFSET_FILL:
 		if (gl_state.polygonOffsetFill)
 			return;
-		gl_state.polygonOffsetFill = true;
+		gl_state.polygonOffsetFill = qtrue;
 	}
 
 	qglEnable(cap);
@@ -494,37 +494,37 @@ void GL_Disable(GLenum cap) {
 	case GL_BLEND:
 		if (!gl_state.blend)
 			return;
-		gl_state.blend = false;
+		gl_state.blend = qfalse;
 		break;
 	case GL_CULL_FACE:
 		if (!gl_state.cullFace)
 			return;
-		gl_state.cullFace = false;
+		gl_state.cullFace = qfalse;
 		break;
 	case GL_DEPTH_TEST:
 		if (!gl_state.depthTest)
 			return;
-		gl_state.depthTest = false;
+		gl_state.depthTest = qfalse;
 		break;
 	case GL_DEPTH_BOUNDS_TEST_EXT:
 		if (!gl_state.glDepthBoundsTest)
 		return;
-		gl_state.glDepthBoundsTest = false;
+		gl_state.glDepthBoundsTest = qfalse;
 		break;
 	case GL_SCISSOR_TEST:
 		if (!gl_state.scissorTest)
 			return;
-		gl_state.scissorTest = false;
+		gl_state.scissorTest = qfalse;
 		break;
 	case GL_STENCIL_TEST:
 		if (!gl_state.stencilTest)
 			return;
-		gl_state.stencilTest = false;
+		gl_state.stencilTest = qfalse;
 		break;
 	case GL_POLYGON_OFFSET_FILL:
 		if (!gl_state.polygonOffsetFill)
 			return;
-		gl_state.polygonOffsetFill = false;
+		gl_state.polygonOffsetFill = qfalse;
 	}
 
 	qglDisable(cap);

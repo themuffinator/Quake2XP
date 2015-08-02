@@ -56,7 +56,7 @@ void Action_DoEnter (menuaction_s * a) {
 void Action_Draw (menuaction_s * a) {
 	float	fontscale = cl_fontScale->value;
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	if (a->generic.flags & QMF_LEFT_JUSTIFY) {
 		if (a->generic.flags & QMF_GRAYED)
@@ -85,16 +85,16 @@ void Action_Draw (menuaction_s * a) {
 	if (a->generic.ownerdraw)
 		a->generic.ownerdraw (a);
 
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 
 }
 
 qboolean Field_DoEnter (menufield_s * f) {
 	if (f->generic.callback) {
 		f->generic.callback (f);
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 // mp menu  values in field
 void Field_Draw (menufield_s * f) {
@@ -102,7 +102,7 @@ void Field_Draw (menufield_s * f) {
 	char tempbuffer[128] = "";
 	float fontscale = cl_fontScale->value;
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	if (f->generic.name)
 		Menu_DrawStringR2LDark (f->generic.x + f->generic.parent->x +
@@ -176,7 +176,7 @@ void Field_Draw (menufield_s * f) {
 
 
 	}
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 qboolean Field_Key (menufield_s * f, int key) {
@@ -231,7 +231,7 @@ qboolean Field_Key (menufield_s * f, int key) {
 		switch (key) {
 			case K_DEL:
 			default:
-				return false;
+				return qfalse;
 		}
 	}
 
@@ -253,7 +253,7 @@ qboolean Field_Key (menufield_s * f, int key) {
 
 			free (cbd);
 		}
-		return true;
+		return qtrue;
 	}
 
 	switch (key) {
@@ -281,12 +281,12 @@ qboolean Field_Key (menufield_s * f, int key) {
 		case K_ENTER:
 		case K_ESCAPE:
 		case K_TAB:
-			return false;
+			return qfalse;
 
 		case K_SPACE:
 		default:
 			if (!isdigit (key) && (f->generic.flags & QMF_NUMBERSONLY))
-				return false;
+				return qfalse;
 
 			if (f->cursor < f->length) {
 				f->buffer[f->cursor++] = key;
@@ -298,7 +298,7 @@ qboolean Field_Key (menufield_s * f, int key) {
 			}
 	}
 
-	return true;
+	return qtrue;
 }
 
 void Menu_AddItem (menuframework_s * menu, void *item) {
@@ -403,7 +403,7 @@ void Menu_Draw (menuframework_s * menu) {
 
 	item = Menu_ItemAtCursor (menu);
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	if (item && item->cursordraw) {
 		item->cursordraw (item);
@@ -426,7 +426,7 @@ void Menu_Draw (menuframework_s * menu) {
 		}
 	}
 
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 	if (item) {
 		if (item->statusbarfunc)
 			item->statusbarfunc ((void *)item);
@@ -450,9 +450,9 @@ void Menu_DrawStatusBar (const char *string) {
 		int col = maxcol / 2 - l / 2;
 
 		Draw_Fill (0, VID_HEIGHT - 8 - (fontscale* 2 - 1) * 4, VID_WIDTH, 9 * fontscale, 0.3, 0.3, 0.3, 1.0);
-		Set_FontShader (true);
+		Set_FontShader (qtrue);
 		Menu_DrawStringScaled ((col * 8) / fontscale*(1 + (fontscale - 1)*0.5), VID_HEIGHT - 10 * fontscale, fontscale, fontscale, string);
-		Set_FontShader (false);
+		Set_FontShader (qfalse);
 	}
 	else {
 		Draw_Fill (0, VID_HEIGHT - 8 - (fontscale - 1) * 4, VID_WIDTH, 9 * fontscale, 0.0, 0.0, 0.0, 0.0);
@@ -502,16 +502,16 @@ qboolean Menu_SelectItem (menuframework_s * s) {
 				return Field_DoEnter ((menufield_s *)item);
 			case MTYPE_ACTION:
 				Action_DoEnter ((menuaction_s *)item);
-				return true;
+				return qtrue;
 			case MTYPE_LIST:
 				//          Menulist_DoEnter( ( menulist_s * ) item );
-				return false;
+				return qfalse;
 			case MTYPE_SPINCONTROL:
 				//          SpinControl_DoEnter( ( menulist_s * ) item );
-				return false;
+				return qfalse;
 		}
 	}
-	return false;
+	return qfalse;
 }
 
 void Menu_SetStatusBar (menuframework_s * m, const char *string) {
@@ -570,19 +570,19 @@ void MenuList_Draw (menulist_s * l) {
 	char **n;
 	int y = 0;
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 	Menu_DrawStringR2LDark (l->generic.x + l->generic.parent->x +
 		LCOLUMN_OFFSET,
 		l->generic.y + l->generic.parent->y,
 		l->generic.name);
 
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 	n = l->itemnames;
 
 	Draw_Fill (l->generic.x - 112 + l->generic.parent->x,
 		l->generic.parent->y + l->generic.y + l->curvalue * 10 + 10,
 		128, 10, 1.0, 0.0, 1.0, 1.0);
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 	while (*n) {
 		Menu_DrawStringR2LDark (l->generic.x + l->generic.parent->x +
 			LCOLUMN_OFFSET,
@@ -592,16 +592,16 @@ void MenuList_Draw (menulist_s * l) {
 		n++;
 		y += 10;
 	}
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 void Separator_Draw (menuseparator_s * s) {
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 	if (s->generic.name)
 		Menu_DrawStringR2LDark (s->generic.x + s->generic.parent->x,
 		s->generic.y + s->generic.parent->y,
 		s->generic.name);
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 void Slider_DoSlide (menuslider_s * s, int dir) {
@@ -624,7 +624,7 @@ void Slider_Draw (menuslider_s * s) {
 
 	shift = (cl_fontScale->value - 1) * 8;
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	Menu_DrawStringR2LDark (s->generic.x + s->generic.parent->x +
 		LCOLUMN_OFFSET,
@@ -659,7 +659,7 @@ void Slider_Draw (menuslider_s * s) {
 		(SLIDER_RANGE - 1) * 8 * s->range*fontscale),
 		s->generic.y + s->generic.parent->y, fontscale, fontscale, 131);
 
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 void SpinControl_DoEnter (menulist_s * s) {
@@ -687,7 +687,7 @@ void SpinControl_Draw (menulist_s * s) {
 	char	buffer[100];
 	float	fontscale = cl_fontScale->value;
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	if (s->generic.name) {
 		Menu_DrawStringR2LDark (s->generic.x + s->generic.parent->x +
@@ -716,5 +716,5 @@ void SpinControl_Draw (menulist_s * s) {
 			buffer);
 	}
 
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }

@@ -233,7 +233,7 @@ void SV_Baselines_f (void) {
 		if (base->modelindex || base->sound || base->effects) {
 			MSG_WriteByte (&sv_client->netchan.message, svc_spawnbaseline);
 			MSG_WriteDeltaEntity (&nullstate, base,
-				&sv_client->netchan.message, true, true);
+				&sv_client->netchan.message, qtrue, qtrue);
 		}
 		start++;
 	}
@@ -494,7 +494,7 @@ SV_ExecuteUserCommand
 void SV_ExecuteUserCommand (char *s) {
 	ucmd_t *u;
 
-	Cmd_TokenizeString (s, true);
+	Cmd_TokenizeString (s, qtrue);
 	sv_player = sv_client->edict;
 
 	//  SV_BeginRedirect (RD_CLIENT);
@@ -559,7 +559,7 @@ void SV_ExecuteClientMessage (client_t * cl) {
 	sv_player = sv_client->edict;
 
 	// only allow one move command
-	move_issued = false;
+	move_issued = qfalse;
 	stringCmdCount = 0;
 
 	while (1) {
@@ -592,7 +592,7 @@ void SV_ExecuteClientMessage (client_t * cl) {
 				if (move_issued)
 					return;			// someone is trying to cheat...
 
-				move_issued = true;
+				move_issued = qtrue;
 				checksumIndex = net_message.readcount;
 				checksum = MSG_ReadByte (&net_message);
 				lastframe = MSG_ReadLong (&net_message);

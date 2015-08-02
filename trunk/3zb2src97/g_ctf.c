@@ -33,7 +33,7 @@ qboolean bots_moveok (edict_t * ent, float ryaw, vec3_t pos, float dist,
 	float *bottom);
 //PON
 ctfgame_t ctfgame;
-qboolean techspawn = false;
+qboolean techspawn = qfalse;
 
 cvar_t *ctf;
 cvar_t *ctf_forcejoin;
@@ -91,7 +91,7 @@ void stuffcmd (edict_t * ent, char *s) {
 
 	gi.WriteByte (11);
 	gi.WriteString (s);
-	gi.unicast (ent, true);
+	gi.unicast (ent, qtrue);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -160,7 +160,7 @@ static qboolean loc_CanSee (edict_t * targ, edict_t * inflictor) {
 
 	// bmodels need special checking because their origin is 0,0,0
 	if (targ->movetype == MOVETYPE_PUSH)
-		return false;			// bmodels not supported
+		return qfalse;			// bmodels not supported
 
 	loc_buildboxpoints (targpoints, targ->s.origin, targ->mins, targ->maxs);
 
@@ -172,10 +172,10 @@ static qboolean loc_CanSee (edict_t * targ, edict_t * inflictor) {
 			gi.trace (viewpoint, vec3_origin, vec3_origin, targpoints[i],
 			inflictor, MASK_SOLID);
 		if (trace.fraction == 1.0)
-			return true;
+			return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -192,7 +192,7 @@ void CTFInit (void) {
 	if (!flag2_item)
 		flag2_item = FindItemByClassname ("item_flag_team2");
 	memset (&ctfgame, 0, sizeof(ctfgame));
-	techspawn = false;
+	techspawn = qfalse;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -584,7 +584,7 @@ qboolean CTFPickup_Flag (edict_t * ent, edict_t * other) {
 
 	if (chedit->value) {
 		SetRespawn (ent, 30);
-		return true;
+		return qtrue;
 	};
 
 
@@ -597,7 +597,7 @@ qboolean CTFPickup_Flag (edict_t * ent, edict_t * other) {
 		if (!(ent->svflags & SVF_MONSTER))
 			gi.cprintf (ent, PRINT_HIGH,
 			"Don't know what team the flag is on.\n");
-		return false;
+		return qfalse;
 	}
 
 	// same team, if the flag at base, check to he has the enemy flag
@@ -671,9 +671,9 @@ qboolean CTFPickup_Flag (edict_t * ent, edict_t * other) {
 				}
 
 				CTFResetFlags ();
-				return false;
+				return qfalse;
 			}
-			return false;		// its at home base already
+			return qfalse;		// its at home base already
 		}
 		// hey, its not home.  return it by teleporting it back
 		gi.bprintf (PRINT_HIGH, "%s returned the %s flag!\n",
@@ -682,9 +682,9 @@ qboolean CTFPickup_Flag (edict_t * ent, edict_t * other) {
 		other->client->resp.ctf_lastreturnedflag = level.time;
 		gi.sound (ent, CHAN_RELIABLE + CHAN_NO_PHS_ADD + CHAN_VOICE,
 			gi.soundindex ("ctf/flagret.wav"), 1, ATTN_NONE, 0);
-		// CTFResetFlag will remove this entity! We must return false
+		// CTFResetFlag will remove this entity! We must return qfalse
 		CTFResetFlag (ctf_team);
-		return false;
+		return qfalse;
 	}
 	// hey, its not our flag, pick it up
 	gi.bprintf (PRINT_HIGH, "%s got the %s flag!\n",
@@ -702,7 +702,7 @@ qboolean CTFPickup_Flag (edict_t * ent, edict_t * other) {
 		ent->svflags |= SVF_NOCLIENT;
 		ent->solid = SOLID_NOT;
 	}
-	return true;
+	return qtrue;
 }
 
 static void CTFDropFlagTouch (edict_t * ent, edict_t * other,
@@ -766,7 +766,7 @@ qboolean CTFDrop_Flag (edict_t * ent, gitem_t * item) {
 		if (!(ent->svflags & SVF_MONSTER))
 			gi.cprintf (ent, PRINT_HIGH, "Winners don't drop flags.\n");
 	}
-	return false;
+	return qfalse;
 }
 
 static void CTFFlagThink (edict_t * ent) {
@@ -871,13 +871,13 @@ void CTFID_f (edict_t * ent) {
 		if (!(ent->svflags & SVF_MONSTER))
 			gi.cprintf (ent, PRINT_HIGH,
 			"Disabling player identication display.\n");
-		ent->client->resp.id_state = false;
+		ent->client->resp.id_state = qfalse;
 	}
 	else {
 		if (!(ent->svflags & SVF_MONSTER))
 			gi.cprintf (ent, PRINT_HIGH,
 			"Activating player identication display.\n");
-		ent->client->resp.id_state = true;
+		ent->client->resp.id_state = qtrue;
 	}
 }
 
@@ -1905,7 +1905,7 @@ qboolean CTFPickup_Tech (edict_t * ent, edict_t * other) {
 		if ((tech = FindItemByClassname (tnames[i])) != NULL &&
 			other->client->pers.inventory[ITEM_INDEX (tech)]) {
 			CTFHasTech (other);
-			return false;		// has this one
+			return qfalse;		// has this one
 		}
 		i++;
 	}
@@ -1913,7 +1913,7 @@ qboolean CTFPickup_Tech (edict_t * ent, edict_t * other) {
 	// client only gets one tech
 	other->client->pers.inventory[ITEM_INDEX (ent->item)]++;
 	other->client->ctf_regentime = level.time;
-	return true;
+	return qtrue;
 }
 
 static void SpawnTech (gitem_t * item, edict_t * spot);
@@ -2045,7 +2045,7 @@ void CTFSetupTechSpawn (void) {
 	ent = G_Spawn ();
 	ent->nextthink = level.time + 2;
 	ent->think = SpawnTechs;
-	techspawn = true;
+	techspawn = qtrue;
 }
 
 int CTFApplyResistance (edict_t * ent, int dmg) {
@@ -2099,9 +2099,9 @@ qboolean CTFApplyStrengthSound (edict_t * ent) {
 				gi.sound (ent, CHAN_VOICE, gi.soundindex ("ctf/tech2.wav"),
 				volume, ATTN_NORM, 0);
 		}
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 
@@ -2112,8 +2112,8 @@ qboolean CTFApplyHaste (edict_t * ent) {
 		tech = FindItemByClassname ("item_tech3");
 	if (tech && ent->client &&
 		ent->client->pers.inventory[ITEM_INDEX (tech)])
-		return true;
-	return false;
+		return qtrue;
+	return qfalse;
 }
 
 void CTFApplyHasteSound (edict_t * ent) {
@@ -2136,7 +2136,7 @@ void CTFApplyHasteSound (edict_t * ent) {
 
 void CTFApplyRegeneration (edict_t * ent) {
 	static gitem_t *tech = NULL;
-	qboolean noise = false;
+	qboolean noise = qfalse;
 	gclient_t *client;
 	int index;
 	float volume = 1.0;
@@ -2158,7 +2158,7 @@ void CTFApplyRegeneration (edict_t * ent) {
 				if (ent->health > 150)
 					ent->health = 150;
 				client->ctf_regentime += 0.5;
-				noise = true;
+				noise = qtrue;
 			}
 			index = ArmorIndex (ent);
 			if (index && client->pers.inventory[index] < 150) {
@@ -2166,7 +2166,7 @@ void CTFApplyRegeneration (edict_t * ent) {
 				if (client->pers.inventory[index] > 150)
 					client->pers.inventory[index] = 150;
 				client->ctf_regentime += 0.5;
-				noise = true;
+				noise = qtrue;
 			}
 		}
 		if (noise && ent->client->ctf_techsndtime < level.time) {
@@ -2184,8 +2184,8 @@ qboolean CTFHasRegeneration (edict_t * ent) {
 		tech = FindItemByClassname ("item_tech4");
 	if (tech && ent->client &&
 		ent->client->pers.inventory[ITEM_INDEX (tech)])
-		return true;
-	return false;
+		return qtrue;
+	return qfalse;
 }
 
 /*
@@ -2241,7 +2241,7 @@ static void CTFSay_Team_Location (edict_t * who, char *buf) {
 	gitem_t *item;
 	int nearteam = -1;
 	edict_t *flag1, *flag2;
-	qboolean hotsee = false;
+	qboolean hotsee = qfalse;
 	qboolean cansee;
 
 	while ((what = loc_findradius (what, who->s.origin, 1024)) != NULL) {
@@ -2254,7 +2254,7 @@ static void CTFSay_Team_Location (edict_t * who, char *buf) {
 		// something we can see get priority over something we can't
 		cansee = loc_CanSee (what, who);
 		if (cansee && !hotsee) {
-			hotsee = true;
+			hotsee = qtrue;
 			hotindex = loc_names[i].priority;
 			hot = what;
 			VectorSubtract (what->s.origin, who->s.origin, v);
@@ -2606,7 +2606,7 @@ void CTFChaseCam (edict_t * ent, pmenu_t * p) {
 		if (e->inuse && e->solid != SOLID_NOT) {
 			ent->client->chase_target = e;
 			PMenu_Close (ent);
-			ent->client->update_chase = true;
+			ent->client->update_chase = qtrue;
 			break;
 		}
 	}
@@ -2624,8 +2624,8 @@ void DeathmatchScoreboard (edict_t * ent);
 void CTFShowScores (edict_t * ent, pmenu_t * p) {
 	PMenu_Close (ent);
 
-	ent->client->showscores = true;
-	ent->client->showinventory = false;
+	ent->client->showscores = qtrue;
+	ent->client->showinventory = qfalse;
 	DeathmatchScoreboard (ent);
 }
 
@@ -2756,7 +2756,7 @@ void CTFCredits (edict_t * ent, pmenu_t * p) {
 
 qboolean CTFStartClient (edict_t * ent) {
 	if (ent->client->resp.ctf_team != CTF_NOTEAM)
-		return false;
+		return qfalse;
 
 	if (!((int)dmflags->value & DF_CTF_FORCEJOIN)) {
 		// start as 'observer'
@@ -2768,9 +2768,9 @@ qboolean CTFStartClient (edict_t * ent) {
 		gi.linkentity (ent);
 
 		CTFOpenJoinMenu (ent);
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 qboolean CTFCheckRules (void) {
@@ -2778,9 +2778,9 @@ qboolean CTFCheckRules (void) {
 		(ctfgame.team1 >= capturelimit->value ||
 		ctfgame.team2 >= capturelimit->value)) {
 		gi.bprintf (PRINT_HIGH, "Capturelimit hit.\n");
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 /*--------------------------------------------------------------------------

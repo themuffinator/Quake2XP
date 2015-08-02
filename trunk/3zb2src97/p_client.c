@@ -175,12 +175,12 @@ qboolean IsFemale (edict_t * ent) {
 	char *info;
 
 	if (!ent->client)
-		return false;
+		return qfalse;
 
 	info = Info_ValueForKey (ent->client->pers.userinfo, "skin");
 	if (info[0] == 'f' || info[0] == 'F')
-		return true;
-	return false;
+		return qtrue;
+	return qfalse;
 }
 
 
@@ -436,13 +436,13 @@ void TossClientWeapon (edict_t * self) {
 		item = NULL;
 
 	if (!((int)(dmflags->value) & DF_QUAD_DROP))
-		quad = false;
+		quad = qfalse;
 	else
 		quad = (self->client->quad_framenum > (level.framenum + 10));
 
 	// RAFAEL
 	if (!((int)(dmflags->value) & DF_QUADFIRE_DROP))
-		quadfire = false;
+		quadfire = qfalse;
 	else
 		quadfire =
 		(self->client->quadfire_framenum > (level.framenum + 10));
@@ -703,7 +703,7 @@ void InitClientPersistant (gclient_t * client) {
 	client->pers.max_magslug = 50;
 	client->pers.max_trap = 5;
 
-	client->pers.connected = true;
+	client->pers.connected = qtrue;
 }
 
 
@@ -1114,10 +1114,10 @@ void spectator_respawn (edict_t * ent) {
 			&& strcmp (spectator_password->string, "none")
 			&& strcmp (spectator_password->string, value)) {
 			gi.cprintf (ent, PRINT_HIGH, ""S_COLOR_RED"Spectator password incorrect.\n");
-			ent->client->pers.spectator = false;
+			ent->client->pers.spectator = qfalse;
 			gi.WriteByte (svc_stufftext);
 			gi.WriteString ("spectator 0\n");
-			gi.unicast (ent, true);
+			gi.unicast (ent, qtrue);
 			return;
 		}
 		// count spectators
@@ -1127,11 +1127,11 @@ void spectator_respawn (edict_t * ent) {
 
 		if (numspec >= maxspectators->value) {
 			gi.cprintf (ent, PRINT_HIGH, ""S_COLOR_RED"Server spectator limit is full.");
-			ent->client->pers.spectator = false;
+			ent->client->pers.spectator = qfalse;
 			// reset his spectator var
 			gi.WriteByte (svc_stufftext);
 			gi.WriteString ("spectator 0\n");
-			gi.unicast (ent, true);
+			gi.unicast (ent, qtrue);
 			return;
 		}
 	}
@@ -1143,10 +1143,10 @@ void spectator_respawn (edict_t * ent) {
 		if (*password->string && strcmp (password->string, "none")
 			&& strcmp (password->string, value)) {
 			gi.cprintf (ent, PRINT_HIGH, ""S_COLOR_RED"Password incorrect.\n");
-			ent->client->pers.spectator = true;
+			ent->client->pers.spectator = qtrue;
 			gi.WriteByte (svc_stufftext);
 			gi.WriteString ("spectator 1\n");
-			gi.unicast (ent, true);
+			gi.unicast (ent, qtrue);
 			return;
 		}
 	}
@@ -1264,7 +1264,7 @@ void PutClientInServer (edict_t * ent) {
 	ent->takedamage = DAMAGE_AIM;
 	ent->movetype = MOVETYPE_WALK;
 	ent->viewheight = 22;
-	ent->inuse = true;
+	ent->inuse = qtrue;
 	ent->classname = "player";
 	ent->mass = 200;
 	ent->solid = SOLID_BBOX;
@@ -1337,7 +1337,7 @@ void PutClientInServer (edict_t * ent) {
 	if (client->pers.spectator) {
 		client->chase_target = NULL;
 
-		client->resp.spectator = true;
+		client->resp.spectator = qtrue;
 
 		ent->movetype = MOVETYPE_NOCLIP;
 		ent->solid = SOLID_NOT;
@@ -1347,7 +1347,7 @@ void PutClientInServer (edict_t * ent) {
 		return;
 	}
 	else
-		client->resp.spectator = false;
+		client->resp.spectator = qfalse;
 
 	//ZOID
 	if (ctf->value) {
@@ -1429,7 +1429,7 @@ void ClientBegin (edict_t * ent) {
 	}
 	// if there is already a body waiting for us (a loadgame), just
 	// take it, otherwise spawn one from scratch
-	if (ent->inuse == true) {
+	if (ent->inuse == qtrue) {
 		// the client has cleared the client side viewangles upon
 		// connecting to the server, which is different than the
 		// state when the game is saved, so we need to compensate
@@ -1495,9 +1495,9 @@ void ClientUserinfoChanged (edict_t * ent, char *userinfo) {
 	s = Info_ValueForKey (userinfo, "spectator");
 	// spectators are only supported in deathmatch
 	if (deathmatch->value && !ctf->value && *s && strcmp (s, "0"))
-		ent->client->pers.spectator = true;
+		ent->client->pers.spectator = qtrue;
 	else
-		ent->client->pers.spectator = false;
+		ent->client->pers.spectator = qfalse;
 
 	// set skin
 	s = Info_ValueForKey (userinfo, "skin");
@@ -1541,7 +1541,7 @@ void ClientUserinfoChanged (edict_t * ent, char *userinfo) {
 ClientConnect
 
 Called when a player begins connecting to the server.
-The game can refuse entrance to a client by returning false.
+The game can refuse entrance to a client by returning qfalse.
 If the client is allowed, the connection process will continue
 and eventually get to ClientBegin()
 Changing levels will NOT cause this to be called again, but
@@ -1557,13 +1557,13 @@ qboolean ClientConnect (edict_t * ent, char *userinfo) {
 		// check for a password
 		value = Info_ValueForKey (userinfo, "password");
 		if (strcmp(password->string, value) != 0)
-		return false;*/
+		return qfalse;*/
 
 	// check to see if they are on the banned IP list
 	value = Info_ValueForKey (userinfo, "ip");
 	if (SV_FilterPacket (value)) {
 		Info_SetValueForKey (userinfo, "rejmsg", "Banned.");
-		return false;
+		return qfalse;
 	}
 	// check for a spectator
 	value = Info_ValueForKey (userinfo, "spectator");
@@ -1575,7 +1575,7 @@ qboolean ClientConnect (edict_t * ent, char *userinfo) {
 			strcmp (spectator_password->string, value)) {
 			Info_SetValueForKey (userinfo, "rejmsg",
 				"Spectator password required or incorrect.");
-			return false;
+			return qfalse;
 		}
 		// count spectators
 		for (i = numspec = 0; i < maxclients->value; i++)
@@ -1586,7 +1586,7 @@ qboolean ClientConnect (edict_t * ent, char *userinfo) {
 		if (numspec >= maxspectators->value) {
 			Info_SetValueForKey (userinfo, "rejmsg",
 				"Server spectator limit is full.");
-			return false;
+			return qfalse;
 		}
 	}
 	else {
@@ -1596,7 +1596,7 @@ qboolean ClientConnect (edict_t * ent, char *userinfo) {
 			strcmp (password->string, value)) {
 			Info_SetValueForKey (userinfo, "rejmsg",
 				"Password required or incorrect.");
-			return false;
+			return qfalse;
 		}
 	}
 
@@ -1605,7 +1605,7 @@ qboolean ClientConnect (edict_t * ent, char *userinfo) {
 
 	// if there is already a body waiting for us (a loadgame), just
 	// take it, otherwise spawn one from scratch
-	if (ent->inuse == false) {
+	if (ent->inuse == qfalse) {
 		// clear the respawning variables
 		//ZOID -- force team join
 		ent->client->resp.ctf_team = -1;
@@ -1620,8 +1620,8 @@ qboolean ClientConnect (edict_t * ent, char *userinfo) {
 	if (game.maxclients > 1)
 		gi.dprintf ("%s"S_COLOR_YELLOW" connected\n", ent->client->pers.netname);
 
-	ent->client->pers.connected = true;
-	return true;
+	ent->client->pers.connected = qtrue;
+	return qtrue;
 }
 
 /*
@@ -1653,9 +1653,9 @@ void ClientDisconnect (edict_t * ent) {
 	gi.unlinkentity (ent);
 	ent->s.modelindex = 0;
 	ent->solid = SOLID_NOT;
-	ent->inuse = false;
+	ent->inuse = qfalse;
 	ent->classname = "disconnected";
-	ent->client->pers.connected = false;
+	ent->client->pers.connected = qfalse;
 
 	playernum = ent - g_edicts - 1;
 	gi.configstring (CS_PLAYERSKINS + playernum, "");
@@ -1785,21 +1785,21 @@ qboolean TraceX (edict_t * ent, vec3_t p2) {
 	rs_trace = gi.trace (ent->s.origin, v1, v2, p2, ent, contents);
 	if (rs_trace.fraction == 1.0 && !rs_trace.allsolid
 		&& !rs_trace.startsolid)
-		return true;
+		return qtrue;
 
 	if (ent->client->zc.route_trace && rs_trace.ent
 		&& (ent->svflags & SVF_MONSTER)) {
 		// if(!rs_trace.ent->targetname)
 		if (!Q_stricmp (rs_trace.ent->classname, "func_door")) {
 			if (rs_trace.ent->moveinfo.state == PSTATE_UP)
-				return true;
+				return qtrue;
 			else
-				return false;
+				return qfalse;
 		}
-		//      if(!Q_stricmp(rs_trace.ent->classname, "func_train")) return true;
+		//      if(!Q_stricmp(rs_trace.ent->classname, "func_train")) return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 void ClientThink (edict_t * ent, usercmd_t * ucmd) {
@@ -1895,7 +1895,7 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 
 		oldwaterstate = ent->client->zc.waterstate;
 		Get_WaterState (ent);
-		i = false;
+		i = qfalse;
 		l = GRS_NORMAL;
 		if (CurrentIndex > 0)
 			Get_RouteOrigin (CurrentIndex - 1, v);
@@ -1904,7 +1904,7 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 			old_ground = ent->groundentity;
 			//gi.bprintf(PRINT_HIGH,"1\n");
 			if (ent->groundentity)
-				i = true;
+				i = qtrue;
 		}
 		else if (!TraceX (ent, v) /* && ent->groundentity */) {
 			VectorCopy (ent->s.old_origin, v);
@@ -1912,18 +1912,18 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 			i = 3;
 			if (0 /* ent->groundentity */) {
 				if (ent->groundentity->classname[0] == 'f')
-					i = false;
+					i = qfalse;
 			}
 		}
 		else if (ent->client->zc.waterstate != oldwaterstate) {
-			i = true;
+			i = qtrue;
 			if (ent->groundentity) {
 				if (!Q_stricmp (ent->groundentity->classname, "func_train")
 					|| !Q_stricmp (ent->groundentity->classname,
 					"func_plat")
 					|| !Q_stricmp (ent->groundentity->classname,
 					"func_door"))
-					i = false;
+					i = qfalse;
 			}
 
 			if (ent->client->zc.waterstate > oldwaterstate)
@@ -1934,58 +1934,58 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 		}
 		else if (fabs (v[2] - ent->s.origin[2]) > 20) {
 			if (ent->groundentity && ent->waterlevel < 2) {
-				k = true;
+				k = qtrue;
 				if (k) {
 					VectorCopy (ent->s.origin, v);
 					//gi.bprintf(PRINT_HIGH,"3\n");
-					i = true;
+					i = qtrue;
 				}
 			}
 
 		}
 		else if ((( /* ent->velocity[2] > 10 && */ !ent->groundentity
-			&& wasground == true)
+			&& wasground == qtrue)
 			|| ( /* ent->velocity[2] < -0.5 && */ ent->groundentity
-			&& wasground == false))
+			&& wasground == qfalse))
 			&& Route[CurrentIndex - 1].state <= GRS_ITEMS) {
-			j = false;
-			k = true;			// false;
+			j = qfalse;
+			k = qtrue;			// qfalse;
 			VectorCopy (ent->s.old_origin, v);
 			v[2] -= 2;
 			rs_trace =
 				gi.trace (ent->s.old_origin, ent->mins, ent->maxs, v, ent,
 				MASK_PLAYERSOLID);
 			if (rs_trace.fraction != 1.0)
-				j = true;
+				j = qtrue;
 
 			if (old_ground) {
 				if (!Q_stricmp (old_ground->classname, "func_train")
 					|| !Q_stricmp (old_ground->classname, "func_plat")
 					|| !Q_stricmp (old_ground->classname, "func_door"))
-					k = false;
+					k = qfalse;
 			}
-			if (!ent->groundentity /* && j */  && wasground == true && k) {
+			if (!ent->groundentity /* && j */  && wasground == qtrue && k) {
 				VectorCopy (ent->s.old_origin, v);
 				//gi.bprintf(PRINT_HIGH,"6\n");
-				i = true;
+				i = qtrue;
 			}
-			else if (ent->groundentity /* && !j */  && wasground == false
+			else if (ent->groundentity /* && !j */  && wasground == qfalse
 				&& k) {
 				//              VectorSubtract(ent->s.origin)
 
 				VectorCopy (ent->s.origin, v);
 				//gi.bprintf(PRINT_HIGH,"7\n");
-				i = true;
+				i = qtrue;
 			}
 
 		}
 		else if (Route[CurrentIndex - 1].index > 1) {
-			k = true;
+			k = qtrue;
 			if (0 /* old_ground */) {
 				if (!Q_stricmp (old_ground->classname, "func_train")
 					|| !Q_stricmp (old_ground->classname, "func_plat")
 					|| !Q_stricmp (old_ground->classname, "func_door"))
-					k = false;
+					k = qfalse;
 			}
 			Get_RouteOrigin (CurrentIndex - 1, min);
 			Get_RouteOrigin (CurrentIndex - 2, max);
@@ -1996,7 +1996,7 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 			if (VectorLength (v) > 0 && Get_vec_yaw (v, x) > 45 && k) {
 				VectorCopy (ent->s.old_origin, v);
 				//gi.bprintf(PRINT_HIGH,"8\n");
-				i = true;
+				i = qtrue;
 			}
 		}
 
@@ -2030,7 +2030,7 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 					}
 				}
 				else if (!Q_stricmp (old_ground->classname, "func_door")) {
-					k = false;
+					k = qfalse;
 					if (old_ground->targetname && old_ground->union_ent) {
 						if (TraceX (ent, old_ground->union_ent->s.origin)
 							&& fabs (ent->s.origin[2] -
@@ -2042,10 +2042,10 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 							i = 2;
 						}
 						else
-							k = true;
+							k = qtrue;
 					}
 					else
-						k = true;
+						k = qtrue;
 					if (k && i) {
 						i = 2;
 						old_ground = other;
@@ -2058,20 +2058,20 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 				if (!Q_stricmp (old_ground->classname, "func_train")
 					|| !Q_stricmp (old_ground->classname, "func_plat")
 					|| !Q_stricmp (old_ground->classname, "func_door"))
-					i = false;
+					i = qfalse;
 			}
 		}
 
-		if (Route[CurrentIndex - 1].index > 0 && i == true) {
+		if (Route[CurrentIndex - 1].index > 0 && i == qtrue) {
 			Get_RouteOrigin (CurrentIndex - 1, max);
 			VectorSubtract (max, v, vv);
 			if (VectorLength (vv) <= 32)
-				i = false;
+				i = qfalse;
 		}
 
 		if (l == GRS_ONTRAIN || l == GRS_ONPLAT || l == GRS_ONDOOR) {
 			if (Route[CurrentIndex - 1].ent == old_ground)
-				i = false;
+				i = qfalse;
 		}
 
 		if (i) {
@@ -2109,9 +2109,9 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 		}
 		//      VectorCopy(ent->s.origin,old_origin);
 		if (ent->groundentity != NULL)
-			wasground = true;
+			wasground = qtrue;
 		else
-			wasground = false;
+			wasground = qfalse;
 	}
 
 	//--------------------------------------
@@ -2123,7 +2123,7 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 		// can exit intermission after five seconds
 		if (level.time > level.intermissiontime + 5.0
 			&& (ucmd->buttons & BUTTON_ANY))
-			level.exitintermission = true;
+			level.exitintermission = qtrue;
 		return;
 	}
 
@@ -2156,7 +2156,7 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 		}
 
 		if (memcmp (&client->old_pmove, &pm.s, sizeof(pm.s))) {
-			pm.snapinitial = true;
+			pm.snapinitial = qtrue;
 			// gi.dprintf ("pmove changed!\n");
 		}
 
@@ -2250,7 +2250,7 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 	{
 	if (!client->weapon_thunk)
 	{
-	client->weapon_thunk = true;
+	client->weapon_thunk = qtrue;
 	Think_Weapon (ent);
 	}
 	}*/
@@ -2269,7 +2269,7 @@ void ClientThink (edict_t * ent, usercmd_t * ucmd) {
 
 		}
 		else if (!client->weapon_thunk) {
-			client->weapon_thunk = true;
+			client->weapon_thunk = qtrue;
 			Think_Weapon (ent);
 		}
 	}
@@ -2333,7 +2333,7 @@ void ClientBeginServerFrame (edict_t * ent) {
 		)
 		Think_Weapon (ent);
 	else
-		client->weapon_thunk = false;
+		client->weapon_thunk = qfalse;
 
 	if (ent->deadflag) {
 		// wait for any button just going down

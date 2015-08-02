@@ -128,7 +128,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	if (!GLimp_InitGL ())
 	{
 		Com_Printf(S_COLOR_RED "VID_CreateWindow() - GLimp_InitGL failed\n");
-		return false;
+		return qfalse;
 	}
 
 	SetForegroundWindow( glw_state.hWnd );
@@ -137,7 +137,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	// let the sound and input subsystems know about the new window
 	VID_NewWindow (width, height);
 
-	return true;
+	return qtrue;
 }
 
 
@@ -231,11 +231,11 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 			*pwidth = width;
 			*pheight = height;
 
-			gl_state.fullscreen = true;
+			gl_state.fullscreen = qtrue;
 
 			Com_Printf(S_COLOR_GREEN"ok\n" );
 
-			if ( !VID_CreateWindow (width, height, true) )
+			if ( !VID_CreateWindow (width, height, qtrue) )
 				return rserr_invalid_mode;
 
 			return rserr_ok;
@@ -267,17 +267,17 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 
 				*pwidth = width;
 				*pheight = height;
-				gl_state.fullscreen = false;
-				if ( !VID_CreateWindow (width, height, false) )
+				gl_state.fullscreen = qfalse;
+				if ( !VID_CreateWindow (width, height, qfalse) )
 					return rserr_invalid_mode;
 				return rserr_invalid_fullscreen;
 			}
 			else
 			{
 				Com_Printf(S_COLOR_GREEN" ok\n" );
-				if ( !VID_CreateWindow (width, height, true) )
+				if ( !VID_CreateWindow (width, height, qtrue) )
 					return rserr_invalid_mode;
-				gl_state.fullscreen = true;
+				gl_state.fullscreen = qtrue;
 				return rserr_ok;
 			}
 		}
@@ -290,8 +290,8 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 
 		*pwidth = width;
 		*pheight = height;
-		gl_state.fullscreen = false;
-		if ( !VID_CreateWindow (width, height, false) )
+		gl_state.fullscreen = qfalse;
+		if ( !VID_CreateWindow (width, height, qfalse) )
 			return rserr_invalid_mode;
 	}
 
@@ -337,7 +337,7 @@ void GLimp_Shutdown( void )
 	if ( gl_state.fullscreen )
 	{
 		ChangeDisplaySettings( 0, 0 );
-		gl_state.fullscreen = false;
+		gl_state.fullscreen = qfalse;
 	}
 }
 
@@ -560,14 +560,14 @@ static qboolean HasHTT( void ) {
 
 	// bit 28 of EDX denotes HTT existence
 	if ( !( regs[_REG_EDX] & ( 1 << 28 ) ) ) {
-		return false;
+		return qfalse;
 	}
 
 	HTStatusFlag = CPUCount( logicalNum, physicalNum );
 	if ( HTStatusFlag != HT_ENABLED ) {
-		return false;
+		return qfalse;
 	}
-	return true;
+	return qtrue;
 }
 
 void GLimp_CpuID(void)
@@ -580,12 +580,12 @@ void GLimp_CpuID(void)
     unsigned    nIds, nExIds, i, z;
 	unsigned	dwCPUSpeed = MeasureCpuSpeed();
 	unsigned	pType;
-	qboolean    SSE3	= false;
-	qboolean	SSE4	= false;
-	qboolean	SSE2	= false;
-	qboolean	SSE		= false;
-	qboolean	MMX		= false;
-	qboolean	EM64T	= false;
+	qboolean    SSE3	= qfalse;
+	qboolean	SSE4	= qfalse;
+	qboolean	SSE2	= qfalse;
+	qboolean	SSE		= qfalse;
+	qboolean	MMX		= qfalse;
+	qboolean	EM64T	= qfalse;
 	SYSTEM_INFO BaseCpuInfo;
 	DWORD		dwProcessAffinity, dwSystemAffinity;
 
@@ -758,7 +758,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 
 	winver.dwOSVersionInfoSize = sizeof(winver);
 		
-	glw_state.allowdisplaydepthchange = false;
+	glw_state.allowdisplaydepthchange = qfalse;
 	ZeroMemory(&cpuinf, sizeof(SYSTEM_INFO));
 	GetSystemInfo(&cpuinf);
 
@@ -784,10 +784,10 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	if ( winver.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS )
 			VID_Error (ERR_FATAL, "Quake2xp requires Windows 2000 or greater");
 		
-		 if ( winver.dwMajorVersion == 6 && (	winver.dwMinorVersion == 0 || winver.dwMinorVersion == 1 || 
+		 if ( winver.dwMajorVersion >= 6 && (	winver.dwMinorVersion == 0 || winver.dwMinorVersion == 1 || 
 												winver.dwMinorVersion == 2 || winver.dwMinorVersion == 3) ) //vista, win7, 8 and 8.1
 			{
-			
+
 			pGPI = (PGPI) GetProcAddress(
             GetModuleHandle(TEXT("kernel32.dll")), 
             "GetProductInfo");
@@ -1002,14 +1002,14 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	
 			}
 						
-					glw_state.allowdisplaydepthchange = true;
+					glw_state.allowdisplaydepthchange = qtrue;
 					
 	}
 
 	else
 	{
 		Com_Printf( S_COLOR_RED "GLimp_Init() - GetVersionEx failed\n" );
-		return false;
+		return qfalse;
 	}
 	
 	// get user name
@@ -1019,7 +1019,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 
 	glw_state.hInstance = ( HINSTANCE ) hinstance;
 	glw_state.wndproc = wndproc;
-	return true;
+	return qtrue;
 	
 
 }
@@ -1177,31 +1177,31 @@ qboolean GLimp_InitGL (void)
 	} else 
 		Com_Printf(S_COLOR_RED"...WGL_EXT_swap_control not found\n");
 
-	gl_state.wgl_swap_control_tear = false;
+	gl_state.wgl_swap_control_tear = qfalse;
 	if ( strstr( glw_state.wglExtsString, "WGL_EXT_swap_control_tear")){
 		Com_Printf("...using WGL_EXT_swap_control_tear\n");
-		gl_state.wgl_swap_control_tear = true;
+		gl_state.wgl_swap_control_tear = qtrue;
 	} 
 	else {
 		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
 	}
 
-	gl_state.arb_multisample = false;
+	gl_state.arb_multisample = qfalse;
 	if ( strstr(  glw_state.wglExtsString, "WGL_ARB_multisample" ) )
 	if(r_arbSamples->value < 2)
 		{
 			Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_ARB_multisample\n");
-			gl_state.arb_multisample = false;
+			gl_state.arb_multisample = qfalse;
 		}else
 	{
 			Com_Printf("...using WGL_ARB_multisample\n");
-			gl_state.arb_multisample = true;
+			gl_state.arb_multisample = qtrue;
 		
 	}
 	else
 	{
 		Com_Printf("...WGL_ARB_multisample not found\n");
-		gl_state.arb_multisample = false;
+		gl_state.arb_multisample = qfalse;
 	}
 
 	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")){
@@ -1343,7 +1343,7 @@ qboolean GLimp_InitGL (void)
 			if ( ( glw_state.hDC = GetDC( glw_state.hWnd ) ) == NULL )
 			{
 				Com_Printf(S_COLOR_RED "GLimp_InitGL() GetDC failed\n" );
-				return false;
+				return qfalse;
 			}
 
 			SetPixelFormat (glw_state.hDC, pixelFormat, &temppfd);
@@ -1364,7 +1364,7 @@ qboolean GLimp_InitGL (void)
 		}
 
 GL_MsgGLError("Init PFD: ");
-return true;
+return qtrue;
 
 fail:
 	if ( glw_state.hGLRC )
@@ -1378,7 +1378,7 @@ fail:
 		ReleaseDC( glw_state.hWnd, glw_state.hDC );
 		glw_state.hDC = NULL;
 	}
-	return false;
+	return qfalse;
 }
 
 
@@ -1406,7 +1406,7 @@ void GL_UpdateSwapInterval()
 {
 
 	if(r_vsync->modified)
-	r_vsync->modified = false;
+	r_vsync->modified = qfalse;
 
 	if(gl_state.wgl_swap_control_tear){
 	

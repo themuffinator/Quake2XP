@@ -988,7 +988,7 @@ void Swap_Init (void) {
 
 	// set the byte swapping variables in a portable manner	
 	if (*(short *)swaptest == 1) {
-		bigendien = false;
+		bigendien = qfalse;
 		_BigShort = ShortSwap;
 		_LittleShort = ShortNoSwap;
 		_BigLong = LongSwap;
@@ -997,7 +997,7 @@ void Swap_Init (void) {
 		_LittleFloat = FloatNoSwap;
 	}
 	else {
-		bigendien = true;
+		bigendien = qtrue;
 		_BigShort = ShortNoSwap;
 		_LittleShort = ShortSwap;
 		_BigLong = LongNoSwap;
@@ -1390,10 +1390,10 @@ can mess up the server's parsing
 */
 qboolean Info_Validate (char *s) {
 	if (strstr (s, "\""))
-		return false;
+		return qfalse;
 	if (strstr (s, ";"))
-		return false;
-	return true;
+		return qfalse;
+	return qtrue;
 }
 
 void Info_SetValueForKey (char *s, char *key, char *value) {
@@ -1508,7 +1508,7 @@ void Q_strcat (char *dst, const char *src, int dstSize) {
 char *Com_ParseExt (char **data_p, qboolean allowNewLines) {
 	int c, len = 0;
 	char *data;
-	qboolean hasNewLines = false;
+	qboolean hasNewLines = qfalse;
 
 	data = *data_p;
 	com_token[0] = 0;
@@ -1608,7 +1608,7 @@ char *Com_SkipWhiteSpace (char *data_p, qboolean *hasNewLines) {
 
 		if (c == '\n') {
 			com_parseLine++;
-			*hasNewLines = true;
+			*hasNewLines = qtrue;
 		}
 		data_p++;
 	}

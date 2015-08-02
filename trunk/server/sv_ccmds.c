@@ -92,7 +92,7 @@ qboolean SV_SetPlayer (void) {
 	char *s;
 
 	if (Cmd_Argc () < 2)
-		return false;
+		return qfalse;
 
 	s = Cmd_Argv (1);
 
@@ -101,16 +101,16 @@ qboolean SV_SetPlayer (void) {
 		idnum = atoi (Cmd_Argv (1));
 		if (idnum < 0 || idnum >= maxclients->value) {
 			Com_Printf ("Bad client slot: %i\n", idnum);
-			return false;
+			return qfalse;
 		}
 
 		sv_client = &svs.clients[idnum];
 		sv_player = sv_client->edict;
 		if (!sv_client->state) {
 			Com_Printf ("Client %i is not active\n", idnum);
-			return false;
+			return qfalse;
 		}
-		return true;
+		return qtrue;
 	}
 	// check for a name match
 	for (i = 0, cl = svs.clients; i < maxclients->value; i++, cl++) {
@@ -119,12 +119,12 @@ qboolean SV_SetPlayer (void) {
 		if (!strcmp (cl->name, s)) {
 			sv_client = cl;
 			sv_player = sv_client->edict;
-			return true;
+			return qtrue;
 		}
 	}
 
 	Com_Printf ("Userid %s is not on the server\n", s);
-	return false;
+	return qfalse;
 }
 
 
@@ -334,7 +334,7 @@ void SV_WriteServerFile (qboolean autosave) {
 	time_t aclock;
 	struct tm *newtime;
 
-	Com_DPrintf ("SV_WriteServerFile(%s)\n", autosave ? "true" : "false");
+	Com_DPrintf ("SV_WriteServerFile(%s)\n", autosave ? "qtrue" : "qfalse");
 
 	Com_sprintf (name, sizeof(name), "%s/save/current/server.ssv",
 		FS_Gamedir ());
@@ -463,7 +463,7 @@ Puts the server in demo mode on a specific map/cinematic
 ==================
 */
 void SV_DemoMap_f (void) {
-	SV_Map (true, Cmd_Argv (1), false);
+	SV_Map (qtrue, Cmd_Argv (1), qfalse);
 }
 
 /*
@@ -513,7 +513,7 @@ void SV_GameMap_f (void) {
 			savedInuse = malloc (maxclients->value * sizeof(qboolean));
 			for (i = 0, cl = svs.clients; i < maxclients->value; i++, cl++) {
 				savedInuse[i] = cl->edict->inuse;
-				cl->edict->inuse = false;
+				cl->edict->inuse = qfalse;
 			}
 
 			SV_WriteLevelFile ();
@@ -527,14 +527,14 @@ void SV_GameMap_f (void) {
 	}
 
 	// start up the next map
-	SV_Map (false, Cmd_Argv (1), false);
+	SV_Map (qfalse, Cmd_Argv (1), qfalse);
 
 	// archive server state
 	strncpy (svs.mapcmd, Cmd_Argv (1), sizeof(svs.mapcmd) - 1);
 
 	// copy off the level to the autosave slot
 	if (!dedicated->value) {
-		SV_WriteServerFile (true);
+		SV_WriteServerFile (qtrue);
 		SV_CopySaveGame ("current", "save0");
 	}
 }
@@ -575,7 +575,7 @@ void SV_ReLightMap_f (void) {
 
 	// if not a pcx, demo, or cinematic, check to make sure the level
 	// exists
-	relightMap = (qboolean)true;
+	relightMap = (qboolean)qtrue;
 	map = Cmd_Argv (1);
 	if (!strstr (map, ".")) {
 		Com_sprintf (expanded, sizeof(expanded), "maps/%s.bsp", map);
@@ -637,7 +637,7 @@ void SV_Loadgame_f (void) {
 
 	// go to the map
 	sv.state = ss_dead;			// don't save current level when changing
-	SV_Map (false, svs.mapcmd, true);
+	SV_Map (qfalse, svs.mapcmd, qtrue);
 
 }
 
@@ -691,7 +691,7 @@ void SV_Savegame_f (void) {
 	SV_WriteLevelFile ();
 
 	// save server state
-	SV_WriteServerFile (false);
+	SV_WriteServerFile (qfalse);
 
 	// copy it off
 	SV_CopySaveGame ("current", dir);
@@ -984,8 +984,8 @@ void SV_KillServer_f (void) {
 		return;
 
 
-	SV_Shutdown ("Server was killed.\n", false);
-	NET_Config (false);			// close network sockets
+	SV_Shutdown ("Server was killed.\n", qfalse);
+	NET_Config (qfalse);			// close network sockets
 
 
 }

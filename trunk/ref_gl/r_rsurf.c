@@ -146,8 +146,8 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 	
 	if (fa->texInfo->flags & SURF_TRANS33 || SURF_TRANS66) {
 
@@ -255,9 +255,9 @@ void R_DrawChainsRA (void) {
 		if (s->texInfo->flags & SURF_WARP)
 			R_DrawWaterPolygons(s);
 		else if (s->texInfo->flags & SURF_FLOWING)
-			DrawGLPoly(s, true);
+			DrawGLPoly(s, qtrue);
 		else
-			DrawGLPoly(s, false);
+			DrawGLPoly(s, qfalse);
 
 	}
 
@@ -316,7 +316,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 	numIndices	= *indeces;
 
 	if (numVertices + nv > MAX_BATCH_SURFS)
-		return false;	// force the start new batch
+		return qfalse;	// force the start new batch
 
 
 
@@ -330,11 +330,11 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		qglUniform1f(ambientWorld_specularScale, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
 		qglUniform1f(ambientWorld_specularExp, image->SpecularExp ? image->SpecularExp : 16.f);
 
-		if (r_parallax->value){
+		if (r_reliefMapping->value){
 
 			if (!image->parallaxScale){
-				scale[0] = r_parallaxScale->value / image->width;
-				scale[1] = r_parallaxScale->value / image->height;
+				scale[0] = r_reliefScale->value / image->width;
+				scale[1] = r_reliefScale->value / image->height;
 			}
 			else
 			{
@@ -377,7 +377,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		*vertices	= numVertices;
 		*indeces	= numIndices;
 
-	return true;	
+	return qtrue;	
 }
 
 int SurfSort( const msurface_t **a, const msurface_t **b )
@@ -403,12 +403,12 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	// setup program
 	GL_BindProgram(ambientWorldProgram, 0);
 
-	qglUniform1f(ambientWorld_colorScale, r_worldColorScale->value);
+	qglUniform1f(ambientWorld_colorScale, r_textureColorScale->value);
 
-	if (r_parallax->value > 0 || r_worldmodel->useXPLM)
+	if (r_reliefMapping->value > 0 || r_worldmodel->useXPLM)
 		qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
 	
-	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_parallax->value, 0, 1));
+	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_reliefMapping->value, 0, 1));
 	qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
 
 	qglUniform1i(ambientWorld_diffuse,		0);
@@ -458,10 +458,10 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 			}
 
 			oldTex = s->texInfo->image->texnum;
-			newBatch = true;
+			newBatch = qtrue;
 		}
 	else
-		newBatch = false;
+		newBatch = qfalse;
 	
 	// fill new batch
 //	repeat:	
@@ -498,7 +498,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	numIndices = *indeces;
 
 	if (numVertices + nv > MAX_BATCH_SURFS)
-		return false;	// force the start new batch
+		return qfalse;	// force the start new batch
 
 
 	if (newBatch)
@@ -529,12 +529,12 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 				qglUniform1i(lightWorld_caustics, 0);
 		}
 
-		if (r_parallax->value){
+		if (r_reliefMapping->value){
 
 			if (!image->parallaxScale){
 
-				scale[0] = r_parallaxScale->value / image->width;
-				scale[1] = r_parallaxScale->value / image->height;
+				scale[0] = r_reliefScale->value / image->width;
+				scale[1] = r_reliefScale->value / image->height;
 			}
 			else
 			{
@@ -581,7 +581,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	*vertices = numVertices;
 	*indeces = numIndices;
 
-	return true;
+	return qtrue;
 }
 
  int lightSurfSort( const msurface_t **a, const msurface_t **b )
@@ -606,25 +606,25 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	// setup program
 	GL_BindProgram(lightWorldProgram, defBits);
 
-	qglUniform1f(lightWorld_colorScale, r_worldColorScale->value);
+	qglUniform1f(lightWorld_colorScale, r_textureColorScale->value);
 	qglUniform1i(lightWorld_ambient, (int)currentShadowLight->isAmbient);
 	qglUniform3fv(lightWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
 	qglUniform3fv(lightWorld_lightOrigin, 1, currentShadowLight->origin);
 	qglUniform4f(lightWorld_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 
 	R_CalcCubeMapMatrix(bmodel);
-	qglUniformMatrix4fv(lightWorld_cubeMatrix, 1, false, (const float *)currentShadowLight->cubeMapMatrix);
+	qglUniformMatrix4fv(lightWorld_cubeMatrix, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
 	if (!bmodel){
-		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, false, (const float *)currentShadowLight->attenMapMatrix);
+		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)currentShadowLight->attenMapMatrix);
 	}
 	else
 	{
 		Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMapMatrix, entAttenMatrix);
-		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, false, (const float *)entAttenMatrix);
+		qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
 	}
 
-	qglUniform1i(lightWorld_parallaxType, (int)clamp(r_parallax->value, 0, 1));
+	qglUniform1i(lightWorld_parallaxType, (int)clamp(r_reliefMapping->value, 0, 1));
 
 	if(currentShadowLight->isFog){
 		qglUniform1i(lightWorld_fog, (int)currentShadowLight->isFog);
@@ -663,10 +663,10 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 			oldTex = s->texInfo->image->texnum;
 			oldFlag = s->flags;
 			oldCaust = caustics;
-			newBatch = true;
+			newBatch = qtrue;
 		}
 		else
-			newBatch = false;
+			newBatch = qfalse;
 
 	// fill new batch
 //	repeat:
@@ -691,7 +691,7 @@ qboolean SurfInFrustum (msurface_t *s) {
 	if (s->polys)
 		return !R_CullBox(s->mins, s->maxs);
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -830,18 +830,18 @@ qboolean R_MarkLightSurf (msurface_t *surf, qboolean world) {
 
 	if (world){
 		if (!SurfInFrustum(surf))
-			return false;
+			return qfalse;
 	}
 
 	if ((surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
-		return false;
+		return qfalse;
 hack:
 
 	plane = surf->plane;
 	poly = surf->polys;
 	
 	if (poly->lightTimestamp == r_lightTimestamp)
-		return false;
+		return qfalse;
 
 	switch (plane->type)
 	{
@@ -865,7 +865,7 @@ hack:
 		//the normals are flipped when surf_planeback is 1
 		if (((surf->flags & MSURF_PLANEBACK) && (dist > 0)) ||
 			(!(surf->flags & MSURF_PLANEBACK) && (dist < 0)))
-			return false;
+			return qfalse;
 next:
 
 	if (world){
@@ -890,12 +890,12 @@ next:
 
 		if (((surf->flags & MSURF_PLANEBACK) && (dot > 0)) ||
 			(!(surf->flags & MSURF_PLANEBACK) && (dot < 0)))
-			return false;
+			return qfalse;
 		}
 next2:
 
 	if (abs(dist) > currentShadowLight->len)
-		return false;
+		return qfalse;
 
 	if(world)
 	{
@@ -917,14 +917,14 @@ next2:
 		pbbox[5] = surf->maxs[2];
 
 		if(!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
-			return false;
+			return qfalse;
 		if(currentShadowLight->_cone && R_CullBox_(&pbbox[0], &pbbox[3], currentShadowLight->frust))
-			return false;
+			return qfalse;
 	}
 
 	poly->lightTimestamp = r_lightTimestamp;
 
-	return true;
+	return qtrue;
 }
 
 void R_MarkLightCasting (mnode_t *node)
@@ -951,7 +951,7 @@ void R_MarkLightCasting (mnode_t *node)
 
 		for (c = 0; c < leaf->numMarkSurfaces; c++, surf++)
 		{
-			if (R_MarkLightSurf ((*surf), true))
+			if (R_MarkLightSurf ((*surf), qtrue))
 			{
 				light_surfaces[num_light_surfaces++] = (*surf);
 			}
@@ -994,7 +994,7 @@ void R_DrawLightWorld(void)
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -1003,18 +1003,18 @@ void R_DrawLightWorld(void)
 	qglEnableVertexAttribArray(ATRB_TANGENT);
 	qglEnableVertexAttribArray(ATRB_BINORMAL);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.xyz_offset));
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.st_offset));
-	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.lm_offset));
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.nm_offset));
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.tg_offset));
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.bn_offset));
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
 	
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
 				
 	if(R_FillLightChain())
-		GL_DrawLightPass(false, false);
+		GL_DrawLightPass(qfalse, qfalse);
 
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -1056,7 +1056,7 @@ void R_DrawBSP (void) {
 		
 	R_ClearSkyBox();	
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -1065,18 +1065,18 @@ void R_DrawBSP (void) {
 	qglEnableVertexAttribArray(ATRB_TANGENT);
 	qglEnableVertexAttribArray(ATRB_BINORMAL);
 	
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.xyz_offset));
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.st_offset));
-	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.lm_offset));
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.nm_offset));
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.tg_offset));
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.bn_offset));
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
 
 	num_scene_surfaces = 0;
 
 	R_RecursiveWorldNode(r_worldmodel->nodes);
 
-	GL_DrawLightmappedPoly(false);
+	GL_DrawLightmappedPoly(qfalse);
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_TEX0);
@@ -1089,7 +1089,7 @@ void R_DrawBSP (void) {
 
 	DrawTextureChains();
 
-	R_DrawSkyBox(true);
+	R_DrawSkyBox(qtrue);
 }
 
 /*
@@ -1098,7 +1098,7 @@ R_DrawInlineBModel
 
 =================
 */
-extern qboolean bmodelcaust = false;
+extern qboolean bmodelcaust = qfalse;
 
 void R_DrawBrushModel();
 
@@ -1236,7 +1236,7 @@ void R_DrawBrushModel (void) {
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		rotated = true;
+		rotated = qtrue;
 
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -1244,7 +1244,7 @@ void R_DrawBrushModel (void) {
 		}
 	}
 	else {
-		rotated = false;
+		rotated = qfalse;
 		VectorAdd(currententity->origin, currentmodel->mins, mins);
 		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
 	}
@@ -1277,7 +1277,7 @@ void R_DrawBrushModel (void) {
 
 	R_DrawInlineBModel2();
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -1286,17 +1286,17 @@ void R_DrawBrushModel (void) {
 	qglEnableVertexAttribArray(ATRB_TANGENT);
 	qglEnableVertexAttribArray(ATRB_BINORMAL);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.xyz_offset));
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.st_offset));
-	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.lm_offset));
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.nm_offset));
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.tg_offset));
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.bn_offset));
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
 	
 	num_scene_surfaces = 0;
 
 	R_DrawInlineBModel();
-	GL_DrawLightmappedPoly(true);
+	GL_DrawLightmappedPoly(qtrue);
 	
 	qglDisableVertexAttribArray(ATRB_POSITION);
 	qglDisableVertexAttribArray(ATRB_NORMAL);
@@ -1328,7 +1328,7 @@ void R_DrawBrushModelRA (void) {
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		rotated = true;
+		rotated = qtrue;
 
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
@@ -1336,7 +1336,7 @@ void R_DrawBrushModelRA (void) {
 		}
 	}
 	else {
-		rotated = false;
+		rotated = qfalse;
 		VectorAdd(currententity->origin, currentmodel->mins, mins);
 		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
 	}
@@ -1384,7 +1384,7 @@ qboolean R_MarkBrushModelSurfaces (void) {
 	for (i=0 ; i<clmodel->numModelSurfaces ; i++, psurf++)
 	{
 
-		if (R_MarkLightSurf (psurf, false))
+		if (R_MarkLightSurf (psurf, qfalse))
 			{
 				light_surfaces[num_light_surfaces++] = psurf;
 			}
@@ -1407,13 +1407,13 @@ void R_DrawLightBrushModel (void) {
 		return;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		rotated = true;
+		rotated = qtrue;
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
 			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
 	} else {
-		rotated = false;
+		rotated = qfalse;
 		VectorAdd(currententity->origin, currentmodel->mins, mins);
 		VectorAdd(currententity->origin, currentmodel->maxs, maxs);
 	}
@@ -1437,7 +1437,7 @@ void R_DrawLightBrushModel (void) {
 	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
 
-	caustics = false;
+	caustics = qfalse;
 	currententity->minmax[0] = mins[0];
 	currententity->minmax[1] = mins[1];
 	currententity->minmax[2] = mins[2];
@@ -1447,22 +1447,22 @@ void R_DrawLightBrushModel (void) {
 
 	VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]);
 	if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-		caustics = true;
+		caustics = qtrue;
 	else
 	{
 		VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]);
 		if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-			caustics = true;
+			caustics = qtrue;
 		else
 		{
 			VectorSet(org, currententity->minmax[0], currententity->minmax[4], currententity->minmax[5]);
 			if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-				caustics = true;
+				caustics = qtrue;
 			else
 			{
 				VectorSet(org, currententity->minmax[3], currententity->minmax[4], currententity->minmax[5]);
 				if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
-					caustics = true;
+					caustics = qtrue;
 			}
 		}
 	}
@@ -1472,7 +1472,7 @@ void R_DrawLightBrushModel (void) {
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
@@ -1480,17 +1480,17 @@ void R_DrawLightBrushModel (void) {
 	qglEnableVertexAttribArray(ATRB_TANGENT);
 	qglEnableVertexAttribArray(ATRB_BINORMAL);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.xyz_offset));
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.st_offset));
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.nm_offset));
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.tg_offset));
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.bn_offset));
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
 
 	r_lightTimestamp++;
 	num_light_surfaces = 0;
 	
 	if(R_MarkBrushModelSurfaces())
-		GL_DrawLightPass(true, caustics);
+		GL_DrawLightPass(qtrue, caustics);
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 	

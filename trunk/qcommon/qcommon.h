@@ -79,8 +79,8 @@ extern	int	zipdata;
 //============================================================================
 
 typedef struct sizebuf_s {
-	qboolean allowoverflow;		// if false, do a Com_Error
-	qboolean overflowed;		// set to true if the buffer size failed
+	qboolean allowoverflow;		// if qfalse, do a Com_Error
+	qboolean overflowed;		// set to qtrue if the buffer size failed
 	byte *data;
 	int maxsize;
 	int cursize;
@@ -392,7 +392,7 @@ void Cbuf_AddEarlyCommands (qboolean clear);
 
 qboolean Cbuf_AddLateCommands (void);
 // adds all the remaining + commands from the command line
-// Returns true if any late commands were added, which
+// Returns qtrue if any late commands were added, which
 // will keep the demoloop from immediately starting
 
 void Cbuf_Execute (void);
@@ -512,12 +512,12 @@ void Cvar_GetLatchedVars (void);
 
 qboolean Cvar_Command (void);
 // called by Cmd_ExecuteString when Cmd_Argv(0) doesn't match a known
-// command.  Returns true if the command was a variable reference that
+// command.  Returns qtrue if the command was a variable reference that
 // was handled. (print or change)
 
 void Cvar_WriteVariables (char *path);
 // appends lines containing "set variable value" for all variables
-// with the archive flag set to true.
+// with the archive flag set to qtrue.
 
 void Cvar_Init (void);
 

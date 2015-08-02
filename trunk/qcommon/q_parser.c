@@ -148,23 +148,23 @@ Parser_SkipWhiteSpace
 ===================
 */
 static qboolean Parser_SkipWhiteSpace (parser_t *parser, qboolean allowLineBreaks) {
-	qboolean	hasNewLines = false;
+	qboolean	hasNewLines = qfalse;
 
 	while (1) {
 		while (*parser->text <= ' ') {
 			if (!*parser->text)
-				return false;
+				return qfalse;
 
 			if (*parser->text == '\n') {
 				parser->line++;
-				hasNewLines = true;
+				hasNewLines = qtrue;
 			}
 
 			parser->text++;
 		}
 
 		if (hasNewLines && !allowLineBreaks)
-			return false;
+			return qfalse;
 
 		// skip double slash comments
 		if (*parser->text == '/' && parser->text[1] == '/') {
@@ -199,7 +199,7 @@ static qboolean Parser_SkipWhiteSpace (parser_t *parser, qboolean allowLineBreak
 		break;
 	}
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -221,7 +221,7 @@ static qboolean Parser_ReadString (parser_t *parser, token_t *token) {
 	while (1) {
 		if (!*parser->text) {
 			Parser_Warning (parser, "missing trailing quote\n");
-			return false;
+			return qfalse;
 		}
 
 		if (*parser->text == '\\' && parser->text[1] == '\"') {
@@ -243,7 +243,7 @@ static qboolean Parser_ReadString (parser_t *parser, token_t *token) {
 
 		if (token->length == MAX_TOKEN_CHARS - 1) {
 			Parser_Warning (parser, "string length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
-			return false;
+			return qfalse;
 		}
 
 		token->text[token->length++] = *parser->text++;
@@ -253,7 +253,7 @@ static qboolean Parser_ReadString (parser_t *parser, token_t *token) {
 
 	Parser_UpdateNumber (token);
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -285,7 +285,7 @@ static qboolean Parser_ReadNumber (parser_t *parser, token_t *token) {
 
 		if (token->length == MAX_TOKEN_CHARS - 1) {
 			Parser_Warning (parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
-			return false;
+			return qfalse;
 		}
 
 		token->text[token->length++] = *parser->text++;
@@ -295,7 +295,7 @@ static qboolean Parser_ReadNumber (parser_t *parser, token_t *token) {
 	if (*parser->text == 'e' || *parser->text == 'E') {
 		if (token->length == MAX_TOKEN_CHARS - 1) {
 			Parser_Warning (parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
-			return false;
+			return qfalse;
 		}
 
 		token->text[token->length++] = *parser->text++;
@@ -303,7 +303,7 @@ static qboolean Parser_ReadNumber (parser_t *parser, token_t *token) {
 		if (*parser->text == '-' || *parser->text == '+') {
 			if (token->length == MAX_TOKEN_CHARS - 1) {
 				Parser_Warning (parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
-				return false;
+				return qfalse;
 			}
 
 			token->text[token->length++] = *parser->text++;
@@ -315,7 +315,7 @@ static qboolean Parser_ReadNumber (parser_t *parser, token_t *token) {
 
 			if (token->length == MAX_TOKEN_CHARS - 1) {
 				Parser_Warning (parser, "number length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
-				return false;
+				return qfalse;
 			}
 
 			token->text[token->length++] = *parser->text++;
@@ -326,7 +326,7 @@ static qboolean Parser_ReadNumber (parser_t *parser, token_t *token) {
 
 	Parser_UpdateNumber (token);
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -359,7 +359,7 @@ static qboolean Parser_ReadWord (parser_t *parser, token_t *token) {
 
 		if (token->length == MAX_TOKEN_CHARS - 1) {
 			Parser_Warning (parser, "word length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
-			return false;
+			return qfalse;
 		}
 
 		token->text[token->length++] = *parser->text++;
@@ -369,7 +369,7 @@ static qboolean Parser_ReadWord (parser_t *parser, token_t *token) {
 
 	Parser_UpdateNumber (token);
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -397,7 +397,7 @@ static qboolean Parser_ReadPunctuation (parser_t *parser, token_t *token) {
 		// a valid multi-character punctuation
 		if (i > MAX_TOKEN_CHARS - 1) {
 			Parser_Warning (parser, "punctuation length exceeds MAX_TOKEN_CHARS ( %i )\n", MAX_TOKEN_CHARS);
-			return false;
+			return qfalse;
 		}
 
 		token->type = TT_PUNCTUATION;
@@ -412,10 +412,10 @@ static qboolean Parser_ReadPunctuation (parser_t *parser, token_t *token) {
 
 		Parser_UpdateNumber (token);
 
-		return true;
+		return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 /*
@@ -431,14 +431,14 @@ static qboolean Parser_GetTokenExt (parser_t *parser, token_t *token, qboolean a
 	char	c;
 
 	if (parser->ungetToken) {
-		parser->ungetToken = false;
+		parser->ungetToken = qfalse;
 		Q_memcpy (token, &parser->token, sizeof(token_t));
-		return true;
+		return qtrue;
 	}
 
 	// make sure incoming data is valid
 	if (!parser->text)
-		return false;
+		return qfalse;
 
 	parser->lastLine = parser->line;
 	parser->lastText = parser->text;
@@ -447,14 +447,14 @@ static qboolean Parser_GetTokenExt (parser_t *parser, token_t *token, qboolean a
 
 	// skip any leading whitespace
 	if (!Parser_SkipWhiteSpace (parser, allowLineBreaks))
-		return false;
+		return qfalse;
 
 	c = *parser->text;
 
 	// handle quoted strings
 	if (c == '\"') {
 		if (Parser_ReadString (parser, token))
-			return true;
+			return qtrue;
 	}
 
 	// check for a number
@@ -463,7 +463,7 @@ static qboolean Parser_GetTokenExt (parser_t *parser, token_t *token, qboolean a
 		(c == '-' && parser->text[1] >= '0' && parser->text[1] <= '9') ||
 		(c == '.' && parser->text[1] >= '0' && parser->text[1] <= '9')) {
 		if (Parser_ReadNumber (parser, token))
-			return true;
+			return qtrue;
 	}
 
 	// check for a regular word
@@ -471,18 +471,18 @@ static qboolean Parser_GetTokenExt (parser_t *parser, token_t *token, qboolean a
 	// and also colons for drive letters
 	else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
 		if (Parser_ReadWord (parser, token))
-			return true;
+			return qtrue;
 	}
 
 	// check for punctuation
 	else if (Parser_ReadPunctuation (parser, token))
-		return true;
+		return qtrue;
 
 	Parser_Warning (parser, "Parser_GetToken: couldn't read token\n");
 
 	memset (token, 0, sizeof(token_t));
 
-	return false;
+	return qfalse;
 }
 
 /*
@@ -492,10 +492,10 @@ Parser_GetToken
 ===================
 */
 qboolean Parser_GetToken (parser_t *parser, token_t *token) {
-	if (!Parser_GetTokenExt (parser, token, true))
-		return false;
+	if (!Parser_GetTokenExt (parser, token, qtrue))
+		return qfalse;
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -505,10 +505,10 @@ Parser_GetTokenOnLine
 ===================
 */
 qboolean Parser_GetTokenOnLine (parser_t *parser, token_t *token) {
-	if (!Parser_GetTokenExt (parser, token, false))
-		return false;
+	if (!Parser_GetTokenExt (parser, token, qfalse))
+		return qfalse;
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -528,7 +528,7 @@ qboolean Parser_GetRestOfLine (parser_t *parser, token_t *token) {
 	while (1) {
 		if (!Parser_GetTokenOnLine (parser, &tok)) {
 			if (!token->length)
-				return false;	// the rest of the line is empty
+				return qfalse;	// the rest of the line is empty
 
 			break;
 		}
@@ -541,7 +541,7 @@ qboolean Parser_GetRestOfLine (parser_t *parser, token_t *token) {
 		token->length += tok.length;
 	}
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -553,7 +553,7 @@ the current token instead of advancing the pointer.
 ===================
 */
 void Parser_UngetToken (parser_t *parser, token_t *token) {
-	parser->ungetToken = true;
+	parser->ungetToken = qtrue;
 	Q_memcpy (&parser->token, token, sizeof(token_t));
 }
 
@@ -567,7 +567,7 @@ qboolean Parser_CheckToken (parser_t *parser, const char *match, qboolean warnin
 	token_t		token;
 
 	if (!Parser_GetToken (parser, &token))
-		return false;
+		return qfalse;
 
 	if (Q_stricmp (token.text, (char*)match)) {
 		if (warning)
@@ -575,10 +575,10 @@ qboolean Parser_CheckToken (parser_t *parser, const char *match, qboolean warnin
 		else
 			Parser_Error (parser, "expected '%s', found '%s'\n", match, token.text);
 
-		return false;
+		return qfalse;
 	}
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -591,7 +591,7 @@ qboolean Parser_CheckTokenType (parser_t *parser, tokenType_t type, qboolean war
 	token_t		token;
 
 	if (!Parser_GetToken (parser, &token))
-		return false;
+		return qfalse;
 
 	if (token.type != type) {
 		if (warning) {
@@ -621,10 +621,10 @@ qboolean Parser_CheckTokenType (parser_t *parser, tokenType_t type, qboolean war
 			}
 		}
 
-		return false;
+		return qfalse;
 	}
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -641,7 +641,7 @@ qboolean Parser_SkipBracedSection (parser_t *parser, int depth) {
 
 	do {
 		if (!Parser_GetToken (parser, &token))
-			return false;
+			return qfalse;
 
 		if (token.type == TT_PUNCTUATION) {
 			if (!Q_stricmp (token.text, "{"))
@@ -651,7 +651,7 @@ qboolean Parser_SkipBracedSection (parser_t *parser, int depth) {
 		}
 	} while (depth);
 
-	return true;
+	return qtrue;
 }
 
 /*

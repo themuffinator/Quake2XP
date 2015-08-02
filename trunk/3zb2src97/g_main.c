@@ -219,7 +219,7 @@ get next map's file name
 */
 void Get_NextMap () {
 	FILE *fp;
-	qboolean firstflag = false;
+	qboolean firstflag = qfalse;
 	char Buff[MAX_QPATH];
 	char top[MAX_QPATH];
 	char nextmap[MAX_QPATH];
@@ -279,7 +279,7 @@ void Get_NextMap () {
 		sscanf (Buff, "%s", nextmap);
 
 		if (!firstflag) {
-			firstflag = true;
+			firstflag = qtrue;
 			strcpy (top, nextmap);
 		}
 
@@ -374,7 +374,7 @@ void CheckNeedPass (void) {
 	// if password or spectator_password has changed, update needpass
 	// as needed
 	if (password->modified || spectator_password->modified) {
-		password->modified = spectator_password->modified = false;
+		password->modified = spectator_password->modified = qfalse;
 
 		need = 0;
 
@@ -519,7 +519,7 @@ void G_RunFrame (void) {
 	// treat each object in turn
 	// even the world gets a chance to think
 	//
-	haveflag = false;
+	haveflag = qfalse;
 	ent = &g_edicts[0];
 	for (i = 0; i < globals.num_edicts; i++, ent++) {
 		if (!ent->inuse)
@@ -554,7 +554,7 @@ void G_RunFrame (void) {
 					if (g_edicts[i].client->pers.
 						inventory[ITEM_INDEX (zflag_item)]) {
 						zflag_ent = NULL;
-						haveflag = true;
+						haveflag = qtrue;
 						gi.sound (ent, CHAN_VOICE,
 							gi.soundindex ("misc/secret.wav"), 1,
 							ATTN_NORM, 0);

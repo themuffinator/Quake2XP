@@ -270,10 +270,10 @@ qboolean FS_FileExists (char *path) {
 
 	if (FS_FOpenFile (path, &f)) {
 		FS_FCloseFile (&f);
-		return (true);
+		return (qtrue);
 	}
 
-	return (false);
+	return (qfalse);
 }
 
 /*
@@ -714,14 +714,14 @@ FS_MatchPath (const char *findname, const char *name, char **output, unsigned mu
 	strncpy (buffer, name, sizeof(buffer));
 
 	if ((canthave & SFF_SUBDIR) && name[strlen (name) - 1] == '/')
-		return (false);
+		return (qfalse);
 
 	if (musthave & SFF_SUBDIR) {
 		if ((ptr = strrchr (buffer, '/')) != NULL)
 			*ptr = '\0';
 
 		else
-			return (false);
+			return (qfalse);
 	}
 
 	if ((musthave & SFF_HIDDEN) || (canthave & SFF_HIDDEN)) {
@@ -730,17 +730,17 @@ FS_MatchPath (const char *findname, const char *name, char **output, unsigned mu
 
 		if (((musthave & SFF_HIDDEN) && ptr[1] != '.') ||
 			((canthave & SFF_HIDDEN) && ptr[1] == '.'))
-			return (false);
+			return (qfalse);
 	}
 
 	if (canthave & SFF_RDONLY)
-		return (false);
+		return (qfalse);
 
 	retval = Com_glob_match (findname, buffer);
 
 	// check that the path depth does not increase
 	if (countchs (buffer, '/') > countchs (findname, '/'))
-		retval = false;
+		retval = qfalse;
 
 	if (retval && output != NULL)
 		*output = strdup (buffer);

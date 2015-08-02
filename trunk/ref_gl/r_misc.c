@@ -505,7 +505,7 @@ image_t *R_LoadLightFilter (int id) {
 	char	checkname[MAX_OSPATH];
 	img_t	pix[6];
 	byte	*nullpixels;
-	qboolean	allNull = true;
+	qboolean	allNull = qtrue;
 
 	Com_sprintf (name, sizeof(name), "***Filter%2i***", id + 1);
 
@@ -565,7 +565,7 @@ image_t *R_LoadLightFilter (int id) {
 
 	for (i = 0; i < 6; i++) {
 		if (pix[i].pixels) {
-			allNull = false;
+			allNull = qfalse;
 			R_FlipImage (i, &pix[i], (byte*)trans);
 			free (pix[i].pixels);
 			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + i, 0, GL_RGBA, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, /*pix[i].pixels*/ trans);
@@ -1008,7 +1008,7 @@ void GL_SetDefaultState (void) {
 
 	qglDisable (GL_POLYGON_OFFSET_FILL);
 	qglPolygonOffset (0.f, 1.f);
-	gl_state.polygonOffsetFill = false;
+	gl_state.polygonOffsetFill = qfalse;
 	gl_state.polygonOffsetFactor = 0.f;
 	gl_state.polygonOffsetUnits = 1.f;
 
@@ -1019,7 +1019,7 @@ void GL_SetDefaultState (void) {
 	// scissor
 	qglDisable (GL_SCISSOR_TEST);
 	qglScissor (0, 0, vid.width, vid.height);
-	gl_state.scissorTest = false;
+	gl_state.scissorTest = qfalse;
 	gl_state.scissor[0] = 0;
 	gl_state.scissor[1] = 0;
 	gl_state.scissor[2] = vid.width;
@@ -1036,9 +1036,9 @@ void GL_SetDefaultState (void) {
 	qglDisable (GL_DEPTH_TEST);
 	qglDepthFunc (GL_LEQUAL);
 	qglDepthMask (1);
-	gl_state.depthTest = false;
+	gl_state.depthTest = qfalse;
 	gl_state.depthFunc = GL_LEQUAL;
-	gl_state.depthMask = true;
+	gl_state.depthMask = qtrue;
 
 	// stencil test
 	qglDisable (GL_STENCIL_TEST);
@@ -1046,7 +1046,7 @@ void GL_SetDefaultState (void) {
 	qglStencilFunc (GL_ALWAYS, 128, 255);
 	qglStencilOp (GL_KEEP, GL_KEEP, GL_KEEP);
 	qglStencilOpSeparate (GL_FRONT_AND_BACK, GL_KEEP, GL_KEEP, GL_KEEP);
-	gl_state.stencilTest = false;
+	gl_state.stencilTest = qfalse;
 	gl_state.stencilMask = 255;
 	gl_state.stencilFunc = GL_ALWAYS;
 	gl_state.stencilRef = 128;
@@ -1059,7 +1059,7 @@ void GL_SetDefaultState (void) {
 	// blending
 	qglDisable (GL_BLEND);
 	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	gl_state.blend = false;
+	gl_state.blend = qfalse;
 	gl_state.blendSrc = GL_SRC_ALPHA;
 	gl_state.blendDst = GL_ONE_MINUS_SRC_ALPHA;
 
@@ -1067,13 +1067,13 @@ void GL_SetDefaultState (void) {
 	qglDisable (GL_CULL_FACE);
 	qglCullFace (GL_FRONT);
 	qglFrontFace (GL_CCW);
-	gl_state.cullFace = false;
+	gl_state.cullFace = qfalse;
 	gl_state.cullMode = GL_FRONT;
 	gl_state.frontFace = GL_CCW;
 
 	// depth bounds test
 	if (gl_state.depthBoundsTest) {
-		gl_state.glDepthBoundsTest = false;
+		gl_state.glDepthBoundsTest = qfalse;
 		qglDisable (GL_DEPTH_BOUNDS_TEST_EXT);
 		glDepthBoundsEXT (0.f, 1.f);
 		gl_state.depthBoundsMins = 0.f;

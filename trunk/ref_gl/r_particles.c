@@ -78,9 +78,9 @@ void R_DrawParticles (void) {
 	qglEnableVertexAttribArray (ATRB_TEX0);
 	qglEnableVertexAttribArray (ATRB_COLOR);
 
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, false, 0, ParticleVert);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, false, 0, ParticleTextCoord);
-	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, false, 0, ParticleColor);
+	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, ParticleVert);
+	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, ParticleTextCoord);
+	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, ParticleColor);
 
 	GL_SelectTexture (GL_TEXTURE0_ARB);
 	qglUniform1i (particle_texMap, 0);

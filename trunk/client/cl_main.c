@@ -245,7 +245,7 @@ void CL_Stop_f (void) {
 	fwrite (&len, 4, 1, cls.demofile);
 	fclose (cls.demofile);
 	cls.demofile = NULL;
-	cls.demorecording = false;
+	cls.demorecording = qfalse;
 	Com_Printf ("Stopped demo.\n");
 }
 
@@ -294,11 +294,11 @@ void CL_Record_f (void) {
 		Com_Printf ("ERROR: couldn't open.\n");
 		return;
 	}
-	cls.demorecording = true;
+	cls.demorecording = qtrue;
 
 	// don't start saving messages until a non-delta compressed message is
 	// received
-	cls.demowaiting = true;
+	cls.demowaiting = qtrue;
 
 	//
 	// write out messages to hold the startup information
@@ -350,7 +350,7 @@ void CL_Record_f (void) {
 
 		MSG_WriteByte (&buf, svc_spawnbaseline);
 		MSG_WriteDeltaEntity (&nullstate, &cl_entities[i].baseline, &buf,
-			true, true);
+			qtrue, qtrue);
 	}
 
 	MSG_WriteByte (&buf, svc_stufftext);
@@ -508,7 +508,7 @@ void CL_SendConnectPacket (void) {
 		adr.port = BigShort (PORT_SERVER);
 
 	port = Cvar_VariableValue ("qport");
-	userinfo_modified = false;
+	userinfo_modified = qfalse;
 
 	if (net_compatibility->value)
 		Netchan_OutOfBandPrint (NS_CLIENT, adr, "connect %i %i %i \"%s\"\n",
@@ -583,7 +583,7 @@ void CL_Connect_f (void) {
 
 	if (Com_ServerState ()) {	// if running a local server, kill it and
 		// reissue
-		SV_Shutdown (va ("Server quit\n", msg), false);
+		SV_Shutdown (va ("Server quit\n", msg), qfalse);
 	}
 	else {
 		CL_Disconnect ();
@@ -591,7 +591,7 @@ void CL_Connect_f (void) {
 
 	server = Cmd_Argv (1);
 
-	NET_Config (true);			// allow remote
+	NET_Config (qtrue);			// allow remote
 
 	CL_Disconnect ();
 
@@ -627,7 +627,7 @@ void CL_Rcon_f (void) {
 	message[3] = (char)255;
 	message[4] = 0;
 
-	NET_Config (true);			// allow remote
+	NET_Config (qtrue);			// allow remote
 
 	strcat (message, "rcon ");
 
@@ -758,7 +758,7 @@ void CL_Packet_f (void) {
 		return;
 	}
 
-	NET_Config (true);			// allow remote
+	NET_Config (qtrue);			// allow remote
 
 	if (!NET_StringToAdr (Cmd_Argv (1), &adr)) {
 		Com_Printf ("Bad address\n");
@@ -873,7 +873,7 @@ void CL_PingServers_f (void) {
 	cvar_t *noudp;
 	cvar_t *noipx;
 
-	NET_Config (true);			// allow remote
+	NET_Config (qtrue);			// allow remote
 
 	// send a broadcast packet
 	Com_Printf ("pinging broadcast...\n");
@@ -965,7 +965,7 @@ void CL_ConnectionlessPacket (void) {
 
 	s = MSG_ReadStringLine (&net_message);
 
-	Cmd_TokenizeString (s, false);
+	Cmd_TokenizeString (s, qfalse);
 
 	c = Cmd_Argv (0);
 
@@ -1111,7 +1111,7 @@ void CL_FixUpGender (void) {
 
 		if (gender->modified) {
 			// was set directly, don't override the user
-			gender->modified = false;
+			gender->modified = qfalse;
 			return;
 		}
 
@@ -1125,7 +1125,7 @@ void CL_FixUpGender (void) {
 			Cvar_Set ("gender", "female");
 		else
 			Cvar_Set ("gender", "none");
-		gender->modified = false;
+		gender->modified = qfalse;
 	}
 }
 
@@ -1152,7 +1152,7 @@ void CL_Snd_Restart_f (void) {
 	CL_RegisterSounds ();
 
 	// cause music track to reload if already playing
-	s_musicsrc->modified = true;
+	s_musicsrc->modified = qtrue;
 }
 
 int precache_check;				// for autodownload of precache items
@@ -1391,7 +1391,7 @@ void CL_RequestNextDownload (void) {
 	if (precache_check == ENV_CNT) {
 		precache_check = ENV_CNT + 1;
 
-		CM_LoadMap (cl.configstrings[CS_MODELS + 1], true, &map_checksum);
+		CM_LoadMap (cl.configstrings[CS_MODELS + 1], qtrue, &map_checksum);
 
 		if (map_checksum != atoi (cl.configstrings[CS_MAPCHECKSUM])) {
 			Com_Error (ERR_DROP,
@@ -1477,7 +1477,7 @@ void CL_Precache_f (void) {
 	if (Cmd_Argc () < 2) {
 		unsigned map_checksum;	// for detecting cheater maps
 
-		CM_LoadMap (cl.configstrings[CS_MODELS + 1], true, &map_checksum);
+		CM_LoadMap (cl.configstrings[CS_MODELS + 1], qtrue, &map_checksum);
 		CL_RegisterSounds ();
 		CL_PrepRefresh ();
 		return;
@@ -1607,7 +1607,7 @@ void CL_InitLocal (void) {
 
 	gender = Cvar_Get ("gender", "male", CVAR_USERINFO | CVAR_ARCHIVE);
 	gender_auto = Cvar_Get ("gender_auto", "1", CVAR_ARCHIVE);
-	gender->modified = false;	// clear this so we know when user sets it
+	gender->modified = qfalse;	// clear this so we know when user sets it
 	// manually
 
 	dmflags = Cvar_Get ("dmflags", "0", CVAR_SERVERINFO);
@@ -1927,7 +1927,7 @@ void CL_Init (void) {
 	M_Init ();
 
 	SCR_Init ();
-	cls.disable_screen = true;	// don't draw yet
+	cls.disable_screen = qtrue;	// don't draw yet
 
 	Music_Init ();
 	CL_InitLocal ();
@@ -1948,13 +1948,13 @@ to run quit through here before the final handoff to the sys code.
 */
 void CL_Shutdown (void) {
 	char	name[MAX_OSPATH];
-	static qboolean isdown = false;
+	static qboolean isdown = qfalse;
 
 	if (isdown) {
 		printf ("recursive shutdown\n");
 		return;
 	}
-	isdown = true;
+	isdown = qtrue;
 
 	// kill temp demo record
 	Com_sprintf (name, sizeof(name), "%s/cachexp/temp.dm2", FS_Gamedir ());

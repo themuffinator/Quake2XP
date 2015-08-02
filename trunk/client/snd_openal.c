@@ -121,7 +121,7 @@ void S_Play (void) {
 		// TO DO - willow: do not cache this data to onboard memory!
 		// this seems to be just any random file, we do no need to store
 		// it in valuable memory.
-		S_StartLocalSound (S_FindName (name, true));
+		S_StartLocalSound (S_FindName (name, qtrue));
 		i++;
 	}
 }
@@ -416,7 +416,7 @@ ALuint S_RegisterSexedSound (entity_state_t * ent, const char *base) {
 	// see if we already know of the model specific sound
 	Com_sprintf (sexedFilename, sizeof(sexedFilename), "#players/%s/%s", model, base + 1);
 
-	return S_FindName (sexedFilename, true);
+	return S_FindName (sexedFilename, qtrue);
 
 }
 
@@ -489,7 +489,7 @@ openal_channel_t *PickChannel_NEW (unsigned int entNum,
 	int i;
 	int firstToDie = -1;
 	//  int                 oldestTime = cl.time;
-	qboolean is_terminate = true;
+	qboolean is_terminate = qtrue;
 
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
 		i++, ch++) {
@@ -500,7 +500,7 @@ openal_channel_t *PickChannel_NEW (unsigned int entNum,
 		/*		if (!ch->sfx)							// found free channel
 				{
 				firstToDie = i;
-				is_terminate = false;
+				is_terminate = qfalse;
 				break;
 				} else {*/
 		ALuint SourceState;
@@ -516,7 +516,7 @@ openal_channel_t *PickChannel_NEW (unsigned int entNum,
 		{
 			ch->bufferNum = 0;	// ch->sfx = NULL;
 			firstToDie = i;
-			is_terminate = false;
+			is_terminate = qfalse;
 			break;
 		}
 	}
@@ -637,7 +637,7 @@ void S_fastsound (vec3_t origin, int entnum, int entchannel,
 		alSourcef (sourceNum, AL_GAIN, gain);
 
 		if (alConfig.efx)
-			EFX_RvbProcSrc (ch, sourceNum, true);
+			EFX_RvbProcSrc (ch, sourceNum, qtrue);
 
 		alSourcePlay (sourceNum);
 	}
@@ -673,11 +673,11 @@ void S_fastsound_queue (vec3_t origin, int entnum, int entchannel,
 	//  ps->flat = is_flat;
 
 	if (origin) {
-		ps->fixed_origin = true;
+		ps->fixed_origin = qtrue;
 		VectorCopy (origin, ps->origin);
 	}
 	else
-		ps->fixed_origin = false;
+		ps->fixed_origin = qfalse;
 
 	ps->volume = fvol;
 	ps->attenuation = attenuation;
@@ -700,7 +700,7 @@ openal_channel_t *PickChannel_lite (ALuint * sourceNum) {
 	openal_channel_t *ch;
 	int i;
 	int firstToDie = -1;
-	qboolean terminate = true;
+	qboolean terminate = qtrue;
 
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
 		i++, ch++) {
@@ -708,7 +708,7 @@ openal_channel_t *PickChannel_lite (ALuint * sourceNum) {
 		/*		if (!ch->sfx)							// found free channel
 				{
 				firstToDie = i;
-				terminate = false;
+				terminate = qfalse;
 				break;
 				} else {*/
 		ALuint SourceState;
@@ -718,7 +718,7 @@ openal_channel_t *PickChannel_lite (ALuint * sourceNum) {
 		// The source already out of processing.
 		if (SourceState == AL_STOPPED || SourceState == AL_INITIAL) {
 			firstToDie = i;
-			terminate = false;
+			terminate = qfalse;
 			break;
 		}
 		/*		}*/
@@ -804,7 +804,7 @@ void S_StartLocalSound (ALuint bufferNum) {
 			alSourcef (sourceNum, AL_GAIN, 0.47);
 
 			if (alConfig.efx)
-				EFX_RvbProcSrc (ch, sourceNum, false);
+				EFX_RvbProcSrc (ch, sourceNum, qfalse);
 
 			alSourcePlay (sourceNum);
 		}
@@ -863,7 +863,7 @@ openal_channel_t *PickChannel (channel_task_t * Channels_TODO,
 	openal_channel_t *ch;
 	int i;
 	int firstToDie = -1;
-	qboolean terminate = false;
+	qboolean terminate = qfalse;
 
 	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
 		i++, ch++) {
@@ -880,7 +880,7 @@ openal_channel_t *PickChannel (channel_task_t * Channels_TODO,
 		/*		if (Flag_checkAL (&Channels_TODO[i], AL_TASK_MANAGER__TERMINATE))
 				{
 				firstToDie = i;
-				terminate = false;
+				terminate = qfalse;
 				break;
 				}*/
 		else {
@@ -914,7 +914,7 @@ openal_channel_t *PickChannel (channel_task_t * Channels_TODO,
 		float len, max;
 		vec3_t delta;
 
-		terminate = true;		// we need to eat weakest now :)
+		terminate = qtrue;		// we need to eat weakest now :)
 		if (new_vec) {
 			VectorSubtract (listener, new_vec, delta);
 			max = VectorLength_Squared (delta);
@@ -1271,7 +1271,7 @@ void S_Update (vec3_t listener_position, vec3_t velocity,
 			alSourcef (sourceNum, AL_GAIN, current_task->TASK_AL_GAIN);
 
 			if (alConfig.efx)
-				EFX_RvbProcSrc (ch, sourceNum, true);
+				EFX_RvbProcSrc (ch, sourceNum, qtrue);
 
 			alSourcePlay (sourceNum);
 		}
@@ -1302,16 +1302,16 @@ qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float 
 		streaming.sound_format = AL_FORMAT_STEREO16;
 	else {
 		Com_Printf (S_COLOR_RED "S_StreamingStart: unsupported format (%d bits and %d channels)\n", num_bits, num_channels);
-		return false;
+		return qfalse;
 	}
 
 	alSourcef (source_name[CH_STREAMING], AL_GAIN, volume);
 	streaming.sound_rate = rate;
 	streaming.bFirst = 0;
 	streaming.bNumAvail = NUM_STRBUF;
-	streaming.enabled = true;
+	streaming.enabled = qtrue;
 
-	return true;
+	return qtrue;
 }
 
 void S_Streaming_Stop (void) {
@@ -1320,7 +1320,7 @@ void S_Streaming_Stop (void) {
 		alSourceStop (source_name[CH_STREAMING]);
 		alSourcei (source_name[CH_STREAMING], AL_BUFFER, 0);
 
-		streaming.enabled = false;
+		streaming.enabled = qfalse;
 	}
 }
 

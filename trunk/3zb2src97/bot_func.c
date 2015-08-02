@@ -28,14 +28,14 @@ qboolean Get_YenPos (char *Buff, int *curr) {
 	i = *curr + 1;
 
 	while (1) {
-		//      if(i >= strlen(Buff)) return false;
+		//      if(i >= strlen(Buff)) return qfalse;
 		if (Buff[i] == 0 || Buff[i] == 10 || Buff[i] == 13) {
 			*curr = i;
-			return true;
+			return qtrue;
 		}
 		if (Buff[i] == '\\') {
 			*curr = i;
-			return true;
+			return qtrue;
 		}
 		if (Buff[i] == '\t')
 			Buff[i] = 0;
@@ -322,7 +322,7 @@ void Bot_Think (edict_t * self) {
 		self->s.modelindex3 = 0;	// remove linked ctf flag
 		//ZOID
 
-		self->client->zc.route_trace = false;
+		self->client->zc.route_trace = qfalse;
 		if (self->client->respawn_time <= level.time) {
 			if (self->svflags & SVF_MONSTER) {
 				self->client->respawn_time = level.time;
@@ -398,7 +398,7 @@ void InitializeBot (edict_t * ent, int botindex) {
 	client->pers.max_magslug = 50;
 	client->pers.max_trap = 5;
 
-	ent->client->pers.connected = false;
+	ent->client->pers.connected = qfalse;
 	gi.dprintf ("%s"S_COLOR_YELLOW" connected\n", ent->client->pers.netname);
 	//  gi.bprintf (PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 
@@ -444,7 +444,7 @@ void PutBotInServer (edict_t * ent) {
 	client->invincible_framenum = 0;
 	client->breather_framenum = 0;
 	client->enviro_framenum = 0;
-	client->grenade_blew_up = false;
+	client->grenade_blew_up = qfalse;
 	client->grenade_time = 0;
 
 	j = zc->botindex;
@@ -519,7 +519,7 @@ void PutBotInServer (edict_t * ent) {
 	ent->client->ps.pmove.pm_flags &= ~PMF_DUCKED;
 
 	Set_BotAnim (ent, ANIM_BASIC, FRAME_run1, FRAME_run6);
-	client->anim_run = true;
+	client->anim_run = qtrue;
 
 	ent->client->ctf_grapple = NULL;
 	ent->client->quad_framenum = level.framenum;
@@ -533,7 +533,7 @@ void PutBotInServer (edict_t * ent) {
 	ent->flags &= ~FL_NO_KNOCKBACK;
 
 	ent->client->anim_priority = ANIM_BASIC;
-	//  ent->client->anim_run = true;
+	//  ent->client->anim_run = qtrue;
 	ent->s.frame = FRAME_run1 - 1;
 	ent->client->anim_end = FRAME_run6;
 	ent->deadflag = DEAD_NO;
@@ -593,16 +593,16 @@ qboolean SpawnBot (int i) {
 
 
 	//	gi.cprintf (NULL,PRINT_HIGH,"Called %s %s %s\n",Bot[i].netname,Bot[i].model,Bot[i].skin);
-	//	return false;
+	//	return qfalse;
 
 	if (Get_NumOfPlayer () >= game.maxclients) {
 		gi.cprintf (NULL, PRINT_HIGH, S_COLOR_RED"Can't add bots\n");
-		return false;
+		return qfalse;
 	}
 
 	bot = Get_NewClient ();
 	if (bot == NULL)
-		return false;
+		return qfalse;
 
 	InitializeBot (bot, i);
 	PutBotInServer (bot);
@@ -620,7 +620,7 @@ qboolean SpawnBot (int i) {
 		}
 
 		bot->client->zc.rt_locktime = level.time + FRAMETIME * 20;
-		bot->client->zc.route_trace = true;
+		bot->client->zc.route_trace = qtrue;
 		bot->client->zc.routeindex = k;
 		VectorCopy (Route[k].Pt, bot->s.origin);
 		VectorAdd (bot->s.origin, bot->mins, bot->absmin);
@@ -646,7 +646,7 @@ qboolean SpawnBot (int i) {
 		}
 	}
 
-	return true;
+	return qtrue;
 }
 
 //----------------------------------------------------------------
@@ -783,7 +783,7 @@ void RemoveBot () {
 
 				gi.linkentity (e);
 
-				e->inuse = false;
+				e->inuse = qfalse;
 				G_FreeEdict (e);
 
 				if (targetindex) {
@@ -885,7 +885,7 @@ void ZigockJoinMenu (edict_t * ent) {
 
 qboolean ZigockStartClient (edict_t * ent) {
 	if (ent->moveinfo.sound_end != CLS_NONE)
-		return false;
+		return qfalse;
 
 	// start as 'observer'
 	ent->movetype = MOVETYPE_NOCLIP;
@@ -895,7 +895,7 @@ qboolean ZigockStartClient (edict_t * ent) {
 	gi.linkentity (ent);
 
 	ZigockJoinMenu (ent);
-	return true;
+	return qtrue;
 }
 
 

@@ -69,9 +69,9 @@ int GL_MsgGLError(char* Info)
 	int		n = qglGetError();
 	
 	if(r_ignoreGlErrors->value)
-		return false;
+		return qfalse;
 
-	if(n == GL_NO_ERROR) return false;
+	if(n == GL_NO_ERROR) return qfalse;
 
 	switch(n) {        
 		case GL_INVALID_ENUM: 
@@ -256,9 +256,9 @@ void R_SetupFrame(void)
 	}
 
 	if(CL_PMpointcontents(r_origin) & CONTENTS_SOLID)
-		outMap = true;
+		outMap = qtrue;
 	else
-		outMap = false;
+		outMap = qfalse;
 
 	for (i = 0; i < 4; i++)
 		v_blend[i] = r_newrefdef.blend[i];
@@ -418,7 +418,7 @@ void R_DrawPlayerWeaponFBO(void)
 		if (!(currententity->flags & RF_WEAPONMODEL))
 			continue;
 
-		R_DrawAliasModel(currententity, true);
+		R_DrawAliasModel(currententity, qtrue);
 	}
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -450,7 +450,7 @@ void R_DrawPlayerWeaponLightPass(void)
 			if (!(currententity->flags & RF_WEAPONMODEL))
 				continue;
 
-			R_DrawAliasModelLightPass(true);
+			R_DrawAliasModelLightPass(qtrue);
 		}
 
 }
@@ -475,7 +475,7 @@ void R_DrawPlayerWeaponAmbient(void)
 			continue;
 
 		if (currentmodel->type == mod_alias)
-			R_DrawAliasModel(currententity, false);
+			R_DrawAliasModel(currententity, qfalse);
 
 	}
 	// draw transluscent shells
@@ -492,7 +492,7 @@ void R_DrawPlayerWeaponAmbient(void)
 			continue;
 
 		if (currentmodel->type == mod_alias)
-			R_DrawAliasModel(currententity, false);
+			R_DrawAliasModel(currententity, qfalse);
 	}
 	GL_DepthMask(1);
 }
@@ -516,7 +516,7 @@ void R_DrawLightScene (void)
 	if(r_shadows->value)
 		GL_Enable(GL_STENCIL_TEST);
 	
-	R_PrepareShadowLightFrame(false);
+	R_PrepareShadowLightFrame(qfalse);
 	
 	if(shadowLight_frame) {
 
@@ -571,7 +571,7 @@ void R_DrawLightScene (void)
 		if (currentmodel->type == mod_brush) 
 			R_DrawLightBrushModel();
 		if(currentmodel->type == mod_alias)
-			R_DrawAliasModelLightPass(false);
+			R_DrawAliasModelLightPass(qfalse);
 		}
 	if (r_useLightOccluders->value)
 		glEndConditionalRender();
@@ -606,7 +606,7 @@ void R_DrawPlayerWeapon(void)
 	if (r_shadows->value)
 		GL_Enable(GL_STENCIL_TEST);
 
-	R_PrepareShadowLightFrame(true);
+	R_PrepareShadowLightFrame(qtrue);
 
 	if (shadowLight_frame) {
 
@@ -648,12 +648,12 @@ void R_RenderSprites(void)
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATRB_POSITION);
 	qglEnableVertexAttribArray(ATRB_TEX0);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, wVertexArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, false, 0, wTexArray);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -705,7 +705,7 @@ static void R_DrawEntitiesOnList (void) {
 
 		switch (currentmodel->type) {
 			case mod_alias:
-				R_DrawAliasModel(currententity, false);
+				R_DrawAliasModel(currententity, qfalse);
 				break;
 			case mod_brush:
 				R_DrawBrushModel();
@@ -766,7 +766,7 @@ static void R_DrawRAScene (void) {
 
 		switch (currentmodel->type) {
 			case mod_alias:
-				R_DrawAliasModel(currententity, false);
+				R_DrawAliasModel(currententity, qfalse);
 				break;
 			case mod_brush:
 				break;
@@ -938,7 +938,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client) {
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (selectedShadowLight && r_lightEditor->value){
-		Set_FontShader(true);
+		Set_FontShader(qtrue);
 		RE_SetColor(colorCyan);
 		Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0);
 		Draw_StringScaled(0, vid.height*0.5+25,  2, 2, buff1);
@@ -957,7 +957,7 @@ void R_RenderFrame(refdef_t * fd, qboolean client) {
 		Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14);
 		Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15);
 		RE_SetColor(colorWhite);
-		Set_FontShader(false);
+		Set_FontShader(qfalse);
 	}
 
 	GL_MsgGLError("R_RenderFrame: ");
@@ -1038,66 +1038,44 @@ void R_VideoInfo_f(void){
 		qglGetIntegerv ( GPU_MEMORY_INFO_EVICTED_MEMORY_NVX , mem);
 		Com_Printf("total video memory evicted %i MB\n", mem[0] >>10);
 
-	} else 
-	if (IsExtensionSupported("GL_ATI_meminfo")) {
-		
-        Com_Printf("\nATI/AMD specific memory info:\n");
-		Com_Printf("\n");
-        qglGetIntegerv (VBO_FREE_MEMORY_ATI, mem);
-        Com_Printf("VBO: total memory free in the pool %i MB\n", mem[0] >> 10);
-        Com_Printf("VBO: largest available free block in the pool %i MB\n", mem[1] >> 10);
-        Com_Printf("VBO: total auxiliary memory free %i MB\n", mem[2] >> 10);
-        Com_Printf("VBO: largest auxiliary free block %i MB\n", mem[3] >> 10);
-
-        qglGetIntegerv (TEXTURE_FREE_MEMORY_ATI, mem);
-        Com_Printf("Texture: total memory free in the pool %i MB\n", mem[0] >> 10);
-        Com_Printf("Texture: largest available free block in the pool %i MB\n", mem[1] >> 10);
-        Com_Printf("Texture: total auxiliary memory free %i MB\n", mem[2] >> 10);
-        Com_Printf("Texture: largest auxiliary free block %i MB\n", mem[3] >> 10);
-
-        qglGetIntegerv (RENDERBUFFER_FREE_MEMORY_ATI, mem);
-        Com_Printf("RenderBuffer: total memory free in the pool %i MB\n", mem[0] >> 10);
-        Com_Printf("RenderBuffer: largest available free block in the pool %i MB\n", mem[1] >> 10);
-        Com_Printf("RenderBuffer: total auxiliary memory free %i MB\n", mem[2] >> 10);
-        Com_Printf("RenderBuffer: largest auxiliary free block %i MB\n", mem[3] >> 10);
-    }
+	}
 	else
 #endif
 		Com_Printf("MemInfo not availabled for your video card or driver!\n");
 }
-
+// 512 mb vram
 void R_LowSpecMachine_f(void)
 {
 Cvar_Set("r_textureCompression", "1");
-Cvar_Set("r_maxTextureSize", "256");
+Cvar_Set("r_maxTextureSize", "512");
 Cvar_Set("r_anisotropic", "1");
-Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_NEAREST");
+Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 
 Cvar_Set("r_shadows", "0");
 Cvar_Set("r_drawFlares", "1");
-Cvar_Set("r_parallax", "0");
+Cvar_Set("r_reliefMapping", "0");
 Cvar_Set("r_skipStaticLights", "1");
 Cvar_Set("r_lightmapScale", "1.0");
 Cvar_Set("r_bloom", "0");
 Cvar_Set("r_dof", "0");
-Cvar_Set("r_radialBlur", "0");
-Cvar_Set("r_softParticles", "0");
+Cvar_Set("r_radialBlur", "1");
+Cvar_Set("r_softParticles", "1");
 Cvar_Set("r_motionBlur", "0");
 Cvar_Set("r_ssao", "0");
 
-vid_ref->modified = true;
+vid_ref->modified = qtrue;
 }
-
+// 1 gb vram
 void R_MediumSpecMachine_f(void)
 {
-Cvar_Set("r_textureCompression", "1");
-Cvar_Set("r_maxTextureSize", "0");
+Cvar_Set("r_textureCompression", "0");
+Cvar_Set("r_maxTextureSize", "512");
 Cvar_Set("r_anisotropic", "8");
 Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 
 Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
-Cvar_Set("r_parallax", "0");
+Cvar_Set("r_reliefMapping", "0");
 Cvar_Set("r_skipStaticLights", "0");
 Cvar_Set("r_lightmapScale", "0.5");
 Cvar_Set("r_bloom", "1");
@@ -1107,7 +1085,7 @@ Cvar_Set("r_softParticles", "1");
 Cvar_Set("r_motionBlur", "0");
 Cvar_Set("r_ssao", "0");
 
-vid_ref->modified = true;
+vid_ref->modified = qtrue;
 }
 
 void R_HiSpecMachine_f(void)
@@ -1119,7 +1097,7 @@ Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 
 Cvar_Set("r_shadows", "1");
 Cvar_Set("r_drawFlares", "1");
-Cvar_Set("r_parallax", "1");
+Cvar_Set("r_reliefMapping", "1");
 Cvar_Set("r_skipStaticLights", "0");
 Cvar_Set("r_lightmapScale", "0.5");
 Cvar_Set("r_bloom", "1");
@@ -1130,7 +1108,7 @@ Cvar_Set("r_fxaa", "1");
 Cvar_Set("r_motionBlur", "1");
 Cvar_Set("r_ssao", "1");
 
-vid_ref->modified = true;
+vid_ref->modified = qtrue;
 }
 
 void R_ChangeLightColor_f(void) ;
@@ -1167,7 +1145,7 @@ void R_RegisterCvars(void)
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
-	r_worldColorScale =					Cvar_Get("r_worldColorScale", "2", CVAR_ARCHIVE);
+	r_textureColorScale =				Cvar_Get("r_textureColorScale", "2", CVAR_ARCHIVE);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
 	r_causticIntens =					Cvar_Get("r_causticIntens", "5.0", CVAR_ARCHIVE);
 	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
@@ -1195,8 +1173,8 @@ void R_RegisterCvars(void)
 	hunk_model=							Cvar_Get("hunk_model", "2.4", CVAR_ARCHIVE);
 	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
 
-	r_parallax=							Cvar_Get("r_parallax", "1", CVAR_ARCHIVE);
-	r_parallaxScale=					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
+	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
+	r_reliefScale=						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
@@ -1306,26 +1284,26 @@ qboolean R_SetMode(void)
 	rserr_t err;
 	const qboolean fullscreen = (qboolean)r_fullScreen->value;
 
-	r_fullScreen->modified = false;
-	r_mode->modified = false;
+	r_fullScreen->modified = qfalse;
+	r_mode->modified = qfalse;
 
     err = GLimp_SetMode(&vid.width, &vid.height, r_mode->value, fullscreen);
 
     // success, update variables
 	if (err == rserr_ok) {
         Cvar_SetValue("r_fullScreen", gl_state.fullscreen);
-        r_fullScreen->modified = false;
+        r_fullScreen->modified = qfalse;
 		gl_state.prev_mode = r_mode->value;
-        return true;
+        return qtrue;
 
     // try without fullscreen
 	} else if (err == rserr_invalid_fullscreen) {
         Com_Printf(S_COLOR_RED "ref_xpgl::R_SetMode() - fullscreen unavailable in this mode\n");
-        if ((err = GLimp_SetMode(&vid.width, &vid.height, r_mode->value, false)) == rserr_ok) {
+        if ((err = GLimp_SetMode(&vid.width, &vid.height, r_mode->value, qfalse)) == rserr_ok) {
             Cvar_SetValue("r_fullScreen", 0);
-            r_fullScreen->modified = false;
+            r_fullScreen->modified = qfalse;
             gl_state.prev_mode = r_mode->value;
-            return true;
+            return qtrue;
         }
 
     } else if (err == rserr_invalid_mode) {
@@ -1333,20 +1311,20 @@ qboolean R_SetMode(void)
     }
 
     // revert to previous mode
-    if (GLimp_SetMode(&vid.width, &vid.height, gl_state.prev_mode, false) == rserr_ok) {
+    if (GLimp_SetMode(&vid.width, &vid.height, gl_state.prev_mode, qfalse) == rserr_ok) {
         Cvar_SetValue("r_mode", gl_state.prev_mode);
-        r_mode->modified = false;
+        r_mode->modified = qfalse;
         Cvar_SetValue("r_fullScreen", 0);
-        r_fullScreen->modified = false;
-        return true;
+        r_fullScreen->modified = qfalse;
+        return qtrue;
     } else {
         Com_Printf(S_COLOR_RED"ref_xpgl::R_SetMode() - could not revert to safe mode\n");
-        return false;
+        return qfalse;
     }
 }
 
 static void DevIL_Init() {
-    static qboolean init = false;
+    static qboolean init = qfalse;
 
     if (init)
         return;
@@ -1365,7 +1343,7 @@ static void DevIL_Init() {
 	Con_Printf (PRINT_ALL, "OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
 	Com_Printf ("==================================\n\n");
 
-    init = true;
+    init = qtrue;
 }
 
 
@@ -1375,7 +1353,6 @@ R_Init
 ===============
 */
 int GL_QueryBits;
-//int flareQueries[MAX_WORLD_SHADOW_LIHGTS];
 int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 
 qboolean IsExtensionSupported(const char *name)
@@ -1389,9 +1366,9 @@ qboolean IsExtensionSupported(const char *name)
 	for (i = 0; i<n; i++){
 		extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
 		if (!strcmp(name, extension))
-			return true;		
+			return qtrue;		
 	}
-	return false;
+	return qfalse;
 }
 
 int R_Init(void *hinstance, void *hWnd)
@@ -1435,14 +1412,6 @@ int R_Init(void *hinstance, void *hWnd)
 	 */
 	Com_Printf( "\n");
 	gl_config.vendor_string = (const char*)qglGetString(GL_VENDOR);
-	Com_Printf(S_COLOR_WHITE "GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
-	gl_config.renderer_string = (const char*)qglGetString(GL_RENDERER);
-	Com_Printf(S_COLOR_WHITE "GL_RENDERER:" S_COLOR_GREEN "  %s\n", gl_config.renderer_string);
-	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
-	Com_Printf(S_COLOR_WHITE "GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
-	
-	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
-	Com_Printf("Using OpenGL: "S_COLOR_GREEN"3.3"S_COLOR_WHITE" %s profile context\n", profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
 
 	strcpy(vendor_buffer, gl_config.vendor_string);
 	strlwr(vendor_buffer);
@@ -1452,7 +1421,16 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
 		VID_Error(ERR_FATAL, "Intel graphics card is unsupported.\n");
 	}
+
+	Com_Printf(S_COLOR_WHITE "GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
+	gl_config.renderer_string = (const char*)qglGetString(GL_RENDERER);
+	Com_Printf(S_COLOR_WHITE "GL_RENDERER:" S_COLOR_GREEN "  %s\n", gl_config.renderer_string);
+	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
+	Com_Printf(S_COLOR_WHITE "GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
 	
+	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
+	Com_Printf("Using OpenGL: "S_COLOR_GREEN"3.3"S_COLOR_WHITE" %s profile context\n", profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+
 	Cvar_Set("scr_drawall", "0");
 
 	Com_Printf("\n");
@@ -1479,42 +1457,34 @@ int R_Init(void *hinstance, void *hWnd)
 
 	aniso_level = r_anisotropic->value;
 	if (IsExtensionSupported("GL_EXT_texture_filter_anisotropic")) {
-		if (r_anisotropic->value == 1) {
+		if (r_anisotropic->value <= 1) {
+			r_anisotropic = Cvar_Set("r_anisotropic", "1");
 			Com_Printf(S_COLOR_YELLOW"...ignoring GL_EXT_texture_filter_anisotropic\n");
-
 		} else {
-
 			Com_Printf("...using GL_EXT_texture_filter_anisotropic\n   ["S_COLOR_GREEN"%i"S_COLOR_WHITE" max] ["S_COLOR_GREEN"%i" S_COLOR_WHITE" selected]\n",
 					   max_aniso, aniso_level);
-
 		}
-	} else {
-		Com_Printf(S_COLOR_RED "...GL_EXT_texture_filter_anisotropic not found\n");
-		r_anisotropic = Cvar_Set("r_anisotropic", "1");
-		r_maxAnisotropy = Cvar_Set("r_maxAnisotropy", "0");
 	}
 
-	gl_state.texture_compression_bptc = false;
+	gl_state.texture_compression_bptc = qfalse;
 	if (IsExtensionSupported("GL_ARB_texture_compression_bptc"))
 		if (!r_textureCompression->value) {
 			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_compression_bptc\n");
-			gl_state.texture_compression_bptc = false;
+			gl_state.texture_compression_bptc = qfalse;
 		}
 		else {
 			Com_Printf("...using GL_ARB_texture_compression_bptc\n");
-			gl_state.texture_compression_bptc = true;
+			gl_state.texture_compression_bptc = qtrue;
 
 		}
 		else {
 			Com_Printf(S_COLOR_RED"...GL_ARB_texture_compression_bptc not found\n");
-			gl_state.texture_compression_bptc = false;
+			gl_state.texture_compression_bptc = qfalse;
 			r_textureCompression = Cvar_Set("r_textureCompression", "0");
 		}
 
 	if (IsExtensionSupported("GL_ARB_texture_cube_map"))
 		Com_Printf("...using GL_ARB_texture_cube_map\n");
-	else 
-		Com_Printf(S_COLOR_RED"...GL_ARB_texture_cube_map not found\n");
 
 	if (IsExtensionSupported("GL_ARB_seamless_cube_map")){
 		Com_Printf("...using GL_ARB_seamless_cube_map\n");
@@ -1535,23 +1505,23 @@ int R_Init(void *hinstance, void *hWnd)
 	}else
 		Com_Printf(S_COLOR_RED"...GL_EXT_stencil_two_side not found\n");
 
-	gl_state.depthBoundsTest = false;
+	gl_state.depthBoundsTest = qfalse;
 	if (IsExtensionSupported("GL_EXT_depth_bounds_test")) {
 	Com_Printf("...using GL_EXT_depth_bounds_test\n");
 
 	glDepthBoundsEXT = (PFNGLDEPTHBOUNDSEXTPROC) qwglGetProcAddress("glDepthBoundsEXT");
-	gl_state.depthBoundsTest = true;
+	gl_state.depthBoundsTest = qtrue;
 	} else {
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
-	gl_state.depthBoundsTest = false;
+	gl_state.depthBoundsTest = qfalse;
 	}
 
 	
-	gl_state.arb_occlusion = false;
-	gl_state.arb_occlusion2 = false;
+	gl_state.arb_occlusion = qfalse;
+	gl_state.arb_occlusion2 = qfalse;
 	if (IsExtensionSupported("GL_ARB_occlusion_query")) {
 		Com_Printf("...using GL_ARB_occlusion_query\n");
-		gl_state.arb_occlusion = true;
+		gl_state.arb_occlusion = qtrue;
 		
 		qglGenQueriesARB		=	(PFNGLGENQUERIESARBPROC) qwglGetProcAddress("glGenQueriesARB");
 		qglDeleteQueriesARB		=	(PFNGLDELETEQUERIESARBPROC) qwglGetProcAddress("glDeleteQueriesARB");
@@ -1565,18 +1535,17 @@ int R_Init(void *hinstance, void *hWnd)
 		qglGetQueryivARB(GL_SAMPLES_PASSED_ARB, GL_QUERY_COUNTER_BITS_ARB, &GL_QueryBits);
 		
 		if (GL_QueryBits) {
-	//		qglGenQueriesARB(MAX_FLARES, (GLuint*)flareQueries);
 			qglGenQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
 
 			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " occlusion query bits\n", GL_QueryBits);
 
 			if (IsExtensionSupported("GL_ARB_occlusion_query2")){
 				Com_Printf("...using GL_ARB_occlusion_query2\n");
-				gl_state.arb_occlusion2 = true;
+				gl_state.arb_occlusion2 = qtrue;
 			}
 			else{
 				Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query2 not found\n");
-				gl_state.arb_occlusion2 = false;
+				gl_state.arb_occlusion2 = qfalse;
 			}
 		}
 		if(gl_state.arb_occlusion2)
@@ -1586,22 +1555,15 @@ int R_Init(void *hinstance, void *hWnd)
 
 		} else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query not found\n");
-		gl_state.arb_occlusion = false;
+		gl_state.arb_occlusion = qfalse;
 	}
 
 
-	if (IsExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+	if (IsExtensionSupported("GL_ARB_texture_non_power_of_two")) 
 		Com_Printf("...using GL_ARB_texture_non_power_of_two\n");
-	} else {
-		Com_Printf(S_COLOR_RED "...GL_ARB_texture_non_power_of_two not found\n");
-	}
-	
 	
 	if (IsExtensionSupported("GL_ARB_texture_rectangle")) 
-		Com_Printf("...using GL_ARB_texture_rectangle\n");
-	else 
-		Com_Printf(S_COLOR_RED "...GL_ARB_texture_rectangle not found\n");
-		
+		Com_Printf("...using GL_ARB_texture_rectangle\n");		
 
 	if (IsExtensionSupported("GL_ARB_vertex_buffer_object")) {
 			
@@ -1625,8 +1587,8 @@ int R_Init(void *hinstance, void *hWnd)
 			VA_SetElem2(tmpVerts[1],vid.width,	vid.height);
 			VA_SetElem2(tmpVerts[2],vid.width,	0);
 			VA_SetElem2(tmpVerts[3],0,			0);
-			qglGenBuffers(1, &gl_state.vbo_fullScreenQuad);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_fullScreenQuad);
+			qglGenBuffers(1, &vbo.vbo_fullScreenQuad);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_fullScreenQuad);
 			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
@@ -1635,8 +1597,8 @@ int R_Init(void *hinstance, void *hWnd)
 			VA_SetElem2(tmpVerts[1],vid.width * 0.5 ,	vid.height);
 			VA_SetElem2(tmpVerts[2],vid.width * 0.5 ,	vid.height * 0.5);
 			VA_SetElem2(tmpVerts[3],0,					vid.height * 0.5);
-			qglGenBuffers(1, &gl_state.vbo_halfScreenQuad);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_halfScreenQuad);
+			qglGenBuffers(1, &vbo.vbo_halfScreenQuad);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_halfScreenQuad);
 			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
@@ -1645,8 +1607,8 @@ int R_Init(void *hinstance, void *hWnd)
 			VA_SetElem2(tmpVerts[1],vid.width * 0.25 ,		vid.height);
 			VA_SetElem2(tmpVerts[2],vid.width * 0.25 ,		vid.height * 0.25);
 			VA_SetElem2(tmpVerts[3],0,						vid.height * 0.25);
-			qglGenBuffers(1, &gl_state.vbo_quarterScreenQuad);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_quarterScreenQuad);
+			qglGenBuffers(1, &vbo.vbo_quarterScreenQuad);
+			qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_quarterScreenQuad);
 			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
@@ -1656,20 +1618,20 @@ int R_Init(void *hinstance, void *hWnd)
 			iCache[idx++] = 0;
 			iCache[idx++] = 2;
 			iCache[idx++] = 3;
-			qglGenBuffers(1, &gl_state.ibo_quadTris);
-			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_state.ibo_quadTris);
+			qglGenBuffers(1, &vbo.ibo_quadTris);
+			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(GL_UNSIGNED_SHORT), iCache, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-			qglGenBuffers(1, &gl_state.vbo_Dynamic);
-			qglGenBuffers(1, &gl_state.ibo_Dynamic);
+			qglGenBuffers(1, &vbo.vbo_Dynamic);
+			qglGenBuffers(1, &vbo.ibo_Dynamic);
 	
 		}
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 	}
 	
-	gl_state.conditional_render = false;
+	gl_state.conditional_render = qfalse;
 			
 	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
 	glEndConditionalRenderNV	= (PFNGLENDCONDITIONALRENDERNVPROC)		qwglGetProcAddress("glEndConditionalRenderNV");
@@ -1679,11 +1641,11 @@ int R_Init(void *hinstance, void *hWnd)
 
 	if(glBeginConditionalRender && glEndConditionalRender){
 			Com_Printf("...using GL_conditional_render\n");
-				gl_state.conditional_render = true;
+				gl_state.conditional_render = qtrue;
 
 	} else {
 		Com_Printf(S_COLOR_RED"...GL_conditional_render not found\n");
-		gl_state.conditional_render = false;		
+		gl_state.conditional_render = qfalse;		
 	}
 	
 	if (IsExtensionSupported("GL_ARB_draw_buffers")) {
@@ -1744,7 +1706,6 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_ARB_framebuffer_object not found\n");
 	}
 
-	gl_state.glsl = false;	
 	if (IsExtensionSupported("GL_ARB_shading_language_100"))
 	{
 		if (IsExtensionSupported("GL_ARB_fragment_shader"))
@@ -1753,12 +1714,11 @@ int R_Init(void *hinstance, void *hWnd)
 
 		if (IsExtensionSupported("GL_ARB_vertex_shader")){
 			Com_Printf("...using GL_ARB_vertex_shader\n");
-	gl_state.glsl = true;	
 	
-	gl_state.shader5= false;
+	gl_state.shader5= qfalse;
 	if (IsExtensionSupported("GL_ARB_gpu_shader5")){
 		Com_Printf("...using GL_ARB_gpu_shader5\n");
-		gl_state.shader5= true;
+		gl_state.shader5= qtrue;
 	}
 
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
@@ -1828,10 +1788,6 @@ int R_Init(void *hinstance, void *hWnd)
 
 	}
 		
-	} else {
-		Com_Printf(S_COLOR_RED"...GLSL render not supported\n");
-		gl_state.glsl = false;
-		VID_Error(ERR_FATAL, "...GLSL render not supported!");
 	}
 			
 	Com_Printf("\n");
@@ -1845,7 +1801,7 @@ int R_Init(void *hinstance, void *hWnd)
 
 	GL_MsgGLError("Init GL Errors: ");
 
-	flareEdit = (qboolean)false;
+	flareEdit = (qboolean)qfalse;
 
 	return 0;
 }
@@ -1899,19 +1855,19 @@ void R_Shutdown(void)
 	ilShutDown();
 	R_ShutdownPrograms();
 		    
-//	if(qglDeleteQueriesARB){
-//	qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
-//	}
+	if(qglDeleteQueriesARB)
+		qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
+	
 	
 	DeleteShadowVertexBuffers();
 
-	qglDeleteBuffers(1, &gl_state.vbo_fullScreenQuad);
-	qglDeleteBuffers(1, &gl_state.vbo_halfScreenQuad);
-	qglDeleteBuffers(1, &gl_state.vbo_quarterScreenQuad);
-	qglDeleteBuffers(1, &gl_state.ibo_quadTris);
-	qglDeleteBuffers(1, &gl_state.vbo_Dynamic);
-	qglDeleteBuffers(1, &gl_state.ibo_Dynamic);
-	qglDeleteBuffers(1, &gl_state.vbo_BSP);
+	qglDeleteBuffers(1, &vbo.vbo_fullScreenQuad);
+	qglDeleteBuffers(1, &vbo.vbo_halfScreenQuad);
+	qglDeleteBuffers(1, &vbo.vbo_quarterScreenQuad);
+	qglDeleteBuffers(1, &vbo.ibo_quadTris);
+	qglDeleteBuffers(1, &vbo.vbo_Dynamic);
+	qglDeleteBuffers(1, &vbo.ibo_Dynamic);
+	qglDeleteBuffers(1, &vbo.vbo_BSP);
 }
 
 
@@ -1929,7 +1885,7 @@ void R_BeginFrame()
     // there is no need to restart video mode with SDL
     if (r_fullScreen->modified) {
         R_SetMode();
-		r_fullScreen->modified = false;
+		r_fullScreen->modified = qfalse;
     }
 #endif
 
@@ -1937,13 +1893,13 @@ void R_BeginFrame()
 	 ** change modes if necessary
 	 */
 	if (r_mode->modified || r_fullScreen->modified)
-        vid_ref->modified = true;
+        vid_ref->modified = qtrue;
 	
 	if(r_dof->modified)
-		r_dof->modified = false;
+		r_dof->modified = qfalse;
 
 	if(r_lightmapScale->modified)
-		r_lightmapScale->modified = false;
+		r_lightmapScale->modified = qfalse;
 
 	if(r_lightmapScale->value >1)
 		Cvar_SetValue("r_lightmapScale", 1);
@@ -1952,16 +1908,16 @@ void R_BeginFrame()
 		Cvar_SetValue("r_lightmapScale", 0);
 
 	if (r_ssao->modified)
-		r_ssao->modified = false;
+		r_ssao->modified = qfalse;
 
 	if (r_textureMode->modified || r_anisotropic->modified) {
 		GL_TextureMode(r_textureMode->string);
 
 		if (r_textureMode->modified)
-			r_textureMode->modified = false;
+			r_textureMode->modified = qfalse;
 
 		if (r_anisotropic->modified)
-			r_anisotropic->modified = false;
+			r_anisotropic->modified = qfalse;
 	}
 
 	/* 

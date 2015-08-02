@@ -188,52 +188,52 @@ static void ApplyChanges (void *unused) {
 	** has been modified
 	*/
 	if (r_gamma->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_anisotropic->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_shadows->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_bloom->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_dof->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_displayRefresh->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_drawFlares->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
-	if (r_parallax->modified)
-		vid_ref->modified = true;
+	if (r_reliefMapping->modified)
+		vid_ref->modified = qtrue;
 
 	if (r_textureCompression->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_vsync->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_dof->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_radialBlur->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_ssao->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_fxaa->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_lightmapScale->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	if (r_motionBlur->modified)
-		vid_ref->modified = true;
+		vid_ref->modified = qtrue;
 
 	M_ForceMenuOff ();
 
@@ -332,11 +332,11 @@ void VID_MenuInit (void) {
 	if (!r_shadows)
 		r_shadows = Cvar_Get ("r_shadows", "0", CVAR_ARCHIVE);
 
-	if (!r_parallax)
-		r_parallax = Cvar_Get ("r_parallax", "0", CVAR_ARCHIVE);
+	if (!r_reliefMapping)
+		r_reliefMapping = Cvar_Get ("r_reliefMapping", "0", CVAR_ARCHIVE);
 
-	if (r_parallax->value > 1)
-		r_parallax = Cvar_Get("r_parallax", "1", CVAR_ARCHIVE);
+	if (r_reliefMapping->value > 1)
+		r_reliefMapping = Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
 
 	if (!r_dof)
 		r_dof = Cvar_Get ("r_dof", "0", CVAR_ARCHIVE);
@@ -435,9 +435,9 @@ void VID_MenuInit (void) {
 	s_parallax_box.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x = 0;
 	s_parallax_box.generic.y = 100 * cl_fontScale->value;
-	s_parallax_box.generic.name = "Parallax";
+	s_parallax_box.generic.name = "Relief Mapping";
 	s_parallax_box.itemnames = yesno_names;
-	s_parallax_box.curvalue = r_parallax->value;
+	s_parallax_box.curvalue = r_reliefMapping->value;
 	s_parallax_box.generic.callback = ParallaxCallback;
 	s_parallax_box.generic.statusbar = "Relief Parallax Mapping";
 

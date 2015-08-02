@@ -243,7 +243,7 @@ Con_MessageMode_f
 ================
 */
 void Con_MessageMode_f (void) {
-	chat_team = false;
+	chat_team = qfalse;
 	cls.key_dest = key_message;
 }
 
@@ -253,7 +253,7 @@ Con_MessageMode2_f
 ================
 */
 void Con_MessageMode2_f (void) {
-	chat_team = true;
+	chat_team = qtrue;
 	cls.key_dest = key_message;
 }
 
@@ -343,7 +343,7 @@ void Con_Init (void) {
 	Cmd_AddCommand ("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
-	con.initialized = true;
+	con.initialized = qtrue;
 }
 
 
@@ -386,17 +386,17 @@ void Con_Print (char *txt) {
 	int		c, l;
 	int		color;
 	//	static qboolean	cr;
-	qboolean	skipNotify = false;
+	qboolean	skipNotify = qfalse;
 
 	if (!Q_strnicmp (txt, "[skipnotify]", 12)) {
-		skipNotify = true;
+		skipNotify = qtrue;
 		txt += 12;
 	}
 
 	if (!con.initialized) {
 		con.lineWidth = -1;
 		Con_CheckResize ();
-		con.initialized = true;
+		con.initialized = qtrue;
 	}
 
 	color = ColorIndex (COLOR_WHITE);
@@ -532,7 +532,7 @@ void Con_DrawNotify (void) {
 	currentColor = 7;
 	RE_SetColor (ColorTable[currentColor]);
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	v = 0;
 	for (i = con.current - NUM_CON_TIMES + 1; i <= con.current; i++) {
@@ -589,7 +589,7 @@ void Con_DrawNotify (void) {
 
 		v += 8;
 	}
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 }
 
 
@@ -629,7 +629,7 @@ void Con_DrawConsole (float frac) {
 	SCR_AddDirtyPoint (0, 0);
 	SCR_AddDirtyPoint (viddef.width - 1, lines - 1);
 
-	Set_FontShader (true);
+	Set_FontShader (qtrue);
 
 	Com_sprintf (version, sizeof(version), "q2xp 1.26.4 (%s)", __DATE__);
 	for (x = 0; x < strlen (version); x++)
@@ -745,7 +745,7 @@ void Con_DrawConsole (float frac) {
 
 	RE_SetColor (colorWhite);
 
-	Set_FontShader (false);
+	Set_FontShader (qfalse);
 
 }
 

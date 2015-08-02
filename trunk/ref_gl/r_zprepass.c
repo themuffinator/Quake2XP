@@ -15,7 +15,7 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	numIndices = *indeces;
 
 	if (numVertices + nv > MAX_BATCH_SURFS)
-		return false;
+		return qfalse;
 
 	// create indexes
 	if (numIndices == 0xffffffff)
@@ -37,7 +37,7 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	*vertices = numVertices;
 	*indeces = numIndices;
 
-	return true;
+	return qtrue;
 }
 
 static void GL_DrawDepthPoly () {
@@ -207,17 +207,15 @@ void R_DrawDepthBrushModel (void) {
 	if (currentmodel->numModelSurfaces == 0)
 		return;
 
-	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
-
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
-		rotated = true;
+		rotated = qtrue;
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;
 			maxs[i] = currententity->origin[i] + currentmodel->radius;
 		}
 	}
 	else {
-		rotated = false;
+		rotated = qfalse;
 		VectorAdd (currententity->origin, currentmodel->mins, mins);
 		VectorAdd (currententity->origin, currentmodel->maxs, maxs);
 	}
@@ -241,9 +239,9 @@ void R_DrawDepthBrushModel (void) {
 	qglPushMatrix ();
 	R_RotateForEntity (currententity);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.xyz_offset));
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 
 	num_depth_surfaces = 0;
 	R_AddBModelDepthPolys ();
@@ -270,7 +268,7 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 
 	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, vertexArray);
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
 
 	c_alias_polys += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
@@ -344,9 +342,9 @@ void R_DrawDepthScene (void) {
 
 	GL_BindProgram (nullProgram, 0);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, gl_state.vbo_BSP);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, false, 0, BUFFER_OFFSET(gl_state.xyz_offset));
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
@@ -357,7 +355,7 @@ void R_DrawDepthScene (void) {
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	qglDisableVertexAttribArray (ATRB_POSITION);
 
-	R_DrawSkyBox (false);
+	R_DrawSkyBox (qfalse);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];

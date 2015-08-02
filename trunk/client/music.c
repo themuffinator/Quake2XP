@@ -86,11 +86,11 @@ static qboolean Music_PlayFile (const char *name, qboolean hasExt) {
 
 		S_Streaming_Start (sp.bits, sp.channels, sp.rate, s_musicvolume->value);
 		mstat = cl_paused->value ? MSTAT_PAUSED : MSTAT_PLAYING;
-		return true;
+		return qtrue;
 	}
 	else {
 		Com_Printf (S_COLOR_YELLOW "Music_Play: unable to load \"%s\"\n", name);
-		return false;
+		return qfalse;
 	}
 }
 
@@ -112,13 +112,13 @@ void Music_Play (void) {
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Play (track, true);
+			CDAudio_Play (track, qtrue);
 			mstat = MSTAT_PLAYING;
 			break;
 
 		case MUSIC_CD_FILES:
 			Q_snprintfz (name, sizeof(name), "music/track%02i", track);
-			Music_PlayFile (name, false);
+			Music_PlayFile (name, qfalse);
 			break;
 
 		case MUSIC_OTHER_FILES:
@@ -131,7 +131,7 @@ void Music_Play (void) {
 				fsIndex = (fsIndex + 1) % fsNumFiles;
 			count = fsNumFiles;
 			while (count-- > 0) {
-				if (Music_PlayFile (fsList[fsIndex], true))
+				if (Music_PlayFile (fsList[fsIndex], qtrue))
 					return;
 				fsIndex = (fsIndex + 1) % fsNumFiles;
 			}
@@ -165,7 +165,7 @@ void Music_Pause (void) {
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Activate (false);
+			CDAudio_Activate (qfalse);
 			break;
 		case MUSIC_CD_FILES:
 		case MUSIC_OTHER_FILES:
@@ -182,7 +182,7 @@ void Music_Resume (void) {
 
 	switch (music_type) {
 		case MUSIC_CD:
-			CDAudio_Activate (true);
+			CDAudio_Activate (qtrue);
 			break;
 		case MUSIC_CD_FILES:
 		case MUSIC_OTHER_FILES:
@@ -206,9 +206,9 @@ void Music_Update (void) {
 		Music_Shutdown ();
 		Music_Init ();
 		Music_Play ();
-		s_musicsrc->modified = false;
-		s_musicvolume->modified = false;
-		s_musicrandom->modified = false;
+		s_musicsrc->modified = qfalse;
+		s_musicvolume->modified = qfalse;
+		s_musicrandom->modified = qfalse;
 		return;
 	}
 
@@ -216,7 +216,7 @@ void Music_Update (void) {
 		return;
 
 	if (s_musicrandom->modified) {
-		s_musicrandom->modified = false;
+		s_musicrandom->modified = qfalse;
 		Music_Play ();
 		return;
 	}
@@ -231,7 +231,7 @@ void Music_Update (void) {
 				alSourcef (source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
 				break;
 		}
-		s_musicvolume->modified = false;
+		s_musicvolume->modified = qfalse;
 		return;
 	}
 

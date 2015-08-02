@@ -333,7 +333,7 @@ qboolean Mat4_Invert (const mat4_t in, mat4_t out) {
 	det = -det3_201_123 * in[3][0] + det3_201_023 * in[3][1] - det3_201_013 * in[3][2] + det3_201_012 * in[3][3];
 
 	if (Q_fabs (det) < MATRIX_INVERSE_EPSILON)
-		return false;
+		return qfalse;
 
 	invDet = 1.0f / det;
 
@@ -388,7 +388,7 @@ qboolean Mat4_Invert (const mat4_t in, mat4_t out) {
 	out[2][3] = -det3_201_013 * invDet;
 	out[3][3] = det3_201_012 * invDet;
 
-	return true;
+	return qtrue;
 }
 
 /*

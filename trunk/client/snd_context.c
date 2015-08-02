@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/snd_loc.h"
 
 alConfig_t alConfig;
-qboolean	openalStop = false;
+qboolean	openalStop = qfalse;
 /*
  =================
  AL_InitDriver
@@ -44,7 +44,7 @@ static qboolean AL_InitDriver (void) {
 	// Open the device
 	if ((alConfig.hDevice = alcOpenDevice (deviceName)) == NULL) {
 		Com_Printf ("failed\n");
-		return false;
+		return qfalse;
 	}
 
 	if (!deviceName)
@@ -98,13 +98,13 @@ static qboolean AL_InitDriver (void) {
 	}
 	Com_DPrintf ("succeeded\n");
 
-	return true;
+	return qtrue;
 
 failed:
 
 	Com_Printf (S_COLOR_RED"...failed hard\n");
 
-	openalStop = true;
+	openalStop = qtrue;
 
 	if (alConfig.hALC) {
 		alcDestroyContext (alConfig.hALC);
@@ -116,7 +116,7 @@ failed:
 		alConfig.hDevice = NULL;
 	}
 
-	return false;
+	return qfalse;
 }
 
 /*
@@ -134,7 +134,7 @@ qboolean AL_StartOpenAL (void) {
 		if (!a) {
 			// We have no audio output devices. No hope.
 			QAL_Shutdown ();
-			return false;
+			return qfalse;
 		}
 		while (*a) {
 			al_device[++i] = a;
@@ -155,17 +155,17 @@ qboolean AL_StartOpenAL (void) {
 		alConfig.device_count = 3;
 #else
 		QAL_Shutdown ();
-		return false;
+		return qfalse;
 #endif
 	}
 
 	// Initialize the device, context, etc...
 	if (AL_InitDriver ()) {
-		return true;
+		return qtrue;
 	}
 	else {
 		QAL_Shutdown ();
-		return false;
+		return qfalse;
 	}
 }
 
