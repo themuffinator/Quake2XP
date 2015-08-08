@@ -788,7 +788,6 @@ qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const v
 #define Vector4Copy(a,b) ((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
 #define PlaneDiff(point,plane) (((plane)->type < 3 ? (point)[(plane)->type] : DotProduct((point), (plane)->normal)) - (plane)->dist)
 
-typedef byte color4ub_t[4];
 #define clamp(a,b,c)	((a) < (b) ? (b) : (a) > (c) ? (c) : (a))
 
 void Q_strncatz (char *dst, int dstSize, const char *src);

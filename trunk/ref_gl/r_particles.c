@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 vec4_t shadelight_surface;
 image_t *r_particletexture[PT_MAX];
 
-typedef vec3_t mat3_t[3];
-
 int CL_PMpointcontents (vec3_t point);
 
 /*
