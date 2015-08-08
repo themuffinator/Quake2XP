@@ -440,7 +440,7 @@ hack:
 		return qfalse;
 
 	//the normals are flipped when surf_planeback is 1
-	if (abs (dist) > currentShadowLight->len)
+	if (fabsf (dist) > currentShadowLight->len)
 		return qfalse;
 
 	lbbox[0] = currentShadowLight->origin[0] - currentShadowLight->radius[0];

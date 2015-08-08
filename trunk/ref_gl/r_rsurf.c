@@ -883,7 +883,7 @@ next:
 		}
 next2:
 
-	if (abs(dist) > currentShadowLight->len)
+	if (fabsf(dist) > currentShadowLight->len)
 		return qfalse;
 
 	if(world)
