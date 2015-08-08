@@ -208,7 +208,7 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 	if (!skin)
 		skin = r_notexture;
 
-	R_CalcAliasFrameLerp (paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
+	R_CalcAliasFrameLerp (paliashdr, 0);
 
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);

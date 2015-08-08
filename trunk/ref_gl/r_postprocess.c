@@ -646,8 +646,7 @@ void R_DownsampleDepth(void) {
 
 	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
-
-//	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
 void R_SSAO (void) {
@@ -726,6 +725,7 @@ void R_SSAO (void) {
 
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
+	GL_DepthMask(1);
 
 	qglPopMatrix();
 	qglMatrixMode(GL_PROJECTION);

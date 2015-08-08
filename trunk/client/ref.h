@@ -225,7 +225,7 @@ typedef enum {
 	it_sky,
 	it_autobump,
 	it_parallax,
-	it_bump
+	it_bump,
 } imagetype_t;
 
 typedef struct image_s {

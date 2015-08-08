@@ -330,20 +330,17 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		qglUniform1f(ambientWorld_specularScale, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
 		qglUniform1f(ambientWorld_specularExp, image->SpecularExp ? image->SpecularExp : 16.f);
 
-		if (r_reliefMapping->value){
-
-			if (!image->parallaxScale){
-				scale[0] = r_reliefScale->value / image->width;
-				scale[1] = r_reliefScale->value / image->height;
-			}
-			else
-			{
-				scale[0] = image->parallaxScale / image->width;
-				scale[1] = image->parallaxScale / image->height;
-			}
-			qglUniform4f(ambientWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
+		if (!image->parallaxScale){
+			scale[0] = r_reliefScale->value / image->width;
+			scale[1] = r_reliefScale->value / image->height;
 		}
-
+		else
+		{
+			scale[0] = image->parallaxScale / image->width;
+			scale[1] = image->parallaxScale / image->height;
+		}
+			qglUniform4f(ambientWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
+	
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
@@ -360,22 +357,20 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		qglUniform1f(ambientWorld_scroll, scroll);
 	}
 
+	// create indexes
+	if (numIndices == 0xffffffff)
+		numIndices = 0;
 
-		// create indexes
-		if (numIndices == 0xffffffff)
-			numIndices = 0;
+	c_brush_polys += (nv - 2);
+	
+	for (i = 0; i < nv - 2; i++){
+		indexArray[numIndices++] = surf->baseIndex;
+		indexArray[numIndices++] = surf->baseIndex + i + 1;
+		indexArray[numIndices++] = surf->baseIndex + i + 2;
+	}
 
-		c_brush_polys += (nv - 2);
-		
-		for (i = 0; i < nv - 2; i++)
-		{
-			indexArray[numIndices++] = surf->baseIndex;
-			indexArray[numIndices++] = surf->baseIndex + i + 1;
-			indexArray[numIndices++] = surf->baseIndex + i + 2;
-		}
-
-		*vertices	= numVertices;
-		*indeces	= numIndices;
+	*vertices	= numVertices;
+	*indeces	= numIndices;
 
 	return qtrue;	
 }
@@ -404,9 +399,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	GL_BindProgram(ambientWorldProgram, 0);
 
 	qglUniform1f(ambientWorld_colorScale, r_textureColorScale->value);
-
-	if (r_reliefMapping->value > 0 || r_worldmodel->useXPLM)
-		qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
+	qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
 	
 	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_reliefMapping->value, 0, 1));
 	qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
@@ -418,7 +411,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qglUniform1i(ambientWorld_lightmap[1],	4);
 	qglUniform1i(ambientWorld_lightmap[2],	5);
 	qglUniform1i(ambientWorld_lightmapType, r_worldmodel->useXPLM ? 1 : 0);
-	qglUniform1i(ambientWorld_ssaoMap, 6);
+	qglUniform1i(ambientWorld_ssaoMap,		6);
 
 	if (r_ssao->value){
 		GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
@@ -529,22 +522,18 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 				qglUniform1i(lightWorld_caustics, 0);
 		}
 
-		if (r_reliefMapping->value){
-
-			if (!image->parallaxScale){
-
-				scale[0] = r_reliefScale->value / image->width;
-				scale[1] = r_reliefScale->value / image->height;
-			}
-			else
-			{
-				scale[0] = image->parallaxScale / image->width;
-				scale[1] = image->parallaxScale / image->height;
-			}
-
-			qglUniform4f(lightWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
-
+		if (!image->parallaxScale){
+			scale[0] = r_reliefScale->value / image->width;
+			scale[1] = r_reliefScale->value / image->height;
 		}
+	else
+		{
+			scale[0] = image->parallaxScale / image->width;
+			scale[1] = image->parallaxScale / image->height;
+		}
+
+		qglUniform4f(lightWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
+
 
 		GL_MBind		(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);

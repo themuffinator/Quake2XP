@@ -746,19 +746,42 @@ typedef BOOL (WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
 ** doing the wgl interface stuff.
 */
 
+/*============================
+Fucking Microsoft!!!!
+http://www.codeproject.com/Articles/678606/Part-Overcoming-Windows-s-deprecation-of-GetVe?msg=5080848#xx5080848xx
+=============================*/
+BOOL GetOsVersion(RTL_OSVERSIONINFOEXW* pk_OsVer)
+{
+	typedef LONG(WINAPI* tRtlGetVersion)(RTL_OSVERSIONINFOEXW*);
+
+	memset(pk_OsVer, 0, sizeof(RTL_OSVERSIONINFOEXW));
+	pk_OsVer->dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOEXW);
+
+	HMODULE h_NtDll = GetModuleHandleW(L"ntdll.dll");
+	tRtlGetVersion f_RtlGetVersion = (tRtlGetVersion)GetProcAddress(h_NtDll, "RtlGetVersion");
+
+	if (!f_RtlGetVersion)
+		return FALSE; // This will never happen (all processes load ntdll.dll)
+
+	LONG Status = f_RtlGetVersion(pk_OsVer);
+	return Status == 0; // STATUS_SUCCESS;
+}
+
 qboolean GLimp_Init( void *hinstance, void *wndproc )
 {
 	char		string[64], S[64];
 	int			len;
-	DWORD		prType;
-	PGPI		pGPI;
+	RTL_OSVERSIONINFOEXW    rtl_OsVer;
+	OSVERSIONINFOEX			winver;
+	SYSTEM_INFO				cpuinf;
+	DWORD					prType;
+	PGPI					pGPI;
 
-	OSVERSIONINFOEX		winver;
-	SYSTEM_INFO			cpuinf;
+
+	glw_state.allowdisplaydepthchange = qfalse;
 
 	winver.dwOSVersionInfoSize = sizeof(winver);
-		
-	glw_state.allowdisplaydepthchange = qfalse;
+	
 	ZeroMemory(&cpuinf, sizeof(SYSTEM_INFO));
 	GetSystemInfo(&cpuinf);
 
@@ -778,214 +801,253 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	//Memory info
 	GLimp_GetMemorySize();
 
-	//OS same info from  http://msdn.microsoft.com/en-us/library/ms724429(VS.85).aspx
 	if ( GetVersionEx( &winver) )
 	{
 	if ( winver.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS )
-			VID_Error (ERR_FATAL, "Quake2xp requires Windows 2000 or greater");
+			VID_Error (ERR_FATAL, "Quake2xp requires Windows XP or greater");
 		
-		 if ( winver.dwMajorVersion >= 6 && (	winver.dwMinorVersion == 0 || winver.dwMinorVersion == 1 || 
-												winver.dwMinorVersion == 2 || winver.dwMinorVersion == 3) ) //vista, win7, 8 and 8.1
+	if (GetOsVersion(&rtl_OsVer)) {
+
+		if (winver.dwMajorVersion >= 6 && (winver.dwMinorVersion == 0 || winver.dwMinorVersion == 1 ||
+			winver.dwMinorVersion == 2 || winver.dwMinorVersion == 3)) //vista, win7, 8, 8.1 and 10
+		{
+
+			pGPI = (PGPI)GetProcAddress(
+				GetModuleHandle(TEXT("kernel32.dll")),
+				"GetProductInfo");
+
+			pGPI(6, 0, 0, 0, &prType);
+
+			switch (prType)
 			{
+			case PRODUCT_ULTIMATE:
+				sprintf(S, "Ultimate Edition");
+				break;
+			case PRODUCT_ULTIMATE_E:
+				sprintf(S, "Ultimate E Edition");
+				break;
+			case PRODUCT_ULTIMATE_N:
+				sprintf(S, "Ultimate N Edition");
+				break;
+			case PRODUCT_HOME_PREMIUM:
+				sprintf(S, "Home Premium Edition");
+				break;
+			case PRODUCT_HOME_PREMIUM_E:
+				sprintf(S, "Home Premium E Edition");
+				break;
+			case PRODUCT_HOME_PREMIUM_N:
+				sprintf(S, "Home Premium N Edition");
+				break;
+			case PRODUCT_HOME_BASIC:
+				sprintf(S, "Home Basic Edition");
+				break;
+			case PRODUCT_HOME_BASIC_E:
+				sprintf(S, "Home Basic E Edition");
+				break;
+			case PRODUCT_HOME_BASIC_N:
+				sprintf(S, "Home Basic N Edition");
+				break;
+			case PRODUCT_ENTERPRISE:
+				sprintf(S, "Enterprise Edition");
+				break;
+			case PRODUCT_ENTERPRISE_E:
+				sprintf(S, "Enterprise E Edition");
+				break;
+			case PRODUCT_ENTERPRISE_N:
+				sprintf(S, "Enterprise N Edition");
+				break;
+			case PRODUCT_BUSINESS:
+				sprintf(S, "Business Edition");
+				break;
+			case PRODUCT_BUSINESS_N:
+				sprintf(S, "Business N Edition");
+				break;
 
-			pGPI = (PGPI) GetProcAddress(
-            GetModuleHandle(TEXT("kernel32.dll")), 
-            "GetProductInfo");
+			// =======win 10========
+			case PRODUCT_PROFESSIONAL:
+				sprintf(S, "Professional Edition");
+				break;
+			case PRODUCT_PROFESSIONAL_N:
+				sprintf(S, "Professional N Edition");
+				break;
 
-			pGPI(6,0,0,0,&prType);
-			
-			switch( prType )
-			{
-				case PRODUCT_ULTIMATE:
-					sprintf(S, "Ultimate Edition");
-					break;
-				case PRODUCT_ULTIMATE_E:
-					sprintf(S, "Ultimate E Edition");
-					break;
-				case PRODUCT_ULTIMATE_N:
-					sprintf(S, "Ultimate N Edition");
-					break;
-				case PRODUCT_HOME_PREMIUM:
-					sprintf(S, "Home Premium Edition");
-					break;
-				case PRODUCT_HOME_PREMIUM_E:
-					sprintf(S, "Home Premium E Edition");
-					break;
-				case PRODUCT_HOME_PREMIUM_N:
-					sprintf(S, "Home Premium N Edition");
-					break;
-				case PRODUCT_HOME_BASIC:
-					sprintf(S, "Home Basic Edition");
-					break;
-				case PRODUCT_HOME_BASIC_E:
-					sprintf(S, "Home Basic E Edition");
-					break;
-				case PRODUCT_HOME_BASIC_N:
-					sprintf(S, "Home Basic N Edition");
-					break;
-				case PRODUCT_ENTERPRISE:
-					sprintf(S, "Enterprise Edition");
-					break;
-				case PRODUCT_ENTERPRISE_E:	
-					sprintf(S, "Enterprise E Edition");
-					break;
-				case PRODUCT_ENTERPRISE_N:	
-					sprintf(S, "Enterprise N Edition");
-					break;
-				case PRODUCT_BUSINESS:
-					sprintf(S, "Business Edition");
-					break;
-				case PRODUCT_BUSINESS_N:
-					sprintf(S, "Business N Edition");
-					break;
-				case PRODUCT_STARTER:
-					sprintf(S, "Starter Edition");
-					break;
-				case PRODUCT_STARTER_E:
-					sprintf(S, "Starter E Edition");
-					break;
-				case PRODUCT_STARTER_N:
-					sprintf(S, "Starter N Edition");
-					break;
-				case PRODUCT_CLUSTER_SERVER:
-					sprintf(S, "Cluster Server Edition");
-					break;
-				case PRODUCT_DATACENTER_SERVER:
-					sprintf(S, "Datacenter Edition");
-					break;
-				case PRODUCT_DATACENTER_SERVER_CORE:
-					sprintf(S, "Datacenter Edition (core installation)");
-					break;
-				case PRODUCT_ENTERPRISE_SERVER:
-					sprintf(S, "Enterprise Edition");
-					break;
-				case PRODUCT_ENTERPRISE_SERVER_CORE:
-					sprintf(S, "Enterprise Edition (core installation)");
-					break;
-				case PRODUCT_ENTERPRISE_SERVER_IA64:
-					sprintf(S, "Enterprise Edition for Itanium-based Systems");
-					break;
-				case PRODUCT_SMALLBUSINESS_SERVER:
-					sprintf(S, "Small Business Server");
-					break;
-				case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
-					sprintf(S, "Small Business Server Premium Edition");
-					break;
-				case PRODUCT_STANDARD_SERVER:
-					sprintf(S, "Standard Edition");
-					break;
-				case PRODUCT_STANDARD_SERVER_CORE:
-					sprintf(S, "Standard Edition (core installation)");
-					break;
-				case PRODUCT_WEB_SERVER:
-					sprintf(S, "Web Server Edition");
-					break;
-				default:
-					sprintf(S, "Ultimate Edition");
-					break;
+			case PRODUCT_CORE:
+				sprintf(S, "Home Edition"); 
+				break;
+			case PRODUCT_CORE_N:
+				sprintf(S, "Home N Edition");
+				break;
+			case PRODUCT_CORE_SINGLELANGUAGE:
+				sprintf(S, "Home Single Language");
+				break;
+			case PRODUCT_CORE_COUNTRYSPECIFIC:
+				sprintf(S, "Home China Language");
+				break;
+			//====================
+			case PRODUCT_STARTER:
+				sprintf(S, "Starter Edition");
+				break;
+			case PRODUCT_STARTER_E:
+				sprintf(S, "Starter E Edition");
+				break;
+			case PRODUCT_STARTER_N:
+				sprintf(S, "Starter N Edition");
+				break;
+			case PRODUCT_CLUSTER_SERVER:
+				sprintf(S, "Cluster Server Edition");
+				break;
+			case PRODUCT_DATACENTER_SERVER:
+				sprintf(S, "Datacenter Edition");
+				break;
+			case PRODUCT_DATACENTER_SERVER_CORE:
+				sprintf(S, "Datacenter Edition (core installation)");
+				break;
+			case PRODUCT_ENTERPRISE_SERVER:
+				sprintf(S, "Enterprise Edition");
+				break;
+			case PRODUCT_ENTERPRISE_SERVER_CORE:
+				sprintf(S, "Enterprise Edition (core installation)");
+				break;
+			case PRODUCT_ENTERPRISE_SERVER_IA64:
+				sprintf(S, "Enterprise Edition for Itanium-based Systems");
+				break;
+			case PRODUCT_SMALLBUSINESS_SERVER:
+				sprintf(S, "Small Business Server");
+				break;
+			case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
+				sprintf(S, "Small Business Server Premium Edition");
+				break;
+			case PRODUCT_STANDARD_SERVER:
+				sprintf(S, "Standard Edition");
+				break;
+			case PRODUCT_STANDARD_SERVER_CORE:
+				sprintf(S, "Standard Edition (core installation)");
+				break;
+			case PRODUCT_WEB_SERVER:
+				sprintf(S, "Web Server Edition");
+				break;
+			default:
+				sprintf(S, "Ultimate Edition");
+				break;
 			}
-			if(winver.dwMinorVersion == 0){
-			if(!Is64BitWindows()){
-			
-			if( winver.wProductType == VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Vista "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			if( winver.wProductType != VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2008 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			}
+			if (rtl_OsVer.dwMinorVersion == 6 && rtl_OsVer.dwMinorVersion == 0) {
+				if (!Is64BitWindows()) {
 
-			if(Is64BitWindows()){	
-			
-			if( winver.wProductType == VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Vista "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			if( winver.wProductType != VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2008 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			}
-			
-			}
-			
-			if(winver.dwMinorVersion == 1){
-			if(!Is64BitWindows()){
-			
-			if( winver.wProductType == VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 7 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			if( winver.wProductType != VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2009 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			}
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Vista "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2008 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
 
-			if(Is64BitWindows()){	
-			
-			if( winver.wProductType == VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 7 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			if( winver.wProductType != VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2009 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			}
-			
+				if (Is64BitWindows()) {
+
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Vista "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2008 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
+
 			}
 
-			if(winver.dwMinorVersion == 2){
-			if(!Is64BitWindows()){
-			
-			if( winver.wProductType == VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			if( winver.wProductType != VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
+			if (rtl_OsVer.dwMinorVersion == 6 && rtl_OsVer.dwMinorVersion == 1) {
+				if (!Is64BitWindows()) {
+
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 7 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2009 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
+
+				if (Is64BitWindows()) {
+
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 7 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2009 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
+
 			}
 
-			if(Is64BitWindows()){	
-			
-			if( winver.wProductType == VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			if( winver.wProductType != VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			}
-			
+			if (rtl_OsVer.dwMinorVersion == 6 && rtl_OsVer.dwMinorVersion == 2) {
+				if (!Is64BitWindows()) {
+
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
+
+				if (Is64BitWindows()) {
+
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
+
 			}
 
-			if(winver.dwMinorVersion == 3){
-			if(!Is64BitWindows()){
-			
-			if( winver.wProductType == VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8.1 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			if( winver.wProductType != VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
+			if (rtl_OsVer.dwMinorVersion == 6 && rtl_OsVer.dwMinorVersion == 3) {
+				if (!Is64BitWindows()) {
+
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8.1 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
+
+				if (Is64BitWindows()) {
+
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8.1 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
+
 			}
 
-			if(Is64BitWindows()){	
-			
-			if( winver.wProductType == VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8.1 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			if( winver.wProductType != VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, winver.szCSDVersion, winver.dwBuildNumber);
-			}
-			
+			if (rtl_OsVer.dwMajorVersion == 10 && rtl_OsVer.dwMinorVersion == 0) {
+				if (!Is64BitWindows()) {
+
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 10 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				//	if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+				//		Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
+
+				if (Is64BitWindows()) {
+
+					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 10 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				//	if (rtl_OsVer.wProductType != VER_NT_WORKSTATION)
+				//		Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				}
+
 			}
 		}
-	
 
-		 if ( winver.dwMajorVersion == 5 && winver.dwMinorVersion == 2 )
-			{
-            if ( winver.wSuiteMask==VER_SUITE_STORAGE_SERVER )
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Storage Server 2003");
-			 
-			if( winver.wProductType == VER_NT_WORKSTATION)
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows XP Professional "S_COLOR_GREEN"x64 "S_COLOR_YELLOW"Edition %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", winver.szCSDVersion, winver.dwBuildNumber);
+
+		if (rtl_OsVer.dwMajorVersion == 5 && rtl_OsVer.dwMinorVersion == 2)
+		{
+			if (rtl_OsVer.wSuiteMask == VER_SUITE_STORAGE_SERVER)
+				Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Storage Server 2003");
+
+			if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
+				Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows XP Professional "S_COLOR_GREEN"x64 "S_COLOR_YELLOW"Edition %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			else {
-				if(Is64BitWindows()) 	
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 2003 Server "S_COLOR_GREEN"x64 "S_COLOR_YELLOW"Edition %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n",winver.szCSDVersion, winver.dwBuildNumber);
-			else 
-				Com_Printf ( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 2003 Server "S_COLOR_GREEN"x32 "S_COLOR_YELLOW"Edition %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n",winver.szCSDVersion, winver.dwBuildNumber);
+				if (Is64BitWindows())
+					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 2003 Server "S_COLOR_GREEN"x64 "S_COLOR_YELLOW"Edition %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+				else
+					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 2003 Server "S_COLOR_GREEN"x32 "S_COLOR_YELLOW"Edition %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
-			
-			}
-	
+		}
+	}
+
 		 if ( winver.dwPlatformId == VER_PLATFORM_WIN32_NT )
 			{
 				
-				if ( winver.dwMajorVersion <= 4 ) 
-						VID_Error (ERR_FATAL, "Quake2xp requires Windows 2000 or greater");
-
-		if ( winver.dwMajorVersion == 5 && winver.dwMinorVersion == 0 )
-					Com_Printf( S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Microsoft Windows 2000 %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n",winver.szCSDVersion, winver.dwBuildNumber);
+				if ( winver.dwMajorVersion == 5 && winver.dwMinorVersion == 0)
+						VID_Error (ERR_FATAL, "Quake2xp requires Windows XP or greater");
 
                 if ( winver.dwMajorVersion == 5 && winver.dwMinorVersion == 1 )
 					{
@@ -996,13 +1058,9 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 								Com_Printf( S_COLOR_YELLOW"Professional " );
 								Com_Printf(S_COLOR_GREEN"%s ",winver.szCSDVersion);
 								Com_Printf( S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n",winver.dwBuildNumber);
-					
-								
 					}
-	
 			}
-						
-					glw_state.allowdisplaydepthchange = qtrue;
+	glw_state.allowdisplaydepthchange = qtrue;
 					
 	}
 
