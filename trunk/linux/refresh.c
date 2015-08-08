@@ -47,13 +47,13 @@ qboolean GLimp_Init(void *hinstance, void *wndproc)
         if (SDL_Init(SDL_INIT_VIDEO) == -1)
         {
 			Com_Printf(S_COLOR_RED "Couldn't init SDL video: %s.\n", SDL_GetError());
-            return false;
+            return qfalse;
         }
 		SDL_VideoDriverName( driverName, sizeof( driverName ) - 1 );
         Com_Printf(S_COLOR_GREEN "\nInitialized SDL video, driver is \"%s\".\n\n", driverName );
 	}
 
-	return true;
+	return qtrue;
 }
 
 /*

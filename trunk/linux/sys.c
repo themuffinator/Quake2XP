@@ -39,7 +39,7 @@
 #include "../qcommon/qcommon.h"
 
 unsigned	sys_frame_time;
-qboolean	stdin_active = true;
+qboolean	stdin_active = qtrue;
 uid_t		saved_euid;
 
 /* ======================================================================= */
@@ -262,7 +262,7 @@ Sys_ConsoleInput(void)
 
 	len = read(0, text, sizeof(text));
 	if (len == 0) {		/* eof! */
-		stdin_active = false;
+		stdin_active = qfalse;
 		return NULL;
 	}
 	if (len < 1)

@@ -57,12 +57,12 @@ qboolean AL_Init (int hardreset)
 	{
 		// Let the user continue without sound
 		Com_Printf (S_COLOR_RED"WARNING: OpenAL initialization failed\n");
-		openalStop = true;
-		return false;
+		openalStop = qtrue;
+		return qfalse;
 	}
 
 	// Initialize extensions
-	alConfig.efx = false;
+	alConfig.efx = qfalse;
 
 	// Check for ALC Extensions
 	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_EXT_CAPTURE") == AL_TRUE)
@@ -77,7 +77,7 @@ qboolean AL_Init (int hardreset)
             ALint		iEffectSlotsGenerated;
             ALint		iSends;
 
-            alConfig.efx = true;
+            alConfig.efx = qtrue;
 
             // To determine how many Auxiliary Effects Slots are available, create as many as possible (up to 128)
             // until the call fails.
@@ -160,5 +160,5 @@ qboolean AL_Init (int hardreset)
 	if (alIsExtensionPresent("AL_EXT_EXPONENT_DISTANCE") == AL_TRUE)
 		Com_Printf("...unlocked exponent distance preset.\n");
 
-	return true;
+	return qtrue;
 }

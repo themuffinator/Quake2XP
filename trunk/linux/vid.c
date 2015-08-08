@@ -87,7 +87,7 @@ VID_Error(int err_level, char *fmt,...)
 void
 VID_Restart_f(void)
 {
-	vid_ref->modified = true;
+	vid_ref->modified = qtrue;
 }
 
 /*
@@ -124,7 +124,7 @@ qboolean
 VID_GetModeInfo(int *width, int *height, int mode)
 {
 	if (mode < 0 || mode >= VID_NUM_MODES)
-		return false;
+		return qfalse;
 
     if (mode == 14) {
         *width = r_customWidth->value;
@@ -134,7 +134,7 @@ VID_GetModeInfo(int *width, int *height, int mode)
         *height = vid_modes[mode].height;
     }
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -146,13 +146,13 @@ VID_NewWindow(int width, int height)
 	viddef.width = width;
 	viddef.height = height;
 
-	cl.force_refdef = true;		// can't use a paused refdef
+	cl.force_refdef = qtrue;		// can't use a paused refdef
 }
 
 void
 VID_FreeReflib(void)
 {
-	reflib_active = false;
+	reflib_active = qfalse;
 }
 
 qboolean VID_StartRefresh()
@@ -166,13 +166,13 @@ qboolean VID_StartRefresh()
 	{
 		R_Shutdown();
 		VID_FreeReflib();
-		return false;
+		return qfalse;
 	}
 
 	Key_ClearStates();
-	reflib_active = true;
+	reflib_active = qtrue;
 
-	return true;
+	return qtrue;
 }
 
 
@@ -192,13 +192,13 @@ VID_CheckChanges(void)
          * * refresh has changed
          */
 
-        cl.force_refdef = true;
+        cl.force_refdef = qtrue;
         S_StopAllSounds();
 
-        vid_ref->modified = false;
-		r_fullScreen->modified = true;
-		cl.refresh_prepped = false;
-		cls.disable_screen = true;
+        vid_ref->modified = qfalse;
+		r_fullScreen->modified = qtrue;
+		cl.refresh_prepped = qfalse;
+		cls.disable_screen = qtrue;
         CL_ClearDecals();
 
 		if (!VID_StartRefresh()) {
@@ -208,7 +208,7 @@ VID_CheckChanges(void)
 			if (cls.key_dest != key_console) 
 				Con_ToggleConsole_f();
 		}
-		cls.disable_screen = false;
+		cls.disable_screen = qfalse;
 		CL_InitImages();
 
 		// XXX: as SDL was restarted, key repeat settings were lost

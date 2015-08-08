@@ -96,8 +96,8 @@ qboolean
 NET_CompareAdr(netadr_t a, netadr_t b)
 {
 	if (a.ip[0] == b.ip[0] && a.ip[1] == b.ip[1] && a.ip[2] == b.ip[2] && a.ip[3] == b.ip[3] && a.port == b.port)
-		return true;
-	return false;
+		return qtrue;
+	return qfalse;
 }
 
 /*
@@ -109,22 +109,22 @@ qboolean
 NET_CompareBaseAdr(netadr_t a, netadr_t b)
 {
 	if (a.type != b.type)
-		return false;
+		return qfalse;
 
 	if (a.type == NA_LOOPBACK)
-		return true;
+		return qtrue;
 
 	if (a.type == NA_IP) {
 		if (a.ip[0] == b.ip[0] && a.ip[1] == b.ip[1] && a.ip[2] == b.ip[2] && a.ip[3] == b.ip[3])
-			return true;
-		return false;
+			return qtrue;
+		return qfalse;
 	}
 	if (a.type == NA_IPX) {
 		if ((memcmp(a.ipx, b.ipx, 10) == 0))
-			return true;
-		return false;
+			return qtrue;
+		return qfalse;
 	}
-	return false;
+	return qfalse;
 }
 
 char           *
@@ -179,7 +179,7 @@ NET_StringToSockaddr(char *s, struct sockaddr *sadr)
 		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = *(int *)h->h_addr_list[0];
 	}
 
-	return true;
+	return qtrue;
 }
 
 /*
@@ -195,14 +195,14 @@ NET_StringToAdr(char *s, netadr_t * a)
 	if (!strcmp(s, "localhost")) {
 		memset(a, 0, sizeof(*a));
 		a->type = NA_LOOPBACK;
-		return true;
+		return qtrue;
 	}
 	if (!NET_StringToSockaddr(s, (struct sockaddr *)&sadr))
-		return false;
+		return qfalse;
 
 	SockadrToNetadr(&sadr, a);
 
-	return true;
+	return qtrue;
 }
 
 
@@ -234,7 +234,7 @@ NET_GetLoopPacket(netsrc_t sock, netadr_t *from, sizebuf_t *message)
 		loop->get = loop->send - MAX_LOOPBACK;
 
 	if (loop->get >= loop->send)
-		return false;
+		return qfalse;
 
 	i = loop->get & (MAX_LOOPBACK - 1);
 	loop->get++;
@@ -242,7 +242,7 @@ NET_GetLoopPacket(netsrc_t sock, netadr_t *from, sizebuf_t *message)
 	memcpy(message->data, loop->msgs[i].data, loop->msgs[i].datalen);
 	message->cursize = loop->msgs[i].datalen;
 	*from = net_local_adr;
-	return true;
+	return qtrue;
 
 }
 
@@ -278,7 +278,7 @@ NET_GetPacket(netsrc_t sock, netadr_t *from, sizebuf_t *message)
 	int		err;
 
 	if (NET_GetLoopPacket(sock, from, message))
-		return true;
+		return qtrue;
 
 	for (protocol = 0; protocol < 2; protocol++) {
 		if (protocol == 0)
@@ -309,10 +309,10 @@ NET_GetPacket(netsrc_t sock, netadr_t *from, sizebuf_t *message)
 			continue;
 		}
 		message->cursize = ret;
-		return true;
+		return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 /*
@@ -444,7 +444,7 @@ NET_Socket(char *net_interface, int port)
 {
 	int		newsocket;
 	struct sockaddr_in address;
-	qboolean	_true = true;
+	qboolean	_true = qtrue;
 	int		i = 1;
 
 	if ((newsocket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
@@ -488,7 +488,7 @@ NET_Socket(char *net_interface, int port)
 void
 NET_Shutdown(void)
 {
-	NET_Config(false);	/* close sockets */
+	NET_Config(qfalse);	/* close sockets */
 }
 
 

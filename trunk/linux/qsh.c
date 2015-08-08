@@ -201,26 +201,26 @@ CompareAttributes(char *path, char *name, unsigned musthave, unsigned canthave)
 
 	/* . and .. never match */
 	if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
-		return false;
+		return qfalse;
 
 	Com_sprintf(fn, sizeof(fn), "%s/%s", path, name);
 
 	if (stat(fn, &st) == -1)
-		return (false);	/* shouldn't happen */
+		return (qfalse);	/* shouldn't happen */
 
 	if (((musthave & SFF_HIDDEN) && name[0] != '.') ||
 	    ((canthave & SFF_HIDDEN) && name[0] == '.'))
-		return (false);
+		return (qfalse);
 
 	if (((musthave & SFF_RDONLY) && access(fn, W_OK) != 0) ||
 	    ((canthave & SFF_RDONLY) && access(fn, W_OK) == 0))
-		return (false);
+		return (qfalse);
 
 	if (((musthave & SFF_SUBDIR) && !(st.st_mode & S_IFDIR)) ||
 	    ((canthave & SFF_SUBDIR) && (st.st_mode & S_IFDIR)))
-		return (false);
+		return (qfalse);
 
-	return (true);
+	return (qtrue);
 }
 
 char *
