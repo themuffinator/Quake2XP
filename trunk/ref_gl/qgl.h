@@ -761,11 +761,11 @@ extern	PFNGLFRAMEBUFFERTEXTURELAYERPROC					qglFramebufferTextureLayer;
 extern	PFNGLDRAWBUFFERSARBPROC								qglDrawBuffers;
 extern	PFNGLCLAMPCOLORARBPROC								qglClampColorARB;
 
+#ifdef _WIN32
+
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC					qwglCreateContextAttribsARB;
 
 const GLubyte * (WINAPI* glGetStringi) (GLenum, GLuint);
-
-#ifdef _WIN32
 
 extern PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
 
@@ -833,9 +833,7 @@ extern BOOL (WINAPI * qwglSetDeviceGammaRampEXT) (const unsigned char *pRed,
 	const unsigned char
 	*pBlue);
 
-#endif
-
-#ifdef __linux__
+#else
 
 extern void (*qgl3DfxSetPaletteEXT) (GLuint *);
 
@@ -866,7 +864,7 @@ void Fake_glColorTableEXT(GLenum target, GLenum internalformat,
 	GLsizei width, GLenum format, GLenum type,
 	const GLvoid * table);
 
-#endif							// linux
+#endif							// GLX
 
 /*
 ** extension constants

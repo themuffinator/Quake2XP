@@ -262,28 +262,10 @@ static void vSyncCallBack (void *s) {
 ** VID_MenuInit
 */
 void VID_MenuInit (void) {
-
-#ifdef __linux__
-	static char *resolutions[] = { 
-		"[1024 768][4:3]",
-		"[1152 864][4:3]",
-		"[1280 1024][5:4]",
-		"[1600 1200][4:3]",
-		"[2048 1536][4:3]",
-
-		"[1280 720][720p HDTV]",
-		"[1280 800][16:10]",
-		"[1366 768][16:9 Plasma and LCD TV]",
-		"[1440 900][16:10]",
-		"[1600 900][16:9 LCD]",
-		"[1680 1050][16:10]",
-		"[1920 1080][1080p full HDTV]",
-		"[1920 1200][16:10]",
-		"[2560 1600][16:10]",
-		"[Custom]", 0
-	};
-#else
-	static char *resolutions[] = { "[Desktop]",
+	static char *resolutions[] = {
+#ifdef _WIN32
+		"[Desktop]",
+#endif
 		"[1024 768][4:3]",
 		"[1152 864][4:3]",
 		"[1280 1024][5:4]",
@@ -300,12 +282,11 @@ void VID_MenuInit (void) {
 		"[1920 1200][16:10]",
 		"[2560 1600][16:10]",
 		"[Custom]", 0 };
-#endif
 
 	static char	*yesno_names[] = { "no", "yes", 0 };
 	static char	*adaptive_vc[] = { "no", "default", "adaptive", 0 };
 	static char *ppl[] = { "Full", "Performance", 0 };
-#ifdef __linux__
+#ifndef _WIN32
 	static char	*samples[] = { "[off]", "[2x]", "[4x]", 0 }; // sdl bug work only 2 and 4 samples per pixel
 #else
 	static char	*samples[] = { "[off]", "[2x]", "[4x]", "[8x]", "[16x]", 0 };
