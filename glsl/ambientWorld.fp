@@ -1,5 +1,3 @@
-#extension GL_ARB_texture_rectangle : enable
-
 uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_NormalMap;
 uniform sampler2D		u_Add;
@@ -8,10 +6,10 @@ uniform sampler2D		u_csmMap;
 uniform sampler2D		u_LightMap0;
 uniform sampler2D		u_LightMap1;
 uniform sampler2D		u_LightMap2;
-uniform int			u_LightMapType;
+uniform int				u_LightMapType;
 
-uniform int			u_ssao;
-uniform sampler2DRect		u_ssaoMap;
+uniform int				u_ssao;
+uniform sampler2DRect	u_ssaoMap;
 
 uniform float			u_ColorModulate;
 uniform float			u_ambientScale;    

@@ -1,21 +1,18 @@
-uniform vec3			u_viewOriginES;
+uniform vec3		u_viewOriginES;
 uniform int			u_parallaxType;
 uniform int			u_LightMapType;
 
-varying vec3			v_viewVecTS;
-varying vec3			v_positionVS;
-varying vec3			v_tbn[3];
+varying vec3		v_viewVecTS;
+varying vec2		v_wTexCoord;
+varying vec2		v_lTexCoord;
+varying vec2		v_envCoord;
 
-varying vec2			v_wTexCoord;
-varying vec2			v_lTexCoord;
-varying vec2			v_envCoord;
-
-attribute vec3			a_tangent;
-attribute vec3			a_binormal;
-attribute vec3			a_vertArray;
-attribute vec3			a_normArray;
-attribute vec2			a_texCoord;
-attribute vec2			a_LtexCoord;
+attribute vec3		a_tangent;
+attribute vec3		a_binormal;
+attribute vec3		a_vertArray;
+attribute vec3		a_normArray;
+attribute vec2		a_texCoord;
+attribute vec2		a_LtexCoord;
 
 void main (void) {
 	// setup tex coords
@@ -23,21 +20,11 @@ void main (void) {
 	v_lTexCoord = a_LtexCoord; // lightmap only
 
 	// calculate tangent space view vector for parallax
-	if (u_parallaxType > 0 || u_LightMapType == 1) {
-		vec3 tmp = u_viewOriginES - a_vertArray;
-
-		v_viewVecTS.x = dot(tmp, a_tangent);
-		v_viewVecTS.y = dot(tmp, a_binormal);
-		v_viewVecTS.z = dot(tmp, a_normArray);
-	}
-
-	if (u_parallaxType == 1) {
-		v_tbn[0] = (gl_ModelViewMatrix * vec4(a_tangent, 0.0)).xyz;
-		v_tbn[1] = (gl_ModelViewMatrix * vec4(a_binormal, 0.0)).xyz;
-		v_tbn[2] = (gl_ModelViewMatrix * vec4(a_normArray, 0.0)).xyz;
-
-		v_positionVS = (gl_ModelViewMatrix * vec4(a_vertArray, 1.0)).xyz;
-	}
+	vec3 tmp = u_viewOriginES - a_vertArray;
+	
+	v_viewVecTS.x = dot(tmp, a_tangent);
+	v_viewVecTS.y = dot(tmp, a_binormal);
+	v_viewVecTS.z = dot(tmp, a_normArray);
 
 	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
 }

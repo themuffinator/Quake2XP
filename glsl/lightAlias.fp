@@ -18,7 +18,7 @@ varying vec2			v_texCoord;
 varying vec3			v_viewVec;
 varying vec3			v_lightVec;
 varying vec4			v_CubeCoord;
-varying vec3			v_AttenCoord;
+varying vec4			v_AttenCoord;
 varying vec4			v_positionVS;
 
 // FIXME: give uniform

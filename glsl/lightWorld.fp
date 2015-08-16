@@ -23,7 +23,7 @@ varying vec3			v_lightVec;
 varying vec2			v_texCoord;
 varying vec4			v_CubeCoord;
 varying vec4			v_lightCoord;
-varying vec3			v_AttenCoord;
+varying vec4			v_AttenCoord;
 
 #include lighting.inc
 #include parallax.inc
@@ -62,18 +62,6 @@ void main (void) {
 	}
 
 	if(u_isAmbient == 0) {
-/*
-		// calculate Toksvig factor
-		// FIXME: need to precompute
-		float len = length(normalMap.xyz);
-		float ft = len / mix(u_specularExp, 1.0, len);
-		float fts = ft * u_specularExp;
-		float specular = (1.0 + fts) / (1.0 + u_specularExp) * normalMap.a * u_specularScale;
-
-		normalMap.xyz /= len;
-
-		vec2 Es = PhongLighting(normalMap.xyz, L, V, fts);
-*/
 		float specular = normalMap.a * u_specularScale;
 		vec2 Es = PhongLighting(normalize(normalMap.xyz), L, V, u_specularExp);
 
