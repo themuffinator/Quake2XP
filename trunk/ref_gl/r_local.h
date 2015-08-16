@@ -697,6 +697,20 @@ typedef struct {
 } glstate_t;
 
 typedef struct {
+	float	color[3];
+	float	view[3];
+	float	fogDensity;
+	float	colorScale;
+	int		isAmbient;
+	int		isFog;
+	int		parallax;
+	float	causticsIntens;
+	int		setTMUs;
+}uniformCache_t;
+
+uniformCache_t uniform;
+
+typedef struct {
 
 GLuint	vbo_fullScreenQuad;
 GLuint	vbo_halfScreenQuad;

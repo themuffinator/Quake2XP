@@ -16,33 +16,12 @@ SHADING LANGUAGE INTERFACE
 
 static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
 int r_numPrograms;
-
-// Usage of half-floats gives 5-10% additional performance,
-// as well as "dark room with a lot of little lights" artefacts.
-// GF5xxx and higher have half-precision types, Radeons don't.
-static const char *floatDefs16 =
-"#define xpFloat	half\n"
-"#define xpVec2		hvec2\n"
-"#define xpVec3		hvec3\n"
-"#define xpVec4		hvec4\n"
-"#define xpMat2		hmat2\n"
-"#define xpMat3		hmat3\n"
-"#define xpMat4		hmat4\n";
-
-static const char *floatDefs32 =
-"#define xpFloat	float\n"
-"#define xpVec2		vec2\n"
-"#define xpVec3		vec3\n"
-"#define xpVec4		vec4\n"
-"#define xpMat2		mat2\n"
-"#define xpMat3		mat3\n"
-"#define xpMat4		mat4\n";
-
 static glslProgram_t	r_nullProgram;
-
 static const char *shader5 =
 "#extension GL_ARB_gpu_shader5 : enable";
 
+static const char *ver =
+"#version 120";
 /*
 =================
 Com_HashKey
@@ -323,11 +302,7 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 			strings[numStrings++] = defines;
 		}
 		/// Berserker's fix end
-
-		strings[numStrings++] = floatDefs32;
-
-		// add check for binaries here!!!
-
+	
 		// compile vertex shader
 		if (vertexSource) {
 			// link includes
@@ -387,7 +362,6 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 				R_GetInfoLog (fragmentId, log, qfalse);
 				qglDeleteShader (fragmentId);
 				Com_Printf ("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
-		//		Com_Printf("%s\n", fragmentSource);
 				continue;
 			}
 		}

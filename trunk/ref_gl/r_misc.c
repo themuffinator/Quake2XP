@@ -1080,6 +1080,16 @@ void GL_SetDefaultState (void) {
 		gl_state.depthBoundsMax = 1.f;
 	}
 
+	uniform.setTMUs = 0;
+	VectorSet(uniform.view, 0.0, 0.0, 0.0);
+	uniform.causticsIntens = 0.0;
+	uniform.parallax = 0;
+	uniform.fogDensity = 0.0;
+	uniform.isFog = 0;
+	VectorSet(uniform.color, 0.0, 0.0, 0.0);
+	uniform.isAmbient = 0;
+	uniform.colorScale = 0.0;
+	
 	qglHint (GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
