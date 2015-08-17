@@ -736,8 +736,10 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
+
 	if (node->visframe != r_visframecount)
 		return;
+
 	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
 		return;
 
@@ -840,7 +842,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 
 qboolean R_MarkLightSurf (msurface_t *surf, qboolean world) {
 	cplane_t	*plane;
-	float		dist, dot;
+	float		dist;
 	glpoly_t	*poly;
 	image_t		*image;
 	char		*purename;
@@ -853,11 +855,6 @@ qboolean R_MarkLightSurf (msurface_t *surf, qboolean world) {
 	if (surf->flags & MSURF_DRAWTURB)
 	if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
 		goto hack;
-
-	if (world){
-		if (!SurfInFrustum(surf))
-			return qfalse;
-	}
 
 	if ((surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
 		return qfalse;
@@ -894,33 +891,7 @@ hack:
 			return qfalse;
 next:
 
-	if (world){
-		switch (plane->type) //now check surf_planeback for camera pos
-		{
-		case PLANE_X:
-			dot = r_origin[0] - plane->dist;
-			break;
-		case PLANE_Y:
-			dot = r_origin[1] - plane->dist;
-			break;
-		case PLANE_Z:
-			dot = r_origin[2] - plane->dist;
-			break;
-		default:
-			dot = DotProduct(r_origin, plane->normal) - plane->dist;
-			break;
-		}
-	
-	if (currentShadowLight->isFog && !currentShadowLight->isShadow)
-			goto next2;
-
-		if (((surf->flags & MSURF_PLANEBACK) && (dot > 0)) ||
-			(!(surf->flags & MSURF_PLANEBACK) && (dot < 0)))
-			return qfalse;
-		}
-next2:
-
-	if (fabsf(dist) > currentShadowLight->len)
+	if (fabsf(dist) > currentShadowLight->maxRad)
 		return qfalse;
 
 	if(world)
@@ -961,9 +932,6 @@ void R_MarkLightCasting (mnode_t *node)
 	mleaf_t		*leaf;
 	int			c, cluster;
 
-	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
-		return;
-
 	if (node->contents != -1)
 	{
 		//we are in a leaf
@@ -988,12 +956,12 @@ void R_MarkLightCasting (mnode_t *node)
 	plane = node->plane;
 	dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
 
-	if (dist > currentShadowLight->len)
+	if (dist > currentShadowLight->maxRad)
 	{
 		R_MarkLightCasting (node->children[0]);
 		return;
 	}
-	if (dist < -currentShadowLight->len)
+	if (dist < -currentShadowLight->maxRad)
 	{
 		R_MarkLightCasting (node->children[1]);
 		return;

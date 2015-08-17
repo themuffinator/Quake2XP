@@ -126,9 +126,9 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 
 void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *str)
 {
-	int px, py, row, col, num;
+	int px, py, row, col, num, counter, quadCounter;
 	float frow, fcol, size;
-	unsigned char *s = (unsigned char *) str;
+	unsigned char *s = (unsigned char *)str;
 
 	if (gl_state.currenttextures[gl_state.currenttmu] !=
 		draw_chars->texnum) {
@@ -138,16 +138,17 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 	px = x;
 	py = y;
 	size = 0.0625;
-	
+	counter = 0;
+
 	while (*s) {
 		num = *s++;
 
-		if ((num & 127) == 32) {	// space
+		if ((num & 127) == 32) {        // space
 			px += 8;
 			continue;
 		}
 
-		if (y <= -8) {			// totally off screen
+		if (y <= -8) {                  // totally off screen
 			px += 8;
 			continue;
 		}
@@ -158,25 +159,35 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		frow = row * 0.0625;
 		fcol = col * 0.0625;
 
-		VA_SetElem2(texCoord[0], fcol, frow);
-		VA_SetElem2(texCoord[1], fcol + size, frow);
-		VA_SetElem2(texCoord[2], fcol + size, frow + size);
-		VA_SetElem2(texCoord[3], fcol, frow + size);
+		quadCounter = counter << 2;
 
-		VA_SetElem2(vertCoord[0], px, py);
-		VA_SetElem2(vertCoord[1], px + 8 * scale_x, py);
-		VA_SetElem2(vertCoord[2], px + 8 * scale_x, py + 8 * scale_y);
-		VA_SetElem2(vertCoord[3], px, py + 8 * scale_y);
+		VA_SetElem2(texCoord[quadCounter + 0], fcol, frow);
+		VA_SetElem2(texCoord[quadCounter + 1], fcol + size, frow);
+		VA_SetElem2(texCoord[quadCounter + 2], fcol + size, frow + size);
+		VA_SetElem2(texCoord[quadCounter + 3], fcol, frow + size);
 
-		VA_SetElem4(colorCoord[0], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-		VA_SetElem4(colorCoord[1], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-		VA_SetElem4(colorCoord[2], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-		VA_SetElem4(colorCoord[3], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+		VA_SetElem2(vertCoord[quadCounter + 0], px, py);
+		VA_SetElem2(vertCoord[quadCounter + 1], px + 8 * scale_x, py);
+		VA_SetElem2(vertCoord[quadCounter + 2], px + 8 * scale_x, py + 8 * scale_y);
+		VA_SetElem2(vertCoord[quadCounter + 3], px, py + 8 * scale_y);
+
+		VA_SetElem4(colorCoord[quadCounter + 0], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+		VA_SetElem4(colorCoord[quadCounter + 1], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+		VA_SetElem4(colorCoord[quadCounter + 2], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+		VA_SetElem4(colorCoord[quadCounter + 3], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 
 		px += 8 * scale_x;
+		counter++;
 
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+		if (counter == MAX_DRAW_STRING_LENGTH)
+		{       /// достигли лимита, невероятный случай! Это какой же широкий монитор должен быть?  :))
+			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);    /// Нарисуем batch
+			counter = 0;                                                            /// Начнём новый batch
+		}
 	}
+
+	if (counter)
+		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 }
 
 /*

@@ -1587,8 +1587,8 @@ int R_Init(void *hinstance, void *hWnd)
 
 		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData){
 			vec2_t		tmpVerts[4];
-			index_t	iCache[6];
-			int		idx = 0, numVerts = 0;
+			index_t		iCache[6 * MAX_DRAW_STRING_LENGTH];
+			int			idx = 0, numVerts = 0, i;
 
 			Com_Printf("...using GL_ARB_vertex_buffer_object\n");
 			// precalc screen quads for postprocessing
@@ -1622,12 +1622,16 @@ int R_Init(void *hinstance, void *hWnd)
 			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
 			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 
-			iCache[idx++] = 0;
-			iCache[idx++] = 1;
-			iCache[idx++] = 2;
-			iCache[idx++] = 0;
-			iCache[idx++] = 2;
-			iCache[idx++] = 3;
+			for (i = 0, idx = 0; i < MAX_DRAW_STRING_LENGTH * 4; i +=4)
+			{
+				iCache[idx++] = i + 0;
+				iCache[idx++] = i + 1;
+				iCache[idx++] = i + 2;
+				iCache[idx++] = i + 0;
+				iCache[idx++] = i + 2;
+				iCache[idx++] = i + 3;
+			}
+
 			qglGenBuffers(1, &vbo.ibo_quadTris);
 			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(GL_UNSIGNED_SHORT), iCache, GL_STATIC_DRAW_ARB);

@@ -54,7 +54,7 @@ typedef struct worldShadowLight_s {
 	float		radius[3];
 	float		_cone;
 	float		depthBounds[2];
-	float		len;
+	float		maxRad;
 	float		fogDensity;
 
 	int			filter, style, area;

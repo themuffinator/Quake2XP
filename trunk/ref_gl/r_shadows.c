@@ -339,7 +339,7 @@ void R_DeformShadowVolume () {
 	Mat3_TransposeMultiplyVector (currententity->axis, temp, light);
 	
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-	dist = (currentShadowLight->len + 50.0) - VectorLength(temp);
+	dist = (currentShadowLight->maxRad + 50.0) - VectorLength(temp);
 	if (dist > 0.0)
 		BuildShadowVolumeTriangles (paliashdr, light, dist);
 
@@ -440,7 +440,7 @@ hack:
 		return qfalse;
 
 	//the normals are flipped when surf_planeback is 1
-	if (fabsf (dist) > currentShadowLight->len)
+	if (fabsf (dist) > currentShadowLight->maxRad)
 		return qfalse;
 
 	lbbox[0] = currentShadowLight->origin[0] - currentShadowLight->radius[0];
@@ -510,7 +510,7 @@ void R_DrawBrushModelVolumes () {
 	num_shadow_surfaces = 0;
 	R_MarkBrushModelShadowSurfaces ();
 
-	scale = currentShadowLight->len * 2;
+	scale = currentShadowLight->maxRad * 2;
 
 	// generate vertex buffer
 	for (i = 0; i < num_shadow_surfaces; i++) {
@@ -625,12 +625,12 @@ void R_MarkShadowCasting (mnode_t *node) {
 	plane = node->plane;
 	dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
 
-	if (dist > currentShadowLight->len) {
+	if (dist > currentShadowLight->maxRad) {
 		R_MarkShadowCasting (node->children[0]);
 		return;
 	}
 
-	if (dist < -currentShadowLight->len) {
+	if (dist < -currentShadowLight->maxRad) {
 		R_MarkShadowCasting (node->children[1]);
 		return;
 	}
@@ -659,7 +659,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	num_shadow_surfaces = 0;
 	R_MarkShadowCasting (r_worldmodel->nodes);
 
-	scale = currentShadowLight->len * 10;
+	scale = currentShadowLight->maxRad * 10;
 
 	// generate vertex buffer
 	for (i = 0; i < num_shadow_surfaces; i++) {

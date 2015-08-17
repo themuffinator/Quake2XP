@@ -554,8 +554,6 @@ void Con_DrawNotify (void) {
 				currentColor = (text[x] >> 8) & 7;
 				RE_SetColor (ColorTable[currentColor]);
 			}
-
-			//	Draw_Char ((x + 1) << 3, v, text[x] & 0xff);
 			Draw_CharScaled ((x*fontscale + 1) * 8, v, fontscale, fontscale, text[x] & 0xff);
 		}
 
@@ -575,16 +573,11 @@ void Con_DrawNotify (void) {
 		}
 
 		s = chat_buffer;
-		//	if (chat_bufferlen > (viddef.width>>3)-(skip+1))
-		//		s += chat_bufferlen - ((viddef.width>>3)-(skip+1));
+
 		if (chat_bufferlen > ((viddef.width / fontscale) / 8) - (skip + 1))
 			s += chat_bufferlen - (int)(((viddef.width / fontscale) / 8) - (skip + 1));
-
-		//	Draw_String(skip<<3, v, s);
-		//	Draw_Char ( (strlen(s)+skip)<<3, v, 10+((cls.realtime>>8)&1));
-		//Draw_StringScaled(skip*fontscale*4*(2-(fontscale-1)), v, fontscale, fontscale, s);
+	
 		Draw_StringScaled (skip*fontscale * 8, v, fontscale, fontscale, s);
-
 		Draw_CharScaled ((strlen (s) + skip)*fontscale * 8, v, fontscale, fontscale, 10 + ((cls.realtime >> 8) & 1));
 
 		v += 8;
@@ -601,10 +594,6 @@ Con_DrawConsole
 Draws the console with the solid background
 ================
 */
-
-extern vec2_t texFontCoord[MAX_VERTEX_ARRAY];
-extern vec3_t vertFontCoord[MAX_VERTEX_ARRAY];
-
 void Con_DrawConsole (float frac) {
 	int			i, j, x, y, n;
 	int			rows;
@@ -624,8 +613,7 @@ void Con_DrawConsole (float frac) {
 		lines = viddef.height;
 
 	// draw the background
-	Draw_StretchPic2 (0, lines - viddef.height, viddef.width,
-		viddef.height, i_conback);
+	Draw_StretchPic2 (0, lines - viddef.height, viddef.width, viddef.height, i_conback);
 	SCR_AddDirtyPoint (0, 0);
 	SCR_AddDirtyPoint (viddef.width - 1, lines - 1);
 

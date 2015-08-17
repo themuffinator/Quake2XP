@@ -83,9 +83,9 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	}
 
 	if (light->spherical) 
-		light->len = light->radius[0];
+		light->maxRad = light->radius[0];
 	else 
-		light->len = max(max(light->radius[0], light->radius[1]), light->radius[2]);
+		light->maxRad = max(max(light->radius[0], light->radius[1]), light->radius[2]);
 	
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
@@ -138,7 +138,7 @@ void R_AddDynamicLight (dlight_t *dl) {
 	light->isNoWorldModel = 0;
 	light->isShadow = 1;
 	light->spherical = qtrue;
-	light->len = dl->intensity;
+	light->maxRad = dl->intensity;
 
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
@@ -188,7 +188,7 @@ void R_AddNoWorldModelLight () {
 	light->flare = 0;
 	light->isAmbient = 0;
 	light->spherical = qtrue;
-	light->len = light->radius[0];
+	light->maxRad = light->radius[0];
 
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
@@ -1488,7 +1488,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	light->vboId = light->iboId = light->iboNumIndices = 0;
 	light->depthBounds[0] = 0.0;
 	light->depthBounds[1] = 1.0;
-	light->len = 0;
+	light->maxRad = 0;
 
 	memcpy (light->targetname, target, sizeof(light->targetname));
 
@@ -1498,9 +1498,9 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	}
 
 	if (light->spherical)
-		light->len = light->radius[0];
+		light->maxRad = light->radius[0];
 	else 
-		light->len = max(max(light->radius[0], light->radius[1]), light->radius[2]);
+		light->maxRad = max(max(light->radius[0], light->radius[1]), light->radius[2]);
 	
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
