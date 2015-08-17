@@ -1480,7 +1480,17 @@ int R_Init(void *hinstance, void *hWnd)
 		else {
 			Com_Printf(S_COLOR_RED"...GL_ARB_texture_compression_bptc not found\n");
 			gl_state.texture_compression_bptc = qfalse;
-			r_textureCompression = Cvar_Set("r_textureCompression", "0");
+		}
+	
+	if (!gl_state.texture_compression_bptc)
+		if (IsExtensionSupported("GL_EXT_texture_compression_s3tc"))
+			if (!r_textureCompression->value) {
+				Com_Printf(S_COLOR_YELLOW"...ignoring GL_EXT_texture_compression_s3tc\n");
+				gl_state.texture_compression_dxt = qfalse;
+		}
+		else {
+			Com_Printf("...using GL_EXT_texture_compression_s3tc\n");
+			gl_state.texture_compression_dxt = qtrue;
 		}
 
 	if (IsExtensionSupported("GL_ARB_texture_cube_map"))
@@ -1909,6 +1919,12 @@ void R_BeginFrame()
 
 	if (r_ssao->modified)
 		r_ssao->modified = qfalse;
+	
+	if (r_reliefMapping->modified)
+		r_reliefMapping->modified = qfalse;
+
+	if (r_reliefMapping->value >1)
+		Cvar_SetValue("r_reliefMapping", 1);
 
 	if (r_textureMode->modified || r_anisotropic->modified) {
 		GL_TextureMode(r_textureMode->string);

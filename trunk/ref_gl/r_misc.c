@@ -1080,17 +1080,28 @@ void GL_SetDefaultState (void) {
 		gl_state.depthBoundsMax = 1.f;
 	}
 
-	uniform.setTMUs = 0;
+	// cached uniforms block
+	uniform.setTMUs = -1;
 	VectorSet(uniform.view, 0.0, 0.0, 0.0);
-	uniform.causticsIntens = 0.0;
-	uniform.parallax = 0;
-	uniform.fogDensity = 0.0;
-	uniform.isFog = 0;
+	uniform.causticsIntens = -1.0;
+	uniform.parallax = -1;
+	uniform.fogDensity = -1.0;
+	uniform.isFog = -1;
 	VectorSet(uniform.color, 0.0, 0.0, 0.0);
-	uniform.isAmbient = 0;
-	uniform.colorScale = 0.0;
-	
+	uniform.isAmbient = -1;
+	uniform.colorScale = -1.0;
+
+	uniformA.setTMUs = -1;
+	VectorSet(uniformA.view, 0.0, 0.0, 0.0);
+	uniformA.causticsIntens = -1.0;
+	uniformA.fogDensity = -1.0;
+	uniformA.isFog = -1;
+	VectorSet(uniformA.color, 0.0, 0.0, 0.0);
+	uniformA.isAmbient = -1;
+	uniformA.colorScale = -1.0;
+
 	qglHint (GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+	qglHint	(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
 
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 

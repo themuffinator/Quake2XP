@@ -393,7 +393,55 @@ void GL_DrawAliasFrameLerpAmbientShell (dmdl_t *paliashdr) {
 	GL_BindNullProgram ();
 }
 
-vec3_t viewOrg;
+void R_UpdateLightAliasUniforms()
+{
+	if (uniformA.colorScale != r_textureColorScale->value) {
+		qglUniform1f(lightAlias_colorScale, r_textureColorScale->value);
+		uniformA.colorScale = r_textureColorScale->value;
+	}
+
+	if (uniformA.isAmbient != currentShadowLight->isAmbient) {
+		qglUniform1i(lightAlias_ambient, (int)currentShadowLight->isAmbient);
+		uniformA.isAmbient = currentShadowLight->isAmbient;
+	}
+
+	if (uniformA.color[0] != currentShadowLight->color[0] || uniform.color[0] != currentShadowLight->color[1] || uniform.color[2] != currentShadowLight->color[2]) {
+		qglUniform4f(lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+		uniformA.color[0] = currentShadowLight->color[0];
+		uniformA.color[1] = currentShadowLight->color[1];
+		uniformA.color[2] = currentShadowLight->color[2];
+	}
+
+	if (uniformA.isFog != currentShadowLight->isFog) {
+		qglUniform1i(lightAlias_fog, (int)currentShadowLight->isFog);
+		uniformA.isFog = currentShadowLight->isFog;
+	}
+
+	if (uniformA.fogDensity != currentShadowLight->fogDensity) {
+		qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity);
+		uniformA.fogDensity = currentShadowLight->fogDensity;
+	}
+	
+	if (uniformA.causticsIntens != r_causticIntens->value) {
+		qglUniform1f(lightAlias_causticsIntens, r_causticIntens->value);
+		uniformA.causticsIntens = r_causticIntens->value;
+	}
+
+	if (!VectorCompare(uniformA.view, r_origin)) {
+		qglUniform3fv(lightAlias_viewOrigin, 1, r_origin);
+		VectorCopy(r_origin, uniformA.view);
+	}
+
+
+	if (uniformA.setTMUs != 1) {
+		qglUniform1i(lightAlias_normal, 0);
+		qglUniform1i(lightAlias_diffuse, 1);
+		qglUniform1i(lightAlias_caustic, 2);
+		qglUniform1i(lightAlias_cube, 3);
+		qglUniform1i(lightAlias_atten, 4);
+		uniformA.setTMUs = 1;
+	}
+}
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	int				i, j, jj = 0;
@@ -519,21 +567,14 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	else
 		inWater = qfalse;
 
-	if (currentShadowLight->isAmbient)
-		qglUniform1i (lightAlias_ambient, 1);
-	else
-		qglUniform1i (lightAlias_ambient, 0);
+	R_UpdateLightAliasUniforms();
 
-	if (inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		qglUniform1i (lightAlias_isCaustics, 1);
-		qglUniform1f (lightAlias_causticsIntens, r_causticIntens->value);
-	}
+	if (inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+		qglUniform1i(lightAlias_isCaustics, 1);
 	else
-		qglUniform1i (lightAlias_isCaustics, 0);
-	
-	qglUniform4f (lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+		qglUniform1i(lightAlias_isCaustics, 0);
+
 	qglUniform3fv (lightAlias_lightOrigin, 1, currentShadowLight->origin);
-	qglUniform3fv (lightAlias_viewOrigin, 1, r_origin);
 	qglUniform1f (lightAlias_specularScale, skin->specularScale * r_specularScale->value);
 	qglUniform1f (lightAlias_specularExp, skin->SpecularExp ? skin->SpecularExp : 16.f);
 
@@ -543,27 +584,12 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	R_CalcCubeMapMatrix (qtrue);
 	qglUniformMatrix4fv (lightAlias_cubeMatrix, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
-	if (currentShadowLight->isFog) {
-		qglUniform1i (lightAlias_fog, (int)currentShadowLight->isFog);
-		qglUniform1f (lightAlias_fogDensity, currentShadowLight->fogDensity);
-	}
-	else
-		qglUniform1i (lightAlias_fog, 0);
 
 	GL_MBind (GL_TEXTURE0_ARB, skinNormalmap->texnum);
-	qglUniform1i (lightAlias_normal, 0);
-
 	GL_MBind (GL_TEXTURE1_ARB, skin->texnum);
-	qglUniform1i (lightAlias_diffuse, 1);
-
 	GL_MBind (GL_TEXTURE2_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-	qglUniform1i (lightAlias_caustic, 2);
-
 	GL_MBindCube (GL_TEXTURE3_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
-	qglUniform1i (lightAlias_cube, 3);
-
 	GL_MBind3d (GL_TEXTURE4_ARB, r_lightAttenMap->texnum);
-	qglUniform1i (lightAlias_atten, 4);
 
 	qglEnableVertexAttribArray (ATRB_POSITION);
 	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);

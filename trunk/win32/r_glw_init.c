@@ -753,6 +753,7 @@ http://www.codeproject.com/Articles/678606/Part-Overcoming-Windows-s-deprecation
 BOOL GetOsVersion(RTL_OSVERSIONINFOEXW* pk_OsVer)
 {
 	typedef LONG(WINAPI* tRtlGetVersion)(RTL_OSVERSIONINFOEXW*);
+	LONG Status;
 
 	memset(pk_OsVer, 0, sizeof(RTL_OSVERSIONINFOEXW));
 	pk_OsVer->dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOEXW);
@@ -763,7 +764,7 @@ BOOL GetOsVersion(RTL_OSVERSIONINFOEXW* pk_OsVer)
 	if (!f_RtlGetVersion)
 		return FALSE; // This will never happen (all processes load ntdll.dll)
 
-	LONG Status = f_RtlGetVersion(pk_OsVer);
+	Status = f_RtlGetVersion(pk_OsVer);
 	return Status == 0; // STATUS_SUCCESS;
 }
 

@@ -780,18 +780,37 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 	upload_width = scaled_width;
 	upload_height = scaled_height;
 	
+	if (gl_state.texture_compression_bptc){
+
+		if (samples == 3){
+
+			if (gl_state.texture_compression_bptc && mipmap)
+				comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+			else
+				comp = gl_tex_solid_format;
+		}
+
+		if (samples == 4){
+
+			if (gl_state.texture_compression_bptc && mipmap)
+				comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+			else
+				comp = gl_tex_alpha_format;
+		}
+	}
+	else
 	if (samples == 3){
 
-		if (gl_state.texture_compression_bptc && mipmap)
-			comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+		if (gl_state.texture_compression_dxt && mipmap)
+			comp = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 		else
 			comp = gl_tex_solid_format;
 	}
 
 	if (samples == 4){
 
-		if (gl_state.texture_compression_bptc && mipmap)
-			comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+		if (gl_state.texture_compression_dxt && mipmap)
+			comp = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 		else
 			comp = gl_tex_alpha_format;
 	}

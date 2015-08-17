@@ -101,7 +101,7 @@ static void ShadowsCallback (void *s) {
 static void ParallaxCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_parallax", box->curvalue * 1);
+	Cvar_SetValue ("r_reliefMapping", box->curvalue * 1);
 }
 
 
@@ -173,7 +173,7 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_textureCompression", s_tc_box.curvalue);
 	Cvar_SetValue ("r_mode", s_mode_list.curvalue);
 	Cvar_SetValue ("r_shadows", s_shadow_box.curvalue);
-	Cvar_SetValue ("r_parallax", s_parallax_box.curvalue);
+	Cvar_SetValue ("r_reliefMapping", s_parallax_box.curvalue);
 	Cvar_SetValue ("r_bloom", s_bloom_box.curvalue);
 	Cvar_SetValue ("r_dof", s_dof_box.curvalue);
 	Cvar_SetValue ("r_radialBlur", s_radBlur_box.curvalue);

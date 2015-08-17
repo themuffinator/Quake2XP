@@ -633,6 +633,7 @@ typedef struct {
 	int currenttmu;
 
 	qboolean	texture_compression_bptc;
+	qboolean	texture_compression_dxt;
 	int			displayrefresh;
 	qboolean	arb_occlusion;
 	qboolean	arb_occlusion2;
@@ -695,6 +696,19 @@ typedef struct {
 
 	vec4_t			fontColor;
 } glstate_t;
+
+typedef struct {
+	float	color[3];
+	float	view[3];
+	float	fogDensity;
+	float	colorScale;
+	int		isAmbient;
+	int		isFog;
+	float	causticsIntens;
+	int		setTMUs;
+}uniformCacheAlias_t;
+
+uniformCacheAlias_t uniformA;
 
 typedef struct {
 	float	color[3];
