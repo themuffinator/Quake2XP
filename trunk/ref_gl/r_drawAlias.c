@@ -131,7 +131,7 @@ qboolean R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 		for (p = 0; p < 8; p++) {
 			int mask = 0;
 
-			for (f = 0; f < 4; f++) {
+			for (f = 0; f < 6; f++) {
 				float dp = DotProduct(frustum[f].normal, bbox[p]);
 
 				if ((dp - frustum[f].dist) < 0) {
@@ -298,7 +298,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		return;
 
 	if (currententity->flags & RF_DISTORT)
-			return;
+		return;
 	
 	if (currententity->flags & RF_TRANSLUCENT)
 		return;

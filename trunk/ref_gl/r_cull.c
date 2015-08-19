@@ -20,8 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-float frustumPlanes[6][4];
-
 // this is the slow, general version
 int BoxOnPlaneSide22 (vec3_t emins, vec3_t emaxs, struct cplane_s *p) {
 	int		i;
@@ -93,7 +91,7 @@ qboolean R_CullBox (vec3_t mins, vec3_t maxs) {
 	if (r_noCull->value)
 		return qfalse;
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 6; i++)
 	if (BOX_ON_PLANE_SIDE (mins, maxs, &frustum[i]) == 2)
 		return qtrue;
 	return qfalse;
@@ -102,7 +100,7 @@ qboolean R_CullBox (vec3_t mins, vec3_t maxs) {
 qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust) {
 	int		i;
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 6; i++)
 	if (BoxOnPlaneSide22 (mins, maxs, &frust[i]) == 2)
 		return qtrue;
 	return qfalse;
@@ -121,7 +119,7 @@ qboolean R_CullOrigin (vec3_t origin) {
 	if (r_noCull->value)
 		return qfalse;
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 6; i++)
 	if (BOX_ON_PLANE_SIDE (origin, origin, &frustum[i]) == 2)
 		return qtrue;
 	return qfalse;
@@ -131,7 +129,7 @@ qboolean R_CullOrigin (vec3_t origin) {
 qboolean R_CullPoint (vec3_t org) {
 	int i;
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 6; i++)
 	if (DotProduct (org, frustum[i].normal) > frustum[i].dist)
 		return qtrue;
 
@@ -145,7 +143,7 @@ qboolean R_CullSphere (const vec3_t centre, const float radius) {
 	if (r_noCull->value)
 		return qfalse;
 
-	for (i = 0, p = frustum; i < 5; i++, p++) {
+	for (i = 0, p = frustum; i < 6; i++, p++) {
 		if (DotProduct (centre, p->normal) - p->dist <= -radius)
 			return qtrue;
 	}
@@ -165,48 +163,6 @@ qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p) {
 	return qtrue;
 }
 
-
-
-qboolean BoxOutsideFrustum (vec3_t mins, vec3_t maxs) {
-	int		i, j;
-	float	dist1, dist2;
-	vec3_t	corners[2];
-
-
-	for (i = 0; i < 6; i++) {
-		for (j = 0; j < 3; j++) {
-			if (frustumPlanes[i][j] < 0) {
-				corners[0][j] = mins[j];
-				corners[1][j] = maxs[j];
-			}
-			else {
-				corners[1][j] = mins[j];
-				corners[0][j] = maxs[j];
-			}
-		}
-
-		dist1 = DotProduct (frustumPlanes[i], corners[0]) + frustumPlanes[i][3];
-		dist2 = DotProduct (frustumPlanes[i], corners[1]) + frustumPlanes[i][3];
-		if (dist1 < 0 && dist2 < 0)
-			return qtrue;
-	}
-
-	return qfalse;
-}
-
-float SphereInFrustum (vec3_t o, float radius) {
-	int p;
-	float d = 0;
-
-	for (p = 0; p < 6; p++) {
-		d = frustumPlanes[p][0] * o[0] + frustumPlanes[p][1] * o[1] + frustumPlanes[p][2] * o[2] + frustumPlanes[p][3];
-		if (d <= -radius)
-			return 0;
-	}
-	return d + radius;
-}
-
-
 int SignbitsForPlane (cplane_t * out) {
 	int bits, j;
 
@@ -224,19 +180,14 @@ int SignbitsForPlane (cplane_t * out) {
 void R_SetFrustum (void) {
 	int i;
 
-	VectorCopy (vpn, frustum[4].normal);
+	RotatePointAroundVector (frustum[0].normal, vup, vpn,    -(90 - r_newrefdef.fov_x * 0.5));
+	RotatePointAroundVector (frustum[1].normal, vup, vpn, 	   90 - r_newrefdef.fov_x * 0.5);
+	RotatePointAroundVector (frustum[2].normal, vright, vpn,   90 - r_newrefdef.fov_y * 0.5);
+	RotatePointAroundVector (frustum[3].normal, vright, vpn, -(90 - r_newrefdef.fov_y * 0.5));
+	VectorCopy	(vpn, frustum[4].normal); 
+	VectorNegate(vpn, frustum[5].normal); 
 
-	// Speedup Small Calculations - Eradicator
-	RotatePointAroundVector (frustum[0].normal, vup, vpn,
-		-(90 - r_newrefdef.fov_x * 0.5));
-	RotatePointAroundVector (frustum[1].normal, vup, vpn,
-		90 - r_newrefdef.fov_x * 0.5);
-	RotatePointAroundVector (frustum[2].normal, vright, vpn,
-		90 - r_newrefdef.fov_y * 0.5);
-	RotatePointAroundVector (frustum[3].normal, vright, vpn,
-		-(90 - r_newrefdef.fov_y * 0.5));
-
-	for (i = 0; i < 5; i++) {
+	for (i = 0; i < 6; i++) {
 		VectorNormalize(frustum[i].normal);
 
 		frustum[i].type = PLANE_ANYZ;
@@ -244,6 +195,7 @@ void R_SetFrustum (void) {
 		frustum[i].signbits = SignbitsForPlane (&frustum[i]);
 	}
 
-	frustum[4].dist += r_zNear->value; // near clip plane
+	frustum[4].dist += r_zNear->value;
+	frustum[5].dist -= r_zFar->value;
 }
 

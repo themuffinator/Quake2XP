@@ -24,11 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 vec3_t vec3_origin = { 0, 0, 0 };
 
 //============================================================================
-/*
-#ifdef _WIN32
-#pragma optimize( "", off )
-#endif
-*/
+
 void Q_memcpy (void *dest, const void *src, const size_t count);
 
 void RotatePointAroundVector (vec3_t dst, const vec3_t dir, const vec3_t point, float degrees) {
@@ -83,11 +79,6 @@ void RotatePointAroundVector (vec3_t dst, const vec3_t dir, const vec3_t point, 
 		dst[i] = rot[i][0] * point[0] + rot[i][1] * point[1] + rot[i][2] * point[2];
 	}
 }
-/*
-#ifdef _WIN32
-#pragma optimize( "", on )
-#endif
-*/
 
 
 void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up) {

@@ -38,6 +38,9 @@ void R_LightFlareOutLine ();
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
+	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[0] <= 0.01 && !r_lightEditor->value)
+		return qfalse;
+
 	if (light->spherical) {
 
 		if (R_CullSphere(light->origin, light->radius[0]))
@@ -60,9 +63,6 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 	if (!HasSharedLeafs(light->vis, viewvis))
 		return qfalse;
 	
-	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[0] <= 0.01 && !r_lightEditor->value)
-		return qfalse;
-
 	return qtrue;
 }
 
@@ -113,7 +113,7 @@ void R_AddDynamicLight (dlight_t *dl) {
 	vec3_t tmp;
 	int i;
 
-	if (!SphereInFrustum (dl->origin, dl->intensity))
+	if (!R_CullSphere (dl->origin, dl->intensity))
 		return;
 
 	light = &shadowLightsBlock[num_dlits++];

@@ -202,7 +202,7 @@ extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;
 extern int r_framecount;
-extern cplane_t frustum[5];
+extern cplane_t frustum[6];
 
 extern	int gl_filter_min, gl_filter_max;
 extern	int flareQueries[MAX_WORLD_SHADOW_LIHGTS];

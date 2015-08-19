@@ -361,10 +361,7 @@ void R_DrawParticles (void) {
 				partVert += 4;
 
 				VectorAdd (move, vec, move);
-
 			}
-
-
 		}
 
 		if (p->flags & PARTICLE_DIRECTIONAL) {
@@ -415,8 +412,6 @@ void R_DrawParticles (void) {
 			ParticleIndex[index++] = partVert + 2;
 
 			partVert += 4;
-
-
 		}
 
 		if (p->flags & PARTICLE_ALIGNED) {
@@ -461,9 +456,8 @@ void R_DrawParticles (void) {
 			ParticleIndex[index++] = partVert + 2;
 
 			partVert += 4;
-
-
 		}
+
 		if (!(p->flags & PARTICLE_ALIGNED) && !(p->flags & PARTICLE_DIRECTIONAL) &&
 			!(p->flags & PARTICLE_SPIRAL) && !(p->flags & PARTICLE_STRETCH)) {
 			//  standart particles 
@@ -472,11 +466,10 @@ void R_DrawParticles (void) {
 
 			// hack a scale up to keep particles from disapearing
 			scale = (p->origin[0] - r_origin[0]) * vpn[0] +
-				(p->origin[1] - r_origin[1]) * vpn[1] +
-				(p->origin[2] - r_origin[2]) * vpn[2];
+					(p->origin[1] - r_origin[1]) * vpn[1] +
+					(p->origin[2] - r_origin[2]) * vpn[2];
 
 			scale = (scale < 20) ? 1 : 1 + scale * 0.0004;
-
 
 			if (p->orient) {
 
@@ -515,7 +508,6 @@ void R_DrawParticles (void) {
 				ParticleIndex[index++] = partVert + 2;
 
 				partVert += 4;
-
 			}
 			else {
 
@@ -551,9 +543,7 @@ void R_DrawParticles (void) {
 				ParticleIndex[index++] = partVert + 2;
 
 				partVert += 4;
-
 			}
-
 		}
 	}
 

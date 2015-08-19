@@ -36,7 +36,7 @@ glstate_t gl_state;
 entity_t *currententity;
 model_t *currentmodel;
 
-cplane_t frustum[5];
+cplane_t frustum[6];
 
 int r_visframecount;			// bumped when going to a new PVS
 int r_framecount;				// used for dlight push checking
