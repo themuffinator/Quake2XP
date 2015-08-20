@@ -1116,10 +1116,6 @@ typedef struct {
 
 	HINSTANCE hinstOpenGL;	// HINSTANCE for the OpenGL library
 
-	qboolean minidriver;
-	qboolean allowdisplaydepthchange;
-	qboolean mcd_accelerated;
-
 	const char	*wglExtsString;
 	const char	*wglRenderer;
 	int desktopWidth, desktopHeight;
