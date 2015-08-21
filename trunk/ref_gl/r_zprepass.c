@@ -49,14 +49,14 @@ static void GL_DrawDepthPoly () {
 	for (i = 0; i < num_depth_surfaces; i++) {
 		s = scene_surfaces[i];
 
-//	repeat:
+	repeat:
 		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
 			if (numIndices != 0xFFFFFFFF) {
 				qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 			}
-//			goto repeat;
+			goto repeat;
 		}
 	}
 
@@ -168,10 +168,6 @@ static void R_AddBModelDepthPolys (void) {
 
 	psurf = &currentmodel->surfaces[currentmodel->firstModelSurface];
 
-	//
-	// draw texture
-	//
-
 	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
 		// find which side of the node we are on
 		pplane = psurf->plane;
@@ -187,8 +183,6 @@ static void R_AddBModelDepthPolys (void) {
 			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 				continue;
 			}
-
-			//		if (!(psurf->texInfo->flags & SURF_WARP))
 			scene_surfaces[num_depth_surfaces++] = psurf;
 		}
 	}
