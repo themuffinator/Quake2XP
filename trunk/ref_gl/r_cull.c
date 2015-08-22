@@ -56,6 +56,9 @@ int BoxOnPlaneSide22 (vec3_t emins, vec3_t emaxs, struct cplane_s *p) {
  */
 qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius) {
 
+	if (r_noCull->value)
+		return qfalse;
+
 	if (mins[0] > origin[0] + radius || mins[1] > origin[1] + radius || mins[2] > origin[2] + radius)
 		return qfalse;
 	if (maxs[0] < origin[0] - radius || maxs[1] < origin[1] - radius || maxs[2] < origin[2] - radius)
@@ -71,6 +74,10 @@ BoundsIntersect
 ===========
 */
 qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2) {
+	
+	if (r_noCull->value)
+		return qfalse;
+
 	if (mins1[0] > maxs2[0] || mins1[1] > maxs2[1] || mins1[2] > maxs2[2])
 		return qfalse;
 	if (maxs1[0] < mins2[0] || maxs1[1] < mins2[1] || maxs1[2] < mins2[2])
@@ -99,6 +106,9 @@ qboolean R_CullBox (vec3_t mins, vec3_t maxs) {
 
 qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust) {
 	int		i;
+
+	if (r_noCull->value)
+		return qfalse;
 
 	for (i = 0; i < 6; i++)
 	if (BoxOnPlaneSide22 (mins, maxs, &frust[i]) == 2)
@@ -129,6 +139,9 @@ qboolean R_CullOrigin (vec3_t origin) {
 qboolean R_CullPoint (vec3_t org) {
 	int i;
 
+	if (r_noCull->value)
+		return qfalse;
+
 	for (i = 0; i < 6; i++)
 	if (DotProduct (org, frustum[i].normal) > frustum[i].dist)
 		return qtrue;
@@ -152,6 +165,10 @@ qboolean R_CullSphere (const vec3_t centre, const float radius) {
 }
 
 qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p) {
+	
+	if (r_noCull->value)
+		return qfalse;
+
 	if (p[0] > maxs[0]) return qfalse;
 	if (p[1] > maxs[1]) return qfalse;
 	if (p[2] > maxs[2]) return qfalse;
@@ -196,6 +213,10 @@ void R_SetFrustum (void) {
 	}
 
 	frustum[4].dist += r_zNear->value;
-	frustum[5].dist -= r_zFar->value;
+	
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		frustum[5].dist -= 128.0;
+	else
+		frustum[5].dist -= r_zFar->value;
 }
 

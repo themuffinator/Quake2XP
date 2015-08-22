@@ -113,7 +113,7 @@ void R_AddDynamicLight (dlight_t *dl) {
 	vec3_t tmp;
 	int i;
 
-	if (!R_CullSphere (dl->origin, dl->intensity))
+	if (R_CullSphere (dl->origin, dl->intensity))
 		return;
 
 	light = &shadowLightsBlock[num_dlits++];
