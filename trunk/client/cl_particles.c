@@ -3013,8 +3013,8 @@ void CL_RailTrail (vec3_t start, vec3_t end) {
 	p->endTime = cl.time + 20000;
 	VectorClear (p->accel);
 	p->sFactor = GL_SRC_ALPHA;
-	p->dFactor = GL_ONE;
-	p->alpha = 1;
+	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
+	p->alpha = 1.0;
 	p->alphavel = -0.50 / (0.3 + frand () * 0.3);
 	p->color[0] = cl_railspiral_red->value;
 	p->color[1] = cl_railspiral_green->value;
@@ -3049,10 +3049,10 @@ void CL_RailTrail (vec3_t start, vec3_t end) {
 	p->orient = 0;
 	p->flags = PARTICLE_STRETCH;
 	p->flags |= PARTICLE_OVERBRIGHT;
-	p->alpha = 1;
+	p->alpha = 1.0;
 	p->alphavel = -0.5 / (0.3 + frand () * 0.3);
 	p->sFactor = GL_SRC_ALPHA;
-	p->dFactor = GL_ONE;
+	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 	p->color[0] = cl_railcore_red->value;
 	p->color[1] = cl_railcore_green->value;
 	p->color[2] = cl_railcore_blue->value;

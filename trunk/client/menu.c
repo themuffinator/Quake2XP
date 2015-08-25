@@ -322,7 +322,7 @@ void M_Main_DrawQuad (float x, float y) {
 	Com_sprintf (scratch, sizeof(scratch),
 		"models/items/quaddama/skin.pcx");
 	entity.skin = R_RegisterSkin (scratch);
-	entity.flags = RF_NOSHADOW | RF_FULLBRIGHT;
+	entity.flags = RF_NOSHADOW | RF_DEPTHHACK;
 	entity.origin[0] = 55;
 	entity.origin[1] = -3;
 	entity.origin[2] = -17;
@@ -331,9 +331,8 @@ void M_Main_DrawQuad (float x, float y) {
 	entity.frame = 0;
 	entity.oldframe = 0;
 	entity.backlerp = 0.0;
-	entity.angles[1] = cl.time * 0.09;
-	if (++yaw > 360)
-		yaw -= 360;
+	entity.angles[1] = anglemod(cl.time / 16);
+	entity.angleMod = qtrue;
 
 	refdef.areabits = 0;
 	refdef.num_entities = 1;

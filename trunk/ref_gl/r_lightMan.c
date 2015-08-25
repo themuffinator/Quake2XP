@@ -160,19 +160,17 @@ void R_AddDynamicLight (dlight_t *dl) {
 void R_AddNoWorldModelLight () {
 
 	worldShadowLight_t *light;
-	mat3_t lightAxis;
 	mat4_t temp;
-	vec3_t tmp;
 	int i;
 
 	light = &shadowLightsBlock[num_nwmLights++];
 	memset (light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet (light->origin, r_newrefdef.vieworg[0], r_newrefdef.vieworg[1], r_newrefdef.vieworg[2]);
-	VectorSet (light->startColor, 1.0, 1.0, 1.0);
+	VectorSet (light->origin, r_newrefdef.vieworg[0]-500.0, r_newrefdef.vieworg[1], r_newrefdef.vieworg[2] + 256);
+	VectorSet (light->startColor, 1.0, 1.0, 0.666);
 	VectorSet (light->angles, 0, 0, 0);
-	VectorSet (light->radius, 256, 256, 256);
+	VectorSet (light->radius, 1500, 1500, 1500);
 
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - 256;
@@ -189,16 +187,6 @@ void R_AddNoWorldModelLight () {
 	light->isAmbient = 0;
 	light->spherical = qtrue;
 	light->maxRad = light->radius[0];
-
-	for (i = 0; i < 8; i++) {
-		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
-		tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
-		tmp[2] = (i & 4) ? -light->radius[2] : light->radius[2];
-
-		AnglesToMat3(light->angles, lightAxis);
-		Mat3_TransposeMultiplyVector(lightAxis, tmp, light->corners[i]);
-		VectorAdd(light->corners[i], light->origin, light->corners[i]);
-	}
 
 	Mat4_Identity(temp);
 	Mat4_Translate(temp, 0.5, 0.5, 0.5);
@@ -2202,19 +2190,16 @@ void R_SetViewLightScreenBounds () {
 				points[5];
 	float		depth[2];
 
+	currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
+	currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
+	currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
+	currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
 
-	if (!r_useLightScissors->value) {
-
-		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
-		currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
-		currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
-		currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
-	}
-
-	if (!(gl_state.depthBoundsTest || r_useDepthBounds->value)) {
-		currentShadowLight->depthBounds[0] = 0.0f;
-		currentShadowLight->depthBounds[1] = 1.0f;
-	}
+	currentShadowLight->depthBounds[0] = 0.0f;
+	currentShadowLight->depthBounds[1] = 1.0f;
+	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
 
 	if (r_useLightScissors->value || (gl_state.depthBoundsTest && r_useDepthBounds->value)) {
 		// copy the corner points of each plane and clip to the frustum

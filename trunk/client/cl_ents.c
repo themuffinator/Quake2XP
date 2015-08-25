@@ -903,8 +903,8 @@ void CL_AddPacketEntities (frame_t * frame) {
 				//bobbing items, q3 style
 				float scale = 0.005 + s1->number * 0.00001;
 				float bob = 4 + cos ((cl.time + 1000) * scale) * 4;
-				ent.oldorigin[2] += bob;
-				ent.origin[2] += bob;
+				ent.oldorigin[2] -= bob;
+				ent.origin[2] -= bob;
 			}
 		}
 		// RAFAEL

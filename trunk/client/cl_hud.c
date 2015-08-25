@@ -307,11 +307,12 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	VectorSet (refdef.vieworg, -rad[0] * 1.5, 0, rad[0] * 1.5*0.39);
 
 	entity.model = model;
-	entity.flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DEPTHHACK;
+	entity.flags = RF_NOSHADOW | RF_DEPTHHACK;
 	entity.frame = 0;
 	entity.oldframe = 0;
 	entity.backlerp = 0.0;
 	entity.angles[1] = anglemod (cl.time / 16);
+	entity.angleMod = qtrue;
 
 	VectorNegate (center, entity.origin);
 

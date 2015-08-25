@@ -47,7 +47,6 @@ image_t *r_xblood[MAX_BLOOD];
 image_t *r_distort;
 image_t *r_predator;
 image_t	*r_texshell[MAX_SHELLS];
-image_t *r_blackTexture;
 image_t *r_DSTTex;
 image_t *r_scanline;
 image_t	*r_envTex;
@@ -835,10 +834,6 @@ void R_InitEngineTextures (void) {
 	if (!r_predator)
 		r_predator = r_notexture;
 
-	r_blackTexture = GL_FindImage ("gfx/blacktex.tga", it_wall);
-	if (!r_blackTexture)
-		r_blackTexture = r_notexture;
-
 	r_scanline = GL_FindImage ("pics/conback_add.tga", it_wall);
 	if (!r_scanline)
 		r_scanline = r_notexture;
@@ -1079,26 +1074,6 @@ void GL_SetDefaultState (void) {
 		gl_state.depthBoundsMins = 0.f;
 		gl_state.depthBoundsMax = 1.f;
 	}
-
-	// cached uniforms block
-	uniform.setTMUs = -1;
-	VectorSet(uniform.view, 0.0, 0.0, 0.0);
-	uniform.causticsIntens = -1.0;
-	uniform.parallax = -1;
-	uniform.fogDensity = -1.0;
-	uniform.isFog = -1;
-	VectorSet(uniform.color, 0.0, 0.0, 0.0);
-	uniform.isAmbient = -1;
-	uniform.colorScale = -1.0;
-
-	uniformA.setTMUs = -1;
-	VectorSet(uniformA.view, 0.0, 0.0, 0.0);
-	uniformA.causticsIntens = -1.0;
-	uniformA.fogDensity = -1.0;
-	uniformA.isFog = -1;
-	VectorSet(uniformA.color, 0.0, 0.0, 0.0);
-	uniformA.isAmbient = -1;
-	uniformA.colorScale = -1.0;
 
 	qglHint (GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 	qglHint	(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);

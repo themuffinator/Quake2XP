@@ -553,7 +553,6 @@ void R_InitPrograms (void) {
 
 		lightWorld_diffuse			= qglGetUniformLocation (id, "u_Diffuse");
 		lightWorld_normal			= qglGetUniformLocation (id, "u_NormalMap");
-		lightWorld_csm				= qglGetUniformLocation (id, "u_csmMap");
 		lightWorld_cube				= qglGetUniformLocation (id, "u_CubeFilterMap");
 		lightWorld_atten			= qglGetUniformLocation (id, "u_attenMap");
 		lightWorld_caustic			= qglGetUniformLocation (id, "u_Caustics");

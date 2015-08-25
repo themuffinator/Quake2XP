@@ -575,65 +575,27 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
  void R_UpdateLightUniforms(qboolean bModel)
  {
-	 mat4_t		entAttenMatrix;
+	mat4_t		entAttenMatrix;
 
-	 if (uniform.colorScale != r_textureColorScale->value) {
-		 qglUniform1f(lightWorld_colorScale, r_textureColorScale->value);
-		 uniform.colorScale = r_textureColorScale->value;
-	 }
+	qglUniform1f(lightWorld_colorScale, r_textureColorScale->value);
+	qglUniform1i(lightWorld_ambient, (int)currentShadowLight->isAmbient);
+	qglUniform4f(lightWorld_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniform1i(lightWorld_fog, (int)currentShadowLight->isFog);
+	qglUniform1f(lightWorld_fogDensity, currentShadowLight->fogDensity);
+	qglUniform1i(lightWorld_parallaxType, (int)clamp(r_reliefMapping->value, 0, 1));
+	qglUniform1f(lightWorld_causticsIntens, r_causticIntens->value);
 
-	 if (uniform.isAmbient != currentShadowLight->isAmbient) {
-		 qglUniform1i(lightWorld_ambient, (int)currentShadowLight->isAmbient);
-		 uniform.isAmbient = currentShadowLight->isAmbient;
-	 }
+	 if (bModel)
+		qglUniform3fv(lightWorld_viewOrigin, 1, BmodelViewOrg);
+	 else
+		 qglUniform3fv(lightWorld_viewOrigin, 1, r_origin);
 
-	 if (uniform.color[0] != currentShadowLight->color[0] || uniform.color[0] != currentShadowLight->color[1] || uniform.color[2] != currentShadowLight->color[2]) {
-		 qglUniform4f(lightWorld_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-		 uniform.color[0] = currentShadowLight->color[0];
-		 uniform.color[1] = currentShadowLight->color[1];
-		 uniform.color[2] = currentShadowLight->color[2];
-	 }
-	
-	 if (uniform.isFog != currentShadowLight->isFog) {
-		 qglUniform1i(lightWorld_fog, (int)currentShadowLight->isFog);
-		 uniform.isFog = currentShadowLight->isFog;
-	 }
-		 
-	 if (uniform.fogDensity != currentShadowLight->fogDensity) {
-		 qglUniform1f(lightWorld_fogDensity, currentShadowLight->fogDensity);
-		 uniform.fogDensity = currentShadowLight->fogDensity;
-	 }
+	 qglUniform1i(lightWorld_diffuse, 0);
+	 qglUniform1i(lightWorld_normal, 1);
+	 qglUniform1i(lightWorld_cube, 2);
+	 qglUniform1i(lightWorld_atten, 3);
+	 qglUniform1i(lightWorld_caustic, 4);
 
-	 if (uniform.parallax != r_reliefMapping->value) {
-		 qglUniform1i(lightWorld_parallaxType, (int)clamp(r_reliefMapping->value, 0, 1));
-		 uniform.parallax = r_reliefMapping->value;
-	 }
-
-	 if (uniform.causticsIntens != r_causticIntens->value) {
-		 qglUniform1f(lightWorld_causticsIntens, r_causticIntens->value);
-		 uniform.causticsIntens = r_causticIntens->value;
-	 }
-	 if (bModel) {
-		 if (!VectorCompare(uniform.view, BmodelViewOrg)) {
-			 qglUniform3fv(lightWorld_viewOrigin, 1, BmodelViewOrg);
-			 VectorCopy(BmodelViewOrg, uniform.view);
-		 }
-	 }
-	 else {
-		 if (!VectorCompare(uniform.view, r_origin)) {
-			 qglUniform3fv(lightWorld_viewOrigin, 1, r_origin);
-			 VectorCopy(r_origin, uniform.view);
-		 }
-	 }
-
-	 if (uniform.setTMUs != 1) {
-		 qglUniform1i(lightWorld_diffuse, 0);
-		 qglUniform1i(lightWorld_normal, 1);
-		 qglUniform1i(lightWorld_cube, 2);
-		 qglUniform1i(lightWorld_atten, 3);
-		 qglUniform1i(lightWorld_caustic, 4);
-		 uniform.setTMUs = 1;
-	 }
 	 
 	 qglUniform3fv(lightWorld_lightOrigin, 1, currentShadowLight->origin);
 

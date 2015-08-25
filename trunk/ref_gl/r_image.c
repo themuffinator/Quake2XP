@@ -1442,7 +1442,6 @@ void GL_FreeUnusedImages(void)
 			r_lightCubeMap[i]->registration_sequence = registration_sequence;
 
 	r_distort->registration_sequence = registration_sequence;
-	r_blackTexture->registration_sequence = registration_sequence;
 	r_defBump->registration_sequence = registration_sequence;
 	r_scanline->registration_sequence = registration_sequence;
 	r_envTex->registration_sequence = registration_sequence;

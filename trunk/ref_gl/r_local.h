@@ -172,7 +172,6 @@ extern	image_t *r_flare;
 
 extern	image_t *draw_chars;
 extern	image_t *r_DSTTex;
-extern	image_t *r_blackTexture;
 
 extern	image_t	*r_defBump;
 extern	image_t	*ScreenMap;
@@ -700,33 +699,6 @@ typedef struct {
 } glstate_t;
 
 typedef struct {
-	float	color[3];
-	float	view[3];
-	float	fogDensity;
-	float	colorScale;
-	int		isAmbient;
-	int		isFog;
-	float	causticsIntens;
-	int		setTMUs;
-}uniformCacheAlias_t;
-
-uniformCacheAlias_t uniformA;
-
-typedef struct {
-	float	color[3];
-	float	view[3];
-	float	fogDensity;
-	float	colorScale;
-	int		isAmbient;
-	int		isFog;
-	int		parallax;
-	float	causticsIntens;
-	int		setTMUs;
-}uniformCache_t;
-
-uniformCache_t uniform;
-
-typedef struct {
 
 GLuint	vbo_fullScreenQuad;
 GLuint	vbo_halfScreenQuad;
@@ -971,7 +943,6 @@ uint ambientWorld_mvp;
 
 uint lightWorld_diffuse;
 uint lightWorld_normal;
-uint lightWorld_csm;
 uint lightWorld_cube;
 uint lightWorld_atten;
 uint lightWorld_caustic;
