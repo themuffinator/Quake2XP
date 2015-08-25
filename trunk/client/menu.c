@@ -1863,6 +1863,7 @@ static char *idcredits[] = {
 	"Pavel 'VorteX' Timofeyev",
 	"Willow",
 	"Linux port by Alejandro Pulver",
+	"FreeBSD port by Alexey 'danfe' Dokuchaev",
 	"",
 	"+BETA TESTERS",
 	"Serge 'Berserker' Borodulin",
@@ -1884,7 +1885,6 @@ static char *idcredits[] = {
 	"Vic",
 	"Echon",
 	"Knightmare",
-	"Psychospaz",
 	"Berserk",
 	"SulQ2",
 	"Richard Stanway",
@@ -4162,7 +4162,7 @@ void PlayerConfig_MenuDraw (void) {
 		entity[0].origin[0] = 90;
 		entity[0].origin[1] = 0;
 		entity[0].origin[2] = -8;
-		entity[0].flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DEPTHHACK;
+		entity[0].flags = RF_NOSHADOW | RF_DEPTHHACK;
 
 		VectorCopy (entity[0].origin, entity[0].oldorigin);
 

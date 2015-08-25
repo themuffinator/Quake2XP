@@ -2250,12 +2250,6 @@ void R_SetViewLightScreenBounds () {
 			currentShadowLight->scissor[3] = scissor[3] - scissor[1];
 		}
 	}
-	else {
-		currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
-		currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
-		currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
-		currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
-	}
 
 	// set the depth bounds
 	if (r_useDepthBounds->value) {
