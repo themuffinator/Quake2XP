@@ -148,8 +148,6 @@ typedef struct {
 	int ofs_frames;				// offset for first frame
 	int ofs_glcmds;
 	int ofs_end;				// end of file
-
-
 } dmdl_t;
 
 

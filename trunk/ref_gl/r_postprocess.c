@@ -614,7 +614,13 @@ void R_MotionBlur (void) {
 
 void R_DownsampleDepth(void) {
 	int id;
+
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
+		return;
 	
+	if (!r_ssao->value)
+		return;
+
 	qglViewport (0, 0, vid.width, vid.height);
 
 	GL_LoadIdentity(GL_MODELVIEW);
@@ -651,6 +657,12 @@ void R_DownsampleDepth(void) {
 
 void R_SSAO (void) {
 	int i, j, id, numSamples;
+
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
+		return;
+
+	if (!r_ssao->value)
+		return;
 
 	// set 2D virtual screen size
 	qglViewport (0, 0, vid.width, vid.height);

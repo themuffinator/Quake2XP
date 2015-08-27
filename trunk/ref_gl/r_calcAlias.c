@@ -279,7 +279,7 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	qglUniform1i(ambientAlias_ssaoMap, 4);
 
-	if (r_ssao->value && !(currententity->flags & RF_WEAPONMODEL)) {
+	if (r_ssao->value && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		GL_MBindRect (GL_TEXTURE4_ARB, fboColor[fboColorIndex]);
 		qglUniform1i(ambientAlias_ssao, 1);
 	}
