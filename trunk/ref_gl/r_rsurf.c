@@ -410,7 +410,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qglUniform1i(ambientWorld_normalmap,	3);
 	qglUniform1i(ambientWorld_lightmap[1],	4);
 	qglUniform1i(ambientWorld_lightmap[2],	5);
-	qglUniform1i(ambientWorld_lightmapType, r_worldmodel->useXPLM ? 1 : 0);
+	qglUniform1i(ambientWorld_lightmapType, (r_worldmodel->useXPLM && r_useRadiosityBump->value) ? 1 : 0);
 	qglUniform1i(ambientWorld_ssaoMap,		6);
 
 	if (r_ssao->value){

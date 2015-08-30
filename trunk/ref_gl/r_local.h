@@ -301,7 +301,7 @@ cvar_t	*r_useLightScissors;
 cvar_t	*r_useDepthBounds;
 cvar_t	*r_specularScale;
 cvar_t	*r_ambientSpecularScale;
-
+cvar_t	*r_useRadiosityBump;
 cvar_t	*r_zNear;
 cvar_t	*r_zFar;
 
