@@ -72,7 +72,11 @@ typedef struct worldShadowLight_s {
 	qboolean	castCaustics;
 	qboolean	visible;
 	uint		occQ;
+	
 	cplane_t	frust[6];
+	msurface_t	*interaction[MAX_MAP_FACES];
+	int			numInteractionSurfs;
+
 	char		targetname[MAX_QPATH];
 
 	byte vis[MAX_MAP_LEAFS / 8];
@@ -86,7 +90,7 @@ typedef struct worldShadowLight_s {
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
-
+	
 } worldShadowLight_t;
 
 #define		Q_INFINITY	1e30f
