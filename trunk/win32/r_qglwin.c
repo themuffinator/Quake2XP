@@ -628,6 +628,10 @@ PFNGLCLAMPCOLORARBPROC								qglClampColorARB = NULL;
 PFNWGLCREATECONTEXTATTRIBSARBPROC					qwglCreateContextAttribsARB = NULL;
 #endif
 
+PFNGLBINDVERTEXARRAYPROC							glBindVertexArray = NULL;
+PFNGLGENVERTEXARRAYSPROC							glGenVertexArrays = NULL;
+PFNGLDELETEVERTEXARRAYSPROC							glDeleteVertexArrays = NULL;
+
 /*
 ** QGL_Shutdown
 **

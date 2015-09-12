@@ -341,25 +341,16 @@ void GLimp_Shutdown( void )
 	}
 }
 
-/*
-=====================================================================
-CPU Detect from MSDN
-http://msdn2.microsoft.com/en-us/library/hskdteyh(VS.80).aspx
-adv info for AMD CPU's form 
-http://www.gamedev.net/community/forums/topic.asp?topic_id=438752
-Hyper Threading detection form DOOM 3 gpl code. Fucking port from C++
-=====================================================================
-*/
-
-static const unsigned CPU_UNKNOWN = 0;
-static const unsigned CPU_AMD = 1;
-static const unsigned CPU_INTEL = 2;
+/*=============
+CPU DETECTION
+=============*/
 
 int MeasureCpuSpeed()
     {
 	unsigned __int64	start, end, counter, stop, frequency;
-	unsigned speed;
-        QueryPerformanceFrequency((LARGE_INTEGER *)&frequency);
+	uint speed;
+
+	QueryPerformanceFrequency((LARGE_INTEGER *)&frequency);
 
 		__asm {
 			rdtsc
@@ -385,209 +376,68 @@ int MeasureCpuSpeed()
 
     }
 
-/*
-================
-LogicalProcPerPhysicalProc
-================
-*/
-#define NUM_LOGICAL_BITS   0x00FF0000     // EBX[23:16] Bit 16-23 in ebx contains the number of logical
-                                          // processors per physical processor when execute cpuid with 
-                                          // eax set to 1
-static unsigned char LogicalProcPerPhysicalProc( void ) {
-	unsigned int regebx = 0;
-	__asm {
-		mov eax, 1
-		cpuid
-		mov regebx, ebx
+qboolean GetCpuCoresThreads( void ) {
+	char cpuVendor[12];
+	uint regs[4], cpuFeatures, cores, logical;
+	qboolean hyperThreads;
+
+	// Get vendor
+	__cpuid(regs, 0);
+	((uint *)cpuVendor)[0] = regs[1];   // EBX
+	((uint *)cpuVendor)[1] = regs[3];   // EDX
+	((uint *)cpuVendor)[2] = regs[2];   // ECX
+
+	// Get CPU features
+	__cpuid(regs, 1);
+	cpuFeatures = regs[3];  // EDX
+
+	// Logical core count per CPU
+	logical = (regs[1] >> 16) & 0xff;       // EBX[23:16]
+
+	if (!strncmp(cpuVendor, "GenuineIntel", 12))
+	{
+		// Get DCP cache info
+		__cpuid(regs, 4);
+		cores = ((regs[0] >> 26) & 0x3f) + 1;   // EAX[31:26] + 1
 	}
-	return (unsigned char) ((regebx & NUM_LOGICAL_BITS) >> 16);
-}
-
-/*
-================
-GetAPIC_ID
-================
-*/
-#define INITIAL_APIC_ID_BITS  0xFF000000  // EBX[31:24] Bits 24-31 (8 bits) return the 8-bit unique 
-                                          // initial APIC ID for the processor this code is running on.
-                                          // Default value = 0xff if HT is not supported
-static unsigned char GetAPIC_ID( void ) {
-	unsigned int regebx = 0;
-	__asm {
-		mov eax, 1
-		cpuid
-		mov regebx, ebx
+	else if (!strncmp(cpuVendor, "AuthenticAMD", 12))
+	{
+		// Get NC: Number of CPU cores - 1
+		__cpuid(regs, 0x80000008);
+		cores = ((uint)(regs[2] & 0xff)) + 1;       // ECX[7:0] + 1
 	}
-	return (unsigned char) ((regebx & INITIAL_APIC_ID_BITS) >> 24);
-}
 
-/*
-================
-CPUCount
+	// Detect hyper-threads  
+	hyperThreads = cpuFeatures & (1 << 28) && cores < logical;
 
-	logicalNum is the number of logical CPU per physical CPU
-    physicalNum is the total number of physical processor
-	returns one of the HT_* flags
-================
-*/
-#define HT_NOT_CAPABLE				0
-#define HT_ENABLED					1
-#define HT_DISABLED					2
-#define HT_SUPPORTED_NOT_ENABLED	3
-#define HT_CANNOT_DETECT			4
-
-int CPUCount( int logicalNum, int physicalNum ) {
-	int statusFlag;
-	unsigned char HT_Enabled = 0;
-	unsigned char i = 1, PHY_ID_MASK  = 0xFF, PHY_ID_SHIFT = 0;
-	SYSTEM_INFO info;
-
-	physicalNum = 1;
-	logicalNum = 1;
-	statusFlag = HT_NOT_CAPABLE;
-
-	info.dwNumberOfProcessors = 0;
-	GetSystemInfo (&info);
-
-	// Number of physical processors in a non-Intel system
-	// or in a 32-bit Intel system with Hyper-Threading technology disabled
-	physicalNum = info.dwNumberOfProcessors;  
-	logicalNum = LogicalProcPerPhysicalProc();
-
-	if ( logicalNum >= 1 ) {	// > 1 doesn't mean HT is enabled in the BIOS
-		HANDLE hCurrentProcessHandle;
-		DWORD  dwProcessAffinity;
-		DWORD  dwSystemAffinity;
-		DWORD  dwAffinityMask;
-
-		// Calculate the appropriate  shifts and mask based on the 
-		// number of logical processors.
-
-		while( i < logicalNum ) {
-			i *= 2;
- 			PHY_ID_MASK  <<= 1;
-			PHY_ID_SHIFT++;
-		}
-		
-		hCurrentProcessHandle = GetCurrentProcess();
-		GetProcessAffinityMask( hCurrentProcessHandle, &dwProcessAffinity, &dwSystemAffinity );
-
-		// Check if available process affinity mask is equal to the
-		// available system affinity mask
-		if ( dwProcessAffinity != dwSystemAffinity ) {
-			statusFlag = HT_CANNOT_DETECT;
-			physicalNum = -1;
-			return statusFlag;
-		}
-
-		dwAffinityMask = 1;
-		while ( dwAffinityMask != 0 && dwAffinityMask <= dwProcessAffinity ) {
-			// Check if this CPU is available
-			if ( dwAffinityMask & dwProcessAffinity ) {
-				if ( SetProcessAffinityMask( hCurrentProcessHandle, dwAffinityMask ) ) {
-					unsigned char APIC_ID, LOG_ID, PHY_ID;
-
-					APIC_ID = GetAPIC_ID();
-					LOG_ID  = APIC_ID & ~PHY_ID_MASK;
-					PHY_ID  = APIC_ID >> PHY_ID_SHIFT;
-
-					if ( LOG_ID != 0 ) {
-						HT_Enabled = 1;
-					}
-				}
-			}
-			dwAffinityMask = dwAffinityMask << 1;
-		}
-	        
-		// Reset the processor affinity
-		SetProcessAffinityMask( hCurrentProcessHandle, dwProcessAffinity );
-	    
-		if ( logicalNum == 1 ) {  // Normal P4 : HT is disabled in hardware
-			statusFlag = HT_DISABLED;
-		} else {
-			if ( HT_Enabled ) {
-				// Total physical processors in a Hyper-Threading enabled system.
-				physicalNum /= logicalNum;
-				statusFlag = HT_ENABLED;
-			} else {
-				statusFlag = HT_SUPPORTED_NOT_ENABLED;
-			}
-		}
+	if (hyperThreads)
+	{
+		Com_Printf("Cores/Threads: "S_COLOR_GREEN"%i"S_COLOR_WHITE"|"S_COLOR_GREEN"%i\n", cores >> 1, logical >> 1);
+		return qtrue;
 	}
-	return statusFlag;
-}
-
-/*
-================
-CPUID
-================
-*/
-#define _REG_EAX		0
-#define _REG_EBX		1
-#define _REG_ECX		2
-#define _REG_EDX		3
-
-static void CPUID( int func, unsigned regs[4] ) {
-	unsigned regEAX, regEBX, regECX, regEDX;
-
-	__asm pusha
-	__asm mov eax, func
-	__asm __emit 00fh
-	__asm __emit 0a2h
-	__asm mov regEAX, eax
-	__asm mov regEBX, ebx
-	__asm mov regECX, ecx
-	__asm mov regEDX, edx
-	__asm popa
-
-	regs[_REG_EAX] = regEAX;
-	regs[_REG_EBX] = regEBX;
-	regs[_REG_ECX] = regECX;
-	regs[_REG_EDX] = regEDX;
-}
-
-/*
-================
-HasHTT
-================
-*/
-static qboolean HasHTT( void ) {
-	unsigned regs[4];
-	int logicalNum=0, physicalNum=0, HTStatusFlag;
-
-	// get CPU feature bits
-	CPUID( 1, regs );
-
-	// bit 28 of EDX denotes HTT existence
-	if ( !( regs[_REG_EDX] & ( 1 << 28 ) ) ) {
+	else
+	{
+		Com_Printf("Cores/Threads: "S_COLOR_GREEN"%i"S_COLOR_WHITE"|"S_COLOR_GREEN"%i\n", cores, logical);
 		return qfalse;
 	}
-
-	HTStatusFlag = CPUCount( logicalNum, physicalNum );
-	if ( HTStatusFlag != HT_ENABLED ) {
-		return qfalse;
-	}
-	return qtrue;
 }
 
 void GLimp_CpuID(void)
 {
     char		CPUString[0x20];
     char		CPUBrandString[0x40];
-	int			numProcessCPU = 0, numSystemCPU = 0;
     int			CPUInfo[4]		= {-1};
-    int			nFeatureInfo	= 0, numPhysicalCores;
-    unsigned    nIds, nExIds, i, z;
-	unsigned	dwCPUSpeed = MeasureCpuSpeed();
-	unsigned	pType;
+    int			nFeatureInfo	= 0;
+    uint	    nIds, nExIds, i;
+	uint		dwCPUSpeed = MeasureCpuSpeed();
+
 	qboolean    SSE3	= qfalse;
 	qboolean	SSE4	= qfalse;
 	qboolean	SSE2	= qfalse;
 	qboolean	SSE		= qfalse;
 	qboolean	MMX		= qfalse;
+	qboolean	HTT		= qfalse;
 	qboolean	EM64T	= qfalse;
-	SYSTEM_INFO BaseCpuInfo;
-	DWORD		dwProcessAffinity, dwSystemAffinity;
 
     // __cpuid with an InfoType argument of 0 returns the number of
     // valid Ids in CPUInfo[0] and the CPU identification string in
@@ -595,22 +445,16 @@ void GLimp_CpuID(void)
     // not in linear order. The code below arranges the information 
     // in a human readable form.
     __cpuid(CPUInfo, 0);
-    nIds = CPUInfo[0];
-    memset(CPUString, 0, sizeof(CPUString));
-    *((int*)CPUString) = CPUInfo[1];
-    *((int*)(CPUString+4)) = CPUInfo[3];
-    *((int*)(CPUString+8)) = CPUInfo[2];
-	
-	if(strcmp(CPUString, "AuthenticAMD") == 0)
-		pType = CPU_AMD;
-	else if(strcmp(CPUString, "GenuineIntel") == 0)
-		pType = CPU_INTEL;
-	else
-		pType = CPU_UNKNOWN;
+	nIds = CPUInfo[0];
+	memset(CPUString, 0, sizeof(CPUString));
 
+    *((int*)CPUString)		= CPUInfo[1];
+    *((int*)(CPUString+4))	= CPUInfo[3];
+    *((int*)(CPUString+8))	= CPUInfo[2];
+	
     // Get the information associated with each valid Id
-    for (i=0; i<=nIds; ++i)
-    {
+    for (i=0; i<=nIds; ++i){
+
         __cpuid(CPUInfo, i);
    
         // Interpret CPU feature information.
@@ -632,11 +476,11 @@ void GLimp_CpuID(void)
     memset(CPUBrandString, 0, sizeof(CPUBrandString));
 
     // Get the information associated with each extended ID.
-    for (i=0x80000000; i<=nExIds; ++i)
-    {
+    for (i=0x80000000; i<=nExIds; ++i){
+
         __cpuid(CPUInfo, i);
   
-        // Interpret CPU brand string and cache information.
+        // Interpret CPU brand string.
         if  (i == 0x80000002)
             memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
         else 
@@ -644,61 +488,41 @@ void GLimp_CpuID(void)
 					memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
         else 
 			if  (i == 0x80000004)
-					memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
-       	
+					memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));       	
 	 }
 
-    if  (nIds >= 1)
-    {
+    if  (nIds >= 1){
  
-        if  (nFeatureInfo || SSE3 || MMX || SSE || SSE2 || SSE4 || EM64T)	{
+        if(nFeatureInfo || SSE3 || MMX || SSE || SSE2 || SSE4 || EM64T){
        		
-		GetSystemInfo(&BaseCpuInfo);
-
-		//Berserker - get current numbers of cpu threads
-		if (GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity )){
-
-			for (z=1; z; z+=z){
-				
-				if (dwProcessAffinity & z)
-					numProcessCPU = numProcessCPU + 1;
-				if (dwSystemAffinity & z)
-					numSystemCPU = numSystemCPU + 1;
-			}
-		}
-		numPhysicalCores = numProcessCPU;
-
-	//	if(HasHTT())
-	//		numPhysicalCores *=0.5;
-
-		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", CPUBrandString);
-//		Com_Printf ("Number of Cpu Cores: "S_COLOR_GREEN"%i"S_COLOR_WHITE", Threads: "S_COLOR_GREEN"%i\n", numPhysicalCores, numProcessCPU);
-		Com_Printf("Number of Cpu Cores/Threads: "S_COLOR_GREEN"%i"S_COLOR_WHITE"\n", numPhysicalCores);
-		Com_Printf ("CPU Speed: "S_COLOR_GREEN"~%d"S_COLOR_WHITE"MHz\n", dwCPUSpeed);
+		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[8]);
+		HTT = GetCpuCoresThreads();
+		float GHz = (float)dwCPUSpeed * 0.001;
+		Com_Printf ("CPU Speed: ~"S_COLOR_GREEN"%.3f"S_COLOR_WHITE" GHz\n", GHz);
 		Com_Printf ("Supported Extensions: ");
 				
 		__cpuid(CPUInfo, 0x80000001);
 		
-			if (CPUInfo[3] & 0x80000000)
+			if(CPUInfo[3] & 0x80000000)
 				Com_Printf (S_COLOR_YELLOW"3DNow! ");
-			if (CPUInfo[3] & 1<<30)
+			if(CPUInfo[3] & 1<<30)
 				Com_Printf (S_COLOR_YELLOW"ex3DNow! ");
-			if (CPUInfo[3] & 1<<22)
+			if(CPUInfo[3] & 1<<22)
 				Com_Printf (S_COLOR_YELLOW"MmxExt ");
 				
-			if	(MMX)
+			if(MMX)
 				Com_Printf (S_COLOR_YELLOW"MMX ");
-			if	(SSE)
+			if(SSE)
 				Com_Printf (S_COLOR_YELLOW"SSE ");
-			if	(SSE2)
+			if(SSE2)
 				Com_Printf (S_COLOR_YELLOW"SSE2 ");
-			if  (SSE3)
-	            Com_Printf (S_COLOR_YELLOW"SSE3 ");
-			if  (SSE4)
-	            Com_Printf (S_COLOR_YELLOW"SSE4 ");
-	//		if(HasHTT())
-	//		     Com_Printf (S_COLOR_YELLOW"HTT ");
-			if (EM64T)
+			if(SSE3)
+				Com_Printf (S_COLOR_YELLOW"SSE3 ");
+			if(SSE4)
+				Com_Printf (S_COLOR_YELLOW"SSE4 ");
+			if(HTT)
+				Com_Printf (S_COLOR_YELLOW"HTT ");
+			if(EM64T)
 				Com_Printf (S_COLOR_YELLOW"EM64T");
 			Com_Printf("\n");
 
@@ -1150,8 +974,7 @@ qboolean GLimp_InitGL (void)
 		HDC hDC = GetDC (temphwnd);
 
 		// Set up OpenGL
-		pixelFormat = ChoosePixelFormat(hDC, &temppfd);
-				
+		pixelFormat = ChoosePixelFormat(hDC, &temppfd);				
 		
 		if (!pixelFormat)
 		{
@@ -1313,8 +1136,8 @@ qboolean GLimp_InitGL (void)
 		iAttributes[12] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : 0;
 		iAttributes[13] = gl_state.arb_multisample ? (int)r_arbSamples->value : 0;
 
-		iAttributes[14] = WGL_SWAP_EXCHANGE_ARB;
-		iAttributes[15] = TRUE;
+//		iAttributes[14] = WGL_SWAP_EXCHANGE_ARB;
+//		iAttributes[15] = TRUE;
 
 		// First attempt...
 		status = qwglChoosePixelFormatARB(hDC, iAttributes, fAttributes, 1, &pixelFormat, &numFormats);

@@ -720,6 +720,17 @@ int vertex_size;
 
 vbo_t vbo;
 
+typedef struct {
+
+	GLuint	vao_fullScreenQuad;
+	GLuint	vao_halfScreenQuad;
+	GLuint	vao_quarterScreenQuad;
+	GLuint	vao_BSP;
+	GLuint	vao_SHADOW;
+}
+vao_t;
+vao_t vao;
+
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);
 

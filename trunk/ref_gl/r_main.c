@@ -1644,7 +1644,17 @@ int R_Init(void *hinstance, void *hWnd)
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 	}
-	
+
+
+	glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)qwglGetProcAddress("glBindVertexArray");
+	glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)qwglGetProcAddress("glGenVertexArrays");
+	glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)qwglGetProcAddress("glDeleteVertexArrays");
+
+	if (glBindVertexArray && glGenVertexArrays && glDeleteVertexArrays) {
+		Com_Printf("...using GL_vertex_array_object\n");
+
+	}
+
 	gl_state.conditional_render = qfalse;
 			
 	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");

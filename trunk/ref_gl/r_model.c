@@ -2713,6 +2713,29 @@ void R_EndRegistration (void) {
 	GL_SetDefaultState ();
 
 	relightMap = qfalse;
+	
+	// bsp vao
+	glGenVertexArrays(1, &vao.vao_BSP);
+	glBindVertexArray(vao.vao_BSP);
+
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+
+	qglEnableVertexAttribArray(ATRB_POSITION);
+	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATRB_TEX1);
+	qglEnableVertexAttribArray(ATRB_NORMAL);
+	qglEnableVertexAttribArray(ATRB_TANGENT);
+	qglEnableVertexAttribArray(ATRB_BINORMAL);
+
+	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
+	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
+	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
+	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 
@@ -2733,6 +2756,8 @@ void Mod_Free (model_t * mod) {
 
 	if (mod->type == mod_alias)
 		qglDeleteBuffers (1, &mod->vboId);
+
+	qglDeleteBuffers(1, &vao.vao_BSP);
 
 	memset (mod, 0, sizeof(*mod));
 }

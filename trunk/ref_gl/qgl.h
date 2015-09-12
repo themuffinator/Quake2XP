@@ -761,6 +761,11 @@ extern	PFNGLFRAMEBUFFERTEXTURELAYERPROC					qglFramebufferTextureLayer;
 extern	PFNGLDRAWBUFFERSARBPROC								qglDrawBuffers;
 extern	PFNGLCLAMPCOLORARBPROC								qglClampColorARB;
 
+extern PFNGLBINDVERTEXARRAYPROC								glBindVertexArray;
+extern PFNGLGENVERTEXARRAYSPROC								glGenVertexArrays;
+extern PFNGLDELETEVERTEXARRAYSPROC							glDeleteVertexArrays;
+
+
 #ifdef _WIN32
 
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC					qwglCreateContextAttribsARB;

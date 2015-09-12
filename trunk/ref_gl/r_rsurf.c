@@ -941,36 +941,15 @@ void R_DrawLightWorld(void)
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_TEX1);
-	qglEnableVertexAttribArray(ATRB_NORMAL);
-	qglEnableVertexAttribArray(ATRB_TANGENT);
-	qglEnableVertexAttribArray(ATRB_BINORMAL);
-
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+	glBindVertexArray(vao.vao_BSP);
 	
 	r_lightTimestamp++;
 	currentShadowLight->numInteractionSurfs = 0;
-	
 	R_MarkLightCasting(r_worldmodel->nodes);
-
 	if(currentShadowLight->numInteractionSurfs > 0)
 		GL_DrawLightPass(qfalse, qfalse);
 
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_NORMAL);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_TANGENT);
-	qglDisableVertexAttribArray(ATRB_BINORMAL);
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	glBindVertexArray(0);
 }
 
 
@@ -1005,36 +984,13 @@ void R_DrawBSP (void) {
 		
 	R_ClearSkyBox();	
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_TEX1);
-	qglEnableVertexAttribArray(ATRB_NORMAL);
-	qglEnableVertexAttribArray(ATRB_TANGENT);
-	qglEnableVertexAttribArray(ATRB_BINORMAL);
-	
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+	glBindVertexArray(vao.vao_BSP);
 
 	num_scene_surfaces = 0;
-
 	R_RecursiveWorldNode(r_worldmodel->nodes);
-
 	GL_DrawLightmappedPoly(qfalse);
-	
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_TEX1);
-	qglDisableVertexAttribArray(ATRB_NORMAL);
-	qglDisableVertexAttribArray(ATRB_TANGENT);
-	qglDisableVertexAttribArray(ATRB_BINORMAL);
-	
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+	glBindVertexArray(0);
 
 	DrawTextureChains();
 
@@ -1226,34 +1182,13 @@ void R_DrawBrushModel (void) {
 
 	R_DrawInlineBModel2();
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_TEX1);
-	qglEnableVertexAttribArray(ATRB_NORMAL);
-	qglEnableVertexAttribArray(ATRB_TANGENT);
-	qglEnableVertexAttribArray(ATRB_BINORMAL);
-
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+	glBindVertexArray(vao.vao_BSP);
 	
 	num_scene_surfaces = 0;
-
 	R_DrawInlineBModel();
 	GL_DrawLightmappedPoly(qtrue);
 	
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_NORMAL);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_TEX1);
-	qglDisableVertexAttribArray(ATRB_TANGENT);
-	qglDisableVertexAttribArray(ATRB_BINORMAL);
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	glBindVertexArray(0);
 
 	qglPopMatrix();
 }
@@ -1416,36 +1351,18 @@ void R_DrawLightBrushModel (void) {
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_NORMAL);
-	qglEnableVertexAttribArray(ATRB_TANGENT);
-	qglEnableVertexAttribArray(ATRB_BINORMAL);
-
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+	glBindVertexArray(vao.vao_BSP);
 
 	r_lightTimestamp++;
 	currentShadowLight->numInteractionSurfs = 0;
-	
 	R_MarkBrushModelSurfaces();
-
 	if(currentShadowLight->numInteractionSurfs)
 		GL_DrawLightPass(qtrue, caustics);
+	
+	glBindVertexArray(0);
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 	
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_NORMAL);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_TANGENT);
-	qglDisableVertexAttribArray(ATRB_BINORMAL);
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	qglPopMatrix();
 }
 
