@@ -63,43 +63,125 @@ glwstate_t glw_state;
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
 int	occ_framecount;
 
-int GL_MsgGLError(char* Info)
+/*=================
+GL_ARB_Debug_output
+From https://sites.google.com/site/opengltutorialsbyaks/introduction-to-opengl-4-1---tutorial-05
+=================*/
+
+void DebugOutput(unsigned source, unsigned type, unsigned id, unsigned severity, const char* message)
 {
-	char	S[1024];
-	int		n = qglGetError();
-	
-	if(r_ignoreGlErrors->value)
-		return qfalse;
+	char debSource[64], debType[64], debSev[64];
 
-	if(n == GL_NO_ERROR) return qfalse;
+	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+		return;
 
-	switch(n) {        
-		case GL_INVALID_ENUM: 
-			sprintf(S, "%s GL_INVALID_ENUM An unacceptable value is specified for an enumerated argument. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
-			break;
-		case GL_INVALID_VALUE: 
-			sprintf(S, "%s GL_INVALID_VALUE A numeric argument is out of range. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
-			break;
-		case GL_INVALID_OPERATION: 
-			sprintf(S, "%s GL_INVALID_OPERATION The specified operation is not allowed in the current state. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
-			break;
-		case GL_STACK_OVERFLOW: 
-			sprintf(S, "%s GL_STACK_OVERFLOW This command would cause a stack overflow. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
-			break;
-		case GL_STACK_UNDERFLOW: 
-			sprintf(S, "%s GL_STACK_UNDERFLOW This command would cause a stack underflow. The offending command is ignored, having no side effect other than to set the error flag.\n",Info);
-			break;
-		case GL_OUT_OF_MEMORY: 
-			sprintf(S, "%s GL_OUT_OF_MEMORY There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.\n",Info);
-			break;
-		default: 
-			sprintf(S, "UNKNOWN GL ERROR\n");
-			break;
+	if (source == GL_DEBUG_SOURCE_API_ARB)
+		strcpy(debSource, "OpenGL");
+	else if (source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
+		strcpy(debSource, "Windows");
+	else if (source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)
+		strcpy(debSource, "Shader Compiler");
+	else if (source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)
+		strcpy(debSource, "Third Party");
+	else if (source == GL_DEBUG_SOURCE_APPLICATION_ARB)
+		strcpy(debSource, "Application");
+	else if (source == GL_DEBUG_SOURCE_OTHER_ARB)
+		strcpy(debSource, "Other");
+	else
+		strcpy(debSource, va("Source 0x%X", source));
+
+	if (type == GL_DEBUG_TYPE_ERROR_ARB)
+		strcpy(debType, "Error");
+	else if (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
+		strcpy(debType, "Deprecated behavior");
+	else if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
+		strcpy(debType, "Undefined behavior");
+	else if (type == GL_DEBUG_TYPE_PORTABILITY_ARB)
+		strcpy(debType, "Portability");
+	else if (type == GL_DEBUG_TYPE_PERFORMANCE_ARB)
+		strcpy(debType, "Performance");
+	else if (type == GL_DEBUG_TYPE_OTHER_ARB)
+		strcpy(debType, "Other");
+	else
+		strcpy(debType, va("Type 0x%X", type));
+
+	if (severity == GL_DEBUG_SEVERITY_HIGH_ARB)
+		strcpy(debSev, "High");
+	else if (severity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
+		strcpy(debSev, "Medium");
+	else if (severity == GL_DEBUG_SEVERITY_LOW_ARB)
+		strcpy(debSev, "Low");
+	else
+		strcpy(debSev, va("0x%X", severity));
+
+	Com_Printf("GL_DEBUG: %s %s\nSeverity '%s': '%s'\nID: '%d'\n", debSource, debType, debSev, message, id);
+}
+
+void GL_CheckError(const char *fileName, int line, const char *subr)
+{
+	int         err;
+	char        s[128];
+
+	if (r_ignoreGlErrors->value)
+		return;
+
+	err = qglGetError();
+	if (err == GL_NO_ERROR)
+		return;
+
+	if (gl_state.debugOutput){
+
+		#define			MAX_GL_DEBUG_MESSAGES   16
+		unsigned        sources[MAX_GL_DEBUG_MESSAGES];
+		unsigned        types[MAX_GL_DEBUG_MESSAGES];
+		unsigned        ids[MAX_GL_DEBUG_MESSAGES];
+		unsigned        severities[MAX_GL_DEBUG_MESSAGES];
+		int             lengths[MAX_GL_DEBUG_MESSAGES];
+		char            messageLog[2048];
+		unsigned        count = MAX_GL_DEBUG_MESSAGES;
+		int             bufsize = 2048;
+
+		unsigned retVal = glGetDebugMessageLogARB(count, bufsize, sources, types, ids, severities, lengths, messageLog);
+		if (retVal > 0)
+		{
+			unsigned pos = 0;
+			for (unsigned i = 0; i < retVal; i++)
+			{
+				DebugOutput(sources[i], types[i], ids[i], severities[i], &messageLog[pos]);
+				pos += lengths[i];
+			}
+		}
 	}
 
-	Con_Printf(PRINT_ALL, S);
+	switch (err)
+	{
+	case GL_INVALID_ENUM:
+		strcpy(s, "GL_INVALID_ENUM");
+		break;
+	case GL_INVALID_VALUE:
+		strcpy(s, "GL_INVALID_VALUE");
+		break;
+	case GL_INVALID_OPERATION:
+		strcpy(s, "GL_INVALID_OPERATION");
+		break;
+	case GL_STACK_OVERFLOW:
+		strcpy(s, "GL_STACK_OVERFLOW");
+		break;
+	case GL_STACK_UNDERFLOW:
+		strcpy(s, "GL_STACK_UNDERFLOW");
+		break;
+	case GL_OUT_OF_MEMORY:
+		strcpy(s, "GL_OUT_OF_MEMORY");
+		break;
+	case GL_INVALID_FRAMEBUFFER_OPERATION_EXT:
+		strcpy(s, "GL_INVALID_FRAMEBUFFER_OPERATION_EXT");
+		break;
+	default:
+		Com_sprintf(s, sizeof(s), "0x%X", err);
+		break;
+	}
 
-	return n;
+	Com_Printf("GL_CheckErrors: %s in file '%s' subroutine '%s' line %i\n", s, fileName, subr, line);
 }
 
 
@@ -841,6 +923,8 @@ void R_RenderView (refdef_t *fd) {
 
 	R_CaptureColorBuffer();
 	R_DrawPlayerWeaponFBO();
+
+	GL_CheckError(__FILE__, __LINE__, "end frame");
 }
 
 void R_SetGL2D (void) {
@@ -959,8 +1043,6 @@ void R_RenderFrame(refdef_t * fd, qboolean client) {
 		RE_SetColor(colorWhite);
 		Set_FontShader(qfalse);
 	}
-
-	GL_MsgGLError("R_RenderFrame: ");
 }
 
 void FlareStatsList_f(void){
@@ -998,7 +1080,6 @@ void Dump_EntityString(void){
 	}
 
 	fputs(buf, f);
-
 	fclose(f);
 
 
@@ -1572,6 +1653,20 @@ int R_Init(void *hinstance, void *hWnd)
 	if (IsExtensionSupported("GL_ARB_texture_non_power_of_two")) 
 		Com_Printf("...using GL_ARB_texture_non_power_of_two\n");
 	
+	glDebugMessageControlARB = (PFNGLDEBUGMESSAGECONTROLARBPROC)	qwglGetProcAddress("glDebugMessageControlARB");
+	glDebugMessageInsertARB = (PFNGLDEBUGMESSAGEINSERTARBPROC)		qwglGetProcAddress("glDebugMessageInsertARB");
+	glDebugMessageCallbackARB = (PFNGLDEBUGMESSAGECALLBACKARBPROC)	qwglGetProcAddress("glDebugMessageCallbackARB");
+	glGetDebugMessageLogARB = (PFNGLGETDEBUGMESSAGELOGARBPROC)		qwglGetProcAddress("glGetDebugMessageLogARB");
+	
+	gl_state.debugOutput = qfalse;
+
+	if (glDebugMessageControlARB && glDebugMessageInsertARB && glDebugMessageCallbackARB && glGetDebugMessageLogARB){
+		Com_Printf("...using GL_ARB_debug_output\n");
+		gl_state.debugOutput = qtrue;
+	}
+	else
+		Com_Printf(S_COLOR_RED"...GL_ARB_debug_output not found\n");
+
 	if (IsExtensionSupported("GL_ARB_texture_rectangle")) 
 		Com_Printf("...using GL_ARB_texture_rectangle\n");		
 
@@ -1822,8 +1917,6 @@ int R_Init(void *hinstance, void *hWnd)
 	Mod_Init();
 	R_InitEngineTextures();
 	R_LoadFont();
-
-	GL_MsgGLError("Init GL Errors: ");
 
 	flareEdit = (qboolean)qfalse;
 

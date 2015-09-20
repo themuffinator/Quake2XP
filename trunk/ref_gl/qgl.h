@@ -765,6 +765,10 @@ extern PFNGLBINDVERTEXARRAYPROC								glBindVertexArray;
 extern PFNGLGENVERTEXARRAYSPROC								glGenVertexArrays;
 extern PFNGLDELETEVERTEXARRAYSPROC							glDeleteVertexArrays;
 
+extern PFNGLDEBUGMESSAGECONTROLARBPROC						glDebugMessageControlARB;
+extern PFNGLDEBUGMESSAGEINSERTARBPROC						glDebugMessageInsertARB;
+extern PFNGLDEBUGMESSAGECALLBACKARBPROC						glDebugMessageCallbackARB;
+extern PFNGLGETDEBUGMESSAGELOGARBPROC						glGetDebugMessageLogARB;
 
 #ifdef _WIN32
 
@@ -773,6 +777,7 @@ extern	PFNWGLCREATECONTEXTATTRIBSARBPROC					qwglCreateContextAttribsARB;
 const GLubyte * (WINAPI* glGetStringi) (GLenum, GLuint);
 
 extern PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
+
 
 const char *(WINAPI * qwglGetExtensionsStringARB) (HDC);
 BOOL (WINAPI * qwglGetPixelFormatAttribivARB) (HDC, int, int, UINT,

@@ -589,7 +589,6 @@ void GL_DrawParticles ();
 void R_TransformToScreen_Vec3 (vec3_t in, vec3_t out);
 void GL_Blend (qboolean on, int dst, int src);
 
-int GL_MsgGLError (char* Info);
 void CreateWeaponRect (void);
 void Create_FBO (void);
 
@@ -644,6 +643,7 @@ typedef struct {
 	qboolean	conditional_render;
 	qboolean	depthBoundsTest;
 	qboolean	shader5;
+	qboolean	debugOutput;
 	int			programId;
 	GLenum		matrixMode;
 
