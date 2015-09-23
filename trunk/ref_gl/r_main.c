@@ -621,8 +621,6 @@ void R_DrawLightScene (void)
 	GL_StencilMask(255);
 	qglClear(GL_STENCIL_BUFFER_BIT);
 	
-	R_DrawLightOccluders();
-
 	R_CastBspShadowVolumes();		// bsp and bmodels shadows
 	R_CastAliasShadowVolumes();		// alias models shadows
 	R_DrawLightWorld();				// light world
@@ -655,8 +653,6 @@ void R_DrawLightScene (void)
 		if(currentmodel->type == mod_alias)
 			R_DrawAliasModelLightPass(qfalse);
 		}
-	if (r_useLightOccluders->value)
-		glEndConditionalRender();
 	}
 	}
 	
@@ -1267,8 +1263,8 @@ void R_RegisterCvars(void)
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "65", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
-	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
-	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", 0);
+//	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
+//	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", 0);
 //	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 	r_specularScale =					Cvar_Get("r_specularScale", "1", CVAR_ARCHIVE);
 	r_ambientSpecularScale =			Cvar_Get("r_ambientSpecularScale", "0.3", CVAR_ARCHIVE);
@@ -1433,9 +1429,6 @@ static void DevIL_Init() {
 R_Init
 ===============
 */
-int GL_QueryBits;
-int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
-
 qboolean IsExtensionSupported(const char *name)
 {
 	int			i;
@@ -1607,49 +1600,6 @@ int R_Init(void *hinstance, void *hWnd)
 	gl_state.depthBoundsTest = qfalse;
 	}
 
-	
-	gl_state.arb_occlusion = qfalse;
-	gl_state.arb_occlusion2 = qfalse;
-	if (IsExtensionSupported("GL_ARB_occlusion_query")) {
-		Com_Printf("...using GL_ARB_occlusion_query\n");
-		gl_state.arb_occlusion = qtrue;
-		
-		qglGenQueriesARB		=	(PFNGLGENQUERIESARBPROC) qwglGetProcAddress("glGenQueriesARB");
-		qglDeleteQueriesARB		=	(PFNGLDELETEQUERIESARBPROC) qwglGetProcAddress("glDeleteQueriesARB");
-		qglIsQueryARB			=	(PFNGLISQUERYARBPROC) qwglGetProcAddress("glIsQueryARB");
-		qglBeginQueryARB		=	(PFNGLBEGINQUERYARBPROC) qwglGetProcAddress("glBeginQueryARB");
-		qglEndQueryARB			=	(PFNGLENDQUERYARBPROC) qwglGetProcAddress("glEndQueryARB");
-		qglGetQueryivARB		=	(PFNGLGETQUERYIVARBPROC) qwglGetProcAddress("glGetQueryivARB");
-		qglGetQueryObjectivARB	=	(PFNGLGETQUERYOBJECTIVARBPROC) qwglGetProcAddress("glGetQueryObjectivARB");
-		qglGetQueryObjectuivARB =	(PFNGLGETQUERYOBJECTUIVARBPROC) qwglGetProcAddress("glGetQueryObjectuivARB");
-
-		qglGetQueryivARB(GL_SAMPLES_PASSED_ARB, GL_QUERY_COUNTER_BITS_ARB, &GL_QueryBits);
-		
-		if (GL_QueryBits) {
-			qglGenQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
-
-			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " occlusion query bits\n", GL_QueryBits);
-
-			if (IsExtensionSupported("GL_ARB_occlusion_query2")){
-				Com_Printf("...using GL_ARB_occlusion_query2\n");
-				gl_state.arb_occlusion2 = qtrue;
-			}
-			else{
-				Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query2 not found\n");
-				gl_state.arb_occlusion2 = qfalse;
-			}
-		}
-		if(gl_state.arb_occlusion2)
-			gl_state.query_passed = GL_ANY_SAMPLES_PASSED;
-		else
-			gl_state.query_passed = GL_SAMPLES_PASSED;
-
-		} else {
-		Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query not found\n");
-		gl_state.arb_occlusion = qfalse;
-	}
-
-
 	if (IsExtensionSupported("GL_ARB_texture_non_power_of_two")) 
 		Com_Printf("...using GL_ARB_texture_non_power_of_two\n");
 	
@@ -1739,34 +1689,7 @@ int R_Init(void *hinstance, void *hWnd)
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 	}
-
-
-	glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)qwglGetProcAddress("glBindVertexArray");
-	glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)qwglGetProcAddress("glGenVertexArrays");
-	glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)qwglGetProcAddress("glDeleteVertexArrays");
-
-	if (glBindVertexArray && glGenVertexArrays && glDeleteVertexArrays) {
-		Com_Printf("...using GL_vertex_array_object\n");
-
-	}
-
-	gl_state.conditional_render = qfalse;
-			
-	glBeginConditionalRenderNV	= (PFNGLBEGINCONDITIONALRENDERNVPROC)	qwglGetProcAddress("glBeginConditionalRenderNV");
-	glEndConditionalRenderNV	= (PFNGLENDCONDITIONALRENDERNVPROC)		qwglGetProcAddress("glEndConditionalRenderNV");
-
-	glBeginConditionalRender	= (PFNGLBEGINCONDITIONALRENDERPROC)		qwglGetProcAddress("glBeginConditionalRender");
-	glEndConditionalRender		= (PFNGLENDCONDITIONALRENDERPROC)		qwglGetProcAddress("glEndConditionalRender");
-
-	if(glBeginConditionalRender && glEndConditionalRender){
-			Com_Printf("...using GL_conditional_render\n");
-				gl_state.conditional_render = qtrue;
-
-	} else {
-		Com_Printf(S_COLOR_RED"...GL_conditional_render not found\n");
-		gl_state.conditional_render = qfalse;		
-	}
-	
+		
 	if (IsExtensionSupported("GL_ARB_draw_buffers")) {
 		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
 		
@@ -1971,10 +1894,6 @@ void R_Shutdown(void)
 	QGL_Shutdown();
 	ilShutDown();
 	R_ShutdownPrograms();
-		    
-	if(qglDeleteQueriesARB)
-		qglDeleteQueriesARB(MAX_WORLD_SHADOW_LIHGTS, (GLuint*)lightsQueries);
-	
 	
 	DeleteShadowVertexBuffers();
 

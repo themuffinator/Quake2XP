@@ -8,7 +8,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>c:\quake2</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>+set r_mode 1 +set r_fullScreen 0 +map base1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>+set r_mode 1 +set r_fullScreen 0 +map fact1 +notarget</LocalDebuggerCommandArguments>
     <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
   </PropertyGroup>
   <PropertyGroup>

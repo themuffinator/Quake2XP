@@ -721,12 +721,7 @@ int vertex_size;
 vbo_t vbo;
 
 typedef struct {
-
-	GLuint	vao_fullScreenQuad;
-	GLuint	vao_halfScreenQuad;
-	GLuint	vao_quarterScreenQuad;
-	GLuint	vao_BSP;
-	GLuint	vao_SHADOW;
+	GLuint	def;
 }
 vao_t;
 vao_t vao;

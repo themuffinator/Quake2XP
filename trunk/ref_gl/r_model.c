@@ -1210,8 +1210,10 @@ void Mod_LoadFaces (lump_t * l) {
 		purename = COM_SkipPath(image->name);
 		COM_StripExtension(purename, noext);
 
-		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
+		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3")){
+			out->flags &= ~MSURF_DRAWTURB;
 			out->flags |= MSURF_LAVA;
+		}
 
 		// create lightmaps and polygons
 		if (!(out->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP)))
@@ -2674,6 +2676,8 @@ struct model_s *R_RegisterModel (char *name) {
 
 }
 
+void GL_CheckError(const char *fileName, int line, const char *subr);
+
 /*
 @@@@@@@@@@@@@@@@@@@@@
 R_EndRegistration
@@ -2713,29 +2717,6 @@ void R_EndRegistration (void) {
 	GL_SetDefaultState ();
 
 	relightMap = qfalse;
-	
-	// bsp vao
-	glGenVertexArrays(1, &vao.vao_BSP);
-	glBindVertexArray(vao.vao_BSP);
-
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_TEX1);
-	qglEnableVertexAttribArray(ATRB_NORMAL);
-	qglEnableVertexAttribArray(ATRB_TANGENT);
-	qglEnableVertexAttribArray(ATRB_BINORMAL);
-
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATRB_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-	qglVertexAttribPointer(ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
-
-	glBindVertexArray(0);
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 
@@ -2756,8 +2737,6 @@ void Mod_Free (model_t * mod) {
 
 	if (mod->type == mod_alias)
 		qglDeleteBuffers (1, &mod->vboId);
-
-	qglDeleteBuffers(1, &vao.vao_BSP);
 
 	memset (mod, 0, sizeof(*mod));
 }
