@@ -147,10 +147,10 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 	float		*v, dstscroll, ambient, alpha;
 	int			i, nv = fa->polys->numVerts;
 
-/*	if (fa->flags & MSURF_LAVA){
+	if (fa->flags & MSURF_LAVA){
 		RenderLavaSurfaces(fa);
 		return;
-	}*/
+	}
 	// setup program
 	GL_BindProgram (waterProgram, 0);
 

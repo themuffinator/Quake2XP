@@ -812,7 +812,6 @@ qboolean R_MarkLightSurf (msurface_t *surf, qboolean world) {
 	purename	= COM_SkipPath(image->name);
 	COM_StripExtension(purename, noext);
 
-//	if (surf->flags & MSURF_DRAWTURB)
 	if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
 		goto hack;
 
