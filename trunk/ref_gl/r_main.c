@@ -245,7 +245,11 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(refract_deformMul, 9.5);
 	qglUniform1f(refract_alpha, e->alpha);
 	qglUniform1f(refract_thickness, len * 0.5);
-	qglUniform1f(refract_thickness2, 0.0); //disable softeness
+	if (currententity->flags & RF_BFG_SPRITE)
+		qglUniform1f(refract_thickness2, 3.0);
+	else
+		qglUniform1f(refract_thickness2, len * 0.5);
+
 	qglUniform2f(refract_screenSize, vid.width, vid.height);
 	qglUniform2f(refract_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1i(refract_alphaMask, 1);

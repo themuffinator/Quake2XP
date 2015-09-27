@@ -1038,6 +1038,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 			ent.flags = RF_TRANSLUCENT;
 			ent.flags |= RF_DISTORT;
+			ent.flags |= RF_BFG_SPRITE;
 			ent.alpha = 0.30;
 		}
 		// RAFAEL

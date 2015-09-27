@@ -950,6 +950,7 @@ void CL_ParseTEnt (void) {
 			ex->ent.model = cl_mod_bfg_explo;
 			ex->ent.flags |= RF_TRANSLUCENT;
 			ex->ent.flags |= RF_DISTORT;
+			ex->ent.flags |= RF_BFG_SPRITE;
 			ex->ent.alpha = 0.30;
 			ex->frames = 4;
 
