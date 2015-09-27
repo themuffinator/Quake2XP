@@ -36,7 +36,7 @@ void main (void) {
 		float A = texture2D(u_deformMap, v_deformTexCoord).a;
 		float softness = clamp((depth - v_depthS) / u_thickness2, 0.0, 1.0);
 		// refracted sprites with soft edges
-		if (A == 0.004) {
+		if (A == 0.01) {
 			discard;
 				return;
 			}
@@ -44,7 +44,7 @@ void main (void) {
 		N *= softness;
 		vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
 		diffuse *= A;
-		gl_FragColor = vec4(deform, 1.0) + diffuse;
+		gl_FragColor = (vec4(deform, 1.0) + diffuse) * A;
 		gl_FragColor *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
 			return;
 	}

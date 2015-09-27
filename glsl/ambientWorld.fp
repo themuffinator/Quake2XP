@@ -1,7 +1,6 @@
 uniform sampler2D		u_Diffuse;
 uniform sampler2D		u_NormalMap;
 uniform sampler2D		u_Add;
-uniform sampler2D		u_csmMap;
 
 uniform sampler2D		u_LightMap0;
 uniform sampler2D		u_LightMap1;
