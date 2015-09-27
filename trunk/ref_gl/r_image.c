@@ -1448,6 +1448,7 @@ void GL_FreeUnusedImages(void)
 	r_randomNormalTex->registration_sequence = registration_sequence;
 	r_lightAttenMap->registration_sequence = registration_sequence;
 	weaponHack->registration_sequence = registration_sequence;
+	r_whiteMap->registration_sequence = registration_sequence;
 
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {

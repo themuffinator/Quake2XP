@@ -568,8 +568,6 @@ WinMain
 */
 HINSTANCE	global_hInstance;
 
-extern cvar_t *avi_fps;
-
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	MSG				msg;
 	int				time, oldtime, newtime;
@@ -626,13 +624,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		//	_controlfp( ~( _EM_ZERODIVIDE /*| _EM_INVALID*/ ), _MCW_EM );
 		_controlfp (_PC_24, _MCW_PC);
 
-		// Heffo - AVI Export
-		if (avi_fps && avi_fps->value) {
-			curtime += (1000 / avi_fps->value);
-			Qcommon_Frame (1000 / avi_fps->value);
-		}
-		else
-			Qcommon_Frame (time);
+		Qcommon_Frame (time);
 
 		oldtime = newtime;
 	}

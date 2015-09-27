@@ -1210,14 +1210,14 @@ void Mod_LoadFaces (lump_t * l) {
 		purename = COM_SkipPath(image->name);
 		COM_StripExtension(purename, noext);
 
+		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3")) {
+			out->flags |= MSURF_LAVA;
+			out->flags &= ~MSURF_DRAWTURB;
+		}
+
 		// create lightmaps and polygons
 		if (!(out->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP)))
 			GL_CreateSurfaceLightmap (out);
-
-		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3")){
-			out->flags = 0;
-			out->flags |= MSURF_LAVA;
-		}
 
 		GL_BuildPolygonFromSurface (out);
 		GL_AddFlareSurface (out);

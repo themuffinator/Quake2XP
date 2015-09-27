@@ -33,81 +33,6 @@ static float shadelight[3];
 void IL_LoadImage (char *filename, byte ** pic, int *width, int *height, ILenum type);
 unsigned int	skyCube = -1;
 
-void  RenderLavaSurfaces (msurface_t * surf) {
-	glpoly_t	*p, *bp;
-	float		*v;
-	vec2_t		scale;
-	int			i, nv = surf->polys->numVerts;
-
-	// setup program
-	GL_BindProgram (lavaProgram, 0);
-
-	if (!surf->texInfo->image->parallaxScale) {
-
-		scale[0] = r_reliefScale->value / surf->texInfo->image->width;
-		scale[1] = r_reliefScale->value / surf->texInfo->image->height;
-	}
-	else {
-		scale[0] = surf->texInfo->image->parallaxScale / surf->texInfo->image->width;
-		scale[1] = surf->texInfo->image->parallaxScale / surf->texInfo->image->height;
-	}
-
-	qglUniform4f	(lava_parallaxParams, scale[0], scale[1], surf->texInfo->image->upload_width, surf->texInfo->image->upload_height);
-	qglUniform1i	(lava_parallaxType, (int)clamp (r_reliefMapping->value, 0, 1));
-	qglUniform3fv	(lava_viewOrigin, 1, r_origin);
-	qglUniform1f	(lava_ambient, r_lightmapScale->value);
-
-	GL_MBind (GL_TEXTURE0_ARB, surf->texInfo->image->texnum);
-	qglUniform1i (lava_diffuse, 0);
-
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglEnableVertexAttribArray (ATRB_TEX0);
-	qglEnableVertexAttribArray (ATRB_NORMAL);
-	qglEnableVertexAttribArray (ATRB_TANGENT);
-	qglEnableVertexAttribArray (ATRB_BINORMAL);
-
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
-	qglVertexAttribPointer (ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
-	qglVertexAttribPointer (ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
-	qglVertexAttribPointer (ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
-
-	for (bp = surf->polys; bp; bp = bp->next) {
-		p = bp;
-		c_brush_polys += (nv - 2);
-
-		for (i = 0, v = p->verts[0]; i < p->numVerts; i++, v += VERTEXSIZE) {
-
-			VectorCopy (v, wVertexArray[i]);
-
-			wTexArray[i][0] = v[3];
-			wTexArray[i][1] = v[4];
-			//normals
-			nTexArray[i][0] = v[7];
-			nTexArray[i][1] = v[8];
-			nTexArray[i][2] = v[9];
-			//tangents
-			tTexArray[i][0] = v[10];
-			tTexArray[i][1] = v[11];
-			tTexArray[i][2] = v[12];
-			//binormals
-			bTexArray[i][0] = v[13];
-			bTexArray[i][1] = v[14];
-			bTexArray[i][2] = v[15];
-		}
-
-		qglDrawElements (GL_TRIANGLES, surf->numIndices, GL_UNSIGNED_SHORT, surf->indices);
-	}
-
-	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglDisableVertexAttribArray (ATRB_TEX0);
-	qglDisableVertexAttribArray (ATRB_NORMAL);
-	qglDisableVertexAttribArray (ATRB_TANGENT);
-	qglDisableVertexAttribArray (ATRB_BINORMAL);
-	GL_BindNullProgram ();
-}
-
-
 #define DST_SIZE 16
 unsigned int dst_texture = 0;
 
@@ -147,10 +72,6 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 	float		*v, dstscroll, ambient, alpha;
 	int			i, nv = fa->polys->numVerts;
 
-	if (fa->flags & MSURF_LAVA){
-		RenderLavaSurfaces(fa);
-		return;
-	}
 	// setup program
 	GL_BindProgram (waterProgram, 0);
 

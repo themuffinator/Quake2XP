@@ -136,8 +136,7 @@ void Hunk_Free (void *base) {
 Sys_Milliseconds
 ================
 */
-//Heffo - AVI EXPORT
-cvar_t	*avi_fps;
+
 int	curtime;
 int Sys_Milliseconds (void) {
 	static int		base;
@@ -147,13 +146,6 @@ int Sys_Milliseconds (void) {
 		base = timeGetTime () & 0xffff0000;
 		initialized = qtrue;
 	}
-
-	//Heffo - AVI EXPORT
-	// I don't think I really need this, but if I don't
-	// put it here for some reason the demo doesn't start
-	// I havn't looked much into it though, lazy me ;)
-	if (avi_fps && avi_fps->value)
-		return (curtime++) - base;
 
 	curtime = timeGetTime () - base;
 

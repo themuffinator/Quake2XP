@@ -669,12 +669,14 @@ byte missing_texture[4][4] = {
 	{ 0.0, 0.0, 0.0, 0.0 },
 };
 
-image_t  *r_defBump;
+image_t	*r_defBump;
+image_t	*r_whiteMap;
 
 void R_InitEngineTextures (void) {
 	int		x, y, i;
 	byte	notex[4][4][4];
 	byte bump[1][1][4] = { 0x80, 0x80, 0xff, 0x40 };
+	byte white[1][1][4] = { 0xff, 0xff, 0xff, 0xff };
 
 	for (x = 0; x < 4; x++) {
 		for (y = 0; y < 4; y++) {
@@ -686,6 +688,7 @@ void R_InitEngineTextures (void) {
 	}
 
 	r_defBump = GL_LoadPic ("***r_defBump***", (byte *)bump, 1, 1, it_bump, 32);
+	r_whiteMap = GL_LoadPic("***r_whiteMap***", (byte *)white, 1, 1, it_bump, 32);
 
 
 	r_notexture =

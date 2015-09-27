@@ -217,26 +217,6 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	GL_BindNullProgram();
 }
 
-/*
-================
-R_RenderBrushPoly
-
-================
-*/
-void R_RenderBrushPoly (msurface_t *fa) {
-	image_t *image;
-	char *purename;
-	char noext[MAX_QPATH];
-
-	image = R_TextureAnimation(fa->texInfo);
-	purename = COM_SkipPath(image->name);
-	COM_StripExtension(purename, noext);
-
-	if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
-		RenderLavaSurfaces(fa);
-	else
-		R_DrawWaterPolygons(fa);
-}
 
 void R_DrawChainsRA (void) {
 	msurface_t *s;
@@ -265,6 +245,9 @@ void R_DrawChainsRA (void) {
 
 	for (s = r_reflective_surfaces; s; s = s->texturechain) {
 		shadelight_surface[3] = 1.f;
+		
+		if (s->flags & MSURF_LAVA)
+			continue;
 
 		R_DrawWaterPolygons(s);
 	}
@@ -272,33 +255,6 @@ void R_DrawChainsRA (void) {
 	r_reflective_surfaces = NULL;
 }
 
-/*
-================
-DrawTextureChains
-
-================
-*/
-void DrawTextureChains (void) {
-	int i;
-	msurface_t *s;
-	image_t *image;
-
-	c_visible_textures = 0;
-
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
-		if (!image->registration_sequence)
-			continue;
-
-		s = image->texturechain;
-		if (!s)
-			continue;
-
-		for (; s; s = s->texturechain)
-			R_RenderBrushPoly(s);
-		
-		image->texturechain = NULL;
-	}
-}
 
 /*
 ===============
@@ -433,7 +389,10 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 				numIndices = 0xFFFFFFFF;
 			}
 
-			GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
+			if(s->flags & MSURF_LAVA)
+				GL_MBind(GL_TEXTURE1_ARB, r_whiteMap->texnum);
+			else
+				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
 
 			if (r_worldmodel->useXPLM) {
 				GL_MBind(GL_TEXTURE4_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
@@ -692,7 +651,6 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 	msurface_t *surf, **mark;
 	mleaf_t *pleaf;
 	float dot;
-	image_t *fx, *image;
 
 	if (node->contents == CONTENTS_SOLID)
 		return;					// solid
@@ -785,15 +743,6 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 				scene_surfaces[num_scene_surfaces++] = surf;
 			}
 		}
-		if (surf->flags & MSURF_LAVA){
-			// FIXME: this is a hack for animation
-			image = R_TextureAnimation(surf->texInfo);
-			fx = R_TextureAnimationFx(surf->texInfo); // fix glow hack
-
-			// the polygon is visible, so add it to the texture sorted chain
-			surf->texturechain = image->texturechain;
-			image->texturechain = surf;
-		}
 	}
 
 	// recurse down the back side
@@ -804,15 +753,9 @@ qboolean R_MarkLightSurf (msurface_t *surf, qboolean world) {
 	cplane_t	*plane;
 	float		dist;
 	glpoly_t	*poly;
-	image_t		*image;
-	char		*purename;
-	char		noext[MAX_QPATH];
 
-	image		= surf->texInfo->image;
-	purename	= COM_SkipPath(image->name);
-	COM_StripExtension(purename, noext);
 
-	if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3"))
+	if (surf->flags & MSURF_LAVA)
 		goto hack;
 
 	if ((surf->texInfo->flags & (SURF_TRANS33|SURF_TRANS66|SURF_SKY|SURF_WARP|SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
@@ -1033,8 +976,6 @@ void R_DrawBSP (void) {
 	qglDisableVertexAttribArray(ATRB_TANGENT);
 	qglDisableVertexAttribArray(ATRB_BINORMAL);
 
-	DrawTextureChains();
-
 	R_DrawSkyBox(qtrue);
 }
 
@@ -1082,7 +1023,7 @@ static void R_DrawInlineBModel (void) {
 			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) 
 				continue;
 			
-			if (!(psurf->texInfo->flags & SURF_WARP))
+			if (!(psurf->texInfo->flags & MSURF_DRAWTURB))
 				scene_surfaces[num_scene_surfaces++] = psurf;
 		}
 	}
@@ -1115,7 +1056,7 @@ static void R_DrawInlineBModel2 (void) {
 				continue;
 
 			if (psurf->flags & MSURF_DRAWTURB)
-				R_RenderBrushPoly(psurf);
+				R_DrawWaterPolygons(psurf);
 		}
 	}
 }

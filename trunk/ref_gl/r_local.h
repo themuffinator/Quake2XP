@@ -183,6 +183,7 @@ extern	image_t	*r_lightAttenMap;
 extern	image_t	*weaponHack;
 extern	image_t *fxaaMap;
 extern	image_t *fboScreen;
+extern	image_t	*r_whiteMap;
 
 #define MAX_FILTERS 256
 extern	image_t	*r_lightCubeMap[MAX_FILTERS];
@@ -384,7 +385,6 @@ void R_RenderDecals (void);
 void R_LightColor (vec3_t org, vec3_t color);
 void MyGlPerspective (GLdouble fov, GLdouble aspectr, GLdouble zNear);
 qboolean R_CullAliasModel (vec3_t bbox[8], entity_t *e);
-void RenderLavaSurfaces (msurface_t * fa);
 int CL_PMpointcontents2 (vec3_t point, struct model_s * ignore);
 void R_DrawAliasDistortModel (entity_t *e);
 void VID_MenuInit (void);

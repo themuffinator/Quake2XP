@@ -921,7 +921,7 @@ void SCR_DrawFPS (void) {
 
 	fps++;
 	if (curtime - lastUpdate >= 1000 / samPerSec) {
-		const float alpha = 0.15;
+		const float alpha = 0.45;
 
 		Com_sprintf (str, sizeof(str), "%4d FPS", (int)fpsAvg);
 
