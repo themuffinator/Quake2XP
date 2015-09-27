@@ -104,8 +104,6 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 	qglUniform1f (water_colorModulate, r_textureColorScale->value);
 	qglUniform1f (water_ambient, ambient);
 
-	qglUniformMatrix3fv (water_entity2world, 1, qfalse, (const float *)currententity->axis);
-
 	dstscroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
 
 	qglEnableVertexAttribArray (ATRB_POSITION);
