@@ -27,24 +27,31 @@ varying vec4			v_positionVS;
 #include lighting.inc
 
 void main (void) {
-	float attenMap = texture3D(u_attenMap, v_AttenCoord).r;
+
+	float attenMap = texture3D(u_attenMap, v_AttenCoord.xyz).r;
 
 	if(attenMap <= CUTOFF_EPSILON){
 		discard;
 		return;
 	}
 
+
 	vec3 L = normalize(v_lightVec);
 	vec3 V = normalize(v_viewVec);
+	
+
 
 	vec4 diffuseMap  = texture2D(u_diffuseMap, v_texCoord);
 	vec4 normalMap =  texture2D(u_bumpMap, v_texCoord);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
 
+
   float SSS = diffuseMap.a;
 
 	vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
+
+
 
 	if (u_isCaustics == 1){
 		vec4 causticsMap = texture2D(u_causticMap, v_texCoord);
@@ -56,7 +63,7 @@ void main (void) {
 		gl_FragColor = diffuseMap * LambertLighting(normalize(normalMap.xyz), V) * u_LightColor * attenMap;
 		return;
 	}
-
+	
 	if (u_isAmbient == 0) {
 
 		float specular = normalMap.a * u_specularScale;
@@ -82,5 +89,6 @@ void main (void) {
 			else	
 					gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
 	}
+	
 }
 }

@@ -40,7 +40,7 @@ void main ()
 	if (u_ssao == 1)
 		gl_FragColor.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).x;
 
-	gl_FragColor.xyz += glow * u_AddShift;
+	gl_FragColor.xyz += glow.rgb * u_AddShift;
 
 	if (u_isEnvMap == 1)
 		gl_FragColor.xyz += texture2D(u_env, v_envCoord).xyz * glow.a * u_envScale;

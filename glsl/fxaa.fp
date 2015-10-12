@@ -2,8 +2,6 @@
 // Original algorithm and code by Timothy Lottes
 // Adoptation by Vic
 
-#extension GL_ARB_gpu_shader5 : enable
-
 #if QF_GLSLVERSION >= 130
 # define FXAA_GLSL_130 1
 #else

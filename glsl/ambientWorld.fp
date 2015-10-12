@@ -26,11 +26,11 @@ varying vec3			v_tbn[3];
 //
 // 3-vector radiosity basis for normal mapping
 //
-const vec3 s_basisVecs[3] = {
-	vec3( 0.81649658092772603273242802490196,  0.                                , 0.57735026918962576450914878050195),
-	vec3(-0.40824829046386301636621401245098,  0.70710678118654752440084436210485, 0.57735026918962576450914878050195),
-	vec3(-0.40824829046386301636621401245098, -0.70710678118654752440084436210485, 0.57735026918962576450914878050195)
-};
+const vec3 s_basisVecs[3]=vec3[](
+vec3(0.81649658092772603273242802490196,  0.                                , 0.57735026918962576450914878050195),
+vec3(-0.40824829046386301636621401245098,  0.70710678118654752440084436210485, 0.70710678118654752440084436210485),
+vec3(-0.40824829046386301636621401245098, -0.70710678118654752440084436210485, 0.57735026918962576450914878050195)
+); 
 
 #include lighting.inc
 #include parallax.inc
@@ -68,15 +68,6 @@ void main (void) {
 		D = lm0 * D.x + lm1 * D.y + lm2 * D.z;
 
 		// approximate specular
-#if 0
-		// reflection vector, unstable highlight, tends to jump in & out
-		vec3 R = reflect(-V, normalMap.xyz);
-
-		vec3 S = vec3(
-			dot(R, s_basisVecs[0]),
-			dot(R, s_basisVecs[1]),
-			dot(R, s_basisVecs[2]));
-#else
 		// half-angle vector, stable but slower
 		vec3 H0 = normalize(V + s_basisVecs[0]);
 		vec3 H1 = normalize(V + s_basisVecs[1]);
@@ -86,27 +77,11 @@ void main (void) {
 			dot(normalMap.xyz, H0),
 			dot(normalMap.xyz, H1),
 			dot(normalMap.xyz, H2));
-#endif
-//		S = scale * pow(max(S, 0.0), fts);
 		S = pow(max(S, 0.0), vec3(u_specularExp));
 		S = (lm0 * S.x + lm1 * S.y + lm2 * S.z);
 
-#if 1
-		// Approximate energy conservation.
-		// Omit division by PI on both diffuse & specular,
-		// dividing the latter by 8 instead of (8 * PI).
-		// After this, scale by PI because after multiplying by lightmap
-		// we actually get N.L * N.H here, not N.H.
-		S *= (u_specularExp + 8.0) / (8.0 / PI);
-
-		// The more material is specular, the less it is diffuse.
-		// Assume all shiny materials are metals of the same moderate roughness in Q2,
-		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
 		gl_FragColor.xyz = diffuseMap * mix(D, S, normalMap.w * u_specularScale);
-#else
-		// Non-conserving sum, with normal map alpha channel holding specular brightness.
-		gl_FragColor.xyz = diffuseMap * D + normalMap.w * u_specularScale * S;
-#endif
+
 	}
 
 	if (u_ssao == 1)

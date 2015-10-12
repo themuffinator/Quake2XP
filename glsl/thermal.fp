@@ -1,4 +1,3 @@
-#version 120
 uniform sampler2DRect u_screenTex;
 
 const vec4 colors[3] = vec4[3](vec4(0.0, 0.0, 1.0, 1.0),

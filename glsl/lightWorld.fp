@@ -29,7 +29,7 @@ varying vec4			v_AttenCoord;
 #include parallax.inc
 
 void main (void) {
-	float attenMap = texture3D(u_attenMap, v_AttenCoord).r;
+	float attenMap = texture3D(u_attenMap, v_AttenCoord.xyz).r;
 
 	if(attenMap <= CUTOFF_EPSILON){
 		discard;
