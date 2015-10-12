@@ -371,9 +371,6 @@
     <ClInclude Include="ref_gl\r_particle.h">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\r_warpsin.h">
-      <Filter>Header Files\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="ref_gl\wglext.h">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
@@ -481,9 +478,6 @@
     <None Include="..\baseq2\glsl\generic.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\lightWorld.defs">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
     <None Include="..\baseq2\glsl\lightWorld.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
@@ -508,9 +502,6 @@
     <None Include="..\baseq2\glsl\radialBlur.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\refract.defs">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
     <None Include="..\baseq2\glsl\refract.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
@@ -533,9 +524,6 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\thermalfp.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\water.defs">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\water.fp">
@@ -565,9 +553,6 @@
     <None Include="..\baseq2\glsl\include\Fxaa3_11.inc">
       <Filter>Source Files\Renderer\glsl\include</Filter>
     </None>
-    <None Include="..\baseq2\glsl\generic.defs">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
     <None Include="..\baseq2\glsl\lightAlias.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
@@ -584,12 +569,6 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\blurStar.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\lava.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\lava.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\depthDownsample.fp">

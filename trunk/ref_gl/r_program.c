@@ -18,10 +18,14 @@ static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
 int r_numPrograms;
 static glslProgram_t	r_nullProgram;
 static const char *shader5 =
-"#extension GL_ARB_gpu_shader5 : enable";
+"#extension GL_ARB_gpu_shader5 : enable\n";
 
-static const char *ver =
-"#version 120";
+static const char *baseExt =
+"#extension GL_ARB_texture_rectangle : enable\n"
+"#extension GL_EXT_gpu_shader4 : enable\n";
+
+static const char *glslVersion =
+"#version 120\n";
 /*
 =================
 Com_HashKey
@@ -303,6 +307,8 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 		}
 		/// Berserker's fix end
 	
+		strings[numStrings++] = glslVersion; //force version fi needit
+
 		// compile vertex shader
 		if (vertexSource) {
 			// link includes
@@ -314,6 +320,8 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 			qglCompileShader (vertexId);
 			qglGetShaderiv (vertexId, GL_COMPILE_STATUS, &status);
 
+	//		Com_Printf("program '%s': warning(s) in vertex shader:\n-----------\n%s\n-----------\n", program->name, log);
+
 			if (!status) {
 				R_GetInfoLog (vertexId, log, qfalse);
 				qglDeleteShader (vertexId);
@@ -322,12 +330,20 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 			}
 		}
 
+		// add ext
+		if (gl_state.shader5)
+			strings[numStrings++] = shader5;
+
+		strings[numStrings++] = baseExt;
+
 		// compile fragment shader
 		if (fragmentSource) {
 			// link includes
 			fragmentSource = R_LoadIncludes ((char*)fragmentSource);
 			strings[numStrings] = fragmentSource;
 			fragmentId = qglCreateShader (GL_FRAGMENT_SHADER);
+
+	//		Com_Printf("program '%s': warning(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
 
 			if (0) {
 
@@ -786,25 +802,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"lava program"S_COLOR_WHITE" ");
-	lavaProgram = R_FindProgram ("lava", qtrue, qtrue);
-
-	if (lavaProgram->valid) {
-		Com_Printf ("succeeded\n");
-		id = lavaProgram->id[0];
-
-		lava_diffuse = qglGetUniformLocation (id, "u_colorMap");
-		lava_csm = qglGetUniformLocation (id, "u_csmMap");
-		lava_parallaxParams = qglGetUniformLocation (id, "u_parallaxParams");
-		lava_viewOrigin = qglGetUniformLocation (id, "u_viewOrigin");
-		lava_parallaxType = qglGetUniformLocation (id, "u_parallaxType");
-		lava_ambient = qglGetUniformLocation(id, "u_ambient");
-	}
-	else {
-		Com_Printf (S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
 	Com_Printf ("Load "S_COLOR_YELLOW"particles program"S_COLOR_WHITE" ");
 	particlesProgram = R_FindProgram ("particles", qtrue, qtrue);
 
@@ -885,6 +882,9 @@ void R_InitPrograms (void) {
 
 	if (fxaaProgram->valid) {
 		Com_Printf ("succeeded\n");
+		id = fxaaProgram->id[0];
+		fxaa_screenTex = qglGetUniformLocation(id, "u_ScreenTex");
+		fxaa_screenSize = qglGetUniformLocation(id, "u_ScreenSize");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -915,15 +915,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	/*	Com_Printf("Load "S_COLOR_YELLOW"fbo program"S_COLOR_WHITE" ");
-		FboProgram = R_FindProgram("fbo", qtrue, qtrue);
-		if(FboProgram->valid){
-		Com_Printf("succeeded\n");
-		} else {
-		Com_Printf(S_COLOR_RED"Failed!\n");
-		missing++;
-		}
-		*/
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	Com_Printf ("\nGLSL shaders loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);
@@ -979,6 +970,23 @@ void R_ListPrograms_f (void) {
 	Com_Printf ("  %i invalid\n", numInvalid);
 }
 
+void R_GLSLinfo_f(void) {
+	
+	int i;
+	uint j;
+	const char *ver;
+
+	ver = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
+	Com_Printf("GLSL Version: "S_COLOR_GREEN"%s\n", ver);
+
+	qglGetIntegerv(GL_NUM_SHADING_LANGUAGE_VERSIONS, &j);
+	for (i = 0; i < j; ++i) {
+		ver = glGetStringi(GL_SHADING_LANGUAGE_VERSION, i);
+		if (!ver)
+			break;
+		Com_Printf(S_COLOR_YELLOW"%s\n", ver);
+	}
+}
 /*
 ============
 GL_BindNullProgram

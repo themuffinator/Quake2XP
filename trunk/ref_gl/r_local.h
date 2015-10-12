@@ -1016,6 +1016,9 @@ uint gen_skyMatrix;
 uint gamma_screenMap;
 uint gamma_control;
 
+uint fxaa_screenTex;
+uint fxaa_screenSize;
+
 uint particle_texMap;
 uint particle_depthMap;
 uint particle_depthParams;
@@ -1037,13 +1040,6 @@ uint refract_thickness2;
 uint refract_ambient;
 uint refract_alphaMask;
 uint refract_mask;
-
-uint lava_diffuse;
-uint lava_csm;
-uint lava_parallaxParams;
-uint lava_viewOrigin;
-uint lava_parallaxType;
-uint lava_ambient;
 
 uint water_deformMap;
 uint water_baseMap;

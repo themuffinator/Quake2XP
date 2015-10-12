@@ -501,9 +501,6 @@ void R_DofBlur (void) {
 
 void R_FXAA (void) {
 
-	unsigned	defBits = 0;
-	int			id;
-
 	if (!r_fxaa->value)
 		return;
 
@@ -511,8 +508,7 @@ void R_FXAA (void) {
 		return;
 
 	// setup program
-	GL_BindProgram (fxaaProgram, defBits);
-	id = fxaaProgram->id[defBits];
+	GL_BindProgram (fxaaProgram, 0);
 
 	if (!fxaatex) {
 		qglGenTextures (1, &fxaatex);
@@ -523,8 +519,8 @@ void R_FXAA (void) {
 	}
 	GL_MBind (GL_TEXTURE0_ARB, fxaatex);
 	qglCopyTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i (qglGetUniformLocation (id, "u_ScreenTex"), 0);
-	qglUniform2f (qglGetUniformLocation (id, "u_ScreenSize"), vid.width, vid.height);
+	qglUniform1i(fxaa_screenTex, 0);
+	qglUniform2f(fxaa_screenSize, vid.width, vid.height);
 
 	R_DrawFullScreenQuad ();
 

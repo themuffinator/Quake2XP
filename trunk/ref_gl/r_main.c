@@ -1193,6 +1193,7 @@ vid_ref->modified = qtrue;
 }
 
 void R_ChangeLightColor_f(void) ;
+void R_GLSLinfo_f(void);
 
 void R_RegisterCvars(void)
 {
@@ -1317,6 +1318,7 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("low_spec",			R_LowSpecMachine_f);
 	Cmd_AddCommand("medium_spec",		R_MediumSpecMachine_f);
 	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
+	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
 /*
 bind INS		"spawnLight"
 bind HOME		"spawnLightToCamera"

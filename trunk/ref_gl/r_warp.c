@@ -465,7 +465,7 @@ R_DrawSkyBox
 int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox (qboolean color) {
 	int i;
-	mat4_t m;
+	mat4_t m, m2;
 
 	if (color) {
 		GL_BindProgram (genericProgram, 0);
@@ -501,6 +501,11 @@ void R_DrawSkyBox (qboolean color) {
 	if (skyrotate)
 		Mat4_Rotate(m, r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 	GL_LoadMatrix(GL_MODELVIEW, m);
+//	Mat4_Multiply(m, r_newrefdef.projectionMatrix, m2);
+//	Com_Printf("%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n",	m[0], m[1], m[2], m[3], m[4], 
+//																		m[5], m[6], m[7], m[8], m[9], 
+//																		m[10], m[11], m[12], m[12], m[13], m[14], m[15]);
+//	qglUniformMatrix4fv(gen_skyMatrix, 1, qfalse, (const float *)m2);
 
 	for (i = 0; i < 6; i++) {
 
