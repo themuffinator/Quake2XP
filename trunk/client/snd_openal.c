@@ -177,7 +177,7 @@ void S_Init (int hardreset) {
 		s_musicvolume = Cvar_Get ("s_musicvolume", "0.8", CVAR_ARCHIVE);
 		s_musicsrc = Cvar_Get ("s_musicsrc", "1", CVAR_ARCHIVE);
 		s_musicrandom = Cvar_Get ("s_musicrandom", "0", CVAR_ARCHIVE);
-		s_openal_device = Cvar_Get ("s_openal_device", "", CVAR_ARCHIVE);
+		s_openal_device = Cvar_Get ("s_openal_device", "OpenAL Soft", CVAR_ARCHIVE);
 		s_openal_efx = Cvar_Get ("s_openal_efx", "1", CVAR_ARCHIVE);
 		s_quality = Cvar_Get ("s_quality", "0", CVAR_ARCHIVE);
 		s_distance_model = Cvar_Get ("s_distance_model", "0", CVAR_ARCHIVE);

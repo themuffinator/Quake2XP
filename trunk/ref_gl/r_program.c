@@ -25,7 +25,7 @@ static const char *baseExt =
 "#extension GL_EXT_gpu_shader4 : enable\n";
 
 static const char *glslVersion =
-"#version 120\n";
+"#version 130\n";
 /*
 =================
 Com_HashKey

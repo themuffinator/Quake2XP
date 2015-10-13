@@ -1501,6 +1501,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
 		VID_Error(ERR_FATAL, "Intel graphics card is unsupported.\n");
 	}
+	
 
 	Com_Printf(S_COLOR_WHITE "GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
 	gl_config.renderer_string = (const char*)qglGetString(GL_RENDERER);

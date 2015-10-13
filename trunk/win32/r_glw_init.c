@@ -1088,9 +1088,9 @@ qboolean GLimp_InitGL (void)
 	qglGetIntegerv(GL_MAJOR_VERSION, &major);
 	qglGetIntegerv(GL_MINOR_VERSION, &minor);
 
-	if (major < 3 || minor < 3){
-		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 3.3 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %i.%i\n", major);
-		VID_Error(ERR_FATAL, "Quake2xp requires OpenGL version 3.3 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %i.%i\n", minor);
+	if (major < 3 && minor < 3){
+		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 3.3 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %i.%i\n", major, minor);
+		VID_Error(ERR_FATAL, "Quake2xp requires OpenGL version 3.3 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %i.%i\n", major, minor);
 	}
 	glGetStringi = (PFNGLGETSTRINGIPROC)qwglGetProcAddress("glGetStringi");
 	if (!glGetStringi)
