@@ -46,5 +46,6 @@ vec4 subScatterFS(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diff
     
     finalCol.rgb += vec3(blinnPhongSpecular(N,L, 0.5) * Att * Specular * finalCol.a * 0.05);
     finalCol.rgb *= lightColor.rgb;
+    finalCol.a = 1.0;
     return finalCol;   
 }

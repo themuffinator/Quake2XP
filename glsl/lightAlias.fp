@@ -83,7 +83,7 @@ void main (void) {
 		if(u_fog == 0) {
 
 			if(SSS <= 0.00392){
-					gl_FragColor = subScatterFS(V, L, normalize(normalMap.xyz), u_LightColor, diffuseMap, attenMap, specular) * cubeFilter;
+					gl_FragColor = subScatterFS(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap, attenMap, specular) * cubeFilter;
 					return;
 			}
 			else	
