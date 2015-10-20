@@ -477,7 +477,7 @@ typedef ptrdiff_t GLintptr;
 #define GL_ELEMENT_ARRAY_BUFFER           0x8893
 #define GL_ARRAY_BUFFER_BINDING           0x8894
 #define GL_ELEMENT_ARRAY_BUFFER_BINDING   0x8895
-#define GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING 0x889F
+#define GL_VERTEX_SHADER_ATTRIB_ARRAY_BUFFER_BINDING 0x889F
 #define GL_READ_ONLY                      0x88B8
 #define GL_WRITE_ONLY                     0x88B9
 #define GL_READ_WRITE                     0x88BA
@@ -495,7 +495,7 @@ typedef ptrdiff_t GLintptr;
 #define GL_DYNAMIC_COPY                   0x88EA
 #define GL_SAMPLES_PASSED                 0x8914
 #define GL_SRC1_ALPHA                     0x8589
-#define GL_VERTEX_ARRAY_BUFFER_BINDING    0x8896
+#define GL_VERTEX_SHADER_ARRAY_BUFFER_BINDING    0x8896
 #define GL_NORMAL_ARRAY_BUFFER_BINDING    0x8897
 #define GL_COLOR_ARRAY_BUFFER_BINDING     0x8898
 #define GL_INDEX_ARRAY_BUFFER_BINDING     0x8899

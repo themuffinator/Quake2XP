@@ -22,7 +22,8 @@ static const char *shader5 =
 
 static const char *baseExt =
 "#extension GL_ARB_texture_rectangle : enable\n"
-"#extension GL_EXT_gpu_shader4 : enable\n";
+"#extension GL_EXT_gpu_shader4 : enable\n"
+"out vec4 fragData;\n";
 
 static const char *glslVersion =
 "#version 130\n";
@@ -307,7 +308,7 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 		}
 		/// Berserker's fix end
 	
-		strings[numStrings++] = glslVersion; //force version fi needit
+		strings[numStrings++] = glslVersion; //force version if needit
 
 		// compile vertex shader
 		if (vertexSource) {
@@ -319,8 +320,6 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 			qglShaderSource (vertexId, numStrings + 1, strings, NULL);
 			qglCompileShader (vertexId);
 			qglGetShaderiv (vertexId, GL_COMPILE_STATUS, &status);
-
-	//		Com_Printf("program '%s': warning(s) in vertex shader:\n-----------\n%s\n-----------\n", program->name, log);
 
 			if (!status) {
 				R_GetInfoLog (vertexId, log, qfalse);
@@ -343,32 +342,7 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 			strings[numStrings] = fragmentSource;
 			fragmentId = qglCreateShader (GL_FRAGMENT_SHADER);
 
-	//		Com_Printf("program '%s': warning(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
-
-			if (0) {
-
-				int lll;
-				char *gls = (char*)fragmentSource;
-
-				Com_Printf ("\n");
-			again:
-				lll = strlen (gls);
-
-				if (lll > 8) {
-					char bak = gls[8];
-
-					gls[8] = 0;
-					Com_Printf (gls);
-					gls[8] = bak;
-					gls += 8;
-					goto again;
-				}
-				else {
-					Com_Printf ("%d", gls);
-				}
-				Com_Printf ("\n\n");
-			}
-
+	//		Com_Printf("program '%s': warning(s) in: %s\n", program->name, log); // debug depricated func
 
 			qglShaderSource (fragmentId, numStrings + 1, strings, NULL);
 			qglCompileShader (fragmentId);

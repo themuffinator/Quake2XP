@@ -352,7 +352,7 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		id = loadingProgram->id[defBits];
 		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), loadScreenColorFade);
-		
+
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
 		qglEnableVertexAttribArray(ATRB_POSITION);
