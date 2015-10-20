@@ -1,4 +1,3 @@
-#extension GL_ARB_texture_rectangle : enable
 #include depth.inc
 
 uniform	sampler2DRect	u_colorMiniMap;

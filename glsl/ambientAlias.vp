@@ -1,12 +1,12 @@
-attribute	vec2			a_texCoord;
-attribute	vec3			a_vertArray;
-attribute	vec3			a_normArray;
-attribute	vec4			a_colorArray;
+in	vec2			a_texCoord;
+in	vec3			a_vertArray;
+in	vec3			a_normArray;
+in	vec4			a_colorArray;
 
-varying		vec2			v_texCoord;
-varying		vec2			v_envCoord;
-varying		vec2			v_shellCoord;
-varying		vec4			v_color;
+out		vec2			v_texCoord;
+out		vec2			v_envCoord;
+out		vec2			v_shellCoord;
+out		vec4			v_color;
 
 uniform		float			u_scroll;
 uniform		int				u_isEnvMap;

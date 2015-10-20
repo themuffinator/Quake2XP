@@ -1,4 +1,4 @@
-varying vec2 v_texCoord;
+in vec2 v_texCoord;
 uniform sampler2D u_map;
 uniform float u_colorScale;
 

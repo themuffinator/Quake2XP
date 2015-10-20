@@ -1,10 +1,11 @@
-varying vec2 v_texCoord;
-varying vec2 v_lineOffset;
+out vec2 v_texCoord;
+out vec2 v_lineOffset;
+
 uniform vec2 u_cinSize;
 uniform vec2 u_cinIntSize;
 
-attribute vec2		a_texCoord;
-attribute vec3		a_vertArray;
+in vec2		a_texCoord;
+in vec3		a_vertArray;
 
 void main() 
 {

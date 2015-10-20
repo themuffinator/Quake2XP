@@ -1,6 +1,6 @@
-varying vec2		v_texCoord;
-varying vec2		v_texCoord1;
-varying vec4		v_colorArray;
+in vec2		v_texCoord;
+in vec2		v_texCoord1;
+in vec4		v_colorArray;
 
 uniform sampler2D	u_map;
 uniform sampler2D	u_map1;

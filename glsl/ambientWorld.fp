@@ -16,12 +16,12 @@ uniform float			u_ambientScale;
 uniform float			u_specularScale;
 uniform float			u_specularExp;
 
-varying vec3			v_positionVS;
-varying vec3			v_viewVecTS;
-varying vec2			v_wTexCoord;
-varying vec2			v_lTexCoord;
-varying vec2			v_envCoord;
-varying vec3			v_tbn[3];
+in vec3			v_positionVS;
+in vec3			v_viewVecTS;
+in vec2			v_wTexCoord;
+in vec2			v_lTexCoord;
+in vec2			v_envCoord;
+in vec3			v_tbn[3];
  
 //
 // 3-vector radiosity basis for normal mapping

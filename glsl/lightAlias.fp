@@ -14,12 +14,12 @@ uniform float			u_fogDensity;
 uniform int				u_isCaustics;
 uniform int				u_isAmbient;
 
-varying vec2			v_texCoord;
-varying vec3			v_viewVec;
-varying vec3			v_lightVec;
-varying vec4			v_CubeCoord;
-varying vec4			v_AttenCoord;
-varying vec4			v_positionVS;
+in vec2			v_texCoord;
+in vec3			v_viewVec;
+in vec3			v_lightVec;
+in vec4			v_CubeCoord;
+in vec4			v_AttenCoord;
+in vec4			v_positionVS;
 
 // FIXME: give uniform
 #define u_specularExp		16.0

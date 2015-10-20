@@ -1,5 +1,5 @@
-varying vec2 v_texCoord;
-varying vec2 v_lineOffset;
+in vec2 v_texCoord;
+in vec2 v_lineOffset;
 uniform sampler2D u_cinMap;
 
 const float brightness = 0.85;

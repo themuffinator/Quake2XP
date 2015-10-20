@@ -22,12 +22,12 @@
 #define OPAQUE_OFFSET		4.0
 #define OPAQUE_MUL			(-1.0 / 512.0)
 
-varying vec2				v_deformTexCoord;
-varying vec2				v_diffuseTexCoord;
-varying vec2				v_deformMul;
-varying vec3				v_positionVS;
-varying mat3				v_tangentToView;
-varying vec4				v_color;
+in vec2				v_deformTexCoord;
+in vec2				v_diffuseTexCoord;
+in vec2				v_deformMul;
+in vec3				v_positionVS;
+in mat3				v_tangentToView;
+in vec4				v_color;
 
 uniform float				u_deformMul;		// for normal w/o depth falloff
 uniform float				u_thickness;

@@ -1,4 +1,4 @@
-attribute vec3		a_vertArray;
+in vec3		a_vertArray;
 
 void main (void) {
 	 gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);

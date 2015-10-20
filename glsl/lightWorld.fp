@@ -16,14 +16,13 @@ uniform float			u_CausticsModulate;
 uniform int				u_isCaustics;
 uniform int				u_isAmbient;
 
-varying vec3			v_tbn[3];
-varying vec3			v_positionVS;
-varying vec3			v_viewVecTS;
-varying vec3			v_lightVec;
-varying vec2			v_texCoord;
-varying vec4			v_CubeCoord;
-varying vec4			v_lightCoord;
-varying vec4			v_AttenCoord;
+in vec3			v_positionVS;
+in vec3			v_viewVecTS;
+in vec3			v_lightVec;
+in vec2			v_texCoord;
+in vec4			v_CubeCoord;
+in vec4			v_lightCoord;
+in vec4			v_AttenCoord;
 
 #include lighting.inc
 #include parallax.inc

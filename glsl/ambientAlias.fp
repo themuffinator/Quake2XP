@@ -1,5 +1,5 @@
-varying	vec2		v_texCoord;
-varying	vec4		v_color;
+in	vec2		v_texCoord;
+in	vec4		v_color;
 
 uniform sampler2D 	u_Diffuse;
 uniform sampler2D	u_NormalMap;
@@ -11,8 +11,8 @@ uniform int			u_isEnvMap;
 
 uniform	int			u_isShell;
 
-varying		vec2	v_envCoord;
-varying		vec2	v_shellCoord;
+in		vec2	v_envCoord;
+in		vec2	v_shellCoord;
 
 uniform int			u_ssao;
 uniform sampler2DRect		u_ssaoMap;

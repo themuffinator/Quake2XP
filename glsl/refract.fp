@@ -1,7 +1,7 @@
-varying float			v_depth;
-varying float			v_depthS;
-varying vec2			v_deformMul;
-varying vec2			v_deformTexCoord;
+in float			v_depth;
+in float			v_depthS;
+in vec2			v_deformMul;
+in vec2			v_deformTexCoord;
 
 uniform float			u_thickness;
 uniform float			u_thickness2;
@@ -19,6 +19,7 @@ uniform sampler2DRect	g_weaponHackMap;
 
 uniform vec2			u_depthParms;
 uniform int				u_ALPHAMASK;
+
 #include depth.inc
 
 void main (void) {
