@@ -22,6 +22,6 @@ void main(void)
 {
 vec3 color = texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb;
 color = BrightnesContrastSaturation(color, u_control.x, u_control.y, u_control.z);
-gl_FragColor.rgb = pow(color, vec3(u_control.w));
-gl_FragColor.a = 1.0;
+fragData.rgb = pow(color, vec3(u_control.w));
+fragData.a = 1.0;
 }

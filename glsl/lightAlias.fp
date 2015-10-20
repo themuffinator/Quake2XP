@@ -28,7 +28,7 @@ in vec4			v_positionVS;
 
 void main (void) {
 
-	float attenMap = texture3D(u_attenMap, v_AttenCoord.xyz).r;
+	float attenMap = texture(u_attenMap, v_AttenCoord.xyz).r;
 
 	if(attenMap <= CUTOFF_EPSILON){
 		discard;
@@ -41,26 +41,26 @@ void main (void) {
 	
 
 
-	vec4 diffuseMap  = texture2D(u_diffuseMap, v_texCoord);
-	vec4 normalMap =  texture2D(u_bumpMap, v_texCoord);
+	vec4 diffuseMap  = texture(u_diffuseMap, v_texCoord);
+	vec4 normalMap =  texture(u_bumpMap, v_texCoord);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
 
 
   float SSS = diffuseMap.a;
 
-	vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
+	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 
 
 
 	if (u_isCaustics == 1){
-		vec4 causticsMap = texture2D(u_causticMap, v_texCoord);
+		vec4 causticsMap = texture(u_causticMap, v_texCoord);
 		vec4 tmp = causticsMap * diffuseMap * u_CausticsModulate;
 		diffuseMap += tmp;
 	}
 
 	if (u_isAmbient == 1) {
-		gl_FragColor = diffuseMap * LambertLighting(normalize(normalMap.xyz), V) * u_LightColor * attenMap;
+		fragData = diffuseMap * LambertLighting(normalize(normalMap.xyz), V) * u_LightColor * attenMap;
 		return;
 	}
 	
@@ -75,7 +75,7 @@ void main (void) {
 			//float fogFactor = exp(-pow(u_fogDensity * fogCoord, 2.0)); //exp2
 
 			vec4 color = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
-			gl_FragColor = mix(u_LightColor, color, fogFactor) * attenMap; // u_LightColor == fogColor
+			fragData = mix(u_LightColor, color, fogFactor) * attenMap; // u_LightColor == fogColor
 
 			return;
 		}
@@ -83,11 +83,11 @@ void main (void) {
 		if(u_fog == 0) {
 
 			if(SSS <= 0.00392){
-					gl_FragColor = subScatterFS(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap, attenMap, specular) * cubeFilter;
+					fragData = subScatterFS(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap, attenMap, specular) * cubeFilter;
 					return;
 			}
 			else	
-					gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
+					fragData = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
 	}
 	
 }

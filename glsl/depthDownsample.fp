@@ -16,5 +16,5 @@ void main (void) {
 	sum += DecodeDepth(texture2DRect(u_depthBufferMap, tc + vec2(0.0, 1.0)).x, u_depthParms);
 
 	// output linear depth
-	gl_FragColor = vec4(sum * 0.25);
+	fragData = vec4(sum * 0.25);
 }

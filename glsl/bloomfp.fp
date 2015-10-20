@@ -11,5 +11,5 @@ void main(void) {
   
 	float TM = u_bloomParams[2] * (u_bloomParams[2] / u_bloomParams[1] + 1.0) / (u_bloomParams[2] + 1.0);
 	screen *= TM;     
-	gl_FragColor = screen;
+	fragData = screen;
 }

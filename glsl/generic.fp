@@ -11,23 +11,23 @@ uniform int			u_ATTRIB_COLORS, u_ATTRIB_CONSOLE, u_isSky;
  
 void main(void) 
 {
-vec4 diffuse = texture2D(u_map, v_texCoord.xy);
-vec4 diffuse1 = texture2D(u_map1, v_texCoord1.xy);
+vec4 diffuse = texture(u_map, v_texCoord.xy);
+vec4 diffuse1 = texture(u_map1, v_texCoord1.xy);
 
 if(u_ATTRIB_CONSOLE == 1){
-	gl_FragColor = diffuse * diffuse1 * v_colorArray * u_colorScale;
+	fragData = diffuse * diffuse1 * v_colorArray * u_colorScale;
 	return;
 }
 
 if(u_ATTRIB_COLORS == 1){
-	gl_FragColor =  vec4(diffuse.rgb * v_colorArray.rgb * u_colorScale, diffuse.a);
+	fragData =  vec4(diffuse.rgb * v_colorArray.rgb * u_colorScale, diffuse.a);
 	return;
 }
 
 if(u_isSky == 1){
-	gl_FragColor =  vec4(diffuse.rgb * u_colorScale, 1.0);
+	fragData =  vec4(diffuse.rgb * u_colorScale, 1.0);
 	return;
 }
 if(u_ATTRIB_COLORS != 1 && u_ATTRIB_CONSOLE != 1)
-	gl_FragColor =  u_color;
+	fragData =  u_color;
 }

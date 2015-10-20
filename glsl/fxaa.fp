@@ -2,11 +2,6 @@
 // Original algorithm and code by Timothy Lottes
 // Adoptation by Vic
 
-#if QF_GLSLVERSION >= 130
-# define FXAA_GLSL_130 1
-#else
-# define FXAA_GLSL_120 1
-#endif
 #define FXAA_GREEN_AS_LUMA 1
 
 #include Fxaa3_11.inc
@@ -47,5 +42,5 @@ void main(void)
     float ConsoleEdgeThresholdMin = 0.05;
     vec4  Console360ConstDir = vec4(1.0, -1.0, 0.25, -0.25);
 
-    gl_FragColor = FxaaPixelShader(pos, ConsolePosPos, u_ScreenTex, u_ScreenTex, u_ScreenTex, rcpFrame, ConsoleRcpFrameOpt, ConsoleRcpFrameOpt2, Console360RcpFrameOpt2, QualitySubpix, QualityEdgeThreshold, QualityEdgeThresholdMin, ConsoleEdgeSharpness, ConsoleEdgeThreshold, ConsoleEdgeThresholdMin, Console360ConstDir);
+    fragData = FxaaPixelShader(pos, ConsolePosPos, u_ScreenTex, u_ScreenTex, u_ScreenTex, rcpFrame, ConsoleRcpFrameOpt, ConsoleRcpFrameOpt2, Console360RcpFrameOpt2, QualitySubpix, QualityEdgeThreshold, QualityEdgeThresholdMin, ConsoleEdgeSharpness, ConsoleEdgeThreshold, ConsoleEdgeThresholdMin, Console360ConstDir);
 }

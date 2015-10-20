@@ -11,7 +11,7 @@ void main(void)
 	
 	float mask = texture2DRect(u_MaskTex, gl_FragCoord.xy).a;
 	if(mask == 0.0){
-		gl_FragColor =  color;
+		fragData =  color;
 		return;
 	}
 	vec2 velocity  = clamp(u_velocity, -1.0, 1.0);
@@ -25,5 +25,5 @@ void main(void)
 	uv += velocity;
 	}
 	//Average all of the samples to get the final blur color.  
-	gl_FragColor =  color / u_numSamples; 
+	fragData =  color / u_numSamples; 
 }

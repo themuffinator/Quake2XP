@@ -25,27 +25,27 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	offsetBest = vec3(texCoord, 1.0);
 	offsetVector *= 0.1;
 
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector *  step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z)          - 0.5);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.5    - 0.25);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.25   - 0.125);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.125  - 0.0625);
-	offsetBest += offsetVector * (step(texture2DLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.0625 - 0.03125);
+	offsetBest += offsetVector *  step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector *  step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z);
+	offsetBest += offsetVector * (step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z)          - 0.5);
+	offsetBest += offsetVector * (step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.5    - 0.25);
+	offsetBest += offsetVector * (step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.25   - 0.125);
+	offsetBest += offsetVector * (step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.125  - 0.0625);
+	offsetBest += offsetVector * (step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.0625 - 0.03125);
 	
 	return offsetBest.xy;  
 }
 
  if(u_parallaxType == 0){
   // simple fastest parallax mapping
-	float offset = texture2DLod( hiMap, texCoord.xy, lod ).a;
+	float offset = textureLod( hiMap, texCoord.xy, lod ).a;
 	offset = offset * 0.04 - 0.02;
 	offsetBest.xy = offset * viewVec.xy + texCoord.xy;
 	return offsetBest.xy;  

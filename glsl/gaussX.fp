@@ -17,5 +17,5 @@ uniform sampler2DRect u_map;
     outp += 0.0596875 * texture2DRect(u_map, gl_FragCoord.xy + vec2(5.0,0.0) );
     outp += 0.015625 *	texture2DRect(u_map, gl_FragCoord.xy + vec2(6.0,0.0) );
  
-    gl_FragColor = outp;
+    fragData = outp;
 } 

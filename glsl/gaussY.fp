@@ -18,6 +18,6 @@ void main(void)
     outp += 0.0596875 *		texture2DRect(u_map, gl_FragCoord.xy + vec2(0.0,5.0) );
     outp += 0.015625 *		texture2DRect(u_map, gl_FragCoord.xy + vec2(0.0,6.0) );
     
-	gl_FragColor = outp * 0.5;
+	fragData = outp * 0.5;
 } 
  

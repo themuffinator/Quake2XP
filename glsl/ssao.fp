@@ -1,4 +1,4 @@
-uniform	sampler2DRect		u_DNMiniMap;
+uniform	sampler2DRect	u_DNMiniMap;
 uniform	sampler2D		u_randomNormalMap;
 
 uniform vec2			u_ssaoParms;	// intensity, scale
@@ -12,46 +12,7 @@ uniform vec2			u_viewport;
 
 #define FARCLIP			4096.0		// Q2 specific
 
-/*
-// reconstructs normal from position
-// creates artifacts on surface edges
-vec3 ViewSpaceNormal (const vec3 p) {
-	vec3 b = normalize(dFdx(p));
-	vec3 t = normalize(dFdy(p));
 
-	return cross(t, b);
-}
-*/
-/*
-mat2 RandomRotation (const in vec2 p) {
-	// We need irrationals for pseudo randomness.
-	// Most (all?) known transcendental numbers will (generally) work.
-	const vec2 v = vec2(
-		23.1406926327792690,	// e^pi (Gelfond's constant)
-		2.6651441426902251);	// 2^sqrt(2) (Gelfond-Schneider constant)
-	float r = mod(123456789., 1e-7 + 256. * dot(p, v));
-	float sinr = sin(r);
-	float cosr = cos(r);
-	return mat2(cosr, sinr, -sinr, cosr);
-}
-*/
-/*
-vec3 RandomNormal (const in vec2 p) {
-	// We need irrationals for pseudo randomness.
-	// Most (all?) known transcendental numbers will (generally) work.
-	const vec2 v = vec2(
-		23.1406926327792690,	// e^pi (Gelfond's constant)
-		2.6651441426902251);	// 2^sqrt(2) (Gelfond-Schneider constant)
-	float r = mod(123456789., 1e-7 + 256. * dot(p, v));
-
-	vec3 n;
-	n.x = sin(r);
-	n.y = cos(r);
-	n.z = sqrt(1.0 - dot(n.xy, n.xy));
-
-	return n;
-}
-*/
 void main (void) {
 	// define kernel
 	const float step = 1.0 - 1.0 / 8.0;
@@ -68,45 +29,9 @@ void main (void) {
 	kernel[6] = normalize(vec3( 1.0,-1.0, 1.0))*fScale*(n+=step);
 	kernel[7] = normalize(vec3( 1.0, 1.0,-1.0))*fScale*(n+=step);
 
-/*
-	vec3 kernel[8] = {
-#if 1
-		normalize(vec3( 1.0, 1.0, 1.0))*fScale*(n+=step),
-		normalize(vec3(-1.0,-1.0,-1.0))*fScale*(n+=step),
-		normalize(vec3(-1.0,-1.0, 1.0))*fScale*(n+=step),
-		normalize(vec3(-1.0, 1.0,-1.0))*fScale*(n+=step),
-
-		normalize(vec3(-1.0, 1.0 ,1.0))*fScale*(n+=step),
-		normalize(vec3( 1.0,-1.0,-1.0))*fScale*(n+=step),
-		normalize(vec3( 1.0,-1.0, 1.0))*fScale*(n+=step),
-		normalize(vec3( 1.0, 1.0,-1.0))*fScale*(n+=step)
-#elif 1
-		vec3( 1.0, 1.0, 1.0),
-		vec3(-1.0,-1.0,-1.0),
-		vec3(-1.0,-1.0, 1.0),
-		vec3(-1.0, 1.0,-1.0),
-
-		vec3(-1.0, 1.0 ,1.0),
-		vec3( 1.0,-1.0,-1.0),
-		vec3( 1.0,-1.0, 1.0),
-		vec3( 1.0, 1.0,-1.0)
-#else
-		vec3(0.717887, 0.271767, 0.539537),
-		vec3(-0.974975, 0.470748, 0.120884),
-		vec3(0.125706, -0.505539, -0.508408),
-		vec3(-0.56859, 0.0946989, 0.827387),
-
-		vec3(0.949156, -0.837214, -0.829524),
-		vec3(-0.956053, -0.794488, -0.0399487),
-		vec3(-0.776238, 0.115268, 0.598804),
-		vec3(-0.943724, 0.814142, 0.586352)
-#endif
-	};
-*/
 
 	// create random rotation matrix
-	vec3 randomNormal = texture2D(u_randomNormalMap, gl_FragCoord.xy * (1.0 / 4.0)).xyz * 2.0 - 1.0;
-//	vec3 randomNormal = RandomNormal(mod(gl_FragCoord.xy, vec2(16.0)));
+	vec3 randomNormal = texture(u_randomNormalMap, gl_FragCoord.xy * (1.0 / 4.0)).xyz * 2.0 - 1.0;
 
 	// get fragment depth
 	float centerDepth = texture2DRect(u_DNMiniMap, gl_FragCoord.xy).x;
@@ -178,5 +103,5 @@ void main (void) {
 		float occ = dot(sum, vec4(2.0 / 8.0)) - 0.075;
 	#endif
 
-	gl_FragColor = vec4(min(mix(1.0, occ, u_ssaoParms.x), 1.0));
+	fragData = vec4(min(mix(1.0, occ, u_ssaoParms.x), 1.0));
 }

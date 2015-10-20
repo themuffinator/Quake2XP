@@ -24,27 +24,29 @@ uniform float       u_AddShift;
 void main ()
 {
 	if(u_isShell == 1){
-		vec4 r0 = texture2D(u_Diffuse,  v_shellCoord);
-		gl_FragColor = r0;
+		vec4 r0 = texture(u_Diffuse,  v_shellCoord);
+		fragData = r0;
 		return;
 	}
 
-	vec4 diffuse = texture2D(u_Diffuse, v_texCoord) * v_color;// * u_ambientScale;
-	vec4 glow = texture2D(u_Add, v_texCoord);
+	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;// * u_ambientScale;
+	vec4 glow = texture(u_Add, v_texCoord);
 	vec3 normalMap = normalize(texture2D(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
-
-	// fake AO/cavity
-	gl_FragColor.xyz = diffuse.xyz * (normalMap.z * 0.5 + 0.5);
+    
+  fragData = vec4(0.0, 0.0, 0.0, 1.0); // shutup compiler
+	
+  // fake AO/cavity
+	fragData.xyz = diffuse.xyz * (normalMap.z * 0.5 + 0.5);
 
 
 	if (u_ssao == 1)
-		gl_FragColor.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).x;
+		fragData.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).x;
 
-	gl_FragColor.xyz += glow.rgb * u_AddShift;
+	fragData.xyz += glow.rgb * u_AddShift;
 
 	if (u_isEnvMap == 1)
-		gl_FragColor.xyz += texture2D(u_env, v_envCoord).xyz * glow.a * u_envScale;
+		fragData.xyz += texture(u_env, v_envCoord).xyz * glow.a * u_envScale;
 
-	gl_FragColor.xyz *= u_ColorModulate;
-	gl_FragColor.w = diffuse.w;
+	fragData.xyz *= u_ColorModulate;
+	fragData.w = diffuse.w;
 }

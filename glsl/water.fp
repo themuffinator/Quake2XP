@@ -53,11 +53,13 @@ vec2 VS2UV (const in vec3 p) {
 
 void main (void) {
 	// load diffuse map with offset
-	vec4 offset = texture2D(u_dstMap, v_deformTexCoord.xy);
-	vec3 diffuse = texture2D(u_colorMap, v_diffuseTexCoord.xy + offset.zw).xyz * u_ambientScale;  
-	vec3 N;
+	vec4 offset = texture(u_dstMap, v_deformTexCoord.xy);
+	vec3 diffuse = texture(u_colorMap, v_diffuseTexCoord.xy + offset.zw).xyz * u_ambientScale;  
+	vec3 N = vec3(0.0, 0.0, 1.0);  // shutup compiler
 	vec2 tc;
 	float sceneDepth;
+
+	fragData = vec4(0.0, 0.0, 0.0, 1.0); // shutup compiler
 
 	if (u_TRANS == 1) {
 		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
@@ -73,13 +75,13 @@ void main (void) {
 		refractColor.z = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 1.15).z;
 
 		// blend water texture
-		gl_FragColor = vec4(mix(refractColor, diffuse, v_color.a), 1.0);
+		fragData = vec4(mix(refractColor, diffuse, v_color.a), 1.0);
 	}
 	
 	if (u_TRANS != 1) {
 		// non-transparent
 		N.xy = offset.xy;
-		gl_FragColor = vec4(diffuse, 1.0);
+		fragData = vec4(diffuse, 1.0);
 //		return;
 	}
 
@@ -170,5 +172,5 @@ void main (void) {
 	scale /= 1.0 + abs(sceneDepth + rayPos.z) * FOREGROUND_FALLOFF;
 
 	// combine
-	gl_FragColor.xyz = mix(gl_FragColor.xyz, texture2DRect(g_colorBufferMap, tc).xyz, scale);
+	fragData.xyz = mix(fragData.xyz, texture2DRect(g_colorBufferMap, tc).xyz, scale);
 }

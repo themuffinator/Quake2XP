@@ -28,7 +28,7 @@ in vec4			v_AttenCoord;
 #include parallax.inc
 
 void main (void) {
-	float attenMap = texture3D(u_attenMap, v_AttenCoord.xyz).r;
+	float attenMap = texture(u_attenMap, v_AttenCoord.xyz).r;
 
 	if(attenMap <= CUTOFF_EPSILON){
 		discard;
@@ -39,15 +39,15 @@ void main (void) {
 	vec3	L = normalize(v_lightVec);
 	vec2  P = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
 
-	vec4 diffuseMap = texture2D(u_Diffuse,  P);
-	vec4 normalMap =  texture2D(u_NormalMap, P);
+	vec4 diffuseMap = texture(u_Diffuse,  P);
+	vec4 normalMap =  texture(u_NormalMap, P);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
 
-	vec4 causticsMap = texture2D(u_Caustics, P);
+	vec4 causticsMap = texture(u_Caustics, P);
 
 	// light filter
-	vec4 cubeFilter = textureCube(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
+	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 
 	if (u_isCaustics == 1) {
 		vec4 tmp = causticsMap * diffuseMap;
@@ -56,7 +56,7 @@ void main (void) {
 	}
 
 	if(u_isAmbient == 1) {
-		gl_FragColor = diffuseMap * LambertLighting(normalize(normalMap.xyz), L) * u_LightColor * attenMap;
+		fragData = diffuseMap * LambertLighting(normalize(normalMap.xyz), L) * u_LightColor * attenMap;
 		return;
 	}
 
@@ -70,11 +70,11 @@ void main (void) {
 			//float fogFactor = exp(-pow(u_fogDensity * fogCoord, 2.0)); //exp2
 
 			vec4 color = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
-			gl_FragColor = mix(u_LightColor, color, fogFactor) * attenMap;  // u_LightColor == fogColor
+			fragData = mix(u_LightColor, color, fogFactor) * attenMap;  // u_LightColor == fogColor
 			return;
 		}
 
 		if(u_fog == 0)
-			gl_FragColor = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
+			fragData = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
 	} 
 }

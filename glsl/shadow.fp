@@ -42,7 +42,7 @@ mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x,			offset.y * 2.0)
 mask += texture2DRect(u_mask, gl_FragCoord.xy + vec2(offset.x * 2.0,	offset.y * 2.0)).a;
 
 mask /=25.0;
-gl_FragColor = vec4(0.0, 0.0, 0.0, mask * u_alpha);
+fragData = vec4(0.0, 0.0, 0.0, mask * u_alpha);
 */
-gl_FragColor = vec4(0.0);
+fragData = vec4(0.0);
 }

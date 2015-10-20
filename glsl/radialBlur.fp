@@ -38,5 +38,5 @@ void main (void) {
 	st += add;
 	accum += texture2DRect(u_screenMap, st);
 
-	gl_FragColor = accum * weight;
+	fragData = accum * weight;
 }

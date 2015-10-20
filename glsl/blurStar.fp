@@ -43,5 +43,5 @@ void main(void)
     sum2 += (texture2DRect(u_map,tx+sdx2)+texture2DRect(u_map,tx-sdx2) )*0.008847;
     sdx2 += dx2;
 
-    gl_FragColor = (sum + sum2)*0.5;
+    fragData = (sum + sum2)*0.5;
 }

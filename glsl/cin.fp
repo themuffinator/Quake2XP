@@ -7,8 +7,8 @@ const vec2 sine_comp = vec2(0.0005, 0.35);
 
 void main ()
 {
-	vec4 cin = texture2D(u_cinMap, v_texCoord.xy);
+	vec4 cin = texture(u_cinMap, v_texCoord.xy);
 	vec4 scanline = cin * (brightness + dot(sine_comp * sin(v_texCoord.xy * v_lineOffset), vec2(1.0)));
-	gl_FragColor = clamp(scanline, 0.0, 1.0);
-	gl_FragColor *=1.5;
+	fragData = clamp(scanline, 0.0, 1.0);
+	fragData *=1.5;
 }

@@ -63,6 +63,6 @@ void main(void)
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( -0.29,-0.29 )*aspectcorrect) * dofblur*0.4);   
         col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (vec2( 0.0,0.4 )*aspectcorrect) * dofblur*0.4);       	               
    */     
-		gl_FragColor = col/17.0;
+		fragData = col/17.0;
 		
 }

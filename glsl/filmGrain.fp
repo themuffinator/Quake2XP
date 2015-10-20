@@ -13,6 +13,6 @@ void main()
     // Color correction   
 	color = color * 1.16438356 - 0.03305936;    
 
-    gl_FragColor = mix(color, ns, 0.04);             
+    fragData = mix(color, ns, 0.04);             
      
 }

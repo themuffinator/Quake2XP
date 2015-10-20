@@ -38,7 +38,7 @@ void main (void) {
 		sum += w0 + w1;
 	}
 
-	gl_FragColor = color / sum;
+	fragData = color / sum;
 }
 
 #else
@@ -70,7 +70,7 @@ void main (void) {
 		sum += w;
 	}
 
-	gl_FragColor = color / sum;
+	fragData = color / sum;
 }
 
 #endif
