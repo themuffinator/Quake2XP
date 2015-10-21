@@ -1,25 +1,21 @@
 in	vec2		v_texCoord;
 in	vec4		v_color;
+in	vec2		v_envCoord;
+in	vec2		v_shellCoord;
 
-uniform sampler2D 	u_Diffuse;
-uniform sampler2D	u_NormalMap;
-uniform sampler2D 	u_Add;
+uniform sampler2D 		u_Diffuse;
+uniform sampler2D		u_NormalMap;
+uniform sampler2D 		u_Add;
+uniform sampler2DRect	u_ssaoMap;
 
 uniform sampler2D	u_env;
 uniform float		u_envScale;
 uniform int			u_isEnvMap;
 
 uniform	int			u_isShell;
-
-in		vec2	v_envCoord;
-in		vec2	v_shellCoord;
-
 uniform int			u_ssao;
-uniform sampler2DRect		u_ssaoMap;
-
-uniform float       u_ColorModulate;
-//uniform float       u_ambientScale;    
-uniform float       u_AddShift; 
+uniform float		u_ColorModulate;
+uniform float		u_AddShift; 
 
 void main ()
 {
@@ -29,9 +25,9 @@ void main ()
 		return;
 	}
 
-	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;// * u_ambientScale;
+	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;
 	vec4 glow = texture(u_Add, v_texCoord);
-	vec3 normalMap = normalize(texture2D(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
+	vec3 normalMap = normalize(texture(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
     
   fragData = vec4(0.0, 0.0, 0.0, 1.0); // shutup compiler
 	

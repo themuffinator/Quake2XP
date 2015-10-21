@@ -3,14 +3,14 @@ in	vec3			a_vertArray;
 in	vec3			a_normArray;
 in	vec4			a_colorArray;
 
-out		vec2			v_texCoord;
-out		vec2			v_envCoord;
-out		vec2			v_shellCoord;
-out		vec4			v_color;
+out	vec2			v_texCoord;
+out	vec2			v_envCoord;
+out	vec2			v_shellCoord;
+out	vec4			v_color;
 
-uniform		float			u_scroll;
-uniform		int				u_isEnvMap;
-uniform		int				u_isShell;
+uniform	float		u_scroll;
+uniform	int			u_isEnvMap;
+uniform	int			u_isShell;
 
 void main ()
 {

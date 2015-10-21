@@ -54,7 +54,7 @@ void main (void) {
 		fragData.xyz = diffuseMap * texture(u_LightMap0, v_lTexCoord.xy).rgb;
 
 	if (u_LightMapType == 1) {
-
+	
 		normalMap.xyz = normalize(normalMap.xyz);
 
 		vec3 lm0 = texture(u_LightMap0, v_lTexCoord.xy).rgb;
