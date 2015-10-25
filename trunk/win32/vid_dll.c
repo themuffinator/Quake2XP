@@ -38,7 +38,7 @@ cvar_t *win_noalttab;
 static UINT MSH_MOUSEWHEEL;
 
 // Console variables that we need to access from this module
-cvar_t		*r_gamma;
+cvar_t		*r_brightness;
 cvar_t		*vid_ref;			// Name of Refresh DLL loaded
 cvar_t		*vid_xpos;			// X coordinate of window position
 cvar_t		*vid_ypos;			// Y coordinate of window position
@@ -70,34 +70,21 @@ extern	unsigned	sys_msg_time;
 extern qboolean s_win95;
 
 static void WIN_DisableAltTab (void) {
+	BOOL old;
+
 	if (s_alttab_disabled)
 		return;
 
-	if (s_win95) {
-		BOOL old;
-
-		SystemParametersInfo (SPI_SCREENSAVERRUNNING, 1, &old, 0);
-	}
-	else {
-		RegisterHotKey (0, 0, MOD_ALT, VK_TAB);
-		RegisterHotKey (0, 1, MOD_ALT, VK_RETURN);
-	}
+	SystemParametersInfo (SPI_SCREENSAVERRUNNING, 1, &old, 0);
+	
 	s_alttab_disabled = qtrue;
 }
 
 static void WIN_EnableAltTab (void) {
 	if (s_alttab_disabled) {
-		if (s_win95) {
 			BOOL old;
-
 			SystemParametersInfo (SPI_SCREENSAVERRUNNING, 0, &old, 0);
-		}
-		else {
-			UnregisterHotKey (0, 0);
-			UnregisterHotKey (0, 1);
-		}
-
-		s_alttab_disabled = qfalse;
+			s_alttab_disabled = qfalse;
 	}
 }
 

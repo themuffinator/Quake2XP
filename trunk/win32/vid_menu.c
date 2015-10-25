@@ -121,7 +121,7 @@ static void BrightnessCallback (void *s) {
 	float gamma;
 	gamma = s_brightness_slider.curvalue / 20;
 
-	Cvar_SetValue ("r_gamma", gamma);
+	Cvar_SetValue ("r_brightness", gamma);
 }
 
 
@@ -187,7 +187,7 @@ static void ApplyChanges (void *unused) {
 	** update appropriate stuff if we're running OpenGL and gamma
 	** has been modified
 	*/
-	if (r_gamma->modified)
+	if (r_brightness->modified)
 		vid_ref->modified = qtrue;
 
 	if (r_anisotropic->modified)
@@ -369,11 +369,11 @@ void VID_MenuInit (void) {
 	s_brightness_slider.generic.type = MTYPE_SLIDER;
 	s_brightness_slider.generic.x = 0;
 	s_brightness_slider.generic.y = 30 * cl_fontScale->value;
-	s_brightness_slider.generic.name = "Gamma";
+	s_brightness_slider.generic.name = "Brightness";
 	s_brightness_slider.generic.callback = BrightnessCallback;
 	s_brightness_slider.minvalue = 20;
 	s_brightness_slider.maxvalue = 40;
-	s_brightness_slider.curvalue = r_gamma->value * 20;
+	s_brightness_slider.curvalue = r_brightness->value * 20;
 
 	// -----------------------------------------------------------------------
 

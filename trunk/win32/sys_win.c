@@ -133,50 +133,7 @@ Sys_ScanForCD
 
 ================
 */
-/*
-char *Sys_ScanForCD (void)
-{
-static char	cddir[MAX_OSPATH];
-static qboolean	done;
-#ifndef DEMO
-char		drive[4];
-FILE		*f;
-char		test[MAX_QPATH];
 
-if (done)		// don't re-check
-return cddir;
-
-// no abort/retry/fail errors
-SetErrorMode (SEM_FAILCRITICALERRORS);
-
-drive[0] = 'c';
-drive[1] = ':';
-drive[2] = '\\';
-drive[3] = 0;
-
-done = qtrue;
-
-// scan the drives
-for (drive[0] = 'c' ; drive[0] <= 'z' ; drive[0]++)
-{
-// where activision put the stuff...
-sprintf (cddir, "%sinstall\\data", drive);
-sprintf (test, "%sinstall\\data\\quake2.exe", drive);
-f = fopen(test, "r");
-if (f)
-{
-fclose (f);
-if (GetDriveType (drive) == DRIVE_CDROM)
-return cddir;
-}
-}
-#endif
-
-cddir[0] = 0;
-
-return NULL;
-}
-*/
 char *Sys_ScanForCD (void) {
 	static char	cddir[MAX_OSPATH];
 	static qboolean	done;
@@ -236,64 +193,13 @@ char *Sys_ScanForCD (void) {
 
 /*
 ================
-Sys_CopyProtect
-
-================
-*/
-void	Sys_CopyProtect (void) {
-#ifndef DEMO
-	char	*cddir;
-
-	cddir = Sys_ScanForCD ();
-	if (!cddir[0])
-		Com_Error (ERR_FATAL, "You must have the Quake2 CD in the drive to play.");
-#endif
-}
-
-
-//================================================================
-
-/*
-================
 Sys_Init
 ================
 */
 void Sys_Init (void) {
-	OSVERSIONINFO	vinfo;
-
-#if 0
-	// allocate a named semaphore on the client so the
-	// front end can tell if it is alive
-
-	// mutex will fail if semephore already exists
-	qwclsemaphore = CreateMutex (
-		NULL,         /* Security attributes */
-		0,            /* owner       */
-		"qwcl"); /* Semaphore name      */
-	if (!qwclsemaphore)
-		Sys_Error ("QWCL is already running on this system");
-	CloseHandle (qwclsemaphore);
-
-	qwclsemaphore = CreateSemaphore (
-		NULL,         /* Security attributes */
-		0,            /* Initial count       */
-		1,            /* Maximum count       */
-		"qwcl"); /* Semaphore name      */
-#endif
 
 	timeBeginPeriod (1);
-
-	vinfo.dwOSVersionInfoSize = sizeof(vinfo);
-
-	if (!GetVersionEx (&vinfo))
-		Sys_Error ("Couldn't get OS info");
-
-	if (vinfo.dwMajorVersion < 4)
-		Sys_Error ("Quake2 requires windows version 4 or greater");
-	if (vinfo.dwPlatformId == VER_PLATFORM_WIN32s)
-		Sys_Error ("Quake2 doesn't run on Win32s");
-	else if (vinfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-		s_win95 = qtrue;
+	s_win95 = qtrue;
 
 	if (dedicated->value) {
 		if (!AllocConsole ())

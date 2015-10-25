@@ -1216,7 +1216,7 @@ void R_RegisterCvars(void)
 	
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
 	
-	r_gamma =							Cvar_Get("r_gamma", "1.5", CVAR_ARCHIVE);
+	r_brightness =							Cvar_Get("r_brightness", "1.5", CVAR_ARCHIVE);
 	r_brightness	=					Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
 	r_contrast	=						Cvar_Get("r_contrast", "1", CVAR_ARCHIVE);
 	r_saturation =						Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
