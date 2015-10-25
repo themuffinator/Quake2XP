@@ -385,6 +385,13 @@ void Cvar_Set_f (void) {
 }
 
 
+// cvar sorting from r1q2
+static int cvarsort(const void *_a, const void *_b) {
+	const cvar_t	*a = (const cvar_t *)_a;
+	const cvar_t	*b = (const cvar_t *)_b;
+	return strcmp(a->name, b->name);
+}
+
 /*
 ============
 Cvar_WriteVariables
@@ -394,12 +401,28 @@ with the archive flag set to qtrue.
 ============
 */
 void Cvar_WriteVariables (char *path) {
-	cvar_t *var;
-	char buffer[1024];
-	FILE *f;
+	cvar_t	*var, *sortedList, *cvar;
+	char	buffer[1024];
+	FILE	*f;
+	int		i, num;
+
+	for (var = cvar_vars, num = 0; var; var = var->next, num++);
+		sortedList = (cvar_t *)Z_Malloc(num * sizeof(cvar_t));
+	
+	if (sortedList) {
+		for (var = cvar_vars, i = 0; var; var = var->next, i++)
+			sortedList[i] = *var;
+
+		qsort(sortedList, num, sizeof(sortedList[0]), cvarsort);
+	}
 
 	f = fopen (path, "a");
-	for (var = cvar_vars; var; var = var->next) {
+	for (cvar = cvar_vars, i = 0; cvar; cvar = cvar->next, i++) {
+		if (sortedList)
+			var = &sortedList[i];
+		else
+			var = cvar;
+
 		if (var->flags & CVAR_ARCHIVE) {
 			Com_sprintf (buffer, sizeof(buffer), "set %s \"%s\"\n",
 				var->name, var->string);
@@ -407,6 +430,9 @@ void Cvar_WriteVariables (char *path) {
 		}
 	}
 	fclose (f);
+
+	if (sortedList)
+		Z_Free(sortedList);
 }
 
 /*
@@ -416,13 +442,6 @@ Cvar_List_f
 ============
 */
 
-// cvar sorting from r1q2
-static int cvarsort (const void *_a, const void *_b) {
-	const cvar_t	*a = (const cvar_t *)_a;
-	const cvar_t	*b = (const cvar_t *)_b;
-	return strcmp (a->name, b->name);
-}
-
 void Cvar_List_f (void) {
 	cvar_t		*var, *cvar, *sortedList;
 	int			i, num;
@@ -430,7 +449,7 @@ void Cvar_List_f (void) {
 	qboolean	help = qfalse;
 
 	for (var = cvar_vars, num = 0; var; var = var->next, num++);
-	sortedList = (cvar_t *)Z_Malloc (num * sizeof(cvar_t));
+		sortedList = (cvar_t *)Z_Malloc (num * sizeof(cvar_t));
 	if (sortedList) {
 		for (var = cvar_vars, i = 0; var; var = var->next, i++)
 			sortedList[i] = *var;

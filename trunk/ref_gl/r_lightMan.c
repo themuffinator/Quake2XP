@@ -821,7 +821,7 @@ void R_MoveLightToRight_f (void) {
 	else
 		VectorCopy (selectedShadowLight->origin, origin);
 
-	if (r_CameraSpaceLightMove->value)
+	if (r_cameraSpaceLightMove->value)
 		VectorMA (origin, offset, v_right, origin);
 	else
 		origin[0] += offset;
@@ -863,7 +863,7 @@ void R_MoveLightForward_f (void) {
 	else
 		VectorCopy (selectedShadowLight->origin, origin);
 
-	if (r_CameraSpaceLightMove->value) {
+	if (r_cameraSpaceLightMove->value) {
 		fix = origin[2];
 		VectorMA (origin, offset, v_forward, origin);
 		origin[2] = fix;

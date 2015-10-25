@@ -1303,7 +1303,7 @@ void R_RegisterCvars(void)
 	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
 	
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
-	r_CameraSpaceLightMove =			Cvar_Get("r_CameraSpaceLightMove", "0", CVAR_ARCHIVE);
+	r_cameraSpaceLightMove =			Cvar_Get("r_cameraSpaceLightMove", "0", CVAR_ARCHIVE);
 
 	r_allowIntel =						Cvar_Get("r_allowIntel", "0", 0);
 
