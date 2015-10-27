@@ -659,19 +659,13 @@ void R_SSAO (void) {
 
 	if (!r_ssao->value)
 		return;
+	
+	qglViewport(0, 0, vid.width, vid.height);
 
-	// set 2D virtual screen size
-	qglViewport (0, 0, vid.width, vid.height);
-
-	qglMatrixMode (GL_PROJECTION);
-	qglPushMatrix ();
-	qglLoadIdentity ();
-	qglOrtho (0, vid.width, vid.height, 0, -99999, 99999);
-
-	qglMatrixMode (GL_MODELVIEW);
-	qglPushMatrix ();
-	qglLoadIdentity ();
-
+	GL_LoadIdentity(GL_MODELVIEW);
+	GL_LoadIdentity(GL_PROJECTION);
+	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
+	
 	GL_Disable (GL_DEPTH_TEST);
 	GL_Disable (GL_CULL_FACE);
 	GL_DepthMask(0);
@@ -735,10 +729,7 @@ void R_SSAO (void) {
 	GL_Enable(GL_DEPTH_TEST);
 	GL_DepthMask(1);
 
-	qglPopMatrix();
-	qglMatrixMode(GL_PROJECTION);
-	qglPopMatrix();
-	qglMatrixMode(GL_MODELVIEW);
-
+	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
+	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }

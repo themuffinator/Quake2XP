@@ -482,10 +482,14 @@ void Mat4_TransposeMultiply (const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_SetOrientation (mat4_t m, const mat3_t rotation, const vec3_t translation);
 void Mat4_Identity (mat4_t mat);
 void Mat4_Rotate (mat4_t m, float angle, float x, float y, float z);
+void Mat4_AffineInvert(const mat4_t in, mat4_t out);
+void Mat4_SetupTransform(mat4_t m, const mat3_t rotation, const vec3_t translation);
 
 void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
 void R_SetLightPlanes ();
+void GL_Ortho(mat4_t m, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+
 trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
 void DrawTextureChains2 ();
 
@@ -522,6 +526,9 @@ extern unsigned d_8to24table[256];
 extern float	d_8to24tablef[256][3];
 
 extern int registration_sequence;
+
+extern float skyrotate;
+extern vec3_t skyaxis;
 
 int R_Init (void *hinstance, void *hWnd);
 void R_Shutdown (void);

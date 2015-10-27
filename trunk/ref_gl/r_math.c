@@ -607,6 +607,30 @@ void Mat4_Rotate (mat4_t m, float angle, float x, float y, float z) {
 	m[2][3] = mx[3] * rz[0] + my[3] * rz[1] + mz[3] * rz[2];
 }
 
+/*
+==================
+Mat4_AffineInvert
+
+==================
+*/
+void Mat4_AffineInvert(const mat4_t in, mat4_t out) {
+	out[0][0] = in[0][0];
+	out[0][1] = in[1][0];
+	out[0][2] = in[2][0];
+	out[0][3] = 0.0f;
+	out[1][0] = in[0][1];
+	out[1][1] = in[1][1];
+	out[1][2] = in[2][1];
+	out[1][3] = 0.0f;
+	out[2][0] = in[0][2];
+	out[2][1] = in[1][2];
+	out[2][2] = in[2][2];
+	out[2][3] = 0.0f;
+	out[3][0] = -(in[0][0] * in[3][0] + in[0][1] * in[3][1] + in[0][2] * in[3][2]);
+	out[3][1] = -(in[1][0] * in[3][0] + in[1][1] * in[3][1] + in[1][2] * in[3][2]);
+	out[3][2] = -(in[2][0] * in[3][0] + in[2][1] * in[3][1] + in[2][2] * in[3][2]);
+	out[3][3] = 1.0f;
+}
 
 /*
 ===============

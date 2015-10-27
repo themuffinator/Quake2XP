@@ -372,76 +372,57 @@ R_SetupViewMatrices
 =============
 */
 
+// convert from Q2 coordinate system (screen depth is X)
+// to OpenGL's coordinate system (screen depth is -Z)
+static mat4_t r_flipMatrix = {
+	{  0.f, 0.f, -1.f, 0.f },	// world +X -> screen -Z
+	{ -1.f, 0.f,  0.f, 0.f },	// world +Y -> screen -X
+	{  0.f, 1.f,  0.f, 0.f },	// world +Z -> screen +Y (Y=0 being the bottom of the screen)
+	{  0.f, 0.f,  0.f, 1.f }
+};
+
 static void R_SetupViewMatrices (void) {
-	float	xMin, xMax, xDiv;
-	float	yMin, yMax, yDiv;
-	float	zNear, zFar, zDiv;
+	mat4_t tmpMatrix;
 
 	// setup perspective projection matrix
-	zNear = max(r_zNear->value, 3.0);
-	zFar = 0.0;			// infinite
+	r_newrefdef.projectionMatrix[0][0] = 1.f / tan(DEG2RAD(r_newrefdef.fov_x) * 0.5f);
+	r_newrefdef.projectionMatrix[0][1] = 0.f;
+	r_newrefdef.projectionMatrix[0][2] = 0.f;
+	r_newrefdef.projectionMatrix[0][3] = 0.f;
 
-	r_newrefdef.depthParms[0] = zNear;
+	r_newrefdef.projectionMatrix[1][0] = 0.f;
+	r_newrefdef.projectionMatrix[1][1] = 1.f / tan(DEG2RAD(r_newrefdef.fov_y) * 0.5f);
+	r_newrefdef.projectionMatrix[1][2] = 0.f;
+	r_newrefdef.projectionMatrix[1][3] = 0.f;
+
+	r_newrefdef.projectionMatrix[2][0] = 0.f;
+	r_newrefdef.projectionMatrix[2][1] = 0.f;
+	r_newrefdef.projectionMatrix[2][2] = -0.999f; // infinite
+	r_newrefdef.projectionMatrix[2][3] = -1.f;
+
+	r_newrefdef.projectionMatrix[3][0] = 0.f;
+	r_newrefdef.projectionMatrix[3][1] = 0.f;
+	r_newrefdef.projectionMatrix[3][2] = -2.f * r_zNear->value; // infinite
+	r_newrefdef.projectionMatrix[3][3] = 0.f;
+
+	r_newrefdef.depthParms[0] = r_zNear->value;
 	r_newrefdef.depthParms[1] = 0.9995f;
-	
-	xMax = zNear * tan(DEG2RAD(r_newrefdef.fov_x) * 0.5);
-	xMin = -xMax;
-
-	yMax = zNear * tan(DEG2RAD(r_newrefdef.fov_y) * 0.5);
-	yMin = -yMax;
-
-	xDiv = 1.0f / (xMax - xMin);
-	yDiv = 1.0f / (yMax - yMin);
-	zDiv = 1.0f / (zFar - zNear);
-
-	r_newrefdef.projectionMatrix[0][0] = 2.0f * zNear * xDiv;
-	r_newrefdef.projectionMatrix[0][1] = 0.0f;
-	r_newrefdef.projectionMatrix[0][2] = 0.0f;
-	r_newrefdef.projectionMatrix[0][3] = 0.0f;
-	r_newrefdef.projectionMatrix[1][0] = 0.0f;
-	r_newrefdef.projectionMatrix[1][1] = 2.0f * zNear * yDiv;
-	r_newrefdef.projectionMatrix[1][2] = 0.0f;
-	r_newrefdef.projectionMatrix[1][3] = 0.0f;
-	r_newrefdef.projectionMatrix[2][0] = (xMax + xMin) * xDiv;
-	r_newrefdef.projectionMatrix[2][1] = (yMax + yMin) * yDiv;
-	r_newrefdef.projectionMatrix[2][2] = -0.999f;
-	r_newrefdef.projectionMatrix[2][3] = -1.0f;
-	r_newrefdef.projectionMatrix[3][0] = 0.0f;
-	r_newrefdef.projectionMatrix[3][1] = 0.0f;
-	r_newrefdef.projectionMatrix[3][2] = -2.0f * zNear;
-	r_newrefdef.projectionMatrix[3][3] = 0.0f;
-
-	if (zFar > zNear) {
-		r_newrefdef.projectionMatrix[2][2] = -(zNear + zFar) * zDiv;
-		r_newrefdef.projectionMatrix[3][2] = -2.0f * zNear * zFar * zDiv;
-	}
 
 	// setup view matrix
 	AnglesToMat3(r_newrefdef.viewangles, r_newrefdef.axis);
+	Mat4_SetupTransform(r_newrefdef.modelViewMatrix, r_newrefdef.axis, r_newrefdef.vieworg);
+	Mat4_AffineInvert(r_newrefdef.modelViewMatrix, tmpMatrix);
+	Mat4_Multiply(tmpMatrix, r_flipMatrix, r_newrefdef.modelViewMatrix);
 
-	r_newrefdef.modelViewMatrix[0][0] = -r_newrefdef.axis[1][0];
-	r_newrefdef.modelViewMatrix[0][1] =  r_newrefdef.axis[2][0];
-	r_newrefdef.modelViewMatrix[0][2] = -r_newrefdef.axis[0][0];
-	r_newrefdef.modelViewMatrix[0][3] = 0.0;
+	// set sky matrix
+	Mat4_Copy(r_newrefdef.modelViewMatrix, r_newrefdef.skyMatrix);
+	Mat4_Translate(r_newrefdef.skyMatrix, r_newrefdef.vieworg[0], r_newrefdef.vieworg[1], r_newrefdef.vieworg[2]);
+	if (skyrotate)
+		Mat4_Rotate(r_newrefdef.skyMatrix, r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 
-	r_newrefdef.modelViewMatrix[1][0] = -r_newrefdef.axis[1][1];
-	r_newrefdef.modelViewMatrix[1][1] =	 r_newrefdef.axis[2][1];
-	r_newrefdef.modelViewMatrix[1][2] = -r_newrefdef.axis[0][1];
-	r_newrefdef.modelViewMatrix[1][3] = 0.0;
-
-	r_newrefdef.modelViewMatrix[2][0] = -r_newrefdef.axis[1][2];
-	r_newrefdef.modelViewMatrix[2][1] =  r_newrefdef.axis[2][2];
-	r_newrefdef.modelViewMatrix[2][2] = -r_newrefdef.axis[0][2];
-	r_newrefdef.modelViewMatrix[2][3] = 0.0;
-
-	r_newrefdef.modelViewMatrix[3][0] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[1]);
-	r_newrefdef.modelViewMatrix[3][1] = -DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[2]);
-	r_newrefdef.modelViewMatrix[3][2] = DotProduct(r_newrefdef.vieworg, r_newrefdef.axis[0]);
-	r_newrefdef.modelViewMatrix[3][3] = 1.0;
-	
 	// load matrices
-	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix); // q2 r_project_matrix
-	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix); // q2 r_world_matrix
+	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
+	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
 
 	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.modelViewProjectionMatrix);
 	Mat4_Transpose(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.modelViewProjectionMatrixTranspose);
@@ -927,16 +908,60 @@ void R_RenderView (refdef_t *fd) {
 	GL_CheckError(__FILE__, __LINE__, "end frame");
 }
 
+void GL_Ortho(mat4_t m, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
+{
+	mat4_t tmp;
+
+	m[0][0] = 2.0F / (right - left);
+	m[0][1] = 0.0F;
+	m[0][2] = 0.0F;
+	m[0][3] = -(right + left) / (right - left);
+
+	m[1][0] = 0.0F;
+	m[1][1] = 2.0F / (top - bottom);
+	m[1][2] = 0.0F;
+	m[1][3] = -(top + bottom) / (top - bottom);
+
+	m[2][0] = 0.0F;
+	m[2][1] = 0.0F;
+	m[2][2] = -2.0F / (zFar - zNear);
+	m[2][3] = -(zFar + zNear) / (zFar - zNear);
+
+	m[3][0] = 0.0F;
+	m[3][1] = 0.0F;
+	m[3][2] = 0.0F;
+	m[3][3] = 1.0F;
+	Mat4_Copy(r_newrefdef.projectionMatrix, tmp);
+	Mat4_Multiply(tmp, m, r_newrefdef.projectionMatrix);
+}
+
+
 void R_SetGL2D (void) {
 	// set 2D virtual screen size
 	qglViewport(0, 0, vid.width, vid.height);
 
-	qglMatrixMode(GL_PROJECTION);
-	qglLoadIdentity();
-	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
+	// setup orthographic projection
+	r_newrefdef.orthoMatrix[0][0] = 2.f / (float)vid.width;
+	r_newrefdef.orthoMatrix[0][1] = 0.f;
+	r_newrefdef.orthoMatrix[0][2] = 0.f;
+	r_newrefdef.orthoMatrix[0][3] = 0.f;
+	r_newrefdef.orthoMatrix[1][0] = 0.f;
+	r_newrefdef.orthoMatrix[1][1] = -2.f / (float)vid.height;
+	r_newrefdef.orthoMatrix[1][2] = 0.f;
+	r_newrefdef.orthoMatrix[1][3] = 0.f;
+	r_newrefdef.orthoMatrix[2][0] = 0.f;
+	r_newrefdef.orthoMatrix[2][1] = 0.f;
+	r_newrefdef.orthoMatrix[2][2] = -1.f;
+	r_newrefdef.orthoMatrix[2][3] = 0.f;
+	r_newrefdef.orthoMatrix[3][0] = -1.f;
+	r_newrefdef.orthoMatrix[3][1] = 1.f;
+	r_newrefdef.orthoMatrix[3][2] = 0.f;
+	r_newrefdef.orthoMatrix[3][3] = 1.f;
 
-	qglMatrixMode(GL_MODELVIEW);
-	qglLoadIdentity();
+	Mat4_Identity(r_newrefdef.modelViewMatrix);
+
+	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
+	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.orthoMatrix);
 
 	GL_Disable(GL_DEPTH_TEST);
 	GL_Disable(GL_CULL_FACE);
@@ -1969,17 +1994,9 @@ void R_BeginFrame()
 			r_anisotropic->modified = qfalse;
 	}
 
-	/* 
-	** go into 2D mode
-	 */
-	qglViewport(0, 0, vid.width, vid.height);
-	qglMatrixMode(GL_PROJECTION);
-	qglLoadIdentity();
-	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
-	qglMatrixMode(GL_MODELVIEW);
-	qglLoadIdentity();
-	GL_Disable(GL_DEPTH_TEST);
-	GL_Disable(GL_CULL_FACE);
+	//go into 2D mode
+	R_SetGL2D();
+
 	GL_Enable(GL_BLEND); // alpha blend for chars
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDrawBuffer( GL_BACK );

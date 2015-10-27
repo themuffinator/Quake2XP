@@ -483,10 +483,12 @@ typedef struct {
 	vec3_t	cornerRays[4];
 	mat3_t	axis;
 	mat4_t	projectionMatrix;
+	mat4_t	orthoMatrix;
 	mat4_t	modelViewMatrix;
 	mat4_t	entModelViewMatrix;
 	mat4_t	modelViewProjectionMatrix;
 	mat4_t	modelViewProjectionMatrixTranspose;
+	mat4_t	skyMatrix;
 
 	int num_entities;
 	entity_t *entities;
