@@ -2,9 +2,10 @@ in vec2		a_texCoord;
 in vec3		a_vertArray;
 
 out vec2 v_texCoord;
+uniform mat4 u_orthoMatrix;
 
 void main (void) 
 {
 	v_texCoord = a_texCoord; 
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+	gl_Position = u_orthoMatrix * vec4(a_vertArray, 1.0);
 }

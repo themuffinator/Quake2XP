@@ -3,13 +3,14 @@ out vec2 v_lineOffset;
 
 uniform vec2 u_cinSize;
 uniform vec2 u_cinIntSize;
+uniform mat4 u_orthoMatrix;
 
 in vec2		a_texCoord;
 in vec3		a_vertArray;
 
 void main() 
 {
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+	gl_Position = u_orthoMatrix * vec4(a_vertArray, 1.0);
 	v_texCoord = a_texCoord;
 
 	v_lineOffset = vec2(3.1415 * u_cinIntSize.x * u_cinSize.x / u_cinIntSize.x, 2.0 * 3.1415 * u_cinIntSize.y);
