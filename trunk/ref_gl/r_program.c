@@ -727,18 +727,7 @@ void R_InitPrograms (void) {
 		Com_Printf (S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-	/*
-	Com_Printf("Load "S_COLOR_YELLOW"glass lighting program"S_COLOR_WHITE" ");
-	lightGlassProgram = R_FindProgram("lightGlass", qtrue, qtrue);
 
-	if (lightGlassProgram->valid){
-	Com_Printf("succeeded\n");
-	}
-	else {
-	Com_Printf(S_COLOR_RED"Failed!\n");
-	missing++;
-	}
-	*/
 	Com_Printf ("Load "S_COLOR_YELLOW"thermal vision program"S_COLOR_WHITE" ");
 	thermalProgram = R_FindProgram ("thermal", qtrue, qtrue);
 
@@ -796,18 +785,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 	
-	/*
-	Com_Printf("Load "S_COLOR_YELLOW"shadow program"S_COLOR_WHITE" ");
-	shadowProgram =  R_FindProgram("shadow", qtrue, qtrue);
-
-	if(shadowProgram->valid){
-	Com_Printf("succeeded\n");
-	}else {
-	Com_Printf(S_COLOR_RED"Failed!\n");
-	missing++;
-	}
-	*/
-
 	Com_Printf ("Load "S_COLOR_YELLOW"generic program"S_COLOR_WHITE" ");
 	genericProgram = R_FindProgram ("generic", qtrue, qtrue);
 
@@ -823,6 +800,7 @@ void R_InitPrograms (void) {
 		gen_color = qglGetUniformLocation (id, "u_color");
 		gen_sky = qglGetUniformLocation (id, "u_isSky");
 		gen_skyMatrix = qglGetUniformLocation(id, "u_SkyMatrix");
+		gen_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -859,6 +837,7 @@ void R_InitPrograms (void) {
 		id = fxaaProgram->id[0];
 		fxaa_screenTex = qglGetUniformLocation(id, "u_ScreenTex");
 		fxaa_screenSize = qglGetUniformLocation(id, "u_ScreenSize");
+		fxaa_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -883,6 +862,7 @@ void R_InitPrograms (void) {
 		id = gammaProgram->id[0];
 		gamma_screenMap = qglGetUniformLocation (id, "u_ScreenTex");
 		gamma_control = qglGetUniformLocation (id, "u_control");
+		gamma_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

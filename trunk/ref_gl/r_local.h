@@ -1019,12 +1019,15 @@ uint gen_colorModulate;
 uint gen_color;
 uint gen_sky;
 uint gen_skyMatrix;
+uint gen_orthoMatrix;
 
 uint gamma_screenMap;
 uint gamma_control;
+uint gamma_orthoMatrix;
 
 uint fxaa_screenTex;
 uint fxaa_screenSize;
+uint fxaa_orthoMatrix;
 
 uint particle_texMap;
 uint particle_depthMap;

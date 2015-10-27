@@ -958,11 +958,6 @@ void R_SetGL2D (void) {
 	r_newrefdef.orthoMatrix[3][2] = 0.f;
 	r_newrefdef.orthoMatrix[3][3] = 1.f;
 
-	Mat4_Identity(r_newrefdef.modelViewMatrix);
-
-	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
-	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.orthoMatrix);
-
 	GL_Disable(GL_DEPTH_TEST);
 	GL_Disable(GL_CULL_FACE);
 }

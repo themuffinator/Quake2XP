@@ -70,6 +70,7 @@ void Set_FontShader(qboolean enable){
 		qglUniform1i(gen_sky, 0);
 		qglUniform1i(gen_tex, 0);
 		qglUniform1f(gen_colorModulate, r_textureColorScale->value);
+		qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	}
 	else{
 
@@ -293,6 +294,8 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	else
 		qglUniform1f(gen_colorModulate, r_textureColorScale->value);
 
+	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+
 	if (scrap_dirty)
 		Scrap_Upload();
 
@@ -352,6 +355,7 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		id = loadingProgram->id[defBits];
 		qglUniform1i(qglGetUniformLocation(id, "u_map"), 0);
 		qglUniform1f(qglGetUniformLocation(id, "u_colorScale"), loadScreenColorFade);
+		qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
@@ -428,6 +432,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_tex, 0);
 	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
+	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -500,6 +505,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_tex, 0);
 	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
+	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -594,7 +600,8 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_tex, 0);
 	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
-
+	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	
 	GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 
 	VA_SetElem2(texCoord[0], x / 64.0, y / 64.0);
@@ -657,6 +664,7 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	qglUniform1i(gen_tex, 0);
 	qglUniform4f(gen_color, r, g, b, a);
 	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
+	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	VA_SetElem2(vertCoord[0], x, y);
 	VA_SetElem2(vertCoord[1], x + w, y);
@@ -700,6 +708,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	qglUniform1i(qglGetUniformLocation(id, "u_cinMap"), 0);
 	qglUniform2f(qglGetUniformLocation(id, "u_cinSize"), w, h);
 	qglUniform2f(qglGetUniformLocation(id, "u_cinIntSize"), cols, rows);
+	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	hscale = rows/256.0;
 	trows = 256;
