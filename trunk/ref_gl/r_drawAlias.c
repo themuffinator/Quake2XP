@@ -265,7 +265,7 @@ next:
 
     qglPushMatrix ();
 
-	R_RotateForEntity(e);
+	R_SetupEntityMatrix(e);
 
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) 
 		GL_DrawAliasFrameLerpAmbientShell(paliashdr);
@@ -372,7 +372,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	}
 	
 	qglPushMatrix ();
-	R_RotateForEntity(currententity);
+	R_SetupEntityMatrix(currententity);
 
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 	VectorCopy(r_origin, tmpView);

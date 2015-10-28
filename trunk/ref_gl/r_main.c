@@ -185,15 +185,6 @@ void GL_CheckError(const char *fileName, int line, const char *subr)
 }
 
 
-void R_RotateForEntity(entity_t * e) {
-	mat4_t entViewMatrix;
-
-	AnglesToMat3(e->angles, e->axis);
-	Mat4_SetOrientation(e->matrix, e->axis, e->origin);
-	Mat4_TransposeMultiply(e->matrix, r_newrefdef.modelViewMatrix, entViewMatrix);
-	GL_LoadMatrix(GL_MODELVIEW, entViewMatrix);
-}
-
 
 /*
 =============================================================
@@ -428,6 +419,40 @@ static void R_SetupViewMatrices (void) {
 	Mat4_Transpose(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.modelViewProjectionMatrixTranspose);
 }
 
+void R_SetupEntityMatrix(entity_t * e) {
+	mat4_t entViewMatrix;
+
+	AnglesToMat3(e->angles, e->axis);
+	Mat4_SetOrientation(e->matrix, e->axis, e->origin);
+	Mat4_TransposeMultiply(e->matrix, r_newrefdef.modelViewMatrix, entViewMatrix);
+	GL_LoadMatrix(GL_MODELVIEW, entViewMatrix);
+}
+
+void R_SetupOrthoMatrix(void) {
+	// set 2D virtual screen size
+	qglViewport(0, 0, vid.width, vid.height);
+
+	// setup orthographic projection
+	r_newrefdef.orthoMatrix[0][0] = 2.f / (float)vid.width;
+	r_newrefdef.orthoMatrix[0][1] = 0.f;
+	r_newrefdef.orthoMatrix[0][2] = 0.f;
+	r_newrefdef.orthoMatrix[0][3] = 0.f;
+	r_newrefdef.orthoMatrix[1][0] = 0.f;
+	r_newrefdef.orthoMatrix[1][1] = -2.f / (float)vid.height;
+	r_newrefdef.orthoMatrix[1][2] = 0.f;
+	r_newrefdef.orthoMatrix[1][3] = 0.f;
+	r_newrefdef.orthoMatrix[2][0] = 0.f;
+	r_newrefdef.orthoMatrix[2][1] = 0.f;
+	r_newrefdef.orthoMatrix[2][2] = -1.f;
+	r_newrefdef.orthoMatrix[2][3] = 0.f;
+	r_newrefdef.orthoMatrix[3][0] = -1.f;
+	r_newrefdef.orthoMatrix[3][1] = 1.f;
+	r_newrefdef.orthoMatrix[3][2] = 0.f;
+	r_newrefdef.orthoMatrix[3][3] = 1.f;
+
+	GL_Disable(GL_DEPTH_TEST);
+	GL_Disable(GL_CULL_FACE);
+}
 
 /*
 =============
@@ -850,9 +875,7 @@ R_RenderView
 r_newrefdef must be set before the first call.
 ================
 */
-void R_SSAO (void);
-void R_DrawDepthScene (void);
-void R_DownsampleDepth (void);
+
 
 void R_RenderView (refdef_t *fd) {
 	if (r_noRefresh->value)
@@ -908,59 +931,6 @@ void R_RenderView (refdef_t *fd) {
 	GL_CheckError(__FILE__, __LINE__, "end frame");
 }
 
-void GL_Ortho(mat4_t m, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
-{
-	mat4_t tmp;
-
-	m[0][0] = 2.0F / (right - left);
-	m[0][1] = 0.0F;
-	m[0][2] = 0.0F;
-	m[0][3] = -(right + left) / (right - left);
-
-	m[1][0] = 0.0F;
-	m[1][1] = 2.0F / (top - bottom);
-	m[1][2] = 0.0F;
-	m[1][3] = -(top + bottom) / (top - bottom);
-
-	m[2][0] = 0.0F;
-	m[2][1] = 0.0F;
-	m[2][2] = -2.0F / (zFar - zNear);
-	m[2][3] = -(zFar + zNear) / (zFar - zNear);
-
-	m[3][0] = 0.0F;
-	m[3][1] = 0.0F;
-	m[3][2] = 0.0F;
-	m[3][3] = 1.0F;
-	Mat4_Copy(r_newrefdef.projectionMatrix, tmp);
-	Mat4_Multiply(tmp, m, r_newrefdef.projectionMatrix);
-}
-
-
-void R_SetGL2D (void) {
-	// set 2D virtual screen size
-	qglViewport(0, 0, vid.width, vid.height);
-
-	// setup orthographic projection
-	r_newrefdef.orthoMatrix[0][0] = 2.f / (float)vid.width;
-	r_newrefdef.orthoMatrix[0][1] = 0.f;
-	r_newrefdef.orthoMatrix[0][2] = 0.f;
-	r_newrefdef.orthoMatrix[0][3] = 0.f;
-	r_newrefdef.orthoMatrix[1][0] = 0.f;
-	r_newrefdef.orthoMatrix[1][1] = -2.f / (float)vid.height;
-	r_newrefdef.orthoMatrix[1][2] = 0.f;
-	r_newrefdef.orthoMatrix[1][3] = 0.f;
-	r_newrefdef.orthoMatrix[2][0] = 0.f;
-	r_newrefdef.orthoMatrix[2][1] = 0.f;
-	r_newrefdef.orthoMatrix[2][2] = -1.f;
-	r_newrefdef.orthoMatrix[2][3] = 0.f;
-	r_newrefdef.orthoMatrix[3][0] = -1.f;
-	r_newrefdef.orthoMatrix[3][1] = 1.f;
-	r_newrefdef.orthoMatrix[3][2] = 0.f;
-	r_newrefdef.orthoMatrix[3][3] = 1.f;
-
-	GL_Disable(GL_DEPTH_TEST);
-	GL_Disable(GL_CULL_FACE);
-}
 
 /*
 ====================
@@ -1024,7 +994,7 @@ void R_DrawFullScreenQuad (void);
 void R_RenderFrame(refdef_t * fd, qboolean client) {
 	R_SetLightLevel();
 	R_RenderView(fd);
-	R_SetGL2D();
+	R_SetupOrthoMatrix();
 
 	// post processing - cut off if player camera is out of map bounds
 	if (!outMap) {
@@ -1990,7 +1960,7 @@ void R_BeginFrame()
 	}
 
 	//go into 2D mode
-	R_SetGL2D();
+	R_SetupOrthoMatrix();
 
 	GL_Enable(GL_BLEND); // alpha blend for chars
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

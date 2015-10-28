@@ -410,10 +410,13 @@ void R_DebugLights (vec3_t lightOrg);
 void R_CastBspShadowVolumes (void);
 void R_CastAliasShadowVolumes (void);
 void R_DrawAliasModelLightPass (qboolean weapon_model);
-void R_RotateForEntity (entity_t * e);
+void R_SetupEntityMatrix (entity_t * e);
 void GL_MBind3d (GLenum target, int texnum);
 void R_CapturePlayerWeapon ();
 void R_LightScale (void);
+void R_SSAO(void);
+void R_DrawDepthScene(void);
+void R_DownsampleDepth(void);
 
 void R_SaveLights_f (void);
 void R_Light_Spawn_f (void);
@@ -1065,6 +1068,64 @@ uint water_colorModulate;
 uint water_ambient;
 uint water_trans;
 uint water_entity2world;
+
+uint gaussx_tex;
+uint gaussx_matrix;
+
+uint gaussy_tex;
+uint gaussy_matrix;
+
+uint star_tex;
+uint star_intens;
+uint star_matrix;
+
+uint bloomDS_threshold;
+uint bloomDS_map;
+uint bloomDS_matrix;
+
+uint bloomFP_map0;
+uint bloomFP_map1;
+uint bloomFP_params;
+uint bloom_FP_matrix;
+
+uint rb_tex;
+uint rb_params;
+uint rb_matrix;
+
+uint dof_screenSize;
+uint dof_params;
+uint dof_tex;
+uint dof_depth;
+uint dof_matrix;
+
+uint film_tex;
+uint film_scroll;
+uint film_matrix;
+
+uint mb_vel;
+uint mb_samples;
+uint mb_matrix;
+uint mb_tex;
+uint mb_mask;
+
+uint depthDS_depth;
+uint depthDS_params;
+
+uint ssao_mini;
+uint ssao_rand;
+uint ssao_params;
+uint ssao_vp;
+
+uint ssaoB_mColor;
+uint ssaoB_mDepth;
+uint ssaoB_sapmles;
+uint ssaoB_axisMask;
+
+uint therm_map;
+uint therm_matrix;
+
+uint thermf_map;
+uint thermf_matrix;
 
 #define	MAX_VERTEX_CACHES	4096
 

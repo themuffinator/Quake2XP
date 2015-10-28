@@ -333,7 +333,7 @@ void R_DeformShadowVolume () {
 	GL_LerpShadowVerts (paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
 
 	qglPushMatrix ();
-	R_RotateForEntity (currententity);
+	R_SetupEntityMatrix (currententity);
 
 	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector (currententity->axis, temp, light);
@@ -500,7 +500,7 @@ void R_DrawBrushModelVolumes () {
 		return;
 
 	qglPushMatrix ();
-	R_RotateForEntity (currententity);
+	R_SetupEntityMatrix (currententity);
 
 	VectorCopy (currentShadowLight->origin, oldLightOrigin);
 	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);

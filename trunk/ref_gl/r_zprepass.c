@@ -231,7 +231,7 @@ void R_DrawDepthBrushModel (void) {
 	}
 
 	qglPushMatrix ();
-	R_RotateForEntity (currententity);
+	R_SetupEntityMatrix (currententity);
 
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 	qglEnableVertexAttribArray(ATRB_POSITION);
@@ -311,7 +311,7 @@ void R_DrawDepthAliasModel(void){
 
 	qglPushMatrix();
 
-	R_RotateForEntity(currententity);
+	R_SetupEntityMatrix(currententity);
 
 	GL_DrawAliasFrameLerpDepth(paliashdr);
 

@@ -48,7 +48,7 @@ void R_BuildFlares (flare_t * light) {
 			return;
 
 		qglPushMatrix ();
-		R_RotateForEntity (light->surf->ent);
+		R_SetupEntityMatrix (light->surf->ent);
 
 	}
 
@@ -219,13 +219,11 @@ void R_DrawQuarterScreenQuad () {
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void R_Bloom (void) {
-
-	unsigned	defBits = 0;
-	int			id;
-
+void R_Bloom (void) 
+{
 	if (!r_bloom->value)
 		return;
+
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
@@ -234,12 +232,10 @@ void R_Bloom (void) {
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	// setup program
-	GL_BindProgram (bloomdsProgram, defBits);
-	id = bloomdsProgram->id[defBits];
-
-	qglUniform1f (qglGetUniformLocation (id, "u_BloomThreshold"), r_bloomThreshold->value);
-	qglUniform1i (qglGetUniformLocation (id, "u_map"), 0);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_BindProgram (bloomdsProgram, 0);
+	qglUniform1f(bloomDS_threshold, r_bloomThreshold->value);
+	qglUniform1i (bloomDS_map, 0);
+	qglUniformMatrix4fv(bloomDS_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();
 
@@ -256,11 +252,10 @@ void R_Bloom (void) {
 	GL_BindRect (bloomtex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
-	GL_BindProgram (blurStarProgram, defBits);
-	id = blurStarProgram->id[defBits];
-	qglUniform1i (qglGetUniformLocation (id, "u_map"), 0);
-	qglUniform1f (qglGetUniformLocation (id, "u_starIntens"), r_bloomStarIntens->value);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_BindProgram (blurStarProgram, 0);
+	qglUniform1i(star_tex, 0);
+	qglUniform1f(star_intens, r_bloomStarIntens->value);
+	qglUniformMatrix4fv(star_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
@@ -269,10 +264,9 @@ void R_Bloom (void) {
 	GL_BindRect (bloomtex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
-	GL_BindProgram (gaussXProgram, defBits);
-	id = gaussXProgram->id[defBits];
-	qglUniform1i (qglGetUniformLocation (id, "u_map"), 0);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_BindProgram (gaussXProgram, 0);
+	qglUniform1i(gaussx_tex, 0);
+	qglUniformMatrix4fv(gaussx_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();
 
@@ -280,10 +274,9 @@ void R_Bloom (void) {
 	GL_BindRect (bloomtex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
-	GL_BindProgram (gaussYProgram, defBits);
-	id = gaussYProgram->id[defBits];
-	qglUniform1i (qglGetUniformLocation (id, "u_map"), 0);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_BindProgram (gaussYProgram, 0);
+	qglUniform1i(gaussy_tex, 0);
+	qglUniformMatrix4fv(gaussy_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();
 
@@ -291,16 +284,14 @@ void R_Bloom (void) {
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	//final pass
-	GL_BindProgram (bloomfpProgram, defBits);
-	id = bloomfpProgram->id[defBits];
-
+	GL_BindProgram (bloomfpProgram, 0);
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
-	qglUniform1i (qglGetUniformLocation (id, "u_map0"), 0);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1i(bloomFP_map0, 0);
 
 	GL_MBindRect (GL_TEXTURE1_ARB, bloomtex);
-	qglUniform1i (qglGetUniformLocation (id, "u_map1"), 1);
-	qglUniform3f (qglGetUniformLocation (id, "u_bloomParams"), r_bloomIntens->value, r_bloomBright->value, r_bloomExposure->value);
+	qglUniform1i(bloomFP_map1, 1);
+	qglUniform3f(bloomFP_params, r_bloomIntens->value, r_bloomBright->value, r_bloomExposure->value);
+	qglUniformMatrix4fv(bloom_FP_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad ();
 
@@ -309,55 +300,43 @@ void R_Bloom (void) {
 
 
 
-void R_ThermalVision (void) {
-
+void R_ThermalVision (void) 
+{
 	unsigned defBits = 0;
 	int	id;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+
 	if (!(r_newrefdef.rdflags & RDF_IRGOGGLES))
 		return;
 
-	GL_SelectTexture (GL_TEXTURE0_ARB);
-
 	if (!thermaltex) {
 		qglGenTextures (1, &thermaltex);
-		GL_BindRect (thermaltex);
+		GL_MBindRect(GL_TEXTURE0_ARB, thermaltex);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
 	}
 	else {
-		GL_BindRect (thermaltex);
+		GL_MBindRect(GL_TEXTURE0_ARB, thermaltex);
 		qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 	}
 
 	// setup program
-	GL_BindProgram (thermalProgram, defBits);
-	id = thermalProgram->id[defBits];
-	qglUniform1i (qglGetUniformLocation (id, "u_screenTex"), 0);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_BindProgram (thermalProgram, 0);
+	qglUniform1i (therm_map, 0);
+	qglUniformMatrix4fv(therm_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad ();
-
-	// create thermal texture (set to zero in default state)
-	if (!thermaltex) {
-		qglGenTextures (1, &thermaltex);
-		GL_BindRect (thermaltex);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width*0.5, vid.height*0.5, 0);
-	}
 
 	// blur x
 	GL_BindRect (thermaltex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
 
-	GL_BindProgram (gaussXProgram, defBits);
-	id = gaussXProgram->id[defBits];
-	qglUniform1i (qglGetUniformLocation (id, "u_map"), 0);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_BindProgram (gaussXProgram, 0);
+	qglUniform1i (gaussx_tex, 0);
+	qglUniformMatrix4fv(gaussx_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad ();
 
@@ -365,10 +344,9 @@ void R_ThermalVision (void) {
 	GL_BindRect (thermaltex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
 
-	GL_BindProgram (gaussYProgram, defBits);
-	id = gaussYProgram->id[defBits];
-	qglUniform1i (qglGetUniformLocation (id, "u_map"), 0);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_BindProgram (gaussYProgram, 0);
+	qglUniform1i (gaussy_tex, 0);
+	qglUniformMatrix4fv(gaussy_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad ();
 
@@ -381,8 +359,8 @@ void R_ThermalVision (void) {
 
 	GL_BindRect (thermaltex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i (qglGetUniformLocation (id, "u_map"), 0);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1i (thermf_map, 0);
+	qglUniformMatrix4fv(thermf_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad ();
 
@@ -391,11 +369,9 @@ void R_ThermalVision (void) {
 
 
 
-void R_RadialBlur (void) {
-
-	unsigned	defBits = 0;
-	int			id;
-	float		blur;
+void R_RadialBlur (void) 
+{
+	float blur;
 
 	if (!r_radialBlur->value)
 		return;
@@ -414,9 +390,8 @@ void R_RadialBlur (void) {
 		qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 		// setup program
-		GL_BindProgram (radialProgram, defBits);
-		id = radialProgram->id[defBits];
-		qglUniform1i (qglGetUniformLocation (id, "u_screenMap"), 0);
+		GL_BindProgram (radialProgram, 0);
+		qglUniform1i(rb_tex, 0);
 
 		if (r_newrefdef.rdflags & RDF_PAIN)
 			blur = 0.01;
@@ -426,8 +401,8 @@ void R_RadialBlur (void) {
 			blur = 0.01;
 
 		// xy = radial center screen space position, z = radius attenuation, w = blur strength
-		qglUniform4f (qglGetUniformLocation (id, "u_radialBlurParams"), vid.width*0.5, vid.height*0.5, 1.0 / vid.height, blur);
-		qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+		qglUniform4f(rb_params, vid.width*0.5, vid.height*0.5, 1.0 / vid.height, blur);
+		qglUniformMatrix4fv(rb_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		R_DrawFullScreenQuad ();
 
@@ -435,9 +410,8 @@ void R_RadialBlur (void) {
 	}
 }
 
-void R_DofBlur (void) {
-	unsigned		defBits = 0;
-	int				id;
+void R_DofBlur (void) 
+{
 	float			tmpDist[5], tmpMins[3];
 	vec2_t          dofParams;
 	trace_t			trace;
@@ -492,18 +466,16 @@ void R_DofBlur (void) {
 	}
 
 	// setup program
-	GL_BindProgram (dofProgram, defBits);
-	id = dofProgram->id[defBits];
-	qglUniform2f (qglGetUniformLocation (id, "u_screenSize"), vid.width, vid.height);
-	qglUniform4f (qglGetUniformLocation (id, "u_dofParams"), dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_BindProgram (dofProgram, 0);
+	qglUniform2f(dof_screenSize, vid.width, vid.height);
+	qglUniform4f (dof_params, dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniformMatrix4fv(dof_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1i(dof_tex, 0);
+	qglUniform1i(dof_depth, 1);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i (qglGetUniformLocation (id, "u_ScreenTex"), 0);
-
 	GL_MBindRect (GL_TEXTURE1_ARB, depthMap->texnum);
-	qglUniform1i (qglGetUniformLocation (id, "u_DepthTex"), 1);
 
 	R_DrawFullScreenQuad ();
 
@@ -540,10 +512,8 @@ void R_FXAA (void) {
 
 }
 
-void R_FilmGrain (void) {
-
-	unsigned	defBits = 0;
-	int			id;
+void R_FilmGrain (void) 
+{
 
 	if (!r_filmGrain->value)
 		return;
@@ -552,31 +522,27 @@ void R_FilmGrain (void) {
 		return;
 
 	// setup program
-	GL_BindProgram (filmGrainProgram, defBits);
-	id = filmGrainProgram->id[defBits];
+	GL_BindProgram (filmGrainProgram, 0);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i (qglGetUniformLocation (id, "u_ScreenTex"), 0);
-	qglUniform1f (qglGetUniformLocation (id, "u_scroll"), -3 * (r_newrefdef.time / 40.0));
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+
+	qglUniform1i (film_tex, 0);
+	qglUniform1f (film_scroll, -3 * (r_newrefdef.time / 40.0));
+	qglUniformMatrix4fv(film_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad ();
 
 	GL_BindNullProgram ();
 }
 
-void R_GammaRamp (void) {
-
-	unsigned	defBits = 0;
-	int			id;
-
-	// setup program
-	GL_BindProgram (gammaProgram, defBits);
-	id = gammaProgram->id[defBits];
+void R_GammaRamp (void) 
+{
+	GL_BindProgram (gammaProgram, 0);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+
 	qglUniform1i (gamma_screenMap, 0);
 	qglUniform4f (gamma_control, r_brightness->value, r_contrast->value, r_saturation->value, 1 / r_brightness->value);
 	qglUniformMatrix4fv(gamma_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -586,11 +552,10 @@ void R_GammaRamp (void) {
 	GL_BindNullProgram ();
 }
 
-void R_MotionBlur (void) {
-
-	unsigned	defBits = 0;
-	int			id;
-	float		temp_x, temp_y, delta_x, delta_y;
+void R_MotionBlur (void) 
+{
+	float	temp_x, temp_y, 
+			delta_x, delta_y;
 
 	if (!r_motionBlur->value)
 		return;
@@ -598,34 +563,33 @@ void R_MotionBlur (void) {
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
-	// setup program
-	GL_BindProgram (motionBlurProgram, defBits);
-	id = motionBlurProgram->id[defBits];
 	// calc camera offsets
 	temp_y = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
 	temp_x = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
 	delta_x = (temp_x * 2.0 / r_newrefdef.fov_x) * r_motionBlurFrameLerp->value;
 	delta_y = (temp_y * 2.0 / r_newrefdef.fov_y) * r_motionBlurFrameLerp->value;
 
-	qglUniform2f (qglGetUniformLocation (id, "u_velocity"), delta_x, delta_y);
-	qglUniform1i (qglGetUniformLocation (id, "u_numSamples"), r_motionBlurSamples->value);
-	qglUniformMatrix4fv(qglGetUniformLocation(id, "u_orthoMatrix"), 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	// setup program
+	GL_BindProgram(motionBlurProgram, 0);
+
+	qglUniform2f (mb_vel, delta_x, delta_y);
+	qglUniform1i (mb_samples, r_motionBlurSamples->value);
+	qglUniformMatrix4fv(mb_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1i (mb_tex, 0);
+	qglUniform1i (mb_mask, 1);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i (qglGetUniformLocation (id, "u_ScreenTex"), 0);
 
 	GL_MBindRect (GL_TEXTURE1_ARB, weaponHack->texnum);
-	qglUniform1i (qglGetUniformLocation (id, "u_MaskTex"), 1);
 
 	R_DrawFullScreenQuad ();
 
 	GL_BindNullProgram ();
 }
 
-void R_DownsampleDepth(void) {
-	int id;
-
+void R_DownsampleDepth(void) 
+{
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 	
@@ -649,11 +613,10 @@ void R_DownsampleDepth(void) {
 	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
 
 	GL_BindProgram(depthDownsampleProgram, 0);
-	id = depthDownsampleProgram->id[0];
 	GL_MBindRect(GL_TEXTURE0_ARB, depthMap->texnum);
 
-	qglUniform1i(qglGetUniformLocation(id, "u_depthBufferMap"), 0);
-	qglUniform2f(qglGetUniformLocation(id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform1i(depthDS_depth, 0);
+	qglUniform2f(depthDS_params, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
 	R_DrawHalfScreenQuad();
 
@@ -666,7 +629,8 @@ void R_DownsampleDepth(void) {
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
-void R_SSAO (void) {
+void R_SSAO (void) 
+{
 	int i, j, id, numSamples;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
@@ -691,14 +655,13 @@ void R_SSAO (void) {
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	GL_BindProgram (ssaoProgram, 0);
-	id = ssaoProgram->id[0];
 	GL_MBindRect(GL_TEXTURE0_ARB, fboDN);
 	GL_MBind(GL_TEXTURE1_ARB, r_randomNormalTex->texnum);
 
-	qglUniform1i (qglGetUniformLocation (id, "u_DNMiniMap"), 0);
-	qglUniform1i (qglGetUniformLocation (id, "u_randomNormalMap"), 1);
-	qglUniform2f (qglGetUniformLocation (id, "u_ssaoParms"), max(r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
-	qglUniform2f (qglGetUniformLocation (id, "u_viewport"), vid.width, vid.height);
+	qglUniform1i (ssao_mini, 0);
+	qglUniform1i (ssao_rand, 1);
+	qglUniform2f (ssao_params, max(r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
+	qglUniform2f (ssao_vp, vid.width, vid.height);
 
 	R_DrawHalfScreenQuad();
 
@@ -711,11 +674,11 @@ void R_SSAO (void) {
 
 		GL_BindProgram(ssaoBlurProgram, 0);
 		id = ssaoBlurProgram->id[0];
-		qglUniform1i(qglGetUniformLocation(id, "u_colorMiniMap"), 0);
-		qglUniform1i(qglGetUniformLocation(id, "u_DNMiniMap"), 1);
+		qglUniform1i(ssaoB_mColor, 0);
+		qglUniform1i(ssaoB_mDepth, 1);
 
 		numSamples = (int)rintf(4.f * vid.height / 1080.f);
-		qglUniform1i(qglGetUniformLocation(id, "u_numSamples"), max(numSamples, 1));
+		qglUniform1i(ssaoB_sapmles, max(numSamples, 1));
 
 		for (i = 0; i < (int)r_ssaoBlur->value; i++) {
 #if 1
@@ -723,7 +686,7 @@ void R_SSAO (void) {
 			for (j = 0; j < 2; j++) {
 				GL_MBindRect(GL_TEXTURE0_ARB, fboColor[j]);
 				qglDrawBuffer(GL_COLOR_ATTACHMENT0 + (j ^ 1));
-				qglUniform2f(qglGetUniformLocation(id, "u_axisMask"), j ? 0.f : 1.f, j ? 1.f : 0.f);
+				qglUniform2f(ssaoB_axisMask, j ? 0.f : 1.f, j ? 1.f : 0.f);
 				R_DrawHalfScreenQuad();
 			}
 #else

@@ -1156,7 +1156,7 @@ void R_DrawBrushModel (void) {
 	}
 
 	qglPushMatrix();
-	R_RotateForEntity(currententity);
+	R_SetupEntityMatrix(currententity);
 
 	//Put camera into model space view angle for bmodels parallax
 	VectorSubtract(r_origin, currententity->origin, tmp);
@@ -1248,7 +1248,7 @@ void R_DrawBrushModelRA (void) {
 
 	qglPushMatrix();
 
-	R_RotateForEntity(currententity);
+	R_SetupEntityMatrix(currententity);
 
 	// put camera into model space view angle for bmodels parallax
 	VectorSubtract(r_origin, currententity->origin, tmp);
@@ -1310,7 +1310,7 @@ void R_DrawLightBrushModel (void) {
 	}
 	
 	qglPushMatrix();
-	R_RotateForEntity(currententity);
+	R_SetupEntityMatrix(currententity);
 	
 	//Put camera into model space view angle for bmodels parallax
 	VectorSubtract(r_origin, currententity->origin, tmp);
