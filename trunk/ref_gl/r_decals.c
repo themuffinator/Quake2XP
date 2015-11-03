@@ -89,13 +89,13 @@ void R_RenderDecals(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-    qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_COLOR);
+    qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
 
-    qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, DecalVertexArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, DecalTexCoordArray);
-    qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, DecalColorArray);
+    qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, DecalVertexArray);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, DecalTexCoordArray);
+    qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, DecalColorArray);
      
 
 	GL_BindProgram(genericProgram, 0);
@@ -201,9 +201,9 @@ void R_RenderDecals(void)
 	 }
 
     GL_Disable(GL_BLEND);
-    qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-    qglDisableVertexAttribArray(ATRB_COLOR);
+    qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+    qglDisableVertexAttribArray(ATT_COLOR);
     GL_DepthMask(1);
     GL_Disable(GL_POLYGON_OFFSET_FILL);
 	GL_BindNullProgram();

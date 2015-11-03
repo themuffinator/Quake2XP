@@ -106,21 +106,21 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 
 	dstscroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglEnableVertexAttribArray (ATRB_TEX0);
-	qglEnableVertexAttribArray (ATRB_TEX2);
-	qglEnableVertexAttribArray (ATRB_NORMAL);
-	qglEnableVertexAttribArray (ATRB_TANGENT);
-	qglEnableVertexAttribArray (ATRB_BINORMAL);
-	qglEnableVertexAttribArray (ATRB_COLOR);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglEnableVertexAttribArray (ATT_TEX0);
+	qglEnableVertexAttribArray (ATT_TEX2);
+	qglEnableVertexAttribArray (ATT_NORMAL);
+	qglEnableVertexAttribArray (ATT_TANGENT);
+	qglEnableVertexAttribArray (ATT_BINORMAL);
+	qglEnableVertexAttribArray (ATT_COLOR);
 
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
-	qglVertexAttribPointer (ATRB_TEX2, 2, GL_FLOAT, qfalse, 0, wTmu2Array);
-	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, wColorArray);
-	qglVertexAttribPointer (ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
-	qglVertexAttribPointer (ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
-	qglVertexAttribPointer (ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+	qglVertexAttribPointer (ATT_TEX2, 2, GL_FLOAT, qfalse, 0, wTmu2Array);
+	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, wColorArray);
+	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
+	qglVertexAttribPointer (ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
+	qglVertexAttribPointer (ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
 
 	for (bp = fa->polys; bp; bp = bp->next) {
 		p = bp;
@@ -156,13 +156,13 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 
 	GL_SelectTexture (GL_TEXTURE0_ARB);
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglDisableVertexAttribArray (ATRB_TEX0);
-	qglDisableVertexAttribArray (ATRB_TEX2);
-	qglDisableVertexAttribArray (ATRB_NORMAL);
-	qglDisableVertexAttribArray (ATRB_TANGENT);
-	qglDisableVertexAttribArray (ATRB_BINORMAL);
-	qglDisableVertexAttribArray (ATRB_COLOR);
+	qglDisableVertexAttribArray (ATT_POSITION);
+	qglDisableVertexAttribArray (ATT_TEX0);
+	qglDisableVertexAttribArray (ATT_TEX2);
+	qglDisableVertexAttribArray (ATT_NORMAL);
+	qglDisableVertexAttribArray (ATT_TANGENT);
+	qglDisableVertexAttribArray (ATT_BINORMAL);
+	qglDisableVertexAttribArray (ATT_COLOR);
 
 	GL_BindNullProgram ();
 }
@@ -474,14 +474,14 @@ void R_DrawSkyBox (qboolean color) {
 		qglUniform1i (gen_tex, 0);
 		qglUniform1f (gen_colorModulate, 1.0);
 
-		qglEnableVertexAttribArray (ATRB_TEX0);
-		qglEnableVertexAttribArray (ATRB_COLOR);
-		qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, SkyTexCoordArray);
-		qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, SkyColorArray);
+		qglEnableVertexAttribArray (ATT_TEX0);
+		qglEnableVertexAttribArray (ATT_COLOR);
+		qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, SkyTexCoordArray);
+		qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, SkyColorArray);
 
 	}
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
 
 
 
@@ -524,10 +524,10 @@ void R_DrawSkyBox (qboolean color) {
 		qglDrawElements (GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, skyIndex);
 	}
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglDisableVertexAttribArray (ATT_POSITION);
 	if (color) {
-		qglDisableVertexAttribArray (ATRB_TEX0);
-		qglDisableVertexAttribArray (ATRB_COLOR);
+		qglDisableVertexAttribArray (ATT_TEX0);
+		qglDisableVertexAttribArray (ATT_COLOR);
 		GL_BindNullProgram ();
 	}
 	qglPopMatrix ();

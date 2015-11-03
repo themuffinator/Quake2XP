@@ -17,16 +17,21 @@ SHADING LANGUAGE INTERFACE
 static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
 int r_numPrograms;
 static glslProgram_t	r_nullProgram;
+
+static const char *shader4 =
+"#extension GL_EXT_gpu_shader4 : enable\n";
+
 static const char *shader5 =
 "#extension GL_ARB_gpu_shader5 : enable\n";
 
 static const char *baseExt =
 "#extension GL_ARB_texture_rectangle : enable\n"
-"#extension GL_EXT_gpu_shader4 : enable\n"
+"#extension GL_ARB_explicit_attrib_location  : enable\n"
+"#extension GL_ARB_separate_shader_objects : enable\n"
 "out vec4 fragData;\n";
 
 static const char *glslVersion =
-"#version 130\n";
+"#version 330 compatibility\n";
 /*
 =================
 Com_HashKey
@@ -332,6 +337,8 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 		// add ext
 		if (gl_state.shader5)
 			strings[numStrings++] = shader5;
+		else
+			strings[numStrings++] = shader4;
 
 		strings[numStrings++] = baseExt;
 
@@ -361,15 +368,6 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 		//
 
 		id = qglCreateProgram ();
-
-		qglBindAttribLocation (id, ATRB_POSITION, "a_vertArray");
-		qglBindAttribLocation (id, ATRB_NORMAL, "a_normArray");
-		qglBindAttribLocation (id, ATRB_TEX0, "a_texCoord");
-		qglBindAttribLocation (id, ATRB_TEX1, "a_LtexCoord");
-		qglBindAttribLocation (id, ATRB_TEX2, "a_2texCoord");
-		qglBindAttribLocation (id, ATRB_TANGENT, "a_tangent");
-		qglBindAttribLocation (id, ATRB_BINORMAL, "a_binormal");
-		qglBindAttribLocation (id, ATRB_COLOR, "a_colorArray");
 
 		if (vertexId) {
 			qglAttachShader (id, vertexId);

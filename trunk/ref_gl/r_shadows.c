@@ -370,8 +370,8 @@ void R_CastAliasShadowVolumes (void) {
 	GL_PolygonOffset (0.1, 1);
 	GL_ColorMask (0, 0, 0, 0);
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -384,7 +384,7 @@ void R_CastAliasShadowVolumes (void) {
 			R_DeformShadowVolume ();
 
 	}
-	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglDisableVertexAttribArray (ATT_POSITION);
 	GL_Disable (GL_POLYGON_OFFSET_FILL);
 	GL_PolygonOffset (0, 0);
 	qglEnable (GL_TEXTURE_2D);
@@ -582,7 +582,7 @@ void R_DrawBrushModelVolumes () {
 	}
 
 	if (ib) {
-		qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
+		qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
 		qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_SHORT, icache);
 	}
 
@@ -753,7 +753,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	}
 	else {
 		if (ib) {
-			qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
+			qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
 			qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_SHORT, icache);
 		}
 	}
@@ -785,14 +785,14 @@ void R_CastBspShadowVolumes (void) {
 	GL_Enable (GL_POLYGON_OFFSET_FILL);
 	GL_PolygonOffset (0.1, 1);
 	GL_ColorMask (0, 0, 0, 0);
-	qglEnableVertexAttribArray (ATRB_POSITION);
+	qglEnableVertexAttribArray (ATT_POSITION);
 
 	if (currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic) { // draw vbo shadow
 
 		qglBindBuffer (GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
 		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
 
-		qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+		qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 		qglDrawElements	(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_SHORT, NULL);
 
 		qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
@@ -813,7 +813,7 @@ void R_CastBspShadowVolumes (void) {
 			R_DrawBrushModelVolumes ();
 	}
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglDisableVertexAttribArray (ATT_POSITION);
 	GL_Disable (GL_POLYGON_OFFSET_FILL);
 	qglEnable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);

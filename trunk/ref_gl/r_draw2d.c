@@ -56,13 +56,13 @@ void Set_FontShader(qboolean enable){
 
 	if (enable){
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-		qglEnableVertexAttribArray(ATRB_POSITION);
-		qglEnableVertexAttribArray(ATRB_TEX0);
-		qglEnableVertexAttribArray(ATRB_COLOR);
+		qglEnableVertexAttribArray(ATT_POSITION);
+		qglEnableVertexAttribArray(ATT_TEX0);
+		qglEnableVertexAttribArray(ATT_COLOR);
 
-		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
-		qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
-		qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
+		qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 
 		GL_BindProgram(genericProgram, 0);
 		qglUniform1i(gen_attribColors, 1);
@@ -75,9 +75,9 @@ void Set_FontShader(qboolean enable){
 	else{
 
 		GL_BindNullProgram();
-		qglDisableVertexAttribArray(ATRB_POSITION);
-		qglDisableVertexAttribArray(ATRB_TEX0);
-		qglDisableVertexAttribArray(ATRB_COLOR);
+		qglDisableVertexAttribArray(ATT_POSITION);
+		qglDisableVertexAttribArray(ATT_TEX0);
+		qglDisableVertexAttribArray(ATT_COLOR);
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
@@ -257,15 +257,15 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_TEX2);
-	qglEnableVertexAttribArray(ATRB_COLOR);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_TEX2);
+	qglEnableVertexAttribArray(ATT_COLOR);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
-	qglVertexAttribPointer(ATRB_TEX2, 2, GL_FLOAT, qfalse, 0, texCoord1);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
+	qglVertexAttribPointer(ATT_TEX2, 2, GL_FLOAT, qfalse, 0, texCoord1);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 	
 	VA_SetElem2(vertCoord[0], x, y);
 	VA_SetElem2(vertCoord[1], x + w, y);
@@ -319,10 +319,10 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 		GL_SelectTexture(GL_TEXTURE0_ARB);
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-		qglDisableVertexAttribArray(ATRB_POSITION);
-		qglDisableVertexAttribArray(ATRB_TEX0);
-		qglDisableVertexAttribArray(ATRB_TEX2);
-		qglDisableVertexAttribArray(ATRB_COLOR);
+		qglDisableVertexAttribArray(ATT_POSITION);
+		qglDisableVertexAttribArray(ATT_TEX0);
+		qglDisableVertexAttribArray(ATT_TEX2);
+		qglDisableVertexAttribArray(ATT_COLOR);
 }
 
 
@@ -359,10 +359,10 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
-		qglEnableVertexAttribArray(ATRB_POSITION);
-		qglEnableVertexAttribArray(ATRB_TEX0);
-		qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
-		qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
+		qglEnableVertexAttribArray(ATT_POSITION);
+		qglEnableVertexAttribArray(ATT_TEX0);
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 
 		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
 
@@ -380,8 +380,8 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 
 		GL_BindNullProgram();
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		qglDisableVertexAttribArray(ATRB_POSITION);
-		qglDisableVertexAttribArray(ATRB_TEX0);
+		qglDisableVertexAttribArray(ATT_POSITION);
+		qglDisableVertexAttribArray(ATT_TEX0);
 }
 
 void Draw_LoadingScreen(int x, int y, int w, int h, char *pic)
@@ -418,13 +418,13 @@ void Draw_Pic2(int x, int y, image_t * gl)
 		GL_Disable(GL_BLEND);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_COLOR);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
 	
-    qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
+    qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 	
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 1);
@@ -462,9 +462,9 @@ void Draw_Pic2(int x, int y, image_t * gl)
 
 	GL_BindNullProgram();
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_COLOR);
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_COLOR);
 }
 
 void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
@@ -491,13 +491,13 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	}
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_COLOR);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
 	
-    qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
+    qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 	
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 1);
@@ -538,9 +538,9 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	
 	GL_BindNullProgram();
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_COLOR);
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_COLOR);
 }
 
 
@@ -586,13 +586,13 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	}
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
-	qglEnableVertexAttribArray(ATRB_COLOR);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
-	qglVertexAttribPointer(ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 1);
@@ -623,9 +623,9 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 
 	GL_BindNullProgram();
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
-	qglDisableVertexAttribArray(ATRB_COLOR);
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_COLOR);
 
 
 }
@@ -654,8 +654,8 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 {
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
 
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 0);
@@ -675,7 +675,7 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	
 	GL_BindNullProgram();
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATT_POSITION);
 }
 
 /*
@@ -745,11 +745,11 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	y1 = sh+h;
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 
 	VA_SetElem2(texCoord[0], 0, 0);
 	VA_SetElem2(texCoord[1], 1, 0);
@@ -765,6 +765,6 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	
 	GL_BindNullProgram();
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
 }

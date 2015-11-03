@@ -737,11 +737,11 @@ void R_RenderSprites(void)
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglEnableVertexAttribArray(ATRB_TEX0);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
 
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
-	qglVertexAttribPointer(ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -758,8 +758,8 @@ void R_RenderSprites(void)
 	}
 
 
-	qglDisableVertexAttribArray(ATRB_POSITION);
-	qglDisableVertexAttribArray(ATRB_TEX0);
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
@@ -1755,11 +1755,29 @@ int R_Init(void *hinstance, void *hWnd)
 			Com_Printf("...using GL_ARB_vertex_shader\n");
 	
 	gl_state.shader5= qfalse;
+	gl_state.shader4 = qfalse;
 	if (IsExtensionSupported("GL_ARB_gpu_shader5")){
 		Com_Printf("...using GL_ARB_gpu_shader5\n");
 		gl_state.shader5= qtrue;
+	}else
+		Com_Printf(S_COLOR_RED"...GL_ARB_gpu_shader5 not found\n");
+
+	if (IsExtensionSupported("GL_EXT_gpu_shader4")){
+		Com_Printf("...using GL_EXT_gpu_shader4\n");
+		gl_state.shader4 = qtrue;
 	}
 
+	gl_state.eal = qfalse;
+	if (IsExtensionSupported("GL_ARB_explicit_attrib_location")){
+		Com_Printf("...using GL_ARB_explicit_attrib_location\n");
+		gl_state.eal = qtrue;
+	}
+
+	if (IsExtensionSupported("GL_ARB_separate_shader_objects")){
+		Com_Printf("...using GL_ARB_separate_shader_objects\n");
+	}
+
+	
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &gl_config.maxVertexUniformComponents);

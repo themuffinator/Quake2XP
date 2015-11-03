@@ -234,14 +234,14 @@ void R_DrawDepthBrushModel (void) {
 	R_SetupEntityMatrix (currententity);
 
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 
 	num_depth_surfaces = 0;
 	R_AddBModelDepthPolys ();
 	GL_DrawDepthPoly ();
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglDisableVertexAttribArray (ATT_POSITION);
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	qglPopMatrix ();
 }
@@ -261,8 +261,8 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
 
 	c_alias_polys += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
@@ -277,7 +277,7 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 
-	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATT_POSITION);
 }
 
 void R_DrawDepthAliasModel(void){
@@ -337,8 +337,8 @@ void R_DrawDepthScene (void) {
 	GL_BindProgram (nullProgram, 0);
 
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
@@ -347,7 +347,7 @@ void R_DrawDepthScene (void) {
 	GL_DrawDepthPoly ();
 	
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglDisableVertexAttribArray (ATT_POSITION);
 
 	R_DrawSkyBox (qfalse);
 

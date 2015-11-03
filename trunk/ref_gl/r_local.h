@@ -653,7 +653,9 @@ typedef struct {
 	qboolean	conditional_render;
 	qboolean	depthBoundsTest;
 	qboolean	shader5;
+	qboolean	shader4;
 	qboolean	debugOutput;
+	qboolean	eal;
 	int			programId;
 	GLenum		matrixMode;
 
@@ -922,21 +924,14 @@ worldDefs_t;
 worldDefs_t worldDefs;
 
 typedef enum glsl_attribute {
-	ATRB_POSITION = 0,
-	ATRB_COLOR = 1,
-	ATRB_TEX0 = 2,
-	ATRB_TEX1 = 3,
-	ATRB_TEX2 = 4,
-	ATRB_TEX3 = 5,
-	ATRB_TEX4 = 6,
-	ATRB_TEX5 = 7,
-	ATRB_TEX6 = 8,
-	ATRB_TEX7 = 9,
-	ATRB_NORMAL = 10,
-	ATRB_TANGENT = 11,
-	ATRB_BINORMAL = 12,
-
-
+	ATT_POSITION = 0,
+	ATT_NORMAL = 1,
+	ATT_TANGENT = 2,
+	ATT_BINORMAL = 3,
+	ATT_COLOR = 4,
+	ATT_TEX0 = 5,
+	ATT_TEX1 = 6,
+	ATT_TEX2 = 7,
 }
 glsl_attrib;
 

@@ -1112,8 +1112,8 @@ void UpdateLightEditor (void) {
 	qglUniform1i (gen_attribConsole, 0);
 	qglUniform1i (gen_sky, 0);
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
 
 	if (currentShadowLight != selectedShadowLight) {
 
@@ -1314,7 +1314,7 @@ void UpdateLightEditor (void) {
 		}
 	}
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglDisableVertexAttribArray (ATT_POSITION);
 	GL_BindNullProgram ();
 	GL_Enable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);
@@ -2193,13 +2193,13 @@ void R_DrawLightFlare () {
 		GL_Disable (GL_SCISSOR_TEST);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglEnableVertexAttribArray (ATRB_TEX0);
-	qglEnableVertexAttribArray (ATRB_COLOR);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglEnableVertexAttribArray (ATT_TEX0);
+	qglEnableVertexAttribArray (ATT_COLOR);
 
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vert_array);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, tex_array);
-	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, color_array);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vert_array);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, tex_array);
+	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, color_array);
 
 	GL_BindProgram (particlesProgram, 0);
 	id = particlesProgram->id[0];
@@ -2255,9 +2255,9 @@ void R_DrawLightFlare () {
 		GL_Enable(GL_SCISSOR_TEST);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglDisableVertexAttribArray (ATRB_TEX0);
-	qglDisableVertexAttribArray (ATRB_COLOR);
+	qglDisableVertexAttribArray (ATT_POSITION);
+	qglDisableVertexAttribArray (ATT_TEX0);
+	qglDisableVertexAttribArray (ATT_COLOR);
 }
 
 void R_LightFlareOutLine () { //flare editing highlights
@@ -2282,8 +2282,8 @@ void R_LightFlareOutLine () { //flare editing highlights
 	GL_Disable (GL_TEXTURE_2D);
 	GL_Disable (GL_CULL_FACE);
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
 
 	// setup program
 	GL_BindProgram (genericProgram, 0);
@@ -2369,7 +2369,7 @@ void R_LightFlareOutLine () { //flare editing highlights
 	GL_Enable (GL_STENCIL_TEST);
 	GL_Enable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);
-	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglDisableVertexAttribArray (ATT_POSITION);
 }
 
 
@@ -2407,8 +2407,8 @@ void R_DrawLightBounds(void) {
 	qglUniform1i(gen_sky, 0);
 	qglUniform4f(gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 
-	qglEnableVertexAttribArray(ATRB_POSITION);
-	qglVertexAttribPointer(ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
 		
 	VectorCopy(currentShadowLight->origin, tmpOrg);
 
@@ -2467,7 +2467,7 @@ void R_DrawLightBounds(void) {
 
 	qglDrawArrays(GL_TRIANGLES, 0, 36);
 
-	qglDisableVertexAttribArray(ATRB_POSITION);
+	qglDisableVertexAttribArray(ATT_POSITION);
 	GL_BindNullProgram();
 	GL_Enable(GL_TEXTURE_2D);
 	GL_Enable(GL_CULL_FACE);

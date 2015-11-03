@@ -72,13 +72,13 @@ void R_DrawParticles (void) {
 	GL_BindProgram (particlesProgram, defBits);
 	id = particlesProgram->id[defBits];
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglEnableVertexAttribArray (ATRB_TEX0);
-	qglEnableVertexAttribArray (ATRB_COLOR);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglEnableVertexAttribArray (ATT_TEX0);
+	qglEnableVertexAttribArray (ATT_COLOR);
 
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, ParticleVert);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, ParticleTextCoord);
-	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, ParticleColor);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, ParticleVert);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, ParticleTextCoord);
+	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, ParticleColor);
 
 	GL_SelectTexture (GL_TEXTURE0_ARB);
 	qglUniform1i (particle_texMap, 0);
@@ -556,8 +556,8 @@ void R_DrawParticles (void) {
 	GL_DepthMask (1);			// back to normal Z buffering
 
 	GL_BindNullProgram ();
-	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglDisableVertexAttribArray (ATRB_TEX0);
-	qglDisableVertexAttribArray (ATRB_COLOR);
+	qglDisableVertexAttribArray (ATT_POSITION);
+	qglDisableVertexAttribArray (ATT_TEX0);
+	qglDisableVertexAttribArray (ATT_COLOR);
 
 }

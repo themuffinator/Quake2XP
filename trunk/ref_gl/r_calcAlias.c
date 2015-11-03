@@ -103,8 +103,8 @@ void GL_DrawAliasFrameLerpWeapon (dmdl_t *paliashdr) {
 
 	R_CalcAliasFrameLerp (paliashdr, 0);
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
 	GL_BindProgram(nullProgram, 0);
 
 	c_alias_polys += paliashdr->num_tris;
@@ -120,7 +120,7 @@ void GL_DrawAliasFrameLerpWeapon (dmdl_t *paliashdr) {
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
+	qglDisableVertexAttribArray (ATT_POSITION);
 	GL_BindNullProgram();
 }
 
@@ -210,18 +210,18 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	R_CalcAliasFrameLerp (paliashdr, 0);
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
 
-	qglEnableVertexAttribArray (ATRB_NORMAL);
-	qglVertexAttribPointer (ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
+	qglEnableVertexAttribArray (ATT_NORMAL);
+	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
-	qglEnableVertexAttribArray (ATRB_COLOR);
-	qglVertexAttribPointer (ATRB_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
+	qglEnableVertexAttribArray (ATT_COLOR);
+	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
 
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
-	qglEnableVertexAttribArray (ATRB_TEX0);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
+	qglEnableVertexAttribArray (ATT_TEX0);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
 
 
 	c_alias_polys += paliashdr->num_tris;
@@ -288,10 +288,10 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglDisableVertexAttribArray (ATRB_NORMAL);
-	qglDisableVertexAttribArray (ATRB_COLOR);
-	qglDisableVertexAttribArray (ATRB_TEX0);
+	qglDisableVertexAttribArray (ATT_POSITION);
+	qglDisableVertexAttribArray (ATT_NORMAL);
+	qglDisableVertexAttribArray (ATT_COLOR);
+	qglDisableVertexAttribArray (ATT_TEX0);
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
 	GL_BindNullProgram ();
 }
@@ -372,23 +372,23 @@ void GL_DrawAliasFrameLerpAmbientShell (dmdl_t *paliashdr) {
 	qglUniform1i (ambientAlias_diffuse, 0);
 
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
 
-	qglEnableVertexAttribArray (ATRB_NORMAL);
-	qglVertexAttribPointer (ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
+	qglEnableVertexAttribArray (ATT_NORMAL);
+	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
-	qglEnableVertexAttribArray (ATRB_TEX0);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
+	qglEnableVertexAttribArray (ATT_TEX0);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
 	GL_Disable (GL_BLEND);
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglDisableVertexAttribArray (ATRB_NORMAL);
-	qglDisableVertexAttribArray (ATRB_TEX0);
+	qglDisableVertexAttribArray (ATT_POSITION);
+	qglDisableVertexAttribArray (ATT_NORMAL);
+	qglDisableVertexAttribArray (ATT_TEX0);
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
 	GL_BindNullProgram ();
 }
@@ -558,32 +558,32 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	GL_MBindCube (GL_TEXTURE3_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
 	GL_MBind3d (GL_TEXTURE4_ARB, r_lightAttenMap->texnum);
 
-	qglEnableVertexAttribArray (ATRB_POSITION);
-	qglVertexAttribPointer (ATRB_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+	qglEnableVertexAttribArray (ATT_POSITION);
+	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
 
-	qglEnableVertexAttribArray (ATRB_TANGENT);
-	qglVertexAttribPointer (ATRB_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
+	qglEnableVertexAttribArray (ATT_TANGENT);
+	qglVertexAttribPointer (ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
 
-	qglEnableVertexAttribArray (ATRB_BINORMAL);
-	qglVertexAttribPointer (ATRB_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
+	qglEnableVertexAttribArray (ATT_BINORMAL);
+	qglVertexAttribPointer (ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
 
-	qglEnableVertexAttribArray (ATRB_NORMAL);
-	qglVertexAttribPointer (ATRB_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
+	qglEnableVertexAttribArray (ATT_NORMAL);
+	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
-	qglEnableVertexAttribArray (ATRB_TEX0);
-	qglVertexAttribPointer (ATRB_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
+	qglEnableVertexAttribArray (ATT_TEX0);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
 	if (currentmodel->noSelfShadow && r_shadows->value)
 		GL_Enable (GL_STENCIL_TEST);
 
-	qglDisableVertexAttribArray (ATRB_POSITION);
-	qglDisableVertexAttribArray (ATRB_TANGENT);
-	qglDisableVertexAttribArray (ATRB_BINORMAL);
-	qglDisableVertexAttribArray (ATRB_NORMAL);
-	qglDisableVertexAttribArray (ATRB_TEX0);
+	qglDisableVertexAttribArray (ATT_POSITION);
+	qglDisableVertexAttribArray (ATT_TANGENT);
+	qglDisableVertexAttribArray (ATT_BINORMAL);
+	qglDisableVertexAttribArray (ATT_NORMAL);
+	qglDisableVertexAttribArray (ATT_TEX0);
 	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
 	GL_BindNullProgram ();
 
