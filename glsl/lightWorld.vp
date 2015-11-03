@@ -12,28 +12,28 @@ out vec4			v_CubeCoord;
 out vec4			v_AttenCoord;
 out vec3			v_positionVS;
 
-in vec3			a_tangent;
-in vec3			a_binormal;
-in vec3			a_normArray;
-in vec3			a_vertArray;
-in vec2			a_texCoord;
+layout(location = 0) in vec3 att_position;
+layout(location = 1) in vec3 att_normal;
+layout(location = 2) in vec3 att_tangent;
+layout(location = 3) in vec3 att_binormal;
+layout(location = 5) in vec2 att_texCoordDiffuse;
 
 void main (void) {
 	// setup tex coords
-	v_texCoord = a_texCoord;  // diffuse & bump
-	v_CubeCoord = u_cubeMatrix * vec4(a_vertArray, 1.0);
-	v_AttenCoord = u_attenMatrix * vec4(a_vertArray, 1.0);
+	v_texCoord = att_texCoordDiffuse;  // diffuse & bump
+	v_CubeCoord = u_cubeMatrix * vec4(att_position, 1.0);
+	v_AttenCoord = u_attenMatrix * vec4(att_position, 1.0);
 
 	// calculate tangent space view vector for parallax
-	vec3 tmp = u_viewOriginES - a_vertArray;
-	v_viewVecTS.x = dot(tmp, a_tangent);
-	v_viewVecTS.y = dot(tmp, a_binormal);
-	v_viewVecTS.z = dot(tmp, a_normArray);
+	vec3 tmp = u_viewOriginES - att_position;
+	v_viewVecTS.x = dot(tmp, att_tangent);
+	v_viewVecTS.y = dot(tmp, att_binormal);
+	v_viewVecTS.z = dot(tmp, att_normal);
 
-	vec3 LV = u_LightOrg - a_vertArray;
-	v_lightVec.x = dot(a_tangent, LV);
-	v_lightVec.y = dot(a_binormal, LV);
-	v_lightVec.z = dot(a_normArray, LV); 
+	vec3 LV = u_LightOrg - att_position;
+	v_lightVec.x = dot(att_tangent, LV);
+	v_lightVec.y = dot(att_binormal, LV);
+	v_lightVec.z = dot(att_normal, LV); 
 
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(att_position, 1.0);
 }

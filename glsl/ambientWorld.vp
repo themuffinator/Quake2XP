@@ -7,24 +7,24 @@ out vec2		v_wTexCoord;
 out vec2		v_lTexCoord;
 out vec2		v_envCoord;
 
-in vec3		a_tangent;
-in vec3		a_binormal;
-in vec3		a_vertArray;
-in vec3		a_normArray;
-in vec2		a_texCoord;
-in vec2		a_LtexCoord;
+layout(location = 0) in vec3	att_position;
+layout(location = 1) in vec3	att_normal;
+layout(location = 2) in vec3	att_tangent;
+layout(location = 3) in vec3	att_binormal;
+layout(location = 5) in vec2	att_texCoordDiffuse;
+layout(location = 6) in vec2	att_texCoordLightMap;
 
 void main (void) {
 	// setup tex coords
-	v_wTexCoord = a_texCoord;  // diffuse, additive, caustics
-	v_lTexCoord = a_LtexCoord; // lightmap only
+	v_wTexCoord = att_texCoordDiffuse;  // diffuse, additive, caustics
+	v_lTexCoord = att_texCoordLightMap; // lightmap only
 
 	// calculate tangent space view vector for parallax
-	vec3 tmp = u_viewOriginES - a_vertArray;
+	vec3 tmp = u_viewOriginES - att_position;
 	
-	v_viewVecTS.x = dot(tmp, a_tangent);
-	v_viewVecTS.y = dot(tmp, a_binormal);
-	v_viewVecTS.z = dot(tmp, a_normArray);
+	v_viewVecTS.x = dot(tmp, att_tangent);
+	v_viewVecTS.y = dot(tmp, att_binormal);
+	v_viewVecTS.z = dot(tmp, att_normal);
 
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(att_position, 1.0);
 }

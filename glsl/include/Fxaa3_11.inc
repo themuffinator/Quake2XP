@@ -20,38 +20,10 @@ DAMAGES.
 ============================================================================*/
 
 #ifndef FXAA_GREEN_AS_LUMA
-    //
-    // For those using non-linear color,
-    // and either not able to get luma in alpha, or not wanting to,
-    // this enables FXAA to run using green as a proxy for luma.
-    // So with this enabled, no need to pack luma in alpha.
-    //
-    // This will turn off AA on anything which lacks some amount of green.
-    // Pure red and blue or combination of only R and B, will get no AA.
-    //
-    // Might want to lower the settings for both,
-    //    fxaaConsoleEdgeThresholdMin
-    //    fxaaQualityEdgeThresholdMin
-    // In order to insure AA does not get turned off on colors 
-    // which contain a minor amount of green.
-    //
-    // 1 = On.
-    // 0 = Off.
-    //
     #define FXAA_GREEN_AS_LUMA 0
 #endif
 
 #ifndef FXAA_EARLY_EXIT
-    //
-    // Controls algorithm's early exit path.
-    // On PS3 turning this ON adds 2 cycles to the shader.
-    // On 360 turning this OFF adds 10ths of a millisecond to the shader.
-    // Turning this off on console will result in a more blurry image.
-    // So this defaults to on.
-    //
-    // 1 = On.
-    // 0 = Off.
-    //
     #define FXAA_EARLY_EXIT 0
 #endif
 
@@ -65,27 +37,6 @@ DAMAGES.
     // 0 = Return unchanged color on pixels which don't need AA.
     //
     #define FXAA_DISCARD 0
-#endif
-
-#ifndef FXAA_FAST_PIXEL_OFFSET
-    //
-    // Used for GLSL 120 only.
-    //
-    // 1 = GL API supports fast pixel offsets
-    // 0 = do not use fast pixel offsets
-    //
-    #ifdef GL_EXT_gpu_shader4
-        #define FXAA_FAST_PIXEL_OFFSET 1
-    #endif
-    #ifdef GL_NV_gpu_shader5
-        #define FXAA_FAST_PIXEL_OFFSET 1
-    #endif
-    #ifdef GL_ARB_gpu_shader5
-        #define FXAA_FAST_PIXEL_OFFSET 1
-    #endif
-    #ifndef FXAA_FAST_PIXEL_OFFSET
-        #define FXAA_FAST_PIXEL_OFFSET 0
-    #endif
 #endif
 
 #ifndef FXAA_GATHER4_ALPHA

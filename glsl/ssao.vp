@@ -1,6 +1,7 @@
-in	vec3		a_vertArray;
+layout(location = 0) in vec3 att_position;
+
 uniform mat4	u_orthoMatrix;
 
 void main (void) {
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(att_position, 1.0);
 }

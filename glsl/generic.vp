@@ -1,7 +1,7 @@
-in vec2			a_texCoord;
-in vec2			a_2texCoord;
-in vec4			a_colorArray;
-in vec3			a_vertArray;
+layout(location = 0) in vec3 att_position;
+layout(location = 4) in vec4 att_color4f;
+layout(location = 5) in vec2 att_texCoordDiffuse;
+layout(location = 7) in vec2 att_texCoordDiffuse1;
 
 out vec2		v_texCoord;
 out vec2		v_texCoord1;
@@ -14,13 +14,13 @@ uniform mat4	u_orthoMatrix;
 
 void main (void) 
 {
-	v_texCoord		= a_texCoord;
-	v_texCoord1		= a_2texCoord; 
-	v_colorArray	= a_colorArray;
+	v_texCoord		= att_texCoordDiffuse;
+	v_texCoord1		= att_texCoordDiffuse1; 
+	v_colorArray	= att_color4f;
 
 	if(u_isSky == 1)
-		gl_Position = gl_ModelViewProjectionMatrix * vec4(a_vertArray, 1.0);
+		gl_Position = gl_ModelViewProjectionMatrix * vec4(att_position, 1.0);
 
 	if(u_isSky != 1)
-		gl_Position = u_orthoMatrix * vec4(a_vertArray, 1.0);
+		gl_Position = u_orthoMatrix * vec4(att_position, 1.0);
 }
