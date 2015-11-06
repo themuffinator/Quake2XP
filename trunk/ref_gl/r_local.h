@@ -464,6 +464,7 @@ void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare ();
 void R_DrawLightBounds(void);
+qboolean R_EntityInLightBounds();
 
 void GL_LoadMatrix (GLenum mode, const mat4_t matrix);
 

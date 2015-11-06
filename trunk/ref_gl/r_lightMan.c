@@ -171,7 +171,7 @@ void R_AddNoWorldModelLight () {
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
 	VectorSet (light->origin, r_newrefdef.vieworg[0]-500.0, r_newrefdef.vieworg[1], r_newrefdef.vieworg[2] + 256);
-	VectorSet (light->startColor, 1.0, 1.0, 0.666);
+	VectorSet (light->startColor, 0.666, 0.666, 0.666);
 	VectorSet (light->angles, 0, 0, 0);
 	VectorSet (light->radius, 1500, 1500, 1500);
 

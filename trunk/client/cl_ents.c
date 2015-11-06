@@ -1064,17 +1064,13 @@ void CL_AddPacketEntities (frame_t * frame) {
 		{
 			if (!Q_strcasecmp (ent.model->name, "models/objects/laser/tris.md2") && !(effects & EF_BLASTER)) {
 				CL_ParticleBlasterBolt (cent->lerp_origin, ent.origin);
-				goto next;
-			}
+			}else
+				// add to refresh list
+				V_AddEntity(&ent);
+
 		}
 
-		// add to refresh list
-		V_AddEntity (&ent);
-
-	next:
 		// color shells generate a seperate entity for the main model
-
-
 		if (effects & EF_COLOR_SHELL
 			&& (!player_camera || (cl_thirdPerson->value
 			&& !(cl.attractloop && !(cl.cinematictime > 0
@@ -1277,6 +1273,11 @@ void CL_AddPacketEntities (frame_t * frame) {
 						CL_BlasterTrail (cent->lerp_origin, ent.origin);
 						V_AddLight (ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0);
 					}
+					else{
+						CL_BlasterTrail(cent->lerp_origin, ent.origin);
+						CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
+						V_AddLight(ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
+					}
 				}
 				else {
 					CL_BlasterTrail (cent->lerp_origin, ent.origin);
@@ -1289,6 +1290,8 @@ void CL_AddPacketEntities (frame_t * frame) {
 				if (net_compatibility->value) {
 					if (effects & EF_TRACKER)	// PGM overloaded for blaster2.
 						V_AddLight (ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0);	// PGM
+					else
+						V_AddLight(ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
 				}
 				else			// PGM
 					V_AddLight (ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
@@ -1339,8 +1342,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 			}
 			//======
 			//ROGUE
-			if (net_compatibility->value) {
-
 				if (effects & EF_TAGTRAIL) {
 					CL_TagTrail (cent->lerp_origin, ent.origin, 220);
 					V_AddLight (ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
@@ -1363,7 +1364,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 					// FIXME - check out this effect in rendition
 					V_AddLight (ent.origin, 200, -1, -1, -1, vec3_origin, 0, 0);
 				}
-			}
 			//ROGUE
 			//======
 

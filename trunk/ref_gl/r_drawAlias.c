@@ -308,9 +308,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 			return;
 	}
 
-	if (!InLightVISEntity())
-		return;
-
 	if (currententity->flags & RF_WEAPONMODEL) {
 		if (!weapon_model)
 			return;
@@ -346,6 +343,9 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 			return;
 	}
+
+	if (!InLightVISEntity())
+		return;
 
 	paliashdr = (dmdl_t *)currentmodel->extraData;
 	

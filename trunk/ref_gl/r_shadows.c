@@ -249,9 +249,6 @@ qboolean R_EntityInLightBounds () {
 		VectorAdd (currententity->origin, currententity->model->mins, mins);
 	}
 
-	if (!InLightVISEntity())
-		return qfalse;
-
 	if (R_CullBox(currentShadowLight->mins, currentShadowLight->maxs))
 		return qfalse;
 	
@@ -269,6 +266,9 @@ qboolean R_EntityInLightBounds () {
 	if (VectorCompare(currentShadowLight->origin, currententity->origin))
 		return qfalse;
 	
+	if (!InLightVISEntity())
+		return qfalse;
+
 	return qtrue;
 }
 

@@ -155,7 +155,7 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 		if (!r_skipStaticLights->value)
 			VectorSet(lightColor, 0.333, 0.333, 0.333);
 		else
-			VectorSet(lightColor, 1.0, 1.0, 1.0);
+			VectorSet(lightColor, 0.5, 0.5, 0.5);
 	}
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
