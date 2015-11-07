@@ -7,7 +7,7 @@ uniform sampler2D	u_map1;
 uniform vec4		u_color;
 uniform float		u_colorScale;
 
-uniform int			u_ATTRIB_COLORS, u_ATTRIB_CONSOLE, u_isSky;
+uniform int			u_ATTRIB_COLORS, u_ATTRIB_CONSOLE, u_isSky, u_3d;
  
 void main(void) 
 {
@@ -28,6 +28,11 @@ if(u_isSky == 1){
 	fragData =  vec4(diffuse.rgb * u_colorScale, 1.0);
 	return;
 }
-if(u_ATTRIB_COLORS != 1 && u_ATTRIB_CONSOLE != 1)
+if(u_ATTRIB_COLORS != 1 && u_ATTRIB_CONSOLE != 1){
 	fragData =  u_color;
+	}
+
+if(u_3d == 1)
+	fragData =  u_color;
+
 }
