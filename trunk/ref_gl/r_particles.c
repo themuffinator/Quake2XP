@@ -56,7 +56,7 @@ void R_DrawParticles (void) {
 	particle_t *p;
 	unsigned	texId, texture = -1, flagId, flags = -1;
 	index_t		ParticleIndex[MAX_INDICES];
-	int			i, len, loc, partVert = 0, index = 0, id, defBits = 0;
+	int			i, len, loc, partVert = 0, index = 0;
 	vec3_t		point, width;
 	vec3_t		move, vec, dir1, dir2, dir3, spdir;
 	vec3_t		up, right;
@@ -69,8 +69,7 @@ void R_DrawParticles (void) {
 		return;
 
 	// setup program
-	GL_BindProgram (particlesProgram, defBits);
-	id = particlesProgram->id[defBits];
+	GL_BindProgram (particlesProgram, 0);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglEnableVertexAttribArray (ATT_TEX0);

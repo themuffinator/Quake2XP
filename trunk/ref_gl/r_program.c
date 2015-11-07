@@ -878,8 +878,9 @@ void R_InitPrograms (void) {
 		gen_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
 		gen_color			= qglGetUniformLocation (id, "u_color");
 		gen_sky				= qglGetUniformLocation (id, "u_isSky");
-		gen_skyMatrix		= qglGetUniformLocation(id, "u_SkyMatrix");
-		gen_orthoMatrix		= qglGetUniformLocation(id, "u_orthoMatrix");
+		gen_skyMatrix		= qglGetUniformLocation (id, "u_SkyMatrix");
+		gen_orthoMatrix		= qglGetUniformLocation (id, "u_orthoMatrix");
+		gen_3d				= qglGetUniformLocation (id, "u_3d");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

@@ -1020,13 +1020,11 @@ void CL_AddPacketEntities (frame_t * frame) {
 				V_AddLight (ent.origin, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0);
 			else if (effects & EF_FLAG2)
 				V_AddLight (ent.origin, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0);
-
-			if (net_compatibility->value) {
-				if (effects & EF_TAGTRAIL)
-					V_AddLight (ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
-				else if (effects & EF_TRACKERTRAIL)
-					V_AddLight (ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
-			}
+			else if (effects & EF_TAGTRAIL)
+				V_AddLight (ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
+			else if (effects & EF_TRACKERTRAIL)
+				V_AddLight (ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+			
 
 		}
 
@@ -1049,7 +1047,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 			ent.alpha = 0.6;
 		}
 
-		if (net_compatibility->value) {
 			if (effects & EF_SPHERETRANS) {
 				ent.flags |= RF_TRANSLUCENT;
 				// PMM - *sigh* yet more EF overloading
@@ -1058,17 +1055,14 @@ void CL_AddPacketEntities (frame_t * frame) {
 				else
 					ent.alpha = 0.3;
 			}
-		}
-		//pmm
-		if (ent.model) // hack for blaster bolt particle
-		{
-			if (!Q_strcasecmp (ent.model->name, "models/objects/laser/tris.md2") && !(effects & EF_BLASTER)) {
-				CL_ParticleBlasterBolt (cent->lerp_origin, ent.origin);
-			}else
-				// add to refresh list
-				V_AddEntity(&ent);
-
-		}
+			
+			if (ent.model) // hack for blaster bolt particle
+			{
+				if (!Q_strcasecmp(ent.model->name, "models/objects/laser/tris.md2") && !(effects & EF_BLASTER)) {
+					CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
+				}else
+					V_AddEntity(&ent);
+			}
 
 		// color shells generate a seperate entity for the main model
 		if (effects & EF_COLOR_SHELL
@@ -1249,6 +1243,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			ent.alpha = 0.30;
 			V_AddEntity (&ent);
 		}
+		
 		// add automatic particle trails
 		if ((effects & ~EF_ROTATE)) {
 			if (effects & EF_ROCKET) {
@@ -1267,7 +1262,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 			else if (effects & EF_BLASTER) {
 				//              CL_BlasterTrail (cent->lerp_origin, ent.origin);
 				//PGM
-				if (net_compatibility->value) {
 					if (effects & EF_TRACKER)	// lame... problematic?
 					{
 						CL_BlasterTrail (cent->lerp_origin, ent.origin);
@@ -1279,22 +1273,14 @@ void CL_AddPacketEntities (frame_t * frame) {
 						V_AddLight(ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
 					}
 				}
-				else {
-					CL_BlasterTrail (cent->lerp_origin, ent.origin);
-					CL_ParticleBlasterBolt (cent->lerp_origin, ent.origin);
-					V_AddLight (ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
-				}
 				//PGM
-			}
+			
 			else if (effects & EF_HYPERBLASTER) {
-				if (net_compatibility->value) {
+
 					if (effects & EF_TRACKER)	// PGM overloaded for blaster2.
 						V_AddLight (ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0);	// PGM
 					else
 						V_AddLight(ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
-				}
-				else			// PGM
-					V_AddLight (ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
 
 			}
 			else

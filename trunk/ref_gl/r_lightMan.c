@@ -1084,7 +1084,6 @@ void UpdateLightEditor (void) {
 
 	GL_Disable (GL_BLEND);
 	GL_Disable (GL_STENCIL_TEST);
-	GL_Disable (GL_TEXTURE_2D);
 	GL_Disable (GL_CULL_FACE);
 
 	// stupid player camera and angles corruption, fixed
@@ -1111,6 +1110,7 @@ void UpdateLightEditor (void) {
 	qglUniform1i (gen_attribColors, 0);
 	qglUniform1i (gen_attribConsole, 0);
 	qglUniform1i (gen_sky, 0);
+	qglUniform1i (gen_3d, 1);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
@@ -1316,7 +1316,6 @@ void UpdateLightEditor (void) {
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	GL_BindNullProgram ();
-	GL_Enable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);
 	GL_Enable (GL_BLEND);
 
@@ -2166,7 +2165,6 @@ void R_DrawLightFlare () {
 
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
-	int			id;
 	vec3_t		vert_array[MAX_FLARES_VERTEX];
 	vec2_t		tex_array[MAX_FLARES_VERTEX];
 	vec4_t		color_array[MAX_FLARES_VERTEX];
@@ -2202,18 +2200,17 @@ void R_DrawLightFlare () {
 	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, color_array);
 
 	GL_BindProgram (particlesProgram, 0);
-	id = particlesProgram->id[0];
 
 	GL_MBind (GL_TEXTURE0_ARB, r_flare->texnum);
-	qglUniform1i (qglGetUniformLocation (id, "u_map0"), 0);
+	qglUniform1i (particle_texMap, 0);
 
 	GL_SelectTexture (GL_TEXTURE1_ARB);
 	GL_BindRect (depthMap->texnum);
-	qglUniform1i (qglGetUniformLocation (id, "u_depthBufferMap"), 1);
-	qglUniform2f (qglGetUniformLocation (id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f (qglGetUniformLocation (id, "u_mask"), 1.0, 0.0);
-	qglUniform1f (qglGetUniformLocation (id, "u_colorScale"), 1.0);
-	qglUniform1f (qglGetUniformLocation (id, "u_thickness"), currentShadowLight->flareSize * 1.5);
+	qglUniform1i (particle_depthMap, 1);
+	qglUniform2f (particle_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f (particle_mask, 1.0, 0.0);
+	qglUniform1f (particle_colorModulate, 1.0);
+	qglUniform1f (particle_thickness, currentShadowLight->flareSize * 1.5);
 
 	// Color Fade
 	VectorSubtract (currentShadowLight->flareOrigin, r_origin, v);
@@ -2279,7 +2276,6 @@ void R_LightFlareOutLine () { //flare editing highlights
 
 	GL_Disable (GL_SCISSOR_TEST);
 	GL_Disable (GL_STENCIL_TEST);
-	GL_Disable (GL_TEXTURE_2D);
 	GL_Disable (GL_CULL_FACE);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
@@ -2290,6 +2286,7 @@ void R_LightFlareOutLine () { //flare editing highlights
 	qglUniform1i (gen_attribColors, 0);
 	qglUniform1i (gen_attribConsole, 0);
 	qglUniform1i (gen_sky, 0);
+	qglUniform1i(gen_3d, 1);
 	qglUniform4f (gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	
 	// draw light to flare connector
@@ -2367,7 +2364,6 @@ void R_LightFlareOutLine () { //flare editing highlights
 	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
 	GL_Enable (GL_STENCIL_TEST);
-	GL_Enable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);
 	qglDisableVertexAttribArray (ATT_POSITION);
 }
@@ -2405,6 +2401,7 @@ void R_DrawLightBounds(void) {
 	qglUniform1i(gen_attribColors, 0);
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_sky, 0);
+	qglUniform1i(gen_3d, 1);
 	qglUniform4f(gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
