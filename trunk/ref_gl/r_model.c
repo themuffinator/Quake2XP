@@ -1210,7 +1210,7 @@ void Mod_LoadFaces (lump_t * l) {
 		purename = COM_SkipPath(image->name);
 		COM_StripExtension(purename, noext);
 
-		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3")) {
+		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3") || !strcmp(noext, "tlava1_4")) {
 			out->flags |= MSURF_LAVA;
 			out->flags &= ~MSURF_DRAWTURB;
 		}
