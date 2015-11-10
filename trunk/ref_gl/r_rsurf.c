@@ -285,6 +285,14 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 
 		qglUniform1f(ambientWorld_specularScale, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
 		qglUniform1f(ambientWorld_specularExp, image->SpecularExp ? image->SpecularExp : 16.f);
+		
+		if (!r_skipStaticLights->value) 
+		{
+			if (surf->flags & MSURF_LAVA)
+				qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value * 0.5);
+			else
+				qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
+		}
 
 		if (!image->parallaxScale){
 			scale[0] = r_reliefScale->value / image->width;
@@ -356,9 +364,10 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 
 	qglUniform1f(ambientWorld_colorScale, r_textureColorScale->value);
 	qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
-	
 	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_reliefMapping->value, 0, 1));
-	qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
+
+	if(r_skipStaticLights->value)
+		qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
 
 	qglUniform1i(ambientWorld_diffuse,		0);
 	qglUniform1i(ambientWorld_lightmap[0],	1);
