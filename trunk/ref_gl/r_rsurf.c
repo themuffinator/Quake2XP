@@ -181,6 +181,8 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		GL_BindProgram(genericProgram, 0);
 		qglUniform1i(gen_attribColors, 1);
 		qglUniform1i(gen_attribConsole, 0);
+		qglUniform1i(gen_sky, 0);
+		qglUniform1i(gen_3d, 0);
 
 		GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
 		qglUniform1i(gen_tex, 0);
@@ -289,7 +291,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		if (!r_skipStaticLights->value) 
 		{
 			if (surf->flags & MSURF_LAVA)
-				qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value * 0.5);
+				qglUniform1f(ambientWorld_ambientLevel, 0.5);
 			else
 				qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
 		}
@@ -1091,13 +1093,6 @@ static void R_DrawInlineBModel3 (void) {
 		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
 			if (psurf->visframe != r_framecount)
 				continue;
-
-			/*===============================
-			berserker - flares for brushmodels
-			=================================*/
-			psurf->visframe = r_framecount;
-			psurf->ent = currententity;
-			// ================================
 
 			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 				psurf->texturechain = r_alpha_surfaces;
