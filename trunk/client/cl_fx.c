@@ -1263,7 +1263,7 @@ void CL_EntityEvent (entity_state_t * ent) {
 			if (cl_footsteps->value)
 				S_fastsound (NULL, ent->number, CHAN_BODY,
 				fastsound_descriptor[id_cl_sfx_footsteps_0 +
-				(rand () & 3)], 0.78,
+				(rand () & 3)], 0.5,
 				ATTN_NORM);
 			break;
 		case EV_FALLSHORT:

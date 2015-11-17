@@ -39,6 +39,20 @@ static int	sound_death_light;
 static int	sound_death;
 static int	sound_death_ss;
 static int	sound_cock;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void soldier_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 void soldier_idle (edict_t *self) {
@@ -226,11 +240,11 @@ void soldier_walk1_random (edict_t *self) {
 mframe_t soldier_frames_walk1[] =
 {
 	ai_walk, 3, NULL,
-	ai_walk, 6, NULL,
+	ai_walk, 6, soldier_step,
 	ai_walk, 2, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 2, NULL,
-	ai_walk, 1, NULL,
+	ai_walk, 1, soldier_step,
 	ai_walk, 6, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 3, NULL,
@@ -265,14 +279,14 @@ mframe_t soldier_frames_walk2[] =
 {
 	ai_walk, 4, NULL,
 	ai_walk, 4, NULL,
-	ai_walk, 9, NULL,
+	ai_walk, 9, soldier_step,
 	ai_walk, 8, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 1, NULL,
 	ai_walk, 3, NULL,
 	ai_walk, 7, NULL,
 	ai_walk, 6, NULL,
-	ai_walk, 7, NULL
+	ai_walk, 7, soldier_step
 };
 mmove_t soldier_move_walk2 = { FRAME_walk209, FRAME_walk218, soldier_frames_walk2, NULL };
 
@@ -293,16 +307,16 @@ void soldier_run (edict_t *self);
 mframe_t soldier_frames_start_run[] =
 {
 	ai_run, 7, NULL,
-	ai_run, 5, NULL
+	ai_run, 5, soldier_step
 };
 mmove_t soldier_move_start_run = { FRAME_run01, FRAME_run02, soldier_frames_start_run, soldier_run };
 
 mframe_t soldier_frames_run[] =
 {
-	ai_run, 10, NULL,
+	ai_run, 10, soldier_step,
 	ai_run, 11, NULL,
 	ai_run, 11, NULL,
-	ai_run, 16, NULL,
+	ai_run, 16, soldier_step,
 	ai_run, 10, NULL,
 	ai_run, 15, NULL
 };
@@ -1212,6 +1226,11 @@ void SP_monster_soldier_x (edict_t *self) {
 	sound_sight1 = gi.soundindex ("soldier/solsght1.wav");
 	sound_sight2 = gi.soundindex ("soldier/solsrch1.wav");
 	sound_cock = gi.soundindex ("infantry/infatck3.wav");
+
+	sound_step1 = gi.soundindex("player/step1.wav");
+	sound_step2 = gi.soundindex("player/step2.wav");
+	sound_step3 = gi.soundindex("player/step3.wav");
+	sound_step4 = gi.soundindex("player/step4.wav");
 
 	self->mass = 100;
 
