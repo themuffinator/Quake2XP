@@ -1758,7 +1758,8 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
 	vec3_t	mins, maxs;
 	byte	vis[MAX_MAP_LEAFS / 8];
 
-	contents = CL_PMpointcontents (light->origin);
+//	contents = CL_PMpointcontents (light->origin);
+	contents = CM_PointContents(light->origin, 0);
 	if (contents & CONTENTS_SOLID)
 		goto skip;
 

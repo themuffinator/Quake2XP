@@ -188,6 +188,17 @@ int	Developer_searchpath (int who) {
 	return (0);
 }
 
+// Psychospaz's mod detector
+qboolean modType(char *name)
+{
+	searchpath_t	*search;
+
+	for (search = fs_searchpaths; search; search = search->next)
+	if (!Q_strcasecmp(search->filename, name))
+		return qtrue;
+
+	return qfalse;
+}
 
 /*
 ===========
