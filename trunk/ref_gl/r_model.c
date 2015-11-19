@@ -2568,6 +2568,11 @@ void R_BeginRegistration (char *model) {
 	r_oldviewcluster = -1;		// force markleafs
 
 	Com_sprintf (fullname, sizeof(fullname), "maps/%s.bsp", model);
+	
+	if (!strcmp(model, "xhangar2"))
+		xhargar2hack = qtrue;
+	else
+		xhargar2hack = qfalse;
 
 	// explicitly free the old map if different
 	// this guarantees that mod_known[0] is the world map

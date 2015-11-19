@@ -360,6 +360,7 @@ extern int radarOldTime;
 extern qboolean spacebox;
 
 extern qboolean arbMultisampleSupported;
+qboolean xhargar2hack;
 
 void GL_Bind (int texnum);
 void GL_MBind (GLenum target, int texnum);
