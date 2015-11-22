@@ -41,6 +41,20 @@ static int	sound_hook_launch;
 static int	sound_hook_hit;
 static int	sound_hook_heal;
 static int	sound_hook_retract;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void medic_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 edict_t *medic_FindDeadMonster (edict_t *self) {
@@ -213,13 +227,13 @@ void medic_stand (edict_t *self) {
 
 mframe_t medic_frames_walk[] =
 {
-	ai_walk, 6.2, NULL,
+	ai_walk, 6.2, medic_step,
 	ai_walk, 18.1, NULL,
 	ai_walk, 1, NULL,
 	ai_walk, 9, NULL,
 	ai_walk, 10, NULL,
 	ai_walk, 9, NULL,
-	ai_walk, 11, NULL,
+	ai_walk, 11, medic_step,
 	ai_walk, 11.6, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 9.9, NULL,
@@ -235,10 +249,10 @@ void medic_walk (edict_t *self) {
 
 mframe_t medic_frames_run[] =
 {
-	ai_run, 18, NULL,
+	ai_run, 18, medic_step,
 	ai_run, 22.5, NULL,
 	ai_run, 25.4, NULL,
-	ai_run, 23.4, NULL,
+	ai_run, 23.4, medic_step,
 	ai_run, 24, NULL,
 	ai_run, 35.6, NULL
 
@@ -703,6 +717,11 @@ void SP_monster_medic (edict_t *self) {
 	sound_hook_retract = gi.soundindex ("medic/medatck5.wav");
 
 	gi.soundindex ("medic/medatck1.wav");
+
+	sound_step1 = gi.soundindex("berserk/step1.wav");
+	sound_step2 = gi.soundindex("berserk/step2.wav");
+	sound_step3 = gi.soundindex("berserk/step3.wav");
+	sound_step4 = gi.soundindex("berserk/step4.wav");
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;

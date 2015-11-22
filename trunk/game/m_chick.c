@@ -51,6 +51,20 @@ static int	sound_pain2;
 static int	sound_pain3;
 static int	sound_sight;
 static int	sound_search;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void chick_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 void ChickMoan (edict_t *self) {
@@ -144,12 +158,12 @@ void chick_stand (edict_t *self) {
 
 mframe_t chick_frames_start_run[] =
 {
-	ai_run, 1, NULL,
+	ai_run, 1, chick_step,
 	ai_run, 0, NULL,
 	ai_run, 0, NULL,
 	ai_run, -1, NULL,
 	ai_run, -1, NULL,
-	ai_run, 0, NULL,
+	ai_run, 0, chick_step,
 	ai_run, 1, NULL,
 	ai_run, 3, NULL,
 	ai_run, 6, NULL,
@@ -159,12 +173,12 @@ mmove_t chick_move_start_run = { FRAME_walk01, FRAME_walk10, chick_frames_start_
 
 mframe_t chick_frames_run[] =
 {
-	ai_run, 6, NULL,
+	ai_run, 6, chick_step,
 	ai_run, 8, NULL,
 	ai_run, 13, NULL,
 	ai_run, 5, NULL,
 	ai_run, 7, NULL,
-	ai_run, 4, NULL,
+	ai_run, 4, chick_step,
 	ai_run, 11, NULL,
 	ai_run, 5, NULL,
 	ai_run, 9, NULL,
@@ -176,13 +190,13 @@ mmove_t chick_move_run = { FRAME_walk11, FRAME_walk20, chick_frames_run, NULL };
 
 mframe_t chick_frames_walk[] =
 {
-	ai_walk, 6, NULL,
+	ai_walk, 6, chick_step,
 	ai_walk, 8, NULL,
 	ai_walk, 13, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 7, NULL,
 	ai_walk, 4, NULL,
-	ai_walk, 11, NULL,
+	ai_walk, 11, chick_step,
 	ai_walk, 5, NULL,
 	ai_walk, 9, NULL,
 	ai_walk, 7, NULL
@@ -617,6 +631,11 @@ void SP_monster_chick (edict_t *self) {
 	sound_pain3 = gi.soundindex ("chick/chkpain3.wav");
 	sound_sight = gi.soundindex ("chick/chksght1.wav");
 	sound_search = gi.soundindex ("chick/chksrch1.wav");
+
+	sound_step1 = gi.soundindex("infantry/step1.wav");
+	sound_step2 = gi.soundindex("infantry/step2.wav");
+	sound_step3 = gi.soundindex("infantry/step3.wav");
+	sound_step4 = gi.soundindex("infantry/step4.wav");
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;

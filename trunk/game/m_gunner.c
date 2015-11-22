@@ -36,6 +36,20 @@ static int	sound_idle;
 static int	sound_open;
 static int	sound_search;
 static int	sound_sight;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void gunner_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 void gunner_idlesound (edict_t *self) {
@@ -169,14 +183,14 @@ void gunner_stand (edict_t *self) {
 
 mframe_t gunner_frames_walk[] =
 {
-	ai_walk, 0, NULL,
+	ai_walk, 0, gunner_step,
 	ai_walk, 3, NULL,
 	ai_walk, 4, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 7, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 6, NULL,
-	ai_walk, 4, NULL,
+	ai_walk, 4, gunner_step,
 	ai_walk, 2, NULL,
 	ai_walk, 7, NULL,
 	ai_walk, 5, NULL,
@@ -191,14 +205,14 @@ void gunner_walk (edict_t *self) {
 
 mframe_t gunner_frames_run[] =
 {
-	ai_run, 26, NULL,
+	ai_run, 26, gunner_step,
 	ai_run, 9, NULL,
 	ai_run, 9, NULL,
 	ai_run, 9, NULL,
-	ai_run, 15, NULL,
+	ai_run, 15, gunner_step,
 	ai_run, 10, NULL,
 	ai_run, 13, NULL,
-	ai_run, 6, NULL
+	ai_run, 6, gunner_step
 };
 
 mmove_t gunner_move_run = { FRAME_run01, FRAME_run08, gunner_frames_run, NULL };
@@ -581,6 +595,11 @@ void SP_monster_gunner (edict_t *self) {
 
 	gi.soundindex ("gunner/gunatck2.wav");
 	gi.soundindex ("gunner/gunatck3.wav");
+
+	sound_step1 = gi.soundindex("gunner/step1.wav");
+	sound_step2 = gi.soundindex("gunner/step2.wav");
+	sound_step3 = gi.soundindex("gunner/step3.wav");
+	sound_step4 = gi.soundindex("gunner/step4.wav");
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;

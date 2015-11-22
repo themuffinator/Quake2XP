@@ -1,4 +1,23 @@
 /*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
 ==============================================================================
 
 GUNNER
@@ -17,6 +36,20 @@ static int	sound_idle;
 static int	sound_open;
 static int	sound_search;
 static int	sound_sight;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void gunner_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 void gunner_idlesound (edict_t *self) {
@@ -150,14 +183,14 @@ void gunner_stand (edict_t *self) {
 
 mframe_t gunner_frames_walk[] =
 {
-	ai_walk, 0, NULL,
+	ai_walk, 0, gunner_step,
 	ai_walk, 3, NULL,
 	ai_walk, 4, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 7, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 6, NULL,
-	ai_walk, 4, NULL,
+	ai_walk, 4, gunner_step,
 	ai_walk, 2, NULL,
 	ai_walk, 7, NULL,
 	ai_walk, 5, NULL,
@@ -172,14 +205,14 @@ void gunner_walk (edict_t *self) {
 
 mframe_t gunner_frames_run[] =
 {
-	ai_run, 26, NULL,
+	ai_run, 26, gunner_step,
 	ai_run, 9, NULL,
 	ai_run, 9, NULL,
 	ai_run, 9, NULL,
-	ai_run, 15, NULL,
+	ai_run, 15, gunner_step,
 	ai_run, 10, NULL,
 	ai_run, 13, NULL,
-	ai_run, 6, NULL
+	ai_run, 6, gunner_step
 };
 
 mmove_t gunner_move_run = { FRAME_run01, FRAME_run08, gunner_frames_run, NULL };
@@ -267,8 +300,8 @@ void gunner_pain (edict_t *self, edict_t *other, float kick, int damage) {
 	else
 		gi.sound (self, CHAN_VOICE, sound_pain2, 1, ATTN_NORM, 0);
 
-	if (skill->value == 3)
-		return;		// no pain anims in nightmare
+	//	if (skill->value == 3)
+	//		return;		// no pain anims in nightmare
 
 	if (damage <= 10)
 		self->monsterinfo.currentmove = &gunner_move_pain3;
@@ -280,16 +313,19 @@ void gunner_pain (edict_t *self, edict_t *other, float kick, int damage) {
 
 void gunner_dead (edict_t *self) {
 	VectorSet (self->mins, -16, -16, -24);
-	VectorSet (self->maxs, 16, 16, -8);
+	VectorSet (self->maxs, 16, 16, 1);
 	self->movetype = MOVETYPE_TOSS;
 	self->svflags |= SVF_DEADMONSTER;
 	self->nextthink = 0;
+
 	Touch_Corpse (self);
 
 	gi.linkentity (self);
 
 	if (skill->value < 3) M_FlyCheck (self);
 	monster_reborn (self);
+
+
 
 }
 
@@ -314,7 +350,7 @@ void gunner_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 
 	// check for gib
 	if (self->health <= self->gib_health) {
-		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
 		for (n = 0; n < 2; n++)
 			ThrowGib (self, "models/objects/gibs/bone/tris.md2", damage, GIB_ORGANIC);
 		for (n = 0; n < 4; n++)
@@ -339,8 +375,12 @@ void gunner_duck_down (edict_t *self) {
 	if (self->monsterinfo.aiflags & AI_DUCKED)
 		return;
 	self->monsterinfo.aiflags |= AI_DUCKED;
-	if (skill->value >= 2) {
+	if (skill->value == 2) {
 		if (random () > 0.5)
+			GunnerGrenade (self);
+	}
+	if (skill->value == 3) {
+		if (random () > 0.6)
 			GunnerGrenade (self);
 	}
 
@@ -556,6 +596,11 @@ void SP_monster_gunner (edict_t *self) {
 	gi.soundindex ("gunner/gunatck2.wav");
 	gi.soundindex ("gunner/gunatck3.wav");
 
+	sound_step1 = gi.soundindex("gunner/step1.wav");
+	sound_step2 = gi.soundindex("gunner/step2.wav");
+	sound_step3 = gi.soundindex("gunner/step3.wav");
+	sound_step4 = gi.soundindex("gunner/step4.wav");
+
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
 	self->s.modelindex = gi.modelindex ("models/monsters/gunner/tris.md2");
@@ -569,10 +614,9 @@ void SP_monster_gunner (edict_t *self) {
 		self->gib_health = -70;
 	self->mass = 200;
 
-
 	self->pain = gunner_pain;
 	self->die = gunner_die;
-	self->s.renderfx |= RF_MONSTER;
+
 	self->monsterinfo.stand = gunner_stand;
 	self->monsterinfo.walk = gunner_walk;
 	self->monsterinfo.run = gunner_run;
@@ -581,7 +625,7 @@ void SP_monster_gunner (edict_t *self) {
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = gunner_sight;
 	self->monsterinfo.search = gunner_search;
-
+	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &gunner_move_stand;

@@ -35,6 +35,20 @@ static int sound_idle;
 static int sound_punch;
 static int sound_sight;
 static int sound_search;
+static int sound_step1, sound_step2, sound_step3, sound_step4;
+
+void berserk_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 void berserk_sight (edict_t *self, edict_t *other) {
 	gi.sound (self, CHAN_VOICE, sound_sight, 1, ATTN_NORM, 0);
@@ -100,13 +114,13 @@ mframe_t berserk_frames_walk[] =
 {
 	ai_walk, 9.1, NULL,
 	ai_walk, 6.3, NULL,
-	ai_walk, 4.9, NULL,
+	ai_walk, 4.9, berserk_step,
 	ai_walk, 6.7, NULL,
 	ai_walk, 6.0, NULL,
 	ai_walk, 8.2, NULL,
 	ai_walk, 7.2, NULL,
 	ai_walk, 6.1, NULL,
-	ai_walk, 4.9, NULL,
+	ai_walk, 4.9, berserk_step,
 	ai_walk, 4.7, NULL,
 	ai_walk, 4.7, NULL,
 	ai_walk, 4.8, NULL
@@ -144,10 +158,10 @@ void berserk_walk (edict_t *self) {
 
 mframe_t berserk_frames_run1[] =
 {
-	ai_run, 21, NULL,
+	ai_run, 21, berserk_step,
 	ai_run, 11, NULL,
 	ai_run, 21, NULL,
-	ai_run, 25, NULL,
+	ai_run, 25, berserk_step,
 	ai_run, 18, NULL,
 	ai_run, 19, NULL
 };
@@ -420,6 +434,11 @@ void SP_monster_berserk (edict_t *self) {
 	sound_punch = gi.soundindex ("berserk/attack.wav");
 	sound_search = gi.soundindex ("berserk/bersrch1.wav");
 	sound_sight = gi.soundindex ("berserk/sight.wav");
+	
+	sound_step1 = gi.soundindex("berserk/step1.wav");
+	sound_step2 = gi.soundindex("berserk/step2.wav");
+	sound_step3 = gi.soundindex("berserk/step3.wav");
+	sound_step4 = gi.soundindex("berserk/step4.wav");
 
 	self->s.modelindex = gi.modelindex ("models/monsters/berserk/tris.md2");
 	VectorSet (self->mins, -16, -16, -24);

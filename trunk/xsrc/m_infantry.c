@@ -1,4 +1,23 @@
 /*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
 ==============================================================================
 
 INFANTRY
@@ -24,6 +43,20 @@ static int	sound_punch_hit;
 static int	sound_sight;
 static int	sound_search;
 static int	sound_idle;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void infantry_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 mframe_t infantry_frames_stand[] =
@@ -119,13 +152,13 @@ void infantry_fidget (edict_t *self) {
 
 mframe_t infantry_frames_walk[] =
 {
-	ai_walk, 5, NULL,
+	ai_walk, 5, infantry_step,
 	ai_walk, 4, NULL,
 	ai_walk, 4, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 4, NULL,
 	ai_walk, 5, NULL,
-	ai_walk, 6, NULL,
+	ai_walk, 6, infantry_step,
 	ai_walk, 4, NULL,
 	ai_walk, 4, NULL,
 	ai_walk, 4, NULL,
@@ -140,11 +173,11 @@ void infantry_walk (edict_t *self) {
 
 mframe_t infantry_frames_run[] =
 {
-	ai_run, 10, NULL,
+	ai_run, 10, infantry_step,
 	ai_run, 20, NULL,
 	ai_run, 5, NULL,
 	ai_run, 7, NULL,
-	ai_run, 30, NULL,
+	ai_run, 30, infantry_step,
 	ai_run, 35, NULL,
 	ai_run, 2, NULL,
 	ai_run, 6, NULL
@@ -200,8 +233,8 @@ void infantry_pain (edict_t *self, edict_t *other, float kick, int damage) {
 
 	self->pain_debounce_time = level.time + 3;
 
-	if (skill->value == 3)
-		return;		// no pain anims in nightmare
+	//	if (skill->value == 3)
+	//		return;		// no pain anims in nightmare
 
 	n = rand () % 2;
 	if (n == 0) {
@@ -237,7 +270,8 @@ void InfantryMachineGun (edict_t *self) {
 	vec3_t	vec;
 	int		flash_number;
 
-	if (self->s.frame == FRAME_attak103) {
+
+	if (self->s.frame == FRAME_attak111) {
 		flash_number = MZ2_INFANTRY_MACHINEGUN_1;
 		AngleVectors (self->s.angles, forward, right, NULL);
 		G_ProjectSource (self->s.origin, monster_flash_offset[flash_number], forward, right, start);
@@ -263,6 +297,8 @@ void InfantryMachineGun (edict_t *self) {
 	}
 
 	monster_fire_bullet (self, start, forward, 3, 4, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, flash_number);
+
+
 }
 
 void infantry_sight (edict_t *self, edict_t *other) {
@@ -271,9 +307,10 @@ void infantry_sight (edict_t *self, edict_t *other) {
 
 void infantry_dead (edict_t *self) {
 	VectorSet (self->mins, -16, -16, -24);
-	VectorSet (self->maxs, 16, 16, -8);
+	VectorSet (self->maxs, 16, 16, 1);
 	self->movetype = MOVETYPE_TOSS;
 	self->svflags |= SVF_DEADMONSTER;
+
 	Touch_Corpse (self);
 
 	gi.linkentity (self);
@@ -353,13 +390,27 @@ mframe_t infantry_frames_death3[] =
 };
 mmove_t infantry_move_death3 = { FRAME_death301, FRAME_death309, infantry_frames_death3, infantry_dead };
 
+void infantry_unhead (edict_t *self) {
+	vec3_t tmp;
+
+	if (net_compatibility->value) return;
+
+	VectorCopy (self->s.origin, tmp);
+	tmp[2] += 30;
+	gi.WriteByte (svc_temp_entity);
+	gi.WriteByte (TE_UNHEAD);
+	gi.WritePosition (tmp);
+	gi.multicast (tmp, MULTICAST_PHS);
+}
 
 void infantry_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point) {
 	int		n;
 
+//	self->s.effects &= ~EF_FLASHLIGHT;		// заберем у монстра фонарик, ибо он разбился ))))
+
 	// check for gib
 	if (self->health <= self->gib_health) {
-		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
 		for (n = 0; n < 2; n++)
 			ThrowGib (self, "models/objects/gibs/bone/tris.md2", damage, GIB_ORGANIC);
 		for (n = 0; n < 4; n++)
@@ -377,17 +428,22 @@ void infantry_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int dam
 	self->takedamage = DAMAGE_YES;
 
 	n = rand () % 3;
-	if (n == 0) {
+	if (n == 0) // w/o head &fire 
+	{
 		self->monsterinfo.currentmove = &infantry_move_death1;
-		gi.sound (self, CHAN_VOICE, sound_die2, 1, ATTN_NORM, 0);
+		if (self->health > self->gib_health)
+			infantry_unhead (self);
+		gi.sound (self, CHAN_VOICE, sound_die2, 1, ATTN_MEDIUM, 0);
 	}
 	else if (n == 1) {
 		self->monsterinfo.currentmove = &infantry_move_death2;
-		gi.sound (self, CHAN_VOICE, sound_die1, 1, ATTN_NORM, 0);
+		if (self->health > self->gib_health)
+			infantry_unhead (self);
+		gi.sound (self, CHAN_VOICE, sound_die1, 1, ATTN_MEDIUM, 0);
 	}
 	else {
 		self->monsterinfo.currentmove = &infantry_move_death3;
-		gi.sound (self, CHAN_VOICE, sound_die2, 1, ATTN_NORM, 0);
+		gi.sound (self, CHAN_VOICE, sound_die2, 1, ATTN_MEDIUM, 0);
 	}
 }
 
@@ -437,15 +493,12 @@ void infantry_dodge (edict_t *self, edict_t *attacker, float eta) {
 }
 
 
-void infantry_set_firetime (edict_t *self) {
+void infantry_cock_gun (edict_t *self) {
 	int		n;
 
-	n = (rand () & 15) + 5;
-	self->monsterinfo.pausetime = level.time + n * FRAMETIME;
-}
-
-void infantry_cock_gun (edict_t *self) {
 	gi.sound (self, CHAN_WEAPON, sound_weapon_cock, 1, ATTN_NORM, 0);
+	n = (rand () & 15) + 3 + 7;
+	self->monsterinfo.pausetime = level.time + n * FRAMETIME;
 }
 
 void infantry_fire (edict_t *self) {
@@ -459,21 +512,21 @@ void infantry_fire (edict_t *self) {
 
 mframe_t infantry_frames_attack1[] =
 {
-	ai_charge, 10, infantry_set_firetime,
-	ai_charge, 6, NULL,
-	ai_charge, 0, infantry_fire,
-	ai_charge, 0, NULL,
-	ai_charge, 1, NULL,
-	ai_charge, -7, NULL,
-	ai_charge, -6, NULL,
+	ai_charge, 4, NULL,
+	ai_charge, -1, NULL,
 	ai_charge, -1, NULL,
 	ai_charge, 0, infantry_cock_gun,
-	ai_charge, 0, NULL,
-	ai_charge, 0, NULL,
-	ai_charge, 0, NULL,
-	ai_charge, 0, NULL,
 	ai_charge, -1, NULL,
-	ai_charge, -1, NULL
+	ai_charge, 1, NULL,
+	ai_charge, 1, NULL,
+	ai_charge, 2, NULL,
+	ai_charge, -2, NULL,
+	ai_charge, -3, NULL,
+	ai_charge, 1, infantry_fire,
+	ai_charge, 5, NULL,
+	ai_charge, -1, NULL,
+	ai_charge, -2, NULL,
+	ai_charge, -3, NULL
 };
 mmove_t infantry_move_attack1 = { FRAME_attak101, FRAME_attak115, infantry_frames_attack1, infantry_run };
 
@@ -519,6 +572,10 @@ void SP_monster_infantry (edict_t *self) {
 		return;
 	}
 
+	//	if (!net_compatibility->value)
+	//	if ((int)dmflags->value & DF_FLASHLIGHT)	
+	//		self->s.effects = EF_FLASHLIGHT;		
+
 	sound_pain1 = gi.soundindex ("infantry/infpain1.wav");
 	sound_pain2 = gi.soundindex ("infantry/infpain2.wav");
 	sound_die1 = gi.soundindex ("infantry/infdeth1.wav");
@@ -533,6 +590,10 @@ void SP_monster_infantry (edict_t *self) {
 	sound_search = gi.soundindex ("infantry/infsrch1.wav");
 	sound_idle = gi.soundindex ("infantry/infidle1.wav");
 
+	sound_step1 = gi.soundindex("infantry/step1.wav");
+	sound_step2 = gi.soundindex("infantry/step2.wav");
+	sound_step3 = gi.soundindex("infantry/step3.wav");
+	sound_step4 = gi.soundindex("infantry/step4.wav");
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
@@ -547,10 +608,9 @@ void SP_monster_infantry (edict_t *self) {
 		self->gib_health = -40;
 	self->mass = 200;
 
-
 	self->pain = infantry_pain;
 	self->die = infantry_die;
-	self->s.renderfx |= RF_MONSTER;
+
 	self->monsterinfo.stand = infantry_stand;
 	self->monsterinfo.walk = infantry_walk;
 	self->monsterinfo.run = infantry_run;
@@ -559,7 +619,7 @@ void SP_monster_infantry (edict_t *self) {
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = infantry_sight;
 	self->monsterinfo.idle = infantry_fidget;
-
+	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &infantry_move_stand;

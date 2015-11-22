@@ -1,4 +1,23 @@
 /*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
 ==============================================================================
 
 insane
@@ -14,6 +33,20 @@ static int	sound_fist;
 static int	sound_shake;
 static int	sound_moan;
 static int	sound_scream[8];
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void insane_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 void insane_fist (edict_t *self) {
 	gi.sound (self, CHAN_VOICE, sound_fist, 1, ATTN_IDLE, 0);
@@ -241,13 +274,13 @@ mmove_t insane_move_down = { FRAME_stand100, FRAME_stand160, insane_frames_down,
 mframe_t insane_frames_walk_normal[] =
 {
 	ai_walk, 0, insane_scream,
-	ai_walk, 2.5, NULL,
+	ai_walk, 2.5, insane_step,
 	ai_walk, 3.5, NULL,
 	ai_walk, 1.7, NULL,
 	ai_walk, 2.3, NULL,
 	ai_walk, 2.4, NULL,
 	ai_walk, 2.2, NULL,
-	ai_walk, 4.2, NULL,
+	ai_walk, 4.2, insane_step,
 	ai_walk, 5.6, NULL,
 	ai_walk, 3.3, NULL,
 	ai_walk, 2.4, NULL,
@@ -260,27 +293,27 @@ mmove_t insane_move_run_normal = { FRAME_walk27, FRAME_walk39, insane_frames_wal
 mframe_t insane_frames_walk_insane[] =
 {
 	ai_walk, 0, insane_scream,		// walk 1
-	ai_walk, 3.4, NULL,		// walk 2
+	ai_walk, 3.4, insane_step,		// walk 2
 	ai_walk, 3.6, NULL,		// 3
 	ai_walk, 2.9, NULL,		// 4
 	ai_walk, 2.2, NULL,		// 5
 	ai_walk, 2.6, NULL,		// 6
-	ai_walk, 0, NULL,		// 7
+	ai_walk, 0, insane_step,		// 7
 	ai_walk, 0.7, NULL,		// 8
 	ai_walk, 4.8, NULL,		// 9
 	ai_walk, 5.3, NULL,		// 10
 	ai_walk, 1.1, NULL,		// 11
-	ai_walk, 2, NULL,		// 12
+	ai_walk, 2, insane_step,		// 12
 	ai_walk, 0.5, NULL,		// 13
 	ai_walk, 0, NULL,		// 14
 	ai_walk, 0, NULL,		// 15
 	ai_walk, 4.9, NULL,		// 16
-	ai_walk, 6.7, NULL,		// 17
+	ai_walk, 6.7, insane_step,		// 17
 	ai_walk, 3.8, NULL,		// 18
 	ai_walk, 2, NULL,		// 19
 	ai_walk, 0.2, NULL,		// 20
 	ai_walk, 0, NULL,		// 21
-	ai_walk, 3.4, NULL,		// 22
+	ai_walk, 3.4, insane_step,		// 22
 	ai_walk, 6.4, NULL,		// 23
 	ai_walk, 5, NULL,		// 24
 	ai_walk, 1.8, NULL,		// 25
@@ -531,11 +564,14 @@ void insane_dead (edict_t *self) {
 	}
 	else {
 		VectorSet (self->mins, -16, -16, -24);
-		VectorSet (self->maxs, 16, 16, -8);
+		VectorSet (self->maxs, 16, 16, 1);
 		self->movetype = MOVETYPE_TOSS;
 	}
 	self->svflags |= SVF_DEADMONSTER;
 	self->nextthink = 0;
+
+	Touch_Corpse (self);
+
 	gi.linkentity (self);
 }
 
@@ -544,7 +580,7 @@ void insane_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 	int		n;
 
 	if (self->health <= self->gib_health) {
-		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_IDLE, 0);
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
 		for (n = 0; n < 2; n++)
 			ThrowGib (self, "models/objects/gibs/bone/tris.md2", damage, GIB_ORGANIC);
 		for (n = 0; n < 4; n++)
@@ -596,6 +632,12 @@ void SP_misc_insane (edict_t *self) {
 	sound_scream[6] = gi.soundindex ("insane/insane9.wav");
 	sound_scream[7] = gi.soundindex ("insane/insane10.wav");
 
+
+	sound_step1 = gi.soundindex("player/step1.wav");
+	sound_step2 = gi.soundindex("player/step2.wav");
+	sound_step3 = gi.soundindex("player/step3.wav");
+	sound_step4 = gi.soundindex("player/step4.wav");
+
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
 	self->s.modelindex = gi.modelindex ("models/monsters/insane/tris.md2");
@@ -610,8 +652,6 @@ void SP_misc_insane (edict_t *self) {
 		self->gib_health = -50;
 	self->mass = 300;
 
-
-
 	self->pain = insane_pain;
 	self->die = insane_die;
 
@@ -623,7 +663,7 @@ void SP_misc_insane (edict_t *self) {
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = NULL;
 	self->monsterinfo.aiflags |= AI_GOOD_GUY;
-
+	self->s.renderfx |= RF_MONSTER;
 	//@@
 	//	self->s.skinnum = skin;
 	//	skin++;

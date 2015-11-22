@@ -256,14 +256,6 @@ void CL_AddParticles (void) {
 		}
 
 		if (p->flags & PARTICLE_NONSOLID) {
-			vec3_t maxs = { 1, 1, 1 };
-			vec3_t mins = { -1, -1, -1 };
-			trace_t trace = CL_PMTraceWorld (p->oldOrg, mins, maxs, org, MASK_SHOT, qtrue);
-			if (trace.fraction != 1.0) {
-				p->next = free_particles;
-				free_particles = p;
-				continue;
-			}
 
 			if (CL_PMpointcontents (kls) & MASK_SHOT) {
 				p->next = free_particles;
@@ -1062,7 +1054,7 @@ void CL_ParticleTracer (vec3_t start, vec3_t end) {
 	active_particles = p;
 	p->orient = 0;
 	p->flags = PARTICLE_DIRECTIONAL;
-//	p->flags |= PARTICLE_NONSOLID;
+	p->flags |= PARTICLE_NONSOLID;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
 	p->sFactor = GL_SRC_ALPHA;

@@ -43,7 +43,20 @@ static int	sound_search;
 static int	sound_melee1;
 static int	sound_melee2;
 static int	sound_melee3;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
 
+void brain_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 void brain_sight (edict_t *self, edict_t *other) {
 	gi.sound (self, CHAN_VOICE, sound_sight, 1, ATTN_NORM, 0);
@@ -156,13 +169,13 @@ void brain_idle (edict_t *self) {
 //
 mframe_t brain_frames_walk1[] =
 {
-	ai_walk, 7, NULL,
+	ai_walk, 7, brain_step,
 	ai_walk, 2, NULL,
 	ai_walk, 3, NULL,
 	ai_walk, 3, NULL,
 	ai_walk, 1, NULL,
 	ai_walk, 0, NULL,
-	ai_walk, 0, NULL,
+	ai_walk, 0, brain_step,
 	ai_walk, 9, NULL,
 	ai_walk, -4, NULL,
 	ai_walk, -1, NULL,
@@ -496,13 +509,13 @@ void brain_melee (edict_t *self) {
 
 mframe_t brain_frames_run[] =
 {
-	ai_run, 9, NULL,
+	ai_run, 9, brain_step,
 	ai_run, 2, NULL,
 	ai_run, 3, NULL,
 	ai_run, 3, NULL,
 	ai_run, 1, NULL,
 	ai_run, 0, NULL,
-	ai_run, 0, NULL,
+	ai_run, 0, brain_step,
 	ai_run, 10, NULL,
 	ai_run, -4, NULL,
 	ai_run, -1, NULL,
@@ -618,6 +631,11 @@ void SP_monster_brain (edict_t *self) {
 	sound_melee1 = gi.soundindex ("brain/melee1.wav");
 	sound_melee2 = gi.soundindex ("brain/melee2.wav");
 	sound_melee3 = gi.soundindex ("brain/melee3.wav");
+
+	sound_step1 = gi.soundindex("berserk/step1.wav");
+	sound_step2 = gi.soundindex("berserk/step2.wav");
+	sound_step3 = gi.soundindex("berserk/step3.wav");
+	sound_step4 = gi.soundindex("berserk/step4.wav");
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;

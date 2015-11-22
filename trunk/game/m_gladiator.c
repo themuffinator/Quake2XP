@@ -39,6 +39,20 @@ static int	sound_cleaver_miss;
 static int	sound_idle;
 static int	sound_search;
 static int	sound_sight;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void gladiator_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 void gladiator_idle (edict_t *self) {
@@ -76,7 +90,7 @@ void gladiator_stand (edict_t *self) {
 
 mframe_t gladiator_frames_walk[] =
 {
-	ai_walk, 15, NULL,
+	ai_walk, 15, gladiator_step,
 	ai_walk, 7, NULL,
 	ai_walk, 6, NULL,
 	ai_walk, 5, NULL,
@@ -84,7 +98,7 @@ mframe_t gladiator_frames_walk[] =
 	ai_walk, 0, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 8, NULL,
-	ai_walk, 12, NULL,
+	ai_walk, 12, gladiator_step,
 	ai_walk, 8, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 5, NULL,
@@ -102,10 +116,10 @@ void gladiator_walk (edict_t *self) {
 
 mframe_t gladiator_frames_run[] =
 {
-	ai_run, 23, NULL,
+	ai_run, 23, gladiator_step,
 	ai_run, 14, NULL,
 	ai_run, 14, NULL,
-	ai_run, 21, NULL,
+	ai_run, 21, gladiator_step,
 	ai_run, 12, NULL,
 	ai_run, 13, NULL
 };
@@ -349,6 +363,11 @@ void SP_monster_gladiator (edict_t *self) {
 	sound_idle = gi.soundindex ("gladiator/gldidle1.wav");
 	sound_search = gi.soundindex ("gladiator/gldsrch1.wav");
 	sound_sight = gi.soundindex ("gladiator/sight.wav");
+
+	sound_step1 = gi.soundindex("berserk/step1.wav");
+	sound_step2 = gi.soundindex("berserk/step2.wav");
+	sound_step3 = gi.soundindex("berserk/step3.wav");
+	sound_step4 = gi.soundindex("berserk/step4.wav");
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;

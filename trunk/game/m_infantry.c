@@ -43,6 +43,20 @@ static int	sound_punch_hit;
 static int	sound_sight;
 static int	sound_search;
 static int	sound_idle;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void infantry_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 mframe_t infantry_frames_stand[] =
@@ -138,13 +152,13 @@ void infantry_fidget (edict_t *self) {
 
 mframe_t infantry_frames_walk[] =
 {
-	ai_walk, 5, NULL,
+	ai_walk, 5, infantry_step,
 	ai_walk, 4, NULL,
 	ai_walk, 4, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 4, NULL,
 	ai_walk, 5, NULL,
-	ai_walk, 6, NULL,
+	ai_walk, 6, infantry_step,
 	ai_walk, 4, NULL,
 	ai_walk, 4, NULL,
 	ai_walk, 4, NULL,
@@ -159,11 +173,11 @@ void infantry_walk (edict_t *self) {
 
 mframe_t infantry_frames_run[] =
 {
-	ai_run, 10, NULL,
+	ai_run, 10, infantry_step,
 	ai_run, 20, NULL,
 	ai_run, 5, NULL,
 	ai_run, 7, NULL,
-	ai_run, 30, NULL,
+	ai_run, 30, infantry_step,
 	ai_run, 35, NULL,
 	ai_run, 2, NULL,
 	ai_run, 6, NULL
@@ -576,6 +590,10 @@ void SP_monster_infantry (edict_t *self) {
 	sound_search = gi.soundindex ("infantry/infsrch1.wav");
 	sound_idle = gi.soundindex ("infantry/infidle1.wav");
 
+	sound_step1 = gi.soundindex("infantry/step1.wav");
+	sound_step2 = gi.soundindex("infantry/step2.wav");
+	sound_step3 = gi.soundindex("infantry/step3.wav");
+	sound_step4 = gi.soundindex("infantry/step4.wav");
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;

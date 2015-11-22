@@ -1,4 +1,23 @@
 /*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
 ==============================================================================
 
 brain
@@ -24,7 +43,20 @@ static int	sound_search;
 static int	sound_melee1;
 static int	sound_melee2;
 static int	sound_melee3;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
 
+void brain_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 void brain_sight (edict_t *self, edict_t *other) {
 	gi.sound (self, CHAN_VOICE, sound_sight, 1, ATTN_NORM, 0);
@@ -137,13 +169,13 @@ void brain_idle (edict_t *self) {
 //
 mframe_t brain_frames_walk1[] =
 {
-	ai_walk, 7, NULL,
+	ai_walk, 7, brain_step,
 	ai_walk, 2, NULL,
 	ai_walk, 3, NULL,
 	ai_walk, 3, NULL,
 	ai_walk, 1, NULL,
 	ai_walk, 0, NULL,
-	ai_walk, 0, NULL,
+	ai_walk, 0, brain_step,
 	ai_walk, 9, NULL,
 	ai_walk, -4, NULL,
 	ai_walk, -1, NULL,
@@ -470,233 +502,6 @@ void brain_melee (edict_t *self) {
 		self->monsterinfo.currentmove = &brain_move_attack2;
 }
 
-static qboolean brain_tounge_attack_ok (vec3_t start, vec3_t end) {
-	vec3_t	dir, angles;
-
-	// check for max distance
-	VectorSubtract (start, end, dir);
-	if (VectorLength (dir) > 512)
-		return qfalse;
-
-	// check for min/max pitch
-	vectoangles (dir, angles);
-	if (angles[0] < -180)
-		angles[0] += 360;
-	if (fabs (angles[0]) > 30)
-		return qfalse;
-
-	return qtrue;
-}
-
-void brain_tounge_attack (edict_t *self) {
-	vec3_t	offset, start, f, r, end, dir;
-	trace_t	tr;
-	int damage;
-
-	AngleVectors (self->s.angles, f, r, NULL);
-	// VectorSet (offset, 24, 0, 6);
-	VectorSet (offset, 24, 0, 16);
-	G_ProjectSource (self->s.origin, offset, f, r, start);
-
-	VectorCopy (self->enemy->s.origin, end);
-	if (!brain_tounge_attack_ok (start, end)) {
-		end[2] = self->enemy->s.origin[2] + self->enemy->maxs[2] - 8;
-		if (!brain_tounge_attack_ok (start, end)) {
-			end[2] = self->enemy->s.origin[2] + self->enemy->mins[2] + 8;
-			if (!brain_tounge_attack_ok (start, end))
-				return;
-		}
-	}
-	VectorCopy (self->enemy->s.origin, end);
-
-	tr = gi.trace (start, NULL, NULL, end, self, MASK_SHOT);
-	if (tr.ent != self->enemy)
-		return;
-
-	damage = 5;
-	gi.sound (self, CHAN_WEAPON, sound_tentacles_retract, 1, ATTN_NORM, 0);
-
-	gi.WriteByte (svc_temp_entity);
-	gi.WriteByte (TE_PARASITE_ATTACK);
-	gi.WriteShort (self - g_edicts);
-	gi.WritePosition (start);
-	gi.WritePosition (end);
-	gi.multicast (self->s.origin, MULTICAST_PVS);
-
-	VectorSubtract (start, end, dir);
-	T_Damage (self->enemy, self, self, dir, self->enemy->s.origin, vec3_origin, damage, 0, DAMAGE_NO_KNOCKBACK, MOD_BRAINTENTACLE);
-
-	// pull the enemy in
-	{
-		vec3_t	forward;
-		self->s.origin[2] += 1;
-		AngleVectors (self->s.angles, forward, NULL, NULL);
-		VectorScale (forward, -1200, self->enemy->velocity);
-	}
-
-}
-
-// Brian right eye center
-
-struct r_eyeball {
-	float x;
-	float y;
-	float z;
-} brain_reye[11] = {
-	{ 0.746700, 0.238370, 34.167690 },
-	{ -1.076390, 0.238370, 33.386372 },
-	{ -1.335500, 5.334300, 32.177170 },
-	{ -0.175360, 8.846370, 30.635479 },
-	{ -2.757590, 7.804610, 30.150860 },
-	{ -5.575090, 5.152840, 30.056160 },
-	{ -7.017550, 3.262470, 30.552521 },
-	{ -7.915740, 0.638800, 33.176189 },
-	{ -3.915390, 8.285730, 33.976349 },
-	{ -0.913540, 10.933030, 34.141811 },
-	{ -0.369900, 8.923900, 34.189079 }
-};
-
-
-
-// Brain left eye center
-struct l_eyeball {
-	float x;
-	float y;
-	float z;
-} brain_leye[11] = {
-	{ -3.364710, 0.327750, 33.938381 },
-	{ -5.140450, 0.493480, 32.659851 },
-	{ -5.341980, 5.646980, 31.277901 },
-	{ -4.134480, 9.277440, 29.925621 },
-	{ -6.598340, 6.815090, 29.322620 },
-	{ -8.610840, 2.529650, 29.251591 },
-	{ -9.231360, 0.093280, 29.747959 },
-	{ -11.004110, 1.936930, 32.395260 },
-	{ -7.878310, 7.648190, 33.148151 },
-	{ -4.947370, 11.430050, 33.313610 },
-	{ -4.332820, 9.444570, 33.526340 }
-};
-
-// note to self
-// need to get an x,y,z offset for
-// each frame of the run cycle
-void brain_laserbeam (edict_t *self) {
-
-	vec3_t forward, right, up;
-	vec3_t tempang, start;
-	vec3_t	dir, angles, end;
-	edict_t *ent;
-
-	// RAFAEL
-	// cant call sound this frequent
-	if (random () > 0.8)
-		gi.sound (self, CHAN_AUTO, gi.soundindex ("misc/lasfly.wav"), 1, ATTN_STATIC, 0);
-
-	// check for max distance
-
-	VectorCopy (self->s.origin, start);
-	VectorCopy (self->enemy->s.origin, end);
-	VectorSubtract (end, start, dir);
-	vectoangles (dir, angles);
-
-	// dis is my right eye
-	ent = G_Spawn ();
-	VectorCopy (self->s.origin, ent->s.origin);
-	VectorCopy (angles, tempang);
-	AngleVectors (tempang, forward, right, up);
-	VectorCopy (tempang, ent->s.angles);
-	VectorCopy (ent->s.origin, start);
-	VectorMA (start, brain_reye[self->s.frame - FRAME_walk101].x, right, start);
-	VectorMA (start, brain_reye[self->s.frame - FRAME_walk101].y, forward, start);
-	VectorMA (start, brain_reye[self->s.frame - FRAME_walk101].z, up, start);
-	VectorCopy (start, ent->s.origin);
-	ent->enemy = self->enemy;
-	ent->owner = self;
-	ent->dmg = 1;
-	monster_dabeam (ent);
-
-	// dis is me left eye
-	ent = G_Spawn ();
-	VectorCopy (self->s.origin, ent->s.origin);
-	VectorCopy (angles, tempang);
-	AngleVectors (tempang, forward, right, up);
-	VectorCopy (tempang, ent->s.angles);
-	VectorCopy (ent->s.origin, start);
-	VectorMA (start, brain_leye[self->s.frame - FRAME_walk101].x, right, start);
-	VectorMA (start, brain_leye[self->s.frame - FRAME_walk101].y, forward, start);
-	VectorMA (start, brain_leye[self->s.frame - FRAME_walk101].z, up, start);
-	VectorCopy (start, ent->s.origin);
-	ent->enemy = self->enemy;
-	ent->owner = self;
-	ent->dmg = 1;
-	monster_dabeam (ent);
-
-}
-
-void brain_laserbeam_reattack (edict_t *self) {
-	if (random () < 0.5)
-	if (visible (self, self->enemy))
-	if (self->enemy->health > 0)
-		self->s.frame = FRAME_walk101;
-}
-
-
-mframe_t brain_frames_attack3[] =
-{
-	ai_charge, 5, NULL,
-	ai_charge, -4, NULL,
-	ai_charge, -4, NULL,
-	ai_charge, -3, NULL,
-	ai_charge, 0, brain_chest_open,
-	ai_charge, 0, brain_tounge_attack,
-	ai_charge, 13, NULL,
-	ai_charge, 0, brain_tentacle_attack,
-	ai_charge, 2, NULL,
-	ai_charge, 0, brain_tounge_attack,
-	ai_charge, -9, brain_chest_closed,
-	ai_charge, 0, NULL,
-	ai_charge, 4, NULL,
-	ai_charge, 3, NULL,
-	ai_charge, 2, NULL,
-	ai_charge, -3, NULL,
-	ai_charge, -6, NULL
-};
-mmove_t brain_move_attack3 = { FRAME_attak201, FRAME_attak217, brain_frames_attack3, brain_run };
-
-mframe_t brain_frames_attack4[] =
-{
-	ai_charge, 9, brain_laserbeam,
-	ai_charge, 2, brain_laserbeam,
-	ai_charge, 3, brain_laserbeam,
-	ai_charge, 3, brain_laserbeam,
-	ai_charge, 1, brain_laserbeam,
-	ai_charge, 0, brain_laserbeam,
-	ai_charge, 0, brain_laserbeam,
-	ai_charge, 10, brain_laserbeam,
-	ai_charge, -4, brain_laserbeam,
-	ai_charge, -1, brain_laserbeam,
-	ai_charge, 2, brain_laserbeam_reattack
-};
-mmove_t brain_move_attack4 = { FRAME_walk101, FRAME_walk111, brain_frames_attack4, brain_run };
-
-
-// RAFAEL
-void brain_attack (edict_t *self) {
-	int r;
-
-	if (random () < 0.8) {
-		r = range (self, self->enemy);
-		if (r == RANGE_NEAR) {
-			if (random () < 0.5)
-				self->monsterinfo.currentmove = &brain_move_attack3;
-			else
-				self->monsterinfo.currentmove = &brain_move_attack4;
-		}
-		else if (r > RANGE_NEAR)
-			self->monsterinfo.currentmove = &brain_move_attack4;
-	}
-
-}
 
 //
 // RUN
@@ -704,13 +509,13 @@ void brain_attack (edict_t *self) {
 
 mframe_t brain_frames_run[] =
 {
-	ai_run, 9, NULL,
+	ai_run, 9, brain_step,
 	ai_run, 2, NULL,
 	ai_run, 3, NULL,
 	ai_run, 3, NULL,
 	ai_run, 1, NULL,
 	ai_run, 0, NULL,
-	ai_run, 0, NULL,
+	ai_run, 0, brain_step,
 	ai_run, 10, NULL,
 	ai_run, -4, NULL,
 	ai_run, -1, NULL,
@@ -737,6 +542,8 @@ void brain_pain (edict_t *self, edict_t *other, float kick, int damage) {
 		return;
 
 	self->pain_debounce_time = level.time + 3;
+	//	if (skill->value == 3)
+	//		return;		// no pain anims in nightmare
 
 	r = random ();
 	if (r < 0.33) {
@@ -755,10 +562,11 @@ void brain_pain (edict_t *self, edict_t *other, float kick, int damage) {
 
 void brain_dead (edict_t *self) {
 	VectorSet (self->mins, -16, -16, -24);
-	VectorSet (self->maxs, 16, 16, -8);
+	VectorSet (self->maxs, 16, 16, 1);
 	self->movetype = MOVETYPE_TOSS;
 	self->svflags |= SVF_DEADMONSTER;
 	self->nextthink = 0;
+
 	Touch_Corpse (self);
 
 	gi.linkentity (self);
@@ -778,7 +586,7 @@ void brain_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage
 
 	// check for gib
 	if (self->health <= self->gib_health) {
-		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
 		for (n = 0; n < 2; n++)
 			ThrowGib (self, "models/objects/gibs/bone/tris.md2", damage, GIB_ORGANIC);
 		for (n = 0; n < 4; n++)
@@ -824,6 +632,11 @@ void SP_monster_brain (edict_t *self) {
 	sound_melee2 = gi.soundindex ("brain/melee2.wav");
 	sound_melee3 = gi.soundindex ("brain/melee3.wav");
 
+	sound_step1 = gi.soundindex("berserk/step1.wav");
+	sound_step2 = gi.soundindex("berserk/step2.wav");
+	sound_step3 = gi.soundindex("berserk/step3.wav");
+	sound_step4 = gi.soundindex("berserk/step4.wav");
+
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
 	self->s.modelindex = gi.modelindex ("models/monsters/brain/tris.md2");
@@ -837,7 +650,6 @@ void SP_monster_brain (edict_t *self) {
 		self->gib_health = -150;
 	self->mass = 400;
 
-
 	self->pain = brain_pain;
 	self->die = brain_die;
 
@@ -845,7 +657,7 @@ void SP_monster_brain (edict_t *self) {
 	self->monsterinfo.walk = brain_walk;
 	self->monsterinfo.run = brain_run;
 	self->monsterinfo.dodge = brain_dodge;
-	self->monsterinfo.attack = brain_attack;
+	//	self->monsterinfo.attack = brain_attack;
 	self->monsterinfo.melee = brain_melee;
 	self->monsterinfo.sight = brain_sight;
 	self->monsterinfo.search = brain_search;

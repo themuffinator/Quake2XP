@@ -1,4 +1,23 @@
 /*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
 ==============================================================================
 
 BERSERK
@@ -16,6 +35,20 @@ static int sound_idle;
 static int sound_punch;
 static int sound_sight;
 static int sound_search;
+static int sound_step1, sound_step2, sound_step3, sound_step4;
+
+void berserk_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 void berserk_sight (edict_t *self, edict_t *other) {
 	gi.sound (self, CHAN_VOICE, sound_sight, 1, ATTN_NORM, 0);
@@ -81,13 +114,13 @@ mframe_t berserk_frames_walk[] =
 {
 	ai_walk, 9.1, NULL,
 	ai_walk, 6.3, NULL,
-	ai_walk, 4.9, NULL,
+	ai_walk, 4.9, berserk_step,
 	ai_walk, 6.7, NULL,
 	ai_walk, 6.0, NULL,
 	ai_walk, 8.2, NULL,
 	ai_walk, 7.2, NULL,
 	ai_walk, 6.1, NULL,
-	ai_walk, 4.9, NULL,
+	ai_walk, 4.9, berserk_step,
 	ai_walk, 4.7, NULL,
 	ai_walk, 4.7, NULL,
 	ai_walk, 4.8, NULL
@@ -125,10 +158,10 @@ void berserk_walk (edict_t *self) {
 
 mframe_t berserk_frames_run1[] =
 {
-	ai_run, 21, NULL,
+	ai_run, 21, berserk_step,
 	ai_run, 11, NULL,
 	ai_run, 21, NULL,
-	ai_run, 25, NULL,
+	ai_run, 25, berserk_step,
 	ai_run, 18, NULL,
 	ai_run, 19, NULL
 };
@@ -292,8 +325,8 @@ void berserk_pain (edict_t *self, edict_t *other, float kick, int damage) {
 	self->pain_debounce_time = level.time + 3;
 	gi.sound (self, CHAN_VOICE, sound_pain, 1, ATTN_NORM, 0);
 
-	if (skill->value == 3)
-		return;		// no pain anims in nightmare
+	//	if (skill->value == 3)
+	//		return;		// no pain anims in nightmare
 
 	if ((damage < 20) || (random () < 0.5))
 		self->monsterinfo.currentmove = &berserk_move_pain1;
@@ -303,17 +336,23 @@ void berserk_pain (edict_t *self, edict_t *other, float kick, int damage) {
 
 
 void berserk_dead (edict_t *self) {
+
+
 	VectorSet (self->mins, -16, -16, -24);
-	VectorSet (self->maxs, 16, 16, -8);
+	//	VectorSet (self->maxs, 16, 16, -8);
+	VectorSet (self->maxs, 16, 16, 1);
+
 	self->movetype = MOVETYPE_TOSS;
 	self->svflags |= SVF_DEADMONSTER;
 	self->nextthink = 0;
+
 	Touch_Corpse (self);
 
 	gi.linkentity (self);
 
 	if (skill->value < 3) M_FlyCheck (self);
 	monster_reborn (self);
+
 
 }
 
@@ -356,7 +395,7 @@ void berserk_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int dama
 	int		n;
 
 	if (self->health <= self->gib_health) {
-		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
 		for (n = 0; n < 2; n++)
 			ThrowGib (self, "models/objects/gibs/bone/tris.md2", damage, GIB_ORGANIC);
 		for (n = 0; n < 4; n++)
@@ -395,13 +434,17 @@ void SP_monster_berserk (edict_t *self) {
 	sound_punch = gi.soundindex ("berserk/attack.wav");
 	sound_search = gi.soundindex ("berserk/bersrch1.wav");
 	sound_sight = gi.soundindex ("berserk/sight.wav");
+	
+	sound_step1 = gi.soundindex("berserk/step1.wav");
+	sound_step2 = gi.soundindex("berserk/step2.wav");
+	sound_step3 = gi.soundindex("berserk/step3.wav");
+	sound_step4 = gi.soundindex("berserk/step4.wav");
 
 	self->s.modelindex = gi.modelindex ("models/monsters/berserk/tris.md2");
 	VectorSet (self->mins, -16, -16, -24);
 	VectorSet (self->maxs, 16, 16, 32);
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
-	self->s.renderfx |= RF_MONSTER;
 
 	self->health = 240;
 	if (skill->value == 3)
@@ -409,7 +452,6 @@ void SP_monster_berserk (edict_t *self) {
 	else
 		self->gib_health = -60;
 	self->mass = 250;
-
 
 	self->pain = berserk_pain;
 	self->die = berserk_die;
@@ -422,7 +464,7 @@ void SP_monster_berserk (edict_t *self) {
 	self->monsterinfo.melee = berserk_melee;
 	self->monsterinfo.sight = berserk_sight;
 	self->monsterinfo.search = berserk_search;
-
+	self->s.renderfx |= RF_MONSTER;
 	self->monsterinfo.currentmove = &berserk_move_stand;
 	self->monsterinfo.scale = MODEL_SCALE;
 

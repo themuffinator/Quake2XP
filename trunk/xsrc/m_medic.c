@@ -1,4 +1,23 @@
 /*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
 ==============================================================================
 
 MEDIC
@@ -22,6 +41,20 @@ static int	sound_hook_launch;
 static int	sound_hook_hit;
 static int	sound_hook_heal;
 static int	sound_hook_retract;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void medic_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 edict_t *medic_FindDeadMonster (edict_t *self) {
@@ -194,13 +227,13 @@ void medic_stand (edict_t *self) {
 
 mframe_t medic_frames_walk[] =
 {
-	ai_walk, 6.2, NULL,
+	ai_walk, 6.2, medic_step,
 	ai_walk, 18.1, NULL,
 	ai_walk, 1, NULL,
 	ai_walk, 9, NULL,
 	ai_walk, 10, NULL,
 	ai_walk, 9, NULL,
-	ai_walk, 11, NULL,
+	ai_walk, 11, medic_step,
 	ai_walk, 11.6, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 9.9, NULL,
@@ -216,10 +249,10 @@ void medic_walk (edict_t *self) {
 
 mframe_t medic_frames_run[] =
 {
-	ai_run, 18, NULL,
+	ai_run, 18, medic_step,
 	ai_run, 22.5, NULL,
 	ai_run, 25.4, NULL,
-	ai_run, 23.4, NULL,
+	ai_run, 23.4, medic_step,
 	ai_run, 24, NULL,
 	ai_run, 35.6, NULL
 
@@ -330,10 +363,11 @@ void medic_fire_blaster (edict_t *self) {
 
 void medic_dead (edict_t *self) {
 	VectorSet (self->mins, -16, -16, -24);
-	VectorSet (self->maxs, 16, 16, -8);
+	VectorSet (self->maxs, 16, 16, 1);
 	self->movetype = MOVETYPE_TOSS;
 	self->svflags |= SVF_DEADMONSTER;
 	self->nextthink = 0;
+
 	Touch_Corpse (self);
 
 	gi.linkentity (self);
@@ -387,7 +421,7 @@ void medic_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage
 
 	// check for gib
 	if (self->health <= self->gib_health) {
-		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
 		for (n = 0; n < 2; n++)
 			ThrowGib (self, "models/objects/gibs/bone/tris.md2", damage, GIB_ORGANIC);
 		for (n = 0; n < 4; n++)
@@ -684,6 +718,11 @@ void SP_monster_medic (edict_t *self) {
 
 	gi.soundindex ("medic/medatck1.wav");
 
+	sound_step1 = gi.soundindex("berserk/step1.wav");
+	sound_step2 = gi.soundindex("berserk/step2.wav");
+	sound_step3 = gi.soundindex("berserk/step3.wav");
+	sound_step4 = gi.soundindex("berserk/step4.wav");
+
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
 	self->s.modelindex = gi.modelindex ("models/monsters/medic/tris.md2");
@@ -696,7 +735,6 @@ void SP_monster_medic (edict_t *self) {
 	else
 		self->gib_health = -130;
 	self->mass = 400;
-
 
 	self->pain = medic_pain;
 	self->die = medic_die;

@@ -221,8 +221,8 @@ void soldier_walk1_random (edict_t *self) {
 
 mframe_t soldier_frames_walk1[] =
 {
-	ai_walk, 3, NULL,
-	ai_walk, 6, soldier_step,
+	ai_walk, 3, soldier_step,
+	ai_walk, 6, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 2, NULL,
@@ -259,17 +259,18 @@ mmove_t soldier_move_walk1 = { FRAME_walk101, FRAME_walk133, soldier_frames_walk
 
 mframe_t soldier_frames_walk2[] =
 {
+	ai_walk, 4, soldier_step,
 	ai_walk, 4, NULL,
-	ai_walk, 4, NULL,
-	ai_walk, 9, soldier_step,
+	ai_walk, 9, NULL,
 	ai_walk, 8, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 1, NULL,
-	ai_walk, 3, NULL,
-	ai_walk, 7, soldier_step,
+	ai_walk, 3, soldier_step,
+	ai_walk, 7, NULL,
 	ai_walk, 6, NULL,
-	ai_walk, 7, soldier_step
+	ai_walk, 7, NULL
 };
+
 mmove_t soldier_move_walk2 = { FRAME_walk209, FRAME_walk218, soldier_frames_walk2, NULL };
 
 void soldier_walk (edict_t *self) {

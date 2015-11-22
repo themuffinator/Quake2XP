@@ -1,4 +1,23 @@
 /*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+*/
+/*
 ==============================================================================
 
 GLADIATOR
@@ -20,6 +39,20 @@ static int	sound_cleaver_miss;
 static int	sound_idle;
 static int	sound_search;
 static int	sound_sight;
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void gladiator_step(edict_t *self) {
+	int		n;
+	n = (rand() + 1) % 4;
+	if (n == 0)
+		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+	else if (n == 3)
+		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+}
 
 
 void gladiator_idle (edict_t *self) {
@@ -57,7 +90,7 @@ void gladiator_stand (edict_t *self) {
 
 mframe_t gladiator_frames_walk[] =
 {
-	ai_walk, 15, NULL,
+	ai_walk, 15, gladiator_step,
 	ai_walk, 7, NULL,
 	ai_walk, 6, NULL,
 	ai_walk, 5, NULL,
@@ -65,7 +98,7 @@ mframe_t gladiator_frames_walk[] =
 	ai_walk, 0, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 8, NULL,
-	ai_walk, 12, NULL,
+	ai_walk, 12, gladiator_step,
 	ai_walk, 8, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 5, NULL,
@@ -83,10 +116,10 @@ void gladiator_walk (edict_t *self) {
 
 mframe_t gladiator_frames_run[] =
 {
-	ai_run, 23, NULL,
+	ai_run, 23, gladiator_step,
 	ai_run, 14, NULL,
 	ai_run, 14, NULL,
-	ai_run, 21, NULL,
+	ai_run, 21, gladiator_step,
 	ai_run, 12, NULL,
 	ai_run, 13, NULL
 };
@@ -225,8 +258,8 @@ void gladiator_pain (edict_t *self, edict_t *other, float kick, int damage) {
 	else
 		gi.sound (self, CHAN_VOICE, sound_pain2, 1, ATTN_NORM, 0);
 
-	if (skill->value == 3)
-		return;		// no pain anims in nightmare
+	//	if (skill->value == 3)
+	//		return;		// no pain anims in nightmare
 
 	if (self->velocity[2] > 100)
 		self->monsterinfo.currentmove = &gladiator_move_pain_air;
@@ -237,17 +270,23 @@ void gladiator_pain (edict_t *self, edict_t *other, float kick, int damage) {
 
 
 void gladiator_dead (edict_t *self) {
+
+
 	VectorSet (self->mins, -16, -16, -24);
-	VectorSet (self->maxs, 16, 16, -8);
+	VectorSet (self->maxs, 16, 16, 1);
 	self->movetype = MOVETYPE_TOSS;
 	self->svflags |= SVF_DEADMONSTER;
 	self->nextthink = 0;
+
 	Touch_Corpse (self);
 
 	gi.linkentity (self);
 
+
+
 	if (skill->value < 3) M_FlyCheck (self);
 	monster_reborn (self);
+
 
 }
 
@@ -283,7 +322,7 @@ void gladiator_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int da
 
 	// check for gib
 	if (self->health <= self->gib_health) {
-		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_NORM, 0);
+		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
 		for (n = 0; n < 2; n++)
 			ThrowGib (self, "models/objects/gibs/bone/tris.md2", damage, GIB_ORGANIC);
 		for (n = 0; n < 4; n++)
@@ -325,6 +364,11 @@ void SP_monster_gladiator (edict_t *self) {
 	sound_search = gi.soundindex ("gladiator/gldsrch1.wav");
 	sound_sight = gi.soundindex ("gladiator/sight.wav");
 
+	sound_step1 = gi.soundindex("berserk/step1.wav");
+	sound_step2 = gi.soundindex("berserk/step2.wav");
+	sound_step3 = gi.soundindex("berserk/step3.wav");
+	sound_step4 = gi.soundindex("berserk/step4.wav");
+
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
 	self->s.modelindex = gi.modelindex ("models/monsters/gladiatr/tris.md2");
@@ -338,10 +382,9 @@ void SP_monster_gladiator (edict_t *self) {
 		self->gib_health = -175;
 	self->mass = 400;
 
-
 	self->pain = gladiator_pain;
 	self->die = gladiator_die;
-	self->s.renderfx |= RF_MONSTER;
+
 	self->monsterinfo.stand = gladiator_stand;
 	self->monsterinfo.walk = gladiator_walk;
 	self->monsterinfo.run = gladiator_run;
@@ -351,11 +394,10 @@ void SP_monster_gladiator (edict_t *self) {
 	self->monsterinfo.sight = gladiator_sight;
 	self->monsterinfo.idle = gladiator_idle;
 	self->monsterinfo.search = gladiator_search;
-
+	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 	self->monsterinfo.currentmove = &gladiator_move_stand;
 	self->monsterinfo.scale = MODEL_SCALE;
 
 	walkmonster_start (self);
 }
-
