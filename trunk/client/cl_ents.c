@@ -996,12 +996,12 @@ void CL_AddPacketEntities (frame_t * frame) {
 			ent.flags |= RF_VIEWERMODEL;	// only draw from mirrors
 			player_camera = qtrue;	// set filter for power shells and over
 
-			// fixed player origin from EGL
-			if ((cl_predict->value)
-				&& !(cl.frame.playerstate.pmove.
-				pm_flags & PMF_NO_PREDICTION)) {
-				VectorCopy (cl.predicted_origin, ent.origin);
-				VectorCopy (cl.predicted_origin, ent.oldorigin);
+			// Berserker fix for player shadow
+			if ((cl_predict->value) && !(cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION)) {
+
+				for (i = 0; i < 3; i++)
+					ent.oldorigin[i] = ent.origin[i] = cl.predicted_origin[i] - (1.0 - cl.lerpfrac) * cl.prediction_error[i];
+			
 			}
 
 			if (renderfx & RF_SHELL_RED)
