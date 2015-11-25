@@ -6,10 +6,8 @@ static int			num_depth_surfaces;
 static vec3_t		modelorg;			// relative to viewpoint
 
 qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
-	unsigned	numVertices, numIndices;
+/*	unsigned	numVertices, numIndices;
 	int			i, nv = surf->numEdges;
-	float		*v;
-	glpoly_t	*p;
 
 	numVertices = *vertices;
 	numIndices = *indeces;
@@ -29,11 +27,42 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	}
 
 	c_brush_polys += (nv - 2);
+	
+	*vertices = numVertices;
+	*indeces = numIndices;
+
+	return qtrue;
+	*/
+	unsigned	numVertices, numIndices;
+	int			i, nv = surf->numEdges;
+	float		*v;
+	glpoly_t	*p;
+
+	numVertices = *vertices;
+	numIndices = *indeces;
+
+	if (numVertices + nv > MAX_BATCH_SURFS)
+		return qfalse;
+
+	c_brush_polys++;
+
+	// create indexes
+	if (numIndices == 0xffffffff)
+		numIndices = 0;
+
+	for (i = 0; i < nv - 2; i++) {
+		indexArray[numIndices++] = numVertices;
+		indexArray[numIndices++] = numVertices + i + 1;
+		indexArray[numIndices++] = numVertices + i + 2;
+	}
 
 	p = surf->polys;
 	v = p->verts[0];
 
-	
+	for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++) {
+		VectorCopy(v, wVertexArray[numVertices]);
+	}
+
 	*vertices = numVertices;
 	*indeces = numIndices;
 
@@ -171,7 +200,10 @@ static void R_AddBModelDepthPolys (void) {
 	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
 		// find which side of the node we are on
 		pplane = psurf->plane;
-		dot = DotProduct (modelorg, pplane->normal) - pplane->dist;
+		if (pplane->type < 3)
+			dot = modelorg[pplane->type] - pplane->dist;
+		else
+			dot = DotProduct (modelorg, pplane->normal) - pplane->dist;
 
 		// draw the polygon
 		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
@@ -233,16 +265,16 @@ void R_DrawDepthBrushModel (void) {
 	qglPushMatrix ();
 	R_SetupEntityMatrix (currententity);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+//	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, /*BUFFER_OFFSET(vbo.xyz_offset)*/wVertexArray);
 
 	num_depth_surfaces = 0;
 	R_AddBModelDepthPolys ();
 	GL_DrawDepthPoly ();
 
 	qglDisableVertexAttribArray (ATT_POSITION);
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+//	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	qglPopMatrix ();
 }
 
@@ -336,17 +368,17 @@ void R_DrawDepthScene (void) {
 
 	GL_BindProgram (nullProgram, 0);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+//	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 	qglEnableVertexAttribArray (ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, /*BUFFER_OFFSET(vbo.xyz_offset)*/wVertexArray);
 
-//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
+	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
 	GL_DrawDepthPoly ();
 	
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+//	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 	qglDisableVertexAttribArray (ATT_POSITION);
 
 	R_DrawSkyBox (qfalse);
@@ -373,6 +405,6 @@ void R_DrawDepthScene (void) {
 		if (currentmodel->type == mod_alias)
 			R_DrawDepthAliasModel ();
 	}
-//	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	GL_BindNullProgram ();
 }

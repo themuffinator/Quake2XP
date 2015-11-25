@@ -1015,7 +1015,11 @@ static void R_DrawInlineBModel (void) {
 	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
 		// find which side of the node we are on
 		pplane = psurf->plane;
-		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
+
+		if (pplane->type < 3)
+			dot = modelorg[pplane->type] - pplane->dist;
+		else
+			dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
 
 		// draw the polygon
 		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON))
@@ -1038,6 +1042,7 @@ static void R_DrawInlineBModel (void) {
 				scene_surfaces[num_scene_surfaces++] = psurf;
 		}
 	}
+
 }
 
 static void R_DrawInlineBModel2 (void) {
