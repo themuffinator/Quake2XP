@@ -1,5 +1,4 @@
 layout(location = 0) in vec3 att_position;
-layout(location = 4) in vec4 att_color4f;
 layout(location = 5) in vec2 att_texCoordDiffuse;
 
 out vec2			v_deformTexCoord;

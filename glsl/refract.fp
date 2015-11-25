@@ -1,7 +1,7 @@
-in float			v_depth;
-in float			v_depthS;
-in vec2			v_deformMul;
-in vec2			v_deformTexCoord;
+in float				v_depth;
+in float				v_depthS;
+in vec2					v_deformMul;
+in vec2					v_deformTexCoord;
 
 uniform float			u_thickness;
 uniform float			u_thickness2;
