@@ -285,7 +285,7 @@ void VID_MenuInit (void) {
 
 	static char	*yesno_names[] = { "no", "yes", 0 };
 	static char	*adaptive_vc[] = { "no", "default", "adaptive", 0 };
-	static char *ppl[] = { "Full", "Performance", 0 };
+
 #ifndef _WIN32
 	static char	*samples[] = { "[off]", "[2x]", "[4x]", 0 }; // sdl bug work only 2 and 4 samples per pixel
 #else
@@ -397,13 +397,12 @@ void VID_MenuInit (void) {
 	// -----------------------------------------------------------------------
 
 	a_pplWorld_list.generic.type = MTYPE_SPINCONTROL;
-	a_pplWorld_list.generic.name = "Realtime Lighting";
+	a_pplWorld_list.generic.name = "Skip Static Lights";
 	a_pplWorld_list.generic.x = 0;
 	a_pplWorld_list.generic.y = 80 * cl_fontScale->value;
-	a_pplWorld_list.itemnames = ppl;
+	a_pplWorld_list.itemnames = yesno_names;
 	a_pplWorld_list.curvalue = r_skipStaticLights->value;
 	a_pplWorld_list.generic.callback = pplWorldCallBack;
-	a_pplWorld_list.generic.statusbar = "Full Lighting or Dynamic Lights Only";
 
 	s_shadow_box.generic.type = MTYPE_SPINCONTROL;
 	s_shadow_box.generic.x = 0;

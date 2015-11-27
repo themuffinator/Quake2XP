@@ -2574,6 +2574,13 @@ void R_BeginRegistration (char *model) {
 	else
 		xhargar2hack = qfalse;
 
+	if (!strcmp(model, "xware"))
+		bmodelfix = qtrue;
+	else if (!strcmp(model, "xship"))
+		bmodelfix = qtrue;
+	else
+		bmodelfix = qfalse;
+
 	// explicitly free the old map if different
 	// this guarantees that mod_known[0] is the world map
 	flushmap = Cvar_Get ("flushmap", "0", 0);

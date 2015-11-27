@@ -361,6 +361,9 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	unsigned	numIndices	= 0xffffffff,
 				numVertices = 0;
 
+	if (bmodelfix && bmodel)
+		return;
+
 	// setup program
 	GL_BindProgram(ambientWorldProgram, 0);
 
@@ -590,6 +593,9 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	unsigned	oldFlag		= 0xffffffff;
 	unsigned	numIndices	= 0xffffffff,
 				numVertices = 0;
+	
+	if (bmodelfix && bmodel)
+		return;
 
 	// setup program
 	GL_BindProgram(lightWorldProgram, 0);
