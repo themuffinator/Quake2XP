@@ -1472,13 +1472,13 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 		if (s1->number != cl.playernum + 1)
 			continue;
 
-		if (s1->effects & (EF_COLOR_SHELL | EF_QUAD | EF_PENT | EF_DOUBLE | EF_HALF_DAMAGE) && modType("rogue")) {
+		if (s1->effects & (EF_COLOR_SHELL | EF_QUAD | EF_PENT | EF_DOUBLE | EF_HALF_DAMAGE)) {
 			gun.flags |= (RF_TRANSLUCENT | s1->renderfx);
 			if (s1->effects & EF_PENT)
 				gun.flags |= RF_SHELL_RED;
 			if (s1->effects & EF_QUAD)
 				gun.flags |= RF_SHELL_BLUE;
-			if (s1->effects & EF_DOUBLE)
+			if ((s1->effects & EF_DOUBLE) && modType("rogue"))
 				gun.flags |= RF_SHELL_DOUBLE;
 			if (s1->effects & EF_HALF_DAMAGE)
 				gun.flags |= RF_SHELL_HALF_DAM;
