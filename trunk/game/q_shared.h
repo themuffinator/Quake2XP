@@ -709,7 +709,7 @@ typedef struct {
 //ROGUE
 
 
-#define EF_FLASHLIGHT		0x80000000
+#define EF_FLASHLIGHT		0x08000000
 
 
 // entity_state_t->renderfx flags

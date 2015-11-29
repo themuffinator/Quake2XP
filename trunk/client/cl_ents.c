@@ -740,7 +740,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 		//======
 		// PMM
-		if (effects & EF_DOUBLE) {
+		if (effects & EF_DOUBLE && modType("rogue")) {
 			effects &= ~EF_DOUBLE;
 			effects |= EF_COLOR_SHELL;
 			renderfx |= RF_SHELL_DOUBLE;
@@ -931,8 +931,8 @@ void CL_AddPacketEntities (frame_t * frame) {
 				ent.angles[i] = LerpAngle (a2, a1, cl.lerpfrac);
 			}
 		}
-
-		if (effects & EF_FLASHLIGHT) {
+		// hack!!!!
+		if (effects & (EF_FLASHLIGHT) && !modType("rogue") && !net_compatibility->value) {
 			entity_t		player_gun;
 			static vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, right, up;
 			frame_t			*oldframe;
@@ -1472,9 +1472,7 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 		if (s1->number != cl.playernum + 1)
 			continue;
 
-		if (s1->
-			effects & (EF_COLOR_SHELL | EF_QUAD | EF_PENT | EF_DOUBLE |
-			EF_HALF_DAMAGE)) {
+		if (s1->effects & (EF_COLOR_SHELL | EF_QUAD | EF_PENT | EF_DOUBLE | EF_HALF_DAMAGE) && modType("rogue")) {
 			gun.flags |= (RF_TRANSLUCENT | s1->renderfx);
 			if (s1->effects & EF_PENT)
 				gun.flags |= RF_SHELL_RED;

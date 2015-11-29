@@ -465,10 +465,12 @@ R_DrawSkyBox
 int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox (qboolean color) {
 	int i;
+//	mat4_t math;
 
 	if (color) {
 		GL_BindProgram (genericProgram, 0);
 		qglUniform1i (gen_sky, 1);
+		qglUniform1i (gen_3d, 1);
 		qglUniform1i (gen_attribColors, 0);
 		qglUniform1i (gen_attribConsole, 0);
 		qglUniform1i (gen_tex, 0);
@@ -496,6 +498,9 @@ void R_DrawSkyBox (qboolean color) {
 
 	qglPushMatrix ();
 	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.skyMatrix);
+
+//	Mat4_Multiply(r_newrefdef.skyMatrix, r_newrefdef.projectionMatrix, math);
+//	qglUniformMatrix4fv(gen_skyMatrix, 1, qfalse, (const float *)math);
 
 	for (i = 0; i < 6; i++) {
 
