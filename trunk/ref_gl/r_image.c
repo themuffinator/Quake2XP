@@ -1034,7 +1034,8 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 			for (j = 0; j < image->width; j++, k++)
 				scrap_texels[texnum][(y + i) * BLOCK_SIZE + x + j] =
 					pic[k];
-		image->texnum = TEXNUM_SCRAPS + texnum;
+//		image->texnum = TEXNUM_SCRAPS + texnum;
+		qglGenTextures (1, &image->texnum);
 		image->scrap = qtrue;
 		image->has_alpha = qtrue;
 		image->sl = (x + 0.01) / (float) BLOCK_SIZE;
@@ -1044,7 +1045,8 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 	} else {
 	  nonscrap:
 		image->scrap = qfalse;
-		image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//		image->texnum = TEXNUM_IMAGES + (image - gltextures);
+		qglGenTextures (1, &image->texnum);
 		GL_Bind(image->texnum);
 		if (bits == 8)
 			image->has_alpha =

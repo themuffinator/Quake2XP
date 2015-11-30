@@ -258,16 +258,16 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
+	qglVertexAttribPointer(ATT_TEX2, 2, GL_FLOAT, qfalse, 0, texCoord1);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
+
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_TEX2);
 	qglEnableVertexAttribArray(ATT_COLOR);
 
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
-	qglVertexAttribPointer(ATT_TEX2, 2, GL_FLOAT, qfalse, 0, texCoord1);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
-	
 	VA_SetElem2(vertCoord[0], x, y);
 	VA_SetElem2(vertCoord[1], x + w, y);
 	VA_SetElem2(vertCoord[2], x + w, y + h);

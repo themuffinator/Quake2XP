@@ -904,14 +904,12 @@ void R_DrawLightWorld(void)
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_TEX1);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 	qglEnableVertexAttribArray(ATT_TANGENT);
 	qglEnableVertexAttribArray(ATT_BINORMAL);
 
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
 	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
 	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
@@ -926,7 +924,6 @@ void R_DrawLightWorld(void)
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_TEX1);
 	qglDisableVertexAttribArray(ATT_NORMAL);
 	qglDisableVertexAttribArray(ATT_TANGENT);
 	qglDisableVertexAttribArray(ATT_BINORMAL);
@@ -1370,12 +1367,10 @@ void R_DrawLightBrushModel (void) {
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-
 	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_TEX1);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 	qglEnableVertexAttribArray(ATT_TANGENT);
 	qglEnableVertexAttribArray(ATT_BINORMAL);
@@ -1397,7 +1392,6 @@ void R_DrawLightBrushModel (void) {
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_TEX1);
 	qglDisableVertexAttribArray(ATT_NORMAL);
 	qglDisableVertexAttribArray(ATT_TANGENT);
 	qglDisableVertexAttribArray(ATT_BINORMAL);
@@ -1427,7 +1421,6 @@ void R_MarkLeaves (void) {
 
 	if (r_oldviewcluster == r_viewcluster && r_oldviewcluster2 == r_viewcluster2 /*&& !r_novis->value*/ && r_viewcluster != -1)
 		return;
-
 
 	r_visframecount++;
 	r_oldviewcluster = r_viewcluster;

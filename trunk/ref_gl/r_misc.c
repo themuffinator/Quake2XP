@@ -123,7 +123,8 @@ void CreateDepthTexture (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+	qglGenTextures (1, &image->texnum);
 
 	depthMap = image;
 
@@ -166,7 +167,8 @@ void CreateScreenRect (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+	qglGenTextures (1, &image->texnum);
 
 	ScreenMap = image;
 
@@ -254,7 +256,8 @@ void CreateWeaponFboMask (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+	qglGenTextures (1, &image->texnum);
 
 	weaponHack = image;
 
@@ -308,7 +311,8 @@ void CreateFboBuffer (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+	qglGenTextures (1, &image->texnum);
 
 	fboScreen = image;
 
@@ -407,7 +411,8 @@ void CreateShadowMask (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+	qglGenTextures (1, &image->texnum);
 
 	shadowMask = image;
 
@@ -523,7 +528,8 @@ image_t *R_LoadLightFilter (int id) {
 	strcpy (image->name, name);
 	image->registration_sequence = registration_sequence;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+	qglGenTextures (1, &image->texnum);
 
 	qglBindTexture (GL_TEXTURE_CUBE_MAP_ARB, image->texnum);
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -647,7 +653,8 @@ void CreateAttenuation () {
 	image->upload_height = 1;
 	image->type = it_pic;
 
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+	qglGenTextures (1, &image->texnum);
 
 	glTexImage3DEXT = (PFNGLTEXIMAGE3DEXTPROC)qwglGetProcAddress ("glTexImage3DEXT");
 

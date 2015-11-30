@@ -1617,6 +1617,11 @@ int R_Init(void *hinstance, void *hWnd)
 	if (IsExtensionSupported("GL_ARB_texture_rectangle")) 
 		Com_Printf("...using GL_ARB_texture_rectangle\n");		
 
+	// unused vao stuff
+	glGenVertexArrays		= (PFNGLGENVERTEXARRAYSPROC)	qwglGetProcAddress	("glGenVertexArrays");
+	glDeleteVertexArrays	= (PFNGLDELETEVERTEXARRAYSPROC)	qwglGetProcAddress	("glDeleteVertexArrays");
+	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress	("glBindVertexArray");
+
 	if (IsExtensionSupported("GL_ARB_vertex_buffer_object")) {
 			
 		qglBindBuffer =		(PFNGLBINDBUFFERPROC)		qwglGetProcAddress("glBindBuffer");
@@ -1686,7 +1691,7 @@ int R_Init(void *hinstance, void *hWnd)
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
 	}
-		
+	
 	if (IsExtensionSupported("GL_ARB_draw_buffers")) {
 		qglDrawBuffers =	(PFNGLDRAWBUFFERSARBPROC) qwglGetProcAddress("glDrawBuffersARB");
 		

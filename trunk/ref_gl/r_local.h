@@ -729,13 +729,12 @@ int lm_offset;
 int nm_offset;
 int tg_offset;
 int bn_offset;
-int vertex_size;
 }vbo_t;
 
 vbo_t vbo;
 
 typedef struct {
-	GLuint	def;
+	GLuint	bsp_a, bsp_l, bml_a, bml_l;
 }
 vao_t;
 vao_t vao;
