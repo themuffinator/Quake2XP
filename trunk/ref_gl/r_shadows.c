@@ -332,8 +332,9 @@ void R_DeformShadowVolume () {
 
 	GL_LerpShadowVerts (paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
 
-	qglPushMatrix ();
 	R_SetupEntityMatrix (currententity);
+
+	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 
 	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector (currententity->axis, temp, light);
@@ -342,8 +343,6 @@ void R_DeformShadowVolume () {
 	dist = (currentShadowLight->maxRad + 50.0) - VectorLength(temp);
 	if (dist > 0.0)
 		BuildShadowVolumeTriangles (paliashdr, light, dist);
-
-	qglPopMatrix ();
 }
 
 void R_CastAliasShadowVolumes (void) {
@@ -499,12 +498,13 @@ void R_DrawBrushModelVolumes () {
 	if (!R_EntityInLightBounds ())
 		return;
 
-	qglPushMatrix ();
 	R_SetupEntityMatrix (currententity);
 
 	VectorCopy (currentShadowLight->origin, oldLightOrigin);
 	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector (currententity->axis, temp, currentShadowLight->origin);
+
+	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 
 	shadowTimeStamp++;
 	num_shadow_surfaces = 0;
@@ -590,7 +590,6 @@ void R_DrawBrushModelVolumes () {
 	c_shadow_tris += ib / 3;
 
 	VectorCopy (oldLightOrigin, currentShadowLight->origin);
-	qglPopMatrix ();
 }
 
 
@@ -773,6 +772,7 @@ void R_CastBspShadowVolumes (void) {
 
 	// setup program
 	GL_BindProgram (nullProgram, 0);
+	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	GL_StencilMask (255);
 	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);

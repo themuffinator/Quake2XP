@@ -26,12 +26,12 @@ static const char *shader5 =
 
 static const char *baseExt =
 "#extension GL_ARB_texture_rectangle : enable\n"
-"#extension GL_ARB_explicit_attrib_location  : enable\n"
-"#extension GL_ARB_separate_shader_objects : enable\n"
 "out vec4 fragData;\n";
 
 static const char *glslVersion =
-"#version 330 compatibility\n";
+"#version 150 compatibility\n"
+"#extension GL_ARB_explicit_attrib_location  : enable\n"
+"#extension GL_ARB_separate_shader_objects : enable\n";
 /*
 =================
 Com_HashKey
@@ -497,6 +497,8 @@ void R_InitPrograms (void) {
 	nullProgram = R_FindProgram ("null", qtrue, qtrue);
 	if (nullProgram->valid) {
 		Com_Printf ("succeeded\n");
+		id = nullProgram->id[0];
+		null_mvp = qglGetUniformLocation(id, "u_mvp");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -526,6 +528,7 @@ void R_InitPrograms (void) {
 		ambientWorld_parallaxType	= qglGetUniformLocation (id, "u_parallaxType");
 		ambientWorld_ambientLevel	= qglGetUniformLocation (id, "u_ambientScale");
 		ambientWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
+		ambientWorld_mvp			= qglGetUniformLocation (id, "u_mvp");
 
 	}
 	else {
@@ -564,6 +567,7 @@ void R_InitPrograms (void) {
 		lightWorld_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
 		lightWorld_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
 		lightWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
+		lightWorld_mvp				= qglGetUniformLocation	(id, "u_mvp");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -588,7 +592,9 @@ void R_InitPrograms (void) {
 		ambientAlias_envScale		= qglGetUniformLocation (id, "u_envScale");
 		ambientAlias_isShell		= qglGetUniformLocation (id, "u_isShell");
 		ambientAlias_scroll			= qglGetUniformLocation (id, "u_scroll");
-		ambientAlias_mvp			= qglGetUniformLocation(id, "u_mvpMatrix");
+		ambientAlias_mvp			= qglGetUniformLocation (id, "u_mvp");
+		ambientAlias_mv				= qglGetUniformLocation	(id, "u_mv");
+		ambientAlias_normalMatrix	= qglGetUniformLocation (id, "u_normalMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -621,7 +627,8 @@ void R_InitPrograms (void) {
 		lightAlias_ambient			= qglGetUniformLocation (id, "u_isAmbient");
 		lightAlias_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
 		lightAlias_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
-		lightAlias_mvp				= qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
+		lightAlias_mvp				= qglGetUniformLocation	(id, "u_mvp");
+		lightAlias_mv				= qglGetUniformLocation(id, "u_mv");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -727,20 +734,23 @@ void R_InitPrograms (void) {
 		Com_Printf("succeeded\n");
 
 		id = depthDownsampleProgram->id[0];
-		depthDS_depth	= qglGetUniformLocation(id, "u_depthBufferMap");
-		depthDS_params	= qglGetUniformLocation(id, "u_depthParms");
+		depthDS_depth		= qglGetUniformLocation(id, "u_depthBufferMap");
+		depthDS_params		= qglGetUniformLocation(id, "u_depthParms");
+		depthDS_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 
 		id = ssaoProgram->id[0];
-		ssao_mini	= qglGetUniformLocation(id, "u_DNMiniMap");
-		ssao_rand	= qglGetUniformLocation(id, "u_randomNormalMap");
-		ssao_params = qglGetUniformLocation(id, "u_ssaoParms");
-		ssao_vp		= qglGetUniformLocation(id, "u_viewport");
+		ssao_mini			= qglGetUniformLocation(id, "u_DNMiniMap");
+		ssao_rand			= qglGetUniformLocation(id, "u_randomNormalMap");
+		ssao_params			= qglGetUniformLocation(id, "u_ssaoParms");
+		ssao_vp				= qglGetUniformLocation(id, "u_viewport");
+		ssao_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 
 		id = ssaoBlurProgram->id[0];
-		ssaoB_mColor	= qglGetUniformLocation(id, "u_colorMiniMap");
-		ssaoB_mDepth	= qglGetUniformLocation(id, "u_DNMiniMap");
-		ssaoB_sapmles	= qglGetUniformLocation(id, "u_numSamples");
-		ssaoB_axisMask	= qglGetUniformLocation(id, "u_axisMask");
+		ssaoB_mColor		= qglGetUniformLocation(id, "u_colorMiniMap");
+		ssaoB_mDepth		= qglGetUniformLocation(id, "u_DNMiniMap");
+		ssaoB_sapmles		= qglGetUniformLocation(id, "u_numSamples");
+		ssaoB_axisMask		= qglGetUniformLocation(id, "u_axisMask");
+		ssaoB_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -790,7 +800,9 @@ void R_InitPrograms (void) {
 		refract_alphaMask	= qglGetUniformLocation (id, "u_ALPHAMASK");
 		refract_mask		= qglGetUniformLocation (id, "u_mask");
 		refract_thickness2	= qglGetUniformLocation (id, "u_thickness2");
-
+		refract_mvp			= qglGetUniformLocation	(id, "u_mvp");
+		refract_mv			= qglGetUniformLocation	(id, "u_mv");
+		refract_pm			= qglGetUniformLocation	(id, "u_pm");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -837,6 +849,9 @@ void R_InitPrograms (void) {
 		water_ambient		= qglGetUniformLocation (id, "u_ambientScale");
 		water_trans			= qglGetUniformLocation (id, "u_TRANS");
 		water_entity2world	= qglGetUniformLocation (id, "g_entityToWorldRot");
+		water_mvp			= qglGetUniformLocation	(id, "u_mvp");
+		water_mv			= qglGetUniformLocation	(id, "u_mv");
+		water_pm			= qglGetUniformLocation	(id, "u_pm");
 
 	}
 	else {
@@ -857,7 +872,8 @@ void R_InitPrograms (void) {
 		particle_mask			= qglGetUniformLocation (id, "u_mask");
 		particle_thickness		= qglGetUniformLocation (id, "u_thickness");
 		particle_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
-
+		particle_mvp			= qglGetUniformLocation (id, "u_mvp");
+		particle_mv				= qglGetUniformLocation (id, "u_mv");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -878,7 +894,7 @@ void R_InitPrograms (void) {
 		gen_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
 		gen_color			= qglGetUniformLocation (id, "u_color");
 		gen_sky				= qglGetUniformLocation (id, "u_isSky");
-		gen_skyMatrix		= qglGetUniformLocation (id, "u_SkyMatrix");
+		gen_mvp				= qglGetUniformLocation (id, "u_mvp");
 		gen_orthoMatrix		= qglGetUniformLocation (id, "u_orthoMatrix");
 		gen_3d				= qglGetUniformLocation (id, "u_3d");
 	}

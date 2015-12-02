@@ -42,16 +42,6 @@ void R_BuildFlares (flare_t * light) {
 	if (!r_skipStaticLights->value)
 		return;
 
-	if (light->surf->ent) {
-
-		if (!VectorCompare (light->surf->ent->angles, vec3_origin))
-			return;
-
-		qglPushMatrix ();
-		R_SetupEntityMatrix (light->surf->ent);
-
-	}
-
 	light->surf->visframe = r_framecount;
 
 	// Color Fade
@@ -84,9 +74,6 @@ void R_BuildFlares (flare_t * light) {
 	VA_SetElem4 (color_array[3], tmp[0], tmp[1], tmp[2], 1);
 
 	qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-
-	if (light->surf->ent)
-		qglPopMatrix ();
 
 	c_flares++;
 }
@@ -596,11 +583,11 @@ void R_DownsampleDepth(void)
 	if (!r_ssao->value)
 		return;
 
-	qglViewport (0, 0, vid.width, vid.height);
+//	qglViewport (0, 0, vid.width, vid.height);
 
-	GL_LoadIdentity(GL_MODELVIEW);
-	GL_LoadIdentity(GL_PROJECTION);
-	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
+//	GL_LoadIdentity(GL_MODELVIEW);
+//	GL_LoadIdentity(GL_PROJECTION);
+//	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
 
 	GL_DepthRange(0.0, 1.0);
 	GL_DepthMask(0);
@@ -617,6 +604,7 @@ void R_DownsampleDepth(void)
 
 	qglUniform1i(depthDS_depth, 0);
 	qglUniform2f(depthDS_params, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniformMatrix4fv(depthDS_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad();
 
@@ -624,8 +612,8 @@ void R_DownsampleDepth(void)
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 	GL_BindNullProgram();
 
-	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
-	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
+//	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
+//	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
@@ -639,11 +627,11 @@ void R_SSAO (void)
 	if (!r_ssao->value)
 		return;
 	
-	qglViewport(0, 0, vid.width, vid.height);
+//	qglViewport(0, 0, vid.width, vid.height);
 
-	GL_LoadIdentity(GL_MODELVIEW);
-	GL_LoadIdentity(GL_PROJECTION);
-	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
+//	GL_LoadIdentity(GL_MODELVIEW);
+//	GL_LoadIdentity(GL_PROJECTION);
+//	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
 	
 	GL_Disable (GL_DEPTH_TEST);
 	GL_Disable (GL_CULL_FACE);
@@ -662,6 +650,7 @@ void R_SSAO (void)
 	qglUniform1i (ssao_rand, 1);
 	qglUniform2f (ssao_params, max(r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
 	qglUniform2f (ssao_vp, vid.width, vid.height);
+	qglUniformMatrix4fv(ssao_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad();
 
@@ -676,6 +665,7 @@ void R_SSAO (void)
 		id = ssaoBlurProgram->id[0];
 		qglUniform1i(ssaoB_mColor, 0);
 		qglUniform1i(ssaoB_mDepth, 1);
+		qglUniformMatrix4fv(ssaoB_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		numSamples = (int)rintf(4.f * vid.height / 1080.f);
 		qglUniform1i(ssaoB_sapmles, max(numSamples, 1));
@@ -707,7 +697,7 @@ void R_SSAO (void)
 	GL_Enable(GL_DEPTH_TEST);
 	GL_DepthMask(1);
 
-	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
-	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
+//	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
+//	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }

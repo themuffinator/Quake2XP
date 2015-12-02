@@ -263,8 +263,6 @@ next:
 		currententity->oldframe = 0;
 	}
 
-    qglPushMatrix ();
-
 	R_SetupEntityMatrix(e);
 
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) 
@@ -275,7 +273,6 @@ next:
 	if(weapon_model)	
 		GL_DrawAliasFrameLerpWeapon(paliashdr);
 
-	qglPopMatrix();
 
 	if (currententity->flags & RF_TRANSLUCENT)
 		GL_Disable(GL_BLEND);
@@ -370,8 +367,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		currententity->frame = 0;
 		currententity->oldframe = 0;
 	}
-	
-	qglPushMatrix ();
+
 	R_SetupEntityMatrix(currententity);
 
 	VectorCopy(currentShadowLight->origin, tmpOrg);
@@ -388,8 +384,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	
 	VectorCopy(tmpOrg, currentShadowLight->origin);
 	VectorCopy(tmpView, r_origin);
-
-	qglPopMatrix();
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);

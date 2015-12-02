@@ -67,7 +67,7 @@ void CreateDSTTex () {
 	qglTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
-void R_DrawWaterPolygons (msurface_t *fa) {
+void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	glpoly_t	*p, *bp;
 	float		*v, dstscroll, ambient, alpha;
 	int			i, nv = fa->polys->numVerts;
@@ -103,6 +103,13 @@ void R_DrawWaterPolygons (msurface_t *fa) {
 	qglUniform2f (water_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1f (water_colorModulate, r_textureColorScale->value);
 	qglUniform1f (water_ambient, ambient);
+	if (!bmodel)
+		qglUniformMatrix4fv(water_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	else
+		qglUniformMatrix4fv(water_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+
+	qglUniformMatrix4fv(water_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(water_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
 	dstscroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
 
@@ -465,7 +472,8 @@ R_DrawSkyBox
 int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox (qboolean color) {
 	int i;
-//	mat4_t math;
+	mat4_t math;
+	vec3_t	org;
 
 	if (color) {
 		GL_BindProgram (genericProgram, 0);
@@ -496,12 +504,19 @@ void R_DrawSkyBox (qboolean color) {
 			return;				// nothing visible
 	}
 
-	qglPushMatrix ();
-	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.skyMatrix);
+//	qglPushMatrix ();
+//	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.skyMatrix);
+	// set sky matrix
+	VectorCopy(r_origin, org);
 
-//	Mat4_Multiply(r_newrefdef.skyMatrix, r_newrefdef.projectionMatrix, math);
-//	qglUniformMatrix4fv(gen_skyMatrix, 1, qfalse, (const float *)math);
+	Mat4_Copy(r_newrefdef.modelViewMatrix, r_newrefdef.skyMatrix);
+	Mat4_Translate(r_newrefdef.skyMatrix, org[0], org[1], org[2]);
+	if (skyrotate)
+		Mat4_Rotate(r_newrefdef.skyMatrix, r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 
+	Mat4_Multiply(r_newrefdef.skyMatrix, r_newrefdef.projectionMatrix, math);
+	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)math);
+	
 	for (i = 0; i < 6; i++) {
 
 		if (skyrotate) {		// hack, forces full sky to draw when
@@ -535,7 +550,7 @@ void R_DrawSkyBox (qboolean color) {
 		qglDisableVertexAttribArray (ATT_COLOR);
 		GL_BindNullProgram ();
 	}
-	qglPopMatrix ();
+//	qglPopMatrix ();
 }
 
 

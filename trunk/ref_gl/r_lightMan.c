@@ -2215,6 +2215,8 @@ void R_DrawLightFlare () {
 	qglUniform2f (particle_mask, 1.0, 0.0);
 	qglUniform1f (particle_colorModulate, 1.0);
 	qglUniform1f (particle_thickness, currentShadowLight->flareSize * 1.5);
+	qglUniformMatrix4fv(particle_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(particle_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
 	// Color Fade
 	VectorSubtract (currentShadowLight->flareOrigin, r_origin, v);
@@ -2292,7 +2294,8 @@ void R_LightFlareOutLine () { //flare editing highlights
 	qglUniform1i (gen_sky, 0);
 	qglUniform1i(gen_3d, 1);
 	qglUniform4f (gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	
+	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+
 	// draw light to flare connector
 	qglEnable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);

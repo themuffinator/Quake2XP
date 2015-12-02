@@ -498,7 +498,7 @@ void GL_Ortho(mat4_t m, GLdouble left, GLdouble right, GLdouble bottom, GLdouble
 trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
 void DrawTextureChains2 ();
 
-void R_DrawChainsRA(void);
+void R_DrawChainsRA(qboolean bmodel);
 void R_DrawBrushModelRA(void);
 extern int	occ_framecount;
 //====================================================================
@@ -552,7 +552,7 @@ void R_LoadFont (void);
 
 qboolean R_CullBox (vec3_t mins, vec3_t maxs);
 void R_MarkLeaves (void);
-void R_DrawWaterPolygons (msurface_t * fa);
+void R_DrawWaterPolygons (msurface_t * fa, qboolean bmodel);
 void R_AddSkySurface (msurface_t * fa);
 void R_ClearSkyBox (void);
 void R_DrawSkyBox (qboolean color);
@@ -936,6 +936,8 @@ typedef enum glsl_attribute {
 }
 glsl_attrib;
 
+uint null_mvp;
+
 uint ambientWorld_diffuse;
 uint ambientWorld_add;
 uint ambientWorld_lightmap[3];
@@ -989,6 +991,8 @@ uint ambientAlias_envScale;
 uint ambientAlias_isShell;
 uint ambientAlias_scroll;
 uint ambientAlias_mvp;
+uint ambientAlias_mv;
+uint ambientAlias_normalMatrix;
 
 uint lightAlias_diffuse;
 uint lightAlias_normal;
@@ -1009,6 +1013,7 @@ uint lightAlias_ambient;
 uint lightAlias_attenMatrix;
 uint lightAlias_cubeMatrix;
 uint lightAlias_mvp;
+uint lightAlias_mv;
 
 uint gen_attribConsole;
 uint gen_attribColors;
@@ -1017,7 +1022,7 @@ uint gen_tex1;
 uint gen_colorModulate;
 uint gen_color;
 uint gen_sky;
-uint gen_skyMatrix;
+uint gen_mvp;
 uint gen_orthoMatrix;
 uint gen_3d;
 
@@ -1035,6 +1040,8 @@ uint particle_depthParams;
 uint particle_mask;
 uint particle_thickness;
 uint particle_colorModulate;
+uint particle_mvp;
+uint particle_mv;
 
 uint refract_normalMap;
 uint refract_baseMap;
@@ -1050,6 +1057,9 @@ uint refract_thickness2;
 uint refract_ambient;
 uint refract_alphaMask;
 uint refract_mask;
+uint refract_mvp;
+uint refract_mv;
+uint refract_pm;
 
 uint water_deformMap;
 uint water_baseMap;
@@ -1065,6 +1075,9 @@ uint water_colorModulate;
 uint water_ambient;
 uint water_trans;
 uint water_entity2world;
+uint water_mvp;
+uint water_mv;
+uint water_pm;
 
 uint gaussx_tex;
 uint gaussx_matrix;
@@ -1107,16 +1120,19 @@ uint mb_mask;
 
 uint depthDS_depth;
 uint depthDS_params;
+uint depthDS_orthoMatrix;
 
 uint ssao_mini;
 uint ssao_rand;
 uint ssao_params;
 uint ssao_vp;
+uint ssao_orthoMatrix;
 
 uint ssaoB_mColor;
 uint ssaoB_mDepth;
 uint ssaoB_sapmles;
 uint ssaoB_axisMask;
+uint ssaoB_orthoMatrix;
 
 uint therm_map;
 uint therm_matrix;

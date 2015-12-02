@@ -1005,7 +1005,7 @@ void GL_SetDefaultState (void) {
 	colorDefault[3] = 255;
 
 	// gl color
-	qglColor4f (1.f, 1.f, 1.f, 1.f);
+//	qglColor4f (1.f, 1.f, 1.f, 1.f);
 	gl_state.rgba[0] = 1.f;
 	gl_state.rgba[1] = 1.f;
 	gl_state.rgba[2] = 1.f;

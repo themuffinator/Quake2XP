@@ -86,6 +86,8 @@ void R_DrawParticles (void) {
 	GL_BindRect (depthMap->texnum);
 	qglUniform1i (particle_depthMap, 1);
 	qglUniform2f (particle_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniformMatrix4fv(particle_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(particle_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
 	GL_DepthMask (0);		// no z buffering
 	GL_Enable (GL_BLEND);

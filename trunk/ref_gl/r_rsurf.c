@@ -175,6 +175,9 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		qglUniform2f(refract_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 		qglUniform1f(refract_ambient, r_lightmapScale->value);
 		qglUniform1i(refract_alphaMask, 0);
+		qglUniformMatrix4fv(refract_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		qglUniformMatrix4fv(refract_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+		qglUniformMatrix4fv(refract_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 		}  
 	else 
 	{
@@ -182,7 +185,8 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		qglUniform1i(gen_attribColors, 1);
 		qglUniform1i(gen_attribConsole, 0);
 		qglUniform1i(gen_sky, 0);
-		qglUniform1i(gen_3d, 0);
+		qglUniform1i(gen_3d, 1);
+		qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 		GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
 		qglUniform1i(gen_tex, 0);
@@ -220,7 +224,7 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 }
 
 
-void R_DrawChainsRA (void) {
+void R_DrawChainsRA (qboolean bmodel) {
 	msurface_t *s;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -235,7 +239,7 @@ void R_DrawChainsRA (void) {
 			shadelight_surface[3] = 1.f;
 
 		if (s->texInfo->flags & SURF_WARP)
-			R_DrawWaterPolygons(s);
+			R_DrawWaterPolygons(s, bmodel);
 		else if (s->texInfo->flags & SURF_FLOWING)
 			DrawGLPoly(s, qtrue);
 		else
@@ -251,7 +255,7 @@ void R_DrawChainsRA (void) {
 		if (s->flags & MSURF_LAVA)
 			continue;
 
-		R_DrawWaterPolygons(s);
+		R_DrawWaterPolygons(s, qfalse);
 	}
 
 	r_reflective_surfaces = NULL;
@@ -382,6 +386,13 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qglUniform1i(ambientWorld_lightmap[2],	5);
 	qglUniform1i(ambientWorld_lightmapType, (r_worldmodel->useXPLM && r_useRadiosityBump->value) ? 1 : 0);
 	qglUniform1i(ambientWorld_ssaoMap,		6);
+	
+	if (!bmodel){
+		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	}
+	else{
+		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	}
 
 	if (r_ssao->value){
 		GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
@@ -561,6 +572,13 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	 else
 		 qglUniform3fv(lightWorld_viewOrigin, 1, r_origin);
 
+	 if (!bModel){
+		 qglUniformMatrix4fv(lightWorld_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	 }
+	 else{
+		 qglUniformMatrix4fv(lightWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	 }
+
 	 qglUniform1i(lightWorld_diffuse, 0);
 	 qglUniform1i(lightWorld_normal, 1);
 	 qglUniform1i(lightWorld_cube, 2);
@@ -693,7 +711,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 
 		if (c) {
 			do {
-				if (SurfInFrustum(*mark))
+		//		if (SurfInFrustum(*mark))
 					(*mark)->visframe = r_framecount;
 				(*mark)->ent = NULL;
 				mark++;
@@ -1075,7 +1093,7 @@ static void R_DrawInlineBModel2 (void) {
 				continue;
 
 			if (psurf->flags & MSURF_DRAWTURB)
-				R_DrawWaterPolygons(psurf);
+				R_DrawWaterPolygons(psurf, qtrue);
 		}
 	}
 }
@@ -1167,7 +1185,6 @@ void R_DrawBrushModel (void) {
 		modelorg[2] = DotProduct(temp, up);
 	}
 
-	qglPushMatrix();
 	R_SetupEntityMatrix(currententity);
 
 	//Put camera into model space view angle for bmodels parallax
@@ -1205,8 +1222,6 @@ void R_DrawBrushModel (void) {
 	qglDisableVertexAttribArray(ATT_NORMAL);
 	qglDisableVertexAttribArray(ATT_TANGENT);
 	qglDisableVertexAttribArray(ATT_BINORMAL);
-
-	qglPopMatrix();
 }
 
 /*
@@ -1258,8 +1273,6 @@ void R_DrawBrushModelRA (void) {
 		modelorg[2] = DotProduct(temp, up);
 	}
 
-	qglPushMatrix();
-
 	R_SetupEntityMatrix(currententity);
 
 	// put camera into model space view angle for bmodels parallax
@@ -1267,9 +1280,7 @@ void R_DrawBrushModelRA (void) {
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
 
 	R_DrawInlineBModel3();
-	R_DrawChainsRA();
-
-	qglPopMatrix();
+	R_DrawChainsRA(qtrue);
 }
 
 void R_MarkBrushModelSurfaces (void) {
@@ -1320,8 +1331,7 @@ void R_DrawLightBrushModel (void) {
 		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 			return;
 	}
-	
-	qglPushMatrix();
+
 	R_SetupEntityMatrix(currententity);
 	
 	//Put camera into model space view angle for bmodels parallax
@@ -1397,8 +1407,6 @@ void R_DrawLightBrushModel (void) {
 	qglDisableVertexAttribArray(ATT_BINORMAL);
 
 	VectorCopy(oldLight, currentShadowLight->origin);
-	
-	qglPopMatrix();
 }
 
 

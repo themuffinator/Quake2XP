@@ -405,27 +405,20 @@ static void R_SetupViewMatrices (void) {
 	Mat4_AffineInvert(r_newrefdef.modelViewMatrix, tmpMatrix);
 	Mat4_Multiply(tmpMatrix, r_flipMatrix, r_newrefdef.modelViewMatrix);
 
-	// set sky matrix
-	Mat4_Copy(r_newrefdef.modelViewMatrix, r_newrefdef.skyMatrix);
-	Mat4_Translate(r_newrefdef.skyMatrix, r_newrefdef.vieworg[0], r_newrefdef.vieworg[1], r_newrefdef.vieworg[2]);
-	if (skyrotate)
-		Mat4_Rotate(r_newrefdef.skyMatrix, r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
+	Mat4_Multiply	(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.modelViewProjectionMatrix);
+	Mat4_Transpose	(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.modelViewProjectionMatrixTranspose);
 
-	// load matrices
-	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
-	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
-
-	Mat4_Multiply(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.modelViewProjectionMatrix);
-	Mat4_Transpose(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.modelViewProjectionMatrixTranspose);
+	//	gl_normalMatrix	
+	Mat4_Invert		(r_newrefdef.modelViewMatrix, tmpMatrix);
+	Mat4_Transpose	(tmpMatrix, r_newrefdef.normalMatrix);
 }
 
 void R_SetupEntityMatrix(entity_t * e) {
-	mat4_t entViewMatrix;
 
 	AnglesToMat3(e->angles, e->axis);
 	Mat4_SetOrientation(e->matrix, e->axis, e->origin);
-	Mat4_TransposeMultiply(e->matrix, r_newrefdef.modelViewMatrix, entViewMatrix);
-	GL_LoadMatrix(GL_MODELVIEW, entViewMatrix);
+	Mat4_TransposeMultiply(e->matrix, r_newrefdef.modelViewProjectionMatrix, e->orMatrix);
+
 }
 
 void R_SetupOrthoMatrix(void) {
@@ -821,9 +814,9 @@ static void R_DrawAmbientScene (void) {
 static void R_DrawRAScene (void) {
 	int i;
 
-	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
+//	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
 
-	R_DrawChainsRA();
+	R_DrawChainsRA(qfalse);
 
 	if (!r_drawEntities->value)
 		return;
@@ -927,7 +920,6 @@ void R_RenderView (refdef_t *fd) {
 
 	R_CaptureColorBuffer();
 	R_DrawPlayerWeaponFBO();
-
 	GL_CheckError(__FILE__, __LINE__, "end frame");
 }
 
@@ -1443,9 +1435,9 @@ qboolean IsExtensionSupported(const char *name)
 
 int R_Init(void *hinstance, void *hWnd)
 {
-	char	vendor_buffer[1000];
-	int		aniso_level, max_aniso;
-	int			profile;
+	char		vendor_buffer[1000];
+	int			aniso_level, max_aniso;
+	int			profile, minor, major;
 	const char *profileName[] = { "core", "compatibility" };
 
 	Draw_GetPalette();
@@ -1499,8 +1491,10 @@ int R_Init(void *hinstance, void *hWnd)
 	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
 	Com_Printf(S_COLOR_WHITE "GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
 	
+	qglGetIntegerv(GL_MAJOR_VERSION, &major);
+	qglGetIntegerv(GL_MINOR_VERSION, &minor);
 	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
-	Com_Printf("Using OpenGL: "S_COLOR_GREEN"3.3"S_COLOR_WHITE" %s profile context\n", profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+	Com_Printf("Using OpenGL: "S_COLOR_GREEN"%i.%i"S_COLOR_WHITE" %s profile context\n", major, minor, profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
 
 	Cvar_Set("scr_drawall", "0");
 
