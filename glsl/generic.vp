@@ -8,7 +8,7 @@ out vec2		v_texCoord1;
 out vec4		v_texCoordSky;
 out vec4		v_colorArray;
 
-uniform mat4	u_SkyMatrix;
+uniform mat4	u_mvp;
 uniform mat4	u_orthoMatrix;
 uniform int		u_3d, u_isSky;
 
@@ -18,9 +18,11 @@ void main (void)
 	v_texCoord1		= att_texCoordDiffuse1; 
 	v_colorArray	= att_color4f;
 
-	if(u_isSky == 1 || u_3d == 1)
+	if(u_isSky == 1)
 		gl_Position = gl_ModelViewProjectionMatrix * vec4(att_position, 1.0);
-
+	
+	if(u_3d == 1)
+		gl_Position = u_mvp * vec4(att_position, 1.0);
 
 	if(u_isSky != 1 && u_3d != 1)
 		gl_Position = u_orthoMatrix * vec4(att_position, 1.0);

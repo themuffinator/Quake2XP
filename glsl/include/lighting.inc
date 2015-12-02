@@ -26,8 +26,8 @@ float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower
 
 vec4 subScatterFS(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
 {
-    float MaterialThickness = 0.1;
-    vec3 ExtinctionCoefficient = vec3(0.80, 0.12, 0.20);
+    float MaterialThickness = 0.12;
+    vec3 ExtinctionCoefficient = vec3(0.70, 0.10, 0.15);
     float RimScalar = 10.0;
 
     vec4 dotLN = vec4(halfLambert(L, N) * Att);

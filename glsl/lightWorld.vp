@@ -3,6 +3,7 @@ uniform vec3 			u_LightOrg;
 uniform float			u_fogDensity;
 uniform mat4			u_attenMatrix;
 uniform mat4			u_cubeMatrix;
+uniform mat4			u_mvp;
 uniform int				u_parallaxType;
 
 out vec3			v_viewVecTS;
@@ -35,5 +36,5 @@ void main (void) {
 	v_lightVec.y = dot(att_binormal, LV);
 	v_lightVec.z = dot(att_normal, LV); 
 
-	gl_Position = gl_ModelViewProjectionMatrix * vec4(att_position, 1.0);
+	gl_Position = u_mvp * vec4(att_position, 1.0);
 }
