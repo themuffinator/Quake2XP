@@ -1443,7 +1443,6 @@ qboolean IsExtensionSupported(const char *name)
 
 int R_Init(void *hinstance, void *hWnd)
 {
-	char		vendor_buffer[1000];
 	int			aniso_level, max_aniso;
 	int			profile, minor, major;
 	const char *profileName[] = { "core", "compatibility" };
@@ -1482,16 +1481,6 @@ int R_Init(void *hinstance, void *hWnd)
 	 */
 	Com_Printf( "\n");
 	gl_config.vendor_string = (const char*)qglGetString(GL_VENDOR);
-
-	strcpy(vendor_buffer, gl_config.vendor_string);
-	strlwr(vendor_buffer);
-
-	if (strstr(vendor_buffer, "intel")) // fuck the intel lol
-	{
-		Com_Printf(S_COLOR_RED"Intel graphics card is unsupported.\n");
-		VID_Error(ERR_FATAL, "Intel graphics card is unsupported.\n");
-	}
-	
 
 	Com_Printf(S_COLOR_WHITE "GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
 	gl_config.renderer_string = (const char*)qglGetString(GL_RENDERER);

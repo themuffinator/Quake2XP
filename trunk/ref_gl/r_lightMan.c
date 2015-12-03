@@ -2397,7 +2397,6 @@ void R_DrawLightBounds(void) {
 
 	GL_Disable(GL_BLEND);
 	GL_Disable(GL_STENCIL_TEST);
-	GL_Disable(GL_TEXTURE_2D);
 	GL_Disable(GL_CULL_FACE);
 
 	if (r_debugLights->value == 2)
@@ -2473,7 +2472,6 @@ void R_DrawLightBounds(void) {
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	GL_BindNullProgram();
-	GL_Enable(GL_TEXTURE_2D);
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_BLEND);
 

@@ -20,40 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-/*
-=============
-GL_LoadMatrix
-
-=============
-*/
-void GL_LoadMatrix(GLenum mode, const mat4_t matrix) {
-
-	if (gl_state.matrixMode != mode) {
-		qglMatrixMode(mode);
-		gl_state.matrixMode = mode;
-	}
-
-	if (!matrix)
-		qglLoadIdentity();
-	else
-		qglLoadMatrixf((const float *)matrix);
-}
-
-/*
-=============
-GL_LoadIdentity
-
-=============
-*/
-void GL_LoadIdentity(GLenum mode) {
-	if (gl_state.matrixMode != mode) {
-		qglMatrixMode(mode);
-		gl_state.matrixMode = mode;
-	}
-
-	qglLoadIdentity();
-}
-
 void GL_SelectTexture(GLenum texture)
 {
 	int tmu;
@@ -366,72 +332,6 @@ void GL_DepthBoundsTest(GLfloat mins, GLfloat maxs) {
 
 		gl_state.depthBoundsMins = mins;
 		gl_state.depthBoundsMax = maxs;
-	}
-}
-
-/*
-=============
-GL_Color4f
-
-=============
-*/
-void GL_Color4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-	if (gl_state.rgba[0] != r || gl_state.rgba[1] != g || gl_state.rgba[2] != b || gl_state.rgba[3] != a) {
-		qglColor4f(r, g, b, a);
-
-		gl_state.rgba[0] = r;
-		gl_state.rgba[1] = g;
-		gl_state.rgba[2] = b;
-		gl_state.rgba[3] = a;
-	}
-}
-
-/*
-=============
-GL_Color4fv
-
-=============
-*/
-void GL_Color4fv(vec4_t rgba) {
-	if (gl_state.rgba[0] != rgba[0] || gl_state.rgba[1] != rgba[1] || gl_state.rgba[2] != rgba[2] || gl_state.rgba[3] != rgba[3]) {
-		qglColor4fv(rgba);
-
-		gl_state.rgba[0] = rgba[0];
-		gl_state.rgba[1] = rgba[1];
-		gl_state.rgba[2] = rgba[2];
-		gl_state.rgba[3] = rgba[3];
-	}
-}
-
-/*
-=============
-GL_Color3f
-
-=============
-*/
-void GL_Color3f(GLfloat r, GLfloat g, GLfloat b) {
-	if (gl_state.rgba[0] != r || gl_state.rgba[1] != g || gl_state.rgba[2] != b) {
-		qglColor3f(r, g, b);
-
-		gl_state.rgba[0] = r;
-		gl_state.rgba[1] = g;
-		gl_state.rgba[2] = b;
-	}
-}
-
-/*
-=============
-GL_Color3fv
-
-=============
-*/
-void GL_Color3fv(vec3_t rgb) {
-	if (gl_state.rgba[0] != rgb[0] || gl_state.rgba[1] != rgb[1] || gl_state.rgba[2] != rgb[2]) {
-		qglColor3fv(rgb);
-
-		gl_state.rgba[0] = rgb[0];
-		gl_state.rgba[1] = rgb[1];
-		gl_state.rgba[2] = rgb[2];
 	}
 }
 

@@ -936,7 +936,10 @@ qboolean GLimp_InitGL (void)
 		int			pixelFormat;
 		uint		numFormats;
 		int			status;
-//		int			major, minor;
+		qboolean	isIntel;
+		const char	*vendor;
+		char		v[1000];
+
 		int			attribs[] =
 		{
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
@@ -1068,30 +1071,32 @@ qboolean GLimp_InitGL (void)
 		gl_state.arb_multisample = qfalse;
 	}
 
-	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")){
-		qwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)qwglGetProcAddress("wglCreateContextAttribsARB");
-		
-		if (qwglCreateContextAttribsARB)
-			Com_Printf("...using WGL_ARB_create_context\n");
-		else
-		{
-			Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_create_context not found\nOpenGL subsystem not initiation\n");
-			VID_Error(ERR_FATAL, "WGL_ARB_create_context not found!");
+	vendor = (const char*)qglGetString(GL_VENDOR);
+	strcpy(v, vendor);
+	strlwr(v);
+
+	if (strstr(v, "intel"))
+		isIntel = qtrue;
+	else
+		isIntel = qfalse;
+
+	if (!isIntel) {
+		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")) {
+			qwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)qwglGetProcAddress("wglCreateContextAttribsARB");
+
+			if (qwglCreateContextAttribsARB)
+				Com_Printf("...using WGL_ARB_create_context\n");
+			else
+			{
+				Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_create_context not found\nOpenGL subsystem not initiation\n");
+				VID_Error(ERR_FATAL, "WGL_ARB_create_context not found!");
+			}
+
 		}
 
+		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_profile"))
+			Com_Printf("...using WGL_ARB_create_context_profile\n");
 	}
-	
-	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_profile"))
-		Com_Printf("...using WGL_ARB_create_context_profile\n");
-	
-
-/*	qglGetIntegerv(GL_MAJOR_VERSION, &major);
-	qglGetIntegerv(GL_MINOR_VERSION, &minor);
-
-	if (major < 3 && minor < 0){
-		Com_Printf(S_COLOR_RED"Quake2xp requires OpenGL version 3.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %i.%i\n", major, minor);
-		VID_Error(ERR_FATAL, "Quake2xp requires OpenGL version 3.0 or higher.\nProbably your graphics card is unsupported or the drivers are not up-to-date.\nCurrent GL version is %i.%i\n", major, minor);
-	}*/
 
 	glGetStringi = (PFNGLGETSTRINGIPROC)qwglGetProcAddress("glGetStringi");
 	if (!glGetStringi)
@@ -1136,9 +1141,6 @@ qboolean GLimp_InitGL (void)
 		
 		iAttributes[12] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : 0;
 		iAttributes[13] = gl_state.arb_multisample ? (int)r_arbSamples->value : 0;
-
-//		iAttributes[14] = WGL_SWAP_EXCHANGE_ARB;
-//		iAttributes[15] = TRUE;
 
 		// First attempt...
 		status = qwglChoosePixelFormatARB(hDC, iAttributes, fAttributes, 1, &pixelFormat, &numFormats);
@@ -1213,11 +1215,18 @@ qboolean GLimp_InitGL (void)
 
 			SetPixelFormat (glw_state.hDC, pixelFormat, &temppfd);
 
-			if ((glw_state.hGLRC = /*qwglCreateContext( glw_state.hDC )*/qwglCreateContextAttribsARB(glw_state.hDC, 0, attribs)) == 0) // create compatibility gl 3.3 context
-			{
-				Com_Printf (S_COLOR_RED "GLimp_InitGL() qwglCreateContextAttribsARB failed (%d)\n", GetLastError());
-				goto fail;
+			if (isIntel) {// force gl2 context
+				if ((glw_state.hGLRC = qwglCreateContext(glw_state.hDC)) == 0) {
+					Com_Printf(S_COLOR_RED "GLimp_InitGL() qwglCreateContext failed (%d)\n", GetLastError());
+					goto fail;
+				}
 			}
+			else
+				if ((glw_state.hGLRC = qwglCreateContextAttribsARB(glw_state.hDC, 0, attribs)) == 0){
+					Com_Printf(S_COLOR_RED "GLimp_InitGL() qwglCreateContextAttribsARB failed (%d)\n", GetLastError());
+					goto fail;
+			}
+
 
 			if ( !qwglMakeCurrent( glw_state.hDC, glw_state.hGLRC ) )
 			{

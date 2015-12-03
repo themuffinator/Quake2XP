@@ -996,20 +996,11 @@ void GL_Strings_f (void) {
 
 void GL_SetDefaultState (void) {
 
-	qglEnable (GL_TEXTURE_2D);
-
 	// font color
 	colorDefault[0] = 255;
 	colorDefault[1] = 255;
 	colorDefault[2] = 255;
 	colorDefault[3] = 255;
-
-	// gl color
-//	qglColor4f (1.f, 1.f, 1.f, 1.f);
-	gl_state.rgba[0] = 1.f;
-	gl_state.rgba[1] = 1.f;
-	gl_state.rgba[2] = 1.f;
-	gl_state.rgba[3] = 1.f;
 
 	qglDisable (GL_POLYGON_OFFSET_FILL);
 	qglPolygonOffset (0.f, 1.f);
