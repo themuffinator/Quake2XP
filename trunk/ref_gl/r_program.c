@@ -29,7 +29,7 @@ static const char *baseExt =
 "out vec4 fragData;\n";
 
 static const char *glslVersion =
-"#version 150 compatibility\n"
+"#version 150\n"
 "#extension GL_ARB_explicit_attrib_location  : enable\n"
 "#extension GL_ARB_separate_shader_objects : enable\n";
 /*

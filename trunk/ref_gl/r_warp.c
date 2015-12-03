@@ -472,8 +472,6 @@ R_DrawSkyBox
 int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox (qboolean color) {
 	int i;
-	mat4_t math;
-	vec3_t	org;
 
 	if (color) {
 		GL_BindProgram (genericProgram, 0);
@@ -488,6 +486,8 @@ void R_DrawSkyBox (qboolean color) {
 		qglEnableVertexAttribArray (ATT_COLOR);
 		qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, SkyTexCoordArray);
 		qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, SkyColorArray);
+		GL_Enable(GL_POLYGON_OFFSET_FILL);
+		GL_PolygonOffset(-1, -1);
 
 	}
 	qglEnableVertexAttribArray (ATT_POSITION);
@@ -501,22 +501,14 @@ void R_DrawSkyBox (qboolean color) {
 			&& skymins[1][i] < skymaxs[1][i])
 			break;
 		if (i == 6)
-			return;				// nothing visible
+			return;	// nothing visible
 	}
 
-//	qglPushMatrix ();
-//	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.skyMatrix);
-	// set sky matrix
-	VectorCopy(r_origin, org);
+	if(color)
+		qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
+	else
+		qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
 
-	Mat4_Copy(r_newrefdef.modelViewMatrix, r_newrefdef.skyMatrix);
-	Mat4_Translate(r_newrefdef.skyMatrix, org[0], org[1], org[2]);
-	if (skyrotate)
-		Mat4_Rotate(r_newrefdef.skyMatrix, r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
-
-	Mat4_Multiply(r_newrefdef.skyMatrix, r_newrefdef.projectionMatrix, math);
-	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)math);
-	
 	for (i = 0; i < 6; i++) {
 
 		if (skyrotate) {		// hack, forces full sky to draw when
@@ -545,12 +537,13 @@ void R_DrawSkyBox (qboolean color) {
 	}
 
 	qglDisableVertexAttribArray (ATT_POSITION);
+	
 	if (color) {
 		qglDisableVertexAttribArray (ATT_TEX0);
 		qglDisableVertexAttribArray (ATT_COLOR);
 		GL_BindNullProgram ();
+		GL_Disable(GL_POLYGON_OFFSET_FILL);
 	}
-//	qglPopMatrix ();
 }
 
 

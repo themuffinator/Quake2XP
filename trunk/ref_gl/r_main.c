@@ -408,6 +408,14 @@ static void R_SetupViewMatrices (void) {
 	Mat4_Multiply	(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.modelViewProjectionMatrix);
 	Mat4_Transpose	(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.modelViewProjectionMatrixTranspose);
 
+	// set sky matrix
+	Mat4_Copy(r_newrefdef.modelViewMatrix, tmpMatrix);
+	Mat4_Translate(tmpMatrix, r_newrefdef.vieworg[0], r_newrefdef.vieworg[1], r_newrefdef.vieworg[2]);
+	if (skyrotate)
+		Mat4_Rotate(tmpMatrix, r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
+
+	Mat4_Multiply(tmpMatrix, r_newrefdef.projectionMatrix, r_newrefdef.skyMatrix);
+
 	//	gl_normalMatrix	
 	Mat4_Invert		(r_newrefdef.modelViewMatrix, tmpMatrix);
 	Mat4_Transpose	(tmpMatrix, r_newrefdef.normalMatrix);
