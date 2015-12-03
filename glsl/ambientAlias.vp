@@ -12,12 +12,12 @@ out	vec4			v_color;
 uniform	float		u_scroll;
 uniform	int			u_isEnvMap;
 uniform	int			u_isShell;
-uniform mat4		u_mvp, u_mv, u_normalMatrix;
+uniform mat4		u_modelViewProjectionMatrix, u_modelViewMatrix, u_normalMatrix;
 
 void main ()
 {
 if(u_isShell == 1){
-	vec3 us = normalize( vec3(u_mv * vec4(att_position, 1.0)) );
+	vec3 us = normalize( vec3(u_modelViewMatrix * vec4(att_position, 1.0)) );
 	vec3 ns = normalize(vec3(u_normalMatrix) * att_normal);
 	vec3 rs = reflect( us, ns );
 	float ms = 2.0 * sqrt( rs.x*rs.x + rs.y*rs.y + (rs.z+1.0)*(rs.z+1.0) );
@@ -27,7 +27,7 @@ if(u_isShell == 1){
 }
 
 if(u_isEnvMap == 1){
-	vec3 u = normalize( vec3(u_mv * vec4(att_position, 1.0)) );
+	vec3 u = normalize( vec3(u_modelViewMatrix * vec4(att_position, 1.0)) );
 	vec3 n = normalize(vec3(u_normalMatrix) * att_normal);
 	vec3 r = reflect( u, n );
 	float m = 2.0 * sqrt( r.x*r.x + r.y*r.y + (r.z+1.0)*(r.z+1.0) );
@@ -38,6 +38,6 @@ if(u_isEnvMap == 1){
 v_texCoord = att_texCoordDiffuse;
 v_color = att_color4f;
 
-gl_Position = u_mvp * vec4(att_position, 1.0);
+gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
 
 }

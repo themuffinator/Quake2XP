@@ -16,7 +16,6 @@ void main (void) {
 	vec2 dir = blurVec.xy * invRadius;
 	float blurDist = clamp(1.0 - dot(dir, dir), 0.0, 1.0);
 	float strength = u_radialBlurParams.w * blurDist * blurDist;
-
 	float weight = 0.125;
   
 	vec4 accum = vec4(0.0);

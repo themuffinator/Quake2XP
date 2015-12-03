@@ -1,7 +1,7 @@
 uniform vec3		u_viewOriginES;
 uniform int			u_parallaxType;
 uniform int			u_LightMapType;
-uniform mat4		u_mvp;
+uniform mat4		u_modelViewProjectionMatrix;
 
 out vec3		v_viewVecTS;
 out vec2		v_wTexCoord;
@@ -27,5 +27,5 @@ void main (void) {
 	v_viewVecTS.y = dot(tmp, att_binormal);
 	v_viewVecTS.z = dot(tmp, att_normal);
 
-	gl_Position = u_mvp * vec4(att_position, 1.0);
+	gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
 }

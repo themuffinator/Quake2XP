@@ -37,7 +37,7 @@ uniform float				u_ambientScale;
 uniform vec2				u_viewport;
 uniform vec2				u_depthParms;
 uniform int					u_TRANS;
-uniform mat4				u_pm;
+uniform mat4				u_projectionMatrix;
 
 uniform sampler2D			u_colorMap;
 uniform sampler2D			u_dstMap;
@@ -48,7 +48,7 @@ uniform	sampler2DRect		g_colorBufferMap;
 // view space to viewport
 //
 vec2 VS2UV (const in vec3 p) {
-	vec4 v = u_pm * vec4(p, 1.0);
+	vec4 v = u_projectionMatrix * vec4(p, 1.0);
 	return (v.xy / v.w * 0.5 + 0.5) * u_viewport; 
 }
 

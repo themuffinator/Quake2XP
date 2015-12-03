@@ -9,7 +9,7 @@ uniform vec3		u_LightOrg;
 uniform vec3		u_ViewOrigin; 		
 uniform mat4		u_attenMatrix;
 uniform mat4		u_cubeMatrix;
-uniform mat4		u_mvp, u_mv;
+uniform mat4		u_modelViewProjectionMatrix, u_modelViewMatrix;
 
 out vec2		v_texCoord;
 out vec4		v_CubeCoord;
@@ -34,7 +34,7 @@ v_viewVec.x = dot(att_tangent, VV);
 v_viewVec.y = dot(att_binormal, VV);
 v_viewVec.z = dot(att_normal, VV); 
 
-gl_Position = u_mvp * vec4(att_position, 1.0);
+gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
 
-v_viewPos = u_mv * vec4(att_position, 1.0);
+v_viewPos = u_modelViewMatrix * vec4(att_position, 1.0);
 }
