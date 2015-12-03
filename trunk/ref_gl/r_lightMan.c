@@ -1864,8 +1864,8 @@ void DeleteShadowVertexBuffers (void) {
 
 	for (light = shadowLight_static; light; light = light->s_next) {
 
-		qglDeleteBuffers (1, &light->vboId);
-		qglDeleteBuffers (1, &light->iboId);
+		qglDeleteBuffersARB (1, &light->vboId);
+		qglDeleteBuffersARB (1, &light->iboId);
 		light->vboId = light->iboId = light->iboNumIndices = 0;
 	}
 	numPreCachedLights = 0;
@@ -2194,7 +2194,7 @@ void R_DrawLightFlare () {
 	if (r_useLightScissors->value)
 		GL_Disable (GL_SCISSOR_TEST);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglEnableVertexAttribArray (ATT_TEX0);
 	qglEnableVertexAttribArray (ATT_COLOR);
@@ -2257,7 +2257,7 @@ void R_DrawLightFlare () {
 	if (r_useLightScissors->value)
 		GL_Enable(GL_SCISSOR_TEST);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
 	qglDisableVertexAttribArray (ATT_COLOR);

@@ -25,7 +25,7 @@ static const char *shader5 =
 "#extension GL_ARB_gpu_shader5 : enable\n";
 
 static const char *baseExt =
-"#extension GL_ARB_texture_rectangle : enable\n"
+//"#extension GL_ARB_texture_rectangle : enable\n"
 "out vec4 fragData;\n";
 
 static const char *glslVersion =
@@ -498,7 +498,7 @@ void R_InitPrograms (void) {
 	if (nullProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = nullProgram->id[0];
-		null_mvp = qglGetUniformLocation(id, "u_mvp");
+		null_mvp = qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -528,7 +528,7 @@ void R_InitPrograms (void) {
 		ambientWorld_parallaxType	= qglGetUniformLocation (id, "u_parallaxType");
 		ambientWorld_ambientLevel	= qglGetUniformLocation (id, "u_ambientScale");
 		ambientWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
-		ambientWorld_mvp			= qglGetUniformLocation (id, "u_mvp");
+		ambientWorld_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
 
 	}
 	else {
@@ -567,7 +567,7 @@ void R_InitPrograms (void) {
 		lightWorld_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
 		lightWorld_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
 		lightWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
-		lightWorld_mvp				= qglGetUniformLocation	(id, "u_mvp");
+		lightWorld_mvp				= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -592,8 +592,8 @@ void R_InitPrograms (void) {
 		ambientAlias_envScale		= qglGetUniformLocation (id, "u_envScale");
 		ambientAlias_isShell		= qglGetUniformLocation (id, "u_isShell");
 		ambientAlias_scroll			= qglGetUniformLocation (id, "u_scroll");
-		ambientAlias_mvp			= qglGetUniformLocation (id, "u_mvp");
-		ambientAlias_mv				= qglGetUniformLocation	(id, "u_mv");
+		ambientAlias_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
+		ambientAlias_mv				= qglGetUniformLocation	(id, "u_modelViewMatrix");
 		ambientAlias_normalMatrix	= qglGetUniformLocation (id, "u_normalMatrix");
 	}
 	else {
@@ -627,8 +627,8 @@ void R_InitPrograms (void) {
 		lightAlias_ambient			= qglGetUniformLocation (id, "u_isAmbient");
 		lightAlias_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
 		lightAlias_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
-		lightAlias_mvp				= qglGetUniformLocation	(id, "u_mvp");
-		lightAlias_mv				= qglGetUniformLocation(id, "u_mv");
+		lightAlias_mvp				= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
+		lightAlias_mv				= qglGetUniformLocation(id, "u_modelViewMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -800,9 +800,9 @@ void R_InitPrograms (void) {
 		refract_alphaMask	= qglGetUniformLocation (id, "u_ALPHAMASK");
 		refract_mask		= qglGetUniformLocation (id, "u_mask");
 		refract_thickness2	= qglGetUniformLocation (id, "u_thickness2");
-		refract_mvp			= qglGetUniformLocation	(id, "u_mvp");
-		refract_mv			= qglGetUniformLocation	(id, "u_mv");
-		refract_pm			= qglGetUniformLocation	(id, "u_pm");
+		refract_mvp			= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
+		refract_mv			= qglGetUniformLocation	(id, "u_modelViewMatrix");
+		refract_pm			= qglGetUniformLocation	(id, "u_projectionMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -849,9 +849,9 @@ void R_InitPrograms (void) {
 		water_ambient		= qglGetUniformLocation (id, "u_ambientScale");
 		water_trans			= qglGetUniformLocation (id, "u_TRANS");
 		water_entity2world	= qglGetUniformLocation (id, "g_entityToWorldRot");
-		water_mvp			= qglGetUniformLocation	(id, "u_mvp");
-		water_mv			= qglGetUniformLocation	(id, "u_mv");
-		water_pm			= qglGetUniformLocation	(id, "u_pm");
+		water_mvp			= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
+		water_mv			= qglGetUniformLocation	(id, "u_modelViewMatrix");
+		water_pm			= qglGetUniformLocation	(id, "u_projectionMatrix");
 
 	}
 	else {
@@ -872,8 +872,8 @@ void R_InitPrograms (void) {
 		particle_mask			= qglGetUniformLocation (id, "u_mask");
 		particle_thickness		= qglGetUniformLocation (id, "u_thickness");
 		particle_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
-		particle_mvp			= qglGetUniformLocation (id, "u_mvp");
-		particle_mv				= qglGetUniformLocation (id, "u_mv");
+		particle_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
+		particle_mv				= qglGetUniformLocation (id, "u_modelViewMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -894,7 +894,7 @@ void R_InitPrograms (void) {
 		gen_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
 		gen_color			= qglGetUniformLocation (id, "u_color");
 		gen_sky				= qglGetUniformLocation (id, "u_isSky");
-		gen_mvp				= qglGetUniformLocation (id, "u_mvp");
+		gen_mvp				= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
 		gen_orthoMatrix		= qglGetUniformLocation (id, "u_orthoMatrix");
 		gen_3d				= qglGetUniformLocation (id, "u_3d");
 	}

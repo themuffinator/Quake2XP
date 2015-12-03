@@ -1128,10 +1128,10 @@ void Mod_BuildVertexCache () {
 
 	}
 
-	qglGenBuffers (1, &vbo.vbo_BSP);
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-	qglBufferData (GL_ARRAY_BUFFER_ARB, vbo_size, buf, GL_STATIC_DRAW_ARB);
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
+	qglGenBuffersARB(1, &vbo.vbo_BSP);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+	qglBufferDataARB(GL_ARRAY_BUFFER_ARB, vbo_size, buf, GL_STATIC_DRAW_ARB);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	Com_DPrintf (""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
 	free (buf);
 }
@@ -2490,10 +2490,10 @@ exit:
 			mod->st[l++] = poutst[indexST].t;
 		}
 	}
-	qglGenBuffers (1, &mod->vboId);
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, mod->vboId);
-	qglBufferData (GL_ARRAY_BUFFER_ARB, l * sizeof(float), mod->st, GL_STATIC_DRAW_ARB);
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
+	qglGenBuffersARB(1, &mod->vboId);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, mod->vboId);
+	qglBufferDataARB(GL_ARRAY_BUFFER_ARB, l * sizeof(float), mod->st, GL_STATIC_DRAW_ARB);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 
@@ -2748,7 +2748,7 @@ void Mod_Free (model_t * mod) {
 		free (mod->neighbours);
 
 	if (mod->type == mod_alias)
-		qglDeleteBuffers (1, &mod->vboId);
+		qglDeleteBuffersARB(1, &mod->vboId);
 
 	memset (mod, 0, sizeof(*mod));
 }

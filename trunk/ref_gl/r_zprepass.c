@@ -251,7 +251,7 @@ void R_DrawDepthBrushModel (void) {
 	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)mvp);
 
 	if (!bmodelfix){
-		qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 		qglEnableVertexAttribArray(ATT_POSITION);
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	}
@@ -265,7 +265,7 @@ void R_DrawDepthBrushModel (void) {
 	GL_DrawDepthPoly(bmodelfix);
 
 	if (!bmodelfix)
-		qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 }
@@ -358,7 +358,7 @@ void R_DrawDepthScene (void) {
 
 	GL_BindProgram (nullProgram, 0);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -368,7 +368,7 @@ void R_DrawDepthScene (void) {
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
 	GL_DrawDepthPoly (qfalse);
 	
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	qglDisableVertexAttribArray (ATT_POSITION);
 
 	R_DrawSkyBox (qfalse);

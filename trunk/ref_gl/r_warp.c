@@ -476,7 +476,7 @@ void R_DrawSkyBox (qboolean color) {
 	if (color) {
 		GL_BindProgram (genericProgram, 0);
 		qglUniform1i (gen_sky, 1);
-		qglUniform1i (gen_3d, 1);
+		qglUniform1i (gen_3d, 0);
 		qglUniform1i (gen_attribColors, 0);
 		qglUniform1i (gen_attribConsole, 0);
 		qglUniform1i (gen_tex, 0);

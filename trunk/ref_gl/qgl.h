@@ -606,17 +606,17 @@ extern PFNGLCLIENTACTIVETEXTUREARBPROC			qglClientActiveTextureARB;
 extern PFNGLMULTITEXCOORD2FARBPROC				qglMultiTexCoord2fARB;
 extern PFNGLMULTITEXCOORD3FVARBPROC				qglMultiTexCoord3fvARB;
 
-extern PFNGLBINDBUFFERPROC						qglBindBuffer;
-extern PFNGLDELETEBUFFERSPROC					qglDeleteBuffers;
-extern PFNGLGENBUFFERSPROC						qglGenBuffers;
-extern PFNGLISBUFFERPROC						qglListBuffer;
-extern PFNGLBUFFERDATAPROC						qglBufferData;
-extern PFNGLBUFFERSUBDATAPROC					qglBufferSubData;
-extern PFNGLGETBUFFERSUBDATAPROC				qglGetBufferSubDdata;
-extern PFNGLMAPBUFFERPROC						qglMapBuffer;
-extern PFNGLUNMAPBUFFERPROC						qglUnmapBuffer;
-extern PFNGLGETBUFFERPARAMETERIVPROC			qglGetBufferParameteriv;
-extern PFNGLGETBUFFERPOINTERVPROC				qglGetBufferPointerv;
+extern PFNGLBINDBUFFERARBPROC						qglBindBufferARB;
+extern PFNGLDELETEBUFFERSARBPROC					qglDeleteBuffersARB;
+extern PFNGLGENBUFFERSARBPROC						qglGenBuffersARB;
+extern PFNGLISBUFFERARBPROC						qglListBufferARB;
+extern PFNGLBUFFERDATAARBPROC						qglBufferDataARB;
+extern PFNGLBUFFERSUBDATAARBPROC					qglBufferSubDataARB;
+extern PFNGLGETBUFFERSUBDATAARBPROC				qglGetBufferSubDdataARB;
+extern PFNGLMAPBUFFERARBPROC						qglMapBufferARB;
+extern PFNGLUNMAPBUFFERARBPROC						qglUnmapBufferARB;
+extern PFNGLGETBUFFERPARAMETERIVARBPROC			qglGetBufferParameterivARB;
+extern PFNGLGETBUFFERPOINTERVARBPROC				qglGetBufferPointervARB;
 
 extern PFNGLVERTEXATTRIB1SARBPROC				glVertexAttrib1sARB;
 extern PFNGLVERTEXATTRIB1FARBPROC				glVertexAttrib1fARB;

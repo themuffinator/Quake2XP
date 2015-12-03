@@ -89,7 +89,7 @@ void R_RenderFlares (void) {
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglEnableVertexAttribArray (ATT_TEX0);
 	qglEnableVertexAttribArray (ATT_COLOR);
@@ -143,7 +143,7 @@ void R_RenderFlares (void) {
 
 	}
 	GL_BindNullProgram ();
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
 	qglDisableVertexAttribArray (ATT_COLOR);
@@ -160,8 +160,8 @@ Post Process Effects
 
 void R_DrawFullScreenQuad () {
 
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, vbo.vbo_fullScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_fullScreenQuad);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
@@ -170,14 +170,14 @@ void R_DrawFullScreenQuad () {
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void R_DrawHalfScreenQuad () {
 
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, vbo.vbo_halfScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_halfScreenQuad);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
@@ -186,14 +186,14 @@ void R_DrawHalfScreenQuad () {
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void R_DrawQuarterScreenQuad () {
 	
-	qglBindBuffer (GL_ARRAY_BUFFER_ARB, vbo.vbo_quarterScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_quarterScreenQuad);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
@@ -202,8 +202,8 @@ void R_DrawQuarterScreenQuad () {
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void R_Bloom (void) 

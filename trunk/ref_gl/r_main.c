@@ -737,7 +737,7 @@ void R_RenderSprites(void)
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 
@@ -761,7 +761,7 @@ void R_RenderSprites(void)
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
 }
@@ -1626,15 +1626,15 @@ int R_Init(void *hinstance, void *hWnd)
 
 	if (IsExtensionSupported("GL_ARB_vertex_buffer_object")) {
 			
-		qglBindBuffer =		(PFNGLBINDBUFFERPROC)		qwglGetProcAddress("glBindBuffer");
-		qglDeleteBuffers =	(PFNGLDELETEBUFFERSPROC)	qwglGetProcAddress("glDeleteBuffers");
-		qglGenBuffers =		(PFNGLGENBUFFERSPROC)		qwglGetProcAddress("glGenBuffers");
-		qglBufferData =		(PFNGLBUFFERDATAPROC)		qwglGetProcAddress("glBufferData");
-		qglBufferSubData =	(PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
-		qglMapBuffer =		(PFNGLMAPBUFFERPROC)		qwglGetProcAddress("glMapBuffer");
-		qglUnmapBuffer =	(PFNGLUNMAPBUFFERPROC)		qwglGetProcAddress("glUnmapBuffer");
+		qglBindBufferARB =		(PFNGLBINDBUFFERARBPROC)		qwglGetProcAddress("glBindBufferARB");
+		qglDeleteBuffersARB =	(PFNGLDELETEBUFFERSARBPROC)	qwglGetProcAddress("glDeleteBuffersARB");
+		qglGenBuffersARB =		(PFNGLGENBUFFERSARBPROC)		qwglGetProcAddress("glGenBuffersARB");
+		qglBufferDataARB =		(PFNGLBUFFERDATAARBPROC)		qwglGetProcAddress("glBufferDataARB");
+		qglBufferSubDataARB =	(PFNGLBUFFERSUBDATAARBPROC)	qwglGetProcAddress("glBufferSubDataARB");
+		qglMapBufferARB =		(PFNGLMAPBUFFERARBPROC)		qwglGetProcAddress("glMapBufferARB");
+		qglUnmapBufferARB =		(PFNGLUNMAPBUFFERARBPROC)		qwglGetProcAddress("glUnmapBufferARB");
 
-		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData){
+		if (qglGenBuffersARB && qglBindBufferARB && qglBufferDataARB && qglDeleteBuffersARB && qglBufferSubDataARB){
 			vec2_t		tmpVerts[4];
 			index_t		iCache[6 * MAX_DRAW_STRING_LENGTH];
 			int			idx = 0, numVerts = 0, i;
@@ -1646,30 +1646,30 @@ int R_Init(void *hinstance, void *hWnd)
 			VA_SetElem2(tmpVerts[1],vid.width,	vid.height);
 			VA_SetElem2(tmpVerts[2],vid.width,	0);
 			VA_SetElem2(tmpVerts[3],0,			0);
-			qglGenBuffers(1, &vbo.vbo_fullScreenQuad);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_fullScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+			qglGenBuffersARB(1, &vbo.vbo_fullScreenQuad);
+			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_fullScreenQuad);
+			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
+			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 			// half quad
 			VA_SetElem2(tmpVerts[0],0,					vid.height);
 			VA_SetElem2(tmpVerts[1],vid.width * 0.5 ,	vid.height);
 			VA_SetElem2(tmpVerts[2],vid.width * 0.5 ,	vid.height * 0.5);
 			VA_SetElem2(tmpVerts[3],0,					vid.height * 0.5);
-			qglGenBuffers(1, &vbo.vbo_halfScreenQuad);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_halfScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+			qglGenBuffersARB(1, &vbo.vbo_halfScreenQuad);
+			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_halfScreenQuad);
+			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
+			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 			// quater quad
 			VA_SetElem2(tmpVerts[0],0,						vid.height);
 			VA_SetElem2(tmpVerts[1],vid.width * 0.25 ,		vid.height);
 			VA_SetElem2(tmpVerts[2],vid.width * 0.25 ,		vid.height * 0.25);
 			VA_SetElem2(tmpVerts[3],0,						vid.height * 0.25);
-			qglGenBuffers(1, &vbo.vbo_quarterScreenQuad);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_quarterScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
-			qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+			qglGenBuffersARB(1, &vbo.vbo_quarterScreenQuad);
+			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_quarterScreenQuad);
+			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW_ARB);
+			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 			for (i = 0, idx = 0; i < MAX_DRAW_STRING_LENGTH * 4; i +=4)
 			{
@@ -1681,13 +1681,13 @@ int R_Init(void *hinstance, void *hWnd)
 				iCache[idx++] = i + 3;
 			}
 
-			qglGenBuffers(1, &vbo.ibo_quadTris);
-			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(GL_UNSIGNED_SHORT), iCache, GL_STATIC_DRAW_ARB);
-			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			qglGenBuffersARB(1, &vbo.ibo_quadTris);
+			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(GL_UNSIGNED_SHORT), iCache, GL_STATIC_DRAW_ARB);
+			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-			qglGenBuffers(1, &vbo.vbo_Dynamic);
-			qglGenBuffers(1, &vbo.ibo_Dynamic);
+			qglGenBuffersARB(1, &vbo.vbo_Dynamic);
+			qglGenBuffersARB(1, &vbo.ibo_Dynamic);
 	
 		}
 	} else {
@@ -1919,13 +1919,13 @@ void R_Shutdown(void)
 	
 	DeleteShadowVertexBuffers();
 
-	qglDeleteBuffers(1, &vbo.vbo_fullScreenQuad);
-	qglDeleteBuffers(1, &vbo.vbo_halfScreenQuad);
-	qglDeleteBuffers(1, &vbo.vbo_quarterScreenQuad);
-	qglDeleteBuffers(1, &vbo.ibo_quadTris);
-	qglDeleteBuffers(1, &vbo.vbo_Dynamic);
-	qglDeleteBuffers(1, &vbo.ibo_Dynamic);
-	qglDeleteBuffers(1, &vbo.vbo_BSP);
+	qglDeleteBuffersARB(1, &vbo.vbo_fullScreenQuad);
+	qglDeleteBuffersARB(1, &vbo.vbo_halfScreenQuad);
+	qglDeleteBuffersARB(1, &vbo.vbo_quarterScreenQuad);
+	qglDeleteBuffersARB(1, &vbo.ibo_quadTris);
+	qglDeleteBuffersARB(1, &vbo.vbo_Dynamic);
+	qglDeleteBuffersARB(1, &vbo.ibo_Dynamic);
+	qglDeleteBuffersARB(1, &vbo.vbo_BSP);
 }
 
 

@@ -918,7 +918,7 @@ void R_DrawLightWorld(void)
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
@@ -938,7 +938,7 @@ void R_DrawLightWorld(void)
 	if(currentShadowLight->numInteractionSurfs > 0)
 		GL_DrawLightPass(qfalse, qfalse);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -979,7 +979,7 @@ void R_DrawBSP (void) {
 		
 	R_ClearSkyBox();	
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
@@ -999,7 +999,7 @@ void R_DrawBSP (void) {
 	R_RecursiveWorldNode(r_worldmodel->nodes);
 	GL_DrawLightmappedPoly(qfalse);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -1193,7 +1193,7 @@ void R_DrawBrushModel (void) {
 
 	R_DrawInlineBModel2();
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
@@ -1214,7 +1214,7 @@ void R_DrawBrushModel (void) {
 	R_DrawInlineBModel();
 	GL_DrawLightmappedPoly(qtrue);
 	
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -1377,7 +1377,7 @@ void R_DrawLightBrushModel (void) {
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
@@ -1398,7 +1398,7 @@ void R_DrawLightBrushModel (void) {
 	if(currentShadowLight->numInteractionSurfs)
 		GL_DrawLightPass(qtrue, caustics);
 	
-	qglBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);

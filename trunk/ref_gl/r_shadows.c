@@ -733,21 +733,21 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	if (precalc) {
 
 		if (currentShadowLight->vboId)
-			qglDeleteBuffers (1, &currentShadowLight->vboId);
+			qglDeleteBuffersARB(1, &currentShadowLight->vboId);
 
-		qglGenBuffers (1, &currentShadowLight->vboId);
-		qglBindBuffer (GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
-		qglBufferData (GL_ARRAY_BUFFER_ARB, surfBase*sizeof(vec3_t), vcache, GL_STATIC_DRAW_ARB);
-		qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
+		qglGenBuffersARB(1, &currentShadowLight->vboId);
+		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
+		qglBufferDataARB(GL_ARRAY_BUFFER_ARB, surfBase*sizeof(vec3_t), vcache, GL_STATIC_DRAW_ARB);
+		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 		if (currentShadowLight->iboId)
-			qglDeleteBuffers (1, &currentShadowLight->iboId);
+			qglDeleteBuffersARB(1, &currentShadowLight->iboId);
 
-		qglGenBuffers (1, &currentShadowLight->iboId);
-		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
-		qglBufferData (GL_ELEMENT_ARRAY_BUFFER, ib*sizeof(GL_UNSIGNED_SHORT), icache, GL_STATIC_DRAW_ARB);
+		qglGenBuffersARB(1, &currentShadowLight->iboId);
+		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
+		qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, ib*sizeof(GL_UNSIGNED_SHORT), icache, GL_STATIC_DRAW_ARB);
 		currentShadowLight->iboNumIndices = ib;
-		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
+		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 		numPreCachedLights++;
 	}
 	else {
@@ -789,14 +789,14 @@ void R_CastBspShadowVolumes (void) {
 
 	if (currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic) { // draw vbo shadow
 
-		qglBindBuffer (GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
-		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
+		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
+		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
 
 		qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 		qglDrawElements	(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_SHORT, NULL);
 
-		qglBindBuffer (GL_ARRAY_BUFFER_ARB, 0);
-		qglBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
+		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	if (!currentShadowLight->isStatic)
