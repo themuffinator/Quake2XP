@@ -289,9 +289,6 @@ void R_Bloom (void)
 
 void R_ThermalVision (void) 
 {
-	unsigned defBits = 0;
-	int	id;
-
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
@@ -341,8 +338,7 @@ void R_ThermalVision (void)
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
 
 	//final pass
-	GL_BindProgram (thermalfpProgram, defBits);
-	id = thermalfpProgram->id[defBits];
+	GL_BindProgram (thermalfpProgram, 0);
 
 	GL_BindRect (thermaltex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
