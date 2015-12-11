@@ -711,7 +711,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 
 		if (c) {
 			do {
-		//		if (SurfInFrustum(*mark))
+				if (SurfInFrustum(*mark))
 					(*mark)->visframe = r_framecount;
 				(*mark)->ent = NULL;
 				mark++;

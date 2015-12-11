@@ -579,18 +579,7 @@ void R_DownsampleDepth(void)
 	if (!r_ssao->value)
 		return;
 
-//	qglViewport (0, 0, vid.width, vid.height);
-
-//	GL_LoadIdentity(GL_MODELVIEW);
-//	GL_LoadIdentity(GL_PROJECTION);
-//	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
-
 	GL_DepthRange(0.0, 1.0);
-	GL_DepthMask(0);
-	GL_ColorMask(1, 1, 1, 1);
-	GL_Disable(GL_CULL_FACE);
-	GL_Disable(GL_DEPTH_TEST);
-
 	// downsample the depth buffer
 	qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
@@ -607,10 +596,6 @@ void R_DownsampleDepth(void)
 	// restore settings
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 	GL_BindNullProgram();
-
-//	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
-//	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
-	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
 void R_SSAO (void) 
@@ -623,17 +608,6 @@ void R_SSAO (void)
 	if (!r_ssao->value)
 		return;
 	
-//	qglViewport(0, 0, vid.width, vid.height);
-
-//	GL_LoadIdentity(GL_MODELVIEW);
-//	GL_LoadIdentity(GL_PROJECTION);
-//	qglOrtho(0, vid.width, vid.height, 0, -99999, 99999);
-	
-	GL_Disable (GL_DEPTH_TEST);
-	GL_Disable (GL_CULL_FACE);
-	GL_DepthMask(0);
-	GL_ColorMask(1, 1, 1, 1);
-
 	// process
 	qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -688,12 +662,4 @@ void R_SSAO (void)
 	// restore
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 	GL_BindNullProgram ();
-
-	GL_Enable(GL_CULL_FACE);
-	GL_Enable(GL_DEPTH_TEST);
-	GL_DepthMask(1);
-
-//	GL_LoadMatrix(GL_PROJECTION, r_newrefdef.projectionMatrix);
-//	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
-	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }

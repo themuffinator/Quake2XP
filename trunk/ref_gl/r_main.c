@@ -905,8 +905,18 @@ void R_RenderView (refdef_t *fd) {
 	R_CaptureDepthBuffer();
 
 	if (r_ssao->value && !(r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))) {
+
+		R_SetupOrthoMatrix();
+		GL_DepthMask(0);
+
 		R_DownsampleDepth();
 		R_SSAO();
+
+		GL_Enable(GL_CULL_FACE);
+		GL_Enable(GL_DEPTH_TEST);
+		GL_DepthMask(1);
+		qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], 
+					r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 	}
 
 	R_DrawAmbientScene();
