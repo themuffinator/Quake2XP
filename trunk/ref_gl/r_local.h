@@ -982,8 +982,7 @@ uint ambientAlias_envScale;
 uint ambientAlias_isShell;
 uint ambientAlias_scroll;
 uint ambientAlias_mvp;
-uint ambientAlias_mv;
-uint ambientAlias_normalMatrix;
+uint ambientAlias_viewOrg;
 
 uint lightAlias_diffuse;
 uint lightAlias_normal;

@@ -416,9 +416,6 @@ static void R_SetupViewMatrices (void) {
 
 	Mat4_Multiply(tmpMatrix, r_newrefdef.projectionMatrix, r_newrefdef.skyMatrix);
 
-	//	gl_normalMatrix	
-	Mat4_Invert		(r_newrefdef.modelViewMatrix, tmpMatrix);
-	Mat4_Transpose	(tmpMatrix, r_newrefdef.normalMatrix);
 }
 
 void R_SetupEntityMatrix(entity_t * e) {

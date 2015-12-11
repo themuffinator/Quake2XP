@@ -286,10 +286,9 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 	}
 	else
 		qglUniform1i(ambientAlias_ssao, 0);
-
+	
+	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
 	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
-	qglUniformMatrix4fv(ambientAlias_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(ambientAlias_normalMatrix, 1, qfalse, (const float *)r_newrefdef.normalMatrix);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
@@ -361,10 +360,9 @@ void GL_DrawAliasFrameLerpAmbientShell (dmdl_t *paliashdr) {
 	qglUniform1i (ambientAlias_isEnvMaping, 0);
 	qglUniform1f (ambientAlias_colorModulate, r_textureColorScale->value);
 	qglUniform1f (ambientAlias_scroll, scroll);
-	
+	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
+
 	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
-	qglUniformMatrix4fv(ambientAlias_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(ambientAlias_normalMatrix, 1, qfalse, (const float *)r_newrefdef.normalMatrix);
 
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_MBind (GL_TEXTURE0_ARB, r_texshell[0]->texnum);

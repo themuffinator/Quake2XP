@@ -593,8 +593,7 @@ void R_InitPrograms (void) {
 		ambientAlias_isShell		= qglGetUniformLocation (id, "u_isShell");
 		ambientAlias_scroll			= qglGetUniformLocation (id, "u_scroll");
 		ambientAlias_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
-		ambientAlias_mv				= qglGetUniformLocation	(id, "u_modelViewMatrix");
-		ambientAlias_normalMatrix	= qglGetUniformLocation (id, "u_normalMatrix");
+		ambientAlias_viewOrg		= qglGetUniformLocation (id, "u_viewOrg");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
