@@ -255,7 +255,7 @@ void R_DrawChainsRA (qboolean bmodel) {
 		if (s->flags & MSURF_LAVA)
 			continue;
 
-		R_DrawWaterPolygons(s, qfalse);
+		R_DrawWaterPolygons(s, bmodel);
 	}
 
 	r_reflective_surfaces = NULL;
@@ -394,7 +394,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 	}
 
-	if (r_ssao->value){
+	if (r_ssao->value && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
 		GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
 		qglUniform1i(ambientWorld_ssao, 1);
 	} else

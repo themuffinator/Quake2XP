@@ -465,6 +465,7 @@ void R_SetupGL(void)
 	GL_Enable(GL_CULL_FACE);
 	GL_Disable(GL_BLEND);
 	GL_Enable(GL_DEPTH_TEST);
+	GL_DepthMask(1);
 }
 
 /*
@@ -819,8 +820,6 @@ static void R_DrawAmbientScene (void) {
 static void R_DrawRAScene (void) {
 	int i;
 
-//	GL_LoadMatrix(GL_MODELVIEW, r_newrefdef.modelViewMatrix);
-
 	R_DrawChainsRA(qfalse);
 
 	if (!r_drawEntities->value)
@@ -905,7 +904,6 @@ void R_RenderView (refdef_t *fd) {
 
 		R_SetupOrthoMatrix();
 		GL_DepthMask(0);
-
 		R_DownsampleDepth();
 		R_SSAO();
 

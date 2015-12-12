@@ -1111,6 +1111,7 @@ void UpdateLightEditor (void) {
 	qglUniform1i (gen_attribConsole, 0);
 	qglUniform1i (gen_sky, 0);
 	qglUniform1i (gen_3d, 1);
+	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
