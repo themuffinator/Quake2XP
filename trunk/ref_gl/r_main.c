@@ -245,6 +245,10 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform2f(refract_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1i(refract_alphaMask, 1);
 	qglUniform2f(refract_mask, 0.0, 1.0);
+	
+	qglUniformMatrix4fv(refract_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(refract_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(refract_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
 	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+0]);
 	VectorMA (wVertexArray[vert+0], -frame->origin_x, right, wVertexArray[vert+0]);

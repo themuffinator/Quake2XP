@@ -354,7 +354,9 @@ void R_ThermalVision (void)
 
 void R_RadialBlur (void) 
 {
-	float blur;
+	float	blur;
+	int		cont = 666;
+	vec3_t	org;
 
 	if (!r_radialBlur->value)
 		return;
@@ -369,12 +371,18 @@ void R_RadialBlur (void)
 
 	hack:
 
+		VectorCopy(r_newrefdef.vieworg, org);
+		org[2] -= 16.0;
+		cont = CL_PMpointcontents(org);
+		
 		GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 		qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 		// setup program
 		GL_BindProgram (radialProgram, 0);
 		qglUniform1i(rb_tex, 0);
+		
+		qglUniform1i(rb_cont, cont);
 
 		if (r_newrefdef.rdflags & RDF_PAIN)
 			blur = 0.01;

@@ -1091,6 +1091,7 @@ uint bloom_FP_matrix;
 uint rb_tex;
 uint rb_params;
 uint rb_matrix;
+uint rb_cont;
 
 uint dof_screenSize;
 uint dof_params;

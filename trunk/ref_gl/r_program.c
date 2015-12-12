@@ -682,6 +682,7 @@ void R_InitPrograms (void) {
 		rb_tex		= qglGetUniformLocation(id, "u_screenMap");
 		rb_params	= qglGetUniformLocation(id, "u_radialBlurParams");
 		rb_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
+		rb_cont		= qglGetUniformLocation(id, "u_cont");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
