@@ -5,12 +5,23 @@ Radial Blur effect, uses Crysis(tm) shader.
 */
 
 // xy = radial center screen space position, z = radius attenuation, w = blur strength
-uniform vec4		u_radialBlurParams;	
+uniform vec4			u_radialBlurParams;	
 uniform sampler2DRect	u_screenMap;
+uniform int				u_cont;
 
 void main (void) {
 	vec2 screenPos = u_radialBlurParams.xy;
 	vec2 blurVec = screenPos.xy - gl_FragCoord.xy;
+	vec4 color;
+
+	if(u_cont >= 17)
+		color = vec4(0.3, 0.3, 0.5, 1.0);
+
+	if(u_cont == 16)
+		color = vec4(0.3, 0.85, 0.3, 1.0);
+	
+	if(u_cont == 8)
+		color = vec4(1.0, 0.3, 0.3, 1.0);
 
 	float invRadius = u_radialBlurParams.z;
 	vec2 dir = blurVec.xy * invRadius;
@@ -36,6 +47,16 @@ void main (void) {
 	accum += texture2DRect(u_screenMap, st);
 	st += add;
 	accum += texture2DRect(u_screenMap, st);
+	
+	float opaque;
+		
+		if( u_cont == 8)
+			opaque = 0.666;
+		else
+			opaque = 0.2;
 
-	fragData = accum * weight;
+	if( u_cont == 8 || u_cont == 16 || u_cont == 32)
+		fragData = mix(accum * weight, color, opaque);
+	else
+		fragData = accum * weight;
 }
