@@ -355,7 +355,7 @@ void R_ThermalVision (void)
 void R_RadialBlur (void) 
 {
 	float	blur;
-	int		cont = 666;
+	int		cont = 0;
 	vec3_t	org;
 
 	if (!r_radialBlur->value)
@@ -363,7 +363,7 @@ void R_RadialBlur (void)
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-
+	
 	if (r_newrefdef.fov_x <= r_radialBlurFov->value)
 		goto hack;
 
@@ -374,7 +374,8 @@ void R_RadialBlur (void)
 		VectorCopy(r_newrefdef.vieworg, org);
 		org[2] -= 16.0;
 		cont = CL_PMpointcontents(org);
-		
+		cont &= CONTENTS_LAVA | CONTENTS_SLIME | CONTENTS_WATER;
+
 		GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 		qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 
@@ -390,7 +391,7 @@ void R_RadialBlur (void)
 			blur = 0.0085;
 		else
 			blur = 0.01;
-
+		Com_Printf("%i\n", cont);
 		// xy = radial center screen space position, z = radius attenuation, w = blur strength
 		qglUniform4f(rb_params, vid.width*0.5, vid.height*0.5, 1.0 / vid.height, blur);
 		qglUniformMatrix4fv(rb_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
