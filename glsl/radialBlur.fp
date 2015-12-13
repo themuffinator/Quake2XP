@@ -14,7 +14,7 @@ void main (void) {
 	vec2 blurVec = screenPos.xy - gl_FragCoord.xy;
 	vec4 color;
 
-	if(u_cont >= 17)
+	if(u_cont == 32)
 		color = vec4(0.3, 0.3, 0.5, 1.0);
 
 	if(u_cont == 16)
