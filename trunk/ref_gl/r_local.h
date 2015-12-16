@@ -31,8 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <GL/glu.h>
 
-#include "r_particle.h"
-
 #ifdef _WIN32
 #include "glext.h"
 #include <math.h>
@@ -55,16 +53,6 @@ typedef void ILvoid;
 #include "../client/ref.h"
 
 #include "qgl.h"
-
-#ifndef GL_NV_multisample_coverage
-#define GL_COVERAGE_SAMPLES_NV            0x80A9
-#define GL_COLOR_SAMPLES_NV               0x8E20
-#endif
-
-#ifndef WGL_NV_multisample_coverage
-#define WGL_COVERAGE_SAMPLES_NV           0x2042
-#define WGL_COLOR_SAMPLES_NV              0x20B9
-#endif
 
 // up / down
 #define	PITCH	0
@@ -89,8 +77,8 @@ extern viddef_t vid;
 
 
 
-#define	TEXNUM_SCRAPS		1152
-#define	TEXNUM_IMAGES		1153
+#define	TEXNUM_SCRAPS		4096
+#define	TEXNUM_IMAGES		4097
 
 #define	TEXNUM_LIGHTMAPS	8192
 #define	MAX_GLTEXTURES		8192 
@@ -133,7 +121,6 @@ typedef struct {
 
 
 //====================================================
-
 
 #define		MAX_CAUSTICS		32
 extern image_t *r_caustic[MAX_CAUSTICS];

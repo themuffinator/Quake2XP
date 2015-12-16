@@ -314,6 +314,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
+		GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
 
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -394,10 +395,9 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 	}
 
-	if (r_ssao->value && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)){
-		GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
+	if (r_ssao->value && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		qglUniform1i(ambientWorld_ssao, 1);
-	} else
+	 else
 		qglUniform1i(ambientWorld_ssao, 0);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);

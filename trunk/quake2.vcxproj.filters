@@ -368,9 +368,6 @@
     <ClInclude Include="ref_gl\r_model.h">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\r_particle.h">
-      <Filter>Header Files\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="ref_gl\wglext.h">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>

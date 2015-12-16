@@ -391,7 +391,7 @@ void R_RadialBlur (void)
 			blur = 0.0085;
 		else
 			blur = 0.01;
-		Com_Printf("%i\n", cont);
+
 		// xy = radial center screen space position, z = radius attenuation, w = blur strength
 		qglUniform4f(rb_params, vid.width*0.5, vid.height*0.5, 1.0 / vid.height, blur);
 		qglUniformMatrix4fv(rb_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -582,9 +582,12 @@ void R_MotionBlur (void)
 
 void R_DownsampleDepth(void) 
 {
-	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-	
+
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+		return;
+
 	if (!r_ssao->value)
 		return;
 
@@ -611,7 +614,10 @@ void R_SSAO (void)
 {
 	int i, j, id, numSamples;
 
-	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
 		return;
 
 	if (!r_ssao->value)

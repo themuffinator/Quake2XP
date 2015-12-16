@@ -280,13 +280,13 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	qglUniform1i(ambientAlias_ssaoMap, 4);
 
-	if (r_ssao->value && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+	if (r_ssao->value && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
 		GL_MBindRect (GL_TEXTURE4_ARB, fboColor[fboColorIndex]);
 		qglUniform1i(ambientAlias_ssao, 1);
 	}
 	else
 		qglUniform1i(ambientAlias_ssao, 0);
-	
+
 	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
 	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 

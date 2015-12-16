@@ -25,7 +25,7 @@ static const char *shader5 =
 "#extension GL_ARB_gpu_shader5 : enable\n";
 
 static const char *baseExt =
-//"#extension GL_ARB_texture_rectangle : enable\n"
+"#extension GL_ARB_texture_rectangle : enable\n"
 "out vec4 fragData;\n";
 
 static const char *glslVersion =

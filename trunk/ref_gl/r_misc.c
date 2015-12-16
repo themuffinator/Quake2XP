@@ -34,9 +34,9 @@ R_InitEngineTextures
 ==================
 */
 
+image_t	*r_defBump;
+image_t	*r_whiteMap;
 image_t *r_notexture;
-image_t *r_radarmap;
-image_t *r_around;
 image_t *r_caustic[MAX_CAUSTICS];
 image_t *fly[MAX_FLY];
 image_t *flameanim[MAX_FLAMEANIM];
@@ -123,8 +123,8 @@ void CreateDepthTexture (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-	qglGenTextures (1, &image->texnum);
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	qglGenTextures (1, &image->texnum);
 
 	depthMap = image;
 
@@ -167,22 +167,22 @@ void CreateScreenRect (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-	qglGenTextures (1, &image->texnum);
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	qglGenTextures (1, &image->texnum);
 
 	ScreenMap = image;
 
 
 	// create screen texture
 
-	qglBindTexture (GL_TEXTURE_RECTANGLE_ARB, ScreenMap->texnum);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglBindTexture		(GL_TEXTURE_RECTANGLE_ARB, ScreenMap->texnum);
+	qglTexParameteri	(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri	(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri	(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri	(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, vid.width, vid.height, 0,
-		GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	qglTexImage2D		(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, vid.width, vid.height, 0,
+						GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 }
 
@@ -256,8 +256,8 @@ void CreateWeaponFboMask (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-	qglGenTextures (1, &image->texnum);
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	qglGenTextures (1, &image->texnum);
 
 	weaponHack = image;
 
@@ -411,8 +411,8 @@ void CreateShadowMask (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-	qglGenTextures (1, &image->texnum);
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	qglGenTextures (1, &image->texnum);
 
 	shadowMask = image;
 
@@ -528,8 +528,8 @@ image_t *R_LoadLightFilter (int id) {
 	strcpy (image->name, name);
 	image->registration_sequence = registration_sequence;
 	image->type = it_pic;
-//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-	qglGenTextures (1, &image->texnum);
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	qglGenTextures (1, &image->texnum);
 
 	qglBindTexture (GL_TEXTURE_CUBE_MAP_ARB, image->texnum);
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -653,8 +653,8 @@ void CreateAttenuation () {
 	image->upload_height = 1;
 	image->type = it_pic;
 
-//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-	qglGenTextures (1, &image->texnum);
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	qglGenTextures (1, &image->texnum);
 
 	glTexImage3DEXT = (PFNGLTEXIMAGE3DEXTPROC)qwglGetProcAddress ("glTexImage3DEXT");
 
@@ -668,38 +668,15 @@ void CreateAttenuation () {
 	qglTexParameteri (GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 }
 
-
-byte missing_texture[4][4] = {
-	{ 0.0, 0.0, 0.0, 0.0 },
-	{ 0.0, 0.0, 0.0, 0.0 },
-	{ 0.0, 0.0, 0.0, 0.0 },
-	{ 0.0, 0.0, 0.0, 0.0 },
-};
-
-image_t	*r_defBump;
-image_t	*r_whiteMap;
-
 void R_InitEngineTextures (void) {
-	int		x, y, i;
-	byte	notex[4][4][4];
-	byte bump[1][1][4] = { 0x80, 0x80, 0xff, 0x40 };
-	byte white[1][1][4] = { 0xff, 0xff, 0xff, 0xff };
+	int		i;
+	byte	notex[1][1][4]	= { 0x0, 0x0, 0x0, 0x0 };
+	byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x40 };
+	byte	white[1][1][4]	= { 0xff, 0xff, 0xff, 0xff };
 
-	for (x = 0; x < 4; x++) {
-		for (y = 0; y < 4; y++) {
-			notex[y][x][0] = missing_texture[x][y] * 255;
-			notex[y][x][1] = missing_texture[x][y] * 255;
-			notex[y][x][2] = missing_texture[x][y] * 255;
-			notex[y][x][3] = 255;
-		}
-	}
-
-	r_defBump = GL_LoadPic ("***r_defBump***", (byte *)bump, 1, 1, it_bump, 32);
-	r_whiteMap = GL_LoadPic("***r_whiteMap***", (byte *)white, 1, 1, it_bump, 32);
-
-
-	r_notexture =
-		GL_LoadPic ("***r_notexture***", (byte *)notex, 4, 4, it_wall, 32);
+	r_defBump	= GL_LoadPic ("***r_defBump***", (byte *)bump, 1, 1, it_bump, 32);
+	r_whiteMap	= GL_LoadPic ("***r_whiteMap***", (byte *)white, 1, 1, it_bump, 32);
+	r_notexture = GL_LoadPic ("***r_notexture***", (byte *)notex, 1, 1, it_wall, 32);
 
 	r_particletexture[PT_DEFAULT] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
 	r_particletexture[PT_BUBBLE] = GL_FindImage ("gfx/particles/bubble.png", it_wall);
@@ -725,9 +702,9 @@ void R_InitEngineTextures (void) {
 	r_particletexture[PT_BLOOD_SPLAT] = GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
 	r_particletexture[PT_BLASTER_BOLT] = GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
 
-	for (x = 0; x < PT_MAX; x++)
-	if (!r_particletexture[x])
-		r_particletexture[x] = r_notexture;
+	for (i = 0; i < PT_MAX; i++)
+	if (!r_particletexture[i])
+		r_particletexture[i] = r_notexture;
 
 	r_decaltexture[DECAL_RAIL] =
 		GL_FindImage ("gfx/decals/decal_railgun.tga", it_wall);
@@ -760,9 +737,9 @@ void R_InitEngineTextures (void) {
 	r_decaltexture[DECAL_BFG] =
 		GL_FindImage ("gfx/decals/decal_bfg.tga", it_wall);
 
-	for (x = 0; x < DECAL_MAX; x++)
-	if (!r_decaltexture[x])
-		r_decaltexture[x] = r_notexture;
+	for (i = 0; i < DECAL_MAX; i++)
+	if (!r_decaltexture[i])
+		r_decaltexture[i] = r_notexture;
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {
 		char name[MAX_QPATH];

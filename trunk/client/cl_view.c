@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // cl_view.c -- player rendering positioning
 
 #include "client.h"
-#include "../ref_gl/r_particle.h"
 #include "../ref_gl/r_local.h"
 //=============
 //
@@ -45,12 +44,6 @@ entity_t r_entities[MAX_ENTITIES];
 int r_numparticles;
 particle_t r_particles[MAX_PARTICLES];
 
-
-
-
-
-
-
 lightstyle_t r_lightstyles[MAX_LIGHTSTYLES];
 
 char cl_weaponmodels[MAX_CLIENTWEAPONMODELS][MAX_QPATH];
@@ -65,16 +58,11 @@ Specifies the model that will be used as the world
 ====================
 */
 
-
 void V_ClearScene (void) {
 	r_numdlights = 0;
 	r_numentities = 0;
 	r_numparticles = 0;
 }
-
-
-
-
 
 /*
 =====================
@@ -97,11 +85,7 @@ void V_AddEntity (entity_t * ent) {
 	if (r_numentities >= MAX_ENTITIES)
 		return;
 	r_entities[r_numentities++] = *ent;
-
-
 }
-
-
 
 /*
 =====================
@@ -114,7 +98,6 @@ void V_AddParticle (vec3_t org, vec3_t length, vec3_t color, float alpha,
 	int flags, int time, float orient, float len,
 	vec3_t oldOrg, vec3_t dir) {
 	particle_t *p;
-	//	int i;
 	vec3_t lm;
 
 	if (r_numparticles >= MAX_PARTICLES)
@@ -139,11 +122,6 @@ void V_AddParticle (vec3_t org, vec3_t length, vec3_t color, float alpha,
 	if (p->flags & PARTICLE_VERTEXLIGHT) {
 		R_LightColor (org, lm);
 		VectorMul (p->color, lm, p->color);
-		/*
-				for (i = 0; i < 3; i++)
-				if (color[i] > 1)
-				color[i] = 1;
-				*/
 	}
 }
 
@@ -311,7 +289,7 @@ void CL_PrepRefresh (void) {
 		"Loading Pics...done");
 	loadingPercent += 10.0f;
 
-	loadScreenColorFade = 0.9;
+	loadScreenColorFade = 1.0;
 
 	for (i = 0; i < MAX_CLIENTS; i++) {
 		if (!cl.configstrings[CS_PLAYERSKINS + i][0])
@@ -330,7 +308,7 @@ void CL_PrepRefresh (void) {
 			"Loading Clients...done");
 		loadingPercent += 10.0f;
 
-		loadScreenColorFade = 1.3;
+		loadScreenColorFade = 1.5;
 	}
 	loadingPercent = 100;
 
