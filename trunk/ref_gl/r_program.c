@@ -714,8 +714,7 @@ void R_InitPrograms (void) {
 		Com_Printf("succeeded\n");
 
 		id = motionBlurProgram->id[0];
-		mb_vel		= qglGetUniformLocation(id, "u_velocity");
-		mb_samples	= qglGetUniformLocation(id, "u_numSamples");
+		mb_params	= qglGetUniformLocation(id, "u_params");
 		mb_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 		mb_tex		= qglGetUniformLocation(id, "u_ScreenTex");
 		mb_mask		= qglGetUniformLocation(id, "u_MaskTex");

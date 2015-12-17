@@ -1090,8 +1090,7 @@ uint film_tex;
 uint film_scroll;
 uint film_matrix;
 
-uint mb_vel;
-uint mb_samples;
+uint mb_params;
 uint mb_matrix;
 uint mb_tex;
 uint mb_mask;

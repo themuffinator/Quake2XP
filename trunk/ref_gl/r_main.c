@@ -409,6 +409,7 @@ static void R_SetupViewMatrices (void) {
 	Mat4_AffineInvert(r_newrefdef.modelViewMatrix, tmpMatrix);
 	Mat4_Multiply(tmpMatrix, r_flipMatrix, r_newrefdef.modelViewMatrix);
 
+	// scissors transform
 	Mat4_Multiply	(r_newrefdef.modelViewMatrix, r_newrefdef.projectionMatrix, r_newrefdef.modelViewProjectionMatrix);
 	Mat4_Transpose	(r_newrefdef.modelViewProjectionMatrix, r_newrefdef.modelViewProjectionMatrixTranspose);
 

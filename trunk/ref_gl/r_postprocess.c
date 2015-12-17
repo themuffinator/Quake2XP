@@ -546,8 +546,7 @@ void R_GammaRamp (void)
 
 void R_MotionBlur (void) 
 {
-	float	temp_x, temp_y, 
-			delta_x, delta_y;
+	vec2_t	angles, delta;
 
 	if (!r_motionBlur->value)
 		return;
@@ -556,16 +555,15 @@ void R_MotionBlur (void)
 		return;
 
 	// calc camera offsets
-	temp_y = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
-	temp_x = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
-	delta_x = (temp_x * 2.0 / r_newrefdef.fov_x) * r_motionBlurFrameLerp->value;
-	delta_y = (temp_y * 2.0 / r_newrefdef.fov_y) * r_motionBlurFrameLerp->value;
+	angles[0] = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
+	angles[1] = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
+	delta[0] = (angles[0] * 2.0 / r_newrefdef.fov_x) * r_motionBlurFrameLerp->value;
+	delta[1] = (angles[1] * 2.0 / r_newrefdef.fov_y) * r_motionBlurFrameLerp->value;
 
 	// setup program
 	GL_BindProgram(motionBlurProgram, 0);
 
-	qglUniform2f (mb_vel, delta_x, delta_y);
-	qglUniform1i (mb_samples, r_motionBlurSamples->value);
+	qglUniform3f(mb_params, delta[0], delta[1], r_motionBlurSamples->value);
 	qglUniformMatrix4fv(mb_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	qglUniform1i (mb_tex, 0);
 	qglUniform1i (mb_mask, 1);
