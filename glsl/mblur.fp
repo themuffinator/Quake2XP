@@ -1,7 +1,6 @@
 uniform sampler2DRect	 	u_ScreenTex;
 uniform sampler2DRect		u_MaskTex;
-uniform vec2				u_velocity;
-uniform int					u_numSamples;
+uniform vec3				u_params; // x-velocity, y-velocity, num samples 
 
 void main(void) 
 {
@@ -14,9 +13,9 @@ void main(void)
 		fragData =  color;
 		return;
 	}
-	vec2 velocity  = clamp(u_velocity, -1.0, 1.0);
+	vec2 velocity  = clamp(u_params.xy, -1.0, 1.0);
 	uv += velocity.xy;  
-	for(int i = 1; i < u_numSamples; ++i)  
+	for(int i = 1; i < u_params.z; ++i)  
 	{  
 	//Sample the color buffer along the velocity vector.  
 	vec4 accum = texture2DRect(u_ScreenTex, uv);  
@@ -25,5 +24,5 @@ void main(void)
 	uv += velocity;
 	}
 	//Average all of the samples to get the final blur color.  
-	fragData =  color / u_numSamples; 
+	fragData =  color / u_params.z; 
 }
