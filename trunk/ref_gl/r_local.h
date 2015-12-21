@@ -1117,6 +1117,9 @@ uint therm_matrix;
 uint thermf_map;
 uint thermf_matrix;
 
+uint sv_mvp;
+uint sv_lightOrg;
+
 #define	MAX_VERTEX_CACHES	4096
 
 /*

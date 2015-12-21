@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int			num_shadow_surfaces, shadowTimeStamp;
 vec4_t		s_lerped[MAX_VERTS];
 vec3_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
+vec4_t		vcache4[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 index_t		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 msurface_t	*shadow_surfaces[MAX_MAP_FACES];
 char		triangleFacingLight[MAX_INDICES / 3];
@@ -64,10 +65,10 @@ void R_MarkShadowTriangles (dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOr
 	}
 }
 
-void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) {
+void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 	dtriangle_t		*ot, *tris;
 	neighbors_t		*neighbours;
-	vec4_t			v0, v1, v2, v3, l0, l1, l2, l3;
+	vec4_t			v0, v1, v2;
 	daliasframe_t	*frame;
 	dtrivertx_t		*verts;
 	int				i, j, numVerts = 0, id = 0;
@@ -76,7 +77,7 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 	verts = frame->verts;
 	ot = tris = (dtriangle_t *)((unsigned char *)hdr + hdr->ofs_tris);
 
-	R_MarkShadowTriangles (hdr, tris, light);
+	R_MarkShadowTriangles(hdr, tris, lightOrg);
 
 	for (i = 0, tris = ot, neighbours = currentmodel->neighbours; i < hdr->num_tris; i++, tris++, neighbours++) {
 
@@ -90,18 +91,12 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 				v1[j] = s_lerped[tris->index_xyz[0]][j];
 			}
 
-			VectorSubtract (v1, light, l2);
-			VectorSubtract (v0, light, l3);
-			VectorNormalize(l2);
-			VectorNormalize(l3);
-			VectorMA (v1, lightRadius, l2, v2);
-			VectorMA (v0, lightRadius, l3, v3);
-
-			VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-			VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-			VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
-			VA_SetElem3 (vcache[numVerts + 3], v3[0], v3[1], v3[2]);
-
+			//  transforms points with w = 1 normally and sends points with w = 0 to infinity away from the light.
+			VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
+			VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
+			VA_SetElem4(vcache4[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
+			VA_SetElem4(vcache4[numVerts + 3], v0[0], v0[1], v0[2], v0[3] = 0.0);
+			
 			icache[id++] = numVerts + 0;
 			icache[id++] = numVerts + 1;
 			icache[id++] = numVerts + 3;
@@ -118,17 +113,10 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 				v1[j] = s_lerped[tris->index_xyz[1]][j];
 			}
 
-			VectorSubtract (v1, light, l2);
-			VectorSubtract (v0, light, l3);
-			VectorNormalize(l2);
-			VectorNormalize(l3);
-			VectorMA (v1, lightRadius, l2, v2);
-			VectorMA (v0, lightRadius, l3, v3);
-
-			VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-			VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-			VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
-			VA_SetElem3 (vcache[numVerts + 3], v3[0], v3[1], v3[2]);
+			VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
+			VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
+			VA_SetElem4(vcache4[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
+			VA_SetElem4(vcache4[numVerts + 3], v0[0], v0[1], v0[2], v0[3] = 0.0);
 
 			icache[id++] = numVerts + 0;
 			icache[id++] = numVerts + 1;
@@ -146,17 +134,10 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 				v1[j] = s_lerped[tris->index_xyz[2]][j];
 			}
 
-			VectorSubtract (v1, light, l2);
-			VectorSubtract (v0, light, l3);
-			VectorNormalize(l2);
-			VectorNormalize(l3);
-			VectorMA (v1, lightRadius, l2, v2);
-			VectorMA (v0, lightRadius, l3, v3);
-
-			VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-			VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-			VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
-			VA_SetElem3 (vcache[numVerts + 3], v3[0], v3[1], v3[2]);
+			VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
+			VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
+			VA_SetElem4(vcache4[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
+			VA_SetElem4(vcache4[numVerts + 3], v0[0], v0[1], v0[2], v0[3] = 0.0);
 
 			icache[id++] = numVerts + 0;
 			icache[id++] = numVerts + 1;
@@ -179,9 +160,10 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 			v2[j] = s_lerped[tris->index_xyz[2]][j];
 		}
 
-		VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-		VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-		VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
+		VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
+		VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
+		VA_SetElem4(vcache4[numVerts + 2], v2[0], v2[1], v2[2], v2[3] = 1.0);
+
 
 		icache[id++] = numVerts + 0;
 		icache[id++] = numVerts + 1;
@@ -196,19 +178,9 @@ void BuildShadowVolumeTriangles (dmdl_t * hdr, vec3_t light, float lightRadius) 
 			v2[j] = s_lerped[tris->index_xyz[2]][j];
 		}
 
-		VectorSubtract (v0, light, l0);
-		VectorSubtract (v1, light, l1);
-		VectorSubtract (v2, light, l2);
-		VectorNormalize(l0);
-		VectorNormalize(l1);
-		VectorNormalize(l2);
-		VectorMA (v0, lightRadius, l0, v0);
-		VectorMA (v1, lightRadius, l1, v1);
-		VectorMA (v2, lightRadius, l2, v2);
-
-		VA_SetElem3 (vcache[numVerts + 0], v0[0], v0[1], v0[2]);
-		VA_SetElem3 (vcache[numVerts + 1], v1[0], v1[1], v1[2]);
-		VA_SetElem3 (vcache[numVerts + 2], v2[0], v2[1], v2[2]);
+		VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 0.0);
+		VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 0.0);
+		VA_SetElem4(vcache4[numVerts + 2], v2[0], v2[1], v2[2], v2[3] = 0.0);
 
 		icache[id++] = numVerts + 2;
 		icache[id++] = numVerts + 1;
@@ -291,7 +263,7 @@ void R_DeformShadowVolume () {
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*v, *ov, *verts;
 	int				*order, i;
-	float			frontlerp, dist;
+	float			frontlerp;
 	vec3_t			move, delta, vectors[3], frontv, backv, light, temp;
 
 	if (!R_EntityInLightBounds ())
@@ -334,15 +306,13 @@ void R_DeformShadowVolume () {
 
 	R_SetupEntityMatrix (currententity);
 
-	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
-
 	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector (currententity->axis, temp, light);
-	
-	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
-	dist = (currentShadowLight->maxRad + 50.0) - VectorLength(temp);
-	if (dist > 0.0)
-		BuildShadowVolumeTriangles (paliashdr, light, dist);
+
+	qglUniformMatrix4fv(sv_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniform3fv(sv_lightOrg, 1, light);
+
+	BuildShadowVolumeTriangles (paliashdr, light);
 }
 
 void R_CastAliasShadowVolumes (void) {
@@ -355,7 +325,7 @@ void R_CastAliasShadowVolumes (void) {
 		return;
 
 	// setup program
-	GL_BindProgram (nullProgram, 0);
+	GL_BindProgram (shadowProgram, 0);
 
 	GL_StencilMask (255);
 	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
@@ -370,7 +340,7 @@ void R_CastAliasShadowVolumes (void) {
 	GL_ColorMask (0, 0, 0, 0);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
-	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vcache);
+	qglVertexAttribPointer (ATT_POSITION, 4, GL_FLOAT, qfalse, 0, vcache4);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];

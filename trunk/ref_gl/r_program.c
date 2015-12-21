@@ -968,6 +968,20 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+
+	Com_Printf("Load "S_COLOR_YELLOW"shadow volumes program"S_COLOR_WHITE" ");
+	shadowProgram = R_FindProgram("shadow", qtrue, qtrue);
+	if (shadowProgram->valid) {
+		Com_Printf("succeeded\n");
+		id = shadowProgram->id[0];
+		sv_mvp = qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
+		sv_lightOrg = qglGetUniformLocation(id, "u_lightOrg");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	Com_Printf ("\nGLSL shaders loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);
