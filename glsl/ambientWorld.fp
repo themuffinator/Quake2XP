@@ -48,8 +48,6 @@ void main (void) {
 	normalMap.xyz -= 1.0;
 	diffuseMap += glowMap;
 
-	fragData = vec4(0.0, 0.0, 0.0, 1.0);
-
 	if (u_LightMapType == 0)
 		fragData.xyz = diffuseMap * texture(u_LightMap0, v_lTexCoord.xy).rgb;
 
@@ -71,15 +69,6 @@ void main (void) {
 		D = lm0 * D.x + lm1 * D.y + lm2 * D.z;
 
 		// approximate specular
-#if 0
-		// reflection vector, unstable highlight, tends to jump in & out
-		vec3 R = reflect(-V, normalMap.xyz);
-
-		vec3 S = vec3(
-			dot(R, s_basisVecs[0]),
-			dot(R, s_basisVecs[1]),
-			dot(R, s_basisVecs[2]));
-#else
 		// half-angle vector, stable but slower
 		vec3 H0 = normalize(V + s_basisVecs[0]);
 		vec3 H1 = normalize(V + s_basisVecs[1]);
@@ -89,12 +78,11 @@ void main (void) {
 			dot(normalMap.xyz, H0),
 			dot(normalMap.xyz, H1),
 			dot(normalMap.xyz, H2));
-#endif
+
 //		S = scale * pow(max(S, 0.0), fts);
 		S = pow(max(S, 0.0), vec3(u_specularExp));
 		S = (lm0 * S.x + lm1 * S.y + lm2 * S.z);
 
-#if 1
 		// Approximate energy conservation.
 		// Omit division by PI on both diffuse & specular,
 		// dividing the latter by 8 instead of (8 * PI).
@@ -106,10 +94,6 @@ void main (void) {
 		// Assume all shiny materials are metals of the same moderate roughness in Q2,
 		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
 		fragData.xyz = diffuseMap * mix(D, S, normalMap.w * u_specularScale);
-#else
-		// Non-conserving sum, with normal map alpha channel holding specular brightness.
-		fragData.xyz = diffuseMap * D + normalMap.w * u_specularScale * S;
-#endif
 	}
 
 	if (u_ssao == 1)
@@ -118,7 +102,7 @@ void main (void) {
 	// fake AO/cavity
 	fragData.xyz *= normalMap.z * 0.5 + 0.5;
 	fragData.xyz *= u_ColorModulate * u_ambientScale;
-
+	fragData.w = 1.0;
 // DEBUG
 //	if (u_ssao == 1)
 //		fragData.xyz = texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;

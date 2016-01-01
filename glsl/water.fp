@@ -60,8 +60,6 @@ void main (void) {
 	vec2 tc;
 	float sceneDepth;
 
-	fragData = vec4(0.0, 0.0, 0.0, 1.0); // shutup compiler
-
 	if (u_TRANS == 1) {
 		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 		N.xy = offset.xy * clamp((sceneDepth + v_positionVS.z) / u_thickness, 0.0, 1.0);
@@ -174,4 +172,5 @@ void main (void) {
 
 	// combine
 	fragData.xyz = mix(fragData.xyz, texture2DRect(g_colorBufferMap, tc).xyz, scale);
+	fragData.w = 1.0;
 }

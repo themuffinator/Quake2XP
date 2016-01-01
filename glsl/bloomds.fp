@@ -12,8 +12,6 @@ tex += texture2DRect( u_map, tc + vec2(0.0, 1.0));
 tex += texture2DRect( u_map, tc + vec2(1.0, 1.0)); 
 tex *= 0.25;
 
-// Cut off?  
-//fragData = max( tex - u_BloomThreshold, 0.0 ) * ( 1.0 / u_BloomThreshold );  
 // Calculate luminance
 float lum = dot(vec4(0.30, 0.59, 0.11, 0.0), tex);
 

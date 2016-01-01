@@ -28,8 +28,6 @@ void main ()
 	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;
 	vec4 glow = texture(u_Add, v_texCoord);
 	vec3 normalMap = normalize(texture(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
-    
-  fragData = vec4(0.0, 0.0, 0.0, 1.0); // shutup compiler
 	
   // fake AO/cavity
 	fragData.xyz = diffuse.xyz * (normalMap.z * 0.5 + 0.5);
