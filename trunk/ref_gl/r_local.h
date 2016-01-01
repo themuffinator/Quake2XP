@@ -878,11 +878,14 @@ glslProgram_t		*filmGrainProgram;
 glslProgram_t		*nullProgram;
 glslProgram_t		*gammaProgram;
 glslProgram_t		*FboProgram;
+glslProgram_t		*light2dProgram;
 
 void GL_BindProgram (glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer ();
 void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
+void R_luv2RGB(void);
+void R_SetupOrthoMatrix(void);
 
 typedef struct {
 	unsigned	CausticsBit;
@@ -1119,6 +1122,11 @@ uint thermf_matrix;
 
 uint sv_mvp;
 uint sv_lightOrg;
+
+uint light2d_orthoMatrix;
+uint light2d_map;
+uint light2d_normal;
+uint light2d_screenSize;
 
 #define	MAX_VERTEX_CACHES	4096
 

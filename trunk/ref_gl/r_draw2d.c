@@ -508,7 +508,8 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_3d, 0);
 	qglUniform1i(gen_tex, 0);
-	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
+
+	qglUniform1f(gen_colorModulate, bump2D ? 1.0 : r_textureColorScale->value);
 	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	if (scrap_dirty)
@@ -548,6 +549,65 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 }
 
 
+void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *gl2)
+{
+	int w, h;
+
+	if (!gl) {
+		Com_Printf("NULL pic in Draw_Pic diffuse\n");
+		return;
+	}
+	
+	if (!gl2) {
+		Com_Printf("NULL pic in Draw_Pic normal\n");
+		return;
+	}
+
+	w = gl->width * sX *gl->picScale_w;
+	h = gl->height * sY *gl->picScale_h;
+
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
+
+	GL_BindProgram(light2dProgram, 0);
+	qglUniform1i(light2d_map, 0);
+	qglUniform1i(light2d_normal, 1);
+	qglUniform2i(light2d_screenSize, vid.width, vid.height);
+	qglUniformMatrix4fv(light2d_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+
+	if (scrap_dirty)
+		Scrap_Upload();
+
+	GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
+	GL_MBind(GL_TEXTURE1_ARB, gl2->texnum);
+
+	VA_SetElem2(texCoord[0], gl->sl, gl->tl);
+	VA_SetElem2(texCoord[1], gl->sh, gl->tl);
+	VA_SetElem2(texCoord[2], gl->sh, gl->th);
+	VA_SetElem2(texCoord[3], gl->sl, gl->th);
+
+	VA_SetElem3(vertCoord[0], x, y, 1.0);
+	VA_SetElem3(vertCoord[1], x + w, y, 1.0);
+	VA_SetElem3(vertCoord[2], x + w, y + h, 1.0);
+	VA_SetElem3(vertCoord[3], x, y + h, 1.0);
+
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+
+
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	GL_BindNullProgram();
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+}
+
 void Draw_Pic(int x, int y, char *pic)
 {
 	image_t *gl;
@@ -573,6 +633,25 @@ void Draw_PicScaled(int x, int y, float scale_x, float scale_y, char *pic)
 	Draw_ScaledPic(x, y, scale_x, scale_y, gl);
 }
 
+void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char *pic, char *pic2)
+{
+	image_t *gl;
+	image_t *gl2;
+
+	gl = Draw_FindPic(pic);
+	if (!gl) {
+		Com_Printf("Can't find pic: %s\n", pic);
+		return;
+	}
+
+	gl2 = Draw_FindPic(pic2);
+	if (!gl2) {
+		Com_Printf("Can't find pic: %s\n", pic2);
+		return;
+	}
+
+	Draw_ScaledBumpPic(x, y, scale_x, scale_y, gl, gl2);
+}
 
 /*
 =============

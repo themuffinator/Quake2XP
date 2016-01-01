@@ -982,6 +982,21 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"light2d program"S_COLOR_WHITE" ");
+	light2dProgram = R_FindProgram("light2d", qtrue, qtrue);
+	if (light2dProgram->valid) {
+		Com_Printf("succeeded\n");
+		id = light2dProgram->id[0];
+		light2d_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
+		light2d_map = qglGetUniformLocation(id, "u_map");
+		light2d_normal = qglGetUniformLocation(id, "u_normalMap");
+		light2d_screenSize = qglGetUniformLocation(id, "u_screenSize");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	Com_Printf ("\nGLSL shaders loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);

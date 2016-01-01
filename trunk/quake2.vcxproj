@@ -60,7 +60,7 @@
     <UseIntelTBB>true</UseIntelTBB>
     <InstrumentIntelTBB>true</InstrumentIntelTBB>
     <UseIntelMKL>Parallel</UseIntelMKL>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -1356,6 +1356,8 @@
     <None Include="..\baseq2\glsl\lightWorld.vp" />
     <None Include="..\baseq2\glsl\loading.fp" />
     <None Include="..\baseq2\glsl\loading.vp" />
+    <None Include="..\baseq2\glsl\light2d.fp" />
+    <None Include="..\baseq2\glsl\light2d.vp" />
     <None Include="..\baseq2\glsl\mblur.fp" />
     <None Include="..\baseq2\glsl\mblur.vp" />
     <None Include="..\baseq2\glsl\null.fp" />

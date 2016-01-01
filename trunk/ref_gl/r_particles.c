@@ -226,7 +226,7 @@ void R_DrawParticles (void) {
 
 			VectorSubtract (p->origin, r_newrefdef.vieworg, point);
 			CrossProduct (point, p->length, width);
-			VectorNormalize (width);
+			VectorNormalizeFast(width);
 			VectorScale (width, scale, width);
 
 			VA_SetElem2 (ParticleTextCoord[partVert + 0], 1, 1);
@@ -244,7 +244,7 @@ void R_DrawParticles (void) {
 
 			VectorAdd (point, p->length, point);
 			CrossProduct (point, p->length, width);
-			VectorNormalize (width);
+			VectorNormalizeFast(width);
 			VectorScale (width, scale, width);
 
 			VA_SetElem2 (ParticleTextCoord[partVert + 2], 0, 0);
@@ -275,7 +275,7 @@ void R_DrawParticles (void) {
 
 			VectorCopy (p->origin, move);
 			VectorCopy (p->length, vec);
-			len = VectorNormalize (vec);
+			len = VectorNormalize(vec);
 			MakeNormalVectors (vec, right, up);
 
 			for (loc = 0; loc < len; loc++) {
@@ -309,7 +309,7 @@ void R_DrawParticles (void) {
 				CrossProduct (point, spdir, width);
 
 				if (VectorLength (width))
-					VectorNormalize (width);
+					VectorNormalizeFast(width);
 				else
 					VectorCopy (vup, width);
 
@@ -325,20 +325,17 @@ void R_DrawParticles (void) {
 					point[1] - width[1] + r_origin[1],
 					point[2] - width[2] + r_origin[2]);
 				VA_SetElem4 (ParticleColor[partVert + 1], r, g, b, a);
-
-
+				
 				VectorAdd (move, dir2, point);
 				VectorSubtract (dir3, dir2, spdir);
-
 
 				VectorSubtract (point, r_origin, point);
 				CrossProduct (point, spdir, width);
 
 				if (VectorLength (width))
-					VectorNormalize (width);
+					VectorNormalizeFast(width);
 				else
 					VectorCopy (vup, width);
-
 
 				VA_SetElem2 (ParticleTextCoord[partVert + 2], 0.5, 0);
 				VA_SetElem3 (ParticleVert[partVert + 2], point[0] - width[0] + r_origin[0],
@@ -370,12 +367,12 @@ void R_DrawParticles (void) {
 			VectorSubtract (r_newrefdef.vieworg, p->origin, axis[0]);
 			VectorSubtract (p->oldOrg, p->origin, axis[1]);
 			CrossProduct (axis[0], axis[1], axis[2]);
-			VectorNormalize (axis[1]);
-			VectorNormalize (axis[2]);
+			VectorNormalizeFast(axis[1]);
+			VectorNormalizeFast(axis[2]);
 
 			// find normal
 			CrossProduct (axis[1], axis[2], axis[0]);
-			VectorNormalize (axis[0]);
+			VectorNormalizeFast(axis[0]);
 
 			VectorMA (p->origin, -p->len, axis[1], oldOrigin);
 			VectorScale (axis[2], p->size, axis[2]);

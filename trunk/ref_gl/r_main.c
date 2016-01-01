@@ -601,7 +601,7 @@ void R_DrawLightScene (void)
 
 	GL_DepthMask(0);
 	GL_Enable(GL_BLEND);
-	GL_BlendFunc(GL_ONE, GL_ONE);
+	GL_BlendFunc(GL_ONE, GL_ONE /*GL_DST_COLOR, GL_ZERO*/);
 
 	if(r_useLightScissors->value)
 		GL_Enable(GL_SCISSOR_TEST);
@@ -877,7 +877,6 @@ R_RenderView
 r_newrefdef must be set before the first call.
 ================
 */
-
 
 void R_RenderView (refdef_t *fd) {
 	if (r_noRefresh->value)

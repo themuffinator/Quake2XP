@@ -247,12 +247,6 @@ typedef struct {
 	vec3_t color;
 } m_dlight_t;
 
-typedef struct {
-	vec3_t origin;
-	float size;
-	float color[3];
-} stain_t;
-
 
 /*
 
@@ -448,7 +442,7 @@ DECALS
 =====================
 */
 
-#define MAX_DECALS				4096
+#define MAX_DECALS				8192
 #define MAX_DECAL_VERTS			384
 #define MAX_DECAL_FRAGMENTS		256
 
@@ -489,8 +483,6 @@ typedef struct {
 //================
 // end decals
 //================
-
-
 
 
 #define	MAX_FRAME_BUFFERS	32
@@ -590,6 +582,8 @@ void Draw_StretchPic (int x, int y, int w, int h, char *name);
 
 
 void Draw_PicScaled (int x, int y, float scale_x, float scale_y, char *pic);
+void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char *pic, char *pic2);
+qboolean bump2D;
 void Draw_ScaledPic (int x, int y, float scale_x, float scale_y, image_t * gl);
 
 void Draw_CharScaled (int x, int y, float scale_x, float scale_y, unsigned char num);
@@ -627,6 +621,7 @@ void GLimp_EndFrame (void);
 void GLimp_AppActivate (qboolean active);
 void VID_NewWindow (int width, int height);
 qboolean VID_GetModeInfo (int *width, int *height, int mode);
+void VectorNormalizeFast(vec3_t v);
 
 struct sfx_s;
 

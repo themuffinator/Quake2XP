@@ -454,11 +454,37 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	// do the damage
 	if (take) {
 
-		if ((targ->svflags & SVF_MONSTER) || (client))
-			SpawnDamage (TE_BLOOD, point, normal, take);
-		else
-			SpawnDamage (te_sparks, point, normal, take);
+		if ((targ->svflags & SVF_MONSTER) || (client)) {
+			SpawnDamage(TE_BLOOD, point, normal, take);
+			{
+				if (dflags & (DAMAGE_ENERGY | DAMAGE_BULLET))
+				{
+					float	probability;
+					probability = ((float)(targ->max_health - targ->health)) / (float)targ->max_health;
+					if (random() < probability)
+					{	// чем меньше здоровье, тем вероятнее "прострел"
+						vec3_t	end, org, ndir;
+						// небольшие отклонения от первоначального dir
+						VectorMA(point, 24, dir, org);
+						org[0] += crandom();
+						org[1] += crandom();
+						org[2] += crandom();
+						VectorSubtract(org, point, ndir);
+						VectorNormalize(ndir);
+						VectorMA(point, 96 + probability * 128, ndir, end);		// до 96...224 единиц летит кровь
 
+						trace_t	tr = gi.trace(point, NULL, NULL, end, targ, MASK_SHOT);
+						if (tr.fraction < 1.0 && !((tr.ent->svflags & SVF_MONSTER) || (tr.ent->svflags & SVF_DEADMONSTER) || (tr.ent->client)))
+							SpawnDamage(TE_BLOOD, tr.endpos, normal, take);
+						else
+							SpawnDamage(TE_BLOOD, end, normal, take);
+					}
+				}
+			}
+		}
+		else
+			SpawnDamage(te_sparks, point, normal, take);
+		
 
 
 		targ->health = targ->health - take;

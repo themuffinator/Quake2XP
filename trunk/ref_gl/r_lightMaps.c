@@ -205,34 +205,17 @@ static void LM_InitBlock (void) {
 // FIXME: remove dynamic completely
 static void LM_UploadBlock (qboolean dynamic) {
 	const int numVecs = loadmodel->useXPLM ? 3 : 1;
-	int texture = /*dynamic ? 0 : */gl_lms.current_lightmap_texture;
+	int texture = gl_lms.current_lightmap_texture;
 	int height = 0;
 	int i;
-	/*
-		if (dynamic) {
-		for (i = 0; i < LIGHTMAP_SIZE; i++) {
-		if (gl_lms.allocated[i] > height)
-		height = gl_lms.allocated[i];
-		}
-		}
-		*/
+
 	// upload the finished atlas
 	for (i = 0; i < numVecs; i++) {
 		GL_Bind (gl_state.lightmap_textures + texture + i * MAX_LIGHTMAPS);
 		qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		/*
-				if (dynamic) {
-				qglTexSubImage2D(GL_TEXTURE_2D,
-				0,
-				0, 0,
-				LIGHTMAP_SIZE, height,
-				GL_LIGHTMAP_FORMAT,
-				GL_UNSIGNED_BYTE,
-				gl_lms.lightmap_buffer[i]);
-				}
-				else {
-				*/			qglTexImage2D (GL_TEXTURE_2D,
+
+		qglTexImage2D (GL_TEXTURE_2D,
 				0,
 				gl_lms.internal_format,
 				LIGHTMAP_SIZE, LIGHTMAP_SIZE,
@@ -240,7 +223,6 @@ static void LM_UploadBlock (qboolean dynamic) {
 				GL_LIGHTMAP_FORMAT,
 				GL_UNSIGNED_BYTE,
 				gl_lms.lightmap_buffer[i]);
-		//		}
 	}
 
 	// start new one
@@ -248,7 +230,6 @@ static void LM_UploadBlock (qboolean dynamic) {
 	// check if atlas limit is exceeded
 	if (++gl_lms.current_lightmap_texture == MAX_LIGHTMAPS)
 		VID_Error (ERR_DROP, "LM_UploadBlock(): MAX_LIGHTMAPS (%i) exceeded.\n", MAX_LIGHTMAPS);
-	//	}
 }
 
 // returns a texture number and the position inside it
@@ -429,12 +410,9 @@ void GL_BeginBuildingLightmaps (model_t *m) {
 
 	memset (gl_lms.allocated, 0, sizeof(gl_lms.allocated));
 
-	//	dummy = (byte*)Z_Malloc(LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3);
-
 	occ_framecount = r_framecount = 1;
 
 	GL_SelectTexture (GL_TEXTURE1);
-	qglEnable (GL_TEXTURE_2D);
 
 	/*
 	 ** setup the base lightstyles so the lightmaps won't have to be regenerated
@@ -454,20 +432,6 @@ void GL_BeginBuildingLightmaps (model_t *m) {
 	gl_lms.current_lightmap_texture = 1;
 	gl_lms.internal_format = GL_RGB8;//gl_tex_solid_format;
 
-	/*
-	 ** initialize the dynamic lightmap texture
-	 */
-	/*
-		GL_Bind(gl_state.lightmap_textures + 0);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglTexImage2D(GL_TEXTURE_2D,
-		0,
-		gl_lms.internal_format,
-		LIGHTMAP_SIZE, LIGHTMAP_SIZE,
-		0, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, dummy);
-		*/
-	//	Z_Free(dummy);
 }
 
 /*
@@ -477,9 +441,6 @@ GL_EndBuildingLightmaps
 */
 void GL_EndBuildingLightmaps (void) {
 	LM_UploadBlock (qfalse);
-
-	GL_SelectTexture (GL_TEXTURE1);
-	qglDisable (GL_TEXTURE_2D);
 	GL_SelectTexture (GL_TEXTURE0);
 }
 

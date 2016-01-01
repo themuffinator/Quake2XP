@@ -703,6 +703,10 @@ char *sb_nums[2][11] = {
 	"anum_6", "anum_7", "anum_8", "anum_9", "anum_minus" }
 };
 
+char *sb_nums_bump[11] = {	"num_0_bump", "num_1_bump", "num_2_bump", "num_3_bump", "num_4_bump", "num_5_bump",
+							"num_6_bump", "num_7_bump", "num_8_bump", "num_9_bump", "num_minus_bump" };
+
+
 #define	ICON_WIDTH	24
 #define	ICON_HEIGHT	24
 #define	CHAR_WIDTH	16
@@ -788,6 +792,9 @@ void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int w
 
 	if (width < 1)
 		return;
+	
+	if(cl_3dhud->value)
+		bump2D = qtrue;
 
 	// draw number string
 	if (width > 5)
@@ -810,10 +817,15 @@ void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int w
 			frame = *ptr - '0';
 
 		Draw_PicScaled (x, y, scale_x, scale_y, sb_nums[color][frame]);
+		
+		if (cl_3dhud->value)
+			Draw_PicBumpScaled(x, y, scale_x, scale_y, sb_nums[color][frame], sb_nums_bump[frame]);
+		
 		x += CHAR_WIDTH*scale_x;
 		ptr++;
 		l--;
 	}
+	bump2D = qfalse;
 }
 
 
@@ -832,6 +844,9 @@ void SCR_TouchPics (void) {
 	for (i = 0; i < 2; i++)
 	for (j = 0; j < 11; j++)
 		Draw_FindPic (sb_nums[i][j]);
+	
+	for (j = 0; j < 11; j++)
+		Draw_FindPic(sb_nums_bump[j]);
 
 	if (crosshair->value) {
 		if (crosshair->value > 13 || crosshair->value < 0)

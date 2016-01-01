@@ -46,8 +46,8 @@ void R_BuildFlares (flare_t * light) {
 
 	// Color Fade
 	VectorSubtract (light->origin, r_origin, v);
-	dist = VectorLength (v) * (light->size * 0.01);
-	dist2 = VectorLength (v);
+	dist2 = VectorLength(v);
+	dist = dist2 * (light->size * 0.01);
 
 	scale = ((1024 - dist2) / 1024) * 0.5;
 
