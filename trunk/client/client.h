@@ -915,6 +915,7 @@ extern image_t *i_loading;
 extern image_t *i_backtile;
 extern image_t *i_turtle;
 
+
 extern image_t *im_main_menu[5];
 void Q_snprintfz (char *dst, int dstSize, const char *fmt, ...);
 

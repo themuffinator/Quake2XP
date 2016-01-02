@@ -348,11 +348,20 @@ void SCR_DrawPause (void) {
 
 	if (!cl_paused->value)
 		return;
-
+	
+	bump2D = qtrue;
+	
 	Draw_ScaledPic((viddef.width - (i_pause->width - i_pause->width * 0.25)) * 0.5f,
 					viddef.height * 0.5f + 8.0f,
 					cl_fontScale->value, cl_fontScale->value,
 					i_pause);
+
+	Draw_PicBumpScaled((viddef.width - (i_pause->width - i_pause->width * 0.25)) * 0.5f,
+		viddef.height * 0.5f + 8.0f,
+		cl_fontScale->value, cl_fontScale->value,
+		"pause", "pause_bump");
+
+	bump2D = qfalse;
 }
 
 /*

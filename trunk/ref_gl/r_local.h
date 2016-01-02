@@ -323,10 +323,8 @@ cvar_t	*r_ignoreGlErrors;
 cvar_t	*r_lightEditor;
 cvar_t	*r_cameraSpaceLightMove;
 
-cvar_t	*r_allowIntel;
-//cvar_t	*r_stereoVision;
-//cvar_t	*r_stereoSeparation;
-
+cvar_t	*r_hudLighting;
+cvar_t	*r_bump2D;
 
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
@@ -1126,7 +1124,8 @@ uint sv_lightOrg;
 uint light2d_orthoMatrix;
 uint light2d_map;
 uint light2d_normal;
-uint light2d_screenSize;
+uint light2d_shift;
+uint light2d_intens;
 
 #define	MAX_VERTEX_CACHES	4096
 

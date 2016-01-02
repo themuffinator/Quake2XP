@@ -73,9 +73,18 @@ int m_menudepth;
 
 static void M_Banner (char *name) {
 	int w, h;
+	char bump[80];
 
+	strcpy(bump, name);
+	strcat(bump, "_bump");
+	
+	bump2D = qtrue;
+	
 	Draw_GetPicSize (&w, &h, name);
 	Draw_PicScaled ((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
+	Draw_PicBumpScaled((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
+
+	bump2D = qfalse;
 }
 
 void M_PushMenu (void (*draw) (void), int (*key) (int k)) {
@@ -353,7 +362,7 @@ void M_Main_Draw (void) {
 	int offcet = 0;
 	int widest = -1;
 	int totalheight = 0;
-	char litname[80];
+	char litname[80], litname2[80];
 	char *names[] = {
 		"m_main_game",
 		"m_main_multiplayer",
@@ -362,6 +371,16 @@ void M_Main_Draw (void) {
 		"m_main_quit",
 		0
 	};
+
+	char *namesBump[] = {
+		"m_main_game_bump",
+		"m_main_multiplayer_bump",
+		"m_main_options_bump",
+		"m_main_video_bump",
+		"m_main_quit_bump",
+		0
+	};
+
 	const float fontscale = cl_fontScale->value;
 
 	for (i = 0; names[i] != 0; i++) {
@@ -377,18 +396,32 @@ void M_Main_Draw (void) {
 
 	offcet = (fontscale - 1) * 60;
 
+	bump2D = qtrue;
+
 	for (i = 0; names[i] != 0; i++) {
 		if (i != m_main_cursor)
 			Draw_PicScaled (xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, names[i]);
+			Draw_PicBumpScaled(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, names[i], namesBump[i]);
 	}
+
 	strcpy (litname, names[m_main_cursor]);
 	strcat (litname, "_sel");
 	Draw_PicScaled (xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, litname);
 
+	strcpy(litname2, namesBump[m_main_cursor]);
+	strcat(litname2, "_sel");
+	Draw_PicBumpScaled(xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, litname, litname2);
+
 	Draw_GetPicSize (&w, &h, "m_main_plaque");
 	Draw_PicScaled ((xoffset - 30) - w, ystart, fontscale, fontscale, "m_main_plaque");
 
+	Draw_GetPicSize(&w, &h, "m_main_plaque_bump");
+	Draw_PicBumpScaled((xoffset - 30) - w, ystart, fontscale, fontscale, "m_main_plaque", "m_main_plaque_bump");
+
 	Draw_PicScaled ((xoffset - 30) - w , ystart + h + 20, fontscale, fontscale, "m_main_logo");
+	Draw_PicBumpScaled((xoffset - 30) - w, ystart + h + 20, fontscale, fontscale, "m_main_logo", "m_main_logo_bump");
+
+	bump2D = qfalse;
 
 	M_Main_DrawQuad (xoffset - 45, ystart + (m_main_cursor * 40 + 5)* fontscale);
 }
@@ -1807,12 +1840,21 @@ void Options_MenuInit (void) {
 void M_Option_Banner (char *name) {
 	int w, h;
 	int move;
+	char bump[80];
+
+	strcpy(bump, name);
+	strcat(bump, "_bump");
+
+	bump2D = qtrue;
 
 	move = 140 + (cl_fontScale->value - 1) * 100;
 
 	Draw_GetPicSize (&w, &h, name);
 	move += h;
 	Draw_PicScaled (viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
+	Draw_PicBumpScaled(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name, bump);
+
+	bump2D = qfalse;
 }
 
 void Options_MenuDraw (void) {

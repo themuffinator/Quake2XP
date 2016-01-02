@@ -1304,7 +1304,10 @@ void R_RegisterCvars(void)
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
 	r_cameraSpaceLightMove =			Cvar_Get("r_cameraSpaceLightMove", "0", CVAR_ARCHIVE);
 
-	r_allowIntel =						Cvar_Get("r_allowIntel", "0", 0);
+	r_hudLighting =						Cvar_Get("r_hudLighting", "1.5", CVAR_ARCHIVE);
+	r_hudLighting->help =				"intensity of hud light pass";
+	r_bump2D =							Cvar_Get("r_bump2D", "1", CVAR_ARCHIVE);
+	r_bump2D->help =					"draw 2d bumpmaps";
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
