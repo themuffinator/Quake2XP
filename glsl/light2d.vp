@@ -2,20 +2,9 @@ layout(location = 0) in vec3	att_position;
 layout(location = 5) in vec2	att_texCoordDiffuse;
 
 out vec2 texCoord;
-out vec3 lightVec; // light and camera pos in ortho proj
-
 uniform mat4	u_orthoMatrix;
-uniform vec2	u_center; // vid.width * 0.5, vid.height * 0.5
 
 void main (void) {
 	texCoord = att_texCoordDiffuse;
-	
-	vec3 light = vec3(u_center.x, u_center.y, 0.01);
-
-	vec3 tmp = light - att_position;
-    lightVec.x = tmp.x;
-    lightVec.y = tmp.y;
-    lightVec.z = tmp.z;
-
 	gl_Position = u_orthoMatrix * vec4(att_position, 1.0);
 }

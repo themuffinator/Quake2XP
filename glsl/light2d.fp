@@ -1,28 +1,23 @@
-uniform sampler2D u_map;
-uniform sampler2D u_normalMap;
+uniform sampler2D	u_map;
+uniform sampler2D	u_normalMap;
+uniform float		u_shift, u_intens;
 
 in vec2 texCoord;
-in vec3 lightVec;
 
 #include lighting.inc
 
-vec4 Desaturate(vec3 color, float Desaturation)
-{
-	vec3 grayXfer = vec3(0.3, 0.59, 0.11);
-	vec3 gray = vec3(dot(grayXfer, color));
-	return vec4(mix(color, gray, Desaturation), 1.0);
-}
-
 void main(void) 
 {
-vec3 light = normalize(lightVec);
+vec3 light = normalize(vec3(11.5 + u_shift, 45.0 - u_shift, 10.0));
+vec3 view  = normalize(vec3(77.5, 31.5, 66.6));
 
-vec4 color = texture(u_map, texCoord);
-vec4 specular = Desaturate(color.xyz, 1.0);	
-vec3 normal = normalize(texture(u_normalMap, texCoord).rgb * 2.0 - 1.0);
-normal.z = 1.0;
-vec2 Es = PhongLighting(normal, light, light, 16.0);
+vec3 color = texture(u_map, texCoord).rgb;
+vec4 bump = texture(u_normalMap, texCoord);
+vec3 specular = vec3(bump.a);	
+vec3 normal = normalize(bump.rgb * 2.0 - 1.0);
 
-fragData.xyz = (Es.x * color.xyz + Es.y * specular.xyz * 0.5) * 16.0;
-fragData.w = 1.0;
+vec2 Es = PhongLighting(normal, light, view, 16.0);
+
+fragData.rgb = (Es.x * color + Es.y * specular) * u_intens;
+fragData.a = 1.0;
 }
