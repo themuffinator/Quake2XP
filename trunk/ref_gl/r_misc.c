@@ -595,7 +595,8 @@ image_t *R_LoadLightFilter (int id) {
 }
 
 
-#define ATTEN_VOLUME_SIZE 64	// Size of 3d attenuation texture (requires of 64*64*64 = 256KB of VRAM)	FIXME: control via CFG!!!
+#define ATTEN_VOLUME_SIZE 16
+
 void CreateAttenuation () {
 	image_t		*image;
 	char		name[18] = "**attenuation3D**";
@@ -611,7 +612,7 @@ void CreateAttenuation () {
 	else if (power > 2)
 		power = 2;
 
-	center = ATTEN_VOLUME_SIZE*0.5;
+	center = ATTEN_VOLUME_SIZE * 0.5;
 
 	for (s = 0; s < ATTEN_VOLUME_SIZE; s++) {
 		for (t = 0; t < ATTEN_VOLUME_SIZE; t++) {

@@ -272,7 +272,7 @@ BSP SURFACES
 qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces, qboolean bmodel) {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->numEdges;
-	float		*v, scroll, scale[2];
+	float		*v, scroll = 0.0, scale[2];
 	glpoly_t	*p;
 
 	numVertices = *vertices;
@@ -323,10 +323,11 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 			if (scroll == 0.0)
 				scroll = -64.0;
 		}
-		else
-			scroll = 0.0;
 
-		qglUniform1f(ambientWorld_scroll, scroll);
+		if(!bmodel)
+			qglUniform1f(ambientWorld_scroll, scroll);
+		else
+			qglUniform1f(ambientWorld_scroll, 0.0);
 	}
 
 	// create indexes
@@ -357,7 +358,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		{
 			VectorCopy(v, wVertexArray[numVertices]);
 
-			wTexArray[numVertices][0] = v[3];
+			wTexArray[numVertices][0] = v[3] + scroll;
 			wTexArray[numVertices][1] = v[4];
 			wLMArray[numVertices][0] = v[5];
 			wLMArray[numVertices][1] = v[6];
@@ -500,7 +501,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->numEdges;
-	float		*v, scroll, scale[2];
+	float		*v, scroll = 0.0, scale[2];
 	glpoly_t	*p;
 
 	numVertices = *vertices;
@@ -551,16 +552,17 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		GL_MBind3d		(GL_TEXTURE3_ARB, r_lightAttenMap->texnum);
 		GL_MBind		(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 
-		if (surf->texInfo->flags & SURF_FLOWING)
-		{
+		if (surf->texInfo->flags & SURF_FLOWING){
+
 			scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
 			if (scroll == 0.0)
 				scroll = -64.0;
-		}
+		}		
+		
+		if(!bmodel)
+			qglUniform1f(lightWorld_scroll, scroll);
 		else
-			scroll = 0.0;
-
-		qglUniform1f(lightWorld_scroll, scroll);
+			qglUniform1f(lightWorld_scroll, 0.0);
 	}
 
 	// create indexes
@@ -592,8 +594,9 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		{
 			VectorCopy(v, wVertexArray[numVertices]);
 
-			wTexArray[numVertices][0] = v[3];
+			wTexArray[numVertices][0] = v[3] + scroll;
 			wTexArray[numVertices][1] = v[4];
+
 
 			nTexArray[numVertices][0] = v[7];
 			nTexArray[numVertices][1] = v[8];
