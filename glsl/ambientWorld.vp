@@ -1,6 +1,7 @@
 uniform vec3		u_viewOriginES;
 uniform int			u_parallaxType;
 uniform int			u_LightMapType;
+uniform float		u_scroll;
 uniform mat4		u_modelViewProjectionMatrix;
 
 out vec3		v_viewVecTS;
@@ -18,6 +19,8 @@ layout(location = 6) in vec2	att_texCoordLightMap;
 void main (void) {
 	// setup tex coords
 	v_wTexCoord = att_texCoordDiffuse;  // diffuse, additive, caustics
+	v_wTexCoord.x += u_scroll;
+
 	v_lTexCoord = att_texCoordLightMap; // lightmap only
 
 	// calculate tangent space view vector for parallax

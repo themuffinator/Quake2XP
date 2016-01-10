@@ -1,10 +1,12 @@
 uniform vec3			u_viewOriginES;
 uniform vec3 			u_LightOrg;
 uniform float			u_fogDensity;
+uniform float			u_scroll;
 uniform mat4			u_attenMatrix;
 uniform mat4			u_cubeMatrix;
 uniform mat4			u_modelViewProjectionMatrix;
 uniform int				u_parallaxType;
+
 
 out vec3			v_viewVecTS;
 out vec3 			v_lightVec;
@@ -22,6 +24,7 @@ layout(location = 5) in vec2 att_texCoordDiffuse;
 void main (void) {
 	// setup tex coords
 	v_texCoord = att_texCoordDiffuse;  // diffuse & bump
+	v_texCoord += u_scroll;
 	v_CubeCoord = u_cubeMatrix * vec4(att_position, 1.0);
 	v_AttenCoord = u_attenMatrix * vec4(att_position, 1.0);
 
