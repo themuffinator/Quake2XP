@@ -269,10 +269,11 @@ BSP SURFACES
 
 ===============
 */
-qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces) {
+qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces, qboolean bmodel) {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->numEdges;
-	float		scroll, scale[2];
+	float		*v, scroll, scale[2];
+	glpoly_t	*p;
 
 	numVertices = *vertices;
 	numIndices	= *indeces;
@@ -334,10 +335,45 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 
 	c_brush_polys += (nv - 2);
 	
-	for (i = 0; i < nv - 2; i++){
-		indexArray[numIndices++] = surf->baseIndex;
-		indexArray[numIndices++] = surf->baseIndex + i + 1;
-		indexArray[numIndices++] = surf->baseIndex + i + 2;
+	if (!bmodel) {
+		for (i = 0; i < nv - 2; i++) {
+			indexArray[numIndices++] = surf->baseIndex;
+			indexArray[numIndices++] = surf->baseIndex + i + 1;
+			indexArray[numIndices++] = surf->baseIndex + i + 2;
+		}
+	}
+	else {
+		for (i = 0; i < nv - 2; i++)
+		{
+			indexArray[numIndices++] = numVertices;
+			indexArray[numIndices++] = numVertices + i + 1;
+			indexArray[numIndices++] = numVertices + i + 2;
+		}
+
+		p = surf->polys;
+		v = p->verts[0];
+
+		for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++)
+		{
+			VectorCopy(v, wVertexArray[numVertices]);
+
+			wTexArray[numVertices][0] = v[3];
+			wTexArray[numVertices][1] = v[4];
+			wLMArray[numVertices][0] = v[5];
+			wLMArray[numVertices][1] = v[6];
+
+			nTexArray[numVertices][0] = v[7];
+			nTexArray[numVertices][1] = v[8];
+			nTexArray[numVertices][2] = v[9];
+
+			tTexArray[numVertices][0] = v[10];
+			tTexArray[numVertices][1] = v[11];
+			tTexArray[numVertices][2] = v[12];
+
+			bTexArray[numVertices][0] = v[13];
+			bTexArray[numVertices][1] = v[14];
+			bTexArray[numVertices][2] = v[15];
+		}
 	}
 
 	*vertices	= numVertices;
@@ -365,9 +401,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	unsigned	oldFlag		= 0xffffffff;
 	unsigned	numIndices	= 0xffffffff,
 				numVertices = 0;
-
-	if (bmodelfix && bmodel)
-		return;
 
 	// setup program
 	GL_BindProgram(ambientWorldProgram, 0);
@@ -442,7 +475,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	
 	// fill new batch
 	repeat:	
-		if (!R_FillAmbientBatch(s, newBatch, &numVertices, &numIndices))
+		if (!R_FillAmbientBatch(s, newBatch, &numVertices, &numIndices, bmodel))
 		{
 			if (numIndices != 0xFFFFFFFF){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
@@ -467,7 +500,8 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->numEdges;
-	float		scroll, scale[2];
+	float		*v, scroll, scale[2];
+	glpoly_t	*p;
 
 	numVertices = *vertices;
 	numIndices = *indeces;
@@ -535,13 +569,46 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
 	c_brush_polys += (nv - 2);
 
-	for (i = 0; i < nv - 2; i++)
-	{
-		indexArray[numIndices++] = surf->baseIndex;
-		indexArray[numIndices++] = surf->baseIndex + i + 1;
-		indexArray[numIndices++] = surf->baseIndex + i + 2;
+	if (!bmodel) {
+		for (i = 0; i < nv - 2; i++)
+		{
+			indexArray[numIndices++] = surf->baseIndex;
+			indexArray[numIndices++] = surf->baseIndex + i + 1;
+			indexArray[numIndices++] = surf->baseIndex + i + 2;
+		}
 	}
+	else {
+		for (i = 0; i < nv - 2; i++)
+		{
+			indexArray[numIndices++] = numVertices;
+			indexArray[numIndices++] = numVertices + i + 1;
+			indexArray[numIndices++] = numVertices + i + 2;
+		}
 
+		p = surf->polys;
+		v = p->verts[0];
+
+		for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++)
+		{
+			VectorCopy(v, wVertexArray[numVertices]);
+
+			wTexArray[numVertices][0] = v[3];
+			wTexArray[numVertices][1] = v[4];
+
+			nTexArray[numVertices][0] = v[7];
+			nTexArray[numVertices][1] = v[8];
+			nTexArray[numVertices][2] = v[9];
+
+			tTexArray[numVertices][0] = v[10];
+			tTexArray[numVertices][1] = v[11];
+			tTexArray[numVertices][2] = v[12];
+
+			bTexArray[numVertices][0] = v[13];
+			bTexArray[numVertices][1] = v[14];
+			bTexArray[numVertices][2] = v[15];
+		}
+
+	}
 
 	*vertices = numVertices;
 	*indeces = numIndices;
@@ -612,9 +679,6 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 	unsigned	numIndices	= 0xffffffff,
 				numVertices = 0;
 	
-	if (bmodelfix && bmodel)
-		return;
-
 	// setup program
 	GL_BindProgram(lightWorldProgram, 0);
 
@@ -1193,8 +1257,6 @@ void R_DrawBrushModel (void) {
 
 	R_DrawInlineBModel2();
 
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_TEX1);
@@ -1202,20 +1264,18 @@ void R_DrawBrushModel (void) {
 	qglEnableVertexAttribArray(ATT_TANGENT);
 	qglEnableVertexAttribArray(ATT_BINORMAL);
 
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, wLMArray);
+	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
+	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
 
 
 	num_scene_surfaces = 0;
 	R_DrawInlineBModel();
 	GL_DrawLightmappedPoly(qtrue);
 	
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_TEX1);
@@ -1377,20 +1437,17 @@ void R_DrawLightBrushModel (void) {
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 	qglEnableVertexAttribArray(ATT_TANGENT);
 	qglEnableVertexAttribArray(ATT_BINORMAL);
 
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
+	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
 
 	r_lightTimestamp++;
 	currentShadowLight->numInteractionSurfs = 0;
@@ -1398,8 +1455,6 @@ void R_DrawLightBrushModel (void) {
 	if(currentShadowLight->numInteractionSurfs)
 		GL_DrawLightPass(qtrue, caustics);
 	
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_NORMAL);

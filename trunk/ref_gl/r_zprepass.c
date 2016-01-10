@@ -7,7 +7,7 @@ static vec3_t		modelorg;			// relative to viewpoint
 
 qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces, qboolean fix) {
 	unsigned	numVertices, numIndices;
-	int			i, nv = surf->numEdges;
+	int			i, nv = surf->polys->numVerts;
 	float		*v;
 
 	numVertices = *vertices;
@@ -250,22 +250,12 @@ void R_DrawDepthBrushModel (void) {
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
 	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)mvp);
 
-	if (!bmodelfix){
-		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
-		qglEnableVertexAttribArray(ATT_POSITION);
-		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	}
-	else{
-		qglEnableVertexAttribArray(ATT_POSITION);
-		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
-	}
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
 
 	num_depth_surfaces = 0;
 	R_AddBModelDepthPolys ();
-	GL_DrawDepthPoly(bmodelfix);
-
-	if (!bmodelfix)
-		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	GL_DrawDepthPoly(qtrue);
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 }

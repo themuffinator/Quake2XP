@@ -42,6 +42,9 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[0] <= 0.01 && !r_lightEditor->value)
 		return qfalse;
 
+	if (!light->radius[0] && !light->radius[1] && !light->radius[2])
+		return qfalse;
+
 	if (light->spherical) {
 
 		if (R_CullSphere(light->origin, light->radius[0]))
@@ -51,18 +54,23 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 		if (R_CullBox(light->mins, light->maxs))
 			return qfalse;
 	}
+
 	if (weapon) {
+
 		if (!currentmodel)
 			return qfalse;
+
 		if (!BoundsAndSphereIntersect (light->mins, light->maxs, r_origin, currentmodel->radius))
 			return qfalse;
 	}
 
 	if (r_newrefdef.areabits) {
+
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))) {
 			return qfalse;
 		}
 	}
+
 	if (!HasSharedLeafs(light->vis, viewvis))
 		return qfalse;
 

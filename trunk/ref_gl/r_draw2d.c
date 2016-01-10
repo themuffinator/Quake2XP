@@ -509,10 +509,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglUniform1i(gen_3d, 0);
 	qglUniform1i(gen_tex, 0);
 
-	if (!r_bump2D->value)
-		bump2D = qfalse;
-
-	qglUniform1f(gen_colorModulate, bump2D ? 1.0 : r_textureColorScale->value);
+	qglUniform1f(gen_colorModulate, r_bump2D->value ? 1.0 : r_textureColorScale->value);
 	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	if (scrap_dirty)
@@ -556,16 +553,6 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 	int w, h;
 	float lightShift;
 
-	if (!gl) {
-		Com_Printf("NULL pic in Draw_Pic diffuse\n");
-		return;
-	}
-	
-	if (!gl2) {
-		Com_Printf("NULL pic in Draw_Pic normal\n");
-		return;
-	}
-
 	w = gl->width * sX *gl->picScale_w;
 	h = gl->height * sY *gl->picScale_h;
 
@@ -582,9 +569,8 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 	qglUniform1i(light2d_map, 0);
 	qglUniform1i(light2d_normal, 1);
 
-	lightShift = 66.6 * sin(r_newrefdef.time);
-	qglUniform1f(light2d_shift, lightShift);
-	qglUniform1f(light2d_intens, r_hudLighting->value);
+	lightShift = 66.6 * sin(Sys_Milliseconds() * 0.001f);
+	qglUniform2f(light2d_params, lightShift, r_hudLighting->value);
 	qglUniformMatrix4fv(light2d_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	if (scrap_dirty)

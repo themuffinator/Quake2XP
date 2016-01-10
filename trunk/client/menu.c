@@ -78,13 +78,9 @@ static void M_Banner (char *name) {
 	strcpy(bump, name);
 	strcat(bump, "_bump");
 	
-	bump2D = qtrue;
-	
 	Draw_GetPicSize (&w, &h, name);
 	Draw_PicScaled ((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
 	Draw_PicBumpScaled((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
-
-	bump2D = qfalse;
 }
 
 void M_PushMenu (void (*draw) (void), int (*key) (int k)) {
@@ -110,6 +106,7 @@ void M_PushMenu (void (*draw) (void), int (*key) (int k)) {
 
 	m_drawfunc = draw;
 	m_keyfunc = key;
+	cls.menuActive = qtrue;
 
 	m_entersound = qtrue;
 
@@ -122,6 +119,9 @@ void M_ForceMenuOff (void) {
 	cls.key_dest = key_game;
 	m_menudepth = 0;
 	Key_ClearStates ();
+	
+	cls.menuActive = qfalse;
+
 	Cvar_Set ("paused", "0");
 }
 
@@ -349,7 +349,7 @@ void M_Main_DrawQuad (float x, float y) {
 	refdef.lightstyles = 0;
 	refdef.rdflags = RDF_NOWORLDMODEL | RDF_NOCLEAR;
 
-	R_RenderFrame (&refdef, qtrue);
+	R_RenderFrame (&refdef);
 	refdef.num_entities++;
 }
 
@@ -393,10 +393,7 @@ void M_Main_Draw (void) {
 
 	ystart = (viddef.height / 2) - 110 * cl_fontScale->value;
 	xoffset = (viddef.width - widest + (70 - (cl_fontScale->value - 1) * 170)) / 2;
-
 	offcet = (fontscale - 1) * 60;
-
-	bump2D = qtrue;
 
 	for (i = 0; names[i] != 0; i++) {
 		if (i != m_main_cursor)
@@ -421,9 +418,7 @@ void M_Main_Draw (void) {
 	Draw_PicScaled ((xoffset - 30) - w , ystart + h + 20, fontscale, fontscale, "m_main_logo");
 	Draw_PicBumpScaled((xoffset - 30) - w, ystart + h + 20, fontscale, fontscale, "m_main_logo", "m_main_logo_bump");
 
-	bump2D = qfalse;
-
-	M_Main_DrawQuad (xoffset - 45, ystart + (m_main_cursor * 40 + 5)* fontscale);
+	M_Main_DrawQuad(xoffset - 45, ystart + (m_main_cursor * 40 + 5)* fontscale);
 }
 
 
@@ -1845,16 +1840,12 @@ void M_Option_Banner (char *name) {
 	strcpy(bump, name);
 	strcat(bump, "_bump");
 
-	bump2D = qtrue;
-
 	move = 140 + (cl_fontScale->value - 1) * 100;
 
 	Draw_GetPicSize (&w, &h, name);
 	move += h;
 	Draw_PicScaled (viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
 	Draw_PicBumpScaled(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name, bump);
-
-	bump2D = qfalse;
 }
 
 void Options_MenuDraw (void) {
@@ -4257,7 +4248,7 @@ void PlayerConfig_MenuDraw (void) {
 		//				  refdef.width / 8, refdef.height / 8);
 		refdef.height += 4;
 
-		R_RenderFrame (&refdef, qtrue);
+		R_RenderFrame (&refdef);
 
 		Com_sprintf (scratch, sizeof(scratch), "/players/%s/%s_i.pcx",
 			s_pmi[s_player_model_box.curvalue].directory,
@@ -4414,8 +4405,9 @@ void M_Draw (void) {
 	// repaint everything next frame
 	SCR_DirtyScreen ();
 
-	Draw_StretchPic (0, 0, viddef.width, viddef.height, "menuback");
-
+	if (cls.state != ca_active || !cl.refresh_prepped)
+		Draw_StretchPic (0, 0, viddef.width, viddef.height, "menuback");
+	
 	m_drawfunc ();
 
 	// delay playing the enter sound until after the

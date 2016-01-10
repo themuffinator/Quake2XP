@@ -990,8 +990,7 @@ void R_InitPrograms (void) {
 		light2d_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 		light2d_map = qglGetUniformLocation(id, "u_map");
 		light2d_normal = qglGetUniformLocation(id, "u_normalMap");
-		light2d_shift = qglGetUniformLocation(id, "u_shift");
-		light2d_intens = qglGetUniformLocation(id, "u_intens");
+		light2d_params = qglGetUniformLocation(id, "u_params");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");

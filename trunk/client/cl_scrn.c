@@ -349,8 +349,9 @@ void SCR_DrawPause (void) {
 	if (!cl_paused->value)
 		return;
 	
-	bump2D = qtrue;
-	
+	if (cls.menuActive)
+		return;
+
 	Draw_ScaledPic((viddef.width - (i_pause->width - i_pause->width * 0.25)) * 0.5f,
 					viddef.height * 0.5f + 8.0f,
 					cl_fontScale->value, cl_fontScale->value,
@@ -360,8 +361,6 @@ void SCR_DrawPause (void) {
 		viddef.height * 0.5f + 8.0f,
 		cl_fontScale->value, cl_fontScale->value,
 		"pause", "pause_bump");
-
-	bump2D = qfalse;
 }
 
 /*
@@ -499,9 +498,13 @@ qboolean needLoadingPlaque (void) {
 
 
 void SCR_BeginLoadingPlaque (void) {
+	
 	S_StopAllSounds ();
+	
 	cl.sound_prepped = qfalse;	// don't play ambients
+	
 	Music_Stop ();
+	
 	if (cls.disable_screen)
 		return;
 	if (developer->value)
@@ -515,8 +518,11 @@ void SCR_BeginLoadingPlaque (void) {
 		scr_draw_loading = 2;	// clear to balack first
 	else
 		scr_draw_loading = 1;
+
 	SCR_UpdateScreen ();
+	
 	cls.disable_screen = Sys_Milliseconds ();
+	
 	cls.disable_servercount = cl.servercount;
 }
 
@@ -529,7 +535,6 @@ void SCR_EndLoadingPlaque (void) {
 	cls.disable_screen = 0;
 	scr_draw_loading = 0;
 	Con_ClearNotify ();
-
 }
 
 /*
@@ -572,7 +577,7 @@ void SCR_TimeRefresh_f (void) {
 		R_BeginFrame ();
 		for (i = 0; i < 128; i++) {
 			cl.refdef.viewangles[1] = i / 128.0 * 360.0;
-			R_RenderFrame (&cl.refdef, qfalse);
+			R_RenderFrame (&cl.refdef);
 		}
 		GLimp_EndFrame ();
 	}
@@ -581,7 +586,7 @@ void SCR_TimeRefresh_f (void) {
 			cl.refdef.viewangles[1] = i / 128.0 * 360.0;
 
 			R_BeginFrame ();
-			R_RenderFrame (&cl.refdef, qfalse);
+			R_RenderFrame (&cl.refdef);
 			GLimp_EndFrame ();
 		}
 	}
@@ -802,9 +807,6 @@ void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int w
 	if (width < 1)
 		return;
 	
-	if(cl_3dhud->value)
-		bump2D = qtrue;
-
 	// draw number string
 	if (width > 5)
 		width = 5;
@@ -819,6 +821,7 @@ void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int w
 	x += (2 + CHAR_WIDTH*(width - l))*scale_x;
 
 	ptr = num;
+
 	while (*ptr && l) {
 		if (*ptr == '-')
 			frame = STAT_MINUS;
@@ -826,15 +829,12 @@ void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int w
 			frame = *ptr - '0';
 
 		Draw_PicScaled (x, y, scale_x, scale_y, sb_nums[color][frame]);
-		
-		if (cl_3dhud->value)
-			Draw_PicBumpScaled(x, y, scale_x, scale_y, sb_nums[color][frame], sb_nums_bump[frame]);
+		Draw_PicBumpScaled(x, y, scale_x, scale_y, sb_nums[color][frame], sb_nums_bump[frame]);
 		
 		x += CHAR_WIDTH*scale_x;
 		ptr++;
 		l--;
 	}
-	bump2D = qfalse;
 }
 
 

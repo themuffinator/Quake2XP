@@ -328,7 +328,7 @@ typedef struct {
 	connstate_t state;
 	keydest_t key_dest;
 	qboolean consoleActive;
-
+	qboolean menuActive;
 
 	int framecount;
 	int realtime;				// always increasing, no clamping, etc

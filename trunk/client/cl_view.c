@@ -577,7 +577,7 @@ void V_RenderView () {
 	c_shadow_volumes = 0;
 	c_decal_tris = 0;
 
-	R_RenderFrame (&cl.refdef, qfalse);
+	R_RenderFrame (&cl.refdef);
 
 
 	if (cl_stats->value)

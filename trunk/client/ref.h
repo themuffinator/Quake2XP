@@ -84,8 +84,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern vec3_t r_origin;
 
-
-
 typedef vec_t vec2_t[2];
 
 typedef vec3_t	mat3_t[3];		// column-major (axis)
@@ -273,7 +271,6 @@ typedef enum {
 } imagetype_t;
 
 typedef struct image_s {
-
 
 	char		name[MAX_QPATH];		// game path, including extension
 	char		bare_name[MAX_QPATH];	// filename only, as called when searching
@@ -583,24 +580,18 @@ void Draw_StretchPic (int x, int y, int w, int h, char *name);
 
 void Draw_PicScaled (int x, int y, float scale_x, float scale_y, char *pic);
 void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char *pic, char *pic2);
-qboolean bump2D;
 void Draw_ScaledPic (int x, int y, float scale_x, float scale_y, image_t * gl);
 
 void Draw_CharScaled (int x, int y, float scale_x, float scale_y, unsigned char num);
-void Draw_CharScaledShadow (int x, int y, float scale_x, float scale_y, unsigned char num);
-
 void Draw_StringScaled (int x, int y, float scale_x, float scale_y, const char *str);
-void Draw_StringScaledShadow (int x, int y, float scale_x, float scale_y, const char *str);
 
 void Draw_TileClear (int x, int y, int w, int h, char *name);
 void Draw_TileClear2 (int x, int y, int w, int h, image_t * image);
 void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a);
-void Draw_FadeScreen (void);
-void Draw_String (int x, int y, const char *str);
 void R_BeginRegistration (char *map);
 void R_SetSky (char *name, float rotate, vec3_t axis);
 void R_EndRegistration (void);
-void R_RenderFrame (refdef_t * fd, qboolean client);
+void R_RenderFrame (refdef_t * fd);
 void Draw_GetPicSize (int *w, int *h, char *name);	// will return 0 0 if
 // not found
 void R_ModelBounds (struct model_s * model, vec3_t mins, vec3_t maxs);

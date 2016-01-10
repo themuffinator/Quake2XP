@@ -317,7 +317,7 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	VectorNegate (center, entity.origin);
 
 	// Draw it
-	R_RenderFrame (&refdef, qtrue);
+	R_RenderFrame (&refdef);
 	refdef.num_entities++;
 }
 
@@ -406,7 +406,6 @@ void SCR_ExecuteLayoutString (char *s) {
 			y = viddef.height / 2 - (120 - atoi (token))*hud_sy;
 			continue;
 		}
-
 
 		if (!strcmp (token, "pic")) {	// draw a pic from a stat number
 			token = COM_Parse (&s);
@@ -508,10 +507,16 @@ void SCR_ExecuteLayoutString (char *s) {
 		}
 
 		if (!strcmp (token, "picn")) {	// draw a pic from a name
+			char bump[60];
 			token = COM_Parse (&s);
 			SCR_AddDirtyPoint (x, y);
 			SCR_AddDirtyPoint (x + 23 * hud_sx, y + 23 * hud_sy);
+
 			Draw_PicScaled (x, y, hud_sx, hud_sy, token);
+			strcpy(bump, token);
+			strcat(bump, "_bump");
+			Draw_PicBumpScaled(x, y, hud_sx, hud_sy, token, bump);
+
 			continue;
 		}
 
@@ -1138,7 +1143,8 @@ void CL_DrawInventory (void) {
 	SCR_DirtyScreen ();
 
 	Draw_ScaledPic (x, y + 8, (float)cl_fontScale->value, (float)cl_fontScale->value, i_inventory);
-
+	Draw_PicBumpScaled(x, y + 8, (float)cl_fontScale->value, (float)cl_fontScale->value, "inventory", "inventory_bump");
+	
 	y += 24 * cl_fontScale->value;
 	x += 24 * cl_fontScale->value;
 

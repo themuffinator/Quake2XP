@@ -345,7 +345,7 @@ extern int radarOldTime;
 extern qboolean spacebox;
 
 extern qboolean arbMultisampleSupported;
-qboolean xhargar2hack , bmodelfix;
+qboolean xhargar2hack;
 
 void GL_Bind (int texnum);
 void GL_MBind (GLenum target, int texnum);
@@ -1124,8 +1124,7 @@ uint sv_lightOrg;
 uint light2d_orthoMatrix;
 uint light2d_map;
 uint light2d_normal;
-uint light2d_shift;
-uint light2d_intens;
+uint light2d_params;
 
 #define	MAX_VERTEX_CACHES	4096
 

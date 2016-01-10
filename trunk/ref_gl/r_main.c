@@ -1000,7 +1000,7 @@ extern worldShadowLight_t *selectedShadowLight;
 void R_MotionBlur (void);
 void R_DrawFullScreenQuad (void);
 
-void R_RenderFrame(refdef_t * fd, qboolean client) {
+void R_RenderFrame(refdef_t * fd) {
 	R_SetLightLevel();
 	R_RenderView(fd);
 	R_SetupOrthoMatrix();
