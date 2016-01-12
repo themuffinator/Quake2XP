@@ -2418,6 +2418,7 @@ void R_DrawLightBounds(void) {
 	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_3d, 1);
 	qglUniform4f(gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);

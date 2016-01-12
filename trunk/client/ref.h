@@ -327,6 +327,7 @@ c_shadow_tris,
 c_part_tris,
 c_decal_tris;
 
+extern int num_visLights;
 
 #define	VERTEXSIZE	16
 

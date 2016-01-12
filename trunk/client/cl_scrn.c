@@ -900,7 +900,6 @@ c_decal_tris;
 
 extern cvar_t *cl_drawfps;
 extern cvar_t *cl_hudScale;
-extern int num_visLights;
 
 void SCR_DrawSpeeds (void) {
 
@@ -1075,6 +1074,8 @@ void SCR_UpdateScreen (void) {
 		SCR_TileClear ();
 
 		V_RenderView ();
+		
+		SCR_DrawSpeeds();
 
 		SCR_DrawStats ();
 		if (cl.frame.playerstate.stats[STAT_LAYOUTS] & 1)
@@ -1086,8 +1087,6 @@ void SCR_UpdateScreen (void) {
 		SCR_CheckDrawCenterString ();
 
 		SCR_DrawPause ();
-
-		SCR_DrawSpeeds ();
 
 		SCR_DrawFPS ();
 

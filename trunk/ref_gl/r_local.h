@@ -438,7 +438,6 @@ void UpdateLightEditor (void);
 void Load_LightFile ();
 void R_SetViewLightDepthBounds ();
 qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p);
-extern int num_visLights;
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
 extern int numFlareOcc;
