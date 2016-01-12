@@ -459,7 +459,7 @@ void R_DrawBrushModelVolumes () {
 	msurface_t	*surf;
 	model_t		*clmodel;
 	glpoly_t	*poly;
-	vec3_t		v1, temp, lightOrigin;
+	vec3_t		v1, temp, oldLight;
 	qboolean	shadow;
 
 	clmodel = currententity->model;
@@ -470,9 +470,9 @@ void R_DrawBrushModelVolumes () {
 
 	R_SetupEntityMatrix (currententity);
 
-	VectorCopy (currentShadowLight->origin, lightOrigin);
-	VectorSubtract (lightOrigin, currententity->origin, temp);
-	Mat3_TransposeMultiplyVector (currententity->axis, temp, lightOrigin);
+	VectorCopy (currentShadowLight->origin, oldLight);
+	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector (currententity->axis, temp, currentShadowLight->origin);
 
 	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 
@@ -493,8 +493,8 @@ void R_DrawBrushModelVolumes () {
 		for (j = 0; j < surf->numEdges; j++) {
 
 			VectorCopy (poly->verts[j], vcache[vb * 2 + 0]);
-			VectorSubtract (poly->verts[j], lightOrigin, v1);
-			VectorNormalizeFast(v1);
+			VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
+			VectorNormalize(v1);
 			sca = scale / VectorLength (v1);
 			vcache[vb * 2 + 1][0] = v1[0] * sca + poly->verts[j][0];
 			vcache[vb * 2 + 1][1] = v1[1] * sca + poly->verts[j][1];
@@ -558,6 +558,8 @@ void R_DrawBrushModelVolumes () {
 
 	c_shadow_volumes++;
 	c_shadow_tris += ib / 3;
+
+	VectorCopy(oldLight, currentShadowLight->origin);
 }
 
 
