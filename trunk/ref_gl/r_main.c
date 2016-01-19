@@ -830,8 +830,13 @@ static void R_DrawAmbientScene (void) {
 // draws translucent entities
 static void R_DrawRAScene (void) {
 	int i;
+	
+	GL_DepthMask(0);
+	GL_PolygonOffset(-1.0, 1.0);
 
 	R_DrawChainsRA(qfalse);
+
+	R_CaptureColorBuffer();
 
 	if (!r_drawEntities->value)
 		return;
@@ -839,7 +844,7 @@ static void R_DrawRAScene (void) {
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		currentmodel = currententity->model;
-
+		
 		if (currentmodel && currentmodel->type == mod_brush) {
 			R_DrawBrushModelRA();
 			continue;
@@ -874,6 +879,8 @@ static void R_DrawRAScene (void) {
 				break;
 		}
 	}
+	GL_DepthMask(1);
+	GL_PolygonOffset(0.0, 1.0);
 }
 
 /*
