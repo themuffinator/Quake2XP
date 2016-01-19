@@ -423,13 +423,6 @@ static void R_SetupViewMatrices (void) {
 
 }
 
-/*
-glTranslatef (e->origin[0],  e->origin[1],  e->origin[2]);
-
-glRotatef (e->angles[1],  0, 0, 1);
-glRotatef (e->angles[0],  0, 1, 0);		/// fixed "stupid quake bug" ;)
-glRotatef (e->angles[2],  1, 0, 0);
-*/
 void R_SetupEntityMatrix(entity_t * e) {
 
 	AnglesToMat3(e->angles, e->axis);

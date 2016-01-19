@@ -230,28 +230,9 @@ void R_DrawChainsRA (qboolean bmodel) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	for (s = r_alpha_surfaces; s; s = s->texturechain) {
-		if (s->texInfo->flags & SURF_TRANS33) 
-			shadelight_surface[3] = 0.33f;
-		else if (s->texInfo->flags & SURF_TRANS66) 
-			shadelight_surface[3] = 0.66f;
-		else
-			shadelight_surface[3] = 1.f;
-
-		if (s->texInfo->flags & SURF_WARP)
-			R_DrawWaterPolygons(s, bmodel);
-		else if (s->texInfo->flags & SURF_FLOWING)
-			DrawGLPoly(s, qtrue);
-		else
-			DrawGLPoly(s, qfalse);
-
-	}
-
-	r_alpha_surfaces = NULL;
-
 	for (s = r_reflective_surfaces; s; s = s->texturechain) {
 		shadelight_surface[3] = 1.f;
-		
+
 		if (s->flags & MSURF_LAVA)
 			continue;
 
@@ -259,6 +240,31 @@ void R_DrawChainsRA (qboolean bmodel) {
 	}
 
 	r_reflective_surfaces = NULL;
+
+	R_CaptureColorBuffer();
+
+	for (s = r_alpha_surfaces; s; s = s->texturechain) {
+		if (s->texInfo->flags & SURF_TRANS33)
+			shadelight_surface[3] = 0.33f;
+		else if (s->texInfo->flags & SURF_TRANS66)
+			shadelight_surface[3] = 0.66f;
+		else
+			shadelight_surface[3] = 1.f;
+
+		if (s->texInfo->flags & SURF_WARP)
+			continue;
+		
+		if (s->flags & MSURF_LAVA)
+			continue;
+
+		if (s->texInfo->flags & SURF_FLOWING)
+			DrawGLPoly(s, qtrue);
+		else
+			DrawGLPoly(s, qfalse);
+	}
+
+	r_alpha_surfaces = NULL;
+
 }
 
 
@@ -829,7 +835,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 			R_AddSkySurface(surf);
 		else if (surf->texInfo->flags & SURF_NODRAW)
 			continue;
-		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66) && !(surf->flags & MSURF_LAVA)) {
+		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66) && !(surf->flags & MSURF_LAVA) && !(surf->flags & MSURF_DRAWTURB) ) {
 			// add to the translucent chain
 			surf->texturechain = r_alpha_surfaces;
 			r_alpha_surfaces = surf;

@@ -1209,10 +1209,13 @@ void Mod_LoadFaces (lump_t * l) {
 		image = out->texInfo->image;
 		purename = COM_SkipPath(image->name);
 		COM_StripExtension(purename, noext);
+		
+		if (!(out->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))) {
 
-		if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3") || !strcmp(noext, "tlava1_4")) {
-			out->flags |= MSURF_LAVA;
-			out->flags &= ~MSURF_DRAWTURB;
+			if (!strcmp(noext, "brlava") || !strcmp(noext, "lava") || !strcmp(noext, "tlava1_3") || !strcmp(noext, "tlava1_4")) {
+				out->flags |= MSURF_LAVA;
+				out->flags &= ~MSURF_DRAWTURB;
+			}
 		}
 
 		// create lightmaps and polygons
