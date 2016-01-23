@@ -934,15 +934,17 @@ void SCR_DrawSpeeds (void) {
 }
 
 void SCR_DrawFPS (void) {
-	static char		avrfps[10], minfps[14], maxfps[14];
-	static int		fps = 0;
-	static int		lastUpdate;
-	const int		samPerSec = 4;
-	static float	fpsAvg = 0;
-	const float		fontscale = cl_fontScale->value;
+	static	char	avrfps[10], minfps[14], maxfps[14];
+	static	int		fps = 0;
+	static	int		lastUpdate;
+	const	int		samPerSec = 4;
+	static	float	fpsAvg = 0;
+	const	float	fontscale = cl_fontScale->value;
 
 	fps++;
+
 	if (curtime - lastUpdate >= 1000 / samPerSec) {
+
 		const float alpha = 0.45;
 
 		if (cl.minFps == 0) // only one time per level
@@ -954,8 +956,8 @@ void SCR_DrawFPS (void) {
 		if (fpsAvg > cl.maxFps)
 			cl.maxFps = fpsAvg;
 
-			Com_sprintf(minfps, sizeof(minfps), "min FPS %4d", cl.minFps);
-			Com_sprintf(maxfps, sizeof(maxfps), "max FPS %4d", cl.maxFps);
+			Com_sprintf(minfps, sizeof(minfps), "Min FPS %4d", cl.minFps);
+			Com_sprintf(maxfps, sizeof(maxfps), "Max FPS %4d", cl.maxFps);
 
 			Com_sprintf(avrfps, sizeof(avrfps), "%4d FPS", (int)fpsAvg);
 
