@@ -58,7 +58,7 @@ cvar_t *scr_graphscale;
 cvar_t *scr_graphshift;
 cvar_t *scr_drawall;
 
-extern cvar_t *cl_drawclock;	// JKnife -- HUD Clock
+extern cvar_t *cl_drawTime;	// JKnife -- HUD Clock
 
 typedef struct {
 	int x1, y1, x2, y2;
@@ -898,7 +898,7 @@ c_shadow_tris,
 c_part_tris,
 c_decal_tris;
 
-extern cvar_t *cl_drawfps;
+extern cvar_t *cl_drawFPS;
 extern cvar_t *cl_hudScale;
 
 void SCR_DrawSpeeds (void) {
@@ -934,28 +934,49 @@ void SCR_DrawSpeeds (void) {
 }
 
 void SCR_DrawFPS (void) {
-	static char	str[16];
-	static int fps = 0;
-	static float fpsAvg = 0;
-	static int	lastUpdate;
-
-	const int samPerSec = 4;
-	const float	fontscale = cl_fontScale->value;
+	static char		avrfps[10], minfps[14], maxfps[14];
+	static int		fps = 0;
+	static int		lastUpdate;
+	const int		samPerSec = 4;
+	static float	fpsAvg = 0;
+	const float		fontscale = cl_fontScale->value;
 
 	fps++;
 	if (curtime - lastUpdate >= 1000 / samPerSec) {
 		const float alpha = 0.45;
 
-		Com_sprintf (str, sizeof(str), "%4d FPS", (int)fpsAvg);
+		if (cl.minFps == 0) // only one time per level
+			cl.minFps = 999999;
+
+		if (fpsAvg < cl.minFps)
+			cl.minFps = fpsAvg;
+
+		if (fpsAvg > cl.maxFps)
+			cl.maxFps = fpsAvg;
+
+			Com_sprintf(minfps, sizeof(minfps), "min FPS %4d", cl.minFps);
+			Com_sprintf(maxfps, sizeof(maxfps), "max FPS %4d", cl.maxFps);
+
+			Com_sprintf(avrfps, sizeof(avrfps), "%4d FPS", (int)fpsAvg);
 
 		lastUpdate = curtime;
-		fpsAvg = samPerSec * (alpha*fps + ((1 - alpha)*fpsAvg) / samPerSec);
+		fpsAvg = samPerSec * (alpha * fps + ((1 - alpha) * fpsAvg) / samPerSec);
 		fps = 0;
 	}
 
-	if (cl_drawfps->value && (cls.state == ca_active)) {
+	
+	if (cl_drawFPS->value && (cls.state == ca_active)) {
+		
 		Set_FontShader (qtrue);
-		Draw_StringScaled (viddef.width - 65 * fontscale, viddef.height*0.65, fontscale, fontscale, str);
+
+		if (cl_drawFPS->value == 2) {
+			Draw_StringScaled(viddef.width - 65 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
+
+			Draw_StringScaled(viddef.width - 90 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
+			Draw_StringScaled(viddef.width - 90 * fontscale, viddef.height * 0.65, fontscale, fontscale, maxfps);
+		} else
+			Draw_StringScaled(viddef.width - 65 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
+
 		RE_SetColor (colorWhite);
 		Set_FontShader (qfalse);
 	}
@@ -986,7 +1007,7 @@ void SCR_DrawClock (void) {
 
 	Set_FontShader (qtrue);
 
-	if (!cl_drawfps->value) {
+	if (!cl_drawFPS->value) {
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}
@@ -1090,7 +1111,7 @@ void SCR_UpdateScreen (void) {
 
 		SCR_DrawFPS ();
 
-		if (cl_drawclock->value && (cls.state == ca_active))
+		if (cl_drawTime->value && (cls.state == ca_active))
 			SCR_DrawClock ();
 
 		SCR_DrawConsole ();

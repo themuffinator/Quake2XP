@@ -232,6 +232,8 @@ typedef struct {
 	int time;					// this is the time value that the client
 	// is rendering at.  always <= cls.realtime
 	float lerpfrac;				// between oldframe and frame
+	
+	int minFps, maxFps;
 
 	refdef_t refdef;
 
@@ -429,8 +431,8 @@ extern cvar_t *cl_paused;
 extern cvar_t *cl_timedemo;
 
 extern cvar_t *cl_vwep;
-extern cvar_t *cl_drawfps;
-extern cvar_t *cl_drawclock;
+extern cvar_t *cl_drawFPS;
+extern cvar_t *cl_drawTime;
 
 
 extern cvar_t *cl_thirdPerson;;
@@ -558,7 +560,6 @@ void CL_ParticleBlood2 (vec3_t org, vec3_t dir, int count);
 void CL_ParticleHeadBlood (vec3_t org);
 void CL_AddLasers (void);
 void CL_GibExplosion (vec3_t org, vec3_t dir);
-void CL_BulletDebris (vec3_t org, vec3_t dir, int count);
 void CL_ParticleTracer (vec3_t start, vec3_t end);
 qboolean AL_Init (int hardreset);
 void AL_Shutdown (void);
@@ -566,7 +567,6 @@ void S_fastsound (vec3_t origin, int entnum, int entchannel,
 	ALuint bufferNum, ALfloat gain, ALfloat rolloff_factor);
 void CL_ParticleArmorSpark (vec3_t org, vec3_t dir, int count,
 	qboolean power);
-void GLAVI_ReadFrameData (byte * buffer);
 void CL_ParticleGibBlood (vec3_t org);
 void CL_ParticleGunSmoke (vec3_t org, vec3_t dir, int count);
 //=================================================
@@ -850,10 +850,6 @@ void V_AddParticle (vec3_t org, vec3_t length, vec3_t color, float alpha,
 void V_AddLight (vec3_t org, float intensity, float r, float g, float b, vec3_t ang, float cone, int filter);
 
 void V_AddLightStyle (int style, float r, float g, float b);
-
-
-
-
 
 //
 // cl_tent.c

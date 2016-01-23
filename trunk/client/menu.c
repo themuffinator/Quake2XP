@@ -1106,11 +1106,11 @@ static void NoAltTabFunc (void *unused) {
 
 
 static void FpsFunc (void *unused) {
-	Cvar_SetValue ("cl_drawfps", s_options_fps_box.curvalue);
+	Cvar_SetValue ("cl_drawFPS", s_options_fps_box.curvalue);
 }
 
 static void TimeFunc (void *unused) {
-	Cvar_SetValue ("cl_drawclock", s_options_time_box.curvalue);
+	Cvar_SetValue ("cl_drawTime", s_options_time_box.curvalue);
 }
 
 static float ClampCvar (float min, float max, float value) {
@@ -1153,11 +1153,11 @@ static void ControlsSetMenuItemValues (void) {
 
 	s_options_noalttab_box.curvalue = win_noalttab->value;
 
-	Cvar_SetValue ("cl_drawfps", ClampCvar (0, 1, cl_drawfps->value));
-	s_options_fps_box.curvalue = cl_drawfps->value;
+	Cvar_SetValue ("cl_drawFPS", ClampCvar (0, 2, cl_drawFPS->value));
+	s_options_fps_box.curvalue = cl_drawFPS->value;
 
-	Cvar_SetValue ("cl_drawclock", ClampCvar (0, 1, cl_drawclock->value));
-	s_options_time_box.curvalue = cl_drawclock->value;
+	Cvar_SetValue ("cl_drawTime", ClampCvar (0, 1, cl_drawTime->value));
+	s_options_time_box.curvalue = cl_drawTime->value;
 
 }
 
@@ -1553,6 +1553,13 @@ void Options_MenuInit (void) {
 		0
 	};
 
+	static char *fps_names[] = {
+		"off",
+		"average",
+		"full",
+		0
+	};
+
 	static char *crosshair_names[] = {
 		"none",
 		"dot",
@@ -1759,15 +1766,15 @@ void Options_MenuInit (void) {
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
 	s_options_fps_box.generic.y = 180 * cl_fontScale->value;
-	s_options_fps_box.generic.name = "draw fps";
+	s_options_fps_box.generic.name = "Draw FPS";
 	s_options_fps_box.generic.callback = FpsFunc;
-	s_options_fps_box.itemnames = yesno_names;
+	s_options_fps_box.itemnames = fps_names;
 
 
 	s_options_time_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_time_box.generic.x = 0;
 	s_options_time_box.generic.y = 190 * cl_fontScale->value;
-	s_options_time_box.generic.name = "draw date/time";
+	s_options_time_box.generic.name = "Draw Date / Time";
 	s_options_time_box.generic.callback = TimeFunc;
 	s_options_time_box.itemnames = yesno_names;
 

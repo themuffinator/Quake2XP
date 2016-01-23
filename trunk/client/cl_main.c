@@ -91,8 +91,8 @@ cvar_t *cl_vwep;
 cvar_t *dmflags;
 
 //q2xp stuff
-cvar_t *cl_drawclock;
-cvar_t *cl_drawfps;
+cvar_t *cl_drawTime;
+cvar_t *cl_drawFPS;
 cvar_t *cl_brass;
 cvar_t *cl_3dhud;
 cvar_t *cl_railcore_red;
@@ -1534,8 +1534,8 @@ void CL_InitLocal (void) {
 	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "150", 0);
 	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", 0);
 
-	cl_drawfps = Cvar_Get ("cl_drawfps", "0", CVAR_ARCHIVE);	// drawfps -
-	// MrG
+	cl_drawFPS = Cvar_Get ("cl_drawFPS", "0", CVAR_ARCHIVE);	// drawfps - // MrG
+	cl_drawFPS->help = "off / average / full";
 
 	cl_run = Cvar_Get ("cl_run", "0", CVAR_ARCHIVE);
 
@@ -1560,7 +1560,7 @@ void CL_InitLocal (void) {
 	rcon_address = Cvar_Get ("rcon_address", "", 0);
 
 	cl_lightlevel = Cvar_Get ("r_lightLevel", "0", 0);
-	cl_drawclock = Cvar_Get ("cl_drawclock", "0", CVAR_ARCHIVE);
+	cl_drawTime = Cvar_Get ("cl_drawTime", "0", CVAR_ARCHIVE);
 
 	cl_3dhud = Cvar_Get ("cl_3dhud", "1", CVAR_ARCHIVE);
 	cl_brass = Cvar_Get ("cl_brass", "512", CVAR_ARCHIVE);
