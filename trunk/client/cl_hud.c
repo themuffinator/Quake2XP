@@ -541,8 +541,10 @@ void SCR_ExecuteLayoutString (char *s) {
 			else
 				color = 1;
 
-			if (cl.frame.playerstate.stats[STAT_FLASHES] & 1)
-				Draw_PicScaled (x, y, hud_sx, hud_sy, "field_3");
+		// ugly yellow rectangle under stat digits - remove it!
+
+		/*	if (cl.frame.playerstate.stats[STAT_FLASHES] & 1)
+				Draw_PicScaled (x, y, hud_sx, hud_sy, "field_3"); */
 
 			SCR_DrawField (x, y, hud_sx, hud_sy, color, width, value);
 			continue;
@@ -560,8 +562,8 @@ void SCR_ExecuteLayoutString (char *s) {
 			else
 				continue;		// negative number = don't show
 
-			if (cl.frame.playerstate.stats[STAT_FLASHES] & 4)
-				Draw_PicScaled (x, y, hud_sx, hud_sy, "field_3");
+		/*	if (cl.frame.playerstate.stats[STAT_FLASHES] & 4)
+				Draw_PicScaled (x, y, hud_sx, hud_sy, "field_3"); */
 
 			SCR_DrawField (x, y, hud_sx, hud_sy, color, width, value);
 			continue;
@@ -577,8 +579,8 @@ void SCR_ExecuteLayoutString (char *s) {
 
 			color = 0;			// green
 
-			if (cl.frame.playerstate.stats[STAT_FLASHES] & 2)
-				Draw_PicScaled (x, y, hud_sx, hud_sy, "field_3");
+		/*	if (cl.frame.playerstate.stats[STAT_FLASHES] & 2)
+				Draw_PicScaled (x, y, hud_sx, hud_sy, "field_3"); */
 
 			SCR_DrawField (x, y, hud_sx, hud_sy, color, width, value);
 			continue;

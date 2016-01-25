@@ -56,7 +56,7 @@ Key_Event (int key, qboolean down, unsigned time);
 
 kbutton_t in_klook;
 kbutton_t in_left, in_right, in_forward, in_back;
-kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright;
+kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright, in_flashlight;
 kbutton_t in_strafe, in_speed, in_use, in_attack;
 kbutton_t in_up, in_down;
 kbutton_t in_zoom;
@@ -245,6 +245,14 @@ void IN_ZoomDown (void) {
 	KeyDown (&in_zoom);
 }
 
+void IN_FlashLightUp(void) {
+	KeyUp(&in_flashlight);
+}
+
+void IN_FlashLightDown(void) {
+	KeyDown(&in_flashlight);
+}
+
 /*
 ===============
 CL_KeyState
@@ -401,7 +409,11 @@ void CL_FinishMove (usercmd_t * cmd) {
 
 	//
 	// figure button bits
-	//  
+	// 
+	if (in_flashlight.state & 3)
+		cmd->buttons |= BUTTON_FLASHLIGHT;
+	in_flashlight.state &= ~2;
+
 	if (in_attack.state & 3)
 		cmd->buttons |= BUTTON_ATTACK;
 	in_attack.state &= ~2;
@@ -506,6 +518,9 @@ void CL_InitInput (void) {
 
 	Cmd_AddCommand ("+zoom", IN_ZoomDown);
 	Cmd_AddCommand ("-zoom", IN_ZoomUp);
+
+	Cmd_AddCommand("+flashlight", IN_FlashLightDown);
+	Cmd_AddCommand("-flashlight", IN_FlashLightUp);
 
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);

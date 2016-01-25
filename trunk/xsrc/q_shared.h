@@ -552,6 +552,7 @@ typedef struct {
 //
 #define	BUTTON_ATTACK		1
 #define	BUTTON_USE			2
+#define BUTTON_FLASHLIGHT	64
 #define	BUTTON_ANY			128			// any key whatsoever
 
 
@@ -634,6 +635,8 @@ typedef struct {
 #define EF_HALF_DAMAGE		0x40000000
 #define EF_TRACKERTRAIL		0x80000000
 //ROGUE
+
+#define EF_FLASHLIGHT		0x08000000
 
 // entity_state_t->renderfx flags
 #define	RF_MINLIGHT			1		// allways have some light (viewmodel)

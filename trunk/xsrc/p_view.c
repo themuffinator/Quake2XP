@@ -842,6 +842,20 @@ void G_SetClientEffects (edict_t *ent) {
 		ent->s.effects |= EF_COLOR_SHELL;
 		ent->s.renderfx |= RF_SHELL_GOD;
 	}
+
+	if (!net_compatibility->value) {
+
+		if (ent->flags & FL_FLASHLIGHT) {
+
+			if (deathmatch->value) {
+
+				if ((int)dmflags->value & DF_FLASHLIGHT)
+					ent->s.effects |= EF_FLASHLIGHT;
+			}
+			else
+				ent->s.effects |= EF_FLASHLIGHT;
+		}
+	}
 }
 
 

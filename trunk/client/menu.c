@@ -583,6 +583,7 @@ char *bindnames[][2] = {
 	{ "invprev", "prev item" },
 	{ "invnext", "next item" },
 	{ "+zoom", "zoom" },     // поместить ровно туда, где будет в меню назначения клавишь!
+	{ "+flashlight", "flashlight" },
 	{ "cmd help", "help computer" },
 	{ 0, 0 }
 };
@@ -615,6 +616,7 @@ static menuaction_s s_keys_inv_drop_action;
 static menuaction_s s_keys_inv_prev_action;
 static menuaction_s s_keys_inv_next_action;
 static menuaction_s s_keys_zoom_action; //zoom
+static menuaction_s s_keys_flashlight_action; //flashlight
 static menuaction_s s_keys_help_computer_action;
 
 static void M_UnbindCommand (char *command) {
@@ -941,6 +943,13 @@ static void Keys_MenuInit (void) {
 	s_keys_zoom_action.generic.localdata[0] = ++i;
 	s_keys_zoom_action.generic.name = bindnames[i][1];
 
+	s_keys_flashlight_action.generic.type = MTYPE_ACTION;
+	s_keys_flashlight_action.generic.flags = QMF_GRAYED;
+	s_keys_flashlight_action.generic.x = 0;
+	s_keys_flashlight_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_flashlight_action.generic.ownerdraw = DrawKeyBindingFunc;
+	s_keys_flashlight_action.generic.localdata[0] = ++i;
+	s_keys_flashlight_action.generic.name = bindnames[i][1];
 
 	s_keys_help_computer_action.generic.type = MTYPE_ACTION;
 	s_keys_help_computer_action.generic.flags = QMF_GRAYED;
@@ -975,6 +984,7 @@ static void Keys_MenuInit (void) {
 	Menu_AddItem (&s_keys_menu, (void *)&s_keys_inv_prev_action);
 	Menu_AddItem (&s_keys_menu, (void *)&s_keys_inv_next_action);
 	Menu_AddItem (&s_keys_menu, (void *)&s_keys_zoom_action);
+	Menu_AddItem(&s_keys_menu, (void *)&s_keys_flashlight_action);
 	Menu_AddItem (&s_keys_menu, (void *)&s_keys_help_computer_action);
 
 	Menu_SetStatusBar (&s_keys_menu, "enter to change, backspace to clear");

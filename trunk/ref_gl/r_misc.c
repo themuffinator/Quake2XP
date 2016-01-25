@@ -69,6 +69,7 @@ uint fboId, fbo_weaponMask;
 uint fboDN;
 uint fboColor[2];
 byte fboColorIndex;
+uint fboDps, rboDps;
 
 void CreateDSTTex_ARB (void) {
 	unsigned char	dist[16][16][4];
@@ -282,7 +283,7 @@ void CreateWeaponFboMask (void) {
 
 }
 
-/*
+
 image_t *fboScreen;
 
 void CreateFboBuffer (void) {
@@ -311,8 +312,8 @@ void CreateFboBuffer (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-//	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-	qglGenTextures (1, &image->texnum);
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+//	qglGenTextures (1, &image->texnum);
 
 	fboScreen = image;
 
@@ -324,7 +325,7 @@ void CreateFboBuffer (void) {
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, vid.width, vid.height, 0,
+	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RG, vid.width, vid.height, 0,
 		GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	qglGenRenderbuffers (1, &rb);
@@ -332,20 +333,19 @@ void CreateFboBuffer (void) {
 	qglRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width, vid.height);
 	qglBindRenderbuffer (GL_RENDERBUFFER, 0);
 
-	qglGenFramebuffers (1, &fboId);
-	qglBindFramebuffer (GL_FRAMEBUFFER, fboId);
+	qglGenFramebuffers (1, &fboDps);
+	qglBindFramebuffer (GL_FRAMEBUFFER, fboDps);
 	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb);
-	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gl_state.dpsId);
+	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rb);
 	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboScreen->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus (GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (statusOK)
 		Com_Printf (""S_COLOR_YELLOW"...Create depth-stencil FBO\n");
 
-	qglDrawBuffers (1, drawbuffer);
 	qglBindFramebuffer (GL_FRAMEBUFFER, 0);
 }
-*/
+
 
 void CreateSSAOBuffer(void) {
 	int i;

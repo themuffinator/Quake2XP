@@ -588,7 +588,7 @@ void Create_FBO (void);
 
 void 	CreateWeaponFboMask();
 void	CreateSSAOBuffer();
-//void CreateFboBuffer (void);
+void CreateFboBuffer (void);
 /*
 ** GL config stuff
 */
@@ -867,6 +867,7 @@ glslProgram_t		*radialProgram;
 glslProgram_t		*dofProgram;
 glslProgram_t		*particlesProgram;
 glslProgram_t		*shadowProgram;
+glslProgram_t		*ssProgram;
 glslProgram_t		*genericProgram;
 glslProgram_t		*cinProgram;
 glslProgram_t		*loadingProgram;
@@ -1120,12 +1121,17 @@ uint thermf_matrix;
 uint sv_mvp;
 uint sv_lightOrg;
 
+uint ss_orthoMatrix;
+uint ss_tex;
+
 uint light2d_orthoMatrix;
 uint light2d_map;
 uint light2d_normal;
 uint light2d_params;
 
 #define	MAX_VERTEX_CACHES	4096
+
+void R_DrawFullScreenQuad();
 
 /*
 ====================================================================

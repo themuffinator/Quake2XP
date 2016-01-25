@@ -616,7 +616,7 @@ void SaveClientData (void) {
 			continue;
 		game.clients[i].pers.health = ent->health;
 		game.clients[i].pers.max_health = ent->max_health;
-		game.clients[i].pers.savedFlags = (ent->flags & (FL_GODMODE | FL_NOTARGET | FL_POWER_ARMOR));
+		game.clients[i].pers.savedFlags = (ent->flags & (FL_GODMODE | FL_NOTARGET | FL_POWER_ARMOR | FL_FLASHLIGHT));
 		if (coop->value)
 			game.clients[i].pers.score = ent->client->resp.score;
 	}
@@ -1608,10 +1608,22 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd) {
 	// monster sighting AI
 	ent->light_level = ucmd->lightlevel;
 
-	if ((int)dmflags->value & DF_FLASHLIGHT)
-		ent->flags = FL_FLASHLIGHT;
+	if (deathmatch->value) {
+		if ((int)dmflags->value & DF_FLASHLIGHT)
+			ent->flags = FL_FLASHLIGHT;
+		else 
+			ent->flags &= ~FL_FLASHLIGHT;		
+	} 
 	else
-		ent->flags &= ~FL_FLASHLIGHT;
+		if (client->latched_buttons & BUTTON_FLASHLIGHT) {
+			ent->flags ^= FL_FLASHLIGHT;
+			client->latched_buttons &= ~BUTTON_FLASHLIGHT;
+
+			if (ent->flags & FL_FLASHLIGHT)
+				gi.sound(ent, CHAN_AUTO, gi.soundindex("misc/flashlight1.wav"), 1, ATTN_NORM, 0);
+			else
+				gi.sound(ent, CHAN_AUTO, gi.soundindex("misc/flashlight2.wav"), 1, ATTN_NORM, 0);
+		}
 
 	// fire weapon from final position if needed
 	if (client->latched_buttons & BUTTON_ATTACK) {

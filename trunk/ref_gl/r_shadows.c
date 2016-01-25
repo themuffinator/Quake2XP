@@ -333,7 +333,6 @@ void R_CastAliasShadowVolumes (void) {
 	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
 	GL_Disable (GL_CULL_FACE);
-	qglDisable (GL_TEXTURE_2D);
 	GL_DepthFunc (GL_LESS);
 	GL_Enable (GL_POLYGON_OFFSET_FILL);
 	GL_PolygonOffset (0.1, 1);
@@ -356,7 +355,6 @@ void R_CastAliasShadowVolumes (void) {
 	qglDisableVertexAttribArray (ATT_POSITION);
 	GL_Disable (GL_POLYGON_OFFSET_FILL);
 	GL_PolygonOffset (0, 0);
-	qglEnable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);
 	GL_BindNullProgram ();
@@ -750,7 +748,6 @@ void R_CastBspShadowVolumes (void) {
 	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
 
 	GL_Disable (GL_CULL_FACE);
-	qglDisable (GL_TEXTURE_2D);
 	GL_DepthFunc (GL_LESS);
 	GL_Enable (GL_POLYGON_OFFSET_FILL);
 	GL_PolygonOffset (0.1, 1);
@@ -785,7 +782,6 @@ void R_CastBspShadowVolumes (void) {
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	GL_Disable (GL_POLYGON_OFFSET_FILL);
-	qglEnable (GL_TEXTURE_2D);
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);
 	GL_BindNullProgram ();
