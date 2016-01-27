@@ -149,12 +149,10 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 	
-	if (fa->texInfo->flags & SURF_TRANS33 || SURF_TRANS66) {
-
-		if (fa->texInfo->flags & SURF_TRANS33)
-			alpha = 0.33f;
-		else
-			alpha = 0.66f;
+	if (fa->texInfo->flags & SURF_TRANS33)
+		alpha = 0.33f;
+	else
+		alpha = 0.66f;
 
 		// setup program
 		GL_BindProgram(refractProgram, 0);
@@ -178,20 +176,6 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		qglUniformMatrix4fv(refract_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 		qglUniformMatrix4fv(refract_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 		qglUniformMatrix4fv(refract_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
-		}  
-	else 
-	{
-		GL_BindProgram(genericProgram, 0);
-		qglUniform1i(gen_attribColors, 1);
-		qglUniform1i(gen_attribConsole, 0);
-		qglUniform1i(gen_sky, 0);
-		qglUniform1i(gen_3d, 1);
-		qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-
-		GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
-		qglUniform1i(gen_tex, 0);
-		qglUniform1f(gen_colorModulate, r_lightmapScale->value);
-	}
 
 
 	if (scrolling){
@@ -250,9 +234,6 @@ void R_DrawChainsRA (qboolean bmodel) {
 			shadelight_surface[3] = 0.66f;
 		else
 			shadelight_surface[3] = 1.f;
-
-		if (s->texInfo->flags & SURF_WARP)
-			continue;
 		
 		if (s->flags & MSURF_LAVA)
 			continue;
