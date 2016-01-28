@@ -156,8 +156,10 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 
 		// setup program
 		GL_BindProgram(refractProgram, 0);
-
-		GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
+		if (scrolling)
+			GL_MBind(GL_TEXTURE0_ARB, r_DSTTex->texnum);
+		else
+			GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
 		qglUniform1i(refract_normalMap, 0);
 		GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
 		qglUniform1i(refract_baseMap, 1);
@@ -176,14 +178,10 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		qglUniformMatrix4fv(refract_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 		qglUniformMatrix4fv(refract_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 		qglUniformMatrix4fv(refract_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
-
-
-	if (scrolling){
-		scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
-
-		if (scroll == 0.0)
-			scroll = -64.0;
-	} else
+		
+	if (scrolling)
+		scroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
+	 else
 		scroll = 0;
 
 	p = fa->polys;
