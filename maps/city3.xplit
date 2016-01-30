@@ -4697,8 +4697,8 @@
 //Light 260
 {
 "classname" "light"
-"origin" "-1633 -416 -1088"
-"radius" "300 300 300"
+"origin" "-1633 -416 -1051"
+"radius" "205 205 205"
 "color" "0.124 1.000 0.000"
 "style" "38"
 "filter" "0"
