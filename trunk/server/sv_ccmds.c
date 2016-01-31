@@ -642,6 +642,7 @@ void SV_Loadgame_f (void) {
 }
 
 
+extern char	needsToDeferredShot[16];
 
 /*
 ==============

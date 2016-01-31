@@ -169,7 +169,7 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		qglUniform1i(refract_depthMap, 3);
 
 		qglUniform1f(refract_deformMul, 1.0);
-		qglUniform1f(refract_alpha, alpha);
+		qglUniform1f(refract_alpha, 1.0);
 		qglUniform1f(refract_thickness, 150.0);
 		qglUniform2f(refract_screenSize, vid.width, vid.height);
 		qglUniform2f(refract_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
@@ -178,7 +178,7 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		qglUniformMatrix4fv(refract_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 		qglUniformMatrix4fv(refract_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 		qglUniformMatrix4fv(refract_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
-		
+
 	if (scrolling)
 		scroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
 	 else
@@ -193,7 +193,7 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		
 		VectorCopy(v, wVertexArray[i]);
 			
-		wTexArray[i][0] = v[3] + scroll;
+		wTexArray[i][0] = v[3] - scroll;
 		wTexArray[i][1] = v[4];
 	}
 
@@ -300,7 +300,6 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
-		GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]);
 
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -404,9 +403,9 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qglUniform1i(ambientWorld_normalmap,	3);
 	qglUniform1i(ambientWorld_lightmap[1],	4);
 	qglUniform1i(ambientWorld_lightmap[2],	5);
-	qglUniform1i(ambientWorld_lightmapType, (r_worldmodel->useXPLM && r_useRadiosityBump->value) ? 1 : 0);
 	qglUniform1i(ambientWorld_ssaoMap,		6);
-	
+	qglUniform1i(ambientWorld_lightmapType, (r_worldmodel->useXPLM && r_useRadiosityBump->value) ? 1 : 0);
+
 	if (!bmodel){
 		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	}
@@ -414,9 +413,11 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 	}
 
-	if (r_ssao->value && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+	if (r_ssao->value && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+		GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]->texnum);
 		qglUniform1i(ambientWorld_ssao, 1);
-	 else
+	}
+	else
 		qglUniform1i(ambientWorld_ssao, 0);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);

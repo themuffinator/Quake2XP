@@ -176,13 +176,14 @@ extern	image_t	*r_whiteMap;
 extern	image_t	*r_lightCubeMap[MAX_FILTERS];
 #define	MAX_GLOBAL_FILTERS	128
 
+extern image_t *fboDN;
+extern image_t *fboColor[2];
+
 extern uint bloomtex;
 extern uint thermaltex;
 extern uint fxaatex;
 
 extern uint fboId, fbo_weaponMask;
-extern uint fboDN;
-extern uint fboColor[2];
 extern byte fboColorIndex;
 
 extern entity_t *currententity;

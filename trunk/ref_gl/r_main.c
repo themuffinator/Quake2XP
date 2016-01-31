@@ -1909,23 +1909,19 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("resetFlarePos");
 	Cmd_RemoveCommand("copy");
 	Cmd_RemoveCommand("paste");
+	Cmd_RemoveCommand("moveLight_right");
+	Cmd_RemoveCommand("moveLight_forward");
+	Cmd_RemoveCommand("moveLight_z");
 
-	Mod_FreeAll();
-	GL_ShutdownImages();
-
-	if (fboId)
-		qglDeleteFramebuffers (1, &fboId);
-	if (fbo_weaponMask)
-		qglDeleteFramebuffers (1, &fbo_weaponMask);
-
-	R_ClearWorldLights();
-	GLimp_Shutdown();
-	QGL_Shutdown();
-	ilShutDown();
-	R_ShutdownPrograms();
+	Cmd_RemoveCommand("glsl");
+	Cmd_RemoveCommand("glslInfo");
+	Cmd_RemoveCommand("openglInfo");
 	
-	DeleteShadowVertexBuffers();
 
+	qglDeleteFramebuffers (1, &fboId);
+	qglDeleteFramebuffers (1, &fbo_weaponMask);
+
+	DeleteShadowVertexBuffers();
 	qglDeleteBuffersARB(1, &vbo.vbo_fullScreenQuad);
 	qglDeleteBuffersARB(1, &vbo.vbo_halfScreenQuad);
 	qglDeleteBuffersARB(1, &vbo.vbo_quarterScreenQuad);
@@ -1933,6 +1929,16 @@ void R_Shutdown(void)
 	qglDeleteBuffersARB(1, &vbo.vbo_Dynamic);
 	qglDeleteBuffersARB(1, &vbo.ibo_Dynamic);
 	qglDeleteBuffersARB(1, &vbo.vbo_BSP);
+
+	Mod_FreeAll();
+	GL_ShutdownImages();
+
+	R_ClearWorldLights();
+	ilShutDown();
+	R_ShutdownPrograms();
+
+	GLimp_Shutdown();
+	QGL_Shutdown();
 }
 
 

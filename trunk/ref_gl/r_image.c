@@ -1452,6 +1452,10 @@ void GL_FreeUnusedImages(void)
 	weaponHack->registration_sequence = registration_sequence;
 	r_whiteMap->registration_sequence = registration_sequence;
 
+	fboDN->registration_sequence = registration_sequence;
+	for (i = 0; i < 2; i++)
+		fboColor[i]->registration_sequence = registration_sequence;
+
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)
@@ -1559,11 +1563,4 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures (1, &bloomtex);
 	if (fxaatex)
 		qglDeleteTextures (1, &fxaatex);
-	if (fboDN)
-		qglDeleteTextures (1, &fboDN);
-
-	for (i = 0; i < 2; i++) {
-		if (fboColor[i])
-			qglDeleteTextures (1, &fboColor[i]);
-	}
 }

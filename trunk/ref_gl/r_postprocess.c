@@ -626,7 +626,7 @@ void R_SSAO (void)
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	GL_BindProgram (ssaoProgram, 0);
-	GL_MBindRect(GL_TEXTURE0_ARB, fboDN);
+	GL_MBindRect(GL_TEXTURE0_ARB, fboDN->texnum);
 	GL_MBind(GL_TEXTURE1_ARB, r_randomNormalTex->texnum);
 
 	qglUniform1i (ssao_mini, 0);
@@ -642,7 +642,7 @@ void R_SSAO (void)
 
 	if (r_ssaoBlur->value) {
 		qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
-		GL_MBindRect(GL_TEXTURE1_ARB, fboDN);
+		GL_MBindRect(GL_TEXTURE1_ARB, fboDN->texnum);
 
 		GL_BindProgram(ssaoBlurProgram, 0);
 		id = ssaoBlurProgram->id[0];
@@ -657,7 +657,7 @@ void R_SSAO (void)
 #if 1
 			// two-pass shader
 			for (j = 0; j < 2; j++) {
-				GL_MBindRect(GL_TEXTURE0_ARB, fboColor[j]);
+				GL_MBindRect(GL_TEXTURE0_ARB, fboColor[j]->texnum);
 				qglDrawBuffer(GL_COLOR_ATTACHMENT0 + (j ^ 1));
 				qglUniform2f(ssaoB_axisMask, j ? 0.f : 1.f, j ? 1.f : 0.f);
 				R_DrawHalfScreenQuad();

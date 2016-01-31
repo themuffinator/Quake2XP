@@ -66,8 +66,8 @@ uint bloomtex;
 uint fxaatex;
 
 uint fboId, fbo_weaponMask;
-uint fboDN;
-uint fboColor[2];
+//uint fboDN;
+//uint fboColor[2];
 byte fboColorIndex;
 uint fboDps, rboDps;
 
@@ -346,36 +346,96 @@ void CreateFboBuffer (void) {
 	qglBindFramebuffer (GL_FRAMEBUFFER, 0);
 }
 
+image_t *fboDN, *fboColor[2];
 
-void CreateSSAOBuffer(void) {
-	int i;
-	qboolean statusOK;
+void CreateMiniDepth(void) {
+	int		i;
+	char	name[17] = "***fboDN***";
+	image_t	*image;
 
-	qglGenTextures(1, &fboDN);
-	GL_BindRect(fboDN);
+	// find a free image
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures) {
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy(image->name, name);
+
+	image->width = vid.width / 2;
+	image->height = vid.height / 2;
+	image->upload_width = vid.width / 2;
+	image->upload_height = vid.height / 2;
+	image->type = it_pic;
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+
+	fboDN = image;
+
+	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, fboDN->texnum);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_R16F, vid.width / 2, vid.height / 2, 0, GL_RED, GL_FLOAT, NULL);
+}
 
-	for (i = 0; i < 2; i++) {
-		qglGenTextures(1, &fboColor[i]);
-		GL_BindRect(fboColor[i]);
+void CreateSsaoColorTextures(void) {
+	int		i, j;
+	char	name[17] = "***fboColor***";
+	image_t	*image;
+
+	for (j = 0; j < 2; j++) {
+		// find a free image
+		for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+			if (!image->texnum)
+				break;
+		}
+		if (i == numgltextures) {
+			if (numgltextures == MAX_GLTEXTURES)
+				VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+			numgltextures++;
+		}
+		image = &gltextures[i];
+
+		strcpy(image->name, name);
+
+		image->width = vid.width / 2;
+		image->height = vid.height / 2;
+		image->upload_width = vid.width / 2;
+		image->upload_height = vid.height / 2;
+		image->type = it_pic;
+		image->texnum = TEXNUM_IMAGES + (image - gltextures);
+
+		fboColor[j] = image;
+
+		qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, fboColor[j]->texnum);
 		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	}
+}
+
+
+void CreateSSAOBuffer(void) {
+	qboolean statusOK;
+
+	CreateMiniDepth();
+	CreateSsaoColorTextures();
 
 	fboColorIndex = 0;
 
 	qglGenFramebuffers(1, &fboId);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboColor[0], 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE_ARB, fboColor[1], 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE_ARB, fboDN, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboColor[0]->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE_ARB, fboColor[1]->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE_ARB, fboDN->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
@@ -752,7 +812,6 @@ void R_InitEngineTextures (void) {
 		r_caustic[i] = GL_FindImage (name, it_wall);
 		if (!r_caustic[i])
 			r_caustic[i] = r_notexture;
-
 	}
 
 	for (i = 0; i < MAX_FLY; i++) {
