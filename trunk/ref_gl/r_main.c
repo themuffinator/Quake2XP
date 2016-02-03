@@ -954,28 +954,21 @@ R_SetLightLevel
 ====================
 */
 void R_SetLightLevel (void) {
-	vec3_t shadelight;
+	vec3_t amb;
+	float mid;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
 	// save off light value for server to look at (BIG HACK!)
-	R_LightPoint(r_newrefdef.vieworg, shadelight);
+	R_LightPoint(r_newrefdef.vieworg, amb);
 
-	// pick the greatest component, which should be the same
-	// as the mono value returned by software
-	if (shadelight[0] > shadelight[1]) {
-		if (shadelight[0] > shadelight[2])
-			r_lightLevel->value = 150 * shadelight[0];
-		else
-			r_lightLevel->value = 150 * shadelight[2];
-	} else {
-		if (shadelight[1] > shadelight[2])
-			r_lightLevel->value = 150 * shadelight[1];
-		else
-			r_lightLevel->value = 150 * shadelight[2];
-	}
+	mid = max(max(amb[0], amb[1]), amb[2]);
+	if (mid <= 0.1)
+		mid = 0.15;
 
+	mid *= 2.0;
+	r_lightLevel->value = 150 * mid; // convert to byte
 }
 
 /*
@@ -1007,9 +1000,9 @@ void R_MotionBlur (void);
 void R_DrawFullScreenQuad (void);
 
 void R_RenderFrame(refdef_t * fd) {
-	R_SetLightLevel();
 	R_RenderView(fd);
 	R_SetupOrthoMatrix();
+	R_SetLightLevel();
 
 	// post processing - cut off if player camera is out of map bounds
 	if (!outMap) {

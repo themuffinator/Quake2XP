@@ -153,7 +153,8 @@ qboolean R_CullAliasModel(vec3_t bbox[8], entity_t *e)
 void SetModelsLight ()
 {
 	int i;
-	
+	float mid;
+
 	if (currententity->flags & (RF_FULLBRIGHT | RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE 
 								| RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
 	{
@@ -177,22 +178,14 @@ void SetModelsLight ()
 	// player lighting hack for communication back to server
 	// big hack!
 	if (currententity->flags & RF_WEAPONMODEL) {
-		// pick the greatest component, which should be the same
-		// as the mono value returned by software
-		if (shadelight[0] > shadelight[1]) {
-			if (shadelight[0] > shadelight[2])
-				r_lightLevel->value = 150 * shadelight[0];
-			else
-				r_lightLevel->value = 150 * shadelight[2];
-		} else {
-			if (shadelight[1] > shadelight[2])
-				r_lightLevel->value = 150 * shadelight[1];
-			else
-				r_lightLevel->value = 150 * shadelight[2];
-		}
+		mid = max(max(shadelight[0], shadelight[1]), shadelight[2]);
 
+		if (mid <= 0.1)
+			mid = 0.15;
+
+		mid *= 2.0;
+		r_lightLevel->value = 150 * mid;
 	}
-
 
 	// =================
 	// PGM	ir goggles color override
