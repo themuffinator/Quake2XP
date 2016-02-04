@@ -160,24 +160,21 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 			GL_MBind(GL_TEXTURE0_ARB, r_DSTTex->texnum);
 		else
 			GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
-	//	qglUniform1i(refract_normalMap, 0);
 		GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
-	//	qglUniform1i(refract_baseMap, 1);
 		GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
-	//	qglUniform1i(refract_screenMap, 2);
 		GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
-	//	qglUniform1i(refract_depthMap, 3);
 
-		qglUniform1f(refract_deformMul, 1.0);
-		qglUniform1f(refract_alpha, 1.0);
-		qglUniform1f(refract_thickness, 150.0);
-		qglUniform2f(refract_screenSize, vid.width, vid.height);
-		qglUniform2f(refract_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-		qglUniform1f(refract_ambient, r_lightmapScale->value);
-		qglUniform1i(refract_alphaMask, 0);
-		qglUniformMatrix4fv(refract_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-		qglUniformMatrix4fv(refract_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-		qglUniformMatrix4fv(refract_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+		qglUniform1f		(0, 1.0);
+		qglUniformMatrix4fv	(1, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		qglUniformMatrix4fv	(2, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+		qglUniformMatrix4fv	(3, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+
+		qglUniform1f (4, alpha);
+		qglUniform1f (5, 150.0);
+		qglUniform2f (7, vid.width, vid.height);
+		qglUniform2f (8, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+		qglUniform1f (9, r_lightmapScale->value);
+		qglUniform1i (11, 0);
 
 	if (scrolling)
 		scroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);

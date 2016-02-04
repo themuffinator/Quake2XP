@@ -1022,24 +1022,6 @@ uint particle_colorModulate;
 uint particle_mvp;
 uint particle_mv;
 
-uint refract_normalMap;
-uint refract_baseMap;
-uint refract_screenMap;
-uint refract_depthMap;
-uint refract_deformMul;
-uint refract_alpha;
-uint refract_thickness;
-uint refract_screenSize;
-uint refract_depthParams;
-uint refract_thickness;
-uint refract_thickness2;
-uint refract_ambient;
-uint refract_alphaMask;
-uint refract_mask;
-uint refract_mvp;
-uint refract_mv;
-uint refract_pm;
-
 uint water_deformMap;
 uint water_baseMap;
 uint water_screenMap;

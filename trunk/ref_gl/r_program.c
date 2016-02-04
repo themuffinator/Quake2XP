@@ -31,6 +31,7 @@ static const char *baseExt =
 static const char *glslVersion =
 "#version 150\n"
 "#extension GL_ARB_explicit_attrib_location  : enable\n"
+"#extension GL_ARB_explicit_uniform_location  : enable\n"
 "#extension GL_ARB_separate_shader_objects : enable\n"
 "#extension GL_ARB_shading_language_420pack : enable\n";
 /*
@@ -785,24 +786,6 @@ void R_InitPrograms (void) {
 
 	if (refractProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = refractProgram->id[0];
-
-		refract_normalMap	= qglGetUniformLocation (id, "u_deformMap");
-		refract_baseMap		= qglGetUniformLocation (id, "u_colorMap");
-		refract_screenMap	= qglGetUniformLocation (id, "g_colorBufferMap");
-		refract_depthMap	= qglGetUniformLocation (id, "g_depthBufferMap");
-		refract_deformMul	= qglGetUniformLocation (id, "u_deformMul");
-		refract_alpha		= qglGetUniformLocation (id, "u_alpha");
-		refract_thickness	= qglGetUniformLocation (id, "u_thickness");
-		refract_screenSize	= qglGetUniformLocation (id, "u_viewport");
-		refract_depthParams = qglGetUniformLocation (id, "u_depthParms");
-		refract_ambient		= qglGetUniformLocation (id, "u_ambientScale");
-		refract_alphaMask	= qglGetUniformLocation (id, "u_ALPHAMASK");
-		refract_mask		= qglGetUniformLocation (id, "u_mask");
-		refract_thickness2	= qglGetUniformLocation (id, "u_thickness2");
-		refract_mvp			= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
-		refract_mv			= qglGetUniformLocation	(id, "u_modelViewMatrix");
-		refract_pm			= qglGetUniformLocation	(id, "u_projectionMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
