@@ -1,14 +1,15 @@
-layout(location = 0) in vec3 att_position;
-layout(location = 5) in vec2 att_texCoordDiffuse;
+layout (location = 0) in vec3 att_position;
+layout (location = 5) in vec2 att_texCoordDiffuse;
 
-out vec2		v_deformTexCoord;
-out vec2		v_deformMul;
-out float		v_depth;
-out float		v_depthS;
-out	vec4		v_color;
+layout (location = 0) uniform float	u_deformMul;
+layout (location = 1) uniform mat4	u_modelViewProjectionMatrix;
+layout (location = 2) uniform mat4	u_modelViewMatrix;
+layout (location = 3) uniform mat4	u_projectionMatrix;
 
-uniform float	u_deformMul;
-uniform mat4	u_modelViewProjectionMatrix, u_modelViewMatrix, u_projectionMatrix;
+out vec2	v_deformTexCoord;
+out vec2	v_deformMul;
+out float	v_depth;
+out float	v_depthS;
 
 void main (void) {
 	
