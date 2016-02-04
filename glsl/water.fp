@@ -28,6 +28,7 @@ in vec2				v_deformMul;
 in vec3				v_positionVS;
 in mat3				v_tangentToView;
 in vec4				v_color;
+in vec3       v_normal;
 
 uniform float				u_deformMul;		// for normal w/o depth falloff
 uniform float				u_thickness;
@@ -83,6 +84,9 @@ void main (void) {
 		fragData = vec4(diffuse, 1.0);
 //		return;
 	}
+ 
+// if(abs(v_normal.z) == 1.0)
+//   return; 
 
 	//
 	// screen-space local reflections

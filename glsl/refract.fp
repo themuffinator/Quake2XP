@@ -10,12 +10,12 @@ uniform float			u_ambientScale;
 
 uniform vec2			u_viewport;
 uniform vec2			u_mask;
-uniform sampler2D		u_deformMap;
-uniform sampler2D		u_colorMap;
 
-uniform	sampler2DRect	g_depthBufferMap;
-uniform	sampler2DRect	g_colorBufferMap;
-uniform sampler2DRect	g_weaponHackMap;
+layout (binding = 0) uniform sampler2D		u_deformMap;
+layout (binding = 1) uniform sampler2D		u_colorMap;
+layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
+layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
+
 
 uniform vec2			u_depthParms;
 uniform int				u_ALPHAMASK;
