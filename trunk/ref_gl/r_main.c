@@ -225,13 +225,13 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	GL_BindProgram(refractProgram, 0);
 
 	GL_MBind(GL_TEXTURE0_ARB, r_distort->texnum);
-	qglUniform1i(refract_normalMap, 0);
+//	qglUniform1i(refract_normalMap, 0);
 	GL_MBind(GL_TEXTURE1_ARB, currentmodel->skins[e->frame]->texnum);
-	qglUniform1i(refract_baseMap, 1);
+//	qglUniform1i(refract_baseMap, 1);
 	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
-	qglUniform1i(refract_screenMap, 2);
+//	qglUniform1i(refract_screenMap, 2);
 	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
-	qglUniform1i(refract_depthMap, 3);
+//	qglUniform1i(refract_depthMap, 3);
 
 	qglUniform1f(refract_deformMul, 9.5);
 	qglUniform1f(refract_alpha, e->alpha);
@@ -1784,7 +1784,15 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf("...using GL_ARB_separate_shader_objects\n");
 	}
 
-	
+#define MAX_UNIFORM_LOCATIONS                           0x826E
+
+	if (IsExtensionSupported("GL_ARB_explicit_uniform_location")){
+		int max_ul;
+		Com_Printf("...using GL_ARB_explicit_uniform_location\n");
+		qglGetIntegerv(MAX_UNIFORM_LOCATIONS, &max_ul);
+		Com_Printf("Max Uniform Locations: %i\n", max_ul);
+	}
+
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &gl_config.maxVertexUniformComponents);

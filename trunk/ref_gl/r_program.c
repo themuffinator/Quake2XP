@@ -31,7 +31,8 @@ static const char *baseExt =
 static const char *glslVersion =
 "#version 150\n"
 "#extension GL_ARB_explicit_attrib_location  : enable\n"
-"#extension GL_ARB_separate_shader_objects : enable\n";
+"#extension GL_ARB_separate_shader_objects : enable\n"
+"#extension GL_ARB_shading_language_420pack : enable\n";
 /*
 =================
 Com_HashKey

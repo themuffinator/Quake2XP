@@ -160,13 +160,13 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 			GL_MBind(GL_TEXTURE0_ARB, r_DSTTex->texnum);
 		else
 			GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
-		qglUniform1i(refract_normalMap, 0);
+	//	qglUniform1i(refract_normalMap, 0);
 		GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
-		qglUniform1i(refract_baseMap, 1);
+	//	qglUniform1i(refract_baseMap, 1);
 		GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
-		qglUniform1i(refract_screenMap, 2);
+	//	qglUniform1i(refract_screenMap, 2);
 		GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
-		qglUniform1i(refract_depthMap, 3);
+	//	qglUniform1i(refract_depthMap, 3);
 
 		qglUniform1f(refract_deformMul, 1.0);
 		qglUniform1f(refract_alpha, 1.0);
