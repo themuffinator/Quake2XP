@@ -22,9 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-vec4_t shadelight_surface;
-void R_LightColor (vec3_t org, vec3_t color);
-
 static vec3_t modelorg;			// relative to viewpoint
 
 msurface_t *r_alpha_surfaces;		// all non-entity BSP surfaces with TRANS33/66
@@ -156,10 +153,12 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 
 		// setup program
 		GL_BindProgram(refractProgram, 0);
+
 		if (scrolling)
 			GL_MBind(GL_TEXTURE0_ARB, r_DSTTex->texnum);
 		else
 			GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
+
 		GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
 		GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
 		GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
@@ -210,7 +209,6 @@ void R_DrawChainsRA (qboolean bmodel) {
 		return;
 
 	for (s = r_reflective_surfaces; s; s = s->texturechain) {
-		shadelight_surface[3] = 1.f;
 
 		if (s->flags & MSURF_LAVA)
 			continue;
@@ -223,12 +221,6 @@ void R_DrawChainsRA (qboolean bmodel) {
 	R_CaptureColorBuffer();
 
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
-		if (s->texInfo->flags & SURF_TRANS33)
-			shadelight_surface[3] = 0.33f;
-		else if (s->texInfo->flags & SURF_TRANS66)
-			shadelight_surface[3] = 0.66f;
-		else
-			shadelight_surface[3] = 1.f;
 		
 		if (s->flags & MSURF_LAVA)
 			continue;
@@ -394,13 +386,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	if(r_skipStaticLights->value)
 		qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
 
-	qglUniform1i(ambientWorld_diffuse,		0);
-	qglUniform1i(ambientWorld_lightmap[0],	1);
-	qglUniform1i(ambientWorld_add,			2);
-	qglUniform1i(ambientWorld_normalmap,	3);
-	qglUniform1i(ambientWorld_lightmap[1],	4);
-	qglUniform1i(ambientWorld_lightmap[2],	5);
-	qglUniform1i(ambientWorld_ssaoMap,		6);
 	qglUniform1i(ambientWorld_lightmapType, (r_worldmodel->useXPLM && r_useRadiosityBump->value) ? 1 : 0);
 
 	if (!bmodel){
@@ -505,13 +490,18 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		
 		if (bmodel){
 			if (caustics && currentShadowLight->castCaustics)
+			{
 				qglUniform1i(lightWorld_caustics, 1);
+				GL_MBind(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+			}
 			else
 				qglUniform1i(lightWorld_caustics, 0);
 		}
 		else{
-			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics)
+			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics) {
 				qglUniform1i(lightWorld_caustics, 1);
+				GL_MBind(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+			}
 			else
 				qglUniform1i(lightWorld_caustics, 0);
 		}
@@ -533,7 +523,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);
 		GL_MBindCube	(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
 		GL_MBind3d		(GL_TEXTURE3_ARB, r_lightAttenMap->texnum);
-		GL_MBind		(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 
 		if (surf->texInfo->flags & SURF_FLOWING){
 
@@ -631,13 +620,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	 else{
 		 qglUniformMatrix4fv(lightWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 	 }
-
-	 qglUniform1i(lightWorld_diffuse, 0);
-	 qglUniform1i(lightWorld_normal, 1);
-	 qglUniform1i(lightWorld_cube, 2);
-	 qglUniform1i(lightWorld_atten, 3);
-	 qglUniform1i(lightWorld_caustic, 4);
-
 	 
 	 qglUniform3fv(lightWorld_lightOrigin, 1, currentShadowLight->origin);
 

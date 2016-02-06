@@ -1162,7 +1162,7 @@
     <ClCompile Include="ref_gl\r_draw2d.c" />
     <ClCompile Include="ref_gl\r_image.c" />
     <ClCompile Include="win32\r_glw_init.c" />
-    <ClCompile Include="ref_gl\r_light.c" />
+    <ClCompile Include="ref_gl\r_vertexLight.c" />
     <ClCompile Include="ref_gl\r_model.c" />
     <ClCompile Include="ref_gl\r_particles.c" />
     <ClCompile Include="ref_gl\r_postprocess.c" />

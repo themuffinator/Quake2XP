@@ -448,33 +448,6 @@ void Mat4_Identity (mat4_t mat) {
 
 /*
 =================
-Mat4_SetOrtho
-
-Native OpenGL bottom-up Y axis orientation.
-=================
-*/
-void Mat4_SetOrtho (mat4_t m, const int w, const int h) {
-	// setup orthographic projection
-	m[0][0] = 2.f / (float)w;
-	m[0][1] = 0.f;
-	m[0][2] = 0.f;
-	m[0][3] = 0.f;
-	m[1][0] = 0.f;
-	m[1][1] = 2.f / (float)h;
-	m[1][2] = 0.f;
-	m[1][3] = 0.f;
-	m[2][0] = 0.f;
-	m[2][1] = 0.f;
-	m[2][2] = -1.f;
-	m[2][3] = 0.f;
-	m[3][0] = -1.f;
-	m[3][1] = -1.f;
-	m[3][2] = 0.f;
-	m[3][3] = 1.f;
-}
-
-/*
-=================
 Mat4_SetupTransform
 
 =================
@@ -630,6 +603,42 @@ void Mat4_AffineInvert(const mat4_t in, mat4_t out) {
 	out[3][1] = -(in[1][0] * in[3][0] + in[1][1] * in[3][1] + in[1][2] * in[3][2]);
 	out[3][2] = -(in[2][0] * in[3][0] + in[2][1] * in[3][1] + in[2][2] * in[3][2]);
 	out[3][3] = 1.0f;
+}
+
+void Mat3_Set(mat3_t mat, vec3_t x, vec3_t y, vec3_t z) {
+	mat[0][0] = x[0];
+	mat[0][1] = x[1];
+	mat[0][2] = x[2];
+
+	mat[1][0] = y[0];
+	mat[1][1] = y[1];
+	mat[1][2] = y[2];
+	
+	mat[2][0] = z[0];
+	mat[2][1] = z[1];
+	mat[2][2] = z[2];
+}
+
+void Mat4_Set(mat4_t mat, vec4_t x, vec4_t y, vec4_t z, vec4_t w) {
+	mat[0][0] = x[0];
+	mat[0][1] = x[1];
+	mat[0][2] = x[2];
+	mat[0][3] = x[3];
+
+	mat[1][0] = y[0];
+	mat[1][1] = y[1];
+	mat[1][2] = y[2];
+	mat[1][3] = y[3];
+
+	mat[2][0] = z[0];
+	mat[2][1] = z[1];
+	mat[2][2] = z[2];
+	mat[2][3] = z[3];
+
+	mat[3][0] = w[0];
+	mat[3][1] = w[1];
+	mat[3][2] = w[2];
+	mat[3][3] = w[3];
 }
 
 /*

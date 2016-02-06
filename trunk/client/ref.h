@@ -80,8 +80,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	MAX_PARTICLES	4096
 #define	MAX_LIGHTSTYLES	256
 
-#define MAX_FLARES      512
-
 extern vec3_t r_origin;
 
 typedef vec_t vec2_t[2];

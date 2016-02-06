@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 extern model_t *loadmodel;
-vec4_t shadelight_surface;
 char skyname[MAX_QPATH];
 float skyrotate;
 vec3_t skyaxis;
@@ -88,14 +87,9 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	ambient = min (r_lightmapScale->value, 0.3f);
 
 	GL_MBind (GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
-	qglUniform1i (water_baseMap, 0);
 	GL_MBind (GL_TEXTURE1_ARB, r_DSTTex->texnum);
-	qglUniform1i (water_deformMap, 1);
-
 	GL_MBindRect (GL_TEXTURE2_ARB, ScreenMap->texnum);
-	qglUniform1i (water_screenMap, 2);
 	GL_MBindRect (GL_TEXTURE3_ARB, depthMap->texnum);
-	qglUniform1i (water_depthMap, 3);
 
 	qglUniform1f (water_deformMul, 1.0);
 	qglUniform1f (water_thickness, 150.0);
@@ -479,7 +473,6 @@ void R_DrawSkyBox (qboolean color) {
 		qglUniform1i (gen_3d, 0);
 		qglUniform1i (gen_attribColors, 0);
 		qglUniform1i (gen_attribConsole, 0);
-		qglUniform1i (gen_tex, 0);
 		qglUniform1f (gen_colorModulate, 1.0);
 
 		qglEnableVertexAttribArray (ATT_TEX0);

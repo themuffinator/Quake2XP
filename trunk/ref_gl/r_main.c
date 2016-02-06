@@ -926,10 +926,7 @@ void R_RenderView (refdef_t *fd) {
 
 	R_DrawAmbientScene();
 	R_DrawLightScene();
-
 	R_RenderDecals();
-	R_RenderFlares();
-	
 	R_DrawParticles();
 	R_CaptureColorBuffer();
 
@@ -1043,11 +1040,11 @@ void R_RenderFrame(refdef_t * fd) {
 	}
 }
 
-void FlareStatsList_f(void){
+void AutoLightsStatsList_f(void){
 
-	Com_Printf("%i raw flares\n", r_numflares);
-	Com_Printf("%i clean flares\n", r_numIgnoreflares);
-	Com_Printf("%i total flares\n", r_numflares - r_numIgnoreflares);
+	Com_Printf("%i raw auto lights\n", r_numAutoLights);
+	Com_Printf("%i clean auto lights\n", r_numIgnoreAutoLights);
+	Com_Printf("%i total auto lights\n", r_numAutoLights - r_numIgnoreAutoLights);
 }
 
 void Dump_EntityString(void){
@@ -1241,8 +1238,8 @@ void R_RegisterCvars(void)
 	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);
 	
 	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
-	r_flaresIntens =					Cvar_Get("r_flaresIntens", "3", CVAR_ARCHIVE);
-	r_flareWeldThreshold =				Cvar_Get("r_flareWeldThreshold", "32", CVAR_ARCHIVE);
+	r_scaleAutoLightColor =				Cvar_Get("r_scaleAutoLightColor", "3", CVAR_ARCHIVE);
+	r_lightWeldThreshold =				Cvar_Get("r_lightWeldThreshold", "32", CVAR_ARCHIVE);
 
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "768", CVAR_ARCHIVE);
@@ -1312,7 +1309,7 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
 	Cmd_AddCommand("modellist",			Mod_Modellist_f);
 	Cmd_AddCommand("openglInfo",		GL_Strings_f);
-	Cmd_AddCommand("flaresStats",		FlareStatsList_f);
+	Cmd_AddCommand("autoLightsStats",	AutoLightsStatsList_f);
 	Cmd_AddCommand("dumpEntityString",	Dump_EntityString);
 	Cmd_AddCommand("glslInfo",			R_ListPrograms_f);
 	Cmd_AddCommand("r_meminfo",			R_VideoInfo_f);
@@ -1884,7 +1881,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("modellist");
 	Cmd_RemoveCommand("screenshot");
 	Cmd_RemoveCommand("imagelist");
-	Cmd_RemoveCommand("flaresStats");
+	Cmd_RemoveCommand("autoLightsStats");
 	Cmd_RemoveCommand("dumpEntityString");
 	Cmd_RemoveCommand("r_meminfo");	
 	Cmd_RemoveCommand("low_spec");

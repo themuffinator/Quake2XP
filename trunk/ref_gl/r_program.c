@@ -34,6 +34,7 @@ static const char *glslVersion =
 "#extension GL_ARB_explicit_uniform_location  : enable\n"
 "#extension GL_ARB_separate_shader_objects : enable\n"
 "#extension GL_ARB_shading_language_420pack : enable\n";
+
 /*
 =================
 Com_HashKey
@@ -513,15 +514,8 @@ void R_InitPrograms (void) {
 		Com_Printf ("succeeded\n");
 		id = ambientWorldProgram->id[0];
 
-		ambientWorld_diffuse		= qglGetUniformLocation (id, "u_Diffuse");
-		ambientWorld_add			= qglGetUniformLocation (id, "u_Add");
-		ambientWorld_lightmap[0]	= qglGetUniformLocation (id, "u_LightMap0");
-		ambientWorld_lightmap[1]	= qglGetUniformLocation (id, "u_LightMap1");
-		ambientWorld_lightmap[2]	= qglGetUniformLocation (id, "u_LightMap2");
 		ambientWorld_lightmapType	= qglGetUniformLocation (id, "u_LightMapType");
-		ambientWorld_normalmap		= qglGetUniformLocation (id, "u_NormalMap");
 		ambientWorld_ssao			= qglGetUniformLocation (id, "u_ssao");
-		ambientWorld_ssaoMap		= qglGetUniformLocation (id, "u_ssaoMap");
 		ambientWorld_parallaxParams = qglGetUniformLocation (id, "u_parallaxParams");
 		ambientWorld_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
 		ambientWorld_specularScale	= qglGetUniformLocation (id, "u_specularScale");
@@ -543,12 +537,6 @@ void R_InitPrograms (void) {
 	if (lightWorldProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = lightWorldProgram->id[0];
-
-		lightWorld_diffuse			= qglGetUniformLocation (id, "u_Diffuse");
-		lightWorld_normal			= qglGetUniformLocation (id, "u_NormalMap");
-		lightWorld_cube				= qglGetUniformLocation (id, "u_CubeFilterMap");
-		lightWorld_atten			= qglGetUniformLocation (id, "u_attenMap");
-		lightWorld_caustic			= qglGetUniformLocation (id, "u_Caustics");
 
 		lightWorld_parallaxParams	= qglGetUniformLocation (id, "u_parallaxParams");
 		lightWorld_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
@@ -582,13 +570,8 @@ void R_InitPrograms (void) {
 		Com_Printf ("succeeded\n");
 		id = aliasAmbientProgram->id[0];
 
-		ambientAlias_diffuse		= qglGetUniformLocation (id, "u_Diffuse");
-		ambientAlias_normalmap		= qglGetUniformLocation (id, "u_NormalMap");
-		ambientAlias_add			= qglGetUniformLocation (id, "u_Add");
-		ambientAlias_env			= qglGetUniformLocation (id, "u_env");
 		ambientAlias_isEnvMaping	= qglGetUniformLocation (id, "u_isEnvMap");
 		ambientAlias_ssao			= qglGetUniformLocation (id, "u_ssao");
-		ambientAlias_ssaoMap		= qglGetUniformLocation (id, "u_ssaoMap");
 		ambientAlias_colorModulate	= qglGetUniformLocation (id, "u_ColorModulate");
 		ambientAlias_addShift		= qglGetUniformLocation (id, "u_AddShift");
 		ambientAlias_envScale		= qglGetUniformLocation (id, "u_envScale");
@@ -609,12 +592,6 @@ void R_InitPrograms (void) {
 	if (aliasBumpProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = aliasBumpProgram->id[0];
-
-		lightAlias_diffuse	= qglGetUniformLocation (id, "u_diffuseMap");
-		lightAlias_normal	= qglGetUniformLocation (id, "u_bumpMap");
-		lightAlias_cube		= qglGetUniformLocation (id, "u_CubeFilterMap");
-		lightAlias_atten	= qglGetUniformLocation (id, "u_attenMap");
-		lightAlias_caustic	= qglGetUniformLocation (id, "u_causticMap");
 
 		lightAlias_viewOrigin		= qglGetUniformLocation (id, "u_ViewOrigin");
 		lightAlias_lightOrigin		= qglGetUniformLocation (id, "u_LightOrg");
@@ -645,11 +622,9 @@ void R_InitPrograms (void) {
 		Com_Printf("succeeded\n");
 
 		id = gaussXProgram->id[0];
-		gaussx_tex		= qglGetUniformLocation(id, "u_map");
 		gaussx_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 
 		id = gaussYProgram->id[0];
-		gaussy_tex		= qglGetUniformLocation(id, "u_map");
 		gaussy_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
@@ -664,7 +639,6 @@ void R_InitPrograms (void) {
 		Com_Printf("succeeded\n");
 
 		id = blurStarProgram->id[0];
-		star_tex		= qglGetUniformLocation(id, "u_map");
 		star_intens		= qglGetUniformLocation(id, "u_starIntens");
 		star_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
@@ -681,7 +655,6 @@ void R_InitPrograms (void) {
 		Com_Printf("succeeded\n");
 		
 		id = radialProgram->id[0];
-		rb_tex		= qglGetUniformLocation(id, "u_screenMap");
 		rb_params	= qglGetUniformLocation(id, "u_radialBlurParams");
 		rb_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 		rb_cont		= qglGetUniformLocation(id, "u_cont");
@@ -700,8 +673,6 @@ void R_InitPrograms (void) {
 		id = dofProgram->id[0];
 		dof_screenSize	= qglGetUniformLocation(id, "u_screenSize");
 		dof_params		= qglGetUniformLocation(id, "u_dofParams");
-		dof_tex			= qglGetUniformLocation(id, "u_ScreenTex");
-		dof_depth		= qglGetUniformLocation(id, "u_DepthTex");
 		dof_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
@@ -718,8 +689,6 @@ void R_InitPrograms (void) {
 		id = motionBlurProgram->id[0];
 		mb_params	= qglGetUniformLocation(id, "u_params");
 		mb_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
-		mb_tex		= qglGetUniformLocation(id, "u_ScreenTex");
-		mb_mask		= qglGetUniformLocation(id, "u_MaskTex");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -735,20 +704,15 @@ void R_InitPrograms (void) {
 		Com_Printf("succeeded\n");
 
 		id = depthDownsampleProgram->id[0];
-		depthDS_depth		= qglGetUniformLocation(id, "u_depthBufferMap");
 		depthDS_params		= qglGetUniformLocation(id, "u_depthParms");
 		depthDS_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 
 		id = ssaoProgram->id[0];
-		ssao_mini			= qglGetUniformLocation(id, "u_DNMiniMap");
-		ssao_rand			= qglGetUniformLocation(id, "u_randomNormalMap");
 		ssao_params			= qglGetUniformLocation(id, "u_ssaoParms");
 		ssao_vp				= qglGetUniformLocation(id, "u_viewport");
 		ssao_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 
 		id = ssaoBlurProgram->id[0];
-		ssaoB_mColor		= qglGetUniformLocation(id, "u_colorMiniMap");
-		ssaoB_mDepth		= qglGetUniformLocation(id, "u_DNMiniMap");
 		ssaoB_sapmles		= qglGetUniformLocation(id, "u_numSamples");
 		ssaoB_axisMask		= qglGetUniformLocation(id, "u_axisMask");
 		ssaoB_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
@@ -767,12 +731,9 @@ void R_InitPrograms (void) {
 
 		id = bloomdsProgram->id[0];
 		bloomDS_threshold	= qglGetUniformLocation(id, "u_BloomThreshold");
-		bloomDS_map			= qglGetUniformLocation(id, "u_map");
 		bloomDS_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 
 		id = bloomfpProgram->id[0];
-		bloomFP_map0	= qglGetUniformLocation(id, "u_map0");
-		bloomFP_map1	= qglGetUniformLocation(id, "u_map1");
 		bloomFP_params	= qglGetUniformLocation(id, "u_bloomParams");
 		bloom_FP_matrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
@@ -801,11 +762,9 @@ void R_InitPrograms (void) {
 		Com_Printf("succeeded\n");
 		
 		id = thermalProgram->id[0];
-		therm_map		= qglGetUniformLocation(id, "u_screenTex");
 		therm_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 
 		id = thermalfpProgram->id[0];
-		thermf_map		= qglGetUniformLocation(id, "u_map");
 		thermf_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 
 	}
@@ -820,10 +779,6 @@ void R_InitPrograms (void) {
 		Com_Printf ("succeeded\n");
 		id = waterProgram->id[0];
 
-		water_deformMap		= qglGetUniformLocation (id, "u_dstMap");
-		water_baseMap		= qglGetUniformLocation (id, "u_colorMap");
-		water_screenMap		= qglGetUniformLocation (id, "g_colorBufferMap");
-		water_depthMap		= qglGetUniformLocation (id, "g_depthBufferMap");
 		water_deformMul		= qglGetUniformLocation (id, "u_deformMul");
 		water_thickness		= qglGetUniformLocation (id, "u_thickness");
 		water_screenSize	= qglGetUniformLocation (id, "u_viewport");
@@ -849,8 +804,6 @@ void R_InitPrograms (void) {
 		Com_Printf ("succeeded\n");
 		id = particlesProgram->id[0];
 
-		particle_texMap			= qglGetUniformLocation (id, "u_map0");
-		particle_depthMap		= qglGetUniformLocation (id, "u_depthBufferMap");
 		particle_depthParams	= qglGetUniformLocation (id, "u_depthParms");
 		particle_mask			= qglGetUniformLocation (id, "u_mask");
 		particle_thickness		= qglGetUniformLocation (id, "u_thickness");
@@ -872,8 +825,6 @@ void R_InitPrograms (void) {
 		id = genericProgram->id[0];
 		gen_attribConsole	= qglGetUniformLocation (id, "u_ATTRIB_CONSOLE");
 		gen_attribColors	= qglGetUniformLocation (id, "u_ATTRIB_COLORS");
-		gen_tex				= qglGetUniformLocation (id, "u_map");
-		gen_tex1			= qglGetUniformLocation (id, "u_map1");
 		gen_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
 		gen_color			= qglGetUniformLocation (id, "u_color");
 		gen_sky				= qglGetUniformLocation (id, "u_isSky");
@@ -914,7 +865,6 @@ void R_InitPrograms (void) {
 	if (fxaaProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = fxaaProgram->id[0];
-		fxaa_screenTex		= qglGetUniformLocation(id, "u_ScreenTex");
 		fxaa_screenSize		= qglGetUniformLocation(id, "u_ScreenSize");
 		fxaa_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
@@ -926,7 +876,7 @@ void R_InitPrograms (void) {
 	Com_Printf ("Load "S_COLOR_YELLOW"film grain program"S_COLOR_WHITE" ");
 	filmGrainProgram = R_FindProgram ("filmGrain", qtrue, qtrue);
 	id = filmGrainProgram->id[0];
-	film_tex	= qglGetUniformLocation(id, "u_ScreenTex");
+
 	film_scroll = qglGetUniformLocation(id, "u_scroll");
 	film_matrix = qglGetUniformLocation(id, "u_orthoMatrix");
 
@@ -943,7 +893,6 @@ void R_InitPrograms (void) {
 	if (gammaProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = gammaProgram->id[0];
-		gamma_screenMap		= qglGetUniformLocation (id, "u_ScreenTex");
 		gamma_control		= qglGetUniformLocation (id, "u_control");
 		gamma_orthoMatrix	= qglGetUniformLocation (id, "u_orthoMatrix");
 	}
@@ -985,8 +934,6 @@ void R_InitPrograms (void) {
 		Com_Printf("succeeded\n");
 		id = light2dProgram->id[0];
 		light2d_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
-		light2d_map = qglGetUniformLocation(id, "u_map");
-		light2d_normal = qglGetUniformLocation(id, "u_normalMap");
 		light2d_params = qglGetUniformLocation(id, "u_params");
 	}
 	else {

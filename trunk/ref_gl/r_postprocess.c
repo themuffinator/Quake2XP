@@ -19,138 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-
-
-int r_numflares;
-flare_t r_flares[MAX_FLARES];
-vec3_t vert[1];
-int numFlareOcc;
-static vec3_t vert_array[MAX_FLARES_VERTEX];
-static vec2_t tex_array[MAX_FLARES_VERTEX];
-static vec4_t color_array[MAX_FLARES_VERTEX];
-
-/*===============
-World lens flares
-===============*/
-
-void R_BuildFlares (flare_t * light) {
-
-	float		dist, dist2, scale;
-	vec3_t		v, tmp;
-	int			flareVert = 0;
-
-	if (!r_skipStaticLights->value)
-		return;
-
-	light->surf->visframe = r_framecount;
-
-	// Color Fade
-	VectorSubtract (light->origin, r_origin, v);
-	dist2 = VectorLength(v);
-	dist = dist2 * (light->size * 0.01);
-
-	scale = ((1024 - dist2) / 1024) * 0.5;
-
-	VectorScale (light->color, scale, tmp);
-
-	VectorMA (light->origin, -1 - dist, vup, vert_array[0]);
-	VectorMA (vert_array[0], 1 + dist, vright, vert_array[0]);
-	VA_SetElem2 (tex_array[0], 0, 1);
-	VA_SetElem4 (color_array[0], tmp[0], tmp[1], tmp[2], 1);
-
-	VectorMA (light->origin, -1 - dist, vup, vert_array[1]);
-	VectorMA (vert_array[1], -1 - dist, vright, vert_array[1]);
-	VA_SetElem2 (tex_array[1], 0, 0);
-	VA_SetElem4 (color_array[1], tmp[0], tmp[1], tmp[2], 1);
-
-	VectorMA (light->origin, 1 + dist, vup, vert_array[2]);
-	VectorMA (vert_array[2], -1 - dist, vright, vert_array[2]);
-	VA_SetElem2 (tex_array[2], 1, 0);
-	VA_SetElem4 (color_array[2], tmp[0], tmp[1], tmp[2], 1);
-
-	VectorMA (light->origin, 1 + dist, vup, vert_array[3]);
-	VectorMA (vert_array[3], 1 + dist, vright, vert_array[3]);
-	VA_SetElem2 (tex_array[3], 1, 1);
-	VA_SetElem4 (color_array[3], tmp[0], tmp[1], tmp[2], 1);
-
-	qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-
-	c_flares++;
-}
-
-qboolean PF_inPVS (vec3_t p1, vec3_t p2);
-
-void R_RenderFlares (void) {
-	int i, id;
-	flare_t *fl;
-
-	if (!r_drawFlares->value)
-		return;
-	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
-		return;
-
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	qglEnableVertexAttribArray (ATT_POSITION);
-	qglEnableVertexAttribArray (ATT_TEX0);
-	qglEnableVertexAttribArray (ATT_COLOR);
-
-	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vert_array);
-	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, tex_array);
-	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, color_array);
-
-	GL_DepthMask (0);
-	GL_Enable (GL_BLEND);
-	GL_BlendFunc (GL_ONE, GL_ONE);
-
-	GL_BindProgram (particlesProgram, 0);
-	id = particlesProgram->id[0];
-
-	GL_MBind (GL_TEXTURE0_ARB, r_flare->texnum);
-	qglUniform1i (qglGetUniformLocation (id, "u_map0"), 0);
-
-	GL_MBindRect (GL_TEXTURE1_ARB, depthMap->texnum);
-	qglUniform1i (qglGetUniformLocation (id, "u_depthBufferMap"), 1);
-	qglUniform2f (qglGetUniformLocation (id, "u_depthParms"), r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f (qglGetUniformLocation (id, "u_mask"), 1.0, 0.0);
-	qglUniform1f (qglGetUniformLocation (id, "u_colorScale"), 1.0);
-
-	fl = r_flares;
-	for (i = 0; i < r_numflares; i++, fl++) {
-		int sidebit;
-		float viewplane;
-
-		if (fl->ignore)
-			continue;
-
-		if (!PF_inPVS (fl->origin, r_origin))
-			continue;
-
-		if (fl->surf->visframe != r_framecount)	// pvs culling... haha, nicest optimisation!
-			continue;
-
-		viewplane = DotProduct (r_origin, fl->surf->plane->normal) - fl->surf->plane->dist;
-		if (viewplane >= 0)
-			sidebit = 0;
-		else
-			sidebit = MSURF_PLANEBACK;
-
-		if ((fl->surf->flags & MSURF_PLANEBACK) != sidebit)
-			continue;			// wrong light poly side!
-
-		qglUniform1f (qglGetUniformLocation (id, "u_thickness"), fl->size * 1.5);
-
-		R_BuildFlares (fl);
-
-	}
-	GL_BindNullProgram ();
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray (ATT_POSITION);
-	qglDisableVertexAttribArray (ATT_TEX0);
-	qglDisableVertexAttribArray (ATT_COLOR);
-	GL_Disable (GL_BLEND);
-	GL_DepthMask (1);
-}
-
 /*
 ====================
 GLSL Full Screen
@@ -221,7 +89,6 @@ void R_Bloom (void)
 	// setup program
 	GL_BindProgram (bloomdsProgram, 0);
 	qglUniform1f(bloomDS_threshold, r_bloomThreshold->value);
-	qglUniform1i (bloomDS_map, 0);
 	qglUniformMatrix4fv(bloomDS_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();
@@ -240,7 +107,6 @@ void R_Bloom (void)
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	GL_BindProgram (blurStarProgram, 0);
-	qglUniform1i(star_tex, 0);
 	qglUniform1f(star_intens, r_bloomStarIntens->value);
 	qglUniformMatrix4fv(star_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -252,7 +118,6 @@ void R_Bloom (void)
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	GL_BindProgram (gaussXProgram, 0);
-	qglUniform1i(gaussx_tex, 0);
 	qglUniformMatrix4fv(gaussx_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();
@@ -262,7 +127,6 @@ void R_Bloom (void)
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	GL_BindProgram (gaussYProgram, 0);
-	qglUniform1i(gaussy_tex, 0);
 	qglUniformMatrix4fv(gaussy_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();
@@ -273,10 +137,7 @@ void R_Bloom (void)
 	//final pass
 	GL_BindProgram (bloomfpProgram, 0);
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
-	qglUniform1i(bloomFP_map0, 0);
-
 	GL_MBindRect (GL_TEXTURE1_ARB, bloomtex);
-	qglUniform1i(bloomFP_map1, 1);
 	qglUniform3f(bloomFP_params, r_bloomIntens->value, r_bloomBright->value, r_bloomExposure->value);
 	qglUniformMatrix4fv(bloom_FP_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -309,7 +170,6 @@ void R_ThermalVision (void)
 
 	// setup program
 	GL_BindProgram (thermalProgram, 0);
-	qglUniform1i (therm_map, 0);
 	qglUniformMatrix4fv(therm_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad ();
@@ -319,7 +179,6 @@ void R_ThermalVision (void)
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
 
 	GL_BindProgram (gaussXProgram, 0);
-	qglUniform1i (gaussx_tex, 0);
 	qglUniformMatrix4fv(gaussx_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad ();
@@ -329,7 +188,6 @@ void R_ThermalVision (void)
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
 
 	GL_BindProgram (gaussYProgram, 0);
-	qglUniform1i (gaussy_tex, 0);
 	qglUniformMatrix4fv(gaussy_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad ();
@@ -342,7 +200,6 @@ void R_ThermalVision (void)
 
 	GL_BindRect (thermaltex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i (thermf_map, 0);
 	qglUniformMatrix4fv(thermf_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad ();
@@ -381,7 +238,6 @@ void R_RadialBlur (void)
 
 		// setup program
 		GL_BindProgram (radialProgram, 0);
-		qglUniform1i(rb_tex, 0);
 		
 		qglUniform1i(rb_cont, cont);
 
@@ -462,8 +318,6 @@ void R_DofBlur (void)
 	qglUniform2f(dof_screenSize, vid.width, vid.height);
 	qglUniform4f (dof_params, dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(dof_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	qglUniform1i(dof_tex, 0);
-	qglUniform1i(dof_depth, 1);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -494,7 +348,7 @@ void R_FXAA (void) {
 	}
 	GL_MBind (GL_TEXTURE0_ARB, fxaatex);
 	qglCopyTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglUniform1i(fxaa_screenTex, 0);
+
 	qglUniform2f(fxaa_screenSize, vid.width, vid.height);
 	qglUniformMatrix4fv(fxaa_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -519,7 +373,6 @@ void R_FilmGrain (void)
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-	qglUniform1i (film_tex, 0);
 	qglUniform1f (film_scroll, -3 * (r_newrefdef.time / 40.0));
 	qglUniformMatrix4fv(film_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -535,7 +388,6 @@ void R_GammaRamp (void)
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-	qglUniform1i (gamma_screenMap, 0);
 	qglUniform4f (gamma_control, r_brightness->value, r_contrast->value, r_saturation->value, 1 / r_brightness->value);
 	qglUniformMatrix4fv(gamma_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -565,12 +417,10 @@ void R_MotionBlur (void)
 
 	qglUniform3f(mb_params, delta[0], delta[1], r_motionBlurSamples->value);
 	qglUniformMatrix4fv(mb_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	qglUniform1i (mb_tex, 0);
-	qglUniform1i (mb_mask, 1);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	
 	GL_MBindRect (GL_TEXTURE1_ARB, weaponHack->texnum);
 
 	R_DrawFullScreenQuad ();
@@ -597,7 +447,6 @@ void R_DownsampleDepth(void)
 	GL_BindProgram(depthDownsampleProgram, 0);
 	GL_MBindRect(GL_TEXTURE0_ARB, depthMap->texnum);
 
-	qglUniform1i(depthDS_depth, 0);
 	qglUniform2f(depthDS_params, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(depthDS_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -610,7 +459,7 @@ void R_DownsampleDepth(void)
 
 void R_SSAO (void) 
 {
-	int i, j, id, numSamples;
+	int i, j, numSamples;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -629,8 +478,6 @@ void R_SSAO (void)
 	GL_MBindRect(GL_TEXTURE0_ARB, fboDN->texnum);
 	GL_MBind(GL_TEXTURE1_ARB, r_randomNormalTex->texnum);
 
-	qglUniform1i (ssao_mini, 0);
-	qglUniform1i (ssao_rand, 1);
 	qglUniform2f (ssao_params, max(r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
 	qglUniform2f (ssao_vp, vid.width, vid.height);
 	qglUniformMatrix4fv(ssao_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -645,9 +492,7 @@ void R_SSAO (void)
 		GL_MBindRect(GL_TEXTURE1_ARB, fboDN->texnum);
 
 		GL_BindProgram(ssaoBlurProgram, 0);
-		id = ssaoBlurProgram->id[0];
-		qglUniform1i(ssaoB_mColor, 0);
-		qglUniform1i(ssaoB_mDepth, 1);
+
 		qglUniformMatrix4fv(ssaoB_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		numSamples = (int)rintf(4.f * vid.height / 1080.f);

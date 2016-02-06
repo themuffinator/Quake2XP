@@ -101,7 +101,6 @@ void R_RenderDecals(void)
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1i(gen_tex, 0);
 	qglUniform1i(gen_3d, 1);
 	qglUniform1i(gen_sky, 0);
 	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);

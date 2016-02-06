@@ -259,9 +259,8 @@ cvar_t	*r_fxaa;
 cvar_t	*deathmatch;
 
 cvar_t	*r_drawFlares;
-cvar_t	*r_flaresIntens;
-cvar_t	*r_flareWeldThreshold;
-cvar_t	*r_useConditionalRender;
+cvar_t	*r_scaleAutoLightColor;
+cvar_t	*r_lightWeldThreshold;
 
 cvar_t	*r_customWidth;
 cvar_t	*r_customHeight;
@@ -472,10 +471,11 @@ void Mat4_Identity (mat4_t mat);
 void Mat4_Rotate (mat4_t m, float angle, float x, float y, float z);
 void Mat4_AffineInvert(const mat4_t in, mat4_t out);
 void Mat4_SetupTransform(mat4_t m, const mat3_t rotation, const vec3_t translation);
+void Mat3_Set(mat3_t mat, vec3_t x, vec3_t y, vec3_t z);
+void Mat4_Set(mat4_t mat, vec4_t x, vec4_t y, vec4_t z, vec4_t w);
 
 void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
-void R_SetLightPlanes ();
 void GL_Ortho(mat4_t m, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
 
 trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
@@ -918,13 +918,8 @@ glsl_attrib;
 
 uint null_mvp;
 
-uint ambientWorld_diffuse;
-uint ambientWorld_add;
-uint ambientWorld_lightmap[3];
 uint ambientWorld_lightmapType;
-uint ambientWorld_normalmap;
 uint ambientWorld_ssao;
-uint ambientWorld_ssaoMap;
 uint ambientWorld_parallaxParams;
 uint ambientWorld_colorScale;
 uint ambientWorld_specularScale;
@@ -935,11 +930,6 @@ uint ambientWorld_ambientLevel;
 uint ambientWorld_scroll;
 uint ambientWorld_mvp;
 
-uint lightWorld_diffuse;
-uint lightWorld_normal;
-uint lightWorld_cube;
-uint lightWorld_atten;
-uint lightWorld_caustic;
 uint lightWorld_parallaxParams;
 uint lightWorld_colorScale;
 uint lightWorld_viewOrigin;
@@ -958,12 +948,7 @@ uint lightWorld_cubeMatrix;
 uint lightWorld_scroll;
 uint lightWorld_mvp;
 
-uint ambientAlias_diffuse;
-uint ambientAlias_normalmap;
-uint ambientAlias_add;
-uint ambientAlias_env;
 uint ambientAlias_ssao;
-uint ambientAlias_ssaoMap;
 uint ambientAlias_colorModulate;
 uint ambientAlias_addShift;
 uint ambientAlias_isEnvMaping;
@@ -973,11 +958,6 @@ uint ambientAlias_scroll;
 uint ambientAlias_mvp;
 uint ambientAlias_viewOrg;
 
-uint lightAlias_diffuse;
-uint lightAlias_normal;
-uint lightAlias_cube;
-uint lightAlias_atten;
-uint lightAlias_caustic;
 uint lightAlias_colorScale;
 uint lightAlias_viewOrigin;
 uint lightAlias_lightOrigin;
@@ -996,8 +976,6 @@ uint lightAlias_mv;
 
 uint gen_attribConsole;
 uint gen_attribColors;
-uint gen_tex;
-uint gen_tex1;
 uint gen_colorModulate;
 uint gen_color;
 uint gen_sky;
@@ -1005,16 +983,12 @@ uint gen_mvp;
 uint gen_orthoMatrix;
 uint gen_3d;
 
-uint gamma_screenMap;
 uint gamma_control;
 uint gamma_orthoMatrix;
 
-uint fxaa_screenTex;
 uint fxaa_screenSize;
 uint fxaa_orthoMatrix;
 
-uint particle_texMap;
-uint particle_depthMap;
 uint particle_depthParams;
 uint particle_mask;
 uint particle_thickness;
@@ -1022,10 +996,6 @@ uint particle_colorModulate;
 uint particle_mvp;
 uint particle_mv;
 
-uint water_deformMap;
-uint water_baseMap;
-uint water_screenMap;
-uint water_depthMap;
 uint water_deformMul;
 uint water_alpha;
 uint water_thickness;
@@ -1040,65 +1010,45 @@ uint water_mvp;
 uint water_mv;
 uint water_pm;
 
-uint gaussx_tex;
-uint gaussx_matrix;
 
-uint gaussy_tex;
+uint gaussx_matrix;
 uint gaussy_matrix;
 
-uint star_tex;
 uint star_intens;
 uint star_matrix;
 
 uint bloomDS_threshold;
-uint bloomDS_map;
 uint bloomDS_matrix;
 
-uint bloomFP_map0;
-uint bloomFP_map1;
 uint bloomFP_params;
 uint bloom_FP_matrix;
 
-uint rb_tex;
 uint rb_params;
 uint rb_matrix;
 uint rb_cont;
 
 uint dof_screenSize;
 uint dof_params;
-uint dof_tex;
-uint dof_depth;
 uint dof_matrix;
 
-uint film_tex;
 uint film_scroll;
 uint film_matrix;
 
 uint mb_params;
 uint mb_matrix;
-uint mb_tex;
-uint mb_mask;
 
-uint depthDS_depth;
 uint depthDS_params;
 uint depthDS_orthoMatrix;
 
-uint ssao_mini;
-uint ssao_rand;
 uint ssao_params;
 uint ssao_vp;
 uint ssao_orthoMatrix;
 
-uint ssaoB_mColor;
-uint ssaoB_mDepth;
 uint ssaoB_sapmles;
 uint ssaoB_axisMask;
 uint ssaoB_orthoMatrix;
 
-uint therm_map;
 uint therm_matrix;
-
-uint thermf_map;
 uint thermf_matrix;
 
 uint sv_mvp;
@@ -1108,8 +1058,6 @@ uint ss_orthoMatrix;
 uint ss_tex;
 
 uint light2d_orthoMatrix;
-uint light2d_map;
-uint light2d_normal;
 uint light2d_params;
 
 #define	MAX_VERTEX_CACHES	4096

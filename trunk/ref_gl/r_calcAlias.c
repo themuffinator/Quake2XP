@@ -266,19 +266,11 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglUniform1f (ambientAlias_addShift, alphaShift);
 
 	GL_MBind (GL_TEXTURE0_ARB, skin->texnum);
-	qglUniform1i (ambientAlias_diffuse, 0);
-
 	GL_MBind (GL_TEXTURE1_ARB, glowskin->texnum);
-	qglUniform1i (ambientAlias_add, 1);
-
 	GL_MBind (GL_TEXTURE2_ARB, r_envTex->texnum);
-	qglUniform1i (ambientAlias_env, 2);
-	qglUniform1f (ambientAlias_envScale, currentmodel->envScale);
-
 	GL_MBind (GL_TEXTURE3_ARB, skinNormalmap->texnum);
-	qglUniform1i (ambientAlias_normalmap, 3);
 
-	qglUniform1i(ambientAlias_ssaoMap, 4);
+	qglUniform1f(ambientAlias_envScale, currentmodel->envScale);
 
 	if (r_ssao->value && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
 		GL_MBindRect (GL_TEXTURE4_ARB, fboColor[fboColorIndex]->texnum);
@@ -376,8 +368,6 @@ void GL_DrawAliasFrameLerpAmbientShell (dmdl_t *paliashdr) {
 		GL_MBind (GL_TEXTURE0_ARB, r_texshell[4]->texnum);
 	if (currententity->flags & RF_SHELL_DOUBLE)
 		GL_MBind (GL_TEXTURE0_ARB, r_texshell[5]->texnum);
-	qglUniform1i (ambientAlias_diffuse, 0);
-
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
@@ -422,11 +412,6 @@ void R_UpdateLightAliasUniforms()
 	qglUniformMatrix4fv(lightAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 	qglUniformMatrix4fv(lightAlias_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
-	qglUniform1i(lightAlias_normal, 0);
-	qglUniform1i(lightAlias_diffuse, 1);
-	qglUniform1i(lightAlias_caustic, 2);
-	qglUniform1i(lightAlias_cube, 3);
-	qglUniform1i(lightAlias_atten, 4);
 }
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {

@@ -70,8 +70,6 @@ typedef struct worldShadowLight_s {
 
 	qboolean	spherical;
 	qboolean	castCaustics;
-	qboolean	visible;
-	uint		occQ;
 	
 	cplane_t	frust[6];
 	msurface_t	*interaction[MAX_MAP_FACES];
@@ -107,22 +105,19 @@ typedef struct {
 	float sizefull;
 
 	int style;
-	int occId;
-	int	occ_frame;
 
 	float lightIntens;
 	msurface_t *surf;
 	vec3_t lightsurf_origin;
 	qboolean ignore;
-	byte vis[MAX_MAP_LEAFS / 8];
-	int area;
 
-} flare_t;
+} autoLight_t;
 
-int r_numflares;
-int r_numIgnoreflares;
-flare_t r_flares[MAX_FLARES];
-#define MAX_FLARES_VERTEX MAX_FLARES*4
+int r_numAutoLights;
+int r_numIgnoreAutoLights;
+autoLight_t r_lightSpawnSurf[MAX_WORLD_SHADOW_LIHGTS];
+
+#define MAX_FLARES_VERTEX MAX_WORLD_SHADOW_LIHGTS*4
 
 
 byte	viewvis[MAX_MAP_LEAFS / 8];

@@ -70,14 +70,14 @@ void Mod_LoadEntityString (lump_t * l) {
 
 
 
-static void R_ClearFlares (void) {
-	memset (r_flares, 0, sizeof(r_flares));
-	r_numflares = 0;
-	r_numIgnoreflares = 0;
+static void R_ClearLightSurf (void) {
+	memset (r_lightSpawnSurf, 0, sizeof(r_lightSpawnSurf));
+	r_numAutoLights = 0;
+	r_numIgnoreAutoLights = 0;
 
 }
 
-void GL_AddFlareSurface (msurface_t * surf) {
+void GL_AddLightFromSurface (msurface_t * surf) {
 	int i, width, height, intens;
 	glpoly_t *poly;
 	byte *buffer;
@@ -85,13 +85,9 @@ void GL_AddFlareSurface (msurface_t * surf) {
 	float *v, surf_bound;
 	vec3_t origin = { 0, 0, 0 }, color = { 1, 1, 1 }, tmp, rgbSum;
 	vec3_t poly_center, mins, maxs, tmp1, lightOffset, radius;
-	int leafnum;
-	int cluster;
 	char target[MAX_QPATH];
 
-	if (surf->texInfo->
-		flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_FLOWING |
-		MSURF_DRAWTURB | SURF_WARP))
+	if (surf->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_FLOWING | MSURF_DRAWTURB | SURF_WARP))
 		return;
 
 	if (!(surf->texInfo->flags & (SURF_LIGHT)))
@@ -99,12 +95,12 @@ void GL_AddFlareSurface (msurface_t * surf) {
 
 	intens = surf->texInfo->value;
 
-	if (r_numflares == MAX_FLARES)
+	if (r_numAutoLights >= MAX_WORLD_SHADOW_LIHGTS)
 		return;
 
 	if (intens <= 1000)
 		return;
-	r_flares[r_numflares].lightIntens = intens;
+	r_lightSpawnSurf[r_numAutoLights].lightIntens = intens;
 	/*
 	   =================== find poligon centre =================== */
 	VectorSet (mins, 999999, 999999, 999999);
@@ -130,30 +126,30 @@ void GL_AddFlareSurface (msurface_t * surf) {
 		}
 	}
 
-
 	poly_center[0] = (mins[0] + maxs[0]) / 2;
 	poly_center[1] = (mins[1] + maxs[1]) / 2;
 	poly_center[2] = (mins[2] + maxs[2]) / 2;
 	VectorCopy (poly_center, origin);
 
-	/* =======calc light surf bounds and flare size ========== */
+	/* =======calc light surf bounds and light size ========== */
 
 
 	VectorSubtract (maxs, mins, tmp1);
 	surf_bound = VectorLength (tmp1);
 	if (surf_bound <= 25)
-		r_flares[r_numflares].size = 10;
+		r_lightSpawnSurf[r_numAutoLights].size = 10;
 	else if (surf_bound <= 50)
-		r_flares[r_numflares].size = 15;
+		r_lightSpawnSurf[r_numAutoLights].size = 15;
 	else if (surf_bound <= 100)
-		r_flares[r_numflares].size = 20;
+		r_lightSpawnSurf[r_numAutoLights].size = 20;
 	else if (surf_bound <= 150)
-		r_flares[r_numflares].size = 25;
+		r_lightSpawnSurf[r_numAutoLights].size = 25;
 	else if (surf_bound <= 200)
-		r_flares[r_numflares].size = 30;
+		r_lightSpawnSurf[r_numAutoLights].size = 30;
 	else if (surf_bound <= 250)
-		r_flares[r_numflares].size = 35;
-	r_flares[r_numflares].sizefull = surf_bound;
+		r_lightSpawnSurf[r_numAutoLights].size = 35;
+
+	r_lightSpawnSurf[r_numAutoLights].sizefull = surf_bound;
 
 	/* =================== calc texture color =================== */
 
@@ -171,7 +167,7 @@ void GL_AddFlareSurface (msurface_t * surf) {
 		rgbSum[2] += (float)p[2] * (1.0 / 255);
 	}
 
-	VectorScale (rgbSum, r_flaresIntens->value / (width * height), color);
+	VectorScale (rgbSum, r_scaleAutoLightColor->value / (width * height), color);
 
 	for (i = 0; i < 3; i++) {
 		if (color[i] < 0.5)
@@ -179,9 +175,9 @@ void GL_AddFlareSurface (msurface_t * surf) {
 		else
 			color[i] = color[i] * 0.5 + 0.5;
 	}
-	VectorCopy (color, r_flares[r_numflares].color);
+	VectorCopy (color, r_lightSpawnSurf[r_numAutoLights].color);
 
-	/* ============== move flare origin in to map bounds ============ */
+	/* ============== move light origin in to map bounds ============ */
 
 	if (surf->flags & MSURF_PLANEBACK)
 		VectorNegate (surf->plane->normal, tmp);
@@ -191,63 +187,24 @@ void GL_AddFlareSurface (msurface_t * surf) {
 	VectorMA (origin, 2, tmp, origin);
 	VectorMA (origin, 10, tmp, lightOffset);
 
-	VectorCopy (origin, r_flares[r_numflares].origin);
-	VectorCopy (tmp, r_flares[r_numflares].lightsurf_origin);
-	r_flares[r_numflares].surf = surf;
-	r_flares[r_numflares].style = 0;
-	r_flares[r_numflares].occId = numFlareOcc;
-	numFlareOcc++;
+	VectorCopy (origin, r_lightSpawnSurf[r_numAutoLights].origin);
+	VectorCopy (tmp, r_lightSpawnSurf[r_numAutoLights].lightsurf_origin);
+	r_lightSpawnSurf[r_numAutoLights].surf = surf;
+	r_lightSpawnSurf[r_numAutoLights].style = 0;
 
-	leafnum = CM_PointLeafnum (r_flares[r_numflares].origin);
-	cluster = CM_LeafCluster (leafnum);
-	r_flares[r_numflares].area = CM_LeafArea (leafnum);
-	Q_memcpy (r_flares[r_numflares].vis, CM_ClusterPVS (cluster), (CM_NumClusters () + 7) >> 3);
+	VectorSet (radius,	r_lightSpawnSurf[r_numAutoLights].size * 10.0,
+						r_lightSpawnSurf[r_numAutoLights].size * 10.0,
+						r_lightSpawnSurf[r_numAutoLights].size * 10.0);
 
-	if (relightMap) {
-		VectorSet (radius, r_flares[r_numflares].size * 10.0,
-			r_flares[r_numflares].size * 10.0,
-			r_flares[r_numflares].size * 10.0);
+	memset (target, 0, sizeof(target));
 
-		memset (target, 0, sizeof(target));
-
-		R_AddNewWorldLight (lightOffset, r_flares[r_numflares].color, radius, 0, 0, vec3_origin,
-			vec3_origin, qtrue, 1, 0, 0, qfalse, 1, origin, r_flares[r_numflares].size, target, 0, 0, 0.0);
-	}
-
-	r_numflares++;
+	R_AddNewWorldLight (lightOffset, r_lightSpawnSurf[r_numAutoLights].color, radius, 0, 0, vec3_origin,
+						vec3_origin, qtrue, 1, 0, 0, qfalse, 1, origin, r_lightSpawnSurf[r_numAutoLights].size, target, 0, 0, 0.0);
+	
+	r_numAutoLights++;
 	free (buffer);
 
 }
-
-void CleanDuplicateFlares () {
-
-	int i, j;
-	flare_t *f1, *f2;
-	vec3_t tmp;
-
-	for (i = 0; i < r_numflares - 1; i++) {
-
-		for (j = i + 1; j < r_numflares; j++) {
-
-			f1 = &r_flares[i];
-			f2 = &r_flares[j];
-
-			if (f1->ignore || f2->ignore)
-				continue;
-
-			VectorSubtract (f2->origin, f1->origin, tmp);
-
-			if (VectorLength (tmp) < r_flareWeldThreshold->value) {
-
-				f2->ignore = qtrue;
-				VectorAdd (f1->origin, f2->origin, tmp);
-				VectorScale (tmp, 0.5f, f1->origin);
-				r_numIgnoreflares++;
-			}
-		}
-	}
-}
-
 
 /*
 =================
@@ -1223,7 +1180,10 @@ void Mod_LoadFaces (lump_t * l) {
 			GL_CreateSurfaceLightmap (out);
 
 		GL_BuildPolygonFromSurface (out);
-		GL_AddFlareSurface (out);
+		
+		if (relightMap) 
+			GL_AddLightFromSurface(out);
+		
 		CalcSurfaceBounds (out);
 		GL_CalcBspIndeces (out);
 	}
@@ -1654,13 +1614,6 @@ void Mod_GenerateLights (model_t * mod) {
 }
 
 void R_PreCalcLightData (void);
-void R_InitLightgrid2 (void);
-
-void Mod_GenerateAmbientLights (model_t * mod) {
-	r_worldmodel = mod;
-	R_InitLightgrid2 ();
-}
-
 
 /*
 =================
@@ -1743,11 +1696,9 @@ void Mod_LoadBrushModel (model_t * mod, void *buffer) {
 	dheader_t *header;
 	mmodel_t *bm;
 
-	R_ClearFlares ();
+	R_ClearLightSurf ();
 	DeleteShadowVertexBuffers ();
 	R_ClearWorldLights ();
-	numLightQ = 0;
-	numFlareOcc = 0;
 
 	loadmodel->memorySize = 0;
 	loadmodel->type = mod_brush;
@@ -1787,8 +1738,6 @@ void Mod_LoadBrushModel (model_t * mod, void *buffer) {
 	if (loadmodel->useXPLM)
 		Z_Free (mod_xplmOffsets);
 
-	CleanDuplicateFlares ();
-
 	Mod_LoadMarksurfaces (&header->lumps[LUMP_LEAFFACES]);
 	Mod_LoadVisibility (&header->lumps[LUMP_VISIBILITY]);
 	Mod_LoadLeafs (&header->lumps[LUMP_LEAFS]);
@@ -1798,7 +1747,6 @@ void Mod_LoadBrushModel (model_t * mod, void *buffer) {
 
 	Load_LightFile ();
 	R_PreCalcLightData ();
-	//	Mod_GenerateAmbientLights(mod);
 
 	mod->numFrames = 2;			// regular and alternate animation
 

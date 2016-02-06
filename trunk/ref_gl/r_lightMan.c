@@ -29,7 +29,6 @@ worldShadowLight_t	shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
 static int num_dlits;
 int num_nwmLights;
 int num_visLights;
-int numLightQ;
 vec3_t	vCache[MAX_VERTEX_ARRAY];
 
 vec3_t player_org, v_forward, v_right, v_up;
@@ -804,7 +803,7 @@ void R_ResetFlarePos_f (void) {
 
 void R_MoveLightToRight_f (void) {
 
-	vec3_t	origin;
+	vec3_t	origin, origin2;
 	float	offset;
 
 	if (!r_lightEditor->value) {
@@ -824,29 +823,33 @@ void R_MoveLightToRight_f (void) {
 
 	offset = atof (Cmd_Argv (1));
 
-	if (flareEdit)
-		VectorCopy (selectedShadowLight->flareOrigin, origin);
-	else
-		VectorCopy (selectedShadowLight->origin, origin);
+	if (!flareEdit) {
+		VectorCopy(selectedShadowLight->origin, origin);
 
-	if (r_cameraSpaceLightMove->value)
-		VectorMA (origin, offset, v_right, origin);
-	else
-		origin[0] += offset;
+		if (r_cameraSpaceLightMove->value)
+			VectorMA(origin, offset, v_right, origin);
+		else
+			origin[0] += offset;
 
-	if (flareEdit)
-		VectorCopy (origin, selectedShadowLight->flareOrigin);
-	else {
 		VectorCopy (origin, selectedShadowLight->origin);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
+
+// move flare
+	VectorCopy(selectedShadowLight->flareOrigin, origin2);
+	if (r_cameraSpaceLightMove->value)
+		VectorMA(origin2, offset, v_right, origin2);
+	else
+		origin2[0] += offset;
+
+	VectorCopy(origin2, selectedShadowLight->flareOrigin);
 }
 
 void R_MoveLightForward_f (void) {
 
-	vec3_t origin;
+	vec3_t origin, origin2;
 	float  offset, fix;
 
 	if (!r_lightEditor->value) {
@@ -866,32 +869,38 @@ void R_MoveLightForward_f (void) {
 
 	offset = atof (Cmd_Argv (1));
 
-	if (flareEdit)
-		VectorCopy (selectedShadowLight->flareOrigin, origin);
-	else
-		VectorCopy (selectedShadowLight->origin, origin);
+	if (!flareEdit) {
+		VectorCopy(selectedShadowLight->origin, origin);
 
-	if (r_cameraSpaceLightMove->value) {
-		fix = origin[2];
-		VectorMA (origin, offset, v_forward, origin);
-		origin[2] = fix;
-	}
-	else
-		origin[1] += offset;
+		if (r_cameraSpaceLightMove->value) {
+			fix = origin[2];
+			VectorMA(origin, offset, v_forward, origin);
+			origin[2] = fix;
+		}
+		else
+			origin[1] += offset;
 
-	if (flareEdit)
-		VectorCopy (origin, selectedShadowLight->flareOrigin);
-	else {
 		VectorCopy (origin, selectedShadowLight->origin);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
+
+// move flare	
+	VectorCopy(selectedShadowLight->flareOrigin, origin2);
+	if (r_cameraSpaceLightMove->value) {
+		fix = origin2[2];
+		VectorMA(origin2, offset, v_forward, origin2);
+		origin2[2] = fix;
+	}
+	else
+		origin2[1] += offset;
+	VectorCopy(origin2, selectedShadowLight->flareOrigin);
 }
 
 void R_MoveLightUpDown_f (void) {
 
-	vec3_t	origin;
+	vec3_t	origin, origin2;
 	float	offset;
 
 	if (!r_lightEditor->value) {
@@ -910,22 +919,23 @@ void R_MoveLightUpDown_f (void) {
 		return;
 	}
 
-	if (flareEdit)
-		VectorCopy (selectedShadowLight->flareOrigin, origin);
-	else
-		VectorCopy (selectedShadowLight->origin, origin);
+	if (!flareEdit) {
+		VectorCopy(selectedShadowLight->origin, origin);
 
-	offset = atof (Cmd_Argv (1));
-	origin[2] += offset;
+		offset = atof(Cmd_Argv(1));
+		origin[2] += offset;
 
-	if (flareEdit)
-		VectorCopy (origin, selectedShadowLight->flareOrigin);
-	else {
 		VectorCopy (origin, selectedShadowLight->origin);
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	}
+
+// move flare
+	VectorCopy(selectedShadowLight->flareOrigin, origin2);
+	offset = atof(Cmd_Argv(1));
+	origin2[2] += offset;
+	VectorCopy(origin2, selectedShadowLight->flareOrigin);
 }
 
 void R_ChangeLightRadius_f (void) {
@@ -1541,8 +1551,6 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 		light->area = CM_LeafArea (leafnum);
 		Q_memcpy (light->vis, CM_ClusterPVS (cluster), (CM_NumClusters () + 7) >> 3);
 	}
-	light->occQ = numLightQ;
-	numLightQ++;
 
 #define START_OFF	1
 	light->start_off = (flags & START_OFF);
@@ -1559,21 +1567,6 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 }
 
 model_t *loadmodel;
-
-void R_SetLightPlanes () {
-
-	vec4_t	clipPlane[6];
-	int		i;
-
-	for (i = 0; i < 6; i++) {
-		clipPlane[i][0] = -DotProduct (r_newrefdef.axis[1], currentShadowLight->frust[i].normal);
-		clipPlane[i][1] = DotProduct (r_newrefdef.axis[2], currentShadowLight->frust[i].normal);
-		clipPlane[i][2] = -DotProduct (r_newrefdef.axis[0], currentShadowLight->frust[i].normal);
-		clipPlane[i][3] = DotProduct (r_newrefdef.vieworg, currentShadowLight->frust[i].normal) - currentShadowLight->frust[i].dist;
-
-		qglClipPlane (GL_CLIP_PLANE0 + i, (double*)clipPlane[i]);
-	}
-}
 
 void Load_BspLights () {
 
@@ -2215,11 +2208,8 @@ void R_DrawLightFlare () {
 	GL_BindProgram (particlesProgram, 0);
 
 	GL_MBind (GL_TEXTURE0_ARB, r_flare->texnum);
-	qglUniform1i (particle_texMap, 0);
+	GL_MBindRect (GL_TEXTURE1_ARB, depthMap->texnum);
 
-	GL_SelectTexture (GL_TEXTURE1_ARB);
-	GL_BindRect (depthMap->texnum);
-	qglUniform1i (particle_depthMap, 1);
 	qglUniform2f (particle_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform2f (particle_mask, 1.0, 0.0);
 	qglUniform1f (particle_colorModulate, 1.0);

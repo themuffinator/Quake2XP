@@ -235,6 +235,9 @@ qboolean R_EntityInLightBounds () {
 			return qfalse;
 	}
 
+	if (VectorCompare(currententity->origin, currentShadowLight->origin)) // skip shadows from shell lights
+		return qfalse;
+
 	if (!InLightVISEntity())
 		return qfalse;
 
