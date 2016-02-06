@@ -3,9 +3,6 @@
 #define MAX_STEPS			20
 #define MAX_STEPS_BINARY	10
 
-//#define STEP_SIZE			3.4
-//#define STEP_SIZE_MUL		1.35			// steps=20, dist=3917
-
 #define STEP_SIZE			10.0
 #define STEP_SIZE_MUL		1.35
 
@@ -22,13 +19,18 @@
 #define OPAQUE_OFFSET		4.0
 #define OPAQUE_MUL			(-1.0 / 512.0)
 
-in vec2				v_deformTexCoord;
-in vec2				v_diffuseTexCoord;
-in vec2				v_deformMul;
-in vec3				v_positionVS;
-in mat3				v_tangentToView;
-in vec4				v_color;
-in vec3       v_normal;
+layout (binding = 0) uniform sampler2D		u_colorMap;
+layout (binding = 1) uniform sampler2D		u_dstMap;
+layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
+layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
+
+in vec2		v_deformTexCoord;
+in vec2		v_diffuseTexCoord;
+in vec2		v_deformMul;
+in vec3		v_positionVS;
+in mat3		v_tangentToView;
+in vec4		v_color;
+in vec3     v_normal;
 
 uniform float				u_deformMul;		// for normal w/o depth falloff
 uniform float				u_thickness;
@@ -39,11 +41,6 @@ uniform vec2				u_viewport;
 uniform vec2				u_depthParms;
 uniform int					u_TRANS;
 uniform mat4				u_projectionMatrix;
-
-uniform sampler2D			u_colorMap;
-uniform sampler2D			u_dstMap;
-uniform	sampler2DRect		g_depthBufferMap;
-uniform	sampler2DRect		g_colorBufferMap;
 
 //
 // view space to viewport

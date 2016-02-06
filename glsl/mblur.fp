@@ -1,5 +1,5 @@
-uniform sampler2DRect	 	u_ScreenTex;
-uniform sampler2DRect		u_MaskTex;
+layout (binding = 0) uniform sampler2DRect	 	u_ScreenTex;
+layout (binding = 1) uniform sampler2DRect		u_MaskTex;
 uniform vec3				u_params; // x-velocity, y-velocity, num samples 
 
 void main(void) 

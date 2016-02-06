@@ -1,11 +1,7 @@
+layout (binding = 0)  uniform sampler2D u_map;
+layout (location = 1) uniform float u_colorScale;
+
 in vec2 v_texCoord;
-uniform sampler2D u_map;
-uniform float u_colorScale;
-
-
-/*
-** Desaturation photoshop math
-*/
 
 vec4 Desaturate(vec3 color, float Desaturation)
 {

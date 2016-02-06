@@ -1,7 +1,7 @@
 #include depth.inc
 
-uniform	sampler2DRect	u_colorMiniMap;
-uniform	sampler2DRect		u_DNMiniMap;
+layout (binding = 0) uniform	sampler2DRect	u_colorMiniMap;
+layout (binding = 1) uniform	sampler2DRect	u_DNMiniMap;
 
 #if 1
 

@@ -1,16 +1,14 @@
+layout (binding = 0) uniform sampler2D		u_map0;
+layout (binding = 1) uniform sampler2DRect	u_depthBufferMap;
+
 in float		v_depth;
 in vec4			v_color;
 in vec2			v_texCoord0;
-
-uniform sampler2D		u_map0;
-uniform sampler2DRect	u_depthBufferMap;
 
 uniform vec2			u_depthParms;
 uniform vec2			u_mask;
 uniform float			u_thickness;
 uniform float			u_colorScale;
-
-
 
 #include depth.inc
 

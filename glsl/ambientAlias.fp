@@ -3,12 +3,12 @@ in	vec4		v_color;
 in	vec2		v_envCoord;
 in	vec2		v_shellCoord;
 
-uniform sampler2D 		u_Diffuse;
-uniform sampler2D		u_NormalMap;
-uniform sampler2D 		u_Add;
-uniform sampler2DRect	u_ssaoMap;
+layout (binding = 0) uniform sampler2D 		u_Diffuse;
+layout (binding = 1) uniform sampler2D 		u_Add;
+layout (binding = 2) uniform sampler2D		u_env;
+layout (binding = 3) uniform sampler2D		u_NormalMap;
+layout (binding = 4) uniform sampler2DRect	u_ssaoMap;
 
-uniform sampler2D	u_env;
 uniform float		u_envScale;
 uniform int			u_isEnvMap;
 

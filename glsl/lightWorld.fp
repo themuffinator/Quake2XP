@@ -1,20 +1,19 @@
-uniform sampler2D		u_Diffuse;
-uniform sampler2D		u_NormalMap;
-uniform samplerCube		u_CubeFilterMap;
-uniform sampler3D	 	u_attenMap;
-uniform sampler2D		u_Caustics;
-uniform sampler2D		u_csmMap;
+layout (binding = 0) uniform sampler2D		u_Diffuse;
+layout (binding = 1) uniform sampler2D		u_NormalMap;
+layout (binding = 2) uniform samplerCube	u_CubeFilterMap;
+layout (binding = 3) uniform sampler3D	 	u_attenMap;
+layout (binding = 4) uniform sampler2D		u_Caustics;
 
-uniform float			u_ColorModulate;
-uniform float			u_specularScale;
-uniform float			u_specularExp;
-uniform vec4 			u_LightColor;
-uniform float 			u_LightRadius;
-uniform int				u_fog;
-uniform float			u_fogDensity;
-uniform float			u_CausticsModulate; 
-uniform int				u_isCaustics;
-uniform int				u_isAmbient;
+uniform float	u_ColorModulate;
+uniform float	u_specularScale;
+uniform float	u_specularExp;
+uniform vec4 	u_LightColor;
+uniform float 	u_LightRadius;
+uniform int		u_fog;
+uniform float	u_fogDensity;
+uniform float	u_CausticsModulate; 
+uniform int		u_isCaustics;
+uniform int		u_isAmbient;
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;
@@ -44,12 +43,11 @@ void main (void) {
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
 
-	vec4 causticsMap = texture(u_Caustics, P);
-
 	// light filter
 	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 
 	if (u_isCaustics == 1) {
+		vec4 causticsMap = texture(u_Caustics, P);
 		vec4 tmp = causticsMap * diffuseMap;
 		tmp *= u_CausticsModulate;
 		diffuseMap = tmp + diffuseMap;

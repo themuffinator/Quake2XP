@@ -1,4 +1,4 @@
-uniform sampler2DRect u_ScreenTex;
+layout (binding = 0) uniform sampler2DRect u_ScreenTex;
 uniform float u_scroll; 
 
 void main()

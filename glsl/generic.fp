@@ -2,8 +2,9 @@ in vec2		v_texCoord;
 in vec2		v_texCoord1;
 in vec4		v_colorArray;
 
-uniform sampler2D	u_map;
-uniform sampler2D	u_map1;
+layout (binding = 0) uniform sampler2D	u_map;
+layout (binding = 1) uniform sampler2D	u_map1;
+
 uniform vec4		u_color;
 uniform float		u_colorScale;
 

@@ -1,8 +1,8 @@
-uniform sampler2D		u_bumpMap;
-uniform sampler2D		u_diffuseMap;
-uniform sampler2D		u_causticMap;
-uniform samplerCube		u_CubeFilterMap;
-uniform sampler3D	 	u_attenMap;
+layout (binding = 0) uniform sampler2D		u_bumpMap;
+layout (binding = 1) uniform sampler2D		u_diffuseMap;
+layout (binding = 2) uniform sampler2D		u_causticMap;
+layout (binding = 3) uniform samplerCube	u_CubeFilterMap;
+layout (binding = 4) uniform sampler3D	 	u_attenMap;
 
 uniform float			u_LightRadius;
 uniform float			u_specularScale;

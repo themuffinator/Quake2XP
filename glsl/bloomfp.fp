@@ -1,5 +1,5 @@
-uniform sampler2DRect		u_map0; // screen
-uniform sampler2DRect		u_map1; // bloom
+layout (binding = 0) uniform sampler2DRect		u_map0; // screen
+layout (binding = 1) uniform sampler2DRect		u_map1; // bloom
 uniform vec3				u_bloomParams; //0 - multipler 1 - Brightness threshold 2 - exposure level
 
 void main(void) { 

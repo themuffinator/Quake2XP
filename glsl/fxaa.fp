@@ -7,7 +7,8 @@
 
 #include Fxaa3_11.inc
 
-uniform sampler2D	u_ScreenTex;
+layout (binding = 0) uniform sampler2D	u_ScreenTex;
+
 uniform vec2		u_ScreenSize;
 
 void main(void)

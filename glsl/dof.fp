@@ -1,5 +1,6 @@
-uniform sampler2DRect	u_ScreenTex;
-uniform sampler2DRect	u_DepthTex;
+layout (binding = 0) uniform sampler2DRect	u_ScreenTex;
+layout (binding = 1) uniform sampler2DRect	u_DepthTex;
+
 uniform vec2			u_screenSize;
 uniform vec4			u_dofParams;
 

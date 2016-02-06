@@ -1,4 +1,5 @@
-uniform sampler2DRect u_ScreenTex;
+layout (binding = 0) uniform sampler2DRect u_ScreenTex;
+
 uniform vec4 u_control; // x - brightens, y - contrast, z - saturation, w - gamma
 
 vec3 BrightnesContrastSaturation(vec3 color, float brt, float con, float sat)

@@ -1,5 +1,5 @@
-uniform	sampler2DRect	u_DNMiniMap;
-uniform	sampler2D		u_randomNormalMap;
+layout (binding = 0) uniform	sampler2DRect	u_DNMiniMap;
+layout (binding = 1) uniform	sampler2D		u_randomNormalMap;
 
 uniform vec2			u_ssaoParms;	// intensity, scale
 uniform vec2			u_viewport;

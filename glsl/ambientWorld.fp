@@ -1,20 +1,17 @@
-uniform sampler2D		u_Diffuse;
-uniform sampler2D		u_NormalMap;
-uniform sampler2D		u_Add;
+layout (binding = 0) uniform sampler2D		u_Diffuse;
+layout (binding = 1) uniform sampler2D		u_LightMap0;
+layout (binding = 2) uniform sampler2D		u_Add;
+layout (binding = 3) uniform sampler2D		u_NormalMap;
+layout (binding = 4) uniform sampler2D		u_LightMap1;
+layout (binding = 5) uniform sampler2D		u_LightMap2;
+layout (binding = 6) uniform sampler2DRect	u_ssaoMap;
 
-uniform sampler2D		u_LightMap0;
-uniform sampler2D		u_LightMap1;
-uniform sampler2D		u_LightMap2;
-uniform int				u_LightMapType;
-
-uniform int				u_ssao;
-uniform sampler2DRect	u_ssaoMap;
-
-uniform float			u_ColorModulate;
-uniform float			u_ambientScale;    
-
-uniform float			u_specularScale;
-uniform float			u_specularExp;
+uniform int		u_LightMapType;
+uniform int		u_ssao;
+uniform float	u_ColorModulate;
+uniform float	u_ambientScale;    
+uniform float	u_specularScale;
+uniform float	u_specularExp;
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;

@@ -1,4 +1,4 @@
-uniform sampler2DRect u_map; 
+layout (binding = 0) uniform sampler2DRect u_map; 
 uniform float u_BloomThreshold;   
 
 void main()   
