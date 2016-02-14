@@ -1785,6 +1785,36 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf("...using GL_ARB_separate_shader_objects\n");
 	}
 
+	gl_state.bindlessTexture = qfalse;
+	if (IsExtensionSupported("GL_ARB_bindless_texture")) {
+				
+		glGetTextureHandleARB				= (PFNGLGETTEXTUREHANDLEARBPROC)			qwglGetProcAddress("glGetTextureHandleARB");
+		glGetTextureSamplerHandleARB		= (PFNGLGETTEXTURESAMPLERHANDLEARBPROC)		qwglGetProcAddress("glGetTextureSamplerHandleARB");
+		glMakeTextureHandleResidentARB		= (PFNGLMAKETEXTUREHANDLERESIDENTARBPROC)	qwglGetProcAddress("glMakeTextureHandleResidentARB");
+		glMakeTextureHandleNonResidentARB	= (PFNGLMAKETEXTUREHANDLERESIDENTARBPROC)	qwglGetProcAddress("glMakeTextureHandleNonResidentARB");
+		glGetImageHandleARB					= (PFNGLGETIMAGEHANDLEARBPROC)				qwglGetProcAddress("glGetImageHandleARB");
+		glMakeImageHandleResidentARB		= (PFNGLMAKEIMAGEHANDLERESIDENTARBPROC)		qwglGetProcAddress("glMakeImageHandleResidentARB");
+		glMakeImageHandleNonResidentARB		= (PFNGLMAKEIMAGEHANDLENONRESIDENTARBPROC)	qwglGetProcAddress("glMakeImageHandleNonResidentARB");
+		glUniformHandleui64ARB				= (PFNGLUNIFORMHANDLEUI64ARBPROC)			qwglGetProcAddress("glUniformHandleui64ARB");
+		glUniformHandleui64vARB				= (PFNGLUNIFORMHANDLEUI64VARBPROC)			qwglGetProcAddress("glUniformHandleui64vARB");
+		glProgramUniformHandleui64ARB		= (PFNGLPROGRAMUNIFORMHANDLEUI64ARBPROC)	qwglGetProcAddress("glProgramUniformHandleui64ARB");
+		glProgramUniformHandleui64vARB		= (PFNGLPROGRAMUNIFORMHANDLEUI64VARBPROC)	qwglGetProcAddress("glProgramUniformHandleui64vARB");
+		glIsTextureHandleResidentARB		= (PFNGLISTEXTUREHANDLERESIDENTARBPROC)		qwglGetProcAddress("glIsTextureHandleResidentARB");
+		glIsImageHandleResidentARB			= (PFNGLISIMAGEHANDLERESIDENTARBPROC)		qwglGetProcAddress("glIsImageHandleResidentARB");
+		glVertexAttribL1ui64ARB				= (PFNGLVERTEXATTRIBL1UI64ARBPROC)			qwglGetProcAddress("glVertexAttribL1ui64ARB");
+		glVertexAttribL1ui64vARB			= (PFNGLVERTEXATTRIBL1UI64VARBPROC)			qwglGetProcAddress("glVertexAttribL1ui64vARB");
+		glGetVertexAttribLui64vARB			= (PFNGLGETVERTEXATTRIBLUI64VARBPROC)		qwglGetProcAddress("glGetVertexAttribLui64vARB");
+
+		if (glGetTextureHandleARB && glGetTextureSamplerHandleARB && glMakeTextureHandleResidentARB && glMakeTextureHandleNonResidentARB &&
+			glGetImageHandleARB && glMakeImageHandleResidentARB && glUniformHandleui64ARB && glUniformHandleui64vARB && glProgramUniformHandleui64ARB && glProgramUniformHandleui64vARB &&
+			glIsTextureHandleResidentARB && glIsImageHandleResidentARB && glVertexAttribL1ui64ARB && glVertexAttribL1ui64vARB && glGetVertexAttribLui64vARB) {
+			Com_Printf("...using GL_ARB_bindless_texture\n");
+			gl_state.bindlessTexture = qtrue;
+		}
+	}
+	else
+		Com_Printf("S_COLOR_RED""...GL_ARB_bindless_texture not found\n");
+
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &gl_config.maxVertexUniformComponents);
