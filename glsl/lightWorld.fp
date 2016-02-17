@@ -1,8 +1,7 @@
 layout (binding = 0) uniform sampler2D		u_Diffuse;
 layout (binding = 1) uniform sampler2D		u_NormalMap;
 layout (binding = 2) uniform samplerCube	u_CubeFilterMap;
-layout (binding = 3) uniform sampler3D	 	u_attenMap;
-layout (binding = 4) uniform sampler2D		u_Caustics;
+layout (binding = 3) uniform sampler2D		u_Caustics;
 
 uniform float	u_ColorModulate;
 uniform float	u_specularScale;
@@ -21,13 +20,14 @@ in vec3			v_lightVec;
 in vec2			v_texCoord;
 in vec4			v_CubeCoord;
 in vec4			v_lightCoord;
-in vec4			v_AttenCoord;
+in vec3			v_lightAtten;
 
 #include lighting.inc
 #include parallax.inc
 
 void main (void) {
-	float attenMap = texture(u_attenMap, v_AttenCoord.xyz).r;
+
+	float attenMap = PointAttenuation(v_lightAtten, 2.0);
 
 	if(attenMap <= CUTOFF_EPSILON){
 		discard;

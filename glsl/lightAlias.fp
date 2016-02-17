@@ -2,7 +2,6 @@ layout (binding = 0) uniform sampler2D		u_bumpMap;
 layout (binding = 1) uniform sampler2D		u_diffuseMap;
 layout (binding = 2) uniform sampler2D		u_causticMap;
 layout (binding = 3) uniform samplerCube	u_CubeFilterMap;
-layout (binding = 4) uniform sampler3D	 	u_attenMap;
 
 uniform float			u_LightRadius;
 uniform float			u_specularScale;
@@ -18,8 +17,8 @@ in vec2			v_texCoord;
 in vec3			v_viewVec;
 in vec3			v_lightVec;
 in vec4			v_CubeCoord;
-in vec4			v_AttenCoord;
 in vec4			v_positionVS;
+in vec3			v_lightAtten;
 
 // FIXME: give uniform
 #define u_specularExp		16.0
@@ -28,18 +27,15 @@ in vec4			v_positionVS;
 
 void main (void) {
 
-	float attenMap = texture(u_attenMap, v_AttenCoord.xyz).r;
+	float attenMap = PointAttenuation(v_lightAtten, 2.0);
 
 	if(attenMap <= CUTOFF_EPSILON){
 		discard;
 		return;
 	}
 
-
 	vec3 L = normalize(v_lightVec);
 	vec3 V = normalize(v_viewVec);
-	
-
 
 	vec4 diffuseMap  = texture(u_diffuseMap, v_texCoord);
 	vec4 normalMap =  texture(u_bumpMap, v_texCoord);
@@ -83,7 +79,7 @@ void main (void) {
 		if(u_fog == 0) {
 
 			if(SSS <= 0.00392){
-					fragData = subScatterFS(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap, attenMap, specular) * cubeFilter;
+					fragData = subScatterFS(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap, attenMap, specular * 0.11) * cubeFilter;
 					return;
 			}
 			else	

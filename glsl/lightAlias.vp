@@ -5,11 +5,11 @@ layout(location = 2) in vec3 att_tangent;
 layout(location = 3) in vec3 att_binormal;
 layout(location = 5) in vec2 att_texCoordDiffuse;
 
-uniform vec3		u_LightOrg;
-uniform vec3		u_ViewOrigin; 		
-uniform mat4		u_attenMatrix;
-uniform mat4		u_cubeMatrix;
-uniform mat4		u_modelViewProjectionMatrix, u_modelViewMatrix;
+uniform vec3	u_LightOrg;
+uniform vec3	u_ViewOrigin; 		
+uniform mat4	u_attenMatrix;
+uniform mat4	u_cubeMatrix;
+uniform mat4	u_modelViewProjectionMatrix, u_modelViewMatrix;
 
 out vec2		v_texCoord;
 out vec4		v_CubeCoord;
@@ -17,12 +17,13 @@ out vec4		v_AttenCoord;
 out vec3		v_viewVec;
 out vec3		v_lightVec;
 out vec4		v_viewPos;
+out vec3		v_lightAtten;
 
 void main (void) {
 	
 v_texCoord = att_texCoordDiffuse; 
 v_CubeCoord = u_cubeMatrix * vec4(att_position, 1.0);
-v_AttenCoord = u_attenMatrix * vec4(att_position, 1.0);
+v_lightAtten = (u_attenMatrix * vec4(att_position, 1.0)).xyz;
 
 vec3 LV = u_LightOrg - att_position;
 v_lightVec.x = dot(att_tangent, LV);
