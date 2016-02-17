@@ -46,6 +46,7 @@ typedef struct worldShadowLight_s {
 	vec3_t		maxs_cone;
 	vec3_t		corners[8];
 	mat3_t		axis;
+	mat4_t		attenMatrix;
 
 	vec3_t		flareOrigin;
 	float		flareSize;

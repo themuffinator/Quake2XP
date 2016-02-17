@@ -1786,7 +1786,7 @@ int R_Init(void *hinstance, void *hWnd)
 	}
 
 	gl_state.bindlessTexture = qfalse;
-	if (IsExtensionSupported("GL_ARB_bindless_texture")) {
+/*	if (IsExtensionSupported("GL_ARB_bindless_texture")) {
 				
 		glGetTextureHandleARB				= (PFNGLGETTEXTUREHANDLEARBPROC)			qwglGetProcAddress("glGetTextureHandleARB");
 		glGetTextureSamplerHandleARB		= (PFNGLGETTEXTURESAMPLERHANDLEARBPROC)		qwglGetProcAddress("glGetTextureSamplerHandleARB");
@@ -1814,7 +1814,7 @@ int R_Init(void *hinstance, void *hWnd)
 	}
 	else
 		Com_Printf("S_COLOR_RED""...GL_ARB_bindless_texture not found\n");
-
+*/
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &gl_config.maxVertexUniformComponents);

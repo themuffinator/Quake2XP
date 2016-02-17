@@ -785,7 +785,7 @@
     <ClCompile Include="qcommon\q_parser.c" />
     <ClCompile Include="ref_gl\r_cull.c" />
     <ClCompile Include="ref_gl\r_glstate.c" />
-    <ClCompile Include="ref_gl\r_lightMan.c" />
+    <ClCompile Include="ref_gl\r_light.c" />
     <ClCompile Include="ref_gl\r_lightMaps.c" />
     <ClCompile Include="ref_gl\r_main.c" />
     <ClCompile Include="ref_gl\r_program.c" />

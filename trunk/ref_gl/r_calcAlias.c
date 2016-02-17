@@ -403,7 +403,7 @@ void R_UpdateLightAliasUniforms()
 	qglUniform3fv(lightAlias_viewOrigin, 1, r_origin);
 	qglUniform3fv(lightAlias_lightOrigin, 1, currentShadowLight->origin);
 
-	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMapMatrix, entAttenMatrix);
+	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
 	qglUniformMatrix4fv(lightAlias_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
 
 	R_CalcCubeMapMatrix(qtrue);
@@ -544,14 +544,13 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	else
 		qglUniform1i(lightAlias_isCaustics, 0);
 
-	qglUniform1f (lightAlias_specularScale, skin->specularScale * r_specularScale->value);
-	qglUniform1f (lightAlias_specularExp, skin->SpecularExp ? skin->SpecularExp : 16.f);
+	qglUniform1f (lightAlias_specularScale, r_specularScale->value);
+//	qglUniform1f (lightAlias_specularExp, skin->SpecularExp ? skin->SpecularExp : 16.f);
 
 	GL_MBind (GL_TEXTURE0_ARB, skinNormalmap->texnum);
 	GL_MBind (GL_TEXTURE1_ARB, skin->texnum);
 	GL_MBind (GL_TEXTURE2_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	GL_MBindCube (GL_TEXTURE3_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
-	GL_MBind3d (GL_TEXTURE4_ARB, r_lightAttenMap->texnum);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);

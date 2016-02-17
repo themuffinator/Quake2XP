@@ -295,16 +295,16 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	refdef.y = y;
 	refdef.width = 24 * hud_sx;
 	refdef.height = 24 * hud_sy;
-	refdef.fov_x = 45;
-	refdef.fov_y = CalcFov (refdef.fov_x, refdef.width, refdef.height);
+	refdef.fov_x = 43;
+	refdef.fov_y = 43;
 	refdef.time = cls.realtime*0.001;
-	refdef.viewangles[0] = 23;
+	refdef.viewangles[0] = 30;
 	refdef.areabits = 0;
 	refdef.num_entities = 1;
 	refdef.entities = &entity;
 	refdef.lightstyles = 0;
 	refdef.rdflags = RDF_NOWORLDMODEL | RDF_NOCLEAR;
-	VectorSet (refdef.vieworg, -rad[0] * 1.5, 0, rad[0] * 1.5*0.39);
+	VectorSet (refdef.vieworg, -rad[0] * 1.5, 0, rad[0]*0.8);
 
 	entity.model = model;
 	entity.flags = RF_NOSHADOW | RF_DEPTHHACK;

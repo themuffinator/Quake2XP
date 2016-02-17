@@ -1448,7 +1448,6 @@ void GL_FreeUnusedImages(void)
 	r_scanline->registration_sequence = registration_sequence;
 	r_envTex->registration_sequence = registration_sequence;
 	r_randomNormalTex->registration_sequence = registration_sequence;
-	r_lightAttenMap->registration_sequence = registration_sequence;
 	weaponHack->registration_sequence = registration_sequence;
 	r_whiteMap->registration_sequence = registration_sequence;
 

@@ -166,7 +166,6 @@ extern	image_t	*r_envTex;
 extern	image_t	*r_randomNormalTex;
 extern	image_t	*shadowMask;
 extern	image_t	*r_scanline;
-extern	image_t	*r_lightAttenMap;
 extern	image_t	*weaponHack;
 extern	image_t *fxaaMap;
 extern	image_t *fboScreen;

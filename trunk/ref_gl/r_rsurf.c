@@ -500,7 +500,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		else{
 			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics) {
 				qglUniform1i(lightWorld_caustics, 1);
-				GL_MBind(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+				GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 			}
 			else
 				qglUniform1i(lightWorld_caustics, 0);
@@ -522,7 +522,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		GL_MBind		(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);
 		GL_MBindCube	(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
-		GL_MBind3d		(GL_TEXTURE3_ARB, r_lightAttenMap->texnum);
 
 		if (surf->texInfo->flags & SURF_FLOWING){
 
@@ -599,7 +598,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
  void R_UpdateLightUniforms(qboolean bModel)
  {
-	mat4_t		entAttenMatrix;
+	 mat4_t	entAttenMatrix;
 
 	qglUniform1f(lightWorld_colorScale, r_textureColorScale->value);
 	qglUniform1i(lightWorld_ambient, (int)currentShadowLight->isAmbient);
@@ -616,9 +615,13 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
 	 if (!bModel){
 		 qglUniformMatrix4fv(lightWorld_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		 qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)currentShadowLight->attenMatrix);
 	 }
 	 else{
 		 qglUniformMatrix4fv(lightWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+
+		 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
+		 qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
 	 }
 	 
 	 qglUniform3fv(lightWorld_lightOrigin, 1, currentShadowLight->origin);
@@ -626,14 +629,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	 R_CalcCubeMapMatrix(bModel);
 	 qglUniformMatrix4fv(lightWorld_cubeMatrix, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
-	 if (!bModel) {
-		 qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)currentShadowLight->attenMapMatrix);
-	 }
-	 else
-	 {
-		 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMapMatrix, entAttenMatrix);
-		 qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
-	 }
  }
 
 static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)

@@ -606,7 +606,7 @@ void R_InitPrograms (void) {
 		lightAlias_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
 		lightAlias_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
 		lightAlias_mvp				= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
-		lightAlias_mv				= qglGetUniformLocation(id, "u_modelViewMatrix");
+		lightAlias_mv				= qglGetUniformLocation (id, "u_modelViewMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

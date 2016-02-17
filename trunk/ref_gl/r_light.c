@@ -79,7 +79,7 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 void UpdateLightBounds (worldShadowLight_t *light) {
 	int i;
 	mat3_t lightAxis;
-	mat4_t temp;
+	mat4_t tmpMatrix, mvMatrix;
 	vec3_t tmp;
 
 	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
@@ -107,21 +107,39 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 		VectorAdd (light->corners[i], light->origin, light->corners[i]);
 	}
 
-	Mat4_Identity (temp);
-	Mat4_Translate (temp, 0.5, 0.5, 0.5);
-	Mat4_Scale (temp, 0.5 / light->radius[0], 0.5 / light->radius[1], 0.5 / light->radius[2]);
-	Mat4_Translate (temp, -light->origin[0], -light->origin[1], -light->origin[2]);
-	Mat4_Copy (temp, light->attenMapMatrix);
+	AnglesToMat3(light->angles, light->axis);
+	Mat4_SetupTransform(tmpMatrix, light->axis, light->origin);
+	Mat4_AffineInvert(tmpMatrix, mvMatrix);
+
+	// setup unit space conversion matrix
+	tmpMatrix[0][0] = 1.f / light->radius[0];
+	tmpMatrix[0][1] = 0.f;
+	tmpMatrix[0][2] = 0.f;
+	tmpMatrix[0][3] = 0.f;
+	tmpMatrix[1][0] = 0.f;
+	tmpMatrix[1][1] = 1.f / light->radius[1];
+	tmpMatrix[1][2] = 0.f;
+	tmpMatrix[1][3] = 0.f;
+	tmpMatrix[2][0] = 0.f;
+	tmpMatrix[2][1] = 0.f;
+	tmpMatrix[2][2] = 1.f / light->radius[2];
+	tmpMatrix[2][3] = 0.f;
+	tmpMatrix[3][0] = 0.f;
+	tmpMatrix[3][1] = 0.f;
+	tmpMatrix[3][2] = 0.f;
+	tmpMatrix[3][3] = 1.f;
+
+	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
 }
 
 
 void R_AddDynamicLight (dlight_t *dl) {
 
 	worldShadowLight_t *light;
-	mat3_t lightAxis;
-	mat4_t temp;
-	vec3_t tmp;
-	int i;
+	mat3_t				lightAxis;
+	mat4_t				tmpMatrix, mvMatrix;
+	vec3_t				tmp;
+	int					i;
 
 	if (R_CullSphere (dl->origin, dl->intensity))
 		return;
@@ -160,31 +178,50 @@ void R_AddDynamicLight (dlight_t *dl) {
 		VectorAdd(light->corners[i], light->origin, light->corners[i]);
 	}
 
-	Mat4_Identity(temp);
-	Mat4_Translate(temp, 0.5, 0.5, 0.5);
-	Mat4_Scale(temp, 0.5 / light->radius[0], 0.5 / light->radius[1], 0.5 / light->radius[2]);
-	Mat4_Translate(temp, -light->origin[0], -light->origin[1], -light->origin[2]);
-	Mat4_Copy(temp, light->attenMapMatrix);
+	AnglesToMat3(light->angles, light->axis);
+	Mat4_SetupTransform(tmpMatrix, light->axis, light->origin);
+	Mat4_AffineInvert(tmpMatrix, mvMatrix);
+
+	// setup unit space conversion matrix
+	tmpMatrix[0][0] = 1.f / light->radius[0];
+	tmpMatrix[0][1] = 0.f;
+	tmpMatrix[0][2] = 0.f;
+	tmpMatrix[0][3] = 0.f;
+	tmpMatrix[1][0] = 0.f;
+	tmpMatrix[1][1] = 1.f / light->radius[1];
+	tmpMatrix[1][2] = 0.f;
+	tmpMatrix[1][3] = 0.f;
+	tmpMatrix[2][0] = 0.f;
+	tmpMatrix[2][1] = 0.f;
+	tmpMatrix[2][2] = 1.f / light->radius[2];
+	tmpMatrix[2][3] = 0.f;
+	tmpMatrix[3][0] = 0.f;
+	tmpMatrix[3][1] = 0.f;
+	tmpMatrix[3][2] = 0.f;
+	tmpMatrix[3][3] = 1.f;
+
+	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
 }
 
-void R_AddNoWorldModelLight () {
+void R_AddNoWorldModelLight (float lightPos) {
 
 	worldShadowLight_t *light;
-	mat4_t temp;
-	int i;
+	mat4_t				tmpMatrix, mvMatrix;
+	int					i;
 
 	light = &shadowLightsBlock[num_nwmLights++];
 	memset (light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet (light->origin, r_newrefdef.vieworg[0]-500.0, r_newrefdef.vieworg[1], r_newrefdef.vieworg[2] + 256);
-	VectorSet (light->startColor, 0.666, 0.666, 0.666);
+	VectorSet (light->origin, currententity->origin[0], currententity->origin[1], currententity->origin[2] + lightPos);
+	VectorSet (light->startColor, 1.0, 1.0, 1.0);
+	VectorSet (light->color, 1.0, 1.0, 1.0);
 	VectorSet (light->angles, 0, 0, 0);
-	VectorSet (light->radius, 1500, 1500, 1500);
+	VectorSet (light->radius, 500, 500, 500);
 
 	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - 256;
-		light->maxs[i] = light->origin[i] + 256;
+		light->mins[i] = light->origin[i] - 500;
+		light->maxs[i] = light->origin[i] + 500;
 	}
 
 	light->style = 0;
@@ -198,11 +235,29 @@ void R_AddNoWorldModelLight () {
 	light->spherical = qtrue;
 	light->maxRad = light->radius[0];
 
-	Mat4_Identity(temp);
-	Mat4_Translate(temp, 0.5, 0.5, 0.5);
-	Mat4_Scale(temp, 0.5 / light->radius[0], 0.5 / light->radius[1], 0.5 / light->radius[2]);
-	Mat4_Translate(temp, -light->origin[0], -light->origin[1], -light->origin[2]);
-	Mat4_Copy(temp, light->attenMapMatrix);
+	AnglesToMat3(light->angles, light->axis);
+	Mat4_SetupTransform(tmpMatrix, light->axis, light->origin);
+	Mat4_AffineInvert(tmpMatrix, mvMatrix);
+
+	// setup unit space conversion matrix
+	tmpMatrix[0][0] = 1.f / light->radius[0];
+	tmpMatrix[0][1] = 0.f;
+	tmpMatrix[0][2] = 0.f;
+	tmpMatrix[0][3] = 0.f;
+	tmpMatrix[1][0] = 0.f;
+	tmpMatrix[1][1] = 1.f / light->radius[1];
+	tmpMatrix[1][2] = 0.f;
+	tmpMatrix[1][3] = 0.f;
+	tmpMatrix[2][0] = 0.f;
+	tmpMatrix[2][1] = 0.f;
+	tmpMatrix[2][2] = 1.f / light->radius[2];
+	tmpMatrix[2][3] = 0.f;
+	tmpMatrix[3][0] = 0.f;
+	tmpMatrix[3][1] = 0.f;
+	tmpMatrix[3][2] = 0.f;
+	tmpMatrix[3][3] = 1.f;
+
+	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
 }
 
 
@@ -235,9 +290,10 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 		R_AddDynamicLight (&r_newrefdef.dlights[i]);
 	}
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		R_AddNoWorldModelLight ();
-
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
+		R_AddNoWorldModelLight(128);
+		R_AddNoWorldModelLight(-128);
+	}
 	if (!shadowLight_frame)
 		return;
 
@@ -672,6 +728,7 @@ void R_EditSelectedLight_f (void) {
 		angles[1] = atof (Cmd_Argv (3));
 		angles[2] = atof (Cmd_Argv (4));
 		VectorCopy (angles, selectedShadowLight->angles);
+		UpdateLightBounds(selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "shadow")) {
@@ -1445,7 +1502,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	cplane_t			*plane;
 	int					i, leafnum, cluster;
 	vec3_t				tmp;
-	mat4_t				temp;
+	mat4_t				tmpMatrix, mvMatrix;
 
 	light = (worldShadowLight_t*)malloc (sizeof(worldShadowLight_t));
 	light->s_next = shadowLight_static;
@@ -1555,12 +1612,29 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 #define START_OFF	1
 	light->start_off = (flags & START_OFF);
 
-	// calc atten tex coord
-	Mat4_Identity (temp);
-	Mat4_Translate (temp, 0.5, 0.5, 0.5);
-	Mat4_Scale (temp, 0.5 / light->radius[0], 0.5 / light->radius[1], 0.5 / light->radius[2]);
-	Mat4_Translate (temp, -light->origin[0], -light->origin[1], -light->origin[2]);
-	Mat4_Copy (temp, light->attenMapMatrix);
+	AnglesToMat3(light->angles, light->axis);
+	Mat4_SetupTransform(tmpMatrix, light->axis, light->origin);
+	Mat4_AffineInvert(tmpMatrix, mvMatrix);
+
+	// setup unit space conversion matrix
+	tmpMatrix[0][0] = 1.f / light->radius[0];
+	tmpMatrix[0][1] = 0.f;
+	tmpMatrix[0][2] = 0.f;
+	tmpMatrix[0][3] = 0.f;
+	tmpMatrix[1][0] = 0.f;
+	tmpMatrix[1][1] = 1.f / light->radius[1];
+	tmpMatrix[1][2] = 0.f;
+	tmpMatrix[1][3] = 0.f;
+	tmpMatrix[2][0] = 0.f;
+	tmpMatrix[2][1] = 0.f;
+	tmpMatrix[2][2] = 1.f / light->radius[2];
+	tmpMatrix[2][3] = 0.f;
+	tmpMatrix[3][0] = 0.f;
+	tmpMatrix[3][1] = 0.f;
+	tmpMatrix[3][2] = 0.f;
+	tmpMatrix[3][3] = 1.f;
+
+	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
 
 	r_numWorlsShadowLights++;
 	return light;

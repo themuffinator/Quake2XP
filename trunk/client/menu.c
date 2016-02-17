@@ -319,8 +319,8 @@ void M_Main_DrawQuad (float x, float y) {
 	refdef.y = y - 7 * cl_fontScale->value;
 	refdef.width = 50 * cl_fontScale->value;
 	refdef.height = 50 * cl_fontScale->value;
-	refdef.fov_x = 40;
-	refdef.fov_y = CalcFov (refdef.fov_x, refdef.width, refdef.height);
+	refdef.fov_x = 45;
+	refdef.fov_y = 45;
 	refdef.time = cls.realtime / 1.5;
 
 	memset (&entity, 0, sizeof(entity));

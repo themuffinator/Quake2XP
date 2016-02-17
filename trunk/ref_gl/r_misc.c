@@ -52,7 +52,6 @@ image_t *r_scanline;
 image_t	*r_envTex;
 image_t	*r_randomNormalTex;
 image_t	*r_lightCubeMap[MAX_FILTERS];
-image_t *r_lightAttenMap;
 image_t	*weaponHack;
 image_t *fbo_color0;
 
@@ -655,80 +654,6 @@ image_t *R_LoadLightFilter (int id) {
 }
 
 
-#define ATTEN_VOLUME_SIZE 16
-
-void CreateAttenuation () {
-	image_t		*image;
-	char		name[18] = "**attenuation3D**";
-	int			i;
-
-	float	center, power;
-	int		s, t, r, offs = 0;
-	byte	data[ATTEN_VOLUME_SIZE*ATTEN_VOLUME_SIZE*ATTEN_VOLUME_SIZE];
-
-	power = 1;
-	if (power < 0.25)
-		power = 0.25;
-	else if (power > 2)
-		power = 2;
-
-	center = ATTEN_VOLUME_SIZE * 0.5;
-
-	for (s = 0; s < ATTEN_VOLUME_SIZE; s++) {
-		for (t = 0; t < ATTEN_VOLUME_SIZE; t++) {
-			for (r = 0; r < ATTEN_VOLUME_SIZE; r++) {
-				float DistSq = sqrt ((s - center)*(s - center) + (t - center)*(t - center) + (r - center)*(r - center));
-				if (DistSq < center) {
-					byte value;
-					float FallOff = pow ((center - DistSq) / center, power);
-					if (s == 0 || s == ATTEN_VOLUME_SIZE - 1 ||
-						t == 0 || t == ATTEN_VOLUME_SIZE - 1 ||
-						r == 0 || r == ATTEN_VOLUME_SIZE - 1)
-						value = 0;
-					else
-						value = FallOff*255.0;
-
-					data[offs++] = value;
-				}
-				else
-					data[offs++] = 0;
-			}
-		}
-	}
-	// find a free image_t
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
-		if (!image->texnum)
-			break;
-	}
-	if (i == numgltextures) {
-		if (numgltextures == MAX_GLTEXTURES)
-			Com_Error (ERR_FATAL, "MAX_GLTEXTURES");
-		numgltextures++;
-	}
-	image = &gltextures[i];
-
-	strcpy (image->name, &name[0]);
-	image->registration_sequence = registration_sequence;
-	image->width = image->height = ATTEN_VOLUME_SIZE;
-	image->upload_width = ATTEN_VOLUME_SIZE * ATTEN_VOLUME_SIZE * ATTEN_VOLUME_SIZE;
-	image->upload_height = 1;
-	image->type = it_pic;
-
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-//	qglGenTextures (1, &image->texnum);
-
-	glTexImage3DEXT = (PFNGLTEXIMAGE3DEXTPROC)qwglGetProcAddress ("glTexImage3DEXT");
-
-	r_lightAttenMap = image;
-	qglBindTexture (GL_TEXTURE_3D, r_lightAttenMap->texnum);
-	glTexImage3DEXT (GL_TEXTURE_3D, 0, GL_INTENSITY, ATTEN_VOLUME_SIZE, ATTEN_VOLUME_SIZE, ATTEN_VOLUME_SIZE, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
-	qglTexParameteri (GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-}
-
 void R_InitEngineTextures (void) {
 	int		i;
 	byte	notex[1][1][4]	= { 0x0, 0x0, 0x0, 0x0 };
@@ -905,7 +830,6 @@ void R_InitEngineTextures (void) {
 	CreateDepthTexture ();
 	CreateScreenRect ();
 	CreateShadowMask ();
-	CreateAttenuation ();
 }
 
 
