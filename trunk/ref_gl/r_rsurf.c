@@ -139,20 +139,14 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	float alpha, scroll;
 	glpoly_t *p;
 	int nv = fa->polys->numVerts;
+	uint numIndeces = 0, numVertixes = 0;
 
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
-	
 	if (fa->texInfo->flags & SURF_TRANS33)
 		alpha = 0.33f;
 	else
 		alpha = 0.66f;
 
-		// setup program
-		GL_BindProgram(refractProgram, 0);
+	qglUniform1f(4, alpha);
 
 		if (scrolling)
 			GL_MBind(GL_TEXTURE0_ARB, r_DSTTex->texnum);
@@ -163,18 +157,6 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
 		GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 
-		qglUniform1f		(0, 1.0);
-		qglUniformMatrix4fv	(1, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-		qglUniformMatrix4fv	(2, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-		qglUniformMatrix4fv	(3, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
-
-		qglUniform1f (4, alpha);
-		qglUniform1f (5, 150.0);
-		qglUniform2f (7, vid.width, vid.height);
-		qglUniform2f (8, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-		qglUniform1f (9, r_lightmapScale->value);
-		qglUniform1i (11, 0);
-
 	if (scrolling)
 		scroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
 	 else
@@ -184,21 +166,22 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	v = p->verts[0];
 
 	c_brush_polys += nv - 2;
-
-	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE) {
-		
-		VectorCopy(v, wVertexArray[i]);
-			
-		wTexArray[i][0] = v[3] - scroll;
-		wTexArray[i][1] = v[4];
+	
+	for (i = 0; i < nv - 2; i++) {
+		indexArray[numIndeces++] = numVertixes;
+		indexArray[numIndeces++] = numVertixes + i + 1;
+		indexArray[numIndeces++] = numVertixes + i + 2;
 	}
 
-	qglDrawElements(GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);	
+	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE, numVertixes++) {
+		
+		VectorCopy(v, wVertexArray[numVertixes]);
 			
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
+		wTexArray[numVertixes][0] = v[3] - scroll;
+		wTexArray[numVertixes][1] = v[4];
+	}
 
-	GL_BindNullProgram();
+	qglDrawElements(GL_TRIANGLES, numIndeces, GL_UNSIGNED_SHORT, indexArray);
 }
 
 
@@ -220,6 +203,26 @@ void R_DrawChainsRA (qboolean bmodel) {
 
 	R_CaptureColorBuffer();
 
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+
+	// setup program
+	GL_BindProgram(refractProgram, 0);
+
+	qglUniform1f(0, 1.0);
+	qglUniformMatrix4fv(1, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(2, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(3, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+
+	qglUniform1f(5, 150.0);
+	qglUniform2f(7, vid.width, vid.height);
+	qglUniform2f(8, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform1f(9, r_lightmapScale->value);
+	qglUniform1i(11, 0);
+
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
 		
 		if (s->flags & MSURF_LAVA)
@@ -230,6 +233,11 @@ void R_DrawChainsRA (qboolean bmodel) {
 		else
 			DrawGLPoly(s, qfalse);
 	}
+
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+
+	GL_BindNullProgram();
 
 	r_alpha_surfaces = NULL;
 
