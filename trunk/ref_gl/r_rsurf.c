@@ -173,12 +173,12 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		indexArray[numIndeces++] = numVertixes + i + 2;
 	}
 
-	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE, numVertixes++) {
+	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE) {
 		
-		VectorCopy(v, wVertexArray[numVertixes]);
+		VectorCopy(v, wVertexArray[i]);
 			
-		wTexArray[numVertixes][0] = v[3] - scroll;
-		wTexArray[numVertixes][1] = v[4];
+		wTexArray[i][0] = v[3] - scroll;
+		wTexArray[i][1] = v[4];
 	}
 
 	qglDrawElements(GL_TRIANGLES, numIndeces, GL_UNSIGNED_SHORT, indexArray);
@@ -187,6 +187,7 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 
 void R_DrawChainsRA (qboolean bmodel) {
 	msurface_t *s;
+	float colorScale = max(r_lightmapScale->value, 0.33);
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -220,7 +221,7 @@ void R_DrawChainsRA (qboolean bmodel) {
 	qglUniform1f(5, 150.0);
 	qglUniform2f(7, vid.width, vid.height);
 	qglUniform2f(8, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(9, r_lightmapScale->value);
+	qglUniform1f(9, colorScale);
 	qglUniform1i(11, 0);
 
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {

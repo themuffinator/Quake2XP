@@ -820,7 +820,7 @@ static void R_DrawAmbientScene (void) {
 
 // draws reflective & alpha chains from world model
 // draws reflective surfaces from brush models
-// draws translucent entities
+
 static void R_DrawRAScene (void) {
 	int i;
 	
@@ -841,35 +841,6 @@ static void R_DrawRAScene (void) {
 		if (currentmodel && currentmodel->type == mod_brush) {
 			R_DrawBrushModelRA();
 			continue;
-		}
-
-		if (!(currententity->flags & RF_TRANSLUCENT))
-			continue;
-		if ((currententity->flags & RF_WEAPONMODEL) || ((currententity->flags & RF_DISTORT) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)))
-			continue;
-
-		if (currententity->flags & RF_BEAM) {
-			R_DrawBeam();
-			continue;
-		}
-
-		if (!currentmodel) {
-			R_DrawNullModel();
-			continue;
-		}
-
-		switch (currentmodel->type) {
-			case mod_alias:
-				R_DrawAliasModel(currententity, qfalse);
-				break;
-			case mod_brush:
-				break;
-			case mod_sprite:
-				R_DrawSpriteModel(currententity);
-				break;
-			default:
-				VID_Error(ERR_DROP, "Bad modeltype");
-				break;
 		}
 	}
 	GL_DepthMask(1);
