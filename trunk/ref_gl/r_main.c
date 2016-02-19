@@ -1592,8 +1592,18 @@ int R_Init(void *hinstance, void *hWnd)
 	glDeleteVertexArrays	= (PFNGLDELETEVERTEXARRAYSPROC)	qwglGetProcAddress	("glDeleteVertexArrays");
 	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress	("glBindVertexArray");
 
+	gl_state.bufferStorage = qfalse;
+
+	if (IsExtensionSupported("GL_ARB_buffer_storage")){ //gl 4.4 
+		Com_Printf("...using GL_ARB_buffer_storage\n");
+		glBufferStorage = (PFNGLBUFFERSTORAGEPROC)qwglGetProcAddress("glBufferStorage");
+		gl_state.bufferStorage = qtrue;
+	}
+	else
+		Com_Printf(S_COLOR_RED"...using GL_ARB_buffer_storage not found\n");
+
 	if (IsExtensionSupported("GL_ARB_vertex_buffer_object")) {
-			
+
 		qglBindBufferARB =		(PFNGLBINDBUFFERARBPROC)		qwglGetProcAddress("glBindBufferARB");
 		qglDeleteBuffersARB =	(PFNGLDELETEBUFFERSARBPROC)	qwglGetProcAddress("glDeleteBuffersARB");
 		qglGenBuffersARB =		(PFNGLGENBUFFERSARBPROC)		qwglGetProcAddress("glGenBuffersARB");
@@ -1654,9 +1664,22 @@ int R_Init(void *hinstance, void *hWnd)
 			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(GL_UNSIGNED_SHORT), iCache, GL_STATIC_DRAW_ARB);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-			qglGenBuffersARB(1, &vbo.vbo_Dynamic);
+			//------------------------------------------------
+			qglGenBuffersARB(1, &vbo.vbo_Dynamic); 
+			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_Dynamic);
+			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, MAX_VERTICES * 2 * sizeof(vec4_t), 0, GL_STREAM_DRAW_ARB);
+			if (gl_state.bufferStorage)
+				glBufferStorage(GL_ARRAY_BUFFER, MAX_VERTICES * 2, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+
+			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+
 			qglGenBuffersARB(1, &vbo.ibo_Dynamic);
-	
+			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
+			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(GL_UNSIGNED_SHORT), 0, GL_STREAM_DRAW_ARB);
+			if (gl_state.bufferStorage)
+				glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 		}
 	} else {
 		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
@@ -1784,7 +1807,7 @@ int R_Init(void *hinstance, void *hWnd)
 		}
 	}
 	else
-		Com_Printf("S_COLOR_RED""...GL_ARB_bindless_texture not found\n");
+		Com_Printf(S_COLOR_RED"...GL_ARB_bindless_texture not found\n");
 */
 	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);

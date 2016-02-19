@@ -188,7 +188,10 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 		numVerts += 3;
 	}
 
-	qglDrawElements (GL_TRIANGLES, id, GL_UNSIGNED_SHORT, icache);
+	qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, numVerts * sizeof(vec4_t), vcache4);
+	qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(GL_UNSIGNED_SHORT), icache);
+
+	qglDrawElements (GL_TRIANGLES, id, GL_UNSIGNED_SHORT, NULL);
 
 	c_shadow_tris += id / 3;
 	c_shadow_volumes++;
@@ -338,8 +341,11 @@ void R_CastAliasShadowVolumes (void) {
 	GL_PolygonOffset (0.1, 1);
 	GL_ColorMask (0, 0, 0, 0);
 
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_Dynamic);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
+
 	qglEnableVertexAttribArray (ATT_POSITION);
-	qglVertexAttribPointer (ATT_POSITION, 4, GL_FLOAT, qfalse, 0, vcache4);
+	qglVertexAttribPointer (ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -353,6 +359,10 @@ void R_CastAliasShadowVolumes (void) {
 
 	}
 	qglDisableVertexAttribArray (ATT_POSITION);
+	
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	GL_Disable (GL_POLYGON_OFFSET_FILL);
 	GL_PolygonOffset (0, 0);
 	GL_Enable (GL_CULL_FACE);

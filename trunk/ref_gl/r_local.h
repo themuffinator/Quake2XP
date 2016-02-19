@@ -641,6 +641,8 @@ typedef struct {
 	qboolean	debugOutput;
 	qboolean	eal;
 	qboolean	bindlessTexture;
+	qboolean	bufferStorage;
+
 	int			programId;
 	GLenum		matrixMode;
 
