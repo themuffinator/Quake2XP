@@ -1667,17 +1667,17 @@ int R_Init(void *hinstance, void *hWnd)
 			//------------------------------------------------
 			qglGenBuffersARB(1, &vbo.vbo_Dynamic); 
 			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_Dynamic);
-			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, MAX_VERTICES * 2 * sizeof(vec4_t), 0, GL_STREAM_DRAW_ARB);
-			if (gl_state.bufferStorage)
-				glBufferStorage(GL_ARRAY_BUFFER, MAX_VERTICES * 2, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, MAX_VERTICES * 4 * sizeof(vec4_t), 0, GL_STREAM_DRAW_ARB);
+		//	if (gl_state.bufferStorage)
+		//		glBufferStorage(GL_ARRAY_BUFFER, MAX_VERTICES * 2, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
 			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 			qglGenBuffersARB(1, &vbo.ibo_Dynamic);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
 			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(GL_UNSIGNED_SHORT), 0, GL_STREAM_DRAW_ARB);
-			if (gl_state.bufferStorage)
-				glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+		//	if (gl_state.bufferStorage)
+		//		glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		}
