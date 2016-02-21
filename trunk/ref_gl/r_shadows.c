@@ -463,7 +463,7 @@ void R_MarkBrushModelShadowSurfaces () {
 
 void R_DrawBrushModelVolumes () {
 	int			i, j, vb = 0, ib = 0, surfBase = 0;
-	float		scale, sca;
+	float		scale;
 	msurface_t	*surf;
 	model_t		*clmodel;
 	glpoly_t	*poly;
@@ -502,11 +502,9 @@ void R_DrawBrushModelVolumes () {
 
 			VectorCopy (poly->verts[j], vcache[vb * 2 + 0]);
 			VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
-	//		VectorNormalize(v1);
-	//		sca = scale / VectorLength (v1);
-			vcache[vb * 2 + 1][0] = v1[0] * 10 + poly->verts[j][0];
-			vcache[vb * 2 + 1][1] = v1[1] * 10 + poly->verts[j][1];
-			vcache[vb * 2 + 1][2] = v1[2] * 10 + poly->verts[j][2];
+			vcache[vb * 2 + 1][0] = v1[0] * scale + poly->verts[j][0];
+			vcache[vb * 2 + 1][1] = v1[1] * scale + poly->verts[j][1];
+			vcache[vb * 2 + 1][2] = v1[2] * scale + poly->verts[j][2];
 			vb++;
 		}
 	}
@@ -623,7 +621,7 @@ int numPreCachedLights;
 
 void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	int			i, j, vb = 0, ib = 0, surfBase = 0;
-	float		scale, sca;
+	float		scale;
 	msurface_t	*surf;
 	glpoly_t	*poly;
 	vec3_t		v1;
@@ -652,12 +650,10 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 
 			VectorCopy (poly->verts[j], vcache[vb * 2 + 0]);
 			VectorSubtract (poly->verts[j], currentShadowLight->origin, v1);
-			VectorNormalizeFast(v1);
-			sca = scale / VectorLength (v1);
 
-			vcache[vb * 2 + 1][0] = v1[0] * sca + poly->verts[j][0];
-			vcache[vb * 2 + 1][1] = v1[1] * sca + poly->verts[j][1];
-			vcache[vb * 2 + 1][2] = v1[2] * sca + poly->verts[j][2];
+			vcache[vb * 2 + 1][0] = v1[0] * scale + poly->verts[j][0];
+			vcache[vb * 2 + 1][1] = v1[1] * scale + poly->verts[j][1];
+			vcache[vb * 2 + 1][2] = v1[2] * scale + poly->verts[j][2];
 			vb++;
 		}
 	}
