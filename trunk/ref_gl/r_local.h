@@ -791,8 +791,8 @@ qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const v
 
 void Q_strncatz (char *dst, int dstSize, const char *src);
 
-#define	MAX_LIGHTMAPS		8		// max number of atlases
-#define	LIGHTMAP_SIZE		1024
+#define	MAX_LIGHTMAPS		4		// max number of atlases
+#define	LIGHTMAP_SIZE		2048
 #define GL_LIGHTMAP_FORMAT	GL_RGB
 #define XPLM_NUMVECS		3
 

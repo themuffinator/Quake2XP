@@ -367,7 +367,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 
 int SurfSort( const msurface_t **a, const msurface_t **b )
 {
-	return	(((*a)->lightmaptexturenum<<26)+((*a)->texInfo->image->texnum<<13)) - 
+	return	(( (*a)->lightmaptexturenum<<26) +( (*a)->texInfo->image->texnum<<13)) - 
 			(((*b)->lightmaptexturenum<<26)+((*b)->texInfo->image->texnum<<13));
 }
 
@@ -392,7 +392,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
 	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_reliefMapping->value, 0, 1));
 
-	if(r_skipStaticLights->value)
+//	if(r_skipStaticLights->value)
 		qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
 
 	qglUniform1i(ambientWorld_lightmapType, (r_worldmodel->useXPLM && r_useRadiosityBump->value) ? 1 : 0);
@@ -601,7 +601,8 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
  int lightSurfSort( const msurface_t **a, const msurface_t **b )
 {
-	return	(*a)->texInfo->image->texnum - (*b)->texInfo->image->texnum;
+	return	(((*a)->texInfo->image->texnum) + ((*a)->flags)) -
+			(((*b)->texInfo->image->texnum) + ((*b)->flags));
 }
 
 

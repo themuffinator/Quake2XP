@@ -214,9 +214,9 @@ void R_SetFrustum (void) {
 
 	frustum[4].dist += r_zNear->value;
 	
-	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		frustum[5].dist -= 128.0;
 	else
-		frustum[5].dist -= r_zFar->value;
+		frustum[5].dist -= 4096.0;//r_zFar->value;
 }
 

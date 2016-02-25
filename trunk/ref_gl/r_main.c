@@ -221,18 +221,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	up = vup;
 	right = vright;
 
-	// setup program
-	GL_BindProgram(refractProgram, 0);
-
-	GL_MBind(GL_TEXTURE0_ARB, r_distort->texnum);
 	GL_MBind(GL_TEXTURE1_ARB, currentmodel->skins[e->frame]->texnum);
-	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
-	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
-
-	qglUniform1f(0, 9.5);
-	qglUniformMatrix4fv(1, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(2, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(3, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
 	qglUniform1f(4, e->alpha);
 	qglUniform1f(5, len * 0.5);
@@ -241,14 +230,6 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 		qglUniform1f(6, 3.0);
 	else
 		qglUniform1f(6, len * 0.5);
-
-	qglUniform2f(7, vid.width, vid.height);
-	qglUniform2f(8, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f(10, 0.0, 1.0);
-	qglUniform1i(11, 1);
-
-	
-
 
 	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+0]);
 	VectorMA (wVertexArray[vert+0], -frame->origin_x, right, wVertexArray[vert+0]);
@@ -270,8 +251,6 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	
 	if(vert)
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-
-	GL_BindNullProgram();
 }
 
 //==================================================================================
@@ -746,6 +725,23 @@ void R_RenderSprites(void)
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 
+	// setup program
+	GL_BindProgram(refractProgram, 0);
+
+	GL_MBind(GL_TEXTURE0_ARB, r_distort->texnum);
+	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
+	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
+
+	qglUniform1f(0, 9.5);
+	qglUniformMatrix4fv(1, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(2, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(3, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+
+	qglUniform2f(7, vid.width, vid.height);
+	qglUniform2f(8, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f(10, 0.0, 1.0);
+	qglUniform1i(11, 1);
+
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 		currentmodel = currententity->model;
@@ -760,10 +756,10 @@ void R_RenderSprites(void)
 			R_DrawDistortSpriteModel(currententity);
 	}
 
-
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	GL_BindNullProgram();
 	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
 }
