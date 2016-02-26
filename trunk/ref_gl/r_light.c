@@ -38,7 +38,7 @@ void R_LightFlareOutLine ();
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
-	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[0] <= 0.01 && !r_lightEditor->value)
+	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[2] <= 0.01 && !r_lightEditor->value)
 		return qfalse;
 
 	if (!light->radius[0] && !light->radius[1] && !light->radius[2])

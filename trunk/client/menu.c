@@ -310,7 +310,6 @@ void M_Main_DrawQuad (float x, float y) {
 	refdef_t refdef;
 	char scratch[MAX_QPATH];
 	static int yaw;
-	int maxframe = 29;
 	entity_t entity;
 
 	memset (&refdef, 0, sizeof(refdef));

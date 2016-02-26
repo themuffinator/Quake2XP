@@ -260,7 +260,6 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 	int				id, vertexId, fragmentId;
 	int				status;
 	int				i, j;
-	int				lineno = 1;
 
 	if ((vertexSource && strlen (vertexSource) < 17) || (fragmentSource && strlen (fragmentSource) < 17))
 		return NULL;
@@ -999,7 +998,7 @@ void R_ListPrograms_f (void) {
 void R_GLSLinfo_f(void) {
 	
 	int i;
-	uint j;
+	GLint j;
 	const char *ver;
 
 	ver = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
@@ -1007,7 +1006,7 @@ void R_GLSLinfo_f(void) {
 
 	qglGetIntegerv(GL_NUM_SHADING_LANGUAGE_VERSIONS, &j);
 	for (i = 0; i < j; ++i) {
-		ver = glGetStringi(GL_SHADING_LANGUAGE_VERSION, i);
+		ver = (const char*)glGetStringi(GL_SHADING_LANGUAGE_VERSION, i);
 		if (!ver)
 			break;
 		Com_Printf(S_COLOR_YELLOW"%s\n", ver);

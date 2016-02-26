@@ -248,7 +248,7 @@ qboolean R_EntityInLightBounds () {
 }
 
 
-void GL_LerpShadowVerts (int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3]) {
+void GL_LerpShadowVerts (int nverts, dtrivertx_t *v, dtrivertx_t *ov, float *lerp, float move[3], float frontv[3], float backv[3]) {
 	int i;
 
 	if (nverts < 1)
@@ -305,7 +305,7 @@ void R_DeformShadowVolume () {
 		backv[i] = currententity->backlerp * oldframe->scale[i];
 	}
 
-	GL_LerpShadowVerts (paliashdr->num_xyz, v, ov, verts, s_lerped[0], move, frontv, backv);
+	GL_LerpShadowVerts (paliashdr->num_xyz, v, ov, s_lerped[0], move, frontv, backv);
 
 	R_SetupEntityMatrix (currententity);
 

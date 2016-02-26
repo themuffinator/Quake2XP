@@ -33,16 +33,6 @@ void GL_SelectTexture(GLenum texture)
 	gl_state.currenttmu = tmu;
 }
 
-void GL_TexEnv(GLenum mode)
-{
-	static int lastmodes[2] = { -1, -1 };
-
-	if (mode != lastmodes[gl_state.currenttmu]) {
-		qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, mode);
-		lastmodes[gl_state.currenttmu] = mode;
-	}
-}
-
 void GL_Bind(int texnum)
 {
 	if (gl_state.currenttextures[gl_state.currenttmu] == texnum)

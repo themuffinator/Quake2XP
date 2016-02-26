@@ -206,7 +206,6 @@ static void LM_InitBlock (void) {
 static void LM_UploadBlock (qboolean dynamic) {
 	const int numVecs = loadmodel->useXPLM ? 3 : 1;
 	int texture = gl_lms.current_lightmap_texture;
-	int height = 0;
 	int i;
 
 	// upload the finished atlas

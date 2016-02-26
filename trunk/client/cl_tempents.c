@@ -40,7 +40,6 @@ beam_t cl_beams[MAX_BEAMS];
 //PMM - added this for player-linked beams.  Currently only used by the plasma beam
 beam_t cl_playerbeams[MAX_BEAMS];
 
-void CL_ParticleBloodSplash (vec3_t org, vec3_t dir);
 void CL_ClientGibs (vec3_t org, vec3_t velocity);
 
 //ROGUE
@@ -611,7 +610,6 @@ void CL_FindRailedSurface (vec3_t start, vec3_t end, vec3_t dir) {
 
 void CL_ParticleSplashLava (vec3_t org, vec3_t dir);
 void CL_ParticleSplashSlime (vec3_t org, vec3_t dir);
-void CL_ParticleBloodSplash (vec3_t org, vec3_t dir);
 
 /*=============================================================
  ReadScaledDir - Berserker's non normalized vector compression

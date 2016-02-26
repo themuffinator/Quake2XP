@@ -1544,60 +1544,6 @@ void CL_ParticleSplashLava (vec3_t org, vec3_t dir) {
 }
 
 
-
-void CL_ParticleBloodSplash (vec3_t org, vec3_t dir) {
-
-	int j;
-	cparticle_t *p;
-
-	return;
-
-	if (!free_particles)
-		return;
-
-	p = free_particles;
-	free_particles = p->next;
-	p->next = active_particles;
-	active_particles = p;
-	VectorClear (p->accel);
-	VectorClear (p->vel);
-	VectorCopy (dir, p->dir);
-	VectorNormalize (p->dir);
-	p->orient = 0;
-	p->flags = PARTICLE_ALIGNED;
-	p->flags |= PARTICLE_AIRONLY;
-	p->flags |= PARTICLE_CLAMP;
-	p->flags |= PARTICLE_NOFADE;
-	p->time = cl.time;
-	p->endTime = cl.time + 2000000;
-	p->sFactor = GL_ONE;
-	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
-
-	p->color[0] = 0.05;
-	p->color[1] = 0;
-	p->color[2] = 0;
-
-	p->colorVel[0] = 0;
-	p->colorVel[1] = 0;
-	p->colorVel[2] = 0;
-
-	p->alpha = 1;
-	p->alphavel = -0.01;
-
-	p->type = PT_BLOOD;
-	p->size = 10;
-	p->sizeVel = 40;
-	p->len = 0;
-	p->endLen = 0;
-
-	for (j = 0; j < 3; j++) {
-		p->org[j] = org[j];
-		p->vel[j] = p->dir[j];
-	}
-
-}
-
-
 void CL_ParticleHeadBlood (vec3_t org) {
 	int j, i;
 	cparticle_t *p;
@@ -2586,8 +2532,6 @@ void CL_DiminishingTrail (vec3_t start, vec3_t end, centity_t * old,
 	float velscale;
 	int cont;
 	trace_t trace;
-	vec3_t gib_min = { -2, -2, -2 };
-	vec3_t gib_max = { 2, 2, 2 };
 
 	VectorCopy (start, move);
 	VectorSubtract (end, start, vec);

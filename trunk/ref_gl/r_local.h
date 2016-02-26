@@ -227,7 +227,6 @@ cvar_t *r_lockPvs;
 cvar_t *r_fullScreen;
 
 cvar_t *r_brightness;
-cvar_t *r_brightness;
 cvar_t *r_contrast;
 cvar_t *r_saturation;
 
@@ -1003,7 +1002,6 @@ uint water_alpha;
 uint water_thickness;
 uint water_screenSize;
 uint water_depthParams;
-uint water_thickness;
 uint water_colorModulate;
 uint water_ambient;
 uint water_trans;

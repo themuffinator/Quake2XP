@@ -1178,8 +1178,7 @@ void R_RegisterCvars(void)
 	
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
 	
-	r_brightness =							Cvar_Get("r_brightness", "1.5", CVAR_ARCHIVE);
-	r_brightness	=					Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
+	r_brightness =						Cvar_Get("r_brightness", "1.5", CVAR_ARCHIVE);
 	r_contrast	=						Cvar_Get("r_contrast", "1", CVAR_ARCHIVE);
 	r_saturation =						Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
 
@@ -1403,7 +1402,7 @@ R_Init
 qboolean IsExtensionSupported(const char *name)
 {
 	int			i;
-	uint		n = 0;
+	GLint		n = 0;
 	const char	*extension;
 
 	qglGetIntegerv(GL_NUM_EXTENSIONS, &n);
@@ -1611,7 +1610,7 @@ int R_Init(void *hinstance, void *hWnd)
 		if (qglGenBuffersARB && qglBindBufferARB && qglBufferDataARB && qglDeleteBuffersARB && qglBufferSubDataARB){
 			vec2_t		tmpVerts[4];
 			index_t		iCache[6 * MAX_DRAW_STRING_LENGTH];
-			int			idx = 0, numVerts = 0, i;
+			int			idx = 0, i;
 
 			Com_Printf("...using GL_ARB_vertex_buffer_object\n");
 			// precalc screen quads for postprocessing
