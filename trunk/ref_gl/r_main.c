@@ -462,7 +462,11 @@ void R_Clear(void)
 	qglClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
 	gldepthmin = 0.0;
 	gldepthmax = 1.0;
-	GL_DepthFunc(GL_LEQUAL);
+  // LEQUAL - trans
+  // EQUAL - opaque
+  // LESS - volumes and z-pass   
+	GL_DepthFunc(GL_LEQUAL); 
+  
 	GL_DepthRange(gldepthmin, gldepthmax);
 }
 
