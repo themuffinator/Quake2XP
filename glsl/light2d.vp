@@ -1,7 +1,7 @@
 layout(location = 0) in vec3	att_position;
 layout(location = 5) in vec2	att_texCoordDiffuse;
 
-out vec2 texCoord;
+out		vec2	texCoord;
 uniform mat4	u_orthoMatrix;
 
 void main (void) {

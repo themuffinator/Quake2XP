@@ -5,7 +5,6 @@ layout (binding = 3) uniform sampler2D		u_Caustics;
 
 uniform float	u_ColorModulate;
 uniform float	u_specularScale;
-uniform float	u_specularExp;
 uniform vec4 	u_LightColor;
 uniform float 	u_LightRadius;
 uniform int		u_fog;
@@ -36,7 +35,7 @@ void main (void) {
  
 	vec3	V = normalize(v_viewVecTS);
 	vec3	L = normalize(v_lightVec);
-	vec2  P = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
+	vec2	P = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
 
 	vec4 diffuseMap = texture(u_Diffuse,  P);
 	vec4 normalMap =  texture(u_NormalMap, P);
@@ -61,14 +60,14 @@ void main (void) {
 	}
 
 	if(u_isAmbient == 0) {
-	
-	float specular = normalMap.a * u_specularScale;
-  float roughness = diffuseMap.r;
-  roughness = 1.0 - roughness; 
-  vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalize(normalMap.xyz), L, V);
-  vec3 brdfColor = brdf * u_LightColor.rgb * cubeFilter.rgb;
+		
+		float specular = normalMap.a * u_specularScale;
+		float roughness = diffuseMap.r;
+		roughness = 1.0 - roughness; 
+		vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalize(normalMap.xyz), L, V);
+		vec3 brdfColor = brdf * u_LightColor.rgb * cubeFilter.rgb;
           
-		if(u_fog == 1) {
+		if(u_fog == 1) {  
 			float fogCoord = abs(gl_FragCoord.z/ gl_FragCoord.w); // = gl_FragCoord.z / gl_FragCoord.w;
 			float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
 

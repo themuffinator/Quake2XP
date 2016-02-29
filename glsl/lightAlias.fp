@@ -5,7 +5,6 @@ layout (binding = 3) uniform samplerCube	u_CubeFilterMap;
 
 uniform float			u_LightRadius;
 uniform float			u_specularScale;
-//uniform float			u_specularExp;
 uniform float			u_CausticsModulate;
 uniform float			u_ColorModulate;
 uniform vec4			u_LightColor;
@@ -20,9 +19,6 @@ in vec3			v_lightVec;
 in vec4			v_CubeCoord;
 in vec4			v_positionVS;
 in vec3			v_lightAtten;
-
-// FIXME: give uniform
-#define u_specularExp		16.0
 
 #include lighting.inc
 

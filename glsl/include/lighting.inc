@@ -1,10 +1,3 @@
-#define	CUTOFF_EPSILON		1.0/255.0		// light intensity below which fragment is discarded
-#define PI      3.14159265358979323846
-#define HALF_PI      1.57079632679489661923
-#define SQRT_PI      1.77245385090551602729
-#define SQRT_THREE    1.73205080756887729352
-#define INV_PI      (1.0 / PI)
-
 #ifndef saturate
 #define saturate(x)    clamp(x, 0.0, 1.0)
 #endif
@@ -68,7 +61,6 @@ vec4 subScatterFS(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diff
 float PointAttenuation (const in vec3 p, const in float e) {
 	return pow(max(1.0 - dot(p, p), 0.0), e);
 }
-
 
 /*
 =================================================================
@@ -236,7 +228,7 @@ vec3 Lighting_BRDF (in vec3 diffuseColor, in vec3 specularColor, in float roughn
 		vec3 diffuse =  Diffuse_OrenNayar(diffuseColor, roughness, NV, NL, VH);
 		float D = SpecularD_GGX(roughness, NH);
 		float G = SpecularG_SmithApprox(roughness, NV, NL);
-  	vec3 F = SpecularF_Schlick(specularColor, VH);
+  		vec3 F = SpecularF_Schlick(specularColor, VH);
 
 		return NL * (diffuse + D * G * F);
 	}
