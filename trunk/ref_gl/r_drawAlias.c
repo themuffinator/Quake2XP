@@ -45,8 +45,8 @@ float shadelight[3];
 float	*shadedots = r_avertexnormal_dots[0];
 float	ref_realtime =0;
 
-void	GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t color);
-void	GL_DrawAliasFrameLerpAmbientShell(dmdl_t *paliashdr);
+void	GL_DrawAliasFrameLerp(dmdl_t *paliashdr, vec3_t color);
+void	GL_DrawAliasFrameLerpShell(dmdl_t *paliashdr);
 
 /*
 ** R_CullAliasModel
@@ -237,9 +237,6 @@ next:
 		
 	SetModelsLight();
 	
-	if (currententity->flags & RF_TRANSLUCENT)
-		GL_Enable(GL_BLEND);
-	
 	if ((currententity->frame >= paliashdr->num_frames)
 		|| (currententity->frame < 0)) {
 		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
@@ -259,16 +256,12 @@ next:
 	R_SetupEntityMatrix(e);
 
 	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) 
-		GL_DrawAliasFrameLerpAmbientShell(paliashdr);
+		GL_DrawAliasFrameLerpShell(paliashdr);
 	else 
-		GL_DrawAliasFrameLerpAmbient(paliashdr, shadelight);
+		GL_DrawAliasFrameLerp(paliashdr, shadelight);
 
 	if(weapon_model)	
 		GL_DrawAliasFrameLerpWeapon(paliashdr);
-
-
-	if (currententity->flags & RF_TRANSLUCENT)
-		GL_Disable(GL_BLEND);
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
@@ -280,7 +273,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 {
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
-	vec3_t		tmpOrg, tmpView, tmp;
 	vec3_t		mins, maxs;
 	int			i;
 
@@ -363,20 +355,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 
 	R_SetupEntityMatrix(currententity);
 
-	VectorCopy(currentShadowLight->origin, tmpOrg);
-	VectorCopy(r_origin, tmpView);
-
-	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
-	Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
-
-	VectorSubtract(r_origin, currententity->origin, tmp);
-	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
-
-
 	GL_DrawAliasFrameLerpLight(paliashdr);
-	
-	VectorCopy(tmpOrg, currentShadowLight->origin);
-	VectorCopy(tmpView, r_origin);
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);

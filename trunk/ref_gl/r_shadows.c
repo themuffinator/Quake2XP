@@ -324,7 +324,7 @@ void R_CastAliasShadowVolumes (void) {
 	if (!r_shadows->value || !r_drawEntities->value)
 		return;
 
-	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient)
+	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->isFog)
 		return;
 
 	// setup program

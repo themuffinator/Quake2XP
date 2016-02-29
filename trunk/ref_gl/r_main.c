@@ -557,6 +557,8 @@ void R_DrawPlayerWeaponAmbient(void)
 
 	}
 	// draw transluscent shells
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_ONE, GL_ONE);
 	GL_DepthMask(0);
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -572,6 +574,8 @@ void R_DrawPlayerWeaponAmbient(void)
 		if (currentmodel->type == mod_alias)
 			R_DrawAliasModel(currententity, qfalse);
 	}
+
+	GL_Enable(GL_BLEND);
 	GL_DepthMask(1);
 }
 
@@ -782,6 +786,9 @@ static void R_DrawEntitiesOnList (void) {
 		if (currententity->flags & (RF_TRANSLUCENT | RF_WEAPONMODEL) || ((currententity->flags & RF_DISTORT) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)))
 			continue;
 
+		if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
+			continue;
+		
 		if (currententity->flags & RF_BEAM) {
 			R_DrawBeam();
 			continue;
@@ -809,6 +816,36 @@ static void R_DrawEntitiesOnList (void) {
 				break;
 		}
 	}
+
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_ONE, GL_ONE);
+	GL_DepthMask(0);
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+
+		if (!(currententity->flags & RF_TRANSLUCENT))
+			continue;
+
+		if (currententity->flags & (RF_WEAPONMODEL))
+			continue;
+
+		if (currententity->flags & RF_BEAM) {
+			R_DrawBeam();
+			continue;
+		}
+
+		currentmodel = currententity->model;
+
+		if (!currentmodel) {
+			R_DrawNullModel();
+			continue;
+		}
+
+		if (currentmodel->type == mod_alias) 
+			R_DrawAliasModel(currententity, qfalse);
+	}
+	GL_Disable(GL_BLEND);
+	GL_DepthMask(1);
 }
 
 // draw all opaque, non-reflective stuff
@@ -829,6 +866,9 @@ static void R_DrawRAScene (void) {
 
 	R_DrawChainsRA(qfalse);
 
+	GL_DepthMask(1);
+	GL_PolygonOffset(0.0, 1.0);
+
 	R_CaptureColorBuffer();
 
 	if (!r_drawEntities->value)
@@ -843,8 +883,6 @@ static void R_DrawRAScene (void) {
 			continue;
 		}
 	}
-	GL_DepthMask(1);
-	GL_PolygonOffset(0.0, 1.0);
 }
 
 /*
@@ -1095,7 +1133,7 @@ void R_LowSpecMachine_f(void)
 {
 Cvar_Set("r_textureCompression", "1");
 Cvar_Set("r_maxTextureSize", "512");
-Cvar_Set("r_anisotropic", "1");
+Cvar_Set("r_anisotropic", "4");
 Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 
 Cvar_Set("r_shadows", "0");
@@ -1591,7 +1629,7 @@ int R_Init(void *hinstance, void *hWnd)
 	glDeleteVertexArrays	= (PFNGLDELETEVERTEXARRAYSPROC)	qwglGetProcAddress	("glDeleteVertexArrays");
 	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress	("glBindVertexArray");
 
-	gl_state.bufferStorage = qfalse;
+/*	gl_state.bufferStorage = qfalse;
 
 	if (IsExtensionSupported("GL_ARB_buffer_storage")){ //gl 4.4 
 		Com_Printf("...using GL_ARB_buffer_storage\n");
@@ -1600,7 +1638,7 @@ int R_Init(void *hinstance, void *hWnd)
 	}
 	else
 		Com_Printf(S_COLOR_RED"...using GL_ARB_buffer_storage not found\n");
-
+*/
 	if (IsExtensionSupported("GL_ARB_vertex_buffer_object")) {
 
 		qglBindBufferARB =		(PFNGLBINDBUFFERARBPROC)		qwglGetProcAddress("glBindBufferARB");

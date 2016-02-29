@@ -125,7 +125,7 @@ void GL_DrawAliasFrameLerpWeapon (dmdl_t *paliashdr) {
 	GL_BindNullProgram();
 }
 
-void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
+void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	vec3_t		vertexArray[3 * MAX_TRIANGLES];
 	vec4_t		colorArray[4 * MAX_TRIANGLES];
 	int			index_xyz;
@@ -292,7 +292,7 @@ void GL_DrawAliasFrameLerpAmbient (dmdl_t *paliashdr, vec3_t lightColor) {
 	GL_BindNullProgram ();
 }
 
-void GL_DrawAliasFrameLerpAmbientShell (dmdl_t *paliashdr) {
+void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	vec3_t		vertexArray[3 * MAX_TRIANGLES];
 	int			index_xyz, i, j, jj = 0;
 	dtriangle_t	*tris;
@@ -306,9 +306,6 @@ void GL_DrawAliasFrameLerpAmbientShell (dmdl_t *paliashdr) {
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
-
-	GL_Enable (GL_BLEND);
-	GL_BlendFunc (GL_ONE, GL_ONE);
 
 	scroll = r_newrefdef.time *0.45;
 
@@ -393,6 +390,13 @@ void GL_DrawAliasFrameLerpAmbientShell (dmdl_t *paliashdr) {
 void R_UpdateLightAliasUniforms()
 {
 	mat4_t	entAttenMatrix;
+	vec3_t	localLight, localView, tmp;
+
+	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, localLight);
+
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, localView);
 
 	qglUniform1f(lightAlias_colorScale, r_textureColorScale->value);
 	qglUniform1i(lightAlias_ambient, (int)currentShadowLight->isAmbient);
@@ -400,8 +404,8 @@ void R_UpdateLightAliasUniforms()
 	qglUniform1i(lightAlias_fog, (int)currentShadowLight->isFog);
 	qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity);
 	qglUniform1f(lightAlias_causticsIntens, r_causticIntens->value);
-	qglUniform3fv(lightAlias_viewOrigin, 1, r_origin);
-	qglUniform3fv(lightAlias_lightOrigin, 1, currentShadowLight->origin);
+	qglUniform3fv(lightAlias_viewOrigin, 1, localView);
+	qglUniform3fv(lightAlias_lightOrigin, 1, localLight);
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
 	qglUniformMatrix4fv(lightAlias_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
@@ -438,9 +442,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
-
-	if (currentmodel->noSelfShadow && r_shadows->value)
-		GL_Disable (GL_STENCIL_TEST);
 
 	backlerp = currententity->backlerp;
 	frontlerp = 1 - backlerp;
@@ -545,7 +546,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 		qglUniform1i(lightAlias_isCaustics, 0);
 
 	qglUniform1f (lightAlias_specularScale, r_specularScale->value);
-//	qglUniform1f (lightAlias_specularExp, skin->SpecularExp ? skin->SpecularExp : 16.f);
 
 	GL_MBind (GL_TEXTURE0_ARB, skinNormalmap->texnum);
 	GL_MBind (GL_TEXTURE1_ARB, skin->texnum);
@@ -569,9 +569,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
-
-	if (currentmodel->noSelfShadow && r_shadows->value)
-		GL_Enable (GL_STENCIL_TEST);
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TANGENT);

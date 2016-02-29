@@ -186,8 +186,9 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 
 
 void R_DrawChainsRA (qboolean bmodel) {
-	msurface_t *s;
-	float colorScale = max(r_lightmapScale->value, 0.33);
+	
+	msurface_t	*s;
+	float		colorScale = max(r_lightmapScale->value, 0.33);
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -274,7 +275,6 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		normal	= R_TextureAnimationNormal(surf->texInfo);
 
 		qglUniform1f(ambientWorld_specularScale, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
-		qglUniform1f(ambientWorld_specularExp, image->SpecularExp ? image->SpecularExp : 16.f);
 		
 		if (!r_skipStaticLights->value) 
 		{
@@ -494,8 +494,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
 
 		qglUniform1f(lightWorld_specularScale, image->specularScale ? image->specularScale : r_specularScale->value);
-
-		qglUniform1f(lightWorld_specularExp, image->SpecularExp ? image->SpecularExp : 16.f);
 		
 		if (bmodel){
 			if (caustics && currentShadowLight->castCaustics)

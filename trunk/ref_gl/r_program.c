@@ -11,11 +11,10 @@ SHADING LANGUAGE INTERFACE
 #endif
 
 #define MAX_INFO_LOG		4096
-
 #define	PROGRAM_HASH_SIZE	MAX_PROGRAMS
 
-static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
 int r_numPrograms;
+static glslProgram_t	*programHashTable[PROGRAM_HASH_SIZE];
 static glslProgram_t	r_nullProgram;
 
 static const char *shader4 =
@@ -24,16 +23,23 @@ static const char *shader4 =
 static const char *shader5 =
 "#extension GL_ARB_gpu_shader5 : enable\n";
 
-static const char *baseExt =
-"#extension GL_ARB_texture_rectangle : enable\n"
+static const char *glslExt =
+"#version 150\n"
+"#extension GL_ARB_texture_rectangle			: enable\n"
+"#extension GL_ARB_explicit_attrib_location		: enable\n"
+"#extension GL_ARB_explicit_uniform_location	: enable\n"
+"#extension GL_ARB_separate_shader_objects		: enable\n"
+"#extension GL_ARB_shading_language_420pack		: enable\n"
 "out vec4 fragData;\n";
 
-static const char *glslVersion =
-"#version 150\n"
-"#extension GL_ARB_explicit_attrib_location  : enable\n"
-"#extension GL_ARB_explicit_uniform_location  : enable\n"
-"#extension GL_ARB_separate_shader_objects : enable\n"
-"#extension GL_ARB_shading_language_420pack : enable\n";
+static const char *mathDefs =
+"#define	CUTOFF_EPSILON	1.0 / 255.0\n"
+"#define	PI				3.14159265358979323846\n"
+"#define	HALF_PI			1.57079632679489661923\n"
+"#define	SQRT_PI			1.77245385090551602729\n"
+"#define	SQRT_THREE		1.73205080756887729352\n"
+"#define	INV_PI			(1.0 / PI)\n";
+
 
 /*
 =================
@@ -315,7 +321,8 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 		}
 		/// Berserker's fix end
 	
-		strings[numStrings++] = glslVersion; //force version if needit
+		strings[numStrings++] = glslExt; 
+		strings[numStrings++] = mathDefs;
 
 		// compile vertex shader
 		if (vertexSource) {
@@ -341,8 +348,6 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 			strings[numStrings++] = shader5;
 		else
 			strings[numStrings++] = shader4;
-
-		strings[numStrings++] = baseExt;
 
 		// compile fragment shader
 		if (fragmentSource) {
@@ -518,7 +523,6 @@ void R_InitPrograms (void) {
 		ambientWorld_parallaxParams = qglGetUniformLocation (id, "u_parallaxParams");
 		ambientWorld_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
 		ambientWorld_specularScale	= qglGetUniformLocation (id, "u_specularScale");
-		ambientWorld_specularExp	= qglGetUniformLocation (id, "u_specularExp");
 		ambientWorld_viewOrigin		= qglGetUniformLocation (id, "u_viewOriginES");
 		ambientWorld_parallaxType	= qglGetUniformLocation (id, "u_parallaxType");
 		ambientWorld_ambientLevel	= qglGetUniformLocation (id, "u_ambientScale");
@@ -551,7 +555,6 @@ void R_InitPrograms (void) {
 		lightWorld_caustics			= qglGetUniformLocation (id, "u_isCaustics");
 
 		lightWorld_specularScale	= qglGetUniformLocation (id, "u_specularScale");
-		lightWorld_specularExp		= qglGetUniformLocation (id, "u_specularExp");
 		lightWorld_ambient			= qglGetUniformLocation (id, "u_isAmbient");
 		lightWorld_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
 		lightWorld_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
@@ -601,7 +604,6 @@ void R_InitPrograms (void) {
 		lightAlias_isCaustics		= qglGetUniformLocation (id, "u_isCaustics");
 		lightAlias_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
 		lightAlias_specularScale	= qglGetUniformLocation (id, "u_specularScale");
-		lightAlias_specularExp		= qglGetUniformLocation (id, "u_specularExp");
 		lightAlias_ambient			= qglGetUniformLocation (id, "u_isAmbient");
 		lightAlias_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
 		lightAlias_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");

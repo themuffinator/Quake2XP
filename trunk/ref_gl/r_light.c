@@ -112,12 +112,18 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	Mat4_AffineInvert(tmpMatrix, mvMatrix);
 
 	// setup unit space conversion matrix
-	tmpMatrix[0][0] = 1.f / light->radius[0];
+	if (light->isFog == 1)
+		tmpMatrix[0][0] = 0.0001f;
+	else
+		tmpMatrix[0][0] = 1.f / light->radius[0];
 	tmpMatrix[0][1] = 0.f;
 	tmpMatrix[0][2] = 0.f;
 	tmpMatrix[0][3] = 0.f;
 	tmpMatrix[1][0] = 0.f;
-	tmpMatrix[1][1] = 1.f / light->radius[1];
+	if (light->isFog == 1)
+		tmpMatrix[1][1] = 0.0001f;
+	else
+		tmpMatrix[1][1] = 1.f / light->radius[1];
 	tmpMatrix[1][2] = 0.f;
 	tmpMatrix[1][3] = 0.f;
 	tmpMatrix[2][0] = 0.f;
@@ -213,15 +219,15 @@ void R_AddNoWorldModelLight () {
 	memset (light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet (light->origin, currententity->origin[0], currententity->origin[1], currententity->origin[2]+256);
+	VectorSet (light->origin, currententity->origin[0]-128, currententity->origin[1], currententity->origin[2]+64);
 	VectorSet (light->startColor, 1.0, 1.0, 1.0);
 	VectorSet (light->color, 1.0, 1.0, 1.0);
 	VectorSet (light->angles, 0, 0, 0);
-	VectorSet (light->radius, 700, 700, 700);
+	VectorSet (light->radius, 500, 500, 500);
 
 	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - 700;
-		light->maxs[i] = light->origin[i] + 700;
+		light->mins[i] = light->origin[i] - 500;
+		light->maxs[i] = light->origin[i] + 500;
 	}
 
 	light->style = 0;
@@ -1616,12 +1622,18 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	Mat4_AffineInvert(tmpMatrix, mvMatrix);
 
 	// setup unit space conversion matrix
-	tmpMatrix[0][0] = 1.f / light->radius[0];
+	if (light->isFog == 1)
+		tmpMatrix[0][0] = 0.0001f;
+	else
+		tmpMatrix[0][0] = 1.f / light->radius[0];
 	tmpMatrix[0][1] = 0.f;
 	tmpMatrix[0][2] = 0.f;
 	tmpMatrix[0][3] = 0.f;
 	tmpMatrix[1][0] = 0.f;
-	tmpMatrix[1][1] = 1.f / light->radius[1];
+	if (light->isFog == 1)
+		tmpMatrix[1][1] = 0.0001f;
+	else
+		tmpMatrix[1][1] = 1.f / light->radius[1];
 	tmpMatrix[1][2] = 0.f;
 	tmpMatrix[1][3] = 0.f;
 	tmpMatrix[2][0] = 0.f;
