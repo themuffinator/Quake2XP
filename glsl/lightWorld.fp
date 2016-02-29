@@ -53,26 +53,32 @@ void main (void) {
 		diffuseMap = tmp + diffuseMap;
 	}
 
+	diffuseMap *= u_ColorModulate;
+
 	if(u_isAmbient == 1) {
 		fragData = diffuseMap * LambertLighting(normalize(normalMap.xyz), L) * u_LightColor * attenMap;
 		return;
 	}
 
 	if(u_isAmbient == 0) {
-		float specular = normalMap.a * u_specularScale;
-		vec2 Es = PhongLighting(normalize(normalMap.xyz), L, V, u_specularExp);
-
+	
+	float specular = normalMap.a * u_specularScale;
+  float roughness = diffuseMap.r;
+  roughness = 1.0 - roughness; 
+  vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalize(normalMap.xyz), L, V);
+  vec3 brdfColor = brdf * u_LightColor.rgb * cubeFilter.rgb;
+          
 		if(u_fog == 1) {
-			float fogCoord = abs(gl_FragCoord.z / gl_FragCoord.w); // = gl_FragCoord.z / gl_FragCoord.w;
+			float fogCoord = abs(gl_FragCoord.z/ gl_FragCoord.w); // = gl_FragCoord.z / gl_FragCoord.w;
 			float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
-			//float fogFactor = exp(-pow(u_fogDensity * fogCoord, 2.0)); //exp2
 
-			vec4 color = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
-			fragData = mix(u_LightColor, color, fogFactor) * attenMap;  // u_LightColor == fogColor
+			fragData = mix(u_LightColor, vec4(brdfColor, 1.0), fogFactor) * attenMap;  // u_LightColor == fogColor
 			return;
 		}
-
-		if(u_fog == 0)
-			fragData = (Es.x * diffuseMap + Es.y * specular) * u_LightColor * cubeFilter * attenMap;
-	} 
+     
+		if(u_fog == 0) { 
+		fragData.rgb =  brdfColor * attenMap; 
+		fragData.a = 1.0;
+     }
+  }	
 }
