@@ -203,7 +203,7 @@ void R_AddDynamicLight (dlight_t *dl) {
 	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
 }
 
-void R_AddNoWorldModelLight (float lightPos) {
+void R_AddNoWorldModelLight () {
 
 	worldShadowLight_t *light;
 	mat4_t				tmpMatrix, mvMatrix;
@@ -213,15 +213,15 @@ void R_AddNoWorldModelLight (float lightPos) {
 	memset (light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet (light->origin, currententity->origin[0], currententity->origin[1], currententity->origin[2] + lightPos);
+	VectorSet (light->origin, currententity->origin[0], currententity->origin[1], currententity->origin[2]+256);
 	VectorSet (light->startColor, 1.0, 1.0, 1.0);
 	VectorSet (light->color, 1.0, 1.0, 1.0);
 	VectorSet (light->angles, 0, 0, 0);
-	VectorSet (light->radius, 500, 500, 500);
+	VectorSet (light->radius, 700, 700, 700);
 
 	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - 500;
-		light->maxs[i] = light->origin[i] + 500;
+		light->mins[i] = light->origin[i] - 700;
+		light->maxs[i] = light->origin[i] + 700;
 	}
 
 	light->style = 0;
@@ -290,10 +290,9 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 		R_AddDynamicLight (&r_newrefdef.dlights[i]);
 	}
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
-		R_AddNoWorldModelLight(128);
-		R_AddNoWorldModelLight(-128);
-	}
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) 
+		R_AddNoWorldModelLight();
+	
 	if (!shadowLight_frame)
 		return;
 
