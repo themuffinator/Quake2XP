@@ -154,7 +154,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 		if (!r_skipStaticLights->value)
-			VectorSet(lightColor, 0.333, 0.333, 0.333);
+			VectorSet(lightColor, 0.33, 0.33, 0.33);
 		else
 			VectorSet(lightColor, 0.5, 0.5, 0.5);
 	}
@@ -435,7 +435,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 					vertexArray[3 * MAX_TRIANGLES],
 					maxs;
 	image_t			*skin, *skinNormalmap;
-	int				index2, oldindex2;
 	unsigned		defBits = 0;
 	int				id;
 	qboolean		inWater;
@@ -446,7 +445,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	backlerp = currententity->backlerp;
 	frontlerp = 1 - backlerp;
 
-	offs = paliashdr->num_xyz;
+	offs = paliashdr->num_tris;
 
 	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
 	oldverts = oldframe->verts;
@@ -506,22 +505,19 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {
 			index_xyz = tris[i].index_xyz[j];
-			index2 = verts[index_xyz].lightnormalindex;
-			oldindex2 = oldverts[index_xyz].lightnormalindex;
+			
+			normalArray[jj][0] = r_avertexnormals[oldnorms[i]][0] * backlerp + r_avertexnormals[norms[i]][0] * frontlerp;
+			normalArray[jj][1] = r_avertexnormals[oldnorms[i]][1] * backlerp + r_avertexnormals[norms[i]][1] * frontlerp;
+			normalArray[jj][2] = r_avertexnormals[oldnorms[i]][2] * backlerp + r_avertexnormals[norms[i]][2] * frontlerp;
 
-			normalArray[jj][0] = r_avertexnormals[oldindex2][0] * backlerp + r_avertexnormals[index2][0] * frontlerp;
-			normalArray[jj][1] = r_avertexnormals[oldindex2][1] * backlerp + r_avertexnormals[index2][1] * frontlerp;
-			normalArray[jj][2] = r_avertexnormals[oldindex2][2] * backlerp + r_avertexnormals[index2][2] * frontlerp;
+			tangentArray[jj][0] = r_avertexnormals[oldtangents[i]][0] * backlerp + r_avertexnormals[tangents[i]][0] * frontlerp;
+			tangentArray[jj][1] = r_avertexnormals[oldtangents[i]][1] * backlerp + r_avertexnormals[tangents[i]][1] * frontlerp;
+			tangentArray[jj][2] = r_avertexnormals[oldtangents[i]][2] * backlerp + r_avertexnormals[tangents[i]][2] * frontlerp;
 
-			tangentArray[jj][0] = r_avertexnormals[oldtangents[index_xyz]][0] * backlerp + r_avertexnormals[tangents[index_xyz]][0] * frontlerp;
-			tangentArray[jj][1] = r_avertexnormals[oldtangents[index_xyz]][1] * backlerp + r_avertexnormals[tangents[index_xyz]][1] * frontlerp;
-			tangentArray[jj][2] = r_avertexnormals[oldtangents[index_xyz]][2] * backlerp + r_avertexnormals[tangents[index_xyz]][2] * frontlerp;
+			binormalArray[jj][0] = r_avertexnormals[oldbinormals[i]][0] * backlerp + r_avertexnormals[binormals[i]][0] * frontlerp;
+			binormalArray[jj][1] = r_avertexnormals[oldbinormals[i]][1] * backlerp + r_avertexnormals[binormals[i]][1] * frontlerp;
+			binormalArray[jj][2] = r_avertexnormals[oldbinormals[i]][2] * backlerp + r_avertexnormals[binormals[i]][2] * frontlerp;
 
-			binormalArray[jj][0] = r_avertexnormals[oldbinormals[index_xyz]][0] * backlerp + r_avertexnormals[binormals[index_xyz]][0] * frontlerp;
-			binormalArray[jj][1] = r_avertexnormals[oldbinormals[index_xyz]][1] * backlerp + r_avertexnormals[binormals[index_xyz]][1] * frontlerp;
-			binormalArray[jj][2] = r_avertexnormals[oldbinormals[index_xyz]][2] * backlerp + r_avertexnormals[binormals[index_xyz]][2] * frontlerp;
-
-			index_xyz = tris[i].index_xyz[j];
 			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
 
 		}
