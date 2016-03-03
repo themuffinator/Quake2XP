@@ -755,6 +755,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 
 		return;
 	}
+	
 	// node is just a decision point, so go down the apropriate sides
 	// find which side of the node we are on
 	plane = node->plane;
@@ -785,6 +786,8 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 
 	// recurse down the children, front side first
 	R_RecursiveWorldNode(node->children[side]);
+
+	AddBoundsToBounds(node->minmaxs, node->minmaxs+3, r_newrefdef.visMins, r_newrefdef.visMaxs);
 
 	// draw stuff
 	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {

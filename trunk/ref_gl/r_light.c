@@ -45,6 +45,15 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 		return qfalse;
 
 	if (light->spherical) {
+		if (!BoundsAndSphereIntersect(r_newrefdef.visMins, r_newrefdef.visMaxs, light->origin, light->radius[0]))
+			return qfalse;
+	}
+	else {
+		if (!BoundsIntersect(r_newrefdef.visMins, r_newrefdef.visMaxs, light->mins, light->maxs))
+			return qfalse;
+	}
+
+	if (light->spherical) {
 
 		if (R_CullSphere(light->origin, light->radius[0]))
 			return qfalse;

@@ -514,6 +514,10 @@ typedef struct {
 	byte *areabits;				// if not NULL, only areas with set bits
 	// will be drawn
 
+	// world bounds
+	vec3_t			visMins;
+	vec3_t			visMaxs;
+
 	lightstyle_t *lightstyles;	// [MAX_LIGHTSTYLES]
 
 	// viewport

@@ -478,6 +478,7 @@ void GL_Ortho(mat4_t m, GLdouble left, GLdouble right, GLdouble bottom, GLdouble
 
 trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
 void DrawTextureChains2 ();
+void AddBoundsToBounds(const vec3_t mins1, const vec3_t maxs1, vec3_t mins2, vec3_t maxs2);
 
 void R_DrawChainsRA(qboolean bmodel);
 void R_DrawBrushModelRA(void);

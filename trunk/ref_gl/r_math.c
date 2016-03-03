@@ -675,3 +675,14 @@ void SetPlaneSignBits (cplane_t *plane) {
 	if (plane->normal[2] < 0)
 		plane->signbits |= 4;
 }
+
+void AddBoundsToBounds(const vec3_t mins1, const vec3_t maxs1, vec3_t mins2, vec3_t maxs2) {
+	int		i;
+
+	for (i = 0; i<3; i++) {
+		if (mins1[i] < mins2[i])
+			mins2[i] = mins1[i];
+		if (maxs1[i] > maxs2[i])
+			maxs2[i] = maxs1[i];
+	}
+}
