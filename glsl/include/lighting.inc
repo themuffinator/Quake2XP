@@ -34,9 +34,9 @@ float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower
 
 vec4 subScatterFS(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
 {
-    float MaterialThickness = 0.2;
-    vec3 ExtinctionCoefficient = vec3(0.45, 0.35, 0.25);
-    float RimScalar = 10.0;
+    float MaterialThickness = 0.3;
+    vec3 ExtinctionCoefficient = vec3(0.3, 0.25, 0.1);
+    float RimScalar = 3.0;
 
     vec4 dotLN = vec4(halfLambert(L, N) * Att);
     dotLN *= Diffuse;
@@ -49,7 +49,7 @@ vec4 subScatterFS(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diff
     rim *= rim;
     rim *= max(dot(N,L),0.0) * Specular;
      
-    vec4 finalCol = dotLN + vec4(indirectLightComponent,1.0);
+    vec4 finalCol = dotLN + vec4(indirectLightComponent, 1.0);
     finalCol.rgb += (rim * RimScalar * Att * finalCol.a);
     
     finalCol.rgb += vec3(blinnPhongSpecular(N,L, 0.5) * Att * Specular * finalCol.a * 0.05);

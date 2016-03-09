@@ -3,15 +3,15 @@ layout (binding = 1) uniform sampler2D		u_diffuseMap;
 layout (binding = 2) uniform sampler2D		u_causticMap;
 layout (binding = 3) uniform samplerCube	u_CubeFilterMap;
 
-uniform float			u_LightRadius;
-uniform float			u_specularScale;
-uniform float			u_CausticsModulate;
-uniform float			u_ColorModulate;
-uniform vec4			u_LightColor;
-uniform int				u_fog;
-uniform float			u_fogDensity;
-uniform int				u_isCaustics;
-uniform int				u_isAmbient;
+uniform float	u_LightRadius;
+uniform float	u_specularScale;
+uniform float	u_CausticsModulate;
+uniform float	u_ColorModulate;
+uniform vec4	u_LightColor;
+uniform int		u_fog;
+uniform float	u_fogDensity;
+uniform int		u_isCaustics;
+uniform int		u_isAmbient;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -19,6 +19,7 @@ in vec3			v_lightVec;
 in vec4			v_CubeCoord;
 in vec4			v_positionVS;
 in vec3			v_lightAtten;
+in vec3			v_lightDirection;
 
 #include lighting.inc
 
