@@ -104,7 +104,7 @@ qboolean R_CullBox (vec3_t mins, vec3_t maxs) {
 	return qfalse;
 }
 
-qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust) {
+qboolean R_CullConeLight (vec3_t mins, vec3_t maxs, cplane_t *frust) {
 	int		i;
 
 	if (r_noCull->value)

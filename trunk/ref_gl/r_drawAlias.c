@@ -325,6 +325,8 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 			return;
 	}
+	if (currentShadowLight->_cone && R_CullConeLight(mins, maxs, currentShadowLight->frust))
+		return;
 
 	if (!InLightVISEntity())
 		return;

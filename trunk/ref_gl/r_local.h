@@ -424,7 +424,7 @@ extern qboolean flareEdit;
 void R_CalcCubeMapMatrix (qboolean model);
 void DeleteShadowVertexBuffers (void);
 void MakeFrustum4Light (worldShadowLight_t *light, qboolean ingame);
-qboolean R_CullBox_ (vec3_t mins, vec3_t maxs, cplane_t *frust);
+qboolean R_CullConeLight (vec3_t mins, vec3_t maxs, cplane_t *frust);
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr);
 qboolean SurfInFrustum (msurface_t *s);
 qboolean HasSharedLeafs (byte *v1, byte *v2);

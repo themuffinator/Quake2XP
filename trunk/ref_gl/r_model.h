@@ -71,7 +71,8 @@ typedef struct worldShadowLight_s {
 
 	qboolean	spherical;
 	qboolean	castCaustics;
-	
+	qboolean	caps;
+
 	cplane_t	frust[6];
 	msurface_t	*interaction[MAX_MAP_FACES];
 	int			numInteractionSurfs;
@@ -94,6 +95,7 @@ typedef struct worldShadowLight_s {
 
 #define		Q_INFINITY	1e30f
 #define		MAX_WORLD_SHADOW_LIHGTS	1024
+#define		EQUAL_EPSILON		0.000001f
 int			r_numWorlsShadowLights;
 extern		worldShadowLight_t *currentShadowLight;
 extern int	numPreCachedLights;
@@ -148,10 +150,18 @@ typedef struct {
 	int firstface, numfaces;
 } mmodel_t;
 
-
+/*
 #define	SIDE_FRONT	0
 #define	SIDE_BACK	1
 #define	SIDE_ON		2
+#define SIDE_CLIP   3
+*/
+typedef enum {
+	SIDE_ON,		// used by point check only
+	SIDE_FRONT,
+	SIDE_BACK,
+	SIDE_CLIP
+} side_t;
 
 // !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct {

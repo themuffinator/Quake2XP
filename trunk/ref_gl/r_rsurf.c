@@ -891,7 +891,7 @@ next:
 		if(!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
 			return qfalse;
 
-		if(currentShadowLight->_cone && R_CullBox_(&pbbox[0], &pbbox[3], currentShadowLight->frust))
+		if(currentShadowLight->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], currentShadowLight->frust))
 			return qfalse;
 	}
 
