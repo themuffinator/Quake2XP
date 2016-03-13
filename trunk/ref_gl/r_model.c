@@ -1955,9 +1955,6 @@ void HACK_RecalcVertsLightNormalIdx (dmdl_t *pheader) {
 			}
 		}
 
-		/// Berserker
-		// В некоторых моделях изредка попадаются несколько точек, имеющие одинаковые координаты.
-		// Для таких случаев объединяем их вектора (если угол между нормалями невелик (до 15 градусов)).
 		for (j = 0; j < pheader->num_xyz; j++)
 		for (k = j + 1; k < pheader->num_xyz; k++)
 		if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2]) {
@@ -2337,9 +2334,6 @@ void Mod_LoadAliasModel (model_t * mod, void *buffer) {
 			}
 		}
 
-		/// Berserker:
-		// В некоторых моделях изредка попадаются несколько точек, имеющие одинаковые координаты.
-		// Для таких случаев объединяем их вектора (если угол между нормалями невелик (до 15 градусов)).
 		for (j = 0; j < pheader->num_xyz; j++)
 		for (k = j + 1; k < pheader->num_xyz; k++)
 		if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2]) {

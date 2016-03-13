@@ -271,10 +271,11 @@ next:
 
 void R_DrawAliasModelLightPass (qboolean weapon_model)
 {
-	dmdl_t		*paliashdr;
-	vec3_t		bbox[8];
-	vec3_t		mins, maxs;
-	int			i;
+	dmdl_t	*paliashdr;
+	vec3_t	bbox[8];
+	vec3_t	mins, maxs;
+	vec3_t	oldLight, oldView, tmp;
+	int		i;
 
 	if (!r_drawEntities->value)
 		return;
@@ -317,16 +318,22 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	VectorAdd(currententity->origin, currententity->model->mins, mins);
 	}
 	
-	if(currentShadowLight->spherical){
-		if(!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
-			return;
-	}else{
+	if (currentShadowLight->_cone) {
 
-		if(!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
+		if (R_CullConeLight(mins, maxs, currentShadowLight->frust))
+			return;
+
+	}
+	else if (currentShadowLight->spherical) {
+
+		if (!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
 			return;
 	}
-	if (currentShadowLight->_cone && R_CullConeLight(mins, maxs, currentShadowLight->frust))
-		return;
+	else {
+
+		if (!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
+			return;
+	}
 
 	if (!InLightVISEntity())
 		return;
@@ -354,10 +361,22 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 		currententity->frame = 0;
 		currententity->oldframe = 0;
 	}
+	
+	VectorCopy(currentShadowLight->origin, oldLight);
+	VectorCopy(r_origin, oldView);
+
+	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, currentShadowLight->origin);
+
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
 
 	R_SetupEntityMatrix(currententity);
 
 	GL_DrawAliasFrameLerpLight(paliashdr);
+
+	VectorCopy(oldLight, currentShadowLight->origin);
+	VectorCopy(oldView, r_origin);
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);

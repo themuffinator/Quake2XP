@@ -387,13 +387,6 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 void R_UpdateLightAliasUniforms()
 {
 	mat4_t	entAttenMatrix;
-	vec3_t	localLight, localView, tmp;
-
-	VectorSubtract(currentShadowLight->origin, currententity->origin, tmp);
-	Mat3_TransposeMultiplyVector(currententity->axis, tmp, localLight);
-
-	VectorSubtract(r_origin, currententity->origin, tmp);
-	Mat3_TransposeMultiplyVector(currententity->axis, tmp, localView);
 
 	qglUniform1f(lightAlias_colorScale, r_textureColorScale->value);
 	qglUniform1i(lightAlias_ambient, (int)currentShadowLight->isAmbient);
@@ -401,8 +394,8 @@ void R_UpdateLightAliasUniforms()
 	qglUniform1i(lightAlias_fog, (int)currentShadowLight->isFog);
 	qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity);
 	qglUniform1f(lightAlias_causticsIntens, r_causticIntens->value);
-	qglUniform3fv(lightAlias_viewOrigin, 1, localView);
-	qglUniform3fv(lightAlias_lightOrigin, 1, localLight);
+	qglUniform3fv(lightAlias_viewOrigin, 1, r_origin);
+	qglUniform3fv(lightAlias_lightOrigin, 1, currentShadowLight->origin);
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
 	qglUniformMatrix4fv(lightAlias_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
@@ -432,17 +425,19 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 					vertexArray[3 * MAX_TRIANGLES],
 					maxs;
 	image_t			*skin, *skinNormalmap;
-	unsigned		defBits = 0;
-	int				id;
+	int				index2, oldindex2;
 	qboolean		inWater;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
+	if (currentmodel->noSelfShadow && r_shadows->value)
+		GL_Disable(GL_STENCIL_TEST);
+
 	backlerp = currententity->backlerp;
 	frontlerp = 1 - backlerp;
 
-	offs = paliashdr->num_tris;
+	offs = paliashdr->num_xyz;
 
 	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
 	oldverts = oldframe->verts;
@@ -497,33 +492,33 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	if (!skinNormalmap)
 		skinNormalmap = r_defBump;
 
-	R_CalcAliasFrameLerp (paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
+	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {
 			index_xyz = tris[i].index_xyz[j];
-			
-			normalArray[jj][0] = r_avertexnormals[oldnorms[i]][0] * backlerp + r_avertexnormals[norms[i]][0] * frontlerp;
-			normalArray[jj][1] = r_avertexnormals[oldnorms[i]][1] * backlerp + r_avertexnormals[norms[i]][1] * frontlerp;
-			normalArray[jj][2] = r_avertexnormals[oldnorms[i]][2] * backlerp + r_avertexnormals[norms[i]][2] * frontlerp;
+			index2 = verts[index_xyz].lightnormalindex;
+			oldindex2 = oldverts[index_xyz].lightnormalindex;
 
-			tangentArray[jj][0] = r_avertexnormals[oldtangents[i]][0] * backlerp + r_avertexnormals[tangents[i]][0] * frontlerp;
-			tangentArray[jj][1] = r_avertexnormals[oldtangents[i]][1] * backlerp + r_avertexnormals[tangents[i]][1] * frontlerp;
-			tangentArray[jj][2] = r_avertexnormals[oldtangents[i]][2] * backlerp + r_avertexnormals[tangents[i]][2] * frontlerp;
+			normalArray[jj][0] = r_avertexnormals[oldindex2][0] * backlerp + r_avertexnormals[index2][0] * frontlerp;
+			normalArray[jj][1] = r_avertexnormals[oldindex2][1] * backlerp + r_avertexnormals[index2][1] * frontlerp;
+			normalArray[jj][2] = r_avertexnormals[oldindex2][2] * backlerp + r_avertexnormals[index2][2] * frontlerp;
 
-			binormalArray[jj][0] = r_avertexnormals[oldbinormals[i]][0] * backlerp + r_avertexnormals[binormals[i]][0] * frontlerp;
-			binormalArray[jj][1] = r_avertexnormals[oldbinormals[i]][1] * backlerp + r_avertexnormals[binormals[i]][1] * frontlerp;
-			binormalArray[jj][2] = r_avertexnormals[oldbinormals[i]][2] * backlerp + r_avertexnormals[binormals[i]][2] * frontlerp;
+			tangentArray[jj][0] = r_avertexnormals[oldtangents[index_xyz]][0] * backlerp + r_avertexnormals[tangents[index_xyz]][0] * frontlerp;
+			tangentArray[jj][1] = r_avertexnormals[oldtangents[index_xyz]][1] * backlerp + r_avertexnormals[tangents[index_xyz]][1] * frontlerp;
+			tangentArray[jj][2] = r_avertexnormals[oldtangents[index_xyz]][2] * backlerp + r_avertexnormals[tangents[index_xyz]][2] * frontlerp;
 
-			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
+			binormalArray[jj][0] = r_avertexnormals[oldbinormals[index_xyz]][0] * backlerp + r_avertexnormals[binormals[index_xyz]][0] * frontlerp;
+			binormalArray[jj][1] = r_avertexnormals[oldbinormals[index_xyz]][1] * backlerp + r_avertexnormals[binormals[index_xyz]][1] * frontlerp;
+			binormalArray[jj][2] = r_avertexnormals[oldbinormals[index_xyz]][2] * backlerp + r_avertexnormals[binormals[index_xyz]][2] * frontlerp;
+
+			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
 
 		}
 	}
 
-
 	// setup program
-	GL_BindProgram (aliasBumpProgram, defBits);
-	id = aliasBumpProgram->id[defBits];
+	GL_BindProgram (aliasBumpProgram, 0);
 
 	VectorAdd (currententity->origin, currententity->model->maxs, maxs);
 	if (CL_PMpointcontents (maxs) & MASK_WATER)

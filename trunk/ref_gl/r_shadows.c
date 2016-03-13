@@ -223,8 +223,13 @@ qboolean R_EntityInLightBounds () {
 		VectorAdd (currententity->origin, currententity->model->maxs, maxs);
 		VectorAdd (currententity->origin, currententity->model->mins, mins);
 	}
-	
-	if (currentShadowLight->spherical) {
+
+	if (currentShadowLight->_cone) {
+
+		if(R_CullConeLight(mins, maxs, currentShadowLight->frust))
+			return qfalse;
+
+	}else if (currentShadowLight->spherical) {
 
 		if (!BoundsAndSphereIntersect (mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
 			return qfalse;
@@ -234,9 +239,6 @@ qboolean R_EntityInLightBounds () {
 		if (!BoundsIntersect (mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
 			return qfalse;
 	}
-
-	if (currentShadowLight->_cone && R_CullConeLight(mins, maxs, currentShadowLight->frust))
-		return qfalse;
 
 	if (VectorCompare(currententity->origin, currentShadowLight->origin)) // skip shadows from shell lights
 		return qfalse;
@@ -250,6 +252,9 @@ qboolean R_EntityInLightBounds () {
 
 void GL_LerpShadowVerts (int nverts, dtrivertx_t *v, dtrivertx_t *ov, float *lerp, float move[3], float frontv[3], float backv[3]) {
 	int i;
+
+	if (nverts < 1)
+		return;
 
 	for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {
 		lerp[0] = move[0] + ov->v[0] * backv[0] + v->v[0] * frontv[0];
@@ -435,7 +440,7 @@ hack:
 	if (!BoundsIntersect (&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
 		return qfalse;
 
-	if (currentShadowLight->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], currentShadowLight->frust))
+	if (currentShadowLight->_cone && R_CullConeLight (&pbbox[0], &pbbox[3], currentShadowLight->frust))
 		return qfalse;
 
 	poly->shadowTimestamp = shadowTimeStamp;
