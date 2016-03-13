@@ -523,7 +523,6 @@ void R_InitPrograms (void) {
 		ambientWorld_parallaxParams = qglGetUniformLocation (id, "u_parallaxParams");
 		ambientWorld_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
 		ambientWorld_specularScale	= qglGetUniformLocation (id, "u_specularScale");
-		ambientWorld_specularExp	= qglGetUniformLocation (id, "u_specularExp");
 		ambientWorld_viewOrigin		= qglGetUniformLocation (id, "u_viewOriginES");
 		ambientWorld_parallaxType	= qglGetUniformLocation (id, "u_parallaxType");
 		ambientWorld_ambientLevel	= qglGetUniformLocation (id, "u_ambientScale");
@@ -556,7 +555,6 @@ void R_InitPrograms (void) {
 		lightWorld_caustics			= qglGetUniformLocation (id, "u_isCaustics");
 
 		lightWorld_specularScale	= qglGetUniformLocation (id, "u_specularScale");
-		lightWorld_specularExp		= qglGetUniformLocation (id, "u_specularExp");
 		lightWorld_ambient			= qglGetUniformLocation (id, "u_isAmbient");
 		lightWorld_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
 		lightWorld_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
@@ -606,7 +604,6 @@ void R_InitPrograms (void) {
 		lightAlias_isCaustics		= qglGetUniformLocation (id, "u_isCaustics");
 		lightAlias_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
 		lightAlias_specularScale	= qglGetUniformLocation (id, "u_specularScale");
-		lightAlias_specularExp		= qglGetUniformLocation (id, "u_specularExp");
 		lightAlias_ambient			= qglGetUniformLocation (id, "u_isAmbient");
 		lightAlias_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
 		lightAlias_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");

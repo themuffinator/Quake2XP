@@ -150,18 +150,12 @@ typedef struct {
 	int firstface, numfaces;
 } mmodel_t;
 
-/*
+
 #define	SIDE_FRONT	0
 #define	SIDE_BACK	1
 #define	SIDE_ON		2
 #define SIDE_CLIP   3
-*/
-typedef enum {
-	SIDE_ON,		// used by point check only
-	SIDE_FRONT,
-	SIDE_BACK,
-	SIDE_CLIP
-} side_t;
+
 
 // !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct {
