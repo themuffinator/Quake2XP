@@ -11,13 +11,14 @@ uniform int		u_ssao;
 uniform float	u_ColorModulate;
 uniform float	u_ambientScale;    
 uniform float	u_specularScale;
-uniform float	u_specularExp;
 
-in vec3			v_positionVS;
-in vec3			v_viewVecTS;
-in vec2			v_wTexCoord;
-in vec2			v_lTexCoord;
-in vec2			v_envCoord;
+in vec3	v_positionVS;
+in vec3	v_viewVecTS;
+in vec2	v_wTexCoord;
+in vec2	v_lTexCoord;
+in vec2	v_envCoord;
+
+float	u_specularExp = 16.0;
  
 //
 // 3-vector radiosity basis for normal mapping
