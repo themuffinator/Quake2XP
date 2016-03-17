@@ -1008,7 +1008,6 @@ void BuildSurfaceNeighbours(msurface_t *surf) {
 Mod_LoadFaces
 =================
 */
-extern index_t	indexArray[MAX_BATCH_SURFS * 3];
 
 void Mod_BuildVertexCache () {
 	msurface_t      *surf;
@@ -1090,6 +1089,7 @@ void Mod_BuildVertexCache () {
 	qglBufferDataARB(GL_ARRAY_BUFFER_ARB, vbo_size, buf, GL_STATIC_DRAW_ARB);
 	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	Com_DPrintf (""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
+	Com_DPrintf ("%i verts in vbo data\n", idx);
 	free (buf);
 }
 
@@ -1234,31 +1234,20 @@ static qboolean cache_Fetch (void *dst, int size) {
 
 void GL_BuildTBN (int count) {
 	int			ci, cj, i, j;
-	float		*vi, *vj, threshold;
+	float		*vi, *vj;
 	msurface_t	*si, *sj;
 	vec3_t		ni, nj;
 	char		cacheName[MAX_QPATH];
 	FILE		*cacheFile = NULL;
-	int         smoothAng = (int)r_tbnSmoothAngle->value;
-
-	threshold = cosf (DEG2RAD (r_tbnSmoothAngle->value));
 
 	// Check for existing data
 	Com_sprintf (cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
 	if (cache_Open (cacheName)) {
-		int angle;
-
-		if (!cache_Fetch (&angle, sizeof(angle)) || angle != smoothAng) {
-			Com_Printf (S_COLOR_RED "GL_BuildTBN: ignoring data for %s with angle %d (need %d)\n",
-				cacheName, angle, smoothAng);
-			cache_Close ();
-			goto recreate;
-		}
 
 		for (i = 0; i < count; i++) {
 			si = &currentmodel->surfaces[i];
 
-			if (si->texInfo->flags & (SURF_SKY | /*SURF_TRANS33 | SURF_TRANS66 | */SURF_NODRAW))
+			if (si->texInfo->flags & (SURF_SKY | SURF_NODRAW))
 				continue;
 
 			vi = si->polys->verts[0];
@@ -1283,16 +1272,11 @@ recreate:
 	cacheFile = fopen (cacheName, "wb");
 	if (cacheFile == NULL)
 		Com_Printf (S_COLOR_RED "GL_BuildTBN: could't open %s for writing\n", currentmodel->name);
-	else {
-		Com_Printf (S_COLOR_YELLOW "GL_BuildTBN: calculating %s, with angle %d\n",
-			currentmodel->name, smoothAng);
-		fwrite (&smoothAng, sizeof(smoothAng), 1, cacheFile);
-	}
 
 	for (i = 0; i < count; i++) {
 		si = &currentmodel->surfaces[i];
 
-		if (si->texInfo->flags & (SURF_SKY | /*SURF_TRANS33 | SURF_TRANS66 | */SURF_NODRAW))
+		if (si->texInfo->flags & (SURF_SKY | SURF_NODRAW))
 			continue;
 
 		vi = si->polys->verts[0];
@@ -1308,7 +1292,7 @@ recreate:
 		for (j = 0; j < count; j++) {
 			sj = &currentmodel->surfaces[j];
 
-			if (!(sj->texInfo->flags & (SURF_SKY | /*SURF_TRANS33 | SURF_TRANS66 | */SURF_NODRAW))) {
+			if (!(sj->texInfo->flags & (SURF_SKY | SURF_NODRAW))) {
 				if (si->texInfo->image->texnum != sj->texInfo->image->texnum)
 					continue;
 
@@ -1317,17 +1301,15 @@ recreate:
 				else
 					VectorCopy (sj->plane->normal, nj);
 
-				if (DotProduct (ni, nj) >= threshold) {
-					vi = si->polys->verts[0];
-					for (ci = 0; ci < si->numEdges; ci++, vi += VERTEXSIZE) {
-						vj = sj->polys->verts[0];
-						for (cj = 0; cj < sj->numEdges; cj++, vj += VERTEXSIZE) {
+				vi = si->polys->verts[0];
+				for (ci = 0; ci < si->numEdges; ci++, vi += VERTEXSIZE) {
+					vj = sj->polys->verts[0];
+					for (cj = 0; cj < sj->numEdges; cj++, vj += VERTEXSIZE) {
 
-							if (VectorCompare (vi, vj)) {
-								vi[7] += nj[0];
-								vi[8] += nj[1];
-								vi[9] += nj[2];
-							}
+						if (VectorCompare (vi, vj)) {
+							vi[7] += nj[0];
+							vi[8] += nj[1];
+							vi[9] += nj[2];
 						}
 					}
 				}
@@ -1340,16 +1322,9 @@ recreate:
 			VectorSet (normal, vi[7], vi[8], vi[9]);
 			VectorNormalize (normal);
 
-			if (DotProduct (normal, ni) < threshold) {
-				vi[7] = normal[0] + ni[0];
-				vi[8] = normal[1] + ni[1];
-				vi[9] = normal[2] + ni[2];
-			}
-			else {
-				vi[7] = normal[0];
-				vi[8] = normal[1];
-				vi[9] = normal[2];
-			}
+			vi[7] = normal[0] + ni[0];
+			vi[8] = normal[1] + ni[1];
+			vi[9] = normal[2] + ni[2];
 
 			CrossProduct (normal, si->texInfo->vecs[0], tmp);
 			CrossProduct (normal, tmp, biTangent);

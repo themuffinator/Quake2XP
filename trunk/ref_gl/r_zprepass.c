@@ -1,14 +1,12 @@
 #include "r_local.h"
 
-extern index_t		indexArray[MAX_BATCH_SURFS * 3];
 extern msurface_t	*scene_surfaces[MAX_MAP_FACES];
 static int			num_depth_surfaces;
 static vec3_t		modelorg;			// relative to viewpoint
 
-qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces, qboolean fix) {
+qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
 	unsigned	numVertices, numIndices;
 	int			i, nv = surf->polys->numVerts;
-	float		*v;
 
 	numVertices = *vertices;
 	numIndices = *indeces;
@@ -20,27 +18,11 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	if (numIndices == 0xffffffff)
 		numIndices = 0;
 
-	if (!fix){
-		for (i = 0; i < nv - 2; i++)
-		{
-			indexArray[numIndices++] = surf->baseIndex;
-			indexArray[numIndices++] = surf->baseIndex + i + 1;
-			indexArray[numIndices++] = surf->baseIndex + i + 2;
-		}
-	}
-	else
+	for (i = 0; i < nv - 2; i++)
 	{
-		for (i = 0; i < nv - 2; i++) {
-			indexArray[numIndices++] = numVertices;
-			indexArray[numIndices++] = numVertices + i + 1;
-			indexArray[numIndices++] = numVertices + i + 2;
-		}
-
-		v = surf->polys->verts[0];
-
-		for (i = 0; i < nv; i++, v += VERTEXSIZE, numVertices++) {
-			VectorCopy(v, wVertexArray[numVertices]);
-		}
+		indexArray[numIndices++] = surf->baseIndex;
+		indexArray[numIndices++] = surf->baseIndex + i + 1;
+		indexArray[numIndices++] = surf->baseIndex + i + 2;
 	}
 
 	c_brush_polys += (nv - 2);
@@ -51,7 +33,7 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	return qtrue;
 }
 
-static void GL_DrawDepthPoly (qboolean fix) {
+static void GL_DrawDepthPoly () {
 	msurface_t	*s;
 	int			i;
 	unsigned	numIndices = 0xffffffff;
@@ -61,9 +43,9 @@ static void GL_DrawDepthPoly (qboolean fix) {
 		s = scene_surfaces[i];
 
 	repeat:
-		if (!R_FillDepthBatch (s, &numVertices, &numIndices, fix)) {
+		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
 			if (numIndices != 0xFFFFFFFF) {
-				qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+				qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 			}
@@ -73,7 +55,7 @@ static void GL_DrawDepthPoly (qboolean fix) {
 
 	// draw the rest
 	if (numIndices != 0xFFFFFFFF)
-		qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indexArray);
+		qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 }
 
 static void R_RecursiveDepthWorldNode (mnode_t * node) {
@@ -250,14 +232,16 @@ void R_DrawDepthBrushModel (void) {
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
 	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)mvp);
 
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
 	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 
 	num_depth_surfaces = 0;
 	R_AddBModelDepthPolys ();
-	GL_DrawDepthPoly(qtrue);
+	GL_DrawDepthPoly();
 
 	qglDisableVertexAttribArray (ATT_POSITION);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
@@ -356,7 +340,7 @@ void R_DrawDepthScene (void) {
 
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
-	GL_DrawDepthPoly (qfalse);
+	GL_DrawDepthPoly ();
 	
 	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	qglDisableVertexAttribArray (ATT_POSITION);

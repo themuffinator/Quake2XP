@@ -507,6 +507,8 @@ extern float   wTmu4Array[MAX_BATCH_SURFS][2];
 extern float   wTmu5Array[MAX_BATCH_SURFS][2];
 extern float   wTmu6Array[MAX_BATCH_SURFS][2];
 
+extern uint		indexArray[MAX_MAP_VERTS * 3];
+
 extern model_t *r_worldmodel;
 
 extern unsigned d_8to24table[256];
