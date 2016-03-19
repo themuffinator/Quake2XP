@@ -38,8 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "winquake.h"
 #include <intrin.h>
 
-
-static qboolean GLimp_SwitchFullscreen( int width, int height );
 qboolean GLimp_InitGL (void);
 
 glwstate_t glw_state;
@@ -934,12 +932,12 @@ qboolean GLimp_InitGL (void)
 		qboolean	isIntel;
 		const char	*vendor;
 		char		v[1000];
-
+		int			debugFlag = r_glDebugOutput->value ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
 		int			attribs[] =
 		{
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-			WGL_CONTEXT_MINOR_VERSION_ARB, 2,
-			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB | WGL_CONTEXT_DEBUG_BIT_ARB, 
+			WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB | debugFlag,
 			WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB /*WGL_CONTEXT_CORE_PROFILE_BIT_ARB*/,
 			0
 		};
@@ -951,14 +949,14 @@ qboolean GLimp_InitGL (void)
 			PFD_SUPPORT_OPENGL |			// support OpenGL
 			PFD_DOUBLEBUFFER,				// double buffered
 			PFD_TYPE_RGBA,					// RGBA type
-			32,								// 32-bit color depth	FOREVER :)
+			32,								// 32-bit color depth
 			0, 0, 0, 0, 0, 0,				// color bits ignored
 			0,								// no alpha buffer
 			0,								// shift bit ignored
 			0,								// no accumulation buffer
 			0, 0, 0, 0, 					// accum bits ignored
-			24,								// 24-bit z-buffer		FOREVER :)
-			0,								/// Berserker: нам уже не нужен stencil		// 8-bit stencil buffer	FOREVER :)
+			24,								// 24-bit z-buffer
+			0,								// 8-bit stencil buffer not need here
 			0,								// no auxiliary buffer
 			PFD_MAIN_PLANE,					// main layer
 			0,								// reserved

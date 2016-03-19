@@ -122,7 +122,7 @@ void GL_CheckError(const char *fileName, int line, const char *subr)
 	int         err;
 	char        s[128];
 
-	if (r_ignoreGlErrors->value)
+	if (r_glDebugOutput->value)
 		return;
 
 	err = qglGetError();
@@ -1303,7 +1303,7 @@ void R_RegisterCvars(void)
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	r_filmGrain = 						Cvar_Get("r_filmGrain", "0", CVAR_ARCHIVE);
-	r_ignoreGlErrors =					Cvar_Get("r_ignoreGlErrors", "1", 0);
+	r_glDebugOutput =					Cvar_Get("r_glDebugOutput", "0", 0);
 	
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
 	r_cameraSpaceLightMove =			Cvar_Get("r_cameraSpaceLightMove", "0", CVAR_ARCHIVE);

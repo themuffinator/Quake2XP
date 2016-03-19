@@ -316,7 +316,7 @@ cvar_t	*r_tbnSmoothAngle;
 
 cvar_t	*r_filmGrain;
 
-cvar_t	*r_ignoreGlErrors;
+cvar_t	*r_glDebugOutput;
 
 cvar_t	*r_lightEditor;
 cvar_t	*r_cameraSpaceLightMove;
