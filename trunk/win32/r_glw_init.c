@@ -38,6 +38,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "winquake.h"
 #include <intrin.h>
 
+#ifdef WIN32
+// Enable NVIDIA High Performance Graphics while using Integrated Graphics.
+__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+#endif 
+
 qboolean GLimp_InitGL (void);
 
 glwstate_t glw_state;
@@ -1147,39 +1152,21 @@ qboolean GLimp_InitGL (void)
 		}
 		else
 		{
-			// Fill the list of attributes we are interested in
-			iAttributes[0 ] = WGL_PIXEL_TYPE_ARB;
-			iAttributes[1 ] = WGL_COLOR_BITS_ARB;
-			iAttributes[2 ] = WGL_RED_BITS_ARB;
-			iAttributes[3 ] = WGL_GREEN_BITS_ARB;
-			iAttributes[4 ] = WGL_BLUE_BITS_ARB;
-			iAttributes[5 ] = WGL_ALPHA_BITS_ARB;
-			iAttributes[6 ] = WGL_DEPTH_BITS_ARB;
-			iAttributes[7 ] = WGL_STENCIL_BITS_ARB;
-
-			// Since WGL_ARB_multisample and WGL_pbuffer are extensions, we must check if
-			// those extensions are supported before passing the corresponding enums
-			// to the driver. This could cause an error if they are not supported.
-			iAttributes[8 ] = gl_state.arb_multisample ? WGL_SAMPLE_BUFFERS_ARB : WGL_PIXEL_TYPE_ARB;
-			iAttributes[9 ] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : WGL_PIXEL_TYPE_ARB;
+		// Fill the list of attributes we are interested in
 			
-			iAttributes[10] = WGL_DRAW_TO_WINDOW_ARB;
-			iAttributes[11] = WGL_DRAW_TO_BITMAP_ARB;
-			iAttributes[12] = WGL_PIXEL_TYPE_ARB;
-			iAttributes[13] = WGL_DOUBLE_BUFFER_ARB;
-			iAttributes[14] = WGL_STEREO_ARB;
-			iAttributes[15] = WGL_ACCELERATION_ARB;
-			iAttributes[16] = WGL_NEED_PALETTE_ARB;
-			iAttributes[17] = WGL_NEED_SYSTEM_PALETTE_ARB;
-			iAttributes[18] = WGL_SWAP_LAYER_BUFFERS_ARB;
-			iAttributes[19] = WGL_SWAP_METHOD_ARB;
-			iAttributes[20] = WGL_NUMBER_OVERLAYS_ARB;
-			iAttributes[21] = WGL_NUMBER_UNDERLAYS_ARB;
-			iAttributes[22] = WGL_TRANSPARENT_ARB;
-			iAttributes[23] = WGL_SUPPORT_GDI_ARB;
-			iAttributes[24] = WGL_SUPPORT_OPENGL_ARB;
+			iAttributes[0] = WGL_ACCELERATION_ARB;
+			iAttributes[1] = WGL_DRAW_TO_WINDOW_ARB;
+			iAttributes[2] = WGL_SUPPORT_OPENGL_ARB;
+			iAttributes[3] = WGL_DOUBLE_BUFFER_ARB;
+			iAttributes[4] = WGL_PIXEL_TYPE_ARB;
+			iAttributes[5] = WGL_COLOR_BITS_ARB;
+			iAttributes[6] = WGL_ALPHA_BITS_ARB;
+			iAttributes[7] = WGL_DEPTH_BITS_ARB;
+			iAttributes[8] = WGL_STENCIL_BITS_ARB;
+			iAttributes[9] = gl_state.arb_multisample ? WGL_SAMPLE_BUFFERS_ARB : WGL_PIXEL_TYPE_ARB;
+			iAttributes[10] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : WGL_PIXEL_TYPE_ARB;
 
-			if (qwglGetPixelFormatAttribivARB(hDC, pixelFormat, 0, 25, iAttributes, iResults) == GL_FALSE) {
+			if (qwglGetPixelFormatAttribivARB(hDC, pixelFormat, 0, 11, iAttributes, iResults) == GL_FALSE) {
 				Com_Printf (S_COLOR_RED	"GLimp_InitGL() wglGetPixelFormatAttribivARB failed\n");
 				VID_Error (ERR_FATAL,	"GLimp_InitGL() wglGetPixelFormatAttribivARB failed\n"); 
 				
@@ -1188,11 +1175,11 @@ qboolean GLimp_InitGL (void)
 			Com_Printf ("WGL_PFD: Color "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Stencil "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits \n",
 				iResults[1], iResults[6], iResults[5], iResults[7]);
 
-			if (iResults[8])
+			if (iResults[9])
 				if (gl_state.arb_multisample && r_arbSamples->value >1)
 							Com_Printf ( "using multisampling, "S_COLOR_GREEN"%d"S_COLOR_WHITE" samples per pixel\n", iResults[9]);
 
-			if (iResults[15] != WGL_FULL_ACCELERATION_ARB)
+			if (iResults[0] != WGL_FULL_ACCELERATION_ARB)
 				Com_Printf ( S_COLOR_RED "********** WARNING **********\npixelformat %d is NOT hardware accelerated!\n*****************************\n", pixelFormat);
 			
 			ReleaseDC (temphwnd, hDC);

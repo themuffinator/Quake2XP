@@ -1098,6 +1098,7 @@ typedef struct {
 	const char	*wglExtsString;
 	const char	*wglRenderer;
 	int desktopWidth, desktopHeight;
+	qboolean pixelFormatSet;
 #else
 	void *hinstOpenGL;
 #endif
