@@ -243,6 +243,7 @@ extern long Q_ftol (float f);
 #define VectorMax(a,b,o)	((o)[0]=((a)[0]>(b)[0])?(a)[0]:(b)[0],(o)[1]=((a)[1]>(b)[1])?(a)[1]:(b)[1],(o)[2]=((a)[2]>(b)[2])?(a)[2]:(b)[2])
 #define VectorMul(in1, in2, out)		((out)[0] = (in1)[0] * (in2)[0], (out)[1] = (in1)[1] * (in2)[1], (out)[2] = (in1)[2] * (in2)[2])
 #define VectorAverage(a,b,o)	((o)[0]=((a)[0]+(b)[0])*0.5f,(o)[1]=((a)[1]+(b)[1])*0.5f,(o)[2]=((a)[2]+(b)[2])*0.5f)
+#define VectorInvert(v)		((v)[0]=-(v)[0], (v)[1]=-(v)[1], (v)[2]=-(v)[2])
 
 #ifndef min 
 #define min(a,b)        (((a) < (b)) ? (a) : (b)) 

@@ -4259,9 +4259,6 @@ void PlayerConfig_MenuDraw (void) {
 
 		Menu_Draw (&s_player_config_menu);
 
-		//	M_DrawTextBox((Xw+x2) * (320.0F / viddef.width) - 8 * cl_fontScale->value,
-		//				  (viddef.height / 2) * (240.0F / viddef.height) - 77 * cl_fontScale->value,
-		//				  refdef.width / 8, refdef.height / 8);
 		refdef.height += 4;
 
 		R_RenderFrame (&refdef);

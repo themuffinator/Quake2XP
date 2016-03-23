@@ -317,6 +317,9 @@ cvar_t	*r_tbnSmoothAngle;
 cvar_t	*r_filmGrain;
 
 cvar_t	*r_glDebugOutput;
+cvar_t	*r_glMinorVersion;
+cvar_t	*r_glMajorVersion;
+cvar_t	*r_glCoreProfile;
 
 cvar_t	*r_lightEditor;
 cvar_t	*r_cameraSpaceLightMove;
@@ -613,6 +616,9 @@ typedef struct {
 	int			maxFragmentUniformComponents;
 	int			maxVertexAttribs;
 	int			maxTextureImageUnits;
+
+	int			glMajorVersion;
+	int			glMinorVersion;
 
 } glconfig_t;
 

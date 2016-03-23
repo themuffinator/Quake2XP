@@ -928,7 +928,7 @@ qboolean RegisterOpenGLWindow(HINSTANCE hInst)
 
 qboolean GLimp_InitGL (void)
 {
-		int			iAttributes[30];
+		int			iAttributes[15];
 		float		fAttributes[] = {0, 0};
 		int			iResults[30];
 		int			pixelFormat;
@@ -938,12 +938,13 @@ qboolean GLimp_InitGL (void)
 		const char	*vendor;
 		char		v[1000];
 		int			debugFlag = r_glDebugOutput->value ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
+		int			contextMask = r_glCoreProfile->value ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 		int			attribs[] =
 		{
-			WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-			WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB | debugFlag,
-			WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB /*WGL_CONTEXT_CORE_PROFILE_BIT_ARB*/,
+			WGL_CONTEXT_MAJOR_VERSION_ARB, r_glMajorVersion->value,
+			WGL_CONTEXT_MINOR_VERSION_ARB, r_glMinorVersion->value,
+			WGL_CONTEXT_FLAGS_ARB,  debugFlag,
+			WGL_CONTEXT_PROFILE_MASK_ARB, contextMask,
 			0
 		};
 
@@ -961,7 +962,7 @@ qboolean GLimp_InitGL (void)
 			0,								// no accumulation buffer
 			0, 0, 0, 0, 					// accum bits ignored
 			24,								// 24-bit z-buffer
-			0,								// 8-bit stencil buffer not need here
+			8,								// 8-bit stencil buffer not need here
 			0,								// no auxiliary buffer
 			PFD_MAIN_PLANE,					// main layer
 			0,								// reserved
@@ -973,6 +974,9 @@ qboolean GLimp_InitGL (void)
 		HGLRC hGLRC;
 		HWND temphwnd = CreateWindowEx(0L,OPENGL_CLASS,"Quake2xp OpenGL PFD Detection Window",WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,0,0,1,1,glw_state.hWnd,0,glw_state.hInstance,NULL);
 		HDC hDC = GetDC (temphwnd);
+
+		gl_config.glMajorVersion = r_glMajorVersion->value;
+		gl_config.glMinorVersion = r_glMinorVersion->value;
 
 		// Set up OpenGL
 		pixelFormat = ChoosePixelFormat(hDC, &temppfd);				
@@ -1173,7 +1177,7 @@ qboolean GLimp_InitGL (void)
 			}
 
 			Com_Printf ("WGL_PFD: Color "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Stencil "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits \n",
-				iResults[1], iResults[6], iResults[5], iResults[7]);
+				iResults[5], iResults[7], iResults[6], iResults[8]);
 
 			if (iResults[9])
 				if (gl_state.arb_multisample && r_arbSamples->value >1)

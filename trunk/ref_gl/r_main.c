@@ -122,7 +122,8 @@ void GL_CheckError(const char *fileName, int line, const char *subr)
 	int         err;
 	char        s[128];
 
-	if (r_glDebugOutput->value)
+#ifdef _WIN32
+	if (!r_glDebugOutput->value)
 		return;
 
 	err = qglGetError();
@@ -182,6 +183,7 @@ void GL_CheckError(const char *fileName, int line, const char *subr)
 	}
 
 	Com_Printf("GL_CheckErrors: %s in file '%s' subroutine '%s' line %i\n", s, fileName, subr, line);
+#endif
 }
 
 
@@ -1303,8 +1305,12 @@ void R_RegisterCvars(void)
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	r_filmGrain = 						Cvar_Get("r_filmGrain", "0", CVAR_ARCHIVE);
+
 	r_glDebugOutput =					Cvar_Get("r_glDebugOutput", "0", 0);
-	
+	r_glMajorVersion =					Cvar_Get("r_glMajorVersion", "3", CVAR_ARCHIVE);
+	r_glMinorVersion =					Cvar_Get("r_glMinorVersion", "2", CVAR_ARCHIVE);
+	r_glCoreProfile =					Cvar_Get("r_glCoreProfile", "0", CVAR_ARCHIVE);
+
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
 	r_cameraSpaceLightMove =			Cvar_Get("r_cameraSpaceLightMove", "0", CVAR_ARCHIVE);
 
@@ -1460,7 +1466,7 @@ qboolean IsExtensionSupported(const char *name)
 int R_Init(void *hinstance, void *hWnd)
 {
 	int			aniso_level, max_aniso;
-	int			profile, minor, major;
+	int			profile;
 	const char *profileName[] = { "core", "compatibility" };
 
 	Draw_GetPalette();
@@ -1503,12 +1509,11 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf(S_COLOR_WHITE "GL_RENDERER:" S_COLOR_GREEN "  %s\n", gl_config.renderer_string);
 	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
 	Com_Printf(S_COLOR_WHITE "GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
-	
-	qglGetIntegerv(GL_MAJOR_VERSION, &major);
-	qglGetIntegerv(GL_MINOR_VERSION, &minor);
-	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
-	Com_Printf("Using OpenGL: "S_COLOR_GREEN"%i.%i"S_COLOR_WHITE" %s profile context\n", major, minor, profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
 
+#ifdef _WIN32
+	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
+	Com_Printf("Using OpenGL: "S_COLOR_GREEN"%i.%i"S_COLOR_WHITE" %s profile context\n", gl_config.glMajorVersion, gl_config.glMinorVersion, profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+#endif
 	Cvar_Set("scr_drawall", "0");
 
 	Com_Printf("\n");

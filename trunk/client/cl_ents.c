@@ -1163,7 +1163,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 				currentPlayerWeapon = cl_weaponmodels[i];
 				ent.model = ci->weaponmodel[i];
 
-
 				if (!ent.model) {
 					if (i != 0)
 						ent.model = ci->weaponmodel[0];
