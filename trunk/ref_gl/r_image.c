@@ -1367,14 +1367,14 @@ struct image_s *R_RegisterPlayerBump (char *name, struct image_s *tex)
 	
 	strcpy(gl, name);
 	gl[strlen(gl) - 4] = 0;
-	strcat(gl, "_nm.tga");
+	strcat(gl, "_bump.tga");
 	img = GL_FindImage (gl, it_skin);
 
 	if (!img)
 	{
 		strcpy(gl, name);
 		gl[strlen(gl) - 4] = 0;
-		strcat(gl, "_nm.dds");
+		strcat(gl, "_bump.dds");
 		img = GL_FindImage (gl, it_skin);
 	}
 	if(!img)

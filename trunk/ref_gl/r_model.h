@@ -318,7 +318,6 @@ typedef struct model_s {
 } model_t;
 
 
-
 #define SHELL_SCALE		        0.5F
 #define WEAPON_SHELL_SCALE		0.2F
 
