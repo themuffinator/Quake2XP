@@ -1965,6 +1965,79 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s) {
 	}
 }
 
+void HACK_RecalcVertsLightNormalIdx(model_t * mod, dmdl_t *pheader)
+{
+	int				i, j, k, l;
+	daliasframe_t	*frame;
+	dtrivertx_t		*verts, *v;
+	vec3_t			normal, triangle[3], v1, v2;
+	dtriangle_t		*tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
+	qboolean		force = qfalse;
+
+	if (strstr(mod->name, "a_grenades.md2") ||
+	strstr(mod->name, "w_bfg.md2") ||
+	strstr(mod->name, "w_blaster.md2") ||
+	strstr(mod->name, "w_chaingun.md2") ||
+	strstr(mod->name, "w_glauncher.md2") ||
+	strstr(mod->name, "w_hyperblaster.md2") ||
+	strstr(mod->name, "w_machinegun.md2") ||
+	strstr(mod->name, "w_railgun.md2") ||
+	strstr(mod->name, "w_rlauncher.md2") ||
+	strstr(mod->name, "w_shotgun.md2") ||
+	strstr(mod->name, "w_weapon.md2") ||
+	strstr(mod->name, "w_sshotgun.md2"))
+	force = qtrue;
+		else
+	force = qfalse;
+
+	if (!force)
+		return;
+
+	/// Berserker: проверим на равенство всех нормалей модели...
+	//for all frames
+	for (i = 0; i<pheader->num_frames; i++)
+	{
+		frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
+		verts = frame->verts;
+
+		vec3_t	normals_[MAX_VERTS];
+		memset(normals_, 0, pheader->num_xyz*sizeof(vec3_t));
+
+		//for all tris
+		for (j = 0; j<pheader->num_tris; j++)
+		{
+			//make 3 vec3_t's of this triangle's vertices
+			for (k = 0; k<3; k++)
+			{
+				l = tris[j].index_xyz[k];
+				v = &verts[l];
+				for (l = 0; l<3; l++)
+					triangle[k][l] = v->v[l];
+			}
+
+			//calculate normal
+			VectorSubtract(triangle[0], triangle[1], v1);
+			VectorSubtract(triangle[2], triangle[1], v2);
+			CrossProduct(v2, v1, normal);
+			VectorScale(normal, -1.0 / VectorLength(normal), normal);
+
+			for (k = 0; k<3; k++)
+			{
+				l = tris[j].index_xyz[k];
+				VectorAdd(normals_[l], normal, normals_[l]);
+			}
+		}
+
+		//normalize average
+		for (j = 0; j<pheader->num_xyz; j++)
+		{
+			VectorNormalize(normals_[j]);
+			verts[j].lightnormalindex = Normal2Index(normals_[j]);
+		}
+
+	}
+
+}
 
 void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	int				i, j, indexST;
@@ -2152,6 +2225,8 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		poutst[i].s = (s - 0.5) * iw;
 		poutst[i].t = (t - 0.5) * ih;
 	}
+
+	HACK_RecalcVertsLightNormalIdx(mod, pheader);
 
 	// try loading from cache
 	Com_sprintf(cachename, sizeof(cachename), "cachexp/%s", mod->name);

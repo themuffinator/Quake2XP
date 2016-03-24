@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "client.h"
 #include "qmenu.h"
 #include "snd_loc.h"
+#include "../ref_gl/r_local.h"
 
 static int m_main_cursor;
 
@@ -56,7 +57,7 @@ void (*m_drawfunc) (void);
 int (*m_keyfunc) (int key);
 
 extern cvar_t *cl_hudScale;
-char *currentPlayerWeapon;
+model_t *currentPlayerWeapon;
 //=============================================================================
 /* Support Routines */
 
@@ -4230,15 +4231,20 @@ void PlayerConfig_MenuDraw (void) {
 
 		memset (&entity[1], 0, sizeof(entity[1]));
 
-		if (currentPlayerWeapon &&strlen (currentPlayerWeapon)) //check for disconnected server
-			Com_sprintf (scratch, sizeof(scratch), "players/%s/%s", s_pmi[s_player_model_box.curvalue].directory, currentPlayerWeapon); //current player weapon
-		else
-			Com_sprintf (scratch, sizeof(scratch), "players/%s/weapon.md2", s_pmi[s_player_model_box.curvalue].directory); //default player weapon
-
-		entity[1].model = R_RegisterModel (scratch);
+		if (currentPlayerWeapon) { 
+			entity[1].model = currentPlayerWeapon;
+			entity[1].skin = currentPlayerWeapon->skins[0];
+			entity[1].bump = currentPlayerWeapon->skins_normal[0];
+		}
+		else {
+			Com_sprintf(scratch, sizeof(scratch), "players/%s/weapon.md2", s_pmi[s_player_model_box.curvalue].directory); //force default player weapon
+			entity[1].model = R_RegisterModel (scratch);
+			entity[1].skin = R_RegisterSkin(scratch);
+			entity[1].bump = R_RegisterPlayerBump(scratch, entity[0].skin);
+		}
+		
 		if (entity[1].model) {
-		//	entity[1].skin = R_RegisterSkin (scratch);
-		//	entity[1].bump = R_RegisterPlayerBump (scratch, entity[1].skin);
+
 			entity[1].origin[0] = 90;
 			entity[1].origin[1] = 0;
 			entity[1].origin[2] = -8;

@@ -668,7 +668,7 @@ CL_AddPacketEntities
 
 ===============
 */
-extern	char	*currentPlayerWeapon;
+extern	model_t	*currentPlayerWeapon;
 void CL_ParticleBlasterBolt (vec3_t start, vec3_t end);
 
 game_export_t *ge;
@@ -1153,16 +1153,16 @@ void CL_AddPacketEntities (frame_t * frame) {
 					ent.flags |= RF_DISTORT;
 
 			}
-
+			
 			if (s1->modelindex2 == 255) {	// custom weapon
 				ci = &cl.clientinfo[s1->skinnum & 0xff];
 				i = (s1->skinnum >> 8);	// 0 is default weapon model
 				if (!cl_vwep->value || i > MAX_CLIENTWEAPONMODELS - 1)
 					i = 0;
 				// save cueeent player weapon for player config menu
-				currentPlayerWeapon = cl_weaponmodels[i];
+		//		currentPlayerWeapon = cl_weaponmodels[i];
 				ent.model = ci->weaponmodel[i];
-
+				
 				if (!ent.model) {
 					if (i != 0)
 						ent.model = ci->weaponmodel[0];
@@ -1173,7 +1173,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			}
 			else
 				ent.model = cl.model_draw[s1->modelindex2];
-
+				currentPlayerWeapon = ent.model;
 			// PMM - check for the defender sphere shell .. make it
 			// translucent
 			// replaces the previous version which used the high bit on

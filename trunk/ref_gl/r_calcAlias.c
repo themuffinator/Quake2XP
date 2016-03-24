@@ -473,7 +473,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	if (!skin)
 		skin = r_notexture;
 
-	// select skin
+//	// select skin
 	if (currententity->bump)
 		skinNormalmap = currententity->bump;	// custom player skin
 	else {

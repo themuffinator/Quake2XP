@@ -220,8 +220,8 @@ void R_AddNoWorldModelLight () {
 	VectorSet (light->radius, 2000, 2000, 2000);
 
 	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - 700;
-		light->maxs[i] = light->origin[i] + 700;
+		light->mins[i] = light->origin[i] - 2000;
+		light->maxs[i] = light->origin[i] + 2000;
 	}
 
 	light->style = 0;
