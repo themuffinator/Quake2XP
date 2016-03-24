@@ -4237,8 +4237,8 @@ void PlayerConfig_MenuDraw (void) {
 
 		entity[1].model = R_RegisterModel (scratch);
 		if (entity[1].model) {
-			entity[1].skin = R_RegisterSkin (scratch);
-			entity[1].bump = R_RegisterPlayerBump (scratch, entity[1].skin);
+		//	entity[1].skin = R_RegisterSkin (scratch);
+		//	entity[1].bump = R_RegisterPlayerBump (scratch, entity[1].skin);
 			entity[1].origin[0] = 90;
 			entity[1].origin[1] = 0;
 			entity[1].origin[2] = -8;

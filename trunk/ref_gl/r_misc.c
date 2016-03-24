@@ -939,9 +939,10 @@ void GL_Strings_f (void) {
 	Com_Printf ("GL_VENDOR:    "S_COLOR_GREEN"%s\n", gl_config.vendor_string);
 	Com_Printf ("GL_RENDERER:  "S_COLOR_GREEN"%s\n", gl_config.renderer_string);
 	Com_Printf ("GL_VERSION:   "S_COLOR_GREEN"%s\n", gl_config.version_string);
+#ifdef _WIN32
 	Com_Printf ("Using OpenGL: "S_COLOR_GREEN"3.3"S_COLOR_WHITE" %s profile context\n\n", profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
 	Com_Printf ("WGL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n", string);
-
+#endif
 	qglGetIntegerv(GL_NUM_EXTENSIONS, &n);
 	Com_Printf("GL_EXTENSIONS:\n");
 	for (i = 0; i<n; i++){

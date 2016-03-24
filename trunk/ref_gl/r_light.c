@@ -217,7 +217,7 @@ void R_AddNoWorldModelLight () {
 	VectorSet (light->startColor, 1.0, 1.0, 1.0);
 	VectorSet (light->color, 1.0, 1.0, 1.0);
 	VectorSet (light->angles, 0, 0, 0);
-	VectorSet (light->radius, 700, 700, 700);
+	VectorSet (light->radius, 2000, 2000, 2000);
 
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - 700;
