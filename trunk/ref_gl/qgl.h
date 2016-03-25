@@ -789,12 +789,13 @@ extern PFNGLVERTEXATTRIBL1UI64VARBPROC						glVertexAttribL1ui64vARB;
 extern PFNGLGETVERTEXATTRIBLUI64VARBPROC					glGetVertexAttribLui64vARB;
 
 extern PFNGLBUFFERSTORAGEPROC								glBufferStorage;
+extern PFNGLGETSTRINGIPROC									glGetStringi;
 
 #ifdef _WIN32
 
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC					qwglCreateContextAttribsARB;
 
-const GLubyte * (WINAPI* glGetStringi) (GLenum, GLuint);
+//const GLubyte * (WINAPI* glGetStringi) (GLenum, GLuint);
 
 extern PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
 
