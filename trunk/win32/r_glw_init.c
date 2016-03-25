@@ -379,6 +379,7 @@ int MeasureCpuSpeed()
 
     }
 
+
 qboolean GetCpuCoresThreads( void ) {
 	char cpuVendor[12];
 	uint regs[4], cpuFeatures, cores, logical;

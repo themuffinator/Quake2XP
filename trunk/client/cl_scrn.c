@@ -556,10 +556,10 @@ int entitycmpfnc (const entity_t * a, const entity_t * b) {
 	 ** all other models are sorted by model then skin
 	 */
 	if (a->model == b->model) {
-		return ((intptr_t)a->skin - (intptr_t)b->skin);
+		return ((int)a->skin - (int)b->skin);
 	}
 	else {
-		return ((intptr_t)a->model - (intptr_t)b->model);
+		return ((int)a->model - (int)b->model);
 	}
 }
 

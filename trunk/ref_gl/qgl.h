@@ -793,11 +793,8 @@ extern PFNGLGETSTRINGIPROC									glGetStringi;
 
 #ifdef _WIN32
 
-extern	PFNWGLCREATECONTEXTATTRIBSARBPROC					qwglCreateContextAttribsARB;
-
-//const GLubyte * (WINAPI* glGetStringi) (GLenum, GLuint);
-
-extern PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
+extern	PFNWGLCREATECONTEXTATTRIBSARBPROC		qwglCreateContextAttribsARB;
+extern	PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
 
 
 const char *(WINAPI * qwglGetExtensionsStringARB) (HDC);

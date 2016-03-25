@@ -2283,6 +2283,8 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	mod->memorySize += cx;
 	mod->memorySize += cx;
 
+	float smooth_cosine = cos(DEG2RAD(45.0));
+
 	//for all frames
 	for (i = 0; i < pheader->num_frames; i++) {
 
@@ -2343,6 +2345,21 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 				VectorAdd(binormals_[l], binormal, binormals_[l]);
 			}
 		}
+
+		for (j = 0; j<pheader->num_xyz; j++)
+			for (k = j + 1; k<pheader->num_xyz; k++)
+				if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2])
+				{
+					float *jnormal = r_avertexnormals[verts[j].lightnormalindex];
+					float *knormal = r_avertexnormals[verts[k].lightnormalindex];
+					if (DotProduct(jnormal, knormal) >= smooth_cosine)	
+					{
+						VectorAdd(tangents_[j], tangents_[k], tangents_[j]);
+						VectorCopy(tangents_[j], tangents_[k]);
+						VectorAdd(binormals_[j], binormals_[k], binormals_[j]);
+						VectorCopy(binormals_[j], binormals_[k]);
+					}
+				}
 
 		//normalize averages
 		for (j = 0; j < pheader->num_xyz; j++) {
