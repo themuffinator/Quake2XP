@@ -931,9 +931,10 @@ void GL_Strings_f (void) {
 
 #ifdef _WIN32
 	string = (char*)glw_state.wglExtsString;
+	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
 #endif
 	
-	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
+
 
 	Com_Printf ("\n");
 	Com_Printf ("GL_VENDOR:    "S_COLOR_GREEN"%s\n", gl_config.vendor_string);
