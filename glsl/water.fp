@@ -41,7 +41,7 @@ uniform vec2				u_viewport;
 uniform vec2				u_depthParms;
 uniform int					u_TRANS;
 uniform mat4				u_projectionMatrix;
-
+uniform int					u_mirror;
 //
 // view space to viewport
 //
@@ -79,11 +79,10 @@ void main (void) {
 		// non-transparent
 		N.xy = offset.xy;
 		fragData = vec4(diffuse, 1.0);
-//		return;
 	}
  
-// if(abs(v_normal.z) == 1.0)
-//   return; 
+	if (u_mirror == 0)
+		return;
 
 	//
 	// screen-space local reflections

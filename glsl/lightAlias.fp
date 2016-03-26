@@ -78,7 +78,7 @@ void main (void) {
 		if(u_fog == 0) {
 
 			if(SSS <= 0.00392){
-					fragData = subScatterFS(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap * 0.5, attenMap, specular * 0.25) * cubeFilter;
+					fragData = SkinLighting(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap * 0.5, attenMap, specular) * cubeFilter;
 					return;
 			}
 			else{	
