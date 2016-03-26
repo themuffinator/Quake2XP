@@ -792,6 +792,7 @@ void R_InitPrograms (void) {
 		water_mvp			= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
 		water_mv			= qglGetUniformLocation	(id, "u_modelViewMatrix");
 		water_pm			= qglGetUniformLocation	(id, "u_projectionMatrix");
+		water_mirror		= qglGetUniformLocation (id, "u_mirror");
 
 	}
 	else {

@@ -275,8 +275,6 @@ cvar_t	*r_ssaoIntensity;
 cvar_t	*r_ssaoScale;
 cvar_t	*r_ssaoBlur;
 
-cvar_t	*sys_priority;
-
 cvar_t	*r_skipStaticLights;
 cvar_t	*r_lightmapScale;
 cvar_t	*r_lightsWeldThreshold;
@@ -1015,7 +1013,7 @@ uint water_entity2world;
 uint water_mvp;
 uint water_mv;
 uint water_pm;
-
+uint water_mirror;
 
 uint gaussx_matrix;
 uint gaussy_matrix;

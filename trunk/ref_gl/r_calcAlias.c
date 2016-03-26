@@ -411,7 +411,6 @@ void R_UpdateLightAliasUniforms()
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	int				i, j, jj = 0;
 	int				index_xyz;
-	byte			*norms, *oldnorms;
 	byte			*binormals, *oldbinormals;
 	byte			*tangents, *oldtangents;
 	dtriangle_t		*tris;
@@ -442,14 +441,12 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
 	oldverts = oldframe->verts;
 	offs2 = offs*currententity->oldframe;
-	oldnorms = currentmodel->normals + offs2;
 	oldbinormals = currentmodel->binormals + offs2;
 	oldtangents = currentmodel->tangents + offs2;
 
 	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts = frame->verts;
 	offs2 = offs*currententity->frame;
-	norms = currentmodel->normals + offs2;
 	binormals = currentmodel->binormals + offs2;
 	tangents = currentmodel->tangents + offs2;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);

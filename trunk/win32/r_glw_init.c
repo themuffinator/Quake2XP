@@ -611,12 +611,6 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	ZeroMemory(&cpuinf, sizeof(SYSTEM_INFO));
 	GetSystemInfo(&cpuinf);
 
-	//set high process priority for fullscreen mode
-	if(r_fullScreen->value && sys_priority->value && cpuinf.dwNumberOfProcessors > 1)
-		SetPriorityClass (GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-	else
-		SetPriorityClass (GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
-
 
 	Con_Printf (PRINT_ALL, "\n");
 	Com_Printf ("========"S_COLOR_YELLOW"System Information"S_COLOR_WHITE"========\n");

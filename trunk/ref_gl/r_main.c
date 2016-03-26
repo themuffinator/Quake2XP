@@ -624,6 +624,30 @@ void R_DrawLightScene (void)
 	qglClear(GL_STENCIL_BUFFER_BIT);
 	
 	R_CastBspShadowVolumes();		// bsp and bmodels shadows
+
+	// only bsp shadows for entity!!! 
+	for (i = 0; i < r_newrefdef.num_entities; i++) { 
+		currententity = &r_newrefdef.entities[i];
+
+		if (currententity->flags & RF_WEAPONMODEL)
+			continue;
+
+		if (currententity->flags & RF_TRANSLUCENT)
+			continue;
+
+		if (currententity->flags & RF_DISTORT)
+			continue;
+
+		currentmodel = currententity->model;
+
+		if (!currentmodel) {
+			R_DrawNullModel();
+			continue;
+		}
+		if (currentmodel->type == mod_alias)
+			R_DrawAliasModelLightPass(qfalse);
+	}
+
 	R_CastAliasShadowVolumes();		// alias models shadows
 	R_DrawLightWorld();				// light world
 	R_DrawLightFlare();				// light flare
@@ -631,7 +655,7 @@ void R_DrawLightScene (void)
 	
 	num_visLights++;
 
-	//entities lightpass w/o player weapon
+	//brush models light pass
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 
@@ -652,8 +676,6 @@ void R_DrawLightScene (void)
 		}
 		if (currentmodel->type == mod_brush) 
 			R_DrawLightBrushModel();
-		if(currentmodel->type == mod_alias)
-			R_DrawAliasModelLightPass(qfalse);
 		}
 	}
 	}
@@ -1253,8 +1275,6 @@ void R_RegisterCvars(void)
 
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "768", CVAR_ARCHIVE);
-
-	sys_priority =						Cvar_Get("sys_priority", "0", CVAR_ARCHIVE);
 		
 	hunk_bsp=							Cvar_Get("hunk_bsp", "70", CVAR_ARCHIVE);
 	hunk_model=							Cvar_Get("hunk_model", "2.4", CVAR_ARCHIVE);

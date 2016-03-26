@@ -304,6 +304,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL){
 		if(!currentShadowLight->isNoWorldModel)
 			return;
+		goto visible;
 	}
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
@@ -337,6 +338,8 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 
 	if (!InLightVISEntity())
 		return;
+
+visible:
 
 	paliashdr = (dmdl_t *)currentmodel->extraData;
 	
@@ -372,6 +375,11 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
 
 	R_SetupEntityMatrix(currententity);
+
+	GL_StencilFunc(GL_EQUAL, 128, 255);
+	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	GL_StencilMask(0);
+	GL_DepthFunc(GL_LEQUAL);
 
 	GL_DrawAliasFrameLerpLight(paliashdr);
 

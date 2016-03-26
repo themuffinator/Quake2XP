@@ -1842,9 +1842,7 @@ static int Mod_FindTriangleWithEdge(neighbors_t * neighbors, dtriangle_t * tris,
 	}
 
 	// normal edge, setup neighbour pointers
-	if (!dup && found != -1) {	// / FIXED by BERSERKER: � Tenebrae ��
-								// ����������� ������, ����� found == -1
-								// -> ������ ������ ������!
+	if (!dup && found != -1) {
 		neighbors[found].n[foundj] = triIndex;
 		return found;
 	}
@@ -1885,35 +1883,6 @@ static void Mod_BuildTriangleNeighbors(neighbors_t * neighbors,
 Mod_LoadAliasModel
 ==================
 */
-
-//see: http://members.rogers.com/deseric/tangentspace.htm
-void R_CalcTangentVectors(float *v0, float *v1, float *v2, float *st0, float *st1, float *st2, vec3_t Tangent, vec3_t Binormal) {
-	vec3_t	vec1, vec2;
-	vec3_t	planes[3];
-	float	tmp;
-	int		i;
-
-	for (i = 0; i < 3; i++) {
-		vec1[0] = v1[i] - v0[i];
-		vec1[1] = st1[0] - st0[0];
-		vec1[2] = st1[1] - st0[1];
-		vec2[0] = v2[i] - v0[i];
-		vec2[1] = st2[0] - st0[0];
-		vec2[2] = st2[1] - st0[1];
-		VectorNormalize(vec1);
-		VectorNormalize(vec2);
-		CrossProduct(vec1, vec2, planes[i]);
-	}
-
-	for (i = 0; i < 3; i++) {
-		tmp = 1.0 / planes[i][0];
-		Tangent[i] = -planes[i][1] * tmp;
-		Binormal[i] = -planes[i][2] * tmp;
-	}
-	VectorNormalize(Tangent);
-	VectorNormalize(Binormal);
-}
-
 
 void Mod_LoadAliasModelFx(model_t *mod, char *s) {
 
@@ -1965,76 +1934,150 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s) {
 	}
 }
 
-void HACK_RecalcVertsLightNormalIdx(model_t * mod, dmdl_t *pheader)
+/*
+=====================
+Compute Tangent Space
+=====================
+*/
+
+void R_CalcTangentVectors(float *v0, float *v1, float *v2, float *st0, float *st1, float *st2, vec3_t Tangent, vec3_t Binormal) {
+	vec3_t	vec1, vec2;
+	vec3_t	planes[3];
+	float	tmp;
+	int		i;
+
+	for (i = 0; i < 3; i++) {
+		vec1[0] = v1[i] - v0[i];
+		vec1[1] = st1[0] - st0[0];
+		vec1[2] = st1[1] - st0[1];
+		vec2[0] = v2[i] - v0[i];
+		vec2[1] = st2[0] - st0[0];
+		vec2[2] = st2[1] - st0[1];
+		VectorNormalize(vec1);
+		VectorNormalize(vec2);
+		CrossProduct(vec1, vec2, planes[i]);
+	}
+
+	for (i = 0; i < 3; i++) {
+		tmp = 1.0 / planes[i][0];
+		Tangent[i] = -planes[i][1] * tmp;
+		Binormal[i] = -planes[i][2] * tmp;
+	}
+	VectorNormalize(Tangent);
+	VectorNormalize(Binormal);
+}
+
+#define smooth_cosine cos(DEG2RAD(45.0))
+
+void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 {
 	int				i, j, k, l;
 	daliasframe_t	*frame;
 	dtrivertx_t		*verts, *v;
-	vec3_t			normal, triangle[3], v1, v2;
 	dtriangle_t		*tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
-	qboolean		force = qfalse;
+	int				cx = pheader->num_xyz * pheader->num_frames * sizeof(byte);
+	vec3_t			binormals_[MAX_VERTS];
+	vec3_t			tangents_[MAX_VERTS];
+	vec3_t			normals_[MAX_VERTS];
+	byte			*tangents = NULL, *binormals = NULL;
 
-	if (strstr(mod->name, "a_grenades.md2") ||
-	strstr(mod->name, "w_bfg.md2") ||
-	strstr(mod->name, "w_blaster.md2") ||
-	strstr(mod->name, "w_chaingun.md2") ||
-	strstr(mod->name, "w_glauncher.md2") ||
-	strstr(mod->name, "w_hyperblaster.md2") ||
-	strstr(mod->name, "w_machinegun.md2") ||
-	strstr(mod->name, "w_railgun.md2") ||
-	strstr(mod->name, "w_rlauncher.md2") ||
-	strstr(mod->name, "w_shotgun.md2") ||
-	strstr(mod->name, "w_weapon.md2") ||
-	strstr(mod->name, "w_sshotgun.md2"))
-	force = qtrue;
-		else
-	force = qfalse;
+	if (!binormals || !tangents) {
+		mod->binormals = binormals = (byte*)Hunk_Alloc(cx);
+		mod->tangents = tangents = (byte*)Hunk_Alloc(cx);
+	}
+	mod->memorySize += cx;
+	mod->memorySize += cx;
 
-	if (!force)
-		return;
-
-	/// Berserker: проверим на равенство всех нормалей модели...
 	//for all frames
-	for (i = 0; i<pheader->num_frames; i++)
-	{
+	for (i = 0; i < pheader->num_frames; i++) {
+
+		//set temp to zero
+		memset(tangents_, 0, pheader->num_xyz*sizeof(vec3_t));
+		memset(binormals_, 0, pheader->num_xyz*sizeof(vec3_t));
+		memset(normals_, 0, pheader->num_xyz*sizeof(vec3_t));
+
+		tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
 		frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
 		verts = frame->verts;
 
-		vec3_t	normals_[MAX_VERTS];
-		memset(normals_, 0, pheader->num_xyz*sizeof(vec3_t));
-
 		//for all tris
-		for (j = 0; j<pheader->num_tris; j++)
-		{
-			//make 3 vec3_t's of this triangle's vertices
-			for (k = 0; k<3; k++)
-			{
+		for (j = 0; j < pheader->num_tris; j++) {
+			vec3_t	edge0, edge1, edge2;
+			vec3_t	triangle[3], dir0, dir1;
+			vec3_t	tangent, binormal, normal, cross;
+
+			for (k = 0; k < 3; k++) {
 				l = tris[j].index_xyz[k];
 				v = &verts[l];
-				for (l = 0; l<3; l++)
+				for (l = 0; l < 3; l++)
 					triangle[k][l] = v->v[l];
 			}
 
-			//calculate normal
-			VectorSubtract(triangle[0], triangle[1], v1);
-			VectorSubtract(triangle[2], triangle[1], v2);
-			CrossProduct(v2, v1, normal);
-			VectorScale(normal, -1.0 / VectorLength(normal), normal);
+			//calc normals
+			VectorSubtract(triangle[0], triangle[1], dir0);
+			VectorSubtract(triangle[2], triangle[1], dir1);
+			CrossProduct(dir1, dir0, normal);
+			VectorInvert(normal);
+			VectorNormalize(normal);
+			
+			// calc tangents
+			edge0[0] = (float)verts[tris[j].index_xyz[0]].v[0];
+			edge0[1] = (float)verts[tris[j].index_xyz[0]].v[1];
+			edge0[2] = (float)verts[tris[j].index_xyz[0]].v[2];
+			edge1[0] = (float)verts[tris[j].index_xyz[1]].v[0];
+			edge1[1] = (float)verts[tris[j].index_xyz[1]].v[1];
+			edge1[2] = (float)verts[tris[j].index_xyz[1]].v[2];
+			edge2[0] = (float)verts[tris[j].index_xyz[2]].v[0];
+			edge2[1] = (float)verts[tris[j].index_xyz[2]].v[1];
+			edge2[2] = (float)verts[tris[j].index_xyz[2]].v[2];
+			
+			R_CalcTangentVectors(edge0, edge1, edge2,
+				&poutst[tris[j].index_st[0]].s,
+				&poutst[tris[j].index_st[1]].s,
+				&poutst[tris[j].index_st[2]].s,
+				tangent, binormal);
 
-			for (k = 0; k<3; k++)
-			{
+			// inverse if needed
+			CrossProduct(binormal, tangent, cross);
+			if (DotProduct(cross, normal) < 0.0) {
+				VectorInvert(tangent);
+				VectorInvert(binormal);
+			}
+
+			for (k = 0; k < 3; k++) {
 				l = tris[j].index_xyz[k];
+				VectorAdd(tangents_[l], tangent, tangents_[l]);
+				VectorAdd(binormals_[l], binormal, binormals_[l]);
 				VectorAdd(normals_[l], normal, normals_[l]);
 			}
 		}
 
-		//normalize average
 		for (j = 0; j<pheader->num_xyz; j++)
-		{
+			for (k = j + 1; k<pheader->num_xyz; k++)
+				if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2])
+				{
+					float *jnormal = r_avertexnormals[verts[j].lightnormalindex];
+					float *knormal = r_avertexnormals[verts[k].lightnormalindex];
+					if (DotProduct(jnormal, knormal) >= smooth_cosine)
+					{
+						VectorAdd(tangents_[j], tangents_[k], tangents_[j]);
+						VectorCopy(tangents_[j], tangents_[k]);
+						VectorAdd(binormals_[j], binormals_[k], binormals_[j]);
+						VectorCopy(binormals_[j], binormals_[k]);
+						VectorAdd(normals_[j], normals_[k], normals_[j]);
+						VectorCopy(normals_[j], normals_[k]);
+					}
+				}
+
+		//normalize averages
+		for (j = 0; j < pheader->num_xyz; j++) {
+			VectorNormalize(tangents_[j]);
+			VectorNormalize(binormals_[j]);
 			VectorNormalize(normals_[j]);
+			tangents[i * pheader->num_xyz + j] = Normal2Index(tangents_[j]);
+			binormals[i * pheader->num_xyz + j] = Normal2Index(binormals_[j]);
 			verts[j].lightnormalindex = Normal2Index(normals_[j]);
 		}
-
 	}
 
 }
@@ -2046,25 +2089,16 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	dstvert_t		*pinst;
 	dtriangle_t		*pintri, *pouttri, *tris;
 	daliasframe_t	*pinframe, *poutframe;
+	daliasframe_t	*frame;
+	dtrivertx_t		*verts;
 	int				version;
+	float			s, t;
+	float			iw, ih;
 
 	vec3_t			tempr, tempv;
 	int				k, l;
 	char			nam[MAX_OSPATH];
 	char			*buff;
-
-	daliasframe_t	*frame;
-	dtrivertx_t		*verts, *v;
-	byte			*tangents = NULL, *binormals = NULL;
-	float			s, t;
-	float			iw, ih;
-	int				cx;
-	vec3_t			binormals_[MAX_VERTS];
-	vec3_t			tangents_[MAX_VERTS];
-	char			cachename[MAX_OSPATH];
-	FILE			*f;
-	unsigned		checksum, cs_binormals, cs_tangents;
-	qboolean		success = qfalse, err = qtrue;;
 
 	mod->memorySize = 0;
 
@@ -2226,167 +2260,8 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		poutst[i].t = (t - 0.5) * ih;
 	}
 
-	HACK_RecalcVertsLightNormalIdx(mod, pheader);
-
-	// try loading from cache
-	Com_sprintf(cachename, sizeof(cachename), "cachexp/%s", mod->name);
-	if (cache_Open(cachename)) {
-
-		cx = pheader->num_xyz * pheader->num_frames * sizeof(byte);
-		mod->binormals = binormals = (byte*)Hunk_Alloc(cx);
-		mod->tangents = tangents = (byte*)Hunk_Alloc(cx);
-		mod->memorySize += cx;
-		mod->memorySize += cx;
-
-		if (!cache_Fetch(&cs_binormals, sizeof(cs_binormals)))
-			goto bad;
-
-		if (!cache_Fetch(mod->binormals, cx))
-			goto bad;
-
-		if (!cache_Fetch(&cs_tangents, sizeof(cs_tangents)))
-			goto bad;
-
-		if (!cache_Fetch(mod->tangents, cx))
-			goto bad;
-
-		if (LittleLong(Com_BlockChecksum(mod->binormals, cx)) != cs_binormals ||
-			LittleLong(Com_BlockChecksum(mod->tangents, cx)) != cs_tangents) {
-			Com_Printf("^1%s: wrong checksum!\n", mod->name);
-			goto bad;
-		}
-
-		// everything went fine
-		Com_DPrintf("%s: loaded from cache\n", mod->name);
-		cache_Close();
-		goto exit;
-
-	bad:
-		// all errors end up here
-		Com_Printf("^1%s: invalid cache\n", mod->name);
-		cache_Close();
-	}
-
-	/* ========================
-	cache not found - recalc it
-	======================== */
-
-	Com_Printf("%s: "S_COLOR_YELLOW"compute tangents\n", mod->name);
-	
-	cx = pheader->num_xyz * pheader->num_frames * sizeof(byte);
-
-	// Calculate tangents for vertices (bump mapping)
-	if (!binormals || !tangents) {
-		mod->binormals = binormals = (byte*)Hunk_Alloc(cx);
-		mod->tangents = tangents = (byte*)Hunk_Alloc(cx);
-	}
-	mod->memorySize += cx;
-	mod->memorySize += cx;
-
-	float smooth_cosine = cos(DEG2RAD(45.0));
-
-	//for all frames
-	for (i = 0; i < pheader->num_frames; i++) {
-
-		//set temp to zero
-		memset(tangents_, 0, pheader->num_xyz*sizeof(vec3_t));
-		memset(binormals_, 0, pheader->num_xyz*sizeof(vec3_t));
-
-		tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
-		frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
-		verts = frame->verts;
-
-		//for all tris
-		for (j = 0; j < pheader->num_tris; j++) {
-			vec3_t	vv0, vv1, vv2;
-			vec3_t	triangle[3], dir0, dir1;
-			vec3_t	tangent, binormal, normal, cross;
-
-			for (k = 0; k < 3; k++) {
-				l = tris[j].index_xyz[k];
-				v = &verts[l];
-				for (l = 0; l < 3; l++)
-					triangle[k][l] = v->v[l];
-			}
-
-			//calculate normal
-			VectorSubtract(triangle[0], triangle[1], dir0);
-			VectorSubtract(triangle[2], triangle[1], dir1);
-			CrossProduct(dir1, dir0, normal);
-			VectorInverse(normal);
-			VectorNormalize(normal);
-
-			vv0[0] = (float)verts[tris[j].index_xyz[0]].v[0];
-			vv0[1] = (float)verts[tris[j].index_xyz[0]].v[1];
-			vv0[2] = (float)verts[tris[j].index_xyz[0]].v[2];
-			vv1[0] = (float)verts[tris[j].index_xyz[1]].v[0];
-			vv1[1] = (float)verts[tris[j].index_xyz[1]].v[1];
-			vv1[2] = (float)verts[tris[j].index_xyz[1]].v[2];
-			vv2[0] = (float)verts[tris[j].index_xyz[2]].v[0];
-			vv2[1] = (float)verts[tris[j].index_xyz[2]].v[1];
-			vv2[2] = (float)verts[tris[j].index_xyz[2]].v[2];
-			
-			R_CalcTangentVectors(vv0, vv1, vv2,
-				&poutst[tris[j].index_st[0]].s,
-				&poutst[tris[j].index_st[1]].s,
-				&poutst[tris[j].index_st[2]].s,
-				tangent, binormal);			
-			
-			// inverse if needed
-			CrossProduct(binormal, tangent, cross);
-			if (DotProduct(cross, normal) < 0.0) {
-				VectorInvert(tangent);
-				VectorInvert(binormal);
-			}
-
-			for (k = 0; k < 3; k++) {
-				l = tris[j].index_xyz[k];
-				VectorAdd(tangents_[l], tangent, tangents_[l]);
-				VectorAdd(binormals_[l], binormal, binormals_[l]);
-			}
-		}
-
-		for (j = 0; j<pheader->num_xyz; j++)
-			for (k = j + 1; k<pheader->num_xyz; k++)
-				if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2])
-				{
-					float *jnormal = r_avertexnormals[verts[j].lightnormalindex];
-					float *knormal = r_avertexnormals[verts[k].lightnormalindex];
-					if (DotProduct(jnormal, knormal) >= smooth_cosine)	
-					{
-						VectorAdd(tangents_[j], tangents_[k], tangents_[j]);
-						VectorCopy(tangents_[j], tangents_[k]);
-						VectorAdd(binormals_[j], binormals_[k], binormals_[j]);
-						VectorCopy(binormals_[j], binormals_[k]);
-					}
-				}
-
-		//normalize averages
-		for (j = 0; j < pheader->num_xyz; j++) {
-			VectorNormalize(tangents_[j]);
-			VectorNormalize(binormals_[j]);
-			tangents[i * pheader->num_xyz + j] = Normal2Index(tangents_[j]);
-			binormals[i * pheader->num_xyz + j] = Normal2Index(binormals_[j]);
-		}
-	}
-
-	// write cache to disk
-	Com_sprintf(cachename, sizeof(cachename), "%s/cachexp/%s", FS_Gamedir(), mod->name); 
-	FS_CreatePath(cachename);
-	f = fopen(cachename, "wb");
-	if (f) {
-
-		checksum = LittleLong(Com_BlockChecksum(binormals, cx));
-		fwrite(&checksum, 1, sizeof(int), f);
-		fwrite(binormals, 1, cx, f);
-
-		checksum = LittleLong(Com_BlockChecksum(tangents, cx));
-		fwrite(&checksum, 1, sizeof(int), f);
-		fwrite(tangents, 1, cx, f);
-
-		fclose(f);
-	}
-exit:
+	// build tangents vectors
+	Mod_BuildMD2Tangents(mod, pheader, poutst);
 
 	ClearBounds(mod->mins, mod->maxs);
 	VectorClear(mod->center);

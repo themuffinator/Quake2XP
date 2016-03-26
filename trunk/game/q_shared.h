@@ -72,14 +72,9 @@ typedef enum {
 #define NULL ((void *)0)
 #endif
 
-/* FIXME: Beware - _vsnprintf does not end with \0 - vsnprintf (*nix) does */
-#ifdef _WIN32
-// Ale: defined the other way around, so it can be changed to _vsnprintf_s()
-// or a local version which terminates the string in Windows
-//#define vsnprintf	_vsnprintf
-//typedef int intptr_t;
-#else
-#include <stdint.h>
+
+#ifdef __linux__
+	#include <stdint.h>
 #endif
 
 //#ifdef _WIN32
@@ -344,9 +339,6 @@ int Q_strncasecmp (const char *s1, const char *s2, int n);
 void Q_strncpyz (char *dst, const char *src, int dstSize);
 void Q_strcat (char *dst, const char *src, int dstSize);
 int Q_strnicmp (const char *string1, const char *string2, int n);
-
-void Com_Memcpy (void* dest, const void* src, const size_t count);
-void Com_Memset (void* dest, const int val, const size_t count);
 
 //=============================================
 

@@ -20,13 +20,7 @@
 
 #endif
 
-/* FIXME: Beware - _vsnprintf does not end with \0 - vsnprintf (*nix) does */
-#ifdef _WIN32
-// Ale: defined the other way around, so it can be changed to _vsnprintf_s()
-// or a local version which terminates the string in Windows
-//#define vsnprintf	_vsnprintf
-typedef int intptr_t;
-#else
+#ifdef __linux__
 #include <stdint.h>
 #endif
 

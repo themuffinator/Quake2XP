@@ -102,6 +102,11 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	else
 		qglUniformMatrix4fv(water_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 
+	if(r_newrefdef.rdflags & RDF_UNDERWATER)
+		qglUniform1i(water_mirror, 0);
+	else
+		qglUniform1i(water_mirror, 1);
+
 	qglUniformMatrix4fv(water_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 	qglUniformMatrix4fv(water_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
