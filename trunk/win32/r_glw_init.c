@@ -1095,10 +1095,6 @@ qboolean GLimp_InitGL (void)
 			Com_Printf("...using WGL_ARB_create_context_profile\n");
 	}
 
-	glGetStringi = (PFNGLGETSTRINGIPROC)qwglGetProcAddress("glGetStringi");
-	if (!glGetStringi)
-		Com_Printf(S_COLOR_RED"glGetStringi: bad getprocaddress\n");
-
 	// Make no rendering context current and destroy the rendering context...
 	qwglMakeCurrent(NULL, NULL);
 	qwglDeleteContext(hGLRC);

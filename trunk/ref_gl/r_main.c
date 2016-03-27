@@ -1522,11 +1522,13 @@ int R_Init(void *hinstance, void *hWnd)
 	 ** get our various GL strings
 	 */
 	Com_Printf( "\n");
+	
 	gl_config.vendor_string = (const char*)qglGetString(GL_VENDOR);
-
 	Com_Printf(S_COLOR_WHITE "GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
+	
 	gl_config.renderer_string = (const char*)qglGetString(GL_RENDERER);
 	Com_Printf(S_COLOR_WHITE "GL_RENDERER:" S_COLOR_GREEN "  %s\n", gl_config.renderer_string);
+	
 	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
 	Com_Printf(S_COLOR_WHITE "GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
 
@@ -1534,13 +1536,18 @@ int R_Init(void *hinstance, void *hWnd)
 	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
 	Com_Printf("Using OpenGL: "S_COLOR_GREEN"%i.%i"S_COLOR_WHITE" %s profile context\n", gl_config.glMajorVersion, gl_config.glMinorVersion, profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
 #endif
-	Cvar_Set("scr_drawall", "0");
 
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");
 	Com_Printf(S_COLOR_GREEN"Checking Basic Quake II XP Extensions\n");
 	Com_Printf("=====================================\n");
 	Com_Printf("\n");
+	
+	glGetStringi = (PFNGLGETSTRINGIPROC)qwglGetProcAddress("glGetStringi");
+	if (!glGetStringi) {
+		Com_Printf(S_COLOR_RED"glGetStringi: bad getprocaddress\n");
+		VID_Error(ERR_FATAL, "glGetStringi: bad getprocaddress");
+	}
 
 	if (IsExtensionSupported("GL_ARB_multitexture")) {
 		Com_Printf("...using GL_ARB_multitexture\n");
