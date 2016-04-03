@@ -213,15 +213,15 @@ void R_AddNoWorldModelLight () {
 	memset (light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet (light->origin, r_origin[0], r_origin[1], r_origin[2] - 5.0);
+	VectorSet (light->origin, r_origin[0], r_origin[1], r_origin[2] - 15.0);
 	VectorSet (light->startColor, 1.0, 1.0, 1.0);
 	VectorSet (light->color, 1.0, 1.0, 1.0);
 	VectorSet (light->angles, 0, 0, 0);
-	VectorSet (light->radius, 300, 300, 300);
+	VectorSet (light->radius, 500.0, 500.0, 500.0);
 
 	for (i = 0; i < 3; i++) {
-		light->mins[i] = light->origin[i] - 300;
-		light->maxs[i] = light->origin[i] + 300;
+		light->mins[i] = light->origin[i] - 200.0;
+		light->maxs[i] = light->origin[i] + 200.0;
 	}
 
 	light->style = 0;
