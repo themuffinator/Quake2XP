@@ -919,7 +919,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 				AngleVectors (ent.angles, forward, NULL, NULL);
 				VectorMA (ent.origin, 64, forward, start);
-				V_AddLight (start, 100, 1, 0, 0, vec3_origin, 0, 0);
+				V_AddLight (start, 250, 1, 0, 0, vec3_origin, 0, 0);
 			}
 		}
 		else {				// interpolate angles
