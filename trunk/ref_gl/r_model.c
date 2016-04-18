@@ -543,16 +543,26 @@ void Mod_LoadLighting(lump_t * l) {
 Mod_LoadVisibility
 =================
 */
-void Mod_LoadVisibility(lump_t * l) {
-	int i;
 
-	if (!l->filelen) {
-		loadmodel->vis = NULL;
-		return;
+static qboolean R_LoadXpVis(void) {
+	char tmp[MAX_QPATH], name[MAX_QPATH];
+	char *buf;
+	int len, i;
+
+	FS_StripExtension(loadmodel->name, tmp, sizeof(tmp));
+	Com_sprintf(name, sizeof(name), "%s.xpvis", tmp);
+
+	len = FS_LoadFile(name, (void**)&buf);
+
+	if (!buf) {
+		Com_Printf("R_LoadXpVis(): external vis for '%s' not found.\n", loadmodel->name);
+		return qfalse;
 	}
-	loadmodel->vis = (dvis_t*)Hunk_Alloc(l->filelen);
-	loadmodel->memorySize += l->filelen;
-	Q_memcpy(loadmodel->vis, mod_base + l->fileofs, l->filelen);
+	
+	loadmodel->vis = (byte *)Hunk_Alloc(len);
+	Q_memcpy(loadmodel->vis, buf, len);
+	loadmodel->memorySize += len;
+	loadmodel->useXpVis = qtrue;
 
 	loadmodel->vis->numclusters = LittleLong(loadmodel->vis->numclusters);
 	for (i = 0; i < loadmodel->vis->numclusters; i++) {
@@ -560,6 +570,37 @@ void Mod_LoadVisibility(lump_t * l) {
 			LittleLong(loadmodel->vis->bitofs[i][0]);
 		loadmodel->vis->bitofs[i][1] =
 			LittleLong(loadmodel->vis->bitofs[i][1]);
+	}
+
+	FS_FreeFile(buf);
+
+	Com_Printf("Loaded vis data from "S_COLOR_GREEN"%s"S_COLOR_WHITE".\n", name);
+
+	return qtrue;
+}
+
+void Mod_LoadVisibility(lump_t * l) {
+	int i;
+
+	loadmodel->useXpVis = qfalse;
+
+	if (!R_LoadXpVis()) {
+
+		if (!l->filelen) {
+			loadmodel->vis = NULL;
+			return;
+		}
+		loadmodel->vis = (dvis_t*)Hunk_Alloc(l->filelen);
+		loadmodel->memorySize += l->filelen;
+		Q_memcpy(loadmodel->vis, mod_base + l->fileofs, l->filelen);
+
+		loadmodel->vis->numclusters = LittleLong(loadmodel->vis->numclusters);
+		for (i = 0; i < loadmodel->vis->numclusters; i++) {
+			loadmodel->vis->bitofs[i][0] =
+				LittleLong(loadmodel->vis->bitofs[i][0]);
+			loadmodel->vis->bitofs[i][1] =
+				LittleLong(loadmodel->vis->bitofs[i][1]);
+		}
 	}
 }
 

@@ -280,6 +280,7 @@ typedef struct model_s {
 	int			lightmap_scale;
 	byte		*lightData;
 	qboolean	useXPLM;	// 3-vector basis lightmap
+	qboolean	useXpVis;
 
 	// for alias models and skins
 	image_t		*skins[MAX_MD2SKINS];
