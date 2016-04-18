@@ -555,7 +555,7 @@ static qboolean R_LoadXpVis(void) {
 	len = FS_LoadFile(name, (void**)&buf);
 
 	if (!buf) {
-		Com_Printf("R_LoadXpVis(): external vis for '%s' not found.\n", loadmodel->name);
+		Com_Printf("R_LoadXpVis(): external vis for " S_COLOR_GREEN "'%s' " S_COLOR_WHITE "not found.\n", loadmodel->name);
 		return qfalse;
 	}
 	
@@ -584,7 +584,8 @@ void Mod_LoadVisibility(lump_t * l) {
 
 	loadmodel->useXpVis = qfalse;
 
-	if (!R_LoadXpVis()) {
+	if (R_LoadXpVis())
+		return;
 
 		if (!l->filelen) {
 			loadmodel->vis = NULL;
@@ -601,7 +602,6 @@ void Mod_LoadVisibility(lump_t * l) {
 			loadmodel->vis->bitofs[i][1] =
 				LittleLong(loadmodel->vis->bitofs[i][1]);
 		}
-	}
 }
 
 
