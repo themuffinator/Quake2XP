@@ -591,15 +591,18 @@ void R_DrawLightScene (void)
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE /*GL_DST_COLOR, GL_ZERO*/);
 
-	if(r_useLightScissors->value)
-		GL_Enable(GL_SCISSOR_TEST);
-	
-	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
-		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
+	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
-	if(r_shadows->value)
-		GL_Enable(GL_STENCIL_TEST);
-	
+		if (r_useLightScissors->value)
+			GL_Enable(GL_SCISSOR_TEST);
+
+		if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+			GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
+
+		if (r_shadows->value)
+			GL_Enable(GL_STENCIL_TEST);
+	}
+
 	R_PrepareShadowLightFrame(qfalse);
 	
 	if(shadowLight_frame) {
@@ -621,7 +624,9 @@ void R_DrawLightScene (void)
 
 	qglClearStencil(128);
 	GL_StencilMask(255);
-	qglClear(GL_STENCIL_BUFFER_BIT);
+	
+	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+		qglClear(GL_STENCIL_BUFFER_BIT);
 	
 	R_CastBspShadowVolumes();		// bsp and bmodels shadows
 
@@ -691,6 +696,9 @@ void R_DrawLightScene (void)
 void R_DrawPlayerWeapon(void)
 {
 	if (!r_drawEntities->value)
+		return;
+	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
 	R_DrawPlayerWeaponAmbient();
