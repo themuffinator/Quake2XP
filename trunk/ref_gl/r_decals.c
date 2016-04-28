@@ -130,7 +130,7 @@ void R_RenderDecals(void)
 				continue;
 
         endLerp = (float)(r_newrefdef.time - dl->time) / (float)(dl->endTime - dl->time);	
-		endLerp *=250;
+		endLerp *= 250.0;
 
 		for (i = 0; i < 3; i++)
 			decalColor[i] = dl->color[i] + (dl->endColor[i] - dl->color[i]) * endLerp;

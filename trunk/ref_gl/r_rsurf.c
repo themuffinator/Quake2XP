@@ -1153,7 +1153,7 @@ void R_DrawBrushModel (void) {
 	//Put camera into model space view angle for bmodels parallax
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
-
+	GL_DepthMask(0);
 	R_DrawInlineBModel2();
 
 	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
@@ -1184,6 +1184,7 @@ void R_DrawBrushModel (void) {
 	qglDisableVertexAttribArray(ATT_TANGENT);
 	qglDisableVertexAttribArray(ATT_BINORMAL);
 	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	GL_DepthMask(1);
 }
 
 /*

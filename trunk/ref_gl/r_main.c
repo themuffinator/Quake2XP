@@ -883,8 +883,15 @@ static void R_DrawEntitiesOnList (void) {
 // draw all opaque, non-reflective stuff
 // fills reflective & alpha chains from world model
 static void R_DrawAmbientScene (void) {
+	
+	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+		GL_DepthMask(0);
+
 	R_DrawBSP();
 	R_DrawEntitiesOnList();
+
+	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+		GL_DepthMask(1);
 }
 
 // draws reflective & alpha chains from world model
@@ -1298,7 +1305,7 @@ void R_RegisterCvars(void)
 	r_lightmapScale =					Cvar_Get("r_lightmapScale", "0.5", CVAR_ARCHIVE);
 	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
-	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "65", CVAR_ARCHIVE);
+	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
 //	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
