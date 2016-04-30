@@ -50,8 +50,6 @@ void main (void) {
 		diffuseMap += tmp;
 	}
 
-	diffuseMap *= u_ColorModulate;
-
 	if (u_isAmbient == 1) {
 		fragData = diffuseMap * LambertLighting(normalize(normalMap.xyz), V) * u_LightColor * attenMap;
 		return;
@@ -59,32 +57,29 @@ void main (void) {
 	
 	if (u_isAmbient == 0) {
 
-  float specular = normalMap.a * u_specularScale;
-  float roughness = diffuseMap.r * 0.45; 
-  roughness = 1.0 - roughness;
-  vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalize(normalMap.xyz), L, V);
-  vec3 brdfColor = brdf * u_LightColor.rgb * cubeFilter.rgb;
+	float specular = normalMap.a * u_specularScale;
+	vec2 Es = PhongLighting(normalize(normalMap.xyz), L, V, 16.0);
+	vec3 color = (Es.x * diffuseMap.rgb + Es.y * specular) * u_LightColor.rgb;
 
 		if(u_fog == 1) {  
 			float fogCoord = abs(gl_FragCoord.z / gl_FragCoord.w);
 			float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
 			//float fogFactor = exp(-pow(u_fogDensity * fogCoord, 2.0)); //exp2
 
-			fragData = mix(u_LightColor, vec4(brdfColor, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
-
+			fragData = mix(u_LightColor, vec4(color, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
 			return;
 		}
 
 		if(u_fog == 0) {
 
 			if(SSS <= 0.00392){
-					fragData = SkinLighting(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap * 0.5, attenMap, specular) * cubeFilter;
-					return;
+				fragData = SkinLighting(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap * 0.5, attenMap, specular) * cubeFilter;
+				return;
 			}
-			else{	
-				fragData.rgb = fragData.rgb =  brdfColor * attenMap; 
-				fragData.a = 1.0;
-			}
+		
+		fragData.rgb = color * cubeFilter.rgb * attenMap; 
+		fragData.a = 1.0;
+			
 		}
 	}        
 }

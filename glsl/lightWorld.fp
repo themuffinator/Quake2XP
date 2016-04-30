@@ -62,10 +62,11 @@ void main (void) {
 	if(u_isAmbient == 0) {
 		
 		float specular = normalMap.a * u_specularScale;
-		float roughness = diffuseMap.r;
-		roughness = 1.0 - roughness; 
+		float roughness = 1.0 - diffuseMap.r;
+		roughness = clamp(roughness, 0.0, 0.5);
+    
 		vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalize(normalMap.xyz), L, V);
-		vec3 brdfColor = brdf * u_LightColor.rgb * cubeFilter.rgb;
+		vec3 brdfColor = brdf * u_LightColor.rgb;
           
 		if(u_fog == 1) {  
 			float fogCoord = abs(gl_FragCoord.z/ gl_FragCoord.w); // = gl_FragCoord.z / gl_FragCoord.w;
@@ -76,7 +77,7 @@ void main (void) {
 		}
      
 		if(u_fog == 0) { 
-		fragData.rgb =  brdfColor * attenMap; 
+		fragData.rgb =  brdfColor  * cubeFilter.rgb * attenMap; 
 		fragData.a = 1.0;
      }
   }	
