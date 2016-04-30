@@ -112,12 +112,18 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	Mat4_AffineInvert(tmpMatrix, mvMatrix);
 
 	// setup unit space conversion matrix
-	tmpMatrix[0][0] = 1.f / light->radius[0];
+	if (light->isFog)
+		tmpMatrix[0][0] = 0.f;
+	else
+		tmpMatrix[0][0] = 1.f / light->radius[0];
 	tmpMatrix[0][1] = 0.f;
 	tmpMatrix[0][2] = 0.f;
 	tmpMatrix[0][3] = 0.f;
 	tmpMatrix[1][0] = 0.f;
-	tmpMatrix[1][1] = 1.f / light->radius[1];
+	if (light->isFog)
+		tmpMatrix[1][1] = 0.f;
+	else
+		tmpMatrix[1][1] = 1.f / light->radius[1];
 	tmpMatrix[1][2] = 0.f;
 	tmpMatrix[1][3] = 0.f;
 	tmpMatrix[2][0] = 0.f;
@@ -213,11 +219,11 @@ void R_AddNoWorldModelLight () {
 	memset (light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet (light->origin, r_origin[0], r_origin[1], r_origin[2] - 15.0);
+	VectorSet (light->origin, r_origin[0], r_origin[1], r_origin[2]);
 	VectorSet (light->startColor, 1.0, 1.0, 1.0);
 	VectorSet (light->color, 1.0, 1.0, 1.0);
 	VectorSet (light->angles, 0, 0, 0);
-	VectorSet (light->radius, 500.0, 500.0, 500.0);
+	VectorSet (light->radius, 200.0, 200.0, 200.0);
 
 	for (i = 0; i < 3; i++) {
 		light->mins[i] = light->origin[i] - 200.0;
@@ -1616,12 +1622,18 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	Mat4_AffineInvert(tmpMatrix, mvMatrix);
 
 	// setup unit space conversion matrix
-	tmpMatrix[0][0] = 1.f / light->radius[0];
+	if(light->isFog)
+		tmpMatrix[0][0] = 0.f;
+	else
+		tmpMatrix[0][0] = 1.f / light->radius[0];
 	tmpMatrix[0][1] = 0.f;
 	tmpMatrix[0][2] = 0.f;
 	tmpMatrix[0][3] = 0.f;
 	tmpMatrix[1][0] = 0.f;
-	tmpMatrix[1][1] = 1.f / light->radius[1];
+	if (light->isFog)
+		tmpMatrix[1][1] = 0.f;
+	else
+		tmpMatrix[1][1] = 1.f / light->radius[1];
 	tmpMatrix[1][2] = 0.f;
 	tmpMatrix[1][3] = 0.f;
 	tmpMatrix[2][0] = 0.f;

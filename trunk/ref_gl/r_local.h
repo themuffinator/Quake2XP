@@ -402,6 +402,7 @@ void R_LightScale (void);
 void R_SSAO(void);
 void R_DrawDepthScene(void);
 void R_DownsampleDepth(void);
+void R_ScreenBlend(void);
 
 void R_SaveLights_f (void);
 void R_Light_Spawn_f (void);

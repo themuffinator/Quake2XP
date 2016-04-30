@@ -1058,6 +1058,7 @@ void R_RenderFrame(refdef_t * fd) {
 		R_Bloom();
 		R_MotionBlur();
 		R_FilmGrain();
+		R_ScreenBlend();
 	}
 	
 	// set alpha blend for 2D mode

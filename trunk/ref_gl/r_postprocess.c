@@ -258,6 +258,39 @@ void R_RadialBlur (void)
 	}
 }
 
+extern float v_blend[4];
+
+void R_ScreenBlend(void)
+{
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+	
+	if (!v_blend[3])
+		return;
+
+		GL_MBindRect(GL_TEXTURE0_ARB, ScreenMap->texnum);
+		qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+
+		// setup program
+		GL_BindProgram(genericProgram, 0);
+
+		qglUniform1i(gen_attribConsole, 0);
+		qglUniform1i(gen_attribColors, 0);
+		qglUniform1i(gen_sky, 0);
+		qglUniform1i(gen_3d, 0);
+		qglUniform4f(gen_color, v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
+		qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+
+		GL_Enable(GL_BLEND);
+
+		R_DrawFullScreenQuad();
+
+		GL_Disable(GL_BLEND);
+
+		GL_BindNullProgram();
+
+}
 void R_DofBlur (void) 
 {
 	float			tmpDist[5], tmpMins[3];
