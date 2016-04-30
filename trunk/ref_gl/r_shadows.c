@@ -189,7 +189,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 	}
 
 	qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, numVerts * sizeof(vec4_t), vcache4);
-	qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(GL_UNSIGNED_INT), icache);
+	qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(uint), icache);
 
 	qglDrawElements (GL_TRIANGLES, id, GL_UNSIGNED_INT, NULL);
 
@@ -561,7 +561,7 @@ void R_DrawBrushModelVolumes () {
 
 	if (ib) {
 		qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, surfBase * sizeof(vec3_t), vcache);
-		qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(GL_UNSIGNED_INT), icache);
+		qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
 
 		qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
 	}
@@ -723,7 +723,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 
 		qglGenBuffersARB(1, &currentShadowLight->iboId);
 		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
-		qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, ib * sizeof(GL_UNSIGNED_INT), icache, GL_STATIC_DRAW_ARB);
+		qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, ib * sizeof(uint), icache, GL_STATIC_DRAW_ARB);
 		currentShadowLight->iboNumIndices = ib;
 		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 		numPreCachedLights++;
@@ -731,7 +731,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	else {
 		if (ib) {
 			qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, surfBase * sizeof(vec3_t), vcache);
-			qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(GL_UNSIGNED_INT), icache);
+			qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
 			
 			qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
 		}

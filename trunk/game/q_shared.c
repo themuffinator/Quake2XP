@@ -65,7 +65,8 @@ void RotatePointAroundVector (vec3_t dst, const vec3_t dir, const vec3_t point, 
 	im[2][1] = m[1][2];
 
 	memset (zrot, 0, sizeof(zrot));
-	zrot[0][0] = zrot[1][1] = zrot[2][2] = 1.0F;
+	zrot[0][0] = zrot[1][1] = 1.0F;
+	zrot[2][2] = 1.0;
 
 	zrot[0][0] = cos (DEG2RAD (degrees));
 	zrot[0][1] = sin (DEG2RAD (degrees));
@@ -242,7 +243,7 @@ float Q_fabs (float f) {
 }
 
 #if defined _M_IX86 && !defined C_ONLY
-#pragma warning (disable:4035)
+
 __declspec(naked) long Q_ftol (float f) {
 	static int tmp;
 	__asm fld dword ptr[esp + 4]
@@ -250,7 +251,7 @@ __declspec(naked) long Q_ftol (float f) {
 	__asm mov eax, tmp
 	__asm ret
 }
-#pragma warning (default:4035)
+
 #endif
 
 /*
@@ -279,9 +280,7 @@ float	anglemod (float a) {
 	return a;
 }
 
-int		i;
 vec3_t	corners[2];
-
 
 // this is the slow, general version
 int BoxOnPlaneSide2 (vec3_t emins, vec3_t emaxs, struct cplane_s *p) {
@@ -383,7 +382,6 @@ int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *p) {
 	return sides;
 }
 #else
-#pragma warning( disable: 4035 )
 
 __declspec(naked) int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *p) {
 	static int bops_initialized;
@@ -613,7 +611,7 @@ __declspec(naked) int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_
 		int 3
 	}
 }
-#pragma warning( default: 4035 )
+
 #endif
 
 void ClearBounds (vec3_t mins, vec3_t maxs) {

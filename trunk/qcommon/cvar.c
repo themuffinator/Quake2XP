@@ -406,9 +406,9 @@ void Cvar_WriteVariables (char *path) {
 	FILE	*f;
 	int		i, num;
 
-	for (var = cvar_vars, num = 0; var; var = var->next, num++);
+	for (var = cvar_vars, num = 0; var; var = var->next, num++) {}
 		sortedList = (cvar_t *)Z_Malloc(num * sizeof(cvar_t));
-	
+
 	if (sortedList) {
 		for (var = cvar_vars, i = 0; var; var = var->next, i++)
 			sortedList[i] = *var;
@@ -448,8 +448,9 @@ void Cvar_List_f (void) {
 	char		*hlp;
 	qboolean	help = qfalse;
 
-	for (var = cvar_vars, num = 0; var; var = var->next, num++);
-		sortedList = (cvar_t *)Z_Malloc (num * sizeof(cvar_t));
+	for (var = cvar_vars, num = 0; var; var = var->next, num++) {}
+		sortedList = (cvar_t *)Z_Malloc(num * sizeof(cvar_t));
+		
 	if (sortedList) {
 		for (var = cvar_vars, i = 0; var; var = var->next, i++)
 			sortedList[i] = *var;

@@ -331,15 +331,15 @@ void GL_BuildPolygonFromSurface (msurface_t * fa) {
 		//
 		s = DotProduct (vec, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
 		s -= fa->texturemins[0];
-		s += fa->light_s * loadmodel->lightmap_scale;
-		s += loadmodel->lightmap_scale / 2;
-		s /= LIGHTMAP_SIZE * loadmodel->lightmap_scale;
+		s += fa->light_s * (float)loadmodel->lightmap_scale;
+		s += (float)loadmodel->lightmap_scale / 2.0;
+		s /= LIGHTMAP_SIZE * (float)loadmodel->lightmap_scale;
 
 		t = DotProduct (vec, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
 		t -= fa->texturemins[1];
-		t += fa->light_t * loadmodel->lightmap_scale;
-		t += loadmodel->lightmap_scale / 2;
-		t /= LIGHTMAP_SIZE * loadmodel->lightmap_scale;
+		t += fa->light_t * (float)loadmodel->lightmap_scale;
+		t += (float)loadmodel->lightmap_scale / 2.0;
+		t /= LIGHTMAP_SIZE * (float)loadmodel->lightmap_scale;
 
 		poly->verts[i][5] = s;
 		poly->verts[i][6] = t;

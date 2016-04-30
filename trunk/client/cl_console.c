@@ -46,10 +46,10 @@ void RE_SetColor (const color4ub_t color) {
 		color[2] != colorDefault[2] ||
 		color[3] != colorDefault[3]) {
 
-		gl_state.fontColor[0] = color[0] / 255;
-		gl_state.fontColor[1] = color[1] / 255;
-		gl_state.fontColor[2] = color[2] / 255;
-		gl_state.fontColor[3] = color[3] / 255;
+		gl_state.fontColor[0] = color[0] / 255.0;
+		gl_state.fontColor[1] = color[1] / 255.0;
+		gl_state.fontColor[2] = color[2] / 255.0;
+		gl_state.fontColor[3] = color[3] / 255.0;
 
 		colorDefault[0] = color[0];
 		colorDefault[1] = color[1];

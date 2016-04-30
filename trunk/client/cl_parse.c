@@ -480,7 +480,7 @@ void CL_ParseBaseline (void) {
 	CL_ParseDelta (&nullstate, es, newnum, bits);
 }
 
-struct image_s *R_RegisterPlayerBump (char *name, struct image_s *tex);
+struct image_s *R_RegisterPlayerBump (char *name);
 
 /*
 ================
@@ -489,7 +489,6 @@ CL_LoadClientinfo
 ================
 */
 char	gender_model[MAX_QPATH];
-extern ALuint S_RegisterPlayerSound (char *name);
 
 void CL_LoadClientinfo (clientinfo_t * ci, char *s) {
 	int i;
@@ -525,7 +524,7 @@ void CL_LoadClientinfo (clientinfo_t * ci, char *s) {
 		memset (ci->weaponmodel, 0, sizeof(ci->weaponmodel));
 		ci->weaponmodel[0] = R_RegisterModel (weapon_filename);
 		ci->skin = R_RegisterSkin (skin_filename);
-		ci->bump = R_RegisterPlayerBump (skin_filename, ci->skin);
+		ci->bump = R_RegisterPlayerBump (skin_filename);
 		ci->icon = Draw_FindPic (ci->iconname);
 	}
 	else {
@@ -555,7 +554,7 @@ void CL_LoadClientinfo (clientinfo_t * ci, char *s) {
 		Com_sprintf (skin_filename, sizeof(skin_filename),
 			"players/%s/%s.pcx", model_name, skin_name);
 		ci->skin = R_RegisterSkin (skin_filename);
-		ci->bump = R_RegisterPlayerBump (skin_filename, ci->skin);
+		ci->bump = R_RegisterPlayerBump (skin_filename);
 
 		// if we don't have the skin and the model wasn't male,
 		// see if the male has it (this is for CTF's skins)
@@ -570,7 +569,7 @@ void CL_LoadClientinfo (clientinfo_t * ci, char *s) {
 			Com_sprintf (skin_filename, sizeof(skin_filename),
 				"players/%s/%s.pcx", model_name, skin_name);
 			ci->skin = R_RegisterSkin (skin_filename);
-			ci->bump = R_RegisterPlayerBump (skin_filename, ci->skin);
+			ci->bump = R_RegisterPlayerBump (skin_filename);
 		}
 		// if we still don't have a skin, it means that the male model
 		// didn't have
@@ -580,7 +579,7 @@ void CL_LoadClientinfo (clientinfo_t * ci, char *s) {
 			Com_sprintf (skin_filename, sizeof(skin_filename),
 				"players/%s/grunt.pcx", model_name, skin_name);
 			ci->skin = R_RegisterSkin (skin_filename);
-			ci->bump = R_RegisterPlayerBump (skin_filename, ci->skin);
+			ci->bump = R_RegisterPlayerBump (skin_filename);
 		}
 		// weapon file
 		for (i = 0; i < num_cl_weaponmodels; i++) {

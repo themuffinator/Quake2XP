@@ -396,9 +396,10 @@ void M_Main_Draw (void) {
 	offcet = (fontscale - 1) * 60;
 
 	for (i = 0; names[i] != 0; i++) {
-		if (i != m_main_cursor)
-			Draw_PicScaled (xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, names[i]);
+		if (i != m_main_cursor) {
+			Draw_PicScaled(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, names[i]);
 			Draw_PicBumpScaled(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, names[i], namesBump[i]);
+		}
 	}
 
 	strcpy (litname, names[m_main_cursor]);
@@ -1499,7 +1500,6 @@ void M_AdvancedInit (void) {
 	s_aoptions_bigHud_box.curvalue = cl_bigHud->value;
 	s_aoptions_hudScale_slider.curvalue = cl_hudScale->value * 10;
 	s_aoptions_fontScale_slider.curvalue = (cl_fontScale->value - 1) * 10;
-	s_aoptions_3dhud_box.curvalue = cl_3dhud->value;
 
 
 	Menu_AddItem (&s_options_menu, (void *)&s_aoptions_railCoreRed_slider);
@@ -4167,7 +4167,7 @@ int	pose_rot = 7;
 const char *pose_rot_names[] = { "0 degrees", "30 degrees", "60 degrees", "90 degrees", "120 degrees", "150 degrees", "180 degrees", "210 degrees", "240 degrees", "270 degrees", "300 degrees", "330 degrees", "auto rotate", 0 };
 int	pose_rot_angle[] = { 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, -1 };
 
-struct image_s *R_RegisterPlayerBump (char *name, struct image_s *tex);
+struct image_s *R_RegisterPlayerBump (char *name);
 
 
 
@@ -4208,7 +4208,7 @@ void PlayerConfig_MenuDraw (void) {
 			skindisplaynames[s_player_skin_box.curvalue]);
 
 		entity[0].skin = R_RegisterSkin (scratch);
-		entity[0].bump = R_RegisterPlayerBump (scratch, entity[0].skin);
+		entity[0].bump = R_RegisterPlayerBump (scratch);
 		entity[0].origin[0] = 90;
 		entity[0].origin[1] = 0;
 		entity[0].origin[2] = -8;
@@ -4240,7 +4240,7 @@ void PlayerConfig_MenuDraw (void) {
 			Com_sprintf(scratch, sizeof(scratch), "players/%s/weapon.md2", s_pmi[s_player_model_box.curvalue].directory); //force default player weapon
 			entity[1].model = R_RegisterModel (scratch);
 			entity[1].skin = R_RegisterSkin(scratch);
-			entity[1].bump = R_RegisterPlayerBump(scratch, entity[0].skin);
+			entity[1].bump = R_RegisterPlayerBump(scratch);
 		}
 		
 		if (entity[1].model) {

@@ -1171,9 +1171,11 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 				}
 			}
-			else
+			else 
 				ent.model = cl.model_draw[s1->modelindex2];
-				currentPlayerWeapon = ent.model;
+			
+			currentPlayerWeapon = ent.model;
+			
 			// PMM - check for the defender sphere shell .. make it
 			// translucent
 			// replaces the previous version which used the high bit on

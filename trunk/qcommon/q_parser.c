@@ -605,6 +605,9 @@ qboolean Parser_CheckTokenType (parser_t *parser, tokenType_t type, qboolean war
 				case TT_PUNCTUATION:
 					Parser_Warning (parser, "expected punctuation, found '%s'", token.text);
 					break;
+				case TT_BAD:
+					Parser_Warning(parser, "expected punctuation, found '%s'", token.text);
+					break;
 			}
 		}
 		else {
@@ -617,6 +620,9 @@ qboolean Parser_CheckTokenType (parser_t *parser, tokenType_t type, qboolean war
 					break;
 				case TT_PUNCTUATION:
 					Parser_Error (parser, "expected punctuation, found '%s'", token.text);
+					break;
+				case TT_BAD:
+					Parser_Error(parser, "expected punctuation, found '%s'", token.text);
 					break;
 			}
 		}

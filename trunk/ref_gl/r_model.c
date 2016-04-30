@@ -524,8 +524,7 @@ void Mod_LoadLighting(lump_t * l) {
 
 	if ((s = strstr(CM_EntityString(), "\"lightmap_scale\""))) {  // resolve lightmap scale
 
-		c = COM_Parse(&s);  // parse the string itself
-		c = COM_Parse(&s);  // and then the value
+		c = COM_Parse(&s);  // parse the string itself and then the value
 
 		loadmodel->lightmap_scale = atoi(c);
 
@@ -2022,10 +2021,9 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 	vec3_t			normals_[MAX_VERTS];
 	byte			*tangents = NULL, *binormals = NULL;
 
-	if (!binormals || !tangents) {
-		mod->binormals = binormals = (byte*)Hunk_Alloc(cx);
-		mod->tangents = tangents = (byte*)Hunk_Alloc(cx);
-	}
+	mod->binormals = binormals = (byte*)Hunk_Alloc(cx);
+	mod->tangents = tangents = (byte*)Hunk_Alloc(cx);
+
 	mod->memorySize += cx;
 	mod->memorySize += cx;
 

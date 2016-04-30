@@ -67,17 +67,24 @@ static qboolean AL_InitDriver (void) {
 		else {
 			switch ((int)s_quality->value) {
 				case 1:
+				default:
 					attrlist[1] = 44100;
+					break;
 				case 2:
 					attrlist[1] = 48000;
+					break;
 				case 3:
 					attrlist[1] = 88200;
+					break;
 				case 4:
 					attrlist[1] = 96000;
+					break;
 				case 5:
 					attrlist[1] = 176400;
+					break;
 				case 6:
 					attrlist[1] = 192000;
+					break;
 			}
 			attrlist_p = attrlist;
 		}

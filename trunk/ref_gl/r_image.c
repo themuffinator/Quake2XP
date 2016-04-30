@@ -1357,13 +1357,10 @@ struct image_s *R_RegisterSkin(char *name)
 	return GL_FindImage(name, it_skin);
 }
 
-struct image_s *R_RegisterPlayerBump (char *name, struct image_s *tex)
+struct image_s *R_RegisterPlayerBump (char *name)
 {
 	image_t	*img;
 	char	gl[48];
-
-	if(!tex)
-		img = r_defBump;
 	
 	strcpy(gl, name);
 	gl[strlen(gl) - 4] = 0;

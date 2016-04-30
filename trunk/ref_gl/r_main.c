@@ -1102,7 +1102,7 @@ void Dump_EntityString(void){
 	FILE *f;
 	char name[MAX_OSPATH];
 	
-	if(!r_worldmodel->name){
+	if(!r_worldmodel->name[0]){
 		Com_Printf(S_COLOR_RED"You must be in a game to dump entity string\n");
 	return;
 	}
@@ -1608,11 +1608,12 @@ int R_Init(void *hinstance, void *hWnd)
 			gl_state.texture_compression_bptc = qfalse;
 		}
 	
-	if (!gl_state.texture_compression_bptc)
-		if (IsExtensionSupported("GL_EXT_texture_compression_s3tc"))
-			if (!r_textureCompression->value) {
-				Com_Printf(S_COLOR_YELLOW"...ignoring GL_EXT_texture_compression_s3tc\n");
-				gl_state.texture_compression_dxt = qfalse;
+		if (!gl_state.texture_compression_bptc) {
+			if (IsExtensionSupported("GL_EXT_texture_compression_s3tc"))
+				if (!r_textureCompression->value) {
+					Com_Printf(S_COLOR_YELLOW"...ignoring GL_EXT_texture_compression_s3tc\n");
+					gl_state.texture_compression_dxt = qfalse;
+				}
 		}
 		else {
 			Com_Printf("...using GL_EXT_texture_compression_s3tc\n");
@@ -1746,7 +1747,7 @@ int R_Init(void *hinstance, void *hWnd)
 
 			qglGenBuffersARB(1, &vbo.ibo_quadTris);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(GL_UNSIGNED_SHORT), iCache, GL_STATIC_DRAW_ARB);
+			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(ushort), iCache, GL_STATIC_DRAW_ARB);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 			//------------------------------------------------
@@ -1760,7 +1761,7 @@ int R_Init(void *hinstance, void *hWnd)
 
 			qglGenBuffersARB(1, &vbo.ibo_Dynamic);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
-			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(GL_UNSIGNED_SHORT), 0, GL_STREAM_DRAW_ARB);
+			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(ushort), 0, GL_STREAM_DRAW_ARB);
 		//	if (gl_state.bufferStorage)
 		//		glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);

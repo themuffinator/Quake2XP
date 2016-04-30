@@ -286,16 +286,8 @@ void VID_MenuInit (void) {
 	static char	*yesno_names[] = { "no", "yes", 0 };
 	static char	*adaptive_vc[] = { "no", "default", "adaptive", 0 };
 
-#ifndef _WIN32
-	static char	*samples[] = { "[off]", "[2x]", "[4x]", 0 }; // sdl bug work only 2 and 4 samples per pixel
-#else
-	static char	*samples[] = { "[off]", "[2x]", "[4x]", "[8x]", "[16x]", 0 };
-#endif
-
-	static char	*radar[] = { "off", "map only", "map and entities", "move detector", 0 };
-
 	if (!r_mode)
-		r_mode = Cvar_Get ("r_mode", "0", 0);
+		r_mode = Cvar_Get ("r_mode", "0", CVAR_ARCHIVE);
 
 	if (!r_anisotropic)
 		r_anisotropic = Cvar_Get ("r_anisotropic", "1", CVAR_ARCHIVE);
@@ -574,8 +566,8 @@ void VID_MenuDraw (void) {
 
 	// draw the banner
 	Draw_GetPicSize (&w, &h, "m_banner_video");
-	Draw_PicScaled ((int)(viddef.width *0.5 - (w *0.5)), (int)((viddef.height *0.5 - menuSize)), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
-	Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.5)), (int)((viddef.height *0.5 - menuSize)), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
+	Draw_PicScaled ((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
+	Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
 
 	// move cursor to a reasonable starting position
 	Menu_AdjustCursor (s_current_menu, 1);
