@@ -691,7 +691,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 				break;
 			case PRODUCT_CORE_COUNTRYSPECIFIC:
 				sprintf(S, "Home China Language");
-				break;
+				break; 
 			//====================
 			case PRODUCT_STARTER:
 				sprintf(S, "Starter Edition");
@@ -828,7 +828,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 			}
 		}
 
-		if (GetVersionEx(&winver)){
+	/*	if (GetVersionEx(&winver)){
 
 			if (winver.dwMajorVersion == 5 && winver.dwMinorVersion == 2)
 			{
@@ -863,7 +863,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 					}
 				}
 			}
-	}
+	}*/
 else
 	{
 		Com_Printf( S_COLOR_RED "GLimp_Init() - GetVersionEx failed\n" );
@@ -1052,7 +1052,7 @@ qboolean GLimp_InitGL (void)
 
 	gl_state.arb_multisample = qfalse;
 	if ( strstr(  glw_state.wglExtsString, "WGL_ARB_multisample" ) )
-	if(r_arbSamples->value < 2)
+	if(r_multiSamples->value < 2)
 		{
 			Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_ARB_multisample\n");
 			gl_state.arb_multisample = qfalse;
@@ -1133,7 +1133,7 @@ qboolean GLimp_InitGL (void)
 		iAttributes[11] = gl_state.arb_multisample ? TRUE : 0;
 		
 		iAttributes[12] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : 0;
-		iAttributes[13] = gl_state.arb_multisample ? (int)r_arbSamples->value : 0;
+		iAttributes[13] = gl_state.arb_multisample ? (int)r_multiSamples->value : 0;
 
 		// First attempt...
 		status = qwglChoosePixelFormatARB(hDC, iAttributes, fAttributes, 1, &pixelFormat, &numFormats);
@@ -1171,7 +1171,7 @@ qboolean GLimp_InitGL (void)
 				iResults[5], iResults[7], iResults[6], iResults[8]);
 
 			if (iResults[9])
-				if (gl_state.arb_multisample && r_arbSamples->value >1)
+				if (gl_state.arb_multisample && r_multiSamples->value >1)
 							Com_Printf ( "using multisampling, "S_COLOR_GREEN"%d"S_COLOR_WHITE" samples per pixel\n", iResults[9]);
 
 			if (iResults[0] != WGL_FULL_ACCELERATION_ARB)

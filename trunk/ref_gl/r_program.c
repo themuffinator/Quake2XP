@@ -918,19 +918,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"soft shadows program"S_COLOR_WHITE" ");
-	ssProgram = R_FindProgram("softShadows", qtrue, qtrue);
-	if (ssProgram->valid) {
-		Com_Printf("succeeded\n");
-		id = ssProgram->id[0];
-		ss_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
-		ss_tex = qglGetUniformLocation(id, "u_ScreenTex");
-	}
-	else {
-		Com_Printf(S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
 	Com_Printf("Load "S_COLOR_YELLOW"light2d program"S_COLOR_WHITE" ");
 	light2dProgram = R_FindProgram("light2d", qtrue, qtrue);
 	if (light2dProgram->valid) {

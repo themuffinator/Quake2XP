@@ -251,7 +251,7 @@ cvar_t	*r_shadows;
 cvar_t	*r_playerShadow;
 cvar_t	*r_useLightOccluders;
 
-cvar_t	*r_arbSamples;
+cvar_t	*r_multiSamples;
 cvar_t	*r_nvSamplesCoverange;
 cvar_t	*r_fxaa;
 cvar_t	*deathmatch;

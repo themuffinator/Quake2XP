@@ -1104,7 +1104,7 @@ void Dump_EntityString(void){
 	
 	if(!r_worldmodel->name[0]){
 		Com_Printf(S_COLOR_RED"You must be in a game to dump entity string\n");
-	return;
+			return;
 	}
 
 	Com_sprintf(name, sizeof(name), "%s/%s", FS_Gamedir(), r_worldmodel->name);
@@ -1177,7 +1177,7 @@ Cvar_Set("r_anisotropic", "4");
 Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
 
 Cvar_Set("r_shadows", "0");
-Cvar_Set("r_drawFlares", "1");
+Cvar_Set("r_drawFlares", "0");
 Cvar_Set("r_reliefMapping", "0");
 Cvar_Set("r_skipStaticLights", "1");
 Cvar_Set("r_lightmapScale", "1.0");
@@ -1280,8 +1280,8 @@ void R_RegisterCvars(void)
 	r_screenShotGamma =					Cvar_Get("r_screenShotGamma", "1.0", CVAR_ARCHIVE);
 	r_screenShotContrast =				Cvar_Get("r_screenShotContrast", "1.0", CVAR_ARCHIVE);
 
-	r_arbSamples =						Cvar_Get("r_arbSamples", "1", CVAR_ARCHIVE);
-	r_fxaa =							Cvar_Get("r_fxaa", "0", CVAR_ARCHIVE);
+	r_multiSamples =					Cvar_Get("r_multiSamples", "1", CVAR_ARCHIVE);
+	r_fxaa =							Cvar_Get("r_fxaa", "1", CVAR_ARCHIVE);
 
 	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);
 	
@@ -1320,9 +1320,9 @@ void R_RegisterCvars(void)
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);
-	r_bloomIntens =						Cvar_Get("r_bloomIntens", "2.0", CVAR_ARCHIVE);
-	r_bloomBright =						Cvar_Get("r_bloomBright", "0.9", CVAR_ARCHIVE);
-	r_bloomExposure =					Cvar_Get("r_bloomExposure", "0.86", CVAR_ARCHIVE);
+	r_bloomIntens =						Cvar_Get("r_bloomIntens", "0.5", CVAR_ARCHIVE);
+	r_bloomBright =						Cvar_Get("r_bloomBright", "1.0", CVAR_ARCHIVE);
+	r_bloomExposure =					Cvar_Get("r_bloomExposure", "1.0", CVAR_ARCHIVE);
 	r_bloomStarIntens =					Cvar_Get("r_bloomStarIntens", "3.0", CVAR_ARCHIVE);
 
 	r_ssao =							Cvar_Get ("r_ssao", "1", CVAR_ARCHIVE);
