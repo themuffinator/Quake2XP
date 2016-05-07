@@ -821,19 +821,19 @@ extern int ZEXPORT unzGoToNextFile (unzFile file) {
 int Unz_ListFiles (unzFile *pak, const char *pattern, char **list, int len, unsigned musthave, unsigned canthave) {
 	const	unz_s *s = (unz_s *)pak;
 	int		i, j, nfound = 0;
-	char	*z;
 
 	for (i = 0; i < HASHSIZE; i++) {
 		for (j = 0; j < s->counts[i]; j++) {
 			const char *token = s->cache[i][j].name;
+			char *s;
 
 			assert (nfound < len && "Please increase FSLF_MAX");
 
-			if (FS_MatchPath (pattern, token, &z, musthave, canthave)) {
+			if (FS_MatchPath (pattern, token, &s, musthave, canthave)) {
 				// XXX: in case of SFF_SUBDIR, a directory will appear as many times as nodes below itself
-				if (nfound > 0 && strcmp (list[nfound - 1], z) == 0)
+				if (nfound > 0 && strcmp (list[nfound - 1], s) == 0)
 					continue;
-				list[nfound] = z;
+				list[nfound] = s;
 				nfound++;
 			}
 		}
@@ -862,7 +862,7 @@ int Unz_NumEntries (unzFile *pak) {
 
 	for (i = 0; i < HASHSIZE; i++) {
 		for (j = 0; j < s->counts[i]; j++) {
-			if (!s->cache[i][j].name[0])
+			if (!s->cache[i][j].name || !s->cache[i][j].name[0])
 				continue;
 			p++;
 		}

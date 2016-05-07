@@ -26,11 +26,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int			num_shadow_surfaces, shadowTimeStamp;
 vec4_t		s_lerped[MAX_VERTS];
 vec3_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
-vec4_t		vcache4[MAX_MAP_TEXINFO * MAX_POLY_VERT];
+vec4_t		vcache4[MAX_VERTS * 3];
 uint		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 msurface_t	*shadow_surfaces[MAX_MAP_FACES];
 char		triangleFacingLight[MAX_INDICES / 3];
-
+void		*dynamicVertex, *dynamicIndex;
 /*
 =====================
 Alias Shadow Volumes

@@ -443,15 +443,14 @@ void SV_CalcBlend (edict_t *ent) {
 
 	}
 	if (contents & (CONTENTS_LAVA)) {
-		SV_AddBlend (1.0, 0.0, 0.0, 0.5, ent->client->ps.blend);
+		SV_AddBlend (1.0, 0.0, 0.0, 0.1, ent->client->ps.blend);
 
 	}
 	else if (contents & CONTENTS_SLIME) {
-		SV_AddBlend (0.0, 1.0, 0.0, 0.5, ent->client->ps.blend);
+		SV_AddBlend (0.0, 1.0, 0.0, 0.1, ent->client->ps.blend);
 
 	}
 	else if (contents & CONTENTS_WATER) {
-		if (!r_radialBlur->value)
 			SV_AddBlend (0.0, 0.0, 0.5, 0.1, ent->client->ps.blend);
 
 	}
