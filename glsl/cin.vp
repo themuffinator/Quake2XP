@@ -12,6 +12,5 @@ void main()
 {
 	gl_Position = u_orthoMatrix * vec4(att_position, 1.0);
 	v_texCoord = att_texCoordDiffuse;
-
 	v_lineOffset = vec2(3.1415 * u_cinParams.y * u_cinParams.x / u_cinParams.y, 2.0 * 3.1415 * u_cinParams.y);
 }
