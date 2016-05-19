@@ -165,9 +165,9 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, r_vsync->value ? 1 : 0);
 
-	if (r_arbSamples->value > 1) {
+	if (r_multiSamples->value > 1) {
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (int)r_arbSamples->value);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (int)r_multiSamples->value);
 	}
 	
 	/* Initiate the flags */
@@ -188,9 +188,9 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	if (!SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &stencil_bits))
 		Com_Printf("Got %d bits of stencil.\n", stencil_bits);
 
-	if (r_arbSamples->value > 1){
+	if (r_multiSamples->value > 1){
 		qglEnable(GL_MULTISAMPLE);
-		Com_Printf("Use multisampling %ix samples per pixel.\n", (int)r_arbSamples->value);
+		Com_Printf("Use multisampling %ix samples per pixel.\n", (int)r_multiSamples->value);
 	} 
 	
 
