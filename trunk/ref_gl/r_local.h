@@ -593,6 +593,21 @@ void Create_FBO (void);
 void 	CreateWeaponFboMask();
 void	CreateSSAOBuffer();
 void CreateFboBuffer (void);
+
+void Matrix3x4_TransformNormal(mnormal_t *out, matrix3x4_t mat, const mnormal_t in);
+void Matrix3x4_TransformTangent(mtangent_t *out, matrix3x4_t mat, const mtangent_t in);
+void Matrix3x4_Invert(matrix3x4_t *out, matrix3x4_t in);
+void Matrix3x4_FromQuatAndVectors(matrix3x4_t *out, vec4_t rot, const float trans[3], const float scale[3]);
+void Matrix3x4_Multiply(matrix3x4_t *out, matrix3x4_t mat1, matrix3x4_t mat2);
+void Matrix3x4_Scale(matrix3x4_t *out, matrix3x4_t in, float scale);
+void Matrix3x4_ScaleAdd(matrix3x4_t *out, matrix3x4_t *base, float scale, matrix3x4_t *add);
+void Matrix3x4_Add(matrix3x4_t *out, matrix3x4_t mat1, matrix3x4_t mat2);
+void Matrix3x4_Subtract(matrix3x4_t *out, matrix3x4_t mat1, matrix3x4_t mat2);
+void Matrix3x4_Copy(matrix3x4_t *out, matrix3x4_t in);
+void Matrix3x4_Transform(mvertex_t *out, matrix3x4_t mat, const mvertex_t in);
+void Matrix3x4GenRotate(matrix3x4_t *out, float angle, const vec3_t axis);
+void Matrix3x4ForEntity(matrix3x4_t *out, entity_t *ent, float z);
+
 /*
 ** GL config stuff
 */
@@ -793,6 +808,11 @@ qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const v
 #define Vector4Set(v, a, b, c, d)	((v)[0]=(a),(v)[1]=(b),(v)[2]=(c),(v)[3]=(d))
 #define Vector4Copy(a,b) ((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
 #define PlaneDiff(point,plane) (((plane)->type < 3 ? (point)[(plane)->type] : DotProduct((point), (plane)->normal)) - (plane)->dist)
+
+#define Vector4Scale(in,scale,out)		((out)[0]=(in)[0]*scale,(out)[1]=(in)[1]*scale,(out)[2]=(in)[2]*scale,(out)[3]=(in)[3]*scale)
+#define Vector4Add(a,b,c)		((c)[0]=(((a[0])+(b[0]))),(c)[1]=(((a[1])+(b[1]))),(c)[2]=(((a[2])+(b[2]))),(c)[3]=(((a[3])+(b[3]))))
+#define Vector4Sub(a,b,c)		((c)[0]=(((a[0])-(b[0]))),(c)[1]=(((a[1])-(b[1]))),(c)[2]=(((a[2])-(b[2]))),(c)[3]=(((a[3])-(b[3]))))
+
 
 #define clamp(a,b,c)	((a) < (b) ? (b) : (a) > (c) ? (c) : (a))
 

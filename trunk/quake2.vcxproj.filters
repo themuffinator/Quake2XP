@@ -288,6 +288,9 @@
     <ClCompile Include="ref_gl\r_light.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="ref_gl\r_iqm.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\anorms.h">
@@ -391,6 +394,9 @@
     </ClInclude>
     <ClInclude Include="client\music.h">
       <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="ref_gl\r_iqm.h">
+      <Filter>Header Files\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

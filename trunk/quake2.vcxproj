@@ -397,6 +397,7 @@
     <ClCompile Include="qcommon\q_parser.c" />
     <ClCompile Include="ref_gl\r_cull.c" />
     <ClCompile Include="ref_gl\r_glstate.c" />
+    <ClCompile Include="ref_gl\r_iqm.c" />
     <ClCompile Include="ref_gl\r_light.c" />
     <ClCompile Include="ref_gl\r_lightMaps.c" />
     <ClCompile Include="ref_gl\r_main.c" />
@@ -665,6 +666,7 @@
     <ClInclude Include="client\cl_console.h" />
     <ClInclude Include="client\client.h" />
     <ClInclude Include="client\music.h" />
+    <ClInclude Include="ref_gl\r_iqm.h" />
     <ClInclude Include="win32\conproc.h" />
     <ClInclude Include="game\game.h" />
     <ClInclude Include="client\input.h" />

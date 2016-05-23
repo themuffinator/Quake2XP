@@ -27,6 +27,7 @@ int modfilelen;
 void Mod_LoadSpriteModel(model_t * mod, void *buffer);
 void Mod_LoadBrushModel(model_t * mod, void *buffer);
 void Mod_LoadAliasModel(model_t * mod, void *buffer);
+qboolean Mod_INTERQUAKEMODEL_Load(model_t *mod, void *buffer);
 
 model_t *Mod_LoadModel(model_t * mod, qboolean crash);
 
@@ -54,11 +55,11 @@ int numentitychars;
 byte *mod_base;
 int *mod_xplmOffsets;		// face light offsets from .xplm file, freed after level is loaded
 
-							/*
-							=================
-							Mod_LoadEntityString
-							=================
-							*/
+/*
+=================
+Mod_LoadEntityString
+=================
+*/
 void Mod_LoadEntityString(lump_t * l) {
 	numentitychars = l->filelen;
 
@@ -385,6 +386,8 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 	model_t *mod;
 	unsigned *buf;
 	int i;
+	qboolean is_iqm = qfalse;
+	char shortname[MAX_QPATH];
 
 	if (!name[0])
 		VID_Error(ERR_DROP, "Mod_ForName: NULL name");
@@ -402,8 +405,10 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 	// search the currently loaded models
 	// 
 	for (i = 0, mod = mod_known; i < mod_numknown; i++, mod++) {
+		
 		if (!mod->name[0])
 			continue;
+
 		if (!strcmp(mod->name, name)) {
 			if (mod->type == mod_alias) {
 				int i = 0;
@@ -439,17 +444,31 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 	// 
 	// load the file
 	// 
+	
+	//if .md2, check for IQM version first
+	COM_StripExtension(mod->name, shortname);
+	strcat(shortname, ".iqm");
 
-	modfilelen = FS_LoadFile(mod->name, (void**)&buf);
+	modfilelen = FS_LoadFile(shortname, (void**)&buf);
 
-	if (!buf) {
-		if (crash)
-			VID_Error(ERR_DROP, "Mod_ForName: %s not found", mod->name);
-
-		memset(mod->name, 0, sizeof(mod->name));
-
-		return NULL;
+	if (!buf) //could not find iqm
+	{
+		modfilelen = FS_LoadFile(mod->name, (void*)&buf);
+		if (!buf)
+		{
+			if (crash)
+				Com_Error(ERR_DROP, "Mod_NumForName: %s not found", mod->name);
+			memset(mod->name, 0, sizeof(mod->name));
+			return NULL;
+		}
 	}
+	else
+	{
+		//we have an .iqm
+		is_iqm = qtrue;
+		strcpy(mod->name, shortname);
+	}
+
 
 	loadmodel = mod;
 
@@ -458,29 +477,37 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 	// 
 
 	// call the apropriate loader
-
-	switch (LittleLong(*(unsigned *)buf)) {
-	case IDALIASHEADER:
-		loadmodel->extraData = Hunk_Begin(hunk_model->value * 1048576, name);
-		Mod_LoadAliasModel(mod, buf);
-		break;
-
-	case IDSPRITEHEADER:
-		loadmodel->extraData = Hunk_Begin(hunk_sprite->value * 1048576, name);
-		Mod_LoadSpriteModel(mod, buf);
-		break;
-
-
-	case IDBSPHEADER:
-		loadmodel->extraData = Hunk_Begin(hunk_bsp->value * 1048576, name);
-		Mod_LoadBrushModel(mod, buf);
-		break;
-
-	default:
-		VID_Error(ERR_DROP, "Mod_NumForName: unknown fileid for %s", mod->name);
-		break;
+	//iqm - try interquake model first
+	if (is_iqm)
+	{
+		if (!Mod_INTERQUAKEMODEL_Load(mod, buf))
+			Com_Error(ERR_DROP, "Mod_NumForName: wrong fileid for %s", mod->name);
 	}
+	else
+	{
+		switch (LittleLong(*(unsigned *)buf)) {
+		case IDALIASHEADER:
+			loadmodel->extraData = Hunk_Begin(hunk_model->value * 1048576, name);
+			Mod_LoadAliasModel(mod, buf);
+			break;
 
+		case IDSPRITEHEADER:
+			loadmodel->extraData = Hunk_Begin(hunk_sprite->value * 1048576, name);
+			Mod_LoadSpriteModel(mod, buf);
+			break;
+
+
+		case IDBSPHEADER:
+			loadmodel->extraData = Hunk_Begin(hunk_bsp->value * 1048576, name);
+			Mod_LoadBrushModel(mod, buf);
+			break;
+
+		default:
+			VID_Error(ERR_DROP, "Mod_NumForName: unknown fileid for %s", mod->name);
+			break;
+		}
+
+	}
 
 	loadmodel->extraDataSize = Hunk_End();
 
@@ -2284,6 +2311,22 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 
 		if (!mod->skins_normal[i])
 			mod->skins_normal[i] = r_defBump;
+
+		// Loading roughness maps
+		strcpy(gl, pname);
+		gl[strlen(gl) - 4] = 0;
+		strcat(gl, "_rgh.tga");
+		mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
+
+		if (!mod->skins_normal[i]) {
+			strcpy(gl, pname);
+			gl[strlen(gl) - 4] = 0;
+			strcat(gl, "_rgh.dds");
+			mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
+		}
+
+		if (!mod->skins_roughness[i])
+			mod->skins_roughness[i] = pname;
 	}
 
 	// Calculate texcoords for triangles (for compute tangents and binormals)
@@ -2507,11 +2550,32 @@ struct model_s *R_RegisterModel(char *name) {
 				if (!mod->skins_normal[i])
 					mod->skins_normal[i] = r_defBump;
 
+				// Loading roughness maps
+				strcpy(gl, pname);
+				gl[strlen(gl) - 4] = 0;
+				strcat(gl, "_rgh.tga");
+				mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
+
+				if (!mod->skins_normal[i]) {
+					strcpy(gl, pname);
+					gl[strlen(gl) - 4] = 0;
+					strcat(gl, "_rgh.dds");
+					mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
+				}
+
+
+				if (!mod->skins_roughness[i])
+					mod->skins_roughness[i] = pname;
+
 			}
 			//PGM
 			mod->numFrames = pheader->num_frames;
 			//PGM
 			//         
+		}
+		else if (mod->type == mod_iqm)
+		{
+			mod->skins[0] = GL_FindImage(mod->skinname, it_skin);
 		}
 		else if (mod->type == mod_brush) {
 			for (i = 0; i < mod->numTexInfo; i++) {

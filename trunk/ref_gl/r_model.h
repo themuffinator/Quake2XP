@@ -27,7 +27,7 @@ m*_t structures are in-memory
 
 
 
-
+#include "r_iqm.h"
 /*
 ==============================================================================
 
@@ -191,8 +191,8 @@ typedef struct mleaf_s {
 
 
 typedef enum {
-	mod_bad, mod_brush, mod_sprite, mod_alias,
-	mod_lensflare, mod_p_shadow
+	mod_bad, mod_brush, mod_sprite, 
+	mod_alias, mod_iqm
 } modtype_t;
 
 
@@ -207,16 +207,46 @@ typedef struct {
 	int n[3];
 } neighbors_t;
 
-//char *COM_Parse (char **data_p);
+// iqm stuff
+#define PI 3.14159265358979323846
+
+typedef struct matrix3x3_s
+{
+	vec3_t a;
+	vec3_t b;
+	vec3_t c;
+}
+matrix3x3_t;
+
+typedef struct matrix3x4_s
+{
+	vec4_t a;
+	vec4_t b;
+	vec4_t c;
+}
+matrix3x4_t;
+
+typedef struct matrix4x4_s
+{
+	vec4_t a;
+	vec4_t b;
+	vec4_t c;
+	vec4_t d;
+}
+matrix4x4_t;
 
 
-/*
-====================================================================
+typedef struct
+{
+	vec3_t		dir;
+} mnormal_t;
 
-VERTEX BUFFERS
+typedef struct
+{
+	vec4_t		dir;
+} mtangent_t;
 
-====================================================================
-*/
+// end iqm stuff
 
 typedef struct model_s {
 
@@ -229,8 +259,8 @@ typedef struct model_s {
 	//
 	// volume occupied by the model graphics
 	//
-	vec3_t		mins, maxs,
-		center;
+	vec3_t		mins, maxs, center;
+	vec3_t		bbox[8];
 	float		radius;
 	//
 	// solid volume for clipping
@@ -286,6 +316,7 @@ typedef struct model_s {
 	image_t		*skins[MAX_MD2SKINS];
 	image_t		*skins_normal[MAX_MD2SKINS];
 	image_t		*skins_specular[MAX_MD2SKINS];
+	image_t		*skins_roughness[MAX_MD2SKINS];
 	image_t		*glowtexture[MAX_MD2SKINS];
 	image_t		*skin_env[MAX_MD2SKINS];
 
@@ -293,6 +324,7 @@ typedef struct model_s {
 	void		*extraData;
 	int			triangles[MAX_TRIANGLES];
 	float		*st;
+	fstvert_t	*stCoords;
 	neighbors_t *neighbours;
 
 	float		ambient;
@@ -316,6 +348,29 @@ typedef struct model_s {
 	int			memorySize;
 
 	mat3_t		axis;
+
+	//iqm skeletal model info
+	unsigned int	version;
+	mvertex_t		*animatevertexes;
+	int				num_joints;
+	iqmjoint_t		*joints;
+	iqmjoint2_t		*joints2;
+	matrix3x4_t		*frames;
+	matrix3x4_t		*outframe;
+	matrix3x4_t		*baseframe;
+	int				num_poses;
+	int				num_triangles;
+	iqmtriangle_t	*tris;
+	mnormal_t		*normal;
+	mnormal_t		*animatenormal;
+	mtangent_t		*tangent;
+	mtangent_t		*animatetangent;
+	unsigned char	*blendindexes;
+	float			*blendweights;
+	char			skinname[MAX_QPATH];
+	char			*jointname;
+	//end iqm
+
 } model_t;
 
 
