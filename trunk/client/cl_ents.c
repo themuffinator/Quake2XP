@@ -759,6 +759,9 @@ void CL_AddPacketEntities (frame_t * frame) {
 		ent.oldframe = cent->prev.frame;
 		ent.backlerp = 1.0 - cl.lerpfrac;
 
+		// iqm stuff
+		ent.iqmFrameTime = Sys_Milliseconds();
+
 		if (renderfx & (RF_FRAMELERP | RF_BEAM)) {	// step origin
 			// discretely, because
 			// the frames

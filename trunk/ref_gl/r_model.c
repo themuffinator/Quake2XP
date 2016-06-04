@@ -2653,12 +2653,12 @@ Mod_Free
 void Mod_Free(model_t * mod) {
 	Hunk_Free(mod->extraData);
 
-	if (mod->neighbours)
-		free(mod->neighbours);
+	if (mod->type == mod_alias) {
+		if (mod->neighbours)
+			free(mod->neighbours);
 
-	if (mod->type == mod_alias)
 		qglDeleteBuffersARB(1, &mod->vboId);
-
+	}
 	memset(mod, 0, sizeof(*mod));
 }
 

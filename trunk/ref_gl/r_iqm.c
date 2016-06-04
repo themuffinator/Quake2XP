@@ -814,22 +814,6 @@ void IQM_AnimateFrame(float curframe, int nextframe)
 	}
 }
 
-
-#define COPY_VERTEX(trinum,vnum) \
-	index_xyz = index_st = currentmodel->tris[trinum].vertex[vnum];\
-	VArray[0] = currentmodel->animatevertexes[index_xyz].position[0];\
-	VArray[1] = currentmodel->animatevertexes[index_xyz].position[1];\
-	VArray[2] = currentmodel->animatevertexes[index_xyz].position[2];\
-	VArray[3] = currentmodel->st[index_st].s;\
-	VArray[4] = currentmodel->st[index_st].t;
-#define COPY_NMDATA \
-	VectorCopy(currentmodel->animatenormal[index_xyz].dir, NormalsArray[va]);\
-	Vector4Copy(currentmodel->animatetangent[index_xyz].dir, TangentsArray[va]);
-#define INC_VARRAY \
-	VArray += vertsize;
-
-
-
 static qboolean IQM_CullModel( void )
 {
 	int i;
@@ -974,3 +958,108 @@ R_DrawINTERQUAKEMODEL
 */
 static vec3_t shadelight;
 
+void IQM_DrawMesh()
+{
+	int     i, j;
+	int     index_xyz, index_st;
+	int     idx = 0;
+	vec3_t	vertexArray[3 * MAX_TRIANGLES];
+/*	vec2_t	texArray[2 * MAX_TRIANGLES];
+	image_t	*skin, *glowskin;
+	float	alphaShift;
+
+	alphaShift = sin(ref_realtime * 5.666);
+	alphaShift = (alphaShift + 1) * 0.5f;
+	alphaShift = clamp(alphaShift, 0.3, 1.0);
+
+	// select skin
+	if (currententity->skin) {
+		skin = currententity->skin;
+	}
+	else
+	{
+		skin = currentmodel->skins[0];
+	}
+	if (!skin)
+		skin = r_notexture;	// fallback...
+
+	glowskin = currentmodel->glowtexture[currententity->skinnum];
+
+	if (!glowskin)
+		glowskin = r_notexture;
+*/
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+
+//	qglEnableVertexAttribArray(ATT_TEX0);
+//	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texArray);
+
+	GL_BindProgram(nullProgram, 0);
+	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+
+	for (i = 0; i<currentmodel->num_triangles; i++)
+	{
+		for (j = 0; j < 3; j++)
+		{
+			index_xyz = index_st = currentmodel->tris[i].vertex[j];
+
+			vertexArray[i * 3 + j][0] = currentmodel->animatevertexes[index_xyz].position[0];
+			vertexArray[i * 3 + j][1] = currentmodel->animatevertexes[index_xyz].position[1];
+			vertexArray[i * 3 + j][2] = currentmodel->animatevertexes[index_xyz].position[2];
+
+		//	texArray[i * 3 + j][0] = currentmodel->stCoords[index_st].s;
+		//	texArray[i * 3 + j][1] = currentmodel->stCoords[index_st].t;
+			idx++;
+		}
+	}
+
+	qglDrawArrays(GL_TRIANGLES, 0, idx);
+
+	qglDisableVertexAttribArray(ATT_POSITION);
+//	qglDisableVertexAttribArray(ATT_TEX0);
+	GL_BindNullProgram();
+}
+
+double degreeToRadian(double degree)
+{
+	double radian = 0;
+	radian = degree * (PI / 180);
+	return radian;
+}
+
+void IQM_DrawModels(void)
+{
+	float		frame, time;
+
+	if (currententity->flags & (RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED | RF_SHELL_BLUE | RF_SHELL_DOUBLE)) //no shells
+		return;
+
+	if (IQM_CullModel())
+		return;
+
+	//modelpitch = 0.52 * sinf(rs_realtime); //use this for testing only
+	modelpitch = degreeToRadian(currententity->angles[PITCH]);
+
+
+	currententity->angles[PITCH] = currententity->angles[ROLL] = 0;
+	R_SetupEntityMatrix(currententity);
+
+	//frame interpolation
+	time = (Sys_Milliseconds() - currententity->iqmFrameTime) / 100;
+	if (time > 1.0)
+		time = 1.0;
+
+	if ((currententity->frame == currententity->oldframe) && !IQM_InAnimGroup(currententity->frame, currententity->oldframe))
+		time = 0;
+
+	//Check for stopped death anims
+	if (currententity->frame == 257 || currententity->frame == 237 || currententity->frame == 219)
+		time = 0;
+
+	frame = currententity->frame + time;
+
+	IQM_AnimateFrame(frame, IQM_NextFrame(currententity->frame));
+
+	IQM_DrawMesh();
+}

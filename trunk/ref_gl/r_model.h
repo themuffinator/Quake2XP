@@ -324,7 +324,6 @@ typedef struct model_s {
 	void		*extraData;
 	int			triangles[MAX_TRIANGLES];
 	float		*st;
-	fstvert_t	*stCoords;
 	neighbors_t *neighbours;
 
 	float		ambient;
@@ -352,6 +351,7 @@ typedef struct model_s {
 	//iqm skeletal model info
 	unsigned int	version;
 	mvertex_t		*animatevertexes;
+	fstvert_t		*stCoords;
 	int				num_joints;
 	iqmjoint_t		*joints;
 	iqmjoint2_t		*joints2;

@@ -808,7 +808,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 				}
 
 			}
-		if (GetOsVersion(&rtl_OsVer))
+
 			if (rtl_OsVer.dwMajorVersion == 10 && rtl_OsVer.dwMinorVersion == 0) {
 				if (!Is64BitWindows()) {
 

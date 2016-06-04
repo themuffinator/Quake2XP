@@ -535,6 +535,8 @@ void R_DrawPlayerWeaponLightPass(void)
 
 }
 
+void IQM_DrawModels(void);
+
 void R_DrawPlayerWeaponAmbient(void)
 {
 	int i;
@@ -556,8 +558,11 @@ void R_DrawPlayerWeaponAmbient(void)
 
 		if (currentmodel->type == mod_alias)
 			R_DrawAliasModel(currententity, qfalse);
-
+		
+		if (currentmodel->type == mod_iqm)
+			IQM_DrawModels();
 	}
+
 	// draw transluscent shells
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
@@ -1768,11 +1773,11 @@ int R_Init(void *hinstance, void *hWnd)
 		//	if (gl_state.bufferStorage)
 		//		glBufferStorage(GL_ARRAY_BUFFER, MAX_VERTICES * 2, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
-			vmap = qglMapBufferRange(GL_ARRAY_BUFFER_ARB, 0, MAX_VERTS * 4 * sizeof(vec4_t), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-			if(vmap)
-				Com_Printf("vmap ok\n");
+//			vmap = qglMapBufferRange(GL_ARRAY_BUFFER_ARB, 0, MAX_VERTS * 4 * sizeof(vec4_t), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+//			if(vmap)
+//				Com_Printf("vmap ok\n");
 
-			qglUnmapBufferARB(GL_ARRAY_BUFFER_ARB);
+//			qglUnmapBufferARB(GL_ARRAY_BUFFER_ARB);
 			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 			qglGenBuffersARB(1, &vbo.ibo_Dynamic);
@@ -1781,11 +1786,11 @@ int R_Init(void *hinstance, void *hWnd)
 		//	if (gl_state.bufferStorage)
 		//		glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
-			imap = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, MAX_INDICES * sizeof(ushort), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-			if (imap)
-				Com_Printf("imap ok\n");
+//			imap = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, MAX_INDICES * sizeof(ushort), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+//			if (imap)
+//				Com_Printf("imap ok\n");
 
-			qglUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER);
+//			qglUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		}

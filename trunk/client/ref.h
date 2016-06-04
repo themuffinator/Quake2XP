@@ -150,7 +150,9 @@ typedef struct entity_s {
 	 */
 	float oldorigin[3];			// also used as RF_BEAM's "to"
 	int oldframe;
-
+	
+	// iqm
+	int iqmFrameTime;
 	/*
 	 ** misc
 	 */
