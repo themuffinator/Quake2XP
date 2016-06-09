@@ -55,7 +55,6 @@ DWORD	dwAxisMap[JOY_MAX_AXES];
 DWORD	dwControlMap[JOY_MAX_AXES];
 PDWORD	pdwRawValue[JOY_MAX_AXES];
 
-cvar_t	*in_joystick;
 // none of these cvars are saved over a session
 // this means that advanced controller configuration needs to be executed
 // each time.  this avoids any problems with getting back to a default usage
@@ -344,7 +343,6 @@ void IN_Init (void) {
 	v_centerspeed = Cvar_Get ("v_centerspeed", "500", 0);
 
 	// joystick variables
-	in_joystick = Cvar_Get("in_joystick", "0", CVAR_ARCHIVE);
 	joy_name = Cvar_Get("joy_name", "joystick", 0);
 	joy_advanced = Cvar_Get("joy_advanced", "0", 0);
 	joy_advaxisx = Cvar_Get("joy_advaxisx", "0", 0);
@@ -481,11 +479,13 @@ void IN_StartupJoystick(void)
 	cv = Cvar_Get("in_initjoy", "1", CVAR_NOSET);
 	if (!cv->value)
 		return;
+	
+	Com_Printf("\n========== Init Joystick ==========\n\n");
 
 	// verify joystick driver is present
 	if ((numdevs = joyGetNumDevs()) == 0)
 	{
-		Com_Printf ("\njoystick not found -- driver not present\n\n");
+		Com_Printf ("" S_COLOR_RED "joystick not found -- driver not present\n");
 		return;
 	}
 
@@ -503,7 +503,8 @@ void IN_StartupJoystick(void)
 	// abort startup if we didn't find a valid joystick
 	if (mmr != JOYERR_NOERROR)
 	{
-		Com_Printf("\njoystick not found -- no valid joysticks (%x)\n\n", mmr);
+		Com_Printf("..." S_COLOR_YELLOW "Joystick Not Found (%x)\n", mmr);
+		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
 
@@ -512,7 +513,8 @@ void IN_StartupJoystick(void)
 	memset(&jc, 0, sizeof(jc));
 	if ((mmr = joyGetDevCaps(joy_id, &jc, sizeof(jc))) != JOYERR_NOERROR)
 	{
-		Com_Printf("\njoystick not found -- invalid joystick capabilities (%x)\n\n", mmr);
+		Com_Printf("..." S_COLOR_RED "Invalid Joystick Capabilities (%x)\n", mmr);
+		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
 
@@ -529,7 +531,10 @@ void IN_StartupJoystick(void)
 	joy_avail = qtrue;
 	joy_advancedinit = qfalse;
 
-	Com_Printf("\njoystick detected\n\n");
+	Com_Printf("Found: " S_COLOR_GREEN "%s\n", jc.szPname);
+	Com_Printf("Num Buttons: " S_COLOR_GREEN "%i / %i\n", jc.wNumButtons, jc.wMaxButtons);
+	Com_Printf("Axis: " S_COLOR_GREEN "%i / %i\n", jc.wNumAxes, jc.wMaxAxes);
+	Com_Printf("\n-----------------------------------\n\n");
 }
 
 
@@ -742,7 +747,7 @@ void IN_JoyMove(usercmd_t *cmd)
 	}
 
 	// verify joystick is available and that the user wants to use it
-	if (!joy_avail || !in_joystick->value)
+	if (!joy_avail)
 	{
 		return;
 	}
@@ -782,11 +787,11 @@ void IN_JoyMove(usercmd_t *cmd)
 					// only absolute control support here (joy_advanced is false)
 					if (m_pitch->value < 0.0)
 					{
-						cl.viewangles[PITCH] -= (fAxisValue * joy_pitchsensitivity->value) * aspeed * cl_pitchspeed->value;
+						cl.viewangles[PITCH] -= (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_pitchspeed->value;
 					}
 					else
 					{
-						cl.viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value) * aspeed * cl_pitchspeed->value;
+						cl.viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_pitchspeed->value;
 					}
 				}
 			}
@@ -830,7 +835,7 @@ void IN_JoyMove(usercmd_t *cmd)
 				{
 					if (dwControlMap[i] == JOY_ABSOLUTE_AXIS)
 					{
-						cl.viewangles[YAW] += (fAxisValue * joy_yawsensitivity->value) * aspeed * cl_yawspeed->value;
+						cl.viewangles[YAW] += (fAxisValue * joy_yawsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_yawspeed->value;
 					}
 					else
 					{
@@ -849,11 +854,12 @@ void IN_JoyMove(usercmd_t *cmd)
 					// pitch movement detected and pitch movement desired by user
 					if (dwControlMap[i] == JOY_ABSOLUTE_AXIS)
 					{
-						cl.viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value) * aspeed * cl_pitchspeed->value;
+						cl.viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_pitchspeed->value;
 					}
 					else
 					{
-						cl.viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value) * speed * 180.0;
+						cl.viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * speed * 180.0;
+
 					}
 				}
 			}
@@ -864,4 +870,5 @@ void IN_JoyMove(usercmd_t *cmd)
 		}
 	}
 }
+
 
