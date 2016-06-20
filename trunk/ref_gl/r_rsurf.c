@@ -564,7 +564,10 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
  }
 
-static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
+ msurface_t		*interaction[MAX_MAP_FACES];
+ int			numInteractionSurfs;
+
+static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 {
 	msurface_t	*s;
 	int			i;
@@ -580,10 +583,10 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 
 	R_UpdateLightUniforms(bmodel);
 
-	qsort(currentShadowLight->interaction, currentShadowLight->numInteractionSurfs, sizeof(msurface_t*), (int (*)(const void *, const void *))lightSurfSort);
+	qsort(interaction, numInteractionSurfs, sizeof(msurface_t*), (int (*)(const void *, const void *))lightSurfSort);
 
-	for (i = 0; i < currentShadowLight->numInteractionSurfs; i++){
-		s = currentShadowLight->interaction[i];
+	for (i = 0; i < numInteractionSurfs; i++){
+		s = interaction[i];
 		poly = s->polys;
 
 		if (poly->lightTimestamp != r_lightTimestamp)
@@ -626,6 +629,66 @@ static void GL_DrawLightPass(qboolean bmodel, qboolean caustics)
 
 	GL_BindNullProgram();
 }
+
+static void GL_DrawStaticLightPass()
+{
+	msurface_t	*s;
+	int			i;
+	qboolean	newBatch, oldCaust;
+	unsigned	oldTex = 0xffffffff;
+	unsigned	oldFlag = 0xffffffff;
+	unsigned	numIndices = 0xffffffff,
+				numVertices = 0;
+
+	// setup program
+	GL_BindProgram(lightWorldProgram, 0);
+
+	R_UpdateLightUniforms(qfalse);
+
+	for (i = 0; i < currentShadowLight->numInteractionSurfs; i++) {
+		
+		s = currentShadowLight->interaction[i];
+
+		if (s->visframe != r_framecount)
+			continue;
+		
+		if (s->ent)
+			continue;
+
+		// flush batch (new texture or flag)
+		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag)
+		{
+			if (numIndices != 0xffffffff) {
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				numVertices = 0;
+				numIndices = 0xffffffff;
+			}
+			oldTex = s->texInfo->image->texnum;
+			oldFlag = s->flags;
+			newBatch = qtrue;
+		}
+		else
+			newBatch = qfalse;
+
+		// fill new batch
+	repeat:
+		if (!R_FillLightBatch(s, newBatch, &numVertices, &numIndices, qfalse, qfalse))
+		{
+			if (numIndices != 0xffffffff) {
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				numVertices = 0;
+				numIndices = 0xffffffff;
+			}
+			goto repeat;
+		}
+	}
+	// draw the rest
+	if (numIndices != 0xffffffff)
+		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+
+	GL_BindNullProgram();
+}
+
 
 qboolean SurfInFrustum (msurface_t *s) {
 	if (s->polys)
@@ -827,12 +890,12 @@ next:
 
 void R_MarkLightCasting (mnode_t *node)
 {
-	cplane_t	*plane;
-	float		dist;
-	msurface_t	**surf;
-	mleaf_t		*leaf;
-	int			c, cluster;
-
+	cplane_t			*plane;
+	float				dist;
+	msurface_t			**surf;
+	mleaf_t				*leaf;
+	int					c, cluster;
+	
 	if (node->contents != -1)
 	{
 		//we are in a leaf
@@ -847,7 +910,7 @@ void R_MarkLightCasting (mnode_t *node)
 		for (c = 0; c < leaf->numMarkSurfaces; c++, surf++){
 
 			if (R_MarkLightSurf ((*surf), qtrue))
-				currentShadowLight->interaction[currentShadowLight->numInteractionSurfs++] = (*surf);			
+				interaction[numInteractionSurfs++] = (*surf);			
 		}
 		return;
 	}
@@ -895,11 +958,15 @@ void R_DrawLightWorld(void)
 	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
 	
-	r_lightTimestamp++;
-	currentShadowLight->numInteractionSurfs = 0;
-	R_MarkLightCasting(r_worldmodel->nodes);
-	if(currentShadowLight->numInteractionSurfs > 0)
-		GL_DrawLightPass(qfalse, qfalse);
+	if (!currentShadowLight->isStatic) {
+		r_lightTimestamp++;
+		numInteractionSurfs = 0;
+		R_MarkLightCasting(r_worldmodel->nodes);
+		if (numInteractionSurfs > 0)
+			GL_DrawDynamicLightPass(qfalse, qfalse);
+	}
+	else
+		GL_DrawStaticLightPass();
 
 	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
@@ -1258,7 +1325,7 @@ void R_MarkBrushModelSurfaces (void) {
 	for (i=0 ; i<clmodel->numModelSurfaces ; i++, psurf++){
 
 		if (R_MarkLightSurf (psurf, qfalse))
-			currentShadowLight->interaction[currentShadowLight->numInteractionSurfs++] = psurf;
+			interaction[numInteractionSurfs++] = psurf;
 	}
 }
 
@@ -1355,10 +1422,10 @@ void R_DrawLightBrushModel (void) {
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
 
 	r_lightTimestamp++;
-	currentShadowLight->numInteractionSurfs = 0;
+	numInteractionSurfs = 0;
 	R_MarkBrushModelSurfaces();
-	if(currentShadowLight->numInteractionSurfs)
-		GL_DrawLightPass(qtrue, caustics);
+	if(numInteractionSurfs > 0)
+		GL_DrawDynamicLightPass(qtrue, caustics);
 	
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);

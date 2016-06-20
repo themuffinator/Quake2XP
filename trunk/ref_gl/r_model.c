@@ -1159,8 +1159,6 @@ void Mod_BuildVertexCache() {
 	free(buf);
 }
 
-
-
 void Mod_LoadFaces(lump_t * l) {
 	dface_t		*in;
 	msurface_t *out;
@@ -1679,7 +1677,7 @@ void Mod_GenerateLights(model_t * mod) {
 	R_InitLightgrid();
 }
 
-void R_PreCalcLightData(void);
+void R_CalcStaticLightInteraction(void);
 
 /*
 =================
@@ -1812,7 +1810,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 	Mod_GenerateLights(mod);
 
 	Load_LightFile();
-	R_PreCalcLightData();
+	R_CalcStaticLightInteraction();
 
 	mod->numFrames = 2;			// regular and alternate animation
 

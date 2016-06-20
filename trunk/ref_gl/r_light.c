@@ -35,6 +35,7 @@ vec3_t player_org, v_forward, v_right, v_up;
 qboolean R_MarkLightLeaves (worldShadowLight_t *light);
 void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine ();
+void R_MarkLightSurfaces(worldShadowLight_t *light);
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
@@ -583,6 +584,7 @@ void R_Paste_Light_Properties_f (void) {
 	UpdateLightBounds (selectedShadowLight);
 	R_MarkLightLeaves (selectedShadowLight);
 	R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+	R_MarkLightSurfaces(selectedShadowLight);
 
 	Com_Printf ("Paste light properties from clipboard.\n");
 }
@@ -643,6 +645,7 @@ void R_EditSelectedLight_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_MarkLightSurfaces(selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "color")) {
@@ -686,6 +689,7 @@ void R_EditSelectedLight_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_MarkLightSurfaces(selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "cone")) {
@@ -699,6 +703,7 @@ void R_EditSelectedLight_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_MarkLightSurfaces(selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "style")) {
@@ -734,6 +739,7 @@ void R_EditSelectedLight_f (void) {
 		angles[2] = atof (Cmd_Argv (4));
 		VectorCopy (angles, selectedShadowLight->angles);
 		UpdateLightBounds(selectedShadowLight);
+		R_MarkLightSurfaces(selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "shadow")) {
@@ -897,6 +903,7 @@ void R_MoveLightToRight_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_MarkLightSurfaces(selectedShadowLight);
 	}
 
 // move flare
@@ -946,6 +953,7 @@ void R_MoveLightForward_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_MarkLightSurfaces(selectedShadowLight);
 	}
 
 // move flare	
@@ -991,6 +999,7 @@ void R_MoveLightUpDown_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_MarkLightSurfaces(selectedShadowLight);
 	}
 
 // move flare
@@ -1047,6 +1056,7 @@ void R_ChangeLightRadius_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
+		R_MarkLightSurfaces(selectedShadowLight);
 	}
 
 }
@@ -1085,6 +1095,7 @@ void R_ChangeLightCone_f (void) {
 	R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	R_MarkLightLeaves (selectedShadowLight);
 	UpdateLightBounds (selectedShadowLight);
+	R_MarkLightSurfaces(selectedShadowLight);
 }
 
 
@@ -1932,18 +1943,106 @@ qboolean InLightVISEntity () {
 
 }
 
+qboolean R_AddLightSurf(msurface_t *surf, worldShadowLight_t *light) {
+	cplane_t	*plane;
+	float		dist;
+	float		lbbox[6], pbbox[6];
 
-void R_PreCalcLightData (void) {
+	if (surf->flags & MSURF_LAVA)
+		goto hack;
+
+	if ((surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_SKY | SURF_WARP | SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
+		return qfalse;
+hack:
+
+	plane = surf->plane;
+
+	switch (plane->type)
+	{
+	case PLANE_X:
+		dist = light->origin[0] - plane->dist;
+		break;
+	case PLANE_Y:
+		dist = light->origin[1] - plane->dist;
+		break;
+	case PLANE_Z:
+		dist = light->origin[2] - plane->dist;
+		break;
+	default:
+		dist = DotProduct(light->origin, plane->normal) - plane->dist;
+		break;
+	}
+
+	if (light->isFog && !light->isShadow)
+		goto next;
+
+	//the normals are flipped when surf_planeback is 1
+	if (((surf->flags & MSURF_PLANEBACK) && (dist > 0)) ||
+		(!(surf->flags & MSURF_PLANEBACK) && (dist < 0)))
+		return qfalse;
+next:
+
+	if (fabsf(dist) > light->maxRad)
+		return qfalse;
+
+	lbbox[0] = light->origin[0] - light->radius[0];
+	lbbox[1] = light->origin[1] - light->radius[1];
+	lbbox[2] = light->origin[2] - light->radius[2];
+	lbbox[3] = light->origin[0] + light->radius[0];
+	lbbox[4] = light->origin[1] + light->radius[1];
+	lbbox[5] = light->origin[2] + light->radius[2];
+
+	// surface bounding box
+	pbbox[0] = surf->mins[0];
+	pbbox[1] = surf->mins[1];
+	pbbox[2] = surf->mins[2];
+	pbbox[3] = surf->maxs[0];
+	pbbox[4] = surf->maxs[1];
+	pbbox[5] = surf->maxs[2];
+
+	if (!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
+		return qfalse;
+
+	if (light->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], light->frust))
+		return qfalse;
+
+	return qtrue;
+}
+
+extern  int lightSurfSort(const msurface_t **a, const msurface_t **b);
+
+static void R_MarkLightSurfaces(worldShadowLight_t *light) {
+	
+	int			i;
+	msurface_t	*surf;
+
+	light->numInteractionSurfs = 0;
+	surf = r_worldmodel->surfaces;
+
+	for (i = 0; i < r_worldmodel->numSurfaces; surf++, i++) {
+		
+		if (R_AddLightSurf(surf, light))
+			light->interaction[light->numInteractionSurfs++] = surf;
+	}
+
+	qsort(light->interaction, light->numInteractionSurfs, sizeof(msurface_t*), (int(*)(const void *, const void *))lightSurfSort);
+
+}
+
+void R_CalcStaticLightInteraction (void) {
+	
 	worldShadowLight_t *light;
 
 	for (light = shadowLight_static; light; light = light->s_next) {
 
-		if (!R_MarkLightLeaves (light))
+		if (!R_MarkLightLeaves (light)) // out of bsp or no area data
 			continue;
 
-		R_DrawBspModelVolumes (qtrue, light);
+		R_DrawBspModelVolumes	(qtrue, light);
+		R_MarkLightSurfaces		(light);
 	}
-	Com_Printf (""S_COLOR_MAGENTA"R_PreCalcLightData: "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", numPreCachedLights);
+
+	Com_Printf (""S_COLOR_MAGENTA"R_CalcStaticLightInteraction: "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", numPreCachedLights);
 }
 
 void DeleteShadowVertexBuffers (void) {
@@ -1953,7 +2052,6 @@ void DeleteShadowVertexBuffers (void) {
 
 		qglDeleteBuffersARB (1, &light->vboId);
 		qglDeleteBuffersARB (1, &light->iboId);
-		light->vboId = light->iboId = light->iboNumIndices = 0;
 	}
 	numPreCachedLights = 0;
 }
