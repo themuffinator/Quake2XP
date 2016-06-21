@@ -42,14 +42,12 @@ static void GL_DrawDepthPoly () {
 	for (i = 0; i < num_depth_surfaces; i++) {
 		s = scene_surfaces[i];
 
-	repeat:
 		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
 			if (numIndices != 0xFFFFFFFF) {
 				qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 			}
-			goto repeat;
 		}
 	}
 

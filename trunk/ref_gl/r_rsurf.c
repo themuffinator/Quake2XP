@@ -414,7 +414,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		newBatch = qfalse;
 	
 	// fill new batch
-	repeat:	
 		if (!R_FillAmbientBatch(s, newBatch, &numVertices, &numIndices, bmodel))
 		{
 			if (numIndices != 0xFFFFFFFF){
@@ -422,7 +421,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 				}
-			goto repeat;
 		}
 	}
 	
@@ -612,7 +610,6 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 			newBatch = qfalse;
 
 	// fill new batch
-	repeat:
 		if (!R_FillLightBatch(s, newBatch, &numVertices, &numIndices, bmodel, caustics))
 		{
 			if (numIndices != 0xffffffff){
@@ -620,7 +617,6 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 				numVertices = 0;
 				numIndices = 0xffffffff;
 			}
-			goto repeat;
 		}
 	}
 	// draw the rest
@@ -634,7 +630,7 @@ static void GL_DrawStaticLightPass()
 {
 	msurface_t	*s;
 	int			i;
-	qboolean	newBatch, oldCaust;
+	qboolean	newBatch;
 	unsigned	oldTex = 0xffffffff;
 	unsigned	oldFlag = 0xffffffff;
 	unsigned	numIndices = 0xffffffff,
@@ -671,7 +667,6 @@ static void GL_DrawStaticLightPass()
 			newBatch = qfalse;
 
 		// fill new batch
-	repeat:
 		if (!R_FillLightBatch(s, newBatch, &numVertices, &numIndices, qfalse, qfalse))
 		{
 			if (numIndices != 0xffffffff) {
@@ -679,7 +674,6 @@ static void GL_DrawStaticLightPass()
 				numVertices = 0;
 				numIndices = 0xffffffff;
 			}
-			goto repeat;
 		}
 	}
 	// draw the rest
