@@ -25,7 +25,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern	unsigned	sys_msg_time;
 
-cvar_t	*in_mouse;
+cvar_t	*m_inversion;
+cvar_t	*v_centermove;
+cvar_t	*v_centerspeed;
 
 qboolean	in_appactive;
 
@@ -106,6 +108,7 @@ qboolean	mlooking;
 void IN_MLookDown (void) {
 	mlooking = qtrue;
 }
+
 void IN_MLookUp (void) {
 	mlooking = qfalse;
 	if (!freelook->value && lookspring->value)
@@ -123,12 +126,9 @@ qboolean	mouseactive;	// qfalse when not focus app
 
 qboolean	restore_spi;
 qboolean	mouseinitialized;
-int		originalmouseparms[3], newmouseparms[3] = { 0, 0, 1 };
-
-int		newMouseParmsXP[3];
-
 qboolean	mouseparmsvalid;
 
+int			originalmouseparms[3], newmouseparms[3] = { 0, 0, 1 };
 int			window_center_x, window_center_y;
 RECT		window_rect;
 
@@ -206,6 +206,7 @@ void IN_StartupMouse (void) {
 	cvar_t		*cv;
 
 	cv = Cvar_Get ("in_initmouse", "1", CVAR_NOSET);
+
 	if (!cv->value)
 		return;
 
@@ -247,21 +248,6 @@ void IN_MouseEvent (int mstate) {
 IN_MouseMove
 ===========
 */
-// mouse variables
-cvar_t	*m_filter;
-cvar_t	*m_accel;
-cvar_t	*m_inversion;
-
-/*
-=========================================================================
-
-VIEW CENTERING
-
-=========================================================================
-*/
-
-cvar_t	*v_centermove;
-cvar_t	*v_centerspeed;
 
 qboolean FindRawDevices()
 {
@@ -334,9 +320,6 @@ IN_Init
 */
 void IN_Init (void) {
 	// mouse variables
-	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
-	in_mouse = Cvar_Get ("in_mouse", "1", CVAR_ARCHIVE);
-	m_accel = Cvar_Get ("m_accel", "0", CVAR_ARCHIVE);
 	m_inversion = Cvar_Get ("m_inversion", "0", CVAR_ARCHIVE);
 
 	// centering
@@ -366,7 +349,7 @@ void IN_Init (void) {
 
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
-	Cmd_AddCommand("joy_advancedupdate", Joy_AdvancedUpdate_f);
+	Cmd_AddCommand ("joy_advancedupdate", Joy_AdvancedUpdate_f);
 
 	FindRawDevices();
 	IN_StartupJoystick();
@@ -502,7 +485,7 @@ void IN_StartupJoystick(void)
 	// abort startup if we didn't find a valid joystick
 	if (mmr != JOYERR_NOERROR)
 	{
-		Com_Printf("..." S_COLOR_YELLOW "Joystick Not Found (%x)\n", mmr);
+		Com_Printf("..." S_COLOR_YELLOW "Joystick Not Found " S_COLOR_WHITE "(%x)\n", mmr);
 		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
