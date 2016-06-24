@@ -2011,7 +2011,7 @@ next:
 
 extern  int lightSurfSort(const msurface_t **a, const msurface_t **b);
 
-static void R_MarkLightSurfaces(worldShadowLight_t *light) {
+void R_MarkLightSurfaces(worldShadowLight_t *light) {
 	
 	int			i;
 	msurface_t	*surf;

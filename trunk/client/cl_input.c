@@ -322,23 +322,36 @@ void CL_AdjustAngles (void) {
 		speed = cls.frametime;
 
 	if (!(in_strafe.state & 1)) {
-		cl.viewangles[YAW] -=
-			speed * cl_yawspeed->value * CL_KeyState (&in_right);
-		cl.viewangles[YAW] +=
-			speed * cl_yawspeed->value * CL_KeyState (&in_left);
+
+#ifdef _WIN32
+		cl.viewangles_YAW -= speed*cl_yawspeed->value * CL_KeyState(&in_right);
+		cl.viewangles_YAW += speed*cl_yawspeed->value * CL_KeyState(&in_left);
+#else
+		cl.viewangles[YAW] -= speed * cl_yawspeed->value * CL_KeyState (&in_right);
+		cl.viewangles[YAW] += speed * cl_yawspeed->value * CL_KeyState (&in_left);
+#endif
 	}
 	if (in_klook.state & 1) {
-		cl.viewangles[PITCH] -=
-			speed * cl_pitchspeed->value * CL_KeyState (&in_forward);
-		cl.viewangles[PITCH] +=
-			speed * cl_pitchspeed->value * CL_KeyState (&in_back);
+
+#ifdef _WIN32
+		cl.viewangles_PITCH -= speed*cl_pitchspeed->value * CL_KeyState(&in_forward);
+		cl.viewangles_PITCH += speed*cl_pitchspeed->value * CL_KeyState(&in_back);
+#else
+		cl.viewangles[PITCH] -= speed * cl_pitchspeed->value * CL_KeyState (&in_forward);
+		cl.viewangles[PITCH] += speed * cl_pitchspeed->value * CL_KeyState (&in_back);
+#endif
 	}
 
 	up = CL_KeyState (&in_lookup);
 	down = CL_KeyState (&in_lookdown);
 
+#ifdef _WIN32
+	cl.viewangles_PITCH -= speed*cl_pitchspeed->value * up;
+	cl.viewangles_PITCH += speed*cl_pitchspeed->value * down;
+#else
 	cl.viewangles[PITCH] -= speed * cl_pitchspeed->value * up;
 	cl.viewangles[PITCH] += speed * cl_pitchspeed->value * down;
+#endif
 }
 
 /*
@@ -353,7 +366,14 @@ void CL_BaseMove (usercmd_t * cmd) {
 
 	memset (cmd, 0, sizeof(*cmd));
 
+#ifdef _WIN32
+	cmd->angles[0] = cl.viewangles_PITCH;
+	cmd->angles[1] = cl.viewangles_YAW;
+	cmd->angles[2] = 0;
+#else
 	VectorCopy (cl.viewangles, cmd->angles);
+#endif
+
 	if (in_strafe.state & 1) {
 		cmd->sidemove += cl_sidespeed->value * CL_KeyState (&in_right);
 		cmd->sidemove -= cl_sidespeed->value * CL_KeyState (&in_left);
@@ -387,6 +407,17 @@ void CL_ClampPitch (void) {
 	if (pitch > 180)
 		pitch -= 360;
 
+#ifdef _WIN32
+	if (cl.viewangles_PITCH + pitch < -360)
+		cl.viewangles_PITCH += 360; // wrapped
+	if (cl.viewangles_PITCH + pitch > 360)
+		cl.viewangles_PITCH -= 360; // wrapped
+
+	if (cl.viewangles_PITCH + pitch > 89)
+		cl.viewangles_PITCH = 89 - pitch;
+	if (cl.viewangles_PITCH + pitch < -89)
+		cl.viewangles_PITCH = -89 - pitch;
+#else
 	if (cl.viewangles[PITCH] + pitch < -360)
 		cl.viewangles[PITCH] += 360;	// wrapped
 	if (cl.viewangles[PITCH] + pitch > 360)
@@ -396,6 +427,7 @@ void CL_ClampPitch (void) {
 		cl.viewangles[PITCH] = 89 - pitch;
 	if (cl.viewangles[PITCH] + pitch < -89)
 		cl.viewangles[PITCH] = -89 - pitch;
+#endif
 }
 
 /*
@@ -432,9 +464,15 @@ void CL_FinishMove (usercmd_t * cmd) {
 	cmd->msec = ms;
 
 	CL_ClampPitch ();
+
+#ifdef _WIN32
+	cmd->angles[0] = ANGLE2SHORT(cl.viewangles_PITCH);
+	cmd->angles[1] = ANGLE2SHORT(cl.viewangles_YAW);
+	cmd->angles[2] = 0;
+#else
 	for (i = 0; i < 3; i++)
 		cmd->angles[i] = ANGLE2SHORT (cl.viewangles[i]);
-
+#endif
 	cmd->impulse = in_impulse;
 	in_impulse = 0;
 
@@ -472,8 +510,12 @@ usercmd_t CL_CreateCmd (void) {
 }
 
 void IN_CenterView (void) {
-	cl.viewangles[PITCH] =
-		-SHORT2ANGLE (cl.frame.playerstate.pmove.delta_angles[PITCH]);
+
+#ifdef _WIN32
+	cl.viewangles_PITCH = -SHORT2ANGLE(cl.frame.playerstate.pmove.delta_angles[PITCH]);
+#else
+	cl.viewangles[PITCH] = -SHORT2ANGLE (cl.frame.playerstate.pmove.delta_angles[PITCH]);
+#endif
 }
 
 /*

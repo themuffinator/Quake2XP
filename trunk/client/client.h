@@ -228,6 +228,8 @@ typedef struct {
 	// tracked view angles to account for standing on rotating objects,
 	// and teleport direction changes
 	vec3_t viewangles;
+	float		viewangles_YAW;
+	float		viewangles_PITCH;
 
 	int time;					// this is the time value that the client
 	// is rendering at.  always <= cls.realtime

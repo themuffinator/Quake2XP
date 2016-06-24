@@ -124,6 +124,9 @@ qboolean	mouseactive;	// qfalse when not focus app
 qboolean	restore_spi;
 qboolean	mouseinitialized;
 int		originalmouseparms[3], newmouseparms[3] = { 0, 0, 1 };
+
+int		newMouseParmsXP[3];
+
 qboolean	mouseparmsvalid;
 
 int			window_center_x, window_center_y;
@@ -140,24 +143,14 @@ Called when the window gains focus or changes in some way
 void IN_ActivateMouse (void) {
 	int		width, height;
 
-	if (!mouseinitialized)
-		return;
-	if (!in_mouse->value) {
-		mouseactive = qfalse;
-		return;
-	}
 	if (mouseactive)
 		return;
 
-	mouseactive = qtrue;
+	/// Berserker's fix
+	width = GetSystemMetrics(SM_CXSCREEN);
+	height = GetSystemMetrics(SM_CYSCREEN);
 
-	if (mouseparmsvalid)
-		restore_spi = SystemParametersInfo (SPI_SETMOUSE, 0, newmouseparms, 0);
-
-	width = GetSystemMetrics (SM_CXSCREEN);
-	height = GetSystemMetrics (SM_CYSCREEN);
-
-	GetWindowRect (cl_hwnd, &window_rect);
+	GetWindowRect(cl_hwnd, &window_rect);
 	if (window_rect.left < 0)
 		window_rect.left = 0;
 	if (window_rect.top < 0)
@@ -167,18 +160,18 @@ void IN_ActivateMouse (void) {
 	if (window_rect.bottom >= height - 1)
 		window_rect.bottom = height - 1;
 
-	window_center_x = (window_rect.right + window_rect.left)*0.5;
-	window_center_y = (window_rect.top + window_rect.bottom)*0.5;
-
-	SetCursorPos (window_center_x, window_center_y);
+	window_center_x = (window_rect.right + window_rect.left) * 0.5;
+	window_center_y = (window_rect.top + window_rect.bottom) * 0.5;
 
 	old_x = window_center_x;
 	old_y = window_center_y;
 
-	SetCapture (cl_hwnd);
-	ClipCursor (&window_rect);
-	while (ShowCursor (FALSE) >= 0)
-		;
+	SetCursorPos(window_center_x, window_center_y);
+	SetCapture(cl_hwnd);
+	ClipCursor(&window_rect);
+
+	mouseactive = qtrue;
+	while (ShowCursor(FALSE) >= 0);
 }
 
 
@@ -190,20 +183,16 @@ Called when the window loses focus
 ===========
 */
 void IN_DeactivateMouse (void) {
-	if (!mouseinitialized)
-		return;
+	
 	if (!mouseactive)
 		return;
 
-	if (restore_spi)
-		SystemParametersInfo (SPI_SETMOUSE, 0, originalmouseparms, 0);
-
-	mouseactive = qfalse;
-
 	ClipCursor (NULL);
 	ReleaseCapture ();
-	while (ShowCursor (TRUE) < 0)
-		;
+
+	mouseactive = qfalse;
+	
+	while (ShowCursor(TRUE) < 0);
 }
 
 
@@ -222,7 +211,7 @@ void IN_StartupMouse (void) {
 
 	mouseinitialized = qtrue;
 	mouseparmsvalid = SystemParametersInfo (SPI_GETMOUSE, 0, originalmouseparms, 0);
-	mouse_buttons = 8;
+	mouse_buttons = 5;
 }
 
 /*
@@ -261,59 +250,7 @@ IN_MouseMove
 // mouse variables
 cvar_t	*m_filter;
 cvar_t	*m_accel;
-
-void IN_MouseMove (usercmd_t *cmd) {
-	int		mx, my;
-	float sens;
-
-	if (!mouseactive)
-		return;
-
-	// find mouse movement
-	if (!GetCursorPos (&current_pos))
-		return;
-
-	mx = current_pos.x - window_center_x;
-	my = current_pos.y - window_center_y;
-
-	if (m_filter->value) {
-		mouse_x = (mx + old_mouse_x) * 0.5;
-		mouse_y = (my + old_mouse_y) * 0.5;
-	}
-	else {
-		mouse_x = mx;
-		mouse_y = my;
-	}
-
-	old_mouse_x = mx;
-	old_mouse_y = my;
-
-	if (m_accel->value < 0)
-		Cvar_Set ("m_accel", "0");
-
-	/// Berserker: коррекция чуствительности от FOV
-	sens = (sensitivity->value + sqrt (mouse_x * mouse_x + mouse_y * mouse_y) * m_accel->value) * cl.refdef.fov_x / 90.0f;
-	mouse_x *= sens;
-	mouse_y *= sens;
-
-	// add mouse X/Y movement to cmd
-	if ((in_strafe.state & 1) || (lookstrafe->value && mlooking))
-		cmd->sidemove += m_side->value * mouse_x;
-	else
-		cl.viewangles[YAW] -= m_yaw->value * mouse_x;
-
-	if ((mlooking || freelook->value) && !(in_strafe.state & 1)) {
-		cl.viewangles[PITCH] += m_pitch->value * mouse_y;
-	}
-	else {
-		cmd->forwardmove -= m_forward->value * mouse_y;
-	}
-
-	// force the mouse to the center, so there's room to move
-	if (mx || my)
-		SetCursorPos (window_center_x, window_center_y);
-}
-
+cvar_t	*m_inversion;
 
 /*
 =========================================================================
@@ -326,6 +263,69 @@ VIEW CENTERING
 cvar_t	*v_centermove;
 cvar_t	*v_centerspeed;
 
+qboolean FindRawDevices()
+{
+	PRAWINPUTDEVICELIST g_pRawInputDeviceList;
+	UINT nDevices;
+
+	Com_Printf("====== Init RAW Input Devices ======\n\n");
+
+	// Get Number of devices attached
+	if (GetRawInputDeviceList(NULL, &nDevices, sizeof(RAWINPUTDEVICELIST)) != 0)
+	{
+		Com_Printf("\n" S_COLOR_RED "No RawInput devices attached\n");
+		return qfalse;
+	}
+	else
+		Com_Printf("" S_COLOR_YELLOW "... Found " S_COLOR_GREEN "%i" S_COLOR_YELLOW " RAW input devices.\n", nDevices);
+
+	// Create list large enough to hold all RAWINPUTDEVICE structs
+	if ((g_pRawInputDeviceList = (PRAWINPUTDEVICELIST)Z_Malloc(sizeof(RAWINPUTDEVICELIST) * nDevices)) == NULL)
+	{
+		Com_Printf("" S_COLOR_RED "Error mallocing RAWINPUTDEVICELIST\n");
+		return qfalse;
+	}
+	// Now get the data on the attached devices
+	if (GetRawInputDeviceList(g_pRawInputDeviceList, &nDevices, sizeof(RAWINPUTDEVICELIST)) == -1)
+	{
+		Com_Printf("" S_COLOR_RED "1Error from GetRawInputDeviceList\n");
+		Z_Free(g_pRawInputDeviceList);
+		return qfalse;
+	}
+
+	PRAWINPUTDEVICE g_pRawInputDevices = (PRAWINPUTDEVICE)Z_Malloc(nDevices * sizeof(RAWINPUTDEVICE));
+
+	for (UINT i = 0; i<nDevices; i++)
+	{
+		if (g_pRawInputDeviceList[i].dwType == RIM_TYPEMOUSE)
+		{
+			UINT nchars = 300;
+			TCHAR deviceName[300];
+			if (GetRawInputDeviceInfo(g_pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, deviceName, &nchars) >= 0)
+				Com_DPrintf("Device[%d]:\n handle=0x%x\n name = %s\n\n", i, g_pRawInputDeviceList[i].hDevice, deviceName);
+			RID_DEVICE_INFO dinfo;
+			UINT sizeofdinfo = sizeof(dinfo);
+			dinfo.cbSize = sizeofdinfo;
+			if (GetRawInputDeviceInfo(g_pRawInputDeviceList[i].hDevice, RIDI_DEVICEINFO, &dinfo, &sizeofdinfo) >= 0)
+			{
+				if (dinfo.dwType == RIM_TYPEMOUSE)
+				{
+					RID_DEVICE_INFO_MOUSE *pMouseInfo = &dinfo.mouse;
+					Com_DPrintf("ID = 0x%x\n", pMouseInfo->dwId);
+					Com_DPrintf("Number of buttons = %i\n", pMouseInfo->dwNumberOfButtons);
+					Com_DPrintf("Sample Rate = %i\n", pMouseInfo->dwSampleRate);
+					Com_DPrintf("Has Horizontal Wheel: %s\n", pMouseInfo->fHasHorizontalWheel ? "Yes" : "No");
+				}
+			}
+		}
+	}
+	Z_Free(g_pRawInputDevices);
+	Z_Free(g_pRawInputDeviceList);
+
+	Com_Printf("\n------------------------------------\n");
+	
+	return qtrue;
+}
 
 /*
 ===========
@@ -337,6 +337,7 @@ void IN_Init (void) {
 	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
 	in_mouse = Cvar_Get ("in_mouse", "1", CVAR_ARCHIVE);
 	m_accel = Cvar_Get ("m_accel", "0", CVAR_ARCHIVE);
+	m_inversion = Cvar_Get ("m_inversion", "0", CVAR_ARCHIVE);
 
 	// centering
 	v_centermove = Cvar_Get ("v_centermove", "0.15", 0);
@@ -367,7 +368,7 @@ void IN_Init (void) {
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
 	Cmd_AddCommand("joy_advancedupdate", Joy_AdvancedUpdate_f);
 
-	IN_StartupMouse ();
+	FindRawDevices();
 	IN_StartupJoystick();
 
 }
@@ -405,11 +406,10 @@ Called every frame, even if not generating commands
 ==================
 */
 void IN_Frame (void) {
-	if (!mouseinitialized)
-		return;
 
-	if (!in_mouse || !in_appactive) {
-		IN_DeactivateMouse ();
+	if (!in_appactive)
+	{
+		IN_DeactivateMouse();
 		return;
 	}
 
@@ -432,7 +432,6 @@ IN_Move
 ===========
 */
 void IN_Move (usercmd_t *cmd) {
-	IN_MouseMove (cmd);
 	
 	if (ActiveApp)
 		IN_JoyMove(cmd);

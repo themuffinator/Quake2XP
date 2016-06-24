@@ -499,7 +499,7 @@ void GLimp_CpuID(void)
  
         if(nFeatureInfo || SSE3 || MMX || SSE || SSE2 || SSE4 || EM64T){
        		
-		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[8]);
+		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[7]);
 		HTT = GetCpuCoresThreads();
 		float GHz = (float)dwCPUSpeed * 0.001;
 		Com_Printf ("CPU Speed: ~"S_COLOR_GREEN"%.3f"S_COLOR_WHITE" GHz\n", GHz);

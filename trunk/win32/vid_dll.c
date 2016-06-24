@@ -252,6 +252,19 @@ void AppActivate (BOOL fActive, BOOL minimize) {
 # define MK_XBUTTON5         0x0200
 #endif
 
+/// Added by Willow: new mouse support
+#ifndef HID_USAGE_PAGE_GENERIC
+#define HID_USAGE_PAGE_GENERIC	((USHORT) 0x01)
+#endif
+#ifndef HID_USAGE_GENERIC_MOUSE
+#define HID_USAGE_GENERIC_MOUSE	((USHORT) 0x02)
+#endif
+///#define mouse_buttons	5
+
+LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+extern cvar_t	*m_inversion;
+
+extern qboolean mouseactive;
 /*
 ====================
 MainWndProc
@@ -259,161 +272,219 @@ MainWndProc
 main window procedure
 ====================
 */
-LONG WINAPI MainWndProc (
-	HWND    hWnd,
-	UINT    uMsg,
-	WPARAM  wParam,
-	LPARAM  lParam) {
-	LONG			lRet = 0;
+LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lParam)
+{
+//willow:
+//ГЛАВНАЯ идея оптимизации обработки сообщений это упорядочить сообщения по интенсинсивности их появления
+//и критичности к времени обработки. Первым в данном списке идёт мышь, до 200 (PS/2) или 500 (USB) сообщений в секунду.
+//Профессиональные игровые мыши рапортуют до 1000 сообщений в секунду.
+	if (mouseactive)
+	{
+		if (uMsg == WM_INPUT)
+			{
+				UINT dwSize = 40;
+				static BYTE lpb[40];
 
-	if (uMsg == MSH_MOUSEWHEEL) {
-		if (((int)wParam) > 0) {
-			Key_Event (K_MWHEELUP, qtrue, sys_msg_time);
-			Key_Event (K_MWHEELUP, qfalse, sys_msg_time);
-		}
-		else {
-			Key_Event (K_MWHEELDOWN, qtrue, sys_msg_time);
-			Key_Event (K_MWHEELDOWN, qfalse, sys_msg_time);
-		}
-		return DefWindowProc (hWnd, uMsg, wParam, lParam);
+				if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != -1)
+				{
+					PRAWINPUT raw = (RAWINPUT*)lpb;
+
+					if (raw->header.dwType == RIM_TYPEMOUSE)
+					{
+						if (raw->data.mouse.lLastX || raw->data.mouse.lLastY)
+						{
+							//willow:
+							//Делать поддержку какого-либо искусственного ускорения баллистической траектории (по примеру m_accel)
+							//мыши я не рекомендую. Подобные технологии признаны безперспективными всеми профессиональными игроками.
+							///Berserker: коррекция чуствительности от FOV
+							///уменьшим чуствительность в 10 раз (чтоб примерно соответствовало чуствительности старой мыши)
+							///float sens = sensitivity->value * cl.refdef.fov_x / 90.0f * 0.1f;
+							//willow: оптимизируем эту формулу. Корректирующий фактор поправлен c 0.1f на 0.111111f * 0.66f,
+							//что в общем-то не имеет никакого принципиального значения. Иначе у меня слайдер настройки едва
+							//за границу не вышел. Заодно получаем оптимизацию - гарантированная замена деления на умножение.
+							float sens = sensitivity->value * cl.refdef.fov_x * 0.00066f;
+
+							if (raw->data.mouse.lLastX)
+								cl.viewangles_YAW -= sens * raw->data.mouse.lLastX;
+
+							if (raw->data.mouse.lLastY)
+							{
+								if (m_inversion->value)
+									cl.viewangles_PITCH -= sens * raw->data.mouse.lLastY;
+								else
+									cl.viewangles_PITCH += sens * raw->data.mouse.lLastY;
+							}
+
+							//willow, Berserker:
+							//Хак курсор не убегал за пределы окна
+							//willow: P.S. всё-же только для оконного режима
+							if (!(r_fullScreen && r_fullScreen->value))
+								SetCursorPos(window_center_x, window_center_y);
+						}
+
+						// perform button actions
+						if (raw->data.mouse.usButtonFlags)
+						{
+							//RI_MOUSE_LEFT_BUTTON
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_DOWN) Key_Event(K_MOUSE1, qtrue, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_LEFT_BUTTON_UP) Key_Event(K_MOUSE1, qfalse, sys_msg_time);
+							//RI_MOUSE_RIGHT_BUTTON
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_DOWN) Key_Event(K_MOUSE2, qtrue, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_UP) Key_Event(K_MOUSE2, qfalse, sys_msg_time);
+							//RI_MOUSE_MIDDLE_BUTTON
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN) Key_Event(K_MOUSE3, qtrue, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_UP) Key_Event(K_MOUSE3, qfalse, sys_msg_time);
+							//RI_MOUSE_BUTTON_4
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN) Key_Event(K_MOUSE4, qtrue, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_UP) Key_Event(K_MOUSE4, qfalse, sys_msg_time);
+							//RI_MOUSE_BUTTON_5
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) Key_Event(K_MOUSE5, qtrue, sys_msg_time);
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_UP) Key_Event(K_MOUSE5, qfalse, sys_msg_time);
+							//RI_MOUSE_WHEEL
+							if (raw->data.mouse.usButtonFlags & RI_MOUSE_WHEEL)
+							{
+								int i = (short)raw->data.mouse.usButtonData; //wheel delta, signed
+								if (i < 0)
+								{
+									Key_Event(K_MWHEELDOWN, qtrue, sys_msg_time);
+									Key_Event(K_MWHEELDOWN, qfalse, sys_msg_time);
+								}
+								else if (i > 0)
+								{
+									Key_Event(K_MWHEELUP, qtrue, sys_msg_time);
+									Key_Event(K_MWHEELUP, qfalse, sys_msg_time);
+								}
+							}
+						}
+						return 0;
+						//willow: DefWindowProc? DefRawInputProc? то и другое?
+					}
+					else
+					{
+						//willow:
+						//Мы обнаружили неизвестное устройство - сообщим в компетентные органы по вопросам RAW INPUT.
+						//Ставить ли в известность DefWindowProc?
+						return DefRawInputProc(&raw, 1, sizeof(RAWINPUTHEADER)) ? 1 : 0;
+					}
+				}
+				//willow:
+				//Поправьте меня, но если мы не смогли прочитать WM_INPUT сообщение, то никто не сможет
+				return 1;
+			} //WM_INPUT
+	
 	}
 
-	switch (uMsg) {
-		case WM_MOUSEWHEEL:
-			/*
-			** this chunk of code theoretically only works under NT4 and Win98
-			** since this message doesn't exist under Win95
-			*/
-			if ((short)HIWORD (wParam) > 0) {
-				Key_Event (K_MWHEELUP, qtrue, sys_msg_time);
-				Key_Event (K_MWHEELUP, qfalse, sys_msg_time);
+	//Willow: Относительно некритичные или редкие сообщения
+	switch (uMsg)
+	{
+	case WM_SYSKEYDOWN:
+		if (wParam == 13)		// Alt+Enter
+		{
+			if (r_fullScreen)
+			{
+				Cvar_SetValue("r_fullscreen", !r_fullScreen->value);
 			}
-			else {
-				Key_Event (K_MWHEELDOWN, qtrue, sys_msg_time);
-				Key_Event (K_MWHEELDOWN, qfalse, sys_msg_time);
-			}
-			break;
-
-		case WM_HOTKEY:
 			return 0;
-
-		case WM_CREATE:
-			cl_hwnd = hWnd;
-
-			MSH_MOUSEWHEEL = RegisterWindowMessage ("MSWHEEL_ROLLMSG");
-			return DefWindowProc (hWnd, uMsg, wParam, lParam);
-
-		case WM_PAINT:
-			SCR_DirtyScreen ();	// force entire screen to update next frame
-			return DefWindowProc (hWnd, uMsg, wParam, lParam);
-
-		case WM_DESTROY:
-			// let sound and input know about this?
-			cl_hwnd = NULL;
-			return DefWindowProc (hWnd, uMsg, wParam, lParam);
-
-		case WM_ACTIVATE:
-		{
-							int	fActive, fMinimized;
-
-							// KJB: Watch this for problems in fullscreen modes with Alt-tabbing.
-							fActive = LOWORD (wParam);
-							fMinimized = (BOOL)HIWORD (wParam);
-
-							AppActivate (fActive != WA_INACTIVE, fMinimized);
-
-							if (reflib_active)
-								GLimp_AppActivate (!(fActive == WA_INACTIVE));
 		}
-			return DefWindowProc (hWnd, uMsg, wParam, lParam);
-
-		case WM_MOVE:
+		// fall through
+	case WM_KEYDOWN:
+		Key_Event(MapKey(lParam), qtrue, sys_msg_time);
+		break;
+	case WM_SYSKEYUP:
+	case WM_KEYUP:
+		Key_Event(MapKey(lParam), qfalse, sys_msg_time);
+		break;
+	case WM_HOTKEY:
+		return 0;
+	case WM_PAINT:
+		SCR_DirtyScreen();	// force entire screen to update next frame
+		break;
+	case WM_DESTROY:
+		// let sound and input know about this?
+		cl_hwnd = NULL;
+		break;
+	case WM_ACTIVATE:
+	{
+		// KJB: Watch this for problems in fullscreen modes with Alt-tabbing.
+		qboolean fActive = LOWORD(wParam);
+		qboolean fMinimized = (BOOL)HIWORD(wParam);
+		AppActivate(fActive != WA_INACTIVE, fMinimized);
+		if (reflib_active)
+			GLimp_AppActivate(!(fActive == WA_INACTIVE));
+	}
+	break;
+	case WM_MOVE:
+		if (!r_fullScreen->value)
 		{
-						int		xPos, yPos;
-						RECT r;
-						int		style;
+			RECT r;
+			int xPos = (short)LOWORD(lParam);    // horizontal position 
+			int yPos = (short)HIWORD(lParam);    // vertical position 
 
-						if (!r_fullScreen->value) {
-							xPos = (short)LOWORD (lParam);    // horizontal position
-							yPos = (short)HIWORD (lParam);    // vertical position
+			r.left = 0;
+			r.top = 0;
+			r.right = 1;
+			r.bottom = 1;
 
-							r.left = 0;
-							r.top = 0;
-							r.right = 1;
-							r.bottom = 1;
+			int style = GetWindowLong(hWnd, GWL_STYLE);
+			AdjustWindowRect(&r, style, FALSE);
 
-							style = GetWindowLong (hWnd, GWL_STYLE);
-							AdjustWindowRect (&r, style, FALSE);
-
-							Cvar_SetValue ("vid_xpos", xPos + r.left);
-							Cvar_SetValue ("vid_ypos", yPos + r.top);
-							vid_xpos->modified = qfalse;
-							vid_ypos->modified = qfalse;
-							if (ActiveApp)
-								IN_Activate (qtrue);
-						}
+			Cvar_SetValue("vid_xpos", xPos + r.left);
+			Cvar_SetValue("vid_ypos", yPos + r.top);
+			vid_xpos->modified = qfalse;
+			vid_ypos->modified = qfalse;
+			if (ActiveApp)
+				IN_Activate(qtrue);
 		}
-			return DefWindowProc (hWnd, uMsg, wParam, lParam);
+		break;
+	case WM_SYSCOMMAND:
+		if (wParam == SC_SCREENSAVE || wParam == SC_MONITORPOWER)
+			return 0;
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+	case MM_MCINOTIFY:
+	//	LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		CDAudio_MessageHandler(hWnd, uMsg, wParam, lParam);
+		break;
+	case WM_CREATE:
+		cl_hwnd = hWnd;
 
-			// this is complicated because Win32 seems to pack multiple mouse events into
-			// one update sometimes, so we always check all states and look for events
-		case WM_LBUTTONDOWN:
-		case WM_LBUTTONUP:
-		case WM_RBUTTONDOWN:
-		case WM_RBUTTONUP:
-		case WM_MBUTTONDOWN:
-		case WM_MBUTTONUP:
-		case WM_MOUSEMOVE:
-		case WM_XBUTTONUP:
-		case WM_XBUTTONDOWN:
-		{
-							   int i, temp = 0;
-							   int mbuttons[] = { MK_LBUTTON, MK_RBUTTON, MK_MBUTTON,
-								   MK_XBUTTON1, MK_XBUTTON2, MK_XBUTTON3, MK_XBUTTON4, MK_XBUTTON5 };
+		//Разрешить события WM_INPUT
+			RAWINPUTDEVICE Rid[1];
+			Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+			Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+			Rid[0].dwFlags =
+				(r_fullScreen && r_fullScreen->value) ?
+				//If set, the mouse button click does not activate the other window
+				RIDEV_CAPTUREMOUSE
+				//If set, this enables the caller to receive the input even when the caller is not in the foreground.
+				//Note that hwndTarget must be specified
+				| RIDEV_INPUTSINK
+				//If set, this prevents any devices specified by usUsagePage or usUsage from generating legacy messages.
+				//This is only for the mouse and keyboard.
+				| RIDEV_NOLEGACY
+				:
+			0;
+			Rid[0].hwndTarget = cl_hwnd;
+			RegisterRawInputDevices(Rid, 1, sizeof(RAWINPUTDEVICE));
+	
+		break;
 
-							   for (i = 0; i < 8; i++)
-							   if (wParam & mbuttons[i])
-								   temp |= (1 << i);
+	case WM_CLOSE:
+		///		if(MessageBox (NULL, "Are you sure you want to quit?", "Confirm Exit", MB_YESNO | MB_ICONQUESTION) == IDYES)
+		///			PostQuitMessage( 0 );	// Exit program when the user will close program
+	
+		return 0;	// Внимание! Если вместо нуля возвращать DefWindowProc(), то программа остается висеть в памяти!
+					// Так мы запрещаем Alt+F4, вместо этого срабатывает просто F4	;)
 
-							   IN_MouseEvent (temp);
-		}
-			break;
-
-		case WM_SYSCOMMAND:
-			if (wParam == SC_SCREENSAVE)
-				return 0;
-			return DefWindowProc (hWnd, uMsg, wParam, lParam);
-		case WM_SYSKEYDOWN:
-			if (wParam == 13) {
-				if (r_fullScreen) {
-					Cvar_SetValue ("r_fullScreen", !r_fullScreen->value);
-				}
-				return 0;
-			}
-			// fall through
-		case WM_KEYDOWN:
-			Key_Event (MapKey (lParam), qtrue, sys_msg_time);
-			break;
-
-		case WM_SYSKEYUP:
-		case WM_KEYUP:
-			Key_Event (MapKey (lParam), qfalse, sys_msg_time);
-			break;
-
-		case MM_MCINOTIFY:
-		{
-							 LONG CDAudio_MessageHandler (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-							 lRet = CDAudio_MessageHandler (hWnd, uMsg, wParam, lParam);
-		}
-			break;
-
-		default:	// pass all unhandled messages to DefWindowProc
-			return DefWindowProc (hWnd, uMsg, wParam, lParam);
+					///	default:	// pass all unhandled messages to DefWindowProc
+					///		no_jmp = false;
+					///		return DefWindowProc (hWnd, uMsg, wParam, lParam);
 	}
 
 	/* return 0 if handled message, 1 if not */
-	return DefWindowProc (hWnd, uMsg, wParam, lParam);
+
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
+
 
 /*
 ============
