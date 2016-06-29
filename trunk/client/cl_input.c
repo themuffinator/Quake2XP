@@ -435,9 +435,8 @@ void CL_ClampPitch (void) {
 CL_FinishMove
 ==============
 */
-void CL_FinishMove (usercmd_t * cmd) {
+void CL_FinishMove(usercmd_t * cmd) {
 	int ms;
-	int i;
 
 	//
 	// figure button bits
@@ -463,16 +462,20 @@ void CL_FinishMove (usercmd_t * cmd) {
 		ms = 100;				// time was unreasonable
 	cmd->msec = ms;
 
-	CL_ClampPitch ();
+	CL_ClampPitch();
 
 #ifdef _WIN32
 	cmd->angles[0] = ANGLE2SHORT(cl.viewangles_PITCH);
 	cmd->angles[1] = ANGLE2SHORT(cl.viewangles_YAW);
 	cmd->angles[2] = 0;
 #else
-	for (i = 0; i < 3; i++)
-		cmd->angles[i] = ANGLE2SHORT (cl.viewangles[i]);
+	{
+		int i;
+		for (i = 0; i < 3; i++)
+			cmd->angles[i] = ANGLE2SHORT(cl.viewangles[i]);
+	}
 #endif
+
 	cmd->impulse = in_impulse;
 	in_impulse = 0;
 

@@ -48,8 +48,6 @@ void M_Menu_Quit_f (void);
 void M_Menu_Advanced_f (void);
 void M_AdvancedInit (void);
 
-void M_Menu_Credits (void);
-
 qboolean m_entersound;			// play after drawing a frame, so caching
 // won't disrupt the sound
 
@@ -1111,6 +1109,7 @@ static menulist_s s_options_time_box;
 
 extern cvar_t *cl_bigHud;
 extern cvar_t *cl_3dhud;
+extern cvar_t *m_inversion;
 
 static void CrosshairFunc (void *unused) {
 	Cvar_SetValue ("crosshair", s_options_crosshair_box.curvalue);
@@ -1180,7 +1179,11 @@ static void ControlsSetMenuItemValues (void) {
 	Cvar_SetValue ("cl_run", ClampCvar (0, 1, cl_run->value));
 	s_options_alwaysrun_box.curvalue = cl_run->value;
 
+#ifdef _WIN32
+	s_options_invertmouse_box.curvalue = m_inversion->value > 0;
+#else
 	s_options_invertmouse_box.curvalue = m_pitch->value < 0;
+#endif
 
 	Cvar_SetValue ("lookspring", ClampCvar (0, 1, lookspring->value));
 	s_options_lookspring_box.curvalue = lookspring->value;
@@ -1213,7 +1216,12 @@ static void ControlsResetDefaultsFunc (void *unused) {
 }
 
 static void InvertMouseFunc (void *unused) {
-	Cvar_SetValue ("m_pitch", -m_pitch->value);
+		
+#ifdef _WIN32
+		Cvar_SetValue("m_inversion", !(m_inversion->value));
+#else
+		Cvar_SetValue("m_pitch", -m_pitch->value);
+#endif
 }
 
 static void LookspringFunc (void *unused) {

@@ -377,7 +377,7 @@ void SCR_DrawLoadingBar (float percent, float scale) {
 void Draw_LoadingScreen (int x, int y, int w, int h, char *pic);
 
 void SCR_DrawLoading (void) {
-	int		scaled;
+	int		scaled, center;
 	char	mapfile[32];
 	char	*mapname;
 	float	fontscale = cl_fontScale->value;
@@ -401,7 +401,11 @@ void SCR_DrawLoading (void) {
 
 		Set_FontShader (qtrue);
 		RE_SetColor (colorGreen);
-		Draw_StringScaled (0, fontscale*scaled, fontscale, fontscale, mapname);
+		
+		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 8;
+
+		Draw_StringScaled (center, fontscale*scaled, fontscale * 2, fontscale * 2, mapname);
+		
 		RE_SetColor (colorYellow);
 		Draw_StringScaled (0, 24 * fontscale, fontscale, fontscale,
 			va ("%s", loadingMessages[0]));

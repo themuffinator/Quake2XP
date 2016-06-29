@@ -409,6 +409,11 @@ void R_SetupEntityMatrix(entity_t * e) {
 	AnglesToMat3(e->angles, e->axis);
 	Mat4_SetOrientation(e->matrix, e->axis, e->origin);
 	Mat4_TransposeMultiply(e->matrix, r_newrefdef.modelViewProjectionMatrix, e->orMatrix);
+
+	if ((e->flags & RF_WEAPONMODEL) && (r_leftHand->value == 1.0F)) { // Flip player weapon
+		Mat4_Scale(e->orMatrix, 1.0, -1.0, 1.0);
+		GL_CullFace(GL_BACK);
+	}
 }
 
 void R_SetupOrthoMatrix(void) {

@@ -113,6 +113,7 @@ cvar_t *cl_bigHud;
 cvar_t *cl_hudScale;
 cvar_t *cl_fontScale;
 cvar_t *cl_itemsBobbing;
+cvar_t *cl_drawPlayerGun;
 
 client_static_t cls;
 client_state_t cl;
@@ -1584,6 +1585,7 @@ void CL_InitLocal (void) {
 	cl_hudScale = Cvar_Get ("cl_hudScale", "0.7", CVAR_ARCHIVE);
 	cl_fontScale = Cvar_Get ("cl_fontScale", "2", 0);
 	cl_itemsBobbing = Cvar_Get ("cl_itemsBobbing", "1", CVAR_ARCHIVE);
+	cl_drawPlayerGun = Cvar_Get("cl_drawPlayerGun", "1", CVAR_ARCHIVE);
 
 	if (cl_fontScale->value < 1)
 		Cvar_Set ("cl_fontScale", "1");

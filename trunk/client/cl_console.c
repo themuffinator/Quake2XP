@@ -623,7 +623,7 @@ void Con_DrawConsole (float frac) {
 	for (x = 0; x < strlen (version); x++)
 		version[x] += 128;
 
-	Draw_StringScaled (viddef.width - 185 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version);
+	Draw_StringScaled (viddef.width - 200 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version);
 
 	// draw the text
 	con.vislines = lines;

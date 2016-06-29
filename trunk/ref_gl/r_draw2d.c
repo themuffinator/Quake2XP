@@ -145,12 +145,12 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		num = *s++;
 
 		if ((num & 127) == 32) {        // space
-			px += 8;
+			px += 8 * scale_x;
 			continue;
 		}
 
 		if (y <= -8) {                  // totally off screen
-			px += 8;
+			px += 8 * scale_x;
 			continue;
 		}
 

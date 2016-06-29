@@ -682,7 +682,6 @@
     <ClInclude Include="server\server.h" />
     <ClInclude Include="qcommon\unzip.h" />
     <ClInclude Include="client\vid.h" />
-    <ClInclude Include="win32\winquake.h" />
     <ClInclude Include="ref_gl\anormtab.h" />
     <ClInclude Include="ref_gl\glext.h" />
     <ClInclude Include="win32\glw_win.h" />
@@ -696,6 +695,7 @@
     <ClInclude Include="ref_gl\ImageLib\ilut.h" />
     <ClInclude Include="client\snd_loc.h" />
     <ClInclude Include="client\sound.h" />
+    <ClInclude Include="win32\winquake.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\baseq2\glsl\blurStar.fp" />

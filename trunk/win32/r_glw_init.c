@@ -31,17 +31,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 **
 */
 
-#include <assert.h>
-#include <windows.h>
 #include "../ref_gl/r_local.h"
-#include "glw_win.h"
-#include "winquake.h"
-#include <intrin.h>
+
 
 #ifdef WIN32
-// Enable NVIDIA High Performance Graphics while using Integrated Graphics.
-__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-#endif 
+// Enable High Performance Graphics while using Integrated Graphics.
+
+__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;        // Nvidia
+__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;  // AMD
+
+#endif
+
+#define	WINDOW_STYLE	(WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_VISIBLE)
 
 qboolean GLimp_InitGL (void);
 
@@ -499,7 +500,7 @@ void GLimp_CpuID(void)
  
         if(nFeatureInfo || SSE3 || MMX || SSE || SSE2 || SSE4 || EM64T){
        		
-		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[7]);
+		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[0]);
 		HTT = GetCpuCoresThreads();
 		float GHz = (float)dwCPUSpeed * 0.001;
 		Com_Printf ("CPU Speed: ~"S_COLOR_GREEN"%.3f"S_COLOR_WHITE" GHz\n", GHz);
