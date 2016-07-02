@@ -442,8 +442,6 @@ extern cvar_t *cl_thirdPersonAngle;
 extern cvar_t *cl_thirdPersonRange;
 extern cvar_t *cl_blood;
 
-extern cvar_t *r_player_shadow;
-
 extern cvar_t *music_source;
 extern cvar_t *music_volume;
 

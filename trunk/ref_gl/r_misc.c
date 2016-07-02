@@ -919,6 +919,43 @@ void GL_ScreenShot_f (void) {
 	Com_DPrintf ("Screenshot time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);
 }
 
+void GL_LevelShot_f(void) {
+	char	picname[80], checkname[MAX_OSPATH], shortName[MAX_QPATH];
+	int		image = 0;
+	ILuint	ImagesToSave[1];
+
+	// Create the scrnshots levelshots if it doesn't exist
+	Com_sprintf(checkname, sizeof(checkname), "%s/levelshots", FS_Gamedir());
+	Sys_Mkdir(checkname);
+
+	strcpy(shortName, r_worldmodel->name + 5); // skip "maps/"
+	shortName[strlen(shortName) - 4] = 0; // skip ".bsp"
+
+	Com_sprintf(picname, sizeof(picname), "%s.%s", shortName, "jpg");
+	Com_sprintf(checkname, sizeof(checkname), "%s/levelshots/%s", FS_Gamedir(), picname);
+
+	if ((r_screenShotJpegQuality->value >= 99) || (r_screenShotJpegQuality->value <= 0))
+		Cvar_SetValue("r_screenShotJpegQuality", 99);
+
+	ilHint(IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
+	ilSetInteger(IL_JPG_QUALITY, (int)r_screenShotJpegQuality->value);
+
+	ilGenImages(1, ImagesToSave);
+	ilBindImage(ImagesToSave[0]);
+
+	if (ilutGLScreen()) {
+		iluGammaCorrect(r_screenShotGamma->value);
+		iluContrast(r_screenShotContrast->value);
+		ilSave(IL_JPG, checkname);
+	}
+
+
+	ilDeleteImages(1, ImagesToSave);
+
+	// Done!
+	Com_Printf("Wrote level shot %s\n", picname);
+
+}
 
 /*
 ** GL_Strings_f

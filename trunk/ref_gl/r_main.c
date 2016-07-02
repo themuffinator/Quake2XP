@@ -1248,6 +1248,7 @@ vid_ref->modified = qtrue;
 
 void R_ChangeLightColor_f(void) ;
 void R_GLSLinfo_f(void);
+void GL_LevelShot_f(void);
 
 void R_RegisterCvars(void)
 {
@@ -1367,6 +1368,7 @@ void R_RegisterCvars(void)
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
+	Cmd_AddCommand("levelshot",			GL_LevelShot_f);
 	Cmd_AddCommand("modellist",			Mod_Modellist_f);
 	Cmd_AddCommand("openglInfo",		GL_Strings_f);
 	Cmd_AddCommand("autoLightsStats",	AutoLightsStatsList_f);
@@ -2022,6 +2024,7 @@ void R_Shutdown(void)
 {
 	Cmd_RemoveCommand("modellist");
 	Cmd_RemoveCommand("screenshot");
+	Cmd_RemoveCommand("levelshot");
 	Cmd_RemoveCommand("imagelist");
 	Cmd_RemoveCommand("autoLightsStats");
 	Cmd_RemoveCommand("dumpEntityString");

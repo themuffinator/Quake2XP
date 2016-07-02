@@ -340,12 +340,32 @@ void Draw_StretchPic(int x, int y, int w, int h, char *pic)
 }
 
 float loadScreenColorFade;
+
+#define WIDTH_FHD 1920.0
+#define HEIGHT_FHD 1080.0
+#define WIDE_SCREEN_16x9  WIDTH_FHD / HEIGHT_FHD
+
 void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 {
+	float offsX, offsY;
+	float woh = (float)vid.width / (float)vid.height;
+
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_LoadingScreen2\n");
 		return;
 	}
+
+		if (woh < WIDE_SCREEN_16x9){  // quad screen
+			offsX = (WIDTH_FHD - (HEIGHT_FHD * woh)) / (WIDTH_FHD * 2.0);
+			offsY = 0;
+		}
+		else if (woh > WIDE_SCREEN_16x9){   // super wide screen (21 x 9)
+			offsX = 0;
+			offsY = (HEIGHT_FHD - (WIDTH_FHD / woh)) / (HEIGHT_FHD * 2.0);
+		}
+		else{
+			offsX = offsY = 0;
+		}
 
 		GL_BindProgram(loadingProgram, 0);
 
@@ -361,10 +381,10 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 
 		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
 
-		VA_SetElem2(texCoord[0], gl->sl, gl->tl);
-		VA_SetElem2(texCoord[1], gl->sh, gl->tl);
-		VA_SetElem2(texCoord[2], gl->sh, gl->th);
-		VA_SetElem2(texCoord[3], gl->sl, gl->th);
+		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
+		VA_SetElem2(texCoord[1], gl->sh - offsX, gl->tl + offsY);
+		VA_SetElem2(texCoord[2], gl->sh - offsX, gl->th - offsY);
+		VA_SetElem2(texCoord[3], gl->sl + offsX, gl->th - offsY);
 
 		VA_SetElem2(vertCoord[0], x, y);
 		VA_SetElem2(vertCoord[1], x + w, y);
@@ -723,7 +743,7 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
-
+	
 	GL_BindProgram(genericProgram, 0);
 	qglUniform1i(gen_attribColors, 0);
 	qglUniform1i(gen_attribConsole, 0);

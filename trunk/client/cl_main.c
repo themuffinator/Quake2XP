@@ -1581,7 +1581,7 @@ void CL_InitLocal (void) {
 	cl_thirdPersonAngle = Cvar_Get ("cl_thirdPersonAngle", "30", CVAR_ARCHIVE);
 	cl_thirdPersonRange = Cvar_Get ("cl_thirdPersonRange", "50", CVAR_ARCHIVE);
 	cl_blood = Cvar_Get ("cl_blood", "1", CVAR_ARCHIVE);
-	cl_bigHud = Cvar_Get ("cl_bigHud", "1", CVAR_ARCHIVE);
+	cl_bigHud = Cvar_Get ("cl_bigHud", "0", CVAR_ARCHIVE); // work correct only for 3:4 displays
 	cl_hudScale = Cvar_Get ("cl_hudScale", "0.7", CVAR_ARCHIVE);
 	cl_fontScale = Cvar_Get ("cl_fontScale", "2", 0);
 	cl_itemsBobbing = Cvar_Get ("cl_itemsBobbing", "1", CVAR_ARCHIVE);

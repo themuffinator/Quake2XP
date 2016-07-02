@@ -1107,7 +1107,7 @@ static menulist_s s_options_console_action;
 static menulist_s s_options_fps_box;
 static menulist_s s_options_time_box;
 
-extern cvar_t *cl_bigHud;
+extern cvar_t *cl_drawhud;
 extern cvar_t *cl_3dhud;
 extern cvar_t *m_inversion;
 
@@ -1328,7 +1328,7 @@ static menulist_s s_aoptions_blood_box;
 static menulist_s s_aoptions_decals_box;
 static menulist_s s_aoptions_3dcam_box;
 
-static menulist_s s_aoptions_bigHud_box;
+static menulist_s s_aoptions_drawHud_box;
 static menulist_s s_aoptions_3dhud_box;
 
 static void UpdateRailCoreRedFunc (void *unused) {
@@ -1376,7 +1376,7 @@ static void Update3dCamFunc (void *unused) {
 }
 
 static void UpdateHud (void *unused) {
-	Cvar_SetValue ("cl_bigHud", s_aoptions_bigHud_box.curvalue);
+	Cvar_SetValue ("cl_drawhud", s_aoptions_drawHud_box.curvalue);
 }
 
 static void Update3dHud (void *unused) {
@@ -1488,13 +1488,13 @@ void M_AdvancedInit (void) {
 	s_aoptions_3dcam_box.curvalue = Cvar_VariableValue ("cl_thirdPepson");
 	menu_y += 20 * cl_fontScale->value;
 
-	s_aoptions_bigHud_box.generic.type = MTYPE_SPINCONTROL;
-	s_aoptions_bigHud_box.generic.x = 0;
-	s_aoptions_bigHud_box.generic.y = menu_y;
-	s_aoptions_bigHud_box.generic.name = "Draw big hud";
-	s_aoptions_bigHud_box.generic.callback = UpdateHud;
-	s_aoptions_bigHud_box.itemnames = yesno_names;
-	s_aoptions_bigHud_box.curvalue = Cvar_VariableValue ("cl_bigHud");
+	s_aoptions_drawHud_box.generic.type = MTYPE_SPINCONTROL;
+	s_aoptions_drawHud_box.generic.x = 0;
+	s_aoptions_drawHud_box.generic.y = menu_y;
+	s_aoptions_drawHud_box.generic.name = "Draw Hud";
+	s_aoptions_drawHud_box.generic.callback = UpdateHud;
+	s_aoptions_drawHud_box.itemnames = yesno_names;
+	s_aoptions_drawHud_box.curvalue = Cvar_VariableValue ("cl_drawhud");
 	menu_y += 10 * cl_fontScale->value;
 
 	s_aoptions_hudScale_slider.generic.type = MTYPE_SLIDER;
@@ -1538,7 +1538,7 @@ void M_AdvancedInit (void) {
 	s_aoptions_decals_box.curvalue = cl_decals->value;
 	s_aoptions_3dcam_box.curvalue = cl_thirdPerson->value;
 
-	s_aoptions_bigHud_box.curvalue = cl_bigHud->value;
+	s_aoptions_drawHud_box.curvalue = cl_drawhud->value;
 	s_aoptions_hudScale_slider.curvalue = cl_hudScale->value * 10;
 	s_aoptions_fontScale_slider.curvalue = (cl_fontScale->value - 1) * 10;
 
@@ -1555,7 +1555,7 @@ void M_AdvancedInit (void) {
 	Menu_AddItem (&s_options_menu, (void *)&s_aoptions_decals_box);
 	Menu_AddItem (&s_options_menu, (void *)&s_aoptions_3dcam_box);
 
-	Menu_AddItem (&s_options_menu, (void *)&s_aoptions_bigHud_box);
+	Menu_AddItem (&s_options_menu, (void *)&s_aoptions_drawHud_box);
 	Menu_AddItem (&s_options_menu, (void *)&s_aoptions_hudScale_slider);
 	Menu_AddItem (&s_options_menu, (void *)&s_aoptions_fontScale_slider);
 	Menu_AddItem (&s_options_menu, (void *)&s_aoptions_3dhud_box);
