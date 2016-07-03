@@ -602,6 +602,7 @@ void R_InitPrograms (void) {
 		lightAlias_fogDensity		= qglGetUniformLocation (id, "u_fogDensity");
 		lightAlias_causticsIntens	= qglGetUniformLocation (id, "u_CausticsModulate");
 		lightAlias_isCaustics		= qglGetUniformLocation (id, "u_isCaustics");
+		lightAlias_isRgh			= qglGetUniformLocation (id, "u_isRgh");
 		lightAlias_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
 		lightAlias_specularScale	= qglGetUniformLocation (id, "u_specularScale");
 		lightAlias_ambient			= qglGetUniformLocation (id, "u_isAmbient");

@@ -61,43 +61,33 @@ self-extracting archives (i.e. can be extracted without Wine).
   Available at ftp://ftp.idsoftware.com/idstuff/quake2/ or any mirror.
   After extracting it you should have baseq2/pak1.pak and baseq2/pak2.pak
 
-- Quake2XP baseq2/ data
-  Available at http://sourceforge.net/projects/quake2xp/files/media/baseq2
-  You should put all the .pkx files under the baseq2 directory
+- Quake2XP game data
+  Available at https://yadi.sk/d/RP5yRSM-sx5ck
+  You should put all the .pkx files in the baseq2/xatrix/rogue directory
 
 - Quake2XP shaders
   For the moment, shaders must be installed manually. Download with:
   $ svn checkout svn://svn.code.sf.net/p/quake2xp/code/glsl glsl
   Then may copy the "glsl" folder under your "baseq2/".
 
-  Alternatively, if you have "zip", a PKX can be created as:
-  $ zip -r q2xpGLSL.pkx glsl
-  And then copy the file under "baseq2/".
-
-- (optional) original CD music in Ogg format
-  Available at http://forums.steampowered.com/forums/showthread.php?t=1756937
-
-  Quake2XP expects tracks as "baseq2/music/trackNN.ogg", so renaming is
-  needed (i.e. 02.ogg -> track02.ogg). You also need to select that music
-  source in the options menu.
-
-  The original Quake II music it's included in q2xpMusic.pkx, but the
-  mentioned archive also has the music for expansions (rogue/xatrix).
+- Quake2XP relight
+  Relight must be installed manually too. Download with:
+  $ svn checkout svn://svn.code.sf.net/p/quake2xp/code/maps maps
+  for vanilla 
+  and 
+  $ svn checkout svn://svn.code.sf.net/p/quake2xp/code/mapsx mapsx
+  for xatix
 
 Expansion packs
 
 If you have the official expansion packs ("xatrix" and "rogue") copy the
 pak*.pak files and video/ folder to the corresponding directory under
 "$PREFIX/share/quake2xp" (not under baseq2/). Then start the game as:
-$ quake2xp +set game <dirname>
-
-You also need the corresponding Quake2XP data for expansions, available at:
-- http://sourceforge.net/projects/quake2xp/files/media/xatrix
-- http://sourceforge.net/projects/quake2xp/files/media/rogue
-
-The soundtracks for these expansions are included in the music pack mentioned
-before, and they should be copied into "dirname/music". Remember to rename the
-files as appropiate.
+$ quake2xp +set game xatrix
+for "the reconing" mp
+and
+$ quake2xp +set compatibility 1 +set game rogue
+or other mod folder
 
 Additional mods
 
@@ -108,11 +98,6 @@ you have the source code, but keep in mind it's different for x86 and x86_64.
 
 If the mod already includes one appropiate for your architecture, just rename
 it to game.so and start Quake2XP as mentioned before for expansion packs.
-
-Additional levels
-
-You can find more SP and MP maps here (which don't require a new mod):
-http://www-personal.umich.edu/~jimw/q2/
 
 ==============================================================================
 3. Notes

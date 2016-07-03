@@ -993,6 +993,7 @@ uint lightAlias_fog;
 uint lightAlias_fogDensity;
 uint lightAlias_causticsIntens;
 uint lightAlias_isCaustics;
+uint lightAlias_isRgh;
 uint lightAlias_specularScale;
 uint lightAlias_ambient;
 uint lightAlias_attenMatrix;

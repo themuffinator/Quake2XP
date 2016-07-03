@@ -2316,7 +2316,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		strcat(gl, "_rgh.tga");
 		mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
 
-		if (!mod->skins_normal[i]) {
+		if (!mod->skins_roughness[i]) {
 			strcpy(gl, pname);
 			gl[strlen(gl) - 4] = 0;
 			strcat(gl, "_rgh.dds");
@@ -2324,7 +2324,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		}
 
 		if (!mod->skins_roughness[i])
-			mod->skins_roughness[i] = pname;
+			mod->skins_roughness[i] = r_notexture;
 	}
 
 	// Calculate texcoords for triangles (for compute tangents and binormals)
@@ -2554,7 +2554,7 @@ struct model_s *R_RegisterModel(char *name) {
 				strcat(gl, "_rgh.tga");
 				mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
 
-				if (!mod->skins_normal[i]) {
+				if (!mod->skins_roughness[i]) {
 					strcpy(gl, pname);
 					gl[strlen(gl) - 4] = 0;
 					strcat(gl, "_rgh.dds");
@@ -2563,7 +2563,7 @@ struct model_s *R_RegisterModel(char *name) {
 
 
 				if (!mod->skins_roughness[i])
-					mod->skins_roughness[i] = pname;
+					mod->skins_roughness[i] = r_notexture;
 
 			}
 			//PGM

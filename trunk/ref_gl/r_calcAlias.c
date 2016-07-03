@@ -149,12 +149,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		if (!r_skipStaticLights->value)
-			VectorSet(lightColor, 0.1, 0.1, 0.1);
-		else
-			VectorSet(lightColor, 0.5, 0.5, 0.5);
-	}
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		VectorSet(lightColor, 0.22, 0.22, 0.22);
+	
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
 		VectorSet (lightColor, 1, 1, 1);
@@ -423,7 +420,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 					binormalArray[3 * MAX_TRIANGLES],
 					vertexArray[3 * MAX_TRIANGLES],
 					maxs;
-	image_t			*skin, *skinNormalmap;
+	image_t			*skin, *skinNormalmap, *rgh;
 	int				index2, oldindex2;
 	qboolean		inWater;
 
@@ -488,6 +485,8 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	}
 	if (!skinNormalmap)
 		skinNormalmap = r_defBump;
+	
+	rgh = currentmodel->skins_roughness[currententity->skinnum];
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 
@@ -536,6 +535,13 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	GL_MBind (GL_TEXTURE1_ARB, skin->texnum);
 	GL_MBind (GL_TEXTURE2_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	GL_MBindCube (GL_TEXTURE3_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
+	
+	if (rgh == r_notexture)
+		qglUniform1i(lightAlias_isRgh, 0);
+	else {
+		qglUniform1i(lightAlias_isRgh, 1);
+		GL_MBind(GL_TEXTURE4_ARB, rgh->texnum);
+	}
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
