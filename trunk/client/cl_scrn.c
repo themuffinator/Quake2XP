@@ -404,10 +404,11 @@ void SCR_DrawLoading (void) {
 		mapname = cl.configstrings[CS_NAME];
 
 		Set_FontShader (qtrue);
-		RE_SetColor (colorGreen);
+		RE_SetColor (colorBlack);
 		
 		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 8;
-
+		Draw_StringScaled(center - 3, fontscale * scaled + 3, fontscale * 2, fontscale * 2, mapname);
+		RE_SetColor(colorGreen);
 		Draw_StringScaled (center, fontscale * scaled, fontscale * 2, fontscale * 2, mapname);
 		
 		RE_SetColor (colorYellow);

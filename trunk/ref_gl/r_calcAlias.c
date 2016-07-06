@@ -487,6 +487,8 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 		skinNormalmap = r_defBump;
 	
 	rgh = currentmodel->skins_roughness[currententity->skinnum];
+	if (!rgh)
+		rgh = r_notexture;
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 
