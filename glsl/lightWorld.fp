@@ -2,6 +2,7 @@ layout (binding = 0) uniform sampler2D		u_Diffuse;
 layout (binding = 1) uniform sampler2D		u_NormalMap;
 layout (binding = 2) uniform samplerCube	u_CubeFilterMap;
 layout (binding = 3) uniform sampler2D		u_Caustics;
+layout (binding = 4) uniform sampler2D		u_RghMap;
 
 uniform float	u_ColorModulate;
 uniform float	u_specularScale;
@@ -12,6 +13,7 @@ uniform float	u_fogDensity;
 uniform float	u_CausticsModulate; 
 uniform int		u_isCaustics;
 uniform int		u_isAmbient;
+uniform int		u_isRgh;
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;
@@ -61,10 +63,17 @@ void main (void) {
 
 	if(u_isAmbient == 0) {
 		
+		float roughness;
 		float specular = normalMap.a * u_specularScale;
-		float roughness = 1.0 - diffuseMap.r;
-		roughness = clamp(roughness, 0.0, 1.0);
     
+		if(u_isRgh == 1){
+			roughness = texture(u_RghMap, P).r * 0.666; // HAIL SATAN!
+		}else
+		{
+		roughness = 1.0 - diffuseMap.r;
+		roughness = clamp(roughness, 0.0, 1.0);
+		}
+
 		vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalize(normalMap.xyz), L, V);
 		vec3 brdfColor = brdf * u_LightColor.rgb;
           
