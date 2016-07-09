@@ -205,6 +205,8 @@ Search shader texts for '#include' directives
 and insert included file contents.
 ==============
 */
+void *Z_Malloc(int size);
+
 char *R_LoadIncludes (char *glsl) {
 	char filename[MAX_QPATH];
 	char *token, *p, *oldp, *oldglsl;
@@ -233,7 +235,7 @@ char *R_LoadIncludes (char *glsl) {
 				Com_Error (ERR_FATAL, "Couldn't load %s", filename);
 
 			oldglsl = glsl;
-			glsl = (char*)Q_malloc (l + li + 2);
+			glsl = (char*)Q_malloc(l + li + 2);
 			memset (glsl, 0, l + li + 2);
 			Q_memcpy (glsl, oldglsl, oldp - oldglsl);
 			Q_strcat (glsl, "\n", l + li + 1);
@@ -560,6 +562,7 @@ void R_InitPrograms (void) {
 		lightWorld_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
 		lightWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
 		lightWorld_mvp				= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
+		lightWorld_isRgh			= qglGetUniformLocation (id, "u_isRgh");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

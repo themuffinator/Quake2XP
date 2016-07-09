@@ -929,25 +929,34 @@ void Mod_LoadTexinfo(lump_t * l) {
 			out->envTexture = GL_FindImage(name, it_wall);
 
 			if (!out->envTexture) {
-				Com_sprintf(name, sizeof(name), "overrides/%s_env.jpg", purename);
+				Com_sprintf(name, sizeof(name), "textures/%s_env.tga", in->texture);
 				out->envTexture = GL_FindImage(name, it_wall);
 
 				if (!out->envTexture) {
-					Com_sprintf(name, sizeof(name), "textures/%s_env.tga", in->texture);
+					Com_sprintf(name, sizeof(name), "textures/%s_env.dds", in->texture);
 					out->envTexture = GL_FindImage(name, it_wall);
 
-					if (!out->envTexture) {
-						Com_sprintf(name, sizeof(name), "textures/%s_env.dds", in->texture);
-						out->envTexture = GL_FindImage(name, it_wall);
+				}
+			}
+		}
 
-						if (!out->envTexture) {
-							Com_sprintf(name, sizeof(name), "textures/%s_env.jpg", in->texture);
-							out->envTexture = GL_FindImage(name, it_wall);
+		Com_sprintf(name, sizeof(name), "overrides/%s_rgh.tga", purename);
+		out->rghMap = GL_FindImage(name, it_wall);
 
-							if (!out->envTexture)
-								out->envTexture = r_notexture;
-						}
-					}
+		if (!out->rghMap) {
+			Com_sprintf(name, sizeof(name), "overrides/%s_rgh.dds", purename);
+			out->rghMap = GL_FindImage(name, it_wall);
+
+			if (!out->rghMap) {
+				Com_sprintf(name, sizeof(name), "textures/%s_rgh.tga", in->texture);
+				out->rghMap = GL_FindImage(name, it_wall);
+
+				if (!out->rghMap) {
+					Com_sprintf(name, sizeof(name), "textures/%s_rgh.dds", in->texture);
+					out->rghMap = GL_FindImage(name, it_wall);
+
+						if (!out->rghMap)
+							out->rghMap = r_notexture;
 				}
 			}
 		}
@@ -2587,6 +2596,9 @@ struct model_s *R_RegisterModel(char *name) {
 
 				if (mod->texInfo[i].envTexture != NULL)
 					mod->texInfo[i].envTexture->registration_sequence = registration_sequence;
+
+				if (mod->texInfo[i].rghMap != NULL)
+					mod->texInfo[i].rghMap->registration_sequence = registration_sequence;
 			}
 		}
 	}

@@ -974,6 +974,7 @@ uint lightWorld_attenMatrix;
 uint lightWorld_cubeMatrix;
 uint lightWorld_scroll;
 uint lightWorld_mvp;
+uint lightWorld_isRgh;
 
 uint ambientAlias_ssao;
 uint ambientAlias_colorModulate;

@@ -149,11 +149,17 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		VectorSet(lightColor, 0.22, 0.22, 0.22);
-	
+	if (r_skipStaticLights->value) {
 
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+			VectorSet(lightColor, 0.75, 0.75, 0.75);
+	}
+	else {
+		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+			VectorSet(lightColor, 0.2, 0.2, 0.2);
+	}
+
+	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
 		VectorSet (lightColor, 1, 1, 1);
 
 	// select skin

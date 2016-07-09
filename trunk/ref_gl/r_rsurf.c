@@ -124,7 +124,23 @@ image_t *R_TextureAnimationEnv(mtexInfo_t * tex)
 		c--;
 	}
 
-	return tex->normalmap;
+	return tex->envTexture;
+}
+
+image_t *R_TextureAnimationRgh(mtexInfo_t * tex)
+{
+	int c;
+
+	if (!tex->next)
+		return tex->rghMap;
+
+	c = currententity->frame % tex->numFrames;
+	while (c) {
+		tex = tex->next;
+		c--;
+	}
+
+	return tex->rghMap;
 }
 
 /*
@@ -448,17 +464,25 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
 	if (newBatch)
 	{
-		image_t		*image, *normalMap;
+		image_t		*image, *normalMap, *rghMap;
 		image		= R_TextureAnimation		(surf->texInfo);
 		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
+		rghMap		= R_TextureAnimationRgh		(surf->texInfo);
 
 		qglUniform1f(lightWorld_specularScale, image->specularScale ? image->specularScale : r_specularScale->value);
-		
+
+		if (rghMap == r_notexture) {
+			qglUniform1i(lightWorld_isRgh, 0);
+		}
+		else {
+			qglUniform1i(lightWorld_isRgh, 1);
+			GL_MBind(GL_TEXTURE4_ARB, rghMap->texnum);
+		}
+
 		if (bmodel){
-			if (caustics && currentShadowLight->castCaustics)
-			{
+			if (caustics && currentShadowLight->castCaustics){
 				qglUniform1i(lightWorld_caustics, 1);
-				GL_MBind(GL_TEXTURE4_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+				GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 			}
 			else
 				qglUniform1i(lightWorld_caustics, 0);
