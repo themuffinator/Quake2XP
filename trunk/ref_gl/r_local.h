@@ -969,6 +969,7 @@ uint lightWorld_fogDensity;
 uint lightWorld_causticsIntens;
 uint lightWorld_caustics;
 uint lightWorld_specularScale;
+uint lightWorld_roughnessScale;
 uint lightWorld_ambient;
 uint lightWorld_attenMatrix;
 uint lightWorld_cubeMatrix;

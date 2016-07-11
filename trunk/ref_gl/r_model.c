@@ -768,6 +768,10 @@ void Mod_LoadTextureFx(image_t *tex, char *s) {
 			tex->SpecularExp = atof(COM_Parse(&s));
 			continue;
 		}
+		if (!Q_strcasecmp(token, "roughnessScale")) {
+			tex->rghScale = atof(COM_Parse(&s));
+			continue;
+		}
 		if (!Q_strcasecmp(token, "envScale")) {
 			tex->envScale = atof(COM_Parse(&s));
 			continue;

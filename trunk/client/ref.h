@@ -295,9 +295,10 @@ typedef struct image_s {
 	index_t		*index;
 	uint		target, id;
 	float		parallaxScale,
-		specularScale,
-		SpecularExp,
-		envScale;
+				specularScale,
+				SpecularExp,
+				envScale, 
+				rghScale;
 
 } image_t;
 

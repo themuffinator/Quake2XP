@@ -563,6 +563,7 @@ void R_InitPrograms (void) {
 		lightWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
 		lightWorld_mvp				= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
 		lightWorld_isRgh			= qglGetUniformLocation (id, "u_isRgh");
+		lightWorld_roughnessScale	= qglGetUniformLocation (id, "u_roughnessScale");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
