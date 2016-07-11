@@ -6,6 +6,7 @@ layout (binding = 4) uniform sampler2D		u_RghMap;
 
 uniform float	u_ColorModulate;
 uniform float	u_specularScale;
+uniform float	u_roughnessScale;
 uniform vec4 	u_LightColor;
 uniform float 	u_LightRadius;
 uniform int		u_fog;
@@ -67,7 +68,7 @@ void main (void) {
 		float specular = normalMap.a * u_specularScale;
     
 		if(u_isRgh == 1){
-			roughness = texture(u_RghMap, P).r * 0.666; // HAIL SATAN!
+			roughness = texture(u_RghMap, P).r * u_roughnessScale;
 		}else
 		{
 		roughness = 1.0 - diffuseMap.r;
