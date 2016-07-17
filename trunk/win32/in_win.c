@@ -769,11 +769,11 @@ void IN_JoyMove(usercmd_t *cmd)
 					// only absolute control support here (joy_advanced is false)
 					if (m_pitch->value < 0.0)
 					{
-						cl.viewangles[PITCH] -= (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_pitchspeed->value;
+						cl.viewangles_PITCH -= (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_pitchspeed->value;
 					}
 					else
 					{
-						cl.viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_pitchspeed->value;
+						cl.viewangles_PITCH += (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_pitchspeed->value;
 					}
 				}
 			}
@@ -817,11 +817,11 @@ void IN_JoyMove(usercmd_t *cmd)
 				{
 					if (dwControlMap[i] == JOY_ABSOLUTE_AXIS)
 					{
-						cl.viewangles[YAW] += (fAxisValue * joy_yawsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_yawspeed->value;
+						cl.viewangles_YAW += (fAxisValue * joy_yawsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_yawspeed->value;
 					}
 					else
 					{
-						cl.viewangles[YAW] += (fAxisValue * joy_yawsensitivity->value) * speed * 180.0;
+						cl.viewangles_YAW += (fAxisValue * joy_yawsensitivity->value) * speed * 180.0;
 					}
 
 				}
@@ -836,11 +836,11 @@ void IN_JoyMove(usercmd_t *cmd)
 					// pitch movement detected and pitch movement desired by user
 					if (dwControlMap[i] == JOY_ABSOLUTE_AXIS)
 					{
-						cl.viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_pitchspeed->value;
+						cl.viewangles_PITCH += (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * aspeed * cl_pitchspeed->value;
 					}
 					else
 					{
-						cl.viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * speed * 180.0;
+						cl.viewangles_PITCH += (fAxisValue * joy_pitchsensitivity->value * (cl.refdef.fov_x / 90.0)) * speed * 180.0;
 
 					}
 				}

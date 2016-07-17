@@ -262,12 +262,14 @@ void LoadHudEnts (void) {
 		R_RegisterModel ("models/items/dopple/tris.md2");
 }
 
+extern cvar_t	*cl_hudModelScale;
+
 void SCR_DrawHudModel (float x, float y, struct model_s *model) {
-	refdef_t refdef;
-	vec3_t center, rad;
-	float scale, hud_sx, hud_sy;
-	float screenAspect, scaledHeight;
-	entity_t entity;
+	refdef_t	refdef;
+	vec3_t		center, rad;
+	float		scale, hud_sx, hud_sy;
+	float		screenAspect, scaledHeight;
+	entity_t	entity;
 
 	if (cls.state != ca_active || !cl.refresh_prepped)
 		return;
@@ -289,10 +291,10 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	R_ModelRadius (model, rad);
 	R_ModelCenter (model, center);
 
-	refdef.x = x;
-	refdef.y = y;
-	refdef.width = 24 * hud_sx;
-	refdef.height = 24 * hud_sy;
+	refdef.x = (int)x + cl_hudModelScale->value;
+	refdef.y = (int)y - cl_hudModelScale->value * hud_sy;
+	refdef.width = (24 + cl_hudModelScale->value) * hud_sx;
+	refdef.height = (24 + cl_hudModelScale->value) * hud_sy;
 	refdef.fov_x = 43;
 	refdef.fov_y = 43;
 	refdef.time = cls.realtime*0.001;
@@ -721,7 +723,7 @@ void SCR_ExecuteLayoutString3d (char *s) {
 			if (cl.configstrings[CS_IMAGES + value]) {
 
 				SCR_AddDirtyPoint (x, y);
-				SCR_AddDirtyPoint (x + 23 * hud_sx, y + 23 * hud_sy);
+				SCR_AddDirtyPoint (x + 24 * hud_sx, y + 24 * hud_sy);
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "p_mask"))
@@ -729,7 +731,7 @@ void SCR_ExecuteLayoutString3d (char *s) {
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "i_help"))
-					SCR_DrawHudModel (x, y, hudmodel.cl_hud_comp);
+					SCR_DrawHudModel (x, y - cl_hudModelScale->value * hud_sy, hudmodel.cl_hud_comp);
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "i_health3"))

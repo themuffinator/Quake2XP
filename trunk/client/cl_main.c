@@ -113,7 +113,7 @@ cvar_t *cl_bigHud;
 cvar_t *cl_hudScale;
 cvar_t *cl_fontScale;
 cvar_t *cl_itemsBobbing;
-cvar_t *cl_drawPlayerGun;
+cvar_t *cl_hudModelScale;
 
 client_static_t cls;
 client_state_t cl;
@@ -1582,10 +1582,10 @@ void CL_InitLocal (void) {
 	cl_thirdPersonRange = Cvar_Get ("cl_thirdPersonRange", "50", CVAR_ARCHIVE);
 	cl_blood = Cvar_Get ("cl_blood", "1", CVAR_ARCHIVE);
 	cl_bigHud = Cvar_Get ("cl_bigHud", "0", CVAR_ARCHIVE); // work correct only for 3:4 displays
-	cl_hudScale = Cvar_Get ("cl_hudScale", "0.7", CVAR_ARCHIVE);
+	cl_hudScale = Cvar_Get ("cl_hudScale", "0.8", CVAR_ARCHIVE);
 	cl_fontScale = Cvar_Get ("cl_fontScale", "2", 0);
 	cl_itemsBobbing = Cvar_Get ("cl_itemsBobbing", "1", CVAR_ARCHIVE);
-	cl_drawPlayerGun = Cvar_Get("cl_drawPlayerGun", "1", CVAR_ARCHIVE);
+	cl_hudModelScale = Cvar_Get("cl_hudModelScale", "5", CVAR_ARCHIVE);;
 
 	if (cl_fontScale->value < 1)
 		Cvar_Set ("cl_fontScale", "1");

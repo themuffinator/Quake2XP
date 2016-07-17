@@ -156,7 +156,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	}
 	else {
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.2, 0.2, 0.2);
+			VectorSet(lightColor, 0.33, 0.33, 0.33);
 	}
 
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES)

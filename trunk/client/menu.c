@@ -4225,9 +4225,9 @@ void PlayerConfig_MenuDraw (void) {
 	refdef.x = viddef.width / 2 + (cl_fontScale->value - 1) * 72;
 	x2 = 320 * (cl_fontScale->value - 1);
 	refdef.y = viddef.height / 2 - 72 * cl_fontScale->value;
-	refdef.width = 171 * cl_fontScale->value;
-	refdef.height = 200 * cl_fontScale->value;
-	refdef.fov_x = 40;
+	refdef.width = 240 * cl_fontScale->value;
+	refdef.height = 335 * cl_fontScale->value;
+	refdef.fov_x = 35;
 	refdef.fov_y = CalcFov (refdef.fov_x, refdef.width, refdef.height);
 	refdef.time = cls.realtime * 0.001;
 
@@ -4278,7 +4278,7 @@ void PlayerConfig_MenuDraw (void) {
 			entity[1].bump = currentPlayerWeapon->skins_normal[0];
 		}
 		else {
-			Com_sprintf(scratch, sizeof(scratch), "players/%s/weapon.md2", s_pmi[s_player_model_box.curvalue].directory); //force default player weapon
+			Com_sprintf(scratch, sizeof(scratch), "players/%s/w_sshotgun.md2", s_pmi[s_player_model_box.curvalue].directory); //force default player weapon
 			entity[1].model = R_RegisterModel (scratch);
 			entity[1].skin = R_RegisterSkin(scratch);
 			entity[1].bump = R_RegisterPlayerBump(scratch);
