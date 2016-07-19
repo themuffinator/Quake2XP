@@ -22,9 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-static float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
-#include "anorms.h"
+static float	r_avertexnormals[NUMVERTEXNORMALS][3] = { 
+#include "anorms.h" 
 };
+
 vec3_t	tempVertexArray[MAX_VERTICES * 4];
 
 
@@ -123,17 +124,16 @@ void GL_DrawAliasFrameLerpWeapon (dmdl_t *paliashdr) {
 }
 
 void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
-	vec3_t		vertexArray[3 * MAX_TRIANGLES];
-	vec4_t		colorArray[4 * MAX_TRIANGLES];
-	int			index_xyz;
-	int			i, j, jj = 0;
-	dtriangle_t	*tris;
-	image_t		*skin, *skinNormalmap, *glowskin;
-	float		alphaShift, alpha;
-	unsigned	defBits = 0;
-	vec3_t		normalArray[3 * MAX_TRIANGLES];
-	float		backlerp, frontlerp;
-	int			index2, oldindex2;
+	vec3_t			vertexArray[3 * MAX_TRIANGLES];
+	vec4_t			colorArray[4 * MAX_TRIANGLES];
+	int				index_xyz;
+	int				i, j, jj = 0;
+	dtriangle_t		*tris;
+	image_t			*skin, *skinNormalmap, *glowskin;
+	float			alphaShift, alpha;
+	vec3_t			normalArray[3 * MAX_TRIANGLES];
+	float			backlerp, frontlerp;
+	int				index2, oldindex2;
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*verts, *oldverts;
 
@@ -253,7 +253,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	}
 
 	// setup program
-	GL_BindProgram (aliasAmbientProgram, defBits);
+	GL_BindProgram (aliasAmbientProgram, 0);
 
 	if (currentmodel->envMap)
 		qglUniform1i (ambientAlias_isEnvMaping, 1);

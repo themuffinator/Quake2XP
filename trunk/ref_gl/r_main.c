@@ -1605,6 +1605,8 @@ int R_Init(void *hinstance, void *hWnd)
 	}
 
 	gl_state.texture_compression_bptc = qfalse;
+	gl_state.texture_compression_dxt = qfalse;
+
 	if (IsExtensionSupported("GL_ARB_texture_compression_bptc"))
 		if (!r_textureCompression->value) {
 			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_compression_bptc\n");
@@ -1626,10 +1628,10 @@ int R_Init(void *hinstance, void *hWnd)
 					Com_Printf(S_COLOR_YELLOW"...ignoring GL_EXT_texture_compression_s3tc\n");
 					gl_state.texture_compression_dxt = qfalse;
 				}
-		}
-		else {
-			Com_Printf("...using GL_EXT_texture_compression_s3tc\n");
-			gl_state.texture_compression_dxt = qtrue;
+				else {
+					Com_Printf("...using GL_EXT_texture_compression_s3tc\n");
+					gl_state.texture_compression_dxt = qtrue;
+				}
 		}
 
 	if (IsExtensionSupported("GL_ARB_texture_cube_map"))
@@ -1864,39 +1866,54 @@ int R_Init(void *hinstance, void *hWnd)
 	}
 
 	if (IsExtensionSupported("GL_ARB_shading_language_100"))
-	{
-		if (IsExtensionSupported("GL_ARB_fragment_shader"))
-		{
-		Com_Printf("...using GL_ARB_fragment_shader\n");
+		Com_Printf("...using GL_ARB_shading_language_100\n");
+	else
+		VID_Error(ERR_FATAL, "GL_ARB_shading_language_100 not found!");
 
-		if (IsExtensionSupported("GL_ARB_vertex_shader")){
-			Com_Printf("...using GL_ARB_vertex_shader\n");
+	if (IsExtensionSupported("GL_ARB_fragment_shader"))
+		Com_Printf("...using GL_ARB_fragment_shader\n");
+	else
+		VID_Error(ERR_FATAL, "GL_ARB_fragment_shader not found!");
+
+	if (IsExtensionSupported("GL_ARB_vertex_shader"))
+		Com_Printf("...using GL_ARB_vertex_shader\n");
+	else
+		VID_Error(ERR_FATAL, "GL_ARB_vertex_shader not found!");
+
+	if (IsExtensionSupported("GL_ARB_explicit_attrib_location"))
+		Com_Printf("...using GL_ARB_explicit_attrib_location\n");
+	 else
+		VID_Error(ERR_FATAL, "GL_ARB_explicit_attrib_location not found!");
 	
-	gl_state.shader5= qfalse;
+	if (IsExtensionSupported("GL_ARB_explicit_uniform_location"))
+		Com_Printf("...using GL_ARB_explicit_uniform_location\n");
+	 else
+		VID_Error(ERR_FATAL, "GL_ARB_explicit_uniform_location not found!");
+
+	if (IsExtensionSupported("GL_ARB_separate_shader_objects"))
+		Com_Printf("...using GL_ARB_separate_shader_objects\n");
+	else
+		VID_Error(ERR_FATAL, "GL_ARB_separate_shader_objects not found!");
+
+	if (IsExtensionSupported("GL_ARB_shading_language_420pack"))
+		Com_Printf("...using GL_ARB_shading_language_420pack\n");
+	else
+		VID_Error(ERR_FATAL, "GL_ARB_shading_language_420pack not found!");
+	
+	gl_state.shader5 = qfalse;
 	gl_state.shader4 = qfalse;
-	if (IsExtensionSupported("GL_ARB_gpu_shader5")){
+	if (IsExtensionSupported("GL_ARB_gpu_shader5")) {
 		Com_Printf("...using GL_ARB_gpu_shader5\n");
-		gl_state.shader5= qtrue;
-	}else
+		gl_state.shader5 = qtrue;
+	}
+	else
 		Com_Printf(S_COLOR_RED"...GL_ARB_gpu_shader5 not found\n");
 
-	if (IsExtensionSupported("GL_EXT_gpu_shader4")){
-		Com_Printf("...using GL_EXT_gpu_shader4\n");
-		gl_state.shader4 = qtrue;
-	}
-
-	gl_state.eal = qfalse;
-	if (IsExtensionSupported("GL_ARB_explicit_attrib_location")){
-		Com_Printf("...using GL_ARB_explicit_attrib_location\n");
-		gl_state.eal = qtrue;
-	}
-	
-	if (IsExtensionSupported("GL_ARB_explicit_uniform_location")){
-		Com_Printf("...using GL_ARB_explicit_uniform_location\n");
-	}
-
-	if (IsExtensionSupported("GL_ARB_separate_shader_objects")){
-		Com_Printf("...using GL_ARB_separate_shader_objects\n");
+	if (!gl_state.shader5) {
+		if (IsExtensionSupported("GL_EXT_gpu_shader4")) {
+			Com_Printf("...using GL_EXT_gpu_shader4\n");
+			gl_state.shader4 = qtrue;
+		}
 	}
 
 	gl_state.bindlessTexture = qfalse;
@@ -1992,11 +2009,6 @@ int R_Init(void *hinstance, void *hWnd)
 	qglUniformMatrix4fv =			(PFNGLUNIFORMMATRIX4FVPROC)			qwglGetProcAddress("glUniformMatrix4fv");
 
 	R_InitPrograms();
-	}
-
-	}
-		
-	}
 			
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");

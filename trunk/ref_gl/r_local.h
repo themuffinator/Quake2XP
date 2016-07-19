@@ -661,7 +661,6 @@ typedef struct {
 	qboolean	shader5;
 	qboolean	shader4;
 	qboolean	debugOutput;
-	qboolean	eal;
 	qboolean	bindlessTexture;
 	qboolean	bufferStorage;
 

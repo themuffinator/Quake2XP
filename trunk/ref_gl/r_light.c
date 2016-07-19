@@ -562,6 +562,10 @@ void R_Paste_Light_Properties_f (void) {
 		return;
 	}
 
+	if (selectedShadowLight == currentShadowLight) {
+		Com_Printf("Copy from Mother to Mother? Lol!.\n");
+		return;
+	}
 	VectorCopy (lightClipBoard.color, selectedShadowLight->startColor);
 	VectorCopy (lightClipBoard.angles, selectedShadowLight->angles);
 	VectorCopy (lightClipBoard.speed, selectedShadowLight->speed);

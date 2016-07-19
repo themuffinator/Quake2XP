@@ -280,8 +280,6 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 	if (numVertices + nv > MAX_BATCH_SURFS)
 		return qfalse;	// force the start new batch
 
-
-
 	if (newBatch) {
 		image_t	*image, *fx, *normal;
 

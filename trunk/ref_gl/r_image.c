@@ -798,23 +798,23 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 				comp = gl_tex_alpha_format;
 		}
 	}
-	else
-	if (samples == 3){
+	else {
+		if (samples == 3) {
 
-		if (gl_state.texture_compression_dxt && mipmap)
-			comp = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-		else
-			comp = gl_tex_solid_format;
+			if (gl_state.texture_compression_dxt && mipmap)
+				comp = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			else
+				comp = gl_tex_solid_format;
+		}
+
+		if (samples == 4) {
+
+			if (gl_state.texture_compression_dxt && mipmap)
+				comp = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			else
+				comp = gl_tex_alpha_format;
+		}
 	}
-
-	if (samples == 4){
-
-		if (gl_state.texture_compression_dxt && mipmap)
-			comp = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-		else
-			comp = gl_tex_alpha_format;
-	}
-
 
 	if (scaled_width == width && scaled_height == height)
 	{
