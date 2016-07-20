@@ -661,7 +661,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="client\anorms.h" />
     <ClInclude Include="client\cdaudio.h" />
     <ClInclude Include="client\cl_console.h" />
     <ClInclude Include="client\client.h" />
@@ -682,7 +681,6 @@
     <ClInclude Include="server\server.h" />
     <ClInclude Include="qcommon\unzip.h" />
     <ClInclude Include="client\vid.h" />
-    <ClInclude Include="ref_gl\anormtab.h" />
     <ClInclude Include="ref_gl\glext.h" />
     <ClInclude Include="win32\glw_win.h" />
     <ClInclude Include="ref_gl\qgl.h" />

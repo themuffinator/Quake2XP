@@ -293,9 +293,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="client\anorms.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="client\cdaudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -349,9 +346,6 @@
     </ClInclude>
     <ClInclude Include="client\vid.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ref_gl\anormtab.h">
-      <Filter>Header Files\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\glext.h">
       <Filter>Header Files\Renderer</Filter>

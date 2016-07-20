@@ -31,17 +31,7 @@ ALIAS MODELS
 =============================================================
 */
 
-
-#define NUMVERTEXNORMALS	162
-
-static float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
-#include "anorms.h"
-};
-#define	SHADEDOT_QUANT 16
-float	r_avertexnormal_dots[SHADEDOT_QUANT][256]= 
-#include "anormtab.h"
-;
-float shadelight[3];
+float	shadelight[3];
 float	*shadedots = r_avertexnormal_dots[0];
 float	ref_realtime =0;
 

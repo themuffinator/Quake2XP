@@ -22,12 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-static float	r_avertexnormals[NUMVERTEXNORMALS][3] = { 
-#include "anorms.h" 
-};
-
 vec3_t	tempVertexArray[MAX_VERTICES * 4];
 
+extern float	*shadedots;
 
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 	daliasframe_t	*frame, *oldframe;
@@ -72,7 +69,7 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 
 	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) {
 		for (i = 0; i < paliashdr->num_xyz; i++, v++, ov++, lerp += 3) {
-			float *normal = r_avertexnormals[verts[i].lightnormalindex];
+			float *normal = q_byteDirs[verts[i].lightnormalindex];
 			lerp[0] = move[0] + ov->v[0] * backv[0] + v->v[0] * frontv[0] + normal[0] * shellScale;
 			lerp[1] = move[1] + ov->v[1] * backv[1] + v->v[1] * frontv[1] + normal[1] * shellScale;
 			lerp[2] = move[2] + ov->v[2] * backv[2] + v->v[2] * frontv[2] + normal[2] * shellScale;
@@ -130,7 +127,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	int				i, j, jj = 0;
 	dtriangle_t		*tris;
 	image_t			*skin, *skinNormalmap, *glowskin;
-	float			alphaShift, alpha;
+	float			alphaShift, alpha, l;
 	vec3_t			normalArray[3 * MAX_TRIANGLES];
 	float			backlerp, frontlerp;
 	int				index2, oldindex2;
@@ -241,13 +238,15 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
 
-			VA_SetElem4 (colorArray[jj], lightColor[0], lightColor[1], lightColor[2], alpha);
+			l = shadedots[verts[index_xyz].lightnormalindex];
+			VA_SetElem4 (colorArray[jj], l * lightColor[0], l * lightColor[1], l * lightColor[2], alpha);
+
 			if (currentmodel->envMap) {
 				index2 = verts[index_xyz].lightnormalindex;
 				oldindex2 = oldverts[index_xyz].lightnormalindex;
-				normalArray[jj][0] = r_avertexnormals[oldindex2][0] * backlerp + r_avertexnormals[index2][0] * frontlerp;
-				normalArray[jj][1] = r_avertexnormals[oldindex2][1] * backlerp + r_avertexnormals[index2][1] * frontlerp;
-				normalArray[jj][2] = r_avertexnormals[oldindex2][2] * backlerp + r_avertexnormals[index2][2] * frontlerp;
+				normalArray[jj][0] = q_byteDirs[oldindex2][0] * backlerp + q_byteDirs[index2][0] * frontlerp;
+				normalArray[jj][1] = q_byteDirs[oldindex2][1] * backlerp + q_byteDirs[index2][1] * frontlerp;
+				normalArray[jj][2] = q_byteDirs[oldindex2][2] * backlerp + q_byteDirs[index2][2] * frontlerp;
 			}
 		}
 	}
@@ -335,9 +334,9 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 			index2 = verts[index_xyz].lightnormalindex;
 			oldindex2 = oldverts[index_xyz].lightnormalindex;
 
-			normalArray[jj][0] = r_avertexnormals[oldindex2][0] * backlerp + r_avertexnormals[index2][0] * frontlerp;
-			normalArray[jj][1] = r_avertexnormals[oldindex2][1] * backlerp + r_avertexnormals[index2][1] * frontlerp;
-			normalArray[jj][2] = r_avertexnormals[oldindex2][2] * backlerp + r_avertexnormals[index2][2] * frontlerp;
+			normalArray[jj][0] = q_byteDirs[oldindex2][0] * backlerp + q_byteDirs[index2][0] * frontlerp;
+			normalArray[jj][1] = q_byteDirs[oldindex2][1] * backlerp + q_byteDirs[index2][1] * frontlerp;
+			normalArray[jj][2] = q_byteDirs[oldindex2][2] * backlerp + q_byteDirs[index2][2] * frontlerp;
 
 		}
 	}
@@ -504,17 +503,17 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 			index2 = verts[index_xyz].lightnormalindex;
 			oldindex2 = oldverts[index_xyz].lightnormalindex;
 
-			normalArray[jj][0] = r_avertexnormals[oldindex2][0] * backlerp + r_avertexnormals[index2][0] * frontlerp;
-			normalArray[jj][1] = r_avertexnormals[oldindex2][1] * backlerp + r_avertexnormals[index2][1] * frontlerp;
-			normalArray[jj][2] = r_avertexnormals[oldindex2][2] * backlerp + r_avertexnormals[index2][2] * frontlerp;
+			normalArray[jj][0] = q_byteDirs[oldindex2][0] * backlerp + q_byteDirs[index2][0] * frontlerp;
+			normalArray[jj][1] = q_byteDirs[oldindex2][1] * backlerp + q_byteDirs[index2][1] * frontlerp;
+			normalArray[jj][2] = q_byteDirs[oldindex2][2] * backlerp + q_byteDirs[index2][2] * frontlerp;
 
-			tangentArray[jj][0] = r_avertexnormals[oldtangents[index_xyz]][0] * backlerp + r_avertexnormals[tangents[index_xyz]][0] * frontlerp;
-			tangentArray[jj][1] = r_avertexnormals[oldtangents[index_xyz]][1] * backlerp + r_avertexnormals[tangents[index_xyz]][1] * frontlerp;
-			tangentArray[jj][2] = r_avertexnormals[oldtangents[index_xyz]][2] * backlerp + r_avertexnormals[tangents[index_xyz]][2] * frontlerp;
+			tangentArray[jj][0] = q_byteDirs[oldtangents[index_xyz]][0] * backlerp + q_byteDirs[tangents[index_xyz]][0] * frontlerp;
+			tangentArray[jj][1] = q_byteDirs[oldtangents[index_xyz]][1] * backlerp + q_byteDirs[tangents[index_xyz]][1] * frontlerp;
+			tangentArray[jj][2] = q_byteDirs[oldtangents[index_xyz]][2] * backlerp + q_byteDirs[tangents[index_xyz]][2] * frontlerp;
 
-			binormalArray[jj][0] = r_avertexnormals[oldbinormals[index_xyz]][0] * backlerp + r_avertexnormals[binormals[index_xyz]][0] * frontlerp;
-			binormalArray[jj][1] = r_avertexnormals[oldbinormals[index_xyz]][1] * backlerp + r_avertexnormals[binormals[index_xyz]][1] * frontlerp;
-			binormalArray[jj][2] = r_avertexnormals[oldbinormals[index_xyz]][2] * backlerp + r_avertexnormals[binormals[index_xyz]][2] * frontlerp;
+			binormalArray[jj][0] = q_byteDirs[oldbinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
+			binormalArray[jj][1] = q_byteDirs[oldbinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
+			binormalArray[jj][2] = q_byteDirs[oldbinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
 
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
 

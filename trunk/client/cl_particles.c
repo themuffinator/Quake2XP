@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "client.h"
 #include "../ref_gl/r_local.h"	
 
-static vec3_t avelocities[NUMVERTEXNORMALS];
+static vec3_t avelocities[NUM_VERTEX_NORMALS];
 
 /*
 ==============================================================
@@ -3477,11 +3477,11 @@ void CL_FlyParticles (vec3_t origin, int count) {
 	float ltime;
 
 
-	if (count > NUMVERTEXNORMALS)
-		count = NUMVERTEXNORMALS;
+	if (count > NUM_VERTEX_NORMALS)
+		count = NUM_VERTEX_NORMALS;
 
 	if (!avelocities[0][0]) {
-		for (i = 0; i < NUMVERTEXNORMALS; i++) {
+		for (i = 0; i < NUM_VERTEX_NORMALS; i++) {
 			avelocities[i][0] = (rand () & 255) * 0.01;
 			avelocities[i][1] = (rand () & 255) * 0.01;
 			avelocities[i][2] = (rand () & 255) * 0.01;
@@ -3520,11 +3520,11 @@ void CL_FlyParticles (vec3_t origin, int count) {
 		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		dist = sin (ltime + i) * 64;
 		p->org[0] =
-			origin[0] + bytedirs[i][0] * dist + forward[0] * BEAMLENGTH;
+			origin[0] + q_byteDirs[i][0] * dist + forward[0] * BEAMLENGTH;
 		p->org[1] =
-			origin[1] + bytedirs[i][1] * dist + forward[1] * BEAMLENGTH;
+			origin[1] + q_byteDirs[i][1] * dist + forward[1] * BEAMLENGTH;
 		p->org[2] =
-			origin[2] + bytedirs[i][2] * dist + forward[2] * BEAMLENGTH;
+			origin[2] + q_byteDirs[i][2] * dist + forward[2] * BEAMLENGTH;
 
 		VectorClear (p->vel);
 		VectorClear (p->accel);
@@ -3593,7 +3593,7 @@ void CL_BfgParticles (entity_t * ent) {
 	float ltime;
 
 	if (!avelocities[0][0]) {
-		for (i = 0; i < NUMVERTEXNORMALS; i++) {
+		for (i = 0; i < NUM_VERTEX_NORMALS; i++) {
 			avelocities[i][0] = (rand () & 255) * 0.01;
 			avelocities[i][1] = (rand () & 255) * 0.01;
 			avelocities[i][2] = (rand () & 255) * 0.01;
@@ -3602,7 +3602,7 @@ void CL_BfgParticles (entity_t * ent) {
 
 
 	ltime = (float)cl.time / 1000.0;
-	for (i = 0; i < NUMVERTEXNORMALS; i++) {
+	for (i = 0; i < NUM_VERTEX_NORMALS; i++) {
 		angle = ltime * avelocities[i][0];
 		sy = sin (angle);
 		cy = cos (angle);
@@ -3634,13 +3634,13 @@ void CL_BfgParticles (entity_t * ent) {
 		p->endTime = cl.time + 20000;
 		dist = sin (ltime + i) * 64;
 		p->org[0] =
-			ent->origin[0] + bytedirs[i][0] * dist +
+			ent->origin[0] + q_byteDirs[i][0] * dist +
 			forward[0] * BEAMLENGTH;
 		p->org[1] =
-			ent->origin[1] + bytedirs[i][1] * dist +
+			ent->origin[1] + q_byteDirs[i][1] * dist +
 			forward[1] * BEAMLENGTH;
 		p->org[2] =
-			ent->origin[2] + bytedirs[i][2] * dist +
+			ent->origin[2] + q_byteDirs[i][2] * dist +
 			forward[2] * BEAMLENGTH;
 
 		VectorClear (p->vel);

@@ -46,10 +46,6 @@ extern qboolean relightMap;
 
 byte Normal2Index(const vec3_t vec);
 
-static float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
-#include "anorms.h"
-};
-
 int bspSize, aliasSize, spriteSize;
 int numentitychars;
 byte *mod_base;
@@ -1871,8 +1867,8 @@ byte Normal2Index(const vec3_t vec) {
 	float d, bestd;
 
 	bestd = best = 0;
-	for (i = 0; i<NUMVERTEXNORMALS; i++) {
-		d = DotProduct(vec, r_avertexnormals[i]);
+	for (i = 0; i<NUM_VERTEX_NORMALS; i++) {
+		d = DotProduct(vec, q_byteDirs[i]);
 		if (d > bestd) {
 			bestd = d;
 			best = i;
@@ -2133,8 +2129,8 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 			for (k = j + 1; k<pheader->num_xyz; k++)
 				if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2])
 				{
-					float *jnormal = r_avertexnormals[verts[j].lightnormalindex];
-					float *knormal = r_avertexnormals[verts[k].lightnormalindex];
+					float *jnormal = q_byteDirs[verts[j].lightnormalindex];
+					float *knormal = q_byteDirs[verts[k].lightnormalindex];
 					if (DotProduct(jnormal, knormal) >= smooth_cosine)
 					{
 						VectorAdd(tangents_[j], tangents_[k], tangents_[j]);
