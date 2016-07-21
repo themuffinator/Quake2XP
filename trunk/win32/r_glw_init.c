@@ -44,15 +44,36 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;  // AMD
 
 #define	WINDOW_STYLE	(WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_VISIBLE)
 
-qboolean GLimp_InitGL (void);
+typedef struct {
+	qboolean		accelerated;
+	qboolean		drawToWindow;
+	qboolean		supportOpenGL;
+	qboolean		doubleBuffer;
+	qboolean		rgba;
+
+	int				colorBits;
+	int				alphaBits;
+	int				depthBits;
+	int				stencilBits;
+	int				samples;
+} glwPixelFormatDescriptor_t;
+
+static LRESULT CALLBACK FakeWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+#define	WINDOW_CLASS_FAKE		"quake2xp Fake Window"
+#define	WINDOW_NAME				"quake2xp"
+
+qboolean GLW_InitDriver(void);
 
 glwstate_t glw_state;
 
 /*
 ** VID_CreateWindow
 */
-#define	WINDOW_CLASS_NAME	"Quake2xp"
-#define	OPENGL_CLASS		"OpenGLDummyPFDWindow"
+#define	WINDOW_CLASS_NAME	"quake2xp"
+
 qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 {
 	WNDCLASS		wc;
@@ -129,9 +150,16 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	UpdateWindow( glw_state.hWnd );
 
 	// init all the gl stuff for the window
-	if (!GLimp_InitGL ())
+	if (!GLW_InitDriver())
 	{
+		Com_Printf(S_COLOR_RED"...destroying window\n");
 		Com_Printf(S_COLOR_RED "VID_CreateWindow() - GLimp_InitGL failed\n");
+
+		ShowWindow(glw_state.hWnd, SW_HIDE);
+		DestroyWindow(glw_state.hWnd);
+		glw_state.hWnd = NULL;
+
+		UnregisterClass(WINDOW_CLASS_NAME, glw_state.hInstance);
 		return qfalse;
 	}
 
@@ -160,7 +188,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
     glw_state.desktopWidth =  GetDeviceCaps(hdc, HORZRES);
     glw_state.desktopHeight = GetDeviceCaps(hdc, VERTRES);
 
-	Com_Printf("Initializing OpenGL display\n");
+	Com_Printf(S_COLOR_YELLOW"...Initializing OpenGL display\n\n");
 	
 	if ( !VID_GetModeInfo( &width, &height, mode ) )
 	{
@@ -883,353 +911,521 @@ else
 
 }
 /*
-==============================
-MULTISAMPLING  SUPPORT
-BASED ON  Richard Stanway CODE
-THX, RICHARD!!!
-==============================
+==================
+GLW_InitExtensions
+
+==================
 */
 
-// don't do anything
-static LRESULT CALLBACK StupidOpenGLProc(HWND hWnd,UINT msg,WPARAM wParam,LPARAM lParam)
-{
-  return DefWindowProc(hWnd,msg,wParam,lParam);
-}
+void GLW_InitExtensions() {
 
-// Registers the window classes
-qboolean RegisterOpenGLWindow(HINSTANCE hInst)
-{
-  WNDCLASSEX wcex;
+	qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)qwglGetProcAddress("wglGetExtensionsStringARB");
 
-  // Initialize our Window class
-  wcex.cbSize = sizeof(wcex);
-  if (GetClassInfoEx(hInst, OPENGL_CLASS, &wcex))
-	return TRUE;
+	if (!qwglGetExtensionsStringARB)
+	{
+		Com_Printf(S_COLOR_RED  "WGL extension string not found!");
+		VID_Error(ERR_FATAL, "WGL extension string not found!");
+	}
 
-  // register main one
-  ZeroMemory(&wcex,sizeof(wcex));
+	glw_state.wglExtsString = qwglGetExtensionsStringARB(glw_state.hDCFake);
 
-  // now the stupid one
-  wcex.cbSize			= sizeof(wcex);
-  wcex.style			= CS_OWNDC;
-  wcex.cbWndExtra		= 0; // space for our pointer 
-  wcex.lpfnWndProc		= StupidOpenGLProc;
-  wcex.hbrBackground	= NULL;
-  wcex.hInstance		= hInst;
-  wcex.hCursor			= LoadCursor(NULL,IDC_ARROW);
-  wcex.lpszClassName	= OPENGL_CLASS;
+	if (glw_state.wglExtsString == NULL)
+		Com_Printf(S_COLOR_RED "WGL_EXTENSION not found!\n");
 
-  return RegisterClassEx(&wcex);
-}
+	Com_Printf("\n");
 
-qboolean GLimp_InitGL (void)
-{
-		int			iAttributes[15];
-		float		fAttributes[] = {0, 0};
-		int			iResults[30];
-		int			pixelFormat;
-		uint		numFormats;
-		int			status;
-		qboolean	isIntel;
-		const char	*vendor;
-		char		v[1000];
-		int			debugFlag = r_glDebugOutput->value ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
-		int			contextMask = r_glCoreProfile->value ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-		int			attribs[] =
-		{
-			WGL_CONTEXT_MAJOR_VERSION_ARB, r_glMajorVersion->value,
-			WGL_CONTEXT_MINOR_VERSION_ARB, r_glMinorVersion->value,
-			WGL_CONTEXT_FLAGS_ARB,  debugFlag,
-			WGL_CONTEXT_PROFILE_MASK_ARB, contextMask,
-			0
-		};
+	Com_Printf("=============================\n");
+	Com_Printf(S_COLOR_GREEN"Checking Basic WGL Extensions\n");
+	Com_Printf("=============================\n\n");
 
-		PIXELFORMATDESCRIPTOR temppfd = { 
-			sizeof(PIXELFORMATDESCRIPTOR),   // size of this pfd 
-			1,								// version number
-			PFD_DRAW_TO_WINDOW |			// support window
-			PFD_SUPPORT_OPENGL |			// support OpenGL
-			PFD_DOUBLEBUFFER,				// double buffered
-			PFD_TYPE_RGBA,					// RGBA type
-			32,								// 32-bit color depth
-			0, 0, 0, 0, 0, 0,				// color bits ignored
-			0,								// no alpha buffer
-			0,								// shift bit ignored
-			0,								// no accumulation buffer
-			0, 0, 0, 0, 					// accum bits ignored
-			24,								// 24-bit z-buffer
-			8,								// 8-bit stencil buffer not need here
-			0,								// no auxiliary buffer
-			PFD_MAIN_PLANE,					// main layer
-			0,								// reserved
-			0, 0, 0							// layer masks ignored
-		};
-
-		RegisterOpenGLWindow(glw_state.hInstance);
-
-		HGLRC hGLRC;
-		HWND temphwnd = CreateWindowEx(0L,OPENGL_CLASS,"Quake2xp OpenGL PFD Detection Window",WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,0,0,1,1,glw_state.hWnd,0,glw_state.hInstance,NULL);
-		HDC hDC = GetDC (temphwnd);
-
-		gl_config.glMajorVersion = r_glMajorVersion->value;
-		gl_config.glMinorVersion = r_glMinorVersion->value;
-
-		// Set up OpenGL
-		pixelFormat = ChoosePixelFormat(hDC, &temppfd);				
-		
-		if (!pixelFormat)
-		{
-			Com_Printf (S_COLOR_RED "GLimp_Init() - ChoosePixelFormat (%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n", (int)temppfd.cColorBits, (int)temppfd.cColorBits, (int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
-			VID_Error (ERR_FATAL,  "GLimp_Init() - ChoosePixelFormat ((%d - color /%d- depth /%d - alpha /%d - stencil) failed. Error %d.\n", (int)temppfd.cColorBits, (int)temppfd.cColorBits, (int)temppfd.cAlphaBits, (int)temppfd.cStencilBits, GetLastError());
-			
-		}
-
-		if (SetPixelFormat(hDC, pixelFormat, &temppfd) == FALSE)
-		{
-			Com_Printf (S_COLOR_RED "GLimp_Init() - SetPixelFormat (%d) failed. Error %d.\n", pixelFormat, GetLastError());
-			VID_Error (ERR_FATAL,  "GLimp_Init() - SetPixelFormat (%d) failed. Error %d.\n", pixelFormat, GetLastError());
-		}
-
-		// Create a rendering context
-		hGLRC = qwglCreateContext(hDC);
-		if (!hGLRC) {
-			Com_Printf (S_COLOR_RED "GLimp_Init() - qwglCreateContext failed\n");
-			VID_Error (ERR_FATAL,  "GLimp_Init() - qwglCreateContext failed\n");
-		}
-
-		// Make the rendering context current
-		if (!(qwglMakeCurrent(hDC, hGLRC))) {
-			
-			Com_Printf (S_COLOR_RED	"GLimp_Init() - qwglMakeCurrent failed\n");
-			VID_Error (ERR_FATAL,	"GLimp_Init() - qwglMakeCurrent failed\n");
-		}
-		
-		qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)qwglGetProcAddress("wglGetExtensionsStringARB");
-		
-		if (!qwglGetExtensionsStringARB) 
-			{
-			Com_Printf (S_COLOR_RED  "WGL extension string not found!");
-			VID_Error (ERR_FATAL, "WGL extension string not found!");
-			}
-		
-		glw_state.wglExtsString = qwglGetExtensionsStringARB (hDC);
-		
-		if (glw_state.wglExtsString == NULL)
-			Com_Printf (S_COLOR_RED "WGL_EXTENSION not found!\n");
-		
-		Com_Printf("\n");
-
-	Com_Printf ("=============================\n");
-	Com_Printf (S_COLOR_GREEN"Checking Basic WGL Extensions\n");
-	Com_Printf ("=============================\n\n");
-
-	if ( strstr( glw_state.wglExtsString, "WGL_ARB_pixel_format" ) )
+	if (strstr(glw_state.wglExtsString, "WGL_ARB_pixel_format"))
 	{
 		Com_Printf("...using WGL_ARB_pixel_format\n");
-		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)	qwglGetProcAddress("wglGetPixelFormatAttribivARB");
-        qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)	qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
-        qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)		qwglGetProcAddress("wglChoosePixelFormatARB");
-	
-	} 
+		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribivARB");
+		qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
+		qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)qwglGetProcAddress("wglChoosePixelFormatARB");
+
+	}
 	else {
 		Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_pixel_format not found\nOpenGL subsystem not initiation\n");
-		VID_Error (ERR_FATAL, "WGL_ARB_pixel_format not found!");
-		}
+		VID_Error(ERR_FATAL, "WGL_ARB_pixel_format not found!");
+	}
 
 	if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control")) {
-		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) qwglGetProcAddress("wglSwapIntervalEXT");
+		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)qwglGetProcAddress("wglSwapIntervalEXT");
 		Com_Printf("...using WGL_EXT_swap_control\n");
-	} else 
+	}
+	else
 		Com_Printf(S_COLOR_RED"...WGL_EXT_swap_control not found\n");
 
 	gl_state.wgl_swap_control_tear = qfalse;
-	if ( strstr( glw_state.wglExtsString, "WGL_EXT_swap_control_tear")){
+	if (strstr(glw_state.wglExtsString, "WGL_EXT_swap_control_tear")) {
 		Com_Printf("...using WGL_EXT_swap_control_tear\n");
 		gl_state.wgl_swap_control_tear = qtrue;
-	} 
+	}
 	else {
 		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
 	}
 
 	gl_state.arb_multisample = qfalse;
-	if ( strstr(  glw_state.wglExtsString, "WGL_ARB_multisample" ) )
-	if(r_multiSamples->value < 2)
+	if (strstr(glw_state.wglExtsString, "WGL_ARB_multisample"))
+		if (r_multiSamples->value < 2)
 		{
 			Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_ARB_multisample\n");
 			gl_state.arb_multisample = qfalse;
-		}else
-	{
+		}
+		else
+		{
 			Com_Printf("...using WGL_ARB_multisample\n");
 			gl_state.arb_multisample = qtrue;
-		
-	}
+
+		}
 	else
 	{
 		Com_Printf("...WGL_ARB_multisample not found\n");
 		gl_state.arb_multisample = qfalse;
 	}
 
-	vendor = (const char*)qglGetString(GL_VENDOR);
-	strcpy(v, vendor);
-	strlwr(v);
+	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")) {
+		qwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)qwglGetProcAddress("wglCreateContextAttribsARB");
 
-	if (strstr(v, "intel"))
-		isIntel = qtrue;
-	else
-		isIntel = qfalse;
-
-	if (!isIntel) {
-		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")) {
-			qwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)qwglGetProcAddress("wglCreateContextAttribsARB");
-
-			if (qwglCreateContextAttribsARB)
-				Com_Printf("...using WGL_ARB_create_context\n");
-			else
-			{
+		if (qwglCreateContextAttribsARB)
+			Com_Printf("...using WGL_ARB_create_context\n");
+			else{
 				Com_Printf(S_COLOR_RED"WARNING!!! WGL_ARB_create_context not found\nOpenGL subsystem not initiation\n");
 				VID_Error(ERR_FATAL, "WGL_ARB_create_context not found!");
 			}
-
 		}
 
 		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_profile"))
 			Com_Printf("...using WGL_ARB_create_context_profile\n");
-	}
 
-	// Make no rendering context current and destroy the rendering context...
-	qwglMakeCurrent(NULL, NULL);
-	qwglDeleteContext(hGLRC);
-	hGLRC = NULL;
-
-	Com_Printf("\n=============================\n\n");
-
-	// Get the number of pixel format available
-		iAttributes[0] = WGL_NUMBER_PIXEL_FORMATS_ARB;
-
-		if (qwglGetPixelFormatAttribivARB(hDC, 0, 0, 1, iAttributes, iResults) == GL_FALSE) {
-			
-			Com_Printf (S_COLOR_RED "GLimp_InitGL() - wglGetPixelFormatAttribivARB failed\n");
-			VID_Error (ERR_FATAL,  "GLimp_InitGL() - wglGetPixelFormatAttribivARB failed\n");
-			
-		}
-		
-		// Choose a Pixel Format Descriptor (PFD) with multisampling support.
-		
-		iAttributes[0] = WGL_DOUBLE_BUFFER_ARB;
-		iAttributes[1] = TRUE;
-		
-		iAttributes[2] = WGL_COLOR_BITS_ARB;
-		iAttributes[3] = 32;
-
-		iAttributes[4] = WGL_DEPTH_BITS_ARB;
-		iAttributes[5] = 24;
-
-		iAttributes[6] = WGL_ALPHA_BITS_ARB;
-		iAttributes[7] = 8;
-
-		iAttributes[8] = WGL_STENCIL_BITS_ARB;
-		iAttributes[9] = 8;
-		
-		iAttributes[10] = gl_state.arb_multisample ? WGL_SAMPLE_BUFFERS_ARB : 0;
-		iAttributes[11] = gl_state.arb_multisample ? TRUE : 0;
-		
-		iAttributes[12] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : 0;
-		iAttributes[13] = gl_state.arb_multisample ? (int)r_multiSamples->value : 0;
-
-		// First attempt...
-		status = qwglChoosePixelFormatARB(hDC, iAttributes, fAttributes, 1, &pixelFormat, &numFormats);
-		// Failure happens not only when the function fails, but also when no matching pixel format has been found
-		if (status == FALSE || numFormats == 0)
-		{
-			
-			Com_Printf (S_COLOR_RED "GLimp_InitGL() - wglChoosePixelFormatARB failed\n");
-			VID_Error (ERR_FATAL,  "GLimp_InitGL() - wglChoosePixelFormatARB failed\n");
-	
-		}
-		else
-		{
-		// Fill the list of attributes we are interested in
-			
-			iAttributes[0] = WGL_ACCELERATION_ARB;
-			iAttributes[1] = WGL_DRAW_TO_WINDOW_ARB;
-			iAttributes[2] = WGL_SUPPORT_OPENGL_ARB;
-			iAttributes[3] = WGL_DOUBLE_BUFFER_ARB;
-			iAttributes[4] = WGL_PIXEL_TYPE_ARB;
-			iAttributes[5] = WGL_COLOR_BITS_ARB;
-			iAttributes[6] = WGL_ALPHA_BITS_ARB;
-			iAttributes[7] = WGL_DEPTH_BITS_ARB;
-			iAttributes[8] = WGL_STENCIL_BITS_ARB;
-			iAttributes[9] = gl_state.arb_multisample ? WGL_SAMPLE_BUFFERS_ARB : WGL_PIXEL_TYPE_ARB;
-			iAttributes[10] = gl_state.arb_multisample ? WGL_SAMPLES_ARB : WGL_PIXEL_TYPE_ARB;
-
-			if (qwglGetPixelFormatAttribivARB(hDC, pixelFormat, 0, 11, iAttributes, iResults) == GL_FALSE) {
-				Com_Printf (S_COLOR_RED	"GLimp_InitGL() wglGetPixelFormatAttribivARB failed\n");
-				VID_Error (ERR_FATAL,	"GLimp_InitGL() wglGetPixelFormatAttribivARB failed\n"); 
-				
-			}
-
-			Com_Printf ("WGL_PFD: Color "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits, Stencil "S_COLOR_GREEN"%d"S_COLOR_WHITE"-bits \n",
-				iResults[5], iResults[7], iResults[6], iResults[8]);
-
-			if (iResults[9])
-				if (gl_state.arb_multisample && r_multiSamples->value >1)
-							Com_Printf ( "using multisampling, "S_COLOR_GREEN"%d"S_COLOR_WHITE" samples per pixel\n", iResults[9]);
-
-			if (iResults[0] != WGL_FULL_ACCELERATION_ARB)
-				Com_Printf ( S_COLOR_RED "********** WARNING **********\npixelformat %d is NOT hardware accelerated!\n*****************************\n", pixelFormat);
-			
-			ReleaseDC (temphwnd, hDC);
-			DestroyWindow (temphwnd);
-			temphwnd = NULL;
-
-
-			if ( ( glw_state.hDC = GetDC( glw_state.hWnd ) ) == NULL )
-			{
-				Com_Printf(S_COLOR_RED "GLimp_InitGL() GetDC failed\n" );
-				return qfalse;
-			}
-
-			SetPixelFormat (glw_state.hDC, pixelFormat, &temppfd);
-
-			if (isIntel) {// force gl2 context
-				if ((glw_state.hGLRC = qwglCreateContext(glw_state.hDC)) == 0) {
-					Com_Printf(S_COLOR_RED "GLimp_InitGL() qwglCreateContext failed (%d)\n", GetLastError());
-					goto fail;
-				}
-			}
-			else
-				if ((glw_state.hGLRC = qwglCreateContextAttribsARB(glw_state.hDC, 0, attribs)) == 0){
-					Com_Printf(S_COLOR_RED "GLimp_InitGL() qwglCreateContextAttribsARB failed (%d)\n", GetLastError());
-					goto fail;
-			}
-
-
-			if ( !qwglMakeCurrent( glw_state.hDC, glw_state.hGLRC ) )
-			{
-				Com_Printf (S_COLOR_RED "GLimp_InitGL() qwglMakeCurrent failed\n");
-				goto fail;
-			}
-
-		
-		}
-
-return qtrue;
-
-fail:
-	if ( glw_state.hGLRC )
-	{
-		qwglDeleteContext( glw_state.hGLRC );
-		glw_state.hGLRC = NULL;
-	}
-
-	if ( glw_state.hDC )
-	{
-		ReleaseDC( glw_state.hWnd, glw_state.hDC );
-		glw_state.hDC = NULL;
-	}
-	return qfalse;
 }
 
+/*
+==================
+GLW_ShutdownFakeOpenGL
+
+==================
+*/
+
+static void GLW_ShutdownFakeOpenGL(void) {
+	if (glw_state.hGLRCFake) {
+		if (qwglMakeCurrent)
+			qwglMakeCurrent(NULL, NULL);
+		if (qwglDeleteContext)
+			qwglDeleteContext(glw_state.hGLRCFake);
+
+		glw_state.hGLRCFake = NULL;
+	}
+
+	if (glw_state.hDCFake) {
+		ReleaseDC(glw_state.hWndFake, glw_state.hDCFake);
+		glw_state.hDCFake = NULL;
+	}
+
+	if (glw_state.hWndFake) {
+		DestroyWindow(glw_state.hWndFake);
+		glw_state.hWndFake = NULL;
+
+		UnregisterClass(WINDOW_CLASS_FAKE, glw_state.hInstance);
+	}
+}
+
+/*
+==================
+GLW_InitFakeOpenGL
+
+==================
+*/
+static qboolean GLW_InitFakeOpenGL(void) {
+	WNDCLASSEX		wndClass;
+	PIXELFORMATDESCRIPTOR	PFD;
+	int				pixelFormat;
+
+	// register the frame class
+	wndClass.cbSize = sizeof(WNDCLASSEX);
+	wndClass.style = 0;
+	wndClass.lpfnWndProc = FakeWndProc;
+	wndClass.cbClsExtra = 0;
+	wndClass.cbWndExtra = 0;
+	wndClass.hInstance = glw_state.hInstance;
+	wndClass.hIcon = 0;
+	wndClass.hIconSm = 0;
+	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wndClass.hbrBackground = (HBRUSH)COLOR_GRAYTEXT;
+	wndClass.lpszMenuName = 0;
+	wndClass.lpszClassName = WINDOW_CLASS_FAKE;
+
+	if (!RegisterClassEx(&wndClass))
+		return qfalse;
+
+	// create the fake window
+	glw_state.hWndFake = CreateWindowEx(0, WINDOW_CLASS_FAKE, WINDOW_NAME, WINDOW_STYLE, 0, 0, 320, 240, NULL, NULL, glw_state.hInstance, NULL);
+	if (!glw_state.hWndFake) {
+		GLW_ShutdownFakeOpenGL();
+		return qfalse;
+	}
+
+	glw_state.hDCFake = GetDC(glw_state.hWndFake);
+	if (!glw_state.hDCFake) {
+		GLW_ShutdownFakeOpenGL();
+		return qfalse;
+	}
+
+	// choose a pixel format
+	memset(&PFD, 0, sizeof(PIXELFORMATDESCRIPTOR));
+
+	PFD.cColorBits = 32;
+	PFD.cDepthBits = 24;
+	PFD.cStencilBits = 8;
+	PFD.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	PFD.iLayerType = PFD_MAIN_PLANE;
+	PFD.iPixelType = PFD_TYPE_RGBA;
+	PFD.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	PFD.nVersion = 1;
+
+	pixelFormat = ChoosePixelFormat(glw_state.hDCFake, &PFD);
+
+	if (!pixelFormat) {
+		GLW_ShutdownFakeOpenGL();
+		return qfalse;
+	}
+
+	// set the pixel format
+	DescribePixelFormat(glw_state.hDCFake, pixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &PFD);
+
+	if (!SetPixelFormat(glw_state.hDCFake, pixelFormat, &PFD)) {
+		GLW_ShutdownFakeOpenGL();
+		return qfalse;
+	}
+
+	// create the fake GL context and make it current
+	glw_state.hGLRCFake = qwglCreateContext(glw_state.hDCFake);
+
+	if (!glw_state.hGLRCFake) {
+		GLW_ShutdownFakeOpenGL();
+		return qfalse;
+	}
+
+	if (!qwglMakeCurrent(glw_state.hDCFake, glw_state.hGLRCFake)) {
+		GLW_ShutdownFakeOpenGL();
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
+/*
+==================
+GLW_DescribePixelFormat
+
+==================
+*/
+static void GLW_DescribePixelFormat(int pixelFormat, glwPixelFormatDescriptor_t *pfd) {
+	int	attribs[11], values[11];
+
+	attribs[0] = WGL_ACCELERATION_ARB;
+	attribs[1] = WGL_DRAW_TO_WINDOW_ARB;
+	attribs[2] = WGL_SUPPORT_OPENGL_ARB;
+	attribs[3] = WGL_DOUBLE_BUFFER_ARB;
+	attribs[4] = WGL_PIXEL_TYPE_ARB;
+	attribs[5] = WGL_COLOR_BITS_ARB;
+	attribs[6] = WGL_ALPHA_BITS_ARB;
+	attribs[7] = WGL_DEPTH_BITS_ARB;
+	attribs[8] = WGL_STENCIL_BITS_ARB;
+	attribs[9] = WGL_SAMPLE_BUFFERS_ARB;
+	attribs[10] = WGL_SAMPLES_ARB;
+
+	if (!qwglGetPixelFormatAttribivARB(glw_state.hDC, pixelFormat, 0, 11, attribs, values)) {
+		// if failed, then multisampling is not supported
+		qwglGetPixelFormatAttribivARB(glw_state.hDC, pixelFormat, 0, 9, attribs, values);
+
+		values[9] = GL_FALSE;
+		values[10] = 0;
+	}
+
+	pfd->accelerated = (values[0] == WGL_FULL_ACCELERATION_ARB);
+	pfd->drawToWindow = (values[1] == GL_TRUE);
+	pfd->supportOpenGL = (values[2] == GL_TRUE);
+	pfd->doubleBuffer = (values[3] == GL_TRUE);
+	pfd->rgba = (values[4] == WGL_TYPE_RGBA_ARB);
+	pfd->colorBits = values[5];
+	pfd->alphaBits = values[6];
+	pfd->depthBits = values[7];
+	pfd->stencilBits = values[8];
+	pfd->samples = (values[9] == GL_TRUE) ? values[10] : 0;
+}
+
+/*
+==================
+GLW_ChoosePixelFormat
+
+==================
+*/
+static int GLW_ChoosePixelFormat(int colorBits, int alphaBits, int depthBits, int stencilBits, int samples) {
+	glwPixelFormatDescriptor_t	current, selected;
+	int							i, numPixelFormats, pixelFormat = 0;
+
+	// initialize the fake OpenGL stuff so that we can use
+	// the extended pixel format functionality
+	if (!GLW_InitFakeOpenGL()) {
+		Com_Printf(S_COLOR_RED "...failed to initialize fake OpenGL context\n");
+		return 0;
+	}
+
+	// check the necessary extensions
+	GLW_InitExtensions();
+	
+	Com_Printf(S_COLOR_YELLOW"\n...Attempting PIXELFORMAT:\n\n");
+	
+	// count pixel formats
+	numPixelFormats = WGL_NUMBER_PIXEL_FORMATS_ARB;
+	qwglGetPixelFormatAttribivARB(glw_state.hDC, 0, 0, 1, &numPixelFormats, &numPixelFormats);
+
+	if (numPixelFormats < 1) {
+		Com_Printf(S_COLOR_RED "...no pixel formats found\n");
+		GLW_ShutdownFakeOpenGL();
+		return 0;
+	}
+
+	Com_Printf("..." S_COLOR_GREEN "%i " S_COLOR_WHITE "pixel formats found\n", numPixelFormats);
+
+	// check if multisampling is desired
+	if (samples > 0)
+		Com_Printf("...attempting to use multisampling\n");
+	else
+		samples = 0;
+
+	// run through all the pixel formats, looking for the best match
+	for (i = 1; i <= numPixelFormats; i++) {
+		// describe the current pixel format
+		GLW_DescribePixelFormat(i, &current);
+
+		// check acceleration
+		if (!current.accelerated) {
+			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, software emulation\n", i);
+			continue;
+		}
+
+		// check samples
+		if (current.samples && !samples) {
+			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, multisample\n", i);
+			continue;
+		}
+
+		// check flags
+		if (!current.drawToWindow || !current.supportOpenGL || !current.doubleBuffer) {
+			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, improper flags\n", i);
+			continue;
+		}
+
+		// check pixel type
+		if (!current.rgba) {
+			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, not RGBA\n", i);
+			continue;
+		}
+
+		// check color bits
+		if (current.colorBits < colorBits) {
+			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, insufficient color bits (" S_COLOR_RED "%i " S_COLOR_WHITE "< " S_COLOR_RED "%i" S_COLOR_WHITE ")\n", i, current.colorBits, colorBits);
+			continue;
+		}
+
+		// check alpha bits
+		if (current.alphaBits < alphaBits) {
+			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, insufficient alpha bits (" S_COLOR_RED "%i " S_COLOR_WHITE "< " S_COLOR_RED "%i" S_COLOR_WHITE ")\n", i, current.alphaBits, alphaBits);
+			continue;
+		}
+
+		// check depth bits
+		if (current.depthBits < depthBits) {
+			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, insufficient depth bits (" S_COLOR_RED "%i " S_COLOR_WHITE "< " S_COLOR_RED "%i" S_COLOR_WHITE ")\n", i, current.depthBits, depthBits);
+			continue;
+		}
+
+		// check stencil bits
+		if (current.stencilBits < stencilBits) {
+			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, insufficient stencil bits (" S_COLOR_RED "%i " S_COLOR_WHITE "< " S_COLOR_RED "%i" S_COLOR_WHITE ")\n", i, current.stencilBits, stencilBits);
+			continue;
+		}
+
+		// if we don't have a selected pixel format yet, then use it
+		if (!pixelFormat) {
+			selected = current;
+			pixelFormat = i;
+			continue;
+		}
+
+		// if current pixel format is better than selected pixel format, then use it
+		if (selected.samples != samples) {
+			if (current.samples == samples || current.samples > selected.samples) {
+				selected = current;
+				pixelFormat = i;
+				continue;
+			}
+		}
+
+		if (selected.colorBits != colorBits) {
+			if (current.colorBits == colorBits || current.colorBits > selected.colorBits) {
+				selected = current;
+				pixelFormat = i;
+				continue;
+			}
+		}
+
+		if (selected.alphaBits != alphaBits) {
+			if (current.alphaBits == alphaBits || current.alphaBits > selected.alphaBits) {
+				selected = current;
+				pixelFormat = i;
+				continue;
+			}
+		}
+
+		if (selected.depthBits != depthBits) {
+			if (current.depthBits == depthBits || current.depthBits > selected.depthBits) {
+				selected = current;
+				pixelFormat = i;
+				continue;
+			}
+		}
+
+		if (selected.stencilBits != stencilBits) {
+			if (current.stencilBits == stencilBits || current.stencilBits > selected.stencilBits) {
+				selected = current;
+				pixelFormat = i;
+				continue;
+			}
+		}
+	}
+
+	// shutdown the fake OpenGL stuff since we no longer need it
+	GLW_ShutdownFakeOpenGL();
+
+	// make sure we have a valid pixel format
+	if (!pixelFormat) {
+		Com_Printf(S_COLOR_RED "...no hardware acceleration found\n");
+		return 0;
+	}
+
+	Com_Printf("...hardware acceleration found\n");
+
+	// report if multisampling is desired but unavailable
+	if (samples && !selected.samples)
+		Com_Printf(S_COLOR_MAGENTA"...failed to find a PIXELFORMAT with multisampling\n");
+
+	gl_config.colorBits		= selected.colorBits;
+	gl_config.alphaBits		= selected.alphaBits;
+	gl_config.depthBits		= selected.depthBits;
+	gl_config.stencilBits	= selected.stencilBits;
+	gl_config.samples		= selected.samples;
+
+	Com_Printf("...Selected " S_COLOR_GREEN "%i " S_COLOR_WHITE "PIXELFORMAT\n", pixelFormat);
+
+	return pixelFormat;
+}
+
+qboolean GLW_InitDriver(void) {
+	PIXELFORMATDESCRIPTOR	PFD;
+	
+	int			pixelFormat;
+	int			debugFlag = r_glDebugOutput->value ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
+	int			contextMask = r_glCoreProfile->value ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+	int			attribs[] =
+	{
+		WGL_CONTEXT_MAJOR_VERSION_ARB, r_glMajorVersion->value,
+		WGL_CONTEXT_MINOR_VERSION_ARB, r_glMinorVersion->value,
+		WGL_CONTEXT_FLAGS_ARB,  debugFlag,
+		WGL_CONTEXT_PROFILE_MASK_ARB, contextMask,
+		0
+	};
+
+	const char *profileName[] = { "core", "compatibility" };
+
+	// get a DC for the current window
+	Com_Printf("...getting DC: ");
+
+	glw_state.hDC = GetDC(glw_state.hWnd);
+	if (!glw_state.hDC) {
+		Com_Printf(S_COLOR_RED "failed\n");
+		return qfalse;
+	}
+
+	Com_Printf(S_COLOR_GREEN"ok\n");
+
+	// choose a pixel format
+	pixelFormat = GLW_ChoosePixelFormat(32, 8, 24, 8, (int)r_multiSamples->value);
+	
+	if (!pixelFormat) {
+		Com_Printf(S_COLOR_RED "...failed to find an appropriate PIXELFORMAT\n");
+
+		ReleaseDC(glw_state.hWnd, glw_state.hDC);
+		glw_state.hDC = NULL;
+
+		return qfalse;
+	}
+
+	// describe the pixel format
+	Com_Printf("...setting pixel format: ");
+
+	qwglDescribePixelFormat(glw_state.hDC, pixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &PFD);
+
+	// set the pixel format
+	if (!qwglSetPixelFormat(glw_state.hDC, pixelFormat, &PFD)) {
+		Com_Printf(S_COLOR_RED "failed\n");
+
+		ReleaseDC(glw_state.hWnd, glw_state.hDC);
+		glw_state.hDC = NULL;
+
+		return qfalse;
+	}
+
+	Com_Printf("ok\n");
+
+	// create the GL context
+	Com_Printf("...creating openGL " S_COLOR_GREEN "%i.%i" S_COLOR_YELLOW "  %s" S_COLOR_WHITE " profile context: ", (int)r_glMajorVersion->value, (int)r_glMinorVersion->value, profileName[contextMask == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+
+	glw_state.hGLRC = qwglCreateContextAttribsARB(glw_state.hDC, NULL, attribs);
+
+	if (!glw_state.hGLRC) {
+		if (GetLastError() == ERROR_INVALID_VERSION_ARB)
+			Com_Error(ERR_FATAL, "Current video card/driver combination does not support OpenGL %i.%i", r_glMajorVersion->value, r_glMinorVersion->value);
+
+		Com_Printf(S_COLOR_RED "failed\n");
+
+		ReleaseDC(glw_state.hWnd, glw_state.hDC);
+		glw_state.hDC = NULL;
+
+		return qfalse;
+	}
+
+	Com_Printf(S_COLOR_GREEN "ok\n");
+
+	// make it current
+	Com_Printf("...making context current: ");
+
+	if (!qwglMakeCurrent(glw_state.hDC, glw_state.hGLRC)) {
+		Com_Printf(S_COLOR_RED "failed\n");
+
+		qwglDeleteContext(glw_state.hGLRC);
+		glw_state.hGLRC = NULL;
+
+		ReleaseDC(glw_state.hWnd, glw_state.hDC);
+		glw_state.hDC = NULL;
+
+		return qfalse;
+	}
+
+	Com_Printf(S_COLOR_GREEN "ok\n");
+
+	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA "S_COLOR_GREEN"%i"S_COLOR_WHITE"-samples\n",
+				gl_config.colorBits, gl_config.depthBits, gl_config.alphaBits, gl_config.stencilBits, gl_config.samples);
+
+	gl_config.glMajorVersion = r_glMajorVersion->value;
+	gl_config.glMinorVersion = r_glMinorVersion->value;
+
+	return qtrue;
+}
 
 
 /*

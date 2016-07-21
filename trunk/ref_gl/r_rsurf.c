@@ -162,7 +162,7 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	else
 		alpha = 0.66f;
 
-	qglUniform1f(4, alpha);
+	qglUniform1f(ref_alpha, alpha);
 
 		if (scrolling)
 			GL_MBind(GL_TEXTURE0_ARB, r_DSTTex->texnum);
@@ -230,16 +230,16 @@ void R_DrawChainsRA (qboolean bmodel) {
 	// setup program
 	GL_BindProgram(refractProgram, 0);
 
-	qglUniform1f(0, 1.0);
-	qglUniformMatrix4fv(1, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(2, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(3, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+	qglUniform1f(ref_deformMul, 1.0);
+	qglUniformMatrix4fv(ref_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(ref_mvm, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(ref_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
-	qglUniform1f(5, 150.0);
-	qglUniform2f(7, vid.width, vid.height);
-	qglUniform2f(8, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(9, colorScale);
-	qglUniform1i(11, 0);
+	qglUniform1f(ref_thickness, 150.0);
+	qglUniform2f(ref_viewport, vid.width, vid.height);
+	qglUniform2f(ref_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform1f(ref_ambientScale, colorScale);
+	qglUniform1i(ref_alphaMask, 0);
 
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
 		

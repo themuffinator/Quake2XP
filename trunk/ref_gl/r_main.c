@@ -225,13 +225,13 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 
 	GL_MBind(GL_TEXTURE1_ARB, currentmodel->skins[e->frame]->texnum);
 
-	qglUniform1f(4, e->alpha);
-	qglUniform1f(5, len * 0.5);
+	qglUniform1f(ref_alpha, e->alpha);
+	qglUniform1f(ref_thickness, len * 0.5);
 
 	if (currententity->flags & RF_BFG_SPRITE)
-		qglUniform1f(6, 3.0);
+		qglUniform1f(ref_thickness2, 3.0);
 	else
-		qglUniform1f(6, len * 0.5);
+		qglUniform1f(ref_thickness2, len * 0.5);
 
 	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+0]);
 	VectorMA (wVertexArray[vert+0], -frame->origin_x, right, wVertexArray[vert+0]);
@@ -782,15 +782,15 @@ void R_RenderSprites(void)
 	GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
 	GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
 
-	qglUniform1f(0, 9.5);
-	qglUniformMatrix4fv(1, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(2, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(3, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+	qglUniform1f		(ref_deformMul, 9.5);
+	qglUniformMatrix4fv	(ref_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv	(ref_mvm, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv	(ref_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
-	qglUniform2f(7, vid.width, vid.height);
-	qglUniform2f(8, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f(10, 0.0, 1.0);
-	qglUniform1i(11, 1);
+	qglUniform2f		(ref_viewport, vid.width, vid.height);
+	qglUniform2f		(ref_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f		(ref_mask, 0.0, 1.0);
+	qglUniform1i		(ref_alphaMask, 1);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -1514,8 +1514,6 @@ qboolean IsExtensionSupported(const char *name)
 int R_Init(void *hinstance, void *hWnd)
 {
 	int			aniso_level, max_aniso;
-	int			profile;
-	const char *profileName[] = { "core", "compatibility" };
 
 	Draw_GetPalette();
 	R_RegisterCvars();
@@ -1559,11 +1557,6 @@ int R_Init(void *hinstance, void *hWnd)
 	
 	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
 	Com_Printf(S_COLOR_WHITE "GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
-
-#ifdef _WIN32
-	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
-	Com_Printf("Using OpenGL: "S_COLOR_GREEN"%i.%i"S_COLOR_WHITE" %s profile context\n", gl_config.glMajorVersion, gl_config.glMinorVersion, profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
-#endif
 
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");
@@ -1882,24 +1875,18 @@ int R_Init(void *hinstance, void *hWnd)
 
 	if (IsExtensionSupported("GL_ARB_explicit_attrib_location"))
 		Com_Printf("...using GL_ARB_explicit_attrib_location\n");
-	 else
+	else {
+		Com_Printf(S_COLOR_RED"GL_ARB_explicit_attrib_location not found!\n");
 		VID_Error(ERR_FATAL, "GL_ARB_explicit_attrib_location not found!");
+	}
 	
-	if (IsExtensionSupported("GL_ARB_explicit_uniform_location"))
-		Com_Printf("...using GL_ARB_explicit_uniform_location\n");
-	 else
-		VID_Error(ERR_FATAL, "GL_ARB_explicit_uniform_location not found!");
-
-	if (IsExtensionSupported("GL_ARB_separate_shader_objects"))
-		Com_Printf("...using GL_ARB_separate_shader_objects\n");
-	else
-		VID_Error(ERR_FATAL, "GL_ARB_separate_shader_objects not found!");
-
 	if (IsExtensionSupported("GL_ARB_shading_language_420pack"))
 		Com_Printf("...using GL_ARB_shading_language_420pack\n");
-	else
+	else {
+		Com_Printf(S_COLOR_RED"GL_ARB_shading_language_420pack not found!\n");
 		VID_Error(ERR_FATAL, "GL_ARB_shading_language_420pack not found!");
-	
+	}
+
 	gl_state.shader5 = qfalse;
 	gl_state.shader4 = qfalse;
 	if (IsExtensionSupported("GL_ARB_gpu_shader5")) {

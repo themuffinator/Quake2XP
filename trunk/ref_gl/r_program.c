@@ -27,11 +27,9 @@ static const char *shader5 =
 static const char *glslExt =
 "#version 150\n"
 "#extension GL_ARB_texture_rectangle			: enable\n"
-"#extension GL_ARB_explicit_attrib_location		: enable\n"
-"#extension GL_ARB_explicit_uniform_location	: enable\n"
-"#extension GL_ARB_separate_shader_objects		: enable\n"
-"#extension GL_ARB_shading_language_420pack		: enable\n"
-"out vec4 fragData;\n";
+"#extension GL_ARB_explicit_attrib_location		: enable\n" // layout attibs
+"#extension GL_ARB_shading_language_420pack		: enable\n" // layout binding
+"out vec4 fragData;\n";										// out fragColor
 
 static const char *mathDefs =
 "#define	CUTOFF_EPSILON	1.0 / 255.0\n"
@@ -754,6 +752,20 @@ void R_InitPrograms (void) {
 
 	if (refractProgram->valid) {
 		Com_Printf ("succeeded\n");
+		id = refractProgram->id[0];
+		ref_deformMul		= qglGetUniformLocation(id, "u_deformMul");
+		ref_mvp				= qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
+		ref_mvm				= qglGetUniformLocation(id, "u_modelViewMatrix");
+		ref_pm				= qglGetUniformLocation(id, "u_projectionMatrix");
+
+		ref_alpha			= qglGetUniformLocation(id, "u_alpha");
+		ref_thickness		= qglGetUniformLocation(id, "u_thickness");
+		ref_thickness2		= qglGetUniformLocation(id, "u_thickness2");
+		ref_viewport		= qglGetUniformLocation(id, "u_viewport");
+		ref_depthParams		= qglGetUniformLocation(id, "u_depthParms");
+		ref_ambientScale	= qglGetUniformLocation(id, "u_ambientScale");
+		ref_mask			= qglGetUniformLocation(id, "u_mask");
+		ref_alphaMask		= qglGetUniformLocation(id, "u_ALPHAMASK");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -846,10 +858,14 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"cinematic program"S_COLOR_WHITE" ");
-	cinProgram = R_FindProgram ("cin", qtrue, qtrue);
+	cinProgram	= R_FindProgram ("cin", qtrue, qtrue);
 
 	if (cinProgram->valid) {
 		Com_Printf ("succeeded\n");
+		id = cinProgram->id[0];
+		cin_params		= qglGetUniformLocation(id, "u_cinParams");
+		cin_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
+
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -861,6 +877,10 @@ void R_InitPrograms (void) {
 
 	if (loadingProgram->valid) {
 		Com_Printf ("succeeded\n");
+		id = loadingProgram->id[0];
+		ls_fade = qglGetUniformLocation(id, "u_colorScale");
+		ls_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
+
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

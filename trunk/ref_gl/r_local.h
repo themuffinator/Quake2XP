@@ -173,7 +173,7 @@ extern	image_t	*r_whiteMap;
 
 #define MAX_FILTERS 256
 extern	image_t	*r_lightCubeMap[MAX_FILTERS];
-#define	MAX_GLOBAL_FILTERS	128
+#define	MAX_GLOBAL_FILTERS	37
 
 extern image_t *fboDN;
 extern image_t *fboColor[2];
@@ -634,6 +634,12 @@ typedef struct {
 	int			glMajorVersion;
 	int			glMinorVersion;
 
+	int			colorBits;
+	int			alphaBits;
+	int			depthBits;
+	int			stencilBits;
+	int			samples;
+
 } glconfig_t;
 
 
@@ -1011,6 +1017,12 @@ uint gen_mvp;
 uint gen_orthoMatrix;
 uint gen_3d;
 
+uint cin_params;
+uint cin_orthoMatrix;
+
+uint ls_fade;
+uint ls_orthoMatrix;
+
 uint gamma_control;
 uint gamma_orthoMatrix;
 
@@ -1049,6 +1061,19 @@ uint bloomDS_matrix;
 
 uint bloomFP_params;
 uint bloom_FP_matrix;
+
+uint ref_deformMul;
+uint ref_mvp;
+uint ref_mvm;
+uint ref_pm;
+uint ref_alpha;
+uint ref_thickness;
+uint ref_thickness2;
+uint ref_viewport;
+uint ref_depthParams;
+uint ref_ambientScale;
+uint ref_mask;
+uint ref_alphaMask;
 
 uint rb_params;
 uint rb_matrix;
@@ -1119,6 +1144,10 @@ typedef struct {
 	HDC     hDC;			// handle to device context
 	HWND    hWnd;			// handle to window
 	HGLRC   hGLRC;			// handle to GL rendering context
+	
+	HWND	hWndFake;
+	HDC		hDCFake;
+	HGLRC	hGLRCFake;
 
 	HINSTANCE hinstOpenGL;	// HINSTANCE for the OpenGL library
 
