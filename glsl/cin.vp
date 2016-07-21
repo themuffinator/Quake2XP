@@ -1,12 +1,11 @@
+layout	(location = 0) in vec3	att_position;
+layout	(location = 5) in vec2	att_texCoordDiffuse;
+
+uniform vec2 u_cinParams; //  w, cols
+uniform mat4 u_orthoMatrix;
+
 out vec2 v_texCoord;
 out vec2 v_lineOffset;
-
-layout (location = 0) uniform vec2 u_cinParams; //  w, cols
-layout (location = 1) uniform mat4 u_orthoMatrix;
-
-layout(location = 0) in vec3	att_position;
-layout(location = 5) in vec2	att_texCoordDiffuse;
-
 
 void main() 
 {

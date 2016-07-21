@@ -3,14 +3,14 @@ layout (binding = 1) uniform sampler2D		u_colorMap;
 layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
 layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
 
-layout (location = 4) uniform float	u_alpha;
-layout (location = 5) uniform float	u_thickness;
-layout (location = 6) uniform float	u_thickness2;
-layout (location = 7) uniform vec2	u_viewport;
-layout (location = 8) uniform vec2	u_depthParms;
-layout (location = 9) uniform float	u_ambientScale;
-layout (location = 10) uniform vec2	u_mask;
-layout (location = 11) uniform int	u_ALPHAMASK;
+uniform float	u_alpha;
+uniform float	u_thickness;
+uniform float	u_thickness2;
+uniform vec2	u_viewport;
+uniform vec2	u_depthParms;
+uniform float	u_ambientScale;
+uniform vec2	u_mask;
+uniform int		u_ALPHAMASK;
 
 in float	v_depth;
 in float	v_depthS;
