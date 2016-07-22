@@ -1291,7 +1291,7 @@ void R_RegisterCvars(void)
 	r_screenShotGamma =					Cvar_Get("r_screenShotGamma", "1.0", CVAR_ARCHIVE);
 	r_screenShotContrast =				Cvar_Get("r_screenShotContrast", "1.0", CVAR_ARCHIVE);
 
-	r_multiSamples =					Cvar_Get("r_multiSamples", "1", CVAR_ARCHIVE);
+	r_multiSamples =					Cvar_Get("r_multiSamples", "0", CVAR_ARCHIVE);
 	r_fxaa =							Cvar_Get("r_fxaa", "1", CVAR_ARCHIVE);
 
 	deathmatch =						Cvar_Get("deathmatch", "0", CVAR_SERVERINFO);

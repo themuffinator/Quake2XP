@@ -660,7 +660,7 @@ typedef struct {
 	qboolean	arb_occlusion;
 	qboolean	arb_occlusion2;
 	unsigned	query_passed;
-	qboolean	arb_multisample;
+	qboolean	use_msaa;
 	qboolean	wgl_swap_control_tear;
 	qboolean	conditional_render;
 	qboolean	depthBoundsTest;

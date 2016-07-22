@@ -159,24 +159,6 @@
     <ClCompile Include="qcommon\unzip.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
-    <ClCompile Include="win32\conproc.c">
-      <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\in_win.c">
-      <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\net_wins.c">
-      <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\r_shwin.c">
-      <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\sys_win.c">
-      <Filter>Source Files\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\vid_dll.c">
-      <Filter>Source Files\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_decals.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -240,9 +222,6 @@
     <ClCompile Include="client\cl_hud.c">
       <Filter>Source Files\CG</Filter>
     </ClCompile>
-    <ClCompile Include="win32\r_glw_init.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_drawAlias.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -290,6 +269,27 @@
     </ClCompile>
     <ClCompile Include="ref_gl\r_iqm.c">
       <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win_glimp.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win_input.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win_network.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win_system.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win_memory.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win_conproc.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win_wndproc.c">
+      <Filter>Source Files\Win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

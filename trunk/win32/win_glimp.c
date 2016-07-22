@@ -941,9 +941,9 @@ void GLW_InitExtensions() {
 	if (strstr(glw_state.wglExtsString, "WGL_ARB_pixel_format"))
 	{
 		Com_Printf("...using WGL_ARB_pixel_format\n");
-		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribivARB");
-		qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
-		qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)qwglGetProcAddress("wglChoosePixelFormatARB");
+		qwglGetPixelFormatAttribivARB	= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)	qwglGetProcAddress	("wglGetPixelFormatAttribivARB");
+		qwglGetPixelFormatAttribfvARB	= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)	qwglGetProcAddress	("wglGetPixelFormatAttribfvARB");
+		qwglChoosePixelFormatARB		= (PFNWGLCHOOSEPIXELFORMATARBPROC)		qwglGetProcAddress	("wglChoosePixelFormatARB");
 
 	}
 	else {
@@ -967,24 +967,19 @@ void GLW_InitExtensions() {
 		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
 	}
 
-	gl_state.arb_multisample = qfalse;
+	gl_state.use_msaa = qfalse;
 	if (strstr(glw_state.wglExtsString, "WGL_ARB_multisample"))
 		if (r_multiSamples->value < 2)
 		{
-			Com_Printf(""S_COLOR_YELLOW"...ignoring WGL_ARB_multisample\n");
-			gl_state.arb_multisample = qfalse;
+			Com_Printf("" S_COLOR_YELLOW "...ignoring WGL_ARB_multisample\n");
+			gl_state.use_msaa = qfalse;
 		}
 		else
 		{
 			Com_Printf("...using WGL_ARB_multisample\n");
-			gl_state.arb_multisample = qtrue;
+			gl_state.use_msaa = qtrue;
 
 		}
-	else
-	{
-		Com_Printf("...WGL_ARB_multisample not found\n");
-		gl_state.arb_multisample = qfalse;
-	}
 
 	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")) {
 		qwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)qwglGetProcAddress("wglCreateContextAttribsARB");
@@ -1039,9 +1034,9 @@ GLW_InitFakeOpenGL
 ==================
 */
 static qboolean GLW_InitFakeOpenGL(void) {
-	WNDCLASSEX		wndClass;
+	WNDCLASSEX				wndClass;
 	PIXELFORMATDESCRIPTOR	PFD;
-	int				pixelFormat;
+	int						pixelFormat;
 
 	// register the frame class
 	wndClass.cbSize = sizeof(WNDCLASSEX);
@@ -1125,16 +1120,16 @@ GLW_DescribePixelFormat
 static void GLW_DescribePixelFormat(int pixelFormat, glwPixelFormatDescriptor_t *pfd) {
 	int	attribs[11], values[11];
 
-	attribs[0] = WGL_ACCELERATION_ARB;
-	attribs[1] = WGL_DRAW_TO_WINDOW_ARB;
-	attribs[2] = WGL_SUPPORT_OPENGL_ARB;
-	attribs[3] = WGL_DOUBLE_BUFFER_ARB;
-	attribs[4] = WGL_PIXEL_TYPE_ARB;
-	attribs[5] = WGL_COLOR_BITS_ARB;
-	attribs[6] = WGL_ALPHA_BITS_ARB;
-	attribs[7] = WGL_DEPTH_BITS_ARB;
-	attribs[8] = WGL_STENCIL_BITS_ARB;
-	attribs[9] = WGL_SAMPLE_BUFFERS_ARB;
+	attribs[0]	= WGL_ACCELERATION_ARB;
+	attribs[1]	= WGL_DRAW_TO_WINDOW_ARB;
+	attribs[2]	= WGL_SUPPORT_OPENGL_ARB;
+	attribs[3]	= WGL_DOUBLE_BUFFER_ARB;
+	attribs[4]	= WGL_PIXEL_TYPE_ARB;
+	attribs[5]	= WGL_COLOR_BITS_ARB;
+	attribs[6]	= WGL_ALPHA_BITS_ARB;
+	attribs[7]	= WGL_DEPTH_BITS_ARB;
+	attribs[8]	= WGL_STENCIL_BITS_ARB;
+	attribs[9]	= WGL_SAMPLE_BUFFERS_ARB;
 	attribs[10] = WGL_SAMPLES_ARB;
 
 	if (!qwglGetPixelFormatAttribivARB(glw_state.hDC, pixelFormat, 0, 11, attribs, values)) {
@@ -1145,16 +1140,16 @@ static void GLW_DescribePixelFormat(int pixelFormat, glwPixelFormatDescriptor_t 
 		values[10] = 0;
 	}
 
-	pfd->accelerated = (values[0] == WGL_FULL_ACCELERATION_ARB);
-	pfd->drawToWindow = (values[1] == GL_TRUE);
-	pfd->supportOpenGL = (values[2] == GL_TRUE);
-	pfd->doubleBuffer = (values[3] == GL_TRUE);
-	pfd->rgba = (values[4] == WGL_TYPE_RGBA_ARB);
-	pfd->colorBits = values[5];
-	pfd->alphaBits = values[6];
-	pfd->depthBits = values[7];
-	pfd->stencilBits = values[8];
-	pfd->samples = (values[9] == GL_TRUE) ? values[10] : 0;
+	pfd->accelerated	= (values[0] == WGL_FULL_ACCELERATION_ARB);
+	pfd->drawToWindow	= (values[1] == GL_TRUE);
+	pfd->supportOpenGL	= (values[2] == GL_TRUE);
+	pfd->doubleBuffer	= (values[3] == GL_TRUE);
+	pfd->rgba			= (values[4] == WGL_TYPE_RGBA_ARB);
+	pfd->colorBits		= values[5];
+	pfd->alphaBits		= values[6];
+	pfd->depthBits		= values[7];
+	pfd->stencilBits	= values[8];
+	pfd->samples		= (values[9] == GL_TRUE) ? values[10] : 0;
 }
 
 /*
@@ -1328,10 +1323,10 @@ static int GLW_ChoosePixelFormat(int colorBits, int alphaBits, int depthBits, in
 qboolean GLW_InitDriver(void) {
 	PIXELFORMATDESCRIPTOR	PFD;
 	
-	int			pixelFormat;
-	int			debugFlag = r_glDebugOutput->value ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
-	int			contextMask = r_glCoreProfile->value ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-	int			attribs[] =
+	int	pixelFormat;
+	int	debugFlag	= r_glDebugOutput->value ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
+	int	contextMask = r_glCoreProfile->value ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+	int	attribs[] =
 	{
 		WGL_CONTEXT_MAJOR_VERSION_ARB, r_glMajorVersion->value,
 		WGL_CONTEXT_MINOR_VERSION_ARB, r_glMinorVersion->value,
@@ -1339,9 +1334,8 @@ qboolean GLW_InitDriver(void) {
 		WGL_CONTEXT_PROFILE_MASK_ARB, contextMask,
 		0
 	};
-
 	const char *profileName[] = { "core", "compatibility" };
-
+	
 	// get a DC for the current window
 	Com_Printf("...getting DC: ");
 
@@ -1354,7 +1348,7 @@ qboolean GLW_InitDriver(void) {
 	Com_Printf(S_COLOR_GREEN"ok\n");
 
 	// choose a pixel format
-	pixelFormat = GLW_ChoosePixelFormat(32, 8, 24, 8, (int)r_multiSamples->value);
+	pixelFormat = GLW_ChoosePixelFormat(32, 8, 24, 8, gl_state.use_msaa ? (int)r_multiSamples->value : 0);
 	
 	if (!pixelFormat) {
 		Com_Printf(S_COLOR_RED "...failed to find an appropriate PIXELFORMAT\n");
