@@ -1512,6 +1512,7 @@ void CL_CalcViewValues (void) {
 	player_state_t *ps, *ops;
 
 	VectorCopy (cl.refdef.viewangles, cl.refdef.viewangles_old);
+	Mat4_Copy(cl.refdef.modelViewProjectionMatrix, cl.refdef.prevMVP);
 
 	// find the previous frame to interpolate from
 	ps = &cl.frame.playerstate;

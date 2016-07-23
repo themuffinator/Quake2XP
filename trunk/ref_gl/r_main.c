@@ -477,38 +477,6 @@ void R_Clear(void)
 	GL_DepthRange(gldepthmin, gldepthmax);
 }
 
-void R_DrawPlayerWeaponFBO(void)
-{
-	int i;
-
-	if (!r_drawEntities->value)
-		return;
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_weaponMask);
-	qglClear(GL_COLOR_BUFFER_BIT);
-	qglClearColor(0.0, 0.0, 0.0, 1.0);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-	for (i = 0; i < r_newrefdef.num_entities; i++)	// weapon model
-	{
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-
-		if (!currentmodel)
-			continue;
-
-		if (currentmodel->type != mod_alias)
-			continue;
-
-		if (!(currententity->flags & RF_WEAPONMODEL))
-			continue;
-
-		R_DrawAliasModel(currententity, qtrue);
-	}
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void R_DrawPlayerWeaponLightPass(void)
 {
 	int i;
@@ -941,6 +909,7 @@ R_RenderView
 r_newrefdef must be set before the first call.
 ================
 */
+void R_MotionBlur(void);
 
 void R_RenderView (refdef_t *fd) {
 	if (r_noRefresh->value)
@@ -990,14 +959,27 @@ void R_RenderView (refdef_t *fd) {
 
 	R_DrawRAScene();
 
-	R_DrawPlayerWeapon();
 	R_DrawParticles();
+
+	if (r_motionBlur->value) {
+		R_SetupOrthoMatrix();
+		GL_DepthMask(0);
+
+		R_MotionBlur();
+		
+		GL_Enable(GL_CULL_FACE);
+		GL_Enable(GL_DEPTH_TEST);
+		GL_DepthMask(1);
+		qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
+			r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+	}
+
+	R_DrawPlayerWeapon();
 
 	R_CaptureColorBuffer();
 	R_RenderSprites();
 
 	R_CaptureColorBuffer();
-	R_DrawPlayerWeaponFBO();
 	GL_CheckError(__FILE__, __LINE__, "end frame");
 }
 
@@ -1051,7 +1033,6 @@ extern char buff15[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
-void R_MotionBlur (void);
 void R_DrawFullScreenQuad (void);
 
 void R_RenderFrame(refdef_t * fd) {
@@ -1066,7 +1047,7 @@ void R_RenderFrame(refdef_t * fd) {
 		R_ThermalVision();
 		R_DofBlur();
 		R_Bloom();
-		R_MotionBlur();
+
 		R_FilmGrain();
 		R_ScreenBlend();
 	}
@@ -1346,8 +1327,8 @@ void R_RegisterCvars(void)
 	r_dofFocus =						Cvar_Get("r_dofFocus", "0.0", CVAR_ARCHIVE);
 
 	r_motionBlur =						Cvar_Get("r_motionBlur", "1", CVAR_ARCHIVE);
-	r_motionBlurSamples	=				Cvar_Get("r_motionBlurSamples", "16", CVAR_ARCHIVE);
-	r_motionBlurFrameLerp =				Cvar_Get("r_motionBlurFrameLerp", "10", CVAR_ARCHIVE);
+	r_motionBlurSamples	=				Cvar_Get("r_motionBlurSamples", "32", CVAR_ARCHIVE);
+	r_motionBlurFrameLerp =				Cvar_Get("r_motionBlurFrameLerp", "20", CVAR_ARCHIVE);
 
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
@@ -1850,7 +1831,6 @@ int R_Init(void *hinstance, void *hWnd)
 		qglBlitFramebuffer =						(PFNGLBLITFRAMEBUFFERPROC) qwglGetProcAddress("glBlitFramebuffer");
 		
 		Com_Printf("\n");
-		CreateWeaponFboMask ();
 		CreateSSAOBuffer ();
 		Com_Printf("\n");
 	}

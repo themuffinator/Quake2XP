@@ -678,7 +678,7 @@ void R_InitPrograms (void) {
 		id = dofProgram->id[0];
 		dof_screenSize	= qglGetUniformLocation(id, "u_screenSize");
 		dof_params		= qglGetUniformLocation(id, "u_dofParams");
-		dof_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
+		dof_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -693,7 +693,7 @@ void R_InitPrograms (void) {
 
 		id = motionBlurProgram->id[0];
 		mb_params	= qglGetUniformLocation(id, "u_params");
-		mb_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
+		mb_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

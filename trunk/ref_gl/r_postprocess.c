@@ -340,7 +340,7 @@ void R_DofBlur (void)
 	GL_BindProgram (dofProgram, 0);
 	qglUniform2f(dof_screenSize, vid.width, vid.height);
 	qglUniform4f (dof_params, dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniformMatrix4fv(dof_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(dof_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -423,15 +423,12 @@ void R_MotionBlur (void)
 {
 	vec2_t	angles, delta;
 
-	if (!r_motionBlur->value)
-		return;
-
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
 	// calc camera offsets
-	angles[0] = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
-	angles[1] = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
+	angles[0] = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
+	angles[1] = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
 	delta[0] = (angles[0] * 2.0 / r_newrefdef.fov_x) * r_motionBlurFrameLerp->value;
 	delta[1] = (angles[1] * 2.0 / r_newrefdef.fov_y) * r_motionBlurFrameLerp->value;
 
@@ -439,12 +436,10 @@ void R_MotionBlur (void)
 	GL_BindProgram(motionBlurProgram, 0);
 
 	qglUniform3f(mb_params, delta[0], delta[1], r_motionBlurSamples->value);
-	qglUniformMatrix4fv(mb_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(mb_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
-	
-	GL_MBindRect (GL_TEXTURE1_ARB, weaponHack->texnum);
 
 	R_DrawFullScreenQuad ();
 

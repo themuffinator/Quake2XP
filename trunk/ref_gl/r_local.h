@@ -1081,13 +1081,13 @@ uint rb_cont;
 
 uint dof_screenSize;
 uint dof_params;
-uint dof_matrix;
+uint dof_orthoMatrix;
 
 uint film_scroll;
 uint film_matrix;
 
 uint mb_params;
-uint mb_matrix;
+uint mb_orthoMatrix;
 
 uint depthDS_params;
 uint depthDS_orthoMatrix;
