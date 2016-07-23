@@ -1,5 +1,3 @@
-// shadertype=glsl
-
 /*
 ==============
 DecodeDepth
