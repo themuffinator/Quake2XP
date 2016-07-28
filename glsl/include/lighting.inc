@@ -26,6 +26,39 @@ float PointAttenuation (const in vec3 p, const in float e) {
 }
 
 /*
+==============
+ConeAttenuation
+
+'p' - position in unit light space.
+'s' - inner, 1/(outer-inner), spot falloff exponent
+==============
+*/
+float ConeAttenuation (in vec3 p, in vec3 s) {
+	float t = max(p.x, 0.0);
+	float c = length(p.yz);
+	c = saturate((c / t - s.x) * s.y);
+
+	return pow(1.0 - c * c, s.z);
+}
+
+/*
+==============
+PyramidAttenuation
+
+'p' - position in unit light space.
+'s' - inner, 1/(outer-inner), spot falloff exponent
+==============
+*/
+float PyramidAttenuation (in vec3 p, in vec3 s) {
+	vec2 v = abs(p.yz);
+	float t = max(p.x, 0.0);
+	float c = max(v.x, v.y);
+	c = max((c / t - s.x) * s.y, 0.0);
+
+	return pow(1.0 - c * c, s.z);
+}
+
+/*
 ============================
 
 Sub Surface Scattering

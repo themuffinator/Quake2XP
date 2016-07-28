@@ -14,6 +14,8 @@ uniform float	u_fogDensity;
 uniform int		u_isCaustics;
 uniform int		u_isAmbient;
 uniform int		u_isRgh;
+uniform int		u_spotLight;
+uniform vec3	u_spotParams;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -28,6 +30,9 @@ in vec3			v_lightDirection;
 void main (void) {
 
 	float attenMap = PointAttenuation(v_lightAtten, 2.0);
+
+	if(u_spotLight == 1)
+		attenMap *= ConeAttenuation(v_lightAtten, u_spotParams);
 
 	if(attenMap <= CUTOFF_EPSILON){
 		discard;
