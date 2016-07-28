@@ -562,6 +562,8 @@ void R_InitPrograms (void) {
 		lightWorld_mvp				= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
 		lightWorld_isRgh			= qglGetUniformLocation (id, "u_isRgh");
 		lightWorld_roughnessScale	= qglGetUniformLocation (id, "u_roughnessScale");
+		lightWorld_spotLight		= qglGetUniformLocation (id, "u_spotLight");
+		lightWorld_spotParams		= qglGetUniformLocation (id, "u_spotParams");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -612,6 +614,8 @@ void R_InitPrograms (void) {
 		lightAlias_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
 		lightAlias_mvp				= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
 		lightAlias_mv				= qglGetUniformLocation (id, "u_modelViewMatrix");
+		lightAlias_spotLight		= qglGetUniformLocation (id, "u_spotLight");
+		lightAlias_spotParams		= qglGetUniformLocation (id, "u_spotParams");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

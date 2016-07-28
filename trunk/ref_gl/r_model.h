@@ -42,11 +42,12 @@ typedef struct worldShadowLight_s {
 	vec3_t		speed;
 	vec3_t		color, startColor;
 	vec3_t		mins, maxs;
-	vec3_t		mins_cone;
-	vec3_t		maxs_cone;
 	vec3_t		corners[8];
+	vec2_t		fov;
 	mat3_t		axis;
 	mat4_t		attenMatrix;
+	mat4_t		spotMatrix;
+	mat4_t		cubeMapMatrix;
 
 	vec3_t		flareOrigin;
 	float		flareSize;
@@ -54,6 +55,9 @@ typedef struct worldShadowLight_s {
 
 	float		radius[3];
 	float		_cone;
+	float		coneExp;
+	float		hotSpot;
+	float		distance;
 	float		depthBounds[2];
 	float		maxRad;
 	float		fogDensity;
@@ -64,14 +68,12 @@ typedef struct worldShadowLight_s {
 	int			isNoWorldModel;
 	int			isAmbient;
 	int			isFog;
-	int			linkedSurf;
+	int			isCone;
 	int			scissor[4];
 	int			start_off;
-	int			framecount;
 
 	qboolean	spherical;
 	qboolean	castCaustics;
-	qboolean	caps;
 
 	cplane_t	frust[6];
 	msurface_t	*interaction[MAX_MAP_FACES];
@@ -79,14 +81,11 @@ typedef struct worldShadowLight_s {
 
 	char		targetname[MAX_QPATH];
 
-	byte vis[MAX_MAP_LEAFS / 8];
+	byte		vis[MAX_MAP_LEAFS / 8];
 
-	GLuint			vboId;
-	GLuint			iboId;
-	int				iboNumIndices;
-
-	mat4_t			attenMapMatrix;
-	mat4_t			cubeMapMatrix;
+	GLuint		vboId;
+	GLuint		iboId;
+	int			iboNumIndices;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;

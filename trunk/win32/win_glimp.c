@@ -1185,9 +1185,9 @@ static int GLW_ChoosePixelFormat(int colorBits, int alphaBits, int depthBits, in
 	}
 
 	Com_Printf("..." S_COLOR_GREEN "%i " S_COLOR_WHITE "pixel formats found\n", numPixelFormats);
-
+	
 	// check if multisampling is desired
-	if (samples > 0)
+	if (samples > 0) 
 		Com_Printf("...attempting to use multisampling\n");
 	else
 		samples = 0;
@@ -1314,7 +1314,7 @@ static int GLW_ChoosePixelFormat(int colorBits, int alphaBits, int depthBits, in
 	gl_config.depthBits		= selected.depthBits;
 	gl_config.stencilBits	= selected.stencilBits;
 	gl_config.samples		= selected.samples;
-
+	
 	Com_Printf("...Selected " S_COLOR_GREEN "%i " S_COLOR_WHITE "PIXELFORMAT\n", pixelFormat);
 
 	return pixelFormat;
@@ -1412,8 +1412,10 @@ qboolean GLW_InitDriver(void) {
 
 	Com_Printf(S_COLOR_GREEN "ok\n");
 
-	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA "S_COLOR_GREEN"%i"S_COLOR_WHITE"-samples\n",
-				gl_config.colorBits, gl_config.depthBits, gl_config.alphaBits, gl_config.stencilBits, gl_config.samples);
+	qglGetIntegerv(GL_MAX_SAMPLES, &gl_config.maxSamples);
+
+	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA [" S_COLOR_GREEN "%i" S_COLOR_WHITE " max] [" S_COLOR_GREEN "%i"S_COLOR_WHITE" selected]\n",
+				gl_config.colorBits, gl_config.depthBits, gl_config.alphaBits, gl_config.stencilBits, gl_config.maxSamples, gl_config.samples);
 
 	gl_config.glMajorVersion = r_glMajorVersion->value;
 	gl_config.glMinorVersion = r_glMinorVersion->value;

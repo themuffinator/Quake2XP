@@ -98,6 +98,13 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	else 
 		light->maxRad = max(max(light->radius[0], light->radius[1]), light->radius[2]);
 	
+	if (light->_cone) {
+		light->isCone = 1;
+		light->spherical = qfalse;
+	}
+
+	light->distance = light->maxRad;
+
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? -light->radius[0] : light->radius[0];
 		tmp[1] = (i & 2) ? -light->radius[1] : light->radius[1];
@@ -113,30 +120,60 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 	Mat4_AffineInvert(tmpMatrix, mvMatrix);
 
 	// setup unit space conversion matrix
-	if (light->isFog)
-		tmpMatrix[0][0] = 0.f;
-	else
-		tmpMatrix[0][0] = 1.f / light->radius[0];
-	tmpMatrix[0][1] = 0.f;
-	tmpMatrix[0][2] = 0.f;
-	tmpMatrix[0][3] = 0.f;
-	tmpMatrix[1][0] = 0.f;
-	if (light->isFog)
-		tmpMatrix[1][1] = 0.f;
-	else
-		tmpMatrix[1][1] = 1.f / light->radius[1];
-	tmpMatrix[1][2] = 0.f;
-	tmpMatrix[1][3] = 0.f;
-	tmpMatrix[2][0] = 0.f;
-	tmpMatrix[2][1] = 0.f;
-	tmpMatrix[2][2] = 1.f / light->radius[2];
-	tmpMatrix[2][3] = 0.f;
-	tmpMatrix[3][0] = 0.f;
-	tmpMatrix[3][1] = 0.f;
-	tmpMatrix[3][2] = 0.f;
-	tmpMatrix[3][3] = 1.f;
+	if (light->isCone) {
+		float x, y;
+		light->fov[0] = light->fov[1] = light->_cone * 0.5;
 
-	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+		x = tanf(light->fov[0] * 0.5f);
+		y = tanf(light->fov[1] * 0.5f);
+
+		tmpMatrix[0][0] = 1.f / light->distance;
+		tmpMatrix[0][1] = 0.f;
+		tmpMatrix[0][2] = 0.f;
+		tmpMatrix[0][3] = 0.f;
+		tmpMatrix[1][0] = 0.f;
+		tmpMatrix[1][1] = 1.f / (light->distance * x);
+		tmpMatrix[1][2] = 0.f;
+		tmpMatrix[1][3] = 0.f;
+		tmpMatrix[2][0] = 0.f;
+		tmpMatrix[2][1] = 0.f;
+		tmpMatrix[2][2] = 1.f / (light->distance * y);
+		tmpMatrix[2][3] = 0.f;
+		tmpMatrix[3][0] = 0.f;
+		tmpMatrix[3][1] = 0.f;
+		tmpMatrix[3][2] = 0.f;
+		tmpMatrix[3][3] = 1.f;
+
+		Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+
+	}
+	else {
+		// setup unit space conversion matrix
+		if (light->isFog)
+			tmpMatrix[0][0] = 0.f;
+		else
+			tmpMatrix[0][0] = 1.f / light->radius[0];
+		tmpMatrix[0][1] = 0.f;
+		tmpMatrix[0][2] = 0.f;
+		tmpMatrix[0][3] = 0.f;
+		tmpMatrix[1][0] = 0.f;
+		if (light->isFog)
+			tmpMatrix[1][1] = 0.f;
+		else
+			tmpMatrix[1][1] = 1.f / light->radius[1];
+		tmpMatrix[1][2] = 0.f;
+		tmpMatrix[1][3] = 0.f;
+		tmpMatrix[2][0] = 0.f;
+		tmpMatrix[2][1] = 0.f;
+		tmpMatrix[2][2] = 1.f / light->radius[2];
+		tmpMatrix[2][3] = 0.f;
+		tmpMatrix[3][0] = 0.f;
+		tmpMatrix[3][1] = 0.f;
+		tmpMatrix[3][2] = 0.f;
+		tmpMatrix[3][3] = 1.f;
+
+		Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+	}
 }
 
 
@@ -239,6 +276,7 @@ void R_AddNoWorldModelLight () {
 	light->isNoWorldModel = 1;
 	light->flare = 0;
 	light->isAmbient = 0;
+	light->isCone = 0;
 	light->spherical = qtrue;
 	light->maxRad = light->radius[0];
 
@@ -1519,8 +1557,8 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	int flags, int fog, float fogDensity) {
 
 	worldShadowLight_t	*light;
-	cplane_t			*plane;
-	int					i, leafnum, cluster;
+	int					i;
+	float				x, y;
 	vec3_t				tmp;
 	mat4_t				tmpMatrix, mvMatrix;
 
@@ -1595,38 +1633,12 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 		VectorAdd (light->corners[i], light->origin, light->corners[i]);
 	}
 
+	MakeFrustum4Light (light, ingame);
 
-	// compute the frustum planes for non cone lights
-	if (!light->_cone) {
-		for (i = 0, plane = light->frust; i < 6; i++, plane++) {
-			float d = DotProduct (light->origin, light->axis[i >> 1]);
-
-			if (i & 1) {
-				VectorNegate (light->axis[i >> 1], plane->normal);
-				plane->dist = -d - light->radius[i >> 1];
-			}
-			else {
-				VectorCopy (light->axis[i >> 1], plane->normal);
-				plane->dist = d - light->radius[i >> 1];
-			}
-
-			SetPlaneType (plane);
-			SetPlaneSignBits (plane);
-		}
-	}
-
-	MakeFrustum4Light (light, qfalse);
-
-	if (ingame) {
-		R_MarkLightLeaves (light);
-		R_DrawBspModelVolumes (qtrue, light);
-	}
-	else {
-		//// simple cull info for new light 
-		leafnum = CM_PointLeafnum (light->origin);
-		cluster = CM_LeafCluster (leafnum);
-		light->area = CM_LeafArea (leafnum);
-		Q_memcpy (light->vis, CM_ClusterPVS (cluster), (CM_NumClusters () + 7) >> 3);
+	if (ingame) { // new light
+		R_DrawBspModelVolumes(qtrue, light);
+		R_MarkLightSurfaces(light);
+		R_MarkLightLeaves(light);
 	}
 
 #define START_OFF	1
@@ -1636,31 +1648,72 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	Mat4_SetupTransform(tmpMatrix, light->axis, light->origin);
 	Mat4_AffineInvert(tmpMatrix, mvMatrix);
 
-	// setup unit space conversion matrix
-	if(light->isFog)
-		tmpMatrix[0][0] = 0.f;
+	if (light->_cone) {
+		light->isCone = 1;
+		light->spherical = qfalse;
+	}
 	else
-		tmpMatrix[0][0] = 1.f / light->radius[0];
-	tmpMatrix[0][1] = 0.f;
-	tmpMatrix[0][2] = 0.f;
-	tmpMatrix[0][3] = 0.f;
-	tmpMatrix[1][0] = 0.f;
-	if (light->isFog)
-		tmpMatrix[1][1] = 0.f;
-	else
-		tmpMatrix[1][1] = 1.f / light->radius[1];
-	tmpMatrix[1][2] = 0.f;
-	tmpMatrix[1][3] = 0.f;
-	tmpMatrix[2][0] = 0.f;
-	tmpMatrix[2][1] = 0.f;
-	tmpMatrix[2][2] = 1.f / light->radius[2];
-	tmpMatrix[2][3] = 0.f;
-	tmpMatrix[3][0] = 0.f;
-	tmpMatrix[3][1] = 0.f;
-	tmpMatrix[3][2] = 0.f;
-	tmpMatrix[3][3] = 1.f;
+		light->isCone = 0;
 
-	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+	light->hotSpot = 0.8f;
+	light->coneExp = 1.f;
+	light->distance = light->maxRad;
+
+	// setup unit space conversion matrix
+	if (light->isCone) {
+
+		light->fov[0] = light->fov[1] = light->_cone * 0.5;
+
+		x = tanf(light->fov[0] * 0.5f);
+		y = tanf(light->fov[1] * 0.5f);
+
+		tmpMatrix[0][0] = 1.f / light->distance;
+		tmpMatrix[0][1] = 0.f;
+		tmpMatrix[0][2] = 0.f;
+		tmpMatrix[0][3] = 0.f;
+		tmpMatrix[1][0] = 0.f;
+		tmpMatrix[1][1] = 1.f / (light->distance * x);
+		tmpMatrix[1][2] = 0.f;
+		tmpMatrix[1][3] = 0.f;
+		tmpMatrix[2][0] = 0.f;
+		tmpMatrix[2][1] = 0.f;
+		tmpMatrix[2][2] = 1.f / (light->distance * y);
+		tmpMatrix[2][3] = 0.f;
+		tmpMatrix[3][0] = 0.f;
+		tmpMatrix[3][1] = 0.f;
+		tmpMatrix[3][2] = 0.f;
+		tmpMatrix[3][3] = 1.f;
+
+		Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+
+	}
+	else {
+
+		if (light->isFog)
+			tmpMatrix[0][0] = 0.f;
+		else
+			tmpMatrix[0][0] = 1.f / light->radius[0];
+		tmpMatrix[0][1] = 0.f;
+		tmpMatrix[0][2] = 0.f;
+		tmpMatrix[0][3] = 0.f;
+		tmpMatrix[1][0] = 0.f;
+		if (light->isFog)
+			tmpMatrix[1][1] = 0.f;
+		else
+			tmpMatrix[1][1] = 1.f / light->radius[1];
+		tmpMatrix[1][2] = 0.f;
+		tmpMatrix[1][3] = 0.f;
+		tmpMatrix[2][0] = 0.f;
+		tmpMatrix[2][1] = 0.f;
+		tmpMatrix[2][2] = 1.f / light->radius[2];
+		tmpMatrix[2][3] = 0.f;
+		tmpMatrix[3][0] = 0.f;
+		tmpMatrix[3][1] = 0.f;
+		tmpMatrix[3][2] = 0.f;
+		tmpMatrix[3][3] = 1.f;
+
+		Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+	}
 
 	r_numWorlsShadowLights++;
 	return light;
@@ -1821,7 +1874,7 @@ void Load_LightFile () {
 			else if (!Q_stricmp (key, "ambient"))
 				ambient = atoi (value);
 			else if (!Q_stricmp (key, "_cone"))
-				cone = atoi (value);
+				cone = atof (value);
 			else if (!Q_stricmp (key, "flare"))
 				flare = atoi (value);
 			else if (!Q_stricmp (key, "flareOrigin"))

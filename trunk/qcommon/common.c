@@ -545,9 +545,10 @@ float	r_avertexnormal_dots[SHADEDOT_QUANT][256] = {
 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00,
 1.00, 1.00, 1.00, 1.00, 1.00 }
 };
+
+
 int com_argc;
 char *com_argv[MAX_NUM_ARGVS + 1];
-
 int realtime;
 
 jmp_buf abortframe;				// an ERR_DROP occured, exit the entire

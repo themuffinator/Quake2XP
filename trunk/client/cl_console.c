@@ -619,7 +619,7 @@ void Con_DrawConsole (float frac) {
 
 	Set_FontShader (qtrue);
 
-	Com_sprintf (version, sizeof(version), "q2xp 1.26.5 (%s)", __DATE__);
+	Com_sprintf (version, sizeof(version), "q2xp 1.26.6 (%s)", __DATE__);
 	for (x = 0; x < strlen (version); x++)
 		version[x] += 128;
 

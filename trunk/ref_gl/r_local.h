@@ -639,6 +639,7 @@ typedef struct {
 	int			depthBits;
 	int			stencilBits;
 	int			samples;
+	int			maxSamples;
 
 } glconfig_t;
 
@@ -981,6 +982,8 @@ uint lightWorld_cubeMatrix;
 uint lightWorld_scroll;
 uint lightWorld_mvp;
 uint lightWorld_isRgh;
+uint lightWorld_spotLight;
+uint lightWorld_spotParams;
 
 uint ambientAlias_ssao;
 uint ambientAlias_colorModulate;
@@ -1007,6 +1010,8 @@ uint lightAlias_attenMatrix;
 uint lightAlias_cubeMatrix;
 uint lightAlias_mvp;
 uint lightAlias_mv;
+uint lightAlias_spotLight;
+uint lightAlias_spotParams;
 
 uint gen_attribConsole;
 uint gen_attribColors;

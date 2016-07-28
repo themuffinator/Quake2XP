@@ -580,6 +580,13 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		 qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
 	 }
 	 
+	 if (currentShadowLight->isCone) {
+		 qglUniform1i(lightWorld_spotLight, 1);
+		 qglUniform3f(lightWorld_spotParams, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
+	 }
+	 else
+		 qglUniform1i(lightWorld_spotLight, 0);
+
 	 R_CalcCubeMapMatrix(bModel);
 	 qglUniformMatrix4fv(lightWorld_cubeMatrix, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
