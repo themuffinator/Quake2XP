@@ -265,6 +265,7 @@ LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern cvar_t	*m_inversion;
 
 extern qboolean mouseactive;
+
 /*
 ====================
 MainWndProc

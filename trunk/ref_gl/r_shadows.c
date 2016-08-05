@@ -385,11 +385,14 @@ qboolean R_MarkShadowSurf (msurface_t *surf) {
 	glpoly_t	*poly;
 	float		dist, lbbox[6], pbbox[6];
 
+	if (surf->texInfo->flags & (SURF_NODRAW)) // rogue hack
+		return qfalse;
+
+	// add sky surfaces to shadow marking
 	if (surf->texInfo->flags & (SURF_SKY))
 		goto hack;
 
-	// add sky surfaces to shadow marking
-	if ((surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_WARP | SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
+	if ((surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_WARP)) || (surf->flags & MSURF_DRAWTURB))
 		return qfalse;
 hack:
 	plane = surf->plane;

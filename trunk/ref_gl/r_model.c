@@ -29,8 +29,6 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer);
 void Mod_LoadAliasModel(model_t * mod, void *buffer);
 qboolean Mod_INTERQUAKEMODEL_Load(model_t *mod, void *buffer);
 
-model_t *Mod_LoadModel(model_t * mod, qboolean crash);
-
 byte mod_novis[MAX_MAP_LEAFS / 8];
 
 #define	MAX_MOD_KNOWN	512
@@ -1166,6 +1164,56 @@ void Mod_BuildVertexCache() {
 	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	Com_DPrintf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
 	free(buf);
+
+	// Gen VAO
+	glDeleteVertexArrays(1, &vao.bsp_a);
+	glDeleteVertexArrays(1, &vao.bsp_l);
+
+	//light surfaces
+	glGenVertexArrays(1, &vao.bsp_l);
+	glBindVertexArray(vao.bsp_l);
+
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_NORMAL);
+	qglEnableVertexAttribArray(ATT_TANGENT);
+	qglEnableVertexAttribArray(ATT_BINORMAL);
+
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
+	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
+	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+
+	glBindVertexArray(0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+
+
+	//ambient surfaces
+	glGenVertexArrays(1, &vao.bsp_a);
+	glBindVertexArray(vao.bsp_a);
+
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_BSP);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_TEX1);
+	qglEnableVertexAttribArray(ATT_NORMAL);
+	qglEnableVertexAttribArray(ATT_TANGENT);
+	qglEnableVertexAttribArray(ATT_BINORMAL);
+
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
+	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
+	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
+	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+
+	glBindVertexArray(0);
+	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+
 }
 
 void Mod_LoadFaces(lump_t * l) {

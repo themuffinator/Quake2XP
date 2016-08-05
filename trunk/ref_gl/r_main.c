@@ -1227,7 +1227,6 @@ Cvar_Set("r_ssao", "1");
 vid_ref->modified = qtrue;
 }
 
-void R_ChangeLightColor_f(void) ;
 void R_GLSLinfo_f(void);
 void GL_LevelShot_f(void);
 
@@ -1666,6 +1665,9 @@ int R_Init(void *hinstance, void *hWnd)
 	glDeleteVertexArrays	= (PFNGLDELETEVERTEXARRAYSPROC)	qwglGetProcAddress	("glDeleteVertexArrays");
 	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress	("glBindVertexArray");
 
+	if(glGenVertexArrays && glDeleteVertexArrays && glBindVertexArray)
+		Com_Printf("...using GL_ARB_vertex_array_object\n");
+
 /*	gl_state.bufferStorage = qfalse;
 
 	if (IsExtensionSupported("GL_ARB_buffer_storage")){ //gl 4.4 
@@ -1686,13 +1688,13 @@ int R_Init(void *hinstance, void *hWnd)
 	
 	if (IsExtensionSupported("GL_ARB_vertex_buffer_object")) {
 
-		qglBindBufferARB =		(PFNGLBINDBUFFERARBPROC)		qwglGetProcAddress("glBindBufferARB");
+		qglBindBufferARB =		(PFNGLBINDBUFFERARBPROC)	qwglGetProcAddress("glBindBufferARB");
 		qglDeleteBuffersARB =	(PFNGLDELETEBUFFERSARBPROC)	qwglGetProcAddress("glDeleteBuffersARB");
-		qglGenBuffersARB =		(PFNGLGENBUFFERSARBPROC)		qwglGetProcAddress("glGenBuffersARB");
-		qglBufferDataARB =		(PFNGLBUFFERDATAARBPROC)		qwglGetProcAddress("glBufferDataARB");
+		qglGenBuffersARB =		(PFNGLGENBUFFERSARBPROC)	qwglGetProcAddress("glGenBuffersARB");
+		qglBufferDataARB =		(PFNGLBUFFERDATAARBPROC)	qwglGetProcAddress("glBufferDataARB");
 		qglBufferSubDataARB =	(PFNGLBUFFERSUBDATAARBPROC)	qwglGetProcAddress("glBufferSubDataARB");
 		qglMapBufferARB =		(PFNGLMAPBUFFERARBPROC)		qwglGetProcAddress("glMapBufferARB");
-		qglUnmapBufferARB =		(PFNGLUNMAPBUFFERARBPROC)		qwglGetProcAddress("glUnmapBufferARB");
+		qglUnmapBufferARB =		(PFNGLUNMAPBUFFERARBPROC)	qwglGetProcAddress("glUnmapBufferARB");
 
 		if (qglGenBuffersARB && qglBindBufferARB && qglBufferDataARB && qglDeleteBuffersARB && qglBufferSubDataARB && qglMapBufferRange){
 			vec2_t		tmpVerts[4];
@@ -2039,6 +2041,7 @@ void R_Shutdown(void)
 	qglDeleteFramebuffers (1, &fbo_weaponMask);
 
 	DeleteShadowVertexBuffers();
+
 	qglDeleteBuffersARB(1, &vbo.vbo_fullScreenQuad);
 	qglDeleteBuffersARB(1, &vbo.vbo_halfScreenQuad);
 	qglDeleteBuffersARB(1, &vbo.vbo_quarterScreenQuad);
@@ -2046,6 +2049,9 @@ void R_Shutdown(void)
 	qglDeleteBuffersARB(1, &vbo.vbo_Dynamic);
 	qglDeleteBuffersARB(1, &vbo.ibo_Dynamic);
 	qglDeleteBuffersARB(1, &vbo.vbo_BSP);
+
+	glDeleteVertexArrays(1, &vao.bsp_a);
+	glDeleteVertexArrays(1, &vao.bsp_l);
 
 	Mod_FreeAll();
 	GL_ShutdownImages();
