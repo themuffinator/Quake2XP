@@ -59,7 +59,7 @@ void main (void) {
 	}
 
 	if (u_isAmbient == 1) {
-		fragData = diffuseMap * LambertLighting(normalize(normalMap.xyz), L) * u_LightColor * attenMap;
+		fragData = diffuseMap * u_ColorModulate * LambertLighting(normalize(normalMap.xyz), L) * u_LightColor * attenMap;
 		return;
 	}
 	
