@@ -553,7 +553,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 
  void R_UpdateLightUniforms(qboolean bModel)
  {
-	 mat4_t	entAttenMatrix;
+	 mat4_t	entAttenMatrix, entSpotMatrix;
 
 	qglUniform1f(lightWorld_colorScale, r_textureColorScale->value);
 	qglUniform1i(lightWorld_ambient, (int)currentShadowLight->isAmbient);
@@ -583,6 +583,15 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	 if (currentShadowLight->isCone) {
 		 qglUniform1i(lightWorld_spotLight, 1);
 		 qglUniform3f(lightWorld_spotParams, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
+
+		 if (!bModel) {
+			 qglUniformMatrix4fv(lightWorld_spotMatrix, 1, qfalse, (const float *)currentShadowLight->spotMatrix);
+		 }
+		 else {
+			 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
+			 qglUniformMatrix4fv(lightWorld_spotMatrix, 1, qfalse, (const float *)entSpotMatrix);
+		 }
+
 	 }
 	 else
 		 qglUniform1i(lightWorld_spotLight, 0);

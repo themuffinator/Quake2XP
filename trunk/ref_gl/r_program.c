@@ -564,6 +564,7 @@ void R_InitPrograms (void) {
 		lightWorld_roughnessScale	= qglGetUniformLocation (id, "u_roughnessScale");
 		lightWorld_spotLight		= qglGetUniformLocation (id, "u_spotLight");
 		lightWorld_spotParams		= qglGetUniformLocation (id, "u_spotParams");
+		lightWorld_spotMatrix		= qglGetUniformLocation (id, "u_spotMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -616,6 +617,7 @@ void R_InitPrograms (void) {
 		lightAlias_mv				= qglGetUniformLocation (id, "u_modelViewMatrix");
 		lightAlias_spotLight		= qglGetUniformLocation (id, "u_spotLight");
 		lightAlias_spotParams		= qglGetUniformLocation (id, "u_spotParams");
+		lightAlias_spotMatrix		= qglGetUniformLocation (id, "u_spotMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

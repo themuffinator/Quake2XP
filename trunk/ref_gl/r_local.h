@@ -984,6 +984,7 @@ uint lightWorld_mvp;
 uint lightWorld_isRgh;
 uint lightWorld_spotLight;
 uint lightWorld_spotParams;
+uint lightWorld_spotMatrix;
 
 uint ambientAlias_ssao;
 uint ambientAlias_colorModulate;
@@ -1012,6 +1013,7 @@ uint lightAlias_mvp;
 uint lightAlias_mv;
 uint lightAlias_spotLight;
 uint lightAlias_spotParams;
+uint lightAlias_spotMatrix;
 
 uint gen_attribConsole;
 uint gen_attribColors;

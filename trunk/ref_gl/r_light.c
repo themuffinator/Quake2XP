@@ -45,6 +45,11 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 	if (!light->radius[0] && !light->radius[1] && !light->radius[2])
 		return qfalse;
 
+	if (light->isCone) {
+		if (R_CullConeLight(light->mins, light->maxs, light->frust))
+			return qfalse;
+	}
+	else
 	if (light->spherical) {
 
 		if (R_CullSphere(light->origin, light->radius[0]))
@@ -79,6 +84,7 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
 void UpdateLightBounds (worldShadowLight_t *light) {
 	int i;
+	float x, y;
 	mat3_t lightAxis;
 	mat4_t tmpMatrix, mvMatrix;
 	vec3_t tmp;
@@ -121,7 +127,7 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 
 	// setup unit space conversion matrix
 	if (light->isCone) {
-		float x, y;
+
 		light->fov[0] = light->fov[1] = light->_cone * 0.5;
 
 		x = tanf(light->fov[0] * 0.5f);
@@ -144,36 +150,34 @@ void UpdateLightBounds (worldShadowLight_t *light) {
 		tmpMatrix[3][2] = 0.f;
 		tmpMatrix[3][3] = 1.f;
 
-		Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+		Mat4_Multiply(mvMatrix, tmpMatrix, light->spotMatrix);
 
 	}
-	else {
-		// setup unit space conversion matrix
-		if (light->isFog)
-			tmpMatrix[0][0] = 0.f;
-		else
-			tmpMatrix[0][0] = 1.f / light->radius[0];
-		tmpMatrix[0][1] = 0.f;
-		tmpMatrix[0][2] = 0.f;
-		tmpMatrix[0][3] = 0.f;
-		tmpMatrix[1][0] = 0.f;
-		if (light->isFog)
-			tmpMatrix[1][1] = 0.f;
-		else
-			tmpMatrix[1][1] = 1.f / light->radius[1];
-		tmpMatrix[1][2] = 0.f;
-		tmpMatrix[1][3] = 0.f;
-		tmpMatrix[2][0] = 0.f;
-		tmpMatrix[2][1] = 0.f;
-		tmpMatrix[2][2] = 1.f / light->radius[2];
-		tmpMatrix[2][3] = 0.f;
-		tmpMatrix[3][0] = 0.f;
-		tmpMatrix[3][1] = 0.f;
-		tmpMatrix[3][2] = 0.f;
-		tmpMatrix[3][3] = 1.f;
 
-		Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
-	}
+	if (light->isFog)
+		tmpMatrix[0][0] = 0.f;
+	else
+		tmpMatrix[0][0] = 1.f / light->radius[0];
+	tmpMatrix[0][1] = 0.f;
+	tmpMatrix[0][2] = 0.f;
+	tmpMatrix[0][3] = 0.f;
+	tmpMatrix[1][0] = 0.f;
+	if (light->isFog)
+		tmpMatrix[1][1] = 0.f;
+	else
+		tmpMatrix[1][1] = 1.f / light->radius[1];
+	tmpMatrix[1][2] = 0.f;
+	tmpMatrix[1][3] = 0.f;
+	tmpMatrix[2][0] = 0.f;
+	tmpMatrix[2][1] = 0.f;
+	tmpMatrix[2][2] = 1.f / light->radius[2];
+	tmpMatrix[2][3] = 0.f;
+	tmpMatrix[3][0] = 0.f;
+	tmpMatrix[3][1] = 0.f;
+	tmpMatrix[3][2] = 0.f;
+	tmpMatrix[3][3] = 1.f;
+
+	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
 }
 
 
@@ -1684,36 +1688,35 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 		tmpMatrix[3][2] = 0.f;
 		tmpMatrix[3][3] = 1.f;
 
-		Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+		Mat4_Multiply(mvMatrix, tmpMatrix, light->spotMatrix);
 
 	}
-	else {
 
-		if (light->isFog)
-			tmpMatrix[0][0] = 0.f;
-		else
-			tmpMatrix[0][0] = 1.f / light->radius[0];
-		tmpMatrix[0][1] = 0.f;
-		tmpMatrix[0][2] = 0.f;
-		tmpMatrix[0][3] = 0.f;
-		tmpMatrix[1][0] = 0.f;
-		if (light->isFog)
-			tmpMatrix[1][1] = 0.f;
-		else
-			tmpMatrix[1][1] = 1.f / light->radius[1];
-		tmpMatrix[1][2] = 0.f;
-		tmpMatrix[1][3] = 0.f;
-		tmpMatrix[2][0] = 0.f;
-		tmpMatrix[2][1] = 0.f;
-		tmpMatrix[2][2] = 1.f / light->radius[2];
-		tmpMatrix[2][3] = 0.f;
-		tmpMatrix[3][0] = 0.f;
-		tmpMatrix[3][1] = 0.f;
-		tmpMatrix[3][2] = 0.f;
-		tmpMatrix[3][3] = 1.f;
+	if (light->isFog)
+		tmpMatrix[0][0] = 0.f;
+	else
+		tmpMatrix[0][0] = 1.f / light->radius[0];
+	tmpMatrix[0][1] = 0.f;
+	tmpMatrix[0][2] = 0.f;
+	tmpMatrix[0][3] = 0.f;
+	tmpMatrix[1][0] = 0.f;
+	if (light->isFog)
+		tmpMatrix[1][1] = 0.f;
+	else
+		tmpMatrix[1][1] = 1.f / light->radius[1];
+	tmpMatrix[1][2] = 0.f;
+	tmpMatrix[1][3] = 0.f;
+	tmpMatrix[2][0] = 0.f;
+	tmpMatrix[2][1] = 0.f;
+	tmpMatrix[2][2] = 1.f / light->radius[2];
+	tmpMatrix[2][3] = 0.f;
+	tmpMatrix[3][0] = 0.f;
+	tmpMatrix[3][1] = 0.f;
+	tmpMatrix[3][2] = 0.f;
+	tmpMatrix[3][3] = 1.f;
 
-		Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
-	}
+	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+
 
 	r_numWorlsShadowLights++;
 	return light;
@@ -2057,10 +2060,10 @@ next:
 	pbbox[4] = surf->maxs[1];
 	pbbox[5] = surf->maxs[2];
 
-	if (!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
+	if (light->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], light->frust))
 		return qfalse;
 
-	if (light->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], light->frust))
+	if (!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
 		return qfalse;
 
 	return qtrue;
