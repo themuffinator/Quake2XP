@@ -401,13 +401,13 @@ void R_UpdateLightAliasUniforms()
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
 	qglUniformMatrix4fv(lightAlias_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
+	
+	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
+	qglUniformMatrix4fv(lightAlias_spotMatrix, 1, qfalse, (const float *)entSpotMatrix);
+	qglUniform3f(lightAlias_spotParams, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
 
 	if (currentShadowLight->isCone) {
 		qglUniform1i(lightAlias_spotLight, 1);
-		qglUniform3f(lightAlias_spotParams, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
-
-		Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
-		qglUniformMatrix4fv(lightAlias_spotMatrix, 1, qfalse, (const float *)entSpotMatrix);
 	}
 	else
 		qglUniform1i(lightWorld_spotLight, 0);

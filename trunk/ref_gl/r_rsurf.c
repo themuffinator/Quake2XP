@@ -843,7 +843,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 	R_RecursiveWorldNode(node->children[!side]);
 }
 
-qboolean R_MarkLightSurf (msurface_t *surf, qboolean world) {
+qboolean R_MarkLightSurf (msurface_t *surf, qboolean world, worldShadowLight_t *light) {
 	cplane_t	*plane;
 	float		dist;
 	glpoly_t	*poly;
@@ -865,20 +865,20 @@ hack:
 	switch (plane->type)
 	{
 	case PLANE_X:
-		dist = currentShadowLight->origin[0] - plane->dist;
+		dist = light->origin[0] - plane->dist;
 		break;
 	case PLANE_Y:
-		dist = currentShadowLight->origin[1] - plane->dist;
+		dist = light->origin[1] - plane->dist;
 		break;
 	case PLANE_Z:
-		dist = currentShadowLight->origin[2] - plane->dist;
+		dist = light->origin[2] - plane->dist;
 		break;
 	default:
-		dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
+		dist = DotProduct (light->origin, plane->normal) - plane->dist;
 		break;
 	}
 	
-	if (currentShadowLight->isFog && !currentShadowLight->isShadow)
+	if (light->isFog && !light->isShadow)
 		goto next;
 
 		//the normals are flipped when surf_planeback is 1
@@ -887,19 +887,19 @@ hack:
 			return qfalse;
 next:
 
-	if (fabsf(dist) > currentShadowLight->maxRad)
+	if (fabsf(dist) > light->maxRad)
 		return qfalse;
 
 	if(world)
 	{
 		float	lbbox[6], pbbox[6];
 
-		lbbox[0] = currentShadowLight->origin[0] - currentShadowLight->radius[0];
-		lbbox[1] = currentShadowLight->origin[1] - currentShadowLight->radius[1];
-		lbbox[2] = currentShadowLight->origin[2] - currentShadowLight->radius[2];
-		lbbox[3] = currentShadowLight->origin[0] + currentShadowLight->radius[0];
-		lbbox[4] = currentShadowLight->origin[1] + currentShadowLight->radius[1];
-		lbbox[5] = currentShadowLight->origin[2] + currentShadowLight->radius[2];
+		lbbox[0] = light->origin[0] - light->radius[0];
+		lbbox[1] = light->origin[1] - light->radius[1];
+		lbbox[2] = light->origin[2] - light->radius[2];
+		lbbox[3] = light->origin[0] + light->radius[0];
+		lbbox[4] = light->origin[1] + light->radius[1];
+		lbbox[5] = light->origin[2] + light->radius[2];
 
 		// surface bounding box
 		pbbox[0] = surf->mins[0];
@@ -909,10 +909,10 @@ next:
 		pbbox[4] = surf->maxs[1];
 		pbbox[5] = surf->maxs[2];
 
-		if(!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
+		if (light->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], light->frust))
 			return qfalse;
 
-		if(currentShadowLight->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], currentShadowLight->frust))
+		if(!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
 			return qfalse;
 	}
 
@@ -921,49 +921,53 @@ next:
 	return qtrue;
 }
 
-void R_MarkLightCasting (mnode_t *node)
+void R_MarkLightCasting (mnode_t *node, qboolean precalc, worldShadowLight_t *light)
 {
 	cplane_t			*plane;
 	float				dist;
 	msurface_t			**surf;
 	mleaf_t				*leaf;
 	int					c, cluster;
-	
+
 	if (node->contents != -1)
 	{
 		//we are in a leaf
 		leaf = (mleaf_t *)node;
 		cluster = leaf->cluster;
 
-		if (!(currentShadowLight->vis[cluster>>3] & (1<<(cluster&7))))
+		if (!(light->vis[cluster>>3] & (1<<(cluster&7))))
 			return;
 
 		surf = leaf->firstmarksurface;
 
 		for (c = 0; c < leaf->numMarkSurfaces; c++, surf++){
 
-			if (R_MarkLightSurf ((*surf), qtrue))
-				interaction[numInteractionSurfs++] = (*surf);			
+			if (R_MarkLightSurf((*surf), qtrue, light)) {
+				if(!precalc)
+					interaction[numInteractionSurfs++] = (*surf);
+				else
+					light->interaction[light->numInteractionSurfs++] = (*surf);
+			}
 		}
 		return;
 	}
 
 	plane = node->plane;
-	dist = DotProduct (currentShadowLight->origin, plane->normal) - plane->dist;
+	dist = DotProduct (light->origin, plane->normal) - plane->dist;
 
-	if (dist > currentShadowLight->maxRad)
+	if (dist > light->maxRad)
 	{
-		R_MarkLightCasting (node->children[0]);
+		R_MarkLightCasting (node->children[0], precalc, light);
 		return;
 	}
-	if (dist < -currentShadowLight->maxRad)
+	if (dist < -light->maxRad)
 	{
-		R_MarkLightCasting (node->children[1]);
+		R_MarkLightCasting (node->children[1], precalc, light);
 		return;
 	}
 
-	R_MarkLightCasting (node->children[0]);
-	R_MarkLightCasting (node->children[1]);
+	R_MarkLightCasting (node->children[0], precalc, light);
+	R_MarkLightCasting (node->children[1], precalc, light);
 }
 
 void R_DrawLightWorld(void)
@@ -982,7 +986,7 @@ void R_DrawLightWorld(void)
 	if (!currentShadowLight->isStatic) {
 		r_lightTimestamp++;
 		numInteractionSurfs = 0;
-		R_MarkLightCasting(r_worldmodel->nodes);
+		R_MarkLightCasting(r_worldmodel->nodes, qfalse, currentShadowLight);
 		if (numInteractionSurfs > 0)
 			GL_DrawDynamicLightPass(qfalse, qfalse);
 	}
@@ -1298,7 +1302,7 @@ void R_MarkBrushModelSurfaces (void) {
 
 	for (i=0 ; i<clmodel->numModelSurfaces ; i++, psurf++){
 
-		if (R_MarkLightSurf (psurf, qfalse))
+		if (R_MarkLightSurf (psurf, qfalse, currentShadowLight))
 			interaction[numInteractionSurfs++] = psurf;
 	}
 }

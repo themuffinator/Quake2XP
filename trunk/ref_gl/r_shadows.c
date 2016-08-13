@@ -440,10 +440,10 @@ hack:
 	pbbox[4] = surf->maxs[1];
 	pbbox[5] = surf->maxs[2];
 
-	if (!BoundsIntersect (&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
+	if (currentShadowLight->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], currentShadowLight->frust))
 		return qfalse;
 
-	if (currentShadowLight->_cone && R_CullConeLight (&pbbox[0], &pbbox[3], currentShadowLight->frust))
+	if (!BoundsIntersect (&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
 		return qfalse;
 
 	poly->shadowTimestamp = shadowTimeStamp;

@@ -35,7 +35,7 @@ vec3_t player_org, v_forward, v_right, v_up;
 qboolean R_MarkLightLeaves (worldShadowLight_t *light);
 void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine ();
-void R_MarkLightSurfaces(worldShadowLight_t *light);
+void R_AddLightInteraction();
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
@@ -630,7 +630,7 @@ void R_Paste_Light_Properties_f (void) {
 	UpdateLightBounds (selectedShadowLight);
 	R_MarkLightLeaves (selectedShadowLight);
 	R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-	R_MarkLightSurfaces(selectedShadowLight);
+	R_AddLightInteraction(selectedShadowLight);
 
 	Com_Printf ("Paste light properties from clipboard.\n");
 }
@@ -691,7 +691,7 @@ void R_EditSelectedLight_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_MarkLightSurfaces(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "color")) {
@@ -735,7 +735,7 @@ void R_EditSelectedLight_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_MarkLightSurfaces(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "cone")) {
@@ -749,7 +749,7 @@ void R_EditSelectedLight_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_MarkLightSurfaces(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "style")) {
@@ -785,7 +785,7 @@ void R_EditSelectedLight_f (void) {
 		angles[2] = atof (Cmd_Argv (4));
 		VectorCopy (angles, selectedShadowLight->angles);
 		UpdateLightBounds(selectedShadowLight);
-		R_MarkLightSurfaces(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight);
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "shadow")) {
@@ -949,7 +949,7 @@ void R_MoveLightToRight_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_MarkLightSurfaces(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight);
 	}
 
 // move flare
@@ -999,7 +999,7 @@ void R_MoveLightForward_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_MarkLightSurfaces(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight);
 	}
 
 // move flare	
@@ -1045,7 +1045,7 @@ void R_MoveLightUpDown_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_MarkLightSurfaces(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight);
 	}
 
 // move flare
@@ -1102,7 +1102,7 @@ void R_ChangeLightRadius_f (void) {
 		UpdateLightBounds (selectedShadowLight);
 		R_MarkLightLeaves (selectedShadowLight);
 		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_MarkLightSurfaces(selectedShadowLight);
+		R_AddLightInteraction(selectedShadowLight);
 	}
 
 }
@@ -1141,7 +1141,7 @@ void R_ChangeLightCone_f (void) {
 	R_DrawBspModelVolumes (qtrue, selectedShadowLight);
 	R_MarkLightLeaves (selectedShadowLight);
 	UpdateLightBounds (selectedShadowLight);
-	R_MarkLightSurfaces(selectedShadowLight);
+	R_AddLightInteraction (selectedShadowLight);
 }
 
 
@@ -1611,6 +1611,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	light->flareSize = flareSize;
 	light->flare = flare;
 	light->vboId = light->iboId = light->iboNumIndices = 0;
+	light->numInteractionSurfs = 0;
 	light->depthBounds[0] = 0.0;
 	light->depthBounds[1] = 1.0;
 	light->maxRad = 0;
@@ -1641,7 +1642,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 
 	if (ingame) { // new light
 		R_DrawBspModelVolumes(qtrue, light);
-		R_MarkLightSurfaces(light);
+		R_AddLightInteraction(light);
 		R_MarkLightLeaves(light);
 	}
 
@@ -2003,90 +2004,16 @@ qboolean InLightVISEntity () {
 
 }
 
-qboolean R_AddLightSurf(msurface_t *surf, worldShadowLight_t *light) {
-	cplane_t	*plane;
-	float		dist;
-	float		lbbox[6], pbbox[6];
-
-	if (surf->flags & MSURF_LAVA)
-		goto hack;
-
-	if ((surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66 | SURF_SKY | SURF_WARP | SURF_NODRAW)) || (surf->flags & MSURF_DRAWTURB))
-		return qfalse;
-hack:
-
-	plane = surf->plane;
-
-	switch (plane->type)
-	{
-	case PLANE_X:
-		dist = light->origin[0] - plane->dist;
-		break;
-	case PLANE_Y:
-		dist = light->origin[1] - plane->dist;
-		break;
-	case PLANE_Z:
-		dist = light->origin[2] - plane->dist;
-		break;
-	default:
-		dist = DotProduct(light->origin, plane->normal) - plane->dist;
-		break;
-	}
-
-	if (light->isFog && !light->isShadow)
-		goto next;
-
-	//the normals are flipped when surf_planeback is 1
-	if (((surf->flags & MSURF_PLANEBACK) && (dist > 0)) ||
-		(!(surf->flags & MSURF_PLANEBACK) && (dist < 0)))
-		return qfalse;
-next:
-
-	if (fabsf(dist) > light->maxRad)
-		return qfalse;
-
-	lbbox[0] = light->origin[0] - light->radius[0];
-	lbbox[1] = light->origin[1] - light->radius[1];
-	lbbox[2] = light->origin[2] - light->radius[2];
-	lbbox[3] = light->origin[0] + light->radius[0];
-	lbbox[4] = light->origin[1] + light->radius[1];
-	lbbox[5] = light->origin[2] + light->radius[2];
-
-	// surface bounding box
-	pbbox[0] = surf->mins[0];
-	pbbox[1] = surf->mins[1];
-	pbbox[2] = surf->mins[2];
-	pbbox[3] = surf->maxs[0];
-	pbbox[4] = surf->maxs[1];
-	pbbox[5] = surf->maxs[2];
-
-	if (light->_cone && R_CullConeLight(&pbbox[0], &pbbox[3], light->frust))
-		return qfalse;
-
-	if (!BoundsIntersect(&lbbox[0], &lbbox[3], &pbbox[0], &pbbox[3]))
-		return qfalse;
-
-	return qtrue;
-}
-
 extern  int lightSurfSort(const msurface_t **a, const msurface_t **b);
+void R_MarkLightCasting(mnode_t *node, qboolean precalc, worldShadowLight_t *light);
+extern int r_lightTimestamp;
 
-void R_MarkLightSurfaces(worldShadowLight_t *light) {
+void R_AddLightInteraction(worldShadowLight_t *light) {
 	
-	int			i;
-	msurface_t	*surf;
-
-	light->numInteractionSurfs = 0;
-	surf = r_worldmodel->surfaces;
-
-	for (i = 0; i < r_worldmodel->numSurfaces; surf++, i++) {
-		
-		if (R_AddLightSurf(surf, light))
-			light->interaction[light->numInteractionSurfs++] = surf;
-	}
-
-	qsort(light->interaction, light->numInteractionSurfs, sizeof(msurface_t*), (int(*)(const void *, const void *))lightSurfSort);
-
+	r_lightTimestamp++;
+	light->numInteractionSurfs = 0; // set to zero for ingame editor
+	
+	R_MarkLightCasting(r_worldmodel->nodes, qtrue, light);
 }
 
 void R_CalcStaticLightInteraction (void) {
@@ -2098,11 +2025,12 @@ void R_CalcStaticLightInteraction (void) {
 		if (!R_MarkLightLeaves (light)) // out of bsp or no area data
 			continue;
 
-		R_DrawBspModelVolumes	(qtrue, light);
-		R_MarkLightSurfaces		(light);
+		R_DrawBspModelVolumes(qtrue, light);
+		R_AddLightInteraction(light);
+		qsort(light->interaction, light->numInteractionSurfs, sizeof(msurface_t*), (int(*)(const void *, const void *))lightSurfSort);
 	}
 
-	Com_Printf (""S_COLOR_MAGENTA"R_CalcStaticLightInteraction: "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", numPreCachedLights);
+	Com_Printf (""S_COLOR_MAGENTA"R_CalcStaticLightInteraction: "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", r_numWorlsShadowLights);
 }
 
 void DeleteShadowVertexBuffers (void) {
