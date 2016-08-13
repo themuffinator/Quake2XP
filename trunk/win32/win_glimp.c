@@ -33,14 +33,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../ref_gl/r_local.h"
 
-
-#ifdef WIN32
 // Enable High Performance Graphics while using Integrated Graphics.
-
 __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;        // Nvidia
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;  // AMD
 
-#endif
 
 #define	WINDOW_STYLE	(WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_VISIBLE)
 

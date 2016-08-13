@@ -572,27 +572,22 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 	 if (!bModel){
 		 qglUniformMatrix4fv(lightWorld_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 		 qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)currentShadowLight->attenMatrix);
+		 qglUniformMatrix4fv(lightWorld_spotMatrix, 1, qfalse, (const float *)currentShadowLight->spotMatrix);
 	 }
 	 else{
 		 qglUniformMatrix4fv(lightWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 
 		 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
 		 qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
+
+		 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
+		 qglUniformMatrix4fv(lightWorld_spotMatrix, 1, qfalse, (const float *)entSpotMatrix);
 	 }
 	 
-	 if (currentShadowLight->isCone) {
+	 qglUniform3f(lightWorld_spotParams, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
+
+	 if (currentShadowLight->isCone) 
 		 qglUniform1i(lightWorld_spotLight, 1);
-		 qglUniform3f(lightWorld_spotParams, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
-
-		 if (!bModel) {
-			 qglUniformMatrix4fv(lightWorld_spotMatrix, 1, qfalse, (const float *)currentShadowLight->spotMatrix);
-		 }
-		 else {
-			 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
-			 qglUniformMatrix4fv(lightWorld_spotMatrix, 1, qfalse, (const float *)entSpotMatrix);
-		 }
-
-	 }
 	 else
 		 qglUniform1i(lightWorld_spotLight, 0);
 

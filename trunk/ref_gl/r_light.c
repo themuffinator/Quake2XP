@@ -1611,7 +1611,6 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	light->flareSize = flareSize;
 	light->flare = flare;
 	light->vboId = light->iboId = light->iboNumIndices = 0;
-	light->numInteractionSurfs = 0;
 	light->depthBounds[0] = 0.0;
 	light->depthBounds[1] = 1.0;
 	light->maxRad = 0;
@@ -1641,9 +1640,9 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	MakeFrustum4Light (light, ingame);
 
 	if (ingame) { // new light
+		R_MarkLightLeaves(light);
 		R_DrawBspModelVolumes(qtrue, light);
 		R_AddLightInteraction(light);
-		R_MarkLightLeaves(light);
 	}
 
 #define START_OFF	1
@@ -1717,7 +1716,6 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	tmpMatrix[3][3] = 1.f;
 
 	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
-
 
 	r_numWorlsShadowLights++;
 	return light;
@@ -2014,6 +2012,7 @@ void R_AddLightInteraction(worldShadowLight_t *light) {
 	light->numInteractionSurfs = 0; // set to zero for ingame editor
 	
 	R_MarkLightCasting(r_worldmodel->nodes, qtrue, light);
+	qsort(light->interaction, light->numInteractionSurfs, sizeof(msurface_t*), (int(*)(const void *, const void *))lightSurfSort);
 }
 
 void R_CalcStaticLightInteraction (void) {
@@ -2027,7 +2026,6 @@ void R_CalcStaticLightInteraction (void) {
 
 		R_DrawBspModelVolumes(qtrue, light);
 		R_AddLightInteraction(light);
-		qsort(light->interaction, light->numInteractionSurfs, sizeof(msurface_t*), (int(*)(const void *, const void *))lightSurfSort);
 	}
 
 	Com_Printf (""S_COLOR_MAGENTA"R_CalcStaticLightInteraction: "S_COLOR_GREEN"%i"S_COLOR_WHITE" lights\n", r_numWorlsShadowLights);
