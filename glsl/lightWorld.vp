@@ -3,6 +3,7 @@ uniform vec3 	u_LightOrg;
 uniform float	u_fogDensity;
 uniform float	u_scroll;
 uniform mat4	u_attenMatrix;
+uniform mat4	u_spotMatrix;
 uniform mat4	u_cubeMatrix;
 uniform mat4	u_modelViewProjectionMatrix;
 uniform int		u_parallaxType;
@@ -14,6 +15,7 @@ out vec4		v_CubeCoord;
 out vec4		v_AttenCoord;
 out vec3		v_positionVS;
 out vec3		v_lightAtten;
+out vec3		v_lightSpot;
 
 layout(location = 0) in vec3 att_position;
 layout(location = 1) in vec3 att_normal;
@@ -23,10 +25,11 @@ layout(location = 5) in vec2 att_texCoordDiffuse;
 
 void main (void) {
 	// setup tex coords
-	v_texCoord = att_texCoordDiffuse;  // diffuse & bump
-	v_texCoord += u_scroll;
-	v_CubeCoord = u_cubeMatrix * vec4(att_position, 1.0);
-	v_lightAtten = (u_attenMatrix * vec4(att_position, 1.0)).xyz;
+	v_texCoord		= att_texCoordDiffuse;  // diffuse & bump
+	v_texCoord		+= u_scroll;
+	v_CubeCoord		= u_cubeMatrix * vec4(att_position, 1.0);
+	v_lightAtten	= (u_attenMatrix * vec4(att_position, 1.0)).xyz;
+	v_lightSpot		= (u_spotMatrix * vec4(att_position, 1.0)).xyz;
 
 	// calculate tangent space view vector for parallax
 	vec3 tmp = u_viewOriginES - att_position;

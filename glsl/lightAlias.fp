@@ -23,6 +23,7 @@ in vec3			v_lightVec;
 in vec4			v_CubeCoord;
 in vec4			v_positionVS;
 in vec3			v_lightAtten;
+in vec3			v_lightSpot;
 in vec3			v_lightDirection;
 
 #include lighting.inc
@@ -32,7 +33,7 @@ void main (void) {
 	float attenMap = PointAttenuation(v_lightAtten, 2.0);
 
 	if(u_spotLight == 1)
-		attenMap *= ConeAttenuation(v_lightAtten, u_spotParams);
+		attenMap *= ConeAttenuation(v_lightSpot, u_spotParams);
 
 	if(attenMap <= CUTOFF_EPSILON){
 		discard;
