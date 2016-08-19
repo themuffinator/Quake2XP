@@ -179,10 +179,11 @@ static void CDAudio_SetMixerVolume (float volume) {
 	mxControlDetails.cbStruct = sizeof(MIXERCONTROLDETAILS);
 	mxControlDetails.dwControlID = mxControl->dwControlID;
 	mxControlDetails.cChannels = mxLine->cChannels;
-	mxControlDetails.cbDetails = sizeof(mxValue);
+	mxControlDetails.cbDetails = sizeof(MIXERCONTROLDETAILS_UNSIGNED);
 	mxControlDetails.paDetails = &mxValue;
 
 	mxValue[0].dwValue = mxValue[1].dwValue = (volume * (mxControl->Bounds.dwMaximum - mxControl->Bounds.dwMinimum)) + mxControl->Bounds.dwMinimum;
+
 	if (dwResult = mixerSetControlDetails ((HMIXEROBJ)cdAudio.hMixer, &mxControlDetails, MIXER_SETCONTROLDETAILSF_VALUE))
 		Com_DPrintf ("CDAudio: mixerSetControlDetails() failed (%i)\n", dwResult);
 }

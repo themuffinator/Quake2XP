@@ -500,11 +500,6 @@ void ReadGame (char *filename) {
 		gi.error ("Couldn't open %s", filename);
 
 
-
-
-
-
-
 	fread (str, sizeof(str), 1, f);
 	if (strcmp (str, __DATE__)) {
 		fclose (f);

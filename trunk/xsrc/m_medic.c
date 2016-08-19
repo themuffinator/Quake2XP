@@ -62,12 +62,15 @@ edict_t *medic_FindDeadMonster (edict_t *self) {
 	edict_t	*best = NULL;
 
 	while ((ent = findradius (ent, self->s.origin, 1024)) != NULL) {
+		gi.dprintf("in radius\n");
 		if (ent == self)
 			continue;
 		if (!(ent->svflags & SVF_MONSTER))
 			continue;
+		gi.dprintf("monster!\n");
 		if (ent->monsterinfo.aiflags & AI_GOOD_GUY)
 			continue;
+		gi.dprintf("no prison\n");
 		if (ent->owner)
 			continue;
 		if (ent->health > 0)
