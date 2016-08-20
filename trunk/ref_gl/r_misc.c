@@ -52,6 +52,7 @@ image_t	*r_envTex;
 image_t	*r_randomNormalTex;
 image_t	*r_lightCubeMap[MAX_FILTERS];
 image_t *fbo_color0;
+image_t *skinBump;
 
 image_t *depthMap;
 image_t *ScreenMap;
@@ -763,6 +764,10 @@ void R_InitEngineTextures (void) {
 
 	for (i = 0; i < MAX_GLOBAL_FILTERS; i++)
 		r_lightCubeMap[i] = R_LoadLightFilter (i);
+
+	skinBump = GL_FindImage("gfx/skinBlend_bump.tga", it_pic);
+	if (!skinBump)
+		skinBump = r_notexture;
 
 	bloomtex = 0;
 	thermaltex = 0;

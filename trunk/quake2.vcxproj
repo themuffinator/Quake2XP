@@ -206,16 +206,16 @@
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <Parallelization>true</Parallelization>
       <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>
-      <UseProcessorExtensions>SSSE3</UseProcessorExtensions>
+      <UseProcessorExtensions>AVX</UseProcessorExtensions>
       <EnableParallelDebugChecks>false</EnableParallelDebugChecks>
       <OptimizationDiagnosticLevel>Medium</OptimizationDiagnosticLevel>
       <EmitOptimizationDiagnosticsToFile>false</EmitOptimizationDiagnosticsToFile>
       <AnalyzeIncludeFiles>false</AnalyzeIncludeFiles>
-      <GenerateAlternateCodePaths>SSSE3</GenerateAlternateCodePaths>
+      <GenerateAlternateCodePaths>AVX</GenerateAlternateCodePaths>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
-      <Optimization>Full</Optimization>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <Optimization>Full</Optimization>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

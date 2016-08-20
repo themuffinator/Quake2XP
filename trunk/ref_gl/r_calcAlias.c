@@ -552,13 +552,15 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	GL_MBind (GL_TEXTURE1_ARB, skin->texnum);
 	GL_MBind (GL_TEXTURE2_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	GL_MBindCube (GL_TEXTURE3_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
-	
+
 	if (rgh == r_notexture)
 		qglUniform1i(lightAlias_isRgh, 0);
 	else {
 		qglUniform1i(lightAlias_isRgh, 1);
 		GL_MBind(GL_TEXTURE4_ARB, rgh->texnum);
 	}
+	
+	GL_MBind(GL_TEXTURE5_ARB, skinBump->texnum);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);

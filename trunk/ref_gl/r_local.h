@@ -170,6 +170,7 @@ extern	image_t	*weaponHack;
 extern	image_t *fxaaMap;
 extern	image_t *fboScreen;
 extern	image_t	*r_whiteMap;
+extern	image_t *skinBump;
 
 #define MAX_FILTERS 256
 extern	image_t	*r_lightCubeMap[MAX_FILTERS];
@@ -249,7 +250,6 @@ cvar_t	*r_maxAnisotropy;
 
 cvar_t	*r_shadows;
 cvar_t	*r_playerShadow;
-cvar_t	*r_useLightOccluders;
 
 cvar_t	*r_multiSamples;
 cvar_t	*r_nvSamplesCoverange;

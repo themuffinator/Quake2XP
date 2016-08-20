@@ -1446,6 +1446,7 @@ void GL_FreeUnusedImages(void)
 	r_envTex->registration_sequence = registration_sequence;
 	r_randomNormalTex->registration_sequence = registration_sequence;
 	r_whiteMap->registration_sequence = registration_sequence;
+	skinBump->registration_sequence = registration_sequence;
 
 	fboDN->registration_sequence = registration_sequence;
 	for (i = 0; i < 2; i++)
