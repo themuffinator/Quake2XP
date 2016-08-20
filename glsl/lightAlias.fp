@@ -3,6 +3,7 @@ layout (binding = 1) uniform sampler2D		u_diffuseMap;
 layout (binding = 2) uniform sampler2D		u_causticMap;
 layout (binding = 3) uniform samplerCube	u_CubeFilterMap;
 layout (binding = 4) uniform sampler2D		u_rghMap;
+layout (binding = 5) uniform sampler2D		u_bumpBlend;
 
 uniform float	u_LightRadius;
 uniform float	u_specularScale;
@@ -47,7 +48,7 @@ void main (void) {
 	vec4 normalMap =  texture(u_bumpMap, v_texCoord);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
-	
+		
 	float SSS = diffuseMap.a;
 
 	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
@@ -95,14 +96,15 @@ void main (void) {
 
 		if(u_fog == 0) {
 
-			if(SSS <= 0.00392){
-				fragData = SkinLighting(V, L, normalize(normalMap.xyz), u_LightColor.rgb, diffuseMap * 0.5, attenMap, specular) * cubeFilter;
-				return;
-			}
-		
-		fragData.rgb = brdfColor * cubeFilter.rgb * attenMap; 
-		fragData.a = 1.0;
-			
+				vec3 nm = texture(u_bumpMap,   v_texCoord).xyz * vec3( 2.0,  2.0, 2.0) + vec3(-1.0, -1.0,  0.0);
+				vec3 dt = texture(u_bumpBlend, v_texCoord).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
+				vec3 r = normalize(nm * dot(nm, dt) - dt * nm.z);
+				vec3 blendNormal =  r * 0.5 + 0.5;
+
+				vec4 sss_color = SkinLighting(V, L, blendNormal, u_LightColor.rgb, diffuseMap * 0.5, attenMap, specular) * cubeFilter;
+				vec3 metall_color = brdfColor * cubeFilter.rgb * attenMap; 
+
+				fragData = mix(sss_color, vec4(metall_color, 1.0), SSS);			
 		}
-	}        
+	}
 }
