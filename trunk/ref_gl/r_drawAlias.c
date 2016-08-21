@@ -196,9 +196,7 @@ R_DrawAliasModel
 =================
 */
 
-void GL_DrawAliasFrameLerpWeapon(dmdl_t *paliashdr);
-
-void R_DrawAliasModel (entity_t *e, qboolean weapon_model)
+void R_DrawAliasModel (entity_t *e)
 {
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
@@ -249,9 +247,6 @@ next:
 		GL_DrawAliasFrameLerpShell(paliashdr);
 	else 
 		GL_DrawAliasFrameLerp(paliashdr, shadelight);
-
-	if(weapon_model)	
-		GL_DrawAliasFrameLerpWeapon(paliashdr);
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);

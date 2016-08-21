@@ -503,7 +503,7 @@ void R_Shutdown (void);
 
 void R_RenderView (refdef_t * fd);
 void GL_ScreenShot_f (void);
-void R_DrawAliasModel (entity_t * e, qboolean weapon_model);
+void R_DrawAliasModel (entity_t * e);
 void R_DrawBrushModel ();
 void R_DrawSpriteModel (entity_t * e);
 void R_DrawBeam ();

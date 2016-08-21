@@ -527,7 +527,7 @@ void R_DrawPlayerWeaponAmbient(void)
 			continue;
 
 		if (currentmodel->type == mod_alias)
-			R_DrawAliasModel(currententity, qfalse);
+			R_DrawAliasModel(currententity);
 		
 		if (currentmodel->type == mod_iqm)
 			IQM_DrawModels();
@@ -549,10 +549,10 @@ void R_DrawPlayerWeaponAmbient(void)
 			continue;
 
 		if (currentmodel->type == mod_alias)
-			R_DrawAliasModel(currententity, qfalse);
+			R_DrawAliasModel(currententity);
 	}
 
-	GL_Enable(GL_BLEND);
+	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
 }
 
@@ -813,7 +813,7 @@ static void R_DrawEntitiesOnList (void) {
 
 		switch (currentmodel->type) {
 			case mod_alias:
-				R_DrawAliasModel(currententity, qfalse);
+				R_DrawAliasModel(currententity);
 				break;
 			case mod_brush:
 				R_DrawBrushModel();
@@ -830,6 +830,7 @@ static void R_DrawEntitiesOnList (void) {
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
 	GL_DepthMask(0);
+
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 
@@ -852,7 +853,7 @@ static void R_DrawEntitiesOnList (void) {
 		}
 
 		if (currentmodel->type == mod_alias) 
-			R_DrawAliasModel(currententity, qfalse);
+			R_DrawAliasModel(currententity);
 	}
 	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
