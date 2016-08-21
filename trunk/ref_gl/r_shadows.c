@@ -320,7 +320,7 @@ void R_DeformShadowVolume () {
 	BuildShadowVolumeTriangles (paliashdr, light);
 }
 
-void R_CastAliasShadowVolumes (void) {
+void R_CastAliasShadowVolumes (qboolean player) {
 	int	i;
 
 	if (!r_shadows->value || !r_drawEntities->value)
@@ -349,16 +349,37 @@ void R_CastAliasShadowVolumes (void) {
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
 
-	for (i = 0; i < r_newrefdef.num_entities; i++) {
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
+	if (player) {
+		for (i = 0; i < r_newrefdef.num_entities; i++) {
+			currententity = &r_newrefdef.entities[i];
+			currentmodel = currententity->model;
 
-		if (!currentmodel)
-			continue;
+			if (!currentmodel)
+				continue;
+			
+			if (!(currententity->flags & RF_VIEWERMODEL))
+				continue;
 
-		if (currentmodel->type == mod_alias)
-			R_DeformShadowVolume ();
+			if (currentmodel->type == mod_alias)
+				R_DeformShadowVolume();
 
+		}
+	}
+	else {
+		for (i = 0; i < r_newrefdef.num_entities; i++) {
+			currententity = &r_newrefdef.entities[i];
+			currentmodel = currententity->model;
+
+			if (!currentmodel)
+				continue;
+
+			if (currententity->flags & RF_VIEWERMODEL)
+				continue;
+
+			if (currentmodel->type == mod_alias)
+				R_DeformShadowVolume();
+
+		}
 	}
 	qglDisableVertexAttribArray (ATT_POSITION);
 	

@@ -597,13 +597,14 @@ void R_DrawLightScene (void)
 	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
 		GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
-	qglClearStencil(128);
-	GL_StencilMask(255);
-	
-	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+		qglClearStencil(128);
+		GL_StencilMask(255);
 		qglClear(GL_STENCIL_BUFFER_BIT);
-	
-	R_CastBspShadowVolumes();		// bsp and bmodels shadows
+	}
+
+	R_CastBspShadowVolumes();			// bsp and bmodels shadows
+	R_CastAliasShadowVolumes(qtrue);	// player models shadows
 
 	// only bsp shadows for entity!!! 
 	for (i = 0; i < r_newrefdef.num_entities; i++) { 
@@ -628,10 +629,8 @@ void R_DrawLightScene (void)
 			R_DrawAliasModelLightPass(qfalse);
 	}
 
-	R_CastAliasShadowVolumes();		// alias models shadows
-	R_DrawLightWorld();				// light world
-	R_DrawLightFlare();				// light flare
-	R_DrawLightBounds();			// debug stuff
+	R_CastAliasShadowVolumes(qfalse);	// alias models shadows
+	R_DrawLightWorld();					// light world
 	
 	num_visLights++;
 
@@ -657,6 +656,10 @@ void R_DrawLightScene (void)
 		if (currentmodel->type == mod_brush) 
 			R_DrawLightBrushModel();
 		}
+	
+	R_DrawLightFlare();				// light flare
+	R_DrawLightBounds();			// debug stuff
+
 	}
 	}
 	

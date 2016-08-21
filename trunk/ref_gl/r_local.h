@@ -100,9 +100,6 @@ typedef enum {
 
 #include "r_model.h"
 
-void GL_BeginRendering (int *x, int *y, int *width, int *height);
-void GL_EndRendering (void);
-
 void GL_SetDefaultState (void);
 void GL_UpdateSwapInterval (void);
 
@@ -348,30 +345,21 @@ qboolean xhargar2hack;
 
 void GL_Bind (int texnum);
 void GL_MBind (GLenum target, int texnum);
-void GL_TexEnv (GLenum value);
-void GL_EnableMultitexture (qboolean enable);
 void GL_SelectTexture (GLenum);
 void GL_MBindCube (GLenum target, int texnum);
 
 void R_LightPoint (vec3_t p, vec3_t color);
 
 void R_InitLightgrid (void);
-void R_RenderFlares (void);
 
-void R_DrawShadowVolume (entity_t * e);
 worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style, int filter, vec3_t angles, vec3_t speed,
 	qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg,
 	float flareSize, char target[MAX_QPATH], int start_off, int fog, float fogDensity);
 void R_DrawParticles ();
-void GL_DrawRadar (void);
-void R_DrawAlphaPoly (void);
-void R_DrawReflectivePoly (void);
 void R_RenderDecals (void);
 void R_LightColor (vec3_t org, vec3_t color);
-void MyGlPerspective (GLdouble fov, GLdouble aspectr, GLdouble zNear);
 qboolean R_CullAliasModel (vec3_t bbox[8], entity_t *e);
 int CL_PMpointcontents2 (vec3_t point, struct model_s * ignore);
-void R_DrawAliasDistortModel (entity_t *e);
 void VID_MenuInit (void);
 void AnglesToMat3 (const vec3_t angles, mat3_t m);
 void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out);
@@ -379,8 +367,6 @@ void R_ShutdownPrograms (void);
 void GL_BindNullProgram (void);
 void GL_BindRect (int texnum);
 void GL_MBindRect (GLenum target, int texnum);
-void R_BlobShadow (void);
-void R_ShadowBlend ();
 void R_Bloom (void);
 void R_ThermalVision (void);
 void R_RadialBlur (void);
@@ -391,14 +377,11 @@ void R_ListPrograms_f (void);
 void R_InitPrograms (void);
 void R_ClearWorldLights (void);
 qboolean R_CullSphere (const vec3_t centre, const float radius);
-void R_DebugLights (vec3_t lightOrg);
 void R_CastBspShadowVolumes (void);
-void R_CastAliasShadowVolumes (void);
+void R_CastAliasShadowVolumes (qboolean player);
 void R_DrawAliasModelLightPass (qboolean weapon_model);
 void R_SetupEntityMatrix (entity_t * e);
 void GL_MBind3d (GLenum target, int texnum);
-void R_CapturePlayerWeapon ();
-void R_LightScale (void);
 void R_SSAO(void);
 void R_DrawDepthScene(void);
 void R_DownsampleDepth(void);
@@ -431,12 +414,9 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr);
 qboolean SurfInFrustum (msurface_t *s);
 qboolean HasSharedLeafs (byte *v1, byte *v2);
 qboolean InLightVISEntity ();
-float SphereInFrustum (vec3_t o, float radius);
 void R_DrawLightBrushModel ();
-void R_DrawLightOccluders ();
 void UpdateLightEditor (void);
 void Load_LightFile ();
-void R_SetViewLightDepthBounds ();
 qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p);
 extern int lightsQueries[MAX_WORLD_SHADOW_LIHGTS];
 extern int numLightQ;
@@ -444,7 +424,6 @@ extern int numFlareOcc;
 extern qboolean FoundReLight;
 qboolean PF_inPVS (vec3_t p1, vec3_t p2);
 void R_SetFrustum (void);
-qboolean BoxOutsideFrustum (vec3_t mins, vec3_t maxs);
 void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare ();
@@ -476,10 +455,8 @@ void Mat4_Set(mat4_t mat, vec4_t x, vec4_t y, vec4_t z, vec4_t w);
 
 void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
-void GL_Ortho(mat4_t m, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
 
 trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
-void DrawTextureChains2 ();
 void AddBoundsToBounds(const vec3_t mins1, const vec3_t maxs1, vec3_t mins2, vec3_t maxs2);
 
 void R_DrawChainsRA(qboolean bmodel);
@@ -531,8 +508,6 @@ void R_DrawBrushModel ();
 void R_DrawSpriteModel (entity_t * e);
 void R_DrawBeam ();
 void R_DrawBSP (void);
-void R_RenderDlights (void);
-void R_RenderBrushPoly (msurface_t * fa);
 void R_InitEngineTextures (void);
 void R_LoadFont (void);
 
@@ -542,7 +517,6 @@ void R_DrawWaterPolygons (msurface_t * fa, qboolean bmodel);
 void R_AddSkySurface (msurface_t * fa);
 void R_ClearSkyBox (void);
 void R_DrawSkyBox (qboolean color);
-void R_MarkLights (dlight_t * light, int bit, mnode_t * node);
 
 void COM_StripExtension (char *in, char *out);
 
@@ -551,7 +525,6 @@ void Draw_Pic (int x, int y, char *name);
 void Draw_StretchPic (int x, int y, int w, int h, char *name);
 void Draw_TileClear (int x, int y, int w, int h, char *name);
 void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a);
-void Draw_FadeScreen (void);
 void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows,
 	byte * data);
 
@@ -583,14 +556,7 @@ qboolean IsExtensionSupported(const char *name);
 /*
 ** GL extension emulation functions
 */
-void GL_DrawParticles ();
-void R_TransformToScreen_Vec3 (vec3_t in, vec3_t out);
-void GL_Blend (qboolean on, int dst, int src);
 
-void CreateWeaponRect (void);
-void Create_FBO (void);
-
-void 	CreateWeaponFboMask();
 void	CreateSSAOBuffer();
 void CreateFboBuffer (void);
 
@@ -772,11 +738,6 @@ void GL_DepthBoundsTest (GLfloat mins, GLfloat maxs);
 void GL_Enable (GLenum cap);
 void GL_Disable (GLenum cap);
 
-void GL_BindFB (fbo_t *fb);
-void R_FB_Init (void);
-void R_FB_Shutdown (void);
-void R_FB_List_f (void);
-
 #ifndef BIT
 #define BIT(num)				(1 << (num))
 #endif
@@ -918,7 +879,6 @@ void GL_BindProgram (glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer ();
 void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
-void R_luv2RGB(void);
 void R_SetupOrthoMatrix(void);
 
 typedef struct {
@@ -1137,8 +1097,7 @@ void GLimp_Shutdown (void);
 rserr_t GLimp_SetMode (unsigned *pwidth, unsigned *pheight, int mode,
 	qboolean fullscreen);
 void GLimp_AppActivate (qboolean active);
-void GLimp_EnableLogging (qboolean enable);
-void GLimp_LogNewFrame (void);
+
 
 #ifndef __GLW_H__
 #define __GLW_H__
