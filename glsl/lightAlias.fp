@@ -43,15 +43,21 @@ void main (void) {
 
 	vec3 L = normalize(v_lightVec);
 	vec3 V = normalize(v_viewVec);
-
+	
+	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 	vec4 diffuseMap  = texture(u_diffuseMap, v_texCoord);
 	vec4 normalMap =  texture(u_bumpMap, v_texCoord);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
-		
+	
+	float specular = normalMap.a * u_specularScale;
+			
 	float SSS = diffuseMap.a;
-
-	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
+	vec3 nm = texture(u_bumpMap,   v_texCoord).xyz * vec3( 2.0,  2.0, 2.0) + vec3(-1.0, -1.0,  0.0);
+	vec3 dt = texture(u_bumpBlend, v_texCoord).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
+	vec3 r = normalize(nm * dot(nm, dt) - dt * nm.z);
+	vec3 blendNormal =  r * 0.5 + 0.5;
+	vec4 skin_color = SkinLighting(V, L, blendNormal, u_LightColor.rgb, diffuseMap * 0.5, attenMap, specular);
 
 
 	if (u_isCaustics == 1){
@@ -61,17 +67,14 @@ void main (void) {
 	}
 
 	if (u_isAmbient == 1) {
-		fragData = diffuseMap * u_ColorModulate * LambertLighting(normalize(normalMap.xyz), L) * u_LightColor * attenMap;
+		vec3 curNormal = mix(blendNormal, normalMap.rgb, SSS);
+		fragData = diffuseMap * u_ColorModulate * LambertLighting(curNormal, L) * u_LightColor * attenMap;
 		return;
 	}
 	
 	if (u_isAmbient == 0) {
 	
 	float roughness;
-	float specular = normalMap.a * u_specularScale;
-
-//	vec2 Es = PhongLighting(normalize(normalMap.xyz), L, V, 16.0);
-//	vec3 color = (Es.x * diffuseMap.rgb + Es.y * specular) * u_LightColor.rgb;
 	
 	if(u_isRgh == 1){
 		vec4 rghMap = texture(u_rghMap, v_texCoord);
@@ -90,21 +93,16 @@ void main (void) {
 			float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
 			//float fogFactor = exp(-pow(u_fogDensity * fogCoord, 2.0)); //exp2
 
-			fragData = mix(u_LightColor, vec4(brdfColor, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
+			vec4 tmp = mix(skin_color, vec4(brdfColor, 1.0), SSS);
+			fragData = mix(u_LightColor, tmp, fogFactor) * attenMap; // u_LightColor == fogColor
 			return;
 		}
 
 		if(u_fog == 0) {
 
-				vec3 nm = texture(u_bumpMap,   v_texCoord).xyz * vec3( 2.0,  2.0, 2.0) + vec3(-1.0, -1.0,  0.0);
-				vec3 dt = texture(u_bumpBlend, v_texCoord).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
-				vec3 r = normalize(nm * dot(nm, dt) - dt * nm.z);
-				vec3 blendNormal =  r * 0.5 + 0.5;
-
-				vec4 sss_color = SkinLighting(V, L, blendNormal, u_LightColor.rgb, diffuseMap * 0.5, attenMap, specular) * cubeFilter;
-				vec3 metall_color = brdfColor * cubeFilter.rgb * attenMap; 
-
-				fragData = mix(sss_color, vec4(metall_color, 1.0), SSS);			
+			skin_color *= cubeFilter;
+			vec3 metall_color = brdfColor * cubeFilter.rgb * attenMap; 
+			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);			
 		}
 	}
 }
