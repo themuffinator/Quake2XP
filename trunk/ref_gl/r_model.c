@@ -892,10 +892,6 @@ void Mod_LoadTexinfo(lump_t * l) {
 			Com_sprintf(name, sizeof(name), "overrides/%s_light.dds", purename);
 			out->addTexture = GL_FindImage(name, it_wall);
 
-			if (!out->addTexture) {
-				Com_sprintf(name, sizeof(name), "overrides/%s_light.jpg", purename);
-				out->addTexture = GL_FindImage(name, it_wall);
-
 				if (!out->addTexture) {
 					Com_sprintf(name, sizeof(name), "textures/%s_light.tga", in->texture);
 					out->addTexture = GL_FindImage(name, it_wall);
@@ -904,16 +900,10 @@ void Mod_LoadTexinfo(lump_t * l) {
 						Com_sprintf(name, sizeof(name), "textures/%s_light.dds", in->texture);
 						out->addTexture = GL_FindImage(name, it_wall);
 
-						if (!out->addTexture) {
-							Com_sprintf(name, sizeof(name), "textures/%s_light.jpg", in->texture);
-							out->addTexture = GL_FindImage(name, it_wall);
-
 							if (!out->addTexture)
 								out->addTexture = r_notexture;
 						}
-					}
 				}
-			}
 		}
 		//
 		// Env Maps Loading

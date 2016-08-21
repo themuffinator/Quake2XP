@@ -84,7 +84,7 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 		alpha = 1.f;
 	}
 
-	ambient = max(r_lightmapScale->value, 0.33f);
+	ambient = max(r_lightmapScale->value, 0.666f);
 
 	GL_MBind (GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
 	GL_MBind (GL_TEXTURE1_ARB, r_DSTTex->texnum);
@@ -97,6 +97,7 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	qglUniform2f (water_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1f (water_colorModulate, r_textureColorScale->value);
 	qglUniform1f (water_ambient, ambient);
+	
 	if (!bmodel)
 		qglUniformMatrix4fv(water_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	else
@@ -159,8 +160,6 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 
 		qglDrawElements (GL_TRIANGLES, fa->numIndices, GL_UNSIGNED_SHORT, fa->indices);
 	}
-
-	GL_SelectTexture (GL_TEXTURE0_ARB);
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
