@@ -48,3 +48,4 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	return offsetBest.xy;  
   }
 }
+

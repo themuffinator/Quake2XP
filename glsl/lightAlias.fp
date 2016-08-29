@@ -49,7 +49,8 @@ void main (void) {
 	vec4 normalMap =  texture(u_bumpMap, v_texCoord);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
-	
+	normalMap.xyz = normalize(normalMap).xyz;
+
 	float specular = normalMap.a * u_specularScale;
 			
 	float SSS = diffuseMap.a;
@@ -85,7 +86,7 @@ void main (void) {
 		roughness = 1.0 - diffuseMap.r * 1.35;
     }
 
-	vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalize(normalMap.xyz), L, V);
+	vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V);
 	vec3 brdfColor = brdf * u_LightColor.rgb;
 
 		if(u_fog == 1) {  
@@ -93,16 +94,15 @@ void main (void) {
 			float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
 			//float fogFactor = exp(-pow(u_fogDensity * fogCoord, 2.0)); //exp2
 
-			vec4 tmp = mix(skin_color, vec4(brdfColor, 1.0), SSS);
-			fragData = mix(u_LightColor, tmp, fogFactor) * attenMap; // u_LightColor == fogColor
+			vec3 tmp =  (Diffuse_Lambert(diffuseMap.rgb) * u_LightColor.rgb) * (normalMap.z * 0.5 + 0.5); //  multiplied by fake AO
+
+	//		vec4 tmp = mix(skin_color, vec4(brdfColor, 1.0), SSS);
+			fragData = mix(u_LightColor, vec4(tmp, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
 			return;
 		}
-
-		if(u_fog == 0) {
 
 			skin_color *= cubeFilter;
 			vec3 metall_color = brdfColor * cubeFilter.rgb * attenMap; 
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);			
-		}
 	}
 }
