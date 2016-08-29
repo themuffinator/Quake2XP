@@ -1669,16 +1669,6 @@ int R_Init(void *hinstance, void *hWnd)
 	if(glGenVertexArrays && glDeleteVertexArrays && glBindVertexArray)
 		Com_Printf("...using GL_ARB_vertex_array_object\n");
 
-/*	gl_state.bufferStorage = qfalse;
-
-	if (IsExtensionSupported("GL_ARB_buffer_storage")){ //gl 4.4 
-		Com_Printf("...using GL_ARB_buffer_storage\n");
-		glBufferStorage = (PFNGLBUFFERSTORAGEPROC)qwglGetProcAddress("glBufferStorage");
-		gl_state.bufferStorage = qtrue;
-	}
-	else
-		Com_Printf(S_COLOR_RED"...using GL_ARB_buffer_storage not found\n");
-*/
 	
 	if (IsExtensionSupported("GL_ARB_map_buffer_range")) {
 		Com_Printf("...using GL_ARB_map_buffer_range\n");
@@ -1756,27 +1746,13 @@ int R_Init(void *hinstance, void *hWnd)
 			qglGenBuffersARB(1, &vbo.vbo_Dynamic); 
 			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_Dynamic);
 			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, MAX_VERTICES * 4 * sizeof(vec4_t), 0, GL_STREAM_DRAW_ARB);
-		//	if (gl_state.bufferStorage)
-		//		glBufferStorage(GL_ARRAY_BUFFER, MAX_VERTICES * 2, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
-//			vmap = qglMapBufferRange(GL_ARRAY_BUFFER_ARB, 0, MAX_VERTS * 4 * sizeof(vec4_t), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-//			if(vmap)
-//				Com_Printf("vmap ok\n");
-
-//			qglUnmapBufferARB(GL_ARRAY_BUFFER_ARB);
 			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 			qglGenBuffersARB(1, &vbo.ibo_Dynamic);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
 			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(ushort), 0, GL_STREAM_DRAW_ARB);
-		//	if (gl_state.bufferStorage)
-		//		glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
-//			imap = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, MAX_INDICES * sizeof(ushort), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-//			if (imap)
-//				Com_Printf("imap ok\n");
-
-//			qglUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		}

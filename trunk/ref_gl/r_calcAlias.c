@@ -361,7 +361,10 @@ void R_UpdateLightAliasUniforms()
 	qglUniform1i(lightAlias_ambient, (int)currentShadowLight->isAmbient);
 	qglUniform4f(lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform1i(lightAlias_fog, (int)currentShadowLight->isFog);
-	qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity);
+	if (currententity->flags & RF_WEAPONMODEL)
+		qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity * 8.0);
+	else
+		qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity);
 	qglUniform1f(lightAlias_causticsIntens, r_causticIntens->value);
 	qglUniform3fv(lightAlias_viewOrigin, 1, r_origin);
 	qglUniform3fv(lightAlias_lightOrigin, 1, currentShadowLight->origin);

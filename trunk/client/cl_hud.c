@@ -26,7 +26,6 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int width, int value);
 float CalcFov (float fov_x, float width, float height);
 
-extern cvar_t *cl_bigHud;
 extern cvar_t *cl_hudScale;
 
 typedef struct {
@@ -280,7 +279,7 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	screenAspect = (float)viddef.width / (float)viddef.height;
 	scaledHeight = 320.0 / screenAspect;
 
-	scale = cl_bigHud->value ? 1 : cl_hudScale->value;
+	scale = cl_hudScale->value;
 
 	hud_sx = (float)viddef.width / 320.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
@@ -363,7 +362,7 @@ void SCR_ExecuteLayoutString (char *s) {
 	screenAspect = (float)viddef.width / (float)viddef.height;
 	scaledHeight = 320.0 / screenAspect;
 
-	scale = cl_bigHud->value ? 1 : cl_hudScale->value;
+	scale = cl_hudScale->value;
 
 	hud_sx = (float)viddef.width / 320.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
@@ -668,7 +667,7 @@ void SCR_ExecuteLayoutString3d (char *s) {
 	screenAspect = (float)viddef.width / (float)viddef.height;
 	scaledHeight = 320.0 / screenAspect;
 
-	scale = cl_bigHud->value ? 1 : cl_hudScale->value;
+	scale = cl_hudScale->value;
 
 	hud_sx = (float)viddef.width / 320.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
