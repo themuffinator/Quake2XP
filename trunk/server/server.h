@@ -27,6 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //=============================================================================
 
+// md5 stuff
+int SV_AnimIndex(char *name);
+
 #define	MAX_MASTERS	8			// max recipients for heartbeat packets
 
 typedef enum {

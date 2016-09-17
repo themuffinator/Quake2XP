@@ -559,3 +559,157 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	GL_BindNullProgram ();
 
 }
+
+//calc the light vectors into the color pointer
+void GL_CalculateMD5LightVectors(modelMeshObject_t *obj)
+{
+	int i = 0;
+	float *lightDir = obj->meshData.lightVectors;
+	modelVert_t *clr = (modelVert_t *)obj->meshData.colorPointerVec;
+	while (i < obj->meshData.numVerts)
+	{
+		//scale and bias into a color vector
+		clr->x = lightDir[0] * 0.5f + 0.5f;
+		clr->y = lightDir[1] * 0.5f + 0.5f;
+		clr->z = lightDir[2] * 0.5f + 0.5f;
+
+		lightDir += 3;
+		clr++;
+		i++;
+	}
+}
+
+extern float	shadelight[3];
+//calculate vert lighting
+void GL_CalculateMD5ColorPointer(modelMeshObject_t *obj, float arbitraryMultiplier)
+{
+	int v = 0;
+	modelRGBA_t *clr = obj->meshData.colorPointer;
+	BYTE *vNorm = obj->meshData.vertNormalIndexes;
+
+	while (v < obj->meshData.numVerts)
+	{
+		float l = shadedots[*vNorm];
+
+		clr->rgba[0] = (l*shadelight[0])*arbitraryMultiplier;
+		clr->rgba[1] = (l*shadelight[1])*arbitraryMultiplier;
+		clr->rgba[2] = (l*shadelight[2])*arbitraryMultiplier;
+		clr->rgba[3] = 1.0f;
+
+		v++;
+		clr++;
+		vNorm++;
+	}
+}
+
+extern void Math_TransformPointByMatrix(modelMatrix_t *matrix, float *in, float *out);
+extern void Math_MatrixInverse(modelMatrix_t *in, modelMatrix_t *out);
+
+void GL_GetWorldToLocalMatrix(entity_t *e, modelMatrix_t *invModelMat)
+{
+	modelMatrix_t modelMat;
+
+	//now i translate the gl 4x4 matrix to one of my matrices
+	modelMat.x1[0] = e->orMatrix[0][0];
+	modelMat.x1[1] = e->orMatrix[1][0];
+	modelMat.x1[2] = e->orMatrix[2][0];
+
+	modelMat.x2[0] = e->orMatrix[0][1];
+	modelMat.x2[1] = e->orMatrix[1][1];
+	modelMat.x2[2] = e->orMatrix[2][1];
+
+	modelMat.x3[0] = e->orMatrix[0][2];
+	modelMat.x3[1] = e->orMatrix[1][2];
+	modelMat.x3[2] = e->orMatrix[2][2];
+
+	modelMat.o[0] = e->orMatrix[0][3];
+	modelMat.o[1] = e->orMatrix[1][3];
+	modelMat.o[2] = e->orMatrix[2][3];
+
+	//invert the matrix to transform the world coordinates with it
+	Math_MatrixInverse(&modelMat, invModelMat);
+}
+
+extern void Mod_CreateTransformedVerts(entity_t *e, modelMeshObject_t *obj, modelMeshObject_t *root, model_t *anm);
+extern void Mod_TangentUpdates(entity_t *e, modelMeshObject_t *obj, float *lightPos);
+extern void SetModelsLight();
+
+void R_DrawMD5Model(entity_t *e)
+{
+	modelMeshObject_t *root;
+	modelMeshObject_t *obj;
+	model_t *m = e->model;
+
+	if (!m || m->type != mod_md5 || !m->md5)
+	{
+		Com_Printf("R_DrawMD5Model call with invalid model type.\n");
+		return;
+	}
+
+	GL_DepthMask(1);
+
+	SetModelsLight();
+
+	root = m->md5;
+
+	//run through and render all objects
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_COLOR);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	// setup program
+	GL_BindProgram(aliasAmbientProgram, 0);
+
+	qglUniform1i(ambientAlias_isEnvMaping, 0);
+	qglUniform1i(ambientAlias_isShell, 0);
+
+	qglUniform1f(ambientAlias_colorModulate, r_textureColorScale->value);
+	qglUniform1f(ambientAlias_addShift, 1.0);
+
+	qglUniform1f(ambientAlias_envScale, currentmodel->envScale);
+	qglUniform1i(ambientAlias_ssao, 0);
+
+	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
+	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	
+	obj = root;
+	while (obj)
+	{
+		//this lets us know we need to transform again.
+		obj->meshData.renderCountCurrent++;
+
+		//make sure the verts are transformed for the current state.
+		Mod_CreateTransformedVerts(e, obj, root, e->anim);
+
+		//set the vertex array for our transformed verts.
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, obj->meshData.vertDataTransformed);
+		//set the tex coord array
+		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, obj->meshData.uvCoord);
+		//set the color pointer
+		GL_CalculateMD5ColorPointer(obj, 1.0f);
+		qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, obj->meshData.colorPointer);
+
+		if (!e->skin)
+		{ //no override, so use the obj skin
+			if (obj->meshData.skin)
+			{
+				GL_MBind(GL_TEXTURE0, obj->meshData.skin->texnum);
+			}
+		}
+		else
+			{
+				GL_MBind(GL_TEXTURE0, e->skin->texnum);
+			}
+
+			//now, draw.
+			qglDrawElements(GL_TRIANGLES, obj->meshData.numFaces * 3, GL_UNSIGNED_INT, obj->meshData.faceDataFormatted);
+
+		obj = obj->next;
+	}
+
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_COLOR);
+	qglDisableVertexAttribArray(ATT_TEX0);
+	GL_BindNullProgram();
+	GL_DepthMask(0);
+}

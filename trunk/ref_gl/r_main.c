@@ -505,8 +505,6 @@ void R_DrawPlayerWeaponLightPass(void)
 
 }
 
-void IQM_DrawModels(void);
-
 void R_DrawPlayerWeaponAmbient(void)
 {
 	int i;
@@ -528,9 +526,6 @@ void R_DrawPlayerWeaponAmbient(void)
 
 		if (currentmodel->type == mod_alias)
 			R_DrawAliasModel(currententity);
-		
-		if (currentmodel->type == mod_iqm)
-			IQM_DrawModels();
 	}
 
 	// draw transluscent shells
@@ -782,6 +777,8 @@ void R_RenderSprites(void)
 	GL_DepthMask(1);
 }
 
+void R_DrawMD5Model(entity_t *e);
+
 // draws ambient opaque entities
 static void R_DrawEntitiesOnList (void) {
 	int i;
@@ -820,6 +817,9 @@ static void R_DrawEntitiesOnList (void) {
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
+				break;
+			case mod_md5:
+				R_DrawMD5Model(currententity);
 				break;
 			default:
 				VID_Error(ERR_DROP, "Bad modeltype");
@@ -2040,7 +2040,6 @@ void R_Shutdown(void)
 	GLimp_Shutdown();
 	QGL_Shutdown();
 }
-
 
 
 /*

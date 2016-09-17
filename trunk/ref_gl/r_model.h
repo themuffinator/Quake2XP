@@ -24,10 +24,6 @@ d*_t structures are on-disk representations
 m*_t structures are in-memory
 
 */
-
-
-
-#include "r_iqm.h"
 /*
 ==============================================================================
 
@@ -191,7 +187,7 @@ typedef struct mleaf_s {
 
 typedef enum {
 	mod_bad, mod_brush, mod_sprite, 
-	mod_alias, mod_iqm
+	mod_alias, mod_md5, mod_md5anim
 } modtype_t;
 
 
@@ -205,47 +201,6 @@ typedef struct {
 typedef struct {
 	int n[3];
 } neighbors_t;
-
-// iqm stuff
-#define PI 3.14159265358979323846
-
-typedef struct matrix3x3_s
-{
-	vec3_t a;
-	vec3_t b;
-	vec3_t c;
-}
-matrix3x3_t;
-
-typedef struct matrix3x4_s
-{
-	vec4_t a;
-	vec4_t b;
-	vec4_t c;
-}
-matrix3x4_t;
-
-typedef struct matrix4x4_s
-{
-	vec4_t a;
-	vec4_t b;
-	vec4_t c;
-	vec4_t d;
-}
-matrix4x4_t;
-
-
-typedef struct
-{
-	vec3_t		dir;
-} mnormal_t;
-
-typedef struct
-{
-	vec4_t		dir;
-} mtangent_t;
-
-// end iqm stuff
 
 typedef struct model_s {
 
@@ -347,28 +302,8 @@ typedef struct model_s {
 
 	mat3_t		axis;
 
-	//iqm skeletal model info
-	unsigned int	version;
-	mvertex_t		*animatevertexes;
-	fstvert_t		*stCoords;
-	int				num_joints;
-	iqmjoint_t		*joints;
-	iqmjoint2_t		*joints2;
-	matrix3x4_t		*frames;
-	matrix3x4_t		*outframe;
-	matrix3x4_t		*baseframe;
-	int				num_poses;
-	int				num_triangles;
-	iqmtriangle_t	*tris;
-	mnormal_t		*normal;
-	mnormal_t		*animatenormal;
-	mtangent_t		*tangent;
-	mtangent_t		*animatetangent;
-	unsigned char	*blendindexes;
-	float			*blendweights;
-	char			skinname[MAX_QPATH];
-	char			*jointname;
-	//end iqm
+	modelMeshObject_t	*md5; //^^;
+	modelAnim_t			*md5anim;
 
 } model_t;
 

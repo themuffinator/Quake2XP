@@ -159,6 +159,11 @@ void CL_ParseDelta (entity_state_t * from, entity_state_t * to, int number,
 
 	if (bits & U_SOLID)
 		to->solid = MSG_ReadShort (&net_message);
+
+	if (bits & U_ANIM)
+	{
+		to->animindex = MSG_ReadShort(&net_message);
+	}
 }
 
 /*
@@ -725,6 +730,12 @@ void CL_AddPacketEntities (frame_t * frame) {
 				predator = qtrue;
 				}
 				*/
+		
+		if (s1->animindex) // md5
+		{
+			ent.anim = cl.anims[s1->animindex];
+		}
+
 		// quad and pent can do different things on client
 		if (effects & EF_PENT) {
 			effects &= ~EF_PENT;
@@ -758,9 +769,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 		//======
 		ent.oldframe = cent->prev.frame;
 		ent.backlerp = 1.0 - cl.lerpfrac;
-
-		// iqm stuff
-		ent.iqmFrameTime = Sys_Milliseconds();
 
 		if (renderfx & (RF_FRAMELERP | RF_BEAM)) {	// step origin
 			// discretely, because

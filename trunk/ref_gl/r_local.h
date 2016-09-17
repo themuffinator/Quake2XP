@@ -53,6 +53,7 @@ typedef void ILvoid;
 #include "../client/ref.h"
 
 #include "qgl.h"
+#include "r_model_md5.h"
 
 // up / down
 #define	PITCH	0
@@ -462,6 +463,10 @@ void AddBoundsToBounds(const vec3_t mins1, const vec3_t maxs1, vec3_t mins2, vec
 void R_DrawChainsRA(qboolean bmodel);
 void R_DrawBrushModelRA(void);
 extern int	occ_framecount;
+
+int Mod_AllocateMD5Mesh(model_t *mod, byte *buf, int len);
+int Mod_AllocateMD5Anim(model_t *mod, byte *buf, int len);
+
 //====================================================================
 
 #define MAX_POLY_VERT		128
@@ -559,20 +564,6 @@ qboolean IsExtensionSupported(const char *name);
 
 void	CreateSSAOBuffer();
 void CreateFboBuffer (void);
-
-void Matrix3x4_TransformNormal(mnormal_t *out, matrix3x4_t mat, const mnormal_t in);
-void Matrix3x4_TransformTangent(mtangent_t *out, matrix3x4_t mat, const mtangent_t in);
-void Matrix3x4_Invert(matrix3x4_t *out, matrix3x4_t in);
-void Matrix3x4_FromQuatAndVectors(matrix3x4_t *out, vec4_t rot, const float trans[3], const float scale[3]);
-void Matrix3x4_Multiply(matrix3x4_t *out, matrix3x4_t mat1, matrix3x4_t mat2);
-void Matrix3x4_Scale(matrix3x4_t *out, matrix3x4_t in, float scale);
-void Matrix3x4_ScaleAdd(matrix3x4_t *out, matrix3x4_t *base, float scale, matrix3x4_t *add);
-void Matrix3x4_Add(matrix3x4_t *out, matrix3x4_t mat1, matrix3x4_t mat2);
-void Matrix3x4_Subtract(matrix3x4_t *out, matrix3x4_t mat1, matrix3x4_t mat2);
-void Matrix3x4_Copy(matrix3x4_t *out, matrix3x4_t in);
-void Matrix3x4_Transform(mvertex_t *out, matrix3x4_t mat, const mvertex_t in);
-void Matrix3x4GenRotate(matrix3x4_t *out, float angle, const vec3_t axis);
-void Matrix3x4ForEntity(matrix3x4_t *out, entity_t *ent, float z);
 
 /*
 ** GL config stuff

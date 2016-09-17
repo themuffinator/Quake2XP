@@ -377,11 +377,9 @@ Loads in a model for the given name
 ==================
 */
 model_t *Mod_ForName(char *name, qboolean crash) {
-	model_t *mod;
-	unsigned *buf;
-	int i;
-	qboolean is_iqm = qfalse;
-	char shortname[MAX_QPATH];
+	model_t		*mod;
+	unsigned	*buf;
+	int			i, wasMD5 = 0;
 
 	if (!name[0])
 		VID_Error(ERR_DROP, "Mod_ForName: NULL name");
@@ -439,45 +437,40 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 	// load the file
 	// 
 	
-	//if .md2, check for IQM version first
-	COM_StripExtension(mod->name, shortname);
-	strcat(shortname, ".iqm");
-
-	modfilelen = FS_LoadFile(shortname, (void**)&buf);
-
-	if (!buf) //could not find iqm
+	modfilelen = FS_LoadFile(mod->name, &buf);
+	if (!buf)
 	{
-		modfilelen = FS_LoadFile(mod->name, (void*)&buf);
-		if (!buf)
-		{
-			if (crash)
-				Com_Error(ERR_DROP, "Mod_NumForName: %s not found", mod->name);
-			memset(mod->name, 0, sizeof(mod->name));
-			return NULL;
-		}
+		if (crash)
+			Sys_Error("Mod_NumForName: %s not found", mod->name);
+		memset(mod->name, 0, sizeof(mod->name));
+		return NULL;
 	}
-	else
-	{
-		//we have an .iqm
-		is_iqm = qtrue;
-		strcpy(mod->name, shortname);
-	}
-
 
 	loadmodel = mod;
+
+	if (strstr(mod->name, "md5mesh"))
+	{ //if it's an md5 mesh
+		if (Mod_AllocateMD5Mesh(mod, (BYTE *)buf, modfilelen))
+		{
+			wasMD5 = 1;
+		}
+	}
+
+	if (!wasMD5)
+	{ //ok, see if it's an anim
+		if (strstr(mod->name, "md5anim"))
+		{
+			if (Mod_AllocateMD5Anim(mod, (byte*)buf, modfilelen))
+			{
+				wasMD5 = 1;
+			}
+		}
+	}
 
 	// 
 	// fill it in
 	// 
-
-	// call the apropriate loader
-	//iqm - try interquake model first
-	if (is_iqm)
-	{
-		if (!Mod_INTERQUAKEMODEL_Load(mod, buf))
-			Com_Error(ERR_DROP, "Mod_NumForName: wrong fileid for %s", mod->name);
-	}
-	else
+	if (!wasMD5)
 	{
 		switch (LittleLong(*(unsigned *)buf)) {
 		case IDALIASHEADER:
@@ -500,9 +493,7 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 			VID_Error(ERR_DROP, "Mod_NumForName: unknown fileid for %s", mod->name);
 			break;
 		}
-
 	}
-
 	loadmodel->extraDataSize = Hunk_End();
 
 	FS_FreeFile(buf);
@@ -2618,11 +2609,7 @@ struct model_s *R_RegisterModel(char *name) {
 			//PGM
 			//         
 		}
-		else if (mod->type == mod_iqm)
-		{
-			mod->skins[0] = GL_FindImage(mod->skinname, it_skin);
-		}
-		else if (mod->type == mod_brush) {
+		 if (mod->type == mod_brush) {
 			for (i = 0; i < mod->numTexInfo; i++) {
 				mod->texInfo[i].image->registration_sequence = registration_sequence;
 
@@ -2639,10 +2626,44 @@ struct model_s *R_RegisterModel(char *name) {
 					mod->texInfo[i].rghMap->registration_sequence = registration_sequence;
 			}
 		}
+		 else if (mod->type == mod_md5)
+		 {
+			 modelMeshObject_t *obj = mod->md5;
+			 while (obj)
+			 {
+				 obj->meshData.skin = GL_FindImage(obj->meshData.skinName, it_skin);
+				 if (!obj->meshData.skin)
+				 { //then just try for a placeholder
+					 obj->meshData.skin = GL_FindImage("players/male/cipher.pcx", it_skin);
+				 }
+				 //check for a normal map
+				 if (obj->meshData.skinNameNormal[0])
+				 {
+					 obj->meshData.skin_normal = GL_FindImage(obj->meshData.skinNameNormal, it_skin);
+				 }
+				 obj = obj->next;
+			 }
+		 }
 	}
 	return mod;
 
 
+}
+
+struct model_s *R_RegisterAnim(char *name)
+{
+	model_t	*mod;
+
+	assert(strstr(name, "md5anim"));
+
+	mod = Mod_ForName(name, qfalse);
+	if (mod)
+	{
+		mod->registration_sequence = registration_sequence;
+
+		//do more stuff
+	}
+	return mod;
 }
 
 void GL_CheckError(const char *fileName, int line, const char *subr);

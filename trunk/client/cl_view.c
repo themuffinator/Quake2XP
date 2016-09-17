@@ -274,6 +274,16 @@ void CL_PrepRefresh (void) {
 	loadingPercent = 55;
 	loadScreenColorFade = 0.55;
 
+	for (i = 1; i<MAX_ANIMS && cl.configstrings[CS_ANIMS + i][0]; i++)
+	{
+		strcpy(name, cl.configstrings[CS_ANIMS + i]);
+		name[37] = 0;	// never go beyond one line
+		SCR_UpdateScreen();
+		Sys_SendKeyEvents();	// pump message loop
+
+		cl.anims[i] = R_RegisterModel(cl.configstrings[CS_ANIMS + i]);
+	}
+
 	Com_Printf ("images\r", i);
 	SCR_UpdateScreen ();
 	for (i = 1; i < MAX_IMAGES && cl.configstrings[CS_IMAGES + i][0]; i++) {

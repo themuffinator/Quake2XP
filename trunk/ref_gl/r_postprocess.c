@@ -406,6 +406,9 @@ void R_FilmGrain (void)
 
 void R_GammaRamp (void) 
 {
+	
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	GL_BindProgram (gammaProgram, 0);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);

@@ -564,6 +564,144 @@ void infantry_attack (edict_t *self) {
 }
 
 
+#define PINKY_FRAMES_IDLE			180
+#define PINKY_FRAMES_WALK			51
+static int g_firstInfantry = 1;
+int g_pinkyAnimIndex_Idle = -1;
+int g_pinkyAnimIndex_Walk = -1;
+
+//run the current animation
+void pinky_animate(edict_t *self)
+{
+	int frames = -1;
+	if (self->s.animindex == g_pinkyAnimIndex_Idle)
+	{
+		frames = PINKY_FRAMES_IDLE;
+	}
+	else if (self->s.animindex == g_pinkyAnimIndex_Walk)
+	{
+		frames = PINKY_FRAMES_WALK;
+	}
+
+	if (frames == -1)
+	{ //invalid/unknown animation
+		return;
+	}
+
+	self->s.frame += 3;	//the server runs at a slower framerate than the model itself.
+						//so.. skip some frames. ^^; don't worry, interpolation will
+						//take care of it in the renderer.
+	if (self->s.frame >= frames)
+	{ //reset back to 2. which is a hack, cause it seems like the first couple frames
+	  //in a lot of animations are wacky.
+		self->s.frame = 2;
+	}
+}
+
+//set the current animation
+void pinky_setanim(edict_t *self, int animIndex)
+{
+	if (self->s.animindex != animIndex)
+	{
+		self->s.animindex = animIndex;
+		self->s.frame = 2;
+	}
+}
+
+//ai util function (general case enemy validation)
+int pinky_validenemy(edict_t *self, edict_t *enemy)
+{
+	if (enemy->inuse && enemy->client &&
+		enemy->client->pers.connected &&
+		enemy->health > 0)
+	{ //ok, try tracing to it.
+		trace_t tr;
+
+		tr = gi.trace(self->s.origin, NULL, NULL, enemy->s.origin, self, MASK_MONSTERSOLID);
+		if (tr.fraction == 1.0f || tr.ent == enemy)
+		{ //ok, passed trace.
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+//cheap ai example
+void pinky_sampleAI(edict_t *self)
+{
+	edict_t *ent;
+	int i;
+
+	if (self->enemy && !pinky_validenemy(self, self->enemy))
+	{ //if no longer valid, nullify
+		self->enemy = NULL;
+	}
+
+	for (i = 1; i <= maxclients->value; i++)
+	{
+		ent = g_edicts + i;
+		if (pinky_validenemy(self, ent))
+		{
+			if (!self->enemy)
+			{
+				self->enemy = ent;
+			}
+			else
+			{
+				vec3_t tmp;
+				float distCur, distNew;
+
+				VectorSubtract(self->s.origin, ent->s.origin, tmp);
+				distNew = VectorLength(tmp);
+				VectorSubtract(self->s.origin, self->enemy->s.origin, tmp);
+				distCur = VectorLength(tmp);
+
+				if ((distNew + 100.0f) < distCur)
+				{ //significantly closer, take it as an enemy.
+					self->enemy = ent;
+				}
+			}
+		}
+	}
+
+	if (self->enemy)
+	{ //if we still have an enemy after all of the above..
+		vec3_t enDir;
+
+		pinky_setanim(self, g_pinkyAnimIndex_Walk);
+
+		//try to move to enemy
+		self->goalentity = self->enemy;
+		M_MoveToGoal(self, 4.0f);
+
+		//get direction to enemy from self
+		VectorSubtract(self->enemy->s.origin, self->s.origin, enDir);
+
+		//set his yaw
+		self->s.angles[YAW] = vectoyaw(enDir);
+	}
+	else
+	{ //no enemy..
+		pinky_setanim(self, g_pinkyAnimIndex_Idle);
+	}
+}
+
+extern void M_SetEffects(edict_t *ent);
+extern qboolean monster_start(edict_t *self);
+void pinky_think(edict_t *self)
+{
+	M_CheckGround(self);
+
+	pinky_animate(self);
+
+	pinky_sampleAI(self);
+
+	M_SetEffects(self);
+
+	self->nextthink = level.time + 0.1;
+}
+
 /*QUAKED monster_infantry (1 .5 0) (-16 -16 -24) (16 16 32) Ambush Trigger_Spawn Sight
 */
 void SP_monster_infantry (edict_t *self) {
@@ -624,6 +762,34 @@ void SP_monster_infantry (edict_t *self) {
 
 	self->monsterinfo.currentmove = &infantry_move_stand;
 	self->monsterinfo.scale = MODEL_SCALE;
+/*
+	if (g_firstInfantry)
+	{
+		g_firstInfantry = 0;
 
-	walkmonster_start (self);
+		self->s.modelindex = gi.modelindex("models/monsters/pinky/pinky.md5mesh");
+
+		g_pinkyAnimIndex_Idle = gi.animindex("models/monsters/pinky/idle1.md5anim");
+		g_pinkyAnimIndex_Walk = gi.animindex("models/monsters/pinky/walk.md5anim");
+
+		pinky_setanim(self, g_pinkyAnimIndex_Idle); //start off in idle.
+
+		self->ideal_yaw = self->s.angles[YAW]; //since pinky manages his ideal yaw calls.
+
+		VectorSet(self->mins, -40, -40, 0);
+		VectorSet(self->maxs, 40, 40, 128);
+
+		self->health = 1000;
+		self->gib_health = -200;
+
+		monster_start(self);
+		M_droptofloor(self);
+
+		self->think = pinky_think;
+		self->nextthink = level.time + 1.0;
+	}
+	else */
+//	{
+		walkmonster_start(self);
+//	}
 }

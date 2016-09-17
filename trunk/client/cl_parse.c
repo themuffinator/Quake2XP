@@ -682,6 +682,14 @@ void CL_ParseConfigString (void) {
 				cl.model_clip[i - CS_MODELS] = NULL;
 		}
 	}
+	else if (i >= CS_ANIMS && i < CS_ANIMS + MAX_ANIMS) //md5
+	{
+		if (cl.refresh_prepped)
+		{
+			int idx = i - CS_ANIMS;
+			cl.anims[idx] = RegisterAnim(cl.configstrings[i]);
+		}
+	}
 	else if (i >= CS_SOUNDS && i < CS_SOUNDS + MAX_MODELS) {
 		if (cl.refresh_prepped) {
 			WILLOW_HACK_SOUND (i - CS_SOUNDS);

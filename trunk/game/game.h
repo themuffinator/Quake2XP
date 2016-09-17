@@ -174,6 +174,7 @@ typedef struct {
 
 	void (*SCR_DrawLoadingBar)(float percent, float scale);
 
+	int(*animindex) (char *name); //md5
 } game_import_t;
 
 //

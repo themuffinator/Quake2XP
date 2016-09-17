@@ -290,7 +290,7 @@ typedef struct {
 
 	vec3_t v_Forward, v_Right, v_Up;	// set when refdef.angles is set
 
-
+	struct model_s	*anims[MAX_ANIMS]; // md5
 
 
 
