@@ -32,9 +32,6 @@ static float shadelight[3];
 void IL_LoadImage (char *filename, byte ** pic, int *width, int *height, ILenum type);
 unsigned int	skyCube = -1;
 
-#define DST_SIZE 16
-unsigned int dst_texture = 0;
-
 /*
 ===============
 CreateDSTTex
@@ -42,29 +39,6 @@ CreateDSTTex
 Create the texture which warps texture shaders
 ===============
 */
-void CreateDSTTex () {
-	signed char data[DST_SIZE][DST_SIZE][2];
-	int x, y;
-
-
-
-	for (x = 0; x < DST_SIZE; x++)
-	for (y = 0; y < DST_SIZE; y++) {
-		data[x][y][0] = rand () % 255 - 128;
-		data[x][y][1] = rand () % 255 - 128;
-	}
-
-	qglGenTextures (1, &dst_texture);
-	qglBindTexture (GL_TEXTURE_2D, dst_texture);
-	qglTexImage2D (GL_TEXTURE_2D, 0, 4, DST_SIZE, DST_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	qglGenerateMipmap (GL_TEXTURE_2D);
-	qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	qglTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-}
 
 void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	glpoly_t	*p, *bp;
