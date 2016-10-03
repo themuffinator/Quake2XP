@@ -512,6 +512,11 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);
 		GL_MBindCube	(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
 
+		if(r_imageAutoBump->value && normalMap == r_defBump)
+			qglUniform1i(lightWorld_autoBump, 1);
+		else
+			qglUniform1i(lightWorld_autoBump, 0);
+
 		if (surf->texInfo->flags & SURF_FLOWING){
 
 			scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));

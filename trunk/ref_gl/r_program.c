@@ -565,6 +565,7 @@ void R_InitPrograms (void) {
 		lightWorld_spotLight		= qglGetUniformLocation (id, "u_spotLight");
 		lightWorld_spotParams		= qglGetUniformLocation (id, "u_spotParams");
 		lightWorld_spotMatrix		= qglGetUniformLocation (id, "u_spotMatrix");
+		lightWorld_autoBump			= qglGetUniformLocation (id, "u_autoBump");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

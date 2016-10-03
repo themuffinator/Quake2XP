@@ -603,7 +603,7 @@ image_t *R_LoadLightFilter (int id) {
 void R_InitEngineTextures (void) {
 	int		i;
 	byte	notex[1][1][4]	= { 0x0, 0x0, 0x0, 0x0 };
-	byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x40 };
+	byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x10 };
 	byte	white[1][1][4]	= { 0xff, 0xff, 0xff, 0xff };
 
 	r_defBump	= GL_LoadPic ("***r_defBump***", (byte *)bump, 1, 1, it_bump, 32);
