@@ -276,3 +276,39 @@ vec3 Lighting_BRDF (in vec3 diffuseColor, in vec3 specularColor, in float roughn
 
 	return vec3(0.0);
 }
+
+vec4 Height2Normal(in vec2 texCoord, sampler2D heightMapSampler, in vec3 color){
+
+	ivec2 texSize = textureSize (heightMapSampler, 0);
+	float hm = dot(vec3(0.333), color);
+		
+	vec3 normal;	
+	normal.x = dFdx(hm);
+	normal.y = dFdy(hm);
+	normal.z = sqrt(1.0 - normal.x * normal.x - normal.y * normal.y); // Reconstruct z component to get a unit normal.
+
+	float me = texture(heightMapSampler, texCoord).r;
+	float n =  texture(heightMapSampler, vec2(texCoord.x, texCoord.y + 1.0 / texSize.y)).r;
+	float s =  texture(heightMapSampler, vec2(texCoord.x, texCoord.y - 1.0 / texSize.y)).r;
+	float e =  texture(heightMapSampler, vec2(texCoord.x + 1.0 / texSize.x, texCoord.y)).r;
+	float w =  texture(heightMapSampler, vec2(texCoord.x - 1.0 / texSize.x, texCoord.y)).r;                
+ 
+	//find perpendicular vector to norm:        
+	vec3 temp = normal; //a temporary vector that is not parallel to norm
+	if(normal.x == 1)
+		temp.y += 0.5;
+	else
+		temp.x += 0.5;
+ 
+	//form a basis with norm being one of the axes:
+	vec3 perp1 = normalize(cross(normal, temp));
+	vec3 perp2 = normalize(cross(normal, perp1));
+ 
+	//use the basis to move the normal in its own space by the offset        
+	vec3 normalOffset = -6.0 * (((n-me)-(s-me)) * perp1 + ((e-me)-(w-me)) * perp2);
+
+	normal += normalOffset;
+	normal = normalize(normal);
+
+	return vec4(normal, hm);
+}

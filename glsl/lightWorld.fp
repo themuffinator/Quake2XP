@@ -15,6 +15,7 @@ uniform float	u_CausticsModulate;
 uniform int		u_isCaustics;
 uniform int		u_isAmbient;
 uniform int		u_isRgh;
+uniform int		u_autoBump;
 uniform int		u_spotLight;
 uniform vec3	u_spotParams;
 
@@ -44,12 +45,23 @@ void main (void) {
  
 	vec3	V = normalize(v_viewVecTS);
 	vec3	L = normalize(v_lightVec);
-	vec2	P = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
 
-	vec4 diffuseMap = texture(u_Diffuse,  P);
-	vec4 normalMap =  texture(u_NormalMap, P);
-	normalMap.xyz *= 2.0;
-	normalMap.xyz -= 1.0;
+	vec4 diffuseMap;
+	vec4 normalMap;
+	vec2 P = v_texCoord;
+
+	if(u_autoBump == 0){
+		P = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
+		diffuseMap = texture(u_Diffuse,  P);
+		normalMap =  texture(u_NormalMap, P);
+		normalMap.xyz *= 2.0;
+		normalMap.xyz -= 1.0;
+	}
+
+	if(u_autoBump == 1){
+		diffuseMap = texture(u_Diffuse,  v_texCoord);	
+		normalMap = Height2Normal(v_texCoord, u_Diffuse, diffuseMap.rgb);
+	}
 
 	// light filter
 	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
