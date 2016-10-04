@@ -18,6 +18,7 @@ uniform int		u_isRgh;
 uniform int		u_autoBump;
 uniform int		u_spotLight;
 uniform vec3	u_spotParams;
+uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;
@@ -48,26 +49,26 @@ void main (void) {
 
 	vec4 diffuseMap;
 	vec4 normalMap;
-	vec2 P = v_texCoord;
+	vec2 texCoord = v_texCoord;
 
 	if(u_autoBump == 0){
-		P = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
-		diffuseMap = texture(u_Diffuse,  P);
-		normalMap =  texture(u_NormalMap, P);
+		texCoord = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
+		diffuseMap = texture(u_Diffuse,  texCoord);
+		normalMap =  texture(u_NormalMap, texCoord);
 		normalMap.xyz *= 2.0;
 		normalMap.xyz -= 1.0;
 	}
 
 	if(u_autoBump == 1){
 		diffuseMap = texture(u_Diffuse,  v_texCoord);	
-		normalMap = Height2Normal(v_texCoord, u_Diffuse, diffuseMap.rgb);
+		normalMap = Height2Normal(v_texCoord, u_Diffuse, diffuseMap.rgb, u_autoBumpParams.x, u_autoBumpParams.y);
 	}
 
 	// light filter
 	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 
 	if (u_isCaustics == 1) {
-		vec4 causticsMap = texture(u_Caustics, P);
+		vec4 causticsMap = texture(u_Caustics, texCoord);
 		vec4 tmp = causticsMap * diffuseMap;
 		tmp *= u_CausticsModulate;
 		diffuseMap = tmp + diffuseMap;
@@ -86,7 +87,7 @@ void main (void) {
 		float specular = normalMap.a * u_specularScale;
     
 		if(u_isRgh == 1){
-			roughness = texture(u_RghMap, P).r * u_roughnessScale;
+			roughness = texture(u_RghMap, texCoord).r * u_roughnessScale;
 		}else
 		{
 		roughness = 1.0 - diffuseMap.r;
@@ -97,7 +98,7 @@ void main (void) {
 		vec3 brdfColor = brdf * u_LightColor.rgb;
           
 		if(u_fog == 1) {  
-			float fogCoord = abs(gl_FragCoord.z/ gl_FragCoord.w); // = gl_FragCoord.z / gl_FragCoord.w;
+			float fogCoord = abs(gl_FragCoord.z / gl_FragCoord.w); // = gl_FragCoord.z / gl_FragCoord.w;
 			float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
 
 			fragData = mix(u_LightColor, vec4(brdfColor, 1.0), fogFactor) * attenMap;  // u_LightColor == fogColor

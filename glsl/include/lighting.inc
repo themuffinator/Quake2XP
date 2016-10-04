@@ -277,7 +277,7 @@ vec3 Lighting_BRDF (in vec3 diffuseColor, in vec3 specularColor, in float roughn
 	return vec3(0.0);
 }
 
-vec4 Height2Normal(in vec2 texCoord, sampler2D heightMapSampler, in vec3 color){
+vec4 Height2Normal(in vec2 texCoord, sampler2D heightMapSampler, in vec3 color, in float scaleBump, in float scaleSpecular){
 
 	ivec2 texSize = textureSize (heightMapSampler, 0);
 	float hm = dot(vec3(0.333), color);
@@ -305,10 +305,10 @@ vec4 Height2Normal(in vec2 texCoord, sampler2D heightMapSampler, in vec3 color){
 	vec3 perp2 = normalize(cross(normal, perp1));
  
 	//use the basis to move the normal in its own space by the offset        
-	vec3 normalOffset = -6.0 * (((n-me)-(s-me)) * perp1 + ((e-me)-(w-me)) * perp2);
+	vec3 normalOffset = -scaleBump * (((n-me)-(s-me)) * perp1 + ((e-me)-(w-me)) * perp2);
 
 	normal += normalOffset;
 	normal = normalize(normal);
 
-	return vec4(normal, hm);
+	return vec4(normal, hm * scaleSpecular);
 }
