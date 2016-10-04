@@ -512,8 +512,10 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);
 		GL_MBindCube	(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
 
-		if(r_imageAutoBump->value && normalMap == r_defBump)
+		if (r_imageAutoBump->value && normalMap == r_defBump) {
 			qglUniform1i(lightWorld_autoBump, 1);
+			qglUniform2f(lightWorld_autoBumpParams, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
+		}
 		else
 			qglUniform1i(lightWorld_autoBump, 0);
 

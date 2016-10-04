@@ -222,7 +222,10 @@ cvar_t *r_noBind;
 cvar_t *r_cull;
 cvar_t *r_vsync;
 cvar_t *r_textureMode;
+
 cvar_t *r_imageAutoBump;
+cvar_t *r_imageAutoBumpScale;
+cvar_t *r_imageAutoSpecularScale;
 
 cvar_t *r_lockPvs;
 cvar_t *r_fullScreen;
@@ -939,6 +942,7 @@ uint lightWorld_spotLight;
 uint lightWorld_spotParams;
 uint lightWorld_spotMatrix;
 uint lightWorld_autoBump;
+uint lightWorld_autoBumpParams;
 
 uint ambientAlias_ssao;
 uint ambientAlias_colorModulate;
