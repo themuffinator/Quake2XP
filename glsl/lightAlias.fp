@@ -80,10 +80,12 @@ void main (void) {
 	if(u_isRgh == 1){
 		vec4 rghMap = texture(u_rghMap, v_texCoord);
 		roughness = rghMap.r * 1.5;
+    roughness = clamp(roughness, 0.1, 1.0);
 	}
 
 	if(u_isRgh == 0){
 		roughness = 1.0 - diffuseMap.r * 1.35;
+    roughness = clamp(roughness, 0.1, 1.0);
     }
 
 	vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V);
