@@ -102,13 +102,13 @@ void R_Bloom (void)
 		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width*0.25, vid.height*0.25, 0);
 	}
 
-	// star blur
+	// generate hdr glare effect
 	GL_BindRect (bloomtex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
-	GL_BindProgram (blurStarProgram, 0);
-	qglUniform1f(star_intens, r_bloomStarIntens->value);
-	qglUniformMatrix4fv(star_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_BindProgram (hdrGlareProgram, 0);
+	qglUniform3f(glare_params, r_glareWidth->value, r_glarePower->value, r_glareExp->value);
+	qglUniformMatrix4fv(glare_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
@@ -138,7 +138,7 @@ void R_Bloom (void)
 	GL_BindProgram (bloomfpProgram, 0);
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	GL_MBindRect (GL_TEXTURE1_ARB, bloomtex);
-	qglUniform3f(bloomFP_params, r_bloomIntens->value, r_bloomBright->value, r_bloomExposure->value);
+	qglUniform1f(bloomFP_params, r_bloomIntens->value);
 	qglUniformMatrix4fv(bloom_FP_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad ();

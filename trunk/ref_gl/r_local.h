@@ -269,9 +269,9 @@ cvar_t	*r_customHeight;
 cvar_t	*r_bloom;
 cvar_t	*r_bloomThreshold;
 cvar_t	*r_bloomIntens;
-cvar_t	*r_bloomBright;
-cvar_t	*r_bloomExposure;
-cvar_t	*r_bloomStarIntens;
+cvar_t	*r_glarePower;
+cvar_t	*r_glareExp;
+cvar_t	*r_glareWidth;
 
 cvar_t	*r_ssao;
 cvar_t	*r_ssaoIntensity;
@@ -843,7 +843,7 @@ glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*gaussXProgram;
 glslProgram_t		*gaussYProgram;
-glslProgram_t		*blurStarProgram;
+glslProgram_t		*hdrGlareProgram;
 glslProgram_t		*bloomdsProgram;
 glslProgram_t		*bloomfpProgram;
 glslProgram_t		*motionBlurProgram;
@@ -1018,8 +1018,8 @@ uint water_mirror;
 uint gaussx_matrix;
 uint gaussy_matrix;
 
-uint star_intens;
-uint star_matrix;
+uint glare_params;
+uint glare_matrix;
 
 uint bloomDS_threshold;
 uint bloomDS_matrix;

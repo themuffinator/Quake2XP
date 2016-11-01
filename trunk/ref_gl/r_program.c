@@ -645,15 +645,15 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"star blur program"S_COLOR_WHITE" ");
-	blurStarProgram = R_FindProgram ("blurStar", qtrue, qtrue);
+	Com_Printf ("Load "S_COLOR_YELLOW"hdrGlare program"S_COLOR_WHITE" ");
+	hdrGlareProgram = R_FindProgram ("hdrGlare", qtrue, qtrue);
 
-	if (blurStarProgram){
+	if (hdrGlareProgram){
 		Com_Printf("succeeded\n");
 
-		id = blurStarProgram->id[0];
-		star_intens		= qglGetUniformLocation(id, "u_starIntens");
-		star_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
+		id = hdrGlareProgram->id[0];
+		glare_params		= qglGetUniformLocation(id, "u_glareParams");
+		glare_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

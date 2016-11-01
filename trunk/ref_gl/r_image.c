@@ -116,7 +116,7 @@ qboolean uploaded_paletted;
 image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 					imagetype_t type, int bits);
 
-int gl_tex_solid_format = GL_RGBA;
+int gl_tex_solid_format = GL_RGB;
 int gl_tex_alpha_format = GL_RGBA;
 
 int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;	

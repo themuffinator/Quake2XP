@@ -646,6 +646,8 @@ void R_DrawMD5Model(entity_t *e)
 		return;
 	}
 
+	R_SetupEntityMatrix(e);
+
 	GL_DepthMask(1);
 
 	SetModelsLight();

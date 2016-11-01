@@ -762,15 +762,15 @@ void SP_monster_infantry (edict_t *self) {
 
 	self->monsterinfo.currentmove = &infantry_move_stand;
 	self->monsterinfo.scale = MODEL_SCALE;
-/*
-	if (g_firstInfantry)
-	{
-		g_firstInfantry = 0;
 
-		self->s.modelindex = gi.modelindex("models/monsters/pinky/pinky.md5mesh");
+//	if (g_firstInfantry)
+//	{
+//		g_firstInfantry = 0;
 
-		g_pinkyAnimIndex_Idle = gi.animindex("models/monsters/pinky/idle1.md5anim");
-		g_pinkyAnimIndex_Walk = gi.animindex("models/monsters/pinky/walk.md5anim");
+/*		self->s.modelindex = gi.modelindex("models/pinky.md5mesh");
+
+		g_pinkyAnimIndex_Idle = gi.animindex("models/idle1.md5anim");
+		g_pinkyAnimIndex_Walk = gi.animindex("models/walk.md5anim");
 
 		pinky_setanim(self, g_pinkyAnimIndex_Idle); //start off in idle.
 
@@ -787,9 +787,10 @@ void SP_monster_infantry (edict_t *self) {
 
 		self->think = pinky_think;
 		self->nextthink = level.time + 1.0;
-	}
-	else */
-//	{
-		walkmonster_start(self);
 //	}
+//	else 
+//	{
+//		walkmonster_start(self);
+//	}*/
+	walkmonster_start(self);
 }
