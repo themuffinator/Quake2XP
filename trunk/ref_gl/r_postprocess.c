@@ -102,12 +102,12 @@ void R_Bloom (void)
 		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, 0, 0, vid.width*0.25, vid.height*0.25, 0);
 	}
 
-	// generate hdr glare effect
+	// generate star shape
 	GL_BindRect (bloomtex);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
-	GL_BindProgram (hdrGlareProgram, 0);
-	qglUniform3f(glare_params, r_glareWidth->value, r_glarePower->value, r_glareExp->value);
+	GL_BindProgram (glareProgram, 0);
+	qglUniform1f(glare_params, r_bloomWidth->value);
 	qglUniformMatrix4fv(glare_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();

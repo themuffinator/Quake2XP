@@ -696,11 +696,10 @@
     <ClInclude Include="win32\winquake.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\baseq2\glsl\hdrGlare.fp" />
-    <None Include="..\baseq2\glsl\hdrGlare.vp" />
     <None Include="..\baseq2\glsl\depthDownsample.fp" />
     <None Include="..\baseq2\glsl\depthDownsample.vp" />
-    <None Include="..\baseq2\glsl\include\tonemap.inc" />
+    <None Include="..\baseq2\glsl\glare.fp" />
+    <None Include="..\baseq2\glsl\glare.vp" />
     <None Include="..\baseq2\glsl\lightAlias.fp" />
     <None Include="..\baseq2\glsl\lightAlias.vp" />
     <None Include="..\baseq2\glsl\ambientAlias.fp" />

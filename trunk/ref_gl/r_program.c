@@ -646,12 +646,12 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"hdrGlare program"S_COLOR_WHITE" ");
-	hdrGlareProgram = R_FindProgram ("hdrGlare", qtrue, qtrue);
+	glareProgram = R_FindProgram ("glare", qtrue, qtrue);
 
-	if (hdrGlareProgram){
+	if (glareProgram){
 		Com_Printf("succeeded\n");
 
-		id = hdrGlareProgram->id[0];
+		id = glareProgram->id[0];
 		glare_params		= qglGetUniformLocation(id, "u_glareParams");
 		glare_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 	}

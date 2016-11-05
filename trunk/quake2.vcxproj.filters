@@ -580,13 +580,10 @@
     <None Include="..\baseq2\glsl\light2d.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\include\tonemap.inc">
-      <Filter>Source Files\Renderer\glsl\include</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\hdrGlare.fp">
+    <None Include="..\baseq2\glsl\glare.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\hdrGlare.vp">
+    <None Include="..\baseq2\glsl\glare.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>
