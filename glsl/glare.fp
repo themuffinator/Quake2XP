@@ -23,21 +23,19 @@ void main(void)
 	const float gaussFact[9] = float[9](0.13298076, 0.12579441, 0.10648267, 0.08065691, 0.05467002, 0.03315905, 0.01799699, 0.00874063, 0.00379866);
   
     vec2 sdx = dx;
-    vec4 sum = ( texture2DRect(u_map, fragCoord) * gaussFact[0] ) * chromaticOffsets[0];
+    vec2 sdx2 = dx2;
+    vec4 sColor = ( texture2DRect(u_map, fragCoord) * gaussFact[0] ) * chromaticOffsets[0];
     
     for (int i = 1; i < 9; i++){
-		sum += ( texture2DRect(u_map, fragCoord + sdx) + texture2DRect(u_map, fragCoord - sdx) ) *  gaussFact[i] * chromaticOffsets[i];
+		sColor += ( texture2DRect(u_map, fragCoord + sdx) + texture2DRect(u_map, fragCoord - sdx) ) *  gaussFact[i] * chromaticOffsets[i];
 		sdx += dx;
     } 
-
-    vec2 sdx2 = dx2;
-    vec4 sum2 = ( texture2DRect(u_map, fragCoord) *  gaussFact[0] ) * chromaticOffsets[0];
     
     for (int i = 1; i < 9; i++){
-		  sum2 += ( texture2DRect(u_map, fragCoord + sdx2) + texture2DRect(u_map, fragCoord - sdx2) ) *  gaussFact[i] * chromaticOffsets[i];
+		  sColor += ( texture2DRect(u_map, fragCoord + sdx2) + texture2DRect(u_map, fragCoord - sdx2) ) *  gaussFact[i] * chromaticOffsets[i];
 		  sdx2 += dx2;
     }
     
-    fragData = sum + sum2;
+    fragData = sColor;
 }
 
