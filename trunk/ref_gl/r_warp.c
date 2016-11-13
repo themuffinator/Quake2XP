@@ -58,7 +58,7 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 		alpha = 1.f;
 	}
 
-	ambient = max(r_lightmapScale->value, 0.666f);
+	ambient = min(r_lightmapScale->value, 0.33f);
 
 	GL_MBind (GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
 	GL_MBind (GL_TEXTURE1_ARB, r_DSTTex->texnum);

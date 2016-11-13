@@ -1455,7 +1455,7 @@ static void DevIL_Init() {
     if (init)
         return;
 
-	Com_Printf ("\==="S_COLOR_YELLOW"OpenIL library initiation..."S_COLOR_WHITE"===\n\n");
+	Com_Printf ("\n==="S_COLOR_YELLOW"OpenIL library initiation..."S_COLOR_WHITE"===\n\n");
 	
 	ilInit();
 	iluInit();
