@@ -230,13 +230,17 @@ BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMoni
 	monitorInfos[monitorCounter].cbSize = sizeof(monitorInfos[monitorCounter]);
 	if (GetMonitorInfo(hMonitor, &monitorInfos[monitorCounter]))
 	{
-		Com_Printf("   " S_COLOR_GREEN "%i" S_COLOR_WHITE ": %i x %i", monitorCounter + 1,
-			abs(monitorInfos[monitorCounter].rcMonitor.left - monitorInfos[monitorCounter].rcMonitor.right),
-			abs(monitorInfos[monitorCounter].rcMonitor.top - monitorInfos[monitorCounter].rcMonitor.bottom));
+		Com_Printf("   " S_COLOR_GREEN "%i" S_COLOR_WHITE ": %i" S_COLOR_GREEN " x " S_COLOR_WHITE "%i",	monitorCounter + 1,
+						abs(monitorInfos[monitorCounter].rcMonitor.left - monitorInfos[monitorCounter].rcMonitor.right),
+						abs(monitorInfos[monitorCounter].rcMonitor.top  - monitorInfos[monitorCounter].rcMonitor.bottom));
+		
 		if (monitorInfos[monitorCounter].dwFlags & MONITORINFOF_PRIMARY)
-			Com_Printf(S_COLOR_YELLOW" (primary)");
+			Com_Printf(" (" S_COLOR_YELLOW "primary" S_COLOR_WHITE ")");
+		
 		Com_Printf("\n");
+		
 		monitorCounter++;
+		
 		if (monitorCounter == MAX_SUPPORTED_MONITORS)
 			return FALSE;
 	}
@@ -255,11 +259,12 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 	HDC		hdc;
 	DEVMODE dm;
 
-	Com_Printf(S_COLOR_YELLOW"...Initializing OpenGL display\n\n");
+	Com_Printf(S_COLOR_YELLOW"...Initializing OpenGL display\n");
 	
-	Com_Printf("==================================\n\n");
-	Com_Printf(S_COLOR_YELLOW"...Available monitors:\n");
-	Com_Printf("\n");
+	Com_Printf("\n==================================\n");
+
+	Com_Printf(S_COLOR_YELLOW"\n...Available monitors:\n\n");
+	
 	monitorCounter = 0;
 	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
 	Com_Printf("\n");
@@ -306,7 +311,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 	primaryMonitor:
 		glw_state.desktopName[0] = 0;
 
-		Com_Printf("...primary monitor will be used for fullscreen mode\n");
+		Com_Printf("...primary monitor will be used for " S_COLOR_YELLOW "fullscreen" S_COLOR_WHITE " mode\n");
 		hdc = GetDC(GetDesktopWindow());
 		glw_state.desktopBitPixel = GetDeviceCaps(hdc, BITSPIXEL);
 		glw_state.desktopWidth = GetDeviceCaps(hdc, HORZRES);
@@ -315,11 +320,11 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 	}
 	else
 	{
-		Com_Printf("...calling CreateDC('%s','%s')\n", glw_state.desktopName, monitorName);
+		Com_Printf("...calling " S_COLOR_YELLOW "CreateDC" S_COLOR_WHITE "('" S_COLOR_GREEN "%s" S_COLOR_WHITE "','" S_COLOR_GREEN "%s" S_COLOR_WHITE "')\n", glw_state.desktopName, monitorName);
 		hdc = CreateDC(glw_state.desktopName, monitorName, NULL, NULL);
 
 		DeleteDC(hdc);
-		Com_Printf("...monitor %i will be used for fullscreen mode\n", (int)vid_monitor->value);
+		Com_Printf("...monitor " S_COLOR_GREEN "%i" S_COLOR_WHITE " will be used for " S_COLOR_YELLOW "fullscreen" S_COLOR_WHITE " mode\n", (int)vid_monitor->value);
 	}
 	
 	Com_Printf("\n==================================\n\n");

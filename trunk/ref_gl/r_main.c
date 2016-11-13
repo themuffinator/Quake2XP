@@ -1455,7 +1455,7 @@ static void DevIL_Init() {
     if (init)
         return;
 
-	Com_Printf ("==="S_COLOR_YELLOW"OpenIL library initiation..."S_COLOR_WHITE"===\n");
+	Com_Printf ("\==="S_COLOR_YELLOW"OpenIL library initiation..."S_COLOR_WHITE"===\n\n");
 	
 	ilInit();
 	iluInit();
@@ -1467,7 +1467,7 @@ static void DevIL_Init() {
 
 	Con_Printf (PRINT_ALL, "OpenIL VENDOR: "S_COLOR_GREEN" %s\n", ilGetString(IL_VENDOR));
 	Con_Printf (PRINT_ALL, "OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
-	Com_Printf ("==================================\n\n");
+	Com_Printf ("\n==================================\n\n");
 
     init = qtrue;
 }
