@@ -1116,7 +1116,16 @@ typedef struct {
 	const char	*wglExtsString;
 	const char	*wglRenderer;
 	int desktopWidth, desktopHeight;
+	int desktopBitPixel;
+	
+	int desktopPosX, desktopPosY;
+	int virtualX, virtualY;
+	int virtualWidth, virtualHeight;
+	int borderWidth, borderHeight;
+
 	qboolean pixelFormatSet;
+	char	 desktopName[32];		// no monitor specified if empty, drawing on primary display
+
 #else
 	void *hinstOpenGL;
 #endif

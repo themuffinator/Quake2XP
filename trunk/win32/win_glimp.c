@@ -76,8 +76,9 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	RECT			r;
 	cvar_t			*vid_xpos, *vid_ypos;
 	int				stylebits;
-	int				x, y, w, h;
+	int				x, y;
 	int				exstyle;
+	DEVMODE			dm;
 
 	/* Register the frame class */
     wc.style         = 0;
@@ -94,6 +95,21 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
     if (!RegisterClass (&wc) )
 		VID_Error (ERR_FATAL, "Couldn't register window class");
 
+	// compute width and height
+	memset(&dm, 0, sizeof(dm));
+	dm.dmSize = sizeof(dm);
+	if (glw_state.desktopName[0])
+	{
+		if (!EnumDisplaySettings(glw_state.desktopName, ENUM_CURRENT_SETTINGS, &dm))
+		{
+			memset(&dm, 0, sizeof(dm));
+			dm.dmSize = sizeof(dm);
+		}
+	}
+	/// save real monitor position in the virtual monitor
+	glw_state.desktopPosX = dm.dmPosition.x;
+	glw_state.desktopPosY = dm.dmPosition.y;
+
 	if (fullscreen)
 	{
 		exstyle = WS_EX_TOPMOST;
@@ -105,27 +121,42 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 		stylebits = WINDOW_STYLE;
 	}
 
-	r.left = 0;
-	r.top = 0;
-	r.right  = width;
-	r.bottom = height;
+	r.left = glw_state.desktopPosX;
+	r.top = glw_state.desktopPosY;
+	r.right = width + glw_state.desktopPosX;
+	r.bottom = height + glw_state.desktopPosY;
+	
+	glw_state.virtualX = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	glw_state.virtualY = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	glw_state.virtualWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	glw_state.virtualHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	glw_state.borderWidth = GetSystemMetrics(SM_CXBORDER) * 3;
+	glw_state.borderHeight = GetSystemMetrics(SM_CYBORDER) * 3 + GetSystemMetrics(SM_CYCAPTION);
+	vid_xpos = Cvar_Get("vid_xpos", "3", 0);
+	vid_ypos = Cvar_Get("vid_ypos", "22", 0);
 
 	AdjustWindowRect (&r, stylebits, FALSE);
 
-	w = r.right - r.left;
-	h = r.bottom - r.top;
-
 	if (fullscreen)
 	{
-		x = 0;
-		y = 0;
+		x = glw_state.desktopPosX;
+		y = glw_state.desktopPosY;
 	}
 	else
 	{
-		vid_xpos = Cvar_Get ("vid_xpos", "0", 0);
-		vid_ypos = Cvar_Get ("vid_ypos", "0", 0);
 		x = vid_xpos->value;
 		y = vid_ypos->value;
+
+		// adjust window coordinates if necessary
+		// so that the window is completely on screen
+		if (x < glw_state.virtualX)
+			x = glw_state.virtualX;
+		if (x > glw_state.virtualX + glw_state.virtualWidth - 64)
+			x = glw_state.virtualX + glw_state.virtualWidth - 64;
+		if (y < glw_state.virtualY)
+			y = glw_state.virtualY;
+		if (y > glw_state.virtualY + glw_state.virtualHeight - 64)
+			y = glw_state.virtualY + glw_state.virtualHeight - 64;
 	}
 
 	glw_state.hWnd = CreateWindowEx (
@@ -133,7 +164,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 		 WINDOW_CLASS_NAME,
 		 "quake2xp",
 		 stylebits,
-		 x, y, w, h,
+		 x, y, width, height,
 		 NULL,
 		 NULL,
 		 glw_state.hInstance,
@@ -168,24 +199,131 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	return qtrue;
 }
 
+BOOL GetDisplayMonitorInfo(char *monitorName)
+{
+	DISPLAY_DEVICE	dd;
+	int				i = 0;
+	BOOL			bRet = FALSE;
 
+	ZeroMemory(&dd, sizeof(dd));
+	dd.cb = sizeof(dd);
+
+	while (EnumDisplayDevices(glw_state.desktopName, i, &dd, EDD_GET_DEVICE_INTERFACE_NAME))
+	{
+		if (dd.StateFlags & DISPLAY_DEVICE_ACTIVE)
+		{
+			lstrcpy(monitorName, dd.DeviceString);
+			bRet = TRUE;
+			break;
+		}
+		i++;
+	}
+
+	return bRet;
+}
+
+#define MAX_SUPPORTED_MONITORS	16
+int monitorCounter;
+MONITORINFO monitorInfos[MAX_SUPPORTED_MONITORS];
+BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
+{
+	monitorInfos[monitorCounter].cbSize = sizeof(monitorInfos[monitorCounter]);
+	if (GetMonitorInfo(hMonitor, &monitorInfos[monitorCounter]))
+	{
+		Com_Printf("   " S_COLOR_GREEN "%i" S_COLOR_WHITE ": %i x %i", monitorCounter + 1,
+			abs(monitorInfos[monitorCounter].rcMonitor.left - monitorInfos[monitorCounter].rcMonitor.right),
+			abs(monitorInfos[monitorCounter].rcMonitor.top - monitorInfos[monitorCounter].rcMonitor.bottom));
+		if (monitorInfos[monitorCounter].dwFlags & MONITORINFOF_PRIMARY)
+			Com_Printf(S_COLOR_YELLOW" (primary)");
+		Com_Printf("\n");
+		monitorCounter++;
+		if (monitorCounter == MAX_SUPPORTED_MONITORS)
+			return FALSE;
+	}
+	return TRUE;
+}
 /*
 ** GLimp_SetMode
 */
 
 rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean fullscreen )
 {
-	int width, height;
+	int width, height, i, idx, cvm, cdsRet;
 	const char *win_fs[] = { "Window", "Full Screen" };
-	// get current device
-	HDC hdc = GetDC (NULL);
-
-	 //read current display mode
-    glw_state.desktopWidth =  GetDeviceCaps(hdc, HORZRES);
-    glw_state.desktopHeight = GetDeviceCaps(hdc, VERTRES);
+	cvar_t	*vid_monitor = Cvar_Get("vid_monitor", "0", CVAR_ARCHIVE);
+	char	monitorName[128];
+	HDC		hdc;
+	DEVMODE dm;
 
 	Com_Printf(S_COLOR_YELLOW"...Initializing OpenGL display\n\n");
 	
+	Com_Printf("==================================\n\n");
+	Com_Printf(S_COLOR_YELLOW"...Available monitors:\n");
+	Com_Printf("\n");
+	monitorCounter = 0;
+	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
+	Com_Printf("\n");
+
+	if ((int)vid_monitor->value <= 0 || (int)vid_monitor->value > MAX_SUPPORTED_MONITORS)
+		goto primaryMonitor;
+	// seek monitor index
+	cvm = (int)vid_monitor->value - 1;
+	for (idx = -1, i = 1; i < 256; i++)	// много?
+	{
+		Com_sprintf(glw_state.desktopName, sizeof(glw_state.desktopName), "\\\\.\\Display%i", i);
+		memset(&dm, 0, sizeof(dm));
+		dm.dmSize = sizeof(dm);
+
+		if (EnumDisplaySettings(glw_state.desktopName, ENUM_CURRENT_SETTINGS, &dm)){
+
+			glw_state.desktopPosX = dm.dmPosition.x;
+			glw_state.desktopPosY = dm.dmPosition.y;
+
+			if (GetDisplayMonitorInfo(monitorName)){
+
+				hdc = CreateDC(glw_state.desktopName, monitorName, NULL, NULL);
+
+				if (hdc){	
+					/// monitor found, so compare positions in virtual desktop
+					glw_state.desktopBitPixel = GetDeviceCaps(hdc, BITSPIXEL);
+					glw_state.desktopWidth = GetDeviceCaps(hdc, HORZRES);
+					glw_state.desktopHeight = GetDeviceCaps(hdc, VERTRES);
+					if (monitorInfos[cvm].rcMonitor.left == glw_state.desktopPosX &&
+						monitorInfos[cvm].rcMonitor.top == glw_state.desktopPosY &&
+						abs(monitorInfos[cvm].rcMonitor.left - monitorInfos[cvm].rcMonitor.right) == glw_state.desktopWidth &&
+						abs(monitorInfos[cvm].rcMonitor.top - monitorInfos[cvm].rcMonitor.bottom) == glw_state.desktopHeight)
+					{
+						idx = i;
+						i = 256;	/// break
+					}
+				}
+				DeleteDC(hdc);
+			}
+		}
+	}
+	if (idx == -1){
+
+	primaryMonitor:
+		glw_state.desktopName[0] = 0;
+
+		Com_Printf("...primary monitor will be used for fullscreen mode\n");
+		hdc = GetDC(GetDesktopWindow());
+		glw_state.desktopBitPixel = GetDeviceCaps(hdc, BITSPIXEL);
+		glw_state.desktopWidth = GetDeviceCaps(hdc, HORZRES);
+		glw_state.desktopHeight = GetDeviceCaps(hdc, VERTRES);
+		ReleaseDC(GetDesktopWindow(), hdc);
+	}
+	else
+	{
+		Com_Printf("...calling CreateDC('%s','%s')\n", glw_state.desktopName, monitorName);
+		hdc = CreateDC(glw_state.desktopName, monitorName, NULL, NULL);
+
+		DeleteDC(hdc);
+		Com_Printf("...monitor %i will be used for fullscreen mode\n", (int)vid_monitor->value);
+	}
+	
+	Com_Printf("\n==================================\n\n");
+
 	if ( !VID_GetModeInfo( &width, &height, mode ) )
 	{
 		Com_Printf(S_COLOR_RED " invalid mode\n" );
@@ -217,31 +355,24 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 	// do a CDS if needed
 	if ( fullscreen )
 	{
-		DEVMODE dm;
-
 		Com_Printf("...attempting fullscreen\n" );
 
 		memset( &dm, 0, sizeof( dm ) );
-
 		dm.dmSize = sizeof( dm );
 
 		dm.dmPelsWidth  = width;
 		dm.dmPelsHeight = height;
 		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
-        
  
 		/* display frequency */
-
-		if (r_displayRefresh->value !=0 )
-		{
+		if (r_displayRefresh->value != 0){
 	        gl_state.displayrefresh	= r_displayRefresh->value;
 			dm.dmDisplayFrequency	= r_displayRefresh->value;
 			dm.dmFields				|= DM_DISPLAYFREQUENCY;
 			Com_Printf("...display frequency is "S_COLOR_GREEN"%d"S_COLOR_WHITE" hz\n", gl_state.displayrefresh);
 		}
-		else 
-		
-		{
+		else {
+			
 			int displayref = GetDeviceCaps (hdc, VREFRESH);
             dm.dmDisplayFrequency	= displayref;
 			dm.dmFields				|= DM_DISPLAYFREQUENCY;
@@ -251,10 +382,16 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 			// force set 32-bit color depth
 			dm.dmBitsPerPel = 32;
 			dm.dmFields |= DM_BITSPERPEL;
-	
+
 			
 		Con_Printf( PRINT_ALL, "...calling CDS: " );
-		if ( ChangeDisplaySettings( &dm, CDS_FULLSCREEN ) == DISP_CHANGE_SUCCESSFUL )
+		
+		if (glw_state.desktopName[0])
+			cdsRet = ChangeDisplaySettingsEx(glw_state.desktopName, &dm, NULL, CDS_FULLSCREEN, NULL);
+		else
+			cdsRet = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+
+		if (cdsRet == DISP_CHANGE_SUCCESSFUL )
 		{
 			*pwidth = width;
 			*pheight = height;
@@ -280,12 +417,17 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 			dm.dmPelsWidth = width * 2;
 			dm.dmPelsHeight = height;
 			dm.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
-
+		
 			/*
 			** our first CDS failed, so maybe we're running on some weird dual monitor
 			** system 
 			*/
-			if ( ChangeDisplaySettings( &dm, CDS_FULLSCREEN ) != DISP_CHANGE_SUCCESSFUL )
+			if (glw_state.desktopName[0])
+				cdsRet = ChangeDisplaySettingsEx(glw_state.desktopName, &dm, NULL, CDS_FULLSCREEN, NULL);
+			else
+				cdsRet = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+
+			if (cdsRet != DISP_CHANGE_SUCCESSFUL )
 			{
 				Com_Printf(S_COLOR_RED" failed\n" );
 
@@ -322,7 +464,6 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		if ( !VID_CreateWindow (width, height, qfalse) )
 			return rserr_invalid_mode;
 	}
-
 	return rserr_ok;
 }
 

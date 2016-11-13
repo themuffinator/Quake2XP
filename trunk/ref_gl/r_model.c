@@ -27,7 +27,6 @@ int modfilelen;
 void Mod_LoadSpriteModel(model_t * mod, void *buffer);
 void Mod_LoadBrushModel(model_t * mod, void *buffer);
 void Mod_LoadAliasModel(model_t * mod, void *buffer);
-qboolean Mod_INTERQUAKEMODEL_Load(model_t *mod, void *buffer);
 
 byte mod_novis[MAX_MAP_LEAFS / 8];
 
