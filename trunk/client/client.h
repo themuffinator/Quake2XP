@@ -457,7 +457,6 @@ extern cvar_t *cl_railspiral_blue;
 
 extern cvar_t *cl_decals;
 extern cvar_t *net_compatibility;
-extern cvar_t *cl_old_explosion;
 extern cvar_t *cl_drawhud;
 extern cvar_t *deathmatch;
 extern cvar_t *s_initsound;

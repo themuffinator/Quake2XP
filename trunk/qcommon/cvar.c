@@ -386,7 +386,7 @@ void Cvar_Set_f (void) {
 
 
 // cvar sorting from r1q2
-static int cvarsort(const void *_a, const void *_b) {
+int cvarsort(const void *_a, const void *_b) {
 	const cvar_t	*a = (const cvar_t *)_a;
 	const cvar_t	*b = (const cvar_t *)_b;
 	return strcmp(a->name, b->name);
@@ -441,6 +441,7 @@ Cvar_List_f
 
 ============
 */
+
 
 void Cvar_List_f (void) {
 	cvar_t		*var, *cvar, *sortedList;

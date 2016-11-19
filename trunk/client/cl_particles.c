@@ -1853,8 +1853,8 @@ void CL_Explosion (vec3_t org) {
 	p->next = active_particles;
 	active_particles = p;
 	p->orient = 0;
-	p->flags = PARTICLE_OVERBRIGHT;
-	p->flags |= PARTICLE_LIGHTING;
+//	p->flags = PARTICLE_OVERBRIGHT;
+	p->flags = PARTICLE_LIGHTING;
 	p->time = cl.time;
 	p->endTime = cl.time + 400;
 	p->size = 50;

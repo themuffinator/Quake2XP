@@ -657,6 +657,10 @@ PFNGLGETVERTEXATTRIBLUI64VARBPROC					glGetVertexAttribLui64vARB = NULL;
 
 PFNGLBUFFERSTORAGEPROC								glBufferStorage = NULL;
 PFNGLGETSTRINGIPROC									glGetStringi = NULL;
+
+PFNGLBINDTEXTURESPROC								glBindTextures = NULL;
+PFNGLBINDSAMPLERSPROC								glBindSamplers = NULL;
+
 /*
 ** QGL_Shutdown
 **

@@ -711,6 +711,19 @@ Cmd_CompleteCommand
 ============
 */
 char retval[256];
+extern int cvarsort(const void *_a, const void *_b);
+
+int cmdSort(const void *_a, const void *_b) {
+	const cmd_function_t	*a = (const cmd_function_t *)_a;
+	const cmd_function_t	*b = (const cmd_function_t *)_b;
+	return strcmp(a->name, b->name);
+}
+
+int aliasSort(const void *_a, const void *_b) {
+	const cmdalias_t	*a = (const cmdalias_t *)_a;
+	const cmdalias_t	*b = (const cmdalias_t *)_b;
+	return strcmp(a->name, b->name);
+}
 
 char *Cmd_CompleteCommand (char *partial) {
 	cmd_function_t *cmd;
@@ -719,6 +732,9 @@ char *Cmd_CompleteCommand (char *partial) {
 	cvar_t *cvar;
 	char *pmatch[1024];
 	qboolean diff = qfalse;
+	qboolean isCvar = qfalse;
+	qboolean isCmd = qfalse;
+	qboolean isAlias = qfalse;
 
 	len = strlen (partial);
 
@@ -726,16 +742,24 @@ char *Cmd_CompleteCommand (char *partial) {
 		return NULL;
 
 	// check for exact match
-	for (cmd = cmd_functions; cmd; cmd = cmd->next)
-	if (!Q_stricmp (partial, cmd->name))
-		return cmd->name;
-	for (a = cmd_alias; a; a = a->next)
-	if (!Q_stricmp (partial, a->name))
-		return a->name;
-	for (cvar = cvar_vars; cvar; cvar = cvar->next)
-	if (!Q_stricmp (partial, cvar->name))
-		return cvar->name;
-
+	for (cmd = cmd_functions; cmd; cmd = cmd->next) {
+		if (!Q_stricmp(partial, cmd->name)) {
+			isCvar = qtrue;
+			return cmd->name;
+		}
+	}
+	for (a = cmd_alias; a; a = a->next) {
+		if (!Q_stricmp(partial, a->name)) {
+			isAlias = qtrue;
+			return a->name;
+		}
+	}
+	for (cvar = cvar_vars; cvar; cvar = cvar->next) {
+		if (!Q_stricmp(partial, cvar->name)) {
+			isCvar = qtrue;
+			return cvar->name;
+		}
+	}
 	for (i = 0; i < 1024; i++)
 		pmatch[i] = NULL;
 	i = 0;
@@ -761,7 +785,15 @@ char *Cmd_CompleteCommand (char *partial) {
 		if (i == 1)
 			return pmatch[0];
 
+		if (isCvar)
+			qsort(pmatch, i, sizeof(pmatch[0]), cvarsort);
+		if (isCmd)
+			qsort(pmatch, i, sizeof(pmatch[0]), cmdSort);
+		if (isAlias)
+			qsort(pmatch, i, sizeof(pmatch[0]), aliasSort);
+
 		Com_Printf ("\nListing matches for '%s'...\n", partial);
+		
 		for (o = 0; o < i; o++)
 			Com_Printf ("  %s\n", pmatch[o]);
 
