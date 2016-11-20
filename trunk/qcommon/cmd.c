@@ -711,18 +711,14 @@ Cmd_CompleteCommand
 ============
 */
 char retval[256];
-extern int cvarsort(const void *_a, const void *_b);
+int Q_SortStricmp(const void *a, const void *b)
+{
+	char	*aa, *bb;
 
-int cmdSort(const void *_a, const void *_b) {
-	const cmd_function_t	*a = (const cmd_function_t *)_a;
-	const cmd_function_t	*b = (const cmd_function_t *)_b;
-	return strcmp(a->name, b->name);
-}
+	aa = *(char **)a;
+	bb = *(char **)b;
 
-int aliasSort(const void *_a, const void *_b) {
-	const cmdalias_t	*a = (const cmdalias_t *)_a;
-	const cmdalias_t	*b = (const cmdalias_t *)_b;
-	return strcmp(a->name, b->name);
+	return Q_stricmp(aa, bb);
 }
 
 char *Cmd_CompleteCommand (char *partial) {
@@ -732,9 +728,6 @@ char *Cmd_CompleteCommand (char *partial) {
 	cvar_t *cvar;
 	char *pmatch[1024];
 	qboolean diff = qfalse;
-	qboolean isCvar = qfalse;
-	qboolean isCmd = qfalse;
-	qboolean isAlias = qfalse;
 
 	len = strlen (partial);
 
@@ -744,19 +737,16 @@ char *Cmd_CompleteCommand (char *partial) {
 	// check for exact match
 	for (cmd = cmd_functions; cmd; cmd = cmd->next) {
 		if (!Q_stricmp(partial, cmd->name)) {
-			isCvar = qtrue;
 			return cmd->name;
 		}
 	}
 	for (a = cmd_alias; a; a = a->next) {
 		if (!Q_stricmp(partial, a->name)) {
-			isAlias = qtrue;
 			return a->name;
 		}
 	}
 	for (cvar = cvar_vars; cvar; cvar = cvar->next) {
 		if (!Q_stricmp(partial, cvar->name)) {
-			isCvar = qtrue;
 			return cvar->name;
 		}
 	}
@@ -785,12 +775,7 @@ char *Cmd_CompleteCommand (char *partial) {
 		if (i == 1)
 			return pmatch[0];
 
-		if (isCvar)
-			qsort(pmatch, i, sizeof(pmatch[0]), cvarsort);
-		if (isCmd)
-			qsort(pmatch, i, sizeof(pmatch[0]), cmdSort);
-		if (isAlias)
-			qsort(pmatch, i, sizeof(pmatch[0]), aliasSort);
+		qsort(pmatch, i, sizeof(char *), (cmp_t *)Q_SortStricmp);
 
 		Com_Printf ("\nListing matches for '%s'...\n", partial);
 		
