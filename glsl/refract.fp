@@ -34,7 +34,7 @@ void main (void) {
 		float A = texture(u_deformMap, v_deformTexCoord).a;
 		float softness = clamp((depth - v_depthS) / u_thickness2, 0.0, 1.0);
 		// refracted sprites with soft edges
-		if (A == 0.01) {
+		if (A <= 0.01) {
 			discard;
 				return;
 			}

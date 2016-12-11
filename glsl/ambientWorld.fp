@@ -44,7 +44,7 @@ void main (void) {
 	vec4 normalMap = texture(u_NormalMap, P);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
-	diffuseMap += glowMap;
+//	diffuseMap += glowMap;
 
 	if (u_LightMapType == 0)
 		fragData.xyz = diffuseMap * texture(u_LightMap0, v_lTexCoord.xy).rgb;
@@ -93,14 +93,16 @@ void main (void) {
 		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
 		fragData.xyz = diffuseMap * mix(D, S, normalMap.w * u_specularScale);
 	}
-
+      
 	if (u_ssao == 1)
 		fragData.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
 
 	// fake AO/cavity
 	fragData.xyz *= normalMap.z * 0.5 + 0.5;
 	fragData.xyz *= u_ColorModulate * u_ambientScale;
-	fragData.w = 1.0;
+  fragData += vec4(glowMap, 1.0);
+//	fragData.w = 1.0;
+
 // DEBUG
 //	if (u_ssao == 1)
 //		fragData.xyz = texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
