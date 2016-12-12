@@ -37,11 +37,6 @@ vec4_t	wColorArray[MAX_BATCH_SURFS];
 float   wTmu0Array[MAX_BATCH_SURFS][2];
 float   wTmu1Array[MAX_BATCH_SURFS][2];
 float   wTmu2Array[MAX_BATCH_SURFS][2];
-float   wTmu3Array[MAX_BATCH_SURFS][2];
-float   wTmu4Array[MAX_BATCH_SURFS][2];
-float   wTmu5Array[MAX_BATCH_SURFS][2];
-float   wTmu6Array[MAX_BATCH_SURFS][2];
-float	SurfColorArray[MAX_BATCH_SURFS][4];
 
 uint	indexArray[MAX_MAP_VERTS * 3];
 vec3_t	nTexArray[MAX_BATCH_SURFS];
@@ -269,15 +264,16 @@ BSP SURFACES
 
 ===============
 */
-qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces, qboolean bmodel) {
-	unsigned	numVertices, numIndices;
+#define MAX_IDX MAX_VERTICES * 4
+
+qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *indeces, qboolean bmodel) {
+	unsigned	numIndices;
 	int			i, nv = surf->numEdges;
 	float		scroll = 0.0, scale[2];
 
-	numVertices = *vertices;
 	numIndices	= *indeces;
 
-	if (numVertices + nv > MAX_BATCH_SURFS)
+	if ((nv-2) * 3 >= MAX_IDX)
 		return qfalse;	// force the start new batch
 
 	if (newBatch) {
@@ -337,7 +333,6 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *vert
 		indexArray[numIndices++] = surf->baseIndex + i + 2;
 		}
 
-	*vertices	= numVertices;
 	*indeces	= numIndices;
 
 	return qtrue;	
@@ -360,8 +355,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qboolean	newBatch;
 	unsigned	oldTex		= 0xffffffff;
 	unsigned	oldFlag		= 0xffffffff;
-	unsigned	numIndices	= 0xffffffff,
-				numVertices = 0;
+	unsigned	numIndices  = 0xffffffff;
 
 	// setup program
 	GL_BindProgram(ambientWorldProgram, 0);
@@ -397,7 +391,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		{
 			if (numIndices != 0xFFFFFFFF){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 			}
 
@@ -417,7 +410,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		{
 			if (numIndices != 0xFFFFFFFF){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 			}
 
@@ -428,11 +420,10 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		newBatch = qfalse;
 	
 	// fill new batch
-		if (!R_FillAmbientBatch(s, newBatch, &numVertices, &numIndices, bmodel))
+		if (!R_FillAmbientBatch(s, newBatch, &numIndices, bmodel))
 		{
 			if (numIndices != 0xFFFFFFFF){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 				}
 		}
@@ -448,16 +439,15 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 
 int	r_lightTimestamp;
 
-qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertices, unsigned *indeces, qboolean bmodel, qboolean caustics)
+qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces, qboolean bmodel, qboolean caustics)
 {
-	unsigned	numVertices, numIndices;
+	unsigned	numIndices;
 	int			i, nv = surf->numEdges;
 	float		scroll = 0.0, scale[2];
 
-	numVertices = *vertices;
 	numIndices = *indeces;
 
-	if (numVertices + nv > MAX_BATCH_SURFS)
+	if ((nv - 2) * 3 >= MAX_IDX)
 		return qfalse;	// force the start new batch
 
 	if (newBatch)
@@ -545,7 +535,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *vertice
 		indexArray[numIndices++] = surf->baseIndex + i + 2;
 	}
 
-	*vertices = numVertices;
 	*indeces = numIndices;
 
 	return qtrue;
@@ -614,8 +603,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 	qboolean	newBatch, oldCaust;
 	unsigned	oldTex		= 0xffffffff;
 	unsigned	oldFlag		= 0xffffffff;
-	unsigned	numIndices	= 0xffffffff,
-				numVertices = 0;
+	unsigned	numIndices	= 0xffffffff;
 	
 	// setup program
 	GL_BindProgram(lightWorldProgram, 0);
@@ -639,7 +627,6 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 		{
 			if (numIndices != 0xffffffff){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				numVertices = 0;
 				numIndices = 0xffffffff;
 			}
 			oldTex = s->texInfo->image->texnum;
@@ -651,11 +638,10 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 			newBatch = qfalse;
 
 	// fill new batch
-		if (!R_FillLightBatch(s, newBatch, &numVertices, &numIndices, bmodel, caustics))
+		if (!R_FillLightBatch(s, newBatch, &numIndices, bmodel, caustics))
 		{
 			if (numIndices != 0xffffffff){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				numVertices = 0;
 				numIndices = 0xffffffff;
 			}
 		}
@@ -674,8 +660,7 @@ static void GL_DrawStaticLightPass()
 	qboolean	newBatch;
 	unsigned	oldTex = 0xffffffff;
 	unsigned	oldFlag = 0xffffffff;
-	unsigned	numIndices = 0xffffffff,
-				numVertices = 0;
+	unsigned	numIndices = 0xffffffff;
 
 	// setup program
 	GL_BindProgram(lightWorldProgram, 0);
@@ -697,7 +682,6 @@ static void GL_DrawStaticLightPass()
 		{
 			if (numIndices != 0xffffffff) {
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				numVertices = 0;
 				numIndices = 0xffffffff;
 			}
 			oldTex = s->texInfo->image->texnum;
@@ -708,11 +692,10 @@ static void GL_DrawStaticLightPass()
 			newBatch = qfalse;
 
 		// fill new batch
-		if (!R_FillLightBatch(s, newBatch, &numVertices, &numIndices, qfalse, qfalse))
+		if (!R_FillLightBatch(s, newBatch, &numIndices, qfalse, qfalse))
 		{
 			if (numIndices != 0xffffffff) {
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				numVertices = 0;
 				numIndices = 0xffffffff;
 			}
 		}
