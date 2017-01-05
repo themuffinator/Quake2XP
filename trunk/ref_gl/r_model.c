@@ -447,31 +447,12 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 
 	loadmodel = mod;
 
-	if (strstr(mod->name, "md5mesh"))
-	{ //if it's an md5 mesh
-		if (Mod_AllocateMD5Mesh(mod, (BYTE *)buf, modfilelen))
-		{
-			wasMD5 = 1;
-		}
-	}
-
-	if (!wasMD5)
-	{ //ok, see if it's an anim
-		if (strstr(mod->name, "md5anim"))
-		{
-			if (Mod_AllocateMD5Anim(mod, (byte*)buf, modfilelen))
-			{
-				wasMD5 = 1;
-			}
-		}
-	}
-
 	// 
 	// fill it in
 	// 
-	if (!wasMD5)
-	{
-		switch (LittleLong(*(unsigned *)buf)) {
+
+		switch (LittleLong(*(unsigned *)buf)) 
+		{
 		case IDALIASHEADER:
 			loadmodel->extraData = Hunk_Begin(hunk_model->value * 1048576, name);
 			Mod_LoadAliasModel(mod, buf);
@@ -492,7 +473,7 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 			VID_Error(ERR_DROP, "Mod_NumForName: unknown fileid for %s", mod->name);
 			break;
 		}
-	}
+
 	loadmodel->extraDataSize = Hunk_End();
 
 	FS_FreeFile(buf);
@@ -2625,44 +2606,10 @@ struct model_s *R_RegisterModel(char *name) {
 					mod->texInfo[i].rghMap->registration_sequence = registration_sequence;
 			}
 		}
-		 else if (mod->type == mod_md5)
-		 {
-			 modelMeshObject_t *obj = mod->md5;
-			 while (obj)
-			 {
-				 obj->meshData.skin = GL_FindImage(obj->meshData.skinName, it_skin);
-				 if (!obj->meshData.skin)
-				 { //then just try for a placeholder
-					 obj->meshData.skin = GL_FindImage("players/male/cipher.pcx", it_skin);
-				 }
-				 //check for a normal map
-				 if (obj->meshData.skinNameNormal[0])
-				 {
-					 obj->meshData.skin_normal = GL_FindImage(obj->meshData.skinNameNormal, it_skin);
-				 }
-				 obj = obj->next;
-			 }
-		 }
 	}
 	return mod;
 
 
-}
-
-struct model_s *R_RegisterAnim(char *name)
-{
-	model_t	*mod;
-
-	assert(strstr(name, "md5anim"));
-
-	mod = Mod_ForName(name, qfalse);
-	if (mod)
-	{
-		mod->registration_sequence = registration_sequence;
-
-		//do more stuff
-	}
-	return mod;
 }
 
 void GL_CheckError(const char *fileName, int line, const char *subr);

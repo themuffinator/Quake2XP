@@ -357,9 +357,6 @@ void SV_InitGameProgs (void) {
 	import.inPVS = PF_inPVS;
 	import.inPHS = PF_inPHS;
 	import.Pmove = Pmove;
-	
-	// md5
-	import.animindex = SV_AnimIndex;
 
 	import.modelindex = SV_ModelIndex;
 	import.soundindex = SV_SoundIndex;

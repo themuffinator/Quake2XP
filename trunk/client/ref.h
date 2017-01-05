@@ -150,7 +150,9 @@ typedef struct entity_s {
 	 */
 	float oldorigin[3];			// also used as RF_BEAM's "to"
 	int oldframe;
-
+	
+	// iqm
+	int iqmFrameTime;
 	/*
 	 ** misc
 	 */
@@ -172,9 +174,6 @@ typedef struct entity_s {
 	vec3_t maxs;
 	qboolean lightVised;
 	byte vis[MAX_MAP_LEAFS / 8];
-
-	// md5
-	struct model_s	*anim;
 
 } entity_t;
 
@@ -623,8 +622,6 @@ void GLimp_AppActivate (qboolean active);
 void VID_NewWindow (int width, int height);
 qboolean VID_GetModeInfo (int *width, int *height, int mode);
 void VectorNormalizeFast(vec3_t v);
-
-struct model_s *(*RegisterAnim) (char *name);
 
 struct sfx_s;
 

@@ -83,6 +83,10 @@ typedef struct worldShadowLight_s {
 	GLuint		iboId;
 	int			iboNumIndices;
 
+	qboolean	directVisibled, visible;
+	GLuint		occID;
+	int			framecount;
+
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;
 	
@@ -187,7 +191,7 @@ typedef struct mleaf_s {
 
 typedef enum {
 	mod_bad, mod_brush, mod_sprite, 
-	mod_alias, mod_md5, mod_md5anim
+	mod_alias
 } modtype_t;
 
 
@@ -301,10 +305,6 @@ typedef struct model_s {
 	int			memorySize;
 
 	mat3_t		axis;
-
-	modelMeshObject_t	*md5; //^^;
-	modelAnim_t			*md5anim;
-
 } model_t;
 
 

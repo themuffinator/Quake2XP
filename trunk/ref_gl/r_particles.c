@@ -50,7 +50,6 @@ vec2_t		ParticleTextCoord[MAX_PARTICLE_VERT];
 int SortPart (particle_t *a, particle_t *b) {
 	return (a->type + a->flags) - (b->type + b->flags);
 }
-void R_AmbientColor (vec3_t org, vec3_t color);
 
 void R_DrawParticles (void) {
 	particle_t *p;

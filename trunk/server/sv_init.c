@@ -59,11 +59,6 @@ int SV_FindIndex (char *name, int start, int max, qboolean create) {
 	return i;
 }
 
-// md5
-int SV_AnimIndex(char *name)
-{
-	return SV_FindIndex(name, CS_ANIMS, MAX_ANIMS, qtrue);
-}
 
 int SV_ModelIndex (char *name) {
 	return SV_FindIndex (name, CS_MODELS, MAX_MODELS, qtrue);

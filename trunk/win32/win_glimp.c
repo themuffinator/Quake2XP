@@ -32,11 +32,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "../ref_gl/r_local.h"
+#include "nvapi/nvapi.h"
 
 // Enable High Performance Graphics while using Integrated Graphics.
 __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;        // Nvidia
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;  // AMD
 
+qboolean nvApiInit;
 
 #define	WINDOW_STYLE	(WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_VISIBLE)
 
@@ -323,6 +325,75 @@ BOOL CALLBACK MonitorEnumProc2(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMon
 	}
 	return TRUE;
 }
+
+
+void GLimp_InitNvApi() {
+
+	NvAPI_Status ret = NVAPI_OK;
+	NvPhysicalGpuHandle hPhysicalGpu[NVAPI_MAX_PHYSICAL_GPUS];
+	NvU32 physicalGpuCount = 0;
+	NvAPI_ShortString ver, string;
+	NV_GPU_THERMAL_SETTINGS thermal, thermal1;
+
+	nvApiInit = qfalse;
+
+	Com_Printf("" S_COLOR_YELLOW "...Initializing NVIDIA API\n\n");
+	
+	// init nvapi
+	ret = NvAPI_Initialize();
+	
+	if (ret != NVAPI_OK) { // check for nvapi error
+		NvAPI_GetErrorMessage(ret, string);
+		Com_Printf(S_COLOR_RED"...NvAPI_Initialize() failed = " S_COLOR_RED "%s\n", string);
+		return;
+	}
+
+	NvAPI_GetInterfaceVersionString(ver);
+	Com_Printf("NVAPI:" S_COLOR_GREEN " %s\n\n", ver);
+
+	// Enumerate the physical GPU handle
+	ret = NvAPI_EnumPhysicalGPUs(hPhysicalGpu, &physicalGpuCount);
+
+	if (ret != NVAPI_OK) {
+		NvAPI_GetErrorMessage(ret, string);
+		Com_Printf(S_COLOR_RED"NvAPI_EnumPhysicalGPUs() failed = " S_COLOR_GREEN "%s\n", string);
+	}
+	else
+		Com_Printf("...found " S_COLOR_GREEN "%i " S_COLOR_WHITE "physical gpu's\n", physicalGpuCount);
+	
+	// check for SLI
+	if(physicalGpuCount > 1)
+		Com_Printf("...available " S_COLOR_GREEN "%i" S_COLOR_WHITE "-Way " S_COLOR_GREEN "SLI\n", physicalGpuCount);
+
+	// get gpu temperature
+	thermal.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+	ret = NvAPI_GPU_GetThermalSettings(hPhysicalGpu[0], 0, &thermal);
+
+	if (ret != NVAPI_OK) {
+		NvAPI_GetErrorMessage(ret, string);
+		Com_Printf(S_COLOR_RED"NVAPI NvAPI_GPU_GetThermalSettings: %s\n", string);
+	} 
+	else
+		Com_Printf("...gpu " S_COLOR_GREEN "0" S_COLOR_WHITE " temperature: " S_COLOR_GREEN "%u" S_COLOR_WHITE " C\n", thermal.sensor[0].currentTemp);
+
+	// get second gpu temperature if available
+	if (physicalGpuCount > 1) {
+		thermal1.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+		ret = NvAPI_GPU_GetThermalSettings(hPhysicalGpu[1], 0, &thermal1);
+
+		if (ret != NVAPI_OK) {
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED"NVAPI NvAPI_GPU_GetThermalSettings: %s\n", string);
+		}
+		Com_Printf("...gpu " S_COLOR_GREEN "1" S_COLOR_WHITE " temperature: " S_COLOR_GREEN "%u" S_COLOR_WHITE " C\n", thermal1.sensor[0].currentTemp);
+	}
+
+	nvApiInit = qtrue;
+
+	Com_Printf("\n==================================\n\n");
+}
+
+
 /*
 ** GLimp_SetMode
 */
@@ -335,6 +406,8 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 	char	monitorName[128], monitorModel[16];
 	HDC		hDC;
 	DEVMODE dm;
+
+	GLimp_InitNvApi();
 
 	Com_Printf(S_COLOR_YELLOW"...Initializing OpenGL display\n");
 	
@@ -480,7 +553,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 			int displayref = GetDeviceCaps (hDC, VREFRESH);
             dm.dmDisplayFrequency	= displayref;
 			dm.dmFields				|= DM_DISPLAYFREQUENCY;
-			Com_Printf("...using desktop frequency: "S_COLOR_GREEN"%d"S_COLOR_WHITE" hz\n", displayref);
+			Com_Printf("...using desktop frequency.\n");
 		}
      
 			// force set 32-bit color depth
@@ -612,6 +685,8 @@ void GLimp_Shutdown( void )
 		ChangeDisplaySettings( 0, 0 );
 		gl_state.fullscreen = qfalse;
 	}
+	if(nvApiInit)
+		NvAPI_Unload();
 }
 
 /*=============
@@ -1151,6 +1226,7 @@ else
 	
 
 }
+
 /*
 ==================
 GLW_InitExtensions
@@ -1235,7 +1311,6 @@ void GLW_InitExtensions() {
 
 		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_profile"))
 			Com_Printf("...using WGL_ARB_create_context_profile\n");
-
 }
 
 /*

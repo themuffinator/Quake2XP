@@ -53,7 +53,6 @@ typedef void ILvoid;
 #include "../client/ref.h"
 
 #include "qgl.h"
-#include "r_model_md5.h"
 
 // up / down
 #define	PITCH	0
@@ -617,6 +616,8 @@ typedef struct {
 	qboolean	arb_occlusion;
 	qboolean	arb_occlusion2;
 	unsigned	query_passed;
+	GLuint		entityOQID[MAX_ENTITIES];
+
 	qboolean	use_msaa;
 	qboolean	wgl_swap_control_tear;
 	qboolean	conditional_render;

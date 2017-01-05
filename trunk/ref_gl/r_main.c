@@ -777,8 +777,6 @@ void R_RenderSprites(void)
 	GL_DepthMask(1);
 }
 
-void R_DrawMD5Model(entity_t *e);
-
 // draws ambient opaque entities
 static void R_DrawEntitiesOnList (void) {
 	int i;
@@ -818,9 +816,6 @@ static void R_DrawEntitiesOnList (void) {
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
 				break;
-			case mod_md5:
-				R_DrawMD5Model(currententity);
-				break;
 			default:
 				VID_Error(ERR_DROP, "Bad modeltype");
 				break;
@@ -829,7 +824,6 @@ static void R_DrawEntitiesOnList (void) {
 
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
-	GL_DepthMask(0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -856,7 +850,6 @@ static void R_DrawEntitiesOnList (void) {
 			R_DrawAliasModel(currententity);
 	}
 	GL_Disable(GL_BLEND);
-	GL_DepthMask(1);
 }
 
 // draw all opaque, non-reflective stuff
@@ -1306,7 +1299,7 @@ void R_RegisterCvars(void)
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
 //	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
-//	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", 0);
+	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", 0);
 //	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 	r_specularScale =					Cvar_Get("r_specularScale", "1", CVAR_ARCHIVE);
 	r_ambientSpecularScale =			Cvar_Get("r_ambientSpecularScale", "0.3", CVAR_ARCHIVE);
@@ -1663,7 +1656,50 @@ int R_Init(void *hinstance, void *hWnd)
 	if (IsExtensionSupported("GL_ARB_texture_rectangle")) 
 		Com_Printf("...using GL_ARB_texture_rectangle\n");		
 
-	// unused vao stuff
+
+	gl_state.arb_occlusion = qfalse;
+	gl_state.arb_occlusion2 = qfalse;
+	if (IsExtensionSupported("GL_ARB_occlusion_query")) {
+		int GL_QueryBits;
+		Com_Printf("...using GL_ARB_occlusion_query\n");
+		gl_state.arb_occlusion = qtrue;
+
+		qglGenQueriesARB = (PFNGLGENQUERIESARBPROC)qwglGetProcAddress("glGenQueriesARB");
+		qglDeleteQueriesARB = (PFNGLDELETEQUERIESARBPROC)qwglGetProcAddress("glDeleteQueriesARB");
+		qglIsQueryARB = (PFNGLISQUERYARBPROC)qwglGetProcAddress("glIsQueryARB");
+		qglBeginQueryARB = (PFNGLBEGINQUERYARBPROC)qwglGetProcAddress("glBeginQueryARB");
+		qglEndQueryARB = (PFNGLENDQUERYARBPROC)qwglGetProcAddress("glEndQueryARB");
+		qglGetQueryivARB = (PFNGLGETQUERYIVARBPROC)qwglGetProcAddress("glGetQueryivARB");
+		qglGetQueryObjectivARB = (PFNGLGETQUERYOBJECTIVARBPROC)qwglGetProcAddress("glGetQueryObjectivARB");
+		qglGetQueryObjectuivARB = (PFNGLGETQUERYOBJECTUIVARBPROC)qwglGetProcAddress("glGetQueryObjectuivARB");
+
+		qglGetQueryivARB(GL_SAMPLES_PASSED_ARB, GL_QUERY_COUNTER_BITS_ARB, &GL_QueryBits);
+
+		if (GL_QueryBits) {
+
+			Com_Printf("   Found "S_COLOR_GREEN "%i" S_COLOR_WHITE " occlusion query bits\n", GL_QueryBits);
+
+			if (IsExtensionSupported("GL_ARB_occlusion_query2")) {
+				Com_Printf("...using GL_ARB_occlusion_query2\n");
+				gl_state.arb_occlusion2 = qtrue;
+			}
+			else {
+				Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query2 not found\n");
+				gl_state.arb_occlusion2 = qfalse;
+			}
+		}
+		if (gl_state.arb_occlusion2)
+			gl_state.query_passed = GL_ANY_SAMPLES_PASSED;
+		else
+			gl_state.query_passed = GL_SAMPLES_PASSED;
+
+	}
+	else {
+		Com_Printf(S_COLOR_RED"...GL_ARB_occlusion_query not found\n");
+		gl_state.arb_occlusion = qfalse;
+	}
+
+	// vao stuff
 	glGenVertexArrays		= (PFNGLGENVERTEXARRAYSPROC)	qwglGetProcAddress	("glGenVertexArrays");
 	glDeleteVertexArrays	= (PFNGLDELETEVERTEXARRAYSPROC)	qwglGetProcAddress	("glDeleteVertexArrays");
 	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress	("glBindVertexArray");
@@ -1674,7 +1710,7 @@ int R_Init(void *hinstance, void *hWnd)
 	
 	if (IsExtensionSupported("GL_ARB_map_buffer_range")) {
 		Com_Printf("...using GL_ARB_map_buffer_range\n");
-		qglMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)qwglGetProcAddress("glUnmapBufferARB");
+		qglMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)qwglGetProcAddress("glMapBufferARB");
 	}
 	else
 		Com_Printf(S_COLOR_RED"...using GL_ARB_map_buffer_range not found\n");

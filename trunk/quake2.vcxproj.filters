@@ -288,9 +288,6 @@
     <ClCompile Include="win32\win_wndproc.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_model_md5.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\cdaudio.h">

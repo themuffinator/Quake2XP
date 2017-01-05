@@ -35,7 +35,7 @@ vec3_t player_org, v_forward, v_right, v_up;
 qboolean R_MarkLightLeaves (worldShadowLight_t *light);
 void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine ();
-void R_AddLightInteraction();
+void R_AddLightInteraction(worldShadowLight_t *light);
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
@@ -261,7 +261,7 @@ void R_AddNoWorldModelLight () {
 	memset (light, 0, sizeof(worldShadowLight_t));
 	light->next = shadowLight_frame;
 	shadowLight_frame = light;
-	VectorSet (light->origin, -100.0, 100.0, 75.0);
+	VectorSet (light->origin, currententity->origin[0]- 100.0, currententity->origin[1] + 75.0, currententity->origin[2] + 72.0);
 	VectorSet (light->startColor, 1.0, 1.0, 1.0);
 	VectorSet (light->color, 1.0, 1.0, 1.0);
 	VectorSet (light->angles, 0, 0, 0);
@@ -347,9 +347,10 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 
 	for (light = shadowLight_frame; light; light = light->next) {
 
-		if (!light->isStatic)
-		if (!R_MarkLightLeaves (light))
-			return;
+		if (!light->isStatic) {
+			if (!R_MarkLightLeaves(light))
+				continue;
+		}
 
 		MakeFrustum4Light (light, qtrue);
 
