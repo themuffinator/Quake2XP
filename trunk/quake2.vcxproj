@@ -490,7 +490,6 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="win32\nvapi\NvApiDriverSettings.c" />
     <ClCompile Include="win32\vid_menu.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
@@ -676,17 +675,11 @@
     <ClInclude Include="qcommon\qfiles.h" />
     <ClInclude Include="client\qmenu.h" />
     <ClInclude Include="client\ref.h" />
-    <ClInclude Include="win32\nvapi\NvApiDriverSettings.h" />
+    <ClInclude Include="win32\nvapi\nvapi.h" />
     <ClInclude Include="win32\nvapi\nvapi_lite_common.h" />
-    <ClInclude Include="win32\nvapi\nvapi_lite_d3dext.h" />
     <ClInclude Include="win32\nvapi\nvapi_lite_salend.h" />
     <ClInclude Include="win32\nvapi\nvapi_lite_salstart.h" />
-    <ClInclude Include="win32\nvapi\nvapi_lite_sli.h" />
-    <ClInclude Include="win32\nvapi\nvapi_lite_stereo.h" />
     <ClInclude Include="win32\nvapi\nvapi_lite_surround.h" />
-    <ClInclude Include="win32\nvapi\nvHLSLExtns.h" />
-    <ClInclude Include="win32\nvapi\nvHLSLExtnsInternal.h" />
-    <ClInclude Include="win32\nvapi\nvShaderExtnEnums.h" />
     <ClInclude Include="win32\resource.h" />
     <ClInclude Include="client\screen.h" />
     <ClInclude Include="server\server.h" />

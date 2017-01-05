@@ -53,7 +53,7 @@
       <UniqueIdentifier>{e2b72631-155f-458a-bc17-d6f1aa729fb3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Win32\nvapi">
-      <UniqueIdentifier>{734ed3bf-8939-4966-aaaf-2a8b49a361f7}</UniqueIdentifier>
+      <UniqueIdentifier>{4fb20f02-147b-4c40-b3d5-b11a152841e3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -291,9 +291,6 @@
     <ClCompile Include="win32\win_wndproc.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="win32\nvapi\NvApiDriverSettings.c">
-      <Filter>Source Files\Win32\nvapi</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\cdaudio.h">
@@ -395,37 +392,19 @@
     <ClInclude Include="ref_gl\r_model_md5.h">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="win32\nvapi\nvapi.h">
+      <Filter>Source Files\Win32\nvapi</Filter>
+    </ClInclude>
     <ClInclude Include="win32\nvapi\nvapi_lite_common.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_d3dext.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_salend.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_salstart.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_sli.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_stereo.h">
       <Filter>Source Files\Win32\nvapi</Filter>
     </ClInclude>
     <ClInclude Include="win32\nvapi\nvapi_lite_surround.h">
       <Filter>Source Files\Win32\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="win32\nvapi\NvApiDriverSettings.h">
+    <ClInclude Include="win32\nvapi\nvapi_lite_salstart.h">
       <Filter>Source Files\Win32\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="win32\nvapi\nvHLSLExtns.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvHLSLExtnsInternal.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvShaderExtnEnums.h">
+    <ClInclude Include="win32\nvapi\nvapi_lite_salend.h">
       <Filter>Source Files\Win32\nvapi</Filter>
     </ClInclude>
   </ItemGroup>
