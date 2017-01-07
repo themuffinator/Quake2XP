@@ -323,8 +323,6 @@ visible:
 
 	paliashdr = (dmdl_t *)currentmodel->extraData;
 	
-	c_alias_polys += paliashdr->num_tris;
-
 	
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));

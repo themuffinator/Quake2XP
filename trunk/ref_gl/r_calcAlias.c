@@ -476,6 +476,8 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 		rgh = r_notexture;
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
+	
+	c_alias_polys += paliashdr->num_tris;
 
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {
