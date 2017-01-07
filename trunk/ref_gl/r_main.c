@@ -1081,6 +1081,7 @@ void AutoLightsStatsList_f(void){
 	Com_Printf("%i total auto lights\n", r_numAutoLights - r_numIgnoreAutoLights);
 }
 
+
 void Dump_EntityString(void){
 
 	char *buf;
@@ -1223,6 +1224,7 @@ vid_ref->modified = qtrue;
 
 void R_GLSLinfo_f(void);
 void GL_LevelShot_f(void);
+void R_NvApi_f(void);
 
 void R_RegisterCvars(void)
 {
@@ -1355,6 +1357,7 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("medium_spec",		R_MediumSpecMachine_f);
 	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
 	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
+	Cmd_AddCommand("gpuInfo",			R_NvApi_f);
 /*
 bind INS		"spawnLight"
 bind HOME		"spawnLightToCamera"
@@ -2028,6 +2031,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("low_spec");
 	Cmd_RemoveCommand("medium_spec");
 	Cmd_RemoveCommand("hi_spec");
+	Cmd_RemoveCommand("gpuInfo");
 	
 	Cmd_RemoveCommand("saveLights");
 	Cmd_RemoveCommand("spawnLight");

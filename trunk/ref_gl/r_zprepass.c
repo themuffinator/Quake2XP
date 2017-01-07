@@ -24,8 +24,6 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 		indexArray[numIndices++] = surf->baseIndex + i + 1;
 		indexArray[numIndices++] = surf->baseIndex + i + 2;
 	}
-
-	c_brush_polys += (nv - 2);
 	
 	*vertices = numVertices;
 	*indeces = numIndices;
@@ -45,6 +43,7 @@ static void GL_DrawDepthPoly () {
 		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
 			if (numIndices != 0xFFFFFFFF) {
 				qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				c_brush_polys += numIndices / 3;
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
 			}
@@ -52,8 +51,10 @@ static void GL_DrawDepthPoly () {
 	}
 
 	// draw the rest
-	if (numIndices != 0xFFFFFFFF)
-		qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+	if (numIndices != 0xFFFFFFFF) {
+		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		c_brush_polys += numIndices / 3;
+	}
 }
 
 static void R_RecursiveDepthWorldNode (mnode_t * node) {

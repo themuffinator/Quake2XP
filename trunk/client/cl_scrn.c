@@ -913,7 +913,7 @@ extern cvar_t *cl_hudScale;
 
 void SCR_DrawSpeeds (void) {
 
-	char	bsp[18], alias[18], st[18], partTris[18], flares[18], shadow[18], decals[18], dtr[18], lt[18];
+	char	bsp[18], alias[18], st[18], partTris[18], shadow[18], decals[18], dtr[18], lt[18];
 	float	fontscale = cl_fontScale->value;
 
 	if (!r_speeds->value)
@@ -923,7 +923,6 @@ void SCR_DrawSpeeds (void) {
 	sprintf (alias, "%i m_tris", c_alias_polys);
 	sprintf (st, "%i s_tris", c_shadow_tris);
 	sprintf (partTris, "%i p_tris", c_part_tris);
-	sprintf (flares, "%i flares", c_flares);
 	sprintf (shadow, "%i shadows", c_shadow_volumes);
 	sprintf (decals, "%i decals", c_decals);
 	sprintf (dtr, "%i d_tris", c_decal_tris);
@@ -931,14 +930,13 @@ void SCR_DrawSpeeds (void) {
 
 	Set_FontShader (qtrue);
 	RE_SetColor (colorCyan);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5, fontscale, fontscale, bsp);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 10 * fontscale, fontscale, fontscale, alias);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 20 * fontscale, fontscale, fontscale, st);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 30 * fontscale, fontscale, fontscale, partTris);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 40 * fontscale, fontscale, fontscale, flares);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 50 * fontscale, fontscale, fontscale, shadow);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 60 * fontscale, fontscale, fontscale, dtr);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.5 + 70 * fontscale, fontscale, fontscale, lt);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4, fontscale, fontscale, bsp);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 10 * fontscale, fontscale, fontscale, alias);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 20 * fontscale, fontscale, fontscale, st);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 30 * fontscale, fontscale, fontscale, partTris);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 40 * fontscale, fontscale, fontscale, shadow);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 50 * fontscale, fontscale, fontscale, dtr);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 60 * fontscale, fontscale, fontscale, lt);
 	RE_SetColor (colorWhite);
 	Set_FontShader (qfalse);
 }

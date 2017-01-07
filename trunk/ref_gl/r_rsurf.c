@@ -150,7 +150,7 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	float alpha, scroll;
 	glpoly_t *p;
 	int nv = fa->polys->numVerts;
-	uint numIndeces = 0, numVertixes = 0;
+	uint numIndices = 0, numVertixes = 0;
 
 	if (fa->texInfo->flags & SURF_TRANS33)
 		alpha = 0.33f;
@@ -175,13 +175,11 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 
 	p = fa->polys;
 	v = p->verts[0];
-
-	c_brush_polys += nv - 2;
 	
 	for (i = 0; i < nv - 2; i++) {
-		indexArray[numIndeces++] = numVertixes;
-		indexArray[numIndeces++] = numVertixes + i + 1;
-		indexArray[numIndeces++] = numVertixes + i + 2;
+		indexArray[numIndices++] = numVertixes;
+		indexArray[numIndices++] = numVertixes + i + 1;
+		indexArray[numIndices++] = numVertixes + i + 2;
 	}
 
 	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE) {
@@ -192,7 +190,8 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 		wTexArray[i][1] = v[4];
 	}
 
-	qglDrawElements(GL_TRIANGLES, numIndeces, GL_UNSIGNED_INT, indexArray);
+	qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+	c_brush_polys += numIndices / 3;
 }
 
 
@@ -325,8 +324,6 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 	if (numIndices == 0xffffffff)
 		numIndices = 0;
 
-	c_brush_polys += (nv - 2);
-
 	for (i = 0; i < nv - 2; i++) {
 		indexArray[numIndices++] = surf->baseIndex;
 		indexArray[numIndices++] = surf->baseIndex + i + 1;
@@ -410,6 +407,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		{
 			if (numIndices != 0xFFFFFFFF){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				c_brush_polys += numIndices / 3;
 				numIndices = 0xFFFFFFFF;
 			}
 
@@ -424,15 +422,18 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		{
 			if (numIndices != 0xFFFFFFFF){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				c_brush_polys += numIndices / 3;
 				numIndices = 0xFFFFFFFF;
 				}
 		}
 	}
 	
 	// draw the rest
-	if (numIndices != 0xFFFFFFFF)
+	if (numIndices != 0xFFFFFFFF) {
 		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-	
+		c_brush_polys += numIndices / 3;
+	}
+
 	GL_BindNullProgram();
 }
 
@@ -525,8 +526,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	// create indexes
 	if (numIndices == 0xffffffff)
 		numIndices = 0;
-
-	c_brush_polys += (nv - 2);
 
 	for (i = 0; i < nv - 2; i++)
 	{
@@ -627,6 +626,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 		{
 			if (numIndices != 0xffffffff){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				c_brush_polys += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
 			oldTex = s->texInfo->image->texnum;
@@ -642,13 +642,16 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 		{
 			if (numIndices != 0xffffffff){
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				c_brush_polys += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
 		}
 	}
 	// draw the rest
-	if (numIndices != 0xffffffff)
+	if (numIndices != 0xffffffff) {
 		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		c_brush_polys += numIndices / 3;
+	}
 
 	GL_BindNullProgram();
 }
@@ -682,6 +685,7 @@ static void GL_DrawStaticLightPass()
 		{
 			if (numIndices != 0xffffffff) {
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				c_brush_polys += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
 			oldTex = s->texInfo->image->texnum;
@@ -696,14 +700,16 @@ static void GL_DrawStaticLightPass()
 		{
 			if (numIndices != 0xffffffff) {
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				c_brush_polys += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
 		}
 	}
 	// draw the rest
-	if (numIndices != 0xffffffff)
+	if (numIndices != 0xffffffff) {
 		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-
+		c_brush_polys += numIndices / 3;
+	}
 	GL_BindNullProgram();
 }
 

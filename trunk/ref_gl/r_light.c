@@ -2383,7 +2383,7 @@ void R_DrawLightFlare () {
 	qglUniform2f (particle_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform2f (particle_mask, 1.0, 0.0);
 	qglUniform1f (particle_colorModulate, 1.0);
-	qglUniform1f (particle_thickness, currentShadowLight->flareSize * 1.5);
+	qglUniform1f (particle_thickness, 10.0 * 1.5);
 	qglUniformMatrix4fv(particle_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(particle_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
