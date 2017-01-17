@@ -389,9 +389,6 @@
     <ClInclude Include="win32\winquake.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\r_model_md5.h">
-      <Filter>Header Files\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="win32\nvapi\nvapi.h">
       <Filter>Source Files\Win32\nvapi</Filter>
     </ClInclude>

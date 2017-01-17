@@ -56,7 +56,7 @@ BEGIN
             VALUE "FileDescription", "quake2xp"
             VALUE "FileVersion", "1.26.6.0"
             VALUE "InternalName", "quake2xp"
-            VALUE "LegalCopyright", "Quake2xp Team(C) 2016"
+            VALUE "LegalCopyright", "Quake2xp Team(C) 2017"
             VALUE "LegalTrademarks", "Quake2xp Team"
             VALUE "OriginalFilename", "quake2xp.exe"
             VALUE "ProductName", "quake2xp"
