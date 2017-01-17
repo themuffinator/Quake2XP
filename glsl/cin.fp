@@ -29,7 +29,7 @@ vec3 median(in sampler2D tex) {
   1.0/512.0 = 0,001953125
   1.0/1024.0 = 0,0009765625
   */
-  vec2 screenOffs = vec2(0.001953125);
+  vec2 screenOffs = vec2( 0.001953125);
    
   // Add the pixels which make up our window to the pixel array.
   for(int dX = -1; dX <= 1; ++dX) {
@@ -55,8 +55,7 @@ vec3 median(in sampler2D tex) {
 
 void main ()
 {
-//	vec4 cin = texture(u_cinMap, v_texCoord.xy);
-  vec4 cin = vec4(median(u_cinMap), 1.0);
+  vec4 cin = vec4(median(u_cinMap), 1.0);  
 	vec4 scanline = cin * (brightness + dot(sine_comp * sin(v_texCoord.xy * v_lineOffset), vec2(1.0)));
 	fragData = clamp(scanline, 0.0, 1.0);
 	fragData *= 1.5;

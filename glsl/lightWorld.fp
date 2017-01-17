@@ -43,7 +43,7 @@ void main (void) {
 		discard;
 		return;
 	}
- 
+
 	vec3	V = normalize(v_viewVecTS);
 	vec3	L = normalize(v_lightVec);
 
