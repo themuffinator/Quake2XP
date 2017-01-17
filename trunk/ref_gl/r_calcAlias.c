@@ -119,12 +119,23 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 			VectorSet(lightColor, 0.75, 0.75, 0.75);
 	}
 	else {
+	/*	vec3_t lum;
+		float tmp;
+
+		VectorSet(lum, 0.30, 0.59, 0.11);
+		tmp = DotProduct(lightColor, lum);
+
+		if ( tmp > r_lightmapScale->value )
+				tmp = r_lightmapScale->value;
+
+		VectorSet(lightColor, tmp, tmp, tmp);
+*/
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 			VectorSet(lightColor, 0.33, 0.33, 0.33);
 	}
 
-	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
-		VectorSet (lightColor, 1, 1, 1);
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+		VectorSet(lightColor, 1, 1, 1);
 
 	// select skin
 	if (currententity->skin)

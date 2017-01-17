@@ -85,9 +85,9 @@ typedef enum {
 #define	YAW					1		// left / right
 #define	ROLL				2		// fall over
 
-#define	MAX_STRING_CHARS	1024	// max length of a string passed to Cmd_TokenizeString
-#define	MAX_STRING_TOKENS	80		// max tokens resulting from Cmd_TokenizeString
-#define	MAX_TOKEN_CHARS		128		// max length of an individual token
+#define	MAX_STRING_CHARS	2048 // was 1024	max length of a string passed to Cmd_TokenizeString
+#define	MAX_STRING_TOKENS	1024 // was 80		max tokens resulting from Cmd_TokenizeString
+#define	MAX_TOKEN_CHARS		2048 // was 128		max length of an individual token
 
 #define	MAX_QPATH			64		// max length of a quake game pathname
 #define	MAX_OSPATH			128		// max length of a filesystem pathname

@@ -150,7 +150,8 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 	vec3_t end;
 	float r;
 	int i;
-
+	trace_t trace;
+	
 	if ((r_worldmodel && !r_worldmodel->lightData) || !r_worldmodel) {
 		color[0] = color[1] = color[2] = 1.0;
 		return;
@@ -161,9 +162,19 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 
 	end[0] = p[0];
 	end[1] = p[1];
-	end[2] = p[2] - 8192.f;
+	end[2] = p[2] - 2048.0f;
 
-	r = RecursiveLightPoint(r_worldmodel->nodes, p, end);
+	trace = CL_PMTraceWorld(p, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+
+	if (trace.fraction != 1.0) {
+		vec3_t tmp;
+		VectorCopy(trace.endpos, tmp);
+		tmp[2] -= 2.0;
+
+		r = RecursiveLightPoint(r_worldmodel->nodes, p, tmp);
+	}
+	else
+		r = RecursiveLightPoint(r_worldmodel->nodes, p, end);
 
 	if (r == -1)
 		VectorClear(color);
