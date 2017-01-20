@@ -363,8 +363,7 @@ void GLimp_InitNvApi() {
 	ret = NvAPI_Initialize();
 	
 	if (ret != NVAPI_OK) { // check for nvapi error
-		NvAPI_GetErrorMessage(ret, string);
-		Com_Printf(S_COLOR_RED"...NvAPI_Initialize() failed: %s\n", string);
+		Com_Printf(S_COLOR_MAGENTA"...not supported\n");
 		return;
 	}
 
@@ -400,6 +399,8 @@ void R_NvApi_f(void) {
 	NV_GPU_THERMAL_SETTINGS			thermal;
 	NV_GPU_DYNAMIC_PSTATES_INFO_EX	m_DynamicPStateInfo;
 	NV_GPU_CLOCK_FREQUENCIES		clocks;
+	return;
+	
 	if (!nvApiInit) {
 		Com_Printf(S_COLOR_RED"NVAPI not found!\n");
 		return;
@@ -475,6 +476,7 @@ void R_NvApi_f(void) {
 		Com_Printf("\n==========================================================\n");
 	}
 }
+
 
 /*
 ** GLimp_SetMode
