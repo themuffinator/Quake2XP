@@ -126,7 +126,7 @@ void R_RenderDecals(void)
               continue;
 		  }
        	
-		  if( R_CullSphere(dl->org, dl->size*1.3) )
+		  if( R_CullSphere(dl->org, dl->size * 1.3) )
 				continue;
 
         endLerp = (float)(r_newrefdef.time - dl->time) / (float)(dl->endTime - dl->time);	

@@ -2074,9 +2074,9 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 	for (i = 0; i < pheader->num_frames; i++) {
 
 		//set temp to zero
-		memset(tangents_, 0, pheader->num_xyz*sizeof(vec3_t));
-		memset(binormals_, 0, pheader->num_xyz*sizeof(vec3_t));
-		memset(normals_, 0, pheader->num_xyz*sizeof(vec3_t));
+		memset(tangents_,	0, pheader->num_xyz * sizeof(vec3_t));
+		memset(binormals_,	0, pheader->num_xyz * sizeof(vec3_t));
+		memset(normals_,	0, pheader->num_xyz * sizeof(vec3_t));
 
 		tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
 		frame = (daliasframe_t *)((byte *)pheader + pheader->ofs_frames + i * pheader->framesize);
@@ -2128,34 +2128,39 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 
 			for (k = 0; k < 3; k++) {
 				l = tris[j].index_xyz[k];
-				VectorAdd(tangents_[l], tangent, tangents_[l]);
-				VectorAdd(binormals_[l], binormal, binormals_[l]);
-				VectorAdd(normals_[l], normal, normals_[l]);
+				VectorAdd(tangents_[l],		tangent,	tangents_[l]);
+				VectorAdd(binormals_[l],	binormal,	binormals_[l]);
+				VectorAdd(normals_[l],		normal,		normals_[l]);
 			}
 		}
 
 		for (j = 0; j<pheader->num_xyz; j++)
 			for (k = j + 1; k<pheader->num_xyz; k++)
-				if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2])
-				{
+				if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2]){
+
 					float *jnormal = q_byteDirs[verts[j].lightnormalindex];
 					float *knormal = q_byteDirs[verts[k].lightnormalindex];
-					if (DotProduct(jnormal, knormal) >= smooth_cosine)
-					{
+
+					if (DotProduct(jnormal, knormal) >= smooth_cosine){
+
 						VectorAdd(tangents_[j], tangents_[k], tangents_[j]);
 						VectorCopy(tangents_[j], tangents_[k]);
+
 						VectorAdd(binormals_[j], binormals_[k], binormals_[j]);
 						VectorCopy(binormals_[j], binormals_[k]);
+
 						VectorAdd(normals_[j], normals_[k], normals_[j]);
 						VectorCopy(normals_[j], normals_[k]);
 					}
 				}
 
 		//normalize averages
-		for (j = 0; j < pheader->num_xyz; j++) {
+		for (j = 0; j < pheader->num_xyz; j++){
+
 			VectorNormalize(tangents_[j]);
 			VectorNormalize(binormals_[j]);
 			VectorNormalize(normals_[j]);
+
 			tangents[i * pheader->num_xyz + j] = Normal2Index(tangents_[j]);
 			binormals[i * pheader->num_xyz + j] = Normal2Index(binormals_[j]);
 			verts[j].lightnormalindex = Normal2Index(normals_[j]);

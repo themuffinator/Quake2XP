@@ -83,8 +83,8 @@ typedef struct {
 #define IDALIASHEADER		(('2'<<24)+('P'<<16)+('D'<<8)+'I')
 #define ALIAS_VERSION	8
 
-#define	MAX_TRIANGLES	4096
-#define MAX_VERTS		2048
+#define	MAX_TRIANGLES	4096 * 2
+#define MAX_VERTS		2048 * 2
 #define MAX_FRAMES		512
 #define MAX_MD2SKINS	32
 #define	MAX_SKINNAME	64
@@ -103,12 +103,6 @@ typedef struct {
 	byte v[3];					// scaled byte to fit in frame mins/maxs
 	byte lightnormalindex;
 } dtrivertx_t;
-
-#define DTRIVERTX_V0   0
-#define DTRIVERTX_V1   1
-#define DTRIVERTX_V2   2
-#define DTRIVERTX_LNI  3
-#define DTRIVERTX_SIZE 4
 
 typedef struct {
 	float scale[3];				// multiply byte verts by this

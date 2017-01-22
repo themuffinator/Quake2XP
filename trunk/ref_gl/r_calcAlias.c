@@ -22,7 +22,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-vec3_t	tempVertexArray[MAX_VERTICES * 4];
+vec3_t	tempVertexArray	[MAX_VERTICES  * 4];
+vec3_t	vertexArray		[MAX_TRIANGLES * 3];
+vec3_t	normalArray		[MAX_TRIANGLES * 3];
+vec3_t	tangentArray	[MAX_TRIANGLES * 3];
+vec3_t	binormalArray	[MAX_TRIANGLES * 3];
+vec4_t	colorArray		[MAX_TRIANGLES * 4];
 
 extern float	*shadedots;
 
@@ -66,7 +71,7 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 	}
 
 	lerp = tempVertexArray[0];
-
+	
 	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD)) {
 		for (i = 0; i < paliashdr->num_xyz; i++, v++, ov++, lerp += 3) {
 			float *normal = q_byteDirs[verts[i].lightnormalindex];
@@ -88,14 +93,11 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 int CL_PMpointcontents (vec3_t point);
 
 void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
-	vec3_t			vertexArray[3 * MAX_TRIANGLES];
-	vec4_t			colorArray[4 * MAX_TRIANGLES];
 	int				index_xyz;
 	int				i, j, jj = 0;
 	dtriangle_t		*tris;
 	image_t			*skin, *skinNormalmap, *glowskin;
 	float			alphaShift, alpha, l;
-	vec3_t			normalArray[3 * MAX_TRIANGLES];
 	float			backlerp, frontlerp;
 	int				index2, oldindex2;
 	daliasframe_t	*frame, *oldframe;
@@ -119,7 +121,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 			VectorSet(lightColor, 0.75, 0.75, 0.75);
 	}
 	else {
-	/*	vec3_t lum;
+	/*	
+		// mono color lighting
+		vec3_t lum;
 		float tmp;
 
 		VectorSet(lum, 0.30, 0.59, 0.11);
@@ -270,12 +274,10 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 }
 
 void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
-	vec3_t		vertexArray[3 * MAX_TRIANGLES];
 	int			index_xyz, i, j, jj = 0;
 	dtriangle_t	*tris;
 	unsigned	defBits = 0;
 	float		scroll = 0.0;
-	vec3_t		normalArray[3 * MAX_TRIANGLES];
 	float		backlerp, frontlerp;
 	int			index2, oldindex2;
 	daliasframe_t	*frame, *oldframe;
@@ -411,11 +413,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	dtrivertx_t		*verts, *oldverts;
 	float			backlerp, frontlerp;
 	unsigned		offs, offs2;
-	vec3_t			normalArray[3 * MAX_TRIANGLES],
-					tangentArray[3 * MAX_TRIANGLES],
-					binormalArray[3 * MAX_TRIANGLES],
-					vertexArray[3 * MAX_TRIANGLES],
-					maxs;
+	vec3_t			maxs;
 	image_t			*skin, *skinNormalmap, *rgh;
 	int				index2, oldindex2;
 	qboolean		inWater;
