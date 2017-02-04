@@ -280,7 +280,7 @@ vec3 Lighting_BRDF (in vec3 diffuseColor, in vec3 specularColor, in float roughn
 vec4 Height2Normal(in vec2 texCoord, sampler2D heightMapSampler, in vec3 color, in float scaleBump, in float scaleSpecular){
 
 	ivec2 texSize = textureSize (heightMapSampler, 0);
-	float hm = dot(vec3(0.333), color);
+  float hm = dot(vec3(0.30, 0.59, 0.11), color);
 		
 	vec3 normal;	
 	normal.x = dFdx(hm);
