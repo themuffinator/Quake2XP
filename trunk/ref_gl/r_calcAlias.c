@@ -199,9 +199,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglEnableVertexAttribArray (ATT_COLOR);
 	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
 
-	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
+//	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
 	qglEnableVertexAttribArray (ATT_TEX0);
-	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 
 
 	c_alias_polys += paliashdr->num_tris;
@@ -269,7 +269,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_COLOR);
 	qglDisableVertexAttribArray (ATT_TEX0);
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+//	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	GL_BindNullProgram ();
 }
 
@@ -351,9 +351,9 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglEnableVertexAttribArray (ATT_NORMAL);
 	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
+//	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
 	qglEnableVertexAttribArray (ATT_TEX0);
-	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
@@ -362,7 +362,7 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_TEX0);
-	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, 0);
+//	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, 0);
 	GL_BindNullProgram ();
 }
 
@@ -555,9 +555,9 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglEnableVertexAttribArray (ATT_NORMAL);
 	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
-	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
+//	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
 	qglEnableVertexAttribArray (ATT_TEX0);
-	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, 0);
+	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
@@ -566,7 +566,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglDisableVertexAttribArray (ATT_BINORMAL);
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_TEX0);
-	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, 0);
+//	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, 0);
 	GL_BindNullProgram ();
 
 }
