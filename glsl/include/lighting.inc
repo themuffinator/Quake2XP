@@ -80,7 +80,7 @@ float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower
 vec4 SkinLighting(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
 {
     float MaterialThickness = 0.2;
-    vec3 ExtinctionCoefficient = vec3(0.1, 0.05, 0.025);
+    vec3 ExtinctionCoefficient = vec3(0.15, 0.05, 0.025);
     float backFaceSpecularIntens = 0.666;
 
     vec4 dotLN = vec4(halfLambert(L, N) * Att);
