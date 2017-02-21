@@ -253,7 +253,7 @@ qboolean R_EntityInLightBounds () {
 void GL_LerpShadowVerts (int nverts, dtrivertx_t *v, dtrivertx_t *ov, float *lerp, float move[3], float frontv[3], float backv[3]) {
 	int i;
 
-	if (nverts < 1)
+	if (currentmodel->numFrames < 1)
 		return;
 
 	for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {

@@ -41,6 +41,9 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale) {
 	float	*lerp;
 	float	backlerp;
 
+	if (currentmodel->numFrames < 1)
+		return;
+
 	backlerp = currententity->backlerp;
 
 	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
@@ -121,21 +124,8 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 			VectorSet(lightColor, 0.75, 0.75, 0.75);
 	}
 	else {
-	/*	
-		// mono color lighting
-		vec3_t lum;
-		float tmp;
-
-		VectorSet(lum, 0.30, 0.59, 0.11);
-		tmp = DotProduct(lightColor, lum);
-
-		if ( tmp > r_lightmapScale->value )
-				tmp = r_lightmapScale->value;
-
-		VectorSet(lightColor, tmp, tmp, tmp);
-*/
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.33, 0.33, 0.33);
+			VectorSet(lightColor, 0.1888, 0.1888, 0.1888);
 	}
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)

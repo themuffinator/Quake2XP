@@ -702,7 +702,7 @@ int bn_offset;
 vbo_t vbo;
 
 typedef struct {
-	GLuint	bsp_a, bsp_l, fonts;
+	GLuint	bsp_a, bsp_l, alias_shadow, fonts;
 }
 vao_t;
 vao_t vao;

@@ -1786,13 +1786,13 @@ int R_Init(void *hinstance, void *hWnd)
 			//------------------------------------------------
 			qglGenBuffersARB(1, &vbo.vbo_Dynamic); 
 			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_Dynamic);
-			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, MAX_VERTICES * 4 * sizeof(vec4_t), 0, GL_STREAM_DRAW_ARB);
+			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, MAX_VERTS * 4 * sizeof(vec4_t), 0, GL_DYNAMIC_DRAW_ARB);
 
 			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 			qglGenBuffersARB(1, &vbo.ibo_Dynamic);
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
-			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(ushort), 0, GL_STREAM_DRAW_ARB);
+			qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(uint), 0, GL_DYNAMIC_DRAW_ARB);
 
 			qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 

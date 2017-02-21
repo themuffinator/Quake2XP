@@ -1129,6 +1129,7 @@ void Mod_BuildVertexCache() {
 	// Gen VAO
 	glDeleteVertexArrays(1, &vao.bsp_a);
 	glDeleteVertexArrays(1, &vao.bsp_l);
+	glDeleteVertexArrays(1, &vao.alias_shadow);
 
 	//light surfaces
 	glGenVertexArrays(1, &vao.bsp_l);
@@ -1174,7 +1175,6 @@ void Mod_BuildVertexCache() {
 
 	glBindVertexArray(0);
 	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-
 }
 
 void Mod_LoadFaces(lump_t * l) {
