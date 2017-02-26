@@ -62,10 +62,7 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
 	if (weapon) {
 
-		if (!currentmodel)
-			return qfalse;
-
-		if (!BoundsAndSphereIntersect (light->mins, light->maxs, r_origin, currentmodel->radius))
+		if (!BoundsAndSphereIntersect (light->mins, light->maxs, r_origin, 25.0))
 			return qfalse;
 	}
 

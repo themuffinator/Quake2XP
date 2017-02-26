@@ -579,7 +579,7 @@ void R_DrawLightScene (void)
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
-	if (r_skipStaticLights->value && currentShadowLight->isStatic && currentShadowLight->style == 0)
+	if (r_skipStaticLights->value && currentShadowLight->isStatic /*&& currentShadowLight->style == 0*/)
 		continue;
 	
 	UpdateLightEditor();
@@ -695,7 +695,7 @@ void R_DrawPlayerWeapon(void)
 
 		for (currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
-			if (r_skipStaticLights->value && currentShadowLight->isStatic && currentShadowLight->style == 0)
+			if (r_skipStaticLights->value && currentShadowLight->isStatic /*&& currentShadowLight->style == 0*/)
 				continue;
 
 			R_SetViewLightScreenBounds();

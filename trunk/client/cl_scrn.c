@@ -906,7 +906,8 @@ c_shadow_volumes,
 c_decals,
 c_shadow_tris,
 c_part_tris,
-c_decal_tris;
+c_decal_tris,
+c_light_batch;
 
 extern cvar_t *cl_drawFPS;
 extern cvar_t *cl_hudScale;

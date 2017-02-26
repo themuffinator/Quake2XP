@@ -386,11 +386,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		// update lightmaps
 		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
 		{
-			if (numIndices != 0xFFFFFFFF){
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				numIndices = 0xFFFFFFFF;
-			}
-
 			if(s->flags & MSURF_LAVA)
 				GL_MBind(GL_TEXTURE1_ARB, r_whiteMap->texnum);
 			else
@@ -399,6 +394,11 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 			if (r_worldmodel->useXPLM) {
 				GL_MBind(GL_TEXTURE4_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
 				GL_MBind(GL_TEXTURE5_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
+			}
+			
+			if (numIndices != 0xFFFFFFFF) {
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				numIndices = 0xFFFFFFFF;
 			}
 		}
 		
@@ -615,10 +615,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 		s = interaction[i];
 		poly = s->polys;
 
-		if (poly->lightTimestamp != r_lightTimestamp)
-			continue;
-		
-		if (s->visframe != r_framecount)
+		if ((poly->lightTimestamp != r_lightTimestamp) || (s->visframe != r_framecount))
 			continue;
 
 		// flush batch (new texture or flag)
@@ -674,10 +671,7 @@ static void GL_DrawStaticLightPass()
 		
 		s = currentShadowLight->interaction[i];
 
-		if (s->visframe != r_framecount)
-			continue;
-		
-		if (s->ent)
+		if ((s->visframe != r_framecount) || (s->ent))
 			continue;
 
 		// flush batch (new texture or flag)
@@ -688,6 +682,7 @@ static void GL_DrawStaticLightPass()
 				c_brush_polys += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
+
 			oldTex = s->texInfo->image->texnum;
 			oldFlag = s->flags;
 			newBatch = qtrue;
@@ -798,8 +793,6 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 
 	// recurse down the children, front side first
 	R_RecursiveWorldNode(node->children[side]);
-
-	AddBoundsToBounds(node->minmaxs, node->minmaxs+3, r_newrefdef.visMins, r_newrefdef.visMaxs);
 
 	// draw stuff
 	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
@@ -919,6 +912,9 @@ void R_MarkLightCasting (mnode_t *node, qboolean precalc, worldShadowLight_t *li
 	msurface_t			**surf;
 	mleaf_t				*leaf;
 	int					c, cluster;
+
+	if (light->isNoWorldModel)
+		return;
 
 	if (node->contents != -1)
 	{
