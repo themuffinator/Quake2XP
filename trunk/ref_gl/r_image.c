@@ -1406,6 +1406,10 @@ void GL_FreeUnusedImages(void)
 		r_caustic[i]->registration_sequence = registration_sequence;
 	}
 
+	for (i = 0; i < MAX_WATER_NORMALS; i++) {
+		r_waterNormals[i]->registration_sequence = registration_sequence;
+	}
+
 
 	for (i = 0; i < MAX_FLY; i++) {
 		fly[i]->registration_sequence = registration_sequence;

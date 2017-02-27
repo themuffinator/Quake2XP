@@ -23,11 +23,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_local.h"
 
 vec3_t	tempVertexArray	[MAX_VERTICES  * 4];
-vec3_t	vertexArray		[MAX_TRIANGLES * 3];
-vec3_t	normalArray		[MAX_TRIANGLES * 3];
-vec3_t	tangentArray	[MAX_TRIANGLES * 3];
-vec3_t	binormalArray	[MAX_TRIANGLES * 3];
-vec4_t	colorArray		[MAX_TRIANGLES * 4];
+
+void R_Init_AliasArrays() {
+
+	vertexArray		= malloc(MAX_TRIANGLES * 3 * sizeof(vec3_t));
+	normalArray		= malloc(MAX_TRIANGLES * 3 * sizeof(vec3_t));
+	tangentArray	= malloc(MAX_TRIANGLES * 3 * sizeof(vec3_t));
+	binormalArray	= malloc(MAX_TRIANGLES * 3 * sizeof(vec3_t));
+	colorArray		= malloc(MAX_TRIANGLES * 3 * sizeof(vec4_t));
+}
+
+void R_Shutdown_AliasArrays() {
+
+	free(vertexArray);
+	free(normalArray);
+	free(tangentArray);
+	free(binormalArray);
+	free(colorArray);
+}
 
 extern float	*shadedots;
 

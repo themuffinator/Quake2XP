@@ -42,7 +42,7 @@ Create the texture which warps texture shaders
 
 void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	glpoly_t	*p, *bp;
-	float		*v, dstscroll, ambient, alpha;
+	float		*v, ambient, alpha;
 	int			i, nv = fa->polys->numVerts;
 
 	// setup program
@@ -61,7 +61,7 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	ambient = min(r_lightmapScale->value, 0.33f);
 
 	GL_MBind (GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
-	GL_MBind (GL_TEXTURE1_ARB, r_DSTTex->texnum);
+	GL_MBind (GL_TEXTURE1_ARB, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->texnum);
 	GL_MBindRect (GL_TEXTURE2_ARB, ScreenMap->texnum);
 	GL_MBindRect (GL_TEXTURE3_ARB, depthMap->texnum);
 
@@ -85,11 +85,8 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	qglUniformMatrix4fv(water_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 	qglUniformMatrix4fv(water_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
-	dstscroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
-
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglEnableVertexAttribArray (ATT_TEX0);
-	qglEnableVertexAttribArray (ATT_TEX2);
 	qglEnableVertexAttribArray (ATT_NORMAL);
 	qglEnableVertexAttribArray (ATT_TANGENT);
 	qglEnableVertexAttribArray (ATT_BINORMAL);
@@ -97,7 +94,6 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
-	qglVertexAttribPointer (ATT_TEX2, 2, GL_FLOAT, qfalse, 0, wTmu2Array);
 	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, wColorArray);
 	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
 	qglVertexAttribPointer (ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
@@ -112,9 +108,6 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 
 			wTexArray[i][0] = v[3];
 			wTexArray[i][1] = v[4];
-
-			wTmu2Array[i][0] = (v[3] + dstscroll);
-			wTmu2Array[i][1] = (v[4] + dstscroll);
 
 			// normals
 			nTexArray[i][0] = v[7];
@@ -137,7 +130,6 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
-	qglDisableVertexAttribArray (ATT_TEX2);
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_TANGENT);
 	qglDisableVertexAttribArray (ATT_BINORMAL);

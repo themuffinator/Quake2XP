@@ -293,9 +293,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="client\cdaudio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="client\cl_console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -403,6 +400,9 @@
     </ClInclude>
     <ClInclude Include="win32\nvapi\nvapi_lite_salend.h">
       <Filter>Source Files\Win32\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="client\cdaudio.h">
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2405,12 +2405,10 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 			mod->st[l++] = poutst[indexST].t;
 		}
 	}
-
-/*	qglGenBuffersARB(1, &mod->vboId);
+	qglGenBuffersARB(1, &mod->vboId);
 	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, mod->vboId);
 	qglBufferDataARB(GL_ARRAY_BUFFER_ARB, l * sizeof(float), mod->st, GL_STATIC_DRAW_ARB);
 	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-	*/
 }
 
 

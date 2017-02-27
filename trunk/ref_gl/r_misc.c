@@ -38,6 +38,7 @@ image_t	*r_defBump;
 image_t	*r_whiteMap;
 image_t *r_notexture;
 image_t *r_caustic[MAX_CAUSTICS];
+image_t *r_waterNormals[MAX_WATER_NORMALS];
 image_t *fly[MAX_FLY];
 image_t *flameanim[MAX_FLAMEANIM];
 image_t *r_flare;
@@ -683,6 +684,18 @@ void R_InitEngineTextures (void) {
 		r_caustic[i] = GL_FindImage (name, it_wall);
 		if (!r_caustic[i])
 			r_caustic[i] = r_notexture;
+	}
+
+	for (i = 0; i < MAX_WATER_NORMALS; i++) {
+		char name[MAX_QPATH];
+
+		if (i < 10)
+			Com_sprintf(name, sizeof(name), "gfx/water/00%iNormal.tga", i);
+		else
+			Com_sprintf(name, sizeof(name), "gfx/water/0%iNormal.tga", i);
+		r_waterNormals[i] = GL_FindImage(name, it_wall);
+		if (!r_waterNormals[i])
+			r_waterNormals[i] = r_notexture;
 	}
 
 	for (i = 0; i < MAX_FLY; i++) {

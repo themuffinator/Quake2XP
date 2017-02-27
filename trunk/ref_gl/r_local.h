@@ -122,6 +122,9 @@ typedef struct {
 #define		MAX_CAUSTICS		32
 extern image_t *r_caustic[MAX_CAUSTICS];
 
+#define		MAX_WATER_NORMALS		32
+extern image_t *r_waterNormals[MAX_WATER_NORMALS];
+
 #define		MAX_FLY		2
 extern image_t *fly[MAX_FLY];
 
@@ -345,6 +348,14 @@ extern qboolean spacebox;
 
 extern qboolean arbMultisampleSupported;
 qboolean xhargar2hack;
+
+vec3_t	*vertexArray;
+vec3_t	*normalArray;
+vec3_t	*tangentArray;
+vec3_t	*binormalArray;
+vec4_t	*colorArray;
+void R_Init_AliasArrays();
+void R_Shutdown_AliasArrays();
 
 void GL_Bind (int texnum);
 void GL_MBind (GLenum target, int texnum);

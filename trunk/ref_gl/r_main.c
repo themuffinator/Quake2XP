@@ -1786,7 +1786,7 @@ int R_Init(void *hinstance, void *hWnd)
 			//------------------------------------------------
 			qglGenBuffersARB(1, &vbo.vbo_Dynamic); 
 			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_Dynamic);
-			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, MAX_VERTS * 4 * sizeof(vec4_t), 0, GL_DYNAMIC_DRAW_ARB);
+			qglBufferDataARB(GL_ARRAY_BUFFER_ARB, MAX_VERTICES * sizeof(vec4_t), 0, GL_DYNAMIC_DRAW_ARB);
 
 			qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
@@ -2007,7 +2007,9 @@ int R_Init(void *hinstance, void *hWnd)
 	R_LoadFont();
 
 	flareEdit = (qboolean)qfalse;
-
+	
+	R_Init_AliasArrays();
+	
 	return 0;
 }
 
@@ -2078,6 +2080,8 @@ void R_Shutdown(void)
 	R_ClearWorldLights();
 	ilShutDown();
 	R_ShutdownPrograms();
+	
+	R_Shutdown_AliasArrays();
 
 	GLimp_Shutdown();
 	QGL_Shutdown();
