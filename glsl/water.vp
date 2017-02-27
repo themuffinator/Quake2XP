@@ -4,7 +4,8 @@ out vec2		v_deformMul;
 out vec3		v_positionVS;
 out mat3		v_tangentToView;
 out vec4		v_color;
-out vec3		v_normal;
+out vec3		v_lightVec;
+out vec3		v_viewVecTS;
 
 uniform float	u_deformMul;
 uniform int		u_TRANS;
@@ -16,18 +17,33 @@ layout(location = 2) in vec3 att_tangent;
 layout(location = 3) in vec3 att_binormal;
 layout(location = 4) in vec4 att_color4f;
 layout(location = 5) in vec2 att_texCoordDiffuse;
-layout(location = 7) in vec2 att_texCoordDiffuse1;
 
 void main (void) {
 	v_diffuseTexCoord = att_texCoordDiffuse;
-	v_deformTexCoord = att_texCoordDiffuse1;
-  
-  v_normal = att_normal;
-  
+	v_deformTexCoord = att_texCoordDiffuse;
+	v_deformTexCoord *= 0.366;
+
 	vec4 pos = u_modelViewMatrix * vec4(att_position, 1.0);
 	v_positionVS = pos.xyz;
 
 	mat3 m = mat3(u_modelViewMatrix);
+
+	vec3 view;
+	view.x =  u_modelViewMatrix[3][0];
+	view.y =  u_modelViewMatrix[3][1];
+	view.z =  u_modelViewMatrix[3][2];
+	vec3 tmp = view - att_position;
+	v_viewVecTS.x = dot(tmp, att_tangent);
+	v_viewVecTS.y = dot(tmp, att_binormal);
+	v_viewVecTS.z = dot(tmp, att_normal);
+	
+	vec3 normal = att_normal;	
+	normal.y -= 2048.0;
+	normal.z += 256.0;
+	vec3 LV = normal - att_position;
+	v_lightVec.x = dot(att_tangent, LV);
+	v_lightVec.y = dot(att_binormal, LV);
+	v_lightVec.z = dot(att_normal, LV); 
 
 	if (u_TRANS == 1) {
 		// compute view space depth

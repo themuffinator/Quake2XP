@@ -1,4 +1,5 @@
 #include depth.inc
+#include lighting.inc
 
 #define MAX_STEPS			20
 #define MAX_STEPS_BINARY	10
@@ -30,7 +31,8 @@ in vec2		v_deformMul;
 in vec3		v_positionVS;
 in mat3		v_tangentToView;
 in vec4		v_color;
-in vec3     v_normal;
+in vec3     v_lightVec;
+in vec3		v_viewVecTS;
 
 uniform float				u_deformMul;		// for normal w/o depth falloff
 uniform float				u_thickness;
@@ -51,12 +53,24 @@ vec2 VS2UV (const in vec3 p) {
 }
 
 void main (void) {
+
 	// load diffuse map with offset
-	vec4 offset = texture(u_dstMap, v_deformTexCoord.xy);
-	vec3 diffuse = texture(u_colorMap, v_diffuseTexCoord.xy + offset.zw).xyz * u_ambientScale;  
+	vec3 offset = normalize(texture(u_dstMap, v_deformTexCoord.xy).rgb * 2.0 - 1.0); // use scaled tex coord
+	
+	// chromatic aberration approximation
+	vec3 diffuse;
+	diffuse.r = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 0.85).r * u_ambientScale; 
+	diffuse.g = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 1.0).g * u_ambientScale;
+	diffuse.b = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 1.15).b * u_ambientScale;	
+	
 	vec3 N = vec3(0.0, 0.0, 1.0);  // shutup compiler
 	vec2 tc;
 	float sceneDepth;
+
+	vec3 V = normalize(v_viewVecTS);
+	vec3 L = normalize(v_lightVec);
+	vec2 Es = PhongLighting(offset, L, V, 1.0);
+	vec3 lighting = Es.x * diffuse + Es.y * diffuse.r;
 
 	if (u_TRANS == 1) {
 		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
@@ -67,18 +81,18 @@ void main (void) {
 
 		// chromatic aberration approximation
 		vec3 refractColor;
-		refractColor.x = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 0.85).x;
-		refractColor.y = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 1.0).y;
-		refractColor.z = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 1.15).z;
+		refractColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 0.85).r;
+		refractColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 1.0).g;
+		refractColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 1.15).b;
 
 		// blend water texture
-		fragData = vec4(mix(refractColor, diffuse, v_color.a), 1.0);
+		fragData = vec4(mix(refractColor + lighting, diffuse, v_color.a), 1.0);
 	}
 	
 	if (u_TRANS != 1) {
 		// non-transparent
 		N.xy = offset.xy;
-		fragData = vec4(diffuse, 1.0);
+		fragData = vec4(diffuse + lighting, 1.0);
 	}
  
 	if (u_mirror == 0)
@@ -93,7 +107,7 @@ void main (void) {
 
 	N = normalize(v_tangentToView * N);
 
-	vec3 V = normalize(v_positionVS);
+	V = normalize(v_positionVS);
 	vec3 R = reflect(V, N);
 
 	// Fresnel
