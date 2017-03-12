@@ -1367,20 +1367,12 @@ void GLW_InitExtensions() {
 		Com_Printf(S_COLOR_RED"WGL_EXT_swap_control_tear not found\n");
 	}
 
-	gl_state.use_msaa = qfalse;
 	if (strstr(glw_state.wglExtsString, "WGL_ARB_multisample"))
 		if (r_multiSamples->value < 2)
-		{
 			Com_Printf("" S_COLOR_YELLOW "...ignoring WGL_ARB_multisample\n");
-			gl_state.use_msaa = qfalse;
-		}
 		else
-		{
 			Com_Printf("...using WGL_ARB_multisample\n");
-			gl_state.use_msaa = qtrue;
-
-		}
-
+		
 	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")) {
 		qwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)qwglGetProcAddress("wglCreateContextAttribsARB");
 
@@ -1404,6 +1396,7 @@ GLW_ShutdownFakeOpenGL
 */
 
 static void GLW_ShutdownFakeOpenGL(void) {
+
 	if (glw_state.hGLRCFake) {
 		if (qwglMakeCurrent)
 			qwglMakeCurrent(NULL, NULL);
@@ -1747,7 +1740,7 @@ qboolean GLW_InitDriver(void) {
 	Com_Printf(S_COLOR_GREEN"ok\n");
 
 	// choose a pixel format
-	pixelFormat = GLW_ChoosePixelFormat(32, 8, 24, 8, gl_state.use_msaa ? (int)r_multiSamples->value : 0);
+	pixelFormat = GLW_ChoosePixelFormat(32, 8, 24, 8, (int)r_multiSamples->value);
 	
 	if (!pixelFormat) {
 		Com_Printf(S_COLOR_RED "...failed to find an appropriate PIXELFORMAT\n");

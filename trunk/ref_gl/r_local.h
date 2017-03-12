@@ -629,7 +629,6 @@ typedef struct {
 	unsigned	query_passed;
 	GLuint		entityOQID[MAX_ENTITIES];
 
-	qboolean	use_msaa;
 	qboolean	wgl_swap_control_tear;
 	qboolean	conditional_render;
 	qboolean	depthBoundsTest;
