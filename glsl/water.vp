@@ -21,7 +21,7 @@ layout(location = 5) in vec2 att_texCoordDiffuse;
 void main (void) {
 	v_diffuseTexCoord = att_texCoordDiffuse;
 	v_deformTexCoord = att_texCoordDiffuse;
-	v_deformTexCoord *= 0.366;
+	v_deformTexCoord *= 0.25;
 
 	vec4 pos = u_modelViewMatrix * vec4(att_position, 1.0);
 	v_positionVS = pos.xyz;
@@ -37,10 +37,8 @@ void main (void) {
 	v_viewVecTS.y = dot(tmp, att_binormal);
 	v_viewVecTS.z = dot(tmp, att_normal);
 	
-	vec3 normal = att_normal;	
-	normal.y -= 2048.0;
-	normal.z += 256.0;
-	vec3 LV = normal - att_position;
+	vec3 locLight = vec3(-8192.0, 4096.0, 8192.0);
+	vec3 LV = locLight - att_position;
 	v_lightVec.x = dot(att_tangent, LV);
 	v_lightVec.y = dot(att_binormal, LV);
 	v_lightVec.z = dot(att_normal, LV); 

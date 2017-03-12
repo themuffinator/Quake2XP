@@ -11,6 +11,7 @@ uniform int		u_ssao;
 uniform float	u_ColorModulate;
 uniform float	u_ambientScale;    
 uniform float	u_specularScale;
+uniform int		u_isLava;
 
 in vec3	v_positionVS;
 in vec3	v_viewVecTS;
@@ -33,6 +34,8 @@ vec3 ( -0.40824829046386301636621401245098f,	-0.70710678118654752440084436210485
 #include lighting.inc
 #include parallax.inc
 
+vec3 whiteLM = vec3(1.0, 1.0, 1.0);
+
 void main (void) {
 
 	
@@ -44,16 +47,23 @@ void main (void) {
 	vec4 normalMap = texture(u_NormalMap, P);
 	normalMap.xyz *= 2.0;
 	normalMap.xyz -= 1.0;
-//	diffuseMap += glowMap;
 
-	if (u_LightMapType == 0)
-		fragData.xyz = diffuseMap * texture(u_LightMap0, v_lTexCoord.xy).rgb;
+	vec3 lm;
+		if(u_isLava == 1)
+			lm = whiteLM;
+		if(u_isLava == 0)
+			lm = texture(u_LightMap0, v_lTexCoord.xy).rgb;
 
+	if (u_LightMapType == 0){
+
+		fragData.xyz = diffuseMap * lm;
+		
+	}
 	if (u_LightMapType == 1) {
 	
 		normalMap.xyz = normalize(normalMap.xyz);
 
-		vec3 lm0 = texture(u_LightMap0, v_lTexCoord.xy).rgb;
+		vec3 lm0 = lm;
 		vec3 lm1 = texture(u_LightMap1, v_lTexCoord.xy).rgb;
 		vec3 lm2 = texture(u_LightMap2, v_lTexCoord.xy).rgb;
 
