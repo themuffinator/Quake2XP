@@ -72,8 +72,10 @@ edict_t *medic_FindDeadMonster (edict_t *self) {
 			continue;
 		if (ent->health > 0)
 			continue;
-		if (ent->nextthink)
+		 // buggy on new vs 2015 builds!!!!
+/*		if (ent->nextthink)
 			continue;
+	*/		
 		if (!visible (self, ent))
 			continue;
 		if (!best) {
@@ -84,7 +86,6 @@ edict_t *medic_FindDeadMonster (edict_t *self) {
 			continue;
 		best = ent;
 	}
-
 	return best;
 }
 
@@ -583,7 +584,7 @@ void medic_cable_attack (edict_t *self) {
 	// check for max distance
 	VectorSubtract (start, self->enemy->s.origin, dir);
 	distance = VectorLength (dir);
-	if (distance > 256)
+	if (distance > 1024)
 		return;
 
 	// check for min/max pitch

@@ -372,7 +372,7 @@ void M_SetEffects (edict_t *ent) {
 	ent->s.renderfx &= ~(RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE);
 
 	if (ent->monsterinfo.aiflags & AI_RESURRECTING) {
-		//	ent->s.effects |= EF_COLOR_SHELL;
+		ent->s.effects |= EF_COLOR_SHELL;
 		ent->s.renderfx |= RF_SHELL_RED;
 	}
 

@@ -153,6 +153,7 @@ is loaded.
 ============
 */
 extern cvar_t	*r_radialBlur;
+extern cvar_t	*weaponHitAccuracy;
 
 void InitGame (void) {
 	gi.dprintf ("==== InitGame ====\n");
@@ -211,7 +212,7 @@ void InitGame (void) {
 	net_compatibility = gi.cvar ("net_compatibility", "0", CVAR_SERVERINFO | CVAR_NOSET);
 	r_radialBlur = gi.cvar ("r_radialBlur", "1", CVAR_ARCHIVE);
 	sv_stopClock = gi.cvar ("sv_stopClock", "0", 0);
-
+	weaponHitAccuracy = gi.cvar("weaponHitAccuracy", "1", CVAR_USERINFO | CVAR_ARCHIVE);
 	// items
 	InitItems ();
 

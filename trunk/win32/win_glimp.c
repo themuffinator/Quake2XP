@@ -134,8 +134,8 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	glw_state.virtualHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 	glw_state.borderWidth = GetSystemMetrics(SM_CXBORDER) * 3;
 	glw_state.borderHeight = GetSystemMetrics(SM_CYBORDER) * 3 + GetSystemMetrics(SM_CYCAPTION);
-	vid_xpos = Cvar_Get("vid_xpos", "3", 0);
-	vid_ypos = Cvar_Get("vid_ypos", "22", 0);
+	vid_xpos = Cvar_Get("vid_xpos", "0", 0);
+	vid_ypos = Cvar_Get("vid_ypos", "0", 0);
 
 	AdjustWindowRect (&r, stylebits, FALSE);
 
@@ -399,7 +399,6 @@ void R_NvApi_f(void) {
 	NV_GPU_THERMAL_SETTINGS			thermal;
 	NV_GPU_DYNAMIC_PSTATES_INFO_EX	m_DynamicPStateInfo;
 	NV_GPU_CLOCK_FREQUENCIES		clocks;
-	return;
 	
 	if (!nvApiInit) {
 		Com_Printf(S_COLOR_RED"NVAPI not found!\n");

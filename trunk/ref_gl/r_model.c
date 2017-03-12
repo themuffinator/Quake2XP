@@ -1129,7 +1129,6 @@ void Mod_BuildVertexCache() {
 	// Gen VAO
 	glDeleteVertexArrays(1, &vao.bsp_a);
 	glDeleteVertexArrays(1, &vao.bsp_l);
-	glDeleteVertexArrays(1, &vao.alias_shadow);
 
 	//light surfaces
 	glGenVertexArrays(1, &vao.bsp_l);
@@ -1831,11 +1830,8 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 	R_CalcStaticLightInteraction();
 
 	mod->numFrames = 2;			// regular and alternate animation
-
-								//
-								// set up the subModels
-								//
-
+		
+	// set up the subModels
 	for (i = 0; i < mod->numSubModels; i++) {
 		model_t *starmod;
 

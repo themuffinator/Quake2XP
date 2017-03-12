@@ -263,7 +263,6 @@ BSP SURFACES
 
 ===============
 */
-#define MAX_IDX MAX_VERTICES * 4
 
 qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *indeces, qboolean bmodel) {
 	unsigned	numIndices;
@@ -303,6 +302,11 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		}
 			qglUniform4f(ambientWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
 	
+		if (surf->flags & MSURF_LAVA)
+			qglUniform1i(ambientWorld_lava, 1);
+		else
+			qglUniform1i(ambientWorld_lava, 0);
+
 		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
 		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
 		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
@@ -386,10 +390,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		// update lightmaps
 		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
 		{
-			if(s->flags & MSURF_LAVA)
-				GL_MBind(GL_TEXTURE1_ARB, r_whiteMap->texnum);
-			else
-				GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
+			GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
 
 			if (r_worldmodel->useXPLM) {
 				GL_MBind(GL_TEXTURE4_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);

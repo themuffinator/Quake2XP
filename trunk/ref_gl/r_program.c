@@ -528,6 +528,7 @@ void R_InitPrograms (void) {
 		ambientWorld_ambientLevel	= qglGetUniformLocation (id, "u_ambientScale");
 		ambientWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
 		ambientWorld_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
+		ambientWorld_lava			= qglGetUniformLocation	(id, "u_isLava");
 
 	}
 	else {

@@ -80,13 +80,13 @@ extern viddef_t vid;
 #define	TEXNUM_SCRAPS		4096
 #define	TEXNUM_IMAGES		4097
 
-#define	TEXNUM_LIGHTMAPS	8192
-#define	MAX_GLTEXTURES		8192 
+#define	TEXNUM_LIGHTMAPS	16384
+#define	MAX_GLTEXTURES		16384 
 
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
 #define MAX_DRAW_STRING_LENGTH  256
-
+#define MAX_IDX MAX_VERTICES * 4
 // ===================================================================
 
 typedef enum {
@@ -925,6 +925,7 @@ uint ambientWorld_parallaxType;
 uint ambientWorld_ambientLevel;
 uint ambientWorld_scroll;
 uint ambientWorld_mvp;
+uint ambientWorld_lava;
 
 uint lightWorld_parallaxParams;
 uint lightWorld_colorScale;
