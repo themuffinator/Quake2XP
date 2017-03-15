@@ -49,7 +49,6 @@ typedef struct {
 
 efx_t efx;
 
-ALuint EFXEAX_RvbCreate (EFXEAXREVERBPROPERTIES *rvb);
 ALuint EFX_RvbCreate (EFXEAXREVERBPROPERTIES *rvb);
 
 void EFX_RvbInit (void) {
@@ -80,15 +79,13 @@ void EFX_RvbInit (void) {
 	}
 }
 
-trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
-
 void EFX_GetRoomSize() {
 	vec3_t forward, right, up;
 	vec3_t end, tmp;
 	trace_t trace;
 	float sum, frontL, backL, leftL, rightL, upL, downL;
 
-	if (s_dynamicReverberation->value) {
+	if (!s_dynamicReverberation->value) {
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbLevelEffect);
 		return;
 	}
