@@ -51,6 +51,7 @@ cvar_t	*s_openal_device;
 cvar_t	*s_quality;
 cvar_t	*s_distance_model;
 cvar_t	*s_initsound;
+cvar_t	*s_dynamicReverberation;
 
 openal_channel_t s_openal_channels[MAX_CHANNELS];
 unsigned s_openal_numChannels;
@@ -182,6 +183,7 @@ void S_Init (int hardreset) {
 		s_quality = Cvar_Get ("s_quality", "0", CVAR_ARCHIVE);
 		s_distance_model = Cvar_Get ("s_distance_model", "0", CVAR_ARCHIVE);
 		s_initsound = Cvar_Get ("s_initsound", "1", CVAR_NOSET);
+		s_dynamicReverberation = Cvar_Get("s_dynamicReverberation", "1", CVAR_ARCHIVE);
 	}
 
 	if (!s_initsound->value || openalStop) {

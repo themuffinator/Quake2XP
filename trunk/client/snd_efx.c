@@ -16,10 +16,22 @@
 // so for now we have it here.
 #include "AL/efx-presets.h"
 
-EFXEAXREVERBPROPERTIES rvb_generic = EFX_REVERB_PRESET_GENERIC;
-EFXEAXREVERBPROPERTIES rvb_room = EFX_REVERB_PRESET_ROOM;
-EFXEAXREVERBPROPERTIES rvb_underwater = EFX_REVERB_PRESET_UNDERWATER;
-EFXEAXREVERBPROPERTIES rvb_level = EFX_REVERB_PRESET_CITY;
+EFXEAXREVERBPROPERTIES rvb_generic			= EFX_REVERB_PRESET_GENERIC;
+EFXEAXREVERBPROPERTIES rvb_room				= EFX_REVERB_PRESET_ROOM;
+EFXEAXREVERBPROPERTIES rvb_underwater		= EFX_REVERB_PRESET_UNDERWATER;
+EFXEAXREVERBPROPERTIES rvb_level			= EFX_REVERB_PRESET_CITY;
+
+EFXEAXREVERBPROPERTIES rvb_small_room		= EFX_REVERB_PRESET_FACTORY_SMALLROOM;
+EFXEAXREVERBPROPERTIES rvb_medium_room		= EFX_REVERB_PRESET_FACTORY_MEDIUMROOM;
+EFXEAXREVERBPROPERTIES rvb_large_room		= EFX_REVERB_PRESET_FACTORY_LARGEROOM;
+
+EFXEAXREVERBPROPERTIES rvb_alcove			= EFX_REVERB_PRESET_FACTORY_ALCOVE;
+EFXEAXREVERBPROPERTIES rvb_short_passege	= EFX_REVERB_PRESET_FACTORY_SHORTPASSAGE;
+EFXEAXREVERBPROPERTIES rvb_long_passege		= EFX_REVERB_PRESET_FACTORY_LONGPASSAGE;
+EFXEAXREVERBPROPERTIES rvb_hall				= EFX_REVERB_PRESET_FACTORY_HALL;
+EFXEAXREVERBPROPERTIES rvb_cour_yard		= EFX_REVERB_PRESET_FACTORY_COURTYARD;
+
+extern cvar_t *s_dynamicReverberation;
 
 typedef struct {
 	qboolean on;
@@ -28,6 +40,11 @@ typedef struct {
 	ALuint rvbUnderwaterEffect;
 	ALuint rvbLevelEffect;
 	ALuint rvbAuxSlot;
+
+	ALuint rvbSmallRoomEffect;
+	ALuint rvbMediumRoomEffect;
+	ALuint rvbLargeRoomEffect;
+	ALuint rvbAlcoveEffect;
 } efx_t;
 
 efx_t efx;
@@ -45,6 +62,11 @@ void EFX_RvbInit (void) {
 	efx.rvbUnderwaterEffect = EFX_RvbCreate (&rvb_underwater);
 	efx.rvbLevelEffect = EFX_RvbCreate (&rvb_level);
 
+	efx.rvbSmallRoomEffect = EFX_RvbCreate(&rvb_small_room);
+	efx.rvbMediumRoomEffect = EFX_RvbCreate(&rvb_medium_room);
+	efx.rvbLargeRoomEffect = EFX_RvbCreate(&rvb_large_room);
+	efx.rvbAlcoveEffect = EFX_RvbCreate(&rvb_alcove);
+
 	alGenAuxiliaryEffectSlots (1, &efx.rvbAuxSlot);
 	alAuxiliaryEffectSloti (efx.rvbAuxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
 
@@ -57,6 +79,88 @@ void EFX_RvbInit (void) {
 		efx.on = qfalse;
 	}
 }
+
+trace_t CL_PMTraceWorld(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
+
+void EFX_GetRoomSize() {
+	vec3_t forward, right, up;
+	vec3_t end, tmp;
+	trace_t trace;
+	float sum, frontL, backL, leftL, rightL, upL, downL;
+
+	if (s_dynamicReverberation->value) {
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbLevelEffect);
+		return;
+	}
+
+	VectorSet (forward,	1, 0, 0);
+	VectorSet (right,	0, 1, 0);
+	VectorSet (up,		0, 0, 1);
+
+	// trace to forward
+	VectorMA(cl.refdef.vieworg, 2048.0, forward, end);
+	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+	if (trace.fraction > 0 && trace.fraction < 1) {
+		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
+		frontL = VectorLength(tmp);
+	}
+
+	// trace to back
+	VectorMA(cl.refdef.vieworg, -2048.0, forward, end);
+	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+	if (trace.fraction > 0 && trace.fraction < 1) {
+		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
+		backL = VectorLength(tmp);
+	}
+
+	// trace to right
+	VectorMA(cl.refdef.vieworg, 2048.0, right, end);
+	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+	if (trace.fraction > 0 && trace.fraction < 1) {
+		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
+		rightL = VectorLength(tmp);
+	}
+
+	// trace to left
+	VectorMA(cl.refdef.vieworg, -2048.0, right, end);
+	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+	if (trace.fraction > 0 && trace.fraction < 1) {
+		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
+		leftL = VectorLength(tmp);
+	}
+
+	// trace to up
+	VectorMA(cl.refdef.vieworg, 2048.0, up, end);
+	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+	if (trace.fraction > 0 && trace.fraction < 1) {
+		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
+		upL = VectorLength(tmp);
+	}
+
+	// trace to down
+	VectorMA(cl.refdef.vieworg, -2048.0, up, end);
+	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
+	if (trace.fraction > 0 && trace.fraction < 1) {
+		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
+		downL = VectorLength(tmp);
+	}
+
+	sum = ( frontL + backL + leftL + rightL + upL + downL) / 6.0;
+
+	if (sum <= 128.0)
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbAlcoveEffect);
+
+	if(sum > 128.0 && sum < 256)
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbSmallRoomEffect);
+	
+	if (sum < 512.0 && sum > 256.0)
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbMediumRoomEffect);
+
+	if (sum >= 512.0)
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbLargeRoomEffect);
+}
+
+
 
 void EFX_RvbUpdate (vec3_t listener_position) {
 	if (!efx.on)
@@ -71,7 +175,7 @@ void EFX_RvbUpdate (vec3_t listener_position) {
 		alAuxiliaryEffectSloti (efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbUnderwaterEffect);
 	}
 	else {
-		alAuxiliaryEffectSloti (efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbLevelEffect);
+		EFX_GetRoomSize();
 	}
 
 	if (alGetError () != AL_NO_ERROR)
@@ -88,6 +192,12 @@ void EFX_RvbShutdown (void) {
 	alDeleteEffects (1, &efx.rvbRoomEffect);
 	alDeleteEffects (1, &efx.rvbUnderwaterEffect);
 	alDeleteEffects (1, &efx.rvbLevelEffect);
+
+	alDeleteEffects(1, &efx.rvbLargeRoomEffect);
+	alDeleteEffects(1, &efx.rvbMediumRoomEffect);
+	alDeleteEffects(1, &efx.rvbSmallRoomEffect);
+	alDeleteEffects(1, &efx.rvbAlcoveEffect);
+
 	efx.on = qfalse;
 }
 
