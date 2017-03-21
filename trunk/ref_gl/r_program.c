@@ -256,18 +256,20 @@ R_CreateProgram
 ==============
 */
 
-static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const char *vertexSource, const char *fragmentSource) {
+static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, const char *vertexSource, const char *fragmentSource, 
+										const char *GeometrySource, const char *tessControlSource, const char *tessEvSource) {
 	char			log[MAX_INFO_LOG];
 	unsigned		hash;
 	glslProgram_t	*program;
 	const char		*strings[MAX_PROGRAM_DEFS * 3 + 2];
 	int				numStrings;
 	int				numLinked = 0;
-	int				id, vertexId, fragmentId;
+	int				id, vertexId, fragmentId, tessControlId, tessEvId, geomId;
 	int				status;
 	int				i, j;
 
-	if ((vertexSource && strlen (vertexSource) < 17) || (fragmentSource && strlen (fragmentSource) < 17))
+	if ((vertexSource && strlen (vertexSource) < 17) || (fragmentSource && strlen (fragmentSource) < 17) || (GeometrySource && strlen(GeometrySource) < 17) ||
+		(tessControlSource && strlen(tessControlSource) < 17) || (tessEvSource && strlen(tessEvSource) < 17))
 		return NULL;
 
 	if (r_numPrograms == MAX_PROGRAMS)
@@ -299,6 +301,9 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 		numStrings = 0;
 		vertexId = 0;
 		fragmentId = 0;
+		geomId = 0;
+		tessControlId = 0;
+		tessEvId = 0;
 
 		/// Berserker's fix start
 		if (program->numDefs) {
@@ -339,6 +344,63 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 				R_GetInfoLog (vertexId, log, qfalse);
 				qglDeleteShader (vertexId);
 				Com_Printf ("program '%s': error(s) in vertex shader:\n-----------\n%s\n-----------\n", program->name, log);
+				continue;
+			}
+		}
+		
+		// compile geo shaders
+		if (GeometrySource) {
+			// link includes
+			GeometrySource = R_LoadIncludes((char*)GeometrySource);
+
+			strings[numStrings] = GeometrySource;
+			geomId = qglCreateShader(GL_GEOMETRY_SHADER);
+			qglShaderSource(geomId, numStrings + 1, strings, NULL);
+			qglCompileShader(geomId);
+			qglGetShaderiv(geomId, GL_COMPILE_STATUS, &status);
+
+			if (!status) {
+				R_GetInfoLog(geomId, log, qfalse);
+				qglDeleteShader(geomId);
+				Com_Printf("program '%s': error(s) in geo shader:\n-----------\n%s\n-----------\n", program->name, log);
+				continue;
+			}
+		}
+
+		// compile tess control shaders
+		if (tessControlSource) {
+			// link includes
+			tessControlSource = R_LoadIncludes((char*)tessControlSource);
+
+			strings[numStrings] = tessControlSource;
+			tessControlId = qglCreateShader(GL_TESS_CONTROL_SHADER);
+			qglShaderSource(tessControlId, numStrings + 1, strings, NULL);
+			qglCompileShader(tessControlId);
+			qglGetShaderiv(tessControlId, GL_COMPILE_STATUS, &status);
+
+			if (!status) {
+				R_GetInfoLog(tessControlId, log, qfalse);
+				qglDeleteShader(tessControlId);
+				Com_Printf("program '%s': error(s) in tess control shader:\n-----------\n%s\n-----------\n", program->name, log);
+				continue;
+			}
+		}
+
+		// compile tess eval shaders
+		if (tessEvSource) {
+			// link includes
+			tessEvSource = R_LoadIncludes((char*)tessEvSource);
+
+			strings[numStrings] = tessEvSource;
+			tessEvId = qglCreateShader(GL_TESS_EVALUATION_SHADER);
+			qglShaderSource(tessEvId, numStrings + 1, strings, NULL);
+			qglCompileShader(tessEvId);
+			qglGetShaderiv(tessEvId, GL_COMPILE_STATUS, &status);
+
+			if (!status) {
+				R_GetInfoLog(tessEvId, log, qfalse);
+				qglDeleteShader(tessEvId);
+				Com_Printf("program '%s': error(s) in tess eval shader:\n-----------\n%s\n-----------\n", program->name, log);
 				continue;
 			}
 		}
@@ -384,6 +446,21 @@ static glslProgram_t *R_CreateProgram (const char *name, const char *defs, const
 		if (fragmentId) {
 			qglAttachShader (id, fragmentId);
 			qglDeleteShader (fragmentId);
+		}
+		
+		if (geomId) {
+			qglAttachShader(id, geomId);
+			qglDeleteShader(geomId);
+		}
+
+		if (tessControlId) {
+			qglAttachShader(id, tessControlId);
+			qglDeleteShader(tessControlId);
+		}
+
+		if (tessEvId) {
+			qglAttachShader(id, tessEvId);
+			qglDeleteShader(tessEvId);
 		}
 
 		qglLinkProgram (id);
@@ -433,11 +510,11 @@ R_FindProgram
 ==============
 */
 
-glslProgram_t *R_FindProgram (const char *name, qboolean vertex, qboolean fragment) {
+glslProgram_t *R_FindProgram (const char *name, qboolean vertex, qboolean fragment, qboolean geo, qboolean tess, qboolean tessEv) {
 	char			filename[MAX_QPATH];
 	char			newname[MAX_QPATH];
 	glslProgram_t	*program;
-	char			*defs, *vertexSource = NULL, *fragmentSource = NULL;
+	char			*defs, *vertexSource = NULL, *fragmentSource = NULL, *geoSource = NULL, *tessSource = NULL, *evalSource = NULL;
 
 	if (!vertex && !fragment)
 		return &r_nullProgram;
@@ -462,10 +539,25 @@ glslProgram_t *R_FindProgram (const char *name, qboolean vertex, qboolean fragme
 		FS_LoadFile (filename, (void **)&fragmentSource);
 	}
 
+	if (geo) {
+		Q_snprintfz(filename, sizeof(filename), "glsl/%s.geo", name);
+		FS_LoadFile(filename, (void **)&geoSource);
+	}
+	
+	if (tess) {
+		Q_snprintfz(filename, sizeof(filename), "glsl/%s.tess", name);
+		FS_LoadFile(filename, (void **)&tessSource);
+	}
+	
+	if (tessEv) {
+		Q_snprintfz(filename, sizeof(filename), "glsl/%s.eval", name);
+		FS_LoadFile(filename, (void **)&evalSource);
+	}
+
 	if (!vertexSource && !fragmentSource)
 		return &r_nullProgram;		// no appropriate shaders found
 
-	program = R_CreateProgram (newname, defs, vertexSource, fragmentSource);
+	program = R_CreateProgram (newname, defs, vertexSource, fragmentSource, geoSource, tessSource, evalSource);
 
 
 	if (defs)
@@ -501,7 +593,7 @@ void R_InitPrograms (void) {
 	memset (&r_nullProgram, 0, sizeof(glslProgram_t));
 
 	Com_Printf ("Load "S_COLOR_YELLOW"null program"S_COLOR_WHITE" ");
-	nullProgram = R_FindProgram ("null", qtrue, qtrue);
+	nullProgram = R_FindProgram ("null", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (nullProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = nullProgram->id[0];
@@ -513,7 +605,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"ambient world program"S_COLOR_WHITE" ");
-	ambientWorldProgram = R_FindProgram ("ambientWorld", qtrue, qtrue);
+	ambientWorldProgram = R_FindProgram ("ambientWorld", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (ambientWorldProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = ambientWorldProgram->id[0];
@@ -537,7 +629,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"light world program"S_COLOR_WHITE" ");
-	lightWorldProgram = R_FindProgram ("lightWorld", qtrue, qtrue);
+	lightWorldProgram = R_FindProgram ("lightWorld", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (lightWorldProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = lightWorldProgram->id[0];
@@ -575,7 +667,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"ambient model program"S_COLOR_WHITE" ");
-	aliasAmbientProgram = R_FindProgram ("ambientAlias", qtrue, qtrue);
+	aliasAmbientProgram = R_FindProgram ("ambientAlias", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (aliasAmbientProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = aliasAmbientProgram->id[0];
@@ -597,7 +689,7 @@ void R_InitPrograms (void) {
 
 
 	Com_Printf ("Load "S_COLOR_YELLOW"light model program"S_COLOR_WHITE" ");
-	aliasBumpProgram = R_FindProgram ("lightAlias", qtrue, qtrue);
+	aliasBumpProgram = R_FindProgram ("lightAlias", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (aliasBumpProgram->valid) {
 		Com_Printf ("succeeded\n");
@@ -628,8 +720,8 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"gauss blur program"S_COLOR_WHITE" ");
-	gaussXProgram = R_FindProgram ("gaussX", qtrue, qtrue);
-	gaussYProgram = R_FindProgram ("gaussY", qtrue, qtrue);
+	gaussXProgram = R_FindProgram ("gaussX", qtrue, qtrue, qfalse, qfalse, qfalse);
+	gaussYProgram = R_FindProgram ("gaussY", qtrue, qtrue, qfalse, qfalse, qfalse);
 	
 
 	if (gaussXProgram->valid && gaussYProgram->valid){
@@ -647,7 +739,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"hdrGlare program"S_COLOR_WHITE" ");
-	glareProgram = R_FindProgram ("glare", qtrue, qtrue);
+	glareProgram = R_FindProgram ("glare", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (glareProgram){
 		Com_Printf("succeeded\n");
@@ -663,7 +755,7 @@ void R_InitPrograms (void) {
 
 
 	Com_Printf ("Load "S_COLOR_YELLOW"radial blur program"S_COLOR_WHITE" ");
-	radialProgram = R_FindProgram ("radialBlur", qtrue, qtrue);
+	radialProgram = R_FindProgram ("radialBlur", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (radialProgram->valid){
 		Com_Printf("succeeded\n");
@@ -679,7 +771,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"dof blur program"S_COLOR_WHITE" ");
-	dofProgram = R_FindProgram ("dof", qtrue, qtrue);
+	dofProgram = R_FindProgram ("dof", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (dofProgram->valid){
 		Com_Printf("succeeded\n");
@@ -695,7 +787,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"motion blur program"S_COLOR_WHITE" ");
-	motionBlurProgram = R_FindProgram ("mblur", qtrue, qtrue);
+	motionBlurProgram = R_FindProgram ("mblur", qtrue, qtrue, qfalse, qfalse, qfalse);
 	
 	if (motionBlurProgram->valid){
 		Com_Printf("succeeded\n");
@@ -710,9 +802,9 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"ssao program"S_COLOR_WHITE" ");
-	ssaoProgram = R_FindProgram ("ssao", qtrue, qtrue);
-	depthDownsampleProgram = R_FindProgram("depthDownsample", qtrue, qtrue);
-	ssaoBlurProgram = R_FindProgram("ssaoBlur", qtrue, qtrue);
+	ssaoProgram = R_FindProgram ("ssao", qtrue, qtrue, qfalse, qfalse, qfalse);
+	depthDownsampleProgram = R_FindProgram("depthDownsample", qtrue, qtrue, qfalse, qfalse, qfalse);
+	ssaoBlurProgram = R_FindProgram("ssaoBlur", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (ssaoProgram->valid && depthDownsampleProgram->valid && ssaoBlurProgram->valid){
 		Com_Printf("succeeded\n");
@@ -737,8 +829,8 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"bloom program"S_COLOR_WHITE" ");
-	bloomdsProgram = R_FindProgram ("bloomds", qtrue, qtrue);
-	bloomfpProgram = R_FindProgram ("bloomfp", qtrue, qtrue);
+	bloomdsProgram = R_FindProgram ("bloomds", qtrue, qtrue, qfalse, qfalse, qfalse);
+	bloomfpProgram = R_FindProgram ("bloomfp", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (bloomdsProgram->valid && bloomfpProgram->valid){
 		Com_Printf("succeeded\n");
@@ -757,7 +849,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"refraction program"S_COLOR_WHITE" ");
-	refractProgram = R_FindProgram ("refract", qtrue, qtrue);
+	refractProgram = R_FindProgram ("refract", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (refractProgram->valid) {
 		Com_Printf ("succeeded\n");
@@ -782,9 +874,9 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"thermal vision program"S_COLOR_WHITE" ");
-	thermalProgram = R_FindProgram ("thermal", qtrue, qtrue);
+	thermalProgram = R_FindProgram ("thermal", qtrue, qtrue, qfalse, qfalse, qfalse);
 
-	thermalfpProgram = R_FindProgram ("thermalfp", qtrue, qtrue);
+	thermalfpProgram = R_FindProgram ("thermalfp", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (thermalProgram->valid && thermalfpProgram){
 		Com_Printf("succeeded\n");
@@ -802,7 +894,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"water program"S_COLOR_WHITE" ");
-	waterProgram = R_FindProgram ("water", qtrue, qtrue);
+	waterProgram = R_FindProgram ("water", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (waterProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = waterProgram->id[0];
@@ -827,7 +919,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"particles program"S_COLOR_WHITE" ");
-	particlesProgram = R_FindProgram ("particles", qtrue, qtrue);
+	particlesProgram = R_FindProgram ("particles", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (particlesProgram->valid) {
 		Com_Printf ("succeeded\n");
@@ -846,7 +938,7 @@ void R_InitPrograms (void) {
 	}
 	
 	Com_Printf ("Load "S_COLOR_YELLOW"generic program"S_COLOR_WHITE" ");
-	genericProgram = R_FindProgram ("generic", qtrue, qtrue);
+	genericProgram = R_FindProgram ("generic", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (genericProgram->valid) {
 		Com_Printf ("succeeded\n");
@@ -867,7 +959,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"cinematic program"S_COLOR_WHITE" ");
-	cinProgram	= R_FindProgram ("cin", qtrue, qtrue);
+	cinProgram	= R_FindProgram ("cin", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (cinProgram->valid) {
 		Com_Printf ("succeeded\n");
@@ -882,7 +974,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"load screen program"S_COLOR_WHITE" ");
-	loadingProgram = R_FindProgram ("loading", qtrue, qtrue);
+	loadingProgram = R_FindProgram ("loading", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (loadingProgram->valid) {
 		Com_Printf ("succeeded\n");
@@ -897,7 +989,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"fxaa program"S_COLOR_WHITE" ");
-	fxaaProgram = R_FindProgram ("fxaa", qtrue, qtrue);
+	fxaaProgram = R_FindProgram ("fxaa", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (fxaaProgram->valid) {
 		Com_Printf ("succeeded\n");
@@ -911,7 +1003,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"film grain program"S_COLOR_WHITE" ");
-	filmGrainProgram = R_FindProgram ("filmGrain", qtrue, qtrue);
+	filmGrainProgram = R_FindProgram ("filmGrain", qtrue, qtrue, qfalse, qfalse, qfalse);
 	id = filmGrainProgram->id[0];
 
 	film_scroll = qglGetUniformLocation(id, "u_scroll");
@@ -926,7 +1018,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"gammaramp program"S_COLOR_WHITE" ");
-	gammaProgram = R_FindProgram ("gamma", qtrue, qtrue);
+	gammaProgram = R_FindProgram ("gamma", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (gammaProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = gammaProgram->id[0];
@@ -940,7 +1032,7 @@ void R_InitPrograms (void) {
 
 
 	Com_Printf("Load "S_COLOR_YELLOW"shadow volumes program"S_COLOR_WHITE" ");
-	shadowProgram = R_FindProgram("shadow", qtrue, qtrue);
+	shadowProgram = R_FindProgram("shadow", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (shadowProgram->valid) {
 		Com_Printf("succeeded\n");
 		id = shadowProgram->id[0];
@@ -953,7 +1045,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"light2d program"S_COLOR_WHITE" ");
-	light2dProgram = R_FindProgram("light2d", qtrue, qtrue);
+	light2dProgram = R_FindProgram("light2d", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (light2dProgram->valid) {
 		Com_Printf("succeeded\n");
 		id = light2dProgram->id[0];
