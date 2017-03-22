@@ -209,15 +209,13 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	float		*up, *right;
 	dsprite_t	*psprite;
 	int			vert=0;
-	vec3_t		dist;
-	float		len;
+	int		len;
 	
 	psprite = (dsprite_t *) currentmodel->extraData;
 	e->frame %= psprite->numFrames;
 	frame = &psprite->frames[e->frame];
 
-	VectorSubtract(e->origin, r_origin, dist);
-	len = VectorLength(dist);
+	len = frame->width;
 
 	// normal sprite
 	up = vup;
@@ -229,7 +227,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(ref_thickness, len * 0.5);
 
 	if (currententity->flags & RF_BFG_SPRITE)
-		qglUniform1f(ref_thickness2, 3.0);
+		qglUniform1f(ref_thickness2, 1.0);
 	else
 		qglUniform1f(ref_thickness2, len * 0.5);
 
