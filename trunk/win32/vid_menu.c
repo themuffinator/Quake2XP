@@ -86,10 +86,10 @@ static void ambientLevelCallback (void *s) {
 	Cvar_SetValue ("r_lightmapScale", ambient);
 }
 
-static void RadarCallback (void *s) {
+static void filmCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_filmGrain", box->curvalue * 1);
+	Cvar_SetValue ("r_filmFilter", box->curvalue * 1);
 }
 
 static void ShadowsCallback (void *s) {
@@ -180,7 +180,7 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_ssao", s_ssao.curvalue);
 	Cvar_SetValue ("r_fxaa", s_fxaa_box.curvalue);
 	Cvar_SetValue ("r_vsync", s_finish_box.curvalue);
-	Cvar_SetValue ("r_filmGrain", s_film_grain.curvalue);
+	Cvar_SetValue ("r_filmFilter", s_film_grain.curvalue);
 	Cvar_SetValue ("r_motionBlur", s_mb_box.curvalue);
 
 	/*
@@ -484,10 +484,11 @@ void VID_MenuInit (void) {
 	s_film_grain.generic.type = MTYPE_SPINCONTROL;
 	s_film_grain.generic.x = 0;
 	s_film_grain.generic.y = 200 * cl_fontScale->value;
-	s_film_grain.generic.name = "Film Grain";
+	s_film_grain.generic.name = "Cinematic filter";
 	s_film_grain.itemnames = yesno_names;
-	s_film_grain.curvalue = r_filmGrain->value;
-	s_film_grain.generic.callback = RadarCallback;
+	s_film_grain.curvalue = r_filmFilter->value;
+	s_film_grain.generic.callback = filmCallback;
+	s_film_grain.generic.statusbar = "Old Technicolor Film Filter";
 
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x = 0;

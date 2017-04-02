@@ -1738,9 +1738,15 @@ qboolean GLW_InitDriver(void) {
 	}
 
 	Com_Printf(S_COLOR_GREEN"ok\n");
+	
+	int samples;
+	if ((int)r_multiSamples->value == 1)
+		samples = 0;
+	else
+		samples = (int)r_multiSamples->value;
 
 	// choose a pixel format
-	pixelFormat = GLW_ChoosePixelFormat(32, 8, 24, 8, (int)r_multiSamples->value);
+	pixelFormat = GLW_ChoosePixelFormat(32, 8, 24, 8, samples);
 	
 	if (!pixelFormat) {
 		Com_Printf(S_COLOR_RED "...failed to find an appropriate PIXELFORMAT\n");

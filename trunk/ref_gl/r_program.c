@@ -1006,8 +1006,11 @@ void R_InitPrograms (void) {
 	filmGrainProgram = R_FindProgram ("filmGrain", qtrue, qtrue, qfalse, qfalse, qfalse);
 	id = filmGrainProgram->id[0];
 
-	film_scroll = qglGetUniformLocation(id, "u_scroll");
-	film_matrix = qglGetUniformLocation(id, "u_orthoMatrix");
+	film_screenRes	= qglGetUniformLocation(id, "u_screenSize");
+	film_rand		= qglGetUniformLocation(id, "u_rand");
+	film_frameTime	= qglGetUniformLocation(id, "u_time");
+	film_params		= qglGetUniformLocation(id, "u_params");
+	film_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 
 	if (filmGrainProgram->valid) {
 		Com_Printf ("succeeded\n");

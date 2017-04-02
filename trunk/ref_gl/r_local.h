@@ -315,8 +315,6 @@ cvar_t	*r_radialBlurFov;
 
 cvar_t	*r_tbnSmoothAngle;
 
-cvar_t	*r_filmGrain;
-
 cvar_t	*r_glDebugOutput;
 cvar_t	*r_glMinorVersion;
 cvar_t	*r_glMajorVersion;
@@ -328,25 +326,19 @@ cvar_t	*r_cameraSpaceLightMove;
 cvar_t	*r_hudLighting;
 cvar_t	*r_bump2D;
 
+cvar_t	*r_filmFilter;
+cvar_t	*r_filmFilterType; // 0 - technicolor; 1 - sepia
+cvar_t	*r_filmFilterNoiseIntens;
+cvar_t	*r_filmFilterScratchIntens;
+cvar_t	*r_filmFilterVignetIntens;
+
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
 
 extern float ref_realtime;
 
-extern int gl_lightmap_format;
-extern int gl_solid_format;
-extern int gl_alpha_format;
-extern int gl_tex_solid_format;
-extern int gl_tex_alpha_format;
-
-extern qboolean inwaterfognode;
 extern int r_visframecount;
 
-extern int radarOldTime;
-
-extern qboolean spacebox;
-
-extern qboolean arbMultisampleSupported;
 qboolean xhargar2hack;
 
 vec3_t	*vertexArray;
@@ -386,7 +378,7 @@ void R_ThermalVision (void);
 void R_RadialBlur (void);
 void R_DofBlur (void);
 void R_FXAA (void);
-void R_FilmGrain (void);
+void R_FilmFilter (void);
 void R_ListPrograms_f (void);
 void R_InitPrograms (void);
 void R_ClearWorldLights (void);
@@ -444,7 +436,6 @@ void R_DrawLightFlare ();
 void R_DrawLightBounds(void);
 qboolean R_EntityInLightBounds();
 
-// TODO: move to common/q_math.h
 extern const mat3_t	mat3_identity;
 extern const mat4_t	mat4_identity;
 
@@ -476,9 +467,6 @@ void AddBoundsToBounds(const vec3_t mins1, const vec3_t maxs1, vec3_t mins2, vec
 void R_DrawChainsRA(qboolean bmodel);
 void R_DrawBrushModelRA(void);
 extern int	occ_framecount;
-
-int Mod_AllocateMD5Mesh(model_t *mod, byte *buf, int len);
-int Mod_AllocateMD5Anim(model_t *mod, byte *buf, int len);
 
 //====================================================================
 
@@ -549,9 +537,6 @@ int Draw_GetPalette (void);
 
 struct image_s *R_RegisterSkin (char *name);
 
-void LoadPCX (char *filename, byte ** pic, byte ** palette, int *width,
-	int *height);
-
 image_t *GL_LoadPic (char *name, byte * pic, int width, int height,
 	imagetype_t type, int bits);
 
@@ -585,7 +570,8 @@ typedef struct {
 	const char	*vendor_string;
 	const char	*version_string;
 	const char	*extensions3_string;
-	int		screenTextureSize;
+
+	int			screenTextureSize;
 	const char	*wglExtensionsString;
 
 	const char	*shadingLanguageVersionString;
@@ -763,11 +749,6 @@ extern	vec3_t	lightspot;
 #define MAX_INDICES		MAX_VERTICES * 4
 #define MAX_VERTEX_ARRAY	8192
 #define MAX_SHADOW_VERTS	16384
-
-extern vec2_t texCoord[MAX_VERTEX_ARRAY];
-extern vec2_t texCoord1[MAX_VERTEX_ARRAY];
-extern vec3_t vertCoord[MAX_VERTEX_ARRAY];
-extern vec4_t colorCoord[MAX_VERTEX_ARRAY];
 
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;
@@ -1054,7 +1035,10 @@ uint dof_screenSize;
 uint dof_params;
 uint dof_orthoMatrix;
 
-uint film_scroll;
+uint film_screenRes;
+uint film_rand;
+uint film_frameTime;
+uint film_params;
 uint film_matrix;
 
 uint mb_params;

@@ -1039,8 +1039,7 @@ void R_RenderFrame(refdef_t * fd) {
 		R_ThermalVision();
 		R_DofBlur();
 		R_Bloom();
-
-		R_FilmGrain();
+		R_FilmFilter();
 		R_ScreenBlend();
 	}
 	
@@ -1327,7 +1326,12 @@ void R_RegisterCvars(void)
 
 	r_radialBlur =						Cvar_Get("r_radialBlur", "1", CVAR_ARCHIVE);
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
-	r_filmGrain = 						Cvar_Get("r_filmGrain", "0", CVAR_ARCHIVE);
+	
+	r_filmFilter = 						Cvar_Get("r_filmFilter", "0", CVAR_ARCHIVE);
+	r_filmFilterType =					Cvar_Get("r_filmFilterType", "0", CVAR_ARCHIVE);
+	r_filmFilterNoiseIntens =			Cvar_Get("r_filmFilterNoiseIntens", "0.05", CVAR_ARCHIVE);
+	r_filmFilterScratchIntens =			Cvar_Get("r_filmFilterScratchIntens", "0.666", CVAR_ARCHIVE);
+	r_filmFilterVignetIntens =			Cvar_Get("r_filmFilterVignetIntens", "0.3", CVAR_ARCHIVE);
 
 	r_glDebugOutput =					Cvar_Get("r_glDebugOutput", "0", 0);
 	r_glMajorVersion =					Cvar_Get("r_glMajorVersion", "3", CVAR_ARCHIVE);

@@ -381,22 +381,27 @@ void R_FXAA (void) {
 
 }
 
-void R_FilmGrain (void) 
+void R_FilmFilter (void) 
 {
 
-	if (!r_filmGrain->value)
+	if (!r_filmFilter->value)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-
+	 
 	// setup program
 	GL_BindProgram (filmGrainProgram, 0);
 
 	GL_MBindRect (GL_TEXTURE0_ARB, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-	qglUniform1f (film_scroll, -3 * (r_newrefdef.time / 40.0));
+	qglUniform2f (film_screenRes, vid.width, vid.height);
+	qglUniform1f (film_rand, crand());
+	qglUniform1i (film_frameTime, r_framecount);
+	qglUniform4f (film_params,	r_filmFilterType->value, r_filmFilterNoiseIntens->value, 
+								r_filmFilterScratchIntens->value, r_filmFilterVignetIntens->value);
+
 	qglUniformMatrix4fv(film_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad ();
@@ -430,8 +435,8 @@ void R_MotionBlur (void)
 		return;
 
 	// calc camera offsets
-	angles[0] = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
-	angles[1] = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
+	angles[0] = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //YAW left-right
+	angles[1] = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //PITCH up-down
 	delta[0] = (angles[0] * 2.0 / r_newrefdef.fov_x) * r_motionBlurFrameLerp->value;
 	delta[1] = (angles[1] * 2.0 / r_newrefdef.fov_y) * r_motionBlurFrameLerp->value;
 

@@ -555,9 +555,6 @@ void R_GenSkyCubeMap (char *name) {
 
 	strncpy (skyname, name, sizeof(skyname)-1);
 
-	qglDisable (GL_TEXTURE_2D);
-	qglEnable (GL_TEXTURE_CUBE_MAP_ARB);
-
 	qglGenTextures (1, &skyCube);
 	qglBindTexture (GL_TEXTURE_CUBE_MAP_ARB, skyCube);
 
@@ -576,7 +573,4 @@ void R_GenSkyCubeMap (char *name) {
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	qglDisable (GL_TEXTURE_CUBE_MAP_ARB);
-	qglEnable (GL_TEXTURE_2D);
 }

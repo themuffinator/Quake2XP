@@ -1958,7 +1958,7 @@ static char *idcredits[] = {
 	"",
 	"+BETA TESTERS",
 	"Serge 'Berserker' Borodulin",
-	"ViPeR_2540",
+	"ViPeR_2540 - beta testing and new hardware",
 	"Sergei V. Sh",
 	"",
 	"+MEDIA ART",
