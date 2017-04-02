@@ -1,18 +1,132 @@
 layout (binding = 0) uniform sampler2DRect u_ScreenTex;
-uniform float u_scroll; 
+
+uniform vec4	u_params;	// x- filter type: 0 - technicolor 1 - sepia
+							// y- noise interns
+							// z - scarch intens
+							// w - vigent size
+uniform vec2	u_screenSize; 
+uniform float	u_rand;
+uniform int		u_time;
+
+vec4 TechniColorSys1(vec4 color)
+{
+	const float amount = 0.4;
+	const vec4 redFilter = vec4(1.0, 0.0, 0.0, 1.0);
+	const vec4 blueGreenFilter = vec4(0.0, 1.0, 0.7, 1.0);
+
+	vec4 redRecord = color * redFilter;
+	vec4 blueGreenRecord = color * blueGreenFilter;
+	vec4 redNegative = vec4(redRecord.r);
+	vec4 blueGreenNegative = vec4((blueGreenRecord.g + blueGreenRecord.b) / 2.0);
+	vec4 redOutput = redNegative * redFilter;
+	vec4 blueGreenOutput = blueGreenNegative * blueGreenFilter;
+	vec4 result = redOutput + blueGreenOutput;
+	return vec4(mix(color, result, amount).rgb, 1.0);
+}
+
+vec4 SepiaColor (vec4 color)
+{	
+	float gray = dot(color.rgb, vec3(0.30, 0.59, 0.11));
+	vec3 sepia = vec3(1.2, 1.0, 0.8); 
+	sepia *= gray;
+	vec3 tmp = mix(color.rgb, sepia, 0.666);
+
+	return vec4(tmp, 1.0);
+}
+
+
+/*==================================
+2D Noise by Ian McEwan, Ashima Arts.
+==================================*/
+
+vec3 mod289(vec3 x)		{ return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec2 mod289(vec2 x)		{ return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec3 permute(vec3 x)	{ return mod289(((x * 34.0) + 1.0) * x); }
+
+float snoise (vec2 v)
+{
+const vec4 C = vec4(0.211324865405187,	// (3.0-sqrt(3.0))/6.0
+					0.366025403784439,	// 0.5*(sqrt(3.0)-1.0)
+					-0.577350269189626,	// -1.0 + 2.0 * C.x
+					0.024390243902439);	// 1.0 / 41.0
+
+	// First corner
+	vec2 i  = floor(v + dot(v, C.yy) );
+	vec2 x0 = v -   i + dot(i, C.xx);
+
+	// Other corners
+	vec2 i1;
+	i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+	vec4 x12 = x0.xyxy + C.xxzz;
+	x12.xy -= i1;
+
+	// Permutations
+	i = mod289(i); // Avoid truncation effects in permutation
+	vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+		+ i.x + vec3(0.0, i1.x, 1.0 ));
+
+	vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+	m = m*m ;
+	m = m*m ;
+
+	// Gradients: 41 points uniformly over a line, mapped onto a diamond.
+	// The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)
+
+	vec3 x = 2.0 * fract(p * C.www) - 1.0;
+	vec3 h = abs(x) - 0.5;
+	vec3 ox = floor(x + 0.5);
+	vec3 a0 = x - ox;
+
+	// Normalise gradients implicitly by scaling m
+	// Approximation of: m *= inversesqrt( a0*a0 + h*h );
+	m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+
+	// Compute final noise value at P
+	vec3 g;
+	g.x  = a0.x  * x0.x  + h.x  * x0.y;
+	g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+	return 130.0 * dot(m, g);
+}
 
 void main()
 {    
-    vec2 const_1 = vec2( 142.0/11.0, 1017.0/13.0 );    
-    float const_2 = 481344.0/11.0;                               
+	vec2 uv = gl_FragCoord.xy / u_screenSize;
+	vec4 color = texture2DRect(u_ScreenTex, gl_FragCoord.xy);
 
-    vec4 color = texture2DRect(u_ScreenTex, gl_FragCoord.xy);             
-    float noise = fract( sin( dot( gl_FragCoord.xy + vec2(0, u_scroll), const_1 )) * const_2);     
-    vec4 ns = vec4(noise, noise, noise, 1.0);
-        
-    // Color correction   
-	color = color * 1.16438356 - 0.03305936;    
+	if(u_params.x == 0)
+		fragData = TechniColorSys1(color);   
 
-    fragData = mix(color, ns, 0.04);             
-     
+	if(u_params.x == 1)
+		fragData = SepiaColor(color);
+		  	
+	float noise = snoise(uv * vec2(u_screenSize.x + u_rand * u_screenSize.y)) * 0.5;
+	fragData += noise * u_params.y;     
+	
+	if ( u_rand < u_params.z )
+	{
+		// Pick a random spot to show scratches
+		float dist = 1.0 / u_params.z;
+		float d = distance(uv, vec2(u_rand * dist, u_rand * dist));
+		if ( d < 0.4 )
+		{
+			// Generate the scratch
+			float xPeriod = 8.0;
+			float yPeriod = 1.0;
+			float pi = 3.141592;
+			float phase = u_time;
+			float turbulence = snoise(uv * 2.5);
+			float vScratch = 0.5 + (sin(((uv.x * xPeriod + uv.y * yPeriod + turbulence)) * pi + phase) * 0.5);
+			vScratch = clamp((vScratch * 10000.0) + 0.35, 0.0, 1.0);
+
+			fragData *= vScratch;
+		}
+	}
+
+	float OuterVignetting	= 1.4 - u_params.w;
+	float InnerVignetting	= 1.0 - u_params.w;
+
+	float d = distance(vec2(0.5, 0.5), uv) * 1.414213;
+	float vignetting = clamp((OuterVignetting - d) / (OuterVignetting - InnerVignetting), 0.0, 1.0);
+	fragData *= vignetting;
+
 }
