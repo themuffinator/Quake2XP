@@ -182,6 +182,7 @@ extern image_t *fboColor[2];
 extern uint bloomtex;
 extern uint thermaltex;
 extern uint fxaatex;
+extern uint fovCorrTex;
 
 extern uint fboId, fbo_weaponMask;
 extern byte fboColorIndex;
@@ -331,6 +332,9 @@ cvar_t	*r_filmFilterType; // 0 - technicolor; 1 - sepia
 cvar_t	*r_filmFilterNoiseIntens;
 cvar_t	*r_filmFilterScratchIntens;
 cvar_t	*r_filmFilterVignetIntens;
+
+cvar_t	*r_fixFovStrength; // 0.0 = no hi-fov perspective correction
+cvar_t	*r_fixFovDistroctionRatio; // 0.0 = cylindrical distortion ratio. 1.0 = spherical
 
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
@@ -856,6 +860,7 @@ glslProgram_t		*nullProgram;
 glslProgram_t		*gammaProgram;
 glslProgram_t		*FboProgram;
 glslProgram_t		*light2dProgram;
+glslProgram_t		*fixFovProgram;
 
 void GL_BindProgram (glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer ();
@@ -1066,6 +1071,9 @@ uint ss_tex;
 
 uint light2d_orthoMatrix;
 uint light2d_params;
+
+uint fixfov_orthoMatrix;
+uint fixfov_params;
 
 #define	MAX_VERTEX_CACHES	4096
 

@@ -444,7 +444,7 @@ void CalcFovForScreen (float ingameFOV) {
 	float	x, y, ratio_x, ratio_y;
 	float	screenAspect = (float)vid.width / (float)vid.height;
 
-	if (ingameFOV < 1 || ingameFOV > 135)
+	if (ingameFOV < 1 || ingameFOV > 179)
 		ingameFOV = 91;
 
 	// calc FOV for 640x480 view (4x3 aspect ratio)

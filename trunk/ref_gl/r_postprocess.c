@@ -547,3 +547,47 @@ void R_SSAO (void)
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 	GL_BindNullProgram ();
 }
+
+/*
+===========================================
+ Based on Giliam de Carpentier work
+ http://www.decarpentier.nl/lens-distortion
+===========================================
+*/
+
+void R_FixFov(void) {
+
+	vec4_t params;
+
+	if (!r_fixFovStrength->value)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	// setup program
+	GL_BindProgram(fixFovProgram, 0);
+
+	if (!fovCorrTex) {
+		qglGenTextures(1, &fovCorrTex);
+		GL_MBind(GL_TEXTURE0_ARB, fovCorrTex);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
+	}
+	GL_MBind(GL_TEXTURE0_ARB, fovCorrTex);
+	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
+
+	params[0] = r_fixFovStrength->value;
+	params[1] = tan(DEG2RAD(r_newrefdef.fov_x) / 2.0) / (vid.width / vid.height);
+	params[2] = vid.width / vid.height;
+	params[3] = r_fixFovDistroctionRatio->value;
+
+	qglUniform4fv(fixfov_params, 1, params);
+	qglUniformMatrix4fv(fixfov_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+
+	R_DrawFullScreenQuad();
+
+	GL_BindNullProgram();
+
+}

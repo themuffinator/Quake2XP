@@ -63,6 +63,7 @@ image_t *shadowMask;
 uint thermaltex;
 uint bloomtex;
 uint fxaatex;
+uint fovCorrTex;
 
 uint fboId, fbo_weaponMask;
 //uint fboDN;
@@ -784,6 +785,7 @@ void R_InitEngineTextures (void) {
 	bloomtex = 0;
 	thermaltex = 0;
 	fxaatex = 0;
+	fovCorrTex = 0;
 
 	CreateDSTTex_ARB ();
 	CreateDepthTexture ();

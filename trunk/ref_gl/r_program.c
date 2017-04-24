@@ -1060,6 +1060,19 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"perspective correction program"S_COLOR_WHITE" ");
+	fixFovProgram = R_FindProgram("fixfov", qtrue, qtrue, qfalse, qfalse, qfalse);
+	if (fixFovProgram->valid) {
+		Com_Printf("succeeded\n");
+		id = fixFovProgram->id[0];
+		fixfov_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
+		fixfov_params = qglGetUniformLocation(id, "u_params");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	Com_Printf ("\nGLSL shaders loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);

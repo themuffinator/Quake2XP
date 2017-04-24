@@ -1025,7 +1025,7 @@ extern char buff15[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
-void R_DrawFullScreenQuad (void);
+void R_FixFov(void);
 
 void R_RenderFrame(refdef_t * fd) {
 	R_RenderView(fd);
@@ -1034,6 +1034,7 @@ void R_RenderFrame(refdef_t * fd) {
 
 	// post processing - cut off if player camera is out of map bounds
 	if (!outMap) {
+		R_FixFov();
 		R_FXAA();
 		R_RadialBlur();
 		R_ThermalVision();
@@ -1346,6 +1347,11 @@ void R_RegisterCvars(void)
 	r_bump2D =							Cvar_Get("r_bump2D", "1", CVAR_ARCHIVE);
 	r_bump2D->help =					"draw 2d bumpmaps";
 
+	r_fixFovStrength =					Cvar_Get("r_fixFovStrength", "0", CVAR_ARCHIVE);
+	r_fixFovStrength->help =			"0.0 no perspective correction";
+	r_fixFovDistroctionRatio =			Cvar_Get("r_fixFovDistroctionRatio", "5", CVAR_ARCHIVE);
+	r_fixFovDistroctionRatio->help =	"cylindrical distortion ratio";
+
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
 	Cmd_AddCommand("levelshot",			GL_LevelShot_f);
@@ -1359,7 +1365,10 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("medium_spec",		R_MediumSpecMachine_f);
 	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
 	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
+#ifdef _WIN32
 	Cmd_AddCommand("gpuInfo",			R_NvApi_f);
+#endif
+
 /*
 bind INS		"spawnLight"
 bind HOME		"spawnLightToCamera"
