@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <GL/glu.h>
 
 #ifdef _WIN32
-#include "glext.h"
+#include "glcorearb.h"
 #include <math.h>
 #include "wglext.h"
 
@@ -596,7 +596,6 @@ typedef struct {
 	int			stencilBits;
 	int			samples;
 	int			maxSamples;
-
 } glconfig_t;
 
 
@@ -605,25 +604,16 @@ typedef struct {
 
 	int prev_mode;
 
-
 	int lightmap_textures;
-
 	int currenttextures[32]; // max gl_texturesXX
 	int currenttmu;
 
 	qboolean	texture_compression_bptc;
-	qboolean	texture_compression_dxt;
 	int			displayrefresh;
-	qboolean	arb_occlusion;
-	qboolean	arb_occlusion2;
-	unsigned	query_passed;
-	GLuint		entityOQID[MAX_ENTITIES];
 
 	qboolean	wgl_swap_control_tear;
-	qboolean	conditional_render;
 	qboolean	depthBoundsTest;
 	qboolean	shader5;
-	qboolean	shader4;
 	qboolean	debugOutput;
 	qboolean	bindlessTexture;
 	qboolean	bufferStorage;
@@ -631,8 +621,8 @@ typedef struct {
 	int			programId;
 	GLenum		matrixMode;
 
-	mat4_t			projectionMatrix;
-	mat4_t			modelViewMatrix;		// ready to load
+	mat4_t		projectionMatrix;
+	mat4_t		modelViewMatrix;		// ready to load
 
 	// frame buffer
 	int			maxRenderBufferSize;

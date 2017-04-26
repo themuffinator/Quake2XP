@@ -160,13 +160,13 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	qglUniform1f(ref_alpha, alpha);
 
 		if (scrolling)
-			GL_MBind(GL_TEXTURE0_ARB, r_DSTTex->texnum);
+			GL_MBind(GL_TEXTURE0, r_DSTTex->texnum);
 		else
-			GL_MBind(GL_TEXTURE0_ARB, fa->texInfo->normalmap->texnum);
+			GL_MBind(GL_TEXTURE0, fa->texInfo->normalmap->texnum);
 
-		GL_MBind(GL_TEXTURE1_ARB, fa->texInfo->image->texnum);
-		GL_MBindRect(GL_TEXTURE2_ARB, ScreenMap->texnum);
-		GL_MBindRect(GL_TEXTURE3_ARB, depthMap->texnum);
+		GL_MBind(GL_TEXTURE1, fa->texInfo->image->texnum);
+		GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
+		GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
 
 	if (scrolling)
 		scroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
@@ -307,9 +307,9 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		else
 			qglUniform1i(ambientWorld_lava, 0);
 
-		GL_MBind(GL_TEXTURE0_ARB, image->texnum);
-		GL_MBind(GL_TEXTURE2_ARB, fx->texnum);
-		GL_MBind(GL_TEXTURE3_ARB, normal->texnum);
+		GL_MBind(GL_TEXTURE0, image->texnum);
+		GL_MBind(GL_TEXTURE2, fx->texnum);
+		GL_MBind(GL_TEXTURE3, normal->texnum);
 
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -376,7 +376,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	}
 
 	if (r_ssao->value && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		GL_MBindRect(GL_TEXTURE6_ARB, fboColor[fboColorIndex]->texnum);
+		GL_MBindRect(GL_TEXTURE6, fboColor[fboColorIndex]->texnum);
 		qglUniform1i(ambientWorld_ssao, 1);
 	}
 	else
@@ -390,11 +390,11 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		// update lightmaps
 		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
 		{
-			GL_MBind(GL_TEXTURE1_ARB, gl_state.lightmap_textures + s->lightmaptexturenum);
+			GL_MBind(GL_TEXTURE1, gl_state.lightmap_textures + s->lightmaptexturenum);
 
 			if (r_worldmodel->useXPLM) {
-				GL_MBind(GL_TEXTURE4_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
-				GL_MBind(GL_TEXTURE5_ARB, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
+				GL_MBind(GL_TEXTURE4, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
+				GL_MBind(GL_TEXTURE5, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
 			}
 			
 			if (numIndices != 0xFFFFFFFF) {
@@ -467,13 +467,13 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		}
 		else {
 			qglUniform1i(lightWorld_isRgh, 1);
-			GL_MBind(GL_TEXTURE4_ARB, rghMap->texnum);
+			GL_MBind(GL_TEXTURE4, rghMap->texnum);
 		}
 
 		if (bmodel){
 			if (caustics && currentShadowLight->castCaustics){
 				qglUniform1i(lightWorld_caustics, 1);
-				GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+				GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 			}
 			else
 				qglUniform1i(lightWorld_caustics, 0);
@@ -481,7 +481,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		else{
 			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics) {
 				qglUniform1i(lightWorld_caustics, 1);
-				GL_MBind(GL_TEXTURE3_ARB, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+				GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 			}
 			else
 				qglUniform1i(lightWorld_caustics, 0);
@@ -500,9 +500,9 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		qglUniform4f(lightWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
 
 
-		GL_MBind		(GL_TEXTURE0_ARB, image->texnum);
-		GL_MBind		(GL_TEXTURE1_ARB, normalMap->texnum);
-		GL_MBindCube	(GL_TEXTURE2_ARB, r_lightCubeMap[currentShadowLight->filter]->texnum);
+		GL_MBind		(GL_TEXTURE0, image->texnum);
+		GL_MBind		(GL_TEXTURE1, normalMap->texnum);
+		GL_MBindCube	(GL_TEXTURE2, r_lightCubeMap[currentShadowLight->filter]->texnum);
 
 		if (r_imageAutoBump->value && normalMap == r_defBump) {
 			qglUniform1i(lightWorld_autoBump, 1);

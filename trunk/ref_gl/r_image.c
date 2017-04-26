@@ -127,8 +127,8 @@ void R_CaptureColorBuffer()
 		
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-	GL_MBindRect(GL_TEXTURE0_ARB, ScreenMap->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 void R_CaptureDepthBuffer()
@@ -136,8 +136,8 @@ void R_CaptureDepthBuffer()
 		
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-	GL_MBindRect(GL_TEXTURE0_ARB, depthMap->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, vid.width, vid.height);
+	GL_MBindRect(GL_TEXTURE0, depthMap->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 /*
@@ -682,41 +682,22 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 	upload_width = scaled_width;
 	upload_height = scaled_height;
 	
-	if (gl_state.texture_compression_bptc){
+	if (samples == 3){
 
-		if (samples == 3){
-
-			if (gl_state.texture_compression_bptc && mipmap)
-				comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
-			else
-				comp = gl_tex_solid_format;
-		}
-
-		if (samples == 4){
-
-			if (gl_state.texture_compression_bptc && mipmap)
-				comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
-			else
-				comp = gl_tex_alpha_format;
-		}
+		if (gl_state.texture_compression_bptc && mipmap)
+			comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+		else
+			comp = gl_tex_solid_format;
 	}
-	else {
-		if (samples == 3) {
 
-			if (gl_state.texture_compression_dxt && mipmap)
-				comp = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			else
-				comp = gl_tex_solid_format;
-		}
+	if (samples == 4){
 
-		if (samples == 4) {
-
-			if (gl_state.texture_compression_dxt && mipmap)
-				comp = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			else
-				comp = gl_tex_alpha_format;
-		}
+		if (gl_state.texture_compression_bptc && mipmap)
+			comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+		else
+			comp = gl_tex_alpha_format;
 	}
+	
 
 	if (scaled_width == width && scaled_height == height)
 	{
@@ -1463,5 +1444,5 @@ void GL_ShutdownImages(void) {
 	if (fxaatex)
 		qglDeleteTextures (1, &fxaatex);
 	if(fovCorrTex)
-		qglDeleteTextures(1, &fxaatex);
+		qglDeleteTextures(1, &fovCorrTex);
 }

@@ -130,13 +130,13 @@ void CreateDepthTexture (void) {
 
 	// create depth texture
 
-	qglBindTexture (GL_TEXTURE_RECTANGLE_ARB, depthMap->texnum);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // rectangle!
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // rectangle!
+	qglBindTexture (GL_TEXTURE_RECTANGLE, depthMap->texnum);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // rectangle!
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // rectangle!
 
-	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_DEPTH_COMPONENT24, vid.width, vid.height, 0,
+	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_DEPTH_COMPONENT24, vid.width, vid.height, 0,
 		GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 
 }
@@ -175,13 +175,13 @@ void CreateScreenRect (void) {
 
 	// create screen texture
 
-	qglBindTexture		(GL_TEXTURE_RECTANGLE_ARB, ScreenMap->texnum);
-	qglTexParameteri	(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri	(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri	(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri	(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglBindTexture		(GL_TEXTURE_RECTANGLE, ScreenMap->texnum);
+	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	qglTexImage2D		(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, vid.width, vid.height, 0,
+	qglTexImage2D		(GL_TEXTURE_RECTANGLE, 0, GL_RGB, vid.width, vid.height, 0,
 						GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 }
@@ -266,13 +266,13 @@ void CreateFboBuffer (void) {
 
 	// attach screen texture
 
-	qglBindTexture (GL_TEXTURE_RECTANGLE_ARB, fboScreen->texnum);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglBindTexture (GL_TEXTURE_RECTANGLE, fboScreen->texnum);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RG, vid.width, vid.height, 0,
+	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RG, vid.width, vid.height, 0,
 		GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	qglGenRenderbuffers (1, &rb);
@@ -284,7 +284,7 @@ void CreateFboBuffer (void) {
 	qglBindFramebuffer (GL_FRAMEBUFFER, fboDps);
 	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb);
 	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rb);
-	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboScreen->texnum, 0);
+	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, fboScreen->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus (GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (statusOK)
@@ -323,12 +323,12 @@ void CreateMiniDepth(void) {
 
 	fboDN = image;
 
-	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, fboDN->texnum);
-	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_R16F, vid.width / 2, vid.height / 2, 0, GL_RED, GL_FLOAT, NULL);
+	qglBindTexture(GL_TEXTURE_RECTANGLE, fboDN->texnum);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_R16F, vid.width / 2, vid.height / 2, 0, GL_RED, GL_FLOAT, NULL);
 }
 
 void CreateSsaoColorTextures(void) {
@@ -360,12 +360,12 @@ void CreateSsaoColorTextures(void) {
 
 		fboColor[j] = image;
 
-		qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, fboColor[j]->texnum);
-		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		qglBindTexture(GL_TEXTURE_RECTANGLE, fboColor[j]->texnum);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	}
 }
 
@@ -380,9 +380,9 @@ void CreateSSAOBuffer(void) {
 
 	qglGenFramebuffers(1, &fboId);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE_ARB, fboColor[0]->texnum, 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE_ARB, fboColor[1]->texnum, 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE_ARB, fboDN->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, fboColor[0]->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, fboColor[1]->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE, fboDN->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
@@ -425,13 +425,13 @@ void CreateShadowMask (void) {
 
 
 	// create shadow mask texture
-	qglBindTexture (GL_TEXTURE_RECTANGLE_ARB, shadowMask->texnum);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglBindTexture (GL_TEXTURE_RECTANGLE, shadowMask->texnum);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	qglTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
 
 typedef struct img_s {
@@ -538,12 +538,12 @@ image_t *R_LoadLightFilter (int id) {
 	image->texnum = TEXNUM_IMAGES + (image - gltextures);
 //	qglGenTextures (1, &image->texnum);
 
-	qglBindTexture (GL_TEXTURE_CUBE_MAP_ARB, image->texnum);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglBindTexture (GL_TEXTURE_CUBE_MAP, image->texnum);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	minw = minh = 0;
 	maxw = maxh = 9999999;
@@ -580,11 +580,11 @@ image_t *R_LoadLightFilter (int id) {
 			allNull = qfalse;
 			R_FlipImage (i, &pix[i], (byte*)trans);
 			free (pix[i].pixels);
-			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + i, 0, GL_RGBA, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, /*pix[i].pixels*/ trans);
+			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, /*pix[i].pixels*/ trans);
 		}
 		else {
 			nullpixels = (byte*)calloc (minw*minh * 4, 1);
-			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + i, 0, GL_RGBA, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
+			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
 			free (nullpixels);
 		}
 
@@ -1036,7 +1036,6 @@ void GL_SetDefaultState (void) {
 		gl_state.depthBoundsMax = 1.f;
 	}
 
-	qglHint (GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 	qglHint	(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
 
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);

@@ -149,7 +149,7 @@ void R_RenderDecals(void)
           }
 
 		texture = tex;
-        GL_MBind(GL_TEXTURE0_ARB, texture);
+        GL_MBind(GL_TEXTURE0, texture);
         GL_BlendFunc(dl->sFactor, dl->dFactor);
 
 		if (dl->flags == DF_OVERBRIGHT)

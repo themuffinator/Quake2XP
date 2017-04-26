@@ -60,10 +60,10 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 
 	ambient = min(r_lightmapScale->value, 0.33f);
 
-	GL_MBind (GL_TEXTURE0_ARB, fa->texInfo->image->texnum);
-	GL_MBind (GL_TEXTURE1_ARB, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->texnum);
-	GL_MBindRect (GL_TEXTURE2_ARB, ScreenMap->texnum);
-	GL_MBindRect (GL_TEXTURE3_ARB, depthMap->texnum);
+	GL_MBind (GL_TEXTURE0, fa->texInfo->image->texnum);
+	GL_MBind (GL_TEXTURE1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->texnum);
+	GL_MBindRect (GL_TEXTURE2, ScreenMap->texnum);
+	GL_MBindRect (GL_TEXTURE3, depthMap->texnum);
 
 	qglUniform1f (water_deformMul, 1.0);
 	qglUniform1f (water_thickness, 150.0);
@@ -492,7 +492,7 @@ void R_DrawSkyBox (qboolean color) {
 			continue;
 
 		if (color)
-			GL_MBind (GL_TEXTURE0_ARB, sky_images[skytexorder[i]]->texnum);
+			GL_MBind (GL_TEXTURE0, sky_images[skytexorder[i]]->texnum);
 
 		numVerts = idx = 0;
 
@@ -556,21 +556,21 @@ void R_GenSkyCubeMap (char *name) {
 	strncpy (skyname, name, sizeof(skyname)-1);
 
 	qglGenTextures (1, &skyCube);
-	qglBindTexture (GL_TEXTURE_CUBE_MAP_ARB, skyCube);
+	qglBindTexture (GL_TEXTURE_CUBE_MAP, skyCube);
 
 	for (i = 0; i < 6; i++) {
 		Com_sprintf (pathname, sizeof(pathname), "env/%s%s.tga", skyname, suf[i]);
 
 		IL_LoadImage (pathname, &pic, &w, &h, IL_TGA);
 		if (pic) {
-			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + i, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic);
+			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic);
 			free (pic);
 		}
 	}
 
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }

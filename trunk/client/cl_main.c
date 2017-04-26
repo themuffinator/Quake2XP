@@ -1517,7 +1517,7 @@ void CL_InitLocal (void) {
 	// register our variables
 	//
 
-	cl_add_blend = Cvar_Get ("cl_blend", "1", 0);
+	cl_add_blend = Cvar_Get ("cl_blend", "1", CVAR_ARCHIVE);
 	cl_add_lights = Cvar_Get ("cl_lights", "1", 0);
 	cl_add_particles = Cvar_Get ("cl_particles", "1", 0);
 	cl_add_entities = Cvar_Get ("cl_entities", "1", 0);

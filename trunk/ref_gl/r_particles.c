@@ -78,7 +78,7 @@ void R_DrawParticles (void) {
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, ParticleTextCoord);
 	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, ParticleColor);
 
-	GL_MBindRect (GL_TEXTURE1_ARB, depthMap->texnum);
+	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
 
 	qglUniform2f (particle_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(particle_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -190,7 +190,7 @@ void R_DrawParticles (void) {
 			partVert = 0;
 			index = 0;
 
-			GL_MBind (GL_TEXTURE0_ARB, texId);
+			GL_MBind (GL_TEXTURE0, texId);
 			GL_BlendFunc (p->sFactor, p->dFactor);
 
 			if (p->sFactor == GL_ONE && p->dFactor == GL_ONE)

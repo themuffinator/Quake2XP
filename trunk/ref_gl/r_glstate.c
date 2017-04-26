@@ -24,12 +24,12 @@ void GL_SelectTexture(GLenum texture)
 {
 	int tmu;
 
-	tmu = texture - GL_TEXTURE0_ARB;
+	tmu = texture - GL_TEXTURE0;
 
 	if (tmu == gl_state.currenttmu)
 		return;
 	
-	qglActiveTextureARB(texture);
+	qglActiveTexture(texture);
 	gl_state.currenttmu = tmu;
 }
 
@@ -56,7 +56,7 @@ void GL_BindCube(int texnum)
 	if (gl_state.currenttextures[gl_state.currenttmu] == texnum)
 		return;
 	
-	qglBindTexture(GL_TEXTURE_CUBE_MAP_ARB, texnum);
+	qglBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
 	gl_state.currenttextures[gl_state.currenttmu] = texnum;
 }
 
@@ -65,13 +65,13 @@ void GL_BindRect(int texnum)
 	if (gl_state.currenttextures[gl_state.currenttmu] == texnum)
 		return;
 
-	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, texnum);
+	qglBindTexture(GL_TEXTURE_RECTANGLE, texnum);
 	gl_state.currenttextures[gl_state.currenttmu] = texnum;
 }
 
 void GL_MBind(GLenum target, int texnum)
 {
-	int targ = target - GL_TEXTURE0_ARB;
+	int targ = target - GL_TEXTURE0;
 	GL_SelectTexture(target);
 
 	if (gl_state.currenttextures[targ] == texnum)
@@ -82,7 +82,7 @@ void GL_MBind(GLenum target, int texnum)
 
 void GL_MBindCube(GLenum target, int texnum)
 {
-	int targ = target - GL_TEXTURE0_ARB;
+	int targ = target - GL_TEXTURE0;
 	GL_SelectTexture(target);
 
 	if (gl_state.currenttextures[targ] == texnum)
@@ -92,7 +92,7 @@ void GL_MBindCube(GLenum target, int texnum)
 
 void GL_MBindRect(GLenum target, int texnum)
 {
-	int targ = target - GL_TEXTURE0_ARB;
+	int targ = target - GL_TEXTURE0;
 	GL_SelectTexture(target);
 
 	if (gl_state.currenttextures[targ] == texnum)
@@ -103,7 +103,7 @@ void GL_MBindRect(GLenum target, int texnum)
 
 void GL_MBind3d(GLenum target, int texnum)
 {
-	int targ = target - GL_TEXTURE0_ARB;
+	int targ = target - GL_TEXTURE0;
 	GL_SelectTexture(target);
 
 	if (gl_state.currenttextures[targ] == texnum)

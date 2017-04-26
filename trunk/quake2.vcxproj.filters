@@ -407,6 +407,9 @@
     <ClInclude Include="win32\afxres.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ref_gl\glcorearb.h">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="win32\icon1.ico">

@@ -47,7 +47,7 @@ void R_LoadFont(void)
 	if(!draw_chars)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
-	GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
+	GL_MBind(GL_TEXTURE0, draw_chars->texnum);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
@@ -55,7 +55,7 @@ void R_LoadFont(void)
 void Set_FontShader(qboolean enable){
 
 	if (enable){
-		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 		qglEnableVertexAttribArray(ATT_POSITION);
 		qglEnableVertexAttribArray(ATT_TEX0);
 		qglEnableVertexAttribArray(ATT_COLOR);
@@ -78,7 +78,7 @@ void Set_FontShader(qboolean enable){
 		qglDisableVertexAttribArray(ATT_POSITION);
 		qglDisableVertexAttribArray(ATT_TEX0);
 		qglDisableVertexAttribArray(ATT_COLOR);
-		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 }
@@ -103,7 +103,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	fcol = col * 0.0625;
 	size = 0.0625;
 
-	GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
+	GL_MBind(GL_TEXTURE0, draw_chars->texnum);
 
 	VA_SetElem2(texCoord[0], fcol, frow);
 	VA_SetElem2(texCoord[1], fcol + size, frow);
@@ -133,7 +133,7 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 
 	if (gl_state.currenttextures[gl_state.currenttmu] !=
 		draw_chars->texnum) {
-		GL_MBind(GL_TEXTURE0_ARB, draw_chars->texnum);
+		GL_MBind(GL_TEXTURE0, draw_chars->texnum);
 	}
 
 	px = x;
@@ -255,7 +255,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	else
 		console = qfalse;
 
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
@@ -300,13 +300,13 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	if (scrap_dirty)
 		Scrap_Upload();
 
-		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
+		GL_MBind(GL_TEXTURE0, gl->texnum);
 		VA_SetElem2(texCoord[0], gl->sl, gl->tl);
 		VA_SetElem2(texCoord[1], gl->sh, gl->tl);
 		VA_SetElem2(texCoord[2], gl->sh, gl->th);
 		VA_SetElem2(texCoord[3], gl->sl, gl->th);
 
-		GL_MBind(GL_TEXTURE1_ARB, r_scanline->texnum);
+		GL_MBind(GL_TEXTURE1, r_scanline->texnum);
 		VA_SetElem2(texCoord1[0], gl->sl, gl->tl - scroll);
 		VA_SetElem2(texCoord1[1], gl->sh, gl->tl - scroll);
 		VA_SetElem2(texCoord1[2], gl->sh, gl->th - scroll);
@@ -315,8 +315,8 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 		GL_BindNullProgram();
-		GL_SelectTexture(GL_TEXTURE0_ARB);
-		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+		GL_SelectTexture(GL_TEXTURE0);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		qglDisableVertexAttribArray(ATT_POSITION);
 		qglDisableVertexAttribArray(ATT_TEX0);
@@ -372,14 +372,14 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		qglUniformMatrix4fv(ls_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 		qglUniform1f(ls_fade, loadScreenColorFade);
 
-		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
 		qglEnableVertexAttribArray(ATT_POSITION);
 		qglEnableVertexAttribArray(ATT_TEX0);
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 
-		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
+		GL_MBind(GL_TEXTURE0, gl->texnum);
 
 		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
 		VA_SetElem2(texCoord[1], gl->sh - offsX, gl->tl + offsY);
@@ -394,7 +394,7 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 		GL_BindNullProgram();
-		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		qglDisableVertexAttribArray(ATT_POSITION);
 		qglDisableVertexAttribArray(ATT_TEX0);
 }
@@ -432,7 +432,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	if (!gl->has_alpha)
 		GL_Disable(GL_BLEND);
 
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_COLOR);
@@ -452,7 +452,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	if (scrap_dirty)
 		Scrap_Upload();
 
-		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
+		GL_MBind(GL_TEXTURE0, gl->texnum);
 				
 		VA_SetElem2(texCoord[0],gl->sl, gl->tl);
 		VA_SetElem2(texCoord[1],gl->sh, gl->tl);
@@ -476,7 +476,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 		GL_Enable(GL_BLEND);
 
 	GL_BindNullProgram();
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_COLOR);
@@ -505,7 +505,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 		h = gl->height * sY;
 	}
 
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_COLOR);
@@ -526,7 +526,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	if (scrap_dirty)
 		Scrap_Upload();
 
-		GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
+		GL_MBind(GL_TEXTURE0, gl->texnum);
 				
 		VA_SetElem2(texCoord[0],gl->sl, gl->tl);
 		VA_SetElem2(texCoord[1],gl->sh, gl->tl);
@@ -553,7 +553,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	GL_BindNullProgram();
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_COLOR);
@@ -569,7 +569,7 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE); // use addative alpha blending
 
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 
@@ -585,8 +585,8 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 	if (scrap_dirty)
 		Scrap_Upload();
 
-	GL_MBind(GL_TEXTURE0_ARB, gl->texnum);
-	GL_MBind(GL_TEXTURE1_ARB, gl2->texnum);
+	GL_MBind(GL_TEXTURE0, gl->texnum);
+	GL_MBind(GL_TEXTURE1, gl2->texnum);
 
 	VA_SetElem2(texCoord[0], gl->sl, gl->tl);
 	VA_SetElem2(texCoord[1], gl->sh, gl->tl);
@@ -604,7 +604,7 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	GL_BindNullProgram();
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 }
@@ -672,7 +672,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 		return;
 	}
 
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_COLOR);
@@ -689,7 +689,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
 	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	
-	GL_MBind(GL_TEXTURE0_ARB, image->texnum);
+	GL_MBind(GL_TEXTURE0, image->texnum);
 
 	VA_SetElem2(texCoord[0], x / 64.0, y / 64.0);
 	VA_SetElem2(texCoord[1], (x + w) / 64.0, y / 64.0);
@@ -709,7 +709,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	GL_BindNullProgram();
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_COLOR);
@@ -740,7 +740,7 @@ Fills a box of pixels with a single color
 void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 {
 
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
 	
@@ -761,7 +761,7 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	
 	GL_BindNullProgram();
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 }
 
@@ -827,7 +827,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	x1 = sw+w;
 	y1 = sh+h;
 
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 
@@ -847,7 +847,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	
 	GL_BindNullProgram();
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 }

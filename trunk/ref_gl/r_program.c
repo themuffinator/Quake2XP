@@ -18,18 +18,12 @@ static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
 int r_numPrograms;
 static glslProgram_t	r_nullProgram;
 
-static const char *shader4 =
-"#extension GL_EXT_gpu_shader4 : enable\n";
-
 static const char *shader5 =
 "#extension GL_ARB_gpu_shader5 : enable\n";
 
 static const char *glslExt =
-"#version 150\n"
-"#extension GL_ARB_texture_rectangle			: enable\n"
-"#extension GL_ARB_explicit_attrib_location		: enable\n" // layout attibs
-"#extension GL_ARB_shading_language_420pack		: enable\n" // layout binding
-"out vec4 fragData;\n";										// out fragColor
+"#version 450 core\n"
+"out vec4 fragData;\n";	// out fragColor
 
 static const char *mathDefs =
 "#define	CUTOFF_EPSILON	1.0 / 255.0\n"
@@ -408,8 +402,6 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, cons
 		// add ext
 		if (gl_state.shader5)
 			strings[numStrings++] = shader5;
-		else
-			strings[numStrings++] = shader4;
 
 		// compile fragment shader
 		if (fragmentSource) {
@@ -1134,7 +1126,7 @@ void R_GLSLinfo_f(void) {
 	GLint j;
 	const char *ver;
 
-	ver = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION_ARB);
+	ver = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION);
 	Com_Printf("GLSL Version: "S_COLOR_GREEN"%s\n", ver);
 
 	qglGetIntegerv(GL_NUM_SHADING_LANGUAGE_VERSIONS, &j);

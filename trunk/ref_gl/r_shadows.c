@@ -188,8 +188,8 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 		numVerts += 3;
 	}
 
-	qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, numVerts * sizeof(vec4_t), vcache4);
-	qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(uint), icache);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec4_t), vcache4);
+	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(uint), icache);
 
 	qglDrawElements (GL_TRIANGLES, id, GL_UNSIGNED_INT, NULL);
 
@@ -334,8 +334,8 @@ void R_CastAliasShadowVolumes (qboolean player) {
 
 	GL_StencilMask (255);
 	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	GL_StencilOpSeparate (GL_BACK, GL_KEEP, GL_INCR_WRAP_EXT, GL_KEEP);
-	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+	GL_StencilOpSeparate (GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 	GL_Disable (GL_CULL_FACE);
 	GL_DepthFunc (GL_LESS);
@@ -343,8 +343,8 @@ void R_CastAliasShadowVolumes (qboolean player) {
 	GL_PolygonOffset (0.1, 1);
 	GL_ColorMask (0, 0, 0, 0);
 
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_Dynamic);
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
@@ -383,8 +383,8 @@ void R_CastAliasShadowVolumes (qboolean player) {
 	}
 	qglDisableVertexAttribArray (ATT_POSITION);
 	
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	GL_Disable (GL_POLYGON_OFFSET_FILL);
 	GL_PolygonOffset (0, 0);
@@ -584,8 +584,8 @@ void R_DrawBrushModelVolumes () {
 	}
 
 	if (ib) {
-		qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, surfBase * sizeof(vec3_t), vcache);
-		qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, surfBase * sizeof(vec3_t), vcache);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
 
 		qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
 	}
@@ -735,27 +735,27 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 	if (precalc) {
 
 		if (currentShadowLight->vboId)
-			qglDeleteBuffersARB(1, &currentShadowLight->vboId);
+			qglDeleteBuffers(1, &currentShadowLight->vboId);
 
-		qglGenBuffersARB(1, &currentShadowLight->vboId);
-		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
-		qglBufferDataARB(GL_ARRAY_BUFFER_ARB, surfBase * sizeof(vec3_t), vcache, GL_STATIC_DRAW_ARB);
-		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+		qglGenBuffers(1, &currentShadowLight->vboId);
+		qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboId);
+		qglBufferData(GL_ARRAY_BUFFER, surfBase * sizeof(vec3_t), vcache, GL_STATIC_DRAW);
+		qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		if (currentShadowLight->iboId)
-			qglDeleteBuffersARB(1, &currentShadowLight->iboId);
+			qglDeleteBuffers(1, &currentShadowLight->iboId);
 
-		qglGenBuffersARB(1, &currentShadowLight->iboId);
-		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
-		qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, ib * sizeof(uint), icache, GL_STATIC_DRAW_ARB);
+		qglGenBuffers(1, &currentShadowLight->iboId);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
+		qglBufferData(GL_ELEMENT_ARRAY_BUFFER, ib * sizeof(uint), icache, GL_STATIC_DRAW);
 		currentShadowLight->iboNumIndices = ib;
-		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		numPreCachedLights++;
 	}
 	else {
 		if (ib) {
-			qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, surfBase * sizeof(vec3_t), vcache);
-			qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
+			qglBufferSubData(GL_ARRAY_BUFFER, 0, surfBase * sizeof(vec3_t), vcache);
+			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
 			
 			qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
 		}
@@ -780,8 +780,8 @@ void R_CastBspShadowVolumes (void) {
 
 	GL_StencilMask (255);
 	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	GL_StencilOpSeparate (GL_BACK, GL_KEEP, GL_INCR_WRAP_EXT, GL_KEEP);
-	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP_EXT, GL_KEEP);
+	GL_StencilOpSeparate (GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 	GL_Disable (GL_CULL_FACE);
 	GL_DepthFunc (GL_LESS);
@@ -792,15 +792,15 @@ void R_CastBspShadowVolumes (void) {
 
 	if (currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic) { // draw vbo shadow
 
-		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, currentShadowLight->vboId);
-		qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
+		qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboId);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
 		
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 		qglDrawElements	(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_INT, NULL);
 	}
 
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo.vbo_Dynamic);
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
 	
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 
@@ -820,8 +820,8 @@ void R_CastBspShadowVolumes (void) {
 	}
 
 	qglDisableVertexAttribArray (ATT_POSITION);
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_Disable (GL_POLYGON_OFFSET_FILL);
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);
