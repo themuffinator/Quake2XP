@@ -28,6 +28,7 @@ extern	unsigned	sys_msg_time;
 cvar_t	*m_inversion;
 cvar_t	*v_centermove;
 cvar_t	*v_centerspeed;
+cvar_t	*in_useJoystic;
 
 qboolean	in_appactive;
 
@@ -346,6 +347,7 @@ void IN_Init (void) {
 	joy_pitchsensitivity = Cvar_Get("joy_pitchsensitivity", "1", 0);
 	joy_yawsensitivity = Cvar_Get("joy_yawsensitivity", "-1", 0);
 
+	in_useJoystic = Cvar_Get("in_useJoystic", "0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
@@ -729,7 +731,7 @@ void IN_JoyMove(usercmd_t *cmd)
 	}
 
 	// verify joystick is available and that the user wants to use it
-	if (!joy_avail)
+	if (!joy_avail || !in_useJoystic->value)
 	{
 		return;
 	}
