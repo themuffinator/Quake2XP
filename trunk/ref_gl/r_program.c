@@ -18,9 +18,6 @@ static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
 int r_numPrograms;
 static glslProgram_t	r_nullProgram;
 
-static const char *shader5 =
-"#extension GL_ARB_gpu_shader5 : enable\n";
-
 static const char *glslExt =
 "#version 450 core\n"
 "out vec4 fragData;\n";	// out fragColor
@@ -399,9 +396,6 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, cons
 			}
 		}
 
-		// add ext
-		if (gl_state.shader5)
-			strings[numStrings++] = shader5;
 
 		// compile fragment shader
 		if (fragmentSource) {

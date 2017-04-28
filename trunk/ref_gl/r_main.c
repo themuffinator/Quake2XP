@@ -1799,15 +1799,6 @@ int R_Init(void *hinstance, void *hWnd)
 	else
 		VID_Error(ERR_FATAL, "GL_ARB_vertex_shader not found!");
 
-
-	gl_state.shader5 = qfalse;
-	if (IsExtensionSupported("GL_ARB_gpu_shader5")) {
-		Com_Printf("...using GL_ARB_gpu_shader5\n");
-		gl_state.shader5 = qtrue;
-	}
-	else
-		Com_Printf(S_COLOR_RED"...GL_ARB_gpu_shader5 not found\n");
-
 	gl_state.bindlessTexture = qfalse;
 /*	if (IsExtensionSupported("GL_ARB_bindless_texture")) {
 				
