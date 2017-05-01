@@ -291,6 +291,9 @@
     <ClCompile Include="win32\win_wndproc.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="win32\win_xbox360.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\cl_console.h">

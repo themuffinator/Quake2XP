@@ -31,3 +31,21 @@ void IN_MouseEvent(int mstate);
 
 extern int		window_center_x, window_center_y;
 extern RECT		window_rect;
+
+cvar_t *xi_axisLx;
+cvar_t *xi_axisLy;
+
+cvar_t *xi_axisRx;
+cvar_t *xi_axisRy;
+
+cvar_t *xi_axisLt;
+cvar_t *xi_axisRt;
+
+cvar_t *xi_dpadArrowMap;
+cvar_t *xi_useController;
+
+extern qboolean xiActive;
+
+void	IN_StartupXInput(void);
+void	IN_ToggleXInput(cvar_t *var);
+void	IN_ControllerMove(usercmd_t *cmd);
