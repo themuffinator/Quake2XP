@@ -488,6 +488,7 @@ void CL_FinishMove(usercmd_t * cmd) {
 CL_CreateCmd
 =================
 */
+
 usercmd_t CL_CreateCmd (void) {
 	usercmd_t cmd;
 

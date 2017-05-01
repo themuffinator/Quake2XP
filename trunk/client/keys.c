@@ -129,7 +129,6 @@ keyname_t keynames[] = {
 	{ "AUX31", K_AUX31 },
 	{ "AUX32", K_AUX32 },
 
-
 	{ "KP_HOME", K_KP_HOME },
 	{ "KP_UPARROW", K_KP_UPARROW },
 	{ "KP_PGUP", K_KP_PGUP },
@@ -150,6 +149,11 @@ keyname_t keynames[] = {
 	{ "MWHEELDOWN", K_MWHEELDOWN },
 
 	{ "PAUSE", K_PAUSE },
+	
+	{ "POV1", K_POV1 },
+	{ "POV2", K_POV2 },
+	{ "POV3", K_POV3 },
+	{ "POV4", K_POV4 },
 
 	{ "SEMICOLON", ';' },			// because a raw semicolon seperates
 	// commands

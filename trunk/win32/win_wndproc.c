@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/snd_loc.h"			//for experimental OpenAL suspend feature.
 //#include "zmouse.h"
 
+#include "xinput.h"
 
 cvar_t *win_noalttab;
 

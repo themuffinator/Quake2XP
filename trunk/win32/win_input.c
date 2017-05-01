@@ -96,6 +96,42 @@ void IN_StartupJoystick(void);
 void Joy_AdvancedUpdate_f(void);
 void IN_JoyMove(usercmd_t *cmd);
 
+
+// ======== xbox360 controller============
+#include "xinput.h"
+
+int xiActiveController = -1;
+qboolean xiActive = qfalse;
+int xi_oldDpadState = 0;
+int xi_oldButtonState = 0;
+void IN_StartupXInput(void);
+void IN_ToggleXInput(cvar_t *var);
+void IN_ControllerMove(usercmd_t *cmd);
+
+cvar_t *xi_axisLx;
+cvar_t *xi_axisLy;
+
+cvar_t *xi_axisRx;
+cvar_t *xi_axisRy;
+
+cvar_t *xi_axisLt;
+cvar_t *xi_axisRt;
+
+cvar_t *xi_dpadArrowMap;
+cvar_t *xi_useController;
+
+// set cvars to these values to decode the action for a given axis
+// if these are changed the menu strings in menu_other.cpp should also be changed!!!
+#define XI_AXIS_NONE		0
+#define XI_AXIS_LOOK		1
+#define XI_AXIS_MOVE		2
+#define XI_AXIS_TURN		3
+#define XI_AXIS_STRAFE		4
+#define XI_AXIS_INVLOOK		5
+#define XI_AXIS_INVMOVE		6
+#define XI_AXIS_INVTURN		7
+#define XI_AXIS_INVSTRAFE	8
+
 /*
 ============================================================
 
@@ -349,13 +385,22 @@ void IN_Init (void) {
 
 	in_useJoystic = Cvar_Get("in_useJoystic", "0", CVAR_ARCHIVE);
 
+	xi_axisLx = Cvar_Get("xi_axisLx", "3", CVAR_ARCHIVE);
+	xi_axisLy = Cvar_Get("xi_axisLy", "2", CVAR_ARCHIVE);
+	xi_axisRx = Cvar_Get("xi_axisRx", "3", CVAR_ARCHIVE);
+	xi_axisRy = Cvar_Get("xi_axisRy", "1", CVAR_ARCHIVE);
+	xi_axisLt = Cvar_Get("xi_axisLt", "8", CVAR_ARCHIVE);
+	xi_axisRt = Cvar_Get("xi_axisRt", "4", CVAR_ARCHIVE);
+	xi_dpadArrowMap = Cvar_Get("xi_dpadArrowMap", "1", CVAR_ARCHIVE);
+	xi_useController = Cvar_Get("xi_useController", "1", CVAR_ARCHIVE);
+
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
 	Cmd_AddCommand ("joy_advancedupdate", Joy_AdvancedUpdate_f);
 
 	FindRawDevices();
+	IN_StartupXInput();
 	IN_StartupJoystick();
-
 }
 
 /*
@@ -418,10 +463,13 @@ IN_Move
 */
 void IN_Move (usercmd_t *cmd) {
 	
+	if (xi_useController->modified) {
+		xi_useController->modified = qfalse;
+		IN_ToggleXInput(xi_useController);
+	}
+
 	if (ActiveApp)
 		IN_JoyMove(cmd);
-
-
 }
 
 
@@ -722,6 +770,11 @@ void IN_JoyMove(usercmd_t *cmd)
 	float	fAxisValue;
 	int		i;
 
+	if (xiActive) {
+		IN_ControllerMove(cmd);
+		return;
+	}
+
 	// complete initialization if first time in
 	// this is needed as cvars are not available at initialization time
 	if (joy_advancedinit != qtrue)
@@ -855,4 +908,240 @@ void IN_JoyMove(usercmd_t *cmd)
 	}
 }
 
+void IN_StartupXInput(void)
+{
+	XINPUT_CAPABILITIES xiCaps;
+
+	// reset to -1 each time as this can be called at runtime
+	xiActiveController = -1;
+	
+	Com_Printf("\n======= Init xInput Devices =======\n\n");
+
+	if (xiActive)
+	{
+		XInputEnable(FALSE);
+		xiActive = qfalse;
+	}
+
+	// only support up to 4 controllers (in a PC scenario usually just one will be attached)
+	for (int c = 0; c < 4; c++)
+	{
+		memset(&xiCaps, 0, sizeof(XINPUT_CAPABILITIES));
+		DWORD gc = XInputGetCapabilities(c, XINPUT_FLAG_GAMEPAD, &xiCaps);
+
+		if (gc == ERROR_SUCCESS)
+		{
+			// just use the first one
+			Com_Printf("Using xInput Device on Port %i\n", c);
+
+			// store to global active controller
+			xiActiveController = c;
+			break;
+		}
+	}
+
+	Com_Printf(S_COLOR_YELLOW "...No xInput Devices Found\n");
+	Com_Printf("\n-----------------------------------\n\n");
+	XInputEnable(FALSE);
+	xiActive = qfalse;
+}
+
+void IN_ToggleXInput(cvar_t *var)
+{
+	if (var->value && !xiActive)
+	{
+		IN_StartupXInput();
+
+		if (xiActiveController != -1)
+		{
+			XInputEnable(TRUE);
+			xiActive = qtrue;
+		}
+
+		xi_oldDpadState = xi_oldButtonState = 0;
+	}
+	else if (!var->value && xiActive)
+	{
+		XInputEnable(FALSE);
+		xiActive = qfalse;
+		xi_oldDpadState = xi_oldButtonState = 0;
+	}
+}
+
+
+extern cvar_t *cl_forwardspeed;
+extern cvar_t *cl_sidespeed;
+
+extern cvar_t *cl_yawspeed;
+extern cvar_t *cl_pitchspeed;
+
+
+void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cvar_t *axisaction)
+{
+	// not using this axis
+	if ((int)axisaction->value <= XI_AXIS_NONE) return;
+
+	// unimplemented
+	if ((int)axisaction->value > XI_AXIS_INVSTRAFE) return;
+
+	// get the amount moved less the deadzone
+	int realmove = abs(axisval) - dz;
+
+	// move is within deadzone threshold
+	if (realmove < dz) return;
+
+	// 0 to 1 scale
+	float fmove = (float)realmove / (axismax - dz);
+
+	// square it to get better scale at small moves
+	fmove *= fmove;
+
+	// go back to negative
+	if (axisval < 0) fmove *= -1;
+
+	// check for inverse scale
+	if ((int)axisaction->value > XI_AXIS_STRAFE) fmove *= -1;
+
+	// decode the move
+	switch ((int)axisaction->value)
+	{
+	case XI_AXIS_LOOK:
+	case XI_AXIS_INVLOOK:
+		// inverted by default (positive = look down)
+		cl.viewangles[0] += fmove * cl_pitchspeed->value / 20.0f;
+		break;
+
+	case XI_AXIS_MOVE:
+	case XI_AXIS_INVMOVE:
+		cmd->forwardmove += fmove * cl_forwardspeed->value;
+		break;
+
+	case XI_AXIS_TURN:
+	case XI_AXIS_INVTURN:
+		// slow this down because the default cl_yawspeed is too fast here
+		// invert it so that positive move = right
+		cl.viewangles[1] += fmove * cl_yawspeed->value / 20.0f * -1;
+		break;
+
+	case XI_AXIS_STRAFE:
+	case XI_AXIS_INVSTRAFE:
+		cmd->sidemove += fmove * cl_sidespeed->value;
+		break;
+
+	default:
+		// unimplemented
+		break;
+	}
+}
+
+void IN_ControllerMove(usercmd_t *cmd)
+{
+	// no controller to use
+	if (!xiActive) 
+		return;
+	
+	if (xiActiveController < 0) 
+		return;
+	
+	if (!xi_useController->value) 
+		return;
+
+	XINPUT_STATE xiState;
+	static DWORD xiLastPacket = 666;
+
+	// get current state
+	DWORD xiResult = XInputGetState(xiActiveController, &xiState);
+
+	if (xiResult != ERROR_SUCCESS)
+	{
+		// something went wrong - we'll handle that properly later...
+		return;
+	}
+
+	// check the axes (always, even if state doesn't change)
+	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 32768,	 xi_axisLx);
+	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 32768,  xi_axisLy);
+	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, 32768, xi_axisRx);
+	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, 32768, xi_axisRy);
+	IN_ControllerAxisMove(cmd, xiState.Gamepad.bLeftTrigger, 0, 255,  xi_axisLt);
+	IN_ControllerAxisMove(cmd, xiState.Gamepad.bRightTrigger, 0, 255, xi_axisRt);
+
+	// fix up the command (bound/etc)
+	if (cl.viewangles[0] > 80.0) cl.viewangles[0] = 80.0;
+	if (cl.viewangles[0] < -70.0) cl.viewangles[0] = -70.0;
+
+	// check for a change of state
+	if (xiLastPacket == xiState.dwPacketNumber) return;
+
+	// store back last packet
+	xiLastPacket = xiState.dwPacketNumber;
+
+	int buttonState = 0;
+	int dpadState = 0;
+
+	if ((int)xi_dpadArrowMap->value)
+	{
+		// check dpad (same order as arrow keys)
+		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)		dpadState |= 1;
+		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)	dpadState |= 2;
+		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)	dpadState |= 4;
+		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)	dpadState |= 8;
+	}
+	else
+	{
+		// check dpad (same order as joystick pov hats)
+		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)		dpadState |= 1;
+		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)	dpadState |= 2;
+		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)	dpadState |= 4;
+		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)	dpadState |= 8;
+	}
+
+	// check for event changes
+	for (int i = 0; i < 4; i++)
+	{
+		if ((int)xi_dpadArrowMap->value)
+		{
+			// map dpad to arrow keys
+			if ((dpadState & (1 << i)) && !(xi_oldDpadState & (1 << i))) 
+				Key_Event(K_UPARROW + i, qtrue, sys_msg_time);
+			if (!(dpadState & (1 << i)) && (xi_oldDpadState & (1 << i))) 
+				Key_Event(K_UPARROW + i, qfalse, sys_msg_time);
+		}
+		else
+		{
+			// map dpad to POV keys
+			if ((dpadState & (1 << i)) && !(xi_oldDpadState & (1 << i))) 
+				Key_Event(K_POV1 + i, qtrue, sys_msg_time);
+			if (!(dpadState & (1 << i)) && (xi_oldDpadState & (1 << i))) 
+				Key_Event(K_POV1 + i, qfalse, sys_msg_time);
+		}
+	}
+
+	// store back
+	xi_oldDpadState = dpadState;
+
+	// check other buttons - map these to K_JOY buttons
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_START)			buttonState |= 1;
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)				buttonState |= 2;
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)		buttonState |= 4;
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)		buttonState |= 8;
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)	buttonState |= 16;
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)	buttonState |= 32;
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_A)				buttonState |= 64;
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_B)				buttonState |= 128;
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_X)				buttonState |= 256;
+	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_Y)				buttonState |= 512;
+
+	// check for event changes
+	for (int i = 0; i < 10; i++)
+	{
+		if ((buttonState & (1 << i)) && !(xi_oldButtonState & (1 << i))) 
+			Key_Event(K_JOY1 + i, qtrue, sys_msg_time);
+		if (!(buttonState & (1 << i)) && (xi_oldButtonState & (1 << i))) 
+			Key_Event(K_JOY1 + i, qfalse, sys_msg_time);
+	}
+
+	// store back
+	xi_oldButtonState = buttonState;
+}
 

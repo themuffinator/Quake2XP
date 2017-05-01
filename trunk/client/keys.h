@@ -131,6 +131,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define K_MWHEELDOWN	239
 #define K_MWHEELUP		240
 
+#define K_POV1			241
+#define K_POV2			242
+#define K_POV3			243
+#define K_POV4			244
 
 extern char *keybindings[256];
 extern int key_repeats[256];
