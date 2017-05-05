@@ -26,19 +26,6 @@
     <Filter Include="Source Files\Renderer">
       <UniqueIdentifier>{2d63330d-87a7-40bb-a1c9-b5ed33c5e5d8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{1289ec4a-c54f-468d-945e-8ed5dbe1e409}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;fi;fd</Extensions>
-    </Filter>
-    <Filter Include="Header Files\Renderer">
-      <UniqueIdentifier>{3b5d97d8-ff49-41df-8e3d-f7686c5f6ca8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Renderer\ImageLib">
-      <UniqueIdentifier>{8841ba1e-940d-4730-a76d-493813d16efd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Audio">
-      <UniqueIdentifier>{33c1f4ec-2bc8-49c5-8199-54233335f2d3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{b666b24e-06bd-42d0-987f-779fd1f8ae73}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
@@ -52,8 +39,32 @@
     <Filter Include="Source Files\Renderer\glsl\include">
       <UniqueIdentifier>{e2b72631-155f-458a-bc17-d6f1aa729fb3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Win32\nvapi">
+    <Filter Include="Source Files\Server\Headers">
+      <UniqueIdentifier>{20e997ce-3ff4-431c-a338-e051d26cda56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Client\Headers">
+      <UniqueIdentifier>{1ead695f-9215-4139-9ba9-e7335253094f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Menu\Headers">
+      <UniqueIdentifier>{499c23ba-213d-4168-8b25-1833a24a20ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\qcommon\Headers">
+      <UniqueIdentifier>{15e46a38-6952-4f3a-bba9-90c8e9565eb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Renderer\Headers">
+      <UniqueIdentifier>{3b5d97d8-ff49-41df-8e3d-f7686c5f6ca8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Renderer\Headers\ImageLib">
+      <UniqueIdentifier>{8841ba1e-940d-4730-a76d-493813d16efd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sound\Headers">
+      <UniqueIdentifier>{33c1f4ec-2bc8-49c5-8199-54233335f2d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Win32\Headers">
       <UniqueIdentifier>{4fb20f02-147b-4c40-b3d5-b11a152841e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Headers">
+      <UniqueIdentifier>{c2898b39-e2a1-4717-9c2d-4dbb20970430}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -294,124 +305,127 @@
     <ClCompile Include="win32\win_xbox360.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="win32\win_joystick.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="client\cl_console.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\conproc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="game\game.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\keys.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\m_frames.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="game\q_shared.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="qcommon\qcommon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="qcommon\qfiles.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\qmenu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\ref.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\screen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="server\server.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="qcommon\unzip.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\vid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ref_gl\glext.h">
-      <Filter>Header Files\Renderer</Filter>
+      <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="win32\glw_win.h">
-      <Filter>Header Files\Renderer</Filter>
+      <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\qgl.h">
-      <Filter>Header Files\Renderer</Filter>
+      <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\r_local.h">
-      <Filter>Header Files\Renderer</Filter>
+      <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\r_model.h">
-      <Filter>Header Files\Renderer</Filter>
+      <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\wglext.h">
-      <Filter>Header Files\Renderer</Filter>
+      <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\ImageLib\config.h">
-      <Filter>Header Files\Renderer\ImageLib</Filter>
+      <Filter>Source Files\Renderer\Headers\ImageLib</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\ImageLib\il.h">
-      <Filter>Header Files\Renderer\ImageLib</Filter>
+      <Filter>Source Files\Renderer\Headers\ImageLib</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\ImageLib\ilu.h">
-      <Filter>Header Files\Renderer\ImageLib</Filter>
+      <Filter>Source Files\Renderer\Headers\ImageLib</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\ImageLib\ilut.h">
-      <Filter>Header Files\Renderer\ImageLib</Filter>
+      <Filter>Source Files\Renderer\Headers\ImageLib</Filter>
     </ClInclude>
     <ClInclude Include="client\snd_loc.h">
-      <Filter>Header Files\Audio</Filter>
+      <Filter>Source Files\Sound\Headers</Filter>
     </ClInclude>
     <ClInclude Include="client\sound.h">
-      <Filter>Header Files\Audio</Filter>
+      <Filter>Source Files\Sound\Headers</Filter>
     </ClInclude>
     <ClInclude Include="client\music.h">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\winquake.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\Sound\Headers</Filter>
     </ClInclude>
     <ClInclude Include="win32\nvapi\nvapi.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
+      <Filter>Source Files\Win32\Headers</Filter>
     </ClInclude>
     <ClInclude Include="win32\nvapi\nvapi_lite_common.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
+      <Filter>Source Files\Win32\Headers</Filter>
     </ClInclude>
     <ClInclude Include="win32\nvapi\nvapi_lite_surround.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
+      <Filter>Source Files\Win32\Headers</Filter>
     </ClInclude>
     <ClInclude Include="win32\nvapi\nvapi_lite_salstart.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
+      <Filter>Source Files\Win32\Headers</Filter>
     </ClInclude>
     <ClInclude Include="win32\nvapi\nvapi_lite_salend.h">
-      <Filter>Source Files\Win32\nvapi</Filter>
+      <Filter>Source Files\Win32\Headers</Filter>
     </ClInclude>
     <ClInclude Include="client\cdaudio.h">
-      <Filter>Header Files\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\afxres.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\Sound\Headers</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\glcorearb.h">
-      <Filter>Header Files\Renderer</Filter>
+      <Filter>Source Files\Renderer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="game\q_shared.h">
+      <Filter>Source Files\qcommon\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="qcommon\qcommon.h">
+      <Filter>Source Files\qcommon\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="qcommon\qfiles.h">
+      <Filter>Source Files\qcommon\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="qcommon\unzip.h">
+      <Filter>Source Files\qcommon\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\keys.h">
+      <Filter>Source Files\Menu\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\qmenu.h">
+      <Filter>Source Files\Menu\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\cl_console.h">
+      <Filter>Source Files\Client\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\client.h">
+      <Filter>Source Files\Client\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\input.h">
+      <Filter>Source Files\Client\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\ref.h">
+      <Filter>Source Files\Client\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\screen.h">
+      <Filter>Source Files\Client\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\winquake.h">
+      <Filter>Source Files\Win32\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\m_frames.h">
+      <Filter>Source Files\Menu\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="game\game.h">
+      <Filter>Source Files\Server\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="server\server.h">
+      <Filter>Source Files\Server\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\vid.h">
+      <Filter>Source Files\Win32\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\afxres.h">
+      <Filter>Resource Files\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\resource.h">
+      <Filter>Resource Files\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\conproc.h">
+      <Filter>Source Files\Client\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -29,8 +29,6 @@ void SCR_CenterPrint (char *str);
 void SCR_BeginLoadingPlaque (void);
 void SCR_EndLoadingPlaque (void);
 
-void SCR_DebugGraph (float value, int color);
-
 void SCR_TouchPics (void);
 
 void SCR_RunConsole (void);

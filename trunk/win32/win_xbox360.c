@@ -34,34 +34,35 @@ typedef struct {
 	HINSTANCE xiDevice;
 } xinput_t;
 
-xinput_t xi_config;
-
-#define XI_AXIS_NONE		0
-#define XI_AXIS_LOOK		1
-#define XI_AXIS_MOVE		2
-#define XI_AXIS_TURN		3
-#define XI_AXIS_STRAFE		4
-#define XI_AXIS_INVLOOK		5
-#define XI_AXIS_INVMOVE		6
-#define XI_AXIS_INVTURN		7
-#define XI_AXIS_INVSTRAFE	8
+xinput_t xinput;
 
 #define XINPUT_LIB	"xinput1_3.dll"
 
 typedef void	(WINAPI * XINPUTENABLE)(BOOL);
-typedef DWORD(WINAPI * XINPUTGETCAPABILITIES)(DWORD, DWORD, PXINPUT_CAPABILITIES);
-typedef DWORD(WINAPI * XINPUTGETSTATE)(DWORD, PXINPUT_STATE);
+typedef DWORD	(WINAPI * XINPUTGETCAPABILITIES)(DWORD, DWORD, PXINPUT_CAPABILITIES);
+typedef DWORD	(WINAPI * XINPUTGETSTATE)(DWORD, PXINPUT_STATE);
+typedef DWORD	(WINAPI * XINPUTGETBATTERYINFORMATION)(BYTE, BYTE, PXINPUT_BATTERY_INFORMATION);
 
 static void		(WINAPI * qXInputEnable)(BOOL enable);
-static DWORD(WINAPI * qXInputGetCapabilities)(DWORD dwUserIndex, DWORD dwFlags, PXINPUT_CAPABILITIES pCapabilities);
-static DWORD(WINAPI * qXInputGetState)(DWORD dwUserIndex, PXINPUT_STATE pState);
+static DWORD	(WINAPI * qXInputGetCapabilities)(DWORD dwUserIndex, DWORD dwFlags, PXINPUT_CAPABILITIES pCapabilities);
+static DWORD	(WINAPI * qXInputGetState)(DWORD dwUserIndex, PXINPUT_STATE pState);
+static DWORD	(WINAPI * qXInputGetBatteryInformation)(BYTE dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION pBatteryInformation);
+
+void IN_ShutDownXinput() {
+
+	Com_Printf("..." S_COLOR_YELLOW "shutting down xInput subsystem\n");
+
+	if (xinput.xiDevice) {
+		Com_Printf("..." S_COLOR_YELLOW "unloading xinput1_3.dll\n");
+		FreeLibrary(xinput.xiDevice);
+	}
+	memset(&xinput, 0, sizeof(xinput_t));
+}
 
 void IN_StartupXInput(void)
 {
 	XINPUT_CAPABILITIES xiCaps;
-
-	if (xiActive)
-		return;
+	XINPUT_BATTERY_INFORMATION batteryInfo;
 
 	// reset to -1 each time as this can be called at runtime
 	xiActiveController = -1;
@@ -71,40 +72,48 @@ void IN_StartupXInput(void)
 	// Load the XInput DLL
 	Com_Printf("...calling LoadLibrary(" S_COLOR_GREEN "%s" S_COLOR_WHITE "): ", XINPUT_LIB);
 
-	if ((xi_config.xiDevice = LoadLibrary(XINPUT_LIB)) == NULL) {
+	if ((xinput.xiDevice = LoadLibrary(XINPUT_LIB)) == NULL) {
 		Com_Printf("failed\n");
 		return;
 	}
 
-	if ((qXInputEnable = (XINPUTENABLE)GetProcAddress(xi_config.xiDevice, "XInputEnable")) == NULL) {
+	if ((qXInputEnable = (XINPUTENABLE)GetProcAddress(xinput.xiDevice, "XInputEnable")) == NULL) {
 		Com_Printf(S_COLOR_RED"...failed to get 'XInputEnable' procedure address\n");
 		return;
 	}
 
-	if ((qXInputGetCapabilities = (XINPUTGETCAPABILITIES)GetProcAddress(xi_config.xiDevice, "XInputGetCapabilities")) == NULL) {
+	if ((qXInputGetCapabilities = (XINPUTGETCAPABILITIES)GetProcAddress(xinput.xiDevice, "XInputGetCapabilities")) == NULL) {
 		Com_Printf(S_COLOR_RED"...failed to get 'XInputGetCapabilities' procedure address\n");
 		return;
 	}
 
-	if ((qXInputGetState = (XINPUTGETSTATE)GetProcAddress(xi_config.xiDevice, "XInputGetState")) == NULL) {
+	if ((qXInputGetState = (XINPUTGETSTATE)GetProcAddress(xinput.xiDevice, "XInputGetState")) == NULL) {
 		Com_Printf(S_COLOR_RED"...failed to get 'XInputGetState' procedure address\n");
 		return;
 	}
+	
+	if ((qXInputGetBatteryInformation = (XINPUTGETBATTERYINFORMATION)GetProcAddress(xinput.xiDevice, "XInputGetBatteryInformation")) == NULL) {
+		Com_Printf(S_COLOR_RED"...failed to get 'XInputGetBatteryInformation' procedure address\n");
+		return;
+	}
 
-	Com_Printf(S_COLOR_GREEN"succeeded\n\n");
+	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
 
 	// only support up to 4 controllers (in a PC scenario usually just one will be attached)
-	for (int contID = 0; contID < 4; contID++)
+	for (int numDev = 0; numDev < 4; numDev++)
 	{
 		memset(&xiCaps, 0, sizeof(XINPUT_CAPABILITIES));
-		DWORD getCaps = qXInputGetCapabilities(contID, XINPUT_FLAG_GAMEPAD, &xiCaps);
+		DWORD getCaps = qXInputGetCapabilities(numDev, XINPUT_FLAG_GAMEPAD, &xiCaps);
+		memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
+		DWORD battStat = qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, batteryInfo);
 
 		if (getCaps == ERROR_SUCCESS)
 		{
 			// just use the first one
-			Com_Printf("...found xInput Device on Port " S_COLOR_GREEN "%i\n", contID);
+			Com_Printf(S_COLOR_YELLOW"...found " S_COLOR_GREEN "%i" S_COLOR_YELLOW " xInput Device\n", numDev + 1);
+
 			// store to global active controller
-			xiActiveController = contID;
+			xiActiveController = numDev;
 			break;
 		}
 	}
@@ -114,27 +123,33 @@ void IN_StartupXInput(void)
 		qXInputEnable(TRUE);
 		xiActive = qtrue;
 	}
+	else {
+		Com_Printf(S_COLOR_MAGENTA"...xInput Device not found.\n");
+		IN_ShutDownXinput();
+	}
+
 	Com_Printf("\n-----------------------------------\n\n");
 }
 
-void IN_ToggleXInput(cvar_t *var)
+void IN_ToggleXInput()
 {
-	return;
 
-	if (var->value && !xiActive)
-	{
-		IN_StartupXInput();
+	if (xi_useController->value){
+		
+		if (xiActive)
+			return;
 
-		if (xiActiveController != -1)
-		{
+		if (xiActiveController != -1) {
 			qXInputEnable(TRUE);
 			xiActive = qtrue;
 		}
-
 		xi_oldDpadState = xi_oldButtonState = 0;
 	}
-	else if (!var->value && xiActive)
+	else 
 	{
+		if (!xiActive)
+			return;
+
 		qXInputEnable(FALSE);
 		xiActive = qfalse;
 		xi_oldDpadState = xi_oldButtonState = 0;
@@ -148,6 +163,15 @@ extern cvar_t *cl_sidespeed;
 extern cvar_t *cl_yawspeed;
 extern cvar_t *cl_pitchspeed;
 
+#define XI_AXIS_NONE		0
+#define XI_AXIS_LOOK		1
+#define XI_AXIS_MOVE		2
+#define XI_AXIS_TURN		3
+#define XI_AXIS_STRAFE		4
+#define XI_AXIS_INVLOOK		5
+#define XI_AXIS_INVMOVE		6
+#define XI_AXIS_INVTURN		7
+#define XI_AXIS_INVSTRAFE	8
 
 void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cvar_t *axisaction)
 {
@@ -173,10 +197,12 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	fmove *= fmove;
 
 	// go back to negative
-	if (axisval < 0) fmove *= -1;
+	if (axisval < 0) 
+		fmove *= -1;
 
 	// check for inverse scale
-	if ((int)axisaction->value > XI_AXIS_STRAFE) fmove *= -1;
+	if ((int)axisaction->value > XI_AXIS_STRAFE) 
+		fmove *= -1;
 
 	// decode the move
 	switch ((int)axisaction->value)
@@ -184,7 +210,7 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	case XI_AXIS_LOOK:
 	case XI_AXIS_INVLOOK:
 		// inverted by default (positive = look down)
-		cl.viewangles[0] += fmove * cl_pitchspeed->value / 20.0f;
+		cl.viewangles_PITCH += fmove * cl_pitchspeed->value / 20.0f;
 		break;
 
 	case XI_AXIS_MOVE:
@@ -196,7 +222,7 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	case XI_AXIS_INVTURN:
 		// slow this down because the default cl_yawspeed is too fast here
 		// invert it so that positive move = right
-		cl.viewangles[1] += fmove * cl_yawspeed->value / 20.0f * -1;
+		cl.viewangles_YAW += fmove * cl_yawspeed->value / 20.0f * -1;
 		break;
 
 	case XI_AXIS_STRAFE:
@@ -243,11 +269,15 @@ void IN_ControllerMove(usercmd_t *cmd)
 	IN_ControllerAxisMove(cmd, xiState.Gamepad.bRightTrigger, 0, 255, xi_axisRt);
 
 	// fix up the command (bound/etc)
-	if (cl.viewangles[0] > 80.0) cl.viewangles[0] = 80.0;
-	if (cl.viewangles[0] < -70.0) cl.viewangles[0] = -70.0;
+	if (cl.viewangles[0] > 80.0) 
+		cl.viewangles[0] = 80.0;
+
+	if (cl.viewangles[0] < -70.0) 
+		cl.viewangles[0] = -70.0;
 
 	// check for a change of state
-	if (xiLastPacket == xiState.dwPacketNumber) return;
+	if (xiLastPacket == xiState.dwPacketNumber) 
+		return;
 
 	// store back last packet
 	xiLastPacket = xiState.dwPacketNumber;
