@@ -44,6 +44,8 @@ cvar_t *xi_axisRt;
 cvar_t *xi_dpadArrowMap;
 cvar_t *xi_useController;
 
+cvar_t *xi_sensitivity;
+
 extern qboolean xiActive;
 
 void	IN_StartupXInput(void);

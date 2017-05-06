@@ -249,6 +249,8 @@
       <ProfileGuidedDatabase>$(IntDir)$(TargetName).pgd</ProfileGuidedDatabase>
       <StackReserveSize>
       </StackReserveSize>
+      <HeapCommitSize>
+      </HeapCommitSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

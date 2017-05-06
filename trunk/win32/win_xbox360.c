@@ -41,12 +41,15 @@ xinput_t xinput;
 typedef void	(WINAPI * XINPUTENABLE)(BOOL);
 typedef DWORD	(WINAPI * XINPUTGETCAPABILITIES)(DWORD, DWORD, PXINPUT_CAPABILITIES);
 typedef DWORD	(WINAPI * XINPUTGETSTATE)(DWORD, PXINPUT_STATE);
-typedef DWORD	(WINAPI * XINPUTGETBATTERYINFORMATION)(BYTE, BYTE, PXINPUT_BATTERY_INFORMATION);
+typedef DWORD	(__stdcall * _XInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
+typedef DWORD	(__stdcall * _XInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
+
 
 static void		(WINAPI * qXInputEnable)(BOOL enable);
 static DWORD	(WINAPI * qXInputGetCapabilities)(DWORD dwUserIndex, DWORD dwFlags, PXINPUT_CAPABILITIES pCapabilities);
 static DWORD	(WINAPI * qXInputGetState)(DWORD dwUserIndex, PXINPUT_STATE pState);
-static DWORD	(WINAPI * qXInputGetBatteryInformation)(BYTE dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION pBatteryInformation);
+static DWORD	(WINAPI * qXInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
+static DWORD	(WINAPI * qXInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
 
 void IN_ShutDownXinput() {
 
@@ -63,6 +66,7 @@ void IN_StartupXInput(void)
 {
 	XINPUT_CAPABILITIES xiCaps;
 	XINPUT_BATTERY_INFORMATION batteryInfo;
+	char batteryLevel[64], batteryType[64];
 
 	// reset to -1 each time as this can be called at runtime
 	xiActiveController = -1;
@@ -92,11 +96,15 @@ void IN_StartupXInput(void)
 		return;
 	}
 	
-	if ((qXInputGetBatteryInformation = (XINPUTGETBATTERYINFORMATION)GetProcAddress(xinput.xiDevice, "XInputGetBatteryInformation")) == NULL) {
+	if ((qXInputGetBatteryInformation = (_XInputGetBatteryInformation)GetProcAddress(xinput.xiDevice, "XInputGetBatteryInformation")) == NULL) {
 		Com_Printf(S_COLOR_RED"...failed to get 'XInputGetBatteryInformation' procedure address\n");
 		return;
 	}
-
+	if ((qXInputGetDSoundAudioDeviceGuids = (_XInputGetDSoundAudioDeviceGuids)GetProcAddress(xinput.xiDevice, "XInputGetDSoundAudioDeviceGuids")) == NULL) {
+		Com_Printf(S_COLOR_RED"...failed to get 'XInputGetDSoundAudioDeviceGuids' procedure address\n");
+		return;
+	}
+		
 	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
 
 	// only support up to 4 controllers (in a PC scenario usually just one will be attached)
@@ -105,12 +113,41 @@ void IN_StartupXInput(void)
 		memset(&xiCaps, 0, sizeof(XINPUT_CAPABILITIES));
 		DWORD getCaps = qXInputGetCapabilities(numDev, XINPUT_FLAG_GAMEPAD, &xiCaps);
 		memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
-		DWORD battStat = qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, batteryInfo);
+		DWORD battStat = qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo);
 
 		if (getCaps == ERROR_SUCCESS)
 		{
+			if(batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
+				strcpy(batteryLevel, "Battery empity");
+			else
+				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
+					strcpy(batteryLevel, "Battery level low");
+			else
+				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
+					strcpy(batteryLevel, "Battery level medium");
+			else
+				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
+					strcpy(batteryLevel, "Battery level full");
+			
+			if (batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED)
+				goto fail;
+
+			if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED)
+					strcpy(batteryType, "Controller wired");
+				else
+			if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
+					strcpy(batteryType, "Controller use Alkalyne battery");
+				else
+			if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
+					strcpy(batteryType, "Controller use Nickel Metal Hydride battery");
+				else
+			if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
+					strcpy(batteryType, "Controller use unknow battery type");
+
 			// just use the first one
-			Com_Printf(S_COLOR_YELLOW"...found " S_COLOR_GREEN "%i" S_COLOR_YELLOW " xInput Device\n", numDev + 1);
+			Com_Printf("...found %i xInput Controller\n", numDev + 1);
+
+			Com_Printf("...%s\n...%s\n", batteryLevel, batteryType);
 
 			// store to global active controller
 			xiActiveController = numDev;
@@ -124,7 +161,8 @@ void IN_StartupXInput(void)
 		xiActive = qtrue;
 	}
 	else {
-		Com_Printf(S_COLOR_MAGENTA"...xInput Device not found.\n");
+		fail:
+		Com_Printf(S_COLOR_MAGENTA"...xInput Device disconnected or not found.\n");
 		IN_ShutDownXinput();
 	}
 
@@ -193,6 +231,13 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	// 0 to 1 scale
 	float fmove = (float)realmove / (axismax - dz);
 
+	float speed;
+
+	if ((in_speed.state & 1) ^ (int)cl_run->value)
+		speed = 2;
+	else
+		speed = 1;
+
 	// square it to get better scale at small moves
 	fmove *= fmove;
 
@@ -210,24 +255,24 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	case XI_AXIS_LOOK:
 	case XI_AXIS_INVLOOK:
 		// inverted by default (positive = look down)
-		cl.viewangles_PITCH += fmove * cl_pitchspeed->value / 20.0f;
+		cl.viewangles_PITCH += fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * (xi_sensitivity->value / 2.0);
 		break;
 
 	case XI_AXIS_MOVE:
 	case XI_AXIS_INVMOVE:
-		cmd->forwardmove += fmove * cl_forwardspeed->value;
+		cmd->forwardmove += fmove * speed * cl_forwardspeed->value;
 		break;
 
 	case XI_AXIS_TURN:
 	case XI_AXIS_INVTURN:
 		// slow this down because the default cl_yawspeed is too fast here
 		// invert it so that positive move = right
-		cl.viewangles_YAW += fmove * cl_yawspeed->value / 20.0f * -1;
+		cl.viewangles_YAW += fmove * (cl_yawspeed->value / cl.refdef.fov_x) * xi_sensitivity->value * -1;
 		break;
 
 	case XI_AXIS_STRAFE:
 	case XI_AXIS_INVSTRAFE:
-		cmd->sidemove += fmove * cl_sidespeed->value;
+		cmd->sidemove -= fmove * speed * cl_sidespeed->value;
 		break;
 
 	default:
@@ -261,7 +306,7 @@ void IN_ControllerMove(usercmd_t *cmd)
 	}
 
 	// check the axes (always, even if state doesn't change)
-	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 32768, xi_axisLx);
+	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 32768, xi_axisLt);
 	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 32768, xi_axisLy);
 	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, 32768, xi_axisRx);
 	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, 32768, xi_axisRy);

@@ -265,7 +265,7 @@ void IN_Init (void) {
 	v_centermove = Cvar_Get ("v_centermove", "0.15", 0);
 	v_centerspeed = Cvar_Get ("v_centerspeed", "500", 0);
 
-	// joystick variables
+	// classic joystick stuff
 	joy_name = Cvar_Get("joy_name", "joystick", 0);
 	joy_advanced = Cvar_Get("joy_advanced", "0", 0);
 	joy_advaxisx = Cvar_Get("joy_advaxisx", "0", 0);
@@ -287,6 +287,7 @@ void IN_Init (void) {
 
 	in_useJoystic = Cvar_Get("in_useJoystic", "0", CVAR_ARCHIVE);
 
+	// xinput stuff
 	xi_axisLx = Cvar_Get("xi_axisLx", "3", CVAR_ARCHIVE);
 	xi_axisLy = Cvar_Get("xi_axisLy", "2", CVAR_ARCHIVE);
 	xi_axisRx = Cvar_Get("xi_axisRx", "3", CVAR_ARCHIVE);
@@ -295,6 +296,7 @@ void IN_Init (void) {
 	xi_axisRt = Cvar_Get("xi_axisRt", "4", CVAR_ARCHIVE);
 	xi_dpadArrowMap = Cvar_Get("xi_dpadArrowMap", "1", CVAR_ARCHIVE);
 	xi_useController = Cvar_Get("xi_useController", "1", CVAR_ARCHIVE);
+	xi_sensitivity = Cvar_Get("xi_sensitivity", "2.0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
