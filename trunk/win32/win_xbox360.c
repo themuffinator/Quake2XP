@@ -38,9 +38,9 @@ xinput_t xinput;
 
 #define XINPUT_LIB	"xinput1_3.dll"
 
-typedef void	(WINAPI * XINPUTENABLE)(BOOL);
-typedef DWORD	(WINAPI * XINPUTGETCAPABILITIES)(DWORD, DWORD, PXINPUT_CAPABILITIES);
-typedef DWORD	(WINAPI * XINPUTGETSTATE)(DWORD, PXINPUT_STATE);
+typedef void	(__stdcall * _xInputEnable)(BOOL);
+typedef DWORD	(__stdcall * _XInputGetCapabilities)(DWORD, DWORD, PXINPUT_CAPABILITIES);
+typedef DWORD	(__stdcall * _XInputGetState)(DWORD, PXINPUT_STATE);
 typedef DWORD	(__stdcall * _XInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
 typedef DWORD	(__stdcall * _XInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
 
@@ -74,37 +74,25 @@ void IN_StartupXInput(void)
 	Com_Printf("\n======= Init xInput Devices =======\n\n");
 
 	// Load the XInput DLL
-	Com_Printf("...calling LoadLibrary(" S_COLOR_GREEN "%s" S_COLOR_WHITE "): ", XINPUT_LIB);
+	Com_Printf("...calling LoadLibrary(" S_COLOR_GREEN "%s" S_COLOR_WHITE "):", XINPUT_LIB);
 
 	if ((xinput.xiDevice = LoadLibrary(XINPUT_LIB)) == NULL) {
-		Com_Printf("failed\n");
+		Com_Printf(S_COLOR_RED"failed!\n");
+		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
 
-	if ((qXInputEnable = (XINPUTENABLE)GetProcAddress(xinput.xiDevice, "XInputEnable")) == NULL) {
-		Com_Printf(S_COLOR_RED"...failed to get 'XInputEnable' procedure address\n");
-		return;
-	}
-
-	if ((qXInputGetCapabilities = (XINPUTGETCAPABILITIES)GetProcAddress(xinput.xiDevice, "XInputGetCapabilities")) == NULL) {
-		Com_Printf(S_COLOR_RED"...failed to get 'XInputGetCapabilities' procedure address\n");
-		return;
-	}
-
-	if ((qXInputGetState = (XINPUTGETSTATE)GetProcAddress(xinput.xiDevice, "XInputGetState")) == NULL) {
-		Com_Printf(S_COLOR_RED"...failed to get 'XInputGetState' procedure address\n");
-		return;
-	}
+	qXInputEnable						= (_xInputEnable)						GetProcAddress(xinput.xiDevice, "XInputEnable");
+	qXInputGetCapabilities				= (_XInputGetCapabilities)				GetProcAddress(xinput.xiDevice, "XInputGetCapabilities");
+	qXInputGetState						= (_XInputGetState)						GetProcAddress(xinput.xiDevice, "XInputGetState");
+	qXInputGetBatteryInformation		= (_XInputGetBatteryInformation)		GetProcAddress(xinput.xiDevice, "XInputGetBatteryInformation");
+	qXInputGetDSoundAudioDeviceGuids	= (_XInputGetDSoundAudioDeviceGuids)	GetProcAddress(xinput.xiDevice, "XInputGetDSoundAudioDeviceGuids");
 	
-	if ((qXInputGetBatteryInformation = (_XInputGetBatteryInformation)GetProcAddress(xinput.xiDevice, "XInputGetBatteryInformation")) == NULL) {
-		Com_Printf(S_COLOR_RED"...failed to get 'XInputGetBatteryInformation' procedure address\n");
+	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputGetDSoundAudioDeviceGuids) {
+		Com_Printf(S_COLOR_RED"...can't find xInput procedures adresses.\n");
+		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
-	if ((qXInputGetDSoundAudioDeviceGuids = (_XInputGetDSoundAudioDeviceGuids)GetProcAddress(xinput.xiDevice, "XInputGetDSoundAudioDeviceGuids")) == NULL) {
-		Com_Printf(S_COLOR_RED"...failed to get 'XInputGetDSoundAudioDeviceGuids' procedure address\n");
-		return;
-	}
-		
 	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
 
 	// only support up to 4 controllers (in a PC scenario usually just one will be attached)
@@ -254,8 +242,7 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	{
 	case XI_AXIS_LOOK:
 	case XI_AXIS_INVLOOK:
-		// inverted by default (positive = look down)
-		cl.viewangles_PITCH += fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * (xi_sensitivity->value / 2.0);
+		cl.viewangles_PITCH -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * (xi_sensitivity->value / 2.5);
 		break;
 
 	case XI_AXIS_MOVE:
