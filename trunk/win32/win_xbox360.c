@@ -36,7 +36,8 @@ typedef struct {
 
 xinput_t xinput;
 
-#define XINPUT_LIB	"xinput1_3.dll"
+#define XINPUT_LIB	"xinput1_3.dll" // win7 support
+
 #define XI_MAX_CONTROLLERS 4
 #define XI_MAX_CONTROLLER_BUTTONS 10
 
@@ -44,21 +45,20 @@ typedef void	(__stdcall * _xInputEnable)(BOOL);
 typedef DWORD	(__stdcall * _XInputGetCapabilities)(DWORD, DWORD, PXINPUT_CAPABILITIES);
 typedef DWORD	(__stdcall * _XInputGetState)(DWORD, PXINPUT_STATE);
 typedef DWORD	(__stdcall * _XInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
-typedef DWORD	(__stdcall * _XInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
-
+typedef DWORD	(__stdcall * _XInputSetState)(DWORD, XINPUT_VIBRATION*);
 
 static void		(WINAPI * qXInputEnable)(BOOL enable);
 static DWORD	(WINAPI * qXInputGetCapabilities)(DWORD dwUserIndex, DWORD dwFlags, PXINPUT_CAPABILITIES pCapabilities);
 static DWORD	(WINAPI * qXInputGetState)(DWORD dwUserIndex, PXINPUT_STATE pState);
 static DWORD	(WINAPI * qXInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
-static DWORD	(WINAPI * qXInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
+static DWORD	(WINAPI * qXInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
 
 void IN_ShutDownXinput() {
 
 	Com_Printf("..." S_COLOR_YELLOW "shutting down xInput subsystem\n");
 
 	if (xinput.xiDevice) {
-		Com_Printf("..." S_COLOR_YELLOW "unloading xinput1_3.dll\n");
+		Com_Printf("..." S_COLOR_YELLOW "unloading " S_COLOR_GREEN "%s\n", XINPUT_LIB);
 		FreeLibrary(xinput.xiDevice);
 	}
 	memset(&xinput, 0, sizeof(xinput_t));
@@ -75,7 +75,7 @@ void IN_StartupXInput(void)
 
 	Com_Printf("\n======= Init xInput Devices =======\n\n");
 
-	// Load the XInput DLL
+	// Load the xInput dll
 	Com_Printf("...calling LoadLibrary(" S_COLOR_GREEN "%s" S_COLOR_WHITE "):", XINPUT_LIB);
 
 	if ((xinput.xiDevice = LoadLibrary(XINPUT_LIB)) == NULL) {
@@ -88,9 +88,9 @@ void IN_StartupXInput(void)
 	qXInputGetCapabilities				= (_XInputGetCapabilities)				GetProcAddress(xinput.xiDevice, "XInputGetCapabilities");
 	qXInputGetState						= (_XInputGetState)						GetProcAddress(xinput.xiDevice, "XInputGetState");
 	qXInputGetBatteryInformation		= (_XInputGetBatteryInformation)		GetProcAddress(xinput.xiDevice, "XInputGetBatteryInformation");
-	qXInputGetDSoundAudioDeviceGuids	= (_XInputGetDSoundAudioDeviceGuids)	GetProcAddress(xinput.xiDevice, "XInputGetDSoundAudioDeviceGuids");
-	
-	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputGetDSoundAudioDeviceGuids) {
+	qXInputSetState						= (_XInputSetState)						GetProcAddress(xinput.xiDevice, "XInputSetState");
+
+	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputSetState) {
 		Com_Printf(S_COLOR_RED"...can't find xInput procedures adresses.\n");
 		Com_Printf("\n-----------------------------------\n\n");
 		return;
@@ -155,7 +155,7 @@ void IN_StartupXInput(void)
 		Com_Printf(S_COLOR_MAGENTA"...xInput Device disconnected or not found.\n");
 		IN_ShutDownXinput();
 	}
-
+	 
 	Com_Printf("\n-----------------------------------\n\n");
 }
 
@@ -184,6 +184,22 @@ void IN_ToggleXInput()
 	}
 }
 
+void SetRumble(int inputDeviceNum, int rumbleLow, int rumbleHigh) {
+
+	if (inputDeviceNum < 0 || inputDeviceNum >= XI_MAX_CONTROLLERS)
+		return;
+
+	if (!xi_useController->value)
+		return;
+
+	XINPUT_VIBRATION vibration;
+	vibration.wLeftMotorSpeed = clamp(rumbleLow, 0, 65535);
+	vibration.wRightMotorSpeed = clamp(rumbleHigh, 0, 65535);
+	DWORD err = qXInputSetState(inputDeviceNum, &vibration);
+
+	if (err != ERROR_SUCCESS)
+		Com_Printf(S_COLOR_RED"XInputSetState error: 0x%x", err);
+}
 
 extern cvar_t *cl_forwardspeed;
 extern cvar_t *cl_sidespeed;
@@ -238,13 +254,17 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	// check for inverse scale
 	if ((int)axisaction->value > XI_AXIS_STRAFE) 
 		fmove *= -1;
+	
+	float inv = 1;
+	if(xi_pitchInversion->value)
+		inv *= -1;
 
 	// decode the move
 	switch ((int)axisaction->value)
 	{
 	case XI_AXIS_LOOK:
 	case XI_AXIS_INVLOOK:
-		cl.viewangles_PITCH -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * (xi_sensitivity->value / 2.5);
+		cl.viewangles_PITCH -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * xi_sensY->value * inv;
 		break;
 
 	case XI_AXIS_MOVE:
@@ -256,7 +276,7 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	case XI_AXIS_INVTURN:
 		// slow this down because the default cl_yawspeed is too fast here
 		// invert it so that positive move = right
-		cl.viewangles_YAW += fmove * (cl_yawspeed->value / cl.refdef.fov_x) * xi_sensitivity->value * -1;
+		cl.viewangles_YAW -= fmove * (cl_yawspeed->value / cl.refdef.fov_x) * xi_sensX->value;
 		break;
 
 	case XI_AXIS_STRAFE:

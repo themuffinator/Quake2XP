@@ -181,6 +181,9 @@ Call before entering a new level, or after changing dlls
 qboolean needLoadingPlaque (void);
 void R_GenSkyCubeMap (char *name);
 
+extern int	xiActiveController;
+void SetRumble(int inputDeviceNum, int rumbleLow, int rumbleHigh);
+
 void CL_PrepRefresh (void) {
 	char		mapname[32];
 	int			i, start = 0, stop = 0;
@@ -197,6 +200,8 @@ void CL_PrepRefresh (void) {
 
 	SCR_AddDirtyPoint (0, 0);
 	SCR_AddDirtyPoint (viddef.width - 1, viddef.height - 1);
+
+	SetRumble(xiActiveController, 0, 0);
 
 	start = Sys_Milliseconds ();
 
@@ -534,6 +539,14 @@ void V_RenderView () {
 			cl.refdef.fov_y -= f;
 
 		}
+
+		// add xBox controller vibration 
+		int value = cl.frame.playerstate.stats[STAT_HEALTH];
+
+		if ((cl.refdef.rdflags & RDF_PAIN) && (value > 0)) 
+			SetRumble(xiActiveController, 4096, 65535);
+		else
+			SetRumble(xiActiveController, 0, 0);
 
 		cl.refdef.areabits = cl.frame.areabits;
 

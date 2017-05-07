@@ -44,7 +44,9 @@ cvar_t *xi_axisRt;
 cvar_t *xi_dpadArrowMap;
 cvar_t *xi_useController;
 
-cvar_t *xi_sensitivity;
+cvar_t *xi_sensX;
+cvar_t *xi_sensY;
+cvar_t *xi_pitchInversion;
 
 extern qboolean xiActive;
 

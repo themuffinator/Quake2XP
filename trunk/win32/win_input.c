@@ -296,7 +296,9 @@ void IN_Init (void) {
 	xi_axisRt = Cvar_Get("xi_axisRt", "4", CVAR_ARCHIVE);
 	xi_dpadArrowMap = Cvar_Get("xi_dpadArrowMap", "1", CVAR_ARCHIVE);
 	xi_useController = Cvar_Get("xi_useController", "1", CVAR_ARCHIVE);
-	xi_sensitivity = Cvar_Get("xi_sensitivity", "2.0", CVAR_ARCHIVE);
+	xi_sensX = Cvar_Get("xi_sensX", "2.0", CVAR_ARCHIVE);
+	xi_sensY = Cvar_Get("xi_sensY", "0.5", CVAR_ARCHIVE);
+	xi_pitchInversion = Cvar_Get("xi_pitchInversion", "0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
