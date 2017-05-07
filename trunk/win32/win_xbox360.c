@@ -37,6 +37,8 @@ typedef struct {
 xinput_t xinput;
 
 #define XINPUT_LIB	"xinput1_3.dll"
+#define XI_MAX_CONTROLLERS 4
+#define XI_MAX_CONTROLLER_BUTTONS 10
 
 typedef void	(__stdcall * _xInputEnable)(BOOL);
 typedef DWORD	(__stdcall * _XInputGetCapabilities)(DWORD, DWORD, PXINPUT_CAPABILITIES);
@@ -95,11 +97,11 @@ void IN_StartupXInput(void)
 	}
 	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
 
-	// only support up to 4 controllers (in a PC scenario usually just one will be attached)
-	for (int numDev = 0; numDev < 4; numDev++)
-	{
+	for (int numDev = 0; numDev < XI_MAX_CONTROLLERS; numDev++){
+
 		memset(&xiCaps, 0, sizeof(XINPUT_CAPABILITIES));
 		DWORD getCaps = qXInputGetCapabilities(numDev, XINPUT_FLAG_GAMEPAD, &xiCaps);
+
 		memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
 		DWORD battStat = qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo);
 
@@ -127,7 +129,7 @@ void IN_StartupXInput(void)
 					strcpy(batteryType, "Controller use Alkalyne battery");
 				else
 			if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
-					strcpy(batteryType, "Controller use Nickel Metal Hydride battery");
+					strcpy(batteryType, "Controller use Ni-MH battery");
 				else
 			if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
 					strcpy(batteryType, "Controller use unknow battery type");
@@ -335,13 +337,14 @@ void IN_ControllerMove(usercmd_t *cmd)
 	}
 
 	// check for event changes
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < XI_MAX_CONTROLLERS; i++)
 	{
 		if ((int)xi_dpadArrowMap->value)
 		{
 			// map dpad to arrow keys
 			if ((dpadState & (1 << i)) && !(xi_oldDpadState & (1 << i)))
 				Key_Event(K_UPARROW + i, qtrue, sys_msg_time);
+
 			if (!(dpadState & (1 << i)) && (xi_oldDpadState & (1 << i)))
 				Key_Event(K_UPARROW + i, qfalse, sys_msg_time);
 		}
@@ -350,6 +353,7 @@ void IN_ControllerMove(usercmd_t *cmd)
 			// map dpad to POV keys
 			if ((dpadState & (1 << i)) && !(xi_oldDpadState & (1 << i)))
 				Key_Event(K_POV1 + i, qtrue, sys_msg_time);
+
 			if (!(dpadState & (1 << i)) && (xi_oldDpadState & (1 << i)))
 				Key_Event(K_POV1 + i, qfalse, sys_msg_time);
 		}
@@ -371,10 +375,11 @@ void IN_ControllerMove(usercmd_t *cmd)
 	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_Y)				buttonState |= 512;
 
 	// check for event changes
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < XI_MAX_CONTROLLER_BUTTONS; i++)
 	{
 		if ((buttonState & (1 << i)) && !(xi_oldButtonState & (1 << i)))
 			Key_Event(K_JOY1 + i, qtrue, sys_msg_time);
+
 		if (!(buttonState & (1 << i)) && (xi_oldButtonState & (1 << i)))
 			Key_Event(K_JOY1 + i, qfalse, sys_msg_time);
 	}
