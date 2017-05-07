@@ -184,9 +184,12 @@ void IN_ToggleXInput()
 	}
 }
 
-void SetRumble(int inputDeviceNum, int rumbleLow, int rumbleHigh) {
+void SetRumble(int devNum, int rumbleLow, int rumbleHigh) {
 
-	if (inputDeviceNum < 0 || inputDeviceNum >= XI_MAX_CONTROLLERS)
+	if (!xiActive)
+		return;
+
+	if (devNum < 0 || devNum >= XI_MAX_CONTROLLERS)
 		return;
 
 	if (!xi_useController->value)
@@ -195,7 +198,7 @@ void SetRumble(int inputDeviceNum, int rumbleLow, int rumbleHigh) {
 	XINPUT_VIBRATION vibration;
 	vibration.wLeftMotorSpeed = clamp(rumbleLow, 0, 65535);
 	vibration.wRightMotorSpeed = clamp(rumbleHigh, 0, 65535);
-	DWORD err = qXInputSetState(inputDeviceNum, &vibration);
+	DWORD err = qXInputSetState(devNum, &vibration);
 
 	if (err != ERROR_SUCCESS)
 		Com_Printf(S_COLOR_RED"XInputSetState error: 0x%x", err);
@@ -338,6 +341,11 @@ void IN_ControllerMove(usercmd_t *cmd)
 
 	int buttonState = 0;
 	int dpadState = 0;
+
+	if (xiState.Gamepad.bLeftTrigger >= 128)
+		buttonState |= 0x10000;
+	if (xiState.Gamepad.bRightTrigger >= 128)
+		buttonState |= 0x20000;
 
 	if ((int)xi_dpadArrowMap->value)
 	{
