@@ -76,7 +76,7 @@ void IN_StartupXInput(void)
 	Com_Printf("\n======= Init xInput Devices =======\n\n");
 
 	// Load the xInput dll
-	Com_Printf("...calling LoadLibrary(" S_COLOR_GREEN "%s" S_COLOR_WHITE "):", XINPUT_LIB);
+	Com_Printf("...calling LoadLibrary(" S_COLOR_GREEN "%s" S_COLOR_WHITE "): ", XINPUT_LIB);
 
 	if ((xinput.xiDevice = LoadLibrary(XINPUT_LIB)) == NULL) {
 		Com_Printf(S_COLOR_RED"failed!\n");
@@ -92,6 +92,7 @@ void IN_StartupXInput(void)
 
 	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputSetState) {
 		Com_Printf(S_COLOR_RED"...can't find xInput procedures adresses.\n");
+		IN_ShutDownXinput(); // unload dll
 		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
@@ -108,16 +109,16 @@ void IN_StartupXInput(void)
 		if (getCaps == ERROR_SUCCESS)
 		{
 			if(batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
-				strcpy(batteryLevel, "Battery empity");
+				strcpy(batteryLevel, S_COLOR_RED"Battery empity");
 			else
 				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
-					strcpy(batteryLevel, "Battery level low");
+					strcpy(batteryLevel, S_COLOR_MAGENTA"Battery level low");
 			else
 				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
-					strcpy(batteryLevel, "Battery level medium");
+					strcpy(batteryLevel, S_COLOR_YELLOW"Battery level medium");
 			else
 				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
-					strcpy(batteryLevel, "Battery level full");
+					strcpy(batteryLevel, S_COLOR_GREEN"Battery level full");
 			
 			if (batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED)
 				goto fail;
@@ -132,10 +133,10 @@ void IN_StartupXInput(void)
 					strcpy(batteryType, "Controller use Ni-MH battery");
 				else
 			if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
-					strcpy(batteryType, "Controller use unknow battery type");
+					strcpy(batteryType, "Controller use unknown battery type");
 
 			// just use the first one
-			Com_Printf("...found %i xInput Controller\n", numDev + 1);
+			Com_Printf("...found xInput Controller\n");
 
 			Com_Printf("...%s\n...%s\n", batteryLevel, batteryType);
 
