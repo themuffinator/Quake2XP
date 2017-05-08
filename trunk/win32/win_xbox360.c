@@ -80,6 +80,7 @@ void IN_StartupXInput(void)
 
 	if ((xinput.xiDevice = LoadLibrary(XINPUT_LIB)) == NULL) {
 		Com_Printf(S_COLOR_RED"failed!\n");
+		IN_ShutDownXinput();
 		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
@@ -120,20 +121,17 @@ void IN_StartupXInput(void)
 				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
 					strcpy(batteryLevel, S_COLOR_GREEN"Battery level full");
 			
-			if (batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED)
-				goto fail;
-
 			if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED)
-					strcpy(batteryType, "Controller wired");
+					strcpy(batteryType, S_COLOR_GREEN"Controller wired");
 				else
 			if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
-					strcpy(batteryType, "Controller use Alkalyne battery");
+					strcpy(batteryType, S_COLOR_GREEN"Controller use Alkalyne battery");
 				else
 			if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
-					strcpy(batteryType, "Controller use Ni-MH battery");
+					strcpy(batteryType, S_COLOR_GREEN"Controller use Ni-MH battery");
 				else
 			if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
-					strcpy(batteryType, "Controller use unknown battery type");
+					strcpy(batteryType, S_COLOR_MAGENTA"Controller use unknown battery type");
 
 			// just use the first one
 			Com_Printf("...found xInput Controller\n");
@@ -152,7 +150,6 @@ void IN_StartupXInput(void)
 		xiActive = qtrue;
 	}
 	else {
-		fail:
 		Com_Printf(S_COLOR_MAGENTA"...xInput Device disconnected or not found.\n");
 		IN_ShutDownXinput();
 	}
