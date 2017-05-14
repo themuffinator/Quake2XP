@@ -2,9 +2,10 @@ layout (binding = 0) uniform sampler2D		u_Diffuse;
 layout (binding = 1) uniform sampler2D		u_LightMap0;
 layout (binding = 2) uniform sampler2D		u_Add;
 layout (binding = 3) uniform sampler2D		u_NormalMap;
-layout (binding = 4) uniform sampler2D		u_LightMap1;
-layout (binding = 5) uniform sampler2D		u_LightMap2;
-layout (binding = 6) uniform sampler2DRect	u_ssaoMap;
+layout (binding = 4) uniform sampler2DRect	u_ssaoMap;
+layout (binding = 5) uniform sampler2D		u_LightMap1;
+layout (binding = 6) uniform sampler2D		u_LightMap2;
+
 
 uniform int		u_LightMapType;
 uniform int		u_ssao;

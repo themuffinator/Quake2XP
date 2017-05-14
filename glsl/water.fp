@@ -59,14 +59,14 @@ void main (void) {
 
 	// load diffuse map with offset
 	vec3 offset = normalize(texture(u_dstMap, v_deformTexCoord.xy).rgb * 2.0 - 1.0); // use scaled tex coord
-	float noise = texture(u_dstMap, v_deformTexCoord.xy).a;
+//	float noise = texture(u_dstMap, v_deformTexCoord.xy).a;
 
 	vec3 diffuse;
 	if (u_TRANS == 1){
 	diffuse.r = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 0.85).r * u_ambientScale; 
 	diffuse.g = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 1.0).g * u_ambientScale;
 	diffuse.b = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 1.15).b * u_ambientScale;	
-	diffuse *= noise;
+//	diffuse *= noise;
 	diffuse *= v_color.a;
 	}
 
@@ -74,14 +74,14 @@ void main (void) {
 	diffuse.r = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 0.425).r * u_ambientScale; 
 	diffuse.g = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 0.5).g * u_ambientScale;
 	diffuse.b = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 0.575).b * u_ambientScale;	
-	diffuse *= noise;
+	diffuse *= 0.5;
 	}
 
 	vec3 N = vec3(0.0, 0.0, 1.0);  // shutup compiler
 	vec2 tc;
 	float sceneDepth;
 
-	vec2 Es = PhongLighting(offset, L, V, 1.0);
+	vec2 Es = PhongLighting(offset, L, V, 6.0);
 	vec3 lighting = Es.x * diffuse + Es.y * diffuse.rrr;
 
 	if (u_TRANS == 1) {
