@@ -344,7 +344,7 @@ void GL_BuildPolygonFromSurface (msurface_t * fa) {
 		poly->verts[i][5] = s;
 		poly->verts[i][6] = t;
 
-		// Store in the tempedges table that this polygon uses the edge
+		// Store edge data for shadow volumes
 		tempEdge = tempEdges + abs (lindex);
 		if (tempEdge->used < 2) {
 			tempEdge->poly[tempEdge->used] = poly;

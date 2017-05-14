@@ -376,7 +376,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	}
 
 	if (r_ssao->value && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		GL_MBindRect(GL_TEXTURE6, fboColor[fboColorIndex]->texnum);
+		GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
 		qglUniform1i(ambientWorld_ssao, 1);
 	}
 	else
@@ -392,9 +392,9 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		{
 			GL_MBind(GL_TEXTURE1, gl_state.lightmap_textures + s->lightmaptexturenum);
 
-			if (r_worldmodel->useXPLM) {
-				GL_MBind(GL_TEXTURE4, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
-				GL_MBind(GL_TEXTURE5, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
+			if (r_worldmodel->useXPLM && r_useRadiosityBump->value) {
+				GL_MBind(GL_TEXTURE5, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
+				GL_MBind(GL_TEXTURE6, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
 			}
 			
 			if (numIndices != 0xFFFFFFFF) {

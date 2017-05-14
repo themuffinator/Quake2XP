@@ -1245,9 +1245,10 @@ void R_RegisterCvars(void)
 	
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
 	
-	r_brightness =						Cvar_Get("r_brightness", "1.5", CVAR_ARCHIVE);
+	r_brightness =						Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
 	r_contrast	=						Cvar_Get("r_contrast", "1", CVAR_ARCHIVE);
 	r_saturation =						Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
+	r_gamma =							Cvar_Get("r_gamma", "1.8", CVAR_ARCHIVE);
 
 	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
@@ -1331,7 +1332,7 @@ void R_RegisterCvars(void)
 	r_filmFilter = 						Cvar_Get("r_filmFilter", "0", CVAR_ARCHIVE);
 	r_filmFilterType =					Cvar_Get("r_filmFilterType", "0", CVAR_ARCHIVE);
 	r_filmFilterNoiseIntens =			Cvar_Get("r_filmFilterNoiseIntens", "0.03", CVAR_ARCHIVE);
-	r_filmFilterScratchIntens =			Cvar_Get("r_filmFilterScratchIntens", "0.666", CVAR_ARCHIVE);
+	r_filmFilterScratchIntens =			Cvar_Get("r_filmFilterScratchIntens", "0.4", CVAR_ARCHIVE);
 	r_filmFilterVignetIntens =			Cvar_Get("r_filmFilterVignetIntens", "0.35", CVAR_ARCHIVE);
 
 	r_glDebugOutput =					Cvar_Get("r_glDebugOutput", "0", 0);

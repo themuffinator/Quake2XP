@@ -38,11 +38,21 @@ MENU INTERACTION
 ====================================================================
 */
 static menuframework_s	s_opengl_menu;
+static menuframework_s	s_opengl2_menu;
 static menuframework_s *s_current_menu;
 
 static menulist_s		s_mode_list;
 static menuslider_s		s_aniso_slider;
+
 static menuslider_s		s_brightness_slider;
+static menuslider_s		s_contrast_slider;
+static menuslider_s		s_saturation_slider;
+static menuslider_s		s_gamma_slider;
+
+static menuslider_s		s_bloomIntens_slider;
+static menuslider_s		s_bloomThreshold_slider;
+static menuslider_s		s_bloomWidth_slider;
+
 static menulist_s  		s_fs_box;
 
 static menulist_s	    s_shadow_box;
@@ -65,8 +75,9 @@ static	menulist_s			s_ssao;
 static	menulist_s			s_fxaa_box;
 static	menulist_s			s_film_grain;
 static	menulist_s			s_mb_box;
-static menuslider_s			s_ambientLevel_slider;
+static	menuslider_s		s_ambientLevel_slider;
 
+static	menuaction_s		s_menuAction_color;
 
 /////////////////////////////////////////////////////////
 //
@@ -79,7 +90,6 @@ static float ClampCvar (float min, float max, float value) {
 	if (value > max) return max;
 	return value;
 }
-
 
 static void ambientLevelCallback (void *s) {
 	float ambient = s_ambientLevel_slider.curvalue / 20;
@@ -118,12 +128,32 @@ static void AnisoCallback (void *s) {
 }
 
 static void BrightnessCallback (void *s) {
-	float gamma;
-	gamma = s_brightness_slider.curvalue / 20;
+	float brt;
+	brt = s_brightness_slider.curvalue / 10;
 
-	Cvar_SetValue ("r_brightness", gamma);
+	Cvar_SetValue ("r_brightness", brt);
 }
 
+static void ContrastCallback(void *s) {
+	float contr;
+	contr = s_contrast_slider.curvalue / 10;
+
+	Cvar_SetValue("r_contrast", contr);
+}
+
+static void SaturationCallback(void *s) {
+	float sat;
+	sat = s_saturation_slider.curvalue / 10;
+
+	Cvar_SetValue("r_saturation", sat);
+}
+
+static void GammaCallback(void *s) {
+	float gm;
+	gm = s_gamma_slider.curvalue / 10;
+
+	Cvar_SetValue("r_gamma", gm);
+}
 
 static void BloomCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
@@ -161,6 +191,21 @@ static void mbCallback (void *s) {
 	Cvar_SetValue ("r_motionBlur", box->curvalue * 1);
 }
 
+static void bloomLevelCallback(void *s) {
+	float intens = s_bloomIntens_slider.curvalue / 10;
+	Cvar_SetValue("r_bloomIntens", intens);
+}
+
+static void bloomThresholdCallback(void *s) {
+	float mins = s_bloomThreshold_slider.curvalue / 10;
+	Cvar_SetValue("r_bloomThreshold", mins);
+}
+
+static void bloomWhidthCallback(void *s) {
+	float star = s_bloomWidth_slider.curvalue / 10;
+	Cvar_SetValue("r_bloomWidth", star);
+}
+
 static void ResetDefaults (void *unused) {
 	VID_MenuInit ();
 }
@@ -188,6 +233,15 @@ static void ApplyChanges (void *unused) {
 	** has been modified
 	*/
 	if (r_brightness->modified)
+		vid_ref->modified = qtrue;
+	
+	if (r_contrast->modified)
+		vid_ref->modified = qtrue;
+	
+	if (r_saturation->modified)
+		vid_ref->modified = qtrue;
+
+	if (r_gamma->modified)
 		vid_ref->modified = qtrue;
 
 	if (r_anisotropic->modified)
@@ -235,6 +289,15 @@ static void ApplyChanges (void *unused) {
 	if (r_motionBlur->modified)
 		vid_ref->modified = qtrue;
 
+	if (r_bloomIntens->modified)
+		vid_ref->modified = qtrue;
+
+	if (r_bloomThreshold->modified)
+		vid_ref->modified = qtrue;
+
+	if (r_bloomWidth->modified)
+		vid_ref->modified = qtrue;
+
 	M_ForceMenuOff ();
 
 }
@@ -257,6 +320,155 @@ static void vSyncCallBack (void *s) {
 
 	Cvar_SetValue ("r_vsync", box->curvalue * 1);
 }
+
+
+M_ColorInit() {
+
+	if (!r_gamma)
+		r_gamma = Cvar_Get("r_gamma", "1.8", CVAR_ARCHIVE);
+
+	if (!r_brightness)
+		r_brightness = Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
+
+	if (!r_contrast)
+		r_contrast = Cvar_Get("r_contrast", "1", CVAR_ARCHIVE);
+
+	if (!r_saturation)
+		r_saturation = Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
+
+	if (!r_bloomThreshold)
+		r_bloomThreshold = Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);
+
+	if (!r_bloomIntens)
+		r_bloomIntens = Cvar_Get("r_bloomIntens", "0.5", CVAR_ARCHIVE);
+
+	if (!r_bloomWidth)
+		r_bloomWidth = Cvar_Get("r_bloomWidth", "3.0", CVAR_ARCHIVE);
+
+	r_gamma->value = ClampCvar(0.1, 2.5, r_gamma->value);
+	r_brightness->value = ClampCvar(0.1, 2.0, r_brightness->value);
+	r_contrast->value = ClampCvar(0.1, 2.0, r_contrast->value);
+	r_saturation->value = ClampCvar(0.1, 2.0, r_saturation->value);
+
+	r_bloomIntens->value = ClampCvar(0.1, 2.0, r_bloomIntens->value);
+	r_bloomThreshold->value = ClampCvar(0.1, 1.0, r_bloomThreshold->value);
+	r_bloomWidth->value = ClampCvar(0.1, 3.0, r_bloomWidth->value);
+
+	s_opengl2_menu.x = viddef.width * 0.50;
+	s_opengl2_menu.nitems = 0;
+
+	s_gamma_slider.generic.type = MTYPE_SLIDER;
+	s_gamma_slider.generic.x = 0;
+	s_gamma_slider.generic.y = 10 * cl_fontScale->value;
+	s_gamma_slider.generic.name = "Gamma";
+	s_gamma_slider.generic.callback = GammaCallback;
+	s_gamma_slider.minvalue = 1;
+	s_gamma_slider.maxvalue = 25;
+	s_gamma_slider.curvalue = r_gamma->value * 10;
+
+	s_brightness_slider.generic.type = MTYPE_SLIDER;
+	s_brightness_slider.generic.x = 0;
+	s_brightness_slider.generic.y = 20 * cl_fontScale->value;
+	s_brightness_slider.generic.name = "Brightness";
+	s_brightness_slider.generic.callback = BrightnessCallback;
+	s_brightness_slider.minvalue = 1;
+	s_brightness_slider.maxvalue = 20;
+	s_brightness_slider.curvalue = r_brightness->value * 10;
+
+	s_contrast_slider.generic.type = MTYPE_SLIDER;
+	s_contrast_slider.generic.x = 0;
+	s_contrast_slider.generic.y = 30 * cl_fontScale->value;
+	s_contrast_slider.generic.name = "Contrast";
+	s_contrast_slider.generic.callback = ContrastCallback;
+	s_contrast_slider.minvalue = 1;
+	s_contrast_slider.maxvalue = 20;
+	s_contrast_slider.curvalue = r_contrast->value * 10;
+
+	s_saturation_slider.generic.type = MTYPE_SLIDER;
+	s_saturation_slider.generic.x = 0;
+	s_saturation_slider.generic.y = 40 * cl_fontScale->value;
+	s_saturation_slider.generic.name = "Saturation";
+	s_saturation_slider.generic.callback = SaturationCallback;
+	s_saturation_slider.minvalue = 1;
+	s_saturation_slider.maxvalue = 20;
+	s_saturation_slider.curvalue = r_saturation->value * 10;
+
+	s_bloomIntens_slider.generic.type = MTYPE_SLIDER;
+	s_bloomIntens_slider.generic.x = 0;
+	s_bloomIntens_slider.generic.y = 60 * cl_fontScale->value;
+	s_bloomIntens_slider.generic.name = "Bloom Intensity";
+	s_bloomIntens_slider.generic.callback = bloomLevelCallback;
+	s_bloomIntens_slider.minvalue = 1;
+	s_bloomIntens_slider.maxvalue = 20;
+	s_bloomIntens_slider.curvalue = r_bloomIntens->value * 10;
+
+	s_bloomThreshold_slider.generic.type = MTYPE_SLIDER;
+	s_bloomThreshold_slider.generic.x = 0;
+	s_bloomThreshold_slider.generic.y = 70 * cl_fontScale->value;
+	s_bloomThreshold_slider.generic.name = "Bloom Threshold";
+	s_bloomThreshold_slider.generic.callback = bloomThresholdCallback;
+	s_bloomThreshold_slider.minvalue = 1;
+	s_bloomThreshold_slider.maxvalue = 10;
+	s_bloomThreshold_slider.curvalue = r_bloomThreshold->value * 10;
+
+	s_bloomWidth_slider.generic.type = MTYPE_SLIDER;
+	s_bloomWidth_slider.generic.x = 0;
+	s_bloomWidth_slider.generic.y = 80 * cl_fontScale->value;
+	s_bloomWidth_slider.generic.name = "Bloom Star Size";
+	s_bloomWidth_slider.generic.callback = bloomWhidthCallback;
+	s_bloomWidth_slider.minvalue = 1;
+	s_bloomWidth_slider.maxvalue = 30;
+	s_bloomWidth_slider.curvalue = r_bloomWidth->value * 10;
+
+	menuSize = 90;
+
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_gamma_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_brightness_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_contrast_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_saturation_slider);
+
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomIntens_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomThreshold_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomWidth_slider);
+
+	Menu_Center(&s_opengl2_menu);
+	s_opengl2_menu.x -= 8;
+}
+
+int Default_MenuKey(menuframework_s * m, int key);
+void M_PushMenu(void(*draw) (void), int(*key) (int k));
+
+void Color_MenuDraw(void)
+{
+	int w, h;
+
+	menuSize = 190 * cl_fontScale->value;
+
+	// draw the banner
+	Draw_GetPicSize(&w, &h, "m_banner_video");
+	Draw_PicScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
+	Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
+
+	
+	Menu_AdjustCursor(&s_opengl2_menu, 1);
+	Menu_Draw(&s_opengl2_menu);
+}
+
+int Color_MenuKey(int key)
+{
+	return Default_MenuKey(&s_opengl2_menu, key);
+}
+
+void M_Menu_Color_f(void) {
+	M_ColorInit();
+	M_PushMenu(Color_MenuDraw, Color_MenuKey);
+}
+
+
+static void ColorSettingsFunc(void *unused) {
+	M_Menu_Color_f();
+}
+
 
 /*
 ** VID_MenuInit
@@ -357,21 +569,11 @@ void VID_MenuInit (void) {
 	s_fs_box.curvalue = r_fullScreen->value;
 	s_fs_box.generic.statusbar = "Requires Restart Video Sub-System";
 
-
-	s_brightness_slider.generic.type = MTYPE_SLIDER;
-	s_brightness_slider.generic.x = 0;
-	s_brightness_slider.generic.y = 30 * cl_fontScale->value;
-	s_brightness_slider.generic.name = "Brightness";
-	s_brightness_slider.generic.callback = BrightnessCallback;
-	s_brightness_slider.minvalue = 20;
-	s_brightness_slider.maxvalue = 40;
-	s_brightness_slider.curvalue = r_brightness->value * 20;
-
 	// -----------------------------------------------------------------------
 
 	s_aniso_slider.generic.type = MTYPE_SLIDER;
 	s_aniso_slider.generic.x = 0;
-	s_aniso_slider.generic.y = 50 * cl_fontScale->value;
+	s_aniso_slider.generic.y = 40 * cl_fontScale->value;
 	s_aniso_slider.generic.name = "Texture Anisotropy Level";
 	s_aniso_slider.minvalue = 1;
 	s_aniso_slider.maxvalue = 16;
@@ -380,7 +582,7 @@ void VID_MenuInit (void) {
 
 	s_tc_box.generic.type = MTYPE_SPINCONTROL;
 	s_tc_box.generic.x = 0;
-	s_tc_box.generic.y = 60 * cl_fontScale->value;
+	s_tc_box.generic.y = 50 * cl_fontScale->value;
 	s_tc_box.generic.name = "Texture Compression";
 	s_tc_box.itemnames = yesno_names;
 	s_tc_box.curvalue = r_textureCompression->value;
@@ -391,14 +593,14 @@ void VID_MenuInit (void) {
 	a_pplWorld_list.generic.type = MTYPE_SPINCONTROL;
 	a_pplWorld_list.generic.name = "Skip Static Lights";
 	a_pplWorld_list.generic.x = 0;
-	a_pplWorld_list.generic.y = 80 * cl_fontScale->value;
+	a_pplWorld_list.generic.y = 70 * cl_fontScale->value;
 	a_pplWorld_list.itemnames = yesno_names;
 	a_pplWorld_list.curvalue = r_skipStaticLights->value;
 	a_pplWorld_list.generic.callback = pplWorldCallBack;
 
 	s_shadow_box.generic.type = MTYPE_SPINCONTROL;
 	s_shadow_box.generic.x = 0;
-	s_shadow_box.generic.y = 90 * cl_fontScale->value;
+	s_shadow_box.generic.y = 80 * cl_fontScale->value;
 	s_shadow_box.generic.name = "Shadows";
 	s_shadow_box.itemnames = yesno_names;
 	s_shadow_box.curvalue = r_shadows->value;
@@ -406,7 +608,7 @@ void VID_MenuInit (void) {
 
 	s_parallax_box.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x = 0;
-	s_parallax_box.generic.y = 100 * cl_fontScale->value;
+	s_parallax_box.generic.y = 90 * cl_fontScale->value;
 	s_parallax_box.generic.name = "Relief Mapping";
 	s_parallax_box.itemnames = yesno_names;
 	s_parallax_box.curvalue = r_reliefMapping->value;
@@ -415,7 +617,7 @@ void VID_MenuInit (void) {
 
 	s_ambientLevel_slider.generic.type = MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x = 0;
-	s_ambientLevel_slider.generic.y = 110 * cl_fontScale->value;
+	s_ambientLevel_slider.generic.y = 100 * cl_fontScale->value;
 	s_ambientLevel_slider.generic.name = "Lightmap Scale";
 	s_ambientLevel_slider.generic.callback = ambientLevelCallback;
 	s_ambientLevel_slider.minvalue = 0;
@@ -425,7 +627,7 @@ void VID_MenuInit (void) {
 
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;
 	s_flare_box.generic.x = 0;
-	s_flare_box.generic.y = 130 * cl_fontScale->value;
+	s_flare_box.generic.y = 120 * cl_fontScale->value;
 	s_flare_box.generic.name = "Flares";
 	s_flare_box.itemnames = yesno_names;
 	s_flare_box.curvalue = r_drawFlares->value;
@@ -433,7 +635,7 @@ void VID_MenuInit (void) {
 
 	s_bloom_box.generic.type = MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x = 0;
-	s_bloom_box.generic.y = 140 * cl_fontScale->value;
+	s_bloom_box.generic.y = 130 * cl_fontScale->value;
 	s_bloom_box.generic.name = "Light Blooms";
 	s_bloom_box.itemnames = yesno_names;
 	s_bloom_box.curvalue = r_bloom->value;
@@ -441,7 +643,7 @@ void VID_MenuInit (void) {
 
 	s_dof_box.generic.type = MTYPE_SPINCONTROL;
 	s_dof_box.generic.x = 0;
-	s_dof_box.generic.y = 150 * cl_fontScale->value;
+	s_dof_box.generic.y = 140 * cl_fontScale->value;
 	s_dof_box.generic.name = "Depth of Field";
 	s_dof_box.itemnames = yesno_names;
 	s_dof_box.curvalue = r_dof->value;
@@ -449,7 +651,7 @@ void VID_MenuInit (void) {
 
 	s_radBlur_box.generic.type = MTYPE_SPINCONTROL;
 	s_radBlur_box.generic.x = 0;
-	s_radBlur_box.generic.y = 160 * cl_fontScale->value;
+	s_radBlur_box.generic.y = 150 * cl_fontScale->value;
 	s_radBlur_box.generic.name = "Radial Blur";
 	s_radBlur_box.itemnames = yesno_names;
 	s_radBlur_box.curvalue = r_radialBlur->value;
@@ -457,7 +659,7 @@ void VID_MenuInit (void) {
 
 	s_mb_box.generic.type = MTYPE_SPINCONTROL;
 	s_mb_box.generic.x = 0;
-	s_mb_box.generic.y = 170 * cl_fontScale->value;
+	s_mb_box.generic.y = 160 * cl_fontScale->value;
 	s_mb_box.generic.name = "Motion Blur";
 	s_mb_box.itemnames = yesno_names;
 	s_mb_box.curvalue = r_motionBlur->value;
@@ -465,7 +667,7 @@ void VID_MenuInit (void) {
 
 	s_ssao.generic.type = MTYPE_SPINCONTROL;
 	s_ssao.generic.x = 0;
-	s_ssao.generic.y = 180 * cl_fontScale->value;
+	s_ssao.generic.y = 170 * cl_fontScale->value;
 	s_ssao.generic.name = "SSAO";
 	s_ssao.itemnames = yesno_names;
 	s_ssao.curvalue = r_ssao->value;
@@ -474,7 +676,7 @@ void VID_MenuInit (void) {
 
 	s_fxaa_box.generic.type = MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x = 0;
-	s_fxaa_box.generic.y = 190 * cl_fontScale->value;
+	s_fxaa_box.generic.y = 180 * cl_fontScale->value;
 	s_fxaa_box.generic.name = "FXAA";
 	s_fxaa_box.itemnames = yesno_names;
 	s_fxaa_box.curvalue = r_fxaa->value;
@@ -483,7 +685,7 @@ void VID_MenuInit (void) {
 
 	s_film_grain.generic.type = MTYPE_SPINCONTROL;
 	s_film_grain.generic.x = 0;
-	s_film_grain.generic.y = 200 * cl_fontScale->value;
+	s_film_grain.generic.y = 190 * cl_fontScale->value;
 	s_film_grain.generic.name = "Cinematic filter";
 	s_film_grain.itemnames = yesno_names;
 	s_film_grain.curvalue = r_filmFilter->value;
@@ -492,7 +694,7 @@ void VID_MenuInit (void) {
 
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x = 0;
-	s_finish_box.generic.y = 210 * cl_fontScale->value;
+	s_finish_box.generic.y = 200 * cl_fontScale->value;
 	s_finish_box.generic.name = "Vertical Sync";
 	s_finish_box.generic.callback = vSyncCallBack;
 	s_finish_box.curvalue = r_vsync->value;
@@ -509,23 +711,29 @@ void VID_MenuInit (void) {
 		s_finish_box.generic.statusbar = "Off - On";
 	}
 
+	s_menuAction_color.generic.type = MTYPE_ACTION;
+	s_menuAction_color.generic.x = 0;
+	s_menuAction_color.generic.y = 220 * cl_fontScale->value;
+	s_menuAction_color.generic.name = "Color / Post-Process Settings...";
+	s_menuAction_color.generic.callback = ColorSettingsFunc;
+	s_menuAction_color.generic.statusbar = "Color Balance and Bloom Settings";
+
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x = 0;
-	s_defaults_action.generic.y = 230 * cl_fontScale->value;
+	s_defaults_action.generic.y = 240 * cl_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x = 0;
-	s_apply_action.generic.y = 240 * cl_fontScale->value;
+	s_apply_action.generic.y = 250 * cl_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 
-	menuSize = 250;
+	menuSize = 260;
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_mode_list);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_fs_box);
-	Menu_AddItem (&s_opengl_menu, (void *)&s_brightness_slider);
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_aniso_slider);
 
@@ -545,6 +753,7 @@ void VID_MenuInit (void) {
 	Menu_AddItem (&s_opengl_menu, (void *)&s_film_grain);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_finish_box);
 
+	Menu_AddItem(&s_opengl_menu, (void *)&s_menuAction_color);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_defaults_action);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_apply_action);
 

@@ -411,15 +411,12 @@ void R_FilmFilter (void)
 
 void R_GammaRamp (void) 
 {
-	
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	GL_BindProgram (gammaProgram, 0);
 
 	GL_MBindRect (GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-	qglUniform4f (gamma_control, r_brightness->value, r_contrast->value, r_saturation->value, 1 / r_brightness->value);
+	qglUniform4f (gamma_control, r_brightness->value, r_contrast->value, r_saturation->value, 1 / r_gamma->value);
 	qglUniformMatrix4fv(gamma_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad ();

@@ -159,9 +159,9 @@ void SetModelsLight ()
 			if (shadelight[i] > 0.01)
 				break;
 		if (i == 3) {
-			shadelight[0] = 0.01;
-			shadelight[1] = 0.01;
-			shadelight[2] = 0.01;
+			shadelight[0] = 0.005;
+			shadelight[1] = 0.005;
+			shadelight[2] = 0.005;
 		}
 	}
 

@@ -236,6 +236,7 @@ cvar_t *r_fullScreen;
 cvar_t *r_brightness;
 cvar_t *r_contrast;
 cvar_t *r_saturation;
+cvar_t *r_gamma;
 
 cvar_t *vid_ref;
 cvar_t *r_finish;
