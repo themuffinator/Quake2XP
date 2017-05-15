@@ -66,94 +66,115 @@ void IN_ShutDownXinput() {
 
 void IN_StartupXInput(void)
 {
+	int numDev, firstDev;
 	XINPUT_CAPABILITIES xiCaps;
 	XINPUT_BATTERY_INFORMATION batteryInfo;
 	char batteryLevel[64], batteryType[64];
 
 	// reset to -1 each time as this can be called at runtime
 	xiActiveController = -1;
+	xiActive = qfalse;
 
 	Com_Printf("\n======= Init xInput Devices =======\n\n");
 
 	// Load the xInput dll
-	Com_Printf("...calling LoadLibrary(" S_COLOR_GREEN "%s" S_COLOR_WHITE "): ", XINPUT_LIB);
-
-	if ((xinput.xiDevice = LoadLibrary(XINPUT_LIB)) == NULL) {
+	Com_Printf("...calling LoadLibrary(%s): ", XINPUT_LIB);
+	if ((xinput.xiDevice = LoadLibrary(XINPUT_LIB)) == NULL)
+	{
 		Com_Printf(S_COLOR_RED"failed!\n");
-		IN_ShutDownXinput();
 		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
 
-	qXInputEnable						= (_xInputEnable)						GetProcAddress(xinput.xiDevice, "XInputEnable");
-	qXInputGetCapabilities				= (_XInputGetCapabilities)				GetProcAddress(xinput.xiDevice, "XInputGetCapabilities");
-	qXInputGetState						= (_XInputGetState)						GetProcAddress(xinput.xiDevice, "XInputGetState");
-	qXInputGetBatteryInformation		= (_XInputGetBatteryInformation)		GetProcAddress(xinput.xiDevice, "XInputGetBatteryInformation");
-	qXInputSetState						= (_XInputSetState)						GetProcAddress(xinput.xiDevice, "XInputSetState");
+	qXInputEnable = (_xInputEnable)GetProcAddress(xinput.xiDevice, "XInputEnable");
+	qXInputGetCapabilities = (_XInputGetCapabilities)GetProcAddress(xinput.xiDevice, "XInputGetCapabilities");
+	qXInputGetState = (_XInputGetState)GetProcAddress(xinput.xiDevice, "XInputGetState");
+	qXInputGetBatteryInformation = (_XInputGetBatteryInformation)GetProcAddress(xinput.xiDevice, "XInputGetBatteryInformation");
+	qXInputSetState = (_XInputSetState)GetProcAddress(xinput.xiDevice, "XInputSetState");
 
-	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputSetState) {
-		Com_Printf(S_COLOR_RED"...can't find xInput procedures adresses.\n");
-		IN_ShutDownXinput(); // unload dll
+	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputSetState)
+	{
+		Com_Printf(S_COLOR_RED"can't find xInput procedures adresses.\n");
+		IN_ShutDownXinput();
 		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
 	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
 
-	for (int numDev = 0; numDev < XI_MAX_CONTROLLERS; numDev++){
+	xi_axisLx = Cvar_Get("xi_axisLx", "3", CVAR_ARCHIVE);
+	xi_axisLy = Cvar_Get("xi_axisLy", "2", CVAR_ARCHIVE);
+	xi_axisRx = Cvar_Get("xi_axisRx", "3", CVAR_ARCHIVE);
+	xi_axisRy = Cvar_Get("xi_axisRy", "1", CVAR_ARCHIVE);
+	xi_axisLt = Cvar_Get("xi_axisLt", "8", CVAR_ARCHIVE);
+	xi_axisRt = Cvar_Get("xi_axisRt", "4", CVAR_ARCHIVE);
+	xi_dpadArrowMap = Cvar_Get("xi_dpadArrowMap", "1", CVAR_ARCHIVE);
+	xi_useController = Cvar_Get("xi_useController", "-1", CVAR_ARCHIVE);
+	xi_useXInput = Cvar_Get("xi_useXInput", "1", CVAR_ARCHIVE);
+	xi_sensX = Cvar_Get("xi_sensX", "2.0", CVAR_ARCHIVE);
+	xi_sensY = Cvar_Get("xi_sensY", "0.5", CVAR_ARCHIVE);
+	xi_pitchInversion = Cvar_Get("xi_pitchInversion", "0", CVAR_ARCHIVE);
 
+	Com_Printf("...enumerate xInput Controllers\n");
+	firstDev = -1;
+	for (numDev = 0; numDev < XI_MAX_CONTROLLERS; numDev++)
+	{
 		memset(&xiCaps, 0, sizeof(XINPUT_CAPABILITIES));
-		DWORD getCaps = qXInputGetCapabilities(numDev, XINPUT_FLAG_GAMEPAD, &xiCaps);
-
-		memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
-		DWORD battStat = qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo);
-
-		if (getCaps == ERROR_SUCCESS)
+		if (qXInputGetCapabilities(numDev, XINPUT_FLAG_GAMEPAD, &xiCaps) == ERROR_SUCCESS)
 		{
-			if(batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
-				strcpy(batteryLevel, S_COLOR_RED"Battery empity");
-			else
-				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
-					strcpy(batteryLevel, S_COLOR_MAGENTA"Battery level low");
-			else
-				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
-					strcpy(batteryLevel, S_COLOR_YELLOW"Battery level medium");
-			else
-				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
-					strcpy(batteryLevel, S_COLOR_GREEN"Battery level full");
-			
-			if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED)
-					strcpy(batteryType, S_COLOR_GREEN"Controller wired");
-				else
-			if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
-					strcpy(batteryType, S_COLOR_GREEN"Controller use Alkalyne battery");
-				else
-			if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
-					strcpy(batteryType, S_COLOR_GREEN"Controller use Ni-MH battery");
-				else
-			if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
-					strcpy(batteryType, S_COLOR_MAGENTA"Controller use unknown battery type");
+			memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
+			if (qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo) == ERROR_SUCCESS)
+			{
+				if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED)
+					strcpy(batteryType, S_COLOR_GREEN"Controller wired\n");
+				else if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
+					strcpy(batteryType, "use Alkalyne battery");
+				else if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
+					strcpy(batteryType, "use Ni-MH battery");
+				else if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
+					strcpy(batteryType, "use unknow battery type");
 
-			// just use the first one
-			Com_Printf("...found xInput Controller\n");
+				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
+					strcpy(batteryLevel, S_COLOR_RED"empity"S_COLOR_WHITE);
+				else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
+					strcpy(batteryLevel, S_COLOR_MAGENTA"level low"S_COLOR_WHITE);
+				else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
+					strcpy(batteryLevel, S_COLOR_YELLOW"level medium"S_COLOR_WHITE);
+				else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
+					strcpy(batteryLevel, S_COLOR_GREEN"level full"S_COLOR_WHITE);
+				else
+					strcpy(batteryLevel, S_COLOR_CYAN"unknown level"S_COLOR_WHITE);
 
-			Com_Printf("...%s\n...%s\n", batteryLevel, batteryType);
+				Com_Printf("Controller %i:\n%s <%s>\n", numDev, batteryType, batteryLevel);
+			}
+				if (firstDev == -1)
+					firstDev = numDev;
 
-			// store to global active controller
-			xiActiveController = numDev;
-			break;
+				// store to global active controller
+				if ((int)xi_useController->value < 0)  /// automatic select
+					xiActiveController = numDev;
+				else
+				{
+					if (xi_useController->integer == numDev)
+						xiActiveController = numDev;
+				}
 		}
 	}
+
+	/// Berserker: если ничего выбралось и если есть хоть один рабочий контроллер, выберем его
+	if (xiActiveController == -1 && firstDev != -1)
+		xiActiveController = firstDev;
 
 	if (xiActiveController != -1)
 	{
 		qXInputEnable(TRUE);
 		xiActive = qtrue;
 	}
-	else {
+	else
+	{
 		Com_Printf(S_COLOR_MAGENTA"...xInput Device disconnected or not found.\n");
 		IN_ShutDownXinput();
 	}
-	 
+
 	Com_Printf("\n-----------------------------------\n\n");
 }
 

@@ -288,17 +288,6 @@ void IN_Init (void) {
 	in_useJoystic = Cvar_Get("in_useJoystic", "0", CVAR_ARCHIVE);
 
 	// xinput stuff
-	xi_axisLx = Cvar_Get("xi_axisLx", "3", CVAR_ARCHIVE);
-	xi_axisLy = Cvar_Get("xi_axisLy", "2", CVAR_ARCHIVE);
-	xi_axisRx = Cvar_Get("xi_axisRx", "3", CVAR_ARCHIVE);
-	xi_axisRy = Cvar_Get("xi_axisRy", "1", CVAR_ARCHIVE);
-	xi_axisLt = Cvar_Get("xi_axisLt", "8", CVAR_ARCHIVE);
-	xi_axisRt = Cvar_Get("xi_axisRt", "4", CVAR_ARCHIVE);
-	xi_dpadArrowMap = Cvar_Get("xi_dpadArrowMap", "1", CVAR_ARCHIVE);
-	xi_useController = Cvar_Get("xi_useController", "1", CVAR_ARCHIVE);
-	xi_sensX = Cvar_Get("xi_sensX", "2.0", CVAR_ARCHIVE);
-	xi_sensY = Cvar_Get("xi_sensY", "0.5", CVAR_ARCHIVE);
-	xi_pitchInversion = Cvar_Get("xi_pitchInversion", "0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);

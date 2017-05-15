@@ -43,6 +43,8 @@ cvar_t *xi_axisRt;
 
 cvar_t *xi_dpadArrowMap;
 cvar_t *xi_useController;
+cvar_t *xi_useXInput;
+cvar_t	*xi_useXInput;
 
 cvar_t *xi_sensX;
 cvar_t *xi_sensY;
