@@ -17,8 +17,8 @@ vec4 mono = Desaturate(color.rgb, 1.0);
 vec4 deltas = color - mono;
 fragData = mono + u_colorScale * deltas;
 
-float OuterVignetting	= 1.4 - 0.45;
-float InnerVignetting	= 1.0 - 0.45;
+float OuterVignetting	= 1.4 - 0.4;
+float InnerVignetting	= 1.0 - 0.4;
 
 float d = distance(vec2(0.5, 0.5), v_texCoord.xy) * 1.414213;
 float vignetting = clamp((OuterVignetting - d) / (OuterVignetting - InnerVignetting), 0.0, 1.0);
