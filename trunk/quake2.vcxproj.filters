@@ -310,9 +310,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ref_gl\glext.h">
-      <Filter>Source Files\Renderer\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="win32\glw_win.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>

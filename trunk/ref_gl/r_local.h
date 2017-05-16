@@ -41,7 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "imagelib/ilut.h"
 
 #else
-#include <GL/glext.h>
+#include "glcorearb.h"
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <IL/ilut.h>

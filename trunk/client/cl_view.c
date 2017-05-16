@@ -181,8 +181,10 @@ Call before entering a new level, or after changing dlls
 qboolean needLoadingPlaque (void);
 void R_GenSkyCubeMap (char *name);
 
+#ifdef _WIN32
 extern int	xiActiveController;
 void SetRumble(int inputDeviceNum, int rumbleLow, int rumbleHigh);
+#endif
 
 void CL_PrepRefresh (void) {
 	char		mapname[32];
@@ -201,7 +203,9 @@ void CL_PrepRefresh (void) {
 	SCR_AddDirtyPoint (0, 0);
 	SCR_AddDirtyPoint (viddef.width - 1, viddef.height - 1);
 
+#ifdef _WIN32
 	SetRumble(xiActiveController, 0, 0);
+#endif
 
 	start = Sys_Milliseconds ();
 
