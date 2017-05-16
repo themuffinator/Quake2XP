@@ -164,11 +164,13 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, r_vsync->value ? 1 : 0);
-	
+	  
+  // sdl2 
+  /*
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, r_glMajorVersion->value);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, r_glMinorVersion->value);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-    
+  */
 	if (r_multiSamples->value > 1) {
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (int)r_multiSamples->value);
