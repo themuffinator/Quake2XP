@@ -45,8 +45,6 @@ extern GLboolean (APIENTRY * qglAreTexturesResident) (GLsizei n,
 	GLboolean *
 	residences);
 
-extern	void (APIENTRY * qglDrawRangeElementsEXT)(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void *indices);
-
 extern void (APIENTRY * qglArrayElement) (GLint i);
 extern void (APIENTRY * qglBegin) (GLenum mode);
 extern void (APIENTRY * qglBindTexture) (GLenum target, GLuint texture);
@@ -572,8 +570,6 @@ extern void (APIENTRY * qglStencilFuncSeparateATI) (GLenum frontfunc,
 	GLenum backfunc,
 	GLint red,
 	GLuint mask);
-
-extern PFNGLTEXIMAGE3DPROC					glTexImage3D;
 
 extern PFNGLSTENCILFUNCSEPARATEPROC			qglStencilFuncSeparate;
 extern PFNGLSTENCILOPSEPARATEPROC			qglStencilOpSeparate;
