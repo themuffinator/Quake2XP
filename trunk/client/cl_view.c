@@ -537,9 +537,9 @@ void V_RenderView () {
 
 			cl.refdef.fov_x += f;
 			cl.refdef.fov_y -= f;
-
 		}
 
+#ifdef _WIN32
 		// add xBox controller vibration 
 		int value = cl.frame.playerstate.stats[STAT_HEALTH];
 
@@ -547,6 +547,7 @@ void V_RenderView () {
 			SetRumble(xiActiveController, 4096, 65535);
 		else
 			SetRumble(xiActiveController, 0, 0);
+#endif
 
 		cl.refdef.areabits = cl.frame.areabits;
 

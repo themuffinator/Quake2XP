@@ -226,9 +226,9 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(ref_alpha, e->alpha);
 	qglUniform1f(ref_thickness, len * 0.5);
 
-	if (currententity->flags & RF_BFG_SPRITE)
-		qglUniform1f(ref_thickness2, 1.0);
-	else
+//	if (currententity->flags & RF_BFG_SPRITE)
+//		qglUniform1f(ref_thickness2, 1.0);
+//	else
 		qglUniform1f(ref_thickness2, len * 0.5);
 
 	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+0]);
