@@ -312,6 +312,10 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	}
 }
 
+
+void IN_ZoomDown(void);
+void IN_ZoomUp(void);
+
 void IN_ControllerMove(usercmd_t *cmd)
 {
 	// no controller to use
@@ -341,8 +345,6 @@ void IN_ControllerMove(usercmd_t *cmd)
 	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 32768, xi_axisLy);
 	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, 32768, xi_axisRx);
 	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, 32768, xi_axisRy);
-	IN_ControllerAxisMove(cmd, xiState.Gamepad.bLeftTrigger, 0, 255, xi_axisLt);
-	IN_ControllerAxisMove(cmd, xiState.Gamepad.bRightTrigger, 0, 255, xi_axisRt);
 
 	// fix up the command (bound/etc)
 	if (cl.viewangles[0] > 80.0) 
@@ -361,10 +363,16 @@ void IN_ControllerMove(usercmd_t *cmd)
 	int buttonState = 0;
 	int dpadState = 0;
 
+	// Hardcoded!!!
 	if (xiState.Gamepad.bLeftTrigger >= 128)
-		buttonState |= 0x10000;
+		IN_ZoomDown();
+	else
+		IN_ZoomUp();
+
 	if (xiState.Gamepad.bRightTrigger >= 128)
-		buttonState |= 0x20000;
+		cmd->buttons |= BUTTON_ATTACK;
+	else
+		cmd->buttons &= ~BUTTON_ATTACK;
 
 	if ((int)xi_dpadArrowMap->value)
 	{

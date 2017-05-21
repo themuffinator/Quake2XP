@@ -471,6 +471,7 @@ void AddBoundsToBounds(const vec3_t mins1, const vec3_t maxs1, vec3_t mins2, vec
 
 void R_DrawChainsRA(qboolean bmodel);
 void R_DrawBrushModelRA(void);
+
 extern int	occ_framecount;
 
 //====================================================================

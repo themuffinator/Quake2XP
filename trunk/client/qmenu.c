@@ -281,6 +281,7 @@ qboolean Field_Key (menufield_s * f, int key) {
 		case K_ENTER:
 		case K_ESCAPE:
 		case K_TAB:
+		case K_MOUSE1:
 			return qfalse;
 
 		case K_SPACE:

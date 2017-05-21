@@ -234,7 +234,7 @@ void LoadHudEnts (void) {
 	hudmodel.cl_hud_flech =
 		R_RegisterModel ("models/weapons/g_etf_rifle/tris.md2");
 	hudmodel.cl_hud_flech_a =
-		R_RegisterModel ("models/ammo/am_flechette/tris.md2");
+		R_RegisterModel ("models/ammo/am_flechette/fx.md2");
 	hudmodel.cl_hud_proxlch =
 		R_RegisterModel ("models/weapons/g_plaunch/tris.md2");
 	hudmodel.cl_hud_proxlch_a =
@@ -262,6 +262,7 @@ void LoadHudEnts (void) {
 }
 
 extern cvar_t	*cl_hudModelScale;
+qboolean stopRotation, xatrix;
 
 void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	refdef_t	refdef;
@@ -310,10 +311,26 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	entity.frame = 0;
 	entity.oldframe = 0;
 	entity.backlerp = 0.0;
-	entity.angles[1] = anglemod (cl.time / 16);
-	entity.angleMod = qtrue;
+	
+	if (net_compatibility->value) {
+		if (stopRotation) {
+			entity.angles[1] = 175.0;
+		}
+		else {
+			entity.angles[1] = anglemod(cl.time / 16);
+			entity.angleMod = qtrue;
+		}
+	}
+	else {
+
+		entity.angles[1] = anglemod(cl.time / 16);
+		entity.angleMod = qtrue;
+	}
 
 	VectorNegate (center, entity.origin);
+
+	if (xatrix)
+		entity.origin[0] += 8.0;
 
 	// Draw it
 	R_RenderFrame (&refdef);
@@ -729,8 +746,11 @@ void SCR_ExecuteLayoutString3d (char *s) {
 					SCR_DrawHudModel (x, y, hudmodel.cl_hud_predator);
 
 				if (!strcmp
-					(cl.configstrings[CS_IMAGES + value], "i_help"))
-					SCR_DrawHudModel (x, y - cl_hudModelScale->value * hud_sy, hudmodel.cl_hud_comp);
+					(cl.configstrings[CS_IMAGES + value], "i_help")) {
+					stopRotation = qtrue;
+					SCR_DrawHudModel(x, y - cl_hudModelScale->value * hud_sy, hudmodel.cl_hud_comp);
+				} else
+					stopRotation = qfalse;
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "i_health3"))
@@ -935,8 +955,12 @@ void SCR_ExecuteLayoutString3d (char *s) {
 				// ==The Reckoning==//
 
 				if (!strcmp
-					(cl.configstrings[CS_IMAGES + value], "a_mslugs"))
-					SCR_DrawHudModel (x, y, hudmodel.cl_hud_mslugs);
+				(cl.configstrings[CS_IMAGES + value], "a_mslugs")) {
+					xatrix = qtrue;
+					SCR_DrawHudModel(x, y, hudmodel.cl_hud_mslugs);
+				}
+				else
+					xatrix = qfalse;
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "a_trap"))
@@ -968,8 +992,8 @@ void SCR_ExecuteLayoutString3d (char *s) {
 					SCR_DrawHudModel (x, y, hudmodel.cl_hud_flech);
 
 				if (!strcmp
-					(cl.configstrings[CS_IMAGES + value], "a_flechettes"))
-					SCR_DrawHudModel (x, y, hudmodel.cl_hud_flech_a);
+				(cl.configstrings[CS_IMAGES + value], "a_flechettes"))
+					SCR_DrawHudModel(x, y, hudmodel.cl_hud_flech_a);
 
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "w_proxlaunch"))
