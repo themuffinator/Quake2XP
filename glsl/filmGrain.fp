@@ -93,10 +93,10 @@ void main()
 	vec2 uv = gl_FragCoord.xy / u_screenSize;
 	vec4 color = texture2DRect(u_ScreenTex, gl_FragCoord.xy);
 
-	if(u_params.x == 0)
+	if(u_params.x == 1)
 		fragData = TechniColorSys1(color);   
 
-	if(u_params.x == 1)
+	if(u_params.x == 2)
 		fragData = SepiaColor(color);
 		  	
 	float noise = snoise(uv * vec2(u_screenSize.x + u_rand * u_screenSize.y)) * 0.5;

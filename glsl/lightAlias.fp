@@ -17,6 +17,8 @@ uniform int		u_isAmbient;
 uniform int		u_isRgh;
 uniform int		u_spotLight;
 uniform vec3	u_spotParams;
+uniform int		u_autoBump;
+uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -43,16 +45,26 @@ void main (void) {
 
 	vec3 L = normalize(v_lightVec);
 	vec3 V = normalize(v_viewVec);
-	
+
+	vec4 normalMap = vec4(0.0);
+	float specular = 0.0;
+
 	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 	vec4 diffuseMap  = texture(u_diffuseMap, v_texCoord);
-	vec4 normalMap =  texture(u_bumpMap, v_texCoord);
-	normalMap.xyz *= 2.0;
-	normalMap.xyz -= 1.0;
-	normalMap.xyz = normalize(normalMap).xyz;
+	
+	if(u_autoBump == 0){
+		normalMap =  texture(u_bumpMap, v_texCoord);
+		normalMap.xyz *= 2.0;
+		normalMap.xyz -= 1.0;
+		normalMap.xyz = normalize(normalMap).xyz;
+		specular = normalMap.a * u_specularScale;
+	}
 
-	float specular = normalMap.a * u_specularScale;
-			
+	if(u_autoBump == 1){
+		normalMap = Height2Normal(v_texCoord, u_diffuseMap, diffuseMap.rgb, u_autoBumpParams.x, u_autoBumpParams.y);
+		specular = normalMap.a;
+	}		
+		
 	float SSS = diffuseMap.a;
 	vec3 nm = texture(u_bumpMap,   v_texCoord).xyz * vec3( 2.0,  2.0, 2.0) + vec3(-1.0, -1.0,  0.0);
 	vec3 dt = texture(u_bumpBlend, v_texCoord).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
@@ -85,7 +97,7 @@ void main (void) {
 
 	if(u_isRgh == 0){
 		roughness = 1.0 - diffuseMap.r * 1.35;
-    roughness = clamp(roughness, 0.1, 1.0);
+		roughness = clamp(roughness, 0.1, 1.0);
     }
 
 	vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V);
@@ -105,6 +117,7 @@ void main (void) {
 
 			skin_color *= cubeFilter;
 			vec3 metall_color = brdfColor * cubeFilter.rgb * attenMap; 
+
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);			
 	}
 }
