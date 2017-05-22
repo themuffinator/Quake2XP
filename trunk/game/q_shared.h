@@ -425,6 +425,9 @@ CVARS (console variables)
 
 #define CVAR_READONLY	32	// dont allow setting from command line or console
 
+#define CVAR_DEVELOPER	64
+#define ExtraDevMode 1888 //Sieg Heil!
+
 // nothing outside the Cvar_*() functions should modify these fields!
 typedef struct cvar_s {
 	char		*name;

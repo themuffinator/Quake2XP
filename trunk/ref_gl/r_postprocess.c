@@ -384,7 +384,7 @@ void R_FXAA (void) {
 void R_FilmFilter (void) 
 {
 
-	if (!r_filmFilter->value)
+	if (!r_filmFilterType->value)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)

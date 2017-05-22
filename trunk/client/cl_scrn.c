@@ -1031,6 +1031,7 @@ void SCR_DrawClock (void) {
 }
 
 void R_GammaRamp (void);
+float ClampCvar(float min, float max, float value);
 
 void SCR_UpdateScreen (void) {
 	// if the screen is disabled (loading plaque is up, or vid mode
@@ -1051,17 +1052,8 @@ void SCR_UpdateScreen (void) {
 		return;					// not initialized yet
 
 
-	if (cl_hudScale->value > 1)
-		Cvar_SetValue ("cl_hudScale", 1);
-
-	if (cl_hudScale->value < 0.1)
-		Cvar_SetValue ("cl_hudScale", 0.1);
-
-	if (cl_fontScale->value < 2)
-		Cvar_SetValue ("cl_fontScale", 2);
-
-	if (cl_fontScale->value > 2)
-		Cvar_SetValue("cl_fontScale", 2);
+	cl_hudScale->value = ClampCvar(0.1, 1.0, cl_hudScale->value);
+	cl_fontScale->value = ClampCvar(2.0, 2.0, cl_fontScale->value);
 
 	R_BeginFrame ();
 

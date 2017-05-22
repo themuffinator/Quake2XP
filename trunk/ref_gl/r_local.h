@@ -239,7 +239,6 @@ cvar_t *r_saturation;
 cvar_t *r_gamma;
 
 cvar_t *vid_ref;
-cvar_t *r_finish;
 
 cvar_t	*r_causticIntens;
 
@@ -284,8 +283,6 @@ cvar_t	*r_skipStaticLights;
 cvar_t	*r_lightmapScale;
 cvar_t	*r_lightsWeldThreshold;
 cvar_t	*r_debugLights;
-cvar_t	*r_occLightBoundsSize;
-cvar_t	*r_debugOccLightBoundsSize;
 cvar_t	*r_useLightScissors;
 cvar_t	*r_useDepthBounds;
 cvar_t	*r_specularScale;
@@ -956,6 +953,8 @@ uint lightAlias_mv;
 uint lightAlias_spotLight;
 uint lightAlias_spotParams;
 uint lightAlias_spotMatrix;
+uint lightAlias_autoBump;
+uint lightAlias_autoBumpParams;
 
 uint gen_attribConsole;
 uint gen_attribColors;

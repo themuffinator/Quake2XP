@@ -917,9 +917,6 @@ void R_RenderView (refdef_t *fd) {
 	if (!r_worldmodel && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel.");
 
-	if (r_finish->value)
-		qglFinish();
-
 	R_SetupFrame();
 	R_SetFrustum();
 	R_SetupViewMatrices();
@@ -1241,7 +1238,6 @@ void R_RegisterCvars(void)
 	r_lockPvs =							Cvar_Get("r_lockPvs", "0", 0);
 
 	r_vsync =							Cvar_Get("r_vsync", "0", CVAR_ARCHIVE);
-	r_finish =							Cvar_Get("r_finish", "0", 0);
 	
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
 	
@@ -1289,19 +1285,16 @@ void R_RegisterCvars(void)
 	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
 	r_reliefScale=						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);
 
-	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_ARCHIVE);
+	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_DEVELOPER);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 
-	r_skipStaticLights =				Cvar_Get("r_skipStaticLights", "0", CVAR_ARCHIVE);
+	r_skipStaticLights =				Cvar_Get("r_skipStaticLights", "0", CVAR_DEVELOPER);
 	r_lightmapScale =					Cvar_Get("r_lightmapScale", "0.5", CVAR_ARCHIVE);
 	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
 	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_lightsWeldThreshold =				Cvar_Get("r_lightsWeldThreshold", "40", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
-//	r_useLightOccluders =				Cvar_Get("r_useLightOccluders", "0", 0);
-	r_occLightBoundsSize =				Cvar_Get("r_occLightBoundsSize", "0.75", 0);
-//	r_debugOccLightBoundsSize =			Cvar_Get("r_debugOccLightBoundsSize", "0.75", 0);
 	r_specularScale =					Cvar_Get("r_specularScale", "1", CVAR_ARCHIVE);
 	r_ambientSpecularScale =			Cvar_Get("r_ambientSpecularScale", "0.3", CVAR_ARCHIVE);
 	r_useRadiosityBump =				Cvar_Get("r_useRadiosityBump", "1", CVAR_ARCHIVE);
@@ -1338,7 +1331,7 @@ void R_RegisterCvars(void)
 	r_glDebugOutput =					Cvar_Get("r_glDebugOutput", "0", 0);
 	r_glMajorVersion =					Cvar_Get("r_glMajorVersion", "4", CVAR_ARCHIVE);
 	r_glMinorVersion =					Cvar_Get("r_glMinorVersion", "5", CVAR_ARCHIVE);
-	r_glCoreProfile =					Cvar_Get("r_glCoreProfile", "0", CVAR_ARCHIVE);
+	r_glCoreProfile =					Cvar_Get("r_glCoreProfile", "0", 0);
 
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
 	r_cameraSpaceLightMove =			Cvar_Get("r_cameraSpaceLightMove", "0", CVAR_ARCHIVE);

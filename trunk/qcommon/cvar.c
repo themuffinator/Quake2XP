@@ -145,6 +145,11 @@ cvar_t *Cvar_Set2 (char *var_name, char *value, qboolean force) {
 		return Cvar_Get (var_name, value, 0);
 	}
 
+	if ((var->flags & CVAR_DEVELOPER) && developer->value != ExtraDevMode) {
+		Com_Printf("" S_COLOR_YELLOW "%s " S_COLOR_MAGENTA "is developer protected\n", var_name);
+		return var;
+	}
+
 	if (var->flags & (CVAR_USERINFO | CVAR_SERVERINFO)) {
 		if (!Cvar_InfoValidate (value)) {
 			Com_Printf ("invalid info cvar value\n");
@@ -328,13 +333,13 @@ qboolean Cvar_Command (void) {
 		Com_Printf ("\"%s\" is \"%s\"", v->name, v->string);
 
 		if (v->flags & CVAR_ARCHIVE)
-			Com_Printf (""S_COLOR_YELLOW" ARCH");
+			Com_Printf (""S_COLOR_YELLOW" ARCHIVE");
 
 		if (v->flags & CVAR_USERINFO)
-			Com_Printf (" USER");
+			Com_Printf (" USERINFO");
 
 		if (v->flags & CVAR_SERVERINFO)
-			Com_Printf (""S_COLOR_BLUE" SERV");
+			Com_Printf (""S_COLOR_BLUE" SERVERINFO");
 
 		if (v->flags & CVAR_NOSET)
 			Com_Printf (""S_COLOR_RED" NOSET");
@@ -482,6 +487,12 @@ void Cvar_List_f (void) {
 			Com_Printf (""S_COLOR_BLUE"S");
 		else
 			Com_Printf (" ");
+
+		if (var->flags & CVAR_DEVELOPER)
+			Com_Printf(""S_COLOR_RED"D");
+		else
+			Com_Printf(" ");
+
 		if (var->flags & CVAR_NOSET)
 			Com_Printf (""S_COLOR_RED"-");
 		else if (var->flags & CVAR_LATCH)

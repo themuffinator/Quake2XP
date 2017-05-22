@@ -375,6 +375,7 @@ void R_UpdateLightAliasUniforms()
 
 	qglUniform1f(lightAlias_colorScale, r_textureColorScale->value);
 	qglUniform1i(lightAlias_ambient, (int)currentShadowLight->isAmbient);
+	qglUniform1f(lightAlias_specularScale, r_specularScale->value);
 	qglUniform4f(lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform1i(lightAlias_fog, (int)currentShadowLight->isFog);
 	if (currententity->flags & RF_WEAPONMODEL)
@@ -396,7 +397,7 @@ void R_UpdateLightAliasUniforms()
 	if (currentShadowLight->isCone)
 		qglUniform1i(lightAlias_spotLight, 1);
 	else
-		qglUniform1i(lightWorld_spotLight, 0);
+		qglUniform1i(lightAlias_spotLight, 0);
 	
 	R_CalcCubeMapMatrix(qtrue);
 	qglUniformMatrix4fv(lightAlias_cubeMatrix, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
@@ -524,13 +525,18 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 		inWater = qfalse;
 
 	R_UpdateLightAliasUniforms();
+	
+	if (r_imageAutoBump->value && skinNormalmap == r_defBump) {
+		qglUniform1i(lightAlias_autoBump, 1);
+		qglUniform2f(lightAlias_autoBumpParams, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
+	}
+	else
+		qglUniform1i(lightAlias_autoBump, 0);
 
 	if (inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		qglUniform1i(lightAlias_isCaustics, 1);
 	else
 		qglUniform1i(lightAlias_isCaustics, 0);
-
-	qglUniform1f (lightAlias_specularScale, r_specularScale->value);
 
 	GL_MBind (GL_TEXTURE0, skinNormalmap->texnum);
 	GL_MBind (GL_TEXTURE1, skin->texnum);
@@ -547,19 +553,15 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	GL_MBind(GL_TEXTURE5, skinBump->texnum);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TANGENT);
+	qglEnableVertexAttribArray(ATT_BINORMAL);
+	qglEnableVertexAttribArray(ATT_NORMAL);
+	qglEnableVertexAttribArray(ATT_TEX0);
+
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
-
-	qglEnableVertexAttribArray (ATT_TANGENT);
 	qglVertexAttribPointer (ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
-
-	qglEnableVertexAttribArray (ATT_BINORMAL);
 	qglVertexAttribPointer (ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
-
-	qglEnableVertexAttribArray (ATT_NORMAL);
 	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
-
-//	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
-	qglEnableVertexAttribArray (ATT_TEX0);
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
@@ -569,7 +571,5 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglDisableVertexAttribArray (ATT_BINORMAL);
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_TEX0);
-//	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, 0);
 	GL_BindNullProgram ();
-
 }

@@ -6,9 +6,6 @@ SHADING LANGUAGE INTERFACE
 ==============================
 */
 #include "r_local.h"
-#ifdef _WIN32
-#include <process.h>
-#endif
 
 #define MAX_INFO_LOG		4096
 
@@ -699,6 +696,8 @@ void R_InitPrograms (void) {
 		lightAlias_spotLight		= qglGetUniformLocation (id, "u_spotLight");
 		lightAlias_spotParams		= qglGetUniformLocation (id, "u_spotParams");
 		lightAlias_spotMatrix		= qglGetUniformLocation (id, "u_spotMatrix");
+		lightAlias_autoBump			= qglGetUniformLocation	(id, "u_autoBump");
+		lightAlias_autoBumpParams	= qglGetUniformLocation	(id, "u_autoBumpParams");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

@@ -937,7 +937,7 @@ void CL_ParseTEnt (void) {
 		case TE_BFG_EXPLOSION:
 			MSG_ReadPos (&net_message, pos);
 			ex = CL_AllocExplosion ();
-			VectorMA(pos, -4000.0, cl.refdef.vieworg, ex->ent.origin);
+			VectorCopy(pos, ex->ent.origin);
 			ex->type = ex_poly;
 			ex->ent.flags = RF_FULLBRIGHT;
 			ex->start = cl.frame.servertime - 100;

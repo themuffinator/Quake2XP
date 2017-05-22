@@ -281,7 +281,6 @@ qboolean Field_Key (menufield_s * f, int key) {
 		case K_ENTER:
 		case K_ESCAPE:
 		case K_TAB:
-		case K_MOUSE1:
 			return qfalse;
 
 		case K_SPACE:
@@ -443,20 +442,23 @@ void Menu_Draw (menuframework_s * menu) {
 }
 
 void Menu_DrawStatusBar (const char *string) {
-	float	fontscale = cl_fontScale->value;
+	int	fontscale = (int)cl_fontScale->value;
+	int	upOffset = 5;
 
 	if (string) {
-		int l = strlen (string);
-		int maxcol = VID_WIDTH / 8;
-		int col = maxcol / 2 - l / 2;
+		int center = ((int)strlen(string) * fontscale * 8) * 0.5;
 
-		Draw_Fill (0, VID_HEIGHT - 8 - (fontscale* 2 - 1) * 4, VID_WIDTH, 9 * fontscale, 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill (0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 1.0, 0.0, 0.75);
+		
 		Set_FontShader (qtrue);
-		Menu_DrawStringScaled ((col * 8) / fontscale*(1 + (fontscale - 1)*0.5), VID_HEIGHT - 10 * fontscale, fontscale, fontscale, string);
+		RE_SetColor(colorBlack);
+		Menu_DrawStringScaled ((VID_WIDTH * 0.5) - center, VID_HEIGHT - (10 * fontscale + upOffset), fontscale, fontscale, string);
+		RE_SetColor(colorWhite);
 		Set_FontShader (qfalse);
+
 	}
 	else {
-		Draw_Fill (0, VID_HEIGHT - 8 - (fontscale - 1) * 4, VID_WIDTH, 9 * fontscale, 0.0, 0.0, 0.0, 0.0);
+		Draw_Fill(0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.1, 0.33, 0.1, 0.5);
 	}
 }
 
