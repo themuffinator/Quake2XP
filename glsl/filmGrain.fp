@@ -8,28 +8,65 @@ uniform vec2	u_screenSize;
 uniform float	u_rand;
 uniform int		u_time;
 
-vec4 TechniColorSys1(vec4 color)
-{
-	const float amount = 0.4;
-	const vec4 redFilter = vec4(1.0, 0.0, 0.0, 1.0);
-	const vec4 blueGreenFilter = vec4(0.0, 1.0, 0.7, 1.0);
+const vec4 redfilter 		= vec4(1.0, 0.0, 0.0, 0.0);
+const vec4 bluegreenfilter 	= vec4(0.0, 1.0, 0.7, 0.0);
 
-	vec4 redRecord = color * redFilter;
-	vec4 blueGreenRecord = color * blueGreenFilter;
-	vec4 redNegative = vec4(redRecord.r);
-	vec4 blueGreenNegative = vec4((blueGreenRecord.g + blueGreenRecord.b) / 2.0);
-	vec4 redOutput = redNegative * redFilter;
-	vec4 blueGreenOutput = blueGreenNegative * blueGreenFilter;
-	vec4 result = redOutput + blueGreenOutput;
-	return vec4(mix(color, result, amount).rgb, 1.0);
+const vec4 greenfilter 		= vec4(0.0, 1.0, 0.0, 0.0);
+const vec4 bluefilter		= vec4(0.0, 0.0, 1.0, 0.0);
+
+const vec4 redorangefilter 	= vec4(0.99, 0.263, 0.0, 0.0);
+
+const vec4 cyanfilter		= vec4(0.0, 1.0, 1.0, 0.0);
+const vec4 magentafilter	= vec4(1.0, 0.0, 1.0, 0.0);
+const vec4 yellowfilter 	= vec4(1.0, 1.0, 0.0, 0.0);
+
+#define ONE_DIV_THREE 1.0 / 3.0
+
+vec4 TechniColorSys1(in vec4 color)
+{
+	
+	vec4 redrecord = color * redfilter;
+	vec4 bluegreenrecord = color * bluegreenfilter;
+	
+	vec4 rednegative = vec4(redrecord.r);
+	vec4 bluegreennegative = vec4((bluegreenrecord.g + bluegreenrecord.b) * 0.5);
+
+	vec4 redoutput = rednegative * redfilter;
+	vec4 bluegreenoutput = bluegreennegative * bluegreenfilter;
+
+	vec4 result = redoutput + bluegreenoutput;
+
+	return mix(color, result, 0.44);
+}
+
+// fuck off sys2 - blue shit!
+
+vec4 TechniColorSys3(in vec4 color)
+{
+	vec4 greenrecord = (color) * greenfilter;
+	vec4 bluerecord = (color) * magentafilter;
+	vec4 redrecord = (color) * redorangefilter;
+		
+	vec4 rednegative = vec4((redrecord.r + redrecord.g + redrecord.b) * ONE_DIV_THREE);
+	vec4 greennegative = vec4((greenrecord.r + greenrecord.g + greenrecord.b) * ONE_DIV_THREE);
+	vec4 bluenegative = vec4((bluerecord.r+ bluerecord.g + bluerecord.b) * ONE_DIV_THREE);
+
+	vec4 redoutput = rednegative + cyanfilter;
+	vec4 greenoutput = greennegative + magentafilter;
+	vec4 blueoutput = bluenegative + yellowfilter;
+
+	vec4 result = redoutput * greenoutput * blueoutput;
+
+
+	return mix(color, result, 0.44);
 }
 
 vec4 SepiaColor (vec4 color)
 {	
-	float gray = dot(color.rgb, vec3(0.30, 0.59, 0.11));
+	float lum = dot(color.rgb, vec3(0.30, 0.59, 0.11));
 	vec3 sepia = vec3(1.2, 1.0, 0.8); 
-	sepia *= gray;
-	vec3 tmp = mix(color.rgb, sepia, 0.666);
+	sepia *= lum;
+	vec3 tmp = mix(color.rgb, sepia, 0.88);
 
 	return vec4(tmp, 1.0);
 }
@@ -97,6 +134,9 @@ void main()
 		fragData = TechniColorSys1(color);   
 
 	if(u_params.x == 2)
+		fragData = TechniColorSys3(color); 
+
+	if(u_params.x == 3)
 		fragData = SepiaColor(color);
 		  	
 	float noise = snoise(uv * vec2(u_screenSize.x + u_rand * u_screenSize.y)) * 0.5;
