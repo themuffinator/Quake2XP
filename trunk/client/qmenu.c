@@ -458,7 +458,7 @@ void Menu_DrawStatusBar (const char *string) {
 
 	}
 	else {
-		Draw_Fill(0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.1, 0.33, 0.1, 0.5);
+		Draw_Fill(0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.0, 0.0, 0.0);
 	}
 }
 

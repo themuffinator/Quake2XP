@@ -582,9 +582,6 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 	qglUniform2f(light2d_params, lightShift, r_hudLighting->value);
 	qglUniformMatrix4fv(light2d_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
-	if (scrap_dirty)
-		Scrap_Upload();
-
 	GL_MBind(GL_TEXTURE0, gl->texnum);
 	GL_MBind(GL_TEXTURE1, gl2->texnum);
 

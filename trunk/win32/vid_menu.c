@@ -500,9 +500,9 @@ void VID_MenuInit (void) {
 		"[2560 1600][16:10]",
 		"[Custom]", 0 };
 
-	static char	*yesno_names[] = { "no", "yes", 0 };
-	static char	*adaptive_vc[] = { "no", "default", "adaptive", 0 };
-	static char	*film_filter[] = { "no", "TechniColor", "Sepia", 0 };
+	static char	*yesno_names[] = { "off", "yes", 0 };
+	static char	*adaptive_vc[] = { "off", "default", "adaptive", 0 };
+	static char	*film_filter[] = { "off", "TechniColor Sys 1", "TechniColor Sys 3", "Sepia", 0 };
 
 	if (!r_mode)
 		r_mode = Cvar_Get ("r_mode", "0", CVAR_ARCHIVE);

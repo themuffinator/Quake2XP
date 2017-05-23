@@ -353,14 +353,14 @@ void SCR_DrawPause (void) {
 		return;
 
 	Draw_ScaledPic((viddef.width - (i_pause->width - i_pause->width * 0.25)) * 0.5f,
-					viddef.height * 0.5f + 8.0f,
+					viddef.height * 0.5f - i_pause->height * 0.5,
 					cl_fontScale->value, cl_fontScale->value,
 					i_pause);
 
 	Draw_PicBumpScaled((viddef.width - (i_pause->width - i_pause->width * 0.25)) * 0.5f,
-		viddef.height * 0.5f + 8.0f,
-		cl_fontScale->value, cl_fontScale->value,
-		"pause", "pause_bump");
+						viddef.height * 0.5f - i_pause->height * 0.5,
+						cl_fontScale->value, cl_fontScale->value,
+						"pause", "pause_bump");
 }
 
 /*
