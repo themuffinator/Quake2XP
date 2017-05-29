@@ -536,7 +536,6 @@ void CL_ParticleBlood (vec3_t org, vec3_t dir, int count) {
 		VectorCopy (p->org, p->oldOrg);
 	}
 
-	for (i = 0; i < 2; i++) {
 		if (!free_particles)
 			return;
 		p = free_particles;
@@ -547,6 +546,7 @@ void CL_ParticleBlood (vec3_t org, vec3_t dir, int count) {
 		VectorClear (p->vel);
 		p->orient = 0;
 		p->flags = PARTICLE_DEFAULT;
+		p->flags |= PARTICLE_NONSOLID;
 		p->time = cl.time;
 		p->endTime = cl.time + 5000;
 		p->sFactor = GL_SRC_ALPHA;
@@ -561,7 +561,7 @@ void CL_ParticleBlood (vec3_t org, vec3_t dir, int count) {
 		p->colorVel[2] = 0;
 
 		p->type = PT_BLOODMIST;
-		p->size = 5;
+		p->size = 0.5;
 		p->sizeVel = 20;
 
 		d = rand () & 7;
@@ -573,14 +573,12 @@ void CL_ParticleBlood (vec3_t org, vec3_t dir, int count) {
 		p->alpha = 1;
 
 		p->alphavel = -1.0 / (0.5 + frand () * 0.3);
-	}
 
 }
 
 void CL_ParticleBlood2 (vec3_t org, vec3_t dir, int count) {
 	int i, j;
 	cparticle_t *p;
-
 
 	if (!cl_blood->value) return;
 
@@ -604,7 +602,7 @@ void CL_ParticleBlood2 (vec3_t org, vec3_t dir, int count) {
 		p->sizeVel = 0;
 		p->time = cl.time;
 		p->endTime = cl.time + 10000;
-		p->color[0] = 0.5;
+		p->color[0] = 1;
 		p->color[1] = 1;
 		p->color[2] = 0;
 
@@ -627,7 +625,6 @@ void CL_ParticleBlood2 (vec3_t org, vec3_t dir, int count) {
 		p->alphavel = 0;
 		VectorCopy (p->org, p->oldOrg);
 	}
-
 }
 
 

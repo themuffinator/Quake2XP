@@ -1014,7 +1014,7 @@ void CL_ParseTEnt (void) {
 		case TE_GREENBLOOD:
 			MSG_ReadPos (&net_message, pos);
 			MSG_ReadDir (&net_message, dir);
-			CL_ParticleBlood2 (pos, dir, 1);
+			CL_ParticleBlood2 (pos, dir, 3);
 			break;
 
 			// RAFAEL

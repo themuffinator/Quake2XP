@@ -632,6 +632,19 @@ void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs) {
 	}
 }
 
+void AddVec4ToBounds(vec4_t v, vec3_t mins, vec3_t maxs) {
+	int		i;
+	vec_t	val;
+
+	for (i = 0; i < 4; i++) {
+		val = v[i];
+		if (val < mins[i])
+			mins[i] = val;
+		if (val > maxs[i])
+			maxs[i] = val;
+	}
+}
+
 void BoundsAdd (vec3_t mins, vec3_t maxs, const vec3_t mins2, const vec3_t maxs2) {
 	if (mins2[0] < mins[0])
 		mins[0] = mins2[0];
