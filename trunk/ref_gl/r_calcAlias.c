@@ -123,10 +123,14 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	alphaShift = (alphaShift + 1) * 0.5f;
 	alphaShift = clamp (alphaShift, currentmodel->glowCfg[0], currentmodel->glowCfg[1]);
 
-	if (currententity->flags & RF_TRANSLUCENT)
+	if (currententity->flags & RF_TRANSLUCENT) {
 		alpha = currententity->alpha;
+	}
 	else
 		alpha = 1.0;
+
+	if (currententity->flags & RF_NOCULL)
+		GL_Disable(GL_CULL_FACE);
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
@@ -138,7 +142,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	}
 	else {
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			VectorSet(lightColor, 0.18, 0.17, 0.14);
+			VectorSet(lightColor, 0.18, 0.18, 0.18);
 	}
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
@@ -274,6 +278,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglDisableVertexAttribArray (ATT_TEX0);
 //	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	GL_BindNullProgram ();
+
+	if (currententity->flags & RF_NOCULL)
+		GL_Enable(GL_CULL_FACE);
 }
 
 void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {

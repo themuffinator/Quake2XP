@@ -260,8 +260,8 @@ void R_AddNoWorldModelLight () {
 	shadowLight_frame = light;
 	VectorCopy (r_origin, light->origin);
 	light->origin[2] -= 20.0;
-	VectorSet (light->startColor, 1.0, 0.87, 0.66);
-	VectorSet (light->color, 1.0, 0.87, 0.66);
+	VectorSet (light->startColor, 1.0, 1.0, 0.9);
+	VectorSet (light->color, 1.0, 0.9, 0.8);
 	VectorSet (light->angles, 0, 0, 0);
 	VectorSet (light->radius, 2048.0, 2048.0, 2048.0);
 

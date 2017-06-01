@@ -1970,11 +1970,6 @@ void Mod_LoadAliasModelFx(model_t *mod, char *s) {
 	while (s) {
 		token = COM_Parse(&s);
 
-		if (!Q_strcasecmp(token, "monster")) {
-			mod->flags |= RF_MONSTER;
-			continue;
-		}
-
 		if (!Q_strcasecmp(token, "distort")) {
 			mod->flags |= RF_DISTORT;
 			continue;

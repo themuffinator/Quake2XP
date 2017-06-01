@@ -822,6 +822,7 @@ static void R_DrawEntitiesOnList (void) {
 
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
+	GL_DepthMask(0); // wtf??? 
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];

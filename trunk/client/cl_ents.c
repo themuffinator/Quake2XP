@@ -669,7 +669,6 @@ CL_AddPacketEntities
 ===============
 */
 extern	model_t	*currentPlayerWeapon;
-void CL_ParticleBlasterBolt (vec3_t start, vec3_t end);
 
 game_export_t *ge;
 
@@ -1059,10 +1058,14 @@ void CL_AddPacketEntities (frame_t * frame) {
 			
 			if (ent.model) // hack for blaster bolt particle
 			{
-				if (!Q_strcasecmp(ent.model->name, "models/objects/laser/tris.md2") && !(effects & EF_BLASTER)) {
-					CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
-				}else
-					V_AddEntity(&ent);
+				if (!Q_strcasecmp(ent.model->name, "models/objects/laser/tris.md2")) {
+					ent.flags  = RF_TRANSLUCENT;
+					ent.flags |= RF_NOCULL;
+					ent.flags |= RF_FULLBRIGHT;
+					ent.flags |= RF_NOSHADOW;
+					ent.alpha = 1.0;
+				}
+				V_AddEntity(&ent);
 			}
 
 		// color shells generate a seperate entity for the main model
@@ -1271,7 +1274,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 					}
 					else{
 						CL_BlasterTrail(cent->lerp_origin, ent.origin);
-						CL_ParticleBlasterBolt(cent->lerp_origin, ent.origin);
 						V_AddLight(ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
 					}
 				}
