@@ -619,7 +619,6 @@ void SP_monster_infantry (edict_t *self) {
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = infantry_sight;
 	self->monsterinfo.idle = infantry_fidget;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &infantry_move_stand;

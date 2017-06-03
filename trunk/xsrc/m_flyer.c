@@ -562,7 +562,6 @@ void SP_monster_flyer (edict_t *self) {
 
 	self->pain = flyer_pain;
 	self->die = flyer_die;
-	self->s.renderfx |= RF_MONSTER;
 	self->monsterinfo.stand = flyer_stand;
 	self->monsterinfo.walk = flyer_walk;
 	self->monsterinfo.run = flyer_run;

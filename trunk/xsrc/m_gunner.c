@@ -625,7 +625,6 @@ void SP_monster_gunner (edict_t *self) {
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = gunner_sight;
 	self->monsterinfo.search = gunner_search;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &gunner_move_stand;

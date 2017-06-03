@@ -612,7 +612,6 @@ void SP_monster_boss2 (edict_t *self) {
 
 	self->pain = boss2_pain;
 	self->die = boss2_die;
-	self->s.renderfx |= RF_MONSTER;
 	self->monsterinfo.stand = boss2_stand;
 	self->monsterinfo.walk = boss2_walk;
 	self->monsterinfo.run = boss2_run;

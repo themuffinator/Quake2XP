@@ -464,7 +464,6 @@ void SP_monster_berserk (edict_t *self) {
 	self->monsterinfo.melee = berserk_melee;
 	self->monsterinfo.sight = berserk_sight;
 	self->monsterinfo.search = berserk_search;
-	self->s.renderfx |= RF_MONSTER;
 	self->monsterinfo.currentmove = &berserk_move_stand;
 	self->monsterinfo.scale = MODEL_SCALE;
 

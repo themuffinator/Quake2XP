@@ -662,7 +662,6 @@ void SP_monster_brain (edict_t *self) {
 	self->monsterinfo.sight = brain_sight;
 	self->monsterinfo.search = brain_search;
 	self->monsterinfo.idle = brain_idle;
-	self->s.renderfx |= RF_MONSTER;
 	self->monsterinfo.power_armor_type = POWER_ARMOR_SCREEN;
 	self->monsterinfo.power_armor_power = 100;
 

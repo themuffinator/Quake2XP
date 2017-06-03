@@ -588,7 +588,6 @@ void SP_monster_hover (edict_t *self) {
 	self->monsterinfo.attack = hover_start_attack;
 	self->monsterinfo.sight = hover_sight;
 	self->monsterinfo.search = hover_search;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &hover_move_stand;

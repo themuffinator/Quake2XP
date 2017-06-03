@@ -1422,7 +1422,6 @@ void SP_monster_gekk (edict_t *self) {
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
-	self->s.renderfx |= RF_MONSTER;
 	self->s.modelindex = gi.modelindex ("models/monsters/gekk/tris.md2");
 	VectorSet (self->mins, -24, -24, -24);
 	VectorSet (self->maxs, 24, 24, 24);

@@ -803,7 +803,6 @@ void SP_monster_makron (edict_t *self) {
 	self->health = 3000;
 	self->gib_health = -2000;
 	self->mass = 500;
-	self->s.renderfx |= RF_MONSTER;
 	self->pain = makron_pain;
 	self->die = makron_die;
 	self->monsterinfo.stand = makron_stand;

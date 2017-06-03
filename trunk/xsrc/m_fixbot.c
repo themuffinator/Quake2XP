@@ -1236,7 +1236,6 @@ void SP_monster_fixbot (edict_t *self) {
 	self->monsterinfo.walk = fixbot_walk;
 	self->monsterinfo.run = fixbot_run;
 	self->monsterinfo.attack = fixbot_attack;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &fixbot_move_stand;

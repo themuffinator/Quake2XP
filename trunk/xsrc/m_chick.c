@@ -644,7 +644,6 @@ void SP_monster_chick (edict_t *self) {
 	self->monsterinfo.attack = chick_attack;
 	self->monsterinfo.melee = chick_melee;
 	self->monsterinfo.sight = chick_sight;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &chick_move_stand;

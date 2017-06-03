@@ -317,7 +317,7 @@ void TankBlaster (edict_t *self) {
 	end[2] += self->enemy->viewheight;
 	VectorSubtract (end, start, dir);
 
-	monster_fire_blaster (self, start, dir, 30, 1000, flash_number, EF_BLASTER);  // hack for client blaster bolt was 800
+	monster_fire_blaster (self, start, dir, 30, 800, flash_number, EF_BLASTER);  // hack for client blaster bolt was 800
 }
 
 void TankStrike (edict_t *self) {
@@ -800,7 +800,6 @@ void SP_monster_tank (edict_t *self) {
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = tank_sight;
 	self->monsterinfo.idle = tank_idle;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &tank_move_stand;

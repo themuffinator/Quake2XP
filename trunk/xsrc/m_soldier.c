@@ -484,7 +484,7 @@ void soldier_fire (edict_t *self, int flash_number) {
 	}
 
 	if (self->s.skinnum <= 1) {
-		monster_fire_blaster (self, start, aim, 5, 1000, flash_index, EF_BLASTER);  // hack for client blaster bolt was 600
+		monster_fire_blaster (self, start, aim, 5, 600, flash_index, EF_BLASTER);  // hack for client blaster bolt was 600
 	}
 	else if (self->s.skinnum <= 3) {
 		monster_fire_shotgun (self, start, aim, 2, 1, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SHOTGUN_COUNT, flash_index);
@@ -1159,7 +1159,6 @@ void SP_monster_soldier_x (edict_t *self) {
 	VectorSet (self->maxs, 16, 16, 32);
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
-	self->s.renderfx |= RF_MONSTER;
 	sound_idle = gi.soundindex ("soldier/solidle1.wav");
 	sound_sight1 = gi.soundindex ("soldier/solsght1.wav");
 	sound_sight2 = gi.soundindex ("soldier/solsrch1.wav");
@@ -1200,7 +1199,6 @@ void SP_monster_soldier_light (edict_t *self) {
 	}
 
 	SP_monster_soldier_x (self);
-	self->s.renderfx |= RF_MONSTER;
 	sound_pain_light = gi.soundindex ("soldier/solpain2.wav");
 	sound_death_light = gi.soundindex ("soldier/soldeth2.wav");
 	gi.modelindex ("models/objects/laser/tris.md2");
@@ -1221,7 +1219,6 @@ void SP_monster_soldier (edict_t *self) {
 	}
 
 	SP_monster_soldier_x (self);
-	self->s.renderfx |= RF_MONSTER;
 	sound_pain = gi.soundindex ("soldier/solpain1.wav");
 	sound_death = gi.soundindex ("soldier/soldeth1.wav");
 	gi.soundindex ("soldier/solatck1.wav");
@@ -1240,7 +1237,6 @@ void SP_monster_soldier_ss (edict_t *self) {
 	}
 
 	SP_monster_soldier_x (self);
-	self->s.renderfx |= RF_MONSTER;
 	sound_pain_ss = gi.soundindex ("soldier/solpain3.wav");
 	sound_death_ss = gi.soundindex ("soldier/soldeth3.wav");
 	gi.soundindex ("soldier/solatck3.wav");
@@ -2424,7 +2420,6 @@ void SP_monster_soldier_h (edict_t *self) {
 	sound_sight1 = gi.soundindex ("soldier/solsght1.wav");
 	sound_sight2 = gi.soundindex ("soldier/solsrch1.wav");
 	sound_cock = gi.soundindex ("infantry/infatck3.wav");
-	self->s.renderfx |= RF_MONSTER;
 	self->mass = 100;
 
 	self->pain = soldierh_pain;
@@ -2463,7 +2458,6 @@ void SP_monster_soldier_ripper (edict_t *self) {
 	gi.modelindex ("models/objects/boomrang/tris.md2");
 	gi.soundindex ("misc/lasfly.wav");
 	gi.soundindex ("soldier/solatck2.wav");
-	self->s.renderfx |= RF_MONSTER;
 	self->s.skinnum = 0;
 	self->health = 50;
 	if (skill->value == 3)
@@ -2482,7 +2476,6 @@ void SP_monster_soldier_hypergun (edict_t *self) {
 	}
 
 	SP_monster_soldier_h (self);
-	self->s.renderfx |= RF_MONSTER;
 	gi.modelindex ("models/objects/blaser/tris.md2");
 	sound_pain = gi.soundindex ("soldier/solpain1.wav");
 	sound_death = gi.soundindex ("soldier/soldeth1.wav");
@@ -2506,7 +2499,6 @@ void SP_monster_soldier_lasergun (edict_t *self) {
 	}
 
 	SP_monster_soldier_h (self);
-	self->s.renderfx |= RF_MONSTER;
 	sound_pain_ss = gi.soundindex ("soldier/solpain3.wav");
 	sound_death_ss = gi.soundindex ("soldier/soldeth3.wav");
 	gi.soundindex ("soldier/solatck3.wav");

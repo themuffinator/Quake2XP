@@ -554,7 +554,6 @@ void SP_monster_hover (edict_t *self) {
 	self->s.modelindex = gi.modelindex ("models/monsters/hover/tris.md2");
 	VectorSet (self->mins, -24, -24, -24);
 	VectorSet (self->maxs, 24, 24, 32);
-	self->s.renderfx |= RF_MONSTER;
 	self->health = 240;
 	self->gib_health = -100;
 	self->mass = 150;

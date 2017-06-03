@@ -186,6 +186,7 @@
       <UseProcessorExtensions>SSSE3</UseProcessorExtensions>
       <WarningLevel>Level3</WarningLevel>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DiagnosticsFormat>Caret</DiagnosticsFormat>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

@@ -603,7 +603,6 @@ void SP_monster_mutant (edict_t *self) {
 	self->monsterinfo.search = mutant_search;
 	self->monsterinfo.idle = mutant_idle;
 	self->monsterinfo.checkattack = mutant_checkattack;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &mutant_move_stand;

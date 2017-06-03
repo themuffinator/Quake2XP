@@ -380,8 +380,6 @@ void SP_monster_flipper (edict_t *self) {
 	self->pain = flipper_pain;
 	self->die = flipper_die;
 
-	self->s.renderfx |= RF_MONSTER;
-
 	self->monsterinfo.stand = flipper_stand;
 	self->monsterinfo.walk = flipper_walk;
 	self->monsterinfo.run = flipper_start_run;

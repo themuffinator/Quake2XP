@@ -667,7 +667,6 @@ void SP_monster_boss5 (edict_t *self) {
 	self->monsterinfo.search = boss5_search;
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = NULL;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &boss5_move_stand;

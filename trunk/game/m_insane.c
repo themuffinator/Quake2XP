@@ -663,7 +663,6 @@ void SP_misc_insane (edict_t *self) {
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = NULL;
 	self->monsterinfo.aiflags |= AI_GOOD_GUY;
-	self->s.renderfx |= RF_MONSTER;
 	//@@
 	//	self->s.skinnum = skin;
 	//	skin++;

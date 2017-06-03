@@ -612,7 +612,7 @@ void VID_MenuInit (void) {
 	s_parallax_box.itemnames = yesno_names;
 	s_parallax_box.curvalue = r_reliefMapping->value;
 	s_parallax_box.generic.callback = ParallaxCallback;
-	s_parallax_box.generic.statusbar = "Use High Quality Virtual Displasment Mapping";
+	s_parallax_box.generic.statusbar = "Use High Quality Virtual Displacement Mapping";
 
 	s_reliefScale_slider.generic.type = MTYPE_SLIDER;
 	s_reliefScale_slider.generic.x = 0;
@@ -622,7 +622,7 @@ void VID_MenuInit (void) {
 	s_reliefScale_slider.maxvalue = 10;
 	s_reliefScale_slider.curvalue = r_reliefScale->value;
 	s_reliefScale_slider.generic.callback = reliefScaleCallback;
-	s_reliefScale_slider.generic.statusbar = "Virtual Displasment Depth";
+	s_reliefScale_slider.generic.statusbar = "Virtual Displacement Depth";
 
 	s_ambientLevel_slider.generic.type = MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x = 0;

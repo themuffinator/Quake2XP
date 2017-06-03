@@ -632,7 +632,6 @@ void SP_monster_floater (edict_t *self) {
 	self->monsterinfo.melee = floater_melee;
 	self->monsterinfo.sight = floater_sight;
 	self->monsterinfo.idle = floater_idle;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	if (random () <= 0.5)

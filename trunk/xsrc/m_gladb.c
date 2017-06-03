@@ -358,7 +358,6 @@ void SP_monster_gladb (edict_t *self) {
 	self->monsterinfo.sight = gladb_sight;
 	self->monsterinfo.idle = gladb_idle;
 	self->monsterinfo.search = gladb_search;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 	self->monsterinfo.currentmove = &gladb_move_stand;
 	self->monsterinfo.scale = MODEL_SCALE;

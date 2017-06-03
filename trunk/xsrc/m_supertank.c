@@ -667,7 +667,6 @@ void SP_monster_supertank (edict_t *self) {
 	self->monsterinfo.search = supertank_search;
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = NULL;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &supertank_move_stand;

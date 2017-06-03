@@ -589,7 +589,6 @@ void SP_monster_flyer (edict_t *self) {
 	self->monsterinfo.melee = flyer_melee;
 	self->monsterinfo.sight = flyer_sight;
 	self->monsterinfo.idle = flyer_idle;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	self->monsterinfo.currentmove = &flyer_move_stand;

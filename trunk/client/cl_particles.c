@@ -2295,7 +2295,6 @@ void CL_BlasterTrail (vec3_t start, vec3_t end) {
 	cparticle_t *p;
 	int dec;
 
-	return;
 	VectorCopy (start, move);
 	VectorSubtract (end, start, vec);
 	len = VectorNormalize (vec);

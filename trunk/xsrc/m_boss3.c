@@ -40,7 +40,6 @@ void SP_monster_boss3_stand (edict_t *self) {
 	self->model = "models/monsters/boss3/rider/tris.md2";
 	self->s.modelindex = gi.modelindex (self->model);
 	self->s.frame = FRAME_stand201;
-	self->s.renderfx |= RF_MONSTER;
 	gi.soundindex ("misc/bigtele.wav");
 
 	VectorSet (self->mins, -32, -32, 0);

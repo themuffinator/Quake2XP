@@ -795,7 +795,6 @@ void SP_monster_makron (edict_t *self) {
 	self->monsterinfo.melee = NULL;
 	self->monsterinfo.sight = makron_sight;
 	self->monsterinfo.checkattack = Makron_CheckAttack;
-	self->s.renderfx |= RF_MONSTER;
 	gi.linkentity (self);
 
 	//	self->monsterinfo.currentmove = &makron_move_stand;
