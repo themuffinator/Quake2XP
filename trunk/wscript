@@ -63,7 +63,6 @@ def build(bld):
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
     #bld.env.append_value('CFLAGS', ['-pg', '-O3', '-march=native'])
     #bld.env.append_value('LINKFLAGS', ['-pg']) 
-     bld.env.append_value('LINKFLAGS', ['-x11'])
 
     # Expand source files
     sources = {}
