@@ -99,7 +99,7 @@ typedef struct vidmode_s {
 	int		mode;
 } vidmode_t;
 
-#pragma comment( lib, "x11.lib" );
+
 #include <X11/Xlib.h>
 
 static vidmode_t vid_modes[] =
