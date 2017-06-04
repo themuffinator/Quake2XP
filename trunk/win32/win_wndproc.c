@@ -516,7 +516,7 @@ typedef struct vidmode_s {
 } vidmode_t;
 
 static vidmode_t vid_modes[] = {
-	{ "Desktop",	1024, 768, 0 },		// desktop native
+	{ "Desktop",	-1, -1, 0 },		// desktop native
 	// generic screen
 	{ "1024x768",	1024, 768, 1 },     // 4:3
 	{ "1152x864",	1152, 864, 2 },     // 4:3
@@ -532,8 +532,9 @@ static vidmode_t vid_modes[] = {
 	{ "1680x1050",	1680, 1050, 11 },   // 16:10
 	{ "1920x1080",	1920, 1080, 12 },   // 16:9 1080p full HDTV
 	{ "1920x1200",	1920, 1200, 13 },   // 16:10
-	{ "2560x1600",	2560, 1600, 14 },   // 16:10
-	{ "Custom",		-1, -1, 15 }		// custom
+	{ "2560x1440",	2560, 1440, 14 },   // 16:9 WQHD
+	{ "2560x1600",	2560, 1600, 15 },   // 16:10
+	{ "Custom",		-1, -1, 16 }		// custom
 };
 
 

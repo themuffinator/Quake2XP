@@ -480,9 +480,7 @@ static void ColorSettingsFunc(void *unused) {
 */
 void VID_MenuInit (void) {
 	static char *resolutions[] = {
-#ifdef _WIN32
 		"[Desktop]",
-#endif
 		"[1024 768][4:3]",
 		"[1152 864][4:3]",
 		"[1280 1024][5:4]",
@@ -497,11 +495,12 @@ void VID_MenuInit (void) {
 		"[1680 1050][16:10]",
 		"[1920 1080][1080p full HDTV]",
 		"[1920 1200][16:10]",
+		"[2560x1440][16:9 WQHD]",
 		"[2560 1600][16:10]",
 		"[Custom]", 0 };
 
 	static char	*yesno_names[] = { "off", "yes", 0 };
-	static char	*adaptive_vc[] = { "off", "default", "adaptive", 0 };
+	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
 	static char	*film_filter[] = { "off", "TechniColor Sys 1", "TechniColor Sys 3", "Sepia", 0 };
 
 	if (!r_mode)
