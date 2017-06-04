@@ -135,7 +135,7 @@ VID_GetModeInfo(int *width, int *height, int mode)
   Screen*  s = DefaultScreenOfDisplay(d);
   
   *width = s->width;
-  *height = s->height  
+  *height = s->height;  
   
   } else
     if (mode == 16) {
