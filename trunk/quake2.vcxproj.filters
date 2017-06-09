@@ -308,6 +308,9 @@
     <ClCompile Include="win32\win_joystick.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="win32\win_adl7.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="win32\glw_win.h">

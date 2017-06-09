@@ -364,6 +364,7 @@ void GLimp_InitNvApi() {
 	
 	if (ret != NVAPI_OK) { // check for nvapi error
 		Com_Printf(S_COLOR_MAGENTA"...not supported\n");
+		Com_Printf("\n==================================\n");
 		return;
 	}
 
@@ -480,6 +481,8 @@ void R_NvApi_f(void) {
 /*
 ** GLimp_SetMode
 */
+qboolean GLimp_InitADL();
+void adl_PrintGpuPerformance();
 
 rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean fullscreen )
 {
@@ -491,6 +494,11 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 	DEVMODE dm;
 
 	GLimp_InitNvApi();
+	
+	GLimp_InitADL();
+	adl_PrintGpuPerformance();
+	
+	Com_Printf("\n==================================\n\n");
 
 	Com_Printf(S_COLOR_YELLOW"...Initializing OpenGL display\n");
 	
@@ -736,6 +744,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 ** for the window.  The state structure is also nulled out.
 **
 */
+void ADL_unload();
 
 void GLimp_Shutdown( void )
 {
@@ -768,8 +777,11 @@ void GLimp_Shutdown( void )
 		ChangeDisplaySettings( 0, 0 );
 		gl_state.fullscreen = qfalse;
 	}
+	
 	if(nvApiInit)
 		NvAPI_Unload();
+
+	ADL_unload();
 }
 
 /*=============

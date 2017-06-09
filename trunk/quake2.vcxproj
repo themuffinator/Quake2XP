@@ -561,6 +561,7 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="qcommon\unzip.c" />
+    <ClCompile Include="win32\win_adl7.c" />
     <ClCompile Include="win32\win_conproc.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
