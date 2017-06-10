@@ -325,6 +325,9 @@ BOOL CALLBACK MonitorEnumProc2(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMon
 	}
 	return TRUE;
 }
+void GLimp_InitADL();
+void adl_PrintGpuPerformance();
+extern qboolean adlInit;
 
 NvPhysicalGpuHandle hPhysicalGpu[NVAPI_MAX_PHYSICAL_GPUS];
 NvU32 physicalGpuCount = 0;
@@ -401,6 +404,11 @@ void R_NvApi_f(void) {
 	NV_GPU_DYNAMIC_PSTATES_INFO_EX	m_DynamicPStateInfo;
 	NV_GPU_CLOCK_FREQUENCIES		clocks;
 	
+	if (adlInit) {
+		adl_PrintGpuPerformance();
+		return;
+	}
+
 	if (!nvApiInit) {
 		Com_Printf(S_COLOR_RED"NVAPI not found!\n");
 		return;
@@ -481,8 +489,6 @@ void R_NvApi_f(void) {
 /*
 ** GLimp_SetMode
 */
-qboolean GLimp_InitADL();
-void adl_PrintGpuPerformance();
 
 rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean fullscreen )
 {
@@ -494,9 +500,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 	DEVMODE dm;
 
 	GLimp_InitNvApi();
-	
 	GLimp_InitADL();
-	adl_PrintGpuPerformance();
 	
 	Com_Printf("\n==================================\n\n");
 
@@ -781,7 +785,8 @@ void GLimp_Shutdown( void )
 	if(nvApiInit)
 		NvAPI_Unload();
 
-	ADL_unload();
+	if(adlInit)
+		ADL_unload();
 }
 
 /*=============

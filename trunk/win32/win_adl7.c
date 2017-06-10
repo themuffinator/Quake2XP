@@ -68,9 +68,13 @@ ADL_CONTEXT_HANDLE context = NULL;
 
 LPAdapterInfo   lpAdapterInfo = NULL;
 int  iNumberAdapters;
+qboolean adlInit;
 
-qboolean GLimp_InitADL()
+void GLimp_InitADL()
 {
+	
+	adlInit = qfalse;
+	
 	Com_Printf("" S_COLOR_YELLOW "\n...Initializing ATI Driver SDK : ");
 	// Load the ADL dll
 	hDLL = LoadLibrary("atiadlxx.dll");
@@ -84,7 +88,7 @@ qboolean GLimp_InitADL()
 	if (NULL == hDLL)
 	{
 		Com_Printf(S_COLOR_MAGENTA"ADL library not found\n");
-		return qfalse;
+		return;
 	}
 
 	ADL_Main_Control_Create = (ADL_MAIN_CONTROL_CREATE)GetProcAddress(hDLL, "ADL_Main_Control_Create");
@@ -123,16 +127,17 @@ qboolean GLimp_InitADL()
 		)
 	{
 		Com_Printf(S_COLOR_RED"Failed to get ADL function pointers\n");
-		return qfalse;
+		return;
 	}
 
 	if (ADL_OK != ADL_Main_Control_Create(ADL_Main_Memory_Alloc, 1))
 	{
 		Com_Printf(S_COLOR_RED"Failed to initialize nested ADL2 context");
-		return ADL_ERR;
+		return;
 	}
+
 	Com_Printf(S_COLOR_GREEN"ok.\n");
-	return qtrue;
+	adlInit = qtrue;
 }
 
 void ADL_unload(){
@@ -209,7 +214,7 @@ void adl_PrintGpuPerformance()
 					int temp;
 					ADL2_OverdriveN_Temperature_Get(context, lpAdapterInfo[i].iAdapterIndex, 1, &temp);
 
-					Com_Printf("Current temperature : %d\n", temp >> 10);
+					Com_Printf("Current temperature : %i\n", temp >> 10);
 					Com_Printf("-------------------------------------------------\n");
 
 				}
@@ -224,8 +229,8 @@ void adl_PrintGpuPerformance()
 				else
 				{
 					Com_Printf("---------Fan Current Speed--------------\n");
-					Com_Printf("Current Fan Speed : %d\n", odNFanControl.iCurrentFanSpeed);
-					Com_Printf("Current Fan Speed Mode : %d\n", odNFanControl.iCurrentFanSpeedMode);
+					Com_Printf("Current Fan Speed : %i\n", odNFanControl.iCurrentFanSpeed);
+					Com_Printf("Current Fan Speed Mode : %i\n", odNFanControl.iCurrentFanSpeedMode);
 					Com_Printf("-----------------------------------------\n");
 
 				}
@@ -238,13 +243,9 @@ void adl_PrintGpuPerformance()
 				}
 				else
 				{
-					Com_Printf("-------------------------------------------------\n");
-					Com_Printf("ADL2_OverdriveN_PerformanceStatus_Get Data\n");
-					Com_Printf("-------------------------------------------------\n");
-					// fix!!!
-					Com_Printf("CoreClock : %d\n", odNPerformanceStatus.iCoreClock );
-					Com_Printf("CurrentBusSpeed : %d\n", odNPerformanceStatus.iCurrentBusSpeed);
-					Com_Printf("MemoryClock : %d\n", odNPerformanceStatus.iMemoryClock);
+					Com_Printf("CoreClock : %i Mhz\n", odNPerformanceStatus.iCoreClock >>5);
+					Com_Printf("CurrentBusSpeed : %i Mhz\n", odNPerformanceStatus.iCurrentBusSpeed >>5);
+					Com_Printf("MemoryClock : %i Mhz\n", odNPerformanceStatus.iMemoryClock >>5);
 					Com_Printf("-------------------------------------------------\n");
 
 				}
