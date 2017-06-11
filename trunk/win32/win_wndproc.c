@@ -384,7 +384,7 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 		{
 			if (r_fullScreen)
 			{
-				Cvar_SetValue("r_fullscreen", !r_fullScreen->value);
+				Cvar_SetValue("r_fullScreen", !r_fullScreen->value);
 			}
 			return 0;
 		}

@@ -25,7 +25,7 @@ typedef int(*ADL2_OVERDRIVEN_FANCONTROL_SET) (ADL_CONTEXT_HANDLE, int, ADLODNFan
 typedef int(*ADL2_OVERDRIVEN_POWERLIMIT_GET) (ADL_CONTEXT_HANDLE, int, ADLODNPowerLimitSetting*);
 typedef int(*ADL2_OVERDRIVEN_POWERLIMIT_SET) (ADL_CONTEXT_HANDLE, int, ADLODNPowerLimitSetting*);
 typedef int(*ADL2_OVERDRIVEN_TEMPERATURE_GET) (ADL_CONTEXT_HANDLE, int, int, int*);
-HINSTANCE hDLL;
+HINSTANCE ati_hDLL;
 
 ADL_MAIN_CONTROL_CREATE          ADL_Main_Control_Create = NULL;
 ADL_MAIN_CONTROL_DESTROY         ADL_Main_Control_Destroy = NULL;
@@ -69,46 +69,47 @@ ADL_CONTEXT_HANDLE context = NULL;
 LPAdapterInfo   lpAdapterInfo = NULL;
 int  iNumberAdapters;
 qboolean adlInit;
+int		phisAdp;
 
 void GLimp_InitADL()
 {
-	
+	int iSupported, iEnabled, iVersion;
 	adlInit = qfalse;
 	
 	Com_Printf("" S_COLOR_YELLOW "\n...Initializing ATI Driver SDK : ");
 	// Load the ADL dll
-	hDLL = LoadLibrary("atiadlxx.dll");
-	if (hDLL == NULL)
+	ati_hDLL = LoadLibrary("atiadlxx.dll");
+	if (ati_hDLL == NULL)
 	{
 		// A 32 bit calling application on 64 bit OS will fail to LoadLibrary.
 		// Try to load the 32 bit library (atiadlxy.dll) instead
-		hDLL = LoadLibrary("atiadlxy.dll");
+		ati_hDLL = LoadLibrary("atiadlxy.dll");
 	}
 
-	if (NULL == hDLL)
+	if (NULL == ati_hDLL)
 	{
 		Com_Printf(S_COLOR_MAGENTA"ADL library not found\n");
 		return;
 	}
 
-	ADL_Main_Control_Create = (ADL_MAIN_CONTROL_CREATE)GetProcAddress(hDLL, "ADL_Main_Control_Create");
-	ADL_Main_Control_Destroy = (ADL_MAIN_CONTROL_DESTROY)GetProcAddress(hDLL, "ADL_Main_Control_Destroy");
-	ADL_Adapter_NumberOfAdapters_Get = (ADL_ADAPTER_NUMBEROFADAPTERS_GET)GetProcAddress(hDLL, "ADL_Adapter_NumberOfAdapters_Get");
-	ADL_Adapter_AdapterInfo_Get = (ADL_ADAPTER_ADAPTERINFO_GET)GetProcAddress(hDLL, "ADL_Adapter_AdapterInfo_Get");
-	ADL_AdapterX2_Caps = (ADL_ADAPTERX2_CAPS)GetProcAddress(hDLL, "ADL_AdapterX2_Caps");
-	ADL2_Adapter_Active_Get = (ADL2_ADAPTER_ACTIVE_GET)GetProcAddress(hDLL, "ADL2_Adapter_Active_Get");
-	ADL2_OverdriveN_Capabilities_Get = (ADL2_OVERDRIVEN_CAPABILITIES_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_Capabilities_Get");
-	ADL2_OverdriveN_SystemClocks_Get = (ADL2_OVERDRIVEN_SYSTEMCLOCKS_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_SystemClocks_Get");
-	ADL2_OverdriveN_SystemClocks_Set = (ADL2_OVERDRIVEN_SYSTEMCLOCKS_SET)GetProcAddress(hDLL, "ADL2_OverdriveN_SystemClocks_Set");
-	ADL2_OverdriveN_MemoryClocks_Get = (ADL2_OVERDRIVEN_MEMORYCLOCKS_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_MemoryClocks_Get");
-	ADL2_OverdriveN_MemoryClocks_Set = (ADL2_OVERDRIVEN_MEMORYCLOCKS_SET)GetProcAddress(hDLL, "ADL2_OverdriveN_MemoryClocks_Set");
-	ADL2_OverdriveN_PerformanceStatus_Get = (ADL2_OVERDRIVEN_PERFORMANCESTATUS_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_PerformanceStatus_Get");
-	ADL2_OverdriveN_FanControl_Get = (ADL2_OVERDRIVEN_FANCONTROL_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_FanControl_Get");
-	ADL2_OverdriveN_FanControl_Set = (ADL2_OVERDRIVEN_FANCONTROL_SET)GetProcAddress(hDLL, "ADL2_OverdriveN_FanControl_Set");
-	ADL2_OverdriveN_PowerLimit_Get = (ADL2_OVERDRIVEN_POWERLIMIT_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_PowerLimit_Get");
-	ADL2_OverdriveN_PowerLimit_Set = (ADL2_OVERDRIVEN_POWERLIMIT_SET)GetProcAddress(hDLL, "ADL2_OverdriveN_PowerLimit_Set");
-	ADL2_OverdriveN_Temperature_Get = (ADL2_OVERDRIVEN_TEMPERATURE_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_Temperature_Get");
-	ADL2_Overdrive_Caps = (ADL2_OVERDRIVE_CAPS)GetProcAddress(hDLL, "ADL2_Overdrive_Caps");
+	ADL_Main_Control_Create = (ADL_MAIN_CONTROL_CREATE)GetProcAddress(ati_hDLL, "ADL_Main_Control_Create");
+	ADL_Main_Control_Destroy = (ADL_MAIN_CONTROL_DESTROY)GetProcAddress(ati_hDLL, "ADL_Main_Control_Destroy");
+	ADL_Adapter_NumberOfAdapters_Get = (ADL_ADAPTER_NUMBEROFADAPTERS_GET)GetProcAddress(ati_hDLL, "ADL_Adapter_NumberOfAdapters_Get");
+	ADL_Adapter_AdapterInfo_Get = (ADL_ADAPTER_ADAPTERINFO_GET)GetProcAddress(ati_hDLL, "ADL_Adapter_AdapterInfo_Get");
+	ADL_AdapterX2_Caps = (ADL_ADAPTERX2_CAPS)GetProcAddress(ati_hDLL, "ADL_AdapterX2_Caps");
+	ADL2_Adapter_Active_Get = (ADL2_ADAPTER_ACTIVE_GET)GetProcAddress(ati_hDLL, "ADL2_Adapter_Active_Get");
+	ADL2_OverdriveN_Capabilities_Get = (ADL2_OVERDRIVEN_CAPABILITIES_GET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_Capabilities_Get");
+	ADL2_OverdriveN_SystemClocks_Get = (ADL2_OVERDRIVEN_SYSTEMCLOCKS_GET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_SystemClocks_Get");
+	ADL2_OverdriveN_SystemClocks_Set = (ADL2_OVERDRIVEN_SYSTEMCLOCKS_SET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_SystemClocks_Set");
+	ADL2_OverdriveN_MemoryClocks_Get = (ADL2_OVERDRIVEN_MEMORYCLOCKS_GET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_MemoryClocks_Get");
+	ADL2_OverdriveN_MemoryClocks_Set = (ADL2_OVERDRIVEN_MEMORYCLOCKS_SET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_MemoryClocks_Set");
+	ADL2_OverdriveN_PerformanceStatus_Get = (ADL2_OVERDRIVEN_PERFORMANCESTATUS_GET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_PerformanceStatus_Get");
+	ADL2_OverdriveN_FanControl_Get = (ADL2_OVERDRIVEN_FANCONTROL_GET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_FanControl_Get");
+	ADL2_OverdriveN_FanControl_Set = (ADL2_OVERDRIVEN_FANCONTROL_SET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_FanControl_Set");
+	ADL2_OverdriveN_PowerLimit_Get = (ADL2_OVERDRIVEN_POWERLIMIT_GET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_PowerLimit_Get");
+	ADL2_OverdriveN_PowerLimit_Set = (ADL2_OVERDRIVEN_POWERLIMIT_SET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_PowerLimit_Set");
+	ADL2_OverdriveN_Temperature_Get = (ADL2_OVERDRIVEN_TEMPERATURE_GET)GetProcAddress(ati_hDLL, "ADL2_OverdriveN_Temperature_Get");
+	ADL2_Overdrive_Caps = (ADL2_OVERDRIVE_CAPS)GetProcAddress(ati_hDLL, "ADL2_Overdrive_Caps");
 	if (NULL == ADL_Main_Control_Create ||
 		NULL == ADL_Main_Control_Destroy ||
 		NULL == ADL_Adapter_NumberOfAdapters_Get ||
@@ -136,27 +137,13 @@ void GLimp_InitADL()
 		return;
 	}
 
-	Com_Printf(S_COLOR_GREEN"ok.\n");
-	adlInit = qtrue;
-}
-
-void ADL_unload(){
-
-	ADL_Main_Control_Destroy();
-	FreeLibrary(hDLL);
-}
-
-void adl_PrintGpuPerformance()
-{
-	int		i, active = 0;
-	int		phisAdp;
-
-	int iSupported, iEnabled, iVersion;
-
 	// Obtain the number of adapters for the system
 	if (ADL_OK != ADL_Adapter_NumberOfAdapters_Get(&iNumberAdapters))
 	{
 		Com_Printf(S_COLOR_RED"Cannot get the number of adapters!\n");
+		ADL_Main_Control_Destroy();
+		FreeLibrary(ati_hDLL);
+		iNumberAdapters = 0;
 		return;
 	}
 
@@ -169,18 +156,39 @@ void adl_PrintGpuPerformance()
 		ADL_Adapter_AdapterInfo_Get(lpAdapterInfo, sizeof(AdapterInfo) * iNumberAdapters);
 	}
 
-	// no crossfire config...
-
 	phisAdp = iNumberAdapters + 1;
 
-//	find num of phisical adapters
-	for (i = 0; i < iNumberAdapters; i++)
+	//	find num of phisical adapters
+	for (int i = 0; i < iNumberAdapters; i++)
 	{
 		if (lpAdapterInfo[i].iBusNumber > -1)
 		{
 			phisAdp--;
+
+			ADL2_Overdrive_Caps(context, lpAdapterInfo[i].iAdapterIndex, &iSupported, &iEnabled, &iVersion);
 		}
 	}
+
+
+//	if (iVersion == 7)
+
+	Com_Printf(S_COLOR_GREEN"ok.\n");
+	adlInit = qtrue;
+}
+
+void ADL_unload(){
+
+	ADL_Main_Control_Destroy();
+	FreeLibrary(ati_hDLL);
+}
+
+void adl_PrintGpuPerformance()
+{
+	int		i, active = 0;
+
+	int iSupported, iEnabled, iVersion;
+
+	// no crossfire config...
 
 	// Repeat for all available adapters in the system
 	for (i = 0; i < phisAdp; i++)
@@ -188,10 +196,6 @@ void adl_PrintGpuPerformance()
 		if (lpAdapterInfo[i].iBusNumber > -1)
 		{
 			ADL2_Overdrive_Caps(context, lpAdapterInfo[i].iAdapterIndex, &iSupported, &iEnabled, &iVersion);
-
-			if (iVersion == 7)
-			{
-				// found! 
 // gpu start
 
 				ADLODNCapabilities overdriveCapabilities;
@@ -251,7 +255,6 @@ void adl_PrintGpuPerformance()
 				}
 
 //========gpu end
-			}
 		}
 	}
 
