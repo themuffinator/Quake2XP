@@ -672,6 +672,9 @@
     <ClInclude Include="client\client.h" />
     <ClInclude Include="client\music.h" />
     <ClInclude Include="ref_gl\glcorearb.h" />
+    <ClInclude Include="win32\adl\adl_defines.h" />
+    <ClInclude Include="win32\adl\adl_sdk.h" />
+    <ClInclude Include="win32\adl\adl_structures.h" />
     <ClInclude Include="win32\afxres.h" />
     <ClInclude Include="win32\conproc.h" />
     <ClInclude Include="game\game.h" />

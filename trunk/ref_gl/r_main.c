@@ -1220,7 +1220,6 @@ vid_ref->modified = qtrue;
 
 void R_GLSLinfo_f(void);
 void GL_LevelShot_f(void);
-void R_NvApi_f(void);
 
 void R_RegisterCvars(void)
 {
@@ -1361,7 +1360,7 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
 	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
 #ifdef _WIN32
-	Cmd_AddCommand("gpuInfo",			R_NvApi_f);
+	Cmd_AddCommand("gpuInfo",			R_GpuInfo_f);
 #endif
 
 /*

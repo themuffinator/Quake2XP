@@ -38,8 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;        // Nvidia
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;  // AMD
 
-qboolean nvApiInit;
-
 #define	WINDOW_STYLE	(WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_VISIBLE)
 
 typedef struct {
@@ -395,7 +393,7 @@ void GLimp_InitNvApi() {
 #define NV_UTIL_DOMAIN_VID  2 //video decoder don't needed
 #define NV_UTIL_DOMAIN_BUS  3
 
-void R_NvApi_f(void) {
+void R_GpuInfo_f(void) {
 
 	NvAPI_Status					ret = NVAPI_OK;
 	NvU32							rpm = 0;
@@ -405,7 +403,7 @@ void R_NvApi_f(void) {
 	NV_GPU_CLOCK_FREQUENCIES		clocks;
 	
 	if (adlInit) {
-		adl_PrintGpuPerformance();
+		ADL_PrintGpuInfo();
 		return;
 	}
 
@@ -748,7 +746,6 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 ** for the window.  The state structure is also nulled out.
 **
 */
-void ADL_unload();
 
 void GLimp_Shutdown( void )
 {
@@ -786,7 +783,7 @@ void GLimp_Shutdown( void )
 		NvAPI_Unload();
 
 	if(adlInit)
-		ADL_unload();
+		ADL_Shutdown();
 }
 
 /*=============

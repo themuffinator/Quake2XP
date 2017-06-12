@@ -1070,6 +1070,12 @@ uint fixfov_params;
 
 void R_DrawFullScreenQuad();
 
+qboolean nvApiInit;
+
+void R_GpuInfo_f(void);
+void ADL_PrintGpuInfo();
+void ADL_Shutdown();
+
 /*
 ====================================================================
 

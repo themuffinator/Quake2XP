@@ -66,6 +66,12 @@
     <Filter Include="Resource Files\Headers">
       <UniqueIdentifier>{c2898b39-e2a1-4717-9c2d-4dbb20970430}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Win32\Headers\Adl">
+      <UniqueIdentifier>{e8373012-be4b-40f8-ac68-9bbe332f7938}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Win32\Headers\NvApi">
+      <UniqueIdentifier>{3e57cfc0-f773-4d21-bc41-b754a67b3422}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="client\cl_console.c">
@@ -349,21 +355,6 @@
     <ClInclude Include="client\music.h">
       <Filter>Source Files\Sound\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi.h">
-      <Filter>Source Files\Win32\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_common.h">
-      <Filter>Source Files\Win32\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_surround.h">
-      <Filter>Source Files\Win32\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_salstart.h">
-      <Filter>Source Files\Win32\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\nvapi\nvapi_lite_salend.h">
-      <Filter>Source Files\Win32\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="client\cdaudio.h">
       <Filter>Source Files\Sound\Headers</Filter>
     </ClInclude>
@@ -426,6 +417,30 @@
     </ClInclude>
     <ClInclude Include="win32\conproc.h">
       <Filter>Source Files\Client\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvapi.h">
+      <Filter>Source Files\Win32\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvapi_lite_common.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvapi_lite_salend.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvapi_lite_salstart.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\nvapi\nvapi_lite_surround.h">
+      <Filter>Source Files\Win32\Headers\NvApi</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\adl\adl_defines.h">
+      <Filter>Source Files\Win32\Headers\Adl</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\adl\adl_sdk.h">
+      <Filter>Source Files\Win32\Headers\Adl</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\adl\adl_structures.h">
+      <Filter>Source Files\Win32\Headers\Adl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
