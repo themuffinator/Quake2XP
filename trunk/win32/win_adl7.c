@@ -265,7 +265,7 @@ void ADL_PrintGpuInfo(){
 		else {
 			Com_Printf("GPU " S_COLOR_GREEN "%i" S_COLOR_WHITE ": Fan Speed   : %i RPM\n", atiPhysicalAdapters - 1, odNFanControl.iCurrentFanSpeed);
 		}
-		
+
 		// gpu-vram clock
 		ADLODNPerformanceStatus odNPerformanceStatus;
 		memset(&odNPerformanceStatus, 0, sizeof(ADLODNPerformanceStatus));
@@ -274,6 +274,8 @@ void ADL_PrintGpuInfo(){
 			Com_Printf(S_COLOR_RED"ADL2_OverdriveN_PerformanceStatus_Get is failed\n");
 		}
 		else {
+			Com_Printf("GPU " S_COLOR_GREEN "%i" S_COLOR_WHITE ": Activity    : %i Percent\n", 
+						atiPhysicalAdapters - 1, odNPerformanceStatus.iGPUActivityPercent);
 			Com_Printf("GPU " S_COLOR_GREEN "%i" S_COLOR_WHITE ": CoreClock   : %i Mhz\n", 
 						atiPhysicalAdapters - 1, odNPerformanceStatus.iCoreClock / 100);
 			Com_Printf("GPU " S_COLOR_GREEN "%i" S_COLOR_WHITE ": MemoryClock : %i (%i Effective) Mhz\n", 
