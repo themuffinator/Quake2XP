@@ -3,9 +3,6 @@ in vec2 v_lineOffset;
 
 layout (binding = 0) uniform sampler2D u_cinMap;
 
-const float brightness = 0.85;
-const vec2 sine_comp = vec2(0.0005, 0.35);
-
 /*
 3x3 Median
 Morgan McGuire and Kyle Whitson
@@ -20,16 +17,18 @@ Morgan McGuire and Kyle Whitson
 #define mnmx5(a, b, c, d, e)	  s2(a, b); s2(c, d); mn3(a, c, e); mx3(b, d, e);           // 6 exchanges
 #define mnmx6(a, b, c, d, e, f) s2(a, d); s2(b, e); s2(c, f); mn3(a, b, c); mx3(d, e, f); // 7 exchanges
 
+
+//  3x3 median too large for 256*256 screen texture. Scale median radius.
+#define ONE_DIV_256		1.0/256.0
+#define ONE_DIV_512		1.0/512.0
+#define ONE_DIV_768		1.0/768.0
+#define ONE_DIV_1024	1.0/1024.0
+
 vec3 median(in sampler2D tex) {
 
   vec3 v[9];
-  /*
-  3x3 median too large for 256*256 screen texture. Scale median radius.
-  1.0/256.0 = 0,00390625
-  1.0/512.0 = 0,001953125
-  1.0/1024.0 = 0,0009765625
-  */
-  vec2 screenOffs = vec2( 0.001953125);
+
+  vec2 screenOffs = vec2(ONE_DIV_1024);
    
   // Add the pixels which make up our window to the pixel array.
   for(int dX = -1; dX <= 1; ++dX) {
@@ -53,10 +52,43 @@ vec3 median(in sampler2D tex) {
   return v[4];
 }
 
+#define REDFILTER 		vec4(1.0, 0.0, 0.0, 0.0)
+#define BLUEGREENFILTER vec4(0.0, 1.0, 0.7, 0.0)
+
+#define GREENFILTER 	vec4(0.0, 1.0, 0.0, 0.0)
+#define BLUEFILTER		vec4(0.0, 0.0, 1.0, 0.0)
+
+#define REDORANGEFILTER vec4(0.99, 0.263, 0.0, 0.0)
+
+#define CYANFILTER		vec4(0.0, 1.0, 1.0, 0.0)
+#define MAGENTAFILTER	vec4(1.0, 0.0, 1.0, 0.0)
+#define YELLOWFILTER 	vec4(1.0, 1.0, 0.0, 0.0)
+
+vec4 TechniColor(in vec4 color)
+{
+	
+	vec4 redrecord = color * REDFILTER;
+	vec4 bluegreenrecord = color * BLUEGREENFILTER;
+	
+	vec4 rednegative = vec4(redrecord.r);
+	vec4 bluegreennegative = vec4((bluegreenrecord.g + bluegreenrecord.b) * 0.5);
+
+	vec4 redoutput = rednegative * REDFILTER;
+	vec4 bluegreenoutput = bluegreennegative * BLUEGREENFILTER;
+
+	vec4 result = redoutput + bluegreenoutput;
+
+	return mix(color, result, 0.44);
+}
+
+#define BRIGHTNESS 1.0
+#define SINE_COMP vec2(0.0005, 0.35)
+
 void main ()
 {
-  vec4 cin = vec4(median(u_cinMap), 1.0);  
-	vec4 scanline = cin * (brightness + dot(sine_comp * sin(v_texCoord.xy * v_lineOffset), vec2(1.0)));
-	fragData = clamp(scanline, 0.0, 1.0);
-	fragData *= 1.5;
+	vec4 cin = vec4(median(u_cinMap), 1.0) * 1.5;
+	cin = clamp(cin, 0.05, 1.0);
+	vec4 scanLine = cin * (BRIGHTNESS + dot(SINE_COMP * sin(v_texCoord.xy * v_lineOffset), vec2(1.0)));	
+	scanLine = TechniColor(scanLine);
+	fragData = scanLine;
 }
