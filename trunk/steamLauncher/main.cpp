@@ -24,6 +24,8 @@ wsprintfA ( psz, "%S", pwsz);
 */
 #endif
 
+#ifdef CONSOLE
+
 int main(int argc, char *argv[])
 {
 STARTUPINFO StartupInfo;
@@ -62,6 +64,9 @@ CreateProcess(NULL, (LPSTR)cmd, NULL, NULL, TRUE, 0, NULL, NULL, &StartupInfo, &
 
 return 0;
 }
+
+#endif
+
 
 // win32 version non unicode only
 #ifndef CONSOLE
