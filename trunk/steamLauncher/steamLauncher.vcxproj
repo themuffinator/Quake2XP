@@ -75,13 +75,13 @@
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.exe</TargetExt>
     <OutDir>C:\Quake2\</OutDir>
-    <IntDir>Release\</IntDir>
+    <IntDir>.\Release\</IntDir>
     <TargetName>quake2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>C:\Quake2\</OutDir>
-    <IntDir>Debug\</IntDir>
+    <IntDir>.\Debug\</IntDir>
     <TargetName>quake2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -102,14 +102,16 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
-      <DiagnosticsFormat>Caret</DiagnosticsFormat>
+      <DiagnosticsFormat>Classic</DiagnosticsFormat>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
+      <OutputFile>C:\Quake2\quake2.exe</OutputFile>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -123,6 +125,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <OutputFile>C:\Quake2\quake2.exe</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

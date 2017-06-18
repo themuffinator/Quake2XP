@@ -179,15 +179,15 @@ void GLimp_InitADL(){
 		
 		if (lpAdapterInfo[i].iBusNumber > -1)
 			ADL2_Overdrive_Caps(context, lpAdapterInfo[i].iAdapterIndex, &iSupported, &iEnabled, &overDriveVer);
+			i = atiPhysicalGpuCount;
 	}
 
 	Com_Printf("\n...Looking for Overdrive version: ");
 
-	if (overDriveVer >= 7)
-		Com_Printf(S_COLOR_YELLOW"version" S_COLOR_GREEN " %i\n", overDriveVer);
+	if (overDriveVer == 7)
+		Com_Printf("\n...Found" S_COLOR_YELLOW " OverdriveN\n");
 	else {
-		Com_Printf(S_COLOR_RED"Failed!\nIncompatible version %i" S_COLOR_WHITE " required version " S_COLOR_GREEN " 7 " S_COLOR_WHITE "or higher\n", 
-		overDriveVer);
+		Com_Printf(S_COLOR_RED"Failed!\nIncompatible version %i\n", overDriveVer);
 		ADL_Shutdown();
 		return;
 	}
@@ -208,7 +208,7 @@ void GLimp_InitADL(){
 			if (ii == seenids_num)
 			{
 				seenids[seenids_num] = adapterID;
-				Com_Printf("...Found adapter %i: " S_COLOR_GREEN "%s\n", seenids_num, adapterInfo.strAdapterName);
+				Com_Printf("...Adapter %i: " S_COLOR_GREEN "%s\n", seenids_num, adapterInfo.strAdapterName);
 				seenids_num++;
 				strcpy(gpuNames[i], adapterInfo.strAdapterName);
 			}
