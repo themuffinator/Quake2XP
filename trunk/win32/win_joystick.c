@@ -65,7 +65,7 @@ void IN_StartupJoystick(void)
 	MMRESULT	mmr;
 	cvar_t		*cv;
 
-	if (xiActive) // found xInput controller
+	if (xInputActive) // found xInput controller
 		return;
 
 	// assume no joystick
@@ -172,7 +172,7 @@ void Joy_AdvancedUpdate_f(void)
 	int	i;
 	DWORD dwTemp;
 
-	if (xiActive)
+	if (xInputActive)
 		return;
 
 	// initialize all the maps
@@ -238,7 +238,7 @@ void IN_Commands(void)
 	int		i, key_index;
 	DWORD	buttonstate, povstate;
 
-	if (xiActive)
+	if (xInputActive)
 		return;
 
 	if (!joy_avail)
@@ -339,7 +339,7 @@ void IN_JoyMove(usercmd_t *cmd)
 	float	fAxisValue;
 	int		i;
 
-	if (xiActive) {
+	if (xInputActive) {
 		IN_ControllerMove(cmd);
 		return;
 	}

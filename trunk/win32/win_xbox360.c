@@ -25,21 +25,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern	unsigned	sys_msg_time;
 
-qboolean	xiActive			= qfalse;
-int			xiActiveController	= -1;
-int			xi_oldDpadState		= 0;
-int			xi_oldButtonState	= 0;
+qboolean	xInputActive			= qfalse;
+int			xInputActiveController	= -1;
+int			xInputOldDpadState		= 0;
+int			xInputOldButtonState	= 0;
 
 typedef struct {
-	HINSTANCE xiDevice;
-} xinput_t;
+	HINSTANCE device;
+} xInput_t;
 
-xinput_t xinput;
+xInput_t xInput;
 
 #define XINPUT_LIB	"xinput1_3.dll" // win7 support
 
-#define XI_MAX_CONTROLLERS 4
-#define XI_MAX_CONTROLLER_BUTTONS 10
+#define XINPUT_MAX_CONTROLLERS 4
+#define XINPUT_MAX_CONTROLLER_BUTTONS 10
 
 typedef void	(__stdcall * _xInputEnable)(BOOL);
 typedef DWORD	(__stdcall * _XInputGetCapabilities)(DWORD, DWORD, PXINPUT_CAPABILITIES);
@@ -57,11 +57,11 @@ void IN_ShutDownXinput() {
 
 	Com_Printf("..." S_COLOR_YELLOW "shutting down xInput subsystem\n");
 
-	if (xinput.xiDevice) {
+	if (xInput.device) {
 		Com_Printf("..." S_COLOR_YELLOW "unloading " S_COLOR_GREEN "%s\n", XINPUT_LIB);
-		FreeLibrary(xinput.xiDevice);
+		FreeLibrary(xInput.device);
 	}
-	memset(&xinput, 0, sizeof(xinput_t));
+	memset(&xInput, 0, sizeof(xInput_t));
 }
 
 void IN_StartupXInput(void)
@@ -72,25 +72,25 @@ void IN_StartupXInput(void)
 	char batteryLevel[64], batteryType[64];
 
 	// reset to -1 each time as this can be called at runtime
-	xiActiveController = -1;
-	xiActive = qfalse;
+	xInputActiveController = -1;
+	xInputActive = qfalse;
 
 	Com_Printf("\n======= Init xInput Devices =======\n\n");
 
 	// Load the xInput dll
 	Com_Printf("...calling LoadLibrary(%s): ", XINPUT_LIB);
-	if ((xinput.xiDevice = LoadLibrary(XINPUT_LIB)) == NULL)
+	if ((xInput.device = LoadLibrary(XINPUT_LIB)) == NULL)
 	{
 		Com_Printf(S_COLOR_RED"failed!\n");
 		Com_Printf("\n-----------------------------------\n\n");
 		return;
 	}
 
-	qXInputEnable = (_xInputEnable)GetProcAddress(xinput.xiDevice, "XInputEnable");
-	qXInputGetCapabilities = (_XInputGetCapabilities)GetProcAddress(xinput.xiDevice, "XInputGetCapabilities");
-	qXInputGetState = (_XInputGetState)GetProcAddress(xinput.xiDevice, "XInputGetState");
-	qXInputGetBatteryInformation = (_XInputGetBatteryInformation)GetProcAddress(xinput.xiDevice, "XInputGetBatteryInformation");
-	qXInputSetState = (_XInputSetState)GetProcAddress(xinput.xiDevice, "XInputSetState");
+	qXInputEnable = (_xInputEnable)GetProcAddress(xInput.device, "XInputEnable");
+	qXInputGetCapabilities = (_XInputGetCapabilities)GetProcAddress(xInput.device, "XInputGetCapabilities");
+	qXInputGetState = (_XInputGetState)GetProcAddress(xInput.device, "XInputGetState");
+	qXInputGetBatteryInformation = (_XInputGetBatteryInformation)GetProcAddress(xInput.device, "XInputGetBatteryInformation");
+	qXInputSetState = (_XInputSetState)GetProcAddress(xInput.device, "XInputSetState");
 
 	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputSetState)
 	{
@@ -101,22 +101,17 @@ void IN_StartupXInput(void)
 	}
 	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
 
-	xi_axisLx = Cvar_Get("xi_axisLx", "3", CVAR_ARCHIVE);
-	xi_axisLy = Cvar_Get("xi_axisLy", "2", CVAR_ARCHIVE);
-	xi_axisRx = Cvar_Get("xi_axisRx", "3", CVAR_ARCHIVE);
-	xi_axisRy = Cvar_Get("xi_axisRy", "1", CVAR_ARCHIVE);
-	xi_axisLt = Cvar_Get("xi_axisLt", "8", CVAR_ARCHIVE);
-	xi_axisRt = Cvar_Get("xi_axisRt", "4", CVAR_ARCHIVE);
-	xi_dpadArrowMap = Cvar_Get("xi_dpadArrowMap", "1", CVAR_ARCHIVE);
-	xi_useController = Cvar_Get("xi_useController", "-1", CVAR_ARCHIVE);
-	xi_useXInput = Cvar_Get("xi_useXInput", "1", CVAR_ARCHIVE);
-	xi_sensX = Cvar_Get("xi_sensX", "2.0", CVAR_ARCHIVE);
-	xi_sensY = Cvar_Get("xi_sensY", "0.5", CVAR_ARCHIVE);
-	xi_pitchInversion = Cvar_Get("xi_pitchInversion", "0", CVAR_ARCHIVE);
+	in_useXInput			= Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
+	x360_useControllerID	= Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
+	x360_sensX				= Cvar_Get("x360_sensX", "2.0", CVAR_ARCHIVE);
+	x360_sensY				= Cvar_Get("x360_sensY", "0.5", CVAR_ARCHIVE);
+	x360_pitchInversion		= Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
+	x360_swapSticks			= Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
+	x360_swapTriggers		= Cvar_Get("x360_swapTriggers", "0", CVAR_ARCHIVE);
 
 	Com_Printf("...enumerate xInput Controllers\n");
 	firstDev = -1;
-	for (numDev = 0; numDev < XI_MAX_CONTROLLERS; numDev++)
+	for (numDev = 0; numDev < XINPUT_MAX_CONTROLLERS; numDev++)
 	{
 		memset(&xiCaps, 0, sizeof(XINPUT_CAPABILITIES));
 		if (qXInputGetCapabilities(numDev, XINPUT_FLAG_GAMEPAD, &xiCaps) == ERROR_SUCCESS)
@@ -150,24 +145,24 @@ void IN_StartupXInput(void)
 					firstDev = numDev;
 
 				// store to global active controller
-				if ((int)xi_useController->value < 0)  /// automatic select
-					xiActiveController = numDev;
+				if (x360_useControllerID->integer < 0)  /// automatic select
+					xInputActiveController = numDev;
 				else
 				{
-					if (xi_useController->integer == numDev)
-						xiActiveController = numDev;
+					if (x360_useControllerID->integer == numDev)
+						xInputActiveController = numDev;
 				}
 		}
 	}
 
 	/// Berserker: если ничего выбралось и если есть хоть один рабочий контроллер, выберем его
-	if (xiActiveController == -1 && firstDev != -1)
-		xiActiveController = firstDev;
+	if (xInputActiveController == -1 && firstDev != -1)
+		xInputActiveController = firstDev;
 
-	if (xiActiveController != -1)
+	if (xInputActiveController != -1)
 	{
 		qXInputEnable(TRUE);
-		xiActive = qtrue;
+		xInputActive = qtrue;
 	}
 	else
 	{
@@ -181,37 +176,37 @@ void IN_StartupXInput(void)
 void IN_ToggleXInput()
 {
 
-	if (xi_useController->value){
+	if (in_useXInput->integer){
 		
-		if (xiActive)
+		if (xInputActive)
 			return;
 
-		if (xiActiveController != -1) {
+		if (xInputActiveController != -1) {
 			qXInputEnable(TRUE);
-			xiActive = qtrue;
+			xInputActive = qtrue;
 		}
-		xi_oldDpadState = xi_oldButtonState = 0;
+		xInputOldDpadState = xInputOldButtonState = 0;
 	}
 	else 
 	{
-		if (!xiActive)
+		if (!xInputActive)
 			return;
 
 		qXInputEnable(FALSE);
-		xiActive = qfalse;
-		xi_oldDpadState = xi_oldButtonState = 0;
+		xInputActive = qfalse;
+		xInputOldDpadState = xInputOldButtonState = 0;
 	}
 }
 
 void SetRumble(int devNum, int rumbleLow, int rumbleHigh) {
 
-	if (!xiActive)
+	if (!xInputActive)
 		return;
 
-	if (devNum < 0 || devNum >= XI_MAX_CONTROLLERS)
+	if (devNum < 0 || devNum >= XINPUT_MAX_CONTROLLERS)
 		return;
 
-	if (!xi_useController->value)
+	if (!in_useXInput->integer)
 		return;
 
 	XINPUT_VIBRATION vibration;
@@ -229,24 +224,30 @@ extern cvar_t *cl_sidespeed;
 extern cvar_t *cl_yawspeed;
 extern cvar_t *cl_pitchspeed;
 
-#define XI_AXIS_NONE		0
-#define XI_AXIS_LOOK		1
-#define XI_AXIS_MOVE		2
-#define XI_AXIS_TURN		3
-#define XI_AXIS_STRAFE		4
-#define XI_AXIS_INVLOOK		5
-#define XI_AXIS_INVMOVE		6
-#define XI_AXIS_INVTURN		7
-#define XI_AXIS_INVSTRAFE	8
+#define XINPUT_AXIS_NONE		0
+#define XINPUT_AXIS_LOOK		1
+#define XINPUT_AXIS_MOVE		2
+#define XINPUT_AXIS_TURN		3	
+#define XINPUT_AXIS_STRAFE		4
 
-void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cvar_t *axisaction)
+#define XINPUT_AXIS_INVLOOK		5
+#define XINPUT_AXIS_INVMOVE		6
+#define XINPUT_AXIS_INVTURN		7
+#define XINPUT_AXIS_INVSTRAFE	8
+
+#define	XINPUT_LEFT_THUMB_X		4
+#define XINPUT_LEFT_THUMB_Y		2
+#define XINPUT_RIGHT_THUMB_X	3
+#define XINPUT_RIGHT_THUMB_Y	1
+
+void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, int type)
 {
 	// not using this axis
-	if ((int)axisaction->value <= XI_AXIS_NONE)
+	if (type <= XINPUT_AXIS_NONE)
 		return;
 
 	// unimplemented
-	if ((int)axisaction->value > XI_AXIS_INVSTRAFE)
+	if (type > XINPUT_AXIS_INVSTRAFE)
 		return;
 
 	// get the amount moved less the deadzone
@@ -260,8 +261,7 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 	float fmove = (float)realmove / (axismax - dz);
 
 	float speed;
-
-	if ((in_speed.state & 1) ^ (int)cl_run->value)
+	if ((in_speed.state & 1) ^ cl_run->integer)
 		speed = 2;
 	else
 		speed = 1;
@@ -274,36 +274,36 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, cva
 		fmove *= -1;
 
 	// check for inverse scale
-	if ((int)axisaction->value > XI_AXIS_STRAFE) 
+	if (type > XINPUT_AXIS_STRAFE)
 		fmove *= -1;
 	
 	float inv = 1;
-	if(xi_pitchInversion->value)
+	if(x360_pitchInversion->value)
 		inv *= -1;
 
 	// decode the move
-	switch ((int)axisaction->value)
+	switch ( type )
 	{
-	case XI_AXIS_LOOK:
-	case XI_AXIS_INVLOOK:
-		cl.viewangles_PITCH -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * xi_sensY->value * inv;
+	case XINPUT_AXIS_LOOK:
+	case XINPUT_AXIS_INVLOOK:
+		cl.viewangles_PITCH -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * x360_sensY->value * inv;
 		break;
 
-	case XI_AXIS_MOVE:
-	case XI_AXIS_INVMOVE:
+	case XINPUT_AXIS_MOVE:
+	case XINPUT_AXIS_INVMOVE:
 		cmd->forwardmove += fmove * speed * cl_forwardspeed->value;
 		break;
 
-	case XI_AXIS_TURN:
-	case XI_AXIS_INVTURN:
+	case XINPUT_AXIS_TURN:
+	case XINPUT_AXIS_INVTURN:
 		// slow this down because the default cl_yawspeed is too fast here
 		// invert it so that positive move = right
-		cl.viewangles_YAW -= fmove * (cl_yawspeed->value / cl.refdef.fov_x) * xi_sensX->value;
+		cl.viewangles_YAW -= fmove * (cl_yawspeed->value / cl.refdef.fov_x) * x360_sensX->value;
 		break;
 
-	case XI_AXIS_STRAFE:
-	case XI_AXIS_INVSTRAFE:
-		cmd->sidemove -= fmove * speed * cl_sidespeed->value;
+	case XINPUT_AXIS_STRAFE:
+	case XINPUT_AXIS_INVSTRAFE:
+		cmd->sidemove = fmove * speed * cl_sidespeed->value;
 		break;
 
 	default:
@@ -319,32 +319,36 @@ void IN_ZoomUp(void);
 void IN_ControllerMove(usercmd_t *cmd)
 {
 	// no controller to use
-	if (!xiActive)
+	if (!xInputActive)
 		return;
 
-	if (xiActiveController < 0)
+	if (xInputActiveController < 0)
 		return;
 
-	if (!xi_useController->value)
+	if (!in_useXInput->integer)
 		return;
 
-	XINPUT_STATE xiState;
-	static DWORD xiLastPacket = 666;
+	XINPUT_STATE xInputStage;
+	static DWORD xInputLastPacket = 666;
 
 	// get current state
-	DWORD xiResult = qXInputGetState(xiActiveController, &xiState);
+	DWORD xInputResult = qXInputGetState(xInputActiveController, &xInputStage);
 
-	if (xiResult != ERROR_SUCCESS)
-	{
-		// something went wrong - we'll handle that properly later...
+	if (xInputResult != ERROR_SUCCESS)
 		return;
-	}
 
-	// check the axes (always, even if state doesn't change)
-	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 32768, xi_axisLt);
-	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, 32768, xi_axisLy);
-	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, 32768, xi_axisRx);
-	IN_ControllerAxisMove(cmd, xiState.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE, 32768, xi_axisRy);
+	if (!x360_swapSticks->value) {
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_Y);
+	}
+	else {
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);
+	}
 
 	// fix up the command (bound/etc)
 	if (cl.viewangles[0] > 80.0) 
@@ -354,91 +358,80 @@ void IN_ControllerMove(usercmd_t *cmd)
 		cl.viewangles[0] = -70.0;
 
 	// check for a change of state
-	if (xiLastPacket == xiState.dwPacketNumber) 
+	if (xInputLastPacket == xInputStage.dwPacketNumber)
 		return;
 
 	// store back last packet
-	xiLastPacket = xiState.dwPacketNumber;
+	xInputLastPacket = xInputStage.dwPacketNumber;
 
 	int buttonState = 0;
 	int dpadState = 0;
 
 	// Hardcoded!!!
-	if (xiState.Gamepad.bLeftTrigger >= 128)
-		IN_ZoomDown();
-	else
-		IN_ZoomUp();
+	if (!x360_swapTriggers->value) {
+		if (xInputStage.Gamepad.bLeftTrigger >= 128)
+			IN_ZoomDown();
+		else
+			IN_ZoomUp();
 
-	if (xiState.Gamepad.bRightTrigger >= 128)
-		cmd->buttons |= BUTTON_ATTACK;
-	else
-		cmd->buttons &= ~BUTTON_ATTACK;
+		if (xInputStage.Gamepad.bRightTrigger >= 128)
+			cmd->buttons |= BUTTON_ATTACK;
+		else
+			cmd->buttons &= ~BUTTON_ATTACK;
+	}
+	else {
 
-	if ((int)xi_dpadArrowMap->value)
-	{
-		// check dpad (same order as arrow keys)
-		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)		dpadState |= 1;
-		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)	dpadState |= 2;
-		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)	dpadState |= 4;
-		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)	dpadState |= 8;
+		if (xInputStage.Gamepad.bRightTrigger >= 128)
+			IN_ZoomDown();
+		else
+			IN_ZoomUp();
+
+		if (xInputStage.Gamepad.bLeftTrigger >= 128)
+			cmd->buttons |= BUTTON_ATTACK;
+		else
+			cmd->buttons &= ~BUTTON_ATTACK;
 	}
-	else
-	{
-		// check dpad (same order as joystick pov hats)
-		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)		dpadState |= 1;
-		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)	dpadState |= 2;
-		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)	dpadState |= 4;
-		if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)	dpadState |= 8;
-	}
+
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)		dpadState |= 1;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)	dpadState |= 2;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)	dpadState |= 4;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)	dpadState |= 8;
 
 	// check for event changes
-	for (int i = 0; i < XI_MAX_CONTROLLERS; i++)
-	{
-		if ((int)xi_dpadArrowMap->value)
-		{
-			// map dpad to arrow keys
-			if ((dpadState & (1 << i)) && !(xi_oldDpadState & (1 << i)))
-				Key_Event(K_UPARROW + i, qtrue, sys_msg_time);
+	for (int i = 0; i < XINPUT_MAX_CONTROLLERS; i++){
 
-			if (!(dpadState & (1 << i)) && (xi_oldDpadState & (1 << i)))
-				Key_Event(K_UPARROW + i, qfalse, sys_msg_time);
-		}
-		else
-		{
-			// map dpad to POV keys
-			if ((dpadState & (1 << i)) && !(xi_oldDpadState & (1 << i)))
-				Key_Event(K_POV1 + i, qtrue, sys_msg_time);
+		if ((dpadState & (1 << i)) && !(xInputOldDpadState & (1 << i)))
+			Key_Event(K_UPARROW + i, qtrue, sys_msg_time);
 
-			if (!(dpadState & (1 << i)) && (xi_oldDpadState & (1 << i)))
-				Key_Event(K_POV1 + i, qfalse, sys_msg_time);
-		}
+		if (!(dpadState & (1 << i)) && (xInputOldDpadState & (1 << i)))
+			Key_Event(K_UPARROW + i, qfalse, sys_msg_time);
 	}
 
 	// store back
-	xi_oldDpadState = dpadState;
+	xInputOldDpadState = dpadState;
 
 	// check other buttons - map these to K_JOY buttons
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_START)			buttonState |= 1;
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)				buttonState |= 2;
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)		buttonState |= 4;
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)		buttonState |= 8;
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)	buttonState |= 16;
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)	buttonState |= 32;
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_A)				buttonState |= 64;
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_B)				buttonState |= 128;
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_X)				buttonState |= 256;
-	if (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_Y)				buttonState |= 512;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_START)			buttonState |= 1;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)				buttonState |= 2;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)		buttonState |= 4;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)		buttonState |= 8;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)	buttonState |= 16;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)	buttonState |= 32;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_A)				buttonState |= 64;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_B)				buttonState |= 128;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_X)				buttonState |= 256;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_Y)				buttonState |= 512;
 
 	// check for event changes
-	for (int i = 0; i < XI_MAX_CONTROLLER_BUTTONS; i++)
+	for (int i = 0; i < XINPUT_MAX_CONTROLLER_BUTTONS; i++)
 	{
-		if ((buttonState & (1 << i)) && !(xi_oldButtonState & (1 << i)))
+		if ((buttonState & (1 << i)) && !(xInputOldButtonState & (1 << i)))
 			Key_Event(K_JOY1 + i, qtrue, sys_msg_time);
 
-		if (!(buttonState & (1 << i)) && (xi_oldButtonState & (1 << i)))
+		if (!(buttonState & (1 << i)) && (xInputOldButtonState & (1 << i)))
 			Key_Event(K_JOY1 + i, qfalse, sys_msg_time);
 	}
 
 	// store back
-	xi_oldButtonState = buttonState;
+	xInputOldButtonState = buttonState;
 }

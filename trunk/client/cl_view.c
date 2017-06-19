@@ -182,7 +182,7 @@ qboolean needLoadingPlaque (void);
 void R_GenSkyCubeMap (char *name);
 
 #ifdef _WIN32
-extern int	xiActiveController;
+extern int	xInputActiveController;
 void SetRumble(int inputDeviceNum, int rumbleLow, int rumbleHigh);
 #endif
 
@@ -204,7 +204,7 @@ void CL_PrepRefresh (void) {
 	SCR_AddDirtyPoint (viddef.width - 1, viddef.height - 1);
 
 #ifdef _WIN32
-	SetRumble(xiActiveController, 0, 0);
+	SetRumble(xInputActiveController, 0, 0);
 #endif
 
 	start = Sys_Milliseconds ();
@@ -548,9 +548,9 @@ void V_RenderView () {
 		int value = cl.frame.playerstate.stats[STAT_HEALTH];
 
 		if ((cl.refdef.rdflags & RDF_PAIN) && (value > 0)) 
-			SetRumble(xiActiveController, 4096, 65535);
+			SetRumble(xInputActiveController, 4096, 65535);
 		else
-			SetRumble(xiActiveController, 0, 0);
+			SetRumble(xInputActiveController, 0, 0);
 #endif
 
 		cl.refdef.areabits = cl.frame.areabits;

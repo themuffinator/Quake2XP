@@ -32,25 +32,15 @@ void IN_MouseEvent(int mstate);
 extern int		window_center_x, window_center_y;
 extern RECT		window_rect;
 
-cvar_t *xi_axisLx;
-cvar_t *xi_axisLy;
+cvar_t *in_useXInput;
+cvar_t *x360_useControllerID;
+cvar_t *x360_sensX;
+cvar_t *x360_sensY;
+cvar_t *x360_pitchInversion;
+cvar_t *x360_swapSticks;
+cvar_t *x360_swapTriggers;
 
-cvar_t *xi_axisRx;
-cvar_t *xi_axisRy;
-
-cvar_t *xi_axisLt;
-cvar_t *xi_axisRt;
-
-cvar_t *xi_dpadArrowMap;
-cvar_t *xi_useController;
-cvar_t *xi_useXInput;
-cvar_t	*xi_useXInput;
-
-cvar_t *xi_sensX;
-cvar_t *xi_sensY;
-cvar_t *xi_pitchInversion;
-
-extern qboolean xiActive;
+extern qboolean xInputActive;
 
 void	IN_StartupXInput(void);
 void	IN_ToggleXInput();

@@ -66,6 +66,14 @@ float Cvar_VariableValue (char *var_name) {
 	return atof (var->string);
 }
 
+float Cvar_VariableInteger(char *var_name) {
+	cvar_t *var;
+
+	var = Cvar_FindVar(var_name);
+	if (!var)
+		return 0;
+	return atoi(var->string);
+}
 
 /*
 ============
@@ -117,10 +125,13 @@ cvar_t *Cvar_Get (char *var_name, char *var_value, int flags) {
 	}
 
 	var = (cvar_t*)Z_Malloc (sizeof(*var));
-	var->name = CopyString (var_name);
-	var->string = CopyString (var_value);
-	var->modified = qtrue;
-	var->value = atof (var->string);
+
+	var->name		= CopyString (var_name);
+	var->string		= CopyString (var_value);
+	var->modified	= qtrue;
+	var->value		= atof (var->string);
+	var->integer	= atoi(var->string);
+	var->qbool		= (var->integer != 0);
 
 	// link the variable in
 	var->next = cvar_vars;
@@ -207,9 +218,10 @@ cvar_t *Cvar_Set2 (char *var_name, char *value, qboolean force) {
 
 	Z_Free (var->string);		// free the old value string
 
-	var->string = CopyString (value);
-	var->value = atof (var->string);
-
+	var->string		= CopyString (value);
+	var->value		= atof (var->string);
+	var->integer	= atoi(var->string);
+	var->qbool		= (var->integer != 0);
 	return var;
 }
 
@@ -251,9 +263,11 @@ cvar_t *Cvar_FullSet (char *var_name, char *value, int flags) {
 
 	Z_Free (var->string);		// free the old value string
 
-	var->string = CopyString (value);
-	var->value = atof (var->string);
-	var->flags = flags;
+	var->string		= CopyString (value);
+	var->value		= atof (var->string);
+	var->integer	= atoi(var->string);
+	var->qbool		= (var->integer != 0);
+	var->flags		= flags;
 
 	return var;
 }
@@ -303,9 +317,13 @@ void Cvar_GetLatchedVars (void) {
 			continue;
 		if (var->string)
 			Z_Free (var->string);
-		var->string = var->latched_string;
+
 		var->latched_string = NULL;
-		var->value = atof (var->string);
+		var->string			= var->latched_string;
+		var->value			= atof (var->string);
+		var->integer		= atoi(var->string);
+		var->qbool			= (var->integer != 0);
+
 		if (!strcmp (var->name, "game")) {
 			FS_SetGamedir (var->string);
 			FS_ExecAutoexec ();
