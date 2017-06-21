@@ -135,7 +135,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	if (r_skipStaticLights->value) {
+	if (r_skipStaticLights->integer) {
 
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 			VectorSet(lightColor, 0.5, 0.5, 0.5);
@@ -260,7 +260,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	qglUniform1f(ambientAlias_envScale, currentmodel->envScale);
 
-	if (r_ssao->value && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
+	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
 		GL_MBindRect (GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
 		qglUniform1i(ambientAlias_ssao, 1);
 	}
@@ -432,7 +432,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	if (currentmodel->noSelfShadow && r_shadows->value)
+	if (currentmodel->noSelfShadow && r_shadows->integer)
 		GL_Disable(GL_STENCIL_TEST);
 
 	backlerp = currententity->backlerp;
@@ -533,7 +533,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 
 	R_UpdateLightAliasUniforms();
 	
-	if (r_imageAutoBump->value && skinNormalmap == r_defBump) {
+	if (r_imageAutoBump->integer && skinNormalmap == r_defBump) {
 		qglUniform1i(lightAlias_autoBump, 1);
 		qglUniform2f(lightAlias_autoBumpParams, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
 	}

@@ -214,7 +214,7 @@ next:
 	}
 
 	if (e->flags & RF_WEAPONMODEL) {
-		if (r_leftHand->value == 2)
+		if (r_leftHand->integer == 2)
 			return;
 	}
 	
@@ -262,7 +262,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	vec3_t	oldLight, oldView, tmp;
 	int		i;
 
-	if (!r_drawEntities->value)
+	if (!r_drawEntities->integer)
 		return;
 
 	if (currententity->flags & RF_DISTORT)
@@ -277,7 +277,7 @@ void R_DrawAliasModelLightPass (qboolean weapon_model)
 	}
 
 	if (currententity->flags & RF_WEAPONMODEL) {
-		if (!weapon_model || r_leftHand->value == 2)
+		if (!weapon_model || r_leftHand->integer == 2)
 			return;
 	}
 

@@ -46,7 +46,7 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 		}
 	}
 
-	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[2] <= 0.01 && !r_lightEditor->value)
+	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[2] <= 0.01 && !r_lightEditor->integer)
 		return qfalse;
 
 	if (!light->radius[0] && !light->radius[1] && !light->radius[2])
@@ -376,7 +376,7 @@ void R_SaveLights_f (void) {
 	FILE	*f;
 	int		i = 0;
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -453,7 +453,7 @@ void R_Light_Spawn_f (void) {
 	trace_t trace;
 	char	target[MAX_QPATH];
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -473,7 +473,7 @@ void R_Light_SpawnToCamera_f (void) {
 	vec3_t	color = { 1.0, 1.0, 1.0 }, radius = { 300, 300, 300 };
 	char	target[MAX_QPATH];
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -490,7 +490,7 @@ void R_Light_Clone_f (void) {
 	char	target[MAX_QPATH];
 	trace_t trace;
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -556,7 +556,7 @@ lightClipboard_t lightClipBoard;
 
 void R_Copy_Light_Properties_f (void) {
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -593,7 +593,7 @@ void R_Copy_Light_Properties_f (void) {
 
 void R_Paste_Light_Properties_f (void) {
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -643,7 +643,7 @@ void R_EditSelectedLight_f (void) {
 		ambient, flare, start_off, fog;
 	char	target[MAX_QPATH];
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -900,7 +900,7 @@ void R_FlareEdit_f (void) {
 
 void R_ResetFlarePos_f (void) {
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -919,7 +919,7 @@ void R_MoveLightToRight_f (void) {
 	vec3_t	origin, origin2;
 	float	offset;
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -939,7 +939,7 @@ void R_MoveLightToRight_f (void) {
 	if (!flareEdit) {
 		VectorCopy(selectedShadowLight->origin, origin);
 
-		if (r_cameraSpaceLightMove->value)
+		if (r_cameraSpaceLightMove->integer)
 			VectorMA(origin, offset, v_right, origin);
 		else
 			origin[0] += offset;
@@ -953,7 +953,7 @@ void R_MoveLightToRight_f (void) {
 
 // move flare
 	VectorCopy(selectedShadowLight->flareOrigin, origin2);
-	if (r_cameraSpaceLightMove->value)
+	if (r_cameraSpaceLightMove->integer)
 		VectorMA(origin2, offset, v_right, origin2);
 	else
 		origin2[0] += offset;
@@ -966,7 +966,7 @@ void R_MoveLightForward_f (void) {
 	vec3_t origin, origin2;
 	float  offset, fix;
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -986,7 +986,7 @@ void R_MoveLightForward_f (void) {
 	if (!flareEdit) {
 		VectorCopy(selectedShadowLight->origin, origin);
 
-		if (r_cameraSpaceLightMove->value) {
+		if (r_cameraSpaceLightMove->integer) {
 			fix = origin[2];
 			VectorMA(origin, offset, v_forward, origin);
 			origin[2] = fix;
@@ -1003,7 +1003,7 @@ void R_MoveLightForward_f (void) {
 
 // move flare	
 	VectorCopy(selectedShadowLight->flareOrigin, origin2);
-	if (r_cameraSpaceLightMove->value) {
+	if (r_cameraSpaceLightMove->integer) {
 		fix = origin2[2];
 		VectorMA(origin2, offset, v_forward, origin2);
 		origin2[2] = fix;
@@ -1018,7 +1018,7 @@ void R_MoveLightUpDown_f (void) {
 	vec3_t	origin, origin2;
 	float	offset;
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -1059,7 +1059,7 @@ void R_ChangeLightRadius_f (void) {
 	float	offset, fRad;
 	vec3_t	rad;
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -1110,7 +1110,7 @@ void R_ChangeLightCone_f (void) {
 
 	float cone, offset;
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -1147,7 +1147,7 @@ void R_ChangeLightCone_f (void) {
 
 void R_Light_Delete_f (void) {
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -1163,7 +1163,7 @@ void R_Light_Delete_f (void) {
 
 void R_Light_UnSelect_f (void) {
 
-	if (!r_lightEditor->value) {
+	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
 		return;
 	}
@@ -1204,7 +1204,7 @@ void UpdateLightEditor (void) {
 	unsigned	headNode;
 	vec3_t		tmpOrg, tmpRad;
 
-	if (!r_lightEditor->value)
+	if (!r_lightEditor->integer)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -1215,7 +1215,7 @@ void UpdateLightEditor (void) {
 
 	GL_Disable (GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Disable (GL_DEPTH_BOUNDS_TEST_EXT);
 
 	GL_Disable (GL_BLEND);
@@ -1456,13 +1456,13 @@ void UpdateLightEditor (void) {
 	GL_Enable (GL_CULL_FACE);
 	GL_Enable (GL_BLEND);
 
-	if (r_shadows->value)
+	if (r_shadows->integer)
 		GL_Enable (GL_STENCIL_TEST);
 
-	if (r_useLightScissors->value)
+	if (r_useLightScissors->integer)
 		GL_Enable (GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
 
 	R_LightFlareOutLine ();
@@ -2268,7 +2268,7 @@ void R_SetViewLightScreenBounds () {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	if (r_useLightScissors->value || (gl_state.depthBoundsTest && r_useDepthBounds->value)) {
+	if (r_useLightScissors->integer || (gl_state.depthBoundsTest && r_useDepthBounds->integer)) {
 		// copy the corner points of each plane and clip to the frustum
 		for (i = 0; i < 6; i++) {
 			VectorCopy (currentShadowLight->corners[cornerIndices[i][0]], points[0]);
@@ -2298,7 +2298,7 @@ void R_SetViewLightScreenBounds () {
 	}
 
 	// set the scissor rectangle
-	if (r_useLightScissors->value) {
+	if (r_useLightScissors->integer) {
 		scissor[0] = max (Q_ftol (floor (mins[0])), r_newrefdef.viewport[0]);
 		scissor[1] = max (Q_ftol (floor (mins[1])), r_newrefdef.viewport[1]);
 		scissor[2] = min (Q_ftol (ceil (maxs[0])), r_newrefdef.viewport[0] + r_newrefdef.viewport[2]);
@@ -2319,7 +2319,7 @@ void R_SetViewLightScreenBounds () {
 	}
 
 	// set the depth bounds
-	if (r_useDepthBounds->value) {
+	if (r_useDepthBounds->integer) {
 		depth[0] = max (mins[2], 0.0f);
 		depth[1] = min (maxs[2], 1.0f);
 
@@ -2355,13 +2355,13 @@ void R_DrawLightFlare () {
 	if (currentShadowLight->isAmbient)
 		return;
 
-	if (!r_drawFlares->value)
+	if (!r_drawFlares->integer)
 		return;
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Disable (GL_DEPTH_BOUNDS_TEST_EXT);
 	
-	if (r_useLightScissors->value)
+	if (r_useLightScissors->integer)
 		GL_Disable (GL_SCISSOR_TEST);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
@@ -2418,10 +2418,10 @@ void R_DrawLightFlare () {
 
 	GL_BindNullProgram ();
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
 	
-	if (r_useLightScissors->value)
+	if (r_useLightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -2443,7 +2443,7 @@ void R_LightFlareOutLine () { //flare editing highlights
 	if (!flareEdit)
 		return;
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Disable (GL_DEPTH_BOUNDS_TEST_EXT);
 
 
@@ -2533,9 +2533,9 @@ void R_LightFlareOutLine () { //flare editing highlights
 
 	GL_BindNullProgram ();
 
-	if (r_useLightScissors->value)
+	if (r_useLightScissors->integer)
 		GL_Enable (GL_SCISSOR_TEST);
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
 	GL_Enable (GL_STENCIL_TEST);
 	GL_Enable (GL_CULL_FACE);
@@ -2548,7 +2548,7 @@ void R_DrawLightBounds(void) {
 	vec3_t		v[8];
 	vec3_t		tmpOrg;
 
-	if (!r_debugLights->value)
+	if (!r_debugLights->integer)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -2559,14 +2559,14 @@ void R_DrawLightBounds(void) {
 
 	GL_Disable(GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	GL_Disable(GL_BLEND);
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_CULL_FACE);
 
-	if (r_debugLights->value == 2)
+	if (r_debugLights->integer == 2)
 		GL_Disable(GL_DEPTH_TEST);
 
 	// setup program
@@ -2643,15 +2643,15 @@ void R_DrawLightBounds(void) {
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_BLEND);
 
-	if (r_debugLights->value == 2)
+	if (r_debugLights->integer == 2)
 		GL_Enable(GL_DEPTH_TEST);
 
-	if (r_shadows->value)
+	if (r_shadows->integer)
 		GL_Enable(GL_STENCIL_TEST);
 
-	if (r_useLightScissors->value)
+	if (r_useLightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 }

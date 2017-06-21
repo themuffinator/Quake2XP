@@ -853,11 +853,11 @@ void GL_ScreenShot_f (void) {
 	}
 
 
-	if ((r_screenShotJpegQuality->value >= 99) || (r_screenShotJpegQuality->value <= 0))
+	if ((r_screenShotJpegQuality->integer >= 99) || (r_screenShotJpegQuality->integer <= 0))
 		Cvar_SetValue ("r_screenShotJpegQuality", 99);
 
 	ilHint (IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
-	ilSetInteger (IL_JPG_QUALITY, (int)r_screenShotJpegQuality->value);
+	ilSetInteger (IL_JPG_QUALITY, r_screenShotJpegQuality->integer);
 
 	ilGenImages (1, ImagesToSave);
 	ilBindImage (ImagesToSave[0]);
@@ -894,11 +894,11 @@ void GL_LevelShot_f(void) {
 	Com_sprintf(picname, sizeof(picname), "%s.%s", shortName, "jpg");
 	Com_sprintf(checkname, sizeof(checkname), "%s/levelshots/%s", FS_Gamedir(), picname);
 
-	if ((r_screenShotJpegQuality->value >= 99) || (r_screenShotJpegQuality->value <= 0))
+	if ((r_screenShotJpegQuality->integer >= 99) || (r_screenShotJpegQuality->integer <= 0))
 		Cvar_SetValue("r_screenShotJpegQuality", 99);
 
 	ilHint(IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
-	ilSetInteger(IL_JPG_QUALITY, (int)r_screenShotJpegQuality->value);
+	ilSetInteger(IL_JPG_QUALITY, r_screenShotJpegQuality->integer);
 
 	ilGenImages(1, ImagesToSave);
 	ilBindImage(ImagesToSave[0]);

@@ -11,7 +11,7 @@
 # - cl_maxfps works fine at 60, and uses usleep() to wait
 #
 
-VERSION = '1.26.2'
+VERSION = '1.26.7'
 APPNAME = 'quake2xp'
 top = '.'
 out = 'build'
@@ -26,9 +26,6 @@ sources_glob = {
         ],
     'rogue' : [
         'roguesrc/**/*.c'
-        ],
-    '3zb2' : [
-        '3zb2src97/*.c'
         ],
     'client' : [
         'game/q_shared.c',
@@ -51,7 +48,7 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_c')
-    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'IL', 'ILU', 'ILUT', 'openal']:
+    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'IL', 'ILU', 'ILUT', 'openal', 'xlib']:
         conf.check_cfg(package=lib, args=['--cflags', '--libs'])
 
 def build(bld):
@@ -98,17 +95,10 @@ def build(bld):
         env = genv
         )
 
-    bld.shlib(
-        source = sources['3zb2'],
-        target = '3zb2/gamexp',
-        install_path = '${DATADIR}/3zb2',
-        env = genv
-        )
-
     bld.program(
         cflags = '-DSYSTEMWIDE="' + bld.env.DATADIR + '"',
         source = sources['client'],
         target = 'quake2xp',
         lib = ['z', 'm', 'dl'],
-        use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL', 'OGG', 'VORBIS', 'VORBISFILE']
+        use = ['IL', 'ILU', 'ILUT', 'OPENAL', 'SDL', 'OGG', 'VORBIS', 'VORBISFILE', 'XLIB']
     )

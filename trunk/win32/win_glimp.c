@@ -38,6 +38,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;        // Nvidia
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;  // AMD
 
+#define	WINDOWBORDERLESS_STYLE	(WS_VISIBLE | WS_POPUP)
+
 #define	WINDOW_STYLE	(WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_VISIBLE)
 
 typedef struct {
@@ -74,7 +76,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 {
 	WNDCLASS		wc;
 	RECT			r;
-	cvar_t			*vid_xpos, *vid_ypos;
+	cvar_t			*vid_xpos, *vid_ypos, *vid_BorderlessWindow;
 	int				stylebits;
 	int				x, y;
 	int				exstyle;
@@ -109,6 +111,8 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	/// save real monitor position in the virtual monitor
 	glw_state.desktopPosX = dm.dmPosition.x;
 	glw_state.desktopPosY = dm.dmPosition.y;
+	
+	vid_BorderlessWindow = Cvar_Get("vid_BorderlessWindow", "0", CVAR_ARCHIVE);
 
 	if (fullscreen)
 	{
@@ -118,7 +122,10 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	else
 	{
 		exstyle = 0;
-		stylebits = WINDOW_STYLE;
+		if(!vid_BorderlessWindow->integer)
+			stylebits = WINDOW_STYLE;
+		else
+			stylebits = WINDOWBORDERLESS_STYLE;
 	}
 
 	r.left = glw_state.desktopPosX;
@@ -144,8 +151,8 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	}
 	else
 	{
-		x = vid_xpos->value;
-		y = vid_ypos->value;
+		x = vid_xpos->integer;
+		y = vid_ypos->integer;
 
 		// adjust window coordinates if necessary
 		// so that the window is completely on screen
@@ -324,7 +331,6 @@ BOOL CALLBACK MonitorEnumProc2(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMon
 	return TRUE;
 }
 void GLimp_InitADL();
-void adl_PrintGpuPerformance();
 extern qboolean adlInit;
 
 NvPhysicalGpuHandle hPhysicalGpu[NVAPI_MAX_PHYSICAL_GPUS];
@@ -510,10 +516,10 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
 
 	monitorName[0] = 0;
-	if ((int)vid_monitor->value <= 0 || (int)vid_monitor->value > MAX_SUPPORTED_MONITORS)
+	if (vid_monitor->integer <= 0 || vid_monitor->integer > MAX_SUPPORTED_MONITORS)
 		cvm = 0;    // лишь бы что-то было корректное...
 	else
-		cvm = (int)vid_monitor->value - 1;
+		cvm = vid_monitor->integer - 1;
 	idx = -1;
 	for (j = 0; j < MAX_SUPPORTED_MONITORS; j++)
 	{
@@ -554,7 +560,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 			}
 		}
 	}
-	if (idx == -1 || (int)vid_monitor->value <= 0 || (int)vid_monitor->value > MAX_SUPPORTED_MONITORS)    /// not found :(
+	if (idx == -1 || vid_monitor->integer <= 0 || vid_monitor->integer > MAX_SUPPORTED_MONITORS)    /// not found :(
 	{
 		glw_state.desktopName[0] = 0;
 		Com_Printf("\n...using " S_COLOR_YELLOW "primary" S_COLOR_WHITE " monitor\n");
@@ -582,9 +588,9 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		DeleteDC(hDC);
 
 		if (monitorNames[cvm][0])
-			Com_Printf("...using monitor " S_COLOR_GREEN "%i " S_COLOR_WHITE "(" S_COLOR_GREEN "%s" S_COLOR_WHITE ")\n", (int)vid_monitor->value, monitorNames[cvm]);
+			Com_Printf("...using monitor " S_COLOR_GREEN "%i " S_COLOR_WHITE "(" S_COLOR_GREEN "%s" S_COLOR_WHITE ")\n", vid_monitor->integer, monitorNames[cvm]);
 		else
-			Com_Printf("...using monitor " S_COLOR_GREEN "%i\n", (int)vid_monitor->value);
+			Com_Printf("...using monitor " S_COLOR_GREEN "%i\n", vid_monitor->integer);
 
 	}
 		Com_Printf(S_COLOR_YELLOW"\n...Available monitors:\n\n");
@@ -635,9 +641,9 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
  
 		/* display frequency */
-		if (r_displayRefresh->value != 0){
-	        gl_state.displayrefresh	= r_displayRefresh->value;
-			dm.dmDisplayFrequency	= r_displayRefresh->value;
+		if (r_displayRefresh->integer != 0){
+	        gl_state.displayrefresh	= r_displayRefresh->integer;
+			dm.dmDisplayFrequency	= r_displayRefresh->integer;
 			dm.dmFields				|= DM_DISPLAYFREQUENCY;
 			Com_Printf("...display frequency is "S_COLOR_GREEN"%d"S_COLOR_WHITE" hz\n", gl_state.displayrefresh);
 		}
@@ -1382,7 +1388,7 @@ void GLW_InitExtensions() {
 	}
 
 	if (strstr(glw_state.wglExtsString, "WGL_ARB_multisample"))
-		if (r_multiSamples->value < 2)
+		if (r_multiSamples->integer < 2)
 			Com_Printf("" S_COLOR_YELLOW "...ignoring WGL_ARB_multisample\n");
 		else
 			Com_Printf("...using WGL_ARB_multisample\n");
@@ -1462,7 +1468,7 @@ static qboolean GLW_InitFakeOpenGL(void) {
 		return qfalse;
 
 	// create the fake window
-	glw_state.hWndFake = CreateWindowEx(0, WINDOW_CLASS_FAKE, WINDOW_NAME, WINDOW_STYLE, 0, 0, 320, 240, NULL, NULL, glw_state.hInstance, NULL);
+	glw_state.hWndFake = CreateWindowEx(0, WINDOW_CLASS_FAKE, WINDOW_NAME, WINDOWBORDERLESS_STYLE, 0, 0, 320, 240, NULL, NULL, glw_state.hInstance, NULL);
 	if (!glw_state.hWndFake) {
 		GLW_ShutdownFakeOpenGL();
 		return qfalse;
@@ -1730,12 +1736,12 @@ qboolean GLW_InitDriver(void) {
 	PIXELFORMATDESCRIPTOR	PFD;
 	
 	int	pixelFormat;
-	int	debugFlag	= r_glDebugOutput->value ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
-	int	contextMask = r_glCoreProfile->value ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+	int	debugFlag	= r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
+	int	contextMask = r_glCoreProfile->integer ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 	int	attribs[] =
 	{
-		WGL_CONTEXT_MAJOR_VERSION_ARB, r_glMajorVersion->value,
-		WGL_CONTEXT_MINOR_VERSION_ARB, r_glMinorVersion->value,
+		WGL_CONTEXT_MAJOR_VERSION_ARB, r_glMajorVersion->integer,
+		WGL_CONTEXT_MINOR_VERSION_ARB, r_glMinorVersion->integer,
 		WGL_CONTEXT_FLAGS_ARB,  debugFlag,
 		WGL_CONTEXT_PROFILE_MASK_ARB, contextMask,
 		0
@@ -1754,10 +1760,10 @@ qboolean GLW_InitDriver(void) {
 	Com_Printf(S_COLOR_GREEN"ok\n");
 	
 	int samples;
-	if ((int)r_multiSamples->value == 1)
+	if ((int)r_multiSamples->integer == 1)
 		samples = 0;
 	else
-		samples = (int)r_multiSamples->value;
+		samples = (int)r_multiSamples->integer;
 
 	// choose a pixel format
 	pixelFormat = GLW_ChoosePixelFormat(32, 8, 24, 8, samples);
@@ -1789,13 +1795,13 @@ qboolean GLW_InitDriver(void) {
 	Com_Printf("ok\n");
 
 	// create the GL context
-	Com_Printf("...creating openGL " S_COLOR_GREEN "%i.%i" S_COLOR_YELLOW "  %s" S_COLOR_WHITE " profile context: ", (int)r_glMajorVersion->value, (int)r_glMinorVersion->value, profileName[contextMask == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+	Com_Printf("...creating openGL " S_COLOR_GREEN "%i.%i" S_COLOR_YELLOW "  %s" S_COLOR_WHITE " profile context: ", r_glMajorVersion->integer, r_glMinorVersion->integer, profileName[contextMask == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
 
 	glw_state.hGLRC = qwglCreateContextAttribsARB(glw_state.hDC, NULL, attribs);
 
 	if (!glw_state.hGLRC) {
 		if (GetLastError() == ERROR_INVALID_VERSION_ARB)
-			Com_Error(ERR_FATAL, "Current video card/driver combination does not support OpenGL %i.%i", r_glMajorVersion->value, r_glMinorVersion->value);
+			Com_Error(ERR_FATAL, "Current video card/driver combination does not support OpenGL %i.%i", r_glMajorVersion->integer, r_glMinorVersion->integer);
 
 		Com_Printf(S_COLOR_RED "failed\n");
 
@@ -1829,8 +1835,8 @@ qboolean GLW_InitDriver(void) {
 	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA [" S_COLOR_GREEN "%i" S_COLOR_WHITE " max] [" S_COLOR_GREEN "%i"S_COLOR_WHITE" selected]\n",
 				gl_config.colorBits, gl_config.depthBits, gl_config.alphaBits, gl_config.stencilBits, gl_config.maxSamples, gl_config.samples);
 
-	gl_config.glMajorVersion = r_glMajorVersion->value;
-	gl_config.glMinorVersion = r_glMinorVersion->value;
+	gl_config.glMajorVersion = r_glMajorVersion->integer;
+	gl_config.glMinorVersion = r_glMinorVersion->integer;
 
 	return qtrue;
 }
@@ -1864,9 +1870,9 @@ void GL_UpdateSwapInterval()
 	if(gl_state.wgl_swap_control_tear){
 	
 	if (wglSwapIntervalEXT){
-		if(r_vsync->value >=2)
+		if(r_vsync->integer >=2)
 			wglSwapIntervalEXT(-1);
-	else if(r_vsync->value >=1)
+	else if(r_vsync->integer >=1)
 			wglSwapIntervalEXT(1);	
 	else
 			wglSwapIntervalEXT(0);
@@ -1874,7 +1880,7 @@ void GL_UpdateSwapInterval()
 	}
 	else
 		if (wglSwapIntervalEXT)
-			wglSwapIntervalEXT(r_vsync->value);
+			wglSwapIntervalEXT(r_vsync->integer);
 	
 }
 
@@ -1890,7 +1896,7 @@ void GLimp_AppActivate( qboolean active )
 	}
 	else
 	{
-		if ( r_fullScreen->value )
+		if ( r_fullScreen->integer )
 			ShowWindow( glw_state.hWnd, SW_MINIMIZE );
 	}
 }

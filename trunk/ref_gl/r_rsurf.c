@@ -283,7 +283,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 
 		qglUniform1f(ambientWorld_specularScale, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
 		
-		if (!r_skipStaticLights->value) 
+		if (!r_skipStaticLights->integer) 
 		{
 			if (surf->flags & MSURF_LAVA)
 				qglUniform1f(ambientWorld_ambientLevel, 0.5);
@@ -363,10 +363,10 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 
 	qglUniform1f(ambientWorld_colorScale, r_textureColorScale->value);
 	qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
-	qglUniform1i(ambientWorld_parallaxType, (int)clamp(r_reliefMapping->value, 0, 1));
+	qglUniform1i(ambientWorld_parallaxType, clamp(r_reliefMapping->integer, 0, 1));
 	qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
 
-	qglUniform1i(ambientWorld_lightmapType, (r_worldmodel->useXPLM && r_useRadiosityBump->value) ? 1 : 0);
+	qglUniform1i(ambientWorld_lightmapType, (r_worldmodel->useXPLM && r_useRadiosityBump->integer) ? 1 : 0);
 
 	if (!bmodel){
 		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -375,7 +375,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 	}
 
-	if (r_ssao->value && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
 		qglUniform1i(ambientWorld_ssao, 1);
 	}
@@ -392,7 +392,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		{
 			GL_MBind(GL_TEXTURE1, gl_state.lightmap_textures + s->lightmaptexturenum);
 
-			if (r_worldmodel->useXPLM && r_useRadiosityBump->value) {
+			if (r_worldmodel->useXPLM && r_useRadiosityBump->integer) {
 				GL_MBind(GL_TEXTURE5, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
 				GL_MBind(GL_TEXTURE6, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
 			}
@@ -504,7 +504,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		GL_MBind		(GL_TEXTURE1, normalMap->texnum);
 		GL_MBindCube	(GL_TEXTURE2, r_lightCubeMap[currentShadowLight->filter]->texnum);
 
-		if (r_imageAutoBump->value && normalMap == r_defBump) {
+		if (r_imageAutoBump->integer && normalMap == r_defBump) {
 			qglUniform1i(lightWorld_autoBump, 1);
 			qglUniform2f(lightWorld_autoBumpParams, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
 		}
@@ -557,7 +557,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	qglUniform4f(lightWorld_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform1i(lightWorld_fog, (int)currentShadowLight->isFog);
 	qglUniform1f(lightWorld_fogDensity, currentShadowLight->fogDensity);
-	qglUniform1i(lightWorld_parallaxType, (int)clamp(r_reliefMapping->value, 0, 1));
+	qglUniform1i(lightWorld_parallaxType, clamp(r_reliefMapping->integer, 0, 1));
 	qglUniform1f(lightWorld_causticsIntens, r_causticIntens->value);
 
 	 if (bModel)
@@ -994,7 +994,7 @@ R_DrawBSP
 void R_DrawBSP (void) {
 	entity_t ent;
 
-	if (!r_drawWorld->value)
+	if (!r_drawWorld->integer)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)

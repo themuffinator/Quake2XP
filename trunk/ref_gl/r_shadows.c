@@ -210,7 +210,7 @@ qboolean R_EntityInLightBounds () {
 		RF_TRANSLUCENT | RF_BEAM | RF_WEAPONMODEL | RF_NOSHADOW | RF_DISTORT))
 		return qfalse;
 
-	if (!r_playerShadow->value && (currententity->flags & RF_VIEWERMODEL))
+	if (!r_playerShadow->integer && (currententity->flags & RF_VIEWERMODEL))
 		return qfalse;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
@@ -323,7 +323,7 @@ void R_DeformShadowVolume () {
 void R_CastAliasShadowVolumes (qboolean player) {
 	int	i;
 
-	if (!r_shadows->value || !r_drawEntities->value)
+	if (!r_shadows->integer || !r_drawEntities->integer)
 		return;
 
 	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->isFog)
@@ -768,7 +768,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 void R_CastBspShadowVolumes (void) {
 	int	i;
 
-	if (!r_shadows->value)
+	if (!r_shadows->integer)
 		return;
 
 	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient)

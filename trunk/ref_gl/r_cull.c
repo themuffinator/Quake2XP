@@ -56,7 +56,7 @@ int BoxOnPlaneSide22 (vec3_t emins, vec3_t emaxs, struct cplane_s *p) {
  */
 qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius) {
 
-	if (r_noCull->value)
+	if (r_noCull->integer)
 		return qfalse;
 
 	if (mins[0] > origin[0] + radius || mins[1] > origin[1] + radius || mins[2] > origin[2] + radius)
@@ -75,7 +75,7 @@ BoundsIntersect
 */
 qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2) {
 	
-	if (r_noCull->value)
+	if (r_noCull->integer)
 		return qfalse;
 
 	if (mins1[0] > maxs2[0] || mins1[1] > maxs2[1] || mins1[2] > maxs2[2])
@@ -95,7 +95,7 @@ Returns qtrue if the box is completely outside the frustom
 qboolean R_CullBox (vec3_t mins, vec3_t maxs) {
 	int i;
 
-	if (r_noCull->value)
+	if (r_noCull->integer)
 		return qfalse;
 
 	for (i = 0; i < 6; i++)
@@ -107,7 +107,7 @@ qboolean R_CullBox (vec3_t mins, vec3_t maxs) {
 qboolean R_CullConeLight (vec3_t mins, vec3_t maxs, cplane_t *frust) {
 	int		i;
 
-	if (r_noCull->value)
+	if (r_noCull->integer)
 		return qfalse;
 
 	for (i = 0; i < 4; i++)
@@ -126,7 +126,7 @@ Returns qtrue if the origin is completely outside the frustom
 qboolean R_CullOrigin (vec3_t origin) {
 	int i;
 
-	if (r_noCull->value)
+	if (r_noCull->integer)
 		return qfalse;
 
 	for (i = 0; i < 6; i++)
@@ -139,7 +139,7 @@ qboolean R_CullOrigin (vec3_t origin) {
 qboolean R_CullPoint (vec3_t org) {
 	int i;
 
-	if (r_noCull->value)
+	if (r_noCull->integer)
 		return qfalse;
 
 	for (i = 0; i < 6; i++)
@@ -153,7 +153,7 @@ qboolean R_CullSphere (const vec3_t centre, const float radius) {
 	int		i;
 	cplane_t *p;
 
-	if (r_noCull->value)
+	if (r_noCull->integer)
 		return qfalse;
 
 	for (i = 0, p = frustum; i < 6; i++, p++) {
@@ -166,7 +166,7 @@ qboolean R_CullSphere (const vec3_t centre, const float radius) {
 
 qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p) {
 	
-	if (r_noCull->value)
+	if (r_noCull->integer)
 		return qfalse;
 
 	if (p[0] > maxs[0]) return qfalse;

@@ -315,6 +315,8 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, int
 
 void IN_ZoomDown(void);
 void IN_ZoomUp(void);
+void IN_AttackDown(void);
+void IN_AttackUp(void);
 
 void IN_ControllerMove(usercmd_t *cmd)
 {
@@ -337,7 +339,7 @@ void IN_ControllerMove(usercmd_t *cmd)
 	if (xInputResult != ERROR_SUCCESS)
 		return;
 
-	if (!x360_swapSticks->value) {
+	if (!x360_swapSticks->integer) {
 		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
 		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);
 		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_X);
@@ -368,16 +370,16 @@ void IN_ControllerMove(usercmd_t *cmd)
 	int dpadState = 0;
 
 	// Hardcoded!!!
-	if (!x360_swapTriggers->value) {
+	if (!x360_swapTriggers->integer) {
 		if (xInputStage.Gamepad.bLeftTrigger >= 128)
 			IN_ZoomDown();
 		else
 			IN_ZoomUp();
 
 		if (xInputStage.Gamepad.bRightTrigger >= 128)
-			cmd->buttons |= BUTTON_ATTACK;
+			IN_AttackDown();
 		else
-			cmd->buttons &= ~BUTTON_ATTACK;
+			IN_AttackUp();
 	}
 	else {
 
@@ -387,9 +389,9 @@ void IN_ControllerMove(usercmd_t *cmd)
 			IN_ZoomUp();
 
 		if (xInputStage.Gamepad.bLeftTrigger >= 128)
-			cmd->buttons |= BUTTON_ATTACK;
+			IN_AttackDown();
 		else
-			cmd->buttons &= ~BUTTON_ATTACK;
+			IN_AttackUp();
 	}
 
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)		dpadState |= 1;

@@ -191,7 +191,7 @@ void R_DrawDepthBrushModel (void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	if (!r_drawEntities->value)
+	if (!r_drawEntities->integer)
 		return;
 
 	if (currentmodel->numModelSurfaces == 0)
@@ -284,7 +284,7 @@ void R_DrawDepthAliasModel(void){
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
 	
-	if (!r_drawEntities->value)
+	if (!r_drawEntities->integer)
 		return;
 	
 	if (R_CullAliasModel(bbox, currententity))
@@ -317,7 +317,7 @@ void R_DrawDepthScene (void) {
 
 	int i;
 
-	if (!r_drawWorld->value)
+	if (!r_drawWorld->integer)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)

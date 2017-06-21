@@ -520,7 +520,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_3d, 0);
 
-	qglUniform1f(gen_colorModulate, r_bump2D->value ? 1.0 : r_textureColorScale->value);
+	qglUniform1f(gen_colorModulate, r_bump2D->integer ? 1.0 : r_textureColorScale->value);
 	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	if (scrap_dirty)
@@ -636,7 +636,7 @@ void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char *pic, c
 	image_t *gl;
 	image_t *gl2;
 
-	if (!r_bump2D->value)
+	if (!r_bump2D->integer)
 		return;
 
 	gl = Draw_FindPic(pic);

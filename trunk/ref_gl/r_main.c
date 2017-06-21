@@ -123,7 +123,7 @@ void GL_CheckError(const char *fileName, int line, const char *subr)
 	char        s[128];
 
 #ifdef _WIN32
-	if (!r_glDebugOutput->value)
+	if (!r_glDebugOutput->integer)
 		return;
 
 	err = qglGetError();
@@ -408,7 +408,7 @@ void R_SetupEntityMatrix(entity_t * e) {
 	Mat4_SetOrientation(e->matrix, e->axis, e->origin);
 	Mat4_TransposeMultiply(e->matrix, r_newrefdef.modelViewProjectionMatrix, e->orMatrix);
 
-	if ((e->flags & RF_WEAPONMODEL) && (r_leftHand->value == 1.0F)) { // Flip player weapon
+	if ((e->flags & RF_WEAPONMODEL) && (r_leftHand->integer == 1.0F)) { // Flip player weapon
 		Mat4_Scale(e->orMatrix, 1.0, -1.0, 1.0);
 		GL_CullFace(GL_BACK);
 	}
@@ -476,7 +476,7 @@ void R_DrawPlayerWeaponLightPass(void)
 {
 	int i;
 
-	if (!r_drawEntities->value)
+	if (!r_drawEntities->integer)
 		return;
 
 	GL_DepthFunc(GL_LEQUAL);
@@ -507,7 +507,7 @@ void R_DrawPlayerWeaponAmbient(void)
 {
 	int i;
 
-	if (!r_drawEntities->value)
+	if (!r_drawEntities->integer)
 		return;
 
 	// draw non-transparent first
@@ -561,13 +561,13 @@ void R_DrawLightScene (void)
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
-		if (r_useLightScissors->value)
+		if (r_useLightScissors->integer)
 			GL_Enable(GL_SCISSOR_TEST);
 
-		if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+		if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 			GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
-		if (r_shadows->value)
+		if (r_shadows->integer)
 			GL_Enable(GL_STENCIL_TEST);
 	}
 
@@ -577,17 +577,17 @@ void R_DrawLightScene (void)
 
 	for(currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
-	if (r_skipStaticLights->value && currentShadowLight->isStatic /*&& currentShadowLight->style == 0*/)
+	if (r_skipStaticLights->integer && currentShadowLight->isStatic)
 		continue;
 	
 	UpdateLightEditor();
 	
 	R_SetViewLightScreenBounds();
 
-	if(r_useLightScissors->value)
+	if(r_useLightScissors->integer)
 		GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
 	
-	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if(gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
@@ -659,14 +659,14 @@ void R_DrawLightScene (void)
 	GL_DepthMask(1);
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
-	if(gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if(gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 	GL_Disable(GL_BLEND);
 }
 
 void R_DrawPlayerWeapon(void)
 {
-	if (!r_drawEntities->value)
+	if (!r_drawEntities->integer)
 		return;
 	
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -678,13 +678,13 @@ void R_DrawPlayerWeapon(void)
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
 
-	if (r_useLightScissors->value)
+	if (r_useLightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
-	if (r_shadows->value)
+	if (r_shadows->integer)
 		GL_Enable(GL_STENCIL_TEST);
 
 	R_PrepareShadowLightFrame(qtrue);
@@ -693,15 +693,15 @@ void R_DrawPlayerWeapon(void)
 
 		for (currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
-			if (r_skipStaticLights->value && currentShadowLight->isStatic /*&& currentShadowLight->style == 0*/)
+			if (r_skipStaticLights->integer && currentShadowLight->isStatic)
 				continue;
 
 			R_SetViewLightScreenBounds();
 
-			if (r_useLightScissors->value)
+			if (r_useLightScissors->integer)
 				GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
 
-			if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+			if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 				GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
 			qglClearStencil(128);
@@ -716,7 +716,7 @@ void R_DrawPlayerWeapon(void)
 	GL_DepthMask(1);
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
-	if (gl_state.depthBoundsTest && r_useDepthBounds->value)
+	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 	GL_Disable(GL_BLEND);
 }
@@ -779,7 +779,7 @@ void R_RenderSprites(void)
 static void R_DrawEntitiesOnList (void) {
 	int i;
 
-	if (!r_drawEntities->value)
+	if (!r_drawEntities->integer)
 		return;
 
 	// draw non-transparent first
@@ -881,7 +881,7 @@ static void R_DrawRAScene (void) {
 
 	R_CaptureColorBuffer();
 
-	if (!r_drawEntities->value)
+	if (!r_drawEntities->integer)
 		return;
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -905,7 +905,8 @@ r_newrefdef must be set before the first call.
 void R_MotionBlur(void);
 
 void R_RenderView (refdef_t *fd) {
-	if (r_noRefresh->value)
+	
+	if (r_noRefresh->integer)
 		return;
 
 	r_newrefdef = *fd;
@@ -927,7 +928,7 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawDepthScene();
 	R_CaptureDepthBuffer();
 
-	if (r_ssao->value && !(r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))) {
+	if (r_ssao->integer && !(r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))) {
 
 		R_SetupOrthoMatrix();
 		GL_DepthMask(0);
@@ -951,7 +952,7 @@ void R_RenderView (refdef_t *fd) {
 
 	R_DrawParticles();
 
-	if (r_motionBlur->value) {
+	if (r_motionBlur->integer) {
 		R_SetupOrthoMatrix();
 		GL_DepthMask(0);
 
@@ -1046,7 +1047,7 @@ void R_RenderFrame(refdef_t * fd) {
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	if (selectedShadowLight && r_lightEditor->value){
+	if (selectedShadowLight && r_lightEditor->integer){
 		Set_FontShader(qtrue);
 		RE_SetColor(colorCyan);
 		Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0);
@@ -1409,27 +1410,27 @@ R_SetMode
 qboolean R_SetMode(void)
 {
 	rserr_t err;
-	const qboolean fullscreen = (qboolean)r_fullScreen->value;
+	const qboolean fullscreen = (qboolean)r_fullScreen->integer;
 
 	r_fullScreen->modified = qfalse;
 	r_mode->modified = qfalse;
 
-    err = GLimp_SetMode(&vid.width, &vid.height, r_mode->value, fullscreen);
+    err = GLimp_SetMode(&vid.width, &vid.height, r_mode->integer, fullscreen);
 
     // success, update variables
 	if (err == rserr_ok) {
         Cvar_SetValue("r_fullScreen", gl_state.fullscreen);
         r_fullScreen->modified = qfalse;
-		gl_state.prev_mode = r_mode->value;
+		gl_state.prev_mode = r_mode->integer;
         return qtrue;
 
     // try without fullscreen
 	} else if (err == rserr_invalid_fullscreen) {
         Com_Printf(S_COLOR_RED "ref_xpgl::R_SetMode() - fullscreen unavailable in this mode\n");
-        if ((err = GLimp_SetMode(&vid.width, &vid.height, r_mode->value, qfalse)) == rserr_ok) {
+        if ((err = GLimp_SetMode(&vid.width, &vid.height, r_mode->integer, qfalse)) == rserr_ok) {
             Cvar_SetValue("r_fullScreen", 0);
             r_fullScreen->modified = qfalse;
-            gl_state.prev_mode = r_mode->value;
+            gl_state.prev_mode = r_mode->integer;
             return qtrue;
         }
 
@@ -1566,12 +1567,12 @@ int R_Init(void *hinstance, void *hWnd)
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
 	Cvar_SetValue("r_maxAnisotropy", max_aniso);
-	if (r_anisotropic->value >= r_maxAnisotropy->value)
-		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->value);
+	if (r_anisotropic->integer >= r_maxAnisotropy->integer)
+		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->integer);
 
-	aniso_level = r_anisotropic->value;
+	aniso_level = r_anisotropic->integer;
 	if (IsExtensionSupported("GL_EXT_texture_filter_anisotropic")) {
-		if (r_anisotropic->value <= 1) {
+		if (r_anisotropic->integer <= 1) {
 			r_anisotropic = Cvar_Set("r_anisotropic", "1");
 			Com_Printf(S_COLOR_YELLOW"...ignoring GL_EXT_texture_filter_anisotropic\n");
 		} else {
@@ -1582,7 +1583,7 @@ int R_Init(void *hinstance, void *hWnd)
 
 	gl_state.texture_compression_bptc = qfalse;
 	if (IsExtensionSupported("GL_ARB_texture_compression_bptc"))
-		if (!r_textureCompression->value) {
+		if (!r_textureCompression->integer) {
 			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_compression_bptc\n");
 			gl_state.texture_compression_bptc = qfalse;
 		}
@@ -1983,6 +1984,17 @@ void R_Shutdown(void)
 R_BeginFrame
 @@@@@@@@@@@@@@@@@@@@@
 */
+static float ClampCvar(float min, float max, float value) {
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
+}
+
+static float ClampCvarInteger(int min, int max, int value) {
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
+}
 
 void R_BeginFrame()
 {
@@ -1998,6 +2010,9 @@ void R_BeginFrame()
 	/* 
 	 ** change modes if necessary
 	 */
+	ClampCvar(0.0, 1.0, r_lightmapScale->value);
+	ClampCvarInteger(0, 1, r_reliefMapping->integer);
+
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = qtrue;
 	
@@ -2007,20 +2022,12 @@ void R_BeginFrame()
 	if(r_lightmapScale->modified)
 		r_lightmapScale->modified = qfalse;
 
-	if(r_lightmapScale->value >1)
-		Cvar_SetValue("r_lightmapScale", 1);
-
-	if (r_lightmapScale->value < 0)
-		Cvar_SetValue("r_lightmapScale", 0);
-
 	if (r_ssao->modified)
 		r_ssao->modified = qfalse;
 	
 	if (r_reliefMapping->modified)
 		r_reliefMapping->modified = qfalse;
 
-	if (r_reliefMapping->value >1)
-		Cvar_SetValue("r_reliefMapping", 1);
 
 	if (r_textureMode->modified || r_anisotropic->modified) {
 		GL_TextureMode(r_textureMode->string);

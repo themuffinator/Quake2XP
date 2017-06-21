@@ -83,7 +83,7 @@ void R_RenderDecals(void)
 	index_t		indices[MAX_DECAL_INDICES];
     float		endLerp, decalAlpha;
 	
-	if (!cl_decals->value)
+	if (!cl_decals->integer)
 		return;
 	
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)

@@ -1320,9 +1320,9 @@ void GL_BuildTBN(int count) {
 	vec3_t		ni, nj;
 	char		cacheName[MAX_QPATH];
 	FILE		*cacheFile = NULL;
-	int         smoothAng = (int)r_tbnSmoothAngle->value;
+	int         smoothAng = r_tbnSmoothAngle->integer;
 
-	threshold = cosf(DEG2RAD(r_tbnSmoothAngle->value));
+	threshold = cosf(DEG2RAD(r_tbnSmoothAngle->integer));
 
 	// Check for existing data
 	Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
@@ -2484,7 +2484,7 @@ void R_BeginRegistration(char *model) {
 	// explicitly free the old map if different
 	// this guarantees that mod_known[0] is the world map
 	flushmap = Cvar_Get("flushmap", "0", 0);
-	if (strcmp(mod_known[0].name, fullname) || flushmap->value)
+	if (strcmp(mod_known[0].name, fullname) || flushmap->integer)
 		Mod_Free(&mod_known[0]);
 	r_worldmodel = Mod_ForName(fullname, qtrue);
 

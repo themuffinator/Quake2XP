@@ -193,7 +193,7 @@ void GL_TextureMode(char *string)
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 			// realtime update anisotropy level
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, r_anisotropic->value);
+			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, r_anisotropic->integer);
 
 		}
 	}
@@ -659,14 +659,14 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 	qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
 
 	if(mipmap){
-	if(r_maxTextureSize->value >= max_size)
+	if(r_maxTextureSize->integer >= max_size)
 		Cvar_SetValue("r_maxTextureSize", max_size);
 
-	if(r_maxTextureSize->value <= 64 && r_maxTextureSize->value > 0 )
+	if(r_maxTextureSize->integer <= 64 && r_maxTextureSize->integer > 0 )
 		Cvar_SetValue("r_maxTextureSize", 64);
 
-	if(r_maxTextureSize->value)
-		max_size =	(int)r_maxTextureSize->value;
+	if(r_maxTextureSize->integer)
+		max_size = r_maxTextureSize->integer;
 	}
 
 	if (scaled_width > max_size)
@@ -743,7 +743,7 @@ done:
 
 	if (mipmap)
 	{
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, r_anisotropic->value);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, r_anisotropic->integer);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
