@@ -850,6 +850,7 @@ glslProgram_t		*gammaProgram;
 glslProgram_t		*FboProgram;
 glslProgram_t		*light2dProgram;
 glslProgram_t		*fixFovProgram;
+glslProgram_t		*menuProgram;
 
 void GL_BindProgram (glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer ();
@@ -973,6 +974,9 @@ uint ls_orthoMatrix;
 
 uint gamma_control;
 uint gamma_orthoMatrix;
+
+uint menu_params;
+uint menu_orthoMatrix;
 
 uint fxaa_screenSize;
 uint fxaa_orthoMatrix;

@@ -57,7 +57,7 @@ int (*m_keyfunc) (int key);
 extern cvar_t *cl_hudScale;
 model_t *currentPlayerWeapon;
 
-void R_MenuBackGroundBlur();
+void R_MenuBackGround();
 //=============================================================================
 /* Support Routines */
 
@@ -4470,7 +4470,7 @@ void M_Draw (void) {
 	if (cls.state != ca_active || !cl.refresh_prepped)
 		Draw_StretchPic (0, 0, viddef.width, viddef.height, "menuback");
 	
-	R_MenuBackGroundBlur();
+	R_MenuBackGround();
 
 	m_drawfunc ();
 

@@ -590,39 +590,18 @@ void R_FixFov(void) {
 
 }
 
-void R_MenuBackGroundBlur() {
+void R_MenuBackGround() {
 	
-	GL_BindProgram(gammaProgram, 0);
-
+	GL_Disable(GL_BLEND);
+	GL_BindProgram(menuProgram, 0);
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-	qglUniform4f(gamma_control, 0.5, 0.88, 0.5, 1.666);
-	qglUniformMatrix4fv(gamma_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform2f(menu_params, vid.width, vid.height);
+	qglUniformMatrix4fv(menu_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad();
-
-	// blur x
-	GL_BindRect(ScreenMap->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-
-	GL_BindProgram(gaussXProgram, 0);
-	qglUniformMatrix4fv(gaussx_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
-	R_DrawFullScreenQuad();
-
-	// blur y
-	GL_BindRect(ScreenMap->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-
-	GL_BindProgram(gaussYProgram, 0);
-	qglUniformMatrix4fv(gaussy_matrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
-	R_DrawFullScreenQuad();
-
-	// store 2 pass gauss blur 
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	GL_BindNullProgram();
-
+	GL_Enable(GL_BLEND);
 }

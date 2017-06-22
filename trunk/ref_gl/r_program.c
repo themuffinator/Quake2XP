@@ -1058,6 +1058,19 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"menu background program"S_COLOR_WHITE" ");
+	menuProgram = R_FindProgram("menu", qtrue, qtrue, qfalse, qfalse, qfalse);
+	if (menuProgram->valid) {
+		Com_Printf("succeeded\n");
+		id = menuProgram->id[0];
+		menu_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
+		menu_params = qglGetUniformLocation(id, "u_screenSize");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	Com_Printf ("\nGLSL shaders loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);

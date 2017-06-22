@@ -642,6 +642,12 @@
     <None Include="..\baseq2\glsl\fixfov.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
+    <None Include="..\baseq2\glsl\menu.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\menu.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\q2.rc">
