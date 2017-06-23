@@ -103,7 +103,6 @@ typedef struct vidmode_s {
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/X.h>
-#include <X11/X11.h>
 
 static vidmode_t vid_modes[] =
 {
