@@ -14,7 +14,7 @@ void weapon_grenade_fire (edict_t *ent, qboolean held);
 // RAFAEL
 void weapon_trap_fire (edict_t *ent, qboolean held);
 
-
+/*
 static void P_ProjectSource (gclient_t *client, vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result) {
 	vec3_t	_distance;
 
@@ -25,7 +25,39 @@ static void P_ProjectSource (gclient_t *client, vec3_t point, vec3_t distance, v
 		_distance[1] = 0;
 	G_ProjectSource (point, _distance, forward, right, result);
 }
+*/
 
+/// Berserker: также меняет forward
+void P_ProjectSource(edict_t *ent, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
+{
+	gclient_t *client = ent->client;
+	float *point = ent->s.origin;
+	vec3_t _distance;
+
+	VectorCopy(distance, _distance);
+	if (client->pers.hand == LEFT_HANDED)
+		_distance[1] *= -1;
+	else if (client->pers.hand == CENTER_HANDED)
+		_distance[1] = 0;
+	G_ProjectSource(point, _distance, forward, right, result);
+
+	char *value = Info_ValueForKey(client->pers.userinfo, "weaponHitAccuracy");
+	if (!value)
+		return;
+	if (!atoi(value))
+		return;
+
+	/// Berserker: fix - теперь заряд попадает точно туда, куда показывает прицел  ;p
+	vec3_t start, end;
+	VectorSet(start, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] + ent->viewheight);
+	VectorMA(start, 8192, forward, end);
+	trace_t tr = gi.trace(start, NULL, NULL, end, ent, MASK_SHOT);
+	if (tr.fraction < 1)
+	{
+		VectorSubtract(tr.endpos, result, forward);
+		VectorNormalize(forward);
+	}
+}
 
 /*
 ===============
@@ -612,7 +644,7 @@ void weapon_grenade_fire (edict_t *ent, qboolean held) {
 
 	VectorSet (offset, 8, 8, ent->viewheight - 8);
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 
 	timer = ent->client->grenade_time - level.time;
 	speed = GRENADE_MINSPEED + (GRENADE_TIMER - timer) * ((GRENADE_MAXSPEED - GRENADE_MINSPEED) / GRENADE_TIMER);
@@ -747,7 +779,7 @@ void weapon_grenadelauncher_fire (edict_t *ent) {
 
 	VectorSet (offset, 8, 8, ent->viewheight - 8);
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
@@ -808,7 +840,7 @@ void Weapon_RocketLauncher_Fire (edict_t *ent) {
 	ent->client->kick_angles[0] = -1;
 
 	VectorSet (offset, 8, 8, ent->viewheight - 8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 	fire_rocket (ent, start, forward, damage, 650, damage_radius, radius_damage);
 
 	// send muzzle flash
@@ -858,7 +890,7 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
 	VectorSet (offset, 24, 8, ent->viewheight - 8);
 	VectorAdd (offset, g_offset, offset);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
@@ -1037,7 +1069,7 @@ void Machinegun_Fire (edict_t *ent) {
 
 	VectorSet (offset_shell, 12, 8.7, ent->viewheight - 3.2);
 	AngleVectors (ent->client->v_angle, forward_shell, left_shell, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset_shell, forward_shell, left_shell, start_shell);
+	P_ProjectSource (ent, offset_shell, forward_shell, left_shell, start_shell);
 	VectorScale (forward_shell, -2, ent->client->kick_origin);
 	Extr_Shell (ent, "models/shells/m_shell.md3", start_shell, forward_shell, 2, ent->velocity, "leftt");
 
@@ -1047,7 +1079,7 @@ void Machinegun_Fire (edict_t *ent) {
 	VectorAdd (ent->client->v_angle, ent->client->kick_angles, angles);
 	AngleVectors (angles, forward, right, NULL);
 	VectorSet (offset, 0, 8, ent->viewheight - 8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 	fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
 
 	gi.WriteByte (svc_muzzleflash);
@@ -1163,7 +1195,7 @@ void Chaingun_Fire (edict_t *ent) {
 
 	VectorSet (offset_shell, 12, 8.7, ent->viewheight - 3.2);
 	AngleVectors (ent->client->v_angle, forward_shell, left_shell, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset_shell, forward_shell, left_shell, start_shell);
+	P_ProjectSource (ent, offset_shell, forward_shell, left_shell, start_shell);
 	VectorScale (forward_shell, 2, ent->client->kick_origin);
 	Extr_Shell (ent, "models/shells/m_shell.md3", start_shell, forward_shell, 2, ent->velocity, "left");
 
@@ -1179,7 +1211,7 @@ void Chaingun_Fire (edict_t *ent) {
 		r = 7 + crandom () * 4;
 		u = crandom () * 4;
 		VectorSet (offset, 0, r, u + ent->viewheight - 8);
-		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		P_ProjectSource (ent, offset, forward, right, start);
 
 		fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_CHAINGUN);
 	}
@@ -1238,7 +1270,7 @@ void weapon_shotgun_fire (edict_t *ent) {
 	ent->client->kick_angles[0] = -2;
 
 	VectorSet (offset, 0, 8, ent->viewheight - 8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 
 	if (is_quad) {
 		damage *= 4;
@@ -1247,7 +1279,7 @@ void weapon_shotgun_fire (edict_t *ent) {
 
 	VectorSet (offset_shell, 12, 8.7, ent->viewheight - 3.2);
 	AngleVectors (ent->client->v_angle, forward_shell, left_shell, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset_shell, forward_shell, left_shell, start_shell);
+	P_ProjectSource (ent, offset_shell, forward_shell, left_shell, start_shell);
 	VectorScale (forward_shell, -2, ent->client->kick_origin);
 	Extr_Shell (ent, "models/shells/s_shell.md3", start_shell, forward_shell, 2, ent->velocity, "right");
 
@@ -1299,7 +1331,7 @@ void weapon_supershotgun_fire (edict_t *ent) {
 	ent->client->kick_angles[0] = -2;
 
 	VectorSet (offset, 0, 8, ent->viewheight - 8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 
 	if (is_quad) {
 		damage *= 4;
@@ -1308,14 +1340,14 @@ void weapon_supershotgun_fire (edict_t *ent) {
 
 	VectorSet (offset_shell, 12, 8.7, ent->viewheight - 3.2);
 	AngleVectors (ent->client->v_angle, forward_shell, left_shell, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset_shell, forward_shell, left_shell, start_shell);
+	P_ProjectSource (ent, offset_shell, forward_shell, left_shell, start_shell);
 	VectorScale (forward_shell, -2, ent->client->kick_origin);
 	Extr_Shell (ent, "models/shells/s_shell.md3", start_shell, forward_shell, 2, ent->velocity, "right");
 
 
 	VectorSet (offset_shell, 15, 10.9, ent->viewheight - 5.4);
 	AngleVectors (ent->client->v_angle, forward_shell, left_shell, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset_shell, forward_shell, left_shell, start_shell);
+	P_ProjectSource (ent, offset_shell, forward_shell, left_shell, start_shell);
 	VectorScale (forward_shell, 0, ent->client->kick_origin);
 	Extr_Shell (ent, "models/shells/s_shell.md3", start_shell, forward_shell, 4, ent->velocity, "right");
 
@@ -1391,7 +1423,7 @@ void weapon_railgun_fire (edict_t *ent) {
 	ent->client->kick_angles[0] = -3;
 
 	VectorSet (offset, 0, 7, ent->viewheight - 8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 	fire_rail (ent, start, forward, damage, kick);
 
 	// send muzzle flash
@@ -1473,7 +1505,7 @@ void weapon_bfg_fire (edict_t *ent) {
 	ent->client->v_dmg_time = level.time + DAMAGE_TIME;
 
 	VectorSet (offset, 8, 8, ent->viewheight - 8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 	fire_bfg (ent, start, forward, damage, 400, damage_radius);
 
 	ent->client->ps.gunframe++;
@@ -1538,7 +1570,7 @@ void weapon_ionripper_fire (edict_t *ent) {
 	// VectorSet (offset, 0, 7, ent->viewheight - 8);
 	VectorSet (offset, 16, 7, ent->viewheight - 8);
 
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 
 	fire_ionripper (ent, start, forward, damage, 500, EF_IONRIPPER);
 
@@ -1599,7 +1631,7 @@ void weapon_phalanx_fire (edict_t *ent) {
 	ent->client->kick_angles[0] = -2;
 
 	VectorSet (offset, 0, 8, ent->viewheight - 8);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 
 	if (ent->client->ps.gunframe == 8) {
 		v[PITCH] = ent->client->v_angle[PITCH];
@@ -1673,7 +1705,7 @@ void weapon_trap_fire (edict_t *ent, qboolean held) {
 
 	VectorSet (offset, 8, 8, ent->viewheight - 8);
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent, offset, forward, right, start);
 
 	timer = ent->client->grenade_time - level.time;
 	speed = GRENADE_MINSPEED + (GRENADE_TIMER - timer) * ((GRENADE_MAXSPEED - GRENADE_MINSPEED) / GRENADE_TIMER);
