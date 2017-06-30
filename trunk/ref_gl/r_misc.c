@@ -232,14 +232,17 @@ static void FB_Check (const char *file, const int line) {
 #define _R_FB_Check();		FB_Check(__FILE__, __LINE__);
 
 image_t *fboScreen;
+image_t *ScreenCapture;
 
 void CreateFboBuffer (void) {
 
 	int			i;
 	char		name[15] = "***fboScreen***";
+	char		name2[20] = "***ScreenCapture***";
 	image_t		*image;
 	qboolean	statusOK;
 	uint		rb;
+
 	// find a free image_t
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (!image->texnum)
@@ -272,7 +275,42 @@ void CreateFboBuffer (void) {
 	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RG, vid.width, vid.height, 0,
+	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RGB, vid.width, vid.height, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+	//======================
+
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures) {
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy(image->name, name2);
+
+	image->width = vid.width;
+	image->height = vid.height;
+	image->upload_width = vid.width;
+	image->upload_height = vid.height;
+	image->type = it_pic;
+	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+
+	ScreenCapture = image;
+
+	// attach screen texture
+
+	qglBindTexture(GL_TEXTURE_RECTANGLE, ScreenCapture->texnum);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGB, vid.width, vid.height, 0,
 		GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	qglGenRenderbuffers (1, &rb);
@@ -285,10 +323,14 @@ void CreateFboBuffer (void) {
 	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb);
 	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rb);
 	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, fboScreen->texnum, 0);
+	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, ScreenCapture->texnum, 0);
+	qglDrawBuffers(1, drawbuffers);
 
 	statusOK = qglCheckFramebufferStatus (GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (statusOK)
 		Com_Printf (""S_COLOR_YELLOW"...Create depth-stencil FBO\n");
+	
+	_R_FB_Check();
 
 	qglBindFramebuffer (GL_FRAMEBUFFER, 0);
 }

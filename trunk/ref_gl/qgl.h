@@ -748,6 +748,8 @@ extern PFNGLGETVERTEXATTRIBLUI64VARBPROC					glGetVertexAttribLui64vARB;
 extern PFNGLBUFFERSTORAGEPROC								glBufferStorage;
 extern PFNGLGETSTRINGIPROC									glGetStringi;
 
+extern PFNGLCOPYIMAGESUBDATAPROC							glCopyImageSubData;
+
 #ifdef _WIN32
 
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC		qwglCreateContextAttribsARB;

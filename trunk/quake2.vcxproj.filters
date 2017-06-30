@@ -319,9 +319,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="win32\glw_win.h">
-      <Filter>Source Files\Renderer\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="ref_gl\qgl.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>

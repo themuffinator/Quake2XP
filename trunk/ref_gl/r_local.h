@@ -851,6 +851,7 @@ glslProgram_t		*FboProgram;
 glslProgram_t		*light2dProgram;
 glslProgram_t		*fixFovProgram;
 glslProgram_t		*menuProgram;
+glslProgram_t		*fbo2screenProgram;
 
 void GL_BindProgram (glslProgram_t *program, int defBits);
 void R_CaptureDepthBuffer ();
@@ -889,6 +890,7 @@ typedef enum glsl_attribute {
 glsl_attrib;
 
 uint null_mvp;
+uint fbo2screen_orthoMatrix;
 
 uint ambientWorld_lightmapType;
 uint ambientWorld_ssao;
@@ -1073,6 +1075,7 @@ uint fixfov_params;
 #define	MAX_VERTEX_CACHES	4096
 
 void R_DrawFullScreenQuad();
+static GLenum	drawbuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 
 qboolean nvApiInit;
 

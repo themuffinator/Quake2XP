@@ -1071,6 +1071,18 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"fbo program"S_COLOR_WHITE" ");
+	fbo2screenProgram = R_FindProgram("fbo2screen", qtrue, qtrue, qfalse, qfalse, qfalse);
+	if (fbo2screenProgram->valid) {
+		Com_Printf("succeeded\n");
+		id = fbo2screenProgram->id[0];
+		fbo2screen_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	Com_Printf ("\nGLSL shaders loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);

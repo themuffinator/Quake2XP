@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #ifdef _WIN32
-#include "glw_win.h"
 
 extern const char * (WINAPI * qwglGetExtensionsStringARB) (HDC);
 extern BOOL (WINAPI * qwglGetPixelFormatAttribivARB) (HDC, int, int, UINT, const int *, int *);
@@ -617,6 +616,7 @@ PFNGLGETSTRINGIPROC									glGetStringi = NULL;
 PFNGLBINDTEXTURESPROC								glBindTextures = NULL;
 PFNGLBINDSAMPLERSPROC								glBindSamplers = NULL;
 
+PFNGLCOPYIMAGESUBDATAPROC							glCopyImageSubData = NULL;
 /*
 ** QGL_Shutdown
 **

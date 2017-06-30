@@ -903,6 +903,7 @@ r_newrefdef must be set before the first call.
 ================
 */
 void R_MotionBlur(void);
+extern uint fboDps;
 
 void R_RenderView (refdef_t *fd) {
 	
@@ -941,6 +942,9 @@ void R_RenderView (refdef_t *fd) {
 		qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], 
 					r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 	}
+	
+	qglBindFramebuffer(GL_FRAMEBUFFER, fboDps);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	R_DrawAmbientScene();
 	R_DrawLightScene();
@@ -972,6 +976,7 @@ void R_RenderView (refdef_t *fd) {
 
 	R_CaptureColorBuffer();
 	GL_CheckError(__FILE__, __LINE__, "end frame");
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
@@ -1025,11 +1030,14 @@ extern char buff15[128];
 extern worldShadowLight_t *selectedShadowLight;
 
 void R_FixFov(void);
+void R_Fbo2Screen();
 
 void R_RenderFrame(refdef_t * fd) {
 	R_RenderView(fd);
 	R_SetupOrthoMatrix();
 	R_SetLightLevel();
+	
+	R_Fbo2Screen();
 
 	// post processing - cut off if player camera is out of map bounds
 	if (!outMap) {
@@ -1549,7 +1557,9 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf("=====================================\n");
 	Com_Printf("\n");
 	
-	glGetStringi = (PFNGLGETSTRINGIPROC)qwglGetProcAddress("glGetStringi");
+	glCopyImageSubData	= (PFNGLCOPYIMAGESUBDATAPROC)	qwglGetProcAddress("glCopyImageSubData");
+	glGetStringi		= (PFNGLGETSTRINGIPROC)			qwglGetProcAddress("glGetStringi");
+
 	if (!glGetStringi) {
 		Com_Printf(S_COLOR_RED"glGetStringi: bad getprocaddress\n");
 		VID_Error(ERR_FATAL, "glGetStringi: bad getprocaddress");
@@ -1778,6 +1788,7 @@ int R_Init(void *hinstance, void *hWnd)
 		
 		Com_Printf("\n");
 		CreateSSAOBuffer ();
+		CreateFboBuffer();
 		Com_Printf("\n");
 	}
 	else {
