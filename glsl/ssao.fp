@@ -53,7 +53,7 @@ void main (void) {
 	vec3 bias;
 	vec4 depths[2];
 	vec4 sum = vec4(0.0);
-
+	
 	for (int i = 0; i < 2; i++) {
 		bias = reflect(kernel[i*4+0], randomNormal) * scale;
 
