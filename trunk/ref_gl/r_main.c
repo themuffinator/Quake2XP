@@ -942,9 +942,6 @@ void R_RenderView (refdef_t *fd) {
 		qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], 
 					r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 	}
-	
-	qglBindFramebuffer(GL_FRAMEBUFFER, fboDps);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	R_DrawAmbientScene();
 	R_DrawLightScene();
@@ -973,10 +970,6 @@ void R_RenderView (refdef_t *fd) {
 
 	R_CaptureColorBuffer();
 	R_RenderSprites();
-
-	R_CaptureColorBuffer();
-	GL_CheckError(__FILE__, __LINE__, "end frame");
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
@@ -1036,8 +1029,6 @@ void R_RenderFrame(refdef_t * fd) {
 	R_RenderView(fd);
 	R_SetupOrthoMatrix();
 	R_SetLightLevel();
-	
-	R_Fbo2Screen();
 
 	// post processing - cut off if player camera is out of map bounds
 	if (!outMap) {
@@ -1788,7 +1779,6 @@ int R_Init(void *hinstance, void *hWnd)
 		
 		Com_Printf("\n");
 		CreateSSAOBuffer ();
-		CreateFboBuffer();
 		Com_Printf("\n");
 	}
 	else {

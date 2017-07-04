@@ -313,13 +313,13 @@ void Cvar_GetLatchedVars (void) {
 	cvar_t *var;
 
 	for (var = cvar_vars; var; var = var->next) {
+		
 		if (!var->latched_string)
 			continue;
-		if (var->string)
-			Z_Free (var->string);
 
-		var->latched_string = NULL;
+		Z_Free (var->string);			
 		var->string			= var->latched_string;
+		var->latched_string = NULL;
 		var->value			= atof (var->string);
 		var->integer		= atoi(var->string);
 		var->qbool			= (var->integer != 0);

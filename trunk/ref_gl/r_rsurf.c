@@ -198,10 +198,51 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 void R_DrawChainsRA (qboolean bmodel) {
 	
 	msurface_t	*s;
-	float		colorScale = max(r_lightmapScale->value, 0.33);
+	float		colorScale = max(r_lightmapScale->value, 0.33), ambient;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+	GL_BindProgram(waterProgram, 0);
+
+	GL_MBind(GL_TEXTURE1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->texnum);
+	GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
+	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
+
+	ambient = min(r_lightmapScale->value, 0.33f);
+
+	qglUniform1f(water_deformMul, 1.0);
+	qglUniform1f(water_thickness, 150.0);
+	qglUniform2f(water_screenSize, vid.width, vid.height);
+	qglUniform2f(water_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform1f(water_colorModulate, r_textureColorScale->value);
+	qglUniform1f(water_ambient, ambient);
+
+	if (!bmodel)
+		qglUniformMatrix4fv(water_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	else
+		qglUniformMatrix4fv(water_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+
+	if (r_newrefdef.rdflags & RDF_UNDERWATER)
+		qglUniform1i(water_mirror, 0);
+	else
+		qglUniform1i(water_mirror, 1);
+
+	qglUniformMatrix4fv(water_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(water_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_NORMAL);
+	qglEnableVertexAttribArray(ATT_TANGENT);
+	qglEnableVertexAttribArray(ATT_BINORMAL);
+	qglEnableVertexAttribArray(ATT_COLOR);
+
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, wColorArray);
+	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
+	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
+	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
 
 	for (s = r_reflective_surfaces; s; s = s->texturechain) {
 
@@ -210,6 +251,17 @@ void R_DrawChainsRA (qboolean bmodel) {
 
 		R_DrawWaterPolygons(s, bmodel);
 	}
+
+
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_NORMAL);
+	qglDisableVertexAttribArray(ATT_TANGENT);
+	qglDisableVertexAttribArray(ATT_BINORMAL);
+	qglDisableVertexAttribArray(ATT_COLOR);
+
+	GL_BindNullProgram();
+//------------------------------
 
 	r_reflective_surfaces = NULL;
 

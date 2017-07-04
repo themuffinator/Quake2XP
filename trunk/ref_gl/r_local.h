@@ -178,6 +178,7 @@ extern	image_t	*r_lightCubeMap[MAX_FILTERS];
 
 extern image_t *fboDN;
 extern image_t *fboColor[2];
+extern image_t *ScreenCapture;
 
 extern uint bloomtex;
 extern uint thermaltex;

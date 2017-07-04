@@ -123,8 +123,9 @@ static vidmode_t vid_modes[] =
 	{ "1920x1080",	1920, 1080, 12 },   // 16:9 1080p full HDTV
 	{ "1920x1200",	1920, 1200, 13 },   // 16:10
 	{ "2560x1440",	2560, 1440, 14 },   // 16:9 WQHD
-	{ "2560x1600",	2560, 1600, 15 },   // 16:10
-	{ "Custom",		-1, -1, 16 }		      // custom
+	{ "2560x1600",	2560, 1600, 15 },   // 16:10   
+  { "3840x2160",	3840, 2160, 16 },   // 16:9 Ultra HD
+	{ "Custom",		-1, -1, 17 }		      // custom
 };
 
 qboolean
@@ -141,7 +142,7 @@ VID_GetModeInfo(int *width, int *height, int mode)
   *height = s->height;  
   
   } else
-    if (mode == 16) {
+    if (mode == 17) {
   
         *width = r_customWidth->value;
         *height = r_customHeight->value;

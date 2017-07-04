@@ -534,7 +534,8 @@ static vidmode_t vid_modes[] = {
 	{ "1920x1200",	1920, 1200, 13 },   // 16:10
 	{ "2560x1440",	2560, 1440, 14 },   // 16:9 WQHD
 	{ "2560x1600",	2560, 1600, 15 },   // 16:10
-	{ "Custom",		-1, -1, 16 }		// custom
+	{ "3840x2160",	3840, 2160, 16 },   // 16:9
+	{ "Custom",		-1, -1, 17 }		// custom
 };
 
 
@@ -543,7 +544,7 @@ qboolean VID_GetModeInfo (int *width, int *height, int mode) {
 	if (mode < 0 || mode >= VID_NUM_MODES)
 		return qfalse;
 
-	if (mode == 15) {
+	if (mode == 17) {
 		*width = r_customWidth->value;
 		*height = r_customHeight->value;
 	}

@@ -127,6 +127,7 @@ void R_CaptureColorBuffer()
 		
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 }

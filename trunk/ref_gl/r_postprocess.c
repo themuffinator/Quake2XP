@@ -605,16 +605,3 @@ void R_MenuBackGround() {
 	GL_BindNullProgram();
 	GL_Enable(GL_BLEND);
 }
-
-void R_Fbo2Screen() {
-
-	GL_BindProgram(fbo2screenProgram, 0);
-	GL_MBindRect(GL_TEXTURE0, fboScreen->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-	
-	qglUniformMatrix4fv(menu_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
-	R_DrawFullScreenQuad();
-
-	GL_BindNullProgram();
-}

@@ -313,7 +313,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, cons
 			strings[numStrings++] = defines;
 		}
 		/// Berserker's fix end
-	
+
 		strings[numStrings++] = glslExt;
 		strings[numStrings++] = mathDefs;
 
@@ -392,7 +392,6 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, cons
 				continue;
 			}
 		}
-
 
 		// compile fragment shader
 		if (fragmentSource) {
@@ -723,7 +722,7 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"hdrGlare program"S_COLOR_WHITE" ");
+	Com_Printf ("Load "S_COLOR_YELLOW"Glare program"S_COLOR_WHITE" ");
 	glareProgram = R_FindProgram ("glare", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (glareProgram){
@@ -1070,7 +1069,7 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
+/*
 	Com_Printf("Load "S_COLOR_YELLOW"fbo program"S_COLOR_WHITE" ");
 	fbo2screenProgram = R_FindProgram("fbo2screen", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (fbo2screenProgram->valid) {
@@ -1082,7 +1081,7 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
+*/
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	Com_Printf ("\nGLSL shaders loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);

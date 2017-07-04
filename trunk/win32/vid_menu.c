@@ -497,6 +497,7 @@ void VID_MenuInit (void) {
 		"[1920 1200][16:10]",
 		"[2560x1440][16:9 WQHD]",
 		"[2560 1600][16:10]",
+		"[3840 2160][16:19 ULTRA HD]",
 		"[Custom]", 0 };
 
 	static char	*yesno_names[] = { "off", "yes", 0 };

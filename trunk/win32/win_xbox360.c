@@ -109,7 +109,7 @@ void IN_StartupXInput(void)
 	x360_swapSticks			= Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
 	x360_swapTriggers		= Cvar_Get("x360_swapTriggers", "0", CVAR_ARCHIVE);
 
-	Com_Printf("...enumerate xInput Controllers\n");
+	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n\n");
 	firstDev = -1;
 	for (numDev = 0; numDev < XINPUT_MAX_CONTROLLERS; numDev++)
 	{
@@ -120,13 +120,13 @@ void IN_StartupXInput(void)
 			if (qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo) == ERROR_SUCCESS)
 			{
 				if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED)
-					strcpy(batteryType, S_COLOR_GREEN"Controller wired\n");
+					strcpy(batteryType, S_COLOR_YELLOW"...use USB connection\n"S_COLOR_WHITE);
 				else if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
-					strcpy(batteryType, "use Alkalyne battery");
+					strcpy(batteryType, S_COLOR_YELLOW"...use Alkalyne battery\n"S_COLOR_WHITE);
 				else if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
-					strcpy(batteryType, "use Ni-MH battery");
+					strcpy(batteryType, S_COLOR_YELLOW"...use Ni-MH battery\n"S_COLOR_WHITE);
 				else if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
-					strcpy(batteryType, "use unknow battery type");
+					strcpy(batteryType, S_COLOR_YELLOW"...use unknow battery type\n"S_COLOR_WHITE);
 
 				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
 					strcpy(batteryLevel, S_COLOR_RED"empity"S_COLOR_WHITE);
@@ -139,7 +139,7 @@ void IN_StartupXInput(void)
 				else
 					strcpy(batteryLevel, S_COLOR_CYAN"unknown level"S_COLOR_WHITE);
 
-				Com_Printf("Controller %i:\n%s <%s>\n", numDev, batteryType, batteryLevel);
+				Com_Printf("Controller " S_COLOR_GREEN "%i" S_COLOR_WHITE ":\n%s<%s>\n", numDev, batteryType, batteryLevel);
 			}
 				if (firstDev == -1)
 					firstDev = numDev;
