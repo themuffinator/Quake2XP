@@ -1289,6 +1289,10 @@ Music Streaming
 */
 
 qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume) {
+	
+	if (!s_initsound->value)
+		return qfalse;
+
 	if (streaming.enabled) {
 		Com_Printf (S_COLOR_YELLOW "S_Streaming_Start: interrupting active stream\n");
 		S_Streaming_Stop ();
