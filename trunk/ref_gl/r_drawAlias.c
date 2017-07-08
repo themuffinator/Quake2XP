@@ -32,7 +32,6 @@ ALIAS MODELS
 */
 
 float	shadelight[3];
-float	*shadedots = r_avertexnormal_dots[0];
 float	ref_realtime =0;
 
 void	GL_DrawAliasFrameLerp(dmdl_t *paliashdr, vec3_t color);
@@ -186,8 +185,6 @@ void SetModelsLight ()
 	}
 	// PGM
 	// =================
-
-	shadedots = r_avertexnormal_dots[((int)(currententity->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
 }
 
 /*

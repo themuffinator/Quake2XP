@@ -479,8 +479,9 @@ static void ColorSettingsFunc(void *unused) {
 ** VID_MenuInit
 */
 void VID_MenuInit (void) {
+
 	static char *resolutions[] = {
-		"[Desktop]",
+		"[Native][Desktop Resolution]",
 		"[1024 768][4:3]",
 		"[1152 864][4:3]",
 		"[1280 1024][5:4]",
@@ -493,11 +494,15 @@ void VID_MenuInit (void) {
 		"[1440 900][16:10]",
 		"[1600 900][16:9 LCD]",
 		"[1680 1050][16:10]",
-		"[1920 1080][1080p full HDTV]",
+		"[1920 1080][1080p FULL HDTV]",
 		"[1920 1200][16:10]",
-		"[2560x1440][16:9 WQHD]",
+		"[2560 1440][16:9 WQHD]",
 		"[2560 1600][16:10]",
-		"[3840 2160][16:19 ULTRA HD]",
+		"[3440 1440][21:9 QHD]",
+		"[3840 1600][12:5 UW TV]",
+		"[3840 2160][16:9 UHD TV 4K]",
+		"[4096 1716][2.39:1 DCI 4K WIDE]",
+		"[4096 2160][1.89:1 DCI 4K]",
 		"[Custom]", 0 };
 
 	static char	*yesno_names[] = { "off", "yes", 0 };

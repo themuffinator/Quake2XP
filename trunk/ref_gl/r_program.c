@@ -722,7 +722,7 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"Glare program"S_COLOR_WHITE" ");
+	Com_Printf ("Load "S_COLOR_YELLOW"glare program"S_COLOR_WHITE" ");
 	glareProgram = R_FindProgram ("glare", qtrue, qtrue, qfalse, qfalse, qfalse);
 
 	if (glareProgram){

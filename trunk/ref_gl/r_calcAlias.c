@@ -227,8 +227,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
 
-			l = shadedots[verts[index_xyz].lightnormalindex];
-			VA_SetElem4 (colorArray[jj], l * lightColor[0], l * lightColor[1], l * lightColor[2], alpha);
+			VA_SetElem4 (colorArray[jj], lightColor[0], lightColor[1], lightColor[2], alpha);
 
 			if (currentmodel->envMap) {
 				index2 = verts[index_xyz].lightnormalindex;
