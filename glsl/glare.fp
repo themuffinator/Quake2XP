@@ -35,7 +35,7 @@ void main(void)
 		  sColor += ( texture2DRect(u_map, fragCoord + sdx2) + texture2DRect(u_map, fragCoord - sdx2) ) *  gaussFact[i] * chromaticOffsets[i];
 		  sdx2 += dx2;
     }
-    
+
     fragData = sColor;
 }
 
