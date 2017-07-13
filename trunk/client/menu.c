@@ -155,6 +155,8 @@ int Default_MenuKey (menuframework_s * m, int key) {
 
 	switch (key) {
 		case K_ESCAPE:
+		case K_XPAD_BACK:
+
 			M_PopMenu ();
 			return menu_out_sound;
 		case K_KP_UPARROW:
@@ -198,44 +200,7 @@ int Default_MenuKey (menuframework_s * m, int key) {
 		case K_MOUSE1:
 		case K_MOUSE2:
 		case K_MOUSE3:
-	//	case K_MOUSE4:
-	//	case K_MOUSE5:
-		case K_JOY1:
-		case K_JOY2:
-		case K_JOY3:
-		case K_JOY4:
-		case K_AUX1:
-		case K_AUX2:
-		case K_AUX3:
-		case K_AUX4:
-		case K_AUX5:
-		case K_AUX6:
-		case K_AUX7:
-		case K_AUX8:
-		case K_AUX9:
-		case K_AUX10:
-		case K_AUX11:
-		case K_AUX12:
-		case K_AUX13:
-		case K_AUX14:
-		case K_AUX15:
-		case K_AUX16:
-		case K_AUX17:
-		case K_AUX18:
-		case K_AUX19:
-		case K_AUX20:
-		case K_AUX21:
-		case K_AUX22:
-		case K_AUX23:
-		case K_AUX24:
-		case K_AUX25:
-		case K_AUX26:
-		case K_AUX27:
-		case K_AUX28:
-		case K_AUX29:
-		case K_AUX30:
-		case K_AUX31:
-		case K_AUX32:
+		case K_XPAD_START:
 
 		case K_KP_ENTER:
 		case K_ENTER:
@@ -459,6 +424,7 @@ void M_Main_Draw (void) {
 int M_Main_Key (int key) {
 	switch (key) {
 		case K_ESCAPE:
+		case K_XPAD_BACK:
 			M_PopMenu ();
 			break;
 
@@ -475,6 +441,7 @@ int M_Main_Key (int key) {
 			return menu_move_sound;
 
 		case K_KP_ENTER:
+		case K_XPAD_START:
 		case K_ENTER:
 			m_entersound = qtrue;
 
@@ -704,6 +671,8 @@ static void DrawKeyBindingFunc (void *self) {
 	menuaction_s *a = (menuaction_s *)self;
 
 	M_FindKeysForCommand (bindnames[a->generic.localdata[0]][0], keys);
+	
+	RE_SetColor(colorWhite);
 
 	if (keys[0] == -1) {
 		Menu_DrawStringScaled (a->generic.x + a->generic.parent->x + 16 * cl_fontScale->value,
@@ -713,9 +682,20 @@ static void DrawKeyBindingFunc (void *self) {
 	}
 	else {
 		size_t x;
-		char *name;
+		char *name = Key_KeynumToString (keys[0]);
+		RE_SetColor(colorWhite);
 
-		name = Key_KeynumToString (keys[0]);
+		if (strstr(name, "XPAD_"))
+			RE_SetColor(colorGold);
+		if (strstr(name, "XPAD_A"))
+			RE_SetColor(colorGreen);
+		if (!strncmp(name, "XPAD_B", 7))
+			RE_SetColor(colorRed);
+		if (strstr(name, "XPAD_X"))
+			RE_SetColor(colorBlue);
+		if (strstr(name, "XPAD_Y"))
+			RE_SetColor(colorYellow);
+
 
 		Menu_DrawStringScaled (a->generic.x + a->generic.parent->x + 16 * cl_fontScale->value,
 			a->generic.y + a->generic.parent->y,
@@ -725,17 +705,33 @@ static void DrawKeyBindingFunc (void *self) {
 		x = strlen (name) * 8 * cl_fontScale->value;
 
 		if (keys[1] != -1) {
+			char *name2 = Key_KeynumToString(keys[1]);
+
+			RE_SetColor(colorWhite);
+
 			Menu_DrawStringScaled (a->generic.x + a->generic.parent->x + 24 + x,
 				a->generic.y + a->generic.parent->y,
 				cl_fontScale->value, cl_fontScale->value,
-				"    ");
+				"  ");
+
+			if (strstr(name2, "XPAD_"))
+				RE_SetColor(colorGold);
+			if (strstr(name2, "XPAD_A"))
+				RE_SetColor(colorGreen);
+			if (!strncmp(name2, "XPAD_B", 7))
+				RE_SetColor(colorRed);
+			if (strstr(name2, "XPAD_X"))
+				RE_SetColor(colorBlue);
+			if (strstr(name2, "XPAD_Y"))
+				RE_SetColor(colorYellow);
 
 			Menu_DrawStringScaled (a->generic.x + a->generic.parent->x + 48 + x,
 				a->generic.y + a->generic.parent->y,
 				cl_fontScale->value, cl_fontScale->value,
-				Key_KeynumToString (keys[1]));
+				name2);
 		}
 	}
+	RE_SetColor(colorWhite);
 }
 
 static void KeyBindingFunc (void *self) {
@@ -768,7 +764,7 @@ static void Keys_MenuInit (void) {
 	s_keys_attack_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_attack_action.generic.localdata[0] = i;
 	s_keys_attack_action.generic.name =
-		bindnames[s_keys_attack_action.generic.localdata[0]][1];
+	bindnames[s_keys_attack_action.generic.localdata[0]][1];
 
 	s_keys_change_weapon_action.generic.type = MTYPE_ACTION;
 	s_keys_change_weapon_action.generic.flags = QMF_GRAYED;

@@ -1023,7 +1023,6 @@ extern char buff15[128];
 extern worldShadowLight_t *selectedShadowLight;
 
 void R_FixFov(void);
-void R_Fbo2Screen();
 
 void R_RenderFrame(refdef_t * fd) {
 	R_RenderView(fd);

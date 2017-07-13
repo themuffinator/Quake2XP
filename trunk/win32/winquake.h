@@ -47,41 +47,4 @@ void	IN_ToggleXInput();
 void	IN_ControllerMove(usercmd_t *cmd);
 void	IN_ShutDownXinput();
 
-// joystick defines and variables
-// where should defines be moved?
-#define JOY_ABSOLUTE_AXIS	0x00000000		// control like a joystick
-#define JOY_RELATIVE_AXIS	0x00000010		// control like a mouse, spinner, trackball
-#define	JOY_MAX_AXES		6				// X, Y, Z, R, U, V
-#define JOY_AXIS_X			0
-#define JOY_AXIS_Y			1
-#define JOY_AXIS_Z			2
-#define JOY_AXIS_R			3
-#define JOY_AXIS_U			4
-#define JOY_AXIS_V			5
-
-// none of these cvars are saved over a session
-// this means that advanced controller configuration needs to be executed
-// each time.  this avoids any problems with getting back to a default usage
-// or when changing from one controller to another.  this way at least something
-// works.
-cvar_t	*joy_name;
-cvar_t	*joy_advanced;
-cvar_t	*joy_advaxisx;
-cvar_t	*joy_advaxisy;
-cvar_t	*joy_advaxisz;
-cvar_t	*joy_advaxisr;
-cvar_t	*joy_advaxisu;
-cvar_t	*joy_advaxisv;
-cvar_t	*joy_forwardthreshold;
-cvar_t	*joy_sidethreshold;
-cvar_t	*joy_pitchthreshold;
-cvar_t	*joy_yawthreshold;
-cvar_t	*joy_forwardsensitivity;
-cvar_t	*joy_sidesensitivity;
-cvar_t	*joy_pitchsensitivity;
-cvar_t	*joy_yawsensitivity;
-cvar_t	*joy_upthreshold;
-cvar_t	*joy_upsensitivity;
-cvar_t	*in_useJoystic;
-
 extern qboolean	mlooking;

@@ -113,7 +113,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	int				i, j, jj = 0;
 	dtriangle_t		*tris;
 	image_t			*skin, *skinNormalmap, *glowskin;
-	float			alphaShift, alpha, l;
+	float			alphaShift, alpha;
 	float			backlerp, frontlerp;
 	int				index2, oldindex2;
 	daliasframe_t	*frame, *oldframe;

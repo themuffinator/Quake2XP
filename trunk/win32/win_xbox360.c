@@ -312,12 +312,6 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, int
 	}
 }
 
-
-void IN_ZoomDown(void);
-void IN_ZoomUp(void);
-void IN_AttackDown(void);
-void IN_AttackUp(void);
-
 void IN_ControllerMove(usercmd_t *cmd)
 {
 	// no controller to use
@@ -369,31 +363,6 @@ void IN_ControllerMove(usercmd_t *cmd)
 	int buttonState = 0;
 	int dpadState = 0;
 
-	// Hardcoded!!!
-	if (!x360_swapTriggers->integer) {
-		if (xInputStage.Gamepad.bLeftTrigger >= 128)
-			IN_ZoomDown();
-		else
-			IN_ZoomUp();
-
-		if (xInputStage.Gamepad.bRightTrigger >= 128)
-			IN_AttackDown();
-		else
-			IN_AttackUp();
-	}
-	else {
-
-		if (xInputStage.Gamepad.bRightTrigger >= 128)
-			IN_ZoomDown();
-		else
-			IN_ZoomUp();
-
-		if (xInputStage.Gamepad.bLeftTrigger >= 128)
-			IN_AttackDown();
-		else
-			IN_AttackUp();
-	}
-
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)		dpadState |= 1;
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)	dpadState |= 2;
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)	dpadState |= 4;
@@ -412,13 +381,19 @@ void IN_ControllerMove(usercmd_t *cmd)
 	// store back
 	xInputOldDpadState = dpadState;
 
-	// check other buttons - map these to K_JOY buttons
+//=============
+	if (xInputStage.Gamepad.bLeftTrigger >= 128) //map to XINPUT_GAMEPAD_LEFT_THUMB
+		buttonState |= 4;
+
+	if (xInputStage.Gamepad.bRightTrigger >= 128) // map to XINPUT_GAMEPAD_RIGHT_THUMB
+		buttonState |= 8;
+
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_START)			buttonState |= 1;
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)				buttonState |= 2;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)		buttonState |= 4;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)		buttonState |= 8;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)	buttonState |= 16;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)	buttonState |= 32;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)		buttonState |= 4; // down
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)		buttonState |= 8; // down
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)	buttonState |= 16; // up
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)	buttonState |= 32; // up
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_A)				buttonState |= 64;
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_B)				buttonState |= 128;
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_X)				buttonState |= 256;
@@ -428,10 +403,10 @@ void IN_ControllerMove(usercmd_t *cmd)
 	for (int i = 0; i < XINPUT_MAX_CONTROLLER_BUTTONS; i++)
 	{
 		if ((buttonState & (1 << i)) && !(xInputOldButtonState & (1 << i)))
-			Key_Event(K_JOY1 + i, qtrue, sys_msg_time);
+			Key_Event(K_XPAD_START + i, qtrue, sys_msg_time);
 
 		if (!(buttonState & (1 << i)) && (xInputOldButtonState & (1 << i)))
-			Key_Event(K_JOY1 + i, qfalse, sys_msg_time);
+			Key_Event(K_XPAD_START + i, qfalse, sys_msg_time);
 	}
 
 	// store back
