@@ -382,6 +382,7 @@ void R_RadialBlur (void);
 void R_DofBlur (void);
 void R_FXAA (void);
 void R_FilmFilter (void);
+void R_FixFov(void);
 void R_ListPrograms_f (void);
 void R_InitPrograms (void);
 void R_ClearWorldLights (void);

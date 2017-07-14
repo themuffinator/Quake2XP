@@ -51,6 +51,7 @@ typedef struct {
 } keyname_t;
 
 keyname_t keynames[] = {
+
 	{ "TAB", K_TAB },
 	{ "ENTER", K_ENTER },
 	{ "ESCAPE", K_ESCAPE },

@@ -268,7 +268,6 @@ typedef struct model_s {
 	int			lightmap_scale;
 	byte		*lightData;
 	qboolean	useXPLM;	// 3-vector basis lightmap
-	qboolean	useXpVis;
 
 	// for alias models and skins
 	image_t		*skins[MAX_MD2SKINS];
@@ -283,6 +282,10 @@ typedef struct model_s {
 	int			triangles[MAX_TRIANGLES];
 	float		*st;
 	neighbors_t *neighbours;
+
+	vec3_t		normal[MAX_VERTS];
+	vec3_t		tangent[MAX_VERTS];
+	vec3_t		binormal[MAX_VERTS];
 
 	float		ambient;
 	float		diffuse;

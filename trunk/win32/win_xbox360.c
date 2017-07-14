@@ -40,6 +40,7 @@ xInput_t xInput;
 
 #define XINPUT_MAX_CONTROLLERS 4
 #define XINPUT_MAX_CONTROLLER_BUTTONS 10
+#define XINPUT_MAX_DPAD_KEYS 4
 
 typedef void	(__stdcall * _xInputEnable)(BOOL);
 typedef DWORD	(__stdcall * _XInputGetCapabilities)(DWORD, DWORD, PXINPUT_CAPABILITIES);
@@ -107,7 +108,6 @@ void IN_StartupXInput(void)
 	x360_sensY				= Cvar_Get("x360_sensY", "0.5", CVAR_ARCHIVE);
 	x360_pitchInversion		= Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
 	x360_swapSticks			= Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
-	x360_swapTriggers		= Cvar_Get("x360_swapTriggers", "0", CVAR_ARCHIVE);
 
 	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n\n");
 	firstDev = -1;
@@ -278,7 +278,8 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, int
 		fmove *= -1;
 	
 	float inv = 1;
-	if(x360_pitchInversion->value)
+
+	if(x360_pitchInversion->integer)
 		inv *= -1;
 
 	// decode the move
@@ -369,7 +370,7 @@ void IN_ControllerMove(usercmd_t *cmd)
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)	dpadState |= 8;
 
 	// check for event changes
-	for (int i = 0; i < XINPUT_MAX_CONTROLLERS; i++){
+	for (int i = 0; i < XINPUT_MAX_DPAD_KEYS; i++){
 
 		if ((dpadState & (1 << i)) && !(xInputOldDpadState & (1 << i)))
 			Key_Event(K_UPARROW + i, qtrue, sys_msg_time);

@@ -4107,8 +4107,8 @@ qboolean PlayerConfig_MenuInit (void) {
 	s_player_name_field.generic.callback = 0;
 	s_player_name_field.generic.x = 0;
 	s_player_name_field.generic.y = 0;
-	s_player_name_field.length = 32;
-	s_player_name_field.visible_length = 32;
+	s_player_name_field.length = 26;
+	s_player_name_field.visible_length = 26;
 	strcpy (s_player_name_field.buffer, name->string);
 	s_player_name_field.cursor = strlen (name->string);
 
@@ -4222,10 +4222,12 @@ void PlayerConfig_MenuDraw (void) {
 
 	refdef.x = viddef.width / 2 + (cl_fontScale->value - 1) * 72;
 	x2 = 320 * (cl_fontScale->value - 1);
-	refdef.y = viddef.height / 2 - 72 * cl_fontScale->value;
-	refdef.width = 240 * cl_fontScale->value;
-	refdef.height = 335 * cl_fontScale->value;
-	refdef.fov_x = 35;
+	refdef.y = 128 * cl_fontScale->value;
+	int y2 = viddef.height / 2 - 72 * cl_fontScale->value;
+
+	refdef.width = 270 * cl_fontScale->value;
+	refdef.height = 350 * cl_fontScale->value;
+	refdef.fov_x = 40;
 	refdef.fov_y = CalcFov (refdef.fov_x, refdef.width, refdef.height);
 	refdef.time = cls.realtime * 0.001;
 
@@ -4262,6 +4264,7 @@ void PlayerConfig_MenuDraw (void) {
 		}
 		else
 			entity[0].angles[1] = pose_rot_angle[pose_rot];
+
 		entity[0].frame = pose_start[pose] + ((cls.realtime >> 8) % (pose_end[pose] - pose_start[pose] + 1));
 		entity[0].oldframe = pose_start[pose] + (((cls.realtime >> 8) - 1) % (pose_end[pose] - pose_start[pose] + 1));
 		entity[0].backlerp = 1.0 - ((float)(cls.realtime & 0xff)) / 255.0;
@@ -4294,7 +4297,7 @@ void PlayerConfig_MenuDraw (void) {
 			entity[1].frame = entity[0].frame;
 			entity[1].oldframe = entity[0].oldframe;
 			entity[1].backlerp = entity[0].backlerp;
-			entity[1].flags = RF_FULLBRIGHT | RF_NOSHADOW | RF_DEPTHHACK;
+			entity[1].flags = RF_NOSHADOW | RF_DEPTHHACK;
 			refdef.num_entities++;
 		}
 
@@ -4304,8 +4307,6 @@ void PlayerConfig_MenuDraw (void) {
 
 		Menu_Draw (&s_player_config_menu);
 
-		refdef.height += 4;
-
 		R_RenderFrame (&refdef);
 
 		Com_sprintf (scratch, sizeof(scratch), "/players/%s/%s_i.pcx",
@@ -4313,7 +4314,7 @@ void PlayerConfig_MenuDraw (void) {
 			s_pmi[s_player_model_box.curvalue].
 			skindisplaynames[s_player_skin_box.curvalue]);
 
-		Draw_PicScaled (s_player_config_menu.x - 40 * cl_fontScale->value, refdef.y, cl_fontScale->value, cl_fontScale->value, scratch);
+		Draw_PicScaled (s_player_config_menu.x - 40 * cl_fontScale->value, y2, cl_fontScale->value, cl_fontScale->value, scratch);
 
 	}
 }

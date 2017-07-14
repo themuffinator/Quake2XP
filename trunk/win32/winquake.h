@@ -38,7 +38,6 @@ cvar_t *x360_sensX;
 cvar_t *x360_sensY;
 cvar_t *x360_pitchInversion;
 cvar_t *x360_swapSticks;
-cvar_t *x360_swapTriggers;
 
 extern qboolean xInputActive;
 
