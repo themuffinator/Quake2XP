@@ -1048,6 +1048,7 @@ int Keys_MenuKey (int key) {
 	switch (key) {
 		case K_KP_ENTER:
 		case K_ENTER:
+		case K_XPAD_START:
 			KeyBindingFunc (item);
 			return menu_in_sound;
 		case K_BACKSPACE:			// delete bindings
