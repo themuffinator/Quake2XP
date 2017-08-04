@@ -1736,7 +1736,7 @@ qboolean GLW_InitDriver(void) {
 	PIXELFORMATDESCRIPTOR	PFD;
 	
 	int	pixelFormat;
-	int	debugFlag	= r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
+	int	debugFlag	= r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : GL_CONTEXT_FLAG_NO_ERROR_BIT;
 	int	contextMask = r_glCoreProfile->integer ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 	int	attribs[] =
 	{

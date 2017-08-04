@@ -1565,18 +1565,18 @@ int R_Init(void *hinstance, void *hWnd)
 		VID_Error(ERR_FATAL, "GL_ARB_multitexture not found!");  //wtf????!!!! kill!
 	}
 
-	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
+	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_aniso);
 	Cvar_SetValue("r_maxAnisotropy", max_aniso);
 	if (r_anisotropic->integer >= r_maxAnisotropy->integer)
 		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->integer);
 
 	aniso_level = r_anisotropic->integer;
-	if (IsExtensionSupported("GL_EXT_texture_filter_anisotropic")) {
+	if (IsExtensionSupported("GL_ARB_texture_filter_anisotropic")) {
 		if (r_anisotropic->integer <= 1) {
 			r_anisotropic = Cvar_Set("r_anisotropic", "1");
-			Com_Printf(S_COLOR_YELLOW"...ignoring GL_EXT_texture_filter_anisotropic\n");
+			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_filter_anisotropic\n");
 		} else {
-			Com_Printf("...using GL_EXT_texture_filter_anisotropic\n   ["S_COLOR_GREEN"%i"S_COLOR_WHITE" max] ["S_COLOR_GREEN"%i" S_COLOR_WHITE" selected]\n",
+			Com_Printf("...using GL_ARB_texture_filter_anisotropic\n   ["S_COLOR_GREEN"%i"S_COLOR_WHITE" max] ["S_COLOR_GREEN"%i" S_COLOR_WHITE" selected]\n",
 					   max_aniso, aniso_level);
 		}
 	}
@@ -1612,9 +1612,9 @@ int R_Init(void *hinstance, void *hWnd)
 	qglStencilMaskSeparate		= (PFNGLSTENCILMASKSEPARATEPROC)	qwglGetProcAddress("glStencilMaskSeparate");
 
 	if(qglStencilFuncSeparate && qglStencilOpSeparate && qglStencilMaskSeparate){
-			Com_Printf("...using GL_EXT_stencil_two_side\n");
+			Com_Printf("...using GL_ARB_stencil_two_side\n");
 	}else
-		Com_Printf(S_COLOR_RED"...GL_EXT_stencil_two_side not found\n");
+		Com_Printf(S_COLOR_RED"...GL_ARB_stencil_two_side not found\n");
 
 	gl_state.depthBoundsTest = qfalse;
 	if (IsExtensionSupported("GL_EXT_depth_bounds_test")) {
