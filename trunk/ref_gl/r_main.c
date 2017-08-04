@@ -1571,15 +1571,13 @@ int R_Init(void *hinstance, void *hWnd)
 		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->integer);
 
 	aniso_level = r_anisotropic->integer;
-	if (IsExtensionSupported("GL_ARB_texture_filter_anisotropic")) {
-		if (r_anisotropic->integer <= 1) {
-			r_anisotropic = Cvar_Set("r_anisotropic", "1");
-			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_filter_anisotropic\n");
-		} else {
+	if (r_anisotropic->integer <= 1) {
+		r_anisotropic = Cvar_Set("r_anisotropic", "1");
+		Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_filter_anisotropic\n");
+	} else {
 			Com_Printf("...using GL_ARB_texture_filter_anisotropic\n   ["S_COLOR_GREEN"%i"S_COLOR_WHITE" max] ["S_COLOR_GREEN"%i" S_COLOR_WHITE" selected]\n",
 					   max_aniso, aniso_level);
 		}
-	}
 
 	gl_state.texture_compression_bptc = qfalse;
 	if (IsExtensionSupported("GL_ARB_texture_compression_bptc"))
@@ -1612,9 +1610,9 @@ int R_Init(void *hinstance, void *hWnd)
 	qglStencilMaskSeparate		= (PFNGLSTENCILMASKSEPARATEPROC)	qwglGetProcAddress("glStencilMaskSeparate");
 
 	if(qglStencilFuncSeparate && qglStencilOpSeparate && qglStencilMaskSeparate){
-			Com_Printf("...using GL_ARB_stencil_two_side\n");
+			Com_Printf("...using GL_EXT_stencil_two_side\n");
 	}else
-		Com_Printf(S_COLOR_RED"...GL_ARB_stencil_two_side not found\n");
+		Com_Printf(S_COLOR_RED"...GL_EXT_stencil_two_side not found\n");
 
 	gl_state.depthBoundsTest = qfalse;
 	if (IsExtensionSupported("GL_EXT_depth_bounds_test")) {

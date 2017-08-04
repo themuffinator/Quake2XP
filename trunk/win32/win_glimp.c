@@ -1736,14 +1736,20 @@ qboolean GLW_InitDriver(void) {
 	PIXELFORMATDESCRIPTOR	PFD;
 	
 	int	pixelFormat;
-	int	debugFlag	= r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : GL_CONTEXT_FLAG_NO_ERROR_BIT;
+	int	contextFlag;
+
+	if(r_glMajorVersion->integer >=4 && r_glMinorVersion->integer >=6)
+		contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : GL_CONTEXT_FLAG_NO_ERROR_BIT;
+	else
+		contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
+
 	int	contextMask = r_glCoreProfile->integer ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 	int	attribs[] =
 	{
-		WGL_CONTEXT_MAJOR_VERSION_ARB, r_glMajorVersion->integer,
-		WGL_CONTEXT_MINOR_VERSION_ARB, r_glMinorVersion->integer,
-		WGL_CONTEXT_FLAGS_ARB,  debugFlag,
-		WGL_CONTEXT_PROFILE_MASK_ARB, contextMask,
+		WGL_CONTEXT_MAJOR_VERSION_ARB,	r_glMajorVersion->integer,
+		WGL_CONTEXT_MINOR_VERSION_ARB,	r_glMinorVersion->integer,
+		WGL_CONTEXT_FLAGS_ARB,			contextFlag,
+		WGL_CONTEXT_PROFILE_MASK_ARB,	contextMask,
 		0
 	};
 	const char *profileName[] = { "core", "compatibility" };
