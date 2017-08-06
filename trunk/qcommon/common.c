@@ -1711,8 +1711,9 @@ void Qcommon_Init (int argc, char **argv) {
 	FS_InitFilesystem ();
 	Com_Printf ("\n");
 
-	Cbuf_AddText ("exec default.cfg\n");
-	Cbuf_AddText ("exec xpconfig.cfg\n");
+	Cbuf_AddText	("exec default.cfg\n");
+	Cbuf_AddText	("exec x360.cfg\n");
+	Cbuf_AddText	("exec xpconfig.cfg\n");
 
 	Cbuf_AddEarlyCommands (qtrue);
 	Cbuf_Execute ();

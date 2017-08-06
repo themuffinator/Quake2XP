@@ -92,7 +92,7 @@ void GLimp_InitADL(){
 	adlInit = qfalse;
 	atiPhysicalGpuCount = atiPhysicalAdapters = 0;
 
-	Com_Printf("" S_COLOR_YELLOW "\n...Initializing ATI Driver Layer :\n");
+	Com_Printf("" S_COLOR_YELLOW "\n...Initializing ATI Driver Library :\n");
 
 	// Load the ADL dll
 	ati_hDLL = LoadLibrary("atiadlxx.dll");
@@ -105,7 +105,7 @@ void GLimp_InitADL(){
 
 	if (NULL == ati_hDLL)
 	{
-		Com_Printf(S_COLOR_MAGENTA"...ADL library not found or unsupported\n");
+		Com_Printf(S_COLOR_MAGENTA"...ADL not found or unsupported\n");
 		return;
 	}
 

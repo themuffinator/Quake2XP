@@ -807,13 +807,15 @@ int VID_MenuKey (int key) {
 	menuframework_s *m = s_current_menu;
 
 	switch (key) {
-		case K_MOUSE2:
+		case K_XPAD_B:
+		case K_XPAD_BACK:
 		case K_ESCAPE:
 			CancelChanges (NULL);
 			return 0;
 
 		case K_MWHEELUP:
 		case K_KP_UPARROW:
+		case K_XPAD_DPAD_UP:
 		case K_UPARROW:
 			m->cursor--;
 			Menu_AdjustCursor (m, -1);
@@ -821,19 +823,23 @@ int VID_MenuKey (int key) {
 
 		case K_MWHEELDOWN:
 		case K_KP_DOWNARROW:
+		case K_XPAD_DPAD_DOWN:
 		case K_DOWNARROW:
 			m->cursor++;
 			Menu_AdjustCursor (m, 1);
 			break;
 		case K_KP_LEFTARROW:
+		case K_XPAD_DPAD_LEFT:
 		case K_LEFTARROW:
 			Menu_SlideItem (m, -1);
 			break;
 		case K_KP_RIGHTARROW:
+		case K_XPAD_DPAD_RIGHT:
 		case K_RIGHTARROW:
 			Menu_SlideItem (m, 1);
 			break;
 		case K_KP_ENTER:
+		case K_XPAD_A:
 		case K_ENTER:
 			if (!Menu_SelectItem (m))
 				ApplyChanges (NULL);

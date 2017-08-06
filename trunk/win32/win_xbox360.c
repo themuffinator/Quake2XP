@@ -23,11 +23,29 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "winquake.h"
 #include "xinput.h"
 
+/*
+//quake2xp xbox360
+//controller default binding
+
+bind XPAD_START "menu_main"
+bind XPAD_BACK "+flashlight"
+bind XPAD_LEFT_THUMBSTICK "cmd help"
+bind XPAD_RIGHT_THUMBSTICK "invuse"
+bind XPAD_LEFT_BUMPER "+movedown"
+bind XPAD_RIGHT_BUMPER "+moveup"
+bind XPAD_A "invnext"
+bind XPAD_B "invprev"
+bind XPAD_X "weapprev"
+bind XPAD_Y "weapnext"
+bind XPAD_DPAD_LEFT "invdrop"
+bind XPAD_LEFT_TRIGGER "+zoom"
+bind XPAD_RIGHT_TRIGGER "+attack"
+*/
+
 extern	unsigned	sys_msg_time;
 
 qboolean	xInputActive			= qfalse;
 int			xInputActiveController	= -1;
-int			xInputOldDpadState		= 0;
 int			xInputOldButtonState	= 0;
 
 typedef struct {
@@ -39,7 +57,7 @@ xInput_t xInput;
 #define XINPUT_LIB	"xinput1_3.dll" // win7 support
 
 #define XINPUT_MAX_CONTROLLERS 4
-#define XINPUT_MAX_CONTROLLER_BUTTONS 10
+#define XINPUT_MAX_CONTROLLER_BUTTONS 16
 #define XINPUT_MAX_DPAD_KEYS 4
 
 typedef void	(__stdcall * _xInputEnable)(BOOL);
@@ -108,6 +126,7 @@ void IN_StartupXInput(void)
 	x360_sensY				= Cvar_Get("x360_sensY", "0.5", CVAR_ARCHIVE);
 	x360_pitchInversion		= Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
 	x360_swapSticks			= Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
+	x360_triggerTreshold	= Cvar_Get("x360_triggerTreshold", "64", CVAR_ARCHIVE);
 
 	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n\n");
 	firstDev = -1;
@@ -185,7 +204,6 @@ void IN_ToggleXInput()
 			qXInputEnable(TRUE);
 			xInputActive = qtrue;
 		}
-		xInputOldDpadState = xInputOldButtonState = 0;
 	}
 	else 
 	{
@@ -194,7 +212,6 @@ void IN_ToggleXInput()
 
 		qXInputEnable(FALSE);
 		xInputActive = qfalse;
-		xInputOldDpadState = xInputOldButtonState = 0;
 	}
 }
 
@@ -362,45 +379,43 @@ void IN_ControllerMove(usercmd_t *cmd)
 	xInputLastPacket = xInputStage.dwPacketNumber;
 
 	int buttonState = 0;
-	int dpadState = 0;
 
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)		dpadState |= 1;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)	dpadState |= 2;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)	dpadState |= 4;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)	dpadState |= 8;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_START)			
+		buttonState |= 1;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)				
+		buttonState |= 2;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)		
+		buttonState |= 4; // down
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)		
+		buttonState |= 8; // down
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)	
+		buttonState |= 16; // up
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)	
+		buttonState |= 32; // up
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_A)				
+		buttonState |= 64;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_B)				
+		buttonState |= 128;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_X)				
+		buttonState |= 256;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_Y)				
+		buttonState |= 512;
 
-	// check for event changes
-	for (int i = 0; i < XINPUT_MAX_DPAD_KEYS; i++){
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)			
+		buttonState |= 1024;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)		
+		buttonState |= 2048;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)		
+		buttonState |= 4096;
+	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)		
+		buttonState |= 8192;
 
-		if ((dpadState & (1 << i)) && !(xInputOldDpadState & (1 << i)))
-			Key_Event(K_UPARROW + i, qtrue, sys_msg_time);
+	if (xInputStage.Gamepad.bLeftTrigger >= x360_triggerTreshold->integer)	
+		buttonState |= 16384; 
+	if (xInputStage.Gamepad.bRightTrigger >= x360_triggerTreshold->integer)	
+		buttonState |= 32768; 
 
-		if (!(dpadState & (1 << i)) && (xInputOldDpadState & (1 << i)))
-			Key_Event(K_UPARROW + i, qfalse, sys_msg_time);
-	}
-
-	// store back
-	xInputOldDpadState = dpadState;
-
-//=============
-	if (xInputStage.Gamepad.bLeftTrigger >= 128) //map to XINPUT_GAMEPAD_LEFT_THUMB
-		buttonState |= 4;
-
-	if (xInputStage.Gamepad.bRightTrigger >= 128) // map to XINPUT_GAMEPAD_RIGHT_THUMB
-		buttonState |= 8;
-
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_START)			buttonState |= 1;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)				buttonState |= 2;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)		buttonState |= 4; // down
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)		buttonState |= 8; // down
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)	buttonState |= 16; // up
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)	buttonState |= 32; // up
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_A)				buttonState |= 64;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_B)				buttonState |= 128;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_X)				buttonState |= 256;
-	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_Y)				buttonState |= 512;
-
-	// check for event changes
+ // check for event changes
 	for (int i = 0; i < XINPUT_MAX_CONTROLLER_BUTTONS; i++)
 	{
 		if ((buttonState & (1 << i)) && !(xInputOldButtonState & (1 << i)))
@@ -409,7 +424,6 @@ void IN_ControllerMove(usercmd_t *cmd)
 		if (!(buttonState & (1 << i)) && (xInputOldButtonState & (1 << i)))
 			Key_Event(K_XPAD_START + i, qfalse, sys_msg_time);
 	}
-
 	// store back
 	xInputOldButtonState = buttonState;
 }

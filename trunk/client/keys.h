@@ -21,83 +21,91 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // these are the key numbers that should be passed to Key_Event
 //
-typedef enum {
-	K_TAB = 9,
-	K_ENTER = 13,
-	K_ESCAPE = 27,
-	K_SPACE = 32,
+//
+// these are the key numbers that should be passed to Key_Event
+//
+#define	K_TAB			9
+#define	K_ENTER			13
+#define	K_ESCAPE		27
+#define	K_SPACE			32
 
-	// normal keys should be passed as lowercased ascii
-	K_BACKSPACE = 127,
-	K_UPARROW,
-	K_DOWNARROW,
-	K_LEFTARROW,
-	K_RIGHTARROW,
+// normal keys should be passed as lowercased ascii
 
-	K_ALT,
-	K_CTRL,
-	K_SHIFT,
-	K_F1,
-	K_F2,
-	K_F3,
-	K_F4,
-	K_F5,
-	K_F6,
-	K_F7,
-	K_F8,
-	K_F9,
-	K_F10,
-	K_F11,
-	K_F12,
-	K_INS,
-	K_DEL,
-	K_PGDN,
-	K_PGUP,
-	K_HOME,
-	K_END,
+#define	K_BACKSPACE		127
+#define	K_UPARROW		128
+#define	K_DOWNARROW		129
+#define	K_LEFTARROW		130
+#define	K_RIGHTARROW	131
 
-	K_KP_HOME = 160,
-	K_KP_UPARROW,
-	K_KP_PGUP,
-	K_KP_LEFTARROW,
-	K_KP_5,
-	K_KP_RIGHTARROW,
-	K_KP_END,
-	K_KP_DOWNARROW,
-	K_KP_PGDN,
-	K_KP_ENTER,
-	K_KP_INS,
-	K_KP_DEL,
-	K_KP_SLASH,
-	K_KP_MINUS,
-	K_KP_PLUS,
-	K_KP_MULT,
+#define	K_ALT			132
+#define	K_CTRL			133
+#define	K_SHIFT			134
+#define	K_F1			135
+#define	K_F2			136
+#define	K_F3			137
+#define	K_F4			138
+#define	K_F5			139
+#define	K_F6			140
+#define	K_F7			141
+#define	K_F8			142
+#define	K_F9			143
+#define	K_F10			144
+#define	K_F11			145
+#define	K_F12			146
+#define	K_INS			147
+#define	K_DEL			148
+#define	K_PGDN			149
+#define	K_PGUP			150
+#define	K_HOME			151
+#define	K_END			152
 
-	K_PAUSE = 255,
+#define K_KP_HOME		160
+#define K_KP_UPARROW	161
+#define K_KP_PGUP		162
+#define	K_KP_LEFTARROW	163
+#define K_KP_5			164
+#define K_KP_RIGHTARROW	165
+#define K_KP_END		166
+#define K_KP_DOWNARROW	167
+#define K_KP_PGDN		168
+#define	K_KP_ENTER		169
+#define K_KP_INS   		170
+#define	K_KP_DEL		171
+#define K_KP_SLASH		172
+#define K_KP_MINUS		173
+#define K_KP_PLUS		174
 
-	// mouse buttons generate virtual keys
-	K_MOUSE1 = 200,
-	K_MOUSE2,
-	K_MOUSE3,
-	K_MOUSE4,
-	K_MOUSE5,
+//
+// mouse buttons generate virtual keys
+//
+#define	K_MOUSE1				200
+#define	K_MOUSE2				201
+#define	K_MOUSE3				202
+#define	K_MOUSE4				203
+#define	K_MOUSE5				204
 
-	// xBox controller buttons
-	K_XPAD_START,
-	K_XPAD_BACK,
-	K_XPAD_LEFT_THUMB,
-	K_XPAD_RIGHT_THUMB,
-	K_XPAD_LEFT_SHOULDER,
-	K_XPAD_RIGHT_SHOULDER,
-	K_XPAD_A,
-	K_XPAD_B,
-	K_XPAD_X,
-	K_XPAD_Y,
+// xBox controller buttons
+#define	K_XPAD_START			205
+#define	K_XPAD_BACK				206	
+#define	K_XPAD_LEFT_THUMB		207
+#define	K_XPAD_RIGHT_THUMB		208
+#define	K_XPAD_LEFT_SHOULDER	209
+#define	K_XPAD_RIGHT_SHOULDER	210
+#define	K_XPAD_A				211
+#define	K_XPAD_B				212
+#define	K_XPAD_X				213
+#define	K_XPAD_Y				214
+#define	K_XPAD_DPAD_UP			215
+#define	K_XPAD_DPAD_DOWN		216
+#define	K_XPAD_DPAD_LEFT		217
+#define	K_XPAD_DPAD_RIGHT		218
+#define	K_XPAD_LEFT_TRIGGER		219
+#define	K_XPAD_RIGHT_TRIGGER	220
 
-	K_MWHEELDOWN,
-	K_MWHEELUP,
-} keynum_t;
+#define	K_MWHEELDOWN			221
+#define	K_MWHEELUP				222
 
+#define K_PAUSE					255
 
 extern char *keybindings[256];
 extern int key_repeats[256];

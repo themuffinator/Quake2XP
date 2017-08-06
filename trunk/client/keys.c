@@ -94,14 +94,20 @@ keyname_t keynames[] = {
 
 	{ "XPAD_START",				K_XPAD_START },
 	{ "XPAD_BACK",				K_XPAD_BACK },
-	{ "XPAD_LEFT_TRIGGER",		K_XPAD_LEFT_THUMB },
-	{ "XPAD_RIGHT_TRIGGER",		K_XPAD_RIGHT_THUMB },
+	{ "XPAD_LEFT_THUMBSTICK",	K_XPAD_LEFT_THUMB },
+	{ "XPAD_RIGHT_THUMBSTICK",	K_XPAD_RIGHT_THUMB },
 	{ "XPAD_LEFT_BUMPER",		K_XPAD_LEFT_SHOULDER },
 	{ "XPAD_RIGHT_BUMPER",		K_XPAD_RIGHT_SHOULDER },
 	{ "XPAD_A",					K_XPAD_A },
 	{ "XPAD_B",					K_XPAD_B },
 	{ "XPAD_X",					K_XPAD_X },
 	{ "XPAD_Y",					K_XPAD_Y },
+	{ "XPAD_DPAD_UP",			K_XPAD_DPAD_UP },
+	{ "XPAD_DPAD_DOWN",			K_XPAD_DPAD_DOWN },
+	{ "XPAD_DPAD_LEFT",			K_XPAD_DPAD_LEFT },
+	{ "XPAD_DPAD_RIGHT",		K_XPAD_DPAD_RIGHT },
+	{ "XPAD_LEFT_TRIGGER",		K_XPAD_LEFT_TRIGGER },
+	{ "XPAD_RIGHT_TRIGGER",		K_XPAD_RIGHT_TRIGGER },
 
 	{ "KP_HOME", K_KP_HOME },
 	{ "KP_UPARROW", K_KP_UPARROW },
@@ -701,8 +707,11 @@ void Key_Event (int key, qboolean down, unsigned time) {
 			&& cls.key_dest != key_message)
 			return;				// ignore most autorepeats
 
-		if (key >= 200 && !keybindings[key] && key != K_MWHEELDOWN && key != K_MWHEELUP)
-			Com_Printf ("%s is unbound, hit F4 to set.\n", Key_KeynumToString (key));
+		if (!cls.menuActive) { // stop spam in to console!
+		
+			if (key >= 200 && !keybindings[key] && key != K_MWHEELDOWN && key != K_MWHEELUP)
+				Com_Printf("%s is unbound, hit F4 to set.\n", Key_KeynumToString(key));
+		}
 	}
 	else {
 		key_repeats[key] = 0;
