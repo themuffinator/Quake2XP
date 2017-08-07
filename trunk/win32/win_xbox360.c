@@ -120,13 +120,17 @@ void IN_StartupXInput(void)
 	}
 	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
 
-	in_useXInput			= Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
-	x360_useControllerID	= Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
-	x360_sensX				= Cvar_Get("x360_sensX", "2.0", CVAR_ARCHIVE);
-	x360_sensY				= Cvar_Get("x360_sensY", "0.5", CVAR_ARCHIVE);
-	x360_pitchInversion		= Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
-	x360_swapSticks			= Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
-	x360_triggerTreshold	= Cvar_Get("x360_triggerTreshold", "64", CVAR_ARCHIVE);
+	in_useXInput				= Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
+	x360_useControllerID		= Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
+	x360_sensX					= Cvar_Get("x360_sensX", "2.0", CVAR_ARCHIVE);
+	x360_sensY					= Cvar_Get("x360_sensY", "0.5", CVAR_ARCHIVE);
+	x360_pitchInversion			= Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
+	x360_swapSticks				= Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
+	x360_triggerTreshold		= Cvar_Get("x360_triggerTreshold", "64", CVAR_ARCHIVE);
+	x360_leftDeadzone			= Cvar_Get("x360_leftDeadzone", "7849", CVAR_ARCHIVE);
+	x360_leftDeadzone->help		= "xbox controller is 7849 by default";
+	x360_rightDeadzone			= Cvar_Get("x360_rightDeadzone", "8689", CVAR_ARCHIVE);
+	x360_rightDeadzone->help	= "xbox controller is 8689 by default";
 
 	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n\n");
 	firstDev = -1;
@@ -352,16 +356,16 @@ void IN_ControllerMove(usercmd_t *cmd)
 		return;
 
 	if (!x360_swapSticks->integer) {
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_X);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, x360_leftDeadzone->integer, 32768, XINPUT_LEFT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, x360_leftDeadzone->integer, 32768, XINPUT_LEFT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, x360_rightDeadzone->integer, 32768, XINPUT_RIGHT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, x360_rightDeadzone->integer, 32768, XINPUT_RIGHT_THUMB_Y);
 	}
 	else {
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_X);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_Y);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, x360_rightDeadzone->integer, 32768, XINPUT_RIGHT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, x360_rightDeadzone->integer, 32768, XINPUT_RIGHT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, x360_leftDeadzone->integer, 32768, XINPUT_LEFT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, x360_leftDeadzone->integer, 32768, XINPUT_LEFT_THUMB_Y);
 	}
 
 	// fix up the command (bound/etc)
