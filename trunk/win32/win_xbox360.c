@@ -40,6 +40,22 @@ bind XPAD_Y "weapnext"
 bind XPAD_DPAD_LEFT "invdrop"
 bind XPAD_LEFT_TRIGGER "+zoom"
 bind XPAD_RIGHT_TRIGGER "+attack"
+
+// Ballmer's binding
+bind XPAD_BACK "cmd help"
+bind XPAD_LEFT_THUMBSTICK "+speed"
+bind XPAD_LEFT_BUMPER "weapprev"
+bind XPAD_RIGHT_BUMPER "weapnext"
+bind XPAD_A "+moveup"
+bind XPAD_B "+movedown"
+bind XPAD_X "invuse"
+bind XPAD_Y "+flashlight"
+bind XPAD_DPAD_UP "invdrop"
+bind XPAD_DPAD_DOWN "inven"
+bind XPAD_DPAD_LEFT "invprev"
+bind XPAD_DPAD_RIGHT "invnext"
+bind XPAD_LEFT_TRIGGER "+zoom"
+bind XPAD_RIGHT_TRIGGER "+attack"
 */
 
 extern	unsigned	sys_msg_time;
@@ -71,6 +87,12 @@ static DWORD	(WINAPI * qXInputGetCapabilities)(DWORD dwUserIndex, DWORD dwFlags,
 static DWORD	(WINAPI * qXInputGetState)(DWORD dwUserIndex, PXINPUT_STATE pState);
 static DWORD	(WINAPI * qXInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
 static DWORD	(WINAPI * qXInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
+
+static float ClampCvar(float min, float max, float value) {
+							if (value < min) return min;
+							if (value > max) return max;
+							return value;
+						}
 
 void IN_ShutDownXinput() {
 
@@ -123,14 +145,16 @@ void IN_StartupXInput(void)
 	in_useXInput				= Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
 	x360_useControllerID		= Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
 	x360_sensX					= Cvar_Get("x360_sensX", "2.0", CVAR_ARCHIVE);
-	x360_sensY					= Cvar_Get("x360_sensY", "0.5", CVAR_ARCHIVE);
+	x360_sensY					= Cvar_Get("x360_sensY", "1.0", CVAR_ARCHIVE);
 	x360_pitchInversion			= Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
 	x360_swapSticks				= Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
-	x360_triggerTreshold		= Cvar_Get("x360_triggerTreshold", "64", CVAR_ARCHIVE);
-	x360_leftDeadzone			= Cvar_Get("x360_leftDeadzone", "7849", CVAR_ARCHIVE);
-	x360_leftDeadzone->help		= "xbox controller is 7849 by default";
-	x360_rightDeadzone			= Cvar_Get("x360_rightDeadzone", "8689", CVAR_ARCHIVE);
-	x360_rightDeadzone->help	= "xbox controller is 8689 by default";
+	x360_triggerTreshold		= Cvar_Get("x360_triggerTreshold", "0.2", CVAR_ARCHIVE);
+	x360_triggerTreshold->help	= "Scale lower triggers theshold.\n[0.01 - 1.0]";
+	x360_deadZone				= Cvar_Get("x360_deadZone", "1.0", CVAR_ARCHIVE);
+	x360_deadZone->help			= "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
+
+	ClampCvar(0.01, 1.0,	x360_triggerTreshold->value);
+	ClampCvar(0.1,	1.5,	x360_deadZone->value);
 
 	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n\n");
 	firstDev = -1;
@@ -261,8 +285,10 @@ extern cvar_t *cl_pitchspeed;
 #define XINPUT_RIGHT_THUMB_X	3
 #define XINPUT_RIGHT_THUMB_Y	1
 
-void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, int type)
+void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int deadZone, int axismax, int type)
 {
+	int outDz = (float)deadZone * x360_deadZone->value;
+
 	// not using this axis
 	if (type <= XINPUT_AXIS_NONE)
 		return;
@@ -272,14 +298,14 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int dz, int axismax, int
 		return;
 
 	// get the amount moved less the deadzone
-	int realmove = abs(axisval) - dz;
+	int realmove = abs(axisval) - outDz;
 
 	// move is within deadzone threshold
-	if (realmove < dz)
+	if (realmove < outDz)
 		return;
 
 	// 0 to 1 scale
-	float fmove = (float)realmove / (axismax - dz);
+	float fmove = (float)realmove / (axismax - outDz);
 
 	float speed;
 	if ((in_speed.state & 1) ^ cl_run->integer)
@@ -356,16 +382,16 @@ void IN_ControllerMove(usercmd_t *cmd)
 		return;
 
 	if (!x360_swapSticks->integer) {
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, x360_leftDeadzone->integer, 32768, XINPUT_LEFT_THUMB_X);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, x360_leftDeadzone->integer, 32768, XINPUT_LEFT_THUMB_Y);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, x360_rightDeadzone->integer, 32768, XINPUT_RIGHT_THUMB_X);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, x360_rightDeadzone->integer, 32768, XINPUT_RIGHT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_Y);
 	}
 	else {
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, x360_rightDeadzone->integer, 32768, XINPUT_RIGHT_THUMB_X);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, x360_rightDeadzone->integer, 32768, XINPUT_RIGHT_THUMB_Y);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, x360_leftDeadzone->integer, 32768, XINPUT_LEFT_THUMB_X);
-		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, x360_leftDeadzone->integer, 32768, XINPUT_LEFT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_RIGHT_THUMB_Y);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRX, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
+		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbRY, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);
 	}
 
 	// fix up the command (bound/etc)
@@ -414,12 +440,14 @@ void IN_ControllerMove(usercmd_t *cmd)
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)		
 		buttonState |= 8192;
 
-	if (xInputStage.Gamepad.bLeftTrigger >= x360_triggerTreshold->integer)	
+	int treshold = 255.0 * x360_triggerTreshold->value;
+
+	if (xInputStage.Gamepad.bLeftTrigger >= treshold)
 		buttonState |= 16384; 
-	if (xInputStage.Gamepad.bRightTrigger >= x360_triggerTreshold->integer)	
+	if (xInputStage.Gamepad.bRightTrigger >= treshold)
 		buttonState |= 32768; 
 
- // check for event changes
+	// check for event changes
 	for (int i = 0; i < XINPUT_MAX_CONTROLLER_BUTTONS; i++)
 	{
 		if ((buttonState & (1 << i)) && !(xInputOldButtonState & (1 << i)))

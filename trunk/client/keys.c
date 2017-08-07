@@ -708,8 +708,8 @@ void Key_Event (int key, qboolean down, unsigned time) {
 			return;				// ignore most autorepeats
 
 		if (!cls.menuActive) { // stop spam in to console!
-		
-			if (key >= 200 && !keybindings[key] && key != K_MWHEELDOWN && key != K_MWHEELUP)
+
+			if (key >= 200 && !keybindings[key] && key != K_MWHEELDOWN && key != K_MWHEELUP && key != K_XPAD_START) // т.к. K_XPAD_START захардоден для меню
 				Com_Printf("%s is unbound, hit F4 to set.\n", Key_KeynumToString(key));
 		}
 	}
@@ -733,7 +733,7 @@ void Key_Event (int key, qboolean down, unsigned time) {
 		key = K_ESCAPE;
 
 	// menu key is hardcoded, so the user can never unbind it
-	if (key == K_ESCAPE) {
+	if (key == K_ESCAPE || key == K_XPAD_START) {
 		if (!down)
 			return;
 
