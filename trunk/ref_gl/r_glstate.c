@@ -368,6 +368,11 @@ void GL_Enable(GLenum cap) {
 		if (gl_state.polygonOffsetFill)
 			return;
 		gl_state.polygonOffsetFill = qtrue;
+	case GL_LINE_SMOOTH:
+		if (gl_state.lineSmooth)
+			return;
+		gl_state.lineSmooth = qtrue;
+
 	}
 
 	qglEnable(cap);
@@ -415,6 +420,11 @@ void GL_Disable(GLenum cap) {
 		if (!gl_state.polygonOffsetFill)
 			return;
 		gl_state.polygonOffsetFill = qfalse;
+	
+	case GL_LINE_SMOOTH:
+		if (!gl_state.lineSmooth)
+			return;
+		gl_state.lineSmooth = qfalse;
 	}
 
 	qglDisable(cap);

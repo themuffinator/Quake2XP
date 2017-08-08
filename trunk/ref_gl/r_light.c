@@ -1262,7 +1262,7 @@ void UpdateLightEditor (void) {
 			VectorAdd (tmp, currentShadowLight->origin, corners[j]);
 		}
 		qglUniform4f (gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-		qglEnable (GL_LINE_SMOOTH);
+		GL_Enable (GL_LINE_SMOOTH);
 		qglLineWidth (3.0);
 
 		// top quad
@@ -1294,7 +1294,7 @@ void UpdateLightEditor (void) {
 		VA_SetElem3 (vCache[23], corners[7][0], corners[7][1], corners[7][2]);
 		qglDrawArrays (GL_LINES, 0, 24);
 
-		qglDisable (GL_LINE_SMOOTH);
+		GL_Disable (GL_LINE_SMOOTH);
 	}
 
 	if (selectedShadowLight) {
@@ -1302,7 +1302,7 @@ void UpdateLightEditor (void) {
 		qglUniform4f (gen_color, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
 
 		qglPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-		qglEnable (GL_LINE_SMOOTH);
+		GL_Enable (GL_LINE_SMOOTH);
 		qglLineWidth (3.0);
 		VectorCopy (selectedShadowLight->origin, tmpOrg);
 		VectorCopy (selectedShadowLight->radius, tmpRad);
@@ -1390,7 +1390,7 @@ void UpdateLightEditor (void) {
 		qglDrawArrays (GL_TRIANGLES, 0, 36);
 
 		qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-		qglDisable (GL_LINE_SMOOTH);
+		GL_Disable (GL_LINE_SMOOTH);
 
 		if (!flareEdit || !selectedShadowLight->flare) { // skip filled box in flare editing mode
 
@@ -2464,7 +2464,7 @@ void R_LightFlareOutLine () { //flare editing highlights
 	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	// draw light to flare connector
-	qglEnable(GL_LINE_SMOOTH);
+	GL_Enable(GL_LINE_SMOOTH);
 	qglLineWidth(3.0);
 
 	VA_SetElem3 (vCache[0], currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
@@ -2472,7 +2472,7 @@ void R_LightFlareOutLine () { //flare editing highlights
 
 	qglDrawArrays (GL_LINES, 0, 2);
 
-	qglDisable (GL_LINE_SMOOTH);
+	GL_Disable (GL_LINE_SMOOTH);
 
 	// draw center of flare
 	VectorCopy (currentShadowLight->flareOrigin, tmpOrg);

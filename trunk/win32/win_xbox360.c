@@ -153,9 +153,6 @@ void IN_StartupXInput(void)
 	x360_deadZone				= Cvar_Get("x360_deadZone", "1.0", CVAR_ARCHIVE);
 	x360_deadZone->help			= "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
 
-	ClampCvar(0.01, 1.0,	x360_triggerTreshold->value);
-	ClampCvar(0.1,	1.5,	x360_deadZone->value);
-
 	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n\n");
 	firstDev = -1;
 	for (numDev = 0; numDev < XINPUT_MAX_CONTROLLERS; numDev++)
@@ -287,6 +284,7 @@ extern cvar_t *cl_pitchspeed;
 
 void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int deadZone, int axismax, int type)
 {
+	
 	int outDz = (float)deadZone * x360_deadZone->value;
 
 	// not using this axis
@@ -380,6 +378,9 @@ void IN_ControllerMove(usercmd_t *cmd)
 
 	if (xInputResult != ERROR_SUCCESS)
 		return;
+
+	ClampCvar(0.01, 1.0, x360_triggerTreshold->value);
+	ClampCvar(0.1,	1.5, x360_deadZone->value);
 
 	if (!x360_swapSticks->integer) {
 		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);

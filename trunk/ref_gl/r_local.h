@@ -651,6 +651,8 @@ typedef struct {
 	GLfloat			polygonOffsetFactor;
 	GLfloat			polygonOffsetUnits;
 
+	qboolean		lineSmooth;
+
 	qboolean		stencilTest;
 	GLenum			stencilFunc;
 	GLenum			stencilFace;
