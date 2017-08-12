@@ -33,9 +33,6 @@
     <Filter Include="Source Files\Renderer\glsl">
       <UniqueIdentifier>{93c44cd4-bfeb-492f-9d35-ae826e25f2db}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\CG">
-      <UniqueIdentifier>{131e8761-b794-4813-a06a-0d3696cb94cd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Renderer\glsl\include">
       <UniqueIdentifier>{e2b72631-155f-458a-bc17-d6f1aa729fb3}</UniqueIdentifier>
     </Filter>
@@ -71,6 +68,9 @@
     </Filter>
     <Filter Include="Source Files\Win32\Headers\NvApi">
       <UniqueIdentifier>{3e57cfc0-f773-4d21-bc41-b754a67b3422}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Cg">
+      <UniqueIdentifier>{131e8761-b794-4813-a06a-0d3696cb94cd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -203,44 +203,11 @@
     <ClCompile Include="ref_gl\r_warp.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="client\cl_cin.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_clents.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_decals.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_ents.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_fx.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_newfx.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_particles.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_scrn.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_tempents.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_view.c">
-      <Filter>Source Files\CG</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_program.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="qcommon\q_parser.c">
       <Filter>Source Files\qcommon</Filter>
-    </ClCompile>
-    <ClCompile Include="client\cl_hud.c">
-      <Filter>Source Files\CG</Filter>
     </ClCompile>
     <ClCompile Include="ref_gl\r_drawAlias.c">
       <Filter>Source Files\Renderer</Filter>
@@ -313,6 +280,39 @@
     </ClCompile>
     <ClCompile Include="win32\win_adl7.c">
       <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_cin.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_clents.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_decals.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_ents.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_fx.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_hud.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_newfx.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_particles.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_scrn.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_tempents.c">
+      <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_view.c">
+      <Filter>Source Files\Cg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

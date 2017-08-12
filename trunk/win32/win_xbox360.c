@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //quake2xp xbox360
 //controller default binding
 
-bind XPAD_START "menu_main"
 bind XPAD_BACK "+flashlight"
 bind XPAD_LEFT_THUMBSTICK "cmd help"
 bind XPAD_RIGHT_THUMBSTICK "invuse"
@@ -74,7 +73,6 @@ xInput_t xInput;
 
 #define XINPUT_MAX_CONTROLLERS 4
 #define XINPUT_MAX_CONTROLLER_BUTTONS 16
-#define XINPUT_MAX_DPAD_KEYS 4
 
 typedef void	(__stdcall * _xInputEnable)(BOOL);
 typedef DWORD	(__stdcall * _XInputGetCapabilities)(DWORD, DWORD, PXINPUT_CAPABILITIES);
@@ -378,6 +376,10 @@ void IN_ControllerMove(usercmd_t *cmd)
 
 	if (xInputResult != ERROR_SUCCESS)
 		return;
+	
+	//clamp values
+	ClampCvar(0.01, 1.0, x360_triggerTreshold->value); 
+	ClampCvar(0.1, 1.5, x360_deadZone->value);
 
 	ClampCvar(0.01, 1.0, x360_triggerTreshold->value);
 	ClampCvar(0.1,	1.5, x360_deadZone->value);

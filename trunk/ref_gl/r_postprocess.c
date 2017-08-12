@@ -433,8 +433,9 @@ void R_MotionBlur (void)
 		return;
 
 	// calc camera offsets
-	angles[0] = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //YAW left-right
-	angles[1] = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //PITCH up-down
+	angles[0] = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
+	angles[1] = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
+
 	delta[0] = (angles[0] * 2.0 / r_newrefdef.fov_x) * r_motionBlurFrameLerp->value;
 	delta[1] = (angles[1] * 2.0 / r_newrefdef.fov_y) * r_motionBlurFrameLerp->value;
 
