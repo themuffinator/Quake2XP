@@ -28,16 +28,27 @@ Post Process Effects
 
 void R_DrawFullScreenQuad () {
 
+	vec3_t rays[4];
+
+	VectorCopy(r_newrefdef.cornerRays[1], rays[0]);
+	VectorCopy(r_newrefdef.cornerRays[0], rays[1]);
+	VectorCopy(r_newrefdef.cornerRays[3], rays[2]);
+	VectorCopy(r_newrefdef.cornerRays[2], rays[3]);
+
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_fullScreenQuad);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
 
+	qglEnableVertexAttribArray(ATT_NORMAL);
+	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, rays[0]);
+
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	qglDisableVertexAttribArray (ATT_POSITION);
-	
+	qglDisableVertexAttribArray (ATT_NORMAL);
+
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -427,26 +438,38 @@ void R_GammaRamp (void)
 
 void R_MotionBlur (void) 
 {
-	vec2_t	angles, delta;
+	mat4_t	invMV;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
-
-	// calc camera offsets
-	angles[0] = r_newrefdef.viewangles_old[1] - r_newrefdef.viewangles[1]; //YAW left-right
-	angles[1] = r_newrefdef.viewangles_old[0] - r_newrefdef.viewangles[0]; //PITCH up-down
-
-	delta[0] = (angles[0] * 2.0 / r_newrefdef.fov_x) * r_motionBlurFrameLerp->value;
-	delta[1] = (angles[1] * 2.0 / r_newrefdef.fov_y) * r_motionBlurFrameLerp->value;
-
+	
 	// setup program
 	GL_BindProgram(motionBlurProgram, 0);
+	Mat4_Invert(r_newrefdef.modelViewMatrix, invMV);
 
-	qglUniform3f(mb_params, delta[0], delta[1], r_motionBlurSamples->value);
+	qglUniform3f(mb_params, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1], r_motionBlurSamples->value);
 	qglUniformMatrix4fv(mb_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(mb_inverseMV, 1, qfalse, (const float *)invMV);
+	qglUniformMatrix4fv(mb_prevMVP, 1, qfalse, (const float *)r_newrefdef.prevMVP);
 
-	GL_MBindRect (GL_TEXTURE0, ScreenMap->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	float fov = tanf(DEG2RAD(r_newrefdef.fov_x) / 2.0);
+	float aspect = vid.width / vid.height;
+	qglUniform2f(mb_params2, r_newrefdef.fov_x, aspect);
+	
+	if (!blurTex) {
+		qglGenTextures(1, &blurTex);
+		GL_MBind(GL_TEXTURE0, blurTex);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
+	}
+	else {
+		GL_MBind(GL_TEXTURE0, blurTex);
+		qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
+	}
+
+	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
+
 
 	R_DrawFullScreenQuad ();
 

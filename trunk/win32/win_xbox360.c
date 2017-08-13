@@ -381,9 +381,6 @@ void IN_ControllerMove(usercmd_t *cmd)
 	ClampCvar(0.01, 1.0, x360_triggerTreshold->value); 
 	ClampCvar(0.1, 1.5, x360_deadZone->value);
 
-	ClampCvar(0.01, 1.0, x360_triggerTreshold->value);
-	ClampCvar(0.1,	1.5, x360_deadZone->value);
-
 	if (!x360_swapSticks->integer) {
 		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);
 		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_Y);

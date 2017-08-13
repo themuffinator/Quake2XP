@@ -504,7 +504,6 @@ typedef struct {
 } fbo_t;
 
 typedef struct {
-	vec2_t	depthParms;
 	int		x, y, width, height;	// in virtual screen coordinates
 	float	fov_x, fov_y;
 	float	vieworg[3];
@@ -528,6 +527,7 @@ typedef struct {
 	// viewport
 	int		viewport[4];
 	vec3_t	cornerRays[4];
+	vec2_t	depthParms;
 	mat3_t	axis;
 	mat4_t	projectionMatrix;
 	mat4_t	orthoMatrix;

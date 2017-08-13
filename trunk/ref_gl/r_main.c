@@ -400,6 +400,23 @@ static void R_SetupViewMatrices (void) {
 
 	Mat4_Multiply(tmpMatrix, r_newrefdef.projectionMatrix, r_newrefdef.skyMatrix);
 
+	float tx, ty;
+	mat3_t axis;
+	// compute the world-space rays to the far plane corners
+	tx = tan(DEG2RAD(r_newrefdef.fov_x * 0.5f));
+	ty = tan(DEG2RAD(r_newrefdef.fov_y * 0.5f));
+
+	for (int i = 0; i < 3; i++) {
+		axis[0][i] = r_newrefdef.axis[0][i];
+		axis[1][i] = r_newrefdef.axis[1][i] * tx;
+		axis[2][i] = r_newrefdef.axis[2][i] * ty;
+
+		// counter-clockwise order
+		r_newrefdef.cornerRays[0][i] = axis[0][i] + axis[1][i] + axis[2][i];	// top left
+		r_newrefdef.cornerRays[1][i] = axis[0][i] + axis[1][i] - axis[2][i];	// bottom left
+		r_newrefdef.cornerRays[2][i] = axis[0][i] - axis[1][i] - axis[2][i];	// bottom right
+		r_newrefdef.cornerRays[3][i] = axis[0][i] - axis[1][i] + axis[2][i];	// top right
+	}
 }
 
 void R_SetupEntityMatrix(entity_t * e) {

@@ -184,6 +184,7 @@ extern uint bloomtex;
 extern uint thermaltex;
 extern uint fxaatex;
 extern uint fovCorrTex;
+extern uint blurTex;
 
 extern uint fboId, fbo_weaponMask;
 extern byte fboColorIndex;
@@ -461,6 +462,7 @@ void Mat4_AffineInvert(const mat4_t in, mat4_t out);
 void Mat4_SetupTransform(mat4_t m, const mat3_t rotation, const vec3_t translation);
 void Mat3_Set(mat3_t mat, vec3_t x, vec3_t y, vec3_t z);
 void Mat4_Set(mat4_t mat, vec4_t x, vec4_t y, vec4_t z, vec4_t w);
+void VectorLerp(const vec3_t from, const vec3_t to, float frac, vec3_t out);
 
 void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
@@ -1048,7 +1050,10 @@ uint film_params;
 uint film_matrix;
 
 uint mb_params;
+uint mb_params2;
 uint mb_orthoMatrix;
+uint mb_prevMVP;
+uint mb_inverseMV;
 
 uint depthDS_params;
 uint depthDS_orthoMatrix;
