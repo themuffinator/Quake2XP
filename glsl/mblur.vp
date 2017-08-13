@@ -1,7 +1,19 @@
-in	vec3		att_position;
+layout(location = 0) in vec3 att_position;
+
 uniform mat4	u_orthoMatrix;
+uniform vec2	u_params2; //x- fov y- aspect
+
+out vec3 viewRay;
+out vec2 texCoord;
 
 void main (void) 
 {
+	viewRay.x = att_position.x * u_params2.y * u_params2.x;
+	viewRay.y = att_position.y * u_params2.x;
+	viewRay.z = 1.0;
+
+//	viewRay = vec3(-att_position.x * u_params2.y * u_params2.x, -att_position.y * u_params2.x, 1.0);
+
 	gl_Position = u_orthoMatrix * vec4(att_position, 1.0);
+	texCoord = gl_Position.xy / gl_Position.w * 0.5 + 0.5;
 }
