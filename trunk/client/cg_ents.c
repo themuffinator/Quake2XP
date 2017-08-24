@@ -1504,8 +1504,8 @@ Sets cl.refdef view values
 ===============
 */
 
-float          fov_delta;
-int          fov_time;
+float	fov_delta;
+int		fov_time;
 
 void CL_CalcViewValues (void) {
 	int i;
@@ -1513,7 +1513,7 @@ void CL_CalcViewValues (void) {
 	frame_t *oldframe;
 	player_state_t *ps, *ops;
 
-	VectorCopy	(cl.refdef.viewangles, cl.refdef.viewangles_old);
+	VectorCopy	(cl.refdef.viewangles, cl.refdef.viewanglesOld);
 
 	// find the previous frame to interpolate from
 	ps = &cl.frame.playerstate;

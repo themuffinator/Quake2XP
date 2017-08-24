@@ -436,39 +436,41 @@ void R_GammaRamp (void)
 	GL_BindNullProgram ();
 }
 
+
 void R_MotionBlur (void) 
 {
-	mat4_t	invMV, prevMVP;
+
+	vec2_t	angles, delta;
+	float	aspect;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
+
+	// calc camera offsets
+	angles[0] = r_newrefdef.viewanglesOld[1] - r_newrefdef.viewangles[1]; //YAW left-right
+	angles[1] = r_newrefdef.viewanglesOld[0] - r_newrefdef.viewangles[0]; //PITCH up-down
 	
+	float blur = r_motionBlurFrameLerp->value;
+	delta[0] = (angles[0] / r_newrefdef.fov_x) * blur;
+	delta[1] = (angles[1] / r_newrefdef.fov_y) * blur;
+
+	vec3_t tmp;
+	VectorSet(tmp, delta[0], delta[1], 1.0);
+	VectorNormalize(delta);
+
 	// setup program
 	GL_BindProgram(motionBlurProgram, 0);
-	Mat4_Invert(r_newrefdef.modelViewMatrix, invMV);
 
-	qglUniform3f(mb_params, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1], r_motionBlurSamples->value);
+	qglUniform3f(mb_params, delta[0], delta[1], r_motionBlurSamples->value);
 	qglUniformMatrix4fv(mb_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	qglUniformMatrix4fv(mb_inverseMV, 1, qfalse, (const float *)invMV);
-	qglUniformMatrix4fv(mb_prevMVP, 1, qfalse, (const float *)prevMVP);
-	
-	if (!blurTex) {
-		qglGenTextures(1, &blurTex);
-		GL_MBind(GL_TEXTURE0, blurTex);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
-	}
 
-	GL_MBind(GL_TEXTURE0, blurTex);
-	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
+	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
+	R_DrawFullScreenQuad();
 
-	R_DrawFullScreenQuad ();
-
-	GL_BindNullProgram ();
-	Mat4_Copy(r_newrefdef.modelViewProjectionMatrix, prevMVP);
+	GL_BindNullProgram();
+//	Com_Printf("X %f || Y %f\n", r_newrefdef.fov_x, r_newrefdef.fov_y);
 }
 
 void R_DownsampleDepth(void) 
