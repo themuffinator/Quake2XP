@@ -534,7 +534,6 @@ typedef struct {
 	mat4_t	modelViewMatrix;
 	mat4_t	modelViewProjectionMatrix;
 	mat4_t	modelViewProjectionMatrixTranspose;
-	mat4_t	prevMVP;
 	mat4_t	skyMatrix;
 
 	int num_entities;

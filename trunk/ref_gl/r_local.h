@@ -613,6 +613,7 @@ typedef struct {
 
 	qboolean	texture_compression_bptc;
 	int			displayrefresh;
+	int			monitorWidth, monitorHeight;
 
 	qboolean	wgl_swap_control_tear;
 	qboolean	depthBoundsTest;
@@ -1050,7 +1051,6 @@ uint film_params;
 uint film_matrix;
 
 uint mb_params;
-uint mb_params2;
 uint mb_orthoMatrix;
 uint mb_prevMVP;
 uint mb_inverseMV;

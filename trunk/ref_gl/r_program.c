@@ -781,7 +781,6 @@ void R_InitPrograms (void) {
 		mb_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 		mb_prevMVP		= qglGetUniformLocation(id, "u_prevMVP");
 		mb_inverseMV	= qglGetUniformLocation(id, "u_inverseMV");
-		mb_params2		= qglGetUniformLocation(id, "u_params2");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

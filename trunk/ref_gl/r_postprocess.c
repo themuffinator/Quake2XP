@@ -438,7 +438,7 @@ void R_GammaRamp (void)
 
 void R_MotionBlur (void) 
 {
-	mat4_t	invMV;
+	mat4_t	invMV, prevMVP;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
@@ -450,11 +450,7 @@ void R_MotionBlur (void)
 	qglUniform3f(mb_params, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1], r_motionBlurSamples->value);
 	qglUniformMatrix4fv(mb_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	qglUniformMatrix4fv(mb_inverseMV, 1, qfalse, (const float *)invMV);
-	qglUniformMatrix4fv(mb_prevMVP, 1, qfalse, (const float *)r_newrefdef.prevMVP);
-
-	float fov = tanf(DEG2RAD(r_newrefdef.fov_x) / 2.0);
-	float aspect = vid.width / vid.height;
-	qglUniform2f(mb_params2, r_newrefdef.fov_x, aspect);
+	qglUniformMatrix4fv(mb_prevMVP, 1, qfalse, (const float *)prevMVP);
 	
 	if (!blurTex) {
 		qglGenTextures(1, &blurTex);
@@ -463,17 +459,16 @@ void R_MotionBlur (void)
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, vid.width, vid.height, 0);
 	}
-	else {
-		GL_MBind(GL_TEXTURE0, blurTex);
-		qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
-	}
+
+	GL_MBind(GL_TEXTURE0, blurTex);
+	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
-
 
 	R_DrawFullScreenQuad ();
 
 	GL_BindNullProgram ();
+	Mat4_Copy(r_newrefdef.modelViewProjectionMatrix, prevMVP);
 }
 
 void R_DownsampleDepth(void) 

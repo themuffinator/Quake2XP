@@ -639,7 +639,10 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		dm.dmPelsWidth  = width;
 		dm.dmPelsHeight = height;
 		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
- 
+
+		gl_state.monitorWidth = GetSystemMetrics(SM_CXSCREEN);
+		gl_state.monitorHeight = GetSystemMetrics(SM_CYSCREEN);
+
 		/* display frequency */
 		if (r_displayRefresh->integer != 0){
 	        gl_state.displayrefresh	= r_displayRefresh->integer;
