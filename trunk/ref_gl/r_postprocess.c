@@ -28,21 +28,11 @@ Post Process Effects
 
 void R_DrawFullScreenQuad () {
 
-	vec3_t rays[4];
-
-	VectorCopy(r_newrefdef.cornerRays[1], rays[0]);
-	VectorCopy(r_newrefdef.cornerRays[0], rays[1]);
-	VectorCopy(r_newrefdef.cornerRays[3], rays[2]);
-	VectorCopy(r_newrefdef.cornerRays[2], rays[3]);
-
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_fullScreenQuad);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
-
-	qglEnableVertexAttribArray(ATT_NORMAL);
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, rays[0]);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -441,7 +431,6 @@ void R_MotionBlur (void)
 {
 
 	vec2_t	angles, delta;
-	float	aspect;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
@@ -454,14 +443,14 @@ void R_MotionBlur (void)
 	delta[0] = (angles[0] / r_newrefdef.fov_x) * blur;
 	delta[1] = (angles[1] / r_newrefdef.fov_y) * blur;
 
-	vec3_t tmp;
-	VectorSet(tmp, delta[0], delta[1], 1.0);
-	VectorNormalize(delta);
+	vec3_t velocity;
+	VectorSet(velocity, delta[0], delta[1], 1.0);
+	VectorNormalize(velocity);
 
 	// setup program
 	GL_BindProgram(motionBlurProgram, 0);
 
-	qglUniform3f(mb_params, delta[0], delta[1], r_motionBlurSamples->value);
+	qglUniform3f(mb_params, velocity[0], velocity[1], r_motionBlurSamples->value);
 	qglUniformMatrix4fv(mb_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
