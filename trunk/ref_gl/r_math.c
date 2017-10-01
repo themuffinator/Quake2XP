@@ -686,3 +686,33 @@ void AddBoundsToBounds(const vec3_t mins1, const vec3_t maxs1, vec3_t mins2, vec
 			maxs2[i] = maxs1[i];
 	}
 }
+
+/*
+=================
+NormalToLatLong
+=================
+*/
+void NormalToLatLong(const vec3_t normal, byte bytes[2]) {
+
+	int		lat, lng;
+
+	if (normal[0] == 0 && normal[1] == 0) {
+		if (normal[2] > 0) {
+			// Lattitude = 0, Longitude = 0
+			bytes[0] = 0;
+			bytes[1] = 0;
+		}
+		else {
+			// Lattitude = 0, Longitude = 128
+			bytes[0] = 128;
+			bytes[1] = 0;
+		}
+	}
+	else {
+		lat = RAD2DEG(atan2(normal[1], normal[0])) * (255.0 / 360.0);
+		lng = RAD2DEG(acos(normal[2])) * (255.0 / 360.0);
+
+		bytes[0] = lng & 0xFF;
+		bytes[1] = lat & 0xFF;
+	}
+}

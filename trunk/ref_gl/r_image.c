@@ -1446,6 +1446,4 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures (1, &fxaatex);
 	if(fovCorrTex)
 		qglDeleteTextures(1, &fovCorrTex);
-	if (blurTex)
-		qglDeleteTextures(1, &blurTex);
 }

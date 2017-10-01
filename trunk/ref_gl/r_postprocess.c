@@ -260,9 +260,6 @@ void R_ScreenBlend(void)
 	if (!v_blend[3])
 		return;
 
-		GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
-		qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-
 		// setup program
 		GL_BindProgram(genericProgram, 0);
 
@@ -270,10 +267,11 @@ void R_ScreenBlend(void)
 		qglUniform1i(gen_attribColors, 0);
 		qglUniform1i(gen_sky, 0);
 		qglUniform1i(gen_3d, 0);
-		qglUniform4f(gen_color, v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
+		qglUniform4f(gen_color, v_blend[0], v_blend[1], v_blend[2], v_blend[3] * 1.5);
 		qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		GL_Enable(GL_BLEND);
+		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		R_DrawFullScreenQuad();
 
@@ -282,6 +280,7 @@ void R_ScreenBlend(void)
 		GL_BindNullProgram();
 
 }
+
 void R_DofBlur (void) 
 {
 	float			tmpDist[5], tmpMins[3];
@@ -340,13 +339,14 @@ void R_DofBlur (void)
 
 	// setup program
 	GL_BindProgram (dofProgram, 0);
+
 	qglUniform2f(dof_screenSize, vid.width, vid.height);
-	qglUniform4f (dof_params, dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform4f(dof_params, dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(dof_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
-	GL_MBindRect (GL_TEXTURE0, ScreenMap->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
+	GL_MBindRect			(GL_TEXTURE0, ScreenMap->texnum);
+	qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	GL_MBindRect			(GL_TEXTURE1, depthMap->texnum);
 
 	R_DrawFullScreenQuad ();
 
@@ -435,6 +435,12 @@ void R_MotionBlur (void)
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
+	if (!r_motionBlur->integer)
+		return;
+	// go to 2d
+	R_SetupOrthoMatrix();
+	GL_DepthMask(0);
+
 	// calc camera offsets
 	angles[0] = r_newrefdef.viewanglesOld[1] - r_newrefdef.viewangles[1]; //YAW left-right
 	angles[1] = r_newrefdef.viewanglesOld[0] - r_newrefdef.viewangles[0]; //PITCH up-down
@@ -443,7 +449,7 @@ void R_MotionBlur (void)
 	delta[0] = (angles[0] / r_newrefdef.fov_x) * blur;
 	delta[1] = (angles[1] / r_newrefdef.fov_y) * blur;
 
-	vec3_t velocity;
+	vec2_t velocity;
 	VectorSet(velocity, delta[0], delta[1], 1.0);
 	VectorNormalize(velocity);
 
@@ -459,7 +465,14 @@ void R_MotionBlur (void)
 	R_DrawFullScreenQuad();
 
 	GL_BindNullProgram();
-//	Com_Printf("X %f || Y %f\n", r_newrefdef.fov_x, r_newrefdef.fov_y);
+
+	// restore 3d
+	GL_Enable(GL_CULL_FACE);
+	GL_Enable(GL_DEPTH_TEST);
+	GL_DepthMask(1);
+	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
+		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+
 }
 
 void R_DownsampleDepth(void) 

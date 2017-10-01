@@ -51,7 +51,7 @@ typedef void ILvoid;
 #endif
 
 #include "../client/ref.h"
-
+#include "r_md3.h"
 #include "qgl.h"
 
 // up / down
@@ -184,9 +184,8 @@ extern uint bloomtex;
 extern uint thermaltex;
 extern uint fxaatex;
 extern uint fovCorrTex;
-extern uint blurTex;
 
-extern uint fboId, fbo_weaponMask;
+extern uint fboId;
 extern byte fboColorIndex;
 
 extern entity_t *currententity;
@@ -1052,8 +1051,6 @@ uint film_matrix;
 
 uint mb_params;
 uint mb_orthoMatrix;
-uint mb_prevMVP;
-uint mb_inverseMV;
 
 uint depthDS_params;
 uint depthDS_orthoMatrix;
@@ -1129,6 +1126,7 @@ typedef struct {
 	const char	*wglExtsString;
 	const char	*wglRenderer;
 	int desktopWidth, desktopHeight;
+	int monitorWidth, monitorHeight;
 	int desktopBitPixel;
 	
 	int desktopPosX, desktopPosY;

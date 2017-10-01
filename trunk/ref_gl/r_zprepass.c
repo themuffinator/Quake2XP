@@ -313,6 +313,55 @@ void R_DrawDepthAliasModel(void){
 	GL_DrawAliasFrameLerpDepth(paliashdr);
 }
 
+extern vec3_t	md3vertexCache[MAX_VERTICES * 4];
+void R_DrawDepthMD3Model(void) {
+
+	md3Model_t	*md3Hdr;
+	vec3_t		bbox[8];
+	int			i;
+
+	if (!r_drawEntities->integer)
+		return;
+
+	if (R_CullMD3Model(bbox, currententity))
+		return;
+
+	md3Hdr = (md3Model_t *)currentmodel->extraData;
+
+	if ((currententity->frame >= md3Hdr->num_frames)
+		|| (currententity->frame < 0)) {
+		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
+			currentmodel->name, currententity->frame);
+		currententity->frame = 0;
+		currententity->oldframe = 0;
+	}
+
+	if ((currententity->oldframe >= md3Hdr->num_frames)
+		|| (currententity->oldframe < 0)) {
+		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n",
+			currentmodel->name, currententity->oldframe);
+		currententity->frame = 0;
+		currententity->oldframe = 0;
+	}
+
+	R_SetupEntityMatrix(currententity);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
+	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+
+	for (i = 0; i < md3Hdr->num_meshes; i++){
+		
+		md3Mesh_t *mesh = &md3Hdr->meshes[i];
+
+		GL_LerpMD3Verts(mesh, md3Hdr);
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3vertexCache);
+		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_INT, mesh->indexes);
+	}
+
+	qglDisableVertexAttribArray(ATT_POSITION);
+}
+
+
 void R_DrawDepthScene (void) {
 
 	int i;
@@ -367,6 +416,9 @@ void R_DrawDepthScene (void) {
 
 		if (currentmodel->type == mod_alias)
 			R_DrawDepthAliasModel ();
+
+		if (currentmodel->type == mod_alias_md3)
+			R_DrawDepthMD3Model();
 	}
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	GL_BindNullProgram ();

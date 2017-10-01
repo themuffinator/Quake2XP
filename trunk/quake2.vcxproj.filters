@@ -314,6 +314,9 @@
     <ClCompile Include="client\cg_view.c">
       <Filter>Source Files\Cg</Filter>
     </ClCompile>
+    <ClCompile Include="ref_gl\r_md3.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ref_gl\qgl.h">
@@ -435,6 +438,9 @@
     </ClInclude>
     <ClInclude Include="win32\adl\adl_structures.h">
       <Filter>Source Files\Win32\Headers\Adl</Filter>
+    </ClInclude>
+    <ClInclude Include="ref_gl\r_md3.h">
+      <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -75,13 +75,6 @@ extern "C" {
  * Extensions removed: _nomatch_^
  */
 
-#ifndef GL_EXT_texture_filter_anisotropic
-#define GL_EXT_texture_filter_anisotropic 1
-#define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
-#define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
-#endif /* GL_EXT_texture_filter_anisotropic */
-
-
 #ifndef GL_EXT_depth_bounds_test
 #define GL_EXT_depth_bounds_test 1
 #define GL_DEPTH_BOUNDS_TEST_EXT          0x8890

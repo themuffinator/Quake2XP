@@ -779,8 +779,6 @@ void R_InitPrograms (void) {
 		id = motionBlurProgram->id[0];
 		mb_params		= qglGetUniformLocation(id, "u_params");
 		mb_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
-		mb_prevMVP		= qglGetUniformLocation(id, "u_prevMVP");
-		mb_inverseMV	= qglGetUniformLocation(id, "u_inverseMV");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

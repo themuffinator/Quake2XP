@@ -191,7 +191,7 @@ typedef struct mleaf_s {
 
 typedef enum {
 	mod_bad, mod_brush, mod_sprite, 
-	mod_alias
+	mod_alias, mod_alias_md3
 } modtype_t;
 
 
@@ -276,6 +276,12 @@ typedef struct model_s {
 	image_t		*skins_roughness[MAX_MD2SKINS];
 	image_t		*glowtexture[MAX_MD2SKINS];
 	image_t		*skin_env[MAX_MD2SKINS];
+
+	image_t      *skinsMD3[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
+	image_t      *skinsMD3_normal[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
+	image_t      *skinsMD3_roughness[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
+	image_t      *skinsMD3_glow[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
+	image_t      *skinsMD3_env[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
 
 	int			extraDataSize;
 	void		*extraData;

@@ -64,9 +64,8 @@ uint thermaltex;
 uint bloomtex;
 uint fxaatex;
 uint fovCorrTex;
-uint blurTex;
 
-uint fboId, fbo_weaponMask;
+uint fboId;
 //uint fboDN;
 //uint fboColor[2];
 byte fboColorIndex;
@@ -790,7 +789,6 @@ void R_InitEngineTextures (void) {
 	thermaltex = 0;
 	fxaatex = 0;
 	fovCorrTex = 0;
-	blurTex = 0;
 
 	CreateDSTTex_ARB ();
 	CreateDepthTexture ();
