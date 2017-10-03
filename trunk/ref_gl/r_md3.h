@@ -140,7 +140,7 @@ typedef struct
 typedef struct
 {
 	char			name[MD3_MAX_PATH];
-	char			glowname[MD3_MAX_PATH];
+
 } md3Skin_t;
 
 typedef struct

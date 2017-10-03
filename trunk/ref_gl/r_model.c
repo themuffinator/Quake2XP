@@ -27,6 +27,7 @@ int modfilelen;
 void Mod_LoadSpriteModel(model_t * mod, void *buffer);
 void Mod_LoadBrushModel(model_t * mod, void *buffer);
 void Mod_LoadAliasModel(model_t * mod, void *buffer);
+void Mod_LoadMD3(model_t *mod, void *buffer);
 
 byte mod_novis[MAX_MAP_LEAFS / 8];
 
@@ -456,6 +457,11 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 		case IDALIASHEADER:
 			loadmodel->extraData = Hunk_Begin(hunk_model->value * 1048576, name);
 			Mod_LoadAliasModel(mod, buf);
+			break;
+		
+		case IDMD3HEADER:
+			loadmodel->extraData = Hunk_Begin((hunk_model->value * 2) * 1048576, name);
+			Mod_LoadMD3(mod, buf);
 			break;
 
 		case IDSPRITEHEADER:
@@ -2468,11 +2474,25 @@ R_RegisterModel
 @@@@@@@@@@@@@@@@@@@@@
 */
 struct model_s *R_RegisterModel(char *name) {
-	model_t *mod;
-	int i;
-	dsprite_t *sprout;
-	dmdl_t *pheader;
+	model_t		*mod;
+	int			i, j;
+	dsprite_t	*sprout;
+	dmdl_t		*pheader;
+	md3Model_t	*md3Hdr;
+	md3Mesh_t	*mesh;
+
 	int len = strlen(name);
+
+	// hack replace md2 to md3
+	if (!strcmp(name + len - 4, ".md2")) 
+	{
+		char s[128];
+		Q_strncpyz(s, name, sizeof(s));
+		s[len - 1] = '3';
+		mod = R_RegisterModel(s);
+		if (mod)
+			return mod;
+	}
 
 	mod = Mod_ForName(name, qfalse);
 	if (mod) {
@@ -2568,6 +2588,50 @@ struct model_s *R_RegisterModel(char *name) {
 					mod->texInfo[i].rghMap->registration_sequence = registration_sequence;
 			}
 		}
+		 if (mod->type == mod_alias_md3) {
+			 
+			 md3Hdr = (md3Model_t *)mod->extraData;
+			 mesh = md3Hdr->meshes;
+			 mod->numFrames = md3Hdr->num_frames;
+
+			 for (i = 0; i < md3Hdr->num_meshes; i++) {
+				 for (j = 0; j < md3Hdr->meshes->num_skins; j++)
+				 {
+					 if (mesh->skins->name[j] && mesh->skins->name[0])
+						 continue;
+
+					 char tex[128];
+					 memcpy(name, mod->skinsMD3[i][j], MD3_MAX_PATH);
+					 mod->skinsMD3[i][j] = GL_FindImage(name, it_skin);
+
+					 // GlowMaps loading
+					 strcpy(tex, name);
+					 tex[strlen(tex) - 4] = 0;
+					 strcat(tex, "_light.tga");
+					 mod->skinsMD3_glow[i][j] = GL_FindImage(tex, it_skin);
+					 if (!mod->skinsMD3_glow[i][j])
+						 mod->skinsMD3_glow[i][j] = r_notexture;
+
+					 // Normal maps loading
+					 strcpy(tex, name);
+					 tex[strlen(tex) - 4] = 0;
+					 strcat(tex, "_bump.tga");
+					 mod->skinsMD3_normal[i][j] = GL_FindImage(tex, it_skin);
+					 if (!mod->skinsMD3_normal[i][j])
+						 mod->skinsMD3_normal[i][j] = r_notexture;
+
+					 // Roughness maps loading
+					 strcpy(tex, name);
+					 tex[strlen(tex) - 4] = 0;
+					 strcat(tex, "_rgh.tga");
+					 mod->skinsMD3_roughness[i][j] = GL_FindImage(tex, it_skin);
+					 if (!mod->skinsMD3_roughness[i][j])
+						 mod->skinsMD3_roughness[i][j] = r_notexture;
+				 }
+
+			 }
+
+		 }
 	}
 	return mod;
 
