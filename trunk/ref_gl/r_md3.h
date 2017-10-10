@@ -10,13 +10,14 @@
 #define	MD3_MAX_MESHES		32		// per model
 #define MD3_MAX_TAGS		16		// per frame
 #define MD3_MAX_PATH		64
+#define MD3_MAX_SKINS		32
 
 #ifndef M_TWOPI
 #define M_TWOPI		6.28318530717958647692
 #endif
 
 // vertex scales
-#define	MD3_XYZ_SCALE		(1.0/64)
+#define	MD3_XYZ_SCALE		(1.0f / 64.0f)
 
 
 
@@ -30,12 +31,6 @@ typedef struct
 	short			point[3];
 	short			norm;
 } dmd3vertex_t;
-
-typedef struct
-{
-	vec3_t			point;
-	vec3_t			normal;
-} admd3vertex_t;
 
 typedef struct
 {
@@ -125,7 +120,6 @@ typedef struct
 {
 	vec3_t			mins;
 	vec3_t			maxs;
-	vec3_t			scale;
 	vec3_t			translate;
 	float			radius;
 } md3Frame_t;
@@ -151,11 +145,17 @@ typedef struct
 	md3ST_t			*stcoords;
 
 	int				num_tris;
-	index32_t		*indexes;
+	index_t			*indexes;
 	int				*neighbours;
 
 	int				num_skins;
-	md3Skin_t		*skins;
+
+	image_t			*skinsAlbedo[MD3_MAX_SKINS];
+	image_t			*skinsNormal[MD3_MAX_SKINS];
+	image_t			*skinsLight[MD3_MAX_SKINS];
+	image_t			*skinsEnv[MD3_MAX_SKINS];
+	image_t			*skinsRgh[MD3_MAX_SKINS];
+
 } md3Mesh_t;
 
 typedef struct md3Model_s
@@ -174,4 +174,4 @@ typedef struct md3Model_s
 byte Normal2Index(const vec3_t vec);
 void NormalToLatLong(const vec3_t normal, byte bytes[2]);
 qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e);
-void GL_LerpMD3Verts(md3Mesh_t *mesh, md3Model_t *md3Hdr);
+void CheckEntityFrameMD3(md3Model_t *paliashdr);

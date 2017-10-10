@@ -44,6 +44,7 @@ int r_framecount;				// used for dlight push checking
 float v_blend[4];				// final blending color
 
 void GL_Strings_f(void);
+void R_DrawMD3Mesh(void);
 
 //
 // view origin
@@ -541,6 +542,9 @@ void R_DrawPlayerWeaponAmbient(void)
 
 		if (currentmodel->type == mod_alias)
 			R_DrawAliasModel(currententity);
+
+		if(currentmodel->type == mod_alias_md3)
+			R_DrawMD3Mesh();
 	}
 
 	// draw transluscent shells
@@ -830,6 +834,9 @@ static void R_DrawEntitiesOnList (void) {
 				break;
 			case mod_sprite:
 				R_DrawSpriteModel(currententity);
+				break;
+			case mod_alias_md3:
+				R_DrawMD3Mesh();
 				break;
 			default:
 				VID_Error(ERR_DROP, "Bad modeltype");

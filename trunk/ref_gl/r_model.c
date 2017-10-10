@@ -2592,45 +2592,29 @@ struct model_s *R_RegisterModel(char *name) {
 			 
 			 md3Hdr = (md3Model_t *)mod->extraData;
 			 mesh = md3Hdr->meshes;
-			 mod->numFrames = md3Hdr->num_frames;
 
-			 for (i = 0; i < md3Hdr->num_meshes; i++) {
+			 for (i = 0; i < md3Hdr->num_meshes; i++, mesh++) {
+
 				 for (j = 0; j < md3Hdr->meshes->num_skins; j++)
 				 {
-					 if (mesh->skins->name[j] && mesh->skins->name[0])
-						 continue;
+					 if (mesh->skinsAlbedo[j] &&  mesh->skinsAlbedo[j]->name[0])
+						 mesh->skinsAlbedo[j]->registration_sequence = registration_sequence;
 
-					 char tex[128];
-					 memcpy(name, mod->skinsMD3[i][j], MD3_MAX_PATH);
-					 mod->skinsMD3[i][j] = GL_FindImage(name, it_skin);
+					 if (mesh->skinsNormal[j] &&  mesh->skinsNormal[j]->name[0])
+						 mesh->skinsNormal[j]->registration_sequence = registration_sequence;
 
-					 // GlowMaps loading
-					 strcpy(tex, name);
-					 tex[strlen(tex) - 4] = 0;
-					 strcat(tex, "_light.tga");
-					 mod->skinsMD3_glow[i][j] = GL_FindImage(tex, it_skin);
-					 if (!mod->skinsMD3_glow[i][j])
-						 mod->skinsMD3_glow[i][j] = r_notexture;
+					 if (mesh->skinsLight[j] &&  mesh->skinsLight[j]->name[0])
+						 mesh->skinsLight[j]->registration_sequence = registration_sequence;
 
-					 // Normal maps loading
-					 strcpy(tex, name);
-					 tex[strlen(tex) - 4] = 0;
-					 strcat(tex, "_bump.tga");
-					 mod->skinsMD3_normal[i][j] = GL_FindImage(tex, it_skin);
-					 if (!mod->skinsMD3_normal[i][j])
-						 mod->skinsMD3_normal[i][j] = r_notexture;
+					 if (mesh->skinsRgh[j] && mesh->skinsRgh[j]->name[0])
+						 mesh->skinsRgh[j]->registration_sequence = registration_sequence;
 
-					 // Roughness maps loading
-					 strcpy(tex, name);
-					 tex[strlen(tex) - 4] = 0;
-					 strcat(tex, "_rgh.tga");
-					 mod->skinsMD3_roughness[i][j] = GL_FindImage(tex, it_skin);
-					 if (!mod->skinsMD3_roughness[i][j])
-						 mod->skinsMD3_roughness[i][j] = r_notexture;
+					 if (mesh->skinsEnv[j] && mesh->skinsEnv[j]->name[0])
+						 mesh->skinsEnv[j]->registration_sequence = registration_sequence;
 				 }
 
 			 }
-
+			 mod->numFrames = md3Hdr->num_frames;
 		 }
 	}
 	return mod;

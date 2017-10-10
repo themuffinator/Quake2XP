@@ -19,7 +19,7 @@ void SinCos(float radians, float *sine, float *cosine)
 	*cosine = cosf(radians);
 }
 
-void Tangent4TrisMD3(index32_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal)
+void Tangent4TrisMD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal)
 {
 	float *v0, *v1, *v2;
 	float *st0, *st1, *st2;
@@ -122,11 +122,11 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	dmd3skin_t			*inSkin;
 	dmd3coord_t			*inCoord;
 	dmd3vertex_t		*inVerts;
-	index32_t			*inIndex, *outIndex;
+	unsigned			*inIndex;
+	WORD				*outIndex;
 	
 	md3Vertex_t			*outVerts;
 	md3ST_t				*outCoord;
-	md3Skin_t			*outSkin;
 	md3Mesh_t			*outMesh;
 	md3Tag_t			*outTag;
 	md3Frame_t			*outFrame;
@@ -173,24 +173,16 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	inFrame		= (dmd3frame_t *)((byte *)inModel + LittleLong(inModel->ofs_frames));
 	outFrame	= outModel->frames = Hunk_Alloc(sizeof(md3Frame_t) * outModel->num_frames);
 
-	mod->radius = 0;
-	ClearBounds(mod->mins, mod->maxs);
-
 	for (i = 0; i < outModel->num_frames; i++, inFrame++, outFrame++)
 	{
 		for (j = 0; j < 3; j++)
 		{
-			outFrame->mins[j]		= LittleFloat(inFrame->mins[j]);
-			outFrame->maxs[j]		= LittleFloat(inFrame->maxs[j]);
-			outFrame->scale[j]		= MD3_XYZ_SCALE;
-			outFrame->translate[j]	= LittleFloat(inFrame->translate[j]);
+			outFrame->translate[j] = LittleFloat(inFrame->translate[j]);
+			outFrame->mins[j] = LittleFloat(inFrame->mins[j]) + outFrame->translate[j];
+			outFrame->maxs[j] = LittleFloat(inFrame->maxs[j]) + outFrame->translate[j];
 		}
 
 		outFrame->radius = LittleFloat(inFrame->radius);
-
-		mod->radius = max(mod->radius, outFrame->radius);
-		AddPointToBounds(outFrame->mins, mod->mins, mod->maxs);
-		AddPointToBounds(outFrame->maxs, mod->mins, mod->maxs);
 	}
 
 	//
@@ -216,6 +208,9 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	//
 	// load the meshes
 	//
+	ClearBounds(mod->mins, mod->maxs);
+	mod->flags = 0;
+
 	inMesh	= (dmd3mesh_t *)((byte *)inModel + LittleLong(inModel->ofs_meshes));
 	outMesh = outModel->meshes = Hunk_Alloc(sizeof(md3Mesh_t)*outModel->num_meshes);
 
@@ -252,50 +247,65 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		// register all skins
 		//
 		inSkin	= (dmd3skin_t *)((byte *)inMesh + LittleLong(inMesh->ofs_skins));
-		outSkin = outMesh->skins = Hunk_Alloc(sizeof(md3Skin_t) * outMesh->num_skins);
 
-		for (j = 0; j < outMesh->num_skins; j++, inSkin++, outSkin++)
+		for (j = 0; j < outMesh->num_skins; j++, inSkin++)
 		{
+			if (!inSkin->name[0])
+			{
+				outMesh->skinsAlbedo[j] = r_notexture;
+				outMesh->skinsNormal[j] = outMesh->skinsLight[j] = 
+				outMesh->skinsEnv[j] = outMesh->skinsRgh[j] = NULL;
+				continue;
+			}
+
 			char tex[128];
 			memcpy(name, inSkin->name, MD3_MAX_PATH);
-			mod->skinsMD3[i][j] = GL_FindImage(name, it_skin);
+			outMesh->skinsAlbedo[j] = GL_FindImage(name, it_skin);
 			
 			// GlowMaps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_light.tga");
-			mod->skinsMD3_glow[i][j] = GL_FindImage(tex, it_skin);
-			if (!mod->skinsMD3_glow[i][j])
-				mod->skinsMD3_glow[i][j] = r_notexture;
+			outMesh->skinsLight[j] = GL_FindImage(tex, it_skin);
+			if (!outMesh->skinsLight[j])
+				outMesh->skinsLight[j] = r_notexture;
 
 			// Normal maps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_bump.tga");
-			mod->skinsMD3_normal[i][j] = GL_FindImage(tex, it_skin);
-			if (!mod->skinsMD3_normal[i][j])
-				mod->skinsMD3_normal[i][j] = r_notexture;
+			outMesh->skinsNormal[j] = GL_FindImage(tex, it_skin);
+			if (!outMesh->skinsNormal[j])
+				outMesh->skinsNormal[j] = r_notexture;
 
 			// Roughness maps loading
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_rgh.tga");
-			mod->skinsMD3_roughness[i][j] = GL_FindImage(tex, it_skin);
-			if (!mod->skinsMD3_roughness[i][j])
-				mod->skinsMD3_roughness[i][j] = r_notexture;
+			outMesh->skinsRgh[j] = GL_FindImage(tex, it_skin);
+			if (!outMesh->skinsRgh[j])
+				outMesh->skinsRgh[j] = r_notexture;
+
+			// Env maps loading
+			strcpy(tex, name);
+			tex[strlen(tex) - 4] = 0;
+			strcat(tex, "_env.tga");
+			outMesh->skinsEnv[j] = GL_FindImage(tex, it_skin);
+			if (!outMesh->skinsEnv[j])
+				outMesh->skinsEnv[j] = r_notexture;
 		}
 
 		//
 		// load the indexes
 		//
-		inIndex		= (index32_t *)((byte *)inMesh + LittleLong(inMesh->ofs_tris));
-		outIndex	= outMesh->indexes = Hunk_Alloc(sizeof(index32_t) * outMesh->num_tris * 3);
+		inIndex		= (unsigned *)((byte *)inMesh + LittleLong(inMesh->ofs_tris));
+		outIndex	= outMesh->indexes = (index_t*)Hunk_Alloc(sizeof(index_t) * outMesh->num_tris * 3);
 
 		for (j = 0; j < outMesh->num_tris; j++, inIndex += 3, outIndex += 3)
 		{
-			outIndex[0] = (index32_t)LittleLong(inIndex[0]);
-			outIndex[1] = (index32_t)LittleLong(inIndex[1]);
-			outIndex[2] = (index32_t)LittleLong(inIndex[2]);
+			outIndex[0] = (index_t)LittleLong(inIndex[0]);
+			outIndex[1] = (index_t)LittleLong(inIndex[1]);
+			outIndex[2] = (index_t)LittleLong(inIndex[2]);
 		}
 
 		//
@@ -329,6 +339,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 					for (y = 0; y<3; y++)
 					{
 						outVerts->xyz[y] = (float)LittleShort(inVerts->point[y]);
+						outVerts->xyz[y] *= MD3_XYZ_SCALE;
 						vertex[y] = outVerts->xyz[y] + outModel->frames[l].translate[y];
 					}
 
@@ -390,6 +401,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				for (y = 0; y<3; y++)
 				{
 					outVerts->xyz[y] = (float)LittleShort(inVerts->point[y]);
+					outVerts->xyz[y] *= MD3_XYZ_SCALE;
 					vertex[y] = outVerts->xyz[y] + outModel->frames[l].translate[y];
 				}
 				AddPointToBounds(vertex, mod->mins, mod->maxs);
@@ -404,6 +416,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	}
 
 	mod->type = mod_alias_md3;
+	mod->flags = 0;
 
 	/// Calc md3 bounds and radius...
 	vec3_t	tempr, tempv;
@@ -505,21 +518,55 @@ qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e)
 	return qfalse;
 }
 
-vec3_t	md3vertexCache[MAX_VERTICES * 4];
+void CheckEntityFrameMD3(md3Model_t *paliashdr)
+{
+		if ((currententity->frame >= paliashdr->num_frames) || (currententity->frame < 0))
+		{
+			Com_Printf("^3CheckEntityFrameMD3, %s: no such frame %d\n", currentmodel->name, currententity->frame);
+			currententity->frame = 0;
+		}
 
-void GL_LerpMD3Verts(md3Mesh_t *mesh, md3Model_t *md3Hdr) {
-	
-	int			j;
-	float		backlerp, frontlerp;
+		if ((currententity->oldframe >= paliashdr->num_frames) || (currententity->oldframe < 0))
+		{
+			Com_Printf("^3CheckEntityFrameMD3, %s: no such oldframe %d\n", currentmodel->name, currententity->oldframe);
+			currententity->oldframe = 0;
+		}
+
+}
+
+vec3_t	md3vertexCache[MAX_VERTICES * 4];
+vec4_t	md3colorCache[MAX_VERTICES * 4];
+void SetModelsLight();
+extern float shadelight[3];
+
+void R_DrawMD3Mesh(void) {
+
+	md3Model_t	*md3Hdr;
+	vec3_t		bbox[8];
+	int			i, j;
+	float		frontlerp, backlerp;
+	md3Frame_t	*frame, *oldframe;
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*v, *ov;
-	md3Frame_t	*frame, *oldFrame;
+	image_t     *skin, *light, *normal;
+	vec3_t      shadeColor;
+
+	if (!r_drawEntities->integer)
+		return;
+
+	if (R_CullMD3Model(bbox, currententity))
+		return;
+
 	
+	md3Hdr = (md3Model_t *)currentmodel->extraData;
+
+	SetModelsLight();
+	CheckEntityFrameMD3(md3Hdr);
+
 	backlerp = currententity->backlerp;
 	frontlerp = 1.0 - backlerp;
-
 	frame = md3Hdr->frames + currententity->frame;
-	oldFrame = md3Hdr->frames + currententity->oldframe;
+	oldframe = md3Hdr->frames + currententity->oldframe;
 
 	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
@@ -527,23 +574,96 @@ void GL_LerpMD3Verts(md3Mesh_t *mesh, md3Model_t *md3Hdr) {
 	move[1] = -DotProduct(delta, vectors[1]);	// left
 	move[2] = DotProduct(delta, vectors[2]);	// up
 
-	VectorAdd(move, oldFrame->translate, move);
+	VectorAdd(move, oldframe->translate, move);
 
 	for (j = 0; j<3; j++)
 		move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
 
-	v = mesh->vertexes + currententity->frame * mesh->num_verts;
-	ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+	R_SetupEntityMatrix(currententity);
 
-	for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
-			
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
+
+	// setup program
+	GL_BindProgram(aliasAmbientProgram, 0);
+
+	qglUniform1i(ambientAlias_isEnvMaping, 0);
+	qglUniform1i(ambientAlias_isShell, 0);
+	qglUniform1f(ambientAlias_colorModulate, 1.0);
+
+	float alphaShift = sin(ref_realtime * 3.0);
+	alphaShift = (alphaShift + 1) * 0.5f;
+	alphaShift = clamp(alphaShift, 0.1, 1.0);
+
+	qglUniform1f(ambientAlias_addShift, alphaShift);
+	qglUniform1f(ambientAlias_envScale, 0.1);
+	qglUniform1i(ambientAlias_ssao, 0);
+
+	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
+	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+
+	for (i = 0; i < md3Hdr->num_meshes; i++) {
+
+		md3Mesh_t *mesh = &md3Hdr->meshes[i];
+		v = mesh->vertexes + currententity->frame * mesh->num_verts;
+		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+
+		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		if (!skin || skin == r_notexture)
+		{
+			if (currententity->skin)
+			{
+				skin = currententity->skin;	// custom player skin
+			}
+		}
+		if (!skin)
+			skin = mesh->skinsAlbedo[0];
+
+		light = mesh->skinsLight[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		if (!light)
+			light = mesh->skinsLight[0];
+
+		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		if (!normal)
+			normal = mesh->skinsNormal[0];
+
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
+		{
+			Vector4Set(md3colorCache[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
 			VectorSet(md3vertexCache[j],
-			move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp,
-			move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp,
-			move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp);
+				move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp,
+				move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp,
+				move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp);
+
+/*			// todo shells
+			float *normal = q_byteDirs[mesh->vertexes[j].normal];
+			VectorSet(md3vertexCache[j],
+				move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp + normal[0] * scale,
+				move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp + normal[1] * scale,
+				move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp + normal[2] * scale);
+				*/
+		}
+
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3vertexCache);
+		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+		qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, md3colorCache);
+
+		GL_MBind(GL_TEXTURE0, skin->texnum);
+		GL_MBind(GL_TEXTURE1, light->texnum);
+		GL_MBind(GL_TEXTURE2, r_envTex->texnum);
+		GL_MBind(GL_TEXTURE3, normal->texnum);
+
+		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	}
 
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_COLOR);
+	GL_BindNullProgram();
 }
+
+
 void GL_DrawMD3AliasFrameLerpLight(md3Mesh_t *mesh, md3Model_t *md3Hdr, int nmesh)
 {
 	int		i;

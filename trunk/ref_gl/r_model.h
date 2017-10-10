@@ -210,6 +210,7 @@ typedef struct model_s {
 
 	char		name[MAX_QPATH];
 	int			registration_sequence;
+	int			max_meshes;
 	modtype_t	type;
 	int			numFrames;
 	int			flags;

@@ -318,7 +318,11 @@ void R_DrawDepthMD3Model(void) {
 
 	md3Model_t	*md3Hdr;
 	vec3_t		bbox[8];
-	int			i;
+	int			i, j;
+	float		frontlerp, backlerp;
+	md3Frame_t	*frame, *oldframe;
+	vec3_t		move, delta, vectors[3];
+	md3Vertex_t	*v, *ov;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -328,21 +332,25 @@ void R_DrawDepthMD3Model(void) {
 
 	md3Hdr = (md3Model_t *)currentmodel->extraData;
 
-	if ((currententity->frame >= md3Hdr->num_frames)
-		|| (currententity->frame < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such frame %d\n",
-			currentmodel->name, currententity->frame);
-		currententity->frame = 0;
-		currententity->oldframe = 0;
-	}
+	CheckEntityFrameMD3(md3Hdr);
 
-	if ((currententity->oldframe >= md3Hdr->num_frames)
-		|| (currententity->oldframe < 0)) {
-		Com_Printf("R_DrawAliasModel %s: no such oldframe %d\n",
-			currentmodel->name, currententity->oldframe);
-		currententity->frame = 0;
-		currententity->oldframe = 0;
-	}
+	backlerp = currententity->backlerp;
+	frontlerp = 1.0 - backlerp;
+	frame = md3Hdr->frames + currententity->frame;
+	oldframe = md3Hdr->frames + currententity->oldframe;
+
+	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
+	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
+	move[0] = DotProduct(delta, vectors[0]);	// forward
+	move[1] = -DotProduct(delta, vectors[1]);	// left
+	move[2] = DotProduct(delta, vectors[2]);	// up
+
+	VectorAdd(move, oldframe->translate, move);
+
+	for (j = 0; j<3; j++)
+		move[j] = backlerp*move[j] + frontlerp*frame->translate[j];
+
+	currentmodel->max_meshes = md3Hdr->num_meshes;
 
 	R_SetupEntityMatrix(currententity);
 	qglEnableVertexAttribArray(ATT_POSITION);
@@ -352,10 +360,19 @@ void R_DrawDepthMD3Model(void) {
 	for (i = 0; i < md3Hdr->num_meshes; i++){
 		
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
+		v = mesh->vertexes + currententity->frame * mesh->num_verts;
+		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
-		GL_LerpMD3Verts(mesh, md3Hdr);
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
+		{
+		VectorSet(md3vertexCache[j],
+				move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp,
+				move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp,
+				move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp);
+		}
+
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3vertexCache);
-		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_INT, mesh->indexes);
+		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	}
 
 	qglDisableVertexAttribArray(ATT_POSITION);
