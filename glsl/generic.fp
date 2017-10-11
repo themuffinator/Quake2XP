@@ -31,6 +31,7 @@ if(u_isSky == 1){
 }
 if(u_ATTRIB_COLORS != 1 && u_ATTRIB_CONSOLE != 1){
 	fragData =  u_color;
+	return;
 	}
 
 if(u_3d == 1)
