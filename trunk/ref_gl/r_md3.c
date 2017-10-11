@@ -4,17 +4,6 @@ typedef uint	index32_t; //index_t is ushort
 
 void SinCos(float radians, float *sine, float *cosine)
 {
-/*	_asm
-	{
-		fld	dword ptr[radians]
-		fsincos
-
-		mov edx, dword ptr[cosine]
-		mov eax, dword ptr[sine]
-
-		fstp dword ptr[edx]
-		fstp dword ptr[eax]
-	}*/
 	*sine = sinf(radians);
 	*cosine = cosf(radians);
 }
@@ -636,7 +625,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = mesh->skinsNormal[0];
+			normal = r_defBump;
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
 		{
@@ -726,9 +715,6 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	md3Vertex_t	*v, *ov;
 	md3Vertex_t	*verts, *oldVerts;
 	image_t     *skin, *rgh, *normal;
-//	vec3_t	normalArray[MD3_MAX_VERTS],
-//			tangentArray[MD3_MAX_VERTS],
-//			binormalArray[MD3_MAX_VERTS];
 	qboolean inWater;
 	vec3_t tmp, oldLight, oldView;
 
@@ -854,11 +840,11 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = mesh->skinsNormal[0];
+			normal = r_defBump;
 
 		rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!rgh)
-			rgh = mesh->skinsRgh[0];
+			rgh = r_notexture;
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
 			
@@ -899,7 +885,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_MBind(GL_TEXTURE2,		r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		GL_MBindCube(GL_TEXTURE3,	r_lightCubeMap[currentShadowLight->filter]->texnum);
 		
-		if (rgh == mesh->skinsRgh[0])
+		if (rgh == r_notexture)
 			qglUniform1i(lightAlias_isRgh, 0);
 		else {
 			qglUniform1i(lightAlias_isRgh, 1);
