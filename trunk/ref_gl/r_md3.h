@@ -114,6 +114,7 @@ typedef struct md3Vertex_s
 	byte			normal;
 	byte			tangent;
 	byte			binormal;
+
 } md3Vertex_t;
 
 typedef struct

@@ -429,8 +429,9 @@ void R_GammaRamp (void)
 
 void R_MotionBlur (void) 
 {
-
 	vec2_t	angles, delta;
+	static vec2_t velocity;
+	float blur;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
@@ -445,11 +446,10 @@ void R_MotionBlur (void)
 	angles[0] = r_newrefdef.viewanglesOld[1] - r_newrefdef.viewangles[1]; //YAW left-right
 	angles[1] = r_newrefdef.viewanglesOld[0] - r_newrefdef.viewangles[0]; //PITCH up-down
 	
-	float blur = r_motionBlurFrameLerp->value;
+	blur = r_motionBlurFrameLerp->value;
 	delta[0] = (angles[0] / r_newrefdef.fov_x) * blur;
 	delta[1] = (angles[1] / r_newrefdef.fov_y) * blur;
-
-	vec2_t velocity;
+	
 	VectorSet(velocity, delta[0], delta[1], 1.0);
 	VectorNormalize(velocity);
 
@@ -472,7 +472,6 @@ void R_MotionBlur (void)
 	GL_DepthMask(1);
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
-
 }
 
 void R_DownsampleDepth(void) 

@@ -44,8 +44,8 @@ int r_framecount;				// used for dlight push checking
 float v_blend[4];				// final blending color
 
 void GL_Strings_f(void);
-void R_DrawMD3Mesh(void);
-
+void R_DrawMD3Mesh(qboolean weapon);
+void R_DrawMD3MeshLight(qboolean weapon);
 //
 // view origin
 //
@@ -511,12 +511,14 @@ void R_DrawPlayerWeaponLightPass(void)
 
 			if (!currentmodel)
 				continue;
-			if (currentmodel->type != mod_alias)
-				continue;
 			if (!(currententity->flags & RF_WEAPONMODEL))
 				continue;
 
-			R_DrawAliasModelLightPass(qtrue);
+			if (currentmodel->type == mod_alias)
+				R_DrawAliasModelLightPass(qtrue);
+
+			if (currentmodel->type == mod_alias_md3)
+				R_DrawMD3MeshLight(qtrue);	
 		}
 
 }
@@ -544,7 +546,7 @@ void R_DrawPlayerWeaponAmbient(void)
 			R_DrawAliasModel(currententity);
 
 		if(currentmodel->type == mod_alias_md3)
-			R_DrawMD3Mesh();
+			R_DrawMD3Mesh(qtrue);
 	}
 
 	// draw transluscent shells
@@ -639,8 +641,12 @@ void R_DrawLightScene (void)
 			R_DrawNullModel();
 			continue;
 		}
+		
 		if (currentmodel->type == mod_alias)
 			R_DrawAliasModelLightPass(qfalse);
+		
+		if (currentmodel->type == mod_alias_md3)
+			R_DrawMD3MeshLight(qfalse);
 	}
 
 	R_CastAliasShadowVolumes(qfalse);	// alias models shadows
@@ -836,7 +842,7 @@ static void R_DrawEntitiesOnList (void) {
 				R_DrawSpriteModel(currententity);
 				break;
 			case mod_alias_md3:
-				R_DrawMD3Mesh();
+				R_DrawMD3Mesh(qfalse);
 				break;
 			default:
 				VID_Error(ERR_DROP, "Bad modeltype");
@@ -1292,7 +1298,8 @@ void R_RegisterCvars(void)
 	r_customHeight =					Cvar_Get("r_customHeight", "768", CVAR_ARCHIVE);
 		
 	hunk_bsp=							Cvar_Get("hunk_bsp", "70", CVAR_ARCHIVE);
-	hunk_model=							Cvar_Get("hunk_model", "2.4", CVAR_ARCHIVE);
+	hunk_md2=							Cvar_Get("hunk_md2", "2.4", CVAR_ARCHIVE);
+	hunk_md3=							Cvar_Get("hunk_md3", "8.0", CVAR_ARCHIVE);
 	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
 
 	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);

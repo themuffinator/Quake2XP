@@ -293,7 +293,8 @@ cvar_t	*r_zNear;
 cvar_t	*r_zFar;
 
 cvar_t	*hunk_bsp;
-cvar_t	*hunk_model;
+cvar_t	*hunk_md2;
+cvar_t	*hunk_md3;
 cvar_t	*hunk_sprite;
 
 //cvar_t	*r_vbo;

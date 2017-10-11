@@ -379,7 +379,7 @@ void R_UpdateLightAliasUniforms()
 {
 	mat4_t	entAttenMatrix, entSpotMatrix;
 
-	qglUniform1f(lightAlias_colorScale, r_textureColorScale->value);
+	qglUniform1f(lightAlias_colorScale, /*r_textureColorScale->value*/ 1.0);
 	qglUniform1i(lightAlias_ambient, (int)currentShadowLight->isAmbient);
 	qglUniform1f(lightAlias_specularScale, r_specularScale->value);
 	qglUniform4f(lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);

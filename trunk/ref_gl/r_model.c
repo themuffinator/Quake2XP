@@ -455,12 +455,12 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 		switch (LittleLong(*(unsigned *)buf)) 
 		{
 		case IDALIASHEADER:
-			loadmodel->extraData = Hunk_Begin(hunk_model->value * 1048576, name);
+			loadmodel->extraData = Hunk_Begin(hunk_md2->value * 1048576, name);
 			Mod_LoadAliasModel(mod, buf);
 			break;
 		
 		case IDMD3HEADER:
-			loadmodel->extraData = Hunk_Begin((hunk_model->value * 2) * 1048576, name);
+			loadmodel->extraData = Hunk_Begin(hunk_md3->value * 1048576, name);
 			Mod_LoadMD3(mod, buf);
 			break;
 
