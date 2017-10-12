@@ -338,16 +338,15 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 					lat *= M_PI / 128.f;
 					lng *= M_PI / 128.f;
 					 
-					vec3_t	norma;
+					vec3_t	normals;
 					float	slat, clat, slng, clng;
 					SinCos(lat, &slat, &clat);
 					SinCos(lng, &slng, &clng);
 
-					norma[0] = clat * slng;
-					norma[1] = slat * slng;
-					norma[2] = clng;
-					outVerts->normal = Normal2Index(norma);
-				//	VectorCopy(norma, outVerts->n);
+					normals[0] = clat * slng;
+					normals[1] = slat * slng;
+					normals[2] = clng;
+					VectorCopy(normals, outVerts->normal);
 				}
 				//for all tris
 				outVerts = outMesh->vertexes + l * outMesh->num_verts;
@@ -370,11 +369,8 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				{
 					VectorNormalize(tangents[j]);
 					VectorNormalize(binormals[j]);
-					outVerts[j].tangent = Normal2Index(tangents[j]);
-					outVerts[j].binormal = Normal2Index(binormals[j]);
-					// unpacked tangents
-				//	VectorCopy(tangents[j], outVerts[j].t);
-				//	VectorCopy(binormals[j], outVerts[j].b);
+					VectorCopy(tangents[j], outVerts[j].tangent);
+					VectorCopy(binormals[j], outVerts[j].binormal);
 				}
 			
 		}
@@ -703,31 +699,10 @@ void R_UpdateMd3LightUniforms()
 
 }
 
+qboolean R_CullMd3Lighing() {
 
-void R_DrawMD3MeshLight(qboolean weapon) {
-
-	md3Model_t	*md3Hdr;
-	vec3_t		bbox[8];
-	int			i, j, k;
-	float		frontlerp, backlerp;
-	md3Frame_t	*frame, *oldframe;
-	vec3_t		move, delta, vectors[3], maxs, mins;
-	md3Vertex_t	*v, *ov;
-	md3Vertex_t	*verts, *oldVerts;
-	image_t     *skin, *rgh, *normal;
-	qboolean inWater;
-	vec3_t tmp, oldLight, oldView;
-
-	if (!r_drawEntities->integer)
-		return;
-
-	if (currententity->flags & RF_WEAPONMODEL)
-		if (!weapon || r_leftHand->integer == 2)
-			return;
-
-
-	if (R_CullMD3Model(bbox, currententity))
-		return;
+	vec3_t mins, maxs;
+	int i;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
@@ -744,21 +719,52 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	if (currentShadowLight->_cone) {
 
 		if (R_CullConeLight(mins, maxs, currentShadowLight->frust))
-			return;
+			return qfalse;
 
 	}
 	else if (currentShadowLight->spherical) {
 
 		if (!BoundsAndSphereIntersect(mins, maxs, currentShadowLight->origin, currentShadowLight->radius[0]))
-			return;
+			return qfalse;
 	}
 	else {
 
 		if (!BoundsIntersect(mins, maxs, currentShadowLight->mins, currentShadowLight->maxs))
-			return;
+			return qfalse;
 	}
 
 	if (!InLightVISEntity())
+		return qfalse;
+
+	return qtrue;
+
+}
+
+void R_DrawMD3MeshLight(qboolean weapon) {
+
+	md3Model_t	*md3Hdr;
+	vec3_t		bbox[8];
+	int			i, j, k;
+	float		frontlerp, backlerp;
+	md3Frame_t	*frame, *oldframe;
+	vec3_t		move, delta, vectors[3], maxs;
+	md3Vertex_t	*v, *ov;
+	md3Vertex_t	*verts, *oldVerts;
+	image_t     *skin, *rgh, *normal;
+	qboolean inWater;
+	vec3_t tmp, oldLight, oldView;
+
+	if (!r_drawEntities->integer)
+		return;
+
+	if (currententity->flags & RF_WEAPONMODEL)
+		if (!weapon || r_leftHand->integer == 2)
+			return;
+
+	if (R_CullMD3Model(bbox, currententity))
+		return;
+
+	if (!R_CullMd3Lighing())
 		return;
 
 	md3Hdr = (md3Model_t *)currentmodel->extraData;
@@ -859,18 +865,17 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		for (k = 0; k<mesh->num_verts; k++){
 
-			normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
-			normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
-			normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
+			tangentArray[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+			tangentArray[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+			tangentArray[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
-			tangentArray[k][0] = q_byteDirs[verts[k].tangent][0] * frontlerp + q_byteDirs[oldVerts[k].tangent][0] * backlerp;
-			tangentArray[k][1] = q_byteDirs[verts[k].tangent][1] * frontlerp + q_byteDirs[oldVerts[k].tangent][1] * backlerp;
-			tangentArray[k][2] = q_byteDirs[verts[k].tangent][2] * frontlerp + q_byteDirs[oldVerts[k].tangent][2] * backlerp;
+			binormalArray[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+			binormalArray[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+			binormalArray[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
 
-
-			binormalArray[k][0] = q_byteDirs[verts[k].binormal][0] * frontlerp + q_byteDirs[oldVerts[k].binormal][0] * backlerp;
-			binormalArray[k][1] = q_byteDirs[verts[k].binormal][1] * frontlerp + q_byteDirs[oldVerts[k].binormal][1] * backlerp;
-			binormalArray[k][2] = q_byteDirs[verts[k].binormal][2] * frontlerp + q_byteDirs[oldVerts[k].binormal][2] * backlerp;
+			normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+			normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+			normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 
 		}
 
