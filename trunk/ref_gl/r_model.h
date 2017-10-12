@@ -290,10 +290,6 @@ typedef struct model_s {
 	float		*st;
 	neighbors_t *neighbours;
 
-	vec3_t		normal[MAX_VERTS];
-	vec3_t		tangent[MAX_VERTS];
-	vec3_t		binormal[MAX_VERTS];
-
 	float		ambient;
 	float		diffuse;
 	float		specular;

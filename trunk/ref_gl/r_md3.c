@@ -347,6 +347,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 					normals[1] = slat * slng;
 					normals[2] = clng;
 					VectorCopy(normals, outVerts->normal);
+					VectorNormalize(outVerts->normal);
 				}
 				//for all tris
 				outVerts = outMesh->vertexes + l * outMesh->num_verts;
@@ -354,8 +355,10 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				{
 					vec3_t tangent;
 					vec3_t binormal;
+					vec3_t cross;
 
 					Tangent4TrisMD3(&outMesh->indexes[j * 3], outVerts, outMesh->stcoords, tangent, binormal);
+
 					// for all vertices in the tri
 					for (k = 0; k<3; k++)
 					{

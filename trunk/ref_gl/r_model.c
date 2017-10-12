@@ -2119,11 +2119,6 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 			VectorNormalize(binormals_[j]);
 			VectorNormalize(normals_[j]);
 
-			// uncompression data
-			VectorCopy(tangents_[j], mod->tangent[j]);
-			VectorCopy(binormals_[j], mod->binormal[j]);
-			VectorCopy(normals_[j], mod->normal[j]);
-
 			tangents[i * pheader->num_xyz + j] = Normal2Index(tangents_[j]);
 			binormals[i * pheader->num_xyz + j] = Normal2Index(binormals_[j]);
 			verts[j].lightnormalindex = Normal2Index(normals_[j]);

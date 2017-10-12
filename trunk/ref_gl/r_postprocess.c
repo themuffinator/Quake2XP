@@ -430,8 +430,8 @@ void R_GammaRamp (void)
 void R_MotionBlur (void) 
 {
 	vec2_t	angles, delta;
-	static vec2_t velocity;
-	float blur;
+	vec3_t	velocity;
+	float	blur;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;

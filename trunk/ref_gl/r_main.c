@@ -1299,7 +1299,7 @@ void R_RegisterCvars(void)
 		
 	hunk_bsp=							Cvar_Get("hunk_bsp", "70", CVAR_ARCHIVE);
 	hunk_md2=							Cvar_Get("hunk_md2", "2.4", CVAR_ARCHIVE);
-	hunk_md3=							Cvar_Get("hunk_md3", "16", CVAR_ARCHIVE);
+	hunk_md3=							Cvar_Get("hunk_md3", "10", CVAR_ARCHIVE);
 	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
 
 	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
