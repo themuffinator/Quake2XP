@@ -1064,8 +1064,8 @@ void CL_AddPacketEntities (frame_t * frame) {
 					ent.flags |= RF_FULLBRIGHT;
 					ent.flags |= RF_NOSHADOW;
 					ent.alpha = 1.0;
+					V_AddEntity(&ent);
 				}
-				V_AddEntity(&ent);
 			}
 
 		// color shells generate a seperate entity for the main model

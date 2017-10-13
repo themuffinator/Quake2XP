@@ -26,11 +26,11 @@ vec3_t	tempVertexArray	[MAX_VERTICES  * 4];
 
 void R_Init_AliasArrays() {
 
-	vertexArray		= malloc(MAX_TRIANGLES * 3 * sizeof(vec3_t));
-	normalArray		= malloc(MAX_TRIANGLES * 3 * sizeof(vec3_t));
-	tangentArray	= malloc(MAX_TRIANGLES * 3 * sizeof(vec3_t));
-	binormalArray	= malloc(MAX_TRIANGLES * 3 * sizeof(vec3_t));
-	colorArray		= malloc(MAX_TRIANGLES * 3 * sizeof(vec4_t));
+	vertexArray		= malloc(MD3_MAX_TRIANGLES * 3 * sizeof(vec3_t));
+	normalArray		= malloc(MD3_MAX_TRIANGLES * 3 * sizeof(vec3_t));
+	tangentArray	= malloc(MD3_MAX_TRIANGLES * 3 * sizeof(vec3_t));
+	binormalArray	= malloc(MD3_MAX_TRIANGLES * 3 * sizeof(vec3_t));
+	colorArray		= malloc(MD3_MAX_TRIANGLES * 4 * sizeof(vec4_t));
 }
 
 void R_Shutdown_AliasArrays() {

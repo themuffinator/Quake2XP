@@ -626,21 +626,13 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		if (!normal)
 			normal = mesh->skinsNormal[0];
 
-		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
-		{
-			Vector4Set(md3colorCache[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
-			VectorSet(md3vertexCache[j],
-				move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp,
-				move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp,
-				move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp);
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
 
-			/*			// todo shells
-			float *normal = q_byteDirs[mesh->vertexes[j].normal];
-			VectorSet(md3vertexCache[j],
-			move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp + normal[0] * scale,
-			move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp + normal[1] * scale,
-			move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp + normal[2] * scale);
-			*/
+			Vector4Set(md3colorCache[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
+			
+			md3vertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
+			md3vertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
+			md3vertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 		}
 
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3vertexCache);
@@ -863,10 +855,9 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
 
-			VectorSet(md3vertexCache[j],
-				move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp,
-				move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp,
-				move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp);
+			md3vertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
+			md3vertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
+			md3vertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 		}
 
 		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
@@ -931,7 +922,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 	md3Model_t		*md3Hdr;
 	vec3_t			bbox[8];
-	int				i, j;
+	int				i, j, k;
 	float			frontlerp, backlerp;
 	md3Frame_t		*frame, *oldframe;
 	vec3_t			move, delta, vectors[3];
@@ -972,69 +963,63 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	R_SetupEntityMatrix(currententity);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 
 	// setup program
 	GL_BindProgram(aliasAmbientProgram, 0);
 
-	float scroll = r_newrefdef.time *0.45;
-	float scale = 0.0;
-
-	if (currententity->flags & RF_WEAPONMODEL)
-		scale = 0.0;
-	else if (currententity->flags & RF_CAMERAMODEL2)
-		scale = 0.0;
-	else
-		scale = 0.5;
+	float scroll = r_newrefdef.time * 0.45;
+	float scale = 0.1f;
 
 	qglUniform1i(ambientAlias_isShell, 1);
 	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
 	qglUniform1f(ambientAlias_scroll, scroll);
 	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	
+	if (currententity->flags & RF_SHELL_BLUE)
+		GL_MBind(GL_TEXTURE0, r_texshell[0]->texnum);
+	if (currententity->flags & RF_SHELL_RED)
+		GL_MBind(GL_TEXTURE0, r_texshell[1]->texnum);
+	if (currententity->flags & RF_SHELL_GREEN)
+		GL_MBind(GL_TEXTURE0, r_texshell[2]->texnum);
+	if (currententity->flags & RF_SHELL_GOD)
+		GL_MBind(GL_TEXTURE0, r_texshell[3]->texnum);
+	if (currententity->flags & RF_SHELL_HALF_DAM)
+		GL_MBind(GL_TEXTURE0, r_texshell[4]->texnum);
+	if (currententity->flags & RF_SHELL_DOUBLE)
+		GL_MBind(GL_TEXTURE0, r_texshell[5]->texnum);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
+
+		md3Vertex_t *verts = mesh->vertexes + currententity->frame * mesh->num_verts;
+		md3Vertex_t *oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+
+		for (k = 0; k < mesh->num_verts; k++){
+
+			normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
+			normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
+			normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
+		}
+
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
-		if (currententity->flags & RF_SHELL_BLUE)
-			GL_MBind(GL_TEXTURE0, r_texshell[0]->texnum);
-		if (currententity->flags & RF_SHELL_RED)
-			GL_MBind(GL_TEXTURE0, r_texshell[1]->texnum);
-		if (currententity->flags & RF_SHELL_GREEN)
-			GL_MBind(GL_TEXTURE0, r_texshell[2]->texnum);
-		if (currententity->flags & RF_SHELL_GOD)
-			GL_MBind(GL_TEXTURE0, r_texshell[3]->texnum);
-		if (currententity->flags & RF_SHELL_HALF_DAM)
-			GL_MBind(GL_TEXTURE0, r_texshell[4]->texnum);
-		if (currententity->flags & RF_SHELL_DOUBLE)
-			GL_MBind(GL_TEXTURE0, r_texshell[5]->texnum);
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
 
-		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
-		{
-			float *normal = q_byteDirs[mesh->vertexes[j].normal];
-			VectorSet(md3vertexCache[j],
-				move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp + normal[0] * scale,
-				move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp + normal[1] * scale,
-				move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp + normal[0] * scale);
-
-			normalArray[j][0] = q_byteDirs[v[j].normal][0] * frontlerp + q_byteDirs[ov[j].normal][0] * backlerp;
-			normalArray[j][1] = q_byteDirs[v[j].normal][1] * frontlerp + q_byteDirs[ov[j].normal][1] * backlerp;
-			normalArray[j][2] = q_byteDirs[v[j].normal][2] * frontlerp + q_byteDirs[ov[j].normal][2] * backlerp;
-
+			md3vertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp + normalArray[j][0] * scale;
+			md3vertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp + normalArray[j][1] * scale;
+			md3vertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp + normalArray[j][2] * scale;
 		}
 
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3vertexCache);
-		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 		qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	}
 
 	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 
 	GL_BindNullProgram();
