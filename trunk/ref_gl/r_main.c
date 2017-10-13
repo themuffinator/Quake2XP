@@ -44,8 +44,7 @@ int r_framecount;				// used for dlight push checking
 float v_blend[4];				// final blending color
 
 void GL_Strings_f(void);
-void R_DrawMD3Mesh(qboolean weapon);
-void R_DrawMD3MeshLight(qboolean weapon);
+
 //
 // view origin
 //
@@ -566,6 +565,11 @@ void R_DrawPlayerWeaponAmbient(void)
 
 		if (currentmodel->type == mod_alias)
 			R_DrawAliasModel(currententity);
+
+		if (currentmodel->type == mod_alias_md3) {
+			if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
+				R_DrawMD3ShellMesh(qtrue);
+		}
 	}
 
 	GL_Disable(GL_BLEND);
@@ -877,6 +881,11 @@ static void R_DrawEntitiesOnList (void) {
 
 		if (currentmodel->type == mod_alias) 
 			R_DrawAliasModel(currententity);
+
+		if (currentmodel->type == mod_alias_md3) {
+			if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
+				R_DrawMD3ShellMesh(qfalse);
+		}
 	}
 	GL_Disable(GL_BLEND);
 }

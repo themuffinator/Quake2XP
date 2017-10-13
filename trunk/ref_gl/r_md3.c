@@ -338,16 +338,15 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 					lat *= M_PI / 128.f;
 					lng *= M_PI / 128.f;
 					 
-					vec3_t	normals;
+					vec3_t	norma;
 					float	slat, clat, slng, clng;
 					SinCos(lat, &slat, &clat);
 					SinCos(lng, &slng, &clng);
 
-					normals[0] = clat * slng;
-					normals[1] = slat * slng;
-					normals[2] = clng;
-					VectorCopy(normals, outVerts->normal);
-					VectorNormalize(outVerts->normal);
+					norma[0] = clat * slng;
+					norma[1] = slat * slng;
+					norma[2] = clng;
+					outVerts->normal = Normal2Index(norma);
 				}
 				//for all tris
 				outVerts = outMesh->vertexes + l * outMesh->num_verts;
@@ -355,10 +354,8 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				{
 					vec3_t tangent;
 					vec3_t binormal;
-					vec3_t cross;
 
 					Tangent4TrisMD3(&outMesh->indexes[j * 3], outVerts, outMesh->stcoords, tangent, binormal);
-
 					// for all vertices in the tri
 					for (k = 0; k<3; k++)
 					{
@@ -372,10 +369,9 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				{
 					VectorNormalize(tangents[j]);
 					VectorNormalize(binormals[j]);
-					VectorCopy(tangents[j], outVerts[j].tangent);
-					VectorCopy(binormals[j], outVerts[j].binormal);
-				}
-			
+					outVerts[j].tangent = Normal2Index(tangents[j]);
+					outVerts[j].binormal = Normal2Index(binormals[j]);
+				}			
 		}
 
 		//
@@ -548,12 +544,16 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	if (currententity->flags & RF_WEAPONMODEL)
 		if (!weapon || r_leftHand->integer == 2)
 			return;
-		
+
+	if (currententity->flags & (RF_VIEWERMODEL))
+		return;
 
 	if (R_CullMD3Model(bbox, currententity))
 		return;
 
-	
+	if (currententity->flags & RF_NOCULL)
+		GL_Disable(GL_CULL_FACE);
+
 	md3Hdr = (md3Model_t *)currentmodel->extraData;
 
 	SetModelsLight();
@@ -624,7 +624,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = r_defBump;
+			normal = mesh->skinsNormal[0];
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
 		{
@@ -662,6 +662,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
+
+	if (currententity->flags & RF_NOCULL)
+		GL_Enable(GL_CULL_FACE);
 }
 
 void R_UpdateMd3LightUniforms()
@@ -763,6 +766,9 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	if (currententity->flags & RF_WEAPONMODEL)
 		if (!weapon || r_leftHand->integer == 2)
 			return;
+	
+	if (currententity->flags & (RF_VIEWERMODEL))
+		return;
 
 	if (R_CullMD3Model(bbox, currententity))
 		return;
@@ -849,11 +855,11 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = r_defBump;
+			normal = mesh->skinsNormal[0];
 
 		rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!rgh)
-			rgh = r_notexture;
+			rgh = mesh->skinsRgh[0];
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
 			
@@ -868,17 +874,18 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		for (k = 0; k<mesh->num_verts; k++){
 
-			tangentArray[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
-			tangentArray[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
-			tangentArray[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
+			normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
+			normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
+			normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
 
-			binormalArray[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
-			binormalArray[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
-			binormalArray[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
+			tangentArray[k][0] = q_byteDirs[verts[k].tangent][0] * frontlerp + q_byteDirs[oldVerts[k].tangent][0] * backlerp;
+			tangentArray[k][1] = q_byteDirs[verts[k].tangent][1] * frontlerp + q_byteDirs[oldVerts[k].tangent][1] * backlerp;
+			tangentArray[k][2] = q_byteDirs[verts[k].tangent][2] * frontlerp + q_byteDirs[oldVerts[k].tangent][2] * backlerp;
 
-			normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-			normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-			normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+
+			binormalArray[k][0] = q_byteDirs[verts[k].binormal][0] * frontlerp + q_byteDirs[oldVerts[k].binormal][0] * backlerp;
+			binormalArray[k][1] = q_byteDirs[verts[k].binormal][1] * frontlerp + q_byteDirs[oldVerts[k].binormal][1] * backlerp;
+			binormalArray[k][2] = q_byteDirs[verts[k].binormal][2] * frontlerp + q_byteDirs[oldVerts[k].binormal][2] * backlerp;
 
 		}
 
@@ -893,7 +900,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_MBind(GL_TEXTURE2,		r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		GL_MBindCube(GL_TEXTURE3,	r_lightCubeMap[currentShadowLight->filter]->texnum);
 		
-		if (rgh == r_notexture)
+		if (rgh == mesh->skinsRgh[0])
 			qglUniform1i(lightAlias_isRgh, 0);
 		else {
 			qglUniform1i(lightAlias_isRgh, 1);
@@ -914,6 +921,123 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 	VectorCopy(oldView, r_origin);
+
+	if (currententity->flags & RF_DEPTHHACK)
+		GL_DepthRange(gldepthmin, gldepthmax);
+}
+
+
+void R_DrawMD3ShellMesh(qboolean weapon) {
+
+	md3Model_t		*md3Hdr;
+	vec3_t			bbox[8];
+	int				i, j;
+	float			frontlerp, backlerp;
+	md3Frame_t		*frame, *oldframe;
+	vec3_t			move, delta, vectors[3];
+	md3Vertex_t		*v, *ov;
+
+	if (!r_drawEntities->integer)
+		return;
+
+	if (currententity->flags & RF_WEAPONMODEL)
+		if (!weapon || r_leftHand->integer == 2)
+			return;
+
+	if (R_CullMD3Model(bbox, currententity))
+		return;
+
+	md3Hdr = (md3Model_t *)currentmodel->extraData;
+
+	CheckEntityFrameMD3(md3Hdr);
+	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
+		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
+
+	backlerp = currententity->backlerp;
+	frontlerp = 1.0 - backlerp;
+	frame = md3Hdr->frames + currententity->frame;
+	oldframe = md3Hdr->frames + currententity->oldframe;
+
+	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
+	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
+	move[0] = DotProduct(delta, vectors[0]);	// forward
+	move[1] = -DotProduct(delta, vectors[1]);	// left
+	move[2] = DotProduct(delta, vectors[2]);	// up
+
+	VectorAdd(move, oldframe->translate, move);
+
+	for (j = 0; j<3; j++)
+		move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
+
+	R_SetupEntityMatrix(currententity);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_NORMAL);
+
+	// setup program
+	GL_BindProgram(aliasAmbientProgram, 0);
+
+	float scroll = r_newrefdef.time *0.45;
+	float scale = 0.0;
+
+	if (currententity->flags & RF_WEAPONMODEL)
+		scale = 0.0;
+	else if (currententity->flags & RF_CAMERAMODEL2)
+		scale = 0.0;
+	else
+		scale = 0.5;
+
+	qglUniform1i(ambientAlias_isShell, 1);
+	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
+	qglUniform1f(ambientAlias_scroll, scroll);
+	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+
+	for (i = 0; i < md3Hdr->num_meshes; i++) {
+
+		md3Mesh_t *mesh = &md3Hdr->meshes[i];
+		v = mesh->vertexes + currententity->frame * mesh->num_verts;
+		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+
+		if (currententity->flags & RF_SHELL_BLUE)
+			GL_MBind(GL_TEXTURE0, r_texshell[0]->texnum);
+		if (currententity->flags & RF_SHELL_RED)
+			GL_MBind(GL_TEXTURE0, r_texshell[1]->texnum);
+		if (currententity->flags & RF_SHELL_GREEN)
+			GL_MBind(GL_TEXTURE0, r_texshell[2]->texnum);
+		if (currententity->flags & RF_SHELL_GOD)
+			GL_MBind(GL_TEXTURE0, r_texshell[3]->texnum);
+		if (currententity->flags & RF_SHELL_HALF_DAM)
+			GL_MBind(GL_TEXTURE0, r_texshell[4]->texnum);
+		if (currententity->flags & RF_SHELL_DOUBLE)
+			GL_MBind(GL_TEXTURE0, r_texshell[5]->texnum);
+
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
+		{
+			float *normal = q_byteDirs[mesh->vertexes[j].normal];
+			VectorSet(md3vertexCache[j],
+				move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp + normal[0] * scale,
+				move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp + normal[1] * scale,
+				move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp + normal[0] * scale);
+
+			normalArray[j][0] = q_byteDirs[v[j].normal][0] * frontlerp + q_byteDirs[ov[j].normal][0] * backlerp;
+			normalArray[j][1] = q_byteDirs[v[j].normal][1] * frontlerp + q_byteDirs[ov[j].normal][1] * backlerp;
+			normalArray[j][2] = q_byteDirs[v[j].normal][2] * frontlerp + q_byteDirs[ov[j].normal][2] * backlerp;
+
+		}
+
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3vertexCache);
+		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+		qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
+
+		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+	}
+
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_NORMAL);
+
+	GL_BindNullProgram();
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
