@@ -19,7 +19,7 @@ uniform float		u_AddShift;
 
 void main ()
 {
-	if(u_isShell == 1){
+	if(u_isShell >= 1){
 		vec4 r0 = texture(u_Diffuse,  v_shellCoord);
 		fragData = r0;
 		return;

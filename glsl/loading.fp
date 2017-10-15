@@ -5,8 +5,8 @@ in vec2 v_texCoord;
 
 vec4 Desaturate(vec3 color, float Desaturation)
 {
-	vec3 grayXfer = vec3(0.3, 0.59, 0.11);
-	vec3 gray = vec3(dot(grayXfer, color));
+	vec3 lum = vec3(0.2125, 0.7154, 0.0721);
+	vec3 gray = vec3(dot(lum, color));
 	return vec4(mix(color, gray, Desaturation), 1.0);
 }
 

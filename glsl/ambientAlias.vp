@@ -9,7 +9,7 @@ out	vec2			v_envCoord;
 out	vec2			v_shellCoord;
 out	vec4			v_color;
 
-uniform	float		u_scroll;
+uniform	vec2		u_shellParams;
 uniform	vec3		u_viewOrg;
 uniform	int			u_isEnvMap;
 uniform	int			u_isShell;
@@ -17,19 +17,23 @@ uniform mat4		u_modelViewProjectionMatrix;
 
 void main ()
 {
+vec4 xyz = vec4(att_position, 1.0);
 
-if(u_isShell == 1 || u_isEnvMap == 1){
+if(u_isShell >= 1 || u_isEnvMap == 1){
 	vec3 viewPos = normalize(u_viewOrg - att_position);
 	float d = dot(att_normal, viewPos);
 	vec3 reflected = att_normal * 2.0 * d - viewPos;
 	v_shellCoord = v_envCoord = 0.5 + reflected.yz * vec2(0.5, -0.5);
 
-	if(u_isShell == 1)
-		v_shellCoord += u_scroll;
+	if(u_isShell >= 1)
+		v_shellCoord += u_shellParams.x;
+
+	if(u_isShell == 2)
+		xyz.xyz += att_normal * u_shellParams.y;
 }
 
 v_texCoord = att_texCoordDiffuse;
 v_color = att_color4f;
 
-gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
+gl_Position = u_modelViewProjectionMatrix * xyz;
 }

@@ -13,7 +13,7 @@ tex += texture2DRect( u_map, tc + vec2(1.0, 1.0));
 tex *= 0.25;
 
 // Calculate luminance
-float lum = dot(vec4(0.30, 0.59, 0.11, 0.0), tex);
+float lum = dot(vec4(0.2125, 0.7154, 0.0721, 0.0), tex);
 
 // Extract very bright areas of the map.
 if (lum > u_BloomThreshold)

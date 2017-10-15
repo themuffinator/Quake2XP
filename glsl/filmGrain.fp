@@ -64,7 +64,7 @@ vec4 TechniColorSys3(in vec4 color)
 
 vec4 SepiaColor (vec4 color)
 {	
-	float lum = dot(color.rgb, vec3(0.30, 0.59, 0.11));
+	float lum = dot(color.rgb, vec3(0.2125, 0.7154, 0.0721));
 	vec3 sepia = vec3(1.2, 1.0, 0.8); 
 	sepia *= lum;
 	vec3 tmp = mix(color.rgb, sepia, 0.88);
@@ -153,10 +153,9 @@ void main()
 			// Generate the scratch
 			float xPeriod = 8.0;
 			float yPeriod = 1.0;
-			float pi = 3.141592;
 			float phase = u_time;
 			float turbulence = snoise(uv * 2.5);
-			float vScratch = 0.5 + (sin(((uv.x * xPeriod + uv.y * yPeriod + turbulence)) * pi + phase) * 0.5);
+			float vScratch = 0.5 + (sin(((uv.x * xPeriod + uv.y * yPeriod + turbulence)) * PI + phase) * 0.5);
 			vScratch = clamp((vScratch * 10000.0) + 0.35, 0.0, 1.0);
 
 			fragData *= vScratch;
