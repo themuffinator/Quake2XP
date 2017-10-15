@@ -23,11 +23,9 @@ if(u_isShell == 1 || u_isEnvMap == 1){
 	float d = dot(att_normal, viewPos);
 	vec3 reflected = att_normal * 2.0 * d - viewPos;
 	v_shellCoord = v_envCoord = 0.5 + reflected.yz * vec2(0.5, -0.5);
-	v_shellCoord.s += u_scroll;
-	v_shellCoord.t -= u_scroll;
-	
+
 	if(u_isShell == 1)
-		v_shellCoord *= 1.5;
+		v_shellCoord += u_scroll;
 }
 
 v_texCoord = att_texCoordDiffuse;

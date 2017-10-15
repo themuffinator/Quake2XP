@@ -70,7 +70,7 @@ void main (void) {
 	vec3 dt = texture(u_bumpBlend, v_texCoord).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
 	vec3 r = normalize(nm * dot(nm, dt) - dt * nm.z);
 	vec3 blendNormal =  r * 0.5 + 0.5;
-	vec4 skin_color = SkinLighting(V, L, blendNormal, u_LightColor.rgb, diffuseMap * 0.5, attenMap, specular);
+	vec4 skin_color = SkinLighting(V, L, blendNormal, u_LightColor.rgb, diffuseMap, attenMap, specular);
 
 
 	if (u_isCaustics == 1){
