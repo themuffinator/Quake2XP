@@ -550,7 +550,7 @@ void R_DrawPlayerWeaponAmbient(void)
 
 	// draw transluscent shells
 	GL_Enable(GL_BLEND);
-	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_BlendFunc(GL_ONE, GL_ONE);
 	GL_DepthMask(0);
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -863,7 +863,7 @@ static void R_DrawEntitiesOnList (void) {
 
 		if (!(currententity->flags & RF_TRANSLUCENT))
 			continue;
-		
+
 		if (currententity->flags & (RF_WEAPONMODEL))
 			continue;
 
@@ -879,9 +879,8 @@ static void R_DrawEntitiesOnList (void) {
 			continue;
 		}
 
-		if (currentmodel->type == mod_alias) {
+		if (currentmodel->type == mod_alias) 
 			R_DrawAliasModel(currententity);
-		}
 
 		if (currentmodel->type == mod_alias_md3) {
 			if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
@@ -911,8 +910,6 @@ static void R_DrawAmbientScene (void) {
 static void R_DrawRAScene (void) {
 	int i;
 	
-	GL_Disable(GL_BLEND);
-
 	GL_DepthMask(0);
 	GL_PolygonOffset(-1.0, 1.0);
 

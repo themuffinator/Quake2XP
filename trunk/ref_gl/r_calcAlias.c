@@ -30,7 +30,7 @@ void R_Init_AliasArrays() {
 	normalArray		= malloc(MD3_MAX_TRIANGLES * 3 * sizeof(vec3_t));
 	tangentArray	= malloc(MD3_MAX_TRIANGLES * 3 * sizeof(vec3_t));
 	binormalArray	= malloc(MD3_MAX_TRIANGLES * 3 * sizeof(vec3_t));
-	colorArray		= malloc(MD3_MAX_TRIANGLES * 4 * sizeof(vec4_t));
+	colorArray		= malloc(MD3_MAX_TRIANGLES * 3 * sizeof(vec4_t));
 }
 
 void R_Shutdown_AliasArrays() {
@@ -129,9 +129,10 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	else
 		alpha = 1.0;
 
-	if (currententity->flags & RF_NOCULL)
+	if (currententity->flags & RF_NOCULL) {
 		GL_Disable(GL_CULL_FACE);
-
+		GL_Enable(GL_ALPHA_TEST);
+	}
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
@@ -278,8 +279,10 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 //	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	GL_BindNullProgram ();
 
-	if (currententity->flags & RF_NOCULL)
+	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
+		GL_Disable(GL_ALPHA_TEST);
+	}
 }
 
 void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {

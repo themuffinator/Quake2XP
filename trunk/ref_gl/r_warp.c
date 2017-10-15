@@ -51,7 +51,7 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	if (fa->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 		alpha = (fa->texInfo->flags & SURF_TRANS33) ? 0.33f : 0.66f;
 		qglUniform1i (water_trans, 1);
-		GL_DepthMask(0);
+
 	}
 	else {
 		qglUniform1i (water_trans, 0);
@@ -93,7 +93,6 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 	}
 
 	qglDrawElements(GL_TRIANGLES, numIdx, GL_UNSIGNED_INT, indexArray);
-	GL_DepthMask(1);
 }
 
 

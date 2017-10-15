@@ -111,19 +111,18 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	dmd3skin_t			*inSkin;
 	dmd3coord_t			*inCoord;
 	dmd3vertex_t		*inVerts;
-	unsigned			*inIndex;
-	WORD				*outIndex;
+	uint				*inIndex;
 
+	index_t				*outIndex;
 	md3Vertex_t			*outVerts;
 	md3ST_t				*outCoord;
 	md3Mesh_t			*outMesh;
 	md3Tag_t			*outTag;
 	md3Frame_t			*outFrame;
 	md3Model_t			*outModel;
+	vec3_t				tangents[MD3_MAX_VERTS], binormals[MD3_MAX_VERTS];
 	char				name[MD3_MAX_PATH];
 	float				lat, lng;
-	vec3_t				tangents[MD3_MAX_VERTS],
-		binormals[MD3_MAX_VERTS];
 
 	inModel = (dmd3_t *)buffer;
 	version = LittleLong(inModel->version);
@@ -346,7 +345,8 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				norma[0] = clat * slng;
 				norma[1] = slat * slng;
 				norma[2] = clng;
-				outVerts->normal = Normal2Index(norma);
+			//	outVerts->normal = Normal2Index(norma);
+				VectorCopy(norma, outVerts->normal);
 			}
 			//for all tris
 			outVerts = outMesh->vertexes + l * outMesh->num_verts;
@@ -369,8 +369,10 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			{
 				VectorNormalize(tangents[j]);
 				VectorNormalize(binormals[j]);
-				outVerts[j].tangent = Normal2Index(tangents[j]);
-				outVerts[j].binormal = Normal2Index(binormals[j]);
+			//	outVerts[j].tangent = Normal2Index(tangents[j]);
+			//	outVerts[j].binormal = Normal2Index(binormals[j]);
+				VectorCopy(tangents[j], outVerts[j].tangent);
+				VectorCopy(binormals[j], outVerts[j].binormal);
 			}
 		}
 
@@ -626,10 +628,10 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		if (!normal)
 			normal = mesh->skinsNormal[0];
 
-		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
 
 			Vector4Set(md3colorCache[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
-			
+
 			md3vertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
 			md3vertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
 			md3vertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
@@ -865,18 +867,18 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		for (k = 0; k<mesh->num_verts; k++) {
 
-			normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
-			normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
-			normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
+			normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+			normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+			normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 
-			tangentArray[k][0] = q_byteDirs[verts[k].tangent][0] * frontlerp + q_byteDirs[oldVerts[k].tangent][0] * backlerp;
-			tangentArray[k][1] = q_byteDirs[verts[k].tangent][1] * frontlerp + q_byteDirs[oldVerts[k].tangent][1] * backlerp;
-			tangentArray[k][2] = q_byteDirs[verts[k].tangent][2] * frontlerp + q_byteDirs[oldVerts[k].tangent][2] * backlerp;
+			tangentArray[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+			tangentArray[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+			tangentArray[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
 
-			binormalArray[k][0] = q_byteDirs[verts[k].binormal][0] * frontlerp + q_byteDirs[oldVerts[k].binormal][0] * backlerp;
-			binormalArray[k][1] = q_byteDirs[verts[k].binormal][1] * frontlerp + q_byteDirs[oldVerts[k].binormal][1] * backlerp;
-			binormalArray[k][2] = q_byteDirs[verts[k].binormal][2] * frontlerp + q_byteDirs[oldVerts[k].binormal][2] * backlerp;
+			binormalArray[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+			binormalArray[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+			binormalArray[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
 
 		}
 
@@ -925,8 +927,8 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	int				i, j, k;
 	float			frontlerp, backlerp;
 	md3Frame_t		*frame, *oldframe;
-	vec3_t			move, delta, vectors[3];
-	md3Vertex_t		*v, *ov;
+	vec3_t			move, delta, vectors[3], tmp, oldView;
+	md3Vertex_t		*v, *ov, *verts, *oldVerts;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -965,9 +967,13 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 
+	VectorCopy(r_origin, oldView);
+	VectorSubtract(r_origin, currententity->origin, tmp);
+	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
+
 	// setup program
 	GL_BindProgram(aliasAmbientProgram, 0);
-
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE);
 	float scroll = r_newrefdef.time * 0.45;
 	float scale = 0.1f;
 
@@ -975,7 +981,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
 	qglUniform1f(ambientAlias_scroll, scroll);
 	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
-	
+
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_MBind(GL_TEXTURE0, r_texshell[0]->texnum);
 	if (currententity->flags & RF_SHELL_RED)
@@ -993,20 +999,20 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
 
-		md3Vertex_t *verts = mesh->vertexes + currententity->frame * mesh->num_verts;
-		md3Vertex_t *oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
+		oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
-		for (k = 0; k < mesh->num_verts; k++){
+		for (k = 0; k < mesh->num_verts; k++) {
 
-			normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
-			normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
-			normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
+			normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+			normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+			normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 		}
 
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
-		for (j = 0; j < mesh->num_verts; j++, v++, ov++){
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
 
 			md3vertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp + normalArray[j][0] * scale;
 			md3vertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp + normalArray[j][1] * scale;
@@ -1024,6 +1030,10 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 	GL_BindNullProgram();
 
+	GL_BlendFunc(GL_ONE, GL_ONE);
+
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
+
+	VectorCopy(oldView, r_origin);
 }

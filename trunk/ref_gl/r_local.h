@@ -476,6 +476,8 @@ void R_DrawBrushModelRA(void);
 void R_DrawMD3Mesh(qboolean weapon);
 void R_DrawMD3MeshLight(qboolean weapon);
 void R_DrawMD3ShellMesh(qboolean weapon);
+void CheckEntityFrameMD3(md3Model_t *paliashdr);
+qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e);
 
 extern int	occ_framecount;
 

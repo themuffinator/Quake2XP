@@ -112,7 +112,7 @@ typedef struct md3ST_s
 typedef struct md3Vertex_s
 {
 	vec3_t			xyz;
-	byte			normal, 
+	vec3_t			normal, 
 					tangent, 
 					binormal;
 } md3Vertex_t;
@@ -170,9 +170,3 @@ typedef struct md3Model_s
 	int				num_meshes;
 	md3Mesh_t		*meshes;
 } md3Model_t;
-
-
-byte Normal2Index(const vec3_t vec);
-void NormalToLatLong(const vec3_t normal, byte bytes[2]);
-qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e);
-void CheckEntityFrameMD3(md3Model_t *paliashdr);
