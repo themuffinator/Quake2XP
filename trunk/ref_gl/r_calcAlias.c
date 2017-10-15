@@ -339,7 +339,7 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglUniform1i (ambientAlias_isShell, 1);
 	qglUniform1i (ambientAlias_isEnvMaping, 0);
 	qglUniform1f (ambientAlias_colorModulate, r_textureColorScale->value);
-	qglUniform1f (ambientAlias_scroll, scroll);
+	qglUniform1f (ambientAlias_shellParams, scroll);
 	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
 
 	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);

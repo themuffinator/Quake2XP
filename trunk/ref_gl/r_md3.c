@@ -974,12 +974,11 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	// setup program
 	GL_BindProgram(aliasAmbientProgram, 0);
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE);
-	float scroll = r_newrefdef.time * 0.45;
-	float scale = 0.1f;
+	vec2_t shellParams = { r_newrefdef.time * 0.45, 0.1f };
 
-	qglUniform1i(ambientAlias_isShell, 1);
+	qglUniform1i(ambientAlias_isShell, 2); // deform in vertex shader
 	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
-	qglUniform1f(ambientAlias_scroll, scroll);
+	qglUniform2fv(ambientAlias_shellParams, 1, shellParams);
 	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 
 	if (currententity->flags & RF_SHELL_BLUE)
@@ -1014,9 +1013,9 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
 
-			md3vertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp + normalArray[j][0] * scale;
-			md3vertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp + normalArray[j][1] * scale;
-			md3vertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp + normalArray[j][2] * scale;
+			md3vertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
+			md3vertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
+			md3vertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 		}
 
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3vertexCache);

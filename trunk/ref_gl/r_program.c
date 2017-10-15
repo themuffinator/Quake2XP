@@ -660,7 +660,7 @@ void R_InitPrograms (void) {
 		ambientAlias_addShift		= qglGetUniformLocation (id, "u_AddShift");
 		ambientAlias_envScale		= qglGetUniformLocation (id, "u_envScale");
 		ambientAlias_isShell		= qglGetUniformLocation (id, "u_isShell");
-		ambientAlias_scroll			= qglGetUniformLocation (id, "u_scroll");
+		ambientAlias_shellParams	= qglGetUniformLocation (id, "u_shellParams");
 		ambientAlias_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
 		ambientAlias_viewOrg		= qglGetUniformLocation (id, "u_viewOrg");
 	}

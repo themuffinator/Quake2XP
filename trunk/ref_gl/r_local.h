@@ -947,7 +947,7 @@ uint ambientAlias_addShift;
 uint ambientAlias_isEnvMaping;
 uint ambientAlias_envScale;
 uint ambientAlias_isShell;
-uint ambientAlias_scroll;
+uint ambientAlias_shellParams;
 uint ambientAlias_mvp;
 uint ambientAlias_viewOrg;
 
