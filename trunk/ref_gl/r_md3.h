@@ -138,6 +138,11 @@ typedef struct
 
 } md3Skin_t;
 
+typedef struct mtriangle_s
+{
+	int		neighbours[3];
+} neighbours_t;
+
 typedef struct
 {
 	int				num_verts;
@@ -147,7 +152,7 @@ typedef struct
 
 	int				num_tris;
 	index_t			*indexes;
-	int				*neighbours;
+	neighbours_t	*triangles;
 
 	int				num_skins;
 

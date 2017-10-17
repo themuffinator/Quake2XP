@@ -47,27 +47,30 @@ void Tangent4TrisMD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec
 }
 
 
-static int Mod_FindTriangleWithEdge(md3Mesh_t *mesh, index32_t p1, index32_t p2, int ignore)
+int R_FindTriangleWithEdge(index_t *indexes, int numtris, index_t start, index_t end, int ignore)
 {
-	int		i, match, count;
-	index32_t *indexes;
+	int i;
+	int match, count;
 
 	count = 0;
 	match = -1;
 
-	for (i = 0, indexes = mesh->indexes; i<mesh->num_tris; i++, indexes += 3)
+	for (i = 0; i < numtris; i++, indexes += 3)
 	{
-		if ((indexes[0] == p2 && indexes[1] == p1)
-			|| (indexes[1] == p2 && indexes[2] == p1)
-			|| (indexes[2] == p2 && indexes[0] == p1)) {
+		if ((indexes[0] == start && indexes[1] == end)
+			|| (indexes[1] == start && indexes[2] == end)
+			|| (indexes[2] == start && indexes[0] == end))
+		{
 			if (i != ignore)
 				match = i;
 			count++;
 		}
-		else if ((indexes[0] == p1 && indexes[1] == p2)
-			|| (indexes[1] == p1 && indexes[2] == p2)
-			|| (indexes[2] == p1 && indexes[0] == p2))
+		else if ((indexes[1] == start && indexes[0] == end)
+			|| (indexes[2] == start && indexes[1] == end)
+			|| (indexes[0] == start && indexes[2] == end))
+		{
 			count++;
+		}
 	}
 
 	// detect edges shared by three triangles and make them seams
@@ -77,21 +80,23 @@ static int Mod_FindTriangleWithEdge(md3Mesh_t *mesh, index32_t p1, index32_t p2,
 	return match;
 }
 
+
 /*
 ===============
-Mod_BuildTriangleNeighbors
+R_BuildTriangleNeighbors
 ===============
 */
-static void Mod_BuildTriangleNeighbors(md3Mesh_t *mesh)
+void R_BuildTriangleNeighbors(neighbours_t *neighbors, index_t *indexes, int numtris)
 {
-	int		i, *n;
-	index32_t	*index;
+	int				i;
+	neighbours_t	*n;
+	index_t			*index;
 
-	for (i = 0, n = mesh->neighbours, index = mesh->indexes; i<mesh->num_tris; i++, n += 3, index += 3)
+	for (i = 0, index = indexes, n = neighbors; i < numtris; i++, index += 3, n++)
 	{
-		n[0] = Mod_FindTriangleWithEdge(mesh, index[0], index[1], i);
-		n[1] = Mod_FindTriangleWithEdge(mesh, index[1], index[2], i);
-		n[2] = Mod_FindTriangleWithEdge(mesh, index[2], index[0], i);
+		n->neighbours[0] = R_FindTriangleWithEdge(indexes, numtris, index[1], index[0], i);
+		n->neighbours[1] = R_FindTriangleWithEdge(indexes, numtris, index[2], index[1], i);
+		n->neighbours[2] = R_FindTriangleWithEdge(indexes, numtris, index[0], index[2], i);
 	}
 }
 
@@ -345,7 +350,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				norma[0] = clat * slng;
 				norma[1] = slat * slng;
 				norma[2] = clng;
-			//	outVerts->normal = Normal2Index(norma);
+				//	outVerts->normal = Normal2Index(norma);
 				VectorCopy(norma, outVerts->normal);
 			}
 			//for all tris
@@ -369,8 +374,8 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			{
 				VectorNormalize(tangents[j]);
 				VectorNormalize(binormals[j]);
-			//	outVerts[j].tangent = Normal2Index(tangents[j]);
-			//	outVerts[j].binormal = Normal2Index(binormals[j]);
+				//	outVerts[j].tangent = Normal2Index(tangents[j]);
+				//	outVerts[j].binormal = Normal2Index(binormals[j]);
 				VectorCopy(tangents[j], outVerts[j].tangent);
 				VectorCopy(binormals[j], outVerts[j].binormal);
 			}
@@ -401,8 +406,8 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		// build triangle neighbours
 		//
 		inMesh = (dmd3mesh_t *)((byte *)inMesh + LittleLong(inMesh->meshsize));
-		outMesh->neighbours = Hunk_Alloc(sizeof(int) * outMesh->num_tris * 3);
-		Mod_BuildTriangleNeighbors(outMesh);
+		outMesh->triangles = (neighbours_t*)Hunk_Alloc(sizeof(neighbours_t) * outMesh->num_tris);
+		R_BuildTriangleNeighbors(outMesh->triangles, outMesh->indexes, outMesh->num_tris);
 	}
 
 	mod->type = mod_alias_md3;
@@ -421,6 +426,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	for (i = 0; i<3; i++)
 		mod->center[i] = (mod->maxs[i] + mod->mins[i]) * 0.5;
 }
+
 
 /*
 =================
@@ -699,7 +705,7 @@ void R_UpdateMd3LightUniforms()
 
 }
 
-qboolean R_CullMd3Lighing() {
+qboolean R_Md3InLightBound() {
 
 	vec3_t mins, maxs;
 	int i;
@@ -764,10 +770,12 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
-	if (R_CullMD3Model(bbox, currententity))
-		return;
+	if (!(currententity->flags & RF_WEAPONMODEL)) {
+		if (R_CullMD3Model(bbox, currententity))
+			return;
+	}
 
-	if (!R_CullMd3Lighing())
+	if (!R_Md3InLightBound())
 		return;
 
 	md3Hdr = (md3Model_t *)currentmodel->extraData;
