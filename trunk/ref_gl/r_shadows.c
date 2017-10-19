@@ -31,6 +31,7 @@ uint		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 msurface_t	*shadow_surfaces[MAX_MAP_FACES];
 char		triangleFacingLight[MAX_INDICES / 3];
 void		*dynamicVertex, *dynamicIndex;
+
 /*
 =====================
 Alias Shadow Volumes
@@ -263,7 +264,7 @@ void GL_LerpShadowVerts (int nverts, dtrivertx_t *v, dtrivertx_t *ov, float *ler
 	}
 }
 
-void R_DeformShadowVolume () {
+void R_DrawMD2ShadowVolume () {
 	dmdl_t			*paliashdr;
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*v, *ov, *verts;
@@ -320,7 +321,174 @@ void R_DeformShadowVolume () {
 	BuildShadowVolumeTriangles (paliashdr, light);
 }
 
-void R_CastAliasShadowVolumes (qboolean player) {
+vec3_t	extrudedVerts[MD3_MAX_VERTS];
+float	md3ShadowVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
+
+void R_DrawMD3ShadowVolume(){
+
+	int				i, j, k, numTris, numVerts;
+	float			frontlerp, backlerp;
+	md3Model_t		*paliashdr;
+	md3Frame_t		*frame, *oldframe;
+	md3Mesh_t		*mesh;
+	md3Vertex_t		*v, *ov;
+	vec3_t			move, v1, v2, normal, trinormal, temp,
+					delta, vectors[3], lightOrg;
+	index_t			*idx, *index0, *index1;
+
+	if (!R_EntityInLightBounds())
+		return;
+
+	currentmodel = currententity->model;
+	paliashdr = (md3Model_t *)currentmodel->extraData;
+	float scale = 10 * currentShadowLight->maxRad;
+
+	R_SetupEntityMatrix(currententity);
+
+	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector(currententity->axis, temp, lightOrg);
+
+	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
+	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
+	move[0] = DotProduct(delta, vectors[0]);	// forward
+	move[1] = -DotProduct(delta, vectors[1]);	// left
+	move[2] = DotProduct(delta, vectors[2]);	// up
+
+	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+
+	backlerp = currententity->backlerp;
+	frontlerp = 1.0 - backlerp;
+	frame = paliashdr->frames + currententity->frame;
+	oldframe = paliashdr->frames + currententity->oldframe;
+
+	VectorAdd(move, oldframe->translate, move);
+
+	for (j = 0; j<3; j++)
+		move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
+
+	for (i = 0; i < paliashdr->num_meshes; i++)
+	{
+		mesh = &paliashdr->meshes[i];
+
+		v = mesh->vertexes + currententity->frame * mesh->num_verts;
+		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
+		{
+			md3VertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
+			md3VertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
+			md3VertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
+
+			/// calculate extruded verts
+			VectorSubtract(md3VertexCache[j], lightOrg, v1);
+			float sca = scale / VectorLength(v1);
+			extrudedVerts[j][0] = v1[0] * sca + md3VertexCache[j][0];
+			extrudedVerts[j][1] = v1[1] * sca + md3VertexCache[j][1];
+			extrudedVerts[j][2] = v1[2] * sca + md3VertexCache[j][2];
+		}
+
+		idx = mesh->indexes;
+		for (j = 0; j < mesh->num_tris; j++){
+
+			//Calculate shadow volume triangle normals
+			VectorSubtract(md3VertexCache[*idx], md3VertexCache[*(idx + 1)], v1);
+			VectorSubtract(md3VertexCache[*(idx + 2)], md3VertexCache[*(idx + 1)], v2);
+			CrossProduct(v2, v1, normal);
+			VectorScale(normal, 1 / VectorLength(normal), trinormal);
+
+			// Find front facing triangles
+			if (DotProduct(trinormal, lightOrg) <= DotProduct(md3VertexCache[*idx], trinormal))
+				triangleFacingLight[j] = 0;	
+			else
+				triangleFacingLight[j] = 1;
+
+			idx += 3;
+		}
+
+		idx = mesh->indexes;
+		numTris = numVerts = 0;
+		for (j = 0; j < mesh->num_tris; j++){
+
+			if (triangleFacingLight[j])
+			{
+				for (k = 0; k<3; k++)
+				{
+					qboolean shadow = qfalse;
+					if (mesh->triangles[j].neighbours[k] == -1)
+						shadow = qtrue;
+					else
+						if (!triangleFacingLight[mesh->triangles[j].neighbours[k]])
+							shadow = qtrue;
+
+					if (shadow)
+					{
+						index0 = idx + k;
+						index1 = idx + ((k + 1) % 3);
+
+						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
+						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
+						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
+
+						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][0];
+						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][1];
+						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][2];
+						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][0];
+						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][1];
+						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][2];
+
+						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][0];
+						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][1];
+						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][2];
+
+						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][0];
+						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][1];
+						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][2];
+						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
+						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
+						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
+
+						numTris += 6;
+					}
+				}
+			}
+
+			idx += 3;
+		}
+
+		idx = mesh->indexes;
+		for (j = 0; j < mesh->num_tris; j++)
+		{
+			if (triangleFacingLight[j])
+			{
+				for (k = 0; k<3; k++)
+				{
+					index0 = idx + k;
+					md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
+					md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
+					md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
+				}
+
+				for (k = 2; k >= 0; k--)
+				{
+					index0 = idx + k;
+					md3ShadowVerts[numVerts++] = extrudedVerts[*index0][0];
+					md3ShadowVerts[numVerts++] = extrudedVerts[*index0][1];
+					md3ShadowVerts[numVerts++] = extrudedVerts[*index0][2];
+				}
+
+				numTris += 6;
+			}
+
+			idx += 3;
+		}
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3ShadowVerts);
+		qglDrawArrays(GL_TRIANGLES, 0, numTris);
+
+	}
+}
+
+
+void R_CastAliasShadowVolumes(qboolean player) {
 	int	i;
 
 	if (!r_shadows->integer || !r_drawEntities->integer)
@@ -330,24 +498,24 @@ void R_CastAliasShadowVolumes (qboolean player) {
 		return;
 
 	// setup program
-	GL_BindProgram (shadowProgram, 0);
+	GL_BindProgram(shadowProgram, 0);
 
-	GL_StencilMask (255);
-	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	GL_StencilOpSeparate (GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+	GL_StencilMask(255);
+	GL_StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	GL_StencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+	GL_StencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
-	GL_Disable (GL_CULL_FACE);
-	GL_DepthFunc (GL_LESS);
-	GL_Enable (GL_POLYGON_OFFSET_FILL);
-	GL_PolygonOffset (0.1, 1);
-	GL_ColorMask (0, 0, 0, 0);
+	GL_Disable(GL_CULL_FACE);
+	GL_DepthFunc(GL_LESS);
+	GL_Enable(GL_POLYGON_OFFSET_FILL);
+	GL_PolygonOffset(0.1, 1);
+	GL_ColorMask(0, 0, 0, 0);
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
 
-	qglEnableVertexAttribArray (ATT_POSITION);
-	qglVertexAttribPointer (ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
 
 	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -356,12 +524,12 @@ void R_CastAliasShadowVolumes (qboolean player) {
 
 			if (!currentmodel)
 				continue;
-			
+
 			if (!(currententity->flags & RF_VIEWERMODEL))
 				continue;
 
 			if (currentmodel->type == mod_alias)
-				R_DeformShadowVolume();
+				R_DrawMD2ShadowVolume();
 
 		}
 	}
@@ -377,20 +545,67 @@ void R_CastAliasShadowVolumes (qboolean player) {
 				continue;
 
 			if (currentmodel->type == mod_alias)
-				R_DeformShadowVolume();
+				R_DrawMD2ShadowVolume();
 
 		}
 	}
-	qglDisableVertexAttribArray (ATT_POSITION);
-	
+
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglDisableVertexAttribArray(ATT_POSITION);
 
-	GL_Disable (GL_POLYGON_OFFSET_FILL);
-	GL_PolygonOffset (0, 0);
-	GL_Enable (GL_CULL_FACE);
-	GL_ColorMask (1, 1, 1, 1);
-	GL_BindNullProgram ();
+	/*==============
+	DRAW MD3 SHADOWS
+	==============*/
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	GL_BindProgram(nullProgram, 0);
+
+	// re-setup stencil
+	GL_StencilMask(255);
+	GL_StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
+	GL_StencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+	GL_StencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+
+	if (player) {
+		for (i = 0; i < r_newrefdef.num_entities; i++) {
+			currententity = &r_newrefdef.entities[i];
+			currentmodel = currententity->model;
+
+			if (!currentmodel)
+				continue;
+
+			if (!(currententity->flags & RF_VIEWERMODEL))
+				continue;
+
+			if (currentmodel->type == mod_alias_md3)
+				R_DrawMD3ShadowVolume();
+
+		}
+	}
+	else {
+		for (i = 0; i < r_newrefdef.num_entities; i++) {
+			currententity = &r_newrefdef.entities[i];
+			currentmodel = currententity->model;
+
+			if (!currentmodel)
+				continue;
+
+			if (currententity->flags & RF_VIEWERMODEL)
+				continue;
+
+			if (currentmodel->type == mod_alias_md3)
+				R_DrawMD3ShadowVolume();
+
+		}
+	}
+
+	GL_BindNullProgram();
+	qglDisableVertexAttribArray(ATT_POSITION);
+	GL_Disable(GL_POLYGON_OFFSET_FILL);
+	GL_PolygonOffset(0, 0);
+	GL_Enable(GL_CULL_FACE);
+	GL_ColorMask(1, 1, 1, 1);
 }
 
 

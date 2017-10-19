@@ -479,6 +479,9 @@ void R_DrawMD3ShellMesh(qboolean weapon);
 void CheckEntityFrameMD3(md3Model_t *paliashdr);
 qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e);
 
+void SetModelsLight();
+extern float shadelight[3];
+byte Normal2Index(const vec3_t vec);
 extern int	occ_framecount;
 
 //====================================================================

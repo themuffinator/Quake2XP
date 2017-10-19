@@ -289,7 +289,6 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	int			index_xyz, i, j, jj = 0;
 	dtriangle_t	*tris;
 	unsigned	defBits = 0;
-	float		scroll = 0.0;
 	float		backlerp, frontlerp;
 	int			index2, oldindex2;
 	daliasframe_t	*frame, *oldframe;
@@ -297,8 +296,6 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
-
-	scroll = r_newrefdef.time *0.45;
 
 	if (currententity->flags & RF_WEAPONMODEL)
 		R_CalcAliasFrameLerp (paliashdr, 0.1);
@@ -335,11 +332,13 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 
 	// setup program
 	GL_BindProgram (aliasAmbientProgram, defBits);
+	
+	vec2_t shellParams = { r_newrefdef.time * 0.45, 0.0f };
 
 	qglUniform1i (ambientAlias_isShell, 1);
 	qglUniform1i (ambientAlias_isEnvMaping, 0);
 	qglUniform1f (ambientAlias_colorModulate, r_textureColorScale->value);
-	qglUniform1f (ambientAlias_shellParams, scroll);
+	qglUniform2fv(ambientAlias_shellParams, 1, shellParams);
 	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
 
 	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);

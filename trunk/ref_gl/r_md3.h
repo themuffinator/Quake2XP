@@ -112,7 +112,7 @@ typedef struct md3ST_s
 typedef struct md3Vertex_s
 {
 	vec3_t			xyz;
-	vec3_t			normal, 
+	byte			normal, 
 					tangent, 
 					binormal;
 } md3Vertex_t;
@@ -161,6 +161,8 @@ typedef struct
 	image_t			*skinsLight[MD3_MAX_SKINS];
 	image_t			*skinsEnv[MD3_MAX_SKINS];
 	image_t			*skinsRgh[MD3_MAX_SKINS];
+	image_t			*skinsAO[MD3_MAX_SKINS];
+	image_t			*skinsSkinLocal[MD3_MAX_SKINS];
 
 } md3Mesh_t;
 
@@ -175,3 +177,6 @@ typedef struct md3Model_s
 	int				num_meshes;
 	md3Mesh_t		*meshes;
 } md3Model_t;
+
+vec3_t	md3VertexCache[MD3_MAX_VERTS];
+vec4_t	md3ColorCache[MD3_MAX_VERTS * 4];

@@ -313,7 +313,6 @@ void R_DrawDepthAliasModel(void){
 	GL_DrawAliasFrameLerpDepth(paliashdr);
 }
 
-extern vec3_t	md3vertexCache[MAX_VERTICES * 4];
 void R_DrawDepthMD3Model(void) {
 
 	md3Model_t	*md3Hdr;
@@ -365,13 +364,12 @@ void R_DrawDepthMD3Model(void) {
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++)
 		{
-		VectorSet(md3vertexCache[j],
-				move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp,
-				move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp,
-				move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp);
+			md3VertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
+			md3VertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
+			md3VertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 		}
 
-		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3vertexCache);
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	}
 

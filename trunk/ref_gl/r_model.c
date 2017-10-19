@@ -2606,6 +2606,12 @@ struct model_s *R_RegisterModel(char *name) {
 
 					 if (mesh->skinsEnv[j] && mesh->skinsEnv[j]->name[0])
 						 mesh->skinsEnv[j]->registration_sequence = registration_sequence;
+
+					 if (mesh->skinsAO[j] && mesh->skinsAO[j]->name[0])
+						 mesh->skinsAO[j]->registration_sequence = registration_sequence;
+
+					 if (mesh->skinsSkinLocal[j] && mesh->skinsSkinLocal[j]->name[0])
+						 mesh->skinsSkinLocal[j]->registration_sequence = registration_sequence;
 				 }
 
 			 }
