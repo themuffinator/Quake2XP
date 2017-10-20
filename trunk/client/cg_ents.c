@@ -978,7 +978,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				else
 					VectorMA (flashLightOrigin, 10, right, flashLightOrigin); //right
 
-				V_AddLight (flashLightOrigin, 1024, 1, 1, 1, flashlightDirection, 0.5, 33);
+				V_AddLight (flashLightOrigin, 348, 1, 1, 1, flashlightDirection, 0.5, 33);
 			}
 			else {
 
@@ -988,7 +988,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				VectorMA (ent.origin, 6, forward, flashLightOrigin);
 				VectorMA (flashLightOrigin, -6, up, flashLightOrigin);
 
-				V_AddLight (flashLightOrigin, 1024, 0.9, 0.9, 0.3, tmpAngles, 0.5, 33);
+				V_AddLight (flashLightOrigin, 348, 0.9, 0.9, 0.3, tmpAngles, 0.5, 33);
 
 			}
 		}
