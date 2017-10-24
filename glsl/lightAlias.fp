@@ -53,11 +53,8 @@ void main (void) {
 	vec4 diffuseMap  = texture(u_diffuseMap, v_texCoord);
 	
 	if(u_autoBump == 0){
-		normalMap =  texture(u_bumpMap, v_texCoord);
-		normalMap.xyz *= 2.0;
-		normalMap.xyz -= 1.0;
-		normalMap.xyz = normalize(normalMap).xyz;
-		specular = normalMap.a * u_specularScale;
+		normalMap.xyz = normalize(texture(u_bumpMap, v_texCoord).rgb * 2.0 - 1.0);
+		specular = texture(u_bumpMap, v_texCoord).w * u_specularScale;
 	}
 
 	if(u_autoBump == 1){
@@ -91,13 +88,12 @@ void main (void) {
 	
 	if(u_isRgh == 1){
 		vec4 rghMap = texture(u_rghMap, v_texCoord);
-		roughness = rghMap.r * 1.5;
-    roughness = clamp(roughness, 0.1, 1.0);
+		roughness = rghMap.r;
+ //   roughness = clamp(roughness, 0.1, 1.0);
 	}
 
 	if(u_isRgh == 0){
-		roughness = 1.0 - diffuseMap.r * 1.35;
-		roughness = clamp(roughness, 0.1, 1.0);
+		roughness = 1.0 - diffuseMap.r;
     }
 
 	vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V);

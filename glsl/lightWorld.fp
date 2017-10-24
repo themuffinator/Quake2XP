@@ -54,9 +54,8 @@ void main (void) {
 	if(u_autoBump == 0){
 		texCoord = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
 		diffuseMap = texture(u_Diffuse,  texCoord);
-		normalMap =  texture(u_NormalMap, texCoord);
-		normalMap.xyz *= 2.0;
-		normalMap.xyz -= 1.0;
+		normalMap.rgb =  normalize(texture(u_NormalMap, texCoord).rgb * 2.0 - 1.0);
+
 	}
 
 	if(u_autoBump == 1){
@@ -77,14 +76,14 @@ void main (void) {
 	diffuseMap *= u_ColorModulate;
 
 	if(u_isAmbient == 1) {
-		fragData = diffuseMap * LambertLighting(normalize(normalMap.xyz), L) * u_LightColor * attenMap;
+		fragData = diffuseMap * LambertLighting(normalMap.xyz, L) * u_LightColor * attenMap;
 		return;
 	}
 
 	if(u_isAmbient == 0) {
 		
 		float roughness;
-		float specular = normalMap.a * u_specularScale;
+		float specular = texture(u_NormalMap, texCoord).a * u_specularScale;
     
 		if(u_isRgh == 1){
 			roughness = texture(u_RghMap, texCoord).r * u_roughnessScale;
@@ -95,7 +94,7 @@ void main (void) {
 		roughness = clamp(roughness, 0.1, 1.0);
 		}
 
-		vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalize(normalMap.xyz), L, V);
+		vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V);
 		vec3 brdfColor = brdf * u_LightColor.rgb;
           
 		if(u_fog == 1) {  

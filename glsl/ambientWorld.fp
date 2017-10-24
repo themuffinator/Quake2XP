@@ -45,9 +45,8 @@ void main (void) {
 
 	vec3 diffuseMap = texture(u_Diffuse, P).xyz;
 	vec3 glowMap = texture(u_Add, P).xyz;
-	vec4 normalMap = texture(u_NormalMap, P);
-	normalMap.xyz *= 2.0;
-	normalMap.xyz -= 1.0;
+	vec3 normalMap = normalize(texture(u_NormalMap, P).rgb * 2.0 - 1.0);
+	float specular = texture(u_NormalMap, P).a;
 
 	vec3 lm;
 		if(u_isLava == 1)
@@ -61,8 +60,6 @@ void main (void) {
 		
 	}
 	if (u_LightMapType == 1) {
-	
-		normalMap.xyz = normalize(normalMap.xyz);
 
 		vec3 lm0 = lm;
 		vec3 lm1 = texture(u_LightMap1, v_lTexCoord.xy).rgb;
@@ -102,7 +99,7 @@ void main (void) {
 		// The more material is specular, the less it is diffuse.
 		// Assume all shiny materials are metals of the same moderate roughness in Q2,
 		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
-		fragData.xyz = diffuseMap * mix(D, S, normalMap.w * u_specularScale);
+		fragData.xyz = diffuseMap * mix(D, S, specular * u_specularScale);
 	}
       
 	if (u_ssao == 1)
