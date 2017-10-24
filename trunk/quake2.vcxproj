@@ -414,7 +414,7 @@
     <ClCompile Include="ref_gl\r_light.c" />
     <ClCompile Include="ref_gl\r_lightMaps.c" />
     <ClCompile Include="ref_gl\r_main.c" />
-    <ClCompile Include="ref_gl\r_md3.c" />
+    <ClCompile Include="ref_gl\r_md3Mesh.c" />
     <ClCompile Include="ref_gl\r_program.c" />
     <ClCompile Include="ref_gl\r_shadows.c" />
     <ClCompile Include="ref_gl\r_zprepass.c" />
@@ -604,8 +604,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_drawAlias.c" />
-    <ClCompile Include="ref_gl\r_calcAlias.c" />
+    <ClCompile Include="ref_gl\r_md2Mesh.c" />
     <ClCompile Include="ref_gl\r_decals.c" />
     <ClCompile Include="ref_gl\r_draw2d.c" />
     <ClCompile Include="ref_gl\r_image.c" />
@@ -720,6 +719,8 @@
     <ClInclude Include="win32\winquake.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\baseq2\glsl\ambientMd3.fp" />
+    <None Include="..\baseq2\glsl\ambientMd3.vp" />
     <None Include="..\baseq2\glsl\depthDownsample.fp" />
     <None Include="..\baseq2\glsl\depthDownsample.vp" />
     <None Include="..\baseq2\glsl\fixfov.fp" />
@@ -728,8 +729,8 @@
     <None Include="..\baseq2\glsl\glare.vp" />
     <None Include="..\baseq2\glsl\lightAlias.fp" />
     <None Include="..\baseq2\glsl\lightAlias.vp" />
-    <None Include="..\baseq2\glsl\ambientAlias.fp" />
-    <None Include="..\baseq2\glsl\ambientAlias.vp" />
+    <None Include="..\baseq2\glsl\ambientMd2.fp" />
+    <None Include="..\baseq2\glsl\ambientMd2.vp" />
     <None Include="..\baseq2\glsl\ambientWorld.fp" />
     <None Include="..\baseq2\glsl\ambientWorld.vp" />
     <None Include="..\baseq2\glsl\bloomds.fp" />

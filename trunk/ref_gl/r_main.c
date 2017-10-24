@@ -758,7 +758,7 @@ void R_RenderSprites(void)
 
 	GL_DepthMask(0);
 	GL_Enable(GL_BLEND);
-	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
@@ -791,9 +791,6 @@ void R_RenderSprites(void)
 		if (!currentmodel)
 			continue;
 
-		if ( r_newrefdef.rdflags & RDF_IRGOGGLES) 
-				continue;
-		
 		if (currentmodel->type == mod_sprite)
 			R_DrawDistortSpriteModel(currententity);
 	}
@@ -853,6 +850,13 @@ static void R_DrawEntitiesOnList (void) {
 				break;
 		}
 	}
+}
+
+static void R_DrawTransEntities(void) {
+	int i;
+
+	if (!r_drawEntities->integer)
+		return;
 
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
@@ -879,7 +883,7 @@ static void R_DrawEntitiesOnList (void) {
 			continue;
 		}
 
-		if (currentmodel->type == mod_alias) 
+		if (currentmodel->type == mod_alias)
 			R_DrawAliasModel(currententity);
 
 		if (currentmodel->type == mod_alias_md3) {
@@ -888,6 +892,7 @@ static void R_DrawEntitiesOnList (void) {
 		}
 	}
 	GL_Disable(GL_BLEND);
+	GL_DepthMask(1);
 }
 
 // draw all opaque, non-reflective stuff
@@ -986,11 +991,11 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawAmbientScene();
 	R_DrawLightScene();
 	R_RenderDecals();
-	R_DrawParticles();
 	R_CaptureColorBuffer();
 
 	R_DrawRAScene();
 
+	R_DrawTransEntities();
 	R_DrawParticles();
 
 	R_CaptureColorBuffer();

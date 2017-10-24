@@ -172,7 +172,6 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 		numVerts += 3;
 
 		// rear cap (with flipped winding order)
-
 		for (j = 0; j < 3; j++) {
 			v0[j] = s_lerped[tris->index_xyz[0]][j];
 			v1[j] = s_lerped[tris->index_xyz[1]][j];
@@ -403,6 +402,7 @@ void R_DrawMD3ShadowVolume(){
 				triangleFacingLight[j] = 1;
 
 			idx += 3;
+
 		}
 
 		idx = mesh->indexes;
@@ -453,6 +453,7 @@ void R_DrawMD3ShadowVolume(){
 			}
 
 			idx += 3;
+			c_shadow_tris += numTris;
 		}
 
 		idx = mesh->indexes;
@@ -477,6 +478,7 @@ void R_DrawMD3ShadowVolume(){
 				}
 
 				numTris += 6;
+				c_shadow_tris += numTris;
 			}
 
 			idx += 3;

@@ -648,8 +648,8 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"ambient model program"S_COLOR_WHITE" ");
-	aliasAmbientProgram = R_FindProgram ("ambientAlias", qtrue, qtrue, qfalse, qfalse, qfalse);
+	Com_Printf ("Load "S_COLOR_YELLOW"ambient md2 program"S_COLOR_WHITE" ");
+	aliasAmbientProgram = R_FindProgram ("ambientMd2", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (aliasAmbientProgram->valid) {
 		Com_Printf ("succeeded\n");
 		id = aliasAmbientProgram->id[0];
@@ -669,6 +669,26 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"ambient md3 program"S_COLOR_WHITE" ");
+	md3AmbientProgram = R_FindProgram("ambientMd3", qtrue, qtrue, qfalse, qfalse, qfalse);
+	if (md3AmbientProgram->valid) {
+		Com_Printf("succeeded\n");
+		id = md3AmbientProgram->id[0];
+
+		ambientMd3_isEnvMaping		= qglGetUniformLocation(id, "u_isEnvMap");
+		ambientMd3_ssao				= qglGetUniformLocation(id, "u_ssao");
+		ambientMd3_colorModulate	= qglGetUniformLocation(id, "u_ColorModulate");
+		ambientMd3_addShift			= qglGetUniformLocation(id, "u_AddShift");
+		ambientMd3_envScale			= qglGetUniformLocation(id, "u_envScale");
+		ambientMd3_isShell			= qglGetUniformLocation(id, "u_isShell");
+		ambientMd3_shellParams		= qglGetUniformLocation(id, "u_shellParams");
+		ambientMd3_mvp				= qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
+		ambientMd3_viewOrg			= qglGetUniformLocation(id, "u_viewOrg");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf ("Load "S_COLOR_YELLOW"light model program"S_COLOR_WHITE" ");
 	aliasBumpProgram = R_FindProgram ("lightAlias", qtrue, qtrue, qfalse, qfalse, qfalse);

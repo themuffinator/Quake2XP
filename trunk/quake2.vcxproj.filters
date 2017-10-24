@@ -209,12 +209,6 @@
     <ClCompile Include="qcommon\q_parser.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_drawAlias.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="ref_gl\r_calcAlias.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_draw2d.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -314,7 +308,10 @@
     <ClCompile Include="client\cg_view.c">
       <Filter>Source Files\Cg</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_md3.c">
+    <ClCompile Include="ref_gl\r_md3Mesh.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_md2Mesh.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
@@ -458,12 +455,6 @@
     </None>
     <None Include="..\baseq2\glsl\include\parallax.inc">
       <Filter>Source Files\Renderer\glsl\include</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\ambientAlias.fp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\ambientAlias.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\ambientWorld.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
@@ -646,6 +637,18 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\menu.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientMd3.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientMd3.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientMd2.fp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\ambientMd2.vp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

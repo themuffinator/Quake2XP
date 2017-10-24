@@ -378,9 +378,9 @@ void CL_ParseMuzzleFlash (void) {
 	VectorCopy (pl->current.origin, dl->origin);
 
 	AngleVectors (pl->current.angles, fv, rv, up);
-	VectorMA (dl->origin, 18, fv, dl->origin);
+	VectorMA (dl->origin, 25, fv, dl->origin);
 	VectorMA (dl->origin, 16, rv, dl->origin);
-	VectorMA (dl->origin, 43, up, dl->origin);
+	VectorMA (dl->origin, 35, up, dl->origin);
 
 	// shell brass  and gun smoke origins
 	if (cl.playernum == i - 1 && !cl_thirdPerson->value) { //local player w/o third person view
@@ -417,7 +417,7 @@ void CL_ParseMuzzleFlash (void) {
 	switch (weapon) {
 		case MZ_BLASTER:
 			dl->color[0] = 1;
-			dl->color[1] = 1;
+			dl->color[1] = 0.7;
 			dl->color[2] = 0;
 
 			S_fastsound (NULL, i, CHAN_WEAPON,
@@ -434,7 +434,7 @@ void CL_ParseMuzzleFlash (void) {
 			break;
 		case MZ_HYPERBLASTER:
 			dl->color[0] = 1;
-			dl->color[1] = 1;
+			dl->color[1] = 0.7;
 			dl->color[2] = 0;
 			S_fastsound (NULL, i, CHAN_WEAPON,
 				fastsound_descriptor[weapons_hyprbf1a], volume * 0.8,
@@ -442,8 +442,8 @@ void CL_ParseMuzzleFlash (void) {
 			break;
 		case MZ_MACHINEGUN:
 			dl->color[0] = 1;
-			dl->color[1] = 1;
-			dl->color[2] = 0;
+			dl->color[1] = 0.6;
+			dl->color[2] = 0.4;
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
 			CL_BrassShells (shell_brass, dir, 1, qtrue);
 			S_fastsound (NULL, i, CHAN_WEAPON,
@@ -452,8 +452,8 @@ void CL_ParseMuzzleFlash (void) {
 			break;
 		case MZ_SHOTGUN:
 			dl->color[0] = 1;
-			dl->color[1] = 1;
-			dl->color[2] = 0;
+			dl->color[1] = 0.6;
+			dl->color[2] = 0.4;
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 4);
 			CL_BrassShells (shell_brass, dir, 1, qfalse);
 			S_fastsound (NULL, i, CHAN_WEAPON,
@@ -465,8 +465,8 @@ void CL_ParseMuzzleFlash (void) {
 			break;
 		case MZ_SSHOTGUN:
 			dl->color[0] = 1;
-			dl->color[1] = 1;
-			dl->color[2] = 0;
+			dl->color[1] = 0.6;
+			dl->color[2] = 0.4;
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 6);
 			CL_BrassShells (shell_brass, dir, 2, qfalse);
 			S_fastsound (NULL, i, CHAN_WEAPON,
@@ -478,8 +478,8 @@ void CL_ParseMuzzleFlash (void) {
 			CL_BrassShells (shell_brass, dir, 1, qtrue);
 			dl->radius = 200 + (rand () & 31);
 			dl->color[0] = 1;
-			dl->color[1] = 0.25;
-			dl->color[2] = 0;
+			dl->color[1] = 0.7;
+			dl->color[2] = 0.5;
 			S_fastsound (NULL, i, CHAN_WEAPON,
 				fastsound_descriptor[weapons_machgf1b + (rand () % 5)],
 				volume * 0.8, ATTN_WEAPON_LIGHT);
@@ -490,7 +490,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->radius = 225 + (rand () & 31);
 			dl->color[0] = 1;
 			dl->color[1] = 0.5;
-			dl->color[2] = 0;
+			dl->color[2] = 0.4;
 			dl->die = cl.time + 0.1;	// long delay
 			S_fastsound (NULL, i, CHAN_WEAPON,
 				fastsound_descriptor[weapons_machgf1b + (rand () % 5)],
@@ -505,8 +505,8 @@ void CL_ParseMuzzleFlash (void) {
 			CL_BrassShells (shell_brass, dir, 1, qtrue);
 			dl->radius = 250 + (rand () & 31);
 			dl->color[0] = 1;
-			dl->color[1] = 1;
-			dl->color[2] = 0;
+			dl->color[1] = 0.6;
+			dl->color[2] = 0.4;
 			dl->die = cl.time + 0.1;	// long delay
 			S_fastsound (NULL, i, CHAN_WEAPON,
 				fastsound_descriptor[weapons_machgf1b + (rand () % 5)],
@@ -621,8 +621,8 @@ void CL_ParseMuzzleFlash (void) {
 			break;
 		case MZ_SHOTGUN2:
 			dl->color[0] = 1;
-			dl->color[1] = 1;
-			dl->color[2] = 0;
+			dl->color[1] = 0.7;
+			dl->color[2] = 0.5;
 			S_fastsound (NULL, i, CHAN_WEAPON,
 				S_RegisterSound ("weapons/shotg2.wav"), volume,
 				ATTN_WEAPON_LIGHT);

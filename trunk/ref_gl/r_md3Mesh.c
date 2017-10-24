@@ -419,10 +419,14 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		inMesh = (dmd3mesh_t *)((byte *)inMesh + LittleLong(inMesh->meshsize));
 		outMesh->triangles = (neighbours_t*)Hunk_Alloc(sizeof(neighbours_t) * outMesh->num_tris);
 		R_BuildTriangleNeighbors(outMesh->triangles, outMesh->indexes, outMesh->num_tris);
-	}
+	
+		if (!Q_strcasecmp(outMesh->name, "MF"))
+			outMesh->muzzle = qtrue;
+		else
+			outMesh->muzzle = qfalse;
+}
 
 	mod->type = mod_alias_md3;
-	mod->flags = 0;
 
 	/// Calc md3 bounds and radius...
 	vec3_t	tempr, tempv;
@@ -550,7 +554,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	md3Frame_t	*frame, *oldframe;
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*v, *ov;
-	image_t     *skin, *light, *normal;
+	image_t     *skin, *light, *normal, *ao;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -571,6 +575,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	md3Hdr = (md3Model_t *)currentmodel->extraData;
 
 	SetModelsLight();
+
 	CheckEntityFrameMD3(md3Hdr);
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
@@ -598,35 +603,41 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	qglEnableVertexAttribArray(ATT_COLOR);
 
 	// setup program
-	GL_BindProgram(aliasAmbientProgram, 0);
+	GL_BindProgram(md3AmbientProgram, 0);
 
-	qglUniform1i(ambientAlias_isEnvMaping, 0);
-	qglUniform1i(ambientAlias_isShell, 0);
-	qglUniform1f(ambientAlias_colorModulate, /*r_textureColorScale->value*/ 1.0);
+	qglUniform1i(ambientMd3_isEnvMaping, 0);
+	qglUniform1i(ambientMd3_isShell, 0);
+	qglUniform1f(ambientMd3_colorModulate, /*r_textureColorScale->value*/ 1.0);
 
 	float alphaShift = sin(ref_realtime * 5.666);
 	alphaShift = (alphaShift + 1) * 0.5f;
 	alphaShift = clamp(alphaShift, 0.3, 1.0);
 
-	qglUniform1f(ambientAlias_addShift, alphaShift);
-	qglUniform1f(ambientAlias_envScale, 0.1);
+	qglUniform1f(ambientMd3_addShift, alphaShift);
+	qglUniform1f(ambientMd3_envScale, 0.1);
 
-	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
-		GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		qglUniform1i(ambientAlias_ssao, 1);
-	}
-	else
-		qglUniform1i(ambientAlias_ssao, 0);
+	qglUniform1i(ambientMd3_ssao, 1);
 
-	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
-	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniform3fv(ambientMd3_viewOrg, 1, r_origin);
+	qglUniformMatrix4fv(ambientMd3_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
-
+		
+		c_alias_polys += md3Hdr->meshes[i].num_tris;
+		
+		if (mesh->muzzle) {
+			GL_Enable(GL_BLEND);
+			GL_DepthMask(0);
+			GL_Disable(GL_CULL_FACE);
+			qglUniform1f(ambientMd3_addShift, 1.0);
+			qglUniform1f(ambientMd3_colorModulate, 2.0);
+			GL_BlendFunc(GL_ONE, GL_ONE);
+		}
+		
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!skin || skin == r_notexture)
 		{
@@ -636,19 +647,26 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			}
 		}
 		if (!skin)
-			skin = mesh->skinsAlbedo[0];
+			skin = r_notexture;
 
 		light = mesh->skinsLight[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!light)
-			light = mesh->skinsLight[0];
+			light = r_notexture;
 
 		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = mesh->skinsNormal[0];
+			normal = r_defBump;
+		
+		ao = mesh->skinsAO[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		if (!ao)
+			ao = r_whiteMap;
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
 
-			Vector4Set(md3ColorCache[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
+			if (mesh->muzzle)
+				Vector4Set(md3ColorCache[j], 1.0, 1.0, 1.0, 1.0);
+			else
+				Vector4Set(md3ColorCache[j], shadelight[0], shadelight[1], shadelight[2], 1.0);
 
 			md3VertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
 			md3VertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
@@ -663,8 +681,16 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_MBind(GL_TEXTURE1, light->texnum);
 		GL_MBind(GL_TEXTURE2, r_envTex->texnum);
 		GL_MBind(GL_TEXTURE3, normal->texnum);
+		GL_MBind(GL_TEXTURE4, ao->texnum);
 
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+	
+		if (mesh->muzzle) {
+			GL_Disable(GL_BLEND);
+			GL_DepthMask(1);
+			GL_Enable(GL_CULL_FACE);
+			GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
 	}
 
 	qglDisableVertexAttribArray(ATT_POSITION);
@@ -859,6 +885,11 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+		
+		if (mesh->muzzle)
+			continue;
+
+		c_alias_polys += md3Hdr->meshes[i].num_tris;
 
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!skin || skin == r_notexture)
@@ -869,15 +900,15 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 			}
 		}
 		if (!skin)
-			skin = mesh->skinsAlbedo[0];
+			skin = r_notexture;
 
 		normal = mesh->skinsNormal[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!normal)
-			normal = mesh->skinsNormal[0];
+			normal = r_defBump;
 
 		rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!rgh)
-			rgh = mesh->skinsRgh[0];
+			rgh = r_notexture;
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
 
@@ -915,7 +946,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_MBind(GL_TEXTURE2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		GL_MBindCube(GL_TEXTURE3, r_lightCubeMap[currentShadowLight->filter]->texnum);
 
-		if (rgh == mesh->skinsRgh[0])
+		if (rgh == r_notexture)
 			qglUniform1i(lightAlias_isRgh, 0);
 		else {
 			qglUniform1i(lightAlias_isRgh, 1);
@@ -965,6 +996,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	md3Hdr = (md3Model_t *)currentmodel->extraData;
 
 	CheckEntityFrameMD3(md3Hdr);
+
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
@@ -993,14 +1025,14 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, viewOrg);
 
 	// setup program
-	GL_BindProgram(aliasAmbientProgram, 0);
+	GL_BindProgram(md3AmbientProgram, 0);
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE);
 	vec2_t shellParams = { r_newrefdef.time * 0.45, 0.1f };
 
-	qglUniform1i(ambientAlias_isShell, 2); // deform in vertex shader
-	qglUniform3fv(ambientAlias_viewOrg, 1, viewOrg);
-	qglUniform2fv(ambientAlias_shellParams, 1, shellParams);
-	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniform1i(ambientMd3_isShell, 1); // deform in vertex shader
+	qglUniform3fv(ambientMd3_viewOrg, 1, viewOrg);
+	qglUniform2fv(ambientMd3_shellParams, 1, shellParams);
+	qglUniformMatrix4fv(ambientMd3_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_MBind(GL_TEXTURE0, r_texshell[0]->texnum);
@@ -1019,14 +1051,19 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
 
+		if (mesh->muzzle)
+			continue;
+
 		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
 		oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
+		c_alias_polys += md3Hdr->meshes[i].num_tris;
+
 		for (k = 0; k < mesh->num_verts; k++) {
 
-			normalArray[i][0] = q_byteDirs[verts[i].normal][0] * frontlerp + q_byteDirs[oldVerts[i].normal][0] * backlerp;
-			normalArray[i][1] = q_byteDirs[verts[i].normal][1] * frontlerp + q_byteDirs[oldVerts[i].normal][1] * backlerp;
-			normalArray[i][2] = q_byteDirs[verts[i].normal][2] * frontlerp + q_byteDirs[oldVerts[i].normal][2] * backlerp;
+			normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
+			normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
+			normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
 		}
 
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
@@ -1046,10 +1083,8 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	}
 
 	qglDisableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_NORMAL);
 
 	GL_BindNullProgram();
-
 	GL_BlendFunc(GL_ONE, GL_ONE);
 
 	if (currententity->flags & RF_DEPTHHACK)

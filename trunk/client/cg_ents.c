@@ -1059,10 +1059,10 @@ void CL_AddPacketEntities (frame_t * frame) {
 			if (ent.model) // hack for blaster bolt particle
 			{
 				if (!Q_strcasecmp(ent.model->name, "models/objects/laser/tris.md2")) {
-					ent.flags = 0; //RF_TRANSLUCENT;
-					ent.flags |= RF_NOCULL;
-					ent.flags |= RF_FULLBRIGHT;
+					ent.flags = RF_FULLBRIGHT;
 					ent.flags |= RF_NOSHADOW;
+					ent.flags |= RF_TRANSLUCENT;
+					ent.flags |= RF_NOCULL;
 					ent.alpha = 1.0;
 				}
 				V_AddEntity(&ent);
@@ -1073,7 +1073,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			&& (!player_camera || (cl_thirdPerson->value
 			&& !(cl.attractloop && !(cl.cinematictime > 0
 			&& cls.realtime - cl.cinematictime > 1000))))) {
-			//	ent.origin[2]+=56;
+
 			if (renderfx & RF_SHELL_RED)
 				V_AddLight (ent.origin, 200, 1.0, 0, 0, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_BLUE)
@@ -1096,7 +1096,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				else if (effects & EF_TRACKERTRAIL)
 					V_AddLight (ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
 			}
-			//	ent.origin[2]-=56;
+
 			if (renderfx & RF_SHELL_HALF_DAM) {
 				if (Developer_searchpath (2) == 2) {
 					// ditch the half damage shell if any of red, blue, or
@@ -1259,7 +1259,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				if (!cont)
 					CL_RocketTrail (cent->lerp_origin, ent.origin, cent);
 
-				V_AddLight (ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
+				V_AddLight (ent.origin, 200, 1, 0.77, 0, vec3_origin, 0, 0);
 			}
 			// PGM - Do not reorder EF_BLASTER and EF_HYPERBLASTER.
 			// EF_BLASTER | EF_TRACKER is a special case for
@@ -1274,7 +1274,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 					}
 					else{
 						CL_BlasterTrail(cent->lerp_origin, ent.origin);
-						V_AddLight(ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
+						V_AddLight(ent.origin, 200, 1, 0.7, 0, vec3_origin, 0, 0);
 					}
 				}
 				//PGM
@@ -1284,7 +1284,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 					if (effects & EF_TRACKER)	// PGM overloaded for blaster2.
 						V_AddLight (ent.origin, 200, 0, 1, 0, vec3_origin, 0, 0);	// PGM
 					else
-						V_AddLight(ent.origin, 200, 1, 1, 0, vec3_origin, 0, 0);
+						V_AddLight(ent.origin, 200, 1, 0.7, 0, vec3_origin, 0, 0);
 
 			}
 			else

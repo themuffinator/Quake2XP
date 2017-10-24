@@ -150,6 +150,7 @@ void IN_StartupXInput(void)
 	x360_triggerTreshold->help	= "Scale lower triggers theshold.\n[0.01 - 1.0]";
 	x360_deadZone				= Cvar_Get("x360_deadZone", "1.0", CVAR_ARCHIVE);
 	x360_deadZone->help			= "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
+	x360_vibration				= Cvar_Get("x360_vibration", "1", CVAR_ARCHIVE);
 
 	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n\n");
 	firstDev = -1;
@@ -241,6 +242,9 @@ void IN_ToggleXInput()
 void SetRumble(int devNum, int rumbleLow, int rumbleHigh) {
 
 	if (!xInputActive)
+		return;
+
+	if (!x360_vibration->integer)
 		return;
 
 	if (devNum < 0 || devNum >= XINPUT_MAX_CONTROLLERS)

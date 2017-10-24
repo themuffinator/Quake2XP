@@ -835,6 +835,7 @@ glslProgram_t r_programs[MAX_PROGRAMS];
 glslProgram_t		*ambientWorldProgram;
 glslProgram_t		*lightWorldProgram;
 glslProgram_t		*aliasAmbientProgram;
+glslProgram_t		*md3AmbientProgram;
 glslProgram_t		*aliasBumpProgram;
 glslProgram_t		*gaussXProgram;
 glslProgram_t		*gaussYProgram;
@@ -953,6 +954,16 @@ uint ambientAlias_isShell;
 uint ambientAlias_shellParams;
 uint ambientAlias_mvp;
 uint ambientAlias_viewOrg;
+
+uint ambientMd3_ssao;
+uint ambientMd3_colorModulate;
+uint ambientMd3_addShift;
+uint ambientMd3_isEnvMaping;
+uint ambientMd3_envScale;
+uint ambientMd3_isShell;
+uint ambientMd3_shellParams;
+uint ambientMd3_mvp;
+uint ambientMd3_viewOrg;
 
 uint lightAlias_colorScale;
 uint lightAlias_viewOrigin;

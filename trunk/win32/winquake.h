@@ -40,6 +40,7 @@ cvar_t	*x360_pitchInversion;
 cvar_t	*x360_swapSticks;
 cvar_t	*x360_triggerTreshold;
 cvar_t	*x360_deadZone;
+cvar_t	*x360_vibration;
 
 extern qboolean xInputActive;
 
