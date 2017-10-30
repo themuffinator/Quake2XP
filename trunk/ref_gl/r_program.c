@@ -564,12 +564,15 @@ R_InitPrograms
 
 
 void R_InitPrograms (void) {
-	int			missing = 0, start = 0, stop = 0, id;
-	float		sec;
+	int			missing = 0,  id;
 
 	Com_Printf ("\nInitializing programs...\n\n");
 
+#ifdef GLSL_LOADING_TIME
+	int		start = 0, stop = 0;
+	float	sec;
 	start = Sys_Milliseconds ();
+#endif
 
 	memset (programHashTable, 0, sizeof(programHashTable));
 	memset (&r_nullProgram, 0, sizeof(glslProgram_t));
@@ -1102,10 +1105,12 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 */
+
+#ifdef GLSL_LOADING_TIME
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;
 	Com_Printf ("\nGLSL shaders loading time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);
-
+#endif
 	Com_Printf ("\n");
 }
 

@@ -1052,12 +1052,9 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	char		string[64], S[64];
 	int			len;
 	RTL_OSVERSIONINFOEXW    rtl_OsVer;
-	OSVERSIONINFOEX			winver;
 	SYSTEM_INFO				cpuinf;
 	DWORD					prType;
 	PGPI					pGPI;
-
-	winver.dwOSVersionInfoSize = sizeof(winver);
 	
 	ZeroMemory(&cpuinf, sizeof(SYSTEM_INFO));
 	GetSystemInfo(&cpuinf);
@@ -1190,23 +1187,6 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 				sprintf(S, "Ultimate Edition");
 				break;
 			}
-			if (rtl_OsVer.dwMajorVersion == 6 && rtl_OsVer.dwMinorVersion == 0) {
-				if (!Is64BitWindows()) {
-
-					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Vista "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
-					else
-						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2008 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
-				}
-				else {
-
-					if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Vista "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
-					else
-						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2008 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
-				}
-
-			}
 			if (rtl_OsVer.dwMajorVersion == 6 && rtl_OsVer.dwMinorVersion == 1) {
 				if (!Is64BitWindows()) {
 
@@ -1279,42 +1259,6 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 			}
 		}
 
-	/*	if (GetVersionEx(&winver)){
-
-			if (winver.dwMajorVersion == 5 && winver.dwMinorVersion == 2)
-			{
-				if (winver.wSuiteMask == VER_SUITE_STORAGE_SERVER)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Storage Server 2003");
-
-				if (winver.wProductType == VER_NT_WORKSTATION)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows XP Professional "S_COLOR_GREEN"x64 "S_COLOR_YELLOW"Edition %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", winver.szCSDVersion, winver.dwBuildNumber);
-				else {
-					if (Is64BitWindows())
-						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 2003 Server "S_COLOR_GREEN"x64 "S_COLOR_YELLOW"Edition %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", winver.szCSDVersion, winver.dwBuildNumber);
-					else
-						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 2003 Server "S_COLOR_GREEN"x32 "S_COLOR_YELLOW"Edition %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", winver.szCSDVersion, winver.dwBuildNumber);
-				}
-
-
-				if (winver.dwPlatformId == VER_PLATFORM_WIN32_NT)
-				{
-
-					if (winver.dwMajorVersion == 5 && winver.dwMinorVersion == 0)
-						VID_Error(ERR_FATAL, "Quake2xp requires Windows XP or greater");
-
-					if (winver.dwMajorVersion == 5 && winver.dwMinorVersion == 1)
-					{
-						Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows XP ");
-						if (winver.wSuiteMask & VER_SUITE_PERSONAL)
-							Com_Printf(S_COLOR_YELLOW, "Home Edition ");
-						else
-							Com_Printf(S_COLOR_YELLOW"Professional ");
-						Com_Printf(S_COLOR_GREEN"%s ", winver.szCSDVersion);
-						Com_Printf(S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", winver.dwBuildNumber);
-					}
-				}
-			}
-	}*/
 else
 	{
 		Com_Printf( S_COLOR_RED "GLimp_Init() - GetVersionEx failed\n" );

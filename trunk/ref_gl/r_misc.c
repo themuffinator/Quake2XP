@@ -376,6 +376,8 @@ void CreateSsaoColorTextures(void) {
 void CreateSSAOBuffer(void) {
 	qboolean statusOK;
 
+	Com_Printf("Load "S_COLOR_YELLOW "ssao fbo ");
+
 	CreateMiniDepth();
 	CreateSsaoColorTextures();
 
@@ -389,9 +391,9 @@ void CreateSSAOBuffer(void) {
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
-		Com_Printf(S_COLOR_RED, "Couldn't create SSAO FBO.");
+		Com_Printf(S_COLOR_RED"Failed!");
 	else
-		Com_Printf(""S_COLOR_MAGENTA"...Created SSAO FBO.\n");
+		Com_Printf(S_COLOR_WHITE"succeeded\n");
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 

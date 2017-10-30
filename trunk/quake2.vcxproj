@@ -417,6 +417,7 @@
     <ClCompile Include="ref_gl\r_md3Mesh.c" />
     <ClCompile Include="ref_gl\r_program.c" />
     <ClCompile Include="ref_gl\r_shadows.c" />
+    <ClCompile Include="ref_gl\r_vertexCache.c" />
     <ClCompile Include="ref_gl\r_zprepass.c" />
     <ClCompile Include="server\sv_ccmds.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -613,7 +614,7 @@
     <ClCompile Include="ref_gl\r_model.c" />
     <ClCompile Include="ref_gl\r_particles.c" />
     <ClCompile Include="ref_gl\r_postprocess.c" />
-    <ClCompile Include="win32\r_qglwin.c" />
+    <ClCompile Include="win32\r_qgl.c" />
     <ClCompile Include="ref_gl\r_misc.c" />
     <ClCompile Include="ref_gl\r_rsurf.c" />
     <ClCompile Include="ref_gl\r_warp.c" />

@@ -125,9 +125,10 @@ typedef vec4_t	mat4_t[4];		// row-major
 
 #define	GL_INDEX_TYPE		GL_UNSIGNED_SHORT
 typedef unsigned short		ushort;
-typedef ushort				index_t;
 typedef unsigned int		uint;
+typedef ushort				index_t;
 typedef uint				index32_t;
+
 
 void Set_FontShader (qboolean enable);
 

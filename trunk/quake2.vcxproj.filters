@@ -194,9 +194,6 @@
     <ClCompile Include="ref_gl\r_postprocess.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="win32\r_qglwin.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_rsurf.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -312,6 +309,12 @@
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="ref_gl\r_md2Mesh.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_vertexCache.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\r_qgl.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

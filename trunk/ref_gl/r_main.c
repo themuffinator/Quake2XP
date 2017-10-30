@@ -130,8 +130,6 @@ void GL_CheckError(const char *fileName, int line, const char *subr)
 	if (err == GL_NO_ERROR)
 		return;
 
-	if (gl_state.debugOutput){
-
 		#define			MAX_GL_DEBUG_MESSAGES   16
 		unsigned        sources[MAX_GL_DEBUG_MESSAGES];
 		unsigned        types[MAX_GL_DEBUG_MESSAGES];
@@ -152,7 +150,7 @@ void GL_CheckError(const char *fileName, int line, const char *subr)
 				pos += lengths[i];
 			}
 		}
-	}
+
 
 	switch (err)
 	{
@@ -1529,6 +1527,15 @@ qboolean IsExtensionSupported(const char *name)
 	return qfalse;
 }
 
+
+void R_InitFboBuffers() {
+	
+	Com_Printf("Initializing FBOs...\n\n");
+
+	CreateSSAOBuffer();
+	Com_Printf("\n");
+}
+
 int R_Init(void *hinstance, void *hWnd)
 {
 	int			aniso_level, max_aniso;
@@ -1562,322 +1569,83 @@ int R_Init(void *hinstance, void *hWnd)
 
 	VID_MenuInit();
 
-	/* 
-	 ** get our various GL strings
-	 */
 	Com_Printf( "\n");
+
+	// Get Extension string
+	glGetStringi = (PFNGLGETSTRINGIPROC)			qwglGetProcAddress("glGetStringi");
+
+	// Multitexture stuff
+	qglActiveTexture = (PFNGLACTIVETEXTUREPROC)qwglGetProcAddress("glActiveTexture");
+
+	// Separated Stencil 
+	qglStencilFuncSeparate	= (PFNGLSTENCILFUNCSEPARATEPROC)	qwglGetProcAddress("glStencilFuncSeparate");
+	qglStencilOpSeparate	= (PFNGLSTENCILOPSEPARATEPROC)		qwglGetProcAddress("glStencilOpSeparate");
+	qglStencilMaskSeparate	= (PFNGLSTENCILMASKSEPARATEPROC)	qwglGetProcAddress("glStencilMaskSeparate");
+
+	// debug context
+	glDebugMessageControlARB	= (PFNGLDEBUGMESSAGECONTROLARBPROC)		qwglGetProcAddress("glDebugMessageControlARB");
+	glDebugMessageInsertARB		= (PFNGLDEBUGMESSAGEINSERTARBPROC)		qwglGetProcAddress("glDebugMessageInsertARB");
+	glDebugMessageCallbackARB	= (PFNGLDEBUGMESSAGECALLBACKARBPROC)	qwglGetProcAddress("glDebugMessageCallbackARB");
+	glGetDebugMessageLogARB		= (PFNGLGETDEBUGMESSAGELOGARBPROC)		qwglGetProcAddress("glGetDebugMessageLogARB");
 	
-	gl_config.vendor_string = (const char*)qglGetString(GL_VENDOR);
-	Com_Printf(S_COLOR_WHITE "GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
-	
-	gl_config.renderer_string = (const char*)qglGetString(GL_RENDERER);
-	Com_Printf(S_COLOR_WHITE "GL_RENDERER:" S_COLOR_GREEN "  %s\n", gl_config.renderer_string);
-	
-	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
-	Com_Printf(S_COLOR_WHITE "GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
-
-	Com_Printf("\n");
-	Com_Printf("=====================================\n");
-	Com_Printf(S_COLOR_GREEN"Checking Basic Quake II XP Extensions\n");
-	Com_Printf("=====================================\n");
-	Com_Printf("\n");
-	
-	glCopyImageSubData	= (PFNGLCOPYIMAGESUBDATAPROC)	qwglGetProcAddress("glCopyImageSubData");
-	glGetStringi		= (PFNGLGETSTRINGIPROC)			qwglGetProcAddress("glGetStringi");
-
-	if (!glGetStringi) {
-		Com_Printf(S_COLOR_RED"glGetStringi: bad getprocaddress\n");
-		VID_Error(ERR_FATAL, "glGetStringi: bad getprocaddress");
-	}
-
-	if (IsExtensionSupported("GL_ARB_multitexture")) {
-		Com_Printf("...using GL_ARB_multitexture\n");
-
-		qglActiveTexture =		(PFNGLACTIVETEXTUREPROC)			qwglGetProcAddress("glActiveTexture");
-	
-	} else {
-		Com_Printf(S_COLOR_RED"...GL_ARB_multitexture not found\n");
-		VID_Error(ERR_FATAL, "GL_ARB_multitexture not found!");  //wtf????!!!! kill!
-	}
-
-	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_aniso);
-	Cvar_SetValue("r_maxAnisotropy", max_aniso);
-	if (r_anisotropic->integer >= r_maxAnisotropy->integer)
-		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->integer);
-
-	aniso_level = r_anisotropic->integer;
-	if (r_anisotropic->integer <= 1) {
-		r_anisotropic = Cvar_Set("r_anisotropic", "1");
-		Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_filter_anisotropic\n");
-	} else {
-			Com_Printf("...using GL_ARB_texture_filter_anisotropic\n   ["S_COLOR_GREEN"%i"S_COLOR_WHITE" max] ["S_COLOR_GREEN"%i" S_COLOR_WHITE" selected]\n",
-					   max_aniso, aniso_level);
-		}
-
-	gl_state.texture_compression_bptc = qfalse;
-	if (IsExtensionSupported("GL_ARB_texture_compression_bptc"))
-		if (!r_textureCompression->integer) {
-			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_compression_bptc\n");
-			gl_state.texture_compression_bptc = qfalse;
-		}
-		else {
-			Com_Printf("...using GL_ARB_texture_compression_bptc\n");
-			gl_state.texture_compression_bptc = qtrue;
-
-		}
-		else {
-			Com_Printf(S_COLOR_RED"...GL_ARB_texture_compression_bptc not found\n");
-			gl_state.texture_compression_bptc = qfalse;
-		}
-
-	if (IsExtensionSupported("GL_ARB_seamless_cube_map")){
-		Com_Printf("...using GL_ARB_seamless_cube_map\n");
-		qglEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-	}
-	else
-		Com_Printf(S_COLOR_RED"...GL_ARB_seamless_cube_map not found\n");
-
-	// ===========================================================================================================================
-
-	// openGL 2.0 Unified Separate Stencil
-	qglStencilFuncSeparate		= (PFNGLSTENCILFUNCSEPARATEPROC)	qwglGetProcAddress("glStencilFuncSeparate");
-	qglStencilOpSeparate		= (PFNGLSTENCILOPSEPARATEPROC)		qwglGetProcAddress("glStencilOpSeparate");
-	qglStencilMaskSeparate		= (PFNGLSTENCILMASKSEPARATEPROC)	qwglGetProcAddress("glStencilMaskSeparate");
-
-	if(qglStencilFuncSeparate && qglStencilOpSeparate && qglStencilMaskSeparate){
-			Com_Printf("...using GL_EXT_stencil_two_side\n");
-	}else
-		Com_Printf(S_COLOR_RED"...GL_EXT_stencil_two_side not found\n");
-
-	gl_state.depthBoundsTest = qfalse;
-	if (IsExtensionSupported("GL_EXT_depth_bounds_test")) {
-	Com_Printf("...using GL_EXT_depth_bounds_test\n");
-
-	glDepthBoundsEXT = (PFNGLDEPTHBOUNDSEXTPROC) qwglGetProcAddress("glDepthBoundsEXT");
-	gl_state.depthBoundsTest = qtrue;
-	} else {
-		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
-	gl_state.depthBoundsTest = qfalse;
-	}
-	
-	glDebugMessageControlARB = (PFNGLDEBUGMESSAGECONTROLARBPROC)	qwglGetProcAddress("glDebugMessageControlARB");
-	glDebugMessageInsertARB = (PFNGLDEBUGMESSAGEINSERTARBPROC)		qwglGetProcAddress("glDebugMessageInsertARB");
-	glDebugMessageCallbackARB = (PFNGLDEBUGMESSAGECALLBACKARBPROC)	qwglGetProcAddress("glDebugMessageCallbackARB");
-	glGetDebugMessageLogARB = (PFNGLGETDEBUGMESSAGELOGARBPROC)		qwglGetProcAddress("glGetDebugMessageLogARB");
-	
-	gl_state.debugOutput = qfalse;
-
-	if (glDebugMessageControlARB && glDebugMessageInsertARB && glDebugMessageCallbackARB && glGetDebugMessageLogARB){
-		Com_Printf("...using GL_ARB_debug_output\n");
-		gl_state.debugOutput = qtrue;
-	}
-	else
-		Com_Printf(S_COLOR_RED"...GL_ARB_debug_output not found\n");
-
 	// vao stuff
-	glGenVertexArrays		= (PFNGLGENVERTEXARRAYSPROC)	qwglGetProcAddress	("glGenVertexArrays");
-	glDeleteVertexArrays	= (PFNGLDELETEVERTEXARRAYSPROC)	qwglGetProcAddress	("glDeleteVertexArrays");
-	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress	("glBindVertexArray");
+	glGenVertexArrays		= (PFNGLGENVERTEXARRAYSPROC)	qwglGetProcAddress("glGenVertexArrays");
+	glDeleteVertexArrays	= (PFNGLDELETEVERTEXARRAYSPROC)	qwglGetProcAddress("glDeleteVertexArrays");
+	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress("glBindVertexArray");
 
-	if(glGenVertexArrays && glDeleteVertexArrays && glBindVertexArray)
-		Com_Printf("...using GL_ARB_vertex_array_object\n");
+	// vbo stuff
+	qglBindBuffer		= (PFNGLBINDBUFFERPROC)		qwglGetProcAddress("glBindBuffer");
+	qglDeleteBuffers	= (PFNGLDELETEBUFFERSPROC)	qwglGetProcAddress("glDeleteBuffers");
+	qglGenBuffers		= (PFNGLGENBUFFERSPROC)		qwglGetProcAddress("glGenBuffers");
+	qglBufferData		= (PFNGLBUFFERDATAPROC)		qwglGetProcAddress("glBufferData");
+	qglBufferSubData	= (PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
+	qglMapBuffer		= (PFNGLMAPBUFFERPROC)		qwglGetProcAddress("glMapBuffer");
+	qglUnmapBuffer		= (PFNGLUNMAPBUFFERPROC)	qwglGetProcAddress("glUnmapBuffer");
+	qglMapBufferRange	= (PFNGLMAPBUFFERRANGEPROC)	qwglGetProcAddress("glMapBufferRange");
 
-	if (IsExtensionSupported("GL_ARB_vertex_buffer_object")) {
+	// fbo stuff
+	qglIsRenderbuffer						= (PFNGLISRENDERBUFFERPROC)						qwglGetProcAddress("glIsRenderbuffer");
+	qglBindRenderbuffer						= (PFNGLBINDRENDERBUFFERPROC)					qwglGetProcAddress("glBindRenderbuffer");
+	qglDeleteRenderbuffers					= (PFNGLDELETERENDERBUFFERSPROC)				qwglGetProcAddress("glDeleteRenderbuffers");
+	qglGenRenderbuffers						= (PFNGLGENRENDERBUFFERSPROC)					qwglGetProcAddress("glGenRenderbuffers");
+	qglRenderbufferStorage					= (PFNGLRENDERBUFFERSTORAGEPROC)				qwglGetProcAddress("glRenderbufferStorage");
+	qglGetRenderbufferParameteriv			= (PFNGLGETRENDERBUFFERPARAMETERIVPROC)			qwglGetProcAddress("glGetRenderbufferParameteriv");
+	qglRenderbufferStorageMultisample		= (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)		qwglGetProcAddress("glRenderbufferStorageMultisample");
 
-		qglBindBuffer =		(PFNGLBINDBUFFERPROC)		qwglGetProcAddress("glBindBuffer");
-		qglDeleteBuffers =	(PFNGLDELETEBUFFERSPROC)	qwglGetProcAddress("glDeleteBuffers");
-		qglGenBuffers =		(PFNGLGENBUFFERSPROC)		qwglGetProcAddress("glGenBuffers");
-		qglBufferData =		(PFNGLBUFFERDATAPROC)		qwglGetProcAddress("glBufferData");
-		qglBufferSubData =	(PFNGLBUFFERSUBDATAPROC)	qwglGetProcAddress("glBufferSubData");
-		qglMapBuffer =		(PFNGLMAPBUFFERPROC)		qwglGetProcAddress("glMapBuffer");
-		qglUnmapBuffer =	(PFNGLUNMAPBUFFERPROC)		qwglGetProcAddress("glUnmapBuffer");
-		qglMapBufferRange =	(PFNGLMAPBUFFERRANGEPROC)	qwglGetProcAddress("glMapBufferRange");
+	qglIsFramebuffer						= (PFNGLISFRAMEBUFFERPROC)						qwglGetProcAddress("glIsFramebuffer");
+	qglBindFramebuffer						= (PFNGLBINDFRAMEBUFFERPROC)					qwglGetProcAddress("glBindFramebuffer");
+	qglDeleteFramebuffers					= (PFNGLDELETEFRAMEBUFFERSPROC)					qwglGetProcAddress("glDeleteFramebuffers");
+	qglGenFramebuffers						= (PFNGLGENFRAMEBUFFERSPROC)					qwglGetProcAddress("glGenFramebuffers");
+	qglCheckFramebufferStatus				= (PFNGLCHECKFRAMEBUFFERSTATUSPROC)				qwglGetProcAddress("glCheckFramebufferStatus");
+	qglFramebufferTexture1D					= (PFNGLFRAMEBUFFERTEXTURE1DPROC)				qwglGetProcAddress("glFramebufferTexture1D");
+	qglFramebufferTexture2D					= (PFNGLFRAMEBUFFERTEXTURE2DPROC)				qwglGetProcAddress("glFramebufferTexture2D");
+	qglFramebufferTexture3D					= (PFNGLFRAMEBUFFERTEXTURE3DPROC)				qwglGetProcAddress("glFramebufferTexture3D");
+	qglFramebufferRenderbuffer				= (PFNGLFRAMEBUFFERRENDERBUFFERPROC)			qwglGetProcAddress("glFramebufferRenderbuffer");
+	qglGenerateMipmap						= (PFNGLGENERATEMIPMAPPROC)						qwglGetProcAddress("glGenerateMipmap");
+	qglBlitFramebuffer						= (PFNGLBLITFRAMEBUFFERPROC)					qwglGetProcAddress("glBlitFramebuffer");
+	qglGetFramebufferAttachmentParameteriv	= (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC)qwglGetProcAddress("glGetFramebufferAttachmentParameteriv");
+	qglDrawBuffers							= (PFNGLDRAWBUFFERSPROC)						qwglGetProcAddress("glDrawBuffers");
+	glCopyImageSubData						= (PFNGLCOPYIMAGESUBDATAPROC)					qwglGetProcAddress("glCopyImageSubData");
 
-		if (qglGenBuffers && qglBindBuffer && qglBufferData && qglDeleteBuffers && qglBufferSubData && qglMapBufferRange){
-			vec2_t		tmpVerts[4];
-			index_t		iCache[6 * MAX_DRAW_STRING_LENGTH];
-			int			idx = 0, i;
-			void		*vmap, *imap;
-			vmap		= NULL;
-			imap		= NULL;
+	// bindless textures stuff
+	glGetTextureHandleARB				= (PFNGLGETTEXTUREHANDLEARBPROC)			qwglGetProcAddress("glGetTextureHandleARB");
+	glGetTextureSamplerHandleARB		= (PFNGLGETTEXTURESAMPLERHANDLEARBPROC)		qwglGetProcAddress("glGetTextureSamplerHandleARB");
+	glMakeTextureHandleResidentARB		= (PFNGLMAKETEXTUREHANDLERESIDENTARBPROC)	qwglGetProcAddress("glMakeTextureHandleResidentARB");
+	glMakeTextureHandleNonResidentARB	= (PFNGLMAKETEXTUREHANDLERESIDENTARBPROC)	qwglGetProcAddress("glMakeTextureHandleNonResidentARB");
+	glGetImageHandleARB					= (PFNGLGETIMAGEHANDLEARBPROC)				qwglGetProcAddress("glGetImageHandleARB");
+	glMakeImageHandleResidentARB		= (PFNGLMAKEIMAGEHANDLERESIDENTARBPROC)		qwglGetProcAddress("glMakeImageHandleResidentARB");
+	glMakeImageHandleNonResidentARB		= (PFNGLMAKEIMAGEHANDLENONRESIDENTARBPROC)	qwglGetProcAddress("glMakeImageHandleNonResidentARB");
+	glUniformHandleui64ARB				= (PFNGLUNIFORMHANDLEUI64ARBPROC)			qwglGetProcAddress("glUniformHandleui64ARB");
+	glUniformHandleui64vARB				= (PFNGLUNIFORMHANDLEUI64VARBPROC)			qwglGetProcAddress("glUniformHandleui64vARB");
+	glProgramUniformHandleui64ARB		= (PFNGLPROGRAMUNIFORMHANDLEUI64ARBPROC)	qwglGetProcAddress("glProgramUniformHandleui64ARB");
+	glProgramUniformHandleui64vARB		= (PFNGLPROGRAMUNIFORMHANDLEUI64VARBPROC)	qwglGetProcAddress("glProgramUniformHandleui64vARB");
+	glIsTextureHandleResidentARB		= (PFNGLISTEXTUREHANDLERESIDENTARBPROC)		qwglGetProcAddress("glIsTextureHandleResidentARB");
+	glIsImageHandleResidentARB			= (PFNGLISIMAGEHANDLERESIDENTARBPROC)		qwglGetProcAddress("glIsImageHandleResidentARB");
+	glVertexAttribL1ui64ARB				= (PFNGLVERTEXATTRIBL1UI64ARBPROC)			qwglGetProcAddress("glVertexAttribL1ui64ARB");
+	glVertexAttribL1ui64vARB			= (PFNGLVERTEXATTRIBL1UI64VARBPROC)			qwglGetProcAddress("glVertexAttribL1ui64vARB");
+	glGetVertexAttribLui64vARB			= (PFNGLGETVERTEXATTRIBLUI64VARBPROC)		qwglGetProcAddress("glGetVertexAttribLui64vARB");
 
-			Com_Printf("...using GL_ARB_vertex_buffer_object\n");
-			// precalc screen quads for postprocessing
-			// full quad
-			VA_SetElem2(tmpVerts[0],0 ,			vid.height);
-			VA_SetElem2(tmpVerts[1],vid.width,	vid.height);
-			VA_SetElem2(tmpVerts[2],vid.width,	0);
-			VA_SetElem2(tmpVerts[3],0,			0);
-			qglGenBuffers(1, &vbo.vbo_fullScreenQuad);
-			qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_fullScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW);
-			qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
-			// half quad
-			VA_SetElem2(tmpVerts[0],0,					vid.height);
-			VA_SetElem2(tmpVerts[1],vid.width * 0.5 ,	vid.height);
-			VA_SetElem2(tmpVerts[2],vid.width * 0.5 ,	vid.height * 0.5);
-			VA_SetElem2(tmpVerts[3],0,					vid.height * 0.5);
-			qglGenBuffers(1, &vbo.vbo_halfScreenQuad);
-			qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_halfScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW);
-			qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
-			// quater quad
-			VA_SetElem2(tmpVerts[0],0,						vid.height);
-			VA_SetElem2(tmpVerts[1],vid.width * 0.25 ,		vid.height);
-			VA_SetElem2(tmpVerts[2],vid.width * 0.25 ,		vid.height * 0.25);
-			VA_SetElem2(tmpVerts[3],0,						vid.height * 0.25);
-			qglGenBuffers(1, &vbo.vbo_quarterScreenQuad);
-			qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_quarterScreenQuad);
-			qglBufferData(GL_ARRAY_BUFFER, sizeof(vec2_t)*4, tmpVerts, GL_STATIC_DRAW);
-			qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
-			for (i = 0, idx = 0; i < MAX_DRAW_STRING_LENGTH * 4; i +=4)
-			{
-				iCache[idx++] = i + 0;
-				iCache[idx++] = i + 1;
-				iCache[idx++] = i + 2;
-				iCache[idx++] = i + 0;
-				iCache[idx++] = i + 2;
-				iCache[idx++] = i + 3;
-			}
-
-			qglGenBuffers(1, &vbo.ibo_quadTris);
-			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, idx * sizeof(ushort), iCache, GL_STATIC_DRAW);
-			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-			//------------------------------------------------
-			qglGenBuffers(1, &vbo.vbo_Dynamic); 
-			qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
-			qglBufferData(GL_ARRAY_BUFFER, MAX_VERTICES * sizeof(vec4_t), 0, GL_DYNAMIC_DRAW);
-
-			qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
-			qglGenBuffers(1, &vbo.ibo_Dynamic);
-			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
-			qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(uint), 0, GL_DYNAMIC_DRAW);
-
-			qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-		}
-	} else {
-		Com_Printf(S_COLOR_RED "...GL_ARB_vertex_buffer_object not found\n");
-	}
-	
-	if (IsExtensionSupported("GL_ARB_draw_buffers")) {
-		qglDrawBuffers =	(PFNGLDRAWBUFFERSPROC) qwglGetProcAddress("glDrawBuffers");
-		
-	if (qglDrawBuffers)
-		Com_Printf("...using GL_ARB_draw_buffers\n");
-	else
-		Com_Printf(S_COLOR_RED"...using GL_ARB_draw_buffers not found\n");
-	}
-
-	if (IsExtensionSupported("GL_ARB_framebuffer_object")) {
-		Com_Printf("...using GL_ARB_framebuffer_object\n");  
-
-		qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE,	&gl_state.maxRenderBufferSize);
-		qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS,	&gl_state.maxColorAttachments);
-		qglGetIntegerv(GL_MAX_SAMPLES,				&gl_state.maxSamples);
-		
-		Com_Printf("\n");
-
-		Com_Printf(S_COLOR_YELLOW"   Max Render Buffer Size:  "S_COLOR_GREEN"%i\n", gl_state.maxRenderBufferSize);
-		Com_Printf(S_COLOR_YELLOW"   Max Color Attachments:   "S_COLOR_GREEN"%i\n", gl_state.maxColorAttachments);
-		Com_Printf(S_COLOR_YELLOW"   Max Buffer Samples:      "S_COLOR_GREEN"%i\n", gl_state.maxSamples);
-
-		qglIsRenderbuffer =							(PFNGLISRENDERBUFFERPROC) qwglGetProcAddress("glIsRenderbuffer");
-		qglBindRenderbuffer =						(PFNGLBINDRENDERBUFFERPROC) qwglGetProcAddress("glBindRenderbuffer");
-		qglDeleteRenderbuffers =					(PFNGLDELETERENDERBUFFERSPROC) qwglGetProcAddress("glDeleteRenderbuffers");
-		qglGenRenderbuffers =						(PFNGLGENRENDERBUFFERSPROC) qwglGetProcAddress("glGenRenderbuffers");
-		qglRenderbufferStorage =					(PFNGLRENDERBUFFERSTORAGEPROC) qwglGetProcAddress("glRenderbufferStorage");
-		qglGetRenderbufferParameteriv =				(PFNGLGETRENDERBUFFERPARAMETERIVPROC) qwglGetProcAddress("glGetRenderbufferParameteriv");
-		qglRenderbufferStorageMultisample =			(PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC) qwglGetProcAddress("glRenderbufferStorageMultisample");
-
-		qglIsFramebuffer =							(PFNGLISFRAMEBUFFERPROC) qwglGetProcAddress("glIsFramebuffer");
-		qglBindFramebuffer =						(PFNGLBINDFRAMEBUFFERPROC) qwglGetProcAddress("glBindFramebuffer");
-		qglDeleteFramebuffers =						(PFNGLDELETEFRAMEBUFFERSPROC) qwglGetProcAddress("glDeleteFramebuffers");
-		qglGenFramebuffers =						(PFNGLGENFRAMEBUFFERSPROC) qwglGetProcAddress("glGenFramebuffers");
-		qglCheckFramebufferStatus =					(PFNGLCHECKFRAMEBUFFERSTATUSPROC) qwglGetProcAddress("glCheckFramebufferStatus");
-		qglFramebufferTexture1D =					(PFNGLFRAMEBUFFERTEXTURE1DPROC) qwglGetProcAddress("glFramebufferTexture1D");
-		qglFramebufferTexture2D =					(PFNGLFRAMEBUFFERTEXTURE2DPROC) qwglGetProcAddress("glFramebufferTexture2D");
-		qglFramebufferTexture3D =					(PFNGLFRAMEBUFFERTEXTURE3DPROC) qwglGetProcAddress("glFramebufferTexture3D");
-		qglFramebufferRenderbuffer =				(PFNGLFRAMEBUFFERRENDERBUFFERPROC) qwglGetProcAddress("glFramebufferRenderbuffer");
-		qglGetFramebufferAttachmentParameteriv =	(PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC) qwglGetProcAddress("glGetFramebufferAttachmentParameteriv");
-		qglGenerateMipmap =							(PFNGLGENERATEMIPMAPPROC) qwglGetProcAddress("glGenerateMipmap");
-		qglBlitFramebuffer =						(PFNGLBLITFRAMEBUFFERPROC) qwglGetProcAddress("glBlitFramebuffer");
-		
-		Com_Printf("\n");
-		CreateSSAOBuffer ();
-		Com_Printf("\n");
-	}
-	else {
-		Com_Printf(S_COLOR_RED"...GL_ARB_framebuffer_object not found\n");
-	}
-
-	if (IsExtensionSupported("GL_ARB_fragment_shader"))
-		Com_Printf("...using GL_ARB_fragment_shader\n");
-	else
-		VID_Error(ERR_FATAL, "GL_ARB_fragment_shader not found!");
-
-	if (IsExtensionSupported("GL_ARB_vertex_shader"))
-		Com_Printf("...using GL_ARB_vertex_shader\n");
-	else
-		VID_Error(ERR_FATAL, "GL_ARB_vertex_shader not found!");
-
-	gl_state.bindlessTexture = qfalse;
-/*	if (IsExtensionSupported("GL_ARB_bindless_texture")) {
-				
-		glGetTextureHandleARB				= (PFNGLGETTEXTUREHANDLEARBPROC)			qwglGetProcAddress("glGetTextureHandleARB");
-		glGetTextureSamplerHandleARB		= (PFNGLGETTEXTURESAMPLERHANDLEARBPROC)		qwglGetProcAddress("glGetTextureSamplerHandleARB");
-		glMakeTextureHandleResidentARB		= (PFNGLMAKETEXTUREHANDLERESIDENTARBPROC)	qwglGetProcAddress("glMakeTextureHandleResidentARB");
-		glMakeTextureHandleNonResidentARB	= (PFNGLMAKETEXTUREHANDLERESIDENTARBPROC)	qwglGetProcAddress("glMakeTextureHandleNonResidentARB");
-		glGetImageHandleARB					= (PFNGLGETIMAGEHANDLEARBPROC)				qwglGetProcAddress("glGetImageHandleARB");
-		glMakeImageHandleResidentARB		= (PFNGLMAKEIMAGEHANDLERESIDENTARBPROC)		qwglGetProcAddress("glMakeImageHandleResidentARB");
-		glMakeImageHandleNonResidentARB		= (PFNGLMAKEIMAGEHANDLENONRESIDENTARBPROC)	qwglGetProcAddress("glMakeImageHandleNonResidentARB");
-		glUniformHandleui64ARB				= (PFNGLUNIFORMHANDLEUI64ARBPROC)			qwglGetProcAddress("glUniformHandleui64ARB");
-		glUniformHandleui64vARB				= (PFNGLUNIFORMHANDLEUI64VARBPROC)			qwglGetProcAddress("glUniformHandleui64vARB");
-		glProgramUniformHandleui64ARB		= (PFNGLPROGRAMUNIFORMHANDLEUI64ARBPROC)	qwglGetProcAddress("glProgramUniformHandleui64ARB");
-		glProgramUniformHandleui64vARB		= (PFNGLPROGRAMUNIFORMHANDLEUI64VARBPROC)	qwglGetProcAddress("glProgramUniformHandleui64vARB");
-		glIsTextureHandleResidentARB		= (PFNGLISTEXTUREHANDLERESIDENTARBPROC)		qwglGetProcAddress("glIsTextureHandleResidentARB");
-		glIsImageHandleResidentARB			= (PFNGLISIMAGEHANDLERESIDENTARBPROC)		qwglGetProcAddress("glIsImageHandleResidentARB");
-		glVertexAttribL1ui64ARB				= (PFNGLVERTEXATTRIBL1UI64ARBPROC)			qwglGetProcAddress("glVertexAttribL1ui64ARB");
-		glVertexAttribL1ui64vARB			= (PFNGLVERTEXATTRIBL1UI64VARBPROC)			qwglGetProcAddress("glVertexAttribL1ui64vARB");
-		glGetVertexAttribLui64vARB			= (PFNGLGETVERTEXATTRIBLUI64VARBPROC)		qwglGetProcAddress("glGetVertexAttribLui64vARB");
-
-		if (glGetTextureHandleARB && glGetTextureSamplerHandleARB && glMakeTextureHandleResidentARB && glMakeTextureHandleNonResidentARB &&
-			glGetImageHandleARB && glMakeImageHandleResidentARB && glUniformHandleui64ARB && glUniformHandleui64vARB && glProgramUniformHandleui64ARB && glProgramUniformHandleui64vARB &&
-			glIsTextureHandleResidentARB && glIsImageHandleResidentARB && glVertexAttribL1ui64ARB && glVertexAttribL1ui64vARB && glGetVertexAttribLui64vARB) {
-			Com_Printf("...using GL_ARB_bindless_texture\n");
-			gl_state.bindlessTexture = qtrue;
-		}
-	}
-	else
-		Com_Printf(S_COLOR_RED"...GL_ARB_bindless_texture not found\n");
-*/
-	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION);
-	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
-	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &gl_config.maxVertexUniformComponents);
-	qglGetIntegerv(GL_MAX_VARYING_FLOATS, &gl_config.maxVaryingFloats);
-	qglGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &gl_config.maxVertexTextureImageUnits);
-	qglGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &gl_config.maxCombinedTextureImageUnits);
-	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
-	qglGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &gl_config.maxVertexAttribs);
-	qglGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &gl_config.maxTextureImageUnits);
-
-	Com_Printf("\n");
-	Com_Printf(S_COLOR_YELLOW"   GLSL Version:               "S_COLOR_GREEN"   %s\n", gl_config.shadingLanguageVersionString);
-	Com_Printf(S_COLOR_YELLOW"   maxFragmentUniformComponents:"S_COLOR_GREEN"  %i\n", gl_config.maxFragmentUniformComponents);
-	Com_Printf(S_COLOR_YELLOW"   maxVertexUniformComponents: "S_COLOR_GREEN"   %i\n", gl_config.maxVertexUniformComponents);
-	Com_Printf(S_COLOR_YELLOW"   maxVertexAttribs:           "S_COLOR_GREEN"   %i\n", gl_config.maxVertexAttribs);
-	Com_Printf(S_COLOR_YELLOW"   maxVaryingFloats:           "S_COLOR_GREEN"   %i\n", gl_config.maxVaryingFloats);
-	Com_Printf(S_COLOR_YELLOW"   maxVertexTextureImageUnits: "S_COLOR_GREEN"   %i\n", gl_config.maxVertexTextureImageUnits);
-	Com_Printf(S_COLOR_YELLOW"   maxTextureImageUnits:       "S_COLOR_GREEN"   %i\n", gl_config.maxTextureImageUnits);
-	Com_Printf(S_COLOR_YELLOW"   maxCombinedTextureImageUnits: "S_COLOR_GREEN" %i\n", gl_config.maxCombinedTextureImageUnits);
-	Com_Printf(S_COLOR_YELLOW"   maxFragmentUniformComponents: "S_COLOR_GREEN" %i\n", gl_config.maxFragmentUniformComponents);
-
+	// glsl stuff
 	qglCreateShader =				(PFNGLCREATESHADERPROC)				qwglGetProcAddress("glCreateShader");
 	qglCreateProgram =				(PFNGLCREATEPROGRAMPROC)			qwglGetProcAddress("glCreateProgram");
 	qglDeleteShader =				(PFNGLDELETESHADERPROC)				qwglGetProcAddress("glDeleteShader");
@@ -1919,8 +1687,100 @@ int R_Init(void *hinstance, void *hWnd)
 	qglUniformMatrix3fv =			(PFNGLUNIFORMMATRIX3FVPROC)         qwglGetProcAddress("glUniformMatrix3fv");
 	qglUniformMatrix4fv =			(PFNGLUNIFORMMATRIX4FVPROC)			qwglGetProcAddress("glUniformMatrix4fv");
 
+	gl_config.vendor_string = (const char*)qglGetString(GL_VENDOR);
+	Com_Printf("GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
+
+	gl_config.renderer_string = (const char*)qglGetString(GL_RENDERER);
+	Com_Printf("GL_RENDERER:" S_COLOR_GREEN "  %s\n", gl_config.renderer_string);
+
+	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
+	Com_Printf("GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
+
+	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION);
+	Com_Printf("GLSL_VERSION:" S_COLOR_GREEN " %s\n", gl_config.shadingLanguageVersionString);
+
+	
+	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
+	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &gl_config.maxVertexUniformComponents);
+	qglGetIntegerv(GL_MAX_VARYING_FLOATS, &gl_config.maxVaryingFloats);
+	qglGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &gl_config.maxVertexTextureImageUnits);
+	qglGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &gl_config.maxCombinedTextureImageUnits);
+	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
+	qglGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &gl_config.maxVertexAttribs);
+	qglGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &gl_config.maxTextureImageUnits);
+
+	qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &gl_state.maxRenderBufferSize);
+	qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &gl_state.maxColorAttachments);
+	qglGetIntegerv(GL_MAX_SAMPLES, &gl_state.maxSamples);
+
+	Com_Printf("\n");
+	Com_Printf(S_COLOR_YELLOW"Max Fragment Uniform Components:"S_COLOR_GREEN" %i\n", gl_config.maxFragmentUniformComponents);
+	Com_Printf(S_COLOR_YELLOW"Max Vertex Uniform Components: "S_COLOR_GREEN"  %i\n", gl_config.maxVertexUniformComponents);
+	Com_Printf(S_COLOR_YELLOW"Max Vertex Attribs:           "S_COLOR_GREEN"   %i\n", gl_config.maxVertexAttribs);
+	Com_Printf(S_COLOR_YELLOW"Max Varying Floats:           "S_COLOR_GREEN"   %i\n", gl_config.maxVaryingFloats);
+	Com_Printf(S_COLOR_YELLOW"Max Vertex TextureImageUnits: "S_COLOR_GREEN"   %i\n", gl_config.maxVertexTextureImageUnits);
+	Com_Printf(S_COLOR_YELLOW"Max Texture ImageUnits:       "S_COLOR_GREEN"   %i\n", gl_config.maxTextureImageUnits);
+	Com_Printf(S_COLOR_YELLOW"Max Combined TextureImageUnits: "S_COLOR_GREEN" %i\n", gl_config.maxCombinedTextureImageUnits);
+	Com_Printf(S_COLOR_YELLOW"Max Fragment UniformComponents: "S_COLOR_GREEN" %i\n", gl_config.maxFragmentUniformComponents);
+
+	Com_Printf(S_COLOR_YELLOW"Max Render Buffer Size:  "S_COLOR_GREEN"        %i\n", gl_state.maxRenderBufferSize);
+	Com_Printf(S_COLOR_YELLOW"Max Color Attachments:   "S_COLOR_GREEN"        %i\n", gl_state.maxColorAttachments);
+	Com_Printf(S_COLOR_YELLOW"Max Buffer Samples:      "S_COLOR_GREEN"        %i\n", gl_state.maxSamples);
+
 	R_InitPrograms();
-			
+	R_InitFboBuffers();
+	R_InitVertexBuffers();
+
+	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_aniso);
+	Cvar_SetValue("r_maxAnisotropy", max_aniso);
+	if (r_anisotropic->integer >= r_maxAnisotropy->integer)
+		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->integer);
+
+	aniso_level = r_anisotropic->integer;
+	if (r_anisotropic->integer <= 1) {
+		r_anisotropic = Cvar_Set("r_anisotropic", "1");
+		Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_filter_anisotropic\n");
+	}
+	else {
+		Com_Printf("...using GL_ARB_texture_filter_anisotropic\n   ["S_COLOR_GREEN"%i"S_COLOR_WHITE" max] ["S_COLOR_GREEN"%i" S_COLOR_WHITE" selected]\n",
+			max_aniso, aniso_level);
+	}
+
+	gl_state.texture_compression_bptc = qfalse;
+	if (IsExtensionSupported("GL_ARB_texture_compression_bptc"))
+		if (!r_textureCompression->integer) {
+			Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_compression_bptc\n");
+			gl_state.texture_compression_bptc = qfalse;
+		}
+		else {
+			Com_Printf("...using GL_ARB_texture_compression_bptc\n");
+			gl_state.texture_compression_bptc = qtrue;
+
+		}
+	else {
+		Com_Printf(S_COLOR_RED"...GL_ARB_texture_compression_bptc not found\n");
+		gl_state.texture_compression_bptc = qfalse;
+	}
+
+	if (IsExtensionSupported("GL_ARB_seamless_cube_map")) {
+		Com_Printf("...using GL_ARB_seamless_cube_map\n");
+		qglEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	}
+
+	// ===========================================================================================================================
+
+	gl_state.depthBoundsTest = qfalse;
+	if (IsExtensionSupported("GL_EXT_depth_bounds_test")) {
+		Com_Printf("...using GL_EXT_depth_bounds_test\n");
+
+		glDepthBoundsEXT = (PFNGLDEPTHBOUNDSEXTPROC)qwglGetProcAddress("glDepthBoundsEXT");
+		gl_state.depthBoundsTest = qtrue;
+	}
+	else {
+		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
+		gl_state.depthBoundsTest = qfalse;
+	}
+
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");
 

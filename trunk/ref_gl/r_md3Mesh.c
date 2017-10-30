@@ -1,7 +1,5 @@
 #include "r_local.h"
 
-typedef uint	index32_t; //index_t is ushort
-
 void SinCos(float radians, float *sine, float *cosine)
 {
 	*sine = sinf(radians);

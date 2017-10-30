@@ -479,6 +479,8 @@ void R_DrawMD3ShellMesh(qboolean weapon);
 void CheckEntityFrameMD3(md3Model_t *paliashdr);
 qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e);
 
+void R_InitVertexBuffers();
+
 void SetModelsLight();
 extern float shadelight[3];
 byte Normal2Index(const vec3_t vec);
@@ -626,10 +628,6 @@ typedef struct {
 
 	qboolean	wgl_swap_control_tear;
 	qboolean	depthBoundsTest;
-	qboolean	shader5;
-	qboolean	debugOutput;
-	qboolean	bindlessTexture;
-	qboolean	bufferStorage;
 
 	int			programId;
 	GLenum		matrixMode;
