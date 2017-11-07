@@ -224,11 +224,11 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(ref_alpha, e->alpha);
 	qglUniform1f(ref_thickness, len * 0.5);
 
-//	if (currententity->flags & RF_BFG_SPRITE)
-//		qglUniform1f(ref_thickness2, 1.0);
-//	else
+	if (currententity->flags & RF_BFG_SPRITE)
+		qglUniform1f(ref_thickness2, 0.88);
+	else
 		qglUniform1f(ref_thickness2, len * 0.5);
-
+	
 	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+0]);
 	VectorMA (wVertexArray[vert+0], -frame->origin_x, right, wVertexArray[vert+0]);
 	VA_SetElem2(wTexArray[vert+0], 0, 1);
@@ -765,6 +765,10 @@ void R_RenderSprites(void)
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 
+	GL_MBind(GL_TEXTURE0, r_distort->texnum);
+	GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
+	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
+
 	// setup program
 	GL_BindProgram(refractProgram, 0);
 
@@ -772,15 +776,15 @@ void R_RenderSprites(void)
 	GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
 	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
 
-	qglUniform1f		(ref_deformMul, 9.5);
-	qglUniformMatrix4fv	(ref_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv	(ref_mvm, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv	(ref_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+	qglUniform1f(ref_deformMul, 9.5);
+	qglUniformMatrix4fv(ref_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(ref_mvm, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(ref_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
-	qglUniform2f		(ref_viewport, vid.width, vid.height);
-	qglUniform2f		(ref_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f		(ref_mask, 0.0, 1.0);
-	qglUniform1i		(ref_alphaMask, 1);
+	qglUniform2f(ref_viewport, vid.width, vid.height);
+	qglUniform2f(ref_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f(ref_mask, 0.0, 1.0);
+	qglUniform1i(ref_alphaMask, 1);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -795,8 +799,8 @@ void R_RenderSprites(void)
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_BindNullProgram();
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
 }
@@ -1569,7 +1573,7 @@ int R_Init(void *hinstance, void *hWnd)
 
 	VID_MenuInit();
 
-	Com_Printf( "\n");
+	Con_Printf(PRINT_ALL,"\n");
 
 	// Get Extension string
 	glGetStringi = (PFNGLGETSTRINGIPROC)			qwglGetProcAddress("glGetStringi");
@@ -1687,31 +1691,59 @@ int R_Init(void *hinstance, void *hWnd)
 	qglUniformMatrix3fv =			(PFNGLUNIFORMMATRIX3FVPROC)         qwglGetProcAddress("glUniformMatrix3fv");
 	qglUniformMatrix4fv =			(PFNGLUNIFORMMATRIX4FVPROC)			qwglGetProcAddress("glUniformMatrix4fv");
 
-	gl_config.vendor_string = (const char*)qglGetString(GL_VENDOR);
+	// DSA stuff glsl block
+	glUniform1fDSA = (PFNGLPROGRAMUNIFORM1FEXTPROC)						qwglGetProcAddress("glProgramUniform1fEXT");
+	glUniform2fDSA = (PFNGLPROGRAMUNIFORM2FEXTPROC)						qwglGetProcAddress("glProgramUniform2fEXT");
+	glUniform3fDSA = (PFNGLPROGRAMUNIFORM3FEXTPROC)						qwglGetProcAddress("glProgramUniform3fEXT");
+	glUniform4fDSA = (PFNGLPROGRAMUNIFORM4FEXTPROC)						qwglGetProcAddress("glProgramUniform4fEXT");
+	glUniform1iDSA = (PFNGLPROGRAMUNIFORM1IEXTPROC)						qwglGetProcAddress("glProgramUniform1iEXT");
+	glUniform2iDSA = (PFNGLPROGRAMUNIFORM2IEXTPROC)						qwglGetProcAddress("glProgramUniform2iEXT");
+	glUniform3iDSA = (PFNGLPROGRAMUNIFORM3IEXTPROC)						qwglGetProcAddress("glProgramUniform3iEXT");
+	glUniform4iDSA = (PFNGLPROGRAMUNIFORM4IEXTPROC)						qwglGetProcAddress("glProgramUniform4iEXT");
+
+	glUniform1fvDSA = (PFNGLPROGRAMUNIFORM1FVEXTPROC)					qwglGetProcAddress("glProgramUniform1fvEXT");
+	glUniform2fvDSA = (PFNGLPROGRAMUNIFORM2FVEXTPROC)					qwglGetProcAddress("glProgramUniform2fvEXT");
+	glUniform3fvDSA = (PFNGLPROGRAMUNIFORM3FVEXTPROC)					qwglGetProcAddress("glProgramUniform3fvEXT");
+	glUniform4fvDSA = (PFNGLPROGRAMUNIFORM4FVEXTPROC)					qwglGetProcAddress("glProgramUniform4fvEXT");
+	glUniform1ivDSA = (PFNGLPROGRAMUNIFORM1IVEXTPROC)					qwglGetProcAddress("glProgramUniform1ivEXT");
+	glUniform2ivDSA = (PFNGLPROGRAMUNIFORM2IVEXTPROC)					qwglGetProcAddress("glProgramUniform2ivEXT");
+	glUniform3ivDSA = (PFNGLPROGRAMUNIFORM3IVEXTPROC)					qwglGetProcAddress("glProgramUniform3ivEXT");
+	glUniform4ivDSA = (PFNGLPROGRAMUNIFORM4IVEXTPROC)					qwglGetProcAddress("glProgramUniform4ivEXT");
+
+	glUniformMatrix2fvDSA =		(PFNGLPROGRAMUNIFORMMATRIX2FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix2fvEXT");
+	glUniformMatrix3fvDSA =		(PFNGLPROGRAMUNIFORMMATRIX3FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix3fvEXT");
+	glUniformMatrix4fvDSA =		(PFNGLPROGRAMUNIFORMMATRIX4FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix4fvEXT");
+
+	glUniformMatrix2x3fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX2X3FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix2x3fvEXT");
+	glUniformMatrix3x2fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX3X2FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix3x2fvEXT");
+	glUniformMatrix2x4fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX2X4FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix2x4fvEXT");
+	glUniformMatrix4x2fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX4X2FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix4x2fvEXT");
+	glUniformMatrix3x4fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX3X4FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix3x4fvEXT");
+	glUniformMatrix4x3fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX4X3FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix4x3fvEXT");
+
+	gl_config.vendor_string					= (const char*)qglGetString(GL_VENDOR);
+	gl_config.renderer_string				= (const char*)qglGetString(GL_RENDERER);
+	gl_config.version_string				= (const char*)qglGetString(GL_VERSION);
+	gl_config.shadingLanguageVersionString	= (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION);
+
 	Com_Printf("GL_VENDOR:" S_COLOR_GREEN "    %s\n", gl_config.vendor_string);
-
-	gl_config.renderer_string = (const char*)qglGetString(GL_RENDERER);
 	Com_Printf("GL_RENDERER:" S_COLOR_GREEN "  %s\n", gl_config.renderer_string);
-
-	gl_config.version_string = (const char*)qglGetString(GL_VERSION);
 	Com_Printf("GL_VERSION:" S_COLOR_GREEN "   %s\n", gl_config.version_string);
-
-	gl_config.shadingLanguageVersionString = (const char*)qglGetString(GL_SHADING_LANGUAGE_VERSION);
 	Com_Printf("GLSL_VERSION:" S_COLOR_GREEN " %s\n", gl_config.shadingLanguageVersionString);
 
 	
-	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
-	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &gl_config.maxVertexUniformComponents);
-	qglGetIntegerv(GL_MAX_VARYING_FLOATS, &gl_config.maxVaryingFloats);
-	qglGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &gl_config.maxVertexTextureImageUnits);
+	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,	&gl_config.maxFragmentUniformComponents);
+	qglGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS,	&gl_config.maxVertexUniformComponents);
+	qglGetIntegerv(GL_MAX_VARYING_FLOATS,				&gl_config.maxVaryingFloats);
+	qglGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,	&gl_config.maxVertexTextureImageUnits);
 	qglGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &gl_config.maxCombinedTextureImageUnits);
-	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gl_config.maxFragmentUniformComponents);
-	qglGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &gl_config.maxVertexAttribs);
-	qglGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &gl_config.maxTextureImageUnits);
+	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,	&gl_config.maxFragmentUniformComponents);
+	qglGetIntegerv(GL_MAX_VERTEX_ATTRIBS,				&gl_config.maxVertexAttribs);
+	qglGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,			&gl_config.maxTextureImageUnits);
 
-	qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &gl_state.maxRenderBufferSize);
-	qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &gl_state.maxColorAttachments);
-	qglGetIntegerv(GL_MAX_SAMPLES, &gl_state.maxSamples);
+	qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE,			&gl_state.maxRenderBufferSize);
+	qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS,			&gl_state.maxColorAttachments);
+	qglGetIntegerv(GL_MAX_SAMPLES,						&gl_state.maxSamples);
 
 	Com_Printf("\n");
 	Com_Printf(S_COLOR_YELLOW"Max Fragment Uniform Components:"S_COLOR_GREEN" %i\n", gl_config.maxFragmentUniformComponents);
