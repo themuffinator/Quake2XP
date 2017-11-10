@@ -1597,6 +1597,9 @@ int R_Init(void *hinstance, void *hWnd)
 	glDeleteVertexArrays	= (PFNGLDELETEVERTEXARRAYSPROC)	qwglGetProcAddress("glDeleteVertexArrays");
 	glBindVertexArray		= (PFNGLBINDVERTEXARRAYPROC)	qwglGetProcAddress("glBindVertexArray");
 
+	glMultiDrawElements		= (PFNGLMULTIDRAWELEMENTSPROC)	qwglGetProcAddress("glMultiDrawElements");
+	glMultiDrawArrays		= (PFNGLMULTIDRAWARRAYSPROC)	qwglGetProcAddress("glMultiDrawArrays");
+
 	// vbo stuff
 	qglBindBuffer		= (PFNGLBINDBUFFERPROC)		qwglGetProcAddress("glBindBuffer");
 	qglDeleteBuffers	= (PFNGLDELETEBUFFERSPROC)	qwglGetProcAddress("glDeleteBuffers");

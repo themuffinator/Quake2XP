@@ -67,7 +67,7 @@ void R_MarkShadowTriangles (dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOr
 }
 
 void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
-	dtriangle_t		*ot, *tris;
+	dtriangle_t		*oldTris, *tris;
 	neighbors_t		*neighbours;
 	vec4_t			v0, v1, v2;
 	daliasframe_t	*frame;
@@ -76,11 +76,11 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 
 	frame = (daliasframe_t *)((byte *)hdr + hdr->ofs_frames + currententity->frame * hdr->framesize);
 	verts = frame->verts;
-	ot = tris = (dtriangle_t *)((unsigned char *)hdr + hdr->ofs_tris);
+	oldTris = tris = (dtriangle_t *)((unsigned char *)hdr + hdr->ofs_tris);
 
 	R_MarkShadowTriangles(hdr, tris, lightOrg);
 
-	for (i = 0, tris = ot, neighbours = currentmodel->neighbours; i < hdr->num_tris; i++, tris++, neighbours++) {
+	for (i = 0, tris = oldTris, neighbours = currentmodel->neighbours; i < hdr->num_tris; i++, tris++, neighbours++) {
 
 		if (!triangleFacingLight[i])
 			continue;
@@ -151,7 +151,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 	}
 
 	// build shadows caps
-	for (i = 0, tris = ot; i < hdr->num_tris; i++, tris++) {
+	for (i = 0, tris = oldTris; i < hdr->num_tris; i++, tris++) {
 		if (!triangleFacingLight[i])
 			continue;
 
@@ -197,7 +197,8 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 	c_shadow_volumes++;
 }
 
-qboolean R_EntityInLightBounds () {
+//differs from the test for mesh in light bound
+qboolean R_EntityCastShadow() { 
 
 	int		i;
 	vec3_t	mins, maxs;
@@ -250,13 +251,13 @@ qboolean R_EntityInLightBounds () {
 }
 
 
-void GL_LerpShadowVerts (int nverts, dtrivertx_t *v, dtrivertx_t *ov, float *lerp, float move[3], float frontv[3], float backv[3]) {
+void GL_LerpShadowVerts (int numVerts, dtrivertx_t *v, dtrivertx_t *ov, float *lerp, float move[3], float frontv[3], float backv[3]) {
 	int i;
 
-	if (currentmodel->numFrames < 1)
+	if (currentmodel->numFrames < 1) //lerp shadow verts only for animated models
 		return;
 
-	for (i = 0; i < nverts; i++, v++, ov++, lerp += 4) {
+	for (i = 0; i < numVerts; i++, v++, ov++, lerp += 4) {
 		lerp[0] = move[0] + ov->v[0] * backv[0] + v->v[0] * frontv[0];
 		lerp[1] = move[1] + ov->v[1] * backv[1] + v->v[1] * frontv[1];
 		lerp[2] = move[2] + ov->v[2] * backv[2] + v->v[2] * frontv[2];
@@ -271,7 +272,7 @@ void R_DrawMD2ShadowVolume () {
 	float			frontlerp;
 	vec3_t			move, delta, vectors[3], frontv, backv, light, temp;
 
-	if (!R_EntityInLightBounds ())
+	if (!R_EntityCastShadow())
 		return;
 
 	paliashdr = (dmdl_t *)currentmodel->extraData;
@@ -335,7 +336,7 @@ void R_DrawMD3ShadowVolume(){
 					delta, vectors[3], lightOrg;
 	index_t			*idx, *index0, *index1;
 
-	if (!R_EntityInLightBounds())
+	if (!R_EntityCastShadow())
 		return;
 
 	currentmodel = currententity->model;
@@ -483,10 +484,8 @@ void R_DrawMD3ShadowVolume(){
 
 			idx += 3;
 		}
-		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3ShadowVerts);
-		qglDrawArrays(GL_TRIANGLES, 0, numTris);
-
 	}
+	qglDrawArrays(GL_TRIANGLES, 0, numTris);
 }
 
 
@@ -561,6 +560,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	==============*/
 
 	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3ShadowVerts);
 	GL_BindProgram(nullProgram, 0);
 
 	// re-setup stencil
@@ -716,7 +716,7 @@ void R_DrawBrushModelVolumes () {
 	clmodel = currententity->model;
 	surf = &clmodel->surfaces[clmodel->firstModelSurface];
 
-	if (!R_EntityInLightBounds ())
+	if (!R_EntityCastShadow())
 		return;
 
 	R_SetupEntityMatrix (currententity);

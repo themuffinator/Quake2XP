@@ -479,6 +479,9 @@ void R_DrawMD3ShellMesh(qboolean weapon);
 void CheckEntityFrameMD3(md3Model_t *paliashdr);
 qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e);
 
+qboolean R_AliasInLightBound();
+void R_UpdateLightAliasUniforms();
+
 void R_InitVertexBuffers();
 
 void SetModelsLight();
@@ -662,6 +665,8 @@ typedef struct {
 	GLfloat			polygonOffsetUnits;
 
 	qboolean		lineSmooth;
+
+	qboolean		depthClamp;
 
 	qboolean		stencilTest;
 	GLenum			stencilFunc;

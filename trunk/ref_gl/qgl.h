@@ -785,6 +785,10 @@ extern PFNGLPROGRAMUNIFORMMATRIX4X3FVEXTPROC	glUniformMatrix4x3fvDSA;
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC		qwglCreateContextAttribsARB;
 extern	PFNWGLSWAPINTERVALEXTPROC				wglSwapIntervalEXT;
 
+extern	PFNGLMULTIDRAWELEMENTSPROC				glMultiDrawElements;
+extern	PFNGLMULTIDRAWARRAYSPROC				glMultiDrawArrays;
+
+
 
 const char *(WINAPI * qwglGetExtensionsStringARB) (HDC);
 BOOL (WINAPI * qwglGetPixelFormatAttribivARB) (HDC, int, int, UINT,

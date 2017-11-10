@@ -1018,6 +1018,7 @@ void SCR_DrawClock (void) {
 
 	Set_FontShader (qtrue);
 
+
 	if (!cl_drawFPS->value) {
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
@@ -1026,8 +1027,37 @@ void SCR_DrawClock (void) {
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpbuf);
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65 + 20 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}
-
 	Set_FontShader (qfalse);
+
+}
+
+void SCR_ShowTexNames() {
+
+	trace_t		trace;
+	vec3_t		end, forward, right, up;
+
+	if (!scr_showTexName->integer)
+		return;
+	
+	if (cls.state != ca_active)
+		return;
+
+	AngleVectors(cl.refdef.viewangles, forward, right, up);
+	VectorMA(cl.refdef.vieworg, 4096, forward, end);
+	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, (MASK_SOLID | MASK_WATER), qfalse);
+	
+	Set_FontShader(qtrue);
+	RE_SetColor(colorGreen);
+
+	if (trace.surface->name[0])
+	{
+		char	string[MAX_QPATH];
+		Com_sprintf(string, sizeof(string), "Surface texture: %s", trace.surface->name);
+		Draw_StringScaled(0, viddef.height / 2 - 50, 2.0, 2.0, string);
+	} 
+
+	Set_FontShader(qfalse);
+	RE_SetColor(colorWhite);
 }
 
 void R_GammaRamp (void);
@@ -1113,6 +1143,7 @@ void SCR_UpdateScreen (void) {
 		SCR_DrawPause ();
 
 		SCR_DrawFPS ();
+		SCR_ShowTexNames();
 
 		if (cl_drawTime->value && (cls.state == ca_active))
 			SCR_DrawClock ();

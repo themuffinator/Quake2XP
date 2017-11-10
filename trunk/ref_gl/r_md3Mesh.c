@@ -703,44 +703,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_Enable(GL_CULL_FACE);
 }
 
-void R_UpdateMd3LightUniforms()
-{
-	mat4_t	entAttenMatrix, entSpotMatrix;
-
-	qglUniform1f(lightAlias_colorScale, 1.0);
-	qglUniform1i(lightAlias_ambient, (int)currentShadowLight->isAmbient);
-	qglUniform1f(lightAlias_specularScale, r_specularScale->value);
-	qglUniform4f(lightAlias_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniform1i(lightAlias_fog, (int)currentShadowLight->isFog);
-	if (currententity->flags & RF_WEAPONMODEL)
-		qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity * 8.0);
-	else
-		qglUniform1f(lightAlias_fogDensity, currentShadowLight->fogDensity);
-	qglUniform1f(lightAlias_causticsIntens, r_causticIntens->value);
-	qglUniform3fv(lightAlias_viewOrigin, 1, r_origin);
-	qglUniform3fv(lightAlias_lightOrigin, 1, currentShadowLight->origin);
-
-	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
-	qglUniformMatrix4fv(lightAlias_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
-
-
-	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
-	qglUniformMatrix4fv(lightAlias_spotMatrix, 1, qfalse, (const float *)entSpotMatrix);
-	qglUniform3f(lightAlias_spotParams, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
-
-	if (currentShadowLight->isCone)
-		qglUniform1i(lightAlias_spotLight, 1);
-	else
-		qglUniform1i(lightAlias_spotLight, 0);
-
-	R_CalcCubeMapMatrix(qtrue);
-	qglUniformMatrix4fv(lightAlias_cubeMatrix, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
-
-	qglUniformMatrix4fv(lightAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
-	qglUniformMatrix4fv(lightAlias_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-
-}
-
 qboolean R_Md3InLightBound() {
 
 	vec3_t mins, maxs;
@@ -781,6 +743,8 @@ qboolean R_Md3InLightBound() {
 	return qtrue;
 
 }
+
+void R_UpdateLightAliasUniforms();
 
 void R_DrawMD3MeshLight(qboolean weapon) {
 
@@ -869,7 +833,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	else
 		inWater = qfalse;
 
-	R_UpdateMd3LightUniforms();
+	R_UpdateLightAliasUniforms();
 
 	qglUniform1i(lightAlias_autoBump, 0);
 	

@@ -373,6 +373,11 @@ void GL_Enable(GLenum cap) {
 			return;
 		gl_state.lineSmooth = qtrue;
 
+	case GL_DEPTH_CLAMP:
+		if (gl_state.depthClamp)
+			return;
+		gl_state.depthClamp = qtrue;
+
 	}
 
 	qglEnable(cap);
@@ -425,6 +430,11 @@ void GL_Disable(GLenum cap) {
 		if (!gl_state.lineSmooth)
 			return;
 		gl_state.lineSmooth = qfalse;
+	
+	case GL_DEPTH_CLAMP:
+		if (!gl_state.depthClamp)
+			return;
+		gl_state.depthClamp = qfalse;
 	}
 
 	qglDisable(cap);
