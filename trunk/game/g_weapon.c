@@ -434,7 +434,7 @@ void Grenade_Explode (edict_t *ent) {
 	G_FreeEdict (ent);
 }
 
-static void Grenade_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf) {
+void Grenade_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf) {
 	if (other == ent->owner)
 		return;
 

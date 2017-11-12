@@ -1314,7 +1314,7 @@ void R_RegisterCvars(void)
 	r_customHeight =					Cvar_Get("r_customHeight", "768", CVAR_ARCHIVE);
 		
 	hunk_bsp=							Cvar_Get("hunk_bsp", "70", CVAR_ARCHIVE);
-	hunk_md2=							Cvar_Get("hunk_md2", "2.4", CVAR_ARCHIVE);
+	hunk_md2=							Cvar_Get("hunk_md2", "4", CVAR_ARCHIVE);
 	hunk_md3=							Cvar_Get("hunk_md3", "8", CVAR_ARCHIVE);
 	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
 
@@ -1880,17 +1880,7 @@ void R_Shutdown(void)
 	qglDeleteFramebuffers (1, &fboId);
 
 	DeleteShadowVertexBuffers();
-
-	qglDeleteBuffers(1, &vbo.vbo_fullScreenQuad);
-	qglDeleteBuffers(1, &vbo.vbo_halfScreenQuad);
-	qglDeleteBuffers(1, &vbo.vbo_quarterScreenQuad);
-	qglDeleteBuffers(1, &vbo.ibo_quadTris);
-	qglDeleteBuffers(1, &vbo.vbo_Dynamic);
-	qglDeleteBuffers(1, &vbo.ibo_Dynamic);
-	qglDeleteBuffers(1, &vbo.vbo_BSP);
-
-	glDeleteVertexArrays(1, &vao.bsp_a);
-	glDeleteVertexArrays(1, &vao.bsp_l);
+	R_ShutDownVertexBuffers();
 
 	Mod_FreeAll();
 	GL_ShutdownImages();

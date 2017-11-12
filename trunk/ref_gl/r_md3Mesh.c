@@ -243,9 +243,9 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		{
 			if (!inSkin->name[0])
 			{
-				outMesh->skinsAlbedo[j] = r_notexture;
+				outMesh->skinsAlbedo[j] = 
 				outMesh->skinsNormal[j] = outMesh->skinsLight[j] =
-					outMesh->skinsEnv[j] = outMesh->skinsRgh[j] = NULL;
+				outMesh->skinsEnv[j]	= outMesh->skinsRgh[j] = r_notexture;
 				continue;
 			}
 
@@ -553,6 +553,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*v, *ov;
 	image_t     *skin, *light, *normal, *ao;
+	mat4_t		m;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -575,6 +576,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	SetModelsLight();
 
 	CheckEntityFrameMD3(md3Hdr);
+
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
@@ -613,8 +615,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	qglUniform1f(ambientMd3_addShift, alphaShift);
 	qglUniform1f(ambientMd3_envScale, 0.1);
-
-	qglUniform1i(ambientMd3_ssao, 1);
+	
 
 	qglUniform3fv(ambientMd3_viewOrg, 1, r_origin);
 	qglUniformMatrix4fv(ambientMd3_mvp, 1, qfalse, (const float *)currententity->orMatrix);
@@ -634,7 +635,18 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglUniform1f(ambientMd3_addShift, 1.0);
 			qglUniform1f(ambientMd3_colorModulate, 2.0);
 			GL_BlendFunc(GL_ONE, GL_ONE);
-		}
+			
+			float angle = DEG2RAD(anglemod(r_newrefdef.time * 6.0));
+
+			Mat4_Identity(m);
+			Mat4_Translate(m, 0.5f, 0.5f, 0.f);
+			Mat4_Rotate(m, angle, 0.f, 0.f, 1.f);
+			
+			qglUniformMatrix4fv(ambientMd3_texRotation, 1, qfalse, (const float *)m);
+			qglUniform1i(ambientMd3_texRotation, 1);
+
+		} else
+			qglUniform1i(ambientMd3_texRotation, 0);
 		
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!skin || skin == r_notexture)

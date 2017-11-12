@@ -28,51 +28,29 @@ Post Process Effects
 
 void R_DrawFullScreenQuad () {
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_fullScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	
-	qglEnableVertexAttribArray (ATT_POSITION);
-	qglVertexAttribPointer (ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
+	glBindVertexArray(vao.fullscreenQuad);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
-	qglDisableVertexAttribArray (ATT_POSITION);
-	qglDisableVertexAttribArray (ATT_NORMAL);
-
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void R_DrawHalfScreenQuad () {
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_halfScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
+	glBindVertexArray(vao.halfScreenQuad);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
-	qglDisableVertexAttribArray(ATT_POSITION);
-	
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void R_DrawQuarterScreenQuad () {
 	
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_quarterScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
-	
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
+	glBindVertexArray(vao.quaterScreenQuad);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-
-	qglDisableVertexAttribArray(ATT_POSITION);
 	
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void R_Bloom (void) 

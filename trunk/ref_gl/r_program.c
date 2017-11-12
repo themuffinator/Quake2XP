@@ -679,13 +679,14 @@ void R_InitPrograms (void) {
 		id = md3AmbientProgram->id[0];
 
 		ambientMd3_isEnvMaping		= qglGetUniformLocation(id, "u_isEnvMap");
-		ambientMd3_ssao				= qglGetUniformLocation(id, "u_ssao");
+		ambientMd3_texRotation		= qglGetUniformLocation(id, "u_isRotation");
 		ambientMd3_colorModulate	= qglGetUniformLocation(id, "u_ColorModulate");
 		ambientMd3_addShift			= qglGetUniformLocation(id, "u_AddShift");
 		ambientMd3_envScale			= qglGetUniformLocation(id, "u_envScale");
 		ambientMd3_isShell			= qglGetUniformLocation(id, "u_isShell");
 		ambientMd3_shellParams		= qglGetUniformLocation(id, "u_shellParams");
 		ambientMd3_mvp				= qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
+		ambientMd3_texRotation		= qglGetUniformLocation(id, "u_rotateTexMatrix");
 		ambientMd3_viewOrg			= qglGetUniformLocation(id, "u_viewOrg");
 	}
 	else {

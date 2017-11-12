@@ -535,15 +535,20 @@ void Con_DrawNotify (void) {
 	Set_FontShader (qtrue);
 
 	v = 0;
+	
 	for (i = con.current - NUM_CON_TIMES + 1; i <= con.current; i++) {
+		
 		if (i < 0)
 			continue;
+
 		time = con.times[i % NUM_CON_TIMES];
 		if (time == 0)
 			continue;
+
 		time = cls.realtime - time;
 		if (time > con_notifytime->value * 1000)
 			continue;
+
 		text = con.text + (i % con.totalLines)*con.lineWidth;
 
 		for (x = 0; x < con.lineWidth; x++) {
@@ -560,7 +565,7 @@ void Con_DrawNotify (void) {
 		v += 8 * fontscale;
 	}
 
-	RE_SetColor (colorWhite);
+	RE_SetColor (colorYellow);
 
 	if (cls.key_dest == key_message) {
 		if (chat_team) {
@@ -582,7 +587,8 @@ void Con_DrawNotify (void) {
 
 		v += 8;
 	}
-	Set_FontShader (qfalse);
+	Set_FontShader	(qfalse);
+	RE_SetColor		(colorWhite);
 }
 
 

@@ -775,9 +775,7 @@ void R_DrawAliasModelLightPass(qboolean weapon_model)
 {
 	dmdl_t	*paliashdr;
 	vec3_t	bbox[8];
-	vec3_t	mins, maxs;
 	vec3_t	oldLight, oldView, tmp;
-	int		i;
 
 	if (!r_drawEntities->integer)
 		return;

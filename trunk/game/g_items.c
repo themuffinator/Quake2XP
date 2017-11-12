@@ -786,14 +786,14 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 
 //======================================================================
 
-static void drop_temp_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf) {
+void drop_temp_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf) {
 	if (other == ent->owner)
 		return;
 
 	Touch_Item (ent, other, plane, surf);
 }
 
-static void drop_make_touchable (edict_t *ent) {
+void drop_make_touchable (edict_t *ent) {
 	ent->touch = Touch_Item;
 	if (deathmatch->value) {
 		ent->nextthink = level.time + 29;

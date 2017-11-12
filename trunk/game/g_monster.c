@@ -97,14 +97,14 @@ void monster_fire_bfg (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 // Monster utility functions
 //
 
-static void M_FliesOff (edict_t *self) {
+void M_FliesOff (edict_t *self) {
 	self->s.effects &= ~EF_FLIES;
 	self->s.sound = 0;
 }
 
 //static int	sound_deadfly;
 
-static void M_FliesOn (edict_t *self) {
+void M_FliesOn (edict_t *self) {
 	if (self->waterlevel)
 		return;
 	//	sound_deadfly = gi.soundindex ("infantry/inflies1.wav");

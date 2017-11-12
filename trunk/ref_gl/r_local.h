@@ -441,6 +441,8 @@ void R_DrawLightFlare ();
 void R_DrawLightBounds(void);
 qboolean R_EntityInLightBounds();
 
+void R_ShutDownVertexBuffers();
+
 extern const mat3_t	mat3_identity;
 extern const mat4_t	mat4_identity;
 
@@ -634,6 +636,8 @@ typedef struct {
 
 	int			programId;
 	GLenum		matrixMode;
+	
+	int			vaoBuffer, vboBuffer;
 
 	mat4_t		projectionMatrix;
 	mat4_t		modelViewMatrix;		// ready to load
@@ -710,9 +714,15 @@ int bn_offset;
 vbo_t vbo;
 
 typedef struct {
-	GLuint	bsp_a, bsp_l, alias_shadow, fonts;
-}
-vao_t;
+	GLuint	bsp_a; 
+	GLuint	bsp_l;
+	GLuint	alias_shadow;
+	GLuint	fonts;
+	GLuint	fullscreenQuad;
+	GLuint	halfScreenQuad;
+	GLuint	quaterScreenQuad;
+}vao_t;
+
 vao_t vao;
 
 void GL_CullFace (GLenum mode);
@@ -958,7 +968,7 @@ uint ambientAlias_shellParams;
 uint ambientAlias_mvp;
 uint ambientAlias_viewOrg;
 
-uint ambientMd3_ssao;
+uint ambientMd3_texRotation;
 uint ambientMd3_colorModulate;
 uint ambientMd3_addShift;
 uint ambientMd3_isEnvMaping;
@@ -967,6 +977,7 @@ uint ambientMd3_isShell;
 uint ambientMd3_shellParams;
 uint ambientMd3_mvp;
 uint ambientMd3_viewOrg;
+uint ambientMd3_texRotation;
 
 uint lightAlias_colorScale;
 uint lightAlias_viewOrigin;
