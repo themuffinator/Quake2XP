@@ -433,6 +433,7 @@ void R_DrawMD3ShadowVolume(){
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][0];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][1];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][2];
+
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][0];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][1];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][2];
@@ -444,6 +445,7 @@ void R_DrawMD3ShadowVolume(){
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][0];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][1];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][2];
+
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
@@ -503,8 +505,8 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_StencilMask(255);
 	GL_StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	GL_StencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 	GL_StencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+	GL_StencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 
 	GL_Disable(GL_CULL_FACE);
 	GL_DepthFunc(GL_LESS);
@@ -517,6 +519,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
+
 
 	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -553,21 +556,18 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray(ATT_POSITION);
 
-	/*==============
+
+	/*================================
 	DRAW MD3 SHADOWS
-	==============*/
+	re-setup vertex pointer and shader
+	todo - use turboshadow
+	=================================*/
 
-	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3ShadowVerts);
 	GL_BindProgram(nullProgram, 0);
 
-	// re-setup stencil
-	GL_StencilMask(255);
-	GL_StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	GL_StencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-	GL_StencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+	GL_FrontFace(GL_CW); // flip cull face order vs stencil re-setup
 
 	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -602,6 +602,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 		}
 	}
 
+	GL_FrontFace(GL_CCW);
 	GL_BindNullProgram();
 	qglDisableVertexAttribArray(ATT_POSITION);
 	GL_Disable(GL_POLYGON_OFFSET_FILL);
@@ -997,8 +998,8 @@ void R_CastBspShadowVolumes (void) {
 
 	GL_StencilMask (255);
 	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
-	GL_StencilOpSeparate (GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 	GL_StencilOpSeparate (GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+	GL_StencilOpSeparate (GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 
 	GL_Disable (GL_CULL_FACE);
 	GL_DepthFunc (GL_LESS);

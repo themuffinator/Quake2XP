@@ -110,15 +110,31 @@ void R_InitVertexBuffers() {
 	//------------------------------------------------
 	qglGenBuffers(1, &vbo.vbo_Dynamic);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
-	qglBufferData(GL_ARRAY_BUFFER, MAX_VERTICES * sizeof(vec4_t), 0, GL_DYNAMIC_DRAW);
+	qglBufferData(GL_ARRAY_BUFFER, MAX_VERTICES * sizeof(vec4_t), 0, GL_STREAM_DRAW);
 
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	qglGenBuffers(1, &vbo.ibo_Dynamic);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(uint), 0, GL_DYNAMIC_DRAW);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(uint), 0, GL_STREAM_DRAW);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	if (!vao.alias_shadow) {
+
+		glGenVertexArrays(1, &vao.alias_shadow);
+
+		glBindVertexArray(vao.alias_shadow);
+		qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
+
+		qglEnableVertexAttribArray(ATT_POSITION);
+		qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
+
+		glBindVertexArray(0);
+		qglBindBuffer(GL_ARRAY_BUFFER, 0);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
 
 	Com_Printf(S_COLOR_GREEN"ok\n\n");
 }
