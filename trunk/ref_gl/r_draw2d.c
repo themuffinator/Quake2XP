@@ -567,7 +567,7 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 	w = gl->width * sX *gl->picScale_w;
 	h = gl->height * sY *gl->picScale_h;
 
-	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE); // use addative alpha blending
+	GL_BlendFunc(GL_ONE, GL_ONE); // use addative alpha blending
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);

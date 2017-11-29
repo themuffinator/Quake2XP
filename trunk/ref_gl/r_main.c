@@ -323,8 +323,9 @@ void R_SetupFrame(void)
 
 	// clear out the portion of the screen that the NOWORLDMODEL defines
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
-		GL_Enable(GL_SCISSOR_TEST);
-		GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+
+			GL_Enable(GL_SCISSOR_TEST);
+			GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
 			qglClearColor(0.0, 0.0, 0.0, 0.0);

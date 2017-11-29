@@ -754,6 +754,8 @@ typedef struct {
 #define RDF_LAVA			128
 #define RDF_SLIME			256
 #define RDF_MASK			512
+#define RDF_NOWORLDMODEL2	1024
+
 //
 // muzzle flashes / player effects
 //

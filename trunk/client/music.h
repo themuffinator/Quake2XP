@@ -32,8 +32,8 @@ typedef struct {
 
 typedef Gen_Interface_t *(*openFunc_t)(const char *, soundparams_t *);
 
-static Gen_Interface_t *Gen_Open (const char *name, soundparams_t *sp);
-static Gen_Interface_t *Gen_OpenAny (const char *name, soundparams_t *sp);
+Gen_Interface_t *Gen_Open (const char *name, soundparams_t *sp);
+Gen_Interface_t *Gen_OpenAny (const char *name, soundparams_t *sp);
 
 typedef struct {
 	char *name;

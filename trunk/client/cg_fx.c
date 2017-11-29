@@ -277,7 +277,8 @@ char *fastsound_name[FAST_SOUNDS_TOTAL] = {
 	"player/step4.wav",			// 37
 	"weapons/tesla.wav",		// 38
 	"weapons/disrupthit.wav",	// 39
-	"misc/radar_snd.wav"		// 40
+	"misc/radar_snd.wav",		// 40
+	"menu/idlogo.wav"			// 41
 };
 
 // Resource descriptors
@@ -293,6 +294,8 @@ void S_fastsound_queue (vec3_t origin, int entnum, int entchannel,
 	unsigned timeofs);
 void S_fastsound (vec3_t origin, int entnum, int entchannel,
 	ALuint bufferNum, float fvol, float attenuation);
+
+ALuint cl_sfx_idlogo;
 
 void CL_fast_sound_init (void) {
 	extern ALuint cl_sfx_lashit, cl_sfx_railg, cl_sfx_rockexp,
@@ -316,12 +319,13 @@ void CL_fast_sound_init (void) {
 	cl_sfx_railg = fastsound_descriptor[id_cl_sfx_railg];
 	cl_sfx_rockexp = fastsound_descriptor[id_cl_sfx_rockexp];
 	cl_sfx_grenexp = fastsound_descriptor[id_cl_sfx_grenexp];
-	cl_sfx_watrexp = fastsound_descriptor[id_cl_sfx_watrexp];
 
 	// q2xp
 	cl_sfx_lava = fastsound_descriptor[id_cl_sfx_lava];
 	cl_sfx_shell = fastsound_descriptor[id_cl_sfx_shell];
 	cl_sfx_debris = fastsound_descriptor[id_cl_sfx_debris];
+
+	cl_sfx_idlogo = fastsound_descriptor[id_idlogo_sound];
 
 	// RAFAEL
 	// cl_sfx_plasexp = S_RegisterSound ("weapons/plasexpl.wav");

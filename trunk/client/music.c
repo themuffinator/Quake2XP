@@ -70,7 +70,7 @@ void Music_Shutdown (void) {
 }
 
 // only to be called inside Music_Play
-static qboolean Music_PlayFile (const char *name, qboolean hasExt) {
+qboolean Music_PlayFile (const char *name, qboolean hasExt) {
 	soundparams_t sp;
 
 	if (hasExt)
@@ -330,7 +330,7 @@ static Gen_Interface_t *Gen_OpenAny (const char *name, soundparams_t *sp) {
 }
 
 // Gen_Open: check given filename and call appropiate routine
-static Gen_Interface_t *Gen_Open (const char *name, soundparams_t *sp) {
+Gen_Interface_t *Gen_Open (const char *name, soundparams_t *sp) {
 	int i;
 	const char *ext = strrchr (name, '.');
 

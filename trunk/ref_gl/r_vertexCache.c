@@ -11,6 +11,10 @@ void R_InitVertexBuffers() {
 	vmap = NULL;
 	imap = NULL;
 
+	glDeleteVertexArrays(1, &vao.fullscreenQuad);
+	glDeleteVertexArrays(1, &vao.halfScreenQuad);
+	glDeleteVertexArrays(1, &vao.quaterScreenQuad);
+
 	Com_Printf("Initializing Vertex Buffers: ");
 
 	for (i = 0, idx = 0; i < MAX_DRAW_STRING_LENGTH * 4; i += 4)
@@ -39,21 +43,18 @@ void R_InitVertexBuffers() {
 	qglBufferData(GL_ARRAY_BUFFER, sizeof(vec2_t) * 4, tmpVerts, GL_STATIC_DRAW);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	if (!vao.fullscreenQuad) {
-
-		glGenVertexArrays(1, &vao.fullscreenQuad);
+	glGenVertexArrays(1, &vao.fullscreenQuad);
 		
-		glBindVertexArray(vao.fullscreenQuad);
-		qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_fullScreenQuad);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	glBindVertexArray(vao.fullscreenQuad);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_fullScreenQuad);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
-		qglEnableVertexAttribArray(ATT_POSITION);
-		qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
 
-		glBindVertexArray(0);
-		qglBindBuffer(GL_ARRAY_BUFFER, 0);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	// half quad
 	VA_SetElem2(tmpVerts[0], 0, vid.height);
@@ -65,21 +66,19 @@ void R_InitVertexBuffers() {
 	qglBufferData(GL_ARRAY_BUFFER, sizeof(vec2_t) * 4, tmpVerts, GL_STATIC_DRAW);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	if (!vao.halfScreenQuad) {
 
-		glGenVertexArrays(1, &vao.halfScreenQuad);
+	glGenVertexArrays(1, &vao.halfScreenQuad);
 
-		glBindVertexArray(vao.halfScreenQuad);
-		qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_halfScreenQuad);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	glBindVertexArray(vao.halfScreenQuad);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_halfScreenQuad);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
-		qglEnableVertexAttribArray(ATT_POSITION);
-		qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
 
-		glBindVertexArray(0);
-		qglBindBuffer(GL_ARRAY_BUFFER, 0);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	// quater quad
 	VA_SetElem2(tmpVerts[0], 0, vid.height);
@@ -91,22 +90,19 @@ void R_InitVertexBuffers() {
 	qglBufferData(GL_ARRAY_BUFFER, sizeof(vec2_t) * 4, tmpVerts, GL_STATIC_DRAW);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	if (!vao.quaterScreenQuad) {
+	glGenVertexArrays(1, &vao.quaterScreenQuad);
 
-		glGenVertexArrays(1, &vao.quaterScreenQuad);
+	glBindVertexArray(vao.quaterScreenQuad);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_quarterScreenQuad);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
-		glBindVertexArray(vao.quaterScreenQuad);
-		qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_quarterScreenQuad);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
 
-		qglEnableVertexAttribArray(ATT_POSITION);
-		qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
-
-		glBindVertexArray(0);
-		qglBindBuffer(GL_ARRAY_BUFFER, 0);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
-
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	
 	//------------------------------------------------
 	qglGenBuffers(1, &vbo.vbo_Dynamic);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);

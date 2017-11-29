@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <AL/al.h>
 #endif
 
-#define FAST_SOUNDS_TOTAL 41
+#define FAST_SOUNDS_TOTAL 42
 extern ALuint fastsound_descriptor[FAST_SOUNDS_TOTAL];
 
 void S_Init (int hardreset);

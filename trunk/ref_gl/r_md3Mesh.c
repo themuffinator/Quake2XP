@@ -575,6 +575,19 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	SetModelsLight();
 
+	if (r_skipStaticLights->integer) {
+
+		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+			VectorSet(shadelight, 0.5, 0.5, 0.5);
+	}
+	else {
+		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+			VectorSet(shadelight, 0.1, 0.1, 0.1);
+	}
+
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+		VectorSet(shadelight, 1, 1, 1);
+		
 	CheckEntityFrameMD3(md3Hdr);
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
@@ -607,7 +620,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	qglUniform1i(ambientMd3_isEnvMaping, 0);
 	qglUniform1i(ambientMd3_isShell, 0);
-	qglUniform1f(ambientMd3_colorModulate, /*r_textureColorScale->value*/ 1.0);
+	qglUniform1f(ambientMd3_colorModulate, 1.0);
 
 	float alphaShift = sin(ref_realtime * 5.666);
 	alphaShift = (alphaShift + 1) * 0.5f;
@@ -627,7 +640,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 		
 		c_alias_polys += md3Hdr->meshes[i].num_tris;
-		
+
 		if (mesh->muzzle) {
 			GL_Enable(GL_BLEND);
 			GL_DepthMask(0);
@@ -635,18 +648,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglUniform1f(ambientMd3_addShift, 1.0);
 			qglUniform1f(ambientMd3_colorModulate, 2.0);
 			GL_BlendFunc(GL_ONE, GL_ONE);
-			
-			float angle = DEG2RAD(anglemod(r_newrefdef.time * 6.0));
-
-			Mat4_Identity(m);
-			Mat4_Translate(m, 0.5f, 0.5f, 0.f);
-			Mat4_Rotate(m, angle, 0.f, 0.f, 1.f);
-			
-			qglUniformMatrix4fv(ambientMd3_texRotation, 1, qfalse, (const float *)m);
-			qglUniform1i(ambientMd3_texRotation, 1);
-
-		} else
-			qglUniform1i(ambientMd3_texRotation, 0);
+		}
 		
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!skin || skin == r_notexture)

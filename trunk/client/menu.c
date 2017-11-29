@@ -324,12 +324,11 @@ void M_Main_DrawQuad(float x, float y) {
 
 	memset(&entity, 0, sizeof(entity));
 
-	Com_sprintf(scratch, sizeof(scratch),
-		"models/items/quaddama/tris.md2");
-	entity.model = R_RegisterModel(scratch);
-	Com_sprintf(scratch, sizeof(scratch),
-		"models/items/quaddama/skin.pcx");
-	entity.skin = R_RegisterSkin(scratch);
+	if (!entity.model) {
+		Com_sprintf(scratch, sizeof(scratch), "models/items/quaddama/tris.md2");
+		entity.model = R_RegisterModel(scratch);
+	}
+
 	entity.flags = RF_NOSHADOW | RF_DEPTHHACK;
 	entity.origin[0] = 55;
 	entity.origin[1] = -3;
@@ -4462,6 +4461,59 @@ void M_Init(void) {
 	Cmd_AddCommand("menu_quit", M_Menu_Quit_f);
 }
 
+void SCR_TileClear(void);
+
+void M_DrawBackgroundModel() {
+	refdef_t	refdef;
+	vec3_t		center, rad;
+	entity_t	entity;
+	char		name[MAX_QPATH];
+	int			pos;
+
+	memset(&refdef, 0, sizeof(refdef));
+	memset(&entity, 0, sizeof(entity));
+
+	if (!entity.model) {
+		Com_sprintf(name, sizeof(name), "models/menu/idlogo.md3");
+		entity.model = R_RegisterModel(name);
+	}
+
+	R_ModelRadius(entity.model, rad);
+	R_ModelCenter(entity.model, center);
+
+	pos = (viddef.width - viddef.height) / 2;
+	refdef.x = pos;
+	refdef.y = 0;
+	refdef.width = viddef.height;
+	refdef.height = viddef.height;
+	refdef.fov_x = 45;
+	refdef.fov_y = 45;
+	refdef.time = cls.realtime;
+	refdef.viewangles[0] = 30;
+	refdef.areabits = 0;
+	refdef.num_entities = 1;
+	refdef.entities = &entity;
+	refdef.lightstyles = 0;
+	refdef.rdflags = RDF_NOWORLDMODEL | RDF_NOCLEAR | RDF_NOWORLDMODEL2;
+	VectorSet(refdef.vieworg, -rad[0] * 1.5, 0, rad[0] * 0.8);
+
+	entity.flags = RF_NOSHADOW  | RF_DEPTHHACK;
+	entity.frame = 0;
+	entity.oldframe = 0;
+	entity.backlerp = 0.0;
+
+	entity.angles[1] = anglemod(cl.time / 32);
+	entity.angleMod = qtrue;
+
+	VectorNegate(center, entity.origin);
+	
+	S_fastsound(entity.origin, 1, CHAN_AUTO, fastsound_descriptor[id_idlogo_sound], 0.11, ATTN_STATIC);
+
+	// Draw it
+	R_RenderFrame(&refdef);
+	refdef.num_entities++;
+}
+
 /*
 =================
 M_Draw
@@ -4473,11 +4525,15 @@ void M_Draw(void) {
 
 	// repaint everything next frame
 	SCR_DirtyScreen();
-
-	if (cls.state != ca_active || !cl.refresh_prepped)
+	
+	
+	if (cls.state != ca_active || !cl.refresh_prepped) {
 		Draw_StretchPic(0, 0, viddef.width, viddef.height, "menuback");
-
-	R_MenuBackGround();
+		R_MenuBackGround();
+		M_DrawBackgroundModel();
+	} 
+	else
+		R_MenuBackGround();
 
 	m_drawfunc();
 
