@@ -269,6 +269,7 @@ typedef enum {
 	it_sky,
 	it_autobump,
 	it_parallax,
+	it_wall2,
 	it_bump,
 } imagetype_t;
 

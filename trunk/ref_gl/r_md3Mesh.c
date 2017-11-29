@@ -265,7 +265,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_bump.tga");
-			outMesh->skinsNormal[j] = GL_FindImage(tex, it_skin);
+			outMesh->skinsNormal[j] = GL_FindImage(tex, it_bump);
 			if (!outMesh->skinsNormal[j])
 				outMesh->skinsNormal[j] = r_notexture;
 
@@ -295,7 +295,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			strcpy(tex, name);
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_local.tga");
-			outMesh->skinsSkinLocal[j] = GL_FindImage(tex, it_skin);
+			outMesh->skinsSkinLocal[j] = GL_FindImage(tex, it_bump);
 			if (!outMesh->skinsSkinLocal[j])
 				outMesh->skinsSkinLocal[j] = r_defBump;
 		}

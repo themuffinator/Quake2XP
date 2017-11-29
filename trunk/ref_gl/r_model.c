@@ -755,7 +755,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 
 		// grab original texture size for override textures
 		Com_sprintf(name, sizeof(name), "textures/%s.wal", in->texture);
-		out->image = GL_FindImage(name, it_wall);
+		out->image = GL_FindImage(name, it_wall2);
 
 		if (!out->image) {
 			// failed to load WAL, use default
@@ -2295,13 +2295,13 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		strcpy(gl, pname);
 		gl[strlen(gl) - 4] = 0;
 		strcat(gl, "_rgh.tga");
-		mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
+		mod->skins_roughness[i] = GL_FindImage(gl, it_wall);
 
 		if (!mod->skins_roughness[i]) {
 			strcpy(gl, pname);
 			gl[strlen(gl) - 4] = 0;
 			strcat(gl, "_rgh.dds");
-			mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
+			mod->skins_roughness[i] = GL_FindImage(gl, it_wall);
 		}
 
 		if (!mod->skins_roughness[i])
@@ -2547,13 +2547,13 @@ struct model_s *R_RegisterModel(char *name) {
 				strcpy(gl, pname);
 				gl[strlen(gl) - 4] = 0;
 				strcat(gl, "_rgh.tga");
-				mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
+				mod->skins_roughness[i] = GL_FindImage(gl, it_wall);
 
 				if (!mod->skins_roughness[i]) {
 					strcpy(gl, pname);
 					gl[strlen(gl) - 4] = 0;
 					strcat(gl, "_rgh.dds");
-					mod->skins_roughness[i] = GL_FindImage(gl, it_bump);
+					mod->skins_roughness[i] = GL_FindImage(gl, it_wall);
 				}
 
 

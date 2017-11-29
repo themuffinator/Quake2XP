@@ -632,6 +632,27 @@ void R_MipNormalMap (byte *in, int width, int height)
 	}
 }
 
+static void R_LinearToSRGB(byte *data, int width, int height) {
+	byte	*p;
+	float	f;
+	int		i, j;
+
+	for (i = 0, p = data; i < width * height; i++, p += 4) {
+		for (j = 0; j < 4; j++) {
+			f = (float)p[j] * (1.f / 255.f);
+
+			// linear to sRGB
+			if (f <= 0.0031308)
+				f *= 12.92f;
+			else
+				f = 1.055 * pow(f, 0.41666) - 0.055f;
+
+			p[j] = (byte)(255.f * clamp(f, 0.f, 1.f));
+		}
+
+		// alpha channel unchanged
+	}
+}
 
 unsigned	scaled[4096*4096];
 qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean bump)
@@ -688,7 +709,10 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		if (gl_state.texture_compression_bptc && mipmap)
 			comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 		else
-			comp = gl_tex_solid_format;
+			if (bump)
+				comp = gl_tex_solid_format;
+			else
+				comp = GL_SRGB8;
 	}
 
 	if (samples == 4){
@@ -696,9 +720,13 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		if (gl_state.texture_compression_bptc && mipmap)
 			comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 		else
-			comp = gl_tex_alpha_format;
+			if (bump)
+				comp = gl_tex_alpha_format;
+			else
+				comp = GL_SRGB8_ALPHA8;
 	}
 	
+//	R_LinearToSRGB(scaled, scaled_width, scaled_height);
 
 	if (scaled_width == width && scaled_height == height)
 	{
@@ -740,7 +768,6 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		}
 	}
 done:
-
 
 	if (mipmap)
 	{
@@ -929,12 +956,17 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		image->texnum = TEXNUM_IMAGES + (image - gltextures);
 //		qglGenTextures (1, &image->texnum);
 		GL_Bind(image->texnum);
+		
+		qboolean itBump = qfalse;
+		if (image->type == it_bump)
+			itBump = qtrue;
+
 		if (bits == 8)
 			image->has_alpha =
 				GL_Upload8(pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_sky);
 		else {
 									
-			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_bump);
+			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_pic && image->type != it_sky), itBump);
 					
 		}
 

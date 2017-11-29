@@ -214,7 +214,7 @@ void R_DrawChainsRA (qboolean bmodel) {
 	qglUniform1f(water_thickness, 150.0);
 	qglUniform2f(water_screenSize, vid.width, vid.height);
 	qglUniform2f(water_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(water_colorModulate, r_textureColorScale->value);
+	qglUniform1f(water_colorModulate, 1.0);
 	qglUniform1f(water_ambient, ambient);
 
 	if (!bmodel)

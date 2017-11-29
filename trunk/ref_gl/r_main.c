@@ -1766,6 +1766,8 @@ int R_Init(void *hinstance, void *hWnd)
 	R_InitPrograms();
 	R_InitFboBuffers();
 	R_InitVertexBuffers();
+	
+	qglEnable(GL_FRAMEBUFFER_SRGB);
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_aniso);
 	Cvar_SetValue("r_maxAnisotropy", max_aniso);
