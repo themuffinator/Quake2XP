@@ -345,14 +345,6 @@ extern int r_visframecount;
 
 qboolean xhargar2hack;
 
-vec3_t	*vertexArray;
-vec3_t	*normalArray;
-vec3_t	*tangentArray;
-vec3_t	*binormalArray;
-vec4_t	*colorArray;
-void R_Init_AliasArrays();
-void R_Shutdown_AliasArrays();
-
 void GL_Bind (int texnum);
 void GL_MBind (GLenum target, int texnum);
 void GL_SelectTexture (GLenum);

@@ -180,7 +180,7 @@ void CreateScreenRect (void) {
 	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	qglTexImage2D		(GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, vid.width, vid.height, 0,
+	qglTexImage2D		(GL_TEXTURE_RECTANGLE, 0, GL_RGB8, vid.width, vid.height, 0,
 						GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 }
@@ -368,7 +368,7 @@ void CreateSsaoColorTextures(void) {
 		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, vid.width / 2, vid.height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	}
 }
 
@@ -585,11 +585,11 @@ image_t *R_LoadLightFilter (int id) {
 			allNull = qfalse;
 			R_FlipImage (i, &pix[i], (byte*)trans);
 			free (pix[i].pixels);
-			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_SRGB8_ALPHA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, /*pix[i].pixels*/ trans);
+			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, /*pix[i].pixels*/ trans);
 		}
 		else {
 			nullpixels = (byte*)calloc (minw*minh * 4, 1);
-			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_SRGB8_ALPHA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
+			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
 			free (nullpixels);
 		}
 

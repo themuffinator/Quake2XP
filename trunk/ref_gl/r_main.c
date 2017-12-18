@@ -1766,8 +1766,6 @@ int R_Init(void *hinstance, void *hWnd)
 	R_InitPrograms();
 	R_InitFboBuffers();
 	R_InitVertexBuffers();
-	
-	qglEnable(GL_FRAMEBUFFER_SRGB);
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_aniso);
 	Cvar_SetValue("r_maxAnisotropy", max_aniso);
@@ -1830,8 +1828,6 @@ int R_Init(void *hinstance, void *hWnd)
 
 	flareEdit = (qboolean)qfalse;
 	
-	R_Init_AliasArrays();
-	
 	return 0;
 }
 
@@ -1891,8 +1887,6 @@ void R_Shutdown(void)
 	R_ClearWorldLights();
 	ilShutDown();
 	R_ShutdownPrograms();
-	
-	R_Shutdown_AliasArrays();
 
 	GLimp_Shutdown();
 	QGL_Shutdown();

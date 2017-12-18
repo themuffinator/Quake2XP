@@ -123,9 +123,11 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 	md3Tag_t			*outTag;
 	md3Frame_t			*outFrame;
 	md3Model_t			*outModel;
-	vec3_t				tangents[MD3_MAX_VERTS], binormals[MD3_MAX_VERTS];
+	vec3_t				tangents[MD3_MAX_VERTS], binormals[MD3_MAX_VERTS], scaleMD3;
 	char				name[MD3_MAX_PATH];
 	float				lat, lng;
+
+	VectorSet(scaleMD3, MD3_XYZ_SCALE, MD3_XYZ_SCALE, MD3_XYZ_SCALE);
 
 	inModel = (dmd3_t *)buffer;
 	version = LittleLong(inModel->version);
@@ -343,8 +345,8 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				int		y;
 				for (y = 0; y<3; y++)
 				{
-					outVerts->xyz[y] = (float)LittleShort(inVerts->point[y]);
-					outVerts->xyz[y] *= MD3_XYZ_SCALE;
+					outVerts->xyz[y] = (float)LittleShort(inVerts->point[y]) * scaleMD3[y];
+				//	outVerts->xyz[y] *= MD3_XYZ_SCALE;
 					vertex[y] = outVerts->xyz[y] + outModel->frames[l].translate[y];
 				}
 
@@ -404,8 +406,8 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				int		y;
 				for (y = 0; y<3; y++)
 				{
-					outVerts->xyz[y] = (float)LittleShort(inVerts->point[y]);
-					outVerts->xyz[y] *= MD3_XYZ_SCALE;
+					outVerts->xyz[y] = (float)LittleShort(inVerts->point[y]) * scaleMD3[y];
+				//	outVerts->xyz[y] *= MD3_XYZ_SCALE;
 					vertex[y] = outVerts->xyz[y] + outModel->frames[l].translate[y];
 				}
 				AddPointToBounds(vertex, mod->mins, mod->maxs);
@@ -542,6 +544,11 @@ void CheckEntityFrameMD3(md3Model_t *paliashdr)
 	}
 
 }
+static vec3_t	vertexArray		[MD3_MAX_TRIANGLES * 3];
+static vec3_t	normalArray		[MD3_MAX_TRIANGLES * 3];
+static vec3_t	tangentArray	[MD3_MAX_TRIANGLES * 3];
+static vec3_t	binormalArray	[MD3_MAX_TRIANGLES * 3];
+static vec4_t	colorArray		[MD3_MAX_TRIANGLES * 4];
 
 void R_DrawMD3Mesh(qboolean weapon) {
 
@@ -553,7 +560,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*v, *ov;
 	image_t     *skin, *light, *normal, *ao;
-	mat4_t		m;
 
 	if (!r_drawEntities->integer)
 		return;
