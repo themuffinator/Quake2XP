@@ -1,11 +1,5 @@
 #include "r_local.h"
 
-void SinCos(float radians, float *sine, float *cosine)
-{
-	*sine = sinf(radians);
-	*cosine = cosf(radians);
-}
-
 void Tangent4TrisMD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal)
 {
 	float *v0, *v1, *v2;
@@ -328,44 +322,43 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		}
 
 		//
-		// Calculate TBN
+		// load all vertexes and calc TBN
 		//
 		inVerts = (dmd3vertex_t *)((byte *)inMesh + LittleLong(inMesh->ofs_verts));
 		outVerts = outMesh->vertexes = Hunk_Alloc(outModel->num_frames * outMesh->num_verts * sizeof(md3Vertex_t));
 
-		for (l = 0; l < outModel->num_frames; l++)
-		{
+		for (l = 0; l < outModel->num_frames; l++){
+
 			// for all frames
 			memset(tangents, 0, outMesh->num_verts * sizeof(vec3_t));
 			memset(binormals, 0, outMesh->num_verts * sizeof(vec3_t));
+
 			outVerts = outMesh->vertexes + l * outMesh->num_verts;
-			for (j = 0; j < outMesh->num_verts; j++, inVerts++, outVerts++)
-			{
-				vec3_t	vertex;
-				int		y;
-				for (y = 0; y<3; y++)
-				{
-					outVerts->xyz[y] = (float)LittleShort(inVerts->point[y]) * scaleMD3[y];
-				//	outVerts->xyz[y] *= MD3_XYZ_SCALE;
-					vertex[y] = outVerts->xyz[y] + outModel->frames[l].translate[y];
+			
+			for (j = 0; j < outMesh->num_verts; j++, inVerts++, outVerts++){
+
+				vec3_t	boundsPoints, norm, translate;
+
+				for (int x = 0; x < 3; x++){
+
+					translate[x] = LittleFloat(inFrame->translate[x]);
+					outVerts->xyz[x] = (float)LittleShort(inVerts->point[x]) * scaleMD3[x] + translate[x];
+					boundsPoints[x] = outVerts->xyz[x] + outModel->frames[l].translate[x];
 				}
 
-				lat = (inVerts->norm >> 8) & 0xff;
-				lng = (inVerts->norm & 0xff);
+				AddPointToBounds(boundsPoints, mod->mins, mod->maxs); // add points for bound box
 
-				lat *= M_PI / 128.f;
-				lng *= M_PI / 128.f;
-
-				vec3_t	norma;
-				float	slat, clat, slng, clng;
-				SinCos(lat, &slat, &clat);
-				SinCos(lng, &slng, &clng);
-
-				norma[0] = clat * slng;
-				norma[1] = slat * slng;
-				norma[2] = clng;
-				outVerts->normal = Normal2Index(norma);
+				lat = (float)((inVerts->norm >> 8) & 0xFF) * M_PI / 128.0;
+				lng = (float)((inVerts->norm >> 0) & 0xFF) * M_PI / 128.0;
+				
+				norm[0] = sin(lng) * cos(lat);
+				norm[1] = sin(lng) * sin(lat);
+				norm[2] = cos(lng);
+				
+				VectorNormalize(norm);
+				outVerts->normal = Normal2Index(norm);
 			}
+
 			//for all tris
 			outVerts = outMesh->vertexes + l * outMesh->num_verts;
 			for (j = 0; j<outMesh->num_tris; j++)
@@ -375,13 +368,14 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 
 				Tangent4TrisMD3(&outMesh->indexes[j * 3], outVerts, outMesh->stcoords, tangent, binormal);
 				// for all vertices in the tri
-				for (k = 0; k<3; k++)
-				{
+				for (k = 0; k<3; k++){
+
 					ll = outMesh->indexes[j * 3 + k];
 					VectorAdd(tangents[ll], tangent, tangents[ll]);
 					VectorAdd(binormals[ll], binormal, binormals[ll]);
 				}
 			}
+
 			// normalize averages
 			for (j = 0; j<outMesh->num_verts; j++)
 			{
@@ -392,27 +386,6 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			}
 		}
 
-		//
-		// load the vertexes
-		//
-
-		inVerts = (dmd3vertex_t *)((byte *)inMesh + LittleLong(inMesh->ofs_verts));
-		outVerts = outMesh->vertexes;
-		for (l = 0; l < outModel->num_frames; l++)
-		{
-			for (j = 0; j < outMesh->num_verts; j++, inVerts++, outVerts++)
-			{
-				vec3_t	vertex;
-				int		y;
-				for (y = 0; y<3; y++)
-				{
-					outVerts->xyz[y] = (float)LittleShort(inVerts->point[y]) * scaleMD3[y];
-				//	outVerts->xyz[y] *= MD3_XYZ_SCALE;
-					vertex[y] = outVerts->xyz[y] + outModel->frames[l].translate[y];
-				}
-				AddPointToBounds(vertex, mod->mins, mod->maxs);
-			}
-		}
 		//
 		// build triangle neighbours
 		//

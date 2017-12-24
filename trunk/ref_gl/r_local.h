@@ -254,6 +254,7 @@ cvar_t	*r_textureColorScale;
 cvar_t	*r_textureCompression;
 cvar_t	*r_anisotropic;
 cvar_t	*r_maxAnisotropy;
+cvar_t	*r_textureLodBias;
 
 cvar_t	*r_shadows;
 cvar_t	*r_playerShadow;

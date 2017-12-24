@@ -2331,8 +2331,10 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 
 	for (k = 0; k < pheader->num_xyz; k++)
 		for (l = 0; l<3; l++) {
-			if (mod->mins[l] > verts[k].v[l])	mod->mins[l] = verts[k].v[l];
-			if (mod->maxs[l] < verts[k].v[l])	mod->maxs[l] = verts[k].v[l];
+			if (mod->mins[l] > verts[k].v[l])	
+				mod->mins[l] = verts[k].v[l];
+			if (mod->maxs[l] < verts[k].v[l])	
+				mod->maxs[l] = verts[k].v[l];
 		}
 
 	for (l = 0; l < 3; l++) {
