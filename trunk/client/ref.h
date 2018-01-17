@@ -128,7 +128,7 @@ typedef unsigned short		ushort;
 typedef unsigned int		uint;
 typedef ushort				index_t;
 typedef uint				index32_t;
-
+typedef const char			cchar;
 
 void Set_FontShader (qboolean enable);
 

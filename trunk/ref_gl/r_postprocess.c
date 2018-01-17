@@ -336,9 +336,6 @@ void R_FXAA (void) {
 	if (!r_fxaa->integer)
 		return;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
 	// setup program
 	GL_BindProgram (fxaaProgram, 0);
 
