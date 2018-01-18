@@ -1,4 +1,8 @@
 /*
+* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+* PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+*/
+/*
  * Copyright (C) 2001 Robert Bäuml
  * Copyright (C) 2002 W. P. va Paassen
  *
