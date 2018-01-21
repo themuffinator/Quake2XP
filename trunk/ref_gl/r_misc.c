@@ -58,6 +58,7 @@ image_t	*r_randomNormalTex;
 image_t	*r_lightCubeMap[MAX_FILTERS];
 image_t *fbo_color0;
 image_t *skinBump;
+image_t	*r_conBump;
 
 image_t *depthMap;
 image_t *ScreenMap;
@@ -771,9 +772,9 @@ void R_InitEngineTextures (void) {
 	if (!r_distort)
 		r_distort = r_notexture;
 
-	r_scanline = GL_FindImage ("pics/conback_add.tga", it_wall);
-	if (!r_scanline)
-		r_scanline = r_notexture;
+	r_conBump = GL_FindImage ("pics/conback_bump.tga", it_wall);
+	if (!r_conBump)
+		r_conBump = r_defBump;
 
 	r_envTex = GL_FindImage ("gfx/tinfx.jpg", it_wall);
 	if (!r_envTex)
@@ -782,7 +783,6 @@ void R_InitEngineTextures (void) {
 	r_randomNormalTex = GL_FindImage ("gfx/randomNormal.png", it_pic);
 	if (!r_randomNormalTex)
 		r_randomNormalTex = r_notexture;
-//		VID_Error(ERR_DROP, "R_InitEngineTextures: 'gfx/randomNormal.png' is missing.");
 
 	for (i = 0; i < MAX_GLOBAL_FILTERS; i++)
 		r_lightCubeMap[i] = R_LoadLightFilter (i);

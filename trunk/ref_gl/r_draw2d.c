@@ -52,8 +52,8 @@ void R_LoadFont(void)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
 	GL_MBind(GL_TEXTURE0, draw_chars->texnum);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 void Set_FontShader(qboolean enable){
@@ -237,6 +237,9 @@ void Draw_GetPicSize(int *w, int *h, char *pic)
 }
 
 
+#define WIDTH_FHD 1920.0
+#define HEIGHT_FHD 1080.0
+#define WIDE_SCREEN_16x9  WIDTH_FHD / HEIGHT_FHD
 
 
 /*
@@ -247,6 +250,8 @@ Draw_StretchPic
 
 void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 {
+	float		offsX, offsY;
+	float		woh = (float)vid.width / (float)vid.height;
 	float		scroll = -13 * (r_newrefdef.time / 40.0);
 	qboolean	console;
 
@@ -290,6 +295,31 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 
 	if (console){
 		qglUniform1i(gen_attribConsole, 1);
+
+		float	t;
+		vec3_t	lPos;
+		t = Sys_Milliseconds() * 0.001;
+		lPos[0] = sin(t);
+		lPos[1] = cos(t);
+		lPos[2] = 0.5;
+		VectorNormalize(lPos);
+		lPos[0] = lPos[0] * 0.5 + 0.5;
+		lPos[1] = lPos[1] * 0.5 + 0.5;
+		lPos[2] = lPos[2] * 0.5 + 0.5;
+
+		qglUniform3fv(gen_light, 1, lPos);
+
+		if (woh < WIDE_SCREEN_16x9) {  // quad screen
+			offsX = (WIDTH_FHD - (HEIGHT_FHD * woh)) / (WIDTH_FHD * 2.0);
+			offsY = 0;
+		}
+		else if (woh > WIDE_SCREEN_16x9) {   // super wide screen (21 x 9)
+			offsX = 0;
+			offsY = (HEIGHT_FHD - (WIDTH_FHD / woh)) / (HEIGHT_FHD * 2.0);
+		}
+		else {
+			offsX = offsY = 0;
+		}
 	}
 	else{
 		qglUniform1i(gen_attribColors, 1);
@@ -303,18 +333,28 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 
 	if (scrap_dirty)
 		Scrap_Upload();
+	
+	if (console) {
 
+		GL_MBind(GL_TEXTURE0, gl->texnum);
+		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
+		VA_SetElem2(texCoord[1], gl->sh - offsX, gl->tl + offsY);
+		VA_SetElem2(texCoord[2], gl->sh - offsX, gl->th - offsY);
+		VA_SetElem2(texCoord[3], gl->sl + offsX, gl->th - offsY);
+
+		GL_MBind(GL_TEXTURE1, r_conBump->texnum);
+		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
+		VA_SetElem2(texCoord[1], gl->sh - offsX, gl->tl + offsY);
+		VA_SetElem2(texCoord[2], gl->sh - offsX, gl->th - offsY);
+		VA_SetElem2(texCoord[3], gl->sl + offsX, gl->th - offsY);
+	}
+	else {
 		GL_MBind(GL_TEXTURE0, gl->texnum);
 		VA_SetElem2(texCoord[0], gl->sl, gl->tl);
 		VA_SetElem2(texCoord[1], gl->sh, gl->tl);
 		VA_SetElem2(texCoord[2], gl->sh, gl->th);
 		VA_SetElem2(texCoord[3], gl->sl, gl->th);
-
-		GL_MBind(GL_TEXTURE1, r_scanline->texnum);
-		VA_SetElem2(texCoord1[0], gl->sl, gl->tl - scroll);
-		VA_SetElem2(texCoord1[1], gl->sh, gl->tl - scroll);
-		VA_SetElem2(texCoord1[2], gl->sh, gl->th - scroll);
-		VA_SetElem2(texCoord1[3], gl->sl, gl->th - scroll);
+	}
 
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -344,10 +384,6 @@ void Draw_StretchPic(int x, int y, int w, int h, char *pic)
 }
 
 float loadScreenColorFade;
-
-#define WIDTH_FHD 1920.0
-#define HEIGHT_FHD 1080.0
-#define WIDE_SCREEN_16x9  WIDTH_FHD / HEIGHT_FHD
 
 void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 {
@@ -791,7 +827,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	GL_BindProgram(cinProgram, 0);
 
 	GL_MBind(GL_TEXTURE0, 0);
-	qglUniform2f(cin_params, w, cols);
+	qglUniform2f(cin_params, vid.width, vid.height);
 	qglUniformMatrix4fv(cin_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	hscale = rows/256.0;

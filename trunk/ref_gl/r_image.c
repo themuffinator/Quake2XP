@@ -1336,7 +1336,7 @@ void GL_FreeUnusedImages(void)
 
 	r_distort->registration_sequence = registration_sequence;
 	r_defBump->registration_sequence = registration_sequence;
-	r_scanline->registration_sequence = registration_sequence;
+	r_conBump->registration_sequence = registration_sequence;
 	r_envTex->registration_sequence = registration_sequence;
 	r_randomNormalTex->registration_sequence = registration_sequence;
 	r_whiteMap->registration_sequence = registration_sequence;

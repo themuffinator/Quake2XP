@@ -114,9 +114,11 @@ qboolean R_CullConeLight (vec3_t mins, vec3_t maxs, cplane_t *frust) {
 	if (r_noCull->integer)
 		return qfalse;
 
-	for (i = 0; i < 4; i++)
-	if (BoxOnPlaneSide22 (mins, maxs, &frust[i]) == 2)
-		return qtrue;
+	for (i = 0; i < 4; i++) {
+		if (BoxOnPlaneSide22(mins, maxs, &frust[i]) == 2)
+			return qtrue;
+	}
+
 	return qfalse;
 }
 

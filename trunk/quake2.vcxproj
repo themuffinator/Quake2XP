@@ -167,6 +167,7 @@
       <ProfileGuidedDatabase>$(IntDir)$(TargetName).pgd</ProfileGuidedDatabase>
       <ManifestFile>
       </ManifestFile>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>c:\quake2\source\declareDPIAware.manifest</AdditionalManifestFiles>
@@ -257,6 +258,10 @@
       </StackReserveSize>
       <HeapCommitSize>
       </HeapCommitSize>
+      <FullProgramDatabaseFile>false</FullProgramDatabaseFile>
+      <MapFileName>
+      </MapFileName>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>c:\quake\source\declareDPIAware.manifest</AdditionalManifestFiles>

@@ -165,7 +165,7 @@ extern	image_t	*ScreenMap;
 extern	image_t	*r_envTex;
 extern	image_t	*r_randomNormalTex;
 extern	image_t	*shadowMask;
-extern	image_t	*r_scanline;
+extern	image_t	*r_conBump;
 extern	image_t	*weaponHack;
 extern	image_t *fxaaMap;
 extern	image_t *fboScreen;
@@ -1001,6 +1001,7 @@ uint gen_sky;
 uint gen_mvp;
 uint gen_orthoMatrix;
 uint gen_3d;
+uint gen_light;
 
 uint cin_params;
 uint cin_orthoMatrix;

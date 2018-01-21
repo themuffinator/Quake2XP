@@ -964,6 +964,7 @@ void R_InitPrograms (void) {
 		gen_mvp				= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
 		gen_orthoMatrix		= qglGetUniformLocation (id, "u_orthoMatrix");
 		gen_3d				= qglGetUniformLocation (id, "u_3d");
+		gen_light			= qglGetUniformLocation (id, "u_lightShift");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

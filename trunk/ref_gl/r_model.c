@@ -1289,12 +1289,12 @@ void GL_BuildTBN(int count) {
 	float		*vi, *vj, threshold;
 	msurface_t	*si, *sj;
 	vec3_t		ni, nj;
-	char		cacheName[MAX_QPATH];
+//	char		cacheName[MAX_QPATH];
 	FILE		*cacheFile = NULL;
 	int         smoothAng = r_tbnSmoothAngle->integer;
 
 	threshold = cosf(DEG2RAD(r_tbnSmoothAngle->integer));
-
+/*
 	// Check for existing data
 	Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
 	if (cache_Open(cacheName)) {
@@ -1310,7 +1310,7 @@ void GL_BuildTBN(int count) {
 		for (i = 0; i < count; i++) {
 			si = &currentmodel->surfaces[i];
 
-			if (si->texInfo->flags & (SURF_SKY | /*SURF_TRANS33 | SURF_TRANS66 | */SURF_NODRAW))
+			if (si->texInfo->flags & (SURF_SKY |SURF_NODRAW))
 				continue;
 
 			vi = si->polys->verts[0];
@@ -1329,6 +1329,7 @@ void GL_BuildTBN(int count) {
 	}
 
 recreate:
+	
 	// Not found, so write it as we calculate it
 	Com_sprintf(cacheName, sizeof(cacheName), "%s/cachexp/%s", FS_Gamedir(), currentmodel->name);
 	FS_CreatePath(cacheName);
@@ -1340,11 +1341,12 @@ recreate:
 			currentmodel->name, smoothAng);
 		fwrite(&smoothAng, sizeof(smoothAng), 1, cacheFile);
 	}
+*/
 
 	for (i = 0; i < count; i++) {
 		si = &currentmodel->surfaces[i];
 
-		if (si->texInfo->flags & (SURF_SKY | /*SURF_TRANS33 | SURF_TRANS66 | */SURF_NODRAW))
+		if (si->texInfo->flags & (SURF_SKY | SURF_NODRAW))
 			continue;
 
 		vi = si->polys->verts[0];
@@ -1360,7 +1362,7 @@ recreate:
 		for (j = 0; j < count; j++) {
 			sj = &currentmodel->surfaces[j];
 
-			if (!(sj->texInfo->flags & (SURF_SKY | /*SURF_TRANS33 | SURF_TRANS66 | */SURF_NODRAW))) {
+			if (!(sj->texInfo->flags & (SURF_SKY | SURF_NODRAW))) {
 				if (si->texInfo->image->texnum != sj->texInfo->image->texnum)
 					continue;
 
@@ -1431,12 +1433,12 @@ recreate:
 				vi[15] = biTangent[2];
 			}
 
-			if (cacheFile != NULL)
-				fwrite(vi + 7, sizeof(*vi), 9, cacheFile);
+	//		if (cacheFile != NULL)
+		//		fwrite(vi + 7, sizeof(*vi), 9, cacheFile);
 		}
 	}
-	if (cacheFile != NULL)
-		fclose(cacheFile);
+//	if (cacheFile != NULL)
+	//	fclose(cacheFile);
 }
 
 
