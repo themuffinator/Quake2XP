@@ -1,15 +1,12 @@
 layout	(location = 0) in vec3	att_position;
 layout	(location = 5) in vec2	att_texCoordDiffuse;
 
-uniform vec2 u_cinParams; //  w, cols
 uniform mat4 u_orthoMatrix;
 
 out vec2 v_texCoord;
-out vec2 v_lineOffset;
 
 void main() 
 {
 	gl_Position = u_orthoMatrix * vec4(att_position, 1.0);
 	v_texCoord = att_texCoordDiffuse;
-	v_lineOffset = vec2(3.1415 * u_cinParams.y * u_cinParams.x / u_cinParams.y, 2.0 * 3.1415 * u_cinParams.y);
 }

@@ -1,8 +1,8 @@
 layout (binding = 0) uniform sampler2D	u_map;
 layout (binding = 1) uniform sampler2D	u_normalMap;
-uniform vec2		u_params;
 
-in vec2 texCoord;
+uniform vec2	u_params;
+in vec2			texCoord;
 
 #include lighting.inc
 

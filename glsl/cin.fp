@@ -1,7 +1,6 @@
-in vec2 v_texCoord;
-in vec2 v_lineOffset;
-
 layout (binding = 0) uniform sampler2D u_cinMap;
+
+in vec2			v_texCoord;
 
 /*
 3x3 Median
@@ -88,7 +87,6 @@ void main ()
 {
 	vec4 cin = vec4(median(u_cinMap), 1.0) * 1.5;
 	cin = clamp(cin, 0.05, 1.0);
-	vec4 scanLine = cin * (BRIGHTNESS + dot(SINE_COMP * sin(v_texCoord.xy * v_lineOffset), vec2(1.0)));	
-	scanLine = TechniColor(scanLine);
-	fragData = scanLine;
+	fragData = TechniColor(cin);
+	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
 }
