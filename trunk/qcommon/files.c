@@ -890,6 +890,7 @@ char **FS_ListFiles (char *findname, int *numfiles, unsigned musthave, unsigned 
 char **FS_ListFilesAll (char *findname, int *numfiles, unsigned musthave, unsigned canthave) {
 	int nfound = 0;
 	char **list = 0;
+	char **list_tmp = 0;
 
 	list = malloc (FSLF_MAX * sizeof(char*));
 
@@ -900,12 +901,15 @@ char **FS_ListFilesAll (char *findname, int *numfiles, unsigned musthave, unsign
 	list = FS_ListSortUnique (list, nfound, &nfound);
 
 	*numfiles = nfound;
-	if (nfound > 0) {
-		list = realloc (list, nfound * sizeof(char*));
+	list_tmp = realloc(list, nfound * sizeof(char*));
+	if (list_tmp != NULL)
+	{
+		list = list_tmp;
 		return list;
 	}
-	else {
-		free (list);
+	else
+	{
+		free(list);
 		return NULL;
 	}
 }

@@ -1930,8 +1930,8 @@ void R_BeginFrame()
 	/* 
 	 ** change modes if necessary
 	 */
-	ClampCvar(0.0, 1.0, r_lightmapScale->value);
-	ClampCvarInteger(0, 1, r_reliefMapping->integer);
+	r_lightmapScale->value = ClampCvar(0.0, 1.0, r_lightmapScale->value);
+	r_reliefMapping->integer = ClampCvarInteger(0, 1, r_reliefMapping->integer);
 
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = qtrue;

@@ -117,9 +117,21 @@ void IN_StartupXInput(void)
 	// reset to -1 each time as this can be called at runtime
 	xInputActiveController = -1;
 	xInputActive = qfalse;
-
+	
+	in_useXInput = Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
+	x360_useControllerID = Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
+	x360_sensX = Cvar_Get("x360_sensX", "2.0", CVAR_ARCHIVE);
+	x360_sensY = Cvar_Get("x360_sensY", "1.0", CVAR_ARCHIVE);
+	x360_pitchInversion = Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
+	x360_swapSticks = Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
+	x360_triggerTreshold = Cvar_Get("x360_triggerTreshold", "0.2", CVAR_ARCHIVE);
+	x360_triggerTreshold->help = "Scale lower triggers theshold.\n[0.01 - 1.0]";
+	x360_deadZone = Cvar_Get("x360_deadZone", "1.0", CVAR_ARCHIVE);
+	x360_deadZone->help = "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
+	x360_vibration = Cvar_Get("x360_vibration", "1", CVAR_ARCHIVE);
+	
 	Com_Printf("\n======= Init xInput Devices =======\n\n");
-
+	 
 	// Load the xInput dll
 	Com_Printf("...calling LoadLibrary(%s): ", XINPUT_LIB);
 	if ((xInput.device = LoadLibrary(XINPUT_LIB)) == NULL)
@@ -143,18 +155,6 @@ void IN_StartupXInput(void)
 		return;
 	}
 	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
-
-	in_useXInput				= Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
-	x360_useControllerID		= Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
-	x360_sensX					= Cvar_Get("x360_sensX", "2.0", CVAR_ARCHIVE);
-	x360_sensY					= Cvar_Get("x360_sensY", "1.0", CVAR_ARCHIVE);
-	x360_pitchInversion			= Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
-	x360_swapSticks				= Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
-	x360_triggerTreshold		= Cvar_Get("x360_triggerTreshold", "0.2", CVAR_ARCHIVE);
-	x360_triggerTreshold->help	= "Scale lower triggers theshold.\n[0.01 - 1.0]";
-	x360_deadZone				= Cvar_Get("x360_deadZone", "1.0", CVAR_ARCHIVE);
-	x360_deadZone->help			= "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
-	x360_vibration				= Cvar_Get("x360_vibration", "1", CVAR_ARCHIVE);
 
 	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n\n");
 	firstDev = -1;
@@ -223,7 +223,7 @@ void IN_StartupXInput(void)
 void IN_ToggleXInput()
 {
 
-	if (in_useXInput->integer){
+	if (in_useXInput->integer && xInputActive){
 		
 		if (xInputActive)
 			return;
@@ -386,8 +386,8 @@ void IN_ControllerMove(usercmd_t *cmd)
 		return;
 	
 	//clamp values
-	ClampCvar(0.01, 1.0, x360_triggerTreshold->value); 
-	ClampCvar(0.1, 1.5, x360_deadZone->value);
+	x360_triggerTreshold->value = ClampCvar(0.01, 1.0, x360_triggerTreshold->value);
+	x360_deadZone->value = ClampCvar(0.1, 1.5, x360_deadZone->value);
 
 	if (!x360_swapSticks->integer) {
 		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);

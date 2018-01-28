@@ -324,7 +324,7 @@ static void vSyncCallBack (void *s) {
 }
 
 
-M_ColorInit() {
+void M_ColorInit() {
 
 	if (!r_gamma)
 		r_gamma = Cvar_Get("r_gamma", "1.8", CVAR_ARCHIVE);

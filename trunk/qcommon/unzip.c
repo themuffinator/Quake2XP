@@ -829,15 +829,15 @@ int Unz_ListFiles (unzFile *pak, const char *pattern, char **list, int len, unsi
 	for (i = 0; i < HASHSIZE; i++) {
 		for (j = 0; j < s->counts[i]; j++) {
 			const char *token = s->cache[i][j].name;
-			char *s;
+			char *z;
 
 			assert (nfound < len && "Please increase FSLF_MAX");
 
-			if (FS_MatchPath (pattern, token, &s, musthave, canthave)) {
+			if (FS_MatchPath (pattern, token, &z, musthave, canthave)) {
 				// XXX: in case of SFF_SUBDIR, a directory will appear as many times as nodes below itself
-				if (nfound > 0 && strcmp (list[nfound - 1], s) == 0)
+				if (nfound > 0 && strcmp (list[nfound - 1], z) == 0)
 					continue;
-				list[nfound] = s;
+				list[nfound] = z;
 				nfound++;
 			}
 		}
