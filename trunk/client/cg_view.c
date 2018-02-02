@@ -82,7 +82,7 @@ void V_AddEntity (entity_t * ent) {
 		for (i = 0; i < 3; i++)
 			ent->oldorigin[i] = ent->origin[i] = cl.predicted_origin[i];
 
-		if (cl_thirdPerson->value)
+		if (cl_thirdPerson->integer)
 			ent->flags &= ~RF_VIEWERMODEL;
 	}
 
@@ -408,7 +408,7 @@ void SCR_DrawCrosshair (void) {
 	int		size_x, size_y;
 
 
-	if (!crosshair->value)
+	if (!crosshair->integer)
 		return;
 
 	if (crosshair->modified) {
@@ -501,7 +501,7 @@ void V_RenderView () {
 	if (!cl.refresh_prepped)
 		return;					// still loading
 
-	if (cl_timedemo->value) {
+	if (cl_timedemo->integer) {
 		if (!cl.timedemo_start)
 			cl.timedemo_start = Sys_Milliseconds ();
 		cl.timedemo_frames++;
@@ -559,14 +559,14 @@ void V_RenderView () {
 
 		cl.refdef.areabits = cl.frame.areabits;
 
-		if (!cl_add_entities->value)
+		if (!cl_add_entities->integer)
 			r_numentities = 0;
 
-		if (!cl_add_particles->value)
+		if (!cl_add_particles->integer)
 			r_numparticles = 0;
-		if (!cl_add_lights->value)
+		if (!cl_add_lights->integer)
 			r_numdlights = 0;
-		if (!cl_add_blend->value)
+		if (!cl_add_blend->integer)
 			VectorClear (cl.refdef.blend);
 
 
@@ -604,10 +604,10 @@ void V_RenderView () {
 	R_RenderFrame (&cl.refdef);
 
 
-	if (cl_stats->value)
+	if (cl_stats->integer)
 		Com_Printf ("ent:%i  dlights:%i  part:%i \n", r_numentities,
 		r_numdlights, r_numparticles);
-	if (log_stats->value && (log_stats_file != 0))
+	if (log_stats->integer && (log_stats_file != 0))
 		fprintf (log_stats_file, "%i,%i,%i,", r_numentities,
 		r_numdlights, r_numparticles);
 

@@ -41,7 +41,7 @@ void vectoangles2 (vec3_t value1, vec3_t angles) {
 	float forward;
 	float yaw, pitch;
 
-	if (value1[1] == 0 && value1[0] == 0) {
+	if (value1[1] == 0.0 && value1[0] == 0.0) {
 		yaw = 0;
 		if (value1[2] > 0)
 			pitch = 90;

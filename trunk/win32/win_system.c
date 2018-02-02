@@ -205,7 +205,7 @@ void Sys_Init (void) {
 	timeBeginPeriod (1);
 	s_win95 = qtrue;
 
-	if (dedicated->value) {
+	if (dedicated->integer) {
 		if (!AllocConsole ())
 			Sys_Error ("Couldn't create dedicated server console");
 		hinput = GetStdHandle (STD_INPUT_HANDLE);

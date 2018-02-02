@@ -1741,7 +1741,7 @@ void Qcommon_Init (int argc, char **argv) {
 	s = va ("%s %s %s %s", VERSION, CPUSTRING, __DATE__, BUILDSTRING);
 	Cvar_Get ("version", s, CVAR_SERVERINFO | CVAR_NOSET);
 
-	if (dedicated->value)
+	if (dedicated->integer)
 		Cmd_AddCommand ("quit", Com_Quit);
 
 	Sys_Init ();
@@ -1755,7 +1755,7 @@ void Qcommon_Init (int argc, char **argv) {
 	// add + commands from command line
 	if (!Cbuf_AddLateCommands ()) {
 		// if the user didn't give any commands, run default action
-		if (!dedicated->value)
+		if (!dedicated->integer)
 			Cbuf_AddText ("d1\n");
 		else
 			Cbuf_AddText ("dedicated_start\n");
@@ -1785,7 +1785,7 @@ void Qcommon_Frame (int msec) {
 
 	if (log_stats->modified) {
 		log_stats->modified = qfalse;
-		if (log_stats->value) {
+		if (log_stats->integer) {
 			if (log_stats_file) {
 				fclose (log_stats_file);
 				log_stats_file = 0;
@@ -1811,7 +1811,7 @@ void Qcommon_Frame (int msec) {
 			msec = 1;
 	}
 
-	if (showtrace->value) {
+	if (showtrace->integer) {
 		extern int c_traces, c_brush_traces;
 		extern int c_pointcontents;
 
@@ -1828,21 +1828,21 @@ void Qcommon_Frame (int msec) {
 	} while (s);
 	Cbuf_Execute ();
 
-	if (host_speeds->value)
+	if (host_speeds->integer)
 		time_before = Sys_Milliseconds ();
 
 	SV_Frame (msec);
 
-	if (host_speeds->value)
+	if (host_speeds->integer)
 		time_between = Sys_Milliseconds ();
 
 	CL_Frame (msec);
 
-	if (host_speeds->value)
+	if (host_speeds->integer)
 		time_after = Sys_Milliseconds ();
 
 
-	if (host_speeds->value) {
+	if (host_speeds->integer) {
 		int all, sv, gm, cl, rf;
 
 		all = time_after - time_before;

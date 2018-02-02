@@ -270,7 +270,7 @@ void CL_ParsePacketEntities (frame_t * oldframe, frame_t * newframe) {
 
 		while (oldnum < newnum) {	// one or more entities from the old
 			// packet are unchanged
-			if (cl_shownet->value == 3)
+			if (cl_shownet->integer == 3)
 				Com_Printf ("   unchanged: %i\n", oldnum);
 			CL_DeltaEntity (newframe, oldnum, oldstate, 0);
 
@@ -289,7 +289,7 @@ void CL_ParsePacketEntities (frame_t * oldframe, frame_t * newframe) {
 
 		if (bits & U_REMOVE) {	// the entity present in oldframe is not
 			// in the current frame
-			if (cl_shownet->value == 3)
+			if (cl_shownet->integer == 3)
 				Com_Printf ("   remove: %i\n", newnum);
 			if (oldnum != newnum)
 				Com_Printf ("U_REMOVE: oldnum != newnum\n");
@@ -309,7 +309,7 @@ void CL_ParsePacketEntities (frame_t * oldframe, frame_t * newframe) {
 		}
 
 		if (oldnum == newnum) {	// delta from previous state
-			if (cl_shownet->value == 3)
+			if (cl_shownet->integer == 3)
 				Com_Printf ("   delta: %i\n", newnum);
 			CL_DeltaEntity (newframe, newnum, oldstate, bits);
 
@@ -328,7 +328,7 @@ void CL_ParsePacketEntities (frame_t * oldframe, frame_t * newframe) {
 		}
 
 		if (oldnum > newnum) {	// delta from baseline
-			if (cl_shownet->value == 3)
+			if (cl_shownet->integer == 3)
 				Com_Printf ("   baseline: %i\n", newnum);
 			CL_DeltaEntity (newframe, newnum, &cl_entities[newnum].baseline,
 				bits);
@@ -340,7 +340,7 @@ void CL_ParsePacketEntities (frame_t * oldframe, frame_t * newframe) {
 	// any remaining entities in the old frame are copied over
 	while (oldnum != 99999) {	// one or more entities from the old
 		// packet are unchanged
-		if (cl_shownet->value == 3)
+		if (cl_shownet->integer == 3)
 			Com_Printf ("   unchanged: %i\n", oldnum);
 		CL_DeltaEntity (newframe, oldnum, oldstate, 0);
 
@@ -516,7 +516,7 @@ void CL_ParseFrame (void) {
 	if (cls.serverProtocol != 26)
 		cl.surpressCount = MSG_ReadByte (&net_message);
 
-	if (cl_shownet->value == 3)
+	if (cl_shownet->integer == 3)
 		Com_Printf ("   frame:%i  delta:%i\n", cl.frame.serverframe,
 		cl.frame.deltaframe);
 
@@ -905,7 +905,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			ent.angles[1] = autorotate;
 			ent.angles[2] = 0;
 			ent.angleMod = qtrue;
-			if (cl_itemsBobbing->value) {
+			if (cl_itemsBobbing->integer) {
 				//bobbing items, q3 style
 				float scale = 0.005 + s1->number * 0.00001;
 				float bob = 4 + cos ((cl.time + 1000) * scale) * 4;
@@ -974,10 +974,10 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 				VectorMA (cl.refdef.vieworg, 30, forward, flashLightOrigin);
 
-				if (hand->value == 2)
+				if (hand->integer == 2)
 					VectorMA (flashLightOrigin, 1, right, flashLightOrigin); //center
 				else
-				if (hand->value == 1)
+				if (hand->integer == 1)
 					VectorMA (flashLightOrigin, -10, right, flashLightOrigin); //left
 				else
 					VectorMA (flashLightOrigin, 10, right, flashLightOrigin); //right
@@ -1094,7 +1094,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				V_AddLight (ent.origin, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0);
 			else if (effects & EF_FLAG2)
 				V_AddLight (ent.origin, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0);
-			if (net_compatibility->value) {
+			if (net_compatibility->integer) {
 				if (effects & EF_TAGTRAIL)
 					V_AddLight (ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
 				else if (effects & EF_TRACKERTRAIL)
@@ -1415,11 +1415,11 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 	int dm_flag;
 	dm_flag = Cvar_VariableValue ("dmflags");
 
-	if (cl_thirdPerson->value)
+	if (cl_thirdPerson->integer)
 		return;
 
 	// allow the gun to be completely removed
-	if (!cl_gun->value)
+	if (!cl_gun->integer)
 		return;
 
 	// don't draw gun if in wide angle view
@@ -1470,7 +1470,7 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 	VectorCopy (gun.origin, gun.oldorigin);	// don't lerp at all
 	VectorCopy (gun.origin, viewweapon);
 
-	if (!cl_thirdPerson->value)
+	if (!cl_thirdPerson->integer)
 		V_AddEntity (&gun);
 
 	// c14 add shell to view model
@@ -1600,7 +1600,7 @@ void CL_CalcViewValues (void) {
 	// add the weapon
 	CL_AddViewWeapon (ps, ops);
 
-	if (cl_thirdPerson->value) {
+	if (cl_thirdPerson->integer) {
 
 		vec3_t end, camPos;
 		float dist_up, dist_back, angle;
@@ -1692,13 +1692,13 @@ void CL_AddEntities (void) {
 		return;
 
 	if (cl.time > cl.frame.servertime) {
-		if (cl_showclamp->value)
+		if (cl_showclamp->integer)
 			Com_Printf ("high clamp %i\n", cl.time - cl.frame.servertime);
 		cl.time = cl.frame.servertime;
 		cl.lerpfrac = 1.0;
 	}
 	else if (cl.time < cl.frame.servertime - 100) {
-		if (cl_showclamp->value)
+		if (cl_showclamp->integer)
 			Com_Printf ("low clamp %i\n",
 			cl.frame.servertime - 100 - cl.time);
 		cl.time = cl.frame.servertime - 100;
@@ -1707,7 +1707,7 @@ void CL_AddEntities (void) {
 	else
 		cl.lerpfrac = 1.0 - (cl.frame.servertime - cl.time) * 0.01;
 
-	if (cl_timedemo->value)
+	if (cl_timedemo->integer)
 		cl.lerpfrac = 1.0;
 
 

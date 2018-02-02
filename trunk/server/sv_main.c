@@ -186,11 +186,11 @@ void SVC_Info (void) {
 	int i, count;
 	int version;
 
-	if (maxclients->value == 1)
+	if (maxclients->integer == 1)
 		return;					// ignore in single player
 
 	version = atoi (Cmd_Argv (1));
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		if (version != PROTOCOL_VERSION)
 			Com_sprintf (string, sizeof(string), "%s: wrong version\n",
 			hostname->string, sizeof(string));
@@ -304,7 +304,7 @@ void SVC_DirectConnect (void) {
 
 	Com_DPrintf ("input protocol is %i\n", version);
 
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		if (version != PROTOCOL_VERSION) {
 			Netchan_OutOfBandPrint (NS_SERVER, adr,
 				"print\nServer is version %4.2f.\n",
@@ -664,7 +664,7 @@ void SV_ReadPackets (void) {
 			break;
 		}
 
-		if (i != maxclients->value)
+		if (i != maxclients->integer)
 			continue;
 	}
 }
@@ -736,7 +736,8 @@ SV_RunGameFrame
 =================
 */
 void SV_RunGameFrame (void) {
-	if (host_speeds->value)
+
+	if (host_speeds->integer)
 		time_before_game = Sys_Milliseconds ();
 
 	// we always need to bump framenum, even if we
@@ -752,13 +753,13 @@ void SV_RunGameFrame (void) {
 
 		// never get more than one tic behind
 		if (sv.time < svs.realtime) {
-			if (sv_showclamp->value)
+			if (sv_showclamp->integer)
 				Com_Printf ("sv highclamp\n");
 			svs.realtime = sv.time;
 		}
 	}
 
-	if (host_speeds->value)
+	if (host_speeds->integer)
 		time_after_game = Sys_Milliseconds ();
 
 }
@@ -791,7 +792,7 @@ void SV_Frame (int msec) {
 	if (!sv_timedemo->value && svs.realtime < sv.time) {
 		// never let the time get too far off
 		if (sv.time - svs.realtime > 100) {
-			if (sv_showclamp->value)
+			if (sv_showclamp->integer)
 				Com_Printf ("sv lowclamp\n");
 			svs.realtime = sv.time - 100;
 		}
@@ -969,7 +970,7 @@ void SV_Init (void) {
 		Cvar_Get ("net_compatibility", "0", CVAR_SERVERINFO | CVAR_NOSET);
 
 
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		Cvar_Get ("protocol", va ("%i", PROTOCOL_VERSION),
 			CVAR_SERVERINFO | CVAR_NOSET);;
 	}

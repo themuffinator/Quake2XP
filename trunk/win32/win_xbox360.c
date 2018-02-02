@@ -214,6 +214,8 @@ void IN_StartupXInput(void)
 	else
 	{
 		Com_Printf(S_COLOR_MAGENTA"...xInput Device disconnected or not found.\n");
+		xInputActive = qfalse;
+		qXInputEnable(FALSE);
 		IN_ShutDownXinput();
 	}
 
@@ -223,7 +225,7 @@ void IN_StartupXInput(void)
 void IN_ToggleXInput()
 {
 
-	if (in_useXInput->integer && xInputActive){
+	if (in_useXInput->integer){
 		
 		if (xInputActive)
 			return;

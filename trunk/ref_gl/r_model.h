@@ -119,7 +119,7 @@ int r_numAutoLights;
 int r_numIgnoreAutoLights;
 autoLight_t r_lightSpawnSurf[MAX_WORLD_SHADOW_LIHGTS];
 
-#define MAX_FLARES_VERTEX MAX_WORLD_SHADOW_LIHGTS*4
+#define MAX_FLARES_VERTEX 4096
 
 
 byte	viewvis[MAX_MAP_LEAFS / 8];

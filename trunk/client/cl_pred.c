@@ -209,7 +209,7 @@ void CL_PredictMovement (void) {
 	if (cls.state != ca_active)
 		return;
 
-	if (cl_paused->value)
+	if (cl_paused->integer)
 		return;
 
 	if (!cl_predict->value || (cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION)) {	// just 
@@ -235,7 +235,7 @@ void CL_PredictMovement (void) {
 
 	// if we are too far out of date, just freeze
 	if (current - ack >= CMD_BACKUP) {
-		if (cl_showmiss->value)
+		if (cl_showmiss->integer)
 			Com_Printf ("exceeded CMD_BACKUP\n");
 		return;
 	}

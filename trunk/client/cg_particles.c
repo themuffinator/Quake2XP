@@ -382,7 +382,7 @@ void CL_AddParticles (void) {
 			}
 		}
 
-		if (cl_blood->value) {
+		if (cl_blood->integer) {
 
 			if (p->type == PT_BLOODDRIP || p->type == PT_xBLOODSPRAY) {
 				trace_t trace;
@@ -494,7 +494,8 @@ void CL_ParticleBlood (vec3_t org, vec3_t dir, int count) {
 	cparticle_t *p;
 	float d;
 
-	if (!cl_blood->value) return;
+	if (!cl_blood->integer) 
+		return;
 
 	for (i = 0; i < count; i++) {
 		if (!free_particles)
@@ -584,7 +585,8 @@ void CL_ParticleBlood2 (vec3_t org, vec3_t dir, int count) {
 	int i, j;
 	cparticle_t *p;
 
-	if (!cl_blood->value) return;
+	if (!cl_blood->integer) 
+		return;
 
 	for (i = 0; i < count; i++) {
 		if (!free_particles)
@@ -1502,7 +1504,8 @@ void CL_ParticleHeadBlood (vec3_t org) {
 	vec3_t end, tmp;
 	float d;
 
-	if (!cl_blood->value) return;
+	if (!cl_blood->integer) 
+		return;
 
 	VectorCopy (org, end);
 	end[2] += 150;
@@ -1599,7 +1602,8 @@ void CL_ParticleGibBlood (vec3_t org) {
 	vec3_t end, tmp;
 	float d;
 
-	if (!cl_blood->value) return;
+	if (!cl_blood->integer) 
+		return;
 
 	VectorCopy (org, end);
 	end[2] += 150;
@@ -1698,7 +1702,8 @@ void CL_ParticleGibBlood2 (vec3_t org) {
 	vec3_t end, tmp;
 	float d;
 
-	if (!cl_blood->value) return;
+	if (!cl_blood->integer) 
+		return;
 
 	VectorCopy (org, end);
 	end[2] += 150;
@@ -2529,7 +2534,7 @@ void CL_DiminishingTrail (vec3_t start, vec3_t end, centity_t * old,
 				p->orient = frand () * 360;
 				p->alpha = 1;
 				p->alphavel = -3.0 / (1 + frand () * 1.7);
-				if (!cl_blood->value)
+				if (!cl_blood->integer)
 					p->alpha = 0;
 				p->color[0] = 0.1;
 				p->color[1] = 0.0;
@@ -2554,7 +2559,7 @@ void CL_DiminishingTrail (vec3_t start, vec3_t end, centity_t * old,
 				VectorCopy (p->org, p->oldOrg);
 
 				p->alpha = 0;
-				if (cl_blood->value) {
+				if (cl_blood->integer) {
 
 					if (trace.fraction != 1.0) {
 
@@ -2575,7 +2580,7 @@ void CL_DiminishingTrail (vec3_t start, vec3_t end, centity_t * old,
 				p->alpha = 0.55;
 				p->alphavel = -1.0 / (1 + frand () * 1.7);
 
-				if (!cl_blood->value)
+				if (!cl_blood->integer)
 					p->alpha = 0;
 
 				p->sFactor = GL_SRC_ALPHA;
@@ -2600,7 +2605,7 @@ void CL_DiminishingTrail (vec3_t start, vec3_t end, centity_t * old,
 				}
 				p->vel[2] -= PARTICLE_GRAVITY;
 
-				if (cl_blood->value) {
+				if (cl_blood->integer) {
 
 					if (trace.fraction > 0 && trace.fraction < 1) {
 						CL_AddDecalToScene (trace.endpos, trace.plane.normal,

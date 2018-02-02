@@ -86,7 +86,7 @@ extern viddef_t vid;
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
 #define MAX_DRAW_STRING_LENGTH  256
-#define MAX_IDX MAX_VERTICES * 4
+#define MAX_IDX 65536
 // ===================================================================
 
 typedef enum {
@@ -761,7 +761,7 @@ extern	vec3_t	lightspot;
 #define VA_SetElem4v(v,a)	((v)[0]=(a)[0],(v)[1]=(a)[1],(v)[2]=(a)[2],(v)[3]=(a)[3])
 
 #define MAX_VERTICES		16384
-#define MAX_INDICES		MAX_VERTICES * 4
+#define MAX_INDICES			65536
 #define MAX_VERTEX_ARRAY	8192
 #define MAX_SHADOW_VERTS	16384
 

@@ -45,7 +45,7 @@ void ClampVertexColor (vec4_t color) {
 		color[2] = 0.15;
 }
 
-#define MAX_PARTICLE_VERT 4096*4
+#define MAX_PARTICLE_VERT 16384
 
 vec4_t		ParticleColor[MAX_PARTICLE_VERT];
 vec3_t		ParticleVert[MAX_PARTICLE_VERT];

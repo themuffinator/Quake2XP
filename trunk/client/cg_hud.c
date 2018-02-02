@@ -316,7 +316,7 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	entity.oldframe = 0;
 	entity.backlerp = 0.0;
 	
-	if (net_compatibility->value) {
+	if (net_compatibility->integer) {
 		if (stopRotation) {
 			entity.angles[1] = 175.0;
 		}
@@ -377,7 +377,7 @@ void SCR_ExecuteLayoutString (char *s) {
 	if (!s[0])
 		return;
 
-	if (!cl_drawhud->value)
+	if (!cl_drawhud->integer)
 		return;
 
 	screenAspect = (float)viddef.width / (float)viddef.height;
@@ -440,7 +440,7 @@ void SCR_ExecuteLayoutString (char *s) {
 				SCR_AddDirtyPoint (x, y);
 				SCR_AddDirtyPoint (x + 23 * hud_sx, y + 23 * hud_sy);
 
-				if (!cl_3dhud->value)
+				if (!cl_3dhud->integer)
 					Draw_PicScaled (x, y, hud_sx, hud_sy, cl.configstrings[CS_IMAGES + value]);
 
 			}
@@ -682,7 +682,7 @@ void SCR_ExecuteLayoutString3d (char *s) {
 	if (!s[0])
 		return;
 
-	if (!cl_drawhud->value)
+	if (!cl_drawhud->integer)
 		return;
 
 	screenAspect = (float)viddef.width / (float)viddef.height;
@@ -1073,7 +1073,7 @@ is based on the stats array
 */
 
 void SCR_DrawStats () {
-	if (cl_3dhud->value)
+	if (cl_3dhud->integer)
 		SCR_ExecuteLayoutString3d (cl.configstrings[CS_STATUSBAR]);
 
 	SCR_ExecuteLayoutString (cl.configstrings[CS_STATUSBAR]);

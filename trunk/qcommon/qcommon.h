@@ -499,6 +499,7 @@ void Cvar_ForceSetValue (char *var_name, float value);
 
 float Cvar_VariableValue (char *var_name);
 // returns 0 if not defined or non numeric
+float Cvar_VariableInteger(char *var_name);
 
 char *Cvar_VariableString (char *var_name);
 // returns an empty string if not defined

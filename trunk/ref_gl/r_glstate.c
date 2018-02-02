@@ -372,11 +372,12 @@ void GL_Enable(GLenum cap) {
 		if (gl_state.polygonOffsetFill)
 			return;
 		gl_state.polygonOffsetFill = qtrue;
+		break;
 	case GL_LINE_SMOOTH:
 		if (gl_state.lineSmooth)
 			return;
 		gl_state.lineSmooth = qtrue;
-
+		break;
 	case GL_DEPTH_CLAMP:
 		if (gl_state.depthClamp)
 			return;
@@ -429,12 +430,12 @@ void GL_Disable(GLenum cap) {
 		if (!gl_state.polygonOffsetFill)
 			return;
 		gl_state.polygonOffsetFill = qfalse;
-	
+		break;
 	case GL_LINE_SMOOTH:
 		if (!gl_state.lineSmooth)
 			return;
 		gl_state.lineSmooth = qfalse;
-	
+		break;
 	case GL_DEPTH_CLAMP:
 		if (!gl_state.depthClamp)
 			return;

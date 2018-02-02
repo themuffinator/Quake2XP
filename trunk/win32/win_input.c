@@ -146,7 +146,7 @@ void IN_StartupMouse (void) {
 
 	cv = Cvar_Get ("in_initmouse", "1", CVAR_NOSET);
 
-	if (!cv->value)
+	if (!cv->integer)
 		return;
 
 	mouseinitialized = qtrue;
@@ -317,7 +317,7 @@ void IN_Frame (void) {
 		|| cls.key_dest == key_console
 		|| cls.key_dest == key_menu) {
 		// temporarily deactivate if in fullscreen
-		if (Cvar_VariableValue ("r_fullScreen") == 0) {
+		if (Cvar_VariableInteger ("r_fullScreen") == 0) {
 			IN_DeactivateMouse ();
 			return;
 		}

@@ -689,7 +689,7 @@ void CL_ParseTEnt (void) {
 		case TE_SHOTGUN:			// bullet hitting wall
 
 			MSG_ReadPos (&net_message, pos);	// end pos
-			if (!net_compatibility->value)
+			if (!net_compatibility->integer)
 				MSG_ReadPos (&net_message, pos2);	// start pos
 			MSG_ReadDir (&net_message, dir);
 
@@ -798,11 +798,11 @@ void CL_ParseTEnt (void) {
 			MSG_ReadPos (&net_message, pos);
 			MSG_ReadPos (&net_message, pos2);
 
-			if (!net_compatibility->value) {
+			if (!net_compatibility->integer) {
 				MSG_ReadDir (&net_message, dir);
 
 			}
-			if (net_compatibility->value)
+			if (net_compatibility->integer)
 				CL_FindTrailPlane (pos, pos2, dir);
 
 			CL_RailTrail (pos, pos2);
@@ -825,7 +825,7 @@ void CL_ParseTEnt (void) {
 		case TE_GRENADE_EXPLOSION_WATER:
 			MSG_ReadPos (&net_message, pos);
 
-			if (!net_compatibility->value) {
+			if (!net_compatibility->integer) {
 				MSG_ReadDir (&net_message, dir);
 				if (type == TE_EXPLOSION2)
 					CL_Debris (pos, dir);
@@ -867,7 +867,7 @@ void CL_ParseTEnt (void) {
 		case TE_PLASMA_EXPLOSION:
 			MSG_ReadPos (&net_message, pos);
 
-			if (!net_compatibility->value)
+			if (!net_compatibility->integer)
 				MSG_ReadDir (&net_message, dir);
 
 			CL_AddDecalToScene (pos, vec3_origin,
@@ -902,7 +902,7 @@ void CL_ParseTEnt (void) {
 		case TE_EXPLOSION1_NP:		// PMM
 			MSG_ReadPos (&net_message, pos);
 
-			if (!net_compatibility->value) {
+			if (!net_compatibility->integer) {
 				if (type == TE_ROCKET_EXPLOSION
 					|| type == TE_ROCKET_EXPLOSION_WATER)
 					MSG_ReadDir (&net_message, dir);
@@ -962,7 +962,7 @@ void CL_ParseTEnt (void) {
 		case TE_BFG_BIGEXPLOSION:
 			MSG_ReadPos (&net_message, pos);
 
-			if (!net_compatibility->value)
+			if (!net_compatibility->integer)
 				MSG_ReadDir (&net_message, dir);
 
 			CL_AddDecalToScene (pos, vec3_origin,
@@ -1079,7 +1079,7 @@ void CL_ParseTEnt (void) {
 		case TE_PLAIN_EXPLOSION:
 			MSG_ReadPos (&net_message, pos);
 
-			if (!net_compatibility->value) {
+			if (!net_compatibility->integer) {
 				if (type == TE_ROCKET_EXPLOSION
 					|| type == TE_ROCKET_EXPLOSION_WATER)
 					MSG_ReadDir (&net_message, dir);
@@ -1444,9 +1444,9 @@ void CL_AddPlayerBeams (void) {
 
 	//PMM
 	if (hand) {
-		if (hand->value == 2)
+		if (hand->integer == 2)
 			hand_multiplier = 0;
-		else if (hand->value == 1)
+		else if (hand->integer == 1)
 			hand_multiplier = -1;
 		else
 			hand_multiplier = 1;
@@ -1487,7 +1487,7 @@ void CL_AddPlayerBeams (void) {
 					cl.v_right, org);
 				VectorMA (org, b->offset[1], cl.v_forward, org);
 				VectorMA (org, b->offset[2], cl.v_up, org);
-				if ((hand) && (hand->value == 2)) {
+				if ((hand) && (hand->integer == 2)) {
 					VectorMA (org, -1, cl.v_up, org);
 				}
 				// FIXME - take these out when final
@@ -1522,7 +1522,7 @@ void CL_AddPlayerBeams (void) {
 			VectorMA (dist, (hand_multiplier * b->offset[0]), r, dist);
 			VectorMA (dist, b->offset[1], f, dist);
 			VectorMA (dist, b->offset[2], u, dist);
-			if ((hand) && (hand->value == 2)) {
+			if ((hand) && (hand->integer == 2)) {
 				VectorMA (org, -1, cl.v_up, org);
 			}
 		}

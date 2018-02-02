@@ -532,7 +532,7 @@ void SV_ClipMoveToEntities (moveclip_t * clip) {
 			if (clip->passedict->owner == touch)
 				continue;		// don't clip against owner
 		}
-		if (!sv_solidcorpse->value) {
+		if (!sv_solidcorpse->integer) {
 			if (!(clip->contentmask & CONTENTS_DEADMONSTER)
 				&& (touch->svflags & SVF_DEADMONSTER))
 				continue;
@@ -619,7 +619,7 @@ trace_t SV_Trace (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end,
 		return clip.trace; // FIX Sometimes function can be called if a player is killed
 
 	clip.trace.ent = ge->edicts;
-	if (clip.trace.fraction == 0)
+	if (clip.trace.fraction == 0.f)
 		return clip.trace;		// blocked by the world
 
 	clip.contentmask = contentmask;

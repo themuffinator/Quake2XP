@@ -1021,6 +1021,10 @@ void IL_LoadImage(char *filename, byte ** pic, int *width, int *height,
 	image = ilGetData();
 
 	buf = (unsigned char*)malloc(w * h * 4);
+
+	if (!buf)
+		Com_Error(ERR_FATAL, ""S_COLOR_RED"IL_LoadImage - FALED!\n");   // wtf, man??? drop to console
+
 	Q_memcpy(buf, image, w * h * 4);
 
 	ilDeleteImages(1, &imageID);

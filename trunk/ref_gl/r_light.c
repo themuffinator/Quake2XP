@@ -1574,6 +1574,9 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	mat4_t				tmpMatrix, mvMatrix;
 
 	light = (worldShadowLight_t*)malloc (sizeof(worldShadowLight_t));
+	if (!light)
+		return NULL;
+
 	light->s_next = shadowLight_static;
 	shadowLight_static = light;
 

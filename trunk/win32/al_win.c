@@ -438,7 +438,7 @@ qboolean AL_Init (int hardreset) {
 		Com_Printf ("...capture capabilities.\n");
 
 	// If EFX is enabled, determine if it's available and use it
-	if (s_openal_efx->value) {
+	if (s_openal_efx->integer) {
 		if (alcIsExtensionPresent (alConfig.hDevice, "ALC_EXT_EFX") == AL_TRUE) {
 			ALuint		uiEffectSlots[128] = { 0 };
 			ALuint		uiEffects[1] = { 0 };

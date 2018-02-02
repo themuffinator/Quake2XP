@@ -347,10 +347,10 @@ SCR_DrawPause
 */
 void SCR_DrawPause (void) {
 
-	if (!scr_showpause->value)	// turn off for screenshots
+	if (!scr_showpause->integer)	// turn off for screenshots
 		return;
 
-	if (!cl_paused->value)
+	if (!cl_paused->integer)
 		return;
 	
 	if (cls.menuActive)
@@ -520,8 +520,10 @@ void SCR_BeginLoadingPlaque (void) {
 	
 	if (cls.disable_screen)
 		return;
-	if (developer->value)
+
+	if (developer->integer)
 		return;
+
 	if (cls.state == ca_disconnected)
 		return;					// if at console, don't bring up the
 	// plaque
@@ -642,7 +644,7 @@ void SCR_TileClear (void) {
 	int top, bottom, left, right;
 	dirty_t clear;
 
-	if (scr_drawall->value)
+	if (scr_drawall->integer)
 		SCR_DirtyScreen ();		// for power vr or broken page flippers...
 
 	if (scr_con_current == 1.0)
@@ -870,9 +872,9 @@ void SCR_TouchPics (void) {
 	for (j = 0; j < 11; j++)
 		Draw_FindPic(sb_nums_bump[j]);
 
-	if (crosshair->value) {
-		if (crosshair->value > 13 || crosshair->value < 0)
-			crosshair->value = 13;
+	if (crosshair->integer) {
+		if (crosshair->integer > 13 || crosshair->integer < 0)
+			crosshair->integer = 13;
 
 		Com_sprintf (crosshair_pic, sizeof(crosshair_pic), "chxp%i", (int)(crosshair->value));
 		Draw_GetPicSize (&crosshair_width, &crosshair_height,
@@ -921,7 +923,7 @@ void SCR_DrawSpeeds (void) {
 	char	bsp[18], alias[18], st[18], partTris[18], shadow[18], decals[18], dtr[18], lt[18];
 	float	fontscale = cl_fontScale->value;
 
-	if (!r_speeds->value)
+	if (!r_speeds->integer)
 		return;
 
 	sprintf (bsp, "%i w_tris", c_brush_polys);
@@ -980,11 +982,11 @@ void SCR_DrawFPS (void) {
 	}
 
 	
-	if (cl_drawFPS->value && (cls.state == ca_active)) {
+	if (cl_drawFPS->integer && (cls.state == ca_active)) {
 		
 		Set_FontShader (qtrue);
 
-		if (cl_drawFPS->value == 2) {
+		if (cl_drawFPS->integer == 2) {
 			Draw_StringScaled(viddef.width - 65 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
 
 			Draw_StringScaled(viddef.width - 95 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
@@ -1023,7 +1025,7 @@ void SCR_DrawClock (void) {
 	Set_FontShader (qtrue);
 
 
-	if (!cl_drawFPS->value) {
+	if (!cl_drawFPS->integer) {
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
 		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}

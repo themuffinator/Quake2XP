@@ -44,7 +44,7 @@ void SV_SetMaster_f (void) {
 	int i, slot;
 
 	// only dedicated servers send heartbeats
-	if (!dedicated->value) {
+	if (!dedicated->integer) {
 		Com_Printf ("Only dedicated servers use masters.\n");
 		return;
 	}
@@ -537,7 +537,7 @@ void SV_GameMap_f (void) {
 	strncpy (svs.mapcmd, Cmd_Argv (1), sizeof(svs.mapcmd) - 1);
 
 	// copy off the level to the autosave slot
-	if (!dedicated->value) {
+	if (!dedicated->integer) {
 		SV_WriteServerFile (qtrue);
 		SV_CopySaveGame ("current", "save0");
 	}
@@ -677,7 +677,7 @@ void SV_Savegame_f (void) {
 		return;
 	}
 
-	if (maxclients->value == 1
+	if (maxclients->integer == 1
 		&& svs.clients[0].edict->client->ps.stats[STAT_HEALTH] <= 0) {
 		Com_Printf ("\nCan't savegame while dead!\n");
 		return;
@@ -928,7 +928,7 @@ void SV_ServerRecord_f (void) {
 	// 
 	// send the serverdata
 	MSG_WriteByte (&buf, svc_serverdata);
-	if (!net_compatibility->value)
+	if (!net_compatibility->integer)
 		MSG_WriteLong (&buf, PROTOCOL_VERSION);
 	else
 		MSG_WriteLong (&buf, OLD_PROTOCOL_VERSION);
@@ -1031,7 +1031,7 @@ void SV_InitOperatorCommands (void) {
 	Cmd_AddCommand ("gamemap", SV_GameMap_f);
 	Cmd_AddCommand ("setmaster", SV_SetMaster_f);
 
-	if (dedicated->value)
+	if (dedicated->integer)
 		Cmd_AddCommand ("say", SV_ConSay_f);
 
 	Cmd_AddCommand ("serverrecord", SV_ServerRecord_f);

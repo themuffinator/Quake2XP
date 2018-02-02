@@ -160,7 +160,7 @@ cvar_t *Cvar_Set2 (char *var_name, char *value, qboolean force) {
 		return Cvar_Get (var_name, value, 0);
 	}
 
-	if ((var->flags & CVAR_DEVELOPER) && developer->value != ExtraDevMode) {
+	if ((var->flags & CVAR_DEVELOPER) && developer->integer != ExtraDevMode) {
 		Com_Printf("" S_COLOR_YELLOW "%s " S_COLOR_MAGENTA "is developer protected\n", var_name);
 		return var;
 	}

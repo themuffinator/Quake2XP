@@ -1268,7 +1268,7 @@ void CL_EntityEvent (entity_state_t * ent) {
 			CL_TeleportParticles (ent->origin);
 			break;
 		case EV_FOOTSTEP:
-			if (cl_footsteps->value)
+			if (cl_footsteps->integer)
 				S_fastsound (NULL, ent->number, CHAN_BODY,
 				fastsound_descriptor[id_cl_sfx_footsteps_0 +
 				(rand () & 3)], 0.5,

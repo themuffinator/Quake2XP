@@ -295,7 +295,7 @@ void CL_AddClEntities () {
 				le->flags &= ~CLM_STRETCH;
 
 				// Nightmare stuff
-				if (cl_blood->value) {
+				if (cl_blood->integer) {
 
 					if (le->model == cl_mod_gib0
 						|| le->model == cl_mod_gib1
@@ -304,9 +304,7 @@ void CL_AddClEntities () {
 						|| le->model == cl_mod_gib4
 						|| le->model == cl_mod_gib5) {
 
-						if (!cl_blood->value)
-							return;
-
+	
 						trace2 = CL_Trace (le->lastOrg, org, entSize, MASK_SOLID);
 						VectorNormalize (trace.plane.normal);
 

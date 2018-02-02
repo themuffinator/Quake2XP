@@ -102,7 +102,7 @@ void SV_BroadcastPrintf (int level, char *fmt, ...) {
 	va_end (argptr);
 
 	// echo to console
-	if (dedicated->value) {
+	if (dedicated->integer) {
 		char copy[1024];
 		int i;
 
@@ -483,7 +483,7 @@ void SV_SendClientMessages (void) {
 
 	// read the next demo message if needed
 	if (sv.state == ss_demo && sv.demofile.f) {
-		if (sv_paused->value)
+		if (sv_paused->integer)
 			msglen = 0;
 		else {
 			// get the next message

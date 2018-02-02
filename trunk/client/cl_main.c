@@ -515,7 +515,7 @@ void CL_SendConnectPacket (void) {
 	port = Cvar_VariableValue ("qport");
 	userinfo_modified = qfalse;
 
-	if (net_compatibility->value)
+	if (net_compatibility->integer)
 		Netchan_OutOfBandPrint (NS_CLIENT, adr, "connect %i %i %i \"%s\"\n",
 		OLD_PROTOCOL_VERSION, port, cls.challenge,
 		Cvar_Userinfo ());
@@ -884,10 +884,10 @@ void CL_PingServers_f (void) {
 	Com_Printf ("pinging broadcast...\n");
 
 	noudp = Cvar_Get ("noudp", "0", CVAR_NOSET);
-	if (!noudp->value) {
+	if (!noudp->integer) {
 		adr.type = NA_BROADCAST;
 		adr.port = BigShort (PORT_SERVER);
-		if (net_compatibility->value)
+		if (net_compatibility->integer)
 			Netchan_OutOfBandPrint (NS_CLIENT, adr,
 			va ("info %i", OLD_PROTOCOL_VERSION));
 		else
@@ -896,10 +896,10 @@ void CL_PingServers_f (void) {
 	}
 
 	noipx = Cvar_Get ("noipx", "0", CVAR_NOSET);
-	if (!noipx->value) {
+	if (!noipx->integer) {
 		adr.type = NA_BROADCAST_IPX;
 		adr.port = BigShort (PORT_SERVER);
-		if (net_compatibility->value)
+		if (net_compatibility->integer)
 			Netchan_OutOfBandPrint (NS_CLIENT, adr,
 			va ("info %i", OLD_PROTOCOL_VERSION));
 		else
@@ -921,7 +921,7 @@ void CL_PingServers_f (void) {
 		}
 		if (!adr.port)
 			adr.port = BigShort (PORT_SERVER);
-		if (net_compatibility->value)
+		if (net_compatibility->integer)
 			Netchan_OutOfBandPrint (NS_CLIENT, adr,
 			va ("info %i", OLD_PROTOCOL_VERSION));
 		else
@@ -1112,7 +1112,7 @@ void CL_FixUpGender (void) {
 	char *p;
 	char sk[80];
 
-	if (gender_auto->value) {
+	if (gender_auto->integer) {
 
 		if (gender->modified) {
 			// was set directly, don't override the user
@@ -1189,13 +1189,13 @@ void CL_RequestNextDownload (void) {
 	//ZOID
 	if (precache_check == CS_MODELS) {	// confirm map
 		precache_check = CS_MODELS + 2;	// 0 isn't used
-		if (allow_download_maps->value)
+		if (allow_download_maps->integer)
 		if (!CL_CheckOrDownloadFile (cl.configstrings[CS_MODELS + 1]))
 			return;			// started a download
 	}
 	if (precache_check >= CS_MODELS
 		&& precache_check < CS_MODELS + MAX_MODELS) {
-		if (allow_download_models->value) {
+		if (allow_download_models->integer) {
 			while (precache_check < CS_MODELS + MAX_MODELS &&
 				cl.configstrings[precache_check][0]) {
 				if (cl.configstrings[precache_check][0] == '*' ||
@@ -1263,7 +1263,7 @@ void CL_RequestNextDownload (void) {
 	}
 	if (precache_check >= CS_SOUNDS
 		&& precache_check < CS_SOUNDS + MAX_SOUNDS) {
-		if (allow_download_sounds->value) {
+		if (allow_download_sounds->integer) {
 			if (precache_check == CS_SOUNDS)
 				precache_check++;	// zero is blank
 			while (precache_check < CS_SOUNDS + MAX_SOUNDS &&
@@ -1298,7 +1298,7 @@ void CL_RequestNextDownload (void) {
 	// so precache_check is now *3
 	if (precache_check >= CS_PLAYERSKINS
 		&& precache_check < CS_PLAYERSKINS + MAX_CLIENTS * PLAYER_MULT) {
-		if (allow_download_players->value) {
+		if (allow_download_players->integer) {
 			while (precache_check <
 				CS_PLAYERSKINS + MAX_CLIENTS * PLAYER_MULT) {
 				int i, n;
@@ -1811,15 +1811,15 @@ void CL_Frame (int msec) {
 	static int extratime;
 	static int lasttimecalled;
 
-	if (dedicated->value)
+	if (dedicated->integer)
 		return;
 
 	extratime += msec;
 
-	if (cl_maxfps->value == 0)
+	if (cl_maxfps->integer == 0)
 		Cvar_SetValue ("cl_maxfps", 100);
 
-	if (!cl_timedemo->value) {
+	if (!cl_timedemo->integer) {
 		int temptime = 1000 / cl_maxfps->value - extratime;
 
 		if (cls.state == ca_connected && extratime < 100)
@@ -1867,10 +1867,10 @@ void CL_Frame (int msec) {
 		CL_PrepRefresh ();
 
 	// update the screen
-	if (host_speeds->value)
+	if (host_speeds->integer)
 		time_before_ref = Sys_Milliseconds ();
 	SCR_UpdateScreen ();
-	if (host_speeds->value)
+	if (host_speeds->integer)
 		time_after_ref = Sys_Milliseconds ();
 
 	// update audio
@@ -1891,7 +1891,7 @@ void CL_Frame (int msec) {
 
 	cls.framecount++;
 
-	if (log_stats->value) {
+	if (log_stats->integer) {
 		if (cls.state == ca_active) {
 			if (!lasttimecalled) {
 				lasttimecalled = Sys_Milliseconds ();
@@ -1918,7 +1918,8 @@ CL_Init
 ====================
 */
 void CL_Init (void) {
-	if (dedicated->value)
+
+	if (dedicated->integer)
 		return;					// nothing running on the client
 
 	// in Windows sound must be initialized after window is created,

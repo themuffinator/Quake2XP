@@ -91,7 +91,7 @@ static void M_Banner(char *name) {
 void M_PushMenu(void(*draw) (void), int(*key) (int k)) {
 	int i;
 
-	if (Cvar_VariableValue("maxclients") == 1 && Com_ServerState())
+	if (Cvar_VariableInteger("maxclients") == 1 && Com_ServerState())
 		Cvar_Set("paused", "1");
 
 	// if this menu is already present, drop back to that level
@@ -3162,7 +3162,7 @@ void StartServer_MenuInit(void) {
 		s_rules_box.itemnames = dm_coop_names;
 	//PGM
 
-	if (Cvar_VariableValue("coop"))
+	if (Cvar_VariableInteger("coop"))
 		s_rules_box.curvalue = 1;
 	else
 		s_rules_box.curvalue = 0;
@@ -3202,7 +3202,7 @@ void StartServer_MenuInit(void) {
 	s_maxclients_field.generic.statusbar = NULL;
 	s_maxclients_field.length = 3;
 	s_maxclients_field.visible_length = 3;
-	if (Cvar_VariableValue("maxclients") == 1)
+	if (Cvar_VariableInteger("maxclients") == 1)
 		strcpy(s_maxclients_field.buffer, "8");
 	else
 		strcpy(s_maxclients_field.buffer, Cvar_VariableString("maxclients"));
@@ -3733,7 +3733,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_box.generic.callback = DownloadCallback;
 	s_allow_download_box.itemnames = yes_no_names;
 	s_allow_download_box.curvalue =
-		(Cvar_VariableValue("allow_download") != 0);
+		(Cvar_VariableInteger("allow_download") != 0);
 
 	s_allow_download_maps_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_maps_box.generic.x = 0;
@@ -3742,7 +3742,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_maps_box.generic.callback = DownloadCallback;
 	s_allow_download_maps_box.itemnames = yes_no_names;
 	s_allow_download_maps_box.curvalue =
-		(Cvar_VariableValue("allow_download_maps") != 0);
+		(Cvar_VariableInteger("allow_download_maps") != 0);
 
 	s_allow_download_players_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_players_box.generic.x = 0;
@@ -3751,7 +3751,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_players_box.generic.callback = DownloadCallback;
 	s_allow_download_players_box.itemnames = yes_no_names;
 	s_allow_download_players_box.curvalue =
-		(Cvar_VariableValue("allow_download_players") != 0);
+		(Cvar_VariableInteger("allow_download_players") != 0);
 
 	s_allow_download_models_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_models_box.generic.x = 0;
@@ -3760,7 +3760,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_models_box.generic.callback = DownloadCallback;
 	s_allow_download_models_box.itemnames = yes_no_names;
 	s_allow_download_models_box.curvalue =
-		(Cvar_VariableValue("allow_download_models") != 0);
+		(Cvar_VariableInteger("allow_download_models") != 0);
 
 	s_allow_download_sounds_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_sounds_box.generic.x = 0;
@@ -3769,7 +3769,7 @@ void DownloadOptions_MenuInit(void) {
 	s_allow_download_sounds_box.generic.callback = DownloadCallback;
 	s_allow_download_sounds_box.itemnames = yes_no_names;
 	s_allow_download_sounds_box.curvalue =
-		(Cvar_VariableValue("allow_download_sounds") != 0);
+		(Cvar_VariableInteger("allow_download_sounds") != 0);
 
 	Menu_AddItem(&s_downloadoptions_menu, &s_download_title);
 	Menu_AddItem(&s_downloadoptions_menu, &s_allow_download_box);
@@ -4165,7 +4165,7 @@ qboolean PlayerConfig_MenuInit(void) {
 	s_player_handedness_box.itemnames = handedness;
 
 	for (i = 0; i < sizeof(rate_tbl) / sizeof(*rate_tbl) - 1; i++)
-		if (Cvar_VariableValue("rate") == rate_tbl[i])
+		if (Cvar_VariableInteger("rate") == rate_tbl[i])
 			break;
 
 	s_player_rate_title.generic.type = MTYPE_SEPARATOR;

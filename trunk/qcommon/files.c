@@ -438,7 +438,7 @@ pack_t *FS_LoadPackFile (char *packfile) {
 	dpackfile_t		info[MAX_FILES_IN_PACK];
 	unsigned		checksum;
 
-	if (fs_OriginalPaksOnly->value) { //Load ONLY original q2 data!!!
+	if (fs_OriginalPaksOnly->integer) { //Load ONLY original q2 data!!!
 #ifdef _WIN32
 		strlwr (packfile);
 #endif
@@ -887,28 +887,24 @@ char **FS_ListFiles (char *findname, int *numfiles, unsigned musthave, unsigned 
  *
  * Create a list of files matching "findname" pattern under all search paths, including PAKs/PKXs.
  */
-char **FS_ListFilesAll (char *findname, int *numfiles, unsigned musthave, unsigned canthave) {
+char **FS_ListFilesAll(char *findname, int *numfiles, unsigned musthave, unsigned canthave) {
 	int nfound = 0;
 	char **list = 0;
-	char **list_tmp = 0;
 
-	list = malloc (FSLF_MAX * sizeof(char*));
+	list = malloc(FSLF_MAX * sizeof(char*));
 
-	nfound += FS_ListFilesDir (findname, list + nfound, FSLF_MAX - nfound, musthave, canthave);
+	nfound += FS_ListFilesDir(findname, list + nfound, FSLF_MAX - nfound, musthave, canthave);
 	if (!(canthave & SFF_RDONLY))
-		nfound += FS_ListFilesPacks (findname, list + nfound, FSLF_MAX - nfound, musthave, canthave);
+		nfound += FS_ListFilesPacks(findname, list + nfound, FSLF_MAX - nfound, musthave, canthave);
 
-	list = FS_ListSortUnique (list, nfound, &nfound);
+	list = FS_ListSortUnique(list, nfound, &nfound);
 
 	*numfiles = nfound;
-	list_tmp = realloc(list, nfound * sizeof(char*));
-	if (list_tmp != NULL)
-	{
-		list = list_tmp;
+	if (nfound > 0) {
+		list = realloc(list, nfound * sizeof(char*));
 		return list;
 	}
-	else
-	{
+	else {
 		free(list);
 		return NULL;
 	}

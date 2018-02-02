@@ -277,7 +277,7 @@ void R_DofBlur (void)
 		return;
 
 	//dof autofocus
-	if (!r_dofFocus->value) {
+	if (!r_dofFocus->integer) {
 
 		AngleVectors (r_newrefdef.viewangles, v_f, v_r, v_up);
 		VectorMA (r_newrefdef.vieworg, 4096, v_f, end_trace);
@@ -558,7 +558,7 @@ void R_FixFov(void) {
 
 	vec4_t params;
 
-	if (!r_fixFovStrength->value)
+	if (!r_fixFovStrength->integer)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)

@@ -753,7 +753,7 @@ void R_InitPrograms (void) {
 	Com_Printf ("Load "S_COLOR_YELLOW"glare program"S_COLOR_WHITE" ");
 	glareProgram = R_FindProgram ("glare", qtrue, qtrue, qfalse, qfalse, qfalse);
 
-	if (glareProgram){
+	if (glareProgram->valid){
 		Com_Printf("succeeded\n");
 
 		id = glareProgram->id[0];
@@ -890,7 +890,7 @@ void R_InitPrograms (void) {
 
 	thermalfpProgram = R_FindProgram ("thermalfp", qtrue, qtrue, qfalse, qfalse, qfalse);
 
-	if (thermalProgram->valid && thermalfpProgram){
+	if (thermalProgram->valid && thermalfpProgram->valid){
 		Com_Printf("succeeded\n");
 		
 		id = thermalProgram->id[0];
@@ -1139,6 +1139,7 @@ void R_ShutdownPrograms (void) {
 				qglDeleteProgram (program->id[j]);
 		}
 	}
+	r_numPrograms = 0;
 }
 
 /*

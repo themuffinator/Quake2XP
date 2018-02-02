@@ -73,9 +73,10 @@ void CL_FreeDecal(decals_t * dl);
 #define MAX_DECAL_ARRAY_VERTS 4096
 #define MAX_DECAL_INDICES     8192
 
-vec4_t DecalColorArray [MAX_DECAL_ARRAY_VERTS];
-vec2_t DecalTexCoordArray [MAX_DECAL_ARRAY_VERTS];
-vec3_t DecalVertexArray [MAX_DECAL_ARRAY_VERTS];
+vec4_t	DecalColorArray		[MAX_DECAL_ARRAY_VERTS];
+vec2_t	DecalTexCoordArray	[MAX_DECAL_ARRAY_VERTS];
+vec3_t	DecalVertexArray	[MAX_DECAL_ARRAY_VERTS];
+index_t	DecalIdxArray		[MAX_DECAL_INDICES];
 
 void R_RenderDecals(void)
 {
@@ -84,7 +85,6 @@ void R_RenderDecals(void)
     unsigned    tex, texture = 0;
     int			x, i;
     int			numIndices = 0, numVertices = 0;
-	index_t		indices[MAX_DECAL_INDICES];
     float		endLerp, decalAlpha;
 	
 	if (!cl_decals->integer)
@@ -146,7 +146,7 @@ void R_RenderDecals(void)
         if (texture != tex) {
         // flush array if new texture/blend
         if (numIndices) {
-			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
+			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
 			c_decal_tris += numIndices/3;
 			numVertices = 0;
 			numIndices = 0;
@@ -169,7 +169,7 @@ void R_RenderDecals(void)
      if ((numIndices >= MAX_DECAL_INDICES - (dl->numverts - 2) * 3) || 
 		 (numVertices >= MAX_DECAL_ARRAY_VERTS - dl->numverts)) {
           
-		 qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
+		 qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
          c_decal_tris = numIndices/3;
 		 numVertices = 0;
          numIndices = 0;
@@ -192,9 +192,9 @@ void R_RenderDecals(void)
 
      // set indices
      for (x = 0; x < dl->numverts - 2; x++) {
-          indices[numIndices+x*3+0] = numVertices;
-          indices[numIndices+x*3+1] = numVertices + x + 1;
-          indices[numIndices+x*3+2] = numVertices + x + 2;
+		 DecalIdxArray[numIndices+x*3+0] = numVertices;
+		 DecalIdxArray[numIndices+x*3+1] = numVertices + x + 1;
+		 DecalIdxArray[numIndices+x*3+2] = numVertices + x + 2;
      }
      numVertices += dl->numverts;
      numIndices += (dl->numverts - 2) * 3;
@@ -202,7 +202,7 @@ void R_RenderDecals(void)
 
      // draw the rest
 	 if (numIndices){
-		 qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
+		 qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
 		c_decal_tris += numIndices/3;
 	 }
 

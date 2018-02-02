@@ -540,7 +540,7 @@ void VID_MenuInit (void) {
 	if (!r_dof)
 		r_dof = Cvar_Get ("r_dof", "0", CVAR_ARCHIVE);
 
-	if (!r_radialBlur->value)
+	if (!r_radialBlur->integer)
 		r_radialBlur = Cvar_Get ("r_radialBlur", "0", CVAR_ARCHIVE);
 
 	if (!r_imageAutoBump)
@@ -552,16 +552,16 @@ void VID_MenuInit (void) {
 	if (!cl_fontScale)
 		cl_fontScale = Cvar_Get ("cl_fontScale", "1", CVAR_ARCHIVE);
 
-	if (!r_ssao->value)
+	if (!r_ssao->integer)
 		r_ssao = Cvar_Get ("r_ssao", 0, CVAR_ARCHIVE);
 
-	if (!r_fxaa->value)
+	if (!r_fxaa->integer)
 		r_fxaa = Cvar_Get ("r_fxaa", 0, CVAR_ARCHIVE);
 
 	if (!r_lightmapScale->value)
 		r_lightmapScale = Cvar_Get ("r_lightmapScale", "0", CVAR_ARCHIVE);
 
-	if (!r_motionBlur->value)
+	if (!r_motionBlur->integer)
 		r_motionBlur = Cvar_Get ("r_motionBlur", "0", CVAR_ARCHIVE);
 
 	s_opengl_menu.x = viddef.width * 0.50;

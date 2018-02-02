@@ -202,7 +202,7 @@ void S_Init (int hardreset) {
 			if (s_openal_numChannels) {
 				S_SoundInfo_f ();
 
-				if (s_distance_model->value)	// OpenAL using the best
+				if (s_distance_model->integer)	// OpenAL using the best
 					// selection by default
 				{
 					// AL_NONE bypasses all distance
@@ -1294,7 +1294,7 @@ Music Streaming
 
 qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume) {
 	
-	if (!s_initsound->value)
+	if (!s_initsound->integer)
 		return qfalse;
 
 	if (streaming.enabled) {

@@ -147,7 +147,7 @@ void PM_StepSlideMove_ (void) {
 			numPlanes = 0;
 		}
 
-		if (trace.fraction == 1)
+		if (trace.fraction == 1.0)
 			break;				// moved the entire distance
 
 		// save entity for contact

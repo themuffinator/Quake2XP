@@ -107,7 +107,7 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 	mat3_t axis;
 	decals_t *d = NULL;
 
-	if (!cl_decals->value)
+	if (!cl_decals->integer)
 		return;
 
 	// invalid decal

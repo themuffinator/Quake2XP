@@ -408,7 +408,7 @@ void CL_ParseServerData (void) {
 	// BIG HACK to let demos from release work with the 3.0x patch!!!
 	// if (Com_ServerState() && PROTOCOL_VERSION == 34)
 
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		if (LegacyProtocol ())		// do nothing
 		{
 		}
@@ -417,7 +417,7 @@ void CL_ParseServerData (void) {
 			PROTOCOL_VERSION);
 	}
 	else
-	if (net_compatibility->value) {
+	if (net_compatibility->integer) {
 		if (LegacyProtocol ())		// do nothing
 		{
 		}
@@ -593,7 +593,7 @@ void CL_LoadClientinfo (clientinfo_t * ci, char *s) {
 				Com_sprintf (weapon_filename, sizeof(weapon_filename), "players/male/%s", cl_weaponmodels[i]);
 				ci->weaponmodel[i] = R_RegisterModel (weapon_filename);
 			}
-			if (!cl_vwep->value)
+			if (!cl_vwep->integer)
 				break;			// only one when vwep is off
 		}
 		// icon file
@@ -804,7 +804,7 @@ void CL_ParseServerMessage (void) {
 	//
 	// if recording demos, copy the message out
 	//
-	if (cl_shownet->value == 1)
+	if (cl_shownet->integer == 1)
 		Com_Printf ("%i ", net_message.cursize);
 	else if (cl_shownet->value >= 2)
 		Com_Printf ("------------------\n");

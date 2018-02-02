@@ -267,7 +267,7 @@ void Netchan_Transmit (netchan_t * chan, int length, byte * data) {
 	NET_SendPacket (chan->sock, send.cursize, send.data,
 		chan->remote_address);
 
-	if (showpackets->value) {
+	if (showpackets->integer) {
 		if (send_reliable)
 			Com_Printf ("send %4i : s=%i reliable=%i ack=%i rack=%i\n",
 			send.cursize, chan->outgoing_sequence - 1,
@@ -309,7 +309,7 @@ qboolean Netchan_Process (netchan_t * chan, sizebuf_t * msg) {
 	sequence &= ~(1 << 31);
 	sequence_ack &= ~(1 << 31);
 
-	if (showpackets->value) {
+	if (showpackets->integer) {
 		if (reliable_message)
 			Com_Printf ("recv %4i : s=%i reliable=%i ack=%i rack=%i\n",
 			msg->cursize, sequence,
@@ -323,7 +323,7 @@ qboolean Netchan_Process (netchan_t * chan, sizebuf_t * msg) {
 	// discard stale or duplicated packets
 	//
 	if (sequence <= chan->incoming_sequence) {
-		if (showdrop->value)
+		if (showdrop->integer)
 			Com_Printf ("%s:Out of order packet %i at %i\n",
 			NET_AdrToString (chan->remote_address)
 			, sequence, chan->incoming_sequence);
@@ -334,7 +334,7 @@ qboolean Netchan_Process (netchan_t * chan, sizebuf_t * msg) {
 	//
 	chan->dropped = sequence - (chan->incoming_sequence + 1);
 	if (chan->dropped > 0) {
-		if (showdrop->value)
+		if (showdrop->integer)
 			Com_Printf ("%s:Dropped %i packets at %i\n",
 			NET_AdrToString (chan->remote_address)
 			, chan->dropped, sequence);

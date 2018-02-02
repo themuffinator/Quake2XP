@@ -66,7 +66,7 @@ static qboolean AL_InitDriver (void) {
 		ALCint attrlist[3] = { ALC_FREQUENCY, 48000, 0 };
 		ALCint *attrlist_p;
 
-		if (!(s_quality->value))
+		if (!(s_quality->integer))
 			attrlist_p = NULL;
 		else {
 			switch ((int)s_quality->value) {

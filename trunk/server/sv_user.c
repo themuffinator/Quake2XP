@@ -115,7 +115,7 @@ void SV_New_f (void) {
 
 	// send the serverdata
 	MSG_WriteByte (&sv_client->netchan.message, svc_serverdata);
-	if (!net_compatibility->value)
+	if (!net_compatibility->integer)
 		MSG_WriteLong (&sv_client->netchan.message, PROTOCOL_VERSION);
 	else
 		MSG_WriteLong (&sv_client->netchan.message, OLD_PROTOCOL_VERSION);
@@ -635,7 +635,7 @@ void SV_ExecuteClientMessage (client_t * cl) {
 					return;
 				}
 
-				if (!sv_paused->value) {
+				if (!sv_paused->integer) {
 					net_drop = cl->netchan.dropped;
 					if (net_drop < 20) {
 

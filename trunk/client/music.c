@@ -89,7 +89,7 @@ qboolean Music_PlayFile (const char *name, qboolean hasExt) {
 			Com_DPrintf (S_COLOR_GREEN "Music_Play: playing \"%s.%s\"\n", name, music_handle->ext);
 
 		S_Streaming_Start (sp.bits, sp.channels, sp.rate, s_musicvolume->value);
-		mstat = cl_paused->value ? MSTAT_PAUSED : MSTAT_PLAYING;
+		mstat = cl_paused->integer ? MSTAT_PAUSED : MSTAT_PLAYING;
 		return qtrue;
 	}
 	else {
@@ -143,14 +143,14 @@ void Music_Play (void) {
 
 	Music_Stop ();
 
-	if (s_musicrandom->value != 0)
+	if (s_musicrandom->integer)
 		// original soundtrack has tracks 2 to 11
 		track = 2 + rand () % 10;
 	else
 		track = atoi (cl.configstrings[CS_CDTRACK]);
 
 	if (music_type != MUSIC_OTHER_FILES &&
-		track == 0 && s_musicrandom->value == 0)
+		track == 0 && !s_musicrandom->integer)
 		return;
 
 	switch (music_type) {
@@ -168,7 +168,7 @@ void Music_Play (void) {
 			if (fsList == NULL)
 				return;
 
-			if (s_musicrandom->value != 0)
+			if (s_musicrandom->integer)
 				fsIndex = rand () % fsNumFiles;
 			else
 				fsIndex = (fsIndex + 1) % fsNumFiles;

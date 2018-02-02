@@ -175,7 +175,13 @@ void GLimp_InitADL(){
 		memset(lpAdapterInfo, '\0', sizeof(AdapterInfo) * atiPhysicalGpuCount);
 
 		// Get the AdapterInfo structure for all adapters in the system
+		if(lpAdapterInfo)
 		ADL_Adapter_AdapterInfo_Get(lpAdapterInfo, sizeof(AdapterInfo) * atiPhysicalGpuCount);
+		else
+		{
+			Com_Printf(S_COLOR_RED"Cannot get lpAdapterInfo!\n");
+			ADL_Shutdown();
+		}
 	}
 
 	//	Looking for overdrive version

@@ -523,7 +523,7 @@ LONG CDAudio_MessageHandler (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CDAudio_Update (void) {
 
-	if (cd_nocd->value) {
+	if (cd_nocd->integer) {
 		CDAudio_Stop ();
 		enabled = qfalse;
 	}
@@ -563,7 +563,7 @@ int CDAudio_Init (void) {
 	cd_looptrack = Cvar_Get ("cd_looptrack", "11", 0);
 	cd_volume = Cvar_Get ("cd_volume", "1.0", CVAR_ARCHIVE);
 
-	if (cd_nocd->value)
+	if (cd_nocd->integer)
 		return -1;
 
 	if (cd_drive->string && cd_drive->string[0])

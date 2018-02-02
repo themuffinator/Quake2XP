@@ -232,7 +232,7 @@ void AppActivate (BOOL fActive, BOOL minimize) {
 		ActiveApp = qfalse;
 		IN_Activate (qfalse);
 		Music_Pause ();
-		if (win_noalttab->value) {
+		if (win_noalttab->integer) {
 			WIN_EnableAltTab ();
 		}
 		if (alConfig.hALC) alcSuspendContext (alConfig.hALC); //willow: Have no success??
@@ -241,7 +241,7 @@ void AppActivate (BOOL fActive, BOOL minimize) {
 		ActiveApp = qtrue;
 		IN_Activate (qtrue);
 		Music_Resume ();
-		if (win_noalttab->value) {
+		if (win_noalttab->integer) {
 			WIN_DisableAltTab ();
 		}
 		if (alConfig.hALC) alcProcessContext (alConfig.hALC); //willow: Have no success??
@@ -315,7 +315,7 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 
 							if (raw->data.mouse.lLastY)
 							{
-								if (m_inversion->value)
+								if (m_inversion->integer)
 									cl.viewangles_PITCH -= sens * raw->data.mouse.lLastY;
 								else
 									cl.viewangles_PITCH += sens * raw->data.mouse.lLastY;
@@ -420,7 +420,7 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 	}
 	break;
 	case WM_MOVE:
-		if (!r_fullScreen->value)
+		if (!r_fullScreen->integer)
 		{
 			RECT r;
 			int xPos = (short)LOWORD(lParam);    // horizontal position 
@@ -640,7 +640,7 @@ update the rendering DLL and/or video mode to match.
 
 void VID_CheckChanges (void) {
 	if (win_noalttab->modified) {
-		if (win_noalttab->value) {
+		if (win_noalttab->integer) {
 			WIN_DisableAltTab ();
 		}
 		else {
@@ -680,8 +680,8 @@ void VID_CheckChanges (void) {
 	** update our window position
 	*/
 	if (vid_xpos->modified || vid_ypos->modified) {
-		if (!r_fullScreen->value)
-			VID_UpdateWindowPosAndSize (vid_xpos->value, vid_ypos->value);
+		if (!r_fullScreen->integer)
+			VID_UpdateWindowPosAndSize (vid_xpos->integer, vid_ypos->integer);
 
 		vid_xpos->modified = qfalse;
 		vid_ypos->modified = qfalse;

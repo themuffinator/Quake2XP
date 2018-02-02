@@ -117,7 +117,7 @@ void SV_CheckForSavegame (void) {
 	FILE *f;
 	int i;
 
-	if (sv_noreload->value)
+	if (sv_noreload->integer)
 		return;
 
 	if (Cvar_VariableValue ("deathmatch"))
@@ -312,7 +312,7 @@ void SV_InitGame (void) {
 	}
 	// dedicated servers are can't be single player and are usually DM
 	// so unless they explicity set coop, force it to deathmatch
-	if (dedicated->value) {
+	if (dedicated->integer) {
 		if (!Cvar_VariableValue ("coop"))
 			Cvar_FullSet ("deathmatch", "1", CVAR_SERVERINFO | CVAR_LATCH);
 	}

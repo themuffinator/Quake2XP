@@ -186,7 +186,7 @@ typedef struct
 #define NVAPI_MAX_GPU_PER_TOPOLOGY          8
 #define NVAPI_MAX_DISPLAY_HEADS             2
 #define NVAPI_ADVANCED_DISPLAY_HEADS        4
-#define NVAPI_MAX_DISPLAYS                  NVAPI_PHYSICAL_GPUS * NVAPI_ADVANCED_DISPLAY_HEADS
+#define NVAPI_MAX_DISPLAYS                  128 //NVAPI_PHYSICAL_GPUS * NVAPI_ADVANCED_DISPLAY_HEADS
 #define NVAPI_MAX_ACPI_IDS                  16
 #define NVAPI_MAX_VIEW_MODES                8
 #define NV_MAX_HEADS                        4   //!< Maximum heads, each with NVAPI_DESKTOP_RES resolution
@@ -196,7 +196,7 @@ typedef struct
 #define NV_MAX_VID_STREAMS  4   //!< Maximum number of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
 #define NV_MAX_VID_PROFILES 4   //!< Maximum number of output video profiles supported
 
-#define NVAPI_SYSTEM_MAX_DISPLAYS           NVAPI_MAX_PHYSICAL_GPUS * NV_MAX_HEADS
+#define NVAPI_SYSTEM_MAX_DISPLAYS           256// NVAPI_MAX_PHYSICAL_GPUS * NV_MAX_HEADS
 
 #define NVAPI_SYSTEM_MAX_HWBCS              128
 #define NVAPI_SYSTEM_HWBC_INVALID_ID        0xffffffff

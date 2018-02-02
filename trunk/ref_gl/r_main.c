@@ -428,7 +428,7 @@ void R_SetupEntityMatrix(entity_t * e) {
 	Mat4_SetOrientation(e->matrix, e->axis, e->origin);
 	Mat4_TransposeMultiply(e->matrix, r_newrefdef.modelViewProjectionMatrix, e->orMatrix);
 
-	if ((e->flags & RF_WEAPONMODEL) && (r_leftHand->integer == 1.0F)) { // Flip player weapon
+	if ((e->flags & RF_WEAPONMODEL) && (r_leftHand->integer == 1)) { // Flip player weapon
 		Mat4_Scale(e->orMatrix, 1.0, -1.0, 1.0);
 		GL_CullFace(GL_BACK);
 	}
@@ -582,7 +582,7 @@ void R_DrawPlayerWeaponAmbient(void)
 void R_DrawLightScene (void)
 {
 	int i;
-	
+
 	num_visLights = 0;
 
 	GL_DepthMask(0);
