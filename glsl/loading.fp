@@ -16,7 +16,7 @@ vec4 color =  texture(u_map, v_texCoord.xy);
 vec4 mono = Desaturate(color.rgb, 1.0); 
 vec4 deltas = color - mono;
 fragData = mono + u_colorScale * deltas;
-fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0; // add scanline
+fragData -= mod(gl_FragCoord.y, 2.0) < 1.0 ? 0.5 : 0.0; // add scanline
 	
 float OuterVignetting	= 1.4 - 0.45;
 float InnerVignetting	= 1.0 - 0.45;

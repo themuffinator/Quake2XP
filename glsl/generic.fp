@@ -24,10 +24,7 @@ if(u_ATTRIB_CONSOLE == 1){
 
 	vec3 L = normalize(vec3(u_lightShift.x, u_lightShift.y, u_lightShift.z));
 	vec3 V  = normalize(vec3(0.0, 0.0, 1.0));
-/*
-	vec2 Es = PhongLighting(normal, L, V, 16.0);
-	vec4 lighting = (Es.x * diffuse + Es.y * specular) * vec4(1.0);
-*/
+
 	vec4 lighting = vec4(Lighting_BRDF(diffuse.rgb, vec3(specular), 0.4, normal.xyz, L, V), 1.0)  * vec4(1.0);
 
 	fragData = /*vec4(0.0, 0.0, 0.0, 1.0)*/ diffuse * 0.25 + lighting;
@@ -54,7 +51,7 @@ if(u_ATTRIB_COLORS == 1){
 }
 
 if(u_isSky == 1){
-	fragData =  vec4(diffuse.rgb * u_colorScale, 1.0);
+	fragData =  vec4(diffuse.rgb, 1.0);
 	return;
 }
 if(u_ATTRIB_COLORS != 1 && u_ATTRIB_CONSOLE != 1){

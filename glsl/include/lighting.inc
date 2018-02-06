@@ -312,3 +312,4 @@ vec4 Height2Normal(in vec2 texCoord, in sampler2D heightMapSampler, in vec3 colo
 
 	return vec4(normal, spec * scaleSpecular);
 }
+
