@@ -93,7 +93,7 @@ typedef struct worldShadowLight_s {
 } worldShadowLight_t;
 
 #define		Q_INFINITY	1e30f
-#define		MAX_WORLD_SHADOW_LIHGTS	1024
+#define		MAX_WORLD_SHADOW_LIHGTS	2048
 #define		EQUAL_EPSILON		0.000001f
 int			r_numWorlsShadowLights;
 extern		worldShadowLight_t *currentShadowLight;

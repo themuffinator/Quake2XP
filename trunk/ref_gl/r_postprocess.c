@@ -82,7 +82,7 @@ void R_Bloom (void)
 		GL_BindRect (bloomtex);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RGB8, 0, 0, vid.width*0.25, vid.height*0.25, 0);
+		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, 0, 0, vid.width*0.25, vid.height*0.25, 0);
 	}
 
 	// generate star shape
@@ -144,7 +144,7 @@ void R_ThermalVision (void)
 		GL_MBindRect(GL_TEXTURE0, thermaltex);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RGB8, 0, 0, vid.width, vid.height, 0);
+		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, 0, 0, vid.width, vid.height, 0);
 	}
 	else {
 		GL_MBindRect(GL_TEXTURE0, thermaltex);
@@ -348,7 +348,7 @@ void R_FXAA (void) {
 		GL_MBind (GL_TEXTURE0, fxaatex);
 		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglCopyTexImage2D (GL_TEXTURE_2D, 0, GL_RGB8, 0, 0, vid.width, vid.height, 0);
+		qglCopyTexImage2D (GL_TEXTURE_2D, 0, GL_SRGB8, 0, 0, vid.width, vid.height, 0);
 	}
 	GL_MBind (GL_TEXTURE0, fxaatex);
 	qglCopyTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -572,7 +572,7 @@ void R_FixFov(void) {
 		GL_MBind(GL_TEXTURE0, fovCorrTex);
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 0, 0, vid.width, vid.height, 0);
+		qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, 0, 0, vid.width, vid.height, 0);
 	}
 	GL_MBind(GL_TEXTURE0, fovCorrTex);
 	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);

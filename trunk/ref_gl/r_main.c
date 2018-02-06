@@ -1281,10 +1281,10 @@ void R_RegisterCvars(void)
 	
 	r_fullScreen =						Cvar_Get("r_fullScreen", "1", CVAR_ARCHIVE);
 	
-	r_brightness =						Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
-	r_contrast	=						Cvar_Get("r_contrast", "1", CVAR_ARCHIVE);
-	r_saturation =						Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
-	r_gamma =							Cvar_Get("r_gamma", "1.8", CVAR_ARCHIVE);
+	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
+	r_contrast	=						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
+	r_saturation =						Cvar_Get("r_saturation", "1.0", CVAR_ARCHIVE);
+	r_gamma =							Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE); 
 
 	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
@@ -1729,7 +1729,7 @@ int R_Init(void *hinstance, void *hWnd)
 	glUniformMatrix4x2fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX4X2FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix4x2fvEXT");
 	glUniformMatrix3x4fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX3X4FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix3x4fvEXT");
 	glUniformMatrix4x3fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX4X3FVEXTPROC)	qwglGetProcAddress("glProgramUniformMatrix4x3fvEXT");
-
+	
 	gl_config.vendor_string					= (const char*)qglGetString(GL_VENDOR);
 	gl_config.renderer_string				= (const char*)qglGetString(GL_RENDERER);
 	gl_config.version_string				= (const char*)qglGetString(GL_VERSION);
@@ -1822,6 +1822,8 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 		gl_state.depthBoundsTest = qfalse;
 	}
+	qglEnable(GL_FRAMEBUFFER_SRGB);
+	Com_Printf("...using ARB_framebuffer_sRGB\n");
 
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");

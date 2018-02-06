@@ -1938,7 +1938,7 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
 	light->area = CM_LeafArea (leafnum);
 
 	if (!light->area) {
-	skip:	Com_DPrintf ("Out of BSP, rejected light at %f %f %f\n", light->origin[0], light->origin[1], light->origin[2]);
+	skip:	Com_DPrintf ("Out of BSP, rejected light at %i %i %i\n", (int)light->origin[0], (int)light->origin[1], (int)light->origin[2]);
 		return qfalse;
 	}
 

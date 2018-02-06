@@ -1289,12 +1289,12 @@ void GL_BuildTBN(int count) {
 	float		*vi, *vj, threshold;
 	msurface_t	*si, *sj;
 	vec3_t		ni, nj;
-//	char		cacheName[MAX_QPATH];
+	char		cacheName[MAX_QPATH];
 	FILE		*cacheFile = NULL;
 	int         smoothAng = r_tbnSmoothAngle->integer;
 
 	threshold = cosf(DEG2RAD(r_tbnSmoothAngle->integer));
-/*
+
 	// Check for existing data
 	Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
 	if (cache_Open(cacheName)) {
@@ -1341,7 +1341,7 @@ recreate:
 			currentmodel->name, smoothAng);
 		fwrite(&smoothAng, sizeof(smoothAng), 1, cacheFile);
 	}
-*/
+
 
 	for (i = 0; i < count; i++) {
 		si = &currentmodel->surfaces[i];
@@ -1433,12 +1433,12 @@ recreate:
 				vi[15] = biTangent[2];
 			}
 
-	//		if (cacheFile != NULL)
-		//		fwrite(vi + 7, sizeof(*vi), 9, cacheFile);
+			if (cacheFile != NULL)
+				fwrite(vi + 7, sizeof(*vi), 9, cacheFile);
 		}
 	}
-//	if (cacheFile != NULL)
-	//	fclose(cacheFile);
+	if (cacheFile != NULL)
+		fclose(cacheFile);
 }
 
 

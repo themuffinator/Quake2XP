@@ -185,7 +185,7 @@ void CreateScreenRect (void) {
 	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	qglTexImage2D		(GL_TEXTURE_RECTANGLE, 0, GL_RGB8, vid.width, vid.height, 0,
+	qglTexImage2D		(GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, vid.width, vid.height, 0,
 						GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 }
@@ -373,7 +373,7 @@ void CreateSsaoColorTextures(void) {
 		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGB8, vid.width / 2, vid.height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, vid.width / 2, vid.height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	}
 }
 
@@ -566,13 +566,17 @@ image_t *R_LoadLightFilter (int id) {
 		if (FS_LoadFile (checkname, NULL) != -1) {
 			IL_LoadImage (checkname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
 			if (pix[i].width) {
-				if (minw < pix[i].width)	minw = pix[i].width;
-				if (maxw > pix[i].width)	maxw = pix[i].width;
+				if (minw < pix[i].width)	
+					minw = pix[i].width;
+				if (maxw > pix[i].width)	
+					maxw = pix[i].width;
 			}
 
 			if (pix[i].height) {
-				if (minh < pix[i].height)	minh = pix[i].height;
-				if (maxh > pix[i].height)	maxh = pix[i].height;
+				if (minh < pix[i].height)	
+					minh = pix[i].height;
+				if (maxh > pix[i].height)	
+					maxh = pix[i].height;
 			}
 		}
 	}

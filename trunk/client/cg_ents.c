@@ -938,7 +938,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			}
 		}
 		// hack!!!!
-		if (effects & (EF_FLASHLIGHT) && !modType("rogue") && !net_compatibility->value) {
+		if (effects & (EF_FLASHLIGHT) && !modType("rogue") && !net_compatibility->integer) {
 			entity_t		player_gun;
 			static vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, right, up;
 			frame_t			*oldframe;

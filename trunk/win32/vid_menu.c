@@ -365,7 +365,7 @@ void M_ColorInit() {
 	s_gamma_slider.generic.name = "Gamma";
 	s_gamma_slider.generic.callback = GammaCallback;
 	s_gamma_slider.minvalue = 1;
-	s_gamma_slider.maxvalue = 25;
+	s_gamma_slider.maxvalue = 20;
 	s_gamma_slider.curvalue = r_gamma->value * 10;
 	s_gamma_slider.generic.statusbar = "Screen Gamma";
 

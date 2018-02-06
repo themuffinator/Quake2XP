@@ -1518,7 +1518,7 @@ GLW_DescribePixelFormat
 ==================
 */
 static void GLW_DescribePixelFormat(int pixelFormat, glwPixelFormatDescriptor_t *pfd) {
-	int	attribs[11], values[11];
+	int	attribs[13], values[11];
 
 	attribs[0]	= WGL_ACCELERATION_ARB;
 	attribs[1]	= WGL_DRAW_TO_WINDOW_ARB;
@@ -1539,6 +1539,8 @@ static void GLW_DescribePixelFormat(int pixelFormat, glwPixelFormatDescriptor_t 
 		values[9] = GL_FALSE;
 		values[10] = 0;
 	}
+	attribs[11] = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+	attribs[12] = GL_TRUE;
 
 	pfd->accelerated	= (values[0] == WGL_FULL_ACCELERATION_ARB);
 	pfd->drawToWindow	= (values[1] == GL_TRUE);

@@ -1459,4 +1459,6 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures (1, &fxaatex);
 	if(fovCorrTex)
 		qglDeleteTextures(1, &fovCorrTex);
+	if(skyCube)
+		qglDeleteTextures(1, &skyCube);
 }

@@ -184,6 +184,7 @@ extern uint bloomtex;
 extern uint thermaltex;
 extern uint fxaatex;
 extern uint fovCorrTex;
+extern unsigned int	skyCube;
 
 extern uint fboId;
 extern byte fboColorIndex;
