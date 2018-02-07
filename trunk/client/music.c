@@ -317,7 +317,7 @@ supported_exts_t supported_exts[] = {
 };
 
 // Gen_OpenAny: try all possible extensions of filename in sequence
-static Gen_Interface_t *Gen_OpenAny (const char *name, soundparams_t *sp) {
+Gen_Interface_t *Gen_OpenAny (const char *name, soundparams_t *sp) {
 	// check all supported extensions, or better try in a loop somewhere else?
 	int i;
 
