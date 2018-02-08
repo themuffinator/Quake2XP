@@ -359,8 +359,8 @@ static mat4_t r_flipMatrix = {
 };
 
 static void R_SetupViewMatrices (void) {
-	mat4_t tmpMatrix;
-
+	mat4_t	tmpMatrix;
+	int		i;
 	// setup perspective projection matrix
 	r_newrefdef.projectionMatrix[0][0] = 1.f / tan(DEG2RAD(r_newrefdef.fov_x) * 0.5f);
 	r_newrefdef.projectionMatrix[0][1] = 0.f;
@@ -409,7 +409,7 @@ static void R_SetupViewMatrices (void) {
 	tx = tan(DEG2RAD(r_newrefdef.fov_x * 0.5f));
 	ty = tan(DEG2RAD(r_newrefdef.fov_y * 0.5f));
 
-	for (int i = 0; i < 3; i++) {
+	for (i = 0; i < 3; i++) {
 		axis[0][i] = r_newrefdef.axis[0][i];
 		axis[1][i] = r_newrefdef.axis[1][i] * tx;
 		axis[2][i] = r_newrefdef.axis[2][i] * ty;
