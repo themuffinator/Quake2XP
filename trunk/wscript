@@ -11,7 +11,7 @@
 # - cl_maxfps works fine at 60, and uses usleep() to wait
 #
 
-VERSION = '1.26.7'
+VERSION = '1.26.8'
 APPNAME = 'quake2xp'
 top = '.'
 out = 'build'
@@ -34,8 +34,6 @@ sources_glob = {
         'server/*.c',
         'ref_gl/*.c',
         'linux/*.c',
-        'win32/r_qglwin.c',
-        'win32/vid_menu.c',
         'game/m_flash.c'
         ]
 }

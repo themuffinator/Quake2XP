@@ -143,9 +143,6 @@
     <ClCompile Include="client\qmenu.c">
       <Filter>Source Files\Menu</Filter>
     </ClCompile>
-    <ClCompile Include="win32\vid_menu.c">
-      <Filter>Source Files\Menu</Filter>
-    </ClCompile>
     <ClCompile Include="qcommon\cmd.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
@@ -314,8 +311,11 @@
     <ClCompile Include="ref_gl\r_vertexCache.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="win32\r_qgl.c">
+    <ClCompile Include="ref_gl\r_qgl.c">
       <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="client\vid_menu.c">
+      <Filter>Source Files\Menu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

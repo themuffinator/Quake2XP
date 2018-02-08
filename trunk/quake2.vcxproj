@@ -407,6 +407,7 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="client\music.c" />
+    <ClCompile Include="client\vid_menu.c" />
     <ClCompile Include="game\m_flash.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
@@ -421,6 +422,7 @@
     <ClCompile Include="ref_gl\r_main.c" />
     <ClCompile Include="ref_gl\r_md3Mesh.c" />
     <ClCompile Include="ref_gl\r_program.c" />
+    <ClCompile Include="ref_gl\r_qgl.c" />
     <ClCompile Include="ref_gl\r_shadows.c" />
     <ClCompile Include="ref_gl\r_vertexCache.c" />
     <ClCompile Include="ref_gl\r_zprepass.c" />
@@ -506,12 +508,6 @@
     </ClCompile>
     <ClCompile Include="client\menu.c" />
     <ClCompile Include="client\qmenu.c">
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
-    </ClCompile>
-    <ClCompile Include="win32\vid_menu.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
@@ -619,7 +615,6 @@
     <ClCompile Include="ref_gl\r_model.c" />
     <ClCompile Include="ref_gl\r_particles.c" />
     <ClCompile Include="ref_gl\r_postprocess.c" />
-    <ClCompile Include="win32\r_qgl.c" />
     <ClCompile Include="ref_gl\r_misc.c" />
     <ClCompile Include="ref_gl\r_rsurf.c" />
     <ClCompile Include="ref_gl\r_warp.c" />
