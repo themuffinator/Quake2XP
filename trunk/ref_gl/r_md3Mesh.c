@@ -342,8 +342,9 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			for (j = 0; j < outMesh->num_verts; j++, inVerts++, outVerts++){
 
 				vec3_t	boundsPoints, norm, translate;
+				int		x;
 
-				for (int x = 0; x < 3; x++){
+				for (x = 0; x < 3; x++){
 
 					translate[x] = LittleFloat(inFrame->translate[x]);
 					outVerts->xyz[x] = (float)LittleShort(inVerts->point[x]) * scaleMD3[x] + translate[x];
