@@ -65,11 +65,9 @@ vec4 TechniColorSys3(in vec4 color)
 vec4 SepiaColor (vec4 color)
 {	
 	float lum = dot(color.rgb, vec3(0.2125, 0.7154, 0.0721));
-	vec3 sepia = vec3(1.2, 1.0, 0.8); 
+	vec3 sepia = vec3(1.888, 1.0, 0.8); 
 	sepia *= lum;
-	vec3 tmp = mix(color.rgb, sepia, 0.88);
-
-	return vec4(tmp, 1.0);
+	return vec4(sepia, 1.0);
 }
 
 
