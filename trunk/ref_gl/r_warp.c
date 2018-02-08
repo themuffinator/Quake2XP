@@ -32,7 +32,6 @@ char skyname[MAX_QPATH];
 float skyrotate;
 vec3_t skyaxis;
 image_t *sky_images[6];
-static float shadelight[3];
 void IL_LoadImage (char *filename, byte ** pic, int *width, int *height, ILenum type);
 unsigned int	skyCube = -1;
 
