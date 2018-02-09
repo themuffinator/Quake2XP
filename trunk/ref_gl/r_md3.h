@@ -19,8 +19,6 @@
 // vertex scales
 #define	MD3_XYZ_SCALE		(1.0f / 64.0f)
 
-#define FUNCTABLE_SIZE		1024
-
 
 typedef struct
 {

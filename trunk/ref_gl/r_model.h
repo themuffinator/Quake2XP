@@ -271,18 +271,18 @@ typedef struct model_s {
 	qboolean	useXPLM;	// 3-vector basis lightmap
 
 	// for alias models and skins
-	image_t		*skins[MAX_MD2SKINS];
-	image_t		*skins_normal[MAX_MD2SKINS];
-	image_t		*skins_specular[MAX_MD2SKINS];
-	image_t		*skins_roughness[MAX_MD2SKINS];
-	image_t		*glowtexture[MAX_MD2SKINS];
-	image_t		*skin_env[MAX_MD2SKINS];
+	image_t		*skins				[MAX_MD2SKINS];
+	image_t		*skins_normal		[MAX_MD2SKINS];
+	image_t		*skins_specular		[MAX_MD2SKINS];
+	image_t		*skins_roughness	[MAX_MD2SKINS];
+	image_t		*glowtexture		[MAX_MD2SKINS];
+	image_t		*skin_env			[MAX_MD2SKINS];
 
-	image_t      *skinsMD3[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
-	image_t      *skinsMD3_normal[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
-	image_t      *skinsMD3_roughness[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
-	image_t      *skinsMD3_glow[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
-	image_t      *skinsMD3_env[/*MD3_MAX_MESHES*/32][MAX_MD2SKINS];
+	image_t      *skinsMD3				[MD3_MAX_MESHES][MD3_MAX_SKINS];
+	image_t      *skinsMD3_normal		[MD3_MAX_MESHES][MD3_MAX_SKINS];
+	image_t      *skinsMD3_roughness	[MD3_MAX_MESHES][MD3_MAX_SKINS];
+	image_t      *skinsMD3_glow			[MD3_MAX_MESHES][MD3_MAX_SKINS];
+	image_t      *skinsMD3_env			[MD3_MAX_MESHES][MD3_MAX_SKINS];
 
 	int			extraDataSize;
 	void		*extraData;
@@ -316,7 +316,6 @@ typedef struct model_s {
 
 #define SHELL_SCALE		        0.5F
 #define WEAPON_SHELL_SCALE		0.2F
-
 
 //============================================================================
 

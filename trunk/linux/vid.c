@@ -253,7 +253,7 @@ VID_Init(void)
 
 	/* Create the video variables so we know how to start the graphics drivers */
 	vid_ref = Cvar_Get ("vid_ref", "xpgl", CVAR_ARCHIVE);
-	r_gamma = Cvar_Get("r_gamma", "1.5", CVAR_ARCHIVE);
+	r_gamma = Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE);
 	r_fullScreen = Cvar_Get ("r_fullScreen", "1", CVAR_ARCHIVE);
 	r_customWidth = Cvar_Get ("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight = Cvar_Get ("r_customHeight", "768", CVAR_ARCHIVE);

@@ -114,9 +114,13 @@ void GL_UpdateSwapInterval()
 /*
  * Swaps the buffers to show the new frame
  */
+ 
+ extern float ref_realtime;
+ 
 void GLimp_EndFrame (void)
 {
-	SDL_GL_SwapBuffers();
+	SDL_GL_SwapBuffers(); 
+  ref_realtime=Sys_Milliseconds()		* 0.0005f;
 }
 
 /*

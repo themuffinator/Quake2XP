@@ -1853,7 +1853,7 @@ void GLimp_EndFrame (void)
 			VID_Error( ERR_FATAL, "GLimp_EndFrame() - SwapBuffers() failed!\n" );
 
 	r_newrefdef.time=Sys_Milliseconds() * 0.001f;
-	ref_realtime=Sys_Milliseconds() * 0.0005f;
+	ref_realtime=Sys_Milliseconds()		* 0.0005f;
 }
 
 
