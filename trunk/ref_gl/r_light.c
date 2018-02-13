@@ -2327,6 +2327,16 @@ void R_SetViewLightScreenBounds () {
 			currentShadowLight->scissor[2] = scissor[2] - scissor[0];
 			currentShadowLight->scissor[3] = scissor[3] - scissor[1];
 		}
+#ifndef _WIN32
+		if (currentShadowLight->scissor[0] < r_newrefdef.viewport[0])	
+				currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
+		if (currentShadowLight->scissor[1] < r_newrefdef.viewport[1])	
+				currentShadowLight->scissor[1] = r_newrefdef.viewport[1];
+		if (currentShadowLight->scissor[2] > r_newrefdef.viewport[2])	
+				currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
+		if (currentShadowLight->scissor[3] > r_newrefdef.viewport[3])	
+				currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
+#endif
 	}
 
 	// set the depth bounds

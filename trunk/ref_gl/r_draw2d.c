@@ -253,7 +253,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	float		offsX, offsY;
 	float		woh = (float)vid.width / (float)vid.height;
 	float		scroll = -13 * (r_newrefdef.time / 40.0);
-	qboolean	console;
+	qboolean	console, menu;
 
 	if (!gl) {
 		Com_Printf("NULL pic in Draw_StretchPic\n");
@@ -263,6 +263,10 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 		console = qtrue;
 	else
 		console = qfalse;
+	if (strstr(gl->name, "menuback"))
+		menu = qtrue;
+	else
+		menu = qfalse;
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
@@ -292,6 +296,18 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	qglUniform1i(gen_attribColors, 0);
 	qglUniform1i(gen_sky, 0);
 	qglUniform1i(gen_3d, 0);
+	
+	if (woh < WIDE_SCREEN_16x9) {  // quad screen
+		offsX = (WIDTH_FHD - (HEIGHT_FHD * woh)) / (WIDTH_FHD * 2.0);
+		offsY = 0;
+	}
+	else if (woh > WIDE_SCREEN_16x9) {   // super wide screen (21 x 9)
+		offsX = 0;
+		offsY = (HEIGHT_FHD - (WIDTH_FHD / woh)) / (HEIGHT_FHD * 2.0);
+	}
+	else {
+		offsX = offsY = 0;
+	}
 
 	if (console){
 		qglUniform1i(gen_attribConsole, 1);
@@ -308,18 +324,6 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 		lPos[2] = lPos[2] * 0.5 + 0.5;
 
 		qglUniform3fv(gen_light, 1, lPos);
-
-		if (woh < WIDE_SCREEN_16x9) {  // quad screen
-			offsX = (WIDTH_FHD - (HEIGHT_FHD * woh)) / (WIDTH_FHD * 2.0);
-			offsY = 0;
-		}
-		else if (woh > WIDE_SCREEN_16x9) {   // super wide screen (21 x 9)
-			offsX = 0;
-			offsY = (HEIGHT_FHD - (WIDTH_FHD / woh)) / (HEIGHT_FHD * 2.0);
-		}
-		else {
-			offsX = offsY = 0;
-		}
 	}
 	else{
 		qglUniform1i(gen_attribColors, 1);
@@ -348,7 +352,15 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 		VA_SetElem2(texCoord[2], gl->sh - offsX, gl->th - offsY);
 		VA_SetElem2(texCoord[3], gl->sl + offsX, gl->th - offsY);
 	}
-	else {
+	else if(menu){
+		GL_MBind(GL_TEXTURE0, gl->texnum);
+		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
+		VA_SetElem2(texCoord[1], gl->sh - offsX, gl->tl + offsY);
+		VA_SetElem2(texCoord[2], gl->sh - offsX, gl->th - offsY);
+		VA_SetElem2(texCoord[3], gl->sl + offsX, gl->th - offsY);
+	}
+	else
+	{
 		GL_MBind(GL_TEXTURE0, gl->texnum);
 		VA_SetElem2(texCoord[0], gl->sl, gl->tl);
 		VA_SetElem2(texCoord[1], gl->sh, gl->tl);

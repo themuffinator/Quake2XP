@@ -4533,10 +4533,10 @@ void M_Draw(void) {
 	
 	if (cls.state != ca_active || !cl.refresh_prepped) {
 		Draw_StretchPic(0, 0, viddef.width, viddef.height, "menuback");
-		R_MenuBackGround();
+	//	R_MenuBackGround();
 		M_DrawBackgroundModel();
 	} 
-	else
+//	else
 		R_MenuBackGround();
 
 	m_drawfunc();
