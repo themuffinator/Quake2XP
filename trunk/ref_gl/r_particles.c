@@ -277,28 +277,28 @@ void R_DrawParticles (void) {
 			MakeNormalVectors (vec, right, up);
 
 			for (loc = 0; loc < len; loc++) {
-				d = loc * 0.1;
+				d = loc * 0.1f;
 				c = cos (d);
 				s = sin (d);
 
-				VectorScale (right, c * 5, dir1);
-				VectorMA (dir1, s * 5, up, dir1);
+				VectorScale (right, c * 5.0f, dir1);
+				VectorMA (dir1, s * 5.0f, up, dir1);
 
-				d = (loc + 1) * 0.1;
+				d = (loc + 1) * 0.1f;
 				c = cos (d);
 				s = sin (d);
 
-				VectorScale (right, c * 5, dir2);
-				VectorMA (dir2, s * 5, up, dir2);
+				VectorScale (right, c * 5.0f, dir2);
+				VectorMA (dir2, s * 5.0f, up, dir2);
 				VectorAdd (dir2, vec, dir2);
 
-				d = (loc + 2) * 0.1;
+				d = (loc + 2) * 0.1f;
 				c = cos (d);
 				s = sin (d);
 
-				VectorScale (right, c * 5, dir3);
-				VectorMA (dir3, s * 5, up, dir3);
-				VectorMA (dir3, 2, vec, dir3);
+				VectorScale (right, c * 5.0f, dir3);
+				VectorMA (dir3, s * 5.0f, up, dir3);
+				VectorMA (dir3, 2.0f, vec, dir3);
 
 				VectorAdd (move, dir1, point);
 				VectorSubtract (dir2, dir1, spdir);
@@ -307,7 +307,7 @@ void R_DrawParticles (void) {
 				CrossProduct (point, spdir, width);
 
 				if (VectorLength (width))
-					VectorNormalizeFast(width);
+					VectorNormalize(width);
 				else
 					VectorCopy (vup, width);
 
@@ -331,7 +331,7 @@ void R_DrawParticles (void) {
 				CrossProduct (point, spdir, width);
 
 				if (VectorLength (width))
-					VectorNormalizeFast(width);
+					VectorNormalize(width);
 				else
 					VectorCopy (vup, width);
 

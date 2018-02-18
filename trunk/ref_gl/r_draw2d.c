@@ -97,7 +97,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	if ((num & 127) == 32)
 		return;					// space
 
-	if (y <= -8*scale_y)
+	if (y <= -8 * scale_y)
 		return;					// totally off screen
 
 	row = num >> 4;

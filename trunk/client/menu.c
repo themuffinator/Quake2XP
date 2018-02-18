@@ -1975,7 +1975,9 @@ static char *idcredits[] = {
 	"Atex",
 	"Jim 'Just_Jim' Waurzyniak",
 	"Serge 'Berserker' Borodulin",
+	"Focator",
 	"Pieter Verhoeven",
+	"Stefan 'evilreflex' Lautner",
 	"",
 	"+USE CODE",
 	"MrG - quake2xp based on beefquake r5",
@@ -1985,7 +1987,6 @@ static char *idcredits[] = {
 	"Knightmare",
 	"Berserk",
 	"SulQ2",
-	"Richard Stanway",
 	"",
 	"+SPECIAL THANKS",
 	"",
@@ -2076,8 +2077,7 @@ static char *idcredits[] = {
 	"Inc. Activision(R) is a registered",
 	"trademark of Activision, Inc. All",
 	"other trademarks and trade names are",
-	"properties of their respective owners.",
-	0
+	"properties of their respective owners."
 };
 
 static char *xatcredits[] = {
@@ -2337,15 +2337,12 @@ static char *roguecredits[] = {
 void M_Credits_MenuDraw(void) {
 	int i, y;
 
-	/*
-	** draw the credits
-	*/
+	// draw the credits
 
 	Set_FontShader(qtrue);
 
-	for (i = 0, y =
-		viddef.height - ((cls.realtime - credits_start_time) / 40.0F);
-		credits[i] && y < viddef.height; y += 10 * cl_fontScale->value, i++) {
+	for (i = 0, y = viddef.height - ((cls.realtime - credits_start_time) / 10.0F); credits[i] && y < viddef.height; y += 10 * cl_fontScale->value, i++) {
+		
 		int j, stringoffset = 0;
 		int bold = qfalse;
 
@@ -2364,8 +2361,7 @@ void M_Credits_MenuDraw(void) {
 		for (j = 0; credits[i][j + stringoffset]; j++) {
 			int x;
 
-			x = (viddef.width - strlen(credits[i]) * 8 * cl_fontScale->value -
-				stringoffset * 8 * cl_fontScale->value) / 2 + (j + stringoffset) * 8 * cl_fontScale->value;
+			x = (viddef.width - strlen(credits[i]) * 8 * cl_fontScale->value - stringoffset * 8 * cl_fontScale->value) / 2 + (j + stringoffset) * 8 * cl_fontScale->value;
 
 			if (bold)
 				Draw_CharScaled(x, y, cl_fontScale->value, cl_fontScale->value, credits[i][j + stringoffset] + 128);
@@ -2374,8 +2370,9 @@ void M_Credits_MenuDraw(void) {
 		}
 	}
 
-	if (y < 0)
+	if (y < 0) 
 		credits_start_time = cls.realtime;
+
 	Set_FontShader(qfalse);
 
 }
@@ -4533,7 +4530,7 @@ void M_Draw(void) {
 	
 	if (cls.state != ca_active || !cl.refresh_prepped) {
 		Draw_StretchPic(0, 0, viddef.width, viddef.height, "menuback");
-	//	R_MenuBackGround();
+//		R_MenuBackGround();
 		M_DrawBackgroundModel();
 	} 
 //	else

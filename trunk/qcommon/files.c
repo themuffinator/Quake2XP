@@ -1056,11 +1056,11 @@ static void FS_ScanForGameDLL (void) {
 
 	// possible values: 0 (gamexp), 1 (game), 2 (auto detect)
 	net_compatibility = Cvar_Get ("net_compatibility", "2", CVAR_SERVERINFO | CVAR_NOSET);
-	ncv = net_compatibility->value;
+	ncv = net_compatibility->integer;
 
 	if (ncv != 0 && ncv != 1 && ncv != 2) {
 		Cvar_ForceSetValue ("net_compatibility", 2);
-		ncv = net_compatibility->value;
+		ncv = net_compatibility->integer;
 	}
 
 #ifdef _WIN32

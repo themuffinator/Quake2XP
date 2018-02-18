@@ -70,7 +70,7 @@ float Cvar_VariableValue (char *var_name) {
 	return atof (var->string);
 }
 
-float Cvar_VariableInteger(char *var_name) {
+int Cvar_VariableInteger(char *var_name) {
 	cvar_t *var;
 
 	var = Cvar_FindVar(var_name);
@@ -305,6 +305,8 @@ void Cvar_ForceSetValue (char *var_name, float value) {
 		Com_sprintf (val, sizeof(val), "%f", value);
 	Cvar_ForceSet (var_name, val);
 }
+
+
 
 /*
 ============

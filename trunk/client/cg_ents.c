@@ -1415,17 +1415,11 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 	int dm_flag;
 	dm_flag = Cvar_VariableValue ("dmflags");
 
-	if (cl_thirdPerson->integer)
+	if (cl_thirdPerson->integer || !cl_gun->integer) {
+		VectorSet(smoke_puff, cl.refdef.vieworg[0], cl.refdef.vieworg[1], cl.refdef.vieworg[2]);
 		return;
-
-	// allow the gun to be completely removed
-	if (!cl_gun->integer)
-		return;
-
-	// don't draw gun if in wide angle view
-	if (ps->fov > 180)			// was 90
-		return;
-
+	}
+	
 	memset (&gun, 0, sizeof(gun));
 
 	if (gun_model)

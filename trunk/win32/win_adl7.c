@@ -2,9 +2,9 @@
 * This is an open source non-commercial project. Dear PVS-Studio, please check it.
 * PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 */
-// Ati Driver SDK
+// AMD Driver SDK
 // Overdrive N 
-// Fuck ATI!!!
+// Fuck IT!!!
 
 #include "../ref_gl/r_local.h"
 #include "adl/adl_sdk.h"
@@ -96,7 +96,7 @@ void GLimp_InitADL(){
 	adlInit = qfalse;
 	atiPhysicalGpuCount = atiPhysicalAdapters = 0;
 
-	Com_Printf("" S_COLOR_YELLOW "\n...Initializing AMD Display Library :\n");
+	Com_Printf("" S_COLOR_YELLOW "\n...Initializing AMD Display Library:\n");
 
 	// Load the ADL dll
 	ati_hDLL = LoadLibrary("atiadlxx.dll");
