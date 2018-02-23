@@ -3,7 +3,7 @@ layout (binding = 1) uniform sampler2DRect	u_depthBufferMap;
 
 in float		v_depth;
 in vec4			v_color;
-in vec2			v_texCoord0;
+in vec4			v_texCoord0;
 
 uniform vec2			u_depthParms;
 uniform vec2			u_mask;
@@ -13,7 +13,7 @@ uniform float			u_colorScale;
 #include depth.inc
 
 void main (void) {
-	vec4 color = texture(u_map0, v_texCoord0);
+	vec4 color = texture(u_map0, v_texCoord0.st);
 	
 	if(u_thickness > 0.0){
 	// Z-feather
