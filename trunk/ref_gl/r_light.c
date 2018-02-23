@@ -53,9 +53,6 @@ qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 	if (light->startColor[0] <= 0.01 && light->startColor[1] <= 0.01 && light->startColor[2] <= 0.01 && !r_lightEditor->integer)
 		return qfalse;
 
-	if (!light->radius[0] && !light->radius[1] && !light->radius[2])
-		return qfalse;
-
 	if (light->isCone) {
 		if (R_CullConeLight(light->mins, light->maxs, light->frust))
 			return qfalse;
@@ -2327,7 +2324,8 @@ void R_SetViewLightScreenBounds () {
 			currentShadowLight->scissor[2] = scissor[2] - scissor[0];
 			currentShadowLight->scissor[3] = scissor[3] - scissor[1];
 		}
-#ifndef _WIN32
+
+		// fix old ugly ATI-AMD scissor bug, don't need for win 10 but requried for linux 
 		if (currentShadowLight->scissor[0] < r_newrefdef.viewport[0])	
 				currentShadowLight->scissor[0] = r_newrefdef.viewport[0];
 		if (currentShadowLight->scissor[1] < r_newrefdef.viewport[1])	
@@ -2336,7 +2334,6 @@ void R_SetViewLightScreenBounds () {
 				currentShadowLight->scissor[2] = r_newrefdef.viewport[2];
 		if (currentShadowLight->scissor[3] > r_newrefdef.viewport[3])	
 				currentShadowLight->scissor[3] = r_newrefdef.viewport[3];
-#endif
 	}
 
 	// set the depth bounds

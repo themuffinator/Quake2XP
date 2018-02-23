@@ -67,6 +67,7 @@ void R_DrawParticles (void) {
 	vec3_t		oldOrigin;
 	float		scale, r, g, b, a;
 	float		c, d, s;
+	mat4_t		m;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -87,11 +88,14 @@ void R_DrawParticles (void) {
 	qglUniform2f (particle_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(particle_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(particle_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(particle_projMat, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
 	GL_DepthMask (0);		// no z buffering
 	GL_Enable (GL_BLEND);
 
 	qsort (r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
+
+	Mat4_Identity(m);
 
 	for (p = r_newrefdef.particles, i = 0; i < r_newrefdef.num_particles; i++, p++) {
 
@@ -174,6 +178,10 @@ void R_DrawParticles (void) {
 				texId = r_particletexture[PT_BLASTER_BOLT]->texnum;
 				break;
 
+			case PT_BFG_BALL:
+				texId = r_particletexture[PT_BFG_BALL]->texnum;//r_bfgBall[((int)(r_newrefdef.time * 7)) & (MAX_BFG_BALL_FRAME - 1)]->texnum;
+				break;
+
 			default:
 				texId = r_particletexture[PT_DEFAULT]->texnum;
 
@@ -212,6 +220,22 @@ void R_DrawParticles (void) {
 				qglUniform1f (particle_colorModulate, 2.0);
 			else
 				qglUniform1f (particle_colorModulate, 1.0);
+
+			if (p->flags & PARTICLE_ROTATE) {
+
+				float rot = r_newrefdef.time * 70;
+
+				Mat4_Translate	(m, 0.5f, 0.5f, 0.5f);
+
+				Mat4_Rotate		(m, 0.f,	1.f, 0.f, 0.f);
+				Mat4_Rotate		(m, 0.f,	0.f, 1.f, 0.f);
+				Mat4_Rotate		(m, rot,	0.f, 0.f, 1.f);
+
+				Mat4_Translate	(m, -0.5f, -0.5f, -0.5f);
+
+				qglUniformMatrix4fv(particle_texRotMat, 1, qfalse, (const float *)m);
+			}else
+				qglUniformMatrix4fv(particle_texRotMat, 1, qfalse, (const float *)m);
 
 		}
 

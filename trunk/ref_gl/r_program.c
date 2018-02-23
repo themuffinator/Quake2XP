@@ -943,6 +943,8 @@ void R_InitPrograms (void) {
 		particle_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
 		particle_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
 		particle_mv				= qglGetUniformLocation (id, "u_modelViewMatrix");
+		particle_projMat		= qglGetUniformLocation	(id, "u_projectionMatrix");
+		particle_texRotMat		= qglGetUniformLocation (id, "u_texRotateMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

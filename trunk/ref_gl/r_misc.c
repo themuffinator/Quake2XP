@@ -649,6 +649,7 @@ void R_InitEngineTextures (void) {
 	r_particletexture[PT_BLOODMIST] = GL_FindImage ("gfx/particles/bloodmist.tga", it_wall);
 	r_particletexture[PT_BLOOD_SPLAT] = GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
 	r_particletexture[PT_BLASTER_BOLT] = GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
+	r_particletexture[PT_BFG_BALL] = GL_FindImage("gfx/bfg/bfgBall_0.tga", it_wall);
 
 	for (i = 0; i < PT_MAX; i++)
 	if (!r_particletexture[i])
@@ -758,7 +759,6 @@ void R_InitEngineTextures (void) {
 		if (!r_explode[i])
 			r_explode[i] = r_notexture;
 	}
-
 
 	for (i = 0; i < MAX_SHELLS; i++) {
 		char shell[MAX_QPATH];

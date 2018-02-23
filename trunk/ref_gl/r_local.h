@@ -1025,6 +1025,9 @@ uint particle_thickness;
 uint particle_colorModulate;
 uint particle_mvp;
 uint particle_mv;
+uint particle_projMat;
+uint particle_texRotMat;
+uint particle_distort;
 
 uint water_deformMul;
 uint water_alpha;

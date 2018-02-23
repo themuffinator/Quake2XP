@@ -46,7 +46,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define PT_BLOODMIST	18
 #define PT_BLOOD_SPLAT  19
 #define PT_BLASTER_BOLT 20
-#define PT_MAX     21
+#define PT_BFG_BALL		21
+#define PT_MAX			22
 
 
 #define DECAL_BULLET		0
@@ -206,8 +207,6 @@ typedef struct {
 	int sFactor;
 	int dFactor;
 	float time;
-
-
 } particle_t;
 
 #define PARTICLE_BOUNCE					1
@@ -226,6 +225,8 @@ typedef struct {
 #define PARTICLE_CLAMP					8192
 #define PARTICLE_NOFADE					16384
 #define PARTICLE_DEFAULT				32768
+#define PARTICLE_ROTATE					65536
+#define PARTICLE_DISTORT				131072
 
 #define CLM_BOUNCE			1
 #define CLM_FRICTION		2

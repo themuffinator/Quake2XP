@@ -228,8 +228,9 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(ref_alpha, e->alpha);
 	qglUniform1f(ref_thickness, len * 0.5);
 
-	if (currententity->flags & RF_BFG_SPRITE)
+	if (currententity->flags & RF_BFG_SPRITE) {
 		qglUniform1f(ref_thickness2, 0.88);
+	}
 	else
 		qglUniform1f(ref_thickness2, len * 0.5);
 	

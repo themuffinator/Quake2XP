@@ -1953,6 +1953,50 @@ void CL_Explosion (vec3_t org) {
 
 }
 
+void CL_BfgBall(vec3_t org) {
+	cparticle_t *p;
+
+	if (!free_particles)
+		return;
+	p = free_particles;
+	free_particles = p->next;
+	p->next = active_particles;
+	active_particles = p;
+	p->orient = 0;
+	p->flags = PARTICLE_LIGHTING;
+	p->flags |= PARTICLE_ROTATE;
+	p->flags |= PARTICLE_DISTORT;
+	p->time = cl.time;
+	p->endTime = cl.time + 20000;
+	p->size = 30;
+	p->sizeVel = 30;
+	p->alpha = 1;
+	p->alphavel = INSTANT_PARTICLE;
+
+	p->lightradius = 200;
+	p->lcolor[0] = 0.0;
+	p->lcolor[1] = 1.0;
+	p->lcolor[2] = 0.0;
+
+
+	p->sFactor = GL_ONE;
+	p->dFactor = GL_ONE;
+
+	p->color[0] = 1;
+	p->color[1] = 1;
+	p->color[2] = 1;
+
+	p->colorVel[0] = 1;
+	p->colorVel[1] = 1;
+	p->colorVel[2] = 1;
+	p->type = PT_BFG_BALL;
+
+	VectorCopy(org, p->org);
+	VectorClear(p->vel);
+	VectorClear(p->accel);
+}
+
+
 /*
 ===============
 CL_TeleporterParticles
@@ -3579,13 +3623,13 @@ void CL_BfgParticles (entity_t * ent) {
 		free_particles = p->next;
 		p->next = active_particles;
 		active_particles = p;
-		p->orient = 0;
+		p->orient = frand () * 360;
 		p->sFactor = GL_SRC_ALPHA;
 		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->flags = PARTICLE_OVERBRIGHT;
-		p->type = PT_BLASTER;
-		p->size = 0.7;
-		p->sizeVel = 2;
+		p->type = PT_SMOKE;
+		p->size = 2.0;
+		p->sizeVel = 15.0;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		dist = sin (ltime + i) * 64;
@@ -3604,12 +3648,12 @@ void CL_BfgParticles (entity_t * ent) {
 
 		VectorSubtract (p->org, ent->origin, v);
 		dist = VectorLength (v) / 90.0;
-		p->color[0] = 0.24;
-		p->color[1] = 0.82;
-		p->color[2] = 0.10;
-		p->colorVel[0] = 0;
-		p->colorVel[1] = 0;
-		p->colorVel[2] = 0;
+		p->color[0] = 0.0 + crand() * 10;
+		p->color[1] = 1.0;
+		p->color[2] = 0.0;
+		p->colorVel[0] = 0.0;
+		p->colorVel[1] = 1.0;
+		p->colorVel[2] = 0.0;
 
 		p->alpha = 1.0 - dist;
 		p->alphavel = -100;

@@ -30,6 +30,7 @@ void CL_ParticleGibBlood2 (vec3_t org);
 #define	MAX_EXPLOSIONS	32
 explosion_t cl_explosions[MAX_EXPLOSIONS];
 
+void CL_BfgBall(vec3_t org);
 
 #define	MAX_BEAMS	32
 typedef struct {
