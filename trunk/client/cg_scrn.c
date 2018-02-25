@@ -397,10 +397,10 @@ void SCR_DrawLoading (void) {
 		strcpy (mapfile, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
 		mapfile[strlen (mapfile) - 4] = 0;	// cut off ".bsp"
 		
-		if (Draw_FindPic (va ("/levelshots/%s.jpg", mapfile)))
-			Draw_LoadingScreen (0, 0, viddef.width, viddef.height, va ("/levelshots/%s.jpg", mapfile));
+		if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
+			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
 		else
-			Draw_Fill (0, 0, viddef.width, viddef.height, 0.33, 0.33, 0.33, 1.0);
+			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/levelshots/noshot.jpg");
 
 		scaled = 8 * fontscale;
 		SCR_DrawLoadingBar (loadingPercent, scaled);

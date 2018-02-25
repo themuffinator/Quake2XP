@@ -1965,11 +1965,10 @@ void CL_BfgBall(vec3_t org) {
 	p->orient = 0;
 	p->flags = PARTICLE_LIGHTING;
 	p->flags |= PARTICLE_ROTATE;
-	p->flags |= PARTICLE_DISTORT;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->size = 30;
-	p->sizeVel = 30;
+	p->size = 35;
+	p->sizeVel = 35;
 	p->alpha = 1;
 	p->alphavel = INSTANT_PARTICLE;
 
@@ -3623,13 +3622,13 @@ void CL_BfgParticles (entity_t * ent) {
 		free_particles = p->next;
 		p->next = active_particles;
 		active_particles = p;
-		p->orient = frand () * 360;
+		p->orient = 0.0f;
 		p->sFactor = GL_SRC_ALPHA;
 		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 		p->flags = PARTICLE_OVERBRIGHT;
-		p->type = PT_SMOKE;
-		p->size = 2.0;
-		p->sizeVel = 15.0;
+		p->type = PT_DEFAULT;
+		p->size = 2.0f;
+		p->sizeVel = 16.0f;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		dist = sin (ltime + i) * 64;
@@ -3648,10 +3647,10 @@ void CL_BfgParticles (entity_t * ent) {
 
 		VectorSubtract (p->org, ent->origin, v);
 		dist = VectorLength (v) / 90.0;
-		p->color[0] = 0.0 + crand() * 10;
+		p->color[0] = 0.0 + crand() * 0.5;
 		p->color[1] = 1.0;
 		p->color[2] = 0.0;
-		p->colorVel[0] = 0.0;
+		p->colorVel[0] = 0.0 + crand() * 0.5;
 		p->colorVel[1] = 1.0;
 		p->colorVel[2] = 0.0;
 

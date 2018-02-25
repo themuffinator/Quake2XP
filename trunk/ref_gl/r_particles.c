@@ -179,7 +179,7 @@ void R_DrawParticles (void) {
 				break;
 
 			case PT_BFG_BALL:
-				texId = r_particletexture[PT_BFG_BALL]->texnum;//r_bfgBall[((int)(r_newrefdef.time * 7)) & (MAX_BFG_BALL_FRAME - 1)]->texnum;
+				texId = r_particletexture[PT_BFG_BALL]->texnum;
 				break;
 
 			default:

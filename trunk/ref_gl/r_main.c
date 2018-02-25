@@ -211,7 +211,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	float		*up, *right;
 	dsprite_t	*psprite;
 	int			vert=0;
-	int		len;
+	int			len, scaled = 1;
 	
 	psprite = (dsprite_t *) currentmodel->extraData;
 	e->frame %= psprite->numFrames;
@@ -227,28 +227,30 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 
 	qglUniform1f(ref_alpha, e->alpha);
 	qglUniform1f(ref_thickness, len * 0.5);
+	qglUniform1f(ref_thickness2, len * 0.5);
 
 	if (currententity->flags & RF_BFG_SPRITE) {
-		qglUniform1f(ref_thickness2, 0.88);
+		GL_MBind(GL_TEXTURE1, r_notexture->texnum);
+		scaled = 2;
 	}
-	else
-		qglUniform1f(ref_thickness2, len * 0.5);
+	else		
+		GL_MBind(GL_TEXTURE1, currentmodel->skins[e->frame]->texnum);
 	
-	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+0]);
-	VectorMA (wVertexArray[vert+0], -frame->origin_x, right, wVertexArray[vert+0]);
-	VA_SetElem2(wTexArray[vert+0], 0, 1);
+	VectorMA	(e->origin,				-frame->origin_y * scaled, up, wVertexArray[vert+0]);
+	VectorMA	(wVertexArray[vert+0],	-frame->origin_x * scaled, right, wVertexArray[vert+0]);
+	VA_SetElem2	(wTexArray[vert+0],		0, 1);
 	
-	VectorMA (e->origin, frame->height - frame->origin_y, up, wVertexArray[vert+1]);
-	VectorMA (wVertexArray[vert+1], -frame->origin_x, right, wVertexArray[vert+1]);
-    VA_SetElem2(wTexArray[vert+1], 0, 0);
+	VectorMA	(e->origin,				frame->height * scaled - frame->origin_y * scaled, up, wVertexArray[vert+1]);
+	VectorMA	(wVertexArray[vert+1], -frame->origin_x * scaled, right, wVertexArray[vert+1]);
+    VA_SetElem2	(wTexArray[vert+1],		0, 0);
 
-	VectorMA (e->origin, frame->height - frame->origin_y, up, wVertexArray[vert+2]);
-	VectorMA (wVertexArray[vert+2], frame->width - frame->origin_x, right, wVertexArray[vert+2]);
-    VA_SetElem2(wTexArray[vert+2], 1, 0);
+	VectorMA	(e->origin,				frame->height * scaled - frame->origin_y * scaled, up, wVertexArray[vert+2]);
+	VectorMA	(wVertexArray[vert+2],	frame->width * scaled - frame->origin_x * scaled, right, wVertexArray[vert+2]);
+    VA_SetElem2	(wTexArray[vert+2],		1, 0);
 
-	VectorMA (e->origin, -frame->origin_y, up, wVertexArray[vert+3]);
-	VectorMA (wVertexArray[vert+3],frame->width - frame->origin_x, right, wVertexArray[vert+3]);
-    VA_SetElem2(wTexArray[vert+3], 1, 1);
+	VectorMA (e->origin,				-frame->origin_y * scaled, up, wVertexArray[vert+3]);
+	VectorMA (wVertexArray[vert+3],		frame->width * scaled - frame->origin_x * scaled, right, wVertexArray[vert+3]);
+    VA_SetElem2(wTexArray[vert+3],		1, 1);
 
 	vert+=4;
 	
@@ -771,16 +773,12 @@ void R_RenderSprites(void)
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 
-	GL_MBind(GL_TEXTURE0, r_distort->texnum);
+	GL_MBind	(GL_TEXTURE0, r_particletexture[PT_BFG_REFR]->texnum);
 	GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
 	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
 
 	// setup program
 	GL_BindProgram(refractProgram, 0);
-
-	GL_MBind(GL_TEXTURE0, r_distort->texnum);
-	GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
-	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
 
 	qglUniform1f(ref_deformMul, 9.5);
 	qglUniformMatrix4fv(ref_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);

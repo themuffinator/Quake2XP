@@ -47,7 +47,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define PT_BLOOD_SPLAT  19
 #define PT_BLASTER_BOLT 20
 #define PT_BFG_BALL		21
-#define PT_MAX			22
+#define PT_BFG_REFR		22
+#define PT_MAX			23
 
 
 #define DECAL_BULLET		0

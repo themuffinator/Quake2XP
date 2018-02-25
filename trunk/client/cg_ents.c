@@ -1073,8 +1073,8 @@ void CL_AddPacketEntities (frame_t * frame) {
 				}
 				if (!Q_strcasecmp(ent.model->name, "sprites/s_bfg1.sp2"))
 					CL_BfgBall(cent->lerp_origin);
-				else
-					V_AddEntity(&ent);
+
+				V_AddEntity(&ent);
 			}
 
 		// color shells generate a seperate entity for the main model
