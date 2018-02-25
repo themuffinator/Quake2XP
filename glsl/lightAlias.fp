@@ -95,7 +95,7 @@ void main (void) {
 		roughness = 1.0 - diffuseMap.r;
     }
   
-  roughness = clamp(roughness, 0.01, 1.0);
+  roughness = clamp(roughness, 0.001, 1.0);
        
 	vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V);
 	vec3 brdfColor = brdf * u_LightColor.rgb;

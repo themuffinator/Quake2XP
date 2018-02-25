@@ -7,8 +7,6 @@ void main(void) {
 
 	vec4 screen = texture2DRect(u_map0, gl_FragCoord.xy); 
 	vec4 bloom = texture2DRect(u_map1, gl_FragCoord.xy * 0.25);
-
 	screen += bloom * u_bloomParams;
-
 	fragData = screen;
 }
