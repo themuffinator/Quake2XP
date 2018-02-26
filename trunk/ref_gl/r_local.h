@@ -901,7 +901,7 @@ worldDefs_t;
 
 worldDefs_t worldDefs;
 
-typedef enum glsl_attribute {
+typedef enum {
 	ATT_POSITION = 0,
 	ATT_NORMAL = 1,
 	ATT_TANGENT = 2,
@@ -912,6 +912,20 @@ typedef enum glsl_attribute {
 	ATT_TEX2 = 7,
 }
 glsl_attrib;
+
+typedef enum {
+	U_MODELVIEW = 0,
+	U_PROJ = 1,
+	U_MODEL_VIEW_PROJ = 2,
+	U_ORTO_PROJ = 3,
+	U_VIEW_ORG = 4,
+	U_LIGHT_ORG = 5,
+	U_DEPTH_PARAMS = 6,
+	U_SCREEN_SIZE = 7,
+	U_COLOR = 8,
+	U_COLOR_SCALE = 9,
+}
+glsl_uniform;
 
 uint null_mvp;
 uint fbo2screen_orthoMatrix;
