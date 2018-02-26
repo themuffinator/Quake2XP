@@ -1,4 +1,4 @@
-uniform sampler2D tex;     // sampler of rendered scene’s render target
+layout (binding = 0) uniform sampler2D tex;     // sampler of rendered scene’s render target
 
 in vec3 vUV;               // interpolated vertex output data
 in vec2 vUVDot;            // interpolated vertex output data

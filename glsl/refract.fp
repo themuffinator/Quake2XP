@@ -44,7 +44,11 @@ void main (void) {
 		diffuse *= A;
 		fragData = (vec4(deform, 1.0) + diffuse) * A;
 		fragData *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
-			return;
+	
+		fragData.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
+		fragData.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
+		fragData.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
+	return;
 	}
 
 	// world refracted surfaces
