@@ -33,8 +33,9 @@ vec3_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 vec4_t		vcache4[MAX_VERTS * 3];
 uint		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 msurface_t	*shadow_surfaces[MAX_MAP_FACES];
-char		triangleFacingLight[MAX_INDICES / 3];
-void		*dynamicVertex, *dynamicIndex;
+
+vec3_t		r_triangleNormals[MAX_INDICES];
+char		triangleFacingLight[MAX_INDICES];
 
 /*
 =====================
@@ -44,7 +45,6 @@ Alias Shadow Volumes
 
 void R_MarkShadowTriangles (dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg) {
 
-	vec3_t	r_triangleNormals[MAX_INDICES / 3];
 	vec3_t	temp, dir0, dir1;
 	int		i;
 	float	f;
