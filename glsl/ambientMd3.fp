@@ -11,6 +11,7 @@ layout (binding = 4) uniform sampler2D		u_ssaoMap;
 
 uniform float		u_envScale;
 uniform int			u_isEnvMap;
+uniform int			u_isTransluscent;
 uniform	int			u_isShell;
 uniform int			u_isRotation;
 uniform float		u_ColorModulate;
@@ -21,6 +22,13 @@ void main ()
 	if(u_isShell == 1){
 		vec4 r0 = texture(u_Diffuse,  v_shellCoord);
 		fragData = r0;
+		return;
+	}
+
+	
+	if(u_isTransluscent == 1){
+		vec4 r0 = texture(u_Diffuse,  v_shellCoord);
+		fragData = r0 * v_color;
 		return;
 	}
 
