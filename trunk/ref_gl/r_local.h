@@ -980,6 +980,7 @@ uint ambientMd3_texRotation;
 uint ambientMd3_colorModulate;
 uint ambientMd3_addShift;
 uint ambientMd3_isEnvMaping;
+uint ambientMd3_isTransluscent;
 uint ambientMd3_envScale;
 uint ambientMd3_isShell;
 uint ambientMd3_shellParams;

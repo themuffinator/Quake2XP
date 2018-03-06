@@ -96,7 +96,6 @@ void R_BuildTriangleNeighbors(neighbours_t *neighbors, index_t *indexes, int num
 	}
 }
 
-
 /*
 =================
 Mod_LoadAliasMD3Model
@@ -402,6 +401,12 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			outMesh->muzzle = qtrue;
 		else
 			outMesh->muzzle = qfalse;
+		
+		outMesh->flags = MESH_OPAQUE;
+
+		if (!Q_strcasecmp(outMesh->name, "TRANSLUS")) 
+			outMesh->flags = MESH_TRANSLUSCENT;
+
 }
 
 	mod->type = mod_alias_md3;
@@ -531,7 +536,7 @@ static vec4_t	colorArray		[MD3_MAX_TRIANGLES * 4];
 void R_DrawMD3Mesh(qboolean weapon) {
 
 	md3Model_t	*md3Hdr;
-	vec3_t		bbox[8];
+	vec3_t		bbox[8], temp, viewOrg;
 	int			i, j;
 	float		frontlerp, backlerp;
 	md3Frame_t	*frame, *oldframe;
@@ -604,6 +609,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	qglUniform1i(ambientMd3_isEnvMaping, 0);
 	qglUniform1i(ambientMd3_isShell, 0);
+	qglUniform1i(ambientMd3_isTransluscent, 0);
 	qglUniform1f(ambientMd3_colorModulate, 1.0);
 
 	float alphaShift = sin(ref_realtime * 5.666);
@@ -613,13 +619,19 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	qglUniform1f(ambientMd3_addShift, alphaShift);
 	qglUniform1f(ambientMd3_envScale, 0.1);
 	
+	VectorSubtract(r_origin, currententity->origin, temp);
+	Mat3_TransposeMultiplyVector(currententity->axis, temp, viewOrg);
 
-	qglUniform3fv(ambientMd3_viewOrg, 1, r_origin);
+	qglUniform3fv(ambientMd3_viewOrg, 1, viewOrg);
 	qglUniformMatrix4fv(ambientMd3_mvp, 1, qfalse, (const float *)currententity->orMatrix);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
+
+		if (!(mesh->flags & MESH_OPAQUE))
+			continue;
+
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 		
@@ -633,7 +645,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglUniform1f(ambientMd3_colorModulate, 2.0);
 			GL_BlendFunc(GL_ONE, GL_ONE);
 		}
-		
+
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!skin || skin == r_notexture)
 		{
@@ -688,6 +700,64 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
 	}
+
+	// Draw Transluscent meshes
+	
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_DepthMask(0);
+
+	qglUniform1i(ambientMd3_isEnvMaping, 1);
+	qglUniform1i(ambientMd3_isTransluscent, 1);
+
+	for (i = 0; i < md3Hdr->num_meshes; i++) {
+
+		md3Mesh_t *mesh = &md3Hdr->meshes[i];
+		v = mesh->vertexes + currententity->frame * mesh->num_verts;
+		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+
+		c_alias_polys += md3Hdr->meshes[i].num_tris;
+
+		if (mesh->muzzle) 
+			continue;
+
+		if (!(mesh->flags & MESH_TRANSLUSCENT))
+			continue;
+
+		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		if (!skin || skin == r_notexture)
+		{
+			if (currententity->skin)
+			{
+				skin = currententity->skin;	// custom player skin
+			}
+		}
+		if (!skin)
+			skin = r_notexture;
+
+
+		for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
+
+			Vector4Set(md3ColorCache[j], 1, 1, 1, 0.33f);
+			md3VertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
+			md3VertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
+			md3VertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
+		}
+
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
+		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+		qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, md3ColorCache);
+
+		GL_MBind(GL_TEXTURE0, skin->texnum);
+
+		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+
+	}
+
+	GL_Disable(GL_BLEND);
+	GL_DepthMask(1);
+	//================
+	
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -847,6 +917,9 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 		
 		if (mesh->muzzle)
+			continue;
+		
+		if (mesh->flags & MESH_TRANSLUSCENT)
 			continue;
 
 		c_alias_polys += md3Hdr->meshes[i].num_tris;

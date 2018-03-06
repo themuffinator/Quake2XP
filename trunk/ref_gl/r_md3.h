@@ -153,6 +153,7 @@ typedef struct
 	neighbours_t	*triangles;
 
 	int				num_skins;
+	int				flags;
 
 	image_t			*skinsAlbedo[MD3_MAX_SKINS];
 	image_t			*skinsNormal[MD3_MAX_SKINS];
@@ -178,3 +179,7 @@ typedef struct md3Model_s
 
 vec3_t	md3VertexCache[MD3_MAX_VERTS];
 vec4_t	md3ColorCache[MD3_MAX_VERTS * 4];
+
+#define MESH_OPAQUE 1
+#define MESH_TRANSLUSCENT 2
+#define MESH_NOSHADOW 4

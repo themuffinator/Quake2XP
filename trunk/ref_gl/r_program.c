@@ -692,6 +692,7 @@ void R_InitPrograms (void) {
 		ambientMd3_mvp				= qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
 		ambientMd3_texRotation		= qglGetUniformLocation(id, "u_rotateTexMatrix");
 		ambientMd3_viewOrg			= qglGetUniformLocation(id, "u_viewOrg");
+		ambientMd3_isTransluscent	= qglGetUniformLocation(id, "u_isTransluscent");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");

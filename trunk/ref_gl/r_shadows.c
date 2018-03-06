@@ -374,6 +374,9 @@ void R_DrawMD3ShadowVolume(){
 	{
 		mesh = &paliashdr->meshes[i];
 
+		if (mesh->flags & MESH_TRANSLUSCENT)
+			continue;
+
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 

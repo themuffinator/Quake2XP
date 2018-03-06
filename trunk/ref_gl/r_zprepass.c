@@ -363,6 +363,10 @@ void R_DrawDepthMD3Model(void) {
 	for (i = 0; i < md3Hdr->num_meshes; i++){
 		
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
+
+		if (mesh->flags & MESH_TRANSLUSCENT)
+			continue;
+
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
