@@ -45,9 +45,9 @@ void main (void) {
 		fragData = (vec4(deform, 1.0) + diffuse) * A;
 		fragData *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
 	
-		fragData.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
-		fragData.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
-		fragData.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
+		fragData.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.425).r;
+		fragData.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.5).g;
+		fragData.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.575).b;
 	return;
 	}
 
@@ -58,7 +58,7 @@ void main (void) {
 	fragData.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
 	fragData.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 	// blend glass texture
-	diffuse *= u_ambientScale;
+	diffuse.rgb *= u_ambientScale;
 	fragData.xyz += diffuse.xyz * u_alpha;
-  fragData.w = 1;
+  fragData.w = 1.0;
 }
