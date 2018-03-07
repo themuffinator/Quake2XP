@@ -129,8 +129,8 @@ int gl_filter_max = GL_LINEAR;
 void R_CaptureColorBuffer()
 {
 		
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
+//	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+//		return;
 
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -139,8 +139,8 @@ void R_CaptureColorBuffer()
 void R_CaptureDepthBuffer()
 {
 		
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
+//	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+//		return;
 	GL_MBindRect(GL_TEXTURE0, depthMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
