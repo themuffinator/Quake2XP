@@ -33,8 +33,6 @@ vec3_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 vec4_t		vcache4[MAX_VERTS * 3];
 uint		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 msurface_t	*shadow_surfaces[MAX_MAP_FACES];
-
-vec3_t		r_triangleNormals[MAX_INDICES];
 char		triangleFacingLight[MAX_INDICES];
 
 /*
@@ -45,7 +43,7 @@ Alias Shadow Volumes
 
 void R_MarkShadowTriangles (dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOrg) {
 
-	vec3_t	temp, dir0, dir1;
+	vec3_t	temp, dir0, dir1, r_triNormals;
 	int		i;
 	float	f;
 	float	*v0, *v1, *v2;
@@ -60,11 +58,11 @@ void R_MarkShadowTriangles (dmdl_t *paliashdr, dtriangle_t *tris, vec3_t lightOr
 		VectorSubtract (v0, v1, dir0);
 		VectorSubtract (v2, v1, dir1);
 
-		CrossProduct (dir0, dir1, r_triangleNormals[i]);
+		CrossProduct (dir0, dir1, r_triNormals);
 
 		// Find front facing triangles
 		VectorSubtract (lightOrg, v0, temp);
-		f = DotProduct (temp, r_triangleNormals[i]);
+		f = DotProduct (temp, r_triNormals);
 
 		triangleFacingLight[i] = f > 0;
 	}

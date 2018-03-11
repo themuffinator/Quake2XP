@@ -493,10 +493,10 @@ qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e)
 	}
 
 	// cull
-	for (i = 0; i<8; i++)
+	for (i = 0; i< 8; i++)
 	{
 		mask = 0;
-		for (j = 0; j<4; j++)
+		for (j = 0; j<6; j++)
 		{
 			float dp = DotProduct(frustum[j].normal, bbox[i]);
 			if ((dp - frustum[j].dist) < 0)
@@ -537,11 +537,12 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	md3Model_t	*md3Hdr;
 	vec3_t		bbox[8], temp, viewOrg;
-	int			i, j, numTransMeshes = 0;
-	float		frontlerp, backlerp;
+	int			i, j, k;
+	float		frontlerp, backlerp, lum;
 	md3Frame_t	*frame, *oldframe;
 	vec3_t		move, delta, vectors[3];
-	md3Vertex_t	*v, *ov;
+	md3Vertex_t	*v, *ov, *verts, *oldVerts;
+	vec3_t		luminance = { 0.2125, 0.7154, 0.0721 };
 	image_t     *skin, *light, *normal, *ao;
 
 	if (!r_drawEntities->integer)
@@ -629,10 +630,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
 
-		if (!(mesh->flags & MESH_OPAQUE)) {
-			numTransMeshes++;
+		if (!(mesh->flags & MESH_OPAQUE)) 
 			continue;
-		}
 
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
@@ -703,42 +702,19 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		}
 	}
 
-	qglDisableVertexAttribArray(ATT_COLOR);
+		// Draw Transluscent meshes
 
-
-	// Draw Transluscent meshes
-	if (numTransMeshes > 0) {
-
-		R_CaptureColorBuffer();
-
-		GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
-		GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
-
+		qglEnableVertexAttribArray(ATT_NORMAL);
+		GL_Enable(GL_BLEND);
+		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		GL_DepthMask(0);
+		qglUniform1i(ambientMd3_isEnvMaping, 1);
+		qglUniform1i(ambientMd3_isTransluscent, 1);
 
-		// setup program
-		GL_BindProgram(refractProgram, 0);
-
-		qglUniform1f(ref_deformMul, 1.0);
-		qglUniformMatrix4fv(ref_mvp, 1, qfalse, (const float *)currententity->orMatrix);
-		qglUniformMatrix4fv(ref_mvm, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-		qglUniformMatrix4fv(ref_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
-
-		qglUniform1f(ref_thickness, 150.0);
-		qglUniform2f(ref_viewport, vid.width, vid.height);
-		qglUniform2f(ref_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-		qglUniform1f(ref_ambientScale, max(r_lightmapScale->value, 0.33));
-		vec3_t luminance = { 0.2125, 0.7154, 0.0721 };
-		float lum = DotProduct(luminance, shadelight);
-		if (lum < 0.0666)
-			lum = 0.0666;
-		qglUniform1f(ref_alpha, lum);
-		qglUniform1i(ref_alphaMask, 0);
+		lum = DotProduct(luminance, shadelight);
+		qglUniform1f(ambientMd3_envScale, lum);
 
 		for (i = 0; i < md3Hdr->num_meshes; i++) {
-
-		//	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		//		continue;
 
 			md3Mesh_t *mesh = &md3Hdr->meshes[i];
 			v = mesh->vertexes + currententity->frame * mesh->num_verts;
@@ -768,27 +744,46 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				normal = r_defBump;
 
 			for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
+				if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+					Vector4Set(md3ColorCache[j], 0.33, 0.33, 0.33, 1.0);
+				else
+					Vector4Set(md3ColorCache[j], shadelight[0], shadelight[1], shadelight[2], 0.5);
 				md3VertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
 				md3VertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
 				md3VertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 			}
 
+			verts = mesh->vertexes + currententity->frame * mesh->num_verts;
+			oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
+
+			for (k = 0; k< mesh->num_verts; k++) {
+
+				normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
+				normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
+				normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
+			}
+
 			qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
 			qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
+			qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, md3ColorCache);
+			qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
+						
+			GL_MBind(GL_TEXTURE0, skin->texnum);
+			GL_MBind(GL_TEXTURE1, r_notexture->texnum);
+			GL_MBind(GL_TEXTURE2, r_envTex->texnum);
+			GL_MBind(GL_TEXTURE3, normal->texnum);
 
-			GL_MBind(GL_TEXTURE0, normal->texnum);
-			GL_MBind(GL_TEXTURE1, skin->texnum);
 
 			qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
-			numTransMeshes--;
 		}
-		GL_DepthMask(1);
-	}
-	//================
-	
+
+	GL_DepthMask(1);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_COLOR);
+	qglDisableVertexAttribArray(ATT_NORMAL);
+
 	GL_BindNullProgram();
 
 	if (currententity->flags & RF_DEPTHHACK)
@@ -946,8 +941,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		if (mesh->muzzle)
 			continue;
 		
-		if (mesh->flags & MESH_TRANSLUSCENT)
-			continue;
+	//	if (mesh->flags & MESH_TRANSLUSCENT)
+	//		continue;
 
 		c_alias_polys += md3Hdr->meshes[i].num_tris;
 

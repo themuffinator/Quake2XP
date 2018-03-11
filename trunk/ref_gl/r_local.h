@@ -261,7 +261,6 @@ cvar_t	*r_shadows;
 cvar_t	*r_playerShadow;
 
 cvar_t	*r_multiSamples;
-cvar_t	*r_nvSamplesCoverange;
 cvar_t	*r_fxaa;
 cvar_t	*deathmatch;
 
@@ -299,7 +298,6 @@ cvar_t	*hunk_md2;
 cvar_t	*hunk_md3;
 cvar_t	*hunk_sprite;
 
-//cvar_t	*r_vbo;
 cvar_t	*r_maxTextureSize;
 
 cvar_t	*r_reliefMapping;
@@ -433,7 +431,6 @@ void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare ();
 void R_DrawLightBounds(void);
-qboolean R_EntityInLightBounds();
 
 void R_ShutDownVertexBuffers();
 

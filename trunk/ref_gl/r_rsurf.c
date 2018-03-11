@@ -156,10 +156,10 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	int nv = fa->polys->numVerts;
 	uint numIndices = 0, numVertixes = 0;
 
-	if (fa->texInfo->flags & SURF_TRANS33)
-		alpha = 0.33f;
-	else
-		alpha = 0.66f;
+//	if (fa->texInfo->flags & SURF_TRANS33)
+//		alpha = 0.33f;
+//	else
+		alpha = 1.0f;
 
 	qglUniform1f(ref_alpha, alpha);
 
