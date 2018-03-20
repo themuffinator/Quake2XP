@@ -21,6 +21,8 @@ static glslProgram_t	r_nullProgram;
 
 static const char *glslExt =
 "#version 450 core\n"
+"precision mediump float;\n"
+"precision mediump int;\n"
 "out vec4 fragData;\n";	// out fragColor
 
 static const char *mathDefs =
