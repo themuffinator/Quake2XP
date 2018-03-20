@@ -1821,8 +1821,9 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 		gl_state.depthBoundsTest = qfalse;
 	}
+
 	qglEnable(GL_FRAMEBUFFER_SRGB);
-	Com_Printf("...using ARB_framebuffer_sRGB\n");
+	Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
 
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");

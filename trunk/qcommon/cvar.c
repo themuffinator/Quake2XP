@@ -291,6 +291,13 @@ void Cvar_SetValue (char *var_name, float value) {
 	Cvar_Set (var_name, val);
 }
 
+void Cvar_SetInteger(char *var_name, int value) {
+	char val[32];
+
+	Com_sprintf(val, sizeof(val), "%i", value);
+	Cvar_Set(var_name, val);
+}
+
 /*
 ============
 Cvar_ForceSetValue

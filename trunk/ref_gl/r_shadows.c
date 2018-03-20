@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int			num_shadow_surfaces, shadowTimeStamp;
 vec4_t		s_lerped[MAX_VERTS];
 vec3_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
-vec4_t		vcache4[MAX_VERTS * 3];
+vec4_t		vcache4[MAX_INDICES];
 uint		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 msurface_t	*shadow_surfaces[MAX_MAP_FACES];
 char		triangleFacingLight[MAX_INDICES];
@@ -256,9 +256,6 @@ qboolean R_EntityCastShadow() {
 void GL_LerpShadowVerts (int numVerts, dtrivertx_t *v, dtrivertx_t *ov, float *lerp, float move[3], float frontv[3], float backv[3]) {
 	int i;
 
-	if (currentmodel->numFrames < 1) //lerp shadow verts only for animated models
-		return;
-
 	for (i = 0; i < numVerts; i++, v++, ov++, lerp += 4) {
 		lerp[0] = move[0] + ov->v[0] * backv[0] + v->v[0] * frontv[0];
 		lerp[1] = move[1] + ov->v[1] * backv[1] + v->v[1] * frontv[1];
@@ -323,7 +320,7 @@ void R_DrawMD2ShadowVolume () {
 	BuildShadowVolumeTriangles (paliashdr, light);
 }
 
-vec3_t	extrudedVerts[MD3_MAX_VERTS];
+vec4_t	extrudedVerts[MD3_MAX_VERTS];
 float	md3ShadowVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
 
 void R_DrawMD3ShadowVolume(){
@@ -349,6 +346,9 @@ void R_DrawMD3ShadowVolume(){
 
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector(currententity->axis, temp, lightOrg);
+
+	qglUniformMatrix4fv(sv_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniform3fv(sv_lightOrg, 1, lightOrg);
 
 	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
@@ -384,12 +384,7 @@ void R_DrawMD3ShadowVolume(){
 			md3VertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
 			md3VertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 
-			/// calculate extruded verts
-			VectorSubtract(md3VertexCache[j], lightOrg, v1);
-			float sca = scale / VectorLength(v1);
-			extrudedVerts[j][0] = v1[0] * sca + md3VertexCache[j][0];
-			extrudedVerts[j][1] = v1[1] * sca + md3VertexCache[j][1];
-			extrudedVerts[j][2] = v1[2] * sca + md3VertexCache[j][2];
+			VectorCopy(md3VertexCache[j], extrudedVerts[j]);
 		}
 
 		idx = mesh->indexes;
@@ -431,29 +426,36 @@ void R_DrawMD3ShadowVolume(){
 						index0 = idx + k;
 						index1 = idx + ((k + 1) % 3);
 
+						//  transforms points with w = 1 normally and sends points with w = 0 to infinity away from the light.
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
+						md3ShadowVerts[numVerts++] = 1.0;
 
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][0];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][1];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][2];
+						md3ShadowVerts[numVerts++] = 0.0;
 
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][0];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][1];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][2];
+						md3ShadowVerts[numVerts++] = 0.0;
 
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][0];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][1];
 						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][2];
+						md3ShadowVerts[numVerts++] = 0.0;
 
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][0];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][1];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][2];
+						md3ShadowVerts[numVerts++] = 1.0;
 
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
 						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
+						md3ShadowVerts[numVerts++] = 1.0;
 
 						numTris += 6;
 					}
@@ -475,6 +477,7 @@ void R_DrawMD3ShadowVolume(){
 					md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
 					md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
 					md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
+					md3ShadowVerts[numVerts++] = 1.0;
 				}
 
 				for (k = 2; k >= 0; k--)
@@ -483,6 +486,7 @@ void R_DrawMD3ShadowVolume(){
 					md3ShadowVerts[numVerts++] = extrudedVerts[*index0][0];
 					md3ShadowVerts[numVerts++] = extrudedVerts[*index0][1];
 					md3ShadowVerts[numVerts++] = extrudedVerts[*index0][2];
+					md3ShadowVerts[numVerts++] = 0.0;
 				}
 
 				numTris += 6;
@@ -569,9 +573,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	todo - use turboshadow
 	=================================*/
 
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3ShadowVerts);
-	GL_BindProgram(nullProgram, 0);
-
+	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, md3ShadowVerts); // new vert array
 	GL_FrontFace(GL_CW); // flip cull face order vs stencil re-setup
 
 	if (player) {

@@ -622,6 +622,7 @@ typedef struct {
 	int			displayrefresh;
 	int			monitorWidth, monitorHeight;
 
+	qboolean	wgl_no_error;
 	qboolean	wgl_swap_control_tear;
 	qboolean	depthBoundsTest;
 

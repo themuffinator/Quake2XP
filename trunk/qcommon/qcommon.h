@@ -494,6 +494,8 @@ cvar_t *Cvar_FullSet (char *var_name, char *value, int flags);
 void Cvar_SetValue (char *var_name, float value);
 // expands value to a string and calls Cvar_Set
 
+void Cvar_SetInteger(char *var_name, int value);
+
 void Cvar_ForceSetValue (char *var_name, float value);
 // will set the variable even if NOSET or LATCH
 

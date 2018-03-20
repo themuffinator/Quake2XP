@@ -1511,222 +1511,76 @@ static qboolean GLW_InitFakeOpenGL(void) {
 	return qtrue;
 }
 
-/*
-==================
-GLW_DescribePixelFormat
+static qboolean GLW_ChoosePixelFormat() {
+	PIXELFORMATDESCRIPTOR	PFD;
+	int pixelFormat, samples;
+	uint numFormats;
+	
+	qglGetIntegerv(GL_MAX_SAMPLES, &gl_config.maxSamples);
 
-==================
-*/
-static void GLW_DescribePixelFormat(int pixelFormat, glwPixelFormatDescriptor_t *pfd) {
-	int	attribs[11], values[11];
+	if (r_multiSamples->integer > gl_config.maxSamples)
+		Cvar_SetInteger(r_multiSamples, gl_config.maxSamples);
 
-	attribs[0]	= WGL_ACCELERATION_ARB;
-	attribs[1]	= WGL_DRAW_TO_WINDOW_ARB;
-	attribs[2]	= WGL_SUPPORT_OPENGL_ARB;
-	attribs[3]	= WGL_DOUBLE_BUFFER_ARB;
-	attribs[4]	= WGL_PIXEL_TYPE_ARB;
-	attribs[5]	= WGL_COLOR_BITS_ARB;
-	attribs[6]	= WGL_ALPHA_BITS_ARB;
-	attribs[7]	= WGL_DEPTH_BITS_ARB;
-	attribs[8]	= WGL_STENCIL_BITS_ARB;
-	attribs[9]	= WGL_SAMPLE_BUFFERS_ARB;
-	attribs[10] = WGL_SAMPLES_ARB;
+	if (r_multiSamples->integer == 1)
+		samples = 0;
+	else
+		samples = r_multiSamples->integer;
 
-	if (!qwglGetPixelFormatAttribivARB(glw_state.hDC, pixelFormat, 0, 11, attribs, values)) {
-		// if failed, then multisampling is not supported
-		qwglGetPixelFormatAttribivARB(glw_state.hDC, pixelFormat, 0, 9, attribs, values);
+	const int pAttribs[] = {
+		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+		WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+		WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+		WGL_COLOR_BITS_ARB, 32,
+		WGL_ALPHA_BITS_ARB, 8,
+		WGL_DEPTH_BITS_ARB, 24,
+		WGL_STENCIL_BITS_ARB, 8,
+		WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+		WGL_SAMPLES_ARB, samples,
+		0
+	};
 
-		values[9] = GL_FALSE;
-		values[10] = 0;
+	Com_Printf(S_COLOR_YELLOW"...Attempting PIXELFORMAT:\n\n");
+
+	if (!qwglChoosePixelFormatARB(glw_state.hDC, pAttribs, NULL, 1, &pixelFormat, &numFormats)) {
+		Com_Printf(S_COLOR_RED "...qwglChoosePixelFormatARB() failed.");
+		ReleaseDC(glw_state.hWnd, glw_state.hDC);
+		glw_state.hDC = NULL;
+
+		return qfalse;
 	}
 
-	pfd->accelerated	= (values[0] == WGL_FULL_ACCELERATION_ARB);
-	pfd->drawToWindow	= (values[1] == GL_TRUE);
-	pfd->supportOpenGL	= (values[2] == GL_TRUE);
-	pfd->doubleBuffer	= (values[3] == GL_TRUE);
-	pfd->rgba			= (values[4] == WGL_TYPE_RGBA_ARB);
-	pfd->colorBits		= values[5];
-	pfd->alphaBits		= values[6];
-	pfd->depthBits		= values[7];
-	pfd->stencilBits	= values[8];
-	pfd->samples		= (values[9] == GL_TRUE) ? values[10] : 0;
-}
-
-/*
-==================
-GLW_ChoosePixelFormat
-
-==================
-*/
-static int GLW_ChoosePixelFormat(int colorBits, int alphaBits, int depthBits, int stencilBits, int samples) {
-	glwPixelFormatDescriptor_t	current, selected;
-	int							i, numPixelFormats, pixelFormat = 0;
-
-	// initialize the fake OpenGL stuff so that we can use
-	// the extended pixel format functionality
-	if (!GLW_InitFakeOpenGL()) {
-		Com_Printf(S_COLOR_RED "...failed to initialize fake OpenGL context\n");
-		return 0;
-	}
-
-	// check the necessary extensions
-	GLW_InitExtensions();
-	
-	Com_Printf(S_COLOR_YELLOW"\n...Attempting PIXELFORMAT:\n\n");
-	
-	// count pixel formats
-	numPixelFormats = WGL_NUMBER_PIXEL_FORMATS_ARB;
+	int numPixelFormats = WGL_NUMBER_PIXEL_FORMATS_ARB;
 	qwglGetPixelFormatAttribivARB(glw_state.hDC, 0, 0, 1, &numPixelFormats, &numPixelFormats);
 
-	if (numPixelFormats < 1) {
-		Com_Printf(S_COLOR_RED "...no pixel formats found\n");
-		GLW_ShutdownFakeOpenGL();
-		return 0;
-	}
-
 	Com_Printf("..." S_COLOR_GREEN "%i " S_COLOR_WHITE "pixel formats found\n", numPixelFormats);
-	
-	// check if multisampling is desired
-	if (samples > 1) 
-		Com_Printf("...attempting to use multisampling\n");
-	else
-		samples = 0;
-
-	// run through all the pixel formats, looking for the best match
-	for (i = 1; i <= numPixelFormats; i++) {
-		// describe the current pixel format
-		GLW_DescribePixelFormat(i, &current);
-
-		// check acceleration
-		if (!current.accelerated) {
-			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, software emulation\n", i);
-			continue;
-		}
-
-		// check samples
-		if (current.samples && !samples) {
-			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, multisample\n", i);
-			continue;
-		}
-
-		// check flags
-		if (!current.drawToWindow || !current.supportOpenGL || !current.doubleBuffer) {
-			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, improper flags\n", i);
-			continue;
-		}
-
-		// check pixel type
-		if (!current.rgba) {
-			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, not RGBA\n", i);
-			continue;
-		}
-
-		// check color bits
-		if (current.colorBits < colorBits) {
-			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, insufficient color bits (" S_COLOR_RED "%i " S_COLOR_WHITE "< " S_COLOR_RED "%i" S_COLOR_WHITE ")\n", i, current.colorBits, colorBits);
-			continue;
-		}
-
-		// check alpha bits
-		if (current.alphaBits < alphaBits) {
-			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, insufficient alpha bits (" S_COLOR_RED "%i " S_COLOR_WHITE "< " S_COLOR_RED "%i" S_COLOR_WHITE ")\n", i, current.alphaBits, alphaBits);
-			continue;
-		}
-
-		// check depth bits
-		if (current.depthBits < depthBits) {
-			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, insufficient depth bits (" S_COLOR_RED "%i " S_COLOR_WHITE "< " S_COLOR_RED "%i" S_COLOR_WHITE ")\n", i, current.depthBits, depthBits);
-			continue;
-		}
-
-		// check stencil bits
-		if (current.stencilBits < stencilBits) {
-			Com_DPrintf("...PIXELFORMAT " S_COLOR_RED "%i " S_COLOR_WHITE "rejected, insufficient stencil bits (" S_COLOR_RED "%i " S_COLOR_WHITE "< " S_COLOR_RED "%i" S_COLOR_WHITE ")\n", i, current.stencilBits, stencilBits);
-			continue;
-		}
-
-		// if we don't have a selected pixel format yet, then use it
-		if (!pixelFormat) {
-			selected = current;
-			pixelFormat = i;
-			continue;
-		}
-
-		// if current pixel format is better than selected pixel format, then use it
-		if (selected.samples != samples) {
-			if (current.samples == samples || current.samples > selected.samples) {
-				selected = current;
-				pixelFormat = i;
-				continue;
-			}
-		}
-
-		if (selected.colorBits != colorBits) {
-			if (current.colorBits == colorBits || current.colorBits > selected.colorBits) {
-				selected = current;
-				pixelFormat = i;
-				continue;
-			}
-		}
-
-		if (selected.alphaBits != alphaBits) {
-			if (current.alphaBits == alphaBits || current.alphaBits > selected.alphaBits) {
-				selected = current;
-				pixelFormat = i;
-				continue;
-			}
-		}
-
-		if (selected.depthBits != depthBits) {
-			if (current.depthBits == depthBits || current.depthBits > selected.depthBits) {
-				selected = current;
-				pixelFormat = i;
-				continue;
-			}
-		}
-
-		if (selected.stencilBits != stencilBits) {
-			if (current.stencilBits == stencilBits || current.stencilBits > selected.stencilBits) {
-				selected = current;
-				pixelFormat = i;
-				continue;
-			}
-		}
-	}
-
-	// shutdown the fake OpenGL stuff since we no longer need it
-	GLW_ShutdownFakeOpenGL();
-
-	// make sure we have a valid pixel format
-	if (!pixelFormat) {
-		Com_Printf(S_COLOR_RED "...no hardware acceleration found\n");
-		return 0;
-	}
-
-	Com_Printf("...hardware acceleration found\n");
-
-	// report if multisampling is desired but unavailable
-	if (samples && !selected.samples)
-		Com_Printf(S_COLOR_MAGENTA"...failed to find a PIXELFORMAT with multisampling\n");
-
-	gl_config.colorBits		= selected.colorBits;
-	gl_config.alphaBits		= selected.alphaBits;
-	gl_config.depthBits		= selected.depthBits;
-	gl_config.stencilBits	= selected.stencilBits;
-	gl_config.samples		= selected.samples;
-	
 	Com_Printf("...Selected " S_COLOR_GREEN "%i " S_COLOR_WHITE "PIXELFORMAT\n", pixelFormat);
+	
+	Com_Printf("...setting pixel format: ");
+	DescribePixelFormat(glw_state.hDC, pixelFormat, sizeof(PFD), &PFD);
+	SetPixelFormat(glw_state.hDC, pixelFormat, &PFD);
 
-	return pixelFormat;
+	Com_Printf(S_COLOR_GREEN "ok\n");
+
+	gl_config.colorBits = 32;
+	gl_config.alphaBits = 8;
+	gl_config.depthBits = 24;
+	gl_config.stencilBits = 8;
+	gl_config.samples = samples;
+
+	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA [" S_COLOR_GREEN "%i" S_COLOR_WHITE " max] [" S_COLOR_GREEN "%i"S_COLOR_WHITE" selected]\n\n",
+		gl_config.colorBits, gl_config.depthBits, gl_config.alphaBits, gl_config.stencilBits, gl_config.maxSamples, gl_config.samples);
+
+	return qtrue;
 }
 
-qboolean GLW_InitDriver(void) {
-	PIXELFORMATDESCRIPTOR	PFD;
+static qboolean GLW_CreateContext() {
 	
-	int	pixelFormat;
-	int	contextFlag;
+	int			contextFlag;
+	const char	*profileName[] = { "core", "compatibility" };
 
-	if(r_glMajorVersion->integer >=4 && r_glMinorVersion->integer >=6)
+	if (r_glMajorVersion->integer >= 4 && r_glMinorVersion->integer >= 6)
 		contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : GL_CONTEXT_FLAG_NO_ERROR_BIT;
 	else
 		contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
@@ -1740,58 +1594,11 @@ qboolean GLW_InitDriver(void) {
 		WGL_CONTEXT_PROFILE_MASK_ARB,	contextMask,
 		0
 	};
-	const char *profileName[] = { "core", "compatibility" };
-	
-	// get a DC for the current window
-	Com_Printf("...getting DC: ");
-
-	glw_state.hDC = GetDC(glw_state.hWnd);
-	if (!glw_state.hDC) {
-		Com_Printf(S_COLOR_RED "failed\n");
-		return qfalse;
-	}
-
-	Com_Printf(S_COLOR_GREEN"ok\n");
-	
-	int samples;
-	if ((int)r_multiSamples->integer == 1)
-		samples = 0;
-	else
-		samples = (int)r_multiSamples->integer;
-
-	// choose a pixel format
-	pixelFormat = GLW_ChoosePixelFormat(32, 8, 24, 8, samples);
-	
-	if (!pixelFormat) {
-		Com_Printf(S_COLOR_RED "...failed to find an appropriate PIXELFORMAT\n");
-
-		ReleaseDC(glw_state.hWnd, glw_state.hDC);
-		glw_state.hDC = NULL;
-
-		return qfalse;
-	}
-
-	// describe the pixel format
-	Com_Printf("...setting pixel format: ");
-
-	qwglDescribePixelFormat(glw_state.hDC, pixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &PFD);
-
-	// set the pixel format
-	if (!qwglSetPixelFormat(glw_state.hDC, pixelFormat, &PFD)) {
-		Com_Printf(S_COLOR_RED "failed\n");
-
-		ReleaseDC(glw_state.hWnd, glw_state.hDC);
-		glw_state.hDC = NULL;
-
-		return qfalse;
-	}
-
-	Com_Printf("ok\n");
 
 	// create the GL context
 	Com_Printf("...creating openGL " S_COLOR_GREEN "%i.%i" S_COLOR_YELLOW "  %s" S_COLOR_WHITE " profile context: ", r_glMajorVersion->integer, r_glMinorVersion->integer, profileName[contextMask == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
 
-	glw_state.hGLRC = qwglCreateContextAttribsARB(glw_state.hDC, NULL, attribs);
+	glw_state.hGLRC = qwglCreateContextAttribsARB(glw_state.hDC, 0, attribs);
 
 	if (!glw_state.hGLRC) {
 		if (GetLastError() == ERROR_INVALID_VERSION_ARB)
@@ -1804,30 +1611,42 @@ qboolean GLW_InitDriver(void) {
 
 		return qfalse;
 	}
-
 	Com_Printf(S_COLOR_GREEN "ok\n");
+	
+	GLW_ShutdownFakeOpenGL();
+	return qtrue;
+}
+
+qboolean GLW_InitDriver(void) {
+
+	if (!GLW_InitFakeOpenGL()) {
+		Com_Printf(S_COLOR_RED "...failed to initialize fake OpenGL context\n");
+		return qfalse;
+	}
+	// get a DC for the current window
+	Com_Printf("...getting DC: ");
+
+	glw_state.hDC = GetDC(glw_state.hWnd);
+	if (!glw_state.hDC) {
+		Com_Printf(S_COLOR_RED "failed\n");
+		return qfalse;
+	}
+
+	Com_Printf(S_COLOR_GREEN"ok\n");
+
+	GLW_InitExtensions();
+	GLW_ChoosePixelFormat();
+	GLW_CreateContext();
 
 	// make it current
 	Com_Printf("...making context current: ");
 
 	if (!qwglMakeCurrent(glw_state.hDC, glw_state.hGLRC)) {
-		Com_Printf(S_COLOR_RED "failed\n");
-
-		qwglDeleteContext(glw_state.hGLRC);
-		glw_state.hGLRC = NULL;
-
-		ReleaseDC(glw_state.hWnd, glw_state.hDC);
-		glw_state.hDC = NULL;
-
+		Com_Printf(S_COLOR_RED "...wglMakeCurrent() failed.");
 		return qfalse;
 	}
 
 	Com_Printf(S_COLOR_GREEN "ok\n");
-
-	qglGetIntegerv(GL_MAX_SAMPLES, &gl_config.maxSamples);
-
-	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA [" S_COLOR_GREEN "%i" S_COLOR_WHITE " max] [" S_COLOR_GREEN "%i"S_COLOR_WHITE" selected]\n",
-				gl_config.colorBits, gl_config.depthBits, gl_config.alphaBits, gl_config.stencilBits, gl_config.maxSamples, gl_config.samples);
 
 	gl_config.glMajorVersion = r_glMajorVersion->integer;
 	gl_config.glMinorVersion = r_glMinorVersion->integer;
