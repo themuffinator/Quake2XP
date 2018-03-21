@@ -1832,6 +1832,7 @@ int R_Init(void *hinstance, void *hWnd)
 	GL_InitImages();
 	Mod_Init();
 	R_InitEngineTextures();
+	R_GenEnvCubeMap();
 	R_LoadFont();
 
 	flareEdit = (qboolean)qfalse;

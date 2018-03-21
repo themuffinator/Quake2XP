@@ -1402,6 +1402,32 @@ int Draw_GetPalette(void)
 }
 
 
+uint	envCube = 0;
+void R_GenEnvCubeMap() {
+	int		i, w, h;
+	char	pathname[MAX_QPATH];
+	char	*surf[6] = { "rt", "bk", "lf", "ft", "up", "dn" };
+	byte	*pic;
+
+	qglGenTextures(1, &envCube);
+	qglBindTexture(GL_TEXTURE_CUBE_MAP, envCube);
+
+	for (i = 0; i < 6; i++) {
+		Com_sprintf(pathname, sizeof(pathname), "gfx/probes/p1_%s.tga", surf[i]);
+
+		IL_LoadImage(pathname, &pic, &w, &h, IL_TGA);
+		if (pic) {
+			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic);
+			free(pic);
+		}
+	}
+
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+}
 /*
 ===============
 GL_InitImages
@@ -1461,4 +1487,6 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures(1, &fovCorrTex);
 	if(skyCube)
 		qglDeleteTextures(1, &skyCube);
+	if(envCube)
+		qglDeleteTextures(1, &envCube);
 }
