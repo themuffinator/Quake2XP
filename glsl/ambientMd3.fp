@@ -27,8 +27,13 @@ void main ()
 
 	
 	if(u_isTransluscent == 1){
-		vec4 r0 = texture(u_Diffuse,  v_shellCoord);
-		fragData = r0 * v_color;
+		vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;
+		vec4 env = texture(u_env,  v_shellCoord);
+		vec3 normalMap = normalize(texture(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
+		env *= u_envScale;
+		diffuse *= (normalMap.z * 0.5 + 0.5);
+		diffuse += env;
+		fragData = diffuse;
 		return;
 	}
 
@@ -45,5 +50,5 @@ void main ()
 	if (u_isEnvMap == 1)
 		fragData.xyz += texture(u_env, v_envCoord).xyz * u_envScale;
 
-	fragData.w = diffuse.w;
+	fragData.w = 1.0;
 }

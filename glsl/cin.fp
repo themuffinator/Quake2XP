@@ -27,7 +27,7 @@ vec3 median(in sampler2D tex) {
 
   vec3 v[9];
 
-  vec2 screenOffs = vec2(ONE_DIV_1024);
+  vec2 screenOffs = vec2(ONE_DIV_768);
    
   // Add the pixels which make up our window to the pixel array.
   for(int dX = -1; dX <= 1; ++dX) {
@@ -80,13 +80,20 @@ vec4 TechniColor(in vec4 color)
 	return mix(color, result, 0.44);
 }
 
-#define BRIGHTNESS 1.0
-#define SINE_COMP vec2(0.0005, 0.35)
+#define RGB_MASK_SIZE 3.0
 
 void main ()
 {
-	vec4 cin = vec4(median(u_cinMap), 1.0) * 1.5;
+	vec4 cin = vec4(median(u_cinMap), 1.0) * 2.0;
 	cin = clamp(cin, 0.05, 1.0);
 	fragData = TechniColor(cin);
-	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
+
+	// create rgb CRT mask
+	float pix = gl_FragCoord.y * 1920.0 + gl_FragCoord.x;
+    pix = floor(pix);
+	vec4 rgbMask = vec4(mod(pix, RGB_MASK_SIZE), mod((pix + 1.0), RGB_MASK_SIZE), mod((pix + 2.0), RGB_MASK_SIZE), 1.0);
+    rgbMask = rgbMask / (RGB_MASK_SIZE - 1.0) + 0.5;
+	fragData *= rgbMask * 1.2;
+
+//	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
 }

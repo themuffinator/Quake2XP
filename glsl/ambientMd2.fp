@@ -42,5 +42,5 @@ void main ()
 		fragData.xyz += texture(u_env, v_envCoord).xyz * glow.a * u_envScale;
 
 	fragData.xyz *= u_ColorModulate;
-	fragData.w = diffuse.w;
+	fragData.w = 1.0;
 }
