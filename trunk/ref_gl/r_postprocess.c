@@ -558,7 +558,7 @@ void R_FixFov(void) {
 
 	vec4_t params;
 
-	if (!r_fixFovStrength->integer)
+	if (!r_fixFovStrength->value)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)

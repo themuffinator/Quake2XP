@@ -260,7 +260,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, cons
 	int				numLinked = 0;
 	int				id, vertexId, fragmentId, tessControlId, tessEvId, geomId;
 	int				status;
-	int				i, j;
+	int				i;
 
 	if ((vertexSource && strlen (vertexSource) < 17) || (fragmentSource && strlen (fragmentSource) < 17) || (GeometrySource && strlen(GeometrySource) < 17) ||
 		(tessControlSource && strlen(tessControlSource) < 17) || (tessEvSource && strlen(tessEvSource) < 17))
@@ -285,9 +285,8 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, cons
 	memset (program, 0, sizeof(*program));
 	Q_strncpyz (program->name, name, sizeof(program->name));
 
-	R_ParseDefs (program, defs);
 
-	program->numId = BIT (program->numDefs);
+	program->numId = 1;
 
 	for (i = 0; i < program->numId; i++) {
 
@@ -298,27 +297,6 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, cons
 		geomId = 0;
 		tessControlId = 0;
 		tessEvId = 0;
-
-		/// Berserker's fix start
-		if (program->numDefs) {
-			int len = 0;
-			// посчитаем требуемый объём памяти по дифайны
-			for (j = 0; j < program->numDefs; j++)
-			if (i & program->defBits[j])
-				len += 8 + strlen (program->defStrings[j]) + 1; // 8 = strlen("#define "), 1 = strlen("\n")
-
-			len++; // for trailing NULL
-			defines = (char*)calloc (len, 1); // calloc = malloc + memclear  ;)
-			for (j = 0; j < program->numDefs; j++) {
-				if (i & program->defBits[j]) {
-					Q_strcat (defines, "#define ", len);
-					Q_strcat (defines, program->defStrings[j], len);
-					Q_strcat (defines, "\n", len);
-				}
-			}
-			strings[numStrings++] = defines;
-		}
-		/// Berserker's fix end
 
 		strings[numStrings++] = glslExt;
 		strings[numStrings++] = mathDefs;
@@ -468,12 +446,6 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, cons
 			Com_Printf ("program '%s': refusing to perform software emulation\n", program->name);
 			continue;
 		}
-
-		// TODO: glValidateProgram?
-		/// Berserker's fix start
-		if (defines)
-			free (defines);
-		/// Berserker's fix end
 
 		program->id[i] = id;
 		numLinked++;
