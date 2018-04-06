@@ -1247,7 +1247,7 @@ void UpdateLightEditor (void) {
 	}
 
 	// setup program
-	GL_BindProgram (genericProgram, 0);
+	GL_BindProgram (genericProgram);
 	qglUniform1i (gen_attribColors, 0);
 	qglUniform1i (gen_attribConsole, 0);
 	qglUniform1i (gen_sky, 0);
@@ -1457,7 +1457,6 @@ void UpdateLightEditor (void) {
 	}
 
 	qglDisableVertexAttribArray (ATT_POSITION);
-	GL_BindNullProgram ();
 	GL_Enable (GL_CULL_FACE);
 	GL_Enable (GL_BLEND);
 
@@ -2391,7 +2390,7 @@ void R_DrawLightFlare () {
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, tex_array);
 	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, color_array);
 
-	GL_BindProgram (particlesProgram, 0);
+	GL_BindProgram (particlesProgram);
 
 	GL_MBind (GL_TEXTURE0, r_flare->texnum);
 	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
@@ -2434,8 +2433,6 @@ void R_DrawLightFlare () {
 
 	qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
-	GL_BindNullProgram ();
-
 	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
 	
@@ -2473,7 +2470,7 @@ void R_LightFlareOutLine () { //flare editing highlights
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
 
 	// setup program
-	GL_BindProgram (genericProgram, 0);
+	GL_BindProgram (genericProgram);
 	qglUniform1i (gen_attribColors, 0);
 	qglUniform1i (gen_attribConsole, 0);
 	qglUniform1i (gen_sky, 0);
@@ -2549,8 +2546,6 @@ void R_LightFlareOutLine () { //flare editing highlights
 
 	qglDrawArrays (GL_TRIANGLES, 0, 36);
 
-	GL_BindNullProgram ();
-
 	if (r_useLightScissors->integer)
 		GL_Enable (GL_SCISSOR_TEST);
 	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
@@ -2588,7 +2583,7 @@ void R_DrawLightBounds(void) {
 		GL_Disable(GL_DEPTH_TEST);
 
 	// setup program
-	GL_BindProgram(genericProgram, 0);
+	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 0);
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_sky, 0);
@@ -2657,7 +2652,6 @@ void R_DrawLightBounds(void) {
 	qglDrawArrays(GL_TRIANGLES, 0, 36);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
-	GL_BindNullProgram();
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_BLEND);
 

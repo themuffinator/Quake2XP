@@ -606,7 +606,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	qglEnableVertexAttribArray(ATT_COLOR);
 
 	// setup program
-	GL_BindProgram(md3AmbientProgram, 0);
+	GL_BindProgram(md3AmbientProgram);
 
 	qglUniform1i(ambientMd3_isEnvMaping, 0);
 	qglUniform1i(ambientMd3_isShell, 0);
@@ -784,8 +784,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	qglDisableVertexAttribArray(ATT_COLOR);
 	qglDisableVertexAttribArray(ATT_NORMAL);
 
-	GL_BindNullProgram();
-
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
 
@@ -915,7 +913,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	qglEnableVertexAttribArray(ATT_TEX0);
 
 	// setup program
-	GL_BindProgram(aliasBumpProgram, 0);
+	GL_BindProgram(aliasBumpProgram);
 
 	VectorAdd(currententity->origin, currententity->model->maxs, maxs);
 	if (CL_PMpointcontents(maxs) & MASK_WATER)
@@ -1018,7 +1016,6 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	qglDisableVertexAttribArray(ATT_BINORMAL);
 	qglDisableVertexAttribArray(ATT_NORMAL);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	GL_BindNullProgram();
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 	VectorCopy(oldView, r_origin);
@@ -1080,7 +1077,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, viewOrg);
 
 	// setup program
-	GL_BindProgram(md3AmbientProgram, 0);
+	GL_BindProgram(md3AmbientProgram);
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE);
 	vec2_t shellParams = { r_newrefdef.time * 0.45, 0.1f };
 
@@ -1139,7 +1136,6 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 
-	GL_BindNullProgram();
 	GL_BlendFunc(GL_ONE, GL_ONE);
 
 	if (currententity->flags & RF_DEPTHHACK)

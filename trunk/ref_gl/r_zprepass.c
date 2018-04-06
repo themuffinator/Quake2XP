@@ -401,7 +401,7 @@ void R_DrawDepthScene (void) {
 
 	R_ClearSkyBox ();
 
-	GL_BindProgram (nullProgram, 0);
+	GL_BindProgram (nullProgram);
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 	qglEnableVertexAttribArray (ATT_POSITION);
@@ -444,5 +444,4 @@ void R_DrawDepthScene (void) {
 			R_DrawDepthMD3Model();
 	}
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	GL_BindNullProgram ();
 }

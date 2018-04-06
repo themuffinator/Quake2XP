@@ -68,7 +68,7 @@ void Set_FontShader(qboolean enable){
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 		qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 
-		GL_BindProgram(genericProgram, 0);
+		GL_BindProgram(genericProgram);
 		qglUniform1i(gen_attribColors, 1);
 		qglUniform1i(gen_attribConsole, 0);
 		qglUniform1i(gen_sky, 0);
@@ -78,7 +78,6 @@ void Set_FontShader(qboolean enable){
 	}
 	else{
 
-		GL_BindNullProgram();
 		qglDisableVertexAttribArray(ATT_POSITION);
 		qglDisableVertexAttribArray(ATT_TEX0);
 		qglDisableVertexAttribArray(ATT_COLOR);
@@ -290,7 +289,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
 	VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
 
-	GL_BindProgram(genericProgram, 0);
+	GL_BindProgram(genericProgram);
 	
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_attribColors, 0);
@@ -369,9 +368,6 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	}
 
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-
-		GL_BindNullProgram();
-		GL_SelectTexture(GL_TEXTURE0);
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		qglDisableVertexAttribArray(ATT_POSITION);
@@ -419,7 +415,7 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 			offsX = offsY = 0;
 		}
 
-		GL_BindProgram(loadingProgram, 0);
+		GL_BindProgram(loadingProgram);
 
 		qglUniformMatrix4fv(ls_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 		qglUniform1f(ls_fade, loadScreenColorFade);
@@ -445,7 +441,6 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
-		GL_BindNullProgram();
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		qglDisableVertexAttribArray(ATT_POSITION);
 		qglDisableVertexAttribArray(ATT_TEX0);
@@ -493,7 +488,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 	
-	GL_BindProgram(genericProgram, 0);
+	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_sky, 0);
@@ -527,7 +522,6 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	if (!gl->has_alpha)
 		GL_Enable(GL_BLEND);
 
-	GL_BindNullProgram();
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -566,7 +560,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 	
-	GL_BindProgram(genericProgram, 0);
+	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_sky, 0);
@@ -603,8 +597,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 
 	if (strstr(gl->name, "chxp"))
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	GL_BindNullProgram();
+
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -628,7 +621,7 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 
-	GL_BindProgram(light2dProgram, 0);
+	GL_BindProgram(light2dProgram);
 
 	lightShift = 66.6 * sin(Sys_Milliseconds() * 0.001f);
 	qglUniform2f(light2d_params, lightShift, r_hudLighting->value);
@@ -652,7 +645,6 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	GL_BindNullProgram();
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -730,7 +722,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 
-	GL_BindProgram(genericProgram, 0);
+	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_sky, 0);
@@ -757,7 +749,6 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
-	GL_BindNullProgram();
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -793,7 +784,7 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
 	
-	GL_BindProgram(genericProgram, 0);
+	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 0);
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_sky, 0);
@@ -808,8 +799,7 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	VA_SetElem2(vertCoord[3], x, y + h);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-	
-	GL_BindNullProgram();
+
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 }
@@ -836,7 +826,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	qglClearColor(0.0, 0.0, 0.0, 1.0);
 
 	// setup program
-	GL_BindProgram(cinProgram, 0);
+	GL_BindProgram(cinProgram);
 
 	GL_MBind(GL_TEXTURE0, 0);
 	qglUniform2f(cin_params, vid.width, vid.height);
@@ -894,8 +884,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	VA_SetElem2(vertCoord[3], x0, y1);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-	
-	GL_BindNullProgram();
+
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);

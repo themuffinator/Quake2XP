@@ -368,7 +368,6 @@ void VID_MenuInit (void);
 void AnglesToMat3 (const vec3_t angles, mat3_t m);
 void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out);
 void R_ShutdownPrograms (void);
-void GL_BindNullProgram (void);
 void GL_BindRect (int texnum);
 void GL_MBindRect (GLenum target, int texnum);
 void R_Bloom (void);
@@ -828,11 +827,10 @@ typedef struct glslProgram_s {
 	struct glslProgram_s	*nextHash;
 
 	char			name[MAX_QPATH];
-	int				numDefs;
-	unsigned		defBits[MAX_PROGRAM_DEFS];
-	char			defStrings[MAX_PROGRAM_DEFS][MAX_DEF_NAME];
+//	char			defStrings[MAX_PROGRAM_DEFS][MAX_DEF_NAME];
 	int				numId;
-	uint			id[MAX_PROGRAM_ID];
+//	uint			id[MAX_PROGRAM_ID];
+	uint			id;
 	qboolean		valid;		// qtrue if all permutations linked successfully
 
 } glslProgram_t;
@@ -877,7 +875,7 @@ glslProgram_t		*fixFovProgram;
 glslProgram_t		*menuProgram;
 glslProgram_t		*fbo2screenProgram;
 
-void GL_BindProgram (glslProgram_t *program, int defBits);
+void GL_BindProgram (glslProgram_t *program);
 void R_CaptureDepthBuffer ();
 void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();

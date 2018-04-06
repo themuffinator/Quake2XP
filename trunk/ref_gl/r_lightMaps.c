@@ -208,12 +208,14 @@ static void LM_InitBlock (void) {
 
 // FIXME: remove dynamic completely
 static void LM_UploadBlock (qboolean dynamic) {
-	const int numVecs = loadmodel->useXPLM ? 3 : 1;
-	int texture = gl_lms.current_lightmap_texture;
-	int i;
+
+	const int	numVecs = loadmodel->useXPLM ? 3 : 1;
+	int			texture = gl_lms.current_lightmap_texture;
+	int			i;
 
 	// upload the finished atlas
 	for (i = 0; i < numVecs; i++) {
+
 		GL_Bind (gl_state.lightmap_textures + texture + i * MAX_LIGHTMAPS);
 		qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -409,13 +411,10 @@ GL_BeginBuildingLightmaps
 void GL_BeginBuildingLightmaps (model_t *m) {
 	static lightstyle_t lightstyles[MAX_LIGHTSTYLES];
 	int i;
-	//	byte *dummy;
 
 	memset (gl_lms.allocated, 0, sizeof(gl_lms.allocated));
 
 	occ_framecount = r_framecount = 1;
-
-	GL_SelectTexture (GL_TEXTURE1);
 
 	/*
 	 ** setup the base lightstyles so the lightmaps won't have to be regenerated
@@ -444,6 +443,5 @@ GL_EndBuildingLightmaps
 */
 void GL_EndBuildingLightmaps (void) {
 	LM_UploadBlock (qfalse);
-	GL_SelectTexture (GL_TEXTURE0);
 }
 

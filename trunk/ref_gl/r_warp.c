@@ -398,7 +398,7 @@ void R_DrawSkyBox (qboolean color) {
 	int i;
 
 	if (color) {
-		GL_BindProgram (genericProgram, 0);
+		GL_BindProgram (genericProgram);
 		qglUniform1i (gen_sky, 1);
 		qglUniform1i (gen_3d, 0);
 		qglUniform1i (gen_attribColors, 0);
@@ -464,7 +464,6 @@ void R_DrawSkyBox (qboolean color) {
 	if (color) {
 		qglDisableVertexAttribArray (ATT_TEX0);
 		qglDisableVertexAttribArray (ATT_COLOR);
-		GL_BindNullProgram ();
 		GL_Disable(GL_POLYGON_OFFSET_FILL);
 	}
 }

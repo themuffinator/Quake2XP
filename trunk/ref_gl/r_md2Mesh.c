@@ -233,7 +233,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	}
 
 	// setup program
-	GL_BindProgram (aliasAmbientProgram, 0);
+	GL_BindProgram (aliasAmbientProgram);
 
 	if (currentmodel->envMap)
 		qglUniform1i (ambientAlias_isEnvMaping, 1);
@@ -269,7 +269,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglDisableVertexAttribArray (ATT_COLOR);
 	qglDisableVertexAttribArray (ATT_TEX0);
 //	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-	GL_BindNullProgram ();
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
@@ -322,7 +321,7 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	}
 
 	// setup program
-	GL_BindProgram (aliasAmbientProgram, defBits);
+	GL_BindProgram (aliasAmbientProgram);
 	
 	vec2_t shellParams = { r_newrefdef.time * 0.45, 0.0f };
 
@@ -365,7 +364,6 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_TEX0);
 //	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, 0);
-	GL_BindNullProgram ();
 }
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
@@ -477,7 +475,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	}
 
 	// setup program
-	GL_BindProgram (aliasBumpProgram, 0);
+	GL_BindProgram (aliasBumpProgram);
 
 	VectorAdd (currententity->origin, currententity->model->maxs, maxs);
 	if (CL_PMpointcontents (maxs) & MASK_WATER)
@@ -532,7 +530,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglDisableVertexAttribArray (ATT_BINORMAL);
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_TEX0);
-	GL_BindNullProgram ();
 }
 
 

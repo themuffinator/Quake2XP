@@ -102,7 +102,7 @@ void R_RenderDecals(void)
     qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, DecalColorArray);
      
 
-	GL_BindProgram(genericProgram, 0);
+	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_3d, 1);
@@ -212,7 +212,6 @@ void R_RenderDecals(void)
     qglDisableVertexAttribArray(ATT_COLOR);
     GL_DepthMask(1);
     GL_Disable(GL_POLYGON_OFFSET_FILL);
-	GL_BindNullProgram();
 }
 
 

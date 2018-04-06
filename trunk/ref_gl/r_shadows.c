@@ -509,8 +509,8 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	if (!currentShadowLight->isShadow || currentShadowLight->isAmbient || currentShadowLight->isFog)
 		return;
 
-	// setup program
-	GL_BindProgram(shadowProgram, 0);
+	// turboshadows
+	GL_BindProgram(shadowProgram);
 
 	GL_StencilMask(255);
 	GL_StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);
@@ -570,7 +570,6 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	/*================================
 	DRAW MD3 SHADOWS
 	re-setup vertex pointer and shader
-	todo - use turboshadow
 	=================================*/
 
 	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, md3ShadowVerts); // new vert array
@@ -610,7 +609,6 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	}
 
 	GL_FrontFace(GL_CCW);
-	GL_BindNullProgram();
 	qglDisableVertexAttribArray(ATT_POSITION);
 	GL_Disable(GL_POLYGON_OFFSET_FILL);
 	GL_PolygonOffset(0, 0);
@@ -1000,7 +998,7 @@ void R_CastBspShadowVolumes (void) {
 		return;
 
 	// setup program
-	GL_BindProgram (nullProgram, 0);
+	GL_BindProgram (nullProgram);
 	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	GL_StencilMask (255);
@@ -1050,5 +1048,4 @@ void R_CastBspShadowVolumes (void) {
 	GL_Disable (GL_POLYGON_OFFSET_FILL);
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);
-	GL_BindNullProgram ();
 }

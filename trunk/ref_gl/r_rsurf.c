@@ -206,7 +206,7 @@ void R_DrawChainsRA (qboolean bmodel) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-	GL_BindProgram(waterProgram, 0);
+	GL_BindProgram(waterProgram);
 
 	GL_MBind(GL_TEXTURE1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->texnum);
 	GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
@@ -263,8 +263,6 @@ void R_DrawChainsRA (qboolean bmodel) {
 	qglDisableVertexAttribArray(ATT_TANGENT);
 	qglDisableVertexAttribArray(ATT_BINORMAL);
 	qglDisableVertexAttribArray(ATT_COLOR);
-
-	GL_BindNullProgram();
 //------------------------------
 
 	r_reflective_surfaces = NULL;
@@ -278,7 +276,7 @@ void R_DrawChainsRA (qboolean bmodel) {
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 
 	// setup program
-	GL_BindProgram(refractProgram, 0);
+	GL_BindProgram(refractProgram);
 
 	qglUniform1f(ref_deformMul, 1.0);
 	qglUniformMatrix4fv(ref_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -304,8 +302,6 @@ void R_DrawChainsRA (qboolean bmodel) {
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-
-	GL_BindNullProgram();
 
 	r_alpha_surfaces = NULL;
 
@@ -415,7 +411,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	unsigned	numIndices  = 0xffffffff;
 
 	// setup program
-	GL_BindProgram(ambientWorldProgram, 0);
+	GL_BindProgram(ambientWorldProgram);
 
 	qglUniform1f(ambientWorld_colorScale, r_textureColorScale->value);
 	qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
@@ -490,8 +486,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 	}
-
-	GL_BindNullProgram();
 }
 
 
@@ -662,7 +656,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 	unsigned	numIndices	= 0xffffffff;
 	
 	// setup program
-	GL_BindProgram(lightWorldProgram, 0);
+	GL_BindProgram(lightWorldProgram);
 
 	R_UpdateLightUniforms(bmodel);
 
@@ -706,8 +700,6 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 	}
-
-	GL_BindNullProgram();
 }
 
 static void GL_DrawStaticLightPass()
@@ -720,7 +712,7 @@ static void GL_DrawStaticLightPass()
 	unsigned	numIndices = 0xffffffff;
 
 	// setup program
-	GL_BindProgram(lightWorldProgram, 0);
+	GL_BindProgram(lightWorldProgram);
 
 	R_UpdateLightUniforms(qfalse);
 
@@ -762,7 +754,6 @@ static void GL_DrawStaticLightPass()
 		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 	}
-	GL_BindNullProgram();
 }
 
 

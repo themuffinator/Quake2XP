@@ -86,25 +86,6 @@ MISCELLANEOUS
 
 ==========================================
 */
-/*
-==============
-R_GetProgramDefBits
-
-==============
-*/
-unsigned R_GetProgramDefBits (glslProgram_t *program, const char *name) {
-	int		i;
-
-	if (!program || !program->valid)
-		return 0;
-
-	for (i = 0; i < program->numDefs; i++) {
-		if (!strcmp (program->defStrings[i], name))
-			return program->defBits[i];
-	}
-
-	return 0;
-}
 
 /*
 ==============
@@ -156,38 +137,6 @@ static void R_GetInfoLog (int id, char *log, qboolean isProgram) {
 	log[length] = 0;
 }
 
-/*
-==============
-R_ParseDefs
-
-==============
-*/
-static void R_ParseDefs (glslProgram_t *program, const char *text) {
-	parser_t	parser;
-	token_t		token;
-
-	Parser_Reset (&parser, va ("program '%s'", program->name), text);
-
-	while (1) {
-		if (!Parser_GetToken (&parser, &token))
-			return;
-
-		if (!Q_IsLiteral (token.text)) {
-			Parser_Warning (&parser, "def '%s' is non-literal\n", token.text);
-			return;
-		}
-
-		if (program->numDefs == MAX_PROGRAM_DEFS) {
-			Parser_Warning (&parser, "MAX_PROGRAM_DEFS hit\n");
-			return;
-		}
-
-		program->defBits[program->numDefs] = BIT (program->numDefs);
-		Q_strncpyz (program->defStrings[program->numDefs], token.text, MAX_DEF_NAME);
-
-		program->numDefs++;
-	}
-}
 
 /*
 ==============
@@ -250,7 +199,7 @@ R_CreateProgram
 ==============
 */
 
-static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, const char *vertexSource, const char *fragmentSource, 
+static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSource, const char *fragmentSource, 
 										const char *GeometrySource, const char *tessControlSource, const char *tessEvSource) {
 	char			log[MAX_INFO_LOG];
 	unsigned		hash;
@@ -285,174 +234,164 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *defs, cons
 	memset (program, 0, sizeof(*program));
 	Q_strncpyz (program->name, name, sizeof(program->name));
 
+	numStrings = 0;
+	vertexId = 0;
+	fragmentId = 0;
+	geomId = 0;
+	tessControlId = 0;
+	tessEvId = 0;
 
-	program->numId = 1;
+	strings[numStrings++] = glslExt;
+	strings[numStrings++] = mathDefs;
 
-	for (i = 0; i < program->numId; i++) {
+	// compile vertex shader
+	if (vertexSource) {
+		// link includes
+		vertexSource = R_LoadIncludes ((char*)vertexSource);
 
-		char *defines = NULL;		/// Berserker's fix
-		numStrings = 0;
-		vertexId = 0;
-		fragmentId = 0;
-		geomId = 0;
-		tessControlId = 0;
-		tessEvId = 0;
-
-		strings[numStrings++] = glslExt;
-		strings[numStrings++] = mathDefs;
-
-		// compile vertex shader
-		if (vertexSource) {
-			// link includes
-			vertexSource = R_LoadIncludes ((char*)vertexSource);
-
-			strings[numStrings] = vertexSource;
-			vertexId = qglCreateShader (GL_VERTEX_SHADER);
-			qglShaderSource (vertexId, numStrings + 1, strings, NULL);
-			qglCompileShader (vertexId);
-			qglGetShaderiv (vertexId, GL_COMPILE_STATUS, &status);
-
-			if (!status) {
-				R_GetInfoLog (vertexId, log, qfalse);
-				qglDeleteShader (vertexId);
-				Com_Printf ("program '%s': error(s) in vertex shader:\n-----------\n%s\n-----------\n", program->name, log);
-				continue;
-			}
-		}
-		
-		// compile geo shaders
-		if (GeometrySource) {
-			// link includes
-			GeometrySource = R_LoadIncludes((char*)GeometrySource);
-
-			strings[numStrings] = GeometrySource;
-			geomId = qglCreateShader(GL_GEOMETRY_SHADER);
-			qglShaderSource(geomId, numStrings + 1, strings, NULL);
-			qglCompileShader(geomId);
-			qglGetShaderiv(geomId, GL_COMPILE_STATUS, &status);
-
-			if (!status) {
-				R_GetInfoLog(geomId, log, qfalse);
-				qglDeleteShader(geomId);
-				Com_Printf("program '%s': error(s) in geo shader:\n-----------\n%s\n-----------\n", program->name, log);
-				continue;
-			}
-		}
-
-		// compile tess control shaders
-		if (tessControlSource) {
-			// link includes
-			tessControlSource = R_LoadIncludes((char*)tessControlSource);
-
-			strings[numStrings] = tessControlSource;
-			tessControlId = qglCreateShader(GL_TESS_CONTROL_SHADER);
-			qglShaderSource(tessControlId, numStrings + 1, strings, NULL);
-			qglCompileShader(tessControlId);
-			qglGetShaderiv(tessControlId, GL_COMPILE_STATUS, &status);
-
-			if (!status) {
-				R_GetInfoLog(tessControlId, log, qfalse);
-				qglDeleteShader(tessControlId);
-				Com_Printf("program '%s': error(s) in tess control shader:\n-----------\n%s\n-----------\n", program->name, log);
-				continue;
-			}
-		}
-
-		// compile tess eval shaders
-		if (tessEvSource) {
-			// link includes
-			tessEvSource = R_LoadIncludes((char*)tessEvSource);
-
-			strings[numStrings] = tessEvSource;
-			tessEvId = qglCreateShader(GL_TESS_EVALUATION_SHADER);
-			qglShaderSource(tessEvId, numStrings + 1, strings, NULL);
-			qglCompileShader(tessEvId);
-			qglGetShaderiv(tessEvId, GL_COMPILE_STATUS, &status);
-
-			if (!status) {
-				R_GetInfoLog(tessEvId, log, qfalse);
-				qglDeleteShader(tessEvId);
-				Com_Printf("program '%s': error(s) in tess eval shader:\n-----------\n%s\n-----------\n", program->name, log);
-				continue;
-			}
-		}
-
-		// compile fragment shader
-		if (fragmentSource) {
-			// link includes
-			fragmentSource = R_LoadIncludes ((char*)fragmentSource);
-			strings[numStrings] = fragmentSource;
-			fragmentId = qglCreateShader (GL_FRAGMENT_SHADER);
-
-	//		Com_Printf("program '%s': warning(s) in: %s\n", program->name, log); // debug depricated func
-
-			qglShaderSource (fragmentId, numStrings + 1, strings, NULL);
-			qglCompileShader (fragmentId);
-			qglGetShaderiv (fragmentId, GL_COMPILE_STATUS, &status);
-
-			if (!status) {
-				R_GetInfoLog (fragmentId, log, qfalse);
-				qglDeleteShader (fragmentId);
-				Com_Printf ("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
-				continue;
-			}
-		}
-
-		//
-		// link the program
-		//
-
-		id = qglCreateProgram ();
-
-		if (vertexId) {
-			qglAttachShader (id, vertexId);
-			qglDeleteShader (vertexId);
-		}
-
-		if (fragmentId) {
-			qglAttachShader (id, fragmentId);
-			qglDeleteShader (fragmentId);
-		}
-		
-		if (geomId) {
-			qglAttachShader(id, geomId);
-			qglDeleteShader(geomId);
-		}
-
-		if (tessControlId) {
-			qglAttachShader(id, tessControlId);
-			qglDeleteShader(tessControlId);
-		}
-
-		if (tessEvId) {
-			qglAttachShader(id, tessEvId);
-			qglDeleteShader(tessEvId);
-		}
-
-		qglLinkProgram (id);
-		qglGetProgramiv (id, GL_LINK_STATUS, &status);
-
-		R_GetInfoLog (id, log, qtrue);
+		strings[numStrings] = vertexSource;
+		vertexId = qglCreateShader (GL_VERTEX_SHADER);
+		qglShaderSource (vertexId, numStrings + 1, strings, NULL);
+		qglCompileShader (vertexId);
+		qglGetShaderiv (vertexId, GL_COMPILE_STATUS, &status);
 
 		if (!status) {
-			qglDeleteProgram (id);
-			Com_Printf ("program '%s': link error(s): %s\n", program->name, log);
-			continue;
+			R_GetInfoLog (vertexId, log, qfalse);
+			qglDeleteShader (vertexId);
+			Com_Printf ("program '%s': error(s) in vertex shader:\n-----------\n%s\n-----------\n", program->name, log);
+			return NULL;
 		}
+	}
+		
+	// compile geo shaders
+	if (GeometrySource) {
+		// link includes
+		GeometrySource = R_LoadIncludes((char*)GeometrySource);
 
-		// don't let it be slow (crap)
-		if (strstr (log, "fragment shader will run in software")) {
-			qglDeleteProgram (id);
-			Com_Printf ("program '%s': refusing to perform software emulation\n", program->name);
-			continue;
+		strings[numStrings] = GeometrySource;
+		geomId = qglCreateShader(GL_GEOMETRY_SHADER);
+		qglShaderSource(geomId, numStrings + 1, strings, NULL);
+		qglCompileShader(geomId);
+		qglGetShaderiv(geomId, GL_COMPILE_STATUS, &status);
+
+		if (!status) {
+			R_GetInfoLog(geomId, log, qfalse);
+			qglDeleteShader(geomId);
+			Com_Printf("program '%s': error(s) in geo shader:\n-----------\n%s\n-----------\n", program->name, log);
+			return NULL;
 		}
-
-		program->id[i] = id;
-		numLinked++;
 	}
 
-	if (numLinked == program->numId)
-		program->valid = qtrue;
+	// compile tess control shaders
+	if (tessControlSource) {
+		// link includes
+		tessControlSource = R_LoadIncludes((char*)tessControlSource);
+
+		strings[numStrings] = tessControlSource;
+		tessControlId = qglCreateShader(GL_TESS_CONTROL_SHADER);
+		qglShaderSource(tessControlId, numStrings + 1, strings, NULL);
+		qglCompileShader(tessControlId);
+		qglGetShaderiv(tessControlId, GL_COMPILE_STATUS, &status);
+
+		if (!status) {
+			R_GetInfoLog(tessControlId, log, qfalse);
+			qglDeleteShader(tessControlId);
+			Com_Printf("program '%s': error(s) in tess control shader:\n-----------\n%s\n-----------\n", program->name, log);
+			return NULL;
+		}
+	}
+
+	// compile tess eval shaders
+	if (tessEvSource) {
+		// link includes
+		tessEvSource = R_LoadIncludes((char*)tessEvSource);
+
+		strings[numStrings] = tessEvSource;
+		tessEvId = qglCreateShader(GL_TESS_EVALUATION_SHADER);
+		qglShaderSource(tessEvId, numStrings + 1, strings, NULL);
+		qglCompileShader(tessEvId);
+		qglGetShaderiv(tessEvId, GL_COMPILE_STATUS, &status);
+
+		if (!status) {
+			R_GetInfoLog(tessEvId, log, qfalse);
+			qglDeleteShader(tessEvId);
+			Com_Printf("program '%s': error(s) in tess eval shader:\n-----------\n%s\n-----------\n", program->name, log);
+			return NULL;
+		}
+	}
+
+	// compile fragment shader
+	if (fragmentSource) {
+		// link includes
+		fragmentSource = R_LoadIncludes ((char*)fragmentSource);
+		strings[numStrings] = fragmentSource;
+		fragmentId = qglCreateShader (GL_FRAGMENT_SHADER);
+
+//		Com_Printf("program '%s': warning(s) in: %s\n", program->name, log); // debug depricated func
+
+		qglShaderSource (fragmentId, numStrings + 1, strings, NULL);
+		qglCompileShader (fragmentId);
+		qglGetShaderiv (fragmentId, GL_COMPILE_STATUS, &status);
+
+		if (!status) {
+			R_GetInfoLog (fragmentId, log, qfalse);
+			qglDeleteShader (fragmentId);
+			Com_Printf ("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
+			return NULL;
+		}
+	}
+
+	//
+	// link the program
+	//
+
+	id = qglCreateProgram ();
+
+	if (vertexId) {
+		qglAttachShader (id, vertexId);
+		qglDeleteShader (vertexId);
+	}
+
+	if (fragmentId) {
+		qglAttachShader (id, fragmentId);
+		qglDeleteShader (fragmentId);
+	}
+		
+	if (geomId) {
+		qglAttachShader(id, geomId);
+		qglDeleteShader(geomId);
+	}
+
+	if (tessControlId) {
+		qglAttachShader(id, tessControlId);
+		qglDeleteShader(tessControlId);
+	}
+
+	if (tessEvId) {
+		qglAttachShader(id, tessEvId);
+		qglDeleteShader(tessEvId);
+	}
+
+	qglLinkProgram (id);
+	qglGetProgramiv (id, GL_LINK_STATUS, &status);
+
+	R_GetInfoLog (id, log, qtrue);
+
+	if (!status) {
+		qglDeleteProgram (id);
+		Com_Printf ("program '%s': link error(s): %s\n", program->name, log);
+		return NULL;
+	}
+
+	// don't let it be slow (crap)
+	if (strstr (log, "fragment shader will run in software")) {
+		qglDeleteProgram (id);
+		Com_Printf ("program '%s': refusing to perform software emulation\n", program->name);
+		return NULL;
+	}
+
+	program->id = id;
+	program->valid = qtrue;
 
 	// add to the hash
 	hash = Com_HashKey (program->name, PROGRAM_HASH_SIZE);
@@ -474,7 +413,7 @@ glslProgram_t *R_FindProgram (const char *name, qboolean vertex, qboolean fragme
 	char			filename[MAX_QPATH];
 	char			newname[MAX_QPATH];
 	glslProgram_t	*program;
-	char			*defs, *vertexSource = NULL, *fragmentSource = NULL, *geoSource = NULL, *tessSource = NULL, *evalSource = NULL;
+	char			*vertexSource = NULL, *fragmentSource = NULL, *geoSource = NULL, *tessSource = NULL, *evalSource = NULL;
 
 	if (!vertex && !fragment)
 		return &r_nullProgram;
@@ -483,11 +422,9 @@ glslProgram_t *R_FindProgram (const char *name, qboolean vertex, qboolean fragme
 	Q_snprintfz (newname, sizeof(newname), "%s%s", name, !vertex ? "(fragment)" : !fragment ? "(vertex)" : "");
 
 	program = R_ProgramForName (newname);
+	
 	if (program)
 		return program;
-
-	Q_snprintfz (filename, sizeof(filename), "glsl/%s.defs", name);
-	FS_LoadFile (filename, (void **)&defs);
 
 	if (vertex) {
 		Q_snprintfz (filename, sizeof(filename), "glsl/%s.vp", name);
@@ -517,11 +454,8 @@ glslProgram_t *R_FindProgram (const char *name, qboolean vertex, qboolean fragme
 	if (!vertexSource && !fragmentSource)
 		return &r_nullProgram;		// no appropriate shaders found
 
-	program = R_CreateProgram (newname, defs, vertexSource, fragmentSource, geoSource, tessSource, evalSource);
+	program = R_CreateProgram (newname, vertexSource, fragmentSource, geoSource, tessSource, evalSource);
 
-
-	if (defs)
-		FS_FreeFile (defs);
 	if (vertexSource)
 		FS_FreeFile (vertexSource);
 	if (fragmentSource)
@@ -559,7 +493,7 @@ void R_InitPrograms (void) {
 	nullProgram = R_FindProgram ("null", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (nullProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = nullProgram->id[0];
+		id = nullProgram->id;
 		null_mvp = qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
 	}
 	else {
@@ -571,7 +505,7 @@ void R_InitPrograms (void) {
 	ambientWorldProgram = R_FindProgram ("ambientWorld", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (ambientWorldProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = ambientWorldProgram->id[0];
+		id = ambientWorldProgram->id;
 
 		ambientWorld_lightmapType	= qglGetUniformLocation (id, "u_LightMapType");
 		ambientWorld_ssao			= qglGetUniformLocation (id, "u_ssao");
@@ -595,7 +529,7 @@ void R_InitPrograms (void) {
 	lightWorldProgram = R_FindProgram ("lightWorld", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (lightWorldProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = lightWorldProgram->id[0];
+		id = lightWorldProgram->id;
 
 		lightWorld_parallaxParams	= qglGetUniformLocation (id, "u_parallaxParams");
 		lightWorld_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
@@ -633,7 +567,7 @@ void R_InitPrograms (void) {
 	aliasAmbientProgram = R_FindProgram ("ambientMd2", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (aliasAmbientProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = aliasAmbientProgram->id[0];
+		id = aliasAmbientProgram->id;
 
 		ambientAlias_isEnvMaping	= qglGetUniformLocation (id, "u_isEnvMap");
 		ambientAlias_ssao			= qglGetUniformLocation (id, "u_ssao");
@@ -654,7 +588,7 @@ void R_InitPrograms (void) {
 	md3AmbientProgram = R_FindProgram("ambientMd3", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (md3AmbientProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = md3AmbientProgram->id[0];
+		id = md3AmbientProgram->id;
 
 		ambientMd3_isEnvMaping		= qglGetUniformLocation(id, "u_isEnvMap");
 		ambientMd3_texRotation		= qglGetUniformLocation(id, "u_isRotation");
@@ -678,7 +612,7 @@ void R_InitPrograms (void) {
 
 	if (aliasBumpProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = aliasBumpProgram->id[0];
+		id = aliasBumpProgram->id;
 
 		lightAlias_viewOrigin		= qglGetUniformLocation (id, "u_ViewOrigin");
 		lightAlias_lightOrigin		= qglGetUniformLocation (id, "u_LightOrg");
@@ -714,10 +648,10 @@ void R_InitPrograms (void) {
 	if (gaussXProgram->valid && gaussYProgram->valid){
 		Com_Printf("succeeded\n");
 
-		id = gaussXProgram->id[0];
+		id = gaussXProgram->id;
 		gaussx_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 
-		id = gaussYProgram->id[0];
+		id = gaussYProgram->id;
 		gaussy_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
@@ -731,7 +665,7 @@ void R_InitPrograms (void) {
 	if (glareProgram->valid){
 		Com_Printf("succeeded\n");
 
-		id = glareProgram->id[0];
+		id = glareProgram->id;
 		glare_params		= qglGetUniformLocation(id, "u_glareParams");
 		glare_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
@@ -747,7 +681,7 @@ void R_InitPrograms (void) {
 	if (radialProgram->valid){
 		Com_Printf("succeeded\n");
 		
-		id = radialProgram->id[0];
+		id = radialProgram->id;
 		rb_params	= qglGetUniformLocation(id, "u_radialBlurParams");
 		rb_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 		rb_cont		= qglGetUniformLocation(id, "u_cont");
@@ -763,7 +697,7 @@ void R_InitPrograms (void) {
 	if (dofProgram->valid){
 		Com_Printf("succeeded\n");
 
-		id = dofProgram->id[0];
+		id = dofProgram->id;
 		dof_screenSize	= qglGetUniformLocation(id, "u_screenSize");
 		dof_params		= qglGetUniformLocation(id, "u_dofParams");
 		dof_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
@@ -779,7 +713,7 @@ void R_InitPrograms (void) {
 	if (motionBlurProgram->valid){
 		Com_Printf("succeeded\n");
 
-		id = motionBlurProgram->id[0];
+		id = motionBlurProgram->id;
 		mb_params		= qglGetUniformLocation(id, "u_params");
 		mb_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
@@ -796,16 +730,16 @@ void R_InitPrograms (void) {
 	if (ssaoProgram->valid && depthDownsampleProgram->valid && ssaoBlurProgram->valid){
 		Com_Printf("succeeded\n");
 
-		id = depthDownsampleProgram->id[0];
+		id = depthDownsampleProgram->id;
 		depthDS_params		= qglGetUniformLocation(id, "u_depthParms");
 		depthDS_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 
-		id = ssaoProgram->id[0];
+		id = ssaoProgram->id;
 		ssao_params			= qglGetUniformLocation(id, "u_ssaoParms");
 		ssao_vp				= qglGetUniformLocation(id, "u_viewport");
 		ssao_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 
-		id = ssaoBlurProgram->id[0];
+		id = ssaoBlurProgram->id;
 		ssaoB_sapmles		= qglGetUniformLocation(id, "u_numSamples");
 		ssaoB_axisMask		= qglGetUniformLocation(id, "u_axisMask");
 		ssaoB_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
@@ -822,11 +756,11 @@ void R_InitPrograms (void) {
 	if (bloomdsProgram->valid && bloomfpProgram->valid){
 		Com_Printf("succeeded\n");
 
-		id = bloomdsProgram->id[0];
+		id = bloomdsProgram->id;
 		bloomDS_threshold	= qglGetUniformLocation(id, "u_BloomThreshold");
 		bloomDS_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 
-		id = bloomfpProgram->id[0];
+		id = bloomfpProgram->id;
 		bloomFP_params	= qglGetUniformLocation(id, "u_bloomParams");
 		bloom_FP_matrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
@@ -840,7 +774,7 @@ void R_InitPrograms (void) {
 
 	if (refractProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = refractProgram->id[0];
+		id = refractProgram->id;
 		ref_deformMul		= qglGetUniformLocation(id, "u_deformMul");
 		ref_mvp				= qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
 		ref_mvm				= qglGetUniformLocation(id, "u_modelViewMatrix");
@@ -868,10 +802,10 @@ void R_InitPrograms (void) {
 	if (thermalProgram->valid && thermalfpProgram->valid){
 		Com_Printf("succeeded\n");
 		
-		id = thermalProgram->id[0];
+		id = thermalProgram->id;
 		therm_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 
-		id = thermalfpProgram->id[0];
+		id = thermalfpProgram->id;
 		thermf_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 
 	}
@@ -884,7 +818,7 @@ void R_InitPrograms (void) {
 	waterProgram = R_FindProgram ("water", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (waterProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = waterProgram->id[0];
+		id = waterProgram->id;
 
 		water_deformMul		= qglGetUniformLocation (id, "u_deformMul");
 		water_thickness		= qglGetUniformLocation (id, "u_thickness");
@@ -910,7 +844,7 @@ void R_InitPrograms (void) {
 
 	if (particlesProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = particlesProgram->id[0];
+		id = particlesProgram->id;
 
 		particle_depthParams	= qglGetUniformLocation (id, "u_depthParms");
 		particle_mask			= qglGetUniformLocation (id, "u_mask");
@@ -932,7 +866,7 @@ void R_InitPrograms (void) {
 	if (genericProgram->valid) {
 		Com_Printf ("succeeded\n");
 
-		id = genericProgram->id[0];
+		id = genericProgram->id;
 		gen_attribConsole	= qglGetUniformLocation (id, "u_ATTRIB_CONSOLE");
 		gen_attribColors	= qglGetUniformLocation (id, "u_ATTRIB_COLORS");
 		gen_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
@@ -953,7 +887,7 @@ void R_InitPrograms (void) {
 
 	if (cinProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = cinProgram->id[0];
+		id = cinProgram->id;
 		cin_params		= qglGetUniformLocation(id, "u_cinParams");
 		cin_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 
@@ -968,7 +902,7 @@ void R_InitPrograms (void) {
 
 	if (loadingProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = loadingProgram->id[0];
+		id = loadingProgram->id;
 		ls_fade = qglGetUniformLocation(id, "u_colorScale");
 		ls_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 
@@ -983,7 +917,7 @@ void R_InitPrograms (void) {
 
 	if (fxaaProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = fxaaProgram->id[0];
+		id = fxaaProgram->id;
 		fxaa_screenSize		= qglGetUniformLocation(id, "u_ScreenSize");
 		fxaa_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
@@ -994,7 +928,7 @@ void R_InitPrograms (void) {
 
 	Com_Printf ("Load "S_COLOR_YELLOW"film grain program"S_COLOR_WHITE" ");
 	filmGrainProgram = R_FindProgram ("filmGrain", qtrue, qtrue, qfalse, qfalse, qfalse);
-	id = filmGrainProgram->id[0];
+	id = filmGrainProgram->id;
 
 	film_screenRes	= qglGetUniformLocation(id, "u_screenSize");
 	film_rand		= qglGetUniformLocation(id, "u_rand");
@@ -1014,7 +948,7 @@ void R_InitPrograms (void) {
 	gammaProgram = R_FindProgram ("gamma", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (gammaProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = gammaProgram->id[0];
+		id = gammaProgram->id;
 		gamma_control		= qglGetUniformLocation (id, "u_control");
 		gamma_orthoMatrix	= qglGetUniformLocation (id, "u_orthoMatrix");
 	}
@@ -1028,7 +962,7 @@ void R_InitPrograms (void) {
 	shadowProgram = R_FindProgram("shadow", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (shadowProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = shadowProgram->id[0];
+		id = shadowProgram->id;
 		sv_mvp = qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
 		sv_lightOrg = qglGetUniformLocation(id, "u_lightOrg");
 	}
@@ -1041,7 +975,7 @@ void R_InitPrograms (void) {
 	light2dProgram = R_FindProgram("light2d", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (light2dProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = light2dProgram->id[0];
+		id = light2dProgram->id;
 		light2d_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 		light2d_params = qglGetUniformLocation(id, "u_params");
 	}
@@ -1054,7 +988,7 @@ void R_InitPrograms (void) {
 	fixFovProgram = R_FindProgram("fixfov", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (fixFovProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = fixFovProgram->id[0];
+		id = fixFovProgram->id;
 		fixfov_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 		fixfov_params = qglGetUniformLocation(id, "u_params");
 	}
@@ -1067,7 +1001,7 @@ void R_InitPrograms (void) {
 	menuProgram = R_FindProgram("menu", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (menuProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = menuProgram->id[0];
+		id = menuProgram->id;
 		menu_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 		menu_params = qglGetUniformLocation(id, "u_screenSize");
 	}
@@ -1080,7 +1014,7 @@ void R_InitPrograms (void) {
 	fbo2screenProgram = R_FindProgram("fbo2screen", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (fbo2screenProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = fbo2screenProgram->id[0];
+		id = fbo2screenProgram->id;
 		fbo2screen_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
@@ -1105,17 +1039,12 @@ R_ShutdownPrograms
 */
 void R_ShutdownPrograms (void) {
 	glslProgram_t	*program;
-	int			i, j;
+	int				i;
 
 	for (i = 0; i < r_numPrograms; i++) {
 		program = &r_programs[i];
-
-		for (j = 0; j < program->numId; j++) {
-			// free all non-zero indices
-			if (program->id[j])
-				qglDeleteProgram (program->id[j]);
+		qglDeleteProgram (program->id);
 		}
-	}
 	r_numPrograms = 0;
 }
 
@@ -1163,20 +1092,6 @@ void R_GLSLinfo_f(void) {
 		Com_Printf(S_COLOR_YELLOW"%s\n", ver);
 	}
 }
-/*
-============
-GL_BindNullProgram
-
-============
-*/
-void GL_BindNullProgram (void) {
-
-	if (gl_state.programId) {
-		qglUseProgram (0);
-		gl_state.programId = 0;
-	}
-}
-
 
 /*
 ============
@@ -1184,15 +1099,10 @@ GL_BindProgram
 
 ============
 */
-void GL_BindProgram (glslProgram_t *program, int defBits) {
+void GL_BindProgram (glslProgram_t *program) {
 	int		id;
 
-	if (!program || program->numId < defBits) {
-		GL_BindNullProgram ();
-		return;
-	}
-
-	id = program->id[defBits];
+	id = program->id;
 
 	if (gl_state.programId != id) {
 		qglUseProgram (id);
