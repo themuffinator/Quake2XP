@@ -830,7 +830,7 @@ typedef struct glslProgram_s {
 //	char			defStrings[MAX_PROGRAM_DEFS][MAX_DEF_NAME];
 	int				numId;
 //	uint			id[MAX_PROGRAM_ID];
-	uint			id;
+	int				id;
 	qboolean		valid;		// qtrue if all permutations linked successfully
 
 } glslProgram_t;

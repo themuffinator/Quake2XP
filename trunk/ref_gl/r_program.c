@@ -1100,9 +1100,7 @@ GL_BindProgram
 ============
 */
 void GL_BindProgram (glslProgram_t *program) {
-	int		id;
-
-	id = program->id;
+	int	id = program->id;
 
 	if (gl_state.programId != id) {
 		qglUseProgram (id);

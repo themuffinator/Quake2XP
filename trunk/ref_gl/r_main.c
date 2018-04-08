@@ -1064,6 +1064,7 @@ extern worldShadowLight_t *selectedShadowLight;
 void R_FixFov(void);
 
 void R_RenderFrame(refdef_t * fd) {
+
 	R_RenderView(fd);
 	R_SetupOrthoMatrix();
 	R_SetLightLevel();
@@ -1699,34 +1700,34 @@ int R_Init(void *hinstance, void *hWnd)
 	qglUniformMatrix4fv =			(PFNGLUNIFORMMATRIX4FVPROC)			qwglGetProcAddress("glUniformMatrix4fv");
 
 	// DSA stuff glsl block
-	glUniform1fDSA = (PFNGLPROGRAMUNIFORM1FPROC)						qwglGetProcAddress("glProgramUniform1f");
-	glUniform2fDSA = (PFNGLPROGRAMUNIFORM2FPROC)						qwglGetProcAddress("glProgramUniform2f");
-	glUniform3fDSA = (PFNGLPROGRAMUNIFORM3FPROC)						qwglGetProcAddress("glProgramUniform3f");
-	glUniform4fDSA = (PFNGLPROGRAMUNIFORM4FPROC)						qwglGetProcAddress("glProgramUniform4f");
-	glUniform1iDSA = (PFNGLPROGRAMUNIFORM1IPROC)						qwglGetProcAddress("glProgramUniform1i");
-	glUniform2iDSA = (PFNGLPROGRAMUNIFORM2IPROC)						qwglGetProcAddress("glProgramUniform2i");
-	glUniform3iDSA = (PFNGLPROGRAMUNIFORM3IPROC)						qwglGetProcAddress("glProgramUniform3i");
-	glUniform4iDSA = (PFNGLPROGRAMUNIFORM4IPROC)						qwglGetProcAddress("glProgramUniform4i");
+	glProgramUniform1f = (PFNGLPROGRAMUNIFORM1FPROC)					qwglGetProcAddress("glProgramUniform1f");
+	glProgramUniform2f = (PFNGLPROGRAMUNIFORM2FPROC)					qwglGetProcAddress("glProgramUniform2f");
+	glProgramUniform3f = (PFNGLPROGRAMUNIFORM3FPROC)					qwglGetProcAddress("glProgramUniform3f");
+	glProgramUniform4f = (PFNGLPROGRAMUNIFORM4FPROC)					qwglGetProcAddress("glProgramUniform4f");
+	glProgramUniform1i = (PFNGLPROGRAMUNIFORM1IPROC)					qwglGetProcAddress("glProgramUniform1i");
+	glProgramUniform2i = (PFNGLPROGRAMUNIFORM2IPROC)					qwglGetProcAddress("glProgramUniform2i");
+	glProgramUniform3i = (PFNGLPROGRAMUNIFORM3IPROC)					qwglGetProcAddress("glProgramUniform3i");
+	glProgramUniform4i = (PFNGLPROGRAMUNIFORM4IPROC)					qwglGetProcAddress("glProgramUniform4i");
 
-	glUniform1fvDSA = (PFNGLPROGRAMUNIFORM1FVPROC)					qwglGetProcAddress("glProgramUniform1fv");
-	glUniform2fvDSA = (PFNGLPROGRAMUNIFORM2FVPROC)					qwglGetProcAddress("glProgramUniform2fv");
-	glUniform3fvDSA = (PFNGLPROGRAMUNIFORM3FVPROC)					qwglGetProcAddress("glProgramUniform3fv");
-	glUniform4fvDSA = (PFNGLPROGRAMUNIFORM4FVPROC)					qwglGetProcAddress("glProgramUniform4fv");
-	glUniform1ivDSA = (PFNGLPROGRAMUNIFORM1IVPROC)					qwglGetProcAddress("glProgramUniform1iv");
-	glUniform2ivDSA = (PFNGLPROGRAMUNIFORM2IVPROC)					qwglGetProcAddress("glProgramUniform2iv");
-	glUniform3ivDSA = (PFNGLPROGRAMUNIFORM3IVPROC)					qwglGetProcAddress("glProgramUniform3iv");
-	glUniform4ivDSA = (PFNGLPROGRAMUNIFORM4IVPROC)					qwglGetProcAddress("glProgramUniform4iv");
+	glProgramUniform1fv = (PFNGLPROGRAMUNIFORM1FVPROC)					qwglGetProcAddress("glProgramUniform1fv");
+	glProgramUniform2fv = (PFNGLPROGRAMUNIFORM2FVPROC)					qwglGetProcAddress("glProgramUniform2fv");
+	glProgramUniform3fv = (PFNGLPROGRAMUNIFORM3FVPROC)					qwglGetProcAddress("glProgramUniform3fv");
+	glProgramUniform4fv = (PFNGLPROGRAMUNIFORM4FVPROC)					qwglGetProcAddress("glProgramUniform4fv");
+	glProgramUniform1iv = (PFNGLPROGRAMUNIFORM1IVPROC)					qwglGetProcAddress("glProgramUniform1iv");
+	glProgramUniform2iv = (PFNGLPROGRAMUNIFORM2IVPROC)					qwglGetProcAddress("glProgramUniform2iv");
+	glProgramUniform3iv = (PFNGLPROGRAMUNIFORM3IVPROC)					qwglGetProcAddress("glProgramUniform3iv");
+	glProgramUniform4iv = (PFNGLPROGRAMUNIFORM4IVPROC)					qwglGetProcAddress("glProgramUniform4iv");
 
-	glUniformMatrix2fvDSA =		(PFNGLPROGRAMUNIFORMMATRIX2FVPROC)	qwglGetProcAddress("glProgramUniformMatrix2fv");
-	glUniformMatrix3fvDSA =		(PFNGLPROGRAMUNIFORMMATRIX3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3fv");
-	glUniformMatrix4fvDSA =		(PFNGLPROGRAMUNIFORMMATRIX4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4fv");
+	glProgramUniformMatrix2fv =		(PFNGLPROGRAMUNIFORMMATRIX2FVPROC)	qwglGetProcAddress("glProgramUniformMatrix2fv");
+	glProgramUniformMatrix3fv =		(PFNGLPROGRAMUNIFORMMATRIX3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3fv");
+	glProgramUniformMatrix4fv =		(PFNGLPROGRAMUNIFORMMATRIX4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4fv");
 
-	glUniformMatrix2x3fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX2X3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix2x3fv");
-	glUniformMatrix3x2fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX3X2FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3x2fv");
-	glUniformMatrix2x4fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX2X4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix2x4fv");
-	glUniformMatrix4x2fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX4X2FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x2fv");
-	glUniformMatrix3x4fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX3X4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3x4fv");
-	glUniformMatrix4x3fvDSA =	(PFNGLPROGRAMUNIFORMMATRIX4X3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x3fv");
+	glProgramUniformMatrix2x3fv =	(PFNGLPROGRAMUNIFORMMATRIX2X3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix2x3fv");
+	glProgramUniformMatrix3x2fv =	(PFNGLPROGRAMUNIFORMMATRIX3X2FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3x2fv");
+	glProgramUniformMatrix2x4fv =	(PFNGLPROGRAMUNIFORMMATRIX2X4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix2x4fv");
+	glProgramUniformMatrix4x2fv =	(PFNGLPROGRAMUNIFORMMATRIX4X2FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x2fv");
+	glProgramUniformMatrix3x4fv =	(PFNGLPROGRAMUNIFORMMATRIX3X4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3x4fv");
+	glProgramUniformMatrix4x3fv =	(PFNGLPROGRAMUNIFORMMATRIX4X3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x3fv");
 	
 	glBindTextureUnit =			(PFNGLBINDTEXTUREUNITPROC)				qwglGetProcAddress("glBindTextureUnit");
 
@@ -1825,9 +1826,6 @@ int R_Init(void *hinstance, void *hWnd)
 
 	qglEnable(GL_FRAMEBUFFER_SRGB);
 	Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
-
-	if (IsExtensionSupported("GL_ARB_direct_state_access"))
-		Com_Printf("...using GL_ARB_direct_state_access\n");
 
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");
