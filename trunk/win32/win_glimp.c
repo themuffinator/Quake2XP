@@ -835,7 +835,7 @@ int MeasureCpuSpeed()
     }
 
 
-qboolean GetCpuCoresThreads( void ) {
+qboolean GetCpuCoresThreads( qboolean ryzen ) {
 	char cpuVendor[12];
 	uint regs[4], cpuFeatures, cores, logical;
 	qboolean hyperThreads;
@@ -868,7 +868,13 @@ qboolean GetCpuCoresThreads( void ) {
 
 	// Detect hyper-threads  
 	hyperThreads = cpuFeatures & (1 << 28) && cores < logical;
-
+	
+	if (ryzen)
+	{
+		Com_Printf("Cores/Threads: "S_COLOR_GREEN"%i"S_COLOR_WHITE"|"S_COLOR_GREEN"%i\n", cores >> 1, logical);
+		return qtrue;
+	}
+	else
 	if (hyperThreads)
 	{
 		Com_Printf("Cores/Threads: "S_COLOR_GREEN"%i"S_COLOR_WHITE"|"S_COLOR_GREEN"%i\n", cores >> 1, logical >> 1);
@@ -892,11 +898,15 @@ void GLimp_CpuID(void)
 
 	qboolean    SSE3	= qfalse;
 	qboolean	SSE4	= qfalse;
+	qboolean	SSE41	= qfalse;
+	qboolean	SSE42	= qfalse;
 	qboolean	SSE2	= qfalse;
 	qboolean	SSE		= qfalse;
 	qboolean	MMX		= qfalse;
 	qboolean	HTT		= qfalse;
+	qboolean	SMT		= qfalse;
 	qboolean	EM64T	= qfalse;
+	qboolean	AVX		= qfalse;
 
     // __cpuid with an InfoType argument of 0 returns the number of
     // valid Ids in CPUInfo[0] and the CPU identification string in
@@ -919,13 +929,16 @@ void GLimp_CpuID(void)
         // Interpret CPU feature information.
         if  (i == 1)
         {
-            SSE4					= (CPUInfo[2] & BIT (9));
-            SSE3					= (CPUInfo[2] & BIT (0));
-			SSE2					= (CPUInfo[3] & BIT(26));
-			SSE						= (CPUInfo[3] & BIT(25));
-			MMX						= (CPUInfo[3] & BIT(23));
-			EM64T					= (CPUInfo[3] & BIT(29));
-            nFeatureInfo			=  CPUInfo[3];
+			SSE2			= (CPUInfo[3] & BIT(26));
+			SSE3			= (CPUInfo[2] & BIT (0));
+			SSE4			= (CPUInfo[2] & BIT (9));
+			SSE41			= (CPUInfo[2] & BIT(19));
+			SSE42			= (CPUInfo[2] & BIT(20));
+			SSE				= (CPUInfo[3] & BIT(25));
+			MMX				= (CPUInfo[3] & BIT(23));
+			EM64T			= (CPUInfo[3] & BIT(29));
+			AVX				= (CPUInfo[2] & BIT(28));
+            nFeatureInfo	=  CPUInfo[3];
         }
     }
     // Calling __cpuid with 0x80000000 as the InfoType argument
@@ -952,36 +965,56 @@ void GLimp_CpuID(void)
 
     if  (nIds >= 1){
  
-        if(nFeatureInfo || SSE3 || MMX || SSE || SSE2 || SSE4 || EM64T){
+        if(nFeatureInfo){
        		
 		Com_Printf ("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[0]);
-		HTT = GetCpuCoresThreads();
+
+		int  count = 0;
+		char *find = strtok(&CPUBrandString[0], " ");
+		
+		while (find != NULL)
+		{
+			// print current line
+		//	Com_Printf("%s\n", find);
+			if (!Q_strcasecmp(find, "Ryzen"))
+				count++;
+			if (!Q_strcasecmp(find, "5"))
+				count++;
+			if (!Q_strcasecmp(find, "7"))
+				count++;
+			// select new line
+			find = strtok(NULL, " ");
+		}
+		if(count >=2)
+			SMT = GetCpuCoresThreads(qtrue);
+		else
+			HTT = GetCpuCoresThreads(qfalse);
+
 		float GHz = (float)dwCPUSpeed * 0.001;
 		Com_Printf ("CPU Speed: ~"S_COLOR_GREEN"%.3f"S_COLOR_WHITE" GHz\n", GHz);
 		Com_Printf ("Supported Extensions: ");
 				
 		__cpuid(CPUInfo, 0x80000001);
 		
-			if(CPUInfo[3] & 0x80000000)
-				Com_Printf (S_COLOR_YELLOW"3DNow! ");
-			if(CPUInfo[3] & 1<<30)
-				Com_Printf (S_COLOR_YELLOW"ex3DNow! ");
-			if(CPUInfo[3] & 1<<22)
-				Com_Printf (S_COLOR_YELLOW"MmxExt ");
-				
-			if(MMX)
-				Com_Printf (S_COLOR_YELLOW"MMX ");
-			if(SSE)
+			if (SSE)
 				Com_Printf (S_COLOR_YELLOW"SSE ");
-			if(SSE2)
+			if (SSE2)
 				Com_Printf (S_COLOR_YELLOW"SSE2 ");
-			if(SSE3)
+			if (SSE3)
 				Com_Printf (S_COLOR_YELLOW"SSE3 ");
-			if(SSE4)
+			if (SSE4)
 				Com_Printf (S_COLOR_YELLOW"SSE4 ");
-			if(HTT)
+			if (SSE41)
+				Com_Printf(S_COLOR_YELLOW"SSE4.1 ");
+			if (SSE42)
+				Com_Printf(S_COLOR_YELLOW"SSE4.2 ");
+			if (AVX)
+				Com_Printf(S_COLOR_YELLOW"AVX ");
+			if (HTT)
 				Com_Printf (S_COLOR_YELLOW"HTT ");
-			if(EM64T)
+			if (SMT)
+				Com_Printf(S_COLOR_YELLOW"SMT ");
+			if (EM64T)
 				Com_Printf (S_COLOR_YELLOW"EM64T");
 			Com_Printf("\n");
 
