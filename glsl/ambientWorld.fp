@@ -7,12 +7,12 @@ layout (binding = 5) uniform sampler2D		u_LightMap1;
 layout (binding = 6) uniform sampler2D		u_LightMap2;
 
 
-uniform int		u_LightMapType;
-uniform int		u_ssao;
-uniform float	u_ColorModulate;
-uniform float	u_ambientScale;    
-uniform float	u_specularScale;
-uniform int		u_isLava;
+layout (location = U_LM_TYPE)			uniform int		u_LightMapType;
+layout (location = U_USE_SSAO)			uniform int		u_ssao;
+layout (location = U_COLOR_MUL)			uniform float	u_ColorModulate;
+layout (location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;    
+layout (location = U_SPECULAR_SCALE)	uniform float	u_specularScale;
+layout (location = U_LAVA_PASS)			uniform int		u_isLava;
 
 in vec3	v_positionVS;
 in vec3	v_viewVecTS;

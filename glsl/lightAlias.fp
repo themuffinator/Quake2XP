@@ -5,20 +5,19 @@ layout (binding = 3) uniform samplerCube	u_CubeFilterMap;
 layout (binding = 4) uniform sampler2D		u_rghMap;
 layout (binding = 5) uniform sampler2D		u_bumpBlend;
 
-uniform float	u_LightRadius;
-uniform float	u_specularScale;
-uniform float	u_CausticsModulate;
-uniform float	u_ColorModulate;
-uniform vec4	u_LightColor;
-uniform int		u_fog;
-uniform float	u_fogDensity;
-uniform int		u_isCaustics;
-uniform int		u_isAmbient;
-uniform int		u_isRgh;
-uniform int		u_spotLight;
-uniform vec3	u_spotParams;
-uniform int		u_autoBump;
-uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
+layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
+layout(location = U_CAUSTICS_SCALE)		uniform float	u_CausticsModulate;
+layout(location = U_COLOR_MUL)			uniform float	u_ColorModulate;
+layout(location = U_COLOR)				uniform vec4	u_LightColor;
+layout(location = U_USE_FOG)			uniform int		u_fog;
+layout(location = U_FOG_DENSITY)		uniform float	u_fogDensity;
+layout(location = U_USE_CAUSTICS)		uniform int		u_isCaustics;
+layout(location = U_AMBIENT_LIGHT)		uniform int		u_isAmbient;
+layout(location = U_USE_RGH_MAP)		uniform int		u_isRgh;
+layout(location = U_SPOT_LIGHT)			uniform int		u_spotLight;
+layout(location = U_SPOT_PARAMS)		uniform vec3	u_spotParams;
+layout(location = U_USE_AUTOBUMP)		uniform int		u_autoBump;
+layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -27,7 +26,6 @@ in vec4			v_CubeCoord;
 in vec4			v_positionVS;
 in vec3			v_lightAtten;
 in vec3			v_lightSpot;
-in vec3			v_lightDirection;
 
 #include lighting.inc
 

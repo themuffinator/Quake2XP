@@ -1,12 +1,16 @@
-uniform vec3	u_viewOriginES;
-uniform vec3 	u_LightOrg;
-uniform float	u_fogDensity;
-uniform float	u_scroll;
-uniform mat4	u_attenMatrix;
-uniform mat4	u_spotMatrix;
-uniform mat4	u_cubeMatrix;
-uniform mat4	u_modelViewProjectionMatrix;
-uniform int		u_parallaxType;
+layout(location = 0) in vec3 att_position;
+layout(location = 1) in vec3 att_normal;
+layout(location = 2) in vec3 att_tangent;
+layout(location = 3) in vec3 att_binormal;
+layout(location = 5) in vec2 att_texCoordDiffuse;
+
+layout(location = U_ATTEN_MATRIX)	uniform mat4	u_attenMatrix;
+layout(location = U_SPOT_MATRIX)	uniform mat4	u_spotMatrix;
+layout(location = U_CUBE_MATRIX)	uniform mat4	u_cubeMatrix;
+layout(location = U_MVP_MATRIX)		uniform mat4	u_modelViewProjectionMatrix;
+layout(location = U_SCROLL)			uniform float	u_scroll;
+layout(location = U_VIEW_POS)		uniform vec3	u_viewOriginES;
+layout(location = U_LIGHT_POS)		uniform vec3 	u_LightOrg;
 
 out vec3		v_viewVecTS;
 out vec3 		v_lightVec;
@@ -16,12 +20,6 @@ out vec4		v_AttenCoord;
 out vec3		v_positionVS;
 out vec3		v_lightAtten;
 out vec3		v_lightSpot;
-
-layout(location = 0) in vec3 att_position;
-layout(location = 1) in vec3 att_normal;
-layout(location = 2) in vec3 att_tangent;
-layout(location = 3) in vec3 att_binormal;
-layout(location = 5) in vec2 att_texCoordDiffuse;
 
 void main (void) {
 	// setup tex coords

@@ -5,31 +5,27 @@ layout(location = 2) in vec3 att_tangent;
 layout(location = 3) in vec3 att_binormal;
 layout(location = 5) in vec2 att_texCoordDiffuse;
 
-uniform vec3	u_LightOrg;
-uniform vec3	u_ViewOrigin; 		
-uniform mat4	u_attenMatrix;
-uniform mat4	u_spotMatrix;
-uniform mat3	u_lightAxis;
-uniform mat4	u_cubeMatrix;
-uniform mat4	u_modelViewProjectionMatrix, u_modelViewMatrix;
+layout(location = U_LIGHT_POS)		uniform vec3	u_LightOrg;
+layout(location = U_VIEW_POS)		uniform vec3	u_ViewOrigin; 		
+layout(location = U_ATTEN_MATRIX)	uniform mat4	u_attenMatrix;
+layout(location = U_SPOT_MATRIX)	uniform mat4	u_spotMatrix;
+layout(location = U_CUBE_MATRIX)	uniform mat4	u_cubeMatrix;
+layout(location = U_MVP_MATRIX)		uniform mat4	u_modelViewProjectionMatrix;
 
 out vec2		v_texCoord;
 out vec4		v_CubeCoord;
 out vec4		v_AttenCoord;
 out vec3		v_viewVec;
 out vec3		v_lightVec;
-out vec4		v_viewPos;
 out vec3		v_lightAtten;
 out vec3		v_lightSpot;
-out vec3		v_lightDirection;
 
 void main (void) {
 	
 v_texCoord			= att_texCoordDiffuse; 
-v_CubeCoord			= u_cubeMatrix * vec4(att_position, 1.0);
-v_lightAtten		= (u_attenMatrix * vec4(att_position, 1.0)).xyz;
-v_lightSpot			= (u_spotMatrix * vec4(att_position, 1.0)).xyz;
-v_lightDirection	= u_lightAxis * (att_position - u_LightOrg);
+v_CubeCoord			= u_cubeMatrix		* vec4(att_position, 1.0);
+v_lightAtten		= (u_attenMatrix	* vec4(att_position, 1.0)).xyz;
+v_lightSpot			= (u_spotMatrix		* vec4(att_position, 1.0)).xyz;
 
 vec3 LV = u_LightOrg - att_position;
 v_lightVec.x = dot(att_tangent, LV);
@@ -42,6 +38,4 @@ v_viewVec.y = dot(att_binormal, VV);
 v_viewVec.z = dot(att_normal, VV); 
 
 gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
-
-v_viewPos = u_modelViewMatrix * vec4(att_position, 1.0);
 }

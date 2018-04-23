@@ -9,11 +9,11 @@ out	vec2			v_envCoord;
 out	vec2			v_shellCoord;
 out	vec4			v_color;
 
-uniform	vec2		u_shellParams;
-uniform	vec3		u_viewOrg;
-uniform	int			u_isEnvMap;
-uniform	int			u_isShell;
-uniform mat4		u_modelViewProjectionMatrix;
+layout(location = U_SHELL_PARAMS)	uniform	vec2		u_shellParams;
+layout(location = U_VIEW_POS)		uniform	vec3		u_viewOrg;
+layout(location = U_ENV_PASS)		uniform	int			u_isEnvMap;
+layout(location = U_SHELL_PASS)		uniform	int			u_isShell;
+layout(location = U_MVP_MATRIX)		uniform mat4		u_modelViewProjectionMatrix;
 
 void main ()
 {

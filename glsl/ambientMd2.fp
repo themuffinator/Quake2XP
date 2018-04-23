@@ -9,13 +9,12 @@ layout (binding = 2) uniform sampler2D		u_env;
 layout (binding = 3) uniform sampler2D		u_NormalMap;
 layout (binding = 4) uniform sampler2DRect	u_ssaoMap;
 
-uniform float		u_envScale;
-uniform int			u_isEnvMap;
-
-uniform	int			u_isShell;
-uniform int			u_ssao;
-uniform float		u_ColorModulate;
-uniform float		u_AddShift; 
+layout(location = U_ENV_SCALE)		uniform float	u_envScale;
+layout(location = U_ENV_PASS)		uniform int		u_isEnvMap;
+layout(location = U_SHELL_PASS)		uniform	int		u_isShell;
+layout(location = U_USE_SSAO)		uniform int		u_ssao;
+layout(location = U_COLOR_MUL)		uniform float	u_ColorModulate;
+layout(location = U_COLOR_OFFSET)	uniform float	u_AddShift; 
 
 void main ()
 {
