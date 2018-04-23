@@ -827,9 +827,6 @@ typedef struct glslProgram_s {
 	struct glslProgram_s	*nextHash;
 
 	char			name[MAX_QPATH];
-//	char			defStrings[MAX_PROGRAM_DEFS][MAX_DEF_NAME];
-	int				numId;
-//	uint			id[MAX_PROGRAM_ID];
 	int				id;
 	qboolean		valid;		// qtrue if all permutations linked successfully
 
@@ -912,100 +909,64 @@ typedef enum {
 glsl_attrib;
 
 typedef enum {
-	U_MODELVIEW = 0,
-	U_PROJ = 1,
-	U_MODEL_VIEW_PROJ = 2,
-	U_ORTO_PROJ = 3,
-	U_VIEW_ORG = 4,
-	U_LIGHT_ORG = 5,
-	U_DEPTH_PARAMS = 6,
-	U_SCREEN_SIZE = 7,
-	U_COLOR = 8,
-	U_COLOR_SCALE = 9,
+	U_MVP_MATRIX,
+	U_MODELVIEW_MATRIX,
+	U_PROJ_MATRIX,
+	U_ORTHO_MATRIX,
+
+	U_TEXTURE0_MATRIX,
+	U_TEXTURE1_MATRIX,
+	U_TEXTURE2_MATRIX,
+	U_TEXTURE3_MATRIX,
+	U_TEXTURE4_MATRIX,
+	U_TEXTURE5_MATRIX,
+	U_TEXTURE6_MATRIX,
+
+	U_ATTEN_MATRIX,
+	U_SPOT_MATRIX,
+	U_CUBE_MATRIX,
+
+	U_SCREEN_SIZE,
+	U_DEPTH_PARAMS,
+	U_COLOR,
+	U_COLOR_OFFSET,	// glow shift
+	U_COLOR_MUL,	// color multipler
+
+	U_SCROLL,
+	U_AMBIENT_LEVEL,
+	U_LM_TYPE,
+	U_PARALLAX_TYPE,
+	U_PARALLAX_PARAMS,
+	U_USE_SSAO,
+	U_LAVA_PASS,
+	U_SHELL_PASS,
+	U_SHELL_PARAMS,
+	U_ENV_PASS,
+	U_ENV_SCALE,
+	
+	U_LIGHT_POS,
+	U_VIEW_POS,
+	U_USE_FOG,
+	U_FOG_DENSITY,
+	U_USE_CAUSTICS,
+	U_CAUSTICS_SCALE,
+	U_AMBIENT_LIGHT,
+	U_SPOT_LIGHT,
+	U_SPOT_PARAMS,
+	U_USE_AUTOBUMP,
+	U_AUTOBUMP_PARAMS,
+	U_USE_RGH_MAP,
+	U_RGH_SCALE,
+	U_SPECULAR_SCALE,
+
+	U_TRANS_PASS,
+	U_FLOAT0,
+
 }
 glsl_uniform;
 
 uint null_mvp;
-uint fbo2screen_orthoMatrix;
 
-uint ambientWorld_lightmapType;
-uint ambientWorld_ssao;
-uint ambientWorld_parallaxParams;
-uint ambientWorld_colorScale;
-uint ambientWorld_specularScale;
-uint ambientWorld_viewOrigin;
-uint ambientWorld_parallaxType;
-uint ambientWorld_ambientLevel;
-uint ambientWorld_scroll;
-uint ambientWorld_mvp;
-uint ambientWorld_lava;
-
-uint lightWorld_parallaxParams;
-uint lightWorld_colorScale;
-uint lightWorld_viewOrigin;
-uint lightWorld_parallaxType;
-uint lightWorld_lightOrigin;
-uint lightWorld_lightColor;
-uint lightWorld_fog;
-uint lightWorld_fogDensity;
-uint lightWorld_causticsIntens;
-uint lightWorld_caustics;
-uint lightWorld_specularScale;
-uint lightWorld_roughnessScale;
-uint lightWorld_ambient;
-uint lightWorld_attenMatrix;
-uint lightWorld_cubeMatrix;
-uint lightWorld_scroll;
-uint lightWorld_mvp;
-uint lightWorld_isRgh;
-uint lightWorld_spotLight;
-uint lightWorld_spotParams;
-uint lightWorld_spotMatrix;
-uint lightWorld_autoBump;
-uint lightWorld_autoBumpParams;
-
-uint ambientAlias_ssao;
-uint ambientAlias_colorModulate;
-uint ambientAlias_addShift;
-uint ambientAlias_isEnvMaping;
-uint ambientAlias_envScale;
-uint ambientAlias_isShell;
-uint ambientAlias_shellParams;
-uint ambientAlias_mvp;
-uint ambientAlias_viewOrg;
-
-uint ambientMd3_texRotation;
-uint ambientMd3_colorModulate;
-uint ambientMd3_addShift;
-uint ambientMd3_isEnvMaping;
-uint ambientMd3_isTransluscent;
-uint ambientMd3_envScale;
-uint ambientMd3_isShell;
-uint ambientMd3_shellParams;
-uint ambientMd3_mvp;
-uint ambientMd3_viewOrg;
-uint ambientMd3_texRotation;
-
-uint lightAlias_colorScale;
-uint lightAlias_viewOrigin;
-uint lightAlias_lightOrigin;
-uint lightAlias_lightColor;
-uint lightAlias_fog;
-uint lightAlias_fogDensity;
-uint lightAlias_causticsIntens;
-uint lightAlias_isCaustics;
-uint lightAlias_isRgh;
-uint lightAlias_specularScale;
-uint lightAlias_ambient;
-uint lightAlias_attenMatrix;
-uint lightAlias_cubeMatrix;
-uint lightAlias_mvp;
-uint lightAlias_mv;
-uint lightAlias_spotLight;
-uint lightAlias_spotParams;
-uint lightAlias_spotMatrix;
-uint lightAlias_autoBump;
-uint lightAlias_autoBumpParams;
 
 uint gen_attribConsole;
 uint gen_attribColors;

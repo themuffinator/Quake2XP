@@ -608,23 +608,23 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	// setup program
 	GL_BindProgram(md3AmbientProgram);
 
-	qglUniform1i(ambientMd3_isEnvMaping, 0);
-	qglUniform1i(ambientMd3_isShell, 0);
-	qglUniform1i(ambientMd3_isTransluscent, 0);
-	qglUniform1f(ambientMd3_colorModulate, 1.0);
+	qglUniform1i(U_ENV_PASS, 0);
+	qglUniform1i(U_SHELL_PASS, 0);
+	qglUniform1i(U_TRANS_PASS, 0);
+	qglUniform1f(U_COLOR_MUL, 1.0);
 
 	float alphaShift = sin(ref_realtime * 5.666);
 	alphaShift = (alphaShift + 1) * 0.5f;
 	alphaShift = clamp(alphaShift, 0.01, 1.0);
 
-	qglUniform1f(ambientMd3_addShift, alphaShift);
-	qglUniform1f(ambientMd3_envScale, 0.1);
+	qglUniform1f(U_COLOR_OFFSET, alphaShift);
+	qglUniform1f(U_ENV_SCALE, 0.1);
 	
 	VectorSubtract(r_origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector(currententity->axis, temp, viewOrg);
 
-	qglUniform3fv(ambientMd3_viewOrg, 1, viewOrg);
-	qglUniformMatrix4fv(ambientMd3_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniform3fv(U_VIEW_POS, 1, viewOrg);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -642,8 +642,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_Enable(GL_BLEND);
 			GL_DepthMask(0);
 			GL_Disable(GL_CULL_FACE);
-			qglUniform1f(ambientMd3_addShift, 1.0);
-			qglUniform1f(ambientMd3_colorModulate, 2.0);
+			qglUniform1f(U_COLOR_OFFSET, 1.0);
+			qglUniform1f(U_COLOR_MUL, 2.0);
 			GL_BlendFunc(GL_ONE, GL_ONE);
 		}
 
@@ -708,11 +708,11 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_Enable(GL_BLEND);
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		GL_DepthMask(0);
-		qglUniform1i(ambientMd3_isEnvMaping, 1);
-		qglUniform1i(ambientMd3_isTransluscent, 1);
+		qglUniform1i(U_ENV_PASS, 1);
+		qglUniform1i(U_TRANS_PASS, 1);
 
 		lum = DotProduct(luminance, shadelight);
-		qglUniform1f(ambientMd3_envScale, lum);
+		qglUniform1f(U_ENV_SCALE, lum);
 
 		for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -923,12 +923,12 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 	R_UpdateLightAliasUniforms();
 
-	qglUniform1i(lightAlias_autoBump, 0);
+	qglUniform1i(U_USE_AUTOBUMP, 0);
 	
 	if (inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
-		qglUniform1i(lightAlias_isCaustics, 1);
+		qglUniform1i(U_USE_CAUSTICS, 1);
 	else
-		qglUniform1i(lightAlias_isCaustics, 0);
+		qglUniform1i(U_USE_CAUSTICS, 0);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -1000,9 +1000,9 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_MBindCube(GL_TEXTURE3, r_lightCubeMap[currentShadowLight->filter]->texnum);
 
 		if (rgh == r_notexture)
-			qglUniform1i(lightAlias_isRgh, 0);
+			qglUniform1i(U_USE_RGH_MAP, 0);
 		else {
-			qglUniform1i(lightAlias_isRgh, 1);
+			qglUniform1i(U_USE_RGH_MAP, 1);
 			GL_MBind(GL_TEXTURE4, rgh->texnum);
 		}
 
@@ -1081,10 +1081,10 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE);
 	vec2_t shellParams = { r_newrefdef.time * 0.45, 0.1f };
 
-	qglUniform1i(ambientMd3_isShell, 1); // deform in vertex shader
-	qglUniform3fv(ambientMd3_viewOrg, 1, viewOrg);
-	qglUniform2fv(ambientMd3_shellParams, 1, shellParams);
-	qglUniformMatrix4fv(ambientMd3_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniform1i(U_SHELL_PASS, 1); // deform in vertex shader
+	qglUniform3fv(U_VIEW_POS, 1, viewOrg);
+	qglUniform2fv(U_SHELL_PARAMS, 1, shellParams);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_MBind(GL_TEXTURE0, r_texshell[0]->texnum);

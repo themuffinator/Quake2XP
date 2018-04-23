@@ -333,14 +333,14 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		fx		= R_TextureAnimationFx(surf->texInfo);
 		normal	= R_TextureAnimationNormal(surf->texInfo);
 
-		qglUniform1f(ambientWorld_specularScale, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
+		qglUniform1f(U_SPECULAR_SCALE, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
 		
 		if (!r_skipStaticLights->integer) 
 		{
 			if (surf->flags & MSURF_LAVA)
-				qglUniform1f(ambientWorld_ambientLevel, 0.5);
+				qglUniform1f(U_AMBIENT_LEVEL, 0.5);
 			else
-				qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
+				qglUniform1f(U_AMBIENT_LEVEL, r_lightmapScale->value);
 		}
 
 		if (!image->parallaxScale){
@@ -352,12 +352,12 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 			scale[0] = image->parallaxScale / image->width;
 			scale[1] = image->parallaxScale / image->height;
 		}
-			qglUniform4f(ambientWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
+			qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], image->upload_width, image->upload_height);
 	
 		if (surf->flags & MSURF_LAVA)
-			qglUniform1i(ambientWorld_lava, 1);
+			qglUniform1i(U_LAVA_PASS, 1);
 		else
-			qglUniform1i(ambientWorld_lava, 0);
+			qglUniform1i(U_LAVA_PASS, 0);
 
 		GL_MBind(GL_TEXTURE0, image->texnum);
 		GL_MBind(GL_TEXTURE2, fx->texnum);
@@ -371,9 +371,9 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		}
 
 		if(!bmodel)
-			qglUniform1f(ambientWorld_scroll, scroll);
+			qglUniform1f(U_SCROLL, scroll);
 		else
-			qglUniform1f(ambientWorld_scroll, 0.0);
+			qglUniform1f(U_SCROLL, 0.0);
 	}
 
 	// create indexes
@@ -413,26 +413,26 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	// setup program
 	GL_BindProgram(ambientWorldProgram);
 
-	qglUniform1f(ambientWorld_colorScale, r_textureColorScale->value);
-	qglUniform3fv(ambientWorld_viewOrigin, 1, bmodel ? BmodelViewOrg : r_origin);
-	qglUniform1i(ambientWorld_parallaxType, clamp(r_reliefMapping->integer, 0, 1));
-	qglUniform1f(ambientWorld_ambientLevel, r_lightmapScale->value);
+	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
+	qglUniform3fv(U_VIEW_POS, 1, bmodel ? BmodelViewOrg : r_origin);
+	qglUniform1i(U_PARALLAX_TYPE, clamp(r_reliefMapping->integer, 0, 1));
+	qglUniform1f(U_AMBIENT_LEVEL, r_lightmapScale->value);
 
-	qglUniform1i(ambientWorld_lightmapType, (r_worldmodel->useXPLM && r_useRadiosityBump->integer) ? 1 : 0);
+	qglUniform1i(U_LM_TYPE, (r_worldmodel->useXPLM && r_useRadiosityBump->integer) ? 1 : 0);
 
 	if (!bmodel){
-		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	}
 	else{
-		qglUniformMatrix4fv(ambientWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 	}
 
 	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		qglUniform1i(ambientWorld_ssao, 1);
+		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
-		qglUniform1i(ambientWorld_ssao, 0);
+		qglUniform1i(U_USE_SSAO, 0);
 
 	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
 
@@ -509,32 +509,32 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
 		rghMap		= R_TextureAnimationRgh		(surf->texInfo);
 
-		qglUniform1f(lightWorld_specularScale,	image->specularScale ?	image->specularScale	: r_specularScale->value);
-		qglUniform1f(lightWorld_roughnessScale, image->rghScale ?		image->rghScale			: 0.666); // HAIL SATAN!
+		qglUniform1f(U_SPECULAR_SCALE,	image->specularScale ?	image->specularScale	: r_specularScale->value);
+		qglUniform1f(U_RGH_SCALE, image->rghScale ?		image->rghScale			: 0.666); // HAIL SATAN!
 
 		if (rghMap == r_notexture) {
-			qglUniform1i(lightWorld_isRgh, 0);
+			qglUniform1i(U_USE_RGH_MAP, 0);
 		}
 		else {
-			qglUniform1i(lightWorld_isRgh, 1);
+			qglUniform1i(U_USE_RGH_MAP, 1);
 			GL_MBind(GL_TEXTURE4, rghMap->texnum);
 		}
 
 		if (bmodel){
 			if (caustics && currentShadowLight->castCaustics){
-				qglUniform1i(lightWorld_caustics, 1);
+				qglUniform1i(U_USE_CAUSTICS, 1);
 				GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 			}
 			else
-				qglUniform1i(lightWorld_caustics, 0);
+				qglUniform1i(U_USE_CAUSTICS, 0);
 		}
 		else{
 			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics) {
-				qglUniform1i(lightWorld_caustics, 1);
+				qglUniform1i(U_USE_CAUSTICS, 1);
 				GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 			}
 			else
-				qglUniform1i(lightWorld_caustics, 0);
+				qglUniform1i(U_USE_CAUSTICS, 0);
 		}
 
 		if (!image->parallaxScale){
@@ -547,7 +547,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 			scale[1] = image->parallaxScale / image->height;
 		}
 
-		qglUniform4f(lightWorld_parallaxParams, scale[0], scale[1], image->upload_width, image->upload_height);
+		qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], image->upload_width, image->upload_height);
 
 
 		GL_MBind		(GL_TEXTURE0, image->texnum);
@@ -555,11 +555,11 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		GL_MBindCube	(GL_TEXTURE2, r_lightCubeMap[currentShadowLight->filter]->texnum);
 
 		if (r_imageAutoBump->integer && normalMap == r_defBump) {
-			qglUniform1i(lightWorld_autoBump, 1);
-			qglUniform2f(lightWorld_autoBumpParams, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
+			qglUniform1i(U_USE_AUTOBUMP, 1);
+			qglUniform2f(U_AUTOBUMP_PARAMS, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
 		}
 		else
-			qglUniform1i(lightWorld_autoBump, 0);
+			qglUniform1i(U_USE_AUTOBUMP, 0);
 
 		if (surf->texInfo->flags & SURF_FLOWING){
 
@@ -569,9 +569,9 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		}		
 		
 		if(!bmodel)
-			qglUniform1f(lightWorld_scroll, scroll);
+			qglUniform1f(U_SCROLL, scroll);
 		else
-			qglUniform1f(lightWorld_scroll, 0.0);
+			qglUniform1f(U_SCROLL, 0.0);
 	}
 
 	// create indexes
@@ -601,44 +601,44 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
  {
 	 mat4_t	entAttenMatrix, entSpotMatrix;
 
-	qglUniform1f(lightWorld_colorScale, r_textureColorScale->value);
-	qglUniform1i(lightWorld_ambient, (int)currentShadowLight->isAmbient);
-	qglUniform3fv(lightWorld_lightOrigin, 1, currentShadowLight->origin);
-	qglUniform4f(lightWorld_lightColor, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniform1i(lightWorld_fog, (int)currentShadowLight->isFog);
-	qglUniform1f(lightWorld_fogDensity, currentShadowLight->fogDensity);
-	qglUniform1i(lightWorld_parallaxType, clamp(r_reliefMapping->integer, 0, 1));
-	qglUniform1f(lightWorld_causticsIntens, r_causticIntens->value);
+	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
+	qglUniform1i(U_AMBIENT_LIGHT, (int)currentShadowLight->isAmbient);
+	qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);
+	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);
+	qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);
+	qglUniform1i(U_PARALLAX_TYPE, clamp(r_reliefMapping->integer, 0, 1));
+	qglUniform1f(U_CAUSTICS_SCALE, r_causticIntens->value);
 
 	 if (bModel)
-		qglUniform3fv(lightWorld_viewOrigin, 1, BmodelViewOrg);
+		qglUniform3fv(U_VIEW_POS, 1, BmodelViewOrg);
 	 else
-		 qglUniform3fv(lightWorld_viewOrigin, 1, r_origin);
+		 qglUniform3fv(U_VIEW_POS, 1, r_origin);
 
 	 if (!bModel){
-		 qglUniformMatrix4fv(lightWorld_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-		 qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)currentShadowLight->attenMatrix);
-		 qglUniformMatrix4fv(lightWorld_spotMatrix, 1, qfalse, (const float *)currentShadowLight->spotMatrix);
+		 qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		 qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float *)currentShadowLight->attenMatrix);
+		 qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float *)currentShadowLight->spotMatrix);
 	 }
 	 else{
-		 qglUniformMatrix4fv(lightWorld_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+		 qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 		 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
-		 qglUniformMatrix4fv(lightWorld_attenMatrix, 1, qfalse, (const float *)entAttenMatrix);
+		 qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float *)entAttenMatrix);
 
 		 Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
-		 qglUniformMatrix4fv(lightWorld_spotMatrix, 1, qfalse, (const float *)entSpotMatrix);
+		 qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float *)entSpotMatrix);
 	 }
 	 
-	 qglUniform3f(lightWorld_spotParams, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
+	 qglUniform3f(U_SPOT_PARAMS, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
 
 	 if (currentShadowLight->isCone) 
-		 qglUniform1i(lightWorld_spotLight, 1);
+		 qglUniform1i(U_SPOT_LIGHT, 1);
 	 else
-		 qglUniform1i(lightWorld_spotLight, 0);
+		 qglUniform1i(U_SPOT_LIGHT, 0);
 
 	 R_CalcCubeMapMatrix(bModel);
-	 qglUniformMatrix4fv(lightWorld_cubeMatrix, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
+	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
  }
 

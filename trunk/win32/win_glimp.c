@@ -1574,7 +1574,7 @@ static qboolean GLW_ChoosePixelFormat() {
 		0
 	};
 
-	Com_Printf(S_COLOR_YELLOW"...Attempting PIXELFORMAT:\n\n");
+	Com_Printf(S_COLOR_YELLOW"\n...Attempting PIXELFORMAT:\n\n");
 
 	if (!qwglChoosePixelFormatARB(glw_state.hDC, pAttribs, NULL, 1, &pixelFormat, &numFormats)) {
 		Com_Printf(S_COLOR_RED "...qwglChoosePixelFormatARB() failed.");

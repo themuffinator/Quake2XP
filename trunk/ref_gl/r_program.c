@@ -33,6 +33,60 @@ static const char *mathDefs =
 "#define	SQRT_THREE		1.73205080756887729352\n"
 "#define	INV_PI			(1.0 / PI)\n";
 
+static const char *glslUniforms =
+"#define	U_MVP_MATRIX			0\n"
+"#define	U_MODELVIEW_MATRIX		1\n"
+"#define	U_PROJ_MATRIX			2\n"
+"#define	U_ORTHO_MATRIX			3\n"
+
+"#define	U_TEXTURE0_MATRIX		4\n"
+"#define	U_TEXTURE1_MATRIX		5\n"
+"#define	U_TEXTURE2_MATRIX		6\n"
+"#define	U_TEXTURE3_MATRIX		7\n"
+"#define	U_TEXTURE4_MATRIX		8\n"
+"#define	U_TEXTURE5_MATRIX		9\n"
+"#define	U_TEXTURE6_MATRIX		10\n"
+
+"#define	U_ATTEN_MATRIX			11\n"
+"#define	U_SPOT_MATRIX			12\n"
+"#define	U_CUBE_MATRIX			13\n"
+
+"#define	U_SCREEN_SIZE			14\n"
+"#define	U_DEPTH_PARAMS			15\n"
+"#define	U_COLOR					16\n"
+"#define	U_COLOR_OFFSET			17\n"	// glow shift
+"#define	U_COLOR_MUL				18\n"	// color multipler
+
+"#define	U_SCROLL				19\n"
+"#define	U_AMBIENT_LEVEL			20\n"
+"#define	U_LM_TYPE				21\n"
+"#define	U_PARALLAX_TYPE			22\n"
+"#define	U_PARALLAX_PARAMS		23\n"
+"#define	U_USE_SSAO				24\n"
+"#define	U_LAVA_PASS				25\n"
+"#define	U_SHELL_PASS			26\n"
+"#define	U_SHELL_PARAMS			27\n"
+"#define	U_ENV_PASS				28\n"
+"#define	U_ENV_SCALE				29\n"
+
+"#define	U_LIGHT_POS				30\n"
+"#define	U_VIEW_POS				31\n"
+"#define	U_USE_FOG				32\n"
+"#define	U_FOG_DENSITY			33\n"
+"#define	U_USE_CAUSTICS			34\n"
+"#define	U_CAUSTICS_SCALE		35\n"
+"#define	U_AMBIENT_LIGHT			36\n"
+"#define	U_SPOT_LIGHT			37\n"
+"#define	U_SPOT_PARAMS			38\n"
+"#define	U_USE_AUTOBUMP			39\n"
+"#define	U_AUTOBUMP_PARAMS		40\n"
+"#define	U_USE_RGH_MAP			41\n"
+"#define	U_RGH_SCALE				42\n"
+"#define	U_SPECULAR_SCALE		43\n"
+
+"#define	U_TRANS_PASS			44\n"
+;
+
 /*
 =================
 Com_HashKey
@@ -243,6 +297,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 
 	strings[numStrings++] = glslExt;
 	strings[numStrings++] = mathDefs;
+	strings[numStrings++] = glslUniforms;
 
 	// compile vertex shader
 	if (vertexSource) {
@@ -485,7 +540,7 @@ void R_InitPrograms (void) {
 	float	sec;
 	start = Sys_Milliseconds ();
 #endif
-
+	 
 	memset (programHashTable, 0, sizeof(programHashTable));
 	memset (&r_nullProgram, 0, sizeof(glslProgram_t));
 
@@ -505,20 +560,6 @@ void R_InitPrograms (void) {
 	ambientWorldProgram = R_FindProgram ("ambientWorld", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (ambientWorldProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = ambientWorldProgram->id;
-
-		ambientWorld_lightmapType	= qglGetUniformLocation (id, "u_LightMapType");
-		ambientWorld_ssao			= qglGetUniformLocation (id, "u_ssao");
-		ambientWorld_parallaxParams = qglGetUniformLocation (id, "u_parallaxParams");
-		ambientWorld_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
-		ambientWorld_specularScale	= qglGetUniformLocation (id, "u_specularScale");
-		ambientWorld_viewOrigin		= qglGetUniformLocation (id, "u_viewOriginES");
-		ambientWorld_parallaxType	= qglGetUniformLocation (id, "u_parallaxType");
-		ambientWorld_ambientLevel	= qglGetUniformLocation (id, "u_ambientScale");
-		ambientWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
-		ambientWorld_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
-		ambientWorld_lava			= qglGetUniformLocation	(id, "u_isLava");
-
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -529,34 +570,6 @@ void R_InitPrograms (void) {
 	lightWorldProgram = R_FindProgram ("lightWorld", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (lightWorldProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = lightWorldProgram->id;
-
-		lightWorld_parallaxParams	= qglGetUniformLocation (id, "u_parallaxParams");
-		lightWorld_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
-		lightWorld_viewOrigin		= qglGetUniformLocation (id, "u_viewOriginES");
-		lightWorld_parallaxType		= qglGetUniformLocation (id, "u_parallaxType");
-
-		lightWorld_lightOrigin		= qglGetUniformLocation (id, "u_LightOrg");
-		lightWorld_lightColor		= qglGetUniformLocation (id, "u_LightColor");
-		lightWorld_fog				= qglGetUniformLocation (id, "u_fog");
-		lightWorld_fogDensity		= qglGetUniformLocation (id, "u_fogDensity");
-
-		lightWorld_causticsIntens	= qglGetUniformLocation (id, "u_CausticsModulate");
-		lightWorld_caustics			= qglGetUniformLocation (id, "u_isCaustics");
-
-		lightWorld_specularScale	= qglGetUniformLocation (id, "u_specularScale");
-		lightWorld_ambient			= qglGetUniformLocation (id, "u_isAmbient");
-		lightWorld_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
-		lightWorld_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
-		lightWorld_scroll			= qglGetUniformLocation (id, "u_scroll");
-		lightWorld_mvp				= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
-		lightWorld_isRgh			= qglGetUniformLocation (id, "u_isRgh");
-		lightWorld_roughnessScale	= qglGetUniformLocation (id, "u_roughnessScale");
-		lightWorld_spotLight		= qglGetUniformLocation (id, "u_spotLight");
-		lightWorld_spotParams		= qglGetUniformLocation (id, "u_spotParams");
-		lightWorld_spotMatrix		= qglGetUniformLocation (id, "u_spotMatrix");
-		lightWorld_autoBump			= qglGetUniformLocation (id, "u_autoBump");
-		lightWorld_autoBumpParams	= qglGetUniformLocation	(id, "u_autoBumpParams");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -567,17 +580,6 @@ void R_InitPrograms (void) {
 	aliasAmbientProgram = R_FindProgram ("ambientMd2", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (aliasAmbientProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = aliasAmbientProgram->id;
-
-		ambientAlias_isEnvMaping	= qglGetUniformLocation (id, "u_isEnvMap");
-		ambientAlias_ssao			= qglGetUniformLocation (id, "u_ssao");
-		ambientAlias_colorModulate	= qglGetUniformLocation (id, "u_ColorModulate");
-		ambientAlias_addShift		= qglGetUniformLocation (id, "u_AddShift");
-		ambientAlias_envScale		= qglGetUniformLocation (id, "u_envScale");
-		ambientAlias_isShell		= qglGetUniformLocation (id, "u_isShell");
-		ambientAlias_shellParams	= qglGetUniformLocation (id, "u_shellParams");
-		ambientAlias_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
-		ambientAlias_viewOrg		= qglGetUniformLocation (id, "u_viewOrg");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -588,19 +590,7 @@ void R_InitPrograms (void) {
 	md3AmbientProgram = R_FindProgram("ambientMd3", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (md3AmbientProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = md3AmbientProgram->id;
 
-		ambientMd3_isEnvMaping		= qglGetUniformLocation(id, "u_isEnvMap");
-		ambientMd3_texRotation		= qglGetUniformLocation(id, "u_isRotation");
-		ambientMd3_colorModulate	= qglGetUniformLocation(id, "u_ColorModulate");
-		ambientMd3_addShift			= qglGetUniformLocation(id, "u_AddShift");
-		ambientMd3_envScale			= qglGetUniformLocation(id, "u_envScale");
-		ambientMd3_isShell			= qglGetUniformLocation(id, "u_isShell");
-		ambientMd3_shellParams		= qglGetUniformLocation(id, "u_shellParams");
-		ambientMd3_mvp				= qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
-		ambientMd3_texRotation		= qglGetUniformLocation(id, "u_rotateTexMatrix");
-		ambientMd3_viewOrg			= qglGetUniformLocation(id, "u_viewOrg");
-		ambientMd3_isTransluscent	= qglGetUniformLocation(id, "u_isTransluscent");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -612,28 +602,6 @@ void R_InitPrograms (void) {
 
 	if (aliasBumpProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = aliasBumpProgram->id;
-
-		lightAlias_viewOrigin		= qglGetUniformLocation (id, "u_ViewOrigin");
-		lightAlias_lightOrigin		= qglGetUniformLocation (id, "u_LightOrg");
-		lightAlias_lightColor		= qglGetUniformLocation (id, "u_LightColor");
-		lightAlias_fog				= qglGetUniformLocation (id, "u_fog");
-		lightAlias_fogDensity		= qglGetUniformLocation (id, "u_fogDensity");
-		lightAlias_causticsIntens	= qglGetUniformLocation (id, "u_CausticsModulate");
-		lightAlias_isCaustics		= qglGetUniformLocation (id, "u_isCaustics");
-		lightAlias_isRgh			= qglGetUniformLocation (id, "u_isRgh");
-		lightAlias_colorScale		= qglGetUniformLocation (id, "u_ColorModulate");
-		lightAlias_specularScale	= qglGetUniformLocation (id, "u_specularScale");
-		lightAlias_ambient			= qglGetUniformLocation (id, "u_isAmbient");
-		lightAlias_attenMatrix		= qglGetUniformLocation (id, "u_attenMatrix");
-		lightAlias_cubeMatrix		= qglGetUniformLocation (id, "u_cubeMatrix");
-		lightAlias_mvp				= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
-		lightAlias_mv				= qglGetUniformLocation (id, "u_modelViewMatrix");
-		lightAlias_spotLight		= qglGetUniformLocation (id, "u_spotLight");
-		lightAlias_spotParams		= qglGetUniformLocation (id, "u_spotParams");
-		lightAlias_spotMatrix		= qglGetUniformLocation (id, "u_spotMatrix");
-		lightAlias_autoBump			= qglGetUniformLocation	(id, "u_autoBump");
-		lightAlias_autoBumpParams	= qglGetUniformLocation	(id, "u_autoBumpParams");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -1067,7 +1035,7 @@ void R_ListPrograms_f (void) {
 		if (!program->valid)
 			numInvalid++;
 
-		Com_Printf ("  %4i: %12i %s%s\n", i, program->numId, program->name, program->valid ? "" : "(INVALID)");
+		Com_Printf ("  %4i: %s%s\n", i, program->name, program->valid ? "" : "(INVALID)");
 	}
 
 	Com_Printf ("-------------------\n");

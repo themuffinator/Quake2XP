@@ -236,31 +236,31 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	GL_BindProgram (aliasAmbientProgram);
 
 	if (currentmodel->envMap)
-		qglUniform1i (ambientAlias_isEnvMaping, 1);
+		qglUniform1i (U_ENV_PASS, 1);
 	else
-		qglUniform1i (ambientAlias_isEnvMaping, 0);
+		qglUniform1i (U_ENV_PASS, 0);
 
-	qglUniform1i (ambientAlias_isShell, 0);
+	qglUniform1i (U_SHELL_PASS, 0);
 
-	qglUniform1f (ambientAlias_colorModulate, r_textureColorScale->value);
-	qglUniform1f (ambientAlias_addShift, alphaShift);
+	qglUniform1f (U_COLOR_MUL, r_textureColorScale->value);
+	qglUniform1f (U_COLOR_OFFSET, alphaShift);
 
 	GL_MBind (GL_TEXTURE0, skin->texnum);
 	GL_MBind (GL_TEXTURE1, glowskin->texnum);
 	GL_MBind (GL_TEXTURE2, r_envTex->texnum);
 	GL_MBind (GL_TEXTURE3, skinNormalmap->texnum);
 
-	qglUniform1f(ambientAlias_envScale, currentmodel->envScale);
+	qglUniform1f(U_ENV_SCALE, currentmodel->envScale);
 
 	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
 		GL_MBindRect (GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		qglUniform1i(ambientAlias_ssao, 1);
+		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
-		qglUniform1i(ambientAlias_ssao, 0);
+		qglUniform1i(U_USE_SSAO, 0);
 
-	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
-	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniform3fv(U_VIEW_POS, 1, r_origin);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
@@ -325,13 +325,13 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	
 	vec2_t shellParams = { r_newrefdef.time * 0.45, 0.0f };
 
-	qglUniform1i (ambientAlias_isShell, 1);
-	qglUniform1i (ambientAlias_isEnvMaping, 0);
-	qglUniform1f (ambientAlias_colorModulate, r_textureColorScale->value);
-	qglUniform2fv(ambientAlias_shellParams, 1, shellParams);
-	qglUniform3fv(ambientAlias_viewOrg, 1, r_origin);
+	qglUniform1i (U_SHELL_PASS, 1);
+	qglUniform1i (U_ENV_PASS, 0);
+	qglUniform1f (U_COLOR_MUL, r_textureColorScale->value);
+	qglUniform2fv(U_SHELL_PARAMS, 1, shellParams);
+	qglUniform3fv(U_VIEW_POS, 1, r_origin);
 
-	qglUniformMatrix4fv(ambientAlias_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_MBind (GL_TEXTURE0, r_texshell[0]->texnum);
@@ -486,16 +486,16 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	R_UpdateLightAliasUniforms();
 	
 	if (r_imageAutoBump->integer && skinNormalmap == r_defBump) {
-		qglUniform1i(lightAlias_autoBump, 1);
-		qglUniform2f(lightAlias_autoBumpParams, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
+		qglUniform1i(U_USE_AUTOBUMP, 1);
+		qglUniform2f(U_AUTOBUMP_PARAMS, r_imageAutoBumpScale->value, r_imageAutoSpecularScale->value);
 	}
 	else
-		qglUniform1i(lightAlias_autoBump, 0);
+		qglUniform1i(U_USE_AUTOBUMP, 0);
 
 	if (inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
-		qglUniform1i(lightAlias_isCaustics, 1);
+		qglUniform1i(U_USE_CAUSTICS, 1);
 	else
-		qglUniform1i(lightAlias_isCaustics, 0);
+		qglUniform1i(U_USE_CAUSTICS, 0);
 
 	GL_MBind (GL_TEXTURE0, skinNormalmap->texnum);
 	GL_MBind (GL_TEXTURE1, skin->texnum);
@@ -503,9 +503,9 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	GL_MBindCube (GL_TEXTURE3, r_lightCubeMap[currentShadowLight->filter]->texnum);
 
 	if (rgh == r_notexture)
-		qglUniform1i(lightAlias_isRgh, 0);
+		qglUniform1i(U_USE_RGH_MAP, 0);
 	else {
-		qglUniform1i(lightAlias_isRgh, 1);
+		qglUniform1i(U_USE_RGH_MAP, 1);
 		GL_MBind(GL_TEXTURE4, rgh->texnum);
 	}
 	
