@@ -1284,6 +1284,7 @@ void R_RegisterCvars(void)
 	r_contrast	=						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
 	r_saturation =						Cvar_Get("r_saturation", "1.0", CVAR_ARCHIVE);
 	r_gamma =							Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE); 
+	r_vibrance =						Cvar_Get("r_vibrance", "0.0", CVAR_ARCHIVE);
 
 	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);

@@ -239,6 +239,7 @@ cvar_t *r_brightness;
 cvar_t *r_contrast;
 cvar_t *r_saturation;
 cvar_t *r_gamma;
+cvar_t *r_vibrance;
 
 cvar_t *vid_ref;
 
@@ -985,6 +986,7 @@ uint ls_fade;
 uint ls_orthoMatrix;
 
 uint gamma_control;
+uint gamma_vibrance;
 uint gamma_orthoMatrix;
 
 uint menu_params;

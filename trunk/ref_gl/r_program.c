@@ -919,6 +919,7 @@ void R_InitPrograms (void) {
 		id = gammaProgram->id;
 		gamma_control		= qglGetUniformLocation (id, "u_control");
 		gamma_orthoMatrix	= qglGetUniformLocation (id, "u_orthoMatrix");
+		gamma_vibrance		= qglGetUniformLocation (id, "u_vibrance");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
