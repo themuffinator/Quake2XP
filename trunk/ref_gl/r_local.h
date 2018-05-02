@@ -239,7 +239,11 @@ cvar_t *r_brightness;
 cvar_t *r_contrast;
 cvar_t *r_saturation;
 cvar_t *r_gamma;
-cvar_t *r_vibrance;
+
+cvar_t	*r_colorVibrance;
+cvar_t	*r_colorBalanceRed;
+cvar_t	*r_colorBalanceGreen;
+cvar_t	*r_colorBalanceBlue;
 
 cvar_t *vid_ref;
 
@@ -879,24 +883,6 @@ void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
 void R_SetupOrthoMatrix(void);
 
-typedef struct {
-	unsigned	CausticsBit;
-	unsigned	ParallaxBit;
-	unsigned	LightParallaxBit;
-	unsigned	AmbientBits;
-	unsigned	AmbientAliasBits;
-	unsigned	LightmapBits;
-	unsigned	AlphaMaskBits;
-	unsigned	WaterTransBits;
-	unsigned	ShellBits;
-	unsigned	EnvBits;
-	unsigned	AttribColorBits;
-	unsigned	ConsoleBits;
-}
-worldDefs_t;
-
-worldDefs_t worldDefs;
-
 typedef enum {
 	ATT_POSITION = 0,
 	ATT_NORMAL = 1,
@@ -961,7 +947,9 @@ typedef enum {
 	U_SPECULAR_SCALE,
 
 	U_TRANS_PASS,
-	U_FLOAT0,
+
+	U_COLOR_PARAMS,
+	U_COLOR_VIBRANCE,
 
 }
 glsl_uniform;

@@ -381,9 +381,16 @@ void R_GammaRamp (void)
 	GL_MBindRect (GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-	qglUniform4f (gamma_control, r_brightness->value, r_contrast->value, r_saturation->value, 1 / r_gamma->value);
-	qglUniform1f (gamma_vibrance, r_vibrance->value);
-	qglUniformMatrix4fv(gamma_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform4f (U_COLOR_PARAMS,	r_brightness->value, 
+									r_contrast->value, 
+									r_saturation->value, 
+									1.0 / r_gamma->value);
+
+	qglUniform3f (U_COLOR_VIBRANCE, r_colorBalanceRed->value	* r_colorVibrance->value,
+									r_colorBalanceGreen->value	* r_colorVibrance->value, 
+									r_colorBalanceBlue->value	* r_colorVibrance->value);
+
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad ();
 

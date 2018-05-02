@@ -85,6 +85,9 @@ static const char *glslUniforms =
 "#define	U_SPECULAR_SCALE		43\n"
 
 "#define	U_TRANS_PASS			44\n"
+
+"#define	U_COLOR_PARAMS			45\n"
+"#define	U_COLOR_VIBRANCE		46\n"
 ;
 
 /*
@@ -912,14 +915,10 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"gammaramp program"S_COLOR_WHITE" ");
+	Com_Printf ("Load "S_COLOR_YELLOW"color correction program"S_COLOR_WHITE" ");
 	gammaProgram = R_FindProgram ("gamma", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (gammaProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = gammaProgram->id;
-		gamma_control		= qglGetUniformLocation (id, "u_control");
-		gamma_orthoMatrix	= qglGetUniformLocation (id, "u_orthoMatrix");
-		gamma_vibrance		= qglGetUniformLocation (id, "u_vibrance");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

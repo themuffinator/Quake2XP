@@ -1308,7 +1308,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 						sprintf(S2, "\n    'Fall Creators Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1709" S_COLOR_WHITE ")");
 					else 
 					if (ver == 1803)
-						sprintf(S2, "\n    'Redstone 4 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1803" S_COLOR_WHITE ")");
+						sprintf(S2, "\n    'April 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1803" S_COLOR_WHITE ")");
 					else
 						sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 

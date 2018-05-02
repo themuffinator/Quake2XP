@@ -52,6 +52,7 @@ static menuslider_s		s_brightness_slider;
 static menuslider_s		s_contrast_slider;
 static menuslider_s		s_saturation_slider;
 static menuslider_s		s_gamma_slider;
+static menuslider_s		s_vibrance_slider;
 
 static menuslider_s		s_bloomIntens_slider;
 static menuslider_s		s_bloomThreshold_slider;
@@ -156,6 +157,14 @@ static void GammaCallback(void *s) {
 
 	Cvar_SetValue("r_gamma", gm);
 }
+
+static void VibranceCallback(void *s) {
+	float vb;
+	vb = s_vibrance_slider.curvalue / 10;
+
+	Cvar_SetValue("r_colorVibrance", vb);
+}
+
 
 static void BloomCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
@@ -351,6 +360,7 @@ void M_ColorInit() {
 	r_brightness->value = ClampCvar(0.1, 2.0, r_brightness->value);
 	r_contrast->value = ClampCvar(0.1, 2.0, r_contrast->value);
 	r_saturation->value = ClampCvar(0.1, 2.0, r_saturation->value);
+	r_colorVibrance->value = ClampCvar(-1.0, 1.0, r_colorVibrance->value);
 
 	r_bloomIntens->value = ClampCvar(0.1, 2.0, r_bloomIntens->value);
 	r_bloomThreshold->value = ClampCvar(0.1, 1.0, r_bloomThreshold->value);
@@ -399,9 +409,20 @@ void M_ColorInit() {
 	s_saturation_slider.curvalue = r_saturation->value * 10;
 	s_saturation_slider.generic.statusbar = "Screen Saturation";
 
+	s_vibrance_slider.generic.type = MTYPE_SLIDER;
+	s_vibrance_slider.generic.x = 0;
+	s_vibrance_slider.generic.y = 50 * cl_fontScale->value;
+	s_vibrance_slider.generic.name = "Vibrance";
+	s_vibrance_slider.generic.callback = VibranceCallback;
+	s_vibrance_slider.minvalue = -10;
+	s_vibrance_slider.maxvalue = 10;
+	s_vibrance_slider.curvalue = r_colorVibrance->value * 10;
+	s_vibrance_slider.generic.statusbar = "Color Vibrance";
+
+
 	s_bloomIntens_slider.generic.type = MTYPE_SLIDER;
 	s_bloomIntens_slider.generic.x = 0;
-	s_bloomIntens_slider.generic.y = 60 * cl_fontScale->value;
+	s_bloomIntens_slider.generic.y = 70 * cl_fontScale->value;
 	s_bloomIntens_slider.generic.name = "Bloom Intensity";
 	s_bloomIntens_slider.generic.callback = bloomLevelCallback;
 	s_bloomIntens_slider.minvalue = 1;
@@ -411,7 +432,7 @@ void M_ColorInit() {
 
 	s_bloomThreshold_slider.generic.type = MTYPE_SLIDER;
 	s_bloomThreshold_slider.generic.x = 0;
-	s_bloomThreshold_slider.generic.y = 70 * cl_fontScale->value;
+	s_bloomThreshold_slider.generic.y = 80 * cl_fontScale->value;
 	s_bloomThreshold_slider.generic.name = "Bloom Threshold";
 	s_bloomThreshold_slider.generic.callback = bloomThresholdCallback;
 	s_bloomThreshold_slider.minvalue = 1;
@@ -421,7 +442,7 @@ void M_ColorInit() {
 
 	s_bloomWidth_slider.generic.type = MTYPE_SLIDER;
 	s_bloomWidth_slider.generic.x = 0;
-	s_bloomWidth_slider.generic.y = 80 * cl_fontScale->value;
+	s_bloomWidth_slider.generic.y = 90 * cl_fontScale->value;
 	s_bloomWidth_slider.generic.name = "Bloom Star Size";
 	s_bloomWidth_slider.generic.callback = bloomWhidthCallback;
 	s_bloomWidth_slider.minvalue = 1;
@@ -435,6 +456,7 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_brightness_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_contrast_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_saturation_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_vibrance_slider);
 
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomIntens_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomThreshold_slider);
