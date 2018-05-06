@@ -1,6 +1,7 @@
 layout (binding = 0) uniform sampler2DRect u_ScreenTex;
 
-uniform vec4 u_control; // x - brightens, y - contrast, z - saturation, w - gamma
+layout(location = U_COLOR_PARAMS)	uniform vec4 u_control;			// x - brightens, y - contrast, z - saturation, w - gamma
+layout(location = U_COLOR_VIBRANCE)	uniform vec3 u_rgbVibrance;		// pre-multipled values vibrance * rgb
 
 vec3 BrightnesContrastSaturation(vec3 color, float brt, float con, float sat)
 {
@@ -19,9 +20,22 @@ vec3 BrightnesContrastSaturation(vec3 color, float brt, float con, float sat)
 	return conColor;
 }
 
+vec3 ColorVibrance(in vec3 color){
+
+  float lum = dot(vec3(0.2125, 0.7154, 0.0721), color);
+
+  float minColor	= min(color.r, min(color.g, color.b));
+  float maxColor	= max(color.r, max(color.g, color.b));
+  float mid			= maxColor - minColor;
+
+  return color  = mix(vec3(lum), color.rgb, (1.0 + (u_rgbVibrance * (1.0 - (sign(u_rgbVibrance) * mid)))));
+}
+
+
 void main(void){
 
 vec3 color = BrightnesContrastSaturation(texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb, u_control.x, u_control.y, u_control.z);
+color = ColorVibrance(color);
 fragData.rgb = pow(color, vec3(u_control.w));
 fragData.a = 1.0;
 
