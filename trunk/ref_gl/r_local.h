@@ -30,10 +30,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <math.h>
 
 #include <GL/glu.h>
+#include "glcorearb.h"
 
 #ifdef _WIN32
-#include "glcorearb.h"
-#include <math.h>
+
 #include "wglext.h"
 
 #include "imagelib/il.h"
@@ -41,7 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "imagelib/ilut.h"
 
 #else
-#include "glcorearb.h"
+
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <IL/ilut.h>

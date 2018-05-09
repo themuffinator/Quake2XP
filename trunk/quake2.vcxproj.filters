@@ -317,6 +317,9 @@
     <ClCompile Include="client\vid_menu.c">
       <Filter>Source Files\Menu</Filter>
     </ClCompile>
+    <ClCompile Include="win32\win_nvapi.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ref_gl\qgl.h">

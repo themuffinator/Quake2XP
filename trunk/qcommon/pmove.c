@@ -812,7 +812,8 @@ void PM_CheckJump (void) {
 			if (pm->s.pm_flags & PMF_DOUBLE_JUMP) {
 				pm->s.pm_flags |= PMF_JUMP_HELD;
 				pm->s.pm_flags &= ~PMF_DOUBLE_JUMP;
-				if (pml.velocity[2] > 0)   //Still rising? 
+			
+			//	if (pml.velocity[2] > 0)   //Still rising? Berserker: Doom 2016 
 				{
 					if (pml.velocity[2] < 270)
 						pml.velocity[2] = 270;

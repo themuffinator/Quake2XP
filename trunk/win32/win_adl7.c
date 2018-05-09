@@ -4,7 +4,6 @@
 */
 // AMD Driver SDK
 // Overdrive N 
-// Fuck IT!!!
 
 #include "../ref_gl/r_local.h"
 #include "adl/adl_sdk.h"
