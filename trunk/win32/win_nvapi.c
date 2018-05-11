@@ -6,7 +6,6 @@
 // NV API SDK
 
 #include "../ref_gl/r_local.h"
-#include "nvapi/nvapi.h"
 
 NvPhysicalGpuHandle hPhysicalGpu[NVAPI_MAX_PHYSICAL_GPUS];
 NvU32 physicalGpuCount = 0;

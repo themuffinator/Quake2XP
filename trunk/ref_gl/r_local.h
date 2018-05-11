@@ -26,11 +26,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <windows.h>
 #endif
 
+#include <GL/glu.h>
+#include "glcorearb.h"
+
 #include <stdio.h>
 #include <math.h>
 
-#include <GL/glu.h>
-#include "glcorearb.h"
+#include "../client/ref.h"
+#include "r_md3.h"
 
 #ifdef _WIN32
 
@@ -50,9 +53,12 @@ typedef void ILvoid;
 #define _inline inline
 #endif
 
-#include "../client/ref.h"
-#include "r_md3.h"
 #include "qgl.h"
+
+#ifdef _WIN32
+	#include "../win32/adl/adl_sdk.h"
+	#include "../win32/nvapi/nvapi.h"
+#endif
 
 // up / down
 #define	PITCH	0

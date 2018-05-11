@@ -6,7 +6,7 @@
 // Overdrive N 
 
 #include "../ref_gl/r_local.h"
-#include "adl/adl_sdk.h"
+
 
 // Definitions of the used function pointers. Add more if you use other ADL APIs
 typedef int(*ADL_MAIN_CONTROL_CREATE)(ADL_MAIN_MALLOC_CALLBACK, int);
