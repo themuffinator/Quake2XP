@@ -305,6 +305,8 @@ IN_Frame
 Called every frame, even if not generating commands
 ==================
 */
+extern int bind_grab;
+
 void IN_Frame (void) {
 
 	if (!in_appactive)
@@ -313,6 +315,7 @@ void IN_Frame (void) {
 		return;
 	}
 
+	/*
 	if (!cl.refresh_prepped
 		|| cls.key_dest == key_console
 		|| cls.key_dest == key_menu) {
@@ -322,7 +325,7 @@ void IN_Frame (void) {
 			return;
 		}
 	}
-
+	*/
 	IN_ActivateMouse ();
 }
 
