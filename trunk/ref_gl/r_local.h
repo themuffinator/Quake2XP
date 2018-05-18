@@ -957,11 +957,47 @@ typedef enum {
 	U_COLOR_PARAMS,
 	U_COLOR_VIBRANCE,
 
+	U_PARTICLE_THICKNESS,
+	U_PARTICLE_MASK,
+	U_TEXCOORD_OFFSET,
+	U_PARTICLE_ANIM,
+
+	U_PARAM_VEC2_0,
+	U_PARAM_VEC2_1,
+	U_PARAM_VEC2_2,
+	U_PARAM_VEC2_3,
+	U_PARAM_VEC2_4,
+	U_PARAM_VEC2_5,
+
+	U_PARAM_VEC3_0,
+	U_PARAM_VEC3_1,
+	U_PARAM_VEC3_2,
+	U_PARAM_VEC3_3,
+	U_PARAM_VEC3_4,
+	U_PARAM_VEC3_5,
+
+	U_PARAM_VEC4_0,
+	U_PARAM_VEC4_1,
+	U_PARAM_VEC4_2,
+	U_PARAM_VEC4_3,
+	U_PARAM_VEC4_4,
+	U_PARAM_VEC4_5,
+
+	U_PARAM_FLOAT_0,
+	U_PARAM_FLOAT_1,
+	U_PARAM_FLOAT_2,
+	U_PARAM_FLOAT_3,
+	U_PARAM_FLOAT_4,
+	U_PARAM_FLOAT_5,
+
+	U_PARAM_INT_0,
+	U_PARAM_INT_1,
+	U_PARAM_INT_2,
+	U_PARAM_INT_3,
+	U_PARAM_INT_4,
+	U_PARAM_INT_5,
 }
 glsl_uniform;
-
-uint null_mvp;
-
 
 uint gen_attribConsole;
 uint gen_attribColors;
@@ -972,32 +1008,6 @@ uint gen_mvp;
 uint gen_orthoMatrix;
 uint gen_3d;
 uint gen_light;
-
-uint cin_params;
-uint cin_orthoMatrix;
-
-uint ls_fade;
-uint ls_orthoMatrix;
-
-uint gamma_control;
-uint gamma_vibrance;
-uint gamma_orthoMatrix;
-
-uint menu_params;
-uint menu_orthoMatrix;
-
-uint fxaa_screenSize;
-uint fxaa_orthoMatrix;
-
-uint particle_depthParams;
-uint particle_mask;
-uint particle_thickness;
-uint particle_colorModulate;
-uint particle_mvp;
-uint particle_mv;
-uint particle_projMat;
-uint particle_texRotMat;
-uint particle_distort;
 
 uint water_deformMul;
 uint water_alpha;
@@ -1013,18 +1023,6 @@ uint water_mv;
 uint water_pm;
 uint water_mirror;
 
-uint gaussx_matrix;
-uint gaussy_matrix;
-
-uint glare_params;
-uint glare_matrix;
-
-uint bloomDS_threshold;
-uint bloomDS_matrix;
-
-uint bloomFP_params;
-uint bloom_FP_matrix;
-
 uint ref_deformMul;
 uint ref_mvp;
 uint ref_mvm;
@@ -1038,48 +1036,6 @@ uint ref_ambientScale;
 uint ref_mask;
 uint ref_alphaMask;
 
-uint rb_params;
-uint rb_matrix;
-uint rb_cont;
-
-uint dof_screenSize;
-uint dof_params;
-uint dof_orthoMatrix;
-
-uint film_screenRes;
-uint film_rand;
-uint film_frameTime;
-uint film_params;
-uint film_matrix;
-
-uint mb_params;
-uint mb_orthoMatrix;
-
-uint depthDS_params;
-uint depthDS_orthoMatrix;
-
-uint ssao_params;
-uint ssao_vp;
-uint ssao_orthoMatrix;
-
-uint ssaoB_sapmles;
-uint ssaoB_axisMask;
-uint ssaoB_orthoMatrix;
-
-uint therm_matrix;
-uint thermf_matrix;
-
-uint sv_mvp;
-uint sv_lightOrg;
-
-uint ss_orthoMatrix;
-uint ss_tex;
-
-uint light2d_orthoMatrix;
-uint light2d_params;
-
-uint fixfov_orthoMatrix;
-uint fixfov_params;
 
 #define	MAX_VERTEX_CACHES	4096
 

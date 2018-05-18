@@ -417,8 +417,8 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 
 		GL_BindProgram(loadingProgram);
 
-		qglUniformMatrix4fv(ls_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-		qglUniform1f(ls_fade, loadScreenColorFade);
+		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+		qglUniform1f(U_COLOR_MUL, loadScreenColorFade);
 
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
@@ -624,8 +624,8 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 	GL_BindProgram(light2dProgram);
 
 	lightShift = 66.6 * sin(Sys_Milliseconds() * 0.001f);
-	qglUniform2f(light2d_params, lightShift, r_hudLighting->value);
-	qglUniformMatrix4fv(light2d_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform2f(U_PARAM_VEC2_0, lightShift, r_hudLighting->value);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_MBind(GL_TEXTURE0, gl->texnum);
 	GL_MBind(GL_TEXTURE1, gl2->texnum);
@@ -829,8 +829,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	GL_BindProgram(cinProgram);
 
 	GL_MBind(GL_TEXTURE0, 0);
-	qglUniform2f(cin_params, vid.width, vid.height);
-	qglUniformMatrix4fv(cin_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	hscale = rows/256.0;
 	trows = 256;

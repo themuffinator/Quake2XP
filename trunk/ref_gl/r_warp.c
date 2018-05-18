@@ -430,7 +430,7 @@ void R_DrawSkyBox (qboolean color) {
 	if(color)
 		qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
 	else
-		qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
 
 	for (i = 0; i < 6; i++) {
 

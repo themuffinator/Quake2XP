@@ -2395,12 +2395,12 @@ void R_DrawLightFlare () {
 	GL_MBind (GL_TEXTURE0, r_flare->texnum);
 	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
 
-	qglUniform2f (particle_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f (particle_mask, 1.0, 0.0);
-	qglUniform1f (particle_colorModulate, 1.0);
-	qglUniform1f (particle_thickness, 10.0 * 1.5);
-	qglUniformMatrix4fv(particle_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(particle_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniform2f (U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f (U_PARTICLE_MASK, 1.0, 0.0);
+	qglUniform1f (U_COLOR_MUL, 1.0);
+	qglUniform1f (U_PARTICLE_THICKNESS, 10.0 * 1.5);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
 	// Color Fade
 	VectorSubtract (currentShadowLight->flareOrigin, r_origin, v);

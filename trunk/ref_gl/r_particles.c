@@ -85,10 +85,9 @@ void R_DrawParticles (void) {
 
 	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
 
-	qglUniform2f (particle_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniformMatrix4fv(particle_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(particle_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(particle_projMat, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+	qglUniform2f (U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
 	GL_DepthMask (0);		// no z buffering
 	GL_Enable (GL_BLEND);
@@ -182,6 +181,9 @@ void R_DrawParticles (void) {
 				texId = r_particletexture[PT_BFG_BALL]->texnum;
 				break;
 
+			case PT_BFG_EXPL:
+				texId = r_particletexture[PT_BFG_EXPL]->texnum;
+				break;
 			default:
 				texId = r_particletexture[PT_DEFAULT]->texnum;
 
@@ -206,20 +208,26 @@ void R_DrawParticles (void) {
 			GL_BlendFunc (p->sFactor, p->dFactor);
 
 			if (p->sFactor == GL_ONE && p->dFactor == GL_ONE)
-				qglUniform2f (particle_mask, 1.0, 0.0); //color
+				qglUniform2f (U_PARTICLE_MASK, 1.0, 0.0); //color
 			else
-				qglUniform2f (particle_mask, 0.0, 1.0); //alpha
+				qglUniform2f (U_PARTICLE_MASK, 0.0, 1.0); //alpha
 			
 			if (p->flags & PARTICLE_NOFADE)
-				qglUniform1f (particle_thickness, 0.0);
+				qglUniform1f (U_PARTICLE_THICKNESS, 0.0);
 			else
-				qglUniform1f (particle_thickness, scale*0.75); // soft blend scale
+				qglUniform1f (U_PARTICLE_THICKNESS, scale * 0.75); // soft blend scale
 
+			if (p->flags & PARTICLE_STRIP_ANIM) {
+				int curFrame = ((int)((r_newrefdef.time - p->time) * 20)) % 32;
+				qglUniform1i(U_PARTICLE_ANIM, 1);
+			}
+			else
+				qglUniform1i(U_PARTICLE_ANIM, 0);
 
 			if (p->flags & PARTICLE_OVERBRIGHT)
-				qglUniform1f (particle_colorModulate, 2.0);
+				qglUniform1f (U_COLOR_MUL, 2.0);
 			else
-				qglUniform1f (particle_colorModulate, 1.0);
+				qglUniform1f (U_COLOR_MUL, 1.0);
 
 			if (p->flags & PARTICLE_ROTATE) {
 
@@ -233,9 +241,9 @@ void R_DrawParticles (void) {
 
 				Mat4_Translate	(m, -0.5f, -0.5f, -0.5f);
 
-				qglUniformMatrix4fv(particle_texRotMat, 1, qfalse, (const float *)m);
+				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)m);
 			}else
-				qglUniformMatrix4fv(particle_texRotMat, 1, qfalse, (const float *)m);
+				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)m);
 
 		}
 

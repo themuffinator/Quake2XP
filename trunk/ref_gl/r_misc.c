@@ -651,6 +651,7 @@ void R_InitEngineTextures (void) {
 	r_particletexture[PT_BLASTER_BOLT] = GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
 	r_particletexture[PT_BFG_BALL] = GL_FindImage("gfx/bfg/bfgBall_0.tga", it_wall);
 	r_particletexture[PT_BFG_REFR] = GL_FindImage("gfx/bfg/bfgRefr.tga", it_wall);
+	r_particletexture[PT_BFG_EXPL] = GL_FindImage("gfx/bfg/bfg_expl.tga", it_wall);
 
 	for (i = 0; i < PT_MAX; i++)
 	if (!r_particletexture[i])

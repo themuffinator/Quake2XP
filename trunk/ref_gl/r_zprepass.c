@@ -233,7 +233,7 @@ void R_DrawDepthBrushModel (void) {
 	R_SetupEntityMatrix (currententity);
 
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
-	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)mvp);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)mvp);
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 	qglEnableVertexAttribArray(ATT_POSITION);
@@ -265,7 +265,7 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
-	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	c_alias_polys += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
@@ -358,7 +358,7 @@ void R_DrawDepthMD3Model(void) {
 	R_SetupEntityMatrix(currententity);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
-	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++){
 		
@@ -406,7 +406,7 @@ void R_DrawDepthScene (void) {
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
 	num_depth_surfaces = 0;

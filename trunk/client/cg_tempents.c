@@ -31,6 +31,7 @@ void CL_ParticleGibBlood2 (vec3_t org);
 explosion_t cl_explosions[MAX_EXPLOSIONS];
 
 void CL_BfgBall(vec3_t org);
+void CL_BfgExplosion(vec3_t org);
 
 #define	MAX_BEAMS	32
 typedef struct {
@@ -973,6 +974,7 @@ void CL_ParseTEnt (void) {
 				DECAL_BFG, 0, frand () * 360,
 				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+			CL_BfgExplosion(pos);
 			CL_BFGExplosionParticles (pos);
 
 			break;

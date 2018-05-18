@@ -53,6 +53,7 @@ static menuslider_s		s_contrast_slider;
 static menuslider_s		s_saturation_slider;
 static menuslider_s		s_gamma_slider;
 static menuslider_s		s_vibrance_slider;
+static menuslider_s		s_fixfov_slider;
 
 static menuslider_s		s_bloomIntens_slider;
 static menuslider_s		s_bloomThreshold_slider;
@@ -165,6 +166,13 @@ static void VibranceCallback(void *s) {
 	Cvar_SetValue("r_colorVibrance", vb);
 }
 
+static void FixFovCallback(void *s) {
+	float vb;
+	vb = s_fixfov_slider.curvalue / 10;
+
+	Cvar_SetValue("r_fixFovStrength", vb);
+}
+
 
 static void BloomCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
@@ -238,6 +246,7 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_vsync", s_finish_box.curvalue);
 	Cvar_SetValue ("r_filmFilter", s_film_grain.curvalue);
 	Cvar_SetValue ("r_motionBlur", s_mb_box.curvalue);
+	Cvar_SetValue("r_fixFovStrength", s_fixfov_slider.curvalue);
 
 	/*
 	** update appropriate stuff if we're running OpenGL and gamma
@@ -309,6 +318,9 @@ static void ApplyChanges (void *unused) {
 	if (r_bloomWidth->modified)
 		vid_ref->modified = qtrue;
 
+	if (r_fixFovStrength->modified)
+		vid_ref->modified = qtrue;
+	
 	M_ForceMenuOff ();
 
 }
@@ -356,6 +368,9 @@ void M_ColorInit() {
 	if (!r_bloomWidth)
 		r_bloomWidth = Cvar_Get("r_bloomWidth", "3.0", CVAR_ARCHIVE);
 
+	if (!r_fixFovStrength)
+		r_fixFovStrength = Cvar_Get("r_fixFovStrength", "0.0", CVAR_ARCHIVE);
+
 	r_gamma->value = ClampCvar(0.1, 2.5, r_gamma->value);
 	r_brightness->value = ClampCvar(0.1, 2.0, r_brightness->value);
 	r_contrast->value = ClampCvar(0.1, 2.0, r_contrast->value);
@@ -365,6 +380,8 @@ void M_ColorInit() {
 	r_bloomIntens->value = ClampCvar(0.1, 2.0, r_bloomIntens->value);
 	r_bloomThreshold->value = ClampCvar(0.1, 1.0, r_bloomThreshold->value);
 	r_bloomWidth->value = ClampCvar(0.1, 3.0, r_bloomWidth->value);
+	
+	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
 
 	s_opengl2_menu.x = viddef.width * 0.50;
 	s_opengl2_menu.nitems = 0;
@@ -450,7 +467,17 @@ void M_ColorInit() {
 	s_bloomWidth_slider.curvalue = r_bloomWidth->value * 10;
 	s_bloomWidth_slider.generic.statusbar = "Bloom Star Size";
 
-	menuSize = 90;
+	s_fixfov_slider.generic.type = MTYPE_SLIDER;
+	s_fixfov_slider.generic.x = 0;
+	s_fixfov_slider.generic.y = 110 * cl_fontScale->value;
+	s_fixfov_slider.generic.name = "Hi-FOV Corection";
+	s_fixfov_slider.generic.callback = FixFovCallback;
+	s_fixfov_slider.minvalue = 0;
+	s_fixfov_slider.maxvalue = 10;
+	s_fixfov_slider.curvalue = r_fixFovStrength->value * 10;
+	s_fixfov_slider.generic.statusbar = "Reducing Field Of View Distortion";
+
+	menuSize = 110;
 
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_gamma_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_brightness_slider);
@@ -461,6 +488,7 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomIntens_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomThreshold_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomWidth_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_fixfov_slider);
 
 	Menu_Center(&s_opengl2_menu);
 	s_opengl2_menu.x -= 8;

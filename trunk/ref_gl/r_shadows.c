@@ -314,8 +314,8 @@ void R_DrawMD2ShadowVolume () {
 	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector (currententity->axis, temp, light);
 
-	qglUniformMatrix4fv(sv_mvp, 1, qfalse, (const float *)currententity->orMatrix);
-	qglUniform3fv(sv_lightOrg, 1, light);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniform3fv(U_LIGHT_POS, 1, light);
 
 	BuildShadowVolumeTriangles (paliashdr, light);
 }
@@ -347,8 +347,8 @@ void R_DrawMD3ShadowVolume(){
 	VectorSubtract(currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector(currententity->axis, temp, lightOrg);
 
-	qglUniformMatrix4fv(sv_mvp, 1, qfalse, (const float *)currententity->orMatrix);
-	qglUniform3fv(sv_lightOrg, 1, lightOrg);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniform3fv(U_LIGHT_POS, 1, lightOrg);
 
 	VectorSubtract(currententity->oldorigin, currententity->origin, delta);
 	AngleVectors(currententity->angles, vectors[0], vectors[1], vectors[2]);
@@ -356,7 +356,7 @@ void R_DrawMD3ShadowVolume(){
 	move[1] = -DotProduct(delta, vectors[1]);	// left
 	move[2] = DotProduct(delta, vectors[2]);	// up
 
-	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	backlerp = currententity->backlerp;
 	frontlerp = 1.0 - backlerp;
@@ -731,7 +731,7 @@ void R_DrawBrushModelVolumes () {
 	VectorSubtract (currentShadowLight->origin, currententity->origin, temp);
 	Mat3_TransposeMultiplyVector (currententity->axis, temp, currentShadowLight->origin);
 
-	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	shadowTimeStamp++;
 	num_shadow_surfaces = 0;
@@ -999,7 +999,7 @@ void R_CastBspShadowVolumes (void) {
 
 	// setup program
 	GL_BindProgram (nullProgram);
-	qglUniformMatrix4fv(null_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	GL_StencilMask (255);
 	GL_StencilFuncSeparate (GL_FRONT_AND_BACK, GL_ALWAYS, 128, 255);

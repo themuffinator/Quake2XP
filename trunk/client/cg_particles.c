@@ -1996,6 +1996,49 @@ void CL_BfgBall(vec3_t org) {
 }
 
 
+void CL_BfgExplosion(vec3_t org) {
+	cparticle_t *p;
+
+	if (!free_particles)
+		return;
+
+	p = free_particles;
+	free_particles = p->next;
+	p->next = active_particles;
+	active_particles = p;
+	p->orient = 0;
+	p->flags = PARTICLE_LIGHTING;
+	p->flags |= PARTICLE_STRIP_ANIM;
+	p->time = cl.time;
+	p->endTime = cl.time + 400;
+	p->size = 60;
+	p->sizeVel = 0;
+	p->alpha = 1;
+	p->alphavel = -1;
+
+	p->lightradius = 350;
+	p->lcolor[0] = 1.0;
+	p->lcolor[1] = 0.5;
+	p->lcolor[2] = 0.5;
+
+
+	p->sFactor = GL_ONE;
+	p->dFactor = GL_ONE;
+
+	p->color[0] = 1;
+	p->color[1] = 1;
+	p->color[2] = 1;
+
+	p->colorVel[0] = 0;
+	p->colorVel[1] = 0;
+	p->colorVel[2] = 0;
+	p->type = PT_BFG_EXPL;
+
+	VectorCopy(org, p->org);
+	VectorClear(p->vel);
+	VectorClear(p->accel);
+}
+
 /*
 ===============
 CL_TeleporterParticles

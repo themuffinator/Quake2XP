@@ -88,6 +88,46 @@ static const char *glslUniforms =
 
 "#define	U_COLOR_PARAMS			45\n"
 "#define	U_COLOR_VIBRANCE		46\n"
+
+"#define	U_PARTICLE_THICKNESS	47\n"	
+"#define	U_PARTICLE_MASK			48\n"
+"#define	U_TEXCOORD_OFFSET		49\n"
+"#define	U_PARTICLE_ANIM			50\n"
+
+"#define	U_PARAM_VEC2_0			51\n"
+"#define	U_PARAM_VEC2_1			52\n"
+"#define	U_PARAM_VEC2_2			53\n"
+"#define	U_PARAM_VEC2_3			54\n"
+"#define	U_PARAM_VEC2_4			55\n"
+"#define	U_PARAM_VEC2_5			56\n"
+
+"#define	U_PARAM_VEC3_0			57\n"
+"#define	U_PARAM_VEC3_1			58\n"
+"#define	U_PARAM_VEC3_2			59\n"
+"#define	U_PARAM_VEC3_3			60\n"
+"#define	U_PARAM_VEC3_4			61\n"
+"#define	U_PARAM_VEC3_5			62\n"
+
+"#define	U_PARAM_VEC4_0			63\n"
+"#define	U_PARAM_VEC4_1			64\n"
+"#define	U_PARAM_VEC4_2			65\n"
+"#define	U_PARAM_VEC4_3			66\n"
+"#define	U_PARAM_VEC4_4			67\n"
+"#define	U_PARAM_VEC4_5			68\n"
+
+"#define	U_PARAM_FLOAT_0			69\n"
+"#define	U_PARAM_FLOAT_1			70\n"
+"#define	U_PARAM_FLOAT_2			71\n"
+"#define	U_PARAM_FLOAT_3			72\n"
+"#define	U_PARAM_FLOAT_4			73\n"
+"#define	U_PARAM_FLOAT_5			74\n"
+
+"#define	U_PARAM_INT_0			75\n"
+"#define	U_PARAM_INT_1			76\n"
+"#define	U_PARAM_INT_2			77\n"
+"#define	U_PARAM_INT_3			78\n"
+"#define	U_PARAM_INT_4			79\n"
+"#define	U_PARAM_INT_5			80\n"
 ;
 
 /*
@@ -551,8 +591,6 @@ void R_InitPrograms (void) {
 	nullProgram = R_FindProgram ("null", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (nullProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = nullProgram->id;
-		null_mvp = qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -618,12 +656,6 @@ void R_InitPrograms (void) {
 
 	if (gaussXProgram->valid && gaussYProgram->valid){
 		Com_Printf("succeeded\n");
-
-		id = gaussXProgram->id;
-		gaussx_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
-
-		id = gaussYProgram->id;
-		gaussy_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -635,10 +667,6 @@ void R_InitPrograms (void) {
 
 	if (glareProgram->valid){
 		Com_Printf("succeeded\n");
-
-		id = glareProgram->id;
-		glare_params		= qglGetUniformLocation(id, "u_glareParams");
-		glare_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -651,11 +679,6 @@ void R_InitPrograms (void) {
 
 	if (radialProgram->valid){
 		Com_Printf("succeeded\n");
-		
-		id = radialProgram->id;
-		rb_params	= qglGetUniformLocation(id, "u_radialBlurParams");
-		rb_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
-		rb_cont		= qglGetUniformLocation(id, "u_cont");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -667,11 +690,6 @@ void R_InitPrograms (void) {
 
 	if (dofProgram->valid){
 		Com_Printf("succeeded\n");
-
-		id = dofProgram->id;
-		dof_screenSize	= qglGetUniformLocation(id, "u_screenSize");
-		dof_params		= qglGetUniformLocation(id, "u_dofParams");
-		dof_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -683,10 +701,6 @@ void R_InitPrograms (void) {
 	
 	if (motionBlurProgram->valid){
 		Com_Printf("succeeded\n");
-
-		id = motionBlurProgram->id;
-		mb_params		= qglGetUniformLocation(id, "u_params");
-		mb_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -700,20 +714,6 @@ void R_InitPrograms (void) {
 
 	if (ssaoProgram->valid && depthDownsampleProgram->valid && ssaoBlurProgram->valid){
 		Com_Printf("succeeded\n");
-
-		id = depthDownsampleProgram->id;
-		depthDS_params		= qglGetUniformLocation(id, "u_depthParms");
-		depthDS_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
-
-		id = ssaoProgram->id;
-		ssao_params			= qglGetUniformLocation(id, "u_ssaoParms");
-		ssao_vp				= qglGetUniformLocation(id, "u_viewport");
-		ssao_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
-
-		id = ssaoBlurProgram->id;
-		ssaoB_sapmles		= qglGetUniformLocation(id, "u_numSamples");
-		ssaoB_axisMask		= qglGetUniformLocation(id, "u_axisMask");
-		ssaoB_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -726,14 +726,6 @@ void R_InitPrograms (void) {
 
 	if (bloomdsProgram->valid && bloomfpProgram->valid){
 		Com_Printf("succeeded\n");
-
-		id = bloomdsProgram->id;
-		bloomDS_threshold	= qglGetUniformLocation(id, "u_BloomThreshold");
-		bloomDS_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
-
-		id = bloomfpProgram->id;
-		bloomFP_params	= qglGetUniformLocation(id, "u_bloomParams");
-		bloom_FP_matrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -772,13 +764,6 @@ void R_InitPrograms (void) {
 
 	if (thermalProgram->valid && thermalfpProgram->valid){
 		Com_Printf("succeeded\n");
-		
-		id = thermalProgram->id;
-		therm_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
-
-		id = thermalfpProgram->id;
-		thermf_matrix	= qglGetUniformLocation(id, "u_orthoMatrix");
-
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -815,16 +800,6 @@ void R_InitPrograms (void) {
 
 	if (particlesProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = particlesProgram->id;
-
-		particle_depthParams	= qglGetUniformLocation (id, "u_depthParms");
-		particle_mask			= qglGetUniformLocation (id, "u_mask");
-		particle_thickness		= qglGetUniformLocation (id, "u_thickness");
-		particle_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
-		particle_mvp			= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
-		particle_mv				= qglGetUniformLocation (id, "u_modelViewMatrix");
-		particle_projMat		= qglGetUniformLocation	(id, "u_projectionMatrix");
-		particle_texRotMat		= qglGetUniformLocation (id, "u_texRotateMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -858,10 +833,6 @@ void R_InitPrograms (void) {
 
 	if (cinProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = cinProgram->id;
-		cin_params		= qglGetUniformLocation(id, "u_cinParams");
-		cin_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
-
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -873,9 +844,6 @@ void R_InitPrograms (void) {
 
 	if (loadingProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = loadingProgram->id;
-		ls_fade = qglGetUniformLocation(id, "u_colorScale");
-		ls_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 
 	}
 	else {
@@ -888,9 +856,6 @@ void R_InitPrograms (void) {
 
 	if (fxaaProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = fxaaProgram->id;
-		fxaa_screenSize		= qglGetUniformLocation(id, "u_ScreenSize");
-		fxaa_orthoMatrix	= qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -899,13 +864,6 @@ void R_InitPrograms (void) {
 
 	Com_Printf ("Load "S_COLOR_YELLOW"film grain program"S_COLOR_WHITE" ");
 	filmGrainProgram = R_FindProgram ("filmGrain", qtrue, qtrue, qfalse, qfalse, qfalse);
-	id = filmGrainProgram->id;
-
-	film_screenRes	= qglGetUniformLocation(id, "u_screenSize");
-	film_rand		= qglGetUniformLocation(id, "u_rand");
-	film_frameTime	= qglGetUniformLocation(id, "u_time");
-	film_params		= qglGetUniformLocation(id, "u_params");
-	film_matrix		= qglGetUniformLocation(id, "u_orthoMatrix");
 
 	if (filmGrainProgram->valid) {
 		Com_Printf ("succeeded\n");
@@ -930,9 +888,6 @@ void R_InitPrograms (void) {
 	shadowProgram = R_FindProgram("shadow", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (shadowProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = shadowProgram->id;
-		sv_mvp = qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
-		sv_lightOrg = qglGetUniformLocation(id, "u_lightOrg");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -943,9 +898,6 @@ void R_InitPrograms (void) {
 	light2dProgram = R_FindProgram("light2d", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (light2dProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = light2dProgram->id;
-		light2d_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
-		light2d_params = qglGetUniformLocation(id, "u_params");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -956,9 +908,6 @@ void R_InitPrograms (void) {
 	fixFovProgram = R_FindProgram("fixfov", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (fixFovProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = fixFovProgram->id;
-		fixfov_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
-		fixfov_params = qglGetUniformLocation(id, "u_params");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
@@ -969,9 +918,6 @@ void R_InitPrograms (void) {
 	menuProgram = R_FindProgram("menu", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (menuProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = menuProgram->id;
-		menu_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
-		menu_params = qglGetUniformLocation(id, "u_screenSize");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
