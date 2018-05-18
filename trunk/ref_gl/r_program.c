@@ -128,6 +128,13 @@ static const char *glslUniforms =
 "#define	U_PARAM_INT_3			78\n"
 "#define	U_PARAM_INT_4			79\n"
 "#define	U_PARAM_INT_5			80\n"
+
+"#define	U_REFR_ALPHA			81\n"
+"#define	U_REFR_DEFORM_MUL		82\n"
+"#define	U_REFR_THICKNESS0		83\n"
+"#define	U_REFR_THICKNESS1		84\n"
+"#define	U_REFR_ALPHA_MASK		85\n"
+
 ;
 
 /*
@@ -737,20 +744,6 @@ void R_InitPrograms (void) {
 
 	if (refractProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = refractProgram->id;
-		ref_deformMul		= qglGetUniformLocation(id, "u_deformMul");
-		ref_mvp				= qglGetUniformLocation(id, "u_modelViewProjectionMatrix");
-		ref_mvm				= qglGetUniformLocation(id, "u_modelViewMatrix");
-		ref_pm				= qglGetUniformLocation(id, "u_projectionMatrix");
-
-		ref_alpha			= qglGetUniformLocation(id, "u_alpha");
-		ref_thickness		= qglGetUniformLocation(id, "u_thickness");
-		ref_thickness2		= qglGetUniformLocation(id, "u_thickness2");
-		ref_viewport		= qglGetUniformLocation(id, "u_viewport");
-		ref_depthParams		= qglGetUniformLocation(id, "u_depthParms");
-		ref_ambientScale	= qglGetUniformLocation(id, "u_ambientScale");
-		ref_mask			= qglGetUniformLocation(id, "u_mask");
-		ref_alphaMask		= qglGetUniformLocation(id, "u_ALPHAMASK");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

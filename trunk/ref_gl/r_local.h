@@ -996,6 +996,12 @@ typedef enum {
 	U_PARAM_INT_3,
 	U_PARAM_INT_4,
 	U_PARAM_INT_5,
+
+	U_REFR_ALPHA,
+	U_REFR_DEFORM_MUL,
+	U_REFR_THICKNESS0,
+	U_REFR_THICKNESS1,
+	U_REFR_ALPHA_MASK,
 }
 glsl_uniform;
 
@@ -1022,19 +1028,6 @@ uint water_mvp;
 uint water_mv;
 uint water_pm;
 uint water_mirror;
-
-uint ref_deformMul;
-uint ref_mvp;
-uint ref_mvm;
-uint ref_pm;
-uint ref_alpha;
-uint ref_thickness;
-uint ref_thickness2;
-uint ref_viewport;
-uint ref_depthParams;
-uint ref_ambientScale;
-uint ref_mask;
-uint ref_alphaMask;
 
 
 #define	MAX_VERTEX_CACHES	4096

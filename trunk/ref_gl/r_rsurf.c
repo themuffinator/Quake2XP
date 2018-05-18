@@ -278,10 +278,10 @@ void R_DrawChainsRA (qboolean bmodel) {
 	// setup program
 	GL_BindProgram(refractProgram);
 
-	qglUniform1f(ref_deformMul, 1.0);
-	qglUniformMatrix4fv(ref_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(ref_mvm, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(ref_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
 	qglUniform1f(ref_thickness, 150.0);
 	qglUniform2f(ref_viewport, vid.width, vid.height);
