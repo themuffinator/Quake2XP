@@ -7,8 +7,8 @@ layout (binding = 1) uniform	sampler2DRect	u_DNMiniMap;
 
 // two-pass blur
 
-uniform vec2			u_axisMask;
-uniform int			u_numSamples;		// to each side, without central one
+layout(location = U_PARAM_VEC2_0)	uniform vec2	u_axisMask;
+layout(location = U_PARAM_INT_0)	uniform int		u_numSamples;		// to each side, without central one
 
 void main (void) {
 	vec2 centerTC = gl_FragCoord.xy;

@@ -1,8 +1,8 @@
 layout (binding = 0) uniform sampler2DRect	u_ScreenTex;
 layout (binding = 1) uniform sampler2DRect	u_DepthTex;
 
-uniform vec2	u_screenSize;
-uniform vec4	u_dofParams;
+layout (location = U_SCREEN_SIZE)	uniform vec2	u_screenSize;
+layout (location = U_PARAM_VEC4_0)	uniform vec4	u_dofParams;
 
 #include depth.inc
 

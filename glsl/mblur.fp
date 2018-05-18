@@ -1,6 +1,6 @@
 layout (binding = 0) uniform sampler2DRect	 	u_ScreenTex;
 
-uniform vec3 u_params; // x-velocity, y-velocity, numSamples 
+layout (location = U_PARAM_VEC3_0)	uniform vec3 u_params; // x-velocity, y-velocity, numSamples 
 
 void main(void) 
 {

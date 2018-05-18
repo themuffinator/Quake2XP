@@ -1,12 +1,12 @@
 layout (binding = 0) uniform sampler2DRect u_ScreenTex;
 
-uniform vec4	u_params;	// x- filter type: 1 - technicolor1; 2 - technicolor3; 3 - sepia
-							// y- noise interns
-							// z - scarch intens
-							// w - vigent size
-uniform vec2	u_screenSize; 
-uniform float	u_rand;
-uniform int		u_time;
+layout(location = U_PARAM_VEC4_0) uniform vec4	u_params;	// x- filter type: 1 - technicolor1; 2 - technicolor3; 3 - sepia
+															// y- noise interns
+															// z - scarch intens
+															// w - vigent size
+layout(location = U_SCREEN_SIZE)	uniform vec2	u_screenSize; 
+layout(location = U_PARAM_FLOAT_0)	uniform float	u_rand;
+layout(location = U_PARAM_INT_0)	uniform int		u_time;
 
 #define REDFILTER 		vec4(1.0, 0.0, 0.0, 0.0)
 #define BLUEGREENFILTER vec4(0.0, 1.0, 0.7, 0.0)

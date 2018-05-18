@@ -1,7 +1,7 @@
 layout(location = 0) in vec3	att_position;
 
-uniform vec4 u_params;
-uniform mat4 u_orthoMatrix;
+layout(location = U_PARAM_VEC4_0) uniform vec4 u_params;
+layout(location = U_ORTHO_MATRIX) uniform mat4 u_orthoMatrix;
   
 out vec3 vUV;                 // output to interpolate over screen
 out vec2 vUVDot;              // output to interpolate over screen

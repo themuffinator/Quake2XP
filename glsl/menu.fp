@@ -1,6 +1,6 @@
 layout (binding = 0) uniform sampler2DRect	u_ScreenTex;
 
-uniform vec2	u_screenSize; 
+layout(location = U_SCREEN_SIZE) uniform vec2	u_screenSize; 
 
 vec4 SepiaColor (vec4 color)
 {	

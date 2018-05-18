@@ -1,5 +1,6 @@
 layout (binding = 0)  uniform sampler2D u_map;
-uniform float u_colorScale;
+
+layout (location = U_COLOR_MUL) uniform float u_colorScale;
 
 in vec2 v_texCoord;
 

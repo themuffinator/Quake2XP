@@ -1,7 +1,7 @@
 layout (binding = 0) uniform sampler2DRect		u_map0; // screen
 layout (binding = 1) uniform sampler2DRect		u_map1; // bloom
 
-uniform float	u_bloomParams; //multipler
+layout (location = U_PARAM_FLOAT_0)	uniform float	u_bloomParams; //multipler
 
 void main(void) { 
 

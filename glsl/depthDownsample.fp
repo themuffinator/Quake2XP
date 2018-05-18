@@ -6,7 +6,7 @@
 
 layout (binding = 0) uniform sampler2DRect	u_depthBufferMap;
 
-uniform vec2	u_depthParms;
+layout (location = U_DEPTH_PARAMS)	uniform vec2	u_depthParms;
 
 void main (void) {
 	vec2 tc = gl_FragCoord.xy * 2.0;

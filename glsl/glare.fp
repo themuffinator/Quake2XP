@@ -1,6 +1,6 @@
 layout (binding = 0) uniform	sampler2DRect	u_map;
 
-uniform float	u_glareParams;
+layout(location = U_PARAM_FLOAT_0) uniform float	u_glareParams;
 
 void main(void)
 {

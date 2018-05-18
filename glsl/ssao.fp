@@ -1,8 +1,8 @@
 layout (binding = 0) uniform	sampler2DRect	u_DNMiniMap;
 layout (binding = 1) uniform	sampler2D		u_randomNormalMap;
 
-uniform vec2			u_ssaoParms;	// intensity, scale
-uniform vec2			u_viewport;
+layout (location = U_PARAM_VEC2_0)	uniform vec2	u_ssaoParms;	// intensity, scale
+layout (location = U_SCREEN_SIZE)	uniform vec2	u_viewport;
 
 #define HQ
 
