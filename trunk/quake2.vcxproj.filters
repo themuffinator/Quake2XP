@@ -215,9 +215,6 @@
     <ClCompile Include="client\snd_openal.c">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="client\music.c">
-      <Filter>Source Files\Sound</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_lightMaps.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -319,6 +316,9 @@
     </ClCompile>
     <ClCompile Include="win32\win_nvapi.c">
       <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="client\snd_music.c">
+      <Filter>Source Files\Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

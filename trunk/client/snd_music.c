@@ -289,17 +289,18 @@ void Music_Update (void) {
 		case MUSIC_OTHER_FILES:
 			if (mstat != MSTAT_PLAYING || S_Streaming_NumFreeBufs () == 0)
 				return;
-
 			// Play a portion of the current file
-			n = music_handle->read (music_handle->f, music_buffer, sizeof(music_buffer));
-			if (n == 0) {
-				Music_Play ();
+			n = music_handle->read(music_handle->f, music_buffer, MAX_STRBUF_SIZE);
+			if (n == 0)
+			{	/// Berserker's FIX: когда уже нечего читать из файла, все-равно ждём окончания проигрывания всей очереди буферов:
+				if (streaming.bNumAvail == NUM_STRBUF)	// когда число свободных буферов станет максимальным,
+
+					Music_Play();			// запускаем музыку заново!
 			}
-			else {
+			else
 				// don't check return value as the buffer is guaranteed to fit
-				S_Streaming_Add (music_buffer, n);
-			}
-			break;
+				S_Streaming_Add(music_buffer, n);
+
 	}
 }
 
@@ -350,21 +351,26 @@ Gen_Interface_t *Gen_Open (const char *name, soundparams_t *sp) {
 	return NULL;
 }
 
-static int MC_ReadVorbis (MC_Vorbis_t *f, char *buffer, int n) {
-	int total = 0;
-	const int step = 1024 * 64;
+#define MUSIC_BUFFER_READ_SIZE	4096
+static byte music_buffer[MAX_STRBUF_SIZE + MUSIC_BUFFER_READ_SIZE];		/// добавка памяти для предотвращения порчи буфера
 
-	assert (step < n);
-	while (total + step < n) {
+static int MC_ReadVorbis(MC_Vorbis_t *f, char *buffer, int n)
+{
+	int total = 0;
+
+	///	assert(step < n);
+	while (1)
+	{
 		// FIXME: check endianess
-		int cur = ov_read (&f->ovFile, buffer + total, step, 0, 2, 1, &f->pos);
+		int cur = ov_read(&f->ovFile, buffer + total, MUSIC_BUFFER_READ_SIZE, 0, 2, 1, &f->pos);
 		if (cur < 0)
 			return 0;
 		if (cur == 0)
 			return total;
+		if (total + cur > n)
+			return total + cur;
 		total += cur;
 	}
-	return total;
 }
 
 static void MC_RewindVorbis (MC_Vorbis_t *f) {

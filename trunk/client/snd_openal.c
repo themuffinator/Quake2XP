@@ -66,20 +66,6 @@ static struct rbtree *knownsounds;
 // Video & Music streaming
 // =======================================================================
 
-typedef struct {
-	// willow: If enabled (not zero) one channel dedicated to cinematic or VOIP communications.
-	qboolean enabled;
-
-	// use a buffer queue to mirror OpenAL behavior
-	ALuint buffers[NUM_STRBUF];
-	unsigned bFirst, bNumAvail;
-
-	ALsizei sound_rate;
-	ALenum sound_format;
-} streaming_t;
-
-streaming_t streaming;
-
 static __inline void sq_add (ALuint x) {
 	int tail = (streaming.bFirst + streaming.bNumAvail) % NUM_STRBUF;
 

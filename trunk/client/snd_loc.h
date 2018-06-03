@@ -280,6 +280,20 @@ void EFX_RvbShutdown (void);
 #define NUM_STRBUF 8
 #define MAX_STRBUF_SIZE (1024*256)
 
+typedef struct {
+	// willow: If enabled (not zero) one channel dedicated to cinematic or VOIP communications.
+	qboolean enabled;
+
+	// use a buffer queue to mirror OpenAL behavior
+	ALuint buffers[NUM_STRBUF];
+	unsigned bFirst, bNumAvail;
+
+	ALsizei sound_rate;
+	ALenum sound_format;
+} streaming_t;
+
+streaming_t streaming;
+
 qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume);
 int S_Streaming_Add (const byte *buffer, int num_bytes);
 int S_Streaming_NumFreeBufs (void);
