@@ -217,25 +217,25 @@ void R_DrawChainsRA (qboolean bmodel) {
 
 	ambient = min(r_lightmapScale->value, 0.33f);
 
-	qglUniform1f(water_deformMul, 1.0);
-	qglUniform1f(water_thickness, 150.0);
-	qglUniform2f(water_screenSize, vid.width, vid.height);
-	qglUniform2f(water_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(water_colorModulate, 1.0);
-	qglUniform1f(water_ambient, ambient);
+	qglUniform1f(U_WATER_DEFORM_MUL, 1.0);
+	qglUniform1f(U_WATHER_THICKNESS, 150.0);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform1f(U_COLOR_MUL, 1.0);
+	qglUniform1f(U_AMBIENT_LEVEL, ambient);
 
 	if (!bmodel)
-		qglUniformMatrix4fv(water_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	else
-		qglUniformMatrix4fv(water_mvp, 1, qfalse, (const float *)currententity->orMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
 	if (r_newrefdef.rdflags & RDF_UNDERWATER)
-		qglUniform1i(water_mirror, 0);
+		qglUniform1i(U_WATER_MIRROR, 0);
 	else
-		qglUniform1i(water_mirror, 1);
+		qglUniform1i(U_WATER_MIRROR, 1);
 
-	qglUniformMatrix4fv(water_mv, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(water_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);

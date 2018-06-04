@@ -71,8 +71,6 @@ void Set_FontShader(qboolean enable){
 		GL_BindProgram(genericProgram);
 		qglUniform1i(gen_attribColors, 1);
 		qglUniform1i(gen_attribConsole, 0);
-		qglUniform1i(gen_sky, 0);
-		qglUniform1i(gen_3d, 0);
 		qglUniform1f(gen_colorModulate, r_textureColorScale->value);
 		qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	}
@@ -293,8 +291,6 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	
 	qglUniform1i(gen_attribConsole, 0);
 	qglUniform1i(gen_attribColors, 0);
-	qglUniform1i(gen_sky, 0);
-	qglUniform1i(gen_3d, 0);
 	
 	if (woh < WIDE_SCREEN_16x9) {  // quad screen
 		offsX = (WIDTH_FHD - (HEIGHT_FHD * woh)) / (WIDTH_FHD * 2.0);
@@ -491,8 +487,6 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1i(gen_sky, 0);
-	qglUniform1i(gen_3d, 0);
 	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
 	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -563,8 +557,6 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1i(gen_sky, 0);
-	qglUniform1i(gen_3d, 0);
 
 	qglUniform1f(gen_colorModulate, r_bump2D->integer ? 1.0 : r_textureColorScale->value);
 	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -725,8 +717,6 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 1);
 	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1i(gen_sky, 0);
-	qglUniform1i(gen_3d, 0);
 	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
 	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	
@@ -787,8 +777,6 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	GL_BindProgram(genericProgram);
 	qglUniform1i(gen_attribColors, 0);
 	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1i(gen_sky, 0);
-	qglUniform1i(gen_3d, 0);
 	qglUniform4f(gen_color, r, g, b, a);
 	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
 	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);

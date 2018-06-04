@@ -608,6 +608,7 @@ typedef struct {
 	int			maxFragmentUniformComponents;
 	int			maxVertexAttribs;
 	int			maxTextureImageUnits;
+	int			maxUniformLocations;
 
 	int			glMajorVersion;
 	int			glMinorVersion;
@@ -881,6 +882,8 @@ glslProgram_t		*FboProgram;
 glslProgram_t		*light2dProgram;
 glslProgram_t		*fixFovProgram;
 glslProgram_t		*menuProgram;
+glslProgram_t		*skyProgram;
+glslProgram_t		*colorProgram;
 glslProgram_t		*fbo2screenProgram;
 
 void GL_BindProgram (glslProgram_t *program);
@@ -1003,6 +1006,13 @@ typedef enum {
 	U_REFR_THICKNESS1,
 	U_REFR_ALPHA_MASK,
 	U_REFR_MASK,
+
+	U_WATER_DEFORM_MUL,
+	U_WATER_ALPHA,
+	U_WATHER_THICKNESS,
+	U_WATER_TRANS,
+	U_WATER_ENTITY2WORLD,
+	U_WATER_MIRROR,
 }
 glsl_uniform;
 
@@ -1010,26 +1020,9 @@ uint gen_attribConsole;
 uint gen_attribColors;
 uint gen_colorModulate;
 uint gen_color;
-uint gen_sky;
-uint gen_mvp;
+
 uint gen_orthoMatrix;
-uint gen_3d;
 uint gen_light;
-
-uint water_deformMul;
-uint water_alpha;
-uint water_thickness;
-uint water_screenSize;
-uint water_depthParams;
-uint water_colorModulate;
-uint water_ambient;
-uint water_trans;
-uint water_entity2world;
-uint water_mvp;
-uint water_mv;
-uint water_pm;
-uint water_mirror;
-
 
 #define	MAX_VERTEX_CACHES	4096
 

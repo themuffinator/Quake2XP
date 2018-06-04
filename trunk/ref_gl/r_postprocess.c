@@ -241,10 +241,8 @@ void R_ScreenBlend(void)
 
 		qglUniform1i(gen_attribConsole, 0);
 		qglUniform1i(gen_attribColors, 0);
-		qglUniform1i(gen_sky, 0);
-		qglUniform1i(gen_3d, 0);
 		qglUniform4f(gen_color, v_blend[0], v_blend[1], v_blend[2], v_blend[3] * 1.5);
-		qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		GL_Enable(GL_BLEND);
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

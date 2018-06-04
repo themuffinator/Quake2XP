@@ -53,11 +53,11 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 
 	if (fa->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 		alpha = (fa->texInfo->flags & SURF_TRANS33) ? 0.33f : 0.66f;
-		qglUniform1i (water_trans, 1);
+		qglUniform1i (U_WATER_TRANS, 1);
 
 	}
 	else {
-		qglUniform1i (water_trans, 0);
+		qglUniform1i (U_WATER_TRANS, 0);
 		alpha = 1.f;
 	}
 
@@ -397,24 +397,22 @@ int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox (qboolean color) {
 	int i;
 
-	if (color) {
-		GL_BindProgram (genericProgram);
-		qglUniform1i (gen_sky, 1);
-		qglUniform1i (gen_3d, 0);
-		qglUniform1i (gen_attribColors, 0);
-		qglUniform1i (gen_attribConsole, 0);
-		qglUniform1f (gen_colorModulate, 1.0);
+	GL_BindProgram(skyProgram);
+	
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
 
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
+
+	if (color) {
+		qglUniform1i(U_PARAM_INT_0, 1);
 		qglEnableVertexAttribArray (ATT_TEX0);
-		qglEnableVertexAttribArray (ATT_COLOR);
 		qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, SkyTexCoordArray);
-		qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, SkyColorArray);
 		GL_Enable(GL_POLYGON_OFFSET_FILL);
 		GL_PolygonOffset(-1, -1);
 
-	}
-	qglEnableVertexAttribArray (ATT_POSITION);
-	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
+	}else
+		qglUniform1i(U_PARAM_INT_0, 0); // depth pass
 
 
 
@@ -426,11 +424,6 @@ void R_DrawSkyBox (qboolean color) {
 		if (i == 6)
 			return;	// nothing visible
 	}
-
-	if(color)
-		qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
-	else
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.skyMatrix);
 
 	for (i = 0; i < 6; i++) {
 
@@ -463,7 +456,6 @@ void R_DrawSkyBox (qboolean color) {
 	
 	if (color) {
 		qglDisableVertexAttribArray (ATT_TEX0);
-		qglDisableVertexAttribArray (ATT_COLOR);
 		GL_Disable(GL_POLYGON_OFFSET_FILL);
 	}
 }

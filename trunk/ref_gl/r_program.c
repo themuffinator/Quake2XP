@@ -135,6 +135,13 @@ static const char *glslUniforms =
 "#define	U_REFR_THICKNESS1		84\n"
 "#define	U_REFR_ALPHA_MASK		85\n"
 "#define	U_REFR_MASK				86\n"
+
+"#define	U_WATER_DEFORM_MUL		87\n"
+"#define	U_WATER_ALPHA			88\n"
+"#define	U_WATHER_THICKNESS		89\n"
+"#define	U_WATER_TRANS			90\n"
+"#define	U_WATER_ENTITY2WORLD	91\n"
+"#define	U_WATER_MIRROR			92\n"
 ;
 
 /*
@@ -767,21 +774,6 @@ void R_InitPrograms (void) {
 	waterProgram = R_FindProgram ("water", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (waterProgram->valid) {
 		Com_Printf ("succeeded\n");
-		id = waterProgram->id;
-
-		water_deformMul		= qglGetUniformLocation (id, "u_deformMul");
-		water_thickness		= qglGetUniformLocation (id, "u_thickness");
-		water_screenSize	= qglGetUniformLocation (id, "u_viewport");
-		water_depthParams	= qglGetUniformLocation (id, "u_depthParms");
-		water_colorModulate = qglGetUniformLocation (id, "u_ColorModulate");
-		water_ambient		= qglGetUniformLocation (id, "u_ambientScale");
-		water_trans			= qglGetUniformLocation (id, "u_TRANS");
-		water_entity2world	= qglGetUniformLocation (id, "g_entityToWorldRot");
-		water_mvp			= qglGetUniformLocation	(id, "u_modelViewProjectionMatrix");
-		water_mv			= qglGetUniformLocation	(id, "u_modelViewMatrix");
-		water_pm			= qglGetUniformLocation	(id, "u_projectionMatrix");
-		water_mirror		= qglGetUniformLocation (id, "u_mirror");
-
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");
@@ -810,10 +802,7 @@ void R_InitPrograms (void) {
 		gen_attribColors	= qglGetUniformLocation (id, "u_ATTRIB_COLORS");
 		gen_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
 		gen_color			= qglGetUniformLocation (id, "u_color");
-		gen_sky				= qglGetUniformLocation (id, "u_isSky");
-		gen_mvp				= qglGetUniformLocation (id, "u_modelViewProjectionMatrix");
 		gen_orthoMatrix		= qglGetUniformLocation (id, "u_orthoMatrix");
-		gen_3d				= qglGetUniformLocation (id, "u_3d");
 		gen_light			= qglGetUniformLocation (id, "u_lightShift");
 	}
 	else {
@@ -910,6 +899,26 @@ void R_InitPrograms (void) {
 	Com_Printf("Load "S_COLOR_YELLOW"menu background program"S_COLOR_WHITE" ");
 	menuProgram = R_FindProgram("menu", qtrue, qtrue, qfalse, qfalse, qfalse);
 	if (menuProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"sky program"S_COLOR_WHITE" ");
+	skyProgram = R_FindProgram("sky", qtrue, qtrue, qfalse, qfalse, qfalse);
+	if (skyProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"color program"S_COLOR_WHITE" ");
+	colorProgram = R_FindProgram("color", qtrue, qtrue, qfalse, qfalse, qfalse);
+	if (colorProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {

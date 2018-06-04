@@ -724,6 +724,8 @@
   <ItemGroup>
     <None Include="..\baseq2\glsl\ambientMd3.fp" />
     <None Include="..\baseq2\glsl\ambientMd3.vp" />
+    <None Include="..\baseq2\glsl\color.fp" />
+    <None Include="..\baseq2\glsl\color.vp" />
     <None Include="..\baseq2\glsl\depthDownsample.fp" />
     <None Include="..\baseq2\glsl\depthDownsample.vp" />
     <None Include="..\baseq2\glsl\fixfov.fp" />
@@ -780,6 +782,8 @@
     <None Include="..\baseq2\glsl\refract.vp" />
     <None Include="..\baseq2\glsl\shadow.fp" />
     <None Include="..\baseq2\glsl\shadow.vp" />
+    <None Include="..\baseq2\glsl\sky.fp" />
+    <None Include="..\baseq2\glsl\sky.vp" />
     <None Include="..\baseq2\glsl\ssao.fp" />
     <None Include="..\baseq2\glsl\ssao.vp" />
     <None Include="..\baseq2\glsl\ssaoBlur.fp" />

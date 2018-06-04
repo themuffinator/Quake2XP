@@ -102,12 +102,9 @@ void R_RenderDecals(void)
     qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, DecalColorArray);
      
 
-	GL_BindProgram(genericProgram);
-	qglUniform1i(gen_attribColors, 1);
-	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1i(gen_3d, 1);
-	qglUniform1i(gen_sky, 0);
-	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	GL_BindProgram(colorProgram);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniform1i(U_PARAM_INT_0, 1); // textured pass
 
 	GL_Enable(GL_POLYGON_OFFSET_FILL);
     GL_PolygonOffset(-1, -1);

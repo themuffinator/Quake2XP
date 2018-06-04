@@ -1247,12 +1247,9 @@ void UpdateLightEditor (void) {
 	}
 
 	// setup program
-	GL_BindProgram (genericProgram);
-	qglUniform1i (gen_attribColors, 0);
-	qglUniform1i (gen_attribConsole, 0);
-	qglUniform1i (gen_sky, 0);
-	qglUniform1i (gen_3d, 1);
-	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	GL_BindProgram (colorProgram);
+	qglUniform1i(U_PARAM_INT_0, 0); // color only pass
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
@@ -1266,7 +1263,7 @@ void UpdateLightEditor (void) {
 
 			VectorAdd (tmp, currentShadowLight->origin, corners[j]);
 		}
-		qglUniform4f (gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+		qglUniform4f (U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 		GL_Enable (GL_LINE_SMOOTH);
 		qglLineWidth (3.0);
 
@@ -1304,7 +1301,7 @@ void UpdateLightEditor (void) {
 
 	if (selectedShadowLight) {
 
-		qglUniform4f (gen_color, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
+		qglUniform4f (U_COLOR, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
 
 		qglPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
 		GL_Enable (GL_LINE_SMOOTH);
@@ -2470,13 +2467,10 @@ void R_LightFlareOutLine () { //flare editing highlights
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);
 
 	// setup program
-	GL_BindProgram (genericProgram);
-	qglUniform1i (gen_attribColors, 0);
-	qglUniform1i (gen_attribConsole, 0);
-	qglUniform1i (gen_sky, 0);
-	qglUniform1i(gen_3d, 1);
-	qglUniform4f (gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	GL_BindProgram (colorProgram);
+	qglUniform1i(U_PARAM_INT_0, 0); // color only pass
+	qglUniform4f (U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	// draw light to flare connector
 	GL_Enable(GL_LINE_SMOOTH);
@@ -2583,13 +2577,10 @@ void R_DrawLightBounds(void) {
 		GL_Disable(GL_DEPTH_TEST);
 
 	// setup program
-	GL_BindProgram(genericProgram);
-	qglUniform1i(gen_attribColors, 0);
-	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1i(gen_sky, 0);
-	qglUniform1i(gen_3d, 1);
-	qglUniform4f(gen_color, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniformMatrix4fv(gen_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	GL_BindProgram(colorProgram);
+	qglUniform1i(U_PARAM_INT_0, 0); // color only pass
+	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vCache);

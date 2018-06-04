@@ -1756,7 +1756,7 @@ int R_Init(void *hinstance, void *hWnd)
 	qglGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,	&gl_config.maxFragmentUniformComponents);
 	qglGetIntegerv(GL_MAX_VERTEX_ATTRIBS,				&gl_config.maxVertexAttribs);
 	qglGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,			&gl_config.maxTextureImageUnits);
-
+	qglGetIntegerv(GL_MAX_UNIFORM_LOCATIONS,			&gl_config.maxUniformLocations);
 	qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE,			&gl_state.maxRenderBufferSize);
 	qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS,			&gl_state.maxColorAttachments);
 	qglGetIntegerv(GL_MAX_SAMPLES,						&gl_state.maxSamples);
@@ -1764,6 +1764,7 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf("\n");
 	Com_Printf(S_COLOR_YELLOW"Max Fragment Uniform Components:"S_COLOR_GREEN" %i\n", gl_config.maxFragmentUniformComponents);
 	Com_Printf(S_COLOR_YELLOW"Max Vertex Uniform Components: "S_COLOR_GREEN"  %i\n", gl_config.maxVertexUniformComponents);
+	Com_Printf(S_COLOR_YELLOW"Max Uniform Locations:"S_COLOR_GREEN"           %i\n", gl_config.maxUniformLocations);
 	Com_Printf(S_COLOR_YELLOW"Max Vertex Attribs:           "S_COLOR_GREEN"   %i\n", gl_config.maxVertexAttribs);
 	Com_Printf(S_COLOR_YELLOW"Max Varying Floats:           "S_COLOR_GREEN"   %i\n", gl_config.maxVaryingFloats);
 	Com_Printf(S_COLOR_YELLOW"Max Vertex TextureImageUnits: "S_COLOR_GREEN"   %i\n", gl_config.maxVertexTextureImageUnits);
