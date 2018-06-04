@@ -1,3 +1,16 @@
+layout(location = 0) in vec3 att_position;
+layout(location = 1) in vec3 att_normal;
+layout(location = 2) in vec3 att_tangent;
+layout(location = 3) in vec3 att_binormal;
+layout(location = 4) in vec4 att_color4f;
+layout(location = 5) in vec2 att_texCoordDiffuse;
+
+layout(location = U_WATER_DEFORM_MUL)	uniform float	u_deformMul;
+layout(location = U_WATER_TRANS)		uniform int		u_TRANS;
+layout(location = U_MVP_MATRIX)			uniform mat4	u_modelViewProjectionMatrix;
+layout(location = U_MODELVIEW_MATRIX)	uniform mat4	u_modelViewMatrix; 
+layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
+
 out vec2		v_deformTexCoord;
 out vec2		v_diffuseTexCoord;
 out vec2		v_deformMul;
@@ -6,17 +19,6 @@ out mat3		v_tangentToView;
 out vec4		v_color;
 out vec3		v_lightVec;
 out vec3		v_viewVecTS;
-
-uniform float	u_deformMul;
-uniform int		u_TRANS;
-uniform mat4	u_modelViewProjectionMatrix, u_modelViewMatrix, u_projectionMatrix;
-
-layout(location = 0) in vec3 att_position;
-layout(location = 1) in vec3 att_normal;
-layout(location = 2) in vec3 att_tangent;
-layout(location = 3) in vec3 att_binormal;
-layout(location = 4) in vec4 att_color4f;
-layout(location = 5) in vec2 att_texCoordDiffuse;
 
 void main (void) {
 	v_diffuseTexCoord = att_texCoordDiffuse;

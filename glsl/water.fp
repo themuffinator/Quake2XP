@@ -1,5 +1,27 @@
-#include depth.inc
-#include lighting.inc
+layout (binding = 0) uniform sampler2D		u_colorMap;
+layout (binding = 1) uniform sampler2D		u_dstMap;
+layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
+layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
+
+layout(location = U_WATER_DEFORM_MUL)	uniform float	u_deformMul;		// for normal w/o depth falloff
+layout(location = U_WATHER_THICKNESS)	uniform float	u_thickness;
+layout(location = U_WATER_ALPHA)		uniform float	u_alpha;
+layout(location = U_COLOR_MUL)			uniform float	u_ColorModulate;
+layout(location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;
+layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
+layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
+layout(location = U_WATER_TRANS)		uniform int		u_TRANS;
+layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
+layout(location = U_WATER_MIRROR)		uniform int		u_mirror;
+
+in vec2		v_deformTexCoord;
+in vec2		v_diffuseTexCoord;
+in vec2		v_deformMul;
+in vec3		v_positionVS;
+in mat3		v_tangentToView;
+in vec4		v_color;
+in vec3     v_lightVec;
+in vec3		v_viewVecTS;
 
 #define MAX_STEPS			20
 #define MAX_STEPS_BINARY	10
@@ -20,30 +42,10 @@
 #define OPAQUE_OFFSET		4.0
 #define OPAQUE_MUL			(-1.0 / 512.0)
 
-layout (binding = 0) uniform sampler2D		u_colorMap;
-layout (binding = 1) uniform sampler2D		u_dstMap;
-layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
-layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
 
-in vec2		v_deformTexCoord;
-in vec2		v_diffuseTexCoord;
-in vec2		v_deformMul;
-in vec3		v_positionVS;
-in mat3		v_tangentToView;
-in vec4		v_color;
-in vec3     v_lightVec;
-in vec3		v_viewVecTS;
+#include depth.inc
+#include lighting.inc
 
-uniform float				u_deformMul;		// for normal w/o depth falloff
-uniform float				u_thickness;
-uniform float				u_alpha;
-uniform float				u_ColorModulate;
-uniform float				u_ambientScale;
-uniform vec2				u_viewport;
-uniform vec2				u_depthParms;
-uniform int					u_TRANS;
-uniform mat4				u_projectionMatrix;
-uniform int					u_mirror;
 //
 // view space to viewport
 //

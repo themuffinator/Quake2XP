@@ -9,7 +9,7 @@ uniform vec4		u_color;
 uniform float		u_colorScale;
 uniform vec3		u_lightShift;
 
-uniform int			u_ATTRIB_COLORS, u_ATTRIB_CONSOLE, u_isSky, u_3d;
+uniform int			u_ATTRIB_COLORS, u_ATTRIB_CONSOLE;
 
 #include lighting.inc
 
@@ -50,16 +50,8 @@ if(u_ATTRIB_COLORS == 1){
 	return;
 }
 
-if(u_isSky == 1){
-	fragData =  vec4(diffuse.rgb, 1.0);
-	return;
-}
 if(u_ATTRIB_COLORS != 1 && u_ATTRIB_CONSOLE != 1){
 	fragData =  u_color;
 	return;
 	}
-
-if(u_3d == 1)
-	fragData =  u_color;
-
 }
