@@ -34,7 +34,7 @@ void Music_Init (void) {
 			CDAudio_Init ();
 			Com_Printf ("=====================================\n\n");
 			break;
-		case MUSIC_CD_FILES:
+		case MUSIC_FILES:
 			Com_Printf ("=====================================\n\n");
 			break;
 		case MUSIC_OTHER_FILES:
@@ -63,7 +63,7 @@ void Music_Shutdown (void) {
 		case MUSIC_CD:
 			CDAudio_Shutdown ();
 			break;
-		case MUSIC_CD_FILES:
+		case MUSIC_FILES:
 			break;
 		case MUSIC_OTHER_FILES:
 			FS_FreeList (fsList, fsNumFiles);
@@ -158,7 +158,7 @@ void Music_Play (void) {
 			mstat = MSTAT_PLAYING;
 			break;
 
-		case MUSIC_CD_FILES:
+		case MUSIC_FILES:
 			Q_snprintfz(name, sizeof(name), "music/track%02i", CL_MissionPackCDTrack(track));
 			Music_PlayFile (name, qfalse);
 			break;
@@ -191,7 +191,7 @@ void Music_Stop (void) {
 		case MUSIC_CD:
 			CDAudio_Stop ();
 			break;
-		case MUSIC_CD_FILES:
+		case MUSIC_FILES:
 		case MUSIC_OTHER_FILES:
 			music_handle->close (music_handle->f);
 			S_Streaming_Stop ();
@@ -209,7 +209,7 @@ void Music_Pause (void) {
 		case MUSIC_CD:
 			CDAudio_Activate (qfalse);
 			break;
-		case MUSIC_CD_FILES:
+		case MUSIC_FILES:
 		case MUSIC_OTHER_FILES:
 			alSourcePause (source_name[CH_STREAMING]);
 			break;
@@ -226,7 +226,7 @@ void Music_Resume (void) {
 		case MUSIC_CD:
 			CDAudio_Activate (qtrue);
 			break;
-		case MUSIC_CD_FILES:
+		case MUSIC_FILES:
 		case MUSIC_OTHER_FILES:
 			alSourcePlay (source_name[CH_STREAMING]);
 			break;
@@ -268,7 +268,7 @@ void Music_Update (void) {
 			case MUSIC_CD:
 				Cvar_SetValue ("cd_volume", s_musicvolume->value);
 				break;
-			case MUSIC_CD_FILES:
+			case MUSIC_FILES:
 			case MUSIC_OTHER_FILES:
 				alSourcef (source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
 				break;
@@ -284,7 +284,7 @@ void Music_Update (void) {
 			CDAudio_Update ();
 			break;
 
-		case MUSIC_CD_FILES:
+		case MUSIC_FILES:
 		case MUSIC_OTHER_FILES:
 			if (mstat != MSTAT_PLAYING || S_Streaming_NumFreeBufs () == 0)
 				return;

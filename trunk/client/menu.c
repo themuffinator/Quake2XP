@@ -4508,7 +4508,7 @@ void M_DrawBackgroundModel() {
 
 	VectorNegate(center, entity.origin);
 	
-	S_fastsound(entity.origin, 1, CHAN_AUTO, fastsound_descriptor[id_idlogo_sound], 0.11, ATTN_STATIC);
+//	S_fastsound(entity.origin, 1, CHAN_AUTO, fastsound_descriptor[id_idlogo_sound], 0.11, ATTN_STATIC);
 
 	// Draw it
 	R_RenderFrame(&refdef);
