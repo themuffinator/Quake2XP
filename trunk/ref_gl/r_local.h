@@ -1002,6 +1002,7 @@ typedef enum {
 	U_REFR_THICKNESS0,
 	U_REFR_THICKNESS1,
 	U_REFR_ALPHA_MASK,
+	U_REFR_MASK,
 }
 glsl_uniform;
 

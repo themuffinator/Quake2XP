@@ -134,7 +134,7 @@ static const char *glslUniforms =
 "#define	U_REFR_THICKNESS0		83\n"
 "#define	U_REFR_THICKNESS1		84\n"
 "#define	U_REFR_ALPHA_MASK		85\n"
-
+"#define	U_REFR_MASK				86\n"
 ;
 
 /*

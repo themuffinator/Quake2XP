@@ -150,14 +150,11 @@ void EFX_GetRoomSize() {
 
 	if (sum <= 128.0)
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbAlcoveEffect);
-
-	if(sum > 128.0 && sum < 256)
+	else if (sum <= 256.0)
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbSmallRoomEffect);
-	
-	if (sum < 512.0 && sum > 256.0)
+	else if (sum <= 512.0)
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbMediumRoomEffect);
-
-	if (sum >= 512.0)
+	else
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbLargeRoomEffect);
 }
 

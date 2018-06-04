@@ -291,8 +291,10 @@ typedef struct {
 	ALsizei sound_rate;
 	ALenum sound_format;
 } streaming_t;
-
 streaming_t streaming;
+
+#define MUSIC_BUFFER_READ_SIZE   4096
+byte music_buffer[MAX_STRBUF_SIZE + MUSIC_BUFFER_READ_SIZE];       /// добавка памяти для предотвращения порчи буфера
 
 qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume);
 int S_Streaming_Add (const byte *buffer, int num_bytes);

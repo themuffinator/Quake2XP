@@ -16,7 +16,6 @@ typedef enum {
 static mstat_t mstat = MSTAT_STOPPED;
 static music_type_t music_type = MUSIC_NONE;
 static Gen_Interface_t *music_handle;
-static byte music_buffer[MAX_STRBUF_SIZE];
 
 static char **fsList;
 static int fsIndex;
@@ -351,17 +350,12 @@ Gen_Interface_t *Gen_Open (const char *name, soundparams_t *sp) {
 	return NULL;
 }
 
-#define MUSIC_BUFFER_READ_SIZE	4096
-static byte music_buffer[MAX_STRBUF_SIZE + MUSIC_BUFFER_READ_SIZE];		/// добавка памяти для предотвращения порчи буфера
-
 static int MC_ReadVorbis(MC_Vorbis_t *f, char *buffer, int n)
 {
 	int total = 0;
 
-	///	assert(step < n);
 	while (1)
 	{
-		// FIXME: check endianess
 		int cur = ov_read(&f->ovFile, buffer + total, MUSIC_BUFFER_READ_SIZE, 0, 2, 1, &f->pos);
 		if (cur < 0)
 			return 0;

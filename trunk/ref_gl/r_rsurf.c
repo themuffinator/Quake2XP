@@ -160,8 +160,9 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 //		alpha = 0.33f;
 //	else
 		alpha = 1.0f;
+		
 
-	qglUniform1f(ref_alpha, alpha);
+	qglUniform1f(U_REFR_ALPHA, alpha);
 
 		if (scrolling)
 			GL_MBind(GL_TEXTURE0, r_DSTTex->texnum);
@@ -196,6 +197,8 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 
 	qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 	c_brush_polys += numIndices / 3;
+
+	
 }
 
 
@@ -283,11 +286,11 @@ void R_DrawChainsRA (qboolean bmodel) {
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
-	qglUniform1f(ref_thickness, 150.0);
-	qglUniform2f(ref_viewport, vid.width, vid.height);
-	qglUniform2f(ref_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(ref_ambientScale, colorScale);
-	qglUniform1i(ref_alphaMask, 0);
+	qglUniform1f(U_REFR_THICKNESS0, 150.0);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform1f(U_COLOR_MUL, colorScale);
+	qglUniform1i(U_REFR_ALPHA_MASK, 0);
 
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
 		

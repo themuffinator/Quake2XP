@@ -212,7 +212,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	dsprite_t	*psprite;
 	int			vert=0;
 	int			len, scaled = 1;
-	
+
 	psprite = (dsprite_t *) currentmodel->extraData;
 	e->frame %= psprite->numFrames;
 	frame = &psprite->frames[e->frame];
@@ -225,9 +225,9 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 
 	GL_MBind(GL_TEXTURE1, currentmodel->skins[e->frame]->texnum);
 
-	qglUniform1f(ref_alpha, e->alpha);
-	qglUniform1f(ref_thickness, len * 0.5);
-	qglUniform1f(ref_thickness2, len * 0.5);
+	qglUniform1f(U_REFR_ALPHA, e->alpha);
+	qglUniform1f(U_REFR_THICKNESS0, len * 0.5);
+	qglUniform1f(U_REFR_THICKNESS1, len * 0.5);
 
 	if (currententity->flags & RF_BFG_SPRITE) {
 		GL_MBind(GL_TEXTURE1, r_notexture->texnum);
@@ -780,15 +780,15 @@ void R_RenderSprites(void)
 	// setup program
 	GL_BindProgram(refractProgram);
 
-	qglUniform1f(ref_deformMul, 9.5);
-	qglUniformMatrix4fv(ref_mvp, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(ref_mvm, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(ref_pm, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+	qglUniform1f(U_REFR_DEFORM_MUL, 9.5);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
-	qglUniform2f(ref_viewport, vid.width, vid.height);
-	qglUniform2f(ref_depthParams, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f(ref_mask, 0.0, 1.0);
-	qglUniform1i(ref_alphaMask, 1);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f(U_REFR_MASK, 0.0, 1.0);
+	qglUniform1i(U_REFR_ALPHA_MASK, 1);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -806,6 +806,7 @@ void R_RenderSprites(void)
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
+	
 }
 
 // draws ambient opaque entities
