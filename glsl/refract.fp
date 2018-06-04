@@ -3,14 +3,14 @@ layout (binding = 1) uniform sampler2D		u_colorMap;
 layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
 layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
 
-uniform float	u_alpha;
-uniform float	u_thickness;
-uniform float	u_thickness2;
-uniform vec2	u_viewport;
-uniform vec2	u_depthParms;
-uniform float	u_ambientScale;
-uniform vec2	u_mask;
-uniform int		u_ALPHAMASK;
+layout(location = U_REFR_ALPHA)			uniform float	u_alpha;
+layout(location = U_REFR_THICKNESS0)	uniform float	u_thickness0; //depth feather
+layout(location = U_REFR_THICKNESS1)	uniform float	u_thickness1; //sprite softeness
+layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
+layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
+layout(location = U_COLOR_MUL)			uniform float	u_ambientScale;
+layout(location = U_REFR_MASK)			uniform vec2	u_mask;			//softeness
+layout(location = U_REFR_ALPHA_MASK)	uniform int		u_ALPHAMASK;	//is sprite
 
 in float	v_depth;
 in float	v_depthS;
@@ -26,13 +26,13 @@ void main (void) {
 
 	// Z-feather
 	float depth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
-	N *= clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
+	N *= clamp((depth - v_depth) / u_thickness0, 0.0, 1.0);
 	// scale by the deform multiplier and the viewport size
 	N *= v_deformMul * u_viewport.xy;
 	
 	if(u_ALPHAMASK == 1){
 		float A = texture(u_deformMap, v_deformTexCoord).a;
-		float softness = clamp((depth - v_depthS) / u_thickness2, 0.0, 1.0);
+		float softness = clamp((depth - v_depthS) / u_thickness1, 0.0, 1.0);
 		// refracted sprites with soft edges
 		if (A <= 0.01) {
 			discard;
