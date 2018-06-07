@@ -26,4 +26,5 @@ void main(void)
 	float vignetting = clamp((OuterVignetting - d) / (OuterVignetting - InnerVignetting), 0.0, 1.0);
 
 	fragData = mix(color, sepia, vignetting);
+	fragData.a = 1.0;
 }
