@@ -4,6 +4,114 @@
 //Light 0
 {
 "classname" "light"
+"origin" "-1294 -757 17"
+"radius" "50 50 50"
+"color" "0.300 0.300 0.500"
+"style" "0"
+"filter" "0"
+"angles" "0 0 0"
+"speed" "0.000 0.000 0.000"
+"shadow" "0"
+"ambient" "0"
+"_cone" "0.0"
+"spawnflags" "0"
+"flareSize" "10"
+"flareOrigin" "-1294 -757 17"
+"flare" "0"
+}
+//Light 1
+{
+"classname" "light"
+"origin" "-1286 -688 1"
+"radius" "50 50 50"
+"color" "0.300 0.300 0.500"
+"style" "0"
+"filter" "0"
+"angles" "0 0 0"
+"speed" "0.000 0.000 0.000"
+"shadow" "0"
+"ambient" "0"
+"_cone" "0.0"
+"spawnflags" "0"
+"flareSize" "10"
+"flareOrigin" "-1286 -688 1"
+"flare" "0"
+}
+//Light 2
+{
+"classname" "light"
+"origin" "-1343 -711 8"
+"radius" "50 50 50"
+"color" "0.300 0.300 0.500"
+"style" "0"
+"filter" "0"
+"angles" "0 0 0"
+"speed" "0.000 0.000 0.000"
+"shadow" "0"
+"ambient" "0"
+"_cone" "0.0"
+"spawnflags" "0"
+"flareSize" "10"
+"flareOrigin" "-1343 -711 8"
+"flare" "0"
+}
+//Light 3
+{
+"classname" "light"
+"origin" "-1261 -614 22"
+"radius" "50 50 50"
+"color" "0.300 0.300 0.500"
+"style" "0"
+"filter" "0"
+"angles" "0 0 0"
+"speed" "0.000 0.000 0.000"
+"shadow" "0"
+"ambient" "0"
+"_cone" "0.0"
+"spawnflags" "0"
+"flareSize" "10"
+"flareOrigin" "-1261 -614 22"
+"flare" "0"
+}
+//Light 4
+{
+"classname" "light"
+"origin" "-1320 -594 11"
+"radius" "50 50 50"
+"color" "0.300 0.300 0.500"
+"style" "0"
+"filter" "0"
+"angles" "0 0 0"
+"speed" "0.000 0.000 0.000"
+"shadow" "0"
+"ambient" "0"
+"_cone" "0.0"
+"spawnflags" "0"
+"flareSize" "10"
+"flareOrigin" "-1320 -594 11"
+"flare" "0"
+}
+//Light 5
+{
+"classname" "light"
+"origin" "-1311 -646 22"
+"radius" "50 50 50"
+"color" "0.300 0.300 0.500"
+"style" "0"
+"filter" "0"
+"angles" "0 0 0"
+"speed" "0.000 0.000 0.000"
+"shadow" "0"
+"ambient" "0"
+"_cone" "0.0"
+"spawnflags" "0"
+"flareSize" "10"
+"flareOrigin" "-1311 -646 22"
+"flare" "0"
+}
+//Light 6
+{
+"classname" "light"
 "origin" "-696 -572 -9"
 "radius" "500 500 100"
 "color" "1.000 0.000 0.000"
@@ -21,7 +129,7 @@
 "fogLight" "1"
 "fogDensity" "0.001000"
 }
-//Light 1
+//Light 7
 {
 "classname" "light"
 "origin" "-639 -835 -11"
@@ -41,133 +149,7 @@
 "fogLight" "1"
 "fogDensity" "0.001000"
 }
-//Light 2
-{
-"classname" "light"
-"origin" "-1287 -708 8"
-"radius" "60 60 60"
-"color" "0.300 0.300 1.000"
-"style" "0"
-"filter" "0"
-"angles" "0 0 0"
-"speed" "0.000 0.000 0.000"
-"shadow" "0"
-"ambient" "0"
-"_cone" "0.0"
-"spawnflags" "0"
-"flareSize" "10"
-"flareOrigin" "-1294 -703 8"
-"flare" "0"
-}
-//Light 3
-{
-"classname" "light"
-"origin" "-1303 -737 8"
-"radius" "60 60 60"
-"color" "0.300 0.300 1.000"
-"style" "0"
-"filter" "0"
-"angles" "0 0 0"
-"speed" "0.000 0.000 0.000"
-"shadow" "0"
-"ambient" "0"
-"_cone" "0.0"
-"spawnflags" "0"
-"flareSize" "10"
-"flareOrigin" "-1303 -737 8"
-"flare" "0"
-}
-//Light 4
-{
-"classname" "light"
-"origin" "-1277 -627 17"
-"radius" "60 60 60"
-"color" "0.300 0.300 1.000"
-"style" "0"
-"filter" "0"
-"angles" "0 0 0"
-"speed" "0.000 0.000 0.000"
-"shadow" "0"
-"ambient" "0"
-"_cone" "0.0"
-"spawnflags" "0"
-"flareSize" "10"
-"flareOrigin" "-1277 -627 17"
-"flare" "0"
-}
-//Light 5
-{
-"classname" "light"
-"origin" "-1331 -626 10"
-"radius" "60 60 60"
-"color" "0.300 0.300 1.000"
-"style" "0"
-"filter" "0"
-"angles" "0 0 0"
-"speed" "0.000 0.000 0.000"
-"shadow" "0"
-"ambient" "0"
-"_cone" "0.0"
-"spawnflags" "0"
-"flareSize" "10"
-"flareOrigin" "-1331 -626 10"
-"flare" "0"
-}
-//Light 6
-{
-"classname" "light"
-"origin" "-1300 -598 23"
-"radius" "60 60 60"
-"color" "0.300 0.300 1.000"
-"style" "0"
-"filter" "0"
-"angles" "0 0 0"
-"speed" "0.000 0.000 0.000"
-"shadow" "0"
-"ambient" "0"
-"_cone" "0.0"
-"spawnflags" "0"
-"flareSize" "10"
-"flareOrigin" "-1300 -602 6"
-"flare" "0"
-}
-//Light 7
-{
-"classname" "light"
-"origin" "-1321 -721 11"
-"radius" "60 60 60"
-"color" "0.300 0.300 1.000"
-"style" "0"
-"filter" "0"
-"angles" "0 0 0"
-"speed" "0.000 0.000 0.000"
-"shadow" "0"
-"ambient" "0"
-"_cone" "0.0"
-"spawnflags" "0"
-"flareSize" "10"
-"flareOrigin" "-1321 -721 11"
-"flare" "0"
-}
 //Light 8
-{
-"classname" "light"
-"origin" "-1304 -634 31"
-"radius" "60 60 60"
-"color" "0.300 0.300 1.000"
-"style" "0"
-"filter" "0"
-"angles" "0 0 0"
-"speed" "0.000 0.000 0.000"
-"shadow" "0"
-"ambient" "0"
-"_cone" "0.0"
-"spawnflags" "0"
-"flareSize" "10"
-"flareOrigin" "-1304 -634 16"
-"flare" "0"
-}
-//Light 9
 {
 "classname" "light"
 "origin" "-944 -200 436"
@@ -185,7 +167,7 @@
 "flareOrigin" "-978 -199 342"
 "flare" "0"
 }
-//Light 10
+//Light 9
 {
 "classname" "light"
 "origin" "1244 453 100"
@@ -203,7 +185,7 @@
 "flareOrigin" "1244 453 17"
 "flare" "0"
 }
-//Light 11
+//Light 10
 {
 "classname" "light"
 "origin" "1436 448 100"
@@ -221,7 +203,7 @@
 "flareOrigin" "1436 448 10"
 "flare" "0"
 }
-//Light 12
+//Light 11
 {
 "classname" "light"
 "origin" "1061 446 100"
@@ -239,7 +221,7 @@
 "flareOrigin" "1061 446 10"
 "flare" "0"
 }
-//Light 13
+//Light 12
 {
 "classname" "light"
 "origin" "694 488 100"
@@ -257,7 +239,7 @@
 "flareOrigin" "694 488 8"
 "flare" "0"
 }
-//Light 14
+//Light 13
 {
 "classname" "light"
 "origin" "687 277 100"
@@ -275,7 +257,7 @@
 "flareOrigin" "687 203 5"
 "flare" "0"
 }
-//Light 15
+//Light 14
 {
 "classname" "light"
 "origin" "686 -415 100"
@@ -293,7 +275,7 @@
 "flareOrigin" "686 -415 8"
 "flare" "0"
 }
-//Light 16
+//Light 15
 {
 "classname" "light"
 "origin" "-1026 -849 500"
@@ -311,7 +293,7 @@
 "flareOrigin" "-1026 -849 372"
 "flare" "0"
 }
-//Light 17
+//Light 16
 {
 "classname" "light"
 "origin" "-702 -602 509"
@@ -329,7 +311,7 @@
 "flareOrigin" "-702 -602 713"
 "flare" "0"
 }
-//Light 18
+//Light 17
 {
 "classname" "light"
 "origin" "-1248 -894 500"
@@ -347,7 +329,7 @@
 "flareOrigin" "-1248 -894 381"
 "flare" "0"
 }
-//Light 19
+//Light 18
 {
 "classname" "light"
 "origin" "-1494 -740 500"
@@ -365,7 +347,7 @@
 "flareOrigin" "-1494 -740 379"
 "flare" "0"
 }
-//Light 20
+//Light 19
 {
 "classname" "light"
 "origin" "-1667 -774 21"
@@ -383,7 +365,7 @@
 "flareOrigin" "-1660 -804 237"
 "flare" "0"
 }
-//Light 21
+//Light 20
 {
 "classname" "light"
 "origin" "-1476 -299 482"
@@ -401,7 +383,7 @@
 "flareOrigin" "-1476 -299 710"
 "flare" "0"
 }
-//Light 22
+//Light 21
 {
 "classname" "light"
 "origin" "78 -299 119"
@@ -419,7 +401,7 @@
 "flareOrigin" "-41 -308 441"
 "flare" "0"
 }
-//Light 23
+//Light 22
 {
 "classname" "light"
 "origin" "2696 838 378"
@@ -437,7 +419,7 @@
 "flareOrigin" "2696 794 488"
 "flare" "0"
 }
-//Light 24
+//Light 23
 {
 "classname" "light"
 "origin" "-1483 -1258 -10"
@@ -455,7 +437,7 @@
 "flareOrigin" "-1483 -1264 -10"
 "flare" "1"
 }
-//Light 25
+//Light 24
 {
 "classname" "light"
 "origin" "-1948 -573 -11"
@@ -473,7 +455,7 @@
 "flareOrigin" "-1948 -567 -11"
 "flare" "1"
 }
-//Light 26
+//Light 25
 {
 "classname" "light"
 "origin" "-1532 -569 -10"
@@ -491,7 +473,7 @@
 "flareOrigin" "-1532 -563 -10"
 "flare" "1"
 }
-//Light 27
+//Light 26
 {
 "classname" "light"
 "origin" "-1455 -74 462"
@@ -509,7 +491,7 @@
 "flareOrigin" "-1455 -74 462"
 "flare" "1"
 }
-//Light 28
+//Light 27
 {
 "classname" "light"
 "origin" "-1696 -146 483"
@@ -527,7 +509,7 @@
 "flareOrigin" "-1703 -146 483"
 "flare" "1"
 }
-//Light 29
+//Light 28
 {
 "classname" "light"
 "origin" "-1264 -329 414"
@@ -545,7 +527,7 @@
 "flareOrigin" "-1257 -329 414"
 "flare" "1"
 }
-//Light 30
+//Light 29
 {
 "classname" "light"
 "origin" "329 -276 302"
@@ -563,7 +545,7 @@
 "flareOrigin" "335 -276 302"
 "flare" "1"
 }
-//Light 31
+//Light 30
 {
 "classname" "light"
 "origin" "320 -696 302"
@@ -581,7 +563,7 @@
 "flareOrigin" "320 -702 302"
 "flare" "1"
 }
-//Light 32
+//Light 31
 {
 "classname" "light"
 "origin" "432 -393 87"
@@ -599,7 +581,7 @@
 "flareOrigin" "438 -393 87"
 "flare" "1"
 }
-//Light 33
+//Light 32
 {
 "classname" "light"
 "origin" "3220 930 440"
@@ -617,7 +599,7 @@
 "flareOrigin" "3220 930 450"
 "flare" "1"
 }
-//Light 34
+//Light 33
 {
 "classname" "light"
 "origin" "3220 798 440"
@@ -635,7 +617,7 @@
 "flareOrigin" "3220 798 450"
 "flare" "1"
 }
-//Light 35
+//Light 34
 {
 "classname" "light"
 "origin" "3120 930 440"
@@ -653,7 +635,7 @@
 "flareOrigin" "3120 930 450"
 "flare" "1"
 }
-//Light 36
+//Light 35
 {
 "classname" "light"
 "origin" "3120 798 440"
@@ -671,7 +653,7 @@
 "flareOrigin" "3120 798 450"
 "flare" "1"
 }
-//Light 37
+//Light 36
 {
 "classname" "light"
 "origin" "2784 1000 502"
@@ -689,7 +671,7 @@
 "flareOrigin" "2784 1000 512"
 "flare" "1"
 }
-//Light 38
+//Light 37
 {
 "classname" "light"
 "origin" "3000 944 292"
@@ -707,7 +689,7 @@
 "flareOrigin" "3000 944 282"
 "flare" "1"
 }
-//Light 39
+//Light 38
 {
 "classname" "light"
 "origin" "2632 1000 446"
@@ -725,7 +707,7 @@
 "flareOrigin" "2632 1000 456"
 "flare" "1"
 }
-//Light 40
+//Light 39
 {
 "classname" "light"
 "origin" "2648 996 36"
@@ -743,7 +725,7 @@
 "flareOrigin" "2648 996 26"
 "flare" "1"
 }
-//Light 41
+//Light 40
 {
 "classname" "light"
 "origin" "2584 996 36"
@@ -761,7 +743,7 @@
 "flareOrigin" "2584 996 26"
 "flare" "1"
 }
-//Light 42
+//Light 41
 {
 "classname" "light"
 "origin" "2336 880 112"
@@ -779,7 +761,7 @@
 "flareOrigin" "2336 880 122"
 "flare" "1"
 }
-//Light 43
+//Light 42
 {
 "classname" "light"
 "origin" "2192 880 112"
@@ -797,7 +779,7 @@
 "flareOrigin" "2192 880 122"
 "flare" "1"
 }
-//Light 44
+//Light 43
 {
 "classname" "light"
 "origin" "3000 768 292"
@@ -815,7 +797,7 @@
 "flareOrigin" "3000 768 282"
 "flare" "1"
 }
-//Light 45
+//Light 44
 {
 "classname" "light"
 "origin" "2648 764 36"
@@ -833,7 +815,7 @@
 "flareOrigin" "2648 764 26"
 "flare" "1"
 }
-//Light 46
+//Light 45
 {
 "classname" "light"
 "origin" "2584 764 36"
@@ -851,7 +833,7 @@
 "flareOrigin" "2584 764 26"
 "flare" "1"
 }
-//Light 47
+//Light 46
 {
 "classname" "light"
 "origin" "2944 608 546"
@@ -869,7 +851,7 @@
 "flareOrigin" "2944 608 556"
 "flare" "1"
 }
-//Light 48
+//Light 47
 {
 "classname" "light"
 "origin" "2784 608 492"
@@ -887,7 +869,7 @@
 "flareOrigin" "2784 608 502"
 "flare" "1"
 }
-//Light 49
+//Light 48
 {
 "classname" "light"
 "origin" "2632 608 436"
@@ -905,7 +887,7 @@
 "flareOrigin" "2632 608 446"
 "flare" "1"
 }
-//Light 50
+//Light 49
 {
 "classname" "light"
 "origin" "1848 880 112"
@@ -923,7 +905,7 @@
 "flareOrigin" "1848 880 122"
 "flare" "1"
 }
-//Light 51
+//Light 50
 {
 "classname" "light"
 "origin" "1848 784 112"
@@ -941,7 +923,7 @@
 "flareOrigin" "1848 784 122"
 "flare" "1"
 }
-//Light 52
+//Light 51
 {
 "classname" "light"
 "origin" "1936 880 112"
@@ -959,7 +941,7 @@
 "flareOrigin" "1936 880 122"
 "flare" "1"
 }
-//Light 53
+//Light 52
 {
 "classname" "light"
 "origin" "1848 448 112"
@@ -977,7 +959,7 @@
 "flareOrigin" "1848 448 122"
 "flare" "1"
 }
-//Light 54
+//Light 53
 {
 "classname" "light"
 "origin" "1728 448 112"
@@ -995,7 +977,7 @@
 "flareOrigin" "1728 448 122"
 "flare" "1"
 }
-//Light 55
+//Light 54
 {
 "classname" "light"
 "origin" "1848 544 112"
@@ -1013,7 +995,7 @@
 "flareOrigin" "1848 544 122"
 "flare" "1"
 }
-//Light 56
+//Light 55
 {
 "classname" "light"
 "origin" "1616 496 30"
@@ -1031,7 +1013,7 @@
 "flareOrigin" "1616 496 20"
 "flare" "1"
 }
-//Light 57
+//Light 56
 {
 "classname" "light"
 "origin" "1616 400 30"
@@ -1049,7 +1031,7 @@
 "flareOrigin" "1616 400 20"
 "flare" "1"
 }
-//Light 58
+//Light 57
 {
 "classname" "light"
 "origin" "761 64 98"
@@ -1067,7 +1049,7 @@
 "flareOrigin" "770 64 103"
 "flare" "1"
 }
-//Light 59
+//Light 58
 {
 "classname" "light"
 "origin" "761 1 98"
@@ -1085,7 +1067,7 @@
 "flareOrigin" "770 4 103"
 "flare" "1"
 }
-//Light 60
+//Light 59
 {
 "classname" "light"
 "origin" "164 -92 196"
@@ -1103,7 +1085,7 @@
 "flareOrigin" "164 -92 206"
 "flare" "1"
 }
-//Light 61
+//Light 60
 {
 "classname" "light"
 "origin" "244 -372 196"
@@ -1121,7 +1103,7 @@
 "flareOrigin" "244 -372 206"
 "flare" "1"
 }
-//Light 62
+//Light 61
 {
 "classname" "light"
 "origin" "332 -564 196"
@@ -1139,7 +1121,7 @@
 "flareOrigin" "332 -564 206"
 "flare" "1"
 }
-//Light 63
+//Light 62
 {
 "classname" "light"
 "origin" "164 -300 196"
@@ -1157,7 +1139,7 @@
 "flareOrigin" "164 -300 206"
 "flare" "1"
 }
-//Light 64
+//Light 63
 {
 "classname" "light"
 "origin" "332 -564 236"
@@ -1175,7 +1157,7 @@
 "flareOrigin" "332 -564 226"
 "flare" "1"
 }
-//Light 65
+//Light 64
 {
 "classname" "light"
 "origin" "164 -92 236"
@@ -1193,7 +1175,7 @@
 "flareOrigin" "164 -92 226"
 "flare" "1"
 }
-//Light 66
+//Light 65
 {
 "classname" "light"
 "origin" "244 -372 236"
@@ -1211,7 +1193,7 @@
 "flareOrigin" "244 -372 226"
 "flare" "1"
 }
-//Light 67
+//Light 66
 {
 "classname" "light"
 "origin" "164 -300 236"
@@ -1229,7 +1211,7 @@
 "flareOrigin" "164 -300 226"
 "flare" "1"
 }
-//Light 68
+//Light 67
 {
 "classname" "light"
 "origin" "761 -608 98"
@@ -1247,7 +1229,7 @@
 "flareOrigin" "770 -608 103"
 "flare" "1"
 }
-//Light 69
+//Light 68
 {
 "classname" "light"
 "origin" "598 -192 98"
@@ -1265,7 +1247,7 @@
 "flareOrigin" "589 -192 103"
 "flare" "1"
 }
-//Light 70
+//Light 69
 {
 "classname" "light"
 "origin" "598 -256 98"
@@ -1283,7 +1265,7 @@
 "flareOrigin" "589 -256 103"
 "flare" "1"
 }
-//Light 71
+//Light 70
 {
 "classname" "light"
 "origin" "761 -672 98"
@@ -1301,7 +1283,7 @@
 "flareOrigin" "770 -672 103"
 "flare" "1"
 }
-//Light 72
+//Light 71
 {
 "classname" "light"
 "origin" "76 -596 156"
@@ -1319,7 +1301,7 @@
 "flareOrigin" "76 -596 166"
 "flare" "1"
 }
-//Light 73
+//Light 72
 {
 "classname" "light"
 "origin" "76 -596 196"
@@ -1337,7 +1319,7 @@
 "flareOrigin" "76 -596 186"
 "flare" "1"
 }
-//Light 74
+//Light 73
 {
 "classname" "light"
 "origin" "-84 -636 312"
@@ -1355,7 +1337,7 @@
 "flareOrigin" "-84 -636 322"
 "flare" "1"
 }
-//Light 75
+//Light 74
 {
 "classname" "light"
 "origin" "-84 -788 312"
@@ -1373,7 +1355,7 @@
 "flareOrigin" "-84 -788 322"
 "flare" "1"
 }
-//Light 76
+//Light 75
 {
 "classname" "light"
 "origin" "-268 -556 312"
@@ -1391,7 +1373,7 @@
 "flareOrigin" "-268 -556 322"
 "flare" "1"
 }
-//Light 77
+//Light 76
 {
 "classname" "light"
 "origin" "-408 -556 312"
@@ -1409,7 +1391,7 @@
 "flareOrigin" "-408 -556 322"
 "flare" "1"
 }
-//Light 78
+//Light 77
 {
 "classname" "light"
 "origin" "-268 -788 312"
@@ -1427,7 +1409,7 @@
 "flareOrigin" "-268 -788 322"
 "flare" "1"
 }
-//Light 79
+//Light 78
 {
 "classname" "light"
 "origin" "-640 -137 453"
@@ -1445,7 +1427,7 @@
 "flareOrigin" "-640 -127 455"
 "flare" "1"
 }
-//Light 80
+//Light 79
 {
 "classname" "light"
 "origin" "-704 -137 453"
@@ -1463,7 +1445,7 @@
 "flareOrigin" "-704 -127 455"
 "flare" "1"
 }
-//Light 81
+//Light 80
 {
 "classname" "light"
 "origin" "-540 -584 200"
@@ -1481,7 +1463,7 @@
 "flareOrigin" "-540 -584 190"
 "flare" "1"
 }
-//Light 82
+//Light 81
 {
 "classname" "light"
 "origin" "-540 -528 200"
@@ -1499,7 +1481,7 @@
 "flareOrigin" "-540 -528 190"
 "flare" "1"
 }
-//Light 83
+//Light 82
 {
 "classname" "light"
 "origin" "-540 -528 160"
@@ -1517,7 +1499,7 @@
 "flareOrigin" "-540 -528 170"
 "flare" "1"
 }
-//Light 84
+//Light 83
 {
 "classname" "light"
 "origin" "-540 -584 160"
@@ -1535,7 +1517,7 @@
 "flareOrigin" "-540 -584 170"
 "flare" "1"
 }
-//Light 85
+//Light 84
 {
 "classname" "light"
 "origin" "-768 -930 553"
@@ -1553,7 +1535,7 @@
 "flareOrigin" "-768 -940 555"
 "flare" "1"
 }
-//Light 86
+//Light 85
 {
 "classname" "light"
 "origin" "-816 -926 553"
@@ -1571,7 +1553,7 @@
 "flareOrigin" "-816 -936 555"
 "flare" "1"
 }
-//Light 87
+//Light 86
 {
 "classname" "light"
 "origin" "-592 -752 588"
@@ -1589,7 +1571,7 @@
 "flareOrigin" "-592 -742 588"
 "flare" "1"
 }
-//Light 88
+//Light 87
 {
 "classname" "light"
 "origin" "-640 -768 588"
@@ -1607,7 +1589,7 @@
 "flareOrigin" "-640 -758 588"
 "flare" "1"
 }
-//Light 89
+//Light 88
 {
 "classname" "light"
 "origin" "-636 -451 553"
@@ -1625,7 +1607,7 @@
 "flareOrigin" "-636 -441 555"
 "flare" "1"
 }
-//Light 90
+//Light 89
 {
 "classname" "light"
 "origin" "-682 -467 553"
@@ -1643,7 +1625,7 @@
 "flareOrigin" "-682 -457 555"
 "flare" "1"
 }
-//Light 91
+//Light 90
 {
 "classname" "light"
 "origin" "-1576 -280 -72"
@@ -1661,7 +1643,7 @@
 "flareOrigin" "-1566 -280 -72"
 "flare" "1"
 }
-//Light 92
+//Light 91
 {
 "classname" "light"
 "origin" "-1572 -488 -72"
@@ -1679,7 +1661,7 @@
 "flareOrigin" "-1562 -488 -72"
 "flare" "1"
 }
-//Light 93
+//Light 92
 {
 "classname" "light"
 "origin" "-1584 -392 -72"
@@ -1697,7 +1679,7 @@
 "flareOrigin" "-1574 -392 -72"
 "flare" "1"
 }
-//Light 94
+//Light 93
 {
 "classname" "light"
 "origin" "-1428 -933 585"
@@ -1715,7 +1697,7 @@
 "flareOrigin" "-1428 -943 587"
 "flare" "1"
 }
-//Light 95
+//Light 94
 {
 "classname" "light"
 "origin" "-1380 -937 585"
@@ -1733,7 +1715,7 @@
 "flareOrigin" "-1380 -947 587"
 "flare" "1"
 }
-//Light 96
+//Light 95
 {
 "classname" "light"
 "origin" "-1553 -656 553"
@@ -1751,7 +1733,7 @@
 "flareOrigin" "-1563 -656 555"
 "flare" "1"
 }
-//Light 97
+//Light 96
 {
 "classname" "light"
 "origin" "-1551 -704 553"
@@ -1769,7 +1751,7 @@
 "flareOrigin" "-1561 -704 555"
 "flare" "1"
 }
-//Light 98
+//Light 97
 {
 "classname" "light"
 "origin" "-1140 -826 585"
@@ -1787,7 +1769,7 @@
 "flareOrigin" "-1140 -816 587"
 "flare" "1"
 }
-//Light 99
+//Light 98
 {
 "classname" "light"
 "origin" "-1188 -824 585"
@@ -1805,7 +1787,7 @@
 "flareOrigin" "-1188 -814 587"
 "flare" "1"
 }
-//Light 100
+//Light 99
 {
 "classname" "light"
 "origin" "-1816 -688 -56"
@@ -1823,7 +1805,7 @@
 "flareOrigin" "-1816 -688 -66"
 "flare" "1"
 }
-//Light 101
+//Light 100
 {
 "classname" "light"
 "origin" "-1816 -768 -56"
@@ -1841,7 +1823,7 @@
 "flareOrigin" "-1816 -768 -66"
 "flare" "1"
 }
-//Light 102
+//Light 101
 {
 "classname" "light"
 "origin" "-1582 -696 -216"
@@ -1859,7 +1841,7 @@
 "flareOrigin" "-1572 -696 -216"
 "flare" "1"
 }
-//Light 103
+//Light 102
 {
 "classname" "light"
 "origin" "-1582 -696 -136"
@@ -1877,7 +1859,7 @@
 "flareOrigin" "-1572 -696 -136"
 "flare" "1"
 }
-//Light 104
+//Light 103
 {
 "classname" "light"
 "origin" "-1582 -696 -280"
@@ -1895,7 +1877,7 @@
 "flareOrigin" "-1572 -696 -280"
 "flare" "1"
 }
-//Light 105
+//Light 104
 {
 "classname" "light"
 "origin" "3006 591 398"
@@ -1913,7 +1895,7 @@
 "flareOrigin" "3006 591 398"
 "flare" "1"
 }
-//Light 106
+//Light 105
 {
 "classname" "light"
 "origin" "1304 437 -268"
@@ -1933,7 +1915,7 @@
 "fogLight" "1"
 "fogDensity" "0.001000"
 }
-//Light 107
+//Light 106
 {
 "classname" "light"
 "origin" "-1674 -953 -348"
@@ -1953,7 +1935,7 @@
 "fogLight" "1"
 "fogDensity" "0.001000"
 }
-//Light 108
+//Light 107
 {
 "classname" "light"
 "origin" "2761 872 -19"
