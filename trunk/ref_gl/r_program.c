@@ -140,8 +140,11 @@ static const char *glslUniforms =
 "#define	U_WATER_ALPHA			88\n"
 "#define	U_WATHER_THICKNESS		89\n"
 "#define	U_WATER_TRANS			90\n"
-"#define	U_WATER_ENTITY2WORLD	91\n"
-"#define	U_WATER_MIRROR			92\n"
+"#define	U_WATER_MIRROR			91\n"
+
+"#define	U_CONSOLE_BACK			92\n"
+"#define	U_2D_PICS				93\n"
+"#define	U_FRAG_COLOR			94\n"
 ;
 
 /*
@@ -588,7 +591,8 @@ R_InitPrograms
 
 
 void R_InitPrograms (void) {
-	int			missing = 0,  id;
+	
+	int	missing = 0;
 
 	Com_Printf ("\nInitializing programs...\n\n");
 
@@ -796,14 +800,6 @@ void R_InitPrograms (void) {
 
 	if (genericProgram->valid) {
 		Com_Printf ("succeeded\n");
-
-		id = genericProgram->id;
-		gen_attribConsole	= qglGetUniformLocation (id, "u_ATTRIB_CONSOLE");
-		gen_attribColors	= qglGetUniformLocation (id, "u_ATTRIB_COLORS");
-		gen_colorModulate	= qglGetUniformLocation (id, "u_colorScale");
-		gen_color			= qglGetUniformLocation (id, "u_color");
-		gen_orthoMatrix		= qglGetUniformLocation (id, "u_orthoMatrix");
-		gen_light			= qglGetUniformLocation (id, "u_lightShift");
 	}
 	else {
 		Com_Printf (S_COLOR_RED"Failed!\n");

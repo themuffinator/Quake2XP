@@ -1227,6 +1227,11 @@ void Mod_LoadFaces(lump_t * l) {
 			}
 		}
 
+		if (!strcmp(noext, "crys1_1") || !strcmp(noext, "crys1_2") || !strcmp(noext, "crys1_3")) {
+			out->flags |= MSURF_SSS; // light pass
+			out->flags |= MSURF_ENVMAP; //ambient pass
+		}
+
 		// create lightmaps and polygons
 		if (!(out->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP)))
 			GL_CreateSurfaceLightmap(out);

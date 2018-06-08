@@ -69,10 +69,11 @@ void Set_FontShader(qboolean enable){
 		qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 
 		GL_BindProgram(genericProgram);
-		qglUniform1i(gen_attribColors, 1);
-		qglUniform1i(gen_attribConsole, 0);
-		qglUniform1f(gen_colorModulate, r_textureColorScale->value);
-		qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+		qglUniform1i(U_2D_PICS, 1);
+		qglUniform1i(U_CONSOLE_BACK, 0);
+		qglUniform1i(U_FRAG_COLOR, 0);
+		qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
+		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	}
 	else{
 
@@ -289,8 +290,8 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 
 	GL_BindProgram(genericProgram);
 	
-	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1i(gen_attribColors, 0);
+	qglUniform1i(U_CONSOLE_BACK, 0);
+	qglUniform1i(U_FRAG_COLOR, 0);
 	
 	if (woh < WIDE_SCREEN_16x9) {  // quad screen
 		offsX = (WIDTH_FHD - (HEIGHT_FHD * woh)) / (WIDTH_FHD * 2.0);
@@ -305,7 +306,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	}
 
 	if (console){
-		qglUniform1i(gen_attribConsole, 1);
+		qglUniform1i(U_CONSOLE_BACK, 1);
 
 		float	t;
 		vec3_t	lPos;
@@ -318,17 +319,17 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 		lPos[1] = lPos[1] * 0.5 + 0.5;
 		lPos[2] = lPos[2] * 0.5 + 0.5;
 
-		qglUniform3fv(gen_light, 1, lPos);
+		qglUniform3fv(U_PARAM_VEC3_0, 1, lPos);
 	}
 	else{
-		qglUniform1i(gen_attribColors, 1);
+		qglUniform1i(U_2D_PICS, 1);
 	}
 	if (strstr(gl->name, "menuback"))
-		qglUniform1f(gen_colorModulate, 1);
+		qglUniform1f(U_COLOR_MUL, 1);
 	else
-		qglUniform1f(gen_colorModulate, r_textureColorScale->value);
+		qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
 
-	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -485,10 +486,11 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 	
 	GL_BindProgram(genericProgram);
-	qglUniform1i(gen_attribColors, 1);
-	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
-	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1i(U_2D_PICS, 1);
+	qglUniform1i(U_CONSOLE_BACK, 0);
+	qglUniform1i(U_FRAG_COLOR, 0);
+	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -555,11 +557,12 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 	
 	GL_BindProgram(genericProgram);
-	qglUniform1i(gen_attribColors, 1);
-	qglUniform1i(gen_attribConsole, 0);
+	qglUniform1i(U_2D_PICS, 1);
+	qglUniform1i(U_CONSOLE_BACK, 0);
+	qglUniform1i(U_FRAG_COLOR, 0);
 
-	qglUniform1f(gen_colorModulate, r_bump2D->integer ? 1.0 : r_textureColorScale->value);
-	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1f(U_COLOR_MUL, r_bump2D->integer ? 1.0 : r_textureColorScale->value);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -715,10 +718,11 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
 
 	GL_BindProgram(genericProgram);
-	qglUniform1i(gen_attribColors, 1);
-	qglUniform1i(gen_attribConsole, 0);
-	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
-	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1i(U_2D_PICS, 1);
+	qglUniform1i(U_CONSOLE_BACK, 0);
+	qglUniform1i(U_FRAG_COLOR, 0);
+	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	
 	GL_MBind(GL_TEXTURE0, image->texnum);
 
@@ -775,11 +779,13 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
 	
 	GL_BindProgram(genericProgram);
-	qglUniform1i(gen_attribColors, 0);
-	qglUniform1i(gen_attribConsole, 0);
-	qglUniform4f(gen_color, r, g, b, a);
-	qglUniform1f(gen_colorModulate, r_textureColorScale->value);
-	qglUniformMatrix4fv(gen_orthoMatrix, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1i(U_2D_PICS, 0);
+	qglUniform1i(U_CONSOLE_BACK, 0);
+	qglUniform1i(U_FRAG_COLOR, 1);
+
+	qglUniform4f(U_COLOR, r, g, b, a);
+	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	VA_SetElem2(vertCoord[0], x, y);
 	VA_SetElem2(vertCoord[1], x + w, y);

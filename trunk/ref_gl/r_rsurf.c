@@ -156,11 +156,10 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	int nv = fa->polys->numVerts;
 	uint numIndices = 0, numVertixes = 0;
 
-//	if (fa->texInfo->flags & SURF_TRANS33)
-//		alpha = 0.33f;
-//	else
-		alpha = 1.0f;
-		
+	if (fa->texInfo->flags & SURF_TRANS33)
+		alpha = 0.33f;
+	else
+		alpha = 0.66f;		
 
 	qglUniform1f(U_REFR_ALPHA, alpha);
 
@@ -338,6 +337,11 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 
 		qglUniform1f(U_SPECULAR_SCALE, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
 		
+		if (surf->flags & MSURF_ENVMAP)
+			qglUniform1i(U_PARAM_INT_0, 1);
+		else
+			qglUniform1i(U_PARAM_INT_0, 0);
+
 		if (!r_skipStaticLights->integer) 
 		{
 			if (surf->flags & MSURF_LAVA)
@@ -552,6 +556,11 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 
 		qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], image->upload_width, image->upload_height);
 
+
+		if (surf->flags & MSURF_SSS)
+			qglUniform1i(U_PARAM_INT_0, 1);
+		else
+			qglUniform1i(U_PARAM_INT_0, 0);
 
 		GL_MBind		(GL_TEXTURE0, image->texnum);
 		GL_MBind		(GL_TEXTURE1, normalMap->texnum);

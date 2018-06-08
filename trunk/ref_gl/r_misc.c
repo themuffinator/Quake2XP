@@ -1051,6 +1051,10 @@ void GL_SetDefaultState (void) {
 		gl_state.depthBoundsMax = 1.f;
 	}
 
+	gl_state.alphaTest = qfalse;
+	gl_state.alphaFunc = GL_GREATER;
+	gl_state.alphaRef = 0.666f;
+
 	qglHint	(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
 
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);

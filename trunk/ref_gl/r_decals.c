@@ -154,9 +154,9 @@ void R_RenderDecals(void)
         GL_BlendFunc(dl->sFactor, dl->dFactor);
 
 		if (dl->flags == DF_OVERBRIGHT)
-			qglUniform1f(gen_colorModulate, 2.0);
+			qglUniform1f(U_COLOR_MUL, 2.0);
 		else
-			qglUniform1f(gen_colorModulate, 1.0);
+			qglUniform1f(U_COLOR_MUL, 1.0);
 
           }
 

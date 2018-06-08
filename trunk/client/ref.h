@@ -101,11 +101,12 @@ typedef vec4_t	mat4_t[4];		// row-major
 #define MSURF_DRAWTURB		0x10
 //#define MSURF_DRAWBACKGROUND	0x40
 #define MSURF_UNDERWATER		0x80
-//#define MSURF_ENVMAP		0x100
-//#define MSURF_DETAIL		0x200
+#define MSURF_ENVMAP		0x100
+#define MSURF_SSS			0x200
 #define MSURF_WATER      	0x400
 #define MSURF_SLIME      	0x800
 #define MSURF_LAVA       	0x1000
+
 
 #define POWERSUIT_SCALE		4.0F
 

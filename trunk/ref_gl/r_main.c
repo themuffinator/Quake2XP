@@ -1979,6 +1979,7 @@ void R_BeginFrame()
 
 	GL_Enable(GL_BLEND); // alpha blend for chars
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	qglDrawBuffer( GL_BACK );
 
 	GL_UpdateSwapInterval();

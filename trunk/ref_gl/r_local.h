@@ -661,6 +661,8 @@ typedef struct {
 	qboolean		blend;
 	GLenum			blendSrc;
 	GLenum			blendDst;
+	GLenum			alphaFunc;
+	GLclampf		alphaRef;
 
 	GLboolean		colorMask[4];
 
@@ -676,6 +678,8 @@ typedef struct {
 	qboolean		lineSmooth;
 
 	qboolean		depthClamp;
+	
+	qboolean		alphaTest;
 
 	qboolean		stencilTest;
 	GLenum			stencilFunc;
@@ -1011,18 +1015,13 @@ typedef enum {
 	U_WATER_ALPHA,
 	U_WATHER_THICKNESS,
 	U_WATER_TRANS,
-	U_WATER_ENTITY2WORLD,
 	U_WATER_MIRROR,
+
+	U_CONSOLE_BACK,
+	U_2D_PICS,
+	U_FRAG_COLOR,
 }
 glsl_uniform;
-
-uint gen_attribConsole;
-uint gen_attribColors;
-uint gen_colorModulate;
-uint gen_color;
-
-uint gen_orthoMatrix;
-uint gen_light;
 
 #define	MAX_VERTEX_CACHES	4096
 

@@ -238,12 +238,13 @@ void R_ScreenBlend(void)
 
 		// setup program
 		GL_BindProgram(genericProgram);
-
-		qglUniform1i(gen_attribConsole, 0);
-		qglUniform1i(gen_attribColors, 0);
-		qglUniform4f(gen_color, v_blend[0], v_blend[1], v_blend[2], v_blend[3] * 1.5);
+		qglUniform1i(U_2D_PICS, 0);
+		qglUniform1i(U_CONSOLE_BACK, 0);
+		qglUniform1i(U_FRAG_COLOR, 1);
+		qglUniform4f(U_COLOR, v_blend[0], v_blend[1], v_blend[2], v_blend[3] * 1.5);
 		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
+		GL_Disable(GL_ALPHA_TEST);
 		GL_Enable(GL_BLEND);
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
