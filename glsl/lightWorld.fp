@@ -18,6 +18,7 @@ layout(location = U_USE_AUTOBUMP)		uniform int		u_autoBump;
 layout(location = U_SPOT_LIGHT)			uniform int		u_spotLight;
 layout(location = U_SPOT_PARAMS)		uniform vec3	u_spotParams;
 layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
+layout(location = U_PARAM_INT_0)		uniform int		u_sss;
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;
@@ -93,7 +94,12 @@ void main (void) {
 		roughness = clamp(roughness, 0.1, 1.0);
 		}
 
-		vec3 brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V);
+		vec3 brdf;
+		if(u_sss == 1)
+			brdf =  SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular);
+		else
+			brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V);
+
 		vec3 brdfColor = brdf * u_LightColor.rgb;
           
 		if(u_fog == 1) {  

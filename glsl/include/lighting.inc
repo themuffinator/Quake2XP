@@ -74,7 +74,7 @@ float halfLambert(in vec3 N, in vec3 L )
 float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower)
 {
     vec3 halfAngle = normalize(normalVec + lightVec);
-    return pow(clamp(dot(normalVec,halfAngle),0.0,1.0), specPower);
+    return pow(clamp(dot(normalVec,halfAngle), 0.0, 1.0), specPower);
 }
 
 vec4 SkinLighting(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
@@ -103,6 +103,29 @@ vec4 SkinLighting(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diff
     return finalCol;   
 }
 
+vec3 SubScateringLighting(in vec3 V, in vec3 L, in vec3 N, in vec3 Color, in float Specular)
+{
+    float MaterialThickness = 0.01f;
+    vec3 ExtinctionCoefficient = vec3(0.5, 0.5, 0.5);
+    float backFaceSpecularIntens = 1.2f;
+
+    vec3 dotLN = vec3(halfLambert(L, N));
+    dotLN *= Color;
+     
+    vec3 indirectLightComponent = vec3(MaterialThickness * max(dot(-N, L), 0.0));
+    indirectLightComponent += MaterialThickness * halfLambert(-V, L);
+    indirectLightComponent *= ExtinctionCoefficient;
+     
+    vec3 rim = vec3(1.0 - max(dot(N, V), 0.0));
+    rim *= rim;
+    rim *= max(dot(N,L), 0.0) * Specular;
+     
+    vec3 finalCol = dotLN + indirectLightComponent;
+    finalCol += rim * backFaceSpecularIntens;
+    
+    finalCol += vec3(blinnPhongSpecular(N,L, 1.0) * Specular);
+    return finalCol;   
+}
 
 
 /*

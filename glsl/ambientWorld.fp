@@ -13,6 +13,7 @@ layout (location = U_COLOR_MUL)			uniform float	u_ColorModulate;
 layout (location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;    
 layout (location = U_SPECULAR_SCALE)	uniform float	u_specularScale;
 layout (location = U_LAVA_PASS)			uniform int		u_isLava;
+layout (location = U_PARAM_INT_0)		uniform int		u_envMapPass;
 
 in vec3	v_positionVS;
 in vec3	v_viewVecTS;
@@ -102,6 +103,12 @@ void main (void) {
 		fragData.xyz = diffuseMap * mix(D, S, specular * u_specularScale);
 	}
       
+	if(u_envMapPass == 1){
+	vec3 envMap = texture(u_Diffuse, v_envCoord).rgb;
+	float lum = dot(vec3(0.2125, 0.7154, 0.0721), envMap);
+	fragData.xyz +=	lum * envMap;	
+	}
+
 	if (u_ssao == 1)
 		fragData.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
 
@@ -109,7 +116,7 @@ void main (void) {
 	fragData.xyz *= normalMap.z * 0.5 + 0.5;
 	fragData.xyz *= u_ColorModulate * u_ambientScale;
 	fragData += vec4(glowMap, 1.0);
-//	fragData.w = 1.0;
+	fragData.w = 1.0;
 
 // DEBUG
 //	if (u_ssao == 1)
