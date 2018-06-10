@@ -19,7 +19,6 @@ in vec3	v_positionVS;
 in vec3	v_viewVecTS;
 in vec2	v_wTexCoord;
 in vec2	v_lTexCoord;
-in vec2	v_envCoord;
 
 float	u_specularExp = 16.0;
  
@@ -103,10 +102,16 @@ void main (void) {
 		fragData.xyz = diffuseMap * mix(D, S, specular * u_specularScale);
 	}
       
-	if(u_envMapPass == 1){
-	vec3 envMap = texture(u_Diffuse, v_envCoord).rgb;
-	float lum = dot(vec3(0.2125, 0.7154, 0.0721), envMap);
-	fragData.xyz +=	lum * envMap;	
+	if(u_envMapPass == 1){  
+  
+  	vec3 reflectionVector = normalMap * dot( V, normalMap );
+	  reflectionVector = ( reflectionVector * 2.0f ) - V;
+  
+	  vec3 envMap = texture(u_Diffuse, reflectionVector.st).rgb;
+    envMap *= 0.5;
+  	float lum = dot(vec3(0.2125, 0.7154, 0.0721), envMap);
+    envMap = envMap * lum;    
+	  fragData.xyz +=	envMap;	
 	}
 
 	if (u_ssao == 1)

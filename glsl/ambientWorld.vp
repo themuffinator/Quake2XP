@@ -13,7 +13,6 @@ layout (location = U_MVP_MATRIX)	uniform mat4		u_modelViewProjectionMatrix;
 out vec3		v_viewVecTS;
 out vec2		v_wTexCoord;
 out vec2		v_lTexCoord;
-out vec2		v_envCoord;
 
 void main (void) {
 	// setup tex coords
@@ -28,11 +27,6 @@ void main (void) {
 	v_viewVecTS.x = dot(tmp, att_tangent);
 	v_viewVecTS.y = dot(tmp, att_binormal);
 	v_viewVecTS.z = dot(tmp, att_normal);
-
-	vec3 viewPos = normalize(u_viewOrg - att_position);
-	float d = dot(att_normal, viewPos);
-	vec3 reflected = att_normal * 2.0 * d - viewPos;
-	v_envCoord = 0.5 + reflected.yz * vec2(0.5, -0.5);
 
 	gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
 }

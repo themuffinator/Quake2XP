@@ -105,9 +105,10 @@ vec4 SkinLighting(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diff
 
 vec3 SubScateringLighting(in vec3 V, in vec3 L, in vec3 N, in vec3 Color, in float Specular)
 {
-    float MaterialThickness = 0.01f;
-    vec3 ExtinctionCoefficient = vec3(0.5, 0.5, 0.5);
-    float backFaceSpecularIntens = 1.2f;
+    float MaterialThickness = 0.01f;  
+    vec3 ext =  Color * 0.222;
+    vec3 ExtinctionCoefficient = vec3(ext.r, ext.g, ext.b);
+    float backFaceSpecularIntens = 0.75f;
 
     vec3 dotLN = vec3(halfLambert(L, N));
     dotLN *= Color;
