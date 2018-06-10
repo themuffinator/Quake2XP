@@ -268,7 +268,7 @@ char *fastsound_name[FAST_SOUNDS_TOTAL] = {
 	"world/spark5.wav",			// 24
 	"world/spark6.wav",			// 25
 	"world/spark7.wav",			// 26
-	"weapons/railgf1a.wav",		// 27
+	"weapons/railgr1a.wav",		// 27
 	"weapons/rocklx1a.wav",		// 28
 	"weapons/grenlx1a.wav",		// 29
 	"weapons/xpld_wat.wav",		// 30
@@ -280,9 +280,7 @@ char *fastsound_name[FAST_SOUNDS_TOTAL] = {
 	"player/step3.wav",			// 36
 	"player/step4.wav",			// 37
 	"weapons/tesla.wav",		// 38
-	"weapons/disrupthit.wav",	// 39
-	"misc/radar_snd.wav",		// 40
-	"menu/idlogo.wav"			// 41
+	"weapons/disrupthit.wav"	// 39
 };
 
 // Resource descriptors
@@ -328,8 +326,6 @@ void CL_fast_sound_init (void) {
 	cl_sfx_lava = fastsound_descriptor[id_cl_sfx_lava];
 	cl_sfx_shell = fastsound_descriptor[id_cl_sfx_shell];
 	cl_sfx_debris = fastsound_descriptor[id_cl_sfx_debris];
-
-	cl_sfx_idlogo = fastsound_descriptor[id_idlogo_sound];
 
 	// RAFAEL
 	// cl_sfx_plasexp = S_RegisterSound ("weapons/plasexpl.wav");

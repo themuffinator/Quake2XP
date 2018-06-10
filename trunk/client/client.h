@@ -91,8 +91,6 @@ extern viddef_t viddef;
 //PGM
 #define id_cl_sfx_lightning		38
 #define id_cl_sfx_disrexp		39
-#define id_radar_sound			40
-#define id_idlogo_sound			41
 
 typedef enum {
 	ex_free, ex_explosion, ex_misc, ex_flash, ex_mflash, ex_poly, ex_poly2

@@ -1227,7 +1227,8 @@ void Mod_LoadFaces(lump_t * l) {
 			}
 		}
 
-		if (!strcmp(noext, "crys1_1") || !strcmp(noext, "crys1_2") || !strcmp(noext, "crys1_3")) {
+		if (!strcmp(noext, "crys1_1") || !strcmp(noext, "crys1_2") || !strcmp(noext, "crys1_3")
+			|| !strcmp(noext, "walmine02")) {
 			out->flags |= MSURF_SSS; // light pass
 			out->flags |= MSURF_ENVMAP; //ambient pass
 		}

@@ -857,8 +857,8 @@ openal_channel_t *PickChannel (channel_task_t * Channels_TODO,
 	int firstToDie = -1;
 	qboolean terminate = qfalse;
 
-	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels;
-		i++, ch++) {
+	for (i = 0, ch = s_openal_channels; i < s_openal_numChannels; i++, ch++) {
+
 		// Don't let game sounds override streaming sounds
 		/* if (!i && streaming) continue; */
 
@@ -1248,13 +1248,10 @@ void S_Update (vec3_t listener_position, vec3_t velocity,
 			ALuint sourceNum = source_name[i];
 			alSourcef (sourceNum, AL_PITCH, 1);
 			alSource3f (sourceNum, AL_DIRECTION, 0, 0, 0);
-			alSourcef (sourceNum, AL_REFERENCE_DISTANCE,
-				current_task->TASK_AL_REFERENCE_DISTANCE);
-			alSourcef (sourceNum, AL_ROLLOFF_FACTOR,
-				current_task->TASK_AL_ROLLOFF_FACTOR);
+			alSourcef (sourceNum, AL_REFERENCE_DISTANCE, current_task->TASK_AL_REFERENCE_DISTANCE);
+			alSourcef (sourceNum, AL_ROLLOFF_FACTOR, current_task->TASK_AL_ROLLOFF_FACTOR);
 			alSourcefv (sourceNum, AL_POSITION, ch->_AL_POSITION);
-			alSourcefv (sourceNum, AL_VELOCITY,
-				current_task->TASK_AL_VELOCITY);
+			alSourcefv (sourceNum, AL_VELOCITY,	current_task->TASK_AL_VELOCITY);
 			alSourcei (sourceNum, AL_BUFFER, ch->bufferNum);
 			alSourcei (sourceNum, AL_SOURCE_RELATIVE, FlagAL_checkAL (ch, AL_FLAGS_FLAT2D));	// Flag_checkAL
 			// (current_task,

@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // cl_tent.c -- client side temporary entities
 
 #include "client.h"
+#include <math.h>
 
 void CL_ParticleGibBlood2 (vec3_t org);
 
@@ -748,10 +749,14 @@ void CL_ParseTEnt (void) {
 
 			}
 			if (r == SPLASH_SPARKS) {
-				S_fastsound (pos, 0, 0,
-					fastsound_descriptor[id_cl_sfx_spark5 +
-					(rand () & 3)], 0.5,
-					ATTN_STATIC);
+				r = rand() & 3;
+				if (r == 0)
+					S_fastsound(pos, 0, 0, fastsound_descriptor[id_cl_sfx_spark5], 0.5, ATTN_STATIC);
+				else if (r == 1)
+					S_fastsound(pos, 0, 0, fastsound_descriptor[id_cl_sfx_spark6], 0.5, ATTN_STATIC);
+				else
+					S_fastsound(pos, 0, 0, fastsound_descriptor[id_cl_sfx_spark7], 0.5, ATTN_STATIC);
+
 				CL_ParticleSmoke (pos, dir, 6);
 				CL_ParticleSpark (pos, dir, 25);
 			}
