@@ -987,6 +987,8 @@ void IL_LoadImage(char *filename, byte ** pic, int *width, int *height,
 	ILuint imageID;
 	signed int w, h;
 
+	*pic = NULL; //missing cubemaps plug
+
 	length = FS_LoadFile(filename, (void **) &buffer);
 	if (!buffer) {
 		Con_Printf(PRINT_DEVELOPER, "Bad image file %s\n", filename);

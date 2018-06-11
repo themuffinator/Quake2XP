@@ -2077,7 +2077,8 @@ static char *idcredits[] = {
 	"Inc. Activision(R) is a registered",
 	"trademark of Activision, Inc. All",
 	"other trademarks and trade names are",
-	"properties of their respective owners."
+	"properties of their respective owners.",
+	0
 };
 
 static char *xatcredits[] = {
@@ -2335,42 +2336,39 @@ static char *roguecredits[] = {
 
 
 void M_Credits_MenuDraw(void) {
-	int i, y;
+	int i, x, y, sl;
+	int i8s = 8 * cl_fontScale->value;
 
 	// draw the credits
 
 	Set_FontShader(qtrue);
 
-	for (i = 0, y = viddef.height - ((cls.realtime - credits_start_time) / 10.0F); credits[i] && y < viddef.height; y += 10 * cl_fontScale->value, i++) {
-		
+	for (i = 0, y = viddef.height - ((cls.realtime - credits_start_time) / 10.0F); credits[i] && y < (int)viddef.height; y += 10 * cl_fontScale->value, i++)    /// Berserker' FIX: was y < viddef.height
+	{
 		int j, stringoffset = 0;
-		int bold = qfalse;
+		int bold;
 
-		if (y <= -8)
+		if (y <= -i8s)
 			continue;
 
 		if (credits[i][0] == '+') {
-			bold = qtrue;
+			bold = 128;
 			stringoffset = 1;
 		}
 		else {
-			bold = qfalse;
+			bold = 0;
 			stringoffset = 0;
 		}
 
-		for (j = 0; credits[i][j + stringoffset]; j++) {
-			int x;
-
-			x = (viddef.width - strlen(credits[i]) * 8 * cl_fontScale->value - stringoffset * 8 * cl_fontScale->value) / 2 + (j + stringoffset) * 8 * cl_fontScale->value;
-
-			if (bold)
-				Draw_CharScaled(x, y, cl_fontScale->value, cl_fontScale->value, credits[i][j + stringoffset] + 128);
-			else
-				Draw_CharScaled(x, y, cl_fontScale->value, cl_fontScale->value, credits[i][j + stringoffset]);
+		sl = strlen(credits[i]);    /// PVS-Studio
+		for (j = 0; credits[i][j + stringoffset]; j++)
+		{
+			x = (viddef.width - (sl - stringoffset) * i8s) / 2 + (j + stringoffset) * i8s;
+			Draw_CharScaled(x, y, cl_fontScale->value, cl_fontScale->value, credits[i][j + stringoffset] + bold);
 		}
 	}
 
-	if (y < 0) 
+	if (y < 0)
 		credits_start_time = cls.realtime;
 
 	Set_FontShader(qfalse);
