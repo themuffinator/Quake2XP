@@ -672,6 +672,8 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 
 	R_UpdateLightUniforms(bmodel);
 
+	qglUniform1i(U_PARAM_INT_1, 1); // temp light
+
 	qsort(interaction, numInteractionSurfs, sizeof(msurface_t*), (int (*)(const void *, const void *))lightSurfSort);
 
 	for (i = 0; i < numInteractionSurfs; i++){
@@ -727,6 +729,8 @@ static void GL_DrawStaticLightPass()
 	GL_BindProgram(lightWorldProgram);
 
 	R_UpdateLightUniforms(qfalse);
+
+	qglUniform1i(U_PARAM_INT_1, 0); // static light
 
 	for (i = 0; i < currentShadowLight->numInteractionSurfs; i++) {
 		
