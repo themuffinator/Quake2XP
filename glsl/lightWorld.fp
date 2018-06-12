@@ -19,6 +19,7 @@ layout(location = U_SPOT_LIGHT)			uniform int		u_spotLight;
 layout(location = U_SPOT_PARAMS)		uniform vec3	u_spotParams;
 layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
 layout(location = U_PARAM_INT_0)		uniform int		u_sss;
+layout(location = U_PARAM_INT_1)		uniform int		u_dLight; // self shadow parallax
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;
@@ -111,8 +112,14 @@ void main (void) {
 		}
      
 		if(u_fog == 0) { 
-		fragData.rgb =  brdfColor  * cubeFilter.rgb * attenMap; 
-		fragData.a = 1.0;
+		  
+		  float shadow;
+
+	//	  if(u_dLight == 1)
+				shadow = selfShadow(u_Diffuse, normalMap.xyz, L, texCoord);
+
+		  fragData.rgb =  brdfColor  * cubeFilter.rgb * attenMap * shadow; 
+		  fragData.a = 1.0;
      }
   }	
 }

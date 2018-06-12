@@ -1,5 +1,5 @@
-uniform vec4			u_parallaxParams; // x = scale[0] y = scale[1] z = tex_w[2] w = tex_h
-uniform int				u_parallaxType;
+layout (location = U_PARALLAX_PARAMS) uniform vec4			u_parallaxParams; // x = scale[0] y = scale[1] z = tex_w[2] w = tex_h
+layout (location = U_PARALLAX_TYPE) uniform int				u_parallaxType;
 
 float ComputeLOD( vec2 tc, vec2 texSize ) { 
  vec2 dx = dFdx( tc ); 
@@ -49,3 +49,36 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
   }
 }
 
+float selfShadow(in sampler2D hiMap, in vec3 Normal, in vec3 L, in vec2 texCoord)
+{
+   float steps;
+   float height = 1.0;
+   float shadow = 0.0;
+   float bumpScale = 1.0;
+   float NL = saturate(dot(Normal, L));
+   vec2 delta;
+      
+   if(NL > 0.0)
+   {
+    vec2 offsetCoord = texCoord;
+    float tex = texture(hiMap, texCoord).a;
+
+    float numShadowSteps = mix(256.0, 8.0, L.z);
+    steps = 1.0 / numShadowSteps;
+    delta = vec2(L.x, -L.y) * bumpScale / (numShadowSteps * L.z);
+    height = tex + steps * 0.1;
+  
+      while ((tex < height) && (height < 1.0)) {
+                height += steps;
+                offsetCoord += delta;
+                tex = texture(hiMap, offsetCoord).a;
+            }
+
+   if(tex < height)
+        shadow = 1.0; 
+    else         
+        shadow = 1.0 - height;
+                        
+   }   
+   return shadow;
+}
