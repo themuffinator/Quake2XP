@@ -1332,6 +1332,7 @@ void R_RegisterCvars(void)
 	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
 	r_reliefScale =						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);
 	r_reliefMappingSelfShadow =			Cvar_Get("r_reliefMappingSelfShadow", "1", CVAR_ARCHIVE);
+	r_reliefMappingSelfShadowOffset =	Cvar_Get("r_reliefMappingSelfShadowOffset", "0.025", CVAR_ARCHIVE);
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_DEVELOPER);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
