@@ -1,5 +1,8 @@
-layout (location = U_PARALLAX_PARAMS) uniform vec4			u_parallaxParams; // x = scale[0] y = scale[1] z = tex_w[2] w = tex_h
-layout (location = U_PARALLAX_TYPE) uniform int				u_parallaxType;
+layout (location = U_PARALLAX_PARAMS)	uniform vec4			u_parallaxParams; // x = scale[0] y = scale[1] z = tex_w[2] w = tex_h
+layout (location = U_PARALLAX_TYPE)		uniform int				u_parallaxType;
+layout (location = U_PARAM_FLOAT_0)		uniform float			u_shadowOffset;
+
+
 
 float ComputeLOD( vec2 tc, vec2 texSize ) { 
  vec2 dx = dFdx( tc ); 
@@ -8,7 +11,6 @@ float ComputeLOD( vec2 tc, vec2 texSize ) {
  float lod = log2( max( mag.x, mag.y ) ); 
  return lod; 
 } 
-
 
 vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) {
 	
@@ -52,10 +54,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 float selfShadow(in sampler2D hiMap, in vec3 Normal, in vec3 L, in vec2 texCoord)
 {
    vec2		delta;
-   float	steps;
-   float	height = 1.0;
-   float	shadow = 0.0;
-   float	reliefScale = 0.05;
+   float	steps, height, shadow;
    float	NL = saturate(dot(Normal, L));
    float	lod = ComputeLOD(texCoord, u_parallaxParams.zw);
 	
@@ -66,7 +65,7 @@ float selfShadow(in sampler2D hiMap, in vec3 Normal, in vec3 L, in vec2 texCoord
 
     float numShadowSteps = mix(60.0, 5.0, -L.z);
     steps = 1.0 / numShadowSteps;
-    delta = vec2(-L.x, -L.y) * reliefScale / (numShadowSteps * -L.z);
+    delta = vec2(-L.x, -L.y) * u_shadowOffset / (numShadowSteps * -L.z);
     height = tex + steps * 0.1;
   
       while ((tex < height) && (height < 1.0)) {
