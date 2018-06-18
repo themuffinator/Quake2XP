@@ -649,6 +649,11 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 else
 		 qglUniform1i(U_SPOT_LIGHT, 0);
 
+	 if (r_reliefMappingSelfShadow->integer)
+		 qglUniform1i(U_PARAM_INT_1, 1);
+	 else
+		 qglUniform1i(U_PARAM_INT_1, 0);
+
 	 R_CalcCubeMapMatrix(bModel);
 	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
@@ -666,13 +671,8 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 	unsigned	oldTex		= 0xffffffff;
 	unsigned	oldFlag		= 0xffffffff;
 	unsigned	numIndices	= 0xffffffff;
-	
-	// setup program
-	GL_BindProgram(lightWorldProgram);
 
 	R_UpdateLightUniforms(bmodel);
-
-	qglUniform1i(U_PARAM_INT_1, 1); // temp light
 
 	qsort(interaction, numInteractionSurfs, sizeof(msurface_t*), (int (*)(const void *, const void *))lightSurfSort);
 
@@ -725,12 +725,7 @@ static void GL_DrawStaticLightPass()
 	unsigned	oldFlag = 0xffffffff;
 	unsigned	numIndices = 0xffffffff;
 
-	// setup program
-	GL_BindProgram(lightWorldProgram);
-
 	R_UpdateLightUniforms(qfalse);
-
-	qglUniform1i(U_PARAM_INT_1, 0); // static light
 
 	for (i = 0; i < currentShadowLight->numInteractionSurfs; i++) {
 		
@@ -1031,6 +1026,8 @@ void R_DrawLightWorld(void)
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
+	
+	GL_BindProgram(lightWorldProgram);
 
 	glBindVertexArray(vao.bsp_l);
 
@@ -1435,6 +1432,8 @@ void R_DrawLightBrushModel (void) {
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
+	
+	GL_BindProgram(lightWorldProgram);
 
 	glBindVertexArray(vao.bsp_l);
 

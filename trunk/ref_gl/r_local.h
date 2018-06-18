@@ -313,6 +313,7 @@ cvar_t	*r_maxTextureSize;
 
 cvar_t	*r_reliefMapping;
 cvar_t	*r_reliefScale;
+cvar_t	*r_reliefMappingSelfShadow;
 
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;

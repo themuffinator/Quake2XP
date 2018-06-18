@@ -1330,7 +1330,8 @@ void R_RegisterCvars(void)
 	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
 
 	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
-	r_reliefScale=						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);
+	r_reliefScale =						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);
+	r_reliefMappingSelfShadow =			Cvar_Get("r_reliefMappingSelfShadow", "1", CVAR_ARCHIVE);
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_DEVELOPER);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
