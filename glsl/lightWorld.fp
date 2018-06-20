@@ -116,7 +116,7 @@ void main (void) {
 		float shadow = 1.0;
 		if(u_selfShadow == 1)
 			shadow = selfShadow(u_Diffuse, normalMap.xyz, L, texCoord);
-
+                                      
 		fragData.rgb =  brdfColor  * attenMap * shadow * cubeFilter.rgb; 
 		fragData.a = 1.0;
      }
