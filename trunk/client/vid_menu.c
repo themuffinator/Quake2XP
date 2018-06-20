@@ -66,6 +66,8 @@ static menulist_s	    s_flare_box;
 static menulist_s	    s_tc_box;
 static menulist_s	    s_refresh_box;
 static menulist_s	    s_parallax_box;
+static menulist_s	    s_parallax_shadow;
+
 static menulist_s	    s_samples_list;
 
 static menulist_s	    s_bloom_box;
@@ -117,6 +119,11 @@ static void ParallaxCallback (void *s) {
 static void reliefScaleCallback(void *s) {
 	menuslider_s *slider = (menuslider_s *)s;
 	Cvar_SetValue("r_reliefScale", slider->curvalue * 1);
+}
+
+static void reliefShadowCallback(void *s) {
+	menulist_s *box = (menulist_s *)s;
+	Cvar_SetValue("r_reliefMappingSelfShadow", box->curvalue * 1);
 }
 
 static void FlareCallback (void *s) {
@@ -238,6 +245,9 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_mode", s_mode_list.curvalue);
 	Cvar_SetValue ("r_reliefScale", s_reliefScale_slider.curvalue);
 	Cvar_SetValue ("r_reliefMapping", s_parallax_box.curvalue);
+
+	Cvar_SetValue("r_reliefMappingSelfShadow", s_parallax_shadow.curvalue);
+
 	Cvar_SetValue ("r_bloom", s_bloom_box.curvalue);
 	Cvar_SetValue ("r_dof", s_dof_box.curvalue);
 	Cvar_SetValue ("r_radialBlur", s_radBlur_box.curvalue);
@@ -252,6 +262,10 @@ static void ApplyChanges (void *unused) {
 	** update appropriate stuff if we're running OpenGL and gamma
 	** has been modified
 	*/
+	
+	if (r_reliefMappingSelfShadow->modified)
+		vid_ref->modified = qtrue;
+
 	if (r_brightness->modified)
 		vid_ref->modified = qtrue;
 	
@@ -563,6 +577,9 @@ void VID_MenuInit (void) {
 	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
 	static char	*film_filter[] = { "off", "TechniColor Sys 1", "TechniColor Sys 3", "Sepia", 0 };
 
+	if(!r_reliefMappingSelfShadow)
+		r_reliefMappingSelfShadow = Cvar_Get("r_reliefMappingSelfShadow", "0", CVAR_ARCHIVE);
+
 	if (!r_mode)
 		r_mode = Cvar_Get ("r_mode", "0", CVAR_ARCHIVE);
 
@@ -673,9 +690,18 @@ void VID_MenuInit (void) {
 	s_parallax_box.generic.callback = ParallaxCallback;
 	s_parallax_box.generic.statusbar = "Use High Quality Virtual Displacement Mapping";
 
+	s_parallax_shadow.generic.type = MTYPE_SPINCONTROL;
+	s_parallax_shadow.generic.x = 0;
+	s_parallax_shadow.generic.y = 90 * cl_fontScale->value;
+	s_parallax_shadow.generic.name = "Self Shadowing Parallax";
+	s_parallax_shadow.itemnames = yesno_names;
+	s_parallax_shadow.curvalue = r_reliefMappingSelfShadow->integer;
+	s_parallax_shadow.generic.callback = reliefShadowCallback;
+	s_parallax_shadow.generic.statusbar = "Virtual Displacement Mapping Self Shadowing";
+
 	s_reliefScale_slider.generic.type = MTYPE_SLIDER;
 	s_reliefScale_slider.generic.x = 0;
-	s_reliefScale_slider.generic.y = 90 * cl_fontScale->value;
+	s_reliefScale_slider.generic.y = 100 * cl_fontScale->value;
 	s_reliefScale_slider.generic.name = "Relief Scale";
 	s_reliefScale_slider.minvalue = 1;
 	s_reliefScale_slider.maxvalue = 10;
@@ -683,9 +709,10 @@ void VID_MenuInit (void) {
 	s_reliefScale_slider.generic.callback = reliefScaleCallback;
 	s_reliefScale_slider.generic.statusbar = "Virtual Displacement Depth";
 
+
 	s_ambientLevel_slider.generic.type = MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x = 0;
-	s_ambientLevel_slider.generic.y = 100 * cl_fontScale->value;
+	s_ambientLevel_slider.generic.y = 110 * cl_fontScale->value;
 	s_ambientLevel_slider.generic.name = "Lightmap Scale";
 	s_ambientLevel_slider.generic.callback = ambientLevelCallback;
 	s_ambientLevel_slider.minvalue = 0;
@@ -695,7 +722,7 @@ void VID_MenuInit (void) {
 
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;
 	s_flare_box.generic.x = 0;
-	s_flare_box.generic.y = 120 * cl_fontScale->value;
+	s_flare_box.generic.y = 130 * cl_fontScale->value;
 	s_flare_box.generic.name = "Light Flares";
 	s_flare_box.itemnames = yesno_names;
 	s_flare_box.curvalue = r_drawFlares->value;
@@ -704,7 +731,7 @@ void VID_MenuInit (void) {
 
 	s_bloom_box.generic.type = MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x = 0;
-	s_bloom_box.generic.y = 130 * cl_fontScale->value;
+	s_bloom_box.generic.y = 140 * cl_fontScale->value;
 	s_bloom_box.generic.name = "Bloom";
 	s_bloom_box.itemnames = yesno_names;
 	s_bloom_box.curvalue = r_bloom->value;
@@ -713,7 +740,7 @@ void VID_MenuInit (void) {
 
 	s_dof_box.generic.type = MTYPE_SPINCONTROL;
 	s_dof_box.generic.x = 0;
-	s_dof_box.generic.y = 140 * cl_fontScale->value;
+	s_dof_box.generic.y = 150 * cl_fontScale->value;
 	s_dof_box.generic.name = "Depth of Field";
 	s_dof_box.itemnames = yesno_names;
 	s_dof_box.curvalue = r_dof->value;
@@ -722,7 +749,7 @@ void VID_MenuInit (void) {
 
 	s_radBlur_box.generic.type = MTYPE_SPINCONTROL;
 	s_radBlur_box.generic.x = 0;
-	s_radBlur_box.generic.y = 150 * cl_fontScale->value;
+	s_radBlur_box.generic.y = 160 * cl_fontScale->value;
 	s_radBlur_box.generic.name = "Radial Blur";
 	s_radBlur_box.itemnames = yesno_names;
 	s_radBlur_box.curvalue = r_radialBlur->value;
@@ -731,7 +758,7 @@ void VID_MenuInit (void) {
 
 	s_mb_box.generic.type = MTYPE_SPINCONTROL;
 	s_mb_box.generic.x = 0;
-	s_mb_box.generic.y = 160 * cl_fontScale->value;
+	s_mb_box.generic.y = 170 * cl_fontScale->value;
 	s_mb_box.generic.name = "Motion Blur";
 	s_mb_box.itemnames = yesno_names;
 	s_mb_box.curvalue = r_motionBlur->value;
@@ -740,7 +767,7 @@ void VID_MenuInit (void) {
 
 	s_ssao.generic.type = MTYPE_SPINCONTROL;
 	s_ssao.generic.x = 0;
-	s_ssao.generic.y = 170 * cl_fontScale->value;
+	s_ssao.generic.y = 180 * cl_fontScale->value;
 	s_ssao.generic.name = "SSAO";
 	s_ssao.itemnames = yesno_names;
 	s_ssao.curvalue = r_ssao->value;
@@ -749,7 +776,7 @@ void VID_MenuInit (void) {
 
 	s_film_grain.generic.type = MTYPE_SPINCONTROL;
 	s_film_grain.generic.x = 0;
-	s_film_grain.generic.y = 180 * cl_fontScale->value;
+	s_film_grain.generic.y = 190 * cl_fontScale->value;
 	s_film_grain.generic.name = "Cinematic filter";
 	s_film_grain.itemnames = film_filter;
 	s_film_grain.curvalue = r_filmFilterType->value;
@@ -758,7 +785,7 @@ void VID_MenuInit (void) {
 
 	s_fxaa_box.generic.type = MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x = 0;
-	s_fxaa_box.generic.y = 190 * cl_fontScale->value;
+	s_fxaa_box.generic.y = 200 * cl_fontScale->value;
 	s_fxaa_box.generic.name = "FXAA";
 	s_fxaa_box.itemnames = yesno_names;
 	s_fxaa_box.curvalue = r_fxaa->value;
@@ -767,7 +794,7 @@ void VID_MenuInit (void) {
 
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x = 0;
-	s_finish_box.generic.y = 200 * cl_fontScale->value;
+	s_finish_box.generic.y = 210 * cl_fontScale->value;
 	s_finish_box.generic.name = "Vertical Sync";
 	s_finish_box.generic.callback = vSyncCallBack;
 	s_finish_box.curvalue = r_vsync->value;
@@ -779,7 +806,7 @@ if (r_vsync->value >= 3)
 
 	s_menuAction_color.generic.type = MTYPE_ACTION;
 	s_menuAction_color.generic.x = 0;
-	s_menuAction_color.generic.y = 220 * cl_fontScale->value;
+	s_menuAction_color.generic.y = 230 * cl_fontScale->value;
 	s_menuAction_color.generic.name = "Post-Process Settings...";
 	s_menuAction_color.generic.callback = ColorSettingsFunc;
 	s_menuAction_color.generic.statusbar = "Color Balance and Bloom Settings";
@@ -787,16 +814,16 @@ if (r_vsync->value >= 3)
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x = 0;
-	s_defaults_action.generic.y = 240 * cl_fontScale->value;
+	s_defaults_action.generic.y = 250 * cl_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x = 0;
-	s_apply_action.generic.y = 250 * cl_fontScale->value;
+	s_apply_action.generic.y = 260 * cl_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 
-	menuSize = 260;
+	menuSize = 270;
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_mode_list);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_fs_box);
@@ -807,6 +834,8 @@ if (r_vsync->value >= 3)
 
 	Menu_AddItem (&s_opengl_menu, (void *)&a_autoBump_list);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_parallax_box);
+	Menu_AddItem(&s_opengl_menu, (void *)&s_parallax_shadow);
+
 	Menu_AddItem (&s_opengl_menu, (void *)&s_reliefScale_slider);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_ambientLevel_slider);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_flare_box);

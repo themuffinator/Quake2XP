@@ -1950,6 +1950,9 @@ void R_BeginFrame()
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = qtrue;
 	
+	if (r_reliefMappingSelfShadow->modified)
+		r_reliefMappingSelfShadow->modified = qfalse;
+
 	if(r_dof->modified)
 		r_dof->modified = qfalse;
 
