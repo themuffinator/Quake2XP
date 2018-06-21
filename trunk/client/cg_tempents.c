@@ -946,8 +946,8 @@ void CL_ParseTEnt (void) {
 			break;
 
 		case TE_BFG_EXPLOSION:
-			MSG_ReadPos (&net_message, pos);
-			ex = CL_AllocExplosion ();
+		MSG_ReadPos (&net_message, pos);
+	/*		ex = CL_AllocExplosion ();
 			VectorCopy(pos, ex->ent.origin);
 			ex->type = ex_poly;
 			ex->ent.flags = RF_FULLBRIGHT;
@@ -962,7 +962,7 @@ void CL_ParseTEnt (void) {
 			ex->ent.flags |= RF_BFG_SPRITE;
 			ex->ent.alpha = 0.30;
 			ex->frames = 4;
-
+			*/
 
 			break;
 

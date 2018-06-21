@@ -229,7 +229,7 @@ typedef struct {
 #define PARTICLE_NOFADE					16384
 #define PARTICLE_DEFAULT				32768
 #define PARTICLE_ROTATE					65536
-#define PARTICLE_STRIP_ANIM				131072
+#define PARTICLE_SOFT_MIDLE				131072
 
 #define CLM_BOUNCE			1
 #define CLM_FRICTION		2

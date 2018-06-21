@@ -148,6 +148,9 @@ extern	image_t	*r_texshell[MAX_SHELLS];
 #define		MAX_EXPLODE 8
 extern image_t *r_explode[MAX_EXPLODE];
 
+#define		MAX_BFG_EXPL		32
+extern image_t *r_bfg_expl[MAX_BFG_EXPL];
+
 extern qboolean drawFlares;
 extern image_t gltextures[MAX_GLTEXTURES];
 extern int numgltextures;

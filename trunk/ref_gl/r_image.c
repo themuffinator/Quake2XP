@@ -1328,6 +1328,10 @@ void GL_FreeUnusedImages(void)
 		r_explode[i]->registration_sequence = registration_sequence;
 	}
 
+	for (i = 0; i < MAX_BFG_EXPL; i++) {
+		r_bfg_expl[i]->registration_sequence = registration_sequence;
+	}
+
 	for (i = 0; i < DECAL_MAX; i++) {
 		r_decaltexture[i]->registration_sequence = registration_sequence;
 	}

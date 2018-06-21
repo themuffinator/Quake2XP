@@ -1967,12 +1967,12 @@ void CL_BfgBall(vec3_t org) {
 	p->flags |= PARTICLE_ROTATE;
 	p->time = cl.time;
 	p->endTime = cl.time + 20000;
-	p->size = 35;
-	p->sizeVel = 35;
+	p->size = 30;
+	p->sizeVel = 30;
 	p->alpha = 1;
 	p->alphavel = INSTANT_PARTICLE;
 
-	p->lightradius = 200;
+	p->lightradius = 100;
 	p->lcolor[0] = 0.0;
 	p->lcolor[1] = 1.0;
 	p->lcolor[2] = 0.0;
@@ -2007,19 +2007,18 @@ void CL_BfgExplosion(vec3_t org) {
 	p->next = active_particles;
 	active_particles = p;
 	p->orient = 0;
-	p->flags = PARTICLE_LIGHTING;
-	p->flags |= PARTICLE_STRIP_ANIM;
+	p->flags = PARTICLE_LIGHTING | PARTICLE_SOFT_MIDLE;
 	p->time = cl.time;
-	p->endTime = cl.time + 400;
-	p->size = 60;
-	p->sizeVel = 0;
+	p->endTime = cl.time + 1600;
+	p->size = 40;
+	p->sizeVel = 40;
 	p->alpha = 1;
-	p->alphavel = -1;
+	p->alphavel = 0;
 
 	p->lightradius = 350;
-	p->lcolor[0] = 1.0;
-	p->lcolor[1] = 0.5;
-	p->lcolor[2] = 0.5;
+	p->lcolor[0] = 0.0;
+	p->lcolor[1] = 1.0;
+	p->lcolor[2] = 0.0;
 
 
 	p->sFactor = GL_ONE;
@@ -2029,9 +2028,9 @@ void CL_BfgExplosion(vec3_t org) {
 	p->color[1] = 1;
 	p->color[2] = 1;
 
-	p->colorVel[0] = 0;
-	p->colorVel[1] = 0;
-	p->colorVel[2] = 0;
+	p->colorVel[0] = 1;
+	p->colorVel[1] = 1;
+	p->colorVel[2] = 1;
 	p->type = PT_BFG_EXPL;
 
 	VectorCopy(org, p->org);

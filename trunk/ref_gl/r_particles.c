@@ -182,7 +182,7 @@ void R_DrawParticles (void) {
 				break;
 
 			case PT_BFG_EXPL:
-				texId = r_particletexture[PT_BFG_EXPL]->texnum;
+				texId = r_bfg_expl[((int)((r_newrefdef.time - p->time) * 20)) % MAX_BFG_EXPL]->texnum;
 				break;
 			default:
 				texId = r_particletexture[PT_DEFAULT]->texnum;
@@ -215,14 +215,10 @@ void R_DrawParticles (void) {
 			if (p->flags & PARTICLE_NOFADE)
 				qglUniform1f (U_PARTICLE_THICKNESS, 0.0);
 			else
+				if (p->flags & PARTICLE_SOFT_MIDLE)
+					qglUniform1f(U_PARTICLE_THICKNESS, scale * 0.35);
+				else
 				qglUniform1f (U_PARTICLE_THICKNESS, scale * 0.75); // soft blend scale
-
-			if (p->flags & PARTICLE_STRIP_ANIM) {
-				int curFrame = ((int)((r_newrefdef.time - p->time) * 20)) % 32;
-				qglUniform1i(U_PARTICLE_ANIM, 1);
-			}
-			else
-				qglUniform1i(U_PARTICLE_ANIM, 0);
 
 			if (p->flags & PARTICLE_OVERBRIGHT)
 				qglUniform1f (U_COLOR_MUL, 2.0);
