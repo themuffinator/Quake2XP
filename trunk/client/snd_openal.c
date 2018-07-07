@@ -233,14 +233,6 @@ void S_Init (int hardreset) {
 					// Generate some AL Buffers for streaming
 					alGenBuffers (NUM_STRBUF, streaming.buffers);
 
-#ifdef _WITH_XRAM
-					if (!eaxSetBufferMode
-						(NUM_STRBUF, streaming.buffers,
-						alGetEnumValue (" AL_STORAGE_ACCESSIBLE"))) {
-						Com_DPrintf ("music: unable to set X-RAM mode\n");
-					}
-#endif
-
 					if (alConfig.efx)
 						EFX_RvbInit ();
 				}
@@ -415,7 +407,7 @@ ALuint S_RegisterSexedSound (entity_state_t * ent, const char *base) {
 
 //=============================================================================
 #define AL_TASK_MANAGER__IS_LOOP_ACTIVE		1
-//#define AL_TASK_MANAGER__IS_SOURCE_RELATIVE   2
+#define AL_TASK_MANAGER__IS_SOURCE_RELATIVE 2
 #define AL_TASK_MANAGER__TERMINATE			4
 #define AL_TASK_MANAGER__EXECUTE			8
 

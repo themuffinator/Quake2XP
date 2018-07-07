@@ -593,7 +593,6 @@ void R_DrawLightScene (void)
 	GL_BlendFunc(GL_ONE, GL_ONE /*GL_DST_COLOR, GL_ZERO*/);
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-
 		if (r_useLightScissors->integer)
 			GL_Enable(GL_SCISSOR_TEST);
 
@@ -613,6 +612,9 @@ void R_DrawLightScene (void)
 	if (r_skipStaticLights->integer && currentShadowLight->isStatic)
 		continue;
 	
+	if ((r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !currentShadowLight->isNoWorldModel)
+		continue;
+
 	UpdateLightEditor();
 	
 	R_SetViewLightScreenBounds();
@@ -639,7 +641,7 @@ void R_DrawLightScene (void)
 		if (currententity->flags & RF_WEAPONMODEL)
 			continue;
 
-		if (currententity->flags & RF_TRANSLUCENT)
+		if ((currententity->flags & RF_TRANSLUCENT) && (currentmodel->type == mod_alias))
 			continue;
 
 		if (currententity->flags & RF_DISTORT)
@@ -731,6 +733,9 @@ void R_DrawPlayerWeapon(void)
 		for (currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
 
 			if (r_skipStaticLights->integer && currentShadowLight->isStatic)
+				continue;
+
+			if (currentShadowLight->filter == 33) // flashlight cut off
 				continue;
 
 			R_SetViewLightScreenBounds();
@@ -1332,10 +1337,13 @@ void R_RegisterCvars(void)
 	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
 	r_reliefScale =						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);
 	r_reliefMappingSelfShadow =			Cvar_Get("r_reliefMappingSelfShadow", "1", CVAR_ARCHIVE);
-	r_reliefMappingSelfShadowOffset =	Cvar_Get("r_reliefMappingSelfShadowOffset", "0.025", CVAR_ARCHIVE);
+	r_reliefMappingSelfShadowOffset =	Cvar_Get("r_reliefMappingSelfShadowOffset", "0.02", CVAR_ARCHIVE);
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_DEVELOPER);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
+
+	r_useBlinnPhongLighting =			Cvar_Get("r_useBlinnPhongLighting", "0", CVAR_ARCHIVE);
+	r_useBlinnPhongLighting->help =		"use old lighting model";
 
 	r_skipStaticLights =				Cvar_Get("r_skipStaticLights", "0", CVAR_DEVELOPER);
 	r_lightmapScale =					Cvar_Get("r_lightmapScale", "0.5", CVAR_ARCHIVE);

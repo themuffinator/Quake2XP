@@ -38,45 +38,6 @@ R_InitEngineTextures
 ==================
 */
 
-image_t	*r_defBump;
-image_t	*r_whiteMap;
-image_t *r_notexture;
-image_t *r_caustic[MAX_CAUSTICS];
-image_t *r_waterNormals[MAX_WATER_NORMALS];
-image_t *fly[MAX_FLY];
-image_t *flameanim[MAX_FLAMEANIM];
-image_t *r_flare;
-image_t *r_blood[MAX_BLOOD];
-image_t *r_explode[MAX_EXPLODE];
-image_t *r_bfg_expl[MAX_BFG_EXPL];
-image_t *r_xblood[MAX_BLOOD];
-image_t *r_distort;
-image_t	*r_texshell[MAX_SHELLS];
-image_t *r_DSTTex;
-image_t *r_scanline;
-image_t	*r_envTex;
-image_t	*r_randomNormalTex;
-image_t	*r_lightCubeMap[MAX_FILTERS];
-image_t *fbo_color0;
-image_t *skinBump;
-image_t	*r_conBump;
-
-image_t *depthMap;
-image_t *ScreenMap;
-image_t *shadowMask;
-
-// TODO use image array
-uint thermaltex;
-uint bloomtex;
-uint fxaatex;
-uint fovCorrTex;
-
-uint fboId;
-//uint fboDN;
-//uint fboColor[2];
-byte fboColorIndex;
-uint fboDps, rboDps;
-
 void CreateDSTTex_ARB (void) {
 	unsigned char	dist[16][16][4];
 	int				x, y;
@@ -653,6 +614,7 @@ void R_InitEngineTextures (void) {
 	r_particletexture[PT_BFG_BALL] = GL_FindImage("gfx/bfg/bfgBall.tga", it_wall);
 	r_particletexture[PT_BFG_REFR] = GL_FindImage("gfx/bfg/bfgRefr.tga", it_wall);
 	r_particletexture[PT_BFG_EXPL] = GL_FindImage("gfx/bfg/bfg_expl.tga", it_wall);
+	r_particletexture[PT_BFG_EXPL2] = GL_FindImage("gfx/bfg/bfgballblast.tga", it_wall);
 
 	for (i = 0; i < PT_MAX; i++)
 	if (!r_particletexture[i])

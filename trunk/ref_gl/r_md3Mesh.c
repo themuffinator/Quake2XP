@@ -444,12 +444,12 @@ qboolean R_CullMD3Model(vec3_t bbox[8], entity_t *e)
 
 	if ((e->frame >= md3Hdr->num_frames) || (e->frame < 0))
 	{
-		Com_Printf("R_Cullmd3Model %s: no such frame %d\n", currentmodel->name, e->frame);
+		Com_DPrintf("R_Cullmd3Model %s: no such frame %d\n", currentmodel->name, e->frame);
 		e->frame = 0;
 	}
 	if ((e->oldframe >= md3Hdr->num_frames) || (e->oldframe < 0))
 	{
-		Com_Printf("R_Cullmd3Model %s: no such oldframe %d\n", currentmodel->name, e->oldframe);
+		Com_DPrintf("R_Cullmd3Model %s: no such oldframe %d\n", currentmodel->name, e->oldframe);
 		e->oldframe = 0;
 	}
 
@@ -745,7 +745,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 			for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
 				if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-					Vector4Set(md3ColorCache[j], 0.33, 0.33, 0.33, 1.0);
+					Vector4Set(md3ColorCache[j], 0.33, 0.33, 0.33, 0.5);
 				else
 					Vector4Set(md3ColorCache[j], shadelight[0], shadelight[1], shadelight[2], 0.5);
 				md3VertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
@@ -871,6 +871,9 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
+
+	R_SetupEntityMatrix(currententity);
+
 	VectorCopy(currentShadowLight->origin, oldLight);
 	VectorCopy(r_origin, oldView);
 
@@ -898,8 +901,6 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 	for (j = 0; j<3; j++)
 		move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
-
-	R_SetupEntityMatrix(currententity);
 
 	GL_StencilFunc(GL_EQUAL, 128, 255);
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);

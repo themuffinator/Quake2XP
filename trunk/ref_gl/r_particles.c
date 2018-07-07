@@ -184,6 +184,11 @@ void R_DrawParticles (void) {
 			case PT_BFG_EXPL:
 				texId = r_bfg_expl[((int)((r_newrefdef.time - p->time) * 20)) % MAX_BFG_EXPL]->texnum;
 				break;
+			
+			case PT_BFG_EXPL2:
+				texId = r_particletexture[PT_BFG_EXPL2]->texnum;
+				break;
+
 			default:
 				texId = r_particletexture[PT_DEFAULT]->texnum;
 

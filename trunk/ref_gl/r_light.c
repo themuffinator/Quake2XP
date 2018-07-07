@@ -2725,6 +2725,11 @@ void R_UpdateLightAliasUniforms()
 	qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float *)entSpotMatrix);
 	qglUniform3f(U_SPOT_PARAMS, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
 
+	if(r_useBlinnPhongLighting->integer)
+		qglUniform1i(U_PARAM_INT_0, 1);
+	else
+		qglUniform1i(U_PARAM_INT_0, 0);
+
 	if (currentShadowLight->isCone)
 		qglUniform1i(U_SPOT_LIGHT, 1);
 	else

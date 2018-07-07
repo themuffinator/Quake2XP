@@ -96,45 +96,6 @@ qboolean Music_PlayFile (const char *name, qboolean hasExt) {
 		return qfalse;
 	}
 }
-/*
-================
-CL_MissionPackCDTrack
-Returns correct OGG track number for mission packs.
-This assumes that the standard Q2 CD was ripped
-as track02-track11, and the Rogue CD as track12-track21.
-================
-*/
-
-int CL_MissionPackCDTrack(int tracknum)
-{
-	if (modType("rogue"))
-	{
-		if (tracknum >= 2 && tracknum <= 11)
-			return tracknum + 10;
-		else
-			return tracknum;
-	}
-	// an out-of-order mix from Q2 and Rogue CDs
-	else if (modType("xatrix"))
-	{
-		switch (tracknum)
-		{
-		case 2: return 9;	break;
-		case 3: return 13;	break;
-		case 4: return 14;	break;
-		case 5: return 7;	break;
-		case 6: return 16;	break;
-		case 7: return 2;	break;
-		case 8: return 15;	break;
-		case 9: return 3;	break;
-		case 10: return 4;	break;
-		case 11: return 18; break;
-		default: return tracknum; break;
-		}
-	}
-	else
-		return tracknum;
-}
 
 void Music_Play (void) {
 	int track, count;
@@ -159,7 +120,13 @@ void Music_Play (void) {
 			break;
 
 		case MUSIC_FILES:
-			Q_snprintfz(name, sizeof(name), "music/track%02i", CL_MissionPackCDTrack(track));
+			if(modType("xatrix"))
+				Q_snprintfz(name, sizeof(name), "music_sp1/track%02i", track);
+			else
+			if (modType("rogue"))
+				Q_snprintfz(name, sizeof(name), "music_sp2/track%02i", track);
+			else
+				Q_snprintfz(name, sizeof(name), "music/track%02i", track);
 			Music_PlayFile (name, qfalse);
 			break;
 

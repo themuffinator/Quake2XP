@@ -111,10 +111,6 @@ LPALSOURCESTOP				alSourceStop;
 LPALSOURCESTOPV				alSourceStopv;
 LPALSOURCEUNQUEUEBUFFERS	alSourceUnqueueBuffers;
 
-// X-RAM
-EAXSetBufferMode			eaxSetBufferMode;
-EAXGetBufferMode			eaxGetBufferMode;
-
 // Effect objects
 LPALGENEFFECTS				alGenEffects;
 LPALDELETEEFFECTS			alDeleteEffects;
@@ -402,7 +398,7 @@ qboolean AL_Init (int hardreset) {
 		alSourceStop = (LPALSOURCESTOP)GPA ("alSourceStop");
 		alSourceStopv = (LPALSOURCESTOPV)GPA ("alSourceStopv");
 		alSourceUnqueueBuffers = (LPALSOURCEUNQUEUEBUFFERS)GPA ("alSourceUnqueueBuffers");
-		alSource3i = (LPALSOURCE3I)alGetProcAddress ("alSource3i");
+		alSource3i = (LPALSOURCE3I)GPA ("alSource3i");
 	}
 
 	// Initialize OpenAL subsystem
@@ -415,23 +411,6 @@ qboolean AL_Init (int hardreset) {
 
 	// Initialize extensions
 	alConfig.efx = qfalse;
-
-	// X-RAM
-	if (alIsExtensionPresent ((ALubyte *)"EAX-RAM")) {
-		Com_Printf ("X-RAM free %d of total %d bytes\n",
-			alGetInteger (alGetEnumValue ("AL_EAX_RAM_FREE")),
-			alGetInteger (alGetEnumValue ("AL_EAX_RAM_SIZE"))
-			);
-		eaxSetBufferMode = (EAXSetBufferMode)alGetProcAddress ("EAXSetBufferMode");
-		eaxGetBufferMode = (EAXGetBufferMode)alGetProcAddress ("EAXGetBufferMode");
-		if (!eaxSetBufferMode) eaxSetBufferMode = EAXSetBufferMode_NULL;
-		if (!eaxGetBufferMode) eaxGetBufferMode = EAXGetBufferMode_NULL;
-	}
-	else {
-		Com_Printf ("...audio chip without onboard RAM.\n");
-		eaxSetBufferMode = EAXSetBufferMode_NULL;
-		eaxGetBufferMode = EAXGetBufferMode_NULL;
-	}
 
 	// Check for ALC Extensions
 	if (alcIsExtensionPresent (alConfig.hDevice, "ALC_EXT_CAPTURE") == AL_TRUE)

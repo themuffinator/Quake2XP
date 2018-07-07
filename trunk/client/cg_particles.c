@@ -1998,6 +1998,39 @@ void CL_BfgBall(vec3_t org) {
 
 void CL_BfgExplosion(vec3_t org) {
 	cparticle_t *p;
+		
+	// blast circle
+	if (!free_particles)
+		return;
+
+	p = free_particles;
+	free_particles = p->next;
+	p->next = active_particles;
+	active_particles = p;
+	p->orient = 0;
+	p->flags = 0;
+	p->time = cl.time;
+	p->endTime = cl.time + 1600;
+	p->size = 10;
+	p->sizeVel = 30;
+	p->alpha = 1;
+	p->alphavel = 0;
+
+	p->sFactor = GL_ONE;
+	p->dFactor = GL_ONE;
+
+	p->color[0] = 0.2;
+	p->color[1] = 1.0;
+	p->color[2] = 0.2;
+
+	p->colorVel[0] = 0.0001;
+	p->colorVel[1] = 0.01;
+	p->colorVel[2] = 0.0001;
+	p->type = PT_BFG_EXPL2;
+
+	VectorCopy(org, p->org);
+	VectorClear(p->vel);
+	VectorClear(p->accel);
 
 	if (!free_particles)
 		return;

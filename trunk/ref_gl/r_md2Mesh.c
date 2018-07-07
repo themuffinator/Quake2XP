@@ -123,6 +123,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Disable(GL_CULL_FACE);
+		GL_DepthMask(0);
 	}
 
 	if (currententity->flags & (RF_VIEWERMODEL))
@@ -220,7 +221,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
 
-			VA_SetElem4 (colorArray[jj], lightColor[0], lightColor[1], lightColor[2], alpha);
+			VA_SetElem4 (colorArray[jj], lightColor[0], lightColor[1], lightColor[2], 1.0);
 
 			if (currentmodel->envMap) {
 				index2 = verts[index_xyz].lightnormalindex;
@@ -272,6 +273,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
+		GL_DepthMask(1);
 	}
 }
 
@@ -707,12 +709,6 @@ void R_DrawAliasModel(entity_t *e)
 	dmdl_t		*paliashdr;
 	vec3_t		bbox[8];
 
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
-		goto next;
-
-	if (e->flags & RF_DISTORT)
-		return;
-next:
 
 	if (!(e->flags & RF_WEAPONMODEL)) {
 		if (R_CullAliasModel(bbox, e))
@@ -818,6 +814,8 @@ visible:
 		currententity->oldframe = 0;
 	}
 
+	R_SetupEntityMatrix(currententity);
+
 	VectorCopy(currentShadowLight->origin, oldLight);
 	VectorCopy(r_origin, oldView);
 
@@ -826,8 +824,6 @@ visible:
 
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, r_origin);
-
-	R_SetupEntityMatrix(currententity);
 
 	GL_StencilFunc(GL_EQUAL, 128, 255);
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);

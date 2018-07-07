@@ -216,6 +216,9 @@ qboolean R_EntityCastShadow() {
 	if (!r_playerShadow->integer && (currententity->flags & RF_VIEWERMODEL))
 		return qfalse;
 
+	if ((currententity->flags & RF_VIEWERMODEL) && (currentShadowLight->filter == 33))
+		return qfalse;
+
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		for (i = 0; i < 3; i++) {
 			mins[i] = currententity->origin[i] - currentmodel->radius;

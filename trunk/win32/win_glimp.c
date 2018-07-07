@@ -142,8 +142,8 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	glw_state.virtualHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 	glw_state.borderWidth = GetSystemMetrics(SM_CXBORDER) * 3;
 	glw_state.borderHeight = GetSystemMetrics(SM_CYBORDER) * 3 + GetSystemMetrics(SM_CYCAPTION);
-	vid_xpos = Cvar_Get("vid_xpos", "0", 0);
-	vid_ypos = Cvar_Get("vid_ypos", "0", 0);
+	vid_xpos = Cvar_Get("vid_xpos", "0", CVAR_ARCHIVE);
+	vid_ypos = Cvar_Get("vid_ypos", "0", CVAR_ARCHIVE);
 
 	AdjustWindowRect (&r, stylebits, FALSE);
 

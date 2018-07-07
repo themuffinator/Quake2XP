@@ -113,17 +113,6 @@ ALuint S_FindName (char *name, qboolean create) {
 		// Upload the sound
 		alGenBuffers (1, &known_sfx_bufferNum[i]);
 
-#ifdef _WITH_XRAM
-		if (!eaxSetBufferMode
-			(1, &known_sfx_bufferNum[i],
-			alGetEnumValue ("AL_STORAGE_HARDWARE"))) {
-			Com_DPrintf ("LoadSound: unable to set X-RAM mode\n");
-		}
-		if (alGetError () != AL_NO_ERROR) {
-			Com_DPrintf ("LoadSound: unable to set X-RAM mode\n");
-		}
-#endif
-
 		alBufferData (known_sfx_bufferNum[i], format, data, size, rate);
 		if (alGetError () != AL_NO_ERROR) {
 			Com_DPrintf ("LoadSound: bad sample\n");
@@ -140,14 +129,6 @@ void S_fastsound_get_descriptors_pool (unsigned count,
 	ALuint * descriptors_pool) {
 	alGenBuffers (count, descriptors_pool);
 
-#ifdef _WITH_XRAM
-	if (!eaxSetBufferMode
-		(count, descriptors_pool, alGetEnumValue ("AL_STORAGE_HARDWARE")))
-		Com_DPrintf ("S_fastsound: unable to set X-RAM mode\n");
-
-	if (alGetError () != AL_NO_ERROR)
-		Com_DPrintf ("S_fastsound: unable to set X-RAM mode\n");
-#endif
 }
 
 void S_fastsound_kill_descriptors_pool (unsigned count,

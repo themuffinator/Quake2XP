@@ -65,12 +65,17 @@ float SV_CalcRoll (vec3_t angles, vec3_t velocity) {
 
 qboolean blooddamage = qfalse;
 
-
 void ClientAutoGenHealth (edict_t *ent) {
+
+	if (!g_autoHealth->integer)
+		return;
+
+	if (g_autoHealth->integer > 25)
+		gi.cvar_set("g_autoHealth", "25");
 
 	ent->nextthink = level.time + 100;
 
-	if (ent->health <= 25 && ent->health >= 1 && ent->nextthink > level.time) {
+	if (ent->health <= g_autoHealth->integer && ent->health >= 1 && ent->nextthink > level.time) {
 		ent->health += 1;
 	}
 

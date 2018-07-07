@@ -655,6 +655,11 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 else
 		 qglUniform1i(U_PARAM_INT_1, 0);
 
+	 if (r_useBlinnPhongLighting->integer)
+		 qglUniform1i(U_PARAM_INT_2, 1);
+	 else
+		 qglUniform1i(U_PARAM_INT_2, 0);
+
 	 R_CalcCubeMapMatrix(bModel);
 	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 

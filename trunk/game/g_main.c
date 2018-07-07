@@ -81,6 +81,8 @@ cvar_t	*r_radialBlur;
 cvar_t  *sv_stopClock;
 cvar_t	*weaponHitAccuracy;
 
+cvar_t	*g_autoHealth;
+
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
 void ClientThink (edict_t *ent, usercmd_t *cmd);
 qboolean ClientConnect (edict_t *ent, char *userinfo);

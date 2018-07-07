@@ -546,6 +546,10 @@ extern cvar_t	*net_compatibility;
 extern cvar_t	*g_spLayout;
 extern cvar_t	*g_dmLayout;
 
+extern cvar_t	*r_radialBlur;
+extern cvar_t	*weaponHitAccuracy;
+extern cvar_t	*g_autoHealth;
+
 void monster_reborn (edict_t *self);
 #define world	(&g_edicts[0])
 

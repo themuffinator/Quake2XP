@@ -941,12 +941,12 @@ void CL_AddPacketEntities (frame_t * frame) {
 		}
 		// hack!!!!
 		if (effects & (EF_FLASHLIGHT) && !modType("rogue") && !net_compatibility->integer) {
-			entity_t		player_gun;
+			
 			static vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, right, up;
 			frame_t			*oldframe;
 			player_state_t	*ps, *ops;
 			extern cvar_t	*hand;
-			int				y, z;
+			int				y;
 
 			if (s1->number == cl.playernum + 1) {
 				// dublicate player weapon info here
@@ -957,34 +957,19 @@ void CL_AddPacketEntities (frame_t * frame) {
 					oldframe = &cl.frame;		// previous frame was dropped or invalid
 				ops = &oldframe->playerstate;
 
-				memset (&player_gun, 0, sizeof(player_gun));
-				if (gun_model)
-					player_gun.model = gun_model;	// development tool
-				else
-					player_gun.model = cl.model_draw[ps->gunindex];
+				for (i = 0; i<3; i++)
+				{
+					if (hand->value == 2)			// center
+						flashLightOrigin[i] = cl.refdef.vieworg[i] + ops->gunoffset[i] + cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]) + vup[i] * 3;
+					else if (hand->value == 1)	// left
+						flashLightOrigin[i] = cl.refdef.vieworg[i] + ops->gunoffset[i] + cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]) - vright[i] * 3 + vup[i] * 3;
+					else						// otherwise right
+						flashLightOrigin[i] = cl.refdef.vieworg[i] + ops->gunoffset[i] + cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]) + vright[i] * 3 + vup[i] * 3;
 
-				for (z = 0; z < 3; z++) {
-					player_gun.origin[z] = cl.refdef.vieworg[z] + ops->gunoffset[z] + cl.lerpfrac * (ps->gunoffset[z] - ops->gunoffset[z]);
-					player_gun.angles[z] = cl.refdef.viewangles[z] + LerpAngle (ops->gunangles[z], ps->gunangles[z], cl.lerpfrac);
+					flashlightDirection[i] = cl.refdef.viewangles[i] + LerpAngle(ops->gunangles[i], ps->gunangles[i], cl.lerpfrac);
 				}
-
-				AngleVectors (player_gun.angles, forward, right, up);
-
-				// set up flashlight position
-				for (i = 0; i < 3; i++)
-					flashlightDirection[i] = cl.refdef.viewangles[i] + LerpAngle (ops->gunangles[i], ps->gunangles[i], cl.lerpfrac);
-
-				VectorMA (cl.refdef.vieworg, 30, forward, flashLightOrigin);
-
-				if (hand->integer == 2)
-					VectorMA (flashLightOrigin, 1, right, flashLightOrigin); //center
-				else
-				if (hand->integer == 1)
-					VectorMA (flashLightOrigin, -10, right, flashLightOrigin); //left
-				else
-					VectorMA (flashLightOrigin, 10, right, flashLightOrigin); //right
-
-				V_AddLight (flashLightOrigin, 348, 1, 1, 1, flashlightDirection, 0.5, 33);
+			
+				V_AddLight (flashLightOrigin, 348, 1.0, 1.0, 0.5, flashlightDirection, 0.5, 33);
 			}
 			else {
 
@@ -994,7 +979,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 				VectorMA (ent.origin, 6, forward, flashLightOrigin);
 				VectorMA (flashLightOrigin, -6, up, flashLightOrigin);
 
-				V_AddLight (flashLightOrigin, 348, 0.9, 0.9, 0.3, tmpAngles, 0.5, 33);
+				V_AddLight (flashLightOrigin, 348, 1.0, 1.0, 0.7, tmpAngles, 0.5, 33);
 
 			}
 		}

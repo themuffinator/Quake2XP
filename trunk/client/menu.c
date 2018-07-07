@@ -1978,6 +1978,7 @@ static char *idcredits[] = {
 	"Focator",
 	"Pieter Verhoeven",
 	"Stefan 'evilreflex' Lautner",
+	"Kurtis Smith",
 	"",
 	"+USE CODE",
 	"MrG - quake2xp based on beefquake r5",

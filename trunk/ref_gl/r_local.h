@@ -126,77 +126,79 @@ typedef struct {
 //====================================================
 
 #define		MAX_CAUSTICS		32
-extern image_t *r_caustic[MAX_CAUSTICS];
+image_t *r_caustic[MAX_CAUSTICS];
 
 #define		MAX_WATER_NORMALS		32
-extern image_t *r_waterNormals[MAX_WATER_NORMALS];
+image_t *r_waterNormals[MAX_WATER_NORMALS];
 
 #define		MAX_FLY		2
-extern image_t *fly[MAX_FLY];
+image_t *fly[MAX_FLY];
 
 #define		MAX_FLAMEANIM		5
-extern image_t *flameanim[MAX_FLAMEANIM];
+image_t *flameanim[MAX_FLAMEANIM];
 
 #define		MAX_BLOOD 6
-extern image_t *r_blood[MAX_BLOOD];
+image_t *r_blood[MAX_BLOOD];
+
 #define		MAX_xBLOOD 6
-extern image_t *r_xblood[MAX_BLOOD];
+image_t *r_xblood[MAX_BLOOD];
 
 #define	MAX_SHELLS 6
-extern	image_t	*r_texshell[MAX_SHELLS];
+image_t	*r_texshell[MAX_SHELLS];
 
 #define		MAX_EXPLODE 8
-extern image_t *r_explode[MAX_EXPLODE];
+image_t *r_explode[MAX_EXPLODE];
 
 #define		MAX_BFG_EXPL		32
-extern image_t *r_bfg_expl[MAX_BFG_EXPL];
+image_t *r_bfg_expl[MAX_BFG_EXPL];
 
 extern qboolean drawFlares;
 extern image_t gltextures[MAX_GLTEXTURES];
 extern int numgltextures;
-extern image_t *r_notexture;
-extern image_t *r_distort;
-extern image_t *r_predator;
-extern image_t *depthMap;
 
-extern image_t *r_particletexture[PT_MAX];
-extern image_t *r_decaltexture[DECAL_MAX];
+image_t *r_notexture;
+image_t *r_distort;
+image_t *r_predator;
+image_t *depthMap;
 
-extern	image_t *r_radarmap;
-extern	image_t *r_around;
-extern	image_t *r_flare;
+image_t *r_particletexture[PT_MAX];
+image_t *r_decaltexture[DECAL_MAX];
 
-extern	image_t *draw_chars;
-extern	image_t *r_DSTTex;
 
-extern	image_t	*r_defBump;
-extern	image_t	*ScreenMap;
-extern	image_t	*r_envTex;
-extern	image_t	*r_randomNormalTex;
-extern	image_t	*shadowMask;
-extern	image_t	*r_conBump;
-extern	image_t	*weaponHack;
-extern	image_t *fxaaMap;
-extern	image_t *fboScreen;
-extern	image_t	*r_whiteMap;
-extern	image_t *skinBump;
+image_t *r_flare;
+
+image_t *draw_chars;
+image_t *r_DSTTex;
+
+image_t	*r_defBump;
+image_t	*ScreenMap;
+image_t	*r_envTex;
+image_t	*r_randomNormalTex;
+image_t	*shadowMask;
+image_t	*r_conBump;
+image_t	*weaponHack;
+image_t *fxaaMap;
+image_t *fboScreen;
+image_t	*r_whiteMap;
+image_t *skinBump;
 
 #define MAX_FILTERS 256
-extern	image_t	*r_lightCubeMap[MAX_FILTERS];
+image_t	*r_lightCubeMap[MAX_FILTERS];
 #define	MAX_GLOBAL_FILTERS	37
 
-extern image_t *fboDN;
-extern image_t *fboColor[2];
-extern image_t *ScreenCapture;
+image_t *fboDN;
+image_t *fboColor[2];
+image_t *ScreenCapture;
 
-extern uint bloomtex;
-extern uint thermaltex;
-extern uint fxaatex;
-extern uint fovCorrTex;
-extern unsigned int	skyCube;
+uint bloomtex;
+uint thermaltex;
+uint fxaatex;
+uint fovCorrTex;
+unsigned int	skyCube;
 
-extern uint fboId;
-extern byte fboColorIndex;
+uint fboId;
+byte fboColorIndex;
+uint fboDps;
 
 extern entity_t *currententity;
 extern model_t *currentmodel;
@@ -295,6 +297,7 @@ cvar_t	*r_ssaoIntensity;
 cvar_t	*r_ssaoScale;
 cvar_t	*r_ssaoBlur;
 
+cvar_t	*r_useBlinnPhongLighting;
 cvar_t	*r_skipStaticLights;
 cvar_t	*r_lightmapScale;
 cvar_t	*r_lightsWeldThreshold;
