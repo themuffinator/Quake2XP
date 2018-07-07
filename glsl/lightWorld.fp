@@ -20,6 +20,7 @@ layout(location = U_SPOT_PARAMS)		uniform vec3	u_spotParams;
 layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
 layout(location = U_PARAM_INT_0)		uniform int		u_sss;
 layout(location = U_PARAM_INT_1)		uniform int		u_selfShadow; // self shadow parallax
+layout(location = U_PARAM_INT_2)		uniform int		u_blinnPhong; // use old lighting model
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;
@@ -96,10 +97,18 @@ void main (void) {
 		}
 
 		vec3 brdf;
+		
 		if(u_sss == 1)
 			brdf =  SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular);
-		else
+
+		if(u_sss == 0){
+
+		if(u_blinnPhong == 0)	
 			brdf =  Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V);
+
+		if(u_blinnPhong == 1)
+			brdf = BlinnPhongLighting(diffuseMap.rgb, specular, normalMap.rgb, L, V, 128.0);
+		}
 
 		vec3 brdfColor = brdf * u_LightColor.rgb;
           

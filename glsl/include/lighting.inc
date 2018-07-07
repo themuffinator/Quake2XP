@@ -7,10 +7,20 @@ vec2 sqr (in vec2 x) { return x * x; }
 vec3 sqr (in vec3 x) { return x * x; }
 vec4 sqr (in vec4 x) { return x * x; }
 
+/*
+=======================
 
-float LambertLighting(const in vec3 N, const in vec3 L) {
+Default Lighting Models
+
+=======================
+*/
+float LambertLighting (const in vec3 N, const in vec3 L) {
 	return max(dot (N, L), 0.0);
 }
+
+float HalfLambert (in vec3 N, in vec3 L){  
+     return dot ( N, L ) * 0.5 + 0.5;
+} 
 
 vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const float sExp) {
 	vec2 E;
@@ -19,8 +29,33 @@ vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const flo
 	E.y = pow(max(dot(R, V), 0.0), sExp);
 	E.y *= E.x;
 	return E;
+}  
+
+vec3 BlinnPhongLighting (in vec3 diffuse, in float specular, const in vec3 N, const in vec3 L, const in vec3 V, const float specPower) {
+
+	vec2 lightTerm;
+  float gloss = 0.75;
+	lightTerm.x = max(dot(N, L), 0.0);
+	vec3 halfAngle = normalize(L + V);
+	lightTerm.y = pow(max(dot(N, halfAngle), 0.0), gloss * gloss * 256.0);
+	vec3 blinnPhong = diffuse * lightTerm.x + specular * lightTerm.y;
+	
+	return blinnPhong;
 }
 
+float blinnPhongSpecular (in vec3 normalVec, in vec3 lightVec, in float specPower){
+    
+  vec3 halfAngle = normalize(normalVec + lightVec);
+  return pow(clamp(dot(normalVec,halfAngle), 0.0, 1.0), specPower);
+}
+
+/*
+================
+
+PointAttenuation
+
+==============
+*/
 float PointAttenuation (const in vec3 p, const in float e) {
 	return pow(max(1.0 - dot(p, p), 0.0), e);
 }
@@ -65,29 +100,17 @@ Sub Surface Scattering
 
 ============================
 */
-
-float halfLambert(in vec3 N, in vec3 L )  
-{  
-     return dot ( N, L ) * 0.5 + 0.5;
-} 
-
-float blinnPhongSpecular(in vec3 normalVec, in vec3 lightVec, in float specPower)
-{
-    vec3 halfAngle = normalize(normalVec + lightVec);
-    return pow(clamp(dot(normalVec,halfAngle), 0.0, 1.0), specPower);
-}
-
-vec4 SkinLighting(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
+vec4 SkinLighting (in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
 {
     float MaterialThickness = 0.2;
     vec3 ExtinctionCoefficient = vec3(0.25, 0.1, 0.1);
     float backFaceSpecularIntens = 0.666;
 
-    vec4 dotLN = vec4(halfLambert(L, N) * Att);
+    vec4 dotLN = vec4(HalfLambert(L, N) * Att);
     dotLN *= Diffuse;
      
     vec3 indirectLightComponent = vec3(MaterialThickness * max(dot(N, L), 0.0));
-    indirectLightComponent += MaterialThickness * halfLambert(V, L);
+    indirectLightComponent += MaterialThickness * HalfLambert(V, L);
     indirectLightComponent *= Att * ExtinctionCoefficient;
      
     vec3 rim = vec3(1.0 - max(dot(N, V), 0.0));
@@ -103,18 +126,18 @@ vec4 SkinLighting(in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diff
     return finalCol;   
 }
 
-vec3 SubScateringLighting(in vec3 V, in vec3 L, in vec3 N, in vec3 Color, in float Specular)
+vec3 SubScateringLighting (in vec3 V, in vec3 L, in vec3 N, in vec3 Color, in float Specular)
 {
     float MaterialThickness = 0.01f;  
     vec3 ext =  Color * 0.222;
     vec3 ExtinctionCoefficient = vec3(ext.r, ext.g, ext.b);
     float backFaceSpecularIntens = 0.75f;
 
-    vec3 dotLN = vec3(halfLambert(L, N));
+    vec3 dotLN = vec3(HalfLambert(L, N));
     dotLN *= Color;
      
     vec3 indirectLightComponent = vec3(MaterialThickness * max(dot(-N, L), 0.0));
-    indirectLightComponent += MaterialThickness * halfLambert(-V, L);
+    indirectLightComponent += MaterialThickness * HalfLambert(-V, L);
     indirectLightComponent *= ExtinctionCoefficient;
      
     vec3 rim = vec3(1.0 - max(dot(N, V), 0.0));
@@ -339,3 +362,50 @@ vec4 Height2Normal(in vec2 texCoord, in sampler2D heightMapSampler, in vec3 colo
 	return vec4(normal, spec * scaleSpecular);
 }
 
+// Alan Zucconi CD-ROM Diffraction Grating
+// based on GPU Gems tutorial
+
+vec3 bump3y (vec3 x, vec3 yoffset)
+{
+ vec3 y = 1 - x * x;
+ y = saturate(y - yoffset);
+ return y;
+}
+
+vec3 spectral_zucconi6 (float w)
+{
+ // w: [400, 700]
+ // x: [0,   1]
+ float x = saturate((w - 400.0)/ 300.0);
+ 
+ const vec3 c1 = vec3(3.54585104, 2.93225262, 2.41593945);
+ const vec3 x1 = vec3(0.69549072, 0.49228336, 0.27699880);
+ const vec3 y1 = vec3(0.02312639, 0.15225084, 0.52607955);
+ 
+ const vec3 c2 = vec3(3.90307140, 3.21182957, 3.96587128);
+ const vec3 x2 = vec3(0.11748627, 0.86755042, 0.66077860);
+ const vec3 y2 = vec3(0.84897130, 0.88445281, 0.73949448);
+ 
+ return bump3y(c1 * (x - x1), y1) + bump3y(c2 * (x - x2), y2);
+}
+
+vec3 LightingDiffraction(in vec3 V, in vec3 L, in vec3 T){
+
+  float d = 1600.0; //nm
+  float cos_ThetaL = dot(L, T);
+  float cos_ThetaV = dot(V, T);
+  float u = abs(cos_ThetaL - cos_ThetaV);
+ 
+  if(u == 0.0)
+    return vec3(0.0);
+
+  vec3 color = vec3(0.0);
+ 
+ for (int n = 1; n <= 8; n++){
+ 
+    float wavelength = u * d / float(n);
+    color += spectral_zucconi6(wavelength);
+ }
+ 
+ return color = saturate(color);
+}

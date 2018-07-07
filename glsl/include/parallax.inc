@@ -18,6 +18,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	// improved qfusion shader
 	float lod = ComputeLOD(texCoord, u_parallaxParams.zw);
 	vec3 offsetBest;
+
   
   if(u_parallaxType >= 1) {
   vec3 offsetVector = vec3(viewVec.xy * u_parallaxParams.xy * vec2(-1.0, -1.0), -1.0);
@@ -40,6 +41,7 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 	offsetBest += offsetVector * (step(textureLod(hiMap, offsetBest.xy, lod).a, offsetBest.z) * 0.0625 - 0.03125);
 	
 	return offsetBest.xy;  
+	
 }
 
  if(u_parallaxType == 0){
