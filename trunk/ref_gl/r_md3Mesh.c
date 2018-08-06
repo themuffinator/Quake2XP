@@ -231,7 +231,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		if (outMesh->num_verts <= 0)
 			VID_Error(ERR_DROP, "mesh %i in model %s has no vertices", i, mod->name);
 		else if (outMesh->num_verts > MD3_MAX_VERTS)
-			VID_Error(ERR_DROP, "mesh %i in model %s has too many vertices", i, mod->name);
+			VID_Error(ERR_DROP, "mesh %i in model %s has too many vertices, %i (4096 max)", i, mod->name, outMesh->num_verts);
 
 		//
 		// register all skins

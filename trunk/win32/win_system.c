@@ -508,6 +508,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	}
 
 	Qcommon_Init (argc, argv);
+
 	oldtime = Sys_Milliseconds ();
 
 	/* main window message loop */

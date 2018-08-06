@@ -145,7 +145,7 @@ DAMAGE_BULLET			damage is from a bullet (used for ricochets)
 DAMAGE_NO_PROTECTION	kills godmode, armor, everything
 ============
 */
-static int CheckPowerArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, int dflags) {
+int CheckPowerArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, int dflags) {
 	gclient_t	*client;
 	int			save;
 	int			power_armor_type;
@@ -223,7 +223,7 @@ static int CheckPowerArmor (edict_t *ent, vec3_t point, vec3_t normal, int damag
 	return save;
 }
 
-static int CheckArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, int te_sparks, int dflags) {
+int CheckArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, int te_sparks, int dflags) {
 	gclient_t	*client;
 	int			save;
 	int			index;

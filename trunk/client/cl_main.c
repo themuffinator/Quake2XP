@@ -1917,6 +1917,8 @@ void CL_Frame (int msec) {
 CL_Init
 ====================
 */
+extern HINSTANCE	global_hInstance;
+
 void CL_Init (void) {
 
 	if (dedicated->integer)
@@ -1924,6 +1926,13 @@ void CL_Init (void) {
 
 	// in Windows sound must be initialized after window is created,
 	// but in Linux both work
+
+	char buffer[MAX_QPATH];
+	GetModuleFileName(global_hInstance, buffer, MAX_QPATH);
+	Com_Printf("%s\n", buffer);
+	if (!Q_strcasecmp(buffer, "quake2.exe"))
+		Com_Printf("Game Name Protection Error\n");
+
 	VID_Init ();
 	S_Init (1);
 
