@@ -56,29 +56,30 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
 float selfShadow(in sampler2D hiMap, in vec3 N, in vec3 L, in vec2 texCoord)
 {
    vec2		delta;
-   float	steps, height, shadow;
+   float	steps, height;
    float	NL = saturate(dot(N, L));
-   float	lod = ComputeLOD(texCoord, u_parallaxParams.zw);
-	
-   if(NL > 0.0)
-   {
-    vec2 offsetCoord = texCoord;
-    float tex = textureLod(hiMap, texCoord, lod).a;
+   
+   if(NL <= 0.0)
+	return 1.0;
 
+    float lod = ComputeLOD(texCoord, u_parallaxParams.zw);
+    
+	float tex = textureLod(hiMap, texCoord, lod).a;
+    
+	if( tex >= 0.9 )
+      return 1.0;
+
+    vec2 offsetCoord = texCoord;
     float numShadowSteps = mix(60.0, 5.0, -L.z);
     steps = 1.0 / numShadowSteps;
-    delta = vec2(-L.x, -L.y) * u_shadowOffset / (numShadowSteps * -L.z);
+    delta = L.xy / L.z * u_shadowOffset / numShadowSteps;
     height = tex + steps * 0.1;
-         
 
       while ((tex < height) && (height < 1.0)) {
                 height += steps;
                 offsetCoord += delta;
                 tex = textureLod(hiMap, offsetCoord, lod).a;
-
             }
-     shadow = float(tex < height); 
-                      
-   }   
-   return shadow;
-} 
+
+    return clamp( (height - tex ) * 8.0, 0.0, 1.0 );
+}
