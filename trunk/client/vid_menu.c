@@ -713,7 +713,7 @@ void VID_MenuInit (void) {
 	s_ambientLevel_slider.generic.type = MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x = 0;
 	s_ambientLevel_slider.generic.y = 110 * cl_fontScale->value;
-	s_ambientLevel_slider.generic.name = "Lightmap Scale";
+	s_ambientLevel_slider.generic.name = "Lightmap Brightness";
 	s_ambientLevel_slider.generic.callback = ambientLevelCallback;
 	s_ambientLevel_slider.minvalue = 0;
 	s_ambientLevel_slider.maxvalue = 20;
