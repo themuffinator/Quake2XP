@@ -1032,7 +1032,9 @@ void R_DrawLightWorld(void)
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
-	
+
+	GL_PolygonOffset(-1.0, -1.0);
+
 	GL_BindProgram(lightWorldProgram);
 
 	glBindVertexArray(vao.bsp_l);
@@ -1438,7 +1440,9 @@ void R_DrawLightBrushModel (void) {
 	GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
-	
+
+	GL_PolygonOffset(-1.0, -1.0);
+
 	GL_BindProgram(lightWorldProgram);
 
 	glBindVertexArray(vao.bsp_l);

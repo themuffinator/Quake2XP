@@ -592,6 +592,9 @@ void R_DrawLightScene (void)
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE /*GL_DST_COLOR, GL_ZERO*/);
 
+	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+		GL_Enable(GL_POLYGON_OFFSET_FILL);
+
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		if (r_useLightScissors->integer)
 			GL_Enable(GL_SCISSOR_TEST);
@@ -599,7 +602,7 @@ void R_DrawLightScene (void)
 		if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 			GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
-		if (r_shadows->integer)
+		if (r_shadows->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 			GL_Enable(GL_STENCIL_TEST);
 	}
 
@@ -701,6 +704,9 @@ void R_DrawLightScene (void)
 	if(gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 	GL_Disable(GL_BLEND);
+
+	GL_Disable(GL_POLYGON_OFFSET_FILL);
+	GL_PolygonOffset(0.0, 0.0);
 }
 
 void R_DrawPlayerWeapon(void)

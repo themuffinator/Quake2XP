@@ -522,9 +522,9 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_Disable(GL_CULL_FACE);
 	GL_DepthFunc(GL_LESS);
-	GL_Enable(GL_POLYGON_OFFSET_FILL);
-	GL_PolygonOffset(0.1, 1);
 	GL_ColorMask(0, 0, 0, 0);
+
+	GL_PolygonOffset(0.1, 1);
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
@@ -613,8 +613,6 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_FrontFace(GL_CCW);
 	qglDisableVertexAttribArray(ATT_POSITION);
-	GL_Disable(GL_POLYGON_OFFSET_FILL);
-	GL_PolygonOffset(0, 0);
 	GL_Enable(GL_CULL_FACE);
 	GL_ColorMask(1, 1, 1, 1);
 }
@@ -1011,9 +1009,10 @@ void R_CastBspShadowVolumes (void) {
 
 	GL_Disable (GL_CULL_FACE);
 	GL_DepthFunc (GL_LESS);
-	GL_Enable (GL_POLYGON_OFFSET_FILL);
-	GL_PolygonOffset (0.1, 1);
 	GL_ColorMask (0, 0, 0, 0);
+
+	GL_PolygonOffset(0.1, 1);
+
 	qglEnableVertexAttribArray (ATT_POSITION);
 
 	if (currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic) { // draw vbo shadow
@@ -1048,7 +1047,6 @@ void R_CastBspShadowVolumes (void) {
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	GL_Disable (GL_POLYGON_OFFSET_FILL);
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);
 }

@@ -907,6 +907,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
+	GL_PolygonOffset(-1.0, -1.0);
+
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TANGENT);
 	qglEnableVertexAttribArray(ATT_BINORMAL);
