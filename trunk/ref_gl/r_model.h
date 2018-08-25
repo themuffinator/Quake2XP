@@ -153,7 +153,6 @@ typedef struct {
 #define	SIDE_FRONT	0
 #define	SIDE_BACK	1
 #define	SIDE_ON		2
-#define SIDE_CLIP   3
 
 
 // !!! if this is changed, it must be changed in asm_draw.h too !!!

@@ -129,6 +129,35 @@ void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out) 
 	out[2] = m[2][0] * in[0] + m[2][1] * in[1] + m[2][2] * in[2];
 }
 
+/*
+================
+Mat3_MultiplyVector
+
+Used to transform something to world space.
+================
+*/
+void Mat3_MultiplyVector(const mat3_t m, const vec3_t in, vec3_t out) {
+	out[0] = m[0][0] * in[0] + m[1][0] * in[1] + m[2][0] * in[2];
+	out[1] = m[0][1] * in[0] + m[1][1] * in[1] + m[2][1] * in[2];
+	out[2] = m[0][2] * in[0] + m[1][2] * in[1] + m[2][2] * in[2];
+}
+
+qboolean Mat3_Compare(const mat3_t a, const mat3_t b) {
+	int		i, j;
+
+	for (i = 0; i < 3; i++) {
+		for (j = 0; j < 3; j++) {
+			if (a[i][j] != b[i][j])
+				return qfalse;
+		}
+	}
+
+	return qtrue;
+}
+
+qboolean Mat3_IsIdentity(const mat3_t mat) {
+	return Mat3_Compare(mat, mat3_identity);
+}
 
 /*
 ===========

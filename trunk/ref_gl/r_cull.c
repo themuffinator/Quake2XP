@@ -186,6 +186,112 @@ qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p) {
 	return qtrue;
 }
 
+enum type {
+	PLANE_ON,		// used by point check only
+	PLANE_FRONT,
+	PLANE_BACK,
+	PLANE_CLIP
+};
+
+/*
+=========================
+Frustum_CullHexProjection
+
+=========================
+*/
+qboolean Frustum_CullHexProjection(const vec3_t points[8], const vec3_t projOrigin, const int planeBits) {
+	const cplane_t	*plane;
+	vec3_t		projPoints[8];
+	uint		side;
+	int			i, j;
+
+	if (!planeBits)
+		return qfalse;
+
+	for (i = 0; i < 8; i++)
+		VectorSubtract(points[i], projOrigin, projPoints[i]);
+
+	for (i = 0, plane = frustum; i < 6; i++, plane++) {
+		if (!(planeBits & BIT(i)))
+			continue;
+
+		side = 0;
+
+		for (j = 0; j < 8; j++) {
+			if (DotProduct(points[j], plane->normal) > plane->dist)
+				side |= PLANE_FRONT;
+			else
+				side |= PLANE_BACK;
+
+			if (side == PLANE_CLIP)
+				break;
+
+			if (DotProduct(projPoints[j], plane->normal) > 0.f)
+				side |= PLANE_FRONT;
+			else
+				side |= PLANE_BACK;
+
+			if (side == PLANE_CLIP)
+				break;
+		}
+
+		if (side == PLANE_BACK)
+			return qtrue;
+	}
+
+	return qfalse;
+}
+
+/*
+============================
+Frustum_CullBoundsProjection
+
+============================
+*/
+qboolean Frustum_CullBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t projOrigin, const int planeBits) {
+	vec3_t	points[8];
+	int		i;
+
+	for (i = 0; i < 8; i++) {
+		points[i][0] = (i & 1) ? mins[0] : maxs[0];
+		points[i][1] = (i & 2) ? mins[1] : maxs[1];
+		points[i][2] = (i & 4) ? mins[2] : maxs[2];
+	}
+
+	return Frustum_CullHexProjection(points, projOrigin, planeBits);
+}
+
+/*
+=================================
+Frustum_CullLocalBoundsProjection
+
+=================================
+*/
+qboolean Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t origin, const mat3_t axis, const vec3_t projOrigin, const int planeBits) {
+	vec3_t	tMins, tMaxs;
+	vec3_t	tmp;
+	vec3_t	points[8];
+	int		i;
+
+	if (Mat3_IsIdentity(axis)) {
+		VectorAdd(origin, mins, tMins);
+		VectorAdd(origin, maxs, tMaxs);
+
+		return Frustum_CullBoundsProjection(tMins, tMaxs, projOrigin, planeBits);
+	}
+
+	for (i = 0; i < 8; i++) {
+		tmp[0] = (i & 1) ? mins[0] : maxs[0];
+		tmp[1] = (i & 2) ? mins[1] : maxs[1];
+		tmp[2] = (i & 4) ? mins[2] : maxs[2];
+
+		Mat3_MultiplyVector(axis, tmp, points[i]);
+		VectorAdd(points[i], origin, points[i]);
+	}
+
+	return Frustum_CullHexProjection(points, projOrigin, planeBits);
+}
+
 int SignbitsForPlane (cplane_t * out) {
 	int bits, j;
 
@@ -225,4 +331,3 @@ void R_SetFrustum (void) {
 	else
 		frustum[5].dist -= r_zFar->value;
 }
-

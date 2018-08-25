@@ -248,6 +248,10 @@ qboolean R_EntityCastShadow() {
 
 	if (VectorCompare(currententity->origin, currentShadowLight->origin)) // skip shadows from shell lights
 		return qfalse;
+	
+	// cull shadow volume out of view frustum
+	if(Frustum_CullLocalBoundsProjection(currententity->model->mins, currententity->model->maxs, currententity->origin, currententity->axis, currentShadowLight->origin, 63)) 
+		return qfalse;
 
 	if (!InLightVISEntity())
 		return qfalse;
@@ -500,6 +504,7 @@ void R_DrawMD3ShadowVolume(){
 		}
 	}
 	qglDrawArrays(GL_TRIANGLES, 0, numTris);
+	c_shadow_volumes++;
 }
 
 
@@ -984,7 +989,6 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 			qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
 		}
 	}
-	c_shadow_volumes++;
 	c_shadow_tris += ib / 3;
 }
 

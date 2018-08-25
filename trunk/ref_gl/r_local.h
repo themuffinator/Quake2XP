@@ -477,6 +477,12 @@ void Mat3_Set(mat3_t mat, vec3_t x, vec3_t y, vec3_t z);
 void Mat4_Set(mat4_t mat, vec4_t x, vec4_t y, vec4_t z, vec4_t w);
 void VectorLerp(const vec3_t from, const vec3_t to, float frac, vec3_t out);
 
+qboolean Frustum_CullBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t projOrigin, const int planeBits);
+qboolean Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t origin, const mat3_t axis, const vec3_t projOrigin, const int planeBits);
+
+qboolean Mat3_IsIdentity(const mat3_t mat);
+void Mat3_MultiplyVector(const mat3_t m, const vec3_t in, vec3_t out);
+
 void SetPlaneType (cplane_t *plane);
 void SetPlaneSignBits (cplane_t *plane);
 
