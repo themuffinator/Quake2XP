@@ -327,7 +327,7 @@ void R_DrawMD2ShadowVolume () {
 	BuildShadowVolumeTriangles (paliashdr, light);
 }
 
-vec4_t	extrudedVerts[MD3_MAX_VERTS];
+vec4_t	extrudedVerts[MD3_MAX_VERTS * MD3_MAX_MESHES];
 float	md3ShadowVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
 
 void R_DrawMD3ShadowVolume(){

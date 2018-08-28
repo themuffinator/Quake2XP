@@ -1200,6 +1200,7 @@ GLW_InitExtensions
 
 ==================
 */
+qboolean ext_sRGB, arb_sRGB;
 
 void GLW_InitExtensions() {
 
@@ -1268,8 +1269,26 @@ void GLW_InitExtensions() {
 			}
 		}
 
+	ext_sRGB = qfalse;
+	arb_sRGB = qfalse;
+
 		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_profile"))
 			Com_Printf("...using WGL_ARB_create_context_profile\n");
+
+		if (strstr(glw_state.wglExtsString, "WGL_ARB_framebuffer_sRGB")) {
+			Com_Printf("...using WGL_ARB_framebuffer_sRGB\n");
+			arb_sRGB = qtrue;
+		}
+		else {
+			if (strstr(glw_state.wglExtsString, "WGL_EXT_framebuffer_sRGB"))
+				Com_Printf("...using WGL_EXT_framebuffer_sRGB\n");
+			ext_sRGB = qtrue;
+		}
+
+		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_no_error"))
+			Com_Printf("...using WGL_ARB_create_context_no_error\n");
+		
+
 }
 
 /*
@@ -1390,8 +1409,15 @@ static qboolean GLW_InitFakeOpenGL(void) {
 static qboolean GLW_ChoosePixelFormat() {
 	PIXELFORMATDESCRIPTOR	PFD;
 	int pixelFormat, samples;
-	uint numFormats;
-	
+	uint numFormats, sRGBformat;
+	qboolean sRGB;
+
+	sRGB = arb_sRGB|ext_sRGB;
+	if (arb_sRGB)
+		sRGBformat = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+	if (ext_sRGB)
+		sRGBformat = WGL_FRAMEBUFFER_SRGB_CAPABLE_EXT;
+
 	qglGetIntegerv(GL_MAX_SAMPLES, &gl_config.maxSamples);
 
 	if (r_multiSamples->integer > gl_config.maxSamples)
@@ -1414,6 +1440,7 @@ static qboolean GLW_ChoosePixelFormat() {
 		WGL_STENCIL_BITS_ARB, 8,
 		WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
 		WGL_SAMPLES_ARB, samples,
+		sRGBformat, sRGB ? GL_TRUE: GL_FALSE,
 		0
 	};
 
