@@ -363,8 +363,6 @@ void R_DrawMD3ShadowVolume(){
 	move[1] = -DotProduct(delta, vectors[1]);	// left
 	move[2] = DotProduct(delta, vectors[2]);	// up
 
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
-
 	backlerp = currententity->backlerp;
 	frontlerp = 1.0 - backlerp;
 	frame = paliashdr->frames + currententity->frame;

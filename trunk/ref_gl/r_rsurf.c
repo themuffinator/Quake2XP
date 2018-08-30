@@ -214,7 +214,7 @@ void R_DrawChainsRA (qboolean bmodel) {
 	GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
 	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
 
-	ambient = min(r_lightmapScale->value, 0.33f);
+	ambient = max(r_lightmapScale->value, 0.15f); // sRGB clamp fix
 
 	qglUniform1f(U_WATER_DEFORM_MUL, 1.0);
 	qglUniform1f(U_WATHER_THICKNESS, 150.0);

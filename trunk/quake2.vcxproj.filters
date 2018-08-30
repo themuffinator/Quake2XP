@@ -675,4 +675,7 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="DPIAware.manifest" />
+  </ItemGroup>
 </Project>
