@@ -186,13 +186,6 @@ qboolean BoundsIntersectsPoint (vec3_t mins, vec3_t maxs, vec3_t p) {
 	return qtrue;
 }
 
-enum type {
-	PLANE_ON,		// used by point check only
-	PLANE_FRONT,
-	PLANE_BACK,
-	PLANE_CLIP
-};
-
 /*
 =========================
 Frustum_CullHexProjection

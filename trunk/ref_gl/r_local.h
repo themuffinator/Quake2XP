@@ -1048,6 +1048,13 @@ void R_GpuInfo_f(void);
 void ADL_PrintGpuInfo();
 void ADL_Shutdown();
 
+typedef enum {
+	PLANE_ON,		// used by point check only
+	PLANE_FRONT,
+	PLANE_BACK,
+	PLANE_CLIP
+}plane_t;
+
 /*
 ====================================================================
 
@@ -1087,6 +1094,7 @@ typedef struct {
 	int desktopWidth, desktopHeight;
 	int monitorWidth, monitorHeight;
 	int desktopBitPixel;
+	int dpi;
 	
 	int desktopPosX, desktopPosY;
 	int virtualX, virtualY;

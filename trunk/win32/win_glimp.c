@@ -183,6 +183,11 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	if (!glw_state.hWnd)
 		VID_Error (ERR_FATAL, "Couldn't create window");
 
+	glw_state.dpi = GetDpiForWindow(glw_state.hWnd);
+	Com_Printf("...desktop dpi is: "S_COLOR_GREEN"%i"S_COLOR_WHITE"dpi\n", glw_state.dpi);
+	if(glw_state.dpi > 96)
+		Com_Printf(S_COLOR_YELLOW"...force dpi awareness:"S_COLOR_GREEN" ok\n");
+
 	ShowWindow( glw_state.hWnd, SW_SHOW );
 	UpdateWindow( glw_state.hWnd );
 
@@ -444,7 +449,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		monitorCounter = 0;
 		EnumDisplayMonitors(NULL, NULL, MonitorEnumProc2, 0);
 
-	
+
 	Com_Printf("\n==================================\n\n");
 
 	if ( !VID_GetModeInfo( &width, &height, mode ) )
@@ -452,7 +457,8 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		Com_Printf(S_COLOR_RED " invalid mode\n" );
 		return rserr_invalid_mode;
 	}
-	
+
+
 	if(mode == 0){
 	width = glw_state.desktopWidth;
 	height = glw_state.desktopHeight;
@@ -468,6 +474,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		
 	} else
 	Con_Printf( PRINT_ALL, " "S_COLOR_WHITE"%s\n", win_fs[fullscreen] );
+
 
 	// destroy the existing window
 	if (glw_state.hWnd)
@@ -884,13 +891,27 @@ void GLimp_GetMemorySize(){
 	Con_Printf (PRINT_ALL, "\n");
 }
 
+#include "shellscalingapi.h"
+void VID_SetProcessDpiAwareness(void) {
 
-BOOL Is64BitWindows()
-{
+	HRESULT(WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness) = NULL;
+	HINSTANCE shDLL = LoadLibrary("shcore.dll");
 
- BOOL f64 = FALSE;
- return IsWow64Process(GetCurrentProcess(), &f64) && f64;
+	if (shDLL)
+		SetProcessDpiAwareness = (HRESULT(WINAPI *)(PROCESS_DPI_AWARENESS))GetProcAddress(shDLL, "SetProcessDpiAwareness");
 
+	if (SetProcessDpiAwareness) {
+		SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE); //win 8.1-10
+	}
+	else
+		SetProcessDPIAware(); //win 7-8.0
+
+	FreeLibrary(shDLL);
+}
+
+BOOL Is64BitWindows(){
+	BOOL f64 = FALSE;
+	return IsWow64Process(GetCurrentProcess(), &f64) && f64;
 }
 
 typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
@@ -1186,9 +1207,12 @@ else
 	len = sizeof(string);
 	Com_Printf("\nUserName: "S_COLOR_GREEN"%s\n", GetUserName(string, &len) ? string : "");
 	Com_Printf ("\n");
-
+		
 	glw_state.hInstance = ( HINSTANCE ) hinstance;
 	glw_state.wndproc = wndproc;
+
+	VID_SetProcessDpiAwareness();
+	
 	return qtrue;
 	
 
@@ -1274,7 +1298,7 @@ void GLW_InitExtensions() {
 
 		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_profile"))
 			Com_Printf("...using WGL_ARB_create_context_profile\n");
-
+//==========================================================
 		if (strstr(glw_state.wglExtsString, "WGL_ARB_framebuffer_sRGB")) {
 			Com_Printf("...using WGL_ARB_framebuffer_sRGB\n");
 			arb_sRGB = qtrue;

@@ -89,6 +89,9 @@ void EFX_GetRoomSize() {
 	trace_t trace;
 	float sum, frontL, backL, leftL, rightL, upL, downL;
 
+	if (!cl.refresh_prepped)
+		return;
+
 	if (!s_dynamicReverberation->integer) {
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbLevelEffect);
 		return;

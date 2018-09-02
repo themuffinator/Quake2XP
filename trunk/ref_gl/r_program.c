@@ -458,7 +458,6 @@ R_FindProgram
 
 glslProgram_t *R_FindProgram (const char *name, int flags) {
 	char			filename[MAX_QPATH];
-	char			newname[MAX_QPATH];
 	glslProgram_t	*program;
 	char			*vertexSource = NULL, *fragmentSource = NULL;
 
@@ -473,7 +472,7 @@ glslProgram_t *R_FindProgram (const char *name, int flags) {
 	if (!vertexSource | !fragmentSource)
 		return &r_nullProgram;		// no appropriate shaders found
 
-	program = R_CreateProgram (newname, vertexSource, fragmentSource);
+	program = R_CreateProgram (name, vertexSource, fragmentSource);
 
 	if (vertexSource)
 		FS_FreeFile (vertexSource);
