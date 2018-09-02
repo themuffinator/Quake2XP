@@ -1447,7 +1447,7 @@ static qboolean GLW_ChoosePixelFormat() {
 	if (r_multiSamples->integer > gl_config.maxSamples)
 		Cvar_SetInteger(r_multiSamples, gl_config.maxSamples);
 
-	if (r_multiSamples->integer == 1)
+	if (r_multiSamples->integer <= 1)
 		samples = 0;
 	else
 		samples = r_multiSamples->integer;
@@ -1462,7 +1462,7 @@ static qboolean GLW_ChoosePixelFormat() {
 		WGL_ALPHA_BITS_ARB, 8,
 		WGL_DEPTH_BITS_ARB, 24,
 		WGL_STENCIL_BITS_ARB, 8,
-		WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+		WGL_SAMPLE_BUFFERS_ARB, samples ? GL_TRUE: GL_FALSE,
 		WGL_SAMPLES_ARB, samples,
 		sRGBformat, sRGB ? GL_TRUE: GL_FALSE,
 		0
