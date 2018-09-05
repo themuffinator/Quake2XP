@@ -891,23 +891,35 @@ void GLimp_GetMemorySize(){
 	Con_Printf (PRINT_ALL, "\n");
 }
 
-#include "shellscalingapi.h"
+typedef enum XP_PROCESS_DPI_AWARENESS { //with out win header, some rename....
+	XP_PROCESS_DPI_UNAWARE = 0,
+	XP_PROCESS_SYSTEM_DPI_AWARE = 1,
+	XP_PROCESS_PER_MONITOR_DPI_AWARE = 2
+} XP_PROCESS_DPI_AWARENESS;
+
 void VID_SetProcessDpiAwareness(void) {
 
-	HRESULT(WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness) = NULL;
-	HINSTANCE shDLL = LoadLibrary("shcore.dll");
+	HRESULT(WINAPI *SetProcessDpiAwareness)(XP_PROCESS_DPI_AWARENESS dpiAwareness) = NULL;
+	BOOL(WINAPI *SetProcessDPIAware)(void) = NULL;
 
+	HINSTANCE u32DLL	= LoadLibrary("user32.dll"); //win 7-8.0
+	HINSTANCE shDLL		= LoadLibrary("shcore.dll"); //win 8.1-10
+	
 	if (shDLL)
-		SetProcessDpiAwareness = (HRESULT(WINAPI *)(PROCESS_DPI_AWARENESS))GetProcAddress(shDLL, "SetProcessDpiAwareness");
+		SetProcessDpiAwareness = (HRESULT(WINAPI *)(XP_PROCESS_DPI_AWARENESS))GetProcAddress(shDLL, "SetProcessDpiAwareness");
+	else
+		SetProcessDPIAware = (BOOL(WINAPI *)(void)) GetProcAddress(u32DLL, "SetProcessDPIAware");
 
 	if (SetProcessDpiAwareness) {
-		SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE); //win 8.1-10
+		SetProcessDpiAwareness(XP_PROCESS_PER_MONITOR_DPI_AWARE); 
 	}
 	else
-		SetProcessDPIAware(); //win 7-8.0
-
+		SetProcessDPIAware(); 
+	
 	if (shDLL)
 		FreeLibrary(shDLL);
+	else
+		FreeLibrary(u32DLL);
 }
 
 BOOL Is64BitWindows(){
