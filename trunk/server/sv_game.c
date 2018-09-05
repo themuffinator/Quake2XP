@@ -396,6 +396,7 @@ void SV_InitGameProgs (void) {
 	import.SetAreaPortalState = CM_SetAreaPortalState;
 	import.AreasConnected = CM_AreasConnected;
 
+	import.LoadFile = FS_LoadFile;
 
 	ge = (game_export_t *)Sys_GetGameAPI (&import);
 

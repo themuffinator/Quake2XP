@@ -174,6 +174,7 @@ typedef struct {
 
 	void (*SCR_DrawLoadingBar)(float percent, float scale);
 
+	int(*LoadFile)(const char *path, void **buffer);
 } game_import_t;
 
 //

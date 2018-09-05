@@ -906,7 +906,8 @@ void VID_SetProcessDpiAwareness(void) {
 	else
 		SetProcessDPIAware(); //win 7-8.0
 
-	FreeLibrary(shDLL);
+	if (shDLL)
+		FreeLibrary(shDLL);
 }
 
 BOOL Is64BitWindows(){

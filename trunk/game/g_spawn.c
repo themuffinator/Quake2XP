@@ -802,8 +802,6 @@ string <stat>
 				sprintf (name, "%s/hud/sphud.lst", game->string);
 		}
 
-		gi.cprintf (NULL, PRINT_HIGH, "Using external layout %s\n", name);
-
 		f = fopen (name, "rb");
 		if (!f) {
 			gi.cprintf (NULL, PRINT_HIGH, "Couldn't open %s\n", name);
@@ -819,10 +817,12 @@ string <stat>
 			goto old;
 		}
 
+		gi.cprintf(NULL, PRINT_HIGH, "Using external hud layout "S_COLOR_GREEN"%s\n", name);
 		gi.configstring (CS_STATUSBAR, buffer);
 		return;
 
-	old:gi.cprintf (NULL, PRINT_HIGH, "Using internal hud program\n");
+	old:
+		gi.cprintf (NULL, PRINT_HIGH, ""S_COLOR_YELLOW"Using internal hud layout\n");
 		if (deathmatch->value)
 			gi.configstring (CS_STATUSBAR, dm_statusbar);
 		else
