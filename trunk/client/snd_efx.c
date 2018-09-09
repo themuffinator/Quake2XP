@@ -69,8 +69,13 @@ void EFX_RvbInit (void) {
 	efx.rvbMediumRoomEffect = EFX_RvbCreate(&rvb_medium_room);
 	efx.rvbLargeRoomEffect = EFX_RvbCreate(&rvb_large_room);
 	efx.rvbAlcoveEffect = EFX_RvbCreate(&rvb_alcove);
-
+	
+	efx.rvbAuxSlot = 0;
 	alGenAuxiliaryEffectSlots (1, &efx.rvbAuxSlot);
+//	ALenum err = alGetError();
+//	if (err != AL_NO_ERROR)
+//		Com_Printf("EFX_RvbInit - alGenAuxiliaryEffectSlots: %s\n", alGetString(err));
+
 	alAuxiliaryEffectSloti (efx.rvbAuxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
 
 	if (alGetError () == AL_NO_ERROR) {
@@ -164,7 +169,11 @@ void EFX_GetRoomSize() {
 
 
 void EFX_RvbUpdate (vec3_t listener_position) {
+	
 	if (!efx.on)
+		return;
+	
+	if (!cl.refresh_prepped)
 		return;
 
 	// If we are not playing, use default preset
@@ -238,6 +247,11 @@ ALuint EFX_RvbCreate (EFXEAXREVERBPROPERTIES *rvb) {
 	alEffectf (effect, AL_EAXREVERB_LFREFERENCE, rvb->flLFReference);
 	alEffectf (effect, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR, rvb->flRoomRolloffFactor);
 	alEffecti (effect, AL_EAXREVERB_DECAY_HFLIMIT, rvb->iDecayHFLimit);
+
+	ALenum err = alGetError();
+
+	if (err != AL_NO_ERROR)
+		Com_Printf("EFX_RvbCreate: %s\n", alGetString(err));
 
 	if (alGetError () != AL_NO_ERROR)
 		Com_Printf (S_COLOR_RED "EFX create filter failed\n");
