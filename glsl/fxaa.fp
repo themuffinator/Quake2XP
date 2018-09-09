@@ -3,7 +3,7 @@
 // Adoptation by Vic
 
 #define FXAA_GREEN_AS_LUMA 1
-#define FXAA_FAST_PIXEL_OFFSET 1
+#define FXAA_GATHER4_ALPHA 1
 
 #include Fxaa3_11.inc
 

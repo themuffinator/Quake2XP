@@ -27,6 +27,7 @@ in vec4			v_CubeCoord;
 in vec4			v_positionVS;
 in vec3			v_lightAtten;
 in vec3			v_lightSpot;
+in vec3			v_tangent;
 
 #include lighting.inc
 
@@ -83,15 +84,17 @@ void main (void) {
 	
 	if (u_isAmbient == 0) {
 	
-	float roughness;
+	float roughness, cd_mask;
 	
 	if(u_isRgh == 1){
 		vec4 rghMap = texture(u_rghMap, v_texCoord);
-		roughness = rghMap.r;
+		roughness = rghMap.r; 
+    cd_mask =  rghMap.a;
 	}
 
 	if(u_isRgh == 0){
 		roughness = 1.0 - diffuseMap.r;
+      cd_mask = 1.0;
     }
   
   roughness = clamp(roughness, 0.001, 1.0);
@@ -116,6 +119,15 @@ void main (void) {
 				metall_color = Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V) * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
 
 
-			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);			
-	}
+			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);	
+      
+      if(cd_mask == 0.0){	    
+        
+      vec2 uv = v_texCoord.xy * 2.0 - 1.0;         
+      vec2 uv_orthogonal = normalize(uv);
+      vec3 uv_tangent = vec3(-uv_orthogonal.y, 0, uv_orthogonal.x);
+
+        fragData.rgb +=LightingDiffraction(V, L, normalize(v_tangent));
+       }
+      }	
 }
