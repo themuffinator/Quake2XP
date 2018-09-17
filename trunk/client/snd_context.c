@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 alConfig_t alConfig;
 qboolean	openalStop = qfalse;
+
 /*
  =================
  AL_InitDriver
@@ -56,24 +57,43 @@ static qboolean AL_InitDriver (void) {
 		alcGetString (alConfig.hDevice, ALC_DEVICE_SPECIFIER));
 	else
 		Com_Printf ("succeeded\n");
-
 	// Create the AL context and make it current
 	Com_DPrintf ("...creating AL context: ");
-	{
+	
+	int quality;
+	#ifdef _WIN32
+		quality = 48000;
+	#else
+		quality = 44100; //wtf? soft al under linux use only 44100hz
+	#endif
 
-#ifdef _WIN32
-		ALCint attrlist[3] = { ALC_FREQUENCY, 48000, 0 };
-#else
-		ALCint attrlist[3] = { ALC_FREQUENCY, 44100, 0 };
-#endif
-
+		ALCint attrlist[6] = { ALC_FREQUENCY, quality, 
+		ALC_HRTF_SOFT, s_useHRTF->integer ? ALC_TRUE : AL_FALSE,
+		0 };
+		
 		if ((alConfig.hALC =
 			alcCreateContext (alConfig.hDevice, attrlist)) == NULL) {
 			Com_DPrintf ("failed\n");
 			goto failed;
 		}
-	}
+	
 	Com_DPrintf ("succeeded\n");
+	
+	Com_Printf("\n");
+	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
+		Com_Printf("...Found " S_COLOR_GREEN "HRTF" S_COLOR_WHITE " support\n");
+		ALCint	hrtfState;
+		alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
+		if (!hrtfState)
+			Com_Printf("...HRTF mode:" S_COLOR_YELLOW " off\n");
+		else
+		{
+			const ALchar *name = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
+			Com_Printf("...HRTF mode:" S_COLOR_GREEN " on\n");
+			Com_Printf("...using " S_COLOR_GREEN "%s\n", name);
+		}
+
+	}
 
 	Com_DPrintf ("...making context current: ");
 	if (!alcMakeContextCurrent (alConfig.hALC)) {

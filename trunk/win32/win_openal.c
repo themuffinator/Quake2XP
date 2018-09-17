@@ -408,7 +408,7 @@ qboolean AL_Init (int hardreset) {
 
 	// Check for ALC Extensions
 	Com_Printf("\n");
-
+/*
 	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
 
 		alcGetStringiSOFT = (LPALCGETSTRINGISOFT)GPA("alcGetStringiSOFT");
@@ -453,7 +453,7 @@ qboolean AL_Init (int hardreset) {
 			}
 		}
 	}
-		
+*/		
 	// If EFX is enabled, determine if it's available and use it
 	if (s_useEfx->integer) {
 		if (alcIsExtensionPresent (alConfig.hDevice, "ALC_EXT_EFX") == AL_TRUE) {
