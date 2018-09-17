@@ -90,9 +90,15 @@ extern qboolean Info_Validate(char * s);
 extern void Info_RemoveKey(char * s, char * key);
 extern char * Info_ValueForKey(char * s, char * key);
 extern void Com_sprintf(char * dest, int size, char * fmt, ...);
+#ifdef _WIN32
 extern int Q_strcasecmp(char * s1, char * s2);
 extern int Q_strncasecmp(char * s1, char * s2, int n);
 extern int Q_stricmp(char * s1, char * s2);
+#else
+extern int Q_strcasecmp();
+extern int Q_strncasecmp();
+extern int Q_stricmp();
+#endif
 extern void Com_PageInMemory(byte * buffer, int size);
 extern char * COM_Parse(char * * data_p);
 extern char * va(char * format, ...);

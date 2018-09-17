@@ -119,12 +119,6 @@
     <ClCompile Include="server\sv_world.c">
       <Filter>Source Files\Server</Filter>
     </ClCompile>
-    <ClCompile Include="win32\al_win.c">
-      <Filter>Source Files\Sound</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\cd_win.c">
-      <Filter>Source Files\Sound</Filter>
-    </ClCompile>
     <ClCompile Include="client\snd_context.c">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
@@ -319,6 +313,12 @@
     </ClCompile>
     <ClCompile Include="client\snd_music.c">
       <Filter>Source Files\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win_cd.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win_openal.c">
+      <Filter>Source Files\Win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

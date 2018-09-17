@@ -171,7 +171,7 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, r_vsync->value ? 1 : 0);
+	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, r_vsync->integer ? 1 : 0);
 	  
   // sdl2 
   /*
@@ -179,9 +179,9 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, r_glMinorVersion->value);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
   */
-	if (r_multiSamples->value > 1) {
+	if (r_multiSamples->integer > 1) {
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (int)r_multiSamples->value);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, r_multiSamples->integer);
 	}
 	
 	/* Initiate the flags */
@@ -199,8 +199,8 @@ rserr_t GLimp_SetMode(unsigned *pwidth, unsigned *pheight, int mode, qboolean fu
 	}
 	Com_Printf("setting mode "S_COLOR_YELLOW"%d"S_COLOR_WHITE":"S_COLOR_YELLOW"[%ix%i]\n", mode , width, height);
 	// Print information
-	if (!SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &stencil_bits))
-		Com_Printf("Got %d bits of stencil.\n", stencil_bits);
+//	if (!SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &stencil_bits))
+//		Com_Printf("Got %d bits of stencil.\n", stencil_bits);
 
 	if (r_multiSamples->value > 1){
 		qglEnable(GL_MULTISAMPLE);

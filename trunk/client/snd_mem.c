@@ -58,7 +58,7 @@ ALuint S_FindName (char *name, qboolean create) {
 	extern ALuint known_sfx_bufferNum[MAX_SFX];
 	extern char *fastsound_name[FAST_SOUNDS_TOTAL];
 
-	if (!s_initsound->value || openalStop)
+	if (!s_initSound->integer || openalStop)
 		return 0;
 
 	if (!name)

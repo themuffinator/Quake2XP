@@ -1109,7 +1109,7 @@ static menulist_s s_options_useEFX_list;
 static menulist_s s_options_unlimited_ambient_list;
 static menulist_s s_options_aldev_box;
 static menulist_s s_options_alquality_list;
-static menulist_s s_options_aldistancemodel_list;
+static menulist_s s_options_hrtf;
 static menulist_s s_options_console_action;
 static menulist_s s_options_fps_box;
 static menulist_s s_options_time_box;
@@ -1173,13 +1173,13 @@ static float ClampCvar(float min, float max, float value) {
 
 
 static void ControlsSetMenuItemValues(void) {
-	s_options_sfxvolume_slider.curvalue = Cvar_VariableValue("s_volume") * 20;
-	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicsrc");
-	s_options_musicrandom_list.curvalue = Cvar_VariableValue("s_musicrandom");
-	s_options_useEFX_list.curvalue = Cvar_VariableValue("s_openal_efx");
-	s_options_aldistancemodel_list.curvalue = Cvar_VariableValue("s_distance_model");
-	s_options_alquality_list.curvalue = Cvar_VariableValue("s_quality");
 
+	s_options_sfxvolume_slider.curvalue = Cvar_VariableValue("s_fxVolume") * 10;
+	s_options_musicvolume_slider.curvalue = Cvar_VariableValue("s_musicVolume") * 10;
+	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicSrc");
+	s_options_musicrandom_list.curvalue = Cvar_VariableValue("s_musicRandom");
+	s_options_useEFX_list.curvalue = Cvar_VariableValue("s_useEfx");
+	s_options_hrtf.curvalue = Cvar_VariableValue("s_useHRTF");
 
 	s_options_sensitivity_slider.curvalue = (sensitivity->value) * 2;
 
@@ -1240,15 +1240,13 @@ static void LookstrafeFunc(void *unused) {
 }
 
 static void UpdateVolumeFunc(void *unused) {
-	if (alListenerf) {
-		Cvar_SetValue("s_volume",
-			s_options_sfxvolume_slider.curvalue / 20);
-		alListenerf(AL_GAIN, s_volume->value);
-	}
+	
+	float vol = s_options_sfxvolume_slider.curvalue / 10.0;
+	Cvar_SetValue("s_fxVolume", vol);
 }
 
 static void UpdateMusicVolumeFunc(void *unused) {
-	Cvar_SetValue("s_musicvolume", s_options_musicvolume_slider.curvalue / 20);
+	Cvar_SetValue("s_musicVolume", s_options_musicvolume_slider.curvalue / 10);
 }
 
 char *al_device[] = {
@@ -1263,41 +1261,29 @@ char *al_device[] = {
 
 static void AlDevice(void *unused) {
 	if (s_options_aldev_box.curvalue > 0)
-		Cvar_Set("s_openal_device",
-			al_device[s_options_aldev_box.curvalue]);
+		Cvar_Set("s_device", al_device[s_options_aldev_box.curvalue]);
 	else
-		Cvar_Set("s_openal_device", "");
+		Cvar_Set("s_device", "");
 
 	CL_Snd_Restart_f();
 }
 
 static void UpdateMusicSrcFunc(void *unused) {
-	Cvar_SetValue("s_musicsrc", s_options_musicsrc_list.curvalue);
+	Cvar_SetValue("s_musicSrc", s_options_musicsrc_list.curvalue);
 }
 
 static void UpdateMusicRandomFunc(void *unused) {
-	Cvar_SetValue("s_musicrandom", s_options_musicrandom_list.curvalue);
+	Cvar_SetValue("s_musicRandom", s_options_musicrandom_list.curvalue);
 }
 
 static void UpdateEFX(void *unused) {
-	Cvar_SetValue("s_openal_efx", s_options_useEFX_list.curvalue);
+	Cvar_SetValue("s_useEfx", s_options_useEFX_list.curvalue);
 	CL_Snd_Restart_f();
 }
 
-static void UpdateALDistanceModel(void *unused) {
-	Cvar_SetValue("s_distance_model",
-		s_options_aldistancemodel_list.curvalue);
-	CL_Snd_Restart_f();
-}
 
-static void UpdateAmbientRange(void *unused) {
-	Cvar_SetValue("sv_unlimited_ambient",
-		s_options_unlimited_ambient_list.curvalue);
-	// needs to restart server to take effect!
-}
-
-static void UpdateQuality(void *unused) {
-	Cvar_SetValue("s_quality", s_options_alquality_list.curvalue);
+static void UpdateHRTF(void *unused) {
+	Cvar_SetValue("s_useHRTF", s_options_hrtf.curvalue);
 	CL_Snd_Restart_f();
 }
 
@@ -1575,33 +1561,10 @@ void M_AdvancedInit(void) {
 
 void Options_MenuInit(void) {
 	static char *s_musicsrc_items[] = {
-		"disabled",
+		"off",
 		"CD-ROM",
-		"soundtrack files",
-		"any files",
-		0
-	};
-
-	static char *quality_items[] = {
-		"Let the system decide (default)",
-		"44100 hz (CD audio friendly)",
-		"48000 hz",
-		"88200 hz",
-		"96000 hz",
-		"176400 hz",
-		"192000 hz",
-		0
-	};
-
-	static char *attenuationmodel_items[] = {
-		"Let the system decide (default)",
-		"NONE (bypasses all distance attenuation)",
-		"INVERSE_DISTANCE",
-		"INVERSE_DISTANCE_CLAMPED (IASIG I3DL2 model)",
-		"LINEAR_DISTANCE (not physically realistic)",
-		"LINEAR_DISTANCE_CLAMPED (not physically realistic)",
-		"EXPONENT_DISTANCE",
-		"EXPONENT_DISTANCE_CLAMPED",
+		"HDD",
+		"Any Files",
 		0
 	};
 
@@ -1653,100 +1616,72 @@ void Options_MenuInit(void) {
 	s_options_sfxvolume_slider.generic.type = MTYPE_SLIDER;
 	s_options_sfxvolume_slider.generic.x = 0;
 	s_options_sfxvolume_slider.generic.y = 10 * cl_fontScale->value;
-	s_options_sfxvolume_slider.generic.name = "OpenAL master volume";
+	s_options_sfxvolume_slider.generic.name = "FX Volume";
 	s_options_sfxvolume_slider.generic.callback = UpdateVolumeFunc;
 	s_options_sfxvolume_slider.minvalue = 0;
-	s_options_sfxvolume_slider.maxvalue = 20;
-	s_options_sfxvolume_slider.curvalue = Cvar_VariableValue("s_volume") * 20;
+	s_options_sfxvolume_slider.maxvalue = 10;
+	s_options_sfxvolume_slider.curvalue = s_fxVolume->value * 10.0;
 
 
 	s_options_musicvolume_slider.generic.type = MTYPE_SLIDER;
 	s_options_musicvolume_slider.generic.x = 0;
 	s_options_musicvolume_slider.generic.y = 20 * cl_fontScale->value;
-	s_options_musicvolume_slider.generic.name = "Music volume";
+	s_options_musicvolume_slider.generic.name = "Music Volume";
 	s_options_musicvolume_slider.generic.callback = UpdateMusicVolumeFunc;
 	s_options_musicvolume_slider.minvalue = 0;
-	s_options_musicvolume_slider.maxvalue = 20;
-	s_options_musicvolume_slider.curvalue = Cvar_VariableValue("s_musicvolume") * 20;
+	s_options_musicvolume_slider.maxvalue = 10;
+	s_options_musicvolume_slider.curvalue = Cvar_VariableValue("s_musicVolume") * 10;
 
 
 	s_options_musicsrc_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_musicsrc_list.generic.x = 0;
 	s_options_musicsrc_list.generic.y = 30 * cl_fontScale->value;
-	s_options_musicsrc_list.generic.name = "Music source";
+	s_options_musicsrc_list.generic.name = "Music Source";
 	s_options_musicsrc_list.generic.callback = UpdateMusicSrcFunc;
 	s_options_musicsrc_list.itemnames = s_musicsrc_items;
-	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicsrc");
+	s_options_musicsrc_list.curvalue = Cvar_VariableValue("s_musicSrc");
 
 	s_options_musicrandom_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_musicrandom_list.generic.x = 0;
 	s_options_musicrandom_list.generic.y = 40 * cl_fontScale->value;
-	s_options_musicrandom_list.generic.name = "Random music playing";
+	s_options_musicrandom_list.generic.name = "Random Music Playing";
 	s_options_musicrandom_list.generic.callback = UpdateMusicRandomFunc;
 	s_options_musicrandom_list.itemnames = yesno_names;
-	s_options_musicrandom_list.curvalue = Cvar_VariableValue("s_musicrandom");
-	s_options_musicrandom_list.generic.statusbar =
-		"If enabled, the music track won't match the current level";
-
-	s_options_alquality_list.generic.type = MTYPE_SPINCONTROL;
-	s_options_alquality_list.generic.x = 0;
-	s_options_alquality_list.generic.y = 50 * cl_fontScale->value;
-	s_options_alquality_list.generic.name = "quality";
-	s_options_alquality_list.generic.callback = UpdateQuality;
-	s_options_alquality_list.itemnames = quality_items;
-	s_options_alquality_list.curvalue = Cvar_VariableValue("s_quality");
-
+	s_options_musicrandom_list.curvalue = Cvar_VariableValue("s_musicRandom");
+	s_options_musicrandom_list.generic.statusbar = "If enabled, the music track won't match the current level";
 
 	s_options_aldev_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_aldev_box.generic.x = 0;
 	s_options_aldev_box.generic.y = 60 * cl_fontScale->value;
-	s_options_aldev_box.generic.name = "sound device";
+	s_options_aldev_box.generic.name = "Sound Device";
 	s_options_aldev_box.generic.callback = AlDevice;
 	s_options_aldev_box.itemnames = al_device;
 
 
 	s_options_aldev_box.curvalue = 0;
 	for (i = 1; i <= alConfig.device_count; i++)
-		if (!Q_strcasecmp(s_openal_device->string, al_device[i])) {
+		if (!Q_strcasecmp(s_device->string, al_device[i])) {
 			s_options_aldev_box.curvalue = i;
 			break;
 		}
 
-	s_options_aldistancemodel_list.generic.type = MTYPE_SPINCONTROL;
-	s_options_aldistancemodel_list.generic.x = 0;
-	s_options_aldistancemodel_list.generic.y = 70 * cl_fontScale->value;
-	s_options_aldistancemodel_list.generic.name =
-		"attenuation by distance";
-	s_options_aldistancemodel_list.generic.callback =
-		UpdateALDistanceModel;
-	s_options_aldistancemodel_list.itemnames = attenuationmodel_items;
-	s_options_aldistancemodel_list.curvalue =
-		Cvar_VariableValue("s_distance_model");
-
+	s_options_hrtf.generic.type = MTYPE_SPINCONTROL;
+	s_options_hrtf.generic.x = 0;
+	s_options_hrtf.generic.y = 70 * cl_fontScale->value;
+	s_options_hrtf.generic.name = "Use HRTF";
+	s_options_hrtf.generic.callback = UpdateHRTF;
+	s_options_hrtf.itemnames = yesno_names;
+	s_options_hrtf.curvalue = Cvar_VariableValue("s_useHRTF");
+	s_options_hrtf.generic.statusbar = "Enable HRTF function";
 
 	s_options_useEFX_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_useEFX_list.generic.x = 0;
 	s_options_useEFX_list.generic.y = 80 * cl_fontScale->value;
-	s_options_useEFX_list.generic.name =
-		"EFX reverb";
+	s_options_useEFX_list.generic.name = "Use EFX Reverbation";
 	s_options_useEFX_list.generic.callback = UpdateEFX;
 	s_options_useEFX_list.itemnames = yesno_names;
-	s_options_useEFX_list.curvalue =
-		Cvar_VariableValue("s_openal_efx");
-	s_options_useEFX_list.generic.statusbar =
-		"Enable room and underwater reverberation effects";
-
-	/*
-	s_options_unlimited_ambient_list.generic.type = MTYPE_SPINCONTROL;
-	s_options_unlimited_ambient_list.generic.x = 0;
-	s_options_unlimited_ambient_list.generic.y = 90*cl_fontScale->value;
-	s_options_unlimited_ambient_list.generic.name =
-	"unlimited range ambient";
-	s_options_unlimited_ambient_list.generic.callback = UpdateAmbientRange;
-	s_options_unlimited_ambient_list.itemnames = yesno_names;
-	s_options_unlimited_ambient_list.curvalue =
-	Cvar_VariableValue("sv_unlimited_ambient") != 0;
-	*/
+	s_options_useEFX_list.curvalue = Cvar_VariableValue("s_openal_efx");
+	s_options_useEFX_list.generic.statusbar = "Enable room and underwater reverberation effects";
 
 	s_options_sensitivity_slider.generic.type = MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x = 0;
@@ -1874,13 +1809,11 @@ void Options_MenuInit(void) {
 	Menu_AddItem(&s_options_menu, (void *)&s_options_musicvolume_slider);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_musicsrc_list);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_musicrandom_list);
-	Menu_AddItem(&s_options_menu, (void *)&s_options_alquality_list);
+//	Menu_AddItem(&s_options_menu, (void *)&s_options_alquality_list);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_aldev_box);
-	Menu_AddItem(&s_options_menu,
-		(void *)&s_options_aldistancemodel_list);
+	Menu_AddItem(&s_options_menu, (void *)&s_options_hrtf);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_useEFX_list);
-	//	Menu_AddItem(&s_options_menu,
-	//				 (void *) &s_options_unlimited_ambient_list);
+
 	Menu_AddItem(&s_options_menu, (void *)&s_options_sensitivity_slider);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_alwaysrun_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_invertmouse_box);
@@ -1888,7 +1821,7 @@ void Options_MenuInit(void) {
 	Menu_AddItem(&s_options_menu, (void *)&s_options_lookstrafe_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_freelook_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_crosshair_box);
-	//	Menu_AddItem(&s_options_menu, (void *) &s_options_joystick_box);
+
 	Menu_AddItem(&s_options_menu, (void *)&s_options_fps_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_time_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_advanced_options_action);

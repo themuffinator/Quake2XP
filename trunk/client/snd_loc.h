@@ -41,15 +41,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
 //main OpenAL framework (Creative's hardware)
+
 #ifdef _WIN32
 #define AL_NO_PROTOTYPES YES
 #include "AL/al.h"
 #define ALC_NO_PROTOTYPES YES
 #include "AL/alc.h"
 #include "AL/efx.h"
-#include "AL/efx-creative.h"
-#include "AL/EFX-Util.h"
-
 
 extern LPALCOPENDEVICE alcOpenDevice;
 extern LPALCCLOSEDEVICE alcCloseDevice;
@@ -165,15 +163,6 @@ extern LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
 extern LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
 extern LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 
-// XRAM Extension function pointer variables and enum values
-typedef ALboolean (AL_APIENTRY * LPEAXSETBUFFERMODE) (ALsizei n,
-	ALuint * buffers,
-	ALint value);
-typedef ALenum (AL_APIENTRY * LPEAXGETBUFFERMODE) (ALuint buffer,
-	ALint * value);
-extern LPEAXSETBUFFERMODE eaxSetBufferMode;
-extern LPEAXGETBUFFERMODE eaxGetBufferMode;
-
 #else
 #define AL_ALEXT_PROTOTYPES
 #include <AL/al.h>
@@ -181,7 +170,27 @@ extern LPEAXGETBUFFERMODE eaxGetBufferMode;
 #include <AL/efx.h>
 #endif
 
-
+#ifndef ALC_SOFT_HRTF
+#define ALC_SOFT_HRTF 1
+#define ALC_HRTF_SOFT                            0x1992
+#define ALC_DONT_CARE_SOFT                       0x0002
+#define ALC_HRTF_STATUS_SOFT                     0x1993
+#define ALC_HRTF_DISABLED_SOFT                   0x0000
+#define ALC_HRTF_ENABLED_SOFT                    0x0001
+#define ALC_HRTF_DENIED_SOFT                     0x0002
+#define ALC_HRTF_REQUIRED_SOFT                   0x0003
+#define ALC_HRTF_HEADPHONES_DETECTED_SOFT        0x0004
+#define ALC_HRTF_UNSUPPORTED_FORMAT_SOFT         0x0005
+#define ALC_NUM_HRTF_SPECIFIERS_SOFT             0x1994
+#define ALC_HRTF_SPECIFIER_SOFT                  0x1995
+#define ALC_HRTF_ID_SOFT                         0x1996
+typedef const ALCchar* (ALC_APIENTRY*LPALCGETSTRINGISOFT)(ALCdevice *device, ALCenum paramName, ALCsizei index);
+typedef ALCboolean(ALC_APIENTRY*LPALCRESETDEVICESOFT)(ALCdevice *device, const ALCint *attribs);
+#ifdef AL_ALEXT_PROTOTYPES
+ALC_API const ALCchar* ALC_APIENTRY alcGetStringiSOFT(ALCdevice *device, ALCenum paramName, ALCsizei index);
+ALC_API ALCboolean ALC_APIENTRY alcResetDeviceSOFT(ALCdevice *device, const ALCint *attribs);
+#endif
+#endif
 /*
  =======================================================================
 
@@ -258,15 +267,16 @@ extern openal_channel_t s_openal_channels[MAX_CHANNELS];
 extern ALuint source_name[MAX_CHANNELS + 1];	// plus 1 streaming channel
 extern unsigned s_openal_numChannels;
 
-extern cvar_t *s_volume;
-extern cvar_t *s_musicvolume;
-extern cvar_t *s_musicsrc;
-extern cvar_t *s_musicrandom;
-extern cvar_t *s_show;
-extern cvar_t *s_openal_efx;
-extern cvar_t *s_openal_device;
-extern cvar_t *s_quality;
-extern cvar_t *s_distance_model;
+cvar_t	*s_fxVolume;
+cvar_t	*s_show;
+cvar_t	*s_musicVolume;
+cvar_t	*s_musicSrc;
+cvar_t	*s_musicRandom;
+cvar_t	*s_useEfx;
+cvar_t	*s_device;
+cvar_t	*s_initSound;
+cvar_t	*s_dynamicReverberation;
+cvar_t	*s_useHRTF;
 
 void EFX_RvbInit (void);
 void EFX_RvbUpdate (vec3_t listener_position);
@@ -292,7 +302,7 @@ typedef struct {
 streaming_t streaming;
 
 #define MUSIC_BUFFER_READ_SIZE   4096
-byte music_buffer[MAX_STRBUF_SIZE + MUSIC_BUFFER_READ_SIZE];       /// добавка памяти для предотвращения порчи буфера
+byte music_buffer[MAX_STRBUF_SIZE + MUSIC_BUFFER_READ_SIZE];       /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
 qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume);
 int S_Streaming_Add (const byte *buffer, int num_bytes);

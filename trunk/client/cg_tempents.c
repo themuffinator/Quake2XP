@@ -862,9 +862,9 @@ void CL_ParseTEnt (void) {
 			ex->ent.angles[1] = rand () % 360;
 
 			if (type == TE_GRENADE_EXPLOSION_WATER)
-				S_StartSound (pos, 0, 0, cl_sfx_watrexp, 1, 0.08, 0);
+				S_StartSound (pos, 0, 0, cl_sfx_watrexp, 1, ATTN_EXPLOSION, 0);
 			else
-				S_StartSound (pos, 0, 0, cl_sfx_grenexp, 1, 0.08, 0);
+				S_StartSound (pos, 0, 0, cl_sfx_grenexp, 1, ATTN_EXPLOSION, 0);
 
 
 
@@ -899,7 +899,7 @@ void CL_ParseTEnt (void) {
 
 			ex->ent.angles[1] = rand () % 360;
 
-			S_StartSound (pos, 0, 0, cl_sfx_rockexp, 1.0, 0.08, 0);
+			S_StartSound (pos, 0, 0, cl_sfx_rockexp, 1.0, ATTN_EXPLOSION, 0);
 			break;
 
 		case TE_EXPLOSION1:
@@ -939,9 +939,9 @@ void CL_ParseTEnt (void) {
 			ex->ent.angles[1] = rand () % 360;
 
 			if (type == TE_ROCKET_EXPLOSION_WATER)
-				S_StartSound (pos, 0, 0, cl_sfx_watrexp, 1, 0.08, 0);
+				S_StartSound (pos, 0, 0, cl_sfx_watrexp, 1, ATTN_EXPLOSION, 0);
 			else
-				S_StartSound (pos, 0, 0, cl_sfx_rockexp, 1, 0.08, 0);
+				S_StartSound (pos, 0, 0, cl_sfx_rockexp, 1, ATTN_EXPLOSION, 0);
 
 			break;
 
@@ -1109,9 +1109,9 @@ void CL_ParseTEnt (void) {
 			ex->ent.angles[1] = rand () % 360;
 
 			if (type == TE_ROCKET_EXPLOSION_WATER)
-				S_StartSound (pos, 0, 0, cl_sfx_watrexp, 1, 0.08, 0);
+				S_StartSound (pos, 0, 0, cl_sfx_watrexp, 1, ATTN_EXPLOSION, 0);
 			else
-				S_StartSound (pos, 0, 0, cl_sfx_rockexp, 1, 0.08, 0);
+				S_StartSound (pos, 0, 0, cl_sfx_rockexp, 1, ATTN_EXPLOSION, 0);
 
 			CL_AddDecalToScene (pos, vec3_origin,
 				0.1, 0.1, 0.1, 1,

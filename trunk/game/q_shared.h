@@ -1138,6 +1138,7 @@ typedef enum {
 #define ATTN_MEDIUM				0.4
 #define ATTN_WEAPON_LIGHT		0.2
 #define ATTN_WEAPON_HEAVY		0.15
+#define ATTN_EXPLOSION			0.005
 
 // player_state->stats[] indexes
 #define STAT_HEALTH_ICON		0

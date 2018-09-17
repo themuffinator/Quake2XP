@@ -33,7 +33,7 @@ qboolean	openalStop = qfalse;
  =================
  */
 static qboolean AL_InitDriver (void) {
-	char *deviceName = s_openal_device->string;
+	char *deviceName = s_device->string;
 
 	Com_DPrintf ("Initializing OpenAL driver\n");
 
@@ -60,42 +60,15 @@ static qboolean AL_InitDriver (void) {
 	// Create the AL context and make it current
 	Com_DPrintf ("...creating AL context: ");
 	{
-		// Setup context attributes at context creation time:
-		// ALC_FREQUENCY, ALC_REFRESH, ALC_SYNC, ALC_MONO_SOURCES,
-		// ALC_STEREO_SOURCES
+
+#ifdef _WIN32
 		ALCint attrlist[3] = { ALC_FREQUENCY, 48000, 0 };
-		ALCint *attrlist_p;
-
-		if (!(s_quality->integer))
-			attrlist_p = NULL;
-		else {
-			switch ((int)s_quality->value) {
-				case 1:
-				default:
-					attrlist[1] = 44100;
-					break;
-				case 2:
-					attrlist[1] = 48000;
-					break;
-				case 3:
-					attrlist[1] = 88200;
-					break;
-				case 4:
-					attrlist[1] = 96000;
-					break;
-				case 5:
-					attrlist[1] = 176400;
-					break;
-				case 6:
-					attrlist[1] = 192000;
-					break;
-			}
-			attrlist_p = attrlist;
-		}
-
+#else
+		ALCint attrlist[3] = { ALC_FREQUENCY, 44100, 0 };
+#endif
 
 		if ((alConfig.hALC =
-			alcCreateContext (alConfig.hDevice, attrlist_p)) == NULL) {
+			alcCreateContext (alConfig.hDevice, attrlist)) == NULL) {
 			Com_DPrintf ("failed\n");
 			goto failed;
 		}

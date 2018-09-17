@@ -2,22 +2,9 @@
 * This is an open source non-commercial project. Dear PVS-Studio, please check it.
 * PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 */
-/*
- Copyright (C) 2006-2007 Team Blur.
- Copyright (C) 2007, team Q2XP.
- */
-
-// Note:
-// The EFX reverb editor was from Quake II Evolved / OverDose / Quantum engine,
-// but wasn't integrated into Quake2XP so only equivalents of snd_eax.c are here.
-//
-// TODO: maybe we can do some basic room detection from map data?
 
 #include "client.h"
 #include "snd_loc.h"
-
-// Most Linux distributions don't ship OpenAL Soft 1.14 yet,
-// so for now we have it here.
 #include "AL/efx-presets.h"
 
 EFXEAXREVERBPROPERTIES rvb_generic			= EFX_REVERB_PRESET_GENERIC;
@@ -72,9 +59,6 @@ void EFX_RvbInit (void) {
 	
 	efx.rvbAuxSlot = 0;
 	alGenAuxiliaryEffectSlots (1, &efx.rvbAuxSlot);
-//	ALenum err = alGetError();
-//	if (err != AL_NO_ERROR)
-//		Com_Printf("EFX_RvbInit - alGenAuxiliaryEffectSlots: %s\n", alGetString(err));
 
 	alAuxiliaryEffectSloti (efx.rvbAuxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
 

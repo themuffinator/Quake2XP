@@ -22,7 +22,7 @@ static int fsIndex;
 static int fsNumFiles;
 
 void Music_Init (void) {
-	music_type = s_musicsrc->value;
+	music_type = s_musicSrc->value;
 	mstat = MSTAT_STOPPED;
 
 	Com_Printf ("\n======== Init Music subsystem =======\n\n");
@@ -87,7 +87,7 @@ qboolean Music_PlayFile (const char *name, qboolean hasExt) {
 		else
 			Com_DPrintf (S_COLOR_GREEN "Music_Play: playing \"%s.%s\"\n", name, music_handle->ext);
 
-		S_Streaming_Start (sp.bits, sp.channels, sp.rate, s_musicvolume->value);
+		S_Streaming_Start (sp.bits, sp.channels, sp.rate, s_musicVolume->value);
 		mstat = cl_paused->integer ? MSTAT_PAUSED : MSTAT_PLAYING;
 		return qtrue;
 	}
@@ -103,14 +103,14 @@ void Music_Play (void) {
 
 	Music_Stop ();
 
-	if (s_musicrandom->integer)
+	if (s_musicRandom->integer)
 		// original soundtrack has tracks 2 to 11
 		track = 2 + rand () % 10;
 	else
 		track = atoi (cl.configstrings[CS_CDTRACK]);
 
 	if (music_type != MUSIC_OTHER_FILES &&
-		track == 0 && !s_musicrandom->integer)
+		track == 0 && !s_musicRandom->integer)
 		return;
 
 	switch (music_type) {
@@ -134,7 +134,7 @@ void Music_Play (void) {
 			if (fsList == NULL)
 				return;
 
-			if (s_musicrandom->integer)
+			if (s_musicRandom->integer)
 				fsIndex = rand () % fsNumFiles;
 			else
 				fsIndex = (fsIndex + 1) % fsNumFiles;
@@ -211,36 +211,36 @@ void Music_Update (void) {
 
 	// Check for configuration changes
 
-	if (s_musicsrc->modified) {
+	if (s_musicSrc->modified) {
 		Music_Shutdown ();
 		Music_Init ();
 		Music_Play ();
-		s_musicsrc->modified = qfalse;
-		s_musicvolume->modified = qfalse;
-		s_musicrandom->modified = qfalse;
+		s_musicSrc->modified = qfalse;
+		s_musicVolume->modified = qfalse;
+		s_musicRandom->modified = qfalse;
 		return;
 	}
 
 	if (music_type == MUSIC_NONE)
 		return;
 
-	if (s_musicrandom->modified) {
-		s_musicrandom->modified = qfalse;
+	if (s_musicRandom->modified) {
+		s_musicRandom->modified = qfalse;
 		Music_Play ();
 		return;
 	}
 
-	if (s_musicvolume->modified) {
+	if (s_musicVolume->modified) {
 		switch (music_type) {
 			case MUSIC_CD:
-				Cvar_SetValue ("cd_volume", s_musicvolume->value);
+				Cvar_SetValue ("cd_volume", s_musicVolume->value);
 				break;
 			case MUSIC_FILES:
 			case MUSIC_OTHER_FILES:
-				alSourcef (source_name[CH_STREAMING], AL_GAIN, s_musicvolume->value);
+				alSourcef (source_name[CH_STREAMING], AL_GAIN, s_musicVolume->value);
 				break;
 		}
-		s_musicvolume->modified = qfalse;
+		s_musicVolume->modified = qfalse;
 		return;
 	}
 

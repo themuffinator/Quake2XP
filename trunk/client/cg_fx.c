@@ -415,25 +415,19 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0.7;
 			dl->color[2] = 0;
 
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_blastf1a], volume * 0.75,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_blastf1a], volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_BLUEHYPERBLASTER:
 			dl->color[0] = 0;
 			dl->color[1] = 0;
 			dl->color[2] = 1;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_hyprbf1a], volume * 0.8,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_hyprbf1a], volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_HYPERBLASTER:
 			dl->color[0] = 1;
 			dl->color[1] = 0.7;
 			dl->color[2] = 0;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_hyprbf1a], volume * 0.8,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_hyprbf1a], volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_MACHINEGUN:
 			dl->color[0] = 1;
@@ -441,9 +435,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[2] = 0.4;
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
 			CL_BrassShells (shell_brass, dir, 1, qtrue);
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_machgf1b + (rand () % 5)],
-				volume * 0.8, ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_SHOTGUN:
 			dl->color[0] = 1;
@@ -451,9 +443,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[2] = 0.4;
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 4);
 			CL_BrassShells (shell_brass, dir, 1, qfalse);
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_shotgf1b], volume * 0.88,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_shotgf1b], volume, ATTN_WEAPON_LIGHT);
 			S_fastsound_queue (smoke_origin, i, CHAN_AUTO,
 				fastsound_descriptor[weapons_shotgr1b],
 				volume * 0.5, ATTN_WEAPON_LIGHT, 100);
@@ -464,9 +454,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[2] = 0.4;
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 6);
 			CL_BrassShells (shell_brass, dir, 2, qfalse);
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_sshotf1b], volume * 0.9,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_sshotf1b], volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_CHAINGUN1:
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
@@ -475,9 +463,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[0] = 1;
 			dl->color[1] = 0.7;
 			dl->color[2] = 0.5;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_machgf1b + (rand () % 5)],
-				volume * 0.8, ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_CHAINGUN2:
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
@@ -487,13 +473,8 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0.5;
 			dl->color[2] = 0.4;
 			dl->die = cl.time + 0.1;	// long delay
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_machgf1b + (rand () % 5)],
-				volume * 0.8, ATTN_WEAPON_LIGHT);
-			S_fastsound_queue (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_machgf1b +
-				(rand () % 5)], volume * 0.8,
-				ATTN_WEAPON_LIGHT, 50);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT);
+			S_fastsound_queue (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b +(rand () % 5)], volume,	ATTN_WEAPON_LIGHT, 50);
 			break;
 		case MZ_CHAINGUN3:
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
@@ -503,56 +484,36 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0.6;
 			dl->color[2] = 0.4;
 			dl->die = cl.time + 0.1;	// long delay
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_machgf1b + (rand () % 5)],
-				volume * 0.8, ATTN_WEAPON_LIGHT);
-			S_fastsound_queue (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_machgf1b +
-				(rand () % 5)], volume * 0.8,
-				ATTN_WEAPON_LIGHT, 33);
-			S_fastsound_queue (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_machgf1b +
-				(rand () % 5)], volume * 0.8,
-				ATTN_WEAPON_LIGHT, 66);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT);
+			S_fastsound_queue (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b +(rand () % 5)], volume, ATTN_WEAPON_LIGHT, 33);
+			S_fastsound_queue (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT, 66);
 			break;
 		case MZ_RAILGUN:
 			dl->color[0] = 0.5;
 			dl->color[1] = 0.5;
 			dl->color[2] = 1.0;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_railgf1a], volume * 0.8,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_railgf1a], volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_ROCKET:
 			dl->color[0] = 1;
 			dl->color[1] = 0.5;
 			dl->color[2] = 0.2;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_rocklf1a], volume * 0.95,
-				ATTN_WEAPON_HEAVY);
-			S_fastsound_queue (smoke_origin, i, CHAN_AUTO,
-				fastsound_descriptor[weapons_rocklr1b],
-				volume * 0.8, ATTN_WEAPON_HEAVY, 150);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_rocklf1a], volume, ATTN_WEAPON_HEAVY);
+			S_fastsound_queue (NULL, i, CHAN_AUTO, fastsound_descriptor[weapons_rocklr1b], volume, ATTN_WEAPON_HEAVY, 150);
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 8);
 			break;
 		case MZ_GRENADE:
 			dl->color[0] = 1;
 			dl->color[1] = 0.5;
 			dl->color[2] = 0;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_grenlf1a], volume * 0.95,
-				ATTN_WEAPON_LIGHT);
-			S_fastsound_queue (smoke_origin, i, CHAN_AUTO,
-				fastsound_descriptor[weapons_grenlr1b],
-				volume * 0.8, ATTN_WEAPON_LIGHT, 100);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_grenlf1a], volume, ATTN_WEAPON_LIGHT);
+			S_fastsound_queue (NULL, i, CHAN_AUTO, fastsound_descriptor[weapons_grenlr1b], volume, ATTN_WEAPON_LIGHT, 100);
 			break;
 		case MZ_BFG:
 			dl->color[0] = 0;
 			dl->color[1] = 1;
 			dl->color[2] = 0;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_bfg__f1y], volume,
-				ATTN_WEAPON_HEAVY);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_bfg__f1y], volume, ATTN_WEAPON_HEAVY);
 			break;
 
 		case MZ_LOGIN:
@@ -560,9 +521,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 1;
 			dl->color[2] = 0;
 			dl->die = cl.time + 1.0;
-			S_fastsound (NULL, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_grenlf1a], 0.95,
-				ATTN_MEDIUM);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_grenlf1a], 1.0, ATTN_MEDIUM);
 			CL_LogoutEffect (pl->current.origin, weapon);
 			break;
 		case MZ_LOGOUT:
@@ -570,9 +529,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0;
 			dl->color[2] = 0;
 			dl->die = cl.time + 1.0;
-			S_fastsound (NULL, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_grenlf1a], 0.95,
-				ATTN_MEDIUM);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_grenlf1a], 1.0, ATTN_MEDIUM);
 			CL_LogoutEffect (pl->current.origin, weapon);
 			break;
 		case MZ_RESPAWN:
@@ -580,9 +537,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 1;
 			dl->color[2] = 0;
 			dl->die = cl.time + 1.0;
-			S_fastsound (NULL, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_grenlf1a], 0.95,
-				ATTN_MEDIUM);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_grenlf1a], 1.0, ATTN_MEDIUM);
 			CL_LogoutEffect (pl->current.origin, weapon);
 			break;
 			// RAFAEL
@@ -590,18 +545,14 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[0] = 1;
 			dl->color[1] = 0.5;
 			dl->color[2] = 0.5;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				S_RegisterSound ("weapons/plasshot.wav"), volume,
-				ATTN_WEAPON_HEAVY);
+			S_fastsound (NULL, i, CHAN_WEAPON, S_RegisterSound ("weapons/plasshot.wav"), volume, ATTN_WEAPON_HEAVY);
 			break;
 			// RAFAEL
 		case MZ_IONRIPPER:
 			dl->color[0] = 1;
 			dl->color[1] = 0.5;
 			dl->color[2] = 0.5;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				S_RegisterSound ("weapons/rippfire.wav"), volume,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, S_RegisterSound ("weapons/rippfire.wav"), volume, ATTN_WEAPON_LIGHT);
 			break;
 
 			// ======================
@@ -610,24 +561,20 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[0] = 0.9;
 			dl->color[1] = 0.7;
 			dl->color[2] = 0;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				S_RegisterSound ("weapons/nail1.wav"), volume,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, S_RegisterSound ("weapons/nail1.wav"), volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_SHOTGUN2:
 			dl->color[0] = 1;
 			dl->color[1] = 0.7;
 			dl->color[2] = 0.5;
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				S_RegisterSound ("weapons/shotg2.wav"), volume,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON,	S_RegisterSound ("weapons/shotg2.wav"), volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_HEATBEAM:
 			dl->color[0] = 1;
 			dl->color[1] = 1;
 			dl->color[2] = 0;
 			dl->die = cl.time + 100;
-			//      S_fastsound (NULL, i, CHAN_WEAPON, S_RegisterSound("weapons/bfg__l1a.wav"), volume, ATTN_NORM);
+			 S_fastsound (NULL, i, CHAN_WEAPON, S_RegisterSound("weapons/bfg__l1a.wav"), volume, ATTN_NORM);
 			break;
 		case MZ_BLASTER2:
 			dl->color[0] = 0;
@@ -635,9 +582,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[2] = 0;
 			// FIXME - different sound for blaster2 ??
 			// FIXME - willow: volume 0.75
-			S_fastsound (smoke_origin, i, CHAN_WEAPON,
-				fastsound_descriptor[weapons_blastf1a], volume * 0.75,
-				ATTN_WEAPON_LIGHT);
+			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_blastf1a], volume, ATTN_WEAPON_LIGHT);
 			break;
 		case MZ_TRACKER:
 			// negative flashes handled the same in gl/soft until
@@ -645,9 +590,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[0] = -1;
 			dl->color[1] = -1;
 			dl->color[2] = -1;
-			S_fastsound (NULL, i, CHAN_WEAPON,
-				S_RegisterSound ("weapons/disint2.wav"), volume,
-				ATTN_MEDIUM);
+			S_fastsound (NULL, i, CHAN_WEAPON, S_RegisterSound ("weapons/disint2.wav"), volume, ATTN_MEDIUM);
 			break;
 		case MZ_NUKE1:
 			dl->color[0] = 1;

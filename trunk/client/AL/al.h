@@ -77,7 +77,6 @@ typedef double ALdouble;
 /** void type (for opaque pointers only) */
 typedef void ALvoid;
 
-
 /* Enumerant values begin at column 50. No tabs. */
 
 /* bad value */
@@ -363,6 +362,7 @@ typedef void ALvoid;
 #define AL_LINEAR_DISTANCE_CLAMPED                0xD004
 #define AL_EXPONENT_DISTANCE                      0xD005
 #define AL_EXPONENT_DISTANCE_CLAMPED              0xD006
+
 
 #define AL_NO_PROTOTYPES YES
 

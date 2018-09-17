@@ -45,18 +45,6 @@ playsound_t s_playsounds[MAX_PLAYSOUNDS];
 playsound_t s_freeplays;
 playsound_t s_pendingplays;
 
-cvar_t	*s_volume;
-cvar_t	*s_show;
-cvar_t	*s_musicvolume;
-cvar_t	*s_musicsrc;
-cvar_t	*s_musicrandom;
-cvar_t	*s_openal_efx;
-cvar_t	*s_openal_device;
-cvar_t	*s_quality;
-cvar_t	*s_distance_model;
-cvar_t	*s_initsound;
-cvar_t	*s_dynamicReverberation;
-
 openal_channel_t s_openal_channels[MAX_CHANNELS];
 unsigned s_openal_numChannels;
 
@@ -163,20 +151,19 @@ void S_Play (void);
 
 void S_Init (int hardreset) {
 	if (hardreset) {
-		s_volume = Cvar_Get ("s_volume", "1", CVAR_ARCHIVE);
+		s_fxVolume = Cvar_Get ("s_fxVolume", "1", CVAR_ARCHIVE);
 		s_show = Cvar_Get ("s_show", "0", 0);
-		s_musicvolume = Cvar_Get ("s_musicvolume", "0.8", CVAR_ARCHIVE);
-		s_musicsrc = Cvar_Get ("s_musicsrc", "1", CVAR_ARCHIVE);
-		s_musicrandom = Cvar_Get ("s_musicrandom", "0", CVAR_ARCHIVE);
-		s_openal_device = Cvar_Get ("s_openal_device", "OpenAL Soft", CVAR_ARCHIVE);
-		s_openal_efx = Cvar_Get ("s_openal_efx", "1", CVAR_ARCHIVE);
-		s_quality = Cvar_Get ("s_quality", "0", CVAR_ARCHIVE);
-		s_distance_model = Cvar_Get ("s_distance_model", "0", CVAR_ARCHIVE);
-		s_initsound = Cvar_Get ("s_initsound", "1", CVAR_NOSET);
+		s_musicVolume = Cvar_Get ("s_musicVolume", "0.8", CVAR_ARCHIVE);
+		s_musicSrc = Cvar_Get ("s_musicSrc", "1", CVAR_ARCHIVE);
+		s_musicRandom = Cvar_Get ("s_musicRandom", "0", CVAR_ARCHIVE);
+		s_device = Cvar_Get ("s_device", "OpenAL Soft", CVAR_ARCHIVE);
+		s_useEfx = Cvar_Get ("s_useEfx", "1", CVAR_ARCHIVE);
+		s_initSound = Cvar_Get ("s_initSound", "1", CVAR_NOSET);
 		s_dynamicReverberation = Cvar_Get("s_dynamicReverberation", "1", CVAR_ARCHIVE);
+		s_useHRTF = Cvar_Get("s_useHRTF", "1", CVAR_ARCHIVE);
 	}
 
-	if (!s_initsound->value || openalStop) {
+	if (!s_initSound->value || openalStop) {
 		Com_Printf ("\n");
 		Com_Printf (S_COLOR_YELLOW"=======Sound not initializing.=======\n");
 		Com_Printf ("\n");
@@ -188,39 +175,7 @@ void S_Init (int hardreset) {
 			if (s_openal_numChannels) {
 				S_SoundInfo_f ();
 
-				if (s_distance_model->integer)	// OpenAL using the best
-					// selection by default
-				{
-					// AL_NONE bypasses all distance
-					// attenuation calculation for all sources. The
-					// implementation is expected to optimize this
-					// situation. AL_INVERSE_DISTANCE_CLAMPED is the IASIG
-					// I3DL2 model, with
-					// AL_REFERENCE_DISTANCE indicating both the reference
-					// distance and the distance
-					// below which gain will be clamped.
-					// AL_INVERSE_DISTANCE is equivalent to the
-					// IASIG I3DL2 model with the exception that
-					// AL_REFERENCE_DISTANCE does not
-					// imply any clamping. The linear models are not
-					// physically realistic, but do allow full
-					// attenuation of a source beyond a specified
-					// distance. The OpenAL implementation is still
-					// free to apply any range clamping as necessary.
-					ALenum modelName[7] = {
-						AL_NONE,
-						AL_INVERSE_DISTANCE,
-						AL_INVERSE_DISTANCE_CLAMPED,
-						AL_LINEAR_DISTANCE,
-						AL_LINEAR_DISTANCE_CLAMPED,
-						AL_EXPONENT_DISTANCE,
-						AL_EXPONENT_DISTANCE_CLAMPED
-					};
-
-					alDistanceModel (modelName[(int)s_distance_model->value - 1]);
-				}
-
-				alListenerf (AL_GAIN, clamp (s_volume->value, 0, 1));
+		//		alListenerf (AL_GAIN, /*clamp (s_volume->value, 0, 1)*/ 1.0);
 
 				if (hardreset) {
 					Cmd_AddCommand ("play", S_Play);
@@ -618,7 +573,7 @@ void S_fastsound (vec3_t origin, int entnum, int entchannel,
 		alSourcei (sourceNum, AL_LOOPING,
 			FlagAL_checkAL (ch, AL_FLAGS_AL_LOOPING));
 		alSourcef (sourceNum, AL_ROLLOFF_FACTOR, rolloff_factor);
-		alSourcef (sourceNum, AL_GAIN, gain);
+		alSourcef (sourceNum, AL_GAIN, /*gain*/ s_fxVolume->value);
 
 		if (alConfig.efx)
 			EFX_RvbProcSrc (ch, sourceNum, qtrue);
@@ -785,7 +740,7 @@ void S_StartLocalSound (ALuint bufferNum) {
 			alSourcei (sourceNum, AL_BUFFER, bufferNum);
 			alSourcei (sourceNum, AL_SOURCE_RELATIVE, AL_TRUE);
 			alSourcei (sourceNum, AL_LOOPING, AL_FALSE);
-			alSourcef (sourceNum, AL_GAIN, 0.47);
+			alSourcef (sourceNum, AL_GAIN, /*0.47*/ s_fxVolume->value);
 
 			if (alConfig.efx)
 				EFX_RvbProcSrc (ch, sourceNum, qfalse);
@@ -1269,7 +1224,7 @@ Music Streaming
 
 qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume) {
 	
-	if (!s_initsound->integer)
+	if (!s_initSound->integer)
 		return qfalse;
 
 	if (streaming.enabled) {

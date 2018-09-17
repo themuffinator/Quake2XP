@@ -453,7 +453,7 @@ extern cvar_t *cl_decals;
 extern cvar_t *net_compatibility;
 extern cvar_t *cl_drawhud;
 extern cvar_t *deathmatch;
-extern cvar_t *s_initsound;
+extern cvar_t *s_initSound;
 extern cvar_t *cl_fontScale;
 extern cvar_t *cl_itemsBobbing;
 extern cvar_t *scr_showTexName;

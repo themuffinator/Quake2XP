@@ -29,6 +29,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/client.h"
 #include "../client/snd_loc.h"
 
+typedef const ALCchar* (ALC_APIENTRY*LPALCGETSTRINGISOFT)(ALCdevice *device, ALCenum paramName, ALCsizei index);
+typedef ALCboolean(ALC_APIENTRY*LPALCRESETDEVICESOFT)(ALCdevice *device, const ALCint *attribs);
+#ifdef AL_ALEXT_PROTOTYPES
+ALC_API const ALCchar* ALC_APIENTRY alcGetStringiSOFT(ALCdevice *device, ALCenum paramName, ALCsizei index);
+ALC_API ALCboolean ALC_APIENTRY alcResetDeviceSOFT(ALCdevice *device, const ALCint *attribs);
+#endif
+
 /*
  =================
  QAL_Shutdown
@@ -49,6 +56,7 @@ void S_SoundInfo_f(void);
  =================
 */
 qboolean AL_StartOpenAL (void);
+extern cvar_t *s_useHRTF;
 
 qboolean AL_Init (int hardreset)
 {
@@ -69,10 +77,46 @@ qboolean AL_Init (int hardreset)
 	alConfig.efx = qfalse;
 
 	// Check for ALC Extensions
-	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_EXT_CAPTURE") == AL_TRUE)
-		Com_Printf("...capture capabilities.\n");
+  	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
 
-    if (s_openal_efx->value) {
+			Com_Printf("...Found " S_COLOR_GREEN "HRTF" S_COLOR_WHITE " support\n");
+			
+			ALCint	numHrtf;
+			ALCint	hrtfState;
+			ALCint	attr[5];
+			ALCint	i, j;
+
+			alcGetIntegerv(alConfig.hDevice, ALC_NUM_HRTF_SPECIFIERS_SOFT, 1, &numHrtf);
+			
+			if (!numHrtf)
+				Com_Printf(S_COLOR_MAGENTA"...No HRTFs found\n");
+
+			Com_Printf("Available HRTFs:\n");
+			
+			for (i = 0; i < numHrtf; i++){
+				const ALCchar *name = alcGetStringiSOFT(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT, i);
+				Com_Printf("    " S_COLOR_YELLOW "%i: " S_COLOR_GREEN "%s\n", i, name);
+			}
+
+			j = 0;
+			attr[j++] = ALC_HRTF_SOFT;
+			attr[j++] = s_useHRTF->integer ? ALC_TRUE : AL_FALSE;
+
+			if (!alcResetDeviceSOFT(alConfig.hDevice, attr))
+				Com_Printf(S_COLOR_RED"Failed to reset device: %s\n", alcGetString(alConfig.hDevice, alcGetError(alConfig.hDevice)));
+
+			alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
+			if (!hrtfState)
+				Com_Printf("...HRTF mode:" S_COLOR_YELLOW " off\n");
+			else
+			{
+				const ALchar *name = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
+				Com_Printf("...HRTF mode:" S_COLOR_GREEN " on\n");
+				Com_Printf("...using " S_COLOR_GREEN "%s\n", name);
+			}
+	} 
+  
+    if (s_useEfx->integer) {
         if (alcIsExtensionPresent(alConfig.hDevice, "ALC_EXT_EFX") == AL_TRUE)
         {
             ALuint		uiEffectSlots[128] = { 0 };
@@ -156,13 +200,5 @@ qboolean AL_Init (int hardreset)
             alDeleteAuxiliaryEffectSlots(iEffectSlotsGenerated, uiEffectSlots);
         }
     }
-
-	if (alIsExtensionPresent("AL_EXT_OFFSET") == AL_TRUE)
-		Com_Printf("...sample offset capabilities.\n");
-	if (alIsExtensionPresent("AL_EXT_LINEAR_DISTANCE") == AL_TRUE)
-		Com_Printf("...unlocked linear distance preset.\n");
-	if (alIsExtensionPresent("AL_EXT_EXPONENT_DISTANCE") == AL_TRUE)
-		Com_Printf("...unlocked exponent distance preset.\n");
-
 	return qtrue;
 }

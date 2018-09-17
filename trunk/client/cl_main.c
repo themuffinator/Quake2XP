@@ -1157,7 +1157,7 @@ void CL_Snd_Restart_f (void) {
 	CL_RegisterSounds ();
 
 	// cause music track to reload if already playing
-	s_musicsrc->modified = qtrue;
+	s_musicSrc->modified = qtrue;
 }
 
 int precache_check;				// for autodownload of precache items

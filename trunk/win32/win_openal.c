@@ -30,7 +30,7 @@ in certain folder.
 
 /*
 willow:
-NVIDIA seems to have screwed name. Some sheets referenced to "NVIDIA® nForce(TM) Audio" but
+NVIDIA seems to have screwed name. Some sheets referenced to "NVIDIAï¿½ nForce(TM) Audio" but
 i got "NVIDIA(R) nForce(TM) Audio" instead. For some purpose NVIDIA recommends to reference
 "NVIDIA" substring.
 */
@@ -150,6 +150,9 @@ LPALGETAUXILIARYEFFECTSLOTIV	alGetAuxiliaryEffectSlotiv;
 LPALGETAUXILIARYEFFECTSLOTF		alGetAuxiliaryEffectSlotf;
 LPALGETAUXILIARYEFFECTSLOTFV	alGetAuxiliaryEffectSlotfv;
 
+LPALCGETSTRINGISOFT alcGetStringiSOFT;
+LPALCRESETDEVICESOFT alcResetDeviceSOFT;
+
 // =====================================================================
 
 #define GPA(a)			GetProcAddress(alConfig.hInstOpenAL, a);
@@ -170,6 +173,9 @@ void QAL_Shutdown (void) {
 		FreeLibrary (alConfig.hInstOpenAL);
 	}
 	memset (&alConfig, 0, sizeof(alConfig_t));
+
+	alcGetStringiSOFT = NULL;
+	alcResetDeviceSOFT = NULL;
 
 	alcOpenDevice = NULL;
 	alcCloseDevice = NULL;
@@ -285,19 +291,6 @@ void QAL_Shutdown (void) {
 
 void S_SoundInfo_f (void);
 
-ALboolean EAXSetBufferMode_NULL (ALsizei n, ALuint *buffers, ALint value) {
-	//willow:
-	//Always successfull, we do not really care of non X-RAM audio chips.
-	//No X-RAM no deal no failures too.
-	return AL_TRUE;
-}
-
-ALenum EAXGetBufferMode_NULL (ALuint buffer, ALint *value) {
-	//willow:
-	//I'm not interested in this function anyway, just heck it would be existed and even realistic!
-	return alGetEnumValue ("AL_STORAGE_AUTOMATIC");
-}
-
 /*
  =================
  AL_Init
@@ -306,6 +299,7 @@ ALenum EAXGetBufferMode_NULL (ALuint buffer, ALint *value) {
 qboolean AL_StartOpenAL (void);
 
 qboolean AL_Init (int hardreset) {
+
 	if (hardreset) {
 		char	path[MAX_OSPATH];
 		Com_Printf ("\n");
@@ -413,11 +407,55 @@ qboolean AL_Init (int hardreset) {
 	alConfig.efx = qfalse;
 
 	// Check for ALC Extensions
-	if (alcIsExtensionPresent (alConfig.hDevice, "ALC_EXT_CAPTURE") == AL_TRUE)
-		Com_Printf ("...capture capabilities.\n");
+	Com_Printf("\n");
 
+	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
+
+		alcGetStringiSOFT = (LPALCGETSTRINGISOFT)GPA("alcGetStringiSOFT");
+		alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)GPA("alcResetDeviceSOFT");
+		
+		if (alcGetStringiSOFT && alcResetDeviceSOFT) {
+
+			Com_Printf("...Found " S_COLOR_GREEN "HRTF" S_COLOR_WHITE " support\n");
+			
+			ALCint	numHrtf;
+			ALCint	hrtfState;
+			ALCint	attr[5];
+			ALCint	i, j;
+
+			alcGetIntegerv(alConfig.hDevice, ALC_NUM_HRTF_SPECIFIERS_SOFT, 1, &numHrtf);
+			
+			if (!numHrtf)
+				Com_Printf(S_COLOR_MAGENTA"...No HRTFs found\n");
+
+			Com_Printf("Available HRTFs:\n");
+			
+			for (i = 0; i < numHrtf; i++){
+				const ALCchar *name = alcGetStringiSOFT(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT, i);
+				Com_Printf("    " S_COLOR_YELLOW "%i: " S_COLOR_GREEN "%s\n", i, name);
+			}
+
+			j = 0;
+			attr[j++] = ALC_HRTF_SOFT;
+			attr[j++] = s_useHRTF->integer ? ALC_TRUE : AL_FALSE;
+
+			if (!alcResetDeviceSOFT(alConfig.hDevice, attr))
+				Com_Printf(S_COLOR_RED"Failed to reset device: %s\n", alcGetString(alConfig.hDevice, alcGetError(alConfig.hDevice)));
+
+			alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
+			if (!hrtfState)
+				Com_Printf("...HRTF mode:" S_COLOR_YELLOW " off\n");
+			else
+			{
+				const ALchar *name = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
+				Com_Printf("...HRTF mode:" S_COLOR_GREEN " on\n");
+				Com_Printf("...using " S_COLOR_GREEN "%s\n", name);
+			}
+		}
+	}
+		
 	// If EFX is enabled, determine if it's available and use it
-	if (s_openal_efx->integer) {
+	if (s_useEfx->integer) {
 		if (alcIsExtensionPresent (alConfig.hDevice, "ALC_EXT_EFX") == AL_TRUE) {
 			ALuint		uiEffectSlots[128] = { 0 };
 			ALuint		uiEffects[1] = { 0 };
@@ -535,15 +573,6 @@ qboolean AL_Init (int hardreset) {
 			alDeleteAuxiliaryEffectSlots (iEffectSlotsGenerated, uiEffectSlots);
 		}
 	}//<---(!s_openal_efx->value)
-
-	// Check for AL Extensions
-
-	if (alIsExtensionPresent ("AL_EXT_OFFSET") == AL_TRUE)
-		Com_Printf ("...sample offset capabilities.\n");
-	if (alIsExtensionPresent ("AL_EXT_LINEAR_DISTANCE") == AL_TRUE)
-		Com_Printf ("...unlocked linear distance preset.\n");
-	if (alIsExtensionPresent ("AL_EXT_EXPONENT_DISTANCE") == AL_TRUE)
-		Com_Printf ("...unlocked exponent distance preset.\n");
 
 	return qtrue;
 }
