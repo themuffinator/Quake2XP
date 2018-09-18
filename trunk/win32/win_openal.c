@@ -408,52 +408,7 @@ qboolean AL_Init (int hardreset) {
 
 	// Check for ALC Extensions
 	Com_Printf("\n");
-/*
-	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
-
-		alcGetStringiSOFT = (LPALCGETSTRINGISOFT)GPA("alcGetStringiSOFT");
-		alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)GPA("alcResetDeviceSOFT");
-		
-		if (alcGetStringiSOFT && alcResetDeviceSOFT) {
-
-			Com_Printf("...Found " S_COLOR_GREEN "HRTF" S_COLOR_WHITE " support\n");
-			
-			ALCint	numHrtf;
-			ALCint	hrtfState;
-			ALCint	attr[5];
-			ALCint	i, j;
-
-			alcGetIntegerv(alConfig.hDevice, ALC_NUM_HRTF_SPECIFIERS_SOFT, 1, &numHrtf);
-			
-			if (!numHrtf)
-				Com_Printf(S_COLOR_MAGENTA"...No HRTFs found\n");
-
-			Com_Printf("Available HRTFs:\n");
-			
-			for (i = 0; i < numHrtf; i++){
-				const ALCchar *name = alcGetStringiSOFT(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT, i);
-				Com_Printf("    " S_COLOR_YELLOW "%i: " S_COLOR_GREEN "%s\n", i, name);
-			}
-
-			j = 0;
-			attr[j++] = ALC_HRTF_SOFT;
-			attr[j++] = s_useHRTF->integer ? ALC_TRUE : AL_FALSE;
-
-			if (!alcResetDeviceSOFT(alConfig.hDevice, attr))
-				Com_Printf(S_COLOR_RED"Failed to reset device: %s\n", alcGetString(alConfig.hDevice, alcGetError(alConfig.hDevice)));
-
-			alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
-			if (!hrtfState)
-				Com_Printf("...HRTF mode:" S_COLOR_YELLOW " off\n");
-			else
-			{
-				const ALchar *name = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
-				Com_Printf("...HRTF mode:" S_COLOR_GREEN " on\n");
-				Com_Printf("...using " S_COLOR_GREEN "%s\n", name);
-			}
-		}
-	}
-*/		
+	
 	// If EFX is enabled, determine if it's available and use it
 	if (s_useEfx->integer) {
 		if (alcIsExtensionPresent (alConfig.hDevice, "ALC_EXT_EFX") == AL_TRUE) {
@@ -510,6 +465,8 @@ qboolean AL_Init (int hardreset) {
 				if (alGetError () != AL_NO_ERROR)
 					break;
 			}
+
+			Com_Printf("=====================================\n");
 
 			Com_Printf ("\n%d Auxiliary Effect Slot%s\n", iEffectSlotsGenerated, (iEffectSlotsGenerated == 1) ? "" : "s");
 

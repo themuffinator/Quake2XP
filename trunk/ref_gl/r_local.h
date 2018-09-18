@@ -91,7 +91,7 @@ extern viddef_t vid;
 
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
-#define MAX_DRAW_STRING_LENGTH  256
+#define MAX_DRAW_STRING_LENGTH  512
 #define MAX_IDX 65536
 // ===================================================================
 

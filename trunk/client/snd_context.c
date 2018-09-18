@@ -36,19 +36,19 @@ qboolean	openalStop = qfalse;
 static qboolean AL_InitDriver (void) {
 	char *deviceName = s_device->string;
 
-	Com_DPrintf ("Initializing OpenAL driver\n");
+	Com_Printf ("\n...Initializing OpenAL Driver\n");
 
 	if (!deviceName[0])
 		deviceName = NULL;
 
 	if (deviceName)
-		Com_Printf ("...opening device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName);
+		Com_Printf ("...Opening Device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName);
 	else
-		Com_Printf ("...opening default device: ");
+		Com_Printf ("...Opening Default Device: ");
 
 	// Open the device
 	if ((alConfig.hDevice = alcOpenDevice (deviceName)) == NULL) {
-		Com_Printf ("failed\n");
+		Com_Printf (S_COLOR_RED"failed\n");
 		return qfalse;
 	}
 
@@ -56,10 +56,15 @@ static qboolean AL_InitDriver (void) {
 		Com_Printf ("succeeded ("S_COLOR_GREEN"%s"S_COLOR_WHITE")\n",
 		alcGetString (alConfig.hDevice, ALC_DEVICE_SPECIFIER));
 	else
-		Com_Printf ("succeeded\n");
+		Com_Printf (S_COLOR_GREEN"succeeded\n");
+
 	// Create the AL context and make it current
-	Com_DPrintf ("...creating AL context: ");
+	Com_Printf ("...Creating AL Context: ");
 	
+	qboolean hrtf = qfalse;
+	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE)
+		hrtf = qtrue;
+
 	int quality;
 	#ifdef _WIN32
 		quality = 48000;
@@ -67,40 +72,43 @@ static qboolean AL_InitDriver (void) {
 		quality = 44100; //wtf? soft al under linux use only 44100hz
 	#endif
 
-		ALCint attrlist[6] = { ALC_FREQUENCY, quality, 
-		ALC_HRTF_SOFT, s_useHRTF->integer ? ALC_TRUE : AL_FALSE,
+		ALCint attrlist[6] = 
+		{	ALC_FREQUENCY, quality, 
+			ALC_HRTF_SOFT, s_useHRTF->integer && hrtf ? ALC_TRUE : AL_FALSE,
 		0 };
 		
 		if ((alConfig.hALC =
 			alcCreateContext (alConfig.hDevice, attrlist)) == NULL) {
-			Com_DPrintf ("failed\n");
+			Com_Printf (S_COLOR_RED"failed\n");
 			goto failed;
 		}
 	
-	Com_DPrintf ("succeeded\n");
-	
-	Com_Printf("\n");
-	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
-		Com_Printf("...Found " S_COLOR_GREEN "HRTF" S_COLOR_WHITE " support\n");
+	Com_Printf (S_COLOR_GREEN"succeeded\n");
+
+	Com_Printf ("...Making Context Current: ");
+	if (!alcMakeContextCurrent (alConfig.hALC)) {
+		Com_Printf (S_COLOR_RED"failed\n");
+		goto failed;
+	}
+	Com_Printf (S_COLOR_GREEN"succeeded\n");
+
+	Com_Printf("\n=====================================\n\n");
+
+	if (hrtf) {
+		Com_Printf("...using ALC_SOFT_HRTF\n");
 		ALCint	hrtfState;
 		alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
 		if (!hrtfState)
-			Com_Printf("...HRTF mode:" S_COLOR_YELLOW " off\n");
+			Com_Printf("...HRTF Mode:" S_COLOR_YELLOW " off\n");
 		else
 		{
 			const ALchar *name = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
-			Com_Printf("...HRTF mode:" S_COLOR_GREEN " on\n");
 			Com_Printf("...using " S_COLOR_GREEN "%s\n", name);
+			Com_Printf("...HRTF Mode:" S_COLOR_GREEN " on\n");
 		}
 
-	}
-
-	Com_DPrintf ("...making context current: ");
-	if (!alcMakeContextCurrent (alConfig.hALC)) {
-		Com_DPrintf ("failed\n");
-		goto failed;
-	}
-	Com_DPrintf ("succeeded\n");
+	}else
+		Com_Printf(S_COLOR_RED"...ALC_SOFT_HRTF not found\n");
 
 	return qtrue;
 
@@ -128,21 +136,25 @@ failed:
  AL_StartOpenAL
  =================
  */
+
 qboolean AL_StartOpenAL (void) {
 	extern const char *al_device[];
 
 	// Get device list
-	if (alcIsExtensionPresent (NULL, "ALC_ENUMERATION_EXT")) {
+	if (alcIsExtensionPresent (NULL, "ALC_ENUMERATE_ALL_EXT")) { // find all ))
 		unsigned i = 0;
-		const char *a = alcGetString (NULL, ALC_DEVICE_SPECIFIER);
+		const char *a = alcGetString (NULL, ALC_ALL_DEVICES_SPECIFIER);
 		if (!a) {
 			// We have no audio output devices. No hope.
 			QAL_Shutdown ();
 			return qfalse;
 		}
+		
+		Com_Printf("====== Available Output Devices =====\n\n");
+
 		while (*a) {
 			al_device[++i] = a;
-			Com_DPrintf ("Device species %i: %s\n", i, a);
+			Com_Printf (">:"S_COLOR_GREEN"%s\n", a);
 			while (*a)
 				a++;
 			a++;
@@ -150,18 +162,11 @@ qboolean AL_StartOpenAL (void) {
 		alConfig.device_count = i;
 	}
 	else {
-		// OS Specific devices. We are here, because device enumeration
-		// failed!
-#ifdef _WIN32
-		al_device[1] = "DirectSound3D";
-		al_device[2] = "DirectSound";
-		al_device[3] = "MMSYSTEM";
-		alConfig.device_count = 3;
-#else
 		QAL_Shutdown ();
 		return qfalse;
-#endif
 	}
+
+	Com_Printf("\n=====================================\n");
 
 	// Initialize the device, context, etc...
 	if (AL_InitDriver ()) {

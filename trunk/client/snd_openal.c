@@ -115,7 +115,51 @@ void S_SoundInfo_f (void) {
 	Com_Printf ("AL_VENDOR:     "S_COLOR_GREEN"%s\n", alGetString (AL_VENDOR));
 	Com_Printf ("AL_RENDERER:   "S_COLOR_GREEN"%s\n", alGetString (AL_RENDERER));
 	Com_Printf ("AL_VERSION:    "S_COLOR_GREEN"%s\n", alGetString (AL_VERSION));
-	Com_Printf ("AL_EXTENSIONS:\n"S_COLOR_GREEN"%s\n", alGetString (AL_EXTENSIONS));
+	
+	const char *alext;
+	Com_Printf("AL_EXTENSIONS:\n");
+	alext = alGetString(AL_EXTENSIONS);
+	if (alext)
+	{
+		unsigned l = strlen(alext), ll;
+		if (l > 0)
+		{
+			char buf[128], c;
+			char *ptr = (char *)alext;
+			char *p;
+			while (1)
+			{
+				ll = 0;
+				p = (char*)ptr;
+				while (1)
+				{
+					c = *p;
+					if (!c || c == ' ')
+						break;
+					ll++;
+					p++;
+				}
+				if (ll >= sizeof(buf))
+				{
+					Com_Printf(S_COLOR_RED"*** extension too long: %i bytes ***\n", ll);
+					break;
+				}
+				if (ll)
+				{
+					memcpy(buf, ptr, ll);
+					buf[ll] = 0;
+					Com_Printf(S_COLOR_GREEN"%s\n", buf);
+				}
+				if (!c)
+					break;
+				ptr = p + 1;
+			}
+		}
+		else
+			Com_Printf(S_COLOR_RED"*** strlen(exts) = 0 ***\n");
+	}
+	else
+		Com_Printf(S_COLOR_RED"*** exts = NULL ***\n");
 
 	Com_Printf ("\n");
 	Com_Printf ("DEVICE: "S_COLOR_GREEN"%s\n",
