@@ -316,7 +316,10 @@ int S_Streaming_NumFreeBufs (void);
 void S_Streaming_Stop (void);
 
 typedef enum {
-	MUSIC_NONE, MUSIC_CD, MUSIC_FILES, MUSIC_OTHER_FILES
+	MUSIC_NONE, 
+	MUSIC_CD, 
+	MUSIC_FILES, 
+	MUSIC_OTHER_FILES
 } music_type_t;
 
 void Music_Init (void);

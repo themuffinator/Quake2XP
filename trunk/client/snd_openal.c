@@ -194,6 +194,7 @@ void S_Music_f (void);
 void S_Play (void);
 
 void S_Init (int hardreset) {
+
 	if (hardreset) {
 		s_fxVolume = Cvar_Get ("s_fxVolume", "1", CVAR_ARCHIVE);
 		s_show = Cvar_Get ("s_show", "0", 0);
@@ -244,7 +245,7 @@ void S_Init (int hardreset) {
 
 		if (!s_openal_numChannels) {
 			Com_Printf (S_COLOR_RED"OpenAL failed to initialize; no sound available\n");
-			Cvar_ForceSet ("s_initsound", "0");	/// Berserker's FIX: устранён крэш если OpenAL не может запуститься
+			Cvar_ForceSet ("s_initSound", "0");	/// Berserker's FIX: устранён крэш если OpenAL не может запуститься
 			AL_Shutdown ();
 		}
 	}

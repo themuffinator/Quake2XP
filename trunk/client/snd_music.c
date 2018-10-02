@@ -46,7 +46,7 @@ void Music_Init (void) {
 			Com_Printf ("====================================\n\n");
 			break;
 		default:
-			Cvar_SetValue ("s_musicsrc", MUSIC_NONE);
+			Cvar_SetValue ("s_musicSrc", MUSIC_NONE);
 			music_type = MUSIC_NONE;
 			return;
 	}
