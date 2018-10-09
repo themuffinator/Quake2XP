@@ -60,14 +60,17 @@ float selfShadow(in sampler2D hiMap, in vec3 N, in vec3 L, in vec2 texCoord)
    float	NL = saturate(dot(N, L));
    
    if(NL <= 0.0)
-	return 1.0;
+		return 1.0;
 
     float lod = ComputeLOD(texCoord, u_parallaxParams.zw);
     
+	if(lod > 8.0)
+		return 1.0;
+
 	float tex = textureLod(hiMap, texCoord, lod).a;
     
-	if( tex >= 0.9 )
-      return 1.0;
+	if(tex >= 0.9)
+		return 1.0;
 
     vec2 offsetCoord = texCoord;
     float numShadowSteps = mix(60.0, 5.0, -L.z);
