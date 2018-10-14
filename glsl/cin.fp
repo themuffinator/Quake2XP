@@ -1,5 +1,7 @@
 layout (binding = 0) uniform sampler2D u_cinMap;
 
+layout (location = U_SCREEN_SIZE)	uniform vec2	u_screenSize;
+
 in vec2			v_texCoord;
 
 /*
@@ -89,11 +91,9 @@ void main ()
 	fragData = TechniColor(cin);
 
 	// create rgb CRT mask
-	float pix = gl_FragCoord.y * 1920.0 + gl_FragCoord.x;
+	float pix = gl_FragCoord.y * u_screenSize.x + gl_FragCoord.x;
     pix = floor(pix);
 	vec4 rgbMask = vec4(mod(pix, RGB_MASK_SIZE), mod((pix + 1.0), RGB_MASK_SIZE), mod((pix + 2.0), RGB_MASK_SIZE), 1.0);
     rgbMask = rgbMask / (RGB_MASK_SIZE - 1.0) + 0.5;
 	fragData *= rgbMask * 1.2;
-
-//	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
 }
