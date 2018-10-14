@@ -550,6 +550,9 @@ extern cvar_t	*r_radialBlur;
 extern cvar_t	*weaponHitAccuracy;
 extern cvar_t	*g_autoHealth;
 
+cvar_t	*g_noStopMusic;
+cvar_t	*g_infinityGibs;
+
 void monster_reborn (edict_t *self);
 #define world	(&g_edicts[0])
 

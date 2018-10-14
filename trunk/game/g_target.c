@@ -180,9 +180,11 @@ void use_target_goal (edict_t *ent, edict_t *other, edict_t *activator) {
 	gi.sound (ent, CHAN_VOICE, ent->noise_index, 1, ATTN_NORM, 0);
 
 	level.found_goals++;
-
-	if (level.found_goals == level.total_goals)
-		gi.configstring (CS_CDTRACK, "0");
+	
+	if (!g_noStopMusic->integer) {
+		if (level.found_goals == level.total_goals)
+			gi.configstring(CS_CDTRACK, "0");
+	}
 
 	G_UseTargets (ent, activator);
 	G_FreeEdict (ent);

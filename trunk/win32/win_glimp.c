@@ -183,10 +183,18 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	if (!glw_state.hWnd)
 		VID_Error (ERR_FATAL, "Couldn't create window");
 
-	glw_state.dpi = GetDpiForWindow(glw_state.hWnd);
-	Com_Printf("...desktop dpi is: "S_COLOR_GREEN"%i"S_COLOR_WHITE"dpi\n", glw_state.dpi);
-	if(glw_state.dpi > 96)
-		Com_Printf(S_COLOR_YELLOW"...force dpi awareness:"S_COLOR_GREEN" ok\n");
+	UINT(WINAPI *GetDpiForWindow)(HWND hwnd) = NULL;
+	HINSTANCE u32DLL = LoadLibrary("user32.dll"); // Windows 10, version 1607 [desktop apps only]
+
+	if(u32DLL)
+		GetDpiForWindow = (UINT(WINAPI *)(HWND hwnd)) GetProcAddress(u32DLL, "GetDpiForWindow");
+
+	if (GetDpiForWindow) {
+		glw_state.dpi = GetDpiForWindow(glw_state.hWnd);
+		Com_Printf("...desktop dpi is: "S_COLOR_GREEN"%i"S_COLOR_WHITE"dpi\n", glw_state.dpi);
+		if (glw_state.dpi > 96)
+			Com_Printf(S_COLOR_YELLOW"...force dpi awareness:"S_COLOR_GREEN" ok\n");
+	}
 
 	ShowWindow( glw_state.hWnd, SW_SHOW );
 	UpdateWindow( glw_state.hWnd );
@@ -907,7 +915,8 @@ void VID_SetProcessDpiAwareness(void) {
 	
 	if (shDLL)
 		SetProcessDpiAwareness = (HRESULT(WINAPI *)(XP_PROCESS_DPI_AWARENESS))GetProcAddress(shDLL, "SetProcessDpiAwareness");
-	else
+	else 
+		if(u32DLL)
 		SetProcessDPIAware = (BOOL(WINAPI *)(void)) GetProcAddress(u32DLL, "SetProcessDPIAware");
 
 	if (SetProcessDpiAwareness) {
@@ -918,7 +927,7 @@ void VID_SetProcessDpiAwareness(void) {
 	
 	if (shDLL)
 		FreeLibrary(shDLL);
-	else
+	if (u32DLL)
 		FreeLibrary(u32DLL);
 }
 
@@ -1187,6 +1196,9 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 					if (ver == 1803)
 						sprintf(S2, "\n    'April 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1803" S_COLOR_WHITE ")");
 					else
+						if (ver == 1809)
+							sprintf(S2, "\n    'October 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1803" S_COLOR_WHITE ")");
+						else
 						sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 
 					RegCloseKey(hKey);

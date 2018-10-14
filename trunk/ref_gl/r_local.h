@@ -355,6 +355,8 @@ cvar_t	*r_filmFilterVignetIntens;
 cvar_t	*r_fixFovStrength; // 0.0 = no hi-fov perspective correction
 cvar_t	*r_fixFovDistroctionRatio; // 0.0 = cylindrical distortion ratio. 1.0 = spherical
 
+cvar_t	*r_screenBlend;
+
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
 

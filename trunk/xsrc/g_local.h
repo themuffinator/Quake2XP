@@ -543,6 +543,9 @@ extern cvar_t	*cl_3dhud;
 extern cvar_t   *sv_solidcorpse;
 extern cvar_t	*net_compatibility;
 
+cvar_t	*g_noStopMusic;
+cvar_t	*g_infinityGibs;
+
 void monster_reborn (edict_t *self);
 void ED_CallSpawn (edict_t *ent);
 qboolean gekk_checkattack (edict_t *self);

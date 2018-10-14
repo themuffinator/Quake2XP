@@ -164,7 +164,11 @@ void ThrowGib (edict_t *self, char *gibname, int damage, int type) {
 	gib->avelocity[2] = random () * 600;
 
 	gib->think = G_FreeEdict;
-	gib->nextthink = level.time + 10 + random () * 10;
+	
+	if (g_infinityGibs->integer)
+		gib->nextthink = 0x7FFFFFFF;
+	else
+		gib->nextthink = level.time + 10 + random() * 10;
 
 	gi.linkentity (gib);
 }
@@ -265,7 +269,11 @@ void ThrowGibACID (edict_t *self, char *gibname, int damage, int type) {
 	gib->avelocity[2] = random () * 600;
 
 	gib->think = G_FreeEdict;
-	gib->nextthink = level.time + 10 + random () * 10;
+	
+	if (g_infinityGibs->integer)
+		gib->nextthink = 0x7FFFFFFF;
+	else
+		gib->nextthink = level.time + 10 + random() * 10;
 
 	gi.linkentity (gib);
 }

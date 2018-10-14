@@ -1409,6 +1409,8 @@ void R_RegisterCvars(void)
 	r_fixFovDistroctionRatio =			Cvar_Get("r_fixFovDistroctionRatio", "5", CVAR_ARCHIVE);
 	r_fixFovDistroctionRatio->help =	"cylindrical distortion ratio";
 
+	r_screenBlend =						Cvar_Get("r_screenBlend", "1", CVAR_ARCHIVE);
+
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
 	Cmd_AddCommand("levelshot",			GL_LevelShot_f);
@@ -1828,10 +1830,10 @@ int R_Init(void *hinstance, void *hWnd)
 		gl_state.texture_compression_bptc = qfalse;
 	}
 
-	if (IsExtensionSupported("GL_ARB_seamless_cube_map")) {
+/*	if (IsExtensionSupported("GL_ARB_seamless_cube_map")) {
 		Com_Printf("...using GL_ARB_seamless_cube_map\n");
 		qglEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-	}
+	}*/
 
 	// ===========================================================================================================================
 

@@ -233,7 +233,7 @@ void R_ScreenBlend(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 	
-	if (!v_blend[3])
+	if (!v_blend[3] || !r_screenBlend->integer)
 		return;
 
 		// setup program
@@ -241,7 +241,7 @@ void R_ScreenBlend(void)
 		qglUniform1i(U_2D_PICS, 0);
 		qglUniform1i(U_CONSOLE_BACK, 0);
 		qglUniform1i(U_FRAG_COLOR, 1);
-		qglUniform4f(U_COLOR, v_blend[0], v_blend[1], v_blend[2], v_blend[3] * 1.5);
+		qglUniform4f(U_COLOR, v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
 		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		GL_Disable(GL_ALPHA_TEST);

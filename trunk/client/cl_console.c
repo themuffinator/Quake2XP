@@ -618,7 +618,11 @@ void Con_DrawConsole (float frac) {
 	int			currentColor;
 	float		fontscale = cl_fontScale->value;
 
-	lines = viddef.height * frac;
+	if (frac == 1.0)
+		lines = viddef.height * frac;
+	else
+		lines = viddef.height * frac - 8 * fontscale; // download bar fix
+
 	if (lines <= 0)
 		return;
 

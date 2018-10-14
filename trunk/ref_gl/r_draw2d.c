@@ -330,6 +330,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 		qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	if (scrap_dirty)
 		Scrap_Upload();
@@ -416,6 +417,7 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 
 		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 		qglUniform1f(U_COLOR_MUL, loadScreenColorFade);
+		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 
@@ -824,6 +826,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 
 	GL_MBind(GL_TEXTURE0, 0);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	hscale = rows/256.0;
 	trows = 256;

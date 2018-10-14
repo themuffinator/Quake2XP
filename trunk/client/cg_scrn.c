@@ -400,7 +400,7 @@ void SCR_DrawLoading (void) {
 		if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
 			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
 		else
-			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/levelshots/noshot.jpg");
+			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
 
 		scaled = 8 * fontscale;
 		SCR_DrawLoadingBar (loadingPercent, scaled);

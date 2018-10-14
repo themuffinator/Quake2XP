@@ -984,10 +984,10 @@ void S_Update (vec3_t listener_position, vec3_t velocity,
 	alListenerfv (AL_VELOCITY, velocity);
 	alListenerfv (AL_ORIENTATION, orientation);
 
-	if ((CL_PMpointcontents (listener_position) & MASK_WATER))
-		alSpeedOfSound (59000);
-	else
-		alSpeedOfSound (13515);
+//	if ((CL_PMpointcontents (listener_position) & MASK_WATER))
+//		alSpeedOfSound (47197);
+//	else
+//		alSpeedOfSound (10976);
 
 
 	if (alConfig.efx)
