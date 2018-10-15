@@ -4259,3 +4259,22 @@
 "flareOrigin" "-279 -832 -240"
 "flare" "0"
 }
+//Light 236
+{
+"classname" "light"
+"origin" "231 -199 -736"
+"radius" "50 50 125"
+"color" "1.000 0.995 0.915"
+"style" "1"
+"filter" "0"
+"angles" "0 0 0"
+"speed" "0.000 0.000 0.000"
+"shadow" "1"
+"ambient" "0"
+"_cone" "0.0"
+"targetname" "t303"
+"spawnflags" "0"
+"flareSize" "10"
+"flareOrigin" "231 -199 -723"
+"flare" "1"
+}
