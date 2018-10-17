@@ -445,6 +445,9 @@
     <ClInclude Include="ref_gl\r_md3.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="win32\win_languages.h">
+      <Filter>Source Files\Win32\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="win32\icon1.ico">

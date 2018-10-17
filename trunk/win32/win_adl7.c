@@ -95,7 +95,7 @@ void GLimp_InitADL(){
 	adlInit = qfalse;
 	atiPhysicalGpuCount = atiPhysicalAdapters = 0;
 
-	Com_Printf("" S_COLOR_YELLOW "\n...Initializing AMD Display Library:\n");
+	Com_Printf("" S_COLOR_YELLOW "\n...Initializing AMD Display Library\n");
 
 	// Load the ADL dll
 	ati_hDLL = LoadLibrary("atiadlxx.dll");

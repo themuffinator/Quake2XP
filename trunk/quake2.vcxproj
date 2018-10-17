@@ -721,6 +721,7 @@
     <ClInclude Include="client\snd_loc.h" />
     <ClInclude Include="client\sound.h" />
     <ClInclude Include="win32\winquake.h" />
+    <ClInclude Include="win32\win_languages.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\baseq2\glsl\ambientMd3.fp" />

@@ -36,6 +36,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "../ref_gl/r_local.h"
+#include "win_languages.h"
+
+#define UI_NUM_LANGS ( sizeof( ui_Language ) / sizeof( ui_Language[0] ) )
+
 
 // Enable High Performance Graphics while using Integrated Graphics.
 __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;        // Nvidia
@@ -1197,7 +1201,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 						sprintf(S2, "\n    'April 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1803" S_COLOR_WHITE ")");
 					else
 						if (ver == 1809)
-							sprintf(S2, "\n    'October 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1803" S_COLOR_WHITE ")");
+							sprintf(S2, "\n    'October 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1809" S_COLOR_WHITE ")");
 						else
 						sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 
@@ -1227,13 +1231,19 @@ else
 		Com_Printf( S_COLOR_RED "GLimp_Init() - GetVersionEx failed\n" );
 		return qfalse;
 	}
-	
-	// get user name
-	len = sizeof(string);
-	Com_Printf("\nUserName: "S_COLOR_GREEN"%s\n", GetUserName(string, &len) ? string : "");
 
 	LANGID lang =  GetUserDefaultUILanguage();
-	Com_Printf("UI Language: "S_COLOR_GREEN"%s\n",lang);
+
+	for (int i = 0; i < UI_NUM_LANGS; i++) {
+		if (lang == ui_Language[i].num) {
+			Com_Printf("\nOS Language: "S_COLOR_GREEN"%s\n", ui_Language[i].description);
+			break;
+		}
+	}
+
+	// get user name
+	len = sizeof(string);
+	Com_Printf("User Name: "S_COLOR_GREEN"%s\n", GetUserName(string, &len) ? string : "");
 
 	glw_state.hInstance = ( HINSTANCE ) hinstance;
 	glw_state.wndproc = wndproc;
