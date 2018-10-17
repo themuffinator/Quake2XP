@@ -1231,8 +1231,10 @@ else
 	// get user name
 	len = sizeof(string);
 	Com_Printf("\nUserName: "S_COLOR_GREEN"%s\n", GetUserName(string, &len) ? string : "");
-	Com_Printf ("\n");
-		
+
+	LANGID lang =  GetUserDefaultUILanguage();
+	Com_Printf("UI Language: "S_COLOR_GREEN"%s\n",lang);
+
 	glw_state.hInstance = ( HINSTANCE ) hinstance;
 	glw_state.wndproc = wndproc;
 
