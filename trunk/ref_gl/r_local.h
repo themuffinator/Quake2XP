@@ -1072,6 +1072,10 @@ rserr_t GLimp_SetMode (unsigned *pwidth, unsigned *pheight, int mode,
 	qboolean fullscreen);
 void GLimp_AppActivate (qboolean active);
 
+qboolean Sys_CheckWindowsVersion();
+void Sys_CpuID();
+void Sys_GetMemorySize();
+void Sys_WindowsInfo();
 
 #ifndef __GLW_H__
 #define __GLW_H__

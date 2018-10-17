@@ -1,4 +1,9 @@
-﻿typedef struct lang_def_s {
+﻿/*
+* This is an open source non-commercial project. Dear PVS-Studio, please check it.
+* PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+*/
+
+typedef struct uiLang_s {
 	DWORD num;
 	const char *description;
 } uiLang_t;

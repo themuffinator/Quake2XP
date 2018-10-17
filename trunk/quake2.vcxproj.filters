@@ -320,6 +320,9 @@
     <ClCompile Include="win32\win_openal.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="win32\win_sysinfo.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ref_gl\qgl.h">
