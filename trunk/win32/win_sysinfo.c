@@ -256,13 +256,15 @@ void Sys_CpuID()
 void Sys_GetMemorySize() {
 
 	MEMORYSTATUSEX		ram;
+	
 	ram.dwLength = sizeof(ram);
 	GlobalMemoryStatusEx(&ram);	
 	
-	int physRam = ram.ullTotalPhys >>20;
+	DWORD physRam = ram.ullTotalPhys >> 20;
+
 	Con_Printf(PRINT_ALL, "\n");
-	Com_Printf("Phisical RAM:  "S_COLOR_GREEN"%i"S_COLOR_WHITE" GB\n", (physRam + 512) >>10);
-	Com_Printf("Memory loaded: "S_COLOR_GREEN"%i"S_COLOR_WHITE" %%\n", ram.dwMemoryLoad);
+	Com_Printf("Phisical RAM:  "S_COLOR_GREEN"%d"S_COLOR_WHITE" GB\n", (physRam + 512) >>10);
+	Com_Printf("Memory loaded: "S_COLOR_GREEN"%d"S_COLOR_WHITE" %%\n", ram.dwMemoryLoad);
 	Con_Printf(PRINT_ALL, "\n");
 }
 
