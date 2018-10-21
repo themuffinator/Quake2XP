@@ -257,17 +257,12 @@ void Sys_GetMemorySize() {
 
 	MEMORYSTATUSEX		ram;
 	ram.dwLength = sizeof(ram);
-	GlobalMemoryStatusEx(&ram);
+	GlobalMemoryStatusEx(&ram);	
 	
-	// Hack from DooM3: For some reason, ullTotalPhys is sometimes off by a meg or two, so we round up to the nearest 16 megs
-	int physRam = ram.ullTotalPhys >> 30; 
-	physRam = (physRam + 8) & ~15;
-
+	int physRam = ram.ullTotalPhys >>20;
 	Con_Printf(PRINT_ALL, "\n");
-	Com_Printf("Phisical RAM:  "S_COLOR_GREEN"%i"S_COLOR_WHITE" GB\n", physRam);
-	Com_Printf("Memory loaded: "S_COLOR_GREEN"%i"S_COLOR_WHITE" PCT\n", ram.dwMemoryLoad);
-
-
+	Com_Printf("Phisical RAM:  "S_COLOR_GREEN"%i"S_COLOR_WHITE" GB\n", (physRam + 512) >>10);
+	Com_Printf("Memory loaded: "S_COLOR_GREEN"%i"S_COLOR_WHITE" %%\n", ram.dwMemoryLoad);
 	Con_Printf(PRINT_ALL, "\n");
 }
 
