@@ -17,6 +17,7 @@ in vec4		v_color;
 #include lighting.inc
 
 #define RGB_MASK_SIZE 3.0
+#define SMOOTHING 1.0 / 16.0
 
 void main(void) 
 {
@@ -47,7 +48,11 @@ if(u_console == 1){
 }
 
 if(u_2dPics == 1){
-	fragData =  vec4(diffuse.rgb * v_color.rgb, diffuse.a);
+
+    // signed distance field
+    float distance = diffuse.a;
+    float alpha = smoothstep(0.5 - SMOOTHING, 0.5 + SMOOTHING, distance);
+	fragData =  vec4(diffuse.rgb * v_color.rgb, diffuse.a * alpha);
 	return;
 }
 
