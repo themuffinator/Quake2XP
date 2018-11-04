@@ -173,7 +173,7 @@ spawn_t	spawns[] = {
 	{ "func_timer", SP_func_timer },
 	{ "func_explosive", SP_func_explosive },
 	{ "func_killbox", SP_func_killbox },
-
+	
 	{ "trigger_always", SP_trigger_always },
 	{ "trigger_once", SP_trigger_once },
 	{ "trigger_multiple", SP_trigger_multiple },

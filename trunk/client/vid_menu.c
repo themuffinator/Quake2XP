@@ -77,15 +77,15 @@ static menulist_s  		s_finish_box;
 static menuaction_s		s_apply_action;
 static menuaction_s		s_defaults_action;
 
-static	menulist_s			a_autoBump_list;
-static	menulist_s			s_radBlur_box;
-static	menulist_s			s_ssao;
-static	menulist_s			s_fxaa_box;
-static	menulist_s			s_film_grain;
-static	menulist_s			s_mb_box;
-static	menuslider_s		s_ambientLevel_slider;
+static	menulist_s		s_autoBump_list;
+static	menulist_s		s_radBlur_box;
+static	menulist_s		s_ssao;
+static	menulist_s		s_fxaa_box;
+static	menulist_s		s_film_grain;
+static	menulist_s		s_mb_box;
+static	menuslider_s	s_ambientLevel_slider;
 
-static	menuaction_s		s_menuAction_color;
+static	menuaction_s	s_menuAction_color;
 
 /////////////////////////////////////////////////////////
 //
@@ -672,14 +672,14 @@ void VID_MenuInit (void) {
 
 	// -----------------------------------------------------------------------
 
-	a_autoBump_list.generic.type = MTYPE_SPINCONTROL;
-	a_autoBump_list.generic.name = "Generate Normal Maps";
-	a_autoBump_list.generic.x = 0;
-	a_autoBump_list.generic.y = 70 * cl_fontScale->value;
-	a_autoBump_list.itemnames = yesno_names;
-	a_autoBump_list.curvalue = r_imageAutoBump->value;
-	a_autoBump_list.generic.callback = autoBumpCallBack;
-	a_autoBump_list.generic.statusbar = "Realtime Normal Maps Generation For Old Textures";
+	s_autoBump_list.generic.type = MTYPE_SPINCONTROL;
+	s_autoBump_list.generic.name = "Generate Normal Maps";
+	s_autoBump_list.generic.x = 0;
+	s_autoBump_list.generic.y = 70 * cl_fontScale->value;
+	s_autoBump_list.itemnames = yesno_names;
+	s_autoBump_list.curvalue = r_imageAutoBump->value;
+	s_autoBump_list.generic.callback = autoBumpCallBack;
+	s_autoBump_list.generic.statusbar = "Realtime Normal Maps Generation For Old Textures";
 
 	s_parallax_box.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x = 0;
@@ -832,7 +832,7 @@ if (r_vsync->value >= 3)
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_tc_box);
 
-	Menu_AddItem (&s_opengl_menu, (void *)&a_autoBump_list);
+	Menu_AddItem (&s_opengl_menu, (void *)&s_autoBump_list);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_parallax_box);
 	Menu_AddItem(&s_opengl_menu, (void *)&s_parallax_shadow);
 

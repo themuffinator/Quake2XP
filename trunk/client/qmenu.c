@@ -452,14 +452,11 @@ void Menu_DrawStatusBar (const char *string) {
 	if (string) {
 		int center = ((int)strlen(string) * fontscale * 8) * 0.5;
 
-		Draw_Fill (0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 1.0, 0.0, 0.75);
+		Draw_Fill (0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.35, 0.0, 0.88);
 		
 		Set_FontShader (qtrue);
-		RE_SetColor(colorBlack);
 		Menu_DrawStringScaled ((VID_WIDTH * 0.5) - center, VID_HEIGHT - (10 * fontscale + upOffset), fontscale, fontscale, string);
-		RE_SetColor(colorWhite);
 		Set_FontShader (qfalse);
-
 	}
 	else {
 		Draw_Fill(0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.0, 0.0, 0.0);

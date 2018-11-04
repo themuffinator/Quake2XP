@@ -98,6 +98,10 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	if (y <= -8 * scale_y)
 		return;					// totally off screen
 
+	// shadow offcets
+	int x2 = x + 3;
+	int y2 = y + 3;
+
 	row = num >> 4;
 	col = num & 15;
 
@@ -105,41 +109,115 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	fcol = col * 0.0625;
 	size = 0.0625;
 
-	GL_MBind(GL_TEXTURE0, draw_chars->texnum);
+	if (gl_state.currenttextures[gl_state.currenttmu] != draw_chars->texnum) {
+		GL_MBind(GL_TEXTURE0, draw_chars->texnum);
+	}
 
 	VA_SetElem2(texCoord[0], fcol, frow);
 	VA_SetElem2(texCoord[1], fcol + size, frow);
 	VA_SetElem2(texCoord[2], fcol + size, frow + size);
 	VA_SetElem2(texCoord[3], fcol, frow + size);
 
+	//====== draw font shadow
+	if (num != 129  && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26) { // fields and sliders filter
+		VA_SetElem2(vertCoord[0], x2, y2);
+		VA_SetElem2(vertCoord[1], x2 + 8 * scale_x, y2);
+		VA_SetElem2(vertCoord[2], x2 + 8 * scale_x, y2 + 8 * scale_y);
+		VA_SetElem2(vertCoord[3], x2, y + 8 * scale_y);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(colorCoord[i], 0.0, 0.0, 0.0, 1.0);
+
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	}
+
+	//====== draw regular font
 	VA_SetElem2(vertCoord[0], x, y);
 	VA_SetElem2(vertCoord[1], x + 8 * scale_x, y);
 	VA_SetElem2(vertCoord[2], x + 8 * scale_x, y + 8 * scale_y);
 	VA_SetElem2(vertCoord[3], x, y + 8 * scale_y);
 
-	VA_SetElem4(colorCoord[0], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-	VA_SetElem4(colorCoord[1], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-	VA_SetElem4(colorCoord[2], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-	VA_SetElem4(colorCoord[3], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(colorCoord[i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 }
 
 
-
-void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *str)
+void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char *s)
 {
 	int px, py, row, col, num, counter, quadCounter;
 	float frow, fcol, size;
+
+	px = x + 3;
+	py = y + 3;
+	
+	size = 0.0625;
+	counter = 0;
+
+	while (*s) {
+		num = *s++;
+
+		if ((num & 127) == 32) {  // space
+			px += 8 * scale_x;
+			continue;
+		}
+
+		if (y <= -8) {			// totally off screen
+			px += 8 * scale_x;
+			continue;
+		}
+
+		row = num >> 4;
+		col = num & 15;
+
+		frow = row * 0.0625;
+		fcol = col * 0.0625;
+
+		quadCounter = counter << 2;
+
+		VA_SetElem2(texCoord[quadCounter + 0], fcol, frow);
+		VA_SetElem2(texCoord[quadCounter + 1], fcol + size, frow);
+		VA_SetElem2(texCoord[quadCounter + 2], fcol + size, frow + size);
+		VA_SetElem2(texCoord[quadCounter + 3], fcol, frow + size);
+
+		VA_SetElem2(vertCoord[quadCounter + 0], px, py);
+		VA_SetElem2(vertCoord[quadCounter + 1], px + 8 * scale_x, py);
+		VA_SetElem2(vertCoord[quadCounter + 2], px + 8 * scale_x, py + 8 * scale_y);
+		VA_SetElem2(vertCoord[quadCounter + 3], px, py + 8 * scale_y);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(colorCoord[quadCounter + i], 0.0, 0.0, 0.0, 1.0);
+
+		px += 8 * scale_x;
+		counter++;
+
+		if (counter == MAX_DRAW_STRING_LENGTH){   
+			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);   
+			counter = 0;                                                            
+		}
+	}
+
+	if (counter)
+		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+}
+
+
+void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *str)
+{
+	int px, py, row, col, num, counter, quadCounter, i;
+	float frow, fcol, size;
 	unsigned char *s = (unsigned char *)str;
 
-	if (gl_state.currenttextures[gl_state.currenttmu] !=
-		draw_chars->texnum) {
+	if (gl_state.currenttextures[gl_state.currenttmu] != draw_chars->texnum) {
 		GL_MBind(GL_TEXTURE0, draw_chars->texnum);
 	}
 
+	Draw_StringShadow(x, y, scale_x, scale_y, s);
+	
 	px = x;
 	py = y;
+
 	size = 0.0625;
 	counter = 0;
 
@@ -174,18 +252,15 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		VA_SetElem2(vertCoord[quadCounter + 2], px + 8 * scale_x, py + 8 * scale_y);
 		VA_SetElem2(vertCoord[quadCounter + 3], px, py + 8 * scale_y);
 
-		VA_SetElem4(colorCoord[quadCounter + 0], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-		VA_SetElem4(colorCoord[quadCounter + 1], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-		VA_SetElem4(colorCoord[quadCounter + 2], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-		VA_SetElem4(colorCoord[quadCounter + 3], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+		for (i = 0; i < 4; i++)
+			VA_SetElem4(colorCoord[quadCounter + i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 
 		px += 8 * scale_x;
 		counter++;
 
-		if (counter == MAX_DRAW_STRING_LENGTH)
-		{       /// достигли лимита, невероятный случай! Это какой же широкий монитор должен быть?  :))
-			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);    /// Нарисуем batch
-			counter = 0;                                                            /// Начнём новый batch
+		if (counter == MAX_DRAW_STRING_LENGTH){     
+			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);   
+			counter = 0;                                            
 		}
 	}
 
@@ -283,10 +358,8 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	VA_SetElem2(vertCoord[2], x + w, y + h);
 	VA_SetElem2(vertCoord[3], x, y + h);
 
-	VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
-	VA_SetElem4(colorCoord[1], 1.0, 1.0, 1.0, 1.0);
-	VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
-	VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(colorCoord[i], 1.0, 1.0, 1.0, 1.0);
 
 	GL_BindProgram(genericProgram);
 	
@@ -508,11 +581,9 @@ void Draw_Pic2(int x, int y, image_t * gl)
 		VA_SetElem2(vertCoord[1],x + gl->width, y);
 		VA_SetElem2(vertCoord[2],x + gl->width, y + gl->height);
 		VA_SetElem2(vertCoord[3],x, y + gl->height);
-		
-		VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
-		VA_SetElem4(colorCoord[1], 1.0, 1.0, 1.0, 1.0);
-		VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
-		VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
 
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -580,11 +651,9 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 		VA_SetElem2(vertCoord[1],x + w, y);
 		VA_SetElem2(vertCoord[2],x + w, y + h);
 		VA_SetElem2(vertCoord[3],x, y + h);
-		
-		VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
-		VA_SetElem4(colorCoord[1], 1.0, 1.0, 1.0, 1.0);
-		VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
-		VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(colorCoord[i], 1.0, 1.0, 1.0, 1.0);
 
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -738,10 +807,8 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	VA_SetElem2(vertCoord[2], x + w, y + h);
 	VA_SetElem2(vertCoord[3], x, y + h);
 
-	VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
-	VA_SetElem4(colorCoord[1], 1.0, 1.0, 1.0, 1.0);
-	VA_SetElem4(colorCoord[2], 1.0, 1.0, 1.0, 1.0);
-	VA_SetElem4(colorCoord[3], 1.0, 1.0, 1.0, 1.0);
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(colorCoord[i], 1.0, 1.0, 1.0, 1.0);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
