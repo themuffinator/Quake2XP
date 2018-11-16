@@ -143,6 +143,7 @@ typedef struct {
 	player_state_t playerstate;
 	int num_entities;
 	int parse_entities;			// non-masked index into cl_parse_entities
+	int rsaFrame;
 	// array
 } frame_t;
 

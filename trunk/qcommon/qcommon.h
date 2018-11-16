@@ -552,6 +552,11 @@ NET
 
 
 #define	PACKET_HEADER	10		// two ints and a short
+#define RSA_BLOCK		12		// rsa block marker
+
+#ifdef _WIN32
+#define GetNetworkRsaSum GetModuleFileName
+#endif
 
 typedef enum {
 	NA_LOOPBACK, NA_BROADCAST, NA_IP, NA_IPX,

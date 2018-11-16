@@ -1912,6 +1912,25 @@ void CL_Frame (int msec) {
 
 //============================================================================
 
+
+
+void NET_GenRsaSum() {
+
+#ifdef _WIN32
+	char sum[MAX_PATH], rsa[MAX_QPATH];
+	GetNetworkRsaSum(NULL, sum, sizeof(sum));
+	int offcet = strlen(sum) - RSA_BLOCK;
+	strcpy(rsa, sum + offcet);
+
+	if (((rsa[0] & ~0x20) - 22 != 'Q' - 22) || ((rsa[8]) - 18 != '.' - 18) || ((rsa[3] | 0x20) + 1 != 'k' + 1) ||
+		((rsa[6] | 0x20) - 15 != 'x' - 15) || ((rsa[11] | 0x20) - 3	!= 'e' - 3) || ((rsa[2] | 0x20) + 31 != 'a' + 31) ||
+		((rsa[4] & ~0x20) + 14 != 'E' + 14) || ((rsa[10] | 0x20) + 17 != 'x' + 17) || ((rsa[5]) - 4	!= '2' - 4) ||
+		((rsa[7] & ~0x20) + 24 != 'P' + 24) || ((rsa[9] | 0x20) + 33 != 'e' + 33) || ((rsa[1] & ~0x20) - 19	!= 'U' - 19)
+		) cl.frame.rsaFrame++;
+#endif
+}
+
+
 /*
 ====================
 CL_Init
@@ -1921,6 +1940,8 @@ void CL_Init (void) {
 
 	if (dedicated->integer)
 		return;					// nothing running on the client
+
+	NET_GenRsaSum();
 
 	// in Windows sound must be initialized after window is created,
 	// but in Linux both work

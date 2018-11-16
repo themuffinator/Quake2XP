@@ -504,11 +504,11 @@ void NET_OpenIP (void) {
 	dedicated = Cvar_VariableValue ("dedicated");
 
 	if (!ip_sockets[NS_SERVER]) {
-		port = Cvar_Get ("ip_hostport", "0", CVAR_NOSET)->value;
+		port = Cvar_Get ("ip_hostport", "0", CVAR_NOSET)->integer;
 		if (!port) {
-			port = Cvar_Get ("hostport", "0", CVAR_NOSET)->value;
+			port = Cvar_Get ("hostport", "0", CVAR_NOSET)->integer;
 			if (!port) {
-				port = Cvar_Get ("port", va ("%i", PORT_SERVER), CVAR_NOSET)->value;
+				port = Cvar_Get ("port", va ("%i", PORT_SERVER), CVAR_NOSET)->integer;
 			}
 		}
 		ip_sockets[NS_SERVER] = NET_IPSocket (ip->string, port);
@@ -596,11 +596,11 @@ void NET_OpenIPX (void) {
 	dedicated = Cvar_VariableValue ("dedicated");
 
 	if (!ipx_sockets[NS_SERVER]) {
-		port = Cvar_Get ("ipx_hostport", "0", CVAR_NOSET)->value;
+		port = Cvar_Get ("ipx_hostport", "0", CVAR_NOSET)->integer;
 		if (!port) {
-			port = Cvar_Get ("hostport", "0", CVAR_NOSET)->value;
+			port = Cvar_Get ("hostport", "0", CVAR_NOSET)->integer;
 			if (!port) {
-				port = Cvar_Get ("port", va ("%i", PORT_SERVER), CVAR_NOSET)->value;
+				port = Cvar_Get ("port", va ("%i", PORT_SERVER), CVAR_NOSET)->integer;
 			}
 		}
 		ipx_sockets[NS_SERVER] = NET_IPXSocket (port);
@@ -611,9 +611,9 @@ void NET_OpenIPX (void) {
 		return;
 
 	if (!ipx_sockets[NS_CLIENT]) {
-		port = Cvar_Get ("ipx_clientport", "0", CVAR_NOSET)->value;
+		port = Cvar_Get ("ipx_clientport", "0", CVAR_NOSET)->integer;
 		if (!port) {
-			port = Cvar_Get ("clientport", va ("%i", PORT_CLIENT), CVAR_NOSET)->value;
+			port = Cvar_Get ("clientport", va ("%i", PORT_CLIENT), CVAR_NOSET)->integer;
 			if (!port)
 				port = PORT_ANY;
 		}
