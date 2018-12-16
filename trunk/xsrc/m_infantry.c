@@ -496,6 +496,14 @@ void infantry_dodge (edict_t *self, edict_t *attacker, float eta) {
 	self->monsterinfo.currentmove = &infantry_move_duck;
 }
 
+void infantry_set_firetime(edict_t *self)
+{
+	int		n;
+
+	n = (rand() & 15) + 5;
+	self->monsterinfo.pausetime = level.time + n * FRAMETIME;
+}
+
 
 void infantry_cock_gun (edict_t *self) {
 	int		n;
@@ -512,14 +520,6 @@ void infantry_fire (edict_t *self) {
 		self->monsterinfo.aiflags &= ~AI_HOLD_FRAME;
 	else
 		self->monsterinfo.aiflags |= AI_HOLD_FRAME;
-}
-
-void infantry_set_firetime(edict_t *self)
-{
-	int		n;
-
-	n = (rand() & 15) + 5;
-	self->monsterinfo.pausetime = level.time + n * FRAMETIME;
 }
 
 mframe_t infantry_frames_attack1[] =
@@ -540,6 +540,7 @@ mframe_t infantry_frames_attack1[] =
 	ai_charge, -1, NULL,
 	ai_charge, -1, NULL
 };
+
 mmove_t infantry_move_attack1 = { FRAME_attak101, FRAME_attak115, infantry_frames_attack1, infantry_run };
 
 

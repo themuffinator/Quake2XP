@@ -729,8 +729,9 @@ typedef struct {
 #define RF_CAMERAMODEL2     0x10000000
 #define RF_SHELL_GOD		0x20000000
 #define RF_NOCULL		    0x00080000
-#define RF_DISTORT		    0x80000000
 #define RF_BFG_SPRITE  		0x08000000
+#define RF_DISTORT		    0x80000000
+
 
 //ROGUE
 #define RF_IR_VISIBLE		0x00008000		// 32768

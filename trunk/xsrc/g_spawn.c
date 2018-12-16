@@ -789,6 +789,58 @@ string <stat>
 		;
 
 
+	void LoadStatusbarProgram() {
+		FILE	*f;
+		char	name[MAX_OSPATH];
+		cvar_t	*game, *dm, *sp;
+		char	buffer[4096];
+		int		len;
+
+		game = gi.cvar("game", "", 0);
+		sp = gi.cvar("sp", "", 0);
+		dm = gi.cvar("dm", "", 0);
+
+
+		if (deathmatch->value) {
+			if (!*game->string)
+				sprintf(name, "%s/hud/dmhud.lst", GAMEVERSION);
+			else
+				sprintf(name, "%s/hud/dmhud.lst", game->string);
+		}
+		else {
+			if (!*game->string)
+				sprintf(name, "%s/hud/sphud.lst", GAMEVERSION);
+			else
+				sprintf(name, "%s/hud/sphud.lst", game->string);
+		}
+
+		f = fopen(name, "rb");
+		if (!f) {
+			gi.cprintf(NULL, PRINT_HIGH, "Couldn't open %s\n", name);
+			goto old;
+		}
+
+		memset(buffer, 0, sizeof(buffer));
+		len = fread(buffer, 1, sizeof(buffer), f);
+		fclose(f);
+
+		if (len <= 0) {
+			gi.cprintf(NULL, PRINT_HIGH, "Couldn't read %s\n", name);
+			goto old;
+		}
+
+		gi.cprintf(NULL, PRINT_HIGH, "Using external hud layout "S_COLOR_GREEN"%s\n", name);
+		gi.configstring(CS_STATUSBAR, buffer);
+		return;
+
+	old:
+		gi.cprintf(NULL, PRINT_HIGH, ""S_COLOR_YELLOW"Using internal hud layout\n");
+		if (deathmatch->value)
+			gi.configstring(CS_STATUSBAR, dm_statusbar);
+		else
+			gi.configstring(CS_STATUSBAR, single_statusbar);
+	}
+
 	/*QUAKED worldspawn (0 0 0) ?
 
 	Only used for the world.
@@ -840,10 +892,7 @@ string <stat>
 		gi.configstring (CS_MAXCLIENTS, va ("%i", (int)(maxclients->value)));
 
 		// status bar program
-		if (deathmatch->value)
-			gi.configstring (CS_STATUSBAR, dm_statusbar);
-		else
-			gi.configstring (CS_STATUSBAR, single_statusbar);
+		LoadStatusbarProgram();
 
 		//---------------
 

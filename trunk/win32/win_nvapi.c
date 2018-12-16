@@ -37,6 +37,8 @@ void GLimp_InitNvApi() {
 	NvAPI_ShortString ver, string;
 
 	nvApiInit = qfalse;
+	
+	Com_Printf("\n==================================\n\n");
 
 	Com_Printf("" S_COLOR_YELLOW "...Initializing NVIDIA API\n\n");
 

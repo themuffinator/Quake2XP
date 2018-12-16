@@ -51,9 +51,6 @@
     <Filter Include="Source Files\Renderer\Headers">
       <UniqueIdentifier>{3b5d97d8-ff49-41df-8e3d-f7686c5f6ca8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Renderer\Headers\ImageLib">
-      <UniqueIdentifier>{8841ba1e-940d-4730-a76d-493813d16efd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Sound\Headers">
       <UniqueIdentifier>{33c1f4ec-2bc8-49c5-8199-54233335f2d3}</UniqueIdentifier>
     </Filter>
@@ -71,6 +68,12 @@
     </Filter>
     <Filter Include="Source Files\Cg">
       <UniqueIdentifier>{131e8761-b794-4813-a06a-0d3696cb94cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sound\Headers\openAL">
+      <UniqueIdentifier>{52b9c68e-a8d8-40f9-9fc6-70d0eb5743fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Renderer\Headers\devIL">
+      <UniqueIdentifier>{8841ba1e-940d-4730-a76d-493813d16efd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -338,16 +341,16 @@
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\ImageLib\config.h">
-      <Filter>Source Files\Renderer\Headers\ImageLib</Filter>
+      <Filter>Source Files\Renderer\Headers\devIL</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\ImageLib\il.h">
-      <Filter>Source Files\Renderer\Headers\ImageLib</Filter>
+      <Filter>Source Files\Renderer\Headers\devIL</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\ImageLib\ilu.h">
-      <Filter>Source Files\Renderer\Headers\ImageLib</Filter>
+      <Filter>Source Files\Renderer\Headers\devIL</Filter>
     </ClInclude>
     <ClInclude Include="ref_gl\ImageLib\ilut.h">
-      <Filter>Source Files\Renderer\Headers\ImageLib</Filter>
+      <Filter>Source Files\Renderer\Headers\devIL</Filter>
     </ClInclude>
     <ClInclude Include="client\snd_loc.h">
       <Filter>Source Files\Sound\Headers</Filter>
@@ -451,6 +454,18 @@
     <ClInclude Include="win32\win_languages.h">
       <Filter>Source Files\Win32\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="client\AL\al.h">
+      <Filter>Source Files\Sound\Headers\openAL</Filter>
+    </ClInclude>
+    <ClInclude Include="client\AL\alc.h">
+      <Filter>Source Files\Sound\Headers\openAL</Filter>
+    </ClInclude>
+    <ClInclude Include="client\AL\efx-presets.h">
+      <Filter>Source Files\Sound\Headers\openAL</Filter>
+    </ClInclude>
+    <ClInclude Include="client\AL\efx.h">
+      <Filter>Source Files\Sound\Headers\openAL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="win32\icon1.ico">
@@ -550,9 +565,6 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\radialBlur.vp">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\refract.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\refract.vp">
@@ -673,6 +685,9 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\color.vp">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\refract.fp">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

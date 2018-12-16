@@ -582,6 +582,9 @@ void R_DrawPlayerWeaponAmbient(void)
 	GL_DepthMask(1);
 }
 
+qboolean R_GetLightOcclusionResult();
+void R_LightOcclusionTest();
+
 void R_DrawLightScene (void)
 {
 	int i;
@@ -634,6 +637,9 @@ void R_DrawLightScene (void)
 		qglClear(GL_STENCIL_BUFFER_BIT);
 	}
 
+	if (!R_GetLightOcclusionResult())
+		continue;
+
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
 	R_CastAliasShadowVolumes(qtrue);	// player models shadows
 
@@ -667,8 +673,6 @@ void R_DrawLightScene (void)
 	R_CastAliasShadowVolumes(qfalse);	// alias models shadows
 	R_DrawLightWorld();					// light world
 	
-	num_visLights++;
-
 	//brush models light pass
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -774,8 +778,6 @@ void R_RenderSprites(void)
 	int i;
 
 	GL_DepthMask(0);
-	GL_Enable(GL_BLEND);
-	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
@@ -784,14 +786,14 @@ void R_RenderSprites(void)
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 
-	GL_MBind	(GL_TEXTURE0, r_particletexture[PT_BFG_REFR]->texnum);
-	GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
+	GL_MBind	(GL_TEXTURE0, r_distort->texnum);
+	GL_MBind	(GL_TEXTURE2, ScreenMap->texnum);
 	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
 
 	// setup program
 	GL_BindProgram(refractProgram);
 
-	qglUniform1f(U_REFR_DEFORM_MUL, 9.5);
+	qglUniform1f(U_REFR_DEFORM_MUL, 2.5);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
@@ -815,7 +817,6 @@ void R_RenderSprites(void)
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
 	
 }
@@ -1006,6 +1007,7 @@ void R_RenderView (refdef_t *fd) {
 	}
 
 	R_DrawAmbientScene();
+	R_LightOcclusionTest();
 	R_DrawLightScene();
 	R_RenderDecals();
 	R_CaptureColorBuffer();
@@ -1363,6 +1365,7 @@ void R_RegisterCvars(void)
 	r_useRadiosityBump =				Cvar_Get("r_useRadiosityBump", "1", CVAR_ARCHIVE);
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 	r_zFar =							Cvar_Get("r_zFar", "4096", CVAR_ARCHIVE);
+	r_useLightOcclusions =				Cvar_Get("r_useLightOcclusions", "1", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.65", CVAR_ARCHIVE);
@@ -1753,7 +1756,18 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramUniformMatrix3x4fv =	(PFNGLPROGRAMUNIFORMMATRIX3X4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3x4fv");
 	glProgramUniformMatrix4x3fv =	(PFNGLPROGRAMUNIFORMMATRIX4X3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x3fv");
 	
-	glBindTextureUnit =			(PFNGLBINDTEXTUREUNITPROC)				qwglGetProcAddress("glBindTextureUnit");
+	glBindTextureUnit =			(PFNGLBINDTEXTUREUNITPROC)		qwglGetProcAddress("glBindTextureUnit");
+	glBindTextures =			(PFNGLBINDTEXTURESPROC)			qwglGetProcAddress("glBindTextures");
+
+	glGenQueries		= (PFNGLGENQUERIESPROC)			qwglGetProcAddress("glGenQueries");
+	glDeleteQueries		= (PFNGLDELETEQUERIESPROC)		qwglGetProcAddress("glDeleteQueries");
+	glIsQuery			= (PFNGLISQUERYPROC)			qwglGetProcAddress("glIsQuery");
+	glBeginQuery		= (PFNGLBEGINQUERYPROC)			qwglGetProcAddress("glBeginQuery");
+	glEndQuery			= (PFNGLENDQUERYPROC)			qwglGetProcAddress("glEndQuery");
+	glGetQueryiv		= (PFNGLGETQUERYIVPROC)			qwglGetProcAddress("glGetQueryiv");
+	glGetQueryObjectiv	= (PFNGLGETQUERYOBJECTIVPROC)	qwglGetProcAddress("glGetQueryObjectiv");
+	glGetQueryObjectuiv	= (PFNGLGETQUERYOBJECTUIVPROC)	qwglGetProcAddress("glGetQueryObjectuiv");
+
 
 	gl_config.vendor_string					= (const char*)qglGetString(GL_VENDOR);
 	gl_config.renderer_string				= (const char*)qglGetString(GL_RENDERER);
@@ -1851,6 +1865,10 @@ int R_Init(void *hinstance, void *hWnd)
 
 	qglEnable(GL_FRAMEBUFFER_SRGB);
 	Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
+
+	int queryBits;
+	glGetQueryiv(GL_SAMPLES_PASSED, GL_QUERY_COUNTER_BITS, &queryBits);
+	Com_Printf("...found [" S_COLOR_GREEN "%i" S_COLOR_WHITE "] query bits\n", queryBits);
 
 	Com_Printf("\n");
 	Com_Printf("=====================================\n");

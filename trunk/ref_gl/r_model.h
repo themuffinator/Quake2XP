@@ -83,9 +83,10 @@ typedef struct worldShadowLight_s {
 	GLuint		iboId;
 	int			iboNumIndices;
 
-	qboolean	directVisibled, visible;
-	GLuint		occID;
-	int			framecount;
+	GLuint		vboBoxId;
+	GLuint		vaoBoxId;
+
+	GLuint		occId;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;

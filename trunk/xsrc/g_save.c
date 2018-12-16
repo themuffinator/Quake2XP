@@ -1810,8 +1810,7 @@ only happens when a new game is started or a save game
 is loaded.
 ============
 */
-extern cvar_t *r_radialBlur;
-extern cvar_t	*weaponHitAccuracy;
+
 
 void InitGame (void) {
 	gi.dprintf ("==== InitGame ====\n");

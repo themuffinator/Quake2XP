@@ -826,7 +826,7 @@ void R_InitPrograms (void) {
 	}
 /*
 	Com_Printf("Load "S_COLOR_YELLOW"fbo program"S_COLOR_WHITE" ");
-	fbo2screenProgram = R_FindProgram("fbo2screen", qtrue, qtrue, qfalse, qfalse, qfalse);
+	fbo2screenProgram = R_FindProgram("fbo2screen", S_DEFAULT);
 	if (fbo2screenProgram->valid) {
 		Com_Printf("succeeded\n");
 		id = fbo2screenProgram->id;

@@ -4,7 +4,7 @@
 */
 #include "r_local.h"
 
-void Tangent4TrisMD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal)
+void CalcTangent4MD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal)
 {
 	float *v0, *v1, *v2;
 	float *st0, *st1, *st2;
@@ -103,7 +103,7 @@ Mod_LoadAliasMD3Model
 */
 void Mod_LoadMD3(model_t *mod, void *buffer)
 {
-	int					version, i, j, l, ll, k;
+	int					version, i, j, k, l, m;
 	dmd3_t				*inModel;
 	dmd3frame_t			*inFrame;
 	dmd3tag_t			*inTag;
@@ -370,13 +370,13 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				vec3_t tangent;
 				vec3_t binormal;
 
-				Tangent4TrisMD3(&outMesh->indexes[j * 3], outVerts, outMesh->stcoords, tangent, binormal);
+				CalcTangent4MD3(&outMesh->indexes[j * 3], outVerts, outMesh->stcoords, tangent, binormal);
 				// for all vertices in the tri
 				for (k = 0; k<3; k++){
 
-					ll = outMesh->indexes[j * 3 + k];
-					VectorAdd(tangents[ll], tangent, tangents[ll]);
-					VectorAdd(binormals[ll], binormal, binormals[ll]);
+					m = outMesh->indexes[j * 3 + k];
+					VectorAdd(tangents[m], tangent, tangents[m]);
+					VectorAdd(binormals[m], binormal, binormals[m]);
 				}
 			}
 

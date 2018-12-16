@@ -134,6 +134,9 @@ void EFX_GetRoomSize() {
 	trace_t trace;
 	float sum, frontL, backL, leftL, rightL, upL, downL;
 
+	if (CL_PMpointcontents(cl.refdef.vieworg) & CONTENTS_SOLID)
+		return;
+
 	if (!cl.refresh_prepped)
 		return;
 

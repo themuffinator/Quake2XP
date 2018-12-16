@@ -11,7 +11,7 @@
 
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"xatrix"
+#define	GAMEVERSION	"baseq2"
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -543,8 +543,11 @@ extern cvar_t	*cl_3dhud;
 extern cvar_t   *sv_solidcorpse;
 extern cvar_t	*net_compatibility;
 
-cvar_t	*g_noStopMusic;
-cvar_t	*g_infinityGibs;
+extern cvar_t *r_radialBlur;
+extern cvar_t	*weaponHitAccuracy;
+
+extern cvar_t	*g_noStopMusic;
+extern cvar_t	*g_infinityGibs;
 
 void monster_reborn (edict_t *self);
 void ED_CallSpawn (edict_t *ent);
@@ -646,6 +649,34 @@ char	*vtos (vec3_t v);
 
 float vectoyaw (vec3_t vec);
 void vectoangles (vec3_t vec, vec3_t angles);
+
+void Grenade_Explode(edict_t *ent);
+void Grenade_Touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf);
+void fire_lead(edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int te_impact, int hspread, int vspread, int mod);
+void check_dodge(edict_t *self, vec3_t start, vec3_t dir, int speed);
+void Trap_Think(edict_t *ent);
+
+void M_FliesOn(edict_t *self);
+void M_FliesOff(edict_t *self);
+
+void func_clock_format_countdown(edict_t *self);
+void func_clock_reset(edict_t *self);
+void light_use(edict_t *self, edict_t *other, edict_t *activator);
+
+void drop_temp_touch(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf);
+void drop_make_touchable(edict_t *ent);
+
+void rotating_light_use(edict_t *self, edict_t *other, edict_t *activator);
+
+int CheckArmor(edict_t *ent, vec3_t point, vec3_t normal, int damage, int te_sparks, int dflags);
+int CheckPowerArmor(edict_t *ent, vec3_t point, vec3_t normal, int damage, int dflags);
+
+void SP_FixCoopSpots(edict_t *self);
+void SP_CreateCoopSpots(edict_t *self);
+
+qboolean parasite_drain_attack_ok(vec3_t start, vec3_t end);
+qboolean brain_tounge_attack_ok(vec3_t start, vec3_t end);
+
 
 //
 // g_combat.c

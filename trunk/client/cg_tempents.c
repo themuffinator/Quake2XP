@@ -840,9 +840,9 @@ void CL_ParseTEnt (void) {
 
 			pos[2] += 3.0; // grenade explosion decal hack
 			CL_AddDecalToScene (pos, vec3_origin,
-				0.1, 0.1, 0.1, 1,
-				0, 0, 0, 1,
-				45, 60000,
+				0.5, 0.0, 0.0, 1,
+				0.1, 0.0, 0.0, 1,
+				40, 10000,
 				DECAL_EXPLODE, 0, frand () * 360,
 				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -878,9 +878,9 @@ void CL_ParseTEnt (void) {
 				MSG_ReadDir (&net_message, dir);
 
 			CL_AddDecalToScene (pos, vec3_origin,
-				0.1, 0.1, 0.1, 1,
-				0, 0, 0, 1,
-				45, 60000,
+				0.5, 0.0, 0.0, 1,
+				0.1, 0.0, 0.0, 1,
+				40, 10000,
 				DECAL_EXPLODE, 0, frand () * 360,
 				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -917,9 +917,9 @@ void CL_ParseTEnt (void) {
 			}
 
 			CL_AddDecalToScene (pos, vec3_origin,
-				0.1, 0.1, 0.1, 1,
-				0, 0, 0, 1,
-				45, 60000,
+				0.5, 0.0, 0.0, 1,
+				0.1, 0.0, 0.0, 1,
+				40, 10000,
 				DECAL_EXPLODE, 0, frand () * 360,
 				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -973,10 +973,10 @@ void CL_ParseTEnt (void) {
 				MSG_ReadDir (&net_message, dir);
 
 			CL_AddDecalToScene (pos, vec3_origin,
-				0.1, 0.1, 0.1, 1,
-				0.1, 0.1, 0.1, 1,
-				45, 60000,
-				DECAL_BFG, 0, frand () * 360,
+				0.5, 0.0, 0.0, 1,
+				0.1, 0.0, 0.0, 1,
+				55, 20000,
+				DECAL_EXPLODE, 0, frand () * 360,
 				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 			CL_BfgExplosion(pos);
@@ -1114,9 +1114,9 @@ void CL_ParseTEnt (void) {
 				S_StartSound (pos, 0, 0, cl_sfx_rockexp, 1, ATTN_EXPLOSION, 0);
 
 			CL_AddDecalToScene (pos, vec3_origin,
-				0.1, 0.1, 0.1, 1,
-				0, 0, 0, 1,
-				56, 60000,
+				0.5, 0.0, 0.0, 1,
+				0.1, 0.0, 0.0, 1,
+				40, 10000,
 				DECAL_EXPLODE, 0, frand () * 360,
 				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

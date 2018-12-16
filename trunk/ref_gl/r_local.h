@@ -309,6 +309,7 @@ cvar_t	*r_ambientSpecularScale;
 cvar_t	*r_useRadiosityBump;
 cvar_t	*r_zNear;
 cvar_t	*r_zFar;
+cvar_t	*r_useLightOcclusions;
 
 cvar_t	*hunk_bsp;
 cvar_t	*hunk_md2;

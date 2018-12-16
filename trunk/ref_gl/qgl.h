@@ -577,14 +577,14 @@ extern PFNGLSTENCILMASKSEPARATEPROC			qglStencilMaskSeparate;
 
 extern PFNGLDEPTHBOUNDSEXTPROC				glDepthBoundsEXT;
 
-extern PFNGLGENQUERIESPROC					qglGenQueries;
-extern PFNGLDELETEQUERIESPROC				qglDeleteQueries;
-extern PFNGLISQUERYPROC						qglIsQuery;
-extern PFNGLBEGINQUERYPROC					qglBeginQuery;
-extern PFNGLENDQUERYPROC					qglEndQuery;
-extern PFNGLGETQUERYIVPROC					qglGetQueryiv;
-extern PFNGLGETQUERYOBJECTIVPROC			qglGetQueryObjectiv;
-extern PFNGLGETQUERYOBJECTUIVPROC			qglGetQueryObjectuiv;
+extern PFNGLGENQUERIESPROC					glGenQueries;
+extern PFNGLDELETEQUERIESPROC				glDeleteQueries;
+extern PFNGLISQUERYPROC						glIsQuery;
+extern PFNGLBEGINQUERYPROC					glBeginQuery;
+extern PFNGLENDQUERYPROC					glEndQuery;
+extern PFNGLGETQUERYIVPROC					glGetQueryiv;
+extern PFNGLGETQUERYOBJECTIVPROC			glGetQueryObjectiv;
+extern PFNGLGETQUERYOBJECTUIVPROC			glGetQueryObjectuiv;
 
 extern PFNGLDRAWRANGEELEMENTSPROC			qglDrawRangeElements;
 
@@ -781,6 +781,7 @@ extern PFNGLPROGRAMUNIFORMMATRIX3X4FVPROC		glProgramUniformMatrix3x4fv;
 extern PFNGLPROGRAMUNIFORMMATRIX4X3FVPROC		glProgramUniformMatrix4x3fv;
 
 extern PFNGLBINDTEXTUREUNITPROC					glBindTextureUnit;
+extern PFNGLBINDTEXTURESPROC					glBindTextures;
 
 extern	PFNGLMULTIDRAWELEMENTSPROC				glMultiDrawElements;
 extern	PFNGLMULTIDRAWARRAYSPROC				glMultiDrawArrays;

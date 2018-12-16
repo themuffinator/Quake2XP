@@ -157,8 +157,8 @@ void SP_target_secret (edict_t *ent) {
 Counts a goal completed.
 These are single use targets.
 */
-void use_target_goal(edict_t *ent, edict_t *other, edict_t *activator) {
-	gi.sound(ent, CHAN_VOICE, ent->noise_index, 1, ATTN_NORM, 0);
+void use_target_goal (edict_t *ent, edict_t *other, edict_t *activator) {
+	gi.sound (ent, CHAN_VOICE, ent->noise_index, 1, ATTN_NORM, 0);
 
 	level.found_goals++;
 
@@ -167,8 +167,8 @@ void use_target_goal(edict_t *ent, edict_t *other, edict_t *activator) {
 			gi.configstring(CS_CDTRACK, "0");
 	}
 
-	G_UseTargets(ent, activator);
-	G_FreeEdict(ent);
+	G_UseTargets (ent, activator);
+	G_FreeEdict (ent);
 }
 
 void SP_target_goal (edict_t *ent) {

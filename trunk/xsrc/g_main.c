@@ -62,6 +62,9 @@ cvar_t	*net_compatibility;
 cvar_t	*r_radialBlur;
 cvar_t  *sv_stopClock;
 cvar_t	*weaponHitAccuracy;
+cvar_t	*g_noStopMusic;
+cvar_t	*g_infinityGibs;
+
 
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
 void ClientThink (edict_t *ent, usercmd_t *cmd);

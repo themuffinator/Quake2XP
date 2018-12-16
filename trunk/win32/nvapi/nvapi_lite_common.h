@@ -87,12 +87,21 @@ typedef signed   short   NvS16;
 typedef unsigned short   NvU16;
 typedef unsigned char    NvU8;
 typedef signed   char    NvS8;
+typedef float            NvF32;
+
+/*!
+ * Macro to convert NvU32 to NvF32.
+ */
+#define NvU32TONvF32(_pData) *(NvF32 *)(_pData)
+/*!
+ * Macro to convert NvF32 to NvU32.
+ */
+#define NvF32TONvU32(_pData) *(NvU32 *)(_pData)
 
 /* Boolean type */
 typedef NvU8 NvBool;
 #define NV_TRUE           ((NvBool)(0 == 0))
 #define NV_FALSE          ((NvBool)(0 != 0))
-
 
 typedef struct _NV_RECT
 {
@@ -101,7 +110,6 @@ typedef struct _NV_RECT
     NvU32    right;
     NvU32    bottom;
 } NV_RECT;
-
 
 
 #define NV_DECLARE_HANDLE(name) struct name##__ { int unused; }; typedef struct name##__ *name
@@ -115,13 +123,15 @@ typedef struct _NV_RECT
 //!                 reconfiguration (going into or out of SLI modes) occurs.  If NVAPI_HANDLE_INVALIDATED
 //!                 is received by an app, it should discard all handles, and re-enumerate them.
 //! @{  
+NV_DECLARE_HANDLE(NvLogicalGpuHandle);             //!< One or more physical GPUs acting in concert (SLI)
+NV_DECLARE_HANDLE(NvPhysicalGpuHandle);            //!< A single physical GPU
 NV_DECLARE_HANDLE(NvDisplayHandle);                //!< Display Device driven by NVIDIA GPU(s) (an attached display)
 NV_DECLARE_HANDLE(NvMonitorHandle);                //!< Monitor handle
 NV_DECLARE_HANDLE(NvUnAttachedDisplayHandle);      //!< Unattached Display Device driven by NVIDIA GPU(s)
-NV_DECLARE_HANDLE(NvLogicalGpuHandle);             //!< One or more physical GPUs acting in concert (SLI)
-NV_DECLARE_HANDLE(NvPhysicalGpuHandle);            //!< A single physical GPU
-NV_DECLARE_HANDLE(NvEventHandle);                  //!< A handle to an event registration instance
 NV_DECLARE_HANDLE(NvVisualComputingDeviceHandle);  //!< A handle to a Visual Computing Device
+NV_DECLARE_HANDLE(NvEventHandle);                  //!< A handle to an event registration instance
+
+
 NV_DECLARE_HANDLE(NvHICHandle);                    //!< A handle to a Host Interface Card
 NV_DECLARE_HANDLE(NvGSyncDeviceHandle);            //!< A handle to a Sync device
 NV_DECLARE_HANDLE(NvVioHandle);                    //!< A handle to an SDI device
@@ -153,7 +163,6 @@ static const NVDX_SwapChainHandle NVDX_SWAPCHAIN_NONE = 0;
 #define NVAPI_LONG_STRING_MAX       256
 #define NVAPI_SHORT_STRING_MAX      64
 
-
 typedef struct 
 {
     NvS32   sX;
@@ -173,10 +182,11 @@ typedef struct
     NvU8  data4[8];
 } NvGUID, NvLUID;
 
+
 #endif //#ifndef NvGUID_Defined
-
-
 #define NVAPI_MAX_PHYSICAL_GPUS             64
+
+
 #define NVAPI_MAX_PHYSICAL_BRIDGES          100
 #define NVAPI_PHYSICAL_GPUS                 32
 #define NVAPI_MAX_LOGICAL_GPUS              64
@@ -186,20 +196,21 @@ typedef struct
 #define NVAPI_MAX_GPU_PER_TOPOLOGY          8
 #define NVAPI_MAX_DISPLAY_HEADS             2
 #define NVAPI_ADVANCED_DISPLAY_HEADS        4
-#define NVAPI_MAX_DISPLAYS                  128 //NVAPI_PHYSICAL_GPUS * NVAPI_ADVANCED_DISPLAY_HEADS
+#define NVAPI_MAX_DISPLAYS                  NVAPI_PHYSICAL_GPUS * NVAPI_ADVANCED_DISPLAY_HEADS
 #define NVAPI_MAX_ACPI_IDS                  16
 #define NVAPI_MAX_VIEW_MODES                8
-#define NV_MAX_HEADS                        4   //!< Maximum heads, each with NVAPI_DESKTOP_RES resolution
-#define NVAPI_MAX_HEADS_PER_GPU             32
 
-#define NV_MAX_HEADS        4   //!< Maximum number of heads, each with #NVAPI_DESKTOP_RES resolution
-#define NV_MAX_VID_STREAMS  4   //!< Maximum number of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
-#define NV_MAX_VID_PROFILES 4   //!< Maximum number of output video profiles supported
-
-#define NVAPI_SYSTEM_MAX_DISPLAYS           256// NVAPI_MAX_PHYSICAL_GPUS * NV_MAX_HEADS
 
 #define NVAPI_SYSTEM_MAX_HWBCS              128
 #define NVAPI_SYSTEM_HWBC_INVALID_ID        0xffffffff
+
+#define NVAPI_SYSTEM_MAX_DISPLAYS           NVAPI_MAX_PHYSICAL_GPUS * NV_MAX_HEADS
+#define NV_MAX_HEADS                        4   //!< Maximum heads, each with NVAPI_DESKTOP_RES resolution
+#define NVAPI_MAX_HEADS_PER_GPU             32
+#define NV_MAX_VID_STREAMS      4   //!< Maximum number of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
+#define NV_MAX_VID_STREAMS_EX  20   //!< Increasing MAX no. of input video streams, each with a #NVAPI_VIDEO_SRC_INFO
+#define NV_MAX_VID_PROFILES     4   //!< Maximum number of output video profiles supported
+
 #define NVAPI_MAX_AUDIO_DEVICES             16
 
 
@@ -351,7 +362,7 @@ typedef enum _NvAPI_Status
     NVAPI_ECID_KEY_VERIFICATION_FAILED          = -198,    //!< The encrypted public key verification has failed.
     NVAPI_FIRMWARE_OUT_OF_DATE                  = -199,    //!< The device's firmware is out of date.
     NVAPI_FIRMWARE_REVISION_NOT_SUPPORTED       = -200,    //!< The device's firmware is not supported.
-    NVAPI_LICENSE_CALLER_AUTHENTICATION_FAILED  = -201,    //!< The caller is not authorized to modify the License.		
+    NVAPI_LICENSE_CALLER_AUTHENTICATION_FAILED  = -201,    //!< The caller is not authorized to modify the License.
     NVAPI_D3D_DEVICE_NOT_REGISTERED             = -202,    //!< The user tried to use a deferred context without registering the device first 	 
     NVAPI_RESOURCE_NOT_ACQUIRED                 = -203,    //!< Head or SourceId was not reserved for the VR Display before doing the Modeset.
     NVAPI_TIMING_NOT_SUPPORTED                  = -204,    //!< Provided timing is not supported.
@@ -359,6 +370,18 @@ typedef enum _NvAPI_Status
     NVAPI_PCLK_LIMITATION_FAILED                = -206,    //!< Provided mode is over sink device pclk limitation.
     NVAPI_NO_CONNECTOR_FOUND                    = -207,    //!< No connector on GPU found. 
     NVAPI_HDCP_DISABLED                         = -208,    //!< When a non-HDCP capable HMD is connected, we would inform user by this code.
+    NVAPI_API_IN_USE                            = -209,    //!< Atleast an API is still being called
+    NVAPI_NVIDIA_DISPLAY_NOT_FOUND              = -210,    //!< No display found on Nvidia GPU(s).
+    NVAPI_PRIV_SEC_VIOLATION                    = -211,    //!< Priv security violation, improper access to a secured register.
+    NVAPI_INCORRECT_VENDOR                      = -212,    //!< NVAPI cannot be called by this vendor
+    NVAPI_DISPLAY_IN_USE                        = -213,    //!< DirectMode Display is already in use
+    NVAPI_UNSUPPORTED_CONFIG_NON_HDCP_HMD       = -214,    //!< The Config is having Non-NVidia GPU with Non-HDCP HMD connected
+    NVAPI_MAX_DISPLAY_LIMIT_REACHED             = -215,    //!< GPU's Max Display Limit has Reached
+    NVAPI_INVALID_DIRECT_MODE_DISPLAY           = -216,    //!< DirectMode not Enabled on the Display
+    NVAPI_GPU_IN_DEBUG_MODE                     = -217,    //!< GPU is in debug mode, OC is NOT allowed.
+    NVAPI_D3D_CONTEXT_NOT_FOUND                 = -218,    //!< No NvAPI context was found for this D3D object
+    NVAPI_STEREO_VERSION_MISMATCH               = -219,    //!< there is version mismatch between stereo driver and dx driver
+    NVAPI_GPU_NOT_POWERED                       = -220,    //!< GPU is not powered and so the request cannot be completed.
 } NvAPI_Status;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -417,9 +440,9 @@ typedef struct
     NvU32   systemVideoMemory;                 //!< Size(in kb) of system memory the driver allocates at load time.
     NvU32   sharedSystemMemory;                //!< Size(in kb) of shared system memory that driver is allowed to commit for surfaces across all allocations.
     NvU32   curAvailableDedicatedVideoMemory;  //!< Size(in kb) of the current available physical framebuffer for allocating video memory surfaces.
-	NvU32   dedicatedVideoMemoryEvictionsSize; //!< Size(in kb) of the total size of memory released as a result of the evictions.
-	NvU32   dedicatedVideoMemoryEvictionCount; //!< Indicates the number of eviction events that caused an allocation to be removed from dedicated video memory to free GPU
-	                                           //!< video memory to make room for other allocations.
+    NvU32   dedicatedVideoMemoryEvictionsSize; //!< Size(in kb) of the total size of memory released as a result of the evictions.
+    NvU32   dedicatedVideoMemoryEvictionCount; //!< Indicates the number of eviction events that caused an allocation to be removed from dedicated video memory to free GPU
+                                               //!< video memory to make room for other allocations.
 } NV_DISPLAY_DRIVER_MEMORY_INFO_V3;
 
 //! \ingroup driverapi
@@ -484,7 +507,7 @@ NVAPI_INTERFACE NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DIS
 //! \note In drivers older than 105.00, all physical GPU handles get invalidated on a
 //!       modeset. So the calling applications need to renum the handles after every modeset.\n
 //!       With drivers 105.00 and up, all physical GPU handles are constant.
-//!       Physical GPU handles are constant as long as the GPUs are not physically moved and 
+//!       Physical GPU handles are constant as long as the GPUs are not physically moved and
 //!       the SBIOS VGA order is unchanged.
 //!
 //!       For GPU handles in TCC MODE please use NvAPI_EnumTCCPhysicalGPUs()
@@ -501,21 +524,22 @@ NVAPI_INTERFACE NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DIS
 //! \ingroup gpu
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount);
-#if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
+#if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__) || defined(__d3d12_h__)
 
 NV_DECLARE_HANDLE(NVDX_ObjectHandle);  // DX Objects
 static const NVDX_ObjectHandle NVDX_OBJECT_NONE = 0;
 
-#endif //if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
+#endif //if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__) || defined(__d3d12_h__)
 #if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME: NvAPI_D3D_GetObjectHandleForResource
 //
 //!   DESCRIPTION: This API gets a handle to a resource.
 //!
-//! \param [in]  pDev       The ID3D11Device, ID3D10Device or IDirect3DDevice9 to use
-//! \param [in]  pResource  The ID3D10Resource, ID3D10Resource or IDirect3DResource9 from which
+//! \param [in]  pDev       The ID3D11Device, ID3D10Device or IDirect3DDevice9 or ID3D11DeviceContext to use
+//! \param [in]  pResource  The ID3D11Resource, ID3D10Resource or IDirect3DResource9 from which
 //!                         we want the NvAPI handle
 //! \param [out]  pHandle   A handle to the resource
 //!

@@ -144,8 +144,8 @@ void CreateScreenRect (void) {
 	qglBindTexture		(GL_TEXTURE_RECTANGLE, ScreenMap->texnum);
 	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameterf	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, gl_filter_min);
+	qglTexParameterf	(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
 	qglTexImage2D		(GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, vid.width, vid.height, 0,
 						GL_RGB, GL_UNSIGNED_BYTE, NULL);

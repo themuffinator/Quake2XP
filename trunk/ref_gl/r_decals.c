@@ -133,9 +133,13 @@ void R_RenderDecals(void)
         endLerp = (float)(r_newrefdef.time - dl->time) / (float)(dl->endTime - dl->time);	
 		endLerp *= 250.0;
 
-		for (i = 0; i < 3; i++)
+		for (i = 0; i < 3; i++) {
 			decalColor[i] = dl->color[i] + (dl->endColor[i] - dl->color[i]) * endLerp;
 		
+			if (decalColor[i] < dl->endColor[i])
+				decalColor[i] = dl->endColor[i];
+		}
+
 		decalAlpha = dl->alpha + (dl->endAlpha - dl->alpha) * endLerp;
 
 		tex = r_decaltexture[dl->type]->texnum;

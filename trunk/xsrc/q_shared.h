@@ -369,9 +369,9 @@ typedef struct cvar_s {
 	char		*string;
 	char		*latched_string;	// for CVAR_LATCH vars
 	int			flags;
-	int			integer;
 	qboolean	modified;	// set each time the cvar is changed
 	float		value;
+	int			integer;
 	struct cvar_s *next;
 } cvar_t;
 

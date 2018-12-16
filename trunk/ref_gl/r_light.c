@@ -328,6 +328,7 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 
 			if (!R_AddLightToFrame (light, weapon))
 				continue;
+			num_visLights++;
 			light->next = shadowLight_frame;
 			shadowLight_frame = light;
 		}
@@ -1553,6 +1554,83 @@ void MakeFrustum4Light (worldShadowLight_t *light, qboolean ingame) {
 	light->frust[3].dist = DotProduct (light->frust[3].normal, v0);
 }
 
+void R_CreateOcclusionBbox(worldShadowLight_t *light) {
+
+	vec3_t		v[8], boxCache[36];
+	vec3_t		tmpOrg, tmpRad;
+
+	VectorCopy(light->origin, tmpOrg);
+	VectorCopy(light->radius, tmpRad);
+	VectorScale(tmpRad, 0.75, tmpRad);
+
+	VectorSet(v[0], tmpOrg[0] - tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] - tmpRad[2]);
+	VectorSet(v[1], tmpOrg[0] - tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] + tmpRad[2]);
+	VectorSet(v[2], tmpOrg[0] - tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] - tmpRad[2]);
+	VectorSet(v[3], tmpOrg[0] - tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] + tmpRad[2]);
+	VectorSet(v[4], tmpOrg[0] + tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] - tmpRad[2]);
+	VectorSet(v[5], tmpOrg[0] + tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] + tmpRad[2]);
+	VectorSet(v[6], tmpOrg[0] + tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] - tmpRad[2]);
+	VectorSet(v[7], tmpOrg[0] + tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] + tmpRad[2]);
+
+	//front
+	VA_SetElem3(boxCache[0], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(boxCache[1], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(boxCache[2], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(boxCache[3], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(boxCache[4], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(boxCache[5], v[3][0], v[3][1], v[3][2]);
+	//right
+	VA_SetElem3(boxCache[6], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(boxCache[7], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(boxCache[8], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(boxCache[9], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(boxCache[10], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(boxCache[11], v[5][0], v[5][1], v[5][2]);
+	//bottom
+	VA_SetElem3(boxCache[12], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(boxCache[13], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(boxCache[14], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(boxCache[15], v[0][0], v[0][1], v[0][2]);
+	VA_SetElem3(boxCache[16], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(boxCache[17], v[6][0], v[6][1], v[6][2]);
+	//top
+	VA_SetElem3(boxCache[18], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(boxCache[19], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(boxCache[20], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(boxCache[21], v[1][0], v[1][1], v[1][2]);
+	VA_SetElem3(boxCache[22], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(boxCache[23], v[7][0], v[7][1], v[7][2]);
+	//left
+	VA_SetElem3(boxCache[24], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(boxCache[25], v[3][0], v[3][1], v[3][2]);
+	VA_SetElem3(boxCache[26], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(boxCache[27], v[2][0], v[2][1], v[2][2]);
+	VA_SetElem3(boxCache[28], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(boxCache[29], v[7][0], v[7][1], v[7][2]);
+	//back
+	VA_SetElem3(boxCache[30], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(boxCache[31], v[5][0], v[5][1], v[5][2]);
+	VA_SetElem3(boxCache[32], v[7][0], v[7][1], v[7][2]);
+	VA_SetElem3(boxCache[33], v[4][0], v[4][1], v[4][2]);
+	VA_SetElem3(boxCache[34], v[6][0], v[6][1], v[6][2]);
+	VA_SetElem3(boxCache[35], v[7][0], v[7][1], v[7][2]);
+
+	qglGenBuffers(1, &light->vboBoxId);
+	qglBindBuffer(GL_ARRAY_BUFFER, light->vboBoxId);
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(vec3_t) * 36, boxCache, GL_STATIC_DRAW);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glGenVertexArrays(1, &light->vaoBoxId);
+	glBindVertexArray(light->vaoBoxId);
+
+	qglBindBuffer(GL_ARRAY_BUFFER, light->vboBoxId);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+	
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+
+}
 
 worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style,
 	int filter, vec3_t angles, vec3_t speed, qboolean isStatic,
@@ -1719,6 +1797,9 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	tmpMatrix[3][3] = 1.f;
 
 	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
+
+	glGenQueries(1, &light->occId);
+	R_CreateOcclusionBbox(light);
 
 	r_numWorlsShadowLights++;
 	return light;
@@ -2039,8 +2120,14 @@ void DeleteShadowVertexBuffers (void) {
 
 	for (light = shadowLight_static; light; light = light->s_next) {
 
+		// shadow buffers
 		qglDeleteBuffers (1, &light->vboId);
 		qglDeleteBuffers (1, &light->iboId);
+
+		// occlusion bboxes
+		qglDeleteBuffers(1, &light->vboBoxId);
+		qglDeleteBuffers(1, &light->vaoBoxId);
+
 	}
 	numPreCachedLights = 0;
 }
@@ -2050,6 +2137,9 @@ void R_ClearWorldLights (void) {
 
 	if (shadowLight_static) {
 		for (light = shadowLight_static; light; light = next) {
+
+			glDeleteQueries(1, &light->occId);
+
 			next = light->s_next;
 			free (light);
 		}
@@ -2741,4 +2831,77 @@ void R_UpdateLightAliasUniforms()
 	qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+}
+
+
+void R_LightOcclusionTest(){
+
+	if (!r_useLightOcclusions->integer)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	GL_BindProgram(nullProgram);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+
+	GL_ColorMask(0, 0, 0, 0);
+	GL_Disable(GL_CULL_FACE);
+	GL_DepthMask(0);
+
+	R_PrepareShadowLightFrame(qfalse);
+
+	if (shadowLight_frame) {
+
+		for (currentShadowLight = shadowLight_frame; currentShadowLight; currentShadowLight = currentShadowLight->next) {
+
+			if (!currentShadowLight->isStatic)
+				continue;
+
+			glBeginQuery(GL_ANY_SAMPLES_PASSED, currentShadowLight->occId);
+
+			glBindVertexArray(currentShadowLight->vaoBoxId);
+			qglDrawArrays(GL_TRIANGLES, 0, 36);
+
+			glEndQuery(GL_ANY_SAMPLES_PASSED);
+		}
+	}
+
+	glBindVertexArray(0);
+	GL_ColorMask(1, 1, 1, 1);
+	GL_Enable(GL_CULL_FACE);
+	GL_DepthMask(1);
+}
+
+qboolean R_GetLightOcclusionResult() {
+
+	GLuint	resultReady, result;
+
+	if (!r_useLightOcclusions->integer)
+		return qtrue;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return qtrue;
+
+	if (!currentShadowLight->isStatic)
+		return qtrue;
+
+	if (num_visLights < 10)
+		return qtrue;
+
+	if (BoundsIntersectsPoint(currentShadowLight->mins, currentShadowLight->maxs, r_origin))
+		return qtrue;
+
+	glGetQueryObjectuiv(currentShadowLight->occId, GL_QUERY_RESULT_AVAILABLE, &resultReady);
+
+	if (resultReady) {
+
+		glGetQueryObjectiv(currentShadowLight->occId, GL_QUERY_RESULT, &result);
+
+		if (result)
+			return qtrue;
+		else
+			return qfalse;
+	}
+	return qtrue;
 }
