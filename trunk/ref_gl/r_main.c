@@ -992,7 +992,7 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawDepthScene();
 	R_LightOcclusionTest();
 	R_CaptureDepthBuffer();
-
+	
 	if (r_ssao->integer && !(r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))) {
 
 		R_SetupOrthoMatrix();
@@ -1011,7 +1011,7 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawLightScene();
 	R_RenderDecals();
 	R_CaptureColorBuffer();
-
+	
 	R_DrawRAScene();
 
 	R_DrawTransEntities();
@@ -1023,6 +1023,7 @@ void R_RenderView (refdef_t *fd) {
 	R_MotionBlur();
 
 	R_DrawPlayerWeapon();
+	
 }
 
 

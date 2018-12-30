@@ -261,9 +261,10 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
-
+	
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
 	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
@@ -277,10 +278,11 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
 		}
 	}
-
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, jj * sizeof(vec3_t), vertexArray);
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void R_DrawDepthAliasModel(void){
@@ -356,7 +358,12 @@ void R_DrawDepthMD3Model(void) {
 	currentmodel->max_meshes = md3Hdr->num_meshes;
 
 	R_SetupEntityMatrix(currententity);
+
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
 	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
@@ -377,11 +384,15 @@ void R_DrawDepthMD3Model(void) {
 			md3VertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
 		}
 
-		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
-		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vec3_t), md3VertexCache);
+		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
+		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, 0);
 	}
 
 	qglDisableVertexAttribArray(ATT_POSITION);
+
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 
@@ -402,12 +413,13 @@ void R_DrawDepthScene (void) {
 	R_ClearSkyBox ();
 
 	GL_BindProgram (nullProgram);
+	
+//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-//	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);

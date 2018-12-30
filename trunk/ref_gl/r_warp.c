@@ -397,7 +397,10 @@ int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox (qboolean color) {
 	int i;
 
-	GL_BindProgram(skyProgram);
+	if(!color)
+		GL_BindProgram(nullProgram);
+	else
+		GL_BindProgram(skyProgram);
 	
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
