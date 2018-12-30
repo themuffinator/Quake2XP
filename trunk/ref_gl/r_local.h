@@ -545,6 +545,7 @@ extern vec3_t skyaxis;
 
 int R_Init (void *hinstance, void *hWnd);
 void R_Shutdown (void);
+void GL_CheckError(const char *fileName, int line, const char *subr);
 
 void R_RenderView (refdef_t * fd);
 void GL_ScreenShot_f (void);
@@ -726,6 +727,8 @@ GLuint	vbo_quarterScreenQuad;
 GLuint	ibo_quadTris;
 GLuint	vbo_Dynamic;
 GLuint	ibo_Dynamic;
+GLuint	ibo_cube;
+
 GLuint	vbo_BSP;
 GLuint	ibo_BSP;
 
@@ -797,6 +800,11 @@ extern	vec3_t	lightspot;
 #define MAX_INDICES			65536
 #define MAX_VERTEX_ARRAY	8192
 #define MAX_SHADOW_VERTS	16384
+
+#define MAX_STREAM_VBO_VERTS MD3_MAX_TRIANGLES * MD3_MAX_MESHES
+#define MAX_STREAM_IBO_IDX	 MD3_MAX_TRIANGLES * MD3_MAX_MESHES * 3
+
+#define NUM_BOX_INDICES 36
 
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;

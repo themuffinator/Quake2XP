@@ -327,12 +327,12 @@ void R_DrawMD2ShadowVolume () {
 	BuildShadowVolumeTriangles (paliashdr, light);
 }
 
-vec4_t	extrudedVerts[MD3_MAX_VERTS * MD3_MAX_MESHES];
+vec4_t	extrudedVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
 float	md3ShadowVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
 
 void R_DrawMD3ShadowVolume(){
 
-	int				i, j, k, numTris, numVerts;
+	int				i, j, k, numTris, numVerts, id = 0;
 	float			frontlerp, backlerp;
 	md3Model_t		*paliashdr;
 	md3Frame_t		*frame, *oldframe;
@@ -501,6 +501,7 @@ void R_DrawMD3ShadowVolume(){
 			idx += 3;
 		}
 	}
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec4_t), md3ShadowVerts);
 	qglDrawArrays(GL_TRIANGLES, 0, numTris);
 	c_shadow_volumes++;
 }
@@ -569,7 +570,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 		}
 	}
 
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 
@@ -578,7 +579,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	re-setup vertex pointer and shader
 	=================================*/
 
-	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, md3ShadowVerts); // new vert array
+//	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0); // new vert array
 	GL_FrontFace(GL_CW); // flip cull face order vs stencil re-setup
 
 	if (player) {
@@ -616,6 +617,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_FrontFace(GL_CCW);
 	qglDisableVertexAttribArray(ATT_POSITION);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	GL_Enable(GL_CULL_FACE);
 	GL_ColorMask(1, 1, 1, 1);
 }

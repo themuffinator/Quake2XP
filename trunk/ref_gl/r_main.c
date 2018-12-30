@@ -990,6 +990,7 @@ void R_RenderView (refdef_t *fd) {
 	R_MarkLeaves();				// done here so we know if we're in water
 	
 	R_DrawDepthScene();
+	R_LightOcclusionTest();
 	R_CaptureDepthBuffer();
 
 	if (r_ssao->integer && !(r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))) {
@@ -1007,7 +1008,6 @@ void R_RenderView (refdef_t *fd) {
 	}
 
 	R_DrawAmbientScene();
-	R_LightOcclusionTest();
 	R_DrawLightScene();
 	R_RenderDecals();
 	R_CaptureColorBuffer();
