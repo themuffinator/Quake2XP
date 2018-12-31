@@ -1008,11 +1008,11 @@ void GL_SetDefaultState (void) {
 
 	// face culling
 	qglDisable (GL_CULL_FACE);
-	qglCullFace (GL_FRONT);
-	qglFrontFace (GL_CCW);
+	qglCullFace (GL_BACK);
+	qglFrontFace (GL_CW);
 	gl_state.cullFace = qfalse;
-	gl_state.cullMode = GL_FRONT;
-	gl_state.frontFace = GL_CCW;
+	gl_state.cullMode = GL_BACK;
+	gl_state.frontFace = GL_CW;
 
 	// depth bounds test
 	if (gl_state.depthBoundsTest) {

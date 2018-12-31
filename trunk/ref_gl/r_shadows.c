@@ -570,17 +570,13 @@ void R_CastAliasShadowVolumes(qboolean player) {
 		}
 	}
 
-//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-
-	/*================================
+	/*===============
 	DRAW MD3 SHADOWS
-	re-setup vertex pointer and shader
-	=================================*/
+	================*/
 
-//	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0); // new vert array
-	GL_FrontFace(GL_CW); // flip cull face order vs stencil re-setup
+	GL_FrontFace(GL_CCW); // flip cull face order vs stencil re-setup
 
 	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -615,7 +611,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 		}
 	}
 
-	GL_FrontFace(GL_CCW);
+	GL_FrontFace(GL_CW);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	GL_Enable(GL_CULL_FACE);

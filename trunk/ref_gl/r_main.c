@@ -472,7 +472,6 @@ R_SetupGL
 void R_SetupGL(void)
 {
 	// set drawing parms
-	GL_CullFace(GL_FRONT);
 	GL_Enable(GL_CULL_FACE);
 	GL_Disable(GL_BLEND);
 	GL_Enable(GL_DEPTH_TEST);
