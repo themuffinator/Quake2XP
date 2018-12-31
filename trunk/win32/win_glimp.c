@@ -702,7 +702,8 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 
 	if(!Sys_CheckWindowsVersion()){
 		Com_Printf( S_COLOR_RED "GLimp_CheckWindowsVersion() - Unsupported windows version.\nWindows 7 and above required\n" );
-		return qfalse;
+		QGL_Shutdown();
+		Com_Error(ERR_FATAL, "GLimp_CheckWindowsVersion() - Unsupported windows version.\nWindows 7 and above required\n");
 	}
 
 	Sys_WindowsInfo();

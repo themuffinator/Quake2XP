@@ -137,6 +137,7 @@ void Sys_CpuID()
 	qboolean	SMT = qfalse;
 	qboolean	EM64T = qfalse;
 	qboolean	AVX = qfalse;
+	qboolean	AVX2 = qfalse;
 
 	// __cpuid with an InfoType argument of 0 returns the number of
 	// valid Ids in CPUInfo[0] and the CPU identification string in
@@ -168,9 +169,16 @@ void Sys_CpuID()
 			MMX = (CPUInfo[3] & BIT(23));
 			EM64T = (CPUInfo[3] & BIT(29));
 			AVX = (CPUInfo[2] & BIT(28));
+			AVX2 = (CPUInfo[1] & BIT(5));
 			nFeatureInfo = CPUInfo[3];
 		}
 	}
+
+	if (nIds >= 0x00000007) {
+		__cpuid(CPUInfo, 0x00000007);
+		AVX2 = (CPUInfo[1] & BIT(5));
+	}
+
 	// Calling __cpuid with 0x80000000 as the InfoType argument
 	// gets the number of valid extended IDs.
 	__cpuid(CPUInfo, 0x80000000);
@@ -240,6 +248,8 @@ void Sys_CpuID()
 				Com_Printf(S_COLOR_YELLOW"SSE4.2 ");
 			if (AVX)
 				Com_Printf(S_COLOR_YELLOW"AVX ");
+			if (AVX2)
+				Com_Printf(S_COLOR_YELLOW"AVX2 ");
 			if (HTT)
 				Com_Printf(S_COLOR_YELLOW"HTT ");
 			if (SMT)
