@@ -185,11 +185,10 @@ void main (void) {
 	f *= f;
 	scale *= 1.0 - f * f;
 	
-	// fade on screen border
-	// avoids abrupt reflection disappearing
-	vec2 a = tc / u_viewport;
-	if (a.x > 0.5) a.x = 1.0 - a.x;
-	if (a.y > 0.5) a.y = 1.0 - a.y;
+		// fade on screen border, avoids abrupt reflection disappearing
+		vec2 a = vec2(0.5) - abs(vec2(0.5) - tc / u_viewport);
+		a = clamp(a * SCREEN_FALLOFF, vec2(0.0), vec2(1.0));
+		scale *= a.x * a.y;
 		
 	scale *= clamp(a.x * SCREEN_FALLOFF, 0.0, 1.0);
 	scale *= clamp(a.y * SCREEN_FALLOFF, 0.0, 1.0);

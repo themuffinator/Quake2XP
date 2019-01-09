@@ -19,6 +19,77 @@ in vec2		v_deformTexCoord;
 
 #include depth.inc
 
+/*
+#define NUM_SAMPLES 36
+
+const vec2 boxOffsets[NUM_SAMPLES] = vec2[](
+	vec2( 0.0, 0.0),
+    vec2( 1.0, 0.0), 
+    vec2( 2.0, 0.0), 
+    vec2( 3.0, 0.0), 
+    vec2( 4.0, 0.0),
+    vec2( 5.0, 0.0),
+    vec2( 6.0, 0.0),
+    vec2( 7.0, 0.0),
+    vec2( 8.0, 0.0),
+
+    vec2( 0.0, 0.0),
+    vec2(-1.0, 0.0), 
+    vec2(-2.0, 0.0), 
+    vec2(-3.0, 0.0), 
+    vec2(-4.0, 0.0),
+    vec2(-5.0, 0.0),
+    vec2(-6.0, 0.0),
+    vec2(-7.0, 0.0),
+    vec2(-8.0, 0.0),
+
+    vec2( 0.0, 0.0),
+    vec2( 0.0, 1.0), 
+    vec2( 0.0, 2.0), 
+    vec2( 0.0, 3.0), 
+    vec2( 0.0, 4.0),
+    vec2( 0.0, 5.0),
+    vec2( 0.0, 6.0),
+    vec2( 0.0, 7.0),
+    vec2( 0.0, 8.0),
+
+    vec2( 0.0,  0.0),
+    vec2( 0.0, -1.0), 
+    vec2( 0.0, -2.0), 
+    vec2( 0.0, -3.0), 
+    vec2( 0.0, -4.0),
+    vec2( 0.0, -5.0),
+    vec2( 0.0, -6.0),
+    vec2( 0.0, -7.0),
+    vec2( 0.0, -8.0)
+	);
+
+vec4 boxBlur(sampler2DRect blurTex){
+
+ vec4 sum = vec4(0.0);
+ 
+ for(int i = 0; i< NUM_SAMPLES; i++)
+    sum += texture2DRect(blurTex, gl_FragCoord.xy +boxOffsets[i]);
+
+ return sum /NUM_SAMPLES;
+}
+*/
+
+vec4 boxBlur(sampler2DRect blurTex, float  blurSamples, vec2 N){
+
+	float numSamples = (1.0 / (blurSamples * 4.0 + 1.0));
+	vec4 sum = texture2DRect( blurTex, gl_FragCoord.xy + N);	// central point
+
+	for ( float i = 1.0; i <= blurSamples; i += 1.0 ){
+
+		sum += texture2DRect(blurTex, gl_FragCoord.xy + N + vec2(i, 0.0));
+		sum += texture2DRect(blurTex, gl_FragCoord.xy + N + vec2(-i, 0.0));
+		sum += texture2DRect(blurTex, gl_FragCoord.xy + N + vec2(0.0, i));
+		sum += texture2DRect(blurTex, gl_FragCoord.xy + N + vec2(0.0, -i));
+	}
+	return sum * numSamples;
+}
+
 void main (void) {
 
 	vec2 N = texture(u_deformMap, v_deformTexCoord).xy * 2.0 - 1.0;
@@ -42,23 +113,26 @@ void main (void) {
 		N *= softness;
 		vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
 		diffuse *= A;
-		fragData = (vec4(deform, 1.0) + diffuse) * A;
+		fragData = vec4(deform, 1.0) + diffuse * u_alpha;
 		fragData *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
-	
-		fragData.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.425).r;
-		fragData.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.5).g;
-		fragData.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.575).b;
 	return;
 	}
 
 	// world refracted surfaces
 	// chromatic aberration approximation
 
-	fragData.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
-	fragData.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
-	fragData.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
-	// blend glass texture
+    vec4 clearGlass;
+    clearGlass.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
+	clearGlass.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
+	clearGlass.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
+
+    vec4 bluredGlass = boxBlur(g_colorBufferMap, max(4.0, diffuse.a * 40.0), N);
+
+    fragData = mix (bluredGlass, clearGlass, diffuse.a);
+
+    // blend glass texture
 	diffuse.rgb *= u_ambientScale;
 	fragData.xyz += diffuse.xyz * u_alpha;
-  fragData.w = 1.0;
+
+    fragData.w = 1.0;
 }
