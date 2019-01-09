@@ -97,7 +97,7 @@ qboolean GetCpuCoresThreads(qboolean ryzen) {
 	}
 
 	// Detect hyper-threads  
-	hyperThreads = cpuFeatures & (1 << 28) && cores < logical;
+	hyperThreads = cpuFeatures & BIT(28) && cores < logical;
 
 	if (ryzen)
 	{
