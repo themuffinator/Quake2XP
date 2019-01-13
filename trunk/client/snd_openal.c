@@ -206,6 +206,8 @@ void S_Init (int hardreset) {
 		s_initSound = Cvar_Get ("s_initSound", "1", CVAR_NOSET);
 		s_dynamicReverberation = Cvar_Get("s_dynamicReverberation", "1", CVAR_ARCHIVE);
 		s_useHRTF = Cvar_Get("s_useHRTF", "1", CVAR_ARCHIVE);
+		s_resamplerQuality = Cvar_Get("s_resamplerQuality", "1", CVAR_ARCHIVE);
+		s_resamplerQuality->help = "0- low quality, 4- high quality.";
 	}
 
 	if (!s_initSound->value || openalStop) {
@@ -620,6 +622,8 @@ void S_fastsound (vec3_t origin, int entnum, int entchannel,
 		alSourcef (sourceNum, AL_ROLLOFF_FACTOR, rolloff_factor);
 		alSourcef (sourceNum, AL_GAIN, /*gain*/ s_fxVolume->value);
 
+		alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
+
 		if (alConfig.efx)
 			EFX_RvbProcSrc (ch, sourceNum, qtrue);
 
@@ -786,6 +790,8 @@ void S_StartLocalSound (ALuint bufferNum) {
 			alSourcei (sourceNum, AL_SOURCE_RELATIVE, AL_TRUE);
 			alSourcei (sourceNum, AL_LOOPING, AL_FALSE);
 			alSourcef (sourceNum, AL_GAIN, /*0.47*/ s_fxVolume->value);
+			
+			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 
 			if (alConfig.efx)
 				EFX_RvbProcSrc (ch, sourceNum, qfalse);
@@ -978,6 +984,8 @@ void S_Update (vec3_t listener_position, vec3_t velocity,
 
 	if (!s_openal_numChannels)
 		return;
+
+	s_resamplerQuality->integer = ClampCvarInteger(0, alConfig.numResamplers, s_resamplerQuality->integer); // clamp
 
 	// Set up listener
 	alListenerfv (AL_POSITION, listener_position);
@@ -1250,7 +1258,8 @@ void S_Update (vec3_t listener_position, vec3_t velocity,
 			// AL_TASK_MANAGER__IS_SOURCE_RELATIVE));
 			alSourcei (sourceNum, AL_LOOPING, FlagAL_checkAL (ch, AL_FLAGS_AL_LOOPING));	// ch->loopSound);
 			alSourcef (sourceNum, AL_GAIN, current_task->TASK_AL_GAIN);
-
+			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
+			
 			if (alConfig.efx)
 				EFX_RvbProcSrc (ch, sourceNum, qtrue);
 

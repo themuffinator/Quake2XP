@@ -804,7 +804,7 @@ extern	vec3_t	lightspot;
 #define MAX_STREAM_VBO_VERTS MD3_MAX_TRIANGLES * MD3_MAX_MESHES
 #define MAX_STREAM_IBO_IDX	 MD3_MAX_TRIANGLES * MD3_MAX_MESHES * 3
 
-#define NUM_BOX_INDICES 36
+#define CUBE_INDICES 36
 
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;

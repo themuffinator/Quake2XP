@@ -153,6 +153,7 @@ LPALGETAUXILIARYEFFECTSLOTFV	alGetAuxiliaryEffectSlotfv;
 LPALCGETSTRINGISOFT alcGetStringiSOFT;
 LPALCRESETDEVICESOFT alcResetDeviceSOFT;
 
+LPALGETSTRINGISOFT alGetStringiSOFT;
 // =====================================================================
 
 #define GPA(a)			GetProcAddress(alConfig.hInstOpenAL, a);
@@ -287,6 +288,9 @@ void QAL_Shutdown (void) {
 	alGetAuxiliaryEffectSlotiv = NULL;
 	alGetAuxiliaryEffectSlotf = NULL;
 	alGetAuxiliaryEffectSlotfv = NULL;
+
+	alGetStringiSOFT = NULL;
+
 }
 
 void S_SoundInfo_f (void);
@@ -297,6 +301,12 @@ void S_SoundInfo_f (void);
  =================
  */
 qboolean AL_StartOpenAL (void);
+
+int ClampCvarInteger(int min, int max, int value) {
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
+}
 
 qboolean AL_Init (int hardreset) {
 
@@ -393,6 +403,8 @@ qboolean AL_Init (int hardreset) {
 		alSourceStopv = (LPALSOURCESTOPV)GPA ("alSourceStopv");
 		alSourceUnqueueBuffers = (LPALSOURCEUNQUEUEBUFFERS)GPA ("alSourceUnqueueBuffers");
 		alSource3i = (LPALSOURCE3I)GPA ("alSource3i");
+
+		alGetStringiSOFT = (LPALGETSTRINGISOFT)GPA ("alGetStringiSOFT");
 	}
 
 	// Initialize OpenAL subsystem
@@ -407,8 +419,31 @@ qboolean AL_Init (int hardreset) {
 	alConfig.efx = qfalse;
 
 	// Check for ALC Extensions
-	Com_Printf("\n");
 	
+	Com_Printf("\n");
+	Com_Printf("=====================================\n");
+	Com_Printf("\n");
+
+	if (!alIsExtensionPresent("AL_SOFT_source_resampler"))
+	{
+		Com_Printf(S_COLOR_MAGENTA"...AL_SOFT_source_resampler not found!\n");
+	}else
+		Com_Printf("...using AL_SOFT_source_resampler\n");
+
+	alConfig.numResamplers = alGetInteger(AL_NUM_RESAMPLERS_SOFT);
+	alConfig.defResampler = alGetInteger(AL_DEFAULT_RESAMPLER_SOFT);
+
+	s_resamplerQuality->integer = ClampCvarInteger(0, alConfig.numResamplers, s_resamplerQuality->integer);
+	ALint i;
+	Com_Printf("...Available Resamplers:\n");
+	for (i = 0; i < alConfig.numResamplers; ++i){
+
+		const ALchar *name = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, i);
+		Com_Printf(">" S_COLOR_GREEN "%i" S_COLOR_WHITE " %s\n", i, name);
+	}
+	const ALchar *currName = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, s_resamplerQuality->integer);
+	Com_Printf("\n...select " S_COLOR_GREEN "%s" S_COLOR_WHITE " resampler\n", currName);
+
 	// If EFX is enabled, determine if it's available and use it
 	if (s_useEfx->integer) {
 		if (alcIsExtensionPresent (alConfig.hDevice, "ALC_EXT_EFX") == AL_TRUE) {

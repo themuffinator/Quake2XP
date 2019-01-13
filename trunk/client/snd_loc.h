@@ -197,6 +197,18 @@ ALC_API ALCboolean ALC_APIENTRY alcResetDeviceSOFT(ALCdevice *device, const ALCi
 #define ALC_ALL_DEVICES_SPECIFIER                0x1013
 #endif
 
+#ifndef AL_SOFT_source_resampler
+#define AL_SOFT_source_resampler
+#define AL_NUM_RESAMPLERS_SOFT                   0x1210
+#define AL_DEFAULT_RESAMPLER_SOFT                0x1211
+#define AL_SOURCE_RESAMPLER_SOFT                 0x1212
+#define AL_RESAMPLER_NAME_SOFT                   0x1213
+typedef const ALchar* (AL_APIENTRY*LPALGETSTRINGISOFT)(ALenum pname, ALsizei index);
+#ifdef AL_ALEXT_PROTOTYPES
+AL_API const ALchar* AL_APIENTRY alGetStringiSOFT(ALenum pname, ALsizei index);
+#endif
+#endif
+
 /*
  =======================================================================
 
@@ -232,6 +244,10 @@ typedef struct {
 	ALCdevice *hDevice;
 	ALCcontext *hALC;
 	unsigned device_count;
+	
+	ALint numResamplers;
+	ALint defResampler;
+
 } alConfig_t;
 
 extern alConfig_t alConfig;
@@ -283,11 +299,14 @@ cvar_t	*s_device;
 cvar_t	*s_initSound;
 cvar_t	*s_dynamicReverberation;
 cvar_t	*s_useHRTF;
+cvar_t	*s_resamplerQuality;
 
 void EFX_RvbInit (void);
 void EFX_RvbUpdate (vec3_t listener_position);
 void EFX_RvbProcSrc (openal_channel_t *ch, ALuint source, qboolean enabled);
 void EFX_RvbShutdown (void);
+
+int ClampCvarInteger(int min, int max, int value);
 
 // Streaming and music definitions
 
@@ -308,7 +327,7 @@ typedef struct {
 streaming_t streaming;
 
 #define MUSIC_BUFFER_READ_SIZE   4096
-byte music_buffer[MAX_STRBUF_SIZE + MUSIC_BUFFER_READ_SIZE];       /// ������� ������ ��� �������������� ����� ������
+byte music_buffer[MAX_STRBUF_SIZE + MUSIC_BUFFER_READ_SIZE]; 
 
 qboolean S_Streaming_Start (int num_bits, int num_channels, ALsizei rate, float volume);
 int S_Streaming_Add (const byte *buffer, int num_bytes);
