@@ -65,7 +65,28 @@ qboolean AL_Init (int hardreset)
 		openalStop = qtrue;
 		return qfalse;
 	}
+  
+  if (!alIsExtensionPresent("AL_SOFT_source_resampler"))
+	{
+		Com_Printf(S_COLOR_MAGENTA"...AL_SOFT_source_resampler not found!\n");
+	}else
+		Com_Printf("...using AL_SOFT_source_resampler\n");
 
+	alConfig.numResamplers = alGetInteger(AL_NUM_RESAMPLERS_SOFT);
+	alConfig.defResampler = alGetInteger(AL_DEFAULT_RESAMPLER_SOFT);
+
+	s_resamplerQuality->integer = ClampCvarInteger(0, alConfig.numResamplers, s_resamplerQuality->integer);
+	ALint i;
+	Com_Printf("...Available Resamplers:\n");
+	for (i = 0; i < alConfig.numResamplers; ++i){
+
+		const ALchar *name = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, i);
+		Com_Printf(">" S_COLOR_GREEN "%i" S_COLOR_WHITE " %s\n", i, name);
+	}
+	const ALchar *currName = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, s_resamplerQuality->integer);
+	Com_Printf("\n...select " S_COLOR_GREEN "%s" S_COLOR_WHITE " resampler\n", currName);
+ 
+  
 	// Initialize extensions
 	alConfig.efx = qfalse;
 
