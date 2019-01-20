@@ -442,7 +442,7 @@ qboolean AL_Init (int hardreset) {
 		Com_Printf(">" S_COLOR_GREEN "%i" S_COLOR_WHITE " %s\n", i, name);
 	}
 	const ALchar *currName = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, s_resamplerQuality->integer);
-	Com_Printf("\n...select " S_COLOR_GREEN "%s" S_COLOR_WHITE " resampler\n", currName);
+	Com_Printf("...selected " S_COLOR_GREEN "%s" S_COLOR_WHITE " resampler\n\n", currName);
 
 	// If EFX is enabled, determine if it's available and use it
 	if (s_useEfx->integer) {

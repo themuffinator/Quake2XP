@@ -536,8 +536,6 @@ void V_RenderView () {
 
 		cl.refdef.time = cl.time * 0.001;
 
-		if (cl_fontScale->value < 1)
-			Cvar_Set ("cl_fontScale", "1");
 
 		// Warp if underwater ala q3a :-)
 		if (cl.refdef.rdflags & RDF_UNDERWATER) {

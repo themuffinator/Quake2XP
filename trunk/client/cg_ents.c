@@ -939,16 +939,25 @@ void CL_AddPacketEntities (frame_t * frame) {
 				ent.angles[i] = LerpAngle (a2, a1, cl.lerpfrac);
 			}
 		}
-		// hack!!!!
-		if (effects & (EF_FLASHLIGHT) && !modType("rogue") && !net_compatibility->integer) {
-			
-			static vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, right, up;
+
+		// rogue hack!!!!
+		if (modName("rogue")) {
+			if (in_flashlight.state & 3)
+				goto next;
+		}
+
+		if (effects & (EF_FLASHLIGHT) && !modName("rogue") && !net_compatibility->integer) {
+						
+			vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, up;
 			frame_t			*oldframe;
 			player_state_t	*ps, *ops;
 			extern cvar_t	*hand;
 			int				y;
+			
+		next:
 
-			if (s1->number == cl.playernum + 1) {
+			if (s1->number == cl.playernum + 1) {			
+
 				// dublicate player weapon info here
 				ps = &cl.frame.playerstate;
 				y = (cl.frame.serverframe - 1) & UPDATE_MASK;
@@ -971,7 +980,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			
 				V_AddLight (flashLightOrigin, 348, 1.0, 1.0, 0.5, flashlightDirection, 0.5, 33);
 			}
-			else {
+			else if(!modName("rogue")){
 
 				VectorCopy (ent.angles, tmpAngles);
 				AngleVectors (tmpAngles, forward, up, NULL);

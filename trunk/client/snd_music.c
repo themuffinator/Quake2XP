@@ -120,10 +120,10 @@ void Music_Play (void) {
 			break;
 
 		case MUSIC_FILES:
-			if(modType("xatrix"))
+			if(modName("xatrix"))
 				Q_snprintfz(name, sizeof(name), "music_sp1/track%02i", track);
 			else
-			if (modType("rogue"))
+			if (modName("rogue"))
 				Q_snprintfz(name, sizeof(name), "music_sp2/track%02i", track);
 			else
 				Q_snprintfz(name, sizeof(name), "music/track%02i", track);

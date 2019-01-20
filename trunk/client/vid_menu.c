@@ -515,13 +515,19 @@ void Color_MenuDraw(void)
 {
 	int w, h;
 
-	menuSize = 190 * cl_fontScale->value;
+	menuSize = 170 * cl_fontScale->value;
 
 	// draw the banner
 	Draw_GetPicSize(&w, &h, "m_banner_video");
-	Draw_PicScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
-	Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
 
+	if (cl_fontScale->value == 2) {
+		Draw_PicScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
+		Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
+	}
+	else if (cl_fontScale->value == 3) {
+		Draw_PicScaled((int)(viddef.width *0.5 - (w *0.75)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
+		Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.75)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
+	}
 	
 	Menu_AdjustCursor(&s_opengl2_menu, 1);
 	Menu_Draw(&s_opengl2_menu);
@@ -617,7 +623,7 @@ void VID_MenuInit (void) {
 		r_vsync = Cvar_Get ("r_vsync", "0", CVAR_ARCHIVE);
 
 	if (!cl_fontScale)
-		cl_fontScale = Cvar_Get ("cl_fontScale", "1", CVAR_ARCHIVE);
+		cl_fontScale = Cvar_Get ("cl_fontScale", "2", CVAR_ARCHIVE);
 
 	if (!r_ssao->integer)
 		r_ssao = Cvar_Get ("r_ssao", 0, CVAR_ARCHIVE);
@@ -867,12 +873,19 @@ void VID_MenuDraw (void) {
 
 	s_current_menu = &s_opengl_menu;
 
-	menuSize = 190 * cl_fontScale->value;
+	menuSize = 170 * cl_fontScale->value;
 
 	// draw the banner
 	Draw_GetPicSize (&w, &h, "m_banner_video");
-	Draw_PicScaled ((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
-	Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
+
+	if (cl_fontScale->value == 2) {
+		Draw_PicScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
+		Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
+	}
+	else if (cl_fontScale->value == 3) {
+		Draw_PicScaled((int)(viddef.width *0.5 - (w *0.75)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
+		Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.75)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
+	}
 
 	// move cursor to a reasonable starting position
 	Menu_AdjustCursor (s_current_menu, 1);

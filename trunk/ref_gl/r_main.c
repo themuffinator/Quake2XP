@@ -1881,7 +1881,6 @@ int R_Init(void *hinstance, void *hWnd)
 	R_LoadFont();
 
 	flareEdit = (qboolean)qfalse;
-	
 	return 0;
 }
 

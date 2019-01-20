@@ -1496,7 +1496,7 @@ void CL_Precache_f (void) {
 	CL_RequestNextDownload ();
 }
 
-
+float ClampCvar(float min, float max, float value);
 /*
 =================
 CL_InitLocal
@@ -1586,14 +1586,14 @@ void CL_InitLocal (void) {
 	cl_thirdPersonRange = Cvar_Get ("cl_thirdPersonRange", "50", CVAR_ARCHIVE);
 	cl_blood = Cvar_Get ("cl_blood", "1", CVAR_ARCHIVE);
 	cl_hudScale = Cvar_Get ("cl_hudScale", "0.8", CVAR_ARCHIVE);
-	cl_fontScale = Cvar_Get ("cl_fontScale", "2", 0);
+	cl_fontScale = Cvar_Get ("cl_fontScale", "3", 0);  
 	cl_itemsBobbing = Cvar_Get ("cl_itemsBobbing", "1", CVAR_ARCHIVE);
 	cl_hudModelScale = Cvar_Get("cl_hudModelScale", "5", CVAR_ARCHIVE);;
 	
 	scr_showTexName = Cvar_Get("scr_showTexName", "0", 0);
 
-	if (cl_fontScale->value < 1)
-		Cvar_Set ("cl_fontScale", "1");
+	cl_hudScale->value = ClampCvar(0.1, 1.0, cl_hudScale->value);
+	cl_fontScale->value = ClampCvar(2.0, 3.0, cl_fontScale->value);
 
 	//
 	// userinfo

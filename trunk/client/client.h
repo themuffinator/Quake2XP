@@ -739,6 +739,8 @@ void CL_ParticleRailRick (vec3_t org, vec3_t dir);
 #endif
 #endif
 
+int	Developer_searchpath(int who);
+qboolean modName(const char *gameDir);
 
 //
 // cl_input
@@ -753,7 +755,7 @@ typedef struct {
 extern kbutton_t in_mlook, in_klook;
 extern kbutton_t in_strafe;
 extern kbutton_t in_speed;
-extern kbutton_t in_zoom;
+extern kbutton_t in_zoom, in_flashlight;
 
 void CL_InitInput (void);
 void CL_SendCmd (void);

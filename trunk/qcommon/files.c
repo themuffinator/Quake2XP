@@ -192,6 +192,17 @@ int	Developer_searchpath (int who) {
 	return (0);
 }
 
+qboolean modName(const char *gameDir) {
+
+	searchpath_t	*search;
+
+	for (search = fs_searchpaths; search; search = search->next)
+		if (strstr(search->filename, gameDir))
+			return qtrue;
+
+	return qfalse;
+}
+
 // Psychospaz's mod detector
 qboolean modType(char *name)
 {

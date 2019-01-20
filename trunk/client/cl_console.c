@@ -486,11 +486,13 @@ void Con_DrawInput (void) {
 	char	*text;
 	int		i;
 	float	fontscale = cl_fontScale->value;
+	float	intervalScale = 0.85;
+
 	if (cls.key_dest == key_menu)
 		return;
+
 	if (cls.key_dest != key_console && cls.state == ca_active)
-		return;					// don't draw anything (always draw if not
-	// active)
+		return;					// don't draw anything (always draw if not active)
 
 	text = key_lines[edit_line];
 
@@ -510,7 +512,7 @@ void Con_DrawInput (void) {
 
 	for (i = 0; i < con.lineWidth; i++)
 		//	Draw_Char ((i + 1) << 3, con.vislines - 15, text[i]);
-		Draw_CharScaled ((i*fontscale + 1) * 8, con.vislines - 15 * fontscale, fontscale, fontscale, text[i]);
+		Draw_CharScaled ((i*fontscale + 1) * (8 * intervalScale), con.vislines - 15 * fontscale, fontscale, fontscale, text[i]);
 
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;
@@ -534,6 +536,7 @@ void Con_DrawNotify (void) {
 	char	*s;
 	int		skip;
 	int		currentColor;
+	float	intervalScale = 0.85;
 	float	fontscale = cl_fontScale->value;
 
 	currentColor = 7;
@@ -542,7 +545,7 @@ void Con_DrawNotify (void) {
 	Set_FontShader (qtrue);
 
 	v = 0;
-	
+
 	for (i = con.current - NUM_CON_TIMES + 1; i <= con.current; i++) {
 		
 		if (i < 0)
@@ -566,7 +569,7 @@ void Con_DrawNotify (void) {
 				currentColor = (text[x] >> 8) & 7;
 				RE_SetColor (ColorTable[currentColor]);
 			}
-			Draw_CharScaled ((x*fontscale + 1) * 8, v, fontscale, fontscale, text[x] & 0xff);
+			Draw_CharScaled ((x*fontscale + 1) * (8 * intervalScale), v, fontscale, fontscale, text[x] & 0xff);
 		}
 
 		v += 8 * fontscale;
@@ -590,7 +593,7 @@ void Con_DrawNotify (void) {
 			s += chat_bufferlen - (int)(((viddef.width / fontscale) / 8) - (skip + 1));
 	
 		Draw_StringScaled (skip*fontscale * 8, v, fontscale, fontscale, s);
-		Draw_CharScaled ((strlen (s) + skip)*fontscale * 8, v, fontscale, fontscale, 10 + ((cls.realtime >> 8) & 1));
+		Draw_CharScaled ((strlen (s) + skip) * fontscale * 8, v, fontscale, fontscale, 10 + ((cls.realtime >> 8) & 1));
 
 		v += 8;
 	}
@@ -616,6 +619,7 @@ void Con_DrawConsole (float frac) {
 	char		version[64];
 	char		dlbar[1024];
 	int			currentColor;
+	float		intervalScale = 0.85;
 	float		fontscale = cl_fontScale->value;
 
 	if (frac == 1.0)
@@ -639,8 +643,9 @@ void Con_DrawConsole (float frac) {
 	Com_sprintf (version, sizeof(version), "q2xp 1.26.9 (%s)", __DATE__);
 	for (x = 0; x < strlen (version); x++)
 		version[x] += 128;
+	int len = strlen(version);
 
-	Draw_StringScaled (viddef.width - 200 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version);
+	Draw_StringScaled (viddef.width - len * 8 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version);
 
 	// draw the text
 	con.vislines = lines;
@@ -691,7 +696,7 @@ void Con_DrawConsole (float frac) {
 
 			//Reset Current font color
 			RE_SetColor (ColorTable[currentColor]);
-			Draw_CharScaled ((x*fontscale + 1) * 8, y, fontscale, fontscale, text[x] & 0xFF);
+			Draw_CharScaled ((x*fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x] & 0xFF);
 		}
 	}
 

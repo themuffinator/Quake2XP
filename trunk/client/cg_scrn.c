@@ -177,7 +177,12 @@ void SCR_DrawCenterString (void) {
 			break;
 		x = (viddef.width - l * 8 * cl_fontScale->value) * 0.5;
 		SCR_AddDirtyPoint (x, y);
-		for (j = 0; j < l; j++, x += 8 * cl_fontScale->value) {
+
+		int rescale = 1.0;
+		if (cl_fontScale->value == 3)
+			rescale = 0.75;
+
+		for (j = 0; j < l; j++, x += 8 * (cl_fontScale->value * rescale)) {
 			Draw_CharScaled (x, y, cl_fontScale->value, cl_fontScale->value, start[j]);
 			if (!remaining--)
 				return;
@@ -411,16 +416,16 @@ void SCR_DrawLoading (void) {
 		
 		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 8;
 		RE_SetColor(colorGreen);
-		Draw_StringScaled (center, fontscale * scaled, fontscale * 2, fontscale * 2, mapname);
+		Draw_StringScaled (center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
 		
 		RE_SetColor (colorYellow);
-		Draw_StringScaled (0, 24 * fontscale * 2, fontscale, fontscale,
+		Draw_StringScaled (0, 44 * fontscale, fontscale, fontscale,
 			va ("%s", loadingMessages[0]));
-		Draw_StringScaled (0, 32 * fontscale * 2, fontscale, fontscale,
+		Draw_StringScaled (0, 54 * fontscale, fontscale, fontscale,
 			va ("%s", loadingMessages[1]));
-		Draw_StringScaled (0, 40 * fontscale * 2, fontscale, fontscale,
+		Draw_StringScaled (0, 64 * fontscale, fontscale, fontscale,
 			va ("%s", loadingMessages[2]));
-		Draw_StringScaled (0, 48 * fontscale * 2, fontscale, fontscale,
+		Draw_StringScaled (0, 74 * fontscale, fontscale, fontscale,
 			va ("%s", loadingMessages[3]));
 		RE_SetColor (colorWhite);
 		Set_FontShader (qfalse);
@@ -794,6 +799,7 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 			x = margin + (centerwidth - width * 8)*scale_x / 2;
 		else
 			x = margin;
+
 		for (i = 0; i < width; i++) {
 			Draw_CharScaled (x, y, scale_x, scale_y, line[i] ^ xor);
 			x += 8 * scale_x;
@@ -947,12 +953,12 @@ void SCR_DrawSpeeds (void) {
 }
 
 void SCR_DrawFPS (void) {
-	static	char	avrfps[10], minfps[14], maxfps[14];
+	static	char	avrfps[10], minfps[20];
 	static	int		fps = 0;
 	static	int		lastUpdate;
 	const	int		samPerSec = 4;
 	static	float	fpsAvg = 0;
-	const	float	fontscale = cl_fontScale->value;
+	float	fontscale = cl_fontScale->value;
 
 	fps++;
 
@@ -969,28 +975,27 @@ void SCR_DrawFPS (void) {
 		if (fpsAvg > cl.maxFps)
 			cl.maxFps = fpsAvg;
 
-			Com_sprintf(minfps, sizeof(minfps), "Min FPS %4d", cl.minFps);
-			Com_sprintf(maxfps, sizeof(maxfps), "Max FPS %4d", cl.maxFps);
-
-			Com_sprintf(avrfps, sizeof(avrfps), "%4d FPS", (int)fpsAvg);
+			Com_sprintf(minfps, sizeof(minfps), "min/max %3d/%3d fps", cl.minFps, cl.maxFps);
+			Com_sprintf(avrfps, sizeof(avrfps), "%4d fps", (int)fpsAvg);
 
 		lastUpdate = curtime;
 		fpsAvg = samPerSec * (alpha * fps + ((1 - alpha) * fpsAvg) / samPerSec);
 		fps = 0;
 	}
 
+	int avrFpsLengh = (int)strlen(avrfps);
+	int minFpsLengh = (int)strlen(minfps);
 	
 	if (cl_drawFPS->integer && (cls.state == ca_active)) {
 		
 		Set_FontShader (qtrue);
 
 		if (cl_drawFPS->integer == 2) {
-			Draw_StringScaled(viddef.width - 65 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
+			Draw_StringScaled(viddef.width - avrFpsLengh * 8 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
+			Draw_StringScaled(viddef.width - minFpsLengh * 8 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
 
-			Draw_StringScaled(viddef.width - 95 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
-			Draw_StringScaled(viddef.width - 95 * fontscale, viddef.height * 0.65, fontscale, fontscale, maxfps);
 		} else
-			Draw_StringScaled(viddef.width - 65 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
+			Draw_StringScaled(viddef.width - avrFpsLengh * 8 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
 
 		RE_SetColor (colorWhite);
 		Set_FontShader (qfalse);
@@ -1020,16 +1025,19 @@ void SCR_DrawClock (void) {
 	sprintf (tmpbuf, "Time %s", timebuf);
 	sprintf (tmpdatebuf, "Date %s", datebuf);
 
+	int timebufLengh = strlen(tmpbuf);
+	int datebufLengh = strlen(tmpdatebuf);
+
 	Set_FontShader (qtrue);
 
 
 	if (!cl_drawFPS->integer) {
-		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
-		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
+		Draw_StringScaled (viddef.width - timebufLengh * 8 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
+		Draw_StringScaled (viddef.width - datebufLengh * 8 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}
 	else {
-		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpbuf);
-		Draw_StringScaled (viddef.width - 105 * fontscale, viddef.height*0.65 + 20 * fontscale, fontscale, fontscale, tmpdatebuf);
+		Draw_StringScaled (viddef.width - timebufLengh * 8 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpbuf);
+		Draw_StringScaled (viddef.width - datebufLengh * 8 * fontscale, viddef.height*0.65 + 20 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}
 	Set_FontShader (qfalse);
 
@@ -1066,6 +1074,7 @@ void SCR_ShowTexNames() {
 
 void R_GammaRamp (void);
 float ClampCvar(float min, float max, float value);
+extern cvar_t *r_mode;
 
 void SCR_UpdateScreen (void) {
 	// if the screen is disabled (loading plaque is up, or vid mode
@@ -1087,7 +1096,12 @@ void SCR_UpdateScreen (void) {
 
 
 	cl_hudScale->value = ClampCvar(0.1, 1.0, cl_hudScale->value);
-	cl_fontScale->value = ClampCvar(2.0, 2.0, cl_fontScale->value);
+	cl_fontScale->value = ClampCvar(2.0, 3.0, cl_fontScale->value);
+
+	if(viddef.height <= 1024)
+		Cvar_Set("cl_fontScale", "2");
+	else
+		Cvar_Set("cl_fontScale", "3");
 
 	R_BeginFrame ();
 

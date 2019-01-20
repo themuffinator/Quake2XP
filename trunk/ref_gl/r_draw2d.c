@@ -99,8 +99,8 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 		return;					// totally off screen
 
 	// shadow offcets
-	int x2 = x + 3;
-	int y2 = y + 3;
+	int x2 = x + 2;
+	int y2 = y + 2;
 
 	row = num >> 4;
 	col = num & 15;
@@ -149,8 +149,8 @@ void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char
 	int px, py, row, col, num, counter, quadCounter;
 	float frow, fcol, size;
 
-	px = x + 3;
-	py = y + 3;
+	px = x + 2;
+	py = y + 2;
 	
 	size = 0.0625;
 	counter = 0;
