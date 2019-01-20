@@ -953,7 +953,7 @@ void SCR_DrawSpeeds (void) {
 }
 
 void SCR_DrawFPS (void) {
-	static	char	avrfps[10], minfps[20];
+	static	char	avrfps[10], minfps[22];
 	static	int		fps = 0;
 	static	int		lastUpdate;
 	const	int		samPerSec = 4;
