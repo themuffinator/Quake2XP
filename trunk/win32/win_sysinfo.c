@@ -263,6 +263,80 @@ void Sys_CpuID()
 
 }
 
+void GetDiskInfos()
+{
+	DWORD dwMask = 1; // Least significant bit is A: flag
+	DWORD dwDrives = GetLogicalDrives();
+	ULARGE_INTEGER freeBytes, totalBytes;
+	ULARGE_INTEGER freeBytes2, totalBytes2;
+
+	uint drvType;
+
+	char msg[24];
+	char strDrive[4] = { '\0' };
+	char strDrivex[4] = { '\0' };
+
+	// 26 letters in [A..Z] range
+	for (int i = 0; i < 26; i++)
+	{
+		//Logically 'AND' the Bitmask with 0x1. we get zero, if its a drive
+		if (dwDrives & dwMask)
+		{
+			wsprintfA((LPSTR)strDrive, "%c:", 'A' + i);
+
+			GetDiskFreeSpaceEx(strDrive, &freeBytes, &totalBytes, NULL);
+			GetDiskFreeSpaceEx(strDrive, &freeBytes2, &totalBytes2, NULL);
+
+			freeBytes.QuadPart /= (1024 * 1024 * 1024);
+			totalBytes.QuadPart /= (1024 * 1024 * 1024);
+
+			// for c-roms in megabytes
+			freeBytes2.QuadPart /= (1024 * 1024);
+			totalBytes2.QuadPart /= (1024 * 1024);
+
+			drvType = GetDriveType(strDrive);
+			switch (drvType)
+			{
+			case DRIVE_UNKNOWN:
+				wsprintf(msg, "Unknown Disk");
+				break;
+			case DRIVE_NO_ROOT_DIR:
+				wsprintf(msg, "Drive is Invalid");
+				break;
+			case DRIVE_REMOVABLE:
+				wsprintf(msg, "Removable Drive");
+				break;
+			case DRIVE_FIXED:
+				wsprintf(msg, "HDD Drive");
+				break;
+			case DRIVE_REMOTE:
+				wsprintf(msg, "Network Drive");
+				break;
+			case DRIVE_CDROM:
+				wsprintf(msg, "CD-ROM Drive");
+				break;
+			case DRIVE_RAMDISK:
+				wsprintf(msg, "RAM Disk");
+				break;
+			default:
+				wsprintf(msg, "Unknown Disk");
+				break;
+			}
+			if(drvType == DRIVE_CDROM)
+				Com_Printf("%s " S_COLOR_GREEN "%s" S_COLOR_WHITE " Full: " S_COLOR_GREEN "%i" S_COLOR_WHITE " MB | Free: " S_COLOR_GREEN "%i" S_COLOR_WHITE " MB", msg, strDrive, totalBytes2.LowPart, freeBytes2.LowPart);
+			else
+				Com_Printf("%s " S_COLOR_GREEN "%s" S_COLOR_WHITE " Full: " S_COLOR_GREEN "%i" S_COLOR_WHITE " GB | Free: " S_COLOR_GREEN "%i" S_COLOR_WHITE " GB", msg, strDrive, totalBytes.LowPart, freeBytes.LowPart);
+			Com_Printf("\n");
+
+			//Just Zero filling the buffer, to prevent overwriting or junks
+			for (int j = 0; j < 4; j++)
+				strDrive[j] = '\0';
+		}
+		// Shift one bit position to left
+		dwMask <<= 1;
+	}
+}
+
 void Sys_GetMemorySize() {
 
 	MEMORYSTATUSEX		ram;
@@ -273,9 +347,14 @@ void Sys_GetMemorySize() {
 	DWORD physRam = ram.ullTotalPhys >> 20;
 
 	Con_Printf(PRINT_ALL, "\n");
-	Com_Printf("Phisical RAM:  "S_COLOR_GREEN"%d"S_COLOR_WHITE" GB\n", (physRam + 512) >>10);
-	Com_Printf("Memory loaded: "S_COLOR_GREEN"%d"S_COLOR_WHITE" %%\n", ram.dwMemoryLoad);
+	Com_Printf("Phisical RAM:    "S_COLOR_GREEN"%d"S_COLOR_WHITE" GB\n", (physRam + 512) >>10);
+	Com_Printf("Memory loaded:   "S_COLOR_GREEN"%d"S_COLOR_WHITE" %%\n", ram.dwMemoryLoad);
+	
 	Con_Printf(PRINT_ALL, "\n");
+	
+	GetDiskInfos();
+	
+	Con_Printf(PRINT_ALL, "\n\n");
 }
 
 BOOL Is64BitWindows() {
