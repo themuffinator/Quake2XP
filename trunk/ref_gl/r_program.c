@@ -462,10 +462,10 @@ glslProgram_t *R_FindProgram (const char *name, int flags) {
 	char			*vertexSource = NULL, *fragmentSource = NULL;
 
 	if (flags & S_DEFAULT) {
-		Q_snprintfz (filename, sizeof(filename), "glsl/%s.vp", name);
+		Q_snprintfz (filename, sizeof(filename), "glsl/%s.vert", name);
 		FS_LoadFile (filename, (void **)&vertexSource);
 
-		Q_snprintfz (filename, sizeof(filename), "glsl/%s.fp", name);
+		Q_snprintfz (filename, sizeof(filename), "glsl/%s.frag", name);
 		FS_LoadFile (filename, (void **)&fragmentSource);
 	}	
 

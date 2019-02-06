@@ -1257,7 +1257,7 @@ void S_Update (vec3_t listener_position, vec3_t velocity,
 			// (current_task,
 			// AL_TASK_MANAGER__IS_SOURCE_RELATIVE));
 			alSourcei (sourceNum, AL_LOOPING, FlagAL_checkAL (ch, AL_FLAGS_AL_LOOPING));	// ch->loopSound);
-			alSourcef (sourceNum, AL_GAIN, current_task->TASK_AL_GAIN);
+			alSourcef (sourceNum, AL_GAIN, /*current_task->TASK_AL_GAIN*/ s_fxVolume->value);
 			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 			
 			if (alConfig.efx)
