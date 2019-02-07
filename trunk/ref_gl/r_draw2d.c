@@ -159,12 +159,12 @@ void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char
 		num = *s++;
 
 		if ((num & 127) == 32) {  // space
-			px += 8 * scale_x;
+			px += 6 * scale_x;
 			continue;
 		}
 
-		if (y <= -8) {			// totally off screen
-			px += 8 * scale_x;
+		if (y <= -6) {			// totally off screen
+			px += 6 * scale_x;
 			continue;
 		}
 
@@ -189,7 +189,7 @@ void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char
 		for (int i = 0; i < 4; i++)
 			VA_SetElem4(colorCoord[quadCounter + i], 0.0, 0.0, 0.0, 1.0);
 
-		px += 8 * scale_x;
+		px += 6 * scale_x;
 		counter++;
 
 		if (counter == MAX_DRAW_STRING_LENGTH){   
@@ -225,12 +225,12 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		num = *s++;
 
 		if ((num & 127) == 32) {        // space
-			px += 8 * scale_x;
+			px += 6 * scale_x;
 			continue;
 		}
 
-		if (y <= -8) {                  // totally off screen
-			px += 8 * scale_x;
+		if (y <= -6) {                  // totally off screen
+			px += 6 * scale_x;
 			continue;
 		}
 
@@ -255,7 +255,7 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		for (i = 0; i < 4; i++)
 			VA_SetElem4(colorCoord[quadCounter + i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 
-		px += 8 * scale_x;
+		px += 6 * scale_x;
 		counter++;
 
 		if (counter == MAX_DRAW_STRING_LENGTH){     

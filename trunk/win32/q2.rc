@@ -35,8 +35,8 @@ IDI_ICON1               ICON                    "icon1.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,26,8,0
- PRODUCTVERSION 1,26,8,0
+ FILEVERSION 1,26,9,0
+ PRODUCTVERSION 1,26,9,0
  FILEFLAGSMASK 0x37L
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -54,13 +54,13 @@ BEGIN
             VALUE "Comments", "18/88 build"
             VALUE "CompanyName", "Quake2xp Team"
             VALUE "FileDescription", "quake2xp"
-            VALUE "FileVersion", "1.26.8.0"
+            VALUE "FileVersion", "1.26.9.0"
             VALUE "InternalName", "quake2xp"
-            VALUE "LegalCopyright", "Quake2xp Team(C) 2017"
+            VALUE "LegalCopyright", "Quake2xp Team(C) 2019"
             VALUE "LegalTrademarks", "Quake2xp Team"
             VALUE "OriginalFilename", "quake2xp.exe"
             VALUE "ProductName", "quake2xp"
-            VALUE "ProductVersion", "1.26.8.0"
+            VALUE "ProductVersion", "1.26.9.0"
         END
     END
     BLOCK "VarFileInfo"

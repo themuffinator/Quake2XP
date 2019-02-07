@@ -51,6 +51,12 @@ void S_SoundInfo_f(void);
 qboolean AL_StartOpenAL (void);
 extern cvar_t *s_useHRTF;
 
+static int ClampCvarInteger(int min, int max, int value) {
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
+}
+
 qboolean AL_Init (int hardreset)
 {
     Com_Printf("\n");

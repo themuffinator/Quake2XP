@@ -420,7 +420,9 @@ void R_DrawDepthScene (void) {
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	
 	GL_DepthFunc(GL_LESS);
+	GL_DepthMask(1);
 
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
@@ -457,6 +459,6 @@ void R_DrawDepthScene (void) {
 			R_DrawDepthMD3Model();
 	}
 	GL_DepthFunc(GL_LEQUAL);
-
+	GL_DepthMask(0);
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

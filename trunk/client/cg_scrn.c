@@ -991,11 +991,11 @@ void SCR_DrawFPS (void) {
 		Set_FontShader (qtrue);
 
 		if (cl_drawFPS->integer == 2) {
-			Draw_StringScaled(viddef.width - avrFpsLengh * 8 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
-			Draw_StringScaled(viddef.width - minFpsLengh * 8 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
+			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
+			Draw_StringScaled(viddef.width - minFpsLengh * 6 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
 
 		} else
-			Draw_StringScaled(viddef.width - avrFpsLengh * 8 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
+			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
 
 		RE_SetColor (colorWhite);
 		Set_FontShader (qfalse);
@@ -1032,12 +1032,12 @@ void SCR_DrawClock (void) {
 
 
 	if (!cl_drawFPS->integer) {
-		Draw_StringScaled (viddef.width - timebufLengh * 8 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
-		Draw_StringScaled (viddef.width - datebufLengh * 8 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
+		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
+		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}
 	else {
-		Draw_StringScaled (viddef.width - timebufLengh * 8 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpbuf);
-		Draw_StringScaled (viddef.width - datebufLengh * 8 * fontscale, viddef.height*0.65 + 20 * fontscale, fontscale, fontscale, tmpdatebuf);
+		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpbuf);
+		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 20 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}
 	Set_FontShader (qfalse);
 

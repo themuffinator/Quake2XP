@@ -915,15 +915,16 @@ static void R_DrawTransEntities(void) {
 // draw all opaque, non-reflective stuff
 // fills reflective & alpha chains from world model
 static void R_DrawAmbientScene (void) {
-	
-	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
-		GL_DepthMask(0);
 
 	R_DrawBSP();
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		GL_DepthMask(1);
+
 	R_DrawEntitiesOnList();
 
-	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
-		GL_DepthMask(1);
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		GL_DepthMask(0);
 }
 
 // draws reflective & alpha chains from world model
@@ -1010,10 +1011,12 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawLightScene();
 	R_RenderDecals();
 	R_CaptureColorBuffer();
-
-	R_DrawParticles();
-	R_DrawRAScene();
+	
 	R_DrawTransEntities();
+	R_DrawParticles();
+	
+	R_DrawRAScene();
+	
 	R_DrawParticles();
 
 	R_CaptureColorBuffer();

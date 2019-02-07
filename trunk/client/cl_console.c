@@ -486,7 +486,7 @@ void Con_DrawInput (void) {
 	char	*text;
 	int		i;
 	float	fontscale = cl_fontScale->value;
-	float	intervalScale = 0.85;
+	float	intervalScale = 0.75;
 
 	if (cls.key_dest == key_menu)
 		return;
@@ -536,7 +536,7 @@ void Con_DrawNotify (void) {
 	char	*s;
 	int		skip;
 	int		currentColor;
-	float	intervalScale = 0.85;
+	float	intervalScale = 0.75;
 	float	fontscale = cl_fontScale->value;
 
 	currentColor = 7;
@@ -619,7 +619,7 @@ void Con_DrawConsole (float frac) {
 	char		version[64];
 	char		dlbar[1024];
 	int			currentColor;
-	float		intervalScale = 0.85;
+	float		intervalScale = 0.75;
 	float		fontscale = cl_fontScale->value;
 
 	if (frac == 1.0)
@@ -645,7 +645,7 @@ void Con_DrawConsole (float frac) {
 		version[x] += 128;
 	int len = strlen(version);
 
-	Draw_StringScaled (viddef.width - len * 8 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version);
+	Draw_StringScaled (viddef.width - len * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version);
 
 	// draw the text
 	con.vislines = lines;
