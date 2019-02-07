@@ -182,7 +182,7 @@ void SCR_DrawCenterString (void) {
 		if (cl_fontScale->value == 3)
 			rescale = 0.75;
 
-		for (j = 0; j < l; j++, x += 8 * (cl_fontScale->value * rescale)) {
+		for (j = 0; j < l; j++, x += (8 * cl_fontScale->value) * rescale) {
 			Draw_CharScaled (x, y, cl_fontScale->value, cl_fontScale->value, start[j]);
 			if (!remaining--)
 				return;

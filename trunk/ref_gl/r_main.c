@@ -1012,12 +1012,12 @@ void R_RenderView (refdef_t *fd) {
 	R_RenderDecals();
 	R_CaptureColorBuffer();
 	
-	R_DrawTransEntities();
 	R_DrawParticles();
 	
 	R_DrawRAScene();
 	
 	R_DrawParticles();
+	R_DrawTransEntities();
 
 	R_CaptureColorBuffer();
 	R_RenderSprites();

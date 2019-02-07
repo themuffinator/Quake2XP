@@ -1464,19 +1464,19 @@ void R_CreateOcclusionBbox(worldShadowLight_t *light) {
 	qglBufferData(GL_ARRAY_BUFFER, 8 * sizeof(vec3_t), v, GL_STATIC_DRAW);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glGenVertexArrays(1, &light->vaoBoxId);
-	glBindVertexArray(light->vaoBoxId);
+//	glGenVertexArrays(1, &light->vaoBoxId);
+//	glBindVertexArray(light->vaoBoxId);
 
 	glGenQueries(1, &light->occId);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
+/*	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
 	qglBindBuffer(GL_ARRAY_BUFFER, light->vboBoxId);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 
 	glBindVertexArray(0);
-
+	*/
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -2613,6 +2613,10 @@ void R_LightOcclusionTest(){
 	GL_Disable(GL_CULL_FACE);
 	GL_DepthMask(0);
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+
 	R_PrepareShadowLightFrame(qfalse);
 
 	if (shadowLight_frame) {
@@ -2623,10 +2627,10 @@ void R_LightOcclusionTest(){
 				continue;
 
 			glBeginQuery(GL_SAMPLES_PASSED, currentShadowLight->occId);
-			
-			glBindVertexArray(currentShadowLight->vaoBoxId);
-			qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, 0);
-			glBindVertexArray(0);
+
+			qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboBoxId);
+			qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+			qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
 
 			glEndQuery(GL_SAMPLES_PASSED);
 		}
@@ -2635,6 +2639,10 @@ void R_LightOcclusionTest(){
 	GL_ColorMask(1, 1, 1, 1);
 	GL_Enable(GL_CULL_FACE);
 	GL_DepthMask(1);
+	
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	qglDisableVertexAttribArray(ATT_POSITION);
 }
 
 qboolean R_GetLightOcclusionResult() {
