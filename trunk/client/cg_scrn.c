@@ -175,19 +175,15 @@ void SCR_DrawCenterString (void) {
 		for (l = 0; l < 40; l++)
 		if (start[l] == '\n' || !start[l])
 			break;
-		x = (viddef.width - l * 8 * cl_fontScale->value) * 0.5;
+		x = (viddef.width - l * 6 * cl_fontScale->value) * 0.5;
 		SCR_AddDirtyPoint (x, y);
 
-		int rescale = 1.0;
-		if (cl_fontScale->value == 3)
-			rescale = 0.75;
-
-		for (j = 0; j < l; j++, x += (8 * cl_fontScale->value) * rescale) {
+		for (j = 0; j < l; j++, x += 6 * cl_fontScale->value) {
 			Draw_CharScaled (x, y, cl_fontScale->value, cl_fontScale->value, start[j]);
 			if (!remaining--)
 				return;
 		}
-		SCR_AddDirtyPoint (x, y + 8 * cl_fontScale->value);
+		SCR_AddDirtyPoint (x, y + 6 * cl_fontScale->value);
 
 		y += 8 * cl_fontScale->value;
 
