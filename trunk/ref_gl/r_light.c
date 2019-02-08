@@ -440,6 +440,7 @@ void R_SaveLights_f (void) {
 static void DeleteCurrentLight (worldShadowLight_t *l) {
 	worldShadowLight_t *light;
 
+
 	if (l == shadowLight_static) {
 		shadowLight_static = l->s_next;
 	}
@@ -1464,21 +1465,8 @@ void R_CreateOcclusionBbox(worldShadowLight_t *light) {
 	qglBufferData(GL_ARRAY_BUFFER, 8 * sizeof(vec3_t), v, GL_STATIC_DRAW);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
-//	glGenVertexArrays(1, &light->vaoBoxId);
-//	glBindVertexArray(light->vaoBoxId);
-
 	glGenQueries(1, &light->occId);
 
-/*	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
-	qglBindBuffer(GL_ARRAY_BUFFER, light->vboBoxId);
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
-
-	glBindVertexArray(0);
-	*/
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style,
@@ -1974,7 +1962,7 @@ void DeleteShadowVertexBuffers (void) {
 
 		// occlusion bboxes
 		qglDeleteBuffers(1, &light->vboBoxId);
-		qglDeleteBuffers(1, &light->vaoBoxId);
+		glDeleteQueries(1, &light->occId);
 
 	}
 	numPreCachedLights = 0;
@@ -1985,8 +1973,6 @@ void R_ClearWorldLights (void) {
 
 	if (shadowLight_static) {
 		for (light = shadowLight_static; light; light = next) {
-
-			glDeleteQueries(1, &light->occId);
 
 			next = light->s_next;
 			free (light);
