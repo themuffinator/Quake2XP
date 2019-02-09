@@ -5,6 +5,7 @@
 
 #include "../ref_gl/r_local.h"
 #include "win_languages.h"
+#include <sysinfoapi.h>
 
 #define UI_NUM_LANGS ( sizeof( ui_Language ) / sizeof( ui_Language[0] ) )
 
@@ -64,7 +65,118 @@ int MeasureCpuSpeed()
 
 }
 
+typedef BOOL(WINAPI *LPFN_GLPI)(
+	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION,
+	PDWORD);
 
+
+// Helper function to count set bits in the processor mask.
+DWORD CountSetBits(ULONG_PTR bitMask)
+{
+	DWORD LSHIFT = sizeof(ULONG_PTR) * 8 - 1;
+	DWORD bitSetCount = 0;
+	ULONG_PTR bitTest = (ULONG_PTR)1 << LSHIFT;
+	DWORD i;
+
+	for (i = 0; i <= LSHIFT; ++i)
+	{
+		bitSetCount += ((bitMask & bitTest) ? 1 : 0);
+		bitTest /= 2;
+	}
+
+	return bitSetCount;
+}
+
+void SYS_GetCpuCount()
+{
+	LPFN_GLPI glpi;
+	BOOL done = FALSE;
+	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
+	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION ptr = NULL;
+	DWORD returnLength = 0;
+	DWORD logicalProcessorCount = 0;
+	DWORD numaNodeCount = 0;
+	DWORD processorCoreCount = 0;
+	DWORD processorL1CacheCount = 0;
+	DWORD processorL2CacheCount = 0;
+	DWORD processorL3CacheCount = 0;
+	DWORD processorPackageCount = 0;
+	DWORD byteOffset = 0;
+	PCACHE_DESCRIPTOR Cache;
+
+	glpi = (LPFN_GLPI)GetProcAddress(GetModuleHandle(TEXT("kernel32")),"GetLogicalProcessorInformation");
+	if (NULL == glpi)
+	{
+		Com_Printf(S_COLOR_RED"\nGetLogicalProcessorInformation is not supported.\n");
+		return;
+	}
+
+	while (!done)
+	{
+		DWORD rc = glpi(buffer, &returnLength);
+
+		if (FALSE == rc)
+		{
+			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				if (buffer)
+					free(buffer);
+
+				buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)malloc(returnLength);
+
+				if (NULL == buffer)
+				{
+					Com_Printf(S_COLOR_RED"\nError: Allocation failure\n");
+					return;
+				}
+			}
+			else
+			{
+				Com_Printf(S_COLOR_RED"\nError %d\n", GetLastError());
+				return;
+			}
+		}
+		else
+		{
+			done = TRUE;
+		}
+	}
+
+	ptr = buffer;
+
+	while (byteOffset + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION) <= returnLength)
+	{
+		switch (ptr->Relationship)
+		{
+		case RelationNumaNode:
+			// Non-NUMA systems report a single record of this type.
+			break;
+		case RelationProcessorCore:
+			// A hyperthreaded core supplies more than one logical processor.
+			logicalProcessorCount += CountSetBits(ptr->ProcessorMask);
+			processorCoreCount++;
+			break;
+		case RelationCache:
+			// Cache data is in ptr->Cache, one CACHE_DESCRIPTOR structure for each cache. 
+			break;
+		case RelationProcessorPackage:
+			// Logical processors share a physical package.
+			processorPackageCount++;
+			break;
+		default:
+			Com_Printf(S_COLOR_RED"\nError: Unsupported LOGICAL_PROCESSOR_RELATIONSHIP value.\n");
+			break;
+		}
+		byteOffset += sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION);
+		ptr++;
+	}
+	Com_Printf("Physical Processor Packages: " S_COLOR_GREEN "%d\n", processorPackageCount);
+	Com_Printf("Cores/Threads " S_COLOR_GREEN "%d" S_COLOR_WHITE "|" S_COLOR_GREEN "%d\n", processorCoreCount, logicalProcessorCount);
+
+	free(buffer);
+}
+
+/*
 qboolean GetCpuCoresThreads(qboolean ryzen) {
 	char cpuVendor[12];
 	uint regs[4], cpuFeatures, cores, logical;
@@ -116,6 +228,7 @@ qboolean GetCpuCoresThreads(qboolean ryzen) {
 			return qfalse;
 		}
 }
+*/
 
 void Sys_CpuID()
 {
@@ -207,7 +320,7 @@ void Sys_CpuID()
 
 			Com_Printf("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[0]);
 
-			int  count = 0;
+		/*	int  count = 0;
 			char *find = strtok(&CPUBrandString[0], " ");
 
 			while (find != NULL)
@@ -227,7 +340,9 @@ void Sys_CpuID()
 				SMT = GetCpuCoresThreads(qtrue);
 			else
 				HTT = GetCpuCoresThreads(qfalse);
-
+		*/	
+			SYS_GetCpuCount();
+			
 			float GHz = (float)dwCPUSpeed * 0.001;
 			Com_Printf("CPU Speed: ~"S_COLOR_GREEN"%.3f"S_COLOR_WHITE" GHz\n", GHz);
 			Com_Printf("Supported Extensions: ");
@@ -260,7 +375,6 @@ void Sys_CpuID()
 
 		}
 	}
-
 }
 
 void GetDiskInfos()
