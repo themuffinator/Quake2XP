@@ -97,9 +97,9 @@ void SYS_GetCpuCount()
 	DWORD logicalProcessorCount = 0;
 	DWORD numaNodeCount = 0;
 	DWORD processorCoreCount = 0;
-	DWORD processorL1CacheCount = 0;
-	DWORD processorL2CacheCount = 0;
-	DWORD processorL3CacheCount = 0;
+	DWORD processorL1CacheSize = 0;
+	DWORD processorL2CacheSize = 0;
+	DWORD processorL3CacheSize = 0;
 	DWORD processorPackageCount = 0;
 	DWORD byteOffset = 0;
 	PCACHE_DESCRIPTOR Cache;
@@ -158,6 +158,19 @@ void SYS_GetCpuCount()
 			break;
 		case RelationCache:
 			// Cache data is in ptr->Cache, one CACHE_DESCRIPTOR structure for each cache. 
+			Cache = &ptr->Cache;
+			if (Cache->Level == 1)
+			{
+				processorL1CacheSize += Cache->Size;
+			}
+			else if (Cache->Level == 2)
+			{
+				processorL2CacheSize += Cache->Size;
+			}
+			else if (Cache->Level == 3)
+			{
+				processorL3CacheSize += Cache->Size;
+			}
 			break;
 		case RelationProcessorPackage:
 			// Logical processors share a physical package.
@@ -171,64 +184,14 @@ void SYS_GetCpuCount()
 		ptr++;
 	}
 	Com_Printf("Physical Processor Packages: " S_COLOR_GREEN "%d\n", processorPackageCount);
-	Com_Printf("Cores/Threads " S_COLOR_GREEN "%d" S_COLOR_WHITE "|" S_COLOR_GREEN "%d\n", processorCoreCount, logicalProcessorCount);
-
+	Com_Printf("Cores/Threads: " S_COLOR_GREEN "%d" S_COLOR_WHITE "|" S_COLOR_GREEN "%d\n", processorCoreCount, logicalProcessorCount);
+	Com_Printf("L1/L2/L3 Cache Size: " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb | " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb | " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb\n",
+		processorL1CacheSize >>10,
+		processorL2CacheSize >>10,
+		processorL3CacheSize >>10);
 	free(buffer);
 }
 
-/*
-qboolean GetCpuCoresThreads(qboolean ryzen) {
-	char cpuVendor[12];
-	uint regs[4], cpuFeatures, cores, logical;
-	qboolean hyperThreads;
-
-	// Get vendor
-	__cpuid(regs, 0);
-	((uint *)cpuVendor)[0] = regs[1];   // EBX
-	((uint *)cpuVendor)[1] = regs[3];   // EDX
-	((uint *)cpuVendor)[2] = regs[2];   // ECX
-
-										// Get CPU features
-	__cpuid(regs, 1);
-	cpuFeatures = regs[3];  // EDX
-
-							// Logical core count per CPU
-	logical = (regs[1] >> 16) & 0xff;       // EBX[23:16]
-
-	if (!strncmp(cpuVendor, "GenuineIntel", 12))
-	{
-		// Get DCP cache info
-		__cpuid(regs, 4);
-		cores = ((regs[0] >> 26) & 0x3f) + 1;   // EAX[31:26] + 1
-	}
-	else if (!strncmp(cpuVendor, "AuthenticAMD", 12))
-	{
-		// Get NC: Number of CPU cores - 1
-		__cpuid(regs, 0x80000008);
-		cores = ((uint)(regs[2] & 0xff)) + 1;       // ECX[7:0] + 1
-	}
-
-	// Detect hyper-threads  
-	hyperThreads = cpuFeatures & BIT(28) && cores < logical;
-
-	if (ryzen)
-	{
-		Com_Printf("Cores/Threads: "S_COLOR_GREEN"%i"S_COLOR_WHITE"|"S_COLOR_GREEN"%i\n", cores >> 1, logical);
-		return qtrue;
-	}
-	else
-		if (hyperThreads)
-		{
-			Com_Printf("Cores/Threads: "S_COLOR_GREEN"%i"S_COLOR_WHITE"|"S_COLOR_GREEN"%i\n", cores >> 1, logical >> 1);
-			return qtrue;
-		}
-		else
-		{
-			Com_Printf("Cores/Threads: "S_COLOR_GREEN"%i"S_COLOR_WHITE"|"S_COLOR_GREEN"%i\n", cores, logical);
-			return qfalse;
-		}
-}
-*/
 
 void Sys_CpuID()
 {
@@ -320,27 +283,6 @@ void Sys_CpuID()
 
 			Com_Printf("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[0]);
 
-		/*	int  count = 0;
-			char *find = strtok(&CPUBrandString[0], " ");
-
-			while (find != NULL)
-			{
-				// print current line
-				//	Com_Printf("%s\n", find);
-				if (!Q_strcasecmp(find, "Ryzen"))
-					count++;
-				if (!Q_strcasecmp(find, "5"))
-					count++;
-				if (!Q_strcasecmp(find, "7"))
-					count++;
-				// select new line
-				find = strtok(NULL, " ");
-			}
-			if (count >= 2)
-				SMT = GetCpuCoresThreads(qtrue);
-			else
-				HTT = GetCpuCoresThreads(qfalse);
-		*/	
 			SYS_GetCpuCount();
 			
 			float GHz = (float)dwCPUSpeed * 0.001;
