@@ -2562,7 +2562,7 @@ static menuframework_s s_savegame_menu;
 static menuframework_s s_loadgame_menu;
 static menuaction_s s_loadgame_actions[MAX_SAVEGAMES];
 
-char m_savestrings[MAX_SAVEGAMES][32];
+char m_savestrings[MAX_SAVEGAMES][MAX_QPATH];
 qboolean m_savevalid[MAX_SAVEGAMES];
 
 void Create_Savestrings(void) {
@@ -2595,10 +2595,12 @@ void LoadGameCallback(void *self) {
 }
 
 void LoadGame_MenuInit(void) {
-	int i;
+	int i, w, h;
 
-	s_loadgame_menu.x = viddef.width / 2 - 120;
-	s_loadgame_menu.y = viddef.height / 2 - 58;
+	Draw_GetPicSize(&w, &h, "m_banner_load_game");
+
+	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.5 + 8 * cl_fontScale->value;
+	s_loadgame_menu.y = viddef.height * 0.25 + 8 * cl_fontScale->value;
 	s_loadgame_menu.nitems = 0;
 
 	Create_Savestrings();
@@ -2665,10 +2667,12 @@ void SaveGame_MenuDraw(void) {
 }
 
 void SaveGame_MenuInit(void) {
-	int i;
+	int i, w, h;
 
-	s_savegame_menu.x = viddef.width / 2 - 120;
-	s_savegame_menu.y = viddef.height / 2 - 58;
+	Draw_GetPicSize(&w, &h, "m_banner_save_game");
+
+	s_savegame_menu.x = viddef.width * 0.5 - w * 0.5 + 8 * cl_fontScale->value;
+	s_savegame_menu.y = viddef.height * 0.25 + 8 * cl_fontScale->value;
 	s_savegame_menu.nitems = 0;
 
 	Create_Savestrings();

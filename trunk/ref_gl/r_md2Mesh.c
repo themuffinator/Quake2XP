@@ -360,8 +360,6 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
-	GL_Disable (GL_BLEND);
-
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_TEX0);

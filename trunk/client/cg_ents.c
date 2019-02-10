@@ -1059,11 +1059,11 @@ void CL_AddPacketEntities (frame_t * frame) {
 			if (ent.model) // hack for blaster bolt particle
 			{
 				if (!Q_strcasecmp(ent.model->name, "models/objects/laser/tris.md2")) {
-					ent.flags = RF_FULLBRIGHT;
+					ent.flags |= RF_FULLBRIGHT;
 					ent.flags |= RF_NOSHADOW;
 					ent.flags |= RF_TRANSLUCENT;
 					ent.flags |= RF_NOCULL;
-					ent.alpha = 1.0;
+					ent.alpha = 0.75;
 				}
 				if (!Q_strcasecmp(ent.model->name, "sprites/s_bfg1.sp2"))
 					CL_BfgBall(cent->lerp_origin);

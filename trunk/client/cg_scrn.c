@@ -410,7 +410,7 @@ void SCR_DrawLoading (void) {
 
 		Set_FontShader (qtrue);
 		
-		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 8;
+		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 6;
 		RE_SetColor(colorGreen);
 		Draw_StringScaled (center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
 		
