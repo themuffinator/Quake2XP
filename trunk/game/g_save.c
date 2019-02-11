@@ -2154,10 +2154,10 @@ WriteGame(char *filename, qboolean autosave)
 {
 	FILE *f;
 	int i;
-	char str_ver[MAX_QPATH];
-	char str_game[MAX_QPATH];
-	char str_os[MAX_QPATH];
-	char str_arch[MAX_QPATH];
+	char str_ver[32];
+	char str_game[32];
+	char str_os[32];
+	char str_arch[32];
 
 	if (!autosave)
 	{
@@ -2209,10 +2209,10 @@ ReadGame(char *filename)
 {
 	FILE *f;
 	int i;
-	char str_ver[MAX_QPATH];
-	char str_game[MAX_QPATH];
-	char str_os[MAX_QPATH];
-	char str_arch[MAX_QPATH];
+	char str_ver[32];
+	char str_game[32];
+	char str_os[32];
+	char str_arch[32];
 
 	gi.FreeTags(TAG_GAME);
 
