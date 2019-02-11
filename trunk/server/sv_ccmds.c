@@ -330,6 +330,38 @@ SV_WriteServerFile
 
 ==============
 */
+void SV_WriteSaveCommentFile(qboolean autosave) {
+	FILE *file;
+	char name[MAX_OSPATH];
+	char comment[MAX_OSPATH];
+	time_t aclock;
+	struct tm *newtime;
+
+	memset(comment, 0, sizeof(comment));
+	
+	Com_sprintf(name, sizeof(name), "%s/save/current/comment.sav", FS_Gamedir());
+	file = fopen(name, "wb");
+
+	if (!file) {
+		Com_Printf("Couldn't write %s\n", name);
+		return;
+	}
+	if (!autosave) {
+		time(&aclock);
+		newtime = localtime(&aclock);
+		Com_sprintf(comment, sizeof(comment), "%2i:%i%i %2i/%2i '%s' Health %i|Armor %i",
+			newtime->tm_hour, newtime->tm_min / 10, newtime->tm_min % 10, 
+			newtime->tm_mon + 1, newtime->tm_mday,
+			sv.configstrings[CS_NAME],
+			pst.playerHealth, pst.playerArmor);
+	}
+	else {	// autosaved
+		Com_sprintf(comment, sizeof(comment), "ENTERING %s", sv.configstrings[CS_NAME]);
+	}
+	fwrite(comment, 1, sizeof(comment), file);
+	fclose(file);
+}
+
 void SV_WriteServerFile (qboolean autosave) {
 	FILE *f;
 	cvar_t *var;
@@ -353,20 +385,18 @@ void SV_WriteServerFile (qboolean autosave) {
 	if (!autosave) {
 		time (&aclock);
 		newtime = localtime (&aclock);
-		Com_sprintf (comment, sizeof(comment), "%2i:%i%i %2i/%2i  ",
+		Com_sprintf (comment, sizeof(comment), "%2i:%i%i %2i/%2i ",
 			newtime->tm_hour, newtime->tm_min / 10,
 			newtime->tm_min % 10, newtime->tm_mon + 1,
 			newtime->tm_mday);
-		strncat (comment, sv.configstrings[CS_NAME],
-			sizeof(comment)-1 - strlen (comment));
+		strncat (comment, sv.configstrings[CS_NAME], sizeof(comment)-1 - strlen (comment));
 	}
 	else {					// autosaved
-		Com_sprintf (comment, sizeof(comment), "ENTERING %s",
-			sv.configstrings[CS_NAME]);
+		Com_sprintf (comment, sizeof(comment), "ENTERING %s", sv.configstrings[CS_NAME]);
 	}
 
 	fwrite (comment, 1, sizeof(comment), f);
-
+	
 	// write the mapcmd
 	fwrite (svs.mapcmd, 1, sizeof(svs.mapcmd), f);
 
@@ -394,6 +424,9 @@ void SV_WriteServerFile (qboolean autosave) {
 	Com_sprintf (name, sizeof(name), "%s/save/current/game.ssv",
 		FS_Gamedir ());
 	ge->WriteGame (name, autosave);
+
+	//================
+	SV_WriteSaveCommentFile(autosave);
 }
 
 /*

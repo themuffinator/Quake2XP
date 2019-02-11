@@ -554,7 +554,7 @@ void V_RenderView () {
 		else
 			SetRumble(xInputActiveController, 0, 0);
 #endif
-
+		
 		cl.refdef.areabits = cl.frame.areabits;
 
 		if (!cl_add_entities->integer)
@@ -567,7 +567,8 @@ void V_RenderView () {
 		if (!cl_add_blend->integer)
 			VectorClear (cl.refdef.blend);
 
-
+		pst.playerHealth = cl.frame.playerstate.stats[STAT_HEALTH];
+		pst.playerArmor = cl.frame.playerstate.stats[STAT_ARMOR];
 
 		cl.refdef.num_entities = r_numentities;
 		cl.refdef.entities = r_entities;

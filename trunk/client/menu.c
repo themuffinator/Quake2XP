@@ -2562,7 +2562,7 @@ static menuframework_s s_savegame_menu;
 static menuframework_s s_loadgame_menu;
 static menuaction_s s_loadgame_actions[MAX_SAVEGAMES];
 
-char m_savestrings[MAX_SAVEGAMES][MAX_QPATH];
+char m_savestrings[MAX_SAVEGAMES][MAX_OSPATH];
 qboolean m_savevalid[MAX_SAVEGAMES];
 
 void Create_Savestrings(void) {
@@ -2571,7 +2571,7 @@ void Create_Savestrings(void) {
 	char name[MAX_OSPATH];
 
 	for (i = 0; i < MAX_SAVEGAMES; i++) {
-		Com_sprintf(name, sizeof(name), "%s/save/save%i/server.ssv",
+		Com_sprintf(name, sizeof(name), "%s/save/save%i/comment.sav",
 			FS_Gamedir(), i);
 		f = fopen(name, "rb");
 		if (!f) {
@@ -2599,7 +2599,7 @@ void LoadGame_MenuInit(void) {
 
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
 
-	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.5 + 8 * cl_fontScale->value;
+	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.8 + 8 * cl_fontScale->value;
 	s_loadgame_menu.y = viddef.height * 0.25 + 8 * cl_fontScale->value;
 	s_loadgame_menu.nitems = 0;
 
@@ -2671,7 +2671,7 @@ void SaveGame_MenuInit(void) {
 
 	Draw_GetPicSize(&w, &h, "m_banner_save_game");
 
-	s_savegame_menu.x = viddef.width * 0.5 - w * 0.5 + 8 * cl_fontScale->value;
+	s_savegame_menu.x = viddef.width * 0.5 - w * 0.8 + 8 * cl_fontScale->value;
 	s_savegame_menu.y = viddef.height * 0.25 + 8 * cl_fontScale->value;
 	s_savegame_menu.nitems = 0;
 
