@@ -127,7 +127,7 @@ void main (void) {
       vec2 uv_orthogonal = normalize(uv);
       vec3 uv_tangent = vec3(-uv_orthogonal.y, 0, uv_orthogonal.x);
 
-        fragData.rgb +=LightingDiffraction(V, L, normalize(v_tangent));
+        fragData.rgb +=LightingDiffraction(V, L, uv_tangent);
        }
       }	
 }
