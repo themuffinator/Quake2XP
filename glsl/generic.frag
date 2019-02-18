@@ -71,7 +71,6 @@ vec4 textureCatmullrom(in sampler2D Sampler, in vec2 Texcoord)
 	return catmullRom(Row0, Row1, Row2, Row3, SplineCoord.y);
 }
 
-
 void main(void) 
 {
 
@@ -103,8 +102,8 @@ if(u_console == 1){
 if(u_2dPics == 1){
 
     // signed distance field
-	float dist = diffuse.a;
-    float alpha = smoothstep(0.5 - SMOOTHING, 0.5 + SMOOTHING, dist);
+    float distance = diffuse.a;
+    float alpha = smoothstep(0.5 - SMOOTHING, 0.5 + SMOOTHING, distance);
 	fragData =  vec4(diffuse.rgb * v_color.rgb, diffuse.a * alpha);
 	return;
 }
