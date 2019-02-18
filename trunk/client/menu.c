@@ -2563,6 +2563,7 @@ static menuframework_s s_loadgame_menu;
 static menuaction_s s_loadgame_actions[MAX_SAVEGAMES];
 
 char m_savestrings[MAX_SAVEGAMES][MAX_OSPATH];
+char m_savesInfos[MAX_SAVEGAMES][MAX_OSPATH];
 qboolean m_savevalid[MAX_SAVEGAMES];
 
 void Create_Savestrings(void) {
@@ -2586,6 +2587,27 @@ void Create_Savestrings(void) {
 	}
 }
 
+void Create_SavesInfoss(void) {
+	int i;
+	FILE *f;
+	char name[MAX_OSPATH];
+
+	for (i = 0; i < MAX_SAVEGAMES; i++) {
+		Com_sprintf(name, sizeof(name), "%s/save/save%i/saveinfo.sav",
+			FS_Gamedir(), i);
+		f = fopen(name, "rb");
+		if (!f) {
+			strcpy(m_savesInfos[i], "");
+			m_savevalid[i] = qfalse;
+		}
+		else {
+			fread(m_savesInfos[i], sizeof(m_savesInfos[i]), 1, f);
+			fclose(f);
+			m_savevalid[i] = qtrue;
+		}
+	}
+}
+
 void LoadGameCallback(void *self) {
 	menuaction_s *a = (menuaction_s *)self;
 
@@ -2599,11 +2621,12 @@ void LoadGame_MenuInit(void) {
 
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
 
-	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.8 + 8 * cl_fontScale->value;
+	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.5 + 8 * cl_fontScale->value;
 	s_loadgame_menu.y = viddef.height * 0.25 + 8 * cl_fontScale->value;
 	s_loadgame_menu.nitems = 0;
 
 	Create_Savestrings();
+	Create_SavesInfoss();
 
 	for (i = 0; i < MAX_SAVEGAMES; i++) {
 		s_loadgame_actions[i].generic.name = m_savestrings[i];
@@ -2617,6 +2640,7 @@ void LoadGame_MenuInit(void) {
 			s_loadgame_actions[i].generic.y += 10 * cl_fontScale->value;
 
 		s_loadgame_actions[i].generic.type = MTYPE_ACTION;
+		s_loadgame_actions[i].generic.statusbar = m_savesInfos[i];
 
 		Menu_AddItem(&s_loadgame_menu, &s_loadgame_actions[i]);
 	}
@@ -2671,11 +2695,12 @@ void SaveGame_MenuInit(void) {
 
 	Draw_GetPicSize(&w, &h, "m_banner_save_game");
 
-	s_savegame_menu.x = viddef.width * 0.5 - w * 0.8 + 8 * cl_fontScale->value;
+	s_savegame_menu.x = viddef.width * 0.5 - w * 0.5 + 8 * cl_fontScale->value;
 	s_savegame_menu.y = viddef.height * 0.25 + 8 * cl_fontScale->value;
 	s_savegame_menu.nitems = 0;
 
 	Create_Savestrings();
+	Create_SavesInfoss();
 
 	// don't include the autosave slot
 	for (i = 0; i < MAX_SAVEGAMES - 1; i++) {
@@ -2688,6 +2713,7 @@ void SaveGame_MenuInit(void) {
 		s_savegame_actions[i].generic.y = (i) * 10 * cl_fontScale->value;
 
 		s_savegame_actions[i].generic.type = MTYPE_ACTION;
+		s_savegame_actions[i].generic.statusbar = m_savesInfos[i];
 
 		Menu_AddItem(&s_savegame_menu, &s_savegame_actions[i]);
 	}

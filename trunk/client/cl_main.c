@@ -1942,7 +1942,7 @@ void CL_Init (void) {
 	if (dedicated->integer)
 		return;					// nothing running on the client
 
-//	NET_GenRsaSum();
+	NET_GenRsaSum();
 
 	// in Windows sound must be initialized after window is created,
 	// but in Linux both work

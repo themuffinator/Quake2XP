@@ -349,11 +349,51 @@ void SV_WriteSaveCommentFile(qboolean autosave) {
 	if (!autosave) {
 		time(&aclock);
 		newtime = localtime(&aclock);
-		Com_sprintf(comment, sizeof(comment), "%2i:%i%i %2i/%2i '%s' Health %i|Armor %i",
-			newtime->tm_hour, newtime->tm_min / 10, newtime->tm_min % 10, 
-			newtime->tm_mon + 1, newtime->tm_mday,
-			sv.configstrings[CS_NAME],
-			pst.playerHealth, pst.playerArmor);
+		Com_sprintf(comment, sizeof(comment), "%2i:%i%i %2i/%2i '%s'",
+					newtime->tm_hour, newtime->tm_min / 10, newtime->tm_min % 10, 
+					newtime->tm_mon + 1, newtime->tm_mday,
+					sv.configstrings[CS_NAME]);
+	}
+	else {	// autosaved
+		Com_sprintf(comment, sizeof(comment), "ENTERING %s", sv.configstrings[CS_NAME]);
+	}
+	fwrite(comment, 1, sizeof(comment), file);
+	fclose(file);
+}
+
+void SV_WriteSaveInfoFile(qboolean autosave) {
+	FILE *file;
+	char name[MAX_OSPATH];
+	char comment[MAX_OSPATH];
+	time_t aclock;
+	struct tm *newtime;
+
+	if (Cvar_VariableValue("skill") == 0)
+		pst.skill = "Easy";
+
+	if (Cvar_VariableValue("skill") == 1)
+		pst.skill = "Medium";
+
+	if (Cvar_VariableValue("skill") == 2)
+		pst.skill = "Hard";
+
+	if (Cvar_VariableValue("skill") == 3)
+		pst.skill = "Nightmare!";
+
+	memset(comment, 0, sizeof(comment));
+	 
+	Com_sprintf(name, sizeof(name), "%s/save/current/saveinfo.sav", FS_Gamedir());
+	file = fopen(name, "wb");
+
+	if (!file) {
+		Com_Printf("Couldn't write %s\n", name);
+		return;
+	}
+	if (!autosave) {
+		time(&aclock);
+		newtime = localtime(&aclock);
+		Com_sprintf(comment, sizeof(comment), "Health %i|Armor %i / Skill: %s",
+					pst.playerHealth, pst.playerArmor, pst.skill);
 	}
 	else {	// autosaved
 		Com_sprintf(comment, sizeof(comment), "ENTERING %s", sv.configstrings[CS_NAME]);
@@ -427,6 +467,7 @@ void SV_WriteServerFile (qboolean autosave) {
 
 	//================
 	SV_WriteSaveCommentFile(autosave);
+	SV_WriteSaveInfoFile(autosave);
 }
 
 /*

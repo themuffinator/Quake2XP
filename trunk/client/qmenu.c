@@ -450,7 +450,7 @@ void Menu_DrawStatusBar (const char *string) {
 	int	upOffset = 5;
 
 	if (string) {
-		int center = ((int)strlen(string) * fontscale * 8) * 0.5;
+		int center = ((int)strlen(string) * fontscale * 6) * 0.5;
 
 		Draw_Fill (0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.35, 0.0, 0.88);
 		

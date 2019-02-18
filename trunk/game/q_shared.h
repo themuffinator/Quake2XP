@@ -76,6 +76,9 @@ typedef enum {
 	#include <stdint.h>
 #endif
 
+
+
+
 //#ifdef _WIN32
 //extern _CRT_JIT_INTRINSIC _CRTIMP __checkReturn int __cdecl toupper(__in int _C);
 //#endif
@@ -172,6 +175,8 @@ void RE_SetColor (const color4ub_t color);
 typedef struct {
 	int playerHealth;
 	int playerArmor;
+	char *skill;
+
 } playerState_t;
 
 playerState_t pst;
@@ -1443,3 +1448,4 @@ char *Com_Parse (char **data_p);
 #define COM_Parse(p)	Com_Parse(p)
 
 void Q_strncatz (char *dst, int dstSize, const char *src);
+
