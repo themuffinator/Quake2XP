@@ -90,8 +90,8 @@ static void M_Banner(char *name) {
 		Draw_PicBumpScaled((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
 	}
 	else if (cl_fontScale->value == 3) {
-		Draw_PicScaled((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
-		Draw_PicBumpScaled((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
+		Draw_PicScaled((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
+		Draw_PicBumpScaled((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
 	}
 }
 

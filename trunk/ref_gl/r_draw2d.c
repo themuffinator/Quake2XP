@@ -28,9 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 image_t *draw_chars;
 
-extern qboolean scrap_dirty;
-void Scrap_Upload(void);
-
 vec2_t	texCoord[MAX_VERTEX_ARRAY];
 vec2_t	texCoord1[MAX_VERTEX_ARRAY];
 vec3_t	vertCoord[MAX_VERTEX_ARRAY];
@@ -405,9 +402,6 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
-	if (scrap_dirty)
-		Scrap_Upload();
-	
 	if (console) {
 
 		GL_MBind(GL_TEXTURE0, gl->texnum);
@@ -567,9 +561,6 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
-	if (scrap_dirty)
-		Scrap_Upload();
-
 		GL_MBind(GL_TEXTURE0, gl->texnum);
 				
 		VA_SetElem2(texCoord[0],gl->sl, gl->tl);
@@ -636,9 +627,6 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 
 	qglUniform1f(U_COLOR_MUL, r_bump2D->integer ? 1.0 : r_textureColorScale->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
-	if (scrap_dirty)
-		Scrap_Upload();
 
 		GL_MBind(GL_TEXTURE0, gl->texnum);
 				

@@ -267,81 +267,6 @@ void GL_ImageList_f(void)
 
 
 /*
-=============================================================================
-
-  scrap allocation
-
-  Allocate all the little status bar obejcts into a single texture
-  to crutch up inefficient hardware / drivers
-
-=============================================================================
-*/
-
-#define	MAX_SCRAPS		1
-#define	BLOCK_SIZE		256
-
-int scrap_allocated[MAX_SCRAPS][BLOCK_SIZE];
-byte scrap_texels[MAX_SCRAPS][BLOCK_SIZE * BLOCK_SIZE];
-qboolean scrap_dirty;
-
-// returns a texture number and the position inside it
-int Scrap_AllocBlock(int w, int h, int *x, int *y)
-{
-	int i, j;
-	int best, best2;
-	int texnum;
-
-	for (texnum = 0; texnum < MAX_SCRAPS; texnum++) {
-		best = BLOCK_SIZE;
-
-		for (i = 0; i < BLOCK_SIZE - w; i++) {
-			best2 = 0;
-
-			for (j = 0; j < w; j++) {
-				if (scrap_allocated[texnum][i + j] >= best)
-					break;
-				if (scrap_allocated[texnum][i + j] > best2)
-					best2 = scrap_allocated[texnum][i + j];
-			}
-			if (j == w) {		// this is a valid spot
-				*x = i;
-				*y = best = best2;
-			}
-		}
-
-		if (best + h > BLOCK_SIZE)
-			continue;
-
-		for (i = 0; i < w; i++)
-			scrap_allocated[texnum][*x + i] = best + h;
-
-		return texnum;
-	}
-
-	return -1;
-//  Sys_Error ("Scrap_AllocBlock: full");
-}
-
-int scrap_uploads;
-
-void Scrap_Upload(void)
-{
-	scrap_uploads++;
-	GL_Bind(TEXNUM_SCRAPS);
-	GL_Upload8(scrap_texels[0], BLOCK_SIZE, BLOCK_SIZE, qfalse, qfalse);
-	scrap_dirty = qfalse;
-}
-
-/*
-=================================================================
-
-PCX LOADING
-
-=================================================================
-*/
-
-
-/*
 ==============
 LoadPCX
 ==============
@@ -836,11 +761,13 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		if (!image->texnum)
 			break;
 	}
+
 	if (i == numgltextures) {
 		if (numgltextures == MAX_GLTEXTURES)
 			VID_Error(ERR_DROP, "MAX_GLTEXTURES");
 		numgltextures++;
 	}
+
 	image = &gltextures[i];
 
 	if (strlen(name) >= sizeof(image->name))
@@ -897,41 +824,9 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 				free(pics);
 			if (palettes)
 				free(palettes);
-			
-		}
-			
+		}			
 	}
-	// load little pics into the scrap
-	if (image->type == it_pic && bits == 8
-		&& image->width < 64 && image->height < 64) {
-		int x, y;
-		int i, j, k;
-		int texnum;
-
-		texnum = Scrap_AllocBlock(image->width, image->height, &x, &y);
-		if (texnum == -1)
-			goto nonscrap;
-		scrap_dirty = qtrue;
-
-		// copy the texels into the scrap block
-		k = 0;
-		for (i = 0; i < image->height; i++)
-			for (j = 0; j < image->width; j++, k++)
-				scrap_texels[texnum][(y + i) * BLOCK_SIZE + x + j] =
-					pic[k];
-		image->texnum = TEXNUM_SCRAPS + texnum;
-//		qglGenTextures (1, &image->texnum);
-		image->scrap = qtrue;
-		image->has_alpha = qtrue;
-		image->sl = (x + 0.01) / (float) BLOCK_SIZE;
-		image->sh = (x + image->width - 0.01) / (float) BLOCK_SIZE;
-		image->tl = (y + 0.01) / (float) BLOCK_SIZE;
-		image->th = (y + image->height - 0.01) / (float) BLOCK_SIZE;
-	} else {
-	  nonscrap:
-		image->scrap = qfalse;
-		image->texnum = TEXNUM_IMAGES + (image - gltextures);
-//		qglGenTextures (1, &image->texnum);
+		qglGenTextures (1, &image->texnum);
 		GL_Bind(image->texnum);
 		
 		qboolean itBump = qfalse;
@@ -955,8 +850,6 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		image->sh = 1;
 		image->tl = 0;
 		image->th = 1;
-
-	}
 
 	return image;
 }

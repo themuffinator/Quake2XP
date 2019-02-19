@@ -90,8 +90,7 @@ void CreateDepthTexture (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-//	qglGenTextures (1, &image->texnum);
+	qglGenTextures (1, &image->texnum);
 
 	depthMap = image;
 
@@ -134,8 +133,7 @@ void CreateScreenRect (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-//	qglGenTextures (1, &image->texnum);
+	qglGenTextures (1, &image->texnum);
 
 	ScreenMap = image;
 
@@ -226,8 +224,7 @@ void CreateFboBuffer (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-//	qglGenTextures (1, &image->texnum);
+	qglGenTextures (1, &image->texnum);
 
 	fboScreen = image;
 
@@ -289,7 +286,7 @@ void CreateMiniDepth(void) {
 	image->upload_width = vid.width / 2;
 	image->upload_height = vid.height / 2;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
+	qglGenTextures(1, &image->texnum);
 
 	fboDN = image;
 
@@ -326,7 +323,7 @@ void CreateSsaoColorTextures(void) {
 		image->upload_width = vid.width / 2;
 		image->upload_height = vid.height / 2;
 		image->type = it_pic;
-		image->texnum = TEXNUM_IMAGES + (image - gltextures);
+		qglGenTextures(1, &image->texnum);
 
 		fboColor[j] = image;
 
@@ -390,8 +387,7 @@ void CreateShadowMask (void) {
 	image->upload_width = vid.width;
 	image->upload_height = vid.height;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-//	qglGenTextures (1, &image->texnum);
+	qglGenTextures (1, &image->texnum);
 
 	shadowMask = image;
 
@@ -507,8 +503,7 @@ image_t *R_LoadLightFilter (int id) {
 	strcpy (image->name, name);
 	image->registration_sequence = registration_sequence;
 	image->type = it_pic;
-	image->texnum = TEXNUM_IMAGES + (image - gltextures);
-//	qglGenTextures (1, &image->texnum);
+	qglGenTextures (1, &image->texnum);
 
 	qglBindTexture (GL_TEXTURE_CUBE_MAP, image->texnum);
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -909,25 +904,26 @@ void GL_LevelShot_f(void) {
 */
 void GL_Strings_f (void) {
 	int			profile, i;
-	uint		n;
+	uint		n, major, minor;
 	const char	*profileName[] = { "core", "compatibility" };
 	char		*string = "";
-
-#ifdef _WIN32
-	string = (char*)glw_state.wglExtsString;
-	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
-#endif
-	
-
 
 	Com_Printf ("\n");
 	Com_Printf ("GL_VENDOR:    "S_COLOR_GREEN"%s\n", gl_config.vendor_string);
 	Com_Printf ("GL_RENDERER:  "S_COLOR_GREEN"%s\n", gl_config.renderer_string);
 	Com_Printf ("GL_VERSION:   "S_COLOR_GREEN"%s\n", gl_config.version_string);
+
 #ifdef _WIN32
-	Com_Printf ("Using OpenGL: "S_COLOR_GREEN"3.3"S_COLOR_WHITE" %s profile context\n\n", profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+
+	string = (char*)glw_state.wglExtsString;
+	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
+	qglGetIntegerv(GL_MAJOR_VERSION, &major);
+	qglGetIntegerv(GL_MINOR_VERSION, &minor);
+
+	Com_Printf ("Using OpenGL: "S_COLOR_GREEN"%i.%i"S_COLOR_WHITE" %s profile context\n\n", major, minor, profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
 	Com_Printf ("WGL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n", string);
 #endif
+
 	qglGetIntegerv(GL_NUM_EXTENSIONS, &n);
 	Com_Printf("GL_EXTENSIONS:\n");
 	for (i = 0; i<n; i++){

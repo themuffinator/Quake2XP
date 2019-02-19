@@ -641,7 +641,6 @@ void GLimp_Shutdown( void )
 		glw_state.hWnd = NULL;
 	}
 
-
 	UnregisterClass (WINDOW_CLASS_NAME, glw_state.hInstance);
 
 	if ( gl_state.fullscreen )
@@ -1003,16 +1002,12 @@ static qboolean GLW_ChoosePixelFormat() {
 }
 
 static qboolean GLW_CreateContext() {
-	
-	int			contextFlag;
+
 	const char	*profileName[] = { "core", "compatibility" };
 
-	if (r_glMajorVersion->integer >= 4 && r_glMinorVersion->integer >= 6)
-		contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : GL_CONTEXT_FLAG_NO_ERROR_BIT;
-	else
-		contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
-
+	int	contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : GL_CONTEXT_FLAG_NO_ERROR_BIT;
 	int	contextMask = r_glCoreProfile->integer ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+
 	int	attribs[] =
 	{
 		WGL_CONTEXT_MAJOR_VERSION_ARB,	r_glMajorVersion->integer,

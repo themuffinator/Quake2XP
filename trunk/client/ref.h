@@ -290,7 +290,6 @@ typedef struct image_s {
 	// drawing
 	int			texnum;					// gl texture binding
 	float		sl, tl, sh, th;		// 0,0 - 1,1 unless part of the scrap
-	qboolean	scrap;
 	qboolean	has_alpha;
 	qboolean	autobump;
 	qboolean	paletted;

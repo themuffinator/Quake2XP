@@ -81,13 +81,8 @@ typedef struct {
 
 extern viddef_t vid;
 
-
-
-#define	TEXNUM_SCRAPS		4096
-#define	TEXNUM_IMAGES		4097
-
-#define	TEXNUM_LIGHTMAPS	16384
-#define	MAX_GLTEXTURES		16384 
+#define	TEXNUM_LIGHTMAPS	32768
+#define	MAX_GLTEXTURES		32768 
 
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
