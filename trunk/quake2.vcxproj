@@ -222,7 +222,7 @@
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <ResourceCompile>

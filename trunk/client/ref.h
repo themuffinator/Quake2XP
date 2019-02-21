@@ -320,6 +320,7 @@ typedef struct mtexInfo_s {
 	image_t *addTexture;
 	image_t *envTexture;
 	image_t *rghMap;
+	image_t *aoMap;
 
 	int value;
 

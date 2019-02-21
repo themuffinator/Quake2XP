@@ -142,6 +142,22 @@ image_t *R_TextureAnimationRgh(mtexInfo_t * tex)
 	return tex->rghMap;
 }
 
+image_t *R_TextureAnimationAO(mtexInfo_t * tex)
+{
+	int c;
+
+	if (!tex->next)
+		return tex->aoMap;
+
+	c = currententity->frame % tex->numFrames;
+	while (c) {
+		tex = tex->next;
+		c--;
+	}
+
+	return tex->aoMap;
+}
+
 /*
 ================
 DrawGLPoly
@@ -329,11 +345,12 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		return qfalse;	// force the start new batch
 
 	if (newBatch) {
-		image_t	*image, *fx, *normal;
+		image_t	*image, *fx, *normal, *ao;
 
 		image	= R_TextureAnimation(surf->texInfo);
 		fx		= R_TextureAnimationFx(surf->texInfo);
 		normal	= R_TextureAnimationNormal(surf->texInfo);
+		ao		= R_TextureAnimationAO(surf->texInfo);
 
 		qglUniform1f(U_SPECULAR_SCALE, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
 		
@@ -369,6 +386,16 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		GL_MBind(GL_TEXTURE0, image->texnum);
 		GL_MBind(GL_TEXTURE2, fx->texnum);
 		GL_MBind(GL_TEXTURE3, normal->texnum);
+		GL_MBind(GL_TEXTURE7, ao->texnum);
+
+		if (ao->texnum != r_notexture->texnum) {
+			qglUniform1i(U_PARAM_INT_1, 1);
+			qglUniform1f(U_PARAM_FLOAT_1, r_bakedAOScale->value);
+		}
+		else {
+			qglUniform1i(U_PARAM_INT_1, 0);
+			qglUniform1f(U_PARAM_FLOAT_1, 1.0);
+		}
 
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{

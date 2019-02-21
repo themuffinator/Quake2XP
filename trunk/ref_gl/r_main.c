@@ -1318,6 +1318,8 @@ void R_RegisterCvars(void)
 	r_causticIntens =					Cvar_Get("r_causticIntens", "5.0", CVAR_ARCHIVE);
 	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
 	r_textureLodBias =					Cvar_Get("r_textureLodBias", "0.0", CVAR_ARCHIVE);
+	
+	r_bakedAOScale =					Cvar_Get("r_bakedAOScale", "1.0", CVAR_ARCHIVE);
 
 	r_imageAutoBump	=					Cvar_Get("r_imageAutoBump", "1", CVAR_ARCHIVE);
 	r_imageAutoBumpScale =				Cvar_Get("r_imageAutoBumpScale", "6.0", CVAR_ARCHIVE);
