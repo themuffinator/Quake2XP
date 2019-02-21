@@ -5,6 +5,7 @@ layout (binding = 3) uniform sampler2D		u_NormalMap;
 layout (binding = 4) uniform sampler2DRect	u_ssaoMap;
 layout (binding = 5) uniform sampler2D		u_LightMap1;
 layout (binding = 6) uniform sampler2D		u_LightMap2;
+layout (binding = 7) uniform sampler2D		u_aoMap;
 
 
 layout (location = U_LM_TYPE)			uniform int		u_LightMapType;
@@ -14,6 +15,8 @@ layout (location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;
 layout (location = U_SPECULAR_SCALE)	uniform float	u_specularScale;
 layout (location = U_LAVA_PASS)			uniform int		u_isLava;
 layout (location = U_PARAM_INT_0)		uniform int		u_envMapPass;
+layout (location = U_PARAM_INT_1)		uniform int		u_aoMapPass;
+layout (location = U_PARAM_FLOAT_1)		uniform float	u_aoMapScale;
 
 in vec3	v_positionVS;
 in vec3	v_viewVecTS;
@@ -47,6 +50,11 @@ void main (void) {
 	vec3 glowMap = texture(u_Add, P).xyz;
 	vec3 normalMap = normalize(texture(u_NormalMap, P).rgb * 2.0 - 1.0);
 	float specular = texture(u_NormalMap, P).a;
+
+	if(u_aoMapPass == 1){
+		vec3 bakedAO = texture(u_aoMap, P).rgb;
+		diffuseMap.xyz *= bakedAO * vec3(u_aoMapScale);
+	}
 
 	vec3 lm;
 		if(u_isLava == 1)
@@ -118,7 +126,7 @@ void main (void) {
 		fragData.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
 
 	// fake AO/cavity
-	fragData.xyz *= normalMap.z * 0.5 + 0.5;
+//	fragData.xyz *= normalMap.z * 0.5 + 0.5;
 	fragData.xyz *= u_ColorModulate * u_ambientScale;
 	fragData += vec4(glowMap, 1.0);
 	fragData.w = 1.0;
