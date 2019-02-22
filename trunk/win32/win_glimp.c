@@ -812,6 +812,12 @@ void GLW_InitExtensions() {
 			Com_Printf("...using WGL_ARB_create_context_no_error\n");
 		
 
+		if (strstr(glw_state.wglExtsString, "WGL_AMD_gpu_association")) {
+			wglGetGPUInfoAMD = (PFNWGLGETGPUINFOAMDPROC)qwglGetProcAddress("wglGetGPUInfoAMD");
+			wglGetGPUIDsAMD = (PFNWGLGETGPUIDSAMDPROC)qwglGetProcAddress("wglGetGPUIDsAMD");
+			if (wglGetGPUInfoAMD && wglGetGPUIDsAMD)
+				Com_Printf("...using WGL_AMD_gpu_association\n");
+		}
 }
 
 /*

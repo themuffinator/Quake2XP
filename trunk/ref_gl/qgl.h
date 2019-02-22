@@ -810,7 +810,8 @@ extern BOOL (WINAPI * qwglChoosePixelFormatEXT) (HDC, const int *,
 	UINT *);
 
 
-
+INT(WINAPI * wglGetGPUInfoAMD) (UINT id, int property, GLenum dataType, UINT size, void *data);
+UINT(WINAPI * wglGetGPUIDsAMD) (UINT maxCount, UINT *ids);
 
 extern int (WINAPI * qwglChoosePixelFormat) (HDC,
 	CONST PIXELFORMATDESCRIPTOR

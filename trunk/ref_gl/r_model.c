@@ -891,26 +891,6 @@ void Mod_LoadTexinfo(lump_t * l) {
 			}
 		}
 
-		Com_sprintf(name, sizeof(name), "overrides/%s_ao.tga", purename);
-		out->aoMap = GL_FindImage(name, it_wall);
-
-		if (!out->aoMap) {
-			Com_sprintf(name, sizeof(name), "overrides/%s_ao.dds", purename);
-			out->aoMap = GL_FindImage(name, it_wall);
-
-			if (!out->aoMap) {
-				Com_sprintf(name, sizeof(name), "textures/%s_ao.tga", in->texture);
-				out->aoMap = GL_FindImage(name, it_wall);
-
-				if (!out->aoMap) {
-					Com_sprintf(name, sizeof(name), "textures/%s_ao.dds", in->texture);
-					out->aoMap = GL_FindImage(name, it_wall);
-
-					if (!out->aoMap)
-						out->aoMap = r_notexture;
-				}
-			}
-		}
 
 		// load texture configuration file
 		Com_sprintf(name, sizeof(name), "materials/%s.mtr", purename);

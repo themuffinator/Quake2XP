@@ -8,7 +8,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>+set r_fullScreen 0 +map q2dm1 +noclip</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>+set r_fullScreen 0 +map base1 +notarget</LocalDebuggerCommandArguments>
     <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
   </PropertyGroup>
   <PropertyGroup>

@@ -44,7 +44,6 @@ extern BOOL (WINAPI * qwglGetPixelFormatAttribivARB) (HDC, int, int, UINT, const
 extern BOOL (WINAPI * qwglGetPixelFormatAttribfvARB) (HDC, int, int, UINT, const int *, FLOAT *);
 extern BOOL (WINAPI * qwglChoosePixelFormatARB) (HDC, const int *, const FLOAT *, UINT, int *, UINT *);
 
-
 const char * (WINAPI * qwglGetExtensionsStringEXT) (void);
 BOOL (WINAPI * qwglGetPixelFormatAttribivEXT) (HDC, int, int, UINT, int *, int *);
 BOOL (WINAPI * qwglGetPixelFormatAttribfvEXT) (HDC, int, int, UINT, int *, FLOAT *);

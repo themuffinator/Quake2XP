@@ -238,6 +238,13 @@ void GLimp_InitADL(){
 void ADL_PrintGpuInfo(){
 
 	Com_Printf(S_COLOR_YELLOW"============ AMD Radeon GPU Info ============\n\n");
+	uint n, *ids;
+
+	if (wglGetGPUInfoAMD && wglGetGPUIDsAMD){
+		n = wglGetGPUIDsAMD(0, 0);
+		ids = malloc(sizeof(uint) * n);
+		wglGetGPUIDsAMD(n, ids);
+	}
 
 	for (int i = 0; i < atiPhysicalAdapters; i++) {
 
@@ -249,6 +256,13 @@ void ADL_PrintGpuInfo(){
 		
 		Com_Printf("GPU " S_COLOR_GREEN "%i" S_COLOR_WHITE ":" S_COLOR_GREEN " %s\n", atiPhysicalAdapters - 1, gpuNames[i]);
 		
+		if (wglGetGPUInfoAMD && wglGetGPUIDsAMD)
+		{
+			uint total = 0;
+			wglGetGPUInfoAMD(ids[i], WGL_GPU_RAM_AMD, GL_UNSIGNED_INT, sizeof(uint), &total);
+			Com_Printf("GPU " S_COLOR_GREEN "%i" S_COLOR_WHITE ": Total Vram  : %i Mb\n", atiPhysicalAdapters - 1, total);
+		}
+
 		// temperature level
 		ADLODNPowerLimitSetting odNPowerControl;
 		memset(&odNPowerControl, 0, sizeof(ADLODNPowerLimitSetting));
