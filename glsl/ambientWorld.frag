@@ -15,8 +15,6 @@ layout (location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;
 layout (location = U_SPECULAR_SCALE)	uniform float	u_specularScale;
 layout (location = U_LAVA_PASS)			uniform int		u_isLava;
 layout (location = U_PARAM_INT_0)		uniform int		u_envMapPass;
-layout (location = U_PARAM_INT_1)		uniform int		u_aoMapPass;
-layout (location = U_PARAM_FLOAT_1)		uniform float	u_aoMapScale;
 
 in vec3	v_positionVS;
 in vec3	v_viewVecTS;
@@ -51,22 +49,15 @@ void main (void) {
 	vec3 normalMap = normalize(texture(u_NormalMap, P).rgb * 2.0 - 1.0);
 	float specular = texture(u_NormalMap, P).a;
 
-	if(u_aoMapPass == 1){
-		vec3 bakedAO = texture(u_aoMap, P).rgb;
-		diffuseMap.xyz *= bakedAO * vec3(u_aoMapScale);
-	}
-
 	vec3 lm;
 		if(u_isLava == 1)
 			lm = whiteLM;
 		if(u_isLava == 0)
 			lm = texture(u_LightMap0, v_lTexCoord.xy).rgb;
 
-	if (u_LightMapType == 0){
-
+	if (u_LightMapType == 0)
 		fragData.xyz = diffuseMap * lm;
 		
-	}
 	if (u_LightMapType == 1) {
 
 		vec3 lm0 = lm;
