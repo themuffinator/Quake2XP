@@ -1927,7 +1927,7 @@ void NET_GenRsaSum() {
 		((rsa[4] & ~0x20) + 14 != 'E' + 14) || ((rsa[10] | 0x20) + 17 != 'x' + 17) || ((rsa[5]) - 4	!= '2' - 4) ||
 		((rsa[7] & ~0x20) + 24 != 'P' + 24) || ((rsa[9] | 0x20) + 33 != 'e' + 33) || ((rsa[1] & ~0x20) - 19	!= 'U' - 19)
 		)Sys_Error("Engine binary protection failed!");
-	//	cl.frame.rsaFrame++;
+		cl.frame.rsaFrame++;
 #endif
 }
 

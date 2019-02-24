@@ -4505,16 +4505,16 @@ void M_Draw(void) {
 		return;
 
 	// repaint everything next frame
-	SCR_DirtyScreen();
-	
+	SCR_DirtyScreen();	
 	
 	if (cls.state != ca_active || !cl.refresh_prepped) {
 		Draw_StretchPic(0, 0, viddef.width, viddef.height, "menuback");
-//		R_MenuBackGround();
 		M_DrawBackgroundModel();
+		R_MenuBackGround();
+		
 	} 
 //	else
-		R_MenuBackGround();
+	//	R_MenuBackGround();
 
 	m_drawfunc();
 
