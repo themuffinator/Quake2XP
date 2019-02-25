@@ -8,6 +8,7 @@ layout (binding = 1) uniform sampler2D 		u_Add;
 layout (binding = 2) uniform sampler2D		u_env;
 layout (binding = 3) uniform sampler2D		u_NormalMap;
 layout (binding = 4) uniform sampler2D		u_ssaoMap;
+layout (binding = 5) uniform sampler2D		u_rgh;
 
 layout(location = U_ENV_SCALE)		uniform float	u_envScale;
 layout(location = U_ENV_PASS)		uniform int		u_isEnvMap;
@@ -15,6 +16,7 @@ layout(location = U_TRANS_PASS)		uniform int		u_isTransluscent;
 layout(location = U_SHELL_PASS)		uniform	int		u_isShell;
 layout(location = U_COLOR_MUL)		uniform float	u_ColorModulate;
 layout(location = U_COLOR_OFFSET)	uniform float	u_AddShift; 
+layout(location = U_PARAM_INT_0)	uniform int		u_alphaMask; 
 
 void main ()
 {
@@ -24,6 +26,13 @@ void main ()
 		return;
 	}
 
+	if(u_alphaMask == 1){
+		float mask = texture(u_rgh, v_texCoord).g;
+		if (mask <= 0.01) {
+			discard;
+			return;
+			}
+	}
 	
 	if(u_isTransluscent == 1){
 		vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;

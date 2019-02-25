@@ -19,6 +19,7 @@ layout(location = U_SPOT_PARAMS)		uniform vec3	u_spotParams;
 layout(location = U_USE_AUTOBUMP)		uniform int		u_autoBump;
 layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
 layout(location = U_PARAM_INT_0)		uniform int		u_blinnPhong; // use old lighting model
+layout(location = U_PARAM_INT_1)		uniform int		u_alphaMask;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -41,6 +42,14 @@ void main (void) {
 	if(attenMap <= CUTOFF_EPSILON){
 		discard;
 		return;
+	}
+	
+	if(u_alphaMask == 1 && u_isRgh == 1){
+		float mask = texture(u_rghMap, v_texCoord).g;
+		if (mask <= 0.01) {
+			discard;
+			return;
+		}
 	}
 
 	vec3 L = normalize(v_lightVec);
