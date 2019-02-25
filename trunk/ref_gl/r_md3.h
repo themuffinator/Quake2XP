@@ -163,6 +163,7 @@ typedef struct
 	image_t			*skinsAO[MD3_MAX_SKINS];
 	image_t			*skinsSkinLocal[MD3_MAX_SKINS];
 	qboolean		muzzle;
+	qboolean		skinAlphatest;
 } md3Mesh_t;
 
 typedef struct md3Model_s

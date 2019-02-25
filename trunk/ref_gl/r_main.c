@@ -433,8 +433,9 @@ void R_SetupEntityMatrix(entity_t * e) {
 
 	if ((e->flags & RF_WEAPONMODEL) && (r_leftHand->integer == 1)) { // Flip player weapon
 		Mat4_Scale(e->orMatrix, 1.0, -1.0, 1.0);
+		GL_CullFace(GL_FRONT);
+	} else
 		GL_CullFace(GL_BACK);
-	}
 }
 
 void R_SetupOrthoMatrix(void) {
@@ -1023,9 +1024,8 @@ void R_RenderView (refdef_t *fd) {
 	R_RenderSprites();
 
 	R_MotionBlur();
-
+	R_GlobalFog();
 	R_DrawPlayerWeapon();
-	
 }
 
 
@@ -1094,6 +1094,7 @@ void R_RenderFrame(refdef_t * fd) {
 		R_ThermalVision();
 		R_DofBlur();
 		R_Bloom();
+
 		R_FilmFilter();
 		R_ScreenBlend();
 	}
@@ -1416,6 +1417,12 @@ void R_RegisterCvars(void)
 	r_fixFovDistroctionRatio->help =	"cylindrical distortion ratio";
 
 	r_screenBlend =						Cvar_Get("r_screenBlend", "1", CVAR_ARCHIVE);
+
+	r_globalFog =						Cvar_Get("r_globalFog", "1", CVAR_ARCHIVE);
+	r_globalFogDensity =				Cvar_Get("r_globalFogDensity", "0.01", CVAR_ARCHIVE);
+	r_globalFogRed =					Cvar_Get("r_globalFogRed", "0.22", CVAR_ARCHIVE);
+	r_globalFogGreen =					Cvar_Get("r_globalFogGreen", "0.22", CVAR_ARCHIVE);
+	r_globalFogBlue =					Cvar_Get("r_globalFogBlue", "0.22", CVAR_ARCHIVE);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);

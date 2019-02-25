@@ -824,6 +824,16 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"global fog program"S_COLOR_WHITE" ");
+	globalFogProgram = R_FindProgram("globalFog", S_DEFAULT);
+	if (globalFogProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 /*
 	Com_Printf("Load "S_COLOR_YELLOW"fbo program"S_COLOR_WHITE" ");
 	fbo2screenProgram = R_FindProgram("fbo2screen", S_DEFAULT);

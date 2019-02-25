@@ -587,3 +587,34 @@ void R_MenuBackGround() {
 	R_DrawFullScreenQuad();
 	GL_Enable(GL_BLEND);
 }
+
+void R_GlobalFog() {
+
+	if (!r_globalFog->integer)
+		return;
+
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
+		return;
+
+	R_SetupOrthoMatrix();
+	GL_DepthMask(0);
+
+	GL_BindProgram(globalFogProgram);
+	
+	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	
+	qglUniform1i(U_PARAM_INT_0, r_globalFog->integer);
+	qglUniform4f(U_PARAM_VEC4_0, r_globalFogRed->value, r_globalFogGreen->value, r_globalFogBlue->value, 1.0 / r_globalFogDensity->value); //view space
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+
+	R_DrawFullScreenQuad();
+
+	// restore 3d
+	GL_Enable(GL_CULL_FACE);
+	GL_Enable(GL_DEPTH_TEST);
+
+	GL_DepthMask(1);
+	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
+		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+}

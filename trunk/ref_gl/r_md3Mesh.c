@@ -396,17 +396,22 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 		inMesh = (dmd3mesh_t *)((byte *)inMesh + LittleLong(inMesh->meshsize));
 		outMesh->triangles = (neighbours_t*)Hunk_Alloc(sizeof(neighbours_t) * outMesh->num_tris);
 		R_BuildTriangleNeighbors(outMesh->triangles, outMesh->indexes, outMesh->num_tris);
-	
+
 		if (!Q_strcasecmp(outMesh->name, "MF"))
 			outMesh->muzzle = qtrue;
 		else
 			outMesh->muzzle = qfalse;
 		
+		if (!Q_strcasecmp(outMesh->name, "ALPHATEST")) {
+			outMesh->skinAlphatest = qtrue;
+		}
+		else
+			outMesh->skinAlphatest = qfalse;
+
 		outMesh->flags = MESH_OPAQUE;
 
 		if (!Q_strcasecmp(outMesh->name, "TRANSLUS")) 
 			outMesh->flags = MESH_TRANSLUSCENT;
-
 }
 
 	mod->type = mod_alias_md3;
@@ -543,7 +548,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*v, *ov, *verts, *oldVerts;
 	vec3_t		luminance = { 0.2125, 0.7154, 0.0721 };
-	image_t     *skin, *light, *normal, *ao;
+	image_t     *skin, *light, *normal, *ao, *rgh;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -646,6 +651,16 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglUniform1f(U_COLOR_MUL, 2.0);
 			GL_BlendFunc(GL_ONE, GL_ONE);
 		}
+
+		if (mesh->skinAlphatest) {
+			qglUniform1i(U_PARAM_INT_0, 1);
+			rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+			if (!rgh)
+				rgh = r_notexture;
+			GL_MBind(GL_TEXTURE5, rgh->texnum);
+		}
+		else 
+			qglUniform1i(U_PARAM_INT_0, 0);
 
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!skin || skin == r_notexture)
@@ -944,6 +959,11 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		
 	//	if (mesh->flags & MESH_TRANSLUSCENT)
 	//		continue;
+		
+		if (mesh->skinAlphatest)
+			qglUniform1i(U_PARAM_INT_1, 1);
+		else
+			qglUniform1i(U_PARAM_INT_1, 0);
 
 		c_alias_polys += md3Hdr->meshes[i].num_tris;
 

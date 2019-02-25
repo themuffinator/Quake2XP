@@ -374,6 +374,9 @@ void R_DrawDepthMD3Model(void) {
 		if (mesh->flags & MESH_TRANSLUSCENT)
 			continue;
 
+		if (mesh->skinAlphatest)
+			continue;
+
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 

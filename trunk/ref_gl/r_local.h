@@ -329,6 +329,12 @@ cvar_t	*r_motionBlurFrameLerp;
 cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;
 
+cvar_t	*r_globalFog;
+cvar_t	*r_globalFogDensity;
+cvar_t	*r_globalFogRed;
+cvar_t	*r_globalFogGreen;
+cvar_t	*r_globalFogBlue;
+
 cvar_t	*r_tbnSmoothAngle;
 
 cvar_t	*r_glDebugOutput;
@@ -407,6 +413,7 @@ void R_SSAO(void);
 void R_DrawDepthScene(void);
 void R_DownsampleDepth(void);
 void R_ScreenBlend(void);
+void R_GlobalFog();
 
 void R_SaveLights_f (void);
 void R_Light_Spawn_f (void);
@@ -910,6 +917,7 @@ glslProgram_t		*menuProgram;
 glslProgram_t		*skyProgram;
 glslProgram_t		*colorProgram;
 glslProgram_t		*fbo2screenProgram;
+glslProgram_t		*globalFogProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureDepthBuffer ();
