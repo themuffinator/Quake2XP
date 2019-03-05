@@ -315,6 +315,47 @@ char *R_LoadIncludes (char *glsl) {
 }
 
 /*
+===============================
+Try To Load Precompiled Shaders
+===============================
+*/
+
+qboolean R_LoadBinaryShader(char *shaderName, int shaderId) {
+
+	char			name[MAX_QPATH];
+	GLint			binLength;
+	GLvoid*			bin;
+	GLint			success;
+	FILE*			binFile;
+
+	Com_sprintf(name, sizeof(name), "%s/shadercache/%s.shader", FS_Gamedir(), shaderName);
+	FS_CreatePath(name);
+
+	binFile = fopen(name, "rb");
+	if (!binFile) {
+		return qfalse;
+	}
+	else {
+		fseek(binFile, 0, SEEK_END);
+		binLength = (GLint)ftell(binFile);
+		bin = (GLvoid*)malloc(binLength);
+		fseek(binFile, 0, SEEK_SET);
+		fread(bin, binLength, 1, binFile);
+		fclose(binFile);
+
+		glProgramBinary(shaderId, gl_state.binaryFormats, bin, binLength);
+		qglGetProgramiv(shaderId, GL_LINK_STATUS, &success);
+		free(bin);
+
+		if (success) {
+			Com_DPrintf(S_COLOR_GREEN">bin\n");
+			return qtrue;
+		}
+	}
+	return qfalse;
+}
+
+/*
 ==============
 R_CreateProgram
 
@@ -354,87 +395,107 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 	memset (program, 0, sizeof(*program));
 	Q_strncpyz (program->name, name, sizeof(program->name));
 
-	numStrings = 0;
-	vertexId = 0;
-	fragmentId = 0;
+	id = qglCreateProgram();
 
-	strings[numStrings++] = glslExt;
-	strings[numStrings++] = mathDefs;
-	strings[numStrings++] = glslUniforms;
+	if (!R_LoadBinaryShader(program->name, id)) { // can't load shader from cache - recompile it!
 
-	// compile vertex shader
-	if (vertexSource) {
-		// link includes
-		vertexSource = R_LoadIncludes ((char*)vertexSource);
+		numStrings = 0;
+		vertexId = 0;
+		fragmentId = 0;
 
-		strings[numStrings] = vertexSource;
-		vertexId = qglCreateShader (GL_VERTEX_SHADER);
-		qglShaderSource (vertexId, numStrings + 1, strings, NULL);
-		qglCompileShader (vertexId);
-		qglGetShaderiv (vertexId, GL_COMPILE_STATUS, &status);
+		strings[numStrings++] = glslExt;
+		strings[numStrings++] = mathDefs;
+		strings[numStrings++] = glslUniforms;
+
+		// compile vertex shader
+		if (vertexSource) {
+			// link includes
+			vertexSource = R_LoadIncludes((char*)vertexSource);
+
+			strings[numStrings] = vertexSource;
+			vertexId = qglCreateShader(GL_VERTEX_SHADER);
+			qglShaderSource(vertexId, numStrings + 1, strings, NULL);
+			qglCompileShader(vertexId);
+			qglGetShaderiv(vertexId, GL_COMPILE_STATUS, &status);
+
+			if (!status) {
+				R_GetInfoLog(vertexId, log, qfalse);
+				qglDeleteShader(vertexId);
+				Com_Printf("program '%s': error(s) in vertex shader:\n-----------\n%s\n-----------\n", program->name, log);
+				return NULL;
+			}
+		}
+
+		// compile fragment shader
+		if (fragmentSource) {
+			// link includes
+			fragmentSource = R_LoadIncludes((char*)fragmentSource);
+			strings[numStrings] = fragmentSource;
+			fragmentId = qglCreateShader(GL_FRAGMENT_SHADER);
+
+			//		Com_Printf("program '%s': warning(s) in: %s\n", program->name, log); // debug depricated func
+
+			qglShaderSource(fragmentId, numStrings + 1, strings, NULL);
+			qglCompileShader(fragmentId);
+			qglGetShaderiv(fragmentId, GL_COMPILE_STATUS, &status);
+
+			if (!status) {
+				R_GetInfoLog(fragmentId, log, qfalse);
+				qglDeleteShader(fragmentId);
+				Com_Printf("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
+				return NULL;
+			}
+		}
+
+		//
+		// link the program
+		//
+
+		if (vertexId) {
+			qglAttachShader(id, vertexId);
+			qglDeleteShader(vertexId);
+		}
+
+		if (fragmentId) {
+			qglAttachShader(id, fragmentId);
+			qglDeleteShader(fragmentId);
+		}
+
+		qglLinkProgram(id);
+		qglGetProgramiv(id, GL_LINK_STATUS, &status);
+
+		R_GetInfoLog(id, log, qtrue);
 
 		if (!status) {
-			R_GetInfoLog (vertexId, log, qfalse);
-			qglDeleteShader (vertexId);
-			Com_Printf ("program '%s': error(s) in vertex shader:\n-----------\n%s\n-----------\n", program->name, log);
+			qglDeleteProgram(id);
+			Com_Printf("program '%s': link error(s): %s\n", program->name, log);
 			return NULL;
 		}
-	}
 
-	// compile fragment shader
-	if (fragmentSource) {
-		// link includes
-		fragmentSource = R_LoadIncludes ((char*)fragmentSource);
-		strings[numStrings] = fragmentSource;
-		fragmentId = qglCreateShader (GL_FRAGMENT_SHADER);
-
-//		Com_Printf("program '%s': warning(s) in: %s\n", program->name, log); // debug depricated func
-
-		qglShaderSource (fragmentId, numStrings + 1, strings, NULL);
-		qglCompileShader (fragmentId);
-		qglGetShaderiv (fragmentId, GL_COMPILE_STATUS, &status);
-
-		if (!status) {
-			R_GetInfoLog (fragmentId, log, qfalse);
-			qglDeleteShader (fragmentId);
-			Com_Printf ("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
+		// don't let it be slow (crap)
+		if (strstr(log, "fragment shader will run in software")) {
+			qglDeleteProgram(id);
+			Com_Printf("program '%s': refusing to perform software emulation\n", program->name);
 			return NULL;
 		}
-	}
-
-	//
-	// link the program
-	//
-
-	id = qglCreateProgram ();
-
-	if (vertexId) {
-		qglAttachShader (id, vertexId);
-		qglDeleteShader (vertexId);
-	}
-
-	if (fragmentId) {
-		qglAttachShader (id, fragmentId);
-		qglDeleteShader (fragmentId);
-	}
 		
+		// make binary shader
+		char	binName[MAX_QPATH];
+		GLint	binLength;
+		GLvoid*	bin;
+		FILE*	binFile;
 
-	qglLinkProgram (id);
-	qglGetProgramiv (id, GL_LINK_STATUS, &status);
+		qglGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binLength);
+		bin = (GLvoid*)malloc(binLength);
+		glGetProgramBinary(id, binLength, &binLength, &gl_state.binaryFormats, bin);
 
-	R_GetInfoLog (id, log, qtrue);
+		Com_sprintf(binName, sizeof(binName), "%s/shadercache/%s.shader", FS_Gamedir(), program->name);
+		FS_CreatePath(binName);
+		binFile = fopen(binName, "wb");
+		fwrite(bin, binLength, 1, binFile);
+		fclose(binFile);
+		free(bin);
 
-	if (!status) {
-		qglDeleteProgram (id);
-		Com_Printf ("program '%s': link error(s): %s\n", program->name, log);
-		return NULL;
-	}
-
-	// don't let it be slow (crap)
-	if (strstr (log, "fragment shader will run in software")) {
-		qglDeleteProgram (id);
-		Com_Printf ("program '%s': refusing to perform software emulation\n", program->name);
-		return NULL;
 	}
 
 	program->id = id;
@@ -492,6 +553,7 @@ R_InitPrograms
 =============
 */
 
+#define GLSL_LOADING_TIME 1
 
 void R_InitPrograms (void) {
 	

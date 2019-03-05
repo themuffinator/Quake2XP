@@ -659,6 +659,7 @@ typedef struct {
 	qboolean	wgl_swap_control_tear;
 	qboolean	depthBoundsTest;
 
+	int			numFormats, binaryFormats;
 	int			programId;
 	GLenum		matrixMode;
 	

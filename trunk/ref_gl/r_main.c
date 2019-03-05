@@ -1778,6 +1778,12 @@ int R_Init(void *hinstance, void *hWnd)
 	glGetQueryObjectiv	= (PFNGLGETQUERYOBJECTIVPROC)	qwglGetProcAddress("glGetQueryObjectiv");
 	glGetQueryObjectuiv	= (PFNGLGETQUERYOBJECTUIVPROC)	qwglGetProcAddress("glGetQueryObjectuiv");
 
+	glGetProgramBinary =	(PFNGLGETPROGRAMBINARYPROC)		qwglGetProcAddress("glGetProgramBinary");
+	glProgramBinary =		(PFNGLPROGRAMBINARYPROC)		qwglGetProcAddress("glProgramBinary");
+	glProgramParameteri =	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
+	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
+	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
+
 
 	gl_config.vendor_string					= (const char*)qglGetString(GL_VENDOR);
 	gl_config.renderer_string				= (const char*)qglGetString(GL_RENDERER);
