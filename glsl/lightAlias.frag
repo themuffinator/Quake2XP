@@ -29,6 +29,7 @@ in vec4			v_positionVS;
 in vec3			v_lightAtten;
 in vec3			v_lightSpot;
 in vec3			v_tangent;
+in vec4     v_viewSpaceN;
 
 #include lighting.inc
 
@@ -129,7 +130,11 @@ void main (void) {
 
 
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);	
-      
+         
+      float frenel = 1.0 * pow(1.0 - abs(dot(V, vec3(0.0, 0.0, 1.0))), 30.0);
+      fragData +=vec4(1.0, 0.0, 1.0, 1.0) * frenel;
+      fragData.a = 1.0;
+                              
       if(cd_mask == 0.0){	    
         
       vec2 uv = v_texCoord.xy * 2.0 - 1.0;         
