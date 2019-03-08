@@ -359,6 +359,8 @@ cvar_t	*r_fixFovDistroctionRatio; // 0.0 = cylindrical distortion ratio. 1.0 = s
 
 cvar_t	*r_screenBlend;
 
+cvar_t	*r_useShaderCache;
+
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
 

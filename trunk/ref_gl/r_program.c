@@ -348,7 +348,7 @@ qboolean R_LoadBinaryShader(char *shaderName, int shaderId) {
 		free(bin);
 
 		if (success) {
-			Com_DPrintf(S_COLOR_GREEN">bin\n");
+			Com_Printf(S_COLOR_GREEN">bin\n");
 			return qtrue;
 		}
 	}
@@ -397,7 +397,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 
 	id = qglCreateProgram();
 
-	if (!R_LoadBinaryShader(program->name, id)) { // can't load shader from cache - recompile it!
+	if (!R_LoadBinaryShader(program->name, id) || !r_useShaderCache->integer) { // can't load shader from cache - recompile it!
 
 		numStrings = 0;
 		vertexId = 0;
@@ -479,23 +479,24 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 			return NULL;
 		}
 		
-		// make binary shader
-		char	binName[MAX_QPATH];
-		GLint	binLength;
-		GLvoid*	bin;
-		FILE*	binFile;
+		if (r_useShaderCache->integer) {// make binary shader
+			
+			char	binName[MAX_QPATH];
+			GLint	binLength;
+			GLvoid*	bin;
+			FILE*	binFile;
 
-		qglGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binLength);
-		bin = (GLvoid*)malloc(binLength);
-		glGetProgramBinary(id, binLength, &binLength, &gl_state.binaryFormats, bin);
+			qglGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binLength);
+			bin = (GLvoid*)malloc(binLength);
+			glGetProgramBinary(id, binLength, &binLength, &gl_state.binaryFormats, bin);
 
-		Com_sprintf(binName, sizeof(binName), "%s/shadercache/%s.shader", FS_Gamedir(), program->name);
-		FS_CreatePath(binName);
-		binFile = fopen(binName, "wb");
-		fwrite(bin, binLength, 1, binFile);
-		fclose(binFile);
-		free(bin);
-
+			Com_sprintf(binName, sizeof(binName), "%s/shadercache/%s.shader", FS_Gamedir(), program->name);
+			FS_CreatePath(binName);
+			binFile = fopen(binName, "wb");
+			fwrite(bin, binLength, 1, binFile);
+			fclose(binFile);
+			free(bin);
+		}
 	}
 
 	program->id = id;

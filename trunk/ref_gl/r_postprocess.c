@@ -603,10 +603,13 @@ void R_GlobalFog() {
 	
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-	
+	GL_MBindRect(GL_TEXTURE1, depthMap->texnum);
+
 	qglUniform1i(U_PARAM_INT_0, r_globalFog->integer);
-	qglUniform4f(U_PARAM_VEC4_0, r_globalFogRed->value, r_globalFogGreen->value, r_globalFogBlue->value, 1.0 / r_globalFogDensity->value); //view space
+	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform4f(U_PARAM_VEC4_0, r_globalFogRed->value, r_globalFogGreen->value, r_globalFogBlue->value, r_globalFogDensity->value); //view space
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
 	R_DrawFullScreenQuad();
 

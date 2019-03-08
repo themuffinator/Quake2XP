@@ -1424,6 +1424,8 @@ void R_RegisterCvars(void)
 	r_globalFogGreen =					Cvar_Get("r_globalFogGreen", "0.22", CVAR_ARCHIVE);
 	r_globalFogBlue =					Cvar_Get("r_globalFogBlue", "0.22", CVAR_ARCHIVE);
 
+	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
+
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
 	Cmd_AddCommand("levelshot",			GL_LevelShot_f);
