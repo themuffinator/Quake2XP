@@ -21,7 +21,6 @@ out vec3		v_lightVec;
 out vec3		v_lightAtten;
 out vec3		v_lightSpot;
 out vec3		v_tangent;
-out vec4    v_viewSpaceN;
 out mat3		v_tangentToView;
 
 void main (void) {
@@ -49,8 +48,6 @@ v_tangent = m * att_tangent;
 v_tangentToView[0] = m * att_tangent;
 v_tangentToView[1] = m * att_binormal;
 v_tangentToView[2] = m * att_normal;
-
-v_viewSpaceN = u_modelViewProjectionMatrix * vec4(0.0, 0.0, 1.0, 1.0);
 
 gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
 }

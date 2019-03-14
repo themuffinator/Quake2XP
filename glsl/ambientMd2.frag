@@ -16,6 +16,7 @@ layout(location = U_USE_SSAO)		uniform int		u_ssao;
 layout(location = U_COLOR_MUL)		uniform float	u_ColorModulate;
 layout(location = U_COLOR_OFFSET)	uniform float	u_AddShift; 
 
+
 void main ()
 {
 	if(u_isShell >= 1){
@@ -41,5 +42,6 @@ void main ()
 		fragData.xyz += texture(u_env, v_envCoord).xyz * glow.a * u_envScale;
 
 	fragData.xyz *= u_ColorModulate;
+
 	fragData.w = 1.0;
 }
