@@ -269,6 +269,11 @@ typedef struct model_s {
 	int			lightmap_scale;
 	byte		*lightData;
 	qboolean	useXPLM;	// 3-vector basis lightmap
+	
+	vec3_t		fogColor, fogSkyColor;
+	float		fogDensity, fogSkyDensity, fogBias;
+	int			fogType;
+	qboolean	useFogFile;
 
 	// for alias models and skins
 	image_t		*skins				[MAX_MD2SKINS];

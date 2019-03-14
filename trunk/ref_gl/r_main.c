@@ -641,9 +641,8 @@ void R_DrawLightScene (void)
 		continue;
 
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
-	R_CastAliasShadowVolumes(qtrue);	// player models shadows
+	R_CastAliasShadowVolumes(qtrue);	// alias models shadows
 
-	// only bsp shadows for entity!!! 
 	for (i = 0; i < r_newrefdef.num_entities; i++) { 
 		currententity = &r_newrefdef.entities[i];
 
@@ -670,9 +669,7 @@ void R_DrawLightScene (void)
 			R_DrawMD3MeshLight(qfalse);
 	}
 
-	R_CastAliasShadowVolumes(qfalse);	// alias models shadows
 	R_DrawLightWorld();					// light world
-	
 	//brush models light pass
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -1419,11 +1416,11 @@ void R_RegisterCvars(void)
 	r_screenBlend =						Cvar_Get("r_screenBlend", "1", CVAR_ARCHIVE);
 
 	r_globalFog =						Cvar_Get("r_globalFog", "1", CVAR_ARCHIVE);
-	r_globalFogDensity =				Cvar_Get("r_globalFogDensity", "0.01", CVAR_ARCHIVE);
-	r_globalFogRed =					Cvar_Get("r_globalFogRed", "0.22", CVAR_ARCHIVE);
-	r_globalFogGreen =					Cvar_Get("r_globalFogGreen", "0.22", CVAR_ARCHIVE);
-	r_globalFogBlue =					Cvar_Get("r_globalFogBlue", "0.22", CVAR_ARCHIVE);
-
+	r_globalFogDensity =				Cvar_Get("r_globalFogDensity", "0.025", CVAR_ARCHIVE);
+	r_globalFogRed =					Cvar_Get("r_globalFogRed", "1.0", CVAR_ARCHIVE);
+	r_globalFogGreen =					Cvar_Get("r_globalFogGreen", "0.25", CVAR_ARCHIVE);
+	r_globalFogBlue =					Cvar_Get("r_globalFogBlue", "0.25", CVAR_ARCHIVE);
+	r_globalFogBias =					Cvar_Get("r_globalFogBias", "0.0", CVAR_ARCHIVE);
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
@@ -1575,12 +1572,14 @@ qboolean IsExtensionSupported(const char *name)
 	return qfalse;
 }
 
+void CreateSkyFboMask(void);
 
 void R_InitFboBuffers() {
 	
 	Com_Printf("Initializing FBOs...\n\n");
 
 	CreateSSAOBuffer();
+	CreateSkyFboMask();
 	Com_Printf("\n");
 }
 
@@ -1948,6 +1947,7 @@ void R_Shutdown(void)
 	
 
 	qglDeleteFramebuffers (1, &fboId);
+	qglDeleteFramebuffers(1, &fbo_skyMask);
 
 	DeleteShadowVertexBuffers();
 	R_ShutDownVertexBuffers();

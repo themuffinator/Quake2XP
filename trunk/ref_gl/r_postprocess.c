@@ -588,6 +588,7 @@ void R_MenuBackGround() {
 	GL_Enable(GL_BLEND);
 }
 
+
 void R_GlobalFog() {
 
 	if (!r_globalFog->integer)
@@ -595,21 +596,35 @@ void R_GlobalFog() {
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
+	
+	if (!r_worldmodel)
+		return;
 
-	R_SetupOrthoMatrix();
 	GL_DepthMask(0);
+	R_SetupOrthoMatrix();
 
 	GL_BindProgram(globalFogProgram);
 	
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 	GL_MBindRect(GL_TEXTURE1, depthMap->texnum);
+	GL_MBindRect(GL_TEXTURE2, skyMask->texnum);
 
-	qglUniform1i(U_PARAM_INT_0, r_globalFog->integer);
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform4f(U_PARAM_VEC4_0, r_globalFogRed->value, r_globalFogGreen->value, r_globalFogBlue->value, r_globalFogDensity->value); //view space
+
+	if (r_worldmodel->useFogFile) {
+		qglUniform1i(U_PARAM_INT_0, r_worldmodel->fogType);
+		qglUniform4f(U_PARAM_VEC4_0, r_worldmodel->fogColor[0], r_worldmodel->fogColor[1], r_worldmodel->fogColor[2], 100.0 / r_worldmodel->fogDensity);
+		qglUniform4f(U_PARAM_VEC4_1, r_worldmodel->fogSkyColor[0], r_worldmodel->fogSkyColor[1], r_worldmodel->fogSkyColor[2], 100.0 / r_worldmodel->fogSkyDensity);
+		qglUniform1f(U_PARAM_FLOAT_0, r_worldmodel->fogBias);
+	}
+	else {
+		qglUniform1i(U_PARAM_INT_0, r_globalFog->integer);
+		qglUniform4f(U_PARAM_VEC4_0, r_globalFogRed->value, r_globalFogGreen->value, r_globalFogBlue->value, 100.0 / r_globalFogDensity->value);
+		qglUniform1f(U_PARAM_FLOAT_0, r_globalFogBias->value);
+	}
+	
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
 	R_DrawFullScreenQuad();
 

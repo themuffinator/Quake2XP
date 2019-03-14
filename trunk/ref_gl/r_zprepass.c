@@ -398,6 +398,55 @@ void R_DrawDepthMD3Model(void) {
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void R_DrawSkyMask() {
+
+	int i;
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_skyMask);
+	qglClear(GL_COLOR_BUFFER_BIT);
+
+	qglClearColor(1.0, 0.0, 0.0, 0.0);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+	
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+
+	num_depth_surfaces = 0;
+	R_RecursiveDepthWorldNode(r_worldmodel->nodes);
+	GL_DrawDepthPoly();
+
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglDisableVertexAttribArray(ATT_POSITION);
+
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+		currentmodel = currententity->model;
+
+		if (!currentmodel)
+			continue;
+
+		if (currententity->flags & RF_TRANSLUCENT)
+			continue;
+		if (currententity->flags & RF_WEAPONMODEL)
+			continue;
+		if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
+			continue;
+		if (currententity->flags & RF_DISTORT)
+			continue;
+
+		if (currentmodel->type == mod_brush)
+			R_DrawDepthBrushModel();
+
+		if (currentmodel->type == mod_alias)
+			R_DrawDepthAliasModel();
+
+		if (currentmodel->type == mod_alias_md3)
+			R_DrawDepthMD3Model();
+	}
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 void R_DrawDepthScene (void) {
 
@@ -412,20 +461,20 @@ void R_DrawDepthScene (void) {
 	currentmodel = r_worldmodel;
 
 	VectorCopy (r_newrefdef.vieworg, modelorg);
+	
+	GL_DepthFunc(GL_LESS);
+	GL_DepthMask(1);
 
 	R_ClearSkyBox ();
 
 	GL_BindProgram (nullProgram);
-	
+
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	
-	GL_DepthFunc(GL_LESS);
-	GL_DepthMask(1);
 
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
@@ -435,6 +484,9 @@ void R_DrawDepthScene (void) {
 	qglDisableVertexAttribArray (ATT_POSITION);
 
 	R_DrawSkyBox (qfalse);
+	
+	if(r_globalFog->integer)
+		R_DrawSkyMask();
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];

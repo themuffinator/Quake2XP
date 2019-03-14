@@ -3220,6 +3220,48 @@ void CL_ParticleRick (vec3_t org, vec3_t dir) {
 		p->vel[j] = p->dir[j] * 2;
 	}
 
+	if (!free_particles)
+		return;
+	p = free_particles;
+	free_particles = p->next;
+	p->next = active_particles;
+	active_particles = p;
+	VectorClear(p->accel);
+	VectorClear(p->vel);
+	VectorCopy(dir, p->dir);
+	VectorNormalize(p->dir);
+	p->orient = 0;
+	p->flags = PARTICLE_LIGHTING;
+	p->lightradius = 5.0;
+	p->lcolor[0] = 1.0;
+	p->lcolor[1] = 0.7;
+	p->lcolor[2] = 0.1;
+	p->time = cl.time;
+	p->endTime = cl.time + 20000;
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
+
+	p->color[0] = 1.0;
+	p->color[1] = 0.7;
+	p->color[2] = 0.1;
+
+	p->colorVel[0] = 1.0;
+	p->colorVel[1] = 0.7;
+	p->colorVel[2] = 0.1;
+	p->alpha = 1.0;
+	p->alphavel = -1.0 / (0.5 + frand() * 0.5);
+
+	p->type = PT_DEFAULT;
+	p->size = 0.1;
+	p->sizeVel = 0.1;
+
+	p->len = 0;
+	p->endLen = 0;
+
+	for (j = 0; j < 3; j++) {
+		p->org[j] = org[j];
+		p->vel[j] = p->dir[j] * 2;
+	}
 }
 
 void CL_ParticleRailRick (vec3_t org, vec3_t dir) {
@@ -3240,8 +3282,12 @@ void CL_ParticleRailRick (vec3_t org, vec3_t dir) {
 		VectorClear (p->accel);
 		VectorClear (p->vel);
 		p->orient = 0;
-		p->flags = PARTICLE_DIRECTIONAL;
-		p->flags |= PARTICLE_AIRONLY;
+		p->flags = PARTICLE_DIRECTIONAL | PARTICLE_AIRONLY;
+		p->lightradius = 10.0;
+		p->lcolor[0] = 1.0;
+		p->lcolor[1] = 0.5;
+		p->lcolor[2] = 0.0;
+
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
 		p->sFactor = GL_SRC_ALPHA;
@@ -3269,6 +3315,7 @@ void CL_ParticleRailRick (vec3_t org, vec3_t dir) {
 		}
 		p->accel[0] = p->accel[1] = 0;
 		p->accel[2] = -PARTICLE_GRAVITY;
+
 	}
 	//SMOKE
 	for (i = 0; i < 11; i++) {
@@ -3396,6 +3443,7 @@ void CL_ParticleRailRick (vec3_t org, vec3_t dir) {
 		p->accel[2] = -PARTICLE_GRAVITY*1.5;
 
 		VectorCopy (p->org, p->oldOrg);
+		V_AddLight(p->oldOrg, 10.0, 1.0, 0.5, 1.0, vec3_origin, 0, 0);
 	}
 
 

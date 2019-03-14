@@ -718,7 +718,6 @@ void CL_ParseTEnt (void) {
 					fastsound_descriptor[id_cl_sfx_ric1 + cnt], 1,
 					ATTN_NORM);
 			}
-
 			break;
 
 		case TE_SPLASH:			// bullet hitting water

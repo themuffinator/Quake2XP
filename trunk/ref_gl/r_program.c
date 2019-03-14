@@ -328,6 +328,9 @@ qboolean R_LoadBinaryShader(char *shaderName, int shaderId) {
 	GLint			success;
 	FILE*			binFile;
 
+	if (!r_useShaderCache->integer)
+		return qfalse;
+
 	Com_sprintf(name, sizeof(name), "%s/shadercache/%s.shader", FS_Gamedir(), shaderName);
 	FS_CreatePath(name);
 
@@ -348,7 +351,7 @@ qboolean R_LoadBinaryShader(char *shaderName, int shaderId) {
 		free(bin);
 
 		if (success) {
-			Com_Printf(S_COLOR_GREEN">bin\n");
+			Com_DPrintf(S_COLOR_GREEN">bin\n");
 			return qtrue;
 		}
 	}
@@ -397,7 +400,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 
 	id = qglCreateProgram();
 
-	if (!R_LoadBinaryShader(program->name, id) || !r_useShaderCache->integer) { // can't load shader from cache - recompile it!
+	if (!R_LoadBinaryShader(program->name, id)) { // can't load shader from cache - recompile it!
 
 		numStrings = 0;
 		vertexId = 0;

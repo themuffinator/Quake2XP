@@ -195,6 +195,9 @@ uint fboId;
 byte fboColorIndex;
 uint fboDps;
 
+image_t	*skyMask;
+uint fbo_skyMask;
+
 extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;
@@ -334,6 +337,7 @@ cvar_t	*r_globalFogDensity;
 cvar_t	*r_globalFogRed;
 cvar_t	*r_globalFogGreen;
 cvar_t	*r_globalFogBlue;
+cvar_t	*r_globalFogBias;
 
 cvar_t	*r_tbnSmoothAngle;
 

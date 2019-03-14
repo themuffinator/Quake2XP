@@ -1746,6 +1746,83 @@ static qboolean R_LoadXPLM(void) {
 	return qtrue;
 }
 
+void Mod_ParseFogParams(model_t *mod, char *s) {
+
+	char	*token;
+
+	while (s) {
+		token = COM_Parse(&s);
+
+		if (!Q_strcasecmp(token, "fogColor")) {
+			mod->fogColor[0] = atof(COM_Parse(&s)); // r
+			mod->fogColor[1] = atof(COM_Parse(&s)); // g
+			mod->fogColor[2] = atof(COM_Parse(&s)); // b
+			Com_Printf("fogColor:" S_COLOR_GREEN " %.3f %.3f %.3f\n", mod->fogColor[0], mod->fogColor[2], mod->fogColor[3]);
+			continue;
+		}
+
+		if (!Q_strcasecmp(token, "fogSkyColor")) {
+			mod->fogSkyColor[0] = atof(COM_Parse(&s)); // r
+			mod->fogSkyColor[1] = atof(COM_Parse(&s)); // g
+			mod->fogSkyColor[2] = atof(COM_Parse(&s)); // b
+			Com_Printf("fogSkyColor:" S_COLOR_GREEN " %.3f %.3f %.3f\n", mod->fogSkyColor[0], mod->fogSkyColor[2], mod->fogSkyColor[3]);
+			continue;
+		}
+
+		if (!Q_strcasecmp(token, "fogDensity")) {
+			mod->fogDensity = atof(COM_Parse(&s));
+			Com_Printf("fogDensity:" S_COLOR_GREEN " %.3f\n", mod->fogDensity);
+			continue;
+		}
+
+		if (!Q_strcasecmp(token, "fogSkyDensity")) {
+			mod->fogSkyDensity = atof(COM_Parse(&s));
+			Com_Printf("fogSkyDensity:" S_COLOR_GREEN " %.3f\n", mod->fogSkyDensity);
+			continue;
+		}
+
+		if (!Q_strcasecmp(token, "fogType")) {
+			mod->fogType = atoi(COM_Parse(&s));
+			Com_Printf("fogType:" S_COLOR_GREEN " %i\n", mod->fogType);
+			continue;
+		}
+
+		if (!Q_strcasecmp(token, "fogBias")) { // 0.0 ... 1.0
+			mod->fogBias = atof(COM_Parse(&s));
+			mod->fogBias = clamp(mod->fogBias, 0.0, 1.0);
+			Com_Printf("fogBias:" S_COLOR_GREEN " %.3f\n", mod->fogBias);
+			continue;
+		}
+	}
+}
+
+void Mod_LoadFogScript(model_t * mod) {
+	int		len;
+	char	name[MAX_OSPATH];
+	char	*buf;
+
+	// set default state - cvar controled
+	mod->useFogFile = qfalse;
+	len = strlen(mod->name);
+	memcpy(name, mod->name, len);
+	name[len - 3] = 'f';
+	name[len - 2] = 'o';
+	name[len - 1] = 'g';
+	name[len] = 0;
+	// load the .fog file
+	len = FS_LoadFile(name, (void **)&buf);
+	if (buf) {
+		Com_Printf(S_COLOR_YELLOW"\n\nLoad fog script for:" S_COLOR_GREEN " %s\n", mod->name);
+		Com_Printf("{\n");
+		char bak = buf[len];
+		buf[len] = 0;
+		Mod_ParseFogParams(mod, buf);
+		buf[len] = bak;
+		FS_FreeFile(buf);
+		mod->useFogFile = qtrue;
+		Com_Printf("}\n");
+	}
+}
 /*
 =================
 Mod_LoadBrushModel
@@ -1766,6 +1843,8 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 
 	if (loadmodel != mod_known)
 		VID_Error(ERR_DROP, "Loaded a brush model after the world");
+
+	Mod_LoadFogScript(mod);
 
 	header = (dheader_t *)buffer;
 
@@ -2475,8 +2554,6 @@ void R_BeginRegistration(char *model) {
 	flareEdit = (qboolean)qfalse;
 }
 
-
-
 /*
 @@@@@@@@@@@@@@@@@@@@@
 R_RegisterModel
@@ -2582,6 +2659,7 @@ struct model_s *R_RegisterModel(char *name) {
 			//         
 		}
 		 if (mod->type == mod_brush) {
+						
 			for (i = 0; i < mod->numTexInfo; i++) {
 				mod->texInfo[i].image->registration_sequence = registration_sequence;
 

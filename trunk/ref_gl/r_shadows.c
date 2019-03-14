@@ -536,8 +536,6 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
 
-
-	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
@@ -545,30 +543,10 @@ void R_CastAliasShadowVolumes(qboolean player) {
 			if (!currentmodel)
 				continue;
 
-			if (!(currententity->flags & RF_VIEWERMODEL))
-				continue;
-
 			if (currentmodel->type == mod_alias)
 				R_DrawMD2ShadowVolume();
 
-		}
-	}
-	else {
-		for (i = 0; i < r_newrefdef.num_entities; i++) {
-			currententity = &r_newrefdef.entities[i];
-			currentmodel = currententity->model;
-
-			if (!currentmodel)
-				continue;
-
-			if (currententity->flags & RF_VIEWERMODEL)
-				continue;
-
-			if (currentmodel->type == mod_alias)
-				R_DrawMD2ShadowVolume();
-
-		}
-	}
+		}	
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
@@ -578,7 +556,6 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_FrontFace(GL_CCW); // flip cull face order vs stencil re-setup
 
-	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
@@ -586,30 +563,10 @@ void R_CastAliasShadowVolumes(qboolean player) {
 			if (!currentmodel)
 				continue;
 
-			if (!(currententity->flags & RF_VIEWERMODEL))
-				continue;
-
 			if (currentmodel->type == mod_alias_md3)
 				R_DrawMD3ShadowVolume();
 
 		}
-	}
-	else {
-		for (i = 0; i < r_newrefdef.num_entities; i++) {
-			currententity = &r_newrefdef.entities[i];
-			currentmodel = currententity->model;
-
-			if (!currentmodel)
-				continue;
-
-			if (currententity->flags & RF_VIEWERMODEL)
-				continue;
-
-			if (currentmodel->type == mod_alias_md3)
-				R_DrawMD3ShadowVolume();
-
-		}
-	}
 
 	GL_FrontFace(GL_CW);
 	qglDisableVertexAttribArray(ATT_POSITION);

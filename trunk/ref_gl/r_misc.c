@@ -340,7 +340,7 @@ void CreateSsaoColorTextures(void) {
 void CreateSSAOBuffer(void) {
 	qboolean statusOK;
 
-	Com_Printf("Load "S_COLOR_YELLOW "ssao fbo ");
+	Com_Printf("Load "S_COLOR_YELLOW "SSAO FBO ");
 
 	CreateMiniDepth();
 	CreateSsaoColorTextures();
@@ -352,6 +352,59 @@ void CreateSSAOBuffer(void) {
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, fboColor[0]->texnum, 0);
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, fboColor[1]->texnum, 0);
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE, fboDN->texnum, 0);
+
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (!statusOK)
+		Com_Printf(S_COLOR_RED"Failed!");
+	else
+		Com_Printf(S_COLOR_WHITE"succeeded\n");
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+
+void CreateSkyFboMask(void) {
+	int		i;
+	char	name[17] = "***skyMask***";
+	image_t	*image;
+	qboolean statusOK;
+
+	Com_Printf("Load "S_COLOR_YELLOW "Sky Mask FBO ");
+
+	// find a free image_t
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures) {
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy(image->name, name);
+
+	image->width = vid.width;
+	image->height = vid.height;
+	image->upload_width = vid.width;
+	image->upload_height = vid.height;
+	image->type = it_pic;
+	qglGenTextures(1, &image->texnum);
+
+	skyMask = image;
+
+	qglBindTexture(GL_TEXTURE_RECTANGLE, skyMask->texnum);
+	qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RED, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	qglGenFramebuffers(1, &fbo_skyMask);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_skyMask);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, skyMask->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
@@ -401,6 +454,7 @@ void CreateShadowMask (void) {
 
 	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
+
 
 typedef struct img_s {
 	byte	*pixels;
