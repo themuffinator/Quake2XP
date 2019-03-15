@@ -27,12 +27,12 @@ void main(void){
 
 	if(mask == 1.0){
 		fogColor = u_fogSkyParams.xyz;
-		density = u_fogSkyParams.w;
+		density = 100.0 / u_fogSkyParams.w;
 	 }
 
 	 if(mask == 0.0){
 		fogColor = u_fogParams.xyz;
-		density = u_fogParams.w;
+		density = 100.0 / u_fogParams.w;
 	}
 
 	if(u_fogType == 1)
