@@ -337,6 +337,12 @@ cvar_t	*r_globalFogDensity;
 cvar_t	*r_globalFogRed;
 cvar_t	*r_globalFogGreen;
 cvar_t	*r_globalFogBlue;
+
+cvar_t	*r_globalSkyFogRed;
+cvar_t	*r_globalSkyFogGreen;
+cvar_t	*r_globalSkyFogBlue;
+cvar_t	*r_globalSkyFogDensity;
+
 cvar_t	*r_globalFogBias;
 
 cvar_t	*r_tbnSmoothAngle;
@@ -437,6 +443,9 @@ void R_FlareEdit_f (void);
 void R_ResetFlarePos_f (void);
 void R_Copy_Light_Properties_f (void);
 void R_Paste_Light_Properties_f (void);
+
+void R_SaveFogScript_f(void);
+void R_RemoveFogScript_f(void);
 
 extern qboolean flareEdit;
 

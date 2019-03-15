@@ -1420,6 +1420,12 @@ void R_RegisterCvars(void)
 	r_globalFogRed =					Cvar_Get("r_globalFogRed", "1.0", CVAR_ARCHIVE);
 	r_globalFogGreen =					Cvar_Get("r_globalFogGreen", "0.25", CVAR_ARCHIVE);
 	r_globalFogBlue =					Cvar_Get("r_globalFogBlue", "0.25", CVAR_ARCHIVE);
+
+	r_globalSkyFogDensity =				Cvar_Get("r_globalSkyFogDensity", "0.01", CVAR_ARCHIVE);
+	r_globalSkyFogRed =					Cvar_Get("r_globalSkyFogRed", "1.0", CVAR_ARCHIVE);
+	r_globalSkyFogGreen =				Cvar_Get("r_globalSkyFogGreen", "0.25", CVAR_ARCHIVE);
+	r_globalSkyFogBlue =				Cvar_Get("r_globalSkyFogBlue", "0.25", CVAR_ARCHIVE);
+
 	r_globalFogBias =					Cvar_Get("r_globalFogBias", "0.0", CVAR_ARCHIVE);
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
 
@@ -1436,6 +1442,10 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("medium_spec",		R_MediumSpecMachine_f);
 	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
 	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
+	Cmd_AddCommand("saveFogScript",		R_SaveFogScript_f);
+	Cmd_AddCommand("removeFogScript",	R_RemoveFogScript_f);
+	
+
 #ifdef _WIN32
 	Cmd_AddCommand("gpuInfo",			R_GpuInfo_f);
 #endif
@@ -1944,7 +1954,8 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("glsl");
 	Cmd_RemoveCommand("glslInfo");
 	Cmd_RemoveCommand("openglInfo");
-	
+	Cmd_RemoveCommand("saveFogScript");
+	Cmd_RemoveCommand("removeFogScript");
 
 	qglDeleteFramebuffers (1, &fboId);
 	qglDeleteFramebuffers(1, &fbo_skyMask);
