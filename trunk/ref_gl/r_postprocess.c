@@ -616,13 +616,13 @@ void R_GlobalFog() {
 		qglUniform1i(U_PARAM_INT_0, r_worldmodel->fogType);
 		qglUniform4f(U_PARAM_VEC4_0, r_worldmodel->fogColor[0], r_worldmodel->fogColor[1], r_worldmodel->fogColor[2], r_worldmodel->fogDensity);
 		qglUniform4f(U_PARAM_VEC4_1, r_worldmodel->fogSkyColor[0], r_worldmodel->fogSkyColor[1], r_worldmodel->fogSkyColor[2], r_worldmodel->fogSkyDensity);
-		qglUniform1f(U_PARAM_FLOAT_0, r_worldmodel->fogBias);
+		qglUniform2f(U_PARAM_VEC2_0, r_worldmodel->fogBias, r_worldmodel->fogSkyBias);
 	}
 	else {
 		qglUniform1i(U_PARAM_INT_0, r_globalFog->integer);
 		qglUniform4f(U_PARAM_VEC4_0, r_globalFogRed->value, r_globalFogGreen->value, r_globalFogBlue->value, r_globalFogDensity->value);
 		qglUniform4f(U_PARAM_VEC4_1, r_globalSkyFogRed->value, r_globalSkyFogGreen->value, r_globalSkyFogBlue->value, r_globalSkyFogDensity->value);
-		qglUniform1f(U_PARAM_FLOAT_0, r_globalFogBias->value);
+		qglUniform2f(U_PARAM_VEC2_0, r_globalFogBias->value, r_globalSkyFogBias->value);
 	}
 	
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -666,6 +666,7 @@ void R_SaveFogScript_f(void) {
 	fprintf(f, "fogDensity %.5f\n",				r_globalFogDensity->value);
 	fprintf(f, "fogSkyDensity %.5f\n",			r_globalSkyFogDensity->value);
 	fprintf(f, "fogBias %.3f\n",				r_globalFogBias->value);
+	fprintf(f, "fogSkyBias %.3f\n",				r_globalSkyFogBias->value);
 	fclose(f);
 
 	Com_Printf(""S_COLOR_MAGENTA"R_SaveFogScript_f: "S_COLOR_WHITE"Save Fog Script To "S_COLOR_GREEN"%s.fog\n", name);

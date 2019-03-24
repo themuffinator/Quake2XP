@@ -337,13 +337,13 @@ cvar_t	*r_globalFogDensity;
 cvar_t	*r_globalFogRed;
 cvar_t	*r_globalFogGreen;
 cvar_t	*r_globalFogBlue;
+cvar_t	*r_globalFogBias;
 
 cvar_t	*r_globalSkyFogRed;
 cvar_t	*r_globalSkyFogGreen;
 cvar_t	*r_globalSkyFogBlue;
 cvar_t	*r_globalSkyFogDensity;
-
-cvar_t	*r_globalFogBias;
+cvar_t	*r_globalSkyFogBias;
 
 cvar_t	*r_tbnSmoothAngle;
 
@@ -746,6 +746,7 @@ GLuint	ibo_quadTris;
 GLuint	vbo_Dynamic;
 GLuint	ibo_Dynamic;
 GLuint	ibo_cube;
+GLuint	ibo_md3Shadow;
 
 GLuint	vbo_BSP;
 GLuint	ibo_BSP;

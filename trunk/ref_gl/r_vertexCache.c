@@ -24,6 +24,7 @@ index_t cube_idx[] = {
 	3, 2, 6,
 	6, 7, 3
 };
+uint iShadowCache[MD3_MAX_VERTS * MD3_MAX_MESHES * 6];
 
 void R_InitVertexBuffers() {
 
@@ -39,6 +40,14 @@ void R_InitVertexBuffers() {
 	glDeleteVertexArrays(1, &vao.quaterScreenQuad);
 
 	Com_Printf("Initializing Vertex Buffers: ");
+
+	for (i = 0; i < MD3_MAX_VERTS * MD3_MAX_MESHES * 6; i++)
+		iShadowCache[i] = i;
+	
+	qglGenBuffers(1, &vbo.ibo_md3Shadow);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_md3Shadow);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, i * sizeof(uint), iShadowCache, GL_STATIC_DRAW);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	for (i = 0, idx = 0; i < MAX_DRAW_STRING_LENGTH * 4; i += 4)
 	{
@@ -155,6 +164,7 @@ void R_ShutDownVertexBuffers() {
 	qglDeleteBuffers(1, &vbo.vbo_Dynamic);
 	qglDeleteBuffers(1, &vbo.ibo_Dynamic);
 	qglDeleteBuffers(1, &vbo.vbo_BSP);
+	qglDeleteBuffers(1, &vbo.ibo_md3Shadow);
 
 	glDeleteVertexArrays(1, &vao.bsp_a);
 	glDeleteVertexArrays(1, &vao.bsp_l);

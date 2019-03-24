@@ -35,6 +35,11 @@ uint		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
 msurface_t	*shadow_surfaces[MAX_MAP_FACES];
 char		triangleFacingLight[MAX_INDICES];
 
+
+vec4_t	extrudedVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
+float	shadowVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
+
+
 /*
 =====================
 Alias Shadow Volumes
@@ -327,9 +332,6 @@ void R_DrawMD2ShadowVolume () {
 	BuildShadowVolumeTriangles (paliashdr, light);
 }
 
-vec4_t	extrudedVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
-float	md3ShadowVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
-
 void R_DrawMD3ShadowVolume(){
 
 	int				i, j, k, numTris, numVerts, id = 0;
@@ -432,35 +434,35 @@ void R_DrawMD3ShadowVolume(){
 						index1 = idx + ((k + 1) % 3);
 
 						//  transforms points with w = 1 normally and sends points with w = 0 to infinity away from the light.
-						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
-						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
-						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
-						md3ShadowVerts[numVerts++] = 1.0;
+						shadowVerts[numVerts++] = md3VertexCache[*index0][0];
+						shadowVerts[numVerts++] = md3VertexCache[*index0][1];
+						shadowVerts[numVerts++] = md3VertexCache[*index0][2];
+						shadowVerts[numVerts++] = 1.0;
 
-						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][0];
-						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][1];
-						md3ShadowVerts[numVerts++] = extrudedVerts[*index0][2];
-						md3ShadowVerts[numVerts++] = 0.0;
+						shadowVerts[numVerts++] = extrudedVerts[*index0][0];
+						shadowVerts[numVerts++] = extrudedVerts[*index0][1];
+						shadowVerts[numVerts++] = extrudedVerts[*index0][2];
+						shadowVerts[numVerts++] = 0.0;
 
-						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][0];
-						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][1];
-						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][2];
-						md3ShadowVerts[numVerts++] = 0.0;
+						shadowVerts[numVerts++] = extrudedVerts[*index1][0];
+						shadowVerts[numVerts++] = extrudedVerts[*index1][1];
+						shadowVerts[numVerts++] = extrudedVerts[*index1][2];
+						shadowVerts[numVerts++] = 0.0;
 
-						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][0];
-						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][1];
-						md3ShadowVerts[numVerts++] = extrudedVerts[*index1][2];
-						md3ShadowVerts[numVerts++] = 0.0;
+						shadowVerts[numVerts++] = extrudedVerts[*index1][0];
+						shadowVerts[numVerts++] = extrudedVerts[*index1][1];
+						shadowVerts[numVerts++] = extrudedVerts[*index1][2];
+						shadowVerts[numVerts++] = 0.0;
 
-						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][0];
-						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][1];
-						md3ShadowVerts[numVerts++] = md3VertexCache[*index1][2];
-						md3ShadowVerts[numVerts++] = 1.0;
+						shadowVerts[numVerts++] = md3VertexCache[*index1][0];
+						shadowVerts[numVerts++] = md3VertexCache[*index1][1];
+						shadowVerts[numVerts++] = md3VertexCache[*index1][2];
+						shadowVerts[numVerts++] = 1.0;
 
-						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
-						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
-						md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
-						md3ShadowVerts[numVerts++] = 1.0;
+						shadowVerts[numVerts++] = md3VertexCache[*index0][0];
+						shadowVerts[numVerts++] = md3VertexCache[*index0][1];
+						shadowVerts[numVerts++] = md3VertexCache[*index0][2];
+						shadowVerts[numVerts++] = 1.0;
 
 						numTris += 6;
 					}
@@ -479,19 +481,19 @@ void R_DrawMD3ShadowVolume(){
 				for (k = 0; k<3; k++)
 				{
 					index0 = idx + k;
-					md3ShadowVerts[numVerts++] = md3VertexCache[*index0][0];
-					md3ShadowVerts[numVerts++] = md3VertexCache[*index0][1];
-					md3ShadowVerts[numVerts++] = md3VertexCache[*index0][2];
-					md3ShadowVerts[numVerts++] = 1.0;
+					 shadowVerts[numVerts++] = md3VertexCache[*index0][0];
+					 shadowVerts[numVerts++] = md3VertexCache[*index0][1];
+					 shadowVerts[numVerts++] = md3VertexCache[*index0][2];
+					 shadowVerts[numVerts++] = 1.0;
 				}
 
 				for (k = 2; k >= 0; k--)
 				{
 					index0 = idx + k;
-					md3ShadowVerts[numVerts++] = extrudedVerts[*index0][0];
-					md3ShadowVerts[numVerts++] = extrudedVerts[*index0][1];
-					md3ShadowVerts[numVerts++] = extrudedVerts[*index0][2];
-					md3ShadowVerts[numVerts++] = 0.0;
+					 shadowVerts[numVerts++] = extrudedVerts[*index0][0];
+					 shadowVerts[numVerts++] = extrudedVerts[*index0][1];
+					 shadowVerts[numVerts++] = extrudedVerts[*index0][2];
+					 shadowVerts[numVerts++] = 0.0;
 				}
 
 				numTris += 6;
@@ -501,8 +503,8 @@ void R_DrawMD3ShadowVolume(){
 			idx += 3;
 		}
 	}
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec4_t), md3ShadowVerts);
-	qglDrawArrays(GL_TRIANGLES, 0, numTris);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float),  shadowVerts);
+	qglDrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
 	c_shadow_volumes++;
 }
 
@@ -547,14 +549,14 @@ void R_CastAliasShadowVolumes(qboolean player) {
 				R_DrawMD2ShadowVolume();
 
 		}	
-
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
+		
 	/*===============
 	DRAW MD3 SHADOWS
 	================*/
 
 	GL_FrontFace(GL_CCW); // flip cull face order vs stencil re-setup
+	
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_md3Shadow);
 
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = &r_newrefdef.entities[i];
@@ -571,6 +573,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	GL_FrontFace(GL_CW);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_Enable(GL_CULL_FACE);
 	GL_ColorMask(1, 1, 1, 1);
 }

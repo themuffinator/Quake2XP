@@ -271,7 +271,7 @@ typedef struct model_s {
 	qboolean	useXPLM;	// 3-vector basis lightmap
 	
 	vec3_t		fogColor, fogSkyColor;
-	float		fogDensity, fogSkyDensity, fogBias;
+	float		fogDensity, fogSkyDensity, fogBias, fogSkyBias;
 	int			fogType;
 	qboolean	useFogFile;
 
