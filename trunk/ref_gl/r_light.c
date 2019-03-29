@@ -43,7 +43,7 @@ void R_AddLightInteraction(worldShadowLight_t *light);
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
-	if (r_newrefdef.areabits) {
+	if (r_newrefdef.areabits && light->area > 0) {
 
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))) {
 			return qfalse;

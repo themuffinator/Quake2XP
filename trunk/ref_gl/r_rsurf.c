@@ -290,6 +290,9 @@ void R_DrawChainsRA (qboolean bmodel) {
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1f(U_COLOR_MUL, colorScale);
 	qglUniform1i(U_REFR_ALPHA_MASK, 0);
+	
+	float blurScale= 18.88 * ((float)vid.width / 1024.0);
+	qglUniform1i(U_PARAM_FLOAT_0, blurScale);
 
 	for (s = r_alpha_surfaces; s; s = s->texturechain) {
 		
