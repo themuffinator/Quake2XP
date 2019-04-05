@@ -11,6 +11,8 @@ layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
 layout(location = U_COLOR_MUL)			uniform float	u_ambientScale;
 layout(location = U_REFR_MASK)			uniform vec2	u_mask;			//softeness
 layout(location = U_REFR_ALPHA_MASK)	uniform int		u_ALPHAMASK;	//is sprite
+layout(location = U_PARAM_FLOAT_0)		uniform float	u_blurScale;
+
 
 in float	v_depth;
 in float	v_depthS;
@@ -126,7 +128,7 @@ void main (void) {
 	clearGlass.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
 	clearGlass.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 
-    vec4 bluredGlass = boxBlur(g_colorBufferMap, max(4.0, diffuse.a * 40.0), N);
+    vec4 bluredGlass = boxBlur(g_colorBufferMap, max(8.0, diffuse.a * u_blurScale), N);
 
     fragData = mix (bluredGlass, clearGlass, diffuse.a);
 
