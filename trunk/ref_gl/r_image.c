@@ -682,8 +682,6 @@ done:
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
-
-
 	return (samples == 4);
 }
 
@@ -828,7 +826,7 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 	}
 		qglGenTextures (1, &image->texnum);
 		GL_Bind(image->texnum);
-		
+
 		qboolean itBump = qfalse;
 		if (image->type == it_bump)
 			itBump = qtrue;
@@ -850,6 +848,9 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		image->sh = 1;
 		image->tl = 0;
 		image->th = 1;
+
+		image->handle = glGetTextureHandleARB(image->texnum);
+		glMakeTextureHandleResidentARB(image->handle);
 
 	return image;
 }
@@ -1352,6 +1353,9 @@ void GL_ShutdownImages(void) {
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (!image->registration_sequence)
 			continue;			// free image_t slot
+
+		glMakeTextureHandleNonResidentARB(image->handle);
+		image->hasHandle = qfalse;
 
 		// free it
 		qglDeleteTextures(1, (GLuint*)&image->texnum);

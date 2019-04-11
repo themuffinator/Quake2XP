@@ -147,6 +147,19 @@ static const char *glslUniforms =
 "#define	U_FRAG_COLOR			94\n"
 ;
 
+static const char *unbindTextures =
+"#define	TMU0			200\n"
+"#define	TMU1			201\n"
+"#define	TMU2			202\n"
+"#define	TMU3			203\n"
+"#define	TMU4			204\n"
+"#define	TMU5			205\n"
+"#define	TMU6			206\n"
+"#define	TMU7			207\n"
+"#define	TMU8			208\n"
+"#define	TMU9			209\n"
+;
+
 typedef enum {
 	S_DEFAULT		= 1,
 	S_TESSCONTROL	= 2,
@@ -409,6 +422,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 		strings[numStrings++] = glslExt;
 		strings[numStrings++] = mathDefs;
 		strings[numStrings++] = glslUniforms;
+		strings[numStrings++] = unbindTextures;
 
 		// compile vertex shader
 		if (vertexSource) {

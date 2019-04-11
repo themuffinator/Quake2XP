@@ -1011,7 +1011,7 @@ void R_RenderView (refdef_t *fd) {
 	R_CaptureColorBuffer();
 	
 	R_DrawParticles();
-	
+
 	R_DrawRAScene();
 	
 	R_DrawParticles();

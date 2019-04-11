@@ -1069,6 +1069,19 @@ typedef enum {
 }
 glsl_uniform;
 
+typedef enum {
+	TMU0,
+	TMU1,
+	TMU2,
+	TMU3,
+	TMU4,
+	TMU5,
+	TMU6,
+	TMU7,
+	TMU8,
+	TMU9,
+}glsl_bindless;
+
 #define	MAX_VERTEX_CACHES	4096
 
 void R_DrawFullScreenQuad();

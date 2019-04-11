@@ -278,6 +278,8 @@ typedef enum {
 	it_bump,
 } imagetype_t;
 
+typedef unsigned long int uint64;
+
 typedef struct image_s {
 
 	char		name[MAX_QPATH];		// game path, including extension
@@ -306,6 +308,9 @@ typedef struct image_s {
 				envScale, 
 				rghScale;
 
+	//bindless graphics
+	uint64		handle;
+	qboolean	hasHandle;
 } image_t;
 
 
