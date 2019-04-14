@@ -555,7 +555,6 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	================*/
 
 	GL_FrontFace(GL_CCW); // flip cull face order vs stencil re-setup
-	
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_md3Shadow);
 
 		for (i = 0; i < r_newrefdef.num_entities; i++) {

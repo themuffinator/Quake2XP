@@ -119,6 +119,9 @@ cvar_t *cl_itemsBobbing;
 cvar_t *cl_hudModelScale;
 cvar_t	*scr_showTexName;
 
+cvar_t	*cl_async;
+cvar_t	*r_maxfps;
+
 client_static_t cls;
 client_state_t cl;
 
@@ -1612,6 +1615,9 @@ void CL_InitLocal (void) {
 	zoomfov = Cvar_Get ("zoomfov", "22.5", CVAR_ARCHIVE);
 	zoomfov->help = "lower FOV limit for '+zoom'";
 
+	r_maxfps = Cvar_Get("r_maxfps", "125", CVAR_ARCHIVE);
+	cl_async = Cvar_Get("cl_async", "0", CVAR_ARCHIVE);
+
 	gender = Cvar_Get ("gender", "male", CVAR_USERINFO | CVAR_ARCHIVE);
 	gender_auto = Cvar_Get ("gender_auto", "1", CVAR_ARCHIVE);
 	gender->modified = qfalse;	// clear this so we know when user sets it
@@ -1799,8 +1805,6 @@ void CL_SendCommand (void) {
 	// resend a connection request if necessary
 	CL_CheckForResend ();
 }
-
-
 /*
 ==================
 CL_Frame
@@ -1808,8 +1812,9 @@ CL_Frame
 ==================
 */
 void CL_Frame (int msec) {
-	static int extratime;
+	static int	extratime, packet_delta, misc_delta = 1000;
 	static int lasttimecalled;
+	qboolean	packet_frame = qtrue;
 
 	if (dedicated->integer)
 		return;
@@ -1819,21 +1824,33 @@ void CL_Frame (int msec) {
 	if (cl_maxfps->integer == 0)
 		Cvar_SetValue ("cl_maxfps", 100);
 
-	if (!cl_timedemo->integer) {
-		int temptime = 1000 / cl_maxfps->value - extratime;
+	if (!cl_timedemo->integer)
+	{
+		if (cl_async->integer)
+		{
+			if (cls.state == ca_connected) {
+				if (packet_delta < 100) {
+					packet_frame = qfalse;
+				}
+			}
+			else {
+				if (packet_delta < 1000 / cl_maxfps->integer)
+					packet_frame = qfalse;	// packetrate is too high
+			}
 
-		if (cls.state == ca_connected && extratime < 100)
-			return;				// don't flood packets out while connecting
-
-		// give CPU to other processes while idle
-		if (temptime > 0) {
-			// XXX: sleep half the time? for now it doesn't seem necessary
-#ifndef _WIN32
-			usleep (temptime);
-#else
-			Sleep (temptime);
-#endif
-			return;				// framerate is too high
+			if (!packet_frame && extratime < 1000 / r_maxfps->integer)
+				return;	// framerate is too high
+		}
+		else
+		{
+			if (cls.state == ca_connected) {
+				if (extratime < 100)
+					return;			// don't flood packets out while connecting
+			}
+			else {
+				if (extratime < 1000 / cl_maxfps->integer)
+					return;			// framerate is too high
+			}
 		}
 	}
 	// let the mouse activate or deactivate
