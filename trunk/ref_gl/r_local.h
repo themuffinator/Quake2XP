@@ -167,6 +167,7 @@ image_t *r_DSTTex;
 
 image_t	*r_defBump;
 image_t	*ScreenMap;
+image_t	*Screen2D;
 image_t	*r_envTex;
 image_t	*r_randomNormalTex;
 image_t	*shadowMask;
@@ -174,6 +175,8 @@ image_t	*r_conBump;
 image_t	*weaponHack;
 image_t *fxaaMap;
 image_t *fboScreen;
+image_t *fboScreenCopy;
+
 image_t	*r_whiteMap;
 image_t *skinBump;
 
@@ -390,6 +393,7 @@ void R_LightPoint (vec3_t p, vec3_t color);
 void R_InitLightgrid (void);
 
 void R_GenEnvCubeMap();
+void R_Capture2dColorBuffer();
 
 worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style, int filter, vec3_t angles, vec3_t speed,
 	qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg,
@@ -426,6 +430,9 @@ void R_DrawDepthScene(void);
 void R_DownsampleDepth(void);
 void R_ScreenBlend(void);
 void R_GlobalFog();
+
+void CreateFboBuffer(void);
+void R_CopyFboColorBuffer();
 
 void R_SaveLights_f (void);
 void R_Light_Spawn_f (void);

@@ -944,7 +944,7 @@ static qboolean GLW_ChoosePixelFormat() {
 	sRGB = arb_sRGB|ext_sRGB;
 	if (arb_sRGB)
 		sRGBformat = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-	if (ext_sRGB)
+	else if (ext_sRGB)
 		sRGBformat = WGL_FRAMEBUFFER_SRGB_CAPABLE_EXT;
 
 	qglGetIntegerv(GL_MAX_SAMPLES, &gl_config.maxSamples);

@@ -126,14 +126,32 @@ int gl_tex_alpha_format = GL_RGBA;
 int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;	
 int gl_filter_max = GL_LINEAR;
 
-void R_CaptureColorBuffer()
-{
+void R_CaptureColorBuffer(){
 		
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+}
+
+void R_CopyFboColorBuffer() {
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	GL_MBindRect(GL_TEXTURE0, fboScreenCopy->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+}
+
+void R_Capture2dColorBuffer(){
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	GL_MBind(GL_TEXTURE0, Screen2D->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void R_CaptureDepthBuffer()

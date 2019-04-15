@@ -1589,6 +1589,7 @@ void R_InitFboBuffers() {
 	
 	Com_Printf("Initializing FBOs...\n\n");
 
+	CreateFboBuffer();
 	CreateSSAOBuffer();
 	CreateSkyFboMask();
 	Com_Printf("\n");

@@ -208,6 +208,7 @@ void R_DrawChainsRA (qboolean bmodel) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+
 	GL_BindProgram(waterProgram);
 
 	GL_MBind(GL_TEXTURE1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->texnum);
@@ -270,6 +271,7 @@ void R_DrawChainsRA (qboolean bmodel) {
 	r_reflective_surfaces = NULL;
 
 	R_CaptureColorBuffer();
+	R_Capture2dColorBuffer();
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);

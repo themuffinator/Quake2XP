@@ -150,6 +150,51 @@ void CreateScreenRect (void) {
 
 }
 
+void CreateScreen2D(void) {
+
+
+	int		i;
+	char	name[15] = "***Screen2D***";
+	image_t	*image;
+
+	// find a free image_t
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures) {
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy(image->name, name);
+
+	image->width = vid.width;
+	image->height = vid.height;
+	image->upload_width = vid.width;
+	image->upload_height = vid.height;
+	image->type = it_pic;
+	qglGenTextures(1, &image->texnum);
+
+	Screen2D = image;
+
+	// create screen texture
+
+	qglBindTexture(GL_TEXTURE_2D, Screen2D->texnum);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	GL_CheckError("load 2d screen", 0, "qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);");
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	GL_CheckError("load 2d screen", 0, "qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);");
+
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	qglTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, vid.width, vid.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	qglGenerateMipmap(GL_TEXTURE_2D);
+}
+
 /*
 =============
 R_FB_Check
@@ -201,9 +246,12 @@ void CreateFboBuffer (void) {
 
 	int			i;
 	char		name[15] = "***fboScreen***";
+	char		name2[19] = "***fboScreenCopy***";
 	image_t		*image;
 	qboolean	statusOK;
 	uint		rb;
+
+	Com_Printf("Load "S_COLOR_YELLOW "HDR FBO ");
 
 	// find a free image_t
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
@@ -236,9 +284,44 @@ void CreateFboBuffer (void) {
 	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RGB, vid.width, vid.height, 0,
+	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, vid.width, vid.height, 0,
 		GL_RGB, GL_UNSIGNED_BYTE, NULL);
+//-------------------------------------------------
 
+	// find a free image_t
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures) {
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy(image->name, name2);
+
+	image->width = vid.width;
+	image->height = vid.height;
+	image->upload_width = vid.width;
+	image->upload_height = vid.height;
+	image->type = it_pic;
+	qglGenTextures(1, &image->texnum);
+
+	fboScreenCopy = image;
+
+	// attach screen texture
+
+	qglBindTexture(GL_TEXTURE_RECTANGLE, fboScreenCopy->texnum);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, vid.width, vid.height, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, NULL);
+//--------------------------------------------------------------------
 	qglGenRenderbuffers (1, &rb);
 	qglBindRenderbuffer (GL_RENDERBUFFER, rb);
 	qglRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width, vid.height);
@@ -249,11 +332,13 @@ void CreateFboBuffer (void) {
 	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb);
 	qglFramebufferRenderbuffer (GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rb);
 	qglFramebufferTexture2D (GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, fboScreen->texnum, 0);
-//	qglDrawBuffers(1, drawbuffers);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, fboScreenCopy->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus (GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
-	if (statusOK)
-		Com_Printf (""S_COLOR_MAGENTA"...Create depth-stencil FBO\n");
+	if (!statusOK)
+		Com_Printf(S_COLOR_RED"Failed!");
+	else
+		Com_Printf(S_COLOR_WHITE"succeeded\n");
 	
 	_R_FB_Check();
 
@@ -826,6 +911,7 @@ void R_InitEngineTextures (void) {
 	CreateDSTTex_ARB ();
 	CreateDepthTexture ();
 	CreateScreenRect ();
+	CreateScreen2D();
 }
 
 
