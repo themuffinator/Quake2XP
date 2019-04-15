@@ -8,6 +8,7 @@ layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 
 out vec2	v_deformTexCoord;
 out vec2	v_deformMul;
+out vec2	v_uv;
 out float	v_depth;
 out float	v_depthS;
 
@@ -29,5 +30,5 @@ void main (void) {
 	v_deformMul = min(d.xx, 0.02) * u_deformMul;
 
 	gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
-
+	v_uv = (gl_Position.xy / gl_Position.w) * (0.5) + vec2(0.5);
 }

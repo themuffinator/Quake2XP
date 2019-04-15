@@ -1,18 +1,18 @@
-/*
+
 layout (binding = 0) uniform sampler2D		u_Diffuse;
 layout (binding = 1) uniform sampler2D		u_NormalMap;
 layout (binding = 2) uniform samplerCube	u_CubeFilterMap;
 layout (binding = 3) uniform sampler2D		u_Caustics;
 layout (binding = 4) uniform sampler2D		u_RghMap;
-*/
 
+/*
 #extension GL_ARB_bindless_texture : require
 layout (bindless_sampler, location  = 100) uniform sampler2D		u_Diffuse;
 layout (bindless_sampler, location  = 101) uniform sampler2D		u_NormalMap;
 layout (bindless_sampler, location  = 102) uniform samplerCube		u_CubeFilterMap;
 layout (bindless_sampler, location  = 103) uniform sampler2D		u_Caustics;
 layout (bindless_sampler, location  = 104) uniform sampler2D		u_RghMap;
-
+*/
 layout(location = U_COLOR_MUL)			uniform float	u_ColorModulate;
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
 layout(location = U_RGH_SCALE)			uniform float	u_roughnessScale;
