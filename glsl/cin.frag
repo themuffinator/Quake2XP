@@ -82,18 +82,10 @@ vec4 TechniColor(in vec4 color)
 	return mix(color, result, 0.44);
 }
 
-#define RGB_MASK_SIZE 3.0
-
 void main ()
 {
 	vec4 cin = vec4(median(u_cinMap), 1.0) * 2.0;
 	cin = clamp(cin, 0.05, 1.0);
 	fragData = TechniColor(cin);
-
-	// create rgb CRT mask
-	float pix = gl_FragCoord.y * u_screenSize.x + gl_FragCoord.x;
-    pix = floor(pix);
-	vec4 rgbMask = vec4(mod(pix, RGB_MASK_SIZE), mod((pix + 1.0), RGB_MASK_SIZE), mod((pix + 2.0), RGB_MASK_SIZE), 1.0);
-    rgbMask = rgbMask / (RGB_MASK_SIZE - 1.0) + 0.5;
-	fragData *= rgbMask * 1.2;
+	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
 }
