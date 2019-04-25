@@ -443,12 +443,6 @@ void R_MotionBlur (void)
 
 void R_DownsampleDepth(void) 
 {
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
-		return;
-
 	if (!r_ssao->integer)
 		return;
 
@@ -482,6 +476,11 @@ void R_SSAO (void)
 	if (!r_ssao->integer)
 		return;
 	
+	R_SetupOrthoMatrix();
+	GL_DepthMask(0);
+
+	R_DownsampleDepth();
+
 	// process
 	qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -531,6 +530,12 @@ void R_SSAO (void)
 
 	// restore
 	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	GL_Enable(GL_CULL_FACE);
+	GL_Enable(GL_DEPTH_TEST);
+	GL_DepthMask(1);
+	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
+				r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
 /*

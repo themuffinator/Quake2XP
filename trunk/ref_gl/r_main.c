@@ -934,6 +934,11 @@ static void R_DrawRAScene (void) {
 	GL_DepthMask(0);
 	GL_PolygonOffset(-1.0, 1.0);
 
+	RA_Frame = qfalse;
+
+	if (r_reflective_surfaces || r_alpha_surfaces)
+		RA_Frame = qtrue;
+
 	R_DrawChainsRA(qfalse);
 
 	GL_DepthMask(1);
@@ -991,30 +996,21 @@ void R_RenderView (refdef_t *fd) {
 	R_LightOcclusionTest();
 	R_CaptureDepthBuffer();
 	
-	if (r_ssao->integer && !(r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))) {
-
-		R_SetupOrthoMatrix();
-		GL_DepthMask(0);
-		R_DownsampleDepth();
-		R_SSAO();
-
-		GL_Enable(GL_CULL_FACE);
-		GL_Enable(GL_DEPTH_TEST);
-		GL_DepthMask(1);
-		qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], 
-					r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
-	}
-
+	R_SSAO();
 	R_DrawAmbientScene();
 	R_DrawLightScene();
 	R_RenderDecals();
-	R_CaptureColorBuffer();
 	
 	R_DrawParticles();
 
+	R_CaptureColorBuffer();
+
 	R_DrawRAScene();
 	
-	R_DrawParticles();
+	if (RA_Frame && r_particlesOverdraw->integer) { // overdraw particles if we have trans or reflective surfaces in frame
+		R_DrawParticles();
+		RA_Frame = qfalse;
+	}
 	R_DrawTransEntities();
 
 	R_CaptureColorBuffer();
@@ -1429,6 +1425,7 @@ void R_RegisterCvars(void)
 	r_globalSkyFogBias =				Cvar_Get("r_globalSkyFogBias", "0.0", CVAR_ARCHIVE);
 
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
+	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", 0);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
@@ -1554,8 +1551,8 @@ static void DevIL_Init() {
 	ilEnable(IL_ORIGIN_SET);
 	ilSetInteger(IL_ORIGIN_MODE, IL_ORIGIN_UPPER_LEFT);
 
-	Con_Printf (PRINT_ALL, "OpenIL VENDOR: "S_COLOR_GREEN" %s\n", ilGetString(IL_VENDOR));
-	Con_Printf (PRINT_ALL, "OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
+	Com_Printf ("OpenIL VENDOR: "S_COLOR_GREEN" %s\n", ilGetString(IL_VENDOR));
+	Com_Printf ("OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
 	Com_Printf ("\n==================================\n\n");
 
     init = qtrue;

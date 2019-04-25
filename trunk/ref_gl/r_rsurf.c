@@ -28,9 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static vec3_t modelorg;			// relative to viewpoint
 
-msurface_t *r_alpha_surfaces;		// all non-entity BSP surfaces with TRANS33/66
-msurface_t *r_reflective_surfaces;	// all non-entity BSP surfaces with WARP
-
 vec4_t	color_black = { 0.f, 0.f, 0.f, 0.f };
 
 vec3_t	wVertexArray[MAX_BATCH_SURFS];

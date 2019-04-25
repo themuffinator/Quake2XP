@@ -340,18 +340,6 @@
     <ClInclude Include="ref_gl\wglext.h">
       <Filter>Source Files\Renderer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\ImageLib\config.h">
-      <Filter>Source Files\Renderer\Headers\devIL</Filter>
-    </ClInclude>
-    <ClInclude Include="ref_gl\ImageLib\il.h">
-      <Filter>Source Files\Renderer\Headers\devIL</Filter>
-    </ClInclude>
-    <ClInclude Include="ref_gl\ImageLib\ilu.h">
-      <Filter>Source Files\Renderer\Headers\devIL</Filter>
-    </ClInclude>
-    <ClInclude Include="ref_gl\ImageLib\ilut.h">
-      <Filter>Source Files\Renderer\Headers\devIL</Filter>
-    </ClInclude>
     <ClInclude Include="client\snd_loc.h">
       <Filter>Source Files\Sound\Headers</Filter>
     </ClInclude>
@@ -465,6 +453,18 @@
     </ClInclude>
     <ClInclude Include="client\AL\efx.h">
       <Filter>Source Files\Sound\Headers\openAL</Filter>
+    </ClInclude>
+    <ClInclude Include="ref_gl\ImageLib\il.h">
+      <Filter>Source Files\Renderer\Headers\devIL</Filter>
+    </ClInclude>
+    <ClInclude Include="ref_gl\ImageLib\ilu.h">
+      <Filter>Source Files\Renderer\Headers\devIL</Filter>
+    </ClInclude>
+    <ClInclude Include="ref_gl\ImageLib\ilut.h">
+      <Filter>Source Files\Renderer\Headers\devIL</Filter>
+    </ClInclude>
+    <ClInclude Include="ref_gl\ImageLib\ilut_config.h">
+      <Filter>Source Files\Renderer\Headers\devIL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

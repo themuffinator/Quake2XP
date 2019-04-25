@@ -38,10 +38,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef _WIN32
 
 #include "wglext.h"
-
+#include "imagelib/ilut_config.h"
 #include "imagelib/il.h"
 #include "imagelib/ilu.h"
 #include "imagelib/ilut.h"
+typedef void ILvoid;
+#define _inline inline
 
 #else
 
@@ -373,6 +375,7 @@ cvar_t	*r_fixFovDistroctionRatio; // 0.0 = cylindrical distortion ratio. 1.0 = s
 cvar_t	*r_screenBlend;
 
 cvar_t	*r_useShaderCache;
+cvar_t	*r_particlesOverdraw;
 
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
@@ -382,6 +385,9 @@ extern float ref_realtime;
 extern int r_visframecount;
 
 qboolean xhargar2hack;
+qboolean RA_Frame;
+msurface_t *r_alpha_surfaces;		// all non-entity BSP surfaces with TRANS33/66
+msurface_t *r_reflective_surfaces;	// all non-entity BSP surfaces with WARP
 
 void GL_Bind (int texnum);
 void GL_MBind (GLenum target, int texnum);

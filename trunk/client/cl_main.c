@@ -1822,7 +1822,7 @@ void CL_Frame (int msec) {
 	extratime += msec;
 
 	if (cl_maxfps->integer == 0)
-		Cvar_SetValue ("cl_maxfps", 100);
+		Cvar_SetValue ("cl_maxfps", 125);
 
 	if (!cl_timedemo->integer)
 	{
@@ -1857,13 +1857,13 @@ void CL_Frame (int msec) {
 	IN_Frame ();
 
 	// decide the simulation time
-	cls.frametime = extratime / 1000.0;
+	cls.frametime = extratime * 0.001f;
 	cl.time += extratime;
 	cls.realtime = curtime;
 
 	extratime = 0;
-	if (cls.frametime > (1.0 / 5))
-		cls.frametime = (1.0 / 5);
+	if (cls.frametime > 0.2f)
+		cls.frametime = 0.2f;
 
 	// if in the debugger last frame, don't timeout
 	if (msec > 5000)
@@ -1891,13 +1891,10 @@ void CL_Frame (int msec) {
 		time_after_ref = Sys_Milliseconds ();
 
 	// update audio
-	{
-		float orientation[6];
-
-		memcpy (orientation, cl.v_forward, sizeof(vec3_t));
-		memcpy (&orientation[3], cl.v_up, sizeof(vec3_t));
-		S_Update (cl.refdef.vieworg, cl.v_forward, orientation);
-	}
+	float orientation[6];
+	memcpy (orientation, cl.v_forward, sizeof(vec3_t));
+	memcpy (&orientation[3], cl.v_up, sizeof(vec3_t));
+	S_Update (cl.refdef.vieworg, cl.v_forward, orientation);
 	Music_Update ();
 
 	// advance local effects for next frame

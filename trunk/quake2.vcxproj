@@ -690,6 +690,10 @@
     <ClInclude Include="client\client.h" />
     <ClInclude Include="client\music.h" />
     <ClInclude Include="ref_gl\glcorearb.h" />
+    <ClInclude Include="ref_gl\ImageLib\il.h" />
+    <ClInclude Include="ref_gl\ImageLib\ilu.h" />
+    <ClInclude Include="ref_gl\ImageLib\ilut.h" />
+    <ClInclude Include="ref_gl\ImageLib\ilut_config.h" />
     <ClInclude Include="ref_gl\r_md3.h" />
     <ClInclude Include="win32\adl\adl_defines.h" />
     <ClInclude Include="win32\adl\adl_sdk.h" />
@@ -719,10 +723,6 @@
     <ClInclude Include="ref_gl\r_local.h" />
     <ClInclude Include="ref_gl\r_model.h" />
     <ClInclude Include="ref_gl\wglext.h" />
-    <ClInclude Include="ref_gl\ImageLib\config.h" />
-    <ClInclude Include="ref_gl\ImageLib\il.h" />
-    <ClInclude Include="ref_gl\ImageLib\ilu.h" />
-    <ClInclude Include="ref_gl\ImageLib\ilut.h" />
     <ClInclude Include="client\snd_loc.h" />
     <ClInclude Include="client\sound.h" />
     <ClInclude Include="win32\winquake.h" />
