@@ -1794,6 +1794,7 @@ int R_Init(void *hinstance, void *hWnd)
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
 
+	glTexImage3D =	(PFNGLTEXIMAGE3DPROC)	qwglGetProcAddress("glTexImage3D");					
 
 	gl_config.vendor_string					= (const char*)qglGetString(GL_VENDOR);
 	gl_config.renderer_string				= (const char*)qglGetString(GL_RENDERER);
@@ -1896,7 +1897,6 @@ int R_Init(void *hinstance, void *hWnd)
 	glGetQueryiv(GL_SAMPLES_PASSED, GL_QUERY_COUNTER_BITS, &queryBits);
 	Com_Printf("...found [" S_COLOR_GREEN "%i" S_COLOR_WHITE "] query bits\n", queryBits);
 
-	Com_Printf("\n");
 	Com_Printf("=====================================\n");
 
 	GL_SetDefaultState();

@@ -186,6 +186,8 @@ image_t *skinBump;
 image_t	*r_lightCubeMap[MAX_FILTERS];
 #define	MAX_GLOBAL_FILTERS	37
 
+image_t *r_3dLut;
+
 image_t *fboDN;
 image_t *fboColor[2];
 image_t *ScreenCapture;

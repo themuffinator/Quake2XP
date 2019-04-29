@@ -540,6 +540,92 @@ void CreateShadowMask (void) {
 	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 }
 
+#define LUT_DATA_SIZE 32768 // 32*32*32
+vec3_t lutData[LUT_DATA_SIZE];
+
+void Load3dLut(void) {
+	int		i, len;
+	char	name[14] = "***r_3dLut***";
+	char	checkname[MAX_OSPATH];
+	char	*buf;
+	image_t	*image;
+	
+	// find a free image
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures) {
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy(image->name, name);
+
+	image->width = vid.width;
+	image->height = vid.height;
+	image->upload_width = vid.width;
+	image->upload_height = vid.height;
+	image->type = it_pic;
+	qglGenTextures(1, &image->texnum);
+	r_3dLut = image;
+
+	Com_sprintf(checkname, sizeof(checkname), "gfx/lut/demo.cube");
+	len = FS_LoadFile(checkname, (void **)&buf);
+	char *token;
+	float x, y, z;
+
+	if (len > 0)
+		Com_Printf("...Load 3D LUT: " S_COLOR_GREEN "%s\n", checkname);
+
+	while (buf) {
+		token = COM_Parse(&buf);
+
+		if (!Q_strcasecmp(token, "TITLE")) {
+			Com_Printf("TITLE:" S_COLOR_YELLOW " %s\n", COM_Parse(&buf));
+			r_3dLut->lutName = COM_Parse(&buf);
+			continue;
+		}
+
+		if (!Q_strcasecmp(token, "LUT_3D_SIZE")) {
+			int lutSize = atoi(COM_Parse(&buf));
+			Com_Printf("LUT_3D_SIZE:" S_COLOR_GREEN " %i\n", lutSize);
+			r_3dLut->lutSize = lutSize;
+			continue;
+		}
+
+		if (!Q_strcasecmp(token, "DOMAIN_MIN")) {
+			x = atof(COM_Parse(&buf));
+			y = atof(COM_Parse(&buf));
+			z = atof(COM_Parse(&buf));
+			Com_Printf("DOMAIN_MIN:" S_COLOR_GREEN " %.3f %.3f %.3f\n", x, y, z);
+			continue;
+		}
+		if (!Q_strcasecmp(token, "DOMAIN_MAX")) {
+			x = atof(COM_Parse(&buf));
+			y = atof(COM_Parse(&buf));
+			z = atof(COM_Parse(&buf));
+			Com_Printf("DOMAIN_MAX:" S_COLOR_GREEN " %.3f %.3f %.3f\n", x, y, z);
+			continue;
+		}	
+	}
+
+	int LUTsize = r_3dLut->lutSize;
+	qglBindTexture(GL_TEXTURE_3D, r_3dLut->texnum);
+
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, LUTsize, LUTsize, LUTsize, 0, GL_RGB, GL_FLOAT, &lutData[0]);
+}
+
+
 
 typedef struct img_s {
 	byte	*pixels;
@@ -912,6 +998,7 @@ void R_InitEngineTextures (void) {
 	CreateDepthTexture ();
 	CreateScreenRect ();
 	CreateScreen2D();
+	Load3dLut();
 }
 
 

@@ -786,6 +786,8 @@ extern PFNGLBINDTEXTURESPROC					glBindTextures;
 extern	PFNGLMULTIDRAWELEMENTSPROC				glMultiDrawElements;
 extern	PFNGLMULTIDRAWARRAYSPROC				glMultiDrawArrays;
 
+extern PFNGLTEXIMAGE3DPROC						glTexImage3D;
+
 #ifdef _WIN32
 
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC		qwglCreateContextAttribsARB;
