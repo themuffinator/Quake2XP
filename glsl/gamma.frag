@@ -1,7 +1,9 @@
-layout (binding = 0) uniform sampler2DRect u_ScreenTex;
+layout (binding = 0) uniform sampler2DRect	u_ScreenTex;
+layout (binding = 1) uniform sampler3D		u_lutTex;
 
-layout(location = U_COLOR_PARAMS)	uniform vec4 u_control;			// x - brightens, y - contrast, z - saturation, w - gamma
-layout(location = U_COLOR_VIBRANCE)	uniform vec3 u_rgbVibrance;		// pre-multipled values vibrance * rgb
+layout(location = U_COLOR_PARAMS)	uniform vec4	u_control;			// x - brightens, y - contrast, z - saturation, w - gamma
+layout(location = U_COLOR_VIBRANCE)	uniform vec3	u_rgbVibrance;		// pre-multipled values vibrance * rgb
+layout(location = U_PARAM_FLOAT_0)	uniform float	u_lutSize;
 
 vec3 BrightnesContrastSaturation(vec3 color, float brt, float con, float sat)
 {
@@ -38,5 +40,11 @@ vec3 color = BrightnesContrastSaturation(texture2DRect(u_ScreenTex, gl_FragCoord
 color = ColorVibrance(color);
 fragData.rgb = pow(color, vec3(u_control.w));
 fragData.a = 1.0;
+
+// apply lut table from https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter24.html
+vec3 scale = vec3((u_lutSize - 1.0) / u_lutSize);
+vec3 offset = vec3(1.0 / (2.0 * u_lutSize));
+vec3 lut = texture(u_lutTex, scale * color + offset).rgb;
+vec3 mixLut = mix(color, lut, vec3(0.5));
 
 }
