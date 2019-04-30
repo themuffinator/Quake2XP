@@ -1161,6 +1161,36 @@ void Dump_EntityString(void){
 
 }
 
+void Cube2Lut_f(void) {
+	
+	char *buf;
+	FILE *out;
+	char name[MAX_OSPATH], outName[MAX_OSPATH];
+	int len;
+
+	if (Cmd_Argc() != 2) {
+		Com_Printf(S_COLOR_YELLOW"usage: cube2lut <adobe cube lut filename>\n");
+		return;
+	}
+
+	Com_sprintf(name, sizeof(name), "gfx/lut/%s.cube", Cmd_Argv(1));
+	len = FS_LoadFile(name, (void**)&buf);
+	if (!len) {
+		Com_Printf(S_COLOR_RED"ERROR: couldn't open %s.\n", name);
+		return;
+	}
+
+	Com_sprintf(outName, sizeof(outName), "%s/gfx/lut/%s.lut", FS_Gamedir(), Cmd_Argv(1));
+	out = fopen(outName, "wb");
+	if (!out) {
+		Com_Printf(S_COLOR_RED"ERROR: couldn't open %s.\n", outName);
+		return;
+	}
+	fwrite(&buf, sizeof(buf), 1, out);
+	fclose(out);
+	Com_Printf(S_COLOR_YELLOW"write: %s\n", outName);
+}
+
 #define		GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
 #define		GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048
 #define		GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  0x9049
@@ -1442,6 +1472,7 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
 	Cmd_AddCommand("saveFogScript",		R_SaveFogScript_f);
 	Cmd_AddCommand("removeFogScript",	R_RemoveFogScript_f);
+	Cmd_AddCommand("makeLut",			Cube2Lut_f);
 	
 
 #ifdef _WIN32
@@ -1955,6 +1986,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("openglInfo");
 	Cmd_RemoveCommand("saveFogScript");
 	Cmd_RemoveCommand("removeFogScript");
+	Cmd_RemoveCommand("Cube2Lut_f");
 
 	qglDeleteFramebuffers (1, &fboId);
 	qglDeleteFramebuffers(1, &fbo_skyMask);
