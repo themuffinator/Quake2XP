@@ -74,10 +74,11 @@ vec4 textureCatmullrom(in sampler2D Sampler, in vec2 Texcoord)
 void main(void) 
 {
 
-vec4 diffuse = textureCatmullrom(u_map, v_texCoord.xy);
+vec4 diffuse;
 
 if(u_console == 1){
 	
+  diffuse = texture(u_map, v_texCoord.xy);
 	vec3 normal = normalize(texture(u_normalMap, v_texCoord).rgb * 2.0 - 1.0);
 	float specular = texture(u_normalMap, v_texCoord).a;	
 
@@ -86,17 +87,19 @@ if(u_console == 1){
 
 	vec4 lighting = vec4(Lighting_BRDF(diffuse.rgb, vec3(specular), 0.4, normal.xyz, L, V), 1.0)  * vec4(1.0);
 
-	fragData = diffuse * 0.25 + lighting;
+	fragData = diffuse + lighting;
 	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
 	fragData.a = 1.0;
 	return;
 }
 
 if(u_2dPics == 1){
-
-    // signed distance field
-    float distance = diffuse.a;
-    float alpha = smoothstep(0.5 - SMOOTHING, 0.5 + SMOOTHING, distance);
+  
+  diffuse  = textureCatmullrom(u_map, v_texCoord.xy);
+  
+  // signed distance field
+  float distance = diffuse.a;
+  float alpha = smoothstep(0.5 - SMOOTHING, 0.5 + SMOOTHING, distance);
 	fragData =  vec4(diffuse.rgb * v_color.rgb, diffuse.a * alpha);
 	return;
 }
