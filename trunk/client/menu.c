@@ -4399,12 +4399,12 @@ int M_Quit_Key(int key) {
 	return 0;
 }
 
-
 void M_Quit_Draw(void) {
-	int w, h;
+	int w = 320;
+	int h = 240;
 
-	Draw_GetPicSize(&w, &h, "quit");
-	Draw_PicScaled((viddef.width - w*cl_fontScale->value) / 2, (viddef.height - h*cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, "quit");
+//	Draw_GetPicSize(&w, &h, "quit");
+	Draw_PicScaled((viddef.width - w * cl_fontScale->value) / 2, (viddef.height - h * cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, "quit");
 
 }
 

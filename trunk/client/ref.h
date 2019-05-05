@@ -313,7 +313,7 @@ typedef struct image_s {
 	qboolean	hasHandle;
 	
 	//lut description
-	uint		lutSize;
+	float		lutSize;
 	char		*lutName;
 } image_t;
 

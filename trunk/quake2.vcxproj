@@ -777,6 +777,8 @@
     <None Include="..\baseq2\glsl\loading.vert" />
     <None Include="..\baseq2\glsl\light2d.frag" />
     <None Include="..\baseq2\glsl\light2d.vert" />
+    <None Include="..\baseq2\glsl\lut.frag" />
+    <None Include="..\baseq2\glsl\lut.vert" />
     <None Include="..\baseq2\glsl\mblur.frag" />
     <None Include="..\baseq2\glsl\mblur.vert" />
     <None Include="..\baseq2\glsl\menu.frag" />

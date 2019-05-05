@@ -845,6 +845,15 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"lookup color table program"S_COLOR_WHITE" ");
+	lutProgram = R_FindProgram("lut", S_DEFAULT);
+	if (lutProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"shadow volumes program"S_COLOR_WHITE" ");
 	shadowProgram = R_FindProgram("shadow", S_DEFAULT);

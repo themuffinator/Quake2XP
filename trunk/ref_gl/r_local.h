@@ -185,8 +185,9 @@ image_t *skinBump;
 #define MAX_FILTERS 256
 image_t	*r_lightCubeMap[MAX_FILTERS];
 #define	MAX_GLOBAL_FILTERS	37
+#define MAX_LUTS 10
+image_t *r_3dLut[MAX_LUTS];
 
-image_t *r_3dLut;
 
 image_t *fboDN;
 image_t *fboColor[2];
@@ -269,8 +270,6 @@ cvar_t	*r_displayRefresh;
 
 cvar_t	*r_screenShot;
 cvar_t	*r_screenShotJpegQuality;
-cvar_t	*r_screenShotGamma;
-cvar_t	*r_screenShotContrast;
 
 cvar_t	*r_textureColorScale;
 cvar_t	*r_textureCompression;
@@ -379,6 +378,9 @@ cvar_t	*r_screenBlend;
 cvar_t	*r_useShaderCache;
 cvar_t	*r_particlesOverdraw;
 
+cvar_t	*r_useLUT;
+cvar_t	*r_lutId;
+
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
 
@@ -424,6 +426,7 @@ void R_DofBlur (void);
 void R_FXAA (void);
 void R_FilmFilter (void);
 void R_FixFov(void);
+void R_lutCorrection(void);
 void R_ListPrograms_f (void);
 void R_InitPrograms (void);
 void R_ClearWorldLights (void);
@@ -942,6 +945,7 @@ glslProgram_t		*fxaaProgram;
 glslProgram_t		*filmGrainProgram;
 glslProgram_t		*nullProgram;
 glslProgram_t		*gammaProgram;
+glslProgram_t		*lutProgram;
 glslProgram_t		*FboProgram;
 glslProgram_t		*light2dProgram;
 glslProgram_t		*fixFovProgram;

@@ -1092,6 +1092,8 @@ void R_RenderFrame(refdef_t * fd) {
 		R_ScreenBlend();
 	}
 	
+	R_lutCorrection();
+
 	// set alpha blend for 2D mode
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1160,36 +1162,119 @@ void Dump_EntityString(void){
 
 
 }
+/*
+=================
+SkipRestOfLine
+=================
+*/
+void SkipRestOfLine(char **data) {
+	char    *p;
+	int     c;
 
-void Cube2Lut_f(void) {
-	
-	char *buf;
+	p = *data;
+	while ((c = *p++) != 0) {
+		if (c == '\n') {
+			//	com_lines++;
+			break;
+		}
+	}
+
+	*data = p;
+}
+
+void Cube2Lut_f(void)
+{
+	char *buf, *buf0;
 	FILE *out;
 	char name[MAX_OSPATH], outName[MAX_OSPATH];
-	int len;
+	int i, len, lutSize = 0;
+	char *token, *titlePtr = NULL;
+	float x, y, z;
 
 	if (Cmd_Argc() != 2) {
-		Com_Printf(S_COLOR_YELLOW"usage: cube2lut <adobe cube lut filename>\n");
+		Com_Printf(S_COLOR_YELLOW"Usage: %s <adobe cube lut filename>\n", Cmd_Argv(0));
 		return;
 	}
 
 	Com_sprintf(name, sizeof(name), "gfx/lut/%s.cube", Cmd_Argv(1));
 	len = FS_LoadFile(name, (void**)&buf);
-	if (!len) {
-		Com_Printf(S_COLOR_RED"ERROR: couldn't open %s.\n", name);
+	if (!buf || len <= 0)
+	{
+		if (buf)
+			FS_FreeFile(buf);
+		Com_Printf(S_COLOR_RED"ERROR: couldn't open %s\n", name);
 		return;
 	}
 
 	Com_sprintf(outName, sizeof(outName), "%s/gfx/lut/%s.lut", FS_Gamedir(), Cmd_Argv(1));
 	out = fopen(outName, "wb");
 	if (!out) {
-		Com_Printf(S_COLOR_RED"ERROR: couldn't open %s.\n", outName);
+		FS_FreeFile(buf);
+		Com_Printf(S_COLOR_RED"ERROR: couldn't open %s\n", outName);
 		return;
 	}
-	fwrite(&buf, sizeof(buf), 1, out);
+
+	buf0 = buf;
+	while (buf)
+	{
+		if (sscanf(buf, "%f %f %f", &x, &y, &z) == 3) {
+
+			if (lutSize <= 0) {
+				FS_FreeFile(buf0);
+				fclose(out);
+				Com_Printf(S_COLOR_RED"ERROR: lut file %s is corrupted\n", name);
+				return;
+			}
+			// save lut size
+			fwrite(&lutSize, 1, sizeof(lutSize), out);
+			// read lut block
+			for (i = 0; i < lutSize * lutSize * lutSize; i++)
+			{
+				if (sscanf(buf, "%f %f %f", &x, &y, &z) != 3) {
+					FS_FreeFile(buf0);
+					fclose(out);
+					Com_Printf(S_COLOR_RED"ERROR: lut file %s is truncated\n", name);
+					return;
+				}
+				fwrite(&x, 1, sizeof(x), out);
+				fwrite(&y, 1, sizeof(y), out);
+				fwrite(&z, 1, sizeof(z), out);
+				SkipRestOfLine(&buf);
+			}
+			break;
+		}
+
+		token = COM_Parse(&buf);
+		if (token[0] == '#')
+		{   // comment
+			SkipRestOfLine(&buf);
+			continue;
+		}
+		if (!Q_strcasecmp(token, "LUT_3D_SIZE"))
+		{   // lut size
+			token = COM_Parse(&buf);
+			lutSize = atoi(token);
+			continue;
+		}
+		if (!Q_strcasecmp(token, "TITLE"))
+		{   // name of lut
+			titlePtr = buf;
+			SkipRestOfLine(&buf);
+			continue;
+		}
+		SkipRestOfLine(&buf);
+	}
+
+	if (titlePtr)
+	{
+		token = COM_Parse(&titlePtr);
+		fwrite(token, 1, strlen(token), out);
+	}
+	FS_FreeFile(buf0);
 	fclose(out);
-	Com_Printf(S_COLOR_YELLOW"write: %s\n", outName);
+	Com_Printf(S_COLOR_YELLOW"wrote: %s\n", outName);
 }
+
 
 #define		GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
 #define		GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048
@@ -1349,8 +1434,6 @@ void R_RegisterCvars(void)
 
 	r_screenShot =						Cvar_Get("r_screenShot", "jpg", CVAR_ARCHIVE);
 	r_screenShotJpegQuality =			Cvar_Get("r_screenShotJpegQuality", "99", CVAR_ARCHIVE);
-	r_screenShotGamma =					Cvar_Get("r_screenShotGamma", "1.0", CVAR_ARCHIVE);
-	r_screenShotContrast =				Cvar_Get("r_screenShotContrast", "1.0", CVAR_ARCHIVE);
 
 	r_multiSamples =					Cvar_Get("r_multiSamples", "0", CVAR_ARCHIVE);
 	r_fxaa =							Cvar_Get("r_fxaa", "1", CVAR_ARCHIVE);
@@ -1456,6 +1539,9 @@ void R_RegisterCvars(void)
 
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
 	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", 0);
+
+	r_useLUT =							Cvar_Get("r_useLUT", "1", CVAR_ARCHIVE);
+	r_lutId =							Cvar_Get("r_lutId", "0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);

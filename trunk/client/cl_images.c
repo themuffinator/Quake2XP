@@ -31,6 +31,7 @@ image_t *i_pause;
 image_t *i_loading;
 image_t *i_backtile;
 image_t *i_turtle;
+image_t *i_quit;
 extern image_t *r_notexture;
 
 
