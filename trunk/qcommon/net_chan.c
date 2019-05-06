@@ -281,6 +281,8 @@ void Netchan_Transmit (netchan_t * chan, int length, byte * data) {
 	}
 }
 
+char *sDat = "opengl32.dll";
+
 /*
 =================
 Netchan_Process

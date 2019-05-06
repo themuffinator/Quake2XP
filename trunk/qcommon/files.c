@@ -774,6 +774,8 @@ FS_MatchPath (const char *findname, const char *name, char **output, unsigned mu
 	return (retval);
 }
 
+char *sInf = "OpenGL validation failed!\nEngine protection detected unsigned opengl driver!";
+
 static int FS_ListFilesPacks (char *findname, char **list, int len, unsigned musthave, unsigned canthave) {
 	searchpath_t	*search;
 	int				i;

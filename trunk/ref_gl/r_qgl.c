@@ -654,7 +654,7 @@ PFNGLMULTIDRAWARRAYSPROC				glMultiDrawArrays		= NULL;
 
 PFNGLBINDTEXTUREUNITPROC				glBindTextureUnit		= NULL;
 
-PFNGLTEXIMAGE3DPROC						glTexImage3D = NULL;
+PFNGLTEXIMAGE3DPROC						qglTexImage3D = NULL;
 
 #ifdef _WIN32
 PFNWGLCREATECONTEXTATTRIBSARBPROC			qwglCreateContextAttribsARB = NULL;
@@ -1063,6 +1063,7 @@ void QGL_Shutdown (void) {
 */
 qboolean QGL_Init () {
 #ifdef _WIN32
+//----------------------------------------------------------------------
 	if ((glw_state.hinstOpenGL = LoadLibrary ("opengl32")) == 0) {
 		char *buf = NULL;
 

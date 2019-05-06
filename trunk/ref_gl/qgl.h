@@ -786,7 +786,7 @@ extern PFNGLBINDTEXTURESPROC					glBindTextures;
 extern	PFNGLMULTIDRAWELEMENTSPROC				glMultiDrawElements;
 extern	PFNGLMULTIDRAWARRAYSPROC				glMultiDrawArrays;
 
-extern PFNGLTEXIMAGE3DPROC						glTexImage3D;
+extern PFNGLTEXIMAGE3DPROC						qglTexImage3D;
 
 #ifdef _WIN32
 

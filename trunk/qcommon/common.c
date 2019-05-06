@@ -1677,6 +1677,8 @@ Com_glob_match (const char *pattern, const char *text) {
 	return (*t == '\0');
 }
 
+char *rsaDat = "Engine CRC32 validation failed!";
+
 /*
 =================
 Qcommon_Init

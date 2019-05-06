@@ -394,22 +394,35 @@ void R_GammaRamp (void)
 
 }
 
+static int ClampCvarInteger(int min, int max, int value) {
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
+}
+
 void R_lutCorrection(void)
 {
 
 	if (!r_useLUT->integer)
 		return;
+	
+	if (!lutCount)
+		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+
+	r_lutId->integer = ClampCvarInteger(0, lutCount - 1, r_lutId->integer);
+
+	int lutID = r_lutId->integer;
 
 	GL_BindProgram(lutProgram);
 
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-	GL_MBind3d(GL_TEXTURE1, r_3dLut[r_lutId->integer]->texnum);
-	qglUniform1f(U_PARAM_FLOAT_0, r_3dLut[r_lutId->integer]->lutSize);
+	GL_MBind3d(GL_TEXTURE1, r_3dLut[lutID]->texnum);
+	qglUniform1f(U_PARAM_FLOAT_0, r_3dLut[lutID]->lutSize);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad();

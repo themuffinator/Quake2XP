@@ -607,7 +607,7 @@ VID_StartRefresh
 ==============
 */
 
-
+#include "../ref_gl/r_local.h"
 qboolean VID_StartRefresh (void) {
 
 	if (reflib_active) {

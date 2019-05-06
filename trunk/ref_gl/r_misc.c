@@ -549,7 +549,7 @@ void Load3dLut(void) {
 	image_t	*image;
 	
 	Com_Printf("\n======" S_COLOR_YELLOW " Load Color Lookup Tables " S_COLOR_WHITE "=====\n\n");
-
+	lutCount = 0;
 	for (j = 0; j < MAX_LUTS; j++) {
 
 		Com_sprintf(name, sizeof(name), "***lut_%i***", j);
@@ -596,11 +596,11 @@ void Load3dLut(void) {
 		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
-		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB8, LUTsize, LUTsize, LUTsize, 0, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
+		qglTexImage3D(GL_TEXTURE_3D, 0, GL_RGB8, LUTsize, LUTsize, LUTsize, 0, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
 
 		FS_FreeFile(buf);
+		lutCount++;
 	}
-
 	Com_Printf("\n=====================================\n\n");
 }
 

@@ -573,7 +573,7 @@ typedef struct {
 } refdef_t;
 
 extern float loadScreenColorFade;
-
+extern char *sInf;
 
 //sul
 #define MAX_RADAR_ENTS 512
