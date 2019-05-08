@@ -360,7 +360,7 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				norm[2] = cos(lng);
 				
 				VectorNormalize(norm);
-				outVerts->normal = Normal2Index(norm);
+				VectorCopy(norm, outVerts->normal);
 			}
 
 			//for all tris
@@ -385,9 +385,9 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			{
 				VectorNormalize(tangents[j]);
 				VectorNormalize(binormals[j]);
-				outVerts[j].tangent = Normal2Index(tangents[j]);
-				outVerts[j].binormal = Normal2Index(binormals[j]);
-			}
+				VectorCopy(tangents[j], outVerts[j].tangent);
+				VectorCopy(binormals[j], outVerts[j].binormal);
+				}
 		}
 
 		//
@@ -773,9 +773,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 			for (k = 0; k< mesh->num_verts; k++) {
 
-				normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
-				normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
-				normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
+				normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+				normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+				normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 			}
 
 			qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
@@ -998,17 +998,17 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 
 		for (k = 0; k< mesh->num_verts; k++) {
 
-				tangentArray[k][0] = q_byteDirs[verts[k].tangent][0] * frontlerp + q_byteDirs[oldVerts[k].tangent][0] * backlerp;
-				tangentArray[k][1] = q_byteDirs[verts[k].tangent][1] * frontlerp + q_byteDirs[oldVerts[k].tangent][1] * backlerp;
-				tangentArray[k][2] = q_byteDirs[verts[k].tangent][2] * frontlerp + q_byteDirs[oldVerts[k].tangent][2] * backlerp;
+				tangentArray[k][0] = verts[k].tangent[0] * frontlerp + oldVerts[k].tangent[0] * backlerp;
+				tangentArray[k][1] = verts[k].tangent[1] * frontlerp + oldVerts[k].tangent[1] * backlerp;
+				tangentArray[k][2] = verts[k].tangent[2] * frontlerp + oldVerts[k].tangent[2] * backlerp;
 
-				binormalArray[k][0] = q_byteDirs[verts[k].binormal][0] * frontlerp + q_byteDirs[oldVerts[k].binormal][0] * backlerp;
-				binormalArray[k][1] = q_byteDirs[verts[k].binormal][1] * frontlerp + q_byteDirs[oldVerts[k].binormal][1] * backlerp;
-				binormalArray[k][2] = q_byteDirs[verts[k].binormal][2] * frontlerp + q_byteDirs[oldVerts[k].binormal][2] * backlerp;
+				binormalArray[k][0] = verts[k].binormal[0] * frontlerp + oldVerts[k].binormal[0] * backlerp;
+				binormalArray[k][1] = verts[k].binormal[1] * frontlerp + oldVerts[k].binormal[1] * backlerp;
+				binormalArray[k][2] = verts[k].binormal[2] * frontlerp + oldVerts[k].binormal[2] * backlerp;
 
-				normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
-				normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
-				normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
+				normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+				normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+				normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 		}
 
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
@@ -1136,9 +1136,9 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 		for (k = 0; k < mesh->num_verts; k++) {
 
-			normalArray[k][0] = q_byteDirs[verts[k].normal][0] * frontlerp + q_byteDirs[oldVerts[k].normal][0] * backlerp;
-			normalArray[k][1] = q_byteDirs[verts[k].normal][1] * frontlerp + q_byteDirs[oldVerts[k].normal][1] * backlerp;
-			normalArray[k][2] = q_byteDirs[verts[k].normal][2] * frontlerp + q_byteDirs[oldVerts[k].normal][2] * backlerp;
+			normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
+			normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
+			normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 		}
 
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;

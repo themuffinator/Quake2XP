@@ -110,7 +110,7 @@ typedef struct md3ST_s
 typedef struct md3Vertex_s
 {
 	vec3_t			xyz;
-	byte			normal, 
+	vec3_t			normal,
 					tangent, 
 					binormal;
 } md3Vertex_t;
