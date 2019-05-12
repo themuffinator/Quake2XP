@@ -613,8 +613,9 @@ typedef struct clentity_s {
 	vec3_t vel;
 	vec3_t accel;
 	struct model_s *model;
-	float ang;
-	float avel;
+	struct entity_s *ent;
+	float ang[3];
+	float avel[3];
 	float alpha;
 	float alphavel;
 	int flags;

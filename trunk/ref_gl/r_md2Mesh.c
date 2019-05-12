@@ -512,6 +512,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	GL_MBind(GL_TEXTURE5, skinBump->texnum);
 	
 	qglUniform1i(U_PARAM_INT_1, 0);
+	qglUniform1i(U_PARAM_INT_2, 0);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TANGENT);

@@ -412,6 +412,9 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 
 		if (!Q_strcasecmp(outMesh->name, "TRANSLUS")) 
 			outMesh->flags = MESH_TRANSLUSCENT;
+
+		if (!Q_strcasecmp(outMesh->name, "MESH_SSS"))
+			outMesh->flags = MESH_SSS;
 }
 
 	mod->type = mod_alias_md3;
@@ -959,7 +962,12 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		
 	//	if (mesh->flags & MESH_TRANSLUSCENT)
 	//		continue;
-		
+
+		if (mesh->flags & MESH_SSS)
+			qglUniform1i(U_PARAM_INT_2, 1);
+		else
+			qglUniform1i(U_PARAM_INT_2, 0);
+
 		if (mesh->skinAlphatest)
 			qglUniform1i(U_PARAM_INT_1, 1);
 		else

@@ -1438,9 +1438,9 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 			ps->gunangles[i],
 			cl.lerpfrac);
 	}
-	AngleVectors (gun.angles, fv, rv, up);
-	VectorMA (gun.origin, 10, fv, smoke_puff);
-	VectorMA (gun.origin, 6.7, fv, shell_puff);
+	AngleVectors	(cl.refdef.viewangles, fv, rv, up);
+	VectorMA		(cl.refdef.vieworg, 10, fv, smoke_puff);
+	VectorMA		(cl.refdef.vieworg, 6.7, fv, shell_puff);
 
 	VectorMA (smoke_puff, 3, rv, smoke_puff);
 	VectorMA (shell_puff, 5, rv, shell_puff);

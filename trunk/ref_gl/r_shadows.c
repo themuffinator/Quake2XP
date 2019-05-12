@@ -349,7 +349,6 @@ void R_DrawMD3ShadowVolume(){
 
 	currentmodel = currententity->model;
 	paliashdr = (md3Model_t *)currentmodel->extraData;
-	float scale = 10 * currentShadowLight->maxRad;
 
 	R_SetupEntityMatrix(currententity);
 
@@ -502,9 +501,10 @@ void R_DrawMD3ShadowVolume(){
 
 			idx += 3;
 		}
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float), shadowVerts);
+		qglDrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
 	}
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float),  shadowVerts);
-	qglDrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
+
 	c_shadow_volumes++;
 }
 

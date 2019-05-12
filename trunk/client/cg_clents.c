@@ -166,6 +166,8 @@ void CL_AddClEntities () {
 		time2 = time * time;
 		org[0] = le->org[0] + le->vel[0] * time + le->accel[0] * time2;
 		org[1] = le->org[1] + le->vel[1] * time + le->accel[1] * time2;
+		org[2] = le->org[2] + le->vel[2] * time + le->accel[2] * time2 * grav;
+
 		bak = le->org[2] + le->vel[2] * time + le->accel[2] * time2 * grav;
 
 		org[2] = bak - 1;
@@ -177,7 +179,7 @@ void CL_AddClEntities () {
 
 		if (onground) {
 			le->flags &= ~CLM_ROTATE;
-			le->avel = 0;
+			VectorSet(le->avel, 0.0, 0.0, 0.0);
 		}
 		else
 		if (le->flags & CLM_STOPPED) {
@@ -236,7 +238,7 @@ void CL_AddClEntities () {
 		ent.model = le->model;
 		VectorSubtract (ent.maxs, ent.mins, tmpSize);
 		entSize = VectorLength (tmpSize);
-
+		
 		if (le->flags & CLM_BOUNCE) {
 			trace_t trace = CL_PMTraceWorld (le->lastOrg, ent.mins, ent.maxs, org, MASK_SOLID, qfalse);
 
@@ -270,7 +272,7 @@ void CL_AddClEntities () {
 					if (trace.plane.normal[2] > 0.9) {
 						VectorClear (le->vel);
 						VectorClear (le->accel);
-						le->avel = 0;
+						VectorSet(le->avel, 0.0, 0.0, 0.0);
 						le->alpha = 1;
 						le->flags &= ~CLM_BOUNCE;
 						le->flags |= CLM_STOPPED;
@@ -348,7 +350,7 @@ void CL_AddClEntities () {
 			else {
 				VectorClear (le->vel);
 				VectorClear (le->accel);
-				le->avel = 0;
+				VectorSet(le->avel, 0.0, 0.0, 0.0);
 				le->flags &= ~PARTICLE_BOUNCE;
 				le->flags |= PARTICLE_STOPED;
 				le->org[2] += entSize;
@@ -363,11 +365,11 @@ void CL_AddClEntities () {
 			|| (le->model == cl_mod_debris2)
 			|| (le->model == cl_mod_debris3)
 			|| (le->model == cl_mod_debris0))
-			ent.angles[0] = ent.angles[1] = ent.angles[2] = le->ang + ((le->flags & CLM_ROTATE) ? (time * le->avel) : 0);
+			ent.angles[0] = ent.angles[1] = ent.angles[2] = le->ang[2] + ((le->flags & CLM_ROTATE) ? (time * le->avel[2]) : 0);
 		else {
 			ent.angles[0] = 0;
 			ent.angles[2] = 0;
-			ent.angles[1] = le->ang + ((le->flags & CLM_ROTATE) ? (time * le->avel) : 0);
+			ent.angles[1] = le->ang[0] + ((le->flags & CLM_ROTATE) ? (time * le->avel[1]) : 0);
 		}
 		V_AddEntity (&ent);
 	}
@@ -397,7 +399,6 @@ void CL_BrassShells (vec3_t org, vec3_t dir, int count, qboolean mshell) {
 	if (DotProduct (tmp, tmp) >= (cl_brass->value * cl_brass->value))
 		return;
 
-
 	for (i = 0; i < count; i++) {
 		if (!free_clentities)
 			return;
@@ -407,7 +408,6 @@ void CL_BrassShells (vec3_t org, vec3_t dir, int count, qboolean mshell) {
 		le->next = active_clentities;
 		active_clentities = le;
 		le->time = cl.time;
-		d = (192 + rand ()) & 63;
 		VectorClear (le->accel);
 		VectorClear (le->vel);
 		le->accel[0] = le->accel[1] = 0;
@@ -418,13 +418,21 @@ void CL_BrassShells (vec3_t org, vec3_t dir, int count, qboolean mshell) {
 		if (mshell)
 			le->model = cl_mod_mshell;
 		else
-			le->model = cl_mod_sshell;
-		le->ang = crand () * 360;
-		le->avel = crand () * 500;
+			le->model = cl_mod_sshell;		
+		
+		le->ang[0] = crand() * 360;
+		le->ang[1] = crand() * 360;
+		le->ang[2] = crand() * 90;
 
-		for (j = 0; j < 3; j++) {
+		le->avel[0] = 0;
+		le->avel[1] = 0;
+		le->avel[2] = 0;
+
+		d = 192 + rand() & 63;
+		for (j = 0; j < 3; j++)
+		{
 			le->lastOrg[j] = le->org[j] = org[j];
-			le->vel[j] = crand () * 24 + d * dir[j];
+			le->vel[j] = crand() * 24 + d * dir[j];
 		}
 	}
 }
@@ -468,8 +476,13 @@ void CL_Debris (vec3_t org, vec3_t dir) {
 		le->alpha = 1.0;
 
 		le->alphavel = -1.0 / (1.5 + frand () * 2.666);
-		le->ang = crand () * 360;
-		le->avel = crand () * 500;
+		le->ang[0] = crand () * 360;
+		le->ang[1] = crand() * 360;
+		le->ang[2] = crand() * 360;
+
+		le->avel[0] = crand() * 384 - 192;
+		le->avel[1] = crand() * 384 - 192;
+		le->avel[2] = crand() * 384 - 192;
 	}
 	// 2
 	for (i = 0; i < 5; i++) {
@@ -500,8 +513,13 @@ void CL_Debris (vec3_t org, vec3_t dir) {
 		le->alpha = 1.0;
 
 		le->alphavel = -1.0 / (1.5 + frand () * 2.666);
-		le->ang = crand () * 360;
-		le->avel = crand () * 500;
+		le->ang[0] = crand() * 360;
+		le->ang[1] = crand() * 360;
+		le->ang[2] = crand() * 360;
+
+		le->avel[0] = crand() * 500;
+		le->avel[1] = crand() * 500;
+		le->avel[2] = crand() * 500;
 	}
 	//3
 	for (i = 0; i < 3; i++) {
@@ -532,8 +550,13 @@ void CL_Debris (vec3_t org, vec3_t dir) {
 		le->alpha = 1.0;
 
 		le->alphavel = -1.0 / (1.5 + frand () * 2.666);
-		le->ang = crand () * 360;
-		le->avel = crand () * 500;
+		le->ang[0] = crand() * 360;
+		le->ang[1] = crand() * 360;
+		le->ang[2] = crand() * 360;
+
+		le->avel[0] = crand() * 500;
+		le->avel[1] = crand() * 500;
+		le->avel[2] = crand() * 500;
 	}
 
 }
@@ -581,8 +604,13 @@ void CL_GibExplosion (vec3_t org, vec3_t dir) {
 	le->alpha = 1.0;
 
 	le->alphavel = -0.1;
-	le->ang = crand () * 360;
-	le->avel = crand () * 500;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 500;
+	le->avel[1] = crand() * 500;
+	le->avel[2] = crand() * 500;
 
 	// 2
 
@@ -613,8 +641,13 @@ void CL_GibExplosion (vec3_t org, vec3_t dir) {
 	le->alpha = 1.0;
 
 	le->alphavel = -0.08;
-	le->ang = crand () * 360;
-	le->avel = crand () * 500;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 500;
+	le->avel[1] = crand() * 500;
+	le->avel[2] = crand() * 500;
 
 	//3
 
@@ -645,8 +678,13 @@ void CL_GibExplosion (vec3_t org, vec3_t dir) {
 	le->alpha = 1.0;
 
 	le->alphavel = -0.09;
-	le->ang = crand () * 360;
-	le->avel = crand () * 500;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 500;
+	le->avel[1] = crand() * 500;
+	le->avel[2] = crand() * 500;
 
 	if (!free_clentities)
 		return;
@@ -675,8 +713,13 @@ void CL_GibExplosion (vec3_t org, vec3_t dir) {
 	le->alpha = 1.0;
 
 	le->alphavel = -0.09;
-	le->ang = crand () * 360;
-	le->avel = crand () * 500;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 500;
+	le->avel[1] = crand() * 500;
+	le->avel[2] = crand() * 500;
 
 	if (!free_clentities)
 		return;
@@ -705,8 +748,13 @@ void CL_GibExplosion (vec3_t org, vec3_t dir) {
 	le->alpha = 1.0;
 
 	le->alphavel = -0.09;
-	le->ang = crand () * 360;
-	le->avel = crand () * 500;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 500;
+	le->avel[1] = crand() * 500;
+	le->avel[2] = crand() * 500;
 
 	if (!free_clentities)
 		return;
@@ -735,8 +783,13 @@ void CL_GibExplosion (vec3_t org, vec3_t dir) {
 	le->alpha = 1.0;
 
 	le->alphavel = -0.09;
-	le->ang = crand () * 360;
-	le->avel = crand () * 500;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 500;
+	le->avel[1] = crand() * 500;
+	le->avel[2] = crand() * 500;
 
 
 }
@@ -788,8 +841,13 @@ void CL_ClientGibs (vec3_t org, vec3_t velocity) {
 	le->alpha = 1.0;
 	le->alphavel = -0.09;
 
-	le->ang = crand () * 360;
-	le->avel = crand () * 256 - 128;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 256-128;
+	le->avel[1] = crand() * 256-128;
+	le->avel[2] = crand() * 256-128;
 
 	//1	
 	if (!free_clentities)
@@ -834,8 +892,13 @@ void CL_ClientGibs (vec3_t org, vec3_t velocity) {
 	le->alpha = 1.0;
 	le->alphavel = -0.09;
 
-	le->ang = crand () * 360;
-	le->avel = crand () * 256 - 128;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 256 - 128;
+	le->avel[1] = crand() * 256 - 128;
+	le->avel[2] = crand() * 256 - 128;
 
 	//2	
 	if (!free_clentities)
@@ -880,8 +943,13 @@ void CL_ClientGibs (vec3_t org, vec3_t velocity) {
 	le->alpha = 1.0;
 	le->alphavel = -0.09;
 
-	le->ang = crand () * 360;
-	le->avel = crand () * 256 - 128;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 256 - 128;
+	le->avel[1] = crand() * 256 - 128;
+	le->avel[2] = crand() * 256 - 128;
 
 
 	//3	
@@ -927,8 +995,13 @@ void CL_ClientGibs (vec3_t org, vec3_t velocity) {
 	le->alpha = 1.0;
 	le->alphavel = -0.09;
 
-	le->ang = crand () * 360;
-	le->avel = crand () * 256 - 128;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 256 - 128;
+	le->avel[1] = crand() * 256 - 128;
+	le->avel[2] = crand() * 256 - 128;
 
 	//4	
 	if (!free_clentities)
@@ -973,8 +1046,13 @@ void CL_ClientGibs (vec3_t org, vec3_t velocity) {
 	le->alpha = 1.0;
 	le->alphavel = -0.09;
 
-	le->ang = crand () * 360;
-	le->avel = crand () * 256 - 128;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 256 - 128;
+	le->avel[1] = crand() * 256 - 128;
+	le->avel[2] = crand() * 256 - 128;
 
 	//5	
 	if (!free_clentities)
@@ -1019,8 +1097,13 @@ void CL_ClientGibs (vec3_t org, vec3_t velocity) {
 	le->alpha = 1.0;
 	le->alphavel = -0.09;
 
-	le->ang = crand () * 360;
-	le->avel = crand () * 256 - 128;
+	le->ang[0] = crand() * 360;
+	le->ang[1] = crand() * 360;
+	le->ang[2] = crand() * 360;
+
+	le->avel[0] = crand() * 256 - 128;
+	le->avel[1] = crand() * 256 - 128;
+	le->avel[2] = crand() * 256 - 128;
 }
 
 void CL_ClearClEntities () {

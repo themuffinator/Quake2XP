@@ -362,7 +362,7 @@ static void vSyncCallBack (void *s) {
 void M_ColorInit() {
 
 	if (!r_gamma)
-		r_gamma = Cvar_Get("r_gamma", "1.8", CVAR_ARCHIVE);
+		r_gamma = Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE);
 
 	if (!r_brightness)
 		r_brightness = Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
@@ -474,12 +474,12 @@ void M_ColorInit() {
 	s_bloomWidth_slider.generic.type = MTYPE_SLIDER;
 	s_bloomWidth_slider.generic.x = 0;
 	s_bloomWidth_slider.generic.y = 90 * cl_fontScale->value;
-	s_bloomWidth_slider.generic.name = "Bloom Star Size";
+	s_bloomWidth_slider.generic.name = "Bloom Shape Size";
 	s_bloomWidth_slider.generic.callback = bloomWhidthCallback;
 	s_bloomWidth_slider.minvalue = 1;
 	s_bloomWidth_slider.maxvalue = 30;
 	s_bloomWidth_slider.curvalue = r_bloomWidth->value * 10;
-	s_bloomWidth_slider.generic.statusbar = "Bloom Star Size";
+	s_bloomWidth_slider.generic.statusbar = "Bloom Shape Size";
 
 	s_fixfov_slider.generic.type = MTYPE_SLIDER;
 	s_fixfov_slider.generic.x = 0;
@@ -710,7 +710,7 @@ void VID_MenuInit (void) {
 	s_reliefScale_slider.generic.y = 100 * cl_fontScale->value;
 	s_reliefScale_slider.generic.name = "Relief Scale";
 	s_reliefScale_slider.minvalue = 1;
-	s_reliefScale_slider.maxvalue = 10;
+	s_reliefScale_slider.maxvalue = 6;
 	s_reliefScale_slider.curvalue = r_reliefScale->value;
 	s_reliefScale_slider.generic.callback = reliefScaleCallback;
 	s_reliefScale_slider.generic.statusbar = "Virtual Displacement Depth";

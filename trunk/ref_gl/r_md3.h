@@ -185,3 +185,4 @@ vec4_t	md3ColorCache[MD3_MAX_VERTS * 4];
 #define MESH_TRANSLUSCENT 2
 #define MESH_NOSHADOW 4
 #define MESH_TWOSIDE 8
+#define MESH_SSS 16

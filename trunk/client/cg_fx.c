@@ -356,11 +356,13 @@ void CL_ParseMuzzleFlash (void) {
 	vec3_t fv, rv, smoke_origin, shell_brass, dir;
 	cdlight_t *dl;
 	int i, weapon, j;
+	vec3_t _forward, _right, _up;
 
 	centity_t *pl;
 	int silenced;
 	float volume;
 	vec3_t up;
+	extern cvar_t *hand;
 
 	i = MSG_ReadShort (&net_message);
 
@@ -376,11 +378,21 @@ void CL_ParseMuzzleFlash (void) {
 	pl = &cl_entities[i];
 
 	dl = CL_AllocDlight (i);
+	
+	AngleVectors(cl.refdef.viewangles, _forward, _right, _up);
 
 	if (cl.playernum == i - 1 && !cl_thirdPerson->value) { //local player w/o third person view
 		VectorCopy(smoke_puff, dl->origin);
 		VectorCopy (smoke_puff, smoke_origin);
-		VectorCopy (shell_puff, shell_brass);
+		VectorCopy (cl.refdef.vieworg, shell_brass);
+		VectorMA(shell_brass, -3, _up, shell_brass);
+		
+		if(hand->integer == 1)
+			VectorMA(shell_brass, -23, _right, shell_brass); // left
+		else
+			VectorMA(shell_brass, 23, _right, shell_brass); // right and center
+
+		VectorMA(shell_brass, 21, _forward, shell_brass);
 	}
 	else {
 		VectorMA (pl->current.origin, 10, fv, shell_brass);
@@ -391,7 +403,6 @@ void CL_ParseMuzzleFlash (void) {
 		VectorMA (smoke_origin, 5, rv, smoke_origin);
 		VectorMA (smoke_origin, 18, up, smoke_origin);
 	}
-
 
 	if (silenced)
 		dl->radius = 100 + (rand () & 31);
@@ -405,9 +416,14 @@ void CL_ParseMuzzleFlash (void) {
 	else
 		volume = 1;
 
-	for (j = 0; j < 3; j++)
-		dir[j] = fv[j] + rv[j] + up[j] * 2;
-
+	if (hand->integer == 1) {
+		for (j = 0; j < 3; j++)
+			dir[j] = -_forward[j] * 0.5 + -_right[j] + _up[j] * 2.5; // left
+	}
+	else {
+		for (j = 0; j < 3; j++)
+			dir[j] = -_forward[j] * 0.5 + _right[j] + _up[j] * 2.5; // right and centre
+	}
 
 	switch (weapon) {
 		case MZ_BLASTER:

@@ -1571,7 +1571,7 @@ void CL_InitLocal (void) {
 	cl_drawTime = Cvar_Get ("cl_drawTime", "0", CVAR_ARCHIVE);
 
 	cl_3dhud = Cvar_Get ("cl_3dhud", "1", CVAR_ARCHIVE);
-	cl_brass = Cvar_Get ("cl_brass", "512", CVAR_ARCHIVE);
+	cl_brass = Cvar_Get ("cl_brass", "128", CVAR_ARCHIVE);
 
 	cl_railcore_red = Cvar_Get ("cl_railcore_red", "1", CVAR_ARCHIVE);
 	cl_railcore_green = Cvar_Get ("cl_railcore_green", "1", CVAR_ARCHIVE);
