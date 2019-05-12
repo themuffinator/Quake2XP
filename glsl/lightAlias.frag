@@ -20,6 +20,7 @@ layout(location = U_USE_AUTOBUMP)		uniform int		u_autoBump;
 layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
 layout(location = U_PARAM_INT_0)		uniform int		u_blinnPhong; // use old lighting model
 layout(location = U_PARAM_INT_1)		uniform int		u_alphaMask;
+layout(location = U_PARAM_INT_2)		uniform int		u_useSSS;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -122,11 +123,14 @@ void main (void) {
 
 			skin_color *= cubeFilter;
 			vec3 metall_color;
+			if(u_useSSS == 1)
+				metall_color = SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular)  * u_LightColor.rgb * cubeFilter.rgb * attenMap;
+			else{
 			if(u_blinnPhong == 1)
 				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular, normalMap.rgb, L, V, 128.0)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
 			if(u_blinnPhong == 0)
 				metall_color = Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V) * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
-
+			}		
 
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);	
    
