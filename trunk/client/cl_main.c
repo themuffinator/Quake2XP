@@ -98,6 +98,7 @@ cvar_t *dmflags;
 cvar_t *cl_drawTime;
 cvar_t *cl_drawFPS;
 cvar_t *cl_brass;
+cvar_t *cl_brassTimeScale;
 cvar_t *cl_3dhud;
 cvar_t *cl_railcore_red;
 cvar_t *cl_railcore_green;
@@ -1572,6 +1573,7 @@ void CL_InitLocal (void) {
 
 	cl_3dhud = Cvar_Get ("cl_3dhud", "1", CVAR_ARCHIVE);
 	cl_brass = Cvar_Get ("cl_brass", "128", CVAR_ARCHIVE);
+	cl_brassTimeScale = Cvar_Get("cl_brassTimeScale", "20", CVAR_ARCHIVE);
 
 	cl_railcore_red = Cvar_Get ("cl_railcore_red", "1", CVAR_ARCHIVE);
 	cl_railcore_green = Cvar_Get ("cl_railcore_green", "1", CVAR_ARCHIVE);

@@ -442,6 +442,8 @@ extern cvar_t *music_source;
 extern cvar_t *music_volume;
 
 extern cvar_t *cl_brass;
+extern cvar_t *cl_brassTimeScale;
+
 extern cvar_t *cl_3dhud;
 
 extern cvar_t *cl_railcore_red;

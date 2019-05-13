@@ -393,6 +393,9 @@ void CL_BrassShells (vec3_t org, vec3_t dir, int count, qboolean mshell) {
 
 	if (!cl_brass->value || !count)
 		return;
+	
+	if (cl_brassTimeScale->value <= 0)
+		return;
 
 	VectorSubtract (cl.refdef.vieworg, org, tmp);
 
@@ -413,7 +416,11 @@ void CL_BrassShells (vec3_t org, vec3_t dir, int count, qboolean mshell) {
 		le->accel[0] = le->accel[1] = 0;
 		le->accel[2] = -6 * PARTICLE_GRAVITY;
 		le->alpha = 1.0;
-		le->alphavel = -0.07;
+		if (mshell)
+			le->alphavel = (-1.0 - frand() * 0.2) / max(1.0, cl_brassTimeScale->value);
+		else
+			le->alphavel = (-0.2 - frand() * 0.2) / max(1.0, cl_brassTimeScale->value);
+
 		le->flags = CLM_BOUNCE | CLM_FRICTION | CLM_ROTATE;
 		if (mshell)
 			le->model = cl_mod_mshell;
