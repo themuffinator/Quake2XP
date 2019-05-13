@@ -128,26 +128,26 @@ vec4 SkinLighting (in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Dif
 
 vec3 SubScateringLighting (in vec3 V, in vec3 L, in vec3 N, in vec3 Color, in float Specular)
 {
-    float MaterialThickness = 0.1f;  
-    vec3 ext =  Color * 0.15;
+    float MaterialThickness =0.5f;  
+    vec3 ext =  Color * 0.5;
     vec3 ExtinctionCoefficient = vec3(ext.r, ext.g- 0.1, ext.b-0.15);
-    float backFaceSpecularIntens = 0.25f;
+    float backFaceSpecularIntens = 0.5f;
 
-    vec3 dotLN = vec3(HalfLambert(L, N));
+    vec3 dotLN = vec3(LambertLighting(L, N));
     dotLN *= Color;
      
     vec3 indirectLightComponent = vec3(MaterialThickness * max(dot(-N, L), 0.0));
-    indirectLightComponent += MaterialThickness * HalfLambert(-V, L);
+    indirectLightComponent += MaterialThickness * LambertLighting(-V, L);
     indirectLightComponent *= ExtinctionCoefficient;
      
     vec3 rim = vec3(1.0 - max(dot(N, V), 0.0));
     rim *= rim;
-    rim *= max(dot(N,L), 0.0) * Specular;
+    rim *= max(dot(N,L), 0.0) * Specular * 2.0;
      
     vec3 finalCol = dotLN + indirectLightComponent;
     finalCol += rim * backFaceSpecularIntens;
     
-    finalCol += vec3(blinnPhongSpecular(N,L, 32.0) * Specular * 1.25);
+    finalCol += vec3(blinnPhongSpecular(N,L, 32.0) * Specular * 2.0);
     return finalCol;   
 }
 
