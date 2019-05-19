@@ -31,12 +31,10 @@ vec3 ColorVibrance(in vec3 color){
   return color  = mix(vec3(lum), color.rgb, (1.0 + (u_rgbVibrance * (1.0 - (sign(u_rgbVibrance) * mid)))));
 }
 
-
 void main(void){
 
 vec3 color = BrightnesContrastSaturation(texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb, u_control.x, u_control.y, u_control.z);
 color = ColorVibrance(color);
-
 fragData.rgb = pow(color, vec3(u_control.w));
 fragData.a = 1.0;
 }
