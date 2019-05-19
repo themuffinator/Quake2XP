@@ -381,6 +381,7 @@ cvar_t	*r_particlesOverdraw;
 
 cvar_t	*r_useLUT;
 cvar_t	*r_lutId;
+cvar_t	*r_colorTempK;
 
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;
@@ -546,6 +547,7 @@ void SetModelsLight();
 extern float shadelight[3];
 byte Normal2Index(const vec3_t vec);
 extern int	occ_framecount;
+void R_ColorTemperatureCorrection(void);
 
 //====================================================================
 

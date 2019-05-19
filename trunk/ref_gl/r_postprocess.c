@@ -375,6 +375,7 @@ void R_FilmFilter (void)
 
 void R_GammaRamp (void) 
 {
+	
 	GL_BindProgram (gammaProgram);
 
 	GL_MBindRect (GL_TEXTURE0, ScreenMap->texnum);
@@ -388,6 +389,7 @@ void R_GammaRamp (void)
 	qglUniform3f (U_COLOR_VIBRANCE, r_colorBalanceRed->value	* r_colorVibrance->value,
 									r_colorBalanceGreen->value	* r_colorVibrance->value, 
 									r_colorBalanceBlue->value	* r_colorVibrance->value);
+
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad ();
@@ -398,6 +400,26 @@ static int ClampCvarInteger(int min, int max, int value) {
 	if (value < min) return min;
 	if (value > max) return max;
 	return value;
+}
+
+void R_ColorTemperatureCorrection(void){
+
+	if (r_colorTempK->value < 1000.0)
+		return;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
+	GL_BindProgram(lutProgram);
+
+	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglUniform1f(U_PARAM_FLOAT_1, r_colorTempK->value);
+	qglUniform1i(U_PARAM_INT_0, 1);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+
+	R_DrawFullScreenQuad();
+
 }
 
 void R_lutCorrection(void)
@@ -423,6 +445,7 @@ void R_lutCorrection(void)
 
 	GL_MBind3d(GL_TEXTURE1, r_3dLut[lutID]->texnum);
 	qglUniform1f(U_PARAM_FLOAT_0, r_3dLut[lutID]->lutSize);
+	qglUniform1i(U_PARAM_INT_0, 0);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad();
