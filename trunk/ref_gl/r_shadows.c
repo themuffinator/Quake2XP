@@ -538,9 +538,28 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
 
+	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
+			
+			if (!currententity->flags & (RF_VIEWERMODEL))
+				continue;
+			if (!currentmodel)
+				continue;
+
+			if (currentmodel->type == mod_alias)
+				R_DrawMD2ShadowVolume();
+
+		}
+	}
+	else {
+		for (i = 0; i < r_newrefdef.num_entities; i++) {
+			currententity = &r_newrefdef.entities[i];
+			currentmodel = currententity->model;
+
+			if (currententity->flags & (RF_VIEWERMODEL))
+				continue;
 
 			if (!currentmodel)
 				continue;
@@ -548,8 +567,8 @@ void R_CastAliasShadowVolumes(qboolean player) {
 			if (currentmodel->type == mod_alias)
 				R_DrawMD2ShadowVolume();
 
-		}	
-		
+		}
+	}
 	/*===============
 	DRAW MD3 SHADOWS
 	================*/

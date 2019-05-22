@@ -2326,7 +2326,8 @@ void R_DrawLightFlare () {
 	// Color Fade
 	VectorSubtract (currentShadowLight->flareOrigin, r_origin, v);
 	dist2 = VectorLength(v);
-	dist = dist2 * 0.1; // 10.0 * 0.01
+//	dist = dist2 * 0.1; // 10.0 * 0.01
+	dist = dist2 * (currentShadowLight->flareSize * 0.01);
 
 	scale = ((1024 - dist2) / 1024) * 0.5;
 

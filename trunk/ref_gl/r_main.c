@@ -669,6 +669,7 @@ void R_DrawLightScene (void)
 			R_DrawMD3MeshLight(qfalse);
 	}
 
+	R_CastAliasShadowVolumes(qfalse);
 	R_DrawLightWorld();					// light world
 	//brush models light pass
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
