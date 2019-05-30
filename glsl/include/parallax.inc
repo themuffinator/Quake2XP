@@ -86,3 +86,70 @@ float selfShadow(in sampler2D hiMap, in vec3 N, in vec3 L, in vec2 texCoord)
 
     return clamp( (height - tex ) * 8.0, 0.0, 1.0 );
 }
+
+#define PARALLAX_STEPS 15
+
+vec2 ParallaxOcclusionMap(in sampler2D hiMap, const in vec2 texCoord, const in vec3 viewVec )
+{
+ float steps =  1.0 / PARALLAX_STEPS;
+ float lod = ComputeLOD( texCoord, u_parallaxParams.zw );
+
+ vec2 delta = vec2( viewVec.x, viewVec.y ) * u_parallaxParams.xy / (-viewVec.z * PARALLAX_STEPS);     
+ float bias = -1.0;
+ vec2 baseTC = texCoord;
+ baseTC -= (1.0 - bias) * PARALLAX_STEPS * delta;
+   
+ float NB0 = textureLod( hiMap, baseTC, lod ).a;
+ float height = 1.0 - steps;
+ vec2 offset = texCoord + delta;
+ 
+ float NB1 = textureLod( hiMap, offset, lod ).a;
+
+ for( int i = 0; i < int( PARALLAX_STEPS ); i++ )
+ {
+  if( NB1 >= height )
+   break;
+
+  NB0 = NB1;
+  height -= steps;
+  offset += delta;
+  NB1 = textureLod( hiMap, offset, lod ).a;
+ }
+
+ vec2 offsetBest = offset;
+ float error = 1.0;
+ float t1 = height;
+ float t0 = t1 + steps;
+ float delta1 = t1 - NB1;
+ float delta0 = t0 - NB0;
+
+ vec4 intersect = vec4( delta * PARALLAX_STEPS, delta * PARALLAX_STEPS + texCoord );
+
+ float t = 0;
+
+ for( int i = 0; i < 10; i++ )
+ {
+  if( abs( error ) <= 0.01 )
+   break;
+
+  float denom = delta1 - delta0;
+  t = (t0 * delta1 - t1 * delta0) / denom;
+  offsetBest = -t * intersect.xy + intersect.zw;
+
+  float NB = textureLod( hiMap, offsetBest, lod ).a;
+
+  error = t - NB;
+  if( error < 0.0 )
+  {
+   delta1 = error;
+   t1 = t;
+  }
+  else
+  {
+   delta0 = error;
+   t0 = t;
+  }
+ }
+
+ return offsetBest;
+}
