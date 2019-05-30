@@ -87,6 +87,8 @@ static	menuslider_s	s_ambientLevel_slider;
 
 static	menuaction_s	s_menuAction_color;
 
+static	menufield_s		s_menuColorTemp;
+
 /////////////////////////////////////////////////////////
 //
 // MENU GENERIC FUNCTIONS
@@ -358,6 +360,11 @@ static void vSyncCallBack (void *s) {
 	Cvar_SetValue ("r_vsync", box->curvalue * 1);
 }
 
+void ColorTempFunc(void *unused)
+{
+	Cvar_Set("r_colorTempK", s_menuColorTemp.buffer);
+	r_colorTempK->integer = ClampCvarInteger(999, 40000, r_colorTempK->integer);
+}
 
 void M_ColorInit() {
 
@@ -491,7 +498,18 @@ void M_ColorInit() {
 	s_fixfov_slider.curvalue = r_fixFovStrength->value * 10;
 	s_fixfov_slider.generic.statusbar = "Reducing Field Of View Distortion";
 
-	menuSize = 110;
+	s_menuColorTemp.generic.type = MTYPE_FIELD;
+	s_menuColorTemp.generic.name = "Color Temperature";
+	s_menuColorTemp.generic.flags = QMF_NUMBERSONLY;
+	s_menuColorTemp.generic.x = 0;
+	s_menuColorTemp.generic.y = 130 * cl_fontScale->value;
+	s_menuColorTemp.generic.statusbar = "Color Temperature in Kelvins 1000 - 40000";
+	s_menuColorTemp.length = 5;
+	s_menuColorTemp.visible_length = 5;
+	s_menuColorTemp.generic.statusbarfunc = ColorTempFunc;
+	strcpy(s_menuColorTemp.buffer, Cvar_VariableString("r_colorTempK"));
+
+	menuSize = 130;
 
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_gamma_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_brightness_slider);
@@ -503,6 +521,7 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomThreshold_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomWidth_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_fixfov_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_menuColorTemp);
 
 	Menu_Center(&s_opengl2_menu);
 	s_opengl2_menu.x -= 8;
@@ -581,7 +600,6 @@ void VID_MenuInit (void) {
 
 	static char	*yesno_names[] = { "off", "yes", 0 };
 	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
-	static char	*film_filter[] = { "off", "TechniColor Sys 1", "TechniColor Sys 3", "Sepia", 0 };
 
 	if(!r_reliefMappingSelfShadow)
 		r_reliefMappingSelfShadow = Cvar_Get("r_reliefMappingSelfShadow", "0", CVAR_ARCHIVE);
@@ -784,10 +802,10 @@ void VID_MenuInit (void) {
 	s_film_grain.generic.x = 0;
 	s_film_grain.generic.y = 190 * cl_fontScale->value;
 	s_film_grain.generic.name = "Cinematic filter";
-	s_film_grain.itemnames = film_filter;
-	s_film_grain.curvalue = r_filmFilterType->value;
+	s_film_grain.itemnames = yesno_names;
+	s_film_grain.curvalue = r_filmFilter->integer;
 	s_film_grain.generic.callback = filmCallback;
-	s_film_grain.generic.statusbar = "Use Cinematic Film Effect <technicolor or sepia>";
+	s_film_grain.generic.statusbar = "Use Cinematic Film Effect noise, vignet and scratches";
 
 	s_fxaa_box.generic.type = MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x = 0;

@@ -203,18 +203,6 @@ qboolean modName(const char *gameDir) {
 	return qfalse;
 }
 
-// Psychospaz's mod detector
-qboolean modType(char *name)
-{
-	searchpath_t	*search;
-
-	for (search = fs_searchpaths; search; search = search->next)
-	if (!Q_strcasecmp(search->filename, name))
-		return qtrue;
-
-	return qfalse;
-}
-
 /*
 ===========
 FS_FOpenFile

@@ -596,7 +596,7 @@ void Load3dLut(void) {
 		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
-		qglTexImage3D(GL_TEXTURE_3D, 0, GL_RGB8, LUTsize, LUTsize, LUTsize, 0, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
+		qglTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, LUTsize, LUTsize, LUTsize, 0, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
 
 		FS_FreeFile(buf);
 		lutCount++;

@@ -350,7 +350,7 @@ void R_FXAA (void) {
 void R_FilmFilter (void) 
 {
 
-	if (!r_filmFilterType->integer)
+	if (!r_filmFilter->integer)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -365,8 +365,7 @@ void R_FilmFilter (void)
 	qglUniform2f (U_SCREEN_SIZE,	vid.width, vid.height);
 	qglUniform1f (U_PARAM_FLOAT_0,	crand());
 	qglUniform1i (U_PARAM_INT_0,	r_framecount);
-	qglUniform4f (U_PARAM_VEC4_0,	r_filmFilterType->integer, r_filmFilterNoiseIntens->value, 
-									r_filmFilterScratchIntens->value, r_filmFilterVignetIntens->value);
+	qglUniform3f (U_PARAM_VEC3_0,	r_filmFilterNoiseIntens->value, r_filmFilterScratchIntens->value, r_filmFilterVignetIntens->value);
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -444,7 +443,7 @@ void R_lutCorrection(void)
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	GL_MBind3d(GL_TEXTURE1, r_3dLut[lutID]->texnum);
-	qglUniform1f(U_PARAM_FLOAT_0, r_3dLut[lutID]->lutSize);
+	qglUniform3f(U_PARAM_VEC3_0, r_3dLut[lutID]->lutSize, r_3dLut[lutID]->lutSize, r_3dLut[lutID]->lutSize);
 	qglUniform1i(U_PARAM_INT_0, 0);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 

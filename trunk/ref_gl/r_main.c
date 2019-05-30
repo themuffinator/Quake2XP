@@ -641,7 +641,7 @@ void R_DrawLightScene (void)
 		continue;
 
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
-	R_CastAliasShadowVolumes(qtrue);	// alias models shadows
+	R_CastAliasShadowVolumes(qtrue);	// player shadow
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) { 
 		currententity = &r_newrefdef.entities[i];
@@ -669,7 +669,7 @@ void R_DrawLightScene (void)
 			R_DrawMD3MeshLight(qfalse);
 	}
 
-	R_CastAliasShadowVolumes(qfalse);
+	R_CastAliasShadowVolumes(qfalse);   // alias shadows with out player model
 	R_DrawLightWorld();					// light world
 	//brush models light pass
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -1500,7 +1500,6 @@ void R_RegisterCvars(void)
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	
 	r_filmFilter = 						Cvar_Get("r_filmFilter", "0", CVAR_ARCHIVE);
-	r_filmFilterType =					Cvar_Get("r_filmFilterType", "0", CVAR_ARCHIVE);
 	r_filmFilterNoiseIntens =			Cvar_Get("r_filmFilterNoiseIntens", "0.03", CVAR_ARCHIVE);
 	r_filmFilterScratchIntens =			Cvar_Get("r_filmFilterScratchIntens", "0.4", CVAR_ARCHIVE);
 	r_filmFilterVignetIntens =			Cvar_Get("r_filmFilterVignetIntens", "0.35", CVAR_ARCHIVE);
@@ -1543,7 +1542,7 @@ void R_RegisterCvars(void)
 
 	r_useLUT =							Cvar_Get("r_useLUT", "1", CVAR_ARCHIVE);
 	r_lutId =							Cvar_Get("r_lutId", "0", CVAR_ARCHIVE);
-	r_colorTempK =						Cvar_Get("r_colorTempK", "0.0", CVAR_ARCHIVE);
+	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
 	r_colorTempK->help = "Color Temperature in Kelvins (from 1000K to 40000K)";
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);

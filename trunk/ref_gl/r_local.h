@@ -366,7 +366,6 @@ cvar_t	*r_hudLighting;
 cvar_t	*r_bump2D;
 
 cvar_t	*r_filmFilter;
-cvar_t	*r_filmFilterType; // 0 - technicolor; 1 - sepia
 cvar_t	*r_filmFilterNoiseIntens;
 cvar_t	*r_filmFilterScratchIntens;
 cvar_t	*r_filmFilterVignetIntens;

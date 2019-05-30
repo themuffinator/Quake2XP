@@ -745,7 +745,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 		//======
 		// PMM
-		if (effects & EF_DOUBLE && modType("rogue")) {
+		if (effects & EF_DOUBLE && modName("rogue")) {
 			effects &= ~EF_DOUBLE;
 			effects |= EF_COLOR_SHELL;
 			renderfx |= RF_SHELL_DOUBLE;
@@ -1479,7 +1479,7 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 				gun.flags |= RF_SHELL_RED;
 			if (s1->effects & EF_QUAD)
 				gun.flags |= RF_SHELL_BLUE;
-			if ((s1->effects & EF_DOUBLE) && modType("rogue"))
+			if ((s1->effects & EF_DOUBLE) && modName("rogue"))
 				gun.flags |= RF_SHELL_DOUBLE;
 			if (s1->effects & EF_HALF_DAMAGE)
 				gun.flags |= RF_SHELL_HALF_DAM;

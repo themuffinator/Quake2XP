@@ -542,14 +542,15 @@ void R_CastAliasShadowVolumes(qboolean player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
-			
-			if (!currententity->flags & (RF_VIEWERMODEL))
-				continue;
-			if (!currentmodel)
+
+			if (!(currententity->flags & RF_VIEWERMODEL)) 
 				continue;
 
-			if (currentmodel->type == mod_alias)
-				R_DrawMD2ShadowVolume();
+				if (!currentmodel)
+					continue;
+
+				if (currentmodel->type == mod_alias)
+					R_DrawMD2ShadowVolume();
 
 		}
 	}
@@ -558,7 +559,7 @@ void R_CastAliasShadowVolumes(qboolean player) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
 
-			if (currententity->flags & (RF_VIEWERMODEL))
+			if (currententity->flags & RF_VIEWERMODEL)
 				continue;
 
 			if (!currentmodel)
@@ -575,10 +576,13 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_FrontFace(GL_CCW); // flip cull face order vs stencil re-setup
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_md3Shadow);
-
+	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = &r_newrefdef.entities[i];
 			currentmodel = currententity->model;
+
+			if (!(currententity->flags & RF_VIEWERMODEL))
+				continue;
 
 			if (!currentmodel)
 				continue;
@@ -587,6 +591,24 @@ void R_CastAliasShadowVolumes(qboolean player) {
 				R_DrawMD3ShadowVolume();
 
 		}
+	}
+	else
+	{
+		for (i = 0; i < r_newrefdef.num_entities; i++) {
+			currententity = &r_newrefdef.entities[i];
+			currentmodel = currententity->model;
+
+			if (currententity->flags & RF_VIEWERMODEL)
+				continue;
+
+			if (!currentmodel)
+				continue;
+
+			if (currentmodel->type == mod_alias_md3)
+				R_DrawMD3ShadowVolume();
+
+		}
+	}
 
 	GL_FrontFace(GL_CW);
 	qglDisableVertexAttribArray(ATT_POSITION);

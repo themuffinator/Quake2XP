@@ -865,9 +865,6 @@ void Qcommon_Shutdown (void);
 extern vec3_t	q_byteDirs[NUM_VERTEX_NORMALS];
 extern float	r_avertexnormal_dots[SHADEDOT_QUANT][256];
 
-
-qboolean modType (char *name);
-
 /*
 ==============================================================
 
