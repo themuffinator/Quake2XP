@@ -109,7 +109,7 @@ static void ambientLevelCallback (void *s) {
 static void filmCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_filmFilterType", box->curvalue * 1);
+	Cvar_SetValue ("r_filmFilter", box->curvalue * 1);
 }
 
 static void ParallaxCallback (void *s) {
