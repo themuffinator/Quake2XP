@@ -378,7 +378,6 @@ cvar_t	*r_screenBlend;
 cvar_t	*r_useShaderCache;
 cvar_t	*r_particlesOverdraw;
 
-cvar_t	*r_useLUT;
 cvar_t	*r_lutId;
 cvar_t	*r_colorTempK;
 

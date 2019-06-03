@@ -54,6 +54,7 @@ static menuslider_s		s_saturation_slider;
 static menuslider_s		s_gamma_slider;
 static menuslider_s		s_vibrance_slider;
 static menuslider_s		s_fixfov_slider;
+static menulist_s		s_lut_list;
 
 static menuslider_s		s_bloomIntens_slider;
 static menuslider_s		s_bloomThreshold_slider;
@@ -360,6 +361,12 @@ static void vSyncCallBack (void *s) {
 	Cvar_SetValue ("r_vsync", box->curvalue * 1);
 }
 
+static void lutCallBack(void *s) {
+	menulist_s *box = (menulist_s *)s;
+
+	Cvar_SetValue("r_lutId", box->curvalue * 1);
+}
+
 void ColorTempFunc(void *unused)
 {
 	Cvar_Set("r_colorTempK", s_menuColorTemp.buffer);
@@ -370,6 +377,9 @@ void M_ColorInit() {
 
 	if (!r_gamma)
 		r_gamma = Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE);
+	
+	if (!r_colorTempK)
+		r_colorTempK = Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
 
 	if (!r_brightness)
 		r_brightness = Cvar_Get("r_brightness", "1", CVAR_ARCHIVE);
@@ -403,6 +413,8 @@ void M_ColorInit() {
 	r_bloomWidth->value = ClampCvar(0.1, 3.0, r_bloomWidth->value);
 	
 	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
+
+	static char	*lut_table[] = { "Neutral", "Technicolor", "Sepia", "Black&White", 0 };
 
 	s_opengl2_menu.x = viddef.width * 0.50;
 	s_opengl2_menu.nitems = 0;
@@ -498,15 +510,24 @@ void M_ColorInit() {
 	s_fixfov_slider.curvalue = r_fixFovStrength->value * 10;
 	s_fixfov_slider.generic.statusbar = "Reducing Field Of View Distortion";
 
+	s_lut_list.generic.type = MTYPE_SPINCONTROL;
+	s_lut_list.generic.name = "Color Grading";
+	s_lut_list.generic.x = 0;
+	s_lut_list.generic.y = 130 * cl_fontScale->value;
+	s_lut_list.itemnames = lut_table;
+	s_lut_list.curvalue = r_lutId->integer;
+	s_lut_list.generic.callback = lutCallBack;
+	s_lut_list.generic.statusbar = "Neutral, Technicolor, Sepia, Black&White";
+
 	s_menuColorTemp.generic.type = MTYPE_FIELD;
 	s_menuColorTemp.generic.name = "Color Temperature";
 	s_menuColorTemp.generic.flags = QMF_NUMBERSONLY;
 	s_menuColorTemp.generic.x = 0;
-	s_menuColorTemp.generic.y = 130 * cl_fontScale->value;
+	s_menuColorTemp.generic.y = 140 * cl_fontScale->value;
 	s_menuColorTemp.generic.statusbar = "Color Temperature in Kelvins 1000 - 40000";
 	s_menuColorTemp.length = 5;
 	s_menuColorTemp.visible_length = 5;
-	s_menuColorTemp.generic.statusbarfunc = ColorTempFunc;
+	s_menuColorTemp.generic.callback = ColorTempFunc;
 	strcpy(s_menuColorTemp.buffer, Cvar_VariableString("r_colorTempK"));
 
 	menuSize = 130;
@@ -521,7 +542,9 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomThreshold_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomWidth_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_fixfov_slider);
+	Menu_AddItem(&s_opengl2_menu, (void *)&s_lut_list);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_menuColorTemp);
+
 
 	Menu_Center(&s_opengl2_menu);
 	s_opengl2_menu.x -= 8;

@@ -1540,10 +1540,9 @@ void R_RegisterCvars(void)
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
 	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", 0);
 
-	r_useLUT =							Cvar_Get("r_useLUT", "1", CVAR_ARCHIVE);
 	r_lutId =							Cvar_Get("r_lutId", "0", CVAR_ARCHIVE);
 	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
-	r_colorTempK->help = "Color Temperature in Kelvins (from 1000K to 40000K)";
+	r_colorTempK->help =				"Color Temperature in Kelvins (from 1000K to 40000K)";
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);

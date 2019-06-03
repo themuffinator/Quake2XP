@@ -423,10 +423,6 @@ void R_ColorTemperatureCorrection(void){
 
 void R_lutCorrection(void)
 {
-
-	if (!r_useLUT->integer)
-		return;
-	
 	if (!lutCount)
 		return;
 
