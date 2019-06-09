@@ -12,7 +12,8 @@ layout(location = U_SPOT_MATRIX)	uniform mat4	u_spotMatrix;
 layout(location = U_CUBE_MATRIX)	uniform mat4	u_cubeMatrix;
 layout(location = U_MVP_MATRIX)		uniform mat4	u_modelViewProjectionMatrix;
 layout(location = U_MODELVIEW_MATRIX)	uniform mat4	u_modelViewMatrix; 
-
+layout(location = U_TEXTURE0_MATRIX)	uniform mat4	u_skyMatrix; 
+layout(location = U_TEXTURE1_MATRIX)	uniform mat3	u_entAxis;
 out vec2		v_texCoord;
 out vec4		v_CubeCoord;
 out vec4		v_AttenCoord;
@@ -22,6 +23,7 @@ out vec3		v_lightAtten;
 out vec3		v_lightSpot;
 out vec3		v_tangent;
 out mat3		v_tangentToView;
+out vec3		v_tst;
 
 void main (void) {
 	
@@ -50,4 +52,6 @@ v_tangentToView[1] = m * att_binormal;
 v_tangentToView[2] = m * att_normal;
 
 gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
+
+v_tst = mat3(u_skyMatrix) * att_normal;
 }

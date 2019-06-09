@@ -4,6 +4,7 @@ layout (binding = 2) uniform sampler2D		u_causticMap;
 layout (binding = 3) uniform samplerCube	u_CubeFilterMap;
 layout (binding = 4) uniform sampler2D		u_rghMap;
 layout (binding = 5) uniform sampler2D		u_bumpBlend;
+layout (binding = 6) uniform samplerCube	u_skyCube;
 
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
 layout(location = U_CAUSTICS_SCALE)		uniform float	u_CausticsModulate;
@@ -21,6 +22,7 @@ layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump 
 layout(location = U_PARAM_INT_0)		uniform int		u_blinnPhong; // use old lighting model
 layout(location = U_PARAM_INT_1)		uniform int		u_alphaMask;
 layout(location = U_PARAM_INT_2)		uniform int		u_useSSS;
+layout(location = U_PARAM_INT_3)		uniform int		u_useSkyRefl;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -30,6 +32,7 @@ in vec4			v_positionVS;
 in vec3			v_lightAtten;
 in vec3			v_lightSpot;
 in vec3			v_tangent;
+in vec3			v_tst;
 
 #include lighting.inc
 
@@ -57,19 +60,19 @@ void main (void) {
 	vec3 V = normalize(v_viewVec);
 
 	vec4 normalMap = vec4(0.0);
-	float specular = 0.0;
+	vec3 specular = vec3(0.0);
 
 	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 	vec4 diffuseMap  = texture(u_diffuseMap, v_texCoord);
 	
 	if(u_autoBump == 0){
-	  normalMap.xyz = normalize(texture(u_bumpMap, v_texCoord).rgb * 2.0 - 1.0);
-    specular = texture(u_bumpMap, v_texCoord).a * u_specularScale;
+		normalMap.xyz = normalize(texture(u_bumpMap, v_texCoord).rgb * 2.0 - 1.0);
+		specular.rgb = texture(u_bumpMap, v_texCoord).aaa * u_specularScale;
 	}
 
 	if(u_autoBump == 1){
 		normalMap = Height2Normal(v_texCoord, u_diffuseMap, diffuseMap.rgb, u_autoBumpParams.x, u_autoBumpParams.y);
-		specular = normalMap.a;
+		specular.rgb = normalMap.aaa;
 	}		
 		
 	float SSS = diffuseMap.a;
@@ -77,7 +80,7 @@ void main (void) {
 	vec3 dt = texture(u_bumpBlend, v_texCoord).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
 	vec3 r = normalize(nm * dot(nm, dt) - dt * nm.z);
 	vec3 blendNormal =  r * 0.5 + 0.5;
-	vec4 skin_color = SkinLighting(V, L, blendNormal, u_LightColor.rgb, diffuseMap, attenMap, specular);
+	vec4 skin_color = SkinLighting(V, L, blendNormal, u_LightColor.rgb, diffuseMap, attenMap, specular.r);
 
 
 	if (u_isCaustics == 1){
@@ -94,17 +97,19 @@ void main (void) {
 	
 	if (u_isAmbient == 0) {
 	
-	float roughness, cd_mask;
+	float roughness, cd_mask, metalness;
 	
 	if(u_isRgh == 1){
 		vec4 rghMap = texture(u_rghMap, v_texCoord);
 		roughness = rghMap.r; 
-    cd_mask =  rghMap.a;
+		metalness =   rghMap.g;
+		cd_mask =  rghMap.a;
 	}
 
 	if(u_isRgh == 0){
 		roughness = 1.0 - diffuseMap.r;
-      cd_mask = 1.0;
+      cd_mask = 1.0; 
+      metalness = 0.0;
     }
   
   roughness = clamp(roughness, 0.001, 1.0);
@@ -120,23 +125,28 @@ void main (void) {
 			fragData = mix(u_LightColor, vec4(tmp, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
 			return;
 		}
-
+	
 			skin_color *= cubeFilter;
 			vec3 metall_color;
 			if(u_useSSS == 1)
-				metall_color = SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular)  * u_LightColor.rgb * cubeFilter.rgb * attenMap;
+				metall_color = SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular.r)  * u_LightColor.rgb * cubeFilter.rgb * attenMap;
 			else{
 			if(u_blinnPhong == 1)
-				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular, normalMap.rgb, L, V, 128.0)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
+				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
 			if(u_blinnPhong == 0)
-				metall_color = Lighting_BRDF(diffuseMap.rgb, vec3(specular), roughness, normalMap.xyz, L, V) * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
+				metall_color = Lighting_BRDF(diffuseMap.rgb, specular, roughness, normalMap.xyz, L, V)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
 			}		
 
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);	
-   
-	//	float frenel = 1.0 * pow(1.0 - abs(dot(V, normalMap.rgb)), 30.0);
-   	//	fragData +=vec4(1.0, 0.2, 1.0, 1.0) * frenel;
+
+		if(u_useSkyRefl == 1 && SSS  > 0.0){
+			vec3 reflCoord = v_tst.xyz;
+			vec3 envSky = textureLod(u_skyCube, reflCoord.xyz, roughness * 14.0).rgb;
+			float frenel = pow(1.0 - abs(dot(V, normalMap.rgb)), 2.0);
+			fragData.rgb += mix(envSky * metalness, fragData.rgb,  frenel);
+		}
 	
+
       if(cd_mask == 0.0){	    
         
       vec2 uv = v_texCoord.xy * 2.0 - 1.0;         
@@ -146,4 +156,5 @@ void main (void) {
         fragData.rgb +=LightingDiffraction(V, L, uv_tangent);
        }
       }	
+	  fragData.a = 1.0;
 }
