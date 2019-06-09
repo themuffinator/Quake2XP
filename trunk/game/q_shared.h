@@ -41,6 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning(disable : 4311)
 #pragma warning(disable : 4312)
 #endif
+#pragma warning(disable : 26451)
 
 #include <assert.h>
 #include <math.h>

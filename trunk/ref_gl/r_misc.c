@@ -606,12 +606,6 @@ void Load3dLut(void) {
 
 
 
-typedef struct img_s {
-	byte	*pixels;
-	int		width;
-	int		height;
-} img_t;
-
 char	*lsuf[6] = { "ft", "bk", "lf", "rt", "up", "dn" };
 unsigned	trans[4096 * 4096];
 

@@ -106,7 +106,7 @@ typedef enum {
 void GL_SetDefaultState (void);
 void GL_UpdateSwapInterval (void);
 
-extern float gldepthmin, gldepthmax;
+extern double gldepthmin, gldepthmax;
 
 
 typedef struct {
@@ -197,7 +197,7 @@ uint bloomtex;
 uint thermaltex;
 uint fxaatex;
 uint fovCorrTex;
-unsigned int	skyCube;
+int	skyCube;
 
 uint fboId;
 byte fboColorIndex;
@@ -1119,6 +1119,12 @@ typedef enum {
 	PLANE_BACK,
 	PLANE_CLIP
 }plane_t;
+
+typedef struct img_s {
+	byte* pixels;
+	int		width;
+	int		height;
+} img_t;
 
 /*
 ====================================================================

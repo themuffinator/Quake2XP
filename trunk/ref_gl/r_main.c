@@ -33,7 +33,7 @@ viddef_t vid;
 
 model_t *r_worldmodel;
 
-float gldepthmin, gldepthmax;
+double gldepthmin, gldepthmax;
 
 glconfig_t gl_config;
 glstate_t gl_state;
@@ -1989,10 +1989,10 @@ int R_Init(void *hinstance, void *hWnd)
 		gl_state.texture_compression_bptc = qfalse;
 	}
 
-/*	if (IsExtensionSupported("GL_ARB_seamless_cube_map")) {
+	if (IsExtensionSupported("GL_ARB_seamless_cube_map")) {
 		Com_Printf("...using GL_ARB_seamless_cube_map\n");
 		qglEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-	}*/
+	}
 
 	// ===========================================================================================================================
 

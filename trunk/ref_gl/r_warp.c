@@ -33,7 +33,6 @@ float skyrotate;
 vec3_t skyaxis;
 image_t *sky_images[6];
 void IL_LoadImage (char *filename, byte ** pic, int *width, int *height, ILenum type);
-unsigned int	skyCube = -1;
 
 /*
 ===============
@@ -497,29 +496,89 @@ void R_SetSky (char *name, float rotate, vec3_t axis) {
 	}
 }
 
+char* cubeSufGL[6] = { "rt", "lf", "bk", "ft", "up", "dn" };
+void R_FlipImage(int idx, img_t* pix, byte* dst);
+unsigned	trans[4096 * 4096];
 void R_GenSkyCubeMap (char *name) {
-	int		i, w, h;
+	int		i, w, h, minw, minh, maxw, maxh;
 	char	pathname[MAX_QPATH];
 	byte	*pic;
+	img_t	pix[6];
 
 	strncpy (skyname, name, sizeof(skyname)-1);
 
 	qglGenTextures (1, &skyCube);
 	qglBindTexture (GL_TEXTURE_CUBE_MAP, skyCube);
 
-	for (i = 0; i < 6; i++) {
-		Com_sprintf (pathname, sizeof(pathname), "env/%s%s.tga", skyname, suf[i]);
 
-		IL_LoadImage (pathname, &pic, &w, &h, IL_TGA);
-		if (pic) {
-			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic);
-			free (pic);
+	minw = minh = 0;
+	maxw = maxh = 9999999;
+	for (i = 0; i < 6; i++) {
+		pix[i].pixels = NULL;
+		pix[i].width = pix[i].height = 0;
+		Com_sprintf(pathname, sizeof(pathname), "env/%s%s.tga", skyname, cubeSufGL[i]);
+		// Berserker: stop spam
+		if (FS_LoadFile(pathname, NULL) != -1) {
+			IL_LoadImage(pathname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
+			if (pix[i].width) {
+				if (minw < pix[i].width)
+					minw = pix[i].width;
+				if (maxw > pix[i].width)
+					maxw = pix[i].width;
+			}
+
+			if (pix[i].height) {
+				if (minh < pix[i].height)
+					minh = pix[i].height;
+				if (maxh > pix[i].height)
+					maxh = pix[i].height;
+			}
 		}
 	}
 
+	for (i = 0; i < 6; i++) {
+	
+			R_FlipImage(i, &pix[i], (byte*)trans);
+			free(pix[i].pixels);
+			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, /*pix[i].pixels*/ trans);
+	}
+	/*
+
+	for (i = 0; i < 6; i++) {
+		Com_sprintf (pathname, sizeof(pathname), "env/%s%s.tga", skyname, cubeSufGL[i]);
+
+		IL_LoadImage (pathname, &pic, &w, &h, IL_TGA);
+		if (pic) {
+			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic);
+			free (pic);
+		}
+	}
+	*/
+
+
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 }
+
+enum {
+	IT_CUBEMAP = 0,
+	IT_FLIPX = 1,
+	IT_FLIPY = 2,
+	IT_FLIPDIAGONAL = 4,
+};
+
+struct	cubemapSufAndFlip{
+
+	char* suf; vec3_t angles; int flags;
+} cubemapShots[6] = {
+	{ "px", { 0, 0, 0 }, IT_FLIPX | IT_FLIPY | IT_FLIPDIAGONAL },
+	{ "nx", { 0, 180, 0 }, IT_FLIPDIAGONAL },
+	{ "py", { 0, 90, 0 }, IT_FLIPY },
+	{ "ny", { 0, 270, 0 }, IT_FLIPX },
+	{ "pz", { -90, 180, 0 }, IT_FLIPDIAGONAL },
+	{ "nz", { 90, 180, 0 }, IT_FLIPDIAGONAL }
+};

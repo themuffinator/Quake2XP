@@ -904,11 +904,6 @@ void CL_ParticleSpark (vec3_t org, vec3_t dir, int count) {
 		p->orient = 0;
 		p->flags = PARTICLE_OVERBRIGHT;
 		p->flags |= PARTICLE_DIRECTIONAL;
-		p->flags |= PARTICLE_LIGHTING;
-		p->lightradius = 30.0;
-		p->lcolor[0] = 1.0;
-		p->lcolor[1] = 1.0;
-		p->lcolor[2] = 0.7;
 		p->time = cl.time;
 		p->endTime = cl.time + 1000;
 		p->sFactor = GL_ONE;
@@ -1815,8 +1810,8 @@ void CL_Explosion (vec3_t org) {
 	p->next = active_particles;
 	active_particles = p;
 	p->orient = 0;
-//	p->flags = PARTICLE_OVERBRIGHT;
-	p->flags = PARTICLE_LIGHTING;
+	p->flags = PARTICLE_OVERBRIGHT;
+	p->flags |= PARTICLE_LIGHTING;
 	p->time = cl.time;
 	p->endTime = cl.time + 400;
 	p->size = 50;

@@ -1444,7 +1444,7 @@ void MakeFrustum4Light (worldShadowLight_t *light, qboolean ingame) {
 
 void R_CreateOcclusionBbox(worldShadowLight_t *light) {
 
-	vec3_t		v[8], tmpOrg, tmpRad;
+	vec3_t	v[8], tmpOrg, tmpRad;
 
 	VectorCopy(light->origin, tmpOrg);
 	VectorCopy(light->radius, tmpRad);
@@ -1830,7 +1830,7 @@ gross culling during svbsp creation.
 */
 qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
 	int contents, leafnum, cluster;
-	int		leafs[MAX_MAP_LEAFS];
+	static int	leafs[MAX_MAP_LEAFS];
 	int		i, count;
 	vec3_t	mins, maxs;
 	byte	vis[MAX_MAP_LEAFS / 8];
@@ -1880,7 +1880,7 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light) {
 extern qboolean cinServer;
 
 qboolean InLightVISEntity () {
-	int		leafs[MAX_MAP_LEAFS];
+	static int	leafs[MAX_MAP_LEAFS];
 	int		i, count;
 	int		longs;
 	vec3_t	mins, maxs;
@@ -2277,9 +2277,9 @@ void R_DrawLightFlare () {
 
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
-	vec3_t		vert_array[MAX_FLARES_VERTEX];
-	vec2_t		tex_array[MAX_FLARES_VERTEX];
-	vec4_t		color_array[MAX_FLARES_VERTEX];
+	static vec3_t	vert_array[MAX_FLARES_VERTEX];
+	static vec2_t	tex_array[MAX_FLARES_VERTEX];
+	static vec4_t	color_array[MAX_FLARES_VERTEX];
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -2590,6 +2590,9 @@ void R_LightOcclusionTest(){
 	if (!r_useLightOcclusions->integer)
 		return;
 
+	if (r_lightEditor->integer)
+		return;
+
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
@@ -2637,6 +2640,9 @@ qboolean R_GetLightOcclusionResult() {
 	GLuint	result;
 
 	if (!r_useLightOcclusions->integer)
+		return qtrue;
+	
+	if (r_lightEditor->integer)
 		return qtrue;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)

@@ -407,7 +407,7 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 
 		if (!strcmp(mod->name, name)) {
 			if (mod->type == mod_alias) {
-				int i = 0;
+				i = 0;
 				image_t *img;
 
 				img = mod->skins[i];
@@ -2115,9 +2115,7 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 	dtrivertx_t		*verts, *v;
 	dtriangle_t		*tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
 	int				cx = pheader->num_xyz * pheader->num_frames * sizeof(byte);
-	vec3_t			binormals_[MAX_VERTS];
-	vec3_t			tangents_[MAX_VERTS];
-	vec3_t			normals_[MAX_VERTS];
+	static vec3_t	binormals_[MAX_VERTS], tangents_[MAX_VERTS], normals_[MAX_VERTS];
 	byte			*tangents = NULL, *binormals = NULL;
 
 	mod->binormals = binormals = (byte*)Hunk_Alloc(cx);
