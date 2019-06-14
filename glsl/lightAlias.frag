@@ -139,12 +139,12 @@ void main (void) {
 
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);	
 
-		if(u_useSkyRefl == 1 && SSS  > 0.0){
+/*		if(u_useSkyRefl == 1 && SSS  > 0.0){
 			vec3 reflCoord = v_tst.xyz;
 			vec3 envSky = textureLod(u_skyCube, reflCoord.xyz, roughness * 14.0).rgb;
 			float frenel = pow(1.0 - abs(dot(V, normalMap.rgb)), 2.0);
 			fragData.rgb += mix(envSky * metalness, fragData.rgb,  frenel);
-		}
+		}*/
 	
 
       if(cd_mask == 0.0){	    
