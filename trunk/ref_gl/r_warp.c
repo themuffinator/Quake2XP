@@ -500,9 +500,8 @@ char* cubeSufGL[6] = { "rt", "lf", "bk", "ft", "up", "dn" };
 void R_FlipImage(int idx, img_t* pix, byte* dst);
 unsigned	trans[4096 * 4096];
 void R_GenSkyCubeMap (char *name) {
-	int		i, w, h, minw, minh, maxw, maxh;
+	int		i, minw, minh, maxw, maxh;
 	char	pathname[MAX_QPATH];
-	byte	*pic;
 	img_t	pix[6];
 
 	strncpy (skyname, name, sizeof(skyname)-1);

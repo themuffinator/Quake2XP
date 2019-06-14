@@ -4,6 +4,17 @@
 */
 #include "r_local.h"
 
+int VectorCompareEpsilon(vec3_t v1, vec3_t v2, float epsilon)
+{
+	if (fabs(v1[0] - v2[0]) > epsilon)
+		return 0;
+	if (fabs(v1[1] - v2[1]) > epsilon)
+		return 0;
+	if (fabs(v1[2] - v2[2]) > epsilon)
+		return 0;
+	return 1;
+}
+
 void CalcTangent4MD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal)
 {
 	float *v0, *v1, *v2;
@@ -391,6 +402,32 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 				}
 		}
 
+		for (j = 0; j < outMesh->num_verts - 1; j++)
+		{
+			int b;
+			for (b = j + 1; b < outMesh->num_verts; b++)
+			{
+				if (VectorCompareEpsilon(outVerts[j].xyz, outVerts[b].xyz, 0.001f))
+				{
+					if (DotProduct(outVerts[j].tangent, outVerts[b].tangent) > 0.0f)
+					{
+						vec3_t  _n, _t, _b;
+						VectorAdd(outVerts[j].normal, outVerts[b].normal, _n);
+						VectorAdd(outVerts[j].tangent, outVerts[b].tangent, _t);
+						VectorAdd(outVerts[j].binormal, outVerts[b].binormal, _b);
+						VectorNormalize(_n);
+						VectorNormalize(_t);
+						VectorNormalize(_b);
+						VectorCopy(_n, outVerts[j].normal);
+						VectorCopy(_n, outVerts[b].normal);
+						VectorCopy(_t, outVerts[j].tangent);
+						VectorCopy(_t, outVerts[b].tangent);
+						VectorCopy(_b, outVerts[j].binormal);
+						VectorCopy(_b, outVerts[b].binormal);
+					}
+				}
+			}
+		}
 		//
 		// build triangle neighbours
 		//
