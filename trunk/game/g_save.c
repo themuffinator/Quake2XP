@@ -1624,6 +1624,7 @@ void InitGame (void) {
 	weaponHitAccuracy = gi.cvar("weaponHitAccuracy", "1", CVAR_USERINFO | CVAR_ARCHIVE);
 	g_noStopMusic = gi.cvar("g_noStopMusic", "0", CVAR_ARCHIVE);
 	g_infinityGibs = gi.cvar("g_infinityGibs", "0", CVAR_ARCHIVE);
+	useRussianLoc = gi.cvar("useRussianLoc", "0", CVAR_SERVERINFO);
 
 	// items
 	InitItems ();

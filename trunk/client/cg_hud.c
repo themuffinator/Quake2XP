@@ -341,12 +341,15 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	refdef.num_entities++;
 }
 
-
 void DrawAltStringScaled (int x, int y, float scale_x, float scale_y, char *s) {
 	Set_FontShader (qtrue);
 	while (*s) {
 
-		Draw_CharScaled (x, y, scale_x, scale_y, *s ^ 0x80);
+		if(useRussianLoc->integer)
+			Draw_CharScaledRus (x, y, scale_x, scale_y, *s ^ 0x80);
+		else
+			Draw_CharScaled(x, y, scale_x, scale_y, *s ^ 0x80);
+
 		x += 8 * scale_x;
 		s++;
 	}

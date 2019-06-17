@@ -164,7 +164,7 @@ image_t *r_decaltexture[DECAL_MAX];
 
 image_t *r_flare;
 
-image_t *draw_chars;
+image_t *draw_chars, *draw_charsRu;
 image_t *r_DSTTex;
 
 image_t	*r_defBump;

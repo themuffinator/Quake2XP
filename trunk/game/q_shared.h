@@ -78,8 +78,6 @@ typedef enum {
 #endif
 
 
-
-
 //#ifdef _WIN32
 //extern _CRT_JIT_INTRINSIC _CRTIMP __checkReturn int __cdecl toupper(__in int _C);
 //#endif

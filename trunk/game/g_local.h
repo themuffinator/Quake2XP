@@ -552,6 +552,7 @@ extern cvar_t	*g_autoHealth;
 
 cvar_t	*g_noStopMusic;
 cvar_t	*g_infinityGibs;
+cvar_t	*useRussianLoc;
 
 void monster_reborn (edict_t *self);
 #define world	(&g_edicts[0])

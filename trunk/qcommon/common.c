@@ -869,8 +869,10 @@ char *MSG_ReadString (sizebuf_t * msg_read) {
 	l = 0;
 	do {
 		c = MSG_ReadChar (msg_read);
-		if (c == -1 || c == 0)
+		
+		if (c == 0) //cyrillic error fix
 			break;
+
 		string[l] = c;
 		l++;
 	} while (l < sizeof(string)-1);

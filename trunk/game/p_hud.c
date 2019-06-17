@@ -276,7 +276,6 @@ void Cmd_Score_f (edict_t *ent) {
 	DeathmatchScoreboard (ent);
 }
 
-
 /*
 ==================
 HelpComputer
@@ -287,33 +286,63 @@ Draw help computer.
 void HelpComputer (edict_t *ent) {
 	char	string[1024];
 	char	*sk;
+	
+	if (useRussianLoc->integer) {
 
-	if (skill->value == 0)
-		sk = "easy";
-	else if (skill->value == 1)
-		sk = "medium";
-	else if (skill->value == 2)
-		sk = "hard";
-	else
-		sk = "nightmare";
+		if (skill->value == 0)
+			sk = "легкий";
+		else if (skill->value == 1)
+			sk = "средний";
+		else if (skill->value == 2)
+			sk = "тяжелый";
+		else
+			sk = "кошмар!";
 
-	// send the layout
-	Com_sprintf (string, sizeof(string),
-		"xv 32 yv 8 picn help "			// background
-		"xv 202 yv 12 string2 \"%s\" "		// skill
-		"xv 0 yv 24 cstring2 \"%s\" "		// level name
-		"xv 0 yv 54 cstring2 \"%s\" "		// help 1
-		"xv 0 yv 110 cstring2 \"%s\" "		// help 2
-		"xv 50 yv 164 string2 \" kills     goals    secrets\" "
-		"xv 50 yv 172 string2 \"%3i/%3i     %i/%i       %i/%i\" ",
-		sk,
-		level.level_name,
-		game.helpmessage1,
-		game.helpmessage2,
-		level.killed_monsters, level.total_monsters,
-		level.found_goals, level.total_goals,
-		level.found_secrets, level.total_secrets);
+		// send the layout
+		Com_sprintf(string, sizeof(string),
+			"xv 32 yv 8 picn help "			// background
+			"xv 202 yv 12 string2 \"%s\" "		// skill
+			"xv 0 yv 24 cstring2 \"%s\" "		// level name
+			"xv 0 yv 54 cstring2 \"%s\" "		// help 1
+			"xv 0 yv 110 cstring2 \"%s\" "		// help 2
+			"xv 50 yv 164 string2 \" убито    заданий   секреты\" "
+			"xv 50 yv 172 string2 \"%3i/%3i     %i/%i     %i/%i\" ",
+			sk,
+			level.level_name,
+			game.helpmessage1,
+			game.helpmessage2,
+			level.killed_monsters, level.total_monsters,
+			level.found_goals, level.total_goals,
+			level.found_secrets, level.total_secrets);
+	}
+	else {
 
+		if (skill->value == 0)
+			sk = "easy";
+		else if (skill->value == 1)
+			sk = "medium";
+		else if (skill->value == 2)
+			sk = "hard";
+		else
+			sk = "hard+";
+
+		// send the layout
+		Com_sprintf(string, sizeof(string),
+			"xv 32 yv 8 picn help "			// background
+			"xv 202 yv 12 string2 \"%s\" "		// skill
+			"xv 0 yv 24 cstring2 \"%s\" "		// level name
+			"xv 0 yv 54 cstring2 \"%s\" "		// help 1
+			"xv 0 yv 110 cstring2 \"%s\" "		// help 2
+			"xv 50 yv 164 string2 \" kills     goals    secrets\" "
+			"xv 50 yv 172 string2 \"%3i/%3i     %i/%i       %i/%i\" ",
+			sk,
+			level.level_name,
+			game.helpmessage1,
+			game.helpmessage2,
+			level.killed_monsters, level.total_monsters,
+			level.found_goals, level.total_goals,
+			level.found_secrets, level.total_secrets);
+	}
 	gi.WriteByte (svc_layout);
 	gi.WriteString (string);
 	gi.unicast (ent, qtrue);

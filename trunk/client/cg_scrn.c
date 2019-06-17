@@ -381,6 +381,7 @@ void SCR_DrawLoadingBar (float percent, float scale) {
 }
 
 void Draw_LoadingScreen (int x, int y, int w, int h, char *pic);
+void Draw_StringScaledRus(int x, int y, float scale_x, float scale_y, const char* str);
 
 void SCR_DrawLoading (void) {
 	int		scaled, center;
@@ -412,7 +413,11 @@ void SCR_DrawLoading (void) {
 		
 		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 6;
 		RE_SetColor(colorGreen);
-		Draw_StringScaled (center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
+
+		if (useRussianLoc->integer)
+			Draw_StringScaledRus(center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
+		else
+			Draw_StringScaled(center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
 		
 		RE_SetColor (colorYellow);
 		Draw_StringScaled (0, 44 * fontscale, fontscale, fontscale,
@@ -773,7 +778,6 @@ void SizeHUDString (char *string, int *w, int *h) {
 	*h = lines * 8;
 }
 
-
 void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwidth, int xor, char *string) {
 	float	margin;
 	char	line[1024];
@@ -797,7 +801,10 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 			x = margin;
 
 		for (i = 0; i < width; i++) {
-			Draw_CharScaled (x, y, scale_x, scale_y, line[i] ^ xor);
+			if(useRussianLoc->integer)
+				Draw_CharScaledRus (x, y, scale_x, scale_y, line[i] ^ xor);
+			else
+				Draw_CharScaled(x, y, scale_x, scale_y, line[i] ^ xor);
 			x += 8 * scale_x;
 		}
 		if (*string) {

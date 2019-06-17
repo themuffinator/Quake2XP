@@ -245,7 +245,7 @@ typedef struct {
 	//
 	// transient data from server
 	//
-	char layout[1024];			// general 2D overlay
+	char layout[8192];			// general 2D overlay
 	int inventory[MAX_ITEMS];
 
 	//
@@ -378,6 +378,9 @@ extern client_static_t cls;
 //
 // cvars
 //
+
+cvar_t *useRussianLoc;
+
 extern cvar_t *cl_stereo_separation;
 extern cvar_t *cl_stereo;
 
@@ -561,6 +564,8 @@ void CL_ParticleArmorSpark (vec3_t org, vec3_t dir, int count,
 	qboolean power);
 void CL_ParticleGibBlood (vec3_t org);
 void CL_ParticleGunSmoke (vec3_t org, vec3_t dir, int count);
+
+void Draw_CharScaledRus(int x, int y, float scale_x, float scale_y, unsigned char num);
 //=================================================
 extern vec3_t dclAng;
 

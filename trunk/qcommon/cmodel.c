@@ -606,6 +606,7 @@ return &map_cmodels[0];
 }
 */
 
+extern cvar_t *useRussianLoc;
 
 cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum) {
 	unsigned *buf, *entbuf;
@@ -676,30 +677,36 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum) {
 	CMod_LoadAreas (&header.lumps[LUMP_AREAS]);
 	CMod_LoadAreaPortals (&header.lumps[LUMP_AREAPORTALS]);
 	CMod_LoadVisibility (&header.lumps[LUMP_VISIBILITY]);
-
-
+	
+	
 	// VorteX: try to load entity replacement file
 	strcpy (entfile, name);
 	entfile[strlen (entfile) - 4] = 0;	// cut off ".bsp" Kirk Barnes
 	strcat (entfile, ".ent");
 	entlength = FS_LoadFile (entfile, (void **)&entbuf);
-	if (entbuf) {
-		map_entitystring[0] = 0;
-		numentitychars = entlength;
-		Com_Printf ("Parsing entities from %s\n", entfile);
-		if (entlength > MAX_MAP_ENTSTRING)
-			Com_Error (ERR_DROP, "Map has too large entity lump - %i",
-			entlength);
-		memcpy (map_entitystring, entbuf, numentitychars);
-		map_entitystring[numentitychars] = 0;
+	
+	if (!entbuf || !useRussianLoc->integer) {
+		CMod_LoadEntityString(&header.lumps[LUMP_ENTITIES]);
+		Com_Printf("Russian Localization not found. Use English Localization.\n");
+	}
+	else {
+		if (entbuf) {
+			map_entitystring[0] = 0;
+			numentitychars = entlength;
+			Com_Printf(S_COLOR_YELLOW"Loading loc file from %s\n", entfile);
+			if (entlength > MAX_MAP_ENTSTRING)
+				Com_Error(ERR_DROP, "Map has too large entity lump - %i", entlength);
+			memcpy(map_entitystring, entbuf, numentitychars);
+			map_entitystring[numentitychars] = 0;
 
-		FS_FreeFile (entbuf);
+			FS_FreeFile(entbuf);
+		}
+		if (!entbuf) {
+			Com_Printf("Russian Localization not found. Use English Localization.\n");
+			Cvar_SetInteger("useRussianLoc", 0);
+		}
+		FS_FreeFile(buf);
 	}
-	if (!entbuf) {
-		Com_Printf ("External entities not found. Use bsp entities\n");
-		CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES]);
-	}
-	FS_FreeFile (buf);
 
 	CM_InitBoxHull ();
 

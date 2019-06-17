@@ -48,7 +48,13 @@ void R_LoadFont(void)
 	if(!draw_chars)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
+	draw_charsRu = GL_FindImage("gfx/fonts/rufont.tga", it_pic);
+
 	GL_MBind(GL_TEXTURE0, draw_chars->texnum);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	GL_MBind(GL_TEXTURE0, draw_charsRu->texnum);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
@@ -139,6 +145,65 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 }
+
+void Draw_CharScaledRus(int x, int y, float scale_x, float scale_y, unsigned char num)
+{
+	int row, col;
+	float frow, fcol, size;
+
+	num &= 255;
+
+	if ((num & 127) == 32)
+		return;					// space
+
+	if (y <= -8 * scale_y)
+		return;					// totally off screen
+
+	// shadow offcets
+	int x2 = x + 2;
+	int y2 = y + 2;
+
+	row = num >> 4;
+	col = num & 15;
+
+	frow = row * 0.0625;
+	fcol = col * 0.0625;
+	size = 0.0625;
+
+	if (gl_state.currenttextures[gl_state.currenttmu] != draw_charsRu->texnum) {
+		GL_MBind(GL_TEXTURE0, draw_charsRu->texnum);
+	}
+
+	VA_SetElem2(texCoord[0], fcol, frow);
+	VA_SetElem2(texCoord[1], fcol + size, frow);
+	VA_SetElem2(texCoord[2], fcol + size, frow + size);
+	VA_SetElem2(texCoord[3], fcol, frow + size);
+
+	//====== draw font shadow
+	if (num != 129 && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26) { // fields and sliders filter
+		VA_SetElem2(vertCoord[0], x2, y2);
+		VA_SetElem2(vertCoord[1], x2 + 8 * scale_x, y2);
+		VA_SetElem2(vertCoord[2], x2 + 8 * scale_x, y2 + 8 * scale_y);
+		VA_SetElem2(vertCoord[3], x2, y + 8 * scale_y);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(colorCoord[i], 0.0, 0.0, 0.0, 1.0);
+
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	}
+
+	//====== draw regular font
+	VA_SetElem2(vertCoord[0], x, y);
+	VA_SetElem2(vertCoord[1], x + 8 * scale_x, y);
+	VA_SetElem2(vertCoord[2], x + 8 * scale_x, y + 8 * scale_y);
+	VA_SetElem2(vertCoord[3], x, y + 8 * scale_y);
+
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(colorCoord[i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+}
+
 
 
 void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char *s)
@@ -258,6 +323,71 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		if (counter == MAX_DRAW_STRING_LENGTH){     
 			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);   
 			counter = 0;                                            
+		}
+	}
+
+	if (counter)
+		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+}
+
+void Draw_StringScaledRus(int x, int y, float scale_x, float scale_y, const char* str)
+{
+	int px, py, row, col, num, counter, quadCounter, i;
+	float frow, fcol, size;
+	unsigned char* s = (unsigned char*)str;
+
+	if (gl_state.currenttextures[gl_state.currenttmu] != draw_charsRu->texnum) {
+		GL_MBind(GL_TEXTURE0, draw_charsRu->texnum);
+	}
+
+	Draw_StringShadow(x, y, scale_x, scale_y, s);
+
+	px = x;
+	py = y;
+
+	size = 0.0625;
+	counter = 0;
+
+	while (*s) {
+		num = *s++;
+
+		if ((num & 127) == 32) {        // space
+			px += 6 * scale_x;
+			continue;
+		}
+
+		if (y <= -6) {                  // totally off screen
+			px += 6 * scale_x;
+			continue;
+		}
+
+		row = num >> 4;
+		col = num & 15;
+
+		frow = row * 0.0625;
+		fcol = col * 0.0625;
+
+		quadCounter = counter << 2;
+
+		VA_SetElem2(texCoord[quadCounter + 0], fcol, frow);
+		VA_SetElem2(texCoord[quadCounter + 1], fcol + size, frow);
+		VA_SetElem2(texCoord[quadCounter + 2], fcol + size, frow + size);
+		VA_SetElem2(texCoord[quadCounter + 3], fcol, frow + size);
+
+		VA_SetElem2(vertCoord[quadCounter + 0], px, py);
+		VA_SetElem2(vertCoord[quadCounter + 1], px + 8 * scale_x, py);
+		VA_SetElem2(vertCoord[quadCounter + 2], px + 8 * scale_x, py + 8 * scale_y);
+		VA_SetElem2(vertCoord[quadCounter + 3], px, py + 8 * scale_y);
+
+		for (i = 0; i < 4; i++)
+			VA_SetElem4(colorCoord[quadCounter + i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
+
+		px += 6 * scale_x;
+		counter++;
+
+		if (counter == MAX_DRAW_STRING_LENGTH) {
+			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+			counter = 0;
 		}
 	}
 

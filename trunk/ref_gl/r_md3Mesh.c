@@ -404,30 +404,33 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 
 		for (j = 0; j < outMesh->num_verts - 1; j++)
 		{
-			int b;
-			for (b = j + 1; b < outMesh->num_verts; b++)
+			for (int b = j + 1; b < outMesh->num_verts; b++)
 			{
 				if (VectorCompareEpsilon(outVerts[j].xyz, outVerts[b].xyz, 0.001f))
 				{
-					if (DotProduct(outVerts[j].tangent, outVerts[b].tangent) > 0.0f)
+					if (DotProduct(outVerts[j].normal, outVerts[b].normal) >= 0.9848)   /// cos 10. Если угол меньше 10 градусов, то сглаживаем.
 					{
-						vec3_t  _n, _t, _b;
-						VectorAdd(outVerts[j].normal, outVerts[b].normal, _n);
-						VectorAdd(outVerts[j].tangent, outVerts[b].tangent, _t);
-						VectorAdd(outVerts[j].binormal, outVerts[b].binormal, _b);
-						VectorNormalize(_n);
-						VectorNormalize(_t);
-						VectorNormalize(_b);
-						VectorCopy(_n, outVerts[j].normal);
-						VectorCopy(_n, outVerts[b].normal);
-						VectorCopy(_t, outVerts[j].tangent);
-						VectorCopy(_t, outVerts[b].tangent);
-						VectorCopy(_b, outVerts[j].binormal);
-						VectorCopy(_b, outVerts[b].binormal);
+						VectorAdd(outVerts[j].normal, outVerts[b].normal, outVerts[j].normal);
+						VectorCopy(outVerts[j].normal, outVerts[b].normal);
+						VectorNormalize(outVerts[j].normal);
+						VectorNormalize(outVerts[b].normal);
+
+						VectorAdd(outVerts[j].tangent, outVerts[b].tangent, outVerts[j].tangent);
+						VectorCopy(outVerts[j].tangent, outVerts[b].tangent);
+
+						VectorAdd(outVerts[j].binormal, outVerts[b].binormal, outVerts[j].binormal);
+						VectorCopy(outVerts[j].binormal, outVerts[b].binormal);
 					}
 				}
 			}
 		}
+		/// normalize it
+		for (j = 0; j < outMesh->num_verts - 1; j++)
+		{
+			VectorNormalize(outVerts[j].tangent);
+			VectorNormalize(outVerts[j].binormal);
+		}
+		
 		//
 		// build triangle neighbours
 		//
