@@ -144,8 +144,8 @@ void main (void) {
 			vec3 envSky = textureLod(u_skyCube, reflCoord.xyz, roughness * 14.0).rgb;
 			float frenel = pow(1.0 - abs(dot(V, normalMap.rgb)), 2.0);
 			fragData.rgb += mix(envSky * metalness, fragData.rgb,  frenel);
-		}*/
-	
+		}
+	*/
 
       if(cd_mask == 0.0){	    
         

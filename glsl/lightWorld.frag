@@ -63,7 +63,7 @@ void main (void) {
 	vec2 texCoord = v_texCoord;
 
 	if(u_autoBump == 0){
-		texCoord = ParallaxOcclusionMap(u_Diffuse, v_texCoord.xy, V); //CalcParallaxOffset(u_Diffuse, v_texCoord, V);
+		texCoord = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
 		diffuseMap = texture(u_Diffuse,  texCoord);
 		normalMap.rgb =  normalize(texture(u_NormalMap, texCoord).rgb * 2.0 - 1.0);
 
