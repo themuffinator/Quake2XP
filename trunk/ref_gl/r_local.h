@@ -407,7 +407,7 @@ void R_Capture2dColorBuffer();
 
 worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style, int filter, vec3_t angles, vec3_t speed,
 	qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg,
-	float flareSize, char target[MAX_QPATH], int start_off, int fog, float fogDensity);
+	float flareSize, char target[MAX_QPATH], int start_off, int fog, float fogDensity, vec3_t occOrg, vec3_t occRad);
 void R_DrawParticles ();
 void R_RenderDecals (void);
 void R_LightColor (vec3_t org, vec3_t color);
@@ -465,7 +465,10 @@ void R_Paste_Light_Properties_f (void);
 void R_SaveFogScript_f(void);
 void R_RemoveFogScript_f(void);
 
-extern qboolean flareEdit;
+extern qboolean flareEdit, occEdit;
+
+void R_OccBBoxEdit_f(void);
+void R_ResetOccBBox_f(void);
 
 void R_CalcCubeMapMatrix (qboolean model);
 void DeleteShadowVertexBuffers (void);

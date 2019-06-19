@@ -40,6 +40,7 @@ qboolean R_MarkLightLeaves (worldShadowLight_t *light);
 void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine ();
 void R_AddLightInteraction(worldShadowLight_t *light);
+void R_DrawOcclusionBbox(worldShadowLight_t* light, qboolean update);
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
@@ -409,6 +410,8 @@ void R_SaveLights_f (void) {
 		fprintf (f, "\"classname\" \"light\"\n");
 		fprintf (f, "\"origin\" \"%i %i %i\"\n", (int)currentShadowLight->origin[0], (int)currentShadowLight->origin[1], (int)currentShadowLight->origin[2]);
 		fprintf (f, "\"radius\" \"%i %i %i\"\n", (int)currentShadowLight->radius[0], (int)currentShadowLight->radius[1], (int)currentShadowLight->radius[2]);
+		fprintf(f, "\"occOrigin\" \"%i %i %i\"\n", (int)currentShadowLight->occOrigin[0], (int)currentShadowLight->occOrigin[1], (int)currentShadowLight->occOrigin[2]);
+		fprintf(f, "\"occRadius\" \"%i %i %i\"\n", (int)currentShadowLight->occRadius[0], (int)currentShadowLight->occRadius[1], (int)currentShadowLight->occRadius[2]);
 		fprintf (f, "\"color\" \"%.3f %.3f %.3f\"\n", currentShadowLight->startColor[0], currentShadowLight->startColor[1], currentShadowLight->startColor[2]);
 		fprintf (f, "\"style\" \"%i\"\n", (int)currentShadowLight->style);
 		fprintf (f, "\"filter\" \"%i\"\n", (int)currentShadowLight->filter);
@@ -472,7 +475,7 @@ void R_Light_Spawn_f (void) {
 
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		R_AddNewWorldLight (spawn, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, 0, qtrue, 0, spawn, 10.0, target, 0, 0, 0.0);
+		R_AddNewWorldLight (spawn, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, 0, qtrue, 0, spawn, 10.0, target, 0, 0, 0.0, spawn, radius);
 	}
 }
 
@@ -485,7 +488,7 @@ void R_Light_SpawnToCamera_f (void) {
 		return;
 	}
 	memset (target, 0, sizeof(target));
-	R_AddNewWorldLight (player_org, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, 0, qtrue, 0, player_org, 10.0, target, 0, 0, 0.0);
+	R_AddNewWorldLight (player_org, color, radius, 0, 0, vec3_origin, vec3_origin, qtrue, 1, 0, 0, qtrue, 0, player_org, 10.0, target, 0, 0, 0.0, player_org, radius);
 }
 
 void R_Light_Clone_f (void) {
@@ -533,7 +536,7 @@ void R_Light_Clone_f (void) {
 	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, qtrue, shadow, ambient, _cone, qtrue, flare, flareOrg, flareSize, target, flag, fog, fogDensity);
+		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, qtrue, shadow, ambient, _cone, qtrue, flare, flareOrg, flareSize, target, flag, fog, fogDensity, spawn, radius);
 	}
 }
 
@@ -644,7 +647,7 @@ void R_Paste_Light_Properties_f (void) {
 void R_EditSelectedLight_f (void) {
 
 	vec3_t	color, origin, angles,
-		speed, radius, fOrg;
+			speed, radius, fOrg, occOrigin, occRadius;
 	float	_cone, fSize, fogDensity;
 	int		style, filter, shadow,
 		ambient, flare, start_off, fog;
@@ -665,6 +668,9 @@ void R_EditSelectedLight_f (void) {
 	VectorCopy (selectedShadowLight->angles, angles);
 	VectorCopy (selectedShadowLight->radius, radius);
 	VectorCopy (selectedShadowLight->flareOrigin, fOrg);
+
+	VectorCopy(selectedShadowLight->occOrigin, occOrigin);
+	VectorCopy(selectedShadowLight->occRadius, occRadius);
 
 	if (selectedShadowLight->targetname[0]) {
 		memset (target, 0, sizeof(target));
@@ -700,6 +706,21 @@ void R_EditSelectedLight_f (void) {
 		R_AddLightInteraction(selectedShadowLight);
 	}
 	else
+		if (!strcmp(Cmd_Argv(1), "occOrigin")) {
+			if (Cmd_Argc() != 5) {
+				Com_Printf("usage: editLight: %s X Y Z\nCurrent Occlusion Origin: %.4f %.4f %.4f\n", Cmd_Argv(0),
+					selectedShadowLight->occOrigin[0],
+					selectedShadowLight->occOrigin[1],
+					selectedShadowLight->occOrigin[2]);
+				return;
+			}
+			occOrigin[0] = atof(Cmd_Argv(2));
+			occOrigin[1] = atof(Cmd_Argv(3));
+			occOrigin[2] = atof(Cmd_Argv(4));
+			VectorCopy(occOrigin, selectedShadowLight->occOrigin);
+			R_DrawOcclusionBbox(selectedShadowLight, qtrue);
+		}
+		else
 	if (!strcmp (Cmd_Argv (1), "color")) {
 		if (Cmd_Argc () != 5) {
 			Com_Printf ("usage: editLight: %s Red Green Blue\nCurrent Color: %.4f %.4f %.4f\n", Cmd_Argv (0),
@@ -744,6 +765,21 @@ void R_EditSelectedLight_f (void) {
 		R_AddLightInteraction(selectedShadowLight);
 	}
 	else
+		if (!strcmp(Cmd_Argv(1), "occRadius")) {
+			if (Cmd_Argc() != 5) {
+				Com_Printf("usage: editLight: %s X Y Z\nCurrent Occlusion Radius: %.4f %.4f %.4f\n", Cmd_Argv(0),
+					selectedShadowLight->occRadius[0],
+					selectedShadowLight->occRadius[1],
+					selectedShadowLight->occRadius[2]);
+				return;
+			}
+			occRadius[0] = atof(Cmd_Argv(2));
+			occRadius[1] = atof(Cmd_Argv(3));
+			occRadius[2] = atof(Cmd_Argv(4));
+			VectorCopy(occRadius, selectedShadowLight->occRadius);
+			R_DrawOcclusionBbox(selectedShadowLight, qtrue);
+		}
+		else
 	if (!strcmp (Cmd_Argv (1), "cone")) {
 		if (Cmd_Argc () != 3) {
 			Com_Printf ("usage: editLight: %s value\nCurrent Light Cone: %.1f\n", Cmd_Argv (0),
@@ -889,11 +925,16 @@ void R_EditSelectedLight_f (void) {
 	}
 }
 
-qboolean flareEdit;
+qboolean flareEdit, occEdit;
 
 void R_FlareEdit_f (void) {
 	int mode;
 
+	if (!r_lightEditor->integer) {
+		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
+		return;
+	}
+	
 	if (Cmd_Argc () != 2) {
 		Com_Printf ("Toggle Flare Editing Mode.\nUsage: editFlare: 0 or 1\n");
 		return;
@@ -903,6 +944,25 @@ void R_FlareEdit_f (void) {
 		flareEdit = qtrue;
 	else
 		flareEdit = qfalse;
+}
+
+void R_OccBBoxEdit_f(void) {
+	int mode;
+
+	if (!r_lightEditor->integer) {
+		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
+		return;
+	}
+
+	if (Cmd_Argc() != 2) {
+		Com_Printf("Toggle occlusin bBoxes Editing Mode.\nUsage: occEdit: 0 or 1\n");
+		return;
+	}
+	mode = atoi(Cmd_Argv(1));
+	if (mode > 0)
+		occEdit = qtrue;
+	else
+		occEdit = qfalse;
 }
 
 void R_ResetFlarePos_f (void) {
@@ -921,9 +981,26 @@ void R_ResetFlarePos_f (void) {
 
 }
 
-void R_MoveLightToRight_f (void) {
+void R_ResetOccBBox_f(void) {
 
-	vec3_t	origin, origin2;
+	if (!r_lightEditor->integer) {
+		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
+		return;
+	}
+
+	if (!selectedShadowLight) {
+		Com_Printf("No selected light.\n");
+		return;
+	}
+
+	VectorCopy(selectedShadowLight->origin, selectedShadowLight->occOrigin);
+	VectorCopy(selectedShadowLight->radius, selectedShadowLight->occRadius);
+
+}
+
+
+void R_MoveLightToRight_f (void) {
+	
 	float	offset;
 
 	if (!r_lightEditor->integer) {
@@ -944,34 +1021,40 @@ void R_MoveLightToRight_f (void) {
 	offset = atof (Cmd_Argv (1));
 
 	if (!flareEdit) {
-		VectorCopy(selectedShadowLight->origin, origin);
+		
+		if (occEdit) {
+			vec3_t occOrigin;
+			VectorCopy(selectedShadowLight->occOrigin, occOrigin);
+			occOrigin[0] += offset;
+			
+			VectorCopy(occOrigin, selectedShadowLight->occOrigin);
+			R_DrawOcclusionBbox(selectedShadowLight, qtrue);
+		}
+		else {
+			vec3_t lightOrg;
+			VectorCopy(selectedShadowLight->origin, lightOrg);
+			lightOrg[0] += offset;
 
-		if (r_cameraSpaceLightMove->integer)
-			VectorMA(origin, offset, v_right, origin);
-		else
-			origin[0] += offset;
-
-		VectorCopy (origin, selectedShadowLight->origin);
-		UpdateLightBounds (selectedShadowLight);
-		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
+			VectorCopy(lightOrg, selectedShadowLight->origin);
+			UpdateLightBounds(selectedShadowLight);
+			R_MarkLightLeaves(selectedShadowLight);
+			R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+			R_AddLightInteraction(selectedShadowLight);
+		}
 	}
 
-// move flare
-	VectorCopy(selectedShadowLight->flareOrigin, origin2);
-	if (r_cameraSpaceLightMove->integer)
-		VectorMA(origin2, offset, v_right, origin2);
-	else
-		origin2[0] += offset;
-
-	VectorCopy(origin2, selectedShadowLight->flareOrigin);
+	// move flare
+	if (flareEdit) {
+		vec3_t flareOrg;
+		VectorCopy(selectedShadowLight->flareOrigin, flareOrg);
+		flareOrg[0] += offset;
+		VectorCopy(flareOrg, selectedShadowLight->flareOrigin);
+	}
 }
 
 void R_MoveLightForward_f (void) {
 
-	vec3_t origin, origin2;
-	float  offset, fix;
+	float  offset;
 
 	if (!r_lightEditor->integer) {
 		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
@@ -991,38 +1074,39 @@ void R_MoveLightForward_f (void) {
 	offset = atof (Cmd_Argv (1));
 
 	if (!flareEdit) {
-		VectorCopy(selectedShadowLight->origin, origin);
 
-		if (r_cameraSpaceLightMove->integer) {
-			fix = origin[2];
-			VectorMA(origin, offset, v_forward, origin);
-			origin[2] = fix;
+		if (occEdit) {
+			vec3_t occOrigin;
+			VectorCopy(selectedShadowLight->occOrigin, occOrigin);
+			occOrigin[1] += offset;
+
+			VectorCopy(occOrigin, selectedShadowLight->occOrigin);
+			R_DrawOcclusionBbox(selectedShadowLight, qtrue);
 		}
-		else
-			origin[1] += offset;
+		else {
+			vec3_t lightOrg;
+			VectorCopy(selectedShadowLight->origin, lightOrg);
+			lightOrg[1] += offset;
 
-		VectorCopy (origin, selectedShadowLight->origin);
-		UpdateLightBounds (selectedShadowLight);
-		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
+			VectorCopy(lightOrg, selectedShadowLight->origin);
+			UpdateLightBounds(selectedShadowLight);
+			R_MarkLightLeaves(selectedShadowLight);
+			R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+			R_AddLightInteraction(selectedShadowLight);
+		}
 	}
 
-// move flare	
-	VectorCopy(selectedShadowLight->flareOrigin, origin2);
-	if (r_cameraSpaceLightMove->integer) {
-		fix = origin2[2];
-		VectorMA(origin2, offset, v_forward, origin2);
-		origin2[2] = fix;
+	// move flare
+	if (flareEdit) {
+		vec3_t flareOrg;
+		VectorCopy(selectedShadowLight->flareOrigin, flareOrg);
+		flareOrg[1] += offset;
+		VectorCopy(flareOrg, selectedShadowLight->flareOrigin);
 	}
-	else
-		origin2[1] += offset;
-	VectorCopy(origin2, selectedShadowLight->flareOrigin);
 }
 
 void R_MoveLightUpDown_f (void) {
 
-	vec3_t	origin, origin2;
 	float	offset;
 
 	if (!r_lightEditor->integer) {
@@ -1041,24 +1125,38 @@ void R_MoveLightUpDown_f (void) {
 		return;
 	}
 
+	offset = atof(Cmd_Argv(1));
+
 	if (!flareEdit) {
-		VectorCopy(selectedShadowLight->origin, origin);
 
-		offset = atof(Cmd_Argv(1));
-		origin[2] += offset;
+		if (occEdit) {
+			vec3_t occOrigin;
+			VectorCopy(selectedShadowLight->occOrigin, occOrigin);
+			occOrigin[2] += offset;
 
-		VectorCopy (origin, selectedShadowLight->origin);
-		UpdateLightBounds (selectedShadowLight);
-		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
+			VectorCopy(occOrigin, selectedShadowLight->occOrigin);
+			R_DrawOcclusionBbox(selectedShadowLight, qtrue);
+		}
+		else {
+			vec3_t lightOrg;
+			VectorCopy(selectedShadowLight->origin, lightOrg);
+			lightOrg[2] += offset;
+
+			VectorCopy(lightOrg, selectedShadowLight->origin);
+			UpdateLightBounds(selectedShadowLight);
+			R_MarkLightLeaves(selectedShadowLight);
+			R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+			R_AddLightInteraction(selectedShadowLight);
+		}
 	}
 
-// move flare
-	VectorCopy(selectedShadowLight->flareOrigin, origin2);
-	offset = atof(Cmd_Argv(1));
-	origin2[2] += offset;
-	VectorCopy(origin2, selectedShadowLight->flareOrigin);
+	// move flare
+	if (flareEdit) {
+		vec3_t flareOrg;
+		VectorCopy(selectedShadowLight->flareOrigin, flareOrg);
+		flareOrg[2] += offset;
+		VectorCopy(flareOrg, selectedShadowLight->flareOrigin);
+	}
 }
 
 void R_ChangeLightRadius_f (void) {
@@ -1087,7 +1185,11 @@ void R_ChangeLightRadius_f (void) {
 		selectedShadowLight->flareSize = fRad;
 	}
 	else {
-		VectorCopy (selectedShadowLight->radius, rad);
+		
+		if (occEdit)
+			VectorCopy(selectedShadowLight->occRadius, rad);
+		else
+			VectorCopy(selectedShadowLight->radius, rad);
 
 		offset = atof (Cmd_Argv (1));
 
@@ -1104,11 +1206,17 @@ void R_ChangeLightRadius_f (void) {
 		if (rad[2] < 10)
 			rad[2] = 10;
 
-		VectorCopy (rad, selectedShadowLight->radius);
-		UpdateLightBounds (selectedShadowLight);
-		R_MarkLightLeaves (selectedShadowLight);
-		R_DrawBspModelVolumes (qtrue, selectedShadowLight);
-		R_AddLightInteraction(selectedShadowLight);
+		if (occEdit) {
+			VectorCopy(rad, selectedShadowLight->occRadius);
+			R_DrawOcclusionBbox(selectedShadowLight, qtrue);
+		}
+		else {
+			VectorCopy(rad, selectedShadowLight->radius);
+			UpdateLightBounds(selectedShadowLight);
+			R_MarkLightLeaves(selectedShadowLight);
+			R_DrawBspModelVolumes(qtrue, selectedShadowLight);
+			R_AddLightInteraction(selectedShadowLight);
+		}
 	}
 
 }
@@ -1163,6 +1271,10 @@ void R_Light_Delete_f (void) {
 		Com_Printf ("No selected light.\n");
 		return;
 	}
+	qglDeleteBuffers(1, &selectedShadowLight->vboId);
+	qglDeleteBuffers(1, &selectedShadowLight->iboId);
+	qglDeleteBuffers(1, &selectedShadowLight->vboBoxId);
+	glDeleteQueries(1, &selectedShadowLight->occId);
 
 	DeleteCurrentLight (selectedShadowLight);
 	selectedShadowLight = NULL;
@@ -1198,6 +1310,40 @@ char buff12[128];
 char buff13[128];
 char buff14[128];
 char buff15[128];
+char buff16[128];
+char buff17[128];
+
+void R_DrawCube(vec3_t v[8], vec3_t org, int size) {
+
+	VectorSet(v[0], org[0] - size, org[1] - size, org[2] + size);
+	VectorSet(v[1], org[0] + size, org[1] - size, org[2] + size);
+	VectorSet(v[2], org[0] + size, org[1] + size, org[2] + size);
+	VectorSet(v[3], org[0] - size, org[1] + size, org[2] + size);
+
+	VectorSet(v[4], org[0] - size, org[1] - size, org[2] - size);
+	VectorSet(v[5], org[0] + size, org[1] - size, org[2] - size);
+	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
+	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
+
+	qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
+
+}
+
+void R_DrawLightBox(vec3_t v[8], vec3_t org, vec3_t radius) {
+
+	VectorSet(v[0], org[0] - radius[0], org[1] - radius[1], org[2] + radius[2]);
+	VectorSet(v[1], org[0] + radius[0], org[1] - radius[1], org[2] + radius[2]);
+	VectorSet(v[2], org[0] + radius[0], org[1] + radius[1], org[2] + radius[2]);
+	VectorSet(v[3], org[0] - radius[0], org[1] + radius[1], org[2] + radius[2]);
+
+	VectorSet(v[4], org[0] - radius[0], org[1] - radius[1], org[2] - radius[2]);
+	VectorSet(v[5], org[0] + radius[0], org[1] - radius[1], org[2] - radius[2]);
+	VectorSet(v[6], org[0] + radius[0], org[1] + radius[1], org[2] - radius[2]);
+	VectorSet(v[7], org[0] - radius[0], org[1] + radius[1], org[2] - radius[2]);
+
+	qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
+
+}
 
 void UpdateLightEditor(void) {
 
@@ -1255,18 +1401,8 @@ void UpdateLightEditor(void) {
 
 	if (currentShadowLight != selectedShadowLight) {
 
-		VectorSet(v[0], currentShadowLight->origin[0] - 5, currentShadowLight->origin[1] - 5, currentShadowLight->origin[2] + 5);
-		VectorSet(v[1], currentShadowLight->origin[0] + 5, currentShadowLight->origin[1] - 5, currentShadowLight->origin[2] + 5);
-		VectorSet(v[2], currentShadowLight->origin[0] + 5, currentShadowLight->origin[1] + 5, currentShadowLight->origin[2] + 5);
-		VectorSet(v[3], currentShadowLight->origin[0] - 5, currentShadowLight->origin[1] + 5, currentShadowLight->origin[2] + 5);
-
-		VectorSet(v[4], currentShadowLight->origin[0] - 5, currentShadowLight->origin[1] - 5, currentShadowLight->origin[2] - 5);
-		VectorSet(v[5], currentShadowLight->origin[0] + 5, currentShadowLight->origin[1] - 5, currentShadowLight->origin[2] - 5);
-		VectorSet(v[6], currentShadowLight->origin[0] + 5, currentShadowLight->origin[1] + 5, currentShadowLight->origin[2] - 5);
-		VectorSet(v[7], currentShadowLight->origin[0] - 5, currentShadowLight->origin[1] + 5, currentShadowLight->origin[2] - 5);
-
 		qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-		qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
+		R_DrawCube(v, currentShadowLight->origin, 5);
 	}
 
 	if (selectedShadowLight) {
@@ -1276,8 +1412,6 @@ void UpdateLightEditor(void) {
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		GL_Enable(GL_LINE_SMOOTH);
 		qglLineWidth(3.0);
-		VectorCopy(selectedShadowLight->origin, tmpOrg);
-		VectorCopy(selectedShadowLight->radius, tmpRad);
 
 		sprintf(buff0, "Origin: %i %i %i", (int)selectedShadowLight->origin[0],
 			(int)selectedShadowLight->origin[1],
@@ -1307,35 +1441,40 @@ void UpdateLightEditor(void) {
 		sprintf(buff14, "Fog Light: %i", selectedShadowLight->isFog);
 		sprintf(buff15, "Fog Density: %5f", selectedShadowLight->fogDensity);
 
-		VectorSet(v[0], tmpOrg[0] - tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] + tmpRad[2]);
-		VectorSet(v[1], tmpOrg[0] + tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] + tmpRad[2]);
-		VectorSet(v[2], tmpOrg[0] + tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] + tmpRad[2]);
-		VectorSet(v[3], tmpOrg[0] - tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] + tmpRad[2]);
+		VectorCopy(selectedShadowLight->origin, tmpOrg);
+		VectorCopy(selectedShadowLight->radius, tmpRad);
+		R_DrawLightBox(v, tmpOrg, tmpRad);
 
-		VectorSet(v[4], tmpOrg[0] - tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] - tmpRad[2]);
-		VectorSet(v[5], tmpOrg[0] + tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] - tmpRad[2]);
-		VectorSet(v[6], tmpOrg[0] + tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] - tmpRad[2]);
-		VectorSet(v[7], tmpOrg[0] - tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] - tmpRad[2]);
+		if (occEdit) {
 
-		qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
+			sprintf(buff16, "Occ BBox Origin: %i %i %i",	(int)selectedShadowLight->occOrigin[0],
+															(int)selectedShadowLight->occOrigin[1],
+															(int)selectedShadowLight->occOrigin[2]);
+			sprintf(buff17, "Occ BBox Radius: %i %i %i",	(int)selectedShadowLight->occRadius[0],
+															(int)selectedShadowLight->occRadius[1],
+															(int)selectedShadowLight->occRadius[2]);
+			qglUniform4f(U_COLOR, 0.0, 1.0, 0.0, 1.0);
+			qglLineWidth(6.0);
+			VectorCopy(selectedShadowLight->occOrigin, tmpOrg);
+			VectorCopy(selectedShadowLight->occRadius, tmpRad);
+			R_DrawLightBox(v, tmpOrg, tmpRad);
+		}
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		GL_Disable(GL_LINE_SMOOTH);
 
-		if (!flareEdit || !selectedShadowLight->flare) { // skip filled box in flare editing mode
+		if (!flareEdit || !selectedShadowLight->flare || !occEdit) { // skip filled box in flare or occ bbox editing mode
 
-			// draw small light box
-			VectorSet(v[0], tmpOrg[0] - 5, tmpOrg[1] - 5, tmpOrg[2] + 5);
-			VectorSet(v[1], tmpOrg[0] + 5, tmpOrg[1] - 5, tmpOrg[2] + 5);
-			VectorSet(v[2], tmpOrg[0] + 5, tmpOrg[1] + 5, tmpOrg[2] + 5);
-			VectorSet(v[3], tmpOrg[0] - 5, tmpOrg[1] + 5, tmpOrg[2] + 5);
+			VectorCopy(selectedShadowLight->origin, tmpOrg);
+			qglUniform4f(U_COLOR, selectedShadowLight->color[0], selectedShadowLight->color[1], selectedShadowLight->color[2], 1.0);
+			R_DrawCube(v, tmpOrg, 3);
+		}
 
-			VectorSet(v[4], tmpOrg[0] - 5, tmpOrg[1] - 5, tmpOrg[2] - 5);
-			VectorSet(v[5], tmpOrg[0] + 5, tmpOrg[1] - 5, tmpOrg[2] - 5);
-			VectorSet(v[6], tmpOrg[0] + 5, tmpOrg[1] + 5, tmpOrg[2] - 5);
-			VectorSet(v[7], tmpOrg[0] - 5, tmpOrg[1] + 5, tmpOrg[2] - 5);
+		if (occEdit) {
 
-			qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
+			VectorCopy(selectedShadowLight->occOrigin, tmpOrg);
+			qglUniform4f(U_COLOR, 0.0, 1.0, 0.0, 1.0);
+			R_DrawCube(v, tmpOrg, 1);
 		}
 
 	}
@@ -1442,13 +1581,17 @@ void MakeFrustum4Light (worldShadowLight_t *light, qboolean ingame) {
 	light->frust[3].dist = DotProduct (light->frust[3].normal, v0);
 }
 
-void R_CreateOcclusionBbox(worldShadowLight_t *light) {
+void R_DrawOcclusionBbox(worldShadowLight_t *light, qboolean update) {
 
 	vec3_t	v[8], tmpOrg, tmpRad;
 
-	VectorCopy(light->origin, tmpOrg);
-	VectorCopy(light->radius, tmpRad);
-	VectorScale(tmpRad, 0.75, tmpRad);
+	if (light->isNoWorldModel)
+		return;
+	if (!light->isStatic)
+		return;
+
+	VectorCopy(light->occOrigin, tmpOrg);
+	VectorCopy(light->occRadius, tmpRad);
 
 	VectorSet(v[0], tmpOrg[0] - tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] + tmpRad[2]);
 	VectorSet(v[1], tmpOrg[0] + tmpRad[0], tmpOrg[1] - tmpRad[1], tmpOrg[2] + tmpRad[2]);
@@ -1460,20 +1603,24 @@ void R_CreateOcclusionBbox(worldShadowLight_t *light) {
 	VectorSet(v[6], tmpOrg[0] + tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] - tmpRad[2]);
 	VectorSet(v[7], tmpOrg[0] - tmpRad[0], tmpOrg[1] + tmpRad[1], tmpOrg[2] - tmpRad[2]);
 
-	qglGenBuffers(1, &light->vboBoxId);
-	qglBindBuffer(GL_ARRAY_BUFFER, light->vboBoxId);
-	qglBufferData(GL_ARRAY_BUFFER, 8 * sizeof(vec3_t), v, GL_STATIC_DRAW);
+	if (!update) {
+		qglGenBuffers(1, &light->vboBoxId);
+		qglBindBuffer(GL_ARRAY_BUFFER, light->vboBoxId);
+		qglBufferData(GL_ARRAY_BUFFER, 8 * sizeof(vec3_t), v, GL_STATIC_DRAW);
+		glGenQueries(1, &light->occId);
+	}
+	else {
+		qglBindBuffer(GL_ARRAY_BUFFER, light->vboBoxId);
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, 8 * sizeof(vec3_t), v);
+	}
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glGenQueries(1, &light->occId);
-
 }
 
 worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style,
 	int filter, vec3_t angles, vec3_t speed, qboolean isStatic,
 	int isShadow, int isAmbient, float cone, qboolean ingame,
 	int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH],
-	int flags, int fog, float fogDensity) {
+	int flags, int fog, float fogDensity, vec3_t occOrg, vec3_t occRad) {
 
 	worldShadowLight_t	*light;
 	int					i;
@@ -1496,6 +1643,10 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	VectorClear (light->speed);
 	VectorClear (light->radius);
 	VectorClear (light->flareOrigin);
+	
+	VectorClear	(light->occOrigin);
+	VectorClear	(light->occRadius);
+
 	memset (light->targetname, 0, sizeof(light->targetname));
 	light->start_off = 0;
 
@@ -1508,6 +1659,10 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	VectorCopy (speed, light->speed);
 	VectorCopy (radius, light->radius);
 	VectorCopy (flareOrg, light->flareOrigin);
+
+	VectorCopy(occOrg, light->occOrigin);
+	VectorCopy(occRad, light->occRadius);
+
 
 	if (light->radius[0] == light->radius[1] && light->radius[0] == light->radius[2])
 		light->spherical = qtrue;
@@ -1635,7 +1790,14 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 
 	Mat4_Multiply(mvMatrix, tmpMatrix, light->attenMatrix);
 
-	R_CreateOcclusionBbox(light);
+	// occ query data
+	if (ingame) {
+		VectorCopy(light->origin, light->occOrigin);
+		VectorScale(light->radius, 0.75, light->occRadius);
+	
+	}
+
+	R_DrawOcclusionBbox(light, qfalse);
 
 	r_numWorlsShadowLights++;
 	return light;
@@ -1709,7 +1871,10 @@ void Load_BspLights () {
 
 		if (addLight && style > 0) {
 			VectorSet (radius, radius[0], radius[0], radius[0]);
-			R_AddNewWorldLight (origin, color, radius, style, 0, vec3_origin, vec3_origin, qtrue, 1, 0, cone, qfalse, 0, origin, 10.0, target, flag, 0, 0.0);
+			vec3_t occRad;
+			VectorScale(radius, 0.75, occRad);
+
+			R_AddNewWorldLight (origin, color, radius, style, 0, vec3_origin, vec3_origin, qtrue, 1, 0, cone, qfalse, 0, origin, 10.0, target, flag, 0, 0.0, origin, occRad);
 			numlights++;
 		}
 	}
@@ -1720,7 +1885,7 @@ void Load_BspLights () {
 void Load_LightFile () {
 
 	int		style, numLights = 0, filter, shadow, ambient, flare, flag, fog;
-	vec3_t	angles, speed, color, origin, lOrigin, fOrg;
+	vec3_t	angles, speed, color, origin, lOrigin, fOrg, occRad, occOrg;
 	char	*c, *token, key[256], *value, target[MAX_QPATH];
 	float	radius[3], cone, fSize, fogDensity;
 	char	name[MAX_QPATH], path[MAX_QPATH];
@@ -1767,6 +1932,8 @@ void Load_LightFile () {
 		VectorClear (lOrigin);
 		VectorClear (color);
 		VectorClear (fOrg);
+		VectorClear	(occRad);
+		VectorClear	(occOrg);
 
 		while (1) {
 			token = COM_Parse (&c);
@@ -1779,8 +1946,12 @@ void Load_LightFile () {
 
 			if (!Q_stricmp (key, "radius"))
 				sscanf (value, "%f %f %f", &radius[0], &radius[1], &radius[2]);
+			else if (!Q_stricmp(key, "occRadius"))
+					sscanf(value, "%f %f %f", &occRad[0], &occRad[1], &occRad[2]);
 			else if (!Q_stricmp (key, "origin"))
 				sscanf (value, "%f %f %f", &origin[0], &origin[1], &origin[2]);
+			else if (!Q_stricmp(key, "occOrigin"))
+				sscanf(value, "%f %f %f", &occOrg[0], &occOrg[1], &occOrg[2]);
 			else if (!Q_stricmp (key, "color"))
 				sscanf (value, "%f %f %f", &color[0], &color[1], &color[2]);
 			else if (!Q_stricmp (key, "style"))
@@ -1813,8 +1984,13 @@ void Load_LightFile () {
 				fogDensity = atof (value);
 
 		}
+		vec3_t nullVec = {0.0, 0.0, 0.0};
+		if (VectorCompare(occOrg, nullVec))
+			VectorCopy(origin, occOrg);
+		if (VectorCompare(occRad, nullVec))
+			VectorScale(radius, 0.75, occRad);
 
-		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, qtrue, shadow, ambient, cone, qfalse, flare, fOrg, fSize, target, flag, fog, fogDensity);
+		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, qtrue, shadow, ambient, cone, qfalse, flare, fOrg, fSize, target, flag, fog, fogDensity, occOrg, occRad);
 		numLights++;
 	}
 	Com_Printf (""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights\n", numLights);
@@ -2469,18 +2645,7 @@ void R_DrawLightBounds(void) {
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, v);
 
 	VectorCopy(currentShadowLight->origin, tmpOrg);
-
-	VectorSet(v[0], tmpOrg[0] - 5, tmpOrg[1] - 5, tmpOrg[2] + 5);
-	VectorSet(v[1], tmpOrg[0] + 5, tmpOrg[1] - 5, tmpOrg[2] + 5);
-	VectorSet(v[2], tmpOrg[0] + 5, tmpOrg[1] + 5, tmpOrg[2] + 5);
-	VectorSet(v[3], tmpOrg[0] - 5, tmpOrg[1] + 5, tmpOrg[2] + 5);
-
-	VectorSet(v[4], tmpOrg[0] - 5, tmpOrg[1] - 5, tmpOrg[2] - 5);
-	VectorSet(v[5], tmpOrg[0] + 5, tmpOrg[1] - 5, tmpOrg[2] - 5);
-	VectorSet(v[6], tmpOrg[0] + 5, tmpOrg[1] + 5, tmpOrg[2] - 5);
-	VectorSet(v[7], tmpOrg[0] - 5, tmpOrg[1] + 5, tmpOrg[2] - 5);
-
-	qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
+	R_DrawCube(v, tmpOrg, 5);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -2640,9 +2805,6 @@ qboolean R_GetLightOcclusionResult() {
 	GLuint	result;
 
 	if (!r_useLightOcclusions->integer)
-		return qtrue;
-	
-	if (r_lightEditor->integer)
 		return qtrue;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)

@@ -219,8 +219,7 @@
       <EmitOptimizationDiagnosticsToFile>false</EmitOptimizationDiagnosticsToFile>
       <AnalyzeIncludeFiles>false</AnalyzeIncludeFiles>
       <GenerateAlternateCodePaths>AVX</GenerateAlternateCodePaths>
-      <DisableSpecificWarnings>
-      </DisableSpecificWarnings>
+      <DisableSpecificWarnings>6031</DisableSpecificWarnings>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
@@ -768,7 +767,6 @@
     <None Include="..\baseq2\glsl\generic.frag" />
     <None Include="..\baseq2\glsl\generic.vert" />
     <None Include="..\baseq2\glsl\include\depth.inc" />
-    <None Include="..\baseq2\glsl\include\Fxaa3_11.inc" />
     <None Include="..\baseq2\glsl\include\lighting.inc" />
     <None Include="..\baseq2\glsl\include\parallax.inc" />
     <None Include="..\baseq2\glsl\lightWorld.frag" />

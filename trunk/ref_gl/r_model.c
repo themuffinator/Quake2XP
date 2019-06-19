@@ -198,7 +198,7 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 	memset(target, 0, sizeof(target));
 
 	R_AddNewWorldLight(lightOffset, r_lightSpawnSurf[r_numAutoLights].color, radius, 0, 0, vec3_origin,
-		vec3_origin, qtrue, 1, 0, 0, qfalse, 1, origin, 10.0, target, 0, 0, 0.0);
+		vec3_origin, qtrue, 1, 0, 0, qfalse, 1, origin, 10.0, target, 0, 0, 0.0, lightOffset, radius);
 
 	r_numAutoLights++;
 	free(buffer);
@@ -2556,6 +2556,7 @@ void R_BeginRegistration(char *model) {
 	r_viewcluster = -1;
 	numPreCachedLights = 0;
 	flareEdit = (qboolean)qfalse;
+	occEdit = (qboolean)qfalse;
 }
 
 /*

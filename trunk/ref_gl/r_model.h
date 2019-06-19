@@ -86,7 +86,8 @@ typedef struct worldShadowLight_s {
 	GLuint		vboBoxId;
 	GLuint		vaoBoxId;
 
-	int		occId;
+	int			occId;
+	vec3_t		occOrigin, occRadius;
 
 	struct worldShadowLight_s *next;
 	struct worldShadowLight_s *s_next;

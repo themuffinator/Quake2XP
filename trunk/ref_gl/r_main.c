@@ -1069,6 +1069,8 @@ extern char buff12[128];
 extern char buff13[128];
 extern char buff14[128];
 extern char buff15[128];
+extern char buff16[128];
+extern char buff17[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
@@ -1118,6 +1120,9 @@ void R_RenderFrame(refdef_t * fd) {
 		Draw_StringScaled(0, vid.height*0.5+265, 2, 2, buff11);
 		Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14);
 		Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15);
+
+		Draw_StringScaled(0, vid.height * 0.5 + 325, 2, 2, buff16);
+		Draw_StringScaled(0, vid.height * 0.5 + 345, 2, 2, buff17);
 		RE_SetColor(colorWhite);
 		Set_FontShader(qfalse);
 	}
@@ -1602,6 +1607,8 @@ bind v			"paste"
 	Cmd_AddCommand("resetFlarePos",				R_ResetFlarePos_f);
 	Cmd_AddCommand("copy",						R_Copy_Light_Properties_f);
 	Cmd_AddCommand("paste",						R_Paste_Light_Properties_f);
+	Cmd_AddCommand("occEdit",					R_OccBBoxEdit_f);
+	Cmd_AddCommand("occReset",					R_ResetOccBBox_f);
 }
 
 /*
@@ -2025,6 +2032,7 @@ int R_Init(void *hinstance, void *hWnd)
 	R_LoadFont();
 
 	flareEdit = (qboolean)qfalse;
+	occEdit = (qboolean)qfalse;
 	return 0;
 }
 
@@ -2067,6 +2075,9 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("moveLight_right");
 	Cmd_RemoveCommand("moveLight_forward");
 	Cmd_RemoveCommand("moveLight_z");
+
+	Cmd_RemoveCommand("occEdit");
+	Cmd_RemoveCommand("occReset");
 
 	Cmd_RemoveCommand("glsl");
 	Cmd_RemoveCommand("glslInfo");

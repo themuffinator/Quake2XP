@@ -19,7 +19,7 @@ static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
 int r_numPrograms;
 static glslProgram_t	r_nullProgram;
 
-#ifdef GLSLS_330 // work with out FXAA glsl 400 required for textureGather and textureGatherOffset.
+#ifdef GLSLS_330
 static const char *glslExt =
 "#version 330 core\n"
 "#extension GL_ARB_explicit_uniform_location : enable\n"

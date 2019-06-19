@@ -132,7 +132,7 @@ void EFX_GetRoomSize() {
 	vec3_t forward, right, up;
 	vec3_t end, tmp;
 	trace_t trace;
-	float sum, frontL, backL, leftL, rightL, upL, downL;
+	float sum = 0.0, frontL=0.0, backL = 0.0, leftL = 0.0, rightL = 0.0, upL = 0.0, downL = 0.0;
 
 	if (CL_PMpointcontents(cl.refdef.vieworg) & CONTENTS_SOLID)
 		return;
