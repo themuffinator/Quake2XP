@@ -425,6 +425,7 @@
     <ClCompile Include="ref_gl\r_program.c" />
     <ClCompile Include="ref_gl\r_qgl.c" />
     <ClCompile Include="ref_gl\r_shadows.c" />
+    <ClCompile Include="ref_gl\r_sky.c" />
     <ClCompile Include="ref_gl\r_vertexCache.c" />
     <ClCompile Include="ref_gl\r_zprepass.c" />
     <ClCompile Include="server\sv_ccmds.c">
@@ -618,9 +619,9 @@
     <ClCompile Include="ref_gl\r_model.c" />
     <ClCompile Include="ref_gl\r_particles.c" />
     <ClCompile Include="ref_gl\r_postprocess.c" />
-    <ClCompile Include="ref_gl\r_misc.c" />
+    <ClCompile Include="ref_gl\r_loadImages.c" />
     <ClCompile Include="ref_gl\r_rsurf.c" />
-    <ClCompile Include="ref_gl\r_warp.c" />
+    <ClCompile Include="ref_gl\r_water.c" />
     <ClCompile Include="ref_gl\r_math.c" />
     <ClCompile Include="client\cg_cin.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>

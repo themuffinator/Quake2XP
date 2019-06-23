@@ -191,9 +191,6 @@
     <ClCompile Include="ref_gl\r_rsurf.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_warp.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_program.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -204,9 +201,6 @@
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="ref_gl\r_math.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="ref_gl\r_misc.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="client\snd_openal.c">
@@ -325,6 +319,15 @@
     </ClCompile>
     <ClCompile Include="win32\win_sysinfo.c">
       <Filter>Source Files\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_loadImages.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_sky.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_water.c">
+      <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

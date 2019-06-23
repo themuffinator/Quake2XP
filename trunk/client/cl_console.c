@@ -39,6 +39,9 @@ color4ub_t	ColorTable[8] = {
 	{ 255, 255, 255, 255 },
 };
 
+void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str);
+void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned char num);
+
 
 color4ub_t		colorDefault;
 

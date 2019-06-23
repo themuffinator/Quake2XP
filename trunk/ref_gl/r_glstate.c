@@ -461,3 +461,142 @@ void GL_Disable(GLenum cap) {
 
 	qglDisable(cap);
 }
+
+/*
+** GL_Strings_f
+*/
+void GL_Strings_f(void) {
+	int			profile, i;
+	uint		n, major, minor;
+	const char* profileName[] = { "core", "compatibility" };
+	char* string = "";
+
+	Com_Printf("\n");
+	Com_Printf("GL_VENDOR:    "S_COLOR_GREEN"%s\n", gl_config.vendor_string);
+	Com_Printf("GL_RENDERER:  "S_COLOR_GREEN"%s\n", gl_config.renderer_string);
+	Com_Printf("GL_VERSION:   "S_COLOR_GREEN"%s\n", gl_config.version_string);
+
+#ifdef _WIN32
+
+	string = (char*)glw_state.wglExtsString;
+	qglGetIntegerv(WGL_CONTEXT_PROFILE_MASK_ARB, &profile);
+	qglGetIntegerv(GL_MAJOR_VERSION, &major);
+	qglGetIntegerv(GL_MINOR_VERSION, &minor);
+
+	Com_Printf("Using OpenGL: "S_COLOR_GREEN"%i.%i"S_COLOR_WHITE" %s profile context\n\n", major, minor, profileName[profile == WGL_CONTEXT_CORE_PROFILE_BIT_ARB ? 0 : 1]);
+	Com_Printf("WGL_EXTENSIONS:\n"S_COLOR_YELLOW"%s\n\n", string);
+#endif
+
+	qglGetIntegerv(GL_NUM_EXTENSIONS, &n);
+	Com_Printf("GL_EXTENSIONS:\n");
+	for (i = 0; i < n; i++) {
+		gl_config.extensions3_string = (const char*)glGetStringi(GL_EXTENSIONS, i);
+		Com_Printf(S_COLOR_YELLOW"%s\n", gl_config.extensions3_string);
+	}
+}
+
+
+/*
+** GL_SetDefaultState
+*/
+
+void GL_SetDefaultState(void) {
+
+	// font color
+	colorDefault[0] = 255;
+	colorDefault[1] = 255;
+	colorDefault[2] = 255;
+	colorDefault[3] = 255;
+
+	qglDisable(GL_POLYGON_OFFSET_FILL);
+	qglPolygonOffset(0.f, 1.f);
+	gl_state.polygonOffsetFill = qfalse;
+	gl_state.polygonOffsetFactor = 0.f;
+	gl_state.polygonOffsetUnits = 1.f;
+
+	qglDepthRange(0.f, 1.f);
+	gl_state.depthRange[0] = 0.f;
+	gl_state.depthRange[1] = 1.f;
+
+	// scissor
+	qglDisable(GL_SCISSOR_TEST);
+	qglScissor(0, 0, vid.width, vid.height);
+	gl_state.scissorTest = qfalse;
+	gl_state.scissor[0] = 0;
+	gl_state.scissor[1] = 0;
+	gl_state.scissor[2] = vid.width;
+	gl_state.scissor[3] = vid.height;
+
+	// color mask
+	qglColorMask(1, 1, 1, 1);
+	gl_state.colorMask[0] = GL_TRUE;
+	gl_state.colorMask[1] = GL_TRUE;
+	gl_state.colorMask[2] = GL_TRUE;
+	gl_state.colorMask[3] = GL_TRUE;
+
+	// depth test
+	qglDisable(GL_DEPTH_TEST);
+	qglDepthFunc(GL_LEQUAL);
+	qglDepthMask(1);
+	gl_state.depthTest = qfalse;
+	gl_state.depthFunc = GL_LEQUAL;
+	gl_state.depthMask = qtrue;
+
+	// stencil test
+	qglDisable(GL_STENCIL_TEST);
+	qglStencilMask(255);
+	qglStencilFunc(GL_ALWAYS, 128, 255);
+	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	qglStencilOpSeparate(GL_FRONT_AND_BACK, GL_KEEP, GL_KEEP, GL_KEEP);
+	gl_state.stencilTest = qfalse;
+	gl_state.stencilMask = 255;
+	gl_state.stencilFunc = GL_ALWAYS;
+	gl_state.stencilRef = 128;
+	gl_state.stencilRefMask = 255;
+	gl_state.stencilFace = GL_FRONT_AND_BACK;
+	gl_state.stencilFail = GL_KEEP;
+	gl_state.stencilZFail = GL_KEEP;
+	gl_state.stencilZPass = GL_KEEP;
+
+	// blending
+	qglDisable(GL_BLEND);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	gl_state.blend = qfalse;
+	gl_state.blendSrc = GL_SRC_ALPHA;
+	gl_state.blendDst = GL_ONE_MINUS_SRC_ALPHA;
+
+	// face culling
+	qglDisable(GL_CULL_FACE);
+	qglCullFace(GL_BACK);
+	qglFrontFace(GL_CW);
+	gl_state.cullFace = qfalse;
+	gl_state.cullMode = GL_BACK;
+	gl_state.frontFace = GL_CW;
+
+	// depth bounds test
+	if (gl_state.depthBoundsTest) {
+		gl_state.glDepthBoundsTest = qfalse;
+		qglDisable(GL_DEPTH_BOUNDS_TEST_EXT);
+		glDepthBoundsEXT(0.f, 1.f);
+		gl_state.depthBoundsMins = 0.f;
+		gl_state.depthBoundsMax = 1.f;
+	}
+
+	gl_state.alphaTest = qfalse;
+	gl_state.alphaFunc = GL_GREATER;
+	gl_state.alphaRef = 0.666f;
+
+	qglHint(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
+
+	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	GL_TextureMode(r_textureMode->string);
+
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	GL_UpdateSwapInterval();
+}

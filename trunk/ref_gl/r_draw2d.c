@@ -26,8 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-image_t *draw_chars;
-
 vec2_t	texCoord[MAX_VERTEX_ARRAY];
 vec2_t	texCoord1[MAX_VERTEX_ARRAY];
 vec3_t	vertCoord[MAX_VERTEX_ARRAY];
@@ -41,20 +39,23 @@ R_LoadFont
 
 void R_LoadFont(void)
 {
-
-	draw_chars = GL_FindImage("gfx/fonts/q3ext.tga", it_pic);
+	draw_chars = GL_FindImage("gfx/fonts/engfont.tga", it_pic);
+	
 	if(!draw_chars)
 		draw_chars = GL_FindImage("pics/conchars.pcx", it_pic);
+
 	if(!draw_chars)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
-	draw_charsRu = GL_FindImage("gfx/fonts/rufont.tga", it_pic);
+	draw_charsInt = GL_FindImage("gfx/fonts/intfont.tga", it_pic);
+	if(!draw_charsInt)
+		draw_charsInt = GL_FindImage("gfx/fonts/engfont.tga", it_pic);
 
 	GL_MBind(GL_TEXTURE0, draw_chars->texnum);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	GL_MBind(GL_TEXTURE0, draw_charsRu->texnum);
+	GL_MBind(GL_TEXTURE0, draw_charsInt->texnum);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
@@ -146,7 +147,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 }
 
-void Draw_CharScaledRus(int x, int y, float scale_x, float scale_y, unsigned char num)
+void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned char num)
 {
 	int row, col;
 	float frow, fcol, size;
@@ -170,8 +171,8 @@ void Draw_CharScaledRus(int x, int y, float scale_x, float scale_y, unsigned cha
 	fcol = col * 0.0625;
 	size = 0.0625;
 
-	if (gl_state.currenttextures[gl_state.currenttmu] != draw_charsRu->texnum) {
-		GL_MBind(GL_TEXTURE0, draw_charsRu->texnum);
+	if (gl_state.currenttextures[gl_state.currenttmu] != draw_charsInt->texnum) {
+		GL_MBind(GL_TEXTURE0, draw_charsInt->texnum);
 	}
 
 	VA_SetElem2(texCoord[0], fcol, frow);
@@ -330,14 +331,14 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 }
 
-void Draw_StringScaledRus(int x, int y, float scale_x, float scale_y, const char* str)
+void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str)
 {
 	int px, py, row, col, num, counter, quadCounter, i;
 	float frow, fcol, size;
 	unsigned char* s = (unsigned char*)str;
 
-	if (gl_state.currenttextures[gl_state.currenttmu] != draw_charsRu->texnum) {
-		GL_MBind(GL_TEXTURE0, draw_charsRu->texnum);
+	if (gl_state.currenttextures[gl_state.currenttmu] != draw_charsInt->texnum) {
+		GL_MBind(GL_TEXTURE0, draw_charsInt->texnum);
 	}
 
 	Draw_StringShadow(x, y, scale_x, scale_y, s);

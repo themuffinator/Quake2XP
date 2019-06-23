@@ -108,7 +108,7 @@ static qboolean AL_InitDriver (void) {
 		}
 
 	}else
-		Com_Printf(S_COLOR_RED"...ALC_SOFT_HRTF not found\n");
+		Com_Printf(S_COLOR_MAGENTA"...ALC_SOFT_HRTF not found\n");
 
 	return qtrue;
 
@@ -150,7 +150,7 @@ qboolean AL_StartOpenAL (void) {
 			return qfalse;
 		}
 		
-		Com_Printf("====== Available Output Devices =====\n\n");
+		Com_Printf(S_COLOR_YELLOW"====== Available Output Devices =====\n\n");
 
 		while (*a) {
 			al_device[++i] = a;

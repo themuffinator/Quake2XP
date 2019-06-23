@@ -261,39 +261,6 @@ void SCR_SizeDown_f (void) {
 	Cvar_SetValue ("viewsize", scr_viewsize->value - 10);
 }
 
-/*
-=================
-SCR_Sky_f
-
-Set a specific sky and rotation speed
-=================
-*/
-void SCR_Sky_f (void) {
-	float rotate;
-	vec3_t axis;
-
-	if (Cmd_Argc () < 2) {
-		Com_Printf ("Usage: sky <basename> <rotate> <axis x y z>\n");
-		return;
-	}
-	if (Cmd_Argc () > 2)
-		rotate = atof (Cmd_Argv (2));
-	else
-		rotate = 0;
-	if (Cmd_Argc () == 6) {
-		axis[0] = atof (Cmd_Argv (3));
-		axis[1] = atof (Cmd_Argv (4));
-		axis[2] = atof (Cmd_Argv (5));
-	}
-	else {
-		axis[0] = 0;
-		axis[1] = 0;
-		axis[2] = 1;
-	}
-
-	R_SetSky (Cmd_Argv (1), rotate, axis);
-}
-
 //============================================================================
 
 /*
@@ -322,7 +289,6 @@ void SCR_Init (void) {
 	Cmd_AddCommand ("loading", SCR_Loading_f);
 	Cmd_AddCommand ("sizeup", SCR_SizeUp_f);
 	Cmd_AddCommand ("sizedown", SCR_SizeDown_f);
-	Cmd_AddCommand ("sky", SCR_Sky_f);
 
 	scr_initialized = qtrue;
 }
@@ -381,7 +347,6 @@ void SCR_DrawLoadingBar (float percent, float scale) {
 }
 
 void Draw_LoadingScreen (int x, int y, int w, int h, char *pic);
-void Draw_StringScaledRus(int x, int y, float scale_x, float scale_y, const char* str);
 
 void SCR_DrawLoading (void) {
 	int		scaled, center;
@@ -414,10 +379,7 @@ void SCR_DrawLoading (void) {
 		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 6;
 		RE_SetColor(colorGreen);
 
-		if (useRussianLoc->integer)
-			Draw_StringScaledRus(center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
-		else
-			Draw_StringScaled(center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
+		Draw_StringScaled(center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
 		
 		RE_SetColor (colorYellow);
 		Draw_StringScaled (0, 44 * fontscale, fontscale, fontscale,
@@ -801,10 +763,7 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 			x = margin;
 
 		for (i = 0; i < width; i++) {
-			if(useRussianLoc->integer)
-				Draw_CharScaledRus (x, y, scale_x, scale_y, line[i] ^ xor);
-			else
-				Draw_CharScaled(x, y, scale_x, scale_y, line[i] ^ xor);
+			Draw_CharScaled(x, y, scale_x, scale_y, line[i] ^ xor);
 			x += 8 * scale_x;
 		}
 		if (*string) {

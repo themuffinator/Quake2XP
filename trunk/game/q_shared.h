@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning(disable : 4305)		// truncation from const double to float
 #pragma warning(disable : 4996)		// vs 2005 security warnings
 #pragma warning(disable : 4133)
+#pragma warning(disable : 6031)
 
 /* x64 warning dont need
    on win32 platform*/

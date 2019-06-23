@@ -345,9 +345,6 @@ void DrawAltStringScaled (int x, int y, float scale_x, float scale_y, char *s) {
 	Set_FontShader (qtrue);
 	while (*s) {
 
-		if(useRussianLoc->integer)
-			Draw_CharScaledRus (x, y, scale_x, scale_y, *s ^ 0x80);
-		else
 			Draw_CharScaled(x, y, scale_x, scale_y, *s ^ 0x80);
 
 		x += 8 * scale_x;
