@@ -1,8 +1,8 @@
-layout (binding = 0) uniform sampler2D	u_map; // todo: use cubemap
+layout (binding = 0) uniform samplerCube	u_map;
 
 layout(location = U_PARAM_INT_0)	uniform int	u_colorPass;
 
-in vec2	v_texCoord; 
+in vec3	v_texCoord; 
 
 void main(void) 
 {
@@ -12,5 +12,5 @@ void main(void)
 		return;	
 	}
 
-	fragData = texture(u_map, v_texCoord.xy);
+	fragData = textureLod(u_map, v_texCoord.xyz, 0.0);
 }
