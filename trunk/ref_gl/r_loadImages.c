@@ -538,6 +538,10 @@ void CreateShadowMask (void) {
 	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	image->handle = glGetTextureHandleARB(image->texnum);
+	glMakeTextureHandleResidentARB(image->handle);
+
 }
 
 
@@ -600,6 +604,10 @@ void Load3dLut(void) {
 
 		FS_FreeFile(buf);
 		lutCount++;
+
+		image->handle = glGetTextureHandleARB(image->texnum);
+		glMakeTextureHandleResidentARB(image->handle);
+
 	}
 	Com_Printf("\n=====================================\n\n");
 }
@@ -763,6 +771,9 @@ image_t *R_LoadLightFilter (int id) {
 	image->height = minh;
 	image->upload_width = image->width * 6;
 	image->upload_height = image->height * 6;
+
+	image->handle = glGetTextureHandleARB(image->texnum);
+	glMakeTextureHandleResidentARB(image->handle);
 
 	if (allNull)
 		image->registration_sequence = -1;	// free

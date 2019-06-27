@@ -278,7 +278,7 @@ typedef enum {
 	it_bump,
 } imagetype_t;
 
-typedef unsigned long int uint64;
+typedef unsigned long long uint64;
 
 typedef struct image_s {
 

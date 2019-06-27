@@ -867,8 +867,8 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		image->tl = 0;
 		image->th = 1;
 
-//		image->handle = glGetTextureHandleARB(image->texnum);
-//		glMakeTextureHandleResidentARB(image->handle);
+		image->handle = glGetTextureHandleARB(image->texnum);
+		glMakeTextureHandleResidentARB(image->handle);
 
 	return image;
 }
@@ -1372,8 +1372,8 @@ void GL_ShutdownImages(void) {
 	//	if (!image->registration_sequence)
 		//	continue;			// free image_t slot
 
-//		glMakeTextureHandleNonResidentARB(image->handle);
-//		image->hasHandle = qfalse;
+		glMakeTextureHandleNonResidentARB(image->handle);
+		image->hasHandle = qfalse;
 
 		// free it
 		qglDeleteTextures(1, (GLuint*)&image->texnum);

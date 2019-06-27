@@ -165,6 +165,7 @@ image_t *r_decaltexture[DECAL_MAX];
 image_t *r_flare;
 
 image_t *draw_chars, *draw_charsRu, *draw_charsInt;
+image_t *draw_charsRu;
 image_t *r_DSTTex;
 
 image_t	*r_defBump;
@@ -1089,6 +1090,18 @@ typedef enum {
 	U_CONSOLE_BACK,
 	U_2D_PICS,
 	U_FRAG_COLOR,
+	U_BINDLESS_ARRAY,
+
+	U_TMU0,
+	U_TMU1,
+	U_TMU2,
+	U_TMU3,
+	U_TMU4,
+	U_TMU5,
+	U_TMU6,
+	U_TMU7,
+	U_TMU8,
+	U_TMU9,
 }
 glsl_uniform;
 

@@ -158,6 +158,19 @@ static const char *glslUniforms =
 "#define	U_CONSOLE_BACK			92\n"
 "#define	U_2D_PICS				93\n"
 "#define	U_FRAG_COLOR			94\n"
+
+"#define	U_BINDLESS_ARRAY		95\n"
+
+"#define	U_TMU0		96\n"
+"#define	U_TMU1		97\n"
+"#define	U_TMU2		98\n"
+"#define	U_TMU3		99\n"
+"#define	U_TMU4		100\n"
+"#define	U_TMU5		101\n"
+"#define	U_TMU6		102\n"
+"#define	U_TMU7		103\n"
+"#define	U_TMU8		104\n"
+
 ;
 
 static const char *unbindTextures =

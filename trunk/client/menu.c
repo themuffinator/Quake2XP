@@ -62,6 +62,7 @@ extern cvar_t *cl_hudScale;
 model_t *currentPlayerWeapon;
 
 void R_MenuBackGround();
+
 //=============================================================================
 /* Support Routines */
 

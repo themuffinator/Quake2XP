@@ -527,16 +527,16 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		}
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);
-			GL_MBind(GL_TEXTURE4, rghMap->texnum);
-		//	glUniformHandleui64ARB(104, rghMap->handle);
+		//	GL_MBind(GL_TEXTURE4, rghMap->texnum);
+			glUniformHandleui64ARB(104, rghMap->handle);
 			GL_CheckError("glUniformHandleui64ARB(104, rghMap->handle);", 553, "tst");
 		}
 
 		if (bmodel){
 			if (caustics && currentShadowLight->castCaustics){
 				qglUniform1i(U_USE_CAUSTICS, 1);
-				GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-			//	glUniformHandleui64ARB(103, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+			//	GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+				glUniformHandleui64ARB(103, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 			}
 			else
 				qglUniform1i(U_USE_CAUSTICS, 0);
@@ -544,8 +544,8 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		else{
 			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics) {
 				qglUniform1i(U_USE_CAUSTICS, 1);
-				GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-			//	glUniformHandleui64ARB(103, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+			//	GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
+				glUniformHandleui64ARB(103, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 			}
 			else
 				qglUniform1i(U_USE_CAUSTICS, 0);
@@ -569,12 +569,12 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		else
 			qglUniform1i(U_PARAM_INT_0, 0);
 
-		GL_MBind		(GL_TEXTURE0, image->texnum);
-	//	glUniformHandleui64ARB(100, image->handle);
-		GL_MBind		(GL_TEXTURE1, normalMap->texnum);
-	//	glUniformHandleui64ARB(101, normalMap->handle);
-		GL_MBindCube	(GL_TEXTURE2, r_lightCubeMap[currentShadowLight->filter]->texnum);
-	//	glUniformHandleui64ARB(102, r_lightCubeMap[currentShadowLight->filter]->handle);
+	//	GL_MBind		(GL_TEXTURE0, image->texnum);
+		glUniformHandleui64ARB(100, image->handle);
+	//	GL_MBind		(GL_TEXTURE1, normalMap->texnum);
+		glUniformHandleui64ARB(101, normalMap->handle);
+	//	GL_MBindCube	(GL_TEXTURE2, r_lightCubeMap[currentShadowLight->filter]->texnum);
+		glUniformHandleui64ARB(102, r_lightCubeMap[currentShadowLight->filter]->handle);
 
 		if (r_imageAutoBump->integer && normalMap == r_defBump) {
 			qglUniform1i(U_USE_AUTOBUMP, 1);
@@ -594,7 +594,15 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 			qglUniform1f(U_SCROLL, scroll);
 		else
 			qglUniform1f(U_SCROLL, 0.0);
+
+		glUniformHandleui64ARB(U_TMU0, image->handle);
+		glUniformHandleui64ARB(U_TMU1, normalMap->handle);
+		glUniformHandleui64ARB(U_TMU2, r_lightCubeMap[currentShadowLight->filter]->handle);
+		glUniformHandleui64ARB(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+		glUniformHandleui64ARB(U_TMU4, rghMap->handle);
 	}
+
+
 
 	// create indexes
 	if (numIndices == 0xffffffff)
