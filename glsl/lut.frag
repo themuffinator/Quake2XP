@@ -61,7 +61,7 @@ if(u_colorK == 0){
     vec3 offset = 1.0 / (2.0 * u_lutSize);
 
 	fragData.rgb = texture(u_lutTex, scale * rawColor.rgb + offset).rgb;
-	fragData.a = 1.0;
+  fragData.a = 1.0;
 
 	}
 }
