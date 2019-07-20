@@ -1,7 +1,14 @@
+/*
 layout (binding = 0) uniform sampler2D		u_deformMap;
 layout (binding = 1) uniform sampler2D		u_colorMap;
 layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
 layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
+*/
+
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_deformMap;
+layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_colorMap;
+layout (bindless_sampler, location  = U_TMU2) uniform sampler2DRect	g_colorBufferMap;
+layout (bindless_sampler, location  = U_TMU3) uniform sampler2DRect	g_depthBufferMap;
 
 layout(location = U_REFR_ALPHA)			uniform float	u_alpha;
 layout(location = U_REFR_THICKNESS0)	uniform float	u_thickness0; //depth feather

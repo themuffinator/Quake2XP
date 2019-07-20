@@ -7,13 +7,12 @@ layout (binding = 4) uniform sampler2D		u_RghMap;
 */
 
 
-#extension GL_ARB_bindless_texture : require
-
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_Diffuse;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_NormalMap;
 layout (bindless_sampler, location  = U_TMU2) uniform samplerCube	u_CubeFilterMap;
 layout (bindless_sampler, location  = U_TMU3) uniform sampler2D		u_Caustics;
 layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_RghMap;
+layout (bindless_sampler) uniform;  
 
 layout(location = U_COLOR_MUL)			uniform float	u_ColorModulate;
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
@@ -77,7 +76,7 @@ void main (void) {
 	}
 
 	// light filter
-	vec4 cubeFilter = vec4(1.0);//texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
+	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 
 	if (u_isCaustics == 1) {
 		vec4 causticsMap = texture(u_Caustics, texCoord);

@@ -1,3 +1,4 @@
+/*
 layout (binding = 0) uniform sampler2D		u_bumpMap;
 layout (binding = 1) uniform sampler2D		u_diffuseMap;
 layout (binding = 2) uniform sampler2D		u_causticMap;
@@ -5,6 +6,15 @@ layout (binding = 3) uniform samplerCube	u_CubeFilterMap;
 layout (binding = 4) uniform sampler2D		u_rghMap;
 layout (binding = 5) uniform sampler2D		u_bumpBlend;
 layout (binding = 6) uniform samplerCube	u_skyCube;
+*/
+
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_bumpMap;
+layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_diffuseMap;
+layout (bindless_sampler, location  = U_TMU2) uniform sampler2D		u_causticMap;
+layout (bindless_sampler, location  = U_TMU3) uniform samplerCube	u_CubeFilterMap;
+layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_rghMap;
+layout (bindless_sampler, location  = U_TMU5) uniform sampler2D		u_bumpBlend;
+layout (bindless_sampler, location  = U_TMU6) uniform samplerCube	u_skyCube;
 
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
 layout(location = U_CAUSTICS_SCALE)		uniform float	u_CausticsModulate;

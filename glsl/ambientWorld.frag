@@ -1,12 +1,17 @@
-layout (binding = 0) uniform sampler2D		u_Diffuse;
+
+//layout (binding = 0) uniform sampler2D		u_Diffuse;
 layout (binding = 1) uniform sampler2D		u_LightMap0;
-layout (binding = 2) uniform sampler2D		u_Add;
-layout (binding = 3) uniform sampler2D		u_NormalMap;
-layout (binding = 4) uniform sampler2DRect	u_ssaoMap;
+//layout (binding = 2) uniform sampler2D		u_Add;
+//layout (binding = 3) uniform sampler2D		u_NormalMap;
+
+layout (bindless_sampler, location = U_TMU0) uniform sampler2D		u_Diffuse;
+layout (bindless_sampler, location = U_TMU2) uniform sampler2D		u_Add;
+layout (bindless_sampler, location = U_TMU3) uniform sampler2D		u_NormalMap;
+layout (bindless_sampler, location = U_TMU4) uniform sampler2DRect	u_ssaoMap;
+
+//layout (binding = 4) uniform sampler2DRect	u_ssaoMap;
 layout (binding = 5) uniform sampler2D		u_LightMap1;
 layout (binding = 6) uniform sampler2D		u_LightMap2;
-layout (binding = 7) uniform sampler2D		u_aoMap;
-
 
 layout (location = U_LM_TYPE)			uniform int		u_LightMapType;
 layout (location = U_USE_SSAO)			uniform int		u_ssao;
