@@ -428,4 +428,7 @@ void R_GenSkyCubeMap(char* name) {
 	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+	skyCube_handle = glGetTextureHandleARB(skyCube);
+	glMakeTextureHandleResidentARB(skyCube_handle);
 }

@@ -200,7 +200,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglEnableVertexAttribArray (ATT_COLOR);
 	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
 
-//	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
 	qglEnableVertexAttribArray (ATT_TEX0);
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 
@@ -246,15 +245,21 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglUniform1f (U_COLOR_MUL, r_textureColorScale->value);
 	qglUniform1f (U_COLOR_OFFSET, alphaShift);
 
-	GL_MBind (GL_TEXTURE0, skin->texnum);
-	GL_MBind (GL_TEXTURE1, glowskin->texnum);
-	GL_MBind (GL_TEXTURE2, r_envTex->texnum);
-	GL_MBind (GL_TEXTURE3, skinNormalmap->texnum);
+//	GL_MBind (GL_TEXTURE0, skin->texnum);
+//	GL_MBind (GL_TEXTURE1, glowskin->texnum);
+//	GL_MBind (GL_TEXTURE2, r_envTex->texnum);
+//	GL_MBind (GL_TEXTURE3, skinNormalmap->texnum);
+	
+	glUniformHandleui64ARB(U_TMU0, skin->handle);
+	glUniformHandleui64ARB(U_TMU1, glowskin->handle);
+	glUniformHandleui64ARB(U_TMU2, r_envTex->handle);
+	glUniformHandleui64ARB(U_TMU3, skinNormalmap->handle);
 
 	qglUniform1f(U_ENV_SCALE, currentmodel->envScale);
 
 	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
-		GL_MBindRect (GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
+	//	GL_MBindRect (GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
+		glUniformHandleui64ARB(U_TMU4, fboColor[fboColorIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
@@ -334,8 +339,8 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglUniform3fv(U_VIEW_POS, 1, r_origin);
 
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
-
-	if (currententity->flags & RF_SHELL_BLUE)
+	
+/*	if (currententity->flags & RF_SHELL_BLUE)
 		GL_MBind (GL_TEXTURE0, r_texshell[0]->texnum);
 	if (currententity->flags & RF_SHELL_RED)
 		GL_MBind (GL_TEXTURE0, r_texshell[1]->texnum);
@@ -347,6 +352,22 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 		GL_MBind (GL_TEXTURE0, r_texshell[4]->texnum);
 	if (currententity->flags & RF_SHELL_DOUBLE)
 		GL_MBind (GL_TEXTURE0, r_texshell[5]->texnum);
+*/ 
+	
+	if (currententity->flags & RF_SHELL_BLUE)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[0]->handle);
+	if (currententity->flags & RF_SHELL_RED)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[1]->handle);
+	if (currententity->flags & RF_SHELL_GREEN)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[2]->handle);
+	if (currententity->flags & RF_SHELL_GOD)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[3]->handle);
+	if (currententity->flags & RF_SHELL_HALF_DAM)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[4]->handle);
+	if (currententity->flags & RF_SHELL_DOUBLE)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[5]->handle);
+	
+	
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
@@ -354,7 +375,6 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglEnableVertexAttribArray (ATT_NORMAL);
 	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
-//	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, currentmodel->vboId);
 	qglEnableVertexAttribArray (ATT_TEX0);
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 
@@ -363,7 +383,6 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_TEX0);
-//	qglBindBufferARB (GL_ARRAY_BUFFER_ARB, 0);
 }
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
@@ -497,20 +516,27 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	else
 		qglUniform1i(U_USE_CAUSTICS, 0);
 
-	GL_MBind (GL_TEXTURE0, skinNormalmap->texnum);
+/*	GL_MBind (GL_TEXTURE0, skinNormalmap->texnum);
 	GL_MBind (GL_TEXTURE1, skin->texnum);
 	GL_MBind (GL_TEXTURE2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	GL_MBindCube (GL_TEXTURE3, r_lightCubeMap[currentShadowLight->filter]->texnum);
+*/	
+	glUniformHandleui64ARB(U_TMU0, skinNormalmap->handle);
+	glUniformHandleui64ARB(U_TMU1, skin->handle);
+	glUniformHandleui64ARB(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+	glUniformHandleui64ARB(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
+	glUniformHandleui64ARB(U_TMU4, rgh->handle);
+	glUniformHandleui64ARB(U_TMU5, skinBump->handle);
 
 	if (rgh == r_notexture)
 		qglUniform1i(U_USE_RGH_MAP, 0);
 	else {
 		qglUniform1i(U_USE_RGH_MAP, 1);
-		GL_MBind(GL_TEXTURE4, rgh->texnum);
+	//	GL_MBind(GL_TEXTURE4, rgh->texnum);
 	}
 	
-	GL_MBind(GL_TEXTURE5, skinBump->texnum);
-	
+//	GL_MBind(GL_TEXTURE5, skinBump->texnum);
+
 	qglUniform1i(U_PARAM_INT_1, 0);
 	qglUniform1i(U_PARAM_INT_2, 0);
 	qglUniform1i(U_PARAM_INT_3, 0);

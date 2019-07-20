@@ -47,9 +47,9 @@ void R_LoadFont(void)
 	if(!draw_chars)
 		VID_Error(ERR_FATAL, "couldn't load pics/conchars");
 
-	draw_charsInt = GL_FindImage("gfx/fonts/engfont.tga", it_pic);
+	draw_charsInt = GL_FindImage("gfx/fonts/intfont.tga", it_pic);
 	if (!draw_charsInt)
-		draw_charsInt = r_notexture;//GL_FindImage("gfx/fonts/engfont.tga", it_pic);
+		draw_charsInt = r_notexture;
 
 	GL_MBind(GL_TEXTURE0, draw_chars->texnum);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

@@ -33,6 +33,7 @@ static const char *glslExt =
 
 static const char *glslExt =
 "#version 450 core\n"
+"#extension GL_ARB_bindless_texture : enable\n"
 "precision mediump float;\n"
 "precision mediump int;\n"
 "out vec4 fragData;\n";	// out fragColor

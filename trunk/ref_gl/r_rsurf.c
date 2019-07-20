@@ -161,13 +161,19 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	qglUniform1f(U_REFR_ALPHA, alpha);
 
 		if (scrolling)
-			GL_MBind(GL_TEXTURE0, r_DSTTex->texnum);
+		//	GL_MBind(GL_TEXTURE0, r_DSTTex->texnum);
+			glUniformHandleui64ARB(U_TMU0, r_DSTTex->handle);
 		else
-			GL_MBind(GL_TEXTURE0, fa->texInfo->normalmap->texnum);
+		//	GL_MBind(GL_TEXTURE0, fa->texInfo->normalmap->texnum);
+			glUniformHandleui64ARB(U_TMU0, fa->texInfo->normalmap->handle);
 
-		GL_MBind(GL_TEXTURE1, fa->texInfo->image->texnum);
+	/*	GL_MBind(GL_TEXTURE1, fa->texInfo->image->texnum);
 		GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
-		GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
+		GL_MBindRect(GL_TEXTURE3, depthMap->texnum);*/
+		glUniformHandleui64ARB(U_TMU1, fa->texInfo->image->handle);
+		glUniformHandleui64ARB(U_TMU2, ScreenMap->handle);
+		glUniformHandleui64ARB(U_TMU3, depthMap->handle);
+
 
 	if (scrolling)
 		scroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
@@ -369,10 +375,13 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		else
 			qglUniform1i(U_LAVA_PASS, 0);
 
-		GL_MBind(GL_TEXTURE0, image->texnum);
-		GL_MBind(GL_TEXTURE2, fx->texnum);
-		GL_MBind(GL_TEXTURE3, normal->texnum);
-		
+//		GL_MBind(GL_TEXTURE0, image->texnum);
+//		GL_MBind(GL_TEXTURE2, fx->texnum);
+//		GL_MBind(GL_TEXTURE3, normal->texnum);
+		glUniformHandleui64ARB(U_TMU0, image->handle);
+		glUniformHandleui64ARB(U_TMU2, fx->handle);
+		glUniformHandleui64ARB(U_TMU3, normal->handle);
+
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
 			scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
@@ -438,7 +447,8 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	}
 
 	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
+	//	GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
+		glUniformHandleui64ARB(U_TMU4, fboColor[fboColorIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
@@ -528,15 +538,14 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);
 		//	GL_MBind(GL_TEXTURE4, rghMap->texnum);
-			glUniformHandleui64ARB(104, rghMap->handle);
-			GL_CheckError("glUniformHandleui64ARB(104, rghMap->handle);", 553, "tst");
+		//	glUniformHandleui64ARB(U_TMU4, rghMap->handle);
 		}
 
 		if (bmodel){
 			if (caustics && currentShadowLight->castCaustics){
 				qglUniform1i(U_USE_CAUSTICS, 1);
 			//	GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-				glUniformHandleui64ARB(103, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+			//	glUniformHandleui64ARB(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 			}
 			else
 				qglUniform1i(U_USE_CAUSTICS, 0);
@@ -545,7 +554,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics) {
 				qglUniform1i(U_USE_CAUSTICS, 1);
 			//	GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-				glUniformHandleui64ARB(103, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+			//	glUniformHandleui64ARB(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 			}
 			else
 				qglUniform1i(U_USE_CAUSTICS, 0);
@@ -568,13 +577,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 			qglUniform1i(U_PARAM_INT_0, 1);
 		else
 			qglUniform1i(U_PARAM_INT_0, 0);
-
-	//	GL_MBind		(GL_TEXTURE0, image->texnum);
-		glUniformHandleui64ARB(100, image->handle);
-	//	GL_MBind		(GL_TEXTURE1, normalMap->texnum);
-		glUniformHandleui64ARB(101, normalMap->handle);
-	//	GL_MBindCube	(GL_TEXTURE2, r_lightCubeMap[currentShadowLight->filter]->texnum);
-		glUniformHandleui64ARB(102, r_lightCubeMap[currentShadowLight->filter]->handle);
 
 		if (r_imageAutoBump->integer && normalMap == r_defBump) {
 			qglUniform1i(U_USE_AUTOBUMP, 1);

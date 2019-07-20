@@ -105,6 +105,9 @@ void CreateDepthTexture (void) {
 	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_DEPTH_COMPONENT24, vid.width, vid.height, 0,
 		GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 
+	depthMap->handle = glGetTextureHandleARB(depthMap->texnum);
+	glMakeTextureHandleResidentARB(depthMap->handle);
+
 }
 
 void CreateScreenRect (void) {
@@ -147,6 +150,9 @@ void CreateScreenRect (void) {
 
 	qglTexImage2D		(GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, vid.width, vid.height, 0,
 						GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+	ScreenMap->handle = glGetTextureHandleARB(ScreenMap->texnum);
+	glMakeTextureHandleResidentARB(ScreenMap->handle);
 
 }
 
@@ -418,6 +424,8 @@ void CreateSsaoColorTextures(void) {
 		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, vid.width / 2, vid.height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		fboColor[j]->handle = glGetTextureHandleARB(fboColor[j]->texnum);
+		glMakeTextureHandleResidentARB(fboColor[j]->handle);
 	}
 }
 
@@ -538,10 +546,6 @@ void CreateShadowMask (void) {
 	qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	qglTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_RGBA, vid.width, vid.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-	image->handle = glGetTextureHandleARB(image->texnum);
-	glMakeTextureHandleResidentARB(image->handle);
-
 }
 
 
@@ -950,7 +954,7 @@ void R_InitEngineTextures (void) {
 	if (!r_flare)
 		r_flare = r_notexture;
 
-	r_distort = GL_FindImage ("gfx/distort/explosion.tga", it_wall);
+	r_distort = GL_FindImage ("gfx/explosion/explosion.tga", it_wall);
 	if (!r_distort)
 		r_distort = r_notexture;
 

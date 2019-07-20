@@ -592,7 +592,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*v, *ov, *verts, *oldVerts;
 	vec3_t		luminance = { 0.2125, 0.7154, 0.0721 };
-	image_t     *skin, *light, *normal, *ao, *rgh;
+	image_t     *skin, *light, *normal, /**ao,*/ *rgh;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -674,6 +674,18 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	qglUniform3fv(U_VIEW_POS, 1, viewOrg);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+	
+	qglUniform1i(U_USE_SSAO, 1);
+
+	if (!r_ssao->integer)
+		qglUniform1i(U_USE_SSAO, 0);
+	if(currententity->flags & RF_WEAPONMODEL)
+		qglUniform1i(U_USE_SSAO, 0);
+	if(r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		qglUniform1i(U_USE_SSAO, 0);
+	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
+		qglUniform1i(U_USE_SSAO, 0);
+
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -693,6 +705,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_Disable(GL_CULL_FACE);
 			qglUniform1f(U_COLOR_OFFSET, 1.0);
 			qglUniform1f(U_COLOR_MUL, 2.0);
+			qglUniform1i(U_USE_SSAO, 0);
 			GL_BlendFunc(GL_ONE, GL_ONE);
 		}
 
@@ -701,7 +714,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 			if (!rgh)
 				rgh = r_notexture;
-			GL_MBind(GL_TEXTURE5, rgh->texnum);
+	//		GL_MBind(GL_TEXTURE5, rgh->texnum);
+			glUniformHandleui64ARB(U_TMU5, rgh->handle);
 		}
 		else 
 			qglUniform1i(U_PARAM_INT_0, 0);
@@ -725,9 +739,9 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		if (!normal)
 			normal = r_defBump;
 		
-		ao = mesh->skinsAO[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-		if (!ao)
-			ao = r_whiteMap;
+	//	ao = mesh->skinsAO[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+	//	if (!ao)
+	//		ao = r_whiteMap;
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
 
@@ -745,11 +759,17 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 		qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, md3ColorCache);
 
-		GL_MBind(GL_TEXTURE0, skin->texnum);
+	/*	GL_MBind(GL_TEXTURE0, skin->texnum);
 		GL_MBind(GL_TEXTURE1, light->texnum);
 		GL_MBind(GL_TEXTURE2, r_envTex->texnum);
 		GL_MBind(GL_TEXTURE3, normal->texnum);
 		GL_MBind(GL_TEXTURE4, ao->texnum);
+*/		
+		glUniformHandleui64ARB(U_TMU0, skin->handle);
+		glUniformHandleui64ARB(U_TMU1, light->handle);
+		glUniformHandleui64ARB(U_TMU2, r_envTex->handle);
+		glUniformHandleui64ARB(U_TMU3, normal->handle);
+		glUniformHandleui64ARB(U_TMU4, fboColor[fboColorIndex]->handle);
 
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	
@@ -769,6 +789,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_DepthMask(0);
 		qglUniform1i(U_ENV_PASS, 1);
 		qglUniform1i(U_TRANS_PASS, 1);
+		qglUniform1i(U_USE_SSAO, 0);
 
 		lum = DotProduct(luminance, shadelight);
 		qglUniform1f(U_ENV_SCALE, lum);
@@ -827,11 +848,15 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, md3ColorCache);
 			qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 						
-			GL_MBind(GL_TEXTURE0, skin->texnum);
+		/*	GL_MBind(GL_TEXTURE0, skin->texnum);
 			GL_MBind(GL_TEXTURE1, r_notexture->texnum);
 			GL_MBind(GL_TEXTURE2, r_envTex->texnum);
 			GL_MBind(GL_TEXTURE3, normal->texnum);
-
+*/			
+			glUniformHandleui64ARB(U_TMU0, skin->handle);
+			glUniformHandleui64ARB(U_TMU1, r_notexture->handle);
+			glUniformHandleui64ARB(U_TMU2, r_envTex->handle);
+			glUniformHandleui64ARB(U_TMU3, normal->handle);
 
 			qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 		}
@@ -1014,7 +1039,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		else
 			qglUniform1i(U_PARAM_INT_1, 0);
 
-		if (weapon) {
+	/*	if (weapon) {
 			trace_t trace;
 			vec3_t ray;
 			VectorCopy(r_newrefdef.vieworg, ray);
@@ -1051,7 +1076,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 					qglUniform1i(U_PARAM_INT_3, 0);
 			}
 		}
-		else
+		else*/
 			qglUniform1i(U_PARAM_INT_3, 0);
 
 		c_alias_polys += md3Hdr->meshes[i].num_tris;
@@ -1106,21 +1131,28 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 
-		GL_MBind(GL_TEXTURE0, normal->texnum);
+/*		GL_MBind(GL_TEXTURE0, normal->texnum);
 		GL_MBind(GL_TEXTURE1, skin->texnum);
 		GL_MBind(GL_TEXTURE2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		GL_MBindCube(GL_TEXTURE3, r_lightCubeMap[currentShadowLight->filter]->texnum);
+*/		
+		glUniformHandleui64ARB(U_TMU0, normal->handle);
+		glUniformHandleui64ARB(U_TMU1, skin->handle);
+		glUniformHandleui64ARB(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+		glUniformHandleui64ARB(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
+		glUniformHandleui64ARB(U_TMU4, rgh->handle);
+		glUniformHandleui64ARB(U_TMU5, skinBump->handle);
+		glUniformHandleui64ARB(U_TMU6, skyCube_handle);
 
 		if (rgh == r_notexture)
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);
-			GL_MBind(GL_TEXTURE4, rgh->texnum);
+		//	GL_MBind(GL_TEXTURE4, rgh->texnum);
 		}
 
-		GL_MBind(GL_TEXTURE5, skinBump->texnum);
-		
-		GL_MBindCube(GL_TEXTURE6, skyCube);
+//		GL_MBind(GL_TEXTURE5, skinBump->texnum);
+//		GL_MBindCube(GL_TEXTURE6, skyCube);
 
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	}
@@ -1200,7 +1232,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	qglUniform2fv(U_SHELL_PARAMS, 1, shellParams);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
-	if (currententity->flags & RF_SHELL_BLUE)
+/*	if (currententity->flags & RF_SHELL_BLUE)
 		GL_MBind(GL_TEXTURE0, r_texshell[0]->texnum);
 	if (currententity->flags & RF_SHELL_RED)
 		GL_MBind(GL_TEXTURE0, r_texshell[1]->texnum);
@@ -1212,6 +1244,19 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		GL_MBind(GL_TEXTURE0, r_texshell[4]->texnum);
 	if (currententity->flags & RF_SHELL_DOUBLE)
 		GL_MBind(GL_TEXTURE0, r_texshell[5]->texnum);
+*/	
+	if (currententity->flags & RF_SHELL_BLUE)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[0]->handle);
+	if (currententity->flags & RF_SHELL_RED)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[1]->handle);
+	if (currententity->flags & RF_SHELL_GREEN)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[2]->handle);
+	if (currententity->flags & RF_SHELL_GOD)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[3]->handle);
+	if (currententity->flags & RF_SHELL_HALF_DAM)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[4]->handle);
+	if (currententity->flags & RF_SHELL_DOUBLE)
+		glUniformHandleui64ARB(U_TMU0, r_texshell[5]->handle);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 

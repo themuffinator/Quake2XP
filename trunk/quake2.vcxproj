@@ -36,7 +36,7 @@
     <UseIntelTBB>true</UseIntelTBB>
     <InstrumentIntelTBB>true</InstrumentIntelTBB>
     <UseIntelMKL>Parallel</UseIntelMKL>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>

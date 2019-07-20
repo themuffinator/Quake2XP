@@ -194,11 +194,12 @@ image_t *fboDN;
 image_t *fboColor[2];
 image_t *ScreenCapture;
 
-uint bloomtex;
-uint thermaltex;
-uint fxaatex;
-uint fovCorrTex;
-int	skyCube;
+uint	bloomtex;
+uint	thermaltex;
+uint	fxaatex;
+uint	fovCorrTex;
+int		skyCube;
+uint64_t	skyCube_handle;
 
 uint fboId;
 byte fboColorIndex;

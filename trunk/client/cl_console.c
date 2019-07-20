@@ -653,15 +653,8 @@ void Con_DrawConsole (float frac) {
 	// draw the text
 	con.vislines = lines;
 
-#if 0
-	rows = (lines - 8) >> 3;	// rows of text to draw
-
-	y = lines - 24;
-#else
 	rows = (lines - 22 * fontscale) / 8;	// rows of text to draw
-
 	y = lines - 30 * fontscale;
-#endif
 
 	// draw from the bottom up
 	if (con.display != con.current) {
@@ -677,6 +670,7 @@ void Con_DrawConsole (float frac) {
 
 	currentColor = 7;
 	RE_SetColor (ColorTable[currentColor]);
+	int oldColor;
 
 	row = con.display;
 	for (i = 0; i < rows; i++, y -= 8 * fontscale, row--) {
@@ -687,19 +681,27 @@ void Con_DrawConsole (float frac) {
 
 		text = con.text + (row % con.totalLines) * con.lineWidth;
 
-
 		for (x = 0; x < con.lineWidth; x++) {
 			if ((text[x] & 0xFF) == ' ')
 				continue;
+
+			oldColor = currentColor;
 
 			if (((text[x] >> 8) & 7) != currentColor) {
 				currentColor = (text[x] >> 8) & 7;
 				RE_SetColor (ColorTable[currentColor]);
 			}
+					
+			
+			if (text[x] < 190)
+				RE_SetColor(ColorTable[oldColor]);
+			else
+				//Reset Current font color
+				RE_SetColor(ColorTable[currentColor]);
 
-			//Reset Current font color
-			RE_SetColor (ColorTable[currentColor]);
-			Draw_CharScaled ((x*fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x] & 0xFF);
+			Draw_CharScaledInt ((x*fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x] & 0xFF);
+			if (text[x] < 190)
+				currentColor = oldColor;
 		}
 	}
 
