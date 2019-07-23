@@ -494,6 +494,9 @@ void CreateSkyFboMask(void) {
 	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	
+	skyMask->handle = glGetTextureHandleARB(skyMask->texnum);
+	glMakeTextureHandleResidentARB(skyMask->handle);
 
 	qglGenFramebuffers(1, &fbo_skyMask);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_skyMask);

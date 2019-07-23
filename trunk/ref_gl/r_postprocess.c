@@ -661,10 +661,13 @@ void R_GlobalFog() {
 
 	GL_BindProgram(globalFogProgram);
 	
-	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
+//	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
+//	glUniformHandleui64ARB(U_TMU0, ScreenMap->handle);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-	GL_MBindRect(GL_TEXTURE1, depthMap->texnum);
+//	GL_MBindRect(GL_TEXTURE1, depthMap->texnum);
 	GL_MBindRect(GL_TEXTURE2, skyMask->texnum);
+	glUniformHandleui64ARB(U_TMU1, depthMap->handle);
+	glUniformHandleui64ARB(U_TMU2, skyMask->handle);
 
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 

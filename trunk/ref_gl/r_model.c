@@ -1747,8 +1747,7 @@ static qboolean R_LoadXPLM(void) {
 }
 
 void Mod_ParseFogParams(model_t *mod, char *s) {
-
-	char	*token;
+	char *token;
 
 	while (s) {
 		token = COM_Parse(&s);
@@ -1757,7 +1756,7 @@ void Mod_ParseFogParams(model_t *mod, char *s) {
 			mod->fogColor[0] = atof(COM_Parse(&s)); // r
 			mod->fogColor[1] = atof(COM_Parse(&s)); // g
 			mod->fogColor[2] = atof(COM_Parse(&s)); // b
-			Com_Printf("fogColor:" S_COLOR_GREEN " %.3f %.3f %.3f\n", mod->fogColor[0], mod->fogColor[2], mod->fogColor[3]);
+			Com_Printf("fogColor:" S_COLOR_GREEN " %.3f %.3f %.3f\n", mod->fogColor[0], mod->fogColor[1], mod->fogColor[2]);
 			continue;
 		}
 
@@ -1765,7 +1764,7 @@ void Mod_ParseFogParams(model_t *mod, char *s) {
 			mod->fogSkyColor[0] = atof(COM_Parse(&s)); // r
 			mod->fogSkyColor[1] = atof(COM_Parse(&s)); // g
 			mod->fogSkyColor[2] = atof(COM_Parse(&s)); // b
-			Com_Printf("fogSkyColor:" S_COLOR_GREEN " %.3f %.3f %.3f\n", mod->fogSkyColor[0], mod->fogSkyColor[2], mod->fogSkyColor[3]);
+			Com_Printf("fogSkyColor:" S_COLOR_GREEN " %.3f %.3f %.3f\n", mod->fogSkyColor[0], mod->fogSkyColor[1], mod->fogSkyColor[2]);
 			continue;
 		}
 
@@ -1787,15 +1786,15 @@ void Mod_ParseFogParams(model_t *mod, char *s) {
 			continue;
 		}
 
-		if (!Q_strcasecmp(token, "fogBias")) { // 0.0 ... 1.0
+		if (!Q_strcasecmp(token, "fogBias")) { // -1.0 ... 1.0
 			mod->fogBias = atof(COM_Parse(&s));
-			mod->fogBias = clamp(mod->fogBias, 0.0, 1.0);
+			mod->fogBias = clamp(mod->fogBias, -1.0, 1.0);
 			Com_Printf("fogBias:" S_COLOR_GREEN " %.3f\n", mod->fogBias);
 			continue;
 		}
-		if (!Q_strcasecmp(token, "fogSkyBias")) { // 0.0 ... 1.0
+		if (!Q_strcasecmp(token, "fogSkyBias")) { // -1.0 ... 1.0
 			mod->fogBias = atof(COM_Parse(&s));
-			mod->fogBias = clamp(mod->fogBias, 0.0, 1.0);
+			mod->fogBias = clamp(mod->fogBias, -1.0, 1.0);
 			Com_Printf("fogSkyBias:" S_COLOR_GREEN " %.3f\n", mod->fogSkyBias);
 			continue;
 		}
@@ -1806,6 +1805,7 @@ void Mod_LoadFogScript(model_t * mod) {
 	int		len;
 	char	name[MAX_OSPATH];
 	char	*buf;
+	qboolean defFog = qfalse;
 
 	// set default state - cvar controled
 	mod->useFogFile = qfalse;
@@ -1817,6 +1817,9 @@ void Mod_LoadFogScript(model_t * mod) {
 	name[len] = 0;
 	// load the .fog file
 	len = FS_LoadFile(name, (void **)&buf);
+	if (!buf) {
+		len = FS_LoadFile("maps/default.fog", (void**)& buf);
+	}
 	if (buf) {
 		Com_Printf(S_COLOR_YELLOW"\n\nLoad fog script for:" S_COLOR_GREEN " %s\n", mod->name);
 		Com_Printf("{\n");

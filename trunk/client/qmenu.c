@@ -580,13 +580,12 @@ void MenuList_Draw (menulist_s * l) {
 		l->generic.y + l->generic.parent->y,
 		l->generic.name);
 
-	Set_FontShader (qfalse);
 	n = l->itemnames;
 
 	Draw_Fill (l->generic.x - 112 + l->generic.parent->x,
 		l->generic.parent->y + l->generic.y + l->curvalue * 10 + 10,
 		128, 10, 1.0, 0.0, 1.0, 1.0);
-	Set_FontShader (qtrue);
+
 	while (*n) {
 		Menu_DrawStringR2LDark (l->generic.x + l->generic.parent->x +
 			LCOLUMN_OFFSET,

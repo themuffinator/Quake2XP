@@ -129,6 +129,8 @@ void Menu_DrawStringDark (int, int, const char *);
 void Menu_DrawStringR2L (int, int, const char *);
 void Menu_DrawStringR2LDark (int, int, const char *);
 
-#define Menu_DrawStringScaled(x, y, sx, sy, z) Draw_StringScaled(x,y, sx, sy, z);
+void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str);
+
+#define Menu_DrawStringScaled(x, y, sx, sy, z) /*Draw_StringScaled*/Draw_StringScaledInt(x,y, sx, sy, z);
 
 #endif

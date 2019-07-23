@@ -150,11 +150,11 @@ qboolean AL_StartOpenAL (void) {
 			return qfalse;
 		}
 		
-		Com_Printf(S_COLOR_YELLOW"====== Available Output Devices =====\n\n");
+		Com_Printf("======" S_COLOR_YELLOW " Available Output Devices " S_COLOR_WHITE "=====\n\n");
 
 		while (*a) {
 			al_device[++i] = a;
-			Com_Printf (">:"S_COLOR_GREEN"%s\n", a);
+			Com_Printf (S_COLOR_GREEN">: %s\n", a);
 			while (*a)
 				a++;
 			a++;
