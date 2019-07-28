@@ -153,15 +153,16 @@ void SV_WipeSavegame (char *savename) {
 
 	Com_DPrintf ("SV_WipeSaveGame(%s)\n", savename);
 
-	Com_sprintf (name, sizeof(name), "%s/save/%s/server.ssv", FS_Gamedir (),
-		savename);
+	Com_sprintf (name, sizeof(name), "%s/save/%s/server.ssv", FS_Gamedir (), savename);
 	remove (name);
-	Com_sprintf (name, sizeof(name), "%s/save/%s/game.ssv", FS_Gamedir (),
-		savename);
+	
+	Com_sprintf (name, sizeof(name), "%s/save/%s/game.ssv", FS_Gamedir (), savename);
 	remove (name);
+	
+	Com_sprintf(name, sizeof(name), "%s/save/%s/shot.jpg", FS_Gamedir (), savename);
+	remove(name);
 
-	Com_sprintf (name, sizeof(name), "%s/save/%s/*.sav", FS_Gamedir (),
-		savename);
+	Com_sprintf (name, sizeof(name), "%s/save/%s/*.sav", FS_Gamedir (),	savename);
 	s = Sys_FindFirst (name, 0, 0);
 	while (s) {
 		remove (s);
@@ -239,6 +240,14 @@ void SV_CopySaveGame (char *src, char *dst) {
 	Com_sprintf (name2, sizeof(name2), "%s/save/%s/game.ssv", FS_Gamedir (),
 		dst);
 	CopyFile (name, name2);
+
+	// copy screenshot
+	if (strcmp(dst, "save0")) // no screenshot for start of level autosaves
+	{
+		Com_sprintf(name, sizeof(name), "%s/save/%s/shot.jpg", FS_Gamedir(), src);
+		Com_sprintf(name2, sizeof(name2), "%s/save/%s/shot.jpg", FS_Gamedir(), dst);
+		CopyFile(name, name2);
+	}
 
 	Com_sprintf (name, sizeof(name), "%s/save/%s/", FS_Gamedir (), src);
 	len = strlen (name);
@@ -720,7 +729,7 @@ void SV_Loadgame_f (void) {
 }
 
 
-extern char	needsToDeferredShot[16];
+extern char	makeSaveShot[16];
 
 /*
 ==============
@@ -762,6 +771,10 @@ void SV_Savegame_f (void) {
 		Com_Printf ("Bad savedir.\n");
 	}
 
+	makeSaveShot[0] = 0;
+	if (!dedicated->integer)
+		Com_sprintf(makeSaveShot, sizeof(makeSaveShot), dir/*Cmd_Argv(1)*/);
+	
 	Com_Printf ("Saving game...\n");
 
 	// archive current level, including all client edicts.

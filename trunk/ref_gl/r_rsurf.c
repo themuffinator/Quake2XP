@@ -684,6 +684,13 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 R_CalcCubeMapMatrix(bModel);
 	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
+	 if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+		 //	GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
+		 glUniformHandleui64ARB(U_TMU5, fboColor[fboColorIndex]->handle);
+		 qglUniform1i(U_USE_SSAO, 1);
+	 }
+	 else
+		 qglUniform1i(U_USE_SSAO, 0);
  }
 
  msurface_t		*interaction[MAX_MAP_FACES];

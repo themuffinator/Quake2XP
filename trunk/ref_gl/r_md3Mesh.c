@@ -1017,6 +1017,14 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	else
 		qglUniform1i(U_USE_CAUSTICS, 0);
 
+	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
+		//	GL_MBindRect (GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
+		glUniformHandleui64ARB(U_TMU6, fboColor[fboColorIndex]->handle);
+		qglUniform1i(U_USE_SSAO, 1);
+	}
+	else
+		qglUniform1i(U_USE_SSAO, 0);
+
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
@@ -1142,7 +1150,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		glUniformHandleui64ARB(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
 		glUniformHandleui64ARB(U_TMU4, rgh->handle);
 		glUniformHandleui64ARB(U_TMU5, skinBump->handle);
-		glUniformHandleui64ARB(U_TMU6, skyCube_handle);
+//		glUniformHandleui64ARB(U_TMU6, skyCube_handle);
 
 		if (rgh == r_notexture)
 			qglUniform1i(U_USE_RGH_MAP, 0);

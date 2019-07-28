@@ -24,16 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 
-image_t *i_conback;
-image_t *i_inventory;
-image_t *i_net;
-image_t *i_pause;
-image_t *i_loading;
-image_t *i_backtile;
-image_t *i_turtle;
-image_t *i_quit;
 extern image_t *r_notexture;
-
 
 void CL_InitImages () {
 
@@ -45,4 +36,6 @@ void CL_InitImages () {
 
 	i_backtile = Draw_FindPic ("backtile");
 	i_turtle = Draw_FindPic ("turtle");
+	i_nosaveshot = Draw_FindPic("nosaveshot");
+
 }

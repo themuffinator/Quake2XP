@@ -1037,6 +1037,9 @@ void R_GammaRamp (void);
 float ClampCvar(float min, float max, float value);
 extern cvar_t *r_mode;
 
+void GL_MakeSaveShot(char* dir);
+char makeSaveShot[16];
+
 void SCR_UpdateScreen (void) {
 	// if the screen is disabled (loading plaque is up, or vid mode
 	// changing)
@@ -1057,7 +1060,7 @@ void SCR_UpdateScreen (void) {
 
 
 	cl_hudScale->value = ClampCvar(0.1, 1.0, cl_hudScale->value);
-	cl_fontScale->value = ClampCvar(2.0, 3.0, cl_fontScale->value);
+	cl_fontScale->value = ClampCvar(2.0, 4.0, cl_fontScale->value);
 
 	if(viddef.height <= 1024)
 		Cvar_Set("cl_fontScale", "2");
@@ -1108,6 +1111,13 @@ void SCR_UpdateScreen (void) {
 
 		V_RenderView ();
 		
+		if (cls.state == ca_active && !scr_con_current)
+			if (makeSaveShot[0])
+			{
+				GL_MakeSaveShot(makeSaveShot);
+				makeSaveShot[0] = 0;
+			}
+
 		SCR_DrawSpeeds();
 
 		SCR_DrawStats ();

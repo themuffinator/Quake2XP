@@ -430,7 +430,6 @@ void Menu_Draw (menuframework_s * menu) {
 		}
 	}
 
-	Set_FontShader (qfalse);
 	if (item) {
 		if (item->statusbarfunc)
 			item->statusbarfunc ((void *)item);
@@ -443,6 +442,7 @@ void Menu_Draw (menuframework_s * menu) {
 	else {
 		Menu_DrawStatusBar (menu->statusbar);
 	}
+	Set_FontShader(qfalse);
 }
 
 void Menu_DrawStatusBar (const char *string) {

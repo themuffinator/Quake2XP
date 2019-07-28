@@ -2565,7 +2565,44 @@ static menuaction_s s_loadgame_actions[MAX_SAVEGAMES];
 
 char m_savestrings[MAX_SAVEGAMES][MAX_OSPATH];
 char m_savesInfos[MAX_SAVEGAMES][MAX_OSPATH];
+char m_savemapnames[MAX_SAVEGAMES][4096];
+
 qboolean m_savevalid[MAX_SAVEGAMES];
+
+void Create_MapNamesList()
+{
+	int		i, j;
+	FILE	*f;
+	char	name[MAX_OSPATH];
+
+	for (i = 0; i < MAX_SAVEGAMES; i++)
+	{
+		Com_sprintf(name, sizeof(name), "%s/save/save%i/server.ssv", FS_Gamedir(), i);
+		f = fopen(name, "rb");
+		if (!f)
+		{
+			strcpy(m_savemapnames[i], "<EMPTY>");
+			m_savevalid[i] = qfalse;
+		}
+		else
+		{
+			fread(m_savemapnames[i]-32, sizeof(m_savemapnames[i]), 1, f);
+
+			for (j = 32; j < sizeof(m_savemapnames[i]); j++)
+			{
+				if (m_savemapnames[i][j] == '$' || !m_savemapnames[i][j] || m_savemapnames[i][j] == '*')
+				{
+					m_savemapnames[i][j] = 0;
+					break;
+				}
+			}
+			fclose(f);
+			m_savevalid[i] = qtrue;
+		}
+	}
+}
+
+
 
 void Create_Savestrings(void) {
 	int i;
@@ -2573,8 +2610,7 @@ void Create_Savestrings(void) {
 	char name[MAX_OSPATH];
 
 	for (i = 0; i < MAX_SAVEGAMES; i++) {
-		Com_sprintf(name, sizeof(name), "%s/save/save%i/comment.sav",
-			FS_Gamedir(), i);
+		Com_sprintf(name, sizeof(name), "%s/save/save%i/comment.sav", FS_Gamedir(), i);
 		f = fopen(name, "rb");
 		if (!f) {
 			strcpy(m_savestrings[i], "<EMPTY>");
@@ -2609,6 +2645,56 @@ void Create_SavesInfoss(void) {
 	}
 }
 
+
+void DrawSavedShot(void* m)
+{
+	int				i, w, h, picWidth, center;
+	menuaction_s	*menu = (menuaction_s*)m;
+	
+	picWidth = s_loadgame_menu.x;
+	picWidth -= 90;
+
+	i = menu->generic.localdata[0];
+
+	if (m_savevalid[i])
+	{
+	if (i){
+
+		Draw_GetPicSize(&w, &h, va("/save/save%i/shot.jpg", i));
+		float aspect = (float)w / (float)h;
+		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, va("/save/save%i/shot.jpg", i));
+
+		Draw_Fill(10, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+
+		Set_FontShader(qtrue);
+		int len = (int)strlen(m_savesInfos[i]);
+		center = picWidth * 0.5 - len * 8;
+		Draw_StringScaled(center - 10 * cl_fontScale->integer, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
+		Set_FontShader(qfalse);
+		}
+	else {
+
+		Draw_GetPicSize(&w, &h, va("/levelshots/%s.jpg", m_savemapnames[i]));
+		float aspect = (float)w / (float)h;
+		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, va("/levelshots/%s.jpg", m_savemapnames[i]));
+		
+		Draw_Fill(10, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+		
+		Set_FontShader(qtrue);
+		int len = (int)strlen(m_savesInfos[i]);
+		center = picWidth * 0.5 - len * 8;
+		Draw_StringScaled(center - 10 * cl_fontScale->integer, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
+		Set_FontShader(qfalse);
+		}
+	}
+	else {
+		Draw_GetPicSize(&w, &h, "nosaveshot");
+		float aspect = (float)w / (float)h;
+		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
+	}
+
+}
+
 void LoadGameCallback(void *self) {
 	menuaction_s *a = (menuaction_s *)self;
 
@@ -2622,12 +2708,14 @@ void LoadGame_MenuInit(void) {
 
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
 
-	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.5 + 8 * cl_fontScale->value;
-	s_loadgame_menu.y = viddef.height * 0.25 + 8 * cl_fontScale->value;
+	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value;
+	s_loadgame_menu.y = viddef.height * 0.25 + h * 0.5 + 8 * cl_fontScale->value;
+
 	s_loadgame_menu.nitems = 0;
 
 	Create_Savestrings();
 	Create_SavesInfoss();
+	Create_MapNamesList();
 
 	for (i = 0; i < MAX_SAVEGAMES; i++) {
 		s_loadgame_actions[i].generic.name = m_savestrings[i];
@@ -2641,7 +2729,7 @@ void LoadGame_MenuInit(void) {
 			s_loadgame_actions[i].generic.y += 10 * cl_fontScale->value;
 
 		s_loadgame_actions[i].generic.type = MTYPE_ACTION;
-		s_loadgame_actions[i].generic.statusbar = m_savesInfos[i];
+		s_loadgame_actions[i].generic.statusbarfunc = DrawSavedShot;
 
 		Menu_AddItem(&s_loadgame_menu, &s_loadgame_actions[i]);
 	}
@@ -2696,12 +2784,13 @@ void SaveGame_MenuInit(void) {
 
 	Draw_GetPicSize(&w, &h, "m_banner_save_game");
 
-	s_savegame_menu.x = viddef.width * 0.5 - w * 0.5 + 8 * cl_fontScale->value;
-	s_savegame_menu.y = viddef.height * 0.25 + 8 * cl_fontScale->value;
+	s_savegame_menu.x = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value;
+	s_savegame_menu.y = viddef.height * 0.25 + h * 0.5 + 8 * cl_fontScale->value;
 	s_savegame_menu.nitems = 0;
 
 	Create_Savestrings();
 	Create_SavesInfoss();
+	Create_MapNamesList();
 
 	// don't include the autosave slot
 	for (i = 0; i < MAX_SAVEGAMES - 1; i++) {
@@ -2714,7 +2803,7 @@ void SaveGame_MenuInit(void) {
 		s_savegame_actions[i].generic.y = (i) * 10 * cl_fontScale->value;
 
 		s_savegame_actions[i].generic.type = MTYPE_ACTION;
-		s_savegame_actions[i].generic.statusbar = m_savesInfos[i];
+		s_savegame_actions[i].generic.statusbarfunc = DrawSavedShot;
 
 		Menu_AddItem(&s_savegame_menu, &s_savegame_actions[i]);
 	}

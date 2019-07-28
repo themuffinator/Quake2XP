@@ -1788,13 +1788,13 @@ void Mod_ParseFogParams(model_t *mod, char *s) {
 
 		if (!Q_strcasecmp(token, "fogBias")) { // -1.0 ... 1.0
 			mod->fogBias = atof(COM_Parse(&s));
-			mod->fogBias = clamp(mod->fogBias, -1.0, 1.0);
+		//	mod->fogBias = clamp(mod->fogBias, -1.0, 1.0);
 			Com_Printf("fogBias:" S_COLOR_GREEN " %.3f\n", mod->fogBias);
 			continue;
 		}
 		if (!Q_strcasecmp(token, "fogSkyBias")) { // -1.0 ... 1.0
-			mod->fogBias = atof(COM_Parse(&s));
-			mod->fogBias = clamp(mod->fogBias, -1.0, 1.0);
+			mod->fogSkyBias = atof(COM_Parse(&s));
+		//	mod->fogSkyBias = clamp(mod->fogBias, -1.0, 1.0);
 			Com_Printf("fogSkyBias:" S_COLOR_GREEN " %.3f\n", mod->fogSkyBias);
 			continue;
 		}

@@ -867,14 +867,14 @@ void CL_DrawInventory (void);
 //
 void CL_PredictMovement (void);
 
-extern image_t *i_conback;
-extern image_t *i_inventory;
-extern image_t *i_net;
-extern image_t *i_pause;
-extern image_t *i_loading;
-extern image_t *i_backtile;
-extern image_t *i_turtle;
-
+image_t *i_conback;
+image_t *i_inventory;
+image_t *i_net;
+image_t *i_pause;
+image_t *i_loading;
+image_t *i_backtile;
+image_t *i_turtle;
+image_t	*i_nosaveshot;
 
 extern image_t *im_main_menu[5];
 void Q_snprintfz (char *dst, int dstSize, const char *fmt, ...);

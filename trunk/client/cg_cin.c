@@ -625,7 +625,7 @@ void SCR_PlayCinematic (char *arg) {
 	FS_Read (&cin.s_channels, 4, &cl.cinematic_file);
 	cin.s_channels = LittleLong (cin.s_channels);
 
-	S_Streaming_Start (cin.s_width * 8, cin.s_channels, cin.s_rate, 1.0);
+	S_Streaming_Start (cin.s_width * 8, cin.s_channels, cin.s_rate, s_fxVolume->value);
 
 	Huff1TableInit ();
 

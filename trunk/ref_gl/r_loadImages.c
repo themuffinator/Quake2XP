@@ -1109,3 +1109,31 @@ void GL_LevelShot_f(void) {
 	Com_Printf("Wrote level shot %s\n", picname);
 
 }
+
+void GL_MakeSaveShot(char* dir) {
+	char	name[MAX_QPATH];
+	int		image = 0;
+	ILuint	ImagesToSave[1];
+
+	Com_sprintf(name, sizeof(name), "%s/save/%s/shot.jpg", FS_Gamedir(), dir);
+
+	if ((r_screenShotJpegQuality->integer >= 99) || (r_screenShotJpegQuality->integer <= 0))
+		Cvar_SetValue("r_screenShotJpegQuality", 99);
+
+	ilHint(IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
+	ilSetInteger(IL_JPG_QUALITY, r_screenShotJpegQuality->integer);
+
+	ilGenImages(1, ImagesToSave);
+	ilBindImage(ImagesToSave[0]);
+
+	if (ilutGLScreen()) {
+		iluGammaCorrect(0.5);
+		ilSave(image, name);
+	}
+
+	ilDeleteImages(1, ImagesToSave);
+
+	// Done!
+	Com_Printf("Wrote save shot %s\n", name);
+
+}
