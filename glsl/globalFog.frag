@@ -1,6 +1,11 @@
+/*
 layout (binding = 0) uniform sampler2DRect	u_screenMap;
 layout (binding = 1) uniform sampler2DRect	u_depthMap;
 layout (binding = 2) uniform sampler2DRect	u_skyMaskMap;
+*/
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2DRect	u_screenMap;
+layout (bindless_sampler, location  = U_TMU1) uniform sampler2DRect	u_depthMap;
+layout (bindless_sampler, location  = U_TMU2) uniform sampler2DRect	u_skyMaskMap;
 
 layout	(location = U_PARAM_INT_0)		uniform int		u_fogType;		// exp1 and exp2
 layout	(location = U_PARAM_VEC4_0)		uniform vec4	u_fogParams;	//rgb and density
@@ -20,20 +25,21 @@ void main(void){
 
 	float fogCoord =  abs(gl_FragCoord.z / gl_FragCoord.w);
 	
-	if(mask == 0.0)
+	if(mask == 0.0){
 		fogCoord += u_fogBias.x;
-
+		fogCoord /= depth;
+	}
 	if(mask == 1.0)
 		fogCoord += u_fogBias.y;
 	
-	fogCoord /= depth;
+	
 
 	vec3 fogColor;
 	float fogFactor, density;
 
 	if(mask == 1.0){
 		fogColor = u_fogSkyParams.xyz;
-		density = 100.0 / u_fogSkyParams.w;
+		density = 1000.0 * u_fogSkyParams.w; // reverse! w/o depth map value
 	 }
 
 	 if(mask == 0.0){
