@@ -38,8 +38,8 @@ void main (void) {
 
 	// compute sample scale
 	vec3 scale = vec3(u_ssaoParms.y *
-		min(centerDepth / 212.0, 1.0) *		// make area smaller if distance is less than 5 meters
-		(1.0 + centerDepth / 320.0));		// make area bigger if distance is more than 32 meters
+		min(centerDepth / 812.0, 1.0) *		// make area smaller if distance is less than 5 meters
+		(1.0 + centerDepth / 1220.0));		// make area bigger if distance is more than 32 meters
 
 	float depthRangeScale = FARCLIP / scale.z * 0.85;
 

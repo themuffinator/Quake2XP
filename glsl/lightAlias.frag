@@ -14,7 +14,6 @@ layout (bindless_sampler, location  = U_TMU2) uniform sampler2D		u_causticMap;
 layout (bindless_sampler, location  = U_TMU3) uniform samplerCube	u_CubeFilterMap;
 layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_rghMap;
 layout (bindless_sampler, location  = U_TMU5) uniform sampler2D		u_bumpBlend;
-layout (bindless_sampler, location  = U_TMU6) uniform sampler2DRect	u_ssaoMap;
 
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
 layout(location = U_CAUSTICS_SCALE)		uniform float	u_CausticsModulate;
@@ -29,7 +28,6 @@ layout(location = U_SPOT_LIGHT)			uniform int		u_spotLight;
 layout(location = U_SPOT_PARAMS)		uniform vec3	u_spotParams;
 layout(location = U_USE_AUTOBUMP)		uniform int		u_autoBump;
 layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump scale y - specular scale
-layout(location = U_USE_SSAO)			uniform int		u_ssao;
 layout(location = U_PARAM_INT_0)		uniform int		u_blinnPhong; // use old lighting model
 layout(location = U_PARAM_INT_1)		uniform int		u_alphaMask;
 layout(location = U_PARAM_INT_2)		uniform int		u_useSSS;
@@ -167,8 +165,6 @@ void main (void) {
         fragData.rgb +=LightingDiffraction(V, L, uv_tangent);
        }
       }	
-	  if (u_ssao == 1)
-		fragData.rgb *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).rgb;
 
 	  fragData.a = 1.0;
 }

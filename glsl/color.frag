@@ -1,6 +1,7 @@
-layout (binding = 0) uniform sampler2D	u_map;
+//layout (binding = 0) uniform sampler2D	u_map;
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2D	u_map;
 
-layout (location = U_COLOR)			  uniform vec4	u_fragColor;
+layout (location = U_COLOR)			uniform vec4	u_fragColor;
 layout (location = U_COLOR_MUL)		uniform float	u_colorMul;
 layout (location = U_PARAM_INT_0)	uniform int		u_colorPass;
 

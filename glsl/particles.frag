@@ -1,8 +1,8 @@
-layout (binding = 0) uniform sampler2D		u_map0;
-layout (binding = 1) uniform sampler2DRect	u_depthBufferMap;
+//layout (binding = 0) uniform sampler2D		u_map0;
+//layout (binding = 1) uniform sampler2DRect	u_depthBufferMap;
 
-//layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_map0;
-//layout (bindless_sampler, location  = U_TMU1) uniform sampler2DRect	u_depthBufferMap;
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_map0;
+layout (bindless_sampler, location  = U_TMU1) uniform sampler2DRect	u_depthBufferMap;
 
 layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
 layout(location = U_PARTICLE_MASK)		uniform vec2	u_mask;

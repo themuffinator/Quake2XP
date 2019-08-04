@@ -12,7 +12,6 @@ layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_NormalMap;
 layout (bindless_sampler, location  = U_TMU2) uniform samplerCube	u_CubeFilterMap;
 layout (bindless_sampler, location  = U_TMU3) uniform sampler2D		u_Caustics;
 layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_RghMap;
-layout (bindless_sampler, location	= U_TMU5) uniform sampler2DRect	u_ssaoMap;
 
 layout(location = U_COLOR_MUL)			uniform float	u_ColorModulate;
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
@@ -31,7 +30,6 @@ layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump 
 layout(location = U_PARAM_INT_0)		uniform int		u_sss;
 layout(location = U_PARAM_INT_1)		uniform int		u_selfShadow; // self shadow parallax
 layout(location = U_PARAM_INT_2)		uniform int		u_blinnPhong; // use old lighting model
-layout(location = U_USE_SSAO)			uniform int		u_ssao;
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;
@@ -139,9 +137,6 @@ void main (void) {
                                       
 		fragData.rgb =  brdfColor  * attenMap * shadow * cubeFilter.rgb; 
 		fragData.a = 1.0;
-		
-		if (u_ssao == 1)
-			fragData.rgb *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).rgb;
      }
   }	
 }
