@@ -172,6 +172,8 @@ extern color4ub_t	ColorTable[8];
 
 void RE_SetColor (const color4ub_t color);
 
+char drawSaveShot[16];
+
 typedef struct {
 	int playerHealth;
 	int playerArmor;

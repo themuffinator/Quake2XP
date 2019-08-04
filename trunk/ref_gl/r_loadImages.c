@@ -794,10 +794,12 @@ void R_InitEngineTextures (void) {
 	byte	notex[1][1][4]	= { 0x0, 0x0, 0x0, 0x0 };
 	byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x10 };
 	byte	white[1][1][4]	= { 0xff, 0xff, 0xff, 0xff };
+	byte	cin[256 * 256 * 4];
 
-	r_defBump	= GL_LoadPic ("***r_defBump***", (byte *)bump, 1, 1, it_bump, 32);
-	r_whiteMap	= GL_LoadPic ("***r_whiteMap***", (byte *)white, 1, 1, it_bump, 32);
-	r_notexture = GL_LoadPic ("***r_notexture***", (byte *)notex, 1, 1, it_wall, 32);
+	r_defBump	= GL_LoadPic ("***r_defBump***",	(byte *)bump, 1, 1, it_bump, 32);
+	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_bump, 32);
+	r_notexture = GL_LoadPic ("***r_notexture***",	(byte *)notex, 1, 1, it_wall, 32);
+	cinMap		= GL_LoadPic ("***cinMap***",		(byte*)cin, 256, 256, it_wall, 32);
 
 	r_particletexture[PT_DEFAULT] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
 	r_particletexture[PT_BUBBLE] = GL_FindImage ("gfx/particles/bubble.png", it_wall);
@@ -1116,6 +1118,7 @@ void GL_MakeSaveShot(char* dir) {
 	ILuint	ImagesToSave[1];
 
 	Com_sprintf(name, sizeof(name), "%s/save/%s/shot.jpg", FS_Gamedir(), dir);
+	remove(name);
 
 	if ((r_screenShotJpegQuality->integer >= 99) || (r_screenShotJpegQuality->integer <= 0))
 		Cvar_SetValue("r_screenShotJpegQuality", 99);

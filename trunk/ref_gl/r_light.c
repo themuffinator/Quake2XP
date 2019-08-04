@@ -2489,8 +2489,11 @@ void R_DrawLightFlare () {
 
 	GL_BindProgram (particlesProgram);
 
-	GL_MBind (GL_TEXTURE0, r_flare->texnum);
-	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
+//	GL_MBind (GL_TEXTURE0, r_flare->texnum);
+//	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
+	
+	glUniformHandleui64ARB(U_TMU0, r_flare->handle);
+	glUniformHandleui64ARB(U_TMU1, depthMap->handle);
 
 	qglUniform2f (U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform2f (U_PARTICLE_MASK, 1.0, 0.0);

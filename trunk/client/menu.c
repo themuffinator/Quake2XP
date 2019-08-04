@@ -2572,7 +2572,7 @@ qboolean m_savevalid[MAX_SAVEGAMES];
 void Create_MapNamesList()
 {
 	int		i, j;
-	FILE	*f;
+	FILE* f;
 	char	name[MAX_OSPATH];
 
 	for (i = 0; i < MAX_SAVEGAMES; i++)
@@ -2586,11 +2586,17 @@ void Create_MapNamesList()
 		}
 		else
 		{
-			fread(m_savemapnames[i]-32, sizeof(m_savemapnames[i]), 1, f);
+			if(f) //paranoia
+				fseek(f, 0x20, SEEK_SET); //move to map name
 
-			for (j = 32; j < sizeof(m_savemapnames[i]); j++)
+			fread(m_savemapnames[i], sizeof(m_savemapnames[i]), 1, f);
+
+			if (m_savemapnames[i][0] == '*') 
+					strcpy((char*)m_savemapnames[i][0], "");
+
+			for (j = 0; j < strlen(m_savemapnames[i]); j++)
 			{
-				if (m_savemapnames[i][j] == '$' || !m_savemapnames[i][j] || m_savemapnames[i][j] == '*')
+				if (m_savemapnames[i][j] == '$' || m_savemapnames[i][j] == 0)
 				{
 					m_savemapnames[i][j] = 0;
 					break;
@@ -2617,7 +2623,16 @@ void Create_Savestrings(void) {
 			m_savevalid[i] = qfalse;
 		}
 		else {
+			fseek(f, 9, SEEK_SET); // try find victory screen
 			fread(m_savestrings[i], sizeof(m_savestrings[i]), 1, f);
+
+			if (!Q_stricmp(m_savestrings[i], "victory.pcx")) {
+				strcpy(m_savestrings[i], "Victory Screen");
+			}
+			else {
+				fseek(f, 0, SEEK_SET);
+				fread(m_savestrings[i], sizeof(m_savestrings[i]), 1, f);
+			}
 			fclose(f);
 			m_savevalid[i] = qtrue;
 		}
@@ -2638,20 +2653,31 @@ void Create_SavesInfoss(void) {
 			m_savevalid[i] = qfalse;
 		}
 		else {
+			fseek(f, 9, SEEK_SET); // try find victory screen
 			fread(m_savesInfos[i], sizeof(m_savesInfos[i]), 1, f);
+
+			if (!Q_stricmp(m_savesInfos[i], "victory.pcx")) {
+				strcpy(m_savesInfos[i], "Victory Screen");
+			}
+			else {
+				fseek(f, 0, SEEK_SET);
+				fread(m_savesInfos[i], sizeof(m_savesInfos[i]), 1, f);
+			}
 			fclose(f);
 			m_savevalid[i] = qtrue;
 		}
 	}
 }
 
-
 void DrawSavedShot(void* m)
 {
 	int				i, w, h, picWidth, center;
 	menuaction_s	*menu = (menuaction_s*)m;
-	
-	picWidth = s_loadgame_menu.x;
+	char			savePic[MAX_QPATH];
+	float			aspect;
+
+	Draw_GetPicSize(&w, &h, "m_banner_load_game");
+	picWidth = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value; //load-save menu x position value
 	picWidth -= 90;
 
 	i = menu->generic.localdata[0];
@@ -2659,11 +2685,12 @@ void DrawSavedShot(void* m)
 	if (m_savevalid[i])
 	{
 	if (i){
+		strcpy(savePic, va("/save/save%i/shot.jpg", i));
+		Draw_GetPicSize(&w, &h, savePic);
+		aspect = (float)w / (float)h;
 
-		Draw_GetPicSize(&w, &h, va("/save/save%i/shot.jpg", i));
-		float aspect = (float)w / (float)h;
-		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, va("/save/save%i/shot.jpg", i));
-
+		R_FreePic(savePic); // update pic cache
+		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		Draw_Fill(10, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
 
 		Set_FontShader(qtrue);
@@ -2674,9 +2701,20 @@ void DrawSavedShot(void* m)
 		}
 	else {
 
-		Draw_GetPicSize(&w, &h, va("/levelshots/%s.jpg", m_savemapnames[i]));
-		float aspect = (float)w / (float)h;
-		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, va("/levelshots/%s.jpg", m_savemapnames[i]));
+		if(!Q_stricmp(m_savemapnames[i], "victory.pcx")) {
+			strcpy(savePic, va("/pics/victory.tga", m_savemapnames[i]));
+			Draw_GetPicSize(&w, &h, savePic);
+			aspect = (float)w / (float)h;
+			Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+		}
+	else
+		{
+		strcpy(savePic, va("/levelshots/%s.jpg", m_savemapnames[i]));
+		Draw_GetPicSize(&w, &h, savePic);
+		aspect = (float)w / (float)h;
+		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+		}
+
 		
 		Draw_Fill(10, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
 		
@@ -2689,7 +2727,7 @@ void DrawSavedShot(void* m)
 	}
 	else {
 		Draw_GetPicSize(&w, &h, "nosaveshot");
-		float aspect = (float)w / (float)h;
+		aspect = (float)w / (float)h;
 		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
 	}
 

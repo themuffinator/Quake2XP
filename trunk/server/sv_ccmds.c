@@ -550,6 +550,8 @@ Puts the server in demo mode on a specific map/cinematic
 ==================
 */
 void SV_DemoMap_f (void) {
+
+	drawSaveShot[0] = 0;
 	SV_Map (qtrue, Cmd_Argv (1), qfalse);
 }
 
@@ -612,6 +614,8 @@ void SV_GameMap_f (void) {
 			free (savedInuse);
 		}
 	}
+	
+	drawSaveShot[0] = 0;
 
 	// start up the next map
 	SV_Map (qfalse, Cmd_Argv (1), qfalse);
@@ -709,14 +713,18 @@ void SV_Loadgame_f (void) {
 		Com_Printf ("Bad savedir.\n");
 	}
 	// make sure the server.ssv file exists
-	Com_sprintf (name, sizeof(name), "%s/save/%s/server.ssv", FS_Gamedir (),
-		Cmd_Argv (1));
+	Com_sprintf (name, sizeof(name), "%s/save/%s/server.ssv", FS_Gamedir (), Cmd_Argv (1));
 	f = fopen (name, "rb");
 	if (!f) {
 		Com_Printf ("No such savegame: %s\n", name);
 		return;
 	}
 	fclose (f);
+
+	if (!strncmp(dir, "save", 4))
+		Com_sprintf(drawSaveShot, sizeof(drawSaveShot), dir);
+	else
+		drawSaveShot[0] = 0;
 
 	SV_CopySaveGame (Cmd_Argv (1), "current");
 

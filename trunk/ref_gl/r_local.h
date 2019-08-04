@@ -157,6 +157,7 @@ image_t *r_notexture;
 image_t *r_distort;
 image_t *r_predator;
 image_t *depthMap;
+image_t	*cinMap;
 
 image_t *r_particletexture[PT_MAX];
 image_t *r_decaltexture[DECAL_MAX];

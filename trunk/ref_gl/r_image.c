@@ -755,6 +755,48 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	return GL_Upload32(trans, width, height, mipmap, qfalse);
 }
 
+// Berserker stuff
+inline char b_chrt(char sym)
+{
+	if ((sym > 0x40) && (sym < 0x5b)) return sym + 0x20;		// "a" - "A"
+	if (sym == 0x5c) return 0x2f;						// "/" - "\"
+	return sym;
+}
+
+qboolean b_stricmp(char* str1, char* str2)
+{
+	int i = 0;
+	while (1)
+	{
+		char ch1 = b_chrt(str1[i]);
+		char ch2 = b_chrt(str2[i]);
+		if ((ch1 == 0) && (ch2 == 0)) return qfalse;		// equal
+		if (ch1 != ch2) return qtrue;					// not equal
+		i++;
+	}
+}
+// Knightmare - free single pic
+void R_FreePic(char* name)
+{
+	int		i;
+	image_t* image;
+
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++)
+	{
+		if (!image->registration_sequence)
+			continue;		// free image_t slot
+		if (image->type != it_pic)
+			continue;		// only free pics
+
+		if (!b_stricmp(name, image->bare_name)){
+			// free it
+			glMakeTextureHandleNonResidentARB(image->handle);
+			qglDeleteTextures(1, &image->texnum);
+			memset(image, 0, sizeof(*image));
+			return;
+		}
+	}
+}
 
 /*
 ================
@@ -1373,8 +1415,6 @@ void GL_ShutdownImages(void) {
 		//	continue;			// free image_t slot
 
 		glMakeTextureHandleNonResidentARB(image->handle);
-		image->hasHandle = qfalse;
-
 		// free it
 		qglDeleteTextures(1, (GLuint*)&image->texnum);
 		memset(image, 0, sizeof(*image));

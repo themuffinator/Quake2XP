@@ -310,7 +310,6 @@ typedef struct image_s {
 
 	//bindless graphics
 	uint64		handle;
-	qboolean	hasHandle;
 	
 	//lut description
 	float		lutSize;

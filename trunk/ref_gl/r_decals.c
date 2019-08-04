@@ -82,7 +82,7 @@ void R_RenderDecals(void)
 {
     decals_t    *dl, *next, *active; 
     vec3_t		decalColor;
-    unsigned    tex, texture = 0;
+	uint64	    texId, texture = 0;
     int			x, i;
     int			numIndices = 0, numVertices = 0;
     float		endLerp, decalAlpha;
@@ -142,19 +142,22 @@ void R_RenderDecals(void)
 
 		decalAlpha = dl->alpha + (dl->endAlpha - dl->alpha) * endLerp;
 
-		tex = r_decaltexture[dl->type]->texnum;
+		texId = r_decaltexture[dl->type]->handle;
           
-        if (texture != tex) {
+        if (texture != texId) {
         // flush array if new texture/blend
         if (numIndices) {
 			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
 			c_decal_tris += numIndices/3;
 			numVertices = 0;
 			numIndices = 0;
-          }
+		}
 
-		texture = tex;
-        GL_MBind(GL_TEXTURE0, texture);
+		texture = texId;
+
+		//GL_MBind(GL_TEXTURE0, texture);
+		glUniformHandleui64ARB(U_TMU0, texId);
+
         GL_BlendFunc(dl->sFactor, dl->dFactor);
 
 		if (dl->flags == DF_OVERBRIGHT)
@@ -162,7 +165,7 @@ void R_RenderDecals(void)
 		else
 			qglUniform1f(U_COLOR_MUL, 1.0);
 
-          }
+        }
 
      //
      // array is full, flush to screen

@@ -350,7 +350,7 @@ void Draw_LoadingScreen (int x, int y, int w, int h, char *pic);
 
 void SCR_DrawLoading (void) {
 	int		scaled, center;
-	char	mapfile[32];
+	char	mapfile[32], saveshot[32];
 	char	*mapname;
 	int		fontscale = (int)cl_fontScale->value;
 
@@ -364,10 +364,21 @@ void SCR_DrawLoading (void) {
 		strcpy (mapfile, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
 		mapfile[strlen (mapfile) - 4] = 0;	// cut off ".bsp"
 		
-		if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
-			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
+		if (drawSaveShot[0])
+		{
+		strcpy(saveshot, va("/save/%s/shot.jpg", drawSaveShot));
+		
+		if (Draw_FindPic(va("/save/%s/shot.jpg", drawSaveShot)))
+			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, saveshot);
 		else
 			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
+		}
+		else {
+			if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
+				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
+			else
+				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
+		}
 
 		scaled = 8 * fontscale;
 		SCR_DrawLoadingBar (loadingPercent, scaled);

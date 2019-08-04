@@ -50,6 +50,7 @@ void ClampVertexColor (vec4_t color) {
 vec4_t		ParticleColor[MAX_PARTICLE_VERT];
 vec3_t		ParticleVert[MAX_PARTICLE_VERT];
 vec2_t		ParticleTextCoord[MAX_PARTICLE_VERT];
+index_t		ParticleIndex[MAX_INDICES];
 
 int SortPart (particle_t *a, particle_t *b) {
 	return (a->type + a->flags) - (b->type + b->flags);
@@ -57,8 +58,8 @@ int SortPart (particle_t *a, particle_t *b) {
 
 void R_DrawParticles (void) {
 	particle_t *p;
-	unsigned	texId, texture = -1, flagId, flags = -1;
-	index_t		ParticleIndex[MAX_INDICES];
+	uint64		texId, texture = -1;
+	uint		flagId, flags = -1;
 	int			i, len, loc, partVert = 0, index = 0;
 	vec3_t		point, width;
 	vec3_t		move, vec, dir1, dir2, dir3, spdir;
@@ -83,7 +84,8 @@ void R_DrawParticles (void) {
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, ParticleTextCoord);
 	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, ParticleColor);
 
-	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
+	//GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
+	glUniformHandleui64ARB(U_TMU1, depthMap->handle);
 
 	qglUniform2f (U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -101,96 +103,96 @@ void R_DrawParticles (void) {
 		switch (p->type) {
 
 			case PT_BUBBLE:
-				texId = r_particletexture[PT_BUBBLE]->texnum;
+				texId = r_particletexture[PT_BUBBLE]->handle;
 				break;
 
 			case PT_FLY:
-				texId = fly[((int)(r_newrefdef.time * 10)) & (MAX_FLY - 1)]->texnum;
+				texId = fly[((int)(r_newrefdef.time * 10)) & (MAX_FLY - 1)]->handle;
 				break;
 
 			case PT_BLOOD:
-				texId = r_particletexture[PT_BLOOD]->texnum;
+				texId = r_particletexture[PT_BLOOD]->handle;
 				break;
 
 			case PT_BLOOD2:
-				texId = r_particletexture[PT_BLOOD2]->texnum;
+				texId = r_particletexture[PT_BLOOD2]->handle;
 				break;
 
 			case PT_BLASTER:
-				texId = r_particletexture[PT_BLASTER]->texnum;
+				texId = r_particletexture[PT_BLASTER]->handle;
 				break;
 
 			case PT_SMOKE:
-				texId = r_particletexture[PT_SMOKE]->texnum;
+				texId = r_particletexture[PT_SMOKE]->handle;
 				break;
 
 			case PT_SPLASH:
-				texId = r_particletexture[PT_SPLASH]->texnum;
+				texId = r_particletexture[PT_SPLASH]->handle;
 				break;
 
 			case PT_SPARK:
-				texId = r_particletexture[PT_SPARK]->texnum;
+				texId = r_particletexture[PT_SPARK]->handle;
 				break;
 
 			case PT_BEAM:
-				texId = r_particletexture[PT_BEAM]->texnum;
+				texId = r_particletexture[PT_BEAM]->handle;
 				break;
 
 			case PT_SPIRAL:
-				texId = r_particletexture[PT_SPIRAL]->texnum;
+				texId = r_particletexture[PT_SPIRAL]->handle;
 				break;
 
 
 			case PT_FLAME:
-				texId = flameanim[((int)((r_newrefdef.time - p->time) * 10)) % MAX_FLAMEANIM]->texnum;
+				texId = flameanim[((int)((r_newrefdef.time - p->time) * 10)) % MAX_FLAMEANIM]->handle;
 				break;
 
 			case PT_BLOODSPRAY:
-				texId = r_blood[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->texnum;
+				texId = r_blood[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->handle;
 				break;
 
 			case PT_xBLOODSPRAY:
-				texId = r_xblood[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->texnum;
+				texId = r_xblood[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->handle;
 				break;
 
 			case PT_EXPLODE:
-				texId = r_explode[((int)((r_newrefdef.time - p->time) * 20)) % MAX_EXPLODE]->texnum;
+				texId = r_explode[((int)((r_newrefdef.time - p->time) * 20)) % MAX_EXPLODE]->handle;
 				break;
 
 			case PT_WATERPULME:
-				texId = r_particletexture[PT_WATERPULME]->texnum;
+				texId = r_particletexture[PT_WATERPULME]->handle;
 				break;
 
 			case PT_WATERCIRCLE:
-				texId = r_particletexture[PT_WATERCIRCLE]->texnum;
+				texId = r_particletexture[PT_WATERCIRCLE]->handle;
 				break;
 
 			case PT_BLOODDRIP:
-				texId = r_particletexture[PT_BLOODDRIP]->texnum;
+				texId = r_particletexture[PT_BLOODDRIP]->handle;
 				break;
 
 			case PT_BLOODMIST:
-				texId = r_particletexture[PT_BLOODMIST]->texnum;
+				texId = r_particletexture[PT_BLOODMIST]->handle;
 				break;
 
 			case PT_BLASTER_BOLT:
-				texId = r_particletexture[PT_BLASTER_BOLT]->texnum;
+				texId = r_particletexture[PT_BLASTER_BOLT]->handle;
 				break;
 
 			case PT_BFG_BALL:
-				texId = r_particletexture[PT_BFG_BALL]->texnum;
+				texId = r_particletexture[PT_BFG_BALL]->handle;
 				break;
 
 			case PT_BFG_EXPL:
-				texId = r_bfg_expl[((int)((r_newrefdef.time - p->time) * 20)) % MAX_BFG_EXPL]->texnum;
+				texId = r_bfg_expl[((int)((r_newrefdef.time - p->time) * 20)) % MAX_BFG_EXPL]->handle;
 				break;
 			
 			case PT_BFG_EXPL2:
-				texId = r_particletexture[PT_BFG_EXPL2]->texnum;
+				texId = r_particletexture[PT_BFG_EXPL2]->handle;
 				break;
 
 			default:
-				texId = r_particletexture[PT_DEFAULT]->texnum;
+				texId = r_particletexture[PT_DEFAULT]->handle;
 
 		}
 
@@ -209,7 +211,9 @@ void R_DrawParticles (void) {
 			partVert = 0;
 			index = 0;
 
-			GL_MBind (GL_TEXTURE0, texId);
+			//GL_MBind (GL_TEXTURE0, texId);
+			glUniformHandleui64ARB(U_TMU0, texId);
+
 			GL_BlendFunc (p->sFactor, p->dFactor);
 
 			if (p->sFactor == GL_ONE && p->dFactor == GL_ONE)

@@ -590,6 +590,8 @@ void CL_Connect_f (void) {
 		return;
 	}
 
+	drawSaveShot[0] = 0;
+	
 	if (Com_ServerState ()) {	// if running a local server, kill it and
 		// reissue
 		SV_Shutdown (va ("Server quit\n", msg), qfalse);
@@ -831,6 +833,9 @@ void CL_Reconnect_f (void) {
 		return;
 
 	S_StopAllSounds ();
+
+	drawSaveShot[0] = 0;
+
 	if (cls.state == ca_connected) {
 		Com_Printf ("reconnecting...\n");
 		cls.state = ca_connected;

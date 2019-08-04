@@ -528,14 +528,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	glUniformHandleui64ARB(U_TMU4, rgh->handle);
 	glUniformHandleui64ARB(U_TMU5, skinBump->handle);
 
-	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
-		//	GL_MBindRect (GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		glUniformHandleui64ARB(U_TMU6, fboColor[fboColorIndex]->handle);
-		qglUniform1i(U_USE_SSAO, 1);
-	}
-	else
-		qglUniform1i(U_USE_SSAO, 0);
-
 	if (rgh == r_notexture)
 		qglUniform1i(U_USE_RGH_MAP, 0);
 	else {
