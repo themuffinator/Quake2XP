@@ -87,10 +87,10 @@ static void M_Banner(char *name) {
 	Draw_GetPicSize(&w, &h, name);
 
 	if (cl_fontScale->value == 2) {
-		Draw_PicScaled((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
-		Draw_PicBumpScaled((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (110 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
+		Draw_PicScaled((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
+		Draw_PicBumpScaled((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
 	}
-	else if (cl_fontScale->value == 3) {
+	else if (cl_fontScale->value >= 3) {
 		Draw_PicScaled((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
 		Draw_PicBumpScaled((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
 	}
@@ -2677,8 +2677,15 @@ void DrawSavedShot(void* m)
 	float			aspect;
 
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
-	picWidth = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value; //load-save menu x position value
-	picWidth -= 90;
+	picWidth = (viddef.width * 0.5) - (w * 0.25) + 10 * (int)cl_fontScale->value;
+	picWidth += 90;
+
+	// fucking hack, lol
+	int wtf;
+	if (cl_fontScale->integer >= 3)
+		wtf = 14;
+	else
+		wtf = 16;
 
 	i = menu->generic.localdata[0];
 
@@ -2690,13 +2697,13 @@ void DrawSavedShot(void* m)
 		aspect = (float)w / (float)h;
 
 		R_FreePic(savePic); // update pic cache
-		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
-		Draw_Fill(10, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (cl_fontScale->integer - 1), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
 
 		Set_FontShader(qtrue);
-		int len = (int)strlen(m_savesInfos[i]);
-		center = picWidth * 0.5 - len * 8;
-		Draw_StringScaled(center - 10 * cl_fontScale->integer, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
+		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)cl_fontScale->value * 6) * 0.5;
+		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
 		Set_FontShader(qfalse);
 		}
 	else {
@@ -2705,30 +2712,30 @@ void DrawSavedShot(void* m)
 			strcpy(savePic, va("/pics/victory.tga", m_savemapnames[i]));
 			Draw_GetPicSize(&w, &h, savePic);
 			aspect = (float)w / (float)h;
-			Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + 10, 0.3, 0.3, 0.3, 1.0);
+			Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		}
 	else
 		{
 		strcpy(savePic, va("/levelshots/%s.jpg", m_savemapnames[i]));
 		Draw_GetPicSize(&w, &h, savePic);
 		aspect = (float)w / (float)h;
-		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		}
-
-		
-		Draw_Fill(10, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+				
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
 		
 		Set_FontShader(qtrue);
-		int len = (int)strlen(m_savesInfos[i]);
-		center = picWidth * 0.5 - len * 8;
-		Draw_StringScaled(center - 10 * cl_fontScale->integer, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
+		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)cl_fontScale->value * 6) * 0.5;
+		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
 		Set_FontShader(qfalse);
 		}
 	}
 	else {
 		Draw_GetPicSize(&w, &h, "nosaveshot");
 		aspect = (float)w / (float)h;
-		Draw_StretchPic(10, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
 	}
 
 }
@@ -2748,6 +2755,7 @@ void LoadGame_MenuInit(void) {
 
 	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value;
 	s_loadgame_menu.y = viddef.height * 0.25 + h * 0.5 + 8 * cl_fontScale->value;
+	s_loadgame_menu.x *= 0.5;
 
 	s_loadgame_menu.nitems = 0;
 
@@ -2824,6 +2832,7 @@ void SaveGame_MenuInit(void) {
 
 	s_savegame_menu.x = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value;
 	s_savegame_menu.y = viddef.height * 0.25 + h * 0.5 + 8 * cl_fontScale->value;
+	s_savegame_menu.x *= 0.5;
 	s_savegame_menu.nitems = 0;
 
 	Create_Savestrings();
