@@ -324,8 +324,6 @@ cvar_t	*hunk_md2;
 cvar_t	*hunk_md3;
 cvar_t	*hunk_sprite;
 
-cvar_t	*r_maxTextureSize;
-
 cvar_t	*r_reliefMapping;
 cvar_t	*r_reliefScale;
 cvar_t	*r_reliefMappingSelfShadow;
@@ -552,7 +550,7 @@ extern float shadelight[3];
 byte Normal2Index(const vec3_t vec);
 extern int	occ_framecount;
 void R_ColorTemperatureCorrection(void);
-
+void IL_LoadImage(char* filename, byte** pic, int* width, int* height, ILenum type);
 //====================================================================
 
 #define MAX_POLY_VERT		128

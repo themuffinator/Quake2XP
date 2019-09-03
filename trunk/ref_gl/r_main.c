@@ -1431,7 +1431,6 @@ void R_RegisterCvars(void)
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
-	r_maxTextureSize=					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
 	r_textureColorScale =				Cvar_Get("r_textureColorScale", "2", CVAR_ARCHIVE);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
 	r_causticIntens =					Cvar_Get("r_causticIntens", "5.0", CVAR_ARCHIVE);
@@ -1723,7 +1722,7 @@ void R_InitFboBuffers() {
 
 int R_Init(void *hinstance, void *hWnd)
 {
-	int	aniso_level, max_aniso;
+	int	aniso_level, max_aniso, max_texSize;
 
 	Draw_GetPalette();
 	R_RegisterCvars();
@@ -1908,6 +1907,13 @@ int R_Init(void *hinstance, void *hWnd)
 	glBindTextureUnit =			(PFNGLBINDTEXTUREUNITPROC)		qwglGetProcAddress("glBindTextureUnit");
 	glBindTextures =			(PFNGLBINDTEXTURESPROC)			qwglGetProcAddress("glBindTextures");
 
+	glCreateTextures =			(PFNGLCREATETEXTURESPROC)		qwglGetProcAddress("glCreateTextures");
+	
+	glTexStorage2D =			(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
+	glTextureStorage2D =		(PFNGLTEXTURESTORAGE2DPROC)		qwglGetProcAddress("glTextureStorage2D");
+	glTextureSubImage2D =		(PFNGLTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glTextureSubImage2D");
+
+
 	glGenQueries		= (PFNGLGENQUERIESPROC)			qwglGetProcAddress("glGenQueries");
 	glDeleteQueries		= (PFNGLDELETEQUERIESPROC)		qwglGetProcAddress("glDeleteQueries");
 	glIsQuery			= (PFNGLISQUERYPROC)			qwglGetProcAddress("glIsQuery");
@@ -1967,6 +1973,9 @@ int R_Init(void *hinstance, void *hWnd)
 	R_InitPrograms();
 	R_InitFboBuffers();
 	R_InitVertexBuffers();
+
+	qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texSize);
+	Com_Printf("...Max Texture Size is ["S_COLOR_GREEN"%i"S_COLOR_WHITE"]\n", max_texSize);
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_aniso);
 
@@ -2161,19 +2170,14 @@ void R_BeginFrame()
 	if (r_reliefMapping->modified)
 		r_reliefMapping->modified = qfalse;
 
+	if (r_textureMode->modified)
+		r_textureMode->modified = qfalse;
 
-	if (r_textureMode->modified || r_anisotropic->modified || r_textureLodBias->modified) {
-		GL_TextureMode(r_textureMode->string);
+	if (r_anisotropic->modified)
+		r_anisotropic->modified = qfalse;
 
-		if (r_textureMode->modified)
-			r_textureMode->modified = qfalse;
-
-		if (r_anisotropic->modified)
-			r_anisotropic->modified = qfalse;
-
-		if (r_textureLodBias->modified)
-			r_textureLodBias->modified = qfalse;
-	}
+	if (r_textureLodBias->modified)
+		r_textureLodBias->modified = qfalse;
 
 	//go into 2D mode
 	R_SetupOrthoMatrix();

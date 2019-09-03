@@ -2712,7 +2712,7 @@ void DrawSavedShot(void* m)
 			strcpy(savePic, va("/pics/victory.tga", m_savemapnames[i]));
 			Draw_GetPicSize(&w, &h, savePic);
 			aspect = (float)w / (float)h;
-			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + 10, 0.3, 0.3, 0.3, 1.0);
+			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
 			Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		}
 	else

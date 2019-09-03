@@ -1000,16 +1000,14 @@ with scanline postprocessing
 */
 extern unsigned r_rawpalette[256];
 
-void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *data)
+void Draw_StretchRaw (int sw, int sh, int w, int h, int rawWidth, int rawHeight, byte *data)
 {
 	static uint	image32[256*256];
-	int			i, j, trows, texId = -1;
-	uint64		handle = 0;
+	int			i, j, trows, tex = 0;
 	byte		*source;
 	int			frac, fracstep;
 	float		hscale;
 	int			row, x0, y0, x1, y1;
-	float		t;
 	unsigned	*dest;
 
 	qglClearColor(0.0, 0.0, 0.0, 1.0);
@@ -1019,26 +1017,25 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 
 	memset(image32, 0, sizeof(image32));
 	
-	GL_MBind(GL_TEXTURE0, /*cinMap->texnum*/0);
-//	glUniformHandleui64ARB(U_TMU0, cinMap->handle);
+	qglGenTextures(1, &tex);
+	GL_MBind(GL_TEXTURE0, tex);
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
-	hscale = rows/256.0;
+	hscale = rawHeight / 256.0;
 	trows = 256;
-	t = rows*hscale / 256;
 
 	for (i=0 ; i<trows ; i++)
 	{
 		row = (int)(i*hscale);
 		
-		if (row > rows)
+		if (row > rawHeight)
 			break;
 		
-		source = data + cols*row;
+		source = data + rawWidth  * row;
 		dest = &image32[i*256];
-		fracstep = cols*0x10000/256;
+		fracstep = rawWidth * 0x10000/256;
 		frac = fracstep >> 1;
 
 		for (j=0 ; j<256 ; j++)
@@ -1047,19 +1044,17 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 			frac += fracstep;
 		}
 	}
-	
+
 	qglTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, image32);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-//	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, image32);
-
 	x0 = sw;
 	y0 = sh;
-	x1 = sw+w;
-	y1 = sh+h;
+	x1 = sw + w;
+	y1 = sh + h;
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
@@ -1083,4 +1078,5 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int cols, int rows, byte *da
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDeleteTextures(1, &tex);
 }

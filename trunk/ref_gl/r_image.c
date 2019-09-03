@@ -174,9 +174,6 @@ GL_TextureMode
 
 void GL_TextureMode(char *string)
 {
-	int i;
-	image_t *glt;
-
 	strlwr(string);
 
 	if (Q_stricmp(r_textureMode->string,	"GL_NEAREST") != 0 &&
@@ -210,19 +207,6 @@ void GL_TextureMode(char *string)
 	if (!Q_stricmp(r_textureMode->string, "GL_LINEAR_MIPMAP_LINEAR")){
 		gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;
 		gl_filter_max = GL_LINEAR;
-	}
-	
-	// change all the existing mipmap texture objects
-	for (i = 0, glt = gltextures; i < numgltextures; i++, glt++) {
-		if (glt->type != it_pic && glt->type != it_sky) {
-			GL_Bind(glt->texnum);
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-			// realtime update anisotropy level
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->integer);
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
-
-		}
 	}
 }
 
@@ -386,101 +370,7 @@ void LoadPCX(char *filename, byte ** pic, byte ** palette, int *width,
 
 }
 
-/*
-================
-GL_ResampleTexture
-================
-*/
-void GL_ResampleTexture (unsigned *in, int inwidth, int inheight, unsigned *out,  int outwidth, int outheight, qboolean normalMap)
-{
-	int			i, j;
-	unsigned	*inrow, *inrow2;
-	unsigned	frac, fracstep;
-	unsigned	p1[4096], p2[4096];
-	byte		*pix1, *pix2, *pix3, *pix4;
 
-	fracstep = inwidth*0x10000/outwidth;
-
-	frac = fracstep>>2;
-	for (i=0 ; i<outwidth ; i++)
-	{
-		p1[i] = 4*(frac>>16);
-		frac += fracstep;
-	}
-	frac = 3*(fracstep>>2);
-	for (i=0 ; i<outwidth ; i++)
-	{
-		p2[i] = 4*(frac>>16);
-		frac += fracstep;
-	}
-
-	if(normalMap)
-	{
-		float	inv127 = 1.0 / 127.0;
-		vec3_t	n, n2, n3, n4;
-
-		for(i = 0; i < outheight; i++, out += outwidth)
-		{
-			inrow = in + inwidth * (int)((i + 0.25) * inheight / outheight);
-			inrow2 = in + inwidth * (int)((i + 0.75) * inheight / outheight);
-
-			for(j = 0; j < outwidth; j++)
-			{
-				pix1 = (byte *) inrow + p1[j];
-				pix2 = (byte *) inrow + p2[j];
-				pix3 = (byte *) inrow2 + p1[j];
-				pix4 = (byte *) inrow2 + p2[j];
-
-				n[0] = (pix1[0] * inv127 - 1.0);
-				n[1] = (pix1[1] * inv127 - 1.0);
-				n[2] = (pix1[2] * inv127 - 1.0);
-
-				n2[0] = (pix2[0] * inv127 - 1.0);
-				n2[1] = (pix2[1] * inv127 - 1.0);
-				n2[2] = (pix2[2] * inv127 - 1.0);
-
-				n3[0] = (pix3[0] * inv127 - 1.0);
-				n3[1] = (pix3[1] * inv127 - 1.0);
-				n3[2] = (pix3[2] * inv127 - 1.0);
-
-				n4[0] = (pix4[0] * inv127 - 1.0);
-				n4[1] = (pix4[1] * inv127 - 1.0);
-				n4[2] = (pix4[2] * inv127 - 1.0);
-
-				n[0] += n2[0] + n3[0] + n4[0];
-				n[1] += n2[1] + n3[1] + n4[1];
-				n[2] += n2[2] + n3[2] + n4[2];
-
-				if(!VectorNormalize(n))
-					VectorSet(n, 0, 0, 1);
-
-				((byte *) (out + j))[0] = (byte)(128 + 127 * n[0]);
-				((byte *) (out + j))[1] = (byte)(128 + 127 * n[1]);
-				((byte *) (out + j))[2] = (byte)(128 + 127 * n[2]);
-				((byte *) (out + j))[3] = (pix1[3] + pix2[3] + pix3[3] + pix4[3])>>2;
-			}
-		}
-	}
-	else
-	{
-		for (i=0 ; i<outheight ; i++, out += outwidth)
-		{
-			inrow = in + inwidth*(int)((i+0.25)*inheight/outheight);
-			inrow2 = in + inwidth*(int)((i+0.75)*inheight/outheight);
-			for (j=0 ; j<outwidth ; j++)
-			{
-				pix1 = (byte *)inrow + p1[j];
-				pix2 = (byte *)inrow + p2[j];
-				pix3 = (byte *)inrow2 + p1[j];
-				pix4 = (byte *)inrow2 + p2[j];
-				((byte *)(out+j))[0] = (pix1[0] + pix2[0] + pix3[0] + pix4[0])>>2;
-				((byte *)(out+j))[1] = (pix1[1] + pix2[1] + pix3[1] + pix4[1])>>2;
-				((byte *)(out+j))[2] = (pix1[2] + pix2[2] + pix3[2] + pix4[2])>>2;
-				((byte *)(out+j))[3] = (pix1[3] + pix2[3] + pix3[3] + pix4[3])>>2;
-			}
-		}
-	}
-}
 
 /*
 ===============
@@ -587,10 +477,7 @@ void R_MipNormalMap (byte *in, int width, int height)
 unsigned	scaled[4096*4096];
 qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean bump)
 {
-	int			samples;
-	int			scaled_width, scaled_height;
-	int			comp, c, i;
-	int			max_size;
+	int			samples, comp, c, i;
 	byte		*scan;
 
 	// scan the texture for any non-255 alpha
@@ -604,35 +491,6 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 			break;
 		}
 	}
-
-	for (scaled_width = 1; scaled_width < width; scaled_width<<=1);
-	for (scaled_height = 1; scaled_height < height; scaled_height<<=1);
-
-	qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
-
-	if(mipmap){
-	if(r_maxTextureSize->integer >= max_size)
-		Cvar_SetValue("r_maxTextureSize", max_size);
-
-	if(r_maxTextureSize->integer <= 64 && r_maxTextureSize->integer > 0 )
-		Cvar_SetValue("r_maxTextureSize", 64);
-
-	if(r_maxTextureSize->integer)
-		max_size = r_maxTextureSize->integer;
-	}
-
-	if (scaled_width > max_size)
-		scaled_width = max_size;
-	if (scaled_height > max_size)
-		scaled_height = max_size;
-
-	if (scaled_width < 1)
-		scaled_width = 1;
-	if (scaled_height < 1)
-		scaled_height = 1;
-
-	upload_width = scaled_width;
-	upload_height = scaled_height;
 	
 	if (samples == 3){
 
@@ -648,60 +506,22 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 			comp = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 		else
 			comp = gl_tex_alpha_format;
-	}
+	}	
 	
-	if (scaled_width == width && scaled_height == height)
-	{
-		if (!mipmap)
-		{
-			qglTexImage2D (GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-			goto done;
-		}
-		memcpy (scaled, data, width*height*4);
-	}
-	else{
-		if(bump)
-			GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height, qtrue);
-		else
-			GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height, qfalse);
-	}
-	qglTexImage2D( GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaled );
+	qglTexImage2D( GL_TEXTURE_2D, 0, comp, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	if (mipmap)
 	{
-		int		miplevel;
-
-		miplevel = 0;
-		while (scaled_width > 1 || scaled_height > 1)
-		{
-			if(bump)
-			R_MipNormalMap ((byte *)scaled, scaled_width, scaled_height);
-			else
-			R_MipMap ((byte *)scaled, scaled_width, scaled_height);
-
-			scaled_width >>= 1;
-			scaled_height >>= 1;
-			if (scaled_width < 1)
-				scaled_width = 1;
-			if (scaled_height < 1)
-				scaled_height = 1;
-			miplevel++;
-			qglTexImage2D (GL_TEXTURE_2D, miplevel, comp, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaled);
-		}
-	}
-done:
-
-	if (mipmap)
-	{
+		qglGenerateMipmap(GL_TEXTURE_2D);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->integer);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
 	else
 	{
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
 	return (samples == 4);
 }
@@ -720,7 +540,7 @@ Returns has_alpha
 qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 					qboolean is_sky)
 {
-	unsigned trans[512 * 256];
+	static unsigned trans[512 * 256];
 	int i, s;
 	int p;
 

@@ -43,7 +43,7 @@ void CreateDSTTex_ARB (void) {
 	int				x, y;
 
 #ifdef _WIN32
-	srand (GetTickCount ());
+	srand (GetTickCount64());
 #else
 	srand (time (NULL));
 #endif
@@ -57,11 +57,11 @@ void CreateDSTTex_ARB (void) {
 
 	r_DSTTex = GL_LoadPic ("***r_DSTTex***", (byte *)dist, 16, 16, it_pic, 24);
 	
-	qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-	qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	qglGenerateMipmap(GL_TEXTURE_2D);
+	qglBindTexture(GL_TEXTURE_2D, r_DSTTex->texnum);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 void CreateDepthTexture (void) {
@@ -189,6 +189,7 @@ void CreateScreen2D(void) {
 	// create screen texture
 
 	qglBindTexture(GL_TEXTURE_2D, Screen2D->texnum);
+	qglGenerateMipmap(GL_TEXTURE_2D);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	GL_CheckError("load 2d screen", 0, "qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);");
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -198,7 +199,6 @@ void CreateScreen2D(void) {
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	qglTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, vid.width, vid.height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	qglGenerateMipmap(GL_TEXTURE_2D);
 }
 
 /*
@@ -791,15 +791,13 @@ image_t *R_LoadLightFilter (int id) {
 
 void R_InitEngineTextures (void) {
 	int		i;
-	byte	notex[1][1][4]	= { 0x0, 0x0, 0x0, 0x0 };
-	byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x10 };
-	byte	white[1][1][4]	= { 0xff, 0xff, 0xff, 0xff };
-	byte	cin[256 * 256 * 4];
+	static byte	notex[1][1][4]	= { 0x0, 0x0, 0x0, 0x0 };
+	static byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x10 };
+	static byte	white[1][1][4]	= { 0xff, 0xff, 0xff, 0xff };
 
 	r_defBump	= GL_LoadPic ("***r_defBump***",	(byte *)bump, 1, 1, it_bump, 32);
 	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_bump, 32);
 	r_notexture = GL_LoadPic ("***r_notexture***",	(byte *)notex, 1, 1, it_wall, 32);
-	cinMap		= GL_LoadPic ("***cinMap***",		(byte*)cin, 256, 256, it_wall, 32);
 
 	r_particletexture[PT_DEFAULT] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
 	r_particletexture[PT_BUBBLE] = GL_FindImage ("gfx/particles/bubble.png", it_wall);

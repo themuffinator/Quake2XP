@@ -37,6 +37,10 @@ typedef struct {
 
 	int width;
 	int height;
+	
+	int rawWidth;
+	int rawHeight;
+
 	byte *pic;
 	byte *pic_pending;
 
@@ -397,8 +401,8 @@ SCR_ReadNextFrame
 byte *SCR_ReadNextFrame (void) {
 	size_t r;
 	int command;
-	byte samples[22050 / 14 * 4 + 4096 * 4];
-	byte compressed[0x20000];
+	static byte samples[22050 / 14 * 4 + 4096 * 4];
+	static byte compressed[0x20000];
 	int size;
 	byte *pic;
 	cblock_t in, huf1;
@@ -557,6 +561,8 @@ qboolean SCR_DrawCinematic (void) {
 		sh = (viddef.height - h) / 2;
 	}
 
+	cin.rawWidth = 256;
+	cin.rawHeight = 256;
 
 	Draw_StretchRaw (sw, sh, w, h, cin.width, cin.height, cin.pic);
 
@@ -578,6 +584,15 @@ void SCR_PlayCinematic (char *arg) {
 	Music_Stop ();
 	// make sure all the audio sources is free and silent
 	S_StopAllSounds ();
+
+	/*
+	// try to load hires victoty screen
+		char repName[MAX_OSPATH]
+		strcpy(repName, name);
+		repName[strlen(repName) - 4] = 0;
+		strcat(repName, ".jpg");
+		IL_LoadImage(repName, &cin.pic, &cin.width, &cin.height, IL_JPG);
+	*/
 
 	cl.cinematicframe = 0;
 	dot = strstr (arg, ".");

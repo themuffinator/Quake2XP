@@ -254,6 +254,7 @@ typedef struct {
 	qFILE cinematic_file;
 	int cinematictime;			// cls.realtime for first cinematic frame
 	int cinematicframe;
+	int cinStaticHD;
 	char cinematicpalette[768];
 	qboolean cinematicpalette_active;
 

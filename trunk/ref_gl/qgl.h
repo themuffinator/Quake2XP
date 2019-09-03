@@ -788,6 +788,11 @@ extern	PFNGLMULTIDRAWARRAYSPROC				glMultiDrawArrays;
 
 extern PFNGLTEXIMAGE3DPROC						qglTexImage3D;
 
+extern PFNGLCREATETEXTURESPROC					glCreateTextures;
+extern PFNGLTEXSTORAGE2DPROC					glTexStorage2D;
+extern PFNGLTEXTURESTORAGE2DPROC				glTextureStorage2D;
+extern PFNGLTEXTURESUBIMAGE2DPROC				glTextureSubImage2D;
+
 #ifdef _WIN32
 
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC		qwglCreateContextAttribsARB;

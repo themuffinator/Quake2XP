@@ -494,15 +494,8 @@ void soldier_fire (edict_t *self, int flash_number) {
 		vectoangles (aim, dir);
 		AngleVectors (dir, forward, right, up);
 
-		if (skill->value >= 2) {
-			r = crandom () * 100 / skill->value + 1;
-			u = crandom () * 50 / skill->value + 1;
-		}
-
-		if (skill->value == 0) {
-			r = crandom () * 200;
-			u = crandom () * 100;
-		}
+		r = crandom() * 1000;
+		u = crandom() * 500;
 
 		VectorMA (start, 8192, forward, end);
 		VectorMA (end, r, right, end);
