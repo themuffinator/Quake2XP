@@ -1,5 +1,4 @@
 layout (binding = 0) uniform sampler2D u_cinMap;
-//layout (bindless_sampler, location  = U_TMU0) uniform sampler2D u_cinMap;
 
 layout (location = U_SCREEN_SIZE)	uniform vec2	u_screenSize;
 
