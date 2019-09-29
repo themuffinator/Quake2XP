@@ -3,8 +3,8 @@ in	vec4		v_color;
 in	vec2		v_envCoord;
 in	vec2		v_shellCoord;
 
-/*l
-ayout (binding = 0) uniform sampler2D 		u_Diffuse;
+/*
+layout (binding = 0) uniform sampler2D 		u_Diffuse;
 layout (binding = 1) uniform sampler2D 		u_Add;
 layout (binding = 2) uniform sampler2D		u_env;
 layout (binding = 3) uniform sampler2D		u_NormalMap;

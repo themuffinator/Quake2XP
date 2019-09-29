@@ -944,7 +944,7 @@ FxaaFloat4 FxaaPixelShader(
 /*==========================================================================*/
 
 
-layout (binding = 0) uniform sampler2D	u_ScreenTex;
+layout (bindless_sampler, location = TMU0) uniform sampler2D	u_ScreenTex;
 layout(location = U_SCREEN_SIZE) uniform vec2	u_ScreenSize;
 
 void main(void)

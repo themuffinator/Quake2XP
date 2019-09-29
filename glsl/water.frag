@@ -1,8 +1,15 @@
+
 layout (binding = 0) uniform sampler2D		u_colorMap;
 layout (binding = 1) uniform sampler2D		u_dstMap;
 layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
 layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
 
+/*
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_colorMap;
+layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_dstMap;
+layout (bindless_sampler, location  = U_TMU2) uniform sampler2DRect	g_colorBufferMap;
+layout (bindless_sampler, location  = U_TMU3) uniform sampler2DRect	g_depthBufferMap;
+*/
 layout(location = U_WATER_DEFORM_MUL)	uniform float	u_deformMul;		// for normal w/o depth falloff
 layout(location = U_WATHER_THICKNESS)	uniform float	u_thickness;
 layout(location = U_WATER_ALPHA)		uniform float	u_alpha;

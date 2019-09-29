@@ -6,7 +6,7 @@ Radial Blur effect, uses Crysis(tm) shader.
 
 // xy = radial center screen space position, z = radius attenuation, w = blur strength
 layout (location = U_PARAM_VEC4_0)	uniform vec4			u_radialBlurParams;	
-layout (binding = 0)				uniform sampler2DRect	u_screenMap;
+layout (bindless_sampler, location = TMU0)	uniform sampler2DRect	u_screenMap;
 
 void main (void) {
 	vec2 screenPos = u_radialBlurParams.xy;

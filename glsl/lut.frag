@@ -1,5 +1,5 @@
-layout (binding = 0) uniform sampler2DRect	u_ScreenTex;
-layout (binding = 1) uniform sampler3D		u_lutTex;
+layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_ScreenTex;
+layout (bindless_sampler, location = U_TMU1) uniform sampler3D		u_lutTex;
 
 layout(location = U_PARAM_VEC3_0)	uniform vec3	u_lutSize;
 layout(location = U_PARAM_FLOAT_1)	uniform float	u_colorTempK;
