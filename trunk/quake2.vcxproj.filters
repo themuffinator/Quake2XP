@@ -188,9 +188,6 @@
     <ClCompile Include="ref_gl\r_postprocess.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_rsurf.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_program.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -327,6 +324,9 @@
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="ref_gl\r_water.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_surf.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

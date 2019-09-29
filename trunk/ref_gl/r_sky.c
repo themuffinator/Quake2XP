@@ -333,7 +333,7 @@ void R_DrawSkyBox(qboolean color) {
 
 	if (color)
 	//	GL_MBindCube(GL_TEXTURE0, skyCube);
-		glUniformHandleui64ARB(U_TMU0, skyCube_handle);
+		GL_SetBindlessTexture(U_TMU0, skyCube_handle);
 
 	for (i = 0; i < 6; i++) {
 

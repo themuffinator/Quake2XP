@@ -206,8 +206,7 @@ void R_RadialBlur (void)
 	hack:
 
 	
-		GL_MBindRect (GL_TEXTURE0, ScreenMap->texnum);
-		qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+		R_CaptureColorBuffer();
 
 		// setup program
 		GL_BindProgram (radialProgram);
@@ -217,6 +216,7 @@ void R_RadialBlur (void)
 		else
 			blur = 0.01;
 
+		GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
 		// xy = radial center screen space position, z = radius attenuation, w = blur strength
 		qglUniform4f(U_PARAM_VEC4_0, vid.width*0.5, vid.height*0.5, 1.0 / vid.height, blur);
 		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -330,6 +330,8 @@ void R_FXAA (void) {
 
 	// setup program
 	GL_BindProgram (fxaaProgram);
+	
+	uint64 handle;
 
 	if (!fxaatex) {
 		qglGenTextures (1, &fxaatex);
@@ -337,10 +339,13 @@ void R_FXAA (void) {
 		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglCopyTexImage2D (GL_TEXTURE_2D, 0, GL_SRGB8, 0, 0, vid.width, vid.height, 0);
+		handle = glGetTextureHandleARB(fxaatex);
+		glMakeTextureHandleResidentARB(handle);
 	}
 	GL_MBind (GL_TEXTURE0, fxaatex);
 	qglCopyTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
-
+	
+	GL_SetBindlessTexture(U_TMU0, handle);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -359,8 +364,8 @@ void R_FilmFilter (void)
 	// setup program
 	GL_BindProgram (filmGrainProgram);
 
-	GL_MBindRect (GL_TEXTURE0, ScreenMap->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	R_CaptureColorBuffer();
+	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
 
 	qglUniform2f (U_SCREEN_SIZE,	vid.width, vid.height);
 	qglUniform1f (U_PARAM_FLOAT_0,	crand());
@@ -380,6 +385,8 @@ void R_GammaRamp (void)
 	GL_MBindRect (GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
+	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
+
 	qglUniform4f (U_COLOR_PARAMS,	r_brightness->value, 
 									r_contrast->value, 
 									r_saturation->value, 
@@ -390,9 +397,7 @@ void R_GammaRamp (void)
 									r_colorBalanceBlue->value	* r_colorVibrance->value);
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawFullScreenQuad ();
-
 }
 
 static int ClampCvarInteger(int min, int max, int value) {
@@ -411,12 +416,12 @@ void R_ColorTemperatureCorrection(void){
 
 	GL_BindProgram(lutProgram);
 
-	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	R_CaptureColorBuffer();
+
 	qglUniform1f(U_PARAM_FLOAT_1, r_colorTempK->value);
 	qglUniform1i(U_PARAM_INT_0, 1);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
+	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
 	R_DrawFullScreenQuad();
 
 }
@@ -435,10 +440,11 @@ void R_lutCorrection(void)
 
 	GL_BindProgram(lutProgram);
 
-	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	R_CaptureColorBuffer();
+	
+	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
+	GL_SetBindlessTexture(U_TMU1, r_3dLut[lutID]->handle);
 
-	GL_MBind3d(GL_TEXTURE1, r_3dLut[lutID]->texnum);
 	qglUniform3f(U_PARAM_VEC3_0, r_3dLut[lutID]->lutSize, r_3dLut[lutID]->lutSize, r_3dLut[lutID]->lutSize);
 	qglUniform1i(U_PARAM_INT_0, 0);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -662,12 +668,13 @@ void R_GlobalFog() {
 	GL_BindProgram(globalFogProgram);
 	
 //	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
-//	glUniformHandleui64ARB(U_TMU0, ScreenMap->handle);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+//	
+//	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 //	GL_MBindRect(GL_TEXTURE1, depthMap->texnum);
-	GL_MBindRect(GL_TEXTURE2, skyMask->texnum);
-	glUniformHandleui64ARB(U_TMU1, depthMap->handle);
-	glUniformHandleui64ARB(U_TMU2, skyMask->handle);
+//	GL_MBindRect(GL_TEXTURE2, skyMask->texnum);
+	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
+	GL_SetBindlessTexture(U_TMU1, depthMap->handle);
+	GL_SetBindlessTexture(U_TMU2, skyMask->handle);
 
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 

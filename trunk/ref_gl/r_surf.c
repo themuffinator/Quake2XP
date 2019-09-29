@@ -161,18 +161,13 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 	qglUniform1f(U_REFR_ALPHA, alpha);
 
 		if (scrolling)
-		//	GL_MBind(GL_TEXTURE0, r_DSTTex->texnum);
-			glUniformHandleui64ARB(U_TMU0, r_DSTTex->handle);
+			GL_SetBindlessTexture(U_TMU0, r_DSTTex->handle);
 		else
-		//	GL_MBind(GL_TEXTURE0, fa->texInfo->normalmap->texnum);
-			glUniformHandleui64ARB(U_TMU0, fa->texInfo->normalmap->handle);
+			GL_SetBindlessTexture(U_TMU0, fa->texInfo->normalmap->handle);
 
-	/*	GL_MBind(GL_TEXTURE1, fa->texInfo->image->texnum);
-		GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
-		GL_MBindRect(GL_TEXTURE3, depthMap->texnum);*/
-		glUniformHandleui64ARB(U_TMU1, fa->texInfo->image->handle);
-		glUniformHandleui64ARB(U_TMU2, ScreenMap->handle);
-		glUniformHandleui64ARB(U_TMU3, depthMap->handle);
+		GL_SetBindlessTexture(U_TMU1, fa->texInfo->image->handle);
+		GL_SetBindlessTexture(U_TMU2, ScreenMap->handle);
+		GL_SetBindlessTexture(U_TMU3, depthMap->handle);
 
 
 	if (scrolling)
@@ -378,9 +373,9 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 //		GL_MBind(GL_TEXTURE0, image->texnum);
 //		GL_MBind(GL_TEXTURE2, fx->texnum);
 //		GL_MBind(GL_TEXTURE3, normal->texnum);
-		glUniformHandleui64ARB(U_TMU0, image->handle);
-		glUniformHandleui64ARB(U_TMU2, fx->handle);
-		glUniformHandleui64ARB(U_TMU3, normal->handle);
+		GL_SetBindlessTexture(U_TMU0, image->handle);
+		GL_SetBindlessTexture(U_TMU2, fx->handle);
+		GL_SetBindlessTexture(U_TMU3, normal->handle);
 
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -448,7 +443,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 
 	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 	//	GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		glUniformHandleui64ARB(U_TMU4, fboColor[fboColorIndex]->handle);
+		GL_SetBindlessTexture(U_TMU4, fboColor[fboColorIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
@@ -597,11 +592,11 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		else
 			qglUniform1f(U_SCROLL, 0.0);
 
-		glUniformHandleui64ARB(U_TMU0, image->handle);
-		glUniformHandleui64ARB(U_TMU1, normalMap->handle);
-		glUniformHandleui64ARB(U_TMU2, r_lightCubeMap[currentShadowLight->filter]->handle);
-		glUniformHandleui64ARB(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
-		glUniformHandleui64ARB(U_TMU4, rghMap->handle);
+		GL_SetBindlessTexture(U_TMU0, image->handle);
+		GL_SetBindlessTexture(U_TMU1, normalMap->handle);
+		GL_SetBindlessTexture(U_TMU2, r_lightCubeMap[currentShadowLight->filter]->handle);
+		GL_SetBindlessTexture(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+		GL_SetBindlessTexture(U_TMU4, rghMap->handle);
 	}
 
 
@@ -686,7 +681,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 
 	 if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		 //	GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		 glUniformHandleui64ARB(U_TMU5, fboColor[fboColorIndex]->handle);
+		 GL_SetBindlessTexture(U_TMU5, fboColor[fboColorIndex]->handle);
 		 qglUniform1i(U_USE_SSAO, 1);
 	 }
 	 else
@@ -1263,6 +1258,7 @@ void R_DrawBrushModel (void) {
 		return;
 	
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
+//	gl_state.bindlessCache[0] = gl_state.bindlessCache[1] = -1;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		rotated = qtrue;
@@ -1333,6 +1329,7 @@ void R_DrawBrushModelRA (void) {
 		return;
 	
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
+//	gl_state.bindlessCache[0] = gl_state.bindlessCache[1] = -1;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		rotated = qtrue;

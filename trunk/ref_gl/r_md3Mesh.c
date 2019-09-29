@@ -715,7 +715,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			if (!rgh)
 				rgh = r_notexture;
 	//		GL_MBind(GL_TEXTURE5, rgh->texnum);
-			glUniformHandleui64ARB(U_TMU5, rgh->handle);
+			GL_SetBindlessTexture(U_TMU5, rgh->handle);
 		}
 		else 
 			qglUniform1i(U_PARAM_INT_0, 0);
@@ -765,11 +765,11 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_MBind(GL_TEXTURE3, normal->texnum);
 		GL_MBind(GL_TEXTURE4, ao->texnum);
 */		
-		glUniformHandleui64ARB(U_TMU0, skin->handle);
-		glUniformHandleui64ARB(U_TMU1, light->handle);
-		glUniformHandleui64ARB(U_TMU2, r_envTex->handle);
-		glUniformHandleui64ARB(U_TMU3, normal->handle);
-		glUniformHandleui64ARB(U_TMU4, fboColor[fboColorIndex]->handle);
+		GL_SetBindlessTexture(U_TMU0, skin->handle);
+		GL_SetBindlessTexture(U_TMU1, light->handle);
+		GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
+		GL_SetBindlessTexture(U_TMU3, normal->handle);
+		GL_SetBindlessTexture(U_TMU4, fboColor[fboColorIndex]->handle);
 
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	
@@ -853,10 +853,10 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_MBind(GL_TEXTURE2, r_envTex->texnum);
 			GL_MBind(GL_TEXTURE3, normal->texnum);
 */			
-			glUniformHandleui64ARB(U_TMU0, skin->handle);
-			glUniformHandleui64ARB(U_TMU1, r_notexture->handle);
-			glUniformHandleui64ARB(U_TMU2, r_envTex->handle);
-			glUniformHandleui64ARB(U_TMU3, normal->handle);
+			GL_SetBindlessTexture(U_TMU0, skin->handle);
+			GL_SetBindlessTexture(U_TMU1, r_notexture->handle);
+			GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
+			GL_SetBindlessTexture(U_TMU3, normal->handle);
 
 			qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 		}
@@ -1136,13 +1136,13 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_MBind(GL_TEXTURE2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 		GL_MBindCube(GL_TEXTURE3, r_lightCubeMap[currentShadowLight->filter]->texnum);
 */		
-		glUniformHandleui64ARB(U_TMU0, normal->handle);
-		glUniformHandleui64ARB(U_TMU1, skin->handle);
-		glUniformHandleui64ARB(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
-		glUniformHandleui64ARB(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
-		glUniformHandleui64ARB(U_TMU4, rgh->handle);
-		glUniformHandleui64ARB(U_TMU5, skinBump->handle);
-//		glUniformHandleui64ARB(U_TMU6, skyCube_handle);
+		GL_SetBindlessTexture(U_TMU0, normal->handle);
+		GL_SetBindlessTexture(U_TMU1, skin->handle);
+		GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+		GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
+		GL_SetBindlessTexture(U_TMU4, rgh->handle);
+		GL_SetBindlessTexture(U_TMU5, skinBump->handle);
+//		GL_SetBindlessTexture(U_TMU6, skyCube_handle);
 
 		if (rgh == r_notexture)
 			qglUniform1i(U_USE_RGH_MAP, 0);
@@ -1246,17 +1246,17 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		GL_MBind(GL_TEXTURE0, r_texshell[5]->texnum);
 */	
 	if (currententity->flags & RF_SHELL_BLUE)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[0]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[0]->handle);
 	if (currententity->flags & RF_SHELL_RED)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[1]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[1]->handle);
 	if (currententity->flags & RF_SHELL_GREEN)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[2]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[2]->handle);
 	if (currententity->flags & RF_SHELL_GOD)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[3]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[3]->handle);
 	if (currententity->flags & RF_SHELL_HALF_DAM)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[4]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[4]->handle);
 	if (currententity->flags & RF_SHELL_DOUBLE)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[5]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 

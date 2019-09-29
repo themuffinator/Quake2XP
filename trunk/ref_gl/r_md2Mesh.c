@@ -250,16 +250,16 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 //	GL_MBind (GL_TEXTURE2, r_envTex->texnum);
 //	GL_MBind (GL_TEXTURE3, skinNormalmap->texnum);
 	
-	glUniformHandleui64ARB(U_TMU0, skin->handle);
-	glUniformHandleui64ARB(U_TMU1, glowskin->handle);
-	glUniformHandleui64ARB(U_TMU2, r_envTex->handle);
-	glUniformHandleui64ARB(U_TMU3, skinNormalmap->handle);
+	GL_SetBindlessTexture(U_TMU0, skin->handle);
+	GL_SetBindlessTexture(U_TMU1, glowskin->handle);
+	GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
+	GL_SetBindlessTexture(U_TMU3, skinNormalmap->handle);
 
 	qglUniform1f(U_ENV_SCALE, currentmodel->envScale);
 
 	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
 	//	GL_MBindRect (GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		glUniformHandleui64ARB(U_TMU4, fboColor[fboColorIndex]->handle);
+		GL_SetBindlessTexture(U_TMU4, fboColor[fboColorIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
@@ -355,17 +355,17 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 */ 
 	
 	if (currententity->flags & RF_SHELL_BLUE)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[0]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[0]->handle);
 	if (currententity->flags & RF_SHELL_RED)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[1]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[1]->handle);
 	if (currententity->flags & RF_SHELL_GREEN)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[2]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[2]->handle);
 	if (currententity->flags & RF_SHELL_GOD)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[3]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[3]->handle);
 	if (currententity->flags & RF_SHELL_HALF_DAM)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[4]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[4]->handle);
 	if (currententity->flags & RF_SHELL_DOUBLE)
-		glUniformHandleui64ARB(U_TMU0, r_texshell[5]->handle);
+		GL_SetBindlessTexture(U_TMU0, r_texshell[5]->handle);
 	
 	
 
@@ -521,12 +521,12 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	GL_MBind (GL_TEXTURE2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
 	GL_MBindCube (GL_TEXTURE3, r_lightCubeMap[currentShadowLight->filter]->texnum);
 */	
-	glUniformHandleui64ARB(U_TMU0, skinNormalmap->handle);
-	glUniformHandleui64ARB(U_TMU1, skin->handle);
-	glUniformHandleui64ARB(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
-	glUniformHandleui64ARB(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
-	glUniformHandleui64ARB(U_TMU4, rgh->handle);
-	glUniformHandleui64ARB(U_TMU5, skinBump->handle);
+	GL_SetBindlessTexture(U_TMU0, skinNormalmap->handle);
+	GL_SetBindlessTexture(U_TMU1, skin->handle);
+	GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
+	GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
+	GL_SetBindlessTexture(U_TMU4, rgh->handle);
+	GL_SetBindlessTexture(U_TMU5, skinBump->handle);
 
 	if (rgh == r_notexture)
 		qglUniform1i(U_USE_RGH_MAP, 0);

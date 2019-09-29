@@ -399,6 +399,8 @@ void GL_MBind (GLenum target, int texnum);
 void GL_SelectTexture (GLenum);
 void GL_MBindCube (GLenum target, int texnum);
 
+void GL_SetBindlessTexture(int loc, uint64 handle);
+
 void R_LightPoint (vec3_t p, vec3_t color);
 
 void R_InitLightgrid (void);
@@ -688,6 +690,10 @@ typedef struct {
 	int lightmap_textures;
 	int currenttextures[32]; // max gl_texturesXX
 	int currenttmu;
+
+	uint64	bindlessCache[65365];
+	uint64	currentBindlessHandle;
+	int		currentBindlessLocation;
 
 	qboolean	texture_compression_bptc;
 	int			displayrefresh;

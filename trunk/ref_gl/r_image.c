@@ -731,10 +731,10 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		image->sh = 1;
 		image->tl = 0;
 		image->th = 1;
-
+				
 		image->handle = glGetTextureHandleARB(image->texnum);
 		glMakeTextureHandleResidentARB(image->handle);
-
+		
 	return image;
 }
 

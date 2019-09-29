@@ -620,7 +620,7 @@
     <ClCompile Include="ref_gl\r_particles.c" />
     <ClCompile Include="ref_gl\r_postprocess.c" />
     <ClCompile Include="ref_gl\r_loadImages.c" />
-    <ClCompile Include="ref_gl\r_rsurf.c" />
+    <ClCompile Include="ref_gl\r_surf.c" />
     <ClCompile Include="ref_gl\r_water.c" />
     <ClCompile Include="ref_gl\r_math.c" />
     <ClCompile Include="client\cg_cin.c">

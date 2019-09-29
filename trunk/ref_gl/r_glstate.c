@@ -24,6 +24,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
+// bindless cache
+void GL_SetBindlessTexture(int loc, uint64 handle) {
+
+	if (gl_state.bindlessCache[gl_state.currentBindlessLocation] == loc &&
+		gl_state.bindlessCache[gl_state.currentBindlessHandle] == handle)
+		return;
+
+	glUniformHandleui64ARB(loc, handle);
+
+	gl_state.bindlessCache[gl_state.currentBindlessLocation] = loc;
+	gl_state.bindlessCache[gl_state.currentBindlessHandle] = handle;
+}
+
 void GL_SelectTexture(GLenum texture)
 {
 	int tmu;

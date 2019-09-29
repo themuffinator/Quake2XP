@@ -156,7 +156,7 @@ void R_RenderDecals(void)
 		texture = texId;
 
 		//GL_MBind(GL_TEXTURE0, texture);
-		glUniformHandleui64ARB(U_TMU0, texId);
+		GL_SetBindlessTexture(U_TMU0, texId);
 
         GL_BlendFunc(dl->sFactor, dl->dFactor);
 

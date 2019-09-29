@@ -229,12 +229,12 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 
 	if (currententity->flags & RF_BFG_SPRITE) {
 	//	GL_MBind(GL_TEXTURE1, r_notexture->texnum);
-		glUniformHandleui64ARB(U_TMU1, r_notexture->handle);
+		GL_SetBindlessTexture(U_TMU1, r_notexture->handle);
 		scaled = 2;
 	}
 	else		
 	//	GL_MBind(GL_TEXTURE1, currentmodel->skins[e->frame]->texnum);
-		glUniformHandleui64ARB(U_TMU1, currentmodel->skins[e->frame]->handle);
+		GL_SetBindlessTexture(U_TMU1, currentmodel->skins[e->frame]->handle);
 	
 	VectorMA	(e->origin,				-frame->origin_y * scaled, up, wVertexArray[vert+0]);
 	VectorMA	(wVertexArray[vert+0],	-frame->origin_x * scaled, right, wVertexArray[vert+0]);
@@ -791,9 +791,9 @@ void R_RenderSprites(void)
 	// setup program
 	GL_BindProgram(refractProgram);
 
-	glUniformHandleui64ARB(U_TMU0, r_distort->handle);
-	glUniformHandleui64ARB(U_TMU2, ScreenMap->handle);
-	glUniformHandleui64ARB(U_TMU3, depthMap->handle);
+	GL_SetBindlessTexture(U_TMU0, r_distort->handle);
+	GL_SetBindlessTexture(U_TMU2, ScreenMap->handle);
+	GL_SetBindlessTexture(U_TMU3, depthMap->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 4.5);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);

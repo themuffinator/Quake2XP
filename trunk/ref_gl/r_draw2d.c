@@ -105,10 +105,8 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	fcol = col * 0.0625;
 	size = 0.0625;
 
-	if (gl_state.currenttextures[gl_state.currenttmu] != draw_chars->texnum) {
-	//	GL_MBind(GL_TEXTURE0, draw_chars->texnum);
-		glUniformHandleui64ARB(U_TMU0, draw_chars->handle);
-	}
+	//GL_MBind(GL_TEXTURE0, draw_chars->texnum);
+	GL_SetBindlessTexture(U_TMU0, draw_chars->handle);
 
 	VA_SetElem2(texCoord[0], fcol, frow);
 	VA_SetElem2(texCoord[1], fcol + size, frow);
@@ -164,10 +162,8 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 	fcol = col * 0.0625;
 	size = 0.0625;
 
-	if (gl_state.currenttextures[gl_state.currenttmu] != draw_charsInt->texnum) {
-		//GL_MBind(GL_TEXTURE0, draw_charsInt->texnum);
-		glUniformHandleui64ARB(U_TMU0, draw_charsInt->handle);
-	}
+	//GL_MBind(GL_TEXTURE0, draw_charsInt->texnum);
+	GL_SetBindlessTexture(U_TMU0, draw_charsInt->handle);
 
 	VA_SetElem2(texCoord[0], fcol, frow);
 	VA_SetElem2(texCoord[1], fcol + size, frow);
@@ -266,10 +262,8 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 	float frow, fcol, size;
 	unsigned char *s = (unsigned char *)str;
 
-	if (gl_state.currenttextures[gl_state.currenttmu] != draw_chars->texnum) {
-		//GL_MBind(GL_TEXTURE0, draw_chars->texnum);
-		glUniformHandleui64ARB(U_TMU0, draw_chars->handle);
-	}
+	//GL_MBind(GL_TEXTURE0, draw_chars->texnum);
+	GL_SetBindlessTexture(U_TMU0, draw_chars->handle);
 
 	Draw_StringShadow(x, y, scale_x, scale_y, s);
 	
@@ -332,10 +326,8 @@ void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char
 	float frow, fcol, size;
 	unsigned char* s = (unsigned char*)str;
 
-	if (gl_state.currenttextures[gl_state.currenttmu] != draw_charsInt->texnum) {
-		//GL_MBind(GL_TEXTURE0, draw_charsInt->texnum);
-		glUniformHandleui64ARB(U_TMU0, draw_charsInt->handle);
-	}
+	//GL_MBind(GL_TEXTURE0, draw_charsInt->texnum);
+	GL_SetBindlessTexture(U_TMU0, draw_charsInt->handle);
 
 	Draw_StringShadow(x, y, scale_x, scale_y, s);
 
@@ -532,14 +524,14 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	if (console) {
 
 		//GL_MBind(GL_TEXTURE0, gl->texnum);
-		glUniformHandleui64ARB(U_TMU0, gl->handle);
+		GL_SetBindlessTexture(U_TMU0, gl->handle);
 		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
 		VA_SetElem2(texCoord[1], gl->sh - offsX, gl->tl + offsY);
 		VA_SetElem2(texCoord[2], gl->sh - offsX, gl->th - offsY);
 		VA_SetElem2(texCoord[3], gl->sl + offsX, gl->th - offsY);
 
 		//GL_MBind(GL_TEXTURE1, r_conBump->texnum);
-		glUniformHandleui64ARB(U_TMU1, r_conBump->handle);
+		GL_SetBindlessTexture(U_TMU1, r_conBump->handle);
 		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
 		VA_SetElem2(texCoord[1], gl->sh - offsX, gl->tl + offsY);
 		VA_SetElem2(texCoord[2], gl->sh - offsX, gl->th - offsY);
@@ -547,7 +539,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	}
 	else if(menu){
 		//GL_MBind(GL_TEXTURE0, gl->texnum);
-		glUniformHandleui64ARB(U_TMU0, gl->handle);
+		GL_SetBindlessTexture(U_TMU0, gl->handle);
 		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
 		VA_SetElem2(texCoord[1], gl->sh - offsX, gl->tl + offsY);
 		VA_SetElem2(texCoord[2], gl->sh - offsX, gl->th - offsY);
@@ -556,7 +548,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	else
 	{
 		//GL_MBind(GL_TEXTURE0, gl->texnum);
-		glUniformHandleui64ARB(U_TMU0, gl->handle);
+		GL_SetBindlessTexture(U_TMU0, gl->handle);
 		VA_SetElem2(texCoord[0], gl->sl, gl->tl);
 		VA_SetElem2(texCoord[1], gl->sh, gl->tl);
 		VA_SetElem2(texCoord[2], gl->sh, gl->th);
@@ -625,7 +617,7 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 
 		//GL_MBind(GL_TEXTURE0, gl->texnum);
-		glUniformHandleui64ARB(U_TMU0, gl->handle);
+		GL_SetBindlessTexture(U_TMU0, gl->handle);
 
 		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
 		VA_SetElem2(texCoord[1], gl->sh - offsX, gl->tl + offsY);
@@ -694,7 +686,7 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		//GL_MBind(GL_TEXTURE0, gl->texnum);
-		glUniformHandleui64ARB(U_TMU0, gl->handle);
+		GL_SetBindlessTexture(U_TMU0, gl->handle);
 				
 		VA_SetElem2(texCoord[0],gl->sl, gl->tl);
 		VA_SetElem2(texCoord[1],gl->sh, gl->tl);
@@ -762,7 +754,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		//GL_MBind(GL_TEXTURE0, gl->texnum);
-		glUniformHandleui64ARB(U_TMU0, gl->handle);
+		GL_SetBindlessTexture(U_TMU0, gl->handle);
 
 		VA_SetElem2(texCoord[0],gl->sl, gl->tl);
 		VA_SetElem2(texCoord[1],gl->sh, gl->tl);
@@ -817,8 +809,8 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 
 	//GL_MBind(GL_TEXTURE0, gl->texnum);
 	//GL_MBind(GL_TEXTURE1, gl2->texnum);
-	glUniformHandleui64ARB(U_TMU0, gl->handle);
-	glUniformHandleui64ARB(U_TMU1, gl2->handle);
+	GL_SetBindlessTexture(U_TMU0, gl->handle);
+	GL_SetBindlessTexture(U_TMU1, gl2->handle);
 
 	VA_SetElem2(texCoord[0], gl->sl, gl->tl);
 	VA_SetElem2(texCoord[1], gl->sh, gl->tl);
@@ -920,7 +912,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	
 	//GL_MBind(GL_TEXTURE0, image->texnum);
-	glUniformHandleui64ARB(U_TMU0, image->handle);
+	GL_SetBindlessTexture(U_TMU0, image->handle);
 
 	VA_SetElem2(texCoord[0], x / 64.0, y / 64.0);
 	VA_SetElem2(texCoord[1], (x + w) / 64.0, y / 64.0);
