@@ -569,10 +569,6 @@ extern vec3_t	nTexArray[MAX_BATCH_SURFS];
 extern vec3_t	tTexArray[MAX_BATCH_SURFS];
 extern vec3_t	bTexArray[MAX_BATCH_SURFS];
 
-extern float   wTmu0Array[MAX_BATCH_SURFS][2];
-extern float   wTmu1Array[MAX_BATCH_SURFS][2];
-extern float   wTmu2Array[MAX_BATCH_SURFS][2];
-
 extern uint		indexArray[MAX_MAP_VERTS * 3];
 
 extern model_t *r_worldmodel;

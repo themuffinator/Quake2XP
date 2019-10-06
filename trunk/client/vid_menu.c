@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../client/qmenu.h"
 #include "../ref_gl/r_local.h"
 
+extern qboolean exitMenu;
 extern cvar_t *vid_ref;
 
 extern void M_ForceMenuOff (void);
@@ -416,6 +417,8 @@ void M_ColorInit() {
 
 	static char	*lut_table[] = { "Neutral", "Technicolor", "Sepia", "Black&White", 0 };
 
+	exitMenu = qfalse;
+
 	s_opengl2_menu.x = viddef.width * 0.50;
 	s_opengl2_menu.nitems = 0;
 
@@ -677,6 +680,8 @@ void VID_MenuInit (void) {
 
 	if (!r_motionBlur->integer)
 		r_motionBlur = Cvar_Get ("r_motionBlur", "0", CVAR_ARCHIVE);
+
+	exitMenu = qfalse;
 
 	s_opengl_menu.x = viddef.width * 0.50;
 	s_opengl_menu.nitems = 0;

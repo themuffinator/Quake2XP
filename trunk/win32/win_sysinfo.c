@@ -658,6 +658,9 @@ qboolean Sys_CheckWindowsVersion() {
 											if(ver == 1903)
 												sprintf(S2, "\n    'May 2019 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1903" S_COLOR_WHITE ")");
 										else
+												if (ver == 1909)
+													sprintf(S2, "\n    'October 2019 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1909" S_COLOR_WHITE ")");
+												else
 											sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 
 				RegCloseKey(hKey);

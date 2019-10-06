@@ -35,10 +35,6 @@ float	wTexArray[MAX_BATCH_SURFS][2];
 float	wLMArray[MAX_BATCH_SURFS][2];
 vec4_t	wColorArray[MAX_BATCH_SURFS];
 
-float   wTmu0Array[MAX_BATCH_SURFS][2];
-float   wTmu1Array[MAX_BATCH_SURFS][2];
-float   wTmu2Array[MAX_BATCH_SURFS][2];
-
 uint	indexArray[MAX_MAP_VERTS * 3];
 vec3_t	nTexArray[MAX_BATCH_SURFS];
 vec3_t	tTexArray[MAX_BATCH_SURFS];

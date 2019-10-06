@@ -60,6 +60,7 @@ int(*m_keyfunc) (int key);
 
 extern cvar_t *cl_hudScale;
 model_t *currentPlayerWeapon;
+qboolean exitMenu;
 
 void R_MenuBackGround();
 
@@ -436,6 +437,7 @@ void M_Main_Draw(void) {
 
 	}
 	M_Main_DrawQuad(xoffset - 30, ystart + (m_main_cursor * 40 + 5)* fontscale);
+	exitMenu = qfalse;
 }
 
 
@@ -532,6 +534,8 @@ static void StartNetworkServerFunc(void *unused) {
 void Multiplayer_MenuInit(void) {
 	s_multiplayer_menu.x = viddef.width * 0.50 - 64 * cl_fontScale->value;
 	s_multiplayer_menu.nitems = 0;
+	
+	exitMenu = qfalse;
 
 	s_join_network_server_action.generic.type = MTYPE_ACTION;
 	s_join_network_server_action.generic.flags = QMF_LEFT_JUSTIFY;
@@ -774,6 +778,8 @@ static void KeyBindingFunc(void *self) {
 static void Keys_MenuInit(void) {
 	int y = 0;
 	int i = 0;
+
+	exitMenu = qfalse;
 
 	s_keys_menu.x = viddef.width * 0.50;
 	s_keys_menu.nitems = 0;
@@ -1401,6 +1407,8 @@ void M_AdvancedInit(void) {
 
 	unsigned  menu_y = 0;
 
+	exitMenu = qfalse;
+
 	/*
 	** configure controls menu and menu items
 	*/
@@ -1619,6 +1627,8 @@ void Options_MenuInit(void) {
 
 
 	win_noalttab = Cvar_Get("win_noalttab", "0", CVAR_ARCHIVE);
+	
+	exitMenu = qfalse;
 
 	/*
 	** configure controls menu and menu items
@@ -1927,6 +1937,7 @@ static char *idcredits[] = {
 	"KriGSSv1N",
 	"Turic",
 	"Atex",
+	"DeltaDesignRus",
 	"Jim 'Just_Jim' Waurzyniak",
 	"Serge 'Berserker' Borodulin",
 	"Focator",
@@ -2295,6 +2306,8 @@ void M_Credits_MenuDraw(void) {
 	int i8s = 8 * cl_fontScale->value;
 
 	// draw the credits
+	
+	exitMenu = qfalse;
 
 	Set_FontShader(qtrue);
 
@@ -2465,6 +2478,8 @@ void Game_MenuInit(void) {
 		0
 	};
 
+	exitMenu = qfalse;
+	
 	s_game_menu.x = viddef.width * 0.50 - 20 * cl_fontScale->value;
 	s_game_menu.nitems = 0;
 
@@ -2762,6 +2777,8 @@ void LoadGame_MenuInit(void) {
 	Create_Savestrings();
 	Create_SavesInfoss();
 	Create_MapNamesList();
+	
+	exitMenu = qfalse;
 
 	for (i = 0; i < MAX_SAVEGAMES; i++) {
 		s_loadgame_actions[i].generic.name = m_savestrings[i];
@@ -2838,6 +2855,8 @@ void SaveGame_MenuInit(void) {
 	Create_Savestrings();
 	Create_SavesInfoss();
 	Create_MapNamesList();
+
+	exitMenu = qfalse;
 
 	// don't include the autosave slot
 	for (i = 0; i < MAX_SAVEGAMES - 1; i++) {
@@ -2972,6 +2991,8 @@ void JoinServer_MenuInit(void) {
 	int i, shift;
 
 	shift = 60 * (cl_fontScale->value - 1);
+
+	exitMenu = qfalse;
 
 	s_joinserver_menu.x = viddef.width * 0.50 - 120;
 
@@ -3253,6 +3274,8 @@ void StartServer_MenuInit(void) {
 	else {
 		FS_FreeFile(buffer);
 	}
+
+	exitMenu = qfalse;
 
 	/*
 	** initialize the menu stuff
@@ -3561,6 +3584,8 @@ void DMOptions_MenuInit(void) {
 	};
 	int dmflags = Cvar_VariableValue("dmflags");
 	int y = 0;
+	
+	exitMenu = qfalse;
 
 	s_dmoptions_menu.x = viddef.width * 0.50;
 	s_dmoptions_menu.nitems = 0;
@@ -3834,6 +3859,8 @@ void DownloadOptions_MenuInit(void) {
 	};
 	int y = 0;
 
+	exitMenu = qfalse;
+	
 	s_downloadoptions_menu.x = viddef.width * 0.50;
 	s_downloadoptions_menu.nitems = 0;
 
@@ -3932,6 +3959,8 @@ void AddressBook_MenuInit(void) {
 	s_addressbook_menu.x = viddef.width / 2 - 142;
 	s_addressbook_menu.y = viddef.height / 2 - 58;
 	s_addressbook_menu.nitems = 0;
+	
+	exitMenu = qfalse;
 
 	for (i = 0; i < NUM_ADDRESSBOOK_ENTRIES; i++) {
 		cvar_t *adr;
@@ -4223,6 +4252,8 @@ qboolean PlayerConfig_MenuInit(void) {
 			}
 		}
 	}
+	
+	exitMenu = qfalse;
 
 	s_player_config_menu.x = viddef.width / 2 - 95 * cl_fontScale->value; //3
 	s_player_config_menu.y = viddef.height / 2 - 97 * cl_fontScale->value; //1
@@ -4539,9 +4570,10 @@ int M_Quit_Key(int key) {
 void M_Quit_Draw(void) {
 	int w = 320;
 	int h = 240;
-
+	exitMenu = qtrue;
 //	Draw_GetPicSize(&w, &h, "quit");
 	Draw_PicScaled((viddef.width - w * cl_fontScale->value) / 2, (viddef.height - h * cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, "quit");
+	Draw_PicBumpScaled((viddef.width - w * cl_fontScale->value) / 2, (viddef.height - h * cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, "quit", "quit_bump");
 
 }
 
@@ -4589,6 +4621,9 @@ void M_DrawBackgroundModel() {
 	entity_t	entity;
 	char		name[MAX_QPATH];
 	int			pos;
+
+	if (exitMenu)
+		return;
 
 	memset(&refdef, 0, sizeof(refdef));
 	memset(&entity, 0, sizeof(entity));
