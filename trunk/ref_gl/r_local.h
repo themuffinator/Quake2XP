@@ -198,6 +198,7 @@ image_t *ScreenCapture;
 uint	bloomtex;
 uint	thermaltex;
 uint	fxaatex;
+uint	motionBlurTex;
 uint	fovCorrTex;
 int		skyCube;
 uint64_t	skyCube_handle;

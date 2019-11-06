@@ -458,6 +458,7 @@ void R_MotionBlur (void)
 	vec2_t	angles, delta;
 	vec3_t velocity;
 	float blur;
+	mat4_t prevModelViewProj, tmp1, tmp2;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
@@ -481,14 +482,25 @@ void R_MotionBlur (void)
 
 	// setup program
 	GL_BindProgram(motionBlurProgram);
+	
+	Mat4_Invert(r_newrefdef.modelViewProjectionMatrix, tmp1);
+	Mat4_Transpose(tmp1, tmp2);
 
-	qglUniform3f(U_PARAM_VEC3_0, velocity[0], velocity[1], r_motionBlurSamples->value);
+	qglUniform3f(U_PARAM_VEC3_0, /*velocity[0]*/blur, velocity[1], r_motionBlurSamples->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float*)prevModelViewProj);
+	qglUniformMatrix4fv(U_TEXTURE1_MATRIX, 1, qfalse, (const float*)tmp1);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	
+	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
+	GL_SetBindlessTexture(U_TMU1, depthMap->handle);
 
 	R_DrawFullScreenQuad();
+
+	Mat4_Copy(r_newrefdef.modelViewProjectionMatrix, prevModelViewProj);
 
 	// restore 3d
 	GL_Enable(GL_CULL_FACE);

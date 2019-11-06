@@ -1960,6 +1960,7 @@ void CL_CheckingNetworkSingature() {
 CL_Init
 ====================
 */
+
 void CL_Init (void) {
 
 	if (dedicated->integer)

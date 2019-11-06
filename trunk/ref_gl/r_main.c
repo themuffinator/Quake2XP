@@ -439,6 +439,10 @@ void R_SetupEntityMatrix(entity_t * e) {
 }
 
 void R_SetupOrthoMatrix(void) {
+
+	GL_Disable(GL_DEPTH_TEST);
+	GL_Disable(GL_CULL_FACE);
+
 	// set 2D virtual screen size
 	qglViewport(0, 0, vid.width, vid.height);
 
@@ -459,9 +463,6 @@ void R_SetupOrthoMatrix(void) {
 	r_newrefdef.orthoMatrix[3][1] = 1.f;
 	r_newrefdef.orthoMatrix[3][2] = 0.f;
 	r_newrefdef.orthoMatrix[3][3] = 1.f;
-
-	GL_Disable(GL_DEPTH_TEST);
-	GL_Disable(GL_CULL_FACE);
 }
 
 /*
@@ -649,7 +650,7 @@ void R_DrawLightScene (void)
 		if (currententity->flags & RF_WEAPONMODEL)
 			continue;
 
-		if ((currententity->flags & RF_TRANSLUCENT) && (currentmodel->type == mod_alias))
+		if ((currententity->flags & RF_TRANSLUCENT) && (currententity->model->type == mod_alias))
 			continue;
 
 		if (currententity->flags & RF_DISTORT)
@@ -1021,8 +1022,8 @@ void R_RenderView (refdef_t *fd) {
 	R_CaptureColorBuffer();
 	R_RenderSprites();
 
-	R_MotionBlur();
 	R_GlobalFog();
+	R_MotionBlur();
 	R_DrawPlayerWeapon();
 }
 

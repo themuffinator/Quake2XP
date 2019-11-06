@@ -120,14 +120,24 @@ void IN_StartupXInput(void)
 	
 	in_useXInput = Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
 	x360_useControllerID = Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
-	x360_sensX = Cvar_Get("x360_sensX", "2.0", CVAR_ARCHIVE);
-	x360_sensY = Cvar_Get("x360_sensY", "1.0", CVAR_ARCHIVE);
+	
+	x360_sensXleft = Cvar_Get("x360_sensXleft", "2.0", CVAR_ARCHIVE);
+	x360_sensYleft = Cvar_Get("x360_sensYlleft", "1.0", CVAR_ARCHIVE);
+	
+	x360_sensXright = Cvar_Get("x360_sensXright", "2.0", CVAR_ARCHIVE);
+	x360_sensYright = Cvar_Get("x360_sensYright", "1.0", CVAR_ARCHIVE);
+	
 	x360_pitchInversion = Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);
 	x360_swapSticks = Cvar_Get("x360_swapSticks", "0", CVAR_ARCHIVE);
+	
 	x360_triggerTreshold = Cvar_Get("x360_triggerTreshold", "0.2", CVAR_ARCHIVE);
 	x360_triggerTreshold->help = "Scale lower triggers theshold.\n[0.01 - 1.0]";
-	x360_deadZone = Cvar_Get("x360_deadZone", "1.0", CVAR_ARCHIVE);
-	x360_deadZone->help = "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
+	
+	x360_deadZoneLeft = Cvar_Get("x360_deadZoneLeft", "1.0", CVAR_ARCHIVE);
+	x360_deadZoneLeft->help = "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
+	x360_deadZoneRight = Cvar_Get("x360_deadZoneRight", "1.0", CVAR_ARCHIVE);
+	x360_deadZoneRight->help = "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
+	
 	x360_vibration = Cvar_Get("x360_vibration", "1", CVAR_ARCHIVE);
 	
 	Com_Printf("\n======= Init xInput Devices =======\n\n");
@@ -292,9 +302,6 @@ extern cvar_t *cl_pitchspeed;
 
 void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int deadZone, int axismax, int type)
 {
-	
-	int outDz = (float)deadZone * x360_deadZone->value;
-
 	// not using this axis
 	if (type <= XINPUT_AXIS_NONE)
 		return;
@@ -303,6 +310,31 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int deadZone, int axisma
 	if (type > XINPUT_AXIS_INVSTRAFE)
 		return;
 
+	int		outDz = 0;
+	float	sensX = 0.0, sensY = 0.0;
+
+	switch (type) {
+		case XINPUT_LEFT_THUMB_X:
+			outDz = (float)deadZone * x360_deadZoneLeft->value;
+			sensX = x360_sensXleft->value;
+			break;
+		case XINPUT_LEFT_THUMB_Y:
+			outDz = (float)deadZone * x360_deadZoneLeft->value;
+			sensY = x360_sensYleft->value;
+			break;
+		case XINPUT_RIGHT_THUMB_X:
+			outDz = (float)deadZone * x360_deadZoneRight->value;
+			sensX = x360_sensXright->value;
+			break;
+		case XINPUT_RIGHT_THUMB_Y:
+			outDz = (float)deadZone * x360_deadZoneRight->value;
+			sensY = x360_sensYright->value;
+			break;
+		default:
+			Com_Printf(S_COLOR_RED, "IN_ControllerAxisMove: Invalid type: %i\n", type);
+		break;
+	}
+	
 	// get the amount moved less the deadzone
 	int realmove = abs(axisval) - outDz;
 
@@ -340,7 +372,7 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int deadZone, int axisma
 	{
 	case XINPUT_AXIS_LOOK:
 	case XINPUT_AXIS_INVLOOK:
-		cl.viewangles_PITCH -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * x360_sensY->value * inv;
+		cl.viewangles_PITCH -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * sensY * inv;
 		break;
 
 	case XINPUT_AXIS_MOVE:
@@ -352,7 +384,7 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int deadZone, int axisma
 	case XINPUT_AXIS_INVTURN:
 		// slow this down because the default cl_yawspeed is too fast here
 		// invert it so that positive move = right
-		cl.viewangles_YAW -= fmove * (cl_yawspeed->value / cl.refdef.fov_x) * x360_sensX->value;
+		cl.viewangles_YAW -= fmove * (cl_yawspeed->value / cl.refdef.fov_x) * sensX;
 		break;
 
 	case XINPUT_AXIS_STRAFE:
@@ -389,7 +421,8 @@ void IN_ControllerMove(usercmd_t *cmd)
 	
 	//clamp values
 	x360_triggerTreshold->value = ClampCvar(0.01, 1.0, x360_triggerTreshold->value);
-	x360_deadZone->value = ClampCvar(0.1, 1.5, x360_deadZone->value);
+	x360_deadZoneLeft->value = ClampCvar(0.1, 1.5, x360_deadZoneLeft->value);
+	x360_deadZoneRight->value = ClampCvar(0.1, 1.5, x360_deadZoneRight->value);
 
 	if (!x360_swapSticks->integer) {
 		IN_ControllerAxisMove(cmd, xInputStage.Gamepad.sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE,	32768,	XINPUT_LEFT_THUMB_X);

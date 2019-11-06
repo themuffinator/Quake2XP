@@ -34,12 +34,15 @@ extern RECT		window_rect;
 
 cvar_t	*in_useXInput;
 cvar_t	*x360_useControllerID;
-cvar_t	*x360_sensX;
-cvar_t	*x360_sensY;
+cvar_t	*x360_sensXleft;
+cvar_t	*x360_sensYleft;
+cvar_t	*x360_sensXright;
+cvar_t	*x360_sensYright;
 cvar_t	*x360_pitchInversion;
 cvar_t	*x360_swapSticks;
 cvar_t	*x360_triggerTreshold;
-cvar_t	*x360_deadZone;
+cvar_t	*x360_deadZoneLeft;
+cvar_t  *x360_deadZoneRight;
 cvar_t	*x360_vibration;
 
 extern qboolean xInputActive;

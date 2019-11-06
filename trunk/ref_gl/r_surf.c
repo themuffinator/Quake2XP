@@ -265,7 +265,6 @@ void R_DrawChainsRA (qboolean bmodel) {
 	r_reflective_surfaces = NULL;
 
 	R_CaptureColorBuffer();
-	R_Capture2dColorBuffer();
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
