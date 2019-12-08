@@ -1069,7 +1069,7 @@ void QGL_Shutdown (void) {
 qboolean QGL_Init () {
 #ifdef _WIN32
 //----------------------------------------------------------------------
-	if ((glw_state.hinstOpenGL = LoadLibrary ("opengl32")) == 0) {
+	if ((glw_state.hinstOpenGL = LoadLibraryA ("opengl32")) == 0) {
 		char *buf = NULL;
 
 		FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError (), MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&buf, 0, NULL);

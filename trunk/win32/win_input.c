@@ -224,8 +224,9 @@ qboolean FindRawDevices()
 	{
 		if (g_pRawInputDeviceList[i].dwType == RIM_TYPEMOUSE)
 		{
-			UINT nchars = 300;
-			TCHAR deviceName[300];
+			uint nchars = 300;
+			static char deviceName[300];
+
 			if (GetRawInputDeviceInfo(g_pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, deviceName, &nchars) >= 0)
 				Com_DPrintf("Device[%d]:\n handle=0x%x\n name = %s\n\n", i, g_pRawInputDeviceList[i].hDevice, deviceName);
 			RID_DEVICE_INFO dinfo;
@@ -236,10 +237,10 @@ qboolean FindRawDevices()
 				if (dinfo.dwType == RIM_TYPEMOUSE)
 				{
 					RID_DEVICE_INFO_MOUSE *pMouseInfo = &dinfo.mouse;
-					Com_DPrintf("ID = 0x%x\n", pMouseInfo->dwId);
-					Com_DPrintf("Number of buttons = %i\n", pMouseInfo->dwNumberOfButtons);
-					Com_DPrintf("Sample Rate = %i\n", pMouseInfo->dwSampleRate);
-					Com_DPrintf("Has Horizontal Wheel: %s\n", pMouseInfo->fHasHorizontalWheel ? "Yes" : "No");
+					Com_Printf("ID = 0x%x\n", pMouseInfo->dwId);
+					Com_Printf("Number of buttons = %i\n", pMouseInfo->dwNumberOfButtons);
+					Com_Printf("Sample Rate = %i\n", pMouseInfo->dwSampleRate);
+					Com_Printf("Has Horizontal Wheel: %s\n", pMouseInfo->fHasHorizontalWheel ? "Yes" : "No");
 				}
 			}
 		}

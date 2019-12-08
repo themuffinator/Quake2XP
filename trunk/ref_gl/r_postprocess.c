@@ -331,7 +331,7 @@ void R_FXAA (void) {
 	// setup program
 	GL_BindProgram (fxaaProgram);
 	
-	uint64 handle;
+	uint64 handle = 0;
 
 	if (!fxaatex) {
 		qglGenTextures (1, &fxaatex);

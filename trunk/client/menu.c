@@ -32,6 +32,8 @@ static int m_main_cursor;
 
 #define NUM_CURSOR_FRAMES 15
 
+int convert_utf8_to_windows1251(const char* utf8, char* windows1251, size_t n);
+
 void M_Menu_Main_f(void);
 void M_Menu_Game_f(void);
 void M_Menu_LoadGame_f(void);
@@ -1129,6 +1131,7 @@ static menulist_s s_options_musicrandom_list;
 static menulist_s s_options_useEFX_list;
 static menulist_s s_options_unlimited_ambient_list;
 static menulist_s s_options_aldev_box;
+static menulist_s s_options_alResempler_box;
 static menulist_s s_options_alquality_list;
 static menulist_s s_options_hrtf;
 static menulist_s s_options_console_action;
@@ -1271,7 +1274,27 @@ static void UpdateMusicVolumeFunc(void *unused) {
 }
 
 char *al_device[] = {
-	"Let the system decide (default)",
+	"default",
+	0,
+	0,
+	0,
+	0,
+	0,
+	0
+};
+char* playback1251[] = {
+0,
+0,
+0,
+0,
+0,
+0,
+0
+};
+char* al_resemplers[] = {
+	0,
+	0,
+	0,
 	0,
 	0,
 	0,
@@ -1287,6 +1310,11 @@ static void AlDevice(void *unused) {
 		Cvar_Set("s_device", "");
 
 	CL_Snd_Restart_f();
+}
+
+static void AlResempler(void* unused) {
+		Cvar_SetValue("s_resamplerQuality", s_options_alResempler_box.curvalue);
+		CL_Snd_Restart_f();
 }
 
 static void UpdateMusicSrcFunc(void *unused) {
@@ -1623,6 +1651,11 @@ void Options_MenuInit(void) {
 
 	};
 
+	static char* not_found[] = {
+	"unsupported",
+	0
+	};
+
 	unsigned i;
 	extern alConfig_t alConfig;
 
@@ -1680,8 +1713,21 @@ void Options_MenuInit(void) {
 	s_options_aldev_box.generic.y = 60 * cl_fontScale->value;
 	s_options_aldev_box.generic.name = "Sound Device";
 	s_options_aldev_box.generic.callback = AlDevice;
-	s_options_aldev_box.itemnames = al_device;
 
+#ifdef _WIN32
+	extern LPALGETSTRINGISOFT alGetStringiSOFT;
+#endif
+
+	if (alGetStringiSOFT) {
+	#define MAX_LEN 512
+		for (i = 0; i <= alConfig.device_count; i++) {
+			playback1251[i] = malloc(sizeof(char) * MAX_LEN);
+			convert_utf8_to_windows1251((const char*)al_device[i], playback1251[i], MAX_LEN);
+		}
+		s_options_aldev_box.itemnames = playback1251;
+	}
+	else 
+		s_options_aldev_box.itemnames = al_device;
 
 	s_options_aldev_box.curvalue = 0;
 	for (i = 1; i <= alConfig.device_count; i++)
@@ -1689,19 +1735,43 @@ void Options_MenuInit(void) {
 			s_options_aldev_box.curvalue = i;
 			break;
 		}
+	
+	s_options_alResempler_box.generic.type = MTYPE_SPINCONTROL;
+	s_options_alResempler_box.generic.x = 0;
+	s_options_alResempler_box.generic.y = 70 * cl_fontScale->value;
+	s_options_alResempler_box.generic.name = "Sound Resampler";
+	s_options_alResempler_box.generic.callback = AlResempler;
+	
+	if (alGetStringiSOFT)
+		s_options_alResempler_box.itemnames = al_resemplers;
+	else
+		s_options_alResempler_box.itemnames = not_found;
+
+	s_options_alResempler_box.generic.statusbar = "Sources Resampling Algorithms";
+
+	s_options_alResempler_box.curvalue = 0;
+	for (i = 1; i <= alConfig.numResamplers; i++)
+		if (s_resamplerQuality->integer == i) {
+			s_options_alResempler_box.curvalue = i;
+			break;
+		}
 
 	s_options_hrtf.generic.type = MTYPE_SPINCONTROL;
 	s_options_hrtf.generic.x = 0;
-	s_options_hrtf.generic.y = 70 * cl_fontScale->value;
+	s_options_hrtf.generic.y = 80 * cl_fontScale->value;
 	s_options_hrtf.generic.name = "Use HRTF";
 	s_options_hrtf.generic.callback = UpdateHRTF;
-	s_options_hrtf.itemnames = yesno_names;
+	if (alGetStringiSOFT)
+		s_options_hrtf.itemnames = yesno_names;
+	else
+		s_options_hrtf.itemnames = not_found;
+
 	s_options_hrtf.curvalue = Cvar_VariableValue("s_useHRTF");
 	s_options_hrtf.generic.statusbar = "Enable HRTF function";
 
 	s_options_useEFX_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_useEFX_list.generic.x = 0;
-	s_options_useEFX_list.generic.y = 80 * cl_fontScale->value;
+	s_options_useEFX_list.generic.y = 90 * cl_fontScale->value;
 	s_options_useEFX_list.generic.name = "Use EFX Reverbation";
 	s_options_useEFX_list.generic.callback = UpdateEFX;
 	s_options_useEFX_list.itemnames = yesno_names;
@@ -1710,7 +1780,7 @@ void Options_MenuInit(void) {
 
 	s_options_sensitivity_slider.generic.type = MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x = 0;
-	s_options_sensitivity_slider.generic.y = 100 * cl_fontScale->value;
+	s_options_sensitivity_slider.generic.y = 110 * cl_fontScale->value;
 	s_options_sensitivity_slider.generic.name = "mouse speed";
 	s_options_sensitivity_slider.generic.callback = MouseSpeedFunc;
 	s_options_sensitivity_slider.minvalue = 2;
@@ -1719,7 +1789,7 @@ void Options_MenuInit(void) {
 
 	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_alwaysrun_box.generic.x = 0;
-	s_options_alwaysrun_box.generic.y = 110 * cl_fontScale->value;
+	s_options_alwaysrun_box.generic.y = 120 * cl_fontScale->value;
 	s_options_alwaysrun_box.generic.name = "always run";
 	s_options_alwaysrun_box.generic.callback = AlwaysRunFunc;
 	s_options_alwaysrun_box.itemnames = yesno_names;
@@ -1727,7 +1797,7 @@ void Options_MenuInit(void) {
 
 	s_options_invertmouse_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_invertmouse_box.generic.x = 0;
-	s_options_invertmouse_box.generic.y = 120 * cl_fontScale->value;
+	s_options_invertmouse_box.generic.y = 130 * cl_fontScale->value;
 	s_options_invertmouse_box.generic.name = "invert mouse";
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
 	s_options_invertmouse_box.itemnames = yesno_names;
@@ -1735,7 +1805,7 @@ void Options_MenuInit(void) {
 
 	s_options_lookspring_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_lookspring_box.generic.x = 0;
-	s_options_lookspring_box.generic.y = 130 * cl_fontScale->value;
+	s_options_lookspring_box.generic.y = 140 * cl_fontScale->value;
 	s_options_lookspring_box.generic.name = "lookspring";
 	s_options_lookspring_box.generic.callback = LookspringFunc;
 	s_options_lookspring_box.itemnames = yesno_names;
@@ -1743,7 +1813,7 @@ void Options_MenuInit(void) {
 
 	s_options_lookstrafe_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_lookstrafe_box.generic.x = 0;
-	s_options_lookstrafe_box.generic.y = 140 * cl_fontScale->value;
+	s_options_lookstrafe_box.generic.y = 150 * cl_fontScale->value;
 	s_options_lookstrafe_box.generic.name = "lookstrafe";
 	s_options_lookstrafe_box.generic.callback = LookstrafeFunc;
 	s_options_lookstrafe_box.itemnames = yesno_names;
@@ -1751,14 +1821,14 @@ void Options_MenuInit(void) {
 
 	s_options_freelook_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_freelook_box.generic.x = 0;
-	s_options_freelook_box.generic.y = 150 * cl_fontScale->value;
+	s_options_freelook_box.generic.y = 160 * cl_fontScale->value;
 	s_options_freelook_box.generic.name = "free look";
 	s_options_freelook_box.generic.callback = FreeLookFunc;
 	s_options_freelook_box.itemnames = yesno_names;
 
 	s_options_crosshair_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_crosshair_box.generic.x = 0;
-	s_options_crosshair_box.generic.y = 160 * cl_fontScale->value;
+	s_options_crosshair_box.generic.y = 170 * cl_fontScale->value;
 	s_options_crosshair_box.generic.name = "crosshair";
 	s_options_crosshair_box.generic.callback = CrosshairFunc;
 	s_options_crosshair_box.itemnames = crosshair_names;
@@ -1783,7 +1853,7 @@ void Options_MenuInit(void) {
 	*/
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
-	s_options_fps_box.generic.y = 180 * cl_fontScale->value;
+	s_options_fps_box.generic.y = 190 * cl_fontScale->value;
 	s_options_fps_box.generic.name = "Draw FPS";
 	s_options_fps_box.generic.callback = FpsFunc;
 	s_options_fps_box.itemnames = fps_names;
@@ -1791,7 +1861,7 @@ void Options_MenuInit(void) {
 
 	s_options_time_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_time_box.generic.x = 0;
-	s_options_time_box.generic.y = 190 * cl_fontScale->value;
+	s_options_time_box.generic.y = 200 * cl_fontScale->value;
 	s_options_time_box.generic.name = "Draw Date / Time";
 	s_options_time_box.generic.callback = TimeFunc;
 	s_options_time_box.itemnames = yesno_names;
@@ -1800,28 +1870,28 @@ void Options_MenuInit(void) {
 
 	s_options_advanced_options_action.generic.type = MTYPE_ACTION;
 	s_options_advanced_options_action.generic.x = 0;
-	s_options_advanced_options_action.generic.y = 210 * cl_fontScale->value;
+	s_options_advanced_options_action.generic.y = 220 * cl_fontScale->value;
 	s_options_advanced_options_action.generic.name = "Advanced Settings";
 	s_options_advanced_options_action.generic.callback = AdvancedSettingsFunc;
 
 
 	s_options_customize_options_action.generic.type = MTYPE_ACTION;
 	s_options_customize_options_action.generic.x = 0;
-	s_options_customize_options_action.generic.y = 230 * cl_fontScale->value;
+	s_options_customize_options_action.generic.y = 240 * cl_fontScale->value;
 	s_options_customize_options_action.generic.name = "Customize Controls";
 	s_options_customize_options_action.generic.callback = CustomizeControlsFunc;
 
 
 	s_options_defaults_action.generic.type = MTYPE_ACTION;
 	s_options_defaults_action.generic.x = 0;
-	s_options_defaults_action.generic.y = 240 * cl_fontScale->value;
+	s_options_defaults_action.generic.y = 250 * cl_fontScale->value;
 	s_options_defaults_action.generic.name = "Reset Defaults";
 	s_options_defaults_action.generic.callback = ControlsResetDefaultsFunc;
 
 
 	s_options_console_action.generic.type = MTYPE_ACTION;
 	s_options_console_action.generic.x = 0;
-	s_options_console_action.generic.y = 250 * cl_fontScale->value;
+	s_options_console_action.generic.y = 260 * cl_fontScale->value;
 	s_options_console_action.generic.name = "go to console";
 	s_options_console_action.generic.callback = ConsoleFunc;
 
@@ -1836,6 +1906,8 @@ void Options_MenuInit(void) {
 	Menu_AddItem(&s_options_menu, (void *)&s_options_musicrandom_list);
 //	Menu_AddItem(&s_options_menu, (void *)&s_options_alquality_list);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_aldev_box);
+	Menu_AddItem(&s_options_menu, (void*)&s_options_alResempler_box);
+	
 	Menu_AddItem(&s_options_menu, (void *)&s_options_hrtf);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_useEFX_list);
 

@@ -750,7 +750,7 @@ void LoadImageErrors(void)
 
 	while ((Error = ilGetError()) != IL_NO_ERROR) {
 		memset(message, 0, 2048);
-		sprintf(message, "%d: %s", Error, iluErrorString(Error));
+		sprintf(message, "%d: %s", Error, (const char*)iluErrorString(Error));
 		Com_Printf("%s\n", message);
 	}
 }

@@ -46,8 +46,8 @@
     <TargetName>gamex86xp</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>d:\Quake2\xatrix\</OutDir>
-    <IntDir>.\Release\</IntDir>
+    <OutDir>C:\Quake2\xatrix\</OutDir>
+    <IntDir>V:\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>gamex86xp</TargetName>
   </PropertyGroup>

@@ -1869,7 +1869,7 @@ void Load_BspLights () {
 				flag = atoi (value);
 		}
 
-		if (addLight && style > 0) {
+		if (addLight/* && style > 0*/) {
 			VectorSet (radius, radius[0], radius[0], radius[0]);
 			vec3_t occRad;
 			VectorScale(radius, 0.75, occRad);

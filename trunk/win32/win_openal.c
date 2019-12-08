@@ -433,7 +433,7 @@ qboolean AL_Init (int hardreset) {
 	if (alGetStringiSOFT) {
 		alConfig.numResamplers = alGetInteger(AL_NUM_RESAMPLERS_SOFT);
 		alConfig.defResampler = alGetInteger(AL_DEFAULT_RESAMPLER_SOFT);
-
+		extern const char* al_resemplers[];
 		s_resamplerQuality->integer = ClampCvarInteger(0, alConfig.numResamplers, s_resamplerQuality->integer);
 		ALint i;
 		Com_Printf("...Available Resamplers:\n");
@@ -441,6 +441,7 @@ qboolean AL_Init (int hardreset) {
 
 			const ALchar* name = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, i);
 			Com_Printf(">" S_COLOR_GREEN "%i" S_COLOR_WHITE " %s\n", i, name);
+			al_resemplers[i] = name;
 		}
 		const ALchar* currName = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, s_resamplerQuality->integer);
 		Com_Printf("...selected " S_COLOR_GREEN "%s" S_COLOR_WHITE " resampler\n\n", currName);
