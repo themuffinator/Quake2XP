@@ -188,7 +188,7 @@ CopyFile
 void CopyFile (char *src, char *dst) {
 	FILE *f1, *f2;
 	int l;
-	byte buffer[65536];
+	static byte buffer[65536];
 
 	Com_DPrintf ("CopyFile (%s, %s)\n", src, dst);
 
@@ -593,6 +593,7 @@ void SV_GameMap_f (void) {
 	if (map[0] == '*') {
 		// wipe all the *.sav files
 		SV_WipeSavegame ("current");
+		map++; //h3xx: Fix server video loading
 	}
 	else {					// save the map just exited
 		if (sv.state == ss_game) {
@@ -618,7 +619,7 @@ void SV_GameMap_f (void) {
 	drawSaveShot[0] = 0;
 
 	// start up the next map
-	SV_Map (qfalse, Cmd_Argv (1), qfalse);
+	SV_Map (qfalse, /*Cmd_Argv (1)*/map, qfalse); // h3xx: Fix server video loading
 
 	// archive server state
 	strncpy (svs.mapcmd, Cmd_Argv (1), sizeof(svs.mapcmd) - 1);

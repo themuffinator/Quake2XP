@@ -416,7 +416,6 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="qcommon\q_parser.c" />
     <ClCompile Include="ref_gl\r_cull.c" />
     <ClCompile Include="ref_gl\r_glstate.c" />
     <ClCompile Include="ref_gl\r_light.c" />

@@ -1900,11 +1900,14 @@ void CL_Frame (int msec) {
 		time_after_ref = Sys_Milliseconds ();
 
 	// update audio
-	float orientation[6];
-	memcpy (orientation, cl.v_forward, sizeof(vec3_t));
-	memcpy (&orientation[3], cl.v_up, sizeof(vec3_t));
-	S_Update (cl.refdef.vieworg, cl.v_forward, orientation);
-	Music_Update ();
+	
+	Music_Update();
+	{
+		float orientation[6];
+		memcpy(orientation, cl.v_forward, sizeof(vec3_t));
+		memcpy(&orientation[3], cl.v_up, sizeof(vec3_t));
+		S_Update(cl.refdef.vieworg, cl.v_forward, orientation);
+	}
 
 	// advance local effects for next frame
 	CL_RunDLights ();

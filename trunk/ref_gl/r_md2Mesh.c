@@ -388,8 +388,8 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	int				i, j, jj = 0;
 	int				index_xyz;
-	byte			*binormals, *oldbinormals;
-	byte			*tangents, *oldtangents;
+	vec3_t			*binormals, *oldbinormals, *normals;
+	vec3_t			*tangents, *oldtangents, *oldnormals;
 	dtriangle_t		*tris;
 	daliasframe_t	*frame, *oldframe;
 	dtrivertx_t		*verts, *oldverts;
@@ -397,7 +397,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	unsigned		offs, offs2;
 	vec3_t			maxs;
 	image_t			*skin, *skinNormalmap, *rgh;
-	int				index2, oldindex2;
 	qboolean		inWater;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
@@ -414,12 +413,14 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
 	oldverts = oldframe->verts;
 	offs2 = offs*currententity->oldframe;
+	oldnormals = currentmodel->normals + offs2;
 	oldbinormals = currentmodel->binormals + offs2;
 	oldtangents = currentmodel->tangents + offs2;
 
 	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts = frame->verts;
 	offs2 = offs*currententity->frame;
+	normals = currentmodel->normals + offs2;
 	binormals = currentmodel->binormals + offs2;
 	tangents = currentmodel->tangents + offs2;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
@@ -473,7 +474,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {
 			index_xyz = tris[i].index_xyz[j];
-			index2 = verts[index_xyz].lightnormalindex;
+		/*	index2 = verts[index_xyz].lightnormalindex;
 			oldindex2 = oldverts[index_xyz].lightnormalindex;
 
 			normalArray[jj][0] = q_byteDirs[oldindex2][0] * backlerp + q_byteDirs[index2][0] * frontlerp;
@@ -487,7 +488,18 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 			binormalArray[jj][0] = q_byteDirs[oldbinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
 			binormalArray[jj][1] = q_byteDirs[oldbinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
 			binormalArray[jj][2] = q_byteDirs[oldbinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
+			*/
+			normalArray[jj][0] = oldnormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;       /// bers
+			normalArray[jj][1] = oldnormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;       /// bers
+			normalArray[jj][2] = oldnormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;       /// bers
 
+			tangentArray[jj][0] = oldtangents[index_xyz][0] * backlerp + tangents[index_xyz][0] * frontlerp;        /// bers
+			tangentArray[jj][1] = oldtangents[index_xyz][1] * backlerp + tangents[index_xyz][1] * frontlerp;        /// bers
+			tangentArray[jj][2] = oldtangents[index_xyz][2] * backlerp + tangents[index_xyz][2] * frontlerp;        /// bers
+
+			binormalArray[jj][0] = oldbinormals[index_xyz][0] * backlerp + binormals[index_xyz][0] * frontlerp;     /// bers
+			binormalArray[jj][1] = oldbinormals[index_xyz][1] * backlerp + binormals[index_xyz][1] * frontlerp;     /// bers
+			binormalArray[jj][2] = oldbinormals[index_xyz][2] * backlerp + binormals[index_xyz][2] * frontlerp;     /// bers
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
 
 		}

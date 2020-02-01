@@ -1379,7 +1379,7 @@ int S_Streaming_Add (const byte *buffer, int num_bytes) {
 			// If we are not playing but there are still enqueued buffers,
 			// restart the audio because it starved of data to play
 			alSourcePlay (source_name[CH_STREAMING]);
-			Com_DPrintf ("S_Streaming_Add: restarting stream, starved\n");
+			Com_DPrintf ("S_Streaming_Add: restarting stream, started\n");
 		}
 		else {
 			// Finished playing

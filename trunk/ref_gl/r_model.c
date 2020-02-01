@@ -2110,7 +2110,7 @@ void R_CalcTangentVectors(float *v0, float *v1, float *v2, float *st0, float *st
 }
 
 #define smooth_cosine cos(DEG2RAD(45.0))
-
+/*
 void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 {
 	int				i, j, k, l;
@@ -2221,6 +2221,127 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 			tangents[i * pheader->num_xyz + j] = Normal2Index(tangents_[j]);
 			binormals[i * pheader->num_xyz + j] = Normal2Index(binormals_[j]);
 			verts[j].lightnormalindex = Normal2Index(normals_[j]);
+		}
+	}
+
+}
+*/
+
+void Mod_BuildMD2Tangents(model_t* mod, dmdl_t* pheader, fstvert_t* poutst)
+{
+	int             i, j, k, l;
+	daliasframe_t* frame;
+	dtrivertx_t* verts, * v;
+	dtriangle_t* tris = (dtriangle_t*)((byte*)pheader + pheader->ofs_tris);
+	int             cx = pheader->num_xyz * pheader->num_frames * sizeof(vec3_t);
+	static vec3_t   tangents_[MAX_VERTS], binormals_[MAX_VERTS], normals_[MAX_VERTS];
+	static vec3_t* tangents, * binormals, * normals;
+
+	mod->binormals = binormals = Hunk_Alloc(cx);
+	mod->tangents = tangents = Hunk_Alloc(cx);
+	mod->normals = normals = Hunk_Alloc(cx);
+
+	//  memset(mod->tangents,   0, pheader->num_xyz * pheader->num_frames * sizeof(vec3_t));
+	//  memset(mod->binormals,  0, pheader->num_xyz * pheader->num_frames * sizeof(vec3_t));
+	//  memset(mod->normals,    0, pheader->num_xyz * pheader->num_frames * sizeof(vec3_t));
+
+	//  mod->memorySize += cx;
+	//  mod->memorySize += cx;
+
+		//for all frames
+	for (i = 0; i < pheader->num_frames; i++) {
+
+		//set temp to zero
+		memset(tangents_, 0, pheader->num_xyz * sizeof(vec3_t));
+		memset(binormals_, 0, pheader->num_xyz * sizeof(vec3_t));
+		memset(normals_, 0, pheader->num_xyz * sizeof(vec3_t));
+
+		tris = (dtriangle_t*)((byte*)pheader + pheader->ofs_tris);
+		frame = (daliasframe_t*)((byte*)pheader + pheader->ofs_frames + i * pheader->framesize);
+		verts = frame->verts;
+
+		//for all tris
+		for (j = 0; j < pheader->num_tris; j++) {
+			vec3_t  edge0, edge1, edge2;
+			vec3_t  triangle[3], dir0, dir1;
+			vec3_t  tangent, binormal, normal, cross;
+
+			for (k = 0; k < 3; k++) {
+				l = tris[j].index_xyz[k];
+				v = &verts[l];
+				for (l = 0; l < 3; l++)
+					triangle[k][l] = v->v[l];
+			}
+
+			//calc normals
+			VectorSubtract(triangle[0], triangle[1], dir0);
+			VectorSubtract(triangle[2], triangle[1], dir1);
+			CrossProduct(dir1, dir0, normal);
+			VectorInvert(normal);
+			VectorNormalize(normal);
+
+			// calc tangents
+			edge0[0] = (float)verts[tris[j].index_xyz[0]].v[0];
+			edge0[1] = (float)verts[tris[j].index_xyz[0]].v[1];
+			edge0[2] = (float)verts[tris[j].index_xyz[0]].v[2];
+			edge1[0] = (float)verts[tris[j].index_xyz[1]].v[0];
+			edge1[1] = (float)verts[tris[j].index_xyz[1]].v[1];
+			edge1[2] = (float)verts[tris[j].index_xyz[1]].v[2];
+			edge2[0] = (float)verts[tris[j].index_xyz[2]].v[0];
+			edge2[1] = (float)verts[tris[j].index_xyz[2]].v[1];
+			edge2[2] = (float)verts[tris[j].index_xyz[2]].v[2];
+
+			R_CalcTangentVectors(edge0, edge1, edge2,
+				&poutst[tris[j].index_st[0]].s,
+				&poutst[tris[j].index_st[1]].s,
+				&poutst[tris[j].index_st[2]].s,
+				tangent, binormal);
+
+			// inverse if needed
+			CrossProduct(binormal, tangent, cross);
+			if (DotProduct(cross, normal) < 0.0) {
+				VectorInvert(tangent);
+				VectorInvert(binormal);
+			}
+
+			for (k = 0; k < 3; k++) {
+				l = tris[j].index_xyz[k];
+				VectorAdd(tangents_[l], tangent, tangents_[l]);
+				VectorAdd(binormals_[l], binormal, binormals_[l]);
+				VectorAdd(normals_[l], normal, normals_[l]);
+			}
+		}
+
+		for (j = 0; j < pheader->num_xyz; j++)
+			for (k = j + 1; k < pheader->num_xyz; k++)
+				if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2]) {
+
+					float* jnormal = q_byteDirs[verts[j].lightnormalindex];
+					float* knormal = q_byteDirs[verts[k].lightnormalindex];
+
+					if (DotProduct(jnormal, knormal) >= smooth_cosine) {
+
+						VectorAdd(tangents_[j], tangents_[k], tangents_[j]);
+						VectorCopy(tangents_[j], tangents_[k]);
+
+						VectorAdd(binormals_[j], binormals_[k], binormals_[j]);
+						VectorCopy(binormals_[j], binormals_[k]);
+
+						VectorAdd(normals_[j], normals_[k], normals_[j]);
+						VectorCopy(normals_[j], normals_[k]);
+					}
+				}
+
+		//normalize averages
+		for (j = 0; j < pheader->num_xyz; j++) {
+
+			VectorNormalize(tangents_[j]);
+			VectorNormalize(binormals_[j]);
+			VectorNormalize(normals_[j]);
+
+			VectorCopy(tangents_[j], mod->tangents[i * pheader->num_xyz + j]);
+			VectorCopy(binormals_[j], mod->binormals[i * pheader->num_xyz + j]);
+			VectorCopy(normals_[j], mod->normals[i * pheader->num_xyz + j]);
 		}
 	}
 

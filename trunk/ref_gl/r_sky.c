@@ -347,14 +347,15 @@ void R_DrawSkyBox(qboolean color) {
 		if (skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
 			continue;
 
+		numVerts = idx = 0;
+
 		GenSkyVertices(skymins[0][i], skymins[1][i], i);
 		GenSkyVertices(skymins[0][i], skymaxs[1][i], i);
 		GenSkyVertices(skymaxs[0][i], skymaxs[1][i], i);
 		GenSkyVertices(skymaxs[0][i], skymins[1][i], i);
-	}
-	if (numVerts) {
+		
 		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, skyIndex);
-		numVerts = idx = 0;
+		
 	}
 
 	qglDisableVertexAttribArray(ATT_POSITION);

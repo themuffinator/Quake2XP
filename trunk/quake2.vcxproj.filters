@@ -191,9 +191,6 @@
     <ClCompile Include="ref_gl\r_program.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="qcommon\q_parser.c">
-      <Filter>Source Files\qcommon</Filter>
-    </ClCompile>
     <ClCompile Include="ref_gl\r_draw2d.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
