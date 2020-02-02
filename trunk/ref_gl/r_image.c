@@ -1068,7 +1068,7 @@ void GL_FreeUnusedImages(void)
 	image_t *image;
 
 	r_notexture->registration_sequence = registration_sequence;
-	r_flare->registration_sequence = registration_sequence;
+//	r_flare->registration_sequence = registration_sequence;
 
 	for (i = 0; i < PT_MAX; i++) {
 		r_particletexture[i]->registration_sequence =
@@ -1142,7 +1142,7 @@ void GL_FreeUnusedImages(void)
 		if (image->type == it_pic)
 			continue;			// don't free pics
 
-
+		glMakeTextureHandleNonResidentARB(image->handle);
 		// free it
 		qglDeleteTextures(1, &image->texnum);
 		memset(image, 0, sizeof(*image));

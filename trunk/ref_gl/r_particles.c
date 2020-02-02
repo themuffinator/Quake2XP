@@ -506,8 +506,8 @@ void R_DrawParticles (void) {
 
 			if (p->orient) {
 
-				float c = (float)cos (DEG2RAD (p->orient)) * scale;
-				float s = (float)sin (DEG2RAD (p->orient)) * scale;
+				c = (float)cos (DEG2RAD (p->orient)) * scale;
+				s = (float)sin (DEG2RAD (p->orient)) * scale;
 
 				VA_SetElem2 (ParticleTextCoord[partVert + 0], 0, 1);
 				VA_SetElem3 (ParticleVert[partVert + 0], p->origin[0] - right[0] * c - up[0] * s,
@@ -586,7 +586,7 @@ void R_DrawParticles (void) {
 	}
 
 	GL_Disable (GL_BLEND);
-	GL_DepthMask (1);			// back to normal Z buffering
+//	GL_DepthMask (1);			// back to normal Z buffering
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);

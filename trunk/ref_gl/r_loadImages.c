@@ -815,17 +815,18 @@ void R_InitEngineTextures (void) {
 	r_particletexture[PT_BLOODSPRAY] = GL_FindImage ("gfx/particles/bloodhit0.tga", it_wall);
 	r_particletexture[PT_xBLOODSPRAY] = GL_FindImage ("gfx/particles/xbloodhit0.tga", it_wall);
 
-	r_particletexture[PT_EXPLODE] = GL_FindImage ("gfx/explode/rlboom_0.jpg", it_wall);
-	r_particletexture[PT_WATERPULME] = GL_FindImage ("gfx/particles/waterplume.tga", it_wall);
-	r_particletexture[PT_WATERCIRCLE] = GL_FindImage ("gfx/particles/water_ripples.dds", it_wall);
-	r_particletexture[PT_BLOODDRIP] = GL_FindImage ("gfx/particles/blooddrip.tga", it_wall);
-	r_particletexture[PT_BLOODMIST] = GL_FindImage ("gfx/particles/bloodmist.tga", it_wall);
-	r_particletexture[PT_BLOOD_SPLAT] = GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
-	r_particletexture[PT_BLASTER_BOLT] = GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
-	r_particletexture[PT_BFG_BALL] = GL_FindImage("gfx/bfg/bfgBall.tga", it_wall);
-	r_particletexture[PT_BFG_REFR] = GL_FindImage("gfx/bfg/bfgRefr.tga", it_wall);
-	r_particletexture[PT_BFG_EXPL] = GL_FindImage("gfx/bfg/bfg_expl.tga", it_wall);
-	r_particletexture[PT_BFG_EXPL2] = GL_FindImage("gfx/bfg/bfgballblast.tga", it_wall);
+	r_particletexture[PT_EXPLODE]		= GL_FindImage ("gfx/explode/rlboom_0.jpg", it_wall);
+	r_particletexture[PT_WATERPULME]	= GL_FindImage ("gfx/particles/waterplume.tga", it_wall);
+	r_particletexture[PT_WATERCIRCLE]	= GL_FindImage ("gfx/particles/water_ripples.dds", it_wall);
+	r_particletexture[PT_BLOODDRIP]		= GL_FindImage ("gfx/particles/blooddrip.tga", it_wall);
+	r_particletexture[PT_BLOODMIST]		= GL_FindImage ("gfx/particles/bloodmist.tga", it_wall);
+	r_particletexture[PT_BLOOD_SPLAT]	= GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
+	r_particletexture[PT_BLASTER_BOLT]	= GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
+	r_particletexture[PT_BFG_BALL]		= GL_FindImage("gfx/bfg/bfgBall.tga", it_wall);
+	r_particletexture[PT_BFG_REFR]		= GL_FindImage("gfx/bfg/bfgRefr.tga", it_wall);
+	r_particletexture[PT_BFG_EXPL]		= GL_FindImage("gfx/bfg/bfg_expl.tga", it_wall);
+	r_particletexture[PT_BFG_EXPL2]		= GL_FindImage("gfx/bfg/bfgballblast.tga", it_wall);
+	r_particletexture[PT_FLARE]			= GL_FindImage("gfx/flares/flare0.tga", it_wall);
 
 	for (i = 0; i < PT_MAX; i++)
 	if (!r_particletexture[i])
@@ -953,10 +954,10 @@ void R_InitEngineTextures (void) {
 			r_texshell[i] = r_notexture;
 	}
 
-	r_flare = GL_FindImage ("gfx/flares/flare0.tga", it_wall);
+/*	r_flare = GL_FindImage ("gfx/flares/flare0.tga", it_wall);
 	if (!r_flare)
 		r_flare = r_notexture;
-
+*/
 	r_distort = GL_FindImage ("gfx/explosion/explosion.tga", it_wall);
 	if (!r_distort)
 		r_distort = r_notexture;

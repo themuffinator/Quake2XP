@@ -769,6 +769,8 @@ GLuint	vbo_fullScreenQuad;
 GLuint	vbo_halfScreenQuad;
 GLuint	vbo_quarterScreenQuad;
 GLuint	ibo_quadTris;
+GLuint	ibo_singleQuad;
+
 GLuint	vbo_Dynamic;
 GLuint	ibo_Dynamic;
 GLuint	ibo_cube;
@@ -960,6 +962,7 @@ glslProgram_t		*fixFovProgram;
 glslProgram_t		*menuProgram;
 glslProgram_t		*skyProgram;
 glslProgram_t		*colorProgram;
+glslProgram_t		*flareProgram;
 glslProgram_t		*fbo2screenProgram;
 glslProgram_t		*globalFogProgram;
 

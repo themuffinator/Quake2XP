@@ -2449,13 +2449,14 @@ void R_SetViewLightScreenBounds () {
 }
 
 
+vec3_t	vert_array[MAX_FLARE_VERTS]; // MAX_FLARE_VERTS 6
+vec2_t	tex_array[MAX_FLARE_VERTS];
+vec4_t	color_array[MAX_FLARE_VERTS];
+
 void R_DrawLightFlare () {
 
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
-	static vec3_t	vert_array[MAX_FLARES_VERTEX];
-	static vec2_t	tex_array[MAX_FLARES_VERTEX];
-	static vec4_t	color_array[MAX_FLARES_VERTEX];
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -2478,6 +2479,8 @@ void R_DrawLightFlare () {
 	if (r_useLightScissors->integer)
 		GL_Disable (GL_SCISSOR_TEST);
 
+	GL_BindProgram(flareProgram);
+
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglEnableVertexAttribArray (ATT_TEX0);
@@ -2486,31 +2489,24 @@ void R_DrawLightFlare () {
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vert_array);
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, tex_array);
 	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, color_array);
-
-	GL_BindProgram (particlesProgram);
-
-//	GL_MBind (GL_TEXTURE0, r_flare->texnum);
-//	GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
 	
-	GL_SetBindlessTexture(U_TMU0, r_flare->handle);
-	GL_SetBindlessTexture(U_TMU1, depthMap->handle);
-
-	qglUniform2f (U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform2f (U_PARTICLE_MASK, 1.0, 0.0);
-	qglUniform1f (U_COLOR_MUL, 1.0);
-	qglUniform1f (U_PARTICLE_THICKNESS, 10.0 * 1.5);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-
 	// Color Fade
 	VectorSubtract (currentShadowLight->flareOrigin, r_origin, v);
 	dist2 = VectorLength(v);
-//	dist = dist2 * 0.1; // 10.0 * 0.01
 	dist = dist2 * (currentShadowLight->flareSize * 0.01);
-
-	scale = ((1024 - dist2) / 1024) * 0.5;
+	scale = ((1024.0 - dist2) / 1024.0) * 0.5;
 
 	VectorScale (currentShadowLight->color, scale, tmp);
+	
+	GL_SetBindlessTexture(U_TMU0, r_particletexture[PT_FLARE]->handle);
+	GL_SetBindlessTexture(U_TMU1, depthMap->handle);
+	
+	qglUniform2f(U_PARAM_VEC2_0, 1.0, 0.0);
+	qglUniform1f(U_PARAM_FLOAT_0, 10.0 * 1.5);
+	qglUniform1f(U_COLOR_MUL, 1.0);
+	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
 
 	VectorMA (currentShadowLight->flareOrigin, -1 - dist, vup, vert_array[0]);
 	VectorMA (vert_array[0], 1 + dist, vright, vert_array[0]);

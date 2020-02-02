@@ -941,6 +941,16 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"flare program"S_COLOR_WHITE" ");
+	flareProgram = R_FindProgram("flare", S_DEFAULT);
+	if (flareProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	Com_Printf("Load "S_COLOR_YELLOW"global fog program"S_COLOR_WHITE" ");
 	globalFogProgram = R_FindProgram("globalFog", S_DEFAULT);
 	if (globalFogProgram->valid) {
