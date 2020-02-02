@@ -47,7 +47,7 @@ static menuframework_s	s_opengl2_menu;
 static menuframework_s *s_current_menu;
 
 static menulist_s		s_mode_list;
-static menuslider_s		s_aniso_slider;
+static menulist_s		s_aniso_list;
 
 static menuslider_s		s_brightness_slider;
 static menuslider_s		s_contrast_slider;
@@ -137,9 +137,9 @@ static void FlareCallback (void *s) {
 }
 
 static void AnisoCallback (void *s) {
-	menuslider_s *slider = (menuslider_s *)s;
+	menulist_s *box  = (menulist_s*)s;
 
-	Cvar_SetValue ("r_anisotropic", slider->curvalue * 1);
+	Cvar_SetValue ("r_anisotropic", box->curvalue * 1);
 }
 
 static void BrightnessCallback (void *s) {
@@ -242,7 +242,7 @@ static void ResetDefaults (void *unused) {
 
 static void ApplyChanges (void *unused) {
 
-	Cvar_SetValue ("r_anisotropic", s_aniso_slider.curvalue);
+	Cvar_SetValue ("r_anisotropic", s_aniso_list.curvalue);
 	Cvar_SetValue ("r_fullScreen", s_fs_box.curvalue);
 	Cvar_SetValue ("r_drawFlares", s_flare_box.curvalue);
 	Cvar_SetValue ("r_textureCompression", s_tc_box.curvalue);
@@ -261,6 +261,30 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_filmFilter", s_film_grain.curvalue);
 	Cvar_SetValue ("r_motionBlur", s_mb_box.curvalue);
 	Cvar_SetValue("r_fixFovStrength", s_fixfov_slider.curvalue);
+
+	switch (s_aniso_list.curvalue)
+	{
+	case 0:
+		Cvar_SetValue("r_anisotropic", 1);
+		break;
+	case 1:
+		Cvar_SetValue("r_anisotropic", 2);
+		break;
+	case 2:
+		Cvar_SetValue("r_anisotropic", 4);
+		break;
+	case 3:
+		Cvar_SetValue("r_anisotropic", 8);
+		break;
+	case 4:
+		Cvar_SetValue("r_anisotropic", 16);
+		break;
+	
+	default:
+		Cvar_SetValue("r_anisotropic", 1);
+		break;
+	}
+
 
 	/*
 	** update appropriate stuff if we're running OpenGL and gamma
@@ -626,6 +650,13 @@ void VID_MenuInit (void) {
 
 	static char	*yesno_names[] = { "off", "yes", 0 };
 	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
+	static char	*aniso_items[] =
+	{	"Off",	  // 1
+		"Low",	  // 2
+		"Medium", // 4
+		"Hight",  // 8
+		"Ultra",  // 16
+		0 };
 
 	if(!r_reliefMappingSelfShadow)
 		r_reliefMappingSelfShadow = Cvar_Get("r_reliefMappingSelfShadow", "0", CVAR_ARCHIVE);
@@ -704,15 +735,30 @@ void VID_MenuInit (void) {
 
 	// -----------------------------------------------------------------------
 
-	s_aniso_slider.generic.type = MTYPE_SLIDER;
-	s_aniso_slider.generic.x = 0;
-	s_aniso_slider.generic.y = 40 * cl_fontScale->value;
-	s_aniso_slider.generic.name = "Anisotropy Filtering";
-	s_aniso_slider.minvalue = 1;
-	s_aniso_slider.maxvalue = 16;
-	s_aniso_slider.curvalue = r_anisotropic->value;
-	s_aniso_slider.generic.callback = AnisoCallback;
-	s_aniso_slider.generic.statusbar = "Texture Anisotropy Level";
+	s_aniso_list.generic.type = MTYPE_SPINCONTROL;
+	s_aniso_list.generic.name = "Anisotropy Filtering";
+	s_aniso_list.generic.x = 0;
+	s_aniso_list.generic.y = 40 * cl_fontScale->value;
+	s_aniso_list.itemnames = aniso_items;
+	s_aniso_list.curvalue = r_anisotropic->value;
+	s_aniso_list.generic.statusbar = "Texture Filtering Quality <Requires Restart Video Sub-System>";
+		
+	if (r_anisotropic->value == 1.0)
+		s_aniso_list.curvalue = 0.0;
+	else
+		if (r_anisotropic->value == 2.0)
+			s_aniso_list.curvalue = 1.0;
+	else
+		if (r_anisotropic->value == 4.0)
+			s_aniso_list.curvalue = 2.0;
+	else
+		if (r_anisotropic->value == 8.0)
+			s_aniso_list.curvalue = 3.0;
+	else
+		if (r_anisotropic->value == 16.0)
+			s_aniso_list.curvalue = 4.0;
+		else
+			s_aniso_list.curvalue = 0.0;
 
 	s_tc_box.generic.type = MTYPE_SPINCONTROL;
 	s_tc_box.generic.x = 0;
@@ -880,7 +926,7 @@ if (r_vsync->value >= 3)
 	Menu_AddItem (&s_opengl_menu, (void *)&s_mode_list);
 	Menu_AddItem (&s_opengl_menu, (void *)&s_fs_box);
 
-	Menu_AddItem (&s_opengl_menu, (void *)&s_aniso_slider);
+	Menu_AddItem (&s_opengl_menu, (void *)&s_aniso_list);
 
 	Menu_AddItem (&s_opengl_menu, (void *)&s_tc_box);
 

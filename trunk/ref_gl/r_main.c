@@ -1326,73 +1326,6 @@ void R_VideoInfo_f(void){
 #endif
 		Com_Printf("MemInfo not availabled for your video card or driver!\n");
 }
-// 512 mb vram
-void R_LowSpecMachine_f(void)
-{
-Cvar_Set("r_textureCompression", "1");
-Cvar_Set("r_maxTextureSize", "512");
-Cvar_Set("r_anisotropic", "4");
-Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
-
-Cvar_Set("r_shadows", "0");
-Cvar_Set("r_drawFlares", "0");
-Cvar_Set("r_reliefMapping", "0");
-Cvar_Set("r_skipStaticLights", "1");
-Cvar_Set("r_lightmapScale", "1.0");
-Cvar_Set("r_bloom", "0");
-Cvar_Set("r_dof", "0");
-Cvar_Set("r_radialBlur", "1");
-Cvar_Set("r_softParticles", "1");
-Cvar_Set("r_motionBlur", "0");
-Cvar_Set("r_ssao", "0");
-
-vid_ref->modified = qtrue;
-}
-// 1 gb vram
-void R_MediumSpecMachine_f(void)
-{
-Cvar_Set("r_textureCompression", "0");
-Cvar_Set("r_maxTextureSize", "512");
-Cvar_Set("r_anisotropic", "8");
-Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
-
-Cvar_Set("r_shadows", "1");
-Cvar_Set("r_drawFlares", "1");
-Cvar_Set("r_reliefMapping", "0");
-Cvar_Set("r_skipStaticLights", "0");
-Cvar_Set("r_lightmapScale", "0.5");
-Cvar_Set("r_bloom", "1");
-Cvar_Set("r_dof", "0");
-Cvar_Set("r_radialBlur", "1");
-Cvar_Set("r_softParticles", "1");
-Cvar_Set("r_motionBlur", "0");
-Cvar_Set("r_ssao", "0");
-
-vid_ref->modified = qtrue;
-}
-
-void R_HiSpecMachine_f(void)
-{
-Cvar_Set("r_textureCompression", "0");
-Cvar_Set("r_maxTextureSize", "0");
-Cvar_Set("r_anisotropic", "16");
-Cvar_Set("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR");
-
-Cvar_Set("r_shadows", "1");
-Cvar_Set("r_drawFlares", "1");
-Cvar_Set("r_reliefMapping", "1");
-Cvar_Set("r_skipStaticLights", "0");
-Cvar_Set("r_lightmapScale", "0.5");
-Cvar_Set("r_bloom", "1");
-Cvar_Set("r_dof", "1");
-Cvar_Set("r_radialBlur", "1");
-Cvar_Set("r_softParticles", "1");
-Cvar_Set("r_fxaa", "1");
-Cvar_Set("r_motionBlur", "1");
-Cvar_Set("r_ssao", "1");
-
-vid_ref->modified = qtrue;
-}
 
 void R_GLSLinfo_f(void);
 void GL_LevelShot_f(void);
@@ -1562,9 +1495,6 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("dumpEntityString",	Dump_EntityString);
 	Cmd_AddCommand("glslInfo",			R_ListPrograms_f);
 	Cmd_AddCommand("r_meminfo",			R_VideoInfo_f);
-	Cmd_AddCommand("low_spec",			R_LowSpecMachine_f);
-	Cmd_AddCommand("medium_spec",		R_MediumSpecMachine_f);
-	Cmd_AddCommand("hi_spec",			R_HiSpecMachine_f);
 	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
 	Cmd_AddCommand("saveFogScript",		R_SaveFogScript_f);
 	Cmd_AddCommand("removeFogScript",	R_RemoveFogScript_f);
@@ -2067,9 +1997,6 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("autoLightsStats");
 	Cmd_RemoveCommand("dumpEntityString");
 	Cmd_RemoveCommand("r_meminfo");	
-	Cmd_RemoveCommand("low_spec");
-	Cmd_RemoveCommand("medium_spec");
-	Cmd_RemoveCommand("hi_spec");
 	Cmd_RemoveCommand("gpuInfo");
 	
 	Cmd_RemoveCommand("saveLights");
@@ -2098,7 +2025,7 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("openglInfo");
 	Cmd_RemoveCommand("saveFogScript");
 	Cmd_RemoveCommand("removeFogScript");
-	Cmd_RemoveCommand("Cube2Lut_f");
+	Cmd_RemoveCommand("makeLut");
 
 	qglDeleteFramebuffers (1, &fboId);
 	qglDeleteFramebuffers(1, &fbo_skyMask);
