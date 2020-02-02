@@ -1652,7 +1652,7 @@ void Options_MenuInit(void) {
 	};
 
 	static char* not_found[] = {
-	"unsupported",
+	//"unsupported",
 	"unsupported",
 	0
 	};

@@ -113,10 +113,8 @@ void EFX_RvbInit (void) {
 	efx.rvbLargeRoomEffect = EFX_RvbCreate(&rvb_large_room, "LARGE ROOM");
 	efx.rvbAlcoveEffect = EFX_RvbCreate(&rvb_alcove, "ALCOVE");
 
-	efx.rvbAuxSlot = 0;
 	alGenAuxiliaryEffectSlots(1, &efx.rvbAuxSlot);
-
-	alAuxiliaryEffectSloti (efx.rvbAuxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
+	alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
 
 	if (alGetError () == AL_NO_ERROR) {
 		efx.on = qtrue;
@@ -210,6 +208,22 @@ void EFX_GetRoomSize() {
 }
 
 
+char* al_error(int err)
+{
+	if (err == AL_INVALID_NAME)
+		return "AL_INVALID_NAME";
+	else if (err == AL_INVALID_ENUM)
+		return "AL_INVALID_ENUM";
+	else if (err == AL_INVALID_VALUE)
+		return "AL_INVALID_VALUE";
+	else if (err == AL_INVALID_OPERATION)
+		return "AL_INVALID_OPERATION";
+	else if (err == AL_OUT_OF_MEMORY)
+		return "AL_OUT_OF_MEMORY";
+	else if (err == AL_NO_ERROR)
+		return "AL_NO_ERROR";
+	return va("0x%X", err);
+}
 
 void EFX_RvbUpdate (vec3_t listener_position) {
 	
@@ -231,8 +245,10 @@ void EFX_RvbUpdate (vec3_t listener_position) {
 		EFX_GetRoomSize();
 	}
 
-	if (alGetError () != AL_NO_ERROR)
-		Com_Printf (S_COLOR_RED "EFX update failed\n");
+	unsigned err;
+	err = alGetError();
+	if (err != AL_NO_ERROR)
+		Com_Printf (S_COLOR_RED "EFX update failed, error %s\n", al_error(err));
 }
 
 void EFX_RvbShutdown (void) {
