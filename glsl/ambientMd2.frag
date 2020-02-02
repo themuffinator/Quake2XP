@@ -3,14 +3,6 @@ in	vec4		v_color;
 in	vec2		v_envCoord;
 in	vec2		v_shellCoord;
 
-/*
-layout (binding = 0) uniform sampler2D 		u_Diffuse;
-layout (binding = 1) uniform sampler2D 		u_Add;
-layout (binding = 2) uniform sampler2D		u_env;
-layout (binding = 3) uniform sampler2D		u_NormalMap;
-layout (binding = 4) uniform sampler2DRect	u_ssaoMap;
-*/
-
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D 	u_Diffuse;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D 	u_Add;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2D		u_env;
@@ -24,7 +16,6 @@ layout(location = U_USE_SSAO)		uniform int		u_ssao;
 layout(location = U_COLOR_MUL)		uniform float	u_ColorModulate;
 layout(location = U_COLOR_OFFSET)	uniform float	u_AddShift; 
 
-
 void main ()
 {
 	if(u_isShell >= 1){
@@ -33,9 +24,9 @@ void main ()
 		return;
 	}
 
-	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;
 	vec4 glow = texture(u_Add, v_texCoord);
 	vec3 normalMap = normalize(texture(u_NormalMap, v_texCoord).rgb * 2.0 - 1.0);
+	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;
 	
   // fake AO/cavity
 	fragData.rgb = diffuse.rgb * (normalMap.z * 0.5 + 0.5);

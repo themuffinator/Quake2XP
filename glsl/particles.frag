@@ -1,7 +1,7 @@
-//layout (binding = 0) uniform sampler2D		u_map0;
+//layout (binding = 0) uniform sampler2D		u_colorMap;
 //layout (binding = 1) uniform sampler2DRect	u_depthBufferMap;
 
-layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_map0;
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_colorMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2DRect	u_depthBufferMap;
 
 layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
@@ -16,7 +16,7 @@ in vec4			v_texCoord0;
 #include depth.inc
 
 void main (void) {
-	vec4 color = texture(u_map0, v_texCoord0.st);
+	vec4 color = texture(u_colorMap, v_texCoord0.st);
 	
 	if(u_thickness > 0.0){
 	// Z-feather
