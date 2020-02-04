@@ -104,13 +104,12 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	int				index_xyz;
 	int				i, j, jj = 0;
 	dtriangle_t		*tris;
-	image_t			*skin, *skinNormalmap, *glowSkin;
+	image_t			*skin, *skinNormalmap, *glowskin;
 	float			alphaShift, alpha;
-	float			backLerp, frontLerp;
-	uint			offs, offs2;
-	daliasframe_t	*frame, *oldFrame;
-	dtrivertx_t		*verts, *oldVerts;
-	vec3_t			*normals, *oldNormals;
+	float			backlerp, frontlerp;
+	int				index2, oldindex2;
+	daliasframe_t	*frame, *oldframe;
+	dtrivertx_t		*verts, *oldverts;
 
 	alphaShift = sin (ref_realtime * currentmodel->glowCfg[2]);
 	alphaShift = (alphaShift + 1) * 0.5f;
@@ -182,10 +181,10 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	if (!skinNormalmap)
 		skinNormalmap = r_defBump;
 
-	glowSkin = currentmodel->glowtexture[currententity->skinnum];
+	glowskin = currentmodel->glowtexture[currententity->skinnum];
 
-	if (!glowSkin)
-		glowSkin = r_notexture;
+	if (!glowskin)
+		glowskin = r_notexture;
 
 	if (!skin)
 		skin = r_notexture;
@@ -204,25 +203,17 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglEnableVertexAttribArray (ATT_TEX0);
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 
-	offs = paliashdr->num_xyz;
 
-	oldFrame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
-	oldVerts = oldFrame->verts;
-	offs2 = offs * currententity->oldframe;
-	oldNormals = currentmodel->normals + offs2;
+	c_alias_polys += paliashdr->num_tris;
+	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
+	jj = 0;
 
+	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	oldverts = oldframe->verts;
 	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts = frame->verts;
-	offs2 = offs * currententity->frame;
-	normals = currentmodel->normals + offs2;
-
-
-	backLerp = currententity->backlerp;
-	frontLerp = 1 - backLerp;
-	
-	c_alias_polys += paliashdr->num_tris;
-	tris = (dtriangle_t*)((byte*)paliashdr + paliashdr->ofs_tris);
-	jj = 0;
+	backlerp = currententity->backlerp;
+	frontlerp = 1 - backlerp;
 
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {
@@ -232,9 +223,11 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 			VA_SetElem4 (colorArray[jj], lightColor[0], lightColor[1], lightColor[2], 1.0);
 
 			if (currentmodel->envMap) {
-				normalArray[jj][0] = oldNormals[index_xyz][0] * backLerp + normals[index_xyz][0] * frontLerp;
-				normalArray[jj][1] = oldNormals[index_xyz][1] * backLerp + normals[index_xyz][1] * frontLerp;
-				normalArray[jj][2] = oldNormals[index_xyz][2] * backLerp + normals[index_xyz][2] * frontLerp;
+				index2 = verts[index_xyz].lightnormalindex;
+				oldindex2 = oldverts[index_xyz].lightnormalindex;
+				normalArray[jj][0] = q_byteDirs[oldindex2][0] * backlerp + q_byteDirs[index2][0] * frontlerp;
+				normalArray[jj][1] = q_byteDirs[oldindex2][1] * backlerp + q_byteDirs[index2][1] * frontlerp;
+				normalArray[jj][2] = q_byteDirs[oldindex2][2] * backlerp + q_byteDirs[index2][2] * frontlerp;
 			}
 		}
 	}
@@ -258,7 +251,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 //	GL_MBind (GL_TEXTURE3, skinNormalmap->texnum);
 	
 	GL_SetBindlessTexture(U_TMU0, skin->handle);
-	GL_SetBindlessTexture(U_TMU1, glowSkin->handle);
+	GL_SetBindlessTexture(U_TMU1, glowskin->handle);
 	GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
 	GL_SetBindlessTexture(U_TMU3, skinNormalmap->handle);
 
@@ -290,13 +283,13 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 }
 
 void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
-	int				index_xyz, i, j, jj;
-	dtriangle_t		*tris;
-	float			backLerp,	frontLerp;
-	uint			offs,		offs2;
-	daliasframe_t	*frame,		*oldFrame;
-	dtrivertx_t		*verts,		*oldVerts;
-	vec3_t			*normals,	*oldNormals;
+	int			index_xyz, i, j, jj = 0;
+	dtriangle_t	*tris;
+	unsigned	defBits = 0;
+	float		backlerp, frontlerp;
+	int			index2, oldindex2;
+	daliasframe_t	*frame, *oldframe;
+	dtrivertx_t		*verts, *oldverts;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
@@ -310,32 +303,27 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 
 	c_alias_polys += paliashdr->num_tris;
 
-	offs = paliashdr->num_xyz;
-
+	jj = 0;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
-	oldFrame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
-	oldVerts = oldFrame->verts;
-	offs2 = offs * currententity->oldframe;
-	oldNormals = currentmodel->normals + offs2;
-
+	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	oldverts = oldframe->verts;
 	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts = frame->verts;
-	offs2 = offs * currententity->frame;
-	normals = currentmodel->normals + offs2;
-
-	backLerp = currententity->backlerp;
-	frontLerp = 1 - backLerp;
-
-	jj = 0;
+	backlerp = currententity->backlerp;
+	frontlerp = 1 - backlerp;
 
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {
 			index_xyz = tris[i].index_xyz[j];
 			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
 
-			normalArray[jj][0] = oldNormals[index_xyz][0] * backLerp + normals[index_xyz][0] * frontLerp;
-			normalArray[jj][1] = oldNormals[index_xyz][1] * backLerp + normals[index_xyz][1] * frontLerp;
-			normalArray[jj][2] = oldNormals[index_xyz][2] * backLerp + normals[index_xyz][2] * frontLerp;
+			index2 = verts[index_xyz].lightnormalindex;
+			oldindex2 = oldverts[index_xyz].lightnormalindex;
+
+			normalArray[jj][0] = q_byteDirs[oldindex2][0] * backlerp + q_byteDirs[index2][0] * frontlerp;
+			normalArray[jj][1] = q_byteDirs[oldindex2][1] * backlerp + q_byteDirs[index2][1] * frontlerp;
+			normalArray[jj][2] = q_byteDirs[oldindex2][2] * backlerp + q_byteDirs[index2][2] * frontlerp;
+
 		}
 	}
 
@@ -398,17 +386,18 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 }
 
 void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
-	int				i, j, jj;
+	int				i, j, jj = 0;
 	int				index_xyz;
-	vec3_t			*binormals, *oldBinormals, *normals;
-	vec3_t			*tangents,	*oldTangents,	*oldNormals;
+	byte			*binormals, *oldbinormals;
+	byte			*tangents, *oldtangents;
 	dtriangle_t		*tris;
-	daliasframe_t	*frame, *oldFrame;
-	dtrivertx_t		*verts, *oldVerts;
-	float			backLerp, frontLerp;
+	daliasframe_t	*frame, *oldframe;
+	dtrivertx_t		*verts, *oldverts;
+	float			backlerp, frontlerp;
 	unsigned		offs, offs2;
 	vec3_t			maxs;
 	image_t			*skin, *skinNormalmap, *rgh;
+	int				index2, oldindex2;
 	qboolean		inWater;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
@@ -416,6 +405,24 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 
 	if (currentmodel->noSelfShadow && r_shadows->integer)
 		GL_Disable(GL_STENCIL_TEST);
+
+	backlerp = currententity->backlerp;
+	frontlerp = 1 - backlerp;
+
+	offs = paliashdr->num_xyz;
+
+	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
+	oldverts = oldframe->verts;
+	offs2 = offs*currententity->oldframe;
+	oldbinormals = currentmodel->binormals + offs2;
+	oldtangents = currentmodel->tangents + offs2;
+
+	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
+	verts = frame->verts;
+	offs2 = offs*currententity->frame;
+	binormals = currentmodel->binormals + offs2;
+	tangents = currentmodel->tangents + offs2;
+	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
 
 	// select skin
 	if (currententity->skin)
@@ -462,46 +469,27 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
 	c_alias_polys += paliashdr->num_tris;
-	
-	backLerp = currententity->backlerp;
-	frontLerp = 1 - backLerp;
-
-	offs = paliashdr->num_xyz;
-
-	oldFrame = (daliasframe_t*)((byte*)paliashdr + paliashdr->ofs_frames + currententity->oldframe * paliashdr->framesize);
-	oldVerts = oldFrame->verts;
-	offs2 = offs * currententity->oldframe;
-	oldNormals = currentmodel->normals + offs2;
-	oldBinormals = currentmodel->binormals + offs2;
-	oldTangents = currentmodel->tangents + offs2;
-
-	frame = (daliasframe_t*)((byte*)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
-	verts = frame->verts;
-	offs2 = offs * currententity->frame;
-	normals = currentmodel->normals + offs2;
-	binormals = currentmodel->binormals + offs2;
-	tangents = currentmodel->tangents + offs2;
-
-	tris = (dtriangle_t*)((byte*)paliashdr + paliashdr->ofs_tris);
-
-	jj = 0;
 
 	for (i = 0; i < paliashdr->num_tris; i++) {
 		for (j = 0; j < 3; j++, jj++) {
 			index_xyz = tris[i].index_xyz[j];
+			index2 = verts[index_xyz].lightnormalindex;
+			oldindex2 = oldverts[index_xyz].lightnormalindex;
+
+			normalArray[jj][0] = q_byteDirs[oldindex2][0] * backlerp + q_byteDirs[index2][0] * frontlerp;
+			normalArray[jj][1] = q_byteDirs[oldindex2][1] * backlerp + q_byteDirs[index2][1] * frontlerp;
+			normalArray[jj][2] = q_byteDirs[oldindex2][2] * backlerp + q_byteDirs[index2][2] * frontlerp;
+
+			tangentArray[jj][0] = q_byteDirs[oldtangents[index_xyz]][0] * backlerp + q_byteDirs[tangents[index_xyz]][0] * frontlerp;
+			tangentArray[jj][1] = q_byteDirs[oldtangents[index_xyz]][1] * backlerp + q_byteDirs[tangents[index_xyz]][1] * frontlerp;
+			tangentArray[jj][2] = q_byteDirs[oldtangents[index_xyz]][2] * backlerp + q_byteDirs[tangents[index_xyz]][2] * frontlerp;
+
+			binormalArray[jj][0] = q_byteDirs[oldbinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
+			binormalArray[jj][1] = q_byteDirs[oldbinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
+			binormalArray[jj][2] = q_byteDirs[oldbinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
+
 			VectorCopy(tempVertexArray[index_xyz], vertexArray[jj]);
 
-			normalArray[jj][0] = oldNormals[index_xyz][0] * backLerp + normals[index_xyz][0] * frontLerp;       
-			normalArray[jj][1] = oldNormals[index_xyz][1] * backLerp + normals[index_xyz][1] * frontLerp;     
-			normalArray[jj][2] = oldNormals[index_xyz][2] * backLerp + normals[index_xyz][2] * frontLerp;       
-
-			tangentArray[jj][0] = oldTangents[index_xyz][0] * backLerp + tangents[index_xyz][0] * frontLerp;        
-			tangentArray[jj][1] = oldTangents[index_xyz][1] * backLerp + tangents[index_xyz][1] * frontLerp;        
-			tangentArray[jj][2] = oldTangents[index_xyz][2] * backLerp + tangents[index_xyz][2] * frontLerp;        
-
-			binormalArray[jj][0] = oldBinormals[index_xyz][0] * backLerp + binormals[index_xyz][0] * frontLerp;    
-			binormalArray[jj][1] = oldBinormals[index_xyz][1] * backLerp + binormals[index_xyz][1] * frontLerp;     
-			binormalArray[jj][2] = oldBinormals[index_xyz][2] * backLerp + binormals[index_xyz][2] * frontLerp;     
 		}
 	}
 

@@ -2110,7 +2110,7 @@ void R_CalcTangentVectors(float *v0, float *v1, float *v2, float *st0, float *st
 }
 
 #define smooth_cosine cos(DEG2RAD(45.0))
-/*
+
 void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 {
 	int				i, j, k, l;
@@ -2221,12 +2221,13 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 			tangents[i * pheader->num_xyz + j] = Normal2Index(tangents_[j]);
 			binormals[i * pheader->num_xyz + j] = Normal2Index(binormals_[j]);
 			verts[j].lightnormalindex = Normal2Index(normals_[j]);
+
 		}
 	}
 
 }
-*/
 
+/*
 void Mod_BuildMD2Tangents(model_t* mod, dmdl_t* pheader, fstvert_t* poutst)
 {
 	int             i, j, k, l;
@@ -2346,7 +2347,7 @@ void Mod_BuildMD2Tangents(model_t* mod, dmdl_t* pheader, fstvert_t* poutst)
 	}
 
 }
-
+*/
 void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	int				i, j, indexST;
 	dmdl_t			*pinmodel, *pheader;

@@ -306,9 +306,11 @@ typedef struct model_s {
 	qboolean	noSelfShadow;
 	qboolean	envMap;
 
-	vec3_t		*normals;
-	vec3_t		*binormals;
-	vec3_t		*tangents;
+	byte		*normals;
+	byte		*binormals;
+	byte		*tangents;
+
+	vec3_t		*smoothNormal;
 
 	int			*indexArray;
 	int			numIndices;
