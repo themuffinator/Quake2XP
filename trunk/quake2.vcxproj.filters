@@ -466,6 +466,12 @@
     <ClInclude Include="ref_gl\ImageLib\ilut_config.h">
       <Filter>Source Files\Renderer\Headers\devIL</Filter>
     </ClInclude>
+    <ClInclude Include="win32\xinput3.h">
+      <Filter>Source Files\Win32\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\xinput.h">
+      <Filter>Source Files\Win32\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="win32\icon1.ico">

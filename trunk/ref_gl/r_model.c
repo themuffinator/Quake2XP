@@ -1752,50 +1752,50 @@ void Mod_ParseFogParams(model_t *mod, char *s) {
 	while (s) {
 		token = COM_Parse(&s);
 
-		if (!Q_strcasecmp(token, "fogColor")) {
-			mod->fogColor[0] = atof(COM_Parse(&s)); // r
-			mod->fogColor[1] = atof(COM_Parse(&s)); // g
-			mod->fogColor[2] = atof(COM_Parse(&s)); // b
-			Com_Printf("fogColor:" S_COLOR_GREEN " %.3f %.3f %.3f\n", mod->fogColor[0], mod->fogColor[1], mod->fogColor[2]);
+		if (!Q_strcasecmp(token, "type")) {
+			fog.type = atoi(COM_Parse(&s));
+			Com_DPrintf("fog type:" S_COLOR_GREEN " %i\n", fog.type);
 			continue;
 		}
 
-		if (!Q_strcasecmp(token, "fogSkyColor")) {
-			mod->fogSkyColor[0] = atof(COM_Parse(&s)); // r
-			mod->fogSkyColor[1] = atof(COM_Parse(&s)); // g
-			mod->fogSkyColor[2] = atof(COM_Parse(&s)); // b
-			Com_Printf("fogSkyColor:" S_COLOR_GREEN " %.3f %.3f %.3f\n", mod->fogSkyColor[0], mod->fogSkyColor[1], mod->fogSkyColor[2]);
+		if (!Q_strcasecmp(token, "worldColor")) {
+			fog.worldColor[0] = atof(COM_Parse(&s)); // r
+			fog.worldColor[1] = atof(COM_Parse(&s)); // g
+			fog.worldColor[2] = atof(COM_Parse(&s)); // b
+			Com_DPrintf("world fog color:" S_COLOR_GREEN " %.3f %.3f %.3f\n", fog.worldColor[0], fog.worldColor[1], fog.worldColor[2]);
 			continue;
 		}
 
-		if (!Q_strcasecmp(token, "fogDensity")) {
-			mod->fogDensity = atof(COM_Parse(&s));
-			Com_Printf("fogDensity:" S_COLOR_GREEN " %.3f\n", mod->fogDensity);
+		if (!Q_strcasecmp(token, "skyColor")) {
+			fog.skyColor[0] = atof(COM_Parse(&s)); // r
+			fog.skyColor[1] = atof(COM_Parse(&s)); // g
+			fog.skyColor[2] = atof(COM_Parse(&s)); // b
+			Com_DPrintf("sky fog color:" S_COLOR_GREEN " %.3f %.3f %.3f\n", fog.skyColor[0], fog.skyColor, fog.skyColor);
 			continue;
 		}
 
-		if (!Q_strcasecmp(token, "fogSkyDensity")) {
-			mod->fogSkyDensity = atof(COM_Parse(&s));
-			Com_Printf("fogSkyDensity:" S_COLOR_GREEN " %.3f\n", mod->fogSkyDensity);
+		if (!Q_strcasecmp(token, "worldDensity")) {
+			fog.worldDensity = atof(COM_Parse(&s));
+			Com_DPrintf("world fog density:" S_COLOR_GREEN " %.3f\n", fog.worldDensity);
 			continue;
 		}
 
-		if (!Q_strcasecmp(token, "fogType")) {
-			mod->fogType = atoi(COM_Parse(&s));
-			Com_Printf("fogType:" S_COLOR_GREEN " %i\n", mod->fogType);
+		if (!Q_strcasecmp(token, "skyDensity")) {
+			fog.skyDensity = atof(COM_Parse(&s));
+			Com_DPrintf("fogSkyDensity:" S_COLOR_GREEN " %.3f\n", fog.skyDensity);
 			continue;
 		}
 
-		if (!Q_strcasecmp(token, "fogBias")) { // -1.0 ... 1.0
-			mod->fogBias = atof(COM_Parse(&s));
-		//	mod->fogBias = clamp(mod->fogBias, -1.0, 1.0);
-			Com_Printf("fogBias:" S_COLOR_GREEN " %.3f\n", mod->fogBias);
+		if (!Q_strcasecmp(token, "worldBias")) { // -1.0 ... 1.0
+			fog.worldBias = atof(COM_Parse(&s));
+		//	fog.worldBias = clamp(fog.worldBias, -1.0, 1.0);
+			Com_DPrintf("world fog bias:" S_COLOR_GREEN " %.3f\n", fog.worldBias);
 			continue;
 		}
-		if (!Q_strcasecmp(token, "fogSkyBias")) { // -1.0 ... 1.0
-			mod->fogSkyBias = atof(COM_Parse(&s));
+		if (!Q_strcasecmp(token, "skyBias")) { // -1.0 ... 1.0
+			fog.skyBias = atof(COM_Parse(&s));
 		//	mod->fogSkyBias = clamp(mod->fogBias, -1.0, 1.0);
-			Com_Printf("fogSkyBias:" S_COLOR_GREEN " %.3f\n", mod->fogSkyBias);
+			Com_DPrintf("sky fog bias:" S_COLOR_GREEN " %.3f\n", fog.skyBias);
 			continue;
 		}
 	}
@@ -1805,31 +1805,36 @@ void Mod_LoadFogScript(model_t * mod) {
 	int		len;
 	char	name[MAX_OSPATH];
 	char	*buf;
-	qboolean defFog = qfalse;
 
-	// set default state - cvar controled
-	mod->useFogFile = qfalse;
 	len = strlen(mod->name);
 	memcpy(name, mod->name, len);
 	name[len - 3] = 'f';
 	name[len - 2] = 'o';
 	name[len - 1] = 'g';
 	name[len] = 0;
+	
 	// load the .fog file
 	len = FS_LoadFile(name, (void **)&buf);
 	if (!buf) {
-		len = FS_LoadFile("maps/default.fog", (void**)& buf);
+		//can't find fog script? Set default  params 
+		Com_Printf("Load default fog values for:" S_COLOR_GREEN " %s\n", mod->name);
+		fog.type = 0;
+		VectorSet(fog.worldColor, 1.0, 1.0, 0.5);
+		VectorSet(fog.skyColor, 1.0, 0.5, 0.3);
+		fog.worldDensity = 0.02500;
+		fog.skyDensity = 0.005;
+		fog.worldBias = 0.0;
+		fog.skyBias = 0.0;
 	}
 	if (buf) {
-		Com_Printf(S_COLOR_YELLOW"\n\nLoad fog script for:" S_COLOR_GREEN " %s\n", mod->name);
-		Com_Printf("{\n");
+		Com_Printf("Load fog script for:" S_COLOR_GREEN " %s\n", mod->name);
+		Com_DPrintf("{\n");
 		char bak = buf[len];
 		buf[len] = 0;
 		Mod_ParseFogParams(mod, buf);
 		buf[len] = bak;
 		FS_FreeFile(buf);
-		mod->useFogFile = qtrue;
-		Com_Printf("}\n");
+		Com_DPrintf("}\n");
 	}
 }
 /*
@@ -2242,12 +2247,8 @@ void Mod_BuildMD2Tangents(model_t* mod, dmdl_t* pheader, fstvert_t* poutst)
 	mod->tangents = tangents = Hunk_Alloc(cx);
 	mod->normals = normals = Hunk_Alloc(cx);
 
-	//  memset(mod->tangents,   0, pheader->num_xyz * pheader->num_frames * sizeof(vec3_t));
-	//  memset(mod->binormals,  0, pheader->num_xyz * pheader->num_frames * sizeof(vec3_t));
-	//  memset(mod->normals,    0, pheader->num_xyz * pheader->num_frames * sizeof(vec3_t));
-
-	//  mod->memorySize += cx;
-	//  mod->memorySize += cx;
+	mod->memorySize += cx;
+	mod->memorySize += cx;
 
 		//for all frames
 	for (i = 0; i < pheader->num_frames; i++) {

@@ -28,109 +28,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 alConfig_t alConfig;
 qboolean	openalStop = qfalse;
 
-/*
- =================
- AL_InitDriver
- =================
- */
-static qboolean AL_InitDriver (void) {
-	char *deviceName = s_device->string;
-
-	Com_Printf ("\n...Initializing OpenAL Driver\n");
-
-	if (!deviceName[0])
-		deviceName = NULL;
-
-	if (deviceName)
-		Com_Printf ("...Opening Device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName);
-	else
-		Com_Printf ("...Opening Default Device: ");
-
-	// Open the device
-	if ((alConfig.hDevice = alcOpenDevice (deviceName)) == NULL) {
-		Com_Printf (S_COLOR_RED"failed\n");
-		return qfalse;
-	}
-
-	if (!deviceName)
-		Com_Printf ("succeeded ("S_COLOR_GREEN"%s"S_COLOR_WHITE")\n",
-		alcGetString (alConfig.hDevice, ALC_DEVICE_SPECIFIER));
-	else
-		Com_Printf (S_COLOR_GREEN"succeeded\n");
-
-	// Create the AL context and make it current
-	Com_Printf ("...Creating AL Context: ");
-
-	qboolean hrtf = qfalse;
-	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
-		hrtf = qtrue;
-	}
-
-	int quality;
-	#ifdef _WIN32
-		quality = 48000;
-	#else
-		quality = 44100; //wtf? soft al under linux use only 44100hz
-	#endif
-
-		ALCint attrlist[6] = 
-		{	ALC_FREQUENCY, quality, 
-			ALC_HRTF_SOFT, s_useHRTF->integer && hrtf ? ALC_TRUE : AL_FALSE,
-		0 };
-		
-		if ((alConfig.hALC =
-			alcCreateContext (alConfig.hDevice, attrlist)) == NULL) {
-			Com_Printf (S_COLOR_RED"failed\n");
-			goto failed;
-		}
-	
-	Com_Printf (S_COLOR_GREEN"succeeded\n");
-
-	Com_Printf ("...Making Context Current: ");
-	if (!alcMakeContextCurrent (alConfig.hALC)) {
-		Com_Printf (S_COLOR_RED"failed\n");
-		goto failed;
-	}
-	Com_Printf (S_COLOR_GREEN"succeeded\n");
-
-	Com_Printf("\n=====================================\n\n");
-
-	if (hrtf) {
-		Com_Printf("...using ALC_SOFT_HRTF\n");
-		ALCint	hrtfState;
-		alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
-		if (!hrtfState)
-			Com_Printf("...HRTF Mode:" S_COLOR_YELLOW " off\n");
-		else
-		{
-			const ALchar *name = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
-			Com_Printf("...using " S_COLOR_GREEN "%s\n", name);
-			Com_Printf("...HRTF Mode:" S_COLOR_GREEN " on\n");
-		}
-
-	}else
-		Com_Printf(S_COLOR_MAGENTA"...ALC_SOFT_HRTF not found\n");
-
-	return qtrue;
-
-failed:
-
-	Com_Printf (S_COLOR_RED"...failed hard\n");
-
-	openalStop = qtrue;
-
-	if (alConfig.hALC) {
-		alcDestroyContext (alConfig.hALC);
-		alConfig.hALC = NULL;
-	}
-
-	if (alConfig.hDevice) {
-		alcCloseDevice (alConfig.hDevice);
-		alConfig.hDevice = NULL;
-	}
-
-	return qfalse;
-}
+#ifdef _WIN32
+extern LPALGETSTRINGISOFT alGetStringiSOFT;
+#endif
 
 typedef struct ConvLetter {
 	char    win1251;
@@ -257,7 +157,129 @@ int convert_utf8_to_windows1251(const char* utf8, char* windows1251, size_t n)
 	windows1251[j] = 0;
 	return 1;
 }
+
+
 #define LINE_MAX 512
+
+/*
+ =================
+ AL_InitDriver
+ =================
+ */
+static qboolean AL_InitDriver (void) {
+	char *deviceName = s_device->string;
+	char *deviceName1251 = NULL;
+
+	Com_Printf ("\n...Initializing OpenAL Driver\n");
+
+	if (!deviceName[0])
+		deviceName = NULL;
+	
+
+	if (alGetStringiSOFT) {
+		deviceName1251 = malloc(sizeof(char) * LINE_MAX);
+
+		if (deviceName) {
+			convert_utf8_to_windows1251(deviceName, deviceName1251, LINE_MAX);
+			Com_Printf("...Opening Device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName1251);
+		}
+		else
+			Com_Printf("...Opening Default Device: ");
+	}
+	else {
+
+		if (deviceName)
+			Com_Printf("...Opening Device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName);
+		else
+			Com_Printf("...Opening Default Device: ");
+	}
+	// Open the device
+	if ((alConfig.hDevice = alcOpenDevice (deviceName)) == NULL) {
+		Com_Printf (S_COLOR_RED"failed\n");
+		return qfalse;
+	}
+
+	if (!deviceName)
+		Com_Printf ("succeeded ("S_COLOR_GREEN"%s"S_COLOR_WHITE")\n",
+		alcGetString (alConfig.hDevice, ALC_DEVICE_SPECIFIER));
+	else
+		Com_Printf (S_COLOR_GREEN"succeeded\n");
+
+	// Create the AL context and make it current
+	Com_Printf ("...Creating AL Context: ");
+
+	qboolean hrtf = qfalse;
+	if (alcIsExtensionPresent(alConfig.hDevice, "ALC_SOFT_HRTF") == AL_TRUE) {
+		hrtf = qtrue;
+	}
+
+	int quality;
+	#ifdef _WIN32
+		quality = 48000;
+	#else
+		quality = 44100; //wtf? soft al under linux use only 44100hz
+	#endif
+
+		ALCint attrlist[6] = 
+		{	ALC_FREQUENCY, quality, 
+			ALC_HRTF_SOFT, s_useHRTF->integer && hrtf ? ALC_TRUE : AL_FALSE,
+		0 };
+		
+		if ((alConfig.hALC =
+			alcCreateContext (alConfig.hDevice, attrlist)) == NULL) {
+			Com_Printf (S_COLOR_RED"failed\n");
+			goto failed;
+		}
+	
+	Com_Printf (S_COLOR_GREEN"succeeded\n");
+
+	Com_Printf ("...Making Context Current: ");
+	if (!alcMakeContextCurrent (alConfig.hALC)) {
+		Com_Printf (S_COLOR_RED"failed\n");
+		goto failed;
+	}
+	Com_Printf (S_COLOR_GREEN"succeeded\n");
+
+	Com_Printf("\n=====================================\n\n");
+
+	if (hrtf) {
+		Com_Printf("...using ALC_SOFT_HRTF\n");
+		ALCint	hrtfState;
+		alcGetIntegerv(alConfig.hDevice, ALC_HRTF_SOFT, 1, &hrtfState);
+		if (!hrtfState)
+			Com_Printf("...HRTF Mode:" S_COLOR_YELLOW " off\n");
+		else
+		{
+			const ALchar *name = alcGetString(alConfig.hDevice, ALC_HRTF_SPECIFIER_SOFT);
+			Com_Printf("...using " S_COLOR_GREEN "%s\n", name);
+			Com_Printf("...HRTF Mode:" S_COLOR_GREEN " on\n");
+		}
+
+	}else
+		Com_Printf(S_COLOR_MAGENTA"...ALC_SOFT_HRTF not found\n");
+
+	return qtrue;
+
+failed:
+
+	Com_Printf (S_COLOR_RED"...failed hard\n");
+
+	openalStop = qtrue;
+
+	if (alConfig.hALC) {
+		alcDestroyContext (alConfig.hALC);
+		alConfig.hALC = NULL;
+	}
+
+	if (alConfig.hDevice) {
+		alcCloseDevice (alConfig.hDevice);
+		alConfig.hDevice = NULL;
+	}
+
+	return qfalse;
+}
+
+
 /*
  =================
  AL_StartOpenAL
@@ -266,15 +288,19 @@ int convert_utf8_to_windows1251(const char* utf8, char* windows1251, size_t n)
 
 qboolean AL_StartOpenAL (void) {
 	extern const char *al_device[];
-	char* playback1251, *playback1251_def;
-	playback1251 = malloc(sizeof(char) * LINE_MAX);
-	playback1251_def = malloc(sizeof(char) * LINE_MAX);
+	char* playback1251[7], *playback1251_def = NULL;
+	int j;
 
 	// Get device list
 	if (alcIsExtensionPresent (NULL, "ALC_ENUMERATE_ALL_EXT")) { // find all ))
 		unsigned i = 0;
 		const ALCchar *a = alcGetString (NULL, ALC_ALL_DEVICES_SPECIFIER);
 		const ALCchar *b = alcGetString (NULL, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
+
+		if (alGetStringiSOFT) {
+			playback1251_def = malloc(sizeof(char) * LINE_MAX);
+			convert_utf8_to_windows1251(b, playback1251_def, LINE_MAX);
+		}
 
 		if (!a) {
 			// We have no audio output devices. No hope.
@@ -284,40 +310,46 @@ qboolean AL_StartOpenAL (void) {
 		
 		Com_Printf("======" S_COLOR_YELLOW " Available Output Devices " S_COLOR_WHITE "=====\n\n");
 		
-#ifdef _WIN32
-		extern LPALGETSTRINGISOFT alGetStringiSOFT;
-#endif
 
-		if (alGetStringiSOFT) {
-			convert_utf8_to_windows1251(a, playback1251, LINE_MAX);
-			convert_utf8_to_windows1251(b, playback1251_def, LINE_MAX);
-		}
-
-		while (*a) {
-			if(alGetStringiSOFT)
-				Com_Printf(">:" S_COLOR_GREEN " %s\n", playback1251);
-			else
-				Com_Printf(">:" S_COLOR_GREEN " %s\n", a);
+		while (*a) { // fill oal device lis
 			al_device[++i] = a;
+			if (!alGetStringiSOFT) {
+				Com_Printf(">:" S_COLOR_GREEN " %s\n", a);
+			}
+			else {
+				playback1251[i] = malloc(sizeof(char) * LINE_MAX);
+				convert_utf8_to_windows1251((const char*)al_device[i], playback1251[i], LINE_MAX);
+				Com_Printf(">:" S_COLOR_GREEN " %s\n", playback1251[i]);
+			}
 			while (*a)
-				while (*a)
-					while (*a)
-						a++;
+					a++;
 			a++;
 		}
-			alConfig.device_count = i;
 
+		alConfig.device_count = i;
+	/*	if (alGetStringiSOFT) {
+			for (j = 0; j <= alConfig.device_count; j++){
+					playback1251[j] = malloc(sizeof(char) * LINE_MAX);
+					convert_utf8_to_windows1251((const char*)al_device[j], playback1251[j], LINE_MAX);
+					Com_Printf(">:" S_COLOR_GREEN " %s\n", playback1251[j]);			
+				}
+			}	
+*/
 			if (alGetStringiSOFT)
 				Com_Printf("Default Output Device: " S_COLOR_GREEN "%s\n", playback1251_def);
 			else
 				Com_Printf("Default Output Device: " S_COLOR_GREEN "%s\n", b);
 			
-			free(playback1251);
-			free(playback1251_def);
+		//	if(alGetStringiSOFT)
+		//		for (j = 0; j <= alConfig.device_count; j++)
+		//			free(playback1251[j]);
+					
+			if(playback1251_def)
+				free(playback1251_def);
+
+			
 	}
-	else {
-		free(playback1251);
-		free(playback1251_def);
+	else {		
 
 		QAL_Shutdown ();
 		return qfalse;

@@ -654,7 +654,7 @@ void R_EditSelectedLight_f (void) {
 	char	target[MAX_QPATH];
 
 	if (!r_lightEditor->integer) {
-		Com_Printf ("Type r_lightEditor 1 to enable light editing.\n");
+		Com_Printf ("Type 'r_lightEditor 1' to enable light editing.\n");
 		return;
 	}
 

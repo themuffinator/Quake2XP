@@ -126,6 +126,22 @@ autoLight_t r_lightSpawnSurf[MAX_WORLD_SHADOW_LIHGTS];
 
 byte	viewvis[MAX_MAP_LEAFS / 8];
 
+// global fog struct
+typedef struct fog_s {
+
+	int type;
+
+	vec3_t skyColor;
+	vec3_t worldColor;
+
+	float skyBias;
+	float worldBias;
+
+	float skyDensity;
+	float worldDensity;
+}fog_t;
+fog_t fog;
+
 /*
 ==============================================================================
 
@@ -271,11 +287,6 @@ typedef struct model_s {
 	byte		*lightData;
 	qboolean	useXPLM;	// 3-vector basis lightmap
 	
-	vec3_t		fogColor, fogSkyColor;
-	float		fogDensity, fogSkyDensity, fogBias, fogSkyBias;
-	int			fogType;
-	qboolean	useFogFile;
-
 	// for alias models and skins
 	image_t		*skins				[MAX_MD2SKINS];
 	image_t		*skins_normal		[MAX_MD2SKINS];

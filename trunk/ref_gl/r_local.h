@@ -342,17 +342,7 @@ cvar_t	*r_radialBlur;
 cvar_t	*r_radialBlurFov;
 
 cvar_t	*r_globalFog;
-cvar_t	*r_globalFogDensity;
-cvar_t	*r_globalFogRed;
-cvar_t	*r_globalFogGreen;
-cvar_t	*r_globalFogBlue;
-cvar_t	*r_globalFogBias;
-
-cvar_t	*r_globalSkyFogRed;
-cvar_t	*r_globalSkyFogGreen;
-cvar_t	*r_globalSkyFogBlue;
-cvar_t	*r_globalSkyFogDensity;
-cvar_t	*r_globalSkyFogBias;
+cvar_t	*r_fogEditor;
 
 cvar_t	*r_tbnSmoothAngle;
 

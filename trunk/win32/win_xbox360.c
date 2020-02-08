@@ -73,22 +73,27 @@ typedef struct {
 
 xInput_t xInput;
 
-#define XINPUT_LIB	"xinput1_3.dll" // win7 support
+#define XINPUT_LIB4	"xinput1_4.dll"
+#define XINPUT_LIB3	"xinput1_3.dll" // win7 support
 
 #define XINPUT_MAX_CONTROLLERS 4
 #define XINPUT_MAX_CONTROLLER_BUTTONS 16
 
-typedef void	(__stdcall * _xInputEnable)(BOOL);
-typedef DWORD	(__stdcall * _XInputGetCapabilities)(DWORD, DWORD, PXINPUT_CAPABILITIES);
-typedef DWORD	(__stdcall * _XInputGetState)(DWORD, PXINPUT_STATE);
-typedef DWORD	(__stdcall * _XInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
-typedef DWORD	(__stdcall * _XInputSetState)(DWORD, XINPUT_VIBRATION*);
+typedef void	(__stdcall	* _xInputEnable)(BOOL);
+typedef DWORD	(__stdcall	* _xInputGetCapabilities)(DWORD, DWORD, PXINPUT_CAPABILITIES);
+typedef DWORD	(__stdcall	* _xInputGetState)(DWORD, PXINPUT_STATE);
+typedef DWORD	(__stdcall	* _xInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
+typedef DWORD	(__stdcall	* _xInputSetState)(DWORD, XINPUT_VIBRATION*);
+typedef DWORD	(__stdcall	* _xInputGetDSoundAudioDeviceGuids)(DWORD, GUID*, GUID*);
+typedef DWORD	(__stdcall	* _xInputGetAudioDeviceIds)(DWORD, LPWSTR, UINT*, LPWSTR, UINT*);
 
-static void		(WINAPI * qXInputEnable)(BOOL enable);
-static DWORD	(WINAPI * qXInputGetCapabilities)(DWORD dwUserIndex, DWORD dwFlags, PXINPUT_CAPABILITIES pCapabilities);
-static DWORD	(WINAPI * qXInputGetState)(DWORD dwUserIndex, PXINPUT_STATE pState);
-static DWORD	(WINAPI * qXInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
-static DWORD	(WINAPI * qXInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
+static	void	(WINAPI * qXInputEnable)(BOOL enable);
+static	DWORD	(WINAPI * qXInputGetCapabilities)(DWORD dwUserIndex, DWORD dwFlags, PXINPUT_CAPABILITIES pCapabilities);
+static	DWORD	(WINAPI * qXInputGetState)(DWORD dwUserIndex, PXINPUT_STATE pState);
+static	DWORD	(WINAPI * qXInputGetBatteryInformation)(DWORD dwUserIndex, BYTE devType, XINPUT_BATTERY_INFORMATION* pBatteryInformation);
+static	DWORD	(WINAPI * qXInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
+static	DWORD	(WINAPI	* qXInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
+static	DWORD	(WINAPI	* qXInputGetAudioDeviceIds)(DWORD  dwUserIndex, LPWSTR pRenderDeviceId, UINT* pRenderCount, LPWSTR pCaptureDeviceId, UINT* pCaptureCount);
 
 static float ClampCvar(float min, float max, float value) {
 							if (value < min) return min;
@@ -96,12 +101,93 @@ static float ClampCvar(float min, float max, float value) {
 							return value;
 						}
 
+unsigned int utf8_encode(void* out, unsigned int unicode, int maxlen)
+{
+	unsigned int bcount = 1;
+	unsigned int lim = 0x80;
+	unsigned int shift;
+	if (!unicode)
+	{	//modified utf-8 encodes encapsulated nulls as over-long.
+		bcount = 2;
+	}
+	else
+	{
+		while (unicode >= lim)
+		{
+			if (bcount == 1)
+				lim <<= 4;
+			else if (bcount < 7)
+				lim <<= 5;
+			else
+				lim <<= 6;
+			bcount++;
+		}
+	}
+
+	//error if needed
+	if (maxlen < bcount)
+		return 0;
+
+	//output it.
+	if (bcount == 1)
+	{
+		*((unsigned char*)out) = (unsigned char)(unicode & 0x7f);
+		out = (char*)out + 1;
+	}
+	else
+	{
+		shift = bcount * 6;
+		shift = shift - 6;
+		*((unsigned char*)out) = (unsigned char)((unicode >> shift)& (0x0000007f >> bcount)) | ((0xffffff00 >> bcount) & 0xff);
+		out = (char*)out + 1;
+		do
+		{
+			shift = shift - 6;
+			*((unsigned char*)out) = (unsigned char)((unicode >> shift) & 0x3f) | 0x80;
+			out = (char*)out + 1;
+		} while (shift);
+	}
+	return bcount;
+}
+char* wchar2char(char* out, size_t outlen, wchar_t* wide) //wide char to char conversion from FTE
+{
+	char* ret = out;
+	int bytes;
+	unsigned int codepoint;
+	if (!outlen)
+		return "";
+	outlen--;
+	//utf-8 to utf-16, not ucs-2.
+	while (*wide)
+	{
+		codepoint = *wide++;
+		if (codepoint >= 0xD800u && codepoint <= 0xDBFFu)
+		{	//handle utf-16 surrogates
+			if (*wide >= 0xDC00u && *wide <= 0xDFFFu)
+			{
+				codepoint = (codepoint & 0x3ff) << 10;
+				codepoint |= *wide++ & 0x3ff;
+			}
+			else
+				codepoint = 0xFFFDu;
+		}
+		bytes = utf8_encode(out, codepoint, outlen);
+		if (bytes <= 0)
+			break;
+		out += bytes;
+		outlen -= bytes;
+	}
+	*out = 0;
+	return ret;
+}
+
+
 void IN_ShutDownXinput() {
 
 	Com_Printf("..." S_COLOR_YELLOW "shutting down xInput subsystem\n");
 
 	if (xInput.device) {
-		Com_Printf("..." S_COLOR_YELLOW "unloading " S_COLOR_GREEN "%s\n", XINPUT_LIB);
+		Com_Printf("..." S_COLOR_YELLOW "unloading " S_COLOR_GREEN "%s\n", XINPUT_LIB4);
 		FreeLibrary(xInput.device);
 	}
 	memset(&xInput, 0, sizeof(xInput_t));
@@ -143,19 +229,29 @@ void IN_StartupXInput(void)
 	Com_Printf("\n======= Init xInput Devices =======\n\n");
 	 
 	// Load the xInput dll
-	Com_Printf("...calling LoadLibrary(%s): ", XINPUT_LIB);
-	if ((xInput.device = LoadLibrary(XINPUT_LIB)) == NULL)
+	Com_Printf("...calling LoadLibrary(%s): ", XINPUT_LIB4);
+	if ((xInput.device = LoadLibrary(XINPUT_LIB4)) == NULL)
 	{
 		Com_Printf(S_COLOR_RED"failed!\n");
-		Com_Printf("\n-----------------------------------\n\n");
-		return;
+
+		Com_Printf("...calling LoadLibrary(%s): ", XINPUT_LIB3);
+		if ((xInput.device = LoadLibrary(XINPUT_LIB3)) == NULL)
+		{
+			Com_Printf(S_COLOR_RED"failed!\n");
+			Com_Printf("\n-----------------------------------\n\n");
+			return;
+		}
 	}
 
 	qXInputEnable = (_xInputEnable)GetProcAddress(xInput.device, "XInputEnable");
-	qXInputGetCapabilities = (_XInputGetCapabilities)GetProcAddress(xInput.device, "XInputGetCapabilities");
-	qXInputGetState = (_XInputGetState)GetProcAddress(xInput.device, "XInputGetState");
-	qXInputGetBatteryInformation = (_XInputGetBatteryInformation)GetProcAddress(xInput.device, "XInputGetBatteryInformation");
-	qXInputSetState = (_XInputSetState)GetProcAddress(xInput.device, "XInputSetState");
+	qXInputGetCapabilities = (_xInputGetCapabilities)GetProcAddress(xInput.device, "XInputGetCapabilities");
+	qXInputGetState = (_xInputGetState)GetProcAddress(xInput.device, "XInputGetState");
+	qXInputGetBatteryInformation = (_xInputGetBatteryInformation)GetProcAddress(xInput.device, "XInputGetBatteryInformation");
+	qXInputSetState = (_xInputSetState)GetProcAddress(xInput.device, "XInputSetState");
+
+	qXInputGetDSoundAudioDeviceGuids = (_xInputGetDSoundAudioDeviceGuids)GetProcAddress(xInput.device, "XInputGetDSoundAudioDeviceGuids"); //win 7 (xinput1_3.dll)
+	
+	qXInputGetAudioDeviceIds = (_xInputGetAudioDeviceIds)GetProcAddress(xInput.device, "XInputGetAudioDeviceIds"); // win 8 - 10 feature (xinput1_4.dll)
 
 	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputSetState)
 	{
@@ -210,6 +306,7 @@ void IN_StartupXInput(void)
 						xInputActiveController = numDev;
 				}
 		}
+
 	}
 
 	/// Berserker: если ничего выбралось и если есть хоть один рабочий контроллер, выберем его

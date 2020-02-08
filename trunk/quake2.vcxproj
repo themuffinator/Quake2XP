@@ -727,6 +727,8 @@
     <ClInclude Include="client\sound.h" />
     <ClInclude Include="win32\winquake.h" />
     <ClInclude Include="win32\win_languages.h" />
+    <ClInclude Include="win32\xinput.h" />
+    <ClInclude Include="win32\xinput3.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\baseq2\glsl\ambientMd3.frag" />

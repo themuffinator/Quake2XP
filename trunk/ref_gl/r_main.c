@@ -1329,6 +1329,7 @@ void R_VideoInfo_f(void){
 
 void R_GLSLinfo_f(void);
 void GL_LevelShot_f(void);
+void R_FogEditor_f(void);
 
 void R_RegisterCvars(void)
 {
@@ -1467,17 +1468,7 @@ void R_RegisterCvars(void)
 	r_screenBlend =						Cvar_Get("r_screenBlend", "1", CVAR_ARCHIVE);
 
 	r_globalFog =						Cvar_Get("r_globalFog", "1", CVAR_ARCHIVE);
-	r_globalFogDensity =				Cvar_Get("r_globalFogDensity", "0.025", CVAR_ARCHIVE);
-	r_globalFogRed =					Cvar_Get("r_globalFogRed", "1.0", CVAR_ARCHIVE);
-	r_globalFogGreen =					Cvar_Get("r_globalFogGreen", "0.25", CVAR_ARCHIVE);
-	r_globalFogBlue =					Cvar_Get("r_globalFogBlue", "0.25", CVAR_ARCHIVE);
-	r_globalFogBias =					Cvar_Get("r_globalFogBias", "0.0", CVAR_ARCHIVE);
-
-	r_globalSkyFogDensity =				Cvar_Get("r_globalSkyFogDensity", "0.01", CVAR_ARCHIVE);
-	r_globalSkyFogRed =					Cvar_Get("r_globalSkyFogRed", "1.0", CVAR_ARCHIVE);
-	r_globalSkyFogGreen =				Cvar_Get("r_globalSkyFogGreen", "0.25", CVAR_ARCHIVE);
-	r_globalSkyFogBlue =				Cvar_Get("r_globalSkyFogBlue", "0.25", CVAR_ARCHIVE);
-	r_globalSkyFogBias =				Cvar_Get("r_globalSkyFogBias", "0.0", CVAR_ARCHIVE);
+	r_fogEditor =						Cvar_Get("r_fogEditor", "0", 0);
 
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
 	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", 0);
@@ -1496,10 +1487,12 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("glslInfo",			R_ListPrograms_f);
 	Cmd_AddCommand("r_meminfo",			R_VideoInfo_f);
 	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
+
+	Cmd_AddCommand("makeLut",			Cube2Lut_f);
+
+	Cmd_AddCommand("fogEdit",			R_FogEditor_f);
 	Cmd_AddCommand("saveFogScript",		R_SaveFogScript_f);
 	Cmd_AddCommand("removeFogScript",	R_RemoveFogScript_f);
-	Cmd_AddCommand("makeLut",			Cube2Lut_f);
-	
 
 #ifdef _WIN32
 	Cmd_AddCommand("gpuInfo",			R_GpuInfo_f);
@@ -2023,9 +2016,12 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("glsl");
 	Cmd_RemoveCommand("glslInfo");
 	Cmd_RemoveCommand("openglInfo");
+
+	Cmd_RemoveCommand("makeLut");
+
+	Cmd_RemoveCommand("fogEdit");
 	Cmd_RemoveCommand("saveFogScript");
 	Cmd_RemoveCommand("removeFogScript");
-	Cmd_RemoveCommand("makeLut");
 
 	qglDeleteFramebuffers (1, &fboId);
 	qglDeleteFramebuffers(1, &fbo_skyMask);
