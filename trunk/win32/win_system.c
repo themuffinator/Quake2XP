@@ -226,7 +226,7 @@ Sys_ConsoleInput
 ================
 */
 char *Sys_ConsoleInput (void) {
-	INPUT_RECORD	recs[1024];
+	static INPUT_RECORD	recs[1024];
 	int		dummy;
 	int		ch, numread, numevents;
 

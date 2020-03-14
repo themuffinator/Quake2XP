@@ -187,6 +187,7 @@ void IN_MouseEvent (int mstate) {
 IN_MouseMove
 ===========
 */
+#include "win_usbVendors.h"
 
 qboolean FindRawDevices()
 {
@@ -202,7 +203,7 @@ qboolean FindRawDevices()
 		return qfalse;
 	}
 	else
-		Com_Printf("" S_COLOR_YELLOW "... Found " S_COLOR_GREEN "%i" S_COLOR_YELLOW " RAW input devices.\n", nDevices);
+		Com_DPrintf("" S_COLOR_YELLOW "... Found " S_COLOR_GREEN "%i" S_COLOR_YELLOW " RAW input devices.\n", nDevices);
 
 	// Create list large enough to hold all RAWINPUTDEVICE structs
 	if ((g_pRawInputDeviceList = (PRAWINPUTDEVICELIST)Z_Malloc(sizeof(RAWINPUTDEVICELIST) * nDevices)) == NULL)
@@ -226,9 +227,11 @@ qboolean FindRawDevices()
 		{
 			uint nchars = 300;
 			static char deviceName[300];
+			deviceName[0] = '\0';
 
 			if (GetRawInputDeviceInfo(g_pRawInputDeviceList[i].hDevice, RIDI_DEVICENAME, deviceName, &nchars) >= 0)
 				Com_DPrintf("Device[%d]:\n handle=0x%x\n name = %s\n\n", i, g_pRawInputDeviceList[i].hDevice, deviceName);
+
 			RID_DEVICE_INFO dinfo;
 			UINT sizeofdinfo = sizeof(dinfo);
 			dinfo.cbSize = sizeofdinfo;
@@ -237,10 +240,28 @@ qboolean FindRawDevices()
 				if (dinfo.dwType == RIM_TYPEMOUSE)
 				{
 					RID_DEVICE_INFO_MOUSE *pMouseInfo = &dinfo.mouse;
-					Com_Printf("ID = 0x%x\n", pMouseInfo->dwId);
-					Com_Printf("Number of buttons = %i\n", pMouseInfo->dwNumberOfButtons);
-					Com_Printf("Sample Rate = %i\n", pMouseInfo->dwSampleRate);
-					Com_Printf("Has Horizontal Wheel: %s\n", pMouseInfo->fHasHorizontalWheel ? "Yes" : "No");
+										
+					char* pstart = strstr(deviceName, "VID_");
+					if (pstart) {
+						char* vid_ = pstart + 4; // skip VID_
+						char vid2[5] = { 0 };
+						strncpy(vid2, vid_, 4);
+						DWORD value = strtoul(vid2, NULL, 16);
+						int z;
+						Com_Printf(S_COLOR_YELLOW"...Found Mouse Device:\n");
+						for (z = 0; i < NUM_VENDORS; z++) {
+							if (value == usb_Vendors[z].vendorId) {
+								Com_Printf("Vendor:           " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
+								break;
+							}
+						}
+						Com_Printf("Buttons:          " S_COLOR_GREEN "%u\n", pMouseInfo->dwNumberOfButtons);
+						if(!pMouseInfo->dwSampleRate)
+							Com_Printf("Frequency:        " S_COLOR_MAGENTA "unsupported\n");
+						else
+							Com_Printf("Frequency:        " S_COLOR_GREEN "%u\n", pMouseInfo->dwSampleRate);
+						Com_Printf("Horizontal Wheel: " S_COLOR_GREEN "%s\n", (pMouseInfo->fHasHorizontalWheel) ? "Yes" : "No");
+					}
 				}
 			}
 		}

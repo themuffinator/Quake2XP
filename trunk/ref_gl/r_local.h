@@ -955,6 +955,7 @@ glslProgram_t		*colorProgram;
 glslProgram_t		*flareProgram;
 glslProgram_t		*fbo2screenProgram;
 glslProgram_t		*globalFogProgram;
+glslProgram_t		*spriteProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureDepthBuffer ();

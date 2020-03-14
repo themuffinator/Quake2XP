@@ -245,10 +245,10 @@ void EFX_RvbUpdate (vec3_t listener_position) {
 		EFX_GetRoomSize();
 	}
 
-	unsigned err;
+/*	unsigned err;
 	err = alGetError();
 	if (err != AL_NO_ERROR)
-		Com_Printf (S_COLOR_RED "EFX update failed, error %s\n", al_error(err));
+		Com_Printf (S_COLOR_RED "EFX update failed, error %s\n", al_error(err));*/
 }
 
 void EFX_RvbShutdown (void) {

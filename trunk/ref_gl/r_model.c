@@ -80,7 +80,7 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 	int i, width, height, intens;
 	glpoly_t *poly;
 	byte *buffer;
-	byte *p;
+	byte *p = NULL;
 	float *v, surf_bound;
 	vec3_t origin = { 0, 0, 0 }, color = { 1, 1, 1 }, tmp, rgbSum;
 	vec3_t poly_center, mins, maxs, tmp1, lightOffset, radius;
@@ -891,6 +891,26 @@ void Mod_LoadTexinfo(lump_t * l) {
 			}
 		}
 
+		Com_sprintf(name, sizeof(name), "overrides/%s_spec.tga", purename);
+		out->colorSpecular = GL_FindImage(name, it_wall);
+
+		if (!out->colorSpecular) {
+			Com_sprintf(name, sizeof(name), "overrides/%s_spec.dds", purename);
+			out->colorSpecular = GL_FindImage(name, it_wall);
+
+			if (!out->colorSpecular) {
+				Com_sprintf(name, sizeof(name), "textures/%s_spec.tga", in->texture);
+				out->colorSpecular = GL_FindImage(name, it_wall);
+
+				if (!out->colorSpecular) {
+					Com_sprintf(name, sizeof(name), "textures/%s_spec.dds", in->texture);
+					out->colorSpecular = GL_FindImage(name, it_wall);
+
+					if (!out->colorSpecular)
+						out->colorSpecular = r_notexture;
+				}
+			}
+		}
 
 		// load texture configuration file
 		Com_sprintf(name, sizeof(name), "materials/%s.mtr", purename);

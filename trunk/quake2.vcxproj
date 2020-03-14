@@ -502,7 +502,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="client\keys.c">
+    <ClCompile Include="client\cl_keys.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
@@ -683,6 +683,7 @@
   <ItemGroup>
     <ClInclude Include="client\AL\al.h" />
     <ClInclude Include="client\AL\alc.h" />
+    <ClInclude Include="client\AL\efx-creative.h" />
     <ClInclude Include="client\AL\efx-presets.h" />
     <ClInclude Include="client\AL\efx.h" />
     <ClInclude Include="client\cdaudio.h" />
@@ -727,6 +728,7 @@
     <ClInclude Include="client\sound.h" />
     <ClInclude Include="win32\winquake.h" />
     <ClInclude Include="win32\win_languages.h" />
+    <ClInclude Include="win32\win_usbVendors.h" />
     <ClInclude Include="win32\xinput.h" />
     <ClInclude Include="win32\xinput3.h" />
   </ItemGroup>
@@ -798,6 +800,8 @@
     <None Include="..\baseq2\glsl\shadow.vert" />
     <None Include="..\baseq2\glsl\sky.frag" />
     <None Include="..\baseq2\glsl\sky.vert" />
+    <None Include="..\baseq2\glsl\sprite.frag" />
+    <None Include="..\baseq2\glsl\sprite.vert" />
     <None Include="..\baseq2\glsl\ssao.frag" />
     <None Include="..\baseq2\glsl\ssao.vert" />
     <None Include="..\baseq2\glsl\ssaoBlur.frag" />

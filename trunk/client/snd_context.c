@@ -289,7 +289,6 @@ failed:
 qboolean AL_StartOpenAL (void) {
 	extern const char *al_device[];
 	char* playback1251[7], *playback1251_def = NULL;
-	int j;
 
 	// Get device list
 	if (alcIsExtensionPresent (NULL, "ALC_ENUMERATE_ALL_EXT")) { // find all ))

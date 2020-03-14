@@ -771,6 +771,17 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"sprite program"S_COLOR_WHITE" ");
+	spriteProgram = R_FindProgram("sprite", S_DEFAULT);
+
+	if (spriteProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	Com_Printf ("Load "S_COLOR_YELLOW"thermal vision program"S_COLOR_WHITE" ");
 	thermalProgram = R_FindProgram ("thermal", S_DEFAULT);
 

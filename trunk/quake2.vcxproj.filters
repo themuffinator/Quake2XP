@@ -131,9 +131,6 @@
     <ClCompile Include="client\snd_mem.c">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="client\keys.c">
-      <Filter>Source Files\Menu</Filter>
-    </ClCompile>
     <ClCompile Include="client\menu.c">
       <Filter>Source Files\Menu</Filter>
     </ClCompile>
@@ -326,6 +323,9 @@
     <ClCompile Include="ref_gl\r_surf.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="client\cl_keys.c">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ref_gl\qgl.h">
@@ -471,6 +471,12 @@
     </ClInclude>
     <ClInclude Include="win32\xinput.h">
       <Filter>Source Files\Win32\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="win32\win_usbVendors.h">
+      <Filter>Source Files\Win32\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="client\AL\efx-creative.h">
+      <Filter>Source Files\Sound\Headers\openAL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -709,6 +715,12 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\flare.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\sprite.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\sprite.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

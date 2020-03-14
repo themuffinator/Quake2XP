@@ -66,6 +66,7 @@ glwstate_t glw_state;
 
 int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
 int	occ_framecount;
+void R_SetupEntityMatrix(entity_t* e);
 
 /*=================
 GL_ARB_Debug_output
@@ -790,7 +791,7 @@ void R_RenderSprites(void)
 	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
 */	
 	// setup program
-	GL_BindProgram(refractProgram);
+	GL_BindProgram(spriteProgram);
 
 	GL_SetBindlessTexture(U_TMU0, r_distort->handle);
 	GL_SetBindlessTexture(U_TMU2, ScreenMap->handle);
@@ -1469,6 +1470,7 @@ void R_RegisterCvars(void)
 
 	r_globalFog =						Cvar_Get("r_globalFog", "1", CVAR_ARCHIVE);
 	r_fogEditor =						Cvar_Get("r_fogEditor", "0", 0);
+	r_fogEditor->help =					 "type fogEdit ? for help list.";
 
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
 	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", 0);
@@ -1491,8 +1493,6 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("makeLut",			Cube2Lut_f);
 
 	Cmd_AddCommand("fogEdit",			R_FogEditor_f);
-	Cmd_AddCommand("saveFogScript",		R_SaveFogScript_f);
-	Cmd_AddCommand("removeFogScript",	R_RemoveFogScript_f);
 
 #ifdef _WIN32
 	Cmd_AddCommand("gpuInfo",			R_GpuInfo_f);
@@ -1876,6 +1876,7 @@ int R_Init(void *hinstance, void *hWnd)
 	qglGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,			&gl_config.maxTextureImageUnits);
 	qglGetIntegerv(GL_MAX_UNIFORM_LOCATIONS,			&gl_config.maxUniformLocations);
 	qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE,			&gl_state.maxRenderBufferSize);
+	qglGetIntegerv(GL_MAX_DRAW_BUFFERS,					&gl_state.maxDrawBuffers);
 	qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS,			&gl_state.maxColorAttachments);
 	qglGetIntegerv(GL_MAX_SAMPLES,						&gl_state.maxSamples);
 
@@ -1890,9 +1891,10 @@ int R_Init(void *hinstance, void *hWnd)
 	Com_Printf(S_COLOR_YELLOW"Max Combined TextureImageUnits: "S_COLOR_GREEN" %i\n", gl_config.maxCombinedTextureImageUnits);
 	Com_Printf(S_COLOR_YELLOW"Max Fragment UniformComponents: "S_COLOR_GREEN" %i\n", gl_config.maxFragmentUniformComponents);
 
-	Com_Printf(S_COLOR_YELLOW"Max Render Buffer Size:  "S_COLOR_GREEN"        %i\n", gl_state.maxRenderBufferSize);
-	Com_Printf(S_COLOR_YELLOW"Max Color Attachments:   "S_COLOR_GREEN"        %i\n", gl_state.maxColorAttachments);
-	Com_Printf(S_COLOR_YELLOW"Max Buffer Samples:      "S_COLOR_GREEN"        %i\n", gl_state.maxSamples);
+	Com_Printf(S_COLOR_YELLOW"Max Render Buffer Size:   "S_COLOR_GREEN"       %i\n", gl_state.maxRenderBufferSize);
+	Com_Printf(S_COLOR_YELLOW"Max Draw Buffers:         "S_COLOR_GREEN"       %i\n", gl_state.maxDrawBuffers);
+	Com_Printf(S_COLOR_YELLOW"Max Color Attachments:    "S_COLOR_GREEN"       %i\n", gl_state.maxColorAttachments);
+	Com_Printf(S_COLOR_YELLOW"Max Buffer Samples:       "S_COLOR_GREEN"       %i\n", gl_state.maxSamples);
 
 	R_InitPrograms();
 	R_InitFboBuffers();
@@ -2020,8 +2022,6 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("makeLut");
 
 	Cmd_RemoveCommand("fogEdit");
-	Cmd_RemoveCommand("saveFogScript");
-	Cmd_RemoveCommand("removeFogScript");
 
 	qglDeleteFramebuffers (1, &fboId);
 	qglDeleteFramebuffers(1, &fbo_skyMask);

@@ -34,6 +34,8 @@ void Sys_WindowsInfo() {
 CPU DETECTION
 =============*/
 
+
+
 int MeasureCpuSpeed()
 {
 	unsigned __int64	start, end, counter, stop, frequency;

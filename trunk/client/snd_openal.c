@@ -201,7 +201,7 @@ void S_Init (int hardreset) {
 		s_musicVolume = Cvar_Get ("s_musicVolume", "0.8", CVAR_ARCHIVE);
 		s_musicSrc = Cvar_Get ("s_musicSrc", "1", CVAR_ARCHIVE);
 		s_musicRandom = Cvar_Get ("s_musicRandom", "0", CVAR_ARCHIVE);
-		s_device = Cvar_Get ("s_device", "OpenAL Soft", CVAR_ARCHIVE);
+		s_device = Cvar_Get ("s_device", "", CVAR_ARCHIVE);
 		s_useEfx = Cvar_Get ("s_useEfx", "1", CVAR_ARCHIVE);
 		s_initSound = Cvar_Get ("s_initSound", "1", CVAR_NOSET);
 		s_dynamicReverberation = Cvar_Get("s_dynamicReverberation", "1", CVAR_ARCHIVE);
@@ -972,8 +972,7 @@ S_Update
 Called once each time through the main loop
 ============
 */
-void S_Update (vec3_t listener_position, vec3_t velocity,
-	float orientation[6]) {
+void S_Update (vec3_t listener_position, vec3_t velocity, float orientation[6]) {
 	entity_state_t *ent;
 	int i, j;
 	byte cl_parse_entities_goodjob[MAX_PARSE_ENTITIES];

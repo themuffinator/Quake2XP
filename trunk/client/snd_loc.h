@@ -48,6 +48,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ALC_NO_PROTOTYPES YES
 #include "AL/alc.h"
 #include "AL/efx.h"
+#include "AL/efx-creative.h"
 
 extern LPALCOPENDEVICE alcOpenDevice;
 extern LPALCCLOSEDEVICE alcCloseDevice;

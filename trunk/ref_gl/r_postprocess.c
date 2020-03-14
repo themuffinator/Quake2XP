@@ -667,17 +667,10 @@ Global Fog Post-processing Effect
 With Ingame Editor
 ===============================*/
 
-void R_SaveFogScript_f(void) {
+void R_SaveFogParams() {
 
 	char	name[MAX_QPATH], path[MAX_QPATH];
 	FILE	*f;
-
-	if (!r_globalFog->integer) {
-		Com_Printf("Type r_globalFog 1 or 2 to save or remove fog script.\n");
-		return;
-	}
-	if (!r_worldmodel)
-		return;
 
 	FS_StripExtension(r_worldmodel->name, name, sizeof(name));
 	Com_sprintf(path, sizeof(path), "%s/%s.fog", FS_Gamedir(), name);
@@ -700,34 +693,31 @@ void R_SaveFogScript_f(void) {
 	fprintf(f, "skyBias %.3f\n",				fog.skyBias);
 	fclose(f);
 
-	Com_Printf(""S_COLOR_MAGENTA"R_SaveFogScript_f: "S_COLOR_WHITE"Save Fog Script To "S_COLOR_GREEN"%s.fog\n", name);
+	Com_Printf(""S_COLOR_MAGENTA"R_SaveFogParams: "S_COLOR_WHITE"Save Fog Script To "S_COLOR_GREEN"%s.fog\n", name);
 }
 
-void R_RemoveFogScript_f(void) {
+void R_RemoveFogParams() {
 
 	char	name[MAX_QPATH], path[MAX_QPATH];
-
-	if (!r_globalFog->integer) {
-		Com_Printf("Type r_globalFog 1 or 2 to save or remove fog script.\n");
-		return;
-	}
-	if (!r_worldmodel)
-		return;
 
 	FS_StripExtension(r_worldmodel->name, name, sizeof(name));
 	Com_sprintf(path, sizeof(path), "%s/%s.fog", FS_Gamedir(), name);
 	remove(path); //remove it!
-	Com_Printf(""S_COLOR_MAGENTA"R_RemoveFogScript_f: "S_COLOR_WHITE"Remove Fog Script To "S_COLOR_GREEN"%s.fog\n", name);
+	Com_Printf(""S_COLOR_MAGENTA"R_RemoveFogParams: "S_COLOR_WHITE"Remove Fog Script To "S_COLOR_GREEN"%s.fog\n", name);
+
+	fog.type = 0;
+	VectorSet(fog.worldColor, 1.0, 1.0, 0.5);
+	VectorSet(fog.skyColor, 1.0, 0.5, 0.3);
+	fog.worldDensity = 0.02500;
+	fog.skyDensity = 0.005;
+	fog.worldBias = 0.0;
+	fog.skyBias = 0.0;
 }
 
 void R_FogEditor_f(void) {
 	
-	if (!r_fogEditor->integer) {
-		Com_Printf(S_COLOR_MAGENTA"You mast set 'r_fogEditor 1' to enable FogEditor.\n");
-		return;
-	}
-	if (!r_globalFog->integer) {
-		Com_Printf(S_COLOR_MAGENTA"You mast set 'r_globalFog 1' to enable FogEditor.\n");
+	if (!r_fogEditor->integer || !r_globalFog->integer) {
+		Com_Printf(S_COLOR_MAGENTA"You mast set 'r_globalFog 1' and 'r_fogEditor 1' to enable Fog Editor.\n");
 		return;
 	}
 
@@ -742,6 +732,18 @@ void R_FogEditor_f(void) {
 		Com_Printf("<skyDensity> " S_COLOR_YELLOW "sky fog density: " S_COLOR_GREEN "value\n");
 		Com_Printf("<worldBias> " S_COLOR_YELLOW "world fog bias: " S_COLOR_GREEN "value\n");
 		Com_Printf("<skyBias> " S_COLOR_YELLOW "sky fog bias: " S_COLOR_GREEN "value\n");
+		Com_Printf("<save> " S_COLOR_YELLOW "save fog params to mapname.fog script.\n");
+		Com_Printf("<remove> " S_COLOR_YELLOW "remove mapname.fog script and set default params.\n");
+		return;
+	}
+
+	if (!strcmp(Cmd_Argv(1), "save")) {
+		R_SaveFogParams();
+		return;
+	}
+
+	if (!strcmp(Cmd_Argv(1), "remove")) {
+		R_RemoveFogParams();
 		return;
 	}
 
