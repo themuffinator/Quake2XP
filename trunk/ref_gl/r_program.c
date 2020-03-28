@@ -19,25 +19,13 @@ static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
 int r_numPrograms;
 static glslProgram_t	r_nullProgram;
 
-#ifdef GLSLS_330
 static const char *glslExt =
-"#version 330 core\n"
-"#extension GL_ARB_explicit_uniform_location : enable\n"
-"#extension GL_ARB_shading_language_420pack : enable\n"
+"#version 450 core\n"
+"#extension GL_ARB_bindless_texture : enable\n"
 "#extension GL_ARB_gpu_shader5 : enable\n"
 "precision mediump float;\n"
 "precision mediump int;\n"
 "out vec4 fragData;\n";	// out fragColor
-
-#else
-
-static const char *glslExt =
-"#version 450 core\n"
-"#extension GL_ARB_bindless_texture : enable\n"
-"precision mediump float;\n"
-"precision mediump int;\n"
-"out vec4 fragData;\n";	// out fragColor
-#endif
 
 static const char *mathDefs =
 "#define	CUTOFF_EPSILON	1.0 / 255.0\n"

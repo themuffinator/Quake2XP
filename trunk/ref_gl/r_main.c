@@ -1013,7 +1013,8 @@ void R_RenderView (refdef_t *fd) {
 	R_CaptureColorBuffer();
 
 	R_DrawRAScene();
-	
+	R_RenderSprites();
+
 	if (RA_Frame && r_particlesOverdraw->integer) { // overdraw particles if we have trans or reflective surfaces in frame
 		R_DrawParticles();
 		RA_Frame = qfalse;
@@ -1021,7 +1022,7 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawTransEntities();
 
 	R_CaptureColorBuffer();
-	R_RenderSprites();
+
 
 	R_GlobalFog();
 	R_MotionBlur();
