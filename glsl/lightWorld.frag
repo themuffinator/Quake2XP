@@ -84,7 +84,7 @@ void main (void) {
 		diffuseMap = tmp + diffuseMap;
 	}
 
-	diffuseMap *= u_ColorModulate;
+	//diffuseMap *= u_ColorModulate;
 
 	if(u_isAmbient == 1) {
 		fragData = diffuseMap * LambertLighting(normalMap.xyz, L) * u_LightColor * attenMap;

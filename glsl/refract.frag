@@ -110,26 +110,8 @@ void main (void) {
 	// scale by the deform multiplier and the viewport size
 	N *= v_deformMul * u_viewport.xy;
 	
-	if(u_ALPHAMASK == 1){
-		float A = texture(u_deformMap, v_deformTexCoord).a;
-		float softness = clamp((depth - v_depthS) / u_thickness1, 0.0, 1.0);
-		// refracted sprites with soft edges
-		if (A <= 0.01) {
-			discard;
-				return;
-			}
-		N *= A;
-		N *= softness;
-		vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
-		diffuse *= A;
-		fragData = vec4(deform, 1.0) + diffuse * u_alpha;
-		fragData *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
-	return;
-	}
-
 	// world refracted surfaces
 	// chromatic aberration approximation
-
     vec4 clearGlass;
     clearGlass.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
 	clearGlass.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;

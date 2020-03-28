@@ -9,8 +9,8 @@ vec2 tc = gl_FragCoord.xy * 4.0;
 vec4 tex = texture2DRect( u_map, tc );  
 
 tex += texture2DRect( u_map, tc + vec2(1.0, 0.0)); 
-tex += texture2DRect( u_map, tc + vec2(0.0, 1.0)); 
 tex += texture2DRect( u_map, tc + vec2(1.0, 1.0)); 
+tex += texture2DRect( u_map, tc + vec2(0.0, 1.0)); 
 tex *= 0.25;
 
 // Calculate luminance
