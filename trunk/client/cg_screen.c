@@ -368,12 +368,19 @@ void SCR_DrawLoading (void) {
 		{
 		strcpy(saveshot, va("/save/%s/shot.jpg", drawSaveShot));
 		
-		if (Draw_FindPic(va("/save/%s/shot.jpg", drawSaveShot)))
-			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, saveshot);
-		else
-			Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
-		}
-		else {
+		// start from level autosave
+		if (!Q_strcasecmp(drawSaveShot, "save0")){
+			if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
+				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
+			else
+				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
+		}else // draw save shot
+			if (Draw_FindPic(va("/save/%s/shot.jpg", drawSaveShot)))
+				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, saveshot);
+			else // cant find any shots
+				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
+			}
+			else {
 			if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
 				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
 			else

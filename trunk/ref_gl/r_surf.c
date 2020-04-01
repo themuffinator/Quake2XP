@@ -273,7 +273,7 @@ void R_DrawChainsRA (qboolean bmodel) {
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 
 	// setup program
-	GL_BindProgram(refractProgram);
+	GL_BindProgram(glassProgram);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);

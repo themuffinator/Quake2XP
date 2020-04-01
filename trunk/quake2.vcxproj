@@ -660,7 +660,7 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="client\cg_particles.c" />
-    <ClCompile Include="client\cg_scrn.c">
+    <ClCompile Include="client\cg_screen.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
@@ -796,6 +796,8 @@
     <None Include="..\baseq2\glsl\radialBlur.vert" />
     <None Include="..\baseq2\glsl\glass.frag" />
     <None Include="..\baseq2\glsl\glass.vert" />
+    <None Include="..\baseq2\glsl\screenFlash.frag" />
+    <None Include="..\baseq2\glsl\screenFlash.vert" />
     <None Include="..\baseq2\glsl\shadow.frag" />
     <None Include="..\baseq2\glsl\shadow.vert" />
     <None Include="..\baseq2\glsl\sky.frag" />

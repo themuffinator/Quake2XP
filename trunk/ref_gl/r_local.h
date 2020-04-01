@@ -927,7 +927,7 @@ glslProgram_t		*motionBlurProgram;
 glslProgram_t		*ssaoProgram;
 glslProgram_t		*depthDownsampleProgram;
 glslProgram_t		*ssaoBlurProgram;
-glslProgram_t		*refractProgram;
+glslProgram_t		*glassProgram;
 glslProgram_t		*lightGlassProgram;
 glslProgram_t		*thermalProgram;
 glslProgram_t		*thermalfpProgram;
@@ -956,6 +956,8 @@ glslProgram_t		*flareProgram;
 glslProgram_t		*fbo2screenProgram;
 glslProgram_t		*globalFogProgram;
 glslProgram_t		*spriteProgram;
+glslProgram_t		*screenFlashProgram;
+
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureDepthBuffer ();

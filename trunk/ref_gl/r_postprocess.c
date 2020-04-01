@@ -236,21 +236,16 @@ void R_ScreenBlend(void)
 	if (!v_blend[3] || !r_screenBlend->integer)
 		return;
 
-		// setup program
-		GL_BindProgram(genericProgram);
-		qglUniform1i(U_2D_PICS, 0);
-		qglUniform1i(U_CONSOLE_BACK, 0);
-		qglUniform1i(U_FRAG_COLOR, 1);
-		qglUniform4f(U_COLOR, v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
-		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-		GL_Disable(GL_ALPHA_TEST);
-		GL_Enable(GL_BLEND);
-		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_BindProgram(screenFlashProgram);
+	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniform3f(U_PARAM_VEC3_0, v_blend[0], v_blend[1], v_blend[2]);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 
-		R_DrawFullScreenQuad();
-
-		GL_Disable(GL_BLEND);
+	R_DrawFullScreenQuad();
 }
 
 void R_DofBlur (void) 
@@ -309,6 +304,7 @@ void R_DofBlur (void)
 		dofParams[1] = r_dofBias->value;
 	}
 
+	R_CaptureColorBuffer();
 	// setup program
 	GL_BindProgram (dofProgram);
 
@@ -316,9 +312,8 @@ void R_DofBlur (void)
 	qglUniform4f(U_PARAM_VEC4_0, dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
-	GL_MBindRect			(GL_TEXTURE0, ScreenMap->texnum);
-	qglCopyTexSubImage2D	(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-	GL_MBindRect			(GL_TEXTURE1, depthMap->texnum);
+	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
+	GL_SetBindlessTexture(U_TMU1, depthMap->handle);
 
 	R_DrawFullScreenQuad ();
 }
@@ -597,7 +592,7 @@ void R_SSAO (void)
 void R_FixFov(void) {
 
 	vec4_t params;
-
+	
 	if (!r_fixFovStrength->value)
 		return;
 
@@ -606,7 +601,6 @@ void R_FixFov(void) {
 
 	// setup program
 	GL_BindProgram(fixFovProgram);
-
 	if (!fovCorrTex) {
 		qglGenTextures(1, &fovCorrTex);
 		GL_MBind(GL_TEXTURE0, fovCorrTex);
@@ -631,10 +625,12 @@ void R_FixFov(void) {
 void R_MenuBackGround() {
 	
 	GL_Disable(GL_BLEND);
-	GL_BindProgram(menuProgram);
+
 	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-
+	
+	GL_BindProgram(menuProgram);
+	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 

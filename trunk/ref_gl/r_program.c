@@ -748,10 +748,10 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"refraction program"S_COLOR_WHITE" ");
-	refractProgram = R_FindProgram ("refract", S_DEFAULT);
+	Com_Printf ("Load "S_COLOR_YELLOW"glass program"S_COLOR_WHITE" ");
+	glassProgram = R_FindProgram ("glass", S_DEFAULT);
 
-	if (refractProgram->valid) {
+	if (glassProgram->valid) {
 		Com_Printf ("succeeded\n");
 	}
 	else {
@@ -959,19 +959,16 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-/*
-	Com_Printf("Load "S_COLOR_YELLOW"fbo program"S_COLOR_WHITE" ");
-	fbo2screenProgram = R_FindProgram("fbo2screen", S_DEFAULT);
-	if (fbo2screenProgram->valid) {
+
+	Com_Printf("Load "S_COLOR_YELLOW"screen flash program"S_COLOR_WHITE" ");
+	screenFlashProgram = R_FindProgram("screenFlash", S_DEFAULT);
+	if (screenFlashProgram->valid) {
 		Com_Printf("succeeded\n");
-		id = fbo2screenProgram->id;
-		fbo2screen_orthoMatrix = qglGetUniformLocation(id, "u_orthoMatrix");
 	}
 	else {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-*/
 
 #ifdef GLSL_LOADING_TIME
 	stop = Sys_Milliseconds ();

@@ -272,9 +272,6 @@
     <ClCompile Include="client\cg_particles.c">
       <Filter>Source Files\Cg</Filter>
     </ClCompile>
-    <ClCompile Include="client\cg_scrn.c">
-      <Filter>Source Files\Cg</Filter>
-    </ClCompile>
     <ClCompile Include="client\cg_tempents.c">
       <Filter>Source Files\Cg</Filter>
     </ClCompile>
@@ -325,6 +322,9 @@
     </ClCompile>
     <ClCompile Include="client\cl_keys.c">
       <Filter>Source Files\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cg_screen.c">
+      <Filter>Source Files\Cg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -721,6 +721,12 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\glass.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\screenFlash.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\screenFlash.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>
