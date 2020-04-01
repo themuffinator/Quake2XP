@@ -930,14 +930,7 @@ static qboolean GLW_InitFakeOpenGL(void) {
 static qboolean GLW_ChoosePixelFormat() {
 	PIXELFORMATDESCRIPTOR	PFD;
 	int pixelFormat, samples;
-	uint numFormats, sRGBformat;
-	qboolean sRGB;
-
-	sRGB = arb_sRGB|ext_sRGB;
-	if (arb_sRGB)
-		sRGBformat = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-	else if (ext_sRGB)
-		sRGBformat = WGL_FRAMEBUFFER_SRGB_CAPABLE_EXT;
+	uint numFormats;
 
 	qglGetIntegerv(GL_MAX_SAMPLES, &gl_config.maxSamples);
 
@@ -961,7 +954,6 @@ static qboolean GLW_ChoosePixelFormat() {
 		WGL_STENCIL_BITS_ARB, 8,
 		WGL_SAMPLE_BUFFERS_ARB, samples ? GL_TRUE: GL_FALSE,
 		WGL_SAMPLES_ARB, samples,
-		sRGBformat, sRGB ? GL_TRUE: GL_FALSE,
 		0
 	};
 

@@ -387,6 +387,8 @@ void CreateMiniDepth(void) {
 	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	qglTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	qglTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_R16F, vid.width / 2, vid.height / 2, 0, GL_RED, GL_FLOAT, NULL);
+	fboDN->handle = glGetTextureHandleARB(fboDN->texnum);
+	glMakeTextureHandleResidentARB(fboDN->handle);
 }
 
 void CreateSsaoColorTextures(void) {

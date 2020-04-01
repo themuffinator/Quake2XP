@@ -80,6 +80,9 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 		VID_Error (ERR_DROP, "R_BuildLightMap(): called for non-lit surface.");
 
 	surf->lightmaptexturenum = gl_lms.current_lightmap_texture;
+	
+	surf->lightMapTex_handle = glGetTextureHandleARB(surf->lightmaptexturenum);
+	glMakeTextureHandleResidentARB(surf->lightMapTex_handle);
 
 	// no more dynamic lightmaps, so only loadmodel is used
 	smax = (surf->extents[0] / (int)loadmodel->lightmap_scale) + 1;

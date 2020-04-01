@@ -521,7 +521,7 @@ void R_DownsampleDepth(void)
 	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
 
 	GL_BindProgram(depthDownsampleProgram);
-	GL_MBindRect(GL_TEXTURE0, depthMap->texnum);
+	GL_SetBindlessTexture(U_TMU0, depthMap->handle);
 
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -555,8 +555,8 @@ void R_SSAO (void)
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	GL_BindProgram (ssaoProgram);
-	GL_MBindRect(GL_TEXTURE0, fboDN->texnum);
-	GL_MBind(GL_TEXTURE1, r_randomNormalTex->texnum);
+	GL_SetBindlessTexture(U_TMU0, fboDN->handle);
+	GL_SetBindlessTexture(U_TMU1, r_randomNormalTex->handle);
 
 	qglUniform2f (U_PARAM_VEC2_0, max(r_ssaoIntensity->value, 0.f), r_ssaoScale->value);
 	qglUniform2f (U_SCREEN_SIZE, vid.width, vid.height);
@@ -569,7 +569,7 @@ void R_SSAO (void)
 
 	if (r_ssaoBlur->integer) {
 		qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
-		GL_MBindRect(GL_TEXTURE1, fboDN->texnum);
+		GL_SetBindlessTexture(U_TMU1, fboDN->handle);
 
 		GL_BindProgram(ssaoBlurProgram);
 
@@ -579,21 +579,13 @@ void R_SSAO (void)
 		qglUniform1i(U_PARAM_INT_0, max(numSamples, 1));
 
 		for (i = 0; i < r_ssaoBlur->integer; i++) {
-#if 1
 			// two-pass shader
 			for (j = 0; j < 2; j++) {
-				GL_MBindRect(GL_TEXTURE0, fboColor[j]->texnum);
+				GL_SetBindlessTexture(U_TMU0, fboColor[j]->handle);
 				qglDrawBuffer(GL_COLOR_ATTACHMENT0 + (j ^ 1));
 				qglUniform2f(U_PARAM_VEC2_0, j ? 0.f : 1.f, j ? 1.f : 0.f);
 				R_DrawHalfScreenQuad();
 			}
-#else
-			// single-pass shader
-			GL_MBindRect(GL_TEXTURE0, fboColor[fboColorIndex]);
-			fboColorIndex ^= 1;
-			qglDrawBuffer(GL_COLOR_ATTACHMENT0 + fboColorIndex);
-			R_DrawHalfScreenQuad();
-#endif
 		}
 	}
 

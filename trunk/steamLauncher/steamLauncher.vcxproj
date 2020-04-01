@@ -74,8 +74,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.exe</TargetExt>
-    <OutDir>D:\Quake2\</OutDir>
-    <IntDir>.\Release\</IntDir>
+    <OutDir>C:\Quake2\</OutDir>
+    <IntDir>V:\Steam\Release\</IntDir>
     <TargetName>quake2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -109,7 +109,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>D:\Quake2\quake2.exe</OutputFile>
+      <OutputFile>C:\Quake2\quake2.exe</OutputFile>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
