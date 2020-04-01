@@ -453,18 +453,18 @@ void R_lutCorrection(void)
 
 }
 
-void R_MotionBlur (void) 
+void R_MotionBlur(void)
 {
 	vec2_t	angles, delta;
 	vec3_t velocity;
 	float blur;
-	mat4_t prevModelViewProj, tmp1, tmp2;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
 	if (!r_motionBlur->integer)
 		return;
+
 	// go to 2d
 	R_SetupOrthoMatrix();
 	GL_DepthMask(0);
@@ -472,35 +472,23 @@ void R_MotionBlur (void)
 	// calc camera offsets
 	angles[0] = r_newrefdef.viewanglesOld[1] - r_newrefdef.viewangles[1]; //YAW left-right
 	angles[1] = r_newrefdef.viewanglesOld[0] - r_newrefdef.viewangles[0]; //PITCH up-down
-	
+
 	blur = r_motionBlurFrameLerp->value;
 	delta[0] = (angles[0] / r_newrefdef.fov_x) * blur;
 	delta[1] = (angles[1] / r_newrefdef.fov_y) * blur;
-	
+
 	VectorSet(velocity, delta[0], delta[1], 1.0);
 	VectorNormalize(velocity);
 
 	// setup program
 	GL_BindProgram(motionBlurProgram);
-	
-	Mat4_Invert(r_newrefdef.modelViewProjectionMatrix, tmp1);
-	Mat4_Transpose(tmp1, tmp2);
 
-	qglUniform3f(U_PARAM_VEC3_0, /*velocity[0]*/blur, velocity[1], r_motionBlurSamples->value);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float*)prevModelViewProj);
-	qglUniformMatrix4fv(U_TEXTURE1_MATRIX, 1, qfalse, (const float*)tmp1);
-	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniform3f(U_PARAM_VEC3_0, velocity[0], velocity[1], r_motionBlurSamples->value);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 
-	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-	
 	GL_SetBindlessTexture(U_TMU0, ScreenMap->handle);
-	GL_SetBindlessTexture(U_TMU1, depthMap->handle);
-
 	R_DrawFullScreenQuad();
-
-	Mat4_Copy(r_newrefdef.modelViewProjectionMatrix, prevModelViewProj);
+	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	// restore 3d
 	GL_Enable(GL_CULL_FACE);
