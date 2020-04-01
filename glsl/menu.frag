@@ -1,4 +1,4 @@
-layout (binding = 0) uniform sampler2DRect	u_ScreenTex;
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2DRect	u_ScreenTex;
 
 layout(location = U_SCREEN_SIZE) uniform vec2	u_screenSize; 
 

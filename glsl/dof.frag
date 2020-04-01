@@ -1,5 +1,5 @@
-layout (binding = 0) uniform sampler2DRect	u_ScreenTex;
-layout (binding = 1) uniform sampler2DRect	u_DepthTex;
+layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_ScreenTex;
+layout (bindless_sampler, location = U_TMU1) uniform sampler2DRect	u_DepthTex;
 
 layout (location = U_SCREEN_SIZE)	uniform vec2	u_screenSize;
 layout (location = U_PARAM_VEC4_0)	uniform vec4	u_dofParams;

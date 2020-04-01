@@ -2,14 +2,7 @@ in	vec2		v_texCoord;
 in	vec4		v_color;
 in	vec2		v_envCoord;
 in	vec2		v_shellCoord;
-/*
-layout (binding = 0) uniform sampler2D 		u_Diffuse;
-layout (binding = 1) uniform sampler2D 		u_Add;
-layout (binding = 2) uniform sampler2D		u_env;
-layout (binding = 3) uniform sampler2D		u_NormalMap;
-layout (binding = 4) uniform sampler2D		u_ssaoMap;
-layout (binding = 5) uniform sampler2D		u_rgh;
-*/
+
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D 	u_Diffuse;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D 	u_Add;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2D		u_env;
