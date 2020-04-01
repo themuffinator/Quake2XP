@@ -1,4 +1,4 @@
-layout (binding = 0) uniform sampler2DRect	 	u_ScreenTex;
+layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	 	u_ScreenTex;
 
 layout (location = U_PARAM_VEC3_0)	uniform vec3 u_params; // x-velocity, y-velocity, numSamples 
 
