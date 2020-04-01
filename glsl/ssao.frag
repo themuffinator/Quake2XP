@@ -1,5 +1,8 @@
-layout (binding = 0) uniform	sampler2DRect	u_DNMiniMap;
-layout (binding = 1) uniform	sampler2D		u_randomNormalMap;
+//layout (binding = 0) uniform	sampler2DRect	u_DNMiniMap;
+//layout (binding = 1) uniform	sampler2D		u_randomNormalMap;
+
+layout (bindless_sampler, location = U_TMU0) uniform	sampler2DRect	u_DNMiniMap;
+layout (bindless_sampler, location = U_TMU1) uniform	sampler2D		u_randomNormalMap;
 
 layout (location = U_PARAM_VEC2_0)	uniform vec2	u_ssaoParms;	// intensity, scale
 layout (location = U_SCREEN_SIZE)	uniform vec2	u_viewport;

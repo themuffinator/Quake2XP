@@ -28,61 +28,6 @@ in vec2		v_deformTexCoord;
 
 #include depth.inc
 
-/*
-#define NUM_SAMPLES 36
-
-const vec2 boxOffsets[NUM_SAMPLES] = vec2[](
-	vec2( 0.0, 0.0),
-    vec2( 1.0, 0.0), 
-    vec2( 2.0, 0.0), 
-    vec2( 3.0, 0.0), 
-    vec2( 4.0, 0.0),
-    vec2( 5.0, 0.0),
-    vec2( 6.0, 0.0),
-    vec2( 7.0, 0.0),
-    vec2( 8.0, 0.0),
-
-    vec2( 0.0, 0.0),
-    vec2(-1.0, 0.0), 
-    vec2(-2.0, 0.0), 
-    vec2(-3.0, 0.0), 
-    vec2(-4.0, 0.0),
-    vec2(-5.0, 0.0),
-    vec2(-6.0, 0.0),
-    vec2(-7.0, 0.0),
-    vec2(-8.0, 0.0),
-
-    vec2( 0.0, 0.0),
-    vec2( 0.0, 1.0), 
-    vec2( 0.0, 2.0), 
-    vec2( 0.0, 3.0), 
-    vec2( 0.0, 4.0),
-    vec2( 0.0, 5.0),
-    vec2( 0.0, 6.0),
-    vec2( 0.0, 7.0),
-    vec2( 0.0, 8.0),
-
-    vec2( 0.0,  0.0),
-    vec2( 0.0, -1.0), 
-    vec2( 0.0, -2.0), 
-    vec2( 0.0, -3.0), 
-    vec2( 0.0, -4.0),
-    vec2( 0.0, -5.0),
-    vec2( 0.0, -6.0),
-    vec2( 0.0, -7.0),
-    vec2( 0.0, -8.0)
-	);
-
-vec4 boxBlur(sampler2DRect blurTex){
-
- vec4 sum = vec4(0.0);
- 
- for(int i = 0; i< NUM_SAMPLES; i++)
-    sum += texture2DRect(blurTex, gl_FragCoord.xy +boxOffsets[i]);
-
- return sum /NUM_SAMPLES;
-}
-*/
 
 vec4 boxBlur(sampler2DRect blurTex, float  blurSamples, vec2 N){
 

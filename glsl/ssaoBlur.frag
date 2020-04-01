@@ -1,14 +1,15 @@
 #include depth.inc
 
-layout (binding = 0) uniform	sampler2DRect	u_colorMiniMap;
-layout (binding = 1) uniform	sampler2DRect	u_DNMiniMap;
+//layout (binding = 0) uniform	sampler2DRect	u_colorMiniMap;
+//layout (binding = 1) uniform	sampler2DRect	u_DNMiniMap;
+layout (bindless_sampler, location = U_TMU0) uniform	sampler2DRect	u_colorMiniMap;
+layout (bindless_sampler, location = U_TMU1) uniform	sampler2DRect	u_DNMiniMap;
 
-#if 1
-
-// two-pass blur
 
 layout(location = U_PARAM_VEC2_0)	uniform vec2	u_axisMask;
 layout(location = U_PARAM_INT_0)	uniform int		u_numSamples;		// to each side, without central one
+
+// two-pass blur
 
 void main (void) {
 	vec2 centerTC = gl_FragCoord.xy;
@@ -40,37 +41,3 @@ void main (void) {
 
 	fragData = color / sum;
 }
-
-#else
-
-// single-pass blur
-
-void main (void) {
-	// low weight center sample, will be used on edges
-	float sum = 0.0125;
-	vec4 color = texture2DRect(u_colorMiniMap, gl_FragCoord.xy) * sum;
-
-	float centerDepth = texture2DRect(u_DNMiniMap, gl_FragCoord.xy).x;
-
-	vec2 arrOffsets[4] = {
-		vec2( 1.0,-1.0),
-		vec2(-1.0,-1.0),
-		vec2( 1.0, 1.0),
-		vec2(-1.0, 1.0)
-	};
-
-	for (int i = 0; i < 4; i++) {
-		vec2 sampleTC = gl_FragCoord.xy + arrOffsets[i];
-
-		float depth = texture2DRect(u_DNMiniMap, sampleTC).x;
-		float diff = 8.0 * (1.0 - depth / centerDepth);
-		float w = max(0.5 - 0.75 * abs(diff) - 0.25 * diff, 0.0);
-
-		color += texture2DRect(u_colorMiniMap, sampleTC) * w;
-		sum += w;
-	}
-
-	fragData = color / sum;
-}
-
-#endif
