@@ -29,7 +29,8 @@ usbVendorId_t usb_Vendors[] = {
 {0x17EF, "Lenovo"},
 {0x1D57, "Xenta"},
 {0x2516, "Cooler Master Co., Ltd."},
-{0x413C, "Dell Computer Corp."}
+{0x413C, "Dell Computer Corp."},
+{0x056A, "Wacom Co., Ltd"}
 };
 
 #define NUM_VENDORS ( sizeof( usb_Vendors ) / sizeof( usb_Vendors[0] ) )

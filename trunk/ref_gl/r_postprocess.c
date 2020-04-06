@@ -598,6 +598,8 @@ void R_FixFov(void) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+	
+	uint64 handle = 0;
 
 	// setup program
 	GL_BindProgram(fixFovProgram);
@@ -607,6 +609,8 @@ void R_FixFov(void) {
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, 0, 0, vid.width, vid.height, 0);
+		handle = glGetTextureHandleARB(fovCorrTex);
+		glMakeTextureHandleResidentARB(handle);
 	}
 	GL_MBind(GL_TEXTURE0, fovCorrTex);
 	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -618,7 +622,7 @@ void R_FixFov(void) {
 
 	qglUniform4fv(U_PARAM_VEC4_0, 1, params);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
+	GL_SetBindlessTexture(U_TMU0, handle);
 	R_DrawFullScreenQuad();
 }
 

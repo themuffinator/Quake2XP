@@ -276,7 +276,7 @@ If the line width has changed, reformat the buffer.
 
 void Con_CheckResize (void) {
 	int		i, j, width, oldwidth, oldtotalLines, numlines, numchars;
-	short	tbuf[CON_TEXTSIZE];
+	static short	tbuf[CON_TEXTSIZE];
 
 	width = (640 >> 3) - 2;
 

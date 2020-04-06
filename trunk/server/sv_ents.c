@@ -688,7 +688,7 @@ void SV_RecordDemoMessage (void) {
 	edict_t *ent;
 	entity_state_t nostate;
 	sizebuf_t buf;
-	byte buf_data[32768];
+	static byte buf_data[32768];
 	int len;
 
 	if (!svs.demofile)

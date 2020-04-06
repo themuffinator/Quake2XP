@@ -248,8 +248,8 @@ qboolean FindRawDevices()
 						strncpy(vid2, vid_, 4);
 						DWORD value = strtoul(vid2, NULL, 16);
 						int z;
-						Com_Printf(S_COLOR_YELLOW"...Found Mouse Device:\n");
-						for (z = 0; i < NUM_VENDORS; z++) {
+						Com_Printf(S_COLOR_YELLOW"...Found Mouse:\n");
+						for (z = 0; z < NUM_VENDORS; z++) {
 							if (value == usb_Vendors[z].vendorId) {
 								Com_Printf("Vendor:           " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
 								break;
