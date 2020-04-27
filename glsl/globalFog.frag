@@ -30,9 +30,7 @@ void main(void){
 		fogCoord /= depth;
 	}
 	if(mask == 1.0)
-		fogCoord += u_fogBias.y;
-	
-	
+		fogCoord += u_fogBias.y;	
 
 	vec3 fogColor;
 	float fogFactor, density;

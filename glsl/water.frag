@@ -1,23 +1,15 @@
-
-layout (binding = 0) uniform sampler2D		u_colorMap;
-layout (binding = 1) uniform sampler2D		u_dstMap;
-layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
-layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
-
-/*
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_colorMap;
-layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_dstMap;
+layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_normalMap;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2DRect	g_colorBufferMap;
 layout (bindless_sampler, location  = U_TMU3) uniform sampler2DRect	g_depthBufferMap;
-*/
+
 layout(location = U_WATER_DEFORM_MUL)	uniform float	u_deformMul;		// for normal w/o depth falloff
 layout(location = U_WATHER_THICKNESS)	uniform float	u_thickness;
-layout(location = U_WATER_ALPHA)		uniform float	u_alpha;
 layout(location = U_COLOR_MUL)			uniform float	u_ColorModulate;
 layout(location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
-layout(location = U_WATER_TRANS)		uniform int		u_TRANS;
+layout(location = U_WATER_TRANS)		uniform int		u_transSurf;
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 layout(location = U_WATER_MIRROR)		uniform int		u_mirror;
 
@@ -51,7 +43,6 @@ in vec3		v_viewVecTS;
 
 
 #include depth.inc
-#include lighting.inc
 
 //
 // view space to viewport
@@ -64,36 +55,27 @@ vec2 VS2UV (const in vec3 p) {
 void main (void) {
 
 	vec3 V = normalize(v_viewVecTS);
-	vec3 L = normalize(v_lightVec);
 
 	// load diffuse map with offset
-	vec3 offset = normalize(texture(u_dstMap, v_deformTexCoord.xy).rgb * 2.0 - 1.0); // use scaled tex coord
-//	float noise = texture(u_dstMap, v_deformTexCoord.xy).a;
+	vec3 offset = normalize(texture(u_normalMap, v_deformTexCoord.xy).rgb * 2.0 - 1.0); // use scaled tex coord
+	
+	vec3 cromaticOffcet = vec3(0.85, 1.0, 1.15);
+	
+	if (u_transSurf == 0)
+		cromaticOffcet *=0.5;
+	
+	vec2 texOff = offset.xy / 4.0;
 
 	vec3 diffuse;
-	if (u_TRANS == 1){
-	diffuse.r = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 0.85).r * u_ambientScale; 
-	diffuse.g = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 1.0).g * u_ambientScale;
-	diffuse.b = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 1.15).b * u_ambientScale;	
-//	diffuse *= noise;
-	diffuse *= v_color.a;
-	}
-
-	if (u_TRANS == 0){
-	diffuse.r = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 0.425).r * u_ambientScale; 
-	diffuse.g = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 0.5).g * u_ambientScale;
-	diffuse.b = texture(u_colorMap, v_diffuseTexCoord.xy + offset.xy * 0.575).b * u_ambientScale;	
-	diffuse *= 0.5;
-	}
+	diffuse.r = texture(u_colorMap, v_diffuseTexCoord.xy + texOff * cromaticOffcet.x).r * u_ambientScale; 
+	diffuse.g = texture(u_colorMap, v_diffuseTexCoord.xy + texOff * cromaticOffcet.y).g * u_ambientScale;
+	diffuse.b = texture(u_colorMap, v_diffuseTexCoord.xy + texOff * cromaticOffcet.z).b * u_ambientScale;	
 
 	vec3 N = vec3(0.0, 0.0, 1.0);  // shutup compiler
 	vec2 tc;
 	float sceneDepth;
 
-	vec2 Es = PhongLighting(offset, L, V, 6.0);
-	vec3 lighting = Es.x * diffuse + Es.y * diffuse.rrr;
-
-	if (u_TRANS == 1) {
+	if (u_transSurf == 1) {
 		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 		N.xy = offset.xy * clamp((sceneDepth + v_positionVS.z) / u_thickness, 0.0, 1.0);
 
@@ -102,18 +84,18 @@ void main (void) {
 
 		// chromatic aberration approximation
 		vec3 refractColor;
-		refractColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 0.85).r;
-		refractColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 1.0).g;
-		refractColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * 1.15).b;
-
+		refractColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.x).r;
+		refractColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.y).g;
+		refractColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.z).b;
+		
+		diffuse *= 0.5;
 		// blend water texture
-		fragData = vec4(mix(refractColor + lighting, diffuse, v_color.a), 1.0);
+		fragData = vec4(mix(refractColor, diffuse, v_color.a), 1.0);
 	}
 	
-	if (u_TRANS != 1) {
-		// non-transparent
-		N.xy = offset.xy;
-		fragData = vec4(diffuse + lighting, 1.0);
+	if (u_transSurf == 0) {
+		diffuse *= 0.25;
+		fragData = vec4(diffuse, 1.0);
 	}
  
 	if (u_mirror == 0)
@@ -123,6 +105,7 @@ void main (void) {
 	// screen-space local reflections
 	//
 
+	N = offset;
 	N.xy *= u_deformMul * NORMAL_MUL;
 	N.z = 1.0;
 
@@ -144,7 +127,7 @@ void main (void) {
 	// FIXME: only temporary solution to self-intersection issue
 	// NOTE: offset must be done using undistorted surface normal,
 	// but since the distortion is weak, this works too
-	if (u_TRANS == 0)
+	if (u_transSurf == 0)
 		rayPos += N * v_positionVS.z * OPAQUE_MUL * OPAQUE_OFFSET;
 
 	float stepSize = STEP_SIZE;
@@ -164,12 +147,9 @@ void main (void) {
 		return;
 
 	// TODO: make more compact
-
-	//
 	// if something is hit, use binary search to enhance precision
-	//
-
 	// go back to the middle
+
 	stepSize *= 0.5;
 	rayPos -= R * stepSize;
 	tc = VS2UV(rayPos).xy;

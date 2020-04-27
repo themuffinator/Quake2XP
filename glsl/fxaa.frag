@@ -803,7 +803,8 @@ vec4 FxaaPixelShader(
 /*==========================================================================*/
 
 
-layout (bindless_sampler, location = TMU0) uniform sampler2D	u_ScreenTex;
+layout (bindless_sampler, location = U_TMU0) uniform sampler2D	u_ScreenTex;
+
 layout(location = U_SCREEN_SIZE) uniform vec2	u_ScreenSize;
 
 void main(void)

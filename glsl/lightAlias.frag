@@ -1,19 +1,11 @@
-/*
-layout (binding = 0) uniform sampler2D		u_bumpMap;
-layout (binding = 1) uniform sampler2D		u_diffuseMap;
-layout (binding = 2) uniform sampler2D		u_causticMap;
-layout (binding = 3) uniform samplerCube	u_CubeFilterMap;
-layout (binding = 4) uniform sampler2D		u_rghMap;
-layout (binding = 5) uniform sampler2D		u_bumpBlend;
-layout (binding = 6) uniform samplerCube	u_skyCube;
-*/
-
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_bumpMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_diffuseMap;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2D		u_causticMap;
 layout (bindless_sampler, location  = U_TMU3) uniform samplerCube	u_CubeFilterMap;
 layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_rghMap;
 layout (bindless_sampler, location  = U_TMU5) uniform sampler2D		u_bumpBlend;
+layout (bindless_sampler, location  = U_TMU6) uniform sampler2DRect	g_colorBufferMap;
+layout (bindless_sampler, location  = U_TMU7) uniform sampler2DRect	g_depthBufferMap;
 
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
 layout(location = U_CAUSTICS_SCALE)		uniform float	u_CausticsModulate;
@@ -32,18 +24,136 @@ layout(location = U_PARAM_INT_0)		uniform int		u_blinnPhong; // use old lighting
 layout(location = U_PARAM_INT_1)		uniform int		u_alphaMask;
 layout(location = U_PARAM_INT_2)		uniform int		u_useSSS;
 layout(location = U_PARAM_INT_3)		uniform int		u_useSkyRefl;
+layout(location = U_PARAM_INT_4)		uniform int		u_useSSLR;
+layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
+layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
+layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
 in vec3			v_lightVec;
 in vec4			v_CubeCoord;
-in vec4			v_positionVS;
+in vec3			v_positionVS;
 in vec3			v_lightAtten;
 in vec3			v_lightSpot;
 in vec3			v_tangent;
 in vec3			v_tst;
+in mat3			v_tangentToView;
 
+
+#include depth.inc
 #include lighting.inc
+
+#define MAX_STEPS			60
+#define MAX_STEPS_BINARY	40
+
+#define STEP_SIZE			10.0
+#define STEP_SIZE_MUL		1.35
+
+#define Z_THRESHOLD			0.5			// sufficient difference to stop tracing
+
+#define	FRESNEL_MUL			1.0
+#define FRESNEL_EXP			1.6
+
+#define NORMAL_MUL			-0.02
+
+#define OPAQUE_OFFSET		4.0
+#define OPAQUE_MUL			(-1.0 / 512.0)
+
+//
+// view space to viewport
+//
+vec2 VS2UV (const in vec3 p) {
+	vec4 v = u_projectionMatrix * vec4(p, 1.0);
+	return (v.xy / v.w * 0.5 + 0.5) * u_viewport; 
+}
+
+vec3 boxBlur(sampler2DRect blurTex, vec2 tc, float  blurSamples){
+
+	float numSamples = (1.0 / (blurSamples * 4.0 + 1.0));
+	vec3 sum = texture2DRect( blurTex, tc).rgb;	// central point
+
+	for ( float i = 1.0; i <= blurSamples; i += 1.0 ){
+
+		sum += texture2DRect(blurTex, tc + vec2(i, 0.0)).rgb;
+		sum += texture2DRect(blurTex, tc + vec2(-i, 0.0)).rgb;
+		sum += texture2DRect(blurTex, tc + vec2(0.0, i)).rgb;
+		sum += texture2DRect(blurTex, tc + vec2(0.0, -i)).rgb;
+	}
+	return sum * numSamples;
+}
+
+vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specular){
+
+	if (u_useSSLR == 0)
+		return vec3(specular);
+
+	if(_sss <= 0.0)
+		return vec3(specular);
+
+	vec2 tc;
+	float sceneDepth;
+
+	// not need it?????
+	vec3 N = normal.xyz;
+	N.xy *= NORMAL_MUL;
+	N.z = 1.0;
+
+	N = normalize(v_tangentToView * normal.xyz);
+	vec3 V = normalize(v_positionVS);
+	V *= vec3(-1.0, 1.0, -1.0);
+
+	vec3 R = reflect(V, N);
+
+	// Fresnel
+	float scale = FRESNEL_MUL * pow(1.0 - abs(dot(V, N)), FRESNEL_EXP);
+	// ignore invisible & facing into the camera reflections
+	if (scale < 0.005 || dot(R, V) < 0.0)
+		return vec3(specular);
+
+	// follow the reflected ray in increasing steps
+	vec3 rayPos = v_positionVS;
+
+	rayPos += N * v_positionVS.z * OPAQUE_MUL * OPAQUE_OFFSET;
+
+	float stepSize = STEP_SIZE;
+	int i;
+
+	for (i = 0; i < MAX_STEPS; i++, stepSize *= STEP_SIZE_MUL) {
+		rayPos += R * stepSize;
+
+		tc = VS2UV(rayPos).xy;
+		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+
+		if (sceneDepth <= -rayPos.z)
+			break;	// intersection
+	}
+
+	if (i == MAX_STEPS)
+		return vec3(specular);
+
+	stepSize *= 0.5;
+	rayPos -= R * stepSize;
+	tc = VS2UV(rayPos).xy;
+
+	sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+
+	for (int j = 0; j < MAX_STEPS_BINARY; j++, stepSize *= 0.5) {
+		rayPos += R * stepSize * (step(-rayPos.z, sceneDepth) - 0.5);
+
+		tc = VS2UV(rayPos).xy;
+		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+
+		float delta = -rayPos.z - sceneDepth;
+
+		if (abs(delta) < Z_THRESHOLD)
+			break;	// found it
+	}
+	vec3 reflectColor  = boxBlur(g_colorBufferMap, tc, max(1.0, roughness * 18.8)) * 4.0;
+	reflectColor *= metalness;
+
+	return reflectColor;
+}
 
 void main (void) {
 
@@ -104,10 +214,7 @@ void main (void) {
 		return;
 	}
 	
-	if (u_isAmbient == 0) {
-	
 	float roughness, cd_mask, metalness;
-	
 	if(u_isRgh == 1){
 		vec4 rghMap = texture(u_rghMap, v_texCoord);
 		roughness = rghMap.r; 
@@ -122,6 +229,8 @@ void main (void) {
     }
   
   roughness = clamp(roughness, 0.001, 1.0);
+
+	if (u_isAmbient == 0) {
        
 		if(u_fog == 1) {  
 			float fogCoord = abs(gl_FragCoord.z / gl_FragCoord.w);
@@ -143,7 +252,7 @@ void main (void) {
 			if(u_blinnPhong == 1)
 				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
 			if(u_blinnPhong == 0)
-				metall_color = Lighting_BRDF(diffuseMap.rgb, specular, roughness, normalMap.xyz, L, V)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
+				metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness, specular.r), roughness, normalMap.xyz, L, V)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
 			}		
 
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);	
@@ -166,5 +275,9 @@ void main (void) {
        }
       }	
 
-	  fragData.a = 1.0;
+/*=====================================
+	screen-space local reflections
+=====================================*/	
+
+
 }

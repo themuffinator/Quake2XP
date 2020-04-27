@@ -1,4 +1,4 @@
-layout (bindless_sampler, location = TMU0) uniform sampler2D tex;     // sampler of rendered scene’s render target
+layout (bindless_sampler, location = U_TMU0) uniform sampler2D  tex;     // sampler of rendered scene’s render target
 
 in vec3 vUV;               // interpolated vertex output data
 in vec2 vUVDot;            // interpolated vertex output data
