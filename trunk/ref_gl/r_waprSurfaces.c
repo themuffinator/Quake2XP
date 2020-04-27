@@ -22,25 +22,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// r_warp.c - water polygons
 
 #include "r_local.h"
 
-/*
-===============
-CreateDSTTex
-
-Create the texture which warps texture shaders
-===============
-*/
-
-void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
+void R_AddWarpPolygons(msurface_t *fa) {
 	glpoly_t	*p;
 	float		*v, alpha;
 	int			i, nv = fa->polys->numVerts;
-	int			numIdx = 0, numVerts = 0;
-
-	
+	int			numIdx = 0, numVerts = 0;	
 
 	if (fa->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 		alpha = (fa->texInfo->flags & SURF_TRANS33) ? 0.33f : 0.66f;
@@ -52,7 +41,7 @@ void R_DrawWaterPolygons (msurface_t *fa, qboolean bmodel) {
 		alpha = 1.f;
 	}
 
-	GL_MBind (GL_TEXTURE0, fa->texInfo->image->texnum);
+	GL_SetBindlessTexture(U_TMU0, fa->texInfo->image->handle);
 
 	p = fa->polys;
 	v = p->verts[0];

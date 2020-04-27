@@ -1555,6 +1555,9 @@ void Mod_LoadLeafs(lump_t *l) {
 	loadmodel->numLeafs = count;
 
 	for (i = 0; i < count; i++, in++, out++) {
+
+		uint firstleafface;
+
 		for (j = 0; j < 3; j++) {
 			out->minmaxs[j] = LittleShort(in->mins[j]);
 			out->minmaxs[3 + j] = LittleShort(in->maxs[j]);
@@ -1566,8 +1569,10 @@ void Mod_LoadLeafs(lump_t *l) {
 		out->cluster = LittleShort(in->cluster);
 		out->area = LittleShort(in->area);
 
-		out->firstmarksurface = loadmodel->markSurfaces + LittleShort(in->firstleafface);
-		out->numMarkSurfaces = LittleShort(in->numleaffaces);
+		// make unsigned long from signed short - yamagi fix for cerberon map
+		firstleafface = LittleShort(in->firstleafface) & 0xFFFF;
+		out->numMarkSurfaces = LittleShort(in->numleaffaces) & 0xFFFF;
+		out->firstmarksurface = loadmodel->markSurfaces + firstleafface;
 
 		if (out->contents & MASK_WATER) {
 			for (j = 0; j < out->numMarkSurfaces; j++) {

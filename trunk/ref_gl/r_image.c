@@ -134,27 +134,8 @@ void R_CaptureColorBuffer(){
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_MBindRect(GL_TEXTURE0, ScreenMap->texnum);
+	GL_MBindRect(GL_TEXTURE0, r_screenTex->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-}
-
-void R_CopyFboColorBuffer() {
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	GL_MBindRect(GL_TEXTURE0, fboScreenCopy->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-}
-
-void R_Capture2dColorBuffer(){
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	GL_MBind(GL_TEXTURE0, Screen2D->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
-	qglGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void R_CaptureDepthBuffer()
@@ -162,7 +143,7 @@ void R_CaptureDepthBuffer()
 		
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-	GL_MBindRect(GL_TEXTURE0, depthMap->texnum);
+	GL_MBindRect(GL_TEXTURE0, r_depthTex->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
@@ -1068,7 +1049,6 @@ void GL_FreeUnusedImages(void)
 	image_t *image;
 
 	r_notexture->registration_sequence = registration_sequence;
-//	r_flare->registration_sequence = registration_sequence;
 
 	for (i = 0; i < PT_MAX; i++) {
 		r_particletexture[i]->registration_sequence =
@@ -1125,14 +1105,8 @@ void GL_FreeUnusedImages(void)
 	r_defBump->registration_sequence = registration_sequence;
 	r_conBump->registration_sequence = registration_sequence;
 	r_envTex->registration_sequence = registration_sequence;
-	r_randomNormalTex->registration_sequence = registration_sequence;
 	r_whiteMap->registration_sequence = registration_sequence;
 	skinBump->registration_sequence = registration_sequence;
-
-	fboDN->registration_sequence = registration_sequence;
-	for (i = 0; i < 2; i++)
-		fboColor[i]->registration_sequence = registration_sequence;
-
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)
@@ -1184,33 +1158,6 @@ int Draw_GetPalette(void)
 	return 0;
 }
 
-
-uint	envCube = 0;
-void R_GenEnvCubeMap() {
-	int		i, w, h;
-	char	pathname[MAX_QPATH];
-	char	*surf[6] = { "rt", "bk", "lf", "ft", "up", "dn" };
-	byte	*pic;
-
-	qglGenTextures(1, &envCube);
-	qglBindTexture(GL_TEXTURE_CUBE_MAP, envCube);
-
-	for (i = 0; i < 6; i++) {
-		Com_sprintf(pathname, sizeof(pathname), "gfx/probes/p1_%s.tga", surf[i]);
-
-		IL_LoadImage(pathname, &pic, &w, &h, IL_TGA);
-		if (pic) {
-			qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic);
-			free(pic);
-		}
-	}
-
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-}
 /*
 ===============
 GL_InitImages
@@ -1265,12 +1212,9 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures (1, &thermaltex);
 	if (bloomtex)
 		qglDeleteTextures (1, &bloomtex);
-	if (fxaatex)
-		qglDeleteTextures (1, &fxaatex);
-	if(fovCorrTex)
-		qglDeleteTextures(1, &fovCorrTex);
-	if(skyCube)
+
+	if (skyCube) {
+		glMakeTextureHandleNonResidentARB(skyCube_handle);
 		qglDeleteTextures(1, &skyCube);
-	if(envCube)
-		qglDeleteTextures(1, &envCube);
+	}
 }

@@ -438,7 +438,7 @@ float CalcFov (float fov_x, float width, float height) // fov for noWorldModels
 	float a;
 	float x;
 
-	if (fov_x < 1 || fov_x > 179)
+	if (fov_x < 1 || fov_x > 200)
 		Com_Error (ERR_DROP, "Bad fov: %f", fov_x);
 
 	x = width / tan (fov_x * (0.002777777777778 * M_PI));
@@ -456,7 +456,7 @@ void CalcFovForScreen (float ingameFOV) {
 	float	x, y, ratio_x, ratio_y;
 	float	screenAspect = (float)vid.width / (float)vid.height;
 
-	if (ingameFOV < 1 || ingameFOV > 179)
+	if (ingameFOV < 1 || ingameFOV > 200)
 		ingameFOV = 91;
 
 	// calc FOV for 640x480 view (4x3 aspect ratio)

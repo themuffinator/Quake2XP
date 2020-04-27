@@ -586,6 +586,7 @@ void R_DrawPlayerWeaponAmbient(void)
 
 qboolean R_GetLightOcclusionResult();
 void R_LightOcclusionTest();
+extern uint queryAvailable;
 
 void R_DrawLightScene (void)
 {
@@ -699,6 +700,7 @@ void R_DrawLightScene (void)
 	R_DrawLightFlare();				// light flare
 	R_DrawLightBounds();			// debug stuff
 
+	glGetQueryObjectiv(currentShadowLight->occId, GL_QUERY_RESULT_AVAILABLE, &currentShadowLight->queryAvailable); // for next frame
 	}
 	}
 	
@@ -786,16 +788,12 @@ void R_RenderSprites(void)
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
 
-/*	GL_MBind	(GL_TEXTURE0, r_distort->texnum);
-	GL_MBind	(GL_TEXTURE2, ScreenMap->texnum);
-	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
-*/	
 	// setup program
 	GL_BindProgram(spriteProgram);
 
 	GL_SetBindlessTexture(U_TMU0, r_distort->handle);
-	GL_SetBindlessTexture(U_TMU2, ScreenMap->handle);
-	GL_SetBindlessTexture(U_TMU3, depthMap->handle);
+	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
+	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 4.5);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -934,6 +932,8 @@ static void R_DrawAmbientScene (void) {
 
 // draws reflective & alpha chains from world model
 // draws reflective surfaces from brush models
+extern msurface_t* r_alphaSurfaces[MAX_MAP_FACES];
+extern msurface_t* r_reflectiveSurfaces[MAX_MAP_FACES];
 
 static void R_DrawRAScene (void) {
 	int i;
@@ -943,10 +943,10 @@ static void R_DrawRAScene (void) {
 
 	RA_Frame = qfalse;
 
-	if (r_reflective_surfaces || r_alpha_surfaces)
+	if (r_reflectiveSurfaces || r_alphaSurfaces)
 		RA_Frame = qtrue;
 
-	R_DrawChainsRA(qfalse);
+	R_DrawSurfacesRA(qfalse);
 
 	GL_DepthMask(1);
 	GL_PolygonOffset(0.0, 1.0);
@@ -975,13 +975,9 @@ r_newrefdef must be set before the first call.
 ================
 */
 void R_MotionBlur(void);
-extern uint fboDps;
 
-void R_RenderView (refdef_t *fd) {
+void R_SetViewport3D(refdef_t* fd) {
 	
-	if (r_noRefresh->integer)
-		return;
-
 	r_newrefdef = *fd;
 	r_newrefdef.viewport[0] = fd->x;
 	r_newrefdef.viewport[1] = vid.height - fd->height - fd->y;
@@ -989,6 +985,14 @@ void R_RenderView (refdef_t *fd) {
 	r_newrefdef.viewport[3] = fd->height;
 
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+}
+
+void R_RenderView (refdef_t *fd) {
+	
+	if (r_noRefresh->integer)
+		return;
+
+	R_SetViewport3D(fd);
 
 	if (!r_worldmodel && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
 		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel.");
@@ -1012,8 +1016,8 @@ void R_RenderView (refdef_t *fd) {
 
 	R_CaptureColorBuffer();
 
-	R_DrawRAScene();
 	R_RenderSprites();
+	R_DrawRAScene();
 
 	if (RA_Frame && r_particlesOverdraw->integer) { // overdraw particles if we have trans or reflective surfaces in frame
 		R_DrawParticles();
@@ -1022,10 +1026,11 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawTransEntities();
 
 	R_CaptureColorBuffer();
-
-
-	R_GlobalFog();
 	R_MotionBlur();
+
+	R_CaptureColorBuffer();
+	R_GlobalFog();
+
 	R_DrawPlayerWeapon();
 }
 
@@ -1103,7 +1108,7 @@ void R_RenderFrame(refdef_t * fd) {
 	}
 	R_ColorTemperatureCorrection();
 	R_lutCorrection();
-
+	
 	// set alpha blend for 2D mode
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1638,8 +1643,6 @@ void CreateSkyFboMask(void);
 void R_InitFboBuffers() {
 	
 	Com_Printf("Initializing FBOs...\n\n");
-
-	CreateFboBuffer();
 	CreateSSAOBuffer();
 	CreateSkyFboMask();
 	Com_Printf("\n");
@@ -1968,7 +1971,6 @@ int R_Init(void *hinstance, void *hWnd)
 	GL_InitImages();
 	Mod_Init();
 	R_InitEngineTextures();
-	R_GenEnvCubeMap();
 	R_LoadFont();
 
 	flareEdit = (qboolean)qfalse;

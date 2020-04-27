@@ -119,6 +119,8 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink) {
 	vec3_t		test;
 	int			contents;
 
+	qboolean	isMonster = (!(ent->monsterinfo.aiflags & AI_NOSTEP));		// false - is barrel
+
 	// try the move	
 	VectorCopy (ent->s.origin, oldorg);
 	VectorAdd (ent->s.origin, move, neworg);
@@ -214,17 +216,44 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink) {
 			return qfalse;
 	}
 
-
+	//---------------------
 	// don't go in to water
-	if (ent->waterlevel == 0) {
+#if 1
+	if (isMonster)
+	{
+		if (ent->waterlevel == 0)		/// если еще не в жидкости, проверим, куда идЄм...
+		{
+			test[0] = trace.endpos[0];
+			test[1] = trace.endpos[1];
+			test[2] = trace.endpos[2] + ent->mins[2] + 1;
+			contents = gi.pointcontents(test);
+
+			if (contents & (CONTENTS_LAVA | CONTENTS_SLIME))	/// если Ћава или яд, то ну их нахуй!
+				return qfalse;
+		}
+		else if (ent->waterlevel <= 2)		/// если уровень воды меньше "высокого", то проверим, можно ли идти дальше в жидкость? ¬ ином случае монстр и так в жидкости, пусть будет хоть шанс выйти на воздух...
+		{
+			test[0] = trace.endpos[0];
+			test[1] = trace.endpos[1];
+			test[2] = trace.endpos[2] + ent->mins[2] + 36;
+			contents = gi.pointcontents(test);
+
+			if (contents & MASK_WATER)
+				return qfalse;
+		}
+	}
+#else
+	if (ent->waterlevel == 0)
+	{
 		test[0] = trace.endpos[0];
 		test[1] = trace.endpos[1];
 		test[2] = trace.endpos[2] + ent->mins[2] + 1;
-		contents = gi.pointcontents (test);
+		contents = gi.pointcontents(test);
 
 		if (contents & MASK_WATER)
-			return qfalse;
+			return false;
 	}
+#endif
 
 	if (trace.fraction == 1) {
 		// if monster had the ground pulled out, go ahead and fall

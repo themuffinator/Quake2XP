@@ -156,7 +156,7 @@ extern int numgltextures;
 image_t *r_notexture;
 image_t *r_distort;
 image_t *r_predator;
-image_t *depthMap;
+image_t *r_depthTex;
 image_t	*cinMap;
 
 image_t *r_particletexture[PT_MAX];
@@ -170,16 +170,11 @@ image_t *draw_charsRu;
 image_t *r_DSTTex;
 
 image_t	*r_defBump;
-image_t	*ScreenMap;
+image_t	*r_screenTex;
 image_t	*Screen2D;
 image_t	*r_envTex;
 image_t	*r_randomNormalTex;
-image_t	*shadowMask;
 image_t	*r_conBump;
-image_t	*weaponHack;
-image_t *fxaaMap;
-image_t *fboScreen;
-image_t *fboScreenCopy;
 
 image_t	*r_whiteMap;
 image_t *skinBump;
@@ -190,24 +185,23 @@ image_t	*r_lightCubeMap[MAX_FILTERS];
 #define MAX_LUTS 10
 image_t *r_3dLut[MAX_LUTS];
 
+image_t	*r_fxaaTex;
+image_t	*r_fixFovTex;
 
-image_t *fboDN;
-image_t *fboColor[2];
-image_t *ScreenCapture;
+image_t *r_miniDepthTex;
+image_t *r_ssaoColorTex[2];
 
 uint	bloomtex;
 uint	thermaltex;
-uint	fxaatex;
-uint	motionBlurTex;
-uint	fovCorrTex;
+
 int		skyCube;
 uint64_t	skyCube_handle;
 
 uint fboId;
-byte fboColorIndex;
+byte r_ssaoColorTexIndex;
 uint fboDps;
 
-image_t	*skyMask;
+image_t	*r_skyMask;
 uint fbo_skyMask;
 
 extern entity_t *currententity;
@@ -382,8 +376,6 @@ extern int r_visframecount;
 
 qboolean xhargar2hack;
 qboolean RA_Frame;
-msurface_t *r_alpha_surfaces;		// all non-entity BSP surfaces with TRANS33/66
-msurface_t *r_reflective_surfaces;	// all non-entity BSP surfaces with WARP
 
 void GL_Bind (int texnum);
 void GL_MBind (GLenum target, int texnum);
@@ -395,9 +387,6 @@ void GL_SetBindlessTexture(int loc, uint64 handle);
 void R_LightPoint (vec3_t p, vec3_t color);
 
 void R_InitLightgrid (void);
-
-void R_GenEnvCubeMap();
-void R_Capture2dColorBuffer();
 
 worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radius[3], int style, int filter, vec3_t angles, vec3_t speed,
 	qboolean isStatic, int isShadow, int isAmbient, float cone, qboolean ingame, int flare, vec3_t flareOrg,
@@ -437,7 +426,6 @@ void R_ScreenBlend(void);
 void R_GlobalFog();
 
 void CreateFboBuffer(void);
-void R_CopyFboColorBuffer();
 
 void R_SaveLights_f (void);
 void R_Light_Spawn_f (void);
@@ -455,9 +443,6 @@ void R_FlareEdit_f (void);
 void R_ResetFlarePos_f (void);
 void R_Copy_Light_Properties_f (void);
 void R_Paste_Light_Properties_f (void);
-
-void R_SaveFogScript_f(void);
-void R_RemoveFogScript_f(void);
 
 extern qboolean flareEdit, occEdit;
 
@@ -524,7 +509,7 @@ void SetPlaneSignBits (cplane_t *plane);
 trace_t CL_PMTraceWorld (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int mask, qboolean checkAliases);
 void AddBoundsToBounds(const vec3_t mins1, const vec3_t maxs1, vec3_t mins2, vec3_t maxs2);
 
-void R_DrawChainsRA(qboolean bmodel);
+void R_DrawSurfacesRA(qboolean bmodel);
 void R_DrawBrushModelRA(void);
 
 void R_DrawMD3Mesh(qboolean weapon);
@@ -588,7 +573,7 @@ void R_LoadFont (void);
 
 qboolean R_CullBox (vec3_t mins, vec3_t maxs);
 void R_MarkLeaves (void);
-void R_DrawWaterPolygons (msurface_t * fa, qboolean bmodel);
+void R_AddWarpPolygons (msurface_t * fa);
 void R_AddSkySurface (msurface_t * fa);
 void R_ClearSkyBox (void);
 void R_DrawSkyBox (qboolean color);
@@ -1101,21 +1086,10 @@ typedef enum {
 	U_TMU7,
 	U_TMU8,
 	U_TMU9,
+	U_TMU10,
 }
 glsl_uniform;
 
-typedef enum {
-	TMU0,
-	TMU1,
-	TMU2,
-	TMU3,
-	TMU4,
-	TMU5,
-	TMU6,
-	TMU7,
-	TMU8,
-	TMU9,
-}glsl_bindless;
 
 #define	MAX_VERTEX_CACHES	4096
 

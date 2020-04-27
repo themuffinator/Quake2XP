@@ -87,6 +87,7 @@ typedef struct worldShadowLight_s {
 	GLuint		vaoBoxId;
 
 	int			occId;
+	uint		queryAvailable;
 	vec3_t		occOrigin, occRadius;
 
 	struct worldShadowLight_s *next;
@@ -208,7 +209,7 @@ typedef struct mleaf_s {
 
 typedef enum {
 	mod_bad, mod_brush, mod_sprite, 
-	mod_alias, mod_alias_md3
+	mod_alias, mod_alias_md3	
 } modtype_t;
 
 
@@ -330,6 +331,7 @@ typedef struct model_s {
 	int			memorySize;
 
 	mat3_t		axis;
+
 } model_t;
 
 

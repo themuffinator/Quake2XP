@@ -456,6 +456,9 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 
 		if (!Q_strcasecmp(outMesh->name, "MESH_SSS"))
 			outMesh->flags = MESH_SSS;
+
+		if (!Q_strcasecmp(outMesh->name, "MESH_ALPHATEST"))
+			outMesh->flags = MESH_ALPHATEST;
 }
 
 	mod->type = mod_alias_md3;
@@ -769,7 +772,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU1, light->handle);
 		GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
 		GL_SetBindlessTexture(U_TMU3, normal->handle);
-		GL_SetBindlessTexture(U_TMU4, fboColor[fboColorIndex]->handle);
+		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	
@@ -1017,6 +1020,16 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	else
 		qglUniform1i(U_USE_CAUSTICS, 0);
 
+	if (currententity->flags & RF_WEAPONMODEL) {
+		qglUniform1i(U_PARAM_INT_4, 1);
+	}
+	else
+		qglUniform1i(U_PARAM_INT_4, 0);
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		qglUniform1i(U_PARAM_INT_4, 0);
+
+
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
@@ -1029,8 +1042,10 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	//	if (mesh->flags & MESH_TRANSLUSCENT)
 	//		continue;
 
-		if (mesh->flags & MESH_SSS)
+		if (mesh->flags & MESH_SSS) {
 			qglUniform1i(U_PARAM_INT_2, 1);
+			qglUniform1i(U_PARAM_INT_4, 0);
+		}
 		else
 			qglUniform1i(U_PARAM_INT_2, 0);
 
@@ -1142,7 +1157,13 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
 		GL_SetBindlessTexture(U_TMU4, rgh->handle);
 		GL_SetBindlessTexture(U_TMU5, skinBump->handle);
+		GL_SetBindlessTexture(U_TMU6, r_screenTex->handle);
+		GL_SetBindlessTexture(U_TMU7, r_depthTex->handle);
 //		GL_SetBindlessTexture(U_TMU6, skyCube_handle);
+
+		qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+		qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
 
 		if (rgh == r_notexture)
 			qglUniform1i(U_USE_RGH_MAP, 0);

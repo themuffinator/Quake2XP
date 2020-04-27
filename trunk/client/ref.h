@@ -172,6 +172,8 @@ typedef struct entity_s {
 	struct image_s *skin;		// NULL for inline skin
 	int flags;
 	vec3_t color;
+	
+	uint shadowVbo, shadowIbo;
 
 	vec3_t lightvector;
 	struct	image_s	*bump;

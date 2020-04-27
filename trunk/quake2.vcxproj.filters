@@ -314,17 +314,17 @@
     <ClCompile Include="ref_gl\r_sky.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_water.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="ref_gl\r_surf.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="client\cl_keys.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
     <ClCompile Include="client\cg_screen.c">
       <Filter>Source Files\Cg</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_waprSurfaces.c">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ref_gl\r_surfaces.c">
+      <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

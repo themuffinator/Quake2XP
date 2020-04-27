@@ -254,9 +254,9 @@ qboolean R_EntityCastShadow() {
 	if (VectorCompare(currententity->origin, currentShadowLight->origin)) // skip shadows from shell lights
 		return qfalse;
 	
-	// cull shadow volume out of view frustum
-	if(Frustum_CullLocalBoundsProjection(currententity->model->mins, currententity->model->maxs, currententity->origin, currententity->axis, currentShadowLight->origin, 63)) 
-		return qfalse;
+//	// cull shadow volume out of view frustum
+//	if(Frustum_CullLocalBoundsProjection(currententity->model->mins, currententity->model->maxs, currententity->origin, currententity->axis, currentShadowLight->origin, 63)) 
+//		return qfalse;
 
 	if (!InLightVISEntity())
 		return qfalse;
@@ -334,7 +334,7 @@ void R_DrawMD2ShadowVolume () {
 
 void R_DrawMD3ShadowVolume(){
 
-	int				i, j, k, numTris, numVerts, id = 0;
+	int				i, j, k, numTris = 0, numVerts = 0, id = 0;
 	float			frontlerp, backlerp;
 	md3Model_t		*paliashdr;
 	md3Frame_t		*frame, *oldframe;
@@ -413,7 +413,6 @@ void R_DrawMD3ShadowVolume(){
 		}
 
 		idx = mesh->indexes;
-		numTris = numVerts = 0;
 		for (j = 0; j < mesh->num_tris; j++){
 
 			if (triangleFacingLight[j])
@@ -480,19 +479,19 @@ void R_DrawMD3ShadowVolume(){
 				for (k = 0; k<3; k++)
 				{
 					index0 = idx + k;
-					 shadowVerts[numVerts++] = md3VertexCache[*index0][0];
-					 shadowVerts[numVerts++] = md3VertexCache[*index0][1];
-					 shadowVerts[numVerts++] = md3VertexCache[*index0][2];
-					 shadowVerts[numVerts++] = 1.0;
+					shadowVerts[numVerts++] = md3VertexCache[*index0][0];
+					shadowVerts[numVerts++] = md3VertexCache[*index0][1];
+					shadowVerts[numVerts++] = md3VertexCache[*index0][2];
+					shadowVerts[numVerts++] = 1.0;
 				}
 
 				for (k = 2; k >= 0; k--)
 				{
 					index0 = idx + k;
-					 shadowVerts[numVerts++] = extrudedVerts[*index0][0];
-					 shadowVerts[numVerts++] = extrudedVerts[*index0][1];
-					 shadowVerts[numVerts++] = extrudedVerts[*index0][2];
-					 shadowVerts[numVerts++] = 0.0;
+					shadowVerts[numVerts++] = extrudedVerts[*index0][0];
+					shadowVerts[numVerts++] = extrudedVerts[*index0][1];
+					shadowVerts[numVerts++] = extrudedVerts[*index0][2];
+					shadowVerts[numVerts++] = 0.0;
 				}
 
 				numTris += 6;
@@ -501,10 +500,9 @@ void R_DrawMD3ShadowVolume(){
 
 			idx += 3;
 		}
-		qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float), shadowVerts);
-		qglDrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
 	}
-
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float), shadowVerts);
+	qglDrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
 	c_shadow_volumes++;
 }
 

@@ -84,8 +84,8 @@ void R_DrawParticles (void) {
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, ParticleTextCoord);
 	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, ParticleColor);
 
-	//GL_MBindRect (GL_TEXTURE1, depthMap->texnum);
-	GL_SetBindlessTexture(U_TMU1, depthMap->handle);
+	//GL_MBindRect (GL_TEXTURE1, r_depthTex->texnum);
+	GL_SetBindlessTexture(U_TMU1, r_depthTex->handle);
 
 	qglUniform2f (U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);

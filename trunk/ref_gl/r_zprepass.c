@@ -35,7 +35,7 @@ qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indec
 	return qtrue;
 }
 
-static void GL_DrawDepthPoly () {
+static void GL_DrawDepthBspTris () {
 	msurface_t	*s;
 	int			i;
 	unsigned	numIndices = 0xffffffff;
@@ -156,7 +156,7 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 	R_RecursiveDepthWorldNode (node->children[!side]);
 }
 
-static void R_AddBModelDepthPolys (void) {
+static void R_AddBModelDepthTris (void) {
 	int i;
 	cplane_t *pplane;
 	float dot;
@@ -240,8 +240,8 @@ void R_DrawDepthBrushModel (void) {
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 
 	num_depth_surfaces = 0;
-	R_AddBModelDepthPolys ();
-	GL_DrawDepthPoly();
+	R_AddBModelDepthTris ();
+	GL_DrawDepthBspTris();
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -251,10 +251,10 @@ void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
 extern vec3_t	tempVertexArray[MAX_VERTICES * 4];
 
 void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
-	vec3_t		vertexArray[3 * MAX_TRIANGLES];
-	int			index_xyz;
-	int			i, j, jj = 0;
-	dtriangle_t	*tris;
+	static vec3_t		vertexArray[3 * MAX_TRIANGLES];
+	int					index_xyz;
+	int					i, j, jj = 0;
+	dtriangle_t			*tris;
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
@@ -315,8 +315,14 @@ void R_DrawDepthAliasModel(void){
 	}
 
 	R_SetupEntityMatrix(currententity);
+	
+	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
+		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
 	GL_DrawAliasFrameLerpDepth(paliashdr);
+
+	if (currententity->flags & RF_DEPTHHACK)
+		GL_DepthRange(gldepthmin, gldepthmax);
 }
 
 void R_DrawDepthMD3Model(void) {
@@ -359,6 +365,9 @@ void R_DrawDepthMD3Model(void) {
 
 	R_SetupEntityMatrix(currententity);
 
+	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
+		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
+
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
 	qglEnableVertexAttribArray(ATT_POSITION);
@@ -396,6 +405,9 @@ void R_DrawDepthMD3Model(void) {
 
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	if (currententity->flags & RF_DEPTHHACK)
+		GL_DepthRange(gldepthmin, gldepthmax);
 }
 
 void R_DrawSkyMask() {
@@ -415,7 +427,7 @@ void R_DrawSkyMask() {
 
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode(r_worldmodel->nodes);
-	GL_DrawDepthPoly();
+	GL_DrawDepthBspTris();
 
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
@@ -478,7 +490,7 @@ void R_DrawDepthScene (void) {
 
 	num_depth_surfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
-	GL_DrawDepthPoly ();
+	GL_DrawDepthBspTris();
 	
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray (ATT_POSITION);

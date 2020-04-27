@@ -2500,7 +2500,7 @@ void R_DrawLightFlare () {
 	VectorScale (currentShadowLight->color, scale, tmp);
 	
 	GL_SetBindlessTexture(U_TMU0, r_particletexture[PT_FLARE]->handle);
-	GL_SetBindlessTexture(U_TMU1, depthMap->handle);
+	GL_SetBindlessTexture(U_TMU1, r_depthTex->handle);
 	
 	qglUniform2f(U_PARAM_VEC2_0, 1.0, 0.0);
 	qglUniform1f(U_PARAM_FLOAT_0, 10.0 * 1.5);
@@ -2781,13 +2781,13 @@ void R_LightOcclusionTest(){
 			if (!currentShadowLight->isStatic)
 				continue;
 
-			glBeginQuery(GL_SAMPLES_PASSED, currentShadowLight->occId);
+			glBeginQuery(GL_ANY_SAMPLES_PASSED, currentShadowLight->occId);
 
 			qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboBoxId);
 			qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 			qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_SHORT, NULL);
 
-			glEndQuery(GL_SAMPLES_PASSED);
+			glEndQuery(GL_ANY_SAMPLES_PASSED);
 		}
 	}
 
@@ -2800,9 +2800,10 @@ void R_LightOcclusionTest(){
 	qglDisableVertexAttribArray(ATT_POSITION);
 }
 
+uint queryAvailable;
 qboolean R_GetLightOcclusionResult() {
 
-	GLuint	result;
+	uint result = 0;
 
 	if (!r_useLightOcclusions->integer)
 		return qtrue;
@@ -2813,16 +2814,19 @@ qboolean R_GetLightOcclusionResult() {
 	if (!currentShadowLight->isStatic)
 		return qtrue;
 
-	if (num_visLights < 10)
-		return qtrue;
-
 	if (BoundsIntersectsPoint(currentShadowLight->mins, currentShadowLight->maxs, r_origin))
 		return qtrue;
+	
+	if (!currentShadowLight->queryAvailable)
+		return qfalse;
 
 	glGetQueryObjectiv(currentShadowLight->occId, GL_QUERY_RESULT, &result);
+	currentShadowLight->queryAvailable = 0;
 
 	if (result)
 		return qtrue;
-	else
+	else {
+		num_visLights--;
 		return qfalse;
+	}
 }

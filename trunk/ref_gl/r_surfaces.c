@@ -28,8 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static vec3_t modelorg;			// relative to viewpoint
 
-vec4_t	color_black = { 0.f, 0.f, 0.f, 0.f };
-
 vec3_t	wVertexArray[MAX_BATCH_SURFS];
 float	wTexArray[MAX_BATCH_SURFS][2];
 float	wLMArray[MAX_BATCH_SURFS][2];
@@ -40,13 +38,6 @@ vec3_t	nTexArray[MAX_BATCH_SURFS];
 vec3_t	tTexArray[MAX_BATCH_SURFS];
 vec3_t	bTexArray[MAX_BATCH_SURFS];
 
-/*
-=============================================================
-
-	BRUSH MODELS
-
-=============================================================
-*/
 /*
 ===============
 R_TextureAnimation
@@ -135,26 +126,25 @@ image_t *R_TextureAnimationRgh(mtexInfo_t * tex)
 	return tex->rghMap;
 }
 
-/*
-================
-DrawGLPoly
+int			numAlphaSurfaces;
+int			numReflectiveSurfaces;
+msurface_t	*r_alphaSurfaces[MAX_MAP_FACES];
+msurface_t	*r_reflectiveSurfaces[MAX_MAP_FACES];
 
-================
-*/
-void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
+void R_AddAlphaSurceces (msurface_t * fa, qboolean scrolling) {
 	int i;
 	float *v;
 	float alpha, scroll;
 	glpoly_t *p;
 	int nv = fa->polys->numVerts;
-	uint numIndices = 0, numVertixes = 0;
+	uint numIndices = 0;
 
-	if (fa->texInfo->flags & SURF_TRANS33)
-		alpha = 0.33f;
-	else
-		alpha = 0.66f;		
+		if (fa->texInfo->flags & SURF_TRANS33)
+			alpha = 0.33f;
+		else
+			alpha = 0.66f;
 
-	qglUniform1f(U_REFR_ALPHA, alpha);
+		qglUniform1f(U_REFR_ALPHA, alpha);
 
 		if (scrolling)
 			GL_SetBindlessTexture(U_TMU0, r_DSTTex->handle);
@@ -162,52 +152,91 @@ void DrawGLPoly (msurface_t * fa, qboolean scrolling) {
 			GL_SetBindlessTexture(U_TMU0, fa->texInfo->normalmap->handle);
 
 		GL_SetBindlessTexture(U_TMU1, fa->texInfo->image->handle);
-		GL_SetBindlessTexture(U_TMU2, ScreenMap->handle);
-		GL_SetBindlessTexture(U_TMU3, depthMap->handle);
+		GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
+		GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
 
+	for (i = 0; i < nv - 2; i++) {
+		indexArray[numIndices++] = 0;
+		indexArray[numIndices++] = i + 1;
+		indexArray[numIndices++] = i + 2;
+	}
 
 	if (scrolling)
 		scroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
-	 else
+	else
 		scroll = 0;
 
 	p = fa->polys;
 	v = p->verts[0];
-	
-	for (i = 0; i < nv - 2; i++) {
-		indexArray[numIndices++] = numVertixes;
-		indexArray[numIndices++] = numVertixes + i + 1;
-		indexArray[numIndices++] = numVertixes + i + 2;
-	}
 
 	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE) {
-		
+
 		VectorCopy(v, wVertexArray[i]);
-			
+
 		wTexArray[i][0] = v[3] - scroll;
 		wTexArray[i][1] = v[4];
 	}
 
 	qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-	c_brush_polys += numIndices / 3;
-
-	
+	c_brush_polys += numIndices / 3;	
 }
 
+void R_DrawAlphaSurfaces() {
 
-void R_DrawChainsRA (qboolean bmodel) {
-	
-	msurface_t	*s;
-	float		colorScale = max(r_lightmapScale->value, 0.33), ambient;
+	msurface_t* s;
+	float colorScale = max(r_lightmapScale->value, 0.33);
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+
+	// setup program
+	GL_BindProgram(glassProgram);
+
+	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
+
+	qglUniform1f(U_REFR_THICKNESS0, 150.0);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform1f(U_COLOR_MUL, colorScale);
+	qglUniform1i(U_REFR_ALPHA_MASK, 0);
+
+	float blurScale = 18.88 * ((float)vid.width / 1024.0);
+	qglUniform1i(U_PARAM_FLOAT_0, blurScale);
+
+	for (int i = 0; i < numAlphaSurfaces; i++) {
+
+		s = r_alphaSurfaces[i];
+
+		if (s->flags & MSURF_LAVA)
+			continue;
+
+		if (s->texInfo->flags & SURF_FLOWING)
+			R_AddAlphaSurceces(s, qtrue);
+		else
+			R_AddAlphaSurceces(s, qfalse);
+	}
+
+	numAlphaSurfaces = 0;
+	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_TEX0);
+}
+
+void R_DrawWarpSurfaces(qboolean bmodel) {
+	msurface_t* s;
+	float		colorScale = max(r_lightmapScale->value, 0.33);
+	float		ambient;
 
 	GL_BindProgram(waterProgram);
 
-	GL_MBind(GL_TEXTURE1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->texnum);
-	GL_MBindRect(GL_TEXTURE2, ScreenMap->texnum);
-	GL_MBindRect(GL_TEXTURE3, depthMap->texnum);
+	GL_SetBindlessTexture(U_TMU1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->handle);
+	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
+	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
 
 	ambient = max(r_lightmapScale->value, 0.15f); // sRGB clamp fix
 
@@ -219,17 +248,17 @@ void R_DrawChainsRA (qboolean bmodel) {
 	qglUniform1f(U_AMBIENT_LEVEL, ambient);
 
 	if (!bmodel)
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
 	else
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
 
 	if (r_newrefdef.rdflags & RDF_UNDERWATER)
 		qglUniform1i(U_WATER_MIRROR, 0);
 	else
 		qglUniform1i(U_WATER_MIRROR, 1);
 
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
@@ -245,66 +274,35 @@ void R_DrawChainsRA (qboolean bmodel) {
 	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
 
-	for (s = r_reflective_surfaces; s; s = s->texturechain) {
+	for (int i = 0; i < numReflectiveSurfaces; i++) {
+
+		s = r_reflectiveSurfaces[i];
 
 		if (s->flags & MSURF_LAVA)
 			continue;
 
-		R_DrawWaterPolygons(s, bmodel);
+		R_AddWarpPolygons(s);
 	}
 
-
+	numReflectiveSurfaces = 0;
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_NORMAL);
 	qglDisableVertexAttribArray(ATT_TANGENT);
 	qglDisableVertexAttribArray(ATT_BINORMAL);
 	qglDisableVertexAttribArray(ATT_COLOR);
-//------------------------------
+}
 
-	r_reflective_surfaces = NULL;
+void R_DrawSurfacesRA(qboolean bmodel) {
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+	
+	R_CaptureColorBuffer();
+	R_DrawAlphaSurfaces();
 
 	R_CaptureColorBuffer();
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
-
-	// setup program
-	GL_BindProgram(glassProgram);
-
-	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
-
-	qglUniform1f(U_REFR_THICKNESS0, 150.0);
-	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
-	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(U_COLOR_MUL, colorScale);
-	qglUniform1i(U_REFR_ALPHA_MASK, 0);
-	
-	float blurScale= 18.88 * ((float)vid.width / 1024.0);
-	qglUniform1i(U_PARAM_FLOAT_0, blurScale);
-
-	for (s = r_alpha_surfaces; s; s = s->texturechain) {
-		
-		if (s->flags & MSURF_LAVA)
-			continue;
-
-		if (s->texInfo->flags & SURF_FLOWING)
-			DrawGLPoly(s, qtrue);
-		else
-			DrawGLPoly(s, qfalse);
-	}
-
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
-
-	r_alpha_surfaces = NULL;
-
+	R_DrawWarpSurfaces(bmodel);
 }
 
 
@@ -369,8 +367,8 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 //		GL_MBind(GL_TEXTURE2, fx->texnum);
 //		GL_MBind(GL_TEXTURE3, normal->texnum);
 		GL_SetBindlessTexture(U_TMU0, image->handle);
-		GL_SetBindlessTexture(U_TMU2, fx->handle);
-		GL_SetBindlessTexture(U_TMU3, normal->handle);
+		GL_SetBindlessTexture(U_TMU1, fx->handle);
+		GL_SetBindlessTexture(U_TMU2, normal->handle);
 
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -409,6 +407,7 @@ int SurfSort( const msurface_t **a, const msurface_t **b )
 vec3_t		BmodelViewOrg;
 int			num_scene_surfaces;
 msurface_t	*scene_surfaces[MAX_MAP_FACES];
+// goto
 
 static void GL_DrawLightmappedPoly(qboolean bmodel)
 {
@@ -437,8 +436,8 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	}
 
 	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-	//	GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		GL_SetBindlessTexture(U_TMU4, fboColor[fboColorIndex]->handle);
+	//	GL_MBindRect(GL_TEXTURE4, r_ssaoColorTex[r_ssaoColorTexIndex]->texnum);
+		GL_SetBindlessTexture(U_TMU3, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
@@ -452,12 +451,12 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		// update lightmaps
 		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
 		{
-			GL_MBind(GL_TEXTURE1, gl_state.lightmap_textures + s->lightmaptexturenum);
+			GL_MBind(GL_TEXTURE0, gl_state.lightmap_textures + s->lightmaptexturenum);
 			//GL_SetBindlessTexture(U_TMU1, gl_state.lightmap_textures + s->lightMapTex_handle);
 
 			if (r_worldmodel->useXPLM && r_useRadiosityBump->integer) {
-				GL_MBind(GL_TEXTURE5, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
-				GL_MBind(GL_TEXTURE6, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
+				GL_MBind(GL_TEXTURE1, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
+				GL_MBind(GL_TEXTURE2, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
 			//	GL_SetBindlessTexture(U_TMU5, gl_state.lightmap_textures + s->lightMapTex_handle + MAX_LIGHTMAPS);
 			//	GL_SetBindlessTexture(U_TMU6, gl_state.lightmap_textures + s->lightMapTex_handle + MAX_LIGHTMAPS * 2);
 			}
@@ -678,8 +677,8 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
 	 if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		 //	GL_MBindRect(GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		 GL_SetBindlessTexture(U_TMU5, fboColor[fboColorIndex]->handle);
+		 //	GL_MBindRect(GL_TEXTURE4, r_ssaoColorTex[r_ssaoColorTexIndex]->texnum);
+		 GL_SetBindlessTexture(U_TMU5, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		 qglUniform1i(U_USE_SSAO, 1);
 	 }
 	 else
@@ -893,14 +892,16 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 			continue;
 		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66) && !(surf->flags & MSURF_LAVA) && !(surf->flags & MSURF_DRAWTURB) ) {
 			// add to the translucent chain
-			surf->texturechain = r_alpha_surfaces;
-			r_alpha_surfaces = surf;
+		//	surf->texturechain = r_alpha_surfaces;
+		//	r_alpha_surfaces = surf;
+			r_alphaSurfaces[numAlphaSurfaces++] = surf;
 		}
 		else {
 			if ((surf->flags & MSURF_DRAWTURB) && !(surf->flags & MSURF_LAVA)) {
 				// add to the reflective chain
-				surf->texturechain = r_reflective_surfaces;
-				r_reflective_surfaces = surf;
+			//	surf->texturechain = r_reflective_surfaces;
+			//	r_reflective_surfaces = surf;
+				r_reflectiveSurfaces[numReflectiveSurfaces++] = surf;
 			}
 			else {
 				// add to the ambient batch
@@ -1171,49 +1172,13 @@ static void R_DrawInlineBModel (void) {
 
 }
 
-static void R_DrawInlineBModel2 (void) {
-	int i;
-	cplane_t *pplane;
-	float dot;
-	msurface_t *psurf;
-		
-	psurf = &currentmodel->surfaces[currentmodel->firstModelSurface];
-
-	//
-	// draw texture
-	//
-
-	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
-		// find which side of the node we are on
-		pplane = psurf->plane;
-		dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
-
-		// draw the polygon
-		if (((psurf->flags & MSURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) || (!(psurf->flags & MSURF_PLANEBACK) && (dot > BACKFACE_EPSILON))) {
-			
-			if (psurf->visframe == r_framecount) // reckless fix
-				continue;
-
-			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
-				continue;
-
-			if (psurf->flags & MSURF_DRAWTURB)
-				R_DrawWaterPolygons(psurf, qtrue);
-		}
-	}
-}
-
-static void R_DrawInlineBModel3 (void) {
+static void R_MarkBmodelSurfacesRA (void) {
 	int i;
 	cplane_t *pplane;
 	float dot;
 	msurface_t *psurf;
 
 	psurf = &currentmodel->surfaces[currentmodel->firstModelSurface];
-
-	//
-	// draw texture
-	//
 
 	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
 		// find which side of the node we are on
@@ -1226,12 +1191,10 @@ static void R_DrawInlineBModel3 (void) {
 				continue;
 
 			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
-				psurf->texturechain = r_alpha_surfaces;
-				r_alpha_surfaces = psurf;
+				r_alphaSurfaces[numAlphaSurfaces++] = psurf;
 			}
 			else if (psurf->texInfo->flags & SURF_WARP) {
-				psurf->texturechain = r_reflective_surfaces;
-				r_reflective_surfaces = psurf;
+				r_reflectiveSurfaces[numReflectiveSurfaces++] = psurf;
 			}
 		}
 	}
@@ -1296,8 +1259,6 @@ void R_DrawBrushModel (void) {
 	//Put camera into model space view angle for bmodels parallax
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
-	GL_DepthMask(0);
-	R_DrawInlineBModel2();
 
 	glBindVertexArray(vao.bsp_a);
 
@@ -1327,7 +1288,6 @@ void R_DrawBrushModelRA (void) {
 		return;
 	
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
-//	gl_state.bindlessCache[0] = gl_state.bindlessCache[1] = -1;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		rotated = qtrue;
@@ -1366,11 +1326,11 @@ void R_DrawBrushModelRA (void) {
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
 
-	R_DrawInlineBModel3();
-	R_DrawChainsRA(qtrue);
+	R_MarkBmodelSurfacesRA();
+	R_DrawSurfacesRA(qtrue);
 }
 
-void R_MarkBrushModelSurfaces (void) {
+void R_MarkLightBrushModelSurfaces (void) {
 	int			i;
 	msurface_t	*psurf;
 	model_t		*clmodel;
@@ -1472,7 +1432,9 @@ void R_DrawLightBrushModel (void) {
 
 	r_lightTimestamp++;
 	numInteractionSurfs = 0;
-	R_MarkBrushModelSurfaces();
+	
+	R_MarkLightBrushModelSurfaces();
+
 	if(numInteractionSurfs > 0)
 		GL_DrawDynamicLightPass(qtrue, caustics);
 	

@@ -258,8 +258,8 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglUniform1f(U_ENV_SCALE, currentmodel->envScale);
 
 	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
-	//	GL_MBindRect (GL_TEXTURE4, fboColor[fboColorIndex]->texnum);
-		GL_SetBindlessTexture(U_TMU4, fboColor[fboColorIndex]->handle);
+	//	GL_MBindRect (GL_TEXTURE4, r_ssaoColorTex[r_ssaoColorTexIndex]->texnum);
+		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
@@ -274,7 +274,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_COLOR);
 	qglDisableVertexAttribArray (ATT_TEX0);
-//	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);

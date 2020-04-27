@@ -137,7 +137,7 @@
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <CompileAs>CompileAsC</CompileAs>
       <OpenMPSupport>false</OpenMPSupport>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -222,7 +222,7 @@
       <GenerateAlternateCodePaths>AVX</GenerateAlternateCodePaths>
       <DisableSpecificWarnings>6031</DisableSpecificWarnings>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <ResourceCompile>
@@ -620,8 +620,8 @@
     <ClCompile Include="ref_gl\r_particles.c" />
     <ClCompile Include="ref_gl\r_postprocess.c" />
     <ClCompile Include="ref_gl\r_loadImages.c" />
-    <ClCompile Include="ref_gl\r_surf.c" />
-    <ClCompile Include="ref_gl\r_water.c" />
+    <ClCompile Include="ref_gl\r_surfaces.c" />
+    <ClCompile Include="ref_gl\r_waprSurfaces.c" />
     <ClCompile Include="ref_gl\r_math.c" />
     <ClCompile Include="client\cg_cin.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
