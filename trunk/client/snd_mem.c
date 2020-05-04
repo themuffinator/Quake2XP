@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 #include "snd_loc.h"
+#include "vorbis\vorbisfile.h"
 
 #define PCM_16BIT	1			// willow: do not touch this!!
 #define PCM_STEREO	2			// willow: do not touch this!!
@@ -41,6 +42,81 @@ static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
 // =======================================================================
 // Load a sound
 // =======================================================================
+
+static int _ov_header_fseek_wrap(FILE* f, ogg_int64_t off, int whence) {
+	if (f == NULL)return(-1);
+
+#ifdef __MINGW32__
+	return fseeko64(f, off, whence);
+#elif defined (_WIN32)
+	return _fseeki64(f, off, whence);
+#else
+	return fseek(f, off, whence);
+#endif
+}
+
+static ov_callbacks OV_CALLBACKS_NOCLOSE = {
+  (size_t(*)(void*, size_t, size_t, void*))  fread,
+  (int (*)(void*, ogg_int64_t, int))           _ov_header_fseek_wrap,
+  (int (*)(void*))                             NULL,
+  (long (*)(void*))                            ftell
+};
+
+qboolean LoadOGG(char* name, ALenum format, short* pcmout, size_t data_len, vorbis_info* vi) {
+	byte* buffer;
+	OggVorbis_File vf;
+	
+	int length = FS_LoadFile(name, (void**)&buffer);
+
+	// open the ogg vorbis file. This is a must on windows, do not use ov_open.
+	// set OV_CALLBACKS_NOCLOSE else it will close your fp when ov_close() is reached, which is fine.
+	if (ov_open_callbacks(buffer, &vf, NULL, 0, OV_CALLBACKS_NOCLOSE) < 0) {
+		Com_Printf("Stream is not a valid OggVorbis stream! %s\n", name);
+		FS_FreeFile(buffer);
+		return qfalse;
+	}
+	// fill vi with a new ogg vorbis info struct, determine audio format
+	// audio format will always been a length of 16bits, vi->channels determines mono or stereo
+	vi = ov_info(&vf, -1);
+	format = vi->channels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
+
+	// data_len is the amount of data to read, allocate said data space
+  // this is calculated by (samples * channels * 2 (aka 16bits))
+	data_len = ov_pcm_total(&vf, -1) * vi->channels * 2;
+	pcmout = malloc(data_len);
+	if (pcmout == 0) {
+		Com_Printf("LoadOGG: Out of memory.\n");
+		ov_clear(&vf);
+		free(pcmout);
+		FS_FreeFile(buffer);
+		return qfalse;
+	}
+
+	// fill pcmout buffer with ov_read data samples
+	// you can't just slap data_len in place of 4096, it doesn't work that way
+	// 0 is endianess, 0 for little, 1 for big
+	// 2 is the data type short's size, mine is 2
+	// 1 is the signedness you want, I want short not unsigned short (for openal) so 1
+	
+	for (size_t size = 0, offset = 0, sel = 0; (size = ov_read(&vf, (char*)pcmout + offset, 4096, 0, 2, 1, (int*)&sel)) != 0; offset += size) {
+		
+		if (size < 0) {
+			Com_Printf("Faulty ogg file :o");
+			ov_clear(&vf);
+			free(pcmout);
+			FS_FreeFile(buffer);
+			return qfalse;
+		}
+	}
+	//alBufferData(buffNum, format, pcmout, data_len, vi->rate);
+
+	ov_clear(&vf);
+	free(pcmout);
+	FS_FreeFile(buffer);
+
+	return qtrue;
+}
+
 /*
 ==================
 S_FindName

@@ -792,6 +792,7 @@ extern PFNGLCREATETEXTURESPROC					glCreateTextures;
 extern PFNGLTEXSTORAGE2DPROC					glTexStorage2D;
 extern PFNGLTEXTURESTORAGE2DPROC				glTextureStorage2D;
 extern PFNGLTEXTURESUBIMAGE2DPROC				glTextureSubImage2D;
+extern PFNGLTEXTUREPARAMETERIPROC				glTextureParameteri;
 
 #ifdef _WIN32
 

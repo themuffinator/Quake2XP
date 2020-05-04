@@ -2798,7 +2798,7 @@ void DrawSavedShot(void* m)
 	else {
 
 		if(!Q_stricmp(m_savemapnames[i], "victory.pcx")) {
-			strcpy(savePic, va("/pics/victory.tga", m_savemapnames[i]));
+			strcpy(savePic, va("/pics/victory.jpg", m_savemapnames[i]));
 			Draw_GetPicSize(&w, &h, savePic);
 			aspect = (float)w / (float)h;
 			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
@@ -2808,6 +2808,12 @@ void DrawSavedShot(void* m)
 		{
 		strcpy(savePic, va("/levelshots/%s.jpg", m_savemapnames[i]));
 		Draw_GetPicSize(&w, &h, savePic);
+
+		if (w == -1 && h == -1) { //custom map no levelshot
+			strcpy(savePic, "/gfx/defshot.jpg");
+			Draw_GetPicSize(&w, &h, savePic);
+		}
+
 		aspect = (float)w / (float)h;
 		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);

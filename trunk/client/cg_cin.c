@@ -587,7 +587,7 @@ void SCR_PlayCinematic (char *arg) {
 
 	/*
 	// try to load hires victoty screen
-		char repName[MAX_OSPATH]
+		char repName[MAX_OSPATH];
 		strcpy(repName, name);
 		repName[strlen(repName) - 4] = 0;
 		strcat(repName, ".jpg");

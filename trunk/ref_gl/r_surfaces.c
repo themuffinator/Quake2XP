@@ -363,9 +363,6 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		else
 			qglUniform1i(U_LAVA_PASS, 0);
 
-//		GL_MBind(GL_TEXTURE0, image->texnum);
-//		GL_MBind(GL_TEXTURE2, fx->texnum);
-//		GL_MBind(GL_TEXTURE3, normal->texnum);
 		GL_SetBindlessTexture(U_TMU0, image->handle);
 		GL_SetBindlessTexture(U_TMU1, fx->handle);
 		GL_SetBindlessTexture(U_TMU2, normal->handle);
@@ -436,7 +433,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	}
 
 	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-	//	GL_MBindRect(GL_TEXTURE4, r_ssaoColorTex[r_ssaoColorTexIndex]->texnum);
 		GL_SetBindlessTexture(U_TMU3, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
@@ -452,21 +448,17 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
 		{
 			GL_MBind(GL_TEXTURE0, gl_state.lightmap_textures + s->lightmaptexturenum);
-			//GL_SetBindlessTexture(U_TMU1, gl_state.lightmap_textures + s->lightMapTex_handle);
 
 			if (r_worldmodel->useXPLM && r_useRadiosityBump->integer) {
 				GL_MBind(GL_TEXTURE1, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
 				GL_MBind(GL_TEXTURE2, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
-			//	GL_SetBindlessTexture(U_TMU5, gl_state.lightmap_textures + s->lightMapTex_handle + MAX_LIGHTMAPS);
-			//	GL_SetBindlessTexture(U_TMU6, gl_state.lightmap_textures + s->lightMapTex_handle + MAX_LIGHTMAPS * 2);
 			}
 			
 			if (numIndices != 0xFFFFFFFF) {
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				numIndices = 0xFFFFFFFF;
 			}
-		}
-		
+		}		
 		// flush batch (new texture)
 		if (s->texInfo->image->texnum != oldTex)
 		{
@@ -529,15 +521,11 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		}
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);
-		//	GL_MBind(GL_TEXTURE4, rghMap->texnum);
-		//	glUniformHandleui64ARB(U_TMU4, rghMap->handle);
 		}
 
 		if (bmodel){
 			if (caustics && currentShadowLight->castCaustics){
 				qglUniform1i(U_USE_CAUSTICS, 1);
-			//	GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-			//	glUniformHandleui64ARB(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 			}
 			else
 				qglUniform1i(U_USE_CAUSTICS, 0);
@@ -545,8 +533,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		else{
 			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics) {
 				qglUniform1i(U_USE_CAUSTICS, 1);
-			//	GL_MBind(GL_TEXTURE3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-			//	glUniformHandleui64ARB(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 			}
 			else
 				qglUniform1i(U_USE_CAUSTICS, 0);
@@ -595,9 +581,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		GL_SetBindlessTexture(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 		GL_SetBindlessTexture(U_TMU4, rghMap->handle);
 	}
-
-
-
 	// create indexes
 	if (numIndices == 0xffffffff)
 		numIndices = 0;
@@ -610,7 +593,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	}
 
 	*indeces = numIndices;
-
 	
 	return qtrue;
 }
@@ -677,7 +659,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
 	 if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		 //	GL_MBindRect(GL_TEXTURE4, r_ssaoColorTex[r_ssaoColorTexIndex]->texnum);
 		 GL_SetBindlessTexture(U_TMU5, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		 qglUniform1i(U_USE_SSAO, 1);
 	 }
@@ -693,10 +674,11 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 	msurface_t	*s;
 	int			i;
 	glpoly_t	*poly;
-	qboolean	newBatch, oldCaust;
-	unsigned	oldTex		= 0xffffffff;
-	unsigned	oldFlag		= 0xffffffff;
-	unsigned	numIndices	= 0xffffffff;
+	qboolean	newBatch;
+	uint		oldCaust	= 0xffffffff;
+	uint		oldTex		= 0xffffffff;
+	uint		oldFlag		= 0xffffffff;
+	uint		numIndices	= 0xffffffff;
 
 	R_UpdateLightUniforms(bmodel);
 
@@ -891,16 +873,10 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 		else if (surf->texInfo->flags & SURF_NODRAW)
 			continue;
 		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66) && !(surf->flags & MSURF_LAVA) && !(surf->flags & MSURF_DRAWTURB) ) {
-			// add to the translucent chain
-		//	surf->texturechain = r_alpha_surfaces;
-		//	r_alpha_surfaces = surf;
 			r_alphaSurfaces[numAlphaSurfaces++] = surf;
 		}
 		else {
 			if ((surf->flags & MSURF_DRAWTURB) && !(surf->flags & MSURF_LAVA)) {
-				// add to the reflective chain
-			//	surf->texturechain = r_reflective_surfaces;
-			//	r_reflective_surfaces = surf;
 				r_reflectiveSurfaces[numReflectiveSurfaces++] = surf;
 			}
 			else {
@@ -1127,17 +1103,13 @@ extern qboolean bmodelcaust = qfalse;
 
 void R_DrawBrushModel();
 
-static void R_DrawInlineBModel (void) {
+static void R_AddAmbientBmodelSurfaces (void) {
 	int i;
 	cplane_t *pplane;
 	float dot;
 	msurface_t *psurf;
 
 	psurf = &currentmodel->surfaces[currentmodel->firstModelSurface];
-
-	//
-	// draw texture
-	//
 
 	for (i = 0; i < currentmodel->numModelSurfaces; i++, psurf++) {
 		// find which side of the node we are on
@@ -1219,7 +1191,6 @@ void R_DrawBrushModel (void) {
 		return;
 	
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
-//	gl_state.bindlessCache[0] = gl_state.bindlessCache[1] = -1;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		rotated = qtrue;
@@ -1263,7 +1234,7 @@ void R_DrawBrushModel (void) {
 	glBindVertexArray(vao.bsp_a);
 
 	num_scene_surfaces = 0;
-	R_DrawInlineBModel();
+	R_AddAmbientBmodelSurfaces();
 	GL_DrawLightmappedPoly(qtrue);
 	
 	glBindVertexArray(0);

@@ -533,7 +533,8 @@ void SV_Map (qboolean attractloop, char *levelstring, qboolean loadgame) {
 		SV_SpawnServer (level, spawnpoint, ss_demo, attractloop, loadgame);
 		cinServer = qfalse;
 	}
-	else if (l > 4 && !strcmp (level + l - 4, ".pcx")) {
+//	else if (l > 4 && !strcmp (level + l - 4, ".pcx")) {
+	else if ((!Q_strcasecmp(level + l - 4, ".png") || !Q_strcasecmp(level + l - 4, ".tga") || !Q_strcasecmp(level + l - 4, ".pcx") || !Q_strcasecmp(level + l - 4, ".jpg") || !Q_strcasecmp(level + l - 4, ".dds"))){
 		SCR_BeginLoadingPlaque ();	// for local system
 		SV_BroadcastCommand ("changing\n");
 		SV_SpawnServer (level, spawnpoint, ss_pic, attractloop, loadgame);

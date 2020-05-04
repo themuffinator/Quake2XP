@@ -1004,16 +1004,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int rawWidth, int rawHeight,
 
 	qglClearColor(0.0, 0.0, 0.0, 1.0);
 
-	// setup program
-	GL_BindProgram(cinProgram);
-
 	memset(image32, 0, sizeof(image32));
-	
-	qglGenTextures(1, &tex);
-	GL_MBind(GL_TEXTURE0, tex);
-
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	hscale = rawHeight / 256.0;
 	trows = 256;
@@ -1037,11 +1028,16 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int rawWidth, int rawHeight,
 		}
 	}
 
-	qglTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, image32);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	// update cin texture
+	GL_MBind(GL_TEXTURE0, r_cinImage->texnum);
+	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, image32);
+
+	// setup program
+	GL_BindProgram(cinProgram);
+
+	GL_SetBindlessTexture(U_TMU0, r_cinImage->handle);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	x0 = sw;
 	y0 = sh;
@@ -1070,5 +1066,4 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int rawWidth, int rawHeight,
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDeleteTextures(1, &tex);
 }

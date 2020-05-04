@@ -699,8 +699,6 @@ void R_DrawLightScene (void)
 	
 	R_DrawLightFlare();				// light flare
 	R_DrawLightBounds();			// debug stuff
-
-	glGetQueryObjectiv(currentShadowLight->occId, GL_QUERY_RESULT_AVAILABLE, &currentShadowLight->queryAvailable); // for next frame
 	}
 	}
 	
@@ -1832,15 +1830,16 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramUniformMatrix3x4fv =	(PFNGLPROGRAMUNIFORMMATRIX3X4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3x4fv");
 	glProgramUniformMatrix4x3fv =	(PFNGLPROGRAMUNIFORMMATRIX4X3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x3fv");
 	
-	glBindTextureUnit =			(PFNGLBINDTEXTUREUNITPROC)		qwglGetProcAddress("glBindTextureUnit");
+
 	glBindTextures =			(PFNGLBINDTEXTURESPROC)			qwglGetProcAddress("glBindTextures");
 
-	glCreateTextures =			(PFNGLCREATETEXTURESPROC)		qwglGetProcAddress("glCreateTextures");
-	
-	glTexStorage2D =			(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
-	glTextureStorage2D =		(PFNGLTEXTURESTORAGE2DPROC)		qwglGetProcAddress("glTextureStorage2D");
+	// Textures DSA 
+	glBindTextureUnit	=		(PFNGLBINDTEXTUREUNITPROC)		qwglGetProcAddress("glBindTextureUnit");
+	glCreateTextures	=		(PFNGLCREATETEXTURESPROC)		qwglGetProcAddress("glCreateTextures");
+	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
+	glTextureStorage2D	=		(PFNGLTEXTURESTORAGE2DPROC)		qwglGetProcAddress("glTextureStorage2D");
 	glTextureSubImage2D =		(PFNGLTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glTextureSubImage2D");
-
+	glTextureParameteri =		(PFNGLTEXTUREPARAMETERIPROC)	qwglGetProcAddress("glTextureParameteri");
 
 	glGenQueries		= (PFNGLGENQUERIESPROC)			qwglGetProcAddress("glGenQueries");
 	glDeleteQueries		= (PFNGLDELETEQUERIESPROC)		qwglGetProcAddress("glDeleteQueries");

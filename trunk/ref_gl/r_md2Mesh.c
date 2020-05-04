@@ -244,11 +244,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	qglUniform1f (U_COLOR_MUL, r_textureColorScale->value);
 	qglUniform1f (U_COLOR_OFFSET, alphaShift);
-
-//	GL_MBind (GL_TEXTURE0, skin->texnum);
-//	GL_MBind (GL_TEXTURE1, glowskin->texnum);
-//	GL_MBind (GL_TEXTURE2, r_envTex->texnum);
-//	GL_MBind (GL_TEXTURE3, skinNormalmap->texnum);
 	
 	GL_SetBindlessTexture(U_TMU0, skin->handle);
 	GL_SetBindlessTexture(U_TMU1, glowskin->handle);
@@ -258,7 +253,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglUniform1f(U_ENV_SCALE, currentmodel->envScale);
 
 	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
-	//	GL_MBindRect (GL_TEXTURE4, r_ssaoColorTex[r_ssaoColorTexIndex]->texnum);
 		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
@@ -338,21 +332,7 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglUniform3fv(U_VIEW_POS, 1, r_origin);
 
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
-	
-/*	if (currententity->flags & RF_SHELL_BLUE)
-		GL_MBind (GL_TEXTURE0, r_texshell[0]->texnum);
-	if (currententity->flags & RF_SHELL_RED)
-		GL_MBind (GL_TEXTURE0, r_texshell[1]->texnum);
-	if (currententity->flags & RF_SHELL_GREEN)
-		GL_MBind (GL_TEXTURE0, r_texshell[2]->texnum);
-	if (currententity->flags & RF_SHELL_GOD)
-		GL_MBind (GL_TEXTURE0, r_texshell[3]->texnum);
-	if (currententity->flags & RF_SHELL_HALF_DAM)
-		GL_MBind (GL_TEXTURE0, r_texshell[4]->texnum);
-	if (currententity->flags & RF_SHELL_DOUBLE)
-		GL_MBind (GL_TEXTURE0, r_texshell[5]->texnum);
-*/ 
-	
+
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_SetBindlessTexture(U_TMU0, r_texshell[0]->handle);
 	if (currententity->flags & RF_SHELL_RED)
@@ -515,11 +495,6 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	else
 		qglUniform1i(U_USE_CAUSTICS, 0);
 
-/*	GL_MBind (GL_TEXTURE0, skinNormalmap->texnum);
-	GL_MBind (GL_TEXTURE1, skin->texnum);
-	GL_MBind (GL_TEXTURE2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-	GL_MBindCube (GL_TEXTURE3, r_lightCubeMap[currentShadowLight->filter]->texnum);
-*/	
 	GL_SetBindlessTexture(U_TMU0, skinNormalmap->handle);
 	GL_SetBindlessTexture(U_TMU1, skin->handle);
 	GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
@@ -531,11 +506,8 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 		qglUniform1i(U_USE_RGH_MAP, 0);
 	else {
 		qglUniform1i(U_USE_RGH_MAP, 1);
-	//	GL_MBind(GL_TEXTURE4, rgh->texnum);
 	}
 	
-//	GL_MBind(GL_TEXTURE5, skinBump->texnum);
-
 	qglUniform1i(U_PARAM_INT_1, 0);
 	qglUniform1i(U_PARAM_INT_2, 0);
 	qglUniform1i(U_PARAM_INT_3, 0);

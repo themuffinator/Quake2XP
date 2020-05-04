@@ -179,11 +179,13 @@ image_t	*r_conBump;
 image_t	*r_whiteMap;
 image_t *skinBump;
 
-#define MAX_FILTERS 256
-image_t	*r_lightCubeMap[MAX_FILTERS];
-#define	MAX_GLOBAL_FILTERS	37
-#define MAX_LUTS 10
-image_t *r_3dLut[MAX_LUTS];
+#define		MAX_FILTERS 256
+image_t		*r_lightCubeMap[MAX_FILTERS];
+#define		MAX_GLOBAL_FILTERS	37
+
+#define		MAX_LUTS 10
+image_t		*r_3dLut[MAX_LUTS];
+int			lutCount;
 
 image_t	*r_fxaaTex;
 image_t	*r_fixFovTex;
@@ -191,10 +193,11 @@ image_t	*r_fixFovTex;
 image_t *r_miniDepthTex;
 image_t *r_ssaoColorTex[2];
 
-uint	bloomtex;
-uint	thermaltex;
+image_t	*r_cinImage;
+image_t	*r_bloomImage;
+image_t	*r_thermalImage;
 
-int		skyCube;
+int			skyCube;
 uint64_t	skyCube_handle;
 
 uint fboId;
@@ -211,8 +214,6 @@ extern int r_framecount;
 extern cplane_t frustum[6];
 
 extern	int gl_filter_min, gl_filter_max;
-
-int lutCount;
 
 //
 // view origin

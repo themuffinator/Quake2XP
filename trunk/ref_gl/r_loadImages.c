@@ -96,9 +96,19 @@ image_t *R_CreateTexture(char *texName, uint targetTex, uint intFormat, uint for
 	qglTexParameteri(targetTex, GL_TEXTURE_WRAP_T, warpT);
 	qglTexParameterf(targetTex, GL_TEXTURE_MIN_FILTER, filterMin);
 	qglTexParameterf(targetTex, GL_TEXTURE_MAG_FILTER, filterMag);
-
+	
 	qglTexImage2D(targetTex, 0, intFormat, width, height, 0, format, imageType, NULL);
+	
+/* // DSA
+	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
+	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, warpS);
+	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, warpT);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, filterMin);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, filterMag);
 
+	glTextureStorage2D(image->texnum, 1, intFormat, width, height);
+	glTextureSubImage2D(image->texnum, 0, 0, 0, width, height, format, imageType, NULL);
+*/
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
 
@@ -628,16 +638,16 @@ void R_InitEngineTextures (void) {
 	if (!skinBump)
 		skinBump = r_notexture;
 
-	bloomtex = 0;
-	thermaltex = 0;
-
 	CreateDSTTex_ARB ();
 	Load3dLut();
 
-	r_depthTex	=	R_CreateTexture("***r_depthTex***", GL_TEXTURE_RECTANGLE, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_INT);
-	r_screenTex	=	R_CreateTexture("***r_screenTex***", GL_TEXTURE_RECTANGLE, GL_SRGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
-	r_fxaaTex	=	R_CreateTexture("***r_fxaaTex***", GL_TEXTURE_2D, GL_SRGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
-	r_fixFovTex =	R_CreateTexture("***r_fixFovTex***", GL_TEXTURE_2D, GL_SRGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_depthTex		=	R_CreateTexture("***r_depthTex***", GL_TEXTURE_RECTANGLE, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_INT);
+	r_screenTex		=	R_CreateTexture("***r_screenTex***", GL_TEXTURE_RECTANGLE, GL_SRGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_fxaaTex		=	R_CreateTexture("***r_fxaaTex***", GL_TEXTURE_2D, GL_SRGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_fixFovTex		=	R_CreateTexture("***r_fixFovTex***", GL_TEXTURE_2D, GL_SRGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_cinImage		=	R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_bloomImage	=	R_CreateTexture("***r_bloomImage***", GL_TEXTURE_RECTANGLE, GL_SRGB8, GL_RGB, it_pic, vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_thermalImage	=	R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_SRGB8, GL_RGB, it_pic, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
 }
 
 

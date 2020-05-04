@@ -717,7 +717,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 			if (!rgh)
 				rgh = r_notexture;
-	//		GL_MBind(GL_TEXTURE5, rgh->texnum);
+
 			GL_SetBindlessTexture(U_TMU5, rgh->handle);
 		}
 		else 
@@ -761,13 +761,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
 		qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, md3ColorCache);
-
-	/*	GL_MBind(GL_TEXTURE0, skin->texnum);
-		GL_MBind(GL_TEXTURE1, light->texnum);
-		GL_MBind(GL_TEXTURE2, r_envTex->texnum);
-		GL_MBind(GL_TEXTURE3, normal->texnum);
-		GL_MBind(GL_TEXTURE4, ao->texnum);
-*/		
+	
 		GL_SetBindlessTexture(U_TMU0, skin->handle);
 		GL_SetBindlessTexture(U_TMU1, light->handle);
 		GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
@@ -851,11 +845,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, md3ColorCache);
 			qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 						
-		/*	GL_MBind(GL_TEXTURE0, skin->texnum);
-			GL_MBind(GL_TEXTURE1, r_notexture->texnum);
-			GL_MBind(GL_TEXTURE2, r_envTex->texnum);
-			GL_MBind(GL_TEXTURE3, normal->texnum);
-*/			
 			GL_SetBindlessTexture(U_TMU0, skin->handle);
 			GL_SetBindlessTexture(U_TMU1, r_notexture->handle);
 			GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
@@ -1145,12 +1134,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
 		qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
-
-/*		GL_MBind(GL_TEXTURE0, normal->texnum);
-		GL_MBind(GL_TEXTURE1, skin->texnum);
-		GL_MBind(GL_TEXTURE2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->texnum);
-		GL_MBindCube(GL_TEXTURE3, r_lightCubeMap[currentShadowLight->filter]->texnum);
-*/		
+		
 		GL_SetBindlessTexture(U_TMU0, normal->handle);
 		GL_SetBindlessTexture(U_TMU1, skin->handle);
 		GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
@@ -1169,11 +1153,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		else {
 			qglUniform1i(U_USE_RGH_MAP, 1);
-		//	GL_MBind(GL_TEXTURE4, rgh->texnum);
 		}
-
-//		GL_MBind(GL_TEXTURE5, skinBump->texnum);
-//		GL_MBindCube(GL_TEXTURE6, skyCube);
 
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	}
@@ -1252,20 +1232,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 	qglUniform3fv(U_VIEW_POS, 1, viewOrg);
 	qglUniform2fv(U_SHELL_PARAMS, 1, shellParams);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
-
-/*	if (currententity->flags & RF_SHELL_BLUE)
-		GL_MBind(GL_TEXTURE0, r_texshell[0]->texnum);
-	if (currententity->flags & RF_SHELL_RED)
-		GL_MBind(GL_TEXTURE0, r_texshell[1]->texnum);
-	if (currententity->flags & RF_SHELL_GREEN)
-		GL_MBind(GL_TEXTURE0, r_texshell[2]->texnum);
-	if (currententity->flags & RF_SHELL_GOD)
-		GL_MBind(GL_TEXTURE0, r_texshell[3]->texnum);
-	if (currententity->flags & RF_SHELL_HALF_DAM)
-		GL_MBind(GL_TEXTURE0, r_texshell[4]->texnum);
-	if (currententity->flags & RF_SHELL_DOUBLE)
-		GL_MBind(GL_TEXTURE0, r_texshell[5]->texnum);
-*/	
+	
 	if (currententity->flags & RF_SHELL_BLUE)
 		GL_SetBindlessTexture(U_TMU0, r_texshell[0]->handle);
 	if (currententity->flags & RF_SHELL_RED)

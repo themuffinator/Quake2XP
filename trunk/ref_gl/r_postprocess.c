@@ -71,47 +71,38 @@ void R_Bloom (void)
 
 	// setup program
 	GL_BindProgram (bloomdsProgram);
+	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
 	qglUniform1f(U_PARAM_FLOAT_0, r_bloomThreshold->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawQuarterScreenQuad ();
 
-	// create bloom texture (set to zero in default state)
-	if (!bloomtex) {
-		qglGenTextures (1, &bloomtex);
-		GL_BindRect (bloomtex);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, 0, 0, vid.width*0.25, vid.height*0.25, 0);
-	}
-
 	// generate star shape
-	GL_BindRect (bloomtex);
+	GL_BindRect (r_bloomImage->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	GL_BindProgram (glareProgram);
+	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
 	qglUniform1f(U_PARAM_FLOAT_0, r_bloomWidth->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawQuarterScreenQuad ();
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	// blur x
-	GL_BindRect (bloomtex);
+	GL_BindRect (r_bloomImage->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	GL_BindProgram (gaussXProgram);
+	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawQuarterScreenQuad ();
 
 	// blur y
-	GL_BindRect (bloomtex);
+	GL_BindRect (r_bloomImage->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	GL_BindProgram (gaussYProgram);
+	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawQuarterScreenQuad ();
 
 	// store 2 pass gauss blur 
@@ -119,11 +110,10 @@ void R_Bloom (void)
 
 	//final pass
 	GL_BindProgram (bloomfpProgram);
-	GL_MBindRect (GL_TEXTURE0, r_screenTex->texnum);
-	GL_MBindRect (GL_TEXTURE1, bloomtex);
+	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
+	GL_SetBindlessTexture(U_TMU1, r_bloomImage->handle);
 	qglUniform1f(U_PARAM_FLOAT_0, r_bloomIntens->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawFullScreenQuad ();
 }
 
@@ -137,40 +127,31 @@ void R_ThermalVision (void)
 	if (!(r_newrefdef.rdflags & RDF_IRGOGGLES))
 		return;
 
-	if (!thermaltex) {
-		qglGenTextures (1, &thermaltex);
-		GL_MBindRect(GL_TEXTURE0, thermaltex);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameteri (GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglCopyTexImage2D (GL_TEXTURE_RECTANGLE, 0, GL_SRGB8, 0, 0, vid.width, vid.height, 0);
-	}
-	else {
-		GL_MBindRect(GL_TEXTURE0, thermaltex);
-		qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-	}
+	GL_MBindRect(GL_TEXTURE0, r_screenTex->texnum);
+	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	// setup program
 	GL_BindProgram (thermalProgram);
+	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawHalfScreenQuad ();
 
 	// blur x
-	GL_BindRect (thermaltex);
+	GL_BindRect (r_thermalImage->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
 
 	GL_BindProgram (gaussXProgram);
+	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawHalfScreenQuad ();
 
 	// blur y
-	GL_BindRect (thermaltex);
+	GL_BindRect (r_thermalImage->texnum);
 	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
 
 	GL_BindProgram (gaussYProgram);
+	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawHalfScreenQuad ();
 
 	// store 2 pass gauss blur 
@@ -178,11 +159,8 @@ void R_ThermalVision (void)
 
 	//final pass
 	GL_BindProgram (thermalfpProgram);
-
-	GL_BindRect (thermaltex);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawFullScreenQuad ();
 }
 

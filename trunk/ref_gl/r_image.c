@@ -1207,12 +1207,6 @@ void GL_ShutdownImages(void) {
 		qglDeleteTextures (i * 3, ids);
 	}
 
-	// TODO use image array
-	if (thermaltex)
-		qglDeleteTextures (1, &thermaltex);
-	if (bloomtex)
-		qglDeleteTextures (1, &bloomtex);
-
 	if (skyCube) {
 		glMakeTextureHandleNonResidentARB(skyCube_handle);
 		qglDeleteTextures(1, &skyCube);

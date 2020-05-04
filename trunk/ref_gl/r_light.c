@@ -2816,12 +2816,8 @@ qboolean R_GetLightOcclusionResult() {
 
 	if (BoundsIntersectsPoint(currentShadowLight->mins, currentShadowLight->maxs, r_origin))
 		return qtrue;
-	
-	if (!currentShadowLight->queryAvailable)
-		return qfalse;
 
 	glGetQueryObjectiv(currentShadowLight->occId, GL_QUERY_RESULT, &result);
-	currentShadowLight->queryAvailable = 0;
 
 	if (result)
 		return qtrue;

@@ -509,6 +509,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0.5;
 			dl->color[2] = 1.0;
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_railgf1a], volume, ATTN_WEAPON_LIGHT);
+			S_fastsound_queue(NULL, i, CHAN_WEAPON, fastsound_descriptor[id_cl_sfx_railg], volume , ATTN_WEAPON_HEAVY, 100);
 			break;
 		case MZ_ROCKET:
 			dl->color[0] = 1;
