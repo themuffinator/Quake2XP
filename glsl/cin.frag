@@ -1,8 +1,7 @@
-layout (binding = 0) uniform sampler2D u_cinMap;
-
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2D	u_cinMap;
 layout (location = U_SCREEN_SIZE)	uniform vec2	u_screenSize;
 
-in vec2			v_texCoord;
+in vec2	v_texCoord;
 
 /*
 3x3 Median

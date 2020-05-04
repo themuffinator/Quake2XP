@@ -1,5 +1,5 @@
-layout (binding = 0) uniform sampler2DRect		u_map0; // screen
-layout (binding = 1) uniform sampler2DRect		u_map1; // bloom
+layout (bindless_sampler, location  = U_TMU0) uniform sampler2DRect		u_map0; // screen
+layout (bindless_sampler, location  = U_TMU1) uniform sampler2DRect		u_map1; // bloom
 
 layout (location = U_PARAM_FLOAT_0)	uniform float	u_bloomParams; //multipler
 
