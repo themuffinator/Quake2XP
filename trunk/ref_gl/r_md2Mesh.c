@@ -241,8 +241,6 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		qglUniform1i (U_ENV_PASS, 0);
 
 	qglUniform1i (U_SHELL_PASS, 0);
-
-	qglUniform1f (U_COLOR_MUL, r_textureColorScale->value);
 	qglUniform1f (U_COLOR_OFFSET, alphaShift);
 	
 	GL_SetBindlessTexture(U_TMU0, skin->handle);
@@ -327,7 +325,6 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 
 	qglUniform1i (U_SHELL_PASS, 1);
 	qglUniform1i (U_ENV_PASS, 0);
-	qglUniform1f (U_COLOR_MUL, r_textureColorScale->value);
 	qglUniform2fv(U_SHELL_PARAMS, 1, shellParams);
 	qglUniform3fv(U_VIEW_POS, 1, r_origin);
 

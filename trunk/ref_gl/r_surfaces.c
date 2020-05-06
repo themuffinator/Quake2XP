@@ -418,7 +418,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	// setup program
 	GL_BindProgram(ambientWorldProgram);
 
-	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
 	qglUniform3fv(U_VIEW_POS, 1, bmodel ? BmodelViewOrg : r_origin);
 	qglUniform1i(U_PARALLAX_TYPE, clamp(r_reliefMapping->integer, 0, 1));
 	qglUniform1f(U_AMBIENT_LEVEL, r_lightmapScale->value);
@@ -608,7 +607,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
  {
 	 mat4_t	entAttenMatrix, entSpotMatrix;
 
-	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
 	qglUniform1i(U_AMBIENT_LIGHT, (int)currentShadowLight->isAmbient);
 	qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);
 	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);

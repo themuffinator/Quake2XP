@@ -68,7 +68,6 @@ void Set_FontShader(qboolean enable){
 		qglUniform1i(U_2D_PICS, 1);
 		qglUniform1i(U_CONSOLE_BACK, 0);
 		qglUniform1i(U_FRAG_COLOR, 0);
-		qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
 		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	}
 	else{
@@ -513,11 +512,6 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	else{
 		qglUniform1i(U_2D_PICS, 1);
 	}
-	if (strstr(gl->name, "menuback"))
-		qglUniform1f(U_COLOR_MUL, 1);
-	else
-		qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
-
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
@@ -682,7 +676,6 @@ void Draw_Pic2(int x, int y, image_t * gl)
 	qglUniform1i(U_2D_PICS, 1);
 	qglUniform1i(U_CONSOLE_BACK, 0);
 	qglUniform1i(U_FRAG_COLOR, 0);
-	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		//GL_MBind(GL_TEXTURE0, gl->texnum);
@@ -750,7 +743,6 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglUniform1i(U_CONSOLE_BACK, 0);
 	qglUniform1i(U_FRAG_COLOR, 0);
 
-	qglUniform1f(U_COLOR_MUL, r_bump2D->integer ? 1.0 : r_textureColorScale->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 		//GL_MBind(GL_TEXTURE0, gl->texnum);
@@ -908,7 +900,6 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglUniform1i(U_2D_PICS, 1);
 	qglUniform1i(U_CONSOLE_BACK, 0);
 	qglUniform1i(U_FRAG_COLOR, 0);
-	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	
 	//GL_MBind(GL_TEXTURE0, image->texnum);
@@ -970,7 +961,6 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a)
 	qglUniform1i(U_FRAG_COLOR, 1);
 
 	qglUniform4f(U_COLOR, r, g, b, a);
-	qglUniform1f(U_COLOR_MUL, r_textureColorScale->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	VA_SetElem2(vertCoord[0], x, y);

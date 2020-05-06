@@ -1371,7 +1371,6 @@ void R_RegisterCvars(void)
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
-	r_textureColorScale =				Cvar_Get("r_textureColorScale", "2", CVAR_ARCHIVE);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
 	r_causticIntens =					Cvar_Get("r_causticIntens", "5.0", CVAR_ARCHIVE);
 	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
@@ -1424,7 +1423,7 @@ void R_RegisterCvars(void)
 	r_useRadiosityBump =				Cvar_Get("r_useRadiosityBump", "1", CVAR_ARCHIVE);
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 	r_zFar =							Cvar_Get("r_zFar", "4096", CVAR_ARCHIVE);
-	r_useLightOcclusions =				Cvar_Get("r_useLightOcclusions", "1", CVAR_ARCHIVE);
+	r_useLightOcclusions =				Cvar_Get("r_useLightOcclusions", "0", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.65", CVAR_ARCHIVE);

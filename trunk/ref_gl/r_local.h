@@ -271,7 +271,6 @@ cvar_t	*r_displayRefresh;
 cvar_t	*r_screenShot;
 cvar_t	*r_screenShotJpegQuality;
 
-cvar_t	*r_textureColorScale;
 cvar_t	*r_textureCompression;
 cvar_t	*r_anisotropic;
 cvar_t	*r_maxAnisotropy;
