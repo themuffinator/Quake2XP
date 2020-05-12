@@ -417,11 +417,15 @@ void R_GenSkyCubeMap(char* name) {
 		}
 	}
 
+	int numMips = CalcMipmapCount(minw, minh);
+	glTexStorage2D(GL_TEXTURE_CUBE_MAP, numMips, GL_RGBA8, minw, minh);
+
 	for (i = 0; i < 6; i++) {
 
 		R_FlipImage(i, &pix[i], (byte*)trans);
 		free(pix[i].pixels);
-		qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+	//	qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+		qglTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, minw, minh, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 	}
 
 	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -429,6 +433,8 @@ void R_GenSkyCubeMap(char* name) {
 	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMips);
 	qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
 	skyCube_handle = glGetTextureHandleARB(skyCube);

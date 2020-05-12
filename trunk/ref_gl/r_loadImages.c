@@ -69,6 +69,7 @@ image_t *R_CreateTexture(char *texName, uint targetTex, uint intFormat, uint for
 
 	int		i;
 	image_t* image;
+	uint* pix = malloc(vid.width * vid.height * 4 * sizeof(uint));
 
 	// find a free image_t
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
@@ -97,22 +98,15 @@ image_t *R_CreateTexture(char *texName, uint targetTex, uint intFormat, uint for
 	qglTexParameterf(targetTex, GL_TEXTURE_MIN_FILTER, filterMin);
 	qglTexParameterf(targetTex, GL_TEXTURE_MAG_FILTER, filterMag);
 	
-	qglTexImage2D(targetTex, 0, intFormat, width, height, 0, format, imageType, NULL);
+//	qglTexImage2D(targetTex, 0, intFormat, width, height, 0, format, imageType, NULL);
 	
-/* // DSA
-	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
-	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, warpS);
-	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, warpT);
-	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, filterMin);
-	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, filterMag);
+	glTexStorage2D(targetTex, 1, intFormat, width, height);
+	qglTexSubImage2D(targetTex, 0, 0, 0, width, height, format, imageType, pix);
 
-	glTextureStorage2D(image->texnum, 1, intFormat, width, height);
-	glTextureSubImage2D(image->texnum, 0, 0, 0, width, height, format, imageType, NULL);
-*/
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
 
-	GL_CheckError("r_loadImages.c", 105, "R_CreateTexture");
+	free(pix);
 
 	return image;
 
@@ -196,7 +190,7 @@ void CreateSSAOBuffer(void) {
 void CreateSkyFboMask(void) {
 	qboolean statusOK;
 
-	r_skyMask = R_CreateTexture("***r_skyMask***", GL_TEXTURE_RECTANGLE, GL_RED, GL_RED, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_skyMask = R_CreateTexture("***r_skyMask***", GL_TEXTURE_RECTANGLE, GL_R8, GL_RED, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
 
 	qglGenFramebuffers(1, &fbo_skyMask);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_skyMask);

@@ -123,11 +123,28 @@ qboolean uploaded_paletted;
 image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 					imagetype_t type, int bits);
 
-int gl_tex_solid_format = GL_RGB;
-int gl_tex_alpha_format = GL_RGBA;
+int gl_tex_solid_format = GL_RGBA8;
+int gl_tex_alpha_format = GL_RGBA8;
 
 int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;	
 int gl_filter_max = GL_LINEAR;
+
+
+int CalcMipmapCount(int w, int h)
+{
+	int width, height, mipcount;
+
+	// mip-maps can't exceeds 16
+	for (mipcount = 0; mipcount < 16; mipcount++)
+	{
+		width = max(1, (w >> mipcount));
+		height = max(1, (h >> mipcount));
+		if (width == 1 && height == 1)
+			break;
+	}
+
+	return mipcount + 1;
+}
 
 void R_CaptureColorBuffer(){
 		
@@ -489,7 +506,11 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 			comp = gl_tex_alpha_format;
 	}	
 	
-	qglTexImage2D( GL_TEXTURE_2D, 0, comp, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+//	qglTexImage2D( GL_TEXTURE_2D, 0, comp, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	
+	int numMips = CalcMipmapCount(width, height);
+	glTexStorage2D(GL_TEXTURE_2D, numMips, comp, width, height);
+	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	if (mipmap)
 	{
@@ -498,6 +519,8 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMips);
 	}
 	else
 	{

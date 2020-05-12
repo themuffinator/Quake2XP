@@ -425,8 +425,6 @@ void R_DownsampleDepth(void);
 void R_ScreenBlend(void);
 void R_GlobalFog();
 
-void CreateFboBuffer(void);
-
 void R_SaveLights_f (void);
 void R_Light_Spawn_f (void);
 void R_Light_Delete_f (void);
@@ -610,12 +608,13 @@ void GL_FreeUnusedImages (void);
 qboolean R_CullOrigin (vec3_t origin);
 qboolean IsExtensionSupported(const char *name);
 
+int CalcMipmapCount(int w, int h);
+
 /*
 ** GL extension emulation functions
 */
 
 void	CreateSSAOBuffer();
-void CreateFboBuffer (void);
 
 /*
 ** GL config stuff
