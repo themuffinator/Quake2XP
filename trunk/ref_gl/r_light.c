@@ -46,7 +46,10 @@ void R_DrawOcclusionBbox(worldShadowLight_t* light, qboolean update);
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
 	if (r_newrefdef.areabits && light->area > 0) {
-
+		
+		if (light->area > MAX_MAP_LEAFS)
+			return qfalse;
+		
 		if (!(r_newrefdef.areabits[light->area >> 3] & (1 << (light->area & 7)))) {
 			return qfalse;
 		}
