@@ -18,13 +18,12 @@ int VectorCompareEpsilon(vec3_t v1, vec3_t v2, float epsilon)
 	return 1;
 }
 
-void CalcTangent4MD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal)
-{
-	float *v0, *v1, *v2;
-	float *st0, *st1, *st2;
-	vec3_t vec1, vec2;
-	vec3_t planes[3];
-	int i;
+void CalcTangent4MD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec3_t Tangent, vec3_t Binormal){
+	float	*v0, *v1, *v2;
+	float	*st0, *st1, *st2;
+	vec3_t	vec1, vec2;
+	vec3_t	planes[3];
+	int		i;
 
 	v0 = vertices[index[0]].xyz;
 	v1 = vertices[index[1]].xyz;
@@ -33,8 +32,8 @@ void CalcTangent4MD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec
 	st1 = texcos[index[1]].st;
 	st2 = texcos[index[2]].st;
 
-	for (i = 0; i<3; i++)
-	{
+	for (i = 0; i<3; i++){
+
 		vec1[0] = v1[i] - v0[i];
 		vec1[1] = st1[0] - st0[0];
 		vec1[2] = st1[1] - st0[1];

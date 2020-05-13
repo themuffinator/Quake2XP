@@ -497,10 +497,10 @@ void R_Light_SpawnToCamera_f (void) {
 
 void R_Light_Clone_f (void) {
 	vec3_t	color, spawn, origin, angles,
-		speed, radius, flareOrg, end;
+			speed, radius, flareOrg, end;
 	float	_cone, flareSize, fogDensity;
 	int		style, filter, shadow, ambient,
-		flare, flag, fog;
+			flare, flag, fogLight;
 	char	target[MAX_QPATH];
 	trace_t trace;
 
@@ -533,14 +533,14 @@ void R_Light_Clone_f (void) {
 	flare = selectedShadowLight->flare;
 	flareSize = selectedShadowLight->flareSize;
 	flag = selectedShadowLight->start_off;
-	fog = selectedShadowLight->isFog;
+	fogLight = selectedShadowLight->isFog;
 	fogDensity = selectedShadowLight->fogDensity;
 	VectorMA (player_org, 1024, v_forward, end);
 
 	trace = CL_PMTraceWorld (player_org, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
 	if (trace.fraction != 1.0) {
 		VectorMA (trace.endpos, -10, v_forward, spawn);
-		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, qtrue, shadow, ambient, _cone, qtrue, flare, flareOrg, flareSize, target, flag, fog, fogDensity, spawn, radius);
+		selectedShadowLight = R_AddNewWorldLight (spawn, color, radius, style, filter, angles, vec3_origin, qtrue, shadow, ambient, _cone, qtrue, flare, flareOrg, flareSize, target, flag, fogLight, fogDensity, spawn, radius);
 	}
 }
 
@@ -654,7 +654,7 @@ void R_EditSelectedLight_f (void) {
 			speed, radius, fOrg, occOrigin, occRadius;
 	float	_cone, fSize, fogDensity;
 	int		style, filter, shadow,
-		ambient, flare, start_off, fog;
+		ambient, flare, start_off, fogLight;
 	char	target[MAX_QPATH];
 
 	if (!r_lightEditor->integer) {
@@ -689,7 +689,7 @@ void R_EditSelectedLight_f (void) {
 	flare = selectedShadowLight->flare;
 	fSize = selectedShadowLight->flareSize;
 	start_off = selectedShadowLight->start_off;
-	fog = selectedShadowLight->isFog;
+	fogLight = selectedShadowLight->isFog;
 	fogDensity = selectedShadowLight->fogDensity;
 
 	if (!strcmp (Cmd_Argv (1), "origin")) {
@@ -914,8 +914,8 @@ void R_EditSelectedLight_f (void) {
 				selectedShadowLight->isFog);
 			return;
 		}
-		fog = atoi (Cmd_Argv (2));
-		selectedShadowLight->isFog = fog;
+		fogLight = atoi (Cmd_Argv (2));
+		selectedShadowLight->isFog = fogLight;
 	}
 	else
 	if (!strcmp (Cmd_Argv (1), "fogDensity")) {
@@ -1624,7 +1624,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	int filter, vec3_t angles, vec3_t speed, qboolean isStatic,
 	int isShadow, int isAmbient, float cone, qboolean ingame,
 	int flare, vec3_t flareOrg, float flareSize, char target[MAX_QPATH],
-	int flags, int fog, float fogDensity, vec3_t occOrg, vec3_t occRad) {
+	int flags, int fogLight, float fogDensity, vec3_t occOrg, vec3_t occRad) {
 
 	worldShadowLight_t	*light;
 	int					i;
@@ -1679,7 +1679,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
 	light->isAmbient = isAmbient;
-	light->isFog = fog;
+	light->isFog = fogLight;
 	light->fogDensity = fogDensity;
 	light->isNoWorldModel = 0;
 	light->next = NULL;
@@ -1888,7 +1888,7 @@ void Load_BspLights () {
 
 void Load_LightFile () {
 
-	int		style, numLights = 0, filter, shadow, ambient, flare, flag, fog;
+	int		style, numLights = 0, filter, shadow, ambient, flare, flag, fogLight;
 	vec3_t	angles, speed, color, origin, lOrigin, fOrg, occRad, occOrg;
 	char	*c, *token, key[256], *value, target[MAX_QPATH];
 	float	radius[3], cone, fSize, fogDensity;
@@ -1925,7 +1925,7 @@ void Load_LightFile () {
 		fSize = 0;
 		flare = 0;
 		flag = 0;
-		fog = 0;
+		fogLight = 0;
 		fogDensity = 0.0;
 
 		memset (target, 0, sizeof(target));
@@ -1983,7 +1983,7 @@ void Load_LightFile () {
 			else if (!Q_stricmp (key, "spawnflags"))
 				flag = atoi (value);
 			else if (!Q_stricmp (key, "fogLight"))
-				fog = atof (value);
+				fogLight = atof (value);
 			else if (!Q_stricmp (key, "fogDensity"))
 				fogDensity = atof (value);
 
@@ -1994,7 +1994,7 @@ void Load_LightFile () {
 		if (VectorCompare(occRad, nullVec))
 			VectorScale(radius, 0.75, occRad);
 
-		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, qtrue, shadow, ambient, cone, qfalse, flare, fOrg, fSize, target, flag, fog, fogDensity, occOrg, occRad);
+		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, qtrue, shadow, ambient, cone, qfalse, flare, fOrg, fSize, target, flag, fogLight, fogDensity, occOrg, occRad);
 		numLights++;
 	}
 	Com_Printf (""S_COLOR_MAGENTA"Load_LightFile:"S_COLOR_WHITE" add "S_COLOR_GREEN"%i"S_COLOR_WHITE" world lights\n", numLights);

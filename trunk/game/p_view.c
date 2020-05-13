@@ -499,7 +499,7 @@ void SV_CalcBlend (edict_t *ent) {
 
 	// add for damage
 	if (ent->client->damage_alpha > 0) {
-		if (!r_radialBlur->value)
+	//	if (!r_radialBlur->value)
 			SV_AddBlend (1.0, 0, 0, 0.2, ent->client->ps.blend);
 	//	else
 			ent->client->ps.rdflags |= RDF_PAIN;

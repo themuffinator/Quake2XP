@@ -121,8 +121,6 @@ typedef struct {
 	int (*modelindex) (char *name);
 	int (*soundindex) (char *name);
 	int (*imageindex) (char *name);
-	
-	int	(*animindex)  (char* name); //md5
 
 	void (*setmodel) (edict_t *ent, char *name);
 

@@ -39,18 +39,18 @@ R_InitEngineTextures
 */
 
 void CreateDSTtex(void) {
-	int		i;
-	image_t* image;
+	image_t	*image;
 	uchar	dist[16][16][4];
-	int				x, y;
+	int		i, x, y;
 
 	for (x = 0; x < 16; x++)
-	for (y = 0; y < 16; y++) {
-		dist[x][y][0] = rand () % 255;
-		dist[x][y][1] = rand () % 255;
-		dist[x][y][2] = rand () % 48;
-		dist[x][y][3] = rand () % 48;
-	}
+		for (y = 0; y < 16; y++) {
+			dist[x][y][0] = rand () % 255;
+			dist[x][y][1] = rand () % 255;
+			dist[x][y][2] = rand () % 48;
+			dist[x][y][3] = rand () % 48;
+		}
+
 	// find a free image_t
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (!image->texnum)
