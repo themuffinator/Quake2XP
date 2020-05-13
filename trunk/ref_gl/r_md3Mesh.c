@@ -4,6 +4,9 @@
 */
 #include "r_local.h"
 
+#define sign(x) ((x)<0 ? (-1) : (1))
+#define DIV_EPSILON 0.00001 
+
 int VectorCompareEpsilon(vec3_t v1, vec3_t v2, float epsilon)
 {
 	if (fabs(v1[0] - v2[0]) > epsilon)
@@ -42,6 +45,14 @@ void CalcTangent4MD3(index_t *index, md3Vertex_t *vertices, md3ST_t *texcos, vec
 		VectorNormalize(vec2);
 		CrossProduct(vec1, vec2, planes[i]);
 	}
+	// Berserker's fix: some models could have degenerate triangles (or strongly elongated)
+	//  corrected the divisor so that it was not very close to zero, otherwise we get division by zero or +/- INF
+	if (fabs(planes[0][0]) <= DIV_EPSILON)
+		planes[0][0] = 0.01 * sign(planes[0][0]);
+	if (fabs(planes[1][0]) <= DIV_EPSILON)
+		planes[1][0] = 0.01 * sign(planes[1][0]);
+	if (fabs(planes[2][0]) <= DIV_EPSILON)
+		planes[2][0] = 0.01 * sign(planes[2][0]);
 
 	Tangent[0] = -planes[0][1] / planes[0][0];
 	Tangent[1] = -planes[1][1] / planes[1][0];

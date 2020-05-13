@@ -135,6 +135,7 @@ typedef unsigned int		uint;
 typedef ushort				index_t;
 typedef uint				index32_t;
 typedef const char			cchar;
+typedef unsigned char		uchar;
 
 void Set_FontShader (qboolean enable);
 

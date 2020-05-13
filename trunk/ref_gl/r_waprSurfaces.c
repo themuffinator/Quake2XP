@@ -32,7 +32,7 @@ void R_AddWarpPolygons(msurface_t *fa) {
 	int			numIdx = 0, numVerts = 0;	
 
 	if (fa->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
-		alpha = (fa->texInfo->flags & SURF_TRANS33) ? 0.33f : 0.66f;
+		alpha =0.33f;
 		qglUniform1i (U_WATER_TRANS, 1);
 
 	}

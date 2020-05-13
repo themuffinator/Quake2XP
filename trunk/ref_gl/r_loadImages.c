@@ -38,15 +38,12 @@ R_InitEngineTextures
 ==================
 */
 
-void CreateDSTTex_ARB (void) {
-	unsigned char	dist[16][16][4];
+void CreateDSTtex(void) {
+	int		i;
+	image_t* image;
+	uchar	dist[16][16][4];
 	int				x, y;
 
-#ifdef _WIN32
-	srand (GetTickCount64());
-#else
-	srand (time (NULL));
-#endif
 	for (x = 0; x < 16; x++)
 	for (y = 0; y < 16; y++) {
 		dist[x][y][0] = rand () % 255;
@@ -54,14 +51,39 @@ void CreateDSTTex_ARB (void) {
 		dist[x][y][2] = rand () % 48;
 		dist[x][y][3] = rand () % 48;
 	}
+	// find a free image_t
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures) {
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
 
-	r_DSTTex = GL_LoadPic ("***r_DSTTex***", (byte *)dist, 16, 16, it_pic, 24);
-	
+	strcpy(image->name, "r_DSTTex");
+
+	image->width = 16;
+	image->height = 16;
+	image->upload_width = 16;
+	image->upload_height = 16;
+	image->type = it_pic;
+	qglGenTextures(1, &image->texnum);
+	r_DSTTex = image;
+
 	qglBindTexture(GL_TEXTURE_2D, r_DSTTex->texnum);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 16, 16);
+	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, dist);
+
+	r_DSTTex->handle = glGetTextureHandleARB(r_DSTTex->texnum);
+	glMakeTextureHandleResidentARB(r_DSTTex->handle);
 }
 
 
@@ -95,8 +117,8 @@ image_t *R_CreateTexture(char *texName, uint targetTex, uint intFormat, uint for
 	qglBindTexture	(targetTex, image->texnum);
 	qglTexParameteri(targetTex, GL_TEXTURE_WRAP_S, warpS);
 	qglTexParameteri(targetTex, GL_TEXTURE_WRAP_T, warpT);
-	qglTexParameterf(targetTex, GL_TEXTURE_MIN_FILTER, filterMin);
-	qglTexParameterf(targetTex, GL_TEXTURE_MAG_FILTER, filterMag);
+	qglTexParameteri(targetTex, GL_TEXTURE_MIN_FILTER, filterMin);
+	qglTexParameteri(targetTex, GL_TEXTURE_MAG_FILTER, filterMag);
 	
 //	qglTexImage2D(targetTex, 0, intFormat, width, height, 0, format, imageType, NULL);
 	
@@ -632,7 +654,7 @@ void R_InitEngineTextures (void) {
 	if (!skinBump)
 		skinBump = r_notexture;
 
-	CreateDSTTex_ARB ();
+	CreateDSTtex();
 	Load3dLut();
 
 	r_depthTex		=	R_CreateTexture("***r_depthTex***", GL_TEXTURE_RECTANGLE, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_INT);

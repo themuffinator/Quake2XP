@@ -203,7 +203,7 @@ void R_DrawAlphaSurfaces() {
 	qglUniform1f(U_REFR_THICKNESS0, 150.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(U_COLOR_MUL, colorScale);
+	qglUniform1f(U_COLOR_MUL, 0.5);
 	qglUniform1i(U_REFR_ALPHA_MASK, 0);
 
 	float blurScale = 18.88 * ((float)vid.width / 1024.0);
@@ -244,8 +244,8 @@ void R_DrawWarpSurfaces(qboolean bmodel) {
 	qglUniform1f(U_WATHER_THICKNESS, 150.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(U_COLOR_MUL, 1.0);
-	qglUniform1f(U_AMBIENT_LEVEL, ambient);
+	qglUniform1f(U_COLOR_MUL, 0.777);
+	qglUniform1f(U_AMBIENT_LEVEL, 1.0);
 
 	if (!bmodel)
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
