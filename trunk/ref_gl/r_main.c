@@ -1372,7 +1372,6 @@ void R_RegisterCvars(void)
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
-	r_causticIntens =					Cvar_Get("r_causticIntens", "5.0", CVAR_ARCHIVE);
 	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
 	r_textureLodBias =					Cvar_Get("r_textureLodBias", "0.0", CVAR_ARCHIVE);
 	
@@ -1396,9 +1395,8 @@ void R_RegisterCvars(void)
 	r_customHeight =					Cvar_Get("r_customHeight", "768", CVAR_ARCHIVE);
 		
 	hunk_bsp=							Cvar_Get("hunk_bsp", "70", CVAR_ARCHIVE);
-	hunk_md2=							Cvar_Get("hunk_md2", "20", CVAR_ARCHIVE);
+	hunk_md2=							Cvar_Get("hunk_md2", "10", CVAR_ARCHIVE);
 	hunk_md3=							Cvar_Get("hunk_md3", "20", CVAR_ARCHIVE);
-	hunk_sprite=						Cvar_Get("hunk_sprite", "0.08", CVAR_ARCHIVE);
 
 	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
 	r_reliefScale =						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);

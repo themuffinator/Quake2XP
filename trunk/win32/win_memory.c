@@ -33,103 +33,75 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //===============================================================================
 
-int		hunkcount;
-
-
 byte	*membase;
-int		hunkmaxsize;
+int		hunkmaxsize = 0;
 int		cursize;
 char	hunk_name[MAX_OSPATH];
+int		hunkcount;
+int		hunk_total_size = 0;
 
-#define	VIRTUAL_ALLOC
-
-void *Hunk_Begin (int maxsize, char *name) {
+void* Hunk_Begin(int maxsize, char* name)
+{
 	// reserve a huge chunk of memory, but don't commit any yet
 	cursize = 0;
 	hunkmaxsize = maxsize;
-	memset (hunk_name, 0, strlen (name) + 1);
-	strcpy (hunk_name, name);
-
-#ifdef VIRTUAL_ALLOC
-	membase = VirtualAlloc (NULL, maxsize, MEM_RESERVE, PAGE_NOACCESS);
-#else
-	membase = malloc (maxsize);
-	memset (membase, 0, maxsize);
-
-#endif
+	int l = strlen(name);
+	if (l >= MAX_OSPATH)
+		l = MAX_OSPATH - 1;
+	memcpy(hunk_name, name, l);
+	hunk_name[l] = 0;
+	membase = (byte*)calloc(maxsize, 1);
 	if (!membase)
-		Sys_Error ("VirtualAlloc reserve failed %s", hunk_name);
-	return (void *)membase;
-
-
+		Sys_Error("Hunk_Begin: failed on reserving of %i bytes for %s", maxsize, hunk_name);
+	return (void*)membase;
 }
 
-void *Hunk_Alloc (int size) {
-	void	*buf;
-
+void* Hunk_Alloc(int size)
+{
 	// round to cacheline
-	size = (size + 31)&~31;
-
-#ifdef VIRTUAL_ALLOC
-	// commit pages as needed
-	//	buf = VirtualAlloc (membase+cursize, size, MEM_COMMIT, PAGE_READWRITE);
-	buf = VirtualAlloc (membase, cursize + size, MEM_COMMIT, PAGE_READWRITE);
-	if (!buf) {
-		FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError (), MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&buf, 0, NULL);
-		Sys_Error ("VirtualAlloc commit failed.\n%s", buf);
-	}
-#endif
+	size = (size + 31) & ~31;
 	cursize += size;
 	if (cursize > hunkmaxsize)
-		Sys_Error ("Hunk_Alloc overflow");
+		Sys_Error("Hunk_Alloc overflow on %s:\ncursize = %i hunkmaxsize = %i\nIf crashed during model or sprite loading,\ntry to clear cache and/or increase value of 'hunk_*' cvar...\nGamedir: %s", hunk_name, cursize, hunkmaxsize, FS_Gamedir());
 
-	return (void *)(membase + cursize - size);
+	return (void*)(membase + cursize - size);
 }
 
-/*
-int Hunk_End (void)
+
+void Hunk_Free(void* base, int size)
 {
+	if (base)
+		free(base);
+	hunkmaxsize = 0;
+	if (size)
+	{
+		hunk_total_size -= size;
+		hunkcount--;
+	}
+}
 
 // free the remaining unused virtual memory
-#if 0
-void	*buf;
-
-// write protect it
-buf = VirtualAlloc (membase, cursize, MEM_COMMIT, PAGE_READONLY);
-if (!buf)
-Sys_Error ("VirtualAlloc commit failed");
-#endif
-
-hunkcount++;
-//Com_Printf ("hunkcount: %i\n", hunkcount);
-return cursize;
-}
-*/
-
-int Hunk_End () {
-	/// Berserker: освободим неиспользуемые, но зарезервированные блоки памяти!
-#ifdef VIRTUAL_ALLOC
-	int size;
-	size = ceil (cursize / 4096.0f) * 4096;     // page size always is 4096, 8192, etc...
-	if (hunkmaxsize > size)
-		VirtualFree (membase + size, hunkmaxsize - size, MEM_RELEASE);
+byte* needFree;
+int Hunk_End(char *name)
+{
+	byte* newbase;
+	hunk_total_size += cursize;	// учтём размер для статистики
+	hunkcount++;
+	needFree = NULL;
+	if (hunkmaxsize > cursize)
+	{
+		Com_DPrintf("Hunk_End: realloc from %imb to %ikb for %s\n", hunkmaxsize>>20, cursize>>10, name);
+		newbase = (byte*)realloc(membase, cursize);
+		if (newbase != membase)
+		{	// случилась редкая хуйня: realloc при уменьшении блока памяти всё же переместил данные, сука!
+			Com_DPrintf("Hunk_End: realloc() moved memory block, %s will be reload!\n", name);
+			needFree = newbase;
+			hunk_total_size -= cursize;	// не будем учитывать, фейл
+			hunkcount--;
+		}
+	}
 	hunkmaxsize = 0;
-#endif
-	///     hunkcount++;
 	return cursize;
-}
-
-
-
-void Hunk_Free (void *base) {
-	if (base)
-#ifdef VIRTUAL_ALLOC
-		VirtualFree (base, 0, MEM_RELEASE);
-#else
-		free (base);
-#endif
-
-	hunkcount--;
 }
 
 //===============================================================================

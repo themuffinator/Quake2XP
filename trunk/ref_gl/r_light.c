@@ -2722,7 +2722,7 @@ void R_UpdateLightAliasUniforms()
 		qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity * 8.0);
 	else
 		qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);
-	qglUniform1f(U_CAUSTICS_SCALE, r_causticIntens->value);
+	qglUniform1f(U_CAUSTICS_SCALE, 2.5);
 	qglUniform3fv(U_VIEW_POS, 1, r_origin);
 	qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);
 

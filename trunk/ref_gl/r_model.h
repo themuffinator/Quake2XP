@@ -349,8 +349,8 @@ void Mod_Modellist_f (void);
 
 void *Hunk_Begin (int maxsize, char *name);
 void *Hunk_Alloc (int size);
-int Hunk_End (void);
-void Hunk_Free (void *base);
+int Hunk_End (char *name);
+void Hunk_Free (void *base, int size);
 
 void Mod_FreeAll (void);
 void Mod_Free (model_t * mod);

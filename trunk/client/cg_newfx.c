@@ -578,7 +578,7 @@ void CL_Tracker_Shell (vec3_t origin) {
 
 void CL_MonsterPlasma_Shell (vec3_t origin) {
 	vec3_t dir;
-	int i, color;
+	int i, color=0;
 	cparticle_t *p;
 
 

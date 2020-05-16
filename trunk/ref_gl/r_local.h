@@ -264,8 +264,6 @@ cvar_t	*r_colorBalanceBlue;
 
 cvar_t *vid_ref;
 
-cvar_t	*r_causticIntens;
-
 cvar_t	*r_displayRefresh;
 
 cvar_t	*r_screenShot;
@@ -317,7 +315,6 @@ cvar_t	*r_useLightOcclusions;
 cvar_t	*hunk_bsp;
 cvar_t	*hunk_md2;
 cvar_t	*hunk_md3;
-cvar_t	*hunk_sprite;
 
 cvar_t	*r_reliefMapping;
 cvar_t	*r_reliefScale;

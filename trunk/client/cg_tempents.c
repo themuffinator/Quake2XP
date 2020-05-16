@@ -234,6 +234,7 @@ int CL_ParseBeam (struct model_s *model) {
 		b->model = model;
 		b->endtime = cl.time + 200;
 		ents.model = b->model;
+		ents.flags = 0;
 		ents.flags |= RF_NOSHADOW;
 		VectorCopy (start, b->start);
 		VectorCopy (end, b->end);

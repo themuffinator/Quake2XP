@@ -48,7 +48,6 @@ extern qboolean relightMap;
 
 byte Normal2Index(const vec3_t vec);
 
-int bspSize, aliasSize, spriteSize;
 int numentitychars;
 byte *mod_base;
 int *mod_xplmOffsets;		// face light offsets from .xplm file, freed after level is loaded
@@ -371,7 +370,52 @@ void Mod_Init(void) {
 	CL_ClearDecals();
 }
 
+// Berserkers memory cache
+unsigned	rhs_checksum;
+unsigned Mod_ReadHunkSize(void* data, int modfilelen)
+{
+	FILE* f;
+	int			len;
+	unsigned	buf[2];
+	char		name[MAX_OSPATH];
 
+	rhs_checksum = Com_BlockChecksum(data, modfilelen);
+
+	Com_sprintf(name, sizeof(name), "%s/cachexp/%s.mem", FS_Gamedir(), loadmodel->name);
+	f = fopen(name, "rb");
+	if (!f)
+		return 0;
+
+	len = fread(buf, 1, sizeof(buf), f);
+	fclose(f);
+	if (len != sizeof(buf))
+		return 0;
+
+	if (buf[0] != rhs_checksum)
+		return 0;
+
+	return buf[1];
+}
+
+
+void Mod_WriteHunkSize(int size)
+{
+	FILE* f;
+	unsigned	buf[2];
+	char		name[MAX_OSPATH];
+
+	buf[0] = rhs_checksum;
+	buf[1] = size;
+
+	Com_sprintf(name, sizeof(name), "%s/cachexp/%s.mem", FS_Gamedir(), loadmodel->name);
+	FS_CreatePath(name);
+	f = fopen(name, "wb");
+	if (f)
+	{
+		fwrite(buf, 1, sizeof(buf), f);
+		fclose(f);
+	}
+}
 
 /*
 ==================
@@ -383,7 +427,7 @@ Loads in a model for the given name
 model_t *Mod_ForName(char *name, qboolean crash) {
 	model_t		*mod;
 	unsigned	*buf;
-	int			i, wasMD5 = 0;
+	int			i;
 
 	if (!name[0])
 		VID_Error(ERR_DROP, "Mod_ForName: NULL name");
@@ -455,27 +499,34 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 	// 
 	// fill it in
 	// 
+	unsigned hs = Mod_ReadHunkSize(buf, modfilelen);
+	int hunk_size = 0;
+	if (hs)
+	{
+		hunk_size = hs & 0x7FFFFFFF;
+		Com_DPrintf("Hunk size of '%s' = %i bytes, loaded from cache.\n", mod->name, hunk_size);
+	}
 
 		switch (LittleLong(*(unsigned *)buf)) 
 		{
 		case IDALIASHEADER:
-			loadmodel->extraData = Hunk_Begin(hunk_md2->value * 1048576, name);
+			loadmodel->extraData = Hunk_Begin(hunk_size ? hunk_size : hunk_md2->integer <<20, name);
 			Mod_LoadAliasModel(mod, buf);
 			break;
 		
 		case IDMD3HEADER:
-			loadmodel->extraData = Hunk_Begin(hunk_md3->value * 1048576, name);
+			loadmodel->extraData = Hunk_Begin(hunk_size ? hunk_size : hunk_md3->integer <<20, name);
 			Mod_LoadMD3(mod, buf);
 			break;
 
 		case IDSPRITEHEADER:
-			loadmodel->extraData = Hunk_Begin(hunk_sprite->value * 1048576, name);
+			loadmodel->extraData = Hunk_Begin(hunk_size ? hunk_size : 1 <<20, name);
 			Mod_LoadSpriteModel(mod, buf);
 			break;
 
 
 		case IDBSPHEADER:
-			loadmodel->extraData = Hunk_Begin(hunk_bsp->value * 1048576, name);
+			loadmodel->extraData = Hunk_Begin(hunk_size ? hunk_size : hunk_bsp->integer <<20, name);
 			Mod_LoadBrushModel(mod, buf);
 			break;
 
@@ -484,7 +535,9 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 			break;
 		}
 
-	loadmodel->extraDataSize = Hunk_End();
+	loadmodel->extraDataSize = Hunk_End(loadmodel->name);
+
+	Mod_WriteHunkSize(loadmodel->extraDataSize);
 
 	FS_FreeFile(buf);
 
@@ -1953,8 +2006,6 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 
 		starmod->numLeafs = bm->visleafs;
 	}
-
-	bspSize += loadmodel->memorySize;
 }
 
 /*
@@ -2405,8 +2456,6 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 
 	mod->memorySize += LittleLong(pinmodel->ofs_end);
 
-	aliasSize += mod->memorySize;
-
 	// byte swap the header fields and sanity check
 	for (i = 0; i < sizeof(dmdl_t)* 0.25; i++)
 		((int *)pheader)[i] = LittleLong(((int *)buffer)[i]);
@@ -2645,8 +2694,6 @@ void Mod_LoadSpriteModel(model_t * mod, void *buffer) {
 	sprout = (dsprite_t*)Hunk_Alloc(modfilelen);
 
 	mod->memorySize += modfilelen;
-
-	spriteSize += mod->memorySize;
 
 	sprout->ident = LittleLong(sprin->ident);
 	sprout->version = LittleLong(sprin->version);
@@ -2896,17 +2943,6 @@ void R_EndRegistration(void) {
 	}
 	GL_FreeUnusedImages();
 
-	total = bspSize + aliasSize + spriteSize;
-	Com_DPrintf("=============="S_COLOR_YELLOW" model memory allocated"S_COLOR_WHITE" ==============\n");
-	Com_DPrintf("Size of Bsp model memory    "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n", bspSize, bspSize >> 20);
-	Com_DPrintf("Size of Alias model memory  "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n", aliasSize, aliasSize >> 20);
-	Com_DPrintf("Size of Sprite model memory "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n", spriteSize, spriteSize >> 20);
-	Com_DPrintf("Size of Total model memory  "S_COLOR_GREEN"%i"S_COLOR_WHITE" Bytes ("S_COLOR_GREEN"%i"S_COLOR_WHITE" Mb)\n", total, total >> 20);
-	Com_DPrintf("====================================================\n");
-
-	bspSize = 0;
-	aliasSize = 0;
-	spriteSize = 0;
 	qglClear(GL_COLOR_BUFFER_BIT);
 	qglClearColor(0.0, 0.0, 0.0, 0.0);
 
@@ -2926,7 +2962,7 @@ Mod_Free
 */
 
 void Mod_Free(model_t * mod) {
-	Hunk_Free(mod->extraData);
+	Hunk_Free(mod->extraData, mod->extraDataSize);
 
 	if (mod->type == mod_alias) {
 		if (mod->neighbours)
