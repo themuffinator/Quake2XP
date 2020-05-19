@@ -281,6 +281,7 @@ char *fastsound_name[FAST_SOUNDS_TOTAL] = {
 	"player/step4.wav",			// 37
 	"weapons/tesla.wav",		// 38
 	"weapons/disrupthit.wav"	// 39
+	"weapons/railHit.wav"		// 40
 };
 
 // Resource descriptors
@@ -294,14 +295,12 @@ void S_fastsound_kill_descriptors_pool (unsigned count,
 void S_fastsound_queue (vec3_t origin, int entnum, int entchannel,
 	ALuint bufferNum, float fvol, float attenuation,
 	unsigned timeofs);
-void S_fastsound (vec3_t origin, int entnum, int entchannel,
-	ALuint bufferNum, float fvol, float attenuation);
 
 ALuint cl_sfx_idlogo;
 
 void CL_fast_sound_init (void) {
 	extern ALuint cl_sfx_lashit, cl_sfx_railg, cl_sfx_rockexp,
-		cl_sfx_grenexp, cl_sfx_watrexp, cl_sfx_lightning, cl_sfx_disrexp;
+		cl_sfx_grenexp, cl_sfx_watrexp, cl_sfx_lightning, cl_sfx_disrexp, cl_sfx_railHit;
 
 	int i = FAST_SOUNDS_TOTAL;
 	// Register waves
@@ -326,7 +325,7 @@ void CL_fast_sound_init (void) {
 	cl_sfx_lava = fastsound_descriptor[id_cl_sfx_lava];
 	cl_sfx_shell = fastsound_descriptor[id_cl_sfx_shell];
 	cl_sfx_debris = fastsound_descriptor[id_cl_sfx_debris];
-
+	cl_sfx_railHit = fastsound_descriptor[id_cl_sfx_railHit];
 	// RAFAEL
 	// cl_sfx_plasexp = S_RegisterSound ("weapons/plasexpl.wav");
 	// willow: i have no solution for sexual flowered sounds now...

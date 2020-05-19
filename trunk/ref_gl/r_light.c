@@ -2715,7 +2715,7 @@ void R_UpdateLightAliasUniforms()
 
 	qglUniform1f(U_COLOR_MUL, 1.0);
 	qglUniform1i(U_AMBIENT_LIGHT, (int)currentShadowLight->isAmbient);
-	qglUniform1f(U_SPECULAR_SCALE, r_specularScale->value);
+	qglUniform1f(U_SPECULAR_SCALE, 1.0);
 	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
 	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);
 	if (currententity->flags & RF_WEAPONMODEL)

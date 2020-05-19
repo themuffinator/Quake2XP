@@ -687,7 +687,8 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum) {
 	
 	if (!entbuf || !useRussianLoc->integer) {
 		CMod_LoadEntityString(&header.lumps[LUMP_ENTITIES]);
-		Com_Printf("Russian Localization not found. Use English Localization.\n");
+	//	Com_Printf("Russian Localization not found. Use English Localization.\n");
+		Com_Printf("Load bsp entity string...\n");
 	}
 	else {
 		if (entbuf) {
@@ -702,7 +703,8 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum) {
 			FS_FreeFile(entbuf);
 		}
 		if (!entbuf) {
-			Com_Printf("Russian Localization not found. Use English Localization.\n");
+		//	Com_Printf("Russian Localization not found. Use English Localization.\n");
+			Com_Printf("External entity string not found.\n");
 			Cvar_SetInteger("useRussianLoc", 0);
 		}
 		FS_FreeFile(buf);

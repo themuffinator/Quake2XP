@@ -283,7 +283,6 @@ cvar_t	*deathmatch;
 
 cvar_t	*r_drawFlares;
 cvar_t	*r_scaleAutoLightColor;
-cvar_t	*r_lightWeldThreshold;
 
 cvar_t	*r_customWidth;
 cvar_t	*r_customHeight;
@@ -301,11 +300,9 @@ cvar_t	*r_ssaoBlur;
 cvar_t	*r_useBlinnPhongLighting;
 cvar_t	*r_skipStaticLights;
 cvar_t	*r_lightmapScale;
-cvar_t	*r_lightsWeldThreshold;
 cvar_t	*r_debugLights;
 cvar_t	*r_useLightScissors;
 cvar_t	*r_useDepthBounds;
-cvar_t	*r_specularScale;
 cvar_t	*r_ambientSpecularScale;
 cvar_t	*r_useRadiosityBump;
 cvar_t	*r_zNear;

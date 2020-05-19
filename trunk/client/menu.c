@@ -2646,15 +2646,21 @@ LOADGAME MENU
 */
 
 #define	MAX_SAVEGAMES	15
-
+#define MAX_SAVESTRING 512
 static menuframework_s s_savegame_menu;
 
 static menuframework_s s_loadgame_menu;
 static menuaction_s s_loadgame_actions[MAX_SAVEGAMES];
 
+static menuaction_s s_quickLoadGame_actions;
+
 char m_savestrings[MAX_SAVEGAMES][MAX_OSPATH];
 char m_savesInfos[MAX_SAVEGAMES][MAX_OSPATH];
-char m_savemapnames[MAX_SAVEGAMES][4096];
+char m_savemapnames[MAX_SAVEGAMES][MAX_OSPATH];
+
+static char m_quicksavestring[32];
+static qboolean m_quicksavevalid;
+char m_quickSavesInfos[MAX_OSPATH];
 
 qboolean m_savevalid[MAX_SAVEGAMES];
 
@@ -2675,13 +2681,14 @@ void Create_MapNamesList()
 		}
 		else
 		{
-			if(f) //paranoia
-				fseek(f, 0x20, SEEK_SET); //move to map name
-
+			fseek(f, 0x20, SEEK_SET); //move to map name
 			fread(m_savemapnames[i], sizeof(m_savemapnames[i]), 1, f);
 
-			if (m_savemapnames[i][0] == '*') 
-					strcpy((char*)m_savemapnames[i][0], "");
+			if (m_savemapnames[i][0] == '*')
+			{
+				for (j = 0; j < MAX_OSPATH - 1; j++)
+					m_savemapnames[i][j] = m_savemapnames[i][j + 1];
+			}
 
 			for (j = 0; j < strlen(m_savemapnames[i]); j++)
 			{
@@ -2697,6 +2704,29 @@ void Create_MapNamesList()
 	}
 }
 
+void Create_QuickLoadList()
+{
+	FILE* f;
+	char	name[MAX_OSPATH], tmp[32];
+
+	Com_sprintf(name, sizeof(name), "%s/save/quick/comment.sav", FS_Gamedir());
+	f = fopen(name, "rb");
+	if (!f)
+	{
+		strcpy(m_quicksavestring, "QUICKSAVE <EMPTY>");
+		m_quicksavevalid = qfalse;
+	}
+	else
+	{
+		fseek(f, 12, SEEK_SET); //move to map name
+		fread(tmp, sizeof(tmp), 1, f);
+		Com_sprintf(m_quicksavestring, sizeof(m_quicksavestring), "QUICKSAVE: %s", tmp);
+
+		fclose(f);
+		m_quicksavevalid = qtrue;
+	}
+
+}
 
 
 void Create_Savestrings(void) {
@@ -2756,6 +2786,24 @@ void Create_SavesInfoss(void) {
 			m_savevalid[i] = qtrue;
 		}
 	}
+}
+
+void Create_QuickSavesInfoss(void) {
+	FILE* f;
+	char name[MAX_OSPATH];
+
+		Com_sprintf(name, sizeof(name), "%s/save/quick/saveinfo.sav", FS_Gamedir());
+		f = fopen(name, "rb");
+		if (!f) {
+			strcpy(m_quickSavesInfos, "");
+			m_quicksavevalid = qfalse;
+		}
+		else {
+			fseek(f, 0, SEEK_SET);
+			fread(m_quickSavesInfos, sizeof(m_quickSavesInfos), 1, f);
+			fclose(f);
+			m_quicksavevalid = qtrue;
+		}
 }
 
 void DrawSavedShot(void* m)
@@ -2835,6 +2883,47 @@ void DrawSavedShot(void* m)
 
 }
 
+void DrawQuickSavedShot(void* m)
+{
+	int				w, h, picWidth, center;
+	menuaction_s*	menu = (menuaction_s*)m;
+	char			savePic[MAX_QPATH];
+	float			aspect;
+
+	Draw_GetPicSize(&w, &h, "m_banner_load_game");
+	picWidth = (viddef.width * 0.5) - (w * 0.25) + 10 * (int)cl_fontScale->value;
+	picWidth += 90;
+
+	// fucking hack, lol
+	int wtf;
+	if (cl_fontScale->integer >= 3)
+		wtf = 14;
+	else
+		wtf = 16;
+
+	strcpy(savePic, va("/save/quick/shot.jpg"));
+	Draw_GetPicSize(&w, &h, savePic);
+	aspect = (float)w / (float)h;
+
+	if (m_quicksavevalid){
+
+		R_FreePic(savePic); // update pic cache
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (cl_fontScale->integer - 1), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+
+		Set_FontShader(qtrue);
+		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_quickSavesInfos) * (int)cl_fontScale->value * 6) * 0.5;
+		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_quickSavesInfos);
+		Set_FontShader(qfalse);
+	}
+	else {
+		Draw_GetPicSize(&w, &h, "nosaveshot");
+		aspect = (float)w / (float)h;
+		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, "nosaveshot");
+	}
+}	
+
 void LoadGameCallback(void *self) {
 	menuaction_s *a = (menuaction_s *)self;
 
@@ -2843,31 +2932,62 @@ void LoadGameCallback(void *self) {
 	M_ForceMenuOff();
 }
 
+void QuickLoadGameCallback(void* self) {
+	menuaction_s* a = (menuaction_s*)self;
+
+	Cbuf_AddText(va("load quick\n"));
+	M_ForceMenuOff();
+}
+
 void LoadGame_MenuInit(void) {
 	int i, w, h;
 
+	drawIDlogo = qfalse;
+	
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
 
 	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value;
-	s_loadgame_menu.y = viddef.height * 0.25 + h * 0.5 + 8 * cl_fontScale->value;
+	s_loadgame_menu.y = viddef.height * 0.2 + h * 0.5 + 8 * cl_fontScale->value;
 	s_loadgame_menu.x *= 0.5;
 
 	s_loadgame_menu.nitems = 0;
 
+	// The quicksave slot...
+	Create_QuickLoadList();
+	Create_QuickSavesInfoss();
+	
+	s_quickLoadGame_actions.generic.type = MTYPE_ACTION;
+	s_quickLoadGame_actions.generic.name = m_quicksavestring;
+	s_quickLoadGame_actions.generic.flags = QMF_LEFT_JUSTIFY;
+	s_quickLoadGame_actions.generic.x = 0;
+	s_quickLoadGame_actions.generic.y = 10 * cl_fontScale->value;
+	s_quickLoadGame_actions.generic.localdata[0] = 0;
+	s_quickLoadGame_actions.generic.statusbarfunc = DrawQuickSavedShot;
+
+	if (!m_quicksavevalid)
+	{
+		s_quickLoadGame_actions.generic.callback = NULL;
+	}
+	else
+	{
+		s_quickLoadGame_actions.generic.callback = QuickLoadGameCallback;
+	}
+
+	Menu_AddItem(&s_loadgame_menu, &s_quickLoadGame_actions);
+	
 	Create_Savestrings();
 	Create_SavesInfoss();
 	Create_MapNamesList();
-	
-	drawIDlogo = qfalse;
 
 	for (i = 0; i < MAX_SAVEGAMES; i++) {
+		
 		s_loadgame_actions[i].generic.name = m_savestrings[i];
 		s_loadgame_actions[i].generic.flags = QMF_LEFT_JUSTIFY;
 		s_loadgame_actions[i].generic.localdata[0] = i;
 		s_loadgame_actions[i].generic.callback = LoadGameCallback;
 
 		s_loadgame_actions[i].generic.x = 0;
-		s_loadgame_actions[i].generic.y = (i) * 10 * cl_fontScale->value;
+		s_loadgame_actions[i].generic.y = (i+3) * 10 * cl_fontScale->value;
 		if (i > 0)				// separate from autosave
 			s_loadgame_actions[i].generic.y += 10 * cl_fontScale->value;
 
@@ -2876,6 +2996,7 @@ void LoadGame_MenuInit(void) {
 
 		Menu_AddItem(&s_loadgame_menu, &s_loadgame_actions[i]);
 	}
+	
 }
 
 void LoadGame_MenuDraw(void) {
@@ -4765,7 +4886,7 @@ void M_Draw(void) {
 		if (!drawIDlogo)
 			R_MenuBackGround();
 
-		M_DrawBackgroundModel();		
+		M_DrawBackgroundModel();
 	} 
 	else
 		R_MenuBackGround();
