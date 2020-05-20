@@ -294,7 +294,6 @@ cvar_t	*s_fxVolume;
 cvar_t	*s_show;
 cvar_t	*s_musicVolume;
 cvar_t	*s_musicSrc;
-cvar_t	*s_musicRandom;
 cvar_t	*s_useEfx;
 cvar_t	*s_device;
 cvar_t	*s_initSound;
@@ -338,8 +337,7 @@ void S_Streaming_Stop (void);
 typedef enum {
 	MUSIC_NONE, 
 	MUSIC_CD, 
-	MUSIC_FILES, 
-	MUSIC_OTHER_FILES
+	MUSIC_FILES 
 } music_type_t;
 
 void Music_Init (void);

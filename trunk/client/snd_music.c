@@ -37,14 +37,6 @@ void Music_Init (void) {
 		case MUSIC_FILES:
 			Com_Printf ("=====================================\n\n");
 			break;
-		case MUSIC_OTHER_FILES:
-			fsList = FS_ListFilesAll ("music/*", &fsNumFiles, 0, SFF_SUBDIR);
-			fsIndex = -1;
-
-			if (fsList != NULL)
-				Com_DPrintf (S_COLOR_YELLOW "found "S_COLOR_GREEN"%d "S_COLOR_YELLOW"music files\n\n", fsNumFiles);
-			Com_Printf ("====================================\n\n");
-			break;
 		default:
 			Cvar_SetValue ("s_musicSrc", MUSIC_NONE);
 			music_type = MUSIC_NONE;
@@ -64,9 +56,6 @@ void Music_Shutdown (void) {
 			CDAudio_Shutdown ();
 			break;
 		case MUSIC_FILES:
-			break;
-		case MUSIC_OTHER_FILES:
-			FS_FreeList (fsList, fsNumFiles);
 			break;
 	}
 	music_type = MUSIC_NONE;
@@ -92,26 +81,18 @@ qboolean Music_PlayFile (const char *name, qboolean hasExt) {
 		return qtrue;
 	}
 	else {
-		Com_Printf (S_COLOR_YELLOW "Music_Play: unable to load \"%s\"\n", name);
+		Com_DPrintf (S_COLOR_YELLOW "Music_Play: unable to load \"%s\"\n", name);
 		return qfalse;
 	}
 }
 
 void Music_Play (void) {
-	int track, count;
+	int track;
 	char name[MAX_QPATH];
 
 	Music_Stop ();
 
-	if (s_musicRandom->integer)
-		// original soundtrack has tracks 2 to 11
-		track = 2 + rand () % 10;
-	else
-		track = atoi (cl.configstrings[CS_CDTRACK]);
-
-	if (music_type != MUSIC_OTHER_FILES &&
-		track == 0 && !s_musicRandom->integer)
-		return;
+	track = atoi (cl.configstrings[CS_CDTRACK]);
 
 	switch (music_type) {
 		case MUSIC_CD:
@@ -129,23 +110,13 @@ void Music_Play (void) {
 				Q_snprintfz(name, sizeof(name), "music/track%02i", track);
 			Music_PlayFile (name, qfalse);
 			break;
-
-		case MUSIC_OTHER_FILES:
-			if (fsList == NULL)
-				return;
-
-			if (s_musicRandom->integer)
-				fsIndex = rand () % fsNumFiles;
-			else
-				fsIndex = (fsIndex + 1) % fsNumFiles;
-			count = fsNumFiles;
-			while (count-- > 0) {
-				if (Music_PlayFile (fsList[fsIndex], qtrue))
-					return;
-				fsIndex = (fsIndex + 1) % fsNumFiles;
-			}
-			break;
 	}
+}
+
+void Music_Play2(char *name) {
+
+	Music_Stop();
+	Music_PlayFile(name, qfalse);
 }
 
 void Music_Stop (void) {
@@ -159,7 +130,6 @@ void Music_Stop (void) {
 			CDAudio_Stop ();
 			break;
 		case MUSIC_FILES:
-		case MUSIC_OTHER_FILES:
 			music_handle->close (music_handle->f);
 			S_Streaming_Stop ();
 			break;
@@ -177,7 +147,6 @@ void Music_Pause (void) {
 			CDAudio_Activate (qfalse);
 			break;
 		case MUSIC_FILES:
-		case MUSIC_OTHER_FILES:
 			alSourcePause (source_name[CH_STREAMING]);
 			break;
 	}
@@ -194,7 +163,6 @@ void Music_Resume (void) {
 			CDAudio_Activate (qtrue);
 			break;
 		case MUSIC_FILES:
-		case MUSIC_OTHER_FILES:
 			alSourcePlay (source_name[CH_STREAMING]);
 			break;
 	}
@@ -217,18 +185,11 @@ void Music_Update (void) {
 		Music_Play ();
 		s_musicSrc->modified = qfalse;
 		s_musicVolume->modified = qfalse;
-		s_musicRandom->modified = qfalse;
 		return;
 	}
 
 	if (music_type == MUSIC_NONE)
 		return;
-
-	if (s_musicRandom->modified) {
-		s_musicRandom->modified = qfalse;
-		Music_Play ();
-		return;
-	}
 
 	if (s_musicVolume->modified) {
 		switch (music_type) {
@@ -236,7 +197,6 @@ void Music_Update (void) {
 				Cvar_SetValue ("cd_volume", s_musicVolume->value);
 				break;
 			case MUSIC_FILES:
-			case MUSIC_OTHER_FILES:
 				alSourcef (source_name[CH_STREAMING], AL_GAIN, s_musicVolume->value);
 				break;
 		}
@@ -252,8 +212,7 @@ void Music_Update (void) {
 			break;
 
 		case MUSIC_FILES:
-		case MUSIC_OTHER_FILES:
-			if (mstat != MSTAT_PLAYING || S_Streaming_NumFreeBufs () == 0)
+		if (mstat != MSTAT_PLAYING || S_Streaming_NumFreeBufs () == 0)
 				return;
 			// Play a portion of the current file
 			n = music_handle->read(music_handle->f, music_buffer, MAX_STRBUF_SIZE);

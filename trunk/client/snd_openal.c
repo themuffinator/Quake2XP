@@ -200,7 +200,6 @@ void S_Init (int hardreset) {
 		s_show = Cvar_Get ("s_show", "0", 0);
 		s_musicVolume = Cvar_Get ("s_musicVolume", "0.8", CVAR_ARCHIVE);
 		s_musicSrc = Cvar_Get ("s_musicSrc", "1", CVAR_ARCHIVE);
-		s_musicRandom = Cvar_Get ("s_musicRandom", "0", CVAR_ARCHIVE);
 		s_device = Cvar_Get ("s_device", "", CVAR_ARCHIVE);
 		s_useEfx = Cvar_Get ("s_useEfx", "1", CVAR_ARCHIVE);
 		s_initSound = Cvar_Get ("s_initSound", "1", CVAR_NOSET);
