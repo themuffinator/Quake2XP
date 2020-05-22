@@ -13,7 +13,6 @@ layout(location = U_ENV_SCALE)		uniform float	u_envScale;
 layout(location = U_ENV_PASS)		uniform int		u_isEnvMap;
 layout(location = U_SHELL_PASS)		uniform	int		u_isShell;
 layout(location = U_USE_SSAO)		uniform int		u_ssao;
-layout(location = U_COLOR_MUL)		uniform float	u_ColorModulate;
 layout(location = U_COLOR_OFFSET)	uniform float	u_AddShift; 
 
 void main ()
@@ -39,8 +38,6 @@ void main ()
 
 	if (u_isEnvMap == 1)
 		fragData.rgb += texture(u_env, v_envCoord).rgb * glow.a * u_envScale;
-
-	fragData.rgb *= u_ColorModulate;
 
 	fragData.a = 1.0;
 }

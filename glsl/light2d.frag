@@ -1,5 +1,3 @@
-//layout (binding = 0) uniform sampler2D	u_map;
-//layout (binding = 1) uniform sampler2D	u_normalMap;
 layout (bindless_sampler, location  = U_TMU0)  uniform sampler2D	u_map;
 layout (bindless_sampler, location  = U_TMU1)  uniform sampler2D	u_normalMap;
 

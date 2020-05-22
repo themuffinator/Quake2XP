@@ -1,10 +1,3 @@
-/*
-layout (binding = 0) uniform sampler2D		u_deformMap;
-layout (binding = 1) uniform sampler2D		u_colorMap;
-layout (binding = 2) uniform sampler2DRect	g_colorBufferMap;
-layout (binding = 3) uniform sampler2DRect	g_depthBufferMap;
-*/
-
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_deformMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_colorMap;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2DRect	g_colorBufferMap;

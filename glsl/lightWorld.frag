@@ -13,7 +13,6 @@ layout (bindless_sampler, location  = U_TMU2) uniform samplerCube	u_CubeFilterMa
 layout (bindless_sampler, location  = U_TMU3) uniform sampler2D		u_Caustics;
 layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_RghMap;
 
-layout(location = U_COLOR_MUL)			uniform float	u_ColorModulate;
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
 layout(location = U_RGH_SCALE)			uniform float	u_roughnessScale;
 layout(location = U_COLOR)				uniform vec4 	u_LightColor;
@@ -83,8 +82,6 @@ void main (void) {
 		tmp *= u_CausticsModulate;
 		diffuseMap = tmp + diffuseMap;
 	}
-
-	//diffuseMap *= u_ColorModulate;
 
 	if(u_isAmbient == 1) {
 		fragData = diffuseMap * LambertLighting(normalMap.xyz, L) * u_LightColor * attenMap;

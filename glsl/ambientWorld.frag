@@ -18,7 +18,6 @@ layout (bindless_sampler, location = U_TMU3) uniform sampler2DRect	u_ssaoMap;
 
 layout (location = U_LM_TYPE)			uniform int		u_LightMapType;
 layout (location = U_USE_SSAO)			uniform int		u_ssao;
-layout (location = U_COLOR_MUL)			uniform float	u_ColorModulate;
 layout (location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;    
 layout (location = U_SPECULAR_SCALE)	uniform float	u_specularScale;
 layout (location = U_LAVA_PASS)			uniform int		u_isLava;
@@ -125,8 +124,8 @@ void main (void) {
 		fragData.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
 
 	// fake AO/cavity
-//	fragData.xyz *= normalMap.z * 0.5 + 0.5;
-	fragData.xyz *= u_ColorModulate * u_ambientScale;
+	fragData.xyz *= normalMap.z * 0.5 + 0.5;
+	fragData.xyz *= u_ambientScale;
 	fragData += vec4(glowMap, 1.0);
 	fragData.w = 1.0;
 

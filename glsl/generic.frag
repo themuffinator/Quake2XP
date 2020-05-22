@@ -1,12 +1,8 @@
-//layout (binding = 0) uniform sampler2D	u_map;
-//layout (binding = 1) uniform sampler2D	u_normalMap;
 layout (bindless_sampler, location  = U_TMU0)  uniform sampler2D	u_map;
 layout (bindless_sampler, location  = U_TMU1)  uniform sampler2D	u_normalMap;
 
-layout(location = U_COLOR)			uniform vec4		u_color;
-layout(location = U_COLOR_MUL)		uniform float		u_colorScale;
-layout(location = U_PARAM_VEC3_0)	uniform vec3		u_lightShift;
-
+layout(location = U_COLOR)			uniform vec4	u_color;
+layout(location = U_PARAM_VEC3_0)	uniform vec3	u_lightShift;
 layout(location = U_CONSOLE_BACK)	uniform int	    u_console;
 layout(location = U_2D_PICS)		uniform int	    u_2dPics;
 layout(location = U_FRAG_COLOR)		uniform int     u_fragColor;
@@ -80,7 +76,7 @@ vec4 diffuse;
 
 if(u_console == 1){
 	
-  diffuse = texture(u_map, v_texCoord.xy);
+	diffuse = texture(u_map, v_texCoord.xy);
 	vec3 normal = normalize(texture(u_normalMap, v_texCoord).rgb * 2.0 - 1.0);
 	float specular = texture(u_normalMap, v_texCoord).a;	
 

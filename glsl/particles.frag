@@ -1,6 +1,3 @@
-//layout (binding = 0) uniform sampler2D		u_colorMap;
-//layout (binding = 1) uniform sampler2DRect	u_depthBufferMap;
-
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_colorMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2DRect	u_depthBufferMap;
 

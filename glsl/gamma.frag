@@ -31,10 +31,24 @@ vec3 ColorVibrance(in vec3 color){
   return color  = mix(vec3(lum), color.rgb, (1.0 + (u_rgbVibrance * (1.0 - (sign(u_rgbVibrance) * mid)))));
 }
 
+#ifndef saturate
+#define saturate(x)    clamp(x, 0.0, 1.0)
+#endif
+
+vec3 ACESFilm(vec3 x)
+{
+    float a = 2.51f;
+    float b = 0.03f;
+    float c = 2.43f;
+    float d = 0.59f;
+    float e = 0.14f;
+    return saturate((x*(a*x+b))/(x*(c*x+d)+e));
+}
 void main(void){
 
 vec3 color = BrightnesContrastSaturation(texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb, u_control.x, u_control.y, u_control.z);
 color = ColorVibrance(color);
+//color = ACESFilm(color);
 fragData.rgb = pow(color, vec3(u_control.w));
 fragData.a = 1.0;
 }

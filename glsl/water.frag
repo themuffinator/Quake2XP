@@ -5,7 +5,6 @@ layout (bindless_sampler, location  = U_TMU3) uniform sampler2DRect	g_depthBuffe
 
 layout(location = U_WATER_DEFORM_MUL)	uniform float	u_deformMul;		// for normal w/o depth falloff
 layout(location = U_WATHER_THICKNESS)	uniform float	u_thickness;
-layout(location = U_COLOR_MUL)			uniform float	u_ColorModulate;
 layout(location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;

@@ -9,7 +9,6 @@ layout (bindless_sampler, location  = U_TMU7) uniform sampler2DRect	g_depthBuffe
 
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
 layout(location = U_CAUSTICS_SCALE)		uniform float	u_CausticsModulate;
-layout(location = U_COLOR_MUL)			uniform float	u_ColorModulate;
 layout(location = U_COLOR)				uniform vec4	u_LightColor;
 layout(location = U_USE_FOG)			uniform int		u_fog;
 layout(location = U_FOG_DENSITY)		uniform float	u_fogDensity;
@@ -39,7 +38,7 @@ in vec3			v_lightSpot;
 in vec3			v_tangent;
 in vec3			v_tst;
 in mat3			v_tangentToView;
-
+in mat4			v_mvMatrix;
 
 #include depth.inc
 #include lighting.inc
@@ -96,8 +95,8 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specu
 
 	// not need it?????
 	vec3 N = normal.xyz;
-	N.xy *= NORMAL_MUL;
-	N.z = 1.0;
+//	N.xy *= NORMAL_MUL;
+//	N.z = 1.0;
 
 	N = normalize(v_tangentToView * normal.xyz);
 	vec3 V = normalize(v_positionVS);
@@ -149,7 +148,7 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specu
 		if (abs(delta) < Z_THRESHOLD)
 			break;	// found it
 	}
-	vec3 reflectColor  = boxBlur(g_colorBufferMap, tc, max(1.0, roughness * 18.8)) * 4.0;
+	vec3 reflectColor  = boxBlur(g_colorBufferMap, tc, roughness * 20.0) * 1.5;
 	reflectColor *= metalness;
 
 	return reflectColor;
@@ -210,7 +209,7 @@ void main (void) {
 
 	if (u_isAmbient == 1) {
 		vec3 curNormal = mix(blendNormal, normalMap.rgb, SSS);
-		fragData = diffuseMap * u_ColorModulate * LambertLighting(curNormal, L) * u_LightColor * attenMap;
+		fragData = diffuseMap * LambertLighting(curNormal, L) * u_LightColor * attenMap;
 		return;
 	}
 	
@@ -266,18 +265,17 @@ void main (void) {
 	*/
 
       if(cd_mask == 0.0){	    
-        
-      vec2 uv = v_texCoord.xy * 2.0 - 1.0;         
-      vec2 uv_orthogonal = normalize(uv);
-      vec3 uv_tangent = vec3(-uv_orthogonal.y, 0, uv_orthogonal.x);
+		
+		vec2 u_remapCenter = vec2(0.70884220810942843185148998534441, 0.70151441133365901319003419638495);
+vec2 u_remapScale = vec2(1.7166806370494551550712489522213, 1.7166806370494551550712489522213);
+vec2 outuv = (v_texCoord.xy - u_remapCenter) * u_remapScale + 0.5;
+		
+		vec2 uv = outuv * 2.0 - 1.0;
+		vec2 uv_orthogonal = normalize(uv);
+		vec3 uv_tangent = vec3(-uv_orthogonal.y, uv_orthogonal.x, 0.0);
+		vec4 worldTangent = v_mvMatrix * vec4(uv_tangent, 0.0);
 
-        fragData.rgb +=LightingDiffraction(V, L, uv_tangent);
+        fragData.rgb += LightingDiffraction(V, L, worldTangent.xyz);
        }
       }	
-
-/*=====================================
-	screen-space local reflections
-=====================================*/	
-
-
 }

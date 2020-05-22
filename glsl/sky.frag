@@ -1,5 +1,3 @@
-//layout (binding = 0) uniform samplerCube	u_map;
-
 layout (bindless_sampler, location  = U_TMU0) uniform samplerCube	u_map;
 
 layout(location = U_PARAM_INT_0)	uniform int	u_colorPass;
