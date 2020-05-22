@@ -774,7 +774,6 @@ void R_GlobalFog() {
 
 	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
 	GL_SetBindlessTexture(U_TMU1, r_depthTex->handle);
-	GL_SetBindlessTexture(U_TMU2, r_skyMask->handle);
 
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 

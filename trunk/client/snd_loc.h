@@ -290,7 +290,7 @@ extern openal_channel_t s_openal_channels[MAX_CHANNELS];
 extern ALuint source_name[MAX_CHANNELS + 1];	// plus 1 streaming channel
 extern unsigned s_openal_numChannels;
 
-cvar_t	*s_fxVolume;
+cvar_t	*s_effectsVolume;
 cvar_t	*s_show;
 cvar_t	*s_musicVolume;
 cvar_t	*s_musicSrc;

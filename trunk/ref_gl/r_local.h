@@ -204,9 +204,6 @@ uint fboId;
 byte r_ssaoColorTexIndex;
 uint fboDps;
 
-image_t	*r_skyMask;
-uint fbo_skyMask;
-
 extern entity_t *currententity;
 extern model_t *currentmodel;
 extern int r_visframecount;

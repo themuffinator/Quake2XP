@@ -312,7 +312,6 @@ void R_DrawSkyBox(qboolean color) {
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
-
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.skyMatrix);
 
 	if (color)
@@ -332,7 +331,6 @@ void R_DrawSkyBox(qboolean color) {
 	}
 
 	if (color)
-	//	GL_MBindCube(GL_TEXTURE0, skyCube);
 		GL_SetBindlessTexture(U_TMU0, skyCube_handle);
 
 	for (i = 0; i < 6; i++) {
@@ -418,13 +416,12 @@ void R_GenSkyCubeMap(char* name) {
 	}
 
 	int numMips = CalcMipmapCount(minw, minh);
-	glTexStorage2D(GL_TEXTURE_CUBE_MAP, numMips, GL_RGBA8, minw, minh);
+	glTexStorage2D(GL_TEXTURE_CUBE_MAP, numMips, GL_SRGB8, minw, minh);
 
 	for (i = 0; i < 6; i++) {
 
 		R_FlipImage(i, &pix[i], (byte*)trans);
 		free(pix[i].pixels);
-	//	qglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 		qglTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, minw, minh, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 	}
 

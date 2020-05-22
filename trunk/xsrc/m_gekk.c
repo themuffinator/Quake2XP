@@ -30,7 +30,6 @@ void gekk_swim (edict_t *self);
 extern void gekk_jump_takeoff (edict_t *self);
 extern void gekk_jump_takeoff2 (edict_t *self);
 extern void gekk_check_landing (edict_t *self);
-extern void gekk_check_landing2 (edict_t *self);
 extern void gekk_stop_skid (edict_t *self);
 
 extern void water_to_land (edict_t *self);
@@ -142,13 +141,13 @@ qboolean gekk_checkattack (edict_t *self) {
 
 void gekk_step (edict_t *self) {
 	int		n;
-	n = (rand () + 1) % 3;
+	n = (rand() + 1) % 3;
 	if (n == 0)
-		gi.sound (self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+		gi.sound(self, CHAN_BODY, sound_step1, 1, ATTN_FOOTSTEPS, 0);
 	else if (n == 1)
-		gi.sound (self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
-	else
-		gi.sound (self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
+		gi.sound(self, CHAN_BODY, sound_step2, 1, ATTN_FOOTSTEPS, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_BODY, sound_step3, 1, ATTN_FOOTSTEPS, 0);
 }
 
 void gekk_sight (edict_t *self, edict_t *other) {

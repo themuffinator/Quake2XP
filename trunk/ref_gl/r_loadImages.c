@@ -120,8 +120,6 @@ image_t *R_CreateTexture(char *texName, uint targetTex, uint intFormat, uint for
 	qglTexParameteri(targetTex, GL_TEXTURE_MIN_FILTER, filterMin);
 	qglTexParameteri(targetTex, GL_TEXTURE_MAG_FILTER, filterMag);
 	
-//	qglTexImage2D(targetTex, 0, intFormat, width, height, 0, format, imageType, NULL);
-	
 	glTexStorage2D(targetTex, 1, intFormat, width, height);
 	qglTexSubImage2D(targetTex, 0, 0, 0, width, height, format, imageType, pix);
 
@@ -197,26 +195,6 @@ void CreateSSAOBuffer(void) {
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_ssaoColorTex[0]->texnum, 0);
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, r_ssaoColorTex[1]->texnum, 0);
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE, r_miniDepthTex->texnum, 0);
-
-	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
-	if (!statusOK)
-		Com_Printf(S_COLOR_RED"Failed!");
-	else
-		Com_Printf(S_COLOR_WHITE"succeeded\n");
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-}
-
-
-void CreateSkyFboMask(void) {
-	qboolean statusOK;
-
-	r_skyMask = R_CreateTexture("***r_skyMask***", GL_TEXTURE_RECTANGLE, GL_R8, GL_RED, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
-
-	qglGenFramebuffers(1, &fbo_skyMask);
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_skyMask);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_skyMask->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)

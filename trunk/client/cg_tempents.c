@@ -824,7 +824,7 @@ void CL_ParseTEnt (void) {
 				DECAL_RAIL, 0, frand () * 360,
 				GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 
-			S_StartSound (pos2, 0, 0, cl_sfx_railHit, 1, ATTN_WEAPON_HEAVY, 0);
+			S_StartSound(pos2, 0, CHAN_AUTO, cl_sfx_grenexp, 1, 0.5, 0);
 			break;
 
 		case TE_EXPLOSION2:

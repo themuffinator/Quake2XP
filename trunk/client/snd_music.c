@@ -113,12 +113,6 @@ void Music_Play (void) {
 	}
 }
 
-void Music_Play2(char *name) {
-
-	Music_Stop();
-	Music_PlayFile(name, qfalse);
-}
-
 void Music_Stop (void) {
 	if (mstat == MSTAT_STOPPED)
 		return;
@@ -218,7 +212,7 @@ void Music_Update (void) {
 			n = music_handle->read(music_handle->f, music_buffer, MAX_STRBUF_SIZE);
 			if (n == 0)
 			{	/// Berserker's FIX: когда уже нечего читать из файла, все-равно ждём окончания проигрывания всей очереди буферов:
-				if (streaming.bNumAvail == NUM_STRBUF)	// когда число свободных буферов станет максимальным,
+			//	if (streaming.bNumAvail == NUM_STRBUF)	// когда число свободных буферов станет максимальным,
 
 					Music_Play();			// запускаем музыку заново!
 			}

@@ -51,7 +51,7 @@ void S_SoundInfo_f(void);
 qboolean AL_StartOpenAL (void);
 extern cvar_t *s_useHRTF;
 
-static int ClampCvarInteger(int min, int max, int value) {
+static int ClampCvarInteger2(int min, int max, int value) {
 	if (value < min) return min;
 	if (value > max) return max;
 	return value;
@@ -81,7 +81,7 @@ qboolean AL_Init (int hardreset)
 	alConfig.numResamplers = alGetInteger(AL_NUM_RESAMPLERS_SOFT);
 	alConfig.defResampler = alGetInteger(AL_DEFAULT_RESAMPLER_SOFT);
 
-	s_resamplerQuality->integer = ClampCvarInteger(0, alConfig.numResamplers, s_resamplerQuality->integer);
+	s_resamplerQuality->integer = ClampCvarInteger2(0, alConfig.numResamplers, s_resamplerQuality->integer);
 	ALint i;
 	Com_Printf("...Available Resamplers:\n");
 	for (i = 0; i < alConfig.numResamplers; ++i){

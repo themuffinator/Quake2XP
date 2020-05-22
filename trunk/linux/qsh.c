@@ -95,7 +95,7 @@ Hunk_Alloc(int size)
 }
 
 int
-Hunk_End(void)
+Hunk_End(char *name)
 {
 	byte           *n;
 
@@ -125,7 +125,7 @@ Hunk_End(void)
 }
 
 void
-Hunk_Free(void *base)
+Hunk_Free(void *base, int size)
 {
 	byte           *m;
 

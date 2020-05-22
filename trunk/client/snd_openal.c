@@ -196,7 +196,7 @@ void S_Play (void);
 void S_Init (int hardreset) {
 
 	if (hardreset) {
-		s_fxVolume = Cvar_Get ("s_fxVolume", "1", CVAR_ARCHIVE);
+		s_effectsVolume = Cvar_Get ("s_effectsVolume", "1", CVAR_ARCHIVE);
 		s_show = Cvar_Get ("s_show", "0", 0);
 		s_musicVolume = Cvar_Get ("s_musicVolume", "0.8", CVAR_ARCHIVE);
 		s_musicSrc = Cvar_Get ("s_musicSrc", "1", CVAR_ARCHIVE);
@@ -572,8 +572,7 @@ openal_channel_t *PickChannel_NEW (unsigned int entNum,
 	return ch;
 }
 
-void S_fastsound (vec3_t origin, int entnum, int entchannel,
-	ALuint bufferNum, ALfloat gain, ALfloat rolloff_factor) {
+void S_fastsound (vec3_t origin, int entnum, int entchannel, ALuint bufferNum, ALfloat gain, ALfloat rolloff_factor) {
 	openal_channel_t *ch;
 	ALuint sourceNum;
 
@@ -606,8 +605,7 @@ void S_fastsound (vec3_t origin, int entnum, int entchannel,
 			alSource3f (sourceNum, AL_VELOCITY, 0, 0, 0);
 		}
 		else {
-			FlagAL_clear (ch,
-				AL_FLAGS_FIXED_POSITION | AL_FLAGS_AL_LOOPING);
+			FlagAL_clear (ch, AL_FLAGS_FIXED_POSITION | AL_FLAGS_AL_LOOPING);
 			// willow: TO DO.
 			// alSourcefv(sourceNum, AL_VELOCITY,
 			// current_task->TASK_AL_VELOCITY);
@@ -616,10 +614,9 @@ void S_fastsound (vec3_t origin, int entnum, int entchannel,
 
 		alSourcei (sourceNum, AL_BUFFER, bufferNum);
 		alSourcei (sourceNum, AL_SOURCE_RELATIVE, AL_FALSE);
-		alSourcei (sourceNum, AL_LOOPING,
-			FlagAL_checkAL (ch, AL_FLAGS_AL_LOOPING));
+		alSourcei (sourceNum, AL_LOOPING, FlagAL_checkAL (ch, AL_FLAGS_AL_LOOPING));
 		alSourcef (sourceNum, AL_ROLLOFF_FACTOR, rolloff_factor);
-		alSourcef (sourceNum, AL_GAIN, /*gain*/ s_fxVolume->value);
+		alSourcef (sourceNum, AL_GAIN, gain * s_effectsVolume->value);
 
 		alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 
@@ -642,8 +639,7 @@ void S_fastsound_queue (vec3_t origin, int entnum, int entchannel,
 	// provided.
 	// This is shortcut, just call "S_fastsound" call instead
 	if (!timeofs) {
-		S_fastsound (origin, entnum, entchannel, bufferNum, fvol,
-			attenuation);
+		S_fastsound (origin, entnum, entchannel, bufferNum, fvol, attenuation);
 		return;
 	}
 	// Allocate a playSound
@@ -788,7 +784,7 @@ void S_StartLocalSound (ALuint bufferNum) {
 			alSourcei (sourceNum, AL_BUFFER, bufferNum);
 			alSourcei (sourceNum, AL_SOURCE_RELATIVE, AL_TRUE);
 			alSourcei (sourceNum, AL_LOOPING, AL_FALSE);
-			alSourcef (sourceNum, AL_GAIN, /*0.47*/ s_fxVolume->value);
+			alSourcef (sourceNum, AL_GAIN, 0.47 * s_effectsVolume->value);
 			
 			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 
@@ -1255,7 +1251,7 @@ void S_Update (vec3_t listener_position, vec3_t velocity, float orientation[6]) 
 			// (current_task,
 			// AL_TASK_MANAGER__IS_SOURCE_RELATIVE));
 			alSourcei (sourceNum, AL_LOOPING, FlagAL_checkAL (ch, AL_FLAGS_AL_LOOPING));	// ch->loopSound);
-			alSourcef (sourceNum, AL_GAIN, /*current_task->TASK_AL_GAIN*/ s_fxVolume->value);
+			alSourcef (sourceNum, AL_GAIN, current_task->TASK_AL_GAIN * s_effectsVolume->value);
 			alSourcei(sourceNum, AL_SOURCE_RESAMPLER_SOFT, s_resamplerQuality->integer);
 			
 			if (alConfig.efx)

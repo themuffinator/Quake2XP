@@ -47,15 +47,13 @@ static int	sound_step1, sound_step2, sound_step3, sound_step4;
 
 void gladiator_step(edict_t *self) {
 	int		n;
-	n = (rand() + 1) % 4;
+	n = (rand() + 1) % 3;
 	if (n == 0)
-		gi.sound(self, CHAN_VOICE, sound_step1, 1, ATTN_NORM, 0);
+		gi.sound(self, CHAN_BODY, sound_step1, 0.5, ATTN_HEAVY_STEPS, 0);
 	else if (n == 1)
-		gi.sound(self, CHAN_VOICE, sound_step2, 1, ATTN_NORM, 0);
+		gi.sound(self, CHAN_BODY, sound_step2, 0.5, ATTN_HEAVY_STEPS, 0);
 	else if (n == 2)
-		gi.sound(self, CHAN_VOICE, sound_step3, 1, ATTN_NORM, 0);
-	else if (n == 3)
-		gi.sound(self, CHAN_VOICE, sound_step4, 1, ATTN_NORM, 0);
+		gi.sound(self, CHAN_BODY, sound_step3, 0.5, ATTN_HEAVY_STEPS, 0);
 }
 
 

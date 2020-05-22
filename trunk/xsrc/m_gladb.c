@@ -26,6 +26,19 @@ static int	sound_idle;
 static int	sound_search;
 static int	sound_sight;
 
+static int	sound_step1, sound_step2, sound_step3, sound_step4;
+
+void gladb_step(edict_t* self) {
+	int		n;
+	n = (rand() + 1) % 3;
+	if (n == 0)
+		gi.sound(self, CHAN_BODY, sound_step1, 0.5, ATTN_HEAVY_STEPS, 0);
+	else if (n == 1)
+		gi.sound(self, CHAN_BODY, sound_step2, 0.5, ATTN_HEAVY_STEPS, 0);
+	else if (n == 2)
+		gi.sound(self, CHAN_BODY, sound_step3, 0.5, ATTN_HEAVY_STEPS, 0);
+}
+
 
 void gladb_idle (edict_t *self) {
 	gi.sound (self, CHAN_VOICE, sound_idle, 1, ATTN_IDLE, 0);
@@ -62,7 +75,7 @@ void gladb_stand (edict_t *self) {
 
 mframe_t gladb_frames_walk[] =
 {
-	ai_walk, 15, NULL,
+	ai_walk, 15, gladb_step,
 	ai_walk, 7, NULL,
 	ai_walk, 6, NULL,
 	ai_walk, 5, NULL,
@@ -70,7 +83,7 @@ mframe_t gladb_frames_walk[] =
 	ai_walk, 0, NULL,
 	ai_walk, 2, NULL,
 	ai_walk, 8, NULL,
-	ai_walk, 12, NULL,
+	ai_walk, 12, gladb_step,
 	ai_walk, 8, NULL,
 	ai_walk, 5, NULL,
 	ai_walk, 5, NULL,
@@ -88,10 +101,10 @@ void gladb_walk (edict_t *self) {
 
 mframe_t gladb_frames_run[] =
 {
-	ai_run, 23, NULL,
+	ai_run, 23, gladb_step,
 	ai_run, 14, NULL,
 	ai_run, 14, NULL,
-	ai_run, 21, NULL,
+	ai_run, 21, gladb_step,
 	ai_run, 12, NULL,
 	ai_run, 13, NULL
 };

@@ -995,7 +995,7 @@ static qboolean GLW_CreateContext() {
 
 	const char	*profileName[] = { "core", "compatibility" };
 
-	int	contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : GL_CONTEXT_FLAG_NO_ERROR_BIT;
+	int	contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
 	int	contextMask = r_glCoreProfile->integer ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 
 	int	attribs[] =

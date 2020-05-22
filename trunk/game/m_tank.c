@@ -56,7 +56,7 @@ void tank_sight (edict_t *self, edict_t *other) {
 
 
 void tank_footstep (edict_t *self) {
-	gi.sound (self, CHAN_BODY, sound_step, 1, ATTN_NORM, 0);
+	gi.sound (self, CHAN_BODY, sound_step, 1, ATTN_FOOTSTEPS, 0);
 }
 
 void tank_thud (edict_t *self) {

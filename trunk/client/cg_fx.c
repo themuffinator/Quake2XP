@@ -280,8 +280,7 @@ char *fastsound_name[FAST_SOUNDS_TOTAL] = {
 	"player/step3.wav",			// 36
 	"player/step4.wav",			// 37
 	"weapons/tesla.wav",		// 38
-	"weapons/disrupthit.wav"	// 39
-	"weapons/railHit.wav"		// 40
+	"weapons/disrupthit.wav"	// 39	
 };
 
 // Resource descriptors
@@ -325,7 +324,9 @@ void CL_fast_sound_init (void) {
 	cl_sfx_lava = fastsound_descriptor[id_cl_sfx_lava];
 	cl_sfx_shell = fastsound_descriptor[id_cl_sfx_shell];
 	cl_sfx_debris = fastsound_descriptor[id_cl_sfx_debris];
-	cl_sfx_railHit = fastsound_descriptor[id_cl_sfx_railHit];
+
+	cl_sfx_railHit = S_RegisterSound("weapons/railHit.wav");
+
 	// RAFAEL
 	// cl_sfx_plasexp = S_RegisterSound ("weapons/plasexpl.wav");
 	// willow: i have no solution for sexual flowered sounds now...
@@ -508,14 +509,14 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0.5;
 			dl->color[2] = 1.0;
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_railgf1a], volume, ATTN_WEAPON_LIGHT);
-			S_fastsound_queue(NULL, i, CHAN_WEAPON, fastsound_descriptor[id_cl_sfx_railg], volume , ATTN_WEAPON_HEAVY, 100);
+			S_fastsound_queue(NULL, i, CHAN_WEAPON, fastsound_descriptor[id_cl_sfx_railg], volume , ATTN_WEAPON_LIGHT, 100);
 			break;
 		case MZ_ROCKET:
 			dl->color[0] = 1;
 			dl->color[1] = 0.5;
 			dl->color[2] = 0.2;
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_rocklf1a], volume, ATTN_WEAPON_HEAVY);
-			S_fastsound_queue (NULL, i, CHAN_AUTO, fastsound_descriptor[weapons_rocklr1b], volume, ATTN_WEAPON_HEAVY, 150);
+			S_fastsound_queue (NULL, i, CHAN_AUTO, fastsound_descriptor[weapons_rocklr1b], volume, ATTN_WEAPON_LIGHT, 150);
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 8);
 			break;
 		case MZ_GRENADE:

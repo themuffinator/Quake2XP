@@ -1636,7 +1636,6 @@ void R_InitFboBuffers() {
 	
 	Com_Printf("Initializing FBOs...\n\n");
 	CreateSSAOBuffer();
-	CreateSkyFboMask();
 	Com_Printf("\n");
 }
 
@@ -2020,7 +2019,6 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("fogEdit");
 
 	qglDeleteFramebuffers (1, &fboId);
-	qglDeleteFramebuffers(1, &fbo_skyMask);
 
 	DeleteShadowVertexBuffers();
 	R_ShutDownVertexBuffers();

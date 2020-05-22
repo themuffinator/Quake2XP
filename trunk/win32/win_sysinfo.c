@@ -8,6 +8,7 @@
 #include <sysinfoapi.h>
 
 #define UI_NUM_LANGS ( sizeof( ui_Language ) / sizeof( ui_Language[0] ) )
+qboolean ru_loc;
 
 void Sys_WindowsInfo() {
 	
@@ -15,12 +16,18 @@ void Sys_WindowsInfo() {
 	int		len, len2;
 	char	s[64], s2[MAX_COMPUTERNAME_LENGTH + 1];
 
+	ru_loc = qfalse;
+
 	len = sizeof(s);
 	len2 = sizeof(s2);
 	
 	for (int i = 0; i < UI_NUM_LANGS; i++) {
 		if (lang == ui_Language[i].num) {
 			Com_Printf("\nUI Language:   "S_COLOR_YELLOW"%s\n", ui_Language[i].description);
+
+			if (ui_Language[i].num == 1049 || ui_Language[i].num == 1092 || ui_Language[i].num == 1133 || ui_Language[i].num == 1157)
+				ru_loc = qtrue;
+
 			break;
 		}
 	}

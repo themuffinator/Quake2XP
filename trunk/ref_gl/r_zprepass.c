@@ -5,7 +5,7 @@
 #include "r_local.h"
 
 extern msurface_t	*scene_surfaces[MAX_MAP_FACES];
-static int			num_depth_surfaces;
+static int			numDepthsurfaces;
 static vec3_t		modelorg;			// relative to viewpoint
 
 qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
@@ -41,7 +41,7 @@ static void GL_DrawDepthBspTris () {
 	unsigned	numIndices = 0xffffffff;
 	unsigned	numVertices = 0;
 
-	for (i = 0; i < num_depth_surfaces; i++) {
+	for (i = 0; i < numDepthsurfaces; i++) {
 		s = scene_surfaces[i];
 
 		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
@@ -149,7 +149,7 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
 			continue;
 		else
-			scene_surfaces[num_depth_surfaces++] = surf;
+			scene_surfaces[numDepthsurfaces++] = surf;
 	}
 
 	// recurse down the back side
@@ -182,7 +182,7 @@ static void R_AddBModelDepthTris (void) {
 			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 				continue;
 			}
-			scene_surfaces[num_depth_surfaces++] = psurf;
+			scene_surfaces[numDepthsurfaces++] = psurf;
 		}
 	}
 }
@@ -239,7 +239,7 @@ void R_DrawDepthBrushModel (void) {
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 
-	num_depth_surfaces = 0;
+	numDepthsurfaces = 0;
 	R_AddBModelDepthTris ();
 	GL_DrawDepthBspTris();
 
@@ -410,56 +410,6 @@ void R_DrawDepthMD3Model(void) {
 		GL_DepthRange(gldepthmin, gldepthmax);
 }
 
-void R_DrawSkyMask() {
-
-	int i;
-
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_skyMask);
-	qglClear(GL_COLOR_BUFFER_BIT);
-
-	qglClearColor(1.0, 0.0, 0.0, 0.0);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
-	
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-
-	num_depth_surfaces = 0;
-	R_RecursiveDepthWorldNode(r_worldmodel->nodes);
-	GL_DrawDepthBspTris();
-
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray(ATT_POSITION);
-
-	for (i = 0; i < r_newrefdef.num_entities; i++) {
-		currententity = &r_newrefdef.entities[i];
-		currentmodel = currententity->model;
-
-		if (!currentmodel)
-			continue;
-
-		if (currententity->flags & RF_TRANSLUCENT)
-			continue;
-		if (currententity->flags & RF_WEAPONMODEL)
-			continue;
-		if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
-			continue;
-		if (currententity->flags & RF_DISTORT)
-			continue;
-
-		if (currentmodel->type == mod_brush)
-			R_DrawDepthBrushModel();
-
-		if (currentmodel->type == mod_alias)
-			R_DrawDepthAliasModel();
-
-		if (currentmodel->type == mod_alias_md3)
-			R_DrawDepthMD3Model();
-	}
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void R_DrawDepthScene (void) {
 
 	int i;
@@ -488,17 +438,18 @@ void R_DrawDepthScene (void) {
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 
-	num_depth_surfaces = 0;
+	numDepthsurfaces = 0;
 	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
 	GL_DrawDepthBspTris();
 	
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray (ATT_POSITION);
 
+	GL_DepthRange(1.0, 1.0); // mark sky for fog mask
+
 	R_DrawSkyBox (qfalse);
 	
-	if(r_globalFog->integer)
-		R_DrawSkyMask();
+	GL_DepthRange(0.0, 1.0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];

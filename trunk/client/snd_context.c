@@ -161,6 +161,7 @@ int convert_utf8_to_windows1251(const char* utf8, char* windows1251, size_t n)
 
 #define LINE_MAX 512
 
+extern qboolean ru_loc;
 /*
  =================
  AL_InitDriver
@@ -180,8 +181,11 @@ static qboolean AL_InitDriver (void) {
 		deviceName1251 = malloc(sizeof(char) * LINE_MAX);
 
 		if (deviceName) {
-			convert_utf8_to_windows1251(deviceName, deviceName1251, LINE_MAX);
-			Com_Printf("...Opening Device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName1251);
+			if (ru_loc) {
+				convert_utf8_to_windows1251(deviceName, deviceName1251, LINE_MAX);
+				Com_Printf("...Opening Device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName1251);
+			} else 
+				Com_Printf("...Opening Device ("S_COLOR_GREEN"%s"S_COLOR_WHITE"): ", deviceName);
 		}
 		else
 			Com_Printf("...Opening Default Device: ");
@@ -296,7 +300,7 @@ qboolean AL_StartOpenAL (void) {
 		const ALCchar *a = alcGetString (NULL, ALC_ALL_DEVICES_SPECIFIER);
 		const ALCchar *b = alcGetString (NULL, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
 
-		if (alGetStringiSOFT) {
+		if (alGetStringiSOFT && ru_loc) {
 			playback1251_def = malloc(sizeof(char) * LINE_MAX);
 			convert_utf8_to_windows1251(b, playback1251_def, LINE_MAX);
 		}
@@ -316,9 +320,14 @@ qboolean AL_StartOpenAL (void) {
 				Com_Printf(">:" S_COLOR_GREEN " %s\n", a);
 			}
 			else {
-				playback1251[i] = malloc(sizeof(char) * LINE_MAX);
-				convert_utf8_to_windows1251((const char*)al_device[i], playback1251[i], LINE_MAX);
-				Com_Printf(">:" S_COLOR_GREEN " %s\n", playback1251[i]);
+				if (ru_loc) {
+					playback1251[i] = malloc(sizeof(char) * LINE_MAX);
+					convert_utf8_to_windows1251((const char*)al_device[i], playback1251[i], LINE_MAX);
+					Com_Printf(">:" S_COLOR_GREEN " %s\n", playback1251[i]);
+				}
+				else {
+					Com_Printf(">:" S_COLOR_GREEN " %s\n", (const char*)al_device[i]);
+				}
 			}
 			while (*a)
 					a++;
@@ -334,7 +343,7 @@ qboolean AL_StartOpenAL (void) {
 				}
 			}	
 */
-			if (alGetStringiSOFT)
+			if (alGetStringiSOFT && ru_loc)
 				Com_Printf("Default Output Device: " S_COLOR_GREEN "%s\n", playback1251_def);
 			else
 				Com_Printf("Default Output Device: " S_COLOR_GREEN "%s\n", b);
