@@ -29,6 +29,8 @@ vec3_t vec3_origin = { 0, 0, 0 };
 
 //============================================================================
 
+qboolean ru_loc;
+
 void Q_memcpy (void *dest, const void *src, const size_t count);
 
 void RotatePointAroundVector (vec3_t dst, const vec3_t dir, const vec3_t point, float degrees) {

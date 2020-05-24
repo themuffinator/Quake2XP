@@ -8,7 +8,6 @@
 #include <sysinfoapi.h>
 
 #define UI_NUM_LANGS ( sizeof( ui_Language ) / sizeof( ui_Language[0] ) )
-qboolean ru_loc;
 
 void Sys_WindowsInfo() {
 	

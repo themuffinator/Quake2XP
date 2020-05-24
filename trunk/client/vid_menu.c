@@ -97,12 +97,6 @@ static	menufield_s		s_menuColorTemp;
 //
 /////////////////////////////////////////////////////////
 
-float ClampCvar (float min, float max, float value) {
-	if (value < min) return min;
-	if (value > max) return max;
-	return value;
-}
-
 static void ambientLevelCallback (void *s) {
 	float ambient = s_ambientLevel_slider.curvalue / 20;
 	Cvar_SetValue ("r_lightmapScale", ambient);

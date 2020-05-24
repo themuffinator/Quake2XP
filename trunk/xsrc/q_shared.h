@@ -54,6 +54,7 @@ typedef enum {
 #define NULL ((void *)0)
 #endif
 
+extern qboolean ru_loc;
 
 // angle indexes
 #define	PITCH				0		// up / down

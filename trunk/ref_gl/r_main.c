@@ -2040,18 +2040,6 @@ void R_Shutdown(void)
 R_BeginFrame
 @@@@@@@@@@@@@@@@@@@@@
 */
-static float ClampCvar(float min, float max, float value) {
-	if (value < min) return min;
-	if (value > max) return max;
-	return value;
-}
-
-static int ClampCvarInteger(int min, int max, int value) {
-	if (value < min) return min;
-	if (value > max) return max;
-	return value;
-}
-
 void R_BeginFrame()
 {
 	
