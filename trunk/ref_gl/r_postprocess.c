@@ -365,12 +365,6 @@ void R_GammaRamp (void)
 	R_DrawFullScreenQuad ();
 }
 
-static int ClampCvarInteger(int min, int max, int value) {
-	if (value < min) return min;
-	if (value > max) return max;
-	return value;
-}
-
 void R_ColorTemperatureCorrection(void){
 
 	if (r_colorTempK->value < 1000.0)
