@@ -166,51 +166,6 @@ void R_CaptureDepthBuffer()
 
 /*
 ===============
-GL_TextureMode
-===============
-*/
-
-void GL_TextureMode(char *string)
-{
-	strlwr(string);
-
-	if (Q_stricmp(r_textureMode->string,	"GL_NEAREST") != 0 &&
-	Q_stricmp(r_textureMode->string,		"GL_LINEAR") != 0 &&
-	Q_stricmp(r_textureMode->string,		"GL_NEAREST_MIPMAP_NEAREST") != 0 &&
-	Q_stricmp(r_textureMode->string,		"GL_LINEAR_MIPMAP_NEAREST") != 0 &&
-	Q_stricmp(r_textureMode->string,		"GL_NEAREST_MIPMAP_LINEAR") != 0 &&
-	Q_stricmp(r_textureMode->string,		"GL_LINEAR_MIPMAP_LINEAR") != 0)
-	Cvar_Set("r_textureMode",				"GL_NEAREST");
-	
-	if (!Q_stricmp(r_textureMode->string, "GL_NEAREST")){
-		gl_filter_min = GL_NEAREST;
-		gl_filter_max = GL_NEAREST;
-	}
-	if (!Q_stricmp(r_textureMode->string, "GL_LINEAR")){
-		gl_filter_min = GL_LINEAR;
-		gl_filter_max = GL_LINEAR;
-	}
-	if (!Q_stricmp(r_textureMode->string, "GL_NEAREST_MIPMAP_NEAREST")){
-		gl_filter_min = GL_NEAREST_MIPMAP_NEAREST;
-		gl_filter_max = GL_NEAREST;
-	}
-	if (!Q_stricmp(r_textureMode->string, "GL_LINEAR_MIPMAP_NEAREST")){
-		gl_filter_min = GL_LINEAR_MIPMAP_NEAREST;
-		gl_filter_max = GL_LINEAR;
-	}
-	if (!Q_stricmp(r_textureMode->string, "GL_NEAREST_MIPMAP_LINEAR")){
-		gl_filter_min = GL_NEAREST_MIPMAP_LINEAR;
-		gl_filter_max = GL_NEAREST;
-	}
-	if (!Q_stricmp(r_textureMode->string, "GL_LINEAR_MIPMAP_LINEAR")){
-		gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;
-		gl_filter_max = GL_LINEAR;
-	}
-}
-
-
-/*
-===============
 GL_ImageList_f
 ===============
 */
@@ -1227,7 +1182,7 @@ void GL_ShutdownImages(void) {
 			ids[i * 3 + 2] = TEXNUM_LIGHTMAPS + i + 1 + MAX_LIGHTMAPS * 2;
 		}
 
-		qglDeleteTextures (i * 3, ids);
+		qglDeleteTextures (gl_lms.current_lightmap_texture * 3, ids);
 	}
 
 	if (skyCube) {

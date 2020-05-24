@@ -207,7 +207,7 @@ void R_DrawAlphaSurfaces() {
 	qglUniform1i(U_REFR_ALPHA_MASK, 0);
 
 	float blurScale = 18.88 * ((float)vid.width / 1024.0);
-	qglUniform1i(U_PARAM_FLOAT_0, blurScale);
+	qglUniform1f(U_PARAM_FLOAT_0, blurScale);
 
 	for (int i = 0; i < numAlphaSurfaces; i++) {
 
@@ -244,7 +244,6 @@ void R_DrawWarpSurfaces(qboolean bmodel) {
 	qglUniform1f(U_WATHER_THICKNESS, 150.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(U_COLOR_MUL, 0.777);
 	qglUniform1f(U_AMBIENT_LEVEL, 1.0);
 
 	if (!bmodel)
@@ -656,12 +655,13 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 R_CalcCubeMapMatrix(bModel);
 	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
-	 if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+/*	 if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		 GL_SetBindlessTexture(U_TMU5, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		 qglUniform1i(U_USE_SSAO, 1);
 	 }
 	 else
 		 qglUniform1i(U_USE_SSAO, 0);
+		 */
  }
 
  msurface_t		*interaction[MAX_MAP_FACES];

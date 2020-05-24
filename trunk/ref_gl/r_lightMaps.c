@@ -81,9 +81,6 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 
 	surf->lightmaptexturenum = gl_lms.current_lightmap_texture;
 	
-	surf->lightMapTex_handle = glGetTextureHandleARB(surf->lightmaptexturenum);
-	glMakeTextureHandleResidentARB(surf->lightMapTex_handle);
-
 	// no more dynamic lightmaps, so only loadmodel is used
 	smax = (surf->extents[0] / (int)loadmodel->lightmap_scale) + 1;
 	tmax = (surf->extents[1] / (int)loadmodel->lightmap_scale) + 1;
@@ -216,21 +213,21 @@ static void LM_UploadBlock (qboolean dynamic) {
 	int			texture = gl_lms.current_lightmap_texture;
 	int			i;
 
+	qglGenTextures(1, &gl_lms.current_lightmap_texture);
+	
+
 	// upload the finished atlas
 	for (i = 0; i < numVecs; i++) {
 
 		GL_Bind (gl_state.lightmap_textures + texture + i * MAX_LIGHTMAPS);
-		qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		qglTexImage2D (GL_TEXTURE_2D,
-				0,
-				gl_lms.internal_format,
-				LIGHTMAP_SIZE, LIGHTMAP_SIZE,
-				0,
-				GL_LIGHTMAP_FORMAT,
-				GL_UNSIGNED_BYTE,
-				gl_lms.lightmap_buffer[i]);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexStorage2D(GL_TEXTURE_2D, 1, gl_lms.internal_format, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
+		qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[i]);
 	}
 
 	// start new one

@@ -305,21 +305,17 @@ R_DrawSkyBox
 void R_DrawSkyBox(qboolean color) {
 	int i;
 
-	if (!color)
-		GL_BindProgram(nullProgram);
-	else
-		GL_BindProgram(skyProgram);
-
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.skyMatrix);
+
+	GL_BindProgram(skyProgram);
 
 	if (color)
 		qglUniform1i(U_PARAM_INT_0, 1);
 	else
 		qglUniform1i(U_PARAM_INT_0, 0); // depth pass
 
-
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.skyMatrix);
 
 	if (skyrotate) {			// check for no sky at all
 		for (i = 0; i < 6; i++)
