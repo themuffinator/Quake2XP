@@ -670,7 +670,7 @@ qboolean Sys_CheckWindowsVersion() {
 													sprintf(S2, "\n    'October 2019 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1909" S_COLOR_WHITE ")");
 												else
 													if (ver == 2004)
-														sprintf(S2, "\n    'May 2020 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1909" S_COLOR_WHITE ")");
+														sprintf(S2, "\n    'May 2020 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "2004" S_COLOR_WHITE ")");
 												else
 											sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 

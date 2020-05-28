@@ -867,7 +867,16 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-
+	
+	Com_Printf("Load "S_COLOR_YELLOW"white balance program"S_COLOR_WHITE" ");
+	whiteBalanceProgram = R_FindProgram("whitebalance", S_DEFAULT);
+	if (whiteBalanceProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 	Com_Printf("Load "S_COLOR_YELLOW"shadow volumes program"S_COLOR_WHITE" ");
 	shadowProgram = R_FindProgram("shadow", S_DEFAULT);
 	if (shadowProgram->valid) {

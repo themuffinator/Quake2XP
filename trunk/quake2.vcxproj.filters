@@ -80,9 +80,6 @@
     <ClCompile Include="client\cl_console.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
-    <ClCompile Include="client\cl_images.c">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
     <ClCompile Include="client\cl_input.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
@@ -325,6 +322,9 @@
     </ClCompile>
     <ClCompile Include="ref_gl\r_surfaces.c">
       <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="client\cl_preload.c">
+      <Filter>Source Files\Client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -727,6 +727,12 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\screenFlash.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\whitebalance.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\whitebalance.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

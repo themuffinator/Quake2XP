@@ -540,6 +540,15 @@ void CL_ParticleRick (vec3_t org, vec3_t dir);
 void CL_ParticleSplash (vec3_t org, vec3_t dir, float r, float g, float b);
 void CL_ParticleSmoke (vec3_t org, vec3_t dir, int count);
 void CL_InitImages ();
+
+typedef struct {
+	struct model_s* menuQuad;
+	struct model_s* menuLogo;
+} menumodel_t;
+
+menumodel_t menumodel;
+void CL_CacheMenuModels();
+
 void CL_TeleportParticles (vec3_t org);
 void CL_ClearParticles (void);
 void CL_ClearDecals (void);
@@ -877,5 +886,16 @@ image_t *i_backtile;
 image_t *i_turtle;
 image_t	*i_nosaveshot;
 
-extern image_t *im_main_menu[5];
+image_t *i_main_menu[5],		*i_main_menu_bump[5],
+		*i_main_menu_sel[5],	*i_main_menu_bump_sel[5];
+
+image_t	*i_main_plaque[2], *i_main_logo[2]; // pack color and normal map
+image_t	*i_menuBackground;
+image_t	*i_quit[2];
+
+image_t	*i_banner_multiplayer[2],	*i_banner_game[2], 
+		*i_banner_load_game[2],		*i_banner_save_game[2], 
+		*i_banner_join_server[2],	*i_banner_addressbook[2], 
+		*i_banner_options[2],		*i_banner_video[2];
+
 void Q_snprintfz (char *dst, int dstSize, const char *fmt, ...);

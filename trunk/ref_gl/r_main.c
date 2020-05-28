@@ -1298,10 +1298,6 @@ void Cube2Lut_f(void)
 #define		GPU_MEMORY_INFO_EVICTION_COUNT_NVX            0x904A
 #define		GPU_MEMORY_INFO_EVICTED_MEMORY_NVX            0x904B
 
-#define     VBO_FREE_MEMORY_ATI                     0x87FB
-#define     TEXTURE_FREE_MEMORY_ATI                 0x87FC
-#define     RENDERBUFFER_FREE_MEMORY_ATI            0x87FD
-
 void R_VideoInfo_f(void){
 
 #ifdef _WIN32
@@ -1362,9 +1358,10 @@ void R_RegisterCvars(void)
 	r_gamma =							Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE); 
 
 	r_colorVibrance =					Cvar_Get("r_colorVibrance", "0.0", CVAR_ARCHIVE);
-	r_colorBalanceRed =					Cvar_Get("r_colorBalanceRed", "1.0", CVAR_ARCHIVE);;
-	r_colorBalanceGreen =				Cvar_Get("r_colorBalanceGreen", "1.0", CVAR_ARCHIVE);;
-	r_colorBalanceBlue =				Cvar_Get("r_colorBalanceBlue", "1.0", CVAR_ARCHIVE);;
+	r_colorBalanceRed =					Cvar_Get("r_colorBalanceRed", "1.0", CVAR_ARCHIVE);
+	r_colorBalanceGreen =				Cvar_Get("r_colorBalanceGreen", "1.0", CVAR_ARCHIVE);
+	r_colorBalanceBlue =				Cvar_Get("r_colorBalanceBlue", "1.0", CVAR_ARCHIVE);
+	r_srgbColorBuffer =					Cvar_Get("r_srgbColorBuffer", "1", CVAR_ARCHIVE);
 
 	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
@@ -1630,8 +1627,6 @@ qboolean IsExtensionSupported(const char *name)
 	return qfalse;
 }
 
-void CreateSkyFboMask(void);
-
 void R_InitFboBuffers() {
 	
 	Com_Printf("Initializing FBOs...\n\n");
@@ -1822,17 +1817,22 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramUniformMatrix4x2fv =	(PFNGLPROGRAMUNIFORMMATRIX4X2FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x2fv");
 	glProgramUniformMatrix3x4fv =	(PFNGLPROGRAMUNIFORMMATRIX3X4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3x4fv");
 	glProgramUniformMatrix4x3fv =	(PFNGLPROGRAMUNIFORMMATRIX4X3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x3fv");
-	
 
-	glBindTextures =			(PFNGLBINDTEXTURESPROC)			qwglGetProcAddress("glBindTextures");
+	
+	glTexImage3D		=		(PFNGLTEXIMAGE3DPROC)			qwglGetProcAddress("glTexImage3D");
 
 	// Textures DSA 
+	glBindTextures		=		(PFNGLBINDTEXTURESPROC)			qwglGetProcAddress("glBindTextures");
 	glBindTextureUnit	=		(PFNGLBINDTEXTUREUNITPROC)		qwglGetProcAddress("glBindTextureUnit");
 	glCreateTextures	=		(PFNGLCREATETEXTURESPROC)		qwglGetProcAddress("glCreateTextures");
-	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
 	glTextureStorage2D	=		(PFNGLTEXTURESTORAGE2DPROC)		qwglGetProcAddress("glTextureStorage2D");
 	glTextureSubImage2D =		(PFNGLTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glTextureSubImage2D");
 	glTextureParameteri =		(PFNGLTEXTUREPARAMETERIPROC)	qwglGetProcAddress("glTextureParameteri");
+
+	// texture storage
+	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
+	glTexStorage3D		=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");
+	glTexSubImage3D		=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
 
 	glGenQueries		= (PFNGLGENQUERIESPROC)			qwglGetProcAddress("glGenQueries");
 	glDeleteQueries		= (PFNGLDELETEQUERIESPROC)		qwglGetProcAddress("glDeleteQueries");
@@ -1848,8 +1848,6 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramParameteri =	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
-
-	qglTexImage3D =	(PFNGLTEXIMAGE3DPROC)	qwglGetProcAddress("glTexImage3D");					
 
 	gl_config.vendor_string					= (const char*)qglGetString(GL_VENDOR);
 	gl_config.renderer_string				= (const char*)qglGetString(GL_RENDERER);
@@ -1949,9 +1947,10 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 		gl_state.depthBoundsTest = qfalse;
 	}
-
-	qglEnable(GL_FRAMEBUFFER_SRGB);
-	Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
+	if (r_srgbColorBuffer->integer) {
+		qglEnable(GL_FRAMEBUFFER_SRGB);
+		Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
+	}
 
 	int queryBits;
 	glGetQueryiv(GL_SAMPLES_PASSED, GL_QUERY_COUNTER_BITS, &queryBits);

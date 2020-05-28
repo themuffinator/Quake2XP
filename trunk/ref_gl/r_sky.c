@@ -412,7 +412,7 @@ void R_GenSkyCubeMap(char* name) {
 	}
 
 	int numMips = CalcMipmapCount(minw, minh);
-	glTexStorage2D(GL_TEXTURE_CUBE_MAP, numMips, GL_SRGB8, minw, minh);
+	glTexStorage2D(GL_TEXTURE_CUBE_MAP, numMips, GL_RGBA8, minw, minh);
 
 	for (i = 0; i < 6; i++) {
 

@@ -373,12 +373,11 @@ void R_ColorTemperatureCorrection(void){
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_BindProgram(lutProgram);
+	GL_BindProgram(whiteBalanceProgram);
 
 	R_CaptureColorBuffer();
 
-	qglUniform1f(U_PARAM_FLOAT_1, r_colorTempK->value);
-	qglUniform1i(U_PARAM_INT_0, 1);
+	qglUniform1f(U_PARAM_FLOAT_0, r_colorTempK->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
 	R_DrawFullScreenQuad();
@@ -400,12 +399,11 @@ void R_lutCorrection(void)
 	GL_BindProgram(lutProgram);
 
 	R_CaptureColorBuffer();
-	
+
 	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
 	GL_SetBindlessTexture(U_TMU1, r_3dLut[lutID]->handle);
 
 	qglUniform3f(U_PARAM_VEC3_0, r_3dLut[lutID]->lutSize, r_3dLut[lutID]->lutSize, r_3dLut[lutID]->lutSize);
-	qglUniform1i(U_PARAM_INT_0, 0);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad();

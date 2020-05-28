@@ -164,6 +164,7 @@ void CL_RegisterTEntModels (void) {
 	//ROGUE
 
 	LoadHudEnts ();
+	CL_CacheMenuModels(); // refresh cache for memu
 }
 
 /*

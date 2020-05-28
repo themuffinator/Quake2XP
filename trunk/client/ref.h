@@ -607,8 +607,10 @@ void Draw_StretchPic (int x, int y, int w, int h, char *name);
 
 
 void Draw_PicScaled (int x, int y, float scale_x, float scale_y, char *pic);
-void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char *pic, char *pic2);
 void Draw_ScaledPic (int x, int y, float scale_x, float scale_y, image_t * gl);
+
+void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char* pic, char* pic2);
+void Draw_ScaledBumpPic(int x, int y, float scale_x, float scale_y, image_t* gl, image_t* gl2);
 
 void Draw_CharScaled (int x, int y, float scale_x, float scale_y, unsigned char num);
 void Draw_StringScaled (int x, int y, float scale_x, float scale_y, const char *str);

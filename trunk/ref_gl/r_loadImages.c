@@ -79,7 +79,7 @@ void CreateDSTtex(void) {
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 16, 16);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, 16, 16);
 	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, dist);
 
 	r_DSTTex->handle = glGetTextureHandleARB(r_DSTTex->texnum);
@@ -186,7 +186,7 @@ void CreateSSAOBuffer(void) {
 	r_miniDepthTex = R_CreateTexture("***r_miniDepthTex***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, it_pic, vid.width / 2, vid.height / 2, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_FLOAT);
 	
 	for(int i = 0; i<2; i++)
-		r_ssaoColorTex[i] = R_CreateTexture("***r_miniDepthTex***", GL_TEXTURE_RECTANGLE, GL_SRGB8, GL_RGB, it_pic, vid.width / 2, vid.height / 2, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+		r_ssaoColorTex[i] = R_CreateTexture("***r_ssaoColorTex***", GL_TEXTURE_RECTANGLE, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width / 2, vid.height / 2, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
 
 	r_ssaoColorTexIndex = 0;
 
@@ -262,7 +262,10 @@ void Load3dLut(void) {
 		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
-		qglTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, LUTsize, LUTsize, LUTsize, 0, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, LUTsize, LUTsize, LUTsize, 0, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
+		
+//		glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGB8, LUTsize, LUTsize, LUTsize);
+//		glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, LUTsize, LUTsize, LUTsize, GL_RGB, GL_UNSIGNED_BYTE, buf + sizeof(LUTsize));
 
 		FS_FreeFile(buf);
 		lutCount++;
@@ -371,14 +374,9 @@ image_t *R_LoadLightFilter (int id) {
 	strcpy (image->name, name);
 	image->registration_sequence = registration_sequence;
 	image->type = it_pic;
-	qglGenTextures (1, &image->texnum);
 
+	qglGenTextures (1, &image->texnum);
 	qglBindTexture (GL_TEXTURE_CUBE_MAP, image->texnum);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	minw = minh = 0;
 	maxw = maxh = 9999999;
@@ -414,16 +412,19 @@ image_t *R_LoadLightFilter (int id) {
 	if ((minw != maxw) || (minh != maxh) || (minw != minh))
 		Com_Error (ERR_DROP, "R_LoadLightFilter: (%i) all images must be quadratic with equal sizes", id + 1);
 
+	int numMips = CalcMipmapCount(minw, minh);
+	glTexStorage2D(GL_TEXTURE_CUBE_MAP, numMips, GL_RGB8, minw, minh);
+
 	for (i = 0; i < 6; i++) {
 		if (pix[i].pixels) {
 			allNull = qfalse;
 			R_FlipImage (i, &pix[i], (byte*)trans);
 			free (pix[i].pixels);
-			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, /*pix[i].pixels*/ trans);
+			qglTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, minw, minh, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 		}
 		else {
 			nullpixels = (byte*)calloc (minw*minh * 4, 1);
-			qglTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8, minw, minh, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
+			qglTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, minw, minh, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
 			free (nullpixels);
 		}
 
@@ -433,6 +434,15 @@ image_t *R_LoadLightFilter (int id) {
 	image->height = minh;
 	image->upload_width = image->width * 6;
 	image->upload_height = image->height * 6;
+
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMips);
+	qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
@@ -636,12 +646,12 @@ void R_InitEngineTextures (void) {
 	Load3dLut();
 
 	r_depthTex		=	R_CreateTexture("***r_depthTex***", GL_TEXTURE_RECTANGLE, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_INT);
-	r_screenTex		=	R_CreateTexture("***r_screenTex***", GL_TEXTURE_RECTANGLE, GL_SRGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
-	r_fxaaTex		=	R_CreateTexture("***r_fxaaTex***", GL_TEXTURE_2D, GL_SRGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
-	r_fixFovTex		=	R_CreateTexture("***r_fixFovTex***", GL_TEXTURE_2D, GL_SRGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_screenTex		=	R_CreateTexture("***r_screenTex***", GL_TEXTURE_RECTANGLE, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_fxaaTex		=	R_CreateTexture("***r_fxaaTex***", GL_TEXTURE_2D, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_fixFovTex		=	R_CreateTexture("***r_fixFovTex***", GL_TEXTURE_2D, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
 	r_cinImage		=	R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
-	r_bloomImage	=	R_CreateTexture("***r_bloomImage***", GL_TEXTURE_RECTANGLE, GL_SRGB8, GL_RGB, it_pic, vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
-	r_thermalImage	=	R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_SRGB8, GL_RGB, it_pic, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_bloomImage	=	R_CreateTexture("***r_bloomImage***", GL_TEXTURE_RECTANGLE, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
+	r_thermalImage	=	R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE);
 }
 
 

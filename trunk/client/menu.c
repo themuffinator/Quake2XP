@@ -81,24 +81,21 @@ typedef struct {
 } menulayer_t;
 
 menulayer_t m_layers[MAX_MENU_DEPTH];
-int m_menudepth;
+uint m_menudepth;
 
-static void M_Banner(char *name) {
+static void M_Banner(image_t *banner[2]) {
 	int w, h;
-	char bump[80];
 
-	strcpy(bump, name);
-	strcat(bump, "_bump");
-
-	Draw_GetPicSize(&w, &h, name);
+	w = banner[0]->width;
+	h = banner[0]->height;
 
 	if (cl_fontScale->value == 2) {
-		Draw_PicScaled((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
-		Draw_PicBumpScaled((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
+		Draw_ScaledPic((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, banner[0]);
+		Draw_ScaledBumpPic((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, banner[0], banner[1]);
 	}
 	else if (cl_fontScale->value >= 3) {
-		Draw_PicScaled((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name);
-		Draw_PicBumpScaled((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, name, bump);
+		Draw_ScaledPic((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, banner[0]);
+		Draw_ScaledBumpPic((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, banner[0], banner[1]);
 	}
 }
 
@@ -149,9 +146,11 @@ void M_PopMenu(void) {
 	if (m_menudepth < 1)
 		Com_Error(ERR_FATAL, "M_PopMenu: depth < 1");
 	m_menudepth--;
-
-	m_drawfunc = m_layers[m_menudepth].draw;
-	m_keyfunc = m_layers[m_menudepth].key;
+	
+	if (m_menudepth) {
+		m_drawfunc = m_layers[m_menudepth].draw;
+		m_keyfunc = m_layers[m_menudepth].key;
+	}
 
 	if (!m_menudepth)
 		M_ForceMenuOff();
@@ -327,10 +326,10 @@ void M_Main_DrawQuad(float x, float y) {
 	extern float CalcFov(float fov_x, float w, float h);
 	refdef_t refdef;
 	static int yaw;
-	char scratch[MAX_QPATH];
 	entity_t entity;
 
 	memset(&refdef, 0, sizeof(refdef));
+	memset(&entity, 0, sizeof(entity));
 
 	refdef.x = x;
 	refdef.y = y - 7 * cl_fontScale->value;
@@ -339,13 +338,13 @@ void M_Main_DrawQuad(float x, float y) {
 	refdef.fov_x = 45;
 	refdef.fov_y = 45;
 	refdef.time = cls.realtime / 1.5;
+	refdef.areabits = 0;
+	refdef.num_entities = 1;
+	refdef.entities = &entity;
+	refdef.lightstyles = 0;
+	refdef.rdflags = RDF_NOWORLDMODEL | RDF_NOCLEAR;
 
-	memset(&entity, 0, sizeof(entity));
-
-	if (!entity.model) {
-		Com_sprintf(scratch, sizeof(scratch), "models/items/quaddama/tris.md2");
-		entity.model = R_RegisterModel(scratch);
-	}
+	entity.model = menumodel.menuQuad;
 	entity.flags = RF_NOSHADOW | RF_DEPTHHACK;
 	entity.origin[0] = 55;
 	entity.origin[1] = -3;
@@ -357,12 +356,6 @@ void M_Main_DrawQuad(float x, float y) {
 	entity.backlerp = 0.0;
 	entity.angles[1] = anglemod(cl.time / 16);
 	entity.angleMod = qtrue;
-
-	refdef.areabits = 0;
-	refdef.num_entities = 1;
-	refdef.entities = &entity;
-	refdef.lightstyles = 0;
-	refdef.rdflags = RDF_NOWORLDMODEL | RDF_NOCLEAR;
 
 	R_RenderFrame(&refdef);
 	refdef.num_entities++;
@@ -377,7 +370,7 @@ void M_Main_Draw(void) {
 	int offcet = 0;
 	int widest = -1;
 	int totalheight = 0;
-	char litname[80], litname2[80];
+
 	char *names[] = {
 		"m_main_game",
 		"m_main_multiplayer",
@@ -412,32 +405,27 @@ void M_Main_Draw(void) {
 
 	for (i = 0; names[i] != 0; i++) {
 		if (i != m_main_cursor) {
-			Draw_PicScaled(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, names[i]);
-			Draw_PicBumpScaled(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, names[i], namesBump[i]);
+			Draw_ScaledPic(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, i_main_menu[i]);
+			Draw_ScaledBumpPic(xoffset + offcet, ystart + (i * fontscale) * 40 + 13, fontscale, fontscale, i_main_menu[i], i_main_menu_bump[i]);
 		}
 	}
 
-	strcpy(litname, names[m_main_cursor]);
-	strcat(litname, "_sel");
-	Draw_PicScaled(xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, litname);
+	Draw_ScaledPic(xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, i_main_menu_sel[m_main_cursor]);
+	Draw_ScaledBumpPic(xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, i_main_menu_sel[m_main_cursor], i_main_menu_bump_sel[m_main_cursor]);
 
-	strcpy(litname2, namesBump[m_main_cursor]);
-	strcat(litname2, "_sel");
-	Draw_PicBumpScaled(xoffset + offcet, ystart + (m_main_cursor * fontscale) * 40 + 13, fontscale, fontscale, litname, litname2);
+	w = i_main_plaque[0]->width;
+	Draw_ScaledPic((xoffset - 30) - w, ystart, fontscale, fontscale, i_main_plaque[0]);
+	Draw_ScaledBumpPic((xoffset - 30) - w, ystart, fontscale, fontscale, i_main_plaque[0], i_main_plaque[1]);
 
-	Draw_GetPicSize(&w, &h, "m_main_plaque");
-	Draw_PicScaled((xoffset - 30) - w, ystart, fontscale, fontscale, "m_main_plaque");
-
-	Draw_GetPicSize(&w, &h, "m_main_plaque_bump");
-	Draw_PicBumpScaled((xoffset - 30) - w, ystart, fontscale, fontscale, "m_main_plaque", "m_main_plaque_bump");
-
+	w = i_main_logo[0]->width;
+	h = i_main_logo[0]->height;
 	if (cl_fontScale->value == 3) {
-		Draw_PicScaled((xoffset - 30) - w, ystart + h + (60 * fontscale), fontscale, fontscale, "m_main_logo");
-		Draw_PicBumpScaled((xoffset - 30) - w, ystart + h + (60 * fontscale), fontscale, fontscale, "m_main_logo", "m_main_logo_bump");
+		Draw_ScaledPic((xoffset - 30) - w, ystart + h + (140 * fontscale), fontscale, fontscale, i_main_logo[0]);
+		Draw_ScaledBumpPic((xoffset - 30) - w, ystart + h + (140 * fontscale), fontscale, fontscale, i_main_logo[0], i_main_logo[1]);
 	}
 	else if (cl_fontScale->value == 2) {
-		Draw_PicScaled((xoffset - 30) - w, ystart + h + 20, fontscale, fontscale, "m_main_logo");
-		Draw_PicBumpScaled((xoffset - 30) - w, ystart + h + 20, fontscale, fontscale, "m_main_logo", "m_main_logo_bump");
+		Draw_ScaledPic((xoffset - 30) - w, ystart + h + 260, fontscale, fontscale, i_main_logo[0]);
+		Draw_ScaledBumpPic((xoffset - 30) - w, ystart + h + 260, fontscale, fontscale, i_main_logo[0], i_main_logo[1]);
 
 	}
 	M_Main_DrawQuad(xoffset - 30, ystart + (m_main_cursor * 40 + 5)* fontscale);
@@ -517,7 +505,7 @@ static menuaction_s s_start_network_server_action;
 static menuaction_s s_player_setup_action;
 
 static void Multiplayer_MenuDraw(void) {
-	M_Banner("m_banner_multiplayer");
+	M_Banner(i_banner_multiplayer);
 
 	Menu_AdjustCursor(&s_multiplayer_menu, 1);
 	Menu_Draw(&s_multiplayer_menu);
@@ -1921,31 +1909,30 @@ void Options_MenuInit(void) {
 	Menu_AddItem(&s_options_menu, (void *)&s_options_console_action);
 }
 
-void M_Option_Banner(char *name) {
+void M_Option_Banner(image_t *banner[2]) {
 	int w, h;
 	int move;
-	char bump[80];
-
-	strcpy(bump, name);
-	strcat(bump, "_bump");
 
 	move = 170 + (cl_fontScale->value - 1) * 100;
 
-	Draw_GetPicSize(&w, &h, name);
+	w = banner[0]->width;
+	h = banner[0]->height;
+
 	move += h;
 	if (cl_fontScale->value == 2) {
-		Draw_PicScaled(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
-		Draw_PicBumpScaled(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name, bump);
+		Draw_ScaledPic(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, banner[0]);
+		Draw_ScaledBumpPic(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, banner[0], banner[1]);
 	}
 	else 
 		if (cl_fontScale->value == 3) {
-			Draw_PicScaled(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name);
-			Draw_PicBumpScaled(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, name, bump);
+			Draw_ScaledPic(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, banner[0]);
+			Draw_ScaledBumpPic(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, banner[0], banner[1]);
 	}
 }
 
 void Options_MenuDraw(void) {
-	M_Option_Banner("m_banner_options");
+	M_Option_Banner(i_banner_options);
+
 	Menu_AdjustCursor(&s_options_menu, 1);
 	Menu_Draw(&s_options_menu);
 }
@@ -2618,7 +2605,7 @@ void Game_MenuInit(void) {
 }
 
 void Game_MenuDraw(void) {
-	M_Banner("m_banner_game");
+	M_Banner(i_banner_game);
 	Menu_AdjustCursor(&s_game_menu, 1);
 	Menu_Draw(&s_game_menu);
 }
@@ -2996,7 +2983,7 @@ void LoadGame_MenuInit(void) {
 }
 
 void LoadGame_MenuDraw(void) {
-	M_Banner("m_banner_load_game");
+	M_Banner(i_banner_load_game);
 	//  Menu_AdjustCursor( &s_loadgame_menu, 1 );
 	Menu_Draw(&s_loadgame_menu);
 }
@@ -3034,7 +3021,7 @@ void SaveGameCallback(void *self) {
 }
 
 void SaveGame_MenuDraw(void) {
-	M_Banner("m_banner_save_game");
+	M_Banner(i_banner_save_game);
 	Menu_AdjustCursor(&s_savegame_menu, 1);
 	Menu_Draw(&s_savegame_menu);
 }
@@ -3242,7 +3229,7 @@ void JoinServer_MenuInit(void) {
 }
 
 void JoinServer_MenuDraw(void) {
-	M_Banner("m_banner_join_server");
+	M_Banner(i_banner_join_server);
 	Menu_Draw(&s_joinserver_menu);
 }
 
@@ -4152,9 +4139,11 @@ static menufield_s s_addressbook_fields[NUM_ADDRESSBOOK_ENTRIES];
 
 void AddressBook_MenuInit(void) {
 	int i;
+	int w = i_banner_addressbook[0]->width;
+	int h = i_banner_addressbook[0]->height;
 
-	s_addressbook_menu.x = viddef.width / 2 - 142;
-	s_addressbook_menu.y = viddef.height / 2 - 58;
+	s_addressbook_menu.x = viddef.width / 2 - ((w + 8) * cl_fontScale->value) / 4;
+	s_addressbook_menu.y = viddef.height / 4 + (h * cl_fontScale->value);
 	s_addressbook_menu.nitems = 0;
 	
 	drawIDlogo = qfalse;
@@ -4171,7 +4160,7 @@ void AddressBook_MenuInit(void) {
 		s_addressbook_fields[i].generic.name = 0;
 		s_addressbook_fields[i].generic.callback = 0;
 		s_addressbook_fields[i].generic.x = 0;
-		s_addressbook_fields[i].generic.y = i * 18 + 0;
+		s_addressbook_fields[i].generic.y = i * 18 * cl_fontScale->value + 0;
 		s_addressbook_fields[i].generic.localdata[0] = i;
 		s_addressbook_fields[i].cursor = 0;
 		s_addressbook_fields[i].length = 60;
@@ -4197,7 +4186,7 @@ int AddressBook_MenuKey(int key) {
 }
 
 void AddressBook_MenuDraw(void) {
-	M_Banner("m_banner_addressbook");
+	M_Banner(i_banner_addressbook);
 	Menu_Draw(&s_addressbook_menu);
 }
 
@@ -4769,8 +4758,8 @@ void M_Quit_Draw(void) {
 	int h = 240;
 	drawIDlogo = qfalse;
 //	Draw_GetPicSize(&w, &h, "quit");
-	Draw_PicScaled((viddef.width - w * cl_fontScale->value) / 2, (viddef.height - h * cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, "quit");
-	Draw_PicBumpScaled((viddef.width - w * cl_fontScale->value) / 2, (viddef.height - h * cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, "quit", "quit_bump");
+	Draw_ScaledPic((viddef.width - w * cl_fontScale->value) / 2, (viddef.height - h * cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, i_quit[0]);
+	Draw_ScaledBumpPic((viddef.width - w * cl_fontScale->value) / 2, (viddef.height - h * cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, i_quit[0], i_quit[1]);
 
 }
 
@@ -4816,7 +4805,6 @@ void M_DrawBackgroundModel() {
 	refdef_t	refdef;
 	vec3_t		center, rad;
 	entity_t	entity;
-	char		name[MAX_QPATH];
 	int			pos;
 
 	if (!drawIDlogo)
@@ -4825,10 +4813,7 @@ void M_DrawBackgroundModel() {
 	memset(&refdef, 0, sizeof(refdef));
 	memset(&entity, 0, sizeof(entity));
 
-	if (!entity.model) {
-		Com_sprintf(name, sizeof(name), "models/menu/idlogo.md3");
-		entity.model = R_RegisterModel(name);
-	}
+	entity.model = menumodel.menuLogo;
 
 	R_ModelRadius(entity.model, rad);
 	R_ModelCenter(entity.model, center);
@@ -4877,7 +4862,7 @@ void M_Draw(void) {
 	SCR_DirtyScreen();	
 	
 	if (cls.state != ca_active || !cl.refresh_prepped) {
-		Draw_StretchPic(0, 0, viddef.width, viddef.height, "menuback");
+		Draw_StretchPic2(0, 0, viddef.width, viddef.height, i_menuBackground);
 		
 		if (!drawIDlogo)
 			R_MenuBackGround();

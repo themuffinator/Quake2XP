@@ -574,24 +574,28 @@ void M_ColorInit() {
 int Default_MenuKey(menuframework_s * m, int key);
 void M_PushMenu(void(*draw) (void), int(*key) (int k));
 
-void Color_MenuDraw(void)
-{
+void Draw_VideoBanner() {
 	int w, h;
 
-	menuSize = 170 * cl_fontScale->value;
-
-	// draw the banner
-	Draw_GetPicSize(&w, &h, "m_banner_video");
+	w = i_banner_video[0]->width;
+	h = i_banner_video[0]->height;
 
 	if (cl_fontScale->value == 2) {
-		Draw_PicScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
-		Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
+		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.5)), (int)(viddef.height * 0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, i_banner_video[0]);
+		Draw_ScaledBumpPic((int)(viddef.width * 0.5 - (w * 0.5)), (int)(viddef.height * 0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, i_banner_video[0], i_banner_video[1]);
 	}
 	else if (cl_fontScale->value == 3) {
-		Draw_PicScaled((int)(viddef.width *0.5 - (w *0.75)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
-		Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.75)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
+		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.75)), (int)(viddef.height * 0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, i_banner_video[0]);
+		Draw_ScaledBumpPic((int)(viddef.width * 0.5 - (w * 0.75)), (int)(viddef.height * 0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, i_banner_video[0], i_banner_video[1]);
 	}
+}
+
+void Color_MenuDraw(void)
+{
+	menuSize = 170 * cl_fontScale->value;
 	
+	Draw_VideoBanner();
+
 	Menu_AdjustCursor(&s_opengl2_menu, 1);
 	Menu_Draw(&s_opengl2_menu);
 }
@@ -955,23 +959,11 @@ VID_MenuDraw
 ================
 */
 void VID_MenuDraw (void) {
-	int w, h;
 
 	s_current_menu = &s_opengl_menu;
-
 	menuSize = 170 * cl_fontScale->value;
 
-	// draw the banner
-	Draw_GetPicSize (&w, &h, "m_banner_video");
-
-	if (cl_fontScale->value == 2) {
-		Draw_PicScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
-		Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.5)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
-	}
-	else if (cl_fontScale->value == 3) {
-		Draw_PicScaled((int)(viddef.width *0.5 - (w *0.75)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video");
-		Draw_PicBumpScaled((int)(viddef.width *0.5 - (w *0.75)), (int)(viddef.height *0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, "m_banner_video", "m_banner_video_bump");
-	}
+	Draw_VideoBanner();
 
 	// move cursor to a reasonable starting position
 	Menu_AdjustCursor (s_current_menu, 1);

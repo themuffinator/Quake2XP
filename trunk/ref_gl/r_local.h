@@ -258,6 +258,7 @@ cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
 cvar_t	*r_colorBalanceGreen;
 cvar_t	*r_colorBalanceBlue;
+cvar_t	*r_srgbColorBuffer;
 
 cvar_t *vid_ref;
 
@@ -921,6 +922,7 @@ glslProgram_t		*filmGrainProgram;
 glslProgram_t		*nullProgram;
 glslProgram_t		*gammaProgram;
 glslProgram_t		*lutProgram;
+glslProgram_t		*whiteBalanceProgram;
 glslProgram_t		*FboProgram;
 glslProgram_t		*light2dProgram;
 glslProgram_t		*fixFovProgram;

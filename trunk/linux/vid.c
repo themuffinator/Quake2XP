@@ -236,7 +236,8 @@ VID_CheckChanges(void)
 				Con_ToggleConsole_f();
 		}
 		cls.disable_screen = qfalse;
-		CL_InitImages();
+		CL_InitImages(); 
+    CL_CacheMenuModels();
 
 		// XXX: as SDL was restarted, key repeat settings were lost
 		IN_Shutdown();

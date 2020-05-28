@@ -378,7 +378,7 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="client\cg_hud.c" />
-    <ClCompile Include="client\cl_images.c">
+    <ClCompile Include="client\cl_preload.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
@@ -814,6 +814,8 @@
     <None Include="..\baseq2\glsl\thermalfp.vert" />
     <None Include="..\baseq2\glsl\water.frag" />
     <None Include="..\baseq2\glsl\water.vert" />
+    <None Include="..\baseq2\glsl\whitebalance.frag" />
+    <None Include="..\baseq2\glsl\whitebalance.vert" />
     <None Include="win32\icon1.ico" />
     <None Include="win32\q2.ico" />
   </ItemGroup>
