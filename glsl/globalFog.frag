@@ -15,7 +15,7 @@ void main(void){
 	
 	float mask;
 	
-	if(depth >= 0.999f)
+	if(depth >= 0.9999)
 		mask = 0.0;
 	else
 		mask = 1.0;

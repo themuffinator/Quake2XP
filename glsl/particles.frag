@@ -21,6 +21,10 @@ void main (void) {
 	float softness = clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
 	
 	fragData = color * v_color * u_colorScale;
+	
+	if(depth < 0.9999)
+		return;
+
 	fragData *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
 	}
 	else
