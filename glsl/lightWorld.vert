@@ -30,15 +30,15 @@ void main (void) {
 	v_lightSpot		= (u_spotMatrix * vec4(att_position, 1.0)).xyz;
 
 	// calculate tangent space view vector for parallax
-	vec3 tmp = u_viewOriginES - att_position;
-	v_viewVecTS.x = dot(tmp, att_tangent);
-	v_viewVecTS.y = dot(tmp, att_binormal);
-	v_viewVecTS.z = dot(tmp, att_normal);
+	vec3 VV = u_viewOriginES - att_position;
+	v_viewVecTS.x = dot(VV, att_tangent);
+	v_viewVecTS.y = dot(VV, att_binormal);
+	v_viewVecTS.z = dot(VV, att_normal);
 
 	vec3 LV = u_LightOrg - att_position;
-	v_lightVec.x = dot(att_tangent, LV);
-	v_lightVec.y = dot(att_binormal, LV);
-	v_lightVec.z = dot(att_normal, LV); 
+	v_lightVec.x = dot(LV, att_tangent);
+	v_lightVec.y = dot(LV, att_binormal);
+	v_lightVec.z = dot(LV, att_normal); 
 
 	gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
 }

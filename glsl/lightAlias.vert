@@ -36,14 +36,14 @@ v_lightAtten		= (u_attenMatrix	* vec4(att_position, 1.0)).xyz;
 v_lightSpot			= (u_spotMatrix		* vec4(att_position, 1.0)).xyz;
 
 vec3 LV = u_LightOrg - att_position;
-v_lightVec.x = dot(att_tangent, LV);
-v_lightVec.y = dot(att_binormal, LV);
-v_lightVec.z = dot(att_normal, LV); 
+v_lightVec.x = dot(LV, att_tangent);
+v_lightVec.y = dot(LV, att_binormal);
+v_lightVec.z = dot(LV, att_normal); 
 
 vec3 VV = u_ViewOrigin - att_position;
-v_viewVec.x = dot(att_tangent, VV);
-v_viewVec.y = dot(att_binormal, VV);
-v_viewVec.z = dot(att_normal, VV); 
+v_viewVec.x = dot(VV, att_tangent);
+v_viewVec.y = dot(VV, att_binormal);
+v_viewVec.z = dot(VV, att_normal); 
 
 mat3 m = mat3(u_modelViewProjectionMatrix);
 
@@ -58,6 +58,6 @@ gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
 
 v_tst = mat3(u_skyMatrix) * att_normal;
 
-	vec4 pos = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
-	v_positionVS = pos.xyz;
+vec4 pos = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
+v_positionVS = pos.xyz;
 }
