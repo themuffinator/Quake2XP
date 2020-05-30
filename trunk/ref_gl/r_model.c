@@ -1366,14 +1366,14 @@ static qboolean cache_Fetch(void *dst, int size) {
 
 void GL_BuildTBN(int count) {
 	int			ci, cj, i, j;
-	float		*vi, *vj, threshold;
+	float		*vi, *vj;
 	msurface_t	*si, *sj;
 	vec3_t		ni, nj;
 	char		cacheName[MAX_QPATH];
 	FILE		*cacheFile = NULL;
 	int         smoothAng = r_tbnSmoothAngle->integer;
 
-	threshold = cosf(DEG2RAD(r_tbnSmoothAngle->integer));
+	double threshold = cosf(DEG2RAD(r_tbnSmoothAngle->value));
 
 	// Check for existing data
 	Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
@@ -1417,8 +1417,7 @@ recreate:
 	if (cacheFile == NULL)
 		Com_Printf(S_COLOR_RED "GL_BuildTBN: could't open %s for writing\n", currentmodel->name);
 	else {
-		Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating %s, with angle %d\n",
-			currentmodel->name, smoothAng);
+		Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating %s, with angle %d\n", currentmodel->name, smoothAng);
 		fwrite(&smoothAng, sizeof(smoothAng), 1, cacheFile);
 	}
 
@@ -1488,7 +1487,7 @@ recreate:
 			CrossProduct(normal, si->texInfo->vecs[0], tmp);
 			CrossProduct(normal, tmp, biTangent);
 			VectorNormalize(biTangent);
-			if (DotProduct(biTangent, si->texInfo->vecs[0]) < 0) {
+			if (DotProduct(biTangent, si->texInfo->vecs[0]) < 0.0) {
 				vi[10] = -biTangent[0];
 				vi[11] = -biTangent[1];
 				vi[12] = -biTangent[2];
@@ -1502,7 +1501,7 @@ recreate:
 			CrossProduct(normal, si->texInfo->vecs[1], tmp);
 			CrossProduct(normal, tmp, biTangent);
 			VectorNormalize(biTangent);
-			if (DotProduct(biTangent, si->texInfo->vecs[1]) < 0) {
+			if (DotProduct(biTangent, si->texInfo->vecs[1]) < 0.0) {
 				vi[13] = -biTangent[0];
 				vi[14] = -biTangent[1];
 				vi[15] = -biTangent[2];

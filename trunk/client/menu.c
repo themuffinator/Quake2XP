@@ -2528,10 +2528,10 @@ static void CreditsFunc(void *unused) {
 
 void Game_MenuInit(void) {
 	static const char *difficulty_names[] = {
-		"easy",
-		"medium",
-		"hard",
-		"nightmare!",
+		"Easy",
+		"Medium",
+		"Hard",
+		"Nightmare!",
 		0
 	};
 
@@ -2544,28 +2544,28 @@ void Game_MenuInit(void) {
 	s_easy_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_easy_game_action.generic.x = 0;
 	s_easy_game_action.generic.y = 0;
-	s_easy_game_action.generic.name = "easy";
+	s_easy_game_action.generic.name = "Easy";
 	s_easy_game_action.generic.callback = EasyGameFunc;
 
 	s_medium_game_action.generic.type = MTYPE_ACTION;
 	s_medium_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_medium_game_action.generic.x = 0;
 	s_medium_game_action.generic.y = 10 * cl_fontScale->value;
-	s_medium_game_action.generic.name = "medium";
+	s_medium_game_action.generic.name = "Medium";
 	s_medium_game_action.generic.callback = MediumGameFunc;
 
 	s_hard_game_action.generic.type = MTYPE_ACTION;
 	s_hard_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_hard_game_action.generic.x = 0;
 	s_hard_game_action.generic.y = 20 * cl_fontScale->value;
-	s_hard_game_action.generic.name = "hard";
+	s_hard_game_action.generic.name = "Hard";
 	s_hard_game_action.generic.callback = HardGameFunc;
 
 	s_nightmare_game_action.generic.type = MTYPE_ACTION;
 	s_nightmare_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_nightmare_game_action.generic.x = 0;
 	s_nightmare_game_action.generic.y = 30 * cl_fontScale->value;
-	s_nightmare_game_action.generic.name = "nightmare!";
+	s_nightmare_game_action.generic.name = "Nightmare!";
 	s_nightmare_game_action.generic.callback = NightmareGameFunc;
 
 	s_blankline.generic.type = MTYPE_SEPARATOR;
@@ -2574,21 +2574,21 @@ void Game_MenuInit(void) {
 	s_load_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_load_game_action.generic.x = 0;
 	s_load_game_action.generic.y = 50 * cl_fontScale->value;
-	s_load_game_action.generic.name = "load game";
+	s_load_game_action.generic.name = "Load Game";
 	s_load_game_action.generic.callback = LoadGameFunc;
 
 	s_save_game_action.generic.type = MTYPE_ACTION;
 	s_save_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_save_game_action.generic.x = 0;
 	s_save_game_action.generic.y = 60 * cl_fontScale->value;
-	s_save_game_action.generic.name = "save game";
+	s_save_game_action.generic.name = "Save Game";
 	s_save_game_action.generic.callback = SaveGameFunc;
 
 	s_credits_action.generic.type = MTYPE_ACTION;
 	s_credits_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_credits_action.generic.x = 0;
 	s_credits_action.generic.y = 70 * cl_fontScale->value;
-	s_credits_action.generic.name = "credits";
+	s_credits_action.generic.name = "Credits";
 	s_credits_action.generic.callback = CreditsFunc;
 
 	Menu_AddItem(&s_game_menu, (void *)&s_easy_game_action);
@@ -2636,6 +2636,7 @@ static menuframework_s s_loadgame_menu;
 static menuaction_s s_loadgame_actions[MAX_SAVEGAMES];
 
 static menuaction_s s_quickLoadGame_actions;
+static menuaction_s s_quickSaveGame_actions;
 
 char m_savestrings[MAX_SAVEGAMES][MAX_OSPATH];
 char m_savesInfos[MAX_SAVEGAMES][MAX_OSPATH];
@@ -2922,6 +2923,13 @@ void QuickLoadGameCallback(void* self) {
 	M_ForceMenuOff();
 }
 
+void QuickSaveGameCallback(void* self) {
+	menuaction_s* a = (menuaction_s*)self;
+
+	Cbuf_AddText(va("save quick\n"));
+	M_ForceMenuOff();
+}
+
 void LoadGame_MenuInit(void) {
 	int i, w, h;
 
@@ -2935,7 +2943,7 @@ void LoadGame_MenuInit(void) {
 
 	s_loadgame_menu.nitems = 0;
 
-	// The quicksave slot...
+	// The quickload slot...
 	Create_QuickLoadList();
 	Create_QuickSavesInfoss();
 	
@@ -3032,9 +3040,26 @@ void SaveGame_MenuInit(void) {
 	Draw_GetPicSize(&w, &h, "m_banner_save_game");
 
 	s_savegame_menu.x = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value;
-	s_savegame_menu.y = viddef.height * 0.25 + h * 0.5 + 8 * cl_fontScale->value;
+	s_savegame_menu.y = viddef.height * 0.2 + h * 0.5 + 8 * cl_fontScale->value;
 	s_savegame_menu.x *= 0.5;
 	s_savegame_menu.nitems = 0;
+
+
+	// The quicksave slot...
+	Create_QuickLoadList();
+	Create_QuickSavesInfoss();
+
+	s_quickSaveGame_actions.generic.type = MTYPE_ACTION;
+	s_quickSaveGame_actions.generic.name = m_quicksavestring;
+	s_quickSaveGame_actions.generic.flags = QMF_LEFT_JUSTIFY;
+	s_quickSaveGame_actions.generic.x = 0;
+	s_quickSaveGame_actions.generic.y = 10 * cl_fontScale->value;
+	s_quickSaveGame_actions.generic.localdata[0] = 0;
+	s_quickSaveGame_actions.generic.statusbarfunc = DrawQuickSavedShot;
+	s_quickSaveGame_actions.generic.callback = QuickSaveGameCallback;
+
+	Menu_AddItem(&s_savegame_menu, &s_quickSaveGame_actions);
+
 
 	Create_Savestrings();
 	Create_SavesInfoss();
@@ -3050,7 +3075,7 @@ void SaveGame_MenuInit(void) {
 		s_savegame_actions[i].generic.callback = SaveGameCallback;
 
 		s_savegame_actions[i].generic.x = 0;
-		s_savegame_actions[i].generic.y = (i) * 10 * cl_fontScale->value;
+		s_savegame_actions[i].generic.y = (i+3) * 10 * cl_fontScale->value;
 
 		s_savegame_actions[i].generic.type = MTYPE_ACTION;
 		s_savegame_actions[i].generic.statusbarfunc = DrawSavedShot;
@@ -3205,15 +3230,13 @@ void JoinServer_MenuInit(void) {
 	for (i = 0; i < MAX_LOCAL_SERVERS; i++) {
 		s_joinserver_server_actions[i].generic.type = MTYPE_ACTION;
 		strcpy(local_server_names[i], NO_SERVER_STRING);
-		s_joinserver_server_actions[i].generic.name =
-			local_server_names[i];
+		s_joinserver_server_actions[i].generic.name = local_server_names[i];
 		s_joinserver_server_actions[i].generic.flags = QMF_LEFT_JUSTIFY;
 		s_joinserver_server_actions[i].generic.x = 0;
 		s_joinserver_server_actions[i].generic.y = shift + 40 * cl_fontScale->value + i * 10 * cl_fontScale->value;
 
 		s_joinserver_server_actions[i].generic.callback = JoinServerFunc;
-		s_joinserver_server_actions[i].generic.statusbar =
-			"press ENTER to connect";
+		s_joinserver_server_actions[i].generic.statusbar = "press ENTER to connect";
 	}
 
 	Menu_AddItem(&s_joinserver_menu, &s_joinserver_address_book_action);
