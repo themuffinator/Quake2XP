@@ -44,7 +44,7 @@ model_t mod_inline[MAX_MOD_KNOWN];
 
 int registration_sequence;
 extern char map_entitystring[MAX_MAP_ENTSTRING];
-extern qboolean relightMap;
+extern qboolean relightMap, cleanAmbientMap;
 
 byte Normal2Index(const vec3_t vec);
 
@@ -2945,6 +2945,7 @@ void R_EndRegistration(void) {
 	GL_SetDefaultState();
 
 	relightMap = qfalse;
+	cleanAmbientMap = qfalse;
 }
 
 

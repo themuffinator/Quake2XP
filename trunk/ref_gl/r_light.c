@@ -42,6 +42,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine ();
 void R_AddLightInteraction(worldShadowLight_t *light);
 void R_DrawOcclusionBbox(worldShadowLight_t* light, qboolean update);
+void Clamp2RGB(vec3_t color);
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
@@ -367,7 +368,10 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 			light->castCaustics = qfalse;
 		else
 			light->castCaustics = qtrue;
-
+		
+		if(light->isAmbient)
+			light->castCaustics = qfalse;
+		
 		VectorCopy (light->startColor, light->color);
 
 		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -1179,7 +1183,7 @@ void R_ChangeLightRadius_f (void) {
 	}
 
 	if (Cmd_Argc () != 2) {
-		Com_Printf ("Usage: ajustSelectedLightRadius: X Y Z\n");
+		Com_Printf ("Usage: changeLightRadius: X Y Z\n");
 		return;
 	}
 	if (flareEdit) {
@@ -1223,6 +1227,33 @@ void R_ChangeLightRadius_f (void) {
 		}
 	}
 
+}
+
+void R_ScaleLightColor_f(void) {
+
+	float	scale;
+
+	if (!r_lightEditor->integer) {
+		Com_Printf("Type r_lightEditor 1 to enable light editing.\n");
+		return;
+	}
+
+	if (!selectedShadowLight) {
+		Com_Printf("No selected light.\n");
+		return;
+	}
+
+	if (Cmd_Argc() != 2) {
+		Com_Printf("Usage: scaleLightColor: value\n");
+		return;
+	}
+	scale = atof(Cmd_Argv(1));
+
+	selectedShadowLight->startColor[0] += scale;
+	selectedShadowLight->startColor[1] += scale;
+	selectedShadowLight->startColor[2] += scale;
+
+	Clamp2RGB(selectedShadowLight->startColor);
 }
 
 void R_ChangeLightCone_f (void) {
@@ -1510,6 +1541,15 @@ void Clamp2RGB (vec3_t color) {
 
 	if (color[2] > 1.0)
 		color[2] = 1.0;
+
+	if (color[0] < 0.0)
+		color[0] = 0.0;
+
+	if (color[1] < 0.0)
+		color[1] = 0.0;
+
+	if (color[2] < 0.0)
+		color[2] = 0.0;
 }
 
 
@@ -1885,6 +1925,7 @@ void Load_BspLights () {
 	Com_Printf (""S_COLOR_MAGENTA"Loaded "S_COLOR_GREEN"%i"S_COLOR_WHITE" bsp lights\n", numlights);
 
 }
+extern qboolean cleanAmbientMap;
 
 void Load_LightFile () {
 
@@ -1993,7 +2034,10 @@ void Load_LightFile () {
 			VectorCopy(origin, occOrg);
 		if (VectorCompare(occRad, nullVec))
 			VectorScale(radius, 0.75, occRad);
-
+		
+		if (cleanAmbientMap && ambient == 1)
+			continue;
+		
 		R_AddNewWorldLight (origin, color, radius, style, filter, angles, speed, qtrue, shadow, ambient, cone, qfalse, flare, fOrg, fSize, target, flag, fogLight, fogDensity, occOrg, occRad);
 		numLights++;
 	}

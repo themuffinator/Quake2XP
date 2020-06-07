@@ -639,7 +639,7 @@ Goes directly to a given map without any savegame archiving.
 For development work
 ==================
 */
-qboolean relightMap;
+qboolean relightMap, cleanAmbientMap;
 
 void SV_Map_f (void) {
 	char *map;
@@ -682,6 +682,26 @@ void SV_ReLightMap_f (void) {
 	SV_GameMap_f ();
 }
 
+void SV_CleanAmbientMap_f(void) {
+	char* map;
+	char expanded[MAX_QPATH];
+
+	// if not a pcx, demo, or cinematic, check to make sure the level
+	// exists
+	cleanAmbientMap = (qboolean)qtrue;
+	map = Cmd_Argv(1);
+	if (!strstr(map, ".")) {
+		Com_sprintf(expanded, sizeof(expanded), "maps/%s.bsp", map);
+		if (FS_LoadFile(expanded, NULL) == -1) {
+			Com_Printf("Can't find %s\n", expanded);
+			return;
+		}
+	}
+
+	sv.state = ss_dead;			// don't save current level when changing
+	SV_WipeSavegame("current");
+	SV_GameMap_f();
+}
 /*
 =====================================================================
 
@@ -1123,6 +1143,7 @@ void SV_InitOperatorCommands (void) {
 
 	Cmd_AddCommand ("map", SV_Map_f);
 	Cmd_AddCommand ("relightmap", SV_ReLightMap_f);
+	Cmd_AddCommand ("cleanAmbientMap", SV_CleanAmbientMap_f);
 	Cmd_AddCommand ("demomap", SV_DemoMap_f);
 	Cmd_AddCommand ("gamemap", SV_GameMap_f);
 	Cmd_AddCommand ("setmaster", SV_SetMaster_f);

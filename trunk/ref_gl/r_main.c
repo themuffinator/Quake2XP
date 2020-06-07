@@ -1331,6 +1331,7 @@ void R_VideoInfo_f(void){
 void R_GLSLinfo_f(void);
 void GL_LevelShot_f(void);
 void R_FogEditor_f(void);
+void R_ScaleLightColor_f(void);
 
 void R_RegisterCvars(void)
 {
@@ -1531,6 +1532,7 @@ bind v			"paste"
 	Cmd_AddCommand("paste",						R_Paste_Light_Properties_f);
 	Cmd_AddCommand("occEdit",					R_OccBBoxEdit_f);
 	Cmd_AddCommand("occReset",					R_ResetOccBBox_f);
+	Cmd_AddCommand("scaleLightColor",			R_ScaleLightColor_f);
 }
 
 /*
@@ -2008,6 +2010,7 @@ void R_Shutdown(void)
 
 	Cmd_RemoveCommand("occEdit");
 	Cmd_RemoveCommand("occReset");
+	Cmd_RemoveCommand("scaleLightColor");
 
 	Cmd_RemoveCommand("glsl");
 	Cmd_RemoveCommand("glslInfo");
