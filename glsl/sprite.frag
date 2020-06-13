@@ -44,6 +44,10 @@ void main (void) {
 	vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
 	diffuse *= A;
 	fragData = vec4(deform, 1.0) + diffuse * u_alpha;
+
+	if(depth < 0.9999)
+		return;
+
 	fragData *= mix(vec4(1.0), vec4(softness), u_mask.xxxy);
     fragData.w = 1.0;
 }

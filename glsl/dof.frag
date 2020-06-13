@@ -1,15 +1,17 @@
+//!#include "include/global.inc"
+
 layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_ScreenTex;
 layout (bindless_sampler, location = U_TMU1) uniform sampler2DRect	u_DepthTex;
 
 layout (location = U_SCREEN_SIZE)	uniform vec2	u_screenSize;
 layout (location = U_PARAM_VEC4_0)	uniform vec4	u_dofParams;
 
-#include depth.inc
+#include depth.inc //!#include "include/depth.inc"
 
 #define DOF_SAMPLES 17
 
 const	vec2 dofOffsets[DOF_SAMPLES] = vec2[]( 
-		    vec2(0.0,	0.0),
+		vec2(0.0,	0.0),
         vec2(0.0,	0.4),
         vec2(0.15,	0.37),
         vec2(0.29,	0.29),
