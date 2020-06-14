@@ -653,54 +653,39 @@ void R_Paste_Light_Properties_f (void) {
 }
 
 // from https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html
-void kelvinToRGB(float kelvin, float intens, vec3_t color) {
-
-	float temp = kelvin / 100.0;
-
-	float red, green, blue;
+void kelvinToRGB(float kelvin, float intens, vec3_t outColor) {
 	
-	kelvin = clamp(kelvin, 1000.0, 40000.0);
+	float r, g, b, tmp, tempK;
+
 	intens = clamp(intens, 0.01, 1.0);
+	tempK = kelvin / 100.0;
 
-	if (temp <= 66) {
+	if (tempK <= 66.0) {
+		r = 1.0;
+		g = 0.39008157876901960784 * log(tempK) - 0.63184144378862745098;
 
-		red = 255;
-
-		green = temp;
-		green = 99.4708025861 * log(green) - 161.1195681661;
-
-
-		if (temp <= 19) {
-
-			blue = 0;
-
+		if (tempK <= 19.0) {
+			b = 0.0;
 		}
 		else {
-
-			blue = temp - 10;
-			blue = 138.5177312231 * log(blue) - 305.0447927307;
-
+			tmp = tempK - 10.0;
+			b = 0.54320678911019607843 * log(tmp) - 1.19625408914;
 		}
-
 	}
 	else {
+		tmp = tempK - 60.0;
+		r = 1.29293618606274509804 * pow(tmp, -0.1332047592);
 
-		red = temp - 60;
-		red = 329.698727446 * pow(red, -0.1332047592);
+		tmp = tempK - 60.0;
+		g = 1.12989086089529411765 * pow(tmp, -0.0755148492);
 
-		green = temp - 60;
-		green = 288.1221695283 * pow(green, -0.0755148492);
-
-		blue = 255;
-
+		b = 1.0;
 	}
+	outColor[0] = clamp(r,	0.0, 1.0);
+	outColor[1] = clamp(g, 0.0, 1.0);
+	outColor[2] = clamp(b,	0.0, 1.0);
 
-	color[0] = clamp(red, 0, 255);
-	color[1] = clamp(green, 0, 255);
-	color[2] = clamp(blue, 0, 255);
-
-	VectorScale(color, DIV255, color);
-	VectorScale(color, intens, color);
+	VectorScale(outColor, intens, outColor);
 	
 }
 
@@ -797,7 +782,7 @@ void R_EditSelectedLight_f (void) {
 	else
 		if (!strcmp(Cmd_Argv(1), "kelvin")) {
 			if (Cmd_Argc() != 4) {
-				Com_Printf("usage: editLight: %s temp in kelvin | intensity value\n", Cmd_Argv(0));
+				Com_Printf("usage: editLight: %s kelvin value | intensity value\n", Cmd_Argv(0));
 				return;
 			}
 			vec3_t tmp;
