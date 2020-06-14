@@ -43,7 +43,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;  // AMD
 
 #define	WINDOWBORDERLESS_STYLE	(WS_VISIBLE | WS_POPUP)
 
-#define	WINDOW_STYLE	(WS_OVERLAPPED|WS_BORDER|WS_CAPTION|WS_VISIBLE)
+#define	WINDOW_STYLE	(WS_CAPTION|WS_VISIBLE)
 
 typedef struct {
 	qboolean		accelerated;
@@ -81,7 +81,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	RECT			r;
 	cvar_t			*vid_xpos, *vid_ypos, *vid_BorderlessWindow;
 	int				stylebits;
-	int				x, y;
+	int				x, y, w, h;
 	int				exstyle;
 	DEVMODE			dm;
 
@@ -146,6 +146,8 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	vid_ypos = Cvar_Get("vid_ypos", "0", CVAR_ARCHIVE);
 
 	AdjustWindowRect (&r, stylebits, FALSE);
+	w = width;
+	h = height;
 
 	if (fullscreen)
 	{
@@ -156,6 +158,9 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	{
 		x = vid_xpos->integer;
 		y = vid_ypos->integer;
+
+		w = r.right - r.left;
+		h = r.bottom - r.top;
 
 		// adjust window coordinates if necessary
 		// so that the window is completely on screen
@@ -174,7 +179,7 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 		 WINDOW_CLASS_NAME,
 		 "quake2xp",
 		 stylebits,
-		 x, y, width, height,
+		 x, y, w, h,
 		 NULL,
 		 NULL,
 		 glw_state.hInstance,

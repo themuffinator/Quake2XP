@@ -223,6 +223,14 @@ typedef	int	fixed16_t;
 #ifndef M_PI2
 #define M_PI2		6.28318530717958647692	// Matches value in GCC v2 math.h
 #endif
+
+#define DIV40 0.025
+#define DIV64 0.015625
+#define DIV254BY255 0.9960784313725490196078431372549
+#define DIV255 0.003921568627450980392156862745098
+#define DIV256 0.00390625
+#define DIV512 0.001953125
+
 struct cplane_s;
 
 extern vec3_t vec3_origin;

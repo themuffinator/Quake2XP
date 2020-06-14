@@ -372,14 +372,14 @@ void Mod_Init(void) {
 
 // Berserkers memory cache
 unsigned	rhs_checksum;
-unsigned Mod_ReadHunkSize(void* data, int modfilelen)
+unsigned Mod_ReadHunkSize(void* data, int modFileLen)
 {
 	FILE* f;
 	int			len;
 	unsigned	buf[2];
 	char		name[MAX_OSPATH];
 
-	rhs_checksum = Com_BlockChecksum(data, modfilelen);
+	rhs_checksum = Com_BlockChecksum(data, modFileLen);
 
 	Com_sprintf(name, sizeof(name), "%s/cachexp/%s.mem", FS_Gamedir(), loadmodel->name);
 	f = fopen(name, "rb");

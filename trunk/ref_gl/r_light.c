@@ -652,6 +652,58 @@ void R_Paste_Light_Properties_f (void) {
 	Com_Printf ("Paste light properties from clipboard.\n");
 }
 
+// from https://tannerhelland.com/2012/09/18/convert-temperature-rgb-algorithm-code.html
+void kelvinToRGB(float kelvin, float intens, vec3_t color) {
+
+	float temp = kelvin / 100.0;
+
+	float red, green, blue;
+	
+	kelvin = clamp(kelvin, 1000.0, 40000.0);
+	intens = clamp(intens, 0.01, 1.0);
+
+	if (temp <= 66) {
+
+		red = 255;
+
+		green = temp;
+		green = 99.4708025861 * log(green) - 161.1195681661;
+
+
+		if (temp <= 19) {
+
+			blue = 0;
+
+		}
+		else {
+
+			blue = temp - 10;
+			blue = 138.5177312231 * log(blue) - 305.0447927307;
+
+		}
+
+	}
+	else {
+
+		red = temp - 60;
+		red = 329.698727446 * pow(red, -0.1332047592);
+
+		green = temp - 60;
+		green = 288.1221695283 * pow(green, -0.0755148492);
+
+		blue = 255;
+
+	}
+
+	color[0] = clamp(red, 0, 255);
+	color[1] = clamp(green, 0, 255);
+	color[2] = clamp(blue, 0, 255);
+
+	VectorScale(color, DIV255, color);
+	VectorScale(color, intens, color);
+	
+}
+
 void R_EditSelectedLight_f (void) {
 
 	vec3_t	color, origin, angles,
@@ -743,6 +795,17 @@ void R_EditSelectedLight_f (void) {
 		VectorCopy (color, selectedShadowLight->startColor);
 	}
 	else
+		if (!strcmp(Cmd_Argv(1), "kelvin")) {
+			if (Cmd_Argc() != 4) {
+				Com_Printf("usage: editLight: %s temp in kelvin | intensity value\n", Cmd_Argv(0));
+				return;
+			}
+			vec3_t tmp;
+			kelvinToRGB(atof(Cmd_Argv(2)), atof(Cmd_Argv(3)), tmp);
+			VectorSet(color, tmp[0], tmp[1], tmp[2]);
+			VectorCopy(color, selectedShadowLight->startColor);
+		}
+		else
 	if (!strcmp (Cmd_Argv (1), "speed")) {
 		if (Cmd_Argc () != 5) {
 			Com_Printf ("usage: editLight: %s X rotate speed Y rotate speed Z rotate speed\nCurrent speed rotations: %.4f %.4f %.4f\n", Cmd_Argv (0),

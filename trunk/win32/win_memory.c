@@ -51,8 +51,10 @@ void* Hunk_Begin(int maxsize, char* name)
 	memcpy(hunk_name, name, l);
 	hunk_name[l] = 0;
 	membase = (byte*)calloc(maxsize, 1);
+	
 	if (!membase)
-		Sys_Error("Hunk_Begin: failed on reserving of %i bytes for %s", maxsize, hunk_name);
+		Sys_Error("Hunk_Begin: failed on reserving of %i mb for %s", maxsize>>20, hunk_name);
+
 	return (void*)membase;
 }
 
@@ -62,7 +64,7 @@ void* Hunk_Alloc(int size)
 	size = (size + 31) & ~31;
 	cursize += size;
 	if (cursize > hunkmaxsize)
-		Sys_Error("Hunk_Alloc overflow on %s:\ncursize = %i hunkmaxsize = %i\nIf crashed during model or sprite loading,\ntry to clear cache and/or increase value of 'hunk_*' cvar...\nGamedir: %s", hunk_name, cursize, hunkmaxsize, FS_Gamedir());
+		Sys_Error("Hunk_Alloc overflow on %s:\ncursize = %ikb hunkmaxsize = %ikb\n", hunk_name, cursize>>10, hunkmaxsize>>10);
 
 	return (void*)(membase + cursize - size);
 }
