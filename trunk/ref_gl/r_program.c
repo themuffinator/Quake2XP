@@ -19,24 +19,22 @@ static glslProgram_t		*programHashTable[PROGRAM_HASH_SIZE];
 int r_numPrograms;
 static glslProgram_t	r_nullProgram;
 
-static const char *glslExt =
+static const char * glslGlobals =
 "#version 450 core\n"
 "#extension GL_ARB_bindless_texture : enable\n"
 "#extension GL_ARB_gpu_shader5 : enable\n"
 "#extension GL_ARB_explicit_uniform_location : enable\n"
 "precision mediump float;\n"
 "precision mediump int;\n"
-"out vec4 fragData;\n";	// out fragColor
+"out vec4 fragData;\n"
 
-static const char *mathDefs =
 "#define	CUTOFF_EPSILON	1.0 / 255.0\n"
 "#define	PI				3.14159265358979323846\n"
 "#define	HALF_PI			1.57079632679489661923\n"
 "#define	SQRT_PI			1.77245385090551602729\n"
 "#define	SQRT_THREE		1.73205080756887729352\n"
-"#define	INV_PI			(1.0 / PI)\n";
+"#define	INV_PI			(1.0 / PI)\n"
 
-static const char *glslUniforms =
 "#define	U_MVP_MATRIX			0\n"
 "#define	U_MODELVIEW_MATRIX		1\n"
 "#define	U_PROJ_MATRIX			2\n"
@@ -423,9 +421,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 		vertexId = 0;
 		fragmentId = 0;
 
-		strings[numStrings++] = glslExt;
-		strings[numStrings++] = mathDefs;
-		strings[numStrings++] = glslUniforms;
+		strings[numStrings++] = glslGlobals;
 
 		// compile vertex shader
 		if (vertexSource) {

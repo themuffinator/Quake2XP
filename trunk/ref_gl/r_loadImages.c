@@ -262,7 +262,7 @@ void Load3dLut(void) {
 		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
-		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, LUTsize, LUTsize, LUTsize, 0, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
+		qglTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, LUTsize, LUTsize, LUTsize, 0, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
 		
 //		glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGB8, LUTsize, LUTsize, LUTsize);
 //		glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, LUTsize, LUTsize, LUTsize, GL_RGB, GL_UNSIGNED_BYTE, buf + sizeof(LUTsize));
