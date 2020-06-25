@@ -2544,7 +2544,7 @@ qboolean Mods_MenuInit()
 	char	**dirnames = NULL;
 	char	findname[MAX_OSPATH];
 	int		i, j, l, ndirs = 0, t = 0, len = 0;
-	char	*modinfo = NULL;
+	char	modinfo[MAX_MODS][256];
 	FILE	*f;
 
 	path = FS_NextPath(NULL);
@@ -2603,7 +2603,7 @@ qboolean Mods_MenuInit()
 				s_mods_actions[t].generic.statusbar = "Quake II";
 			else
 			if (!Q_strcasecmp(m_mod_names[t], "ctf"))
-				s_mods_actions[t].generic.statusbar = "Quake II: Caplure The Flag";
+				s_mods_actions[t].generic.statusbar = "Quake II: Capture The Flag";
 			else
 				if (!Q_strcasecmp(m_mod_names[t], "rogue"))
 					s_mods_actions[t].generic.statusbar = "Quake II: Ground Zero";
@@ -2626,11 +2626,11 @@ qboolean Mods_MenuInit()
 					}
 					else {
 						fseek(f, 0, SEEK_END);
-						len = ftell(f);
+						len = min(255, ftell(f));
 						fseek(f, 0, SEEK_SET);
-						modinfo = (char*)malloc(len);
-						fread(modinfo, len, 1, f);
-						s_mods_actions[t].generic.statusbar = modinfo;
+						memset(modinfo[t], 0, 256);
+						fread(modinfo[t], len, 1, f);
+						s_mods_actions[t].generic.statusbar = &modinfo[t][0];
 						fclose(f);
 					}
 				}
@@ -2640,7 +2640,6 @@ qboolean Mods_MenuInit()
 			t++;
 		}
 	}
-	free(modinfo);
 	return qtrue;
 }
 
