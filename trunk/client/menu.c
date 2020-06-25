@@ -2517,7 +2517,7 @@ static void CreditsFunc(void *unused) {
 	M_Menu_Credits_f();
 }
 
-#define	MAX_MODS			46
+#define	MAX_MODS			25
 #define	MAX_MOD_NAMELEN		18
 menuframework_s	s_mods_menu;
 menuaction_s	s_mods_actions[MAX_MODS];
@@ -2543,7 +2543,7 @@ qboolean Mods_MenuInit()
 	char	*path = NULL;
 	char	**dirnames = NULL;
 	char	findname[MAX_OSPATH];
-	int		i, j, l, ndirs = 0, t = 0, len = 0;
+	int		i, l, ndirs = 0, t = 0, len = 0;
 	char	modinfo[MAX_MODS][256];
 	FILE	*f;
 
@@ -2578,68 +2578,69 @@ qboolean Mods_MenuInit()
 	if (!ndirs)
 		return qfalse;
 
-	s_mods_menu.x = viddef.width / 2 - 132;
-	s_mods_menu.y = viddef.height / 2 - 114;
+
+	s_mods_menu.x = viddef.width * 0.50 - 20 * cl_fontScale->value;
+	s_mods_menu.y = viddef.height / 2 - 150;
+
 	s_mods_menu.nitems = 0;
 
-	for (j = 0; j < 2; j++)
+	for (i = 0; i < MAX_MODS; i++)
 	{
-		for (i = 0; i < MAX_MODS / 2; i++)
-		{
-			if (t == ndirs)
-				break;
+		if (t == ndirs)
+			break;
 
-			s_mods_actions[t].generic.name = m_mod_names[t];
-			s_mods_actions[t].generic.flags = QMF_LEFT_JUSTIFY;
-			s_mods_actions[t].generic.localdata[0] = t;
-			s_mods_actions[t].generic.callback = ModCallback;
+		s_mods_actions[t].generic.name = m_mod_names[t];
+		s_mods_actions[t].generic.flags = QMF_LEFT_JUSTIFY;
+		s_mods_actions[t].generic.localdata[0] = t;
+		s_mods_actions[t].generic.callback = ModCallback;
+		s_mods_actions[t].generic.y = i * 10 * cl_fontScale->value;
 
-			s_mods_actions[t].generic.x = j * 154;
-			s_mods_actions[t].generic.y = i * 10 * cl_fontScale->value;
-
-			s_mods_actions[t].generic.type = MTYPE_ACTION;
+		s_mods_actions[t].generic.type = MTYPE_ACTION;
 			
-			if (!Q_strcasecmp(m_mod_names[t], "baseq2"))
-				s_mods_actions[t].generic.statusbar = "Quake II";
-			else
-			if (!Q_strcasecmp(m_mod_names[t], "ctf"))
-				s_mods_actions[t].generic.statusbar = "Quake II: Capture The Flag";
-			else
-				if (!Q_strcasecmp(m_mod_names[t], "rogue"))
-					s_mods_actions[t].generic.statusbar = "Quake II: Ground Zero";
-			else
-				if (!Q_strcasecmp(m_mod_names[t], "xatrix"))
-					s_mods_actions[t].generic.statusbar = "Quake II: The Reckoning";
-			else
-				if (!Q_strcasecmp(m_mod_names[t], "gladiator"))
-					s_mods_actions[t].generic.statusbar = "Gladiator Bot";
-			else
-				if (!Q_strcasecmp(m_mod_names[t], "3zb2"))
-					s_mods_actions[t].generic.statusbar = "3rd Zigock Bot";
-			else
-				if (!Q_strcasecmp(m_mod_names[t], "eraser"))
-					s_mods_actions[t].generic.statusbar = "Eraser Bot";
-				else {
-					f = fopen(va("%s/info.md", m_mod_names[t]), "rb");
-					if (!f) {
-						s_mods_actions[t].generic.statusbar = "Unknow Mod";
-					}
-					else {
-						fseek(f, 0, SEEK_END);
-						len = min(255, ftell(f));
-						fseek(f, 0, SEEK_SET);
-						memset(modinfo[t], 0, 256);
-						fread(modinfo[t], len, 1, f);
-						s_mods_actions[t].generic.statusbar = &modinfo[t][0];
-						fclose(f);
-					}
+		if (!Q_strcasecmp(m_mod_names[t], "baseq2"))
+			s_mods_actions[t].generic.statusbar = "Quake II";
+		else
+		if (!Q_strcasecmp(m_mod_names[t], "ctf"))
+			s_mods_actions[t].generic.statusbar = "Quake II: Capture The Flag";
+		else
+			if (!Q_strcasecmp(m_mod_names[t], "rogue"))
+				s_mods_actions[t].generic.statusbar = "Quake II: Ground Zero";
+		else
+			if (!Q_strcasecmp(m_mod_names[t], "xatrix"))
+				s_mods_actions[t].generic.statusbar = "Quake II: The Reckoning";
+		else
+			if (!Q_strcasecmp(m_mod_names[t], "gladiator"))
+				s_mods_actions[t].generic.statusbar = "Gladiator Bot";
+		else
+			if (!Q_strcasecmp(m_mod_names[t], "3zb2"))
+				s_mods_actions[t].generic.statusbar = "3rd Zigock Bot";
+		else
+			if (!Q_strcasecmp(m_mod_names[t], "eraser"))
+				s_mods_actions[t].generic.statusbar = "Eraser Bot";
+			else 				
+				if (!Q_strcasecmp(m_mod_names[t], "zaero"))
+					s_mods_actions[t].generic.statusbar = "Quake II: Zaero";
+			else {
+				f = fopen(va("%s/info.md", m_mod_names[t]), "rb");
+				if (!f) {
+					s_mods_actions[t].generic.statusbar = m_mod_names[t];
 				}
+				else {
+					fseek(f, 0, SEEK_END);
+					len = min(255, ftell(f));
+					fseek(f, 0, SEEK_SET);
+					memset(modinfo[t], 0, 256);
+					fread(modinfo[t], len, 1, f);
+					s_mods_actions[t].generic.statusbar = &modinfo[t][0];
+					fclose(f);
+				}
+			}
 
-			Menu_AddItem(&s_mods_menu, &s_mods_actions[t]);
+		Menu_AddItem(&s_mods_menu, &s_mods_actions[t]);
 
-			t++;
-		}
+		t++;
 	}
+
 	return qtrue;
 }
 
