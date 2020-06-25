@@ -1052,7 +1052,6 @@ void SCR_ShowTexNames() {
 }
 
 void R_GammaRamp (void);
-float ClampCvar(float min, float max, float value);
 extern cvar_t *r_mode;
 
 void GL_MakeSaveShot(char* dir);

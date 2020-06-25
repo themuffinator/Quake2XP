@@ -1505,7 +1505,6 @@ void CL_Precache_f (void) {
 	CL_RequestNextDownload ();
 }
 
-float ClampCvar(float min, float max, float value);
 /*
 =================
 CL_InitLocal

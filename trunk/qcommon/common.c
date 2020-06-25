@@ -1741,6 +1741,9 @@ void Qcommon_Init (int argc, char **argv) {
 	logfile_active = Cvar_Get ("logfile", "0", 0);
 	showtrace = Cvar_Get ("showtrace", "0", 0);
 	dedicated = Cvar_Get ("dedicated", "0", CVAR_NOSET);
+	
+	// possible values: 0 (gamexp), 1 (game), 2 (auto detect)
+	net_compatibility = Cvar_Get("net_compatibility", "2", CVAR_LATCH | CVAR_NOSET);
 
 	s = va ("%s %s %s %s", VERSION, CPUSTRING, __DATE__, BUILDSTRING);
 	Cvar_Get ("version", s, CVAR_SERVERINFO | CVAR_NOSET);

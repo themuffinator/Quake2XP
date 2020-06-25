@@ -95,12 +95,6 @@ static	DWORD	(WINAPI * qXInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVi
 static	DWORD	(WINAPI	* qXInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
 static	DWORD	(WINAPI	* qXInputGetAudioDeviceIds)(DWORD  dwUserIndex, LPWSTR pRenderDeviceId, UINT* pRenderCount, LPWSTR pCaptureDeviceId, UINT* pCaptureCount);
 
-static float ClampCvar(float min, float max, float value) {
-							if (value < min) return min;
-							if (value > max) return max;
-							return value;
-						}
-
 unsigned int utf8_encode(void* out, unsigned int unicode, int maxlen)
 {
 	unsigned int bcount = 1;

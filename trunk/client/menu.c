@@ -1178,15 +1178,6 @@ static void TimeFunc(void *unused) {
 	Cvar_SetValue("cl_drawTime", s_options_time_box.curvalue);
 }
 
-static float ClampCvar(float min, float max, float value) {
-	if (value < min)
-		return min;
-	if (value > max)
-		return max;
-	return value;
-}
-
-
 static void ControlsSetMenuItemValues(void) {
 
 	s_options_effectsVolume_slider.curvalue = Cvar_VariableValue("s_effectsVolume") * 10;
@@ -2526,6 +2517,152 @@ static void CreditsFunc(void *unused) {
 	M_Menu_Credits_f();
 }
 
+#define	MAX_MODS			46
+#define	MAX_MOD_NAMELEN		18
+menuframework_s	s_mods_menu;
+menuaction_s	s_mods_actions[MAX_MODS];
+menuaction_s	s_mod_game_action;
+char			m_mod_names[MAX_MODS][MAX_MOD_NAMELEN + 1];
+void FS_InitFilesystem(void);
+
+void ModCallback(void* self)
+{
+	menuaction_s* a = (menuaction_s*)self;
+
+	if (s_mods_menu.cursor < MAX_MODS) {
+		Cbuf_AddText("killserver\n");
+		Cbuf_AddText(va("game %s\n", m_mod_names[s_mods_menu.cursor]));
+		Cbuf_AddText("exec default.cfg\n");
+		Cbuf_AddText("exec xpconfig.cfg\n");
+	}
+	M_ForceMenuOff();
+}
+
+qboolean Mods_MenuInit()
+{
+	char	*path = NULL;
+	char	**dirnames = NULL;
+	char	findname[MAX_OSPATH];
+	int		i, j, l, ndirs = 0, t = 0, len = 0;
+	char	*modinfo = NULL;
+	FILE	*f;
+
+	path = FS_NextPath(NULL);
+	if (path)
+	{
+		char* tmp = findname;
+		Com_sprintf(findname, sizeof(findname), "%s/../*.*", path);
+		while (*tmp != 0)
+		{
+			if (*tmp == '\\')
+				*tmp = '/';
+			tmp++;
+		}
+		l = strlen(findname) - 3;	// cut "*.*"
+		dirnames = FS_ListFiles(findname, &ndirs, SFF_SUBDIR, 0);
+
+		if (dirnames != 0)
+		{
+			ndirs--;
+			if (ndirs > MAX_MODS)
+				ndirs = MAX_MODS;
+			for (i = 0; i < ndirs; i++)
+			{
+				strcpy(m_mod_names[i], &dirnames[i][l]);
+				free(dirnames[i]);
+			}
+			free(dirnames);
+		}
+	}
+
+	if (!ndirs)
+		return qfalse;
+
+	s_mods_menu.x = viddef.width / 2 - 132;
+	s_mods_menu.y = viddef.height / 2 - 114;
+	s_mods_menu.nitems = 0;
+
+	for (j = 0; j < 2; j++)
+	{
+		for (i = 0; i < MAX_MODS / 2; i++)
+		{
+			if (t == ndirs)
+				break;
+
+			s_mods_actions[t].generic.name = m_mod_names[t];
+			s_mods_actions[t].generic.flags = QMF_LEFT_JUSTIFY;
+			s_mods_actions[t].generic.localdata[0] = t;
+			s_mods_actions[t].generic.callback = ModCallback;
+
+			s_mods_actions[t].generic.x = j * 154;
+			s_mods_actions[t].generic.y = i * 10 * cl_fontScale->value;
+
+			s_mods_actions[t].generic.type = MTYPE_ACTION;
+			
+			if (!Q_strcasecmp(m_mod_names[t], "baseq2"))
+				s_mods_actions[t].generic.statusbar = "Quake II";
+			else
+			if (!Q_strcasecmp(m_mod_names[t], "ctf"))
+				s_mods_actions[t].generic.statusbar = "Quake II: Caplure The Flag";
+			else
+				if (!Q_strcasecmp(m_mod_names[t], "rogue"))
+					s_mods_actions[t].generic.statusbar = "Quake II: Ground Zero";
+			else
+				if (!Q_strcasecmp(m_mod_names[t], "xatrix"))
+					s_mods_actions[t].generic.statusbar = "Quake II: The Reckoning";
+			else
+				if (!Q_strcasecmp(m_mod_names[t], "gladiator"))
+					s_mods_actions[t].generic.statusbar = "Gladiator Bot";
+			else
+				if (!Q_strcasecmp(m_mod_names[t], "3zb2"))
+					s_mods_actions[t].generic.statusbar = "3rd Zigock Bot";
+			else
+				if (!Q_strcasecmp(m_mod_names[t], "eraser"))
+					s_mods_actions[t].generic.statusbar = "Eraser Bot";
+				else {
+					f = fopen(va("%s/info.md", m_mod_names[t]), "rb");
+					if (!f) {
+						s_mods_actions[t].generic.statusbar = "Unknow Mod";
+					}
+					else {
+						fseek(f, 0, SEEK_END);
+						len = ftell(f);
+						fseek(f, 0, SEEK_SET);
+						modinfo = (char*)malloc(len);
+						fread(modinfo, len, 1, f);
+						s_mods_actions[t].generic.statusbar = modinfo;
+						fclose(f);
+					}
+				}
+
+			Menu_AddItem(&s_mods_menu, &s_mods_actions[t]);
+
+			t++;
+		}
+	}
+	free(modinfo);
+	return qtrue;
+}
+
+
+void Mods_MenuDraw(void)
+{
+	M_Banner(i_banner_game);
+	Menu_Draw(&s_mods_menu);
+}
+
+int Mods_MenuKey(int key)
+{
+	return Default_MenuKey(&s_mods_menu, key);
+}
+
+void SelectModFunc(void* data)
+{
+	if (Mods_MenuInit())
+		M_PushMenu(Mods_MenuDraw, Mods_MenuKey);
+}
+
+
 void Game_MenuInit(void) {
 	static const char *difficulty_names[] = {
 		"Easy",
@@ -2584,10 +2721,21 @@ void Game_MenuInit(void) {
 	s_save_game_action.generic.name = "Save Game";
 	s_save_game_action.generic.callback = SaveGameFunc;
 
+	s_blankline.generic.type = MTYPE_SEPARATOR;
+
+	s_mod_game_action.generic.type = MTYPE_ACTION;
+	s_mod_game_action.generic.flags = QMF_LEFT_JUSTIFY;
+	s_mod_game_action.generic.x = 0;
+	s_mod_game_action.generic.y = 80 * cl_fontScale->value;
+	s_mod_game_action.generic.name = "Select Mod";
+	s_mod_game_action.generic.callback = SelectModFunc;
+
+	s_blankline.generic.type = MTYPE_SEPARATOR;
+
 	s_credits_action.generic.type = MTYPE_ACTION;
 	s_credits_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_credits_action.generic.x = 0;
-	s_credits_action.generic.y = 70 * cl_fontScale->value;
+	s_credits_action.generic.y = 100 * cl_fontScale->value;
 	s_credits_action.generic.name = "Credits";
 	s_credits_action.generic.callback = CreditsFunc;
 
@@ -2598,6 +2746,7 @@ void Game_MenuInit(void) {
 	Menu_AddItem(&s_game_menu, (void *)&s_blankline);
 	Menu_AddItem(&s_game_menu, (void *)&s_load_game_action);
 	Menu_AddItem(&s_game_menu, (void *)&s_save_game_action);
+	Menu_AddItem(&s_game_menu, (void *)&s_mod_game_action);
 	Menu_AddItem(&s_game_menu, (void *)&s_blankline);
 	Menu_AddItem(&s_game_menu, (void *)&s_credits_action);
 

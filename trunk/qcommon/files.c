@@ -1043,9 +1043,7 @@ char *FS_NextPath (char *prevpath) {
 	return NULL;
 }
 
-extern cvar_t *net_compatibility;
-
-static void FS_ScanForGameDLL (void) {
+void FS_ScanForGameDLL (void) {
 	FILE		*fp;
 	char		*path;
 #ifdef _WIN32
@@ -1053,58 +1051,9 @@ static void FS_ScanForGameDLL (void) {
 #else
 	static const char	*gamenames[] = { "gamexp.so", "game.so" };
 #endif
-	int			ncv;
 
-	// possible values: 0 (gamexp), 1 (game), 2 (auto detect)
-	net_compatibility = Cvar_Get ("net_compatibility", "2", CVAR_SERVERINFO | CVAR_NOSET);
-	ncv = net_compatibility->integer;
-
-	if (ncv != 0 && ncv != 1 && ncv != 2) {
-		Cvar_ForceSetValue ("net_compatibility", 2);
-		ncv = net_compatibility->integer;
-	}
-
-#ifdef _WIN32
-	// check the current debug directory first for development purposes
-#ifdef NDEBUG
-	path = "release";
-#else
-	path = "debug";
-#endif
-	if (ncv != 2) {
-		// cases 0 and 1: option was specified by user
-		Com_sprintf (gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamenames[ncv]);
-		fp = fopen (gameDLLPath, "rb");
-	}
-	else {
-		// case 2: autodetect
-		int i;
-		for (i = 0; i < 2; i++) {
-			Com_sprintf (gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamenames[i]);
-			fp = fopen (gameDLLPath, "rb");
-			if (fp != NULL) {
-				Cvar_ForceSetValue ("net_compatibility", i);
-				break;
-			}
-		}
-	}
-
-	if (fp != NULL) {
-		fclose (fp);
-		return;
-	}
-#endif  // _WIN32
-
-	/* now run through the search paths */
 	path = NULL;
 	while ((path = FS_NextPath (path)) != NULL) {
-		if (ncv != 2) {
-			Com_sprintf (gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamenames[ncv]);
-			fp = fopen (gameDLLPath, "rb");
-			if (fp == NULL)
-				continue;
-		}
-		else {
 			int i;
 			for (i = 0; i < 2; i++) {
 				Com_sprintf (gameDLLPath, sizeof(gameDLLPath), "%s/%s", path, gamenames[i]);
@@ -1116,7 +1065,6 @@ static void FS_ScanForGameDLL (void) {
 				continue;
 			else
 				Cvar_ForceSetValue ("net_compatibility", i);
-		}
 
 		fclose (fp);
 		return;
@@ -1173,6 +1121,6 @@ void FS_InitFilesystem (void) {
 	Com_Printf ("\n");
 	Com_Printf (S_COLOR_YELLOW "Using " S_COLOR_GREEN "'%s'" S_COLOR_YELLOW " for writing\n", fs_gamedir);
 
-	FS_ScanForGameDLL ();
+//	FS_ScanForGameDLL ();
 	Com_Printf (S_COLOR_YELLOW "Found game library at " S_COLOR_GREEN "'%s'\n", gameDLLPath);
 }

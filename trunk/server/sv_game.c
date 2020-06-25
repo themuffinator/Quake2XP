@@ -334,7 +334,7 @@ SV_InitGameProgs
 Init the game subsystem for a new map
 ===============
 */
-
+void FS_ScanForGameDLL(void);
 void SV_InitGameProgs (void) {
 	game_import_t import;
 
@@ -398,13 +398,13 @@ void SV_InitGameProgs (void) {
 
 	import.LoadFile = FS_LoadFile;
 
+	FS_ScanForGameDLL();
 	ge = (game_export_t *)Sys_GetGameAPI (&import);
 
 	if (!ge)
 		Com_Error (ERR_DROP, "failed to load game DLL");
 	if (ge->apiversion != GAME_API_VERSION)
-		Com_Error (ERR_DROP, "game is version %i, not %i", ge->apiversion,
-		GAME_API_VERSION);
+		Com_Error (ERR_DROP, "game is version %i, not %i", ge->apiversion, GAME_API_VERSION);
 
 	ge->Init ();
 }
