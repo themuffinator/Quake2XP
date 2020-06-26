@@ -747,6 +747,7 @@
     <None Include="..\baseq2\glsl\glare.vert" />
     <None Include="..\baseq2\glsl\globalFog.frag" />
     <None Include="..\baseq2\glsl\globalFog.vert" />
+    <None Include="..\baseq2\glsl\include\blur.inc" />
     <None Include="..\baseq2\glsl\lightAlias.frag" />
     <None Include="..\baseq2\glsl\lightAlias.vert" />
     <None Include="..\baseq2\glsl\ambientMd2.frag" />

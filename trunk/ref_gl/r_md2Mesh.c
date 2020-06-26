@@ -508,6 +508,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglUniform1i(U_PARAM_INT_1, 0);
 	qglUniform1i(U_PARAM_INT_2, 0);
 	qglUniform1i(U_PARAM_INT_3, 0);
+	qglUniform1i(U_PARAM_INT_4, 0);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TANGENT);

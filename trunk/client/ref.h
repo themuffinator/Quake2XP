@@ -292,6 +292,7 @@ typedef struct image_s {
 	int			width, height;			// source image
 	int			upload_width, upload_height;	// after power of two and picmip
 	int			registration_sequence;	// 0 = free
+	int			numMips;
 	struct		msurface_s *texturechain;	// for sort-by-texture world
 	// drawing
 	int			texnum;					// gl texture binding

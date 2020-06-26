@@ -196,6 +196,7 @@ image_t *r_ssaoColorTex[2];
 image_t	*r_cinImage;
 image_t	*r_bloomImage;
 image_t	*r_thermalImage;
+image_t *r_screen2D;
 
 int			skyCube;
 uint64_t	skyCube_handle;
@@ -358,6 +359,8 @@ cvar_t	*r_particlesOverdraw;
 
 cvar_t	*r_lutId;
 cvar_t	*r_colorTempK;
+
+cvar_t *r_earthSky, * r_earthSunPos_x, * r_earthSunPos_y, * r_earthSunPos_z, * r_earthSunIntens;
 
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;

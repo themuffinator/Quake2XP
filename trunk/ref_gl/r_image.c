@@ -153,6 +153,7 @@ void R_CaptureColorBuffer(){
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
+
 void R_CaptureDepthBuffer()
 {
 		

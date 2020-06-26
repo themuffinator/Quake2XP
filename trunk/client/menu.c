@@ -2404,7 +2404,6 @@ int M_Credits_Key(int key) {
 }
 
 extern int Developer_searchpath(int who);
-void Music_Play2(char* name);
 
 void M_Menu_Credits_f(void) {
 	int n;
