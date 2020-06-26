@@ -128,8 +128,8 @@ void main(void)
     vec3 color = atmosphere(
         normalize(v_Position),          // normalized ray direction
         vec3(0.0, 0.0, 6371e3),         // ray origin
-        vec3(8192.0),                   // position of the sun
-        22.0,                           // intensity of the sun
+        vec3(8192.0, 8192.0, 8192.0),   // position of the sun - z is sun height
+        12.0,                           // intensity of the sun
         6371e3,                         // radius of the planet in meters
         6471e3,                         // radius of the atmosphere in meters
         vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
@@ -138,5 +138,6 @@ void main(void)
         1.2e3,                          // Mie scale height
         0.758                           // Mie preferred scattering direction
     );
-	fragData = textureLod(u_map, v_texCoord.xyz, 0.0);
+	fragData = vec4(color, 1.0);
+ // fragData = textureLod(u_map, v_texCoord.xyz, 0.0);
 }

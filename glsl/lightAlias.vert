@@ -34,7 +34,7 @@ v_texCoord			= att_texCoordDiffuse;
 v_CubeCoord			= u_cubeMatrix		* vec4(att_position, 1.0);
 v_lightAtten		= (u_attenMatrix	* vec4(att_position, 1.0)).xyz;
 v_lightSpot			= (u_spotMatrix		* vec4(att_position, 1.0)).xyz;
-
+v_tangent       =  att_tangent;
 vec3 LV = u_LightOrg - att_position;
 v_lightVec.x = dot(LV, att_tangent);
 v_lightVec.y = dot(LV, att_binormal);

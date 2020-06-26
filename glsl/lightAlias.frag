@@ -266,14 +266,10 @@ void main (void) {
 
       if(cd_mask == 0.0){	    
 		
-		vec2 u_remapCenter = vec2(0.70884220810942843185148998534441, 0.70151441133365901319003419638495);
-vec2 u_remapScale = vec2(1.7166806370494551550712489522213, 1.7166806370494551550712489522213);
-vec2 outuv = (v_texCoord.xy - u_remapCenter) * u_remapScale + 0.5;
-		
-		vec2 uv = outuv * 2.0 - 1.0;
-		vec2 uv_orthogonal = normalize(uv);
-		vec3 uv_tangent = vec3(-uv_orthogonal.y, uv_orthogonal.x, 0.0);
-		vec4 worldTangent = v_mvMatrix * vec4(uv_tangent, 0.0);
+  	    vec2 uv = v_texCoord.xy * 2.0 - 1.0;
+		    vec2 uv_orthogonal = normalize(uv);
+		    vec3 uv_tangent = vec3(-uv_orthogonal.y, uv_orthogonal.x, 0.0);
+		    vec4 worldTangent = v_mvMatrix * vec4(uv_tangent, 0.0);
 
         fragData.rgb += LightingDiffraction(V, L, worldTangent.xyz);
        }
