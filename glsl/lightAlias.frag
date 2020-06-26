@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_bumpMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_diffuseMap;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2D		u_causticMap;
@@ -40,11 +41,12 @@ in vec3			v_tst;
 in mat3			v_tangentToView;
 in mat4			v_mvMatrix;
 
-#include depth.inc
-#include lighting.inc
+#include depth.inc		//!#include "include/depth.inc"
+#include lighting.inc	//!#include "include/lighting.inc"
+#include blur.inc		//!#include "include/blur.inc"
 
-#define MAX_STEPS			60
-#define MAX_STEPS_BINARY	40
+#define MAX_STEPS			120
+#define MAX_STEPS_BINARY	100
 
 #define STEP_SIZE			10.0
 #define STEP_SIZE_MUL		1.35
@@ -67,21 +69,6 @@ vec2 VS2UV (const in vec3 p) {
 	return (v.xy / v.w * 0.5 + 0.5) * u_viewport; 
 }
 
-vec3 boxBlur(sampler2DRect blurTex, vec2 tc, float  blurSamples){
-
-	float numSamples = (1.0 / (blurSamples * 4.0 + 1.0));
-	vec3 sum = texture2DRect( blurTex, tc).rgb;	// central point
-
-	for ( float i = 1.0; i <= blurSamples; i += 1.0 ){
-
-		sum += texture2DRect(blurTex, tc + vec2(i, 0.0)).rgb;
-		sum += texture2DRect(blurTex, tc + vec2(-i, 0.0)).rgb;
-		sum += texture2DRect(blurTex, tc + vec2(0.0, i)).rgb;
-		sum += texture2DRect(blurTex, tc + vec2(0.0, -i)).rgb;
-	}
-	return sum * numSamples;
-}
-
 vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specular){
 
 	if (u_useSSLR == 0)
@@ -95,8 +82,8 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specu
 
 	// not need it?????
 	vec3 N = normal.xyz;
-//	N.xy *= NORMAL_MUL;
-//	N.z = 1.0;
+	N.xy *= NORMAL_MUL;
+	N.z = 1.0;
 
 	N = normalize(v_tangentToView * normal.xyz);
 	vec3 V = normalize(v_positionVS);
@@ -107,7 +94,7 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specu
 	// Fresnel
 	float scale = FRESNEL_MUL * pow(1.0 - abs(dot(V, N)), FRESNEL_EXP);
 	// ignore invisible & facing into the camera reflections
-	if (scale < 0.005 || dot(R, V) < 0.0)
+	if (scale < 0.05 || dot(R, V) < 0.0)
 		return vec3(specular);
 
 	// follow the reflected ray in increasing steps
@@ -148,7 +135,10 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specu
 		if (abs(delta) < Z_THRESHOLD)
 			break;	// found it
 	}
-	vec3 reflectColor  = boxBlur(g_colorBufferMap, tc, roughness * 20.0) * 1.5;
+	vec3 reflectColor  = vec3(0.0);
+	reflectColor += blur13(g_colorBufferMap, tc, textureSize(g_colorBufferMap, 0), direction.xy).rgb;
+	reflectColor += blur13(g_colorBufferMap, tc, textureSize(g_colorBufferMap, 0), direction.zw).rgb;
+
 	reflectColor *= metalness;
 
 	return reflectColor;

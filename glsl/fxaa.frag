@@ -1,3 +1,5 @@
+//!#include "include/global.inc"
+
 // FXAA 3.11 by TIMOTHY LOTTES (nvsdk v3.00) 
 // Copyright (c) 2014-2015, NVIDIA CORPORATION. All rights reserved.
 

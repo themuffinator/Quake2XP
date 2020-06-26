@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_deformMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_colorMap;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2DRect	g_colorBufferMap;
@@ -19,7 +20,7 @@ in float	v_depthS;
 in vec2		v_deformMul;
 in vec2		v_deformTexCoord;
 
-#include depth.inc
+#include depth.inc  //!#include "include/depth.inc"
 
 void main (void) {
 

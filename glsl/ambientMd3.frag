@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 in	vec2		v_texCoord;
 in	vec4		v_color;
 in	vec2		v_envCoord;

@@ -1,6 +1,4 @@
-//layout (binding = 0) uniform	sampler2DRect	u_DNMiniMap;
-//layout (binding = 1) uniform	sampler2D		u_randomNormalMap;
-
+//!#include "include/global.inc"
 layout (bindless_sampler, location = U_TMU0) uniform	sampler2DRect	u_DNMiniMap;
 layout (bindless_sampler, location = U_TMU1) uniform	sampler2D		u_randomNormalMap;
 

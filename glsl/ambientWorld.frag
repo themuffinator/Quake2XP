@@ -1,20 +1,13 @@
-
-//layout (binding = 0) uniform sampler2D		u_Diffuse;
+//!#include "include/global.inc"
 
 layout (binding = 0) uniform sampler2D		u_LightMap0;
 layout (binding = 1) uniform sampler2D		u_LightMap1;
 layout (binding = 2) uniform sampler2D		u_LightMap2;
 
-//layout (binding = 2) uniform sampler2D		u_Add;
-//layout (binding = 3) uniform sampler2D		u_NormalMap;
-
 layout (bindless_sampler, location = U_TMU0) uniform sampler2D		u_Diffuse;
 layout (bindless_sampler, location = U_TMU1) uniform sampler2D		u_Add;
 layout (bindless_sampler, location = U_TMU2) uniform sampler2D		u_NormalMap;
 layout (bindless_sampler, location = U_TMU3) uniform sampler2DRect	u_ssaoMap;
-
-//layout (binding = 4) uniform sampler2DRect	u_ssaoMap;
-
 
 layout (location = U_LM_TYPE)			uniform int		u_LightMapType;
 layout (location = U_USE_SSAO)			uniform int		u_ssao;
@@ -40,8 +33,8 @@ vec3 ( -0.40824829046386301636621401245098f,	0.70710678118654752440084436210485f
 vec3 ( -0.40824829046386301636621401245098f,	-0.70710678118654752440084436210485f,	0.57735026918962576450914878050195f )
 ); 
 
-#include lighting.inc
-#include parallax.inc
+#include lighting.inc //!#include "include/lighting.inc"
+#include parallax.inc //!#include "include/parallax.inc"
 
 vec3 whiteLM = vec3(1.0, 1.0, 1.0);
 

@@ -1,8 +1,6 @@
-//
-// this quarters the depth buffer
-//
+//!#include "include/global.inc"
 
-#include depth.inc
+#include depth.inc //!#include "include/depth.inc"
 
 //layout (binding = 0) uniform sampler2DRect	u_depthBufferMap;
 layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_depthBufferMap;

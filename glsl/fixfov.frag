@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location = U_TMU0) uniform sampler2D  tex;     // sampler of rendered scene’s render target
 
 in vec3 vUV;               // interpolated vertex output data

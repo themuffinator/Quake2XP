@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2DRect	u_screenMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2DRect	u_depthMap;
 
@@ -7,7 +8,7 @@ layout	(location = U_PARAM_VEC4_1)		uniform vec4	u_fogSkyParams; //sky rgb and d
 layout	(location = U_PARAM_VEC2_0)		uniform vec2	u_fogBias;		// x - world, y - sky
 layout	(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
 
-#include depth.inc
+#include depth.inc  //!#include "include/depth.inc"
 
 void main(void){
 	vec3 backBuffer = texture2DRect(u_screenMap, gl_FragCoord.xy).rgb;

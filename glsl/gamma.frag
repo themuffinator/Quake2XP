@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_ScreenTex;
 
 layout(location = U_COLOR_PARAMS)	uniform vec4	u_control;			// x - brightens, y - contrast, z - saturation, w - gamma

@@ -1,7 +1,9 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform samplerCube	u_map;
 
 layout(location = U_PARAM_INT_0)	uniform int	    u_colorPass;
-layout(location = U_VIEW_POS)	    uniform vec3    u_view;
+layout(location = U_PARAM_INT_1)	uniform int	    u_earthSky;
+layout(location = U_PARAM_VEC4_0)   uniform vec4    u_sunParams;
 
 in vec3	v_texCoord; 
 in vec3 v_Position;
@@ -125,19 +127,23 @@ void main(void)
 		fragData = vec4(0.0);
 		return;	
 	}
-    vec3 color = atmosphere(
-        normalize(v_Position),          // normalized ray direction
-        vec3(0.0, 0.0, 6371e3),         // ray origin
-        vec3(8192.0, 8192.0, 8192.0),   // position of the sun - z is sun height
-        12.0,                           // intensity of the sun
-        6371e3,                         // radius of the planet in meters
-        6471e3,                         // radius of the atmosphere in meters
-        vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
-        21e-6,                          // Mie scattering coefficient
-        8e3,                            // Rayleigh scale height
-        1.2e3,                          // Mie scale height
-        0.758                           // Mie preferred scattering direction
-    );
-	fragData = vec4(color, 1.0);
- // fragData = textureLod(u_map, v_texCoord.xyz, 0.0);
+    if(u_earthSky == 1){
+        vec3 sky = atmosphere(
+            normalize(v_Position),          // normalized ray direction
+            vec3(0.0, 0.0, 6372e3),         // ray origin
+            u_sunParams.xyz,                // position of the sun - z is sun height
+            u_sunParams.w,                  // intensity of the sun
+            6371e3,                         // radius of the planet in meters
+            6471e3,                         // radius of the atmosphere in meters
+            vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+            21e-6,                          // Mie scattering coefficient
+            8e3,                            // Rayleigh scale height
+            1.2e3,                          // Mie scale height
+            0.758                           // Mie preferred scattering direction
+        );
+        fragData = vec4(sky, 1.0);
+        return;
+    }
+  
+  fragData = textureLod(u_map, v_texCoord.xyz, 0.0);
 }

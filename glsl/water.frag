@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_colorMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_normalMap;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2DRect	g_colorBufferMap;
@@ -18,7 +19,7 @@ in vec2		v_deformMul;
 in vec3		v_positionVS;
 in mat3		v_tangentToView;
 in vec4		v_color;
-in vec3     v_lightVec;
+in vec3   v_lightVec;
 in vec3		v_viewVecTS;
 
 #define MAX_STEPS			20
@@ -41,7 +42,7 @@ in vec3		v_viewVecTS;
 #define OPAQUE_MUL			(-1.0 / 512.0)
 
 
-#include depth.inc
+#include depth.inc  //!#include "include/depth.inc"
 
 //
 // view space to viewport

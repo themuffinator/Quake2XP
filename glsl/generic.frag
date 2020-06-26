@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0)  uniform sampler2D	u_map;
 layout (bindless_sampler, location  = U_TMU1)  uniform sampler2D	u_normalMap;
 
@@ -12,7 +13,7 @@ in vec2		v_texCoord;
 in vec4		v_color;
 
 
-#include lighting.inc
+#include lighting.inc //!#include "include/lighting.inc"
 
 #define RGB_MASK_SIZE 3.0
 #define SMOOTHING 1.0 / 16.0

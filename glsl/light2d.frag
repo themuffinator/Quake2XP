@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0)  uniform sampler2D	u_map;
 layout (bindless_sampler, location  = U_TMU1)  uniform sampler2D	u_normalMap;
 
@@ -5,7 +6,7 @@ layout(location = U_PARAM_VEC2_0)	uniform vec2	u_params;
 
 in vec2			texCoord;
 
-#include lighting.inc
+#include lighting.inc //!#include "include/lighting.inc"
 
 void main(void) 
 {

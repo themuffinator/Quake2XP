@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D	u_map;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2DRect	u_depthBufferMap;
 
@@ -11,7 +12,7 @@ in float	v_depth;
 in vec2		v_texCoord; 
 in vec4		v_color;
 
-#include depth.inc
+#include depth.inc //!#include "include/depth.inc"
 
 void main(void) 
 {

@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2DRect u_screenTex;
 
 const vec4 colors[3] = vec4[](vec4(0.0, 0.0, 1.0, 1.0),

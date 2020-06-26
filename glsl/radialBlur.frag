@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 /*
 ===========================================
 Radial Blur effect, uses Crysis(tm) shader.

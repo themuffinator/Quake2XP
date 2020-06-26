@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_deformMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_colorMap;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2DRect	g_colorBufferMap;
@@ -19,23 +20,8 @@ in float	v_depthS;
 in vec2		v_deformMul;
 in vec2		v_deformTexCoord;
 
-#include depth.inc
-
-
-vec4 boxBlur(sampler2DRect blurTex, float  blurSamples, vec2 N){
-
-	float numSamples = (1.0 / (blurSamples * 4.0 + 1.0));
-	vec4 sum = texture2DRect( blurTex, gl_FragCoord.xy + N);	// central point
-
-	for ( float i = 1.0; i <= blurSamples; i += 1.0 ){
-
-		sum += texture2DRect(blurTex, gl_FragCoord.xy + N + vec2(i, 0.0));
-		sum += texture2DRect(blurTex, gl_FragCoord.xy + N + vec2(-i, 0.0));
-		sum += texture2DRect(blurTex, gl_FragCoord.xy + N + vec2(0.0, i));
-		sum += texture2DRect(blurTex, gl_FragCoord.xy + N + vec2(0.0, -i));
-	}
-	return sum * numSamples;
-}
+#include depth.inc //!#include "include/depth.inc"
+#include blur.inc //!#include "include/blur.inc"
 
 void main (void) {
 
@@ -55,7 +41,7 @@ void main (void) {
 	clearGlass.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
 	clearGlass.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 
-    vec4 bluredGlass = boxBlur(g_colorBufferMap, max(8.0, diffuse.a * u_blurScale), N);
+    vec4 bluredGlass = boxBlur2(g_colorBufferMap, max(8.0, diffuse.a * u_blurScale), N);
 
     fragData = mix (bluredGlass, clearGlass, diffuse.a);
 

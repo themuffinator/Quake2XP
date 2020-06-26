@@ -1,12 +1,4 @@
-/*
-layout (binding = 0) uniform sampler2D		u_Diffuse;
-layout (binding = 1) uniform sampler2D		u_NormalMap;
-layout (binding = 2) uniform samplerCube	u_CubeFilterMap;
-layout (binding = 3) uniform sampler2D		u_Caustics;
-layout (binding = 4) uniform sampler2D		u_RghMap;
-*/
-
-
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_Diffuse;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_NormalMap;
 layout (bindless_sampler, location  = U_TMU2) uniform samplerCube	u_CubeFilterMap;
@@ -39,8 +31,8 @@ in vec4			v_lightCoord;
 in vec3			v_lightAtten;
 in vec3			v_lightSpot;
 
-#include lighting.inc
-#include parallax.inc
+#include lighting.inc   //!#include "include/lighting.inc"
+#include parallax.inc   //!#include "include/parallax.inc"
 
 void main (void) {
 

@@ -1,4 +1,5 @@
-#include depth.inc
+//!#include "include/global.inc"
+#include depth.inc //!#include "include/depth.inc"
 
 //layout (binding = 0) uniform	sampler2DRect	u_colorMiniMap;
 //layout (binding = 1) uniform	sampler2DRect	u_DNMiniMap;

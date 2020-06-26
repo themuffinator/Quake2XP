@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0)  uniform sampler2D u_map;
 
 layout (location = U_COLOR_MUL) uniform float u_colorScale;

@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_colorMap;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2DRect	u_depthBufferMap;
 
@@ -10,7 +11,7 @@ in float		v_depth;
 in vec4			v_color;
 in vec4			v_texCoord0;
 
-#include depth.inc
+#include depth.inc //!#include "include/depth.inc"
 
 void main (void) {
 	vec4 color = texture(u_colorMap, v_texCoord0.st);
