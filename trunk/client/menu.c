@@ -2517,8 +2517,8 @@ static void CreditsFunc(void *unused) {
 	M_Menu_Credits_f();
 }
 
-#define	MAX_MODS			25
-#define	MAX_MOD_NAMELEN		18
+#define	MAX_MODS			48
+#define	MAX_MOD_NAMELEN		24
 menuframework_s	s_mods_menu;
 menuaction_s	s_mods_actions[MAX_MODS];
 menuaction_s	s_mod_game_action;
@@ -2544,7 +2544,7 @@ qboolean Mods_MenuInit()
 	char	**dirnames = NULL;
 	char	findname[MAX_OSPATH];
 	int		i, l, ndirs = 0, t = 0, len = 0;
-	char	modinfo[MAX_MODS][256];
+	static char	modinfo[MAX_MODS][MAX_CLIENTS];
 	FILE	*f;
 
 	path = FS_NextPath(NULL);
@@ -2627,11 +2627,11 @@ qboolean Mods_MenuInit()
 				}
 				else {
 					fseek(f, 0, SEEK_END);
-					len = min(255, ftell(f));
+					len = min(255, ftell(f));       
 					fseek(f, 0, SEEK_SET);
-					memset(modinfo[t], 0, 256);
+					memset(modinfo[t], 0, 256);   
 					fread(modinfo[t], len, 1, f);
-					s_mods_actions[t].generic.statusbar = &modinfo[t][0];
+					s_mods_actions[t].generic.statusbar = &modinfo[t][0];  
 					fclose(f);
 				}
 			}
