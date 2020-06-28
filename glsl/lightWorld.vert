@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout(location = 0) in vec3 att_position;
 layout(location = 1) in vec3 att_normal;
 layout(location = 2) in vec3 att_tangent;

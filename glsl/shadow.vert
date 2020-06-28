@@ -1,3 +1,4 @@
+//!#include "include/global.inc"
 layout(location = 0) in vec4	att_position;
 
 layout(location = U_MVP_MATRIX) uniform mat4	u_modelViewProjectionMatrix;

@@ -130,7 +130,7 @@ void main(void)
     if(u_earthSky == 1){
         vec3 sky = atmosphere(
             normalize(v_Position),          // normalized ray direction
-            vec3(0.0, 0.0, 6372e3),         // ray origin
+            vec3(0.0, 0.0, 6371e3),         // ray origin
             u_sunParams.xyz,                // position of the sun - z is sun height
             u_sunParams.w,                  // intensity of the sun
             6371e3,                         // radius of the planet in meters

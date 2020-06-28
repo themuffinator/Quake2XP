@@ -261,7 +261,7 @@ void main (void) {
 		    vec3 uv_tangent = vec3(-uv_orthogonal.y, uv_orthogonal.x, 0.0);
 		    vec4 worldTangent = v_mvMatrix * vec4(uv_tangent, 0.0);
 
-        fragData.rgb += LightingDiffraction(V, L, worldTangent.xyz);
+        fragData.rgb += LightingDiffraction(V, L, worldTangent.xyz) * 0.5;
        }
       }	
 }
