@@ -360,7 +360,7 @@ cvar_t	*r_particlesOverdraw;
 cvar_t	*r_lutId;
 cvar_t	*r_colorTempK;
 
-cvar_t *r_earthSky, * r_earthSunPos_x, * r_earthSunPos_y, * r_earthSunPos_z, * r_earthSunIntens;
+cvar_t *r_earthSky, *r_earthSunAzimuth, *r_earthSunIntens;
 
 int CL_PMpointcontents (vec3_t point);
 qboolean outMap;

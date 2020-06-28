@@ -319,8 +319,13 @@ void R_DrawSkyBox(qboolean color) {
 		qglUniform1i(U_PARAM_INT_1, 1);
 	else
 		qglUniform1i(U_PARAM_INT_1, 0);
+	
+	float rad = 10471e3;
+	float angle = 1.0 + r_newrefdef.time * 0.125;
+	float x = rad * cos(angle); 
+	float hipos = rad * sin(angle);
 
-	qglUniform4f(U_PARAM_VEC4_0, r_earthSunPos_x->value, r_earthSunPos_y->value, r_earthSunPos_z->value, r_earthSunIntens->value);
+	qglUniform4f(U_PARAM_VEC4_0, 0, x, hipos, r_earthSunIntens->value);
 
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.skyMatrix);
 

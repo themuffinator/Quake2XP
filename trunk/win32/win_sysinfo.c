@@ -289,8 +289,13 @@ void Sys_CpuID()
 
 		if (nFeatureInfo) {
 
-			Com_Printf("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[0]);
+			///  Berserker: trim left spaces
+			for (i = 0; i < sizeof(CPUBrandString); i++) 
+				if (CPUBrandString[i] != ' ')
+					break;
 
+			Com_Printf("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[i]);
+			
 			SYS_GetCpuCount();
 			
 			float GHz = (float)dwCPUSpeed * 0.001;
@@ -333,10 +338,12 @@ void GetDiskInfos()
 	DWORD dwDrives = GetLogicalDrives();
 	ULARGE_INTEGER freeBytes, totalBytes;
 	uint drvType;
-
 	char msg[24];
 	char strDrive[4] = { '\0' };
-	char strDrivex[4] = { '\0' };
+	char label[MAX_PATH];
+	char dsk[4], fat[16];
+	qboolean result;
+	float   total, free;
 
 	// 26 letters in [A..Z] range
 	for (int i = 0; i < 26; i++)
@@ -346,7 +353,7 @@ void GetDiskInfos()
 		{
 			wsprintfA((LPSTR)strDrive, "%c:", 'A' + i);
 
-			GetDiskFreeSpaceEx(strDrive, &freeBytes, &totalBytes, NULL);
+			result = GetDiskFreeSpaceEx(strDrive, &freeBytes, &totalBytes, NULL);
 			
 			drvType = GetDriveType(strDrive);
 			switch (drvType)
@@ -367,26 +374,34 @@ void GetDiskInfos()
 				wsprintf(msg, "Network Drive");
 				break;
 			case DRIVE_CDROM:
-				wsprintf(msg, "CD-ROM Drive");
+				wsprintf(msg, "DVD Drive");
 				break;
 			case DRIVE_RAMDISK:
-				wsprintf(msg, "RAM Disk");
+				wsprintf(msg, "RAM Drive");
 				break;
 			default:
 				wsprintf(msg, "Unknown Disk");
 				break;
 			}
-			if (drvType == DRIVE_CDROM) {
-
-				freeBytes.QuadPart /= (1024 * 1024);
-				totalBytes.QuadPart /= (1024 * 1024);
-				Com_Printf("%s " S_COLOR_GREEN "%s" S_COLOR_WHITE " Full: " S_COLOR_GREEN "%i" S_COLOR_WHITE " MB | Free: " S_COLOR_GREEN "%i" S_COLOR_WHITE " MB", msg, strDrive, totalBytes.LowPart, freeBytes.LowPart);
+			if (result == 0)
+			{
+				Com_Printf("%s " S_COLOR_GREEN "%s" S_COLOR_WHITE " Empty", msg, strDrive);
 			}
-			else {
+			else
+			{
+				total = (float)totalBytes.QuadPart / (1024 * 1024 * 1024);
+				free = (float)freeBytes.QuadPart / (1024 * 1024 * 1024);
 
-				freeBytes.QuadPart /= (1024 * 1024 * 1024);
-				totalBytes.QuadPart /= (1024 * 1024 * 1024);
-				Com_Printf("%s " S_COLOR_GREEN "%s" S_COLOR_WHITE " Full: " S_COLOR_GREEN "%i" S_COLOR_WHITE " GB | Free: " S_COLOR_GREEN "%i" S_COLOR_WHITE " GB", msg, strDrive, totalBytes.LowPart, freeBytes.LowPart);
+				sprintf(dsk, "%s\\", strDrive);
+				GetVolumeInformation(dsk, label, MAX_PATH, NULL, NULL, NULL, fat, sizeof(fat));
+
+				if (drvType == DRIVE_CDROM)
+					Com_Printf("%s " S_COLOR_GREEN "%s" S_COLOR_WHITE " Capacity " S_COLOR_GREEN "%.3f" S_COLOR_WHITE " GB |", msg, strDrive, total);
+				else 
+					Com_Printf("%s " S_COLOR_GREEN "%s" S_COLOR_WHITE " Capacity" S_COLOR_GREEN " %.3f" S_COLOR_WHITE " GB | Free " S_COLOR_GREEN "%.3f" S_COLOR_WHITE " GB |", msg, strDrive, total, free);
+
+				Com_Printf(S_COLOR_YELLOW" '%s' " S_COLOR_WHITE "on" S_COLOR_GREEN " %s", label, fat);
+				
 			}
 			Com_Printf("\n");
 
@@ -408,15 +423,15 @@ void Sys_GetMemorySize() {
 	
 	DWORD physRam = ram.ullTotalPhys >> 20;
 
-	Con_Printf(PRINT_ALL, "\n");
-	Com_Printf("Physical RAM:    "S_COLOR_GREEN"%d"S_COLOR_WHITE" GB\n", (physRam + 512) >>10);
-	Com_Printf("Memory loaded:   "S_COLOR_GREEN"%d"S_COLOR_WHITE" %%\n", ram.dwMemoryLoad);
+	Com_Printf("\n");
+	Com_Printf("Physical RAM: "S_COLOR_GREEN"%d"S_COLOR_WHITE" GB\n", (physRam + 512) >>10);
+	Com_Printf("Memory Usage: "S_COLOR_GREEN"%d"S_COLOR_WHITE" %%\n", ram.dwMemoryLoad);
 	
-	Con_Printf(PRINT_ALL, "\n");
+	Com_Printf("\n");
 	
 	GetDiskInfos();
 	
-	Con_Printf(PRINT_ALL, "\n\n");
+	Com_Printf("\n\n");
 }
 
 BOOL Is64BitWindows() {
