@@ -2836,7 +2836,7 @@ void Create_MapNamesList()
 	}
 }
 
-void Create_QuickLoadList()
+void Create_QuickSavesList(qboolean load)
 {
 	FILE* f;
 	char	name[MAX_OSPATH], tmp[32];
@@ -2852,8 +2852,10 @@ void Create_QuickLoadList()
 	{
 		fseek(f, 12, SEEK_SET); //move to map name
 		fread(tmp, sizeof(tmp), 1, f);
-		Com_sprintf(m_quicksavestring, sizeof(m_quicksavestring), "QUICKSAVE: %s", tmp);
-
+		if(load)
+			Com_sprintf(m_quicksavestring, sizeof(m_quicksavestring), "QUICKLOAD: %s", tmp);
+		else
+			Com_sprintf(m_quicksavestring, sizeof(m_quicksavestring), "QUICKSAVE: %s", tmp);
 		fclose(f);
 		m_quicksavevalid = qtrue;
 	}
@@ -3092,7 +3094,7 @@ void LoadGame_MenuInit(void) {
 	s_loadgame_menu.nitems = 0;
 
 	// The quickload slot...
-	Create_QuickLoadList();
+	Create_QuickSavesList(qtrue);
 	Create_QuickSavesInfoss();
 	
 	s_quickLoadGame_actions.generic.type = MTYPE_ACTION;
@@ -3194,7 +3196,7 @@ void SaveGame_MenuInit(void) {
 
 
 	// The quicksave slot...
-	Create_QuickLoadList();
+	Create_QuickSavesList(qfalse);
 	Create_QuickSavesInfoss();
 
 	s_quickSaveGame_actions.generic.type = MTYPE_ACTION;

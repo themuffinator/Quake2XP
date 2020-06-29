@@ -1475,9 +1475,9 @@ void R_RegisterCvars(void)
 	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
 	r_colorTempK->help =				"Color Temperature in Kelvins (from 1000K to 40000K)";
 
-	r_earthSky = 						Cvar_Get("r_earthSky", "0", CVAR_ARCHIVE);
-	r_earthSunIntens =					Cvar_Get("r_earthSunIntens", "12.0", CVAR_ARCHIVE);
-	r_earthSunAzimuth =					Cvar_Get("r_earthSunAzimuth", "0.0", CVAR_ARCHIVE);
+	r_earthSky = 						Cvar_Get("r_earthSky", "0", 0);
+	r_earthSunIntens =					Cvar_Get("r_earthSunIntens", "12.0", 0);
+//	r_earthSunAzimuth =					Cvar_Get("r_earthSunAzimuth", "0.0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
