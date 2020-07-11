@@ -241,7 +241,6 @@ cvar_t *r_mode;
 cvar_t *r_noBind;
 cvar_t *r_cull;
 cvar_t *r_vsync;
-cvar_t *r_textureMode;
 
 cvar_t *r_imageAutoBump;
 cvar_t *r_imageAutoBumpScale;
@@ -314,8 +313,8 @@ cvar_t	*hunk_md3;
 
 cvar_t	*r_reliefMapping;
 cvar_t	*r_reliefScale;
-cvar_t	*r_reliefMappingSelfShadow;
-cvar_t	*r_reliefMappingSelfShadowOffset;
+cvar_t	*r_selfShadowingParallax;
+cvar_t	*r_selfShadowOffset;
 
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;
@@ -761,7 +760,7 @@ vbo_t vbo;
 typedef struct {
 	GLuint	bsp_a; 
 	GLuint	bsp_l;
-	GLuint	alias_shadow;
+	GLuint	shadow;
 	GLuint	fonts;
 	GLuint	fullscreenQuad;
 	GLuint	halfScreenQuad;

@@ -168,8 +168,6 @@ void SCR_DrawCenterString (void) {
 	else
 		y = 48;
 
-	Set_FontShader (qtrue);
-
 	do {
 		// scan the width of the line
 		for (l = 0; l < 40; l++)
@@ -195,7 +193,6 @@ void SCR_DrawCenterString (void) {
 		start++;				// skip the \n
 	} while (1);
 
-	Set_FontShader (qfalse);
 }
 
 void SCR_CheckDrawCenterString (void) {
@@ -391,8 +388,6 @@ void SCR_DrawLoading (void) {
 		SCR_DrawLoadingBar (loadingPercent, scaled);
 
 		mapname = cl.configstrings[CS_NAME];
-
-		Set_FontShader (qtrue);
 		
 		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 6;
 		RE_SetColor(colorGreen);
@@ -409,7 +404,6 @@ void SCR_DrawLoading (void) {
 		Draw_StringScaled (0, 74 * fontscale, fontscale, fontscale,
 			va ("%s", loadingMessages[3]));
 		RE_SetColor (colorWhite);
-		Set_FontShader (qfalse);
 	}
 }
 
@@ -465,8 +459,7 @@ void SCR_DrawConsole (void) {
 		// but can't
 		// render
 		Con_DrawConsole (0.5);
-		Draw_Fill (0, viddef.height * 0.5f, viddef.width,
-			viddef.height * 0.5f, 0.0, 0.0, 0.0, 1.0);
+		Draw_Fill (0, viddef.height * 0.5f, viddef.width, viddef.height * 0.5f, 0.0, 0.0, 0.0, 1.0);
 		return;
 	}
 
@@ -766,8 +759,6 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 
 	margin = x;
 
-	Set_FontShader (qtrue);
-
 	while (*string) {
 		// scan out one line of text from the string
 		width = 0;
@@ -790,7 +781,6 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 			y += 8 * scale_y;
 		}
 	}
-	Set_FontShader (qfalse);
 }
 
 /*
@@ -918,7 +908,6 @@ void SCR_DrawSpeeds (void) {
 	sprintf (dtr, "%i d_tris", c_decal_tris);
 	sprintf(lt, "%i vis lights", num_visLights);
 
-	Set_FontShader (qtrue);
 	RE_SetColor (colorCyan);
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4, fontscale, fontscale, bsp);
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 10 * fontscale, fontscale, fontscale, alias);
@@ -928,7 +917,6 @@ void SCR_DrawSpeeds (void) {
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 50 * fontscale, fontscale, fontscale, dtr);
 	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 60 * fontscale, fontscale, fontscale, lt);
 	RE_SetColor (colorWhite);
-	Set_FontShader (qfalse);
 }
 
 void SCR_DrawFPS (void) {
@@ -967,8 +955,6 @@ void SCR_DrawFPS (void) {
 	
 	if (cl_drawFPS->integer && (cls.state == ca_active)) {
 		
-		Set_FontShader (qtrue);
-
 		if (cl_drawFPS->integer == 2) {
 			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
 			Draw_StringScaled(viddef.width - minFpsLengh * 6 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
@@ -977,7 +963,6 @@ void SCR_DrawFPS (void) {
 			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
 
 		RE_SetColor (colorWhite);
-		Set_FontShader (qfalse);
 	}
 }
 
@@ -1007,9 +992,6 @@ void SCR_DrawClock (void) {
 	int timebufLengh = strlen(tmpbuf);
 	int datebufLengh = strlen(tmpdatebuf);
 
-	Set_FontShader (qtrue);
-
-
 	if (!cl_drawFPS->integer) {
 		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
 		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
@@ -1018,8 +1000,6 @@ void SCR_DrawClock (void) {
 		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpbuf);
 		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 20 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}
-	Set_FontShader (qfalse);
-
 }
 
 void SCR_ShowTexNames() {
@@ -1037,7 +1017,6 @@ void SCR_ShowTexNames() {
 	VectorMA(cl.refdef.vieworg, 4096, forward, end);
 	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, (MASK_SOLID | MASK_WATER), qfalse);
 	
-	Set_FontShader(qtrue);
 	RE_SetColor(colorGreen);
 
 	if (trace.surface->name[0])
@@ -1047,7 +1026,6 @@ void SCR_ShowTexNames() {
 		Draw_StringScaled(0, viddef.height / 2 - 50, 2.0, 2.0, string);
 	} 
 
-	Set_FontShader(qfalse);
 	RE_SetColor(colorWhite);
 }
 

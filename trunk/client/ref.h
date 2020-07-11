@@ -137,8 +137,6 @@ typedef uint				index32_t;
 typedef const char			cchar;
 typedef unsigned char		uchar;
 
-void Set_FontShader (qboolean enable);
-
 typedef struct entity_s {
 	struct model_s *model;		// opaque type outside refresh
 	float angles[3];

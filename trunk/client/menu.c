@@ -252,23 +252,19 @@ void M_DrawCharacter(int cx, int cy, int num) {
 }
 
 void M_Print(int cx, int cy, char *str) {
-	Set_FontShader(qtrue);
 	while (*str) {
 		M_DrawCharacter(cx, cy, (*str) + 128);
 		str++;
 		cx += 8 * cl_fontScale->value;
 	}
-	Set_FontShader(qfalse);
 }
 
 void M_PrintWhite(int cx, int cy, char *str) {
-	Set_FontShader(qtrue);
 	while (*str) {
 		M_DrawCharacter(cx, cy, *str);
 		str++;
 		cx += 8 * cl_fontScale->value;
 	}
-	Set_FontShader(qfalse);
 }
 
 
@@ -276,7 +272,6 @@ void M_DrawTextBox(int x, int y, int width, int lines) {
 	int cx, cy;
 	int n;
 
-	Set_FontShader(qtrue);
 	// draw left side
 	cx = x;
 	cy = y;
@@ -309,7 +304,6 @@ void M_DrawTextBox(int x, int y, int width, int lines) {
 		M_DrawCharacter(cx, cy, 6);
 	}
 	M_DrawCharacter(cx, cy + 8, 9);
-	Set_FontShader(qfalse);
 }
 
 
@@ -2355,8 +2349,6 @@ void M_Credits_MenuDraw(void) {
 	
 	drawIDlogo = qfalse;
 
-	Set_FontShader(qtrue);
-
 	for (i = 0, y = viddef.height - ((cls.realtime - credits_start_time) / 30.0F); credits[i] && y < (int)viddef.height; y += 10 * cl_fontScale->value, i++)    /// Berserker' FIX: was y < viddef.height
 	{
 		int j, stringoffset = 0;
@@ -2384,8 +2376,6 @@ void M_Credits_MenuDraw(void) {
 
 	if (y < 0)
 		credits_start_time = cls.realtime;
-
-	Set_FontShader(qfalse);
 
 }
 
@@ -2972,10 +2962,8 @@ void DrawSavedShot(void* m)
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (cl_fontScale->integer - 1), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
 
-		Set_FontShader(qtrue);
 		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)cl_fontScale->value * 6) * 0.5;
 		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
-		Set_FontShader(qfalse);
 		}
 	else {
 
@@ -3002,11 +2990,9 @@ void DrawSavedShot(void* m)
 		}
 				
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
-		
-		Set_FontShader(qtrue);
+
 		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)cl_fontScale->value * 6) * 0.5;
 		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
-		Set_FontShader(qfalse);
 		}
 	}
 	else {
@@ -3046,10 +3032,8 @@ void DrawQuickSavedShot(void* m)
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (cl_fontScale->integer - 1), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
 
-		Set_FontShader(qtrue);
 		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_quickSavesInfos) * (int)cl_fontScale->value * 6) * 0.5;
 		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_quickSavesInfos);
-		Set_FontShader(qfalse);
 	}
 	else {
 		Draw_GetPicSize(&w, &h, "nosaveshot");

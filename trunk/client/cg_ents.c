@@ -992,6 +992,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 			}
 		}
+		vec3_t light_org;
 
 		// ***It's Me!!!!!!***//
 		if (s1->number == cl.playernum + 1) {
@@ -1004,26 +1005,29 @@ void CL_AddPacketEntities (frame_t * frame) {
 				VectorCopy(cl.predicted_origin, ent.oldorigin);
 			}
 
+			VectorCopy(ent.origin, light_org);
+			light_org[2] += 96;
+
 			if (renderfx & RF_SHELL_RED)
-				V_AddLight (ent.origin, 200, 1.0, 0.5, 0.5, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1.0, 0.5, 0.5, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_BLUE)
-				V_AddLight (ent.origin, 200, 0.5, 0.5, 1.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.5, 0.5, 1.0, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_GREEN)
-				V_AddLight (ent.origin, 200, 0.5, 1.0, 0.5, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.5, 1.0, 0.5, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_GOD)
-				V_AddLight (ent.origin, 200, 1, 1, 1, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1, 1, 1, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_HALF_DAM)
-				V_AddLight (ent.origin, 200, 0.56, 0.59, 0.45, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.56, 0.59, 0.45, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_DOUBLE)
-				V_AddLight (ent.origin, 200, 0.9, 0.7, 0.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.9, 0.7, 0.0, vec3_origin, 0, 0);
 			else if (effects & EF_FLAG1)
-				V_AddLight (ent.origin, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0);
 			else if (effects & EF_FLAG2)
-				V_AddLight (ent.origin, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0);
 			else if (effects & EF_TAGTRAIL)
-				V_AddLight (ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
 			else if (effects & EF_TRACKERTRAIL)
-				V_AddLight (ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
 			
 
 		}
@@ -1077,27 +1081,32 @@ void CL_AddPacketEntities (frame_t * frame) {
 			&& !(cl.attractloop && !(cl.cinematictime > 0
 			&& cls.realtime - cl.cinematictime > 1000))))) {
 
+			VectorCopy(ent.origin, light_org);
+			light_org[0] += 15;
+			light_org[1] += 15;
+			light_org[2] += 100;
+
 			if (renderfx & RF_SHELL_RED)
-				V_AddLight (ent.origin, 200, 1.0, 0, 0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1.0, 0, 0, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_BLUE)
-				V_AddLight (ent.origin, 200, 0, 0, 1.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0, 0, 1.0, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_GREEN)
-				V_AddLight (ent.origin, 200, 0, 1.0, 0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0, 1.0, 0, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_GOD)
-				V_AddLight (ent.origin, 200, 1, 1, 1, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1, 1, 1, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_HALF_DAM)
-				V_AddLight (ent.origin, 200, 0.8, 0.8, 0.8, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 0.8, 0.8, 0.8, vec3_origin, 0, 0);
 			else if (renderfx & RF_SHELL_DOUBLE)
-				V_AddLight (ent.origin, 200, 1, 0.8, 0.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 200, 1, 0.8, 0.0, vec3_origin, 0, 0);
 			else if (effects & EF_FLAG1)
-				V_AddLight (ent.origin, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 1.0, 0.1, 0.1, vec3_origin, 0, 0);
 			else if (effects & EF_FLAG2)
-				V_AddLight (ent.origin, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0);
+				V_AddLight (light_org, 225, 0.1, 0.1, 1.0, vec3_origin, 0, 0);
 			if (net_compatibility->integer) {
 				if (effects & EF_TAGTRAIL)
-					V_AddLight (ent.origin, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
+					V_AddLight (light_org, 225, 1.0, 1.0, 0.0, vec3_origin, 0, 0);
 				else if (effects & EF_TRACKERTRAIL)
-					V_AddLight (ent.origin, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
+					V_AddLight (light_org, 225, -1.0, -1.0, -1.0, vec3_origin, 0, 0);
 			}
 
 			if (renderfx & RF_SHELL_HALF_DAM) {

@@ -308,17 +308,18 @@ LONG WINAPI MainWndProc(HWND    hWnd, UINT    uMsg, WPARAM  wParam, LPARAM  lPar
 							//willow: оптимизируем эту формулу. Корректирующий фактор поправлен c 0.1f на 0.111111f * 0.66f,
 							//что в общем-то не имеет никакого принципиального значения. Иначе у меня слайдер настройки едва
 							//за границу не вышел. Заодно получаем оптимизацию - гарантированная замена деления на умножение.
-							float sens = sensitivity->value * cl.refdef.fov_x * 0.00066f;
+							float sens_x = sensitivity->value * cl.refdef.fov_x * 0.00066f;
+							float sens_y = sensitivity->value * cl.refdef.fov_y * 0.00066f;
 
 							if (raw->data.mouse.lLastX)
-								cl.viewangles_YAW -= sens * raw->data.mouse.lLastX;
+								cl.viewangles_YAW -= sens_x * raw->data.mouse.lLastX;
 
 							if (raw->data.mouse.lLastY)
 							{
 								if (m_inversion->integer)
-									cl.viewangles_PITCH -= sens * raw->data.mouse.lLastY;
+									cl.viewangles_PITCH -= sens_y * raw->data.mouse.lLastY;
 								else
-									cl.viewangles_PITCH += sens * raw->data.mouse.lLastY;
+									cl.viewangles_PITCH += sens_y * raw->data.mouse.lLastY;
 							}
 
 							//willow, Berserker:

@@ -121,7 +121,7 @@ static void reliefScaleCallback(void *s) {
 
 static void reliefShadowCallback(void *s) {
 	menulist_s *box = (menulist_s *)s;
-	Cvar_SetValue("r_reliefMappingSelfShadow", box->curvalue * 1);
+	Cvar_SetValue("r_selfShadow", box->curvalue * 1);
 }
 
 static void FlareCallback (void *s) {
@@ -285,7 +285,7 @@ static void ApplyChanges (void *unused) {
 	** has been modified
 	*/
 	
-	if (r_reliefMappingSelfShadow->modified)
+	if (r_selfShadowingParallax->modified)
 		vid_ref->modified = qtrue;
 
 	if (r_brightness->modified)
@@ -656,8 +656,8 @@ void VID_MenuInit (void) {
 		"Ultra",  // 16
 		0 };
 
-	if(!r_reliefMappingSelfShadow)
-		r_reliefMappingSelfShadow = Cvar_Get("r_reliefMappingSelfShadow", "0", CVAR_ARCHIVE);
+	if(!r_selfShadowingParallax)
+		r_selfShadowingParallax = Cvar_Get("r_selfShadowingParallax", "0", CVAR_ARCHIVE);
 
 	if (!r_mode)
 		r_mode = Cvar_Get ("r_mode", "0", CVAR_ARCHIVE);
@@ -791,7 +791,7 @@ void VID_MenuInit (void) {
 	s_parallax_shadow.generic.y = 90 * cl_fontScale->value;
 	s_parallax_shadow.generic.name = "Self Shadowing Parallax";
 	s_parallax_shadow.itemnames = yesno_names;
-	s_parallax_shadow.curvalue = r_reliefMappingSelfShadow->integer;
+	s_parallax_shadow.curvalue = r_selfShadowingParallax->integer;
 	s_parallax_shadow.generic.callback = reliefShadowCallback;
 	s_parallax_shadow.generic.statusbar = "Virtual Displacement Mapping Self Shadowing";
 

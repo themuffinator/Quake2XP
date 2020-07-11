@@ -639,7 +639,10 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
 		VectorSet(shadelight, 1, 1, 1);
-		
+	
+	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
+		VectorSet(shadelight, 1, 1, 1);
+
 	CheckEntityFrameMD3(md3Hdr);
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
@@ -1185,11 +1188,11 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 	md3Model_t		*md3Hdr;
 	vec3_t			bbox[8];
-	int				i, j, k;
+	int				i, j;
 	float			frontlerp, backlerp;
 	md3Frame_t		*frame, *oldframe;
 	vec3_t			move, delta, vectors[3], tmp, viewOrg;
-	md3Vertex_t		*v, *ov, *verts, *oldVerts;
+	md3Vertex_t		*v, *ov;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -1234,8 +1237,8 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 
 	// setup program
 	GL_BindProgram(md3AmbientProgram);
-	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE);
-	vec2_t shellParams = { r_newrefdef.time * 0.45, 0.1f };
+	GL_BlendFunc(GL_SRC_COLOR, GL_ONE);
+	vec2_t shellParams = { r_newrefdef.time * 0.45, 0.0 };
 
 	qglUniform1i(U_SHELL_PASS, 1); // deform in vertex shader
 	qglUniform3fv(U_VIEW_POS, 1, viewOrg);
@@ -1262,18 +1265,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 		if (mesh->muzzle)
 			continue;
 
-		verts = mesh->vertexes + currententity->frame * mesh->num_verts;
-		oldVerts = mesh->vertexes + currententity->oldframe * mesh->num_verts;
-
 		c_alias_polys += md3Hdr->meshes[i].num_tris;
-
-		for (k = 0; k < mesh->num_verts; k++) {
-
-			normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
-			normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
-			normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
-		}
-
 		v = mesh->vertexes + currententity->frame * mesh->num_verts;
 		ov = mesh->vertexes + currententity->oldframe * mesh->num_verts;
 
@@ -1282,6 +1274,10 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 			md3VertexCache[j][0] = move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp;
 			md3VertexCache[j][1] = move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp;
 			md3VertexCache[j][2] = move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp;
+
+			normalArray[j][0] = ov->normal[0] * backlerp + v->normal[0] * frontlerp;
+			normalArray[j][1] = ov->normal[1] * backlerp + v->normal[1] * frontlerp;
+			normalArray[j][2] = ov->normal[2] * backlerp + v->normal[2] * frontlerp;
 		}
 
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);

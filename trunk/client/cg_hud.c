@@ -342,7 +342,6 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 }
 
 void DrawAltStringScaled (int x, int y, float scale_x, float scale_y, char *s) {
-	Set_FontShader (qtrue);
 	while (*s) {
 
 			Draw_CharScaled(x, y, scale_x, scale_y, *s ^ 0x80);
@@ -350,7 +349,6 @@ void DrawAltStringScaled (int x, int y, float scale_x, float scale_y, char *s) {
 		x += 8 * scale_x;
 		s++;
 	}
-	Set_FontShader (qfalse);
 }
 
 
@@ -477,11 +475,9 @@ void SCR_ExecuteLayoutString (char *s) {
 
 			DrawAltStringScaled (x + 32 * hud_sx, y, hud_sx, hud_sy, ci->name);
 
-			Set_FontShader (qtrue);
 			Draw_StringScaled (x + 32 * hud_sx, y + 8 * hud_sy, hud_sx, hud_sy, va ("Score:  %i", score));
 			Draw_StringScaled (x + 32 * hud_sx, y + 16 * hud_sy, hud_sx, hud_sy, va ("Ping:  %i", ping));
 			Draw_StringScaled (x + 32 * hud_sx, y + 24 * hud_sy, hud_sx, hud_sy, va ("Time:  %i", time));
-			Set_FontShader (qfalse);
 
 			if (!ci->icon)
 				ci = &cl.baseclientinfo;
@@ -519,9 +515,7 @@ void SCR_ExecuteLayoutString (char *s) {
 			if (value == cl.playernum)
 				DrawAltStringScaled (x, y, hud_sx, hud_sy, block);
 			else {
-				Set_FontShader (qtrue);
 				Draw_StringScaled (x, y, hud_sx, hud_sy, block);
-				Set_FontShader (qfalse);
 				continue;
 			}
 		}
@@ -616,9 +610,7 @@ void SCR_ExecuteLayoutString (char *s) {
 			index = cl.frame.playerstate.stats[index];
 			if (index < 0 || index >= MAX_CONFIGSTRINGS)
 				Com_Error (ERR_DROP, "Bad stat_string index");
-			Set_FontShader (qtrue);
 			Draw_StringScaled (x, y, hud_sx, hud_sy, cl.configstrings[index]);
-			Set_FontShader (qfalse);
 			continue;
 		}
 
@@ -630,9 +622,7 @@ void SCR_ExecuteLayoutString (char *s) {
 
 		if (!strcmp (token, "string")) {
 			token = COM_Parse (&s);
-			Set_FontShader (qtrue);
 			Draw_StringScaled (x, y, hud_sx, hud_sy, token);
-			Set_FontShader (qfalse);
 			continue;
 		}
 
@@ -1177,8 +1167,6 @@ void CL_DrawInventory (void) {
 	y += 24 * cl_fontScale->value;
 	x += 24 * cl_fontScale->value;
 
-	Set_FontShader (qtrue);
-
 	Inv_DrawString (x, y, "hotkey ### item");
 
 	Inv_DrawString (x, y + 8 * cl_fontScale->value, "------ --- ----");
@@ -1211,6 +1199,4 @@ void CL_DrawInventory (void) {
 		Inv_DrawString (x, y, string);
 		y += 8 * cl_fontScale->value;
 	}
-
-	Set_FontShader (qfalse);
 }

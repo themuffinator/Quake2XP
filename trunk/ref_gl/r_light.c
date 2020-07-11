@@ -2553,6 +2553,7 @@ void R_DrawLightFlare () {
 
 	float		dist, dist2, scale;
 	vec3_t		v, tmp;
+	uchar		quadIdx[] = { 0, 1, 2, 0, 2, 3 };
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -2577,7 +2578,6 @@ void R_DrawLightFlare () {
 
 	GL_BindProgram(flareProgram);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglEnableVertexAttribArray (ATT_TEX0);
 	qglEnableVertexAttribArray (ATT_COLOR);
@@ -2624,7 +2624,7 @@ void R_DrawLightFlare () {
 	VA_SetElem2 (tex_array[3], 1, 1);
 	VA_SetElem4 (color_array[3], tmp[0], tmp[1], tmp[2], 1);
 
-	qglDrawElements	(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
 
 	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
@@ -2632,7 +2632,6 @@ void R_DrawLightFlare () {
 	if (r_useLightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
 	qglDisableVertexAttribArray (ATT_COLOR);
@@ -2678,7 +2677,7 @@ void R_LightFlareOutLine() { //flare editing highlights
 	GL_Disable(GL_LINE_SMOOTH);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
-
+	
 	// draw center of flare
 	VectorCopy(currentShadowLight->flareOrigin, tmpOrg);
 	VectorSet(v[0], tmpOrg[0] - 1, tmpOrg[1] - 1, tmpOrg[2] + 1);

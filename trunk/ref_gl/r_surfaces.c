@@ -613,7 +613,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);
 	qglUniform1i(U_PARALLAX_TYPE, clamp(r_reliefMapping->integer, 0, 1));
 	qglUniform1f(U_CAUSTICS_SCALE, 2.5);
-	qglUniform1f(U_PARAM_FLOAT_0, r_reliefMappingSelfShadowOffset->value);
+	qglUniform1f(U_PARAM_FLOAT_0, r_selfShadowOffset->value);
 	
 	 if (bModel)
 		qglUniform3fv(U_VIEW_POS, 1, BmodelViewOrg);
@@ -642,7 +642,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 else
 		 qglUniform1i(U_SPOT_LIGHT, 0);
 
-	 if (r_reliefMappingSelfShadow->integer)
+	 if (r_selfShadowingParallax->integer)
 		 qglUniform1i(U_PARAM_INT_1, 1);
 	 else
 		 qglUniform1i(U_PARAM_INT_1, 0);

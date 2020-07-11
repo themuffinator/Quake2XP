@@ -545,8 +545,6 @@ void Con_DrawNotify (void) {
 	currentColor = 7;
 	RE_SetColor (ColorTable[currentColor]);
 
-	Set_FontShader (qtrue);
-
 	v = 0;
 
 	for (i = con.current - NUM_CON_TIMES + 1; i <= con.current; i++) {
@@ -600,7 +598,6 @@ void Con_DrawNotify (void) {
 
 		v += 8;
 	}
-	Set_FontShader	(qfalse);
 	RE_SetColor		(colorWhite);
 }
 
@@ -640,8 +637,6 @@ void Con_DrawConsole (float frac) {
 	Draw_StretchPic2 (0, lines - viddef.height, viddef.width, viddef.height, i_conback);
 	SCR_AddDirtyPoint (0, 0);
 	SCR_AddDirtyPoint (viddef.width - 1, lines - 1);
-
-	Set_FontShader (qtrue);
 
 	Com_sprintf (version, sizeof(version), "q2xp 1.26.9 (%s)", __DATE__);
 	for (x = 0; x < strlen (version); x++)
@@ -759,8 +754,5 @@ void Con_DrawConsole (float frac) {
 	Con_DrawInput ();
 
 	RE_SetColor (colorWhite);
-
-	Set_FontShader (qfalse);
-
 }
 

@@ -213,6 +213,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	dsprite_t	*psprite;
 	int			vert=0;
 	int			len, scaled = 1;
+	uchar		quadIdx[] = { 0, 1, 2, 0, 2, 3 };
 
 	psprite = (dsprite_t *) currentmodel->extraData;
 	e->frame %= psprite->numFrames;
@@ -256,7 +257,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	vert+=4;
 	
 	if(vert)
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
 }
 
 //==================================================================================
@@ -779,7 +780,6 @@ void R_RenderSprites(void)
 
 	GL_DepthMask(0);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadTris);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 
@@ -816,9 +816,7 @@ void R_RenderSprites(void)
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	GL_DepthMask(1);
-	
+	GL_DepthMask(1);	
 }
 
 // draws ambient opaque entities
@@ -1112,7 +1110,6 @@ void R_RenderFrame(refdef_t * fd) {
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (selectedShadowLight && r_lightEditor->integer){
-		Set_FontShader(qtrue);
 		RE_SetColor(colorCyan);
 		Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0);
 		Draw_StringScaled(0, vid.height*0.5+25,  2, 2, buff1);
@@ -1134,7 +1131,6 @@ void R_RenderFrame(refdef_t * fd) {
 		Draw_StringScaled(0, vid.height * 0.5 + 325, 2, 2, buff16);
 		Draw_StringScaled(0, vid.height * 0.5 + 345, 2, 2, buff17);
 		RE_SetColor(colorWhite);
-		Set_FontShader(qfalse);
 	}
 }
 
@@ -1370,7 +1366,6 @@ void R_RegisterCvars(void)
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
-	r_textureMode =						Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE);
 	r_textureLodBias =					Cvar_Get("r_textureLodBias", "0.0", CVAR_ARCHIVE);
 	
 	r_imageAutoBump	=					Cvar_Get("r_imageAutoBump", "1", CVAR_ARCHIVE);
@@ -1397,8 +1392,8 @@ void R_RegisterCvars(void)
 
 	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
 	r_reliefScale =						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);
-	r_reliefMappingSelfShadow =			Cvar_Get("r_reliefMappingSelfShadow", "1", CVAR_ARCHIVE);
-	r_reliefMappingSelfShadowOffset =	Cvar_Get("r_reliefMappingSelfShadowOffset", "0.02", CVAR_ARCHIVE);
+	r_selfShadowingParallax =			Cvar_Get("r_selfShadowingParallax", "1", CVAR_ARCHIVE);
+	r_selfShadowOffset =				Cvar_Get("r_selfShadowOffset", "3.0", CVAR_ARCHIVE);
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_DEVELOPER);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
@@ -2067,8 +2062,8 @@ void R_BeginFrame()
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = qtrue;
 	
-	if (r_reliefMappingSelfShadow->modified)
-		r_reliefMappingSelfShadow->modified = qfalse;
+	if (r_selfShadowingParallax->modified)
+		r_selfShadowingParallax->modified = qfalse;
 
 	if(r_dof->modified)
 		r_dof->modified = qfalse;
@@ -2081,9 +2076,6 @@ void R_BeginFrame()
 	
 	if (r_reliefMapping->modified)
 		r_reliefMapping->modified = qfalse;
-
-	if (r_textureMode->modified)
-		r_textureMode->modified = qfalse;
 
 	if (r_anisotropic->modified)
 		r_anisotropic->modified = qfalse;
