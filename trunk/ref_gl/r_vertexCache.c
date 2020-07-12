@@ -3,8 +3,8 @@
 * PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 */
 #include "r_local.h"
-
-index_t cube_idx[] = {
+ 
+uchar cube_idx[] = {
 	// front
 	0, 1, 2,
 	2, 3, 0,
