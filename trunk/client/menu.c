@@ -2552,7 +2552,6 @@ qboolean Mods_MenuInit()
 
 		if (dirnames != 0)
 		{
-			ndirs--;
 			if (ndirs > MAX_MODS)
 				ndirs = MAX_MODS;
 			for (i = 0; i < ndirs; i++)
