@@ -123,7 +123,7 @@ void SV_CheckForSavegame (void) {
 	if (Cvar_VariableValue ("deathmatch"))
 		return;
 
-	Com_sprintf (name, sizeof(name), "%s/save/current/%s.sav", FS_Gamedir (),
+	Com_sprintf (name, sizeof(name), "%s/savexp/current/%s.sav", FS_Gamedir (),
 		sv.name);
 	f = fopen (name, "rb");
 	if (!f)

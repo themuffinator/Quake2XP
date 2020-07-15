@@ -789,7 +789,7 @@ void GL_MakeSaveShot(char* dir) {
 	int		image = 0;
 	ILuint	ImagesToSave[1];
 
-	Com_sprintf(name, sizeof(name), "%s/save/%s/shot.jpg", FS_Gamedir(), dir);
+	Com_sprintf(name, sizeof(name), "%s/savexp/%s/shot.jpg", FS_Gamedir(), dir);
 	remove(name);
 
 	if ((r_screenShotJpegQuality->integer >= 99) || (r_screenShotJpegQuality->integer <= 0))

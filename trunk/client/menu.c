@@ -2793,7 +2793,7 @@ void Create_MapNamesList()
 
 	for (i = 0; i < MAX_SAVEGAMES; i++)
 	{
-		Com_sprintf(name, sizeof(name), "%s/save/save%i/server.ssv", FS_Gamedir(), i);
+		Com_sprintf(name, sizeof(name), "%s/savexp/save%i/server.ssv", FS_Gamedir(), i);
 		f = fopen(name, "rb");
 		if (!f)
 		{
@@ -2830,7 +2830,7 @@ void Create_QuickSavesList(qboolean load)
 	FILE* f;
 	char	name[MAX_OSPATH], tmp[32];
 
-	Com_sprintf(name, sizeof(name), "%s/save/quick/comment.sav", FS_Gamedir());
+	Com_sprintf(name, sizeof(name), "%s/savexp/quick/comment.sav", FS_Gamedir());
 	f = fopen(name, "rb");
 	if (!f)
 	{
@@ -2858,7 +2858,7 @@ void Create_Savestrings(void) {
 	char name[MAX_OSPATH];
 
 	for (i = 0; i < MAX_SAVEGAMES; i++) {
-		Com_sprintf(name, sizeof(name), "%s/save/save%i/comment.sav", FS_Gamedir(), i);
+		Com_sprintf(name, sizeof(name), "%s/savexp/save%i/comment.sav", FS_Gamedir(), i);
 		f = fopen(name, "rb");
 		if (!f) {
 			strcpy(m_savestrings[i], "<EMPTY>");
@@ -2887,7 +2887,7 @@ void Create_SavesInfoss(void) {
 	char name[MAX_OSPATH];
 
 	for (i = 0; i < MAX_SAVEGAMES; i++) {
-		Com_sprintf(name, sizeof(name), "%s/save/save%i/saveinfo.sav",
+		Com_sprintf(name, sizeof(name), "%s/savexp/save%i/saveinfo.sav",
 			FS_Gamedir(), i);
 		f = fopen(name, "rb");
 		if (!f) {
@@ -2915,7 +2915,7 @@ void Create_QuickSavesInfoss(void) {
 	FILE* f;
 	char name[MAX_OSPATH];
 
-		Com_sprintf(name, sizeof(name), "%s/save/quick/saveinfo.sav", FS_Gamedir());
+		Com_sprintf(name, sizeof(name), "%s/savexp/quick/saveinfo.sav", FS_Gamedir());
 		f = fopen(name, "rb");
 		if (!f) {
 			strcpy(m_quickSavesInfos, "");
@@ -2952,7 +2952,7 @@ void DrawSavedShot(void* m)
 	if (m_savevalid[i])
 	{
 	if (i){
-		strcpy(savePic, va("/save/save%i/shot.jpg", i));
+		strcpy(savePic, va("/savexp/save%i/shot.jpg", i));
 		Draw_GetPicSize(&w, &h, savePic);
 		aspect = (float)w / (float)h;
 
@@ -3020,7 +3020,7 @@ void DrawQuickSavedShot(void* m)
 	else
 		wtf = 16;
 
-	strcpy(savePic, va("/save/quick/shot.jpg"));
+	strcpy(savePic, va("/savexp/quick/shot.jpg"));
 	Draw_GetPicSize(&w, &h, savePic);
 	aspect = (float)w / (float)h;
 
@@ -3070,7 +3070,7 @@ void LoadGame_MenuInit(void) {
 	
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
 
-	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value;
+	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.25 - 16 * cl_fontScale->value;
 	s_loadgame_menu.y = viddef.height * 0.2 + h * 0.5 + 8 * cl_fontScale->value;
 	s_loadgame_menu.x *= 0.5;
 
@@ -3172,7 +3172,7 @@ void SaveGame_MenuInit(void) {
 
 	Draw_GetPicSize(&w, &h, "m_banner_save_game");
 
-	s_savegame_menu.x = viddef.width * 0.5 - w * 0.25 + 8 * cl_fontScale->value;
+	s_savegame_menu.x = viddef.width * 0.5 - w * 0.25 - 16 * cl_fontScale->value;
 	s_savegame_menu.y = viddef.height * 0.2 + h * 0.5 + 8 * cl_fontScale->value;
 	s_savegame_menu.x *= 0.5;
 	s_savegame_menu.nitems = 0;
