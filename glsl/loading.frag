@@ -1,7 +1,8 @@
 //!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0)  uniform sampler2D u_map;
 
-layout (location = U_COLOR_MUL) uniform float u_colorScale;
+layout (location = U_PARAM_FLOAT_0) uniform float	u_lod;
+layout (location = U_PARAM_FLOAT_1) uniform float	u_colorFade;
 layout (location = U_SCREEN_SIZE)	uniform vec2	u_screenSize;
 
 in vec2 v_texCoord;
@@ -15,10 +16,10 @@ vec4 Desaturate(vec3 color, float Desaturation)
 
 void main(void) 
 {
-vec4 color =  texture(u_map, v_texCoord.xy);
+vec4 color =  textureLod(u_map, v_texCoord.xy, u_lod);
 vec4 mono = Desaturate(color.rgb, 1.0); 
 vec4 deltas = color - mono;
-fragData = mono + u_colorScale * deltas;
+fragData = mono + u_colorFade * deltas;
 
 fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
 

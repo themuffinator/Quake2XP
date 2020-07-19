@@ -1,3 +1,4 @@
+//!#include "global.inc"
 layout (location = U_PARALLAX_PARAMS)	uniform vec4			u_parallaxParams; // x = scale[0] y = scale[1] z = tex_w[2] w = tex_h
 layout (location = U_PARALLAX_TYPE)		uniform int				u_parallaxType;
 layout (location = U_PARAM_FLOAT_0)		uniform float			u_shadowOffset;
@@ -53,38 +54,28 @@ vec2 CalcParallaxOffset (in sampler2D hiMap, in vec2 texCoord, in vec3 viewVec) 
   }
 }
 
-float selfShadow(in sampler2D hiMap, in vec3 N, in vec3 L, in vec2 texCoord)
-{
-   vec2		delta;
-   float	steps, height;
-   float	NL = saturate(dot(N, L));
-   
-   if(NL <= 0.0)
-		return 1.0;
+float selfShadow(in sampler2D hiMap, in vec3 L, in vec2 texCoord){
 
     float lod = ComputeLOD(texCoord, u_parallaxParams.zw);
     
 	if(lod > 8.0)
 		return 1.0;
 
-	float tex = textureLod(hiMap, texCoord, lod).a;
-    
-	if(tex >= 0.9)
-		return 1.0;
+    vec2 offs = L.xy * u_parallaxParams.xy * u_shadowOffset;
+	float blur = 0.7;
 
-    vec2 offsetCoord = texCoord;
-    float numShadowSteps = mix(60.0, 5.0, -L.z);
-    steps = 1.0 / numShadowSteps;
-    delta = L.xy / L.z * u_shadowOffset / numShadowSteps;
-    height = tex + steps * 0.1;
+    float base =  textureLod(hiMap, texCoord, lod).a;
 
-      while ((tex < height) && (height < 1.0)) {
-                height += steps;
-                offsetCoord += delta;
-                tex = textureLod(hiMap, offsetCoord, lod).a;
-            }
+    float sh0  = ( textureLod(hiMap, texCoord + offs * 0.88, lod).a - base - 0.88 ) * 0.5 * blur;
+    float sh1  = ( textureLod(hiMap, texCoord + offs * 0.77, lod).a - base - 0.77 ) * 1.0 * blur;
+    float sh2  = ( textureLod(hiMap, texCoord + offs * 0.66, lod).a - base - 0.66 ) * 1.5 * blur;
+    float sh3  = ( textureLod(hiMap, texCoord + offs * 0.55, lod).a - base - 0.55 ) * 2.0 * blur;
+    float sh4  = ( textureLod(hiMap, texCoord + offs * 0.44, lod).a - base - 0.44 ) * 2.5 * blur;
+    float sh5  = ( textureLod(hiMap, texCoord + offs * 0.33, lod).a - base - 0.33 ) * 3.0 * blur;
+    float sh6  = ( textureLod(hiMap, texCoord + offs * 0.22, lod).a - base - 0.22 ) * 3.5 * blur;
+	float sh7  = ( textureLod(hiMap, texCoord + offs * 0.11, lod).a - base - 0.11 ) * 4.0 * blur;
 
-    return clamp( (height - tex ) * 8.0, 0.0, 1.0 );
+    return saturate( 1.0 - max(max(max(max(max(max( max( sh0, sh1 ), sh2 ), sh3 ), sh4 ), sh5 ), sh6 ), sh7 ));
 }
 
 #define PARALLAX_STEPS 15
