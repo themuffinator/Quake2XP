@@ -617,6 +617,7 @@ void Draw_StretchPic(int x, int y, int w, int h, char *pic)
 }
 
 float loadScreenColorFade;
+float loadingLod;
 
 void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 {
@@ -643,7 +644,8 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		GL_BindProgram(loadingProgram);
 
 		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-		qglUniform1f(U_COLOR_MUL, loadScreenColorFade);
+		qglUniform1f(U_PARAM_FLOAT_0, loadingLod);
+		qglUniform1f(U_PARAM_FLOAT_1, loadScreenColorFade);
 		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 		qglEnableVertexAttribArray(ATT_POSITION);
@@ -651,7 +653,6 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertCoord);
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
 
-		//GL_MBind(GL_TEXTURE0, gl->texnum);
 		GL_SetBindlessTexture(U_TMU0, gl->handle);
 
 		VA_SetElem2(texCoord[0], gl->sl + offsX, gl->tl + offsY);
@@ -670,10 +671,23 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		qglDisableVertexAttribArray(ATT_TEX0);
 }
 
+image_t* GL_FindPic(char* name)
+{
+	image_t* gl;
+
+	gl = GL_FindImage(name + 1, it_wall);
+
+	if (gl) {
+		if (gl != r_notexture)
+			strcpy(gl->bare_name, name);
+	}
+	return gl;
+}
+
 void Draw_LoadingScreen(int x, int y, int w, int h, char *pic)
 {
 	image_t *gl;
-	gl = Draw_FindPic(pic);
+	gl = GL_FindPic(pic);
 	if (!gl) {
 		Com_Printf("Can't find pic: %s\n", pic);
 		return;

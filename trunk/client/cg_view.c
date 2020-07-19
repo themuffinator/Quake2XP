@@ -184,6 +184,7 @@ Call before entering a new level, or after changing dlls
 */
 qboolean needLoadingPlaque (void);
 void R_GenSkyCubeMap (char *name);
+extern float loadingLod;
 
 #ifdef _WIN32
 extern int	xInputActiveController;
@@ -225,6 +226,7 @@ void CL_PrepRefresh (void) {
 	Com_sprintf (loadingMessages[3], sizeof(loadingMessages[3]),
 		"Loading Clients...");
 	loadingPercent = 1;
+	loadingLod = 4.0;
 
 	// let the render dll load the map
 	strcpy (mapname, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
@@ -240,6 +242,7 @@ void CL_PrepRefresh (void) {
 		"Loading Map...done");
 	loadingPercent = 35;
 	loadScreenColorFade = 0.35;
+	loadingLod = 3.0;
 
 	// precache status bar pics
 	Com_Printf ("pics\r");
@@ -248,6 +251,7 @@ void CL_PrepRefresh (void) {
 	Com_Printf ("                                     \r");
 
 	CL_RegisterTEntModels ();
+	loadingLod = 2.5;
 
 	num_cl_weaponmodels = 1;
 	strcpy (cl_weaponmodels[0], "weapon.md2");
@@ -286,6 +290,7 @@ void CL_PrepRefresh (void) {
 		"Loading Models...done");
 	loadingPercent = 55;
 	loadScreenColorFade = 0.55;
+	loadingLod = 2.0;
 
 	Com_Printf ("images\r", i);
 	SCR_UpdateScreen ();
@@ -296,7 +301,7 @@ void CL_PrepRefresh (void) {
 		SCR_UpdateScreen ();
 		Sys_SendKeyEvents ();	// pump message loop
 	}
-
+	loadingLod = 1.0;
 	Com_Printf ("                                     \r");
 	Com_sprintf (loadingMessages[2], sizeof(loadingMessages[2]),
 		"Loading Pics...done");
@@ -320,11 +325,11 @@ void CL_PrepRefresh (void) {
 		Com_sprintf (loadingMessages[3], sizeof(loadingMessages[3]),
 			"Loading Clients...done");
 		loadingPercent = 85;
-
+		loadingLod = 0.5;
 		loadScreenColorFade = 1.0;
 	}
 	loadingPercent = 100;
-
+	loadingLod = 0.0;
 	CL_LoadClientinfo (&cl.baseclientinfo, "unnamed\\male/grunt");
 
 	// set sky textures and speed

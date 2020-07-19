@@ -255,8 +255,8 @@ qboolean R_EntityCastShadow() {
 		return qfalse;
 	
 //	// cull shadow volume out of view frustum
-//	if(Frustum_CullLocalBoundsProjection(currententity->model->mins, currententity->model->maxs, currententity->origin, currententity->axis, currentShadowLight->origin, 63)) 
-//		return qfalse;
+	if(Frustum_CullLocalBoundsProjection(currententity->model->mins, currententity->model->maxs, currententity->origin, currententity->axis, currentShadowLight->origin, 63)) 
+		return qfalse;
 
 	if (!InLightVISEntity())
 		return qfalse;

@@ -266,13 +266,13 @@ qboolean Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs,
 	vec3_t	points[8];
 	int		i;
 
-	if (Mat3_IsIdentity(axis)) {
+/*	if (Mat3_IsIdentity(axis)) {
 		VectorAdd(origin, mins, tMins);
 		VectorAdd(origin, maxs, tMaxs);
 
 		return Frustum_CullBoundsProjection(tMins, tMaxs, projOrigin, planeBits);
 	}
-
+	*/
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? mins[0] : maxs[0];
 		tmp[1] = (i & 2) ? mins[1] : maxs[1];

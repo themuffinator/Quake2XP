@@ -274,10 +274,7 @@ typedef enum {
 	it_wall,
 	it_pic,
 	it_sky,
-	it_autobump,
-	it_parallax,
-	it_wall2,
-	it_bump,
+	it_bump, it_test
 } imagetype_t;
 
 typedef unsigned long long uint64;

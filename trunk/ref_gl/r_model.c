@@ -812,13 +812,13 @@ void Mod_LoadTexinfo(lump_t * l) {
 
 		// grab original texture size for override textures
 		Com_sprintf(name, sizeof(name), "textures/%s.wal", in->texture);
-		out->image = GL_FindImage(name, it_wall2);
+		out->image = GL_FindImage(name, it_wall);
 
 		if (!out->image) {
 			// failed to load WAL, use default
 			Com_Printf("Couldn't load %s\n", name);
 
-			out->image = GL_FindImage("pics/noimage.tga", it_pic);
+			out->image = GL_FindImage("pics/noimage.tga", it_wall);
 
 			if (!out->image)
 				out->image = r_notexture;

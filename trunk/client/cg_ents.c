@@ -1006,7 +1006,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 			}
 
 			VectorCopy(ent.origin, light_org);
-			light_org[2] += 96;
 
 			if (renderfx & RF_SHELL_RED)
 				V_AddLight (light_org, 200, 1.0, 0.5, 0.5, vec3_origin, 0, 0);
@@ -1082,9 +1081,6 @@ void CL_AddPacketEntities (frame_t * frame) {
 			&& cls.realtime - cl.cinematictime > 1000))))) {
 
 			VectorCopy(ent.origin, light_org);
-			light_org[0] += 15;
-			light_org[1] += 15;
-			light_org[2] += 100;
 
 			if (renderfx & RF_SHELL_RED)
 				V_AddLight (light_org, 200, 1.0, 0, 0, vec3_origin, 0, 0);

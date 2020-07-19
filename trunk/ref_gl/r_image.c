@@ -672,12 +672,17 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 		if (image->type == it_bump)
 			itBump = qtrue;
 
+		qboolean mipmap = qtrue;
+
+		if (image->type == it_pic || image->type == it_sky)
+			mipmap = qfalse;
+		
 		if (bits == 8)
 			image->has_alpha =
-				GL_Upload8(pic, width, height, (image->type != it_pic && image->type != it_sky), image->type == it_sky);
+				GL_Upload8(pic, width, height, mipmap, image->type == it_sky);
 		else {
 									
-			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_pic && image->type != it_sky), itBump);
+			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, qtrue, itBump);
 					
 		}
 
