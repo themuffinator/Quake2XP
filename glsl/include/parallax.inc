@@ -2,7 +2,7 @@
 layout (location = U_PARALLAX_PARAMS)	uniform vec4			u_parallaxParams; // x = scale[0] y = scale[1] z = tex_w[2] w = tex_h
 layout (location = U_PARALLAX_TYPE)		uniform int				u_parallaxType;
 layout (location = U_PARAM_FLOAT_0)		uniform float			u_shadowOffset;
-
+layout (location = U_PARAM_FLOAT_1)		uniform float			u_shadowBlur;
 
 
 float ComputeLOD( vec2 tc, vec2 texSize ) { 
@@ -62,7 +62,7 @@ float selfShadow(in sampler2D hiMap, in vec3 L, in vec2 texCoord){
 		return 1.0;
 
     vec2 offs = L.xy * u_parallaxParams.xy * u_shadowOffset;
-	float blur = 0.7;
+	float blur = u_shadowBlur;
 
     float base =  textureLod(hiMap, texCoord, lod).a;
 
