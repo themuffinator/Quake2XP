@@ -2231,6 +2231,7 @@ void DeleteShadowVertexBuffers (void) {
 		// shadow buffers
 		qglDeleteBuffers (1, &light->vboId);
 		qglDeleteBuffers (1, &light->iboId);
+		glDeleteVertexArrays(1, &light->vao);
 
 		// occlusion bboxes
 		qglDeleteBuffers(1, &light->vboBoxId);

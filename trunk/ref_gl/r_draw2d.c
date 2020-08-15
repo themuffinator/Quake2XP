@@ -676,7 +676,7 @@ image_t* GL_FindPic(char* name)
 	image_t* gl;
 
 	gl = GL_FindImage(name + 1, it_wall);
-
+	gl->type = it_wall;
 	if (gl) {
 		if (gl != r_notexture)
 			strcpy(gl->bare_name, name);

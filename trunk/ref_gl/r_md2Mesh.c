@@ -141,8 +141,11 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
 		VectorSet(lightColor, 1, 1, 1);
-
-	// select skin
+	
+	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD | RF_FULLBRIGHT))
+		VectorSet(lightColor, 1, 1, 1);
+	
+		// select skin
 	if (currententity->skin)
 		skin = currententity->skin;	// custom player skin
 	else {

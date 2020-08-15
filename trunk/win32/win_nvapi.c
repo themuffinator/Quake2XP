@@ -75,6 +75,12 @@ void GLimp_InitNvApi() {
 #define NV_UTIL_DOMAIN_VID  2 //video decoder don't needed
 #define NV_UTIL_DOMAIN_BUS  3
 
+#define		GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
+#define		GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048
+#define		GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  0x9049
+#define		GPU_MEMORY_INFO_EVICTION_COUNT_NVX            0x904A
+#define		GPU_MEMORY_INFO_EVICTED_MEMORY_NVX            0x904B
+
 extern qboolean adlInit;
 
 void R_GpuInfo_f(void) {
@@ -162,7 +168,20 @@ void R_GpuInfo_f(void) {
 					(NvU32)((clocks.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency + 500) / 1000));
 		}
 
+		if (IsExtensionSupported("GL_NVX_gpu_memory_info")) {
+			int mem;
+			float total, unused, used;
 
+			qglGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &mem);
+			total = (float)mem / (1024 * 1024);
+			Com_Printf("\n...Total GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", total);
+
+			qglGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &mem);
+			unused = (float)mem / (1024 * 1024);
+			used = total - unused;
+			Com_Printf("...Used GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", used);
+
+		}
 		Com_Printf("\n==========================================================\n");
 	}
 }

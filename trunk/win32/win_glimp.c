@@ -746,7 +746,6 @@ void GLW_InitExtensions() {
 		Com_Printf(S_COLOR_RED "WGL_EXTENSION not found!\n");
 
 	Com_Printf("\n");
-
 	Com_Printf("=============================\n");
 	Com_Printf(S_COLOR_GREEN"Checking Basic WGL Extensions\n");
 	Com_Printf("=============================\n\n");
@@ -996,7 +995,7 @@ static qboolean GLW_ChoosePixelFormat() {
 	return qtrue;
 }
 
-static qboolean GLW_CreateContext() {
+void GLW_CreateContext() {
 
 	const char	*profileName[] = { "core", "compatibility" };
 
@@ -1018,20 +1017,30 @@ static qboolean GLW_CreateContext() {
 	glw_state.hGLRC = qwglCreateContextAttribsARB(glw_state.hDC, 0, attribs);
 
 	if (!glw_state.hGLRC) {
-		if (GetLastError() == ERROR_INVALID_VERSION_ARB)
-			Com_Error(ERR_FATAL, "Current video card/driver combination does not support OpenGL %i.%i", r_glMajorVersion->integer, r_glMinorVersion->integer);
 
 		Com_Printf(S_COLOR_RED "failed\n");
 
 		ReleaseDC(glw_state.hWnd, glw_state.hDC);
 		glw_state.hDC = NULL;
 
-		return qfalse;
+		int	err = GetLastError();
+		switch (err)
+		{
+		case ERROR_INVALID_VERSION_ARB:
+			Com_Printf("ERROR_INVALID_VERSION_ARB\n");
+			break;
+		case ERROR_INVALID_PROFILE_ARB:
+			Com_Printf("ERROR_INVALID_PROFILE_ARB\n");
+			break;
+		default:
+			Com_Printf("unknown error: 0x%x\n", err);
+			break;
+		}
+		VID_Error(ERR_FATAL, "Current video card/driver combination does not support OpenGL %i.%i", r_glMajorVersion->integer, r_glMinorVersion->integer);
 	}
+
 	Com_Printf(S_COLOR_GREEN "ok\n");
-	
 	GLW_ShutdownFakeOpenGL();
-	return qtrue;
 }
 
 qboolean GLW_InitDriver(void) {
@@ -1046,6 +1055,7 @@ qboolean GLW_InitDriver(void) {
 	glw_state.hDC = GetDC(glw_state.hWnd);
 	if (!glw_state.hDC) {
 		Com_Printf(S_COLOR_RED "failed\n");
+		VID_Error(ERR_FATAL, "...getting DC: failed.");
 		return qfalse;
 	}
 
@@ -1060,6 +1070,7 @@ qboolean GLW_InitDriver(void) {
 
 	if (!qwglMakeCurrent(glw_state.hDC, glw_state.hGLRC)) {
 		Com_Printf(S_COLOR_RED "...wglMakeCurrent() failed.");
+		VID_Error(ERR_FATAL, "...wglMakeCurrent() failed.");
 		return qfalse;
 	}
 

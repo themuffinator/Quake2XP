@@ -271,6 +271,7 @@ cvar_t	*r_textureCompression;
 cvar_t	*r_anisotropic;
 cvar_t	*r_maxAnisotropy;
 cvar_t	*r_textureLodBias;
+cvar_t	*r_maxTextureSize;
 
 cvar_t	*r_shadows;
 cvar_t	*r_playerShadow;
@@ -315,6 +316,7 @@ cvar_t	*r_reliefMapping;
 cvar_t	*r_reliefScale;
 cvar_t	*r_selfShadowingParallax;
 cvar_t	*r_selfShadowOffset;
+cvar_t* r_selfShadowBlur;
 
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;
@@ -592,7 +594,6 @@ image_t *GL_LoadPic (char *name, byte * pic, int width, int height,
 
 image_t *GL_FindImage (char *name, imagetype_t type);
 
-void GL_TextureMode (char *string);
 void GL_ImageList_f (void);
 
 void GL_InitImages (void);
@@ -739,8 +740,9 @@ GLuint	vbo_quarterScreenQuad;
 GLuint	ibo_quadTris;
 GLuint	ibo_singleQuad;
 
-GLuint	vbo_Dynamic;
-GLuint	ibo_Dynamic;
+GLuint	vbo_shadowDynamic;
+GLuint	ibo_shadowDynamic;
+
 GLuint	ibo_cube;
 GLuint	ibo_md3Shadow;
 
@@ -761,6 +763,7 @@ typedef struct {
 	GLuint	bsp_a; 
 	GLuint	bsp_l;
 	GLuint	shadow;
+	GLuint	shadowMD3;
 	GLuint	fonts;
 	GLuint	fullscreenQuad;
 	GLuint	halfScreenQuad;
@@ -769,6 +772,25 @@ typedef struct {
 }vao_t;
 
 vao_t vao;
+
+typedef struct
+{
+	vec3_t      xyz[MD3_MAX_VERTS * MD3_MAX_MESHES];
+	vec2_t      st[MD3_MAX_VERTS * MD3_MAX_MESHES];
+	vec4_t		color[MD3_MAX_VERTS * MD3_MAX_MESHES];
+	vec3_t      normal[MD3_MAX_VERTS* MD3_MAX_MESHES];
+	vec3_t      tangent[MD3_MAX_VERTS * MD3_MAX_MESHES];
+	vec3_t      binormal[MD3_MAX_VERTS * MD3_MAX_MESHES];
+} srfTess_t;
+
+srfTess_t tess;
+
+#define OFFSET_XYZ_TESS			0
+#define OFFSET_ST_TESS			sizeof(vec3_t)
+#define OFFSET_COLOR_TESS		sizeof(vec3_t) + sizeof(vec2_t)
+#define OFFSET_NORMAL_TESS		sizeof(vec3_t) + sizeof(vec2_t) + sizeof(vec4_t)
+#define OFFSET_TANGENT_TES		sizeof(vec3_t) + sizeof(vec2_t) + sizeof(vec4_t) + sizeof(vec3_t)		
+#define OFFSET_BINORMAL_TESS	sizeof(vec3_t) + sizeof(vec2_t) + sizeof(vec4_t) + sizeof(vec3_t) + sizeof(vec3_t)
 
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);

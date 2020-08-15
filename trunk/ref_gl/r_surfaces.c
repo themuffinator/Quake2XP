@@ -614,6 +614,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	qglUniform1i(U_PARALLAX_TYPE, clamp(r_reliefMapping->integer, 0, 1));
 	qglUniform1f(U_CAUSTICS_SCALE, 2.5);
 	qglUniform1f(U_PARAM_FLOAT_0, r_selfShadowOffset->value);
+	qglUniform1f(U_PARAM_FLOAT_1, r_selfShadowBlur->value);
 	
 	 if (bModel)
 		qglUniform3fv(U_VIEW_POS, 1, BmodelViewOrg);

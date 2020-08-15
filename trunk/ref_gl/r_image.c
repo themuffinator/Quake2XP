@@ -113,7 +113,7 @@ float d_8to24tablef[256][3];
 qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 					qboolean is_sky);
 qboolean GL_Upload32(unsigned *data, int width, int height,
-					 qboolean mipmap, qboolean bump);
+					 qboolean mipmap);
 
 int upload_width, upload_height;
 qboolean uploaded_paletted;
@@ -332,105 +332,63 @@ Returns has_alpha
 ===============
 */
 
-void R_MipMap (byte *in, int width, int height)
-{
+#define	MAX_DIMENSION	4096
+byte *R_ResampleTexture(const byte* in, int inwidth, int inheight, int outwidth, int outheight) { // from doom3bfg
 	int		i, j;
-	byte	*out;
-	int		row;
+	const	byte	*inrow, *inrow2;
+	uint			frac, fracstep;
+	static	uint	p1[MAX_DIMENSION], p2[MAX_DIMENSION];
+	const	byte	*pix1, *pix2, *pix3, *pix4;
+	byte*	out,	*out_p;
 
-	if ( width == 1 && height == 1 )
-		return;
-
-	row = width * 4;
-	out = in;
-	width >>= 1;
-	height >>= 1;
-
-	if ( width == 0 || height == 0 )
-	{
-		width += height;	// get largest
-		for (i=0 ; i<width ; i++, out+=4, in+=8 )
-		{
-			out[0] = ( in[0] + in[4] )>>1;
-			out[1] = ( in[1] + in[5] )>>1;
-			out[2] = ( in[2] + in[6] )>>1;
-			out[3] = ( in[3] + in[7] )>>1;
-		}
-		return;
+	if (outwidth > MAX_DIMENSION) {
+		outwidth = MAX_DIMENSION;
+	}
+	if (outheight > MAX_DIMENSION) {
+		outheight = MAX_DIMENSION;
 	}
 
-	for (i=0 ; i<height ; i++, in+=row)
-	{
-		for (j=0 ; j<width ; j++, out+=4, in+=8)
-		{
-			out[0] = (in[0] + in[4] + in[row+0] + in[row+4])>>2;
-			out[1] = (in[1] + in[5] + in[row+1] + in[row+5])>>2;
-			out[2] = (in[2] + in[6] + in[row+2] + in[row+6])>>2;
-			out[3] = (in[3] + in[7] + in[row+3] + in[row+7])>>2;
+	out = (byte*)malloc(outwidth * outheight * 4);
+	out_p = out;
+
+	fracstep = inwidth * 0x10000 / outwidth;
+
+	frac = fracstep >> 2;
+	for (i = 0; i < outwidth; i++) {
+		p1[i] = 4 * (frac >> 16);
+		frac += fracstep;
+	}
+	frac = 3 * (fracstep >> 2);
+	for (i = 0; i < outwidth; i++) {
+		p2[i] = 4 * (frac >> 16);
+		frac += fracstep;
+	}
+
+	for (i = 0; i < outheight; i++, out_p += outwidth * 4) {
+		inrow = in + 4 * inwidth * (int)((i + 0.25f) * inheight / outheight);
+		inrow2 = in + 4 * inwidth * (int)((i + 0.75f) * inheight / outheight);
+		frac = fracstep >> 1;
+		for (j = 0; j < outwidth; j++) {
+			pix1 = inrow + p1[j];
+			pix2 = inrow + p2[j];
+			pix3 = inrow2 + p1[j];
+			pix4 = inrow2 + p2[j];
+			out_p[j * 4 + 0] = (pix1[0] + pix2[0] + pix3[0] + pix4[0]) >> 2;
+			out_p[j * 4 + 1] = (pix1[1] + pix2[1] + pix3[1] + pix4[1]) >> 2;
+			out_p[j * 4 + 2] = (pix1[2] + pix2[2] + pix3[2] + pix4[2]) >> 2;
+			out_p[j * 4 + 3] = (pix1[3] + pix2[3] + pix3[3] + pix4[3]) >> 2;
 		}
 	}
+
+	return out;
 }
 
-
-// from XReal
-void R_MipNormalMap (byte *in, int width, int height)
-{
-	int		i, j;
-	byte	*out;
-	vec3_t	n;
-	float	length, inv127 = 1.0f / 127.0f;
-
-	if(width == 1 && height == 1)
-		return;
-
-	out = in;
-	width <<= 2;
-	height >>= 1;
-
-	for(i = 0; i < height; i++, in += width)
-	{
-		for(j = 0; j < width; j += 8, out += 4, in += 8)
-		{
-			n[0] =	(inv127 * in[0] - 1.0) +
-					(inv127 * in[4] - 1.0) +
-					(inv127 * in[width + 0] - 1.0) +
-					(inv127 * in[width + 4] - 1.0);
-
-			n[1] =	(inv127 * in[1] - 1.0) +
-					(inv127 * in[5] - 1.0) +
-					(inv127 * in[width + 1] - 1.0) +
-					(inv127 * in[width + 5] - 1.0);
-
-			n[2] =	(inv127 * in[2] - 1.0) +
-					(inv127 * in[6] - 1.0) +
-					(inv127 * in[width + 2] - 1.0) +
-					(inv127 * in[width + 6] - 1.0);
-
-			length = VectorLength(n);
-
-			if(length)
-			{
-				n[0] /= length;
-				n[1] /= length;
-				n[2] /= length;
-			}
-			else
-				VectorSet(n, 0.0, 0.0, 1.0);
-
-			out[0] = (byte) (128 + 127 * n[0]);
-			out[1] = (byte) (128 + 127 * n[1]);
-			out[2] = (byte) (128 + 127 * n[2]);
-			out[3] = (in[3] + in[7] + in[width + 3] + in[width + 7]) >> 2;
-		}
-	}
-}
-
-
-unsigned	scaled[4096*4096];
-qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean bump)
+qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap)
 {
 	int			samples, comp, c, i;
 	byte		*scan;
+	int			scaled_width, scaled_height;
+	uint		*scaled;
 
 	// scan the texture for any non-255 alpha
 	c = width * height;
@@ -459,22 +417,53 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		else
 			comp = gl_tex_alpha_format;
 	}	
-	
-//	qglTexImage2D( GL_TEXTURE_2D, 0, comp, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	
-	int numMips = CalcMipmapCount(width, height);
-	glTexStorage2D(GL_TEXTURE_2D, numMips, comp, width, height);
-	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	if(r_maxTextureSize->integer){
+		int max_size;
+
+		qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+
+		scaled_width = width;
+		scaled_height = height;
+
+		if (r_maxTextureSize->integer >= max_size)
+			Cvar_SetValue("r_maxTextureSize", max_size);
+
+		if (r_maxTextureSize->integer <= 64 && r_maxTextureSize->integer > 0)
+			Cvar_SetValue("r_maxTextureSize", 64);
+
+		if (r_maxTextureSize->integer)
+			max_size = r_maxTextureSize->integer;
+
+		if (scaled_width > max_size)
+			scaled_width = max_size;
+		if (scaled_height > max_size)
+			scaled_height = max_size;	
+
+		scaled = R_ResampleTexture(data, width, height, scaled_width, scaled_height);
+	}
+	else {
+		scaled_width = width;
+		scaled_height = height;
+		scaled = data;
+	}
+
+	int numMips = CalcMipmapCount(scaled_width, scaled_height);
+	glTexStorage2D(GL_TEXTURE_2D, numMips, comp, scaled_width, scaled_height);
+	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, scaled_width, scaled_height, GL_RGBA, GL_UNSIGNED_BYTE, scaled);
+
+	if (scaled_width != width || scaled_height != height)
+		free(scaled);
 
 	if (mipmap)
 	{
 		qglGenerateMipmap(GL_TEXTURE_2D);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, r_anisotropic->integer);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, r_textureLodBias->value);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, numMips);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY,	r_anisotropic->integer);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS,		r_textureLodBias->value);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,		gl_filter_min);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,		gl_filter_max);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL,		0);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL,		numMips);
 	}
 	else
 	{
@@ -533,7 +522,7 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	}
 
 
-	return GL_Upload32(trans, width, height, mipmap, qfalse);
+	return GL_Upload32(trans, width, height, mipmap);
 }
 
 // Berserker stuff
@@ -594,7 +583,7 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 	int i;
 	int len;
 	char s[128];
-	
+
 	// find a free image_t
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (!image->texnum)
@@ -663,29 +652,16 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 				free(pics);
 			if (palettes)
 				free(palettes);
-		}			
+		}	
 	}
 		qglGenTextures (1, &image->texnum);
 		GL_Bind(image->texnum);
 
-		qboolean itBump = qfalse;
-		if (image->type == it_bump)
-			itBump = qtrue;
-
-		qboolean mipmap = qtrue;
-
-		if (image->type == it_pic || image->type == it_sky)
-			mipmap = qfalse;
-		
 		if (bits == 8)
-			image->has_alpha =
-				GL_Upload8(pic, width, height, mipmap, image->type == it_sky);
-		else {
-									
-			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, qtrue, itBump);
+			image->has_alpha = GL_Upload8(pic, width, height, (image->type != it_sky && image->type != it_pic), image->type == it_sky);
+		else 									
+			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_sky && image->type != it_pic));
 					
-		}
-
 		image->upload_width = width;	
 		image->upload_height = height;
 
@@ -817,7 +793,6 @@ GL_FindImage
 Finds or loads the given image
 ===============
 */
-unsigned int nmap[4194304];
 char override = 0;
 image_t *GL_FindImage(char *name, imagetype_t type)
 {
@@ -826,13 +801,13 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	byte *pic, *palette;
 	int width, height;
 	
+	int imgType = type;
 	
 	if (!name)
 		return NULL;			
 	len = strlen(name);
 	if (len < 5)
 		return NULL;			
-
 
 	// look for it
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
@@ -845,11 +820,10 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	// 
 	// load the pic from disk
 	// 
-
 	pic = NULL;
 	palette = NULL;
 		
-	if (strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Targa override  crap
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Targa override  crap
 
 		char s[128];
 		override = 1;
@@ -858,13 +832,13 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		s[len - 2] = 'g';
 		s[len - 1] = 'a';
 
-		image = GL_FindImage(s, type);
+		image = GL_FindImage(s, imgType);
 		if (image) {
 			override = 0;
 			return image;
 		}
 	}
-	if (strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Jpeg override  crap
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Jpeg override  crap
 
 		char s[128];
 		override = 1;
@@ -873,13 +847,13 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		s[len - 2] = 'p';
 		s[len - 1] = 'g';
 
-		image = GL_FindImage(s, type);
+		image = GL_FindImage(s, imgType);
 		if (image) {
 			override = 0;
 			return image;
 		}
 	}
-	if (strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Png override  crap
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Png override  crap
 																															
 		char s[128];
 		override = 1;
@@ -888,7 +862,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		s[len - 2] = 'n';
 		s[len - 1] = 'g';
 
-		image = GL_FindImage(s, type);
+		image = GL_FindImage(s, imgType);
 		if (image) {
 			override = 0;
 			return image;
@@ -896,7 +870,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	}
 
 
-	if (strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// DDS override  crap
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// DDS override  crap
 																															
 		char s[128];
 		override = 1;
@@ -905,7 +879,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		s[len - 2] = 'd';
 		s[len - 1] = 's';
 
-		image = GL_FindImage(s, type);
+		image = GL_FindImage(s, imgType);
 		if (image) {
 			override = 0;
 			return image;
@@ -919,7 +893,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 	
-	image = GL_LoadPic(name, pic, width, height, type, 8);
+	image = GL_LoadPic(name, pic, width, height, imgType, 8);
 
 	} else if (!strcmp(name + len - 4, ".wal")) {
 
@@ -933,7 +907,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32);
+		image = GL_LoadPic(name, pic, width, height, imgType, 32);
 		
 	}
 
@@ -943,7 +917,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32);
+		image = GL_LoadPic(name, pic, width, height, imgType, 32);
 	}
 
 
@@ -953,7 +927,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 24);
+		image = GL_LoadPic(name, pic, width, height, it_wall, 24);
 	} 
 	else if (!strcmp(name + len - 4, ".png")) {
 		IL_LoadImage(name, &pic, &width, &height, IL_PNG);
@@ -961,7 +935,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32);
+		image = GL_LoadPic(name, pic, width, height, imgType, 32);
 	}
 	else
 		return NULL;

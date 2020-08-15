@@ -1287,43 +1287,6 @@ void Cube2Lut_f(void)
 	Com_Printf(S_COLOR_YELLOW"wrote: %s\n", outName);
 }
 
-
-#define		GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
-#define		GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048
-#define		GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  0x9049
-#define		GPU_MEMORY_INFO_EVICTION_COUNT_NVX            0x904A
-#define		GPU_MEMORY_INFO_EVICTED_MEMORY_NVX            0x904B
-
-void R_VideoInfo_f(void){
-
-#ifdef _WIN32
-	int mem[4];
-	
-	if (IsExtensionSupported("GL_NVX_gpu_memory_info")) {
-						
-		Com_Printf("\nNvidia specific memory info:\n");
-		Com_Printf("\n");
-		qglGetIntegerv ( GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX , mem);
-		Com_Printf("dedicated video memory %i MB\n", mem[0] >>10);
-
-		qglGetIntegerv ( GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX , mem);
-		Com_Printf("total available memory %i MB\n", mem[0] >>10);
-
-		qglGetIntegerv ( GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX , mem);
-		Com_Printf("currently unused GPU memory %i MB\n", mem[0] >>10);
-
-		qglGetIntegerv ( GPU_MEMORY_INFO_EVICTION_COUNT_NVX , mem);
-		Com_Printf("count of total evictions seen by system %i MB\n", mem[0] >>10);
-
-		qglGetIntegerv ( GPU_MEMORY_INFO_EVICTED_MEMORY_NVX , mem);
-		Com_Printf("total video memory evicted %i MB\n", mem[0] >>10);
-
-	}
-	else
-#endif
-		Com_Printf("MemInfo not availabled for your video card or driver!\n");
-}
-
 void R_GLSLinfo_f(void);
 void GL_LevelShot_f(void);
 void R_FogEditor_f(void);
@@ -1367,7 +1330,7 @@ void R_RegisterCvars(void)
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
 	r_textureLodBias =					Cvar_Get("r_textureLodBias", "0.0", CVAR_ARCHIVE);
-	
+	r_maxTextureSize =					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
 	r_imageAutoBump	=					Cvar_Get("r_imageAutoBump", "1", CVAR_ARCHIVE);
 	r_imageAutoBumpScale =				Cvar_Get("r_imageAutoBumpScale", "6.0", CVAR_ARCHIVE);
 	r_imageAutoSpecularScale =			Cvar_Get("r_imageAutoSpecularScale", "1", CVAR_ARCHIVE);
@@ -1394,6 +1357,7 @@ void R_RegisterCvars(void)
 	r_reliefScale =						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);
 	r_selfShadowingParallax =			Cvar_Get("r_selfShadowingParallax", "1", CVAR_ARCHIVE);
 	r_selfShadowOffset =				Cvar_Get("r_selfShadowOffset", "3.0", CVAR_ARCHIVE);
+	r_selfShadowBlur =					Cvar_Get("r_selfShadowBlur", "0.7", CVAR_ARCHIVE);
 
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_DEVELOPER);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
@@ -1482,7 +1446,6 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("autoLightsStats",	AutoLightsStatsList_f);
 	Cmd_AddCommand("dumpEntityString",	Dump_EntityString);
 	Cmd_AddCommand("glslInfo",			R_ListPrograms_f);
-	Cmd_AddCommand("r_meminfo",			R_VideoInfo_f);
 	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
 
 	Cmd_AddCommand("makeLut",			Cube2Lut_f);
@@ -1986,7 +1949,6 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("imagelist");
 	Cmd_RemoveCommand("autoLightsStats");
 	Cmd_RemoveCommand("dumpEntityString");
-	Cmd_RemoveCommand("r_meminfo");	
 	Cmd_RemoveCommand("gpuInfo");
 	
 	Cmd_RemoveCommand("saveLights");

@@ -640,7 +640,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
 		VectorSet(shadelight, 1, 1, 1);
 	
-	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
+	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD | RF_FULLBRIGHT))
 		VectorSet(shadelight, 1, 1, 1);
 
 	CheckEntityFrameMD3(md3Hdr);

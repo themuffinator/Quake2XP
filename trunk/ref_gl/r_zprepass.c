@@ -262,7 +262,7 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
@@ -368,8 +368,8 @@ void R_DrawDepthMD3Model(void) {
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_shadowDynamic);
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 

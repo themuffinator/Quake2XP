@@ -261,7 +261,7 @@ Frustum_CullLocalBoundsProjection
 =================================
 */
 qboolean Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t origin, const mat3_t axis, const vec3_t projOrigin, const int planeBits) {
-	vec3_t	tMins, tMaxs;
+//	vec3_t	tMins, tMaxs;
 	vec3_t	tmp;
 	vec3_t	points[8];
 	int		i;

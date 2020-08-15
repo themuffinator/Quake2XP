@@ -1071,6 +1071,26 @@ void CL_AddPacketEntities (frame_t * frame) {
 				if (!Q_strcasecmp(ent.model->name, "sprites/s_bfg1.sp2"))
 					CL_BfgBall(cent->lerp_origin);
 
+				if (!Q_strcasecmp(ent.model->name, "models/items/quaddama/tris.md2")) {
+					ent.flags |= RF_FULLBRIGHT;
+					ent.alpha = 0.75;
+				}
+
+				if (!Q_strcasecmp(ent.model->name, "models/items/quaddama/tris.md3")) {
+					ent.flags |= RF_FULLBRIGHT;
+					ent.alpha = 0.75;
+				}
+
+				if (!Q_strcasecmp(ent.model->name, "models/items/invulner/tris.md2")) {
+					ent.flags |= RF_FULLBRIGHT;
+					ent.alpha = 0.75;
+				}
+
+				if (!Q_strcasecmp(ent.model->name, "models/items/invulner/tris.md3")) {
+					ent.flags |= RF_FULLBRIGHT;
+					ent.alpha = 0.75;
+				}
+
 				V_AddEntity(&ent);
 			}
 

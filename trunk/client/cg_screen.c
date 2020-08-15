@@ -395,14 +395,10 @@ void SCR_DrawLoading (void) {
 		Draw_StringScaled(center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
 		
 		RE_SetColor (colorYellow);
-		Draw_StringScaled (0, 44 * fontscale, fontscale, fontscale,
-			va ("%s", loadingMessages[0]));
-		Draw_StringScaled (0, 54 * fontscale, fontscale, fontscale,
-			va ("%s", loadingMessages[1]));
-		Draw_StringScaled (0, 64 * fontscale, fontscale, fontscale,
-			va ("%s", loadingMessages[2]));
-		Draw_StringScaled (0, 74 * fontscale, fontscale, fontscale,
-			va ("%s", loadingMessages[3]));
+		Draw_StringScaled (0, 44 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[0]));
+		Draw_StringScaled (0, 54 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[1]));
+		Draw_StringScaled (0, 64 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[2]));
+		Draw_StringScaled (0, 74 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[3]));
 		RE_SetColor (colorWhite);
 	}
 }

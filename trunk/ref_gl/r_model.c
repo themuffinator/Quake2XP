@@ -1920,21 +1920,43 @@ Mod_LoadBrushModel
 
 =================
 */
-void Mod_LoadBrushModel(model_t * mod, void *buffer) {
-	int i;
-	dheader_t *header;
-	mmodel_t *bm;
+extern float loadingPercent;
+extern void SCR_UpdateScreen(void);
+extern char loadingMessages[5][96];
 
+void Mod_UpdateLoadingBar(float percent, char *text) {
+
+	loadingPercent = percent;
+	Com_sprintf(loadingMessages[0], sizeof(loadingMessages[0]), va("Loading Map... %s", text));
+	SCR_UpdateScreen();
+}
+
+void calcLoadingTime(char *text, int start) { //debug tool
+	int	stop, msec;
+	return;
+
+	stop = Sys_Milliseconds();
+	msec = stop - start;
+	Com_Printf("%s load at %i msec\n", text, msec);
+}
+
+void Mod_LoadBrushModel(model_t * mod, void *buffer) {
+	int			i;
+	dheader_t	*header;
+	mmodel_t	*bm;
+
+	Mod_UpdateLoadingBar(0.4, "Clear Old Data");
 	R_ClearLightSurf();
 	DeleteShadowVertexBuffers();
 	R_ClearWorldLights();
-
+	
 	loadmodel->memorySize = 0;
 	loadmodel->type = mod_brush;
 
 	if (loadmodel != mod_known)
 		VID_Error(ERR_DROP, "Loaded a brush model after the world");
 
+	Mod_UpdateLoadingBar(0.5, "Fog Data");
 	Mod_LoadFogScript(mod);
 
 	header = (dheader_t *)buffer;
@@ -1951,36 +1973,50 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 	for (i = 0; i < sizeof(dheader_t)* 0.25; i++)
 		((int *)header)[i] = LittleLong(((int *)header)[i]);
 
-
 	// load into heap
+	Mod_UpdateLoadingBar(0.6, "Entity String");
 	Mod_LoadEntityString(&header->lumps[LUMP_ENTITIES]);
+	Mod_UpdateLoadingBar(0.7, "Vertexes");
 	Mod_LoadVertexes(&header->lumps[LUMP_VERTEXES]);
+	Mod_UpdateLoadingBar(0.8, "Edges");
 	Mod_LoadEdges(&header->lumps[LUMP_EDGES]);
+	Mod_UpdateLoadingBar(0.8, "Surf Edges");
 	Mod_LoadSurfedges(&header->lumps[LUMP_SURFEDGES]);
 
+	Mod_UpdateLoadingBar(1.0, "Lightmaps");
 	if (!R_LoadXPLM())
 		Mod_LoadLighting(&header->lumps[LUMP_LIGHTING]);
 
+	Mod_UpdateLoadingBar(2.0, "Planes");
 	Mod_LoadPlanes(&header->lumps[LUMP_PLANES]);
+	Mod_UpdateLoadingBar(5.0, "Textures");
 	Mod_LoadTexinfo(&header->lumps[LUMP_TEXINFO]);
-
+	Mod_UpdateLoadingBar(10.0, "Faces");
 	Mod_LoadFaces(&header->lumps[LUMP_FACES]);
 
 	if (loadmodel->useXPLM)
 		Z_Free(mod_xplmOffsets);
 
+	Mod_UpdateLoadingBar(15.0, "Mark Surfaces");
 	Mod_LoadMarksurfaces(&header->lumps[LUMP_LEAFFACES]);
+	Mod_UpdateLoadingBar(16.0, "Visibility");
 	Mod_LoadVisibility(&header->lumps[LUMP_VISIBILITY]);
+	Mod_UpdateLoadingBar(17.0, "Leafs");
 	Mod_LoadLeafs(&header->lumps[LUMP_LEAFS]);
+	Mod_UpdateLoadingBar(20.0, "Nodes");
 	Mod_LoadNodes(&header->lumps[LUMP_NODES]);
+	Mod_UpdateLoadingBar(22.0, "SubModel Surfaces");
 	Mod_LoadsubModels(&header->lumps[LUMP_MODELS]);
+	Mod_UpdateLoadingBar(25.0, "Vertex Lighting");
 	Mod_GenerateLights(mod);
-
+	Mod_UpdateLoadingBar(28.0, "World Lights");
 	Load_LightFile();
+	Mod_UpdateLoadingBar(32.0, "Light Interaction");
 	R_CalcStaticLightInteraction();
 
 	mod->numFrames = 2;			// regular and alternate animation
-		
+
+	Mod_UpdateLoadingBar(34.0, "Sub Models");
 	// set up the subModels
 	for (i = 0; i < mod->numSubModels; i++) {
 		model_t *starmod;

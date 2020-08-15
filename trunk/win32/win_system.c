@@ -81,7 +81,7 @@ void Sys_Error (char *error, ...) {
 	vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
-	MessageBox (GetActiveWindow (), text, "Engine Error", 0 /* MB_OK */); // popup error mesage box
+	MessageBox (GetActiveWindow (), text, "Engine Error",  MB_OK | MB_TOPMOST); // popup error mesage box
 
 	if (qwclsemaphore)
 		CloseHandle (qwclsemaphore);

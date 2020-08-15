@@ -217,15 +217,11 @@ void CL_PrepRefresh (void) {
 	loadScreenColorFade = 0.1;
 
 	loadingMessage = qtrue;
-	Com_sprintf (loadingMessages[0], sizeof(loadingMessages[0]),
-		"Loading Map...");
-	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]),
-		"Loading Models...");
-	Com_sprintf (loadingMessages[2], sizeof(loadingMessages[2]),
-		"Loading Pics...");
-	Com_sprintf (loadingMessages[3], sizeof(loadingMessages[3]),
-		"Loading Clients...");
-	loadingPercent = 1;
+	Com_sprintf (loadingMessages[0], sizeof(loadingMessages[0]), "Loading Map...");
+	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]), "Loading Models...");
+	Com_sprintf (loadingMessages[2], sizeof(loadingMessages[2]), "Loading Pics...");
+	Com_sprintf (loadingMessages[3], sizeof(loadingMessages[3]), "Loading Clients...");
+	loadingPercent = 0.0;
 	loadingLod = 4.0;
 
 	// let the render dll load the map
@@ -234,12 +230,11 @@ void CL_PrepRefresh (void) {
 
 	// register models, pics, and skins
 	Com_Printf ("Map: %s\r", mapname);
+
 	SCR_UpdateScreen ();
 	R_BeginRegistration (mapname);
-
 	Com_Printf ("                                     \r");
-	Com_sprintf (loadingMessages[0], sizeof(loadingMessages[0]),
-		"Loading Map...done");
+	Com_sprintf (loadingMessages[0], sizeof(loadingMessages[0]), "Loading Map...done");
 	loadingPercent = 35;
 	loadScreenColorFade = 0.35;
 	loadingLod = 3.0;
@@ -274,8 +269,7 @@ void CL_PrepRefresh (void) {
 		}
 		else {
 
-			Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]),
-				"Loading Models...%s", cl.configstrings[CS_MODELS + i]);
+			Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]), "Loading Models...%s", cl.configstrings[CS_MODELS + i]);
 
 			cl.model_draw[i] = R_RegisterModel (cl.configstrings[CS_MODELS + i]);
 			if (name[0] == '*')
@@ -285,28 +279,27 @@ void CL_PrepRefresh (void) {
 		}
 		if (name[0] != '*')
 			Com_Printf ("                                     \r");
+		loadingPercent += 0.25;
 	}
-	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]),
-		"Loading Models...done");
-	loadingPercent = 55;
-	loadScreenColorFade = 0.55;
+	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]), "Loading Models...done");
+	loadingPercent = 70;
+	loadScreenColorFade = 0.70;
 	loadingLod = 2.0;
 
 	Com_Printf ("images\r", i);
 	SCR_UpdateScreen ();
 	for (i = 1; i < MAX_IMAGES && cl.configstrings[CS_IMAGES + i][0]; i++) {
 
-		cl.image_precache[i] =
-			Draw_FindPic (cl.configstrings[CS_IMAGES + i]);
+		cl.image_precache[i] = Draw_FindPic (cl.configstrings[CS_IMAGES + i]);
 		SCR_UpdateScreen ();
 		Sys_SendKeyEvents ();	// pump message loop
+		loadingPercent += 0.25;
 	}
 	loadingLod = 1.0;
 	Com_Printf ("                                     \r");
-	Com_sprintf (loadingMessages[2], sizeof(loadingMessages[2]),
-		"Loading Pics...done");
+	Com_sprintf (loadingMessages[2], sizeof(loadingMessages[2]), "Loading Pics...done");
 	loadingPercent = 75;
-
+	loadingLod = 1.5;
 	loadScreenColorFade = 0.75;
 
 	for (i = 0; i < MAX_CLIENTS; i++) {
@@ -321,15 +314,14 @@ void CL_PrepRefresh (void) {
 		SCR_UpdateScreen ();
 		Sys_SendKeyEvents ();	// pump message loop
 		CL_ParseClientinfo (i);
-		Com_Printf ("                                     \r");
-		Com_sprintf (loadingMessages[3], sizeof(loadingMessages[3]),
-			"Loading Clients...done");
-		loadingPercent = 85;
-		loadingLod = 0.5;
-		loadScreenColorFade = 1.0;
+		loadingPercent += 1.0;
 	}
-	loadingPercent = 100;
-	loadingLod = 0.0;
+	Com_Printf("                                     \r");
+	Com_sprintf(loadingMessages[3], sizeof(loadingMessages[3]), "Loading Clients...done");
+	loadingPercent = 85;
+	loadingLod = 0.5;
+	loadScreenColorFade = 1.0;
+
 	CL_LoadClientinfo (&cl.baseclientinfo, "unnamed\\male/grunt");
 
 	// set sky textures and speed
@@ -346,6 +338,10 @@ void CL_PrepRefresh (void) {
 	Con_ClearNotify ();
 
 	SCR_UpdateScreen ();
+
+	loadingPercent = 100;
+	loadingLod = 0.0;
+
 	cl.refresh_prepped = qtrue;
 	cl.force_refdef = qtrue;		// make sure we have a valid refdef
 

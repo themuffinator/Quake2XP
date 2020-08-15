@@ -530,8 +530,8 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_PolygonOffset(0.1, 1);
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_shadowDynamic);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
@@ -957,22 +957,37 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 
 	if (precalc) {
 
-		if (currentShadowLight->vboId)
+		// del old data
+		if(currentShadowLight->vboId);
 			qglDeleteBuffers(1, &currentShadowLight->vboId);
+		if (currentShadowLight->iboId);
+			qglDeleteBuffers(1, &currentShadowLight->iboId);
+		if (currentShadowLight->vao);
+			glDeleteVertexArrays(1, &currentShadowLight->vao);
 
 		qglGenBuffers(1, &currentShadowLight->vboId);
 		qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboId);
 		qglBufferData(GL_ARRAY_BUFFER, surfBase * sizeof(vec3_t), vcache, GL_STATIC_DRAW);
 		qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		if (currentShadowLight->iboId)
-			qglDeleteBuffers(1, &currentShadowLight->iboId);
-
 		qglGenBuffers(1, &currentShadowLight->iboId);
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
 		qglBufferData(GL_ELEMENT_ARRAY_BUFFER, ib * sizeof(uint), icache, GL_STATIC_DRAW);
 		currentShadowLight->iboNumIndices = ib;
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		// gen vao
+		glGenVertexArrays(1, &currentShadowLight->vao);
+		glBindVertexArray(currentShadowLight->vao);
+		qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboId);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
+
+		qglEnableVertexAttribArray(ATT_POSITION);
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+		glBindVertexArray(0);
+		qglBindBuffer(GL_ARRAY_BUFFER, 0);
+		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 		numPreCachedLights++;
 	}
 	else {
@@ -1011,20 +1026,18 @@ void R_CastBspShadowVolumes (void) {
 
 	GL_PolygonOffset(0.1, 1);
 
-	qglEnableVertexAttribArray (ATT_POSITION);
+	if (currentShadowLight->isStatic) { // draw vbo shadow
 
-	if (currentShadowLight->vboId && currentShadowLight->iboId && currentShadowLight->isStatic) { // draw vbo shadow
-
-		qglBindBuffer(GL_ARRAY_BUFFER, currentShadowLight->vboId);
-		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentShadowLight->iboId);
-		
-		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+		glBindVertexArray(currentShadowLight->vao);
 		qglDrawElements	(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_INT, NULL);
+		glBindVertexArray(0);
 	}
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_Dynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_Dynamic);
+
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_shadowDynamic);
 	
+	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 
 	if (!currentShadowLight->isStatic)	
