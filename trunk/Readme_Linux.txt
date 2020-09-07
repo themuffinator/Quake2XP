@@ -138,7 +138,13 @@ to mail me at "alepulver at gmail.com".
 
 The Quake2XP author's address is "barnes at yandex.ru".
 
-Website: http://quake2xp.sourceforge.net/
+Website: 
+http://quake2xp.sourceforge.net/
+https://www.moddb.com/mods/quake-2-xp   
+
+Discord:
+RU  - https://discord.gg/q9CeNH6
+ENG - https://discord.gg/ncq3C2r
 
 ==============================================================================
 5. TODO
