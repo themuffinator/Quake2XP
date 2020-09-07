@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "client.h"
 #include "snd_loc.h"
-#include "vorbis\vorbisfile.h"
+#include "vorbis/vorbisfile.h"
 
 #define PCM_16BIT	1			// willow: do not touch this!!
 #define PCM_STEREO	2			// willow: do not touch this!!
