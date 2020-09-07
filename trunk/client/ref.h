@@ -274,7 +274,8 @@ typedef enum {
 	it_wall,
 	it_pic,
 	it_sky,
-	it_bump, it_test
+	it_bump, 
+	it_mipmap
 } imagetype_t;
 
 typedef unsigned long long uint64;
@@ -288,20 +289,16 @@ typedef struct image_s {
 	int			upload_width, upload_height;	// after power of two and picmip
 	int			registration_sequence;	// 0 = free
 	int			numMips;
-	struct		msurface_s *texturechain;	// for sort-by-texture world
 	// drawing
 	int			texnum;					// gl texture binding
 	float		sl, tl, sh, th;		// 0,0 - 1,1 unless part of the scrap
+
 	qboolean	has_alpha;
-	qboolean	autobump;
 	qboolean	paletted;
-	qboolean	is_cin;
 	qboolean	envMap;
 
 	float		picScale_w;
 	float		picScale_h;
-	index_t		*index;
-	uint		target, id;
 	float		parallaxScale,
 				specularScale,
 				SpecularExp,
@@ -359,7 +356,7 @@ typedef struct glpoly_s {
 	vec3_t	center;
 	int		lightTimestamp;
 	int		shadowTimestamp;
-	int		ShadowedFace;
+//	int		ShadowedFace;
 	int		numVerts;
 	int		flags;
 	float	verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
@@ -387,7 +384,6 @@ typedef struct msurface_s {
 	short extents[2];
 
 	int light_s, light_t;		// gl lightmap coordinates
-	int dlight_s, dlight_t;		// gl lightmap coordinates for dynamic
 	// lightmaps
 
 	glpoly_t *polys;			// multiple if warped
@@ -460,8 +456,8 @@ DECALS
 */
 
 #define MAX_DECALS				8192
-#define MAX_DECAL_VERTS			384
-#define MAX_DECAL_FRAGMENTS		256
+#define MAX_DECAL_VERTS			128
+#define MAX_DECAL_FRAGMENTS		64
 
 typedef struct decals_t {
 	struct decals_t *prev, *next;

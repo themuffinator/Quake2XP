@@ -1541,11 +1541,12 @@ void UpdateLightEditor(void) {
 			VectorCopy(selectedShadowLight->occOrigin, tmpOrg);
 			VectorCopy(selectedShadowLight->occRadius, tmpRad);
 			R_DrawLightBox(v, tmpOrg, tmpRad);
+						
 		}
 
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		GL_Disable(GL_LINE_SMOOTH);
-
+		
 		if (!flareEdit || !selectedShadowLight->flare || !occEdit) { // skip filled box in flare or occ bbox editing mode
 
 			VectorCopy(selectedShadowLight->origin, tmpOrg);
@@ -1672,6 +1673,7 @@ void MakeFrustum4Light (worldShadowLight_t *light, qboolean ingame) {
 	CreateNormal (light->frust[3].normal, v4, v1, v0);
 	light->frust[3].dist = DotProduct (light->frust[3].normal, v0);
 }
+
 
 void R_DrawOcclusionBbox(worldShadowLight_t *light, qboolean update) {
 
@@ -2819,7 +2821,6 @@ void R_UpdateLightAliasUniforms()
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
 	qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float *)entAttenMatrix);
-
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
 	qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float *)entSpotMatrix);

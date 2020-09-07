@@ -418,7 +418,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap)
 			comp = gl_tex_alpha_format;
 	}	
 
-	if(r_maxTextureSize->integer){
+	if(r_maxTextureSize->integer && mipmap){
 		int max_size;
 
 		qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
@@ -458,7 +458,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap)
 	if (mipmap)
 	{
 		qglGenerateMipmap(GL_TEXTURE_2D);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY,	r_anisotropic->integer);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY,	r_anisotropic->value);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS,		r_textureLodBias->value);
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,		gl_filter_min);
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,		gl_filter_max);
@@ -801,8 +801,6 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	byte *pic, *palette;
 	int width, height;
 	
-	int imgType = type;
-	
 	if (!name)
 		return NULL;			
 	len = strlen(name);
@@ -832,7 +830,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		s[len - 2] = 'g';
 		s[len - 1] = 'a';
 
-		image = GL_FindImage(s, imgType);
+		image = GL_FindImage(s, type);
 		if (image) {
 			override = 0;
 			return image;
@@ -847,7 +845,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		s[len - 2] = 'p';
 		s[len - 1] = 'g';
 
-		image = GL_FindImage(s, imgType);
+		image = GL_FindImage(s, type);
 		if (image) {
 			override = 0;
 			return image;
@@ -862,7 +860,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		s[len - 2] = 'n';
 		s[len - 1] = 'g';
 
-		image = GL_FindImage(s, imgType);
+		image = GL_FindImage(s, type);
 		if (image) {
 			override = 0;
 			return image;
@@ -879,7 +877,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		s[len - 2] = 'd';
 		s[len - 1] = 's';
 
-		image = GL_FindImage(s, imgType);
+		image = GL_FindImage(s, type);
 		if (image) {
 			override = 0;
 			return image;
@@ -893,7 +891,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 	
-	image = GL_LoadPic(name, pic, width, height, imgType, 8);
+	image = GL_LoadPic(name, pic, width, height, type, 8);
 
 	} else if (!strcmp(name + len - 4, ".wal")) {
 
@@ -907,7 +905,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, imgType, 32);
+		image = GL_LoadPic(name, pic, width, height, type, 32);
 		
 	}
 
@@ -917,7 +915,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, imgType, 32);
+		image = GL_LoadPic(name, pic, width, height, type, 32);
 	}
 
 
@@ -927,7 +925,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, it_wall, 24);
+		image = GL_LoadPic(name, pic, width, height, it_pic, 24);
 	} 
 	else if (!strcmp(name + len - 4, ".png")) {
 		IL_LoadImage(name, &pic, &width, &height, IL_PNG);
@@ -935,7 +933,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, imgType, 32);
+		image = GL_LoadPic(name, pic, width, height, type, 32);
 	}
 	else
 		return NULL;
@@ -952,6 +950,74 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	return image;
 }
 
+image_t* GL_FindImage2(char* name, imagetype_t type)// no override
+{
+	image_t	*image;
+	int		i, len, width, height;
+	byte	*pic = NULL;
+
+	if (!name)
+		return NULL;
+
+	len = strlen(name);
+
+	if (len < 5)
+		return NULL;
+
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		if (image->type != type)
+			continue;
+		if (!strcmp(name, image->name)) {
+			image->registration_sequence = registration_sequence;
+			return image;
+		}
+	}
+
+ if (!strcmp(name + len - 4, ".tga")) {
+		IL_LoadImage(name, &pic, &width, &height, IL_TGA);
+
+		if (!pic)
+			return NULL;
+
+		image = GL_LoadPic(name, pic, width, height, type, 32);
+
+	}
+
+	else if (!strcmp(name + len - 4, ".dds")) {
+		IL_LoadImage(name, &pic, &width, &height, IL_DDS);
+
+		if (!pic)
+			return NULL;
+
+		image = GL_LoadPic(name, pic, width, height, type, 32);
+	}
+
+
+	else if (!strcmp(name + len - 4, ".jpg")) {
+		IL_LoadImage(name, &pic, &width, &height, IL_JPG);
+
+		if (!pic)
+			return NULL;
+
+		image = GL_LoadPic(name, pic, width, height, type, 24);
+	}
+	else if (!strcmp(name + len - 4, ".png")) {
+		IL_LoadImage(name, &pic, &width, &height, IL_PNG);
+
+		if (!pic)
+			return NULL;
+
+		image = GL_LoadPic(name, pic, width, height, type, 32);
+	}
+	else
+		return NULL;
+
+
+	if (pic)
+		free(pic);
+
+	return image;
+}
 
 
 

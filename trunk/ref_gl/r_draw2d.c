@@ -671,12 +671,14 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		qglDisableVertexAttribArray(ATT_TEX0);
 }
 
+image_t* GL_FindImage2(char* name, imagetype_t type);
+
 image_t* GL_FindPic(char* name)
 {
 	image_t* gl;
 
-	gl = GL_FindImage(name + 1, it_wall);
-	gl->type = it_wall;
+	gl = GL_FindImage2(name + 1, it_mipmap);
+
 	if (gl) {
 		if (gl != r_notexture)
 			strcpy(gl->bare_name, name);
@@ -688,6 +690,7 @@ void Draw_LoadingScreen(int x, int y, int w, int h, char *pic)
 {
 	image_t *gl;
 	gl = GL_FindPic(pic);
+
 	if (!gl) {
 		Com_Printf("Can't find pic: %s\n", pic);
 		return;

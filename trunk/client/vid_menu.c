@@ -678,10 +678,10 @@ void VID_MenuInit (void) {
 	if (!r_reliefMapping)
 		r_reliefMapping = Cvar_Get ("r_reliefMapping", "0", CVAR_ARCHIVE);
 
-	if (r_reliefMapping->value > 1)
+	if (r_reliefMapping->integer > 1)
 		r_reliefMapping = Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
 
-	r_reliefScale->value = ClampCvar(1.0, 10.0, r_reliefScale->value);
+	r_reliefScale->integer = ClampCvarInteger(1, 10, r_reliefScale->integer);
 
 	if (!r_dof)
 		r_dof = Cvar_Get ("r_dof", "0", CVAR_ARCHIVE);
@@ -830,7 +830,7 @@ void VID_MenuInit (void) {
 	s_bloom_box.generic.y = 140 * cl_fontScale->value;
 	s_bloom_box.generic.name = "Bloom";
 	s_bloom_box.itemnames = yesno_names;
-	s_bloom_box.curvalue = r_bloom->value;
+	s_bloom_box.curvalue = r_bloom->integer;
 	s_bloom_box.generic.callback = BloomCallback;
 	s_bloom_box.generic.statusbar = "Draw Bloom Effect";
 

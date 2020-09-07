@@ -403,7 +403,6 @@ int SurfSort( const msurface_t **a, const msurface_t **b )
 vec3_t		BmodelViewOrg;
 int			num_scene_surfaces;
 msurface_t	*scene_surfaces[MAX_MAP_FACES];
-// goto
 
 static void GL_DrawLightmappedPoly(qboolean bmodel)
 {
@@ -430,8 +429,9 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 	}
 
+	GL_SetBindlessTexture(U_TMU3, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
+
 	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		GL_SetBindlessTexture(U_TMU3, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else

@@ -1600,7 +1600,8 @@ void R_InitFboBuffers() {
 
 int R_Init(void *hinstance, void *hWnd)
 {
-	int	aniso_level, max_aniso, max_texSize;
+	int		max_aniso, max_texSize;
+	float	aniso_level;
 
 	Draw_GetPalette();
 	R_RegisterCvars();
@@ -1709,6 +1710,11 @@ int R_Init(void *hinstance, void *hWnd)
 	glVertexAttribL1ui64ARB				= (PFNGLVERTEXATTRIBL1UI64ARBPROC)			qwglGetProcAddress("glVertexAttribL1ui64ARB");
 	glVertexAttribL1ui64vARB			= (PFNGLVERTEXATTRIBL1UI64VARBPROC)			qwglGetProcAddress("glVertexAttribL1ui64vARB");
 	glGetVertexAttribLui64vARB			= (PFNGLGETVERTEXATTRIBLUI64VARBPROC)		qwglGetProcAddress("glGetVertexAttribLui64vARB");
+	
+	if (!glGetTextureHandleARB && !glMakeTextureHandleResidentARB && !glMakeTextureHandleNonResidentARB && !glUniformHandleui64ARB) {
+		Com_Printf("Current video card/driver combination does not support GL_ARB_bindless_texture\n");
+		VID_Error(ERR_FATAL, "Current video card/driver combination does not support GL_ARB_bindless_texture\n");
+	}
 
 	// glsl stuff
 	qglCreateShader =				(PFNGLCREATESHADERPROC)				qwglGetProcAddress("glCreateShader");
@@ -1863,18 +1869,18 @@ int R_Init(void *hinstance, void *hWnd)
 
 	qglGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_aniso);
 
-	Cvar_SetValue("r_maxAnisotropy", max_aniso);
-	if (r_anisotropic->integer >= r_maxAnisotropy->integer)
-		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->integer);
+	Cvar_SetValue("r_maxAnisotropy", (float)max_aniso);
+	if (r_anisotropic->value >= r_maxAnisotropy->value)
+		Cvar_SetValue("r_anisotropic", r_maxAnisotropy->value);
 
-	aniso_level = r_anisotropic->integer;
-	if (r_anisotropic->integer <= 1) {
+	aniso_level = r_anisotropic->value;
+	if (r_anisotropic->value <= 1.0) {
 		r_anisotropic = Cvar_Set("r_anisotropic", "1");
 		Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_filter_anisotropic\n");
 	}
 	else {
-		Com_Printf("...using GL_ARB_texture_filter_anisotropic\n   ["S_COLOR_GREEN"%i"S_COLOR_WHITE" max] ["S_COLOR_GREEN"%i" S_COLOR_WHITE" selected]\n",
-			max_aniso, aniso_level);
+		Com_Printf("...using GL_ARB_texture_filter_anisotropic ["S_COLOR_GREEN"%i"S_COLOR_WHITE" max] ["S_COLOR_GREEN"%i" S_COLOR_WHITE" selected]\n",
+			max_aniso, (int)aniso_level);
 	}
 
 	gl_state.texture_compression_bptc = qfalse;
@@ -1911,7 +1917,7 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 		gl_state.depthBoundsTest = qfalse;
 	}
-	if (r_srgbColorBuffer->integer) {
+	if (r_srgbColorBuffer->integer && IsExtensionSupported("GL_ARB_framebuffer_sRGB")) {
 		qglEnable(GL_FRAMEBUFFER_SRGB);
 		Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
 	}

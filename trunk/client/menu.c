@@ -1124,8 +1124,9 @@ static menulist_s s_options_time_box;
 extern cvar_t	*cl_drawhud;
 extern cvar_t	*cl_3dhud;
 extern cvar_t	*m_inversion;
+#ifdef _WIN32
 extern cvar_t	*in_useXInput;
-
+#endif
 static void CrosshairFunc(void *unused) {
 	Cvar_SetValue("crosshair", s_options_crosshair_box.curvalue);
 }
@@ -1159,11 +1160,11 @@ static void MouseSpeedFunc(void *unused) {
 static void NoAltTabFunc(void *unused) {
 	Cvar_SetValue("win_noalttab", s_options_noalttab_box.curvalue);
 }
-
+#ifdef _WIN32
 static void GamePadFunc(void* unused) {
 	Cvar_SetValue("in_useXInput", s_options_gamepad_box.curvalue);
 }
-
+#endif
 static void FpsFunc(void *unused) {
 	Cvar_SetValue("cl_drawFPS", s_options_fps_box.curvalue);
 }
@@ -1203,10 +1204,12 @@ static void ControlsSetMenuItemValues(void) {
 
 	Cvar_SetValue("crosshair", ClampCvar(0, 13, crosshair->value));
 	s_options_crosshair_box.curvalue = crosshair->value;
-
+#ifdef _WIN32
 	Cvar_SetValue("in_useXInput", ClampCvar(0, 1, in_useXInput->integer));
 	s_options_gamepad_box.curvalue = in_useXInput->integer;
-	
+#else
+	s_options_gamepad_box.curvalue = 0;
+#endif
 
 	s_options_noalttab_box.curvalue = win_noalttab->value;
 
@@ -1819,10 +1822,15 @@ void Options_MenuInit(void) {
 	s_options_gamepad_box.generic.x = 0;
 	s_options_gamepad_box.generic.y = 170 * cl_fontScale->value;;
 	s_options_gamepad_box.generic.name = "Gamepad";
+#ifdef _WIN32
 	s_options_gamepad_box.generic.callback = GamePadFunc;
 	s_options_gamepad_box.itemnames = yesno_names;
 	s_options_gamepad_box.generic.statusbar = "Enable xBox Controller";
-
+#else
+	s_options_gamepad_box.generic.callback = NULL;
+	s_options_gamepad_box.itemnames = "unsupported";
+	s_options_gamepad_box.generic.statusbar = "Enable xBox Controller";
+#endif
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
 	s_options_fps_box.generic.y = 190 * cl_fontScale->value;
