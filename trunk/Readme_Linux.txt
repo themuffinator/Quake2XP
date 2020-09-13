@@ -26,26 +26,37 @@ In Ubuntu they can be installed with the following command.
 $ sudo apt-get install build-essential libvorbis-dev libdevil-dev \
   libsdl1.2-dev libopenal-dev
 
-As the project uses the Waf build system, Python must also be present. Once
-you have the mentioned packages, build and install with:
+As the project uses the Waf build system, Python must also be present.
+Once you have the mentioned packages, build and install with:
 
-$ python waf configure
-$ python waf
-$ sudo python waf install
+$ python[2] waf configure
+$ python[2] waf
+$ sudo python[2] waf install
+
+In the above-given commands "pyhton[2]" means your python2 executable:
+if your Linux distribution by default uses python 2, the executable is just
+"python", if it uses python 3, the executable is "python2". If you don't know
+which is it in your case, run
+
+$ python -V
+
+If the result is "Python 2.x.x", you need to use python executable (e.g.
+"python waf configure"), if the result is "Python 3.x.x", you need to use
+python2 executable (e.g. "python2 waf configure").
 
 By default the installation prefix is "/usr/local", but can be changed via
 arguments. In fact, Quake2XP will run from any directory because the data path
 is added to the executable, and libraries are loaded at run-time. For example,
 you can install it in "$HOME/local" as follows.
 
-$ python waf configure --prefix=$HOME/local
-$ python waf
-$ python waf install
+$ python[2] waf configure --prefix=$HOME/local
+$ python[2] waf
+$ python[2] waf install
 
 If you have the required libraries but still get an error, see below for
 contact information.
 
-You can also uninstall it with "python waf uninstall".
+You can also uninstall it with "python[2] waf uninstall".
 
 ==============================================================================
 2. Copying data
@@ -133,14 +144,11 @@ If random playing is enabled, it should do what's expected. The command
 4. Contact
 ==============================================================================
 
-If you have any problems or suggestions regarding the Linux version, feel free
-to mail me at "alepulver at gmail.com".
-
 The Quake2XP author's address is "barnes at yandex.ru".
 
-Website: 
+Website:
 http://quake2xp.sourceforge.net/
-https://www.moddb.com/mods/quake-2-xp   
+https://www.moddb.com/mods/quake-2-xp
 
 Discord:
 RU  - https://discord.gg/q9CeNH6

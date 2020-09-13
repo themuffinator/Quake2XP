@@ -30,9 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define PCM_16BIT	1			// willow: do not touch this!!
 #define PCM_STEREO	2			// willow: do not touch this!!
 
-byte *S_Alloc (int size);
-
-
 //=============================================================================
 
 static qboolean LoadWAV (char *name, byte ** wav, ALenum * format,
