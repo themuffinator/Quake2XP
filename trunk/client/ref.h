@@ -531,9 +531,8 @@ typedef struct {
 	// will be drawn
 
 	// world bounds
-	vec3_t			visMins;
-	vec3_t			visMaxs;
-
+	vec3_t	visBounds[2];
+	float	zFar;
 	lightstyle_t *lightstyles;	// [MAX_LIGHTSTYLES]
 
 	// viewport

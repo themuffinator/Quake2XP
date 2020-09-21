@@ -982,12 +982,14 @@ void R_RenderView (refdef_t *fd) {
 		VID_Error(ERR_DROP, "R_RenderView: NULL worldmodel.");
 
 	R_SetupFrame();
-	R_SetFrustum();
+	R_SetFrustum(qtrue);
 	R_SetupViewMatrices();
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
 	
 	R_DrawDepthScene();
+	R_SetFrustum(qfalse);
+
 	R_LightOcclusionTest();
 	R_CaptureDepthBuffer();
 	
@@ -1096,7 +1098,7 @@ void R_RenderFrame(refdef_t * fd) {
 	// set alpha blend for 2D mode
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	
 	if (selectedShadowLight && r_lightEditor->integer){
 		RE_SetColor(colorCyan);
 		Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0);

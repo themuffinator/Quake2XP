@@ -298,8 +298,62 @@ int SignbitsForPlane (cplane_t * out) {
 	return bits;
 }
 
+void SetFarClip(void) // from quake3
+{
+	float	farthestCornerDistance;
+	int		i;
 
-void R_SetFrustum (void) {
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
+		r_newrefdef.zFar = 128.0;
+		return;
+	}
+
+	farthestCornerDistance = 0;
+
+	for (i = 0; i < 8; i++){
+		vec3_t v;
+		vec3_t vecTo;
+		float distance;
+
+		if (i & 1)
+		{
+			v[0] = r_newrefdef.visBounds[0][0];
+		}
+		else
+		{
+			v[0] = r_newrefdef.visBounds[1][0];
+		}
+
+		if (i & 2)
+		{
+			v[1] = r_newrefdef.visBounds[0][1];
+		}
+		else
+		{
+			v[1] = r_newrefdef.visBounds[1][1];
+		}
+
+		if (i & 4)
+		{
+			v[2] = r_newrefdef.visBounds[0][2];
+		}
+		else
+		{
+			v[2] = r_newrefdef.visBounds[1][2];
+		}
+
+		VectorSubtract(v, r_newrefdef.vieworg, vecTo);
+		distance = DotProduct(vecTo, vecTo);
+
+		if (distance > farthestCornerDistance)
+			farthestCornerDistance = distance;
+	}
+
+	r_newrefdef.zFar = sqrt(farthestCornerDistance);
+}
+
+
+void R_SetFrustum (qboolean zPass) {
 	int i;
 
 	RotatePointAroundVector (frustum[0].normal, vup, vpn,    -(90 - r_newrefdef.fov_x * 0.5));
@@ -319,8 +373,12 @@ void R_SetFrustum (void) {
 
 	frustum[4].dist += r_zNear->value;
 	
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		frustum[5].dist -= 128.0;
+	if (zPass) {
+		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+			frustum[5].dist -= 128.0;
+		else
+			frustum[5].dist -= r_zFar->value;
+	}
 	else
-		frustum[5].dist -= r_zFar->value;
+		frustum[5].dist -= r_newrefdef.zFar;
 }

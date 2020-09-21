@@ -76,7 +76,7 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 
 	if (R_CullBox (node->minmaxs, node->minmaxs + 3))
 		return;
-
+	
 	// if a leaf node, draw stuff
 	if (node->contents != -1) {
 		pleaf = (mleaf_t *)node;
@@ -85,6 +85,31 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 		if (r_newrefdef.areabits) {
 			if (!(r_newrefdef.areabits[pleaf->area >> 3] & (1 << (pleaf->area & 7))))
 				return;			// not visible
+		}
+
+		// add to z buffer bounds
+		vec3_t mins, maxs;;
+		VectorCopy(node->minmaxs, mins);
+		VectorCopy(node->minmaxs + 3, maxs);
+
+		if (mins[0] < r_newrefdef.visBounds[0][0]) {
+			r_newrefdef.visBounds[0][0] = mins[0];
+		}
+		if (mins[1] < r_newrefdef.visBounds[0][1]) {
+			r_newrefdef.visBounds[0][1] = mins[1];
+		}
+		if (mins[2] < r_newrefdef.visBounds[0][2]) {
+			r_newrefdef.visBounds[0][2] = mins[2];
+		}
+
+		if (maxs[0] > r_newrefdef.visBounds[1][0]) {
+			r_newrefdef.visBounds[1][0] = maxs[0];
+		}
+		if (maxs[1] > r_newrefdef.visBounds[1][1]) {
+			r_newrefdef.visBounds[1][1] = maxs[1];
+		}
+		if (maxs[2] > r_newrefdef.visBounds[1][2]) {
+			r_newrefdef.visBounds[1][2] = maxs[2];
 		}
 
 		mark = pleaf->firstmarksurface;
@@ -478,5 +503,7 @@ void R_DrawDepthScene (void) {
 	}
 	GL_DepthFunc(GL_LEQUAL);
 	GL_DepthMask(0);
+
+	SetFarClip();
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
