@@ -468,8 +468,8 @@ extern void (APIENTRY * qglTexEnvf) (GLenum target, GLenum pname,
 	GLfloat param);
 extern void (APIENTRY * qglTexEnvfv) (GLenum target, GLenum pname,
 	const GLfloat * params);
-extern void (APIENTRY * qglTexEnvi) (GLenum target, GLenum pname,
-	GLint param);
+//extern void (APIENTRY * qglTexEnvi) (GLenum target, GLenum pname,
+//	GLint param);
 extern void (APIENTRY * qglTexEnviv) (GLenum target, GLenum pname,
 	const GLint * params);
 extern void (APIENTRY * qglTexGend) (GLenum coord, GLenum pname,

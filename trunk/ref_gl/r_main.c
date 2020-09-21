@@ -538,6 +538,8 @@ void R_DrawPlayerWeaponAmbient(void)
 	if (!r_drawEntities->integer)
 		return;
 
+	GL_DepthMask(1); // fill depth too
+	
 	// draw non-transparent first
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -556,11 +558,13 @@ void R_DrawPlayerWeaponAmbient(void)
 		if(currentmodel->type == mod_alias_md3)
 			R_DrawMD3Mesh(qtrue);
 	}
+	
+	GL_DepthMask(0);
 
 	// draw transluscent shells
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
-	GL_DepthMask(0);
+
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 
@@ -582,7 +586,6 @@ void R_DrawPlayerWeaponAmbient(void)
 	}
 
 	GL_Disable(GL_BLEND);
-	GL_DepthMask(1);
 }
 
 qboolean R_GetLightOcclusionResult();
@@ -595,7 +598,6 @@ void R_DrawLightScene (void)
 
 	num_visLights = 0;
 
-	GL_DepthMask(0);
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE /*GL_DST_COLOR, GL_ZERO*/);
 
@@ -702,8 +704,7 @@ void R_DrawLightScene (void)
 	R_DrawLightBounds();			// debug stuff
 	}
 	}
-	
-	GL_DepthMask(1);
+
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
 	if(gl_state.depthBoundsTest && r_useDepthBounds->integer)
@@ -724,7 +725,6 @@ void R_DrawPlayerWeapon(void)
 
 	R_DrawPlayerWeaponAmbient();
 
-	GL_DepthMask(0);
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
 
@@ -766,19 +766,18 @@ void R_DrawPlayerWeapon(void)
 		}
 	}
 
-	GL_DepthMask(1);
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
+
 	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
+	
 	GL_Disable(GL_BLEND);
 }
 
 void R_RenderSprites(void)
 {
 	int i;
-
-	GL_DepthMask(0);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
@@ -816,7 +815,6 @@ void R_RenderSprites(void)
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	GL_DepthMask(1);	
 }
 
 // draws ambient opaque entities
@@ -876,7 +874,6 @@ static void R_DrawTransEntities(void) {
 
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
-	GL_DepthMask(0); // wtf??? 
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -908,7 +905,6 @@ static void R_DrawTransEntities(void) {
 		}
 	}
 	GL_Disable(GL_BLEND);
-	GL_DepthMask(1);
 }
 
 // draw all opaque, non-reflective stuff
@@ -916,14 +912,7 @@ static void R_DrawTransEntities(void) {
 static void R_DrawAmbientScene (void) {
 
 	R_DrawBSP();
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		GL_DepthMask(1);
-
 	R_DrawEntitiesOnList();
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		GL_DepthMask(0);
 }
 
 // draws reflective & alpha chains from world model
@@ -934,7 +923,7 @@ extern msurface_t* r_reflectiveSurfaces[MAX_MAP_FACES];
 static void R_DrawRAScene (void) {
 	int i;
 	
-	GL_DepthMask(0);
+
 	GL_PolygonOffset(-1.0, 1.0);
 
 	RA_Frame = qfalse;
@@ -944,7 +933,6 @@ static void R_DrawRAScene (void) {
 
 	R_DrawSurfacesRA(qfalse);
 
-	GL_DepthMask(1);
 	GL_PolygonOffset(0.0, 1.0);
 
 	R_CaptureColorBuffer();
@@ -1603,7 +1591,7 @@ int R_Init(void *hinstance, void *hWnd)
 	int		max_aniso, max_texSize;
 	float	aniso_level;
 
-	Draw_GetPalette();
+	InitQ2Palette();
 	R_RegisterCvars();
 
 	// initialize our QGL dynamic bindings

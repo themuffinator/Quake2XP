@@ -108,7 +108,6 @@ void R_RenderDecals(void)
 
 	GL_Enable(GL_POLYGON_OFFSET_FILL);
     GL_PolygonOffset(-1, -1);
-    GL_DepthMask(0);
     GL_Enable(GL_BLEND);
 
 	active = &active_decals;
@@ -214,7 +213,6 @@ void R_RenderDecals(void)
     qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
     qglDisableVertexAttribArray(ATT_COLOR);
-    GL_DepthMask(1);
     GL_Disable(GL_POLYGON_OFFSET_FILL);
 }
 

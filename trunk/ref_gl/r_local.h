@@ -193,6 +193,9 @@ image_t	*r_fixFovTex;
 image_t *r_miniDepthTex;
 image_t *r_ssaoColorTex[2];
 
+image_t* r_shadowMask;
+image_t* r_shadowStencil;
+
 image_t	*r_cinImage;
 image_t	*r_bloomImage;
 image_t	*r_thermalImage;
@@ -204,6 +207,8 @@ uint64_t	skyCube_handle;
 uint fboId;
 byte r_ssaoColorTexIndex;
 uint fboDps;
+
+uint shadowFBO;
 
 extern entity_t *currententity;
 extern model_t *currentmodel;
@@ -585,7 +590,7 @@ void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows,
 void R_BeginFrame ();
 void R_SetPalette (const unsigned char *palette);
 
-int Draw_GetPalette (void);
+int InitQ2Palette (void);
 
 struct image_s *R_RegisterSkin (char *name);
 

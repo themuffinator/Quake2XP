@@ -716,7 +716,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 		if (mesh->muzzle) {
 			GL_Enable(GL_BLEND);
-			GL_DepthMask(0);
 			GL_Disable(GL_CULL_FACE);
 			qglUniform1f(U_COLOR_OFFSET, 1.0);
 			qglUniform1f(U_COLOR_MUL, 2.0);
@@ -784,7 +783,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	
 		if (mesh->muzzle) {
 			GL_Disable(GL_BLEND);
-			GL_DepthMask(1);
 			GL_Enable(GL_CULL_FACE);
 			GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
@@ -795,7 +793,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		qglEnableVertexAttribArray(ATT_NORMAL);
 		GL_Enable(GL_BLEND);
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		GL_DepthMask(0);
 		qglUniform1i(U_ENV_PASS, 1);
 		qglUniform1i(U_TRANS_PASS, 1);
 		qglUniform1i(U_USE_SSAO, 0);
@@ -864,8 +861,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 			qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 		}
-
-	GL_DepthMask(1);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);

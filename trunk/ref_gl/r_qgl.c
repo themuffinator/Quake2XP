@@ -374,7 +374,7 @@ void (APIENTRY * qglTexCoord4sv)(const GLshort *v);
 void (APIENTRY * qglTexCoordPointer)(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 void (APIENTRY * qglTexEnvf)(GLenum target, GLenum pname, GLfloat param);
 void (APIENTRY * qglTexEnvfv)(GLenum target, GLenum pname, const GLfloat *params);
-void (APIENTRY * qglTexEnvi)(GLenum target, GLenum pname, GLint param);
+//void (APIENTRY * qglTexEnvi)(GLenum target, GLenum pname, GLint param);
 void (APIENTRY * qglTexEnviv)(GLenum target, GLenum pname, const GLint *params);
 void (APIENTRY * qglTexGend)(GLenum coord, GLenum pname, GLdouble param);
 void (APIENTRY * qglTexGendv)(GLenum coord, GLenum pname, const GLdouble *params);
@@ -976,7 +976,7 @@ void QGL_Shutdown (void) {
 	qglTexCoordPointer = NULL;
 	qglTexEnvf = NULL;
 	qglTexEnvfv = NULL;
-	qglTexEnvi = NULL;
+//	qglTexEnvi = NULL;
 	qglTexEnviv = NULL;
 	qglTexGend = NULL;
 	qglTexGendv = NULL;
@@ -1378,7 +1378,7 @@ qboolean QGL_Init () {
 	qglTexCoordPointer = GPA ("glTexCoordPointer");
 	qglTexEnvf = GPA ("glTexEnvf");
 	qglTexEnvfv = GPA ("glTexEnvfv");
-	qglTexEnvi = GPA ("glTexEnvi");
+//	qglTexEnvi = GPA ("glTexEnvi");
 	qglTexEnviv = GPA ("glTexEnviv");
 	qglTexGend = GPA ("glTexGend");
 	qglTexGendv = GPA ("glTexGendv");

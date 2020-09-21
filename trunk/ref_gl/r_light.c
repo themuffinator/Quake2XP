@@ -2861,7 +2861,6 @@ void R_LightOcclusionTest(){
 
 	GL_ColorMask(0, 0, 0, 0);
 	GL_Disable(GL_CULL_FACE);
-	GL_DepthMask(0);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
 
@@ -2888,7 +2887,6 @@ void R_LightOcclusionTest(){
 
 	GL_ColorMask(1, 1, 1, 1);
 	GL_Enable(GL_CULL_FACE);
-	GL_DepthMask(1);
 	
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

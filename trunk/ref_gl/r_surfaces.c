@@ -1237,8 +1237,6 @@ void R_DrawBrushModel (void) {
 	GL_DrawLightmappedPoly(qtrue);
 	
 	glBindVertexArray(0);
-
-	GL_DepthMask(1);
 }
 
 /*
