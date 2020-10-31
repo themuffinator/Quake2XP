@@ -1151,7 +1151,7 @@ void GL_FreeUnusedImages(void)
 Draw_GetPalette
 ===============
 */
-int InitQ2Palette(void)
+int Draw_GetPalette(void)
 {
 	int i;
 	int r, g, b;
@@ -1188,7 +1188,7 @@ GL_InitImages
 void GL_InitImages(void)
 {
 	registration_sequence = 1;
-	InitQ2Palette();
+	Draw_GetPalette();
 
 }
 

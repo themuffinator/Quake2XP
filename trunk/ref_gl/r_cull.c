@@ -303,14 +303,9 @@ void SetFarClip(void) // from quake3
 	float	farthestCornerDistance;
 	int		i;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL){
-		r_newrefdef.zFar = 128.0;
-		return;
-	}
-
 	farthestCornerDistance = 0;
 
-	for (i = 0; i < 8; i++){
+	for (i = 0; i < 8; i++) {
 		vec3_t v;
 		vec3_t vecTo;
 		float distance;
@@ -350,35 +345,35 @@ void SetFarClip(void) // from quake3
 	}
 
 	r_newrefdef.zFar = sqrt(farthestCornerDistance);
+	Com_DPrintf("zfar %.3f\n", r_newrefdef.zFar);
 }
 
 
-void R_SetFrustum (qboolean zPass) {
+void R_SetFrustum(qboolean zPass) {
 	int i;
 
-	RotatePointAroundVector (frustum[0].normal, vup, vpn,    -(90 - r_newrefdef.fov_x * 0.5));
-	RotatePointAroundVector (frustum[1].normal, vup, vpn, 	   90 - r_newrefdef.fov_x * 0.5);
-	RotatePointAroundVector (frustum[2].normal, vright, vpn,   90 - r_newrefdef.fov_y * 0.5);
-	RotatePointAroundVector (frustum[3].normal, vright, vpn, -(90 - r_newrefdef.fov_y * 0.5));
-	VectorCopy	(vpn, frustum[4].normal); 
-	VectorNegate(vpn, frustum[5].normal); 
+	RotatePointAroundVector(frustum[0].normal, vup, vpn, -(90 - r_newrefdef.fov_x * 0.5));
+	RotatePointAroundVector(frustum[1].normal, vup, vpn, 90 - r_newrefdef.fov_x * 0.5);
+	RotatePointAroundVector(frustum[2].normal, vright, vpn, 90 - r_newrefdef.fov_y * 0.5);
+	RotatePointAroundVector(frustum[3].normal, vright, vpn, -(90 - r_newrefdef.fov_y * 0.5));
+	VectorCopy(vpn, frustum[4].normal);
+	VectorNegate(vpn, frustum[5].normal);
 
 	for (i = 0; i < 6; i++) {
 		VectorNormalize(frustum[i].normal);
 
 		frustum[i].type = PLANE_ANYZ;
-		frustum[i].dist = DotProduct (r_origin, frustum[i].normal);
-		frustum[i].signbits = SignbitsForPlane (&frustum[i]);
+		frustum[i].dist = DotProduct(r_origin, frustum[i].normal);
+		frustum[i].signbits = SignbitsForPlane(&frustum[i]);
 	}
 
 	frustum[4].dist += r_zNear->value;
-	
-	if (zPass) {
-		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-			frustum[5].dist -= 128.0;
-		else
-			frustum[5].dist -= r_zFar->value;
-	}
+
+	if (zPass) 
+		frustum[5].dist -= r_zFar->value;
 	else
 		frustum[5].dist -= r_newrefdef.zFar;
+
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		frustum[5].dist -= 128.0;
 }

@@ -708,7 +708,9 @@ void NET_Init (void) {
 		Com_Error (ERR_FATAL, "Winsock initialization failed.");
 
 	Com_Printf ("======="S_COLOR_YELLOW" Winsock Initialized "S_COLOR_WHITE"======\n");
+	Com_Printf("\n...%s: " S_COLOR_GREEN "%s\n", winsockdata.szDescription, winsockdata.szSystemStatus);
 	Com_Printf ("\n");
+
 	noudp = Cvar_Get ("noudp", "0", CVAR_NOSET);
 	noipx = Cvar_Get ("noipx", "0", CVAR_NOSET);
 

@@ -61,11 +61,11 @@ static void GL_DrawDepthBspTris () {
 	}
 }
 
-static void R_RecursiveDepthWorldNode (mnode_t * node) {
+static void R_RecursiveDepthWorldNode(mnode_t* node) {
 	int c, side, sidebit;
-	cplane_t *plane;
-	msurface_t *surf, **mark;
-	mleaf_t *pleaf;
+	cplane_t* plane;
+	msurface_t* surf, ** mark;
+	mleaf_t* pleaf;
 	float dot;
 
 	if (node->contents == CONTENTS_SOLID)
@@ -74,12 +74,12 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 	if (node->visframe != r_visframecount)
 		return;
 
-	if (R_CullBox (node->minmaxs, node->minmaxs + 3))
+	if (R_CullBox(node->minmaxs, node->minmaxs + 3))
 		return;
-	
+
 	// if a leaf node, draw stuff
 	if (node->contents != -1) {
-		pleaf = (mleaf_t *)node;
+		pleaf = (mleaf_t*)node;
 
 		// check for door connected areas
 		if (r_newrefdef.areabits) {
@@ -117,7 +117,7 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 
 		if (c) {
 			do {
-				if (SurfInFrustum (*mark))
+				if (SurfInFrustum(*mark))
 					(*mark)->visframe = r_framecount;
 				(*mark)->ent = NULL;
 				mark++;
@@ -131,18 +131,18 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 	plane = node->plane;
 
 	switch (plane->type) {
-		case PLANE_X:
-			dot = modelorg[0] - plane->dist;
-			break;
-		case PLANE_Y:
-			dot = modelorg[1] - plane->dist;
-			break;
-		case PLANE_Z:
-			dot = modelorg[2] - plane->dist;
-			break;
-		default:
-			dot = DotProduct (modelorg, plane->normal) - plane->dist;
-			break;
+	case PLANE_X:
+		dot = modelorg[0] - plane->dist;
+		break;
+	case PLANE_Y:
+		dot = modelorg[1] - plane->dist;
+		break;
+	case PLANE_Z:
+		dot = modelorg[2] - plane->dist;
+		break;
+	default:
+		dot = DotProduct(modelorg, plane->normal) - plane->dist;
+		break;
 	}
 
 	if (dot >= 0) {
@@ -155,7 +155,7 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 	}
 
 	// recurse down the children, front side first
-	R_RecursiveDepthWorldNode (node->children[side]);
+	R_RecursiveDepthWorldNode(node->children[side]);
 
 	// draw stuff
 	for (c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c; c--, surf++) {
@@ -167,7 +167,7 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 			continue;			// wrong side
 
 		if (surf->texInfo->flags & SURF_SKY) {	// just adds to visible sky bounds
-			R_AddSkySurface (surf);
+			R_AddSkySurface(surf);
 		}
 		else if (surf->texInfo->flags & SURF_NODRAW)
 			continue;
@@ -178,8 +178,9 @@ static void R_RecursiveDepthWorldNode (mnode_t * node) {
 	}
 
 	// recurse down the back side
-	R_RecursiveDepthWorldNode (node->children[!side]);
+	R_RecursiveDepthWorldNode(node->children[!side]);
 }
+
 
 static void R_AddBModelDepthTris (void) {
 	int i;
@@ -435,6 +436,8 @@ void R_DrawDepthMD3Model(void) {
 		GL_DepthRange(gldepthmin, gldepthmax);
 }
 
+void SetFarClip(void);
+
 void R_DrawDepthScene (void) {
 
 	int i;
@@ -503,7 +506,7 @@ void R_DrawDepthScene (void) {
 	}
 	GL_DepthFunc(GL_LEQUAL);
 	GL_DepthMask(0);
-
 	SetFarClip();
+
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

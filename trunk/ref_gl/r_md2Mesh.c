@@ -123,6 +123,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Disable(GL_CULL_FACE);
+		GL_DepthMask(0);
 	}
 
 	if (currententity->flags & (RF_VIEWERMODEL))
@@ -271,6 +272,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
+		GL_DepthMask(1);
 	}
 }
 

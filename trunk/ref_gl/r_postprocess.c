@@ -424,6 +424,7 @@ void R_MotionBlur(void)
 
 	// go to 2d
 	R_SetupOrthoMatrix();
+	GL_DepthMask(0);
 
 	// calc camera offsets
 	angles[0] = r_newrefdef.viewanglesOld[1] - r_newrefdef.viewangles[1]; //YAW left-right
@@ -449,6 +450,7 @@ void R_MotionBlur(void)
 	// restore 3d
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
+	GL_DepthMask(1);
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
@@ -754,6 +756,7 @@ void R_GlobalFog() {
 	if (!r_worldmodel)
 		return;
 
+	GL_DepthMask(0);
 	R_SetupOrthoMatrix();
 
 	GL_BindProgram(globalFogProgram);
@@ -776,6 +779,7 @@ void R_GlobalFog() {
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
 
+	GL_DepthMask(1);
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 				r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }

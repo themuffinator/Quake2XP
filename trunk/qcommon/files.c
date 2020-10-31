@@ -1053,6 +1053,9 @@ void FS_ScanForGameDLL (void) {
 #endif
 
 	path = NULL;
+//	if(net_compatibility->integer == 1)
+	//	Com_Printf("======force old protocol ======\n\n");
+
 	while ((path = FS_NextPath (path)) != NULL) {
 			int i;
 			for (i = 0; i < 2; i++) {
@@ -1063,8 +1066,8 @@ void FS_ScanForGameDLL (void) {
 			}
 			if (fp == NULL)
 				continue;
-			else
-				Cvar_ForceSetValue ("net_compatibility", i);
+		//	else
+			//	Cvar_ForceSetValue ("net_compatibility", i);
 
 		fclose (fp);
 		return;

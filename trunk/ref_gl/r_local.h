@@ -193,9 +193,6 @@ image_t	*r_fixFovTex;
 image_t *r_miniDepthTex;
 image_t *r_ssaoColorTex[2];
 
-image_t* r_shadowMask;
-image_t* r_shadowStencil;
-
 image_t	*r_cinImage;
 image_t	*r_bloomImage;
 image_t	*r_thermalImage;
@@ -207,8 +204,6 @@ uint64_t	skyCube_handle;
 uint fboId;
 byte r_ssaoColorTexIndex;
 uint fboDps;
-
-uint shadowFBO;
 
 extern entity_t *currententity;
 extern model_t *currentmodel;
@@ -465,8 +460,7 @@ extern int numLightQ;
 extern int numFlareOcc;
 extern qboolean FoundReLight;
 qboolean PF_inPVS (vec3_t p1, vec3_t p2);
-void R_SetFrustum (qboolean zPass);
-void SetFarClip(void);
+void R_SetFrustum (qboolean zpass);
 void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare ();
@@ -591,7 +585,7 @@ void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows,
 void R_BeginFrame ();
 void R_SetPalette (const unsigned char *palette);
 
-int InitQ2Palette (void);
+int Draw_GetPalette (void);
 
 struct image_s *R_RegisterSkin (char *name);
 
