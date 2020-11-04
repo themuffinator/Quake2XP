@@ -2408,11 +2408,16 @@ void ModCallback(void* self)
 
 void DrawModShot(void* m)
 {
-	int	w = 0, h = 0, size = 0;
+	int	w = 0, h = 0, size = 0, scale;
 	menuaction_s* menu = (menuaction_s*)m;
 	
+	if (cl_fontScale->integer >= 3)
+		scale = 250;
+	else 
+		scale = 150;
+
 	w = viddef.width * 0.50 + 10 * cl_fontScale->integer;
-	h = viddef.height / 2 - 150;
+	h = viddef.height / 2 - scale;
 	size = min(viddef.width - w, viddef.height - h);
 	size -= 20;
 
@@ -2431,7 +2436,7 @@ qboolean Mods_MenuInit()
 	char	*path = NULL;
 	char	**dirnames = NULL;
 	char	findname[MAX_OSPATH];
-	int		i, l, ndirs = 0, t = 0, len = 0;
+	int		i, l, ndirs = 0, t = 0, len = 0, scale;
 	static char	modinfo[MAX_MODS][MAX_CLIENTS];
 	FILE	*f;
 
@@ -2465,9 +2470,13 @@ qboolean Mods_MenuInit()
 	if (!ndirs)
 		return qfalse;
 
+	if (cl_fontScale->integer >= 3)
+		scale = 250;
+	else
+		scale = 150;
 
 	s_mods_menu.x = viddef.width * 0.50 - 20 * cl_fontScale->value;
-	s_mods_menu.y = viddef.height / 2 - 150;
+	s_mods_menu.y = viddef.height / 2 - scale;
 
 	s_mods_menu.nitems = 0;
 
