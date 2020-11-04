@@ -126,11 +126,6 @@ image_t *R_TextureAnimationRgh(mtexInfo_t * tex)
 	return tex->rghMap;
 }
 
-int			numAlphaSurfaces;
-int			numReflectiveSurfaces;
-msurface_t	*r_alphaSurfaces[MAX_MAP_FACES];
-msurface_t	*r_reflectiveSurfaces[MAX_MAP_FACES];
-
 void R_AddAlphaSurceces (msurface_t * fa, qboolean scrolling) {
 	int i;
 	float *v;
@@ -180,6 +175,50 @@ void R_AddAlphaSurceces (msurface_t * fa, qboolean scrolling) {
 	qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 	c_brush_polys += numIndices / 3;	
 }
+
+void R_AddALightlphaSurceces(msurface_t* fa) {
+	int i;
+	float* v;
+	glpoly_t* p;
+	int nv = fa->polys->numVerts;
+	uint numIndices = 0;
+
+	GL_SetBindlessTexture(U_TMU0, fa->texInfo->normalmap->handle);
+	GL_SetBindlessTexture(U_TMU1, fa->texInfo->image->handle);
+
+	for (i = 0; i < nv - 2; i++) {
+		indexArray[numIndices++] = 0;
+		indexArray[numIndices++] = i + 1;
+		indexArray[numIndices++] = i + 2;
+	}
+
+	p = fa->polys;
+	v = p->verts[0];
+
+	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE) {
+
+		VectorCopy(v, wVertexArray[i]);
+
+		wTexArray[i][0] = v[3];
+		wTexArray[i][1] = v[4];
+
+		nTexArray[i][0] = v[7];
+		nTexArray[i][1] = v[8];
+		nTexArray[i][2] = v[9];
+
+		tTexArray[i][0] = v[10];
+		tTexArray[i][1] = v[11];
+		tTexArray[i][2] = v[12];
+
+		bTexArray[i][0] = v[13];
+		bTexArray[i][1] = v[14];
+		bTexArray[i][2] = v[15];
+	}
+
+	qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+	c_brush_polys += numIndices / 3;
+}
+
 
 void R_DrawAlphaSurfaces() {
 
@@ -1238,7 +1277,7 @@ void R_DrawBrushModel (void) {
 	
 	glBindVertexArray(0);
 
-	GL_DepthMask(1);
+//	GL_DepthMask(1);
 }
 
 /*

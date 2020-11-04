@@ -42,19 +42,6 @@ MOUSE CONTROL
 ============================================================
 */
 
-qboolean	mlooking;
-
-void IN_MLookDown (void) {
-	mlooking = qtrue;
-}
-
-void IN_MLookUp (void) {
-	mlooking = qfalse;
-	if (!freelook->value && lookspring->value)
-		IN_CenterView ();
-}
-
-int			mouse_buttons;
 int			mouse_oldbuttonstate;
 POINT		current_pos;
 int			mouse_x, mouse_y, old_mouse_x, old_mouse_y, mx_accum, my_accum;
@@ -63,11 +50,8 @@ int			old_x, old_y;
 
 qboolean	mouseactive;	// qfalse when not focus app
 
-qboolean	restore_spi;
 qboolean	mouseinitialized;
-qboolean	mouseparmsvalid;
 
-int			originalmouseparms[3], newmouseparms[3] = { 0, 0, 1 };
 int			window_center_x, window_center_y;
 RECT		window_rect;
 
@@ -134,7 +118,7 @@ void IN_DeactivateMouse (void) {
 	while (ShowCursor(TRUE) < 0);
 }
 
-
+#define MOUSE_BUTTONS 9
 
 /*
 ===========
@@ -150,8 +134,6 @@ void IN_StartupMouse (void) {
 		return;
 
 	mouseinitialized = qtrue;
-	mouseparmsvalid = SystemParametersInfo (SPI_GETMOUSE, 0, originalmouseparms, 0);
-	mouse_buttons = 5;
 }
 
 /*
@@ -166,7 +148,7 @@ void IN_MouseEvent (int mstate) {
 		return;
 
 	// perform button actions
-	for (i = 0; i < mouse_buttons; i++) {
+	for (i = 0; i < MOUSE_BUTTONS; i++) {
 		if ((mstate & (1 << i)) &&
 			!(mouse_oldbuttonstate & (1 << i))) {
 			Key_Event (K_MOUSE1 + i, qtrue, sys_msg_time);
@@ -287,8 +269,8 @@ void IN_Init (void) {
 	v_centermove = Cvar_Get ("v_centermove", "0.15", 0);
 	v_centerspeed = Cvar_Get ("v_centerspeed", "500", 0);
 
-	Cmd_AddCommand ("+mlook", IN_MLookDown);
-	Cmd_AddCommand ("-mlook", IN_MLookUp);
+//	Cmd_AddCommand ("+mlook", IN_MLookDown);
+//	Cmd_AddCommand ("-mlook", IN_MLookUp);
 
 	FindRawDevices();
 	IN_StartupXInput();

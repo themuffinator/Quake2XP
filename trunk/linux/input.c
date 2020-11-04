@@ -318,25 +318,7 @@ void IN_ClearMouseState()
 {
 	mx = my = 0;
 }
- 
-/*
- * Look up
- */
-static void
-IN_MLookDown ( void )
-{
-	mlooking = qtrue;
-}
 
-/*
- * Look down
- */
-static void
-IN_MLookUp ( void )
-{
-	mlooking = qfalse;
-	IN_CenterView();
-}
 
 /*
  * Initializes the backend
@@ -350,9 +332,6 @@ IN_Init ( void )
 	m_filter = Cvar_Get( "m_filter", "0", CVAR_ARCHIVE );
 
 	exponential_speedup = Cvar_Get( "exponential_speedup", "0", CVAR_ARCHIVE );
-
-	Cmd_AddCommand( "+mlook", IN_MLookDown );
-	Cmd_AddCommand( "-mlook", IN_MLookUp );
 
 	mouse_x = mouse_y = 0.0;
 
@@ -383,8 +362,6 @@ IN_Shutdown ( void )
 	keyq_tail = 0;
 	memset(keyq, 0, sizeof(keyq));
 
-	Cmd_RemoveCommand("+mlook");
-	Cmd_RemoveCommand("-mlook");
 	Com_Printf("Input shut down.\n");
 	input_started = qfalse;
 }
@@ -482,25 +459,23 @@ IN_Move ( usercmd_t *cmd )
 		}
 
 		/* add mouse X/Y movement to cmd */
-		if ( ( in_strafe.state & 1 ) ||
-				( lookstrafe->value && mlooking ) )
-		{
-			cmd->sidemove += m_side->value * mouse_x;
-		}
-		else
-		{
+	//	if ( ( in_strafe.state & 1 ) ||  ( lookstrafe->value && mlooking ) )
+	//	{
+	//		cmd->sidemove += m_side->value * mouse_x;
+	//	}
+	//	else
+	//	{
 			cl.viewangles [ YAW ] -= m_yaw->value * mouse_x;
-		}
+	//	}
 
-		if ( ( mlooking || freelook->value ) &&
-				!( in_strafe.state & 1 ) )
-		{
+	//	if ( ( mlooking || freelook->value ) &&  !( in_strafe.state & 1 ) )
+	//	{
 			cl.viewangles [ PITCH ] += m_pitch->value * mouse_y;
-		}
-		else
-		{
-			cmd->forwardmove -= m_forward->value * mouse_y;
-		}
+	//	}
+	//	else
+	//	{
+	//		cmd->forwardmove -= m_forward->value * mouse_y;
+	//	}
 
 		IN_ClearMouseState();
 	}

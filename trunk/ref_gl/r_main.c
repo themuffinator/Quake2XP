@@ -480,6 +480,7 @@ void R_SetupGL(void)
 	GL_Disable(GL_BLEND);
 	GL_Enable(GL_DEPTH_TEST);
 	GL_DepthMask(1);
+	GL_DepthRange(0.0, 1.0);
 }
 
 /*
@@ -584,11 +585,6 @@ void R_DrawPlayerWeaponAmbient(void)
 	GL_Disable(GL_BLEND);
 	GL_DepthMask(1);
 }
-
-qboolean R_GetLightOcclusionResult();
-void R_LightOcclusionTest();
-extern uint queryAvailable;
-
 void R_DrawLightScene (void)
 {
 	int i;
@@ -641,9 +637,6 @@ void R_DrawLightScene (void)
 		qglClear(GL_STENCIL_BUFFER_BIT);
 	}
 
-	if (!R_GetLightOcclusionResult())
-		continue;
-
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
 	R_CastAliasShadowVolumes(qtrue);	// player shadow
 
@@ -653,7 +646,7 @@ void R_DrawLightScene (void)
 		if (currententity->flags & RF_WEAPONMODEL)
 			continue;
 
-		if ((currententity->flags & RF_TRANSLUCENT) && (currententity->model->type == mod_alias))
+		if (currententity->flags & RF_TRANSLUCENT)
 			continue;
 
 		if (currententity->flags & RF_DISTORT)
@@ -777,6 +770,9 @@ void R_DrawPlayerWeapon(void)
 void R_RenderSprites(void)
 {
 	int i;
+	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
 
 	GL_DepthMask(0);
 
@@ -820,7 +816,7 @@ void R_RenderSprites(void)
 }
 
 // draws ambient opaque entities
-static void R_DrawEntitiesOnList (void) {
+static void R_DrawOpaqueEntities(void) {
 	int i;
 
 	if (!r_drawEntities->integer)
@@ -836,10 +832,8 @@ static void R_DrawEntitiesOnList (void) {
 		if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
 			continue;
 		
-		if (currententity->flags & RF_BEAM) {
-			R_DrawBeam();
+		if (currententity->flags & RF_BEAM) 
 			continue;
-		}
 
 		currentmodel = currententity->model;
 
@@ -871,12 +865,15 @@ static void R_DrawEntitiesOnList (void) {
 static void R_DrawTransEntities(void) {
 	int i;
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
 	if (!r_drawEntities->integer)
 		return;
 
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
-	GL_DepthMask(0); // wtf??? 
+	GL_DepthMask(0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -887,10 +884,8 @@ static void R_DrawTransEntities(void) {
 		if (currententity->flags & (RF_WEAPONMODEL))
 			continue;
 
-		if (currententity->flags & RF_BEAM) {
-			R_DrawBeam();
+		if (currententity->flags & RF_BEAM)
 			continue;
-		}
 
 		currentmodel = currententity->model;
 
@@ -912,28 +907,20 @@ static void R_DrawTransEntities(void) {
 }
 
 // draw all opaque, non-reflective stuff
-// fills reflective & alpha chains from world model
-static void R_DrawAmbientScene (void) {
+void R_DrawAmbientScene (void) {
 
 	R_DrawBSP();
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		GL_DepthMask(1);
-
-	R_DrawEntitiesOnList();
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		GL_DepthMask(0);
+	R_DrawOpaqueEntities();
 }
 
 // draws reflective & alpha chains from world model
 // draws reflective surfaces from brush models
-extern msurface_t* r_alphaSurfaces[MAX_MAP_FACES];
-extern msurface_t* r_reflectiveSurfaces[MAX_MAP_FACES];
-
-static void R_DrawRAScene (void) {
+void R_DrawRAScene (void) {
 	int i;
 	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+
 	GL_DepthMask(0);
 	GL_PolygonOffset(-1.0, 1.0);
 
@@ -970,8 +957,6 @@ R_RenderView
 r_newrefdef must be set before the first call.
 ================
 */
-void R_MotionBlur(void);
-
 void R_SetViewport3D(refdef_t* fd) {
 	
 	r_newrefdef = *fd;
@@ -1001,7 +986,6 @@ void R_RenderView (refdef_t *fd) {
 	
 	R_DrawDepthScene();
 	R_SetFrustum(qfalse);
-	R_LightOcclusionTest();
 	R_CaptureDepthBuffer();
 	
 	R_SSAO();
@@ -1105,7 +1089,7 @@ void R_RenderFrame(refdef_t * fd) {
 	}
 	R_ColorTemperatureCorrection();
 	R_lutCorrection();
-	
+
 	// set alpha blend for 2D mode
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1376,7 +1360,6 @@ void R_RegisterCvars(void)
 	r_useRadiosityBump =				Cvar_Get("r_useRadiosityBump", "1", CVAR_ARCHIVE);
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 	r_zFar =							Cvar_Get("r_zFar", "4096", CVAR_ARCHIVE);
-	r_useLightOcclusions =				Cvar_Get("r_useLightOcclusions", "0", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
 	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.65", CVAR_ARCHIVE);
@@ -1923,10 +1906,6 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
 	}
 
-	int queryBits;
-	glGetQueryiv(GL_SAMPLES_PASSED, GL_QUERY_COUNTER_BITS, &queryBits);
-	Com_Printf("...found [" S_COLOR_GREEN "%i" S_COLOR_WHITE "] query bits\n", queryBits);
-
 	Com_Printf("=====================================\n");
 
 	GL_SetDefaultState();
@@ -2095,12 +2074,4 @@ void R_SetPalette(const unsigned char *palette)
 	}
 	qglClearColor(0, 0, 0, 0);
 	qglClear(GL_COLOR_BUFFER_BIT);
-}
-
-/*
-** R_DrawBeam
-*/
-void R_DrawBeam()
-{
-	return;
 }

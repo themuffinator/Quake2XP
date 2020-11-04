@@ -95,6 +95,10 @@ keyname_t keynames[] = {
 	{ "MOUSE3", K_MOUSE3 },
 	{ "MOUSE4", K_MOUSE4 },
 	{ "MOUSE5", K_MOUSE5 },
+	{ "MOUSE6", K_MOUSE6 },
+	{ "MOUSE7", K_MOUSE7 },
+	{ "MOUSE8", K_MOUSE8 },
+	{ "MOUSE9", K_MOUSE9 },
 
 	{ "XPAD_START",				K_XPAD_START },
 	{ "XPAD_BACK",				K_XPAD_BACK },

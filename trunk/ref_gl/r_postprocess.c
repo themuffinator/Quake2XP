@@ -492,6 +492,8 @@ void R_SSAO (void)
 	
 	R_SetupOrthoMatrix();
 	R_DownsampleDepth();
+	
+	GL_DepthMask(0);
 
 	// process
 	qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
@@ -537,6 +539,7 @@ void R_SSAO (void)
 
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
+	GL_DepthMask(1);
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 				r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }

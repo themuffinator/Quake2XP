@@ -605,7 +605,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*v, *ov, *verts, *oldVerts;
 	vec3_t		luminance = { 0.2125, 0.7154, 0.0721 };
-	image_t     *skin, *light, *normal, /**ao,*/ *rgh;
+	image_t     *skin, *light, *normal, *ao, *rgh;
 
 	if (!r_drawEntities->integer)
 		return;
@@ -754,9 +754,10 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		if (!normal)
 			normal = r_defBump;
 		
-	//	ao = mesh->skinsAO[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-	//	if (!ao)
-	//		ao = r_whiteMap;
+		if (currententity->flags & RF_WEAPONMODEL && r_ssao->integer)
+			ao = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+		else
+			ao = r_whiteMap;
 
 		for (j = 0; j < mesh->num_verts; j++, v++, ov++) {
 
@@ -779,6 +780,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
 		GL_SetBindlessTexture(U_TMU3, normal->handle);
 		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
+		GL_SetBindlessTexture(U_TMU5, ao->handle);
 
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	

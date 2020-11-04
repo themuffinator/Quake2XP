@@ -26,6 +26,7 @@ usbVendorId_t usb_Vendors[] = {
 {0x1241, "Belkin"},
 {0x1267, "Logic3 (LG)"},
 {0x1532, "Razer USA, Ltd"},
+{0x1689, "Razer USA, Ltd"},
 {0x17EF, "Lenovo"},
 {0x1D57, "Xenta"},
 {0x2516, "Cooler Master Co., Ltd."},
@@ -34,3 +35,39 @@ usbVendorId_t usb_Vendors[] = {
 };
 
 #define NUM_VENDORS ( sizeof( usb_Vendors ) / sizeof( usb_Vendors[0] ) )
+/*
+typedef struct Logitech_s {
+	DWORD Id;
+	const char* description;
+} Logitech_t;
+
+Logitech_t logitech_mice[] = {
+{0XC70E,	"MX1000 Bluetooth Laser Mouse"},
+{0XC518,	"MX610 Laser Cordless Mouse"},
+{0XC51A,	"MX Revolution / G7 Cordless Mouse"},
+{0XC51B,	"V220 Cordless Optical Mouse for Notebooks"},
+{0XC510,	"Cordless Mouse"},
+{0XC514,	"Cordless Mouse"},
+{0XC50A,	"Cordless Mouse"},
+{0XC402,	"Marble Mouse(2 - button)"},
+{0XC408,	"Marble Mouse(4 - button)"},
+{0XC247,	"G100S Optical Gaming Mouse"},
+{0XC24A,	"G600 Gaming Mouse"},
+{0XC24C,	"G400s Optical Mouse"},
+{0XC24E,	"G500s Laser Gaming Mouse"},
+{0XC245,	"G400 Optical Mouse"},
+{0XC246,	"Gaming Mouse G300"},
+{0XC077,	"M105 Optical Mouse"},
+{0XC07C,	"G700s Rechargeable Gaming Mouse"},
+{0XC07D,	"G502 Mouse"},
+{0XC07E,	"G402 Gaming Mouse"},
+{0XC080,	"G303 Gaming Mouse"},
+{0XC083,	"G403 Prodigy Gaming Mouse"},
+{0XC084,	"G203 Gaming Mouse"},
+{0XC063,	"DELL Laser Mouse"},
+{0XC064,	"M110 corded optical mouse"},
+{0XC066,	"G9x Laser Mouse"},
+{0XC068,	"G500 Laser Mouse"},
+
+};
+*/

@@ -306,7 +306,6 @@ cvar_t	*r_ambientSpecularScale;
 cvar_t	*r_useRadiosityBump;
 cvar_t	*r_zNear;
 cvar_t	*r_zFar;
-cvar_t	*r_useLightOcclusions;
 
 cvar_t	*hunk_bsp;
 cvar_t	*hunk_md2;
@@ -420,6 +419,7 @@ void R_DrawDepthScene(void);
 void R_DownsampleDepth(void);
 void R_ScreenBlend(void);
 void R_GlobalFog();
+void R_MotionBlur(void);
 
 void R_SaveLights_f (void);
 void R_Light_Spawn_f (void);
@@ -461,6 +461,7 @@ extern int numFlareOcc;
 extern qboolean FoundReLight;
 qboolean PF_inPVS (vec3_t p1, vec3_t p2);
 void R_SetFrustum (qboolean zpass);
+void SetFarClip(void);
 void R_SetViewLightScreenBounds ();
 qboolean BoundsIntersect (const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 void R_DrawLightFlare ();
@@ -550,6 +551,11 @@ extern int registration_sequence;
 
 extern float skyrotate;
 extern vec3_t skyaxis;
+
+int			numAlphaSurfaces;
+int			numReflectiveSurfaces;
+msurface_t* r_alphaSurfaces[MAX_MAP_FACES];
+msurface_t* r_reflectiveSurfaces[MAX_MAP_FACES];
 
 int R_Init (void *hinstance, void *hWnd);
 void R_Shutdown (void);

@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static int m_main_cursor;
 extern qboolean ru_loc;
+void M_Option_Banner(image_t* banner[2]);
 
 #define NUM_CURSOR_FRAMES 15
 
@@ -582,12 +583,6 @@ char *bindnames[][2] = {
 	{ "+speed", "run" },
 	{ "+moveleft", "step left" },
 	{ "+moveright", "step right" },
-	{ "+strafe", "sidestep" },
-	{ "+lookup", "look up" },
-	{ "+lookdown", "look down" },
-	{ "centerview", "center view" },
-	{ "+mlook", "mouse look" },
-	{ "+klook", "keyboard look" },
 	{ "+moveup", "up / jump" },
 	{ "+movedown", "down / crouch" },
 	{ "inven", "inventory" },
@@ -615,12 +610,6 @@ static menuaction_s s_keys_turn_right_action;
 static menuaction_s s_keys_run_action;
 static menuaction_s s_keys_step_left_action;
 static menuaction_s s_keys_step_right_action;
-static menuaction_s s_keys_sidestep_action;
-static menuaction_s s_keys_look_up_action;
-static menuaction_s s_keys_look_down_action;
-static menuaction_s s_keys_center_view_action;
-static menuaction_s s_keys_mouse_look_action;
-static menuaction_s s_keys_keyboard_look_action;
 static menuaction_s s_keys_move_up_action;
 static menuaction_s s_keys_move_down_action;
 static menuaction_s s_keys_inventory_action;
@@ -862,60 +851,6 @@ static void Keys_MenuInit(void) {
 	s_keys_step_right_action.generic.name =
 		bindnames[s_keys_step_right_action.generic.localdata[0]][1];
 
-	s_keys_sidestep_action.generic.type = MTYPE_ACTION;
-	s_keys_sidestep_action.generic.flags = QMF_GRAYED;
-	s_keys_sidestep_action.generic.x = 0;
-	s_keys_sidestep_action.generic.y = y += 9 * cl_fontScale->value;
-	s_keys_sidestep_action.generic.ownerdraw = DrawKeyBindingFunc;
-	s_keys_sidestep_action.generic.localdata[0] = ++i;
-	s_keys_sidestep_action.generic.name =
-		bindnames[s_keys_sidestep_action.generic.localdata[0]][1];
-
-	s_keys_look_up_action.generic.type = MTYPE_ACTION;
-	s_keys_look_up_action.generic.flags = QMF_GRAYED;
-	s_keys_look_up_action.generic.x = 0;
-	s_keys_look_up_action.generic.y = y += 9 * cl_fontScale->value;
-	s_keys_look_up_action.generic.ownerdraw = DrawKeyBindingFunc;
-	s_keys_look_up_action.generic.localdata[0] = ++i;
-	s_keys_look_up_action.generic.name =
-		bindnames[s_keys_look_up_action.generic.localdata[0]][1];
-
-	s_keys_look_down_action.generic.type = MTYPE_ACTION;
-	s_keys_look_down_action.generic.flags = QMF_GRAYED;
-	s_keys_look_down_action.generic.x = 0;
-	s_keys_look_down_action.generic.y = y += 9 * cl_fontScale->value;
-	s_keys_look_down_action.generic.ownerdraw = DrawKeyBindingFunc;
-	s_keys_look_down_action.generic.localdata[0] = ++i;
-	s_keys_look_down_action.generic.name =
-		bindnames[s_keys_look_down_action.generic.localdata[0]][1];
-
-	s_keys_center_view_action.generic.type = MTYPE_ACTION;
-	s_keys_center_view_action.generic.flags = QMF_GRAYED;
-	s_keys_center_view_action.generic.x = 0;
-	s_keys_center_view_action.generic.y = y += 9 * cl_fontScale->value;
-	s_keys_center_view_action.generic.ownerdraw = DrawKeyBindingFunc;
-	s_keys_center_view_action.generic.localdata[0] = ++i;
-	s_keys_center_view_action.generic.name =
-		bindnames[s_keys_center_view_action.generic.localdata[0]][1];
-
-	s_keys_mouse_look_action.generic.type = MTYPE_ACTION;
-	s_keys_mouse_look_action.generic.flags = QMF_GRAYED;
-	s_keys_mouse_look_action.generic.x = 0;
-	s_keys_mouse_look_action.generic.y = y += 9 * cl_fontScale->value;
-	s_keys_mouse_look_action.generic.ownerdraw = DrawKeyBindingFunc;
-	s_keys_mouse_look_action.generic.localdata[0] = ++i;
-	s_keys_mouse_look_action.generic.name =
-		bindnames[s_keys_mouse_look_action.generic.localdata[0]][1];
-
-	s_keys_keyboard_look_action.generic.type = MTYPE_ACTION;
-	s_keys_keyboard_look_action.generic.flags = QMF_GRAYED;
-	s_keys_keyboard_look_action.generic.x = 0;
-	s_keys_keyboard_look_action.generic.y = y += 9 * cl_fontScale->value;
-	s_keys_keyboard_look_action.generic.ownerdraw = DrawKeyBindingFunc;
-	s_keys_keyboard_look_action.generic.localdata[0] = ++i;
-	s_keys_keyboard_look_action.generic.name =
-		bindnames[s_keys_keyboard_look_action.generic.localdata[0]][1];
-
 	s_keys_move_up_action.generic.type = MTYPE_ACTION;
 	s_keys_move_up_action.generic.flags = QMF_GRAYED;
 	s_keys_move_up_action.generic.x = 0;
@@ -1014,12 +949,6 @@ static void Keys_MenuInit(void) {
 	Menu_AddItem(&s_keys_menu, (void *)&s_keys_run_action);
 	Menu_AddItem(&s_keys_menu, (void *)&s_keys_step_left_action);
 	Menu_AddItem(&s_keys_menu, (void *)&s_keys_step_right_action);
-	Menu_AddItem(&s_keys_menu, (void *)&s_keys_sidestep_action);
-	Menu_AddItem(&s_keys_menu, (void *)&s_keys_look_up_action);
-	Menu_AddItem(&s_keys_menu, (void *)&s_keys_look_down_action);
-	Menu_AddItem(&s_keys_menu, (void *)&s_keys_center_view_action);
-	Menu_AddItem(&s_keys_menu, (void *)&s_keys_mouse_look_action);
-	Menu_AddItem(&s_keys_menu, (void *)&s_keys_keyboard_look_action);
 	Menu_AddItem(&s_keys_menu, (void *)&s_keys_move_up_action);
 	Menu_AddItem(&s_keys_menu, (void *)&s_keys_move_down_action);
 	Menu_AddItem(&s_keys_menu, (void *)&s_keys_inventory_action);
@@ -1036,6 +965,8 @@ static void Keys_MenuInit(void) {
 }
 
 static void Keys_MenuDraw(void) {
+
+	M_Option_Banner(i_banner_options);
 	Menu_AdjustCursor(&s_keys_menu, 1);
 	Menu_Draw(&s_keys_menu);
 }
@@ -1076,11 +1007,13 @@ int Keys_MenuKey(int key) {
 }
 
 void M_Menu_Keys_f(void) {
+
 	Keys_MenuInit();
 	M_PushMenu(Keys_MenuDraw, Keys_MenuKey);
 }
 
 void M_Menu_Advanced_f(void) {
+	M_Option_Banner(i_banner_options);
 	M_AdvancedInit();
 
 }
@@ -1100,12 +1033,9 @@ static menuaction_s s_options_defaults_action;
 static menuaction_s s_options_customize_options_action;
 static menuaction_s s_options_advanced_options_action;
 static menuslider_s s_options_sensitivity_slider;
-static menulist_s s_options_freelook_box;
 static menulist_s s_options_noalttab_box;
 static menulist_s s_options_alwaysrun_box;
 static menulist_s s_options_invertmouse_box;
-static menulist_s s_options_lookspring_box;
-static menulist_s s_options_lookstrafe_box;
 static menulist_s s_options_crosshair_box;
 static menulist_s s_options_gamepad_box;
 static menuslider_s s_options_effectsVolume_slider;
@@ -1146,10 +1076,6 @@ static void CustomizeControlsFunc(void *unused) {
 
 static void AlwaysRunFunc(void *unused) {
 	Cvar_SetValue("cl_run", s_options_alwaysrun_box.curvalue);
-}
-
-static void FreeLookFunc(void *unused) {
-	Cvar_SetValue("freelook", s_options_freelook_box.curvalue);
 }
 
 static void MouseSpeedFunc(void *unused) {
@@ -1193,15 +1119,6 @@ static void ControlsSetMenuItemValues(void) {
 	s_options_invertmouse_box.curvalue = m_pitch->value < 0;
 #endif
 
-	Cvar_SetValue("lookspring", ClampCvar(0, 1, lookspring->value));
-	s_options_lookspring_box.curvalue = lookspring->value;
-
-	Cvar_SetValue("lookstrafe", ClampCvar(0, 1, lookstrafe->value));
-	s_options_lookstrafe_box.curvalue = lookstrafe->value;
-
-	Cvar_SetValue("freelook", ClampCvar(0, 1, freelook->value));
-	s_options_freelook_box.curvalue = freelook->value;
-
 	Cvar_SetValue("crosshair", ClampCvar(0, 13, crosshair->value));
 	s_options_crosshair_box.curvalue = crosshair->value;
 #ifdef _WIN32
@@ -1235,14 +1152,6 @@ static void InvertMouseFunc(void *unused) {
 #else
 	Cvar_SetValue("m_pitch", -m_pitch->value);
 #endif
-}
-
-static void LookspringFunc(void *unused) {
-	Cvar_SetValue("lookspring", !lookspring->value);
-}
-
-static void LookstrafeFunc(void *unused) {
-	Cvar_SetValue("lookstrafe", !lookstrafe->value);
 }
 
 static void UpdateVolumeFunc(void *unused) {
@@ -1529,16 +1438,6 @@ void M_AdvancedInit(void) {
 	s_aoptions_hudScale_slider.curvalue = Cvar_VariableValue("cl_hudScale") * 10;
 	menu_y += 10 * cl_fontScale->value;
 
-	s_aoptions_fontScale_slider.generic.type = MTYPE_SLIDER;
-	s_aoptions_fontScale_slider.generic.x = 0;
-	s_aoptions_fontScale_slider.generic.y = menu_y;
-	s_aoptions_fontScale_slider.generic.name = "Font Scale";
-	s_aoptions_fontScale_slider.generic.callback = UpdateFontScaleFunc;
-	s_aoptions_fontScale_slider.minvalue = 0;
-	s_aoptions_fontScale_slider.maxvalue = 10;
-	s_aoptions_fontScale_slider.curvalue = (Cvar_VariableValue("cl_fontScale") - 1) * 10;
-	menu_y += 10 * cl_fontScale->value;
-
 	s_aoptions_3dhud_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_3dhud_box.generic.x = 0;
 	s_aoptions_3dhud_box.generic.y = menu_y;
@@ -1562,7 +1461,6 @@ void M_AdvancedInit(void) {
 
 	s_aoptions_drawHud_box.curvalue = cl_drawhud->value;
 	s_aoptions_hudScale_slider.curvalue = cl_hudScale->value * 10;
-	s_aoptions_fontScale_slider.curvalue = (cl_fontScale->value - 1) * 10;
 
 
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_railCoreRed_slider);
@@ -1579,7 +1477,6 @@ void M_AdvancedInit(void) {
 
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_drawHud_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_hudScale_slider);
-	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_fontScale_slider);
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_3dhud_box);
 
 }
@@ -1777,33 +1674,9 @@ void Options_MenuInit(void) {
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
 	s_options_invertmouse_box.itemnames = yesno_names;
 
-
-	s_options_lookspring_box.generic.type = MTYPE_SPINCONTROL;
-	s_options_lookspring_box.generic.x = 0;
-	s_options_lookspring_box.generic.y = 130 * cl_fontScale->value;
-	s_options_lookspring_box.generic.name = "Look Spring";
-	s_options_lookspring_box.generic.callback = LookspringFunc;
-	s_options_lookspring_box.itemnames = yesno_names;
-
-
-	s_options_lookstrafe_box.generic.type = MTYPE_SPINCONTROL;
-	s_options_lookstrafe_box.generic.x = 0;
-	s_options_lookstrafe_box.generic.y = 140 * cl_fontScale->value;
-	s_options_lookstrafe_box.generic.name = "Look Strafe";
-	s_options_lookstrafe_box.generic.callback = LookstrafeFunc;
-	s_options_lookstrafe_box.itemnames = yesno_names;
-
-
-	s_options_freelook_box.generic.type = MTYPE_SPINCONTROL;
-	s_options_freelook_box.generic.x = 0;
-	s_options_freelook_box.generic.y = 150 * cl_fontScale->value;
-	s_options_freelook_box.generic.name = "Free Look";
-	s_options_freelook_box.generic.callback = FreeLookFunc;
-	s_options_freelook_box.itemnames = yesno_names;
-
 	s_options_crosshair_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_crosshair_box.generic.x = 0;
-	s_options_crosshair_box.generic.y = 160 * cl_fontScale->value;
+	s_options_crosshair_box.generic.y = 130 * cl_fontScale->value;
 	s_options_crosshair_box.generic.name = "Crosshair";
 	s_options_crosshair_box.generic.callback = CrosshairFunc;
 	s_options_crosshair_box.itemnames = crosshair_names;
@@ -1820,7 +1693,7 @@ void Options_MenuInit(void) {
 
 	s_options_gamepad_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_gamepad_box.generic.x = 0;
-	s_options_gamepad_box.generic.y = 170 * cl_fontScale->value;;
+	s_options_gamepad_box.generic.y = 140 * cl_fontScale->value;;
 	s_options_gamepad_box.generic.name = "Gamepad";
 #ifdef _WIN32
 	s_options_gamepad_box.generic.callback = GamePadFunc;
@@ -1833,7 +1706,7 @@ void Options_MenuInit(void) {
 #endif
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
-	s_options_fps_box.generic.y = 190 * cl_fontScale->value;
+	s_options_fps_box.generic.y = 160 * cl_fontScale->value;
 	s_options_fps_box.generic.name = "Draw FPS";
 	s_options_fps_box.generic.callback = FpsFunc;
 	s_options_fps_box.itemnames = fps_names;
@@ -1841,7 +1714,7 @@ void Options_MenuInit(void) {
 
 	s_options_time_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_time_box.generic.x = 0;
-	s_options_time_box.generic.y = 200 * cl_fontScale->value;
+	s_options_time_box.generic.y = 170 * cl_fontScale->value;
 	s_options_time_box.generic.name = "Draw Date / Time";
 	s_options_time_box.generic.callback = TimeFunc;
 	s_options_time_box.itemnames = yesno_names;
@@ -1849,28 +1722,28 @@ void Options_MenuInit(void) {
 
 	s_options_advanced_options_action.generic.type = MTYPE_ACTION;
 	s_options_advanced_options_action.generic.x = 0;
-	s_options_advanced_options_action.generic.y = 220 * cl_fontScale->value;
+	s_options_advanced_options_action.generic.y = 190 * cl_fontScale->value;
 	s_options_advanced_options_action.generic.name = "Advanced Settings";
 	s_options_advanced_options_action.generic.callback = AdvancedSettingsFunc;
 
 
 	s_options_customize_options_action.generic.type = MTYPE_ACTION;
 	s_options_customize_options_action.generic.x = 0;
-	s_options_customize_options_action.generic.y = 230 * cl_fontScale->value;
+	s_options_customize_options_action.generic.y = 200 * cl_fontScale->value;
 	s_options_customize_options_action.generic.name = "Customize Controls";
 	s_options_customize_options_action.generic.callback = CustomizeControlsFunc;
 	//-------------------------
 
 	s_options_defaults_action.generic.type = MTYPE_ACTION;
 	s_options_defaults_action.generic.x = 0;
-	s_options_defaults_action.generic.y = 250 * cl_fontScale->value;
+	s_options_defaults_action.generic.y = 220 * cl_fontScale->value;
 	s_options_defaults_action.generic.name = "Reset Defaults";
 	s_options_defaults_action.generic.callback = ControlsResetDefaultsFunc;
 
 
 	s_options_console_action.generic.type = MTYPE_ACTION;
 	s_options_console_action.generic.x = 0;
-	s_options_console_action.generic.y = 260 * cl_fontScale->value;
+	s_options_console_action.generic.y = 240 * cl_fontScale->value;
 	s_options_console_action.generic.name = "go to console";
 	s_options_console_action.generic.callback = ConsoleFunc;
 
@@ -1888,9 +1761,6 @@ void Options_MenuInit(void) {
 	Menu_AddItem(&s_options_menu, (void *)&s_options_sensitivity_slider);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_alwaysrun_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_invertmouse_box);
-	Menu_AddItem(&s_options_menu, (void *)&s_options_lookspring_box);
-	Menu_AddItem(&s_options_menu, (void *)&s_options_lookstrafe_box);
-	Menu_AddItem(&s_options_menu, (void *)&s_options_freelook_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_crosshair_box);
 	Menu_AddItem(&s_options_menu, (void*)&s_options_gamepad_box);
 
@@ -2000,6 +1870,7 @@ static char *idcredits[] = {
 	"Echon",
 	"Knightmare",
 	"Berserk",
+	"Discoloda",
 	"SulQ2",
 	"",
 	"+SPECIAL THANKS",
@@ -2535,6 +2406,26 @@ void ModCallback(void* self)
 	M_ForceMenuOff();
 }
 
+void DrawModShot(void* m)
+{
+	int	w = 0, h = 0, size = 0;
+	menuaction_s* menu = (menuaction_s*)m;
+	
+	w = viddef.width * 0.50 + 10 * cl_fontScale->integer;
+	h = viddef.height / 2 - 150;
+	size = min(viddef.width - w, viddef.height - h);
+	size -= 20;
+
+	if (Draw_FindPic(m_mod_names[s_mods_menu.cursor])) {
+		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0);
+		Draw_StretchPic(w, h, size, size, m_mod_names[s_mods_menu.cursor]);
+	}
+	else {
+		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0);
+		Draw_StretchPic(w, h, size, size, "idlog");
+	}
+}
+
 qboolean Mods_MenuInit()
 {
 	char	*path = NULL;
@@ -2592,7 +2483,8 @@ qboolean Mods_MenuInit()
 		s_mods_actions[t].generic.y = i * 10 * cl_fontScale->value;
 
 		s_mods_actions[t].generic.type = MTYPE_ACTION;
-			
+		s_mods_actions[t].generic.statusbarfunc = DrawModShot;
+
 		if (!Q_strcasecmp(m_mod_names[t], "baseq2"))
 			s_mods_actions[t].generic.statusbar = "Quake II";
 		else
@@ -3930,7 +3822,7 @@ void DMOptions_MenuInit(void) {
 	static char *teamplay_names[] = {
 		"disabled", "by skin", "by model", 0
 	};
-	int dmflags = Cvar_VariableValue("dmflags");
+	int dmflags = Cvar_VariableInteger("dmflags");
 	int y = 0;
 	
 	drawIDlogo = qfalse;

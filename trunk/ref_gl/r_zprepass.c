@@ -218,9 +218,6 @@ void R_DrawDepthBrushModel (void) {
 	qboolean	rotated;
 	mat4_t		mvp;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
 	if (!r_drawEntities->integer)
 		return;
 
@@ -284,7 +281,6 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
-
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
@@ -436,8 +432,6 @@ void R_DrawDepthMD3Model(void) {
 		GL_DepthRange(gldepthmin, gldepthmax);
 }
 
-void SetFarClip(void);
-
 void R_DrawDepthScene (void) {
 
 	int i;
@@ -452,31 +446,30 @@ void R_DrawDepthScene (void) {
 
 	VectorCopy (r_newrefdef.vieworg, modelorg);
 	
-	GL_DepthFunc(GL_LESS);
-	GL_DepthMask(1);
-
 	R_ClearSkyBox ();
+
+	GL_DepthFunc(GL_LESS);
 
 	GL_BindProgram (nullProgram);
 
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-	qglEnableVertexAttribArray (ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
 
 	numDepthsurfaces = 0;
-	R_RecursiveDepthWorldNode (r_worldmodel->nodes);
+	R_RecursiveDepthWorldNode(r_worldmodel->nodes);
 	GL_DrawDepthBspTris();
-	
+
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray (ATT_POSITION);
+	qglDisableVertexAttribArray(ATT_POSITION);
 
 	GL_DepthRange(1.0, 1.0); // mark sky for fog mask
 
-	R_DrawSkyBox (qfalse);
-	
+	R_DrawSkyBox(qfalse);
+
 	GL_DepthRange(0.0, 1.0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -504,8 +497,8 @@ void R_DrawDepthScene (void) {
 		if (currentmodel->type == mod_alias_md3)
 			R_DrawDepthMD3Model();
 	}
+
 	GL_DepthFunc(GL_LEQUAL);
-	GL_DepthMask(0);
 	SetFarClip();
 
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

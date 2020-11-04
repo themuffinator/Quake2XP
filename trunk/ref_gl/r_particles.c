@@ -586,7 +586,7 @@ void R_DrawParticles (void) {
 	}
 
 	GL_Disable (GL_BLEND);
-
+	GL_DepthMask(1);
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
 	qglDisableVertexAttribArray (ATT_COLOR);
