@@ -701,6 +701,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	if(r_newrefdef.rdflags & RDF_IRGOGGLES)
 		qglUniform1i(U_USE_SSAO, 0);
 
+	if (currententity->flags & RF_WEAPONMODEL)
+		GL_DepthMask(1);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -786,7 +788,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	
 		if (mesh->muzzle) {
 			GL_Disable(GL_BLEND);
-			GL_DepthMask(1);
+		//	GL_DepthMask(1);
 			GL_Enable(GL_CULL_FACE);
 			GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
@@ -801,6 +803,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		qglUniform1i(U_ENV_PASS, 1);
 		qglUniform1i(U_TRANS_PASS, 1);
 		qglUniform1i(U_USE_SSAO, 0);
+		qglUniform1i(U_SHELL_PASS, 0);
 
 		lum = DotProduct(luminance, shadelight);
 		qglUniform1f(U_ENV_SCALE, lum);
@@ -867,7 +870,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 		}
 
-	GL_DepthMask(1);
+//	GL_DepthMask(1);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);

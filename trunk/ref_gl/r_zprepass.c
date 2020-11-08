@@ -439,8 +439,8 @@ void R_DrawDepthScene (void) {
 	if (!r_drawWorld->integer)
 		return;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
+//	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+//		return;
 
 	currentmodel = r_worldmodel;
 
@@ -449,28 +449,30 @@ void R_DrawDepthScene (void) {
 	R_ClearSkyBox ();
 
 	GL_DepthFunc(GL_LESS);
+	GL_DepthMask(1);
 
 	GL_BindProgram (nullProgram);
 
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
+	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+		qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
+		qglEnableVertexAttribArray(ATT_POSITION);
+		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
 
-	numDepthsurfaces = 0;
-	R_RecursiveDepthWorldNode(r_worldmodel->nodes);
-	GL_DrawDepthBspTris();
+		numDepthsurfaces = 0;
+		R_RecursiveDepthWorldNode(r_worldmodel->nodes);
+		GL_DrawDepthBspTris();
 
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglDisableVertexAttribArray(ATT_POSITION);
+		qglBindBuffer(GL_ARRAY_BUFFER, 0);
+		qglDisableVertexAttribArray(ATT_POSITION);
 
-	GL_DepthRange(1.0, 1.0); // mark sky for fog mask
+		GL_DepthRange(1.0, 1.0); // mark sky for fog mask
+		R_DrawSkyBox(qfalse);
+		GL_DepthRange(0.0, 1.0);
+	}
 
-	R_DrawSkyBox(qfalse);
-
-	GL_DepthRange(0.0, 1.0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -499,6 +501,7 @@ void R_DrawDepthScene (void) {
 	}
 
 	GL_DepthFunc(GL_LEQUAL);
+	GL_DepthMask(0);
 	SetFarClip();
 
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

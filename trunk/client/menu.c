@@ -2458,8 +2458,9 @@ qboolean Mods_MenuInit()
 		{
 			if (ndirs > MAX_MODS)
 				ndirs = MAX_MODS;
-			for (i = 0; i < ndirs; i++)
-			{
+
+			for (i = 0; i < ndirs; i++){
+
 				strcpy(m_mod_names[i], &dirnames[i][l]);
 				free(dirnames[i]);
 			}
@@ -2480,8 +2481,8 @@ qboolean Mods_MenuInit()
 
 	s_mods_menu.nitems = 0;
 
-	for (i = 0; i < MAX_MODS; i++)
-	{
+	for (i = 0; i < MAX_MODS; i++){
+
 		if (t == ndirs)
 			break;
 
@@ -2524,16 +2525,17 @@ qboolean Mods_MenuInit()
 				}
 				else {
 					fseek(f, 0, SEEK_END);
-					len = min(255, ftell(f));       
+					len = min(255, ftell(f));
 					fseek(f, 0, SEEK_SET);
-					memset(modinfo[t], 0, 256);   
+					memset(modinfo[t], 0, 256);
 					fread(modinfo[t], len, 1, f);
-					s_mods_actions[t].generic.statusbar = &modinfo[t][0];  
+					s_mods_actions[t].generic.statusbar = &modinfo[t][0];
 					fclose(f);
 				}
+		
 			}
 
-		Menu_AddItem(&s_mods_menu, &s_mods_actions[t]);
+			Menu_AddItem(&s_mods_menu, &s_mods_actions[t]);
 
 		t++;
 	}

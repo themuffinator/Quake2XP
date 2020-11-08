@@ -91,7 +91,7 @@ void R_DrawParticles (void) {
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
-	GL_DepthMask (0);		// no z buffering
+//	GL_DepthMask (0);		// no z buffering
 	GL_Enable (GL_BLEND);
 
 	qsort (r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
@@ -586,7 +586,7 @@ void R_DrawParticles (void) {
 	}
 
 	GL_Disable (GL_BLEND);
-	GL_DepthMask(1);
+//	GL_DepthMask(1);
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
 	qglDisableVertexAttribArray (ATT_COLOR);

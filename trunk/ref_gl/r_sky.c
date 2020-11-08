@@ -305,6 +305,7 @@ R_DrawSkyBox
 void R_DrawSkyBox(qboolean color) {
 	int i;
 
+
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
 

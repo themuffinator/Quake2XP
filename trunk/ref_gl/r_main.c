@@ -532,66 +532,13 @@ void R_DrawPlayerWeaponLightPass(void)
 
 }
 
-void R_DrawPlayerWeaponAmbient(void)
-{
-	int i;
-
-	if (!r_drawEntities->integer)
-		return;
-
-	// draw non-transparent first
-	for (i = 0; i < r_newrefdef.num_entities; i++) {
-		currententity = &r_newrefdef.entities[i];
-
-		if (currententity->flags & RF_TRANSLUCENT)
-			continue;
-
-		currentmodel = currententity->model;
-
-		if (!(currententity->flags & RF_WEAPONMODEL))
-			continue;
-
-		if (currentmodel->type == mod_alias)
-			R_DrawAliasModel(currententity);
-
-		if(currentmodel->type == mod_alias_md3)
-			R_DrawMD3Mesh(qtrue);
-	}
-
-	// draw transluscent shells
-	GL_Enable(GL_BLEND);
-	GL_BlendFunc(GL_ONE, GL_ONE);
-	GL_DepthMask(0);
-	for (i = 0; i < r_newrefdef.num_entities; i++) {
-		currententity = &r_newrefdef.entities[i];
-
-		if (!(currententity->flags & RF_TRANSLUCENT))
-			continue;
-
-		currentmodel = currententity->model;
-
-		if (!(currententity->flags & RF_WEAPONMODEL))
-			continue;
-
-		if (currentmodel->type == mod_alias)
-			R_DrawAliasModel(currententity);
-
-		if (currentmodel->type == mod_alias_md3) {
-			if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
-				R_DrawMD3ShellMesh(qtrue);
-		}
-	}
-
-	GL_Disable(GL_BLEND);
-	GL_DepthMask(1);
-}
 void R_DrawLightScene (void)
 {
 	int i;
 
 	num_visLights = 0;
 
-	GL_DepthMask(0);
+//	GL_DepthMask(0);
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE /*GL_DST_COLOR, GL_ZERO*/);
 
@@ -696,7 +643,7 @@ void R_DrawLightScene (void)
 	}
 	}
 	
-	GL_DepthMask(1);
+//	GL_DepthMask(1);
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
 	if(gl_state.depthBoundsTest && r_useDepthBounds->integer)
@@ -707,6 +654,60 @@ void R_DrawLightScene (void)
 	GL_PolygonOffset(0.0, 0.0);
 }
 
+void R_DrawPlayerWeaponAmbient(void)
+{
+	int i;
+
+	if (!r_drawEntities->integer)
+		return;
+
+	// draw non-transparent first
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+
+		if (currententity->flags & RF_TRANSLUCENT)
+			continue;
+
+		currentmodel = currententity->model;
+
+		if (!(currententity->flags & RF_WEAPONMODEL))
+			continue;
+
+		if (currentmodel->type == mod_alias)
+			R_DrawAliasModel(currententity);
+
+		if (currentmodel->type == mod_alias_md3)
+			R_DrawMD3Mesh(qtrue);
+	}
+
+	// draw transluscent shells
+	GL_Enable(GL_BLEND);
+	GL_BlendFunc(GL_ONE, GL_ONE);
+//	GL_DepthMask(0);
+	for (i = 0; i < r_newrefdef.num_entities; i++) {
+		currententity = &r_newrefdef.entities[i];
+
+		if (!(currententity->flags & RF_TRANSLUCENT))
+			continue;
+
+		currentmodel = currententity->model;
+
+		if (!(currententity->flags & RF_WEAPONMODEL))
+			continue;
+
+		if (currentmodel->type == mod_alias)
+			R_DrawAliasModel(currententity);
+
+		if (currentmodel->type == mod_alias_md3) {
+			if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
+				R_DrawMD3ShellMesh(qtrue);
+		}
+	}
+
+	GL_Disable(GL_BLEND);
+//	GL_DepthMask(1);
+}
+
 void R_DrawPlayerWeapon(void)
 {
 	if (!r_drawEntities->integer)
@@ -714,6 +715,7 @@ void R_DrawPlayerWeapon(void)
 	
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+
 
 	R_DrawPlayerWeaponAmbient();
 
@@ -774,7 +776,7 @@ void R_RenderSprites(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_DepthMask(0);
+//	GL_DepthMask(0);
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
@@ -812,7 +814,7 @@ void R_RenderSprites(void)
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-	GL_DepthMask(1);	
+//	GL_DepthMask(1);	
 }
 
 // draws ambient opaque entities
@@ -873,7 +875,7 @@ static void R_DrawTransEntities(void) {
 
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
-	GL_DepthMask(0);
+//	GL_DepthMask(0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -903,7 +905,7 @@ static void R_DrawTransEntities(void) {
 		}
 	}
 	GL_Disable(GL_BLEND);
-	GL_DepthMask(1);
+//	GL_DepthMask(1);
 }
 
 // draw all opaque, non-reflective stuff
@@ -921,7 +923,7 @@ void R_DrawRAScene (void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_DepthMask(0);
+//	GL_DepthMask(0);
 	GL_PolygonOffset(-1.0, 1.0);
 
 	RA_Frame = qfalse;
@@ -931,7 +933,7 @@ void R_DrawRAScene (void) {
 
 	R_DrawSurfacesRA(qfalse);
 
-	GL_DepthMask(1);
+//	GL_DepthMask(1);
 	GL_PolygonOffset(0.0, 1.0);
 
 	R_CaptureColorBuffer();
@@ -996,10 +998,10 @@ void R_RenderView (refdef_t *fd) {
 	R_DrawParticles();
 
 	R_CaptureColorBuffer();
-
+	
 	R_RenderSprites();
 	R_DrawRAScene();
-
+	
 	if (RA_Frame && r_particlesOverdraw->integer) { // overdraw particles if we have trans or reflective surfaces in frame
 		R_DrawParticles();
 		RA_Frame = qfalse;
@@ -1008,7 +1010,6 @@ void R_RenderView (refdef_t *fd) {
 
 	R_CaptureColorBuffer();
 	R_MotionBlur();
-
 	R_CaptureColorBuffer();
 	R_GlobalFog();
 
@@ -1089,10 +1090,11 @@ void R_RenderFrame(refdef_t * fd) {
 	}
 	R_ColorTemperatureCorrection();
 	R_lutCorrection();
-
+	
 	// set alpha blend for 2D mode
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_DepthMask(1);
 
 	if (selectedShadowLight && r_lightEditor->integer){
 		RE_SetColor(colorCyan);
