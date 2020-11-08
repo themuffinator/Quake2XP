@@ -291,9 +291,9 @@ typedef struct {
 #define	PLANE_NON_AXIAL	3
 
 // 3-5 are non-axial planes snapped to the nearest
-#define	PLANE_ANYX		3
-#define	PLANE_ANYY		4
-#define	PLANE_ANYZ		5
+#define	PLANE_ANYX		4
+#define	PLANE_ANYY		5
+#define	PLANE_ANYZ		6
 
 // planes (x&~1) and (x&~1)+1 are always opposites
 

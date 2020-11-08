@@ -2419,7 +2419,7 @@ void DrawModShot(void* m)
 	w = viddef.width * 0.50 + 10 * cl_fontScale->integer;
 	h = viddef.height / 2 - scale;
 	size = min(viddef.width - w, viddef.height - h);
-	size -= 20;
+	size *= 0.75;
 
 	if (Draw_FindPic(m_mod_names[s_mods_menu.cursor])) {
 		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0);

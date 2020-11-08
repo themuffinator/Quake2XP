@@ -121,7 +121,7 @@ static void reliefScaleCallback(void *s) {
 
 static void reliefShadowCallback(void *s) {
 	menulist_s *box = (menulist_s *)s;
-	Cvar_SetValue("r_selfShadow", box->curvalue * 1);
+	Cvar_SetValue("r_selfShadowingParallax", box->curvalue * 1);
 }
 
 static void FlareCallback (void *s) {
@@ -244,7 +244,7 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_reliefScale", s_reliefScale_slider.curvalue);
 	Cvar_SetValue ("r_reliefMapping", s_parallax_box.curvalue);
 
-	Cvar_SetValue("r_reliefMappingSelfShadow", s_parallax_shadow.curvalue);
+	Cvar_SetValue("r_selfShadowingParallax", s_parallax_shadow.curvalue);
 
 	Cvar_SetValue ("r_bloom", s_bloom_box.curvalue);
 	Cvar_SetValue ("r_dof", s_dof_box.curvalue);

@@ -234,7 +234,24 @@ qboolean Frustum_CullHexProjection(const vec3_t points[8], const vec3_t projOrig
 
 	return qfalse;
 }
+/*
+============================
+Frustum_CullBoundsProjection
 
+============================
+*/
+qboolean Frustum_CullBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t projOrigin, const int planeBits) {
+	vec3_t	points[8];
+	int		i;
+
+	for (i = 0; i < 8; i++) {
+		points[i][0] = (i & 1) ? mins[0] : maxs[0];
+		points[i][1] = (i & 2) ? mins[1] : maxs[1];
+		points[i][2] = (i & 4) ? mins[2] : maxs[2];
+	}
+
+	return Frustum_CullHexProjection(points, projOrigin, planeBits);
+}
 /*
 =================================
 Frustum_CullLocalBoundsProjection
@@ -242,10 +259,18 @@ Frustum_CullLocalBoundsProjection
 =================================
 */
 qboolean Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs, const vec3_t origin, const mat3_t axis, const vec3_t projOrigin, const int planeBits) {
+	vec3_t	tMins, tMaxs;
 	vec3_t	tmp;
 	vec3_t	points[8];
 	int		i;
 
+		if (Mat3_IsIdentity(axis)) {
+			VectorAdd(origin, mins, tMins);
+			VectorAdd(origin, maxs, tMaxs);
+
+			return Frustum_CullBoundsProjection(tMins, tMaxs, projOrigin, planeBits);
+		}
+		
 	for (i = 0; i < 8; i++) {
 		tmp[0] = (i & 1) ? mins[0] : maxs[0];
 		tmp[1] = (i & 2) ? mins[1] : maxs[1];
