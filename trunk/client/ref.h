@@ -274,8 +274,9 @@ typedef enum {
 	it_wall,
 	it_pic,
 	it_sky,
-	it_bump, 
-	it_mipmap
+	it_bump,
+	it_mipmap, 
+	it_srgb
 } imagetype_t;
 
 typedef unsigned long long uint64;
@@ -595,7 +596,7 @@ void Draw_Pic (int x, int y, char *name);
 void Draw_Pic2 (int x, int y, image_t * gl);
 void Draw_StretchPic2 (int x, int y, int w, int h, image_t * gl);
 void Draw_StretchPic (int x, int y, int w, int h, char *name);
-
+void Draw_StretchPicNew(int x, int y, int w, int h, char* pic, imagetype_t type);
 
 void Draw_PicScaled (int x, int y, float scale_x, float scale_y, char *pic);
 void Draw_ScaledPic (int x, int y, float scale_x, float scale_y, image_t * gl);

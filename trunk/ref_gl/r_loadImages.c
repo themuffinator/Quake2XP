@@ -802,7 +802,7 @@ void GL_MakeSaveShot(char* dir) {
 	ilBindImage(ImagesToSave[0]);
 
 	if (ilutGLScreen()) {
-		iluGammaCorrect(0.5);
+	//	iluGammaCorrect(0.5);
 		ilSave(image, name);
 	}
 

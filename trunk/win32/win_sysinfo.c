@@ -158,6 +158,7 @@ void SYS_GetCpuCount()
 		{
 		case RelationNumaNode:
 			// Non-NUMA systems report a single record of this type.
+			numaNodeCount++;
 			break;
 		case RelationProcessorCore:
 			// A hyperthreaded core supplies more than one logical processor.
@@ -657,37 +658,44 @@ qboolean Sys_CheckWindowsVersion() {
 				RegQueryValueEx(hKey, "ReleaseId", NULL, &dwType, (LPBYTE)&sz_val, &len);
 				ver = atoi(sz_val);
 
-				if (ver == 1507)
-					sprintf(S2, "\n    'Threshold 1' " S_COLOR_WHITE "(" S_COLOR_GREEN "1507" S_COLOR_WHITE ")");
-				else
-					if (ver == 1511)
-						sprintf(S2, "\n    'November Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1511" S_COLOR_WHITE ")");
-					else
-						if (ver == 1607)
-							sprintf(S2, "\n    'Anniversary Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1607" S_COLOR_WHITE ")");
-						else
-							if (ver == 1703)
-								sprintf(S2, "\n    'Creators Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1703" S_COLOR_WHITE ")");
-							else
-								if (ver == 1709)
-									sprintf(S2, "\n    'Fall Creators Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1709" S_COLOR_WHITE ")");
-								else
-									if (ver == 1803)
-										sprintf(S2, "\n    'April 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1803" S_COLOR_WHITE ")");
-									else
-										if (ver == 1809)
-											sprintf(S2, "\n    'October 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1809" S_COLOR_WHITE ")");
-										else 
-											if(ver == 1903)
-												sprintf(S2, "\n    'May 2019 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1903" S_COLOR_WHITE ")");
-										else
-												if (ver == 1909)
-													sprintf(S2, "\n    'October 2019 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "1909" S_COLOR_WHITE ")");
-												else
-													if (ver == 2004)
-														sprintf(S2, "\n    'May 2020 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "2004" S_COLOR_WHITE ")");
-												else
-											sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+				switch (ver) {
+				case 1507:
+					sprintf(S2, "\n    'Threshold 1' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 1511:
+					sprintf(S2, "\n    'November Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 1607:
+					sprintf(S2, "\n    'Anniversary Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 1703:
+					sprintf(S2, "\n    'Creators Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 1709:
+					sprintf(S2, "\n    'Fall Creators Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 1803:
+					sprintf(S2, "\n    'April 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 1809:
+					sprintf(S2, "\n    'October 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 1903:
+					sprintf(S2, "\n    'May 2019 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 1909:
+					sprintf(S2, "\n    'October 2019 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 2004:
+					sprintf(S2, "\n    'May 2020 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				case 2009:
+					sprintf(S2, "\n    '20H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				default:
+					sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					break;
+				}
 
 				RegCloseKey(hKey);
 			}
