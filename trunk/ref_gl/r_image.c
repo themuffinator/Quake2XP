@@ -111,7 +111,7 @@ unsigned d_8to24table[256];
 float d_8to24tablef[256][3];
 
 qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap, qboolean is_sky);
-qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean srgb);
+qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean srgb, qboolean scaled);
 
 int upload_width, upload_height;
 qboolean uploaded_paletted;
@@ -152,11 +152,11 @@ void R_CaptureColorBuffer(){
 }
 
 
-void R_CaptureDepthBuffer()
-{
+void R_CaptureDepthBuffer(){
 		
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+
 	GL_MBindRect(GL_TEXTURE0, r_depthTex->texnum);
 	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
@@ -381,7 +381,7 @@ byte *R_ResampleTexture(const byte* in, int inwidth, int inheight, int outwidth,
 	return out;
 }
 
-qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean srgb)
+qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean srgb, qboolean scale)
 {
 	int			samples, comp, c, i;
 	byte		*scan;
@@ -434,7 +434,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		}
 	}
 
-	if(r_maxTextureSize->integer && mipmap){
+	if(r_maxTextureSize->integer && mipmap && scale){
 		int max_size;
 
 		qglGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
@@ -538,7 +538,7 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	}
 
 
-	return GL_Upload32(trans, width, height, mipmap, qfalse);
+	return GL_Upload32(trans, width, height, mipmap, qfalse, qfalse);
 }
 
 // Berserker stuff
@@ -592,10 +592,9 @@ This is also used as an entry point for the generated r_notexture
 ================
 */
 
-image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
-					imagetype_t type, int bits)
+image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t type, int bits)
 {
-	image_t *image;
+	image_t* image;
 	int i;
 	int len;
 	char s[128];
@@ -633,57 +632,61 @@ image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
 	// because they will be natively textured with hi-res textures.
 	if (!strcmp(s + len - 4, ".tga") || !strcmp(s + len - 4, ".dds") || !strcmp(s + len - 4, ".png") || !strcmp(s + len - 4, ".jpg"))
 	{
-		miptex_t *mt;
+		miptex_t* mt;
 		s[len - 3] = 'w';
 		s[len - 2] = 'a';
 		s[len - 1] = 'l';		// replace extension 
-		FS_LoadFile(s, (void **) &mt);	// load .wal file 
+		FS_LoadFile(s, (void**)&mt);	// load .wal file 
 
 		if (mt) {
 			image->width = LittleLong(mt->width);	// grab size from wal
 			image->height = LittleLong(mt->height);
-			FS_FreeFile((void *) mt);	// free the wal
+			FS_FreeFile((void*)mt);	// free the wal
 		}
-		
+
 	}
-	
+
 	if (image->type == it_pic && bits >= 24) //Scale hi-res pics
 	{
-		byte *pics, *palettes;
+		byte* pics, * palettes;
 		int pcx_w, pcx_h;
 		s[len - 3] = 'p';
 		s[len - 2] = 'c';
-		s[len - 1] = 'x';		
-		LoadPCX(s, &pics, &palettes, &pcx_w, &pcx_h);	
+		s[len - 1] = 'x';
+		LoadPCX(s, &pics, &palettes, &pcx_w, &pcx_h);
 
 		image->picScale_w = 1.0;
 		image->picScale_h = 1.0;
 
 		if (pcx_w > 0 && pcx_h > 0) {
-			
-			image->picScale_w = (float)pcx_w/image->width;
-			image->picScale_h = (float)pcx_h/image->height;
-		
+
+			image->picScale_w = (float)pcx_w / image->width;
+			image->picScale_h = (float)pcx_h / image->height;
+
 			if (pics)
 				free(pics);
 			if (palettes)
 				free(palettes);
-		}	
-	}
-		qglGenTextures (1, &image->texnum);
-		GL_Bind(image->texnum);
-		
-		qboolean srgb = qfalse;
-
-		if (image->type == it_pic) {
-			if (!strstr(image->name, "_bump"))
-				srgb = qtrue;
 		}
+	}
+	qglGenTextures(1, &image->texnum);
+	GL_Bind(image->texnum);
+
+	qboolean srgb = qfalse;
+
+	if (image->type == it_pic) {
+		if (!strstr(image->name, "_bump"))
+			srgb = qtrue;
+	}
+
+	qboolean scaled = qtrue;
+	if (image->type == it_mipmap)
+		scaled = qfalse;
 
 		if (bits == 8)
 			image->has_alpha = GL_Upload8(pic, width, height, (image->type != it_sky && image->type != it_pic), image->type == it_sky);
 		else 									
-			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_sky && image->type != it_pic), srgb);
+			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_sky && image->type != it_pic), srgb, scaled);
 					
 		image->upload_width = width;	
 		image->upload_height = height;

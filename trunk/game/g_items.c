@@ -1065,19 +1065,6 @@ void SpawnItem (edict_t *ent, gitem_t *item) {
 		gi.modelindex (ent->model);
 }
 
-void Use_IR (edict_t *ent, gitem_t *item) {
-	ent->client->pers.inventory[ITEM_INDEX (item)]--;
-	ValidateSelectedItem (ent);
-
-	if (ent->client->ir_framenum > level.framenum)
-		ent->client->ir_framenum += 600;
-	else
-		ent->client->ir_framenum = level.framenum + 600;
-
-	gi.sound (ent, CHAN_ITEM, gi.soundindex ("misc/ir_start.wav"), 1, ATTN_NORM, 0);
-}
-
-
 //======================================================================
 
 gitem_t	itemlist[] =
@@ -1092,27 +1079,6 @@ gitem_t	itemlist[] =
 	/*QUAKED item_mask (.3 .3 1) (-16 -16 -16) (16 16 16) TRIGGER_SPAWN
 	gives +1 to maximum health
 	*/
-	{
-		"item_mask",
-		Pickup_Powerup,
-		Use_IR,
-		Drop_General,
-		NULL,
-		"items/pkup.wav",
-		"models/items/predator/tris.md2", EF_ROTATE,
-		NULL,
-		/* icon */		"p_mask",
-		/* pickup */	"Rredator Mask",
-		/* width */		2,
-		60,
-		NULL,
-		IT_POWERUP,
-		0,
-		NULL,
-		0,
-		/* precache */ "misc/ir_start.wav"
-	},
-
 	/*QUAKED item_armor_body (.3 .3 1) (-16 -16 -16) (16 16 16)
 	*/
 	{

@@ -932,7 +932,6 @@ extern void SP_item_health_mega ( edict_t * self ) ;
 extern void SP_item_health_large ( edict_t * self ) ;
 extern void SP_item_health_small ( edict_t * self ) ;
 extern void SP_item_health ( edict_t * self ) ;
-extern void Use_IR ( edict_t * ent , gitem_t * item ) ;
 extern void SpawnItem ( edict_t * ent , gitem_t * item ) ;
 extern void PrecacheItem ( gitem_t * it ) ;
 extern void droptofloor ( edict_t * ent ) ;

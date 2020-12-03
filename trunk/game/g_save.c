@@ -970,7 +970,6 @@ functionList_t functionList[] = {
 { "SP_item_health_large", (byte *)SP_item_health_large },
 { "SP_item_health_small", (byte *)SP_item_health_small },
 { "SP_item_health", (byte *)SP_item_health },
-{ "Use_IR", (byte *)Use_IR },
 { "SpawnItem", (byte *)SpawnItem },
 { "PrecacheItem", (byte *)PrecacheItem },
 { "droptofloor", (byte *)droptofloor },
