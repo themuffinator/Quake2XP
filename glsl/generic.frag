@@ -40,25 +40,25 @@ vec4 textureCatmullrom(in sampler2D Sampler, in vec2 Texcoord)
 	ivec2 TextureSize = textureSize(Sampler, 0) - ivec2(1);
 	ivec2 TexelCoord = ivec2(TextureSize * Texcoord);
 
-	vec4 Texel00 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2(-1,-1));
-	vec4 Texel10 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 0,-1));
-	vec4 Texel20 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 1,-1));
-	vec4 Texel30 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 2,-1));
+	vec4 Texel00 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2(-1.0,-1.0));
+	vec4 Texel10 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 0.0,-1.0));
+	vec4 Texel20 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 1.0,-1.0));
+	vec4 Texel30 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 2.0,-1.0));
 
-	vec4 Texel01 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2(-1, 0));
-	vec4 Texel11 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 0, 0));
-	vec4 Texel21 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 1, 0));
-	vec4 Texel31 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 2, 0));
+	vec4 Texel01 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2(-1.0, 0.0));
+	vec4 Texel11 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 0.0, 0.0));
+	vec4 Texel21 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 1.0, 0.0));
+	vec4 Texel31 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 2.0, 0.0));
 
-	vec4 Texel02 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2(-1, 1));
-	vec4 Texel12 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 0, 1));
-	vec4 Texel22 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 1, 1));
-	vec4 Texel32 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 2, 1));
+	vec4 Texel02 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2(-1.0, 1.0));
+	vec4 Texel12 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 0.0, 1.0));
+	vec4 Texel22 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 1.0, 1.0));
+	vec4 Texel32 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 2.0, 1.0));
 
-	vec4 Texel03 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2(-1, 2));
-	vec4 Texel13 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 0, 2));
-	vec4 Texel23 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 1, 2));
-	vec4 Texel33 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 2, 2));
+	vec4 Texel03 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2(-1.0, 2.0));
+	vec4 Texel13 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 0.0, 2.0));
+	vec4 Texel23 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 1.0, 2.0));
+	vec4 Texel33 = texelFetchOffset(Sampler, TexelCoord, 0, ivec2( 2.0, 2.0));
 
 	vec2 SplineCoord = fract(TextureSize * Texcoord);
 

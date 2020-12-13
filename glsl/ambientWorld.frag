@@ -9,6 +9,10 @@ layout (bindless_sampler, location = U_TMU1) uniform sampler2D		u_Add;
 layout (bindless_sampler, location = U_TMU2) uniform sampler2D		u_NormalMap;
 layout (bindless_sampler, location = U_TMU3) uniform sampler2DRect	u_ssaoMap;
 
+/*layout (bindless_sampler, location = U_TMU4) uniform sampler2D		u_LightMap0;
+layout (bindless_sampler, location = U_TMU5) uniform sampler2D		u_LightMap1;
+layout (bindless_sampler, location = U_TMU6) uniform sampler2D		u_LightMap2;
+*/
 layout (location = U_LM_TYPE)			uniform int		u_LightMapType;
 layout (location = U_USE_SSAO)			uniform int		u_ssao;
 layout (location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;    
@@ -104,9 +108,9 @@ void main (void) {
 	if(u_envMapPass == 1){  
   
   	vec3 reflectionVector = normalMap * dot( V, normalMap );
-	  reflectionVector = ( reflectionVector * 2.0f ) - V;
+	reflectionVector = ( reflectionVector * 2.0f ) - V;
   
-	  vec3 envMap = texture(u_Diffuse, reflectionVector.st).rgb;
+	vec3 envMap = texture(u_Diffuse, reflectionVector.st).rgb;
     envMap *= 0.5;
   	float lum = dot(vec3(0.2125, 0.7154, 0.0721), envMap);
     envMap = envMap * lum;    

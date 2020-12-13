@@ -136,8 +136,10 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specu
 			break;	// found it
 	}
 	vec3 reflectColor  = vec3(0.0);
-	reflectColor += blur13(g_colorBufferMap, tc, textureSize(g_colorBufferMap, 0), direction.xy).rgb;
-	reflectColor += blur13(g_colorBufferMap, tc, textureSize(g_colorBufferMap, 0), direction.zw).rgb;
+	vec2 texSize = textureSize(g_colorBufferMap, 0);
+
+	reflectColor += blur13(g_colorBufferMap, tc, texSize, direction.xy).rgb;
+	reflectColor += blur13(g_colorBufferMap, tc, texSize, direction.zw).rgb;
 
 	reflectColor *= metalness;
 

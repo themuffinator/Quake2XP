@@ -103,7 +103,7 @@ Sub Surface Scattering
 vec4 SkinLighting (in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
 {
     float MaterialThickness = 0.2;
-    vec3 ExtinctionCoefficient = vec3(0.25, 0.1, 0.1);
+    vec3 ExtinctionCoefficient = vec3(0.15, 0.15, 0.1);
     float backFaceSpecularIntens = 0.666;
 
     vec4 dotLN = vec4(HalfLambert(L, N) * Att);

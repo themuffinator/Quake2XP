@@ -41,9 +41,8 @@ void main ()
 	vec4 diffuse = texture(u_Diffuse, v_texCoord) * v_color;
 	vec3 glow = texture(u_Add, v_texCoord).rgb;
 	vec3 normalMap = normalize(texture(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
-	
-  // fake AO/cavity
-	fragData.rgb = diffuse.xyz * (normalMap.z * 0.5 + 0.5);
+	float bakedAO = texture(u_rgh, v_texCoord).b;
+	fragData.rgb = diffuse.rgb * bakedAO;
 	
 	if(u_ssao == 1)
 		fragData.rgb *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).rgb;
