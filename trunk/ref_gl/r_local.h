@@ -663,7 +663,7 @@ typedef struct {
 	int currenttextures[32]; // max gl_texturesXX
 	int currenttmu;
 
-	uint64	bindlessCache[65365];
+	uint64	bindlessCache[8192];
 	uint64	currentBindlessHandle;
 	int		currentBindlessLocation;
 
@@ -883,6 +883,8 @@ typedef struct {
 	// the lightmap texture data needs to be kept in
 	// main memory so texsubimage can update properly
 	byte lightmap_buffer[3][LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3];
+	uint64_t	lm_handle;
+
 } gllightmapstate_t;
 
 gllightmapstate_t gl_lms;

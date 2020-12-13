@@ -213,8 +213,7 @@ static void LM_UploadBlock (qboolean dynamic) {
 	int			texture = gl_lms.current_lightmap_texture;
 	int			i;
 
-	qglGenTextures(1, &gl_lms.current_lightmap_texture);
-	
+	qglGenTextures(1, &gl_lms.current_lightmap_texture);	
 
 	// upload the finished atlas
 	for (i = 0; i < numVecs; i++) {
@@ -229,6 +228,8 @@ static void LM_UploadBlock (qboolean dynamic) {
 		glTexStorage2D(GL_TEXTURE_2D, 1, gl_lms.internal_format, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
 		qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[i]);
 	}
+	gl_lms.lm_handle = glGetTextureHandleARB(gl_state.lightmap_textures + texture + i * MAX_LIGHTMAPS);
+	glMakeTextureHandleResidentARB(gl_lms.lm_handle);
 
 	// start new one
 	//	if (!dynamic) {

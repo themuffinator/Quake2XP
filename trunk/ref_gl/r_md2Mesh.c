@@ -126,6 +126,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		GL_DepthMask(0);
 	}
 
+	if (currententity->flags & (RF_WEAPONMODEL))
+		GL_DepthMask(1);
+
 	if (currententity->flags & (RF_VIEWERMODEL))
 		return;
 
@@ -274,6 +277,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 		GL_Enable(GL_CULL_FACE);
 		GL_DepthMask(1);
 	}
+
+	if (currententity->flags & (RF_WEAPONMODEL))
+		GL_DepthMask(0);
 }
 
 void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {

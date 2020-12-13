@@ -333,6 +333,65 @@ void Sys_CpuID()
 	}
 }
 
+/// Berserker: CPU utilization gage
+union {
+	LONGLONG	li;
+	FILETIME	ft;
+} procTime_prev;
+clock_t	totalTime_prev;
+
+void GLimp_GetCpuUtilization(unsigned* cpuUtil)
+{
+	clock_t	totalTime;
+	int		util;
+	float	dT, deltaTime;
+	SYSTEMTIME	sDeltaProcTime;
+	union {
+		LONGLONG	li;
+		FILETIME	ft;
+	} createTime, exitTime, kernelTime, userTime, procTime, deltaProcTime;
+	HANDLE	hProcess = GetCurrentProcess();
+
+	if (!GetProcessTimes(hProcess, &createTime.ft, &exitTime.ft, &kernelTime.ft, &userTime.ft))
+	{
+		*cpuUtil = INT_MAX;
+		return;
+	}
+
+	totalTime = clock();
+	procTime.li = kernelTime.li + userTime.li;
+	deltaProcTime.li = procTime.li - procTime_prev.li;
+	procTime_prev.li = procTime.li;
+
+	FileTimeToSystemTime(&deltaProcTime.ft, &sDeltaProcTime);
+
+	dT = (float)(totalTime - totalTime_prev) * (1000.0F / CLOCKS_PER_SEC);
+	totalTime_prev = totalTime;
+
+	deltaTime = sDeltaProcTime.wMilliseconds + sDeltaProcTime.wSecond * 1000.0 + sDeltaProcTime.wMinute * 60000.0 + sDeltaProcTime.wHour * 3600000.0 + (sDeltaProcTime.wDay - 1) * 86400000.0;	/// дальше не будем раскручивать ;)
+
+	util = (int)(100.0 * deltaTime / dT);
+	if (util < 0)	
+		util = 0;
+
+	*cpuUtil = util;
+}
+
+void GLimp_InitCPU(void)
+{
+	HANDLE	hProcess = GetCurrentProcess();
+	union {
+		LONGLONG	li;
+		FILETIME	ft;
+	} createTime, exitTime, kernelTime, userTime;
+
+	GetProcessTimes(hProcess, &createTime.ft, &exitTime.ft, &kernelTime.ft, &userTime.ft);
+
+	procTime_prev.li = kernelTime.li + userTime.li;
+	totalTime_prev = clock();
+}
+
+
 void GetDiskInfos()
 {
 	DWORD dwMask = 1; // Least significant bit is A: flag

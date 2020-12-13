@@ -485,10 +485,13 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
 		{
 			GL_MBind(GL_TEXTURE0, gl_state.lightmap_textures + s->lightmaptexturenum);
+		//	GL_SetBindlessTexture(U_TMU4, gl_lms.lm_handle + s->lightmaptexturenum);
 
 			if (r_worldmodel->useXPLM && r_useRadiosityBump->integer) {
 				GL_MBind(GL_TEXTURE1, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
 				GL_MBind(GL_TEXTURE2, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
+			//	GL_SetBindlessTexture(U_TMU5, gl_lms.lm_handle + s->lightmaptexturenum + MAX_LIGHTMAPS);
+			//	GL_SetBindlessTexture(U_TMU6, gl_lms.lm_handle + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
 			}
 			
 			if (numIndices != 0xFFFFFFFF) {
