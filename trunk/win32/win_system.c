@@ -422,7 +422,16 @@ void *Sys_GetGameAPI (void *parms) {
 	game_library = LoadLibrary (gameDLLPath);
 
 	if (game_library) {
-		Com_Printf ("LoadLibrary (%s)\n", gameDLLPath);
+
+		Com_Printf("========== Load Game DLL ==========\n\n");
+		Com_Printf ("...Found:" S_COLOR_GREEN " %s\n", gameDLLPath);
+
+		if (net_compatibility->integer == 1)
+			Com_Printf("..." S_COLOR_YELLOW "Use Old Net Protocol\n");
+		else
+			Com_Printf("..." S_COLOR_YELLOW "Use q2xp Net Protocol\n");
+		
+		Com_Printf("\n===================================\n\n");
 		//		break;
 	}
 

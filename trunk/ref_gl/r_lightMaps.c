@@ -207,7 +207,7 @@ static void LM_InitBlock (void) {
 }
 
 // FIXME: remove dynamic completely
-static void LM_UploadBlock (qboolean dynamic) {
+static void LM_UploadBlock () {
 
 	const int	numVecs = loadmodel->useXPLM ? 3 : 1;
 	int			texture = gl_lms.current_lightmap_texture;
@@ -390,7 +390,7 @@ void GL_CreateSurfaceLightmap (msurface_t * surf) {
 	tmax = (surf->extents[1] / loadmodel->lightmap_scale) + 1;
 
 	if (!LM_AllocBlock (smax, tmax, &surf->light_s, &surf->light_t)) {
-		LM_UploadBlock (qfalse);
+		LM_UploadBlock ();
 		LM_InitBlock ();
 
 		if (!LM_AllocBlock (smax, tmax, &surf->light_s, &surf->light_t))
@@ -443,6 +443,6 @@ GL_EndBuildingLightmaps
 =======================
 */
 void GL_EndBuildingLightmaps (void) {
-	LM_UploadBlock (qfalse);
+	LM_UploadBlock ();
 }
 

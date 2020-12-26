@@ -1179,6 +1179,9 @@ void CL_DrawInventory (void) {
 		Com_sprintf (binding, sizeof(binding), "use %s",
 			cl.configstrings[CS_ITEMS + item]);
 		bind = "";
+#ifndef _WIN32
+		extern char* keybindings[256]; // linux fix
+#endif
 		for (j = 0; j < 256; j++)
 		if (keybindings[j] && !Q_stricmp (keybindings[j], binding)) {
 			bind = Key_KeynumToString (j);

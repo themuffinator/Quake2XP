@@ -703,6 +703,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	if (currententity->flags & RF_WEAPONMODEL)
 		GL_DepthMask(1);
+	else
+		GL_DepthMask(0);
 
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
@@ -788,7 +790,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	
 		if (mesh->muzzle) {
 			GL_Disable(GL_BLEND);
-		//	GL_DepthMask(1);
+			GL_DepthMask(1);
 			GL_Enable(GL_CULL_FACE);
 			GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
