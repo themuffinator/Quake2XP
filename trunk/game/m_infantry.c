@@ -189,6 +189,7 @@ mframe_t infantry_frames_run[] =
 mmove_t infantry_move_run = { FRAME_run01, FRAME_run08, infantry_frames_run, NULL };
 
 void infantry_run (edict_t *self) {
+
 	if (self->monsterinfo.aiflags & AI_STAND_GROUND)
 		self->monsterinfo.currentmove = &infantry_move_stand;
 	else
@@ -410,8 +411,6 @@ void infantry_unhead (edict_t *self) {
 void infantry_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point) {
 	int		n;
 
-	self->s.effects &= ~EF_FLASHLIGHT;		// заберем у монстра фонарик, ибо он разбился ))))
-
 	// check for gib
 	if (self->health <= self->gib_health) {
 		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/udeath.wav"), 1, ATTN_MEDIUM, 0);
@@ -561,6 +560,9 @@ mframe_t infantry_frames_attack2[] =
 mmove_t infantry_move_attack2 = { FRAME_attak201, FRAME_attak208, infantry_frames_attack2, infantry_run };
 
 void infantry_attack (edict_t *self) {
+
+//	self->s.effects |= EF_FLASHLIGHT;
+
 	if (range (self, self->enemy) == RANGE_MELEE)
 		self->monsterinfo.currentmove = &infantry_move_attack2;
 	else

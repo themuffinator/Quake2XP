@@ -741,7 +741,7 @@ void R_DrawPlayerWeapon(void)
 			if (r_skipStaticLights->integer && currentShadowLight->isStatic)
 				continue;
 
-			if (currentShadowLight->filter == 33) // flashlight cut off
+			if (currentShadowLight->filter == 33)  // flashlight cut off
 				continue;
 
 			R_SetViewLightScreenBounds();

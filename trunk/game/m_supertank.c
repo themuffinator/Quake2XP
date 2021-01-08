@@ -134,6 +134,7 @@ mmove_t	supertank_move_stand = { FRAME_stand_1, FRAME_stand_60, supertank_frames
 
 void supertank_stand (edict_t *self) {
 	self->monsterinfo.currentmove = &supertank_move_stand;
+	self->s.effects &= ~EF_FLASHLIGHT;
 }
 
 
@@ -201,6 +202,7 @@ void supertank_run (edict_t *self) {
 		self->monsterinfo.currentmove = &supertank_move_stand;
 	else
 		self->monsterinfo.currentmove = &supertank_move_run;
+	self->s.effects |= EF_FLASHLIGHT;
 }
 
 mframe_t supertank_frames_turn_right[] =

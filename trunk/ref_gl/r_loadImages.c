@@ -684,22 +684,16 @@ void GL_ScreenShot_f (void) {
 
 	startTime = Sys_Milliseconds ();
 
-	if (Q_stricmp (r_screenShot->string, "jpg") != 0 &&
-		Q_stricmp (r_screenShot->string, "tga") != 0 &&
+	if (Q_stricmp (r_screenShot->string, "tga") != 0 &&
 		Q_stricmp (r_screenShot->string, "png") != 0 &&
-		Q_stricmp (r_screenShot->string, "bmp") != 0 &&
-		Q_stricmp (r_screenShot->string, "tif") != 0 &&
-		Q_stricmp (r_screenShot->string, "pcx") != 0)
+		Q_stricmp (r_screenShot->string, "jpg") != 0 &&
+		Q_stricmp (r_screenShot->string, "tif") != 0)
 		Cvar_Set ("r_screenShot", "jpg");
 
 	if (!Q_stricmp (r_screenShot->string, "tga"))
 		image = IL_TGA;
 	if (!Q_stricmp (r_screenShot->string, "png"))
 		image = IL_PNG;
-	if (!Q_stricmp (r_screenShot->string, "bmp"))
-		image = IL_BMP;
-	if (!Q_stricmp (r_screenShot->string, "pcx"))
-		image = IL_PCX;
 	if (!Q_stricmp (r_screenShot->string, "jpg"))
 		image = IL_JPG;
 	if (!Q_stricmp (r_screenShot->string, "tif"))
@@ -802,7 +796,7 @@ void GL_MakeSaveShot(char* dir) {
 	ilBindImage(ImagesToSave[0]);
 
 	if (ilutGLScreen()) {
-	//	iluGammaCorrect(0.5);
+//		iluGammaCorrect(0.5);
 		ilSave(image, name);
 	}
 

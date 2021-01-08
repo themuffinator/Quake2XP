@@ -940,20 +940,15 @@ void CL_AddPacketEntities (frame_t * frame) {
 			}
 		}
 
-		// rogue hack!!!!
-		int dmFlag = Cvar_VariableInteger("dmflags");
-		if (modName("rogue") && (dmFlag & DF_FLASHLIGHT))
-				goto next;
-		
 
-		if (effects & (EF_FLASHLIGHT) && !modName("rogue") && !net_compatibility->integer) {
-			vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, up;
+		int dmFlag = Cvar_VariableInteger("dmflags");
+
+		if ( ( (effects & EF_FLASHLIGHT) && !net_compatibility->integer) || (net_compatibility->integer && (dmFlag & DF_FLASHLIGHT) ) ) {
+			vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, up, right;
 			frame_t			*oldframe;
 			player_state_t	*ps, *ops;
 			extern cvar_t	*hand;
 			int				y;
-			
-			next:
 
 			if (s1->number == cl.playernum + 1) {			
 
@@ -967,7 +962,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 
 				for (i = 0; i<3; i++)
 				{
-					if (hand->value == 2)			// center
+					if (hand->value == 2)		// center
 						flashLightOrigin[i] = cl.refdef.vieworg[i] + ops->gunoffset[i] + cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]) + vup[i] * 3;
 					else if (hand->value == 1)	// left
 						flashLightOrigin[i] = cl.refdef.vieworg[i] + ops->gunoffset[i] + cl.lerpfrac * (ps->gunoffset[i] - ops->gunoffset[i]) - vright[i] * 3 + vup[i] * 3;
@@ -982,12 +977,13 @@ void CL_AddPacketEntities (frame_t * frame) {
 			else if(!modName("rogue")){
 
 				VectorCopy (ent.angles, tmpAngles);
-				AngleVectors (tmpAngles, forward, up, NULL);
+				AngleVectors (tmpAngles, forward, right, up);
 
-				VectorMA (ent.origin, 6, forward, flashLightOrigin);
-				VectorMA (flashLightOrigin, -6, up, flashLightOrigin);
+				VectorMA (ent.origin,			6,	forward,	flashLightOrigin);
+				VectorMA (flashLightOrigin,		1,	right,		flashLightOrigin);
+				VectorMA (flashLightOrigin,		25, up,			flashLightOrigin);
 
-				V_AddLight (flashLightOrigin, 512.0, 1.0, 1.0, 0.7, tmpAngles, 0.5, 33);
+				V_AddLight (flashLightOrigin, 1024.0, 1.0, 1.0, 1.0, tmpAngles, 0.5, 36); // monsters flashlight
 
 			}
 		}

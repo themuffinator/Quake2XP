@@ -617,7 +617,7 @@ void monster_start_go (edict_t *self) {
 
 	if (self->health <= 0)
 		return;
-
+	
 	// check for target to combat_point and change to combattarget
 	if (self->target) {
 		qboolean	notcombat;

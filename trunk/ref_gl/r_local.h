@@ -181,7 +181,7 @@ image_t *skinBump;
 
 #define		MAX_FILTERS 256
 image_t		*r_lightCubeMap[MAX_FILTERS];
-#define		MAX_GLOBAL_FILTERS	37
+#define		MAX_GLOBAL_FILTERS	38
 
 #define		MAX_LUTS 10
 image_t		*r_3dLut[MAX_LUTS];

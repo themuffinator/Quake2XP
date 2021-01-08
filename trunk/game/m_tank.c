@@ -113,6 +113,7 @@ mmove_t	tank_move_stand = { FRAME_stand01, FRAME_stand30, tank_frames_stand, NUL
 
 void tank_stand (edict_t *self) {
 	self->monsterinfo.currentmove = &tank_move_stand;
+	self->s.effects &= ~EF_FLASHLIGHT; // end of attack (player was killed)
 }
 
 
@@ -164,6 +165,7 @@ mmove_t	tank_move_stop_walk = { FRAME_walk21, FRAME_walk25, tank_frames_stop_wal
 
 void tank_walk (edict_t *self) {
 	self->monsterinfo.currentmove = &tank_move_walk;
+//	self->s.effects &= ~EF_FLASHLIGHT;
 }
 
 
@@ -214,6 +216,9 @@ mframe_t tank_frames_stop_run[] =
 mmove_t	tank_move_stop_run = { FRAME_walk21, FRAME_walk25, tank_frames_stop_run, tank_walk };
 
 void tank_run (edict_t *self) {
+
+	self->s.effects |= EF_FLASHLIGHT;
+
 	if (self->enemy && self->enemy->client)
 		self->monsterinfo.aiflags |= AI_BRUTAL;
 	else
@@ -753,6 +758,7 @@ void tank_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage,
 
 	self->monsterinfo.currentmove = &tank_move_death;
 
+	self->s.effects &= ~EF_FLASHLIGHT;		// заберем у монстра фонарик, ибо он разбился ))))
 }
 
 
