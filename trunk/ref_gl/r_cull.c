@@ -285,15 +285,11 @@ qboolean Frustum_CullLocalBoundsProjection(const vec3_t mins, const vec3_t maxs,
 
 void SetFarClip(void) // from quake3
 {
-	float	farthestCornerDistance;
+	float	distance, farDist = 0.0;
+	vec3_t	v, vecTo;
 	int		i;
 
-	farthestCornerDistance = 0;
-
 	for (i = 0; i < 8; i++) {
-		vec3_t v;
-		vec3_t vecTo;
-		float distance;
 
 		if (i & 1)
 		{
@@ -325,12 +321,12 @@ void SetFarClip(void) // from quake3
 		VectorSubtract(v, r_newrefdef.vieworg, vecTo);
 		distance = DotProduct(vecTo, vecTo);
 
-		if (distance > farthestCornerDistance)
-			farthestCornerDistance = distance;
+		if (distance > farDist)
+			farDist = distance;
 	}
 
-	r_newrefdef.zFar = sqrt(farthestCornerDistance);
-	Com_DPrintf("zfar %.3f\n", r_newrefdef.zFar);
+	r_newrefdef.zFar = sqrt(farDist);
+//	Com_DPrintf("zfar %.3f\n", r_newrefdef.zFar);
 }
 
 int SignbitsForPlane(cplane_t* out) {

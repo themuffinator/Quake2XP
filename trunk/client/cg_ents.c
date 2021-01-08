@@ -941,20 +941,19 @@ void CL_AddPacketEntities (frame_t * frame) {
 		}
 
 		// rogue hack!!!!
-		if (modName("rogue")) {
-			if (in_flashlight.state & 3)
+		int dmFlag = Cvar_VariableInteger("dmflags");
+		if (modName("rogue") && (dmFlag & DF_FLASHLIGHT))
 				goto next;
-		}
+		
 
 		if (effects & (EF_FLASHLIGHT) && !modName("rogue") && !net_compatibility->integer) {
-						
 			vec3_t	flashlightDirection, flashLightOrigin, tmpAngles, forward, up;
 			frame_t			*oldframe;
 			player_state_t	*ps, *ops;
 			extern cvar_t	*hand;
 			int				y;
 			
-		next:
+			next:
 
 			if (s1->number == cl.playernum + 1) {			
 

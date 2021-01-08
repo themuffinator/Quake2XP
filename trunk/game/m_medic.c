@@ -60,6 +60,8 @@ void medic_step(edict_t *self) {
 		gi.sound(self, CHAN_BODY, sound_step4, 0.5, ATTN_HEAVY_STEPS, 0);
 }
 
+void M_FliesOn(edict_t *self);
+void M_FliesOff(edict_t *self);
 
 edict_t *medic_FindDeadMonster (edict_t *self) {
 	edict_t	*ent = NULL;
@@ -76,10 +78,8 @@ edict_t *medic_FindDeadMonster (edict_t *self) {
 			continue;
 		if (ent->health > 0)
 			continue;
-		 // buggy on new vs 2015 builds!!!!
-/*		if (ent->nextthink)
+		if (ent->nextthink && (ent->think != M_FliesOff) && (ent->think != M_FliesOn))
 			continue;
-	*/		
 		if (!visible (self, ent))
 			continue;
 		if (!best) {

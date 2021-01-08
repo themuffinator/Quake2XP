@@ -104,6 +104,7 @@ void monster_fire_bfg (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 void M_FliesOff (edict_t *self) {
 	self->s.effects &= ~EF_FLIES;
 	self->s.sound = 0;
+	self->nextthink = 0;
 }
 
 //static int	sound_deadfly;
