@@ -83,8 +83,9 @@ if(u_console == 1){
 
 	vec3 L = normalize(vec3(u_lightShift.x, u_lightShift.y, u_lightShift.z));
 	vec3 V  = normalize(vec3(0.0, 0.0, 1.0));
-
-	vec4 lighting = vec4(Lighting_BRDF(diffuse.rgb, vec3(specular), 0.4, normal.xyz, L, V), 1.0)  * vec4(1.0);
+  
+  vec2 Es = PhongLighting (normal.xyz, L, V, 16.0);
+	vec4 lighting = vec4(diffuse.rgb * Es.x + specular * Es.y, 1.0);//vec4(Lighting_BRDF(diffuse.rgb, vec3(specular), 0.4, normal.xyz, L, V), 1.0)  * vec4(1.0);
 
 	fragData = diffuse + lighting;
 	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
@@ -94,12 +95,12 @@ if(u_console == 1){
 
 if(u_2dPics == 1){
   
-  diffuse  = textureCatmullrom(u_map, v_texCoord.xy);
+  diffuse  = texture(u_map, v_texCoord.xy);
   
   // signed distance field
-  float distance = diffuse.a;
-  float alpha = smoothstep(0.5 - SMOOTHING, 0.5 + SMOOTHING, distance);
-	fragData =  vec4(diffuse.rgb * v_color.rgb, diffuse.a * alpha);
+//  float distance = diffuse.a;
+ // float alpha = smoothstep(0.5 - SMOOTHING, 0.5 + SMOOTHING, distance);
+	fragData =  vec4(diffuse.rgb * v_color.rgb, diffuse.a /** alpha*/);
 	return;
 }
 
