@@ -92,6 +92,9 @@ void R_GpuInfo_f(void) {
 	NV_GPU_DYNAMIC_PSTATES_INFO_EX	m_DynamicPStateInfo;
 	NV_GPU_CLOCK_FREQUENCIES		clocks;
 
+	NV_GPU_PERF_PSTATES_INFO PerfPstatesInfo;
+	PerfPstatesInfo.version = NV_GPU_PERF_PSTATES_INFO_VER;
+
 	if (adlInit) {
 		ADL_PrintGpuInfo();
 		return;
@@ -151,7 +154,7 @@ void R_GpuInfo_f(void) {
 				m_DynamicPStateInfo.utilization[NV_UTIL_DOMAIN_GPU].percentage,
 				m_DynamicPStateInfo.utilization[NV_UTIL_DOMAIN_FB].percentage,
 				m_DynamicPStateInfo.utilization[NV_UTIL_DOMAIN_BUS].percentage);
-
+		
 		// get gpu & vram frequencies
 		clocks.version = NV_GPU_CLOCK_FREQUENCIES_VER;
 		clocks.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
@@ -168,20 +171,34 @@ void R_GpuInfo_f(void) {
 					(NvU32)((clocks.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency + 500) / 1000));
 		}
 
-		if (IsExtensionSupported("GL_NVX_gpu_memory_info")) {
-			int mem;
-			float total, unused, used;
-
-			qglGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &mem);
-			total = (float)mem / (1024 * 1024);
-			Com_Printf("\n...Total GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", total);
-
-			qglGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &mem);
-			unused = (float)mem / (1024 * 1024);
-			used = total - unused;
-			Com_Printf("...Used GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", used);
-
+		NV_GPU_PERF_PSTATE_ID currentPState;
+		ret = NvAPI_GPU_GetCurrentPstate(hPhysicalGpu[i], &currentPState);
+		if (ret != NVAPI_OK)
+		{
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED "NvAPI_GPU_GetCurrentPstate() fail: %s\n", string);
 		}
+		else
+			Com_Printf("\n...GPU Performance Level: " S_COLOR_GREEN "%i\n", (int)currentPState);
+
+		NV_DISPLAY_DRIVER_MEMORY_INFO gpuMemoryStatus;
+		gpuMemoryStatus.version = MAKE_NVAPI_VERSION(NV_DISPLAY_DRIVER_MEMORY_INFO_V2, 2);
+		ret = NvAPI_GPU_GetMemoryInfo(hPhysicalGpu[i], (NV_DISPLAY_DRIVER_MEMORY_INFO *)&gpuMemoryStatus);
+		if (NVAPI_OK != ret)
+		{
+			NvAPI_GetErrorMessage(ret, string);
+			Com_Printf(S_COLOR_RED "NvAPI_GPU_GetMemoryInfo() fail: %s\n", string);
+		} else{
+			float used = (float)gpuMemoryStatus.dedicatedVideoMemory - (float)gpuMemoryStatus.curAvailableDedicatedVideoMemory;
+			float total = (float)gpuMemoryStatus.dedicatedVideoMemory;
+			
+			total /= (1024 * 1024);
+			used /= (1024 * 1024);
+			
+			Com_Printf("\n...Full GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", total);
+			Com_Printf("...Used GPU Memory: " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " Gb\n", used);
+		}
+
 		Com_Printf("\n==========================================================\n");
 	}
 }
