@@ -432,7 +432,7 @@ int M_Main_Key(int key) {
 	switch (key) {
 	case K_ESCAPE:
 		//		case K_XPAD_BACK:
-	case K_XPAD_B: // в меню "B" работает как навигация назад
+	case K_XPAD_B: // пїЅ пїЅпїЅпїЅпїЅ "B" пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 		M_PopMenu();
 		break;
 
@@ -452,7 +452,7 @@ int M_Main_Key(int key) {
 
 	case K_KP_ENTER:
 		//		case K_XPAD_START:
-	case K_XPAD_A: // в меню "A" работает как выбор пункта меню
+	case K_XPAD_A: // пїЅ пїЅпїЅпїЅпїЅ "A" пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	case K_ENTER:
 		m_entersound = qtrue;
 
@@ -590,7 +590,7 @@ char *bindnames[][2] = {
 	{ "invdrop", "drop item" },
 	{ "invprev", "prev item" },
 	{ "invnext", "next item" },
-	{ "+zoom", "zoom" },     // поместить ровно туда, где будет в меню назначения клавишь!
+	{ "+zoom", "zoom" },     // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
 	{ "+flashlight", "flashlight" },
 	{ "cmd help", "help computer" },
 	{ 0, 0 }
@@ -1586,7 +1586,7 @@ void Options_MenuInit(void) {
 #endif
 
 	if (alGetStringiSOFT) {
-
+		
 		if (ru_loc) {
 		#define MAX_LEN 512
 			for (i = 0; i <= alConfig.device_count; i++) {
@@ -1613,7 +1613,7 @@ void Options_MenuInit(void) {
 	s_options_alResempler_box.generic.y = 60 * cl_fontScale->value;
 	s_options_alResempler_box.generic.name = "Sound Resampler";
 	s_options_alResempler_box.generic.callback = AlResempler;
-	
+
 	if (alGetStringiSOFT)
 		s_options_alResempler_box.itemnames = al_resemplers;
 	else
@@ -1698,12 +1698,12 @@ void Options_MenuInit(void) {
 #ifdef _WIN32
 	s_options_gamepad_box.generic.callback = GamePadFunc;
 	s_options_gamepad_box.itemnames = yesno_names;
-	s_options_gamepad_box.generic.statusbar = "Enable xBox Controller";
 #else
 	s_options_gamepad_box.generic.callback = NULL;
-	s_options_gamepad_box.itemnames = "unsupported";
-	s_options_gamepad_box.generic.statusbar = "Enable xBox Controller";
+	s_options_gamepad_box.itemnames = not_found;
 #endif
+	s_options_gamepad_box.generic.statusbar = "Enable xBox Controller";
+
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
 	s_options_fps_box.generic.y = 160 * cl_fontScale->value;
@@ -2261,7 +2261,7 @@ void M_Credits_MenuDraw(void) {
 int M_Credits_Key(int key) {
 	switch (key) {
 	case K_ESCAPE:
-	case K_XPAD_B: // выхода из credits на геймпаде "B"
+	case K_XPAD_B: // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ credits пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ "B"
 		if (creditsBuffer)
 			FS_FreeFile(creditsBuffer);
 		
@@ -4802,13 +4802,13 @@ int M_Quit_Key(int key) {
 	case K_ESCAPE:
 	case 'n':
 	case 'N':
-	case K_XPAD_B: // отмена выхода на геймпаде "B"
+	case K_XPAD_B: // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ "B"
 		M_PopMenu();
 		break;
 
 	case 'Y':
 	case 'y':
-	case K_XPAD_A: // подтверждение выхода на геймпаде "A"
+	case K_XPAD_A: // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ "A"
 		cls.key_dest = key_console;
 		CL_Quit_f();
 		break;

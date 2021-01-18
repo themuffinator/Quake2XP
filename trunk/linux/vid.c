@@ -24,7 +24,6 @@
 
 #include "../client/client.h"
 #include "../client/input.h"
-#include "../client/keys.h"
 #include "../client/snd_loc.h"
 
 /* Console variables that we need to access from this module */
@@ -48,7 +47,6 @@ qboolean	reflib_active = 0;
  * ==========================================================================
  */
 
-//#define	MAXPRINTMSG	4096
 void
 Con_Printf(int print_level, char *fmt,...)
 {

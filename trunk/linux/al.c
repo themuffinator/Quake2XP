@@ -50,6 +50,7 @@ void S_SoundInfo_f(void);
 */
 qboolean AL_StartOpenAL (void);
 extern cvar_t *s_useHRTF;
+extern const char* al_resemplers[];
 
 static int ClampCvarInteger2(int min, int max, int value) {
 	if (value < min) return min;
@@ -85,8 +86,8 @@ qboolean AL_Init (int hardreset)
 	ALint i;
 	Com_Printf("...Available Resamplers:\n");
 	for (i = 0; i < alConfig.numResamplers; ++i){
-
 		const ALchar *name = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, i);
+		al_resemplers[i] = name;
 		Com_Printf(">" S_COLOR_GREEN "%i" S_COLOR_WHITE " %s\n", i, name);
 	}
 	const ALchar *currName = alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, s_resamplerQuality->integer);
