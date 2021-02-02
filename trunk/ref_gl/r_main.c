@@ -1784,6 +1784,7 @@ int R_Init(void *hinstance, void *hWnd)
 	glTextureStorage2D	=		(PFNGLTEXTURESTORAGE2DPROC)		qwglGetProcAddress("glTextureStorage2D");
 	glTextureSubImage2D =		(PFNGLTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glTextureSubImage2D");
 	glTextureParameteri =		(PFNGLTEXTUREPARAMETERIPROC)	qwglGetProcAddress("glTextureParameteri");
+	glTextureParameterf =		(PFNGLTEXTUREPARAMETERFPROC)	qwglGetProcAddress("glTextureParameterf");
 
 	// texture storage
 	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
