@@ -1788,7 +1788,7 @@ int R_Init(void *hinstance, void *hWnd)
 	// texture storage
 	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
 	glTexStorage3D		=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");
-//	glTexSubImage3D		=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
+	glTexSubImage3D		=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
 
 	glGenQueries		= (PFNGLGENQUERIESPROC)			qwglGetProcAddress("glGenQueries");
 	glDeleteQueries		= (PFNGLDELETEQUERIESPROC)		qwglGetProcAddress("glDeleteQueries");
