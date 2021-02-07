@@ -79,8 +79,8 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 	if (surf->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP))
 		VID_Error (ERR_DROP, "R_BuildLightMap(): called for non-lit surface.");
 
-	surf->lightmaptexturenum = gl_lms.current_lightmap_texture;
-	
+	surf->lightmapTexNum = gl_lms.texnum;
+
 	// no more dynamic lightmaps, so only loadmodel is used
 	smax = (surf->extents[0] / (int)loadmodel->lightmap_scale) + 1;
 	tmax = (surf->extents[1] / (int)loadmodel->lightmap_scale) + 1;
@@ -209,32 +209,27 @@ static void LM_InitBlock (void) {
 // FIXME: remove dynamic completely
 static void LM_UploadBlock () {
 
-	const int	numVecs = loadmodel->useXPLM ? 3 : 1;
-	int			texture = gl_lms.current_lightmap_texture;
-	int			i;
+	const int	numLm = loadmodel->useXPLM ? 3 : 1;
+	int			texture = gl_lms.texnum;
 
-	qglGenTextures(1, &gl_lms.current_lightmap_texture);	
+	qglGenTextures(1, &gl_lms.texnum);	
 
 	// upload the finished atlas
-	for (i = 0; i < numVecs; i++) {
-
-		GL_Bind (gl_state.lightmap_textures + texture + i * MAX_LIGHTMAPS);
+	for (int i = 0; i < numLm; i++) {
+		
+		GL_Bind (gl_state.lightmapOffcet + texture + i * MAX_LIGHTMAPS);
 
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glTexStorage2D(GL_TEXTURE_2D, 1, gl_lms.internal_format, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
-		qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_LIGHTMAP_FORMAT, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[i]);
-	}
-	gl_lms.lm_handle = glGetTextureHandleARB(gl_state.lightmap_textures + texture + i * MAX_LIGHTMAPS);
-	glMakeTextureHandleResidentARB(gl_lms.lm_handle);
+		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
+		qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[i]);
 
-	// start new one
-	//	if (!dynamic) {
-	// check if atlas limit is exceeded
-	if (++gl_lms.current_lightmap_texture == MAX_LIGHTMAPS)
+	}
+
+	if (++gl_lms.texnum == MAX_LIGHTMAPS)
 		VID_Error (ERR_DROP, "LM_UploadBlock(): MAX_LIGHTMAPS (%i) exceeded.\n", MAX_LIGHTMAPS);
 }
 
@@ -429,12 +424,8 @@ void GL_BeginBuildingLightmaps (model_t *m) {
 	}
 	r_newrefdef.lightstyles = lightstyles;
 
-	if (!gl_state.lightmap_textures)
-		gl_state.lightmap_textures = TEXNUM_LIGHTMAPS;
-
-	gl_lms.current_lightmap_texture = 1;
-	gl_lms.internal_format = GL_RGB8;//gl_tex_solid_format;
-
+	if (!gl_state.lightmapOffcet)
+		gl_state.lightmapOffcet = TEXNUM_LIGHTMAPS;
 }
 
 /*

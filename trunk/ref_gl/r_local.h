@@ -659,7 +659,7 @@ typedef struct {
 
 	int prev_mode;
 
-	int lightmap_textures;
+	int lightmapOffcet;
 	int currenttextures[32]; // max gl_texturesXX
 	int currenttmu;
 
@@ -869,12 +869,10 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 
 #define	MAX_LIGHTMAPS		4		// max number of atlases
 #define	LIGHTMAP_SIZE		2048
-#define GL_LIGHTMAP_FORMAT	GL_RGB
 #define XPLM_NUMVECS		3
 
 typedef struct {
-	int internal_format;
-	int current_lightmap_texture;
+	int texnum, delux1, delux2;
 
 	msurface_t *lightmap_surfaces[MAX_LIGHTMAPS];
 
@@ -883,7 +881,7 @@ typedef struct {
 	// the lightmap texture data needs to be kept in
 	// main memory so texsubimage can update properly
 	byte lightmap_buffer[3][LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3];
-	uint64_t	lm_handle;
+	uint64_t	lm_handle[3];
 
 } gllightmapstate_t;
 

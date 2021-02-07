@@ -70,18 +70,17 @@ void CreateDSTtex(void) {
 	image->upload_width = 16;
 	image->upload_height = 16;
 	image->type = it_pic;
-	qglGenTextures(1, &image->texnum);
+
+	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
+	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTextureStorage2D(image->texnum, 1, GL_RGB8, 16, 16);
+	glTextureSubImage2D(image->texnum, 0, 0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, dist);
+
 	r_DSTTex = image;
-
-	qglBindTexture(GL_TEXTURE_2D, r_DSTTex->texnum);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, 16, 16);
-	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, dist);
-
 	r_DSTTex->handle = glGetTextureHandleARB(r_DSTTex->texnum);
 	glMakeTextureHandleResidentARB(r_DSTTex->handle);
 }
@@ -112,27 +111,26 @@ image_t *R_CreateTexture(char *texName, uint targetTex, uint intFormat, uint for
 	image->upload_width = width;
 	image->upload_height = height;
 	image->type = type;
-	qglGenTextures(1, &image->texnum);
 
 	if (mipmap)
 		image->numMips = CalcMipmapCount(width, height);
 	else
 		image->numMips = 1;
 
-	qglBindTexture	(targetTex, image->texnum);
-	qglTexParameteri(targetTex, GL_TEXTURE_WRAP_S, warpS);
-	qglTexParameteri(targetTex, GL_TEXTURE_WRAP_T, warpT);
-	qglTexParameteri(targetTex, GL_TEXTURE_MIN_FILTER, filterMin);
-	qglTexParameteri(targetTex, GL_TEXTURE_MAG_FILTER, filterMag);
+	glCreateTextures(targetTex, 1, &image->texnum);
+	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, warpS);
+	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, warpT);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, filterMin);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, filterMag);
 
 	if (mipmap) {
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, image->numMips);
-		qglGenerateMipmap(GL_TEXTURE_2D);
+		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips);
+		glGenerateTextureMipmap(image->texnum);
 	}
 
-	glTexStorage2D(targetTex, image->numMips, intFormat, width, height);
-	qglTexSubImage2D(targetTex, 0, 0, 0, width, height, format, imageType, pix);
+	glTextureStorage2D(image->texnum, image->numMips, intFormat, width, height);
+	glTextureSubImage2D(image->texnum, 0, 0, 0, width, height, format, imageType, pix);
 
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
@@ -250,7 +248,6 @@ void Load3dLut(void) {
 		image->upload_width = vid.width;
 		image->upload_height = vid.height;
 		image->type = it_pic;
-		qglGenTextures(1, &image->texnum);
 		r_3dLut[j] = image;
 
 		Com_sprintf(checkname, sizeof(checkname), "gfx/lut/lut_%i.lut", j);
@@ -264,18 +261,18 @@ void Load3dLut(void) {
 
 		Com_Printf("Load LUT:" S_COLOR_GREEN " %s\n", title);
 
-		qglBindTexture(GL_TEXTURE_3D, r_3dLut[j]->texnum);
+		glCreateTextures(GL_TEXTURE_3D, 1, &r_3dLut[j]->texnum);
 
-		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTextureParameteri(r_3dLut[j]->texnum, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		
-		glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGB16F, LUTsize, LUTsize, LUTsize);
-		glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, LUTsize, LUTsize, LUTsize, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
-
+		glTextureStorage3D(r_3dLut[j]->texnum, 1, GL_RGB16F, LUTsize, LUTsize, LUTsize);
+		glTextureSubImage3D(r_3dLut[j]->texnum, 0, 0, 0, 0, LUTsize, LUTsize, LUTsize, GL_RGB, GL_FLOAT, buf + sizeof(LUTsize));
+		
 		FS_FreeFile(buf);
 		lutCount++;
 
@@ -384,8 +381,7 @@ image_t *R_LoadLightFilter (int id) {
 	image->registration_sequence = registration_sequence;
 	image->type = it_pic;
 
-	qglGenTextures (1, &image->texnum);
-	qglBindTexture (GL_TEXTURE_CUBE_MAP, image->texnum);
+	glCreateTextures (GL_TEXTURE_CUBE_MAP, 1, &image->texnum);
 
 	minw = minh = 0;
 	maxw = maxh = 9999999;
@@ -422,18 +418,18 @@ image_t *R_LoadLightFilter (int id) {
 		Com_Error (ERR_DROP, "R_LoadLightFilter: (%i) all images must be quadratic with equal sizes", id + 1);
 
 	int numMips = CalcMipmapCount(minw, minh);
-	glTexStorage2D(GL_TEXTURE_CUBE_MAP, numMips, GL_RGB8, minw, minh);
+	glTextureStorage2D(image->texnum, numMips, GL_RGB8, minw, minh);
 
 	for (i = 0; i < 6; i++) {
 		if (pix[i].pixels) {
 			allNull = qfalse;
 			R_FlipImage (i, &pix[i], (byte*)trans);
 			free (pix[i].pixels);
-			qglTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, minw, minh, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+			glTextureSubImage3D(image->texnum, 0, 0, 0, i, minw, minh, 1, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 		}
 		else {
 			nullpixels = (byte*)calloc (minw*minh * 4, 1);
-			qglTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, minw, minh, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
+			glTextureSubImage3D(image->texnum, 0, 0, 0, i, minw, minh, 1, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
 			free (nullpixels);
 		}
 
@@ -444,14 +440,14 @@ image_t *R_LoadLightFilter (int id) {
 	image->upload_width = image->width * 6;
 	image->upload_height = image->height * 6;
 
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMips);
-	qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, numMips);
+	glGenerateTextureMipmap(image->texnum);
 
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);

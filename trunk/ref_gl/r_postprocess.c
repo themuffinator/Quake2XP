@@ -66,8 +66,7 @@ void R_Bloom (void)
 		return;
 
 	// downsample and cut color
-	GL_MBindRect (GL_TEXTURE0, r_screenTex->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	glCopyTextureSubImage2D(r_screenTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	// setup program
 	GL_BindProgram (bloomdsProgram);
@@ -78,8 +77,7 @@ void R_Bloom (void)
 	R_DrawQuarterScreenQuad ();
 
 	// generate star shape
-	GL_BindRect (r_bloomImage->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	GL_BindProgram (glareProgram);
 	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
@@ -88,8 +86,7 @@ void R_Bloom (void)
 	R_DrawQuarterScreenQuad ();
 
 	// blur x
-	GL_BindRect (r_bloomImage->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	GL_BindProgram (gaussXProgram);
 	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
@@ -97,8 +94,7 @@ void R_Bloom (void)
 	R_DrawQuarterScreenQuad ();
 
 	// blur y
-	GL_BindRect (r_bloomImage->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	GL_BindProgram (gaussYProgram);
 	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
@@ -106,7 +102,7 @@ void R_Bloom (void)
 	R_DrawQuarterScreenQuad ();
 
 	// store 2 pass gauss blur 
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	//final pass
 	GL_BindProgram (bloomfpProgram);
@@ -126,9 +122,9 @@ void R_ThermalVision (void)
 
 	if (!(r_newrefdef.rdflags & RDF_IRGOGGLES))
 		return;
-
-	GL_MBindRect(GL_TEXTURE0, r_screenTex->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	
+	// grab screen
+	glCopyTextureSubImage2D(r_screenTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	// setup program
 	GL_BindProgram (thermalProgram);
@@ -137,8 +133,7 @@ void R_ThermalVision (void)
 	R_DrawHalfScreenQuad ();
 
 	// blur x
-	GL_BindRect (r_thermalImage->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
+	glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
 
 	GL_BindProgram (gaussXProgram);
 	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
@@ -146,8 +141,7 @@ void R_ThermalVision (void)
 	R_DrawHalfScreenQuad ();
 
 	// blur y
-	GL_BindRect (r_thermalImage->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
+	glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.5, vid.height * 0.5);
 
 	GL_BindProgram (gaussYProgram);
 	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
@@ -155,8 +149,7 @@ void R_ThermalVision (void)
 	R_DrawHalfScreenQuad ();
 
 	// store 2 pass gauss blur 
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
-
+	glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.5, vid.height * 0.5);
 	//final pass
 	GL_BindProgram (thermalfpProgram);
 	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
@@ -214,8 +207,7 @@ void R_ScreenBlend(void)
 	if (!v_blend[3] || !r_screenBlend->integer)
 		return;
 
-	GL_MBindRect(GL_TEXTURE0, r_screenTex->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	glCopyTextureSubImage2D(r_screenTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	GL_BindProgram(screenFlashProgram);
 	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
@@ -307,9 +299,8 @@ void R_FXAA (void) {
 	// setup program
 	GL_BindProgram (fxaaProgram);
 
-	GL_MBind (GL_TEXTURE0, r_fxaaTex->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
-	
+	glCopyTextureSubImage2D(r_fxaaTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+
 	GL_SetBindlessTexture(U_TMU0, r_fxaaTex->handle);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -347,8 +338,7 @@ void R_GammaRamp (void)
 	
 	GL_BindProgram (gammaProgram);
 
-	GL_MBindRect (GL_TEXTURE0, r_screenTex->texnum);
-	qglCopyTexSubImage2D (GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	glCopyTextureSubImage2D(r_screenTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
 
@@ -437,6 +427,8 @@ void R_MotionBlur(void)
 	VectorSet(velocity, delta[0], delta[1], 1.0);
 	VectorNormalize(velocity);
 
+	glCopyTextureSubImage2D(r_screenTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+
 	// setup program
 	GL_BindProgram(motionBlurProgram);
 
@@ -445,7 +437,6 @@ void R_MotionBlur(void)
 
 	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
 	R_DrawFullScreenQuad();
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	// restore 3d
 	GL_Enable(GL_CULL_FACE);
@@ -564,8 +555,7 @@ void R_FixFov(void) {
 	// setup program
 	GL_BindProgram(fixFovProgram);
 
-	GL_MBind(GL_TEXTURE0, r_fixFovTex->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.width, vid.height);
+	glCopyTextureSubImage2D(r_fixFovTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	params[0] = r_fixFovStrength->value;
 	params[1] = tan(DEG2RAD(r_newrefdef.fov_x) / 2.0) / (vid.width / vid.height);
@@ -582,9 +572,8 @@ void R_MenuBackGround() {
 	
 	GL_Disable(GL_BLEND);
 
-	GL_MBindRect(GL_TEXTURE0, r_screenTex->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
-	
+	glCopyTextureSubImage2D(r_screenTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+
 	GL_BindProgram(menuProgram);
 	GL_SetBindlessTexture(U_TMU0, r_screenTex->handle);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);

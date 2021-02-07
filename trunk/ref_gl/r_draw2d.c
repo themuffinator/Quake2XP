@@ -1064,8 +1064,7 @@ void Draw_StretchRaw (int sw, int sh, int w, int h, int rawWidth, int rawHeight,
 	}
 
 	// update cin texture
-	GL_MBind(GL_TEXTURE0, r_cinImage->texnum);
-	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, image32);
+	glTextureSubImage2D(r_cinImage->texnum, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, image32);
 
 	// setup program
 	GL_BindProgram(cinProgram);

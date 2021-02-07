@@ -396,8 +396,7 @@ void R_GenSkyCubeMap(char* name) {
 
 	strncpy(skyname, name, sizeof(skyname) - 1);
 
-	qglGenTextures(1, &skyCube);
-	qglBindTexture(GL_TEXTURE_CUBE_MAP, skyCube);
+	glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &skyCube);
 
 	minw = minh = 0;
 	maxw = maxh = 9999999;
@@ -425,23 +424,23 @@ void R_GenSkyCubeMap(char* name) {
 	}
 
 	int numMips = CalcMipmapCount(minw, minh);
-	glTexStorage2D(GL_TEXTURE_CUBE_MAP, numMips, GL_RGBA8, minw, minh);
+	glTextureStorage2D(skyCube, numMips, GL_RGBA8, minw, minh);
 
 	for (i = 0; i < 6; i++) {
 
 		R_FlipImage(i, &pix[i], (byte*)trans);
 		free(pix[i].pixels);
-		qglTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, minw, minh, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+		glTextureSubImage3D(skyCube, 0, 0, 0, i, minw, minh, 1, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 	}
 
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-	qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, numMips);
-	qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	glTextureParameteri(skyCube, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTextureParameteri(skyCube, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTextureParameteri(skyCube, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(skyCube, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(skyCube, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(skyCube, GL_TEXTURE_BASE_LEVEL, 0);
+	glTextureParameteri(skyCube, GL_TEXTURE_MAX_LEVEL, numMips);
+	glGenerateTextureMipmap(skyCube);
 
 	skyCube_handle = glGetTextureHandleARB(skyCube);
 	glMakeTextureHandleResidentARB(skyCube_handle);

@@ -291,6 +291,8 @@ typedef enum {
 
 typedef unsigned long long uint64;
 
+
+
 typedef struct image_s {
 
 	char		name[MAX_QPATH];		// game path, including extension
@@ -410,7 +412,9 @@ typedef struct msurface_s {
 	int dlightframe;
 	int dlightbits;
 
-	int lightmaptexturenum;
+	int lightmapTexNum;
+	int lighmapDelux1, lighmapDelux2;
+
 	uint64 lightMapTex_handle;
 
 	byte styles[MAXLIGHTMAPS];

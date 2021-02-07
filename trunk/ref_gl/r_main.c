@@ -1778,14 +1778,17 @@ int R_Init(void *hinstance, void *hWnd)
 	qglTexImage3D		=		(PFNGLTEXIMAGE3DPROC)			qwglGetProcAddress("glTexImage3D");
 
 	// Textures DSA 
-	glBindTextures		=		(PFNGLBINDTEXTURESPROC)			qwglGetProcAddress("glBindTextures");
-	glBindTextureUnit	=		(PFNGLBINDTEXTUREUNITPROC)		qwglGetProcAddress("glBindTextureUnit");
-	glCreateTextures	=		(PFNGLCREATETEXTURESPROC)		qwglGetProcAddress("glCreateTextures");
-	glTextureStorage2D	=		(PFNGLTEXTURESTORAGE2DPROC)		qwglGetProcAddress("glTextureStorage2D");
-	glTextureSubImage2D =		(PFNGLTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glTextureSubImage2D");
-	glTextureParameteri =		(PFNGLTEXTUREPARAMETERIPROC)	qwglGetProcAddress("glTextureParameteri");
-	glTextureParameterf =		(PFNGLTEXTUREPARAMETERFPROC)	qwglGetProcAddress("glTextureParameterf");
-
+	glBindTextures			=		(PFNGLBINDTEXTURESPROC)			qwglGetProcAddress("glBindTextures");
+	glBindTextureUnit		=		(PFNGLBINDTEXTUREUNITPROC)		qwglGetProcAddress("glBindTextureUnit");
+	glCreateTextures		=		(PFNGLCREATETEXTURESPROC)		qwglGetProcAddress("glCreateTextures");
+	glTextureStorage2D		=		(PFNGLTEXTURESTORAGE2DPROC)		qwglGetProcAddress("glTextureStorage2D");
+	glTextureSubImage2D		=		(PFNGLTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glTextureSubImage2D");
+	glTextureParameteri		=		(PFNGLTEXTUREPARAMETERIPROC)	qwglGetProcAddress("glTextureParameteri");
+	glTextureParameterf		=		(PFNGLTEXTUREPARAMETERFPROC)	qwglGetProcAddress("glTextureParameterf");
+	glCopyTextureSubImage2D =		(PFNGLCOPYTEXTURESUBIMAGE2DPROC)qwglGetProcAddress("glCopyTextureSubImage2D");
+	glGenerateTextureMipmap =		(PFNGLGENERATETEXTUREMIPMAPPROC)qwglGetProcAddress("glGenerateTextureMipmap");
+	glTextureStorage3D		=		(PFNGLTEXTURESTORAGE3DPROC)		qwglGetProcAddress("glTextureStorage3D");
+	glTextureSubImage3D		=		(PFNGLTEXTURESUBIMAGE3DPROC)	qwglGetProcAddress("glTextureSubImage3D");
 	// texture storage
 	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
 	glTexStorage3D		=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");

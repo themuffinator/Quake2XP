@@ -146,9 +146,7 @@ void R_CaptureColorBuffer(){
 		
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-
-	GL_MBindRect(GL_TEXTURE0, r_screenTex->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	glCopyTextureSubImage2D(r_screenTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 
@@ -157,8 +155,8 @@ void R_CaptureDepthBuffer(){
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	GL_MBindRect(GL_TEXTURE0, r_depthTex->texnum);
-	qglCopyTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, 0, 0, vid.width, vid.height);
+	glBindTextureUnit(0, r_depthTex->texnum);
+	glCopyTextureSubImage2D(r_depthTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 /*
@@ -380,6 +378,7 @@ byte *R_ResampleTexture(const byte* in, int inwidth, int inheight, int outwidth,
 
 	return out;
 }
+static uint imageIdx;
 
 qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean srgb, qboolean unScaled)
 {
@@ -465,27 +464,28 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 	}
 
 	int numMips = CalcMipmapCount(scaled_width, scaled_height);
-	glTexStorage2D(GL_TEXTURE_2D, numMips, intFormat, scaled_width, scaled_height);
-	qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, scaled_width, scaled_height, GL_RGBA, GL_UNSIGNED_BYTE, scaled);
+	glTextureStorage2D(imageIdx, numMips, intFormat, scaled_width, scaled_height);
+	glTextureSubImage2D(imageIdx, 0, 0, 0, scaled_width, scaled_height, GL_RGBA, GL_UNSIGNED_BYTE, scaled);
 
 	if (scaled_width != width || scaled_height != height)
 		free(scaled);
 
 	if (mipmap)
 	{
-		qglGenerateMipmap(GL_TEXTURE_2D);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY,	r_anisotropic->value);
-		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS,		r_textureLodBias->value);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,		gl_filter_min);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,		gl_filter_max);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL,		0);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL,		numMips);
+		glGenerateTextureMipmap(imageIdx);
+		glTextureParameterf(imageIdx, GL_TEXTURE_MAX_ANISOTROPY,	r_anisotropic->value);
+		glTextureParameterf(imageIdx, GL_TEXTURE_LOD_BIAS,			r_textureLodBias->value);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER,		gl_filter_min);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER,		gl_filter_max);
+		glTextureParameteri(imageIdx, GL_TEXTURE_BASE_LEVEL,		0);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MAX_LEVEL,		numMips);
 	}
 	else
 	{
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER, gl_filter_max);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
+	imageIdx = 0;
 	return (samples == 4);
 }
 
@@ -595,6 +595,7 @@ This is also used as an entry point for the generated r_notexture
 image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t type, int bits)
 {
 	image_t* image;
+
 	int i;
 	int len;
 	char s[128];
@@ -669,8 +670,10 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 				free(palettes);
 		}
 	}
-	qglGenTextures(1, &image->texnum);
-	GL_Bind(image->texnum);
+	imageIdx = 0;
+
+	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
+	imageIdx = image->texnum;
 
 	qboolean srgb = qfalse;
 
@@ -1239,9 +1242,9 @@ void GL_ShutdownImages(void) {
 
 	// Berserker's fix for old Q2 bug:
 	// free lightmaps
-	if (gl_lms.current_lightmap_texture) {
+	if (gl_lms.texnum) {
 		j = TEXNUM_LIGHTMAPS;
-		qglDeleteTextures(gl_lms.current_lightmap_texture, &j);		
+		qglDeleteTextures(gl_lms.texnum, &j);		
 	}
 
 	if (skyCube) {

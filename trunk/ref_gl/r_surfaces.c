@@ -435,8 +435,8 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 
 int SurfSort( const msurface_t **a, const msurface_t **b )
 {
-	return	(( (*a)->lightmaptexturenum<<26) +( (*a)->texInfo->image->texnum<<13)) - 
-			(((*b)->lightmaptexturenum<<26)+((*b)->texInfo->image->texnum<<13));
+	return	(( (*a)->lightmapTexNum <<26) +( (*a)->texInfo->image->texnum<<13)) -
+			(((*b)->lightmapTexNum <<26)+((*b)->texInfo->image->texnum<<13));
 }
 
 vec3_t		BmodelViewOrg;
@@ -482,16 +482,13 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		s = scene_surfaces[i];
 
 		// update lightmaps
-		if (gl_state.currenttextures[1] != gl_state.lightmap_textures + s->lightmaptexturenum)
+		if (gl_state.currenttextures[1] != gl_state.lightmapOffcet +s->lightmapTexNum)
 		{
-			GL_MBind(GL_TEXTURE0, gl_state.lightmap_textures + s->lightmaptexturenum);
-		//	GL_SetBindlessTexture(U_TMU4, gl_lms.lm_handle + s->lightmaptexturenum);
+			GL_MBind(GL_TEXTURE0, gl_state.lightmapOffcet + s->lightmapTexNum);
 
 			if (r_worldmodel->useXPLM && r_useRadiosityBump->integer) {
-				GL_MBind(GL_TEXTURE1, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS);
-				GL_MBind(GL_TEXTURE2, gl_state.lightmap_textures + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
-			//	GL_SetBindlessTexture(U_TMU5, gl_lms.lm_handle + s->lightmaptexturenum + MAX_LIGHTMAPS);
-			//	GL_SetBindlessTexture(U_TMU6, gl_lms.lm_handle + s->lightmaptexturenum + MAX_LIGHTMAPS * 2);
+				GL_MBind(GL_TEXTURE1, gl_state.lightmapOffcet + s->lightmapTexNum + MAX_LIGHTMAPS);
+				GL_MBind(GL_TEXTURE2, gl_state.lightmapOffcet + s->lightmapTexNum + MAX_LIGHTMAPS * 2);
 			}
 			
 			if (numIndices != 0xFFFFFFFF) {
