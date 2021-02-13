@@ -872,7 +872,7 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 #define XPLM_NUMVECS		3
 
 typedef struct {
-	int texnum, delux1, delux2;
+	int texnum;
 
 	msurface_t *lightmap_surfaces[MAX_LIGHTMAPS];
 

@@ -440,8 +440,8 @@ int SurfSort( const msurface_t **a, const msurface_t **b )
 }
 
 vec3_t		BmodelViewOrg;
-int			num_scene_surfaces;
-msurface_t	*scene_surfaces[MAX_MAP_FACES];
+int			numSceneSurfaces;
+msurface_t	*sceneSurfaces[MAX_MAP_FACES];
 
 static void GL_DrawLightmappedPoly(qboolean bmodel)
 {
@@ -476,26 +476,15 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	else
 		qglUniform1i(U_USE_SSAO, 0);
 
-	qsort(scene_surfaces, num_scene_surfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
+	qsort(sceneSurfaces, numSceneSurfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
 
-	for (i = 0; i < num_scene_surfaces; i++){
-		s = scene_surfaces[i];
+	for (i = 0; i < numSceneSurfaces; i++){
+		s = sceneSurfaces[i];
 
-		// update lightmaps
-		if (gl_state.currenttextures[1] != gl_state.lightmapOffcet +s->lightmapTexNum)
-		{
-			GL_MBind(GL_TEXTURE0, gl_state.lightmapOffcet + s->lightmapTexNum);
-
-			if (r_worldmodel->useXPLM && r_useRadiosityBump->integer) {
-				GL_MBind(GL_TEXTURE1, gl_state.lightmapOffcet + s->lightmapTexNum + MAX_LIGHTMAPS);
-				GL_MBind(GL_TEXTURE2, gl_state.lightmapOffcet + s->lightmapTexNum + MAX_LIGHTMAPS * 2);
-			}
-			
-			if (numIndices != 0xFFFFFFFF) {
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-				numIndices = 0xFFFFFFFF;
-			}
-		}		
+		GL_MBind(GL_TEXTURE0, gl_state.lightmapOffcet + s->lightmapTexNum);
+		GL_MBind(GL_TEXTURE1, gl_state.lightmapOffcet + s->lightmapTexNum + MAX_LIGHTMAPS);
+		GL_MBind(GL_TEXTURE2, gl_state.lightmapOffcet + s->lightmapTexNum + MAX_LIGHTMAPS * 2);
+	
 		// flush batch (new texture)
 		if (s->texInfo->image->texnum != oldTex)
 		{
@@ -919,7 +908,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 			}
 			else {
 				// add to the ambient batch
-				scene_surfaces[num_scene_surfaces++] = surf;
+				sceneSurfaces[numSceneSurfaces++] = surf;
 			}
 		}
 	}
@@ -1122,7 +1111,7 @@ void R_DrawBSP (void) {
 
 	glBindVertexArray(vao.bsp_a);
 
-	num_scene_surfaces = 0;
+	numSceneSurfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
 	GL_DrawLightmappedPoly(qfalse);
 
@@ -1176,7 +1165,7 @@ static void R_AddAmbientBmodelSurfaces (void) {
 				continue;
 			
 			if (!(psurf->texInfo->flags & MSURF_DRAWTURB))
-				scene_surfaces[num_scene_surfaces++] = psurf;
+				sceneSurfaces[numSceneSurfaces++] = psurf;
 		}
 	}
 
@@ -1271,7 +1260,7 @@ void R_DrawBrushModel (void) {
 
 	glBindVertexArray(vao.bsp_a);
 
-	num_scene_surfaces = 0;
+	numSceneSurfaces = 0;
 	R_AddAmbientBmodelSurfaces();
 	GL_DrawLightmappedPoly(qtrue);
 	

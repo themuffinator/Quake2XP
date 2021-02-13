@@ -413,7 +413,6 @@ typedef struct msurface_s {
 	int dlightbits;
 
 	int lightmapTexNum;
-	int lighmapDelux1, lighmapDelux2;
 
 	uint64 lightMapTex_handle;
 

@@ -4,8 +4,8 @@
 */
 #include "r_local.h"
 
-extern msurface_t	*scene_surfaces[MAX_MAP_FACES];
-static int			numDepthsurfaces;
+extern msurface_t	*sceneSurfaces[MAX_MAP_FACES];
+static int			numDepthSurfaces;
 static vec3_t		modelorg;			// relative to viewpoint
 
 qboolean R_FillDepthBatch (msurface_t *surf, unsigned *vertices, unsigned *indeces) {
@@ -41,8 +41,8 @@ static void GL_DrawDepthBspTris () {
 	unsigned	numIndices = 0xffffffff;
 	unsigned	numVertices = 0;
 
-	for (i = 0; i < numDepthsurfaces; i++) {
-		s = scene_surfaces[i];
+	for (i = 0; i < numDepthSurfaces; i++) {
+		s = sceneSurfaces[i];
 
 		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
 			if (numIndices != 0xFFFFFFFF) {
@@ -174,7 +174,7 @@ static void R_RecursiveDepthWorldNode(mnode_t* node) {
 		else if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
 			continue;
 		else
-			scene_surfaces[numDepthsurfaces++] = surf;
+			sceneSurfaces[numDepthSurfaces++] = surf;
 	}
 
 	// recurse down the back side
@@ -208,7 +208,7 @@ static void R_AddBModelDepthTris (void) {
 			if (psurf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
 				continue;
 			}
-			scene_surfaces[numDepthsurfaces++] = psurf;
+			sceneSurfaces[numDepthSurfaces++] = psurf;
 		}
 	}
 }
@@ -262,7 +262,7 @@ void R_DrawDepthBrushModel (void) {
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 
-	numDepthsurfaces = 0;
+	numDepthSurfaces = 0;
 	R_AddBModelDepthTris ();
 	GL_DrawDepthBspTris();
 
@@ -461,7 +461,7 @@ void R_DrawDepthScene (void) {
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
 
-		numDepthsurfaces = 0;
+		numDepthSurfaces = 0;
 		R_RecursiveDepthWorldNode(r_worldmodel->nodes);
 		GL_DrawDepthBspTris();
 
