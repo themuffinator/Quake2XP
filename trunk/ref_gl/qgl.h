@@ -791,7 +791,7 @@ extern PFNGLTEXIMAGE3DPROC						qglTexImage3D;
 extern PFNGLCREATETEXTURESPROC					glCreateTextures;
 extern PFNGLTEXSTORAGE2DPROC					glTexStorage2D;
 extern PFNGLTEXSTORAGE3DPROC					glTexStorage3D;
-extern PFNGLTEXSUBIMAGE3DPROC					glTexSubImage3D;
+extern PFNGLTEXSUBIMAGE3DPROC					qglTexSubImage3D;
 
 extern PFNGLTEXTURESTORAGE2DPROC				glTextureStorage2D;
 extern PFNGLTEXTURESUBIMAGE2DPROC				glTextureSubImage2D;

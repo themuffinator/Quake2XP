@@ -1447,7 +1447,7 @@ void UpdateLightEditor(void) {
 
 	GL_Disable(GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	GL_Disable(GL_BLEND);
@@ -1572,10 +1572,10 @@ void UpdateLightEditor(void) {
 	if (r_shadows->integer)
 		GL_Enable(GL_STENCIL_TEST);
 
-	if (r_useLightScissors->integer)
+	if (r_lightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	R_LightFlareOutLine();
@@ -2471,7 +2471,7 @@ void R_SetViewLightScreenBounds () {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	if (r_useLightScissors->integer || (gl_state.depthBoundsTest && r_useDepthBounds->integer)) {
+	if (r_lightScissors->integer || (gl_state.depthBoundsTest && r_depthBoundsTest->integer)) {
 		// copy the corner points of each plane and clip to the frustum
 		for (i = 0; i < 6; i++) {
 			VectorCopy (currentShadowLight->corners[cornerIndices[i][0]], points[0]);
@@ -2501,7 +2501,7 @@ void R_SetViewLightScreenBounds () {
 	}
 
 	// set the scissor rectangle
-	if (r_useLightScissors->integer) {
+	if (r_lightScissors->integer) {
 		scissor[0] = max (Q_ftol (floor (mins[0])), r_newrefdef.viewport[0]);
 		scissor[1] = max (Q_ftol (floor (mins[1])), r_newrefdef.viewport[1]);
 		scissor[2] = min (Q_ftol (ceil (maxs[0])), r_newrefdef.viewport[0] + r_newrefdef.viewport[2]);
@@ -2532,7 +2532,7 @@ void R_SetViewLightScreenBounds () {
 	}
 
 	// set the depth bounds
-	if (r_useDepthBounds->integer) {
+	if (r_depthBoundsTest->integer) {
 		depth[0] = max (mins[2], 0.0f);
 		depth[1] = min (maxs[2], 1.0f);
 
@@ -2573,10 +2573,10 @@ void R_DrawLightFlare () {
 	if (!r_drawFlares->integer)
 		return;
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Disable (GL_DEPTH_BOUNDS_TEST_EXT);
 	
-	if (r_useLightScissors->integer)
+	if (r_lightScissors->integer)
 		GL_Disable (GL_SCISSOR_TEST);
 
 	GL_BindProgram(flareProgram);
@@ -2629,10 +2629,10 @@ void R_DrawLightFlare () {
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
 	
-	if (r_useLightScissors->integer)
+	if (r_lightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
 
 	qglDisableVertexAttribArray (ATT_POSITION);
@@ -2653,7 +2653,7 @@ void R_LightFlareOutLine() { //flare editing highlights
 	if (!flareEdit)
 		return;
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	GL_Disable(GL_SCISSOR_TEST);
@@ -2696,9 +2696,9 @@ void R_LightFlareOutLine() { //flare editing highlights
 	qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	if (r_useLightScissors->integer)
+	if (r_lightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 	GL_Enable(GL_STENCIL_TEST);
 	GL_Enable(GL_CULL_FACE);
@@ -2721,7 +2721,7 @@ void R_DrawLightBounds(void) {
 
 	GL_Disable(GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	GL_Disable(GL_BLEND);
@@ -2755,10 +2755,10 @@ void R_DrawLightBounds(void) {
 	if (r_shadows->integer)
 		GL_Enable(GL_STENCIL_TEST);
 
-	if (r_useLightScissors->integer)
+	if (r_lightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 }
 
@@ -2828,7 +2828,7 @@ void R_UpdateLightAliasUniforms()
 
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
-	if(r_useBlinnPhongLighting->integer)
+	if(r_blinnPhongLighting->integer)
 		qglUniform1i(U_PARAM_INT_0, 1);
 	else
 		qglUniform1i(U_PARAM_INT_0, 0);

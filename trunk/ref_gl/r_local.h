@@ -296,14 +296,14 @@ cvar_t	*r_ssaoIntensity;
 cvar_t	*r_ssaoScale;
 cvar_t	*r_ssaoBlur;
 
-cvar_t	*r_useBlinnPhongLighting;
+cvar_t	*r_blinnPhongLighting;
 cvar_t	*r_skipStaticLights;
 cvar_t	*r_lightmapScale;
 cvar_t	*r_debugLights;
-cvar_t	*r_useLightScissors;
-cvar_t	*r_useDepthBounds;
-cvar_t	*r_ambientSpecularScale;
-cvar_t	*r_useRadiosityBump;
+cvar_t	*r_lightScissors;
+cvar_t	*r_depthBoundsTest;
+cvar_t	*r_radiositySpecularScale;
+cvar_t	*r_radiosityNormalMapping;
 cvar_t	*r_zNear;
 cvar_t	*r_zFar;
 
@@ -315,7 +315,7 @@ cvar_t	*r_reliefMapping;
 cvar_t	*r_reliefScale;
 cvar_t	*r_selfShadowingParallax;
 cvar_t	*r_selfShadowOffset;
-cvar_t* r_selfShadowBlur;
+cvar_t	*r_selfShadowBlur;
 
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;
@@ -337,7 +337,7 @@ cvar_t	*r_glDebugOutput;
 cvar_t	*r_glMinorVersion;
 cvar_t	*r_glMajorVersion;
 cvar_t	*r_glCoreProfile;
-
+cvar_t	*r_debug;
 cvar_t	*r_lightEditor;
 cvar_t	*r_cameraSpaceLightMove;
 

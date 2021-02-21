@@ -544,10 +544,10 @@ void R_DrawLightScene (void)
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
-		if (r_useLightScissors->integer)
+		if (r_lightScissors->integer)
 			GL_Enable(GL_SCISSOR_TEST);
 
-		if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+		if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 			GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 		if (r_shadows->integer)
@@ -572,10 +572,10 @@ void R_DrawLightScene (void)
 	
 	R_SetViewLightScreenBounds();
 
-	if(r_useLightScissors->integer)
+	if(r_lightScissors->integer)
 		GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
 	
-	if(gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if(gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
@@ -646,7 +646,7 @@ void R_DrawLightScene (void)
 //	GL_DepthMask(1);
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
-	if(gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if(gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 	GL_Disable(GL_BLEND);
 
@@ -723,10 +723,10 @@ void R_DrawPlayerWeapon(void)
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
 
-	if (r_useLightScissors->integer)
+	if (r_lightScissors->integer)
 		GL_Enable(GL_SCISSOR_TEST);
 
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	if (r_shadows->integer)
@@ -746,10 +746,10 @@ void R_DrawPlayerWeapon(void)
 
 			R_SetViewLightScreenBounds();
 
-			if (r_useLightScissors->integer)
+			if (r_lightScissors->integer)
 				GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
 
-			if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+			if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 				GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
 
 			qglClearStencil(128);
@@ -764,7 +764,7 @@ void R_DrawPlayerWeapon(void)
 	GL_DepthMask(1);
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
-	if (gl_state.depthBoundsTest && r_useDepthBounds->integer)
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 	GL_Disable(GL_BLEND);
 }
@@ -1346,20 +1346,20 @@ void R_RegisterCvars(void)
 	r_selfShadowOffset =				Cvar_Get("r_selfShadowOffset", "3.0", CVAR_ARCHIVE);
 	r_selfShadowBlur =					Cvar_Get("r_selfShadowBlur", "0.7", CVAR_ARCHIVE);
 
-	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_DEVELOPER);
+	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_VIDEO_DEBUG);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 
-	r_useBlinnPhongLighting =			Cvar_Get("r_useBlinnPhongLighting", "0", CVAR_ARCHIVE);
-	r_useBlinnPhongLighting->help =		"use old lighting model";
+	r_blinnPhongLighting =			Cvar_Get("r_blinnPhongLighting", "0", CVAR_ARCHIVE);
+	r_blinnPhongLighting->help =		"use old lighting model";
 
-	r_skipStaticLights =				Cvar_Get("r_skipStaticLights", "0", CVAR_DEVELOPER);
+	r_skipStaticLights =				Cvar_Get("r_skipStaticLights", "0", CVAR_VIDEO_DEBUG);
 	r_lightmapScale =					Cvar_Get("r_lightmapScale", "0.5", CVAR_ARCHIVE);
-	r_useLightScissors = 				Cvar_Get("r_useLightScissors", "1", 0);
-	r_useDepthBounds =					Cvar_Get("r_useDepthBounds", "1", 0);
+	r_lightScissors = 				Cvar_Get("r_lightScissors", "1", 0);
+	r_depthBoundsTest =					Cvar_Get("r_depthBoundsTest", "1", 0);
 	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
-	r_ambientSpecularScale =			Cvar_Get("r_ambientSpecularScale", "0.3", CVAR_ARCHIVE);
-	r_useRadiosityBump =				Cvar_Get("r_useRadiosityBump", "1", CVAR_ARCHIVE);
+	r_radiositySpecularScale =			Cvar_Get("r_radiositySpecularScale", "0.3", CVAR_ARCHIVE);
+	r_radiosityNormalMapping =				Cvar_Get("r_radiosityNormalMapping", "1", CVAR_ARCHIVE);
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 	r_zFar =							Cvar_Get("r_zFar", "4096", CVAR_ARCHIVE);
 
@@ -1393,6 +1393,7 @@ void R_RegisterCvars(void)
 	r_glMajorVersion =					Cvar_Get("r_glMajorVersion", "4", CVAR_ARCHIVE);
 	r_glMinorVersion =					Cvar_Get("r_glMinorVersion", "5", CVAR_ARCHIVE);
 	r_glCoreProfile =					Cvar_Get("r_glCoreProfile", "0", 0);
+	r_debug =							Cvar_Get("r_debug", "0", 0);
 
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
 	r_cameraSpaceLightMove =			Cvar_Get("r_cameraSpaceLightMove", "0", CVAR_ARCHIVE);
@@ -1792,7 +1793,7 @@ int R_Init(void *hinstance, void *hWnd)
 	// texture storage
 	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
 	glTexStorage3D		=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");
-	glTexSubImage3D		=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
+	qglTexSubImage3D	=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
 
 	glGenQueries		= (PFNGLGENQUERIESPROC)			qwglGetProcAddress("glGenQueries");
 	glDeleteQueries		= (PFNGLDELETEQUERIESPROC)		qwglGetProcAddress("glDeleteQueries");
@@ -1806,6 +1807,7 @@ int R_Init(void *hinstance, void *hWnd)
 	glGetProgramBinary =	(PFNGLGETPROGRAMBINARYPROC)		qwglGetProcAddress("glGetProgramBinary");
 	glProgramBinary =		(PFNGLPROGRAMBINARYPROC)		qwglGetProcAddress("glProgramBinary");
 	glProgramParameteri =	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
+
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
 

@@ -370,7 +370,7 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		normal	= R_TextureAnimationNormal(surf->texInfo);
 		rgh		= R_TextureAnimationRgh(surf->texInfo);
 
-		qglUniform1f(U_SPECULAR_SCALE, image->specularScale ? image->specularScale : r_ambientSpecularScale->value);
+		qglUniform1f(U_SPECULAR_SCALE, image->specularScale ? image->specularScale : r_radiositySpecularScale->value);
 		
 		if (surf->flags & MSURF_ENVMAP)
 			qglUniform1i(U_PARAM_INT_0, 1);
@@ -459,7 +459,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	qglUniform1i(U_PARALLAX_TYPE, clamp(r_reliefMapping->integer, 0, 1));
 	qglUniform1f(U_AMBIENT_LEVEL, r_lightmapScale->value);
 
-	qglUniform1i(U_LM_TYPE, (r_worldmodel->useXPLM && r_useRadiosityBump->integer) ? 1 : 0);
+	qglUniform1i(U_LM_TYPE, (r_worldmodel->useXPLM && r_radiosityNormalMapping->integer) ? 1 : 0);
 
 	if (!bmodel){
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -676,7 +676,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 else
 		 qglUniform1i(U_PARAM_INT_1, 0);
 
-	 if (r_useBlinnPhongLighting->integer)
+	 if (r_blinnPhongLighting->integer)
 		 qglUniform1i(U_PARAM_INT_2, 1);
 	 else
 		 qglUniform1i(U_PARAM_INT_2, 0);

@@ -154,13 +154,15 @@ Cvar_Set2
 */
 cvar_t *Cvar_Set2 (char *var_name, char *value, qboolean force) {
 	cvar_t *var;
+	extern cvar_t *r_debug;
 
 	var = Cvar_FindVar (var_name);
+
 	if (!var) {					// create it
 		return Cvar_Get (var_name, value, 0);
 	}
 
-	if ((var->flags & CVAR_DEVELOPER) && developer->integer != ExtraDevMode) {
+	if ((var->flags & CVAR_VIDEO_DEBUG) && !r_debug->integer) {
 		Com_Printf("" S_COLOR_YELLOW "%s " S_COLOR_MAGENTA "is developer protected\n", var_name);
 		return var;
 	}
@@ -519,7 +521,7 @@ void Cvar_List_f (void) {
 		else
 			Com_Printf (" ");
 
-		if (var->flags & CVAR_DEVELOPER)
+		if (var->flags & CVAR_VIDEO_DEBUG)
 			Com_Printf(""S_COLOR_RED"D");
 		else
 			Com_Printf(" ");
