@@ -47,6 +47,15 @@ typedef struct {
 //extern viddef_t vid;
 extern viddef_t viddef;
 
+typedef struct {
+	int startTime;
+	int endTime;
+	int rumbleLow;
+	int rumbleHigh;
+} rumble_t;
+rumble_t rumble;
+void CL_SetRumble(int low, int high, int end);
+void CL_ShotdownRumble();
 //=============================================================================
 // Sound effect ID's:
 #define weapons_blastf1a		0

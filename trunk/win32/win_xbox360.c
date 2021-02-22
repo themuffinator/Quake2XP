@@ -201,10 +201,10 @@ void IN_StartupXInput(void)
 	in_useXInput = Cvar_Get("in_useXInput", "1", CVAR_ARCHIVE);
 	x360_useControllerID = Cvar_Get("x360_useControllerID", "-1", CVAR_ARCHIVE);
 	
-	x360_sensXleft = Cvar_Get("x360_sensXleft", "2.0", CVAR_ARCHIVE);
+	x360_sensXleft = Cvar_Get("x360_sensXleft", "1.0", CVAR_ARCHIVE);
 	x360_sensYleft = Cvar_Get("x360_sensYlleft", "1.0", CVAR_ARCHIVE);
 	
-	x360_sensXright = Cvar_Get("x360_sensXright", "2.0", CVAR_ARCHIVE);
+	x360_sensXright = Cvar_Get("x360_sensXright", "1.0", CVAR_ARCHIVE);
 	x360_sensYright = Cvar_Get("x360_sensYright", "1.0", CVAR_ARCHIVE);
 	
 	x360_pitchInversion = Cvar_Get("x360_pitchInversion", "0", CVAR_ARCHIVE);

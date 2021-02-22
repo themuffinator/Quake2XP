@@ -1135,7 +1135,6 @@ void SCR_UpdateScreen (void) {
 		SCR_DrawLoading ();
 
 	}
-
 	R_GammaRamp ();
 	GLimp_EndFrame ();
 }

@@ -432,18 +432,21 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[2] = 0;
 
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_blastf1a], volume, ATTN_WEAPON_LIGHT);
+			CL_SetRumble(1024, 2048, 150);
 			break;
 		case MZ_BLUEHYPERBLASTER:
 			dl->color[0] = 0;
 			dl->color[1] = 0;
 			dl->color[2] = 1;
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_hyprbf1a], volume, ATTN_WEAPON_LIGHT);
+			CL_SetRumble(8192, 15000, 150);
 			break;
 		case MZ_HYPERBLASTER:
 			dl->color[0] = 1;
 			dl->color[1] = 0.7;
 			dl->color[2] = 0;
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_hyprbf1a], volume, ATTN_WEAPON_LIGHT);
+			CL_SetRumble(8192, 15000, 150);
 			break;
 		case MZ_MACHINEGUN:
 			dl->color[0] = 1;
@@ -452,6 +455,7 @@ void CL_ParseMuzzleFlash (void) {
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
 			CL_BrassShells (shell_brass, dir, 1, qtrue);
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT);
+			CL_SetRumble(8192, 15000, 150);
 			break;
 		case MZ_SHOTGUN:
 			dl->color[0] = 1;
@@ -463,6 +467,7 @@ void CL_ParseMuzzleFlash (void) {
 			S_fastsound_queue (smoke_origin, i, CHAN_AUTO,
 				fastsound_descriptor[weapons_shotgr1b],
 				volume * 0.5, ATTN_WEAPON_LIGHT, 100);
+			CL_SetRumble(8192, 20000, 200);
 			break;
 		case MZ_SSHOTGUN:
 			dl->color[0] = 1;
@@ -471,6 +476,7 @@ void CL_ParseMuzzleFlash (void) {
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 6);
 			CL_BrassShells (shell_brass, dir, 2, qfalse);
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_sshotf1b], volume, ATTN_WEAPON_LIGHT);
+			CL_SetRumble(20000, 65000, 250);
 			break;
 		case MZ_CHAINGUN1:
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
@@ -480,6 +486,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[1] = 0.7;
 			dl->color[2] = 0.5;
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT);
+			CL_SetRumble(8192, 15000, 150);
 			break;
 		case MZ_CHAINGUN2:
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
@@ -491,6 +498,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->die = cl.time + 0.1;	// long delay
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT);
 			S_fastsound_queue (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b +(rand () % 5)], volume,	ATTN_WEAPON_LIGHT, 50);
+			CL_SetRumble(8192, 15000, 150);
 			break;
 		case MZ_CHAINGUN3:
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 1);
@@ -503,6 +511,7 @@ void CL_ParseMuzzleFlash (void) {
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT);
 			S_fastsound_queue (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b +(rand () % 5)], volume, ATTN_WEAPON_LIGHT, 33);
 			S_fastsound_queue (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_machgf1b + (rand () % 5)], volume, ATTN_WEAPON_LIGHT, 66);
+			CL_SetRumble(8192, 15000, 150);
 			break;
 		case MZ_RAILGUN:
 			dl->color[0] = 0.5;
@@ -510,6 +519,7 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[2] = 1.0;
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_railgf1a], volume, ATTN_WEAPON_LIGHT);
 			S_fastsound_queue(NULL, i, CHAN_WEAPON, fastsound_descriptor[id_cl_sfx_railg], volume , ATTN_WEAPON_LIGHT, 100);
+			CL_SetRumble(12000, 40000, 250);
 			break;
 		case MZ_ROCKET:
 			dl->color[0] = 1;
@@ -518,6 +528,7 @@ void CL_ParseMuzzleFlash (void) {
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_rocklf1a], volume, ATTN_WEAPON_HEAVY);
 			S_fastsound_queue (NULL, i, CHAN_AUTO, fastsound_descriptor[weapons_rocklr1b], volume, ATTN_WEAPON_LIGHT, 150);
 			CL_ParticleGunSmoke (smoke_origin, vec3_origin, 8);
+			CL_SetRumble(8192, 65535, 250);
 			break;
 		case MZ_GRENADE:
 			dl->color[0] = 1;
@@ -525,12 +536,14 @@ void CL_ParseMuzzleFlash (void) {
 			dl->color[2] = 0;
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_grenlf1a], volume, ATTN_WEAPON_LIGHT);
 			S_fastsound_queue (NULL, i, CHAN_AUTO, fastsound_descriptor[weapons_grenlr1b], volume, ATTN_WEAPON_LIGHT, 100);
+			CL_SetRumble(8000, 8000, 150);
 			break;
 		case MZ_BFG:
 			dl->color[0] = 0;
 			dl->color[1] = 1;
 			dl->color[2] = 0;
 			S_fastsound (NULL, i, CHAN_WEAPON, fastsound_descriptor[weapons_bfg__f1y], volume, ATTN_WEAPON_HEAVY);
+			CL_SetRumble(25000, 65535, 350);
 			break;
 
 		case MZ_LOGIN:

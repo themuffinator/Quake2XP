@@ -491,6 +491,29 @@ V_RenderView
 
 ==================
 */
+void CL_SetRumble(int low, int high, int end) {
+	
+#ifdef _WIN32
+	rumble.startTime = cl.time;
+	rumble.endTime = rumble.startTime + end;
+
+	SetRumble(xInputActiveController, low, high);
+#endif
+}
+
+void CL_ShotdownRumble() {
+
+#ifdef _WIN32
+	if (rumble.startTime <= 0)
+		return;
+
+	int currTime = cl.time;
+	if (rumble.endTime < currTime) {
+		SetRumble(xInputActiveController, 0, 0);
+		rumble.endTime = rumble.startTime = 0;
+	}
+#endif
+}
 
 void V_RenderView () {
 	extern int entitycmpfnc (const entity_t *, const entity_t *);
@@ -546,13 +569,60 @@ void V_RenderView () {
 		}
 
 #ifdef _WIN32
-		// add xBox controller vibration 
 		int value = cl.frame.playerstate.stats[STAT_HEALTH];
+		int armor = cl.frame.playerstate.stats[STAT_ARMOR];
+		float scale;
 
-		if ((cl.refdef.rdflags & RDF_PAIN) && (value > 0)) 
-			SetRumble(xInputActiveController, 4096, 65535);
-		else
-			SetRumble(xInputActiveController, 0, 0);
+		switch (armor)
+		{
+		case 200:
+			scale = 0.008;
+		case 190:
+			scale = 0.009;
+		case 180:
+			scale = 0.01;
+		case 170:
+			scale = 0.02;
+		case 160:
+			scale = 0.03;
+		case 150:
+			scale = 0.04;
+		case 140:
+			scale = 0.05;
+		case 130:
+			scale = 0.06;
+		case 120:
+			scale = 0.07;
+		case 110:
+			scale = 0.08;
+		case 100:
+			scale = 0.09;
+		case 90:
+			scale = 0.1;
+		case 80:
+			scale = 0.2;
+		case 70:
+			scale = 0.3;
+		case 60:
+			scale = 0.4;
+		case 50:
+			scale = 0.5;
+		case 40:
+			scale = 0.6;
+		case 30:
+			scale = 0.7;
+		case 20:
+			scale = 0.8;
+		case 10:
+			scale = 0.9;
+		case 0:
+			scale = 1.0;
+		default:
+			scale = 1.0;
+			break;
+		}
+		if ((cl.refdef.rdflags & RDF_PAIN) && (value > 0))
+			CL_SetRumble(4096 / scale, 8190 / scale, 100);
 #endif
 		
 		cl.refdef.areabits = cl.frame.areabits;
@@ -616,6 +686,7 @@ void V_RenderView () {
 		scr_vrect.y + scr_vrect.height - 1);
 
 	SCR_DrawCrosshair ();
+	CL_ShotdownRumble();
 }
 
 

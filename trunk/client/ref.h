@@ -512,22 +512,13 @@ typedef struct {
 //================
 
 
-#define	MAX_FRAME_BUFFERS	32
-
 typedef struct {
-	unsigned int	format;
-	unsigned int	id;
-	int				width;
-	int				height;
+	uint	ssao;
+	uint	backBuf;
+	uint	mirror;
+}fbo_t;
+fbo_t fbo;
 
-} rbo_t;
-
-typedef struct {
-	char			name[MAX_QPATH];
-	int				index;	// in rg.fbs
-	unsigned int	id;
-
-} fbo_t;
 
 typedef struct {
 	int		x, y, width, height;	// in virtual screen coordinates
@@ -572,29 +563,10 @@ typedef struct {
 
 	int numDecals;
 	decals_t *decals;
-
-	int			numFBs;
-	fbo_t		*fbs[MAX_FRAME_BUFFERS];
-	fbo_t		*screenFB;
-	fbo_t		*hdrFB;
-	image_t		*depthBufferImage;	// depth24-stencil8 format
-	image_t		*colorBufferImage; //  screen texture
-
 } refdef_t;
 
 extern float loadScreenColorFade;
 extern char *sInf;
-
-//sul
-#define MAX_RADAR_ENTS 512
-typedef struct RadarEnt_s {
-	float color[3];
-	vec3_t org;
-} RadarEnt_t;
-
-
-extern int numRadarEnts;
-extern RadarEnt_t RadarEnts[MAX_RADAR_ENTS];
 
 #define	API_VERSION		3
 

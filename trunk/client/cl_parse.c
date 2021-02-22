@@ -942,5 +942,4 @@ void CL_ParseServerMessage (void) {
 	// 
 	if (cls.demorecording && !cls.demowaiting)
 		CL_WriteDemoMessage ();
-
 }
