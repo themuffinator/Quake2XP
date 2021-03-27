@@ -95,87 +95,6 @@ static	DWORD	(WINAPI * qXInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVi
 static	DWORD	(WINAPI	* qXInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
 static	DWORD	(WINAPI	* qXInputGetAudioDeviceIds)(DWORD  dwUserIndex, LPWSTR pRenderDeviceId, UINT* pRenderCount, LPWSTR pCaptureDeviceId, UINT* pCaptureCount);
 
-unsigned int utf8_encode(void* out, unsigned int unicode, int maxlen)
-{
-	unsigned int bcount = 1;
-	unsigned int lim = 0x80;
-	unsigned int shift;
-	if (!unicode)
-	{	//modified utf-8 encodes encapsulated nulls as over-long.
-		bcount = 2;
-	}
-	else
-	{
-		while (unicode >= lim)
-		{
-			if (bcount == 1)
-				lim <<= 4;
-			else if (bcount < 7)
-				lim <<= 5;
-			else
-				lim <<= 6;
-			bcount++;
-		}
-	}
-
-	//error if needed
-	if (maxlen < bcount)
-		return 0;
-
-	//output it.
-	if (bcount == 1)
-	{
-		*((unsigned char*)out) = (unsigned char)(unicode & 0x7f);
-		out = (char*)out + 1;
-	}
-	else
-	{
-		shift = bcount * 6;
-		shift = shift - 6;
-		*((unsigned char*)out) = (unsigned char)((unicode >> shift)& (0x0000007f >> bcount)) | ((0xffffff00 >> bcount) & 0xff);
-		out = (char*)out + 1;
-		do
-		{
-			shift = shift - 6;
-			*((unsigned char*)out) = (unsigned char)((unicode >> shift) & 0x3f) | 0x80;
-			out = (char*)out + 1;
-		} while (shift);
-	}
-	return bcount;
-}
-char* wchar2char(char* out, size_t outlen, wchar_t* wide) //wide char to char conversion from FTE
-{
-	char* ret = out;
-	int bytes;
-	unsigned int codepoint;
-	if (!outlen)
-		return "";
-	outlen--;
-	//utf-8 to utf-16, not ucs-2.
-	while (*wide)
-	{
-		codepoint = *wide++;
-		if (codepoint >= 0xD800u && codepoint <= 0xDBFFu)
-		{	//handle utf-16 surrogates
-			if (*wide >= 0xDC00u && *wide <= 0xDFFFu)
-			{
-				codepoint = (codepoint & 0x3ff) << 10;
-				codepoint |= *wide++ & 0x3ff;
-			}
-			else
-				codepoint = 0xFFFDu;
-		}
-		bytes = utf8_encode(out, codepoint, outlen);
-		if (bytes <= 0)
-			break;
-		out += bytes;
-		outlen -= bytes;
-	}
-	*out = 0;
-	return ret;
-}
-
-
 void IN_ShutDownXinput() {
 
 	Com_Printf("..." S_COLOR_YELLOW "shutting down xInput subsystem\n");
@@ -367,6 +286,30 @@ void SetRumble(int devNum, int rumbleLow, int rumbleHigh) {
 
 	if (err != ERROR_SUCCESS)
 		Com_Printf(S_COLOR_RED"XInputSetState error: 0x%x", err);
+}
+
+void CL_SetRumble(int low, int high, int end) {
+
+#ifdef _WIN32
+	rumble.startTime = cl.time;
+	rumble.endTime = rumble.startTime + end;
+
+	SetRumble(xInputActiveController, low, high);
+#endif
+}
+
+void CL_ShotdownRumble() {
+
+#ifdef _WIN32
+	if (rumble.startTime <= 0)
+		return;
+
+	int currTime = cl.time;
+	if (rumble.endTime < currTime) {
+		SetRumble(xInputActiveController, 0, 0);
+		rumble.endTime = rumble.startTime = 0;
+	}
+#endif
 }
 
 extern cvar_t *cl_forwardspeed;

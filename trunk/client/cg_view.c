@@ -491,29 +491,6 @@ V_RenderView
 
 ==================
 */
-void CL_SetRumble(int low, int high, int end) {
-	
-#ifdef _WIN32
-	rumble.startTime = cl.time;
-	rumble.endTime = rumble.startTime + end;
-
-	SetRumble(xInputActiveController, low, high);
-#endif
-}
-
-void CL_ShotdownRumble() {
-
-#ifdef _WIN32
-	if (rumble.startTime <= 0)
-		return;
-
-	int currTime = cl.time;
-	if (rumble.endTime < currTime) {
-		SetRumble(xInputActiveController, 0, 0);
-		rumble.endTime = rumble.startTime = 0;
-	}
-#endif
-}
 
 void V_RenderView () {
 	extern int entitycmpfnc (const entity_t *, const entity_t *);

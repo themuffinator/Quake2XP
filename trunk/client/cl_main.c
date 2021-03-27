@@ -48,7 +48,7 @@ cvar_t *cl_autoskins;
 cvar_t *cl_footsteps;
 cvar_t *cl_timeout;
 cvar_t *cl_predict;
-cvar_t *cl_maxfps;
+cvar_t *cl_maxFps;
 cvar_t *cl_gun;
 
 cvar_t *cl_add_particles;
@@ -117,9 +117,6 @@ cvar_t *cl_fontScale;
 cvar_t *cl_itemsBobbing;
 cvar_t *cl_hudModelScale;
 cvar_t	*scr_showTexName;
-
-cvar_t	*cl_async;
-cvar_t	*r_maxfps;
 
 client_static_t cls;
 client_state_t cl;
@@ -1537,7 +1534,7 @@ void CL_InitLocal (void) {
 	cl_noskins = Cvar_Get ("cl_noskins", "0", 0);
 	cl_autoskins = Cvar_Get ("cl_autoskins", "0", 0);
 	cl_predict = Cvar_Get ("cl_predict", "1", 0);
-	cl_maxfps = Cvar_Get ("cl_maxfps", "600", CVAR_ARCHIVE);
+	cl_maxFps = Cvar_Get ("cl_maxFps", "600", CVAR_ARCHIVE);
 	cl_upspeed = Cvar_Get ("cl_upspeed", "200", 0);
 	cl_forwardspeed = Cvar_Get ("cl_forwardspeed", "200", 0);
 	cl_sidespeed = Cvar_Get ("cl_sidespeed", "200", 0);
@@ -1617,9 +1614,6 @@ void CL_InitLocal (void) {
 	fov->help = "Field Of Vision (degrees). '90' will block '+zoom'.";
 	zoomfov = Cvar_Get ("zoomfov", "22.5", CVAR_ARCHIVE);
 	zoomfov->help = "lower FOV limit for '+zoom'";
-
-	r_maxfps = Cvar_Get("r_maxfps", "125", CVAR_ARCHIVE);
-	cl_async = Cvar_Get("cl_async", "0", CVAR_ARCHIVE);
 
 	gender = Cvar_Get ("gender", "male", CVAR_USERINFO | CVAR_ARCHIVE);
 	gender_auto = Cvar_Get ("gender_auto", "1", CVAR_ARCHIVE);
@@ -1824,37 +1818,20 @@ void CL_Frame (int msec) {
 
 	extratime += msec;
 
-	if (cl_maxfps->integer == 0)
-		Cvar_SetValue ("cl_maxfps", 125);
+	if (cl_maxFps->integer == 0)
+		Cvar_SetValue ("cl_maxFps", 125);
 
 	if (!cl_timedemo->integer)
 	{
-		if (cl_async->integer)
-		{
-			if (cls.state == ca_connected) {
-				if (packet_delta < 100) {
-					packet_frame = qfalse;
-				}
-			}
-			else {
-				if (packet_delta < 1000 / cl_maxfps->integer)
-					packet_frame = qfalse;	// packetrate is too high
-			}
-
-			if (!packet_frame && extratime < 1000 / r_maxfps->integer)
-				return;	// framerate is too high
-		}
-		else
-		{
 			if (cls.state == ca_connected) {
 				if (extratime < 100)
 					return;			// don't flood packets out while connecting
 			}
 			else {
-				if (extratime < 1000 / cl_maxfps->integer)
+				if (extratime < 1000 / cl_maxFps->integer)
 					return;			// framerate is too high
 			}
-		}
+		
 	}
 	// let the mouse activate or deactivate
 	IN_Frame ();

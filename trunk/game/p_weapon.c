@@ -46,6 +46,119 @@ static void P_ProjectSource(gclient_t *client, vec3_t point, vec3_t distance, ve
 	G_ProjectSource(point, _distance, forward, right, result);
 }
 */
+float mod_dist_point_to_line(vec3_t point, vec3_t linepoint, vec3_t linedir)
+{
+	vec3_t temp, temp2;
+
+	VectorSubtract(point, linepoint, temp);
+	CrossProduct(temp, linedir, temp2);
+
+	return VectorLength(temp2) / VectorLength(linedir);
+}
+
+edict_t *mod_GetLeadoffVec(edict_t *self, vec3_t fireorigin, float rad, float projspeed, int bydist, vec3_t firedir)
+{
+	edict_t *other; /*any potential target besides yourself*/
+	edict_t *best; /*best victim so far*/
+
+	vec3_t viewvec;  /*your line of site*/
+	vec3_t guessdir;
+	vec3_t bestvec; /*the best guess for the direction of your blaster fire*/
+	float bestdist, dist;  /*distance of the other guy and the shortest distance encountered*/
+
+
+	vec3_t temp, temp2, otherdir;
+	float d, t;
+	double alpha, beta, rho;
+	double a, b, c, t1, t2;
+
+	//gi.dprintf("Checking Targets\n");
+
+	AngleVectors(self->client->v_angle, viewvec, NULL, NULL); /*get the view direction*/
+
+	best = NULL;
+	other = findradius(NULL, fireorigin, rad); /*find something*/
+
+	while (other) {
+		if ((other->svflags & SVF_MONSTER) && other->health > 0 && other != self) { /*might have to modify these*/
+			if (visible(self, other) && infront(self, other)) {
+				/*player is in front and visible*/
+
+				/*calculate lead off*/
+				VectorSubtract(other->s.origin, other->s.old_origin, otherdir);
+				alpha = VectorNormalize(otherdir); /*alpha = speed,  otherdir=direction vector*/
+
+				if (alpha > .05 && projspeed > 0) { /*if speed is significant, this value may have to be changed*/
+					d = mod_dist_point_to_line(fireorigin, other->s.origin, otherdir); /*distance from the firepoint to the
+																						the line on which the enemy is running*/
+
+					beta = projspeed; /*our projectile speed*/
+
+					VectorSubtract(fireorigin, other->s.origin, temp);
+					CrossProduct(temp, otherdir, temp2);  //temp2 now holds the normal to a plane defined by fireorigin and other->s.origin
+					CrossProduct(temp2, otherdir, temp);
+					VectorNormalize(temp); /*temp holds the direction from the point to the line*/
+
+					VectorScale(temp, d, guessdir);
+					VectorAdd(guessdir, fireorigin, guessdir);
+					VectorSubtract(guessdir, other->s.origin, guessdir);
+					rho = VectorLength(guessdir); /*the length from other->s.origin to the point where the perpendicular vector from fireorigin intersects*/
+
+					/*now, a little quadratic equation solving...*/
+					a = alpha * alpha - beta * beta;
+					b = -2 * alpha * rho;
+					c = rho * rho + d * d;
+
+					t1 = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
+					t2 = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
+
+					t = (t1 >= 0) ? t1 : t2; /*positive solution is the correct one*/
+
+					VectorScale(otherdir, t * alpha, guessdir);
+					VectorAdd(other->s.origin, guessdir, guessdir);
+					VectorSubtract(guessdir, fireorigin, guessdir); /*now we have our best guess*/
+				}
+				else {
+					/*enemy is standing still, so just get a simple direction vector*/
+					VectorSubtract(other->s.origin, fireorigin, guessdir);
+				}
+
+
+				if (bydist) {
+					dist = guessdir[0] * guessdir[0] + guessdir[1] * guessdir[1] + guessdir[2] * guessdir[2];
+
+					if (!best || dist < bestdist) {
+						best = other;
+						VectorCopy(guessdir, bestvec);
+						bestdist = dist;
+					}
+				}
+				else {
+					/*choose best as the person most in front of us*/
+					VectorNormalize(guessdir);
+					dist = DotProduct(viewvec, guessdir);
+
+					if (!best || dist > bestdist) {
+						best = other;
+						VectorCopy(guessdir, bestvec);
+						bestdist = dist;
+					}
+				}
+			}
+		}
+		other = findradius(other, self->s.origin, rad); /*find the next entity*/
+	}
+
+	if (!best) /*No targets aquired, so just fire forward as usual*/
+		AngleVectors(self->client->v_angle, firedir, NULL, NULL);
+	else {
+		//gi.dprintf("Target %s Aquired\n", best->classname);
+		VectorCopy(bestvec, firedir);
+		VectorNormalize(firedir);
+	}
+
+	return best;
+}
 
 /// Berserker: также меняет forward
 void P_ProjectSource(edict_t *ent, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
@@ -775,6 +888,7 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	vec3_t	forward, right;
 	vec3_t	start;
 	vec3_t	offset;
+//	vec3_t firevec; /*Added: Direction to fire*/
 
 	if (is_quad)
 		damage *= 4;
@@ -787,6 +901,10 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	ent->client->kick_angles[0] = -1;
 
 	fire_blaster (ent, start, forward, damage, 1000, effect, hyper);
+	/*Added:Get LeadOff for nearest badguy*/
+//	mod_GetLeadoffVec(ent, start, 2048, 1000, qfalse, firevec);
+//	fire_blaster(ent, start, firevec, damage, 1000, effect, hyper);
+	/*End Modification*/
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -803,6 +921,7 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 
 void Weapon_Blaster_Fire (edict_t *ent) {
 	int		damage;
+
 
 	if (deathmatch->value)
 		damage = 15;
