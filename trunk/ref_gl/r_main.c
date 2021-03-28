@@ -1415,11 +1415,12 @@ void R_RegisterCvars(void)
 	r_fogEditor->help =					 "type fogEdit ? for help list.";
 
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
-	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", 0);
+	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", CVAR_ARCHIVE);
 
 	r_lutId =							Cvar_Get("r_lutId", "0", CVAR_ARCHIVE);
 	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
 	r_colorTempK->help =				"Color Temperature in Kelvins (from 1000K to 40000K)";
+	r_useColorCorrection =				Cvar_Get("r_useColorCorrection", "1", CVAR_ARCHIVE);
 
 	r_earthSky = 						Cvar_Get("r_earthSky", "0", 0);
 	r_earthSunIntens =					Cvar_Get("r_earthSunIntens", "12.0", 0);

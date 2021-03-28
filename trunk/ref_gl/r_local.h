@@ -259,6 +259,7 @@ cvar_t	*r_colorBalanceRed;
 cvar_t	*r_colorBalanceGreen;
 cvar_t	*r_colorBalanceBlue;
 cvar_t	*r_srgbColorBuffer;
+cvar_t	*r_useColorCorrection;
 
 cvar_t *vid_ref;
 

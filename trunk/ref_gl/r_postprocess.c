@@ -333,9 +333,11 @@ void R_FilmFilter (void)
 	R_DrawFullScreenQuad ();
 }
 
-void R_GammaRamp (void) 
-{
-	
+void R_GammaRamp (void){
+
+	if (!r_useColorCorrection->integer)
+		return;
+
 	GL_BindProgram (gammaProgram);
 
 	glCopyTextureSubImage2D(r_screenTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -359,6 +361,9 @@ void R_ColorTemperatureCorrection(void){
 
 	if (r_colorTempK->value < 1000.0)
 		return;
+	
+	if (!r_useColorCorrection->integer)
+		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
@@ -377,6 +382,9 @@ void R_ColorTemperatureCorrection(void){
 void R_lutCorrection(void)
 {
 	if (!lutCount)
+		return;
+
+	if (!r_useColorCorrection->integer)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
