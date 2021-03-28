@@ -222,7 +222,7 @@ void IN_StartupXInput(void)
 
 	}
 
-	/// Berserker: если ничего выбралось и если есть хоть один рабочий контроллер, выберем его
+	/// Berserker: пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 	if (xInputActiveController == -1 && firstDev != -1)
 		xInputActiveController = firstDev;
 
@@ -286,30 +286,6 @@ void SetRumble(int devNum, int rumbleLow, int rumbleHigh) {
 
 	if (err != ERROR_SUCCESS)
 		Com_Printf(S_COLOR_RED"XInputSetState error: 0x%x", err);
-}
-
-void CL_SetRumble(int low, int high, int end) {
-
-#ifdef _WIN32
-	rumble.startTime = cl.time;
-	rumble.endTime = rumble.startTime + end;
-
-	SetRumble(xInputActiveController, low, high);
-#endif
-}
-
-void CL_ShotdownRumble() {
-
-#ifdef _WIN32
-	if (rumble.startTime <= 0)
-		return;
-
-	int currTime = cl.time;
-	if (rumble.endTime < currTime) {
-		SetRumble(xInputActiveController, 0, 0);
-		rumble.endTime = rumble.startTime = 0;
-	}
-#endif
 }
 
 extern cvar_t *cl_forwardspeed;
