@@ -741,6 +741,12 @@
     <None Include="..\baseq2\glsl\include\global.inc">
       <Filter>Source Files\Renderer\glsl\include</Filter>
     </None>
+    <None Include="..\baseq2\glsl\shadowMask.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\shadowMask.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\q2.rc">

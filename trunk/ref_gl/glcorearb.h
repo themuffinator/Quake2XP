@@ -85,6 +85,19 @@ extern "C" {
 #endif
 #endif /* GL_EXT_depth_bounds_test */
 
+#ifndef GL_ARB_color_buffer_float
+#define GL_ARB_color_buffer_float 1
+#define GL_RGBA_FLOAT_MODE_ARB            0x8820
+#define GL_CLAMP_VERTEX_COLOR_ARB         0x891A
+#define GL_CLAMP_FRAGMENT_COLOR_ARB       0x891B
+#define GL_CLAMP_READ_COLOR_ARB           0x891C
+#define GL_FIXED_ONLY_ARB                 0x891D
+	typedef void (APIENTRYP PFNGLCLAMPCOLORARBPROC) (GLenum target, GLenum clamp);
+#ifdef GL_GLEXT_PROTOTYPES
+	GLAPI void APIENTRY glClampColorARB(GLenum target, GLenum clamp);
+#endif
+#endif /* GL_ARB_color_buffer_float */
+
 #ifndef GL_VERSION_1_0
 #define GL_VERSION_1_0 1
 typedef void GLvoid;

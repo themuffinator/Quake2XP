@@ -82,6 +82,8 @@ extern qboolean ru_loc;
 
 float ClampCvar(float min, float max, float value);
 int ClampCvarInteger(int min, int max, int value);
+qboolean b_stricmp(char *str1, char *str2);
+unsigned Com_HashKey(const char *string);
 
 //#ifdef _WIN32
 //extern _CRT_JIT_INTRINSIC _CRTIMP __checkReturn int __cdecl toupper(__in int _C);

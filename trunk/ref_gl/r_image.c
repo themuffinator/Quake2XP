@@ -116,14 +116,14 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 int upload_width, upload_height;
 qboolean uploaded_paletted;
 
-image_t *GL_LoadPic(char *name, byte * pic, int width, int height,
-					imagetype_t type, int bits);
+image_t *GL_LoadPic(char *name, byte * pic, int width, int height, imagetype_t type, int bits, uint _hash);
 
 int gl_tex_solid_format = GL_RGBA8;
 int gl_tex_alpha_format = GL_RGBA8;
 
 int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;	
 int gl_filter_max = GL_LINEAR;
+
 
 
 int CalcMipmapCount(int w, int h)
@@ -478,7 +478,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER,		gl_filter_min);
 		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER,		gl_filter_max);
 		glTextureParameteri(imageIdx, GL_TEXTURE_BASE_LEVEL,		0);
-		glTextureParameteri(imageIdx, GL_TEXTURE_MAX_LEVEL,		numMips);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MAX_LEVEL,			numMips);
 	}
 	else
 	{
@@ -541,38 +541,24 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	return GL_Upload32(trans, width, height, mipmap, qfalse, qtrue);
 }
 
-// Berserker stuff
-inline char b_chrt(char sym)
-{
-	if ((sym > 0x40) && (sym < 0x5b)) return sym + 0x20;		// "a" - "A"
-	if (sym == 0x5c) return 0x2f;						// "/" - "\"
-	return sym;
-}
 
-qboolean b_stricmp(char* str1, char* str2)
-{
-	int i = 0;
-	while (1)
-	{
-		char ch1 = b_chrt(str1[i]);
-		char ch2 = b_chrt(str2[i]);
-		if ((ch1 == 0) && (ch2 == 0)) return qfalse;		// equal
-		if (ch1 != ch2) return qtrue;					// not equal
-		i++;
-	}
-}
 // Knightmare - free single pic
 void R_FreePic(char* name)
 {
 	int		i;
 	image_t* image;
+	uint  hash = Com_HashKey(name);
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++)
 	{
 		if (!image->registration_sequence)
 			continue;		// free image_t slot
+		
 		if (image->type != it_pic)
 			continue;		// only free pics
+		
+		if (image->hash != hash)
+			continue;
 
 		if (!b_stricmp(name, image->bare_name)){
 			// free it
@@ -592,7 +578,7 @@ This is also used as an entry point for the generated r_notexture
 ================
 */
 
-image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t type, int bits)
+image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t type, int bits, uint _hash)
 {
 	image_t* image;
 
@@ -624,6 +610,11 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	image->picScale_w = 1.0;
 	image->picScale_h = 1.0;
 	image->type = type;
+	if (_hash)
+		image->hash = _hash;
+	else
+		image->hash = Com_HashKey(name);
+
 
 	// Knightmare- Nexus's image replacement scaling code
 	len = strlen(name);
@@ -676,10 +667,11 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	imageIdx = image->texnum;
 
 	qboolean srgb = qfalse;
-
-	if (image->type == it_pic) {
-		if (!strstr(image->name, "_bump"))
-			srgb = qtrue;
+	if (r_srgbColorBuffer->integer) {
+		if (image->type == it_pic) {
+			if (!strstr(image->name, "_bump"))
+				srgb = qtrue;
+		}
 	}
 
 	qboolean unScaled = qfalse;
@@ -805,7 +797,7 @@ image_t *GL_LoadWal(char *name)
 	ofs = LittleLong(mt->offsets[0]);
 
 
-	image = GL_LoadPic(name, (byte *) mt + ofs, width, height, it_wall, 8);
+	image = GL_LoadPic(name, (byte *) mt + ofs, width, height, it_wall, 8, 0);
 
 	FS_FreeFile((void *) mt);
 
@@ -825,10 +817,10 @@ char override = 0;
 image_t *GL_FindImage(char *name, imagetype_t type)
 {
 	image_t *image;
-	int i, len;
+	int i, len, width, height;
+	uint hash = Com_HashKey(name);
 	byte *pic, *palette;
-	int width, height;
-	
+
 	if (!name)
 		return NULL;			
 	len = strlen(name);
@@ -836,13 +828,17 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		return NULL;			
 
 	// look for it
-	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
-		if (!strcmp(name, image->name)) {
-			image->registration_sequence = registration_sequence;
-			return image;
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++)
+	{
+		if (image->hash == hash)
+		{
+			if (!b_stricmp(image->name, name)){
+
+				image->registration_sequence = registration_sequence;
+				return image;
+			}
 		}
 	}
-
 	// 
 	// load the pic from disk
 	// 
@@ -919,7 +915,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 	
-	image = GL_LoadPic(name, pic, width, height, type, 8);
+	image = GL_LoadPic(name, pic, width, height, type, 8, Com_HashKey(name));
 
 	} else if (!strcmp(name + len - 4, ".wal")) {
 
@@ -933,7 +929,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32);
+		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
 		
 	}
 
@@ -943,7 +939,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32);
+		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
 	}
 
 
@@ -953,7 +949,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, it_pic, 24);
+		image = GL_LoadPic(name, pic, width, height, it_pic, 24, Com_HashKey(name));
 	} 
 	else if (!strcmp(name + len - 4, ".png")) {
 		IL_LoadImage(name, &pic, &width, &height, IL_PNG);
@@ -961,7 +957,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32);
+		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
 	}
 	else
 		return NULL;
@@ -1007,7 +1003,7 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32);
+		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
 
 	}
 
@@ -1017,7 +1013,7 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32);
+		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
 	}
 
 
@@ -1027,7 +1023,7 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 24);
+		image = GL_LoadPic(name, pic, width, height, type, 24, Com_HashKey(name));
 	}
 	else if (!strcmp(name + len - 4, ".png")) {
 		IL_LoadImage(name, &pic, &width, &height, IL_PNG);
@@ -1035,7 +1031,7 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 		if (!pic)
 			return NULL;
 
-		image = GL_LoadPic(name, pic, width, height, type, 32);
+		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
 	}
 	else
 		return NULL;
@@ -1227,7 +1223,7 @@ GL_ShutdownImages
 ===============
 */
 void GL_ShutdownImages(void) {
-	int i, j;
+	int i;
 	image_t *image;
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
@@ -1240,12 +1236,18 @@ void GL_ShutdownImages(void) {
 		memset(image, 0, sizeof(*image));
 	}
 
-	// Berserker's fix for old Q2 bug:
-	// free lightmaps
-	if (gl_lms.texnum) {
-		j = TEXNUM_LIGHTMAPS;
-		qglDeleteTextures(gl_lms.texnum, &j);		
+
+	GLuint ids[MAX_LIGHTMAPS * 3];
+	for (i = 0; i < XPLM_NUMVECS; i++) {
+		ids[i * 3 + 0] = TEXNUM_LIGHTMAPS + i + 1;
+
+		// FIXME: include XPLM ones only when necessary
+		ids[i * 3 + 1] = TEXNUM_LIGHTMAPS + i + 1 + MAX_LIGHTMAPS;
+		ids[i * 3 + 2] = TEXNUM_LIGHTMAPS + i + 1 + MAX_LIGHTMAPS * 2;
 	}
+
+	qglDeleteTextures(i * 3, ids);
+
 
 	if (skyCube) {
 		glMakeTextureHandleNonResidentARB(skyCube_handle);

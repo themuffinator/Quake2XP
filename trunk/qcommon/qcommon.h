@@ -790,7 +790,7 @@ void FS_FreeFile (void *buffer);
 void FS_CreatePath (char *path);
 
 int FS_filelength (qFILE *f);
-int FS_filelength2 (FILE *f);
+
 
 char **FS_ListFiles (char *findname, int *numfiles, unsigned musthave, unsigned canthave);
 char **FS_ListFilesAll (char *findname, int *numfiles, unsigned musthave, unsigned canthave);

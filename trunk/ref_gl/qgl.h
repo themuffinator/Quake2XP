@@ -802,6 +802,8 @@ extern PFNGLGENERATETEXTUREMIPMAPPROC			glGenerateTextureMipmap;
 extern PFNGLTEXTURESTORAGE3DPROC				glTextureStorage3D;
 extern PFNGLTEXTURESUBIMAGE3DPROC				glTextureSubImage3D;
 
+extern PFNGLCLAMPCOLORARBPROC					qglClampColorARB;
+
 #ifdef _WIN32
 
 extern	PFNWGLCREATECONTEXTATTRIBSARBPROC		qwglCreateContextAttribsARB;

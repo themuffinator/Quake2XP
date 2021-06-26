@@ -49,6 +49,7 @@ QUAKE FILESYSTEM
 typedef struct {
 	char	name[MAX_QPATH];
 	int		filepos, filelen;
+	unsigned hash;
 } packfile_t;
 
 typedef enum {
@@ -64,6 +65,7 @@ typedef struct pack_s {
 	int			size;
 	packfile_t	*files;
 	packtype_t	packtype;
+	unsigned	hash;
 } pack_t;
 
 char	fs_gamedir[MAX_OSPATH];
@@ -114,19 +116,6 @@ int FS_filelength (qFILE *f) {
 
 	return end;
 }
-
-int FS_filelength2 (FILE *f) {
-	int		pos;
-	int		end;
-
-	pos = ftell (f);
-	fseek (f, 0, SEEK_END);
-	end = ftell (f);
-	fseek (f, pos, SEEK_SET);
-
-	return end;
-}
-
 
 /*
 ============
@@ -224,6 +213,7 @@ int FS_FOpenFile (const char *filename, qFILE *qfile) {
 	qfile->f = 0;
 	qfile->z = 0;
 	file_from_pak = 0;
+	unsigned hash_filename = Com_HashKey(filename);
 
 	// search through the path, one element at a time
 	for (search = fs_searchpaths; search; search = search->next) {
@@ -233,8 +223,11 @@ int FS_FOpenFile (const char *filename, qFILE *qfile) {
 				// look through all the pak file elements
 				pak = search->pack;
 				for (i = 0; i < pak->numfiles; i++) {
-					if (!Q_strcasecmp (pak->files[i].name, filename)) {	// found it!
-						file_from_pak = 1;
+				//	if (!Q_strcasecmp (pak->files[i].name, filename)) {	// found it!
+					if (pak->files[i].hash == hash_filename)
+						if (!b_stricmp(pak->files[i].name, (char*)filename))
+						{	// found it!	
+					file_from_pak = 1;
 						Com_DPrintf ("PackFile: %s : %s\n", pak->filename, filename);
 						// open a new file on the pakfile
 						qfile->f = fopen (pak->filename, "rb");
@@ -473,6 +466,7 @@ pack_t *FS_LoadPackFile (char *packfile) {
 	// parse the directory
 	for (i = 0; i < numpackfiles; i++) {
 		strcpy (newfiles[i].name, info[i].name);
+		newfiles[i].hash = Com_HashKey(newfiles[i].name);
 		newfiles[i].filepos = LittleLong (info[i].filepos);
 		newfiles[i].filelen = LittleLong (info[i].filelen);
 	}

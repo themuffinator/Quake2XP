@@ -32,7 +32,9 @@ void Mod_LoadSpriteModel(model_t * mod, void *buffer);
 void Mod_LoadBrushModel(model_t * mod, void *buffer);
 void Mod_LoadAliasModel(model_t * mod, void *buffer);
 void Mod_LoadMD3(model_t *mod, void *buffer);
-
+extern char loadingMessages[5][96];
+extern float loadingPercent;
+extern void SCR_UpdateScreen(void);
 byte mod_novis[MAX_MAP_LEAFS / 8];
 
 #define	MAX_MOD_KNOWN	512
@@ -964,7 +966,8 @@ void Mod_LoadTexinfo(lump_t * l) {
 				}
 			}
 		}
-
+		Com_sprintf(loadingMessages[0], sizeof(loadingMessages[0]), va("Loading Map... Textures [%s]", name));
+		SCR_UpdateScreen();
 		// load texture configuration file
 		Com_sprintf(name, sizeof(name), "materials/%s.mtr", purename);
 		x = FS_LoadFile(name, (void **)&buff);
@@ -1082,6 +1085,111 @@ void BuildSurfaceNeighbours(msurface_t *surf) {
 				surf->polys->neighbours[i] = tempEdge->poly[j];
 	}
 }
+
+/*
+================
+GL_BuildPolygonFromSurface
+================
+*/
+void GL_BuildPolygonFromSurface(msurface_t *fa) {
+	int			i, lindex, lnumverts;
+	medge_t *pedges, *r_pedge;
+	int			vertpage;
+	float *vec;
+	float		s, t;
+	glpoly_t *poly;
+	vec3_t		total;
+	temp_connect_t *tempEdge;
+
+	fa->numVertices = fa->numEdges;
+	fa->numIndices = (fa->numVertices - 2) * 3;
+
+	// reconstruct the polygon
+	pedges = currentmodel->edges;
+	lnumverts = fa->numEdges;
+	vertpage = 0;
+
+	VectorClear(total);
+	//
+	// draw texture
+	//
+	poly = (glpoly_t *)Hunk_Alloc(sizeof(glpoly_t) + (lnumverts - 4) * VERTEXSIZE * sizeof(float));
+	poly->next = fa->polys;
+	poly->flags = fa->flags;
+	fa->polys = poly;
+	poly->numVerts = lnumverts;
+
+	currentmodel->memorySize += sizeof(glpoly_t) + (lnumverts - 4) * VERTEXSIZE * sizeof(float);
+
+	// reserve space for neighbour pointers
+	// FIXME: pointers don't need to be 4 bytes
+	poly->neighbours = (glpoly_t **)Hunk_Alloc(lnumverts * 4);
+
+	for (i = 0; i < lnumverts; i++) {
+		lindex = currentmodel->surfEdges[fa->firstedge + i];
+
+		if (lindex > 0) {
+			r_pedge = &pedges[lindex];
+			vec = currentmodel->vertexes[r_pedge->v[0]].position;
+		}
+		else {
+			r_pedge = &pedges[-lindex];
+			vec = currentmodel->vertexes[r_pedge->v[1]].position;
+		}
+		s = DotProduct(vec,
+			fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
+		s /= fa->texInfo->image->width;
+
+		t = DotProduct(vec,
+			fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
+		t /= fa->texInfo->image->height;
+
+		VectorAdd(total, vec, total);
+		VectorCopy(vec, poly->verts[i]);
+		poly->verts[i][3] = s;
+		poly->verts[i][4] = t;
+
+		//
+		// lightmap texture coordinates
+		//
+		s = DotProduct(vec, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
+		s -= fa->texturemins[0];
+		s += fa->light_s * (float)loadmodel->lightmap_scale;
+		s += (float)loadmodel->lightmap_scale / 2.0;
+		s /= LIGHTMAP_SIZE * (float)loadmodel->lightmap_scale;
+
+		t = DotProduct(vec, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
+		t -= fa->texturemins[1];
+		t += fa->light_t * (float)loadmodel->lightmap_scale;
+		t += (float)loadmodel->lightmap_scale / 2.0;
+		t /= LIGHTMAP_SIZE * (float)loadmodel->lightmap_scale;
+
+		poly->verts[i][5] = s;
+		poly->verts[i][6] = t;
+
+		// Store edge data for shadow volumes
+		tempEdge = tempEdges + abs(lindex);
+		if (tempEdge->used < 2) {
+			tempEdge->poly[tempEdge->used] = poly;
+			tempEdge->used++;
+		}
+		else
+			Com_DPrintf("GL_BuildPolygonFromSurface: Edge used by more than 2 surfaces\n");
+
+	}
+
+	poly->numVerts = lnumverts;
+
+	VectorScale(total, 1.0f / (float)lnumverts, total);
+
+	fa->c_s =
+		(DotProduct(total, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3])
+		/ fa->texInfo->image->width;
+	fa->c_t =
+		(DotProduct(total, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3])
+		/ fa->texInfo->image->height;
+}
+
 
 /*
 =================
@@ -1220,6 +1328,7 @@ void Mod_BuildVertexCache() {
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
+
 
 void Mod_LoadFaces(lump_t * l) {
 	dface_t		*in;
@@ -1920,9 +2029,6 @@ Mod_LoadBrushModel
 
 =================
 */
-extern float loadingPercent;
-extern void SCR_UpdateScreen(void);
-extern char loadingMessages[5][96];
 
 void Mod_UpdateLoadingBar(float percent, char *text) {
 

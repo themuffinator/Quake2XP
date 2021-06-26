@@ -22,7 +22,7 @@ void Sys_WindowsInfo() {
 	
 	for (int i = 0; i < UI_NUM_LANGS; i++) {
 		if (lang == ui_Language[i].num) {
-			Com_Printf("\nUI Language:   "S_COLOR_YELLOW"%s\n", ui_Language[i].description);
+			Com_Printf("\nUI Language:       "S_COLOR_YELLOW"%s\n", ui_Language[i].description);
 
 			if (ui_Language[i].num == 1049 || ui_Language[i].num == 1092 || ui_Language[i].num == 1133 || ui_Language[i].num == 1157)
 				ru_loc = qtrue;
@@ -30,48 +30,26 @@ void Sys_WindowsInfo() {
 			break;
 		}
 	}
+	Com_Printf("User Name:         "S_COLOR_YELLOW"%s\n", GetUserName(s, &len) ? s : "");
+	Com_Printf("Computer Name:     "S_COLOR_YELLOW"%s\n", GetComputerName(s2, &len2) ? s2 : "");
 
-	Com_Printf("User Name:     "S_COLOR_YELLOW"%s\n", GetUserName(s, &len) ? s : "");
-	Com_Printf("Computer Name: "S_COLOR_YELLOW"%s\n", GetComputerName(s2, &len2) ? s2 : "");
+//	LoadKeyboardLayout("00000409", KLF_ACTIVATE); // eng
+//	LoadKeyboardLayout("00000419", KLF_ACTIVATE); //rus
+	HKL currentLayout = GetKeyboardLayout(0);
+	uint kbLang = (uint)currentLayout & 0x0000FFFF;
+	
+	for (int i = 0; i < UI_NUM_LANGS; i++) {
+		if (kbLang == ui_Language[i].num) {
+			Com_Printf("Keyboard Language: "S_COLOR_YELLOW"%s\n", ui_Language[i].description);
+			break;
+		}
+	}
 }
 
 
 /*=============
 CPU DETECTION
 =============*/
-
-
-
-int MeasureCpuSpeed()
-{
-	unsigned __int64	start, end, counter, stop, frequency;
-	uint speed;
-
-	QueryPerformanceFrequency((LARGE_INTEGER *)&frequency);
-
-	__asm {
-		rdtsc
-		mov dword ptr[start + 0], eax
-		mov dword ptr[start + 4], edx
-	}
-
-	QueryPerformanceCounter((LARGE_INTEGER *)&stop);
-	stop += frequency;
-
-	do {
-		QueryPerformanceCounter((LARGE_INTEGER *)&counter);
-	} while (counter < stop);
-
-	__asm {
-		rdtsc
-		mov dword ptr[end + 0], eax
-		mov dword ptr[end + 4], edx
-	}
-
-	speed = (unsigned)((end - start) / 1000000);
-	return speed;
-
-}
 
 typedef BOOL(WINAPI *LPFN_GLPI)(
 	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION,
@@ -201,6 +179,21 @@ void SYS_GetCpuCount()
 	free(buffer);
 }
 
+void  Sys_GetCpuSpeed(void) {
+	int cpuInfo[4] = { 0, 0, 0, 0 };
+	__cpuid(cpuInfo, 0);
+	if (cpuInfo[0] >= 0x16) {
+		__cpuid(cpuInfo, 0x16);
+
+		Com_Printf("Processor Base Frequency:  " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " GHz\n", (float)cpuInfo[0]/1000.0);
+		Com_Printf("Maximum Frequency:         " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " GHz\n", (float)cpuInfo[1]/1000.0);
+		Com_Printf("Bus (Reference) Frequency: " S_COLOR_GREEN "%4d" S_COLOR_WHITE " MHz\n", cpuInfo[2]);
+	}
+	else {
+		Com_Printf(S_COLOR_MAGENTA"CPUID level 16h unsupported\n");
+	}
+
+}
 
 void Sys_CpuID()
 {
@@ -209,8 +202,6 @@ void Sys_CpuID()
 	int			CPUInfo[4] = { -1 };
 	int			nFeatureInfo = 0;
 	uint	    nIds, nExIds, i;
-	uint		dwCPUSpeed = MeasureCpuSpeed();
-
 	qboolean    SSE3 = qfalse;
 	qboolean	SSE4 = qfalse;
 	qboolean	SSE41 = qfalse;
@@ -298,9 +289,8 @@ void Sys_CpuID()
 			Com_Printf("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[i]);
 			
 			SYS_GetCpuCount();
-			
-			float GHz = (float)dwCPUSpeed * 0.001;
-			Com_Printf("CPU Speed: ~"S_COLOR_GREEN"%.3f"S_COLOR_WHITE" GHz\n", GHz);
+			Sys_GetCpuSpeed();
+
 			Com_Printf("Supported Extensions: ");
 
 			__cpuid(CPUInfo, 0x80000001);
@@ -445,7 +435,7 @@ void GetDiskInfos()
 			}
 			if (result == 0)
 			{
-				Com_Printf("%s " S_COLOR_GREEN "%s" S_COLOR_WHITE " Empty", msg, strDrive);
+				Com_Printf("%s " S_COLOR_GREEN "%s" S_COLOR_WHITE " No Disk", msg, strDrive);
 			}
 			else
 			{
@@ -749,7 +739,10 @@ qboolean Sys_CheckWindowsVersion() {
 					sprintf(S2, "\n    'May 2020 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 					break;
 				case 2009:
-					sprintf(S2, "\n    '20H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					if(rtl_OsVer.dwBuildNumber == 19043)
+						sprintf(S2, "\n    '21H1 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					else
+						sprintf(S2, "\n    '20H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 					break;
 				default:
 					sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);

@@ -515,7 +515,7 @@ void Con_DrawInput (void) {
 
 	for (i = 0; i < con.lineWidth; i++)
 		//	Draw_Char ((i + 1) << 3, con.vislines - 15, text[i]);
-		Draw_CharScaled ((i*fontscale + 1) * (8 * intervalScale), con.vislines - 15 * fontscale, fontscale, fontscale, text[i]);
+		Draw_CharScaled((i*fontscale + 1) * (8 * intervalScale), con.vislines - 15 * fontscale, fontscale, fontscale, text[i]);
 
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;

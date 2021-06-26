@@ -70,6 +70,7 @@ void CreateDSTtex(void) {
 	image->upload_width = 16;
 	image->upload_height = 16;
 	image->type = it_pic;
+	image->hash = Com_HashKey(image->name);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
 	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -111,6 +112,7 @@ image_t *R_CreateTexture(char *texName, uint targetTex, uint intFormat, uint for
 	image->upload_width = width;
 	image->upload_height = height;
 	image->type = type;
+	image->hash = Com_HashKey(image->name);
 
 	if (mipmap)
 		image->numMips = CalcMipmapCount(width, height);
@@ -120,6 +122,10 @@ image_t *R_CreateTexture(char *texName, uint targetTex, uint intFormat, uint for
 	glCreateTextures(targetTex, 1, &image->texnum);
 	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, warpS);
 	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, warpT);
+	
+//	if(intFormat == GL_DEPTH24_STENCIL8)
+//		glTextureParameteri(image->texnum, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_STENCIL_INDEX);
+
 	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, filterMin);
 	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, filterMag);
 
@@ -215,6 +221,36 @@ void CreateSSAOBuffer(void) {
 
 }
 
+void R_ShadowFBO() {
+
+	qboolean statusOK;
+
+	Com_Printf("Load "S_COLOR_YELLOW "SHADOW FBO ");
+
+	r_shadowMask = R_CreateTexture("***r_shadowMask***", GL_TEXTURE_RECTANGLE, GL_R8, GL_RED, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_INT, qfalse);
+//	int rb = 0;
+//	qglGenRenderbuffers(1, &rb);
+//	qglBindRenderbuffer(GL_RENDERBUFFER, rb);
+//	qglRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width, vid.height);
+//	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	qglGenFramebuffers(1, &fbo.stencil);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo.stencil);
+//	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rb);
+//	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rb);
+
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_shadowMask->texnum, 0);
+//	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_RECTANGLE, r_shadowMask->texnum, 0);
+
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (!statusOK)
+		Com_Printf(S_COLOR_RED"Failed!");
+	else
+		Com_Printf(S_COLOR_WHITE"succeeded\n");
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
 
 void Load3dLut(void) {
 	int		i, j, len;
@@ -248,6 +284,8 @@ void Load3dLut(void) {
 		image->upload_width = vid.width;
 		image->upload_height = vid.height;
 		image->type = it_pic;
+		image->hash = Com_HashKey(image->name);
+
 		r_3dLut[j] = image;
 
 		Com_sprintf(checkname, sizeof(checkname), "gfx/lut/lut_%i.lut", j);
@@ -380,6 +418,7 @@ image_t *R_LoadLightFilter (int id) {
 	strcpy (image->name, name);
 	image->registration_sequence = registration_sequence;
 	image->type = it_pic;
+	image->hash = Com_HashKey(image->name);
 
 	glCreateTextures (GL_TEXTURE_CUBE_MAP, 1, &image->texnum);
 
@@ -465,9 +504,9 @@ void R_InitEngineTextures (void) {
 	static byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x10 };
 	static byte	white[1][1][4]	= { 0xff, 0xff, 0xff, 0xff };
 
-	r_defBump	= GL_LoadPic ("***r_defBump***",	(byte *)bump, 1, 1, it_bump, 32);
-	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_bump, 32);
-	r_notexture = GL_LoadPic ("***r_notexture***",	(byte *)notex, 1, 1, it_wall, 32);
+	r_defBump	= GL_LoadPic ("***r_defBump***",	(byte *)bump, 1, 1, it_bump, 32, 0);
+	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_bump, 32, 0);
+	r_notexture = GL_LoadPic ("***r_notexture***",	(byte *)notex, 1, 1, it_wall, 32, 0);
 
 	r_particletexture[PT_DEFAULT] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
 	r_particletexture[PT_BUBBLE] = GL_FindImage ("gfx/particles/bubble.png", it_wall);
@@ -768,7 +807,7 @@ void GL_LevelShot_f(void) {
 	ilDeleteImages(1, ImagesToSave);
 
 	// Done!
-	Com_Printf("Wrote level shot %s\n", picname);
+	Com_Printf("Wrote level shot %s\n", & picname);
 
 }
 

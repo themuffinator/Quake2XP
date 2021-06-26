@@ -176,7 +176,7 @@ Com_HashKey
 
 =================
 */
-unsigned Com_HashKey (const char *string, unsigned size) {
+unsigned Com_ProgramHashKey (const char *string, unsigned size) {
 	int			i;
 	unsigned	hash = 0;
 	char		letter;
@@ -234,7 +234,7 @@ static glslProgram_t *R_ProgramForName (const char *name) {
 	glslProgram_t	*program;
 	unsigned	hash;
 
-	hash = Com_HashKey (name, PROGRAM_HASH_SIZE);
+	hash = Com_ProgramHashKey(name, PROGRAM_HASH_SIZE);
 
 	for (program = programHashTable[hash]; program; program = program->nextHash) {
 		if (!Q_stricmp (program->name, name))
@@ -519,7 +519,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 	program->valid = qtrue;
 
 	// add to the hash
-	hash = Com_HashKey (program->name, PROGRAM_HASH_SIZE);
+	hash = Com_ProgramHashKey(program->name, PROGRAM_HASH_SIZE);
 	program->nextHash = programHashTable[hash];
 	programHashTable[hash] = program;
 
@@ -876,6 +876,15 @@ void R_InitPrograms (void) {
 	Com_Printf("Load "S_COLOR_YELLOW"shadow volumes program"S_COLOR_WHITE" ");
 	shadowProgram = R_FindProgram("shadow", S_DEFAULT);
 	if (shadowProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+	Com_Printf("Load "S_COLOR_YELLOW"shadow blur program"S_COLOR_WHITE" ");
+	shadowMaskProgram = R_FindProgram("shadowMask", S_DEFAULT);
+	if (shadowMaskProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
 	else {

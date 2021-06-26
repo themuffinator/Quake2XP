@@ -1458,6 +1458,32 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 			ps->gunangles[i],
 			cl.lerpfrac);
 	}
+
+	// q2pro - adjust the gun origin so that the gun doesn't intersect with walls
+	{
+		vec3_t view_dir, right_dir, up_dir;
+		vec3_t gun_real_pos, gun_tip;
+		const float gun_length = 28.f;
+		const float gun_right = 10.f;
+		const float gun_up = -5.f;
+		trace_t trace;
+		static vec3_t mins = { -4, -4, -4 }, maxs = { 4, 4, 4 };
+
+		AngleVectors(cl.refdef.viewangles, view_dir, right_dir, up_dir);
+		VectorMA(gun.origin, gun_right, right_dir, gun_real_pos);
+		VectorMA(gun_real_pos, gun_up, up_dir, gun_real_pos);
+		VectorMA(gun_real_pos, gun_length, view_dir, gun_tip);
+
+		trace = CM_BoxTrace(gun_real_pos, gun_tip, mins, maxs, 0, MASK_SOLID);
+
+		if (trace.fraction != 1.0f)
+		{
+			VectorMA(trace.endpos, -gun_length, view_dir, gun.origin);
+			VectorMA(gun.origin, -gun_right, right_dir, gun.origin);
+			VectorMA(gun.origin, -gun_up, up_dir, gun.origin);
+		}
+	}
+
 	AngleVectors	(cl.refdef.viewangles, fv, rv, up);
 	VectorMA		(cl.refdef.vieworg, 10, fv, smoke_puff);
 	VectorMA		(cl.refdef.vieworg, 6.7, fv, shell_puff);
@@ -1478,7 +1504,7 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 			gun.oldframe = ops->gunframe;
 	}
 
-	gun.flags = RF_MINLIGHT | RF_DEPTHHACK | RF_WEAPONMODEL;
+	gun.flags = RF_MINLIGHT /* | RF_DEPTHHACK*/ | RF_WEAPONMODEL;
 	gun.backlerp = 1.0 - cl.lerpfrac;
 	VectorCopy (gun.origin, gun.oldorigin);	// don't lerp at all
 	VectorCopy (gun.origin, viewweapon);

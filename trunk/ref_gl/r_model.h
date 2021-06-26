@@ -233,7 +233,7 @@ typedef struct model_s {
 	modtype_t	type;
 	int			numFrames;
 	int			flags;
-
+	uint		hash;
 	//
 	// volume occupied by the model graphics
 	//

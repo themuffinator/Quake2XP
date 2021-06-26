@@ -178,6 +178,8 @@ image_t	*r_conBump;
 
 image_t	*r_whiteMap;
 image_t *skinBump;
+image_t *r_shadowMask;
+image_t *r_depthMask;
 
 #define		MAX_FILTERS 256
 image_t		*r_lightCubeMap[MAX_FILTERS];
@@ -597,7 +599,7 @@ int Draw_GetPalette (void);
 struct image_s *R_RegisterSkin (char *name);
 
 image_t *GL_LoadPic (char *name, byte * pic, int width, int height,
-	imagetype_t type, int bits);
+	imagetype_t type, int bits, uint _hash);
 
 image_t *GL_FindImage (char *name, imagetype_t type);
 
@@ -868,22 +870,19 @@ qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const v
 
 void Q_strncatz (char *dst, int dstSize, const char *src);
 
-#define	MAX_LIGHTMAPS		4		// max number of atlases
+#define	MAX_LIGHTMAPS		4
 #define	LIGHTMAP_SIZE		2048
-#define XPLM_NUMVECS		3
+#define XPLM_NUMVECS		3	// Do not change
+#define LIGHTMAP_BLOCKLIGHTS_SIZE LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3
 
 typedef struct {
+	// Atlas texId for each vector.
 	int texnum;
-
-	msurface_t *lightmap_surfaces[MAX_LIGHTMAPS];
-
+	// The lightmap texture data needs to be kept in
+	// main memory so texsubimage can update properly.
+	byte		lightmap_buffer[3][LIGHTMAP_BLOCKLIGHTS_SIZE];
+	// Block loading.
 	int allocated[LIGHTMAP_SIZE];
-
-	// the lightmap texture data needs to be kept in
-	// main memory so texsubimage can update properly
-	byte lightmap_buffer[3][LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3];
-	uint64_t	lm_handle[3];
-
 } gllightmapstate_t;
 
 gllightmapstate_t gl_lms;
@@ -965,6 +964,7 @@ glslProgram_t		*fbo2screenProgram;
 glslProgram_t		*globalFogProgram;
 glslProgram_t		*spriteProgram;
 glslProgram_t		*screenFlashProgram;
+glslProgram_t		*shadowMaskProgram;
 
 
 void GL_BindProgram (glslProgram_t *program);

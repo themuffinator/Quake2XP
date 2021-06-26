@@ -36,25 +36,6 @@ const vec3_t r_xplmBasisVecs[XPLM_NUMVECS] = {
 	{ -0.40824829046386301636621401245098f, -0.70710678118654752440084436210485f, 0.57735026918962576450914878050195f }
 };
 
-/*
-=============================================================================
-
-LIGHTMAP ALLOCATION
-
-=============================================================================
-*/
-/*
-===============
-R_SetCacheState
-
-===============
-*/
-void R_SetCacheState (msurface_t * surf) {
-	int i;
-
-	for (i = 0; i < MAXLIGHTMAPS && surf->styles[i] != 255; i++)
-		surf->cached_light[i] = r_newrefdef.lightstyles[surf->styles[i]].white;
-}
 
 /*
 ===============
@@ -65,8 +46,9 @@ then normalize into GL format in gl_lms.lightmap_buffer.
 ===============
 */
 //extern int *mod_xplmOffsets;		// face light offsets from .xplm file, freed after level is loaded
+
 void R_BuildLightMap (msurface_t *surf, int stride) {
-	static float s_blocklights[LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3];		// intermediate RGB buffer for combining multiple lightmaps
+	static float s_blocklights[LIGHTMAP_BLOCKLIGHTS_SIZE];		// intermediate RGB buffer for combining multiple lightmaps
 	const int numVecs = loadmodel->useXPLM ? 3 : 1;
 	int smax, tmax;
 	int r, g, b, cmax;
@@ -88,8 +70,8 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 	size = smax * tmax;
 	stride -= smax * 3;
 
-	if (size > (sizeof(s_blocklights) / (int)loadmodel->lightmap_scale))
-		VID_Error (ERR_DROP, "R_BuildLightMap(): bad s_blocklights size.");
+	if (size > ((sizeof(float) * LIGHTMAP_BLOCKLIGHTS_SIZE) / (int)loadmodel->lightmap_scale))
+		VID_Error(ERR_DROP, "R_BuildLightMap(): bad gl_lms.blocklights size.");
 
 	// count maps
 	if (surf->samples)
@@ -202,9 +184,6 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 
 }
 
-static void LM_InitBlock (void) {
-	memset (gl_lms.allocated, 0, sizeof(gl_lms.allocated));
-}
 
 // FIXME: remove dynamic completely
 static void LM_UploadBlock () {
@@ -228,9 +207,6 @@ static void LM_UploadBlock () {
 		qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[i]);
 
 	}
-
-	if (++gl_lms.texnum == MAX_LIGHTMAPS)
-		VID_Error (ERR_DROP, "LM_UploadBlock(): MAX_LIGHTMAPS (%i) exceeded.\n", MAX_LIGHTMAPS);
 }
 
 // returns a texture number and the position inside it
@@ -265,109 +241,6 @@ static qboolean LM_AllocBlock (int w, int h, int *x, int *y) {
 	return qtrue;
 }
 
-/*
-================
-GL_BuildPolygonFromSurface
-================
-*/
-void GL_BuildPolygonFromSurface (msurface_t * fa) {
-	int			i, lindex, lnumverts;
-	medge_t		*pedges, *r_pedge;
-	int			vertpage;
-	float		*vec;
-	float		s, t;
-	glpoly_t	*poly;
-	vec3_t		total;
-	temp_connect_t *tempEdge;
-
-	fa->numVertices = fa->numEdges;
-	fa->numIndices = (fa->numVertices - 2) * 3;
-
-	// reconstruct the polygon
-	pedges = currentmodel->edges;
-	lnumverts = fa->numEdges;
-	vertpage = 0;
-
-	VectorClear (total);
-	//
-	// draw texture
-	//
-	poly = (glpoly_t*)Hunk_Alloc (sizeof(glpoly_t)+(lnumverts - 4) * VERTEXSIZE * sizeof(float));
-	poly->next = fa->polys;
-	poly->flags = fa->flags;
-	fa->polys = poly;
-	poly->numVerts = lnumverts;
-
-	currentmodel->memorySize += sizeof(glpoly_t)+(lnumverts - 4) * VERTEXSIZE * sizeof(float);
-
-	// reserve space for neighbour pointers
-	// FIXME: pointers don't need to be 4 bytes
-	poly->neighbours = (glpoly_t **)Hunk_Alloc (lnumverts * 4);
-
-	for (i = 0; i < lnumverts; i++) {
-		lindex = currentmodel->surfEdges[fa->firstedge + i];
-
-		if (lindex > 0) {
-			r_pedge = &pedges[lindex];
-			vec = currentmodel->vertexes[r_pedge->v[0]].position;
-		}
-		else {
-			r_pedge = &pedges[-lindex];
-			vec = currentmodel->vertexes[r_pedge->v[1]].position;
-		}
-		s = DotProduct (vec,
-			fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
-		s /= fa->texInfo->image->width;
-
-		t = DotProduct (vec,
-			fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
-		t /= fa->texInfo->image->height;
-
-		VectorAdd (total, vec, total);
-		VectorCopy (vec, poly->verts[i]);
-		poly->verts[i][3] = s;
-		poly->verts[i][4] = t;
-
-		//
-		// lightmap texture coordinates
-		//
-		s = DotProduct (vec, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
-		s -= fa->texturemins[0];
-		s += fa->light_s * (float)loadmodel->lightmap_scale;
-		s += (float)loadmodel->lightmap_scale / 2.0;
-		s /= LIGHTMAP_SIZE * (float)loadmodel->lightmap_scale;
-
-		t = DotProduct (vec, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3];
-		t -= fa->texturemins[1];
-		t += fa->light_t * (float)loadmodel->lightmap_scale;
-		t += (float)loadmodel->lightmap_scale / 2.0;
-		t /= LIGHTMAP_SIZE * (float)loadmodel->lightmap_scale;
-
-		poly->verts[i][5] = s;
-		poly->verts[i][6] = t;
-
-		// Store edge data for shadow volumes
-		tempEdge = tempEdges + abs (lindex);
-		if (tempEdge->used < 2) {
-			tempEdge->poly[tempEdge->used] = poly;
-			tempEdge->used++;
-		}
-		else
-			Com_DPrintf ("GL_BuildPolygonFromSurface: Edge used by more than 2 surfaces\n");
-
-	}
-
-	poly->numVerts = lnumverts;
-
-	VectorScale (total, 1.0f / (float)lnumverts, total);
-
-	fa->c_s =
-		(DotProduct (total, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3])
-		/ fa->texInfo->image->width;
-	fa->c_t =
-		(DotProduct (total, fa->texInfo->vecs[1]) + fa->texInfo->vecs[1][3])
-		/ fa->texInfo->image->height;
-}
 
 /*
 ========================
@@ -384,15 +257,9 @@ void GL_CreateSurfaceLightmap (msurface_t * surf) {
 	smax = (surf->extents[0] / loadmodel->lightmap_scale) + 1;
 	tmax = (surf->extents[1] / loadmodel->lightmap_scale) + 1;
 
-	if (!LM_AllocBlock (smax, tmax, &surf->light_s, &surf->light_t)) {
-		LM_UploadBlock ();
-		LM_InitBlock ();
+	if (!LM_AllocBlock (smax, tmax, &surf->light_s, &surf->light_t))
+		VID_Error (ERR_FATAL, "GL_CreateSurfaceLightmap(): consecutive calls to LM_AllocBlock(%d, %d) failed.\n", smax, tmax);
 
-		if (!LM_AllocBlock (smax, tmax, &surf->light_s, &surf->light_t))
-			VID_Error (ERR_FATAL, "GL_CreateSurfaceLightmap(): consecutive calls to LM_AllocBlock(%d, %d) failed.\n", smax, tmax);
-	}
-
-	R_SetCacheState (surf);
 	R_BuildLightMap (surf, LIGHTMAP_SIZE * 3);
 }
 

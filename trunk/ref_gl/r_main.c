@@ -679,6 +679,7 @@ void R_DrawPlayerWeaponAmbient(void)
 		if (currentmodel->type == mod_alias_md3)
 			R_DrawMD3Mesh(qtrue);
 	}
+//	R_CaptureDepthBuffer();
 
 	// draw transluscent shells
 	GL_Enable(GL_BLEND);
@@ -1008,12 +1009,13 @@ void R_RenderView (refdef_t *fd) {
 	}
 	R_DrawTransEntities();
 
+	R_DrawPlayerWeapon();
+
 	R_CaptureColorBuffer();
 	R_MotionBlur();
 	R_CaptureColorBuffer();
 	R_GlobalFog();
 
-	R_DrawPlayerWeapon();
 }
 
 

@@ -31,6 +31,54 @@ vec3_t vec3_origin = { 0, 0, 0 };
 
 qboolean ru_loc;
 
+/*
+ =================
+ Com_HashKey
+
+ Returns hash key for string
+ =================
+*/
+
+inline char b_chrt(char sym)
+{
+	if ((sym > 0x40) && (sym < 0x5b)) return sym + 0x20;		// "a" - "A"
+	if (sym == 0x5c) return 0x2f;						// "/" - "\"
+	return sym;
+}
+
+qboolean b_stricmp(char *str1, char *str2)
+{
+	int i = 0;
+	while (1)
+	{
+		char ch1 = b_chrt(str1[i]);
+		char ch2 = b_chrt(str2[i]);
+
+		if ((ch1 == 0) && (ch2 == 0))
+			return qfalse;		// equal
+		if (ch1 != ch2)
+			return qtrue;					// not equal
+		i++;
+	}
+}
+
+unsigned Com_HashKey(const char *string)
+{
+	unsigned	hashKey = 0;
+	int			i;
+	char		letter;
+
+	for (i = 0; string[i]; i++)
+	{
+		letter = b_chrt(string[i]);
+		hashKey = (hashKey + i) * 37 + letter;
+	}
+
+	return hashKey;
+}
+
+
+
 void Q_memcpy (void *dest, const void *src, const size_t count);
 
 void RotatePointAroundVector (vec3_t dst, const vec3_t dir, const vec3_t point, float degrees) {

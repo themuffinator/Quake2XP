@@ -324,6 +324,7 @@ typedef struct image_s {
 	//lut description
 	float		lutSize;
 	char		*lutName;
+	uint		hash;
 } image_t;
 
 
@@ -414,7 +415,7 @@ typedef struct msurface_s {
 
 	int lightmapTexNum;
 
-	uint64 lightMapTex_handle;
+	uint64 lightMapTex_handle[3];
 
 	byte styles[MAXLIGHTMAPS];
 	float cached_light[MAXLIGHTMAPS];	// values currently used in
@@ -513,10 +514,14 @@ typedef struct {
 
 
 typedef struct {
-	uint	ssao;
 	uint	backBuf;
 	uint	mirror;
+	uint	nullfbo;
+	uint	ssao;
+	uint	stencil;
+
 }fbo_t;
+
 fbo_t fbo;
 
 

@@ -401,6 +401,10 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		else
 			qglUniform1i(U_LAVA_PASS, 0);
 
+		GL_MBind(GL_TEXTURE0, gl_state.lightmapOffcet + surf->lightmapTexNum);
+		GL_MBind(GL_TEXTURE1, gl_state.lightmapOffcet + surf->lightmapTexNum + MAX_LIGHTMAPS);
+		GL_MBind(GL_TEXTURE2, gl_state.lightmapOffcet + surf->lightmapTexNum + MAX_LIGHTMAPS * 2);
+
 		GL_SetBindlessTexture(U_TMU0, image->handle);
 		GL_SetBindlessTexture(U_TMU1, fx->handle);
 		GL_SetBindlessTexture(U_TMU2, normal->handle);
@@ -480,10 +484,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 
 	for (i = 0; i < numSceneSurfaces; i++){
 		s = sceneSurfaces[i];
-
-		GL_MBind(GL_TEXTURE0, gl_state.lightmapOffcet + s->lightmapTexNum);
-		GL_MBind(GL_TEXTURE1, gl_state.lightmapOffcet + s->lightmapTexNum + MAX_LIGHTMAPS);
-		GL_MBind(GL_TEXTURE2, gl_state.lightmapOffcet + s->lightmapTexNum + MAX_LIGHTMAPS * 2);
 	
 		// flush batch (new texture)
 		if (s->texInfo->image->texnum != oldTex)
@@ -1104,8 +1104,6 @@ void R_DrawBSP (void) {
 	currententity = &ent;
 
 	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
-
-	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
 		
 	R_ClearSkyBox();	
 
@@ -1235,9 +1233,6 @@ void R_DrawBrushModel (void) {
 
 	if (R_CullBox(mins, maxs))
 		return;
-
-	memset(gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
-
 
 	VectorSubtract(r_newrefdef.vieworg, currententity->origin, modelorg);
 
