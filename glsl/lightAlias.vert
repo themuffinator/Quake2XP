@@ -34,7 +34,8 @@ v_texCoord			= att_texCoordDiffuse;
 v_CubeCoord			= u_cubeMatrix		* vec4(att_position, 1.0);
 v_lightAtten		= (u_attenMatrix	* vec4(att_position, 1.0)).xyz;
 v_lightSpot			= (u_spotMatrix		* vec4(att_position, 1.0)).xyz;
-v_tangent       =  att_tangent;
+v_tangent			=  att_tangent;
+
 vec3 LV = u_LightOrg - att_position;
 v_lightVec.x = dot(LV, att_tangent);
 v_lightVec.y = dot(LV, att_binormal);
@@ -45,19 +46,14 @@ v_viewVec.x = dot(VV, att_tangent);
 v_viewVec.y = dot(VV, att_binormal);
 v_viewVec.z = dot(VV, att_normal); 
 
-mat3 m = mat3(u_modelViewProjectionMatrix);
-
-v_mvMatrix = u_modelViewMatrix;
-
 // calculate tangent to view space transform
+mat3 m = mat3(u_modelViewProjectionMatrix);
 v_tangentToView[0] = m * att_tangent;
 v_tangentToView[1] = m * att_binormal;
 v_tangentToView[2] = m * att_normal;
 
+v_mvMatrix = u_modelViewMatrix;
+
 gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
-
-v_tst = mat3(u_skyMatrix) * att_normal;
-
-vec4 pos = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
-v_positionVS = pos.xyz;
+v_positionVS =gl_Position.xyz;
 }

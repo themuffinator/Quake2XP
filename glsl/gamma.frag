@@ -36,20 +36,49 @@ vec3 ColorVibrance(in vec3 color){
 #define saturate(x)    clamp(x, 0.0, 1.0)
 #endif
 
-vec3 ACESFilm(vec3 x)
-{
-    float a = 2.51f;
-    float b = 0.03f;
-    float c = 2.43f;
-    float d = 0.59f;
-    float e = 0.14f;
-    return saturate((x*(a*x+b))/(x*(c*x+d)+e));
+vec3 uncharted2Tonemap(vec3 x) {
+  float A = 0.15;
+  float B = 0.50;
+  float C = 0.10;
+  float D = 0.20;
+  float E = 0.02;
+  float F = 0.30;
+  float W = 11.2;
+  return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
 }
+
+vec3 uncharted2(vec3 color) {
+  const float W = 11.2;
+  float exposureBias = 2.0;
+  vec3 curr = uncharted2Tonemap(exposureBias * color);
+  vec3 whiteScale = 1.0 / uncharted2Tonemap(vec3(W));
+  return curr * whiteScale;
+}
+
+float uncharted2Tonemap(float x) {
+  float A = 0.15;
+  float B = 0.50;
+  float C = 0.10;
+  float D = 0.20;
+  float E = 0.02;
+  float F = 0.30;
+  float W = 11.2;
+  return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
+}
+
+float uncharted2(float color) {
+  const float W = 11.2;
+  const float exposureBias = 2.0;
+  float curr = uncharted2Tonemap(exposureBias * color);
+  float whiteScale = 1.0 / uncharted2Tonemap(W);
+  return curr * whiteScale;
+}
+
 void main(void){
 
 vec3 color = BrightnesContrastSaturation(texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb, u_control.x, u_control.y, u_control.z);
 color = ColorVibrance(color);
-//color = ACESFilm(color);
+//color = uncharted2(color);
 fragData.rgb = pow(color, vec3(u_control.w));
 fragData.a = 1.0;
 }

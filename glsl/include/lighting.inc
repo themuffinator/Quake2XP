@@ -34,7 +34,7 @@ vec2 PhongLighting (const in vec3 N, const in vec3 L, const in vec3 V, const flo
 vec3 BlinnPhongLighting (in vec3 diffuse, in float specular, const in vec3 N, const in vec3 L, const in vec3 V, const float specPower) {
 
 	vec2 lightTerm;
-  float gloss = 0.75;
+	float gloss = 0.75;
 	lightTerm.x = max(dot(N, L), 0.0);
 	vec3 halfAngle = normalize(L + V);
 	lightTerm.y = pow(max(dot(N, halfAngle), 0.0), gloss * gloss * 256.0);
@@ -102,15 +102,15 @@ Sub Surface Scattering
 */
 vec4 SkinLighting (in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Diffuse, in float Att, in float Specular)
 {
-    float MaterialThickness = 0.2;
+    float MaterialThickness = 0.075;
     vec3 ExtinctionCoefficient = vec3(0.45, 0.25, 0.15);
     float backFaceSpecularIntens = 0.666;
 
     vec4 dotLN = vec4(HalfLambert(L, N) * Att);
     dotLN *= Diffuse;
      
-    vec3 indirectLightComponent = vec3(MaterialThickness * max(dot(N, L), 0.0));
-    indirectLightComponent += MaterialThickness * HalfLambert(V, L);
+    vec3 indirectLightComponent = vec3(MaterialThickness * max(dot(-N, L), 0.0));//
+    indirectLightComponent += MaterialThickness * HalfLambert(-V, L);//
     indirectLightComponent *= Att * ExtinctionCoefficient;
      
     vec3 rim = vec3(1.0 - max(dot(N, V), 0.0));
@@ -118,9 +118,11 @@ vec4 SkinLighting (in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Dif
     rim *= max(dot(N,L), 0.0) * Specular;
      
     vec4 finalCol = dotLN + vec4(indirectLightComponent, 1.0);
-    finalCol.rgb += (rim * backFaceSpecularIntens * Att * finalCol.a);
+    finalCol.rgb += (rim * backFaceSpecularIntens * Att);
     
-    finalCol.rgb += vec3(blinnPhongSpecular(N,L, 0.5) * Att * Specular * finalCol.a * 0.05);
+	Specular *= 0.025;
+    
+	finalCol.rgb += vec3(blinnPhongSpecular(N,L, 0.5) * Att * Specular);
     finalCol.rgb *= lightColor.rgb;
     finalCol.a = 1.0;
     return finalCol;   

@@ -9,10 +9,10 @@ layout (bindless_sampler, location = U_TMU1) uniform sampler2D		u_Add;
 layout (bindless_sampler, location = U_TMU2) uniform sampler2D		u_NormalMap;
 layout (bindless_sampler, location = U_TMU3) uniform sampler2DRect	u_ssaoMap;
 
-/*layout (bindless_sampler, location = U_TMU4) uniform sampler2D		u_LightMap0;
-layout (bindless_sampler, location = U_TMU5) uniform sampler2D		u_LightMap1;
-layout (bindless_sampler, location = U_TMU6) uniform sampler2D		u_LightMap2;
-*/
+//layout (bindless_sampler, location = U_TMU4) uniform sampler2D		u_LightMap0;
+//layout (bindless_sampler, location = U_TMU5) uniform sampler2D		u_LightMap1;
+//layout (bindless_sampler, location = U_TMU6) uniform sampler2D		u_LightMap2;
+
 layout (location = U_LM_TYPE)			uniform int		u_LightMapType;
 layout (location = U_USE_SSAO)			uniform int		u_ssao;
 layout (location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;    
@@ -58,12 +58,7 @@ void main (void) {
 			lm = whiteLM;
 		if(u_isLava == 0)
 			lm = texture(u_LightMap0, v_lTexCoord.xy).rgb;
-
-	if (u_LightMapType == 0)
-		fragData.xyz = diffuseMap * lm;
 		
-	if (u_LightMapType == 1) {
-
 		vec3 lm0 = lm;
 		vec3 lm1 = texture(u_LightMap1, v_lTexCoord.xy).rgb;
 		vec3 lm2 = texture(u_LightMap2, v_lTexCoord.xy).rgb;
@@ -103,7 +98,6 @@ void main (void) {
 		// Assume all shiny materials are metals of the same moderate roughness in Q2,
 		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
 		fragData.xyz = diffuseMap * mix(D, S, specular * u_specularScale);
-	}
       
 	if(u_envMapPass == 1){  
   

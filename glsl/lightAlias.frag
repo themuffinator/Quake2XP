@@ -56,8 +56,6 @@ in mat4			v_mvMatrix;
 #define	FRESNEL_MUL			1.0
 #define FRESNEL_EXP			1.6
 
-#define NORMAL_MUL			-0.02
-
 #define OPAQUE_OFFSET		4.0
 #define OPAQUE_MUL			(-1.0 / 512.0)
 
@@ -69,33 +67,28 @@ vec2 VS2UV (const in vec3 p) {
 	return (v.xy / v.w * 0.5 + 0.5) * u_viewport; 
 }
 
-vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specular){
+vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness){
 
 	if (u_useSSLR == 0)
-		return vec3(specular);
+		return vec3(0.0);
 
 	if(_sss <= 0.0)
-		return vec3(specular);
+		return vec3(0.0);
 
 	vec2 tc;
 	float sceneDepth;
 
-	// not need it?????
-	vec3 N = normal.xyz;
-	N.xy *= NORMAL_MUL;
-	N.z = 1.0;
-
-	N = normalize(v_tangentToView * normal.xyz);
+	vec3 N = normalize(v_tangentToView * normal.xyz);
 	vec3 V = normalize(v_positionVS);
 	V *= vec3(-1.0, 1.0, -1.0);
-
+	
 	vec3 R = reflect(V, N);
 
 	// Fresnel
 	float scale = FRESNEL_MUL * pow(1.0 - abs(dot(V, N)), FRESNEL_EXP);
 	// ignore invisible & facing into the camera reflections
 	if (scale < 0.05 || dot(R, V) < 0.0)
-		return vec3(specular);
+		return vec3(0.0);
 
 	// follow the reflected ray in increasing steps
 	vec3 rayPos = v_positionVS;
@@ -116,7 +109,7 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specu
 	}
 
 	if (i == MAX_STEPS)
-		return vec3(specular);
+		return vec3(0.0);
 
 	stepSize *= 0.5;
 	rayPos -= R * stepSize;
@@ -136,10 +129,7 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness, float specu
 			break;	// found it
 	}
 	vec3 reflectColor  = vec3(0.0);
-	vec2 texSize = textureSize(g_colorBufferMap);
-
-	reflectColor += blur13(g_colorBufferMap, tc, texSize, direction.xy).rgb;
-	reflectColor += blur13(g_colorBufferMap, tc, texSize, direction.zw).rgb;
+	reflectColor += boxBlur(g_colorBufferMap, tc, 16.0);
 
 	reflectColor *= metalness;
 
@@ -243,7 +233,7 @@ void main (void) {
 			if(u_blinnPhong == 1)
 				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
 			if(u_blinnPhong == 0)
-				metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness, specular.r), roughness, normalMap.xyz, L, V)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
+				metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
 			}		
 
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);	
