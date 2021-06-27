@@ -122,10 +122,6 @@ image_t *R_CreateTexture(char *texName, uint targetTex, uint intFormat, uint for
 	glCreateTextures(targetTex, 1, &image->texnum);
 	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, warpS);
 	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, warpT);
-	
-//	if(intFormat == GL_DEPTH24_STENCIL8)
-//		glTextureParameteri(image->texnum, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_STENCIL_INDEX);
-
 	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, filterMin);
 	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, filterMag);
 

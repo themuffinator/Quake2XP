@@ -222,7 +222,7 @@ void CL_PrepRefresh (void) {
 	Com_sprintf (loadingMessages[2], sizeof(loadingMessages[2]), "Loading Pics...");
 	Com_sprintf (loadingMessages[3], sizeof(loadingMessages[3]), "Loading Clients...");
 	loadingPercent = 0.0;
-	loadingLod = 4.0;
+	loadingLod = 6.0;
 
 	// let the render dll load the map
 	strcpy (mapname, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
@@ -235,9 +235,9 @@ void CL_PrepRefresh (void) {
 	R_BeginRegistration (mapname);
 	Com_Printf ("                                     \r");
 	Com_sprintf (loadingMessages[0], sizeof(loadingMessages[0]), "Loading Map...done");
-	loadingPercent = 35;
-	loadScreenColorFade = 0.35;
-	loadingLod = 3.0;
+	loadingPercent = 55;
+	
+	//loadingLod = 3.0;
 
 	// precache status bar pics
 	Com_Printf ("pics\r");
@@ -250,6 +250,10 @@ void CL_PrepRefresh (void) {
 
 	num_cl_weaponmodels = 1;
 	strcpy (cl_weaponmodels[0], "weapon.md2");
+	
+	int numModels = 0;
+	for (i = 1; i < MAX_MODELS && cl.configstrings[CS_MODELS + i][0]; i++)
+		numModels++;
 
 	for (i = 1; i < MAX_MODELS && cl.configstrings[CS_MODELS + i][0]; i++) {
 		strcpy (name, cl.configstrings[CS_MODELS + i]);
@@ -279,28 +283,40 @@ void CL_PrepRefresh (void) {
 		}
 		if (name[0] != '*')
 			Com_Printf ("                                     \r");
-		loadingPercent += 0.25;
+		loadingPercent = 55.0 + 34.0 * (float)i / (float)numModels;
+		loadScreenColorFade = 0.35 + 0.4 * (float)i / (float)numModels;
+		loadingLod = 3.0 - 2.0 * (float)i / (float)numModels;
 	}
 	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]), "Loading Models...done");
-	loadingPercent = 70;
-	loadScreenColorFade = 0.70;
-	loadingLod = 2.0;
+	loadingPercent = 90.0;
 
 	Com_Printf ("images\r", i);
 	SCR_UpdateScreen ();
+	
+	int numPics = 0;
+	for (i = 1; i < MAX_IMAGES && cl.configstrings[CS_IMAGES + i][0]; i++)
+		numPics++;
+
 	for (i = 1; i < MAX_IMAGES && cl.configstrings[CS_IMAGES + i][0]; i++) {
 
 		cl.image_precache[i] = Draw_FindPic (cl.configstrings[CS_IMAGES + i]);
 		SCR_UpdateScreen ();
 		Sys_SendKeyEvents ();	// pump message loop
-		loadingPercent += 0.25;
+		loadingPercent = 90.0 + 4.0 * (float)i / (float)numPics;
+		loadScreenColorFade = 0.75 + 0.25 * (float)i / (float)numPics;
+		loadingLod = 1.0 - 0.5 * (float)i / (float)numPics;
 	}
-	loadingLod = 1.0;
+
 	Com_Printf ("                                     \r");
 	Com_sprintf (loadingMessages[2], sizeof(loadingMessages[2]), "Loading Pics...done");
-	loadingPercent = 75;
-	loadingLod = 1.5;
-	loadScreenColorFade = 0.75;
+	loadingPercent = 95;
+	
+	int numClients = 0;
+	for (i = 0; i < MAX_CLIENTS; i++) {
+		if (!cl.configstrings[CS_PLAYERSKINS + i][0])
+			continue;
+		++numClients;
+	}
 
 	for (i = 0; i < MAX_CLIENTS; i++) {
 		if (!cl.configstrings[CS_PLAYERSKINS + i][0])
@@ -314,13 +330,14 @@ void CL_PrepRefresh (void) {
 		SCR_UpdateScreen ();
 		Sys_SendKeyEvents ();	// pump message loop
 		CL_ParseClientinfo (i);
-		loadingPercent += 1.0;
+		loadingPercent = 95.0 + 4.0 * (float)i / (float)numClients;
+		loadScreenColorFade = 1.0 + 0.2 * (float)i / (float)numClients;
+		loadingLod = 0.5 - 0.5 * (float)i / (float)numClients;
 	}
 	Com_Printf("                                     \r");
 	Com_sprintf(loadingMessages[3], sizeof(loadingMessages[3]), "Loading Clients...done");
-	loadingPercent = 85;
-	loadingLod = 0.5;
-	loadScreenColorFade = 1.0;
+
+	loadingPercent = 100;
 
 	CL_LoadClientinfo (&cl.baseclientinfo, "unnamed\\male/grunt");
 
@@ -338,9 +355,6 @@ void CL_PrepRefresh (void) {
 	Con_ClearNotify ();
 
 	SCR_UpdateScreen ();
-
-	loadingPercent = 100;
-	loadingLod = 0.0;
 
 	cl.refresh_prepped = qtrue;
 	cl.force_refdef = qtrue;		// make sure we have a valid refdef

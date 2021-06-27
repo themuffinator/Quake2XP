@@ -782,7 +782,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 	char       name[MAX_QPATH];
 	char       *purename;
 	int        count, next;
-	int        i, j, k, x;
+	int        i, j, k, x, z;
 	char		*buff;
 
 	in = (texInfo_t *)(mod_base + l->fileofs);
@@ -796,7 +796,10 @@ void Mod_LoadTexinfo(lump_t * l) {
 	loadmodel->texInfo = out = (mtexInfo_t*)Hunk_Alloc(count * sizeof(*out));
 	loadmodel->memorySize += count * sizeof(*out);
 
-
+	uint texCount = 0, nt = 0;
+	for (z = 0; z < count; z++) 
+		texCount++;
+	
 	for (i = 0; i < count; i++, in++, out++) {
 		for (j = 0; j < 2; j++)
 			for (k = 0; k < 4; k++)
@@ -902,6 +905,7 @@ void Mod_LoadTexinfo(lump_t * l) {
 						}
 				}
 		}
+
 		//
 		// Env Maps Loading
 		//
@@ -945,29 +949,20 @@ void Mod_LoadTexinfo(lump_t * l) {
 				}
 			}
 		}
+		extern float loadingLod;
 
-		Com_sprintf(name, sizeof(name), "overrides/%s_spec.tga", purename);
-		out->colorSpecular = GL_FindImage(name, it_wall);
+		nt++;
+		loadingPercent = 5.0 + 47.0 * (float)nt / (float)texCount;
+		loadScreenColorFade = 0.1 + 0.35 * (float)nt / (float)texCount;
+		loadingLod = 6.0 - 3.0 * (float)nt / (float)texCount;
 
-		if (!out->colorSpecular) {
-			Com_sprintf(name, sizeof(name), "overrides/%s_spec.dds", purename);
-			out->colorSpecular = GL_FindImage(name, it_wall);
-
-			if (!out->colorSpecular) {
-				Com_sprintf(name, sizeof(name), "textures/%s_spec.tga", in->texture);
-				out->colorSpecular = GL_FindImage(name, it_wall);
-
-				if (!out->colorSpecular) {
-					Com_sprintf(name, sizeof(name), "textures/%s_spec.dds", in->texture);
-					out->colorSpecular = GL_FindImage(name, it_wall);
-
-					if (!out->colorSpecular)
-						out->colorSpecular = r_notexture;
-				}
-			}
-		}
-		Com_sprintf(loadingMessages[0], sizeof(loadingMessages[0]), va("Loading Map... Textures [%s]", name));
+		char noext[MAX_QPATH];
+		strcpy(noext, name);
+		noext[strlen(noext) - 8] = 0;
+		// from 100 to 0 100 * (texCount - nt) / texCount
+		Com_sprintf(loadingMessages[0], sizeof(loadingMessages[0]), "Loading Map... Materials: %i%s [%s]", 100 * nt / texCount, "%", noext);
 		SCR_UpdateScreen();
+
 		// load texture configuration file
 		Com_sprintf(name, sizeof(name), "materials/%s.mtr", purename);
 		x = FS_LoadFile(name, (void **)&buff);
@@ -982,9 +977,6 @@ void Mod_LoadTexinfo(lump_t * l) {
 
 		}
 	}
-
-
-
 
 	// count animation frames
 	for (i = 0, out = loadmodel->texInfo; i < count; i++, out++) {
@@ -2095,29 +2087,29 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 
 	Mod_UpdateLoadingBar(2.0, "Planes");
 	Mod_LoadPlanes(&header->lumps[LUMP_PLANES]);
-	Mod_UpdateLoadingBar(5.0, "Textures");
+	Mod_UpdateLoadingBar(5.0, "Materials");
 	Mod_LoadTexinfo(&header->lumps[LUMP_TEXINFO]);
-	Mod_UpdateLoadingBar(10.0, "Faces");
+	Mod_UpdateLoadingBar(50.0, "Faces");
 	Mod_LoadFaces(&header->lumps[LUMP_FACES]);
 
 	if (loadmodel->useXPLM)
 		Z_Free(mod_xplmOffsets);
 
-	Mod_UpdateLoadingBar(15.0, "Mark Surfaces");
+	Mod_UpdateLoadingBar(52.25, "Mark Surfaces");
 	Mod_LoadMarksurfaces(&header->lumps[LUMP_LEAFFACES]);
-	Mod_UpdateLoadingBar(16.0, "Visibility");
+	Mod_UpdateLoadingBar(52.50, "Visibility");
 	Mod_LoadVisibility(&header->lumps[LUMP_VISIBILITY]);
-	Mod_UpdateLoadingBar(17.0, "Leafs");
+	Mod_UpdateLoadingBar(52.35, "Leafs");
 	Mod_LoadLeafs(&header->lumps[LUMP_LEAFS]);
-	Mod_UpdateLoadingBar(20.0, "Nodes");
+	Mod_UpdateLoadingBar(53.0, "Nodes");
 	Mod_LoadNodes(&header->lumps[LUMP_NODES]);
-	Mod_UpdateLoadingBar(22.0, "SubModel Surfaces");
+	Mod_UpdateLoadingBar(53.25, "SubModel Surfaces");
 	Mod_LoadsubModels(&header->lumps[LUMP_MODELS]);
-	Mod_UpdateLoadingBar(25.0, "Vertex Lighting");
+	Mod_UpdateLoadingBar(53.50, "Vertex Lighting");
 	Mod_GenerateLights(mod);
-	Mod_UpdateLoadingBar(28.0, "World Lights");
+	Mod_UpdateLoadingBar(53.75, "World Lights");
 	Load_LightFile();
-	Mod_UpdateLoadingBar(32.0, "Light Interaction");
+	Mod_UpdateLoadingBar(54.0, "Light Interaction");
 	R_CalcStaticLightInteraction();
 
 	mod->numFrames = 2;			// regular and alternate animation

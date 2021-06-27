@@ -2602,7 +2602,6 @@ void R_DrawLightFlare () {
 	
 	qglUniform2f(U_PARAM_VEC2_0, 1.0, 0.0);
 	qglUniform1f(U_PARAM_FLOAT_0, 10.0 * 1.5);
-	qglUniform1f(U_COLOR_MUL, 1.0);
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);

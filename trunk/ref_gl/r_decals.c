@@ -155,15 +155,14 @@ void R_RenderDecals(void)
 
 		texture = texId;
 
-		//GL_MBind(GL_TEXTURE0, texture);
 		GL_SetBindlessTexture(U_TMU0, texId);
 
         GL_BlendFunc(dl->sFactor, dl->dFactor);
 
-		if (dl->flags == DF_OVERBRIGHT)
-			qglUniform1f(U_COLOR_MUL, 2.0);
-		else
-			qglUniform1f(U_COLOR_MUL, 1.0);
+	//	if (dl->flags == DF_OVERBRIGHT)
+	//		qglUniform1f(U_COLOR_MUL, 2.0);
+	//	else
+	//		qglUniform1f(U_COLOR_MUL, 1.0);
 
         }
 
