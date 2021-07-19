@@ -387,7 +387,7 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 
 void R_SaveLights_f (void) {
 
-	char	name[MAX_QPATH], path[MAX_QPATH];
+	char	name[MAX_QPATH] = {0}, path[MAX_QPATH];
 	FILE	*f;
 	int		i = 0;
 
@@ -1902,7 +1902,7 @@ model_t *loadmodel;
 void Load_BspLights () {
 
 	int addLight, style, numlights, flag;
-	char *c, *token, key[256], *value, target[MAX_QPATH];
+	char *c, *token, key[256], *value = {0}, target[MAX_QPATH];
 	float color[3], origin[3], radius[3], cone;
 
 	if (!loadmodel) {
@@ -1983,7 +1983,7 @@ void Load_LightFile () {
 	vec3_t	angles, speed, color, origin, lOrigin, fOrg, occRad, occOrg;
 	char	*c, *token, key[256], *value, target[MAX_QPATH];
 	float	radius[3], cone, fSize, fogDensity;
-	char	name[MAX_QPATH], path[MAX_QPATH];
+	char	name[MAX_QPATH], path[MAX_QPATH] = {0};
 
 	if (!r_worldmodel) {
 		Com_Printf ("No map loaded.\n");

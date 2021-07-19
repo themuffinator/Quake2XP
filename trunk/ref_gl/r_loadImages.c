@@ -700,12 +700,11 @@ void R_InitEngineTextures (void) {
 =============================
 Universal GL_ScreenShot_f
 with DevIL Lib
-TGA JPG PNG BMP PCX support
 =============================
 */
 void GL_ScreenShot_f (void) {
 	FILE	*file;
-	char	picname[80], checkname[MAX_OSPATH];
+	char	picname[80] = {0}, checkname[MAX_OSPATH];
 	int		i, image = 0;
 	ILuint	ImagesToSave[1];
 	int		startTime, endTime;
@@ -774,7 +773,7 @@ void GL_ScreenShot_f (void) {
 }
 
 void GL_LevelShot_f(void) {
-	char	picname[80], checkname[MAX_OSPATH], shortName[MAX_QPATH];
+	char	picname[80] = {0}, checkname[MAX_OSPATH], shortName[MAX_QPATH];
 	int		image = 0;
 	ILuint	ImagesToSave[1];
 

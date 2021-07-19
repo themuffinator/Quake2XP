@@ -742,7 +742,10 @@ qboolean Sys_CheckWindowsVersion() {
 					if(rtl_OsVer.dwBuildNumber == 19043)
 						sprintf(S2, "\n    '21H1 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 					else
-						sprintf(S2, "\n    '20H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+						if (rtl_OsVer.dwBuildNumber == 19044)
+							sprintf(S2, "\n    '21H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+						else
+							sprintf(S2, "\n    '20H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 					break;
 				default:
 					sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);

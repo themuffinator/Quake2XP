@@ -677,6 +677,7 @@ typedef struct {
 	qboolean	wgl_no_error;
 	qboolean	wgl_swap_control_tear;
 	qboolean	depthBoundsTest;
+	qboolean	depthClamp;
 
 	int			numFormats, binaryFormats;
 	int			programId;
@@ -716,9 +717,6 @@ typedef struct {
 	GLfloat			polygonOffsetUnits;
 
 	qboolean		lineSmooth;
-
-	qboolean		depthClamp;
-	
 	qboolean		alphaTest;
 
 	qboolean		stencilTest;
