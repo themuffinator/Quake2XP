@@ -188,7 +188,7 @@ extern float loadingLod;
 
 #ifdef _WIN32
 extern int	xInputActiveController;
-void SetRumble(int inputDeviceNum, int rumbleLow, int rumbleHigh);
+void IN_SetRumble(int inputDeviceNum, int rumbleLow, int rumbleHigh);
 #endif
 
 void CL_PrepRefresh (void) {
@@ -209,7 +209,7 @@ void CL_PrepRefresh (void) {
 	SCR_AddDirtyPoint (viddef.width - 1, viddef.height - 1);
 
 #ifdef _WIN32
-	SetRumble(xInputActiveController, 0, 0);
+	IN_SetRumble(xInputActiveController, 0, 0);
 #endif
 
 	start = Sys_Milliseconds ();

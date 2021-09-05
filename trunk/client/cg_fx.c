@@ -1267,3 +1267,28 @@ void CL_ClearEffects (void) {
 	CL_ClearLightStyles ();
 	CL_ClearClEntities ();
 }
+
+#ifdef _WIN32
+extern int xInputActiveController;
+
+void CL_SetRumble(int low, int high, int end) {
+    rumble.startTime = cl.time;
+    rumble.endTime = rumble.startTime + end;
+
+    IN_SetRumble(xInputActiveController, low, high);
+}
+
+void CL_ShotdownRumble() {
+    if (rumble.startTime <= 0)
+        return;
+
+    int currTime = cl.time;
+    if (rumble.endTime < currTime) {
+        IN_SetRumble(xInputActiveController, 0, 0);
+        rumble.endTime = rumble.startTime = 0;
+    }
+}
+#else
+void CL_SetRumble(int low, int high, int end) {}
+void CL_ShotdownRumble() {}
+#endif

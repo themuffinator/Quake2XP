@@ -26,6 +26,9 @@ In Ubuntu they can be installed with the following command.
 $ sudo apt-get install build-essential libvorbis-dev libdevil-dev \
   libsdl1.2-dev libopenal-dev
 
+In Fedora 34:
+$ sudo dnf install -y SDL-devel libvorbis-devel DevIL-devel DevIL-ILUT-devel openal-soft-devel
+
 As the project uses the Waf build system, Python must also be present.
 Once you have the mentioned packages, build and install with:
 

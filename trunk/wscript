@@ -55,6 +55,7 @@ def build(bld):
 
     bld.env.append_value('CFLAGS', ['-Wno-unused-result'])
     bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
+    bld.env.append_value('CFLAGS', ['-fcommon'])
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
     #bld.env.append_value('CFLAGS', ['-pg', '-O3', '-march=native'])
     #bld.env.append_value('LINKFLAGS', ['-pg']) 

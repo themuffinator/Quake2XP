@@ -56,6 +56,7 @@ typedef struct {
 rumble_t rumble;
 void CL_SetRumble(int low, int high, int end);
 void CL_ShotdownRumble();
+
 //=============================================================================
 // Sound effect ID's:
 #define weapons_blastf1a		0
