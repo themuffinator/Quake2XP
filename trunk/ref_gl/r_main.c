@@ -859,7 +859,7 @@ static void R_DrawOpaqueEntities(void) {
 				R_DrawMD3Mesh(qfalse);
 				break;
 			default:
-				VID_Error(ERR_DROP, "Bad modeltype");
+				VID_Error(ERR_DROP, "Bad modeltype %i", currentmodel->type);
 				break;
 		}
 	}

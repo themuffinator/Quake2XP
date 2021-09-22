@@ -73,6 +73,8 @@ DWORD CountSetBits(ULONG_PTR bitMask)
 	return bitSetCount;
 }
 
+uint 	sys_numCpuCores=0;
+
 void SYS_GetCpuCount()
 {
 	LPFN_GLPI glpi = NULL;
@@ -171,11 +173,15 @@ void SYS_GetCpuCount()
 		ptr++;
 	}
 	Com_Printf("Physical Processor Packages: " S_COLOR_GREEN "%d\n", processorPackageCount);
+	Com_Printf("Number of NUMA nodes: " S_COLOR_GREEN "%d\n", numaNodeCount);
 	Com_Printf("Cores/Threads: " S_COLOR_GREEN "%d" S_COLOR_WHITE "|" S_COLOR_GREEN "%d\n", processorCoreCount, logicalProcessorCount);
 	Com_Printf("L1/L2/L3 Cache Size: " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb | " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb | " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb\n",
 		processorL1CacheSize >>10,
 		processorL2CacheSize >>10,
 		processorL3CacheSize >>10);
+
+	sys_numCpuCores = logicalProcessorCount;
+	
 	free(buffer);
 }
 
@@ -743,9 +749,9 @@ qboolean Sys_CheckWindowsVersion() {
 						sprintf(S2, "\n    '21H1 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 					else
 						if (rtl_OsVer.dwBuildNumber == 19044)
-							sprintf(S2, "\n    '21H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+							sprintf(S2, "\n    '21H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%d" S_COLOR_WHITE ")", ver);
 						else
-							sprintf(S2, "\n    '20H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+							sprintf(S2, "\n    '20H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%d" S_COLOR_WHITE ")", ver);
 					break;
 				default:
 					sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);

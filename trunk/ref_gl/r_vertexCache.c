@@ -180,8 +180,7 @@ void R_ShutDownVertexBuffers() {
 	qglDeleteBuffers(1, &vbo.vbo_BSP);
 	qglDeleteBuffers(1, &vbo.ibo_md3Shadow);
 
-	glDeleteVertexArrays(1, &vao.bsp_a);
-	glDeleteVertexArrays(1, &vao.bsp_l);
+	glDeleteVertexArrays(1, &vao.bsp);
 	glDeleteVertexArrays(1, &vao.shadow);
 	glDeleteVertexArrays(1, &vao.fullscreenQuad);
 	glDeleteVertexArrays(1, &vao.halfScreenQuad);

@@ -46,9 +46,16 @@ int SV_FindIndex (char *name, int start, int max, qboolean create) {
 	if (!create)
 		return 0;
 
-	if (i == max)
-		Com_Error (ERR_DROP, "*Index: overflow");
-
+	if (i == max) {
+		if (start == CS_MODELS)
+			Com_Printf("*Index: overflow for models\n");
+		else if (start == CS_SOUNDS)
+			Com_Printf("*Index: overflow for sounds\n");
+		else if (start == CS_IMAGES)
+			Com_Printf("*Index: overflow for images\n");
+		else
+			Com_Printf("*Index: overflow\n");
+	}
 	strncpy (sv.configstrings[start + i], name,
 		sizeof(sv.configstrings[i]));
 

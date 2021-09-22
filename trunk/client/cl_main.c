@@ -136,6 +136,10 @@ extern	char	*currentPlayerWeapon;
 
 extern cvar_t *Cvar_FindVar (char *var_name);
 
+#ifdef _WIN32
+extern void GLimp_InitCPU(void);
+#endif
+
 
 /// Modified by Berserker: ignore
 int CL_PMpointcontents2 (vec3_t point, struct model_s * ignore) {
@@ -1944,6 +1948,10 @@ void CL_Init (void) {
 
 	// in Windows sound must be initialized after window is created,
 	// but in Linux both work
+
+#ifdef _WIN32
+	GLimp_InitCPU();
+#endif // _WIN32
 
 	VID_Init ();
 	S_Init (1);

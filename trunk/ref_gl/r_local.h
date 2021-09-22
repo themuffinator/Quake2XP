@@ -767,8 +767,7 @@ int bn_offset;
 vbo_t vbo;
 
 typedef struct {
-	GLuint	bsp_a; 
-	GLuint	bsp_l;
+	GLuint	bsp; 
 	GLuint	shadow;
 	GLuint	shadowMD3;
 	GLuint	fonts;
@@ -869,7 +868,7 @@ qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const v
 void Q_strncatz (char *dst, int dstSize, const char *src);
 
 #define	MAX_LIGHTMAPS		4
-#define	LIGHTMAP_SIZE		2048
+#define	LIGHTMAP_SIZE		4096
 #define XPLM_NUMVECS		3	// Do not change
 #define LIGHTMAP_BLOCKLIGHTS_SIZE LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3
 

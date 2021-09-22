@@ -245,7 +245,6 @@ void CL_PrepRefresh (void) {
 	SCR_TouchPics ();
 	Com_Printf ("                                     \r");
 
-	CL_RegisterTEntModels ();
 	loadingLod = 2.5;
 
 	num_cl_weaponmodels = 1;
@@ -287,6 +286,8 @@ void CL_PrepRefresh (void) {
 		loadScreenColorFade = 0.35 + 0.4 * (float)i / (float)numModels;
 		loadingLod = 3.0 - 2.0 * (float)i / (float)numModels;
 	}
+	CL_RegisterTEntModels ();
+
 	Com_sprintf (loadingMessages[1], sizeof(loadingMessages[1]), "Loading Models...done");
 	loadingPercent = 90.0;
 

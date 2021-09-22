@@ -209,7 +209,7 @@ typedef struct mleaf_s {
 
 
 typedef enum {
-	mod_bad, mod_brush, mod_sprite, 
+	mod_brush, mod_sprite, 
 	mod_alias, mod_alias_md3	
 } modtype_t;
 

@@ -915,13 +915,20 @@ void SCR_DrawSpeeds (void) {
 	RE_SetColor (colorWhite);
 }
 
+#ifdef _WIN32
+void GLimp_GetCpuUtilization(unsigned* cpuUtil);
+extern 	uint sys_numCpuCores;
+#endif
+
 void SCR_DrawFPS (void) {
-	static	char	avrfps[10], minfps[22];
+	static	char	avrfps[10] = { 0 }, minfps[22] = { 0 }, cpuUtil[20] = {0};
 	static	int		fps = 0;
 	static	int		lastUpdate;
 	const	int		samPerSec = 4;
 	static	float	fpsAvg = 0;
 	float	fontscale = cl_fontScale->value;
+	static	unsigned	procUtil;
+	
 
 	fps++;
 
@@ -938,17 +945,21 @@ void SCR_DrawFPS (void) {
 		if (fpsAvg > cl.maxFps)
 			cl.maxFps = fpsAvg;
 
-			Com_sprintf(minfps, sizeof(minfps), "min/max %3d/%3d fps", cl.minFps, cl.maxFps);
-			Com_sprintf(avrfps, sizeof(avrfps), "%4d fps", (int)fpsAvg);
+			Com_sprintf(minfps, sizeof(minfps), "Min/Max %3d/%3d Fps", cl.minFps, cl.maxFps);
+			Com_sprintf(avrfps, sizeof(avrfps), "%4d Fps", (int)fpsAvg);
 
 		lastUpdate = curtime;
 		fpsAvg = samPerSec * (alpha * fps + ((1 - alpha) * fpsAvg) / samPerSec);
 		fps = 0;
+
+#ifdef _WIN32
+		GLimp_GetCpuUtilization(&procUtil);
+#endif
 	}
 
 	int avrFpsLengh = (int)strlen(avrfps);
 	int minFpsLengh = (int)strlen(minfps);
-	
+
 	if (cl_drawFPS->integer && (cls.state == ca_active)) {
 		
 		if (cl_drawFPS->integer == 2) {
@@ -957,6 +968,12 @@ void SCR_DrawFPS (void) {
 
 		} else
 			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
+
+#ifdef _WIN32
+		Com_sprintf(cpuUtil, sizeof(cpuUtil), "%3d Cpu Utilization", (int)procUtil / sys_numCpuCores);
+		int cpuUtilLengh = (int)strlen(cpuUtil);
+		Draw_StringScaled(viddef.width - cpuUtilLengh * 6 * fontscale, viddef.height * 0.65-60, fontscale, fontscale, cpuUtil);
+#endif
 
 		RE_SetColor (colorWhite);
 	}

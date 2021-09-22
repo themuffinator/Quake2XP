@@ -675,8 +675,11 @@ void VID_CheckChanges (void) {
 
 		cls.disable_screen = qfalse;
 		CL_InitImages ();
-		CL_CacheMenuModels();
+
+		CL_RegisterTEntModels();
 	}
+
+
 
 	/*
 	** update our window position

@@ -1193,7 +1193,7 @@ void Mod_BuildVertexCache() {
 	msurface_t      *surf;
 	int         i, vbo_size, vb, idx = 0, numIndices = 0;
 	int         xyz_size, st_size, lm_size, nm_size, tg_size, bn_size;
-	float   *buf;
+	float		*buf;
 
 	// calc vbo buffer size
 	vb = 0;
@@ -1272,12 +1272,11 @@ void Mod_BuildVertexCache() {
 	free(buf);
 
 	// Gen VAO
-	glDeleteVertexArrays(1, &vao.bsp_a);
-	glDeleteVertexArrays(1, &vao.bsp_l);
+	glDeleteVertexArrays(1, &vao.bsp);
 
 	//light surfaces
-	glGenVertexArrays(1, &vao.bsp_l);
-	glBindVertexArray(vao.bsp_l);
+	glGenVertexArrays(1, &vao.bsp);
+	glBindVertexArray(vao.bsp);
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 
@@ -1296,29 +1295,6 @@ void Mod_BuildVertexCache() {
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
-
-	//ambient surfaces
-	glGenVertexArrays(1, &vao.bsp_a);
-	glBindVertexArray(vao.bsp_a);
-
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_TEX1);
-	qglEnableVertexAttribArray(ATT_NORMAL);
-	qglEnableVertexAttribArray(ATT_TANGENT);
-	qglEnableVertexAttribArray(ATT_BINORMAL);
-
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
-	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
-	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
-	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
-
-	glBindVertexArray(0);
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 
@@ -2918,6 +2894,7 @@ struct model_s *R_RegisterModel(char *name) {
 	}
 
 	mod = Mod_ForName(name, qfalse);
+
 	if (mod) {
 		mod->registration_sequence = registration_sequence;
 
@@ -3093,6 +3070,7 @@ Mod_Free
 */
 
 void Mod_Free(model_t * mod) {
+
 	Hunk_Free(mod->extraData, mod->extraDataSize);
 
 	if (mod->type == mod_alias) {
@@ -3104,12 +3082,13 @@ void Mod_Free(model_t * mod) {
 	memset(mod, 0, sizeof(*mod));
 }
 
+
 /*
 ================
 Mod_FreeAll
 ================
 */
-void Mod_FreeAll(void) {
+void Mod_FreeAll() {
 	int i;
 
 	for (i = 0; i < mod_numknown; i++) {

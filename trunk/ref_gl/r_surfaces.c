@@ -1062,7 +1062,7 @@ void R_DrawLightWorld(void)
 
 	GL_BindProgram(lightWorldProgram);
 
-	glBindVertexArray(vao.bsp_l);
+	glBindVertexArray(vao.bsp);
 
 	if (!currentShadowLight->isStatic) {
 		r_lightTimestamp++;
@@ -1107,7 +1107,7 @@ void R_DrawBSP (void) {
 		
 	R_ClearSkyBox();	
 
-	glBindVertexArray(vao.bsp_a);
+	glBindVertexArray(vao.bsp);
 
 	numSceneSurfaces = 0;
 	R_RecursiveWorldNode(r_worldmodel->nodes);
@@ -1253,7 +1253,7 @@ void R_DrawBrushModel (void) {
 	VectorSubtract(r_origin, currententity->origin, tmp);
 	Mat3_TransposeMultiplyVector(currententity->axis, tmp, BmodelViewOrg);
 
-	glBindVertexArray(vao.bsp_a);
+	glBindVertexArray(vao.bsp);
 
 	numSceneSurfaces = 0;
 	R_AddAmbientBmodelSurfaces();
@@ -1421,7 +1421,7 @@ void R_DrawLightBrushModel (void) {
 
 	GL_BindProgram(lightWorldProgram);
 
-	glBindVertexArray(vao.bsp_l);
+	glBindVertexArray(vao.bsp);
 
 	r_lightTimestamp++;
 	numInteractionSurfs = 0;
