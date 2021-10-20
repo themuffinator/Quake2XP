@@ -1048,6 +1048,7 @@ static menulist_s s_options_alResempler_box;
 static menulist_s s_options_alquality_list;
 static menulist_s s_options_hrtf;
 static menulist_s s_options_console_action;
+static menulist_s s_options_cpuUtil_box;
 static menulist_s s_options_fps_box;
 static menulist_s s_options_time_box;
 
@@ -1095,6 +1096,10 @@ static void FpsFunc(void *unused) {
 	Cvar_SetValue("cl_drawFPS", s_options_fps_box.curvalue);
 }
 
+static void CpuUtilFunc(void* unused) {
+	Cvar_SetValue("sys_cpuUtilization", s_options_cpuUtil_box.curvalue);
+}
+
 static void TimeFunc(void *unused) {
 	Cvar_SetValue("cl_drawTime", s_options_time_box.curvalue);
 }
@@ -1119,10 +1124,10 @@ static void ControlsSetMenuItemValues(void) {
 	s_options_invertmouse_box.curvalue = m_pitch->value < 0;
 #endif
 
-	Cvar_SetValue("crosshair", ClampCvar(0, 13, crosshair->value));
+	Cvar_SetValue("crosshair", ClampCvarInteger(0, 13, crosshair->integer));
 	s_options_crosshair_box.curvalue = crosshair->value;
 #ifdef _WIN32
-	Cvar_SetValue("in_useXInput", ClampCvar(0, 1, in_useXInput->integer));
+	Cvar_SetValue("in_useXInput", ClampCvarInteger(0, 1, in_useXInput->integer));
 	s_options_gamepad_box.curvalue = in_useXInput->integer;
 #else
 	s_options_gamepad_box.curvalue = 0;
@@ -1130,10 +1135,13 @@ static void ControlsSetMenuItemValues(void) {
 
 	s_options_noalttab_box.curvalue = win_noalttab->value;
 
-	Cvar_SetValue("cl_drawFPS", ClampCvar(0, 2, cl_drawFPS->value));
+	Cvar_SetValue("sys_cpuUtilization", ClampCvarInteger(0, 1, sys_cpuUtilization->integer));
+	s_options_cpuUtil_box.curvalue = sys_cpuUtilization->value;
+
+	Cvar_SetValue("cl_drawFPS", ClampCvarInteger(0, 2, cl_drawFPS->integer));
 	s_options_fps_box.curvalue = cl_drawFPS->value;
 
-	Cvar_SetValue("cl_drawTime", ClampCvar(0, 1, cl_drawTime->value));
+	Cvar_SetValue("cl_drawTime", ClampCvarInteger(0, 1, cl_drawTime->integer));
 	s_options_time_box.curvalue = cl_drawTime->value;
 
 }
@@ -1704,9 +1712,16 @@ void Options_MenuInit(void) {
 #endif
 	s_options_gamepad_box.generic.statusbar = "Enable xBox Controller";
 
+	s_options_cpuUtil_box.generic.type = MTYPE_SPINCONTROL;
+	s_options_cpuUtil_box.generic.x = 0;
+	s_options_cpuUtil_box.generic.y = 160 * cl_fontScale->value;
+	s_options_cpuUtil_box.generic.name = "Draw CPU Utilization";
+	s_options_cpuUtil_box.generic.callback = CpuUtilFunc;
+	s_options_cpuUtil_box.itemnames = yesno_names;
+
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
-	s_options_fps_box.generic.y = 160 * cl_fontScale->value;
+	s_options_fps_box.generic.y = 170 * cl_fontScale->value;
 	s_options_fps_box.generic.name = "Draw FPS";
 	s_options_fps_box.generic.callback = FpsFunc;
 	s_options_fps_box.itemnames = fps_names;
@@ -1714,7 +1729,7 @@ void Options_MenuInit(void) {
 
 	s_options_time_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_time_box.generic.x = 0;
-	s_options_time_box.generic.y = 170 * cl_fontScale->value;
+	s_options_time_box.generic.y = 180 * cl_fontScale->value;
 	s_options_time_box.generic.name = "Draw Date / Time";
 	s_options_time_box.generic.callback = TimeFunc;
 	s_options_time_box.itemnames = yesno_names;
@@ -1722,21 +1737,21 @@ void Options_MenuInit(void) {
 
 	s_options_advanced_options_action.generic.type = MTYPE_ACTION;
 	s_options_advanced_options_action.generic.x = 0;
-	s_options_advanced_options_action.generic.y = 190 * cl_fontScale->value;
+	s_options_advanced_options_action.generic.y = 200 * cl_fontScale->value;
 	s_options_advanced_options_action.generic.name = "Advanced Settings";
 	s_options_advanced_options_action.generic.callback = AdvancedSettingsFunc;
 
 
 	s_options_customize_options_action.generic.type = MTYPE_ACTION;
 	s_options_customize_options_action.generic.x = 0;
-	s_options_customize_options_action.generic.y = 200 * cl_fontScale->value;
+	s_options_customize_options_action.generic.y = 210 * cl_fontScale->value;
 	s_options_customize_options_action.generic.name = "Customize Controls";
 	s_options_customize_options_action.generic.callback = CustomizeControlsFunc;
 	//-------------------------
 
 	s_options_defaults_action.generic.type = MTYPE_ACTION;
 	s_options_defaults_action.generic.x = 0;
-	s_options_defaults_action.generic.y = 220 * cl_fontScale->value;
+	s_options_defaults_action.generic.y = 230 * cl_fontScale->value;
 	s_options_defaults_action.generic.name = "Reset Defaults";
 	s_options_defaults_action.generic.callback = ControlsResetDefaultsFunc;
 
@@ -1764,6 +1779,7 @@ void Options_MenuInit(void) {
 	Menu_AddItem(&s_options_menu, (void *)&s_options_crosshair_box);
 	Menu_AddItem(&s_options_menu, (void*)&s_options_gamepad_box);
 
+	Menu_AddItem(&s_options_menu, (void *)&s_options_cpuUtil_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_fps_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_time_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_advanced_options_action);

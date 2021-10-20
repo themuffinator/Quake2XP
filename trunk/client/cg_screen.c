@@ -920,19 +920,44 @@ void GLimp_GetCpuUtilization(unsigned* cpuUtil);
 extern 	uint sys_numCpuCores;
 #endif
 
+void SCR_DrawCpuUtilization() {
+	static	char	cpuUtil[21] = { 0 };
+	static	int		frame = 0, delta = 4, lastUpdate;
+	static	uint	procUtil;
+	float	fontscale = cl_fontScale->value;
+	
+	if (!sys_cpuUtilization->integer)
+		return;
+
+#ifdef _WIN32
+	frame++;
+
+	if (curtime - lastUpdate >= 1000 / delta) {
+		lastUpdate = curtime;
+		frame = 0;
+		GLimp_GetCpuUtilization(&procUtil);
+	}
+
+	if (cls.state == ca_active) {
+		Com_sprintf(cpuUtil, sizeof(cpuUtil), "%3d%c Cpu Utilization", (int)procUtil / sys_numCpuCores, 37); // ASCII code of % is 37
+		int cpuUtilLengh = (int)strlen(cpuUtil);
+		Draw_StringScaled(viddef.width - cpuUtilLengh * 6 * fontscale, viddef.height * 0.65 - 60, fontscale, fontscale, cpuUtil);	
+	}
+#endif
+}
+
 void SCR_DrawFPS (void) {
 	static	char	avrfps[10] = { 0 }, minfps[22] = { 0 }, cpuUtil[20] = {0};
 	static	int		fps = 0;
 	static	int		lastUpdate;
-	const	int		samPerSec = 4;
+	const	int		delta = 4;
 	static	float	fpsAvg = 0;
 	float	fontscale = cl_fontScale->value;
-	static	unsigned	procUtil;
-	
+	static	unsigned	procUtil;	
 
 	fps++;
 
-	if (curtime - lastUpdate >= 1000 / samPerSec) {
+	if (curtime - lastUpdate >= 1000 / delta) {
 
 		const float alpha = 0.45;
 
@@ -949,13 +974,9 @@ void SCR_DrawFPS (void) {
 			Com_sprintf(avrfps, sizeof(avrfps), "%4d Fps", (int)fpsAvg);
 
 		lastUpdate = curtime;
-		fpsAvg = samPerSec * (alpha * fps + ((1 - alpha) * fpsAvg) / samPerSec);
+		fpsAvg = delta * (alpha * fps + ((1 - alpha) * fpsAvg) / delta);
 		fps = 0;
 
-#ifdef _WIN32
-		if(sys_cpuUtilization->integer)
-			GLimp_GetCpuUtilization(&procUtil);
-#endif
 	}
 
 	int avrFpsLengh = (int)strlen(avrfps);
@@ -969,16 +990,6 @@ void SCR_DrawFPS (void) {
 
 		} else
 			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
-
-#ifdef _WIN32
-		if (sys_cpuUtilization->integer) {
-			Com_sprintf(cpuUtil, sizeof(cpuUtil), "%3d Cpu Utilization", (int)procUtil / sys_numCpuCores);
-			int cpuUtilLengh = (int)strlen(cpuUtil);
-			Draw_StringScaled(viddef.width - cpuUtilLengh * 6 * fontscale, viddef.height * 0.65 - 60, fontscale, fontscale, cpuUtil);
-		}
-#endif
-
-		RE_SetColor (colorWhite);
 	}
 }
 
@@ -1143,6 +1154,7 @@ void SCR_UpdateScreen (void) {
 		SCR_DrawPause ();
 
 		SCR_DrawFPS ();
+		SCR_DrawCpuUtilization();
 		SCR_ShowTexNames();
 
 		if (cl_drawTime->value && (cls.state == ca_active))
