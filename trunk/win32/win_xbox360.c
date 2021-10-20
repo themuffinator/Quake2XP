@@ -221,8 +221,6 @@ void IN_StartupXInput(void)
 		}
 
 	}
-
-	/// Berserker: ���� ������ ��������� � ���� ���� ���� ���� ������� ����������, ������� ���
 	if (xInputActiveController == -1 && firstDev != -1)
 		xInputActiveController = firstDev;
 

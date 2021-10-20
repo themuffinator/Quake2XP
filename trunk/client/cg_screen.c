@@ -953,7 +953,8 @@ void SCR_DrawFPS (void) {
 		fps = 0;
 
 #ifdef _WIN32
-		GLimp_GetCpuUtilization(&procUtil);
+		if(sys_cpuUtilization->integer)
+			GLimp_GetCpuUtilization(&procUtil);
 #endif
 	}
 
@@ -970,9 +971,11 @@ void SCR_DrawFPS (void) {
 			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
 
 #ifdef _WIN32
-		Com_sprintf(cpuUtil, sizeof(cpuUtil), "%3d Cpu Utilization", (int)procUtil / sys_numCpuCores);
-		int cpuUtilLengh = (int)strlen(cpuUtil);
-		Draw_StringScaled(viddef.width - cpuUtilLengh * 6 * fontscale, viddef.height * 0.65-60, fontscale, fontscale, cpuUtil);
+		if (sys_cpuUtilization->integer) {
+			Com_sprintf(cpuUtil, sizeof(cpuUtil), "%3d Cpu Utilization", (int)procUtil / sys_numCpuCores);
+			int cpuUtilLengh = (int)strlen(cpuUtil);
+			Draw_StringScaled(viddef.width - cpuUtilLengh * 6 * fontscale, viddef.height * 0.65 - 60, fontscale, fontscale, cpuUtil);
+		}
 #endif
 
 		RE_SetColor (colorWhite);

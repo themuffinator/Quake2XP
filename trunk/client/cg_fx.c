@@ -1270,6 +1270,7 @@ void CL_ClearEffects (void) {
 
 #ifdef _WIN32
 extern int xInputActiveController;
+void IN_SetRumble(int devNum, int rumbleLow, int rumbleHigh);
 
 void CL_SetRumble(int low, int high, int end) {
     rumble.startTime = cl.time;

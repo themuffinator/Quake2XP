@@ -29,94 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <unistd.h>
 #endif
 
-cvar_t *adr0;
-cvar_t *adr1;
-cvar_t *adr2;
-cvar_t *adr3;
-cvar_t *adr4;
-cvar_t *adr5;
-cvar_t *adr6;
-cvar_t *adr7;
-cvar_t *adr8;
-
-
-cvar_t *rcon_client_password;
-cvar_t *rcon_address;
-
-cvar_t *cl_noskins;
-cvar_t *cl_autoskins;
-cvar_t *cl_footsteps;
-cvar_t *cl_timeout;
-cvar_t *cl_predict;
-cvar_t *cl_maxFps;
-cvar_t *cl_gun;
-
-cvar_t *cl_add_particles;
-cvar_t *cl_add_lights;
-cvar_t *cl_add_entities;
-cvar_t *cl_add_blend;
-
-cvar_t *cl_shownet;
-cvar_t *cl_showmiss;
-cvar_t *cl_showclamp;
-
-cvar_t *cl_paused;
-cvar_t *cl_timedemo;
-
-cvar_t *lookspring;
-cvar_t *lookstrafe;
-cvar_t *sensitivity;
-
-cvar_t *m_pitch;
-cvar_t *m_yaw;
-cvar_t *m_forward;
-cvar_t *m_side;
-
-cvar_t *cl_lightlevel;
-
-//
-// userinfo
-//
-cvar_t *info_password;
-cvar_t *info_spectator;
-cvar_t *name;
-cvar_t *skin;
-cvar_t *rate;
-cvar_t *fov;
-cvar_t *zoomfov;
-cvar_t *msg;
-cvar_t *hand;
-cvar_t *gender;
-cvar_t *gender_auto;
-
-cvar_t *cl_vwep;
-cvar_t *dmflags;
-
-//q2xp stuff
-cvar_t *cl_drawTime;
-cvar_t *cl_drawFPS;
-cvar_t *cl_brass;
-cvar_t *cl_brassTimeScale;
-cvar_t *cl_3dhud;
-cvar_t *cl_railcore_red;
-cvar_t *cl_railcore_green;
-cvar_t *cl_railcore_blue;
-cvar_t *cl_railspiral_red;
-cvar_t *cl_railspiral_green;
-cvar_t *cl_railspiral_blue;
-cvar_t *cl_decals;
-cvar_t *net_compatibility;
-cvar_t *cl_drawhud;
-cvar_t *cl_thirdPerson;
-cvar_t *cl_thirdPersonAngle;
-cvar_t *cl_thirdPersonRange;
-cvar_t *cl_blood;
-cvar_t *deathmatch;
-cvar_t *cl_hudScale;
-cvar_t *cl_fontScale;
-cvar_t *cl_itemsBobbing;
-cvar_t *cl_hudModelScale;
-cvar_t	*scr_showTexName;
 
 client_static_t cls;
 client_state_t cl;
@@ -1631,6 +1543,7 @@ void CL_InitLocal (void) {
 
 	deathmatch = Cvar_Get ("deathmatch", "0", CVAR_SERVERINFO);
 
+	sys_cpuUtilization = Cvar_Get("sys_cpuUtilization", "0", CVAR_ARCHIVE);
 
 	//
 	// register our commands
