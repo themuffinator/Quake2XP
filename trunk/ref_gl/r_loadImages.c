@@ -685,7 +685,7 @@ void R_InitEngineTextures (void) {
 	CreateDSTtex();
 	Load3dLut();
 
-	r_depthTex		=	R_CreateTexture("***r_depthTex***", GL_TEXTURE_RECTANGLE, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_INT, qfalse);
+	r_depthTex		=	R_CreateTexture("***r_depthTex***", GL_TEXTURE_RECTANGLE, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_INT, qfalse);
 	r_screenTex		=	R_CreateTexture("***r_screenTex***", GL_TEXTURE_RECTANGLE, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse);
 	r_fxaaTex		=	R_CreateTexture("***r_fxaaTex***", GL_TEXTURE_2D, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse);
 	r_fixFovTex		=	R_CreateTexture("***r_fixFovTex***", GL_TEXTURE_2D, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse);

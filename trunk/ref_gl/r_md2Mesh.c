@@ -123,7 +123,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Disable(GL_CULL_FACE);
-	//	GL_DepthMask(0);
+		GL_DepthMask(0);
 	}
 
 	if (currententity->flags & (RF_WEAPONMODEL))
@@ -253,12 +253,11 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	GL_SetBindlessTexture(U_TMU1, glowskin->handle);
 	GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
 	GL_SetBindlessTexture(U_TMU3, skinNormalmap->handle);
-	GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 
 	qglUniform1f(U_ENV_SCALE, currentmodel->envScale);
 
-	if (r_ssao->integer && /*!(currententity->flags & RF_WEAPONMODEL) &&*/ !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
-
+	if (r_ssao->integer && !(currententity->flags & RF_WEAPONMODEL) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES)) {
+		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
@@ -276,7 +275,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
-//		GL_DepthMask(1);
+		GL_DepthMask(1);
 	}
 
 	if (currententity->flags & (RF_WEAPONMODEL))

@@ -641,6 +641,25 @@ For development work
 */
 qboolean relightMap, cleanAmbientMap;
 
+void MapsComplitationList()
+{
+	char** map_list = { 0 };
+	int	i, numMapFiles;
+
+	map_list = FS_ListFilesAll("maps/*.bsp", &numMapFiles, 0, SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM);
+
+	if (map_list == NULL)
+		return;
+
+	Com_Printf("Current map List:\n");
+	for (i = 0; i < numMapFiles; i++)
+	{
+		map_list[i] = COM_SkipPath(map_list[i]);	// skip "maps"
+		map_list[i][strlen(map_list[i]) - 4] = 0;	// cut off ".bsp"
+		Com_Printf("   %s\n", map_list[i]);
+	}
+}
+
 void SV_Map_f (void) {
 	char *map;
 	char expanded[MAX_QPATH];
@@ -651,7 +670,8 @@ void SV_Map_f (void) {
 	if (!strstr (map, ".")) {
 		Com_sprintf (expanded, sizeof(expanded), "maps/%s.bsp", map);
 		if (FS_LoadFile (expanded, NULL) == -1) {
-			Com_Printf ("Can't find %s\n", expanded);
+		//	Com_Printf ("Can't find %s\n", expanded);
+			MapsComplitationList();
 			return;
 		}
 	}
@@ -672,7 +692,8 @@ void SV_ReLightMap_f (void) {
 	if (!strstr (map, ".")) {
 		Com_sprintf (expanded, sizeof(expanded), "maps/%s.bsp", map);
 		if (FS_LoadFile (expanded, NULL) == -1) {
-			Com_Printf ("Can't find %s\n", expanded);
+		//	Com_Printf ("Can't find %s\n", expanded);
+			MapsComplitationList();
 			return;
 		}
 	}
@@ -693,7 +714,8 @@ void SV_CleanAmbientMap_f(void) {
 	if (!strstr(map, ".")) {
 		Com_sprintf(expanded, sizeof(expanded), "maps/%s.bsp", map);
 		if (FS_LoadFile(expanded, NULL) == -1) {
-			Com_Printf("Can't find %s\n", expanded);
+		//	Com_Printf("Can't find %s\n", expanded);
+			MapsComplitationList();
 			return;
 		}
 	}

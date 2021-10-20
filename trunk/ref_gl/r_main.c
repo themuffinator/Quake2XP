@@ -679,7 +679,6 @@ void R_DrawPlayerWeaponAmbient(void)
 		if (currentmodel->type == mod_alias_md3)
 			R_DrawMD3Mesh(qtrue);
 	}
-//	R_CaptureDepthBuffer();
 
 	// draw transluscent shells
 	GL_Enable(GL_BLEND);
@@ -859,7 +858,7 @@ static void R_DrawOpaqueEntities(void) {
 				R_DrawMD3Mesh(qfalse);
 				break;
 			default:
-				VID_Error(ERR_DROP, "Bad modeltype %i", currentmodel->type);
+				VID_Error(ERR_DROP, "Bad modeltype");
 				break;
 		}
 	}
@@ -1009,13 +1008,12 @@ void R_RenderView (refdef_t *fd) {
 	}
 	R_DrawTransEntities();
 
-	R_DrawPlayerWeapon();
-
 	R_CaptureColorBuffer();
 	R_MotionBlur();
 	R_CaptureColorBuffer();
 	R_GlobalFog();
 
+	R_DrawPlayerWeapon();
 }
 
 
@@ -1187,7 +1185,7 @@ void Cube2Lut_f(void)
 {
 	char *buf, *buf0;
 	FILE *out;
-	char name[MAX_OSPATH] = { 0 }, outName[MAX_OSPATH] = { 0 };
+	char name[MAX_OSPATH], outName[MAX_OSPATH];
 	int i, len, lutSize = 0;
 	char *token, *titlePtr = NULL;
 	float x, y, z;
@@ -1912,17 +1910,6 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 		gl_state.depthBoundsTest = qfalse;
 	}
-
-	gl_state.depthClamp = qfalse;
-	if (IsExtensionSupported("GL_ARB_depth_clamp")) {
-		Com_Printf("...using GL_ARB_depth_clamp\n");
-		gl_state.depthClamp = qtrue;
-	}
-	else {
-		Com_Printf(S_COLOR_RED"...GL_ARB_depth_clamp not found\n");
-		gl_state.depthClamp = qfalse;
-	}
-
 	if (r_srgbColorBuffer->integer && IsExtensionSupported("GL_ARB_framebuffer_sRGB")) {
 		qglEnable(GL_FRAMEBUFFER_SRGB);
 		Com_Printf("...using GL_ARB_framebuffer_sRGB\n");

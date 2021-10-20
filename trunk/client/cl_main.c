@@ -1938,7 +1938,7 @@ void CL_CheckingNetworkSingature() {
 CL_Init
 ====================
 */
-
+void MapsComplitationList();
 void CL_Init (void) {
 
 	if (dedicated->integer)

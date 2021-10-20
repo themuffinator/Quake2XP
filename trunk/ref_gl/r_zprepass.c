@@ -483,8 +483,8 @@ void R_DrawDepthScene (void) {
 
 		if (currententity->flags & RF_TRANSLUCENT)
 			continue;
-	//	if (currententity->flags & RF_WEAPONMODEL)
-	//		continue;
+		if (currententity->flags & RF_WEAPONMODEL)
+			continue;
 		if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD))
 			continue;
 		if (currententity->flags & RF_DISTORT)

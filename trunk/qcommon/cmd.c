@@ -732,6 +732,7 @@ char *Cmd_CompleteCommand (char *partial) {
 	cvar_t *cvar;
 	char *pmatch[1024];
 	qboolean diff = qfalse;
+	unsigned t = 0;
 
 	len = strlen (partial);
 
@@ -781,10 +782,9 @@ char *Cmd_CompleteCommand (char *partial) {
 
 		qsort(pmatch, i, sizeof(char *), (cmp_t *)Q_SortStricmp);
 
-		Com_Printf ("\nListing matches for '%s'...\n", partial);
-		
-		for (o = 0; o < i; o++)
-			Com_Printf ("  %s\n", pmatch[o]);
+		Com_Printf("\nListing matches for '%s'...\n", partial);
+			for (o = 0; o < i; o++)
+				Com_Printf("  %s\n", pmatch[o]);
 
 		strcpy (retval, "");
 		p = 0;

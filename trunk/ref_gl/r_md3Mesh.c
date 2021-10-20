@@ -786,11 +786,6 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		GL_SetBindlessTexture(U_TMU5, ao->handle);
 
-		if (r_ssao->integer && /*!(currententity->flags & RF_WEAPONMODEL) &&*/ !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(r_newrefdef.rdflags & RDF_IRGOGGLES))
-			qglUniform1i(U_USE_SSAO, 1);
-		else
-			qglUniform1i(U_USE_SSAO, 0);
-
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	
 		if (mesh->muzzle) {
