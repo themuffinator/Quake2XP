@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../game/q_shared.h"
 
 
-#define	VERSION		"1.26.8"
+#define	VERSION		"1.26.9"
 
 #define	BASEDIRNAME	"baseq2"
 
@@ -76,6 +76,8 @@ extern char purelist[4096];
 
 extern	int file_from_pak;
 extern	int	zipdata;
+
+
 //============================================================================
 
 typedef struct sizebuf_s {
@@ -717,6 +719,29 @@ typedef struct {
 	FILE *f;					// in case the file being part of a pak or
 	// the actual file
 } qFILE;
+
+typedef struct {
+	char	name[MAX_QPATH];
+	int		filepos, filelen;
+	unsigned hash;
+} packfile_t;
+
+typedef enum {
+	pt_zip,
+	pt_pak,
+	pt_file
+} packtype_t;
+
+typedef struct pack_s {
+	char		filename[MAX_OSPATH];
+	qFILE		qfile;
+	int			numfiles;
+	int			size;
+	packfile_t* files;
+	packtype_t	packtype;
+	unsigned	hash;
+} pack_t;
+
 
 void CM_WritePortalState (FILE * f);
 void CM_ReadPortalState (FILE * f);

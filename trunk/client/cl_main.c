@@ -651,6 +651,11 @@ void CL_Disconnect (void) {
 		cls.download = NULL;
 	}
 
+#ifdef USE_CURL
+	CL_CancelHTTPDownloads(qtrue);
+	cls.downloadReferer[0] = 0;
+#endif
+
 	cls.state = ca_disconnected;
 	currentPlayerWeapon = NULL;
 }
@@ -726,6 +731,13 @@ void CL_Changing_f (void) {
 	cls.state = ca_connected;	// not active anymore, but not
 	// disconnected
 	Com_Printf ("\nChanging map...\n");
+
+#ifdef USE_CURL
+	// FS: Added because Whale's Weapons HTTP server rejects you after a lot of 404s.  Then you lose HTTP until a hard reconnect.
+	if (cls.downloadServer[0] != 0) {
+		CL_SetHTTPServer(cls.downloadServer);
+	}
+#endif
 }
 
 
@@ -882,8 +894,8 @@ Responses to broadcasts, etc
 =================
 */
 void CL_ConnectionlessPacket (void) {
-	char *s;
-	char *c;
+	char	*s, *c, *buff, *p;
+	int		i;
 
 	MSG_BeginReading (&net_message);
 	MSG_ReadLong (&net_message);	// skip the -1
@@ -903,6 +915,27 @@ void CL_ConnectionlessPacket (void) {
 			return;
 		}
 		Netchan_Setup (NS_CLIENT, &cls.netchan, net_from, cls.quakePort);
+
+		// HTTP downloading from R1Q2
+		buff = NET_AdrToString(cls.netchan.remote_address);
+		for (i = 1; i < Cmd_Argc(); i++)
+		{
+			p = Cmd_Argv(i);
+			if (!strncmp(p, "dlserver=", 9))
+			{
+#ifdef USE_CURL
+				p += 9;
+				Com_sprintf(cls.downloadReferer, sizeof(cls.downloadReferer), "quake2://%s", buff);
+				CL_SetHTTPServer(p);
+				if (cls.downloadServer[0])
+					Com_Printf("HTTP downloading enabled, URL: %s\n", cls.downloadServer);
+#else
+				Com_Printf("HTTP downloading supported by server but this client was built without USE_CURL, too bad.\n");
+#endif	// USE_CURL
+			}
+		}
+		// end HTTP downloading from R1Q2
+
 		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
 		MSG_WriteString (&cls.netchan.message, "new");
 		cls.state = ca_connected;
@@ -1545,6 +1578,13 @@ void CL_InitLocal (void) {
 
 	sys_cpuUtilization = Cvar_Get("sys_cpuUtilization", "0", CVAR_ARCHIVE);
 
+#ifdef USE_CURL
+	cl_httpProxy = Cvar_Get("cl_httpProxy", "", CVAR_ARCHIVE);
+	cl_httpFileLists = Cvar_Get("cl_httpFileLists", "1", CVAR_ARCHIVE);
+	cl_httpDownloads = Cvar_Get("cl_httpDownloads", "1", CVAR_ARCHIVE);
+	cl_httpMaxConnections = Cvar_Get("cl_httpMaxConnections", "4", CVAR_ARCHIVE);
+#endif
+
 	//
 	// register our commands
 	//
@@ -1766,6 +1806,10 @@ void CL_Frame (int msec) {
 	if (msec > 5000)
 		cls.netchan.last_received = Sys_Milliseconds ();
 
+#ifdef USE_CURL	// HTTP downloading from R1Q2
+	CL_RunHTTPDownloads();
+#endif	// USE_CURL
+
 	// fetch results from server
 	CL_ReadPackets ();
 
@@ -1883,6 +1927,10 @@ void CL_Init (void) {
 	CL_InitLocal ();
 	IN_Init ();
 
+#ifdef USE_CURL	// HTTP downloading from R1Q2
+	CL_InitHTTPDownloads();
+#endif	// USE_CURL
+
 	FS_ExecAutoexec ();
 	Cbuf_Execute ();
 }
@@ -1909,6 +1957,10 @@ void CL_Shutdown (void) {
 	// kill temp demo record
 	Com_sprintf (name, sizeof(name), "%s/cachexp/temp.dm2", FS_Gamedir ());
 	remove (name);
+
+#ifdef USE_CURL	// HTTP downloading from R1Q2
+	CL_HTTP_Cleanup(qtrue);
+#endif	// USE_CURL
 
 	CL_WriteConfiguration ();
 

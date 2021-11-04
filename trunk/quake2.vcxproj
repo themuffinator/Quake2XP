@@ -124,7 +124,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;USE_CURL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -148,7 +148,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>nvapi.lib;winmm.lib;wsock32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;ogg_static.lib;vorbisfile_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>nvapi.lib;winmm.lib;wsock32.lib;Ws2_32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;ogg_static.lib;vorbisfile_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>win32\nvapi;Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -188,7 +188,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;USE_CURL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -225,6 +225,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <BrowseInformation>true</BrowseInformation>
       <SupportJustMyCode>true</SupportJustMyCode>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -232,7 +233,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>winmm.lib;wsock32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;ogg_static.lib;vorbisfile_static.lib;nvapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;wsock32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;ogg_static.lib;vorbisfile_static.lib;nvapi.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
       <Version>
       </Version>
@@ -379,6 +380,7 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="client\cg_hud.c" />
+    <ClCompile Include="client\cl_http.c" />
     <ClCompile Include="client\cl_preload.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
@@ -691,6 +693,15 @@
     <ClInclude Include="client\cl_console.h" />
     <ClInclude Include="client\client.h" />
     <ClInclude Include="client\music.h" />
+    <ClInclude Include="curl\curl.h" />
+    <ClInclude Include="curl\curlbuild.h" />
+    <ClInclude Include="curl\curlrules.h" />
+    <ClInclude Include="curl\curlver.h" />
+    <ClInclude Include="curl\easy.h" />
+    <ClInclude Include="curl\mprintf.h" />
+    <ClInclude Include="curl\multi.h" />
+    <ClInclude Include="curl\stdcheaders.h" />
+    <ClInclude Include="curl\typecheck-gcc.h" />
     <ClInclude Include="ref_gl\glcorearb.h" />
     <ClInclude Include="ref_gl\ImageLib\il.h" />
     <ClInclude Include="ref_gl\ImageLib\ilu.h" />

@@ -70,6 +70,8 @@ qboolean GLW_InitDriver(void);
 
 glwstate_t glw_state;
 
+void Com_Printf(char* fmt, ...);
+
 /*
 ** VID_CreateWindow
 */
@@ -784,7 +786,7 @@ void GLW_InitExtensions() {
 			Com_Printf("" S_COLOR_YELLOW "...ignoring WGL_ARB_multisample\n");
 		else
 			Com_Printf("...using WGL_ARB_multisample\n");
-		
+
 	if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context")) {
 		qwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)qwglGetProcAddress("wglCreateContextAttribsARB");
 
@@ -812,8 +814,16 @@ void GLW_InitExtensions() {
 			ext_sRGB = qtrue;
 		}
 
-		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_no_error"))
-			Com_Printf("...using WGL_ARB_create_context_no_error\n");
+		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_no_error")) {
+			if(r_contextNoError->integer)
+				Com_Printf("...using WGL_ARB_create_context_no_error\n");
+			else
+				Com_Printf(S_COLOR_YELLOW"...ignoring WGL_ARB_create_context_no_error\n");
+		}
+		else {
+			Com_Printf(S_COLOR_MAGENTA"...WGL_ARB_create_context_no_error not found\n");
+			Cvar_SetInteger("r_contextNoError", 0);
+		}
 }
 
 /*
@@ -999,7 +1009,7 @@ void GLW_CreateContext() {
 
 	const char	*profileName[] = { "core", "compatibility" };
 
-	int	contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
+	int	contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR;
 	int	contextMask = r_glCoreProfile->integer ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 
 	int	attribs[] =
@@ -1008,6 +1018,7 @@ void GLW_CreateContext() {
 		WGL_CONTEXT_MINOR_VERSION_ARB,	r_glMinorVersion->integer,
 		WGL_CONTEXT_FLAGS_ARB,			contextFlag,
 		WGL_CONTEXT_PROFILE_MASK_ARB,	contextMask,
+		WGL_CONTEXT_OPENGL_NO_ERROR_ARB, r_contextNoError->integer ? GL_TRUE : GL_FALSE,
 		0
 	};
 

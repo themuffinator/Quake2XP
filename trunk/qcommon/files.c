@@ -46,27 +46,7 @@ QUAKE FILESYSTEM
 
 
 // in memory
-typedef struct {
-	char	name[MAX_QPATH];
-	int		filepos, filelen;
-	unsigned hash;
-} packfile_t;
 
-typedef enum {
-	pt_zip,
-	pt_pak,
-	pt_file
-} packtype_t;
-
-typedef struct pack_s {
-	char		filename[MAX_OSPATH];
-	qFILE		qfile;
-	int			numfiles;
-	int			size;
-	packfile_t	*files;
-	packtype_t	packtype;
-	unsigned	hash;
-} pack_t;
 
 char	fs_gamedir[MAX_OSPATH];
 cvar_t	*fs_basedir;
@@ -482,6 +462,46 @@ pack_t *FS_LoadPackFile (char *packfile) {
 	return pack;
 }
 
+/*
+=================
+FS_AddPAKFile
+
+Adds a pak file to the searchpath
+=================
+*/
+void FS_AddPAKFile (char *packPath)
+{
+	searchpath_t *search;
+	pack_t		*pack;
+
+    pack = FS_LoadPackFile(packPath);
+    if (!pack)
+        return;
+    search = Z_Malloc (sizeof(searchpath_t));
+    search->pack = pack;
+    search->next = fs_searchpaths;
+	fs_searchpaths = search;
+}
+/*
+=================
+FS_AddPkxFile
+
+Adds a pkx file to the searchpath
+=================
+*/
+void FS_AddPkxFile(char* packPath)
+{
+	searchpath_t* search;
+	pack_t* pack;
+
+	pack = FS_LoadZipFile(packPath);
+	if (!pack)
+		return;
+	search = Z_Malloc(sizeof(searchpath_t));
+	search->pack = pack;
+	search->next = fs_searchpaths;
+	fs_searchpaths = search;
+}
 static int SortListPtrs (const void *data1, const void *data2) {
 	// XXX: we have pointers to strings here!
 	return Q_stricmp (*(char * const *)data1, *(char * const *)data2);
@@ -1035,6 +1055,25 @@ char *FS_NextPath (char *prevpath) {
 	}
 
 	return NULL;
+}
+
+/*
+=================
+FS_LocalFileExists
+================
+*/
+qboolean FS_LocalFileExists(char* path)
+{
+	char		realPath[MAX_OSPATH];
+	FILE* f;
+
+	Com_sprintf(realPath, sizeof(realPath), "%s/%s", FS_Gamedir(), path);
+	f = fopen(realPath, "rb");
+	if (f) {
+		fclose(f);
+		return qtrue;
+	}
+	return qfalse;
 }
 
 void FS_ScanForGameDLL (void) {

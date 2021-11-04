@@ -1393,6 +1393,7 @@ void R_RegisterCvars(void)
 	r_glMajorVersion =					Cvar_Get("r_glMajorVersion", "4", CVAR_ARCHIVE);
 	r_glMinorVersion =					Cvar_Get("r_glMinorVersion", "5", CVAR_ARCHIVE);
 	r_glCoreProfile =					Cvar_Get("r_glCoreProfile", "0", 0);
+	r_contextNoError =					Cvar_Get("r_contextNoError", "0", CVAR_ARCHIVE);
 	r_debug =							Cvar_Get("r_debug", "0", 0);
 
 	r_lightEditor =						Cvar_Get("r_lightEditor", "0", 0);
@@ -1914,7 +1915,6 @@ int R_Init(void *hinstance, void *hWnd)
 		qglEnable(GL_FRAMEBUFFER_SRGB);
 		Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
 	}
-
 	Com_Printf("=====================================\n");
 
 	GL_SetDefaultState();

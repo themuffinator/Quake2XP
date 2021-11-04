@@ -703,7 +703,12 @@ void Con_DrawConsole (float frac) {
 	//ZOID
 	// draw the download bar
 	// figure out width
-	if (cls.download) {
+#ifdef USE_CURL	// HTTP downloading from R1Q2
+	if (cls.downloadname[0] && (cls.download || cls.downloadposition))
+#else
+	if (cls.download) 
+#endif	
+	{
 		// avoid warnings of using a short* instead of char* in strrchr/strlen
 		char *textch = (char*)text;
 

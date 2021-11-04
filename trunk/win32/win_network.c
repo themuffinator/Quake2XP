@@ -25,6 +25,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "winsock.h"
 #include "wsipx.h"
+#include <iphlpapi.h>
+#pragma comment(lib, "iphlpapi.lib")
+
 #include "../qcommon/qcommon.h"
 
 #define	MAX_LOOPBACK	4
@@ -688,14 +691,139 @@ void NET_Sleep (int msec) {
 
 //===================================================================
 
+#define	MAX_NETWORK_INTERFACES	32
+int		numInterfaces = 0;
 
-static WSADATA		winsockdata;
+void NET_GetAdapterInfo() {
+	DWORD dwRetVal = 0;
+	UINT i;
+	ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
+	PIP_ADAPTER_INFO pAdapterInfo;
+	PIP_ADAPTER_INFO pAdapter = NULL;
+	// dhcp time
+	struct tm newTime;
+	char buffer[32];
+	errno_t err;
 
+	pAdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
+
+	if (pAdapterInfo == NULL) {
+		Com_Printf(S_COLOR_MAGENTA"Error allocating memory needed to call GetAdaptersinfo\n");
+		return;
+	}
+
+	if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
+		free(pAdapterInfo);
+		pAdapterInfo = (IP_ADAPTER_INFO*)malloc(ulOutBufLen);
+		if (pAdapterInfo == NULL) {
+			Com_Printf(S_COLOR_MAGENTA"Error allocating memory needed to call GetAdaptersinfo\n");
+			return;
+		}
+	}
+
+	if ((dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen)) == NO_ERROR) {
+
+		pAdapter = pAdapterInfo;
+
+		while (pAdapter) {
+			Com_Printf("Found Interface: ");
+			Com_Printf("" S_COLOR_GREEN "%s\n", pAdapter->Description);
+			Com_Printf("GUID: " S_COLOR_GREEN "%s\n", pAdapter->AdapterName);
+			Com_Printf("MAC:  ");
+			for (i = 0; i < pAdapter->AddressLength; i++) {
+				if (i == (pAdapter->AddressLength - 1))
+					Com_Printf("" S_COLOR_GREEN "%.2X\n", (int)pAdapter->Address[i]);
+				else
+					Com_Printf("" S_COLOR_GREEN "%.2X-", (int)pAdapter->Address[i]);
+			}
+
+			Com_Printf("Type: ");
+			switch (pAdapter->Type) {
+			case MIB_IF_TYPE_OTHER:
+				Com_Printf(S_COLOR_GREEN"Other\n");
+				break;
+			case MIB_IF_TYPE_ETHERNET:
+				Com_Printf(S_COLOR_GREEN"Ethernet\n");
+				break;
+			case MIB_IF_TYPE_TOKENRING:
+				Com_Printf(S_COLOR_GREEN"Token Ring\n");
+				break;
+			case MIB_IF_TYPE_FDDI:
+				Com_Printf(S_COLOR_GREEN"FDDI\n");
+				break;
+			case MIB_IF_TYPE_PPP:
+				Com_Printf(S_COLOR_GREEN"PPP\n");
+				break;
+			case MIB_IF_TYPE_LOOPBACK:
+				Com_Printf(S_COLOR_GREEN"Loopback\n");
+				break;
+			case MIB_IF_TYPE_SLIP:
+				Com_Printf(S_COLOR_GREEN"Slip\n");
+				break;
+			default:
+				Com_Printf(S_COLOR_MAGENTA"Unknown type %ld\n", pAdapter->Type);
+				break;
+			}
+
+			Com_Printf("IP Address:  " S_COLOR_GREEN "%s\n", pAdapter->IpAddressList.IpAddress.String);
+			Com_Printf("IP Mask:     " S_COLOR_GREEN "%s\n", pAdapter->IpAddressList.IpMask.String);
+			Com_Printf("Gateway:     " S_COLOR_GREEN "%s\n", pAdapter->GatewayList.IpAddress.String);
+
+			if (pAdapter->DhcpEnabled) {
+				Com_Printf("DHCP Server: " S_COLOR_GREEN "%s\n", pAdapter->DhcpServer.IpAddress.String);
+				Com_Printf("Lease Obtained: ");
+				/* Display local time */
+				err = _localtime32_s(&newTime, (__time32_t*)&pAdapter->LeaseObtained);
+				if (err)
+					Com_Printf(S_COLOR_MAGENTA"Invalid Argument to _localtime32_s\n");
+				else {
+					// Convert to an ASCII representation 
+					err = asctime_s(buffer, 32, &newTime);
+					if (err)
+						Com_Printf(S_COLOR_MAGENTA"Invalid Argument to asctime_s\n");
+					else
+						/* asctime_s returns the string terminated by \n\0 */
+						Com_Printf(S_COLOR_GREEN"%s", buffer);
+				}
+
+				Com_Printf("Lease Expires:  ");
+				err = _localtime32_s(&newTime, (__time32_t*)&pAdapter->LeaseExpires);
+				if (err)
+					printf(S_COLOR_MAGENTA"Invalid Argument to _localtime32_s\n");
+				else {
+					// Convert to an ASCII representation 
+					err = asctime_s(buffer, 32, &newTime);
+					if (err)
+						Com_Printf(S_COLOR_MAGENTA"Invalid Argument to asctime_s\n");
+					else
+						/* asctime_s returns the string terminated by \n\0 */
+						Com_Printf(S_COLOR_GREEN"%s", buffer);
+				}
+			}
+			else
+				Com_Printf("DHCP Server: " S_COLOR_MAGENTA "not found\n");
+
+			numInterfaces++;
+			if (numInterfaces >= MAX_NETWORK_INTERFACES)
+			{
+				Com_Printf(S_COLOR_MAGENTA"NET_AdapterInfo: MAX_NETWORK_INTERFACES(%i) hit.\n", MAX_NETWORK_INTERFACES);
+				free(pAdapterInfo);
+				return;
+			}
+			pAdapter = pAdapter->Next;
+		}
+	}
+	if (pAdapterInfo)
+		free(pAdapterInfo);
+
+}
 /*
 ====================
 NET_Init
 ====================
 */
+static WSADATA winsockdata;
+
 void NET_Init (void) {
 	WORD	wVersionRequested;
 	int		r;
@@ -708,8 +836,14 @@ void NET_Init (void) {
 		Com_Error (ERR_FATAL, "Winsock initialization failed.");
 
 	Com_Printf ("======="S_COLOR_YELLOW" Winsock Initialized "S_COLOR_WHITE"======\n");
-	Com_Printf("\n...%s: " S_COLOR_GREEN "%s\n", winsockdata.szDescription, winsockdata.szSystemStatus);
+	Com_Printf("\n%s status: " S_COLOR_GREEN "%s\n", winsockdata.szDescription, winsockdata.szSystemStatus);
+	Com_Printf("\n");
+
+	NET_GetAdapterInfo();
+
 	Com_Printf ("\n");
+	Com_Printf("==================================\n\n");
+	
 
 	noudp = Cvar_Get ("noudp", "0", CVAR_NOSET);
 	noipx = Cvar_Get ("noipx", "0", CVAR_NOSET);

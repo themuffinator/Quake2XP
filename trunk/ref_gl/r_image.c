@@ -615,7 +615,6 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	else
 		image->hash = Com_HashKey(name);
 
-
 	// Knightmare- Nexus's image replacement scaling code
 	len = strlen(name);
 	strcpy(s, name);

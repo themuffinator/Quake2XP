@@ -132,6 +132,7 @@ typedef vec4_t	mat4_t[4];		// row-major
 #define	GL_INDEX_TYPE		GL_UNSIGNED_SHORT
 typedef unsigned short		ushort;
 typedef unsigned int		uint;
+typedef unsigned long		ulong;
 typedef ushort				index_t;
 typedef uint				index32_t;
 typedef const char			cchar;

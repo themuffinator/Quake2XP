@@ -340,6 +340,7 @@ cvar_t	*r_glDebugOutput;
 cvar_t	*r_glMinorVersion;
 cvar_t	*r_glMajorVersion;
 cvar_t	*r_glCoreProfile;
+cvar_t	*r_contextNoError;
 cvar_t	*r_debug;
 cvar_t	*r_lightEditor;
 cvar_t	*r_cameraSpaceLightMove;

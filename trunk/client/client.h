@@ -37,6 +37,56 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cl_console.h"
 #include "snd_loc.h"
 
+#ifdef USE_CURL
+#define CURL_STATICLIB
+#define CURL_HIDDEN_SYMBOLS
+#define CURL_EXTERN_SYMBOL
+#define CURL_CALLING_CONVENTION __cdecl
+#include "..\curl\curl.h"
+
+cvar_t* cl_httpDownloads;
+cvar_t* cl_httpFileLists;
+cvar_t* cl_httpProxy;
+cvar_t* cl_httpMaxConnections;
+
+void CL_CancelHTTPDownloads(qboolean permKill);
+void CL_InitHTTPDownloads(void);
+qboolean CL_QueueHTTPDownload(const char* quakePath);
+void CL_RunHTTPDownloads(void);
+qboolean CL_PendingHTTPDownloads(void);
+void CL_SetHTTPServer(const char* URL);
+void CL_HTTP_Cleanup(qboolean fullShutdown);
+
+typedef enum
+{
+	DLQ_STATE_NOT_STARTED,
+	DLQ_STATE_RUNNING,
+	DLQ_STATE_DONE
+} dlq_state;
+
+typedef struct dlqueue_s
+{
+	struct dlqueue_s* next;
+	char				quakePath[MAX_QPATH];
+	dlq_state			state;
+} dlqueue_t;
+
+typedef struct dlhandle_s
+{
+	CURL* curl;
+	char		filePath[MAX_OSPATH];
+	FILE* file;
+	dlqueue_t* queueEntry;
+	size_t		fileSize;
+	size_t		position;
+	double		speed;
+	char		URL[576];
+	char* tempBuffer;
+} dlhandle_t;
+#endif
+
+void FS_AddPAKFile(char* packPath);
+void FS_AddPkxFile(char* packPath);
 
 cvar_t* adr0;
 cvar_t* adr1;
@@ -471,6 +521,26 @@ typedef struct {
 	qboolean demowaiting;		// don't record until a non-delta message
 	// is received
 	FILE *demofile;
+
+#ifdef USE_CURL
+	size_t		downloadposition;
+	dlqueue_t		downloadQueue;			//queue of paths we need
+
+	dlhandle_t		HTTPHandles[4];			//actual download handles
+	//don't raise this!
+	//i use a hardcoded maximum of 4 simultaneous connections to avoid
+	//overloading the server. i'm all too familiar with assholes who set
+	//their IE or Firefox max connections to 16 and rape my Apache processes
+	//every time they load a page... i'd rather not have my q2 client also
+	//have the ability to do so - especially since we're possibly downloading
+	//large files.
+
+	char			downloadServer[512];	//base url prefix to download from
+	char			downloadReferer[32];	//libcurl requires a static string :(
+
+//	char			downloadServerRetry[512];
+//	char			downloadReferer[32];	//libcurl requires a static string :(
+#endif
 
 } client_static_t;
 

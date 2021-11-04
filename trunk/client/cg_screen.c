@@ -939,7 +939,7 @@ void SCR_DrawCpuUtilization() {
 	}
 
 	if (cls.state == ca_active) {
-		Com_sprintf(cpuUtil, sizeof(cpuUtil), "%3d%c Cpu Utilization", (int)procUtil / sys_numCpuCores, 37); // ASCII code of % is 37
+		Com_sprintf(cpuUtil, sizeof(cpuUtil), "%3d%c CPU Utilization", (int)procUtil / sys_numCpuCores, 37); // ASCII code of % is 37
 		int cpuUtilLengh = (int)strlen(cpuUtil);
 		Draw_StringScaled(viddef.width - cpuUtilLengh * 6 * fontscale, viddef.height * 0.65 - 60, fontscale, fontscale, cpuUtil);	
 	}

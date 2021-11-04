@@ -75,6 +75,9 @@
     <Filter Include="Source Files\Renderer\Headers\devIL">
       <UniqueIdentifier>{8841ba1e-940d-4730-a76d-493813d16efd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Client\curl">
+      <UniqueIdentifier>{f260666c-41ca-424a-b6ce-8c82c2ab8e9e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="client\cl_console.c">
@@ -326,6 +329,9 @@
     <ClCompile Include="client\cl_preload.c">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
+    <ClCompile Include="client\cl_http.c">
+      <Filter>Source Files\Client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ref_gl\qgl.h">
@@ -477,6 +483,33 @@
     </ClInclude>
     <ClInclude Include="client\AL\efx-creative.h">
       <Filter>Source Files\Sound\Headers\openAL</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\curl.h">
+      <Filter>Source Files\Client\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\curlbuild.h">
+      <Filter>Source Files\Client\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\curlrules.h">
+      <Filter>Source Files\Client\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\curlver.h">
+      <Filter>Source Files\Client\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\easy.h">
+      <Filter>Source Files\Client\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\mprintf.h">
+      <Filter>Source Files\Client\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\multi.h">
+      <Filter>Source Files\Client\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\stdcheaders.h">
+      <Filter>Source Files\Client\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\typecheck-gcc.h">
+      <Filter>Source Files\Client\curl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

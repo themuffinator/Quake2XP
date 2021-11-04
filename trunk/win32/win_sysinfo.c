@@ -6,6 +6,8 @@
 #include "../ref_gl/r_local.h"
 #include "win_languages.h"
 #include <sysinfoapi.h>
+#include <intrin.h>
+#include "psapi.h"
 
 #define UI_NUM_LANGS ( sizeof( ui_Language ) / sizeof( ui_Language[0] ) )
 
@@ -175,8 +177,10 @@ void SYS_GetCpuCount()
 	Com_Printf("Physical Processor Packages: " S_COLOR_GREEN "%d\n", processorPackageCount);
 	Com_Printf("Number of NUMA nodes: " S_COLOR_GREEN "%d\n", numaNodeCount);
 	Com_Printf("Cores/Threads: " S_COLOR_GREEN "%d" S_COLOR_WHITE "|" S_COLOR_GREEN "%d\n", processorCoreCount, logicalProcessorCount);
-	Com_Printf("L1/L2/L3 Cache Size: " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb | " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb | " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb\n",
+	Com_Printf("L1/L2/L3 Cache Size: " S_COLOR_GREEN "%dx%d"  S_COLOR_WHITE "kb | " S_COLOR_GREEN "%dx%d" S_COLOR_WHITE "kb | " S_COLOR_GREEN "%d" S_COLOR_WHITE "kb\n",
+		processorCoreCount,
 		processorL1CacheSize >>10,
+		processorCoreCount,
 		processorL2CacheSize >>10,
 		processorL3CacheSize >>10);
 
@@ -186,9 +190,11 @@ void SYS_GetCpuCount()
 }
 
 void  Sys_GetCpuSpeed(void) {
-	int cpuInfo[4] = { 0, 0, 0, 0 };
+	int cpuInfo[4] = { -1 };
+
 	__cpuid(cpuInfo, 0);
-	if (cpuInfo[0] >= 0x16) {
+	
+	if (cpuInfo[0] >= 0x16) {		
 		__cpuid(cpuInfo, 0x16);
 
 		Com_Printf("Processor Base Frequency:  " S_COLOR_GREEN "%.2f" S_COLOR_WHITE " GHz\n", (float)cpuInfo[0]/1000.0);
@@ -292,7 +298,7 @@ void Sys_CpuID()
 				if (CPUBrandString[i] != ' ')
 					break;
 
-			Com_Printf("Cpu Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[i]);
+			Com_Printf("CPU Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[i]);
 			
 			SYS_GetCpuCount();
 			Sys_GetCpuSpeed();
@@ -472,21 +478,23 @@ void GetDiskInfos()
 
 void Sys_GetMemorySize() {
 
-	MEMORYSTATUSEX		ram;
-	
-	ram.dwLength = sizeof(ram);
-	GlobalMemoryStatusEx(&ram);	
-	
-	DWORD physRam = ram.ullTotalPhys >> 20;
+	MEMORYSTATUSEX		memsat;
+	PROCESS_MEMORY_COUNTERS_EX pmc;
+
+	memsat.dwLength = sizeof(memsat);
+	GlobalMemoryStatusEx(&memsat);
+	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+
+	ulong virtualMemUsedByMe = pmc.PrivateUsage;
+	ulong physRam = memsat.ullTotalPhys >> 20;
 
 	Com_Printf("\n");
-	Com_Printf("Physical RAM: "S_COLOR_GREEN"%d"S_COLOR_WHITE" GB\n", (physRam + 512) >>10);
-	Com_Printf("Memory Usage: "S_COLOR_GREEN"%d"S_COLOR_WHITE" %%\n", ram.dwMemoryLoad);
-	
+	Com_Printf("Physical RAM:         "S_COLOR_GREEN"%d"S_COLOR_WHITE"GB\n", (physRam + 512) >>10);
+	Com_Printf("Process Memory Usage: "S_COLOR_GREEN"%d"S_COLOR_WHITE"MB\n", pmc.PrivateUsage >>20);
+	Com_Printf("Total Memory Usage:   "S_COLOR_GREEN"%d"S_COLOR_WHITE"%%\n", memsat.dwMemoryLoad);
 	Com_Printf("\n");
-	
+
 	GetDiskInfos();
-	
 	Com_Printf("\n\n");
 }
 
@@ -746,10 +754,12 @@ qboolean Sys_CheckWindowsVersion() {
 					sprintf(S2, "\n    'May 2020 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
 					break;
 				case 2009:
-					if(rtl_OsVer.dwBuildNumber == 19043)
-						sprintf(S2, "\n    '21H1 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					else
-						sprintf(S2, "\n    '20H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%d" S_COLOR_WHITE ")", ver);
+					if (rtl_OsVer.dwBuildNumber == 19042)
+						sprintf(S2, "\n    'October 2020 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%d" S_COLOR_WHITE ")", ver);
+					else if(rtl_OsVer.dwBuildNumber == 19043)
+						sprintf(S2, "\n    'May 2021 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
+					else if (rtl_OsVer.dwBuildNumber == 19044)
+						sprintf(S2, "\n    '21H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);					
 					break;
 				default:
 					sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);

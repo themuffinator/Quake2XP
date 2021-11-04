@@ -78,6 +78,7 @@ typedef enum {
 	#include <stdint.h>
 #endif
 
+
 extern qboolean ru_loc;
 
 float ClampCvar(float min, float max, float value);
