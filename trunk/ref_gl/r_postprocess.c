@@ -461,7 +461,7 @@ void R_DownsampleDepth(void)
 
 	GL_DepthRange(0.0, 1.0);
 	// downsample the depth buffer
-	qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo.ssao);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
 
 	GL_BindProgram(depthDownsampleProgram);
@@ -471,9 +471,6 @@ void R_DownsampleDepth(void)
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad();
-
-	// restore settings
-	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void R_SSAO (void) 
@@ -495,7 +492,7 @@ void R_SSAO (void)
 //	GL_DepthMask(0);
 
 	// process
-	qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo.ssao);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	GL_BindProgram (ssaoProgram);
@@ -511,25 +508,23 @@ void R_SSAO (void)
 	// blur
 	r_ssaoColorTexIndex = 0;
 
-	if (r_ssaoBlur->integer) {
-		qglBindFramebuffer(GL_FRAMEBUFFER, fboId);
-		GL_SetBindlessTexture(U_TMU1, r_miniDepthTex->handle);
+//	qglBindFramebuffer(GL_FRAMEBUFFER, fbo.ssao);
+	GL_SetBindlessTexture(U_TMU1, r_miniDepthTex->handle);
 
-		GL_BindProgram(ssaoBlurProgram);
+	GL_BindProgram(ssaoBlurProgram);
 
-		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
-		numSamples = (int)rintf(4.f * vid.height / 1080.f);
-		qglUniform1i(U_PARAM_INT_0, max(numSamples, 1));
+	numSamples = (int)rintf(4.f * vid.height / 1080.f);
+	qglUniform1i(U_PARAM_INT_0, max(numSamples, 1));
 
-		for (i = 0; i < r_ssaoBlur->integer; i++) {
-			// two-pass shader
-			for (j = 0; j < 2; j++) {
-				GL_SetBindlessTexture(U_TMU0, r_ssaoColorTex[j]->handle);
-				qglDrawBuffer(GL_COLOR_ATTACHMENT0 + (j ^ 1));
-				qglUniform2f(U_PARAM_VEC2_0, j ? 0.f : 1.f, j ? 1.f : 0.f);
-				R_DrawHalfScreenQuad();
-			}
+	for (i = 0; i < r_ssaoBlur->integer; i++) {
+		// two-pass shader
+		for (j = 0; j < 2; j++) {
+			GL_SetBindlessTexture(U_TMU0, r_ssaoColorTex[j]->handle);
+			qglDrawBuffer(GL_COLOR_ATTACHMENT0 + (j ^ 1));
+			qglUniform2f(U_PARAM_VEC2_0, j ? 0.f : 1.f, j ? 1.f : 0.f);
+			R_DrawHalfScreenQuad();
 		}
 	}
 

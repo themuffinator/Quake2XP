@@ -324,7 +324,7 @@ typedef struct image_s {
 	
 	//lut description
 	float		lutSize;
-	char		*lutName;
+	char		lutName[MAX_QPATH];
 	uint		hash;
 } image_t;
 
@@ -515,7 +515,7 @@ typedef struct {
 
 
 typedef struct {
-	uint	backBuf;
+	uint	hdrBuf;
 	uint	mirror;
 	uint	nullfbo;
 	uint	ssao;

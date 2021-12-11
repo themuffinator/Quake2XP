@@ -1189,6 +1189,7 @@ void Cube2Lut_f(void)
 	int i, len, lutSize = 0;
 	char *token, *titlePtr = NULL;
 	float x, y, z;
+	extern int lutCount;
 
 	if (Cmd_Argc() != 2) {
 		Com_Printf(S_COLOR_YELLOW"Usage: %s <adobe cube lut filename>\n", Cmd_Argv(0));
@@ -1205,7 +1206,7 @@ void Cube2Lut_f(void)
 		return;
 	}
 
-	Com_sprintf(outName, sizeof(outName), "%s/gfx/lut/%s.lut", FS_Gamedir(), Cmd_Argv(1));
+	Com_sprintf(outName, sizeof(outName), "%s/gfx/lut/lut_%i.lut", FS_Gamedir(), lutCount);
 	out = fopen(outName, "wb");
 	if (!out) {
 		FS_FreeFile(buf);
@@ -1227,7 +1228,8 @@ void Cube2Lut_f(void)
 			// save lut size
 			fwrite(&lutSize, 1, sizeof(lutSize), out);
 			// read lut block
-			for (i = 0; i < lutSize * lutSize * lutSize; i++)
+			int lutBlockSize = pow(lutSize, 3);
+			for (i = 0; i < lutBlockSize; i++)
 			{
 				if (sscanf(buf, "%f %f %f", &x, &y, &z) != 3) {
 					FS_FreeFile(buf0);

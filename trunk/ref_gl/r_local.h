@@ -185,7 +185,7 @@ image_t *r_depthMask;
 image_t		*r_lightCubeMap[MAX_FILTERS];
 #define		MAX_GLOBAL_FILTERS	38
 
-#define		MAX_LUTS 10
+#define		MAX_LUTS 8
 image_t		*r_3dLut[MAX_LUTS];
 int			lutCount;
 

@@ -433,7 +433,11 @@ void M_ColorInit() {
 	
 	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
 
-	static char	*lut_table[] = { "Neutral", "Technicolor", "Sepia", "Black&White", 0 };
+	static char * lut_table[8] = {0};
+	
+	for (int i = 0; i < lutCount; i++) {
+		lut_table[i] = r_3dLut[i]->lutName;
+	}
 
 	drawIDlogo = qfalse;
 
@@ -538,7 +542,7 @@ void M_ColorInit() {
 	s_lut_list.itemnames = lut_table;
 	s_lut_list.curvalue = r_lutId->integer;
 	s_lut_list.generic.callback = lutCallBack;
-	s_lut_list.generic.statusbar = "Neutral, Technicolor, Sepia, Black&White";
+	s_lut_list.generic.statusbar = "Add Color Filters";
 
 	s_menuColorTemp.generic.type = MTYPE_FIELD;
 	s_menuColorTemp.generic.name = "Color Temperature";

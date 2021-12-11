@@ -65,6 +65,8 @@ cvar_t *net_compatibility;
 
 cvar_t *sv_solidcorpse;
 
+cvar_t *sv_downloadserver;	// r1ch: download server
+cvar_t* sv_iplimit;			// r1ch: max connections from a single IP (prevent DoS)
 void Master_Shutdown (void);
 
 
@@ -284,6 +286,7 @@ SVC_DirectConnect
 A connection request that did not come from the master
 ==================
 */
+/*
 void SVC_DirectConnect (void) {
 	char userinfo[MAX_INFO_STRING];
 	netadr_t adr;
@@ -295,6 +298,7 @@ void SVC_DirectConnect (void) {
 	int version;
 	int qport;
 	int challenge;
+	int	previousclients;	// rich: connection limit per IP
 
 	adr = net_from;
 
@@ -439,7 +443,228 @@ gotnewcl:
 	newcl->lastmessage = svs.realtime;	// don't timeout
 	newcl->lastconnect = svs.realtime;
 }
+*/
+/*
+=====================
+SV_CleanClient
 
+From R1Q2
+r1ch: this does the final cleaning up of a client after zombie state.
+=====================
+*/
+void SV_CleanClient(client_t* drop)
+{
+	if (drop->download)
+	{
+		Z_Free(drop->download);
+		drop->download = NULL;
+	}
+}
+
+void SVC_DirectConnect(void)
+{
+	char		userinfo[MAX_INFO_STRING];
+	netadr_t	adr;
+	int			i;
+	client_t* cl, * newcl;
+	client_t	temp;
+	edict_t* ent;
+	int			edictnum;
+	int			version;
+	int			qport;
+	int			challenge;
+	int			previousclients;	// rich: connection limit per IP
+
+	adr = net_from;
+
+	Com_DPrintf("SVC_DirectConnect ()\n");
+
+	version = atoi(Cmd_Argv(1));
+	if (!net_compatibility->integer) {
+		if (version != PROTOCOL_VERSION) {
+			Netchan_OutOfBandPrint(NS_SERVER, adr,
+				"print\nServer is version %4.2f.\n",
+				VERSION);
+			Com_DPrintf("    rejected connect from version %i\n", version);
+			return;
+		}
+	}
+	else {
+		if (version != OLD_PROTOCOL_VERSION) {
+			Netchan_OutOfBandPrint(NS_SERVER, adr,
+				"print\nServer is version %4.2f.\n",
+				VERSION);
+			Com_DPrintf("    rejected connect from version %i\n", version);
+			return;
+		}
+	}
+
+	qport = atoi(Cmd_Argv(2));
+
+	challenge = atoi(Cmd_Argv(3));
+
+	// r1ch: limit connections from a single IP
+	previousclients = 0;
+	//	for (i=0,cl=svs.clients; i<(int)maxclients->value; i++,cl++)
+	for (i = 0, cl = svs.clients; i < maxclients->integer; i++, cl++)
+	{
+		if (cl->state == cs_free)
+			continue;
+		if (NET_CompareBaseAdr(adr, cl->netchan.remote_address))
+		{
+			// r1ch: zombies are less dangerous
+			if (cl->state == cs_zombie)
+				previousclients++;
+			else
+				previousclients += 2;
+		}
+	}
+	if (previousclients >= (int)sv_iplimit->value * 2)
+	{
+		Netchan_OutOfBandPrint(NS_SERVER, adr, "print\nToo many connections from your host.\n");
+		Com_DPrintf("    too many connections\n");
+		return;
+	}
+	// end r1ch fix
+
+	strncpy(userinfo, Cmd_Argv(4), sizeof(userinfo) - 1);
+	userinfo[sizeof(userinfo) - 1] = 0;
+
+	// force the IP key/value pair so the game can filter based on ip
+	Info_SetValueForKey(userinfo, "ip", NET_AdrToString(net_from));
+
+	// attractloop servers are ONLY for local clients
+	if (sv.attractloop)
+	{
+		if (!NET_IsLocalAddress(adr))
+		{
+			Com_Printf("Remote connect in attract loop.  Ignored.\n");
+			Netchan_OutOfBandPrint(NS_SERVER, adr, "print\nConnection refused.\n");
+			return;
+		}
+	}
+
+	// see if the challenge is valid
+	if (!NET_IsLocalAddress(adr))
+	{
+		for (i = 0; i < MAX_CHALLENGES; i++)
+		{
+			if (NET_CompareBaseAdr(net_from, svs.challenges[i].adr))
+			{
+				if (challenge == svs.challenges[i].challenge)
+					break;		// good
+				Netchan_OutOfBandPrint(NS_SERVER, adr, "print\nBad challenge.\n");
+				return;
+			}
+		}
+		if (i == MAX_CHALLENGES)
+		{
+			Netchan_OutOfBandPrint(NS_SERVER, adr, "print\nNo challenge for address.\n");
+			return;
+		}
+	}
+
+	newcl = &temp;
+	memset(newcl, 0, sizeof(client_t));
+
+	// if there is already a slot for this ip, reuse it
+//	for (i=0,cl=svs.clients ; i<maxclients->value ; i++,cl++)
+	for (i = 0, cl = svs.clients; i < maxclients->integer; i++, cl++)
+	{
+		if (cl->state == cs_free)
+			continue;
+		if (NET_CompareBaseAdr(adr, cl->netchan.remote_address)
+			&& (cl->netchan.qport == qport
+				|| adr.port == cl->netchan.remote_address.port))
+		{
+			//	if (!NET_IsLocalAddress (adr) && (svs.realtime - cl->lastconnect) < ((int)sv_reconnect_limit->value * 1000))
+			if (!NET_IsLocalAddress(adr) && (svs.realtime - cl->lastconnect) < (sv_reconnect_limit->integer * 1000))
+			{
+				Com_DPrintf("%s:reconnect rejected : too soon\n", NET_AdrToString(adr));
+				return;
+			}
+			// r1ch: !! fix nasty bug where non-disconnected clients (from dropped disconnect
+			// packets) could be overwritten!
+			if (cl->state != cs_zombie)
+			{
+				Com_DPrintf("    client already found\n");
+				// If we legitly get here, spoofed udp isn't possible (passed challenge) and client addr/port combo
+				// is exactly the same, so we can assume its really a dropped/crashed client. i hope...
+				Com_Printf("Dropping %s, ghost reconnect\n", cl->name);
+				SV_DropClient(cl);
+			}
+			// end r1ch fix
+
+			Com_Printf("%s:reconnect\n", NET_AdrToString(adr));
+
+			SV_CleanClient(cl);	// r1ch: clean up last client data
+
+			newcl = cl;
+			goto gotnewcl;
+		}
+	}
+
+	// find a client slot
+	newcl = NULL;
+	//	for (i=0,cl=svs.clients ; i<maxclients->value ; i++,cl++)
+	for (i = 0, cl = svs.clients; i < maxclients->integer; i++, cl++)
+	{
+		if (cl->state == cs_free)
+		{
+			newcl = cl;
+			break;
+		}
+	}
+	if (!newcl)
+	{
+		Netchan_OutOfBandPrint(NS_SERVER, adr, "print\nServer is full.\n");
+		Com_DPrintf("Rejected a connection.\n");
+		return;
+	}
+
+gotnewcl:
+	// build a new connection
+	// accept the new client
+	// this is the only place a client_t is ever initialized
+	*newcl = temp;
+	sv_client = newcl;
+	edictnum = (newcl - svs.clients) + 1;
+	ent = EDICT_NUM(edictnum);
+	newcl->edict = ent;
+	newcl->challenge = challenge; // save challenge for checksumming
+
+	// get the game a chance to reject this connection or modify the userinfo
+	if (!(ge->ClientConnect(ent, userinfo)))
+	{
+		if (*Info_ValueForKey(userinfo, "rejmsg"))
+			Netchan_OutOfBandPrint(NS_SERVER, adr, "print\n%s\nConnection refused.\n",
+				Info_ValueForKey(userinfo, "rejmsg"));
+		else
+			Netchan_OutOfBandPrint(NS_SERVER, adr, "print\nConnection refused.\n");
+		Com_DPrintf("Game rejected a connection.\n");
+		return;
+	}
+
+	// parse some info from the info strings
+	strncpy(newcl->userinfo, userinfo, sizeof(newcl->userinfo) - 1);
+	SV_UserinfoChanged(newcl);
+
+	// send the connect packet to the client
+	// r1ch: note we could ideally send this twice but it prints unsightly message on original client.
+	if (sv_downloadserver->string[0])
+		Netchan_OutOfBandPrint(NS_SERVER, adr, "client_connect dlserver=%s", sv_downloadserver->string);
+	else
+		Netchan_OutOfBandPrint(NS_SERVER, adr, "client_connect");
+
+	Netchan_Setup(NS_SERVER, &newcl->netchan, adr, qport);
+
+	newcl->state = cs_connected;
+
+	SZ_Init(&newcl->datagram, newcl->datagram_buf, sizeof(newcl->datagram_buf));
+	newcl->datagram.allowoverflow = qtrue;
+	newcl->lastmessage = svs.realtime;	// don't timeout
+	newcl->lastconnect = svs.realtime;
+}
 int Rcon_Validate (void) {
 	if (!strlen (rcon_password->string))
 		return 0;
@@ -1009,6 +1234,12 @@ void SV_Init (void) {
 	public_server = Cvar_Get ("public", "0", 0);
 
 	sv_reconnect_limit = Cvar_Get ("sv_reconnect_limit", "3", CVAR_ARCHIVE);
+	
+	sv_downloadserver = Cvar_Get("sv_downloadserver", "", 0);	
+	sv_downloadserver->help = "Sets URL of HTTP autodownload server where clients can download game content over HTTP. Default empty. Path leads to game dir name, e.g. quake2.com/baseq2/maps.";
+	sv_iplimit = Cvar_Get("sv_iplimit", "3", 0);	
+	sv_iplimit->help = "Sets connection limit per IP address.  Stops zombie DoS/Flood.";
+
 
 	SZ_Init (&net_message, net_message_buffer, sizeof(net_message_buffer));
 }

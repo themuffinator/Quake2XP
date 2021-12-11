@@ -81,19 +81,8 @@ qboolean CL_CheckOrDownloadFile (char *filename) {
 		// download
 		return qtrue;
 	}
-	
-#ifdef USE_CURL
-	if (CL_QueueHTTPDownload(filename))
-	{
-		//we return true so that the precache check keeps feeding us more files.
-		//since we have multiple HTTP connections we want to minimize latency
-		//and be constantly sending requests, not one at a time.
-		return qtrue;
-	}
-	else
-#endif
-	{
-		strcpy(cls.downloadname, filename);
+
+			strcpy(cls.downloadname, filename);
 
 		// download to a temp name, and only rename
 		// to the real name when done, so if interrupted
@@ -133,7 +122,7 @@ qboolean CL_CheckOrDownloadFile (char *filename) {
 		cls.downloadnumber++;
 
 		return qfalse;
-	}
+	
 }
 
 /*

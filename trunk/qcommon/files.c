@@ -1031,6 +1031,24 @@ void FS_StripExtension (const char *in, char *out, size_t size_out) {
 		*out = 0;
 }
 
+qboolean FS_FileInGamedir(const char* file)
+{
+	char path[MAX_OSPATH];
+	FILE* fd;
+
+	Com_sprintf(path, sizeof(path), "%s/%s", fs_gamedir, file);
+
+	if ((fd = fopen(path, "rb")) != NULL)
+	{
+		fclose(fd);
+		return qtrue;
+	}
+	else
+	{
+		return qfalse;
+	}
+}
+
 /*
 ================
 FS_NextPath
@@ -1097,7 +1115,7 @@ void FS_ScanForGameDLL (void) {
 			}
 			if (fp == NULL)
 				continue;
-		//	else
+			else
 				Cvar_ForceSetValue ("net_compatibility", i);
 
 		fclose (fp);
@@ -1105,6 +1123,19 @@ void FS_ScanForGameDLL (void) {
 	}
 
 	Com_Error (ERR_FATAL, "Could not find any game DLLs\n");
+}
+
+/*
+=================
+FS_DownloadDir
+
+Called to find where to download game content.
+Either fs_downloaddir (which results in Sys_DownloadDir()/<gamedir>) or FS_Gamedir()
+=================
+*/
+char* FS_DownloadDir(void)
+{
+	return FS_Gamedir();
 }
 
 /*

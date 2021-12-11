@@ -37,56 +37,57 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cl_console.h"
 #include "snd_loc.h"
 
+
 #ifdef USE_CURL
-#define CURL_STATICLIB
-#define CURL_HIDDEN_SYMBOLS
-#define CURL_EXTERN_SYMBOL
-#define CURL_CALLING_CONVENTION __cdecl
-#include "..\curl\curl.h"
 
-cvar_t* cl_httpDownloads;
-cvar_t* cl_httpFileLists;
-cvar_t* cl_httpProxy;
-cvar_t* cl_httpMaxConnections;
+#ifndef QCURL_H
+#define QCURL_H
 
-void CL_CancelHTTPDownloads(qboolean permKill);
-void CL_InitHTTPDownloads(void);
-qboolean CL_QueueHTTPDownload(const char* quakePath);
-void CL_RunHTTPDownloads(void);
-qboolean CL_PendingHTTPDownloads(void);
-void CL_SetHTTPServer(const char* URL);
-void CL_HTTP_Cleanup(qboolean fullShutdown);
+// --------
 
-typedef enum
-{
-	DLQ_STATE_NOT_STARTED,
-	DLQ_STATE_RUNNING,
-	DLQ_STATE_DONE
-} dlq_state;
+#include "curl/header/curl.h"
+#include "curl/header/download.h"
+// --------
 
-typedef struct dlqueue_s
-{
-	struct dlqueue_s* next;
-	char				quakePath[MAX_QPATH];
-	dlq_state			state;
-} dlqueue_t;
+// True if cURL is initialized.
+extern qboolean qcurlInitialized;
 
-typedef struct dlhandle_s
-{
-	CURL* curl;
-	char		filePath[MAX_OSPATH];
-	FILE* file;
-	dlqueue_t* queueEntry;
-	size_t		fileSize;
-	size_t		position;
-	double		speed;
-	char		URL[576];
-	char* tempBuffer;
-} dlhandle_t;
-#endif
+// Function pointers to cURL.
+extern void (*qcurl_easy_cleanup)(CURL* curl);
+extern CURL* (*qcurl_easy_init)(void);
+extern CURLcode(*qcurl_easy_getinfo)(CURL* curl, CURLINFO info, ...);
+extern CURLcode(*qcurl_easy_setopt)(CURL* curl, CURLoption option, ...);
+extern const char* (*qcurl_easy_strerror)(CURLcode);
+
+extern void (*qcurl_global_cleanup)(void);
+extern CURLcode(*qcurl_global_init)(long flags);
+
+extern CURLMcode(*qcurl_multi_add_handle)(CURLM* multi_handle, CURL* curl_handle);
+extern CURLMcode(*qcurl_multi_cleanup)(CURLM* multi_handle);
+extern CURLMsg* (*qcurl_multi_info_read)(CURLM* multi_handle, int* msgs_in_queue);
+extern CURLM* (*qcurl_multi_init)(void);
+extern CURLMcode(*qcurl_multi_perform)(CURLM* multi_handle, int* running_handles);
+extern CURLMcode(*qcurl_multi_remove_handle)(CURLM* multi_handle, CURL* curl_handle);
+extern char* (*qcurl_version)(void);
+
+// --------
+
+// Loads and initialized cURL.
+qboolean qcurlInit(void);
+
+// Shuts cURL down and unloads it.
+void qcurlShutdown(void);
+
+// --------
+
+#endif // QCURL_H
+#endif // USE_CURL
+
+
 
 void FS_AddPAKFile(char* packPath);
 void FS_AddPkxFile(char* packPath);
+char* FS_DownloadDir(void);
 
 cvar_t* adr0;
 cvar_t* adr1;
@@ -514,6 +515,8 @@ typedef struct {
 	char downloadname[MAX_OSPATH];
 	int downloadnumber;
 	dltype_t downloadtype;
+	size_t		downloadposition;	// added for HTTP downloads
+	float		downloadrate;		// Knightmare- to display KB/s
 	int downloadpercent;
 
 	// demo recording info must be here, so it isn't cleared on level change
@@ -523,23 +526,12 @@ typedef struct {
 	FILE *demofile;
 
 #ifdef USE_CURL
-	size_t		downloadposition;
-	dlqueue_t		downloadQueue;			//queue of paths we need
-
-	dlhandle_t		HTTPHandles[4];			//actual download handles
-	//don't raise this!
-	//i use a hardcoded maximum of 4 simultaneous connections to avoid
-	//overloading the server. i'm all too familiar with assholes who set
-	//their IE or Firefox max connections to 16 and rape my Apache processes
-	//every time they load a page... i'd rather not have my q2 client also
-	//have the ability to do so - especially since we're possibly downloading
-	//large files.
-
-	char			downloadServer[512];	//base url prefix to download from
-	char			downloadReferer[32];	//libcurl requires a static string :(
-
-//	char			downloadServerRetry[512];
-//	char			downloadReferer[32];	//libcurl requires a static string :(
+	/* http downloading */
+	dlqueue_t  downloadQueue; /* queues with files to download. */
+	dlhandle_t HTTPHandles[MAX_HTTP_HANDLES]; /* download handles. */
+	char	   downloadServer[512]; /* URL prefix to dowload from .*/
+	char	   downloadServerRetry[512]; /* retry count. */
+	char	   downloadReferer[32]; /* referer string. */
 #endif
 
 } client_static_t;

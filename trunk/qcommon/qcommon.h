@@ -79,6 +79,8 @@ extern	int	zipdata;
 
 
 //============================================================================
+int Q_strlcpy(char* dst, const char* src, int size);
+int Q_strlcat(char* dst, const char* src, int size);
 
 typedef struct sizebuf_s {
 	qboolean allowoverflow;		// if qfalse, do a Com_Error
