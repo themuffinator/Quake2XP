@@ -1050,6 +1050,11 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	//	if (mesh->flags & MESH_TRANSLUSCENT)
 	//		continue;
 
+		if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)&& !(currententity->flags & RF_WEAPONMODEL))
+			qglUniform1i(U_USE_SSAO, 1);
+		else
+			qglUniform1i(U_USE_SSAO, 0);
+
 		if (mesh->flags & MESH_SSS) {
 			qglUniform1i(U_PARAM_INT_2, 1);
 			qglUniform1i(U_PARAM_INT_4, 0);
@@ -1162,7 +1167,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU5, skinBump->handle);
 		GL_SetBindlessTexture(U_TMU6, r_screenTex->handle);
 		GL_SetBindlessTexture(U_TMU7, r_depthTex->handle);
-//		GL_SetBindlessTexture(U_TMU6, skyCube_handle);
+		GL_SetBindlessTexture(U_TMU8, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 
 		qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);

@@ -501,12 +501,18 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	else
 		qglUniform1i(U_USE_CAUSTICS, 0);
 
+	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL) && !(currententity->flags & RF_WEAPONMODEL))
+		qglUniform1i(U_USE_SSAO, 1);
+	else
+		qglUniform1i(U_USE_SSAO, 0);
+
 	GL_SetBindlessTexture(U_TMU0, skinNormalmap->handle);
 	GL_SetBindlessTexture(U_TMU1, skin->handle);
 	GL_SetBindlessTexture(U_TMU2, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 	GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
 	GL_SetBindlessTexture(U_TMU4, rgh->handle);
 	GL_SetBindlessTexture(U_TMU5, skinBump->handle);
+	GL_SetBindlessTexture(U_TMU8, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 
 	if (rgh == r_notexture)
 		qglUniform1i(U_USE_RGH_MAP, 0);

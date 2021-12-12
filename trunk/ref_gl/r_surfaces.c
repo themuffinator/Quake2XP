@@ -456,6 +456,9 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	unsigned	oldFlag		= 0xffffffff;
 	unsigned	numIndices  = 0xffffffff;
 
+	if (!r_lightmapScale->value)
+		return;
+
 	// setup program
 	GL_BindProgram(ambientWorldProgram);
 
@@ -606,6 +609,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		GL_SetBindlessTexture(U_TMU2, r_lightCubeMap[currentShadowLight->filter]->handle);
 		GL_SetBindlessTexture(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 		GL_SetBindlessTexture(U_TMU4, rghMap->handle);
+		GL_SetBindlessTexture(U_TMU5, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 	}
 	// create indexes
 	if (numIndices == 0xffffffff)
@@ -684,13 +688,12 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 R_CalcCubeMapMatrix(bModel);
 	 qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
 
-/*	 if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		 GL_SetBindlessTexture(U_TMU5, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
+	 if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		 qglUniform1i(U_USE_SSAO, 1);
 	 }
 	 else
 		 qglUniform1i(U_USE_SSAO, 0);
-		 */
+		 
  }
 
  msurface_t		*interaction[MAX_MAP_FACES];

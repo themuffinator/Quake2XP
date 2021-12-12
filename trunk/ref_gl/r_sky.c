@@ -29,7 +29,7 @@ extern model_t* loadmodel;
 char skyname[MAX_QPATH];
 float skyrotate;
 vec3_t skyaxis;
-vec3_t		SkyVertexArray[3 * MAX_TRIANGLES];
+vec3_t		SkyVertexArray[MAX_TRIANGLES];
 index_t		skyIndex[MAX_INDICES];
 static int	numVerts, idx;
 void IL_LoadImage(char* filename, byte** pic, int* width, int* height, ILenum type);
@@ -283,16 +283,7 @@ void GenSkyVertices(float x, float y, int axis) {
 		else
 			v[j] = b[k - 1];
 	}
-
 	VA_SetElem3(SkyVertexArray[numVerts], v[0], v[1], v[2]);
-
-	skyIndex[idx++] = numVerts + 0;
-	skyIndex[idx++] = numVerts + 1;
-	skyIndex[idx++] = numVerts + 3;
-	skyIndex[idx++] = numVerts + 3;
-	skyIndex[idx++] = numVerts + 1;
-	skyIndex[idx++] = numVerts + 2;
-
 	numVerts++;
 
 }
@@ -304,7 +295,6 @@ R_DrawSkyBox
 */
 void R_DrawSkyBox(qboolean color) {
 	int i;
-
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
@@ -342,6 +332,8 @@ void R_DrawSkyBox(qboolean color) {
 	if (color)
 		GL_SetBindlessTexture(U_TMU0, skyCube_handle);
 
+	numVerts = idx = 0;
+
 	for (i = 0; i < 6; i++) {
 
 		if (skyrotate) {		// hack, forces full sky to draw when rotating
@@ -354,16 +346,19 @@ void R_DrawSkyBox(qboolean color) {
 		if (skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
 			continue;
 
-		numVerts = idx = 0;
+		skyIndex[idx++] = numVerts + 0;
+		skyIndex[idx++] = numVerts + 1;
+		skyIndex[idx++] = numVerts + 3;
+		skyIndex[idx++] = numVerts + 3;
+		skyIndex[idx++] = numVerts + 1;
+		skyIndex[idx++] = numVerts + 2;
 
 		GenSkyVertices(skymins[0][i], skymins[1][i], i);
 		GenSkyVertices(skymins[0][i], skymaxs[1][i], i);
 		GenSkyVertices(skymaxs[0][i], skymaxs[1][i], i);
-		GenSkyVertices(skymaxs[0][i], skymins[1][i], i);
-		
-		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, skyIndex);
-		
+		GenSkyVertices(skymaxs[0][i], skymins[1][i], i);	
 	}
+		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, skyIndex);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 }
