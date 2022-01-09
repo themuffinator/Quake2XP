@@ -73,6 +73,19 @@ typedef struct {
 
 xInput_t xInput;
 
+typedef struct _XINPUT_CAPABILITIES_EX //undocumented stuff
+{
+	XINPUT_CAPABILITIES Capabilities;
+	WORD VendorId;
+	WORD ProductId;
+	WORD VersionNumber;
+	WORD unk1;
+	DWORD unk2;
+} XINPUT_CAPABILITIES_EX, * PXINPUT_CAPABILITIES_EX;
+
+typedef DWORD(_stdcall* _XInputGetCapabilitiesEx)(DWORD a1, DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES_EX* pCapabilities);
+_XInputGetCapabilitiesEx qXInputGetCapabilitiesEx;
+
 #define XINPUT_LIB4	"xinput1_4.dll"
 #define XINPUT_LIB3	"xinput1_3.dll" // win7 support
 
@@ -95,6 +108,7 @@ static	DWORD	(WINAPI * qXInputSetState)(DWORD dwUserIndex, XINPUT_VIBRATION* pVi
 static	DWORD	(WINAPI	* qXInputGetDSoundAudioDeviceGuids)(DWORD dwUserIndex, GUID* pDSoundRenderGuid, GUID* pDSoundCaptureGuid);
 static	DWORD	(WINAPI	* qXInputGetAudioDeviceIds)(DWORD  dwUserIndex, LPWSTR pRenderDeviceId, UINT* pRenderCount, LPWSTR pCaptureDeviceId, UINT* pCaptureCount);
 
+
 void IN_ShutDownXinput() {
 
 	Com_Printf("..." S_COLOR_YELLOW "shutting down xInput subsystem\n");
@@ -106,12 +120,13 @@ void IN_ShutDownXinput() {
 	memset(&xInput, 0, sizeof(xInput_t));
 }
 
+
 void IN_StartupXInput(void)
 {
 	int numDev, firstDev;
 	XINPUT_CAPABILITIES xiCaps;
 	XINPUT_BATTERY_INFORMATION batteryInfo;
-	char batteryLevel[64], batteryType[64];
+	char batteryLevel[64], batteryType[64], padInfo[64];
 
 	// reset to -1 each time as this can be called at runtime
 	xInputActiveController = -1;
@@ -156,6 +171,8 @@ void IN_StartupXInput(void)
 		}
 	}
 
+	qXInputGetCapabilitiesEx = (_XInputGetCapabilitiesEx)GetProcAddress(xInput.device, (char*)108);
+
 	qXInputEnable = (_xInputEnable)GetProcAddress(xInput.device, "XInputEnable");
 	qXInputGetCapabilities = (_xInputGetCapabilities)GetProcAddress(xInput.device, "XInputGetCapabilities");
 	qXInputGetState = (_xInputGetState)GetProcAddress(xInput.device, "XInputGetState");
@@ -163,7 +180,6 @@ void IN_StartupXInput(void)
 	qXInputSetState = (_xInputSetState)GetProcAddress(xInput.device, "XInputSetState");
 
 	qXInputGetDSoundAudioDeviceGuids = (_xInputGetDSoundAudioDeviceGuids)GetProcAddress(xInput.device, "XInputGetDSoundAudioDeviceGuids"); //win 7 (xinput1_3.dll)
-	
 	qXInputGetAudioDeviceIds = (_xInputGetAudioDeviceIds)GetProcAddress(xInput.device, "XInputGetAudioDeviceIds"); // win 8 - 10 feature (xinput1_4.dll)
 
 	if (!qXInputEnable || !qXInputGetCapabilities || !qXInputGetState || !qXInputGetBatteryInformation || !qXInputSetState)
@@ -175,7 +191,10 @@ void IN_StartupXInput(void)
 	}
 	Com_Printf(S_COLOR_GREEN"succeeded.\n\n");
 
-	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n\n");
+	if (!qXInputGetCapabilitiesEx)
+		Com_Printf(S_COLOR_MAGENTA"can't find qXInputGetCapabilitiesEx procedures adresses.\n");
+
+	Com_Printf(S_COLOR_YELLOW"...enumerate xInput Controllers\n");
 	firstDev = -1;
 	for (numDev = 0; numDev < XINPUT_MAX_CONTROLLERS; numDev++)
 	{
@@ -186,13 +205,13 @@ void IN_StartupXInput(void)
 			if (qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo) == ERROR_SUCCESS)
 			{
 				if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED)
-					strcpy(batteryType, S_COLOR_YELLOW"...use USB connection\n"S_COLOR_WHITE);
+					strcpy(batteryType, S_COLOR_YELLOW"...use USB connection "S_COLOR_WHITE);
 				else if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
-					strcpy(batteryType, S_COLOR_YELLOW"...use Alkalyne battery\n"S_COLOR_WHITE);
+					strcpy(batteryType, S_COLOR_YELLOW"Alkalyne "S_COLOR_WHITE);
 				else if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
-					strcpy(batteryType, S_COLOR_YELLOW"...use Ni-MH battery\n"S_COLOR_WHITE);
+					strcpy(batteryType, S_COLOR_YELLOW"Ni-MH "S_COLOR_WHITE);
 				else if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
-					strcpy(batteryType, S_COLOR_YELLOW"...use unknow battery type\n"S_COLOR_WHITE);
+					strcpy(batteryType, S_COLOR_YELLOW"Unknow Type "S_COLOR_WHITE);
 
 				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
 					strcpy(batteryLevel, S_COLOR_RED"empity"S_COLOR_WHITE);
@@ -204,8 +223,35 @@ void IN_StartupXInput(void)
 					strcpy(batteryLevel, S_COLOR_GREEN"level full"S_COLOR_WHITE);
 				else
 					strcpy(batteryLevel, S_COLOR_CYAN"unknown level"S_COLOR_WHITE);
+					
+				XINPUT_CAPABILITIES_EX capsEx;
+				if (qXInputGetCapabilitiesEx(1, numDev, 0, &capsEx) != ERROR_SUCCESS) 
+					sprintf(padInfo, S_COLOR_CYAN"Unknown Vendor");
+	
+				Com_Printf("]" S_COLOR_GREEN "%i" S_COLOR_WHITE ":\n", numDev);
+				
+				#include "win_usbVendors.h"
+				DWORD value = capsEx.VendorId;
+				int z;
+				for (z = 0; z < NUM_VENDORS; z++) {
+					if (value == usb_Vendors[z].vendorId) {
+						Com_Printf("Vendor:  " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
+						break;
+					Com_Printf("Vendor:  " S_COLOR_MAGENTA "Unknown " S_COLOR_GREEN "VID_0x%04X\n", capsEx.VendorId);
+					} 
+						
+				}
+				value = capsEx.ProductId;
+				for (z = 0; z < NUM_INPUT_DEVICES; z++) {
+					if (value == product[z].Id) {
+						Com_Printf("Model:   " S_COLOR_GREEN "%s\n", product[z].description);
+						break;
+					Com_Printf("Model:   " S_COLOR_MAGENTA "Unknown " S_COLOR_GREEN "PID_0x%04X\n", capsEx.ProductId);
+					}
+					
+				}
 
-				Com_Printf("Controller " S_COLOR_GREEN "%i" S_COLOR_WHITE ":\n%s<%s>\n", numDev, batteryType, batteryLevel);
+				Com_Printf("Battery: %s<%s>\n", batteryType, batteryLevel);
 			}
 				if (firstDev == -1)
 					firstDev = numDev;

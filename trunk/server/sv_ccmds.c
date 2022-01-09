@@ -547,12 +547,34 @@ void SV_ReadServerFile (void) {
 SV_DemoMap_f
 
 Puts the server in demo mode on a specific map/cinematic
+Add Berserker fix
 ==================
 */
 void SV_DemoMap_f (void) {
 
+	if (Cmd_Argc() != 2)
+	{
+		Com_Printf("^3USAGE: %s <filename>\n", Cmd_Argv(0));
+		return;
+	}
+
+	char	demofile[MAX_QPATH];
+	char* ch;
+	char* demoname = Cmd_Argv(1);
+
+	ch = strstr(demoname, ".cin");
+	if (ch)
+		strcpy(demofile, demoname);
+	else {
+		ch = strstr(demoname, ".dm2");
+		if (ch)
+			strcpy(demofile, demoname);
+		else
+			Com_sprintf(demofile, sizeof(demofile), "%s.dm2", demoname);
+	}
+
 	drawSaveShot[0] = 0;
-	SV_Map (qtrue, Cmd_Argv (1), qfalse);
+	SV_Map (qtrue, demofile, qfalse);
 }
 
 /*

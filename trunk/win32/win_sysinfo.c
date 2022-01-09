@@ -190,7 +190,7 @@ void SYS_GetCpuCount()
 }
 
 void  Sys_GetCpuSpeed(void) {
-	int cpuInfo[4] = { -1 };
+	int cpuInfo[4] = { 0,0,0,0 };
 
 	__cpuid(cpuInfo, 0);
 	
@@ -498,9 +498,15 @@ void Sys_GetMemorySize() {
 	Com_Printf("\n\n");
 }
 
-BOOL Is64BitWindows() {
-	BOOL f64 = FALSE;
-	return IsWow64Process(GetCurrentProcess(), &f64) && f64;
+qboolean isWin64x()
+{
+	SYSTEM_INFO sys;
+	GetNativeSystemInfo(&sys);
+	if (sys.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ||
+		sys.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64)
+		return qtrue;
+	else
+		return qfalse;
 }
 
 typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
@@ -527,14 +533,13 @@ BOOL GetOsVersion(RTL_OSVERSIONINFOEXW* pk_OsVer)
 	Status = f_RtlGetVersion(pk_OsVer);
 	return Status == 0; // STATUS_SUCCESS;
 }
-#include "versionhelpers.h"
 
 qboolean Sys_CheckWindowsVersion() {
 
 	RTL_OSVERSIONINFOEXW    rtl_OsVer;
 	DWORD					prType;
 	PGPI					pGPI;
-	char					S[64], S2[64];
+	char					S[64];
 
 	if (GetOsVersion(&rtl_OsVer))
 	{
@@ -655,7 +660,7 @@ qboolean Sys_CheckWindowsVersion() {
 			break;
 		}
 		if (rtl_OsVer.dwMajorVersion == 6 && rtl_OsVer.dwMinorVersion == 1) {
-			if (!Is64BitWindows()) {
+			if (!isWin64x()) {
 
 				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
 					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 7 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
@@ -669,10 +674,10 @@ qboolean Sys_CheckWindowsVersion() {
 				else
 					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2008 R2 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
-
+			return qtrue;
 		}
 		if (rtl_OsVer.dwMajorVersion == 6 && rtl_OsVer.dwMinorVersion == 2) {
-			if (!Is64BitWindows()) {
+			if (!isWin64x()) {
 
 				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
 					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
@@ -686,11 +691,11 @@ qboolean Sys_CheckWindowsVersion() {
 				else
 					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
-
+			return qtrue;
 		}
 
 		if (rtl_OsVer.dwMajorVersion == 6 && rtl_OsVer.dwMinorVersion == 3) {
-			if (!Is64BitWindows()) {
+			if (!isWin64x()) {
 
 				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
 					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8.1 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
@@ -704,89 +709,57 @@ qboolean Sys_CheckWindowsVersion() {
 				else
 					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
-
+		
+			return qtrue;
 		}
 
-		if (rtl_OsVer.dwMajorVersion == 10 && rtl_OsVer.dwMinorVersion == 0) {
+		if (rtl_OsVer.dwMajorVersion == 10 && rtl_OsVer.dwMinorVersion == 0) { //win 10-11 detection
 
-			// Get windows 10 OS number 
-			DWORD	dwType = REG_SZ;
-			HKEY	regKey = HKEY_LOCAL_MACHINE;
+			DWORD	dwType;
 			HKEY	hKey = 0;
-			cchar	*subkey = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
-			char	sz_val[5];
-			DWORD	len = 5;
-			int		ver;
+			DWORD	dwSize = 64;
+			DWORD	keyMode = KEY_READ;
+			char	buildId[5] = { 0 }, releaseId[5] = { 0 }, versionID[5] = { 0 }, winName[64] = { 0 };
+			int		build, release, ubr;
+#ifdef _DEBUG
+			return qtrue;
+#endif
+			// win 10 Pro reads as Enterprise on win64.
+			// https://docs.microsoft.com/en-us/windows/win32/winprog64/accessing-an-alternate-registry-view
+			if (isWin64x())
+				keyMode |= KEY_WOW64_64KEY;
 
-			if (RegOpenKey(regKey, subkey, &hKey) == ERROR_SUCCESS) {
-				RegQueryValueEx(hKey, "ReleaseId", NULL, &dwType, (LPBYTE)&sz_val, &len);
-				ver = atoi(sz_val);
+			if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, keyMode, &hKey) == ERROR_SUCCESS) {
 
-				switch (ver) {
-				case 1507:
-					sprintf(S2, "\n    'Threshold 1' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 1511:
-					sprintf(S2, "\n    'November Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 1607:
-					sprintf(S2, "\n    'Anniversary Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 1703:
-					sprintf(S2, "\n    'Creators Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 1709:
-					sprintf(S2, "\n    'Fall Creators Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 1803:
-					sprintf(S2, "\n    'April 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 1809:
-					sprintf(S2, "\n    'October 2018 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 1903:
-					sprintf(S2, "\n    'May 2019 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 1909:
-					sprintf(S2, "\n    'October 2019 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 2004:
-					sprintf(S2, "\n    'May 2020 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				case 2009:
-					if (rtl_OsVer.dwBuildNumber == 19042)
-						sprintf(S2, "\n    'October 2020 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%d" S_COLOR_WHITE ")", ver);
-					else if(rtl_OsVer.dwBuildNumber == 19043)
-						sprintf(S2, "\n    'May 2021 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					else if (rtl_OsVer.dwBuildNumber == 19044)
-						sprintf(S2, "\n    '21H2 Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);					
-					break;
-				default:
-					sprintf(S2, "\n    'Unknow Update' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", ver);
-					break;
-				}
+				dwType = REG_SZ;
+				RegQueryValueEx(hKey, "ProductName", 0, &dwType, (LPBYTE)&winName, &dwSize); // windows name
+
+				RegQueryValueEx(hKey, "CurrentBuild", 0, &dwType, (LPBYTE)&buildId, &dwSize); // build num
+				build = atoi(buildId);
+
+				RegQueryValueEx(hKey, "ReleaseId", 0, &dwType, (LPBYTE)&releaseId, &dwSize); // release num
+				release = atoi(releaseId);
+
+				RegQueryValueEx(hKey, "DisplayVersion", 0, &dwType, (LPBYTE)&versionID, &dwSize); //update name
+
+				dwType = REG_DWORD;
+				dwSize = sizeof(DWORD);
+				RegQueryValueEx(hKey, "UBR", 0, &dwType, &ubr, &dwSize); // Update Build Revision
+
+				sprintf(S, "'Version %s' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", versionID, release);
 
 				RegCloseKey(hKey);
 			}
 
-			if (!Is64BitWindows()) {
+			if (!isWin64x())
+				Com_Printf("OS: " S_COLOR_YELLOW "%s "S_COLOR_GREEN"x86 " S_COLOR_YELLOW "%s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", winName, S, build, ubr);
+			else
+				Com_Printf("OS: " S_COLOR_YELLOW "%s "S_COLOR_GREEN"x64 " S_COLOR_YELLOW "%s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", winName, S, build, ubr);
 
-				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 10 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, S2, rtl_OsVer.dwBuildNumber);
-				else
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2016"S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, S2, rtl_OsVer.dwBuildNumber);
-			}
-			else {
-
-				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 10 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, S2, rtl_OsVer.dwBuildNumber);
-				else
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2016 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, S2, rtl_OsVer.dwBuildNumber);
-			}
-
-		}
+			return qtrue;
+		}		
 }
-return qtrue;
-	
-		return qfalse;
+
+return qfalse;
+
 }

@@ -37,6 +37,32 @@ void GL_SetBindlessTexture(int loc, uint64 handle) {
 	gl_state.bindlessCache[gl_state.currentBindlessHandle] = handle;
 }
 
+void GL_UpdateLightPos(vec3_t pos) {
+	
+	if (lightUniforms.pos[0] == pos[0] && lightUniforms.pos[1] == pos[1] && lightUniforms.pos[2] == pos[2])
+		return;
+
+	qglUniform3fv(U_LIGHT_POS, 1, pos);
+
+	lightUniforms.pos[0] = pos[0];
+	lightUniforms.pos[1] = pos[1];
+	lightUniforms.pos[2] = pos[2];
+}
+
+void GL_UpdateLightColor(vec3_t color) {
+
+	if (lightUniforms.color[0] == color[0] && lightUniforms.color[1] == color[1] && lightUniforms.color[2] == color[2])
+		return;
+
+	qglUniform4f(U_COLOR, color[0], color[1], color[2], 1.0);
+
+	lightUniforms.color[0] = color[0];
+	lightUniforms.color[1] = color[1];
+	lightUniforms.color[2] = color[2];
+	lightUniforms.color[3] = 1.0;
+}
+
+
 void GL_SelectTexture(GLenum texture)
 {
 	int tmu;
@@ -598,6 +624,15 @@ void GL_SetDefaultState(void) {
 	gl_state.alphaTest = qfalse;
 	gl_state.alphaFunc = GL_GREATER;
 	gl_state.alphaRef = 0.666f;
+
+	lightUniforms.pos[0] = -999999;
+	lightUniforms.pos[1] = -999999;
+	lightUniforms.pos[2] = -999999;
+
+	lightUniforms.color[0] = -1.0;
+	lightUniforms.color[1] = -1.0;
+	lightUniforms.color[2] = -1.0;
+	lightUniforms.color[3] = -1.0;
 
 	qglHint(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
 

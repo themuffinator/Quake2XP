@@ -639,8 +639,10 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 mat4_t	entAttenMatrix, entSpotMatrix;
 
 	qglUniform1i(U_AMBIENT_LIGHT, (int)currentShadowLight->isAmbient);
-	qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);
-	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	//qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);
+	//qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	GL_UpdateLightPos(currentShadowLight->origin);
+	GL_UpdateLightColor(currentShadowLight->color);
 	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);
 	qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);
 	qglUniform1i(U_PARALLAX_TYPE, clamp(r_reliefMapping->integer, 0, 1));

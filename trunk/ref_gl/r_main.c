@@ -1543,7 +1543,7 @@ static void DevIL_Init() {
     if (init)
         return;
 
-	Com_Printf ("\n==="S_COLOR_YELLOW"OpenIL library initiation..."S_COLOR_WHITE"===\n\n");
+	Com_Printf (S_COLOR_YELLOW"\n...Initializing OpenIL Library\n\n");
 	
 	ilInit();
 	iluInit();
@@ -1555,9 +1555,8 @@ static void DevIL_Init() {
 
 	Com_Printf ("OpenIL VENDOR: "S_COLOR_GREEN" %s\n", ilGetString(IL_VENDOR));
 	Com_Printf ("OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
-	Com_Printf ("\n==================================\n\n");
 
-    init = qtrue;
+	init = qtrue;
 }
 
 
@@ -1610,6 +1609,8 @@ int R_Init(void *hinstance, void *hWnd)
 	}
 	// set our "safe" modes
 	gl_state.prev_mode = 0;
+
+	Com_Printf("\n====" S_COLOR_YELLOW " Starting OpenGL Renderer" S_COLOR_WHITE " ====\n");
 
     // initialize IL library
     DevIL_Init();

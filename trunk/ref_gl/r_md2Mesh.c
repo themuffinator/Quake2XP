@@ -355,12 +355,11 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	
 
 	qglEnableVertexAttribArray (ATT_POSITION);
-	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
-
 	qglEnableVertexAttribArray (ATT_NORMAL);
-	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
-
 	qglEnableVertexAttribArray (ATT_TEX0);
+
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);

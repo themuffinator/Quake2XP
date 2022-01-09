@@ -478,7 +478,9 @@ extern const mat4_t	mat4_identity;
 
 void Mat3_Identity (mat3_t m);
 void Mat3_Copy (const mat3_t in, mat3_t out);
+qboolean Mat3_Compare(const mat3_t a, const mat3_t b);
 
+qboolean Mat4_Compare(const mat4_t a, const mat4_t b);
 void Mat4_Multiply (const mat4_t a, const mat4_t b, mat4_t out);
 void Mat4_Copy (const mat4_t in, mat4_t out);
 void Mat4_Transpose (const mat4_t in, mat4_t out);
@@ -739,6 +741,24 @@ typedef struct {
 
 	vec4_t			fontColor;
 } glstate_t;
+
+typedef struct {
+	vec3_t pos;
+	vec3_t view;
+	vec4_t color;
+	int ambient;
+	int fog;
+	float fogDensity;
+	mat4_t entAttenMat, entSpotMat;
+	vec3_t spotParams;
+	mat4_t mvp, cubeMat, entMat;
+
+
+}lightUniforms_t;
+lightUniforms_t lightUniforms;
+
+void GL_UpdateLightPos(vec3_t pos);
+void GL_UpdateLightColor(vec3_t color);
 
 typedef struct {
 

@@ -616,8 +616,6 @@ qboolean VID_StartRefresh (void) {
 		VID_FreeReflib ();
 	}
 
-	Com_Printf ("==== Starting OpenGL Renderer ====\n");
-
 	Swap_Init ();
 
 	if (R_Init (global_hInstance, MainWndProc) == -1) {

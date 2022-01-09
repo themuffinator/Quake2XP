@@ -159,6 +159,19 @@ qboolean Mat3_IsIdentity(const mat3_t mat) {
 	return Mat3_Compare(mat, mat3_identity);
 }
 
+qboolean Mat4_Compare(const mat4_t a, const mat4_t b) {
+	int		i, j;
+
+	for (i = 0; i < 4; i++) {
+		for (j = 0; j < 4; j++) {
+			if (a[i][j] != b[i][j])
+				return qfalse;
+		}
+	}
+
+	return qtrue;
+}
+
 /*
 ===========
 Mat4_Multiply

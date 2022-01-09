@@ -2806,26 +2806,27 @@ void R_UpdateLightAliasUniforms()
 {
 	mat4_t	entAttenMatrix, entSpotMatrix;
 
-	qglUniform1i(U_AMBIENT_LIGHT, (int)currentShadowLight->isAmbient);
-	qglUniform1f(U_SPECULAR_SCALE, 1.0);
-	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);
+	qglUniform1i(U_AMBIENT_LIGHT, (int)currentShadowLight->isAmbient);//
+//	qglUniform1f(U_SPECULAR_SCALE, 1.0);
+	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);//
+	
+	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);//
 	if (currententity->flags & RF_WEAPONMODEL)
-		qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity * 8.0);
+		qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity * 8.0);//
 	else
-		qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);
-	qglUniform1f(U_CAUSTICS_SCALE, 2.5);
-	qglUniform3fv(U_VIEW_POS, 1, r_origin);
-	qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);
+		qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);//
+//	qglUniform1f(U_CAUSTICS_SCALE, 2.5);
+	qglUniform3fv(U_VIEW_POS, 1, r_origin);//
+	qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);//
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->attenMatrix, entAttenMatrix);
-	qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float *)entAttenMatrix);
+	qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float *)entAttenMatrix);//
 
 	Mat4_TransposeMultiply(currententity->matrix, currentShadowLight->spotMatrix, entSpotMatrix);
-	qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float *)entSpotMatrix);
-	qglUniform3f(U_SPOT_PARAMS, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
+	qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float *)entSpotMatrix);//
+	qglUniform3f(U_SPOT_PARAMS, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);//
 
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);//
 
 	if(r_blinnPhongLighting->integer)
 		qglUniform1i(U_PARAM_INT_0, 1);
@@ -2838,7 +2839,7 @@ void R_UpdateLightAliasUniforms()
 		qglUniform1i(U_SPOT_LIGHT, 0);
 
 	R_CalcCubeMapMatrix(qtrue);
-	qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);
+	qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float *)currentShadowLight->cubeMapMatrix);//
 
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);//
 }

@@ -343,7 +343,8 @@ void R_DrawSkyBox(qboolean color) {
 			skymaxs[1][i] = 1;
 		}
 
-		if (skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
+		if (skymins[0][i] >= skymaxs[0][i] 
+			|| skymins[1][i] >= skymaxs[1][i])
 			continue;
 
 		skyIndex[idx++] = numVerts + 0;

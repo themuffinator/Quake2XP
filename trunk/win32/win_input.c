@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../client/client.h"
 #include "winquake.h"
+#include "win_usbVendors.h"
 
 extern	unsigned	sys_msg_time;
 
@@ -169,8 +170,6 @@ void IN_MouseEvent (int mstate) {
 IN_MouseMove
 ===========
 */
-#include "win_usbVendors.h"
-
 qboolean FindRawDevices()
 {
 	PRAWINPUTDEVICELIST g_pRawInputDeviceList;
@@ -226,8 +225,12 @@ qboolean FindRawDevices()
 					char* pstart = strstr(deviceName, "VID_");
 					if (pstart) {
 						char* vid_ = pstart + 4; // skip VID_
+						char* pid_ = pstart + 13; // skip VID_XXXX&PID_
 						char vid2[5] = { 0 };
+						char pid2[5] = { 0 };
 						strncpy(vid2, vid_, 4);
+						strncpy(pid2, pid_, 4);
+
 						DWORD value = strtoul(vid2, NULL, 16);
 						int z;
 						Com_Printf(S_COLOR_YELLOW"...Found Mouse:\n");
@@ -235,8 +238,20 @@ qboolean FindRawDevices()
 							if (value == usb_Vendors[z].vendorId) {
 								Com_Printf("Vendor:           " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
 								break;
+								Com_Printf("Vendor:           " S_COLOR_MAGENTA "Unknown " S_COLOR_GREEN "VID_0x%04X\n", value);
 							}
 						}
+
+						DWORD valPid = strtoul(pid2, NULL, 16);
+						for (z = 0; z < NUM_INPUT_DEVICES; z++) {
+							if (valPid == product[z].Id) {
+								Com_Printf("Model:            " S_COLOR_GREEN "%s\n", product[z].description);
+								break;
+								Com_Printf("Model:            " S_COLOR_MAGENTA "Unknown " S_COLOR_GREEN "PID_0x%04X\n", valPid);
+							}
+
+						}
+
 						Com_Printf("Buttons:          " S_COLOR_GREEN "%u\n", pMouseInfo->dwNumberOfButtons);
 						if(!pMouseInfo->dwSampleRate)
 							Com_Printf("Frequency:        " S_COLOR_MAGENTA "unsupported\n");
