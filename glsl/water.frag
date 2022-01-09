@@ -19,8 +19,6 @@ in vec2		v_deformMul;
 in vec3		v_positionVS;
 in mat3		v_tangentToView;
 in vec4		v_color;
-in vec3   v_lightVec;
-in vec3		v_viewVecTS;
 
 #define MAX_STEPS			20
 #define MAX_STEPS_BINARY	10
@@ -53,8 +51,6 @@ vec2 VS2UV (const in vec3 p) {
 }
 
 void main (void) {
-
-	vec3 V = normalize(v_viewVecTS);
 
 	// load diffuse map with offset
 	vec3 offset = normalize(texture(u_normalMap, v_deformTexCoord.xy).rgb * 2.0 - 1.0); // use scaled tex coord
@@ -111,7 +107,7 @@ void main (void) {
 
 	N = normalize(v_tangentToView * N);
 
-	V = normalize(v_positionVS);
+	vec3 V = normalize(v_positionVS);
 	vec3 R = reflect(V, N);
 
 	// Fresnel

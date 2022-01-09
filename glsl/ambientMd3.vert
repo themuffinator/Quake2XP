@@ -27,7 +27,7 @@ if(u_isShell == 1 || u_isEnvMap == 1){
 	
 	if(u_isShell == 1){
 		v_shellCoord += u_shellParams.x;
-		xyz.xyz += att_normal * u_shellParams.y;
+	//	xyz.xyz += att_normal * u_shellParams.y;
 		}
 }
 

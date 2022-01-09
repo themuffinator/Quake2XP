@@ -1,4 +1,4 @@
-//!#include "include/global.inc"
+////!#include "include/global.inc"
 
 layout (binding = 0) uniform sampler2D		u_LightMap0;
 layout (binding = 1) uniform sampler2D		u_LightMap1;
@@ -46,7 +46,7 @@ void main (void) {
 
 	
 	vec3 V = normalize(v_viewVecTS);
-	vec2 P = CalcParallaxOffset(u_Diffuse, v_wTexCoord.xy, V);
+	vec2 P = ParallaxOcclusionMap(u_Diffuse, v_wTexCoord.xy, V);
 
 	vec3 diffuseMap = texture(u_Diffuse, P).xyz;
 	vec3 glowMap = texture(u_Add, P).xyz;

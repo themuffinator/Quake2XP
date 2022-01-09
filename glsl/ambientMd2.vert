@@ -9,12 +9,14 @@ out	vec2			v_texCoord;
 out	vec2			v_envCoord;
 out	vec2			v_shellCoord;
 out	vec4			v_color;
+out vec3			v_positionVS;
 
-layout(location = U_SHELL_PARAMS)	uniform	vec2		u_shellParams;
-layout(location = U_VIEW_POS)		uniform	vec3		u_viewOrg;
-layout(location = U_ENV_PASS)		uniform	int			u_isEnvMap;
-layout(location = U_SHELL_PASS)		uniform	int			u_isShell;
-layout(location = U_MVP_MATRIX)		uniform mat4		u_modelViewProjectionMatrix;
+layout(location = U_SHELL_PARAMS)		uniform	vec2		u_shellParams;
+layout(location = U_VIEW_POS)			uniform	vec3		u_viewOrg;
+layout(location = U_ENV_PASS)			uniform	int			u_isEnvMap;
+layout(location = U_SHELL_PASS)			uniform	int			u_isShell;
+layout(location = U_MVP_MATRIX)			uniform mat4		u_modelViewProjectionMatrix;
+layout(location = U_MODELVIEW_MATRIX)	uniform mat4		u_modelViewMatrix;
 
 void main ()
 {
@@ -25,7 +27,6 @@ if(u_isShell >= 1 || u_isEnvMap == 1){
 	float d = dot(att_normal, viewPos);
 	vec3 reflected = att_normal * 2.0 * d - viewPos;
 	v_shellCoord = v_envCoord = 0.5 + reflected.yz * vec2(0.5, -0.5);
-
 	v_shellCoord += u_shellParams.x;
 
 	if(u_isShell == 2)

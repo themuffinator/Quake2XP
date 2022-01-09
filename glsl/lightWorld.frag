@@ -1,9 +1,11 @@
 //!#include "include/global.inc"
+
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2D		u_Diffuse;
 layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_NormalMap;
 layout (bindless_sampler, location  = U_TMU2) uniform samplerCube	u_CubeFilterMap;
 layout (bindless_sampler, location  = U_TMU3) uniform sampler2D		u_Caustics;
 layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_RghMap;
+layout (bindless_sampler, location  = U_TMU5) uniform sampler2DRect	u_SSAOMap;
 
 layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
 layout(location = U_RGH_SCALE)			uniform float	u_roughnessScale;
@@ -21,6 +23,7 @@ layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump 
 layout(location = U_PARAM_INT_0)		uniform int		u_sss;
 layout(location = U_PARAM_INT_1)		uniform int		u_selfShadow; // self shadow parallax
 layout(location = U_PARAM_INT_2)		uniform int		u_blinnPhong; // use old lighting model
+layout(location = U_USE_SSAO)			uniform int		u_ssao;
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;
@@ -54,7 +57,7 @@ void main (void) {
 	vec2 texCoord = v_texCoord;
 
 	if(u_autoBump == 0){
-		texCoord = CalcParallaxOffset(u_Diffuse, v_texCoord, V);
+		texCoord = ParallaxOcclusionMap(u_Diffuse, v_texCoord, V);
 		diffuseMap = texture(u_Diffuse,  texCoord);
 		normalMap.rgb =  normalize(texture(u_NormalMap, texCoord).rgb * 2.0 - 1.0);
 
@@ -123,8 +126,11 @@ void main (void) {
 		float shadow = 1.0;
 		if(u_selfShadow == 1)
 			shadow = selfShadow(u_Diffuse, L, texCoord);
-                                      
+        
 		fragData.rgb =  brdfColor  * attenMap * shadow * cubeFilter.rgb; 
+		if(u_ssao == 1)
+			fragData.rgb *= texture2DRect(u_SSAOMap, gl_FragCoord.xy * 0.5).rgb;
+
 		fragData.a = 1.0;
      }
   }	

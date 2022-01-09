@@ -7,9 +7,10 @@ layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_rghMap;
 layout (bindless_sampler, location  = U_TMU5) uniform sampler2D		u_bumpBlend;
 layout (bindless_sampler, location  = U_TMU6) uniform sampler2DRect	g_colorBufferMap;
 layout (bindless_sampler, location  = U_TMU7) uniform sampler2DRect	g_depthBufferMap;
+layout (bindless_sampler, location  = U_TMU8) uniform sampler2DRect	u_SSAOMap;
 
-layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
-layout(location = U_CAUSTICS_SCALE)		uniform float	u_CausticsModulate;
+//layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
+//layout(location = U_CAUSTICS_SCALE)		uniform float	u_CausticsModulate;
 layout(location = U_COLOR)				uniform vec4	u_LightColor;
 layout(location = U_USE_FOG)			uniform int		u_fog;
 layout(location = U_FOG_DENSITY)		uniform float	u_fogDensity;
@@ -28,6 +29,7 @@ layout(location = U_PARAM_INT_4)		uniform int		u_useSSLR;
 layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
+layout(location = U_USE_SSAO)			uniform int		u_ssao;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -167,7 +169,7 @@ void main (void) {
 	
 	if(u_autoBump == 0){
 		normalMap.xyz = normalize(texture(u_bumpMap, v_texCoord).rgb * 2.0 - 1.0);
-		specular.rgb = texture(u_bumpMap, v_texCoord).aaa * u_specularScale;
+		specular.rgb = texture(u_bumpMap, v_texCoord).aaa; // * u_specularScale;
 	}
 
 	if(u_autoBump == 1){
@@ -185,7 +187,7 @@ void main (void) {
 
 	if (u_isCaustics == 1){
 		vec4 causticsMap = texture(u_causticMap, v_texCoord);
-		vec4 tmp = causticsMap * diffuseMap * u_CausticsModulate;
+		vec4 tmp = causticsMap * diffuseMap * 2.5;// * u_CausticsModulate;
 		diffuseMap += tmp;
 	}
 
@@ -195,17 +197,19 @@ void main (void) {
 		return;
 	}
 	
-	float roughness, cd_mask, metalness;
+	float roughness, cd_mask, metalness, backedAO;
 	if(u_isRgh == 1){
 		vec4 rghMap = texture(u_rghMap, v_texCoord);
 		roughness = rghMap.r; 
 		metalness =   rghMap.g;
+		backedAO = rghMap.b;
 		cd_mask =  rghMap.a;
 	}
 
 	if(u_isRgh == 0){
 		roughness = 1.0 - diffuseMap.r;
       cd_mask = 1.0; 
+	  backedAO = 1.0;
       metalness = 0.0;
     }
   
@@ -256,4 +260,8 @@ void main (void) {
         fragData.rgb += LightingDiffraction(V, L, worldTangent.xyz) * 0.5;
        }
       }	
+	  if(u_ssao == 1){
+		fragData.rgb *= texture2DRect(u_SSAOMap, gl_FragCoord.xy * 0.5).rgb;
+		fragData.rgb *= vec3(backedAO);
+	}
 }

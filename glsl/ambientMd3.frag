@@ -42,7 +42,7 @@ void main ()
 	vec3 glow = texture(u_Add, v_texCoord).rgb;
 	vec3 normalMap = normalize(texture(u_NormalMap, v_texCoord).xyz * 2.0 - 1.0);
 	float bakedAO = texture(u_rgh, v_texCoord).b;
-	fragData.rgb = diffuse.rgb * bakedAO;
+	fragData.rgb = diffuse.rgb * (bakedAO * 2.0);
 	
 	if(u_ssao == 1)
 		fragData.rgb *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).rgb;

@@ -18,7 +18,6 @@ out vec2		v_deformMul;
 out vec3		v_positionVS;
 out mat3		v_tangentToView;
 out vec4		v_color;
-out vec3		v_viewVecTS;
 
 void main (void) {
 	v_diffuseTexCoord = att_texCoordDiffuse;
@@ -28,15 +27,6 @@ void main (void) {
 	vec4 pos = u_modelViewMatrix * vec4(att_position, 1.0);
 	v_positionVS = pos.xyz;
 
-	vec3 view;
-	view.x =  u_modelViewMatrix[3][0];
-	view.y =  u_modelViewMatrix[3][1];
-	view.z =  u_modelViewMatrix[3][2];
-	vec3 tmp = view - att_position;
-	v_viewVecTS.x = dot(tmp, att_tangent);
-	v_viewVecTS.y = dot(tmp, att_binormal);
-	v_viewVecTS.z = dot(tmp, att_normal);
-	
 	// compute view space depth
 	pos = vec4(1.0, 0.0, pos.z, 1.0);
 	// compute the deform strength
