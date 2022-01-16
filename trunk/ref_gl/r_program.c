@@ -28,6 +28,10 @@ static const char * glslGlobals =
 "precision mediump int;\n"
 "out vec4 fragData;\n"
 
+"#ifndef saturate\n"
+"#define saturate(x)    clamp(x, 0.0, 1.0)\n"
+"#endif\n"
+
 "#define	CUTOFF_EPSILON	1.0 / 255.0\n"
 "#define	PI				3.14159265358979323846\n"
 "#define	HALF_PI			1.57079632679489661923\n"
@@ -149,17 +153,24 @@ static const char * glslGlobals =
 
 "#define	U_BINDLESS_ARRAY		95\n"
 
-"#define	U_TMU0		96\n"
-"#define	U_TMU1		97\n"
-"#define	U_TMU2		98\n"
-"#define	U_TMU3		99\n"
-"#define	U_TMU4		100\n"
-"#define	U_TMU5		101\n"
-"#define	U_TMU6		102\n"
-"#define	U_TMU7		103\n"
-"#define	U_TMU8		104\n"
-"#define	U_TMU9		105\n"
-"#define	U_TMU10		106\n"
+"#define		U_PARAM_iVEC2_0 96\n"
+"#define		U_PARAM_iVEC2_1 97\n"
+"#define		U_PARAM_iVEC2_2 98\n"
+"#define		U_PARAM_iVEC2_3 99\n"
+"#define		U_PARAM_iVEC2_4 100\n"
+"#define		U_PARAM_iVEC2_5 101\n"
+
+"#define	U_TMU0		102\n"
+"#define	U_TMU1		103\n"
+"#define	U_TMU2		104\n"
+"#define	U_TMU3		105\n"
+"#define	U_TMU4		106\n"
+"#define	U_TMU5		107\n"
+"#define	U_TMU6		108\n"
+"#define	U_TMU7		109\n"
+"#define	U_TMU8		110\n"
+"#define	U_TMU9		111\n"
+"#define	U_TMU10		112\n"
 ;
 
 typedef enum {
@@ -649,6 +660,17 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"light decals program"S_COLOR_WHITE" ");
+	lightDecalsProgram = R_FindProgram("lightDecals", S_DEFAULT);
+
+	if (lightDecalsProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	Com_Printf ("Load "S_COLOR_YELLOW"gauss blur program"S_COLOR_WHITE" ");
 	gaussXProgram = R_FindProgram ("gaussX", S_DEFAULT);
 	gaussYProgram = R_FindProgram ("gaussY", S_DEFAULT);
@@ -882,16 +904,6 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-	Com_Printf("Load "S_COLOR_YELLOW"shadow blur program"S_COLOR_WHITE" ");
-	shadowMaskProgram = R_FindProgram("shadowMask", S_DEFAULT);
-	if (shadowMaskProgram->valid) {
-		Com_Printf("succeeded\n");
-	}
-	else {
-		Com_Printf(S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
 	Com_Printf("Load "S_COLOR_YELLOW"light2d program"S_COLOR_WHITE" ");
 	light2dProgram = R_FindProgram("light2d", S_DEFAULT);
 	if (light2dProgram->valid) {

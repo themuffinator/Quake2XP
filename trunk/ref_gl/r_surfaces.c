@@ -386,8 +386,8 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		}
 
 		if (!image->parallaxScale){
-			scale[0] = r_reliefScale->value / image->width;
-			scale[1] = r_reliefScale->value / image->height;
+			scale[0] = r_parallaxScale->value / image->width;
+			scale[1] = r_parallaxScale->value / image->height;
 		}
 		else
 		{
@@ -463,7 +463,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	GL_BindProgram(ambientWorldProgram);
 
 	qglUniform3fv(U_VIEW_POS, 1, bmodel ? BmodelViewOrg : r_origin);
-	qglUniform1i(U_PARALLAX_TYPE, clamp(r_reliefMapping->integer, 0, 1));
+	qglUniform1i(U_PARALLAX_TYPE, r_parallaxMapping->integer);
 	qglUniform1f(U_AMBIENT_LEVEL, r_lightmapScale->value);
 
 	qglUniform1i(U_LM_TYPE, (r_worldmodel->useXPLM && r_radiosityNormalMapping->integer) ? 1 : 0);
@@ -568,8 +568,8 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		}
 
 		if (!image->parallaxScale){
-			scale[0] = r_reliefScale->value / image->width;
-			scale[1] = r_reliefScale->value / image->height;
+			scale[0] = r_parallaxScale->value / image->width;
+			scale[1] = r_parallaxScale->value / image->height;
 		}
 	else
 		{
@@ -645,7 +645,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	GL_UpdateLightColor(currentShadowLight->color);
 	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);
 	qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);
-	qglUniform1i(U_PARALLAX_TYPE, clamp(r_reliefMapping->integer, 0, 1));
+	qglUniform1i(U_PARALLAX_TYPE, r_parallaxMapping->integer);
 	qglUniform1f(U_CAUSTICS_SCALE, 2.5);
 	qglUniform1f(U_PARAM_FLOAT_0, r_selfShadowOffset->value);
 	qglUniform1f(U_PARAM_FLOAT_1, r_selfShadowBlur->value);

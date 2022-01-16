@@ -22,7 +22,7 @@
     <ProjectName>quake2xp</ProjectName>
     <ProjectGuid>{D3316DC4-E2AD-4884-BA0D-AE07AD407492}</ProjectGuid>
     <RootNamespace>quake2xp</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -36,12 +36,12 @@
     <UseIntelTBB>true</UseIntelTBB>
     <InstrumentIntelTBB>true</InstrumentIntelTBB>
     <UseIntelMKL>Parallel</UseIntelMKL>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -49,12 +49,12 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -219,13 +219,13 @@
       <EmitOptimizationDiagnosticsToFile>false</EmitOptimizationDiagnosticsToFile>
       <AnalyzeIncludeFiles>false</AnalyzeIncludeFiles>
       <GenerateAlternateCodePaths>AVX</GenerateAlternateCodePaths>
-      <DisableSpecificWarnings>6031</DisableSpecificWarnings>
+      <DisableSpecificWarnings>6031; 5105</DisableSpecificWarnings>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
       <BrowseInformation>true</BrowseInformation>
       <SupportJustMyCode>true</SupportJustMyCode>
-      <LanguageStandard_C>Default</LanguageStandard_C>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -782,6 +782,8 @@
     <None Include="..\baseq2\glsl\include\depth.inc" />
     <None Include="..\baseq2\glsl\include\lighting.inc" />
     <None Include="..\baseq2\glsl\include\parallax.inc" />
+    <None Include="..\baseq2\glsl\lightDecals.frag" />
+    <None Include="..\baseq2\glsl\lightDecals.vert" />
     <None Include="..\baseq2\glsl\lightWorld.frag" />
     <None Include="..\baseq2\glsl\lightWorld.vert" />
     <None Include="..\baseq2\glsl\loading.frag" />
@@ -806,8 +808,6 @@
     <None Include="..\baseq2\glsl\screenFlash.vert" />
     <None Include="..\baseq2\glsl\shadow.frag" />
     <None Include="..\baseq2\glsl\shadow.vert" />
-    <None Include="..\baseq2\glsl\shadowMask.frag" />
-    <None Include="..\baseq2\glsl\shadowMask.vert" />
     <None Include="..\baseq2\glsl\sky.frag" />
     <None Include="..\baseq2\glsl\sky.vert" />
     <None Include="..\baseq2\glsl\sprite.frag" />

@@ -515,9 +515,11 @@ void R_InitEngineTextures (void) {
 	r_decaltexture[DECAL_BFG] =
 		GL_FindImage ("gfx/decals/decal_bfg.tga", it_wall);
 
-	for (i = 0; i < DECAL_MAX; i++)
-	if (!r_decaltexture[i])
-		r_decaltexture[i] = r_notexture;
+
+	for (i = 0; i < DECAL_MAX; i++) {
+		if (!r_decaltexture[i])
+			r_decaltexture[i] = r_notexture;
+	}
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {
 		char name[MAX_QPATH];

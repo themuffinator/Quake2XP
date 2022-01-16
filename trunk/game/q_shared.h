@@ -1161,8 +1161,8 @@ typedef enum {
 #define	ATTN_STATIC             1.05
 #define	ATTN_NORM               1.0
 #define ATTN_MEDIUM				0.4
-#define ATTN_HEAVY_STEPS		0.55
-#define ATTN_FOOTSTEPS			0.2
+#define ATTN_HEAVY_STEPS		0.88
+#define ATTN_FOOTSTEPS			1.0
 #define ATTN_WEAPON_LIGHT		0.2
 #define	ATTN_BIG_GUN            0.17
 #define ATTN_WEAPON_HEAVY		0.15

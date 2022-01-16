@@ -162,7 +162,6 @@ image_t	*cinMap;
 image_t *r_particletexture[PT_MAX];
 image_t *r_decaltexture[DECAL_MAX];
 
-
 image_t *r_flare;
 
 image_t *draw_chars, *draw_charsRu, *draw_charsInt;
@@ -314,11 +313,13 @@ cvar_t	*hunk_bsp;
 cvar_t	*hunk_md2;
 cvar_t	*hunk_md3;
 
-cvar_t	*r_reliefMapping;
-cvar_t	*r_reliefScale;
+cvar_t	*r_parallaxMapping;
+cvar_t	*r_parallaxScale;
 cvar_t	*r_selfShadowingParallax;
 cvar_t	*r_selfShadowOffset;
 cvar_t	*r_selfShadowBlur;
+
+cvar_t	*r_decalsShading;
 
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;
@@ -392,6 +393,7 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	float flareSize, char target[MAX_QPATH], int start_off, int fog, float fogDensity, vec3_t occOrg, vec3_t occRad);
 void R_DrawParticles (void);
 void R_RenderDecals (void);
+void R_RenderDecalsLight(void);
 void R_LightColor (vec3_t org, vec3_t color);
 qboolean R_CullAliasModel (vec3_t bbox[8], entity_t *e);
 int CL_PMpointcontents2 (vec3_t point, struct model_s * ignore);
@@ -956,12 +958,10 @@ glslProgram_t		*lightGlassProgram;
 glslProgram_t		*thermalProgram;
 glslProgram_t		*thermalfpProgram;
 glslProgram_t		*waterProgram;
-glslProgram_t		*lavaProgram;
 glslProgram_t		*radialProgram;
 glslProgram_t		*dofProgram;
 glslProgram_t		*particlesProgram;
 glslProgram_t		*shadowProgram;
-glslProgram_t		*ssProgram;
 glslProgram_t		*genericProgram;
 glslProgram_t		*cinProgram;
 glslProgram_t		*loadingProgram;
@@ -971,18 +971,16 @@ glslProgram_t		*nullProgram;
 glslProgram_t		*gammaProgram;
 glslProgram_t		*lutProgram;
 glslProgram_t		*whiteBalanceProgram;
-glslProgram_t		*FboProgram;
 glslProgram_t		*light2dProgram;
 glslProgram_t		*fixFovProgram;
 glslProgram_t		*menuProgram;
 glslProgram_t		*skyProgram;
 glslProgram_t		*colorProgram;
 glslProgram_t		*flareProgram;
-glslProgram_t		*fbo2screenProgram;
 glslProgram_t		*globalFogProgram;
 glslProgram_t		*spriteProgram;
 glslProgram_t		*screenFlashProgram;
-glslProgram_t		*shadowMaskProgram;
+glslProgram_t		*lightDecalsProgram;
 
 
 void GL_BindProgram (glslProgram_t *program);
@@ -1116,6 +1114,13 @@ typedef enum {
 	U_2D_PICS,
 	U_FRAG_COLOR,
 	U_BINDLESS_ARRAY,
+		
+	U_PARAM_iVEC2_0,
+	U_PARAM_iVEC2_1,
+	U_PARAM_iVEC2_2,
+	U_PARAM_iVEC2_3,
+	U_PARAM_iVEC2_4,
+	U_PARAM_iVEC2_5,
 
 	U_TMU0,
 	U_TMU1,

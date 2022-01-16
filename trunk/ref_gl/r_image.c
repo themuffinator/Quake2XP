@@ -102,6 +102,7 @@ int numgltextures;
 image_t *r_particletexture[PT_MAX];
 image_t *r_decaltexture[DECAL_MAX];
 
+
 static byte intensitytable[256];
 static unsigned char gammatable[256];
 

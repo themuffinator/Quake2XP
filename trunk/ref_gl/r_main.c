@@ -615,6 +615,8 @@ void R_DrawLightScene (void)
 
 	R_CastAliasShadowVolumes(qfalse);   // alias shadows with out player model
 	R_DrawLightWorld();					// light world
+	R_RenderDecalsLight();
+
 	//brush models light pass
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -1342,8 +1344,8 @@ void R_RegisterCvars(void)
 	hunk_md2=							Cvar_Get("hunk_md2", "10", CVAR_ARCHIVE);
 	hunk_md3=							Cvar_Get("hunk_md3", "20", CVAR_ARCHIVE);
 
-	r_reliefMapping =					Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
-	r_reliefScale =						Cvar_Get("r_reliefScale", "2.0", CVAR_ARCHIVE);
+	r_parallaxMapping =					Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
+	r_parallaxScale =						Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
 	r_selfShadowingParallax =			Cvar_Get("r_selfShadowingParallax", "1", CVAR_ARCHIVE);
 	r_selfShadowOffset =				Cvar_Get("r_selfShadowOffset", "3.0", CVAR_ARCHIVE);
 	r_selfShadowBlur =					Cvar_Get("r_selfShadowBlur", "0.7", CVAR_ARCHIVE);
@@ -1428,6 +1430,7 @@ void R_RegisterCvars(void)
 	r_earthSky = 						Cvar_Get("r_earthSky", "0", 0);
 	r_earthSunIntens =					Cvar_Get("r_earthSunIntens", "12.0", 0);
 //	r_earthSunAzimuth =					Cvar_Get("r_earthSunAzimuth", "0.0", CVAR_ARCHIVE);
+	r_decalsShading =					Cvar_Get("r_decalsShading", "0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);
@@ -2016,8 +2019,8 @@ void R_BeginFrame()
 	 ** change modes if necessary
 	 */
 	r_lightmapScale->value = ClampCvar(0.0, 1.0, r_lightmapScale->value);
-	r_reliefMapping->integer = ClampCvarInteger(0, 1, r_reliefMapping->integer);
-	r_reliefScale->integer = ClampCvarInteger(0, 6, r_reliefScale->integer);
+	r_parallaxMapping->integer = ClampCvarInteger(0, 3, r_parallaxMapping->integer);
+	r_parallaxScale->integer = ClampCvarInteger(0, 6, r_parallaxScale->integer);
 
 	if (r_mode->modified || r_fullScreen->modified)
         vid_ref->modified = qtrue;
@@ -2034,8 +2037,8 @@ void R_BeginFrame()
 	if (r_ssao->modified)
 		r_ssao->modified = qfalse;
 	
-	if (r_reliefMapping->modified)
-		r_reliefMapping->modified = qfalse;
+	if (r_parallaxMapping->modified)
+		r_parallaxMapping->modified = qfalse;
 
 	if (r_anisotropic->modified)
 		r_anisotropic->modified = qfalse;

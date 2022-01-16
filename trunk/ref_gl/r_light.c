@@ -44,6 +44,7 @@ void R_AddLightInteraction(worldShadowLight_t *light);
 void R_DrawOcclusionBbox(worldShadowLight_t* light, qboolean update);
 void Clamp2RGB(vec3_t color);
 
+
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
 	if (r_newrefdef.areabits && light->area > 0) {

@@ -70,7 +70,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DECAL_ACIDMARK			13
 #define DECAL_BFG				14
 
-
 #define DECAL_MAX			15
 
 #define DF_SHADE		0x00000400	// 1024
@@ -493,6 +492,7 @@ typedef struct decals_t {
 	float endAlpha;
 	float size;
 	vec3_t org;
+	vec3_t normal;
 	int type;
 	int flags;
 	int sFactor;

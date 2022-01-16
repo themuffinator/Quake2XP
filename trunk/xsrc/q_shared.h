@@ -1057,9 +1057,9 @@ typedef enum {
 #define	ATTN_BIG_GUN            0.17
 #define ATTN_MEDIUM				0.4
 #define ATTN_WEAPON_LIGHT		0.2
-#define ATTN_FOOTSTEPS			0.2
+#define ATTN_FOOTSTEPS			1.0
 #define ATTN_WEAPON_HEAVY		0.15
-#define ATTN_HEAVY_STEPS		0.55		
+#define ATTN_HEAVY_STEPS		0.88		
 
 // player_state->stats[] indexes
 #define STAT_HEALTH_ICON		0

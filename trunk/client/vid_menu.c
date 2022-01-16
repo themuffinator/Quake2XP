@@ -111,12 +111,12 @@ static void filmCallback (void *s) {
 static void ParallaxCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_reliefMapping", box->curvalue * 1);
+	Cvar_SetValue ("r_parallaxMapping", box->curvalue * 1);
 }
 
 static void reliefScaleCallback(void *s) {
 	menuslider_s *slider = (menuslider_s *)s;
-	Cvar_SetValue("r_reliefScale", slider->curvalue * 1);
+	Cvar_SetValue("r_parallaxScale", slider->curvalue * 1);
 }
 
 static void reliefShadowCallback(void *s) {
@@ -241,8 +241,8 @@ static void ApplyChanges (void *unused) {
 	Cvar_SetValue ("r_drawFlares", s_flare_box.curvalue);
 	Cvar_SetValue ("r_textureCompression", s_tc_box.curvalue);
 	Cvar_SetValue ("r_mode", s_mode_list.curvalue);
-	Cvar_SetValue ("r_reliefScale", s_reliefScale_slider.curvalue);
-	Cvar_SetValue ("r_reliefMapping", s_parallax_box.curvalue);
+	Cvar_SetValue ("r_parallaxScale", s_reliefScale_slider.curvalue);
+	Cvar_SetValue ("r_parallaxMapping", s_parallax_box.curvalue);
 
 	Cvar_SetValue("r_selfShadowingParallax", s_parallax_shadow.curvalue);
 
@@ -303,7 +303,7 @@ static void ApplyChanges (void *unused) {
 	if (r_anisotropic->modified)
 		vid_ref->modified = qtrue;
 
-	if (r_reliefScale->modified)
+	if (r_parallaxScale->modified)
 		vid_ref->modified = qtrue;
 
 	if (r_bloom->modified)
@@ -318,7 +318,7 @@ static void ApplyChanges (void *unused) {
 	if (r_drawFlares->modified)
 		vid_ref->modified = qtrue;
 
-	if (r_reliefMapping->modified)
+	if (r_parallaxMapping->modified)
 		vid_ref->modified = qtrue;
 
 	if (r_textureCompression->modified)
@@ -649,7 +649,7 @@ void VID_MenuInit (void) {
 		"[4096 1716][2.39:1 DCI 4K WIDE]",
 		"[4096 2160][1.89:1 DCI 4K]",
 		"[Custom]", 0 };
-
+	static char* parallax_names[] = { "off", "Linear Step Parallax", "Relief Mapping", "Crytek Parallax Occusion Mapping", 0 };
 	static char	*yesno_names[] = { "off", "yes", 0 };
 	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
 	static char	*aniso_items[] =
@@ -679,13 +679,14 @@ void VID_MenuInit (void) {
 	if (!r_bloom)
 		r_bloom = Cvar_Get ("r_bloom", "0", CVAR_ARCHIVE);
 
-	if (!r_reliefMapping)
-		r_reliefMapping = Cvar_Get ("r_reliefMapping", "0", CVAR_ARCHIVE);
+	if (!r_parallaxMapping)
+		r_parallaxMapping = Cvar_Get ("r_parallaxMapping", "0", CVAR_ARCHIVE);
 
-	if (r_reliefMapping->integer > 1)
-		r_reliefMapping = Cvar_Get("r_reliefMapping", "1", CVAR_ARCHIVE);
+	if (r_parallaxMapping->integer > 3)
+		r_parallaxMapping = Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
 
-	r_reliefScale->integer = ClampCvarInteger(1, 10, r_reliefScale->integer);
+	r_parallaxScale->integer = ClampCvarInteger(1, 10, r_parallaxScale->integer);
+	r_parallaxMapping->integer = ClampCvarInteger(0, 3, r_parallaxMapping->integer);
 
 	if (!r_dof)
 		r_dof = Cvar_Get ("r_dof", "0", CVAR_ARCHIVE);
@@ -784,11 +785,11 @@ void VID_MenuInit (void) {
 	s_parallax_box.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x = 0;
 	s_parallax_box.generic.y = 80 * cl_fontScale->value;
-	s_parallax_box.generic.name = "Relief Mapping";
-	s_parallax_box.itemnames = yesno_names;
-	s_parallax_box.curvalue = r_reliefMapping->value;
+	s_parallax_box.generic.name = "Parallax Mapping";
+	s_parallax_box.itemnames = parallax_names;
+	s_parallax_box.curvalue = clamp(r_parallaxMapping->value, 0, 3);
 	s_parallax_box.generic.callback = ParallaxCallback;
-	s_parallax_box.generic.statusbar = "Use High Quality Virtual Displacement Mapping";
+	s_parallax_box.generic.statusbar = "Virtual Displacement Mapping";
 
 	s_parallax_shadow.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_shadow.generic.x = 0;
@@ -805,7 +806,7 @@ void VID_MenuInit (void) {
 	s_reliefScale_slider.generic.name = "Relief Scale";
 	s_reliefScale_slider.minvalue = 1;
 	s_reliefScale_slider.maxvalue = 6;
-	s_reliefScale_slider.curvalue = r_reliefScale->value;
+	s_reliefScale_slider.curvalue = r_parallaxScale->value;
 	s_reliefScale_slider.generic.callback = reliefScaleCallback;
 	s_reliefScale_slider.generic.statusbar = "Virtual Displacement Depth";
 

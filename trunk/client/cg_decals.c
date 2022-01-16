@@ -183,6 +183,11 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 		VectorSet (d->color, red, green, blue);
 		VectorSet (d->endColor, endRed, endGreen, endBlue);
 
+		if (fr->surf->flags & MSURF_PLANEBACK)
+			VectorNegate(fr->surf->plane->normal, d->normal);
+		else
+			VectorCopy(fr->surf->plane->normal, d->normal);
+
 		for (j = 0; j < fr->numverts; j++) {
 			vec3_t v;
 
