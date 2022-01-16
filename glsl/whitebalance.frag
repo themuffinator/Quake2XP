@@ -3,10 +3,6 @@ layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_ScreenTex;
 
 layout(location = U_PARAM_FLOAT_0)	uniform float	u_colorTempK;
 
-#ifndef saturate
-#define saturate(x)    clamp(x, 0.0, 1.0)
-#endif
-
 vec3 ColorTemperatureToRGB(float temperatureInKelvins)
 {
 	vec3 retColor;

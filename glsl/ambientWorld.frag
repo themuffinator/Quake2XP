@@ -46,7 +46,22 @@ void main (void) {
 
 	
 	vec3 V = normalize(v_viewVecTS);
-	vec2 P = ParallaxOcclusionMap(u_Diffuse, v_wTexCoord.xy, V);
+	vec2 P;
+
+	switch (u_parallaxType) {
+		case 0: 
+		P = v_wTexCoord;
+		break;
+		case 1: 
+		P = LinearStepParallax(u_Diffuse, v_wTexCoord, V);
+		break;
+		case 2: 
+		P = ReliefMapping(u_Diffuse, v_wTexCoord, V);
+		break;
+		case 3:	
+		P = ParallaxOcclusionMap(u_Diffuse, v_wTexCoord, V);
+		break;
+}
 
 	vec3 diffuseMap = texture(u_Diffuse, P).xyz;
 	vec3 glowMap = texture(u_Add, P).xyz;

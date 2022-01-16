@@ -1,7 +1,3 @@
-#ifndef saturate
-#define saturate(x)    clamp(x, 0.0, 1.0)
-#endif
-
 float sqr (in float x) { return x * x; }
 vec2 sqr (in vec2 x) { return x * x; }
 vec3 sqr (in vec3 x) { return x * x; }
@@ -410,4 +406,23 @@ vec3 LightingDiffraction(in vec3 V, in vec3 L, in vec3 T){
  }
  
  return color = saturate(color);
+}
+
+void calcTBN(in vec3 viewOrg, in vec3 lightOrg, in vec2 texCoord, in vec3 vertexPos, in vec3 norm, out vec3 L, out vec3 V){
+
+	vec3 denormTangent = dFdxFine(texCoord.y) * dFdyFine(vertexPos) - dFdxFine(vertexPos) * dFdyFine(texCoord.y);
+    vec3 tangent = normalize(denormTangent - norm * dot(norm, denormTangent));
+ 
+    vec3 normal = normalize(norm);
+    vec3 binormal = cross(normal,tangent);
+
+	vec3 VV = viewOrg - vertexPos;
+	V.x = dot(VV, tangent);
+	V.y = dot(VV, binormal);
+	V.z = dot(VV, normal);
+
+	vec3 LV = lightOrg - vertexPos;
+	L.x = dot(LV, tangent);
+	L.y = dot(LV, binormal);
+	L.z = dot(LV, normal); 
 }

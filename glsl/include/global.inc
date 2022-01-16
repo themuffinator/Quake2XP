@@ -130,14 +130,25 @@ out vec4 fragData;	// out fragColor
 
 #define	U_BINDLESS_ARRAY		95 
 
-#define	U_TMU0		96 
-#define	U_TMU1		97 
-#define	U_TMU2		98 
-#define	U_TMU3		99 
-#define	U_TMU4		100 
-#define	U_TMU5		101 
-#define	U_TMU6		102 
-#define	U_TMU7		103 
-#define	U_TMU8		104 
-#define	U_TMU9		105 
-#define	U_TMU10		106 
+#define		U_PARAM_iVEC2_0 96
+#define		U_PARAM_iVEC2_1 97
+#define		U_PARAM_iVEC2_2 98
+#define		U_PARAM_iVEC2_3 99
+#define		U_PARAM_iVEC2_4 100
+#define		U_PARAM_iVEC2_5 101
+
+#define	U_TMU0		102 
+#define	U_TMU1		103 
+#define	U_TMU2		104 
+#define	U_TMU3		105 
+#define	U_TMU4		106 
+#define	U_TMU5		107 
+#define	U_TMU6		108 
+#define	U_TMU7		109 
+#define	U_TMU8		110 
+#define	U_TMU9		111 
+#define	U_TMU10		112 
+
+#ifndef saturate
+#define saturate(x)    clamp(x, 0.0, 1.0)
+#endif

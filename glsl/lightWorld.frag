@@ -54,13 +54,26 @@ void main (void) {
 
 	vec4 diffuseMap;
 	vec4 normalMap;
-	vec2 texCoord = v_texCoord;
+	vec2 texCoord;
 
 	if(u_autoBump == 0){
-		texCoord = ParallaxOcclusionMap(u_Diffuse, v_texCoord, V);
+
+		switch (u_parallaxType) {
+			case 0:
+			texCoord = v_texCoord;
+			break;
+			case 1: 
+			texCoord = LinearStepParallax(u_Diffuse, v_texCoord, V);
+			break;
+			case 2:
+			texCoord = ReliefMapping(u_Diffuse, v_texCoord, V);
+			break;
+			case 3:
+			texCoord = ParallaxOcclusionMap(u_Diffuse, v_texCoord, V);
+			break;
+		}
 		diffuseMap = texture(u_Diffuse,  texCoord);
 		normalMap.rgb =  normalize(texture(u_NormalMap, texCoord).rgb * 2.0 - 1.0);
-
 	}
 
 	if(u_autoBump == 1){
