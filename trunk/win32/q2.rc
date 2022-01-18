@@ -26,9 +26,8 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "icon1.ico"
-
-
+IDB_BITMAP1             BITMAP  DISCARDABLE     "console.bmp"
+IDI_ICON1               ICON    DISCARDABLE     "favicon.ico"
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -56,7 +55,7 @@ BEGIN
             VALUE "FileDescription", "quake2xp"
             VALUE "FileVersion", "1.26.9.0"
             VALUE "InternalName", "quake2xp"
-            VALUE "LegalCopyright", "Quake2xp Team(C) 2020"
+            VALUE "LegalCopyright", "Quake2xp Team(C) 2022"
             VALUE "LegalTrademarks", "Quake2xp Team"
             VALUE "OriginalFilename", "quake2xp.exe"
             VALUE "ProductName", "quake2xp"

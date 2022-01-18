@@ -39,9 +39,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MAXIMUM_WIN_MEMORY	0x1000000
 
 //#define DEMO
-
-qboolean s_win95;
-
 int			starttime;
 int			ActiveApp;
 qboolean	Minimized;
@@ -69,7 +66,7 @@ SYSTEM IO
 */
 
 
-
+/*
 void Sys_Error (char *error, ...) {
 	va_list		argptr;
 	char		text[1024];
@@ -91,6 +88,9 @@ void Sys_Error (char *error, ...) {
 
 	exit (1);
 }
+*/
+
+void Sys_ShutdownConsole(void);
 
 void Sys_Quit (void) {
 	timeEndPeriod (1);
@@ -103,7 +103,7 @@ void Sys_Quit (void) {
 
 	// shut down QHOST hooks if necessary
 	DeinitConProc ();
-
+	Sys_ShutdownConsole();
 	exit (0);
 }
 
@@ -203,9 +203,8 @@ Sys_Init
 void Sys_Init (void) {
 
 	timeBeginPeriod (1);
-	s_win95 = qtrue;
 
-	if (dedicated->integer) {
+/*	if (dedicated->integer) {
 		if (!AllocConsole ())
 			Sys_Error ("Couldn't create dedicated server console");
 		hinput = GetStdHandle (STD_INPUT_HANDLE);
@@ -213,7 +212,8 @@ void Sys_Init (void) {
 
 		// let QHOST hook in
 		InitConProc (argc, argv);
-	}
+	}*/
+
 }
 
 
@@ -225,6 +225,7 @@ static int	console_textlen;
 Sys_ConsoleInput
 ================
 */
+/*
 char *Sys_ConsoleInput (void) {
 	static INPUT_RECORD	recs[1024];
 	int		dummy;
@@ -287,7 +288,7 @@ char *Sys_ConsoleInput (void) {
 
 	return NULL;
 }
-
+*/
 
 /*
 ================
@@ -296,6 +297,7 @@ Sys_ConsoleOutput
 Print text to the dedicated console
 ================
 */
+/*
 void Sys_ConsoleOutput (char *string) {
 	int		dummy;
 	char	text[256];
@@ -316,7 +318,7 @@ void Sys_ConsoleOutput (char *string) {
 	if (console_textlen)
 		WriteFile (houtput, console_text, console_textlen, &dummy, NULL);
 }
-
+*/
 
 /*
 ================
@@ -486,6 +488,7 @@ WinMain
 ==================
 */
 HINSTANCE	global_hInstance;
+void Sys_InitDedConsole(void);
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	MSG				msg;
@@ -499,6 +502,8 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	global_hInstance = hInstance;
 
 	ParseCommandLine (lpCmdLine);
+
+	Sys_InitDedConsole();
 
 	// if we find the CD, add a +set cddir xxx command line
 	cddir = Sys_ScanForCD ();

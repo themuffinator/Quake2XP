@@ -335,6 +335,9 @@
     <ClCompile Include="client\curl\http.c">
       <Filter>Source Files\Client\curl</Filter>
     </ClCompile>
+    <ClCompile Include="win32\win_syscons.c">
+      <Filter>Source Files\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ref_gl\qgl.h">
@@ -761,5 +764,19 @@
     <ResourceCompile Include="win32\q2.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="win32\console.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="favicon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\win32\icon5.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="win32\favicon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

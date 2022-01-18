@@ -716,7 +716,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 
 	VID_SetProcessDpiAwareness();
 
-	Com_Printf("\n==================================\n");
+//	Com_Printf("\n==================================\n");
 
 	glw_state.hInstance = ( HINSTANCE ) hinstance;
 	glw_state.wndproc = wndproc;

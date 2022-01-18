@@ -816,6 +816,7 @@ void NET_GetAdapterInfo() {
 				return;
 			}
 			pAdapter = pAdapter->Next;
+			Com_Printf("\n");
 		}
 	}
 	if (pAdapterInfo)
@@ -843,10 +844,7 @@ void NET_Init (void) {
 	Com_Printf ("======="S_COLOR_YELLOW" Winsock Initialized "S_COLOR_WHITE"======\n");
 	Com_Printf("\n%s status: " S_COLOR_GREEN "%s\n", winsockdata.szDescription, winsockdata.szSystemStatus);
 	Com_Printf("\n");
-
 	NET_GetAdapterInfo();
-
-	Com_Printf ("\n");
 	Com_Printf("==================================\n\n");
 	
 

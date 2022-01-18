@@ -72,7 +72,6 @@ extern	unsigned	sys_msg_time;
 /*
 ** WIN32 helper functions
 */
-extern qboolean s_win95;
 
 static void WIN_DisableAltTab (void) {
 	BOOL old;

@@ -2,8 +2,11 @@
 // Microsoft Visual C++ generated include file.
 // Used by q2.rc
 //
-#define IDD_DIALOG2                     102
-#define IDI_ICON1                       115
+#define IDI_ICON1                       101
+#define IDB_BITMAP1                     106
+#define IDD_DIALOG1                     107
+#define IDI_ICON2                       112
+#define IDI_ICON3                       113
 
 // Next default values for new objects
 // 
