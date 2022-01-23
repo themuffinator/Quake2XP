@@ -60,7 +60,7 @@ typedef struct {
 
 loopback_t	loopbacks[2];
 int		ip_sockets [2];
-int		ipx_sockets[2];
+//int		ipx_sockets[2];
 
 int		NET_Socket (char *net_interface, int port);
 char           *NET_ErrorString(void);
@@ -123,11 +123,11 @@ NET_CompareBaseAdr(netadr_t a, netadr_t b)
 			return qtrue;
 		return qfalse;
 	}
-	if (a.type == NA_IPX) {
+/*	if (a.type == NA_IPX) {
 		if ((memcmp(a.ipx, b.ipx, 10) == 0))
 			return qtrue;
 		return qfalse;
-	}
+	}*/
 	return qfalse;
 }
 
@@ -278,17 +278,17 @@ NET_GetPacket(netsrc_t sock, netadr_t *from, sizebuf_t *message)
 	struct sockaddr_in from_sock;
 	socklen_t	fromlen;
 	int		net_socket;
-	int		protocol;
+//	int		protocol;
 	int		err;
 
 	if (NET_GetLoopPacket(sock, from, message))
 		return qtrue;
 
-	for (protocol = 0; protocol < 2; protocol++) {
-		if (protocol == 0)
+//	for (protocol = 0; protocol < 2; protocol++) {
+	//	if (protocol == 0)
 			net_socket = ip_sockets[sock];
-		else
-			net_socket = ipx_sockets[sock];
+	//	else
+	//		net_socket = ipx_sockets[sock];
 
 		if (!net_socket)
 			continue;
@@ -314,7 +314,7 @@ NET_GetPacket(netsrc_t sock, netadr_t *from, sizebuf_t *message)
 		}
 		message->cursize = ret;
 		return qtrue;
-	}
+//	}
 
 	return qfalse;
 }
@@ -343,7 +343,7 @@ NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 		net_socket = ip_sockets[sock];
 		if (!net_socket)
 			return;
-	} else if (to.type == NA_IPX) {
+	} /*else if (to.type == NA_IPX) {
 		net_socket = ipx_sockets[sock];
 		if (!net_socket)
 			return;
@@ -351,7 +351,7 @@ NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 		net_socket = ipx_sockets[sock];
 		if (!net_socket)
 			return;
-	} else {
+	}*/ else {
 		Com_Error(ERR_FATAL, "NET_SendPacket: bad address type");
 		return;
 	}
@@ -394,11 +394,11 @@ NET_OpenIP(void)
 /*
  * ==================== NET_OpenIPX ====================
  */
-void
+/*void
 NET_OpenIPX(void)
 {
 }
-
+*/
 
 /*
  * ==================== NET_Config
@@ -416,14 +416,14 @@ NET_Config(qboolean multiplayer)
 				close(ip_sockets[i]);
 				ip_sockets[i] = 0;
 			}
-			if (ipx_sockets[i]) {
+		/*	if (ipx_sockets[i]) {
 				close(ipx_sockets[i]);
 				ipx_sockets[i] = 0;
-			}
+			}*/
 		}
 	} else {		/* open sockets */
 		NET_OpenIP();
-		NET_OpenIPX();
+	//	NET_OpenIPX();
 	}
 }
 
