@@ -452,7 +452,7 @@ void R_UpdateAmbientBspUniforms(qboolean bmodel) {
 	qglUniform1i(U_PARALLAX_TYPE, r_parallaxMapping->integer);
 	qglUniform1f(U_AMBIENT_LEVEL, r_lightmapScale->value);
 
-	qglUniform1i(U_LM_TYPE, (r_worldmodel->useXPLM && r_radiosityNormalMapping->integer) ? 1 : 0);
+	qglUniform1i(U_LM_TYPE, r_worldmodel->useXPLM ? 1 : 0);
 
 	if (!bmodel) {
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
@@ -461,13 +461,13 @@ void R_UpdateAmbientBspUniforms(qboolean bmodel) {
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
 	}
 
-	GL_SetBindlessTexture(U_TMU6, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
-
 	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		qglUniform1i(U_USE_SSAO, 1);
 	}
 	else
 		qglUniform1i(U_USE_SSAO, 0);
+
+	GL_SetBindlessTexture(U_TMU6, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 }
 
 static void GL_DrawLightmappedPoly(qboolean bmodel)
@@ -613,7 +613,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		GL_SetBindlessTexture(U_TMU2, r_lightCubeMap[currentShadowLight->filter]->handle);
 		GL_SetBindlessTexture(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);
 		GL_SetBindlessTexture(U_TMU4, rghMap->handle);
-		GL_SetBindlessTexture(U_TMU5, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 	}
 	// create indexes
 	if (numIndices == 0xffffffff)
@@ -699,6 +698,8 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	 }
 	 else
 		 qglUniform1i(U_USE_SSAO, 0);
+
+	 GL_SetBindlessTexture(U_TMU5, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		 
  }
 

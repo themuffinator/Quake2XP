@@ -194,7 +194,8 @@ void Sys_Error (char *error, ...)
 	Sys_ShowConsole(qtrue);
 
 	// Wait for the user to quit
-	while (1)
+	int count = 0;
+	while (count < 10000)
 	{
 		while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 		{
@@ -205,7 +206,8 @@ void Sys_Error (char *error, ...)
 			DispatchMessage(&msg);
 		}
 		// Don't hog the CPU
-		Sleep(25);
+		Sleep(1);
+		count++;
 	}
 }
 
