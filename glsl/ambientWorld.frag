@@ -1,8 +1,4 @@
-////!#include "include/global.inc"
-
-//layout (binding = 0) uniform sampler2D		u_LightMap0;
-//layout (binding = 1) uniform sampler2D		u_LightMap1;
-//layout (binding = 2) uniform sampler2D		u_LightMap2;
+//!#include "include/global.inc"
 
 layout (bindless_sampler, location = U_TMU0) uniform sampler2D		u_Diffuse;
 layout (bindless_sampler, location = U_TMU1) uniform sampler2D		u_Add;
@@ -71,7 +67,9 @@ void main (void) {
 			lm = whiteLM;
 		if(u_isLava == 0)
 			lm = texture(u_LightMap0, v_lTexCoord.xy).rgb;
-		
+	
+	if(u_LightMapType == 1){
+
 		vec3 lm0 = lm;
 		vec3 lm1 = texture(u_LightMap1, v_lTexCoord.xy).rgb;
 		vec3 lm2 = texture(u_LightMap2, v_lTexCoord.xy).rgb;
@@ -81,7 +79,7 @@ void main (void) {
 			dot(normalMap.xyz, s_basisVecs[0]),
 			dot(normalMap.xyz, s_basisVecs[1]),
 			dot(normalMap.xyz, s_basisVecs[2]));
-
+		
 		// Omit energy-conserving division by PI here.
 		D = lm0 * D.x + lm1 * D.y + lm2 * D.z;
 
@@ -112,7 +110,10 @@ void main (void) {
 		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
 		
 		fragData.xyz = diffuseMap * mix(D, S, specular * u_specularScale);
-      
+	} else
+		fragData.xyz = diffuseMap * lm;
+
+
 	if(u_envMapPass == 1){  
   
   	vec3 reflectionVector = normalMap * dot( V, normalMap );
