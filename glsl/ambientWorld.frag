@@ -1,17 +1,16 @@
 ////!#include "include/global.inc"
 
-layout (binding = 0) uniform sampler2D		u_LightMap0;
-layout (binding = 1) uniform sampler2D		u_LightMap1;
-layout (binding = 2) uniform sampler2D		u_LightMap2;
+//layout (binding = 0) uniform sampler2D		u_LightMap0;
+//layout (binding = 1) uniform sampler2D		u_LightMap1;
+//layout (binding = 2) uniform sampler2D		u_LightMap2;
 
 layout (bindless_sampler, location = U_TMU0) uniform sampler2D		u_Diffuse;
 layout (bindless_sampler, location = U_TMU1) uniform sampler2D		u_Add;
 layout (bindless_sampler, location = U_TMU2) uniform sampler2D		u_NormalMap;
-layout (bindless_sampler, location = U_TMU3) uniform sampler2DRect	u_ssaoMap;
-
-//layout (bindless_sampler, location = U_TMU4) uniform sampler2D		u_LightMap0;
-//layout (bindless_sampler, location = U_TMU5) uniform sampler2D		u_LightMap1;
-//layout (bindless_sampler, location = U_TMU6) uniform sampler2D		u_LightMap2;
+layout (bindless_sampler, location = U_TMU3) uniform sampler2D		u_LightMap0;
+layout (bindless_sampler, location = U_TMU4) uniform sampler2D		u_LightMap1;
+layout (bindless_sampler, location = U_TMU5) uniform sampler2D		u_LightMap2;
+layout (bindless_sampler, location = U_TMU6) uniform sampler2DRect	u_ssaoMap;
 
 layout (location = U_LM_TYPE)			uniform int		u_LightMapType;
 layout (location = U_USE_SSAO)			uniform int		u_ssao;
@@ -40,11 +39,10 @@ vec3 ( -0.40824829046386301636621401245098f,	-0.70710678118654752440084436210485
 #include lighting.inc //!#include "include/lighting.inc"
 #include parallax.inc //!#include "include/parallax.inc"
 
-vec3 whiteLM = vec3(1.0, 1.0, 1.0);
-
 void main (void) {
 
-	
+	vec3 whiteLM = vec3(1.0, 1.0, 1.0);	
+
 	vec3 V = normalize(v_viewVecTS);
 	vec2 P;
 
@@ -112,6 +110,7 @@ void main (void) {
 		// The more material is specular, the less it is diffuse.
 		// Assume all shiny materials are metals of the same moderate roughness in Q2,
 		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
+		
 		fragData.xyz = diffuseMap * mix(D, S, specular * u_specularScale);
       
 	if(u_envMapPass == 1){  

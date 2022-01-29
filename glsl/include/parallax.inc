@@ -115,8 +115,8 @@ vec2 ParallaxOcclusionMap(in sampler2D hiMap, const in vec2 texCoord, const in v
 vec2 LinearStepParallax(in sampler2D u_HeightMap, in vec2 texCoord, vec3 V){
 	
 	float	lod = ComputeLOD(texCoord, u_parallaxParams.zw);
-	vec2	displacement = V.xy * u_parallaxParams.xy / max(V.z * NUM_STEPS, 0.01);
-	float	offset = 0.001;
+	vec2	displacement = V.xy * u_parallaxParams.xy / max(V.z * NUM_STEPS, 0.001);
+	float	offset = 0.01;
 	vec2	offsetBest;
 
 	offsetBest.xy = texCoord - displacement * vec2(textureLod(u_HeightMap, texCoord, lod).a * offset);
