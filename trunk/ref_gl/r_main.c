@@ -994,8 +994,8 @@ void R_RenderView (refdef_t *fd) {
 	
 	R_SSAO();
 	R_DrawAmbientScene();
-	R_DrawLightScene();
 	R_RenderDecals();
+	R_DrawLightScene();
 	
 	R_DrawParticles();
 

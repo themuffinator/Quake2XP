@@ -667,7 +667,7 @@ typedef struct {
 
 	int prev_mode;
 
-	int lightmapOffcet;
+	//int lightmapOffcet;
 	int currenttextures[32]; // max gl_texturesXX
 	int currenttmu;
 
@@ -897,7 +897,9 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 
 typedef struct {
 	// Atlas texId for each vector.
-	int texnum;
+	int		texnum[3];
+	uint64	handle[3];
+
 	// The lightmap texture data needs to be kept in
 	// main memory so texsubimage can update properly.
 	byte		lightmap_buffer[3][LIGHTMAP_BLOCKLIGHTS_SIZE];

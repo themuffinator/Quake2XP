@@ -413,10 +413,6 @@ typedef struct msurface_s {
 	int dlightframe;
 	int dlightbits;
 
-	int lightmapTexNum;
-
-	uint64 lightMapTex_handle[3];
-
 	byte styles[MAXLIGHTMAPS];
 	float cached_light[MAXLIGHTMAPS];	// values currently used in
 	// lightmap

@@ -1282,6 +1282,7 @@ void Mod_BuildVertexCache() {
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_TEX1);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 	qglEnableVertexAttribArray(ATT_TANGENT);
 	qglEnableVertexAttribArray(ATT_BINORMAL);
@@ -1291,6 +1292,7 @@ void Mod_BuildVertexCache() {
 	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
 	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
+	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1841,6 +1843,8 @@ static qboolean R_LoadXPLM(void) {
 	char *pB, *buf;
 	int *pIB;
 	int i, len, numFaces;
+	
+//	return qfalse;
 
 	FS_StripExtension(loadmodel->name, tmp, sizeof(tmp));
 	Com_sprintf(name, sizeof(name), "%s.xplm", tmp);

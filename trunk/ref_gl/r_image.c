@@ -1245,12 +1245,16 @@ void GL_ShutdownImages(void) {
 		ids[i * 3 + 1] = TEXNUM_LIGHTMAPS + i + 1 + MAX_LIGHTMAPS;
 		ids[i * 3 + 2] = TEXNUM_LIGHTMAPS + i + 1 + MAX_LIGHTMAPS * 2;
 	}
-
+	if (gl_lms.handle) {
+		glMakeTextureHandleNonResidentARB(gl_lms.handle[0]);
+		glMakeTextureHandleNonResidentARB(gl_lms.handle[1]);
+		glMakeTextureHandleNonResidentARB(gl_lms.handle[2]);
+	}
 	qglDeleteTextures(i * 3, ids);
 
 
 	if (skyCube) {
 		glMakeTextureHandleNonResidentARB(skyCube_handle);
 		qglDeleteTextures(1, &skyCube);
-	}
+	}	
 }

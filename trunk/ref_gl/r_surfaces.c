@@ -401,13 +401,13 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 		else
 			qglUniform1i(U_LAVA_PASS, 0);
 
-		GL_MBind(GL_TEXTURE0, gl_state.lightmapOffcet + surf->lightmapTexNum);
-		GL_MBind(GL_TEXTURE1, gl_state.lightmapOffcet + surf->lightmapTexNum + MAX_LIGHTMAPS);
-		GL_MBind(GL_TEXTURE2, gl_state.lightmapOffcet + surf->lightmapTexNum + MAX_LIGHTMAPS * 2);
-
 		GL_SetBindlessTexture(U_TMU0, image->handle);
 		GL_SetBindlessTexture(U_TMU1, fx->handle);
 		GL_SetBindlessTexture(U_TMU2, normal->handle);
+
+		GL_SetBindlessTexture(U_TMU3, gl_lms.handle[0]);// lightmap
+		GL_SetBindlessTexture(U_TMU4, gl_lms.handle[1]);// radiosity nm vectors 1
+		GL_SetBindlessTexture(U_TMU5, gl_lms.handle[2]);// radiosity nm vectors 2
 
 		if (surf->texInfo->flags & SURF_FLOWING)
 		{
@@ -439,13 +439,36 @@ qboolean R_FillAmbientBatch (msurface_t *surf, qboolean newBatch, unsigned *inde
 
 int SurfSort( const msurface_t **a, const msurface_t **b )
 {
-	return	(( (*a)->lightmapTexNum <<26) +( (*a)->texInfo->image->texnum<<13)) -
-			(((*b)->lightmapTexNum <<26)+((*b)->texInfo->image->texnum<<13));
+	return	( ((*a)->texInfo->image->texnum) ) - ( ((*b)->texInfo->image->texnum) );
 }
 
 vec3_t		BmodelViewOrg;
 int			numSceneSurfaces;
 msurface_t	*sceneSurfaces[MAX_MAP_FACES];
+
+void R_UpdateAmbientBspUniforms(qboolean bmodel) {
+
+	qglUniform3fv(U_VIEW_POS, 1, bmodel ? BmodelViewOrg : r_origin);
+	qglUniform1i(U_PARALLAX_TYPE, r_parallaxMapping->integer);
+	qglUniform1f(U_AMBIENT_LEVEL, r_lightmapScale->value);
+
+	qglUniform1i(U_LM_TYPE, (r_worldmodel->useXPLM && r_radiosityNormalMapping->integer) ? 1 : 0);
+
+	if (!bmodel) {
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
+	}
+	else {
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
+	}
+
+	GL_SetBindlessTexture(U_TMU6, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
+
+	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+		qglUniform1i(U_USE_SSAO, 1);
+	}
+	else
+		qglUniform1i(U_USE_SSAO, 0);
+}
 
 static void GL_DrawLightmappedPoly(qboolean bmodel)
 {
@@ -462,26 +485,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	// setup program
 	GL_BindProgram(ambientWorldProgram);
 
-	qglUniform3fv(U_VIEW_POS, 1, bmodel ? BmodelViewOrg : r_origin);
-	qglUniform1i(U_PARALLAX_TYPE, r_parallaxMapping->integer);
-	qglUniform1f(U_AMBIENT_LEVEL, r_lightmapScale->value);
-
-	qglUniform1i(U_LM_TYPE, (r_worldmodel->useXPLM && r_radiosityNormalMapping->integer) ? 1 : 0);
-
-	if (!bmodel){
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	}
-	else{
-		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
-	}
-
-	GL_SetBindlessTexture(U_TMU3, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
-
-	if (r_ssao->integer && !(r_newrefdef.rdflags & RDF_IRGOGGLES) && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
-		qglUniform1i(U_USE_SSAO, 1);
-	}
-	else
-		qglUniform1i(U_USE_SSAO, 0);
+	R_UpdateAmbientBspUniforms(bmodel);
 
 	qsort(sceneSurfaces, numSceneSurfaces, sizeof(msurface_t*), (int(*)(const void *, const void *))SurfSort);
 
@@ -1063,7 +1067,7 @@ void R_DrawLightWorld(void)
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	GL_PolygonOffset(-1.0, -1.0);
+	GL_PolygonOffset(-2.0, -2.0);
 
 	GL_BindProgram(lightWorldProgram);
 

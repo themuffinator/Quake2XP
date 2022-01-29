@@ -61,8 +61,6 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 	if (surf->texInfo->flags & (SURF_SKY | SURF_TRANS33 | SURF_TRANS66 | SURF_WARP))
 		VID_Error (ERR_DROP, "R_BuildLightMap(): called for non-lit surface.");
 
-	surf->lightmapTexNum = gl_lms.texnum;
-
 	// no more dynamic lightmaps, so only loadmodel is used
 	smax = (surf->extents[0] / (int)loadmodel->lightmap_scale) + 1;
 	tmax = (surf->extents[1] / (int)loadmodel->lightmap_scale) + 1;
@@ -188,25 +186,47 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 // FIXME: remove dynamic completely
 static void LM_UploadBlock () {
 
-	const int	numLm = loadmodel->useXPLM ? 3 : 1;
-	int			texture = gl_lms.texnum;
+	glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[0]);
 
-	qglGenTextures(1, &gl_lms.texnum);	
+	glTextureParameteri(gl_lms.texnum[0], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(gl_lms.texnum[0], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(gl_lms.texnum[0], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteri(gl_lms.texnum[0], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// upload the finished atlas
-	for (int i = 0; i < numLm; i++) {
-		
-		GL_Bind (gl_state.lightmapOffcet + texture + i * MAX_LIGHTMAPS);
+	glTextureStorage2D(gl_lms.texnum[0], 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
+	glTextureSubImage2D(gl_lms.texnum[0], 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[0]);
 
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	gl_lms.handle[0] = glGetTextureHandleARB(gl_lms.texnum[0]);
+	glMakeTextureHandleResidentARB(gl_lms.handle[0]);
 
-		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
-		qglTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[i]);
+	if (loadmodel->useXPLM) {
+		glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[1]);
 
-	}
+		glTextureParameteri(gl_lms.texnum[1], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(gl_lms.texnum[1], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(gl_lms.texnum[1], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(gl_lms.texnum[1], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTextureStorage2D(gl_lms.texnum[1], 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
+		glTextureSubImage2D(gl_lms.texnum[1], 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[1]);
+
+		gl_lms.handle[1] = glGetTextureHandleARB(gl_lms.texnum[1]);
+		glMakeTextureHandleResidentARB(gl_lms.handle[1]);
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[2]);
+
+		glTextureParameteri(gl_lms.texnum[2], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(gl_lms.texnum[2], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(gl_lms.texnum[2], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(gl_lms.texnum[2], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTextureStorage2D(gl_lms.texnum[2], 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
+		glTextureSubImage2D(gl_lms.texnum[2], 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[2]);
+
+		gl_lms.handle[2] = glGetTextureHandleARB(gl_lms.texnum[2]);
+		glMakeTextureHandleResidentARB(gl_lms.handle[2]);
+
+		}
 }
 
 // returns a texture number and the position inside it
@@ -290,9 +310,6 @@ void GL_BeginBuildingLightmaps (model_t *m) {
 		lightstyles[i].white = 3;
 	}
 	r_newrefdef.lightstyles = lightstyles;
-
-	if (!gl_state.lightmapOffcet)
-		gl_state.lightmapOffcet = TEXNUM_LIGHTMAPS;
 }
 
 /*

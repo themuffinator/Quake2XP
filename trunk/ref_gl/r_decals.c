@@ -263,7 +263,7 @@ void R_RenderDecalsLight(void)
 	R_CalcCubeMapMatrix(qfalse);
 	qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float*)currentShadowLight->cubeMapMatrix);
 
-	GL_PolygonOffset(-2, -2);
+	GL_PolygonOffset(-3, -3);
 
 	active = &active_decals;
 
