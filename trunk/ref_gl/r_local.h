@@ -667,10 +667,6 @@ typedef struct {
 
 	int prev_mode;
 
-	//int lightmapOffcet;
-	int currenttextures[32]; // max gl_texturesXX
-	int currenttmu;
-
 	uint64	bindlessCache[8192];
 	uint64	currentBindlessHandle;
 	int		currentBindlessLocation;
@@ -851,10 +847,6 @@ void GL_Disable (GLenum cap);
 extern glconfig_t gl_config;
 extern glstate_t gl_state;
 
-extern int	g_numGlLights;
-
-extern	vec3_t	lightspot;
-
 #define VA_SetElem2(v,a,b)		((v)[0]=(a),(v)[1]=(b))
 #define VA_SetElem3(v,a,b,c)	((v)[0]=(a),(v)[1]=(b),(v)[2]=(c))
 #define VA_SetElem4(v,a,b,c,d)	((v)[0]=(a),(v)[1]=(b),(v)[2]=(c),(v)[3]=(d))
@@ -893,7 +885,7 @@ void Q_strncatz (char *dst, int dstSize, const char *src);
 #define	MAX_LIGHTMAPS		4
 #define	LIGHTMAP_SIZE		4096
 #define XPLM_NUMVECS		3	// Do not change
-#define LIGHTMAP_BLOCKLIGHTS_SIZE LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3
+#define LM_BLOCKLIGHTS_SIZE LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3
 
 typedef struct {
 	// Atlas texId for each vector.
@@ -902,7 +894,7 @@ typedef struct {
 
 	// The lightmap texture data needs to be kept in
 	// main memory so texsubimage can update properly.
-	byte		lightmap_buffer[3][LIGHTMAP_BLOCKLIGHTS_SIZE];
+	byte		lightmap_buffer[3][LM_BLOCKLIGHTS_SIZE];
 	// Block loading.
 	int allocated[LIGHTMAP_SIZE];
 } gllightmapstate_t;
@@ -917,12 +909,10 @@ PROGRAMS
 
 ====================================================================
 */
-#define	MAX_PROGRAM_UNIFORMS	32
 #define	MAX_PROGRAM_DEFS	8					// max permutation defs program can have
 #define	MAX_PROGRAM_ID		(1 << MAX_PROGRAM_DEFS)		// max GL indices per program object
 
 #define	MAX_UNIFORM_NAME	64
-#define	MAX_DEF_NAME		32
 #define	MAX_PROGRAMS		256
 
 typedef struct {
@@ -1137,9 +1127,6 @@ typedef enum {
 	U_TMU10,
 }
 glsl_uniform;
-
-
-#define	MAX_VERTEX_CACHES	4096
 
 void R_DrawFullScreenQuad();
 static GLenum	drawbuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };

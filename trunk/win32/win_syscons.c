@@ -89,7 +89,7 @@ Sys_ConsoleOutput
 */
 void Sys_ConsoleOutput (char *text)
 {
-	char	buffer[MAX_PRINTMSG];
+	static char	buffer[MAX_PRINTMSG];
 	int		len = 0;
 
 	// Change \n to \r\n so it displays properly in the edit box and
@@ -161,6 +161,8 @@ void Sys_ShowConsole(qboolean show)
 Sys_Error
 =================
 */
+void SaveConsoleLog(qboolean crash, char* str);
+
 void Sys_Error (char *error, ...)
 {
 	char	string[1024];
@@ -172,7 +174,6 @@ void Sys_Error (char *error, ...)
 	Qcommon_Shutdown();
 
 	va_start(argPtr, error);
-//	vsprintf(string, error, argPtr);
 	vsnprintf (string, sizeof(string), error, argPtr);
 	va_end(argPtr);
 
@@ -180,6 +181,7 @@ void Sys_Error (char *error, ...)
 	Sys_ConsoleOutput("\n");
 	Sys_ConsoleOutput(string);
 	Sys_ConsoleOutput("\n");
+	SaveConsoleLog(qtrue, string); // make crash log
 
 	// Display the message and set a timer so we can flash the text
 	SetWindowText(sys_console.hWndMsg, string);
@@ -193,7 +195,7 @@ void Sys_Error (char *error, ...)
 
 	Sys_ShowConsole(qtrue);
 
-	// Wait for the user to quit
+	// wait 10 seconds and quit
 	int count = 0;
 	while (count < 10000)
 	{
@@ -205,14 +207,13 @@ void Sys_Error (char *error, ...)
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		// Don't hog the CPU
 		Sleep(1);
 		count++;
 	}
 }
 
 #include "..\client\cl_console.h"
-void SaveConsoleLog(void) {
+void SaveConsoleLog(qboolean crash, char* str) {
 	int l, x;
 	short* line;
 	FILE* f;
@@ -252,6 +253,8 @@ void SaveConsoleLog(void) {
 		}
 		fprintf(f, "%s\n", buffer);
 	}
+	if (crash)
+		fprintf(f, "%s\n", str);
 
 	fclose(f);
 
@@ -298,7 +301,7 @@ static LONG WINAPI Sys_ConsoleProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 			}
 			else
 				if ((HWND)lParam == sys_console.hWndSaveLog)
-					SaveConsoleLog();
+					SaveConsoleLog(qfalse, NULL);
 			else 
 				if ((HWND)lParam == sys_console.hWndQuit)
 				Sys_Quit();

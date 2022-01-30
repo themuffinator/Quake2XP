@@ -45,10 +45,10 @@ Combine & scale multiple lightmaps into the floating-point format in s_blockligh
 then normalize into GL format in gl_lms.lightmap_buffer.
 ===============
 */
-//extern int *mod_xplmOffsets;		// face light offsets from .xplm file, freed after level is loaded
+
+static float s_blocklights[LM_BLOCKLIGHTS_SIZE];		// intermediate RGB buffer for combining multiple lightmaps
 
 void R_BuildLightMap (msurface_t *surf, int stride) {
-	static float s_blocklights[LIGHTMAP_BLOCKLIGHTS_SIZE];		// intermediate RGB buffer for combining multiple lightmaps
 	const int numVecs = loadmodel->useXPLM ? 3 : 1;
 	int smax, tmax;
 	int r, g, b, cmax;
@@ -68,7 +68,7 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 	size = smax * tmax;
 	stride -= smax * 3;
 
-	if (size > ((sizeof(float) * LIGHTMAP_BLOCKLIGHTS_SIZE) / (int)loadmodel->lightmap_scale))
+	if (size > ((sizeof(float) * LM_BLOCKLIGHTS_SIZE) / (int)loadmodel->lightmap_scale))
 		VID_Error(ERR_DROP, "R_BuildLightMap(): bad gl_lms.blocklights size.");
 
 	// count maps
@@ -182,8 +182,6 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 
 }
 
-
-// FIXME: remove dynamic completely
 static void LM_UploadBlock () {
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[0]);

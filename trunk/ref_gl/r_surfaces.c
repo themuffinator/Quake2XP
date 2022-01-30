@@ -1112,8 +1112,6 @@ void R_DrawBSP (void) {
 	ent.frame = (int) (r_newrefdef.time * 2);
 	Mat3_Identity(ent.axis);
 	currententity = &ent;
-
-	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
 		
 	R_ClearSkyBox();	
 
@@ -1224,8 +1222,6 @@ void R_DrawBrushModel (void) {
 		return;
 	if (currentmodel->numModelSurfaces == 0)
 		return;
-	
-	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		rotated = qtrue;
@@ -1287,10 +1283,9 @@ void R_DrawBrushModelRA (void) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
+
 	if (currentmodel->numModelSurfaces == 0)
 		return;
-	
-	gl_state.currenttextures[0] = gl_state.currenttextures[1] = -1;
 
 	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2]) {
 		rotated = qtrue;
@@ -1340,7 +1335,6 @@ void R_MarkLightBrushModelSurfaces (void) {
 
 	clmodel = currententity->model;
 	psurf = &clmodel->surfaces[clmodel->firstModelSurface];
-
 
 	for (i=0 ; i<clmodel->numModelSurfaces ; i++, psurf++){
 
@@ -1403,7 +1397,7 @@ void R_DrawLightBrushModel (void) {
 	VectorSet(org, currententity->minmax[0], currententity->minmax[1], currententity->minmax[5]);
 	if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
 		caustics = qtrue;
-	else
+	else 
 	{
 		VectorSet(org, currententity->minmax[3], currententity->minmax[1], currententity->minmax[5]);
 		if (CL_PMpointcontents2(org, currentmodel) & MASK_WATER)
@@ -1427,7 +1421,7 @@ void R_DrawLightBrushModel (void) {
 	GL_StencilMask(0);
 	GL_DepthFunc(GL_LEQUAL);
 
-	GL_PolygonOffset(-1.0, -1.0);
+	GL_PolygonOffset(-2.0, -2.0);
 
 	GL_BindProgram(lightWorldProgram);
 
@@ -1464,14 +1458,14 @@ void R_MarkLeaves (void) {
 	mleaf_t	*leaf;
 	int		cluster;
 
-	if (r_oldviewcluster == r_viewcluster && r_oldviewcluster2 == r_viewcluster2 /*&& !r_novis->value*/ && r_viewcluster != -1)
+	if (r_oldviewcluster == r_viewcluster && r_oldviewcluster2 == r_viewcluster2 && r_viewcluster != -1)
 		return;
 
 	r_visframecount++;
 	r_oldviewcluster = r_viewcluster;
 	r_oldviewcluster2 = r_viewcluster2;
 
-	if (/*r_novis->value ||*/ r_viewcluster == -1 || !r_worldmodel->vis)
+	if (r_viewcluster == -1 || !r_worldmodel->vis)
 	{
 		// mark everything
 		for (i=0 ; i<r_worldmodel->numLeafs ; i++)

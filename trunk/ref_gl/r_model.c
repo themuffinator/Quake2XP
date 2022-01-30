@@ -153,12 +153,11 @@ void GL_AddLightFromSurface(msurface_t * surf) {
 
 	/* =================== calc texture color =================== */
 
-	GL_Bind(surf->texInfo->image->texnum);
 	width = surf->texInfo->image->upload_width;
 	height = surf->texInfo->image->upload_height;
-
+	int size = width * height * 3 * 4;
 	buffer = (byte*)malloc(width * height * 3);
-	qglGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	glGetTextureImage(surf->texInfo->image->texnum, 0, GL_RGB, GL_UNSIGNED_BYTE, size, buffer);
 	VectorClear(rgbSum);
 
 	for (i = 0, p = buffer; i < width * height; i++, p += 3) {

@@ -1798,6 +1798,9 @@ int R_Init(void *hinstance, void *hWnd)
 	glGenerateTextureMipmap =		(PFNGLGENERATETEXTUREMIPMAPPROC)qwglGetProcAddress("glGenerateTextureMipmap");
 	glTextureStorage3D		=		(PFNGLTEXTURESTORAGE3DPROC)		qwglGetProcAddress("glTextureStorage3D");
 	glTextureSubImage3D		=		(PFNGLTEXTURESUBIMAGE3DPROC)	qwglGetProcAddress("glTextureSubImage3D");
+
+	glGetTextureImage		=		(PFNGLGETTEXTUREIMAGEPROC)		qwglGetProcAddress("glGetTextureImage");
+
 	// texture storage
 	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
 	glTexStorage3D		=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");

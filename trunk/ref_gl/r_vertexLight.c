@@ -114,26 +114,26 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 		dt /= r_worldmodel->lightmap_scale;
 
 		smax = (surf->extents[0] / (int)r_worldmodel->lightmap_scale) + 1;
-
+				
 		lm = surf->samples + (dt * smax + ds) * 3;
+		
+		VectorClear(pointcolor);
 
-	//	if (r_worldmodel->useXPLM) {
-	//		tmax = (surf->extents[1] / (int)r_worldmodel->lightmap_scale) + 1;
-	//		size = smax * tmax * 3;
+		if (r_worldmodel->useXPLM) {
+			int tmax = (surf->extents[1] / (int)r_worldmodel->lightmap_scale) + 1;
+			int size = smax * tmax * 3;
 
-	//		VectorClear(pointcolor);
-
-	//		for (j = 0; j < XPLM_NUMVECS; j++, lm += size) {
-	//			pointcolor[0] += lm[0] * r_xplmBasisVecs[j][2];
-	//			pointcolor[1] += lm[1] * r_xplmBasisVecs[j][2];
-	//			pointcolor[2] += lm[2] * r_xplmBasisVecs[j][2];
-	//		}
-	//	}
-	//	else {
+			for (int j = 0; j < XPLM_NUMVECS; j++, lm += size) {
+				pointcolor[0] += lm[0] * r_xplmBasisVecs[j][2];
+				pointcolor[1] += lm[1] * r_xplmBasisVecs[j][2];
+				pointcolor[2] += lm[2] * r_xplmBasisVecs[j][2];
+			}
+		}
+		else {
 			pointcolor[0] = lm[0];
 			pointcolor[1] = lm[1];
 			pointcolor[2] = lm[2];
-	//	}
+		}
 
 		VectorScale(pointcolor, ambientScale, pointcolor);
 
