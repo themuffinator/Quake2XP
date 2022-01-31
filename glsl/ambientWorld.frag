@@ -14,6 +14,7 @@ layout (location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;
 layout (location = U_SPECULAR_SCALE)	uniform float	u_specularScale;
 layout (location = U_LAVA_PASS)			uniform int		u_isLava;
 layout (location = U_PARAM_INT_0)		uniform int		u_envMapPass;
+layout (location = U_PARAM_INT_1)		uniform int		u_bump;	
 
 in vec3	v_positionVS;
 in vec3	v_viewVecTS;
@@ -108,22 +109,24 @@ void main (void) {
 		// The more material is specular, the less it is diffuse.
 		// Assume all shiny materials are metals of the same moderate roughness in Q2,
 		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
-		
-		fragData.xyz = diffuseMap * mix(D, S, specular * u_specularScale);
+		if(u_bump == 1)
+			fragData.xyz = diffuseMap * mix(D, S, specular * u_specularScale);
+		else
+			fragData.xyz = diffuseMap * D;
+
 	} else
 		fragData.xyz = diffuseMap * lm;
 
-
 	if(u_envMapPass == 1){  
   
-  	vec3 reflectionVector = normalMap * dot( V, normalMap );
-	reflectionVector = ( reflectionVector * 2.0f ) - V;
+  		vec3 reflectionVector = normalMap * dot( V, normalMap );
+		reflectionVector = ( reflectionVector * 2.0f ) - V;
   
-	vec3 envMap = texture(u_Diffuse, reflectionVector.st).rgb;
-    envMap *= 0.5;
-  	float lum = dot(vec3(0.2125, 0.7154, 0.0721), envMap);
-    envMap = envMap * lum;    
-	  fragData.xyz +=	envMap;	
+		vec3 envMap = texture(u_Diffuse, reflectionVector.st).rgb;
+		envMap *= 0.5;
+  		float lum = dot(vec3(0.2125, 0.7154, 0.0721), envMap);
+		envMap = envMap * lum;    
+		fragData.xyz +=	envMap;	
 	}
 
 	if (u_ssao == 1)
