@@ -184,47 +184,24 @@ void R_BuildLightMap (msurface_t *surf, int stride) {
 
 static void LM_UploadBlock () {
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[0]);
+	const int numVecs = loadmodel->useXPLM ? 3 : 1;
+	int i;
 
-	glTextureParameteri(gl_lms.texnum[0], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(gl_lms.texnum[0], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(gl_lms.texnum[0], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(gl_lms.texnum[0], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	for (i = 0; i < numVecs; i++) {
 
-	glTextureStorage2D(gl_lms.texnum[0], 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
-	glTextureSubImage2D(gl_lms.texnum[0], 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[0]);
+		glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[i]);
 
-	gl_lms.handle[0] = glGetTextureHandleARB(gl_lms.texnum[0]);
-	glMakeTextureHandleResidentARB(gl_lms.handle[0]);
+		glTextureParameteri(gl_lms.texnum[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(gl_lms.texnum[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(gl_lms.texnum[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(gl_lms.texnum[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	if (loadmodel->useXPLM) {
-		glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[1]);
+		glTextureStorage2D(gl_lms.texnum[i], 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
+		glTextureSubImage2D(gl_lms.texnum[i], 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[i]);
 
-		glTextureParameteri(gl_lms.texnum[1], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(gl_lms.texnum[1], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(gl_lms.texnum[1], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(gl_lms.texnum[1], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		glTextureStorage2D(gl_lms.texnum[1], 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
-		glTextureSubImage2D(gl_lms.texnum[1], 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[1]);
-
-		gl_lms.handle[1] = glGetTextureHandleARB(gl_lms.texnum[1]);
-		glMakeTextureHandleResidentARB(gl_lms.handle[1]);
-
-		glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[2]);
-
-		glTextureParameteri(gl_lms.texnum[2], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(gl_lms.texnum[2], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(gl_lms.texnum[2], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(gl_lms.texnum[2], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		glTextureStorage2D(gl_lms.texnum[2], 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
-		glTextureSubImage2D(gl_lms.texnum[2], 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[2]);
-
-		gl_lms.handle[2] = glGetTextureHandleARB(gl_lms.texnum[2]);
-		glMakeTextureHandleResidentARB(gl_lms.handle[2]);
-
-		}
+		gl_lms.handle[i] = glGetTextureHandleARB(gl_lms.texnum[i]);
+		glMakeTextureHandleResidentARB(gl_lms.handle[i]);
+	}
 }
 
 // returns a texture number and the position inside it
