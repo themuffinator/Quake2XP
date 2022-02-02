@@ -15,51 +15,39 @@ Quake2XP Linux Notes
 The source code can be downloaded from SourceForge as:
 $ svn checkout svn://svn.code.sf.net/p/quake2xp/code/trunk quake2xp-code
 
-The following libraries are needed to compile Quake2XP.
+The following dependencies are needed to compile Quake2XP.
 - DevIL
 - OpenGL
 - OpenAL (>= 1.14, see troubleshooting)
 - SDL
 - Vorbisfile (which requires Ogg and Vorbis)
+- Waf (build tool)
 
-In Ubuntu they can be installed with the following command.
+In Ubuntu they can be installed with the following command:
 $ sudo apt-get install build-essential libvorbis-dev libdevil-dev \
-  libsdl1.2-dev libopenal-dev
+  libsdl1.2-dev libopenal-dev waf
 
-In Fedora 34:
-$ sudo dnf install -y SDL-devel libvorbis-devel DevIL-devel DevIL-ILUT-devel openal-soft-devel
+In Fedora:
+$ sudo dnf install -y SDL-devel libvorbis-devel DevIL-devel DevIL-ILUT-devel \
+  openal-soft-devel waf
 
-As the project uses the Waf build system, Python must also be present.
 Once you have the mentioned packages, build and install with:
-
-$ python[2] waf configure
-$ python[2] waf
-$ sudo python[2] waf install
-
-In the above-given commands "pyhton[2]" means your python2 executable:
-if your Linux distribution by default uses python 2, the executable is just
-"python", if it uses python 3, the executable is "python2". If you don't know
-which is it in your case, run
-
-$ python -V
-
-If the result is "Python 2.x.x", you need to use python executable (e.g.
-"python waf configure"), if the result is "Python 3.x.x", you need to use
-python2 executable (e.g. "python2 waf configure").
+$ waf configure
+$ waf
+$ sudo waf install
 
 By default the installation prefix is "/usr/local", but can be changed via
 arguments. In fact, Quake2XP will run from any directory because the data path
 is added to the executable, and libraries are loaded at run-time. For example,
 you can install it in "$HOME/local" as follows.
-
-$ python[2] waf configure --prefix=$HOME/local
-$ python[2] waf
-$ python[2] waf install
+$ waf configure --prefix=$HOME/local
+$ waf
+$ waf install
 
 If you have the required libraries but still get an error, see below for
 contact information.
 
-You can also uninstall it with "python[2] waf uninstall".
+You can also uninstall it with "waf uninstall".
 
 ==============================================================================
 2. Copying data

@@ -60,7 +60,6 @@ typedef struct {
 
 loopback_t	loopbacks[2];
 int		ip_sockets [2];
-//int		ipx_sockets[2];
 
 int		NET_Socket (char *net_interface, int port);
 char           *NET_ErrorString(void);
@@ -123,11 +122,7 @@ NET_CompareBaseAdr(netadr_t a, netadr_t b)
 			return qtrue;
 		return qfalse;
 	}
-/*	if (a.type == NA_IPX) {
-		if ((memcmp(a.ipx, b.ipx, 10) == 0))
-			return qtrue;
-		return qfalse;
-	}*/
+
 	return qfalse;
 }
 
@@ -278,45 +273,36 @@ NET_GetPacket(netsrc_t sock, netadr_t *from, sizebuf_t *message)
 	struct sockaddr_in from_sock;
 	socklen_t	fromlen;
 	int		net_socket;
-//	int		protocol;
 	int		err;
 
 	if (NET_GetLoopPacket(sock, from, message))
 		return qtrue;
 
-//	for (protocol = 0; protocol < 2; protocol++) {
-	//	if (protocol == 0)
-			net_socket = ip_sockets[sock];
-	//	else
-	//		net_socket = ipx_sockets[sock];
+    net_socket = ip_sockets[sock];
+    if (!net_socket)
+        return qfalse;
 
-		if (!net_socket)
-			continue;
+    fromlen = sizeof(from_sock);
+    ret = recvfrom(net_socket, message->data, message->maxsize
+        ,0, (struct sockaddr *)&from_sock, &fromlen);
 
-		fromlen = sizeof(from_sock);
-		ret = recvfrom(net_socket, message->data, message->maxsize
-		    ,0, (struct sockaddr *)&from_sock, &fromlen);
+    SockadrToNetadr(&from_sock, from);
 
-		SockadrToNetadr(&from_sock, from);
+    if (ret == -1) {
+        err = errno;
+        if (err == EWOULDBLOCK || err == ECONNREFUSED)
+            return qfalse;
 
-		if (ret == -1) {
-			err = errno;
-
-			if (err == EWOULDBLOCK || err == ECONNREFUSED)
-				continue;
-			Com_Printf("NET_GetPacket: %s from %s\n", NET_ErrorString(),
-			    NET_AdrToString(*from));
-			continue;
-		}
-		if (ret == message->maxsize) {
-			Com_Printf("Oversize packet from %s\n", NET_AdrToString(*from));
-			continue;
-		}
-		message->cursize = ret;
-		return qtrue;
-//	}
-
-	return qfalse;
+        Com_Printf("NET_GetPacket: %s from %s\n", NET_ErrorString(),
+            NET_AdrToString(*from));
+        return qfalse;
+    }
+    if (ret == message->maxsize) {
+        Com_Printf("Oversize packet from %s\n", NET_AdrToString(*from));
+        return qfalse;
+    }
+    message->cursize = ret;
+    return qtrue;
 }
 
 /*
@@ -343,15 +329,7 @@ NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 		net_socket = ip_sockets[sock];
 		if (!net_socket)
 			return;
-	} /*else if (to.type == NA_IPX) {
-		net_socket = ipx_sockets[sock];
-		if (!net_socket)
-			return;
-	} else if (to.type == NA_BROADCAST_IPX) {
-		net_socket = ipx_sockets[sock];
-		if (!net_socket)
-			return;
-	}*/ else {
+	} else {
 		Com_Error(ERR_FATAL, "NET_SendPacket: bad address type");
 		return;
 	}
@@ -392,15 +370,6 @@ NET_OpenIP(void)
 }
 
 /*
- * ==================== NET_OpenIPX ====================
- */
-/*void
-NET_OpenIPX(void)
-{
-}
-*/
-
-/*
  * ==================== NET_Config
  *
  * A single player game will only use the loopback code ====================
@@ -416,14 +385,9 @@ NET_Config(qboolean multiplayer)
 				close(ip_sockets[i]);
 				ip_sockets[i] = 0;
 			}
-		/*	if (ipx_sockets[i]) {
-				close(ipx_sockets[i]);
-				ipx_sockets[i] = 0;
-			}*/
 		}
 	} else {		/* open sockets */
 		NET_OpenIP();
-	//	NET_OpenIPX();
 	}
 }
 
