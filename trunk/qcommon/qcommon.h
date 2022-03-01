@@ -539,7 +539,7 @@ extern qboolean userinfo_modified;
 // this is set each time a CVAR_USERINFO variable is changed
 // so that the client knows to send it to the server
 
-cvar_t* net_compatibility;
+extern cvar_t* net_compatibility;
 /*
 ==============================================================
 

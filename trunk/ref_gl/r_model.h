@@ -225,6 +225,28 @@ typedef struct {
 	int n[3];
 } neighbors_t;
 
+#define		MAX_MODEL_LIGHTS		32
+
+typedef struct
+{
+	int			mesh;				// Номер меша модели, в которой указана точка vert. O - для MD2. -1 - если источник не определен.
+	unsigned	tri;				// Номер полигона, к которому "привязываем" источник. От него считаем нормаль для создания подпространства, в котором уже будем двигать лайт (с помощью origin).
+	vec3_t		color;				// Цвет источника света
+	byte		style;				// Стиль мигания
+	byte		cl_style;			// Клиентский стиль мигания
+	float		radius;				// Радиус источника (всегда шаровидный!)
+	int			filtercube_start;	// Начальный кадр светофильтра
+	int			filtercube_end;		// Конечный кадр светофильтра
+	float		framerate;			// Скорость анимации светофильтра
+	float		_cone;				// Конус действия источника
+	float		distance;			// Расстояние от центральной точки треугольника tri до источника света
+	vec3_t		angles;				// angles of the cubemap filter
+	vec3_t		rspeed;				// rotation speed of cube map
+	unsigned	skinbits;			// MD2 ONLY: Номера шкур, для которых действует этот лайт. Т.к. MAX_MD2SKINS=32, то зададим это битовой маской.
+	int			frame_start;		// Начальный кадр действия лайта
+	int			frame_end;			// Конечный кадр действия лайта
+} modlight_t;
+
 typedef struct model_s {
 
 	char		name[MAX_QPATH];
@@ -332,6 +354,8 @@ typedef struct model_s {
 	int			memorySize;
 
 	mat3_t		axis;
+
+	modlight_t	mod_lights[MAX_MODEL_LIGHTS];
 
 } model_t;
 

@@ -1034,15 +1034,16 @@ void R_CastBspShadowVolumes (void) {
 	}
 
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_shadowDynamic);
-	
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_bspShadowDynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_bspShadowDynamic);
+
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 
+//	glBindVertexArray(vao.bspDynamicShadow);
+
 	if (!currentShadowLight->isStatic)	
-		R_DrawBspModelVolumes(qfalse, NULL); 
-	
+		R_DrawBspModelVolumes(qfalse, NULL); 	
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -1054,10 +1055,11 @@ void R_CastBspShadowVolumes (void) {
 		if (currentmodel->type == mod_brush)
 			R_DrawBrushModelVolumes ();
 	}
-
+//	glBindVertexArray(0);
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);
+
 }

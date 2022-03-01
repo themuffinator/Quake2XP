@@ -37,6 +37,7 @@
     <InstrumentIntelTBB>true</InstrumentIntelTBB>
     <UseIntelMKL>Parallel</UseIntelMKL>
     <PlatformToolset>v143</PlatformToolset>
+    <UseInteloneTBB>false</UseInteloneTBB>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -209,23 +210,23 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <UseMSVC>false</UseMSVC>
       <GlobalOptimizations>true</GlobalOptimizations>
-      <InterproceduralOptimization>SingleFile</InterproceduralOptimization>
+      <InterproceduralOptimization>NoIPO</InterproceduralOptimization>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <Parallelization>true</Parallelization>
       <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>
       <UseProcessorExtensions>AVX</UseProcessorExtensions>
       <EnableParallelDebugChecks>false</EnableParallelDebugChecks>
-      <OptimizationDiagnosticLevel>Medium</OptimizationDiagnosticLevel>
       <EmitOptimizationDiagnosticsToFile>false</EmitOptimizationDiagnosticsToFile>
       <AnalyzeIncludeFiles>false</AnalyzeIncludeFiles>
       <GenerateAlternateCodePaths>AVX</GenerateAlternateCodePaths>
       <DisableSpecificWarnings>6031; 5105</DisableSpecificWarnings>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
       <BrowseInformation>true</BrowseInformation>
       <SupportJustMyCode>true</SupportJustMyCode>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <OpenMP>GenerateParallelCode</OpenMP>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

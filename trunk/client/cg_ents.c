@@ -1412,8 +1412,240 @@ void CL_AddPacketEntities (frame_t * frame) {
 	}
 }
 
+//===================================================================
+
+void CreateNormal(vec3_t dst, vec3_t xyz0, vec3_t xyz1, vec3_t xyz2);
 
 
+// ¬ычислить центральную точку org и нормаль треугольника dir
+void R_GetVertexOrigin(entity_t* ent, int i, vec3_t org, vec3_t dir)
+{
+	vec3_t	vectors[3];
+	int		j, index_xyz;
+	model_t* mod = ent->model;
+
+	if (mod->type == mod_alias)
+	{
+		vec3_t	move;
+		vec3_t	frontv, backv;
+		dtrivertx_t* v;
+		dtrivertx_t* ov;
+		dmdl_t* paliashdr = (dmdl_t*)mod->extraData;
+
+		if ((ent->frame >= paliashdr->num_frames) || (ent->frame < 0))
+		{
+			Com_Printf("R_GetVertexOrigin, %s: no such frame %d\n", ent->model->name, ent->frame);
+			ent->frame = 0;
+			ent->oldframe = 0;
+		}
+
+		if ((ent->oldframe >= paliashdr->num_frames) || (ent->oldframe < 0))
+		{
+			Com_Printf("R_GetVertexOrigin, %s: no such oldframe %d\n", ent->model->name, ent->oldframe);
+			ent->frame = 0;
+			ent->oldframe = 0;
+		}
+
+		daliasframe_t* frame = (daliasframe_t*)((byte*)paliashdr + paliashdr->ofs_frames + ent->frame * paliashdr->framesize);
+		daliasframe_t* oldframe = (daliasframe_t*)((byte*)paliashdr + paliashdr->ofs_frames + ent->oldframe * paliashdr->framesize);
+		dtriangle_t* tris = (dtriangle_t*)((byte*)paliashdr + paliashdr->ofs_tris);
+		float	backlerp = ent->backlerp;
+		float	frontlerp = 1.0 - backlerp;
+		// move should be the delta back to the previous frame * backlerp
+		VectorSubtract(ent->oldorigin, ent->origin, move);
+		if (ent->angles[0] || ent->angles[1] || ent->angles[2])
+		{
+			vec3_t	temp;
+			VectorCopy(move, temp);
+			AngleVectors(ent->angles, vectors[0], vectors[1], vectors[2]);
+			move[0] = DotProduct(temp, vectors[0]);
+			move[1] = -DotProduct(temp, vectors[1]);
+			move[2] = DotProduct(temp, vectors[2]);
+		}
+		VectorAdd(move, oldframe->translate, move);
+		for (j = 0; j < 3; j++)
+		{
+			move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
+			frontv[j] = frontlerp * frame->scale[j];
+			backv[j] = backlerp * oldframe->scale[j];
+		}
+
+		for (j = 0; j < 3; j++)
+		{
+			index_xyz = tris[mod->mod_lights[i].tri].index_xyz[j];
+			v = frame->verts + index_xyz;
+			ov = oldframe->verts + index_xyz;
+			VectorSet(vectors[j],
+				move[0] + ov->v[0] * backv[0] + v->v[0] * frontv[0],
+				move[1] + ov->v[1] * backv[1] + v->v[1] * frontv[1],
+				move[2] + ov->v[2] * backv[2] + v->v[2] * frontv[2]);
+		}
+	}
+	else if(mod->type == mod_alias_md3)
+	{
+		vec3_t	move;
+		md3Vertex_t* v;
+		md3Vertex_t* ov;
+		md3Mesh_t* mesh;
+		md3Model_t* paliashdr = (md3Model_t*)mod->extraData;
+
+		if ((ent->frame >= paliashdr->num_frames) || (ent->frame < 0))
+		{
+			Com_Printf("R_GetVertexOrigin md3, %s: no such frame %d\n", ent->model->name, ent->frame);
+			ent->frame = 0;
+		}
+
+		if ((ent->oldframe >= paliashdr->num_frames) || (ent->oldframe < 0))
+		{
+			Com_Printf("R_GetVertexOrigin md3, %s: no such oldframe %d\n", ent->model->name, ent->oldframe);
+			ent->oldframe = 0;
+		}
+
+
+		mesh = &paliashdr->meshes[mod->mod_lights[i].mesh];
+		float	backlerp = ent->backlerp;
+		float	frontlerp = 1.0 - backlerp;
+		md3Frame_t* frame = paliashdr->frames + ent->frame;
+		md3Frame_t* oldframe = paliashdr->frames + ent->oldframe;
+		VectorSubtract(ent->oldorigin, ent->origin, move);
+		if (ent->angles[0] || ent->angles[1] || ent->angles[2])
+		{
+			vec3_t	temp;
+			VectorCopy(move, temp);
+			AngleVectors(ent->angles, vectors[0], vectors[1], vectors[2]);
+			move[0] = DotProduct(temp, vectors[0]);	// forward
+			move[1] = -DotProduct(temp, vectors[1]);	// left
+			move[2] = DotProduct(temp, vectors[2]);	// up
+		}
+		VectorAdd(move, oldframe->translate, move);
+		for (j = 0; j < 3; j++)
+			move[j] = backlerp * move[j] + frontlerp * frame->translate[j];
+
+		for (j = 0; j < 3; j++)
+		{
+			index_xyz = mesh->indexes[mod->mod_lights[i].tri * 3 + j];
+			v = mesh->vertexes + ent->frame * mesh->num_verts + index_xyz;
+			ov = mesh->vertexes + ent->oldframe * mesh->num_verts + index_xyz;
+			VectorSet(vectors[j],
+				move[0] + ov->xyz[0] * backlerp + v->xyz[0] * frontlerp,
+				move[1] + ov->xyz[1] * backlerp + v->xyz[1] * frontlerp,
+				move[2] + ov->xyz[2] * backlerp + v->xyz[2] * frontlerp);
+		}
+	}
+	org[0] = (vectors[0][0] + vectors[1][0] + vectors[2][0]) * 0.3333333;
+	org[1] = (vectors[0][1] + vectors[1][1] + vectors[2][1]) * 0.3333333;
+	org[2] = (vectors[0][2] + vectors[1][2] + vectors[2][2]) * 0.3333333;
+
+	CreateNormal(dir, vectors[2], vectors[1], vectors[0]);
+}
+
+
+void PointRotate(vec3_t angles, vec3_t org)
+{
+	float	a, b, c;
+	float	sa, ca, sb, cb, sc, cc;
+	float	xa, yc, zc;
+
+	a = DEG2RAD(angles[0]);
+	b = DEG2RAD(angles[1]);
+	c = DEG2RAD(angles[2]);
+
+	sa = sin(a);
+	ca = cos(a);
+	sb = sin(b);
+	cb = cos(b);
+	sc = sin(c);
+	cc = cos(c);
+
+	yc = org[1] * cc - org[2] * sc;
+	zc = org[1] * sc + org[2] * cc;
+	xa = org[0] * ca + zc * sa;
+	org[2] = -org[0] * sa + zc * ca;
+	org[0] = xa * cb - yc * sb;
+	org[1] = xa * sb + yc * cb;
+}
+
+void R_AddModelLight()
+{
+	int i;
+	vec3_t	org, tempang, normal;
+	vec3_t	temp;
+	qboolean	add;
+
+	if (currententity->model->type != mod_alias && currententity->model->type != mod_alias_md3)
+		return;
+
+	if (currententity->flags & (RF_DISTORT | RF_TRANSLUCENT))
+		return;		// прозрачные модели не могут светитьс€
+
+	unsigned flags = 3;
+	if (flags & 3)
+		for (i = 0; i < MAX_MODEL_LIGHTS; i++)
+		{
+			if (currententity->model->mod_lights[i].mesh != -1)
+			{
+				if (currententity->model->type == mod_alias)
+				{
+					if (currententity->model->mod_lights[i].skinbits == 0)
+						add = qtrue;
+					else
+					{
+						if (currententity->skin)	// custom player skin
+							add = qtrue;
+						else
+						{
+							if (currententity->skinnum >= MAX_MD2SKINS)
+								add = qtrue;
+							else
+								add = (currententity->model->mod_lights[i].skinbits & (unsigned)pow((double)2, currententity->skinnum));
+						}
+					}
+				}
+				else
+					add = qtrue;
+
+				if (add)
+					if (currententity->frame < currententity->model->mod_lights[i].frame_start || currententity->frame > currententity->model->mod_lights[i].frame_end)
+						add = qfalse;
+
+				if (add)
+				{
+					if (flags != 3)
+					{
+						int b0, b1;
+						b0 = Q_strncasecmp(currententity->model->name, "players", 7);
+						b1 = Q_strncasecmp(currententity->model->name, "models/weapons", 14);
+						if (flags == 1 && b0 && b1)		// Player's models or player's weapon models
+							continue;
+						if (flags == 2 && (!b0 || !b1))	// All other models
+							continue;
+					}
+
+					R_GetVertexOrigin(currententity, i, org, normal);
+					VectorMA(org, currententity->model->mod_lights[i].distance, normal, org);
+					if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
+						PointRotate(currententity->angles, org);
+					VectorAdd(org, currententity->origin, org);
+					vectoangles2(normal, temp);
+					VectorAdd(temp, currententity->angles, tempang);
+
+					VectorMA(currententity->model->mod_lights[i].angles, cl.time, currententity->model->mod_lights[i].rspeed, temp);
+					VectorAdd(tempang, temp, tempang);
+					vec3_t	angles;
+					VectorSet(angles, tempang[0], tempang[1], tempang[2]);
+
+					V_AddLight(org, currententity->model->mod_lights[i].radius, 
+									currententity->model->mod_lights[i].color[0], 
+									currententity->model->mod_lights[i].color[1], 
+									currententity->model->mod_lights[i].color[2], 
+									angles,
+									currententity->model->mod_lights[i]._cone, 
+									0);
+				}
+			}
+		}
+	
+}
 
 vec3_t viewweapon;
 

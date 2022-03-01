@@ -1093,6 +1093,8 @@ void R_RenderFrame(refdef_t * fd) {
 	R_ColorTemperatureCorrection();
 	R_lutCorrection();
 	
+	GL_CheckError("shadows", 1064, "");
+
 	// set alpha blend for 2D mode
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

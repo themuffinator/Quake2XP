@@ -671,9 +671,18 @@ void VID_CheckChanges (void) {
 			Com_Error (ERR_FATAL, "Error during initialization video");
 
 		cls.disable_screen = qfalse;
-		CL_InitImages ();
+	
+		int		start = 0, stop = 0;
+		float	sec;
+		start = Sys_Milliseconds();
 
+		CL_InitImages ();
 		CL_RegisterTEntModels();
+
+		stop = Sys_Milliseconds();
+		sec = (float)stop - (float)start;
+		Com_Printf(S_COLOR_YELLOW ">Precache media: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);
+		Com_Printf("\n=====================================\n");
 	}
 
 

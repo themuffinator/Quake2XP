@@ -355,6 +355,7 @@ byte *R_ResampleTexture(const byte* in, int inwidth, int inheight, int outwidth,
 		p1[i] = 4 * (frac >> 16);
 		frac += fracstep;
 	}
+
 	frac = 3 * (fracstep >> 2);
 	for (i = 0; i < outwidth; i++) {
 		p2[i] = 4 * (frac >> 16);
@@ -1237,20 +1238,14 @@ void GL_ShutdownImages(void) {
 	}
 
 
-	GLuint ids[MAX_LIGHTMAPS * 3];
-	for (i = 0; i < XPLM_NUMVECS; i++) {
-		ids[i * 3 + 0] = TEXNUM_LIGHTMAPS + i + 1;
-
-		// FIXME: include XPLM ones only when necessary
-		ids[i * 3 + 1] = TEXNUM_LIGHTMAPS + i + 1 + MAX_LIGHTMAPS;
-		ids[i * 3 + 2] = TEXNUM_LIGHTMAPS + i + 1 + MAX_LIGHTMAPS * 2;
-	}
 	if (gl_lms.handle) {
 		glMakeTextureHandleNonResidentARB(gl_lms.handle[0]);
 		glMakeTextureHandleNonResidentARB(gl_lms.handle[1]);
 		glMakeTextureHandleNonResidentARB(gl_lms.handle[2]);
 	}
-	qglDeleteTextures(i * 3, ids);
+	qglDeleteTextures(1, &gl_lms.texnum[0]);
+	qglDeleteTextures(1, &gl_lms.texnum[1]);
+	qglDeleteTextures(1, &gl_lms.texnum[2]);
 
 
 	if (skyCube) {

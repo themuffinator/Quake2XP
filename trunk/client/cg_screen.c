@@ -581,7 +581,7 @@ void SCR_TimeRefresh_f (void) {
 
 	stop = Sys_Milliseconds ();
 	time = (stop - start) / 1000.0;
-	Com_Printf ("%f seconds ("S_COLOR_YELLOW"%f"S_COLOR_WHITE" fps)\n", time, 128 / time);
+	Com_Printf ("%f seconds ("S_COLOR_YELLOW"%f" S_COLOR_WHITE " fps)\n", time, 128 / time);
 }
 
 /*

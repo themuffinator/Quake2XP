@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // cl_tent.c -- client side temporary entities
 
 #include "client.h"
-#include <math.h>
+//#include <math.h>
 
 void CL_ParticleGibBlood2 (vec3_t org);
 

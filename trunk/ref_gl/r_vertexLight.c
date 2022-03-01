@@ -139,7 +139,6 @@ int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
 
 		return 1;
 	}
-
 	// go down back side
 	return RecursiveLightPoint(node->children[!side], mid, end);
 }

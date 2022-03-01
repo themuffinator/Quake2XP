@@ -308,6 +308,7 @@ __declspec(naked) long Q_ftol (float f) {
 
 #endif
 
+
 /*
 ===============
 LerpAngle
@@ -667,6 +668,7 @@ __declspec(naked) int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_
 }
 
 #endif
+
 
 void ClearBounds (vec3_t mins, vec3_t maxs) {
 	mins[0] = mins[1] = mins[2] = 99999;

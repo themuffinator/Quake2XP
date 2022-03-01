@@ -137,29 +137,41 @@ void R_InitVertexBuffers() {
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
 	//------------------------------------------------
-	
+	// md2-3 shadows 4 use verts
+
 	qglGenBuffers(1, &vbo.vbo_shadowDynamic);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
-	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec4_t), 0, GL_STREAM_DRAW);
+	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec4_t), 0, GL_DYNAMIC_DRAW);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	qglGenBuffers(1, &vbo.ibo_shadowDynamic);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_shadowDynamic);
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_STREAM_DRAW);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_DYNAMIC_DRAW);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//---------------------------------------------------
+
+	qglGenBuffers(1, &vbo.vbo_bspShadowDynamic);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_bspShadowDynamic);
+	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec3_t), 0, GL_DYNAMIC_DRAW);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	qglGenBuffers(1, &vbo.ibo_bspShadowDynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_bspShadowDynamic);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_DYNAMIC_DRAW);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	glGenVertexArrays(1, &vao.shadow);
-	glBindVertexArray(vao.shadow);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_shadowDynamic);
+	glGenVertexArrays(1, &vao.bspDynamicShadow);
+	glBindVertexArray(vao.bspDynamicShadow);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_bspShadowDynamic);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_bspShadowDynamic);
 	
 	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 	
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
+	
 	qglGenBuffers(1, &vbo.ibo_cube);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
 	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_idx), cube_idx, GL_STATIC_DRAW);
@@ -167,6 +179,8 @@ void R_InitVertexBuffers() {
 
 
 	Com_Printf(S_COLOR_GREEN"ok\n\n");
+
+	
 }
 
 void R_ShutDownVertexBuffers() {
@@ -181,7 +195,7 @@ void R_ShutDownVertexBuffers() {
 	qglDeleteBuffers(1, &vbo.ibo_md3Shadow);
 
 	glDeleteVertexArrays(1, &vao.bsp);
-	glDeleteVertexArrays(1, &vao.shadow);
+	glDeleteVertexArrays(1, &vao.bspDynamicShadow);
 	glDeleteVertexArrays(1, &vao.fullscreenQuad);
 	glDeleteVertexArrays(1, &vao.halfScreenQuad);
 	glDeleteVertexArrays(1, &vao.quaterScreenQuad);

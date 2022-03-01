@@ -7,6 +7,7 @@
 #include "win_languages.h"
 #include <sysinfoapi.h>
 #include <intrin.h>
+#include "shlobj.h"
 #include "psapi.h"
 
 #define UI_NUM_LANGS ( sizeof( ui_Language ) / sizeof( ui_Language[0] ) )
@@ -24,7 +25,7 @@ void Sys_WindowsInfo() {
 	
 	for (int i = 0; i < UI_NUM_LANGS; i++) {
 		if (lang == ui_Language[i].num) {
-			Com_Printf("\nUI Language:       "S_COLOR_YELLOW"%s\n", ui_Language[i].description);
+			Com_Printf("\nUI Language:       " S_COLOR_YELLOW "%s\n", ui_Language[i].description);
 
 			if (ui_Language[i].num == 1049 || ui_Language[i].num == 1092 || ui_Language[i].num == 1133 || ui_Language[i].num == 1157)
 				ru_loc = qtrue;
@@ -32,8 +33,14 @@ void Sys_WindowsInfo() {
 			break;
 		}
 	}
-	Com_Printf("User Name:         "S_COLOR_YELLOW"%s\n", GetUserName(s, &len) ? s : "");
-	Com_Printf("Computer Name:     "S_COLOR_YELLOW"%s\n", GetComputerName(s2, &len2) ? s2 : "");
+	Com_Printf("User Name:         " S_COLOR_YELLOW "%s\n", GetUserName(s, &len) ? s : "");
+	Com_Printf("Computer Name:     " S_COLOR_YELLOW "%s\n", GetComputerName(s2, &len2) ? s2 : "");
+
+	char my_documents[MAX_PATH];
+	HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+
+	if (result == S_OK)
+		Com_Printf("Save Folder:					" S_COLOR_YELLOW "%s\n", my_documents);
 
 //	LoadKeyboardLayout("00000409", KLF_ACTIVATE); // eng
 //	LoadKeyboardLayout("00000419", KLF_ACTIVATE); //rus
@@ -42,7 +49,7 @@ void Sys_WindowsInfo() {
 	
 	for (int i = 0; i < UI_NUM_LANGS; i++) {
 		if (kbLang == ui_Language[i].num) {
-			Com_Printf("Keyboard Language: "S_COLOR_YELLOW"%s\n", ui_Language[i].description);
+			Com_Printf("Keyboard Language: " S_COLOR_YELLOW "%s\n", ui_Language[i].description);
 			break;
 		}
 	}
@@ -298,7 +305,7 @@ void Sys_CpuID()
 				if (CPUBrandString[i] != ' ')
 					break;
 
-			Com_Printf("CPU Brand Name: "S_COLOR_GREEN"%s\n", &CPUBrandString[i]);
+			Com_Printf("CPU Brand Name: " S_COLOR_GREEN "%s\n", &CPUBrandString[i]);
 			
 			SYS_GetCpuCount();
 			Sys_GetCpuSpeed();
@@ -489,9 +496,9 @@ void Sys_GetMemorySize() {
 	ulong physRam = memsat.ullTotalPhys >> 20;
 
 	Com_Printf("\n");
-	Com_Printf("Physical RAM:         "S_COLOR_GREEN"%d"S_COLOR_WHITE"GB\n", (physRam + 512) >>10);
-	Com_Printf("Process Memory Usage: "S_COLOR_GREEN"%d"S_COLOR_WHITE"MB\n", pmc.PrivateUsage >>20);
-	Com_Printf("Total Memory Usage:   "S_COLOR_GREEN"%d"S_COLOR_WHITE"%%\n", memsat.dwMemoryLoad);
+	Com_Printf("Physical RAM:         " S_COLOR_GREEN "%d" S_COLOR_WHITE "GB\n", (physRam + 512) >>10);
+	Com_Printf("Process Memory Usage: " S_COLOR_GREEN "%d" S_COLOR_WHITE "MB\n", pmc.PrivateUsage >>20);
+	Com_Printf("Total Memory Usage:   " S_COLOR_GREEN "%d" S_COLOR_WHITE "%%\n", memsat.dwMemoryLoad);
 	Com_Printf("\n");
 
 	GetDiskInfos();
@@ -663,16 +670,16 @@ qboolean Sys_CheckWindowsVersion() {
 			if (!isWin64x()) {
 
 				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 7 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows 7 " S_COLOR_GREEN "x32 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s  " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 				else
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2008 R2 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows Server 2008 R2 " S_COLOR_GREEN "x32 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
 			else {
 
 				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 7 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows 7 " S_COLOR_GREEN "x64 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 				else
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2008 R2 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows Server 2008 R2 " S_COLOR_GREEN "x64 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
 			return qtrue;
 		}
@@ -680,16 +687,16 @@ qboolean Sys_CheckWindowsVersion() {
 			if (!isWin64x()) {
 
 				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows 8 " S_COLOR_GREEN "x32 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 				else
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows Server 2012 " S_COLOR_GREEN "x32 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
 			else {
 
 				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows 8 " S_COLOR_GREEN "x64 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 				else
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows Server 2012 R2 " S_COLOR_GREEN "x64 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
 			return qtrue;
 		}
@@ -698,16 +705,16 @@ qboolean Sys_CheckWindowsVersion() {
 			if (!isWin64x()) {
 
 				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8.1 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows 8.1 " S_COLOR_GREEN "x32 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 				else
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 "S_COLOR_GREEN"x32 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows Server 2012 " S_COLOR_GREEN "x32 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
 			else {
 
 				if (rtl_OsVer.wProductType == VER_NT_WORKSTATION)
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows 8.1 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows 8.1 " S_COLOR_GREEN "x64 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 				else
-					Com_Printf(S_COLOR_WHITE"OS: "S_COLOR_YELLOW"Microsoft Windows Server 2012 R2 "S_COLOR_GREEN"x64 "S_COLOR_WHITE"%s"S_COLOR_YELLOW" %s "S_COLOR_WHITE"build "S_COLOR_GREEN"%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
+					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows Server 2012 R2 " S_COLOR_GREEN "x64 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
 		
 			return qtrue;
@@ -752,9 +759,9 @@ qboolean Sys_CheckWindowsVersion() {
 			}
 
 			if (!isWin64x())
-				Com_Printf("OS: " S_COLOR_YELLOW "%s "S_COLOR_GREEN"x86 " S_COLOR_YELLOW "%s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", winName, S, build, ubr);
+				Com_Printf("OS: " S_COLOR_YELLOW "%s " S_COLOR_GREEN "x86 " S_COLOR_YELLOW "%s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", winName, S, build, ubr);
 			else
-				Com_Printf("OS: " S_COLOR_YELLOW "%s "S_COLOR_GREEN"x64 " S_COLOR_YELLOW "%s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", winName, S, build, ubr);
+				Com_Printf("OS: " S_COLOR_YELLOW "%s " S_COLOR_GREEN "x64 " S_COLOR_YELLOW "%s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", winName, S, build, ubr);
 
 			return qtrue;
 		}		

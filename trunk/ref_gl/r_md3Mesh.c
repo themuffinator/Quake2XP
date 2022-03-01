@@ -7,6 +7,8 @@
 #define sign(x) ((x)<0 ? (-1) : (1))
 #define DIV_EPSILON 0.00001 
 
+void InitModLights(model_t* mod);
+
 int VectorCompareEpsilon(vec3_t v1, vec3_t v2, float epsilon)
 {
 	if (fabs(v1[0] - v2[0]) > epsilon)
@@ -254,6 +256,9 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			VID_Error(ERR_DROP, "mesh %i in model %s has no vertices", i, mod->name);
 		else if (outMesh->num_verts > MD3_MAX_VERTS)
 			VID_Error(ERR_DROP, "mesh %i in model %s has too many vertices, %i (4096 max)", i, mod->name, outMesh->num_verts);
+
+		
+		InitModLights(mod);
 
 		//
 		// register all skins

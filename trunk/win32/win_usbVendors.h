@@ -34,7 +34,8 @@ usbVendorId_t usb_Vendors[] = {
 {0x056A, "Wacom Co., Ltd"},
 {0x0955, "NVIDIA Corp."},
 {0x28de, "Valve Corp."},
-{0x0738, "Mad Catz, Inc."}
+{0x0738, "Mad Catz, Inc."},
+{0x0DB0, "Micro-Star International Co., Ltd"}
 };
 
 #define NUM_VENDORS ( sizeof( usb_Vendors ) / sizeof( usb_Vendors[0] ) )
@@ -46,6 +47,8 @@ typedef struct product_s {
 
 
 product_t product[] = {
+//MSI
+{0x0D08, "Clutch GM08 Gaming Mouse."},
 //SteelSeries
 {0x1361,	"Ideazon Sensei."},
 {0x1720,	"Mouse."},
@@ -70,7 +73,7 @@ product_t product[] = {
 {0x8090, "X-718BK Oscar Optical Gaming Mouse."},
 {0x9033, "X-718BK Optical Mouse."},
 {0x9066, "F3 V-Track Gaming Mouse."},
-{0x9090, "XL-730K / XL-740K / XL-750BK / XL-755BK Mice."},
+{0x9090, "XL-730K/XL-740K/XL-750BK/XL-755BK Mice."},
 {0xF613, "Bloody V7M Mouse."},
 
 	// --------logitech

@@ -165,7 +165,6 @@ image_t *r_decaltexture[DECAL_MAX];
 image_t *r_flare;
 
 image_t *draw_chars, *draw_charsRu, *draw_charsInt;
-image_t *draw_charsRu;
 image_t *r_DSTTex;
 
 image_t	*r_defBump;
@@ -280,7 +279,7 @@ cvar_t	*r_playerShadow;
 
 cvar_t	*r_multiSamples;
 cvar_t	*r_fxaa;
-cvar_t	*deathmatch;
+extern cvar_t	*deathmatch;
 
 cvar_t	*r_drawFlares;
 cvar_t	*r_scaleAutoLightColor;
@@ -376,11 +375,6 @@ extern int r_visframecount;
 
 qboolean xhargar2hack;
 qboolean RA_Frame;
-
-void GL_Bind (int texnum);
-void GL_MBind (GLenum target, int texnum);
-void GL_SelectTexture (GLenum);
-void GL_MBindCube (GLenum target, int texnum);
 
 void GL_SetBindlessTexture(int loc, uint64 handle);
 
@@ -769,6 +763,9 @@ GLuint	ibo_singleQuad;
 GLuint	vbo_shadowDynamic;
 GLuint	ibo_shadowDynamic;
 
+GLuint	vbo_bspShadowDynamic;
+GLuint	ibo_bspShadowDynamic;
+
 GLuint	ibo_cube;
 GLuint	ibo_md3Shadow;
 
@@ -787,7 +784,7 @@ vbo_t vbo;
 
 typedef struct {
 	GLuint	bsp; 
-	GLuint	shadow;
+	GLuint	bspDynamicShadow;
 	GLuint	shadowMD3;
 	GLuint	fonts;
 	GLuint	fullscreenQuad;

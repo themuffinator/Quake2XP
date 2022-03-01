@@ -237,26 +237,27 @@ qboolean FindRawDevices()
 						for (z = 0; z < NUM_VENDORS; z++) {
 							if (value == usb_Vendors[z].vendorId) {
 								Com_Printf("Vendor:           " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
-								break;
-								Com_Printf("Vendor:           " S_COLOR_MAGENTA "Unknown " S_COLOR_GREEN "VID_0x%04X\n", value);
+								break;							
 							}
 						}
+						if(z == NUM_VENDORS)
+							Com_Printf("Vendor:           " S_COLOR_GREEN "0x%04X\n", value);
 
 						DWORD valPid = strtoul(pid2, NULL, 16);
 						for (z = 0; z < NUM_INPUT_DEVICES; z++) {
 							if (valPid == product[z].Id) {
 								Com_Printf("Model:            " S_COLOR_GREEN "%s\n", product[z].description);
 								break;
-								Com_Printf("Model:            " S_COLOR_MAGENTA "Unknown " S_COLOR_GREEN "PID_0x%04X\n", valPid);
 							}
-
 						}
+						if(z == NUM_INPUT_DEVICES)
+							Com_Printf("Model:            " S_COLOR_GREEN "0x%04X\n", valPid);
 
-						Com_Printf("Buttons:          " S_COLOR_GREEN "%u\n", pMouseInfo->dwNumberOfButtons);
+						Com_Printf("Buttons:          " S_COLOR_GREEN "%d\n", pMouseInfo->dwNumberOfButtons);
 						if(!pMouseInfo->dwSampleRate)
 							Com_Printf("Frequency:        " S_COLOR_MAGENTA "unsupported\n");
 						else
-							Com_Printf("Frequency:        " S_COLOR_GREEN "%u\n", pMouseInfo->dwSampleRate);
+							Com_Printf("Frequency:        " S_COLOR_GREEN "%d\n", pMouseInfo->dwSampleRate);
 						Com_Printf("Horizontal Wheel: " S_COLOR_GREEN "%s\n", (pMouseInfo->fHasHorizontalWheel) ? "Yes" : "No");
 					}
 				}

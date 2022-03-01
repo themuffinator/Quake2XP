@@ -454,6 +454,7 @@ void R_UpdateAmbientBspUniforms(qboolean bmodel) {
 	
 	qglUniform1i(U_LM_TYPE, r_worldmodel->useXPLM ? 1 : 0);
 	qglUniform1i(U_PARAM_INT_1, r_radiosityNormalMapping->integer ? 1 : 0);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
 
 	if (!bmodel) {
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);

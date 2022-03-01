@@ -190,7 +190,7 @@ typedef struct entity_s {
 typedef struct {
 	vec3_t origin, color, angles;
 	float intensity, _cone;
-	int filter;
+	int filter, style;
 	qboolean spotlight;
 
 } dlight_t;

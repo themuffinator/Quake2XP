@@ -205,24 +205,24 @@ void IN_StartupXInput(void)
 			if (qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo) == ERROR_SUCCESS)
 			{
 				if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED)
-					strcpy(batteryType, S_COLOR_YELLOW"...use USB connection "S_COLOR_WHITE);
+					strcpy(batteryType, S_COLOR_YELLOW"...use USB connection " S_COLOR_WHITE);
 				else if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
-					strcpy(batteryType, S_COLOR_YELLOW"Alkalyne "S_COLOR_WHITE);
+					strcpy(batteryType, S_COLOR_YELLOW"Alkalyne " S_COLOR_WHITE);
 				else if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
-					strcpy(batteryType, S_COLOR_YELLOW"Ni-MH "S_COLOR_WHITE);
+					strcpy(batteryType, S_COLOR_YELLOW"Ni-MH " S_COLOR_WHITE);
 				else if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
-					strcpy(batteryType, S_COLOR_YELLOW"Unknow Type "S_COLOR_WHITE);
+					strcpy(batteryType, S_COLOR_YELLOW"Unknow Type " S_COLOR_WHITE);
 
 				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
-					strcpy(batteryLevel, S_COLOR_RED"empity"S_COLOR_WHITE);
+					strcpy(batteryLevel, S_COLOR_RED"empity" S_COLOR_WHITE);
 				else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
-					strcpy(batteryLevel, S_COLOR_MAGENTA"level low"S_COLOR_WHITE);
+					strcpy(batteryLevel, S_COLOR_MAGENTA"level low" S_COLOR_WHITE);
 				else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
-					strcpy(batteryLevel, S_COLOR_YELLOW"level medium"S_COLOR_WHITE);
+					strcpy(batteryLevel, S_COLOR_YELLOW"level medium" S_COLOR_WHITE);
 				else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
-					strcpy(batteryLevel, S_COLOR_GREEN"level full"S_COLOR_WHITE);
+					strcpy(batteryLevel, S_COLOR_GREEN"level full" S_COLOR_WHITE);
 				else
-					strcpy(batteryLevel, S_COLOR_CYAN"unknown level"S_COLOR_WHITE);
+					strcpy(batteryLevel, S_COLOR_CYAN"unknown level" S_COLOR_WHITE);
 					
 				XINPUT_CAPABILITIES_EX capsEx;
 				if (qXInputGetCapabilitiesEx(1, numDev, 0, &capsEx) != ERROR_SUCCESS) 
@@ -236,20 +236,22 @@ void IN_StartupXInput(void)
 				for (z = 0; z < NUM_VENDORS; z++) {
 					if (value == usb_Vendors[z].vendorId) {
 						Com_Printf("Vendor:  " S_COLOR_GREEN "%s\n", usb_Vendors[z].description);
-						break;
-					Com_Printf("Vendor:  " S_COLOR_MAGENTA "Unknown " S_COLOR_GREEN "VID_0x%04X\n", capsEx.VendorId);
-					} 
-						
+
+						break;					
+					} 						
 				}
+				if(z == NUM_VENDORS)
+					Com_Printf("Vendor:  " S_COLOR_GREEN "0x%04X\n", capsEx.VendorId);
+
 				value = capsEx.ProductId;
 				for (z = 0; z < NUM_INPUT_DEVICES; z++) {
 					if (value == product[z].Id) {
 						Com_Printf("Model:   " S_COLOR_GREEN "%s\n", product[z].description);
 						break;
-					Com_Printf("Model:   " S_COLOR_MAGENTA "Unknown " S_COLOR_GREEN "PID_0x%04X\n", capsEx.ProductId);
-					}
-					
+					}					
 				}
+				if(z == NUM_INPUT_DEVICES)
+					Com_Printf("Model:   " S_COLOR_GREEN "0x%04X\n", capsEx.ProductId);
 
 				Com_Printf("Battery: %s<%s>\n", batteryType, batteryLevel);
 			}

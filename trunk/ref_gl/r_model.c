@@ -1899,7 +1899,7 @@ static qboolean R_LoadXPLM(void) {
 
 	FS_FreeFile(buf);
 
-	Com_Printf("Loaded lightmaps from "S_COLOR_GREEN"%s"S_COLOR_WHITE".\n", name);
+	Com_Printf("Loaded lightmaps from " S_COLOR_GREEN "%s" S_COLOR_WHITE ".\n", name);
 
 	return qtrue;
 }
@@ -2224,6 +2224,28 @@ static void Mod_BuildTriangleNeighbors(neighbors_t * neighbors,
 Mod_LoadAliasModel
 ==================
 */
+
+void InitModLights(model_t* mod)
+{
+	int		i;
+	for (i = 0; i < MAX_MODEL_LIGHTS; i++)
+	{	/// Set defaults
+		mod->mod_lights[i].mesh = -1;
+		mod->mod_lights[i].tri = 0;
+		mod->mod_lights[i]._cone = 0;
+		mod->mod_lights[i].distance = 0;
+		VectorClear(mod->mod_lights[i].angles);
+		VectorClear(mod->mod_lights[i].rspeed);
+		VectorSet(mod->mod_lights[i].color, 1, 1, 1);
+		mod->mod_lights[i].style = mod->mod_lights[i].cl_style = 0;
+		mod->mod_lights[i].filtercube_end = mod->mod_lights[i].filtercube_start = 0;
+		mod->mod_lights[i].framerate = 0;
+		mod->mod_lights[i].radius = 64;
+		mod->mod_lights[i].skinbits = 0;
+		mod->mod_lights[i].frame_start = 0;
+		mod->mod_lights[i].frame_end = 0x7FFFFFFF;
+	}
+}
 
 void Mod_LoadAliasModelFx(model_t *mod, char *s) {
 
@@ -2590,6 +2612,8 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 
 
 	mod->flags = 0;
+	
+	InitModLights(mod);
 
 	// set default render fx values
 	mod->glowCfg[0] = 0.3;
@@ -2774,6 +2798,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 			mod->st[l++] = poutst[indexST].t;
 		}
 	}
+
 	qglGenBuffers(1, &mod->vboId);
 	qglBindBuffer(GL_ARRAY_BUFFER, mod->vboId);
 	qglBufferData(GL_ARRAY_BUFFER, l * sizeof(float), mod->st, GL_STATIC_DRAW);
