@@ -615,7 +615,6 @@ void R_DrawLightScene (void)
 
 	R_CastAliasShadowVolumes(qfalse);   // alias shadows with out player model
 	R_DrawLightWorld();					// light world
-	R_RenderDecalsLight();
 
 	//brush models light pass
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -994,9 +993,9 @@ void R_RenderView (refdef_t *fd) {
 	
 	R_SSAO();
 	R_DrawAmbientScene();
-	R_RenderDecals();
 	R_DrawLightScene();
-	
+	R_RenderDecals();
+
 	R_DrawParticles();
 
 	R_CaptureColorBuffer();
@@ -1432,7 +1431,6 @@ void R_RegisterCvars(void)
 	r_earthSky = 						Cvar_Get("r_earthSky", "0", 0);
 	r_earthSunIntens =					Cvar_Get("r_earthSunIntens", "12.0", 0);
 //	r_earthSunAzimuth =					Cvar_Get("r_earthSunAzimuth", "0.0", CVAR_ARCHIVE);
-	r_decalsShading =					Cvar_Get("r_decalsShading", "0", CVAR_ARCHIVE);
 
 	Cmd_AddCommand("imagelist",			GL_ImageList_f);
 	Cmd_AddCommand("screenshot",		GL_ScreenShot_f);

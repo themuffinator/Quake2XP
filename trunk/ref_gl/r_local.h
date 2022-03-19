@@ -159,8 +159,8 @@ image_t *r_predator;
 image_t *r_depthTex;
 image_t	*cinMap;
 
-image_t *r_particletexture[PT_MAX];
-image_t *r_decaltexture[DECAL_MAX];
+image_t *r_particleTexture[PT_MAX];
+image_t *r_decalTexture[DECAL_MAX];
 
 image_t *r_flare;
 
@@ -317,8 +317,6 @@ cvar_t	*r_parallaxScale;
 cvar_t	*r_selfShadowingParallax;
 cvar_t	*r_selfShadowOffset;
 cvar_t	*r_selfShadowBlur;
-
-cvar_t	*r_decalsShading;
 
 cvar_t	*r_dof;
 cvar_t	*r_dofBias;
@@ -526,7 +524,15 @@ byte Normal2Index(const vec3_t vec);
 extern int	occ_framecount;
 void R_ColorTemperatureCorrection(void);
 void IL_LoadImage(char* filename, byte** pic, int* width, int* height, ILenum type);
+image_t* R_CreateTexture(char* texName, uint targetTex,
+	uint intFormat, uint format,
+	uint type, uint width, uint height,
+	uint warpS, uint warpT,
+	uint filterMin, uint filterMag,
+	uint imageType, qboolean mipmap,
+	uint* pixdata);
 //====================================================================
+mleaf_t* Mod_PointInLeaf(vec3_t p, model_t* model);
 
 #define MAX_POLY_VERT		128
 #define	MAX_BATCH_SURFS		21845
@@ -969,7 +975,6 @@ glslProgram_t		*flareProgram;
 glslProgram_t		*globalFogProgram;
 glslProgram_t		*spriteProgram;
 glslProgram_t		*screenFlashProgram;
-glslProgram_t		*lightDecalsProgram;
 
 
 void GL_BindProgram (glslProgram_t *program);

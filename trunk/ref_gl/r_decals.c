@@ -111,8 +111,7 @@ void R_RenderDecals(void)
 	qglUniform1i(U_PARAM_INT_0, 1); // textured pass
 
 	GL_Enable(GL_POLYGON_OFFSET_FILL);
-    GL_PolygonOffset(-1, -1);
- // GL_DepthMask(0);
+    GL_PolygonOffset(-3, -3);
     GL_Enable(GL_BLEND);
 
 	active = &active_decals;
@@ -146,7 +145,7 @@ void R_RenderDecals(void)
 
 		decalAlpha = dl->alpha + (dl->endAlpha - dl->alpha) * endLerp;
 
-		texId = r_decaltexture[dl->type]->handle;
+		texId = r_decalTexture[dl->type]->handle;
           
         if (texture != texId) {
         // flush array if new texture/blend
@@ -162,12 +161,6 @@ void R_RenderDecals(void)
 		GL_SetBindlessTexture(U_TMU0, texId);
 
         GL_BlendFunc(dl->sFactor, dl->dFactor);
-
-	//	if (dl->flags == DF_OVERBRIGHT)
-	//		qglUniform1f(U_COLOR_MUL, 2.0);
-	//	else
-	//		qglUniform1f(U_COLOR_MUL, 1.0);
-
         }
 
      //
@@ -212,159 +205,12 @@ void R_RenderDecals(void)
 		 qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
 		c_decal_tris += numIndices/3;
 	 }
-
-    GL_Disable(GL_BLEND);
     qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
     qglDisableVertexAttribArray(ATT_COLOR);
-//  GL_DepthMask(1);
-    GL_Disable(GL_POLYGON_OFFSET_FILL);
+	GL_Disable(GL_BLEND);
+	GL_Disable(GL_POLYGON_OFFSET_FILL);
 }
-
-void R_RenderDecalsLight(void)
-{
-	decals_t* dl, * next, * active;
-	vec3_t		decalColor;
-	uint64	    texId, texture = 0;
-	int			x, i;
-	int			numIndices = 0, numVertices = 0;
-	float		endLerp, decalAlpha;
-
-	if (!cl_decals->integer || !r_decalsShading->integer)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
-
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, DecalVertexArray);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, DecalTexCoordArray);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, DecalColorArray);
-
-	GL_BindProgram(lightDecalsProgram);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
-
-	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
-	qglUniform3f(U_SPOT_PARAMS, currentShadowLight->hotSpot, 1.f / (1.f - currentShadowLight->hotSpot), currentShadowLight->coneExp);
-
-	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);
-	qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);
-
-	if (currentShadowLight->isCone)
-		qglUniform1i(U_SPOT_LIGHT, 1);
-	else
-		qglUniform1i(U_SPOT_LIGHT, 0);
-
-	qglUniformMatrix4fv(U_ATTEN_MATRIX, 1, qfalse, (const float*)currentShadowLight->attenMatrix);
-	qglUniformMatrix4fv(U_SPOT_MATRIX, 1, qfalse, (const float*)currentShadowLight->spotMatrix);
-	R_CalcCubeMapMatrix(qfalse);
-	qglUniformMatrix4fv(U_CUBE_MATRIX, 1, qfalse, (const float*)currentShadowLight->cubeMapMatrix);
-
-	GL_PolygonOffset(-3, -3);
-
-	active = &active_decals;
-
-	for (dl = active->next; dl != active; dl = next) {
-
-		next = dl->next;
-
-		if (!dl->node || dl->node->visframe != r_visframecount)
-			continue;
-
-		// look if it has a bad type
-		if (dl->type < 0 || dl->type >= DECAL_MAX)
-		{
-			CL_FreeDecal(dl);
-			continue;
-		}
-
-		if (R_CullSphere(dl->org, dl->size * 1.3))
-			continue;
-
-		endLerp = (float)(r_newrefdef.time - dl->time) / (float)(dl->endTime - dl->time);
-		endLerp *= 250.0;
-
-		for (i = 0; i < 3; i++) {
-			decalColor[i] = dl->color[i] + (dl->endColor[i] - dl->color[i]) * endLerp;
-
-			if (decalColor[i] < dl->endColor[i])
-				decalColor[i] = dl->endColor[i];
-		}
-
-		decalAlpha = dl->alpha + (dl->endAlpha - dl->alpha) * endLerp;
-
-		texId = r_decaltexture[dl->type]->handle;
-
-		if (texture != texId) {
-			// flush array if new texture/blend
-			if (numIndices) {
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
-				c_decal_tris += numIndices / 3;
-				numVertices = 0;
-				numIndices = 0;
-			}
-
-			texture = texId;
-
-			GL_SetBindlessTexture(U_TMU0, texId);
-			GL_SetBindlessTexture(U_TMU1, r_lightCubeMap[currentShadowLight->filter]->handle);
-			qglUniform2i(U_PARAM_iVEC2_0, dl->sFactor, dl->dFactor);
-			GL_BlendFunc(dl->sFactor, dl->dFactor);
-		}
-
-		//
-		// array is full, flush to screen
-		//
-		if ((numIndices >= MAX_DECAL_INDICES - (dl->numverts - 2) * 3) ||
-			(numVertices >= MAX_DECAL_ARRAY_VERTS - dl->numverts)) {
-
-			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
-			c_decal_tris = numIndices / 3;
-			numVertices = 0;
-			numIndices = 0;
-		}
-
-		// set vertices
-		for (x = 0; x < dl->numverts; x++) {
-			DecalColorArray[x + numVertices][0] = decalColor[0];
-			DecalColorArray[x + numVertices][1] = decalColor[1];
-			DecalColorArray[x + numVertices][2] = decalColor[2];
-			DecalColorArray[x + numVertices][3] = decalAlpha;
-
-			DecalTexCoordArray[x + numVertices][0] = dl->stcoords[x][0];
-			DecalTexCoordArray[x + numVertices][1] = dl->stcoords[x][1];
-
-			DecalVertexArray[x + numVertices][0] = dl->verts[x][0];
-			DecalVertexArray[x + numVertices][1] = dl->verts[x][1];
-			DecalVertexArray[x + numVertices][2] = dl->verts[x][2];
-		}
-
-		// set indices
-		for (x = 0; x < dl->numverts - 2; x++) {
-			DecalIdxArray[numIndices + x * 3 + 0] = numVertices;
-			DecalIdxArray[numIndices + x * 3 + 1] = numVertices + x + 1;
-			DecalIdxArray[numIndices + x * 3 + 2] = numVertices + x + 2;
-		}
-		numVertices += dl->numverts;
-		numIndices += (dl->numverts - 2) * 3;
-	}
-
-	// draw the rest
-	if (numIndices) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
-		c_decal_tris += numIndices / 3;
-	}
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_COLOR);
-	GL_BlendFunc(GL_ONE, GL_ONE);
-}
-
-
-
 
 #define	ON_EPSILON			0.1	// point on plane side epsilon
 #define BACKFACE_EPSILON	0.01

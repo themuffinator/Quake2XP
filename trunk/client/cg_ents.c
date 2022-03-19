@@ -1692,7 +1692,7 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 	}
 
 	// q2pro - adjust the gun origin so that the gun doesn't intersect with walls
-	{
+	if(cl_gunCollision->integer) {
 		vec3_t view_dir, right_dir, up_dir;
 		vec3_t gun_real_pos, gun_tip;
 		const float gun_length = 28.f;
@@ -1700,13 +1700,16 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 		const float gun_up = -5.f;
 		trace_t trace;
 		static vec3_t mins = { -4, -4, -4 }, maxs = { 4, 4, 4 };
+		qboolean alias = qfalse;
+		if (cl_gunCollision->integer == 2)
+			alias = qtrue;
 
 		AngleVectors(cl.refdef.viewangles, view_dir, right_dir, up_dir);
 		VectorMA(gun.origin, gun_right, right_dir, gun_real_pos);
 		VectorMA(gun_real_pos, gun_up, up_dir, gun_real_pos);
 		VectorMA(gun_real_pos, gun_length, view_dir, gun_tip);
 
-		trace = CM_BoxTrace(gun_real_pos, gun_tip, mins, maxs, 0, MASK_SOLID);
+		trace = CL_PMTraceWorld(gun_real_pos, mins, maxs, gun_tip, MASK_SOLID, alias);
 
 		if (trace.fraction != 1.0f)
 		{

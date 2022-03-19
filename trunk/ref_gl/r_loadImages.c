@@ -451,74 +451,59 @@ void R_InitEngineTextures (void) {
 	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_bump, 32, 0);
 	r_notexture = GL_LoadPic ("***r_notexture***",	(byte *)notex, 1, 1, it_wall, 32, 0);
 
-	r_particletexture[PT_DEFAULT] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
-	r_particletexture[PT_BUBBLE] = GL_FindImage ("gfx/particles/bubble.png", it_wall);
-	r_particletexture[PT_FLY] = GL_FindImage ("gfx/fly/fly0.png", it_wall);
-	r_particletexture[PT_BLOOD] = GL_FindImage ("gfx/particles/bloodTrail.tga", it_wall);	// default
-	r_particletexture[PT_BLOOD2] = GL_FindImage ("gfx/particles/bloodTrail2.tga", it_wall);	// xatrix
-	r_particletexture[PT_BLASTER] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
-	r_particletexture[PT_SMOKE] = GL_FindImage ("gfx/particles/smoke.png", it_wall);
-	r_particletexture[PT_SPLASH] = GL_FindImage ("gfx/particles/drop.tga", it_wall);
-	r_particletexture[PT_SPARK] = GL_FindImage ("gfx/particles/spark.tga", it_wall);
+	r_particleTexture[PT_DEFAULT] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
+	r_particleTexture[PT_BUBBLE] = GL_FindImage ("gfx/particles/bubble.png", it_wall);
+	r_particleTexture[PT_FLY] = GL_FindImage ("gfx/fly/fly0.png", it_wall);
+	r_particleTexture[PT_BLOOD] = GL_FindImage ("gfx/particles/bloodTrail.tga", it_wall);	// default
+	r_particleTexture[PT_BLOOD2] = GL_FindImage ("gfx/particles/bloodTrail2.tga", it_wall);	// xatrix
+	r_particleTexture[PT_BLASTER] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
+	r_particleTexture[PT_SMOKE] = GL_FindImage ("gfx/particles/smoke.png", it_wall);
+	r_particleTexture[PT_SPLASH] = GL_FindImage ("gfx/particles/drop.tga", it_wall);
+	r_particleTexture[PT_SPARK] = GL_FindImage ("gfx/particles/spark.tga", it_wall);
 
-	r_particletexture[PT_BEAM] = GL_FindImage ("gfx/particles/pt_beam.png", it_wall);
-	r_particletexture[PT_SPIRAL] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
-	r_particletexture[PT_FLAME] = GL_FindImage ("gfx/flame/fire_00.tga", it_wall);
-	r_particletexture[PT_BLOODSPRAY] = GL_FindImage ("gfx/particles/bloodhit0.tga", it_wall);
-	r_particletexture[PT_xBLOODSPRAY] = GL_FindImage ("gfx/particles/xbloodhit0.tga", it_wall);
+	r_particleTexture[PT_BEAM] = GL_FindImage ("gfx/particles/pt_beam.png", it_wall);
+	r_particleTexture[PT_SPIRAL] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
+	r_particleTexture[PT_FLAME] = GL_FindImage ("gfx/flame/fire_00.tga", it_wall);
+	r_particleTexture[PT_BLOODSPRAY] = GL_FindImage ("gfx/particles/bloodhit0.tga", it_wall);
+	r_particleTexture[PT_xBLOODSPRAY] = GL_FindImage ("gfx/particles/xbloodhit0.tga", it_wall);
 
-	r_particletexture[PT_EXPLODE]		= GL_FindImage ("gfx/explode/rlboom_0.jpg", it_wall);
-	r_particletexture[PT_WATERPULME]	= GL_FindImage ("gfx/particles/waterplume.tga", it_wall);
-	r_particletexture[PT_WATERCIRCLE]	= GL_FindImage ("gfx/particles/water_ripples.dds", it_wall);
-	r_particletexture[PT_BLOODDRIP]		= GL_FindImage ("gfx/particles/blooddrip.tga", it_wall);
-	r_particletexture[PT_BLOODMIST]		= GL_FindImage ("gfx/particles/bloodmist.tga", it_wall);
-	r_particletexture[PT_BLOOD_SPLAT]	= GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
-	r_particletexture[PT_BLASTER_BOLT]	= GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
-	r_particletexture[PT_BFG_BALL]		= GL_FindImage("gfx/bfg/bfgBall.tga", it_wall);
-	r_particletexture[PT_BFG_REFR]		= GL_FindImage("gfx/bfg/bfgRefr.tga", it_wall);
-	r_particletexture[PT_BFG_EXPL]		= GL_FindImage("gfx/bfg/bfg_expl.tga", it_wall);
-	r_particletexture[PT_BFG_EXPL2]		= GL_FindImage("gfx/bfg/bfgballblast.tga", it_wall);
-	r_particletexture[PT_FLARE]			= GL_FindImage("gfx/flares/flare0.tga", it_wall);
+	r_particleTexture[PT_EXPLODE]		= GL_FindImage ("gfx/explode/rlboom_0.jpg", it_wall);
+	r_particleTexture[PT_WATERPULME]	= GL_FindImage ("gfx/particles/waterplume.tga", it_wall);
+	r_particleTexture[PT_WATERCIRCLE]	= GL_FindImage ("gfx/particles/water_ripples.dds", it_wall);
+	r_particleTexture[PT_BLOODDRIP]		= GL_FindImage ("gfx/particles/blooddrip.tga", it_wall);
+	r_particleTexture[PT_BLOODMIST]		= GL_FindImage ("gfx/particles/bloodmist.tga", it_wall);
+	r_particleTexture[PT_BLOOD_SPLAT]	= GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
+	r_particleTexture[PT_BLASTER_BOLT]	= GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
+	r_particleTexture[PT_BFG_BALL]		= GL_FindImage("gfx/bfg/bfgBall.tga", it_wall);
+	r_particleTexture[PT_BFG_REFR]		= GL_FindImage("gfx/bfg/bfgRefr.tga", it_wall);
+	r_particleTexture[PT_BFG_EXPL]		= GL_FindImage("gfx/bfg/bfg_expl.tga", it_wall);
+	r_particleTexture[PT_BFG_EXPL2]		= GL_FindImage("gfx/bfg/bfgballblast.tga", it_wall);
+	r_particleTexture[PT_FLARE]			= GL_FindImage("gfx/flares/flare0.tga", it_wall);
 
 	for (i = 0; i < PT_MAX; i++)
-	if (!r_particletexture[i])
-		r_particletexture[i] = r_notexture;
+	if (!r_particleTexture[i])
+		r_particleTexture[i] = r_notexture;
 
-	r_decaltexture[DECAL_RAIL] =
-		GL_FindImage ("gfx/decals/decal_railgun.tga", it_wall);
-	r_decaltexture[DECAL_BULLET] =
-		GL_FindImage ("gfx/decals/decal_bullet2.tga", it_wall);
-	r_decaltexture[DECAL_BLASTER] =
-		GL_FindImage ("gfx/decals/decal_blaster2.tga", it_wall);
-	r_decaltexture[DECAL_EXPLODE] =
-		GL_FindImage ("gfx/decals/decal_explode.tga", it_wall);
-	r_decaltexture[DECAL_BLOOD1] =
-		GL_FindImage ("gfx/decals/decal_blood1.tga", it_wall);
-	r_decaltexture[DECAL_BLOOD2] =
-		GL_FindImage ("gfx/decals/decal_blood2.tga", it_wall);
-	r_decaltexture[DECAL_BLOOD3] =
-		GL_FindImage ("gfx/decals/decal_blood3.tga", it_wall);
-	r_decaltexture[DECAL_BLOOD4] =
-		GL_FindImage ("gfx/decals/decal_blood4.tga", it_wall);
-	r_decaltexture[DECAL_BLOOD5] =
-		GL_FindImage ("gfx/decals/decal_blood5.tga", it_wall);
-	r_decaltexture[DECAL_BLOOD6] =
-		GL_FindImage ("gfx/decals/decal_blood6.tga", it_wall);
-	r_decaltexture[DECAL_BLOOD7] =
-		GL_FindImage ("gfx/decals/decal_blood7.tga", it_wall);
-	r_decaltexture[DECAL_BLOOD8] =
-		GL_FindImage ("gfx/decals/decal_blood8.tga", it_wall);
-	r_decaltexture[DECAL_BLOOD9] =
-		GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
-	r_decaltexture[DECAL_ACIDMARK] =
-		GL_FindImage ("gfx/decals/decal_acidmark.tga", it_wall);
-	r_decaltexture[DECAL_BFG] =
-		GL_FindImage ("gfx/decals/decal_bfg.tga", it_wall);
+	r_decalTexture[DECAL_RAIL]		=	GL_FindImage ("gfx/decals/decal_railgun.tga", it_wall);
+	r_decalTexture[DECAL_BULLET]	=	GL_FindImage ("gfx/decals/decal_bullet2.tga", it_wall);
+	r_decalTexture[DECAL_BLASTER]	=	GL_FindImage ("gfx/decals/decal_blaster2.tga", it_wall);
+	r_decalTexture[DECAL_EXPLODE]	=	GL_FindImage ("gfx/decals/decal_explode.tga", it_wall);
+	r_decalTexture[DECAL_BLOOD1]	=	GL_FindImage ("gfx/decals/decal_blood1.tga", it_wall);
+	r_decalTexture[DECAL_BLOOD2]	=	GL_FindImage ("gfx/decals/decal_blood2.tga", it_wall);
+	r_decalTexture[DECAL_BLOOD3]	=	GL_FindImage ("gfx/decals/decal_blood3.tga", it_wall);
+	r_decalTexture[DECAL_BLOOD4]	=	GL_FindImage ("gfx/decals/decal_blood4.tga", it_wall);
+	r_decalTexture[DECAL_BLOOD5]	=	GL_FindImage ("gfx/decals/decal_blood5.tga", it_wall);
+	r_decalTexture[DECAL_BLOOD6]	=	GL_FindImage ("gfx/decals/decal_blood6.tga", it_wall);
+	r_decalTexture[DECAL_BLOOD7]	=	GL_FindImage ("gfx/decals/decal_blood7.tga", it_wall);
+	r_decalTexture[DECAL_BLOOD8]	=	GL_FindImage ("gfx/decals/decal_blood8.tga", it_wall);
+	r_decalTexture[DECAL_BLOOD9]	=	GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
+	r_decalTexture[DECAL_ACIDMARK]	=	GL_FindImage ("gfx/decals/decal_acidmark.tga", it_wall);
+	r_decalTexture[DECAL_BFG]		=	GL_FindImage ("gfx/decals/decal_bfg.tga", it_wall);
 
 
 	for (i = 0; i < DECAL_MAX; i++) {
-		if (!r_decaltexture[i])
-			r_decaltexture[i] = r_notexture;
+		if (!r_decalTexture[i])
+			r_decalTexture[i] = r_notexture;
 	}
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {

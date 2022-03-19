@@ -2598,7 +2598,7 @@ void R_DrawLightFlare () {
 
 	VectorScale (currentShadowLight->color, scale, tmp);
 	
-	GL_SetBindlessTexture(U_TMU0, r_particletexture[PT_FLARE]->handle);
+	GL_SetBindlessTexture(U_TMU0, r_particleTexture[PT_FLARE]->handle);
 	GL_SetBindlessTexture(U_TMU1, r_depthTex->handle);
 	
 	qglUniform2f(U_PARAM_VEC2_0, 1.0, 0.0);

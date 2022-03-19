@@ -198,13 +198,10 @@ Sets cl.predicted_origin and cl.predicted_angles
 =================
 */
 void CL_PredictMovement (void) {
-	int ack, current;
-	int frame;
-	int oldframe;
+	int ack, current, frame, oldframe;
 	usercmd_t *cmd;
 	pmove_t pm;
-	int step;
-	int oldz;
+	int step, oldz, i;
 
 	if (cls.state != ca_active)
 		return;
@@ -214,19 +211,9 @@ void CL_PredictMovement (void) {
 
 	if (!cl_predict->value || (cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION)) {	// just 
 		// set  angles
-
-#ifdef _WIN32 // raw input
-		cl.predicted_angles[0] = cl.viewangles_PITCH + SHORT2ANGLE(cl.frame.playerstate.pmove.delta_angles[0]);
-		cl.predicted_angles[1] = cl.viewangles_YAW + SHORT2ANGLE(cl.frame.playerstate.pmove.delta_angles[1]);
-		cl.predicted_angles[2] = SHORT2ANGLE(cl.frame.playerstate.pmove.delta_angles[2]);
-#else
-		{
-			int i;
-			for (i = 0; i < 3; i++) {
-				cl.predicted_angles[i] = cl.viewangles[i] + SHORT2ANGLE(cl.frame.playerstate.pmove.delta_angles[i]);
-			}
+		for (i = 0; i < 3; i++) {
+			cl.predicted_angles[i] = cl.viewangles[i] + SHORT2ANGLE(cl.frame.playerstate.pmove.delta_angles[i]);
 		}
-#endif
 		return;
 	}
 

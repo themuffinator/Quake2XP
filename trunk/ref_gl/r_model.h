@@ -341,19 +341,17 @@ typedef struct model_s {
 	qboolean	noSelfShadow;
 	qboolean	envMap;
 
-	byte		*normals;
-	byte		*binormals;
-	byte		*tangents;
+	vec3_t	*normals;
+	byte	*binormals;
+	byte	*tangents;
 
-	vec3_t		*smoothNormal;
+	int		*indexArray;
+	int		numIndices;
 
-	int			*indexArray;
-	int			numIndices;
+	GLuint	vboId;
+	int		memorySize;
 
-	GLuint		vboId;
-	int			memorySize;
-
-	mat3_t		axis;
+	mat3_t	axis;
 
 	modlight_t	mod_lights[MAX_MODEL_LIGHTS];
 
@@ -367,7 +365,6 @@ typedef struct model_s {
 
 void Mod_Init (void);
 model_t *Mod_ForName (char *name, qboolean crash);
-mleaf_t *Mod_PointInLeaf (float *p, model_t * model);
 byte *Mod_ClusterPVS (int cluster, model_t * model);
 
 void Mod_Modellist_f (void);

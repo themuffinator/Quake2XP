@@ -371,53 +371,6 @@ void Mod_Init(void) {
 	CL_ClearDecals();
 }
 
-// Berserkers memory cache
-unsigned	rhs_checksum;
-unsigned Mod_ReadHunkSize(void* data, int modFileLen)
-{
-	FILE* f;
-	int			len;
-	unsigned	buf[2];
-	char		name[MAX_OSPATH];
-
-	rhs_checksum = Com_BlockChecksum(data, modFileLen);
-
-	Com_sprintf(name, sizeof(name), "%s/cachexp/%s.mem", FS_Gamedir(), loadmodel->name);
-	f = fopen(name, "rb");
-	if (!f)
-		return 0;
-
-	len = fread(buf, 1, sizeof(buf), f);
-	fclose(f);
-	if (len != sizeof(buf))
-		return 0;
-
-	if (buf[0] != rhs_checksum)
-		return 0;
-
-	return buf[1];
-}
-
-
-void Mod_WriteHunkSize(int size)
-{
-	FILE* f;
-	unsigned	buf[2];
-	char		name[MAX_OSPATH];
-
-	buf[0] = rhs_checksum;
-	buf[1] = size;
-
-	Com_sprintf(name, sizeof(name), "%s/cachexp/%s.mem", FS_Gamedir(), loadmodel->name);
-	FS_CreatePath(name);
-	f = fopen(name, "wb");
-	if (f)
-	{
-		fwrite(buf, 1, sizeof(buf), f);
-		fclose(f);
-	}
-}
-
 /*
 ==================
 Mod_ForName
@@ -500,34 +453,25 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 	// 
 	// fill it in
 	// 
-	unsigned hs = Mod_ReadHunkSize(buf, modfilelen);
-	int hunk_size = 0;
-	if (hs)
-	{
-		hunk_size = hs & 0x7FFFFFFF;
-		Com_DPrintf("Hunk size of '%s' = %i bytes, loaded from cache.\n", mod->name, hunk_size);
-	}
-
 		switch (LittleLong(*(unsigned *)buf)) 
 		{
 		case IDALIASHEADER:
-			loadmodel->extraData = Hunk_Begin(hunk_size ? hunk_size : hunk_md2->integer <<20, name);
+			loadmodel->extraData = Hunk_Begin( hunk_md2->integer <<20, name);
 			Mod_LoadAliasModel(mod, buf);
 			break;
 		
 		case IDMD3HEADER:
-			loadmodel->extraData = Hunk_Begin(hunk_size ? hunk_size : hunk_md3->integer <<20, name);
+			loadmodel->extraData = Hunk_Begin(hunk_md3->integer <<20, name);
 			Mod_LoadMD3(mod, buf);
 			break;
 
 		case IDSPRITEHEADER:
-			loadmodel->extraData = Hunk_Begin(hunk_size ? hunk_size : 1 <<20, name);
+			loadmodel->extraData = Hunk_Begin(1 <<20, name);
 			Mod_LoadSpriteModel(mod, buf);
 			break;
 
-
 		case IDBSPHEADER:
-			loadmodel->extraData = Hunk_Begin(hunk_size ? hunk_size : hunk_bsp->integer <<20, name);
+			loadmodel->extraData = Hunk_Begin(hunk_bsp->integer <<20, name);
 			Mod_LoadBrushModel(mod, buf);
 			break;
 
@@ -537,8 +481,6 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 		}
 
 	loadmodel->extraDataSize = Hunk_End(loadmodel->name);
-
-	Mod_WriteHunkSize(loadmodel->extraDataSize);
 
 	FS_FreeFile(buf);
 
@@ -1414,91 +1356,13 @@ void Mod_LoadFaces(lump_t * l) {
 	Mod_BuildVertexCache();
 }
 
-// Mini cache abstraction, don't touch these varibles directly!
-
-static byte *_cacheData;
-static int _cachePos, _cacheSize;
-
-static qboolean cache_Open(const char *name) {
-	_cacheSize = FS_LoadFile(name, (void**)&_cacheData);
-	_cachePos = 0;
-	return (_cacheData != NULL);
-}
-
-static void cache_Close() {
-	FS_FreeFile(_cacheData);
-}
-
-static qboolean cache_Fetch(void *dst, int size) {
-	if (_cacheSize - _cachePos < size) {
-		return qfalse;
-	}
-	else {
-		memcpy(dst, _cacheData + _cachePos, size);
-		_cachePos += size;
-		return qtrue;
-	}
-}
-
-// End mini cache
+#define bspSmoothAngle cosf(DEG2RAD(33.0))
 
 void GL_BuildTBN(int count) {
 	int			ci, cj, i, j;
 	float		*vi, *vj;
 	msurface_t	*si, *sj;
 	vec3_t		ni, nj;
-	char		cacheName[MAX_QPATH];
-	FILE		*cacheFile = NULL;
-	int         smoothAng = r_tbnSmoothAngle->integer;
-
-	double threshold = cosf(DEG2RAD(r_tbnSmoothAngle->value));
-
-	// Check for existing data
-	Com_sprintf(cacheName, sizeof(cacheName), "cachexp/%s", currentmodel->name);
-	if (cache_Open(cacheName)) {
-		int angle;
-
-		if (!cache_Fetch(&angle, sizeof(angle)) || angle != smoothAng) {
-			Com_Printf(S_COLOR_RED "GL_BuildTBN: ignoring data for %s with angle %d (need %d)\n",
-				cacheName, angle, smoothAng);
-			cache_Close();
-			goto recreate;
-		}
-
-		for (i = 0; i < count; i++) {
-			si = &currentmodel->surfaces[i];
-
-			if (si->texInfo->flags & (SURF_SKY |SURF_NODRAW))
-				continue;
-
-			vi = si->polys->verts[0];
-
-			for (ci = 0; ci < si->numEdges; ci++, vi += VERTEXSIZE) {
-				if (!cache_Fetch(vi + 7, 9 * sizeof(*vi))) {
-					Com_Printf(S_COLOR_RED "GL_BuildTBN: insufficient data in %s\n", cacheName);
-					cache_Close();
-					goto recreate;
-				}
-			}
-		}
-		Com_DPrintf(S_COLOR_GREEN "GL_BuildTBN: using cached data from %s\n", cacheName);
-		cache_Close();
-		return;
-	}
-
-recreate:
-	
-	// Not found, so write it as we calculate it
-	Com_sprintf(cacheName, sizeof(cacheName), "%s/cachexp/%s", FS_Gamedir(), currentmodel->name);
-	FS_CreatePath(cacheName);
-	cacheFile = fopen(cacheName, "wb");
-	if (cacheFile == NULL)
-		Com_Printf(S_COLOR_RED "GL_BuildTBN: could't open %s for writing\n", currentmodel->name);
-	else {
-		Com_Printf(S_COLOR_YELLOW "GL_BuildTBN: calculating %s, with angle %d\n", currentmodel->name, smoothAng);
-		fwrite(&smoothAng, sizeof(smoothAng), 1, cacheFile);
-	}
-
 
 	for (i = 0; i < count; i++) {
 		si = &currentmodel->surfaces[i];
@@ -1528,7 +1392,7 @@ recreate:
 				else
 					VectorCopy(sj->plane->normal, nj);
 
-				if (DotProduct(ni, nj) >= threshold) {
+				if (DotProduct(ni, nj) >= bspSmoothAngle) {
 					vi = si->polys->verts[0];
 					for (ci = 0; ci < si->numEdges; ci++, vi += VERTEXSIZE) {
 						vj = sj->polys->verts[0];
@@ -1551,7 +1415,7 @@ recreate:
 			VectorSet(normal, vi[7], vi[8], vi[9]);
 			VectorNormalize(normal);
 
-			if (DotProduct(normal, ni) < threshold) {
+			if (DotProduct(normal, ni) < bspSmoothAngle) {
 				vi[7] = normal[0] + ni[0];
 				vi[8] = normal[1] + ni[1];
 				vi[9] = normal[2] + ni[2];
@@ -1589,13 +1453,8 @@ recreate:
 				vi[14] = biTangent[1];
 				vi[15] = biTangent[2];
 			}
-
-			if (cacheFile != NULL)
-				fwrite(vi + 7, sizeof(*vi), 9, cacheFile);
 		}
 	}
-	if (cacheFile != NULL)
-		fclose(cacheFile);
 }
 
 
@@ -2325,7 +2184,7 @@ void R_CalcTangentVectors(float *v0, float *v1, float *v2, float *st0, float *st
 	VectorNormalize(Binormal);
 }
 
-#define smooth_cosine cos(DEG2RAD(45.0))
+#define md2SmoothAngle cos(DEG2RAD(45.0))
 
 void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 {
@@ -2334,14 +2193,17 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 	dtrivertx_t		*verts, *v;
 	dtriangle_t		*tris = (dtriangle_t *)((byte *)pheader + pheader->ofs_tris);
 	int				cx = pheader->num_xyz * pheader->num_frames * sizeof(byte);
+	int				cx2 = pheader->num_xyz * pheader->num_frames * sizeof(vec3_t);
 	static vec3_t	binormals_[MAX_VERTS], tangents_[MAX_VERTS], normals_[MAX_VERTS];
 	byte			*tangents = NULL, *binormals = NULL;
+	vec3_t			*normals = NULL;
 
-	mod->binormals = binormals = (byte*)Hunk_Alloc(cx);
-	mod->tangents = tangents = (byte*)Hunk_Alloc(cx);
+	mod->binormals	= binormals = (byte*)Hunk_Alloc(cx);
+	mod->tangents	= tangents	= (byte*)Hunk_Alloc(cx);
+	mod->normals	= normals	= Hunk_Alloc(cx2);
 
-	mod->memorySize += cx;
-	mod->memorySize += cx;
+	mod->memorySize += cx *2;
+	mod->memorySize += cx2;
 
 	//for all frames
 	for (i = 0; i < pheader->num_frames; i++) {
@@ -2414,7 +2276,7 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 					float *jnormal = q_byteDirs[verts[j].lightnormalindex];
 					float *knormal = q_byteDirs[verts[k].lightnormalindex];
 
-					if (DotProduct(jnormal, knormal) >= smooth_cosine){
+					if (DotProduct(jnormal, knormal) >= md2SmoothAngle){
 
 						VectorAdd(tangents_[j], tangents_[k], tangents_[j]);
 						VectorCopy(tangents_[j], tangents_[k]);
@@ -2436,130 +2298,13 @@ void Mod_BuildMD2Tangents(model_t * mod, dmdl_t *pheader, fstvert_t *poutst)
 
 			tangents[i * pheader->num_xyz + j] = Normal2Index(tangents_[j]);
 			binormals[i * pheader->num_xyz + j] = Normal2Index(binormals_[j]);
-			verts[j].lightnormalindex = Normal2Index(normals_[j]);
+			VectorCopy(normals_[j], normals[i * pheader->num_xyz + j]);
 
 		}
 	}
 
 }
 
-/*
-void Mod_BuildMD2Tangents(model_t* mod, dmdl_t* pheader, fstvert_t* poutst)
-{
-	int             i, j, k, l;
-	daliasframe_t* frame;
-	dtrivertx_t* verts, * v;
-	dtriangle_t* tris = (dtriangle_t*)((byte*)pheader + pheader->ofs_tris);
-	int             cx = pheader->num_xyz * pheader->num_frames * sizeof(vec3_t);
-	static vec3_t   tangents_[MAX_VERTS], binormals_[MAX_VERTS], normals_[MAX_VERTS];
-	static vec3_t* tangents, * binormals, * normals;
-
-	mod->binormals = binormals = Hunk_Alloc(cx);
-	mod->tangents = tangents = Hunk_Alloc(cx);
-	mod->normals = normals = Hunk_Alloc(cx);
-
-	mod->memorySize += cx;
-	mod->memorySize += cx;
-
-		//for all frames
-	for (i = 0; i < pheader->num_frames; i++) {
-
-		//set temp to zero
-		memset(tangents_, 0, pheader->num_xyz * sizeof(vec3_t));
-		memset(binormals_, 0, pheader->num_xyz * sizeof(vec3_t));
-		memset(normals_, 0, pheader->num_xyz * sizeof(vec3_t));
-
-		tris = (dtriangle_t*)((byte*)pheader + pheader->ofs_tris);
-		frame = (daliasframe_t*)((byte*)pheader + pheader->ofs_frames + i * pheader->framesize);
-		verts = frame->verts;
-
-		//for all tris
-		for (j = 0; j < pheader->num_tris; j++) {
-			vec3_t  edge0, edge1, edge2;
-			vec3_t  triangle[3], dir0, dir1;
-			vec3_t  tangent, binormal, normal, cross;
-
-			for (k = 0; k < 3; k++) {
-				l = tris[j].index_xyz[k];
-				v = &verts[l];
-				for (l = 0; l < 3; l++)
-					triangle[k][l] = v->v[l];
-			}
-
-			//calc normals
-			VectorSubtract(triangle[0], triangle[1], dir0);
-			VectorSubtract(triangle[2], triangle[1], dir1);
-			CrossProduct(dir1, dir0, normal);
-			VectorInvert(normal);
-			VectorNormalize(normal);
-
-			// calc tangents
-			edge0[0] = (float)verts[tris[j].index_xyz[0]].v[0];
-			edge0[1] = (float)verts[tris[j].index_xyz[0]].v[1];
-			edge0[2] = (float)verts[tris[j].index_xyz[0]].v[2];
-			edge1[0] = (float)verts[tris[j].index_xyz[1]].v[0];
-			edge1[1] = (float)verts[tris[j].index_xyz[1]].v[1];
-			edge1[2] = (float)verts[tris[j].index_xyz[1]].v[2];
-			edge2[0] = (float)verts[tris[j].index_xyz[2]].v[0];
-			edge2[1] = (float)verts[tris[j].index_xyz[2]].v[1];
-			edge2[2] = (float)verts[tris[j].index_xyz[2]].v[2];
-
-			R_CalcTangentVectors(edge0, edge1, edge2,
-				&poutst[tris[j].index_st[0]].s,
-				&poutst[tris[j].index_st[1]].s,
-				&poutst[tris[j].index_st[2]].s,
-				tangent, binormal);
-
-			// inverse if needed
-			CrossProduct(binormal, tangent, cross);
-			if (DotProduct(cross, normal) < 0.0) {
-				VectorInvert(tangent);
-				VectorInvert(binormal);
-			}
-
-			for (k = 0; k < 3; k++) {
-				l = tris[j].index_xyz[k];
-				VectorAdd(tangents_[l], tangent, tangents_[l]);
-				VectorAdd(binormals_[l], binormal, binormals_[l]);
-				VectorAdd(normals_[l], normal, normals_[l]);
-			}
-		}
-
-		for (j = 0; j < pheader->num_xyz; j++)
-			for (k = j + 1; k < pheader->num_xyz; k++)
-				if (verts[j].v[0] == verts[k].v[0] && verts[j].v[1] == verts[k].v[1] && verts[j].v[2] == verts[k].v[2]) {
-
-					float* jnormal = q_byteDirs[verts[j].lightnormalindex];
-					float* knormal = q_byteDirs[verts[k].lightnormalindex];
-
-					if (DotProduct(jnormal, knormal) >= smooth_cosine) {
-
-						VectorAdd(tangents_[j], tangents_[k], tangents_[j]);
-						VectorCopy(tangents_[j], tangents_[k]);
-
-						VectorAdd(binormals_[j], binormals_[k], binormals_[j]);
-						VectorCopy(binormals_[j], binormals_[k]);
-
-						VectorAdd(normals_[j], normals_[k], normals_[j]);
-						VectorCopy(normals_[j], normals_[k]);
-					}
-				}
-
-		//normalize averages
-		for (j = 0; j < pheader->num_xyz; j++) {
-
-			VectorNormalize(tangents_[j]);
-			VectorNormalize(binormals_[j]);
-			VectorNormalize(normals_[j]);
-
-			VectorCopy(tangents_[j], mod->tangents[i * pheader->num_xyz + j]);
-			VectorCopy(binormals_[j], mod->binormals[i * pheader->num_xyz + j]);
-			VectorCopy(normals_[j], mod->normals[i * pheader->num_xyz + j]);
-		}
-	}
-
-}
-*/
 void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	int				i, j, indexST;
 	dmdl_t			*pinmodel, *pheader;

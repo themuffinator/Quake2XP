@@ -660,17 +660,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"light decals program"S_COLOR_WHITE" ");
-	lightDecalsProgram = R_FindProgram("lightDecals", S_DEFAULT);
-
-	if (lightDecalsProgram->valid) {
-		Com_Printf("succeeded\n");
-	}
-	else {
-		Com_Printf(S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
 	Com_Printf ("Load "S_COLOR_YELLOW"gauss blur program"S_COLOR_WHITE" ");
 	gaussXProgram = R_FindProgram ("gaussX", S_DEFAULT);
 	gaussYProgram = R_FindProgram ("gaussY", S_DEFAULT);

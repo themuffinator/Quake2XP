@@ -121,6 +121,7 @@ void IN_ShutDownXinput() {
 }
 
 
+
 void IN_StartupXInput(void)
 {
 	int numDev, firstDev;
@@ -204,26 +205,27 @@ void IN_StartupXInput(void)
 			memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
 			if (qXInputGetBatteryInformation(numDev, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo) == ERROR_SUCCESS)
 			{
-				if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED)
+				if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED || batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED)
 					strcpy(batteryType, S_COLOR_YELLOW"...use USB connection " S_COLOR_WHITE);
-				else if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
-					strcpy(batteryType, S_COLOR_YELLOW"Alkalyne " S_COLOR_WHITE);
-				else if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
-					strcpy(batteryType, S_COLOR_YELLOW"Ni-MH " S_COLOR_WHITE);
-				else if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
-					strcpy(batteryType, S_COLOR_YELLOW"Unknow Type " S_COLOR_WHITE);
+				else {
+					if (batteryInfo.BatteryType == BATTERY_TYPE_ALKALINE)
+						strcpy(batteryType, S_COLOR_YELLOW"Alkalyne " S_COLOR_WHITE);
+					else if (batteryInfo.BatteryType == BATTERY_TYPE_NIMH)
+						strcpy(batteryType, S_COLOR_YELLOW"Ni-MH " S_COLOR_WHITE);
+					else if (batteryInfo.BatteryType == BATTERY_TYPE_UNKNOWN)
+						strcpy(batteryType, S_COLOR_YELLOW"Unknow Type " S_COLOR_WHITE);
 
-				if (batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
-					strcpy(batteryLevel, S_COLOR_RED"empity" S_COLOR_WHITE);
-				else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
-					strcpy(batteryLevel, S_COLOR_MAGENTA"level low" S_COLOR_WHITE);
-				else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
-					strcpy(batteryLevel, S_COLOR_YELLOW"level medium" S_COLOR_WHITE);
-				else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
-					strcpy(batteryLevel, S_COLOR_GREEN"level full" S_COLOR_WHITE);
-				else
-					strcpy(batteryLevel, S_COLOR_CYAN"unknown level" S_COLOR_WHITE);
-					
+					if (batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
+						strcpy(batteryLevel, S_COLOR_RED"empity" S_COLOR_WHITE);
+					else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
+						strcpy(batteryLevel, S_COLOR_MAGENTA"level low" S_COLOR_WHITE);
+					else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
+						strcpy(batteryLevel, S_COLOR_YELLOW"level medium" S_COLOR_WHITE);
+					else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
+						strcpy(batteryLevel, S_COLOR_GREEN"level full" S_COLOR_WHITE);
+					else
+						strcpy(batteryLevel, S_COLOR_CYAN"unknown level" S_COLOR_WHITE);
+				}
 				XINPUT_CAPABILITIES_EX capsEx;
 				if (qXInputGetCapabilitiesEx(1, numDev, 0, &capsEx) != ERROR_SUCCESS) 
 					sprintf(padInfo, S_COLOR_CYAN"Unknown Vendor");
@@ -253,7 +255,10 @@ void IN_StartupXInput(void)
 				if(z == NUM_INPUT_DEVICES)
 					Com_Printf("Model:   " S_COLOR_GREEN "0x%04X\n", capsEx.ProductId);
 
-				Com_Printf("Battery: %s<%s>\n", batteryType, batteryLevel);
+				if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED || batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED)
+					Com_Printf("Battery: %s\n", batteryType);
+				else
+					Com_Printf("Battery: %s<%s>\n", batteryType, batteryLevel);
 			}
 				if (firstDev == -1)
 					firstDev = numDev;
@@ -287,6 +292,30 @@ void IN_StartupXInput(void)
 
 	Com_Printf("\n-----------------------------------\n\n");
 }
+
+void SCR_DrawBatteryLevel() {
+	XINPUT_BATTERY_INFORMATION batteryInfo;
+
+	if (!in_useXInput->integer)
+		return;
+
+		memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
+		if (qXInputGetBatteryInformation(xInputActiveController, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo) == ERROR_SUCCESS)
+		{
+			if (batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
+				Draw_ScaledPic(3, 3, 0.5, 0.5, i_batteryLevel[0]);
+			else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
+				Draw_ScaledPic(3, 3, 0.5, 1.0, i_batteryLevel[1]);
+			else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
+				Draw_ScaledPic(3, 3, 0.5, 0.5, i_batteryLevel[2]);
+			else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
+				Draw_ScaledPic(3, 3, 0.5, 0.5, i_batteryLevel[3]);
+			else if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED || batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED)
+				Draw_ScaledPic(3, 3, 0.5, 0.5, i_batteryLevel[4]);
+		}
+
+}
+
 
 void IN_ToggleXInput()
 {
@@ -428,7 +457,7 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int deadZone, int axisma
 	{
 	case XINPUT_AXIS_LOOK:
 	case XINPUT_AXIS_INVLOOK:
-		cl.viewangles_PITCH -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * sensY * inv;
+		cl.viewangles[PITCH] -= fmove * (cl_pitchspeed->value / cl.refdef.fov_y) * sensY * inv;
 		break;
 
 	case XINPUT_AXIS_MOVE:
@@ -440,7 +469,7 @@ void IN_ControllerAxisMove(usercmd_t *cmd, int axisval, int deadZone, int axisma
 	case XINPUT_AXIS_INVTURN:
 		// slow this down because the default cl_yawspeed is too fast here
 		// invert it so that positive move = right
-		cl.viewangles_YAW -= fmove * (cl_yawspeed->value / cl.refdef.fov_x) * sensX;
+		cl.viewangles[YAW] -= fmove * (cl_yawspeed->value / cl.refdef.fov_x) * sensX;
 		break;
 
 	case XINPUT_AXIS_STRAFE:

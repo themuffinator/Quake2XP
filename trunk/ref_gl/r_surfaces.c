@@ -170,55 +170,17 @@ void R_AddAlphaSurceces (msurface_t * fa, qboolean scrolling) {
 
 		wTexArray[i][0] = v[3] - scroll;
 		wTexArray[i][1] = v[4];
+
+		R_LightColor(v, shadelight);
+		wColorArray[i][0] = shadelight[0];
+		wColorArray[i][1] = shadelight[1];
+		wColorArray[i][2] = shadelight[2];
+		wColorArray[i][3] = 1.0;
 	}
 
 	qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 	c_brush_polys += numIndices / 3;	
 }
-
-void R_AddALightlphaSurceces(msurface_t* fa) {
-	int i;
-	float* v;
-	glpoly_t* p;
-	int nv = fa->polys->numVerts;
-	uint numIndices = 0;
-
-	GL_SetBindlessTexture(U_TMU0, fa->texInfo->normalmap->handle);
-	GL_SetBindlessTexture(U_TMU1, fa->texInfo->image->handle);
-
-	for (i = 0; i < nv - 2; i++) {
-		indexArray[numIndices++] = 0;
-		indexArray[numIndices++] = i + 1;
-		indexArray[numIndices++] = i + 2;
-	}
-
-	p = fa->polys;
-	v = p->verts[0];
-
-	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE) {
-
-		VectorCopy(v, wVertexArray[i]);
-
-		wTexArray[i][0] = v[3];
-		wTexArray[i][1] = v[4];
-
-		nTexArray[i][0] = v[7];
-		nTexArray[i][1] = v[8];
-		nTexArray[i][2] = v[9];
-
-		tTexArray[i][0] = v[10];
-		tTexArray[i][1] = v[11];
-		tTexArray[i][2] = v[12];
-
-		bTexArray[i][0] = v[13];
-		bTexArray[i][1] = v[14];
-		bTexArray[i][2] = v[15];
-	}
-
-	qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-	c_brush_polys += numIndices / 3;
-}
-
 
 void R_DrawAlphaSurfaces() {
 
@@ -227,9 +189,11 @@ void R_DrawAlphaSurfaces() {
 
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
 
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, wColorArray);
 
 	// setup program
 	GL_BindProgram(glassProgram);
@@ -264,6 +228,7 @@ void R_DrawAlphaSurfaces() {
 	numAlphaSurfaces = 0;
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_COLOR);
 }
 
 void R_DrawWarpSurfaces(qboolean bmodel) {

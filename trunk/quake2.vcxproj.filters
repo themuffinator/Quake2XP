@@ -75,9 +75,6 @@
     <Filter Include="Source Files\Renderer\Headers\devIL">
       <UniqueIdentifier>{8841ba1e-940d-4730-a76d-493813d16efd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Client\curl">
-      <UniqueIdentifier>{1ef31e21-9a09-4ae5-81f6-b6cd648c9c35}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="client\cl_console.c">
@@ -328,12 +325,6 @@
     </ClCompile>
     <ClCompile Include="client\cl_preload.c">
       <Filter>Source Files\Client</Filter>
-    </ClCompile>
-    <ClCompile Include="client\curl\qcurl.c">
-      <Filter>Source Files\Client\curl</Filter>
-    </ClCompile>
-    <ClCompile Include="client\curl\http.c">
-      <Filter>Source Files\Client\curl</Filter>
     </ClCompile>
     <ClCompile Include="win32\win_syscons.c">
       <Filter>Source Files\Win32</Filter>
@@ -752,12 +743,6 @@
     </None>
     <None Include="..\baseq2\glsl\include\global.inc">
       <Filter>Source Files\Renderer\glsl\include</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\lightDecals.frag">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\lightDecals.vert">
-      <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

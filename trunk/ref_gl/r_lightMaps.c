@@ -188,7 +188,6 @@ static void LM_UploadBlock () {
 	int i;
 
 	for (i = 0; i < numVecs; i++) {
-
 		glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[i]);
 
 		glTextureParameteri(gl_lms.texnum[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

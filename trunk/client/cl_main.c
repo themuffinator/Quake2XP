@@ -651,13 +651,6 @@ void CL_Disconnect (void) {
 		cls.download = NULL;
 	}
 
-#ifdef USE_CURL
-	CL_CancelHTTPDownloads(qtrue);
-	cls.downloadReferer[0] = 0;
-	cls.downloadname[0] = 0;
-	cls.downloadposition = 0;
-#endif
-
 	cls.state = ca_disconnected;
 	currentPlayerWeapon = NULL;
 }
@@ -732,14 +725,8 @@ void CL_Changing_f (void) {
 	SCR_BeginLoadingPlaque ();
 	cls.state = ca_connected;	// not active anymore, but not
 	// disconnected
-	Com_Printf ("\nChanging map...\n");   
+	Com_Printf ("\nChanging map...\n");  
 
-#ifdef USE_CURL
-	if (cls.downloadServerRetry[0] != 0)
-	{
-		CL_SetHTTPServer(cls.downloadServerRetry);
-	}
-#endif
 }
 
 
@@ -925,18 +912,7 @@ void CL_ConnectionlessPacket (void) {
 
 			if (!strncmp(p, "dlserver=", 9))
 			{
-#ifdef USE_CURL
-				p += 9;
-				Com_sprintf(cls.downloadReferer, sizeof(cls.downloadReferer), "quake2://%s", buff);
-				CL_SetHTTPServer(p);
-
-				if (cls.downloadServer[0])
-				{
-					Com_Printf("HTTP downloading enabled, URL: %s\n", cls.downloadServer);
-				}
-#else
 				Com_Printf("HTTP downloading supported by server but not the client.\n");
-#endif
 			}
 		}
 
@@ -1552,6 +1528,7 @@ void CL_InitLocal (void) {
 
 	useRussianLoc = Cvar_Get("useRussianLoc", "0", CVAR_SERVERINFO);
 
+	cl_gunCollision = Cvar_Get("cl_gunCollision", "2", CVAR_ARCHIVE);
 	//
 	// userinfo
 	//
@@ -1582,13 +1559,6 @@ void CL_InitLocal (void) {
 	deathmatch = Cvar_Get ("deathmatch", "0", CVAR_SERVERINFO);
 
 	sys_cpuUtilization = Cvar_Get("sys_cpuUtilization", "0", CVAR_ARCHIVE);
-
-#ifdef USE_CURL
-	cl_http_proxy = Cvar_Get("cl_http_proxy", "", 0);
-	cl_http_filelists = Cvar_Get("cl_http_filelists", "1", 0);
-	cl_http_downloads = Cvar_Get("cl_http_downloads", "1", CVAR_ARCHIVE);
-	cl_http_max_connections = Cvar_Get("cl_http_max_connections", "4", 0);
-#endif
 
 	//
 	// register our commands
@@ -1796,15 +1766,6 @@ void CL_Frame (int msec) {
 		
 	}
 
-	// Run HTTP downloads more often while connecting.
-#ifdef USE_CURL
-	if (cls.state == ca_connected)
-	{
-		CL_RunHTTPDownloads();
-	}
-#endif
-
-
 	// let the mouse activate or deactivate
 	IN_Frame ();
 
@@ -1876,11 +1837,6 @@ void CL_Frame (int msec) {
 			}
 		}
 	}
-	// Run HTTP downloads during game.
-#ifdef USE_CURL
-	CL_RunHTTPDownloads();
-#endif
-
 }
 
 void CL_CheckingNetworkSingature() {
@@ -1943,9 +1899,6 @@ void CL_Init (void) {
 	CL_InitLocal ();
 	IN_Init ();
 
-#ifdef USE_CURL
-	CL_InitHTTPDownloads();
-#endif
 	FS_ExecAutoexec ();
 	Cbuf_Execute ();
 }
@@ -1977,9 +1930,6 @@ void CL_Shutdown (void) {
 
 	Music_Shutdown ();
 	S_Shutdown ();
-#ifdef USE_CURL
-	CL_HTTP_Cleanup(qtrue);
-#endif
 	IN_Shutdown ();
 	VID_Shutdown ();
 }

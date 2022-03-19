@@ -1061,6 +1061,7 @@ extern cvar_t *r_mode;
 
 void GL_MakeSaveShot(char* dir);
 char makeSaveShot[16];
+void SCR_DrawBatteryLevel();
 
 void SCR_UpdateScreen (void) {
 	// if the screen is disabled (loading plaque is up, or vid mode
@@ -1156,6 +1157,10 @@ void SCR_UpdateScreen (void) {
 		SCR_DrawFPS ();
 		SCR_DrawCpuUtilization();
 		SCR_ShowTexNames();
+
+#ifdef _WIN32
+		SCR_DrawBatteryLevel();
+#endif
 
 		if (cl_drawTime->value && (cls.state == ca_active))
 			SCR_DrawClock ();

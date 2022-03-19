@@ -37,54 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cl_console.h"
 #include "snd_loc.h"
 
-
-#ifdef USE_CURL
-
-#ifndef QCURL_H
-#define QCURL_H
-
-// --------
-
-#include "curl/header/curl.h"
-#include "curl/header/download.h"
-// --------
-
-// True if cURL is initialized.
-extern qboolean qcurlInitialized;
-
-// Function pointers to cURL.
-extern void (*qcurl_easy_cleanup)(CURL* curl);
-extern CURL* (*qcurl_easy_init)(void);
-extern CURLcode(*qcurl_easy_getinfo)(CURL* curl, CURLINFO info, ...);
-extern CURLcode(*qcurl_easy_setopt)(CURL* curl, CURLoption option, ...);
-extern const char* (*qcurl_easy_strerror)(CURLcode);
-
-extern void (*qcurl_global_cleanup)(void);
-extern CURLcode(*qcurl_global_init)(long flags);
-
-extern CURLMcode(*qcurl_multi_add_handle)(CURLM* multi_handle, CURL* curl_handle);
-extern CURLMcode(*qcurl_multi_cleanup)(CURLM* multi_handle);
-extern CURLMsg* (*qcurl_multi_info_read)(CURLM* multi_handle, int* msgs_in_queue);
-extern CURLM* (*qcurl_multi_init)(void);
-extern CURLMcode(*qcurl_multi_perform)(CURLM* multi_handle, int* running_handles);
-extern CURLMcode(*qcurl_multi_remove_handle)(CURLM* multi_handle, CURL* curl_handle);
-extern char* (*qcurl_version)(void);
-
-// --------
-
-// Loads and initialized cURL.
-qboolean qcurlInit(void);
-
-// Shuts cURL down and unloads it.
-void qcurlShutdown(void);
-
-// --------
-
-#endif // QCURL_H
-#endif // USE_CURL
-
-
-
 void FS_AddPAKFile(char* packPath);
 void FS_AddPkxFile(char* packPath);
 char* FS_DownloadDir(void);
@@ -178,6 +130,7 @@ cvar_t* cl_itemsBobbing;
 cvar_t* cl_hudModelScale;
 cvar_t* scr_showTexName;
 cvar_t* sys_cpuUtilization;
+cvar_t* cl_gunCollision;
 
 
 #ifndef VIDDEF_LOCK
@@ -382,8 +335,6 @@ typedef struct {
 	// tracked view angles to account for standing on rotating objects,
 	// and teleport direction changes
 	vec3_t viewangles;
-	float		viewangles_YAW;
-	float		viewangles_PITCH;
 
 	int time;					// this is the time value that the client
 	// is rendering at.  always <= cls.realtime
@@ -524,16 +475,6 @@ typedef struct {
 	qboolean demowaiting;		// don't record until a non-delta message
 	// is received
 	FILE *demofile;
-
-#ifdef USE_CURL
-	/* http downloading */
-	dlqueue_t  downloadQueue; /* queues with files to download. */
-	dlhandle_t HTTPHandles[MAX_HTTP_HANDLES]; /* download handles. */
-	char	   downloadServer[512]; /* URL prefix to dowload from .*/
-	char	   downloadServerRetry[512]; /* retry count. */
-	char	   downloadReferer[32]; /* referer string. */
-#endif
-
 } client_static_t;
 
 extern client_static_t cls;
@@ -1052,6 +993,8 @@ image_t	*i_nosaveshot;
 
 image_t *i_main_menu[5],		*i_main_menu_bump[5],
 		*i_main_menu_sel[5],	*i_main_menu_bump_sel[5];
+
+image_t	*i_batteryLevel[6];
 
 image_t	*i_main_plaque[2], *i_main_logo[2]; // pack color and normal map
 image_t	*i_menuBackground;

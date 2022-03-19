@@ -131,6 +131,7 @@ product_t product[] = {
 {0x02e3,	"Xbox One Elite Controller." },
 {0x02ea,	"Xbox One S Controller." },
 {0x02fd,	"Xbox One S Controller (Bluetooth)." },
+{0x02ff,	"Xbox One S Controller (Usb)." }, // valve say its Microsoft X-Box One Elite pad, lol
 {0x0b00,	"Xbox One Elite 2 Controller." },
 {0x0b02,	"Xbox One Elite 2 Controller (Bluetooth)." },
 {0x0b05,	"Xbox One Elite 2 Controller (Bluetooth)." },

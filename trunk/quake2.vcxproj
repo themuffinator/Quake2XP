@@ -125,7 +125,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;USE_CURL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -149,7 +149,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>nvapi.lib;winmm.lib;wsock32.lib;Ws2_32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;ogg_static.lib;vorbisfile_static.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>nvapi.lib;winmm.lib;wsock32.lib;Ws2_32.lib;devil.lib;ilu.lib;zlib.lib;ilut.lib;ogg_static.lib;vorbisfile_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>win32\nvapi;Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -189,7 +189,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;USE_CURL;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -411,8 +411,6 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="client\curl\http.c" />
-    <ClCompile Include="client\curl\qcurl.c" />
     <ClCompile Include="client\snd_music.c" />
     <ClCompile Include="client\vid_menu.c" />
     <ClCompile Include="game\m_flash.c">
@@ -784,8 +782,6 @@
     <None Include="..\baseq2\glsl\include\depth.inc" />
     <None Include="..\baseq2\glsl\include\lighting.inc" />
     <None Include="..\baseq2\glsl\include\parallax.inc" />
-    <None Include="..\baseq2\glsl\lightDecals.frag" />
-    <None Include="..\baseq2\glsl\lightDecals.vert" />
     <None Include="..\baseq2\glsl\lightWorld.frag" />
     <None Include="..\baseq2\glsl\lightWorld.vert" />
     <None Include="..\baseq2\glsl\loading.frag" />

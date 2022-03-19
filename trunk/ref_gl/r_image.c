@@ -99,14 +99,8 @@ static const byte r_originalPalette[] = {
 image_t gltextures[MAX_GLTEXTURES];
 int numgltextures;
 
-image_t *r_particletexture[PT_MAX];
-image_t *r_decaltexture[DECAL_MAX];
-
-
 static byte intensitytable[256];
 static unsigned char gammatable[256];
-
-
 
 unsigned d_8to24table[256];
 float d_8to24tablef[256][3];
@@ -1097,11 +1091,6 @@ void GL_FreeUnusedImages(void)
 
 	r_notexture->registration_sequence = registration_sequence;
 
-	for (i = 0; i < PT_MAX; i++) {
-		r_particletexture[i]->registration_sequence =
-			registration_sequence;
-	}
-
 	for (i = 0; i < MAX_CAUSTICS; i++) {
 		r_caustic[i]->registration_sequence = registration_sequence;
 	}
@@ -1137,9 +1126,12 @@ void GL_FreeUnusedImages(void)
 	}
 
 	for (i = 0; i < DECAL_MAX; i++) {
-		r_decaltexture[i]->registration_sequence = registration_sequence;
+		r_decalTexture[i]->registration_sequence = registration_sequence;
 	}
 	
+	for (i = 0; i < PT_MAX; i++) {
+		r_particleTexture[i]->registration_sequence = registration_sequence;
+	}
 	
 	for (i = 0; i < MAX_SHELLS; i++){
 		r_texshell[i]->registration_sequence = registration_sequence;

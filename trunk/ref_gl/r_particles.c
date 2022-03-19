@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_local.h"
 
 vec4_t shadelight_surface;
-image_t *r_particletexture[PT_MAX];
 
 int CL_PMpointcontents (vec3_t point);
 
@@ -103,7 +102,7 @@ void R_DrawParticles (void) {
 		switch (p->type) {
 
 			case PT_BUBBLE:
-				texId = r_particletexture[PT_BUBBLE]->handle;
+				texId = r_particleTexture[PT_BUBBLE]->handle;
 				break;
 
 			case PT_FLY:
@@ -111,35 +110,35 @@ void R_DrawParticles (void) {
 				break;
 
 			case PT_BLOOD:
-				texId = r_particletexture[PT_BLOOD]->handle;
+				texId = r_particleTexture[PT_BLOOD]->handle;
 				break;
 
 			case PT_BLOOD2:
-				texId = r_particletexture[PT_BLOOD2]->handle;
+				texId = r_particleTexture[PT_BLOOD2]->handle;
 				break;
 
 			case PT_BLASTER:
-				texId = r_particletexture[PT_BLASTER]->handle;
+				texId = r_particleTexture[PT_BLASTER]->handle;
 				break;
 
 			case PT_SMOKE:
-				texId = r_particletexture[PT_SMOKE]->handle;
+				texId = r_particleTexture[PT_SMOKE]->handle;
 				break;
 
 			case PT_SPLASH:
-				texId = r_particletexture[PT_SPLASH]->handle;
+				texId = r_particleTexture[PT_SPLASH]->handle;
 				break;
 
 			case PT_SPARK:
-				texId = r_particletexture[PT_SPARK]->handle;
+				texId = r_particleTexture[PT_SPARK]->handle;
 				break;
 
 			case PT_BEAM:
-				texId = r_particletexture[PT_BEAM]->handle;
+				texId = r_particleTexture[PT_BEAM]->handle;
 				break;
 
 			case PT_SPIRAL:
-				texId = r_particletexture[PT_SPIRAL]->handle;
+				texId = r_particleTexture[PT_SPIRAL]->handle;
 				break;
 
 
@@ -160,27 +159,27 @@ void R_DrawParticles (void) {
 				break;
 
 			case PT_WATERPULME:
-				texId = r_particletexture[PT_WATERPULME]->handle;
+				texId = r_particleTexture[PT_WATERPULME]->handle;
 				break;
 
 			case PT_WATERCIRCLE:
-				texId = r_particletexture[PT_WATERCIRCLE]->handle;
+				texId = r_particleTexture[PT_WATERCIRCLE]->handle;
 				break;
 
 			case PT_BLOODDRIP:
-				texId = r_particletexture[PT_BLOODDRIP]->handle;
+				texId = r_particleTexture[PT_BLOODDRIP]->handle;
 				break;
 
 			case PT_BLOODMIST:
-				texId = r_particletexture[PT_BLOODMIST]->handle;
+				texId = r_particleTexture[PT_BLOODMIST]->handle;
 				break;
 
 			case PT_BLASTER_BOLT:
-				texId = r_particletexture[PT_BLASTER_BOLT]->handle;
+				texId = r_particleTexture[PT_BLASTER_BOLT]->handle;
 				break;
 
 			case PT_BFG_BALL:
-				texId = r_particletexture[PT_BFG_BALL]->handle;
+				texId = r_particleTexture[PT_BFG_BALL]->handle;
 				break;
 
 			case PT_BFG_EXPL:
@@ -188,11 +187,11 @@ void R_DrawParticles (void) {
 				break;
 			
 			case PT_BFG_EXPL2:
-				texId = r_particletexture[PT_BFG_EXPL2]->handle;
+				texId = r_particleTexture[PT_BFG_EXPL2]->handle;
 				break;
 
 			default:
-				texId = r_particletexture[PT_DEFAULT]->handle;
+				texId = r_particleTexture[PT_DEFAULT]->handle;
 
 		}
 
