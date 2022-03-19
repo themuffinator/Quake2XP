@@ -1,6 +1,7 @@
 //!#include "include/global.inc"
-layout (location = 0) in vec3 att_position;
-layout (location = 5) in vec2 att_texCoordDiffuse;
+layout (location = 0)	in vec3 att_position;
+layout(location = 4)	in vec4 att_color4f;
+layout (location = 5)	in vec2 att_texCoordDiffuse;
 
 layout(location = U_REFR_DEFORM_MUL)	uniform float	u_deformMul;
 layout(location = U_MVP_MATRIX)			uniform mat4	u_modelViewProjectionMatrix;
@@ -10,13 +11,14 @@ layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 out vec2	v_deformTexCoord;
 out vec2	v_deformMul;
 out vec2	v_uv;
+out vec4	v_color;
 out float	v_depth;
 out float	v_depthS;
 
 void main (void) {
 	
 	v_deformTexCoord = att_texCoordDiffuse;
-
+	v_color = att_color4f;
 	// compute view space depth
 	vec4 positionVS = u_modelViewMatrix * vec4(att_position, 1.0);
 	positionVS = vec4(1.0, 0.0, positionVS.z, 1.0);

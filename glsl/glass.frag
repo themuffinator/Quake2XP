@@ -19,6 +19,7 @@ in float	v_depth;
 in float	v_depthS;
 in vec2		v_deformMul;
 in vec2		v_deformTexCoord;
+in vec4		v_color;
 
 #include depth.inc //!#include "include/depth.inc"
 #include blur.inc //!#include "include/blur.inc"
@@ -47,7 +48,7 @@ void main (void) {
 
     // blend glass texture
 	diffuse.rgb *= u_ambientScale;
-	fragData.xyz += diffuse.xyz * u_alpha;
+	fragData.xyz += diffuse.xyz *u_alpha * (v_color.rgb * 2.0);
 
     fragData.w = 1.0;
 }

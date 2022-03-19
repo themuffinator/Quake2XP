@@ -14,33 +14,33 @@ void main(void){
 	vec3 backBuffer = texture2DRect(u_screenMap, gl_FragCoord.xy).rgb;
 	float depth = DecodeDepth(texture2DRect(u_depthMap, gl_FragCoord.xy).x, u_depthParms);
 	
-	float mask;
+	bool mask;
 	
 	if(depth >= 0.9999)
-		mask = 0.0;
+		mask = false;
 	else
-		mask = 1.0;
+		mask = true;
 
 	depth = depth * 0.5 + 0.5;
 
 	float fogCoord =  abs(gl_FragCoord.z / gl_FragCoord.w);
 	
-	if(mask == 0.0){
+	if(!mask){
 		fogCoord += u_fogBias.x;
 		fogCoord /= depth;
 	}
-	if(mask == 1.0)
+	if(mask)
 		fogCoord += u_fogBias.y;	
 
 	vec3 fogColor;
 	float fogFactor, density;
 
-	if(mask == 1.0){
+	if(mask){
 		fogColor = u_fogSkyParams.xyz;
 		density = 1000.0 * u_fogSkyParams.w; // reverse! w/o depth map value
 	 }
 
-	 if(mask == 0.0){
+	 if(!mask){
 		fogColor = u_fogParams.xyz;
 		density = 100.0 / u_fogParams.w;
 	}

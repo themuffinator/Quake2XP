@@ -28,8 +28,14 @@ out vec3		v_tst;
 out vec3		v_positionVS;
 out mat4		v_mvMatrix;
 
+out vec3	v_t, v_b, v_n;
+
 void main (void) {
-	
+
+v_t = att_tangent;
+v_b = att_binormal;
+v_n = att_normal;
+
 v_texCoord			= att_texCoordDiffuse; 
 v_CubeCoord			= u_cubeMatrix		* vec4(att_position, 1.0);
 v_lightAtten		= (u_attenMatrix	* vec4(att_position, 1.0)).xyz;

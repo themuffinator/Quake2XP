@@ -42,6 +42,7 @@ in vec3			v_tangent;
 in vec3			v_tst;
 in mat3			v_tangentToView;
 in mat4			v_mvMatrix;
+in vec3	v_t, v_b, v_n;
 
 #include depth.inc		//!#include "include/depth.inc"
 #include lighting.inc	//!#include "include/lighting.inc"

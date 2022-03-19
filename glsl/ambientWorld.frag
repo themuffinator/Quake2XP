@@ -20,21 +20,13 @@ in vec3	v_positionVS;
 in vec3	v_viewVecTS;
 in vec2	v_wTexCoord;
 in vec2	v_lTexCoord;
+in vec3	v_bumpVecs[3];
 
 float	u_specularExp = 16.0;
- 
-//
-// 3-vector radiosity basis for normal mapping
-//
-
-const vec3 s_basisVecs[3] = vec3[](
-vec3 ( 0.81649658092772603273242802490196f,		0.f,									0.57735026918962576450914878050195f ),
-vec3 ( -0.40824829046386301636621401245098f,	0.70710678118654752440084436210485f,	0.57735026918962576450914878050195f ),
-vec3 ( -0.40824829046386301636621401245098f,	-0.70710678118654752440084436210485f,	0.57735026918962576450914878050195f )
-); 
 
 #include lighting.inc //!#include "include/lighting.inc"
 #include parallax.inc //!#include "include/parallax.inc"
+
 
 void main (void) {
 
@@ -77,18 +69,18 @@ void main (void) {
 
 		// diffuse
 		vec3 D = vec3(
-			dot(normalMap.xyz, s_basisVecs[0]),
-			dot(normalMap.xyz, s_basisVecs[1]),
-			dot(normalMap.xyz, s_basisVecs[2]));
+			dot(normalMap.xyz, v_bumpVecs[0]),
+			dot(normalMap.xyz, v_bumpVecs[1]),
+			dot(normalMap.xyz, v_bumpVecs[2]));
 		
 		// Omit energy-conserving division by PI here.
 		D = lm0 * D.x + lm1 * D.y + lm2 * D.z;
 
 		// approximate specular
 		// half-angle vector, stable but slower
-		vec3 H0 = normalize(V + s_basisVecs[0]);
-		vec3 H1 = normalize(V + s_basisVecs[1]);
-		vec3 H2 = normalize(V + s_basisVecs[2]);
+		vec3 H0 = normalize(V + v_bumpVecs[0]);
+		vec3 H1 = normalize(V + v_bumpVecs[1]);
+		vec3 H2 = normalize(V + v_bumpVecs[2]);
 
 		vec3 S = vec3(
 			dot(normalMap.xyz, H0),

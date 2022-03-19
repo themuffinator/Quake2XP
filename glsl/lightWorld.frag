@@ -7,8 +7,8 @@ layout (bindless_sampler, location  = U_TMU3) uniform sampler2D		u_Caustics;
 layout (bindless_sampler, location  = U_TMU4) uniform sampler2D		u_RghMap;
 layout (bindless_sampler, location  = U_TMU5) uniform sampler2DRect	u_SSAOMap;
 
-layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
-layout(location = U_RGH_SCALE)			uniform float	u_roughnessScale;
+//layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
+//layout(location = U_RGH_SCALE)			uniform float	u_roughnessScale;
 layout(location = U_COLOR)				uniform vec4 	u_LightColor;
 layout(location = U_USE_FOG)			uniform int		u_fog;
 layout(location = U_FOG_DENSITY)		uniform float	u_fogDensity;
@@ -99,10 +99,10 @@ void main (void) {
 	if(u_isAmbient == 0) {
 		
 		float roughness;
-		float specular = texture(u_NormalMap, texCoord).a * u_specularScale;
+		float specular = texture(u_NormalMap, texCoord).a;
     
 		if(u_isRgh == 1){
-			roughness = texture(u_RghMap, texCoord).r * u_roughnessScale;
+			roughness = texture(u_RghMap, texCoord).r;
 		}
     if(u_isRgh != 1)
 		{
