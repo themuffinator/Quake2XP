@@ -18,6 +18,7 @@ out vec2		v_deformMul;
 out vec3		v_positionVS;
 out mat3		v_tangentToView;
 out vec4		v_color;
+//noperspective out vec4 v_color;
 
 void main (void) {
 	v_diffuseTexCoord = att_texCoordDiffuse;

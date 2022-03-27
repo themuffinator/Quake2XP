@@ -19,6 +19,7 @@ in vec2		v_deformMul;
 in vec3		v_positionVS;
 in mat3		v_tangentToView;
 in vec4		v_color;
+//noperspective in vec4 v_color;
 
 #define MAX_STEPS			20
 #define MAX_STEPS_BINARY	10
@@ -86,12 +87,12 @@ void main (void) {
 		
 		diffuse *= 0.5;
 		// blend water texture
-		fragData = vec4(mix(refractColor, diffuse, v_color.a), 1.0);
+		fragData = vec4(mix(refractColor, diffuse * v_color.rgb * 4.0, v_color.a), 1.0);
 	}
 	
 	if (u_transSurf == 0) {
 		diffuse *= 0.25;
-		fragData = vec4(diffuse, 1.0);
+		fragData = vec4(diffuse * (v_color.rgb * 8.0), 1.0);
 	}
  
 	if (u_mirror == 0)

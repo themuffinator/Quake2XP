@@ -48,7 +48,7 @@ void main (void) {
 
     // blend glass texture
 	diffuse.rgb *= u_ambientScale;
-	fragData.xyz += diffuse.xyz *u_alpha * (v_color.rgb * 2.0);
+	fragData.xyz += diffuse.xyz *u_alpha * v_color.rgb;
 
     fragData.w = 1.0;
 }

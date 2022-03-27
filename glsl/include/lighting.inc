@@ -1,3 +1,5 @@
+//!#include "global.inc"
+
 float sqr (in float x) { return x * x; }
 vec2 sqr (in vec2 x) { return x * x; }
 vec3 sqr (in vec3 x) { return x * x; }
@@ -295,6 +297,23 @@ vec3 SpecularF_Fresnel (in vec3 color, in float VH) {
 	vec3 b = ((g + VH) * VH - 1.0) / ((g - VH) * VH + 1.0);
 
 	return 0.5 * a * a * (1.0 + b * b);
+}
+
+vec3 ImportanceSampleGGX( vec2 Xi, float Roughness, vec3 N ){
+
+	float a = Roughness * Roughness;
+	float Phi = 2.0 * PI * Xi.x;
+	float CosTheta = sqrt( (1.0 - Xi.y) / ( 1.0 + (a*a - 1) * Xi.y ) );
+	float SinTheta = sqrt( 1.0 - CosTheta * CosTheta );
+	vec3 H;
+	H.x = SinTheta * cos( Phi );
+	H.y = SinTheta * sin( Phi );
+	H.z = CosTheta;
+	vec3 UpVector = abs(N.z) < 0.999 ? vec3(0,0,1) : vec3(1,0,0);
+	vec3 TangentX = normalize( cross( UpVector, N ) );
+	vec3 TangentY = cross( N, TangentX );
+	// Tangent to world space
+	return TangentX * H.x + TangentY * H.y + N * H.z;
 }
 
 /*
