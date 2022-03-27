@@ -332,7 +332,8 @@ cvar_t	*r_radialBlurFov;
 cvar_t	*r_globalFog;
 cvar_t	*r_fogEditor;
 
-cvar_t	*r_tbnSmoothAngle;
+cvar_t	*r_debugTbn;
+cvar_t	*r_debugTbnLen;
 
 cvar_t	*r_glDebugOutput;
 cvar_t	*r_glMinorVersion;
@@ -564,6 +565,7 @@ int			numAlphaSurfaces;
 int			numReflectiveSurfaces;
 msurface_t* r_alphaSurfaces[MAX_MAP_FACES];
 msurface_t* r_reflectiveSurfaces[MAX_MAP_FACES];
+msurface_t* r_reflSurfChains;
 
 int R_Init (void *hinstance, void *hWnd);
 void R_Shutdown (void);
@@ -975,7 +977,7 @@ glslProgram_t		*flareProgram;
 glslProgram_t		*globalFogProgram;
 glslProgram_t		*spriteProgram;
 glslProgram_t		*screenFlashProgram;
-
+glslProgram_t		*tbnDebugProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureDepthBuffer ();

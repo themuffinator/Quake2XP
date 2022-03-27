@@ -72,6 +72,10 @@ void R_AddWarpPolygons(msurface_t *fa) {
 		bTexArray[i][1] = v[14];
 		bTexArray[i][2] = v[15];
 
+		R_LightColor(v, shadelight);
+		wColorArray[i][0] = shadelight[0];
+		wColorArray[i][1] = shadelight[1];
+		wColorArray[i][2] = shadelight[2];
 		wColorArray[i][3] = alpha;
 	}
 

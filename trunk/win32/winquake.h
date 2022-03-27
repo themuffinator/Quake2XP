@@ -44,6 +44,8 @@ cvar_t	*x360_triggerTreshold;
 cvar_t	*x360_deadZoneLeft;
 cvar_t  *x360_deadZoneRight;
 cvar_t	*x360_vibration;
+cvar_t  *x360_batteryScale;
+cvar_t  *x360_batteryStatus;
 
 extern qboolean xInputActive;
 

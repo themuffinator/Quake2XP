@@ -38,6 +38,8 @@ vec3_t	nTexArray[MAX_BATCH_SURFS];
 vec3_t	tTexArray[MAX_BATCH_SURFS];
 vec3_t	bTexArray[MAX_BATCH_SURFS];
 
+
+
 /*
 ===============
 R_TextureAnimation
@@ -175,7 +177,7 @@ void R_AddAlphaSurceces (msurface_t * fa, qboolean scrolling) {
 		wColorArray[i][0] = shadelight[0];
 		wColorArray[i][1] = shadelight[1];
 		wColorArray[i][2] = shadelight[2];
-		wColorArray[i][3] = 1.0;
+		wColorArray[i][3] = alpha;
 	}
 
 	qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
@@ -278,7 +280,6 @@ void R_DrawWarpSurfaces(qboolean bmodel) {
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
 
 	for (int i = 0; i < numReflectiveSurfaces; i++) {
-
 		s = r_reflectiveSurfaces[i];
 
 		if (s->flags & MSURF_LAVA)
@@ -286,8 +287,8 @@ void R_DrawWarpSurfaces(qboolean bmodel) {
 
 		R_AddWarpPolygons(s);
 	}
-
 	numReflectiveSurfaces = 0;
+
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
 	qglDisableVertexAttribArray(ATT_NORMAL);
@@ -881,7 +882,7 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 		}
 		else {
 			if ((surf->flags & MSURF_DRAWTURB) && !(surf->flags & MSURF_LAVA)) {
-				r_reflectiveSurfaces[numReflectiveSurfaces++] = surf;
+				r_reflectiveSurfaces[numReflectiveSurfaces++] = surf;			
 			}
 			else {
 				// add to the ambient batch

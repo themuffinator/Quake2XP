@@ -1346,7 +1346,7 @@ void R_RegisterCvars(void)
 	hunk_md3=							Cvar_Get("hunk_md3", "20", CVAR_ARCHIVE);
 
 	r_parallaxMapping =					Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
-	r_parallaxScale =						Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
+	r_parallaxScale =					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);
 	r_selfShadowingParallax =			Cvar_Get("r_selfShadowingParallax", "1", CVAR_ARCHIVE);
 	r_selfShadowOffset =				Cvar_Get("r_selfShadowOffset", "3.0", CVAR_ARCHIVE);
 	r_selfShadowBlur =					Cvar_Get("r_selfShadowBlur", "0.7", CVAR_ARCHIVE);
@@ -1354,17 +1354,20 @@ void R_RegisterCvars(void)
 	r_shadows =							Cvar_Get("r_shadows", "1", CVAR_VIDEO_DEBUG);
 	r_playerShadow =					Cvar_Get("r_playerShadow", "1", CVAR_ARCHIVE);
 
-	r_blinnPhongLighting =			Cvar_Get("r_blinnPhongLighting", "0", CVAR_ARCHIVE);
+	r_blinnPhongLighting =				Cvar_Get("r_blinnPhongLighting", "0", CVAR_ARCHIVE);
 	r_blinnPhongLighting->help =		"use old lighting model";
 
 	r_skipStaticLights =				Cvar_Get("r_skipStaticLights", "0", CVAR_VIDEO_DEBUG);
 	r_lightmapScale =					Cvar_Get("r_lightmapScale", "0.5", CVAR_ARCHIVE);
-	r_lightScissors = 				Cvar_Get("r_lightScissors", "1", 0);
+	r_lightScissors = 					Cvar_Get("r_lightScissors", "1", 0);
 	r_depthBoundsTest =					Cvar_Get("r_depthBoundsTest", "1", 0);
-	r_tbnSmoothAngle =					Cvar_Get("r_tbnSmoothAngle", "45", CVAR_ARCHIVE);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
+	
+	r_debugTbn =						Cvar_Get("r_debugTbn", "0", 0);
+	r_debugTbnLen =						Cvar_Get("r_debugTbnLen", "1.0", 0);
+
 	r_radiositySpecularScale =			Cvar_Get("r_radiositySpecularScale", "0.3", CVAR_ARCHIVE);
-	r_radiosityNormalMapping =				Cvar_Get("r_radiosityNormalMapping", "1", CVAR_ARCHIVE);
+	r_radiosityNormalMapping =			Cvar_Get("r_radiosityNormalMapping", "1", CVAR_ARCHIVE);
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 	r_zFar =							Cvar_Get("r_zFar", "4096", CVAR_ARCHIVE);
 

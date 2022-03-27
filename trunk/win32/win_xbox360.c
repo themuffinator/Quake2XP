@@ -120,13 +120,12 @@ void IN_ShutDownXinput() {
 	memset(&xInput, 0, sizeof(xInput_t));
 }
 
-
+XINPUT_BATTERY_INFORMATION batteryInfo;
 
 void IN_StartupXInput(void)
 {
 	int numDev, firstDev;
 	XINPUT_CAPABILITIES xiCaps;
-	XINPUT_BATTERY_INFORMATION batteryInfo;
 	char batteryLevel[64], batteryType[64], padInfo[64];
 
 	// reset to -1 each time as this can be called at runtime
@@ -154,7 +153,9 @@ void IN_StartupXInput(void)
 	x360_deadZoneRight->help = "Scale sticks dead zones.\n[0.1-1.5]\n[0.5] looks like doom3bfg";
 	
 	x360_vibration = Cvar_Get("x360_vibration", "1", CVAR_ARCHIVE);
-	
+	x360_batteryScale = Cvar_Get("x360_batteryScale", "0.2", CVAR_ARCHIVE);
+	x360_batteryStatus = Cvar_Get("x360_batteryStatus", "1", CVAR_ARCHIVE);
+
 	Com_Printf("\n======= Init xInput Devices =======\n\n");
 	 
 	// Load the xInput dll
@@ -289,31 +290,46 @@ void IN_StartupXInput(void)
 		qXInputEnable(FALSE);
 		IN_ShutDownXinput();
 	}
-
 	Com_Printf("\n-----------------------------------\n\n");
 }
 
 void SCR_DrawBatteryLevel() {
-	XINPUT_BATTERY_INFORMATION batteryInfo;
+	static int lastUpdate;
 
-	if (!in_useXInput->integer)
+	if (!in_useXInput->integer || !xInputActive || !x360_batteryStatus->integer)
 		return;
 
-		memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
-		if (qXInputGetBatteryInformation(xInputActiveController, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo) == ERROR_SUCCESS)
-		{
-			if (batteryInfo.BatteryLevel == BATTERY_LEVEL_EMPTY)
-				Draw_ScaledPic(3, 3, 0.5, 0.5, i_batteryLevel[0]);
-			else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_LOW)
-				Draw_ScaledPic(3, 3, 0.5, 1.0, i_batteryLevel[1]);
-			else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_MEDIUM)
-				Draw_ScaledPic(3, 3, 0.5, 0.5, i_batteryLevel[2]);
-			else if (batteryInfo.BatteryLevel == BATTERY_LEVEL_FULL)
-				Draw_ScaledPic(3, 3, 0.5, 0.5, i_batteryLevel[3]);
-			else if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED || batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED)
-				Draw_ScaledPic(3, 3, 0.5, 0.5, i_batteryLevel[4]);
-		}
+	x360_batteryScale->value = ClampCvar(0.1, 1.0, x360_batteryScale->value);
+	float scale = x360_batteryScale->value;
 
+	if (curtime - lastUpdate >= 30000) { //30sec update interval
+		memset(&batteryInfo, 0, sizeof(XINPUT_BATTERY_INFORMATION));
+		qXInputGetBatteryInformation(xInputActiveController, BATTERY_DEVTYPE_GAMEPAD, &batteryInfo);
+		Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[5]);
+		lastUpdate = curtime;
+	}
+	else
+			if (batteryInfo.BatteryType == BATTERY_TYPE_WIRED || batteryInfo.BatteryType == BATTERY_TYPE_DISCONNECTED) {
+				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[4]);
+			}
+			else switch (batteryInfo.BatteryLevel) {
+
+			case BATTERY_LEVEL_EMPTY:
+				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[0]);
+				break;
+			case BATTERY_LEVEL_LOW:
+				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[1]);
+				break;
+			case BATTERY_LEVEL_MEDIUM:
+				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[2]);
+				break;
+			case BATTERY_LEVEL_FULL:
+				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[3]);
+				break;
+			default:
+				Draw_ScaledPic(3, 3, scale, scale, i_batteryLevel[3]);
+				break;
+			}
 }
 
 

@@ -391,14 +391,14 @@ R_CreateProgram
 ==============
 */
 
-static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSource, const char *fragmentSource) {
+static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSource, const char *fragmentSource, const char* geoSource) {
 	char			log[MAX_INFO_LOG];
 	unsigned		hash;
 	glslProgram_t	*program;
 	const char		*strings[MAX_PROGRAM_DEFS * 3 + 2];
 	int				numStrings;
 	int				numLinked = 0;
-	int				id, vertexId, fragmentId;
+	int				id, vertexId, fragmentId, geoId;
 	int				status;
 	int				i;
 
@@ -431,6 +431,7 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 		numStrings = 0;
 		vertexId = 0;
 		fragmentId = 0;
+		geoId = 0;
 
 		strings[numStrings++] = glslGlobals;
 
@@ -449,6 +450,27 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 				R_GetInfoLog(vertexId, log, qfalse);
 				qglDeleteShader(vertexId);
 				Com_Printf("program '%s': error(s) in vertex shader:\n-----------\n%s\n-----------\n", program->name, log);
+				return NULL;
+			}
+		}
+
+		// compile fragment shader
+		if (geoSource) {
+			// link includes
+			geoSource = R_LoadIncludes((char*)geoSource);
+			strings[numStrings] = geoSource;
+			geoId = qglCreateShader(GL_GEOMETRY_SHADER);
+
+			//Com_Printf("program '%s': warning(s) in: %s\n", program->name, log); // debug depricated func
+
+			qglShaderSource(geoId, numStrings + 1, strings, NULL);
+			qglCompileShader(geoId);
+			qglGetShaderiv(geoId, GL_COMPILE_STATUS, &status);
+
+			if (!status) {
+				R_GetInfoLog(geoId, log, qfalse);
+				qglDeleteShader(geoId);
+				Com_Printf("program '%s': error(s) in fragment shader:\n-----------\n%s\n-----------\n", program->name, log);
 				return NULL;
 			}
 		}
@@ -481,6 +503,11 @@ static glslProgram_t *R_CreateProgram (	const char *name, const char *vertexSour
 		if (vertexId) {
 			qglAttachShader(id, vertexId);
 			qglDeleteShader(vertexId);
+		}
+
+		if (geoId) {
+			qglAttachShader(id, geoId);
+			qglDeleteShader(geoId);
 		}
 
 		if (fragmentId) {
@@ -548,7 +575,7 @@ R_FindProgram
 glslProgram_t *R_FindProgram (const char *name, int flags) {
 	char			filename[MAX_QPATH];
 	glslProgram_t	*program;
-	char			*vertexSource = NULL, *fragmentSource = NULL;
+	char			*vertexSource = NULL, *fragmentSource = NULL, *geoSource = NULL;
 
 	if (flags & S_DEFAULT) {
 		Q_snprintfz (filename, sizeof(filename), "glsl/%s.vert", name);
@@ -558,13 +585,30 @@ glslProgram_t *R_FindProgram (const char *name, int flags) {
 		FS_LoadFile (filename, (void **)&fragmentSource);
 	}	
 
+	if (flags & S_GEO) {
+		Q_snprintfz(filename, sizeof(filename), "glsl/%s.vert", name);
+		FS_LoadFile(filename, (void**)&vertexSource);
+
+		Q_snprintfz(filename, sizeof(filename), "glsl/%s.geom", name);
+		FS_LoadFile(filename, (void**)&geoSource);
+
+		Q_snprintfz(filename, sizeof(filename), "glsl/%s.frag", name);
+		FS_LoadFile(filename, (void**)&fragmentSource);
+	}
+
+
 	if (!vertexSource | !fragmentSource)
 		return &r_nullProgram;		// no appropriate shaders found
 
-	program = R_CreateProgram (name, vertexSource, fragmentSource);
+	if (flags & S_GEO)
+		program = R_CreateProgram (name, vertexSource, fragmentSource, geoSource);
+	else
+		program = R_CreateProgram(name, vertexSource, fragmentSource, NULL);
 
 	if (vertexSource)
 		FS_FreeFile (vertexSource);
+	if (geoSource)
+		FS_FreeFile(geoSource);
 	if (fragmentSource)
 		FS_FreeFile (fragmentSource);
 
@@ -972,6 +1016,17 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"debug TBN program"S_COLOR_WHITE" ");
+	tbnDebugProgram = R_FindProgram("tbnDebug", S_GEO);
+	if (tbnDebugProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+	
 
 #ifdef GLSL_LOADING_TIME
 	stop = Sys_Milliseconds ();

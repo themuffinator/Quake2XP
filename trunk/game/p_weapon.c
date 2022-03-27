@@ -902,7 +902,7 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 
 	fire_blaster (ent, start, forward, damage, 1000, effect, hyper);
 	/*Added:Get LeadOff for nearest badguy*/
-//	mod_GetLeadoffVec(ent, start, 2048, 1000, qfalse, firevec);
+//	mod_GetLeadoffVec(ent, start, 2048, 1000, qtrue, firevec);
 //	fire_blaster(ent, start, firevec, damage, 1000, effect, hyper);
 	/*End Modification*/
 

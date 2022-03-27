@@ -1159,7 +1159,8 @@ void SCR_UpdateScreen (void) {
 		SCR_ShowTexNames();
 
 #ifdef _WIN32
-		SCR_DrawBatteryLevel();
+		if (cls.state == ca_active)
+			SCR_DrawBatteryLevel();
 #endif
 
 		if (cl_drawTime->value && (cls.state == ca_active))

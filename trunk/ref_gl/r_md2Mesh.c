@@ -106,9 +106,12 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	image_t			*skin, *skinNormalmap, *glowskin;
 	float			alphaShift, alpha;
 	float			backlerp, frontlerp;
-	daliasframe_t	*frame, *oldFrame;
-	dtrivertx_t		*verts, *oldVerts;
-	vec3_t			*normals, *oldNormals;
+
+	daliasframe_t	*frame,		*oldFrame;
+	dtrivertx_t		*verts,		*oldVerts;
+	vec3_t			*normals,	*oldNormals;
+	byte			*tangents,	*oldTangents;
+	byte			*binormals,	*oldBinormals;
 	uint			offs;
 
 	alphaShift = sin (ref_realtime * currentmodel->glowCfg[2]);
@@ -198,17 +201,20 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	R_CalcAliasFrameLerp (paliashdr, 0);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
-	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+	qglEnableVertexAttribArray(ATT_COLOR);
+	qglEnableVertexAttribArray(ATT_TEX0);
 
-	qglEnableVertexAttribArray (ATT_NORMAL);
-	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
+	qglEnableVertexAttribArray(ATT_TANGENT);
+	qglEnableVertexAttribArray(ATT_BINORMAL);
+	qglEnableVertexAttribArray(ATT_NORMAL);
 
-	qglEnableVertexAttribArray (ATT_COLOR);
-	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
-
-	qglEnableVertexAttribArray (ATT_TEX0);
-	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
-
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
+	
+	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
+	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
+	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 
 	c_alias_polys += paliashdr->num_tris;
 	tris = (dtriangle_t *)((byte *)paliashdr + paliashdr->ofs_tris);
@@ -217,11 +223,16 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	oldVerts	= oldFrame->verts;
 	offs		= paliashdr->num_xyz * currententity->oldframe;
 	oldNormals	= currentmodel->normals + offs;
+	oldTangents	= currentmodel->tangents + offs;
+	oldBinormals = currentmodel->binormals + offs;
+
 
 	frame	= (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames + currententity->frame * paliashdr->framesize);
 	verts	= frame->verts;
 	offs	= paliashdr->num_xyz * currententity->frame;
 	normals = currentmodel->normals + offs;
+	tangents = currentmodel->tangents + offs;
+	binormals = currentmodel->binormals + offs;
 
 	backlerp	= currententity->backlerp;
 	frontlerp	= 1 - backlerp;
@@ -232,8 +243,17 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 			VectorCopy (tempVertexArray[index_xyz], vertexArray[jj]);
 			VA_SetElem4 (colorArray[jj], lightColor[0], lightColor[1], lightColor[2], 1.0);
+			
+			if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+				tangentArray[jj][0] = q_byteDirs[oldTangents[index_xyz]][0] * backlerp + q_byteDirs[tangents[index_xyz]][0] * frontlerp;
+				tangentArray[jj][1] = q_byteDirs[oldTangents[index_xyz]][1] * backlerp + q_byteDirs[tangents[index_xyz]][1] * frontlerp;
+				tangentArray[jj][2] = q_byteDirs[oldTangents[index_xyz]][2] * backlerp + q_byteDirs[tangents[index_xyz]][2] * frontlerp;
 
-			if (currentmodel->envMap) {
+				binormalArray[jj][0] = q_byteDirs[oldBinormals[index_xyz]][0] * backlerp + q_byteDirs[binormals[index_xyz]][0] * frontlerp;
+				binormalArray[jj][1] = q_byteDirs[oldBinormals[index_xyz]][1] * backlerp + q_byteDirs[binormals[index_xyz]][1] * frontlerp;
+				binormalArray[jj][2] = q_byteDirs[oldBinormals[index_xyz]][2] * backlerp + q_byteDirs[binormals[index_xyz]][2] * frontlerp;
+			}
+			if (currentmodel->envMap || r_debugTbn->integer) {
 				normalArray[jj][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
 				normalArray[jj][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
 				normalArray[jj][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
@@ -272,10 +292,23 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
+	if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+		GL_BindProgram(tbnDebugProgram);
+		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)currententity->orMatrix);
+		if (currententity->flags & (RF_WEAPONMODEL))
+			qglUniform1f(U_PARAM_FLOAT_0, 0.3);
+		else
+			qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
+		qglDrawArrays(GL_TRIANGLES, 0, jj);
+	}
+
 	qglDisableVertexAttribArray (ATT_POSITION);
-	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_COLOR);
 	qglDisableVertexAttribArray (ATT_TEX0);
+
+	qglDisableVertexAttribArray(ATT_TANGENT);
+	qglDisableVertexAttribArray(ATT_BINORMAL);
+	qglDisableVertexAttribArray(ATT_NORMAL);
 
 	if (currententity->flags & RF_NOCULL) {
 		GL_Enable(GL_CULL_FACE);
