@@ -7,7 +7,6 @@ layout(location = 4) in vec4 att_color4f;
 layout(location = 5) in vec2 att_texCoordDiffuse;
 
 layout(location = U_WATER_DEFORM_MUL)	uniform float	u_deformMul;
-layout(location = U_WATER_TRANS)		uniform int		u_transSurf;
 layout(location = U_MVP_MATRIX)			uniform mat4	u_modelViewProjectionMatrix;
 layout(location = U_MODELVIEW_MATRIX)	uniform mat4	u_modelViewMatrix; 
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;

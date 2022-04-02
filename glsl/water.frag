@@ -19,7 +19,6 @@ in vec2		v_deformMul;
 in vec3		v_positionVS;
 in mat3		v_tangentToView;
 in vec4		v_color;
-//noperspective in vec4 v_color;
 
 #define MAX_STEPS			20
 #define MAX_STEPS_BINARY	10
@@ -55,12 +54,7 @@ void main (void) {
 
 	// load diffuse map with offset
 	vec3 offset = normalize(texture(u_normalMap, v_deformTexCoord.xy).rgb * 2.0 - 1.0); // use scaled tex coord
-	
 	vec3 cromaticOffcet = vec3(0.85, 1.0, 1.15);
-	
-	if (u_transSurf == 0)
-		cromaticOffcet *=0.5;
-	
 	vec2 texOff = offset.xy / 4.0;
 
 	vec3 diffuse;
@@ -75,7 +69,6 @@ void main (void) {
 	if (u_transSurf == 1) {
 		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 		N.xy = offset.xy * clamp((sceneDepth + v_positionVS.z) / u_thickness, 0.0, 1.0);
-
 		// scale by the deform multiplier & viewport size
 		tc = N.xy * v_deformMul * u_viewport;
 
@@ -84,15 +77,13 @@ void main (void) {
 		refractColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.x).r;
 		refractColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.y).g;
 		refractColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.z).b;
-		
-		diffuse *= 0.5;
+
 		// blend water texture
-		fragData = vec4(mix(refractColor, diffuse * v_color.rgb * 4.0, v_color.a), 1.0);
+		fragData = vec4(mix(refractColor, diffuse * (v_color.rgb * 2.0) * v_color.a, v_color.a), 1.0);
 	}
 	
 	if (u_transSurf == 0) {
-		diffuse *= 0.25;
-		fragData = vec4(diffuse * (v_color.rgb * 8.0), 1.0);
+		fragData = vec4(diffuse * (v_color.rgb * 2.0), 1.0);
 	}
  
 	if (u_mirror == 0)

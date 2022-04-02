@@ -4,14 +4,10 @@ layout (bindless_sampler, location  = U_TMU1) uniform sampler2D		u_colorMap;
 layout (bindless_sampler, location  = U_TMU2) uniform sampler2DRect	g_colorBufferMap;
 layout (bindless_sampler, location  = U_TMU3) uniform sampler2DRect	g_depthBufferMap;
 
-layout(location = U_REFR_ALPHA)			uniform float	u_alpha;
 layout(location = U_REFR_THICKNESS0)	uniform float	u_thickness0; //depth feather
-layout(location = U_REFR_THICKNESS1)	uniform float	u_thickness1; //sprite softeness
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
-layout(location = U_COLOR_MUL)			uniform float	u_ambientScale;
-layout(location = U_REFR_MASK)			uniform vec2	u_mask;			//softeness
-layout(location = U_REFR_ALPHA_MASK)	uniform int		u_ALPHAMASK;	//is sprite
+layout(location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;
 layout(location = U_PARAM_FLOAT_0)		uniform float	u_blurScale;
 
 
@@ -48,7 +44,7 @@ void main (void) {
 
     // blend glass texture
 	diffuse.rgb *= u_ambientScale;
-	fragData.xyz += diffuse.xyz *u_alpha * v_color.rgb;
+	fragData.xyz += diffuse.xyz * ((v_color.rgb * 2.0) * v_color.a);
 
     fragData.w = 1.0;
 }
