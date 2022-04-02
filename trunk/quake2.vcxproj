@@ -625,7 +625,6 @@
     <ClCompile Include="ref_gl\r_postprocess.c" />
     <ClCompile Include="ref_gl\r_loadImages.c" />
     <ClCompile Include="ref_gl\r_surfaces.c" />
-    <ClCompile Include="ref_gl\r_waprSurfaces.c" />
     <ClCompile Include="ref_gl\r_math.c" />
     <ClCompile Include="client\cg_cin.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>

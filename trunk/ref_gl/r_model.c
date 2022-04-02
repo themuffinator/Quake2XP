@@ -1133,8 +1133,8 @@ Mod_LoadFaces
 void Mod_BuildVertexCache() {
 	msurface_t      *surf;
 	int         i, vbo_size, vb, idx = 0, numIndices = 0;
-	int         xyz_size, st_size, lm_size, nm_size, tg_size, bn_size;
-	float		*buf;
+	int         xyz_size, st_size, lm_size, nm_size, tg_size, bn_size, col_size;
+	float		*buf, alpha = 1.0;
 
 	// calc vbo buffer size
 	vb = 0;
@@ -1160,7 +1160,10 @@ void Mod_BuildVertexCache() {
 	vbo.bn_offset = vbo.tg_offset + tg_size;
 	bn_size = vb * sizeof(vec3_t);
 
-	vbo_size = vbo.bn_offset + bn_size;
+	vbo.col_offset = vbo.bn_offset + bn_size;
+	col_size = vb * sizeof(vec4_t);
+
+	vbo_size = vbo.col_offset + col_size;
 
 	buf = (float*)malloc(vbo_size);
 	if (!buf)
@@ -1174,6 +1177,15 @@ void Mod_BuildVertexCache() {
 		float       *v;
 
 		surf->baseIndex = idx;
+
+		if (surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66)) {
+			if (surf->texInfo->flags & SURF_TRANS33)
+			alpha = 0.33f;
+		else
+			alpha = 0.66f;
+		}
+		else
+			alpha = 1.0f;			
 
 		v = p->verts[0];
 		for (jj = 0; jj < nv; jj++, v += VERTEXSIZE, vb++) {
@@ -1199,6 +1211,13 @@ void Mod_BuildVertexCache() {
 			buf[vbo.bn_offset / 4 + vb * 3 + 0] = v[13];
 			buf[vbo.bn_offset / 4 + vb * 3 + 1] = v[14];
 			buf[vbo.bn_offset / 4 + vb * 3 + 2] = v[15];
+
+			// vertex color
+			R_LightColor(v, shadelight);
+			buf[vbo.col_offset / 4 + vb * 4 + 0] = shadelight[0];
+			buf[vbo.col_offset / 4 + vb * 4 + 1] = shadelight[1];
+			buf[vbo.col_offset / 4 + vb * 4 + 2] = shadelight[2];
+			buf[vbo.col_offset / 4 + vb * 4 + 3] = alpha;
 
 			idx++;
 		}
@@ -1227,13 +1246,17 @@ void Mod_BuildVertexCache() {
 	qglEnableVertexAttribArray(ATT_NORMAL);
 	qglEnableVertexAttribArray(ATT_TANGENT);
 	qglEnableVertexAttribArray(ATT_BINORMAL);
+	qglEnableVertexAttribArray(ATT_COLOR);
 
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
+	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
+
 	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
 	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
-	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
+
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.col_offset));
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1351,8 +1374,6 @@ void Mod_LoadFaces(lump_t * l) {
 	}
 
 	Z_Free(tempEdges);
-
-	Mod_BuildVertexCache();
 }
 
 #define bspSmoothAngle cosf(DEG2RAD(33.0))
@@ -1944,7 +1965,9 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 	Mod_UpdateLoadingBar(53.25, "SubModel Surfaces");
 	Mod_LoadsubModels(&header->lumps[LUMP_MODELS]);
 	Mod_UpdateLoadingBar(53.50, "Vertex Lighting");
-	Mod_GenerateLights(mod);
+	Mod_GenerateLights(mod); /////
+	Mod_UpdateLoadingBar(53.60, "Vertex Cache");
+	Mod_BuildVertexCache();
 	Mod_UpdateLoadingBar(53.75, "World Lights");
 	Load_LightFile();
 	Mod_UpdateLoadingBar(54.0, "Light Interaction");

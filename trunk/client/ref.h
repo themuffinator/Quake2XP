@@ -74,12 +74,9 @@ DECAL_BFG,
 DECAL_MAX
 }decalTex_t;
 
-#define DF_SHADE		0x00000400	// 1024
-#define DF_NOTIMESCALE	0x00000800	// 2048
-#define INSTANT_DECAL	-10000.0
 #define DF_OVERBRIGHT	1
 #define DF_VERTEXLIGHT	2
-#define DF_AREADECAL	4
+
 
 #define	MAX_DLIGHTS		32
 #define	MAX_ENTITIES	128
@@ -130,7 +127,6 @@ typedef vec4_t	mat4_t[4];		// row-major
 
 #define SHELL_WHITE_COLOR	0xD7
 
-#define	GL_INDEX_TYPE		GL_UNSIGNED_SHORT
 typedef unsigned short		ushort;
 typedef unsigned int		uint;
 typedef unsigned long		ulong;

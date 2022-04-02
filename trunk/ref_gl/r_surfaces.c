@@ -128,77 +128,59 @@ image_t *R_TextureAnimationRgh(mtexInfo_t * tex)
 	return tex->rghMap;
 }
 
-void R_AddAlphaSurceces (msurface_t * fa, qboolean scrolling) {
+void R_AddAlphaSurceces (msurface_t *s, uint *indeces, qboolean update) {
 	int i;
-	float *v;
-	float alpha, scroll;
-	glpoly_t *p;
-	int nv = fa->polys->numVerts;
-	uint numIndices = 0;
+	uint numIndices;
+	float scroll = 0.0;
+	qboolean scrolling = qfalse;
+	int nv = s->polys->numVerts;
+	
+	numIndices = *indeces;
 
-		if (fa->texInfo->flags & SURF_TRANS33)
-			alpha = 0.33f;
-		else
-			alpha = 0.66f;
+	if (s->texInfo->flags & SURF_FLOWING){
+		scroll = -64 * ((r_newrefdef.time / 40.0) - (int)(r_newrefdef.time / 40.0));
+		
+		if (scroll == 0.0)
+			scroll = -64.0;
+		
+		scrolling = qtrue;
 
-		qglUniform1f(U_REFR_ALPHA, alpha);
+		qglUniform1f(U_SCROLL, scroll);
+	}else
+		qglUniform1f(U_SCROLL, 0.0);
 
-		if (scrolling)
-			GL_SetBindlessTexture(U_TMU0, r_DSTTex->handle);
-		else
-			GL_SetBindlessTexture(U_TMU0, fa->texInfo->normalmap->handle);
-
-		GL_SetBindlessTexture(U_TMU1, fa->texInfo->image->handle);
-		GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
-		GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
-
-	for (i = 0; i < nv - 2; i++) {
-		indexArray[numIndices++] = 0;
-		indexArray[numIndices++] = i + 1;
-		indexArray[numIndices++] = i + 2;
-	}
+	if (update) {
 
 	if (scrolling)
-		scroll = (r_newrefdef.time * 0.15f) - (int)(r_newrefdef.time * 0.15f);
+		GL_SetBindlessTexture(U_TMU0, r_DSTTex->handle);
 	else
-		scroll = 0;
-
-	p = fa->polys;
-	v = p->verts[0];
-
-	for (i = 0; i < p->numVerts; i++, v += VERTEXSIZE) {
-
-		VectorCopy(v, wVertexArray[i]);
-
-		wTexArray[i][0] = v[3] - scroll;
-		wTexArray[i][1] = v[4];
-
-		R_LightColor(v, shadelight);
-		wColorArray[i][0] = shadelight[0];
-		wColorArray[i][1] = shadelight[1];
-		wColorArray[i][2] = shadelight[2];
-		wColorArray[i][3] = alpha;
+		GL_SetBindlessTexture(U_TMU0, s->texInfo->normalmap->handle);
+		GL_SetBindlessTexture(U_TMU1, s->texInfo->image->handle);
 	}
-
-	qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
-	c_brush_polys += numIndices / 3;	
+	
+	for (i = 0; i < nv - 2; i++) {
+		indexArray[numIndices++] = s->baseIndex;
+		indexArray[numIndices++] = s->baseIndex + i + 1;
+		indexArray[numIndices++] = s->baseIndex + i + 2;
+	}
+	*indeces = numIndices;
 }
 
+int alphaSurfSort(const msurface_t** a, const msurface_t** b){
+	return	(((*a)->texInfo->image->texnum)) - (((*b)->texInfo->image->texnum));
+}
 void R_DrawAlphaSurfaces() {
-
 	msurface_t* s;
-	float colorScale = max(r_lightmapScale->value, 0.33);
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
-
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, wColorArray);
+	qboolean	newTex;
+	float		ambientScale = max(r_lightmapScale->value, 0.33);
+	uint		oldTex = 0;
+	uint		numIndices = 0;
 
 	// setup program
 	GL_BindProgram(glassProgram);
+	
+	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
+	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
@@ -208,12 +190,13 @@ void R_DrawAlphaSurfaces() {
 	qglUniform1f(U_REFR_THICKNESS0, 150.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(U_COLOR_MUL, 0.5);
-	qglUniform1i(U_REFR_ALPHA_MASK, 0);
+	qglUniform1f(U_AMBIENT_LEVEL, ambientScale);
 
 	float blurScale = 18.88 * ((float)vid.width / 1024.0);
 	qglUniform1f(U_PARAM_FLOAT_0, blurScale);
 
+	qsort(r_alphaSurfaces, numAlphaSurfaces, sizeof(msurface_t*), (int(*)(const void*, const void*))alphaSurfSort);
+	
 	for (int i = 0; i < numAlphaSurfaces; i++) {
 
 		s = r_alphaSurfaces[i];
@@ -221,22 +204,65 @@ void R_DrawAlphaSurfaces() {
 		if (s->flags & MSURF_LAVA)
 			continue;
 
-		if (s->texInfo->flags & SURF_FLOWING)
-			R_AddAlphaSurceces(s, qtrue);
+		if (s->texInfo->image->texnum != oldTex) {
+			if (numIndices) {
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				c_brush_polys += numIndices / 3;
+				numIndices = 0;
+			}
+			oldTex = s->texInfo->image->texnum;
+			newTex = qtrue;
+		}
 		else
-			R_AddAlphaSurceces(s, qfalse);
-	}
+			newTex = qfalse;
 
+		R_AddAlphaSurceces(s, &numIndices, newTex);
+
+		if (numIndices >= MAX_IDX) { //overflow
+			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+			c_brush_polys += numIndices / 3;
+			numIndices = 0;
+		}
+	}
+	if (numIndices) {
+		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		c_brush_polys += numIndices / 3;
+		numIndices = 0;
+	}
 	numAlphaSurfaces = 0;
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_COLOR);
 }
 
-void R_DrawWarpSurfaces(qboolean bmodel) {
+void R_AddWaterSurceces(msurface_t* s, uint* indeces, qboolean update) {
+	int i;
+	uint numIndices;
+	float scroll = 0.0;
+	qboolean scrolling = qfalse;
+	int nv = s->polys->numVerts;
+
+	numIndices = *indeces;
+
+	if (s->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
+		qglUniform1i(U_WATER_TRANS, 1);
+	else 
+		qglUniform1i(U_WATER_TRANS, 0);
+
+	if (update)
+		GL_SetBindlessTexture(U_TMU0, s->texInfo->image->handle);	
+
+	for (i = 0; i < nv - 2; i++) {
+		indexArray[numIndices++] = s->baseIndex;
+		indexArray[numIndices++] = s->baseIndex + i + 1;
+		indexArray[numIndices++] = s->baseIndex + i + 2;
+	}
+	*indeces = numIndices;
+}
+
+void R_DrawWaterSurfaces(qboolean bmodel) {
 	msurface_t* s;
-	float		colorScale = max(r_lightmapScale->value, 0.33);
-	float		ambient;
+	float		ambientScale = max(r_lightmapScale->value, 0.33);
+	qboolean	newTex;
+	uint		oldTex = 0;
+	uint		numIndices = 0;
 
 	GL_BindProgram(waterProgram);
 
@@ -244,14 +270,12 @@ void R_DrawWarpSurfaces(qboolean bmodel) {
 	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
 	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
 
-	ambient = max(r_lightmapScale->value, 0.15f); // sRGB clamp fix
-
 	qglUniform1f(U_WATER_DEFORM_MUL, 1.0);
+	qglUniform1f(U_AMBIENT_LEVEL, ambientScale);
 	qglUniform1f(U_WATHER_THICKNESS, 150.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniform1f(U_AMBIENT_LEVEL, 1.0);
-
+	
 	if (!bmodel)
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
 	else
@@ -265,48 +289,54 @@ void R_DrawWarpSurfaces(qboolean bmodel) {
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
 	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
 
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_NORMAL);
-	qglEnableVertexAttribArray(ATT_TANGENT);
-	qglEnableVertexAttribArray(ATT_BINORMAL);
-	qglEnableVertexAttribArray(ATT_COLOR);
-
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, wVertexArray);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, wTexArray);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, wColorArray);
-	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, nTexArray);
-	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tTexArray);
-	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, bTexArray);
-
 	for (int i = 0; i < numReflectiveSurfaces; i++) {
 		s = r_reflectiveSurfaces[i];
 
 		if (s->flags & MSURF_LAVA)
 			continue;
 
-		R_AddWarpPolygons(s);
+		if (s->texInfo->image->texnum != oldTex) {
+			if (numIndices) {
+				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				c_brush_polys += numIndices / 3;
+				numIndices = 0;
+			}
+			oldTex = s->texInfo->image->texnum;
+			newTex = qtrue;
+		}
+		else
+			newTex = qfalse;
+
+		R_AddWaterSurceces(s, &numIndices, newTex);
+
+		if (numIndices >= MAX_IDX) { //overflow
+			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+			c_brush_polys += numIndices / 3;
+			numIndices = 0;
+		}
+	}
+	if (numIndices) {
+		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		c_brush_polys += numIndices / 3;
+		numIndices = 0;
 	}
 	numReflectiveSurfaces = 0;
-
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_NORMAL);
-	qglDisableVertexAttribArray(ATT_TANGENT);
-	qglDisableVertexAttribArray(ATT_BINORMAL);
-	qglDisableVertexAttribArray(ATT_COLOR);
 }
 
 void R_DrawSurfacesRA(qboolean bmodel) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-	
+
+	glBindVertexArray(vao.bsp);
+
 	R_CaptureColorBuffer();
 	R_DrawAlphaSurfaces();
 
 	R_CaptureColorBuffer();
-	R_DrawWarpSurfaces(bmodel);
+	R_DrawWaterSurfaces(bmodel);
+
+	glBindVertexArray(0);
 }
 
 

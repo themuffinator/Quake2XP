@@ -83,21 +83,18 @@ typedef struct {
 
 extern viddef_t vid;
 
-#define	TEXNUM_LIGHTMAPS	32768
 #define	MAX_GLTEXTURES		32768 
 
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
 #define MAX_DRAW_STRING_LENGTH  512
-#define MAX_IDX 65536
+#define MAX_IDX 4294967295 //uint size
 // ===================================================================
 
 typedef enum {
 	rserr_ok,
-
 	rserr_invalid_fullscreen,
 	rserr_invalid_mode,
-
 	rserr_unknown
 } rserr_t;
 
@@ -107,15 +104,6 @@ void GL_SetDefaultState (void);
 void GL_UpdateSwapInterval (void);
 
 extern double gldepthmin, gldepthmax;
-
-
-typedef struct {
-	float x, y, z;
-	float s, t;
-	float r, g, b;
-} glvert_t;
-
-
 
 #define BACKFACE_EPSILON	0.01
 
@@ -149,9 +137,16 @@ image_t *r_explode[MAX_EXPLODE];
 #define		MAX_BFG_EXPL		32
 image_t *r_bfg_expl[MAX_BFG_EXPL];
 
-extern qboolean drawFlares;
-extern image_t gltextures[MAX_GLTEXTURES];
-extern int numgltextures;
+#define		MAX_FILTERS 256
+image_t* r_lightCubeMap[MAX_FILTERS];
+#define		MAX_GLOBAL_FILTERS	38
+
+#define		MAX_LUTS 8
+image_t* r_3dLut[MAX_LUTS];
+int			lutCount;
+
+image_t gltextures[MAX_GLTEXTURES];
+int numgltextures;
 
 image_t *r_notexture;
 image_t *r_distort;
@@ -178,14 +173,6 @@ image_t	*r_whiteMap;
 image_t *skinBump;
 image_t *r_shadowMask;
 image_t *r_depthMask;
-
-#define		MAX_FILTERS 256
-image_t		*r_lightCubeMap[MAX_FILTERS];
-#define		MAX_GLOBAL_FILTERS	38
-
-#define		MAX_LUTS 8
-image_t		*r_3dLut[MAX_LUTS];
-int			lutCount;
 
 image_t	*r_fxaaTex;
 image_t	*r_fixFovTex;
@@ -583,7 +570,7 @@ void R_LoadFont (void);
 
 qboolean R_CullBox (vec3_t mins, vec3_t maxs);
 void R_MarkLeaves (void);
-void R_AddWarpPolygons (msurface_t * fa);
+void R_AddWaterPolygons (msurface_t * fa);
 void R_AddSkySurface (msurface_t * fa);
 void R_ClearSkyBox (void);
 void R_DrawSkyBox (qboolean color);
@@ -781,11 +768,15 @@ GLuint	vbo_BSP;
 GLuint	ibo_BSP;
 
 int xyz_offset;
+
 int st_offset;
 int lm_offset;
-int nm_offset;
+
 int tg_offset;
 int bn_offset;
+int nm_offset;
+
+int col_offset;
 }vbo_t;
 
 vbo_t vbo;

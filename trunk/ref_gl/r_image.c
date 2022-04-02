@@ -95,10 +95,6 @@ static const byte r_originalPalette[] = {
 199, 171, 155, 167, 139, 119, 135, 107,  87, 159,  91,  83
 };
 
-
-image_t gltextures[MAX_GLTEXTURES];
-int numgltextures;
-
 static byte intensitytable[256];
 static unsigned char gammatable[256];
 

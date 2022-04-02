@@ -191,7 +191,7 @@ void R_LightPoint (vec3_t p, vec3_t color) {
 }
 
 
-#define LIGHTGRID_STEP 256
+#define LIGHTGRID_STEP 128
 #define LIGHTGRID_NUM_STEPS (8192/LIGHTGRID_STEP)	// 64
 
 byte r_lightgrid[LIGHTGRID_NUM_STEPS * LIGHTGRID_NUM_STEPS * LIGHTGRID_NUM_STEPS][3];
