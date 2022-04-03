@@ -533,7 +533,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	else
 		qglUniform1i(U_USE_AUTOBUMP, 0);
 
-	if (inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL))
+	if ((inWater && currentShadowLight->castCaustics && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) || (!inWater && currentShadowLight->castCaustics2 && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)))
 		qglUniform1i(U_USE_CAUSTICS, 1);
 	else
 		qglUniform1i(U_USE_CAUSTICS, 0);

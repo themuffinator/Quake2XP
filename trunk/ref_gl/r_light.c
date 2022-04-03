@@ -369,6 +369,11 @@ void R_PrepareShadowLightFrame (qboolean weapon) {
 			light->castCaustics = qfalse;
 		else
 			light->castCaustics = qtrue;
+
+		if (CL_PMpointcontents(light->origin) & MASK_WATER) // underwater light cusc caustics to non water surfaces
+			light->castCaustics2 = qtrue;
+		else
+			light->castCaustics2 = qfalse;
 		
 		if(light->isAmbient)
 			light->castCaustics = qfalse;

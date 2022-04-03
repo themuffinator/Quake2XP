@@ -69,7 +69,7 @@ typedef struct worldShadowLight_s {
 	int			start_off;
 
 	qboolean	spherical;
-	qboolean	castCaustics;
+	qboolean	castCaustics, castCaustics2;
 
 	cplane_t	frust[6];
 	msurface_t	*interaction[MAX_MAP_FACES];

@@ -128,6 +128,13 @@ image_t *R_TextureAnimationRgh(mtexInfo_t * tex)
 	return tex->rghMap;
 }
 
+int alphaSurfSort(const msurface_t** a, const msurface_t** b) {
+	return	(((*a)->texInfo->image->texnum)) - (((*b)->texInfo->image->texnum));
+}
+int waterSurfSort(const msurface_t** a, const msurface_t** b) {
+	return	(((*a)->texInfo->image->texnum)) - (((*b)->texInfo->image->texnum));
+}
+
 void R_AddAlphaSurceces (msurface_t *s, uint *indeces, qboolean update) {
 	int i;
 	uint numIndices;
@@ -166,9 +173,7 @@ void R_AddAlphaSurceces (msurface_t *s, uint *indeces, qboolean update) {
 	*indeces = numIndices;
 }
 
-int alphaSurfSort(const msurface_t** a, const msurface_t** b){
-	return	(((*a)->texInfo->image->texnum)) - (((*b)->texInfo->image->texnum));
-}
+
 void R_DrawAlphaSurfaces() {
 	msurface_t* s;
 	qboolean	newTex;
@@ -288,6 +293,8 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
 	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
+
+	qsort(r_reflectiveSurfaces, numReflectiveSurfaces, sizeof(msurface_t*), (int(*)(const void*, const void*))waterSurfSort);
 
 	for (int i = 0; i < numReflectiveSurfaces; i++) {
 		s = r_reflectiveSurfaces[i];
@@ -555,18 +562,18 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		}
 
 		if (bmodel){
-			if (caustics && currentShadowLight->castCaustics){
+			if ((caustics && currentShadowLight->castCaustics) || (!caustics && currentShadowLight->castCaustics2)){
 				qglUniform1i(U_USE_CAUSTICS, 1);
 			}
 			else
 				qglUniform1i(U_USE_CAUSTICS, 0);
 		}
 		else{
-			if ((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics) {
+			if (((surf->flags & MSURF_WATER) && currentShadowLight->castCaustics) || (!(surf->flags & MSURF_WATER) && currentShadowLight->castCaustics2)) {
 				qglUniform1i(U_USE_CAUSTICS, 1);
 			}
 			else
-				qglUniform1i(U_USE_CAUSTICS, 0);
+				qglUniform1i(U_USE_CAUSTICS, 0);			
 		}
 
 		if (!image->parallaxScale){
