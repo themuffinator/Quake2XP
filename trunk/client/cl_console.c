@@ -703,20 +703,14 @@ void Con_DrawConsole (float frac) {
 	//ZOID
 	// draw the download bar
 	// figure out width
-
-#ifdef USE_CURL
-	if (cls.downloadname[0] && (cls.download || cls.downloadposition))
-#else
-	if (cls.download)
-#endif
-	{
+	if (cls.download){
 		// avoid warnings of using a short* instead of char* in strrchr/strlen
 		char *textch = (char*)text;
 
-		if ((textch = strrchr (cls.downloadname, '/')) != NULL)
+		if ((textch = strrchr (cls.downloadName, '/')) != NULL)
 			textch++;
 		else
-			textch = cls.downloadname;
+			textch = cls.downloadName;
 
 		x = con.lineWidth - ((con.lineWidth * 7) * 0.025);
 		y = x - strlen (textch) - 8;

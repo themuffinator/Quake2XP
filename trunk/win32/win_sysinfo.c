@@ -726,11 +726,9 @@ qboolean Sys_CheckWindowsVersion() {
 			HKEY	hKey = 0;
 			DWORD	dwSize = 64;
 			DWORD	keyMode = KEY_READ;
-			char	buildId[5] = { 0 }, releaseId[5] = { 0 }, versionID[5] = { 0 }, winName[64] = { 0 };
+			char	buildId[12] = { 0 }, releaseId[5] = { 0 }, versionID[5] = { 0 }, winName[64] = { 0 }; // buildId[12] - debug crash fix
 			int		build, release, ubr;
-#ifdef _DEBUG
-			return qtrue;
-#endif
+
 			// win 10 Pro reads as Enterprise on win64.
 			// https://docs.microsoft.com/en-us/windows/win32/winprog64/accessing-an-alternate-registry-view
 			if (isWin64x())
