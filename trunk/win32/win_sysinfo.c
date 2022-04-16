@@ -726,7 +726,7 @@ qboolean Sys_CheckWindowsVersion() {
 			HKEY	hKey = 0;
 			DWORD	dwSize = 64;
 			DWORD	keyMode = KEY_READ;
-			char	buildId[12] = { 0 }, releaseId[5] = { 0 }, versionID[5] = { 0 }, winName[64] = { 0 }; // buildId[12] - debug crash fix
+			char	buildId[12] = { 0 }, releaseId[9] = { 0 }, versionID[14] = { 0 }, winName[64] = { 0 }; // buildId[12] - debug crash fix
 			int		build, release, ubr;
 
 			// win 10 Pro reads as Enterprise on win64.
