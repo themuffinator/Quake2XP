@@ -893,7 +893,7 @@ void SV_Kick_f (void) {
 	SV_ClientPrintf (sv_client, PRINT_HIGH,
 		"You were kicked from the game\n");
 	SV_DropClient (sv_client);
-	sv_client->lastmessage = svs.realtime;	// min case there is a funny
+	sv_client->lastmessage = svs.realTime;	// min case there is a funny
 	// zombie
 }
 
@@ -938,7 +938,7 @@ void SV_Status_f (void) {
 		for (j = 0; j < l; j++)
 			Com_Printf (" ");
 
-		Com_Printf ("%7i ", svs.realtime - cl->lastmessage);
+		Com_Printf ("%7i ", svs.realTime - cl->lastmessage);
 
 		s = NET_AdrToString (cl->netchan.remote_address);
 		Com_Printf ("%s", s);

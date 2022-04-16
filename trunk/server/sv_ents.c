@@ -549,7 +549,7 @@ void SV_BuildClientFrame (client_t * client) {
 	// this is the frame we are creating
 	frame = &client->frames[sv.framenum & UPDATE_MASK];
 
-	frame->senttime = svs.realtime;	// save it for ping calc later
+	frame->senttime = svs.realTime;	// save it for ping calc later
 
 	// find the client's PVS
 	for (i = 0; i < 3; i++)

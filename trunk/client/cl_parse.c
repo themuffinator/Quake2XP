@@ -82,19 +82,19 @@ qboolean CL_CheckOrDownloadFile (char *filename) {
 		return qtrue;
 	}
 
-			strcpy(cls.downloadname, filename);
+			strcpy(cls.downloadName, filename);
 
 		// download to a temp name, and only rename
 		// to the real name when done, so if interrupted
 		// a runt file wont be left
-		COM_StripExtension(cls.downloadname, cls.downloadtempname);
-		strcat(cls.downloadtempname, ".tmp");
+		COM_StripExtension(cls.downloadName, cls.downloadTempName);
+		strcat(cls.downloadTempName, ".tmp");
 
 		//ZOID
 		// check to see if we already have a tmp for this file, if so, try to
 		// resume
 		// open the file if not opened yet
-		CL_DownloadFileName(name, sizeof(name), cls.downloadtempname);
+		CL_DownloadFileName(name, sizeof(name), cls.downloadTempName);
 
 		//  FS_CreatePath (name);
 
@@ -107,19 +107,19 @@ qboolean CL_CheckOrDownloadFile (char *filename) {
 			cls.download = fp;
 
 			// give the server an offset to start the download
-			Com_Printf("Resuming %s\n", cls.downloadname);
+			Com_Printf("Resuming %s\n", cls.downloadName);
 			MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
 			MSG_WriteString(&cls.netchan.message,
-				va("download %s %i", cls.downloadname, len));
+				va("download %s %i", cls.downloadName, len));
 		}
 		else {
-			Com_Printf("Downloading %s\n", cls.downloadname);
+			Com_Printf("Downloading %s\n", cls.downloadName);
 			MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
 			MSG_WriteString(&cls.netchan.message,
-				va("download %s", cls.downloadname));
+				va("download %s", cls.downloadName));
 		}
 
-		cls.downloadnumber++;
+		cls.downloadNumber++;
 
 		return qfalse;
 	
@@ -153,20 +153,20 @@ void CL_Download_f (void) {
 		return;
 	}
 
-	strcpy (cls.downloadname, filename);
-	Com_Printf ("Downloading %s\n", cls.downloadname);
+	strcpy (cls.downloadName, filename);
+	Com_Printf ("Downloading %s\n", cls.downloadName);
 
 	// download to a temp name, and only rename
 	// to the real name when done, so if interrupted
 	// a runt file wont be left
-	COM_StripExtension (cls.downloadname, cls.downloadtempname);
-	strcat (cls.downloadtempname, ".tmp");
+	COM_StripExtension (cls.downloadName, cls.downloadTempName);
+	strcat (cls.downloadTempName, ".tmp");
 
 	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 	MSG_WriteString (&cls.netchan.message,
-		va ("download %s", cls.downloadname));
+		va ("download %s", cls.downloadName));
 
-	cls.downloadnumber++;
+	cls.downloadNumber++;
 }
 
 void WILLOW_HACK_SOUND (int i) {
@@ -312,14 +312,14 @@ void CL_ParseDownload (void) {
 	}
 	// open the file if not opened yet
 	if (!cls.download) {
-		CL_DownloadFileName (name, sizeof(name), cls.downloadtempname);
+		CL_DownloadFileName (name, sizeof(name), cls.downloadTempName);
 
 		FS_CreatePath (name);
 
 		cls.download = fopen (name, "wb");
 		if (!cls.download) {
 			net_message.readcount += size;
-			Com_Printf ("Failed to open %s\n", cls.downloadtempname);
+			Com_Printf ("Failed to open %s\n", cls.downloadTempName);
 			CL_RequestNextDownload ();
 			return;
 		}
@@ -339,7 +339,7 @@ void CL_ParseDownload (void) {
 			Com_Printf ("%i%%", cls.downloadpercent);
 		}
 #endif
-		cls.downloadpercent = percent;
+		cls.downloadPercent = percent;
 
 		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 		SZ_Print (&cls.netchan.message, "nextdl");
@@ -353,14 +353,14 @@ void CL_ParseDownload (void) {
 		fclose (cls.download);
 
 		// rename the temp file to it's final name
-		CL_DownloadFileName (oldn, sizeof(oldn), cls.downloadtempname);
-		CL_DownloadFileName (newn, sizeof(newn), cls.downloadname);
+		CL_DownloadFileName (oldn, sizeof(oldn), cls.downloadTempName);
+		CL_DownloadFileName (newn, sizeof(newn), cls.downloadName);
 		r = rename (oldn, newn);
 		if (r)
 			Com_Printf ("failed to rename.\n");
 
 		cls.download = NULL;
-		cls.downloadpercent = 0;
+		cls.downloadPercent = 0;
 
 		// get another file if needed
 
@@ -941,6 +941,6 @@ void CL_ParseServerMessage (void) {
 	// we don't know if it is ok to save a demo message until
 	// after we have parsed the frame
 	// 
-	if (cls.demorecording && !cls.demowaiting)
+	if (cls.demoRecording && !cls.demoWaiting)
 		CL_WriteDemoMessage ();
 }

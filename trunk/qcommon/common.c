@@ -118,7 +118,7 @@ vec3_t q_byteDirs[NUM_VERTEX_NORMALS] = {
 
 int com_argc;
 char *com_argv[MAX_NUM_ARGVS + 1];
-int realtime;
+int realTime;
 
 jmp_buf abortframe;				// an ERR_DROP occured, exit the entire
 // frame

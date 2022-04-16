@@ -765,7 +765,7 @@ void Key_Event (int key, qboolean down, unsigned time) {
 			return;
 		}
 		// Knightmare- skip cinematic
-		if (cl.cinematictime > 0 && !cl.attractloop && cls.realtime - cl.cinematictime > 1000) {
+		if (cl.cinematictime > 0 && !cl.attractloop && cls.realTime - cl.cinematictime > 1000) {
 			// skip the rest of the cinematic
 			SCR_FinishCinematic ();
 		}

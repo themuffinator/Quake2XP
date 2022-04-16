@@ -245,7 +245,7 @@ void CL_AddClEntities () {
 			if (trace.fraction > 0 && trace.fraction < 1) {
 				vec3_t	vel;
 				// Reflect velocity
-				float time = cl.time - (cls.frametime + cls.frametime * trace.fraction) * 1000;
+				float time = cl.time - (cls.frameTime + cls.frameTime * trace.fraction) * 1000;
 				time = (time - le->time) * 0.001;
 
 				VectorSet (vel, le->vel[0], le->vel[1], le->vel[2] + le->accel[2] * time * grav);

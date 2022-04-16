@@ -429,6 +429,7 @@
     <ClCompile Include="ref_gl\r_qgl.c" />
     <ClCompile Include="ref_gl\r_shadows.c" />
     <ClCompile Include="ref_gl\r_sky.c" />
+    <ClCompile Include="ref_gl\r_raSurfaces.c" />
     <ClCompile Include="ref_gl\r_vertexCache.c" />
     <ClCompile Include="ref_gl\r_zprepass.c" />
     <ClCompile Include="server\sv_ccmds.c">

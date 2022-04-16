@@ -529,7 +529,7 @@ void CL_ParseFrame (void) {
 	if (cl.frame.deltaframe <= 0) {
 		cl.frame.valid = qtrue;	// uncompressed frame
 		old = NULL;
-		cls.demowaiting = qfalse;	// we can start recording now
+		cls.demoWaiting = qfalse;	// we can start recording now
 	}
 	else {
 		old = &cl.frames[cl.frame.deltaframe & UPDATE_MASK];
@@ -593,7 +593,7 @@ void CL_ParseFrame (void) {
 				cl.frame.playerstate.pmove.origin[2] * 0.125;
 			VectorCopy (cl.frame.playerstate.viewangles,
 				cl.predicted_angles);
-			if (cls.disable_servercount != cl.servercount
+			if (cls.disableServerCount != cl.servercount
 				&& cl.refresh_prepped)
 				SCR_EndLoadingPlaque ();	// get rid of loading plaque
 		}
@@ -950,7 +950,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			extern cvar_t	*hand;
 			int				y;
 
-			if (s1->number == cl.playernum + 1) {			
+			if (s1->number == cl.playernum + 1) {	
 
 				// dublicate player weapon info here
 				ps = &cl.frame.playerstate;
@@ -1093,7 +1093,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 		if (effects & EF_COLOR_SHELL
 			&& (!player_camera || (cl_thirdPerson->value
 			&& !(cl.attractloop && !(cl.cinematictime > 0
-			&& cls.realtime - cl.cinematictime > 1000))))) {
+			&& cls.realTime - cl.cinematictime > 1000))))) {
 
 			VectorCopy(ent.origin, light_org);
 
@@ -1220,7 +1220,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			if (effects & EF_COLOR_SHELL
 				&& (!player_camera || (cl_thirdPerson->value
 				&& !(cl.attractloop && !(cl.cinematictime > 0
-				&& cls.realtime - cl.cinematictime > 1000))))) {
+				&& cls.realTime - cl.cinematictime > 1000))))) {
 				ent.flags = renderfx | RF_TRANSLUCENT | RF_CAMERAMODEL2;
 				ent.alpha = 0.30;
 				V_AddEntity (&ent);
@@ -1242,7 +1242,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			if (effects & EF_COLOR_SHELL
 				&& (!player_camera || (cl_thirdPerson->value
 				&& !(cl.attractloop && !(cl.cinematictime > 0
-				&& cls.realtime - cl.cinematictime > 1000))))) {
+				&& cls.realTime - cl.cinematictime > 1000))))) {
 				ent.flags = renderfx | RF_TRANSLUCENT | RF_CAMERAMODEL2;
 				ent.alpha = 0.30;
 				V_AddEntity (&ent);
@@ -1255,7 +1255,7 @@ void CL_AddPacketEntities (frame_t * frame) {
 			if (effects & EF_COLOR_SHELL
 				&& (!player_camera || (cl_thirdPerson->value
 				&& !(cl.attractloop && !(cl.cinematictime > 0
-				&& cls.realtime - cl.cinematictime > 1000))))) {
+				&& cls.realTime - cl.cinematictime > 1000))))) {
 				ent.flags = renderfx | RF_TRANSLUCENT | RF_CAMERAMODEL2;
 				ent.alpha = 0.30;
 				V_AddEntity (&ent);
@@ -1828,7 +1828,7 @@ void CL_CalcViewValues (void) {
 		}
 
 		// smooth out stair climbing
-		delta = cls.realtime - cl.predicted_step_time;
+		delta = cls.realTime - cl.predicted_step_time;
 		if (delta < 100) {
 			cl.refdef.vieworg[2] -=
 				cl.predicted_step * (100 - delta) * 0.01;

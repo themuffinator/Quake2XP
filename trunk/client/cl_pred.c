@@ -202,6 +202,7 @@ void CL_PredictMovement (void) {
 	usercmd_t *cmd;
 	pmove_t pm;
 	int step, oldz, i;
+	static int	last_step_frame = 0;
 
 	if (cls.state != ca_active)
 		return;
@@ -239,26 +240,57 @@ void CL_PredictMovement (void) {
 
 	frame = 0;
 
-	// run frames
-	while (++ack < current) {
-		frame = ack & (CMD_BACKUP - 1);
-		cmd = &cl.cmds[frame];
+	if (cl_async->value)
+	{
+		// run frames
+		while (++ack <= current) // Changed '<' to '<=' cause current is our pending cmd
+		{
+			frame = ack & (CMD_BACKUP - 1);
+			cmd = &cl.cmds[frame];
 
-		pm.cmd = *cmd;
-		Pmove (&pm);
+			if (!cmd->msec) // Ignore 'null' usercmd entries
+				continue;
 
-		// save for debug checking
-		VectorCopy (pm.s.origin, cl.predicted_origins[frame]);
+			pm.cmd = *cmd;
+			Pmove(&pm);
+
+			// save for debug checking
+			VectorCopy(pm.s.origin, cl.predicted_origins[frame]);
+		}
+
+		oldframe = (ack - 2) & (CMD_BACKUP - 1);
+		oldz = cl.predicted_origins[oldframe][2];
+		step = pm.s.origin[2] - oldz;
+
+		// TODO: Add Paril's step down fix here
+		if (last_step_frame != current && step > 63 && step < 160 && (pm.s.pm_flags & PMF_ON_GROUND))
+		{
+			cl.predicted_step = step * 0.125;
+			cl.predicted_step_time = cls.realTime - cls.frameTime * 500;
+			last_step_frame = current;
+		}
 	}
+	else{
+		// run frames
+		while (++ack < current) {
+			frame = ack & (CMD_BACKUP - 1);
+			cmd = &cl.cmds[frame];
 
-	oldframe = (ack - 2) & (CMD_BACKUP - 1);
-	oldz = cl.predicted_origins[oldframe][2];
-	step = pm.s.origin[2] - oldz;
-	if (step > 63 && step < 160 && (pm.s.pm_flags & PMF_ON_GROUND)) {
-		cl.predicted_step = step * 0.125;
-		cl.predicted_step_time = cls.realtime - cls.frametime * 500;
+			pm.cmd = *cmd;
+			Pmove(&pm);
+
+			// save for debug checking
+			VectorCopy(pm.s.origin, cl.predicted_origins[frame]);
+		}
+
+		oldframe = (ack - 2) & (CMD_BACKUP - 1);
+		oldz = cl.predicted_origins[oldframe][2];
+		step = pm.s.origin[2] - oldz;
+		if (step > 63 && step < 160 && (pm.s.pm_flags & PMF_ON_GROUND)) {
+			cl.predicted_step = step * 0.125;
+			cl.predicted_step_time = cls.realTime - cls.frameTime * 500;
+		}
 	}
-
 	// copy results out for rendering
 	cl.predicted_origin[0] = pm.s.origin[0] * 0.125;
 	cl.predicted_origin[1] = pm.s.origin[1] * 0.125;

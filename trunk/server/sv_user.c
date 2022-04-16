@@ -605,7 +605,7 @@ void SV_ExecuteClientMessage (client_t * cl) {
 					if (cl->lastframe > 0) {
 						cl->frame_latency[cl->
 							lastframe & (LATENCY_COUNTS - 1)] =
-							svs.realtime -
+							svs.realTime -
 							cl->frames[cl->lastframe & UPDATE_MASK].senttime;
 					}
 				}

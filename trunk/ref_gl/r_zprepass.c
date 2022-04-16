@@ -456,6 +456,7 @@ void R_DrawDepthScene (void) {
 //	qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //debug tool
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
+
 		qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 		qglEnableVertexAttribArray(ATT_POSITION);
 		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));

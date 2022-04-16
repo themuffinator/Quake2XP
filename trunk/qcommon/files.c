@@ -172,6 +172,52 @@ qboolean modName(const char *gameDir) {
 	return qfalse;
 }
 
+qboolean RepairPath(char* filename)
+{
+	int i = 0;
+	int last = 0;
+	int laster = 0;
+
+	while (1)
+	{
+		if (filename[i] == 0)
+			return qfalse;
+
+		if (filename[i] == '/' || filename[i] == '\\')
+		{
+			laster = last;
+			last = i;
+		}
+
+		if (filename[i] == '.' && filename[i + 1] == '.')
+		{
+			if (laster == 0)
+				return qfalse;	// Ситуация типа '../monsters/skin.pcx', то есть две точки встретились в самом начале
+
+			if (filename[i + 2] != '/' && filename[i + 2] != '\\')
+				return qfalse;	// Ситуация, когда не встретилась строка  ../
+
+			int in, out;
+			in = i + 3;
+			out = laster + 1;
+
+			while (1)
+			{
+				filename[out] = filename[in];
+
+				if (filename[in] == 0)
+					return qtrue;
+
+				in++;
+				out++;
+			}
+		}
+
+		i++;
+	}
+}
+
+
 /*
 ===========
 FS_FOpenFile
@@ -189,6 +235,8 @@ int FS_FOpenFile (const char *filename, qFILE *qfile) {
 	char			netpath[MAX_OSPATH];
 	pack_t			*pak;
 	int				i;
+	
+	while (RepairPath((char*)filename)); //ctank skin fix
 
 	qfile->f = 0;
 	qfile->z = 0;

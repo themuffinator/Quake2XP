@@ -196,7 +196,7 @@ void SV_SpawnServer (char *server, char *spawnpoint,
 
 	// wipe the entire per-level structure
 	memset (&sv, 0, sizeof(sv));
-	svs.realtime = 0;
+	svs.realTime = 0;
 	sv.loadgame = loadgame;
 	sv.attractloop = attractloop;
 

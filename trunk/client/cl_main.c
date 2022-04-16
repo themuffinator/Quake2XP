@@ -141,8 +141,8 @@ void CL_WriteDemoMessage (void) {
 	// the first eight bytes are just packet sequencing stuff
 	len = net_message.cursize - 8;
 	swlen = LittleLong (len);
-	fwrite (&swlen, 4, 1, cls.demofile);
-	fwrite (net_message.data + 8, len, 1, cls.demofile);
+	fwrite (&swlen, 4, 1, cls.demoFile);
+	fwrite (net_message.data + 8, len, 1, cls.demoFile);
 }
 
 
@@ -156,16 +156,16 @@ stop recording a demo
 void CL_Stop_f (void) {
 	int len;
 
-	if (!cls.demorecording) {
+	if (!cls.demoRecording) {
 		Com_Printf ("Not recording a demo.\n");
 		return;
 	}
 	// finish up
 	len = -1;
-	fwrite (&len, 4, 1, cls.demofile);
-	fclose (cls.demofile);
-	cls.demofile = NULL;
-	cls.demorecording = qfalse;
+	fwrite (&len, 4, 1, cls.demoFile);
+	fclose (cls.demoFile);
+	cls.demoFile = NULL;
+	cls.demoRecording = qfalse;
 	Com_Printf ("Stopped demo.\n");
 }
 
@@ -192,7 +192,7 @@ void CL_Record_f (void) {
 		return;
 	}
 
-	if (cls.demorecording) {
+	if (cls.demoRecording) {
 		Com_Printf ("Already recording.\n");
 		return;
 	}
@@ -209,16 +209,16 @@ void CL_Record_f (void) {
 
 	Com_Printf ("recording to %s.\n", name);
 	FS_CreatePath (name);
-	cls.demofile = fopen (name, "wb");
-	if (!cls.demofile) {
+	cls.demoFile = fopen (name, "wb");
+	if (!cls.demoFile) {
 		Com_Printf ("ERROR: couldn't open.\n");
 		return;
 	}
-	cls.demorecording = qtrue;
+	cls.demoRecording = qtrue;
 
 	// don't start saving messages until a non-delta compressed message is
 	// received
-	cls.demowaiting = qtrue;
+	cls.demoWaiting = qtrue;
 
 	//
 	// write out messages to hold the startup information
@@ -242,8 +242,8 @@ void CL_Record_f (void) {
 				// it
 				// out
 				len = LittleLong (buf.cursize);
-				fwrite (&len, 4, 1, cls.demofile);
-				fwrite (buf.data, buf.cursize, 1, cls.demofile);
+				fwrite (&len, 4, 1, cls.demoFile);
+				fwrite (buf.data, buf.cursize, 1, cls.demoFile);
 				buf.cursize = 0;
 			}
 
@@ -263,8 +263,8 @@ void CL_Record_f (void) {
 
 		if (buf.cursize + 64 > buf.maxsize) {	// write it out
 			len = LittleLong (buf.cursize);
-			fwrite (&len, 4, 1, cls.demofile);
-			fwrite (buf.data, buf.cursize, 1, cls.demofile);
+			fwrite (&len, 4, 1, cls.demoFile);
+			fwrite (buf.data, buf.cursize, 1, cls.demoFile);
 			buf.cursize = 0;
 		}
 
@@ -279,8 +279,8 @@ void CL_Record_f (void) {
 	// write it to the demo file
 
 	len = LittleLong (buf.cursize);
-	fwrite (&len, 4, 1, cls.demofile);
-	fwrite (buf.data, buf.cursize, 1, cls.demofile);
+	fwrite (&len, 4, 1, cls.demoFile);
+	fwrite (buf.data, buf.cursize, 1, cls.demoFile);
 
 	// the rest of the demo file will be individual frames
 }
@@ -358,6 +358,7 @@ void CL_ForwardToServer_f (void) {
 		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 		SZ_Print (&cls.netchan.message, Cmd_Args ());
 	}
+	cls.forcePacket = qtrue;
 }
 
 
@@ -402,7 +403,7 @@ void CL_Drop (void) {
 	CL_Disconnect ();
 
 	// drop loading plaque unless this is the initial game start
-	if (cls.disable_servercount != -1)
+	if (cls.disableServerCount != -1)
 		SCR_EndLoadingPlaque ();	// get rid of loading plaque
 }
 
@@ -419,7 +420,7 @@ void CL_SendConnectPacket (void) {
 	netadr_t adr;
 	int port;
 
-	if (!NET_StringToAdr (cls.servername, &adr)) {
+	if (!NET_StringToAdr (cls.serverName, &adr)) {
 		Com_Printf ("Bad server address\n");
 		cls.connect_time = 0;
 		return;
@@ -442,6 +443,16 @@ void CL_SendConnectPacket (void) {
 }
 
 /*
+==================
+CL_ForcePacket
+==================
+*/
+void CL_ForcePacket(void)
+{
+	cls.forcePacket = qtrue;
+}
+
+/*
 =================
 CL_CheckForResend
 
@@ -455,7 +466,7 @@ void CL_CheckForResend (void) {
 	// then connect
 	if (cls.state == ca_disconnected && Com_ServerState ()) {
 		cls.state = ca_connecting;
-		strncpy (cls.servername, "localhost", sizeof(cls.servername) - 1);
+		strncpy (cls.serverName, "localhost", sizeof(cls.serverName) - 1);
 		// we don't need a challenge on the localhost
 		CL_SendConnectPacket ();
 		return;
@@ -465,13 +476,13 @@ void CL_CheckForResend (void) {
 	if (cls.state != ca_connecting)
 		return;
 
-	if (cls.realtime - cls.connect_time < 3000)
+	if (cls.realTime - cls.connect_time < 3000)
 		return;
 
 	CL_ClearDecals ();
 	CL_ClearParticles ();
 
-	if (!NET_StringToAdr (cls.servername, &adr)) {
+	if (!NET_StringToAdr (cls.serverName, &adr)) {
 		Com_Printf ("Bad server address\n");
 		cls.state = ca_disconnected;
 		return;
@@ -479,9 +490,9 @@ void CL_CheckForResend (void) {
 	if (adr.port == 0)
 		adr.port = BigShort (PORT_SERVER);
 
-	cls.connect_time = cls.realtime;	// for retransmit requests
+	cls.connect_time = cls.realTime;	// for retransmit requests
 
-	Com_Printf ("Connecting to %s...\n", cls.servername);
+	Com_Printf ("Connecting to %s...\n", cls.serverName);
 
 	Netchan_OutOfBandPrint (NS_CLIENT, adr, "getchallenge\n");
 }
@@ -518,7 +529,7 @@ void CL_Connect_f (void) {
 	CL_Disconnect ();
 
 	cls.state = ca_connecting;
-	strncpy (cls.servername, server, sizeof(cls.servername) - 1);
+	strncpy (cls.serverName, server, sizeof(cls.serverName) - 1);
 	cls.connect_time = -99999;	// CL_CheckForResend() will fire
 	// immediately
 }
@@ -633,7 +644,7 @@ void CL_Disconnect (void) {
 
 	SCR_StopCinematic ();
 
-	if (cls.demorecording)
+	if (cls.demoRecording)
 		CL_Stop_f ();
 
 	// send a disconnect message to the server
@@ -753,13 +764,14 @@ void CL_Reconnect_f (void) {
 		cls.state = ca_connected;
 		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
 		MSG_WriteString (&cls.netchan.message, "new");
+		cls.forcePacket = qtrue;
 		return;
 	}
 
-	if (*cls.servername) {
+	if (*cls.serverName) {
 		if (cls.state >= ca_connected) {
 			CL_Disconnect ();
-			cls.connect_time = cls.realtime - 1500;
+			cls.connect_time = cls.realTime - 1500;
 		}
 		else
 			cls.connect_time = -99999;	// fire immediately
@@ -920,6 +932,7 @@ void CL_ConnectionlessPacket (void) {
 		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
 		MSG_WriteString (&cls.netchan.message, "new");
 		cls.state = ca_connected;
+		cls.forcePacket = qtrue;
 		return;
 	}
 	// server responding to a status broadcast
@@ -1020,7 +1033,7 @@ void CL_ReadPackets (void) {
 	// check timeout
 	//
 	if (cls.state >= ca_connected
-		&& cls.realtime - cls.netchan.last_received >
+		&& cls.realTime - cls.netchan.last_received >
 		cl_timeout->value * 1000) {
 		if (++cl.timeoutcount > 5)	// timeoutcount saves debugger
 		{
@@ -1437,7 +1450,7 @@ CL_InitLocal
 */
 void CL_InitLocal (void) {
 	cls.state = ca_disconnected;
-	cls.realtime = Sys_Milliseconds ();
+	cls.realTime = Sys_Milliseconds ();
 
 	CL_InitInput ();
 
@@ -1464,7 +1477,7 @@ void CL_InitLocal (void) {
 	cl_noskins = Cvar_Get ("cl_noskins", "0", 0);
 	cl_autoskins = Cvar_Get ("cl_autoskins", "0", 0);
 	cl_predict = Cvar_Get ("cl_predict", "1", 0);
-	cl_maxFps = Cvar_Get ("cl_maxFps", "600", CVAR_ARCHIVE);
+	cl_maxFps = Cvar_Get ("cl_maxFps", "500", CVAR_ARCHIVE);
 	cl_upspeed = Cvar_Get ("cl_upspeed", "200", 0);
 	cl_forwardspeed = Cvar_Get ("cl_forwardspeed", "200", 0);
 	cl_sidespeed = Cvar_Get ("cl_sidespeed", "200", 0);
@@ -1559,6 +1572,10 @@ void CL_InitLocal (void) {
 	deathmatch = Cvar_Get ("deathmatch", "0", CVAR_SERVERINFO);
 
 	sys_cpuUtilization = Cvar_Get("sys_cpuUtilization", "0", CVAR_ARCHIVE);
+	
+	cl_async = Cvar_Get("cl_async", "1", CVAR_ARCHIVE);
+	net_maxFps = Cvar_Get("net_maxFps", "60", CVAR_ARCHIVE);
+	r_maxFps = Cvar_Get("r_maxFps", "1000", CVAR_ARCHIVE);
 
 	//
 	// register our commands
@@ -1711,6 +1728,197 @@ void CL_FixCvarCheats (void) {
 
 //============================================================================
 
+static void CL_RefreshInputs(void)
+{
+	// fetch results from server
+	CL_ReadPackets();
+
+	// get new key events
+	Sys_SendKeyEvents();
+
+	// process console commands
+	Cbuf_Execute();
+
+	// fix any cheating cvars
+	CL_FixCvarCheats();
+
+	// Update usercmd state
+	if (cls.state > ca_connecting)
+		CL_RefreshCmd();
+	else
+		CL_RefreshMove();
+}
+
+/*
+==================
+CL_SendCommand_Async
+==================
+*/
+static void CL_SendCommand_Async(void)
+{
+	// send intentions now
+	CL_SendCmd_Async();
+
+	// resend a connection request if necessary
+	CL_CheckForResend();
+}
+
+
+/*
+==================
+CL_Frame_Async
+==================
+*/
+#define FRAMETIME_MAX 0.5 // was 0.2
+void CL_Frame_Async(int msec)
+{
+	static int	packetDelta = 0;
+	static int	renderDelta = 0;
+	static int	miscDelta = 0;
+	static int  lasttimecalled;
+	qboolean	packetFrame = qtrue;
+	qboolean	renderFrame = qtrue;
+	qboolean	miscFrame = qtrue;
+
+	// Don't allow setting maxfps too low or too high
+	net_maxFps->integer = ClampCvarInteger(10, 90, net_maxFps->integer);
+	r_maxFps->integer	= ClampCvarInteger(10, 1000, r_maxFps->integer);
+
+	packetDelta += msec;
+	renderDelta += msec;
+	miscDelta += msec;
+	
+	// decide the simulation time
+	cls.frameTime = packetDelta * 0.001f;
+	cls.renderFrameTime = renderDelta * 0.001f;
+	cl.time += msec;
+	cls.realTime = curtime;
+
+	// Don't extrapolate too far ahead
+	if (cls.frameTime > FRAMETIME_MAX)
+		cls.frameTime = FRAMETIME_MAX;
+	if (cls.frameTime > FRAMETIME_MAX)
+		cls.frameTime = FRAMETIME_MAX;
+
+	// If in the debugger last frame, don't timeout
+	if (msec > 5000)
+		cls.netchan.last_received = Sys_Milliseconds();
+
+	if (!cl_timedemo->value)
+	{	// Don't flood packets out while connecting
+		if (cls.state == ca_connected && packetDelta < 100)
+			packetFrame = qfalse;
+
+		if (packetDelta < 1000.0 / net_maxFps->value)
+			packetFrame = qfalse;
+		else if (cls.frameTime == cls.renderFrameTime)
+			packetFrame = qfalse;
+
+		if (renderDelta < 1000.0 / r_maxFps->value)
+			renderFrame = qfalse;
+
+		// Stuff that only needs to run at 10FPS
+		if (miscDelta < 1000.0 / 10)
+			miscFrame = qfalse;
+
+		if (!packetFrame && !renderFrame && !cls.forcePacket && !userinfo_modified)
+		{	
+			return;
+		}
+
+	}
+	else if (msec < 1)	// don't exceed 1000 fps in timedemo mode (fixes hang)
+	{
+		return;
+	}
+
+	// Update the inputs (keyboard, mouse, console)
+	if (packetFrame || renderFrame)
+		CL_RefreshInputs();
+
+	if (cls.forcePacket || userinfo_modified)
+	{
+		packetFrame = qtrue;
+		cls.forcePacket =qfalse;
+	}
+
+	// Send a new command message to the server
+	if (packetFrame)
+	{
+		packetDelta = 0;
+		CL_SendCommand_Async();
+	}
+
+	if (renderFrame)
+	{
+		renderDelta = 0;
+
+		if (miscFrame)
+		{
+			miscDelta = 0;
+
+			// Let the mouse activate or deactivate
+			IN_Frame();
+
+			// Allow rendering DLL change
+			VID_CheckChanges();
+		}
+		// Predict all unacknowledged movements
+		CL_PredictMovement();
+
+		if (!cl.refresh_prepped && cls.state == ca_active)
+			CL_PrepRefresh();
+
+		// Predict all unacknowledged movements
+	//	CL_PredictMovement ();
+
+		// update the screen
+		if (host_speeds->value)
+			time_before_ref = Sys_Milliseconds();
+		SCR_UpdateScreen();
+		if (host_speeds->value)
+			time_after_ref = Sys_Milliseconds();
+
+		Music_Update();
+		{
+			float orientation[6];
+			memcpy(orientation, cl.v_forward, sizeof(vec3_t));
+			memcpy(&orientation[3], cl.v_up, sizeof(vec3_t));
+			S_Update(cl.refdef.vieworg, cl.v_forward, orientation);
+		}
+
+		// Advance local effects for next frame
+		CL_RunDLights();
+		CL_RunLightStyles();
+		SCR_RunCinematic();
+		SCR_RunConsole();
+
+		cls.frameCount++;
+
+		if (log_stats->value)
+		{
+			if (cls.state == ca_active)
+			{
+				if (!lasttimecalled)
+				{
+					lasttimecalled = Sys_Milliseconds();
+					if (log_stats_file)
+						fprintf(log_stats_file, "0\n");
+				}
+				else
+				{
+					int now = Sys_Milliseconds();
+
+					if (log_stats_file)
+						fprintf(log_stats_file, "%d\n", now - lasttimecalled);
+					lasttimecalled = now;
+				}
+			}
+		}
+	}
+}
+
+
 /*
 ==================
 CL_SendCommand
@@ -1748,6 +1956,13 @@ void CL_Frame (int msec) {
 	if (dedicated->integer)
 		return;
 
+	if (cl_async->value && !cl_timedemo->value)
+	{
+		CL_Frame_Async(msec);
+		return;
+	}
+
+
 	extratime += msec;
 
 	if (cl_maxFps->integer == 0)
@@ -1770,13 +1985,13 @@ void CL_Frame (int msec) {
 	IN_Frame ();
 
 	// decide the simulation time
-	cls.frametime = extratime * 0.001f;
+	cls.frameTime = extratime * 0.001f;
 	cl.time += extratime;
-	cls.realtime = curtime;
+	cls.realTime = curtime;
 
 	extratime = 0;
-	if (cls.frametime > 0.2f)
-		cls.frametime = 0.2f;
+	if (cls.frameTime > 0.2f)
+		cls.frameTime = 0.2f;
 
 	// if in the debugger last frame, don't timeout
 	if (msec > 5000)
@@ -1819,7 +2034,7 @@ void CL_Frame (int msec) {
 	SCR_RunCinematic ();
 	SCR_RunConsole ();
 
-	cls.framecount++;
+	cls.frameCount++;
 
 	if (log_stats->integer) {
 		if (cls.state == ca_active) {
@@ -1893,7 +2108,7 @@ void CL_Init (void) {
 	M_Init ();
 
 	SCR_Init ();
-	cls.disable_screen = qtrue;	// don't draw yet
+	cls.disableScreen = qtrue;	// don't draw yet
 
 	Music_Init ();
 	CL_InitLocal ();

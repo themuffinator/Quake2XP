@@ -132,6 +132,9 @@ cvar_t* scr_showTexName;
 cvar_t* sys_cpuUtilization;
 cvar_t* cl_gunCollision;
 
+cvar_t* cl_async;
+cvar_t* net_maxFps;
+cvar_t* r_maxFps;
 
 #ifndef VIDDEF_LOCK
 #define VIDDEF_LOCK
@@ -139,8 +142,7 @@ typedef struct {
 	unsigned width, height;		// coordinates from main game
 } viddef_t;
 #endif
-//#define viddef vid
-//extern viddef_t vid;
+
 extern viddef_t viddef;
 
 typedef struct {
@@ -152,6 +154,10 @@ typedef struct {
 rumble_t rumble;
 void CL_SetRumble(int low, int high, int end);
 void CL_ShotdownRumble();
+
+void CL_SendCmd_Async(void);
+void CL_RefreshCmd(void);
+void CL_RefreshMove(void);
 
 //=============================================================================
 // Sound effect ID's:
@@ -222,6 +228,7 @@ trace_t CL_Trace (vec3_t start, vec3_t end, float size, int contentmask);
 void CL_ParticleSmoke2 (vec3_t org, vec3_t dir, float r, float g, float b,
 	int count, qboolean add);
 void CL_LaserParticle (vec3_t org, vec3_t dir, int count);
+
 #define	MAX_LASERS	32
 typedef struct {
 	entity_t ent;
@@ -337,7 +344,7 @@ typedef struct {
 	vec3_t viewangles;
 
 	int time;					// this is the time value that the client
-	// is rendering at.  always <= cls.realtime
+	// is rendering at.  always <= cls.realTime
 	float lerpfrac;				// between oldframe and frame
 	
 	int minFps, maxFps;
@@ -356,7 +363,7 @@ typedef struct {
 	// non-gameserver infornamtion
 	// FIXME: move this cinematic stuff into the cin_t structure
 	qFILE cinematic_file;
-	int cinematictime;			// cls.realtime for first cinematic frame
+	int cinematictime;			// cls.realTime for first cinematic frame
 	int cinematicframe;
 	int cinStaticHD;
 	char cinematicpalette[768];
@@ -435,20 +442,22 @@ typedef struct {
 	qboolean consoleActive;
 	qboolean menuActive;
 
-	int framecount;
-	int realtime;				// always increasing, no clamping, etc
-	float frametime;			// seconds since last frame
+	int frameCount;
+	int realTime;				// always increasing, no clamping, etc
+	float frameTime;			// seconds since last frame
+	float renderFrameTime;
+	qboolean forcePacket;
 
 	// screen rendering information
-	float disable_screen;		// showing loading plaque between levels
+	int disableScreen;		// showing loading plaque between levels
 	// or changing rendering dlls
 	// if time gets > 30 seconds ahead, break it
-	int disable_servercount;	// when we receive a frame and
+	int disableServerCount;	// when we receive a frame and
 	// cl.servercount
 	// > cls.disable_servercount, clear disable_screen
 
 	// connection information
-	char servername[MAX_OSPATH];	// name of server from original
+	char serverName[MAX_OSPATH];	// name of server from original
 	// connect
 	float connect_time;			// for connection retransmits
 
@@ -462,19 +471,17 @@ typedef struct {
 	int challenge;				// from the server to use for connecting
 
 	FILE *download;				// file transfer from server
-	char downloadtempname[MAX_OSPATH];
-	char downloadname[MAX_OSPATH];
-	int downloadnumber;
-	dltype_t downloadtype;
-	size_t		downloadposition;	// added for HTTP downloads
-	float		downloadrate;		// Knightmare- to display KB/s
-	int downloadpercent;
+	char downloadTempName[MAX_OSPATH];
+	char downloadName[MAX_OSPATH];
+	int downloadNumber;
+	dltype_t downloadType;
+	int downloadPercent;
 
 	// demo recording info must be here, so it isn't cleared on level change
-	qboolean demorecording;
-	qboolean demowaiting;		// don't record until a non-delta message
+	qboolean demoRecording;
+	qboolean demoWaiting;		// don't record until a non-delta message
 	// is received
-	FILE *demofile;
+	FILE *demoFile;
 } client_static_t;
 
 extern client_static_t cls;

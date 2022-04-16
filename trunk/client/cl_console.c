@@ -368,7 +368,7 @@ static void Con_Linefeed (qboolean skipNotify) {
 
 	// mark time for transparent overlay
 	if (con.current >= 0)
-		con.times[con.current % NUM_CON_TIMES] = skipNotify ? 0 : cls.realtime;
+		con.times[con.current % NUM_CON_TIMES] = skipNotify ? 0 : cls.realTime;
 
 	con.x = 0;
 	if (con.display == con.current)
@@ -500,7 +500,7 @@ void Con_DrawInput (void) {
 	text = key_lines[edit_line];
 
 	// add the cursor frame
-	text[key_linepos] = 10 + ((int)(cls.realtime >> 8) & 1);
+	text[key_linepos] = 10 + ((int)(cls.realTime >> 8) & 1);
 
 	// fill out remainder with spaces
 	for (i = key_linepos + 1; i < con.lineWidth; i++)
@@ -556,7 +556,7 @@ void Con_DrawNotify (void) {
 		if (time == 0)
 			continue;
 
-		time = cls.realtime - time;
+		time = cls.realTime - time;
 		if (time > con_notifytime->value * 1000)
 			continue;
 
@@ -594,7 +594,7 @@ void Con_DrawNotify (void) {
 			s += chat_bufferlen - (int)(((viddef.width / fontscale) / 8) - (skip + 1));
 	
 		Draw_StringScaled (skip*fontscale * 8, v, fontscale, fontscale, s);
-		Draw_CharScaled ((strlen (s) + skip) * fontscale * 8, v, fontscale, fontscale, 10 + ((cls.realtime >> 8) & 1));
+		Draw_CharScaled ((strlen (s) + skip) * fontscale * 8, v, fontscale, fontscale, 10 + ((cls.realTime >> 8) & 1));
 
 		v += 8;
 	}
@@ -733,10 +733,10 @@ void Con_DrawConsole (float frac) {
 		i = strlen (dlbar);
 		dlbar[i++] = '\x80';
 		// where's the dot go?
-		if (cls.downloadpercent == 0)
+		if (cls.downloadPercent == 0)
 			n = 0;
 		else
-			n = y * cls.downloadpercent / 100;
+			n = y * cls.downloadPercent / 100;
 
 		for (j = 0; j < y; j++)
 		if (j == n)
@@ -746,7 +746,7 @@ void Con_DrawConsole (float frac) {
 		dlbar[i++] = '\x82';
 		dlbar[i] = 0;
 
-		sprintf (dlbar + strlen (dlbar), " %02d%%", cls.downloadpercent);
+		sprintf (dlbar + strlen (dlbar), " %02d%%", cls.downloadPercent);
 
 		// draw it
 		y = con.vislines - 12;

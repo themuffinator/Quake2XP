@@ -301,7 +301,7 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	refdef.height = (24 + cl_hudModelScale->value) * hud_sy;
 	refdef.fov_x = 43;
 	refdef.fov_y = 43;
-	refdef.time = cls.realtime*0.001;
+	refdef.time = cls.realTime*0.001;
 	refdef.viewangles[0] = 30;
 	refdef.areabits = 0;
 	refdef.num_entities = 1;
@@ -1195,7 +1195,7 @@ void CL_DrawInventory (void) {
 		else					// draw a blinky cursor by the selected
 			// item
 		{
-			if ((int)(cls.realtime * 10) & 1)
+			if ((int)(cls.realTime * 10) & 1)
 				Draw_CharScaled (x - 8, y, cl_fontScale->value, cl_fontScale->value, 15);
 
 		}

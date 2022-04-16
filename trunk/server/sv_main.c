@@ -376,7 +376,7 @@ void SVC_DirectConnect (void) {
 			&& (cl->netchan.qport == qport
 			|| adr.port == cl->netchan.remote_address.port)) {
 			if (!NET_IsLocalAddress (adr)
-				&& (svs.realtime - cl->lastconnect) <
+				&& (svs.realTime - cl->lastconnect) <
 				((int)sv_reconnect_limit->value * 1000)) {
 				Com_DPrintf ("%s:reconnect rejected : too soon\n",
 					NET_AdrToString (adr));
@@ -440,8 +440,8 @@ gotnewcl:
 	SZ_Init (&newcl->datagram, newcl->datagram_buf,
 		sizeof(newcl->datagram_buf));
 	newcl->datagram.allowoverflow = qtrue;
-	newcl->lastmessage = svs.realtime;	// don't timeout
-	newcl->lastconnect = svs.realtime;
+	newcl->lastmessage = svs.realTime;	// don't timeout
+	newcl->lastconnect = svs.realTime;
 }
 */
 /*
@@ -577,8 +577,8 @@ void SVC_DirectConnect(void)
 			&& (cl->netchan.qport == qport
 				|| adr.port == cl->netchan.remote_address.port))
 		{
-			//	if (!NET_IsLocalAddress (adr) && (svs.realtime - cl->lastconnect) < ((int)sv_reconnect_limit->value * 1000))
-			if (!NET_IsLocalAddress(adr) && (svs.realtime - cl->lastconnect) < (sv_reconnect_limit->integer * 1000))
+			//	if (!NET_IsLocalAddress (adr) && (svs.realTime - cl->lastconnect) < ((int)sv_reconnect_limit->value * 1000))
+			if (!NET_IsLocalAddress(adr) && (svs.realTime - cl->lastconnect) < (sv_reconnect_limit->integer * 1000))
 			{
 				Com_DPrintf("%s:reconnect rejected : too soon\n", NET_AdrToString(adr));
 				return;
@@ -662,8 +662,8 @@ gotnewcl:
 
 	SZ_Init(&newcl->datagram, newcl->datagram_buf, sizeof(newcl->datagram_buf));
 	newcl->datagram.allowoverflow = qtrue;
-	newcl->lastmessage = svs.realtime;	// don't timeout
-	newcl->lastconnect = svs.realtime;
+	newcl->lastmessage = svs.realTime;	// don't timeout
+	newcl->lastconnect = svs.realTime;
 }
 int Rcon_Validate (void) {
 	if (!strlen (rcon_password->string))
@@ -882,7 +882,7 @@ void SV_ReadPackets (void) {
 				// process 
 				// it
 				if (cl->state != cs_zombie) {
-					cl->lastmessage = svs.realtime;	// don't timeout
+					cl->lastmessage = svs.realTime;	// don't timeout
 					SV_ExecuteClientMessage (cl);
 				}
 			}
@@ -900,7 +900,7 @@ SV_CheckTimeouts
 
 If a packet has not been received from a client for timeout->value
 seconds, drop the conneciton.  Server frames are used instead of
-realtime to avoid dropping the local client while debugging.
+realTime to avoid dropping the local client while debugging.
 
 When a client is normally dropped, the client_t goes into a zombie state
 for a few seconds to make sure any final reliable message gets resent
@@ -913,13 +913,13 @@ void SV_CheckTimeouts (void) {
 	int droppoint;
 	int zombiepoint;
 
-	droppoint = svs.realtime - 1000 * timeout->value;
-	zombiepoint = svs.realtime - 1000 * zombietime->value;
+	droppoint = svs.realTime - 1000 * timeout->value;
+	zombiepoint = svs.realTime - 1000 * zombietime->value;
 
 	for (i = 0, cl = svs.clients; i < maxclients->value; i++, cl++) {
 		// message times may be wrong across a changelevel
-		if (cl->lastmessage > svs.realtime)
-			cl->lastmessage = svs.realtime;
+		if (cl->lastmessage > svs.realTime)
+			cl->lastmessage = svs.realTime;
 
 		if (cl->state == cs_zombie && cl->lastmessage < zombiepoint) {
 			cl->state = cs_free;	// can now be reused
@@ -977,10 +977,10 @@ void SV_RunGameFrame (void) {
 		ge->RunFrame ();
 
 		// never get more than one tic behind
-		if (sv.time < svs.realtime) {
+		if (sv.time < svs.realTime) {
 			if (sv_showclamp->integer)
 				Com_Printf ("sv highclamp\n");
-			svs.realtime = sv.time;
+			svs.realTime = sv.time;
 		}
 	}
 
@@ -1002,7 +1002,7 @@ void SV_Frame (int msec) {
 	if (!svs.initialized)
 		return;
 
-	svs.realtime += msec;
+	svs.realTime += msec;
 
 	// keep the random time dependent
 	rand ();
@@ -1014,14 +1014,14 @@ void SV_Frame (int msec) {
 	SV_ReadPackets ();
 
 	// move autonomous things around if enough time has passed
-	if (!sv_timedemo->value && svs.realtime < sv.time) {
+	if (!sv_timedemo->value && svs.realTime < sv.time) {
 		// never let the time get too far off
-		if (sv.time - svs.realtime > 100) {
+		if (sv.time - svs.realTime > 100) {
 			if (sv_showclamp->integer)
 				Com_Printf ("sv lowclamp\n");
-			svs.realtime = sv.time - 100;
+			svs.realTime = sv.time - 100;
 		}
-		NET_Sleep (sv.time - svs.realtime);
+		NET_Sleep (sv.time - svs.realTime);
 		return;
 	}
 	// update ping based on the last known frame from all clients
@@ -1073,13 +1073,13 @@ void Master_Heartbeat (void) {
 		return;					// a private dedicated game
 
 	// check for time wraparound
-	if (svs.last_heartbeat > svs.realtime)
-		svs.last_heartbeat = svs.realtime;
+	if (svs.last_heartbeat > svs.realTime)
+		svs.last_heartbeat = svs.realTime;
 
-	if (svs.realtime - svs.last_heartbeat < HEARTBEAT_SECONDS * 1000)
+	if (svs.realTime - svs.last_heartbeat < HEARTBEAT_SECONDS * 1000)
 		return;					// not time to send yet
 
-	svs.last_heartbeat = svs.realtime;
+	svs.last_heartbeat = svs.realTime;
 
 	// send the same string that we would give for a status OOB command
 	string = SV_StatusString ();

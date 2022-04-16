@@ -100,9 +100,10 @@ product_t product[] = {
 {0XC083,	"G403 Prodigy Gaming Mouse."},
 {0XC084,	"G203 Gaming Mouse."},
 {0XC063,	"DELL Laser Mouse."},
-{0XC064,	"M110 corded optical mouse."},
+{0XC064,	"M110 Corded optical mouse."},
 {0XC066,	"G9x Laser Mouse."},
 {0XC068,	"G500 Laser Mouse."},
+{0xC069,	"M500 Corded Mouse."},
 
 {0xc21d,	"Gamepad F310."},	
 {0xc21e,	"Gamepad F510."},

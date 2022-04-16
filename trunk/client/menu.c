@@ -332,7 +332,7 @@ void M_Main_DrawQuad(float x, float y) {
 	refdef.height = 50 * cl_fontScale->value;
 	refdef.fov_x = 45;
 	refdef.fov_y = 45;
-	refdef.time = cls.realtime / 1.5;
+	refdef.time = cls.realTime / 1.5;
 	refdef.areabits = 0;
 	refdef.num_entities = 1;
 	refdef.entities = &entity;
@@ -2244,7 +2244,7 @@ void M_Credits_MenuDraw(void) {
 	
 	drawIDlogo = qfalse;
 
-	for (i = 0, y = viddef.height - ((cls.realtime - credits_start_time) / 30.0F); credits[i] && y < (int)viddef.height; y += 10 * cl_fontScale->value, i++)    /// Berserker' FIX: was y < viddef.height
+	for (i = 0, y = viddef.height - ((cls.realTime - credits_start_time) / 30.0F); credits[i] && y < (int)viddef.height; y += 10 * cl_fontScale->value, i++)    /// Berserker' FIX: was y < viddef.height
 	{
 		int j, stringoffset = 0;
 		int bold;
@@ -2270,7 +2270,7 @@ void M_Credits_MenuDraw(void) {
 	}
 
 	if (y < 0)
-		credits_start_time = cls.realtime;
+		credits_start_time = cls.realTime;
 
 }
 
@@ -2332,7 +2332,7 @@ void M_Menu_Credits_f(void) {
 
 	}
 
-	credits_start_time = cls.realtime;
+	credits_start_time = cls.realTime;
 	M_PushMenu(M_Credits_MenuDraw, M_Credits_Key);
 }
 
@@ -4656,7 +4656,7 @@ void PlayerConfig_MenuDraw(void) {
 	refdef.height = 350 * cl_fontScale->value;
 	refdef.fov_x = 40;
 	refdef.fov_y = CalcFov(refdef.fov_x, refdef.width, refdef.height);
-	refdef.time = cls.realtime * 0.001;
+	refdef.time = cls.realTime * 0.001;
 
 	pose = rand() % 16;
 
@@ -4685,16 +4685,16 @@ void PlayerConfig_MenuDraw(void) {
 		VectorCopy(entity[0].origin, entity[0].oldorigin);
 
 		if (pose_rot_angle[pose_rot] == -1) {
-			entity[0].angles[1] = anglemod(cls.realtime >> 4);
+			entity[0].angles[1] = anglemod(cls.realTime >> 4);
 			if (entity[0].angles[1] > 360)
 				entity[0].angles[1] -= 360;
 		}
 		else
 			entity[0].angles[1] = pose_rot_angle[pose_rot];
 
-		entity[0].frame = pose_start[pose] + ((cls.realtime >> 8) % (pose_end[pose] - pose_start[pose] + 1));
-		entity[0].oldframe = pose_start[pose] + (((cls.realtime >> 8) - 1) % (pose_end[pose] - pose_start[pose] + 1));
-		entity[0].backlerp = 1.0 - ((float)(cls.realtime & 0xff)) / 255.0;
+		entity[0].frame = pose_start[pose] + ((cls.realTime >> 8) % (pose_end[pose] - pose_start[pose] + 1));
+		entity[0].oldframe = pose_start[pose] + (((cls.realTime >> 8) - 1) % (pose_end[pose] - pose_start[pose] + 1));
+		entity[0].backlerp = 1.0 - ((float)(cls.realTime & 0xff)) / 255.0;
 
 		// player weapon model
 
@@ -4908,7 +4908,7 @@ void M_DrawBackgroundModel() {
 	refdef.height = viddef.height;
 	refdef.fov_x = 45;
 	refdef.fov_y = 45;
-	refdef.time = cls.realtime;
+	refdef.time = cls.realTime;
 	refdef.viewangles[0] = 30;
 	refdef.areabits = 0;
 	refdef.num_entities = 1;

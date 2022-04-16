@@ -664,13 +664,13 @@ void VID_CheckChanges (void) {
 		vid_ref->modified = qfalse;
 		r_fullScreen->modified = qtrue;
 		cl.refresh_prepped = qfalse;
-		cls.disable_screen = qtrue;
+		cls.disableScreen = qtrue;
 		CL_ClearDecals ();
 
 		if (!VID_StartRefresh ())
 			Com_Error (ERR_FATAL, "Error during initialization video");
 
-		cls.disable_screen = qfalse;
+		cls.disableScreen = qfalse;
 	
 		int		start = 0, stop = 0;
 		float	sec;

@@ -9521,12 +9521,12 @@ NVAPI_INTERFACE NvAPI_D3D9_Present(IDirect3DDevice9 *pDevice,
 //!   DESCRIPTION: This API queries the universal framecounter of the Quadro-Sync master device.
 //!
 //! \param [in]   pDevice            The caller provides the DX9 device that has access to the Quadro-Sync device
-//! \param [out]  pFrameCount        The caller provides the storage space where the framecount is stored.
+//! \param [out]  pFrameCount        The caller provides the storage space where the frameCount is stored.
 //!
 //! SUPPORTED OS:  Windows 7 and higher
 //!
 //!
-//! \retval ::NVAPI_OK                  *pFrameCount populated with framecount value.
+//! \retval ::NVAPI_OK                  *pFrameCount populated with frameCount value.
 //! \retval ::NVAPI_ERROR               The operation failed.
 //! \retval ::NVAPI_INVALID_ARGUMENT    One or more args passed in are invalid.
 //! \retval ::NVAPI_API_NOT_INITIALIZED NvAPI was not yet initialized.
@@ -9729,12 +9729,12 @@ NVAPI_INTERFACE NvAPI_D3D1x_Present(IUnknown *pDevice,
 //!
 //! \param [in]    pDevice           The caller provides the D3D device that has access to the Quadro-Sync device,
 //!                                  pDevice can be either ID3D10Device or ID3D10Device1 or ID3D11Device or ID3D12Device.
-//! \param [out]   pFrameCount       The caller provides the storage space where the framecount is stored.
+//! \param [out]   pFrameCount       The caller provides the storage space where the frameCount is stored.
 //!
 //! SUPPORTED OS:  Windows 7 and higher
 //!
 //!
-//! \retval ::NVAPI_OK                   *pFrameCount populated with framecount value.
+//! \retval ::NVAPI_OK                   *pFrameCount populated with frameCount value.
 //! \retval ::NVAPI_ERROR                The operation failed.
 //! \retval ::NVAPI_INVALID_ARGUMENT     One or more args passed in are invalid.
 //! \retval ::NVAPI_API_NOT_INITIALIZED  NvAPI was not yet initialized.

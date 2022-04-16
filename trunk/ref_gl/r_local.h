@@ -525,18 +525,15 @@ mleaf_t* Mod_PointInLeaf(vec3_t p, model_t* model);
 #define MAX_POLY_VERT		128
 #define	MAX_BATCH_SURFS		21845
 
-extern vec3_t	wVertexArray[MAX_BATCH_SURFS];
+vec3_t	wVertexArray[MAX_BATCH_SURFS];
+vec2_t	wTexArray[MAX_BATCH_SURFS];
+vec2_t	wLMArray[MAX_BATCH_SURFS];
+vec4_t   wColorArray[MAX_BATCH_SURFS];
 
-extern float	wTexArray[MAX_BATCH_SURFS][2];
-extern float	wLMArray[MAX_BATCH_SURFS][2];
-extern vec4_t   wColorArray[MAX_BATCH_SURFS];
-
-
-extern vec3_t	nTexArray[MAX_BATCH_SURFS];
-extern vec3_t	tTexArray[MAX_BATCH_SURFS];
-extern vec3_t	bTexArray[MAX_BATCH_SURFS];
-
-extern uint		indexArray[MAX_MAP_VERTS * 3];
+vec3_t	nTexArray[MAX_BATCH_SURFS];
+vec3_t	tTexArray[MAX_BATCH_SURFS];
+vec3_t	bTexArray[MAX_BATCH_SURFS];
+uint	indexArray[MAX_MAP_VERTS * 3];
 
 extern model_t *r_worldmodel;
 
@@ -785,11 +782,11 @@ typedef struct {
 	GLuint	bsp; 
 	GLuint	bspDynamicShadow;
 	GLuint	shadowMD3;
-	GLuint	fonts;
+	GLuint	_2d;
 	GLuint	fullscreenQuad;
 	GLuint	halfScreenQuad;
 	GLuint	quaterScreenQuad;
-	GLuint	base;
+	GLuint	depthBSP;
 }vao_t;
 
 vao_t vao;
@@ -798,10 +795,11 @@ typedef struct
 {
 	vec3_t      xyz[MD3_MAX_VERTS * MD3_MAX_MESHES];
 	vec2_t      st[MD3_MAX_VERTS * MD3_MAX_MESHES];
-	vec4_t		color[MD3_MAX_VERTS * MD3_MAX_MESHES];
+	vec2_t      st2[MD3_MAX_VERTS * MD3_MAX_MESHES];
 	vec3_t      normal[MD3_MAX_VERTS* MD3_MAX_MESHES];
 	vec3_t      tangent[MD3_MAX_VERTS * MD3_MAX_MESHES];
 	vec3_t      binormal[MD3_MAX_VERTS * MD3_MAX_MESHES];
+	vec4_t		color[MD3_MAX_VERTS * MD3_MAX_MESHES];
 } srfTess_t;
 
 srfTess_t tess;

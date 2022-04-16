@@ -489,17 +489,17 @@ void SCR_RunCinematic (void) {
 		return;					// static image
 
 	if (cls.key_dest != key_game) {	// pause if menu or console is up
-		cl.cinematictime = cls.realtime - cl.cinematicframe * 1000 / 14;
+		cl.cinematictime = cls.realTime - cl.cinematicframe * 1000 / 14;
 		return;
 	}
 
-	frame = (cls.realtime - cl.cinematictime) * 14.0 / 1000;
+	frame = (cls.realTime - cl.cinematictime) * 14.0 / 1000;
 	if (frame <= cl.cinematicframe)
 		return;
 	if (frame > cl.cinematicframe + 1) {
 		Com_DPrintf ("Dropped frame: %i > %i\n", frame,
 			cl.cinematicframe + 1);
-		cl.cinematictime = cls.realtime - cl.cinematicframe * 1000 / 14;
+		cl.cinematictime = cls.realTime - cl.cinematicframe * 1000 / 14;
 	}
 	if (cin.pic)
 		Z_Free (cin.pic);

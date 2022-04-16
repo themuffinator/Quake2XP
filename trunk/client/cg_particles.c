@@ -346,7 +346,7 @@ void CL_AddParticles (void) {
 
 			if (trace.fraction > 0 && trace.fraction < 1) {
 				vec3_t	vel;
-				float time = cl.time - (cls.frametime + cls.frametime * trace.fraction) * 1000;
+				float time = cl.time - (cls.frameTime + cls.frameTime * trace.fraction) * 1000;
 				time = (time - p->time) * 0.001;
 
 				VectorSet (vel, p->vel[0], p->vel[1], p->vel[2] + p->accel[2] * time * grav);

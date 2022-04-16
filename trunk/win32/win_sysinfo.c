@@ -485,20 +485,20 @@ void GetDiskInfos()
 
 void Sys_GetMemorySize() {
 
-	MEMORYSTATUSEX		memsat;
+	MEMORYSTATUSEX		memstat;
 	PROCESS_MEMORY_COUNTERS_EX pmc;
 
-	memsat.dwLength = sizeof(memsat);
-	GlobalMemoryStatusEx(&memsat);
+	memstat.dwLength = sizeof(memstat);
+	GlobalMemoryStatusEx(&memstat);
 	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 
 	ulong virtualMemUsedByMe = pmc.PrivateUsage;
-	ulong physRam = memsat.ullTotalPhys >> 20;
+	ulong physRam = memstat.ullTotalPhys >> 20;
 
 	Com_Printf("\n");
 	Com_Printf("Physical RAM:         " S_COLOR_GREEN "%d" S_COLOR_WHITE "GB\n", (physRam + 512) >>10);
 	Com_Printf("Process Memory Usage: " S_COLOR_GREEN "%d" S_COLOR_WHITE "MB\n", pmc.PrivateUsage >>20);
-	Com_Printf("Total Memory Usage:   " S_COLOR_GREEN "%d" S_COLOR_WHITE "%%\n", memsat.dwMemoryLoad);
+	Com_Printf("Total Memory Usage:   " S_COLOR_GREEN "%d" S_COLOR_WHITE "%%\n", memstat.dwMemoryLoad);
 	Com_Printf("\n");
 
 	GetDiskInfos();

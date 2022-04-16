@@ -196,7 +196,7 @@ void SCR_DrawCenterString (void) {
 }
 
 void SCR_CheckDrawCenterString (void) {
-	scr_centertime_off -= cls.frametime;
+	scr_centertime_off -= cls.frameTime;
 
 	if (scr_centertime_off <= 0)
 		return;
@@ -422,13 +422,13 @@ void SCR_RunConsole (void) {
 		scr_conlines = 0;		// none visible
 
 	if (scr_conlines < scr_con_current) {
-		scr_con_current -= scr_conspeed->value * cls.frametime;
+		scr_con_current -= scr_conspeed->value * cls.frameTime;
 		if (scr_conlines > scr_con_current)
 			scr_con_current = scr_conlines;
 
 	}
 	else if (scr_conlines > scr_con_current) {
-		scr_con_current += scr_conspeed->value * cls.frametime;
+		scr_con_current += scr_conspeed->value * cls.frameTime;
 		if (scr_conlines < scr_con_current)
 			scr_con_current = scr_conlines;
 	}
@@ -477,7 +477,7 @@ SCR_BeginLoadingPlaque
 */
 
 qboolean needLoadingPlaque (void) {
-	if (!cls.disable_screen || !scr_draw_loading)
+	if (!cls.disableScreen || !scr_draw_loading)
 		return qtrue;
 	return qfalse;
 }
@@ -491,7 +491,7 @@ void SCR_BeginLoadingPlaque (void) {
 	
 	Music_Stop ();
 	
-	if (cls.disable_screen)
+	if (cls.disableScreen)
 		return;
 
 	if (developer->integer)
@@ -509,9 +509,9 @@ void SCR_BeginLoadingPlaque (void) {
 
 	SCR_UpdateScreen ();
 	
-	cls.disable_screen = Sys_Milliseconds ();
+	cls.disableScreen = Sys_Milliseconds ();
 	
-	cls.disable_servercount = cl.servercount;
+	cls.disableServerCount = cl.servercount;
 }
 
 /*
@@ -520,7 +520,7 @@ SCR_EndLoadingPlaque
 ================
 */
 void SCR_EndLoadingPlaque (void) {
-	cls.disable_screen = 0;
+	cls.disableScreen = 0;
 	scr_draw_loading = 0;
 	Con_ClearNotify ();
 }
@@ -1067,11 +1067,11 @@ void SCR_UpdateScreen (void) {
 	// if the screen is disabled (loading plaque is up, or vid mode
 	// changing)
 	// do nothing at all
-	if (cls.disable_screen) {
+	if (cls.disableScreen) {
 		if (cls.download)		// Knightmare- don't time out on downloads
-			cls.disable_screen = Sys_Milliseconds ();
-		if (Sys_Milliseconds () - cls.disable_screen > 120000 && cl.refresh_prepped && !(cl.cinematictime > 0)) {
-			cls.disable_screen = 0;
+			cls.disableScreen = Sys_Milliseconds ();
+		if (Sys_Milliseconds () - cls.disableScreen > 120000 && cl.refresh_prepped && !(cl.cinematictime > 0)) {
+			cls.disableScreen = 0;
 			Com_Printf ("Loading plaque timed out.\n");
 			return;
 		}
@@ -1097,7 +1097,7 @@ void SCR_UpdateScreen (void) {
 		R_SetPalette (NULL);
 		SCR_DrawLoading ();
 
-		if (cls.disable_screen)
+		if (cls.disableScreen)
 			scr_draw_loading = 2;
 
 		// NO FULLSCREEN CONSOLE!!!

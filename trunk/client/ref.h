@@ -147,7 +147,7 @@ typedef struct entity_s {
 	 */
 	float	origin[3];				// also used as RF_BEAM's "from"
 	int		frame;					// also used as RF_BEAM's diameter
-	int		framecount;				// for vis calc
+	int		frameCount;				// for vis calc
 
 	/*
 	 ** previous data for lerping
