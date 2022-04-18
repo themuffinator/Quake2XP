@@ -2894,7 +2894,7 @@ void Mod_FreeAll() {
 
 }
 
-#ifdef _WIN32
+#ifndef _WIN32
 /// from Tenebrae, asm by Berserker
 qboolean HasSharedLeafs(byte *v1, byte *v2) {
 
@@ -2950,8 +2950,8 @@ qboolean HasSharedLeafs(byte *v1, byte *v2) {
 	int i;
 
 	while (numLeafs > 32) {
-		uint32_t *v1_x4 = (uint32_t*)v1;
-		uint32_t *v2_x4 = (uint32_t*)v2;
+		uint *v1_x4 = (uint*)v1;
+		uint *v2_x4 = (uint*)v2;
 		if (*v1_x4 & *v2_x4)
 			return qtrue;
 

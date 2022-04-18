@@ -326,7 +326,7 @@
     <ClCompile Include="win32\win_syscons.c">
       <Filter>Source Files\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_raSurfaces.c">
+    <ClCompile Include="ref_gl\r_surfacesRA.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

@@ -105,9 +105,6 @@ void R_DrawAlphaSurfaces() {
 
 		s = r_alphaSurfaces[i];
 
-		if (s->flags & MSURF_LAVA)
-			continue;
-
 		if (s->texInfo->image->texnum != oldTex) {
 			if (numIndices) {
 				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
@@ -197,9 +194,6 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 
 	for (int i = 0; i < numReflectiveSurfaces; i++) {
 		s = r_reflectiveSurfaces[i];
-
-		if (s->flags & MSURF_LAVA)
-			continue;
 
 		if (s->texInfo->image->texnum != oldTex) {
 			if (numIndices) {

@@ -421,9 +421,9 @@ void Sys_ShutdownConsole (void)
 		DeleteObject(sys_console.hFontBold);
 
 	if (sys_console.defOutputProc)
-		SetWindowLong(sys_console.hWndOutput, GWL_WNDPROC, (LONG)sys_console.defOutputProc);
+		SetWindowLong(sys_console.hWndOutput, GWLP_WNDPROC, (LONG)sys_console.defOutputProc);
 	if (sys_console.defInputProc)
-		SetWindowLong(sys_console.hWndInput, GWL_WNDPROC, (LONG)sys_console.defInputProc);
+		SetWindowLong(sys_console.hWndInput, GWLP_WNDPROC, (LONG)sys_console.defInputProc);
 
 	ShowWindow(sys_console.hWnd, SW_HIDE);
 	DestroyWindow(sys_console.hWnd);
@@ -521,8 +521,8 @@ void Sys_InitDedConsole (void)
 	sys_console.hBrushInput = CreateSolidBrush(RGB(255, 255, 255));
 
 	// Subclass edit boxes
-	sys_console.defOutputProc = (WNDPROC)SetWindowLong(sys_console.hWndOutput, GWL_WNDPROC, (LONG)Sys_ConsoleEditProc);
-	sys_console.defInputProc = (WNDPROC)SetWindowLong(sys_console.hWndInput, GWL_WNDPROC, (LONG)Sys_ConsoleEditProc);
+	sys_console.defOutputProc = (WNDPROC)SetWindowLong(sys_console.hWndOutput, GWLP_WNDPROC, (LONG)Sys_ConsoleEditProc);
+	sys_console.defInputProc = (WNDPROC)SetWindowLong(sys_console.hWndInput, GWLP_WNDPROC, (LONG)Sys_ConsoleEditProc);
 
 	// Set text limit for input edit box
 	SendMessage(sys_console.hWndInput, EM_SETLIMITTEXT, (WPARAM)(MAX_INPUT-1), 0);
