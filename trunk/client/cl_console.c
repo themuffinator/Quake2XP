@@ -488,7 +488,7 @@ The input line scrolls horizontally if typing goes beyond the right edge
 void Con_DrawInput (void) {
 	char	*text;
 	int		i;
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 	float	intervalScale = 0.75;
 
 	if (cls.key_dest == key_menu)
@@ -540,7 +540,7 @@ void Con_DrawNotify (void) {
 	int		skip;
 	int		currentColor;
 	float	intervalScale = 0.75;
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 
 	currentColor = 7;
 	RE_SetColor (ColorTable[currentColor]);
@@ -620,7 +620,7 @@ void Con_DrawConsole (float frac) {
 	char		dlbar[1024];
 	int			currentColor;
 	float		intervalScale = 0.75;
-	float		fontscale = cl_fontScale->value;
+	float		fontscale = ui_fontScale->value;
 
 	if (frac == 1.0)
 		lines = viddef.height * frac;

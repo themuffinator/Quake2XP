@@ -420,7 +420,7 @@ void R_GenSkyCubeMap(char* name) {
 	}
 
 	int numMips = CalcMipmapCount(minw, minh);
-	glTextureStorage2D(skyCube, numMips, GL_RGBA8, minw, minh);
+	glTextureStorage2D(skyCube, numMips, GL_RGB8, minw, minh);
 
 	for (i = 0; i < 6; i++) {
 

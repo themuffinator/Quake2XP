@@ -1620,7 +1620,7 @@ void InitGame (void) {
 	g_autoHealth = gi.cvar("g_autoHealth", "25", CVAR_ARCHIVE);
 	g_autoHealth->help = "Automatic recovery of health (25 max, 0 turn off it).\nNightmare skill only.\n";
 	
-	weaponHitAccuracy = gi.cvar("weaponHitAccuracy", "1", CVAR_USERINFO | CVAR_ARCHIVE);
+	g_weaponHitAccuracy = gi.cvar("g_weaponHitAccuracy", "1", CVAR_USERINFO | CVAR_ARCHIVE);
 	g_noStopMusic = gi.cvar("g_noStopMusic", "0", CVAR_ARCHIVE);
 	g_infinityGibs = gi.cvar("g_infinityGibs", "0", CVAR_ARCHIVE);
 	useRussianLoc = gi.cvar("useRussianLoc", "0", CVAR_SERVERINFO);

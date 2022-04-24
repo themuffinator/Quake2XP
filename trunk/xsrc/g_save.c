@@ -1870,7 +1870,7 @@ void InitGame (void) {
 	r_radialBlur = gi.cvar ("r_radialBlur", "1", CVAR_ARCHIVE);
 
 	sv_stopClock = gi.cvar("sv_stopClock", "0", 0);
-	weaponHitAccuracy = gi.cvar("weaponHitAccuracy", "1", CVAR_USERINFO | CVAR_ARCHIVE);
+	g_weaponHitAccuracy = gi.cvar("g_weaponHitAccuracy", "1", CVAR_USERINFO | CVAR_ARCHIVE);
 
 	g_noStopMusic = gi.cvar("g_noStopMusic", "0", CVAR_ARCHIVE);
 	g_infinityGibs = gi.cvar("g_infinityGibs", "0", CVAR_ARCHIVE);

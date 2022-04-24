@@ -173,17 +173,17 @@ void SCR_DrawCenterString (void) {
 		for (l = 0; l < 40; l++)
 		if (start[l] == '\n' || !start[l])
 			break;
-		x = (viddef.width - l * 6 * cl_fontScale->value) * 0.5;
+		x = (viddef.width - l * 6 * ui_fontScale->value) * 0.5;
 		SCR_AddDirtyPoint (x, y);
 
-		for (j = 0; j < l; j++, x += 6 * cl_fontScale->value) {
-			Draw_CharScaled (x, y, cl_fontScale->value, cl_fontScale->value, start[j]);
+		for (j = 0; j < l; j++, x += 6 * ui_fontScale->value) {
+			Draw_CharScaled (x, y, ui_fontScale->value, ui_fontScale->value, start[j]);
 			if (!remaining--)
 				return;
 		}
-		SCR_AddDirtyPoint (x, y + 6 * cl_fontScale->value);
+		SCR_AddDirtyPoint (x, y + 6 * ui_fontScale->value);
 
-		y += 8 * cl_fontScale->value;
+		y += 8 * ui_fontScale->value;
 
 		while (*start && *start != '\n')
 			start++;
@@ -322,12 +322,12 @@ void SCR_DrawPause (void) {
 
 	Draw_ScaledPic((viddef.width - (i_pause->width - i_pause->width * 0.25)) * 0.5f,
 					viddef.height * 0.5f - i_pause->height * 0.5,
-					cl_fontScale->value, cl_fontScale->value,
+					ui_fontScale->value, ui_fontScale->value,
 					i_pause);
 
 	Draw_PicBumpScaled((viddef.width - (i_pause->width - i_pause->width * 0.25)) * 0.5f,
 						viddef.height * 0.5f - i_pause->height * 0.5,
-						cl_fontScale->value, cl_fontScale->value,
+						ui_fontScale->value, ui_fontScale->value,
 						"pause", "pause_bump");
 }
 
@@ -349,7 +349,7 @@ void SCR_DrawLoading (void) {
 	int		scaled, center;
 	char	mapfile[32], saveshot[32];
 	char	*mapname;
-	int		fontscale = (int)cl_fontScale->value;
+	int		fontscale = (int)ui_fontScale->value;
 
 	if (!scr_draw_loading)
 		return;
@@ -885,12 +885,12 @@ c_decal_tris,
 c_light_batch;
 
 extern cvar_t *cl_drawFPS;
-extern cvar_t *cl_hudScale;
+extern cvar_t *ui_hudScale;
 
 void SCR_DrawSpeeds (void) {
 
 	char	bsp[18], alias[18], st[18], partTris[18], shadow[18], decals[18], dtr[18], lt[18];
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 
 	if (!r_speeds->integer)
 		return;
@@ -924,7 +924,7 @@ void SCR_DrawCpuUtilization() {
 	static	char	cpuUtil[21] = { 0 };
 	static	int		frame = 0, delta = 4, lastUpdate;
 	static	uint	procUtil;
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 	
 	if (!sys_cpuUtilization->integer)
 		return;
@@ -952,7 +952,7 @@ void SCR_DrawFPS (void) {
 	static	int		lastUpdate;
 	const	int		delta = 4;
 	static	float	fpsAvg = 0;
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 	static	unsigned	procUtil;	
 
 	fps++;
@@ -982,9 +982,9 @@ void SCR_DrawFPS (void) {
 	int avrFpsLengh = (int)strlen(avrfps);
 	int minFpsLengh = (int)strlen(minfps);
 
-	if (cl_drawFPS->integer && (cls.state == ca_active)) {
+	if (ui_drawFPS->integer && (cls.state == ca_active)) {
 		
-		if (cl_drawFPS->integer == 2) {
+		if (ui_drawFPS->integer == 2) {
 			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
 			Draw_StringScaled(viddef.width - minFpsLengh * 6 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
 
@@ -998,7 +998,7 @@ void SCR_DrawClock (void) {
 	char	tmpbuf[24];
 	char	datebuf[20];
 	char	tmpdatebuf[24];
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 
 #ifndef _WIN32
 	struct tm *tm;
@@ -1019,7 +1019,7 @@ void SCR_DrawClock (void) {
 	int timebufLengh = strlen(tmpbuf);
 	int datebufLengh = strlen(tmpdatebuf);
 
-	if (!cl_drawFPS->integer) {
+	if (!ui_drawFPS->integer) {
 		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
 		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
 	}
@@ -1082,13 +1082,13 @@ void SCR_UpdateScreen (void) {
 		return;					// not initialized yet
 
 
-	cl_hudScale->value = ClampCvar(0.1, 1.0, cl_hudScale->value);
-	cl_fontScale->value = ClampCvar(2.0, 4.0, cl_fontScale->value);
+	ui_hudScale->value = ClampCvar(0.1, 1.0, ui_hudScale->value);
+	ui_fontScale->value = ClampCvar(2.0, 4.0, ui_fontScale->value);
 
 	if(viddef.height <= 1024)
-		Cvar_Set("cl_fontScale", "2");
+		Cvar_Set("ui_fontScale", "2");
 	else
-		Cvar_Set("cl_fontScale", "3");
+		Cvar_Set("ui_fontScale", "3");
 
 	R_BeginFrame ();
 
@@ -1163,7 +1163,7 @@ void SCR_UpdateScreen (void) {
 			SCR_DrawBatteryLevel();
 #endif
 
-		if (cl_drawTime->value && (cls.state == ca_active))
+		if (ui_drawTime->value && (cls.state == ca_active))
 			SCR_DrawClock ();
 
 		SCR_DrawConsole ();

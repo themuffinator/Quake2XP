@@ -125,17 +125,6 @@ jmp_buf abortframe;				// an ERR_DROP occured, exit the entire
 
 
 FILE *log_stats_file;
-
-cvar_t *host_speeds;
-cvar_t *log_stats;
-cvar_t *developer;
-cvar_t *timescale;
-cvar_t *fixedtime;
-cvar_t *logfile_active;			// 1 = buffer log, 2 = flush after each
-cvar_t	*sys_firstRun;			// print
-cvar_t *showtrace;
-cvar_t *dedicated;
-cvar_t *fs_OriginalPaksOnly;
 FILE *logfile;
 
 int server_state;

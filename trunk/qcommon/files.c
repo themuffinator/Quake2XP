@@ -455,7 +455,7 @@ pack_t *FS_LoadPackFile (char *packfile) {
 	int				numpackfiles;
 	pack_t			*pack;
 	FILE			*packhandle;
-	dpackfile_t		info[MAX_FILES_IN_PACK];
+	static dpackfile_t		info[MAX_FILES_IN_PACK];
 	unsigned		checksum;
 
 	if (fs_OriginalPaksOnly->integer) { //Load ONLY original q2 data!!!

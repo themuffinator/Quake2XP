@@ -753,6 +753,12 @@
     <None Include="..\baseq2\glsl\tbnDebug.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
+    <None Include="..\baseq2\glsl\glassLight.frag">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
+    <None Include="..\baseq2\glsl\glassLight.vert">
+      <Filter>Source Files\Renderer\glsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\q2.rc">

@@ -284,6 +284,7 @@ cvar_t	*r_ssaoIntensity;
 cvar_t	*r_ssaoScale;
 cvar_t	*r_ssaoBlur;
 
+cvar_t	*r_transSurfShading;
 cvar_t	*r_blinnPhongLighting;
 cvar_t	*r_skipStaticLights;
 cvar_t	*r_lightmapScale;
@@ -535,7 +536,8 @@ vec3_t	tTexArray[MAX_BATCH_SURFS];
 vec3_t	bTexArray[MAX_BATCH_SURFS];
 uint	indexArray[MAX_MAP_VERTS * 3];
 
-extern model_t *r_worldmodel;
+extern	model_t *r_worldmodel;
+vec3_t	BmodelViewOrg;
 
 extern unsigned d_8to24table[256];
 extern float	d_8to24tablef[256][3];

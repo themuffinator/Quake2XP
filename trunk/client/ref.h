@@ -76,6 +76,7 @@ DECAL_MAX
 
 #define DF_OVERBRIGHT	1
 #define DF_VERTEXLIGHT	2
+#define DF_TWOSIDE		4
 
 
 #define	MAX_DLIGHTS		32
@@ -367,6 +368,7 @@ typedef struct glpoly_s {
 	vec3_t	normal;
 	vec3_t	center;
 	int		lightTimestamp;
+	int		lightTimestampRA;
 	int		shadowTimestamp;
 //	int		ShadowedFace;
 	int		numVerts;

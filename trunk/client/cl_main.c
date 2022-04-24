@@ -1485,9 +1485,6 @@ void CL_InitLocal (void) {
 	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "150", 0);
 	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", 0);
 
-	cl_drawFPS = Cvar_Get ("cl_drawFPS", "0", CVAR_ARCHIVE);	// drawfps - // MrG
-	cl_drawFPS->help = "off / average / full";
-
 	cl_run = Cvar_Get ("cl_run", "0", CVAR_ARCHIVE);
 
 	sensitivity = Cvar_Get ("sensitivity", "3", CVAR_ARCHIVE);
@@ -1508,9 +1505,7 @@ void CL_InitLocal (void) {
 	rcon_address = Cvar_Get ("rcon_address", "", 0);
 
 	cl_lightlevel = Cvar_Get ("r_lightLevel", "0", 0);
-	cl_drawTime = Cvar_Get ("cl_drawTime", "0", CVAR_ARCHIVE);
-
-	cl_3dhud = Cvar_Get ("cl_3dhud", "1", CVAR_ARCHIVE);
+	
 	cl_brass = Cvar_Get ("cl_brass", "128", CVAR_ARCHIVE);
 	cl_brassTimeScale = Cvar_Get("cl_brassTimeScale", "20", CVAR_ARCHIVE);
 
@@ -1523,21 +1518,24 @@ void CL_InitLocal (void) {
 	cl_railspiral_blue = Cvar_Get ("cl_railspiral_blue", "1", CVAR_ARCHIVE);
 
 	cl_decals = Cvar_Get ("cl_decals", "1", CVAR_ARCHIVE);
-	cl_drawhud = Cvar_Get ("cl_drawhud", "1", CVAR_ARCHIVE);
-
 	cl_thirdPerson = Cvar_Get ("cl_thirdPerson", "0", CVAR_ARCHIVE);
 	cl_thirdPersonAngle = Cvar_Get ("cl_thirdPersonAngle", "30", CVAR_ARCHIVE);
 	cl_thirdPersonRange = Cvar_Get ("cl_thirdPersonRange", "50", CVAR_ARCHIVE);
 	cl_blood = Cvar_Get ("cl_blood", "1", CVAR_ARCHIVE);
-	cl_hudScale = Cvar_Get ("cl_hudScale", "0.8", CVAR_ARCHIVE);
-	cl_fontScale = Cvar_Get ("cl_fontScale", "3", 0);  
 	cl_itemsBobbing = Cvar_Get ("cl_itemsBobbing", "1", CVAR_ARCHIVE);
-	cl_hudModelScale = Cvar_Get("cl_hudModelScale", "5", CVAR_ARCHIVE);
-	
+
 	scr_showTexName = Cvar_Get("scr_showTexName", "0", 0);
 
-	cl_hudScale->value = ClampCvar(0.1, 1.0, cl_hudScale->value);
-	cl_fontScale->value = ClampCvar(2.0, 3.0, cl_fontScale->value);
+	ui_drawHud = Cvar_Get("ui_drawHud", "1", CVAR_ARCHIVE);
+	ui_3dHud = Cvar_Get("ui_3dHud", "1", CVAR_ARCHIVE);
+	ui_hudScale = Cvar_Get("ui_hudScale", "0.8", CVAR_ARCHIVE);
+	ui_hudScale->value = ClampCvar(0.1, 1.0, ui_hudScale->value);
+	ui_fontScale->value = ClampCvar(2.0, 3.0, ui_fontScale->value);
+	ui_hudModelScale = Cvar_Get("ui_hudModelScale", "5", CVAR_ARCHIVE);
+	ui_drawTime = Cvar_Get("ui_drawTime", "0", CVAR_ARCHIVE);
+	ui_fontScale = Cvar_Get("ui_fontScale", "3", 0);
+	ui_drawFPS = Cvar_Get("ui_drawFPS", "0", CVAR_ARCHIVE);	// drawfps - // MrG
+	ui_drawFPS->help = "off / average / full";
 
 	useRussianLoc = Cvar_Get("useRussianLoc", "0", CVAR_SERVERINFO);
 
@@ -1547,8 +1545,7 @@ void CL_InitLocal (void) {
 	//
 	info_password = Cvar_Get ("password", "", CVAR_USERINFO);
 	info_spectator = Cvar_Get ("spectator", "0", CVAR_USERINFO);
-	name =
-		Cvar_Get ("name", "Unknown Quaker", CVAR_USERINFO | CVAR_ARCHIVE);
+	name = Cvar_Get ("name", "Unknown Quaker", CVAR_USERINFO | CVAR_ARCHIVE);
 	skin = Cvar_Get ("skin", "male/grunt", CVAR_USERINFO | CVAR_ARCHIVE);
 	rate = Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE);	// FIXME
 	msg = Cvar_Get ("msg", "1", CVAR_USERINFO | CVAR_ARCHIVE);

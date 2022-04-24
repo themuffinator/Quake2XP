@@ -500,55 +500,52 @@ extern	edict_t			*g_edicts;
 #define random()	((rand () & 0x7fff) / ((float)0x7fff))
 #define crandom()	(2.0 * (random() - 0.5))
 
-extern	cvar_t	*maxentities;
-extern	cvar_t	*deathmatch;
-extern	cvar_t	*coop;
-extern	cvar_t	*dmflags;
-extern	cvar_t	*skill;
-extern	cvar_t	*fraglimit;
-extern	cvar_t	*timelimit;
-extern	cvar_t	*password;
-extern	cvar_t	*spectator_password;
-extern	cvar_t	*needpass;
-extern	cvar_t	*g_select_empty;
-extern	cvar_t	*dedicated;
+cvar_t* deathmatch;
+cvar_t* coop;
+cvar_t* dmflags;
+cvar_t* skill;
+cvar_t* fraglimit;
+cvar_t* timelimit;
+cvar_t* password;
+cvar_t* spectator_password;
+cvar_t* needpass;
+cvar_t* maxclients;
+cvar_t* maxspectators;
+cvar_t* maxentities;
+cvar_t* g_select_empty;
+cvar_t* dedicated;
 
-extern	cvar_t	*filterban;
+cvar_t* filterban;
 
-extern	cvar_t	*sv_gravity;
-extern	cvar_t	*sv_maxvelocity;
+cvar_t* sv_maxvelocity;
+cvar_t* sv_gravity;
 
-extern	cvar_t	*gun_x, *gun_y, *gun_z;
-extern	cvar_t	*sv_rollspeed;
-extern	cvar_t	*sv_rollangle;
+cvar_t* sv_rollspeed;
+cvar_t* sv_rollangle;
+cvar_t* gun_x;
+cvar_t* gun_y;
+cvar_t* gun_z;
 
-extern	cvar_t	*run_pitch;
-extern	cvar_t	*run_roll;
-extern	cvar_t	*bob_up;
-extern	cvar_t	*bob_pitch;
-extern	cvar_t	*bob_roll;
+cvar_t* run_pitch;
+cvar_t* run_roll;
+cvar_t* bob_up;
+cvar_t* bob_pitch;
+cvar_t* bob_roll;
 
-extern	cvar_t	*sv_cheats;
-extern	cvar_t	*maxclients;
-extern	cvar_t	*maxspectators;
+cvar_t* sv_cheats;
 
-extern	cvar_t	*flood_msgs;
-extern	cvar_t	*flood_persecond;
-extern	cvar_t	*flood_waitdelay;
-extern  cvar_t  *g_monsterRespawn;
-extern	cvar_t	*sv_maplist;
+cvar_t* flood_msgs;
+cvar_t* flood_persecond;
+cvar_t* flood_waitdelay;
+cvar_t* g_monsterRespawn;
+cvar_t* sv_maplist;
+cvar_t* sv_solidcorpse;
+cvar_t* net_compatibility;
+cvar_t* r_radialBlur;
+cvar_t* sv_stopClock;
+cvar_t* g_weaponHitAccuracy;
 
-
-extern cvar_t	*sv_stopClock;
-extern cvar_t   *sv_solidcorpse;
-extern cvar_t	*net_compatibility;
-
-extern cvar_t	*g_spLayout;
-extern cvar_t	*g_dmLayout;
-
-extern cvar_t	*r_radialBlur;
-extern cvar_t	*weaponHitAccuracy;
-extern cvar_t	*g_autoHealth;
+cvar_t* g_autoHealth;
 
 cvar_t	*g_noStopMusic;
 cvar_t	*g_infinityGibs;

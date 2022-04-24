@@ -104,12 +104,19 @@ cvar_t* gender_auto;
 cvar_t* cl_vwep;
 cvar_t* dmflags;
 
+cvar_t* cl_upspeed;
+cvar_t* cl_forwardspeed;
+cvar_t* cl_sidespeed;
+cvar_t* cl_yawspeed;
+cvar_t* cl_pitchspeed;
+cvar_t* cl_anglespeedkey;
+cvar_t* cl_run;
+
+
+
 //q2xp stuff
-cvar_t* cl_drawTime;
-cvar_t* cl_drawFPS;
 cvar_t* cl_brass;
 cvar_t* cl_brassTimeScale;
-cvar_t* cl_3dhud;
 cvar_t* cl_railcore_red;
 cvar_t* cl_railcore_green;
 cvar_t* cl_railcore_blue;
@@ -118,16 +125,22 @@ cvar_t* cl_railspiral_green;
 cvar_t* cl_railspiral_blue;
 cvar_t* cl_decals;
 cvar_t* net_compatibility;
-cvar_t* cl_drawhud;
 cvar_t* cl_thirdPerson;
 cvar_t* cl_thirdPersonAngle;
 cvar_t* cl_thirdPersonRange;
 cvar_t* cl_blood;
 cvar_t* deathmatch;
-cvar_t* cl_hudScale;
-cvar_t* cl_fontScale;
 cvar_t* cl_itemsBobbing;
-cvar_t* cl_hudModelScale;
+
+cvar_t* ui_drawTime;
+cvar_t* ui_drawFPS;
+
+cvar_t* ui_3dHud;
+cvar_t* ui_drawHud;
+cvar_t* ui_hudScale;
+cvar_t* ui_fontScale;
+cvar_t* ui_hudModelScale;
+
 cvar_t* scr_showTexName;
 cvar_t* sys_cpuUtilization;
 cvar_t* cl_gunCollision;
@@ -494,89 +507,8 @@ extern client_static_t cls;
 
 cvar_t *useRussianLoc;
 
-extern cvar_t *cl_stereo_separation;
-extern cvar_t *cl_stereo;
-
-extern cvar_t *cl_gun;
-extern cvar_t *cl_add_blend;
-extern cvar_t *cl_add_lights;
-extern cvar_t *cl_add_particles;
-extern cvar_t *cl_add_entities;
-extern cvar_t *cl_predict;
-extern cvar_t *cl_footsteps;
-extern cvar_t *cl_noskins;
-extern cvar_t *cl_autoskins;
-
-extern cvar_t *zoomfov;
-
 #define MAX_FOV 120
 
-extern cvar_t *cl_upspeed;
-extern cvar_t *cl_forwardspeed;
-extern cvar_t *cl_sidespeed;
-
-extern cvar_t *cl_yawspeed;
-extern cvar_t *cl_pitchspeed;
-
-extern cvar_t *cl_run;
-
-extern cvar_t *cl_anglespeedkey;
-
-extern cvar_t *cl_shownet;
-extern cvar_t *cl_showmiss;
-extern cvar_t *cl_showclamp;
-
-extern cvar_t *dmflags;
-
-extern cvar_t *lookspring;
-extern cvar_t *lookstrafe;
-extern cvar_t *sensitivity;
-
-extern cvar_t *m_pitch;
-extern cvar_t *m_yaw;
-extern cvar_t *m_forward;
-extern cvar_t *m_side;
-
-extern cvar_t *freelook;
-
-extern cvar_t *cl_lightlevel;	// FIXME HACK
-
-extern cvar_t *cl_paused;
-extern cvar_t *cl_timedemo;
-
-extern cvar_t *cl_vwep;
-extern cvar_t *cl_drawFPS;
-extern cvar_t *cl_drawTime;
-
-
-extern cvar_t *cl_thirdPerson;;
-extern cvar_t *cl_thirdPersonAngle;
-extern cvar_t *cl_thirdPersonRange;
-extern cvar_t *cl_blood;
-
-extern cvar_t *music_source;
-extern cvar_t *music_volume;
-
-extern cvar_t *cl_brass;
-extern cvar_t *cl_brassTimeScale;
-
-extern cvar_t *cl_3dhud;
-
-extern cvar_t *cl_railcore_red;
-extern cvar_t *cl_railcore_green;
-extern cvar_t *cl_railcore_blue;
-extern cvar_t *cl_railspiral_red;
-extern cvar_t *cl_railspiral_green;
-extern cvar_t *cl_railspiral_blue;
-
-extern cvar_t *cl_decals;
-extern cvar_t *net_compatibility;
-extern cvar_t *cl_drawhud;
-extern cvar_t *deathmatch;
-extern cvar_t *s_initSound;
-extern cvar_t *cl_fontScale;
-extern cvar_t *cl_itemsBobbing;
-extern cvar_t *scr_showTexName;
 
 extern ALuint cl_sfx_lava;
 extern ALuint cl_sfx_shell;

@@ -243,14 +243,13 @@ extern vec3_t vec3_origin;
 // microsoft's fabs seems to be ungodly slow...
 //float Q_fabs (float f);
 //#define	fabs(f) Q_fabs(f)
-/*
+
 #if !defined C_ONLY && !defined __linux__ && !defined __sgi
 extern long Q_ftol (float f);
 #else
 #define Q_ftol( f ) ( long ) (f)
 #endif
-*/
-extern int Q_ftol(float f);
+
 
 #define dotProduct(x)		((x)[0]*(x)[0]+(x)[1]*(x)[1]+(x)[2]*(x)[2])
 #define DotProduct(x,y)		((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
@@ -446,7 +445,9 @@ CVARS (console variables)
 */
 
 #ifndef CVAR
+
 #define	CVAR
+
 
 #define	CVAR_ARCHIVE	1	// set to cause it to be saved to vars.rc
 #define	CVAR_USERINFO	2	// added to userinfo  when changed

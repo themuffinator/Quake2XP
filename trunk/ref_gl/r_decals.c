@@ -86,6 +86,7 @@ void R_RenderDecals(void)
 	uint64	    texId, texture = 0;
     int			x, i;
     int			numIndices = 0, numVertices = 0;
+	uint		oldFlag = 0;
     float		endLerp, decalAlpha;
 	
 	if (!cl_decals->integer)
@@ -147,7 +148,7 @@ void R_RenderDecals(void)
 
 		texId = r_decalTexture[dl->type]->handle;
           
-        if (texture != texId) {
+        if (texture != texId || dl->flags != oldFlag) {
         // flush array if new texture/blend
         if (numIndices) {
 			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, DecalIdxArray);
@@ -155,12 +156,14 @@ void R_RenderDecals(void)
 			numVertices = 0;
 			numIndices = 0;
 		}
-
+		oldFlag = dl->flags;
 		texture = texId;
 
 		GL_SetBindlessTexture(U_TMU0, texId);
 
         GL_BlendFunc(dl->sFactor, dl->dFactor);
+		if (dl->flags & DF_TWOSIDE)
+			GL_Disable(GL_CULL_FACE);
         }
 
      //
@@ -210,6 +213,7 @@ void R_RenderDecals(void)
     qglDisableVertexAttribArray(ATT_COLOR);
 	GL_Disable(GL_BLEND);
 	GL_Disable(GL_POLYGON_OFFSET_FILL);
+	GL_Enable(GL_CULL_FACE);
 }
 
 #define	ON_EPSILON			0.1	// point on plane side epsilon

@@ -188,6 +188,9 @@ void CL_AddDecalToScene (vec3_t origin, vec3_t dir,
 		else
 			VectorCopy(fr->surf->plane->normal, d->normal);
 
+		if (fr->surf->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
+			d->flags |= DF_TWOSIDE;
+
 		for (j = 0; j < fr->numverts; j++) {
 			vec3_t v;
 

@@ -30,7 +30,7 @@ void DrawHUDString (float x, float y, float scale_x, float scale_y, int centerwi
 void SCR_DrawField (int x, int y, float scale_x, float scale_y, int color, int width, int value);
 float CalcFov (float fov_x, float width, float height);
 
-extern cvar_t *cl_hudScale;
+extern cvar_t *ui_hudScale;
 
 typedef struct {
 
@@ -265,7 +265,7 @@ void LoadHudEnts (void) {
 		R_RegisterModel ("models/items/dopple/tris.md2");
 }
 
-extern cvar_t	*cl_hudModelScale;
+extern cvar_t	*ui_hudModelScale;
 qboolean stopRotation, xatrix;
 
 void SCR_DrawHudModel (float x, float y, struct model_s *model) {
@@ -284,7 +284,7 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	screenAspect = (float)viddef.width / (float)viddef.height;
 	scaledHeight = 320.0 / screenAspect;
 
-	scale = cl_hudScale->value;
+	scale = ui_hudScale->value;
 
 	hud_sx = (float)viddef.width / 320.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
@@ -295,10 +295,10 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	R_ModelRadius (model, rad);
 	R_ModelCenter (model, center);
 
-	refdef.x = (int)x + cl_hudModelScale->value;
-	refdef.y = (int)y - cl_hudModelScale->value * hud_sy;
-	refdef.width = (24 + cl_hudModelScale->value) * hud_sx;
-	refdef.height = (24 + cl_hudModelScale->value) * hud_sy;
+	refdef.x = (int)x + ui_hudModelScale->value;
+	refdef.y = (int)y - ui_hudModelScale->value * hud_sy;
+	refdef.width = (24 + ui_hudModelScale->value) * hud_sx;
+	refdef.height = (24 + ui_hudModelScale->value) * hud_sy;
 	refdef.fov_x = 43;
 	refdef.fov_y = 43;
 	refdef.time = cls.realTime*0.001;
@@ -375,13 +375,13 @@ void SCR_ExecuteLayoutString (char *s) {
 	if (!s[0])
 		return;
 
-	if (!cl_drawhud->integer)
+	if (!ui_drawHud->integer)
 		return;
 
 	screenAspect = (float)viddef.width / (float)viddef.height;
 	scaledHeight = 320.0 / screenAspect;
 
-	scale = cl_hudScale->value;
+	scale = ui_hudScale->value;
 
 	hud_sx = (float)viddef.width / 320.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
@@ -438,7 +438,7 @@ void SCR_ExecuteLayoutString (char *s) {
 				SCR_AddDirtyPoint (x, y);
 				SCR_AddDirtyPoint (x + 23 * hud_sx, y + 23 * hud_sy);
 
-				if (!cl_3dhud->integer)
+				if (!ui_3dHud->integer)
 					Draw_PicScaled (x, y, hud_sx, hud_sy, cl.configstrings[CS_IMAGES + value]);
 
 			}
@@ -672,13 +672,13 @@ void SCR_ExecuteLayoutString3d (char *s) {
 	if (!s[0])
 		return;
 
-	if (!cl_drawhud->integer)
+	if (!ui_drawHud->integer)
 		return;
 
 	screenAspect = (float)viddef.width / (float)viddef.height;
 	scaledHeight = 320.0 / screenAspect;
 
-	scale = cl_hudScale->value;
+	scale = ui_hudScale->value;
 
 	hud_sx = (float)viddef.width / 320.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
@@ -742,7 +742,7 @@ void SCR_ExecuteLayoutString3d (char *s) {
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "i_help")) {
 					stopRotation = qtrue;
-					SCR_DrawHudModel(x, y - cl_hudModelScale->value * hud_sy, hudmodel.cl_hud_comp);
+					SCR_DrawHudModel(x, y - ui_hudModelScale->value * hud_sy, hudmodel.cl_hud_comp);
 				} else
 					stopRotation = qfalse;
 
@@ -1063,7 +1063,7 @@ is based on the stats array
 */
 
 void SCR_DrawStats () {
-	if (cl_3dhud->integer)
+	if (ui_3dHud->integer)
 		SCR_ExecuteLayoutString3d (cl.configstrings[CS_STATUSBAR]);
 
 	SCR_ExecuteLayoutString (cl.configstrings[CS_STATUSBAR]);
@@ -1106,8 +1106,8 @@ Inv_DrawString
 */
 void Inv_DrawString (int x, int y, char *string) {
 	while (*string) {
-		Draw_CharScaled (x, y, cl_fontScale->value, cl_fontScale->value, *string);
-		x += 8 * cl_fontScale->value;
+		Draw_CharScaled (x, y, ui_fontScale->value, ui_fontScale->value, *string);
+		x += 8 * ui_fontScale->value;
 		string++;
 	}
 }
@@ -1155,23 +1155,23 @@ void CL_DrawInventory (void) {
 	if (top < 0)
 		top = 0;
 
-	x = (viddef.width - 256 * cl_fontScale->value) * 0.5;
-	y = (viddef.height - 240 * cl_fontScale->value) * 0.5;
+	x = (viddef.width - 256 * ui_fontScale->value) * 0.5;
+	y = (viddef.height - 240 * ui_fontScale->value) * 0.5;
 
 	// repaint everything next frame
 	SCR_DirtyScreen ();
 
-	Draw_ScaledPic (x, y + 8, (float)cl_fontScale->value, (float)cl_fontScale->value, i_inventory);
-	Draw_PicBumpScaled(x, y + 8, (float)cl_fontScale->value, (float)cl_fontScale->value, "inventory", "inventory_bump");
+	Draw_ScaledPic (x, y + 8, (float)ui_fontScale->value, (float)ui_fontScale->value, i_inventory);
+	Draw_PicBumpScaled(x, y + 8, (float)ui_fontScale->value, (float)ui_fontScale->value, "inventory", "inventory_bump");
 	
-	y += 24 * cl_fontScale->value;
-	x += 24 * cl_fontScale->value;
+	y += 24 * ui_fontScale->value;
+	x += 24 * ui_fontScale->value;
 
 	Inv_DrawString (x, y, "hotkey ### item");
 
-	Inv_DrawString (x, y + 8 * cl_fontScale->value, "------ --- ----");
+	Inv_DrawString (x, y + 8 * ui_fontScale->value, "------ --- ----");
 
-	y += 16 * cl_fontScale->value;
+	y += 16 * ui_fontScale->value;
 
 	for (i = top; i < num && i < top + DISPLAY_ITEMS; i++) {
 		item = index[i];
@@ -1196,10 +1196,10 @@ void CL_DrawInventory (void) {
 			// item
 		{
 			if ((int)(cls.realTime * 10) & 1)
-				Draw_CharScaled (x - 8, y, cl_fontScale->value, cl_fontScale->value, 15);
+				Draw_CharScaled (x - 8, y, ui_fontScale->value, ui_fontScale->value, 15);
 
 		}
 		Inv_DrawString (x, y, string);
-		y += 8 * cl_fontScale->value;
+		y += 8 * ui_fontScale->value;
 	}
 }

@@ -31,6 +31,13 @@ WORLD LIGHTS
 
 ==============================================================================
 */
+msurface_t* interactionRA[MAX_MAP_FACES];
+int			numInteractionSurfsRA;
+
+msurface_t* interaction[MAX_MAP_FACES];
+int			numInteractionSurfs;
+
+int	r_lightTimestamp, r_lightTimestampRA;
 
 typedef struct worldShadowLight_s {
 	vec3_t		origin;
@@ -74,6 +81,9 @@ typedef struct worldShadowLight_s {
 	cplane_t	frust[6];
 	msurface_t	*interaction[MAX_MAP_FACES];
 	int			numInteractionSurfs;
+
+	msurface_t* interactionRA[MAX_MAP_FACES];
+	int			numInteractionSurfsRA;
 
 	char		targetname[MAX_QPATH];
 

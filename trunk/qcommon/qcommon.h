@@ -185,6 +185,17 @@ unsigned short CRC_Block (byte * start, int count);
 
 void R_FreePic(char* name);
 
+cvar_t* host_speeds;
+cvar_t* log_stats;
+cvar_t* developer;
+cvar_t* timescale;
+cvar_t* fixedtime;
+cvar_t* logfile_active;			// 1 = buffer log, 2 = flush after each
+cvar_t* sys_firstRun;			// print
+cvar_t* showtrace;
+cvar_t* dedicated;
+cvar_t* fs_OriginalPaksOnly;
+
 /*
 ==============================================================
 

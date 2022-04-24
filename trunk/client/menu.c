@@ -62,7 +62,7 @@ qboolean m_entersound;			// play after drawing a frame, so caching
 void(*m_drawfunc) (void);
 int(*m_keyfunc) (int key);
 
-extern cvar_t *cl_hudScale;
+extern cvar_t *ui_hudScale;
 model_t *currentPlayerWeapon;
 qboolean drawIDlogo;
 struct model_s* cl_menu_id_logo;
@@ -90,13 +90,13 @@ static void M_Banner(image_t *banner[2]) {
 	w = banner[0]->width;
 	h = banner[0]->height;
 
-	if (cl_fontScale->value == 2) {
-		Draw_ScaledPic((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, banner[0]);
-		Draw_ScaledBumpPic((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, banner[0], banner[1]);
+	if (ui_fontScale->value == 2) {
+		Draw_ScaledPic((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, banner[0]);
+		Draw_ScaledBumpPic((viddef.width / 2) - (w * 0.5), (viddef.height / 2) - (130 + (h * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, banner[0], banner[1]);
 	}
-	else if (cl_fontScale->value >= 3) {
-		Draw_ScaledPic((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, banner[0]);
-		Draw_ScaledBumpPic((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * cl_fontScale->value)), cl_fontScale->value, cl_fontScale->value, banner[0], banner[1]);
+	else if (ui_fontScale->value >= 3) {
+		Draw_ScaledPic((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, banner[0]);
+		Draw_ScaledBumpPic((viddef.width / 2) - (w * 0.75), (viddef.height / 2) - (170 + (h / 0.65 * ui_fontScale->value)), ui_fontScale->value, ui_fontScale->value, banner[0], banner[1]);
 	}
 }
 
@@ -247,7 +247,7 @@ higher res screens.
 ================
 */
 void M_DrawCharacter(int cx, int cy, int num) {
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 
 	Draw_CharScaled(cx + ((viddef.width - 320) >> 1), cy + ((viddef.height - 240) >> 1), fontscale, fontscale, num);
 }
@@ -256,7 +256,7 @@ void M_Print(int cx, int cy, char *str) {
 	while (*str) {
 		M_DrawCharacter(cx, cy, (*str) + 128);
 		str++;
-		cx += 8 * cl_fontScale->value;
+		cx += 8 * ui_fontScale->value;
 	}
 }
 
@@ -264,7 +264,7 @@ void M_PrintWhite(int cx, int cy, char *str) {
 	while (*str) {
 		M_DrawCharacter(cx, cy, *str);
 		str++;
-		cx += 8 * cl_fontScale->value;
+		cx += 8 * ui_fontScale->value;
 	}
 }
 
@@ -327,9 +327,9 @@ void M_Main_DrawQuad(float x, float y) {
 	memset(&entity, 0, sizeof(entity));
 
 	refdef.x = x;
-	refdef.y = y - 7 * cl_fontScale->value;
-	refdef.width = 50 * cl_fontScale->value;
-	refdef.height = 50 * cl_fontScale->value;
+	refdef.y = y - 7 * ui_fontScale->value;
+	refdef.width = 50 * ui_fontScale->value;
+	refdef.height = 50 * ui_fontScale->value;
 	refdef.fov_x = 45;
 	refdef.fov_y = 45;
 	refdef.time = cls.realTime / 1.5;
@@ -384,7 +384,7 @@ void M_Main_Draw(void) {
 		0
 	};
 
-	const float fontscale = cl_fontScale->value;
+	const float fontscale = ui_fontScale->value;
 
 	for (i = 0; names[i] != 0; i++) {
 		Draw_GetPicSize(&w, &h, names[i]);
@@ -394,8 +394,8 @@ void M_Main_Draw(void) {
 		totalheight += (h + 12);
 	}
 
-	ystart = (viddef.height / 2) - 110 * cl_fontScale->value;
-	xoffset = (viddef.width - widest + (70 - (cl_fontScale->value - 1) * 170)) / 2;
+	ystart = (viddef.height / 2) - 110 * ui_fontScale->value;
+	xoffset = (viddef.width - widest + (70 - (ui_fontScale->value - 1) * 170)) / 2;
 	offcet = (fontscale - 1) * 60;
 
 	for (i = 0; names[i] != 0; i++) {
@@ -414,11 +414,11 @@ void M_Main_Draw(void) {
 
 	w = i_main_logo[0]->width;
 	h = i_main_logo[0]->height;
-	if (cl_fontScale->value == 3) {
+	if (ui_fontScale->value == 3) {
 		Draw_ScaledPic((xoffset - 30) - w, ystart + h + (140 * fontscale), fontscale, fontscale, i_main_logo[0]);
 		Draw_ScaledBumpPic((xoffset - 30) - w, ystart + h + (140 * fontscale), fontscale, fontscale, i_main_logo[0], i_main_logo[1]);
 	}
-	else if (cl_fontScale->value == 2) {
+	else if (ui_fontScale->value == 2) {
 		Draw_ScaledPic((xoffset - 30) - w, ystart + h + 260, fontscale, fontscale, i_main_logo[0]);
 		Draw_ScaledBumpPic((xoffset - 30) - w, ystart + h + 260, fontscale, fontscale, i_main_logo[0], i_main_logo[1]);
 
@@ -519,7 +519,7 @@ static void StartNetworkServerFunc(void *unused) {
 }
 
 void Multiplayer_MenuInit(void) {
-	s_multiplayer_menu.x = viddef.width * 0.50 - 64 * cl_fontScale->value;
+	s_multiplayer_menu.x = viddef.width * 0.50 - 64 * ui_fontScale->value;
 	s_multiplayer_menu.nitems = 0;
 	
 	drawIDlogo = qfalse;
@@ -534,14 +534,14 @@ void Multiplayer_MenuInit(void) {
 	s_start_network_server_action.generic.type = MTYPE_ACTION;
 	s_start_network_server_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_start_network_server_action.generic.x = 0;
-	s_start_network_server_action.generic.y = 10 * cl_fontScale->value;
+	s_start_network_server_action.generic.y = 10 * ui_fontScale->value;
 	s_start_network_server_action.generic.name = " start network server";
 	s_start_network_server_action.generic.callback = StartNetworkServerFunc;
 
 	s_player_setup_action.generic.type = MTYPE_ACTION;
 	s_player_setup_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_player_setup_action.generic.x = 0;
-	s_player_setup_action.generic.y = 20 * cl_fontScale->value;
+	s_player_setup_action.generic.y = 20 * ui_fontScale->value;
 	s_player_setup_action.generic.name = " player setup";
 	s_player_setup_action.generic.callback = PlayerSetupFunc;
 
@@ -662,8 +662,8 @@ static void M_FindKeysForCommand(char *command, int *twokeys) {
 
 static void KeyCursorDrawFunc(menuframework_s * menu) {
 	Draw_CharScaled(menu->x,
-		menu->y + menu->cursor * 9 * cl_fontScale->value,
-		cl_fontScale->value, cl_fontScale->value,
+		menu->y + menu->cursor * 9 * ui_fontScale->value,
+		ui_fontScale->value, ui_fontScale->value,
 		bind_grab ? '=' : 12 + ((int)(Sys_Milliseconds() / 250) & 1));
 }
 
@@ -676,9 +676,9 @@ static void DrawKeyBindingFunc(void *self) {
 	RE_SetColor(colorWhite);
 
 	if (keys[0] == -1) {
-		Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 16 * cl_fontScale->value,
+		Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->value,
 			a->generic.y + a->generic.parent->y,
-			cl_fontScale->value, cl_fontScale->value,
+			ui_fontScale->value, ui_fontScale->value,
 			"???");
 	}
 	else {
@@ -698,12 +698,12 @@ static void DrawKeyBindingFunc(void *self) {
 			RE_SetColor(colorYellow);
 
 
-		Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 16 * cl_fontScale->value,
+		Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->value,
 			a->generic.y + a->generic.parent->y,
-			cl_fontScale->value, cl_fontScale->value,
+			ui_fontScale->value, ui_fontScale->value,
 			(const char *)name);
 
-		x = strlen(name) * 8 * cl_fontScale->value;
+		x = strlen(name) * 8 * ui_fontScale->value;
 
 		if (keys[1] != -1) {
 			char *name2 = Key_KeynumToString(keys[1]);
@@ -712,7 +712,7 @@ static void DrawKeyBindingFunc(void *self) {
 
 			Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 24 + x,
 				a->generic.y + a->generic.parent->y,
-				cl_fontScale->value, cl_fontScale->value,
+				ui_fontScale->value, ui_fontScale->value,
 				"  ");
 
 			if (strstr(name2, "XPAD_"))
@@ -728,7 +728,7 @@ static void DrawKeyBindingFunc(void *self) {
 
 			Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 48 + x,
 				a->generic.y + a->generic.parent->y,
-				cl_fontScale->value, cl_fontScale->value,
+				ui_fontScale->value, ui_fontScale->value,
 				name2);
 		}
 	}
@@ -772,7 +772,7 @@ static void Keys_MenuInit(void) {
 	s_keys_change_weapon_action.generic.type = MTYPE_ACTION;
 	s_keys_change_weapon_action.generic.flags = QMF_GRAYED;
 	s_keys_change_weapon_action.generic.x = 0;
-	s_keys_change_weapon_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_change_weapon_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_change_weapon_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_change_weapon_action.generic.localdata[0] = ++i;
 	s_keys_change_weapon_action.generic.name =
@@ -781,7 +781,7 @@ static void Keys_MenuInit(void) {
 	s_keys_change1_weapon_action.generic.type = MTYPE_ACTION;
 	s_keys_change1_weapon_action.generic.flags = QMF_GRAYED;
 	s_keys_change1_weapon_action.generic.x = 0;
-	s_keys_change1_weapon_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_change1_weapon_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_change1_weapon_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_change1_weapon_action.generic.localdata[0] = ++i;
 	s_keys_change1_weapon_action.generic.name =
@@ -791,7 +791,7 @@ static void Keys_MenuInit(void) {
 	s_keys_walk_forward_action.generic.type = MTYPE_ACTION;
 	s_keys_walk_forward_action.generic.flags = QMF_GRAYED;
 	s_keys_walk_forward_action.generic.x = 0;
-	s_keys_walk_forward_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_walk_forward_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_walk_forward_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_walk_forward_action.generic.localdata[0] = ++i;
 	s_keys_walk_forward_action.generic.name =
@@ -800,7 +800,7 @@ static void Keys_MenuInit(void) {
 	s_keys_backpedal_action.generic.type = MTYPE_ACTION;
 	s_keys_backpedal_action.generic.flags = QMF_GRAYED;
 	s_keys_backpedal_action.generic.x = 0;
-	s_keys_backpedal_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_backpedal_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_backpedal_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_backpedal_action.generic.localdata[0] = ++i;
 	s_keys_backpedal_action.generic.name =
@@ -809,7 +809,7 @@ static void Keys_MenuInit(void) {
 	s_keys_turn_left_action.generic.type = MTYPE_ACTION;
 	s_keys_turn_left_action.generic.flags = QMF_GRAYED;
 	s_keys_turn_left_action.generic.x = 0;
-	s_keys_turn_left_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_turn_left_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_turn_left_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_turn_left_action.generic.localdata[0] = ++i;
 	s_keys_turn_left_action.generic.name =
@@ -818,7 +818,7 @@ static void Keys_MenuInit(void) {
 	s_keys_turn_right_action.generic.type = MTYPE_ACTION;
 	s_keys_turn_right_action.generic.flags = QMF_GRAYED;
 	s_keys_turn_right_action.generic.x = 0;
-	s_keys_turn_right_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_turn_right_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_turn_right_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_turn_right_action.generic.localdata[0] = ++i;
 	s_keys_turn_right_action.generic.name =
@@ -827,7 +827,7 @@ static void Keys_MenuInit(void) {
 	s_keys_run_action.generic.type = MTYPE_ACTION;
 	s_keys_run_action.generic.flags = QMF_GRAYED;
 	s_keys_run_action.generic.x = 0;
-	s_keys_run_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_run_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_run_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_run_action.generic.localdata[0] = ++i;
 	s_keys_run_action.generic.name =
@@ -836,7 +836,7 @@ static void Keys_MenuInit(void) {
 	s_keys_step_left_action.generic.type = MTYPE_ACTION;
 	s_keys_step_left_action.generic.flags = QMF_GRAYED;
 	s_keys_step_left_action.generic.x = 0;
-	s_keys_step_left_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_step_left_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_step_left_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_step_left_action.generic.localdata[0] = ++i;
 	s_keys_step_left_action.generic.name =
@@ -845,7 +845,7 @@ static void Keys_MenuInit(void) {
 	s_keys_step_right_action.generic.type = MTYPE_ACTION;
 	s_keys_step_right_action.generic.flags = QMF_GRAYED;
 	s_keys_step_right_action.generic.x = 0;
-	s_keys_step_right_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_step_right_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_step_right_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_step_right_action.generic.localdata[0] = ++i;
 	s_keys_step_right_action.generic.name =
@@ -854,7 +854,7 @@ static void Keys_MenuInit(void) {
 	s_keys_move_up_action.generic.type = MTYPE_ACTION;
 	s_keys_move_up_action.generic.flags = QMF_GRAYED;
 	s_keys_move_up_action.generic.x = 0;
-	s_keys_move_up_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_move_up_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_move_up_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_move_up_action.generic.localdata[0] = ++i;
 	s_keys_move_up_action.generic.name =
@@ -863,7 +863,7 @@ static void Keys_MenuInit(void) {
 	s_keys_move_down_action.generic.type = MTYPE_ACTION;
 	s_keys_move_down_action.generic.flags = QMF_GRAYED;
 	s_keys_move_down_action.generic.x = 0;
-	s_keys_move_down_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_move_down_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_move_down_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_move_down_action.generic.localdata[0] = ++i;
 	s_keys_move_down_action.generic.name =
@@ -872,7 +872,7 @@ static void Keys_MenuInit(void) {
 	s_keys_inventory_action.generic.type = MTYPE_ACTION;
 	s_keys_inventory_action.generic.flags = QMF_GRAYED;
 	s_keys_inventory_action.generic.x = 0;
-	s_keys_inventory_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_inventory_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_inventory_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_inventory_action.generic.localdata[0] = ++i;
 	s_keys_inventory_action.generic.name =
@@ -881,7 +881,7 @@ static void Keys_MenuInit(void) {
 	s_keys_inv_use_action.generic.type = MTYPE_ACTION;
 	s_keys_inv_use_action.generic.flags = QMF_GRAYED;
 	s_keys_inv_use_action.generic.x = 0;
-	s_keys_inv_use_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_inv_use_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_inv_use_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_inv_use_action.generic.localdata[0] = ++i;
 	s_keys_inv_use_action.generic.name =
@@ -890,7 +890,7 @@ static void Keys_MenuInit(void) {
 	s_keys_inv_drop_action.generic.type = MTYPE_ACTION;
 	s_keys_inv_drop_action.generic.flags = QMF_GRAYED;
 	s_keys_inv_drop_action.generic.x = 0;
-	s_keys_inv_drop_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_inv_drop_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_inv_drop_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_inv_drop_action.generic.localdata[0] = ++i;
 	s_keys_inv_drop_action.generic.name =
@@ -899,7 +899,7 @@ static void Keys_MenuInit(void) {
 	s_keys_inv_prev_action.generic.type = MTYPE_ACTION;
 	s_keys_inv_prev_action.generic.flags = QMF_GRAYED;
 	s_keys_inv_prev_action.generic.x = 0;
-	s_keys_inv_prev_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_inv_prev_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_inv_prev_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_inv_prev_action.generic.localdata[0] = ++i;
 	s_keys_inv_prev_action.generic.name =
@@ -908,7 +908,7 @@ static void Keys_MenuInit(void) {
 	s_keys_inv_next_action.generic.type = MTYPE_ACTION;
 	s_keys_inv_next_action.generic.flags = QMF_GRAYED;
 	s_keys_inv_next_action.generic.x = 0;
-	s_keys_inv_next_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_inv_next_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_inv_next_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_inv_next_action.generic.localdata[0] = ++i;
 	s_keys_inv_next_action.generic.name =
@@ -917,7 +917,7 @@ static void Keys_MenuInit(void) {
 	s_keys_zoom_action.generic.type = MTYPE_ACTION;
 	s_keys_zoom_action.generic.flags = QMF_GRAYED;
 	s_keys_zoom_action.generic.x = 0;
-	s_keys_zoom_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_zoom_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_zoom_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_zoom_action.generic.localdata[0] = ++i;
 	s_keys_zoom_action.generic.name = bindnames[i][1];
@@ -925,7 +925,7 @@ static void Keys_MenuInit(void) {
 	s_keys_flashlight_action.generic.type = MTYPE_ACTION;
 	s_keys_flashlight_action.generic.flags = QMF_GRAYED;
 	s_keys_flashlight_action.generic.x = 0;
-	s_keys_flashlight_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_flashlight_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_flashlight_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_flashlight_action.generic.localdata[0] = ++i;
 	s_keys_flashlight_action.generic.name = bindnames[i][1];
@@ -933,7 +933,7 @@ static void Keys_MenuInit(void) {
 	s_keys_help_computer_action.generic.type = MTYPE_ACTION;
 	s_keys_help_computer_action.generic.flags = QMF_GRAYED;
 	s_keys_help_computer_action.generic.x = 0;
-	s_keys_help_computer_action.generic.y = y += 9 * cl_fontScale->value;
+	s_keys_help_computer_action.generic.y = y += 9 * ui_fontScale->value;
 	s_keys_help_computer_action.generic.ownerdraw = DrawKeyBindingFunc;
 	s_keys_help_computer_action.generic.localdata[0] = ++i;
 	s_keys_help_computer_action.generic.name =
@@ -1052,8 +1052,8 @@ static menulist_s s_options_cpuUtil_box;
 static menulist_s s_options_fps_box;
 static menulist_s s_options_time_box;
 
-extern cvar_t	*cl_drawhud;
-extern cvar_t	*cl_3dhud;
+extern cvar_t	*ui_drawHud;
+extern cvar_t	*ui_3dHud;
 extern cvar_t	*m_inversion;
 #ifdef _WIN32
 extern cvar_t	*in_useXInput;
@@ -1093,7 +1093,7 @@ static void GamePadFunc(void* unused) {
 }
 #endif
 static void FpsFunc(void *unused) {
-	Cvar_SetValue("cl_drawFPS", s_options_fps_box.curvalue);
+	Cvar_SetValue("ui_drawFPS", s_options_fps_box.curvalue);
 }
 
 static void CpuUtilFunc(void* unused) {
@@ -1101,7 +1101,7 @@ static void CpuUtilFunc(void* unused) {
 }
 
 static void TimeFunc(void *unused) {
-	Cvar_SetValue("cl_drawTime", s_options_time_box.curvalue);
+	Cvar_SetValue("ui_drawTime", s_options_time_box.curvalue);
 }
 
 static void ControlsSetMenuItemValues(void) {
@@ -1138,11 +1138,11 @@ static void ControlsSetMenuItemValues(void) {
 	Cvar_SetValue("sys_cpuUtilization", ClampCvarInteger(0, 1, sys_cpuUtilization->integer));
 	s_options_cpuUtil_box.curvalue = sys_cpuUtilization->value;
 
-	Cvar_SetValue("cl_drawFPS", ClampCvarInteger(0, 2, cl_drawFPS->integer));
-	s_options_fps_box.curvalue = cl_drawFPS->value;
+	Cvar_SetValue("ui_drawFPS", ClampCvarInteger(0, 2, ui_drawFPS->integer));
+	s_options_fps_box.curvalue = ui_drawFPS->value;
 
-	Cvar_SetValue("cl_drawTime", ClampCvarInteger(0, 1, cl_drawTime->integer));
-	s_options_time_box.curvalue = cl_drawTime->value;
+	Cvar_SetValue("ui_drawTime", ClampCvarInteger(0, 1, ui_drawTime->integer));
+	s_options_time_box.curvalue = ui_drawTime->value;
 
 }
 
@@ -1293,11 +1293,11 @@ static void UpdateRailSpiralBlueFunc(void *unused) {
 }
 
 static void UpdateHudScaleFunc(void *unused) {
-	Cvar_SetValue("cl_hudScale", s_aoptions_hudScale_slider.curvalue / 10);
+	Cvar_SetValue("ui_hudScale", s_aoptions_hudScale_slider.curvalue / 10);
 }
 
 static void UpdateFontScaleFunc(void *unused) {
-	Cvar_SetValue("cl_fontScale", s_aoptions_fontScale_slider.curvalue / 10 + 1);
+	Cvar_SetValue("ui_fontScale", s_aoptions_fontScale_slider.curvalue / 10 + 1);
 }
 
 static void UpdateBloodFunc(void *unused) {
@@ -1313,11 +1313,11 @@ static void Update3dCamFunc(void *unused) {
 }
 
 static void UpdateHud(void *unused) {
-	Cvar_SetValue("cl_drawhud", s_aoptions_drawHud_box.curvalue);
+	Cvar_SetValue("ui_drawHud", s_aoptions_drawHud_box.curvalue);
 }
 
 static void Update3dHud(void *unused) {
-	Cvar_SetValue("cl_3dhud", s_aoptions_3dhud_box.curvalue);
+	Cvar_SetValue("ui_3dHud", s_aoptions_3dhud_box.curvalue);
 }
 
 
@@ -1337,7 +1337,7 @@ void M_AdvancedInit(void) {
 	** configure controls menu and menu items
 	*/
 	s_options_menu.x = viddef.width >> 1;
-	s_options_menu.y = (viddef.height >> 1) - 100 * cl_fontScale->value;
+	s_options_menu.y = (viddef.height >> 1) - 100 * ui_fontScale->value;
 	s_options_menu.nitems = 0;
 
 	s_aoptions_railCoreRed_slider.generic.type = MTYPE_SLIDER;
@@ -1348,7 +1348,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_railCoreRed_slider.minvalue = 0;
 	s_aoptions_railCoreRed_slider.maxvalue = 10;
 	s_aoptions_railCoreRed_slider.curvalue = Cvar_VariableValue("cl_railcore_red") * 10;
-	menu_y += 10 * cl_fontScale->value;
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_railCoreGreen_slider.generic.type = MTYPE_SLIDER;
 	s_aoptions_railCoreGreen_slider.generic.x = 0;
@@ -1358,7 +1358,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_railCoreGreen_slider.minvalue = 0;
 	s_aoptions_railCoreGreen_slider.maxvalue = 10;
 	s_aoptions_railCoreGreen_slider.curvalue = Cvar_VariableValue("cl_railcore_green") * 10;
-	menu_y += 10 * cl_fontScale->value;
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_railCoreBlue_slider.generic.type = MTYPE_SLIDER;
 	s_aoptions_railCoreBlue_slider.generic.x = 0;
@@ -1368,7 +1368,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_railCoreBlue_slider.minvalue = 0;
 	s_aoptions_railCoreBlue_slider.maxvalue = 10;
 	s_aoptions_railCoreBlue_slider.curvalue = Cvar_VariableValue("cl_railcore_blue") * 10;
-	menu_y += 20 * cl_fontScale->value;
+	menu_y += 20 * ui_fontScale->value;
 
 	s_aoptions_railSpiralRed_slider.generic.type = MTYPE_SLIDER;
 	s_aoptions_railSpiralRed_slider.generic.x = 0;
@@ -1378,7 +1378,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_railSpiralRed_slider.minvalue = 0;
 	s_aoptions_railSpiralRed_slider.maxvalue = 10;
 	s_aoptions_railSpiralRed_slider.curvalue = Cvar_VariableValue("cl_railspiral_red") * 10;
-	menu_y += 10 * cl_fontScale->value;
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_railSpiralGreen_slider.generic.type = MTYPE_SLIDER;
 	s_aoptions_railSpiralGreen_slider.generic.x = 0;
@@ -1388,7 +1388,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_railSpiralGreen_slider.minvalue = 0;
 	s_aoptions_railSpiralGreen_slider.maxvalue = 10;
 	s_aoptions_railSpiralGreen_slider.curvalue = Cvar_VariableValue("cl_railspiral_green") * 10;
-	menu_y += 10 * cl_fontScale->value;
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_railSpiralBlue_slider.generic.type = MTYPE_SLIDER;
 	s_aoptions_railSpiralBlue_slider.generic.x = 0;
@@ -1398,7 +1398,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_railSpiralBlue_slider.minvalue = 0;
 	s_aoptions_railSpiralBlue_slider.maxvalue = 10;
 	s_aoptions_railSpiralBlue_slider.curvalue = Cvar_VariableValue("cl_railspiral_blue") * 10;
-	menu_y += 20 * cl_fontScale->value;
+	menu_y += 20 * ui_fontScale->value;
 
 	s_aoptions_blood_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_blood_box.generic.x = 0;
@@ -1407,7 +1407,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_blood_box.generic.callback = UpdateBloodFunc;
 	s_aoptions_blood_box.itemnames = yesno_names;
 	s_aoptions_blood_box.curvalue = Cvar_VariableValue("cl_blood");
-	menu_y += 20 * cl_fontScale->value;
+	menu_y += 20 * ui_fontScale->value;
 
 	s_aoptions_decals_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_decals_box.generic.x = 0;
@@ -1416,7 +1416,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_decals_box.generic.callback = UpdateDecalsFunc;
 	s_aoptions_decals_box.itemnames = yesno_names;
 	s_aoptions_decals_box.curvalue = Cvar_VariableValue("cl_decals");
-	menu_y += 10 * cl_fontScale->value;
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_3dcam_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_3dcam_box.generic.x = 0;
@@ -1425,7 +1425,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_3dcam_box.generic.callback = Update3dCamFunc;
 	s_aoptions_3dcam_box.itemnames = yesno_names;
 	s_aoptions_3dcam_box.curvalue = Cvar_VariableValue("cl_thirdPepson");
-	menu_y += 20 * cl_fontScale->value;
+	menu_y += 20 * ui_fontScale->value;
 
 	s_aoptions_drawHud_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_drawHud_box.generic.x = 0;
@@ -1433,8 +1433,8 @@ void M_AdvancedInit(void) {
 	s_aoptions_drawHud_box.generic.name = "Draw Hud";
 	s_aoptions_drawHud_box.generic.callback = UpdateHud;
 	s_aoptions_drawHud_box.itemnames = yesno_names;
-	s_aoptions_drawHud_box.curvalue = Cvar_VariableValue("cl_drawhud");
-	menu_y += 10 * cl_fontScale->value;
+	s_aoptions_drawHud_box.curvalue = Cvar_VariableValue("ui_drawHud");
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_hudScale_slider.generic.type = MTYPE_SLIDER;
 	s_aoptions_hudScale_slider.generic.x = 0;
@@ -1443,8 +1443,8 @@ void M_AdvancedInit(void) {
 	s_aoptions_hudScale_slider.generic.callback = UpdateHudScaleFunc;
 	s_aoptions_hudScale_slider.minvalue = 0;
 	s_aoptions_hudScale_slider.maxvalue = 10;
-	s_aoptions_hudScale_slider.curvalue = Cvar_VariableValue("cl_hudScale") * 10;
-	menu_y += 10 * cl_fontScale->value;
+	s_aoptions_hudScale_slider.curvalue = Cvar_VariableValue("ui_hudScale") * 10;
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_3dhud_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_3dhud_box.generic.x = 0;
@@ -1452,8 +1452,8 @@ void M_AdvancedInit(void) {
 	s_aoptions_3dhud_box.generic.name = "Draw hud models";
 	s_aoptions_3dhud_box.generic.callback = Update3dHud;
 	s_aoptions_3dhud_box.itemnames = yesno_names;
-	s_aoptions_3dhud_box.curvalue = Cvar_VariableValue("cl_3dhud");
-	menu_y += 10 * cl_fontScale->value;
+	s_aoptions_3dhud_box.curvalue = Cvar_VariableValue("ui_3dHud");
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_railCoreRed_slider.curvalue = cl_railcore_red->value * 10;
 	s_aoptions_railCoreGreen_slider.curvalue = cl_railcore_green->value * 10;
@@ -1467,8 +1467,8 @@ void M_AdvancedInit(void) {
 	s_aoptions_decals_box.curvalue = cl_decals->value;
 	s_aoptions_3dcam_box.curvalue = cl_thirdPerson->value;
 
-	s_aoptions_drawHud_box.curvalue = cl_drawhud->value;
-	s_aoptions_hudScale_slider.curvalue = cl_hudScale->value * 10;
+	s_aoptions_drawHud_box.curvalue = ui_drawHud->value;
+	s_aoptions_hudScale_slider.curvalue = ui_hudScale->value * 10;
 
 
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_railCoreRed_slider);
@@ -1551,12 +1551,12 @@ void Options_MenuInit(void) {
 	** configure controls menu and menu items
 	*/
 	s_options_menu.x = viddef.width >> 1;
-	s_options_menu.y = (viddef.height >> 1) - 110 * cl_fontScale->value;
+	s_options_menu.y = (viddef.height >> 1) - 110 * ui_fontScale->value;
 	s_options_menu.nitems = 0;
 
 	s_options_effectsVolume_slider.generic.type = MTYPE_SLIDER;
 	s_options_effectsVolume_slider.generic.x = 0;
-	s_options_effectsVolume_slider.generic.y = 10 * cl_fontScale->value;
+	s_options_effectsVolume_slider.generic.y = 10 * ui_fontScale->value;
 	s_options_effectsVolume_slider.generic.name = "Effects Volume";
 	s_options_effectsVolume_slider.generic.callback = UpdateVolumeFunc;
 	s_options_effectsVolume_slider.minvalue = 0;
@@ -1566,7 +1566,7 @@ void Options_MenuInit(void) {
 
 	s_options_musicvolume_slider.generic.type = MTYPE_SLIDER;
 	s_options_musicvolume_slider.generic.x = 0;
-	s_options_musicvolume_slider.generic.y = 20 * cl_fontScale->value;
+	s_options_musicvolume_slider.generic.y = 20 * ui_fontScale->value;
 	s_options_musicvolume_slider.generic.name = "Music Volume";
 	s_options_musicvolume_slider.generic.callback = UpdateMusicVolumeFunc;
 	s_options_musicvolume_slider.minvalue = 0;
@@ -1576,7 +1576,7 @@ void Options_MenuInit(void) {
 
 	s_options_musicsrc_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_musicsrc_list.generic.x = 0;
-	s_options_musicsrc_list.generic.y = 30 * cl_fontScale->value;
+	s_options_musicsrc_list.generic.y = 30 * ui_fontScale->value;
 	s_options_musicsrc_list.generic.name = "Music Source";
 	s_options_musicsrc_list.generic.callback = UpdateMusicSrcFunc;
 	s_options_musicsrc_list.itemnames = s_musicsrc_items;
@@ -1585,7 +1585,7 @@ void Options_MenuInit(void) {
 
 	s_options_aldev_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_aldev_box.generic.x = 0;
-	s_options_aldev_box.generic.y = 50 * cl_fontScale->value;
+	s_options_aldev_box.generic.y = 50 * ui_fontScale->value;
 	s_options_aldev_box.generic.name = "Sound Device";
 	s_options_aldev_box.generic.callback = AlDevice;
 
@@ -1618,7 +1618,7 @@ void Options_MenuInit(void) {
 	
 	s_options_alResempler_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_alResempler_box.generic.x = 0;
-	s_options_alResempler_box.generic.y = 60 * cl_fontScale->value;
+	s_options_alResempler_box.generic.y = 60 * ui_fontScale->value;
 	s_options_alResempler_box.generic.name = "Sound Resampler";
 	s_options_alResempler_box.generic.callback = AlResempler;
 
@@ -1638,7 +1638,7 @@ void Options_MenuInit(void) {
 
 	s_options_hrtf.generic.type = MTYPE_SPINCONTROL;
 	s_options_hrtf.generic.x = 0;
-	s_options_hrtf.generic.y = 70 * cl_fontScale->value;
+	s_options_hrtf.generic.y = 70 * ui_fontScale->value;
 	s_options_hrtf.generic.name = "Use HRTF";
 	s_options_hrtf.generic.callback = UpdateHRTF;
 	if (alGetStringiSOFT)
@@ -1651,7 +1651,7 @@ void Options_MenuInit(void) {
 
 	s_options_useEFX_list.generic.type = MTYPE_SPINCONTROL;
 	s_options_useEFX_list.generic.x = 0;
-	s_options_useEFX_list.generic.y = 80 * cl_fontScale->value;
+	s_options_useEFX_list.generic.y = 80 * ui_fontScale->value;
 	s_options_useEFX_list.generic.name = "Use EFX Reverbation";
 	s_options_useEFX_list.generic.callback = UpdateEFX;
 	s_options_useEFX_list.itemnames = yesno_names;
@@ -1660,7 +1660,7 @@ void Options_MenuInit(void) {
 
 	s_options_sensitivity_slider.generic.type = MTYPE_SLIDER;
 	s_options_sensitivity_slider.generic.x = 0;
-	s_options_sensitivity_slider.generic.y = 100 * cl_fontScale->value;
+	s_options_sensitivity_slider.generic.y = 100 * ui_fontScale->value;
 	s_options_sensitivity_slider.generic.name = "Mouse Speed";
 	s_options_sensitivity_slider.generic.callback = MouseSpeedFunc;
 	s_options_sensitivity_slider.minvalue = 2;
@@ -1669,7 +1669,7 @@ void Options_MenuInit(void) {
 
 	s_options_alwaysrun_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_alwaysrun_box.generic.x = 0;
-	s_options_alwaysrun_box.generic.y = 110 * cl_fontScale->value;
+	s_options_alwaysrun_box.generic.y = 110 * ui_fontScale->value;
 	s_options_alwaysrun_box.generic.name = "Always Run";
 	s_options_alwaysrun_box.generic.callback = AlwaysRunFunc;
 	s_options_alwaysrun_box.itemnames = yesno_names;
@@ -1677,14 +1677,14 @@ void Options_MenuInit(void) {
 
 	s_options_invertmouse_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_invertmouse_box.generic.x = 0;
-	s_options_invertmouse_box.generic.y = 120 * cl_fontScale->value;
+	s_options_invertmouse_box.generic.y = 120 * ui_fontScale->value;
 	s_options_invertmouse_box.generic.name = "Invert Mouse";
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
 	s_options_invertmouse_box.itemnames = yesno_names;
 
 	s_options_crosshair_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_crosshair_box.generic.x = 0;
-	s_options_crosshair_box.generic.y = 130 * cl_fontScale->value;
+	s_options_crosshair_box.generic.y = 130 * ui_fontScale->value;
 	s_options_crosshair_box.generic.name = "Crosshair";
 	s_options_crosshair_box.generic.callback = CrosshairFunc;
 	s_options_crosshair_box.itemnames = crosshair_names;
@@ -1701,7 +1701,7 @@ void Options_MenuInit(void) {
 
 	s_options_gamepad_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_gamepad_box.generic.x = 0;
-	s_options_gamepad_box.generic.y = 140 * cl_fontScale->value;;
+	s_options_gamepad_box.generic.y = 140 * ui_fontScale->value;;
 	s_options_gamepad_box.generic.name = "Gamepad";
 #ifdef _WIN32
 	s_options_gamepad_box.generic.callback = GamePadFunc;
@@ -1714,14 +1714,14 @@ void Options_MenuInit(void) {
 
 	s_options_cpuUtil_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_cpuUtil_box.generic.x = 0;
-	s_options_cpuUtil_box.generic.y = 160 * cl_fontScale->value;
+	s_options_cpuUtil_box.generic.y = 160 * ui_fontScale->value;
 	s_options_cpuUtil_box.generic.name = "Draw CPU Utilization";
 	s_options_cpuUtil_box.generic.callback = CpuUtilFunc;
 	s_options_cpuUtil_box.itemnames = yesno_names;
 
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
-	s_options_fps_box.generic.y = 170 * cl_fontScale->value;
+	s_options_fps_box.generic.y = 170 * ui_fontScale->value;
 	s_options_fps_box.generic.name = "Draw FPS";
 	s_options_fps_box.generic.callback = FpsFunc;
 	s_options_fps_box.itemnames = fps_names;
@@ -1729,7 +1729,7 @@ void Options_MenuInit(void) {
 
 	s_options_time_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_time_box.generic.x = 0;
-	s_options_time_box.generic.y = 180 * cl_fontScale->value;
+	s_options_time_box.generic.y = 180 * ui_fontScale->value;
 	s_options_time_box.generic.name = "Draw Date / Time";
 	s_options_time_box.generic.callback = TimeFunc;
 	s_options_time_box.itemnames = yesno_names;
@@ -1737,28 +1737,28 @@ void Options_MenuInit(void) {
 
 	s_options_advanced_options_action.generic.type = MTYPE_ACTION;
 	s_options_advanced_options_action.generic.x = 0;
-	s_options_advanced_options_action.generic.y = 200 * cl_fontScale->value;
+	s_options_advanced_options_action.generic.y = 200 * ui_fontScale->value;
 	s_options_advanced_options_action.generic.name = "Advanced Settings";
 	s_options_advanced_options_action.generic.callback = AdvancedSettingsFunc;
 
 
 	s_options_customize_options_action.generic.type = MTYPE_ACTION;
 	s_options_customize_options_action.generic.x = 0;
-	s_options_customize_options_action.generic.y = 210 * cl_fontScale->value;
+	s_options_customize_options_action.generic.y = 210 * ui_fontScale->value;
 	s_options_customize_options_action.generic.name = "Customize Controls";
 	s_options_customize_options_action.generic.callback = CustomizeControlsFunc;
 	//-------------------------
 
 	s_options_defaults_action.generic.type = MTYPE_ACTION;
 	s_options_defaults_action.generic.x = 0;
-	s_options_defaults_action.generic.y = 230 * cl_fontScale->value;
+	s_options_defaults_action.generic.y = 230 * ui_fontScale->value;
 	s_options_defaults_action.generic.name = "Reset Defaults";
 	s_options_defaults_action.generic.callback = ControlsResetDefaultsFunc;
 
 
 	s_options_console_action.generic.type = MTYPE_ACTION;
 	s_options_console_action.generic.x = 0;
-	s_options_console_action.generic.y = 240 * cl_fontScale->value;
+	s_options_console_action.generic.y = 240 * ui_fontScale->value;
 	s_options_console_action.generic.name = "go to console";
 	s_options_console_action.generic.callback = ConsoleFunc;
 
@@ -1792,20 +1792,20 @@ void M_Option_Banner(image_t *banner[2]) {
 	int w, h;
 	int move;
 
-	move = 170 + (cl_fontScale->value - 1) * 100;
+	move = 170 + (ui_fontScale->value - 1) * 100;
 
 	w = banner[0]->width;
 	h = banner[0]->height;
 
 	move += h;
-	if (cl_fontScale->value == 2) {
-		Draw_ScaledPic(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, banner[0]);
-		Draw_ScaledBumpPic(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, banner[0], banner[1]);
+	if (ui_fontScale->value == 2) {
+		Draw_ScaledPic(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, banner[0]);
+		Draw_ScaledBumpPic(viddef.width / 2 - (w * 0.5), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, banner[0], banner[1]);
 	}
 	else 
-		if (cl_fontScale->value == 3) {
-			Draw_ScaledPic(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, banner[0]);
-			Draw_ScaledBumpPic(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, cl_fontScale->value, cl_fontScale->value, banner[0], banner[1]);
+		if (ui_fontScale->value == 3) {
+			Draw_ScaledPic(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, banner[0]);
+			Draw_ScaledBumpPic(viddef.width / 2 - (w * 0.75), viddef.height / 2 - move, ui_fontScale->value, ui_fontScale->value, banner[0], banner[1]);
 	}
 }
 
@@ -2238,13 +2238,13 @@ static char *roguecredits[] = {
 
 void M_Credits_MenuDraw(void) {
 	int i, x, y;
-	int i6s = 6 * cl_fontScale->value;
+	int i6s = 6 * ui_fontScale->value;
 
 	// draw the credits
 	
 	drawIDlogo = qfalse;
 
-	for (i = 0, y = viddef.height - ((cls.realTime - credits_start_time) / 30.0F); credits[i] && y < (int)viddef.height; y += 10 * cl_fontScale->value, i++)    /// Berserker' FIX: was y < viddef.height
+	for (i = 0, y = viddef.height - ((cls.realTime - credits_start_time) / 30.0F); credits[i] && y < (int)viddef.height; y += 10 * ui_fontScale->value, i++)    /// Berserker' FIX: was y < viddef.height
 	{
 		int j, stringoffset = 0;
 		int bold;
@@ -2265,7 +2265,7 @@ void M_Credits_MenuDraw(void) {
 		{
 			x = (viddef.width - strlen(credits[i]) * i6s - stringoffset * i6s) / 2 + (j + stringoffset) * i6s;
 
-			Draw_CharScaled(x, y, cl_fontScale->value, cl_fontScale->value, credits[i][j + stringoffset] + bold);
+			Draw_CharScaled(x, y, ui_fontScale->value, ui_fontScale->value, credits[i][j + stringoffset] + bold);
 		}
 	}
 
@@ -2427,12 +2427,12 @@ void DrawModShot(void* m)
 	int	w = 0, h = 0, size = 0, scale;
 	menuaction_s* menu = (menuaction_s*)m;
 	
-	if (cl_fontScale->integer >= 3)
+	if (ui_fontScale->integer >= 3)
 		scale = 250;
 	else 
 		scale = 150;
 
-	w = viddef.width * 0.50 + 10 * cl_fontScale->integer;
+	w = viddef.width * 0.50 + 10 * ui_fontScale->integer;
 	h = viddef.height / 2 - scale;
 	size = min(viddef.width - w, viddef.height - h);
 	size *= 0.75;
@@ -2487,12 +2487,12 @@ qboolean Mods_MenuInit()
 	if (!ndirs)
 		return qfalse;
 
-	if (cl_fontScale->integer >= 3)
+	if (ui_fontScale->integer >= 3)
 		scale = 250;
 	else
 		scale = 150;
 
-	s_mods_menu.x = viddef.width * 0.50 - 20 * cl_fontScale->value;
+	s_mods_menu.x = viddef.width * 0.50 - 20 * ui_fontScale->value;
 	s_mods_menu.y = viddef.height / 2 - scale;
 
 	s_mods_menu.nitems = 0;
@@ -2506,7 +2506,7 @@ qboolean Mods_MenuInit()
 		s_mods_actions[t].generic.flags = QMF_LEFT_JUSTIFY;
 		s_mods_actions[t].generic.localdata[0] = t;
 		s_mods_actions[t].generic.callback = ModCallback;
-		s_mods_actions[t].generic.y = i * 10 * cl_fontScale->value;
+		s_mods_actions[t].generic.y = i * 10 * ui_fontScale->value;
 
 		s_mods_actions[t].generic.type = MTYPE_ACTION;
 		s_mods_actions[t].generic.statusbarfunc = DrawModShot;
@@ -2589,7 +2589,7 @@ void Game_MenuInit(void) {
 
 	drawIDlogo = qfalse;
 	
-	s_game_menu.x = viddef.width * 0.50 - 20 * cl_fontScale->value;
+	s_game_menu.x = viddef.width * 0.50 - 20 * ui_fontScale->value;
 	s_game_menu.nitems = 0;
 
 	s_easy_game_action.generic.type = MTYPE_ACTION;
@@ -2602,21 +2602,21 @@ void Game_MenuInit(void) {
 	s_medium_game_action.generic.type = MTYPE_ACTION;
 	s_medium_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_medium_game_action.generic.x = 0;
-	s_medium_game_action.generic.y = 10 * cl_fontScale->value;
+	s_medium_game_action.generic.y = 10 * ui_fontScale->value;
 	s_medium_game_action.generic.name = "Medium";
 	s_medium_game_action.generic.callback = MediumGameFunc;
 
 	s_hard_game_action.generic.type = MTYPE_ACTION;
 	s_hard_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_hard_game_action.generic.x = 0;
-	s_hard_game_action.generic.y = 20 * cl_fontScale->value;
+	s_hard_game_action.generic.y = 20 * ui_fontScale->value;
 	s_hard_game_action.generic.name = "Hard";
 	s_hard_game_action.generic.callback = HardGameFunc;
 
 	s_nightmare_game_action.generic.type = MTYPE_ACTION;
 	s_nightmare_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_nightmare_game_action.generic.x = 0;
-	s_nightmare_game_action.generic.y = 30 * cl_fontScale->value;
+	s_nightmare_game_action.generic.y = 30 * ui_fontScale->value;
 	s_nightmare_game_action.generic.name = "Nightmare!";
 	s_nightmare_game_action.generic.callback = NightmareGameFunc;
 
@@ -2625,14 +2625,14 @@ void Game_MenuInit(void) {
 	s_load_game_action.generic.type = MTYPE_ACTION;
 	s_load_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_load_game_action.generic.x = 0;
-	s_load_game_action.generic.y = 50 * cl_fontScale->value;
+	s_load_game_action.generic.y = 50 * ui_fontScale->value;
 	s_load_game_action.generic.name = "Load Game";
 	s_load_game_action.generic.callback = LoadGameFunc;
 
 	s_save_game_action.generic.type = MTYPE_ACTION;
 	s_save_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_save_game_action.generic.x = 0;
-	s_save_game_action.generic.y = 60 * cl_fontScale->value;
+	s_save_game_action.generic.y = 60 * ui_fontScale->value;
 	s_save_game_action.generic.name = "Save Game";
 	s_save_game_action.generic.callback = SaveGameFunc;
 
@@ -2641,7 +2641,7 @@ void Game_MenuInit(void) {
 	s_mod_game_action.generic.type = MTYPE_ACTION;
 	s_mod_game_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_mod_game_action.generic.x = 0;
-	s_mod_game_action.generic.y = 80 * cl_fontScale->value;
+	s_mod_game_action.generic.y = 80 * ui_fontScale->value;
 	s_mod_game_action.generic.name = "Select Mod";
 	s_mod_game_action.generic.callback = SelectModFunc;
 
@@ -2650,7 +2650,7 @@ void Game_MenuInit(void) {
 	s_credits_action.generic.type = MTYPE_ACTION;
 	s_credits_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_credits_action.generic.x = 0;
-	s_credits_action.generic.y = 100 * cl_fontScale->value;
+	s_credits_action.generic.y = 100 * ui_fontScale->value;
 	s_credits_action.generic.name = "Credits";
 	s_credits_action.generic.callback = CreditsFunc;
 
@@ -2864,12 +2864,12 @@ void DrawSavedShot(void* m)
 	float			aspect;
 
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
-	picWidth = (viddef.width * 0.5) - (w * 0.25) + 10 * (int)cl_fontScale->value;
+	picWidth = (viddef.width * 0.5) - (w * 0.25) + 10 * (int)ui_fontScale->value;
 	picWidth += 90;
 
 	// fucking hack, lol
 	int wtf;
-	if (cl_fontScale->integer >= 3)
+	if (ui_fontScale->integer >= 3)
 		wtf = 14;
 	else
 		wtf = 16;
@@ -2884,12 +2884,12 @@ void DrawSavedShot(void* m)
 		aspect = (float)w / (float)h;
 
 		R_FreePic(savePic); // update pic cache
-		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (cl_fontScale->integer - 1), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0);
 
-		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)cl_fontScale->value * 6) * 0.5;
-		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
+		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)ui_fontScale->value * 6) * 0.5;
+		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_savesInfos[i]);
 		}
 	else {
 
@@ -2897,7 +2897,7 @@ void DrawSavedShot(void* m)
 			strcpy(savePic, va("/pics/victory.jpg", m_savemapnames[i]));
 			Draw_GetPicSize(&w, &h, savePic);
 			aspect = (float)w / (float)h;
-			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0);
 			Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		}
 	else
@@ -2911,14 +2911,14 @@ void DrawSavedShot(void* m)
 		}
 
 		aspect = (float)w / (float)h;
-		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		}
 				
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0);
 
-		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)cl_fontScale->value * 6) * 0.5;
-		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_savesInfos[i]);
+		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)ui_fontScale->value * 6) * 0.5;
+		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_savesInfos[i]);
 		}
 	}
 	else {
@@ -2937,12 +2937,12 @@ void DrawQuickSavedShot(void* m)
 	float			aspect;
 
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
-	picWidth = (viddef.width * 0.5) - (w * 0.25) + 10 * (int)cl_fontScale->value;
+	picWidth = (viddef.width * 0.5) - (w * 0.25) + 10 * (int)ui_fontScale->value;
 	picWidth += 90;
 
 	// fucking hack, lol
 	int wtf;
-	if (cl_fontScale->integer >= 3)
+	if (ui_fontScale->integer >= 3)
 		wtf = 14;
 	else
 		wtf = 16;
@@ -2954,12 +2954,12 @@ void DrawQuickSavedShot(void* m)
 	if (m_quicksavevalid){
 
 		R_FreePic(savePic); // update pic cache
-		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)cl_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (cl_fontScale->integer - 1), picWidth, 10 * cl_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0);
 
-		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_quickSavesInfos) * (int)cl_fontScale->value * 6) * 0.5;
-		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, cl_fontScale->value, cl_fontScale->value, m_quickSavesInfos);
+		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_quickSavesInfos) * (int)ui_fontScale->value * 6) * 0.5;
+		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_quickSavesInfos);
 	}
 	else {
 		Draw_GetPicSize(&w, &h, "nosaveshot");
@@ -2997,8 +2997,8 @@ void LoadGame_MenuInit(void) {
 	
 	Draw_GetPicSize(&w, &h, "m_banner_load_game");
 
-	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.25 - 16 * cl_fontScale->value;
-	s_loadgame_menu.y = viddef.height * 0.2 + h * 0.5 + 8 * cl_fontScale->value;
+	s_loadgame_menu.x = viddef.width * 0.5 - w * 0.25 - 16 * ui_fontScale->value;
+	s_loadgame_menu.y = viddef.height * 0.2 + h * 0.5 + 8 * ui_fontScale->value;
 	s_loadgame_menu.x *= 0.5;
 
 	s_loadgame_menu.nitems = 0;
@@ -3011,7 +3011,7 @@ void LoadGame_MenuInit(void) {
 	s_quickLoadGame_actions.generic.name = m_quicksavestring;
 	s_quickLoadGame_actions.generic.flags = QMF_LEFT_JUSTIFY;
 	s_quickLoadGame_actions.generic.x = 0;
-	s_quickLoadGame_actions.generic.y = 10 * cl_fontScale->value;
+	s_quickLoadGame_actions.generic.y = 10 * ui_fontScale->value;
 	s_quickLoadGame_actions.generic.localdata[0] = 0;
 	s_quickLoadGame_actions.generic.statusbarfunc = DrawQuickSavedShot;
 
@@ -3038,9 +3038,9 @@ void LoadGame_MenuInit(void) {
 		s_loadgame_actions[i].generic.callback = LoadGameCallback;
 
 		s_loadgame_actions[i].generic.x = 0;
-		s_loadgame_actions[i].generic.y = (i+3) * 10 * cl_fontScale->value;
+		s_loadgame_actions[i].generic.y = (i+3) * 10 * ui_fontScale->value;
 		if (i > 0)				// separate from autosave
-			s_loadgame_actions[i].generic.y += 10 * cl_fontScale->value;
+			s_loadgame_actions[i].generic.y += 10 * ui_fontScale->value;
 
 		s_loadgame_actions[i].generic.type = MTYPE_ACTION;
 		s_loadgame_actions[i].generic.statusbarfunc = DrawSavedShot;
@@ -3099,8 +3099,8 @@ void SaveGame_MenuInit(void) {
 
 	Draw_GetPicSize(&w, &h, "m_banner_save_game");
 
-	s_savegame_menu.x = viddef.width * 0.5 - w * 0.25 - 16 * cl_fontScale->value;
-	s_savegame_menu.y = viddef.height * 0.2 + h * 0.5 + 8 * cl_fontScale->value;
+	s_savegame_menu.x = viddef.width * 0.5 - w * 0.25 - 16 * ui_fontScale->value;
+	s_savegame_menu.y = viddef.height * 0.2 + h * 0.5 + 8 * ui_fontScale->value;
 	s_savegame_menu.x *= 0.5;
 	s_savegame_menu.nitems = 0;
 
@@ -3113,7 +3113,7 @@ void SaveGame_MenuInit(void) {
 	s_quickSaveGame_actions.generic.name = m_quicksavestring;
 	s_quickSaveGame_actions.generic.flags = QMF_LEFT_JUSTIFY;
 	s_quickSaveGame_actions.generic.x = 0;
-	s_quickSaveGame_actions.generic.y = 10 * cl_fontScale->value;
+	s_quickSaveGame_actions.generic.y = 10 * ui_fontScale->value;
 	s_quickSaveGame_actions.generic.localdata[0] = 0;
 	s_quickSaveGame_actions.generic.statusbarfunc = DrawQuickSavedShot;
 	s_quickSaveGame_actions.generic.callback = QuickSaveGameCallback;
@@ -3135,7 +3135,7 @@ void SaveGame_MenuInit(void) {
 		s_savegame_actions[i].generic.callback = SaveGameCallback;
 
 		s_savegame_actions[i].generic.x = 0;
-		s_savegame_actions[i].generic.y = (i+3) * 10 * cl_fontScale->value;
+		s_savegame_actions[i].generic.y = (i+3) * 10 * ui_fontScale->value;
 
 		s_savegame_actions[i].generic.type = MTYPE_ACTION;
 		s_savegame_actions[i].generic.statusbarfunc = DrawSavedShot;
@@ -3233,7 +3233,7 @@ void NullCursorDraw(void *self) {}
 
 void SearchLocalGames(void) {
 	int		i;
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 
 	m_num_servers = 0;
 	for (i = 0; i < MAX_LOCAL_SERVERS; i++)
@@ -3259,7 +3259,7 @@ void SearchLocalGamesFunc(void *self) {
 void JoinServer_MenuInit(void) {
 	int i, shift;
 
-	shift = 60 * (cl_fontScale->value - 1);
+	shift = 60 * (ui_fontScale->value - 1);
 
 	drawIDlogo = qfalse;
 
@@ -3278,14 +3278,14 @@ void JoinServer_MenuInit(void) {
 	s_joinserver_search_action.generic.name = "refresh server list";
 	s_joinserver_search_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_joinserver_search_action.generic.x = 0;
-	s_joinserver_search_action.generic.y = shift + 10 * cl_fontScale->value;
+	s_joinserver_search_action.generic.y = shift + 10 * ui_fontScale->value;
 	s_joinserver_search_action.generic.callback = SearchLocalGamesFunc;
 	s_joinserver_search_action.generic.statusbar = "search for servers";
 
 	s_joinserver_server_title.generic.type = MTYPE_SEPARATOR;
 	s_joinserver_server_title.generic.name = "connect to...";
 	s_joinserver_server_title.generic.x = 80;
-	s_joinserver_server_title.generic.y = shift + 30 * cl_fontScale->value;
+	s_joinserver_server_title.generic.y = shift + 30 * ui_fontScale->value;
 
 	for (i = 0; i < MAX_LOCAL_SERVERS; i++) {
 		s_joinserver_server_actions[i].generic.type = MTYPE_ACTION;
@@ -3293,7 +3293,7 @@ void JoinServer_MenuInit(void) {
 		s_joinserver_server_actions[i].generic.name = local_server_names[i];
 		s_joinserver_server_actions[i].generic.flags = QMF_LEFT_JUSTIFY;
 		s_joinserver_server_actions[i].generic.x = 0;
-		s_joinserver_server_actions[i].generic.y = shift + 40 * cl_fontScale->value + i * 10 * cl_fontScale->value;
+		s_joinserver_server_actions[i].generic.y = shift + 40 * ui_fontScale->value + i * 10 * ui_fontScale->value;
 
 		s_joinserver_server_actions[i].generic.callback = JoinServerFunc;
 		s_joinserver_server_actions[i].generic.statusbar = "press ENTER to connect";
@@ -3558,7 +3558,7 @@ void StartServer_MenuInit(void) {
 
 	s_rules_box.generic.type = MTYPE_SPINCONTROL;
 	s_rules_box.generic.x = 0;
-	s_rules_box.generic.y = 20 * cl_fontScale->value;
+	s_rules_box.generic.y = 20 * ui_fontScale->value;
 	s_rules_box.generic.name = "rules";
 
 	//PGM - rogue games only available with rogue DLL.
@@ -3578,7 +3578,7 @@ void StartServer_MenuInit(void) {
 	s_timelimit_field.generic.name = "time limit";
 	s_timelimit_field.generic.flags = QMF_NUMBERSONLY;
 	s_timelimit_field.generic.x = 0;
-	s_timelimit_field.generic.y = 36 * cl_fontScale->value;
+	s_timelimit_field.generic.y = 36 * ui_fontScale->value;
 	s_timelimit_field.generic.statusbar = "0 = no limit";
 	s_timelimit_field.length = 3;
 	s_timelimit_field.visible_length = 3;
@@ -3588,7 +3588,7 @@ void StartServer_MenuInit(void) {
 	s_fraglimit_field.generic.name = "frag limit";
 	s_fraglimit_field.generic.flags = QMF_NUMBERSONLY;
 	s_fraglimit_field.generic.x = 0;
-	s_fraglimit_field.generic.y = 54 * cl_fontScale->value;
+	s_fraglimit_field.generic.y = 54 * ui_fontScale->value;
 	s_fraglimit_field.generic.statusbar = "0 = no limit";
 	s_fraglimit_field.length = 3;
 	s_fraglimit_field.visible_length = 3;
@@ -3604,7 +3604,7 @@ void StartServer_MenuInit(void) {
 	s_maxclients_field.generic.name = "max players";
 	s_maxclients_field.generic.flags = QMF_NUMBERSONLY;
 	s_maxclients_field.generic.x = 0;
-	s_maxclients_field.generic.y = 72 * cl_fontScale->value;
+	s_maxclients_field.generic.y = 72 * ui_fontScale->value;
 	s_maxclients_field.generic.statusbar = NULL;
 	s_maxclients_field.length = 3;
 	s_maxclients_field.visible_length = 3;
@@ -3617,7 +3617,7 @@ void StartServer_MenuInit(void) {
 	s_hostname_field.generic.name = "hostname";
 	s_hostname_field.generic.flags = 0;
 	s_hostname_field.generic.x = 0;
-	s_hostname_field.generic.y = 90 * cl_fontScale->value;
+	s_hostname_field.generic.y = 90 * ui_fontScale->value;
 	s_hostname_field.generic.statusbar = NULL;
 	s_hostname_field.length = 12;
 	s_hostname_field.visible_length = 12;
@@ -3627,7 +3627,7 @@ void StartServer_MenuInit(void) {
 	s_startserver_dmoptions_action.generic.name = " deathmatch flags";
 	s_startserver_dmoptions_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_startserver_dmoptions_action.generic.x = 24;
-	s_startserver_dmoptions_action.generic.y = 108 * cl_fontScale->value;
+	s_startserver_dmoptions_action.generic.y = 108 * ui_fontScale->value;
 	s_startserver_dmoptions_action.generic.statusbar = NULL;
 	s_startserver_dmoptions_action.generic.callback = DMOptionsFunc;
 
@@ -3635,7 +3635,7 @@ void StartServer_MenuInit(void) {
 	s_startserver_start_action.generic.name = " begin";
 	s_startserver_start_action.generic.flags = QMF_LEFT_JUSTIFY;
 	s_startserver_start_action.generic.x = 24;
-	s_startserver_start_action.generic.y = 128 * cl_fontScale->value;
+	s_startserver_start_action.generic.y = 128 * ui_fontScale->value;
 	s_startserver_start_action.generic.callback = StartServerActionFunc;
 
 	Menu_AddItem(&s_startserver_menu, &s_startmap_list);
@@ -3867,7 +3867,7 @@ void DMOptions_MenuInit(void) {
 
 	s_weapons_stay_box.generic.type = MTYPE_SPINCONTROL;
 	s_weapons_stay_box.generic.x = 0;
-	s_weapons_stay_box.generic.y = y += 10 * cl_fontScale->value;
+	s_weapons_stay_box.generic.y = y += 10 * ui_fontScale->value;
 	s_weapons_stay_box.generic.name = "weapons stay";
 	s_weapons_stay_box.generic.callback = DMFlagCallback;
 	s_weapons_stay_box.itemnames = yes_no_names;
@@ -3875,7 +3875,7 @@ void DMOptions_MenuInit(void) {
 
 	s_instant_powerups_box.generic.type = MTYPE_SPINCONTROL;
 	s_instant_powerups_box.generic.x = 0;
-	s_instant_powerups_box.generic.y = y += 10 * cl_fontScale->value;
+	s_instant_powerups_box.generic.y = y += 10 * ui_fontScale->value;
 	s_instant_powerups_box.generic.name = "instant powerups";
 	s_instant_powerups_box.generic.callback = DMFlagCallback;
 	s_instant_powerups_box.itemnames = yes_no_names;
@@ -3883,7 +3883,7 @@ void DMOptions_MenuInit(void) {
 
 	s_powerups_box.generic.type = MTYPE_SPINCONTROL;
 	s_powerups_box.generic.x = 0;
-	s_powerups_box.generic.y = y += 10 * cl_fontScale->value;
+	s_powerups_box.generic.y = y += 10 * ui_fontScale->value;
 	s_powerups_box.generic.name = "allow powerups";
 	s_powerups_box.generic.callback = DMFlagCallback;
 	s_powerups_box.itemnames = yes_no_names;
@@ -3891,7 +3891,7 @@ void DMOptions_MenuInit(void) {
 
 	s_health_box.generic.type = MTYPE_SPINCONTROL;
 	s_health_box.generic.x = 0;
-	s_health_box.generic.y = y += 10 * cl_fontScale->value;
+	s_health_box.generic.y = y += 10 * ui_fontScale->value;
 	s_health_box.generic.callback = DMFlagCallback;
 	s_health_box.generic.name = "allow health";
 	s_health_box.itemnames = yes_no_names;
@@ -3899,7 +3899,7 @@ void DMOptions_MenuInit(void) {
 
 	s_armor_box.generic.type = MTYPE_SPINCONTROL;
 	s_armor_box.generic.x = 0;
-	s_armor_box.generic.y = y += 10 * cl_fontScale->value;
+	s_armor_box.generic.y = y += 10 * ui_fontScale->value;
 	s_armor_box.generic.name = "allow armor";
 	s_armor_box.generic.callback = DMFlagCallback;
 	s_armor_box.itemnames = yes_no_names;
@@ -3907,7 +3907,7 @@ void DMOptions_MenuInit(void) {
 
 	s_spawn_farthest_box.generic.type = MTYPE_SPINCONTROL;
 	s_spawn_farthest_box.generic.x = 0;
-	s_spawn_farthest_box.generic.y = y += 10 * cl_fontScale->value;
+	s_spawn_farthest_box.generic.y = y += 10 * ui_fontScale->value;
 	s_spawn_farthest_box.generic.name = "spawn farthest";
 	s_spawn_farthest_box.generic.callback = DMFlagCallback;
 	s_spawn_farthest_box.itemnames = yes_no_names;
@@ -3915,7 +3915,7 @@ void DMOptions_MenuInit(void) {
 
 	s_samelevel_box.generic.type = MTYPE_SPINCONTROL;
 	s_samelevel_box.generic.x = 0;
-	s_samelevel_box.generic.y = y += 10 * cl_fontScale->value;
+	s_samelevel_box.generic.y = y += 10 * ui_fontScale->value;
 	s_samelevel_box.generic.name = "same map";
 	s_samelevel_box.generic.callback = DMFlagCallback;
 	s_samelevel_box.itemnames = yes_no_names;
@@ -3923,7 +3923,7 @@ void DMOptions_MenuInit(void) {
 
 	s_force_respawn_box.generic.type = MTYPE_SPINCONTROL;
 	s_force_respawn_box.generic.x = 0;
-	s_force_respawn_box.generic.y = y += 10 * cl_fontScale->value;
+	s_force_respawn_box.generic.y = y += 10 * ui_fontScale->value;
 	s_force_respawn_box.generic.name = "force respawn";
 	s_force_respawn_box.generic.callback = DMFlagCallback;
 	s_force_respawn_box.itemnames = yes_no_names;
@@ -3931,14 +3931,14 @@ void DMOptions_MenuInit(void) {
 
 	s_teamplay_box.generic.type = MTYPE_SPINCONTROL;
 	s_teamplay_box.generic.x = 0;
-	s_teamplay_box.generic.y = y += 10 * cl_fontScale->value;
+	s_teamplay_box.generic.y = y += 10 * ui_fontScale->value;
 	s_teamplay_box.generic.name = "teamplay";
 	s_teamplay_box.generic.callback = DMFlagCallback;
 	s_teamplay_box.itemnames = teamplay_names;
 
 	s_allow_exit_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_exit_box.generic.x = 0;
-	s_allow_exit_box.generic.y = y += 10 * cl_fontScale->value;
+	s_allow_exit_box.generic.y = y += 10 * ui_fontScale->value;
 	s_allow_exit_box.generic.name = "allow exit";
 	s_allow_exit_box.generic.callback = DMFlagCallback;
 	s_allow_exit_box.itemnames = yes_no_names;
@@ -3946,7 +3946,7 @@ void DMOptions_MenuInit(void) {
 
 	s_infinite_ammo_box.generic.type = MTYPE_SPINCONTROL;
 	s_infinite_ammo_box.generic.x = 0;
-	s_infinite_ammo_box.generic.y = y += 10 * cl_fontScale->value;
+	s_infinite_ammo_box.generic.y = y += 10 * ui_fontScale->value;
 	s_infinite_ammo_box.generic.name = "infinite ammo";
 	s_infinite_ammo_box.generic.callback = DMFlagCallback;
 	s_infinite_ammo_box.itemnames = yes_no_names;
@@ -3954,7 +3954,7 @@ void DMOptions_MenuInit(void) {
 
 	s_fixed_fov_box.generic.type = MTYPE_SPINCONTROL;
 	s_fixed_fov_box.generic.x = 0;
-	s_fixed_fov_box.generic.y = y += 10 * cl_fontScale->value;
+	s_fixed_fov_box.generic.y = y += 10 * ui_fontScale->value;
 	s_fixed_fov_box.generic.name = "fixed FOV";
 	s_fixed_fov_box.generic.callback = DMFlagCallback;
 	s_fixed_fov_box.itemnames = yes_no_names;
@@ -3962,7 +3962,7 @@ void DMOptions_MenuInit(void) {
 
 	s_quad_drop_box.generic.type = MTYPE_SPINCONTROL;
 	s_quad_drop_box.generic.x = 0;
-	s_quad_drop_box.generic.y = y += 10 * cl_fontScale->value;
+	s_quad_drop_box.generic.y = y += 10 * ui_fontScale->value;
 	s_quad_drop_box.generic.name = "quad drop";
 	s_quad_drop_box.generic.callback = DMFlagCallback;
 	s_quad_drop_box.itemnames = yes_no_names;
@@ -3970,7 +3970,7 @@ void DMOptions_MenuInit(void) {
 
 	s_friendlyfire_box.generic.type = MTYPE_SPINCONTROL;
 	s_friendlyfire_box.generic.x = 0;
-	s_friendlyfire_box.generic.y = y += 10 * cl_fontScale->value;
+	s_friendlyfire_box.generic.y = y += 10 * ui_fontScale->value;
 	s_friendlyfire_box.generic.name = "friendly fire";
 	s_friendlyfire_box.generic.callback = DMFlagCallback;
 	s_friendlyfire_box.itemnames = yes_no_names;
@@ -3978,7 +3978,7 @@ void DMOptions_MenuInit(void) {
 
 	s_predator_box.generic.type = MTYPE_SPINCONTROL;
 	s_predator_box.generic.x = 0;
-	s_predator_box.generic.y = y += 10 * cl_fontScale->value;
+	s_predator_box.generic.y = y += 10 * ui_fontScale->value;
 	s_predator_box.generic.name = "Flash Light";
 	s_predator_box.generic.callback = DMFlagCallback;
 	s_predator_box.itemnames = yes_no_names;
@@ -3986,7 +3986,7 @@ void DMOptions_MenuInit(void) {
 
 	s_ut_dj_box.generic.type = MTYPE_SPINCONTROL;
 	s_ut_dj_box.generic.x = 0;
-	s_ut_dj_box.generic.y = y += 10 * cl_fontScale->value;
+	s_ut_dj_box.generic.y = y += 10 * ui_fontScale->value;
 	s_ut_dj_box.generic.name = "UT double jump";
 	s_ut_dj_box.generic.callback = DMFlagCallback;
 	s_ut_dj_box.itemnames = yes_no_names;
@@ -3997,7 +3997,7 @@ void DMOptions_MenuInit(void) {
 	if (Developer_searchpath(2) == 2) {
 		s_no_mines_box.generic.type = MTYPE_SPINCONTROL;
 		s_no_mines_box.generic.x = 0;
-		s_no_mines_box.generic.y = y += 10 * cl_fontScale->value;
+		s_no_mines_box.generic.y = y += 10 * ui_fontScale->value;
 		s_no_mines_box.generic.name = "remove mines";
 		s_no_mines_box.generic.callback = DMFlagCallback;
 		s_no_mines_box.itemnames = yes_no_names;
@@ -4005,7 +4005,7 @@ void DMOptions_MenuInit(void) {
 
 		s_no_nukes_box.generic.type = MTYPE_SPINCONTROL;
 		s_no_nukes_box.generic.x = 0;
-		s_no_nukes_box.generic.y = y += 10 * cl_fontScale->value;
+		s_no_nukes_box.generic.y = y += 10 * ui_fontScale->value;
 		s_no_nukes_box.generic.name = "remove nukes";
 		s_no_nukes_box.generic.callback = DMFlagCallback;
 		s_no_nukes_box.itemnames = yes_no_names;
@@ -4013,7 +4013,7 @@ void DMOptions_MenuInit(void) {
 
 		s_stack_double_box.generic.type = MTYPE_SPINCONTROL;
 		s_stack_double_box.generic.x = 0;
-		s_stack_double_box.generic.y = y += 10 * cl_fontScale->value;
+		s_stack_double_box.generic.y = y += 10 * ui_fontScale->value;
 		s_stack_double_box.generic.name = "2x/4x stacking off";
 		s_stack_double_box.generic.callback = DMFlagCallback;
 		s_stack_double_box.itemnames = yes_no_names;
@@ -4021,7 +4021,7 @@ void DMOptions_MenuInit(void) {
 
 		s_no_spheres_box.generic.type = MTYPE_SPINCONTROL;
 		s_no_spheres_box.generic.x = 0;
-		s_no_spheres_box.generic.y = y += 10 * cl_fontScale->value;
+		s_no_spheres_box.generic.y = y += 10 * ui_fontScale->value;
 		s_no_spheres_box.generic.name = "remove spheres";
 		s_no_spheres_box.generic.callback = DMFlagCallback;
 		s_no_spheres_box.itemnames = yes_no_names;
@@ -4138,7 +4138,7 @@ void DownloadOptions_MenuInit(void) {
 
 	s_allow_download_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_box.generic.x = 0;
-	s_allow_download_box.generic.y = y += 20 * cl_fontScale->value;
+	s_allow_download_box.generic.y = y += 20 * ui_fontScale->value;
 	s_allow_download_box.generic.name = "allow downloading";
 	s_allow_download_box.generic.callback = DownloadCallback;
 	s_allow_download_box.itemnames = yes_no_names;
@@ -4147,7 +4147,7 @@ void DownloadOptions_MenuInit(void) {
 
 	s_allow_download_maps_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_maps_box.generic.x = 0;
-	s_allow_download_maps_box.generic.y = y += 20 * cl_fontScale->value;
+	s_allow_download_maps_box.generic.y = y += 20 * ui_fontScale->value;
 	s_allow_download_maps_box.generic.name = "maps";
 	s_allow_download_maps_box.generic.callback = DownloadCallback;
 	s_allow_download_maps_box.itemnames = yes_no_names;
@@ -4156,7 +4156,7 @@ void DownloadOptions_MenuInit(void) {
 
 	s_allow_download_players_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_players_box.generic.x = 0;
-	s_allow_download_players_box.generic.y = y += 10 * cl_fontScale->value;
+	s_allow_download_players_box.generic.y = y += 10 * ui_fontScale->value;
 	s_allow_download_players_box.generic.name = "player models/skins";
 	s_allow_download_players_box.generic.callback = DownloadCallback;
 	s_allow_download_players_box.itemnames = yes_no_names;
@@ -4165,7 +4165,7 @@ void DownloadOptions_MenuInit(void) {
 
 	s_allow_download_models_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_models_box.generic.x = 0;
-	s_allow_download_models_box.generic.y = y += 10 * cl_fontScale->value;
+	s_allow_download_models_box.generic.y = y += 10 * ui_fontScale->value;
 	s_allow_download_models_box.generic.name = "models";
 	s_allow_download_models_box.generic.callback = DownloadCallback;
 	s_allow_download_models_box.itemnames = yes_no_names;
@@ -4174,7 +4174,7 @@ void DownloadOptions_MenuInit(void) {
 
 	s_allow_download_sounds_box.generic.type = MTYPE_SPINCONTROL;
 	s_allow_download_sounds_box.generic.x = 0;
-	s_allow_download_sounds_box.generic.y = y += 10 * cl_fontScale->value;
+	s_allow_download_sounds_box.generic.y = y += 10 * ui_fontScale->value;
 	s_allow_download_sounds_box.generic.name = "sounds";
 	s_allow_download_sounds_box.generic.callback = DownloadCallback;
 	s_allow_download_sounds_box.itemnames = yes_no_names;
@@ -4225,8 +4225,8 @@ void AddressBook_MenuInit(void) {
 	int w = i_banner_addressbook[0]->width;
 	int h = i_banner_addressbook[0]->height;
 
-	s_addressbook_menu.x = viddef.width / 2 - ((w + 8) * cl_fontScale->value) / 4;
-	s_addressbook_menu.y = viddef.height / 4 + (h * cl_fontScale->value);
+	s_addressbook_menu.x = viddef.width / 2 - ((w + 8) * ui_fontScale->value) / 4;
+	s_addressbook_menu.y = viddef.height / 4 + (h * ui_fontScale->value);
 	s_addressbook_menu.nitems = 0;
 	
 	drawIDlogo = qfalse;
@@ -4243,7 +4243,7 @@ void AddressBook_MenuInit(void) {
 		s_addressbook_fields[i].generic.name = 0;
 		s_addressbook_fields[i].generic.callback = 0;
 		s_addressbook_fields[i].generic.x = 0;
-		s_addressbook_fields[i].generic.y = i * 18 * cl_fontScale->value + 0;
+		s_addressbook_fields[i].generic.y = i * 18 * ui_fontScale->value + 0;
 		s_addressbook_fields[i].generic.localdata[0] = i;
 		s_addressbook_fields[i].cursor = 0;
 		s_addressbook_fields[i].length = 60;
@@ -4479,7 +4479,7 @@ qboolean PlayerConfig_MenuInit(void) {
 
 	PlayerConfig_ScanDirectories();
 
-	offcet = (cl_fontScale->value - 1) * 16;
+	offcet = (ui_fontScale->value - 1) * 16;
 
 	if (s_numplayermodels == 0)
 		return qfalse;
@@ -4524,8 +4524,8 @@ qboolean PlayerConfig_MenuInit(void) {
 	
 	drawIDlogo = qfalse;
 
-	s_player_config_menu.x = viddef.width / 2 - 95 * cl_fontScale->value; //3
-	s_player_config_menu.y = viddef.height / 2 - 97 * cl_fontScale->value; //1
+	s_player_config_menu.x = viddef.width / 2 - 95 * ui_fontScale->value; //3
+	s_player_config_menu.y = viddef.height / 2 - 97 * ui_fontScale->value; //1
 	s_player_config_menu.nitems = 0;
 
 	s_player_name_field.generic.type = MTYPE_FIELD;
@@ -4540,12 +4540,12 @@ qboolean PlayerConfig_MenuInit(void) {
 
 	s_player_model_title.generic.type = MTYPE_SEPARATOR;
 	s_player_model_title.generic.name = "model";
-	s_player_model_title.generic.x = -8 * cl_fontScale->value;
-	s_player_model_title.generic.y = 60 * cl_fontScale->value;
+	s_player_model_title.generic.x = -8 * ui_fontScale->value;
+	s_player_model_title.generic.y = 60 * ui_fontScale->value;
 
 	s_player_model_box.generic.type = MTYPE_SPINCONTROL;
-	s_player_model_box.generic.x = (-56 * cl_fontScale->value) + offcet;
-	s_player_model_box.generic.y = 70 * cl_fontScale->value;
+	s_player_model_box.generic.x = (-56 * ui_fontScale->value) + offcet;
+	s_player_model_box.generic.y = 70 * ui_fontScale->value;
 	s_player_model_box.generic.callback = ModelCallback;
 	s_player_model_box.generic.cursor_offset = -48;
 	s_player_model_box.curvalue = currentdirectoryindex;
@@ -4553,12 +4553,12 @@ qboolean PlayerConfig_MenuInit(void) {
 
 	s_player_skin_title.generic.type = MTYPE_SEPARATOR;
 	s_player_skin_title.generic.name = "skin";
-	s_player_skin_title.generic.x = -16 * cl_fontScale->value;
-	s_player_skin_title.generic.y = 84 * cl_fontScale->value;
+	s_player_skin_title.generic.x = -16 * ui_fontScale->value;
+	s_player_skin_title.generic.y = 84 * ui_fontScale->value;
 
 	s_player_skin_box.generic.type = MTYPE_SPINCONTROL;
-	s_player_skin_box.generic.x = (-56 * cl_fontScale->value) + offcet;
-	s_player_skin_box.generic.y = 94 * cl_fontScale->value;
+	s_player_skin_box.generic.x = (-56 * ui_fontScale->value) + offcet;
+	s_player_skin_box.generic.y = 94 * ui_fontScale->value;
 	s_player_skin_box.generic.name = 0;
 	s_player_skin_box.generic.callback = 0;
 	s_player_skin_box.generic.cursor_offset = -48;
@@ -4568,12 +4568,12 @@ qboolean PlayerConfig_MenuInit(void) {
 
 	s_player_hand_title.generic.type = MTYPE_SEPARATOR;
 	s_player_hand_title.generic.name = "handedness";
-	s_player_hand_title.generic.x = 32 * cl_fontScale->value;
-	s_player_hand_title.generic.y = 108 * cl_fontScale->value;
+	s_player_hand_title.generic.x = 32 * ui_fontScale->value;
+	s_player_hand_title.generic.y = 108 * ui_fontScale->value;
 
 	s_player_handedness_box.generic.type = MTYPE_SPINCONTROL;
-	s_player_handedness_box.generic.x = (-56 * cl_fontScale->value) + offcet;
-	s_player_handedness_box.generic.y = 118 * cl_fontScale->value;
+	s_player_handedness_box.generic.x = (-56 * ui_fontScale->value) + offcet;
+	s_player_handedness_box.generic.y = 118 * ui_fontScale->value;
 	s_player_handedness_box.generic.name = 0;
 	s_player_handedness_box.generic.cursor_offset = -48;
 	s_player_handedness_box.generic.callback = HandednessCallback;
@@ -4586,12 +4586,12 @@ qboolean PlayerConfig_MenuInit(void) {
 
 	s_player_rate_title.generic.type = MTYPE_SEPARATOR;
 	s_player_rate_title.generic.name = "connect speed";
-	s_player_rate_title.generic.x = 56 * cl_fontScale->value;
-	s_player_rate_title.generic.y = 156 * cl_fontScale->value;
+	s_player_rate_title.generic.x = 56 * ui_fontScale->value;
+	s_player_rate_title.generic.y = 156 * ui_fontScale->value;
 
 	s_player_rate_box.generic.type = MTYPE_SPINCONTROL;
-	s_player_rate_box.generic.x = (-56 * cl_fontScale->value) + offcet;
-	s_player_rate_box.generic.y = 166 * cl_fontScale->value;
+	s_player_rate_box.generic.x = (-56 * ui_fontScale->value) + offcet;
+	s_player_rate_box.generic.y = 166 * ui_fontScale->value;
 	s_player_rate_box.generic.name = 0;
 	s_player_rate_box.generic.cursor_offset = -48;
 	s_player_rate_box.generic.callback = RateCallback;
@@ -4601,8 +4601,8 @@ qboolean PlayerConfig_MenuInit(void) {
 	s_player_download_action.generic.type = MTYPE_ACTION;
 	s_player_download_action.generic.name = "download options";
 	s_player_download_action.generic.flags = QMF_LEFT_JUSTIFY;
-	s_player_download_action.generic.x = -24 * cl_fontScale->value;
-	s_player_download_action.generic.y = 186 * cl_fontScale->value;
+	s_player_download_action.generic.x = -24 * ui_fontScale->value;
+	s_player_download_action.generic.y = 186 * ui_fontScale->value;
 	s_player_download_action.generic.statusbar = NULL;
 	s_player_download_action.generic.callback = DownloadOptionsFunc;
 
@@ -4647,13 +4647,13 @@ void PlayerConfig_MenuDraw(void) {
 	memset(&refdef, 0, sizeof(refdef));
 
 	refdef.x = viddef.width / 2;
-	x2 = 320 * (cl_fontScale->value - 1);
+	x2 = 320 * (ui_fontScale->value - 1);
 
-	refdef.y = (viddef.height / 2) - (350 * cl_fontScale->value) / 2;
-	y2 = viddef.height / 2 - 72 * cl_fontScale->value;
+	refdef.y = (viddef.height / 2) - (350 * ui_fontScale->value) / 2;
+	y2 = viddef.height / 2 - 72 * ui_fontScale->value;
 
-	refdef.width = 270 * cl_fontScale->value;
-	refdef.height = 350 * cl_fontScale->value;
+	refdef.width = 270 * ui_fontScale->value;
+	refdef.height = 350 * ui_fontScale->value;
 	refdef.fov_x = 40;
 	refdef.fov_y = CalcFov(refdef.fov_x, refdef.width, refdef.height);
 	refdef.time = cls.realTime * 0.001;
@@ -4741,7 +4741,7 @@ void PlayerConfig_MenuDraw(void) {
 					s_pmi[s_player_model_box.curvalue].
 					skindisplaynames[s_player_skin_box.curvalue]);
 
-		Draw_PicScaled(s_player_config_menu.x - 40 * cl_fontScale->value, y2, cl_fontScale->value, cl_fontScale->value, scratch);
+		Draw_PicScaled(s_player_config_menu.x - 40 * ui_fontScale->value, y2, ui_fontScale->value, ui_fontScale->value, scratch);
 
 	}
 }
@@ -4841,8 +4841,8 @@ void M_Quit_Draw(void) {
 	int h = 240;
 	drawIDlogo = qfalse;
 //	Draw_GetPicSize(&w, &h, "quit");
-	Draw_ScaledPic((viddef.width - w * cl_fontScale->value) / 2, (viddef.height - h * cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, i_quit[0]);
-	Draw_ScaledBumpPic((viddef.width - w * cl_fontScale->value) / 2, (viddef.height - h * cl_fontScale->value) / 2, cl_fontScale->value, cl_fontScale->value, i_quit[0], i_quit[1]);
+	Draw_ScaledPic((viddef.width - w * ui_fontScale->value) / 2, (viddef.height - h * ui_fontScale->value) / 2, ui_fontScale->value, ui_fontScale->value, i_quit[0]);
+	Draw_ScaledBumpPic((viddef.width - w * ui_fontScale->value) / 2, (viddef.height - h * ui_fontScale->value) / 2, ui_fontScale->value, ui_fontScale->value, i_quit[0], i_quit[1]);
 
 }
 

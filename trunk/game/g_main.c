@@ -36,53 +36,6 @@ int meansOfDeath;
 
 edict_t		*g_edicts;
 
-cvar_t	*deathmatch;
-cvar_t	*coop;
-cvar_t	*dmflags;
-cvar_t	*skill;
-cvar_t	*fraglimit;
-cvar_t	*timelimit;
-cvar_t	*password;
-cvar_t	*spectator_password;
-cvar_t	*needpass;
-cvar_t	*maxclients;
-cvar_t	*maxspectators;
-cvar_t	*maxentities;
-cvar_t	*g_select_empty;
-cvar_t	*dedicated;
-
-cvar_t	*filterban;
-
-cvar_t	*sv_maxvelocity;
-cvar_t	*sv_gravity;
-
-cvar_t	*sv_rollspeed;
-cvar_t	*sv_rollangle;
-cvar_t	*gun_x;
-cvar_t	*gun_y;
-cvar_t	*gun_z;
-
-cvar_t	*run_pitch;
-cvar_t	*run_roll;
-cvar_t	*bob_up;
-cvar_t	*bob_pitch;
-cvar_t	*bob_roll;
-
-cvar_t	*sv_cheats;
-
-cvar_t	*flood_msgs;
-cvar_t	*flood_persecond;
-cvar_t	*flood_waitdelay;
-cvar_t  *g_monsterRespawn;
-cvar_t	*sv_maplist;
-cvar_t  *sv_solidcorpse;
-cvar_t	*net_compatibility;
-cvar_t	*r_radialBlur;
-cvar_t  *sv_stopClock;
-cvar_t	*weaponHitAccuracy;
-
-cvar_t	*g_autoHealth;
-
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
 void ClientThink (edict_t *ent, usercmd_t *cmd);
 qboolean ClientConnect (edict_t *ent, char *userinfo);

@@ -953,6 +953,8 @@ void R_DrawRAScene (void) {
 	}
 }
 
+void R_DrawLightWorldRA(void);
+
 /*
 ================
 R_RenderView
@@ -994,15 +996,14 @@ void R_RenderView (refdef_t *fd) {
 	R_SSAO();
 	R_DrawAmbientScene();
 	R_DrawLightScene();
-	R_RenderDecals();
 
 	R_DrawParticles();
-
 	R_CaptureColorBuffer();
-	
 	R_RenderSprites();
 	R_DrawRAScene();
-	
+	R_RenderDecals();
+	R_DrawLightWorldRA();
+
 	if (RA_Frame && r_particlesOverdraw->integer) { // overdraw particles if we have trans or reflective surfaces in frame
 		R_DrawParticles();
 		RA_Frame = qfalse;
@@ -1342,7 +1343,7 @@ void R_RegisterCvars(void)
 	r_customHeight =					Cvar_Get("r_customHeight", "768", CVAR_ARCHIVE);
 		
 	hunk_bsp=							Cvar_Get("hunk_bsp", "70", CVAR_ARCHIVE);
-	hunk_md2=							Cvar_Get("hunk_md2", "20", CVAR_ARCHIVE);
+	hunk_md2=							Cvar_Get("hunk_md2", "15", CVAR_ARCHIVE);
 	hunk_md3=							Cvar_Get("hunk_md3", "20", CVAR_ARCHIVE);
 
 	r_parallaxMapping =					Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
@@ -1362,7 +1363,8 @@ void R_RegisterCvars(void)
 	r_lightScissors = 					Cvar_Get("r_lightScissors", "1", 0);
 	r_depthBoundsTest =					Cvar_Get("r_depthBoundsTest", "1", 0);
 	r_debugLights =						Cvar_Get("r_debugLights", "0", 0);
-	
+	r_transSurfShading =				Cvar_Get("r_transSurfShading", "1", CVAR_ARCHIVE);
+
 	r_debugTbn =						Cvar_Get("r_debugTbn", "0", 0);
 	r_debugTbnLen =						Cvar_Get("r_debugTbnLen", "1.0", 0);
 
@@ -1987,7 +1989,9 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("makeLut");
 
 	Cmd_RemoveCommand("fogEdit");
-
+#ifdef _WIN32
+	Cmd_RemoveCommand("gpuInfo");
+#endif
 	qglDeleteFramebuffers (1, &fboId);
 
 	DeleteShadowVertexBuffers();

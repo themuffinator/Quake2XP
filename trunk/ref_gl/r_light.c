@@ -2202,9 +2202,14 @@ qboolean InLightVISEntity () {
 
 }
 
-extern  int lightSurfSort(const msurface_t **a, const msurface_t **b);
+int lightSurfSort(const msurface_t** a, const msurface_t** b)
+{
+	return	(((*a)->texInfo->image->texnum) + ((*a)->flags)) -
+		(((*b)->texInfo->image->texnum) + ((*b)->flags));
+}
+
 void R_MarkLightCasting(mnode_t *node, qboolean precalc, worldShadowLight_t *light);
-extern int r_lightTimestamp;
+void R_MarkLightCastingRA(mnode_t* node, qboolean precalc, worldShadowLight_t* light);
 
 void R_AddLightInteraction(worldShadowLight_t *light) {
 	
@@ -2213,6 +2218,11 @@ void R_AddLightInteraction(worldShadowLight_t *light) {
 	
 	R_MarkLightCasting(r_worldmodel->nodes, qtrue, light);
 	qsort(light->interaction, light->numInteractionSurfs, sizeof(msurface_t*), (int(*)(const void *, const void *))lightSurfSort);
+
+	r_lightTimestampRA++;
+	light->numInteractionSurfsRA = 0;
+	R_MarkLightCastingRA(r_worldmodel->nodes, qtrue, light);
+	qsort(light->interactionRA, light->numInteractionSurfsRA, sizeof(msurface_t*), (int(*)(const void*, const void*))lightSurfSort);
 }
 
 void R_CalcStaticLightInteraction (void) {

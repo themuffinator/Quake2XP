@@ -798,6 +798,17 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"glass lighting program"S_COLOR_WHITE" ");
+	lightGlassProgram = R_FindProgram("glassLight", S_DEFAULT);
+
+	if (lightGlassProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	Com_Printf("Load "S_COLOR_YELLOW"sprite program"S_COLOR_WHITE" ");
 	spriteProgram = R_FindProgram("sprite", S_DEFAULT);
 

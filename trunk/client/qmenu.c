@@ -58,7 +58,7 @@ void Action_DoEnter (menuaction_s * a) {
 
 //action items and sub menus
 void Action_Draw (menuaction_s * a) {
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 
 	if (a->generic.flags & QMF_LEFT_JUSTIFY) {
 		if (a->generic.flags & QMF_GRAYED)
@@ -100,7 +100,7 @@ qboolean Field_DoEnter (menufield_s * f) {
 void Field_Draw (menufield_s * f) {
 	int i;
 	char tempbuffer[128] = "";
-	float fontscale = cl_fontScale->value;
+	float fontscale = ui_fontScale->value;
 
 	if (f->generic.name)
 		Menu_DrawStringR2LDark (f->generic.x + f->generic.parent->x +
@@ -154,9 +154,9 @@ void Field_Draw (menufield_s * f) {
 		int offset;
 
 		if (f->visible_offset)
-			offset = f->visible_length*cl_fontScale->value;
+			offset = f->visible_length*ui_fontScale->value;
 		else
-			offset = f->cursor*cl_fontScale->value;
+			offset = f->cursor*ui_fontScale->value;
 
 		if (((int)(Sys_Milliseconds () / 250)) & 1) {
 			Draw_CharScaled (f->generic.x + f->generic.parent->x + (offset + 3) * 8 + 8 / fontscale,
@@ -409,15 +409,15 @@ void Menu_Draw (menuframework_s * menu) {
 	}
 	else if (item && item->type != MTYPE_FIELD) {
 		if (item->flags & QMF_LEFT_JUSTIFY) {
-			Draw_CharScaled (menu->x + item->x - 24 * cl_fontScale->value + item->cursor_offset,
+			Draw_CharScaled (menu->x + item->x - 24 * ui_fontScale->value + item->cursor_offset,
 				menu->y + item->y,
-				cl_fontScale->value, cl_fontScale->value,
+				ui_fontScale->value, ui_fontScale->value,
 				12 + ((int)(Sys_Milliseconds () * 0.004) & 1));
 		}
 		else {
-			Draw_CharScaled (menu->x + item->cursor_offset*cl_fontScale->value,
+			Draw_CharScaled (menu->x + item->cursor_offset*ui_fontScale->value,
 				menu->y + item->y,
-				cl_fontScale->value, cl_fontScale->value,
+				ui_fontScale->value, ui_fontScale->value,
 				12 + ((int)(Sys_Milliseconds () * 0.004) & 1));
 		}
 	}
@@ -437,7 +437,7 @@ void Menu_Draw (menuframework_s * menu) {
 }
 
 void Menu_DrawStatusBar (const char *string) {
-	int	fontscale = (int)cl_fontScale->value;
+	int	fontscale = (int)ui_fontScale->value;
 	int	upOffset = 5;
 
 	if (string) {
@@ -453,7 +453,7 @@ void Menu_DrawStatusBar (const char *string) {
 
 void Menu_DrawStringDark (int x, int y, const char *string) {
 	unsigned	i;
-	float		fontscale = cl_fontScale->value;
+	float		fontscale = ui_fontScale->value;
 
 	for (i = 0; i < strlen (string); i++) {
 		Draw_CharScaled ((x + i * 8 * fontscale), y, fontscale, fontscale, string[i] + 128);
@@ -462,7 +462,7 @@ void Menu_DrawStringDark (int x, int y, const char *string) {
 
 void Menu_DrawStringR2L (int x, int y, const char *string) {
 	unsigned	i;
-	float		fontscale = cl_fontScale->value;
+	float		fontscale = ui_fontScale->value;
 
 	for (i = 0; i < strlen (string); i++) {
 		Draw_CharScaled ((x - i * 8 * fontscale), y, fontscale, fontscale, string[strlen (string) - i - 1]);
@@ -471,7 +471,7 @@ void Menu_DrawStringR2L (int x, int y, const char *string) {
 
 void Menu_DrawStringR2LDark (int x, int y, const char *string) {
 	unsigned	i;
-	float		fontscale = cl_fontScale->value;
+	float		fontscale = ui_fontScale->value;
 
 	for (i = 0; i < strlen (string); i++) {
 		Draw_CharScaled ((x - i * 8 * fontscale), y, fontscale, fontscale, string[strlen (string) - i - 1] + 128);
@@ -608,9 +608,9 @@ void Slider_DoSlide (menuslider_s * s, int dir) {
 
 void Slider_Draw (menuslider_s * s) {
 	int		i, shift;
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 
-	shift = (cl_fontScale->value - 1) * 8;
+	shift = (ui_fontScale->value - 1) * 8;
 
 	Menu_DrawStringR2LDark (s->generic.x + s->generic.parent->x +
 		LCOLUMN_OFFSET,
@@ -669,7 +669,7 @@ void SpinControl_DoSlide (menulist_s * s, int dir) {
 
 void SpinControl_Draw (menulist_s * s) {
 	char	buffer[100];
-	float	fontscale = cl_fontScale->value;
+	float	fontscale = ui_fontScale->value;
 
 	if (s->generic.name) {
 		Menu_DrawStringR2LDark (s->generic.x + s->generic.parent->x +
@@ -693,7 +693,7 @@ void SpinControl_Draw (menulist_s * s) {
 
 		strcpy (buffer, strchr (s->itemnames[s->curvalue], '\n') + 1);
 		Menu_DrawStringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
-			s->generic.y + s->generic.parent->y + 10 * cl_fontScale->value,
+			s->generic.y + s->generic.parent->y + 10 * ui_fontScale->value,
 			fontscale, fontscale,
 			buffer);
 	}

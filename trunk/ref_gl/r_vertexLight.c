@@ -45,15 +45,13 @@ RecursiveLightPoint
 ======================
 */
 int RecursiveLightPoint (mnode_t * node, vec3_t start, vec3_t end) {
-	const float ambientScale = max(r_lightmapScale->value, 0.f) * (1.f / 255.f);
+	const float ambientScale = max(r_lightmapScale->value, 0.33f) * (1.f / 255.f);
 	float front, back, f;
-	int side;
-	int smax;
+	int side, smax;
 	cplane_t *plane;
 	vec3_t mid;
 	msurface_t *surf;
-	int s, t, ds, dt;
-	int i, r;
+	int s, t, ds, dt, i, r;
 	mtexInfo_t *tex;
 	byte *lm;
 

@@ -214,7 +214,7 @@ int SurfSort( const msurface_t **a, const msurface_t **b )
 	return	( ((*a)->texInfo->image->texnum) ) - ( ((*b)->texInfo->image->texnum) );
 }
 
-vec3_t		BmodelViewOrg;
+
 int			numSceneSurfaces;
 msurface_t	*sceneSurfaces[MAX_MAP_FACES];
 
@@ -299,8 +299,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	}
 }
 
-
-int	r_lightTimestamp;
 
 qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces, qboolean bmodel, qboolean caustics)
 {
@@ -404,14 +402,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 	return qtrue;
 }
 
- int lightSurfSort( const msurface_t **a, const msurface_t **b )
-{
-	return	(((*a)->texInfo->image->texnum) + ((*a)->flags)) -
-			(((*b)->texInfo->image->texnum) + ((*b)->flags));
-}
-
-
- void R_UpdateLightUniforms(qboolean bModel)
+void R_UpdateLightUniforms(qboolean bModel)
  {
 	 mat4_t	entAttenMatrix, entSpotMatrix;
 
@@ -477,8 +468,7 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		 
  }
 
-msurface_t	*interaction[MAX_MAP_FACES];
-int			numInteractionSurfs;
+int lightSurfSort(const msurface_t** a, const msurface_t** b);
 
 static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 {
@@ -501,9 +491,6 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 
 		if ((poly->lightTimestamp != r_lightTimestamp) || (s->visframe != r_framecount))
 			continue;
-
-	//	if (s->flags & (SURF_TRANS33 | SURF_TRANS66))
-	//		continue;
 
 		// flush batch (new texture or flag)
 		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust)
@@ -555,9 +542,6 @@ static void GL_DrawStaticLightPass()
 
 		if ((s->visframe != r_framecount) || (s->ent))
 			continue;
-
-	//	if (s->flags & (SURF_TRANS33 | SURF_TRANS66))
-	//		continue;
 
 		// flush batch (new texture or flag)
 		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag)
@@ -836,6 +820,7 @@ void R_MarkLightCasting (mnode_t *node, qboolean precalc, worldShadowLight_t *li
 	R_MarkLightCasting (node->children[0], precalc, light);
 	R_MarkLightCasting (node->children[1], precalc, light);
 }
+
 
 void R_DrawLightWorld(void)
 {

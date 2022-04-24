@@ -446,7 +446,7 @@ void M_ColorInit() {
 
 	s_gamma_slider.generic.type = MTYPE_SLIDER;
 	s_gamma_slider.generic.x = 0;
-	s_gamma_slider.generic.y = 10 * cl_fontScale->value;
+	s_gamma_slider.generic.y = 10 * ui_fontScale->value;
 	s_gamma_slider.generic.name = "Gamma";
 	s_gamma_slider.generic.callback = GammaCallback;
 	s_gamma_slider.minvalue = 1;
@@ -456,7 +456,7 @@ void M_ColorInit() {
 
 	s_brightness_slider.generic.type = MTYPE_SLIDER;
 	s_brightness_slider.generic.x = 0;
-	s_brightness_slider.generic.y = 20 * cl_fontScale->value;
+	s_brightness_slider.generic.y = 20 * ui_fontScale->value;
 	s_brightness_slider.generic.name = "Brightness";
 	s_brightness_slider.generic.callback = BrightnessCallback;
 	s_brightness_slider.minvalue = 1;
@@ -466,7 +466,7 @@ void M_ColorInit() {
 
 	s_contrast_slider.generic.type = MTYPE_SLIDER;
 	s_contrast_slider.generic.x = 0;
-	s_contrast_slider.generic.y = 30 * cl_fontScale->value;
+	s_contrast_slider.generic.y = 30 * ui_fontScale->value;
 	s_contrast_slider.generic.name = "Contrast";
 	s_contrast_slider.generic.callback = ContrastCallback;
 	s_contrast_slider.minvalue = 1;
@@ -476,7 +476,7 @@ void M_ColorInit() {
 
 	s_saturation_slider.generic.type = MTYPE_SLIDER;
 	s_saturation_slider.generic.x = 0;
-	s_saturation_slider.generic.y = 40 * cl_fontScale->value;
+	s_saturation_slider.generic.y = 40 * ui_fontScale->value;
 	s_saturation_slider.generic.name = "Saturation";
 	s_saturation_slider.generic.callback = SaturationCallback;
 	s_saturation_slider.minvalue = 1;
@@ -486,7 +486,7 @@ void M_ColorInit() {
 
 	s_vibrance_slider.generic.type = MTYPE_SLIDER;
 	s_vibrance_slider.generic.x = 0;
-	s_vibrance_slider.generic.y = 50 * cl_fontScale->value;
+	s_vibrance_slider.generic.y = 50 * ui_fontScale->value;
 	s_vibrance_slider.generic.name = "Vibrance";
 	s_vibrance_slider.generic.callback = VibranceCallback;
 	s_vibrance_slider.minvalue = -10;
@@ -497,7 +497,7 @@ void M_ColorInit() {
 
 	s_bloomIntens_slider.generic.type = MTYPE_SLIDER;
 	s_bloomIntens_slider.generic.x = 0;
-	s_bloomIntens_slider.generic.y = 70 * cl_fontScale->value;
+	s_bloomIntens_slider.generic.y = 70 * ui_fontScale->value;
 	s_bloomIntens_slider.generic.name = "Bloom Intensity";
 	s_bloomIntens_slider.generic.callback = bloomLevelCallback;
 	s_bloomIntens_slider.minvalue = 1;
@@ -507,7 +507,7 @@ void M_ColorInit() {
 
 	s_bloomThreshold_slider.generic.type = MTYPE_SLIDER;
 	s_bloomThreshold_slider.generic.x = 0;
-	s_bloomThreshold_slider.generic.y = 80 * cl_fontScale->value;
+	s_bloomThreshold_slider.generic.y = 80 * ui_fontScale->value;
 	s_bloomThreshold_slider.generic.name = "Bloom Threshold";
 	s_bloomThreshold_slider.generic.callback = bloomThresholdCallback;
 	s_bloomThreshold_slider.minvalue = 1;
@@ -517,7 +517,7 @@ void M_ColorInit() {
 
 	s_bloomWidth_slider.generic.type = MTYPE_SLIDER;
 	s_bloomWidth_slider.generic.x = 0;
-	s_bloomWidth_slider.generic.y = 90 * cl_fontScale->value;
+	s_bloomWidth_slider.generic.y = 90 * ui_fontScale->value;
 	s_bloomWidth_slider.generic.name = "Bloom Shape Size";
 	s_bloomWidth_slider.generic.callback = bloomWhidthCallback;
 	s_bloomWidth_slider.minvalue = 1;
@@ -527,7 +527,7 @@ void M_ColorInit() {
 
 	s_fixfov_slider.generic.type = MTYPE_SLIDER;
 	s_fixfov_slider.generic.x = 0;
-	s_fixfov_slider.generic.y = 110 * cl_fontScale->value;
+	s_fixfov_slider.generic.y = 110 * ui_fontScale->value;
 	s_fixfov_slider.generic.name = "Hi-FOV Corection";
 	s_fixfov_slider.generic.callback = FixFovCallback;
 	s_fixfov_slider.minvalue = 0;
@@ -538,7 +538,7 @@ void M_ColorInit() {
 	s_lut_list.generic.type = MTYPE_SPINCONTROL;
 	s_lut_list.generic.name = "Color Grading";
 	s_lut_list.generic.x = 0;
-	s_lut_list.generic.y = 130 * cl_fontScale->value;
+	s_lut_list.generic.y = 130 * ui_fontScale->value;
 	s_lut_list.itemnames = lut_table;
 	s_lut_list.curvalue = r_lutId->integer;
 	s_lut_list.generic.callback = lutCallBack;
@@ -548,7 +548,7 @@ void M_ColorInit() {
 	s_menuColorTemp.generic.name = "Color Temperature";
 	s_menuColorTemp.generic.flags = QMF_NUMBERSONLY;
 	s_menuColorTemp.generic.x = 0;
-	s_menuColorTemp.generic.y = 140 * cl_fontScale->value;
+	s_menuColorTemp.generic.y = 140 * ui_fontScale->value;
 	s_menuColorTemp.generic.statusbar = "Color Temperature in Kelvins 1000 - 40000";
 	s_menuColorTemp.length = 5;
 	s_menuColorTemp.visible_length = 5;
@@ -584,19 +584,19 @@ void Draw_VideoBanner() {
 	w = i_banner_video[0]->width;
 	h = i_banner_video[0]->height;
 
-	if (cl_fontScale->value == 2) {
-		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.5)), (int)(viddef.height * 0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, i_banner_video[0]);
-		Draw_ScaledBumpPic((int)(viddef.width * 0.5 - (w * 0.5)), (int)(viddef.height * 0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, i_banner_video[0], i_banner_video[1]);
+	if (ui_fontScale->value == 2) {
+		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.5)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, i_banner_video[0]);
+		Draw_ScaledBumpPic((int)(viddef.width * 0.5 - (w * 0.5)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, i_banner_video[0], i_banner_video[1]);
 	}
-	else if (cl_fontScale->value == 3) {
-		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.75)), (int)(viddef.height * 0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, i_banner_video[0]);
-		Draw_ScaledBumpPic((int)(viddef.width * 0.5 - (w * 0.75)), (int)(viddef.height * 0.5 - menuSize), cl_fontScale->value, cl_fontScale->value, i_banner_video[0], i_banner_video[1]);
+	else if (ui_fontScale->value == 3) {
+		Draw_ScaledPic((int)(viddef.width * 0.5 - (w * 0.75)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, i_banner_video[0]);
+		Draw_ScaledBumpPic((int)(viddef.width * 0.5 - (w * 0.75)), (int)(viddef.height * 0.5 - menuSize), ui_fontScale->value, ui_fontScale->value, i_banner_video[0], i_banner_video[1]);
 	}
 }
 
 void Color_MenuDraw(void)
 {
-	menuSize = 170 * cl_fontScale->value;
+	menuSize = 170 * ui_fontScale->value;
 	
 	Draw_VideoBanner();
 
@@ -700,8 +700,8 @@ void VID_MenuInit (void) {
 	if (!r_vsync)
 		r_vsync = Cvar_Get ("r_vsync", "0", CVAR_ARCHIVE);
 
-	if (!cl_fontScale)
-		cl_fontScale = Cvar_Get ("cl_fontScale", "2", CVAR_ARCHIVE);
+	if (!ui_fontScale)
+		ui_fontScale = Cvar_Get ("ui_fontScale", "2", CVAR_ARCHIVE);
 
 	if (!r_ssao->integer)
 		r_ssao = Cvar_Get ("r_ssao", 0, CVAR_ARCHIVE);
@@ -723,14 +723,14 @@ void VID_MenuInit (void) {
 	s_mode_list.generic.type = MTYPE_SPINCONTROL;
 	s_mode_list.generic.name = "Screen Resolution";
 	s_mode_list.generic.x = 0;
-	s_mode_list.generic.y = 10 * cl_fontScale->value;
+	s_mode_list.generic.y = 10 * ui_fontScale->value;
 	s_mode_list.itemnames = resolutions;
 	s_mode_list.curvalue = r_mode->value;
 	s_mode_list.generic.statusbar = "Screen Resolution <Requires Restart Video Sub-System>";
 
 	s_fs_box.generic.type = MTYPE_SPINCONTROL;
 	s_fs_box.generic.x = 0;
-	s_fs_box.generic.y = 20 * cl_fontScale->value;
+	s_fs_box.generic.y = 20 * ui_fontScale->value;
 	s_fs_box.generic.name = "Fullscreen";
 	s_fs_box.itemnames = yesno_names;
 	s_fs_box.curvalue = r_fullScreen->value;
@@ -741,7 +741,7 @@ void VID_MenuInit (void) {
 	s_aniso_list.generic.type = MTYPE_SPINCONTROL;
 	s_aniso_list.generic.name = "Anisotropy Filtering";
 	s_aniso_list.generic.x = 0;
-	s_aniso_list.generic.y = 40 * cl_fontScale->value;
+	s_aniso_list.generic.y = 40 * ui_fontScale->value;
 	s_aniso_list.itemnames = aniso_items;
 	s_aniso_list.curvalue = r_anisotropic->value;
 	s_aniso_list.generic.statusbar = "Texture Filtering Quality <Requires Restart Video Sub-System>";
@@ -765,7 +765,7 @@ void VID_MenuInit (void) {
 
 	s_tc_box.generic.type = MTYPE_SPINCONTROL;
 	s_tc_box.generic.x = 0;
-	s_tc_box.generic.y = 50 * cl_fontScale->value;
+	s_tc_box.generic.y = 50 * ui_fontScale->value;
 	s_tc_box.generic.name = "Texture Compression";
 	s_tc_box.itemnames = yesno_names;
 	s_tc_box.curvalue = r_textureCompression->value;
@@ -776,7 +776,7 @@ void VID_MenuInit (void) {
 	s_autoBump_list.generic.type = MTYPE_SPINCONTROL;
 	s_autoBump_list.generic.name = "Generate Normal Maps";
 	s_autoBump_list.generic.x = 0;
-	s_autoBump_list.generic.y = 70 * cl_fontScale->value;
+	s_autoBump_list.generic.y = 70 * ui_fontScale->value;
 	s_autoBump_list.itemnames = yesno_names;
 	s_autoBump_list.curvalue = r_imageAutoBump->value;
 	s_autoBump_list.generic.callback = autoBumpCallBack;
@@ -784,7 +784,7 @@ void VID_MenuInit (void) {
 
 	s_parallax_box.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_box.generic.x = 0;
-	s_parallax_box.generic.y = 80 * cl_fontScale->value;
+	s_parallax_box.generic.y = 80 * ui_fontScale->value;
 	s_parallax_box.generic.name = "Parallax Mapping";
 	s_parallax_box.itemnames = parallax_names;
 	s_parallax_box.curvalue = clamp(r_parallaxMapping->value, 0, 3);
@@ -793,7 +793,7 @@ void VID_MenuInit (void) {
 
 	s_parallax_shadow.generic.type = MTYPE_SPINCONTROL;
 	s_parallax_shadow.generic.x = 0;
-	s_parallax_shadow.generic.y = 90 * cl_fontScale->value;
+	s_parallax_shadow.generic.y = 90 * ui_fontScale->value;
 	s_parallax_shadow.generic.name = "Self Shadowing Parallax";
 	s_parallax_shadow.itemnames = yesno_names;
 	s_parallax_shadow.curvalue = r_selfShadowingParallax->integer;
@@ -802,7 +802,7 @@ void VID_MenuInit (void) {
 
 	s_reliefScale_slider.generic.type = MTYPE_SLIDER;
 	s_reliefScale_slider.generic.x = 0;
-	s_reliefScale_slider.generic.y = 100 * cl_fontScale->value;
+	s_reliefScale_slider.generic.y = 100 * ui_fontScale->value;
 	s_reliefScale_slider.generic.name = "Relief Scale";
 	s_reliefScale_slider.minvalue = 1;
 	s_reliefScale_slider.maxvalue = 6;
@@ -813,7 +813,7 @@ void VID_MenuInit (void) {
 
 	s_ambientLevel_slider.generic.type = MTYPE_SLIDER;
 	s_ambientLevel_slider.generic.x = 0;
-	s_ambientLevel_slider.generic.y = 110 * cl_fontScale->value;
+	s_ambientLevel_slider.generic.y = 110 * ui_fontScale->value;
 	s_ambientLevel_slider.generic.name = "Lightmap Brightness";
 	s_ambientLevel_slider.generic.callback = ambientLevelCallback;
 	s_ambientLevel_slider.minvalue = 0;
@@ -823,7 +823,7 @@ void VID_MenuInit (void) {
 
 	s_flare_box.generic.type = MTYPE_SPINCONTROL;
 	s_flare_box.generic.x = 0;
-	s_flare_box.generic.y = 130 * cl_fontScale->value;
+	s_flare_box.generic.y = 130 * ui_fontScale->value;
 	s_flare_box.generic.name = "Light Flares";
 	s_flare_box.itemnames = yesno_names;
 	s_flare_box.curvalue = r_drawFlares->value;
@@ -832,7 +832,7 @@ void VID_MenuInit (void) {
 
 	s_bloom_box.generic.type = MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x = 0;
-	s_bloom_box.generic.y = 140 * cl_fontScale->value;
+	s_bloom_box.generic.y = 140 * ui_fontScale->value;
 	s_bloom_box.generic.name = "Bloom";
 	s_bloom_box.itemnames = yesno_names;
 	s_bloom_box.curvalue = r_bloom->integer;
@@ -841,7 +841,7 @@ void VID_MenuInit (void) {
 
 	s_dof_box.generic.type = MTYPE_SPINCONTROL;
 	s_dof_box.generic.x = 0;
-	s_dof_box.generic.y = 150 * cl_fontScale->value;
+	s_dof_box.generic.y = 150 * ui_fontScale->value;
 	s_dof_box.generic.name = "Depth of Field";
 	s_dof_box.itemnames = yesno_names;
 	s_dof_box.curvalue = r_dof->value;
@@ -850,7 +850,7 @@ void VID_MenuInit (void) {
 
 	s_radBlur_box.generic.type = MTYPE_SPINCONTROL;
 	s_radBlur_box.generic.x = 0;
-	s_radBlur_box.generic.y = 160 * cl_fontScale->value;
+	s_radBlur_box.generic.y = 160 * ui_fontScale->value;
 	s_radBlur_box.generic.name = "Radial Blur";
 	s_radBlur_box.itemnames = yesno_names;
 	s_radBlur_box.curvalue = r_radialBlur->value;
@@ -859,7 +859,7 @@ void VID_MenuInit (void) {
 
 	s_mb_box.generic.type = MTYPE_SPINCONTROL;
 	s_mb_box.generic.x = 0;
-	s_mb_box.generic.y = 170 * cl_fontScale->value;
+	s_mb_box.generic.y = 170 * ui_fontScale->value;
 	s_mb_box.generic.name = "Motion Blur";
 	s_mb_box.itemnames = yesno_names;
 	s_mb_box.curvalue = r_motionBlur->value;
@@ -868,7 +868,7 @@ void VID_MenuInit (void) {
 
 	s_ssao.generic.type = MTYPE_SPINCONTROL;
 	s_ssao.generic.x = 0;
-	s_ssao.generic.y = 180 * cl_fontScale->value;
+	s_ssao.generic.y = 180 * ui_fontScale->value;
 	s_ssao.generic.name = "SSAO";
 	s_ssao.itemnames = yesno_names;
 	s_ssao.curvalue = r_ssao->value;
@@ -877,7 +877,7 @@ void VID_MenuInit (void) {
 
 	s_film_grain.generic.type = MTYPE_SPINCONTROL;
 	s_film_grain.generic.x = 0;
-	s_film_grain.generic.y = 190 * cl_fontScale->value;
+	s_film_grain.generic.y = 190 * ui_fontScale->value;
 	s_film_grain.generic.name = "Cinematic filter";
 	s_film_grain.itemnames = yesno_names;
 	s_film_grain.curvalue = r_filmFilter->integer;
@@ -886,7 +886,7 @@ void VID_MenuInit (void) {
 
 	s_fxaa_box.generic.type = MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x = 0;
-	s_fxaa_box.generic.y = 200 * cl_fontScale->value;
+	s_fxaa_box.generic.y = 200 * ui_fontScale->value;
 	s_fxaa_box.generic.name = "FXAA";
 	s_fxaa_box.itemnames = yesno_names;
 	s_fxaa_box.curvalue = r_fxaa->value;
@@ -895,7 +895,7 @@ void VID_MenuInit (void) {
 
 	s_finish_box.generic.type = MTYPE_SPINCONTROL;
 	s_finish_box.generic.x = 0;
-	s_finish_box.generic.y = 210 * cl_fontScale->value;
+	s_finish_box.generic.y = 210 * ui_fontScale->value;
 	s_finish_box.generic.name = "Vertical Sync";
 	s_finish_box.generic.callback = vSyncCallBack;
 	s_finish_box.curvalue = r_vsync->value;
@@ -907,7 +907,7 @@ if (r_vsync->value >= 3)
 
 	s_menuAction_color.generic.type = MTYPE_ACTION;
 	s_menuAction_color.generic.x = 0;
-	s_menuAction_color.generic.y = 230 * cl_fontScale->value;
+	s_menuAction_color.generic.y = 230 * ui_fontScale->value;
 	s_menuAction_color.generic.name = "Post-Process Settings...";
 	s_menuAction_color.generic.callback = ColorSettingsFunc;
 	s_menuAction_color.generic.statusbar = "Color Balance and Bloom Settings";
@@ -915,13 +915,13 @@ if (r_vsync->value >= 3)
 	s_defaults_action.generic.type = MTYPE_ACTION;
 	s_defaults_action.generic.name = "reset to defaults";
 	s_defaults_action.generic.x = 0;
-	s_defaults_action.generic.y = 250 * cl_fontScale->value;
+	s_defaults_action.generic.y = 250 * ui_fontScale->value;
 	s_defaults_action.generic.callback = ResetDefaults;
 
 	s_apply_action.generic.type = MTYPE_ACTION;
 	s_apply_action.generic.name = "Apply Changes";
 	s_apply_action.generic.x = 0;
-	s_apply_action.generic.y = 260 * cl_fontScale->value;
+	s_apply_action.generic.y = 260 * ui_fontScale->value;
 	s_apply_action.generic.callback = ApplyChanges;
 
 	menuSize = 270;
@@ -966,7 +966,7 @@ VID_MenuDraw
 void VID_MenuDraw (void) {
 
 	s_current_menu = &s_opengl_menu;
-	menuSize = 170 * cl_fontScale->value;
+	menuSize = 170 * ui_fontScale->value;
 
 	Draw_VideoBanner();
 

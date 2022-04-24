@@ -45,7 +45,7 @@ void P_ProjectSource(edict_t *ent, vec3_t distance, vec3_t forward, vec3_t right
 		_distance[1] = 0;
 	G_ProjectSource(point, _distance, forward, right, result);
 
-	char *value = Info_ValueForKey(client->pers.userinfo, "weaponHitAccuracy");
+	char *value = Info_ValueForKey(client->pers.userinfo, "g_weaponHitAccuracy");
 	if (!value)
 		return;
 	if (!atoi(value))

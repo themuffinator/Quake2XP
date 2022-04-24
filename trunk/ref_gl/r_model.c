@@ -1228,7 +1228,7 @@ void Mod_BuildVertexCache() {
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 	qglBufferData(GL_ARRAY_BUFFER, vbo_size, buf, GL_STATIC_DRAW);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	Com_DPrintf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
+	Com_Printf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
 	free(buf);
 
 	// Gen VAO
