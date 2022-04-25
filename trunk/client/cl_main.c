@@ -1577,6 +1577,7 @@ void CL_InitLocal (void) {
 	//
 	// register our commands
 	//
+	Cmd_AddCommand("memInfo", Sys_MemoryUsage_f);
 	Cmd_AddCommand ("cmd", CL_ForwardToServer_f);
 	Cmd_AddCommand ("pause", CL_Pause_f);
 	Cmd_AddCommand ("pingservers", CL_PingServers_f);
@@ -2137,6 +2138,8 @@ void CL_Shutdown (void) {
 	// kill temp demo record
 	Com_sprintf (name, sizeof(name), "%s/cachexp/temp.dm2", FS_Gamedir ());
 	remove (name);
+	
+	Cmd_RemoveCommand("memInfo");
 
 	CL_WriteConfiguration ();
 

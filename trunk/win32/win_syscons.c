@@ -196,9 +196,9 @@ void Sys_Error (char *error, ...)
 	Sys_ShowConsole(qtrue);
 
 	// wait 10 seconds and quit
-	int count = 0;
-	while (count < 10000)
-	{
+//	int count = 0;
+//	while (count < 10000)
+//	{
 		while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 		{
 			if (!GetMessage(&msg, NULL, 0, 0))
@@ -207,9 +207,9 @@ void Sys_Error (char *error, ...)
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		Sleep(1);
-		count++;
-	}
+//		Sleep(1);
+//		count++;
+//	}
 }
 
 #include "..\client\cl_console.h"

@@ -40,6 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void FS_AddPAKFile(char* packPath);
 void FS_AddPkxFile(char* packPath);
 char* FS_DownloadDir(void);
+void Sys_MemoryUsage_f(void);
 
 cvar_t* adr0;
 cvar_t* adr1;

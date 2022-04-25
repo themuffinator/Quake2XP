@@ -490,7 +490,7 @@ void Sys_GetMemorySize() {
 
 	memstat.dwLength = sizeof(memstat);
 	GlobalMemoryStatusEx(&memstat);
-	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS_EX*)&pmc, sizeof(pmc));
 
 	ulong virtualMemUsedByMe = pmc.PrivateUsage;
 	ulong physRam = memstat.ullTotalPhys >> 20;
@@ -505,8 +505,16 @@ void Sys_GetMemorySize() {
 	Com_Printf("\n\n");
 }
 
-qboolean isWin64x()
-{
+void Sys_MemoryUsage_f(void){
+
+	PROCESS_MEMORY_COUNTERS_EX pmc;
+	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS_EX*)&pmc, sizeof(pmc));
+	ulong virtualMemUsedByMe = pmc.PrivateUsage;
+	Com_Printf(S_COLOR_YELLOW"Process Memory Usage: " S_COLOR_GREEN "%d" S_COLOR_WHITE "MB\n", pmc.PrivateUsage >>20);
+}
+
+qboolean isWin64x(){
+
 	SYSTEM_INFO sys;
 	GetNativeSystemInfo(&sys);
 	if (sys.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ||

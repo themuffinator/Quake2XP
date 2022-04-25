@@ -1342,9 +1342,9 @@ void R_RegisterCvars(void)
 	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
 	r_customHeight =					Cvar_Get("r_customHeight", "768", CVAR_ARCHIVE);
 		
-	hunk_bsp=							Cvar_Get("hunk_bsp", "70", CVAR_ARCHIVE);
-	hunk_md2=							Cvar_Get("hunk_md2", "15", CVAR_ARCHIVE);
-	hunk_md3=							Cvar_Get("hunk_md3", "20", CVAR_ARCHIVE);
+	hunk_bsp=							Cvar_Get("hunk_bsp", "60", CVAR_ARCHIVE);
+	hunk_md2=							Cvar_Get("hunk_md2", "5", CVAR_ARCHIVE);
+	hunk_md3=							Cvar_Get("hunk_md3", "14", CVAR_ARCHIVE);
 
 	r_parallaxMapping =					Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
 	r_parallaxScale =					Cvar_Get("r_parallaxScale", "2.0", CVAR_ARCHIVE);

@@ -456,7 +456,7 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 		switch (LittleLong(*(unsigned *)buf)) 
 		{
 		case IDALIASHEADER:
-			loadmodel->extraData = Hunk_Begin( hunk_md2->integer <<20, name);
+			loadmodel->extraData = Hunk_Begin(hunk_md2->integer <<20, name);
 			Mod_LoadAliasModel(mod, buf);
 			break;
 		
@@ -466,7 +466,7 @@ model_t *Mod_ForName(char *name, qboolean crash) {
 			break;
 
 		case IDSPRITEHEADER:
-			loadmodel->extraData = Hunk_Begin(1 <<20, name);
+			loadmodel->extraData = Hunk_Begin(0x10000, name);
 			Mod_LoadSpriteModel(mod, buf);
 			break;
 
@@ -2344,6 +2344,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	int				k, l;
 	char			nam[MAX_OSPATH];
 	char			*buff;
+	uint			loadMem = 0;
 
 	mod->memorySize = 0;
 
@@ -2353,9 +2354,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 	if (version != ALIAS_VERSION)
 		VID_Error(ERR_DROP, "%s has wrong version number (%i should be %i)", mod->name, version, ALIAS_VERSION);
 
-
 	pheader = (dmdl_t*)Hunk_Alloc(LittleLong(pinmodel->ofs_end));
-
 	mod->memorySize += LittleLong(pinmodel->ofs_end);
 
 	// byte swap the header fields and sanity check

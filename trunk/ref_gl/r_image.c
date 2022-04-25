@@ -158,27 +158,22 @@ GL_ImageList_f
 
 void GL_ImageList_f(void)
 {
-	int i, totalTexturesSize;
+	int i;
+	uint totalTexturesSize = 0;
 	image_t *image;
-	int texels;
 
 	const char *palstrings[2] = {
 		"RGB",
 		"PAL"
 	};
-	totalTexturesSize = 0;
 	Com_Printf("------------------\n");
-	texels = 0;
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		
 		if (image->texnum <= 0)
 			continue;
 		
-		texels += image->upload_width * image->upload_height;
-
-		
-		totalTexturesSize += image->upload_width * image->upload_height*4;
+		totalTexturesSize += (image->upload_width * image->upload_height)*4;
 
 		switch (image->type) {
 		case it_skin:
@@ -197,16 +192,12 @@ void GL_ImageList_f(void)
 			Com_Printf(" ");
 			break;
 		}
-
+		
 		Com_Printf(" %3i %3i %s: %s\n",
 				   image->upload_width, image->upload_height,
 				   palstrings[image->paletted], image->name);
 	}
-	Com_Printf("Total texel count (not counting mipmaps): %i\n",
-			   texels);
-
-	Com_Printf("%i MB total image memory\n",	totalTexturesSize >> 20);
-
+	Com_Printf("%i MB total image memory\n",totalTexturesSize>>20);
 }
 
 
@@ -434,10 +425,10 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		scaled_height = height;
 
 		if (r_maxTextureSize->integer >= max_size)
-			Cvar_SetValue("r_maxTextureSize", max_size);
+			Cvar_SetInteger("r_maxTextureSize", max_size);
 
 		if (r_maxTextureSize->integer <= 64 && r_maxTextureSize->integer > 0)
-			Cvar_SetValue("r_maxTextureSize", 64);
+			Cvar_SetInteger("r_maxTextureSize", 64);
 
 		if (r_maxTextureSize->integer)
 			max_size = r_maxTextureSize->integer;
