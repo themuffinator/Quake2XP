@@ -43,7 +43,7 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	numIndices = *indeces;
 
 	if (s->texInfo->flags & SURF_FLOWING) {
-		scroll = -64 * ((r_newrefdef.time / 200.0) - (int)(r_newrefdef.time / 200.0));
+		scroll = -64 * ((r_newrefdef.time / 500.0) - (int)(r_newrefdef.time / 500.0));
 
 		if (scroll == 0.0)
 			scroll = -64.0;
@@ -369,7 +369,7 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	numIndices = *indeces;
 
 	if (s->texInfo->flags & SURF_FLOWING) {
-		scroll = -64 * ((r_newrefdef.time / 200.0) - (int)(r_newrefdef.time / 200.0));
+		scroll = -64 * ((r_newrefdef.time / 500.0) - (int)(r_newrefdef.time / 500.0));
 
 		if (scroll == 0.0)
 			scroll = -64.0;
@@ -389,9 +389,6 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 
 	if (update) {
 		GL_SetBindlessTexture(U_TMU0, s->texInfo->image->handle);
-	if (scrolling)
-		GL_SetBindlessTexture(U_TMU1, r_DSTTex->handle);
-	else
 		GL_SetBindlessTexture(U_TMU1, s->texInfo->normalmap->handle);
 		GL_SetBindlessTexture(U_TMU2, r_lightCubeMap[currentShadowLight->filter]->handle);
 		GL_SetBindlessTexture(U_TMU3, r_caustic[((int)(r_newrefdef.time * 15)) & (MAX_CAUSTICS - 1)]->handle);

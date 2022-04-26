@@ -1355,7 +1355,7 @@ int Q_strcasecmp (const char *s1, const char *s2) {
 void Com_sprintf (char *dest, int size, char *fmt, ...) {
 	int		len;
 	va_list		argptr;
-	char	bigbuffer[0x10000];
+	static char	bigbuffer[0x10000];
 
 	va_start (argptr, fmt);
 	len = vsnprintf (bigbuffer, sizeof(bigbuffer), fmt, argptr);

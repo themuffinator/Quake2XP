@@ -1135,7 +1135,7 @@ void Mod_BuildVertexCache() {
 	int         i, vbo_size, vb, idx = 0, numIndices = 0;
 	int         xyz_size, st_size, lm_size, nm_size, tg_size, bn_size, col_size;
 	float		*buf, alpha = 1.0;
-
+	char* purename, noext[64];
 	// calc vbo buffer size
 	vb = 0;
 	for (i = 0, surf = currentmodel->surfaces; i < currentmodel->numSurfaces; i++, surf++)
@@ -1212,8 +1212,23 @@ void Mod_BuildVertexCache() {
 			buf[vbo.bn_offset / 4 + vb * 3 + 1] = v[14];
 			buf[vbo.bn_offset / 4 + vb * 3 + 2] = v[15];
 
-			// vertex color
-			R_LightColor(v, shadelight);
+			purename = COM_SkipPath(surf->texInfo->image->name);
+			COM_StripExtension(purename, noext);
+
+			if (!strcmp(noext, "yelfield")) {
+				shadelight[0] = 1.0;
+				shadelight[1] = 1.0;
+				shadelight[2] = 0.0;
+				alpha = 1.0;
+			}
+			else if (!strcmp(noext, "redfield")) {
+				shadelight[0] = 1.0;
+				shadelight[1] = 0.0;
+				shadelight[2] = 0.0;
+				alpha = 1.0;
+			}else	
+				R_LightColor(v, shadelight);
+
 			buf[vbo.col_offset / 4 + vb * 4 + 0] = shadelight[0];
 			buf[vbo.col_offset / 4 + vb * 4 + 1] = shadelight[1];
 			buf[vbo.col_offset / 4 + vb * 4 + 2] = shadelight[2];
