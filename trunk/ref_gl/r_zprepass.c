@@ -258,16 +258,18 @@ void R_DrawDepthBrushModel (void) {
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)mvp);
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+//	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
+//	qglEnableVertexAttribArray(ATT_POSITION);
+//	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
+	glBindVertexArray(vao.depthBSP);
 
 	numDepthSurfaces = 0;
 	R_AddBModelDepthTris ();
 	GL_DrawDepthBspTris();
 
-	qglDisableVertexAttribArray (ATT_POSITION);
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+//	qglDisableVertexAttribArray (ATT_POSITION);
+//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void R_CalcAliasFrameLerp (dmdl_t *paliashdr, float shellScale);
@@ -284,9 +286,9 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+//	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+//	qglEnableVertexAttribArray(ATT_POSITION);
+//	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
@@ -303,8 +305,8 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, jj * sizeof(vec3_t), vertexArray);
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+//	qglDisableVertexAttribArray(ATT_POSITION);
+//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void R_DrawDepthAliasModel(void){
@@ -390,10 +392,10 @@ void R_DrawDepthMD3Model(void) {
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_shadowDynamic);
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+//	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
+//	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_dynamic);
+//	qglEnableVertexAttribArray(ATT_POSITION);
+//	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
@@ -423,10 +425,10 @@ void R_DrawDepthMD3Model(void) {
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, 0);
 	}
 
-	qglDisableVertexAttribArray(ATT_POSITION);
+//	qglDisableVertexAttribArray(ATT_POSITION);
 
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+//	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
@@ -457,23 +459,32 @@ void R_DrawDepthScene (void) {
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
-		qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-		qglEnableVertexAttribArray(ATT_POSITION);
-		qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
+		glBindVertexArray(vao.depthBSP);
 
 		numDepthSurfaces = 0;
 		R_RecursiveDepthWorldNode(r_worldmodel->nodes);
 		GL_DrawDepthBspTris();
 
-		qglBindBuffer(GL_ARRAY_BUFFER, 0);
-		qglDisableVertexAttribArray(ATT_POSITION);
+		for (i = 0; i < r_newrefdef.num_entities; i++) {
+			currententity = &r_newrefdef.entities[i];
+			currentmodel = currententity->model;
+
+			if (!currentmodel)
+				continue;
+
+			if (currentmodel->type == mod_brush)
+				R_DrawDepthBrushModel();
+		}
+		glBindVertexArray(0);
 
 		GL_DepthRange(1.0, 1.0); // mark sky for fog mask
 		R_DrawSkyBox(qfalse);
 		GL_DepthRange(0.0, 1.0);
 	}
 
+	glBindVertexArray(vao.dynamic);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -491,15 +502,14 @@ void R_DrawDepthScene (void) {
 		if (currententity->flags & RF_DISTORT)
 			continue;
 
-		if (currentmodel->type == mod_brush)
-			R_DrawDepthBrushModel ();
-
 		if (currentmodel->type == mod_alias)
 			R_DrawDepthAliasModel ();
 
 		if (currentmodel->type == mod_alias_md3)
 			R_DrawDepthMD3Model();
 	}
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	GL_DepthFunc(GL_LEQUAL);
 	GL_DepthMask(0);

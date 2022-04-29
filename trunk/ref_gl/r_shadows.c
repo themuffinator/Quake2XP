@@ -530,11 +530,8 @@ void R_CastAliasShadowVolumes(qboolean player) {
 
 	GL_PolygonOffset(0.1, 1);
 
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_shadowDynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_shadowDynamic);
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 4, GL_FLOAT, qfalse, 0, 0);
+	glBindVertexArray(vao.md2Shadow);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_aliasShadow);
 
 	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
@@ -573,7 +570,10 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	================*/
 
 	GL_FrontFace(GL_CCW); // flip cull face order vs stencil re-setup
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_md3Shadow);
+
+	glBindVertexArray(vao.md3Shadow);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_aliasShadow);
+
 	if (player) {
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = &r_newrefdef.entities[i];
@@ -609,9 +609,10 @@ void R_CastAliasShadowVolumes(qboolean player) {
 	}
 
 	GL_FrontFace(GL_CW);
-	qglDisableVertexAttribArray(ATT_POSITION);
+
+	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	GL_Enable(GL_CULL_FACE);
 	GL_ColorMask(1, 1, 1, 1);
 }
@@ -1033,14 +1034,8 @@ void R_CastBspShadowVolumes (void) {
 		glBindVertexArray(0);
 	}
 
-
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_bspShadowDynamic);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_bspShadowDynamic);
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
-
-//	glBindVertexArray(vao.bspDynamicShadow);
+	glBindVertexArray(vao.dynamic);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
 
 	if (!currentShadowLight->isStatic)	
 		R_DrawBspModelVolumes(qfalse, NULL); 	
@@ -1055,10 +1050,9 @@ void R_CastBspShadowVolumes (void) {
 		if (currentmodel->type == mod_brush)
 			R_DrawBrushModelVolumes ();
 	}
-//	glBindVertexArray(0);
-	qglDisableVertexAttribArray (ATT_POSITION);
+	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	GL_Enable (GL_CULL_FACE);
 	GL_ColorMask (1, 1, 1, 1);
 

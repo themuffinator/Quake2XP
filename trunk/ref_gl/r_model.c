@@ -1242,14 +1242,11 @@ void Mod_BuildVertexCache() {
 	qglGenBuffers(1, &vbo.vbo_BSP);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
 	qglBufferData(GL_ARRAY_BUFFER, vbo_size, buf, GL_STATIC_DRAW);
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	Com_Printf(""S_COLOR_GREEN"%d"S_COLOR_WHITE" kbytes of VBO vertex data\n", vbo_size / 1024);
 	free(buf);
 
 	// Gen VAO
 	glDeleteVertexArrays(1, &vao.bsp);
-
-	//light surfaces
 	glGenVertexArrays(1, &vao.bsp);
 	glBindVertexArray(vao.bsp);
 
@@ -1266,14 +1263,24 @@ void Mod_BuildVertexCache() {
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.st_offset));
 	qglVertexAttribPointer(ATT_TEX1, 2, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.lm_offset));
-
 	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.nm_offset));
 	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.tg_offset));
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.bn_offset));
-
 	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.col_offset));
 
 	glBindVertexArray(0);
+
+//----------------------------------------------
+//setup z world
+	glDeleteVertexArrays(1, &vao.depthBSP);
+	glGenVertexArrays(1, &vao.depthBSP);
+	glBindVertexArray(vao.depthBSP);
+
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
+	glBindVertexArray(0);
+
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }

@@ -754,11 +754,11 @@ GLuint	vbo_quarterScreenQuad;
 GLuint	ibo_quadTris;
 GLuint	ibo_singleQuad;
 
-GLuint	vbo_shadowDynamic;
-GLuint	ibo_shadowDynamic;
+GLuint	vbo_aliasShadow;
+GLuint	ibo_md2Shadow;
 
-GLuint	vbo_bspShadowDynamic;
-GLuint	ibo_bspShadowDynamic;
+GLuint	vbo_dynamic;
+GLuint	ibo_dynamic;
 
 GLuint	ibo_cube;
 GLuint	ibo_md3Shadow;
@@ -781,14 +781,14 @@ int col_offset;
 vbo_t vbo;
 
 typedef struct {
-	GLuint	bsp; 
-	GLuint	bspDynamicShadow;
-	GLuint	shadowMD3;
-	GLuint	_2d;
+	GLuint	bsp;
+	GLuint	depthBSP;
+	GLuint	dynamic;
+	GLuint	md2Shadow;
+	GLuint	md3Shadow;
 	GLuint	fullscreenQuad;
 	GLuint	halfScreenQuad;
 	GLuint	quaterScreenQuad;
-	GLuint	depthBSP;
 }vao_t;
 
 vao_t vao;
