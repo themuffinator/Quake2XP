@@ -339,7 +339,7 @@ SCR_DrawLoading
 
 void SCR_DrawLoadingBar (float percent, float scale) {
 
-	Draw_Fill (2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 0.0, 1.0, 0.0, 0.13);
+	Draw_Fill (2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 0.0, 1.0, 0.0, 0.13, qtrue);
 
 }
 
@@ -455,7 +455,7 @@ void SCR_DrawConsole (void) {
 		// but can't
 		// render
 		Con_DrawConsole (0.5);
-		Draw_Fill (0, viddef.height * 0.5f, viddef.width, viddef.height * 0.5f, 0.0, 0.0, 0.0, 1.0);
+		Draw_Fill (0, viddef.height * 0.5f, viddef.width, viddef.height * 0.5f, 0.0, 0.0, 0.0, 1.0, qfalse);
 		return;
 	}
 

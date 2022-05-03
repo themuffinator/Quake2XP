@@ -1935,7 +1935,7 @@ int R_Init(void *hinstance, void *hWnd)
 	GL_InitImages();
 	Mod_Init();
 	R_InitEngineTextures();
-	R_LoadFont();
+	R_Init2D();
 
 	flareEdit = (qboolean)qfalse;
 	occEdit = (qboolean)qfalse;

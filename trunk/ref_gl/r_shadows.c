@@ -27,17 +27,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-int			num_shadow_surfaces, shadowTimeStamp;
-vec4_t		s_lerped[MAX_VERTS];
+int	num_shadow_surfaces, shadowTimeStamp;
+
+msurface_t* shadow_surfaces[MAX_MAP_FACES];
 vec3_t		vcache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
-vec4_t		vcache4[MAX_INDICES];
 uint		icache[MAX_MAP_TEXINFO * MAX_POLY_VERT];
-msurface_t	*shadow_surfaces[MAX_MAP_FACES];
-char		triangleFacingLight[MAX_INDICES];
 
+char	triangleFacingLight[MAX_INDICES];
+vec4_t	s_lerped[MAX_VERTS];
+vec4_t	vcacheMd2[MAX_INDICES];
+uint	icacheMd2[MAX_INDICES];
 
-vec4_t	extrudedVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
-float	shadowVerts[MD3_MAX_TRIANGLES * MD3_MAX_MESHES];
+vec4_t	extrudedVerts[MD3_MAX_VERTS * MD3_MAX_MESHES];
+float	shadowVerts[MD3_MAX_VERTS * MD3_MAX_MESHES];
 
 
 /*
@@ -100,17 +102,17 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 			}
 
 			//  transforms points with w = 1 normally and sends points with w = 0 to infinity away from the light.
-			VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
-			VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
-			VA_SetElem4(vcache4[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
-			VA_SetElem4(vcache4[numVerts + 3], v0[0], v0[1], v0[2], v0[3] = 0.0);
+			VA_SetElem4(vcacheMd2[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
+			VA_SetElem4(vcacheMd2[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
+			VA_SetElem4(vcacheMd2[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
+			VA_SetElem4(vcacheMd2[numVerts + 3], v0[0], v0[1], v0[2], v0[3] = 0.0);
 			
-			icache[id++] = numVerts + 0;
-			icache[id++] = numVerts + 1;
-			icache[id++] = numVerts + 3;
-			icache[id++] = numVerts + 3;
-			icache[id++] = numVerts + 1;
-			icache[id++] = numVerts + 2;
+			icacheMd2[id++] = numVerts + 0;
+			icacheMd2[id++] = numVerts + 1;
+			icacheMd2[id++] = numVerts + 3;
+			icacheMd2[id++] = numVerts + 3;
+			icacheMd2[id++] = numVerts + 1;
+			icacheMd2[id++] = numVerts + 2;
 			numVerts += 4;
 		}
 
@@ -121,17 +123,17 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 				v1[j] = s_lerped[tris->index_xyz[1]][j];
 			}
 
-			VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
-			VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
-			VA_SetElem4(vcache4[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
-			VA_SetElem4(vcache4[numVerts + 3], v0[0], v0[1], v0[2], v0[3] = 0.0);
+			VA_SetElem4(vcacheMd2[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
+			VA_SetElem4(vcacheMd2[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
+			VA_SetElem4(vcacheMd2[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
+			VA_SetElem4(vcacheMd2[numVerts + 3], v0[0], v0[1], v0[2], v0[3] = 0.0);
 
-			icache[id++] = numVerts + 0;
-			icache[id++] = numVerts + 1;
-			icache[id++] = numVerts + 3;
-			icache[id++] = numVerts + 3;
-			icache[id++] = numVerts + 1;
-			icache[id++] = numVerts + 2;
+			icacheMd2[id++] = numVerts + 0;
+			icacheMd2[id++] = numVerts + 1;
+			icacheMd2[id++] = numVerts + 3;
+			icacheMd2[id++] = numVerts + 3;
+			icacheMd2[id++] = numVerts + 1;
+			icacheMd2[id++] = numVerts + 2;
 			numVerts += 4;
 		}
 
@@ -142,17 +144,17 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 				v1[j] = s_lerped[tris->index_xyz[2]][j];
 			}
 
-			VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
-			VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
-			VA_SetElem4(vcache4[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
-			VA_SetElem4(vcache4[numVerts + 3], v0[0], v0[1], v0[2], v0[3] = 0.0);
+			VA_SetElem4(vcacheMd2[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
+			VA_SetElem4(vcacheMd2[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
+			VA_SetElem4(vcacheMd2[numVerts + 2], v1[0], v1[1], v1[2], v1[3] = 0.0);
+			VA_SetElem4(vcacheMd2[numVerts + 3], v0[0], v0[1], v0[2], v0[3] = 0.0);
 
-			icache[id++] = numVerts + 0;
-			icache[id++] = numVerts + 1;
-			icache[id++] = numVerts + 3;
-			icache[id++] = numVerts + 3;
-			icache[id++] = numVerts + 1;
-			icache[id++] = numVerts + 2;
+			icacheMd2[id++] = numVerts + 0;
+			icacheMd2[id++] = numVerts + 1;
+			icacheMd2[id++] = numVerts + 3;
+			icacheMd2[id++] = numVerts + 3;
+			icacheMd2[id++] = numVerts + 1;
+			icacheMd2[id++] = numVerts + 2;
 			numVerts += 4;
 		}
 	}
@@ -168,14 +170,14 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 			v2[j] = s_lerped[tris->index_xyz[2]][j];
 		}
 
-		VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
-		VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
-		VA_SetElem4(vcache4[numVerts + 2], v2[0], v2[1], v2[2], v2[3] = 1.0);
+		VA_SetElem4(vcacheMd2[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 1.0);
+		VA_SetElem4(vcacheMd2[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 1.0);
+		VA_SetElem4(vcacheMd2[numVerts + 2], v2[0], v2[1], v2[2], v2[3] = 1.0);
 
 
-		icache[id++] = numVerts + 0;
-		icache[id++] = numVerts + 1;
-		icache[id++] = numVerts + 2;
+		icacheMd2[id++] = numVerts + 0;
+		icacheMd2[id++] = numVerts + 1;
+		icacheMd2[id++] = numVerts + 2;
 		numVerts += 3;
 
 		// rear cap (with flipped winding order)
@@ -185,18 +187,18 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 			v2[j] = s_lerped[tris->index_xyz[2]][j];
 		}
 
-		VA_SetElem4(vcache4[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 0.0);
-		VA_SetElem4(vcache4[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 0.0);
-		VA_SetElem4(vcache4[numVerts + 2], v2[0], v2[1], v2[2], v2[3] = 0.0);
+		VA_SetElem4(vcacheMd2[numVerts + 0], v0[0], v0[1], v0[2], v0[3] = 0.0);
+		VA_SetElem4(vcacheMd2[numVerts + 1], v1[0], v1[1], v1[2], v1[3] = 0.0);
+		VA_SetElem4(vcacheMd2[numVerts + 2], v2[0], v2[1], v2[2], v2[3] = 0.0);
 
-		icache[id++] = numVerts + 2;
-		icache[id++] = numVerts + 1;
-		icache[id++] = numVerts + 0;
+		icacheMd2[id++] = numVerts + 2;
+		icacheMd2[id++] = numVerts + 1;
+		icacheMd2[id++] = numVerts + 0;
 		numVerts += 3;
 	}
 
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec4_t), vcache4);
-	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(uint), icache);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec4_t), vcacheMd2);
+	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(uint), icacheMd2);
 
 	qglDrawElements (GL_TRIANGLES, id, GL_UNSIGNED_INT, NULL);
 

@@ -2438,11 +2438,11 @@ void DrawModShot(void* m)
 	size *= 0.75;
 
 	if (Draw_FindPic(m_mod_names[s_mods_menu.cursor])) {
-		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0, qfalse);
 		Draw_StretchPic(w, h, size, size, m_mod_names[s_mods_menu.cursor]);
 	}
 	else {
-		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill(w - 3, h - 3, size + 6, size + 6, 0.3, 0.3, 0.3, 1.0, qfalse);
 		Draw_StretchPic(w, h, size, size, "idlog");
 	}
 }
@@ -2884,9 +2884,9 @@ void DrawSavedShot(void* m)
 		aspect = (float)w / (float)h;
 
 		R_FreePic(savePic); // update pic cache
-		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, qfalse);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
 
 		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)ui_fontScale->value * 6) * 0.5;
 		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_savesInfos[i]);
@@ -2897,7 +2897,7 @@ void DrawSavedShot(void* m)
 			strcpy(savePic, va("/pics/victory.jpg", m_savemapnames[i]));
 			Draw_GetPicSize(&w, &h, savePic);
 			aspect = (float)w / (float)h;
-			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+			Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, qfalse);
 			Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		}
 	else
@@ -2911,11 +2911,11 @@ void DrawSavedShot(void* m)
 		}
 
 		aspect = (float)w / (float)h;
-		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, qfalse);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
 		}
 				
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
 
 		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)ui_fontScale->value * 6) * 0.5;
 		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_savesInfos[i]);
@@ -2954,9 +2954,9 @@ void DrawQuickSavedShot(void* m)
 	if (m_quicksavevalid){
 
 		R_FreePic(savePic); // update pic cache
-		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0);
+		Draw_Fill(viddef.width * 0.5 - 5, (viddef.height * 0.5 - (picWidth / aspect) * 0.5) - 5, picWidth + 10, (picWidth / aspect) + (wtf * (int)ui_fontScale->value), 0.3, 0.3, 0.3, 1.0, qfalse);
 		Draw_StretchPic(viddef.width * 0.5, viddef.height * 0.5 - (picWidth / aspect) * 0.5, picWidth, picWidth / aspect, savePic);
-		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0);
+		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
 
 		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_quickSavesInfos) * (int)ui_fontScale->value * 6) * 0.5;
 		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_quickSavesInfos);

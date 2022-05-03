@@ -596,7 +596,7 @@ void Draw_StringScaled (int x, int y, float scale_x, float scale_y, const char *
 
 void Draw_TileClear (int x, int y, int w, int h, char *name);
 void Draw_TileClear2 (int x, int y, int w, int h, image_t * image);
-void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a);
+void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a, qboolean loading);
 void R_BeginRegistration (char *map);
 void R_SetSky (char *name, float rotate, vec3_t axis);
 void R_EndRegistration (void);

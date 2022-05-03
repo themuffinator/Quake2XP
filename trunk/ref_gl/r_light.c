@@ -34,7 +34,6 @@ worldShadowLight_t	shadowLightsBlock[MAX_WORLD_SHADOW_LIHGTS];
 static int num_dlits;
 int num_nwmLights;
 int num_visLights;
-vec3_t	vCache[MAX_VERTEX_ARRAY];
 
 vec3_t player_org, v_forward, v_right, v_up;
 qboolean R_MarkLightLeaves (worldShadowLight_t *light);
@@ -2824,7 +2823,6 @@ void R_UpdateLightAliasUniforms()
 
 	qglUniform1i(U_AMBIENT_LIGHT, (int)currentShadowLight->isAmbient);//
 //	qglUniform1f(U_SPECULAR_SCALE, 1.0);
-	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);//
 	
 	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);//
 	if (currententity->flags & RF_WEAPONMODEL)

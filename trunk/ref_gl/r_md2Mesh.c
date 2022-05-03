@@ -512,6 +512,11 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 			normalArray[jj][0] = oldNormals[index_xyz][0] * backlerp + normals[index_xyz][0] * frontlerp;
 			normalArray[jj][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
 			normalArray[jj][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
+			
+			colorArray[jj][0] = currentShadowLight->color[0];
+			colorArray[jj][1] = currentShadowLight->color[1];
+			colorArray[jj][2] = currentShadowLight->color[2];
+			colorArray[jj][3] = 1.0;
 		}
 	}
 
@@ -567,12 +572,14 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglEnableVertexAttribArray(ATT_BINORMAL);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
 
 	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, vertexArray);
 	qglVertexAttribPointer (ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
 	qglVertexAttribPointer (ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
 	qglVertexAttribPointer (ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
 
 	qglDrawArrays (GL_TRIANGLES, 0, jj);
 
@@ -581,6 +588,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglDisableVertexAttribArray (ATT_BINORMAL);
 	qglDisableVertexAttribArray (ATT_NORMAL);
 	qglDisableVertexAttribArray (ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_COLOR);
 }
 
 

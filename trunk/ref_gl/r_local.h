@@ -87,8 +87,8 @@ extern viddef_t vid;
 
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
-#define MAX_DRAW_STRING_LENGTH  512
 #define MAX_IDX 4294967295 //uint size
+#define MAX_MESHES	65536
 // ===================================================================
 
 typedef enum {
@@ -562,14 +562,12 @@ void GL_ScreenShot_f (void);
 void R_DrawAliasModel (entity_t * e);
 void R_DrawBrushModel ();
 void R_DrawSpriteModel (entity_t * e);
-void R_DrawBeam ();
 void R_DrawBSP (void);
 void R_InitEngineTextures (void);
-void R_LoadFont (void);
+void R_Init2D (void);
 
 qboolean R_CullBox (vec3_t mins, vec3_t maxs);
 void R_MarkLeaves (void);
-void R_AddWaterPolygons (msurface_t * fa);
 void R_AddSkySurface (msurface_t * fa);
 void R_ClearSkyBox (void);
 void R_DrawSkyBox (qboolean color);
@@ -580,7 +578,7 @@ void Draw_GetPicSize (int *w, int *h, char *name);
 void Draw_Pic (int x, int y, char *name);
 void Draw_StretchPic (int x, int y, int w, int h, char *name);
 void Draw_TileClear (int x, int y, int w, int h, char *name);
-void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a);
+void Draw_Fill (int x, int y, int w, int h, float r, float g, float b, float a, qboolean loading);
 void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows,
 	byte * data);
 
@@ -751,20 +749,16 @@ typedef struct {
 GLuint	vbo_fullScreenQuad;
 GLuint	vbo_halfScreenQuad;
 GLuint	vbo_quarterScreenQuad;
-GLuint	ibo_quadTris;
-GLuint	ibo_singleQuad;
-
-GLuint	vbo_aliasShadow;
-GLuint	ibo_md2Shadow;
-
-GLuint	vbo_dynamic;
-GLuint	ibo_dynamic;
-
-GLuint	ibo_cube;
-GLuint	ibo_md3Shadow;
+GLuint	ibo_quad;
 
 GLuint	vbo_BSP;
-GLuint	ibo_BSP;
+GLuint	vbo_aliasShadow;
+GLuint	ibo_md2Shadow;
+GLuint	ibo_md3Shadow;
+GLuint	vbo_dynamic;
+GLuint	ibo_dynamic;
+GLuint	ibo_cube;
+GLuint	vbo_draw2d;
 
 int xyz_offset;
 
@@ -789,6 +783,7 @@ typedef struct {
 	GLuint	fullscreenQuad;
 	GLuint	halfScreenQuad;
 	GLuint	quaterScreenQuad;
+	GLuint	draw2d;
 }vao_t;
 
 vao_t vao;
@@ -853,13 +848,19 @@ extern glstate_t gl_state;
 
 #define MAX_VERTICES		16384
 #define MAX_INDICES			65536
-#define MAX_VERTEX_ARRAY	8192
-#define MAX_SHADOW_VERTS	16384
 
-#define MAX_STREAM_VBO_VERTS MD3_MAX_TRIANGLES * MD3_MAX_MESHES
-#define MAX_STREAM_IBO_IDX	 MD3_MAX_TRIANGLES * MD3_MAX_MESHES * 3
+#define MAX_STREAM_VBO_VERTS MD3_MAX_VERTS * MD3_MAX_MESHES
+#define MAX_STREAM_IBO_IDX	 MD3_MAX_VERTS * MD3_MAX_MESHES
 
 #define CUBE_INDICES 36
+
+#define MAX_DRAW_STRING_LENGTH  512
+typedef struct {
+	vec2_t	texCoord[MAX_DRAW_STRING_LENGTH];
+	vec2_t	vertCoord[MAX_DRAW_STRING_LENGTH];
+	vec4_t	colorCoord[MAX_DRAW_STRING_LENGTH];
+} tess2d_t;
+tess2d_t tess2d;
 
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;

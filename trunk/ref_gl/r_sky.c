@@ -296,8 +296,8 @@ R_DrawSkyBox
 void R_DrawSkyBox(qboolean color) {
 	int i;
 
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, SkyVertexArray);
+	glBindVertexArray(vao.dynamic);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
 
 	GL_BindProgram(skyProgram);
 
@@ -359,9 +359,13 @@ void R_DrawSkyBox(qboolean color) {
 		GenSkyVertices(skymaxs[0][i], skymaxs[1][i], i);
 		GenSkyVertices(skymaxs[0][i], skymins[1][i], i);	
 	}
-		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, skyIndex);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec3_t), SkyVertexArray);
+	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numVerts * 3 * sizeof(uint), skyIndex);
 
-	qglDisableVertexAttribArray(ATT_POSITION);
+	qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, 0);
+
+	glBindVertexArray(0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 

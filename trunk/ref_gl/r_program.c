@@ -662,7 +662,7 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"light world program"S_COLOR_WHITE" ");
+	Com_Printf ("Load "S_COLOR_YELLOW"world interaction program"S_COLOR_WHITE" ");
 	lightWorldProgram = R_FindProgram ("lightWorld", S_DEFAULT);
 	if (lightWorldProgram->valid) {
 		Com_Printf ("succeeded\n");
@@ -693,7 +693,7 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"light model program"S_COLOR_WHITE" ");
+	Com_Printf ("Load "S_COLOR_YELLOW"alias interaction program"S_COLOR_WHITE" ");
 	aliasBumpProgram = R_FindProgram ("lightAlias", S_DEFAULT);
 
 	if (aliasBumpProgram->valid) {
@@ -798,7 +798,7 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"glass lighting program"S_COLOR_WHITE" ");
+	Com_Printf("Load "S_COLOR_YELLOW"glass interaction program"S_COLOR_WHITE" ");
 	lightGlassProgram = R_FindProgram("glassLight", S_DEFAULT);
 
 	if (lightGlassProgram->valid) {

@@ -1220,12 +1220,14 @@ void Mod_BuildVertexCache() {
 				shadelight[1] = 1.0;
 				shadelight[2] = 0.0;
 				alpha = 1.0;
+				surf->texInfo->flags &= ~SURF_WARP; // temp water fix
 			}
 			else if (!strcmp(noext, "redfield")) {
 				shadelight[0] = 1.0;
 				shadelight[1] = 0.0;
 				shadelight[2] = 0.0;
 				alpha = 1.0;
+				surf->texInfo->flags &= ~SURF_WARP; // temp water fix
 			}else	
 				R_LightColor(v, shadelight);
 

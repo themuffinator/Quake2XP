@@ -42,6 +42,9 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 
 	numIndices = *indeces;
 
+
+	if (update) {
+
 	if (s->texInfo->flags & SURF_FLOWING) {
 		scroll = -64 * ((r_newrefdef.time / 500.0) - (int)(r_newrefdef.time / 500.0));
 
@@ -54,8 +57,6 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	}
 	else
 		qglUniform1f(U_SCROLL, 0.0);
-
-	if (update) {
 
 		if (scrolling)
 			GL_SetBindlessTexture(U_TMU0, r_DSTTex->handle);
@@ -142,13 +143,13 @@ void R_AddWaterSurceces(msurface_t* s, uint* indeces, qboolean update) {
 
 	numIndices = *indeces;
 
-	if (s->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
-		qglUniform1i(U_WATER_TRANS, 1);
-	else
-		qglUniform1i(U_WATER_TRANS, 0);
-
-	if (update)
+	if (update) {
+		if (s->texInfo->flags & (SURF_TRANS33 | SURF_TRANS66))
+			qglUniform1i(U_WATER_TRANS, 1);
+		else
+			qglUniform1i(U_WATER_TRANS, 0);
 		GL_SetBindlessTexture(U_TMU0, s->texInfo->image->handle);
+	}
 
 	for (i = 0; i < nv - 2; i++) {
 		indexArray[numIndices++] = s->baseIndex;
@@ -243,9 +244,6 @@ qboolean R_MarkLightSurfRA(msurface_t* surf, qboolean world, worldShadowLight_t*
 	cplane_t* plane;
 	float		dist;
 	glpoly_t* poly;
-
-	if (surf->flags & MSURF_LAVA)
-		return qfalse;
 
 	if (!(surf->texInfo->flags & (SURF_TRANS66 | SURF_TRANS33)))
 		return qfalse;
@@ -458,6 +456,9 @@ void R_DrawLightAlphaSurfaces() {
 
 		s = currentShadowLight->interactionRA[i];
 
+		if (s->texInfo->flags & SURF_WARP)
+			continue;
+
 		if ((s->visframe != r_framecount) || (s->ent))
 			continue;
 
@@ -507,6 +508,9 @@ void R_DrawLightAlphaSurfacesDynamic(qboolean bmodel, qboolean caustics) {
 
 		s = interactionRA[i];
 		poly = s->polys;
+
+		if (s->texInfo->flags & SURF_WARP)
+			continue;
 
 		if ((poly->lightTimestampRA != r_lightTimestampRA) || (s->visframe != r_framecount))
 			continue;
@@ -663,11 +667,17 @@ void R_DrawLightWorldRA(void){
 	if (!r_transSurfShading->integer)
 		return;
 
-	GL_BindProgram(lightGlassProgram);
-	glBindVertexArray(vao.bsp);
-
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
+
+	if (r_shadows->integer)
+		GL_Enable(GL_STENCIL_TEST);
+
+	if (r_lightScissors->integer)
+		GL_Enable(GL_SCISSOR_TEST);
+
+	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
+		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
 
 	R_PrepareShadowLightFrame(qfalse);
 
@@ -677,6 +687,26 @@ void R_DrawLightWorldRA(void){
 
 			if (r_skipStaticLights->integer && currentShadowLight->isStatic)
 				continue;
+			
+			R_SetViewLightScreenBounds();
+
+			if (r_lightScissors->integer)
+				GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
+
+			if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
+				GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
+
+			qglClearStencil(128);
+			GL_StencilMask(255);
+			qglClear(GL_STENCIL_BUFFER_BIT);
+			R_CastBspShadowVolumes();
+
+			GL_BindProgram(lightGlassProgram);
+			glBindVertexArray(vao.bsp);
+			GL_StencilFunc(GL_EQUAL, 128, 255);
+			GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+			GL_StencilMask(0);
+			GL_DepthFunc(GL_LEQUAL);
 
 			R_DrawLightRA();
 
@@ -694,6 +724,8 @@ void R_DrawLightWorldRA(void){
 	}
 
 	glBindVertexArray(0);
-
 	GL_Disable(GL_BLEND);
+	GL_Disable(GL_STENCIL_TEST);
+	GL_Disable(GL_SCISSOR_TEST);
+	GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 }

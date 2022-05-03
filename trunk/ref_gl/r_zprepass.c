@@ -258,17 +258,12 @@ void R_DrawDepthBrushModel (void) {
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, mvp);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)mvp);
 
-//	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_BSP);
-//	qglEnableVertexAttribArray(ATT_POSITION);
-//	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, BUFFER_OFFSET(vbo.xyz_offset));
 	glBindVertexArray(vao.depthBSP);
 
 	numDepthSurfaces = 0;
 	R_AddBModelDepthTris ();
 	GL_DrawDepthBspTris();
 
-//	qglDisableVertexAttribArray (ATT_POSITION);
-//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 
@@ -286,9 +281,6 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 
 	R_CalcAliasFrameLerp(paliashdr, 0);			/// Просто сюда переместили вычисления Lerp...
 	
-//	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
-//	qglEnableVertexAttribArray(ATT_POSITION);
-//	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
@@ -305,8 +297,6 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, jj * sizeof(vec3_t), vertexArray);
 	qglDrawArrays(GL_TRIANGLES, 0, jj);
 
-//	qglDisableVertexAttribArray(ATT_POSITION);
-//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void R_DrawDepthAliasModel(void){
@@ -392,11 +382,6 @@ void R_DrawDepthMD3Model(void) {
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
 		GL_DepthRange(gldepthmin, gldepthmin + 0.3 * (gldepthmax - gldepthmin));
 
-//	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
-//	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_dynamic);
-//	qglEnableVertexAttribArray(ATT_POSITION);
-//	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, 0);
-
 	Mat4_TransposeMultiply(currententity->matrix, r_newrefdef.modelViewProjectionMatrix, currententity->orMatrix);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
@@ -425,11 +410,6 @@ void R_DrawDepthMD3Model(void) {
 		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, 0);
 	}
 
-//	qglDisableVertexAttribArray(ATT_POSITION);
-
-//	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-//	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
 	if (currententity->flags & RF_DEPTHHACK)
 		GL_DepthRange(gldepthmin, gldepthmax);
 }
@@ -440,9 +420,6 @@ void R_DrawDepthScene (void) {
 
 	if (!r_drawWorld->integer)
 		return;
-
-//	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-//		return;
 
 	currentmodel = r_worldmodel;
 

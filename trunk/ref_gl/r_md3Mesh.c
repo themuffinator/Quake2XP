@@ -1074,12 +1074,13 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	qglEnableVertexAttribArray(ATT_BINORMAL);
 	qglEnableVertexAttribArray(ATT_NORMAL);
 	qglEnableVertexAttribArray(ATT_TEX0);
-	
+	qglEnableVertexAttribArray(ATT_COLOR);
+
 	qglVertexAttribPointer(ATT_POSITION, 3, GL_FLOAT, qfalse, 0, md3VertexCache);
 	qglVertexAttribPointer(ATT_TANGENT, 3, GL_FLOAT, qfalse, 0, tangentArray);
 	qglVertexAttribPointer(ATT_BINORMAL, 3, GL_FLOAT, qfalse, 0, binormalArray);
 	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
-
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
 	// setup program
 	GL_BindProgram(aliasBumpProgram);
 
@@ -1218,6 +1219,11 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 				normalArray[k][0] = verts[k].normal[0] * frontlerp + oldVerts[k].normal[0] * backlerp;
 				normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
 				normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
+
+				colorArray[k][0] = currentShadowLight->color[0];
+				colorArray[k][1] = currentShadowLight->color[1];
+				colorArray[k][2] = currentShadowLight->color[2];
+				colorArray[k][3] = 1.0;
 		}
 
 		qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, mesh->stcoords);
@@ -1250,6 +1256,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 	qglDisableVertexAttribArray(ATT_BINORMAL);
 	qglDisableVertexAttribArray(ATT_NORMAL);
 	qglDisableVertexAttribArray(ATT_TEX0);
+	qglDisableVertexAttribArray(ATT_COLOR);
 
 	VectorCopy(oldLight, currentShadowLight->origin);
 	VectorCopy(oldView, r_origin);

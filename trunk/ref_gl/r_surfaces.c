@@ -318,9 +318,6 @@ qboolean R_FillLightBatch(msurface_t *surf, qboolean newBatch, unsigned *indeces
 		normalMap	= R_TextureAnimationNormal	(surf->texInfo);
 		rghMap		= R_TextureAnimationRgh		(surf->texInfo);
 
-		qglUniform1f(U_SPECULAR_SCALE,	1.0);
-		qglUniform1f(U_RGH_SCALE, image->rghScale ?		image->rghScale			: 0.666); // HAIL SATAN!
-
 		if (rghMap == r_notexture) {
 			qglUniform1i(U_USE_RGH_MAP, 0);
 		}
