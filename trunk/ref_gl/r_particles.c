@@ -23,9 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "r_local.h"
-
-vec4_t shadelight_surface;
-
 int CL_PMpointcontents (vec3_t point);
 
 /*
@@ -57,8 +54,8 @@ int SortPart (particle_t *a, particle_t *b) {
 
 void R_DrawParticles (void) {
 	particle_t *p;
-	uint64		texId, texture = -1;
-	uint		flagId, flags = -1;
+	uint64		texId, texture = 0;
+	uint		flagId, flags = 0;
 	int			i, len, loc, partVert = 0, index = 0;
 	vec3_t		point, width;
 	vec3_t		move, vec, dir1, dir2, dir3, spdir;
@@ -72,26 +69,23 @@ void R_DrawParticles (void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	// setup program
-	GL_BindProgram (particlesProgram);
+	GL_Enable(GL_BLEND);
 
 	qglEnableVertexAttribArray (ATT_POSITION);
 	qglEnableVertexAttribArray (ATT_TEX0);
 	qglEnableVertexAttribArray (ATT_COLOR);
 
-	qglVertexAttribPointer (ATT_POSITION, 3, GL_FLOAT, qfalse, 0, ParticleVert);
-	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, ParticleTextCoord);
-	qglVertexAttribPointer (ATT_COLOR, 4, GL_FLOAT, qfalse, 0, ParticleColor);
+	qglVertexAttribPointer (ATT_POSITION,	3, GL_FLOAT, qfalse, 0, ParticleVert);
+	qglVertexAttribPointer (ATT_TEX0,		2, GL_FLOAT, qfalse, 0, ParticleTextCoord);
+	qglVertexAttribPointer (ATT_COLOR,		4, GL_FLOAT, qfalse, 0, ParticleColor);
 
-	//GL_MBindRect (GL_TEXTURE1, r_depthTex->texnum);
-	GL_SetBindlessTexture(U_TMU1, r_depthTex->handle);
+	// setup program
+	GL_BindProgram(particlesProgram);
 
-	qglUniform2f (U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
-	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
-
-//	GL_DepthMask (0);		// no z buffering
-	GL_Enable (GL_BLEND);
+	GL_SetBindlessTexture	(U_TMU1, r_depthTex->handle);
+	qglUniform2f			(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniformMatrix4fv		(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv		(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 
 	qsort (r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
 
@@ -210,7 +204,6 @@ void R_DrawParticles (void) {
 			partVert = 0;
 			index = 0;
 
-			//GL_MBind (GL_TEXTURE0, texId);
 			GL_SetBindlessTexture(U_TMU0, texId);
 
 			GL_BlendFunc (p->sFactor, p->dFactor);
@@ -585,7 +578,6 @@ void R_DrawParticles (void) {
 	}
 
 	GL_Disable (GL_BLEND);
-//	GL_DepthMask(1);
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
 	qglDisableVertexAttribArray (ATT_COLOR);

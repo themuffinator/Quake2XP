@@ -669,15 +669,9 @@ void R_DrawLightWorldRA(void){
 
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
-
-	if (r_shadows->integer)
-		GL_Enable(GL_STENCIL_TEST);
-
-	if (r_lightScissors->integer)
-		GL_Enable(GL_SCISSOR_TEST);
-
-	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
-		GL_Enable(GL_DEPTH_BOUNDS_TEST_EXT);
+	
+	GL_BindProgram(lightGlassProgram);
+	glBindVertexArray(vao.bsp);
 
 	R_PrepareShadowLightFrame(qfalse);
 
@@ -687,26 +681,6 @@ void R_DrawLightWorldRA(void){
 
 			if (r_skipStaticLights->integer && currentShadowLight->isStatic)
 				continue;
-			
-			R_SetViewLightScreenBounds();
-
-			if (r_lightScissors->integer)
-				GL_Scissor(currentShadowLight->scissor[0], currentShadowLight->scissor[1], currentShadowLight->scissor[2], currentShadowLight->scissor[3]);
-
-			if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
-				GL_DepthBoundsTest(currentShadowLight->depthBounds[0], currentShadowLight->depthBounds[1]);
-
-			qglClearStencil(128);
-			GL_StencilMask(255);
-			qglClear(GL_STENCIL_BUFFER_BIT);
-			R_CastBspShadowVolumes();
-
-			GL_BindProgram(lightGlassProgram);
-			glBindVertexArray(vao.bsp);
-			GL_StencilFunc(GL_EQUAL, 128, 255);
-			GL_StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-			GL_StencilMask(0);
-			GL_DepthFunc(GL_LEQUAL);
 
 			R_DrawLightRA();
 
@@ -725,7 +699,4 @@ void R_DrawLightWorldRA(void){
 
 	glBindVertexArray(0);
 	GL_Disable(GL_BLEND);
-	GL_Disable(GL_STENCIL_TEST);
-	GL_Disable(GL_SCISSOR_TEST);
-	GL_Disable(GL_DEPTH_BOUNDS_TEST_EXT);
 }

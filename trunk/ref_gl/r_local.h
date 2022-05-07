@@ -332,6 +332,7 @@ cvar_t	*r_debug;
 cvar_t	*r_lightEditor;
 cvar_t	*r_cameraSpaceLightMove;
 
+cvar_t	*r_fontsShadow;
 cvar_t	*r_hudLighting;
 cvar_t	*r_bump2D;
 

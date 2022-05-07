@@ -92,7 +92,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	VA_SetElem2(tess2d.data[3].texCoord, fcol,			frow + size);
 
 	//====== draw font shadow
-	if (num != 129 && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26) { // fields and sliders filter
+	if (num != 129 && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26 && r_fontsShadow->integer) { // fields and sliders filter
 		VA_SetElem2(tess2d.data[0].pos, x2,				y2);
 		VA_SetElem2(tess2d.data[1].pos, x2 + scaleX,	y2);
 		VA_SetElem2(tess2d.data[2].pos, x2 + scaleX,	y2 + scaleY);
@@ -101,6 +101,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 		for (int i = 0; i < 4; i++)
 			VA_SetElem4(tess2d.data[i].colorCoord, 0.0, 0.0, 0.0, 1.0);
 
+		qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	}
@@ -114,6 +115,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(tess2d.data[i].colorCoord, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0);
 
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -165,7 +167,7 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 	VA_SetElem2(tess2d.data[3].texCoord, fcol,			frow + size);
 
 	//====== draw font shadow
-	if (num != 129 && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26) { // fields and sliders filter
+	if (num != 129 && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26 && r_fontsShadow->integer) { // fields and sliders filter
 		VA_SetElem2(tess2d.data[0].pos, x2,				y2);
 		VA_SetElem2(tess2d.data[1].pos, x2 + scaleX,	y2);
 		VA_SetElem2(tess2d.data[2].pos, x2 + scaleX,	y2 + scaleY);
@@ -174,6 +176,7 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 		for (int i = 0; i < 4; i++)
 			VA_SetElem4(tess2d.data[i].colorCoord, 0.0, 0.0, 0.0, 1.0);
 
+		qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	}
@@ -186,6 +189,7 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(tess2d.data[i].colorCoord, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0);
 
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -246,12 +250,14 @@ void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char
 		counter ++;
 
 		if (counter == MAX_DRAW_STRING_LENGTH) {
+			qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 			qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 			counter = 0;
 		}
 	}
 	if (counter) {
+		qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 	}
@@ -275,8 +281,9 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, draw_chars->handle);
-
-	Draw_StringShadow(x, y, scale_x, scale_y, s);
+	
+	if(r_fontsShadow->integer)
+		Draw_StringShadow(x, y, scale_x, scale_y, s);
 	
 	px = x;
 	py = y;
@@ -324,12 +331,14 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		counter++;
 
 		if (counter == MAX_DRAW_STRING_LENGTH) {
+			qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 			qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 			counter = 0;
 		}
 	}
 	if (counter) {
+		qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 	}
@@ -356,8 +365,9 @@ void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, draw_charsInt->handle);
-
-	Draw_StringShadow(x, y, scale_x, scale_y, s);
+	
+	if(r_fontsShadow->integer)
+		Draw_StringShadow(x, y, scale_x, scale_y, s);
 
 	px = x;
 	py = y;
@@ -405,12 +415,14 @@ void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char
 		counter++;
 
 		if (counter == MAX_DRAW_STRING_LENGTH) {
+			qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 			qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 			counter = 0;
 		}
 	}
 	if (counter) {
+		qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 	}
@@ -564,6 +576,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
 
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -632,8 +645,9 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -712,8 +726,9 @@ void Draw_Pic2(int x, int y, image_t * gl)
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -768,8 +783,9 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -813,8 +829,9 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -909,8 +926,9 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -966,6 +984,8 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a, q
 		VA_SetElem4(tess2d.data[2].colorCoord, 0.0, 0.5, 0.0, 0.75);
 		VA_SetElem4(tess2d.data[3].colorCoord, 0.5, 0.0, 0.0, 0.25);
 	}
+
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
@@ -1039,8 +1059,9 @@ void Draw_StretchRaw (int x, int y, int w, int h, int rawWidth, int rawHeight, b
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);

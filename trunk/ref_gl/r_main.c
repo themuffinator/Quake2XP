@@ -1413,6 +1413,7 @@ void R_RegisterCvars(void)
 	r_hudLighting->help =				"intensity of hud light pass";
 	r_bump2D =							Cvar_Get("r_bump2D", "1", CVAR_ARCHIVE);
 	r_bump2D->help =					"draw 2d bumpmaps";
+	r_fontsShadow =						Cvar_Get("r_fontsShadow", "1", CVAR_ARCHIVE);
 
 	r_fixFovStrength =					Cvar_Get("r_fixFovStrength", "0", CVAR_ARCHIVE);
 	r_fixFovStrength->help =			"0.0 no perspective correction";

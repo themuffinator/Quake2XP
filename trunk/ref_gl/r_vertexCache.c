@@ -54,14 +54,14 @@ void R_InitVertexBuffers() {
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
 	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), &tess2d, GL_STREAM_DRAW);
 
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
-
 	qglEnableVertexAttribArray	(ATT_POSITION);
 	qglEnableVertexAttribArray	(ATT_TEX0);
 	qglEnableVertexAttribArray	(ATT_COLOR);
 	qglVertexAttribPointer		(ATT_POSITION,	2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_POS);
 	qglVertexAttribPointer		(ATT_TEX0,		2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_TC);
 	qglVertexAttribPointer		(ATT_COLOR,		4, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_COLOR);
+
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
 
 	glBindVertexArray(0);
 //-------------------------
@@ -173,11 +173,11 @@ void R_InitVertexBuffers() {
 
 	qglGenBuffers(1, &vbo.vbo_dynamic);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_dynamic);
-	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec3_t), 0, GL_DYNAMIC_DRAW);
+	qglBufferData(GL_ARRAY_BUFFER, MAX_STREAM_VBO_VERTS * sizeof(vec3_t), 0, GL_STREAM_DRAW);
 
 	qglGenBuffers(1, &vbo.ibo_dynamic);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_dynamic);
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_DYNAMIC_DRAW);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_STREAM_IBO_IDX * sizeof(uint), 0, GL_STREAM_DRAW);
 
 	glGenVertexArrays(1, &vao.dynamic);
 	glBindVertexArray(vao.dynamic);
