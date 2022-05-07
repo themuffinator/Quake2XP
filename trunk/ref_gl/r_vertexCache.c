@@ -25,15 +25,48 @@ uchar cube_idx[] = {
 	6, 7, 3
 };
 uint	ibo_md3Shadow[MD3_MAX_VERTS * MD3_MAX_MESHES];
-ushort	ibo_quad[] = { 0, 1, 2, 0, 2, 3 }; //index buffer for 2d drawing
 
 void R_InitVertexBuffers() {
 
 	vec2_t		tmpVerts[4];
-	int			i;
+	int			i, idx = 0;
 
 	Com_Printf("Initializing Vertex Buffers: ");
 
+	// 2d drawing
+	for (i = 0; i < MAX_DRAW_STRING_LENGTH * 4; i += 4)
+	{
+		ibo_quadString[idx++] = i + 0;
+		ibo_quadString[idx++] = i + 1;
+		ibo_quadString[idx++] = i + 2;
+		ibo_quadString[idx++] = i + 0;
+		ibo_quadString[idx++] = i + 2;
+		ibo_quadString[idx++] = i + 3;
+	}
+	qglGenBuffers(1, &vbo.ibo_quadString);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quadString), ibo_quadString, GL_STATIC_DRAW);
+
+	qglGenBuffers(1, &vbo.vbo_draw2d);
+	glGenVertexArrays(1, &vao.draw2d);
+
+	glBindVertexArray(vao.draw2d);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), &tess2d, GL_STREAM_DRAW);
+
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
+
+	qglEnableVertexAttribArray	(ATT_POSITION);
+	qglEnableVertexAttribArray	(ATT_TEX0);
+	qglEnableVertexAttribArray	(ATT_COLOR);
+	qglVertexAttribPointer		(ATT_POSITION,	2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_POS);
+	qglVertexAttribPointer		(ATT_TEX0,		2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_TC);
+	qglVertexAttribPointer		(ATT_COLOR,		4, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_COLOR);
+
+	glBindVertexArray(0);
+//-------------------------
+
+	index_t	ibo_quad[] = { 0, 1, 2, 0, 2, 3 };
 	qglGenBuffers(1, &vbo.ibo_quad);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quad);
 	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quad), ibo_quad, GL_STATIC_DRAW);

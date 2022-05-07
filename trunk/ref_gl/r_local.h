@@ -374,7 +374,6 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	float flareSize, char target[MAX_QPATH], int start_off, int fog, float fogDensity, vec3_t occOrg, vec3_t occRad);
 void R_DrawParticles (void);
 void R_RenderDecals (void);
-void R_RenderDecalsLight(void);
 void R_LightColor (vec3_t org, vec3_t color);
 qboolean R_CullAliasModel (vec3_t bbox[8], entity_t *e);
 int CL_PMpointcontents2 (vec3_t point, struct model_s * ignore);
@@ -382,8 +381,6 @@ void VID_MenuInit (void);
 void AnglesToMat3 (const vec3_t angles, mat3_t m);
 void Mat3_TransposeMultiplyVector (const mat3_t m, const vec3_t in, vec3_t out);
 void R_ShutdownPrograms (void);
-void GL_BindRect (int texnum);
-void GL_MBindRect (GLenum target, int texnum);
 void R_Bloom (void);
 void R_ThermalVision (void);
 void R_RadialBlur (void);
@@ -400,7 +397,6 @@ void R_CastBspShadowVolumes (void);
 void R_CastAliasShadowVolumes (qboolean player);
 void R_DrawAliasModelLightPass (qboolean weapon_model);
 void R_SetupEntityMatrix (entity_t * e);
-void GL_MBind3d (GLenum target, int texnum);
 void R_SSAO(void);
 void R_DrawDepthScene(void);
 void R_DownsampleDepth(void);
@@ -749,6 +745,7 @@ typedef struct {
 GLuint	vbo_fullScreenQuad;
 GLuint	vbo_halfScreenQuad;
 GLuint	vbo_quarterScreenQuad;
+GLuint	ibo_quadString;
 GLuint	ibo_quad;
 
 GLuint	vbo_BSP;
@@ -788,25 +785,31 @@ typedef struct {
 
 vao_t vao;
 
-typedef struct
-{
-	vec3_t      xyz[MD3_MAX_VERTS * MD3_MAX_MESHES];
-	vec2_t      st[MD3_MAX_VERTS * MD3_MAX_MESHES];
-	vec2_t      st2[MD3_MAX_VERTS * MD3_MAX_MESHES];
-	vec3_t      normal[MD3_MAX_VERTS* MD3_MAX_MESHES];
-	vec3_t      tangent[MD3_MAX_VERTS * MD3_MAX_MESHES];
-	vec3_t      binormal[MD3_MAX_VERTS * MD3_MAX_MESHES];
-	vec4_t		color[MD3_MAX_VERTS * MD3_MAX_MESHES];
-} srfTess_t;
+// 2D VBO stuff
+#define MAX_DRAW_STRING_LENGTH 512
+#define QUADVERT 4
+index_t	ibo_quadString[6 * MAX_DRAW_STRING_LENGTH];
 
-srfTess_t tess;
+#define	VERT2D_POS		((byte *)(NULL)+0)
+#define	VERT2D_TC		((byte *)(NULL)+8)
+#define VERT2D_COLOR	((byte *)(NULL)+16)
 
-#define OFFSET_XYZ_TESS			0
-#define OFFSET_ST_TESS			sizeof(vec3_t)
-#define OFFSET_COLOR_TESS		sizeof(vec3_t) + sizeof(vec2_t)
-#define OFFSET_NORMAL_TESS		sizeof(vec3_t) + sizeof(vec2_t) + sizeof(vec4_t)
-#define OFFSET_TANGENT_TES		sizeof(vec3_t) + sizeof(vec2_t) + sizeof(vec4_t) + sizeof(vec3_t)		
-#define OFFSET_BINORMAL_TESS	sizeof(vec3_t) + sizeof(vec2_t) + sizeof(vec4_t) + sizeof(vec3_t) + sizeof(vec3_t)
+///	fill array
+/// xy0, st0, rgba0
+/// xy1, st1, rgba1
+/// xy2, st2, rgba2
+/// xy3, st3, rgba3
+
+typedef struct {
+	vec2_t pos;
+	vec2_t texCoord;
+	vec4_t colorCoord;
+}vertex2d_t;
+
+typedef struct {
+	vertex2d_t data[MAX_DRAW_STRING_LENGTH];
+}tess2d_t;
+tess2d_t tess2d;
 
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);
@@ -854,6 +857,7 @@ extern glstate_t gl_state;
 
 #define CUBE_INDICES 36
 
+/*
 #define MAX_DRAW_STRING_LENGTH  512
 typedef struct {
 	vec2_t	texCoord[MAX_DRAW_STRING_LENGTH];
@@ -861,7 +865,7 @@ typedef struct {
 	vec4_t	colorCoord[MAX_DRAW_STRING_LENGTH];
 } tess2d_t;
 tess2d_t tess2d;
-
+*/
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;
 qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius);

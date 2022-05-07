@@ -26,15 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-#define	VERT2D_POS		((byte *)(NULL)+0)
-#define	VERT2D_TC		((byte *)(NULL)+8)
-#define VERT2D_COLOR	((byte *)(NULL)+16)
-
-typedef struct {
-	vec2_t xy;
-	vec2_t st;
-	vec4_t rgba;
-}verts2d_t;
 
 /*
 ===============
@@ -45,7 +36,7 @@ R_Init2D
 void R_Init2D(void)
 {
 	draw_chars = GL_FindImage("gfx/fonts/engfont.tga", it_pic);
-	
+
 	if(!draw_chars)
 		draw_chars = GL_FindImage("pics/conchars.pcx", it_pic);
 
@@ -55,24 +46,6 @@ void R_Init2D(void)
 	draw_charsInt = GL_FindImage("gfx/fonts/intfont.tga", it_pic);
 	if (!draw_charsInt)
 		draw_charsInt = r_notexture;
-
-	qglGenBuffers(1, &vbo.vbo_draw2d);
-	glGenVertexArrays(1, &vao.draw2d);
-
-	glBindVertexArray(vao.draw2d);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quad);
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
-	qglVertexAttribPointer(ATT_POSITION,	2, GL_FLOAT, qfalse, sizeof(verts2d_t), VERT2D_POS);
-	qglVertexAttribPointer(ATT_TEX0,		2, GL_FLOAT, qfalse, sizeof(verts2d_t), VERT2D_TC);
-	qglVertexAttribPointer(ATT_COLOR,		4, GL_FLOAT, qfalse, sizeof(verts2d_t), VERT2D_COLOR);
-
-	glBindVertexArray(0);
-	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char num)
@@ -110,27 +83,38 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	
 	GL_SetBindlessTexture(U_TMU0, draw_chars->handle);
 
-	float vBuf[32]={x,			y,			fcol,			frow,			gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-					x + scaleX,	y,			fcol + size,	frow,			gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-					x + scaleX,	y + scaleY,	fcol + size,	frow + size,	gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-					x,			y + scaleY,	fcol,			frow + size,	gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0
-	};
-	float vBuf2[32] = { x2,				y2,				fcol,			frow,			0., 0., 0., 1.,
-						x2 + scaleX,	y2,				fcol + size,	frow,			0., 0., 0., 1.,
-						x2 + scaleX,	y2 + scaleY,	fcol + size,	frow + size,	0., 0., 0., 1.,
-						x2,				y2 + scaleY,	fcol,			frow + size,	0., 0., 0., 1.
-	};
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
 
+	VA_SetElem2(tess2d.data[0].texCoord, fcol,			frow);
+	VA_SetElem2(tess2d.data[1].texCoord, fcol + size,	frow);
+	VA_SetElem2(tess2d.data[2].texCoord, fcol + size,	frow + size);
+	VA_SetElem2(tess2d.data[3].texCoord, fcol,			frow + size);
+
 	//====== draw font shadow
 	if (num != 129 && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26) { // fields and sliders filter
-		qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf2), vBuf2, GL_STREAM_DRAW);
+		VA_SetElem2(tess2d.data[0].pos, x2,				y2);
+		VA_SetElem2(tess2d.data[1].pos, x2 + scaleX,	y2);
+		VA_SetElem2(tess2d.data[2].pos, x2 + scaleX,	y2 + scaleY);
+		VA_SetElem2(tess2d.data[3].pos, x2,				y2 + scaleY);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(tess2d.data[i].colorCoord, 0.0, 0.0, 0.0, 1.0);
+
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	}
 
 	//====== draw regular font
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
+	VA_SetElem2(tess2d.data[0].pos, x,			y);
+	VA_SetElem2(tess2d.data[1].pos, x + scaleX, y);
+	VA_SetElem2(tess2d.data[2].pos, x + scaleX, y + scaleY);
+	VA_SetElem2(tess2d.data[3].pos, x,			y + scaleY);
+
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(tess2d.data[i].colorCoord, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0);
+
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -172,44 +156,55 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 
 	GL_SetBindlessTexture(U_TMU0, draw_charsInt->handle);
 
-	float vBuf[32] = {	x,			y,			fcol,			frow,			gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-						x + scaleX,	y,			fcol + size,	frow,			gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-						x + scaleX,	y + scaleY,	fcol + size,	frow + size,	gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-						x,			y + scaleY,	fcol,			frow + size,	gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0
-	};
-	float vBuf2[32] = { x2,				y2,				fcol,			frow,			0., 0., 0., 1.,
-						x2 + scaleX,	y2,				fcol + size,	frow,			0., 0., 0., 1.,
-						x2 + scaleX,	y2 + scaleY,	fcol + size,	frow + size,	0., 0., 0., 1.,
-						x2,				y2 + scaleY,	fcol,			frow + size,	0., 0., 0., 1.
-	};
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
 
+	VA_SetElem2(tess2d.data[0].texCoord, fcol,			frow);
+	VA_SetElem2(tess2d.data[1].texCoord, fcol + size,	frow);
+	VA_SetElem2(tess2d.data[2].texCoord, fcol + size,	frow + size);
+	VA_SetElem2(tess2d.data[3].texCoord, fcol,			frow + size);
+
 	//====== draw font shadow
 	if (num != 129 && num != 18 && num != 19 && num != 20 && num != 24 && num != 25 && num != 26) { // fields and sliders filter
-		qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf2), vBuf2, GL_STREAM_DRAW);
+		VA_SetElem2(tess2d.data[0].pos, x2,				y2);
+		VA_SetElem2(tess2d.data[1].pos, x2 + scaleX,	y2);
+		VA_SetElem2(tess2d.data[2].pos, x2 + scaleX,	y2 + scaleY);
+		VA_SetElem2(tess2d.data[3].pos, x2,				y2 + scaleY);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(tess2d.data[i].colorCoord, 0.0, 0.0, 0.0, 1.0);
+
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	}
-
 	//====== draw regular font
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
+	VA_SetElem2(tess2d.data[0].pos, x, y);
+	VA_SetElem2(tess2d.data[1].pos, x + scaleX, y);
+	VA_SetElem2(tess2d.data[2].pos, x + scaleX, y + scaleY);
+	VA_SetElem2(tess2d.data[3].pos, x, y + scaleY);
+
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(tess2d.data[i].colorCoord, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0);
+
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-
 }
 
 void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char *s)
 {
-	int px, py, row, col, num;
-	float frow, fcol, size;
-	float scaleX, scaleY;
-	
+	int		px, py, row, col, num;
+	float	frow, fcol, size;
+	float	scaleX, scaleY;
+	int		counter, quadCounter;
+
 	px = x + 2;
 	py = y + 2;
-	
 	size = 0.0625;
+	
+	counter = 0;
 
 	while (*s) {
 		num = *s++;
@@ -231,24 +226,44 @@ void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char
 		fcol = col * 0.0625;
 		scaleX = 8 * scale_x;
 		scaleY = 8 * scale_y;
+		
+		quadCounter = counter << 2;
 
-		float vBuf[32] = {	px,				py,				fcol,			frow,			0.0, 0.0, 0.0, 1.0,
-							px + scaleX,	py,				fcol + size,	frow,			0.0, 0.0, 0.0, 1.0,
-							px + scaleX,	py + scaleY,	fcol + size,	frow + size,	0.0, 0.0, 0.0, 1.0,
-							px,				py + scaleY,	fcol,			frow + size,	0.0, 0.0, 0.0, 1.0
-		};
+		VA_SetElem2(tess2d.data[quadCounter + 0].pos, px,			py);
+		VA_SetElem2(tess2d.data[quadCounter + 1].pos, px + scaleX,	py);
+		VA_SetElem2(tess2d.data[quadCounter + 2].pos, px + scaleX,	py + scaleY);
+		VA_SetElem2(tess2d.data[quadCounter + 3].pos, px,			py + scaleY);
+
+		VA_SetElem2(tess2d.data[quadCounter + 0].texCoord, fcol,		frow);
+		VA_SetElem2(tess2d.data[quadCounter + 1].texCoord, fcol + size,	frow);
+		VA_SetElem2(tess2d.data[quadCounter + 2].texCoord, fcol + size,	frow + size);
+		VA_SetElem2(tess2d.data[quadCounter + 3].texCoord, fcol,		frow + size);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(tess2d.data[quadCounter + i].colorCoord, 0.0, 0.0, 0.0, 1.0);
+
 		px += 6 * scale_x;
-		qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+		counter ++;
+
+		if (counter == MAX_DRAW_STRING_LENGTH) {
+			qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
+			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+			counter = 0;
+		}
+	}
+	if (counter) {
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
+		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 	}
 }
 
 
 void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *str){
-	int px, py, row, col, num;
-	float frow, fcol, size;
-	unsigned char *s = (unsigned char *)str;
-	float scaleX, scaleY;
+	int		px, py, row, col, num;
+	float	frow, fcol, size;
+	uchar	*s = (uchar *)str;
+	float	scaleX, scaleY;
+	int		counter, quadCounter;
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
@@ -265,8 +280,9 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 	
 	px = x;
 	py = y;
-
 	size = 0.0625;
+	
+	counter = 0;
 
 	while (*s) {
 		num = *s++;
@@ -288,15 +304,34 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 		fcol = col * 0.0625;
 		scaleX = 8 * scale_x;
 		scaleY = 8 * scale_y;
+		
+		quadCounter = counter << 2;
 
-		float vBuf[32] = { px,				py,				fcol,			frow,			gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-							px + scaleX,	py,				fcol + size,	frow,			gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-							px + scaleX,	py + scaleY,	fcol + size,	frow + size,	gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-							px,				py + scaleY,	fcol,			frow + size,	gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0
-		};
+		VA_SetElem2(tess2d.data[quadCounter + 0].pos, px,			py);
+		VA_SetElem2(tess2d.data[quadCounter + 1].pos, px + scaleX,	py);
+		VA_SetElem2(tess2d.data[quadCounter + 2].pos, px + scaleX,	py + scaleY);
+		VA_SetElem2(tess2d.data[quadCounter + 3].pos, px,			py + scaleY);
+
+		VA_SetElem2(tess2d.data[quadCounter + 0].texCoord, fcol,		frow);
+		VA_SetElem2(tess2d.data[quadCounter + 1].texCoord, fcol + size,	frow);
+		VA_SetElem2(tess2d.data[quadCounter + 2].texCoord, fcol + size,	frow + size);
+		VA_SetElem2(tess2d.data[quadCounter + 3].texCoord, fcol,		frow + size);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(tess2d.data[quadCounter + i].colorCoord, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0);
+
 		px += 6 * scale_x;
-		qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+		counter++;
+
+		if (counter == MAX_DRAW_STRING_LENGTH) {
+			qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
+			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+			counter = 0;
+		}
+	}
+	if (counter) {
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
+		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 	}
 
 	glBindVertexArray(0);
@@ -304,12 +339,12 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char *s
 }
 
 
-void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str)
-{
-	int px, py, row, col, num;
-	float frow, fcol, size;
-	unsigned char* s = (unsigned char*)str;
-	float scaleX, scaleY;
+void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str){
+	int		px, py, row, col, num;
+	float	frow, fcol, size;
+	uchar*	s = (uchar*)str;
+	float	scaleX, scaleY;
+	int		counter, quadCounter;
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
@@ -326,8 +361,9 @@ void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char
 
 	px = x;
 	py = y;
-
 	size = 0.0625;
+
+	counter = 0;
 
 	while (*s) {
 		num = *s++;
@@ -350,14 +386,33 @@ void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char
 		scaleX = 8 * scale_x;
 		scaleY = 8 * scale_y;
 
-		float vBuf[32] = {	px,				py,				fcol,			frow,			gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-							px + scaleX,	py,				fcol + size,	frow,			gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-							px + scaleX,	py + scaleY,	fcol + size,	frow + size,	gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0,
-							px,				py + scaleY,	fcol,			frow + size,	gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0
-		};
+		quadCounter = counter << 2;
+
+		VA_SetElem2(tess2d.data[quadCounter + 0].pos, px, py);
+		VA_SetElem2(tess2d.data[quadCounter + 1].pos, px + scaleX, py);
+		VA_SetElem2(tess2d.data[quadCounter + 2].pos, px + scaleX, py + scaleY);
+		VA_SetElem2(tess2d.data[quadCounter + 3].pos, px, py + scaleY);
+
+		VA_SetElem2(tess2d.data[quadCounter + 0].texCoord, fcol, frow);
+		VA_SetElem2(tess2d.data[quadCounter + 1].texCoord, fcol + size, frow);
+		VA_SetElem2(tess2d.data[quadCounter + 2].texCoord, fcol + size, frow + size);
+		VA_SetElem2(tess2d.data[quadCounter + 3].texCoord, fcol, frow + size);
+
+		for (int i = 0; i < 4; i++)
+			VA_SetElem4(tess2d.data[quadCounter + i].colorCoord, gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], 1.0);
+
 		px += 6 * scale_x;
-		qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+		counter++;
+
+		if (counter == MAX_DRAW_STRING_LENGTH) {
+			qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
+			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+			counter = 0;
+		}
+	}
+	if (counter) {
+		qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
+		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 	}
 
 	glBindVertexArray(0);
@@ -477,8 +532,10 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	
-	glBindVertexArray(vao.draw2d);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
+	VA_SetElem2(tess2d.data[0].pos, x,		y);
+	VA_SetElem2(tess2d.data[1].pos, x + w,	y);
+	VA_SetElem2(tess2d.data[2].pos, x + w,	y + h);
+	VA_SetElem2(tess2d.data[3].pos, x,		y + h);
 
 	if (console || menu) {
 		
@@ -487,22 +544,27 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t *gl)
 		if(console)
 			GL_SetBindlessTexture(U_TMU1, r_conBump->handle);
 
-		float vBuf[32] = {	x,		y,		gl->sl + offsX, gl->tl + offsY,	1,	1,	1,	1,
-							x + w,	y,		gl->sh - offsX, gl->tl + offsY,	1,	1,	1,	1,
-							x + w,	y + h,	gl->sh - offsX, gl->th - offsY,	1,	1,	1,	1,
-							x,		y + h,	gl->sl + offsX, gl->th - offsY,	1,	1,	1,	1 };
-		qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);		
+		VA_SetElem2(tess2d.data[0].texCoord, gl->sl + offsX, gl->tl + offsY);
+		VA_SetElem2(tess2d.data[1].texCoord, gl->sh - offsX, gl->tl + offsY);
+		VA_SetElem2(tess2d.data[2].texCoord, gl->sh - offsX, gl->th - offsY);
+		VA_SetElem2(tess2d.data[3].texCoord, gl->sl + offsX, gl->th - offsY);
 	}
 	else
 	{
 		GL_SetBindlessTexture(U_TMU0, gl->handle);
-		float vBuf[32] = {	x,		y,		gl->sl, gl->tl,	1,	1,	1,	1,
-							x + w,	y,		gl->sh, gl->tl,	1,	1,	1,	1,
-							x + w,	y + h,	gl->sh, gl->th,	1,	1,	1,	1,
-							x,		y + h,	gl->sl, gl->th,	1,	1,	1,	1 };
-		qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
-	}
 
+		VA_SetElem2(tess2d.data[0].texCoord, gl->sl, gl->tl);
+		VA_SetElem2(tess2d.data[1].texCoord, gl->sh, gl->tl);
+		VA_SetElem2(tess2d.data[2].texCoord, gl->sh, gl->th);
+		VA_SetElem2(tess2d.data[3].texCoord, gl->sl, gl->th);
+	}
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(tess2d.data[i].colorCoord, 1.0, 1.0, 1.0, 1.0);
+	
+	glBindVertexArray(vao.draw2d);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
+
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -558,17 +620,20 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t * gl)
 		
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
 
-	//					x		y		s				t				r	g	b	a	
-	float vBuf[32] = {	x,		y,		gl->sl + offsX, gl->tl + offsY,	1,	1,	1,	1,
-						x + w,	y,		gl->sh - offsX, gl->tl + offsY,	1,	1,	1,	1,
-						x + w,	y + h,	gl->sh - offsX, gl->th - offsY,	1,	1,	1,	1,
-						x,		y + h,	gl->sl + offsX, gl->th - offsY,	1,	1,	1,	1 };
+	VA_SetElem2(tess2d.data[0].pos, x,		y);
+	VA_SetElem2(tess2d.data[1].pos, x + w,	y);
+	VA_SetElem2(tess2d.data[2].pos, x + w,	y + h);
+	VA_SetElem2(tess2d.data[3].pos, x,		y + h);
 
+	VA_SetElem2(tess2d.data[0].texCoord, gl->sl + offsX, gl->tl + offsY);
+	VA_SetElem2(tess2d.data[1].texCoord, gl->sh - offsX, gl->tl + offsY);
+	VA_SetElem2(tess2d.data[2].texCoord, gl->sh - offsX, gl->th - offsY);
+	VA_SetElem2(tess2d.data[3].texCoord, gl->sl + offsX, gl->th - offsY);
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -632,17 +697,23 @@ void Draw_Pic2(int x, int y, image_t * gl)
 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
 
-	//					x				y				s		t		r	g	b	a	
-	float vBuf[32] = {	x,				y,				gl->sl, gl->tl,	1,	1,	1,	1,
-						x + gl->width,	y,				gl->sh, gl->tl,	1,	1,	1,	1,
-						x + gl->width,	y + gl->height,	gl->sh, gl->th,	1,	1,	1,	1,
-						x,				y + gl->height,	gl->sl, gl->th,	1,	1,	1,	1 };
+	VA_SetElem2(tess2d.data[0].pos, x,		y);
+	VA_SetElem2(tess2d.data[1].pos, x + w,	y);
+	VA_SetElem2(tess2d.data[2].pos, x + w,	y + h);
+	VA_SetElem2(tess2d.data[3].pos, x,		y + h);
 
+	VA_SetElem2(tess2d.data[0].texCoord, gl->sl, gl->tl);
+	VA_SetElem2(tess2d.data[1].texCoord, gl->sh, gl->tl);
+	VA_SetElem2(tess2d.data[2].texCoord, gl->sh, gl->th);
+	VA_SetElem2(tess2d.data[3].texCoord, gl->sl, gl->th);
+
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(tess2d.data[i].colorCoord, 1.0, 1.0, 1.0, 1.0);
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -682,17 +753,23 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t * gl)
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
-	//					x		y		s		t		r	g	b	a	
-	float vBuf[32] = { x,		y,		gl->sl, gl->tl,	1,	1,	1,	1,
-						x + w,	y,		gl->sh, gl->tl,	1,	1,	1,	1,
-						x + w,	y + h,	gl->sh, gl->th,	1,	1,	1,	1,
-						x,		y + h,	gl->sl, gl->th,	1,	1,	1,	1 };
+	VA_SetElem2(tess2d.data[0].pos, x,		y);
+	VA_SetElem2(tess2d.data[1].pos, x + w,	y);
+	VA_SetElem2(tess2d.data[2].pos, x + w,	y + h);
+	VA_SetElem2(tess2d.data[3].pos, x,		y + h);
 
+	VA_SetElem2(tess2d.data[0].texCoord, gl->sl, gl->tl);
+	VA_SetElem2(tess2d.data[1].texCoord, gl->sh, gl->tl);
+	VA_SetElem2(tess2d.data[2].texCoord, gl->sh, gl->th);
+	VA_SetElem2(tess2d.data[3].texCoord, gl->sl, gl->th);
+
+	for (int i = 0; i < 4; i++)
+		VA_SetElem4(tess2d.data[i].colorCoord, 1.0, 1.0, 1.0, 1.0);
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -724,17 +801,20 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t *gl, image_t *
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
 	GL_SetBindlessTexture(U_TMU1, gl2->handle);
 
-	//					x		y		s		t		r	g	b	a	
-	float vBuf[32] = {	x,		y,		gl->sl, gl->tl,	1,	1,	1,	1,
-						x + w,	y,		gl->sh, gl->tl,	1,	1,	1,	1,
-						x + w,	y + h,	gl->sh, gl->th,	1,	1,	1,	1,
-						x,		y + h,	gl->sl, gl->th,	1,	1,	1,	1 };
+	VA_SetElem2(tess2d.data[0].pos, x,		y);
+	VA_SetElem2(tess2d.data[1].pos, x + w,	y);
+	VA_SetElem2(tess2d.data[2].pos, x + w,	y + h);
+	VA_SetElem2(tess2d.data[3].pos, x,		y + h);
 
+	VA_SetElem2(tess2d.data[0].texCoord, gl->sl, gl->tl);
+	VA_SetElem2(tess2d.data[1].texCoord, gl->sh, gl->tl);
+	VA_SetElem2(tess2d.data[2].texCoord, gl->sh, gl->th);
+	VA_SetElem2(tess2d.data[3].texCoord, gl->sl, gl->th);
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -813,17 +893,24 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t * image)
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	
 	GL_SetBindlessTexture(U_TMU0, image->handle);
-	//					x		y		s				t			r	g	b	a	
-	float vBuf[32] = {	x,		y,		x / 64.0,		y / 64.0,	1,	1,	1,	1,
-						x + w,	y,		x / 64.0,		y / 64.0,	1,	1,	1,	1,
-						x + w,	y + h,	(x + w) / 64.0, y / 64.0,	1,	1,	1,	1,
-						x,		y + h,	x / 64.0,		(y + h) / 64.0,	1,	1,	1,	1 };
 
+	VA_SetElem2(tess2d.data[0].pos, x,		y);
+	VA_SetElem2(tess2d.data[1].pos, x + w,	y);
+	VA_SetElem2(tess2d.data[2].pos, x + w,	y + h);
+	VA_SetElem2(tess2d.data[3].pos, x,		y + h);
+
+	VA_SetElem2(tess2d.data[0].texCoord, x / 64.0,			y / 64.0);
+	VA_SetElem2(tess2d.data[1].texCoord, x / 64.0,			y / 64.0);
+	VA_SetElem2(tess2d.data[2].texCoord, (x + w) / 64.0,	y / 64.0);
+	VA_SetElem2(tess2d.data[3].texCoord, x / 64.0,			(y + h) / 64.0);
+	
+	for(int i = 0; i<4; i++)
+		VA_SetElem4(tess2d.data[i].colorCoord, 1.0, 1.0, 1.0,1.0);
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
@@ -859,29 +946,28 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a, q
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
-	//					x		y		s		t		r	g	b	a	
-	float vBuf[32] = {	x,		y,		0.0,	0.0,	r,	g,	b,	a,
-						x + w,	y,		0.0,	0.0,	r,	g,	b,	a,
-						x + w,	y + h,	0.0,	0.0,	r,	g,	b,	a,
-						x,		y + h,	0.0,	0.0,	r,	g,	b,	a };
-
-	float vBuf2[32] = { x,		y,		0.0,	0.0,	0.5,	0.0,	0.0,	0.25,
-						x + w,	y,		0.0,	0.0,	0.0,	0.5,	0.0,	0.75,
-						x + w,	y + h,	0.0,	0.0,	0.0,	0.5,	0.0,	0.75,
-						x,		y + h,	0.0,	0.0,	0.5,	0.0,	0.0,	0.25 };
-
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
 
-	if (loading) {
-		qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf2), vBuf2, GL_STREAM_DRAW);
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	VA_SetElem2(tess2d.data[0].pos, x,		y);
+	VA_SetElem2(tess2d.data[1].pos, x + w,	y);
+	VA_SetElem2(tess2d.data[2].pos, x + w,	y + h);
+	VA_SetElem2(tess2d.data[3].pos, x,		y + h);
+
+	if (!loading) {
+		VA_SetElem4(tess2d.data[0].colorCoord, r, g, b, a);
+		VA_SetElem4(tess2d.data[1].colorCoord, r, g, b, a);
+		VA_SetElem4(tess2d.data[2].colorCoord, r, g, b, a);
+		VA_SetElem4(tess2d.data[3].colorCoord, r, g, b, a);
 	}
-	else
-	{
-		qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	else {
+		VA_SetElem4(tess2d.data[0].colorCoord, 0.5, 0.0, 0.0, 0.25);
+		VA_SetElem4(tess2d.data[1].colorCoord, 0.0, 0.5, 0.0, 0.75);
+		VA_SetElem4(tess2d.data[2].colorCoord, 0.0, 0.5, 0.0, 0.75);
+		VA_SetElem4(tess2d.data[3].colorCoord, 0.5, 0.0, 0.0, 0.25);
 	}
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
+	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -941,16 +1027,19 @@ void Draw_StretchRaw (int x, int y, int w, int h, int rawWidth, int rawHeight, b
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
-	//					x	y		s		t		r	g	b	a	
-	float vBuf[32] = {	x,	y,		0.0,	0.0,	0., 0., 0., 0.,
-						x+w,y,		1.0,	0.0,	0., 0., 0., 0.,
-						x+w,y+h,	1.0,	1.0,	0., 0., 0., 0.,
-						x,	y+h,	0.0,	1.0,	0., 0., 0., 0.
-						};
+	VA_SetElem2(tess2d.data[0].pos, x,		y);
+	VA_SetElem2(tess2d.data[1].pos, x + w,	y);
+	VA_SetElem2(tess2d.data[2].pos, x + w,	y + h);
+	VA_SetElem2(tess2d.data[3].pos, x,		y + h);
+
+	VA_SetElem2(tess2d.data[0].texCoord, 0.0, 0.0);
+	VA_SetElem2(tess2d.data[1].texCoord, 1.0, 0.0);
+	VA_SetElem2(tess2d.data[2].texCoord, 1.0, 1.0);
+	VA_SetElem2(tess2d.data[3].texCoord, 0.0, 1.0);
 
 	glBindVertexArray(vao.draw2d);
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2d);
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vBuf), vBuf, GL_STREAM_DRAW);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
 
 	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
