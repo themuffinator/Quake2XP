@@ -947,13 +947,12 @@ void SCR_DrawCpuUtilization() {
 }
 
 void SCR_DrawFPS (void) {
-	static	char	avrfps[10] = { 0 }, minfps[22] = { 0 }, cpuUtil[20] = {0};
+	static	char	avrfps[10] = { 0 }, minfps[22] = { 0 }, cpuUtil[20] = {0}, frameTime[20] = { 0 };
 	static	int		fps = 0;
 	static	int		lastUpdate;
 	const	int		delta = 4;
 	static	float	fpsAvg = 0;
 	float	fontscale = ui_fontScale->value;
-	static	unsigned	procUtil;	
 
 	fps++;
 
@@ -976,7 +975,6 @@ void SCR_DrawFPS (void) {
 		lastUpdate = curtime;
 		fpsAvg = delta * (alpha * fps + ((1 - alpha) * fpsAvg) / delta);
 		fps = 0;
-
 	}
 
 	int avrFpsLengh = (int)strlen(avrfps);
@@ -987,7 +985,6 @@ void SCR_DrawFPS (void) {
 		if (ui_drawFPS->integer == 2) {
 			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
 			Draw_StringScaled(viddef.width - minFpsLengh * 6 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
-
 		} else
 			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
 	}
@@ -1018,7 +1015,7 @@ void SCR_DrawClock (void) {
 
 	int timebufLengh = strlen(tmpbuf);
 	int datebufLengh = strlen(tmpdatebuf);
-
+	
 	if (!ui_drawFPS->integer) {
 		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
 		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
@@ -1067,6 +1064,7 @@ void SCR_UpdateScreen (void) {
 	// if the screen is disabled (loading plaque is up, or vid mode
 	// changing)
 	// do nothing at all
+	int start = Sys_Milliseconds();
 	if (cls.disableScreen) {
 		if (cls.download)		// Knightmare- don't time out on downloads
 			cls.disableScreen = Sys_Milliseconds ();
@@ -1154,16 +1152,16 @@ void SCR_UpdateScreen (void) {
 
 		SCR_DrawPause ();
 
-		SCR_DrawFPS ();
-		SCR_DrawCpuUtilization();
-		SCR_ShowTexNames();
-
 #ifdef _WIN32
 		if (cls.state == ca_active)
 			SCR_DrawBatteryLevel();
 #endif
 
-		if (ui_drawTime->value && (cls.state == ca_active))
+		SCR_DrawFPS ();
+		SCR_DrawCpuUtilization();
+		SCR_ShowTexNames();
+
+		if (ui_drawTime->integer && (cls.state == ca_active))
 			SCR_DrawClock ();
 
 		SCR_DrawConsole ();
@@ -1171,8 +1169,26 @@ void SCR_UpdateScreen (void) {
 		M_Draw ();
 
 		SCR_DrawLoading ();
-
 	}
 	R_GammaRamp ();
-	GLimp_EndFrame ();
+
+	int stop = Sys_Milliseconds();
+
+	if (ui_drawFPS->integer == 2 && (cls.state == ca_active)) {
+		static char	frameTime[22] = { 0 };
+		static int frame = 0, lastUpdate, delta = 4;
+		static float msec;
+
+		frame++;
+		if (curtime - lastUpdate >= 1000 / delta) {
+			lastUpdate = curtime;
+			frame = 0;
+			msec = (float)stop - (float)start;
+		}
+		Com_sprintf(frameTime, sizeof(frameTime), "Frame Time %.1f Msec", msec);
+		int frameTimeLenght = (int)strlen(frameTime);
+		Draw_StringScaled(viddef.width - frameTimeLenght * 6 * ui_fontScale->value, viddef.height * 0.65, ui_fontScale->value, ui_fontScale->value, frameTime);
+	}
+
+	GLimp_EndFrame();
 }

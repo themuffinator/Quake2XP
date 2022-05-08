@@ -757,6 +757,7 @@ GLuint	vbo_dynamic;
 GLuint	ibo_dynamic;
 GLuint	ibo_cube;
 GLuint	vbo_draw2d;
+GLuint	vbo_draw2dString;
 
 int xyz_offset;
 
@@ -782,6 +783,7 @@ typedef struct {
 	GLuint	halfScreenQuad;
 	GLuint	quaterScreenQuad;
 	GLuint	draw2d;
+	GLuint	draw2dString;
 }vao_t;
 
 vao_t vao;
@@ -808,9 +810,14 @@ typedef struct {
 }vertex2d_t;
 
 typedef struct {
-	vertex2d_t data[MAX_DRAW_STRING_LENGTH];
+	vertex2d_t data[QUADVERT];
 }tess2d_t;
 tess2d_t tess2d;
+
+typedef struct {
+	vertex2d_t data[QUADVERT * MAX_DRAW_STRING_LENGTH];
+}tess2dString_t;
+tess2dString_t tess2dString;
 
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);
@@ -858,15 +865,6 @@ extern glstate_t gl_state;
 
 #define CUBE_INDICES 36
 
-/*
-#define MAX_DRAW_STRING_LENGTH  512
-typedef struct {
-	vec2_t	texCoord[MAX_DRAW_STRING_LENGTH];
-	vec2_t	vertCoord[MAX_DRAW_STRING_LENGTH];
-	vec4_t	colorCoord[MAX_DRAW_STRING_LENGTH];
-} tess2d_t;
-tess2d_t tess2d;
-*/
 void R_PrepareShadowLightFrame (qboolean weapon);
 extern worldShadowLight_t *shadowLight_static, *shadowLight_frame;
 qboolean BoundsAndSphereIntersect (const vec3_t mins, const vec3_t maxs, const vec3_t origin, float radius);

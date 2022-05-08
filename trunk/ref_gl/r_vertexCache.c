@@ -34,6 +34,12 @@ void R_InitVertexBuffers() {
 	Com_Printf("Initializing Vertex Buffers: ");
 
 	// 2d drawing
+
+	index_t	ibo_quad[] = { 0, 1, 2, 0, 2, 3 };
+	qglGenBuffers(1, &vbo.ibo_quad);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quad);
+	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quad), ibo_quad, GL_STATIC_DRAW);
+
 	for (i = 0; i < MAX_DRAW_STRING_LENGTH * 4; i += 4)
 	{
 		ibo_quadString[idx++] = i + 0;
@@ -61,15 +67,30 @@ void R_InitVertexBuffers() {
 	qglVertexAttribPointer		(ATT_TEX0,		2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_TC);
 	qglVertexAttribPointer		(ATT_COLOR,		4, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_COLOR);
 
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quad);
+
+	glBindVertexArray(0);
+//-------------
+
+	qglGenBuffers(1, &vbo.vbo_draw2dString);
+	glGenVertexArrays(1, &vao.draw2dString);
+
+	glBindVertexArray(vao.draw2dString);
+	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_draw2dString);
+	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2dString), &tess2dString, GL_STREAM_DRAW);
+
+	qglEnableVertexAttribArray(ATT_POSITION);
+	qglEnableVertexAttribArray(ATT_TEX0);
+	qglEnableVertexAttribArray(ATT_COLOR);
+	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_POS);
+	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_TC);
+	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, sizeof(vertex2d_t), VERT2D_COLOR);
+
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
 
 	glBindVertexArray(0);
-//-------------------------
 
-	index_t	ibo_quad[] = { 0, 1, 2, 0, 2, 3 };
-	qglGenBuffers(1, &vbo.ibo_quad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quad);
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ibo_quad), ibo_quad, GL_STATIC_DRAW);
+//-------------------------
 
 	// precalc screen quads for postprocessing
 	// full quad
