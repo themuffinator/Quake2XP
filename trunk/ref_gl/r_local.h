@@ -819,6 +819,12 @@ typedef struct {
 }tess2dString_t;
 tess2dString_t tess2dString;
 
+#define MAX_2D_VERTS 2048 //QUADVERT * MAX_DRAW_STRING_LENGTH
+vec2_t	texCoord[MAX_2D_VERTS];
+vec2_t	texCoord1[MAX_2D_VERTS];
+vec2_t	vertCoord[MAX_2D_VERTS];
+vec4_t	colorCoord[MAX_2D_VERTS];
+
 void GL_CullFace (GLenum mode);
 void GL_FrontFace (GLenum mode);
 

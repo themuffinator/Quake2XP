@@ -38,6 +38,7 @@ typedef struct {
 
 	int lineWidth;				// characters across screen
 	int totalLines;				// total lines in console scrollback
+	int	backedit;
 
 	float cursorspeed;
 

@@ -186,6 +186,7 @@ Interactive line editing and console scrollback
 ====================
 */
 void Key_Console (int key) {
+	int i;
 
 	switch (key) {
 		case K_KP_SLASH:
@@ -232,8 +233,8 @@ void Key_Console (int key) {
 			break;
 	}
 
-	if ((toupper (key) == 'V' && keydown[K_CTRL]) ||
-		(((key == K_INS) || (key == K_KP_INS)) && keydown[K_SHIFT])) {
+	if ((toupper (key) == 'V' && keydown[K_CTRL]) || (((key == K_INS) || (key == K_KP_INS)) && keydown[K_SHIFT])) {
+
 		char *cbd;
 
 		if ((cbd = Sys_GetClipboardData ()) != 0) {
@@ -252,13 +253,14 @@ void Key_Console (int key) {
 			}
 			free (cbd);
 		}
-
+		con.backedit = 0;
 		return;
 	}
 
 	if (key == 'l') {
 		if (keydown[K_CTRL]) {
 			Cbuf_AddText ("clear\n");
+			con.backedit = 0;
 			return;
 		}
 	}
@@ -277,6 +279,7 @@ void Key_Console (int key) {
 		history_line = edit_line;
 		key_lines[edit_line][0] = ']';
 		key_linepos = 1;
+		con.backedit = 0;
 		if (cls.state == ca_disconnected)
 			SCR_UpdateScreen ();	// force an update, because the command
 		// may take some time
@@ -285,24 +288,75 @@ void Key_Console (int key) {
 
 	if (key == K_TAB) {			// command completion
 		CompleteCommand ();
+		con.backedit = 0;
 		return;
 	}
 
-	if ((key == K_BACKSPACE) || (key == K_LEFTARROW)
-		|| (key == K_KP_LEFTARROW) || ((key == 'h')
-		&& (keydown[K_CTRL]))) {
+	if (key == K_BACKSPACE){
+
 		if (key_linepos > 1)
-			key_linepos--;
+		{
+			if (con.backedit && con.backedit < key_linepos)
+			{
+				if (key_linepos - con.backedit <= 1)
+					return;
+
+				for (i = key_linepos - con.backedit - 1; i < key_linepos; i++)
+					key_lines[edit_line][i] = key_lines[edit_line][i + 1];
+
+				if (key_linepos > 1)
+					key_linepos--;
+			}
+			else
+			{
+				key_linepos--;
+			}
+		}
 		return;
 	}
 
-	if ((key == K_UPARROW) || (key == K_KP_UPARROW) ||
-		((key == 'p') && keydown[K_CTRL])) {
+	if (key == K_DEL)
+	{
+		if (key_linepos > 1 && con.backedit)
+		{
+			for (i = key_linepos - con.backedit; i < key_linepos; i++)
+				key_lines[edit_line][i] = key_lines[edit_line][i + 1];
+
+			con.backedit--;
+			key_linepos--;
+		}
+		return;
+	}
+	
+	if (key == K_LEFTARROW)
+	{
+		if (key_linepos > 1)
+		{
+			con.backedit++;
+			if (con.backedit > key_linepos - 1) con.backedit = key_linepos - 1;
+		}
+		return;
+	}
+	if (key == K_RIGHTARROW)
+	{
+		if (key_linepos > 1)
+		{
+			con.backedit--;
+			if (con.backedit < 0) con.backedit = 0;
+		}
+		return;
+	}
+
+	if ((key == K_UPARROW) || (key == K_KP_UPARROW) || ((key == 'p') && keydown[K_CTRL])) 
+	{
 		do {
 			history_line = (history_line - 1) & 31;
-		} while (history_line != edit_line && !key_lines[history_line][1]);
+		} 
+		while (history_line != edit_line && !key_lines[history_line][1]);
+	
 		if (history_line == edit_line)
 			history_line = (edit_line + 1) & 31;
+		
 		strcpy (key_lines[edit_line], key_lines[history_line]);
 		key_linepos = strlen (key_lines[edit_line]);
 		return;
@@ -359,9 +413,24 @@ void Key_Console (int key) {
 		return;					// non printable
 
 	if (key_linepos < MAXCMDLINE - 1) {
-		key_lines[edit_line][key_linepos] = key;
-		key_linepos++;
-		key_lines[edit_line][key_linepos] = 0;
+		if (con.backedit) //insert character...
+		{
+			for (i = key_linepos; i > key_linepos - con.backedit; i--)
+				key_lines[edit_line][i] = key_lines[edit_line][i - 1];
+
+			key_lines[edit_line][i] = key;
+			key_linepos++;
+			key_lines[edit_line][key_linepos] = 0;
+		}
+		else
+		{
+			key_lines[edit_line][key_linepos++] = key;
+			key_lines[edit_line][key_linepos] = 0;
+		}
+		//key_lines[edit_line][key_linepos] = key;
+		//key_linepos++;
+		//key_lines[edit_line][key_linepos] = 0;
+	
 	}
 
 }
@@ -630,6 +699,7 @@ void Key_Init (void) {
 	consolekeys[K_HOME] = qtrue;
 	consolekeys[K_KP_HOME] = qtrue;
 	consolekeys[K_END] = qtrue;
+	consolekeys[K_DEL] = qtrue;
 	consolekeys[K_KP_END] = qtrue;
 	consolekeys[K_PGUP] = qtrue;
 	consolekeys[K_KP_PGUP] = qtrue;

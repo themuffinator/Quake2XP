@@ -133,22 +133,22 @@ unsigned Com_HashKey(const char *string);
 #define PRINT_DEVELOPER		1		// only print when "developer 1"
 #define PRINT_ALERT			2
 
-typedef byte	color4ub_t[4];
+typedef float	color4_t[4];
 
-extern color4ub_t	colorDefault;
-extern color4ub_t	colorBlack;
-extern color4ub_t	colorRed;
-extern color4ub_t	colorGreen;
-extern color4ub_t	colorYellow;
-extern color4ub_t	colorBlue;
-extern color4ub_t	colorCyan;
-extern color4ub_t	colorMagenta;
-extern color4ub_t	colorWhite;
-extern color4ub_t	colorLtGray;
-extern color4ub_t	colorMdGray;
-extern color4ub_t	colorDkGray;
-extern color4ub_t	colorGold;
-extern color4ub_t	ColorTable[8];
+extern color4_t	colorDefault;
+extern color4_t	colorBlack;
+extern color4_t	colorRed;
+extern color4_t	colorGreen;
+extern color4_t	colorYellow;
+extern color4_t	colorBlue;
+extern color4_t	colorCyan;
+extern color4_t	colorMagenta;
+extern color4_t	colorWhite;
+extern color4_t	colorLtGray;
+extern color4_t	colorMdGray;
+extern color4_t	colorDkGray;
+extern color4_t	colorGold;
+extern color4_t	ColorTable[8];
 
 #define	COLOR_BLACK		'0'
 #define	COLOR_RED		'1'
@@ -175,7 +175,7 @@ extern color4ub_t	ColorTable[8];
 #define IsColorString(p)	(p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE)
 #define ColorIndex(c)		(((c) - '0') & 7)
 
-void RE_SetColor (const color4ub_t color);
+void RE_SetColor (const color4_t color);
 
 char drawSaveShot[16];
 

@@ -27,25 +27,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../ref_gl/r_local.h"
 
-
-color4ub_t	ColorTable[8] = {
-	{ 0, 0, 0, 255 },
-	{ 255, 0, 0, 255 },
-	{ 0, 255, 0, 255 },
-	{ 255, 255, 0, 255 },
-	{ 0, 0, 255, 255 },
-	{ 0, 255, 255, 255 },
-	{ 255, 0, 255, 255 },
-	{ 255, 255, 255, 255 },
+color4_t	ColorTable[8] = {
+	{ 0.0, 0.0, 0.0, 1.0 },
+	{ 1.0, 0.0, 0.0, 1.0 },
+	{ 0.0, 1.0, 0.0, 1.0 },
+	{ 1.0, 1.0, 0.0, 1.0 },
+	{ 0.0, 0.0, 1.0, 1.0 },
+	{ 0.0, 1.0, 1.0, 1.0 },
+	{ 1.0, 0.0, 1.0, 1.0 },
+	{ 1.0, 1.0, 1.0, 1.0 },
 };
 
 void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str);
 void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned char num);
 
 
-color4ub_t		colorDefault;
+color4_t		colorDefault;
 
-void RE_SetColor (const color4ub_t color) {
+void RE_SetColor (const color4_t color) {
 
 
 	if (color[0] != colorDefault[0] ||
@@ -53,10 +52,10 @@ void RE_SetColor (const color4ub_t color) {
 		color[2] != colorDefault[2] ||
 		color[3] != colorDefault[3]) {
 
-		gl_state.fontColor[0] = color[0] / 255.0;
-		gl_state.fontColor[1] = color[1] / 255.0;
-		gl_state.fontColor[2] = color[2] / 255.0;
-		gl_state.fontColor[3] = color[3] / 255.0;
+		gl_state.fontColor[0] = color[0];
+		gl_state.fontColor[1] = color[1];
+		gl_state.fontColor[2] = color[2];
+		gl_state.fontColor[3] = color[3];
 
 		colorDefault[0] = color[0];
 		colorDefault[1] = color[1];
@@ -65,19 +64,19 @@ void RE_SetColor (const color4ub_t color) {
 	}
 }
 
-color4ub_t	colorBlack = { 0, 0, 0, 255 };
-color4ub_t	colorRed = { 255, 0, 0, 255 };
-color4ub_t	colorGreen = { 0, 255, 0, 255 };
-color4ub_t	colorYellow = { 255, 255, 0, 255 };
-color4ub_t	colorBlue = { 0, 0, 255, 255 };
-color4ub_t	colorCyan = { 0, 255, 255, 255 };
-color4ub_t	colorMagenta = { 255, 0, 255, 255 };
-color4ub_t	colorWhite = { 255, 255, 255, 255 };
+color4_t	colorBlack	=	{ 1.0, 1.0, 1.0, 1.0 };
+color4_t	colorRed	=	{ 1.0, 0.0, 0.0, 1.0 };
+color4_t	colorGreen	=	{ 0.0, 1.0, 0.0, 1.0 };
+color4_t	colorYellow =	{ 1.0, 1.0, 0.0, 1.0 };
+color4_t	colorBlue	=	{ 0.0, 0.0, 1.0, 1.0 };
+color4_t	colorCyan	=	{ 0.0, 1.0, 1.0, 1.0 };
+color4_t	colorMagenta =	{ 1.0, 0.0, 1.0, 1.0 };
+color4_t	colorWhite	=	{ 1.0, 1.0, 1.0, 1.0 };
 
-color4ub_t	colorLtGray = { 192, 192, 192, 255 };
-color4ub_t	colorMdGray = { 128, 128, 128, 255 };
-color4ub_t	colorDkGray = { 64, 64, 64, 255 };
-color4ub_t	colorGold = { 255, 192, 64, 255 };
+color4_t	colorLtGray =	{ 0.75, 0.75, 0.75, 1.0 };
+color4_t	colorMdGray =	{ 0.50,	0.50, 0.50, 1.0 };
+color4_t	colorDkGray =	{ 0.25, 0.25, 0.25, 1.0 };
+color4_t	colorGold	=	{ 1.00, 0.75, 0.25, 1.0 };
 
 console_t con;
 
@@ -92,6 +91,7 @@ extern int key_linepos;
 void Key_ClearTyping (void) {
 	key_lines[edit_line][1] = 0;	// clear any typing
 	key_linepos = 1;
+	con.backedit = 0;
 }
 
 /*
@@ -287,13 +287,14 @@ void Con_CheckResize (void) {
 		width = CON_DEFAULT_WIDTH;
 		con.lineWidth = width;
 		con.totalLines = CON_TEXTSIZE / con.lineWidth;
-
+		con.backedit = 0;
 		for (i = 0; i<CON_TEXTSIZE; i++)
 			con.text[i] = (ColorIndex (COLOR_WHITE) << 8) | ' ';
 	}
 	else {
 		oldwidth = con.lineWidth;
 		con.lineWidth = width;
+		con.backedit = 0;
 		oldtotalLines = con.totalLines;
 		con.totalLines = CON_TEXTSIZE / con.lineWidth;
 		numlines = oldtotalLines;
@@ -334,6 +335,7 @@ Con_Init
 */
 void Con_Init (void) {
 	con.lineWidth = -1;
+	con.backedit = 0;
 
 	Con_CheckResize ();
 
@@ -486,10 +488,9 @@ The input line scrolls horizontally if typing goes beyond the right edge
 */
 
 void Con_DrawInput (void) {
-	char	*text;
+	char	*text, output[2048], addch[8];
 	int		i;
 	float	fontscale = ui_fontScale->value;
-	float	intervalScale = 0.75;
 
 	if (cls.key_dest == key_menu)
 		return;
@@ -500,7 +501,10 @@ void Con_DrawInput (void) {
 	text = key_lines[edit_line];
 
 	// add the cursor frame
-	text[key_linepos] = 10 + ((int)(cls.realTime >> 8) & 1);
+	if (con.backedit)
+		text[key_linepos] = ' ';
+	else
+		text[key_linepos] = 12;
 
 	// fill out remainder with spaces
 	for (i = key_linepos + 1; i < con.lineWidth; i++)
@@ -513,10 +517,22 @@ void Con_DrawInput (void) {
 	// draw it
 	RE_SetColor (colorWhite);
 
-	for (i = 0; i < con.lineWidth; i++)
-		//	Draw_Char ((i + 1) << 3, con.vislines - 15, text[i]);
-		Draw_CharScaled((i*fontscale + 1) * (8 * intervalScale), con.vislines - 15 * fontscale, fontscale, fontscale, text[i]);
+	Com_sprintf(output, sizeof(output), "");
+	for (i = 0; i < con.lineWidth; i++) {
+		
+		if (con.backedit == key_linepos - i && ((int)(cls.realTime >> 8) & 1)) {
+			addch[0] = 10;
+			addch[1] = '\0';
+			Q_strncatz(output, sizeof(output), addch);
+		}
+		else {
+			addch[0] = text[i];
+			addch[1] = '\0';
+			Q_strncatz(output, sizeof(output), addch);
+		}
 
+	}
+	Draw_StringScaled(0, con.vislines - 15 * fontscale, fontscale, fontscale, output);
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;
 }

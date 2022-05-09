@@ -339,7 +339,7 @@ SCR_DrawLoading
 
 void SCR_DrawLoadingBar (float percent, float scale) {
 
-	Draw_Fill (2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 0.0, 1.0, 0.0, 0.13, qtrue);
+	Draw_Fill (2, viddef.height - scale * 10 + 3, viddef.width * percent * 0.01, scale * 3 - 6, 1.0, 1.0, 1.0, 1.0, qtrue);
 
 }
 
@@ -1169,26 +1169,24 @@ void SCR_UpdateScreen (void) {
 		M_Draw ();
 
 		SCR_DrawLoading ();
+		int stop = Sys_Milliseconds();
+
+		if (ui_drawFPS->integer == 2 && (cls.state == ca_active)) {
+			static char	frameTime[22] = { 0 };
+			static int frame = 0, lastUpdate, delta = 4;
+			static float msec;
+
+			frame++;
+			if (curtime - lastUpdate >= 1000 / delta) {
+				lastUpdate = curtime;
+				frame = 0;
+				msec = (float)stop - (float)start;
+			}
+			Com_sprintf(frameTime, sizeof(frameTime), "Frame Time %.1f Msec", msec);
+			int frameTimeLenght = (int)strlen(frameTime);
+			Draw_StringScaled(viddef.width - frameTimeLenght * 6 * ui_fontScale->value, viddef.height * 0.65, ui_fontScale->value, ui_fontScale->value, frameTime);
+		}
 	}
 	R_GammaRamp ();
-
-	int stop = Sys_Milliseconds();
-
-	if (ui_drawFPS->integer == 2 && (cls.state == ca_active)) {
-		static char	frameTime[22] = { 0 };
-		static int frame = 0, lastUpdate, delta = 4;
-		static float msec;
-
-		frame++;
-		if (curtime - lastUpdate >= 1000 / delta) {
-			lastUpdate = curtime;
-			frame = 0;
-			msec = (float)stop - (float)start;
-		}
-		Com_sprintf(frameTime, sizeof(frameTime), "Frame Time %.1f Msec", msec);
-		int frameTimeLenght = (int)strlen(frameTime);
-		Draw_StringScaled(viddef.width - frameTimeLenght * 6 * ui_fontScale->value, viddef.height * 0.65, ui_fontScale->value, ui_fontScale->value, frameTime);
-	}
-
 	GLimp_EndFrame();
 }
