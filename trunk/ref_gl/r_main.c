@@ -996,13 +996,14 @@ void R_RenderView (refdef_t *fd) {
 	R_SSAO();
 	R_DrawAmbientScene();
 	R_DrawLightScene();
+	R_RenderDecals(qfalse);
 
 	R_DrawParticles();
 	R_CaptureColorBuffer();
 	R_RenderSprites();
 	R_DrawRAScene();
-	R_RenderDecals();
 	R_DrawLightWorldRA();
+	R_RenderDecals(qtrue);
 
 	if (RA_Frame && r_particlesOverdraw->integer) { // overdraw particles if we have trans or reflective surfaces in frame
 		R_DrawParticles();
@@ -1013,7 +1014,9 @@ void R_RenderView (refdef_t *fd) {
 	R_CaptureColorBuffer();
 	R_MotionBlur();
 	R_CaptureColorBuffer();
-	R_GlobalFog();
+	
+	if(!outMap)
+		R_GlobalFog();
 
 	R_DrawPlayerWeapon();
 }
@@ -1884,7 +1887,7 @@ int R_Init(void *hinstance, void *hWnd)
 
 	aniso_level = r_anisotropic->value;
 	if (r_anisotropic->value <= 1.0) {
-		r_anisotropic = Cvar_Set("r_anisotropic", "1");
+		r_anisotropic = Cvar_Set("r_anisotropic", "1.0");
 		Com_Printf(S_COLOR_YELLOW"...ignoring GL_ARB_texture_filter_anisotropic\n");
 	}
 	else {
@@ -1901,7 +1904,6 @@ int R_Init(void *hinstance, void *hWnd)
 		else {
 			Com_Printf("...using GL_ARB_texture_compression_bptc\n");
 			gl_state.texture_compression_bptc = qtrue;
-
 		}
 	else {
 		Com_Printf(S_COLOR_RED"...GL_ARB_texture_compression_bptc not found\n");

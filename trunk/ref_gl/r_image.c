@@ -385,7 +385,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		if (samples == 3) {
 
 			if (gl_state.texture_compression_bptc && mipmap)
-				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
 			else
 				intFormat = gl_tex_solid_format;
 		}
@@ -393,7 +393,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		if (samples == 4) {
 
 			if (gl_state.texture_compression_bptc && mipmap)
-				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
 			else
 				intFormat = gl_tex_alpha_format;
 		}
@@ -402,7 +402,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		if (samples == 3) {
 
 			if (gl_state.texture_compression_bptc && mipmap)
-				intFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB;
+				intFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
 			else
 				intFormat = GL_SRGB8;
 		}
@@ -410,7 +410,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		if (samples == 4) {
 
 			if (gl_state.texture_compression_bptc && mipmap)
-				intFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB;
+				intFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
 			else
 				intFormat = GL_SRGB8_ALPHA8;
 		}

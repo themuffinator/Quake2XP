@@ -79,7 +79,7 @@ vec3_t	DecalVertexArray	[MAX_DECAL_ARRAY_VERTS];
 vec3_t	DecalNormalArray	[MAX_DECAL_INDICES /3];
 index_t	DecalIdxArray		[MAX_DECAL_INDICES];
 
-void R_RenderDecals(void)
+void R_RenderDecals(qboolean twoside)
 {
     decals_t    *dl, *next, *active; 
     vec3_t		decalColor;
@@ -90,9 +90,6 @@ void R_RenderDecals(void)
     float		endLerp, decalAlpha;
 	
 	if (!cl_decals->integer)
-		return;
-	
-	if (!r_lightmapScale->value)
 		return;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -133,6 +130,12 @@ void R_RenderDecals(void)
        	
 		  if( R_CullSphere(dl->org, dl->size * 1.3) )
 				continue;
+		
+		  if (!twoside && (dl->flags & DF_TWOSIDE))
+			  continue;
+
+		  if (twoside && !(dl->flags & DF_TWOSIDE))
+			  continue;
 
         endLerp = (float)(r_newrefdef.time - dl->time) / (float)(dl->endTime - dl->time);	
 		endLerp *= 250.0;

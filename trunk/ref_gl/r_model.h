@@ -94,6 +94,12 @@ typedef struct worldShadowLight_s {
 	GLuint		vao;
 	int			iboNumIndices;
 
+	GLuint		vboMD2;
+	GLuint		iboMD2;
+
+	GLuint		vboMD3;
+	GLuint		iboMD3;
+
 	GLuint		vboBoxId;
 	GLuint		vaoBoxId;
 

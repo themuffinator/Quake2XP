@@ -1164,11 +1164,6 @@ void SCR_UpdateScreen (void) {
 		if (ui_drawTime->integer && (cls.state == ca_active))
 			SCR_DrawClock ();
 
-		SCR_DrawConsole ();
-
-		M_Draw ();
-
-		SCR_DrawLoading ();
 		int stop = Sys_Milliseconds();
 
 		if (ui_drawFPS->integer == 2 && (cls.state == ca_active)) {
@@ -1186,6 +1181,12 @@ void SCR_UpdateScreen (void) {
 			int frameTimeLenght = (int)strlen(frameTime);
 			Draw_StringScaled(viddef.width - frameTimeLenght * 6 * ui_fontScale->value, viddef.height * 0.65, ui_fontScale->value, ui_fontScale->value, frameTime);
 		}
+		SCR_DrawConsole ();
+
+		M_Draw ();
+
+		SCR_DrawLoading ();
+		
 	}
 	R_GammaRamp ();
 	GLimp_EndFrame();
