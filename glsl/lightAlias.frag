@@ -9,9 +9,6 @@ layout (bindless_sampler, location  = U_TMU6) uniform sampler2DRect	g_colorBuffe
 layout (bindless_sampler, location  = U_TMU7) uniform sampler2DRect	g_depthBufferMap;
 layout (bindless_sampler, location  = U_TMU8) uniform sampler2DRect	u_SSAOMap;
 
-//layout(location = U_SPECULAR_SCALE)		uniform float	u_specularScale;
-//layout(location = U_CAUSTICS_SCALE)		uniform float	u_CausticsModulate;
-layout(location = U_COLOR)				uniform vec4	u_LightColor;
 layout(location = U_USE_FOG)			uniform int		u_fog;
 layout(location = U_FOG_DENSITY)		uniform float	u_fogDensity;
 layout(location = U_USE_CAUSTICS)		uniform int		u_isCaustics;
@@ -34,6 +31,7 @@ layout(location = U_USE_SSAO)			uniform int		u_ssao;
 in vec2			v_texCoord;
 in vec3			v_viewVec;
 in vec3			v_lightVec;
+in vec4         v_lightColor;
 in vec4			v_CubeCoord;
 in vec3			v_positionVS;
 in vec3			v_lightAtten;
@@ -183,7 +181,7 @@ void main (void) {
 	vec3 dt = texture(u_bumpBlend, v_texCoord).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
 	vec3 r = normalize(nm * dot(nm, dt) - dt * nm.z);
 	vec3 blendNormal =  r * 0.5 + 0.5;
-	vec4 skin_color = SkinLighting(V, L, blendNormal, u_LightColor.rgb, diffuseMap, attenMap, specular.r);
+	vec4 skin_color = SkinLighting(V, L, blendNormal, v_lightColor.rgb, diffuseMap, attenMap, specular.r);
 
 
 	if (u_isCaustics == 1){
@@ -194,7 +192,7 @@ void main (void) {
 
 	if (u_isAmbient == 1) {
 		vec3 curNormal = mix(blendNormal, normalMap.rgb, SSS);
-		fragData = diffuseMap * LambertLighting(curNormal, L) * u_LightColor * attenMap;
+		fragData = diffuseMap * LambertLighting(curNormal, L) * v_lightColor * attenMap;
 		return;
 	}
 	
@@ -223,22 +221,22 @@ void main (void) {
 			float fogFactor = exp(-u_fogDensity * fogCoord); //exp1
 			//float fogFactor = exp(-pow(u_fogDensity * fogCoord, 2.0)); //exp2
 
-			vec3 tmp =  (Diffuse_Lambert(diffuseMap.rgb) * u_LightColor.rgb) * (normalMap.z * 0.5 + 0.5); //  multiplied by fake AO
+			vec3 tmp =  (Diffuse_Lambert(diffuseMap.rgb) * v_lightColor.rgb) * (normalMap.z * 0.5 + 0.5); //  multiplied by fake AO
 
 	//		vec4 tmp = mix(skin_color, vec4(brdfColor, 1.0), SSS);
-			fragData = mix(u_LightColor, vec4(tmp, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
+			fragData = mix(v_lightColor, vec4(tmp, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
 			return;
 		}
 	
 			skin_color *= cubeFilter;
 			vec3 metall_color;
 			if(u_useSSS == 1)
-				metall_color = SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular.r)  * u_LightColor.rgb * cubeFilter.rgb * attenMap;
+				metall_color = SubScateringLighting(V, L, normalMap.xyz, diffuseMap.rgb, specular.r)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
 			else{
 			if(u_blinnPhong == 1)
-				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
+				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * v_lightColor.rgb * cubeFilter.rgb * attenMap; 
 			if(u_blinnPhong == 0)
-				metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * u_LightColor.rgb * cubeFilter.rgb * attenMap; 
+				metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap; 
 			}		
 
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);	

@@ -79,11 +79,11 @@ void main (void) {
 		refractColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.z).b;
 
 		// blend water texture
-		fragData = vec4(mix(refractColor, diffuse * (v_color.rgb * 2.0) * v_color.a, v_color.a), 1.0);
+		fragData = vec4(mix(refractColor, diffuse * (v_color.rgb), v_color.a), 1.0);
 	}
 	
 	if (u_transSurf == 0) {
-		fragData = vec4(diffuse * (v_color.rgb * 2.0), 1.0);
+		fragData = vec4(diffuse * v_color.rgb, 1.0);
 	}
  
 	if (u_mirror == 0)

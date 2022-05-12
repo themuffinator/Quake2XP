@@ -2,7 +2,6 @@
 
 #include depth.inc //!#include "include/depth.inc"
 
-//layout (binding = 0) uniform sampler2DRect	u_depthBufferMap;
 layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_depthBufferMap;
 
 layout (location = U_DEPTH_PARAMS)	uniform vec2	u_depthParms;

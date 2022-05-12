@@ -7,7 +7,7 @@ layout(location = U_ORTHO_MATRIX) uniform mat4	u_orthoMatrix;
 
 out vec2		v_texCoord;
 out vec4		v_color;
-
+out vec3		v_vColor;
 void main (void) 
 {
 	v_texCoord	= att_texCoordDiffuse;

@@ -2,8 +2,7 @@
 layout (bindless_sampler, location  = U_TMU0)  uniform sampler2D	u_map;
 layout (bindless_sampler, location  = U_TMU1)  uniform sampler2D	u_normalMap;
 
-layout(location = U_COLOR)			uniform vec4	u_color;
-layout(location = U_PARAM_VEC3_0)	uniform vec3	u_lightShift;
+layout(location = U_PARAM_VEC4_0)	uniform vec4	u_lightShift;
 layout(location = U_CONSOLE_BACK)	uniform int	    u_console;
 layout(location = U_2D_PICS)		uniform int	    u_2dPics;
 layout(location = U_FRAG_COLOR)		uniform int     u_fragColor;
@@ -14,9 +13,6 @@ in vec4		v_color;
 
 
 #include lighting.inc //!#include "include/lighting.inc"
-
-#define RGB_MASK_SIZE 3.0
-#define SMOOTHING 1.0 / 16.0
 
 vec4 catmullRom(in vec4 A, in vec4 B, in vec4 C, in vec4 D, in float s)
 {
@@ -82,13 +78,12 @@ if(u_console == 1){
 	float specular = texture(u_normalMap, v_texCoord).a;	
 
 	vec3 L = normalize(vec3(u_lightShift.x, u_lightShift.y, u_lightShift.z));
-	vec3 V  = normalize(vec3(0.0, 0.0, 1.0));
+	vec3 V  = normalize(vec3(u_lightShift.x, u_lightShift.y, 1.0));
   
-  vec2 Es = PhongLighting (normal.xyz, L, V, 16.0);
-	vec4 lighting = vec4(diffuse.rgb * Es.x + specular * Es.y, 1.0);//vec4(Lighting_BRDF(diffuse.rgb, vec3(specular), 0.4, normal.xyz, L, V), 1.0)  * vec4(1.0);
-
-	fragData = diffuse + lighting;
-	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
+	vec2 Es = PhongLighting (normal.xyz, L, V, 16.0);
+	vec4 lighting = vec4(diffuse.rgb * Es.x + specular * Es.y, 1.0);
+	fragData = lighting * u_lightShift.w;
+	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.1 : 0.0;
 	fragData.a = 1.0;
 	return;
 }
@@ -105,7 +100,7 @@ if(u_2dPics == 1){
 }
 
 if(u_fragColor == 1){
-	fragData =  u_color;
+	fragData =  v_color;
 	return;
 	}
 }
