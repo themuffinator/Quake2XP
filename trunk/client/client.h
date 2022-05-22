@@ -37,10 +37,102 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cl_console.h"
 #include "snd_loc.h"
 
+qboolean FS_FileInGamedir(const char* file);
+#ifdef USE_CURL
+
+// Number of max. parallel downloads.
+#define MAX_HTTP_HANDLES 4
+
+#include "curl/curl.h"
+
+typedef enum
+{
+	DLQ_STATE_NOT_STARTED,
+	DLQ_STATE_RUNNING
+} dlq_state;
+
+typedef struct dlqueue_s
+{
+	struct dlqueue_s* next;
+	char quakePath[MAX_QPATH];
+	dlq_state state;
+} dlqueue_t;
+
+typedef struct dlhandle_s
+{
+	CURL* curl;
+	char filePath[MAX_OSPATH];
+	FILE* file;
+	dlqueue_t* queueEntry;
+	size_t fileSize;
+	size_t position;
+	size_t fileDownloadedSize;
+	char URL[576];
+	char* tempBuffer;
+} dlhandle_t;
+
+typedef struct dlquirks_s
+{
+	qboolean error;
+	qboolean filelist;
+	char gamedir[MAX_QPATH];
+} dlquirks_t;
+
+extern dlquirks_t dlquirks;
+
+extern cvar_t* cl_http_downloads;
+extern cvar_t* cl_http_filelists;
+extern cvar_t* cl_http_proxy;
+extern cvar_t* cl_http_max_connections;
+extern cvar_t* cl_http_show_dw_progress;
+
+void CL_CancelHTTPDownloads(qboolean permKill);
+void CL_InitHTTPDownloads(void);
+qboolean CL_QueueHTTPDownload(const char* quakePath, qboolean gamedirForFilelist);
+void CL_RunHTTPDownloads(void);
+qboolean CL_PendingHTTPDownloads(void);
+void CL_SetHTTPServer(const char* URL);
+void CL_HTTP_Cleanup(qboolean fullShutdown);
+
+// --------
+
+// True if cURL is initialized.
+extern qboolean qcurlInitialized;
+
+// Function pointers to cURL.
+extern void (*qcurl_easy_cleanup)(CURL* curl);
+extern CURL* (*qcurl_easy_init)(void);
+extern CURLcode(*qcurl_easy_getinfo)(CURL* curl, CURLINFO info, ...);
+extern CURLcode(*qcurl_easy_setopt)(CURL* curl, CURLoption option, ...);
+extern const char* (*qcurl_easy_strerror)(CURLcode);
+
+extern void (*qcurl_global_cleanup)(void);
+extern CURLcode(*qcurl_global_init)(long flags);
+
+extern CURLMcode(*qcurl_multi_add_handle)(CURLM* multi_handle, CURL* curl_handle);
+extern CURLMcode(*qcurl_multi_cleanup)(CURLM* multi_handle);
+extern CURLMsg* (*qcurl_multi_info_read)(CURLM* multi_handle, int* msgs_in_queue);
+extern CURLM* (*qcurl_multi_init)(void);
+extern CURLMcode(*qcurl_multi_perform)(CURLM* multi_handle, int* running_handles);
+extern CURLMcode(*qcurl_multi_remove_handle)(CURLM* multi_handle, CURL* curl_handle);
+
+// --------
+
+// Loads and initialized cURL.
+qboolean qcurlInit(void);
+
+// Shuts cURL down and unloads it.
+void qcurlShutdown(void);
+
+
+#endif // USE_CURL
+
+
 void FS_AddPAKFile(char* packPath);
 void FS_AddPkxFile(char* packPath);
 char* FS_DownloadDir(void);
 void Sys_MemoryUsage_f(void);
+void CL_ParseDownload(void);
 
 cvar_t* adr0;
 cvar_t* adr1;
@@ -490,12 +582,24 @@ typedef struct {
 	int downloadNumber;
 	dltype_t downloadType;
 	int downloadPercent;
+	size_t		downloadposition;
+	float		downloadRate; //kmquake2
 
 	// demo recording info must be here, so it isn't cleared on level change
 	qboolean demoRecording;
 	qboolean demoWaiting;		// don't record until a non-delta message
 	// is received
 	FILE *demoFile;
+
+#ifdef USE_CURL
+	/* http downloading */
+	dlqueue_t  downloadQueue; /* queues with files to download. */
+	dlhandle_t HTTPHandles[MAX_HTTP_HANDLES]; /* download handles. */
+	char	   downloadServer[512]; /* URL prefix to dowload from .*/
+	char	   downloadServerRetry[512]; /* retry count. */
+	char	   downloadReferer[32]; /* referer string. */
+#endif
+
 } client_static_t;
 
 extern client_static_t cls;

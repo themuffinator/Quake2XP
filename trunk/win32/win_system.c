@@ -439,7 +439,6 @@ void *Sys_GetGameAPI (void *parms) {
 		Sys_UnloadGame ();
 		return NULL;
 	}
-
 	return GetGameAPI (parms);
 }
 
@@ -554,3 +553,66 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	// never gets here
 	return TRUE;
 }
+
+/// Experimental Anticheat support
+#ifdef ANTICHEAT
+/* from R1Q2/Q2Pro AntiCheat code */
+typedef PVOID(*FNINIT)(VOID);
+static PVOID	anticheatApi;
+static FNINIT	anticheatInit;
+static HMODULE	anticheatHandle;
+
+qboolean Sys_GetAntiCheatAPI()
+{
+	qboolean updated = qfalse;
+
+	//already loaded, just reinit
+	if (anticheatInit)
+	{
+		anticheatApi = anticheatInit();
+		if (!anticheatApi)
+		{
+			Com_Printf("^1Anticheat failed to reinitialize!\n");
+			FreeLibrary(anticheatHandle);
+			anticheatHandle = NULL;
+			anticheatInit = NULL;
+			return qfalse;
+		}
+		return qtrue;
+	}
+
+reInit:
+	anticheatHandle = LoadLibrary("anticheat");
+	if (!anticheatHandle)
+	{
+		Com_Printf("^1Anticheat failed to load.\n");
+		return qfalse;
+	}
+
+	//this should never fail unless the anticheat.dll is bad
+	anticheatInit = (FNINIT)GetProcAddress(anticheatHandle, "Initialize");
+	if (!anticheatInit)
+	{
+		Com_Printf("^1Couldn't get API of anticheat.dll!\nPlease check you are using a valid anticheat.dll from http://antiche.at/\n");
+		FreeLibrary(anticheatHandle);
+		anticheatHandle = NULL;
+		return qfalse;
+	}
+
+	anticheatApi = anticheatInit();
+	if (anticheatApi)
+		return qtrue; // succeeded
+
+	FreeLibrary(anticheatHandle);
+	anticheatHandle = NULL;
+	anticheatInit = NULL;
+	if (!updated)
+	{
+		updated = qtrue;
+		goto reInit;
+	}
+
+	Com_Printf("^1Anticheat failed to initialize.\n");
+	return qfalse;
+}
+#endif

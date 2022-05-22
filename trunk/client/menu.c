@@ -676,10 +676,10 @@ static void DrawKeyBindingFunc(void *self) {
 	RE_SetColor(colorWhite);
 
 	if (keys[0] == -1) {
-		Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->value,
+		Draw_StringScaled(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->value,
 			a->generic.y + a->generic.parent->y,
 			ui_fontScale->value, ui_fontScale->value,
-			"???");
+			"???", qtrue);
 	}
 	else {
 		size_t x;
@@ -698,10 +698,10 @@ static void DrawKeyBindingFunc(void *self) {
 			RE_SetColor(colorYellow);
 
 
-		Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->value,
+		Draw_StringScaled(a->generic.x + a->generic.parent->x + 16 * ui_fontScale->value,
 			a->generic.y + a->generic.parent->y,
 			ui_fontScale->value, ui_fontScale->value,
-			(const char *)name);
+			(const char *)name, qfalse);
 
 		x = strlen(name) * 8 * ui_fontScale->value;
 
@@ -710,10 +710,10 @@ static void DrawKeyBindingFunc(void *self) {
 
 			RE_SetColor(colorWhite);
 
-			Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 24 + x,
+			Draw_StringScaled(a->generic.x + a->generic.parent->x + 24 + x,
 				a->generic.y + a->generic.parent->y,
 				ui_fontScale->value, ui_fontScale->value,
-				"  ");
+				"  ", qfalse);
 
 			if (strstr(name2, "XPAD_"))
 				RE_SetColor(colorGold);
@@ -726,10 +726,10 @@ static void DrawKeyBindingFunc(void *self) {
 			if (strstr(name2, "XPAD_Y"))
 				RE_SetColor(colorYellow);
 
-			Menu_DrawStringScaled(a->generic.x + a->generic.parent->x + 48 + x,
+			Draw_StringScaled(a->generic.x + a->generic.parent->x + 48 + x,
 				a->generic.y + a->generic.parent->y,
 				ui_fontScale->value, ui_fontScale->value,
-				name2);
+				name2, qfalse);
 		}
 	}
 	RE_SetColor(colorWhite);
@@ -2889,7 +2889,7 @@ void DrawSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
 
 		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)ui_fontScale->value * 6) * 0.5;
-		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_savesInfos[i]);
+		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_savesInfos[i], qtrue);
 		}
 	else {
 
@@ -2918,7 +2918,7 @@ void DrawSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
 
 		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_savesInfos[i]) * (int)ui_fontScale->value * 6) * 0.5;
-		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_savesInfos[i]);
+		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_savesInfos[i],qtrue);
 		}
 	}
 	else {
@@ -2959,7 +2959,7 @@ void DrawQuickSavedShot(void* m)
 		Draw_Fill(viddef.width * 0.5, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + (ui_fontScale->integer - 1), picWidth, 10 * ui_fontScale->value, 0.0, 0.5, 0.0, 1.0, qfalse);
 
 		center = (viddef.width * 0.5) + (picWidth * 0.5) - ((int)strlen(m_quickSavesInfos) * (int)ui_fontScale->value * 6) * 0.5;
-		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_quickSavesInfos);
+		Draw_StringScaled(center, (viddef.height * 0.5 + (picWidth / aspect) * 0.5) + 2, ui_fontScale->value, ui_fontScale->value, m_quickSavesInfos, qtrue);
 	}
 	else {
 		Draw_GetPicSize(&w, &h, "nosaveshot");

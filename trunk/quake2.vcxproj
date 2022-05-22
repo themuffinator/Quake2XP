@@ -128,7 +128,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;USE_CURL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -192,7 +192,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;NDEBUG;_WINDOWS;USE_CURL;ANTICHEAT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -385,6 +385,7 @@
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <ClCompile Include="client\cg_hud.c" />
+    <ClCompile Include="client\cl_download.c" />
     <ClCompile Include="client\cl_preload.c">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
@@ -415,6 +416,8 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
+    <ClCompile Include="client\cl_https.c" />
+    <ClCompile Include="client\cl_curl.c" />
     <ClCompile Include="client\snd_music.c" />
     <ClCompile Include="client\vid_menu.c" />
     <ClCompile Include="game\m_flash.c">
@@ -697,6 +700,17 @@
     <ClInclude Include="client\cdaudio.h" />
     <ClInclude Include="client\cl_console.h" />
     <ClInclude Include="client\client.h" />
+    <ClInclude Include="client\curl\curl.h" />
+    <ClInclude Include="client\curl\curlver.h" />
+    <ClInclude Include="client\curl\easy.h" />
+    <ClInclude Include="client\curl\header.h" />
+    <ClInclude Include="client\curl\mprintf.h" />
+    <ClInclude Include="client\curl\multi.h" />
+    <ClInclude Include="client\curl\options.h" />
+    <ClInclude Include="client\curl\stdcheaders.h" />
+    <ClInclude Include="client\curl\system.h" />
+    <ClInclude Include="client\curl\typecheck-gcc.h" />
+    <ClInclude Include="client\curl\urlapi.h" />
     <ClInclude Include="client\music.h" />
     <ClInclude Include="ref_gl\glcorearb.h" />
     <ClInclude Include="ref_gl\ImageLib\il.h" />

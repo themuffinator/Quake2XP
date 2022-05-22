@@ -392,13 +392,13 @@ void SCR_DrawLoading (void) {
 		center = viddef.width / 2 - (int)strlen(mapname) * fontscale * 6;
 		RE_SetColor(colorGreen);
 
-		Draw_StringScaled(center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname);
+		Draw_StringScaled(center, 20 * fontscale, fontscale * 2, fontscale * 2, mapname, qtrue);
 		
 		RE_SetColor (colorYellow);
-		Draw_StringScaled (0, 44 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[0]));
-		Draw_StringScaled (0, 54 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[1]));
-		Draw_StringScaled (0, 64 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[2]));
-		Draw_StringScaled (0, 74 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[3]));
+		Draw_StringScaled (0, 44 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[0]), qtrue);
+		Draw_StringScaled (0, 54 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[1]), qtrue);
+		Draw_StringScaled (0, 64 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[2]), qtrue);
+		Draw_StringScaled (0, 74 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[3]), qtrue);
 		RE_SetColor (colorWhite);
 	}
 }
@@ -905,13 +905,13 @@ void SCR_DrawSpeeds (void) {
 	sprintf(lt, "%i vis lights", num_visLights);
 
 	RE_SetColor (colorCyan);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4, fontscale, fontscale, bsp);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 10 * fontscale, fontscale, fontscale, alias);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 20 * fontscale, fontscale, fontscale, st);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 30 * fontscale, fontscale, fontscale, partTris);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 40 * fontscale, fontscale, fontscale, shadow);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 50 * fontscale, fontscale, fontscale, dtr);
-	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 60 * fontscale, fontscale, fontscale, lt);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4, fontscale, fontscale, bsp, qtrue);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 10 * fontscale, fontscale, fontscale, alias, qtrue);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 20 * fontscale, fontscale, fontscale, st, qtrue);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 30 * fontscale, fontscale, fontscale, partTris, qtrue);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 40 * fontscale, fontscale, fontscale, shadow, qtrue);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 50 * fontscale, fontscale, fontscale, dtr, qtrue);
+	Draw_StringScaled (viddef.width - 95 * fontscale, viddef.height*0.4 + 60 * fontscale, fontscale, fontscale, lt, qtrue);
 	RE_SetColor (colorWhite);
 }
 
@@ -941,7 +941,7 @@ void SCR_DrawCpuUtilization() {
 	if (cls.state == ca_active) {
 		Com_sprintf(cpuUtil, sizeof(cpuUtil), "%3d%c CPU Utilization", (int)procUtil / sys_numCpuCores, 37); // ASCII code of % is 37
 		int cpuUtilLengh = (int)strlen(cpuUtil);
-		Draw_StringScaled(viddef.width - cpuUtilLengh * 6 * fontscale, viddef.height * 0.65 - 60, fontscale, fontscale, cpuUtil);	
+		Draw_StringScaled(viddef.width - cpuUtilLengh * 6 * fontscale, viddef.height * 0.65 - 60, fontscale, fontscale, cpuUtil, qtrue);
 	}
 #endif
 }
@@ -983,10 +983,10 @@ void SCR_DrawFPS (void) {
 	if (ui_drawFPS->integer && (cls.state == ca_active)) {
 		
 		if (ui_drawFPS->integer == 2) {
-			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps);
-			Draw_StringScaled(viddef.width - minFpsLengh * 6 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps);
+			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65 - 40, fontscale, fontscale, avrfps, qtrue);
+			Draw_StringScaled(viddef.width - minFpsLengh * 6 * fontscale, viddef.height * 0.65 - 20, fontscale, fontscale, minfps, qtrue);
 		} else
-			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps);
+			Draw_StringScaled(viddef.width - avrFpsLengh * 6 * fontscale, viddef.height * 0.65, fontscale, fontscale, avrfps, qtrue);
 	}
 }
 
@@ -1017,12 +1017,12 @@ void SCR_DrawClock (void) {
 	int datebufLengh = strlen(tmpdatebuf);
 	
 	if (!ui_drawFPS->integer) {
-		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf);
-		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf);
+		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65, fontscale, fontscale, tmpbuf, qtrue);
+		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpdatebuf, qtrue);
 	}
 	else {
-		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpbuf);
-		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 20 * fontscale, fontscale, fontscale, tmpdatebuf);
+		Draw_StringScaled (viddef.width - timebufLengh * 6 * fontscale, viddef.height*0.65 + 10 * fontscale, fontscale, fontscale, tmpbuf, qtrue);
+		Draw_StringScaled (viddef.width - datebufLengh * 6 * fontscale, viddef.height*0.65 + 20 * fontscale, fontscale, fontscale, tmpdatebuf, qtrue);
 	}
 }
 
@@ -1047,7 +1047,7 @@ void SCR_ShowTexNames() {
 	{
 		char	string[MAX_QPATH];
 		Com_sprintf(string, sizeof(string), "Surface texture: %s", trace.surface->name);
-		Draw_StringScaled(0, viddef.height / 2 - 50, 2.0, 2.0, string);
+		Draw_StringScaled(0, viddef.height / 2 - 50, 2.0, 2.0, string, qtrue);
 	} 
 
 	RE_SetColor(colorWhite);
@@ -1179,7 +1179,7 @@ void SCR_UpdateScreen (void) {
 			}
 			Com_sprintf(frameTime, sizeof(frameTime), "Frame Time %.1f Msec", msec);
 			int frameTimeLenght = (int)strlen(frameTime);
-			Draw_StringScaled(viddef.width - frameTimeLenght * 6 * ui_fontScale->value, viddef.height * 0.65, ui_fontScale->value, ui_fontScale->value, frameTime);
+			Draw_StringScaled(viddef.width - frameTimeLenght * 6 * ui_fontScale->value, viddef.height * 0.65, ui_fontScale->value, ui_fontScale->value, frameTime, qtrue);
 		}
 		SCR_DrawConsole ();
 

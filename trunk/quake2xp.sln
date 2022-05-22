@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xatrix", "xsrc\xatrix.vcxpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "steamLauncher", "steamLauncher\steamLauncher.vcxproj", "{F3D3BE5D-6396-4FC7-94D2-F8817896DBAC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zaero", "zaero\zaero_2008.vcxproj", "{D7F2BF19-299B-4CA7-B037-91FB10209490}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -47,6 +49,14 @@ Global
 		{F3D3BE5D-6396-4FC7-94D2-F8817896DBAC}.Release|Win32.Build.0 = Release|Win32
 		{F3D3BE5D-6396-4FC7-94D2-F8817896DBAC}.Release|x64.ActiveCfg = Release|x64
 		{F3D3BE5D-6396-4FC7-94D2-F8817896DBAC}.Release|x64.Build.0 = Release|x64
+		{D7F2BF19-299B-4CA7-B037-91FB10209490}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D7F2BF19-299B-4CA7-B037-91FB10209490}.Debug|Win32.Build.0 = Debug|Win32
+		{D7F2BF19-299B-4CA7-B037-91FB10209490}.Debug|x64.ActiveCfg = Debug|x64
+		{D7F2BF19-299B-4CA7-B037-91FB10209490}.Debug|x64.Build.0 = Debug|x64
+		{D7F2BF19-299B-4CA7-B037-91FB10209490}.Release|Win32.ActiveCfg = Release|Win32
+		{D7F2BF19-299B-4CA7-B037-91FB10209490}.Release|Win32.Build.0 = Release|Win32
+		{D7F2BF19-299B-4CA7-B037-91FB10209490}.Release|x64.ActiveCfg = Release|x64
+		{D7F2BF19-299B-4CA7-B037-91FB10209490}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

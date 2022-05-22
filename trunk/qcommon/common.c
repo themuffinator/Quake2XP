@@ -859,7 +859,7 @@ char *MSG_ReadString (sizebuf_t * msg_read) {
 	do {
 		c = MSG_ReadChar (msg_read);
 		
-		if (c == 0) //cyrillic error fix
+		if (c == -1 || c == 0) //cyrillic error fix
 			break;
 
 		string[l] = c;

@@ -1105,25 +1105,25 @@ void R_RenderFrame(refdef_t * fd) {
 
 	if (selectedShadowLight && r_lightEditor->integer){
 		RE_SetColor(colorCyan);
-		Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0);
-		Draw_StringScaled(0, vid.height*0.5+25,  2, 2, buff1);
-		Draw_StringScaled(0, vid.height*0.5+45,  2, 2, buff2);
-		Draw_StringScaled(0, vid.height*0.5+65,  2, 2, buff3);
-		Draw_StringScaled(0, vid.height*0.5+85,  2, 2, buff4);
-		Draw_StringScaled(0, vid.height*0.5+105, 2, 2, buff5);
-		Draw_StringScaled(0, vid.height*0.5+125, 2, 2, buff6);
-		Draw_StringScaled(0, vid.height*0.5+145, 2, 2, buff7);
-		Draw_StringScaled(0, vid.height*0.5+165, 2, 2, buff8);
-		Draw_StringScaled(0, vid.height*0.5+185, 2, 2, buff9);
-		Draw_StringScaled(0, vid.height*0.5+205, 2, 2, buff12);
-		Draw_StringScaled(0, vid.height*0.5+225, 2, 2, buff13);
-		Draw_StringScaled(0, vid.height*0.5+245, 2, 2, buff10);
-		Draw_StringScaled(0, vid.height*0.5+265, 2, 2, buff11);
-		Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14);
-		Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15);
+		Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+25,  2, 2, buff1, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+45,  2, 2, buff2, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+65,  2, 2, buff3, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+85,  2, 2, buff4, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+105, 2, 2, buff5, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+125, 2, 2, buff6, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+145, 2, 2, buff7, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+165, 2, 2, buff8, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+185, 2, 2, buff9, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+205, 2, 2, buff12, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+225, 2, 2, buff13, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+245, 2, 2, buff10, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+265, 2, 2, buff11, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+285, 2, 2, buff14, qtrue);
+		Draw_StringScaled(0, vid.height*0.5+305, 2, 2, buff15, qtrue);
 
-		Draw_StringScaled(0, vid.height * 0.5 + 325, 2, 2, buff16);
-		Draw_StringScaled(0, vid.height * 0.5 + 345, 2, 2, buff17);
+		Draw_StringScaled(0, vid.height * 0.5 + 325, 2, 2, buff16, qtrue);
+		Draw_StringScaled(0, vid.height * 0.5 + 345, 2, 2, buff17, qtrue);
 		RE_SetColor(colorWhite);
 	}
 }

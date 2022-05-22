@@ -38,7 +38,7 @@ color4_t	ColorTable[8] = {
 	{ 1.0, 1.0, 1.0, 1.0 },
 };
 
-void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str);
+//void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str);
 void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned char num);
 
 
@@ -532,7 +532,7 @@ void Con_DrawInput (void) {
 		}
 
 	}
-	Draw_StringScaled(0, con.vislines - 15 * fontscale, fontscale, fontscale, output);
+	Draw_StringScaled(0, con.vislines - 15 * fontscale, fontscale, fontscale, output, qtrue);
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;
 }
@@ -596,11 +596,11 @@ void Con_DrawNotify (void) {
 
 	if (cls.key_dest == key_message) {
 		if (chat_team) {
-			Draw_StringScaled (8 * fontscale, v, fontscale, fontscale, "say_team:");
+			Draw_StringScaled (8 * fontscale, v, fontscale, fontscale, "say_team:", qfalse);
 			skip = 11;
 		}
 		else {
-			Draw_StringScaled (8 * fontscale, v, fontscale, fontscale, "say:");
+			Draw_StringScaled (8 * fontscale, v, fontscale, fontscale, "say:", qfalse);
 			skip = 5;
 		}
 
@@ -609,7 +609,7 @@ void Con_DrawNotify (void) {
 		if (chat_bufferlen > ((viddef.width / fontscale) / 8) - (skip + 1))
 			s += chat_bufferlen - (int)(((viddef.width / fontscale) / 8) - (skip + 1));
 	
-		Draw_StringScaled (skip*fontscale * 8, v, fontscale, fontscale, s);
+		Draw_StringScaled (skip*fontscale * 8, v, fontscale, fontscale, s, qfalse);
 		Draw_CharScaled ((strlen (s) + skip) * fontscale * 8, v, fontscale, fontscale, 10 + ((cls.realTime >> 8) & 1));
 
 		v += 8;
@@ -626,10 +626,11 @@ Con_DrawConsole
 Draws the console with the solid background
 ================
 */
+
 void Con_DrawConsole (float frac) {
 	int			i, j, x, y, n;
 	int			rows;
-	short		*text;
+	short		*text, output[1024];
 	int			row;
 	int			lines;
 	char		version[64];
@@ -655,11 +656,12 @@ void Con_DrawConsole (float frac) {
 	SCR_AddDirtyPoint (viddef.width - 1, lines - 1);
 
 	Com_sprintf (version, sizeof(version), "q2xp %s (%s)", VERSION, __DATE__);
-	for (x = 0; x < strlen (version); x++)
-		version[x] += 128;
+//	for (x = 0; x < strlen (version); x++)
+//		version[x] += 128;
 	int len = strlen(version);
-
-	Draw_StringScaled (viddef.width - len * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version);
+	
+	RE_SetColor(colorGreen);
+	Draw_StringScaled (viddef.width - len * 6 * fontscale, lines - 12 * fontscale, fontscale, fontscale, version, qtrue);
 
 	// draw the text
 	con.vislines = lines;
@@ -692,6 +694,7 @@ void Con_DrawConsole (float frac) {
 
 		text = con.text + (row % con.totalLines) * con.lineWidth;
 
+		Com_sprintf(output, sizeof(output), "");
 		for (x = 0; x < con.lineWidth; x++) {
 			if ((text[x] & 0xFF) == ' ')
 				continue;
@@ -702,8 +705,6 @@ void Con_DrawConsole (float frac) {
 				currentColor = (text[x] >> 8) & 7;
 				RE_SetColor (ColorTable[currentColor]);
 			}
-					
-			
 			if (text[x] < 190)
 				RE_SetColor(ColorTable[oldColor]);
 			else
@@ -711,18 +712,21 @@ void Con_DrawConsole (float frac) {
 				RE_SetColor(ColorTable[currentColor]);
 
 			Draw_CharScaledInt ((x*fontscale + 1) * (8 * intervalScale), y, fontscale, fontscale, text[x] & 0xFF);
+
 			if (text[x] < 190)
 				currentColor = oldColor;
 		}
 	}
 
-	//ZOID
-	// draw the download bar
-	// figure out width
-	if (cls.download){
+	//ZOID draw the download bar figure out width
+#ifdef USE_CURL
+	if (cls.downloadName[0] && (cls.download || cls.downloadposition))
+#else
+	if (cls.download)
+#endif 
+	{
 		// avoid warnings of using a short* instead of char* in strrchr/strlen
 		char *textch = (char*)text;
-
 		if ((textch = strrchr (cls.downloadName, '/')) != NULL)
 			textch++;
 		else

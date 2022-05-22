@@ -662,6 +662,13 @@ void CL_Disconnect (void) {
 		cls.download = NULL;
 	}
 
+#ifdef USE_CURL
+	CL_CancelHTTPDownloads(qtrue);
+	cls.downloadReferer[0] = 0;
+	cls.downloadName[0] = 0;
+	cls.downloadposition = 0;
+#endif
+
 	cls.state = ca_disconnected;
 	currentPlayerWeapon = NULL;
 }
@@ -737,6 +744,13 @@ void CL_Changing_f (void) {
 	cls.state = ca_connected;	// not active anymore, but not
 	// disconnected
 	Com_Printf ("\nChanging map...\n");  
+#ifdef USE_CURL
+	if (cls.downloadServerRetry[0] != 0)
+	{
+		CL_SetHTTPServer(cls.downloadServerRetry);
+	}
+#endif
+
 
 }
 
@@ -894,6 +908,8 @@ CL_ConnectionlessPacket
 Responses to broadcasts, etc
 =================
 */
+qboolean Sys_GetAntiCheatAPI();
+
 void CL_ConnectionlessPacket (void) {
 	char	*s, *c;
 
@@ -910,6 +926,8 @@ void CL_ConnectionlessPacket (void) {
 
 	// server connection
 	if (!strcmp (c, "client_connect")) {
+		int		try_to_use_anticheat = 0;
+
 		if (cls.state == ca_connected) {
 			Com_Printf ("Dup connect received.  Ignored.\n");
 			return;
@@ -921,13 +939,47 @@ void CL_ConnectionlessPacket (void) {
 		for (int i = 1; i < Cmd_Argc(); i++)
 		{
 			char* p = Cmd_Argv(i);
-
-			if (!strncmp(p, "dlserver=", 9))
-			{
-				Com_Printf("HTTP downloading supported by server but not the client.\n");
-			}
+			
+		if (!strncmp(p, "ac=", 3))
+		{
+			p += 3;
+			if (!p[0])
+				continue;
+			if (atoi(p))
+				try_to_use_anticheat = qtrue;
 		}
 
+			else if (!strncmp(p, "dlserver=", 9))
+			{
+#ifdef USE_CURL
+				p += 9;
+				Com_sprintf(cls.downloadReferer, sizeof(cls.downloadReferer), "quake2://%s", buff);
+				CL_SetHTTPServer(p);
+
+				if (cls.downloadServer[0])
+				{
+					Com_Printf("HTTP downloading enabled, URL: %s\n", cls.downloadServer);
+				}
+#else
+				Com_Printf("HTTP downloading supported by server but not the client.\n");
+#endif
+
+			}
+		}
+		if (try_to_use_anticheat) {
+#ifdef ANTICHEATx
+			MSG_WriteByte(&cls.netchan.message, clc_nop);
+			Netchan_Transmit(&cls.netchan, 0, NULL);
+			S_StopAllSounds();
+			Com_Printf("Loading anticheat, this may take a few moments...\n");
+			SCR_UpdateScreen();
+			if (!Sys_GetAntiCheatAPI())
+				Com_Printf("anticheat failed to load, trying to connect without it.\n");
+#else
+			if (try_to_use_anticheat > 1)
+				Com_Printf("Anticheat required by server, but no anticheat support linked in.\n");
+#endif
+		}
 
 		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
 		MSG_WriteString (&cls.netchan.message, "new");
@@ -1113,12 +1165,13 @@ int precache_tex;
 int precache_model_skin;
 
 byte *precache_model;			// used for skin checking in alias models
-
+/*
 #define PLAYER_MULT 5
 
 // ENV_CNT is map load, ENV_CNT+1 is first env map
 #define ENV_CNT (CS_PLAYERSKINS + MAX_CLIENTS * PLAYER_MULT)
 #define TEXTURE_CNT (ENV_CNT+13)
+
 
 static const char *env_suf[6] = { "rt", "bk", "lf", "ft", "up", "dn" };
 
@@ -1287,7 +1340,7 @@ void CL_RequestNextDownload (void) {
 							return;	// started a download
 						}
 						n++;
-						/* FALL THROUGH */
+						// FALL THROUGH 
 
 					case 1:		// weapon model
 						Com_sprintf (fn, sizeof(fn), "players/%s/weapon.md2",
@@ -1298,7 +1351,7 @@ void CL_RequestNextDownload (void) {
 							return;	// started a download
 						}
 						n++;
-						/* FALL THROUGH */
+						// FALL THROUGH 
 
 					case 2:		// weapon skin
 						Com_sprintf (fn, sizeof(fn), "players/%s/weapon.pcx",
@@ -1309,7 +1362,7 @@ void CL_RequestNextDownload (void) {
 							return;	// started a download
 						}
 						n++;
-						/* FALL THROUGH */
+						// FALL THROUGH 
 
 					case 3:		// skin
 						Com_sprintf (fn, sizeof(fn), "players/%s/%s.pcx", model,
@@ -1320,7 +1373,7 @@ void CL_RequestNextDownload (void) {
 							return;	// started a download
 						}
 						n++;
-						/* FALL THROUGH */
+						// FALL THROUGH  
 
 					case 4:		// skin_i
 						Com_sprintf (fn, sizeof(fn), "players/%s/%s_i.pcx",
@@ -1414,6 +1467,14 @@ void CL_RequestNextDownload (void) {
 		va ("begin %i\n", precache_spawncount));
 
 }
+*/
+
+void CL_ResetPrecacheCheck(void)
+{
+	precache_check = CS_MODELS;
+	precache_model = 0;
+	precache_model_skin = 0;
+}
 
 /*
 =================
@@ -1442,6 +1503,7 @@ void CL_Precache_f (void) {
 
 	CL_RequestNextDownload ();
 }
+
 
 /*
 =================
@@ -1540,6 +1602,16 @@ void CL_InitLocal (void) {
 	useRussianLoc = Cvar_Get("useRussianLoc", "0", CVAR_SERVERINFO);
 
 	cl_gunCollision = Cvar_Get("cl_gunCollision", "2", CVAR_ARCHIVE);
+
+#ifdef USE_CURL
+	cl_http_proxy = Cvar_Get("cl_http_proxy", "", 0);
+	cl_http_filelists = Cvar_Get("cl_http_filelists", "1", 0);
+	cl_http_downloads = Cvar_Get("cl_http_downloads", "1", CVAR_ARCHIVE);
+	cl_http_max_connections = Cvar_Get("cl_http_max_connections", "4", 0);
+	cl_http_show_dw_progress = Cvar_Get("cl_http_show_dw_progress", "1", 0);
+#endif
+
+
 	//
 	// userinfo
 	//
@@ -1829,6 +1901,13 @@ void CL_Frame_Async(int msec)
 	{
 		return;
 	}
+	// Run HTTP downloads more often while connecting.
+#ifdef USE_CURL
+	if (cls.state == ca_connected)
+	{
+		CL_RunHTTPDownloads();
+	}
+#endif
 
 	// Update the inputs (keyboard, mouse, console)
 	if (packetFrame || renderFrame)
@@ -1845,6 +1924,10 @@ void CL_Frame_Async(int msec)
 	{
 		packetDelta = 0;
 		CL_SendCommand_Async();
+#ifdef USE_CURL	// HTTP downloading from R1Q2
+		// downloads run less often in game
+		CL_RunHTTPDownloads();
+#endif	// USE_CURL
 	}
 
 	if (renderFrame)
@@ -1995,6 +2078,14 @@ void CL_Frame (int msec) {
 	if (msec > 5000)
 		cls.netchan.last_received = Sys_Milliseconds ();
 
+	// Run HTTP downloads more often while connecting.
+#ifdef USE_CURL
+	if (cls.state == ca_connected)
+	{
+		CL_RunHTTPDownloads();
+	}
+#endif
+
 	// fetch results from server
 	CL_ReadPackets ();
 
@@ -2105,6 +2196,10 @@ void CL_Init (void) {
 
 	M_Init ();
 
+#ifdef USE_CURL
+	CL_InitHTTPDownloads();
+#endif
+
 	SCR_Init ();
 	cls.disableScreen = qtrue;	// don't draw yet
 
@@ -2134,6 +2229,10 @@ void CL_Shutdown (void) {
 		return;
 	}
 	isdown = qtrue;
+
+#ifdef USE_CURL
+	CL_HTTP_Cleanup(qtrue);
+#endif
 
 	// kill temp demo record
 	Com_sprintf (name, sizeof(name), "%s/cachexp/temp.dm2", FS_Gamedir ());

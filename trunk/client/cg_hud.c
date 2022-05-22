@@ -475,9 +475,9 @@ void SCR_ExecuteLayoutString (char *s) {
 
 			DrawAltStringScaled (x + 32 * hud_sx, y, hud_sx, hud_sy, ci->name);
 
-			Draw_StringScaled (x + 32 * hud_sx, y + 8 * hud_sy, hud_sx, hud_sy, va ("Score:  %i", score));
-			Draw_StringScaled (x + 32 * hud_sx, y + 16 * hud_sy, hud_sx, hud_sy, va ("Ping:  %i", ping));
-			Draw_StringScaled (x + 32 * hud_sx, y + 24 * hud_sy, hud_sx, hud_sy, va ("Time:  %i", time));
+			Draw_StringScaled (x + 32 * hud_sx, y + 8 * hud_sy, hud_sx, hud_sy, va ("Score:  %i", score),qfalse);
+			Draw_StringScaled (x + 32 * hud_sx, y + 16 * hud_sy, hud_sx, hud_sy, va ("Ping:  %i", ping), qfalse);
+			Draw_StringScaled (x + 32 * hud_sx, y + 24 * hud_sy, hud_sx, hud_sy, va ("Time:  %i", time), qfalse);
 
 			if (!ci->icon)
 				ci = &cl.baseclientinfo;
@@ -515,7 +515,7 @@ void SCR_ExecuteLayoutString (char *s) {
 			if (value == cl.playernum)
 				DrawAltStringScaled (x, y, hud_sx, hud_sy, block);
 			else {
-				Draw_StringScaled (x, y, hud_sx, hud_sy, block);
+				Draw_StringScaled (x, y, hud_sx, hud_sy, block, qfalse);
 				continue;
 			}
 		}
@@ -610,7 +610,7 @@ void SCR_ExecuteLayoutString (char *s) {
 			index = cl.frame.playerstate.stats[index];
 			if (index < 0 || index >= MAX_CONFIGSTRINGS)
 				Com_Error (ERR_DROP, "Bad stat_string index");
-			Draw_StringScaled (x, y, hud_sx, hud_sy, cl.configstrings[index]);
+			Draw_StringScaled (x, y, hud_sx, hud_sy, cl.configstrings[index], qfalse);
 			continue;
 		}
 
@@ -622,7 +622,7 @@ void SCR_ExecuteLayoutString (char *s) {
 
 		if (!strcmp (token, "string")) {
 			token = COM_Parse (&s);
-			Draw_StringScaled (x, y, hud_sx, hud_sy, token);
+			Draw_StringScaled (x, y, hud_sx, hud_sy, token, qfalse);
 			continue;
 		}
 

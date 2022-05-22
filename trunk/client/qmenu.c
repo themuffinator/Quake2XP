@@ -67,10 +67,10 @@ void Action_Draw (menuaction_s * a) {
 			a->generic.y + a->generic.parent->y,
 			a->generic.name);
 		else
-			Menu_DrawStringScaled (a->generic.x + a->generic.parent->x + LCOLUMN_OFFSET*fontscale,
+			Draw_StringScaled(a->generic.x + a->generic.parent->x + LCOLUMN_OFFSET*fontscale,
 			a->generic.y + a->generic.parent->y,
 			fontscale, fontscale,
-			a->generic.name);
+			a->generic.name, qtrue);
 	}
 	else {
 		if (a->generic.flags & QMF_GRAYED)
@@ -145,10 +145,10 @@ void Field_Draw (menufield_s * f) {
 			25);
 	}
 
-	Menu_DrawStringScaled (f->generic.x + f->generic.parent->x + 24 / fontscale,
+		Draw_StringScaled (f->generic.x + f->generic.parent->x + 24 / fontscale,
 		f->generic.y + f->generic.parent->y,
 		fontscale, fontscale,
-		tempbuffer);
+		tempbuffer, qtrue);
 
 	if (Menu_ItemAtCursor (f->generic.parent) == f) {
 		int offset;
@@ -444,7 +444,7 @@ void Menu_DrawStatusBar (const char *string) {
 		int center = ((int)strlen(string) * fontscale * 6) * 0.5;
 
 		Draw_Fill (0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.35, 0.0, 0.88, qfalse);
-		Menu_DrawStringScaled ((VID_WIDTH * 0.5) - center, VID_HEIGHT - (10 * fontscale + upOffset), fontscale, fontscale, string);
+		Draw_StringScaled ((VID_WIDTH * 0.5) - center, VID_HEIGHT - (10 * fontscale + upOffset), fontscale, fontscale, string, qtrue);
 	}
 	else {
 		Draw_Fill(0, VID_HEIGHT - (12 * fontscale + upOffset), VID_WIDTH, 12 * fontscale, 0.0, 0.0, 0.0, 0.0, qfalse);
@@ -678,23 +678,23 @@ void SpinControl_Draw (menulist_s * s) {
 			s->generic.name);
 	}
 	if (!strchr (s->itemnames[s->curvalue], '\n')) {
-		Menu_DrawStringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
+		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, fontscale,
-			s->itemnames[s->curvalue]);
+			s->itemnames[s->curvalue], qfalse);
 	}
 	else {
 		strcpy (buffer, s->itemnames[s->curvalue]);
 		*strchr (buffer, '\n') = 0;
-		Menu_DrawStringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
+		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, fontscale,
-			buffer);
+			buffer, qfalse);
 
 		strcpy (buffer, strchr (s->itemnames[s->curvalue], '\n') + 1);
-		Menu_DrawStringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
+		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y + 10 * ui_fontScale->value,
 			fontscale, fontscale,
-			buffer);
+			buffer, qfalse);
 	}
 }

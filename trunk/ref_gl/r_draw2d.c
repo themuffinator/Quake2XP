@@ -47,7 +47,6 @@ void R_Init2D(void)
 		draw_charsInt = r_notexture;
 }
 
-
 void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char num)
 {
 	int row, col;
@@ -255,7 +254,7 @@ void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char
 }
 
 
-void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char* str)
+void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char* str, qboolean international)
 {
 	int px, py, row, col, num, counter, quadCounter, i;
 	float frow, fcol, size;
@@ -276,91 +275,10 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char* s
 	qglUniform1i(U_FRAG_COLOR, 0);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 
-	GL_SetBindlessTexture(U_TMU0, draw_chars->handle);
-
-	if(r_fontsShadow->integer)
-		Draw_StringShadow(x, y, scale_x, scale_y, s);
-
-	px = x;
-	py = y;
-
-	size = 0.0625;
-	counter = 0;
-
-	while (*s) {
-		num = *s++;
-
-		if ((num & 127) == 32) {        // space
-			px += 6 * scale_x;
-			continue;
-		}
-
-		if (y <= -6) {                  // totally off screen
-			px += 6 * scale_x;
-			continue;
-		}
-
-		row = num >> 4;
-		col = num & 15;
-
-		frow = row * 0.0625;
-		fcol = col * 0.0625;
-
-		quadCounter = counter << 2;
-
-		VA_SetElem2(texCoord[quadCounter + 0], fcol, frow);
-		VA_SetElem2(texCoord[quadCounter + 1], fcol + size, frow);
-		VA_SetElem2(texCoord[quadCounter + 2], fcol + size, frow + size);
-		VA_SetElem2(texCoord[quadCounter + 3], fcol, frow + size);
-
-		VA_SetElem2(vertCoord[quadCounter + 0], px, py);
-		VA_SetElem2(vertCoord[quadCounter + 1], px + 8 * scale_x, py);
-		VA_SetElem2(vertCoord[quadCounter + 2], px + 8 * scale_x, py + 8 * scale_y);
-		VA_SetElem2(vertCoord[quadCounter + 3], px, py + 8 * scale_y);
-
-		for (i = 0; i < 4; i++)
-			VA_SetElem4(colorCoord[quadCounter + i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
-
-		px += 6 * scale_x;
-		counter++;
-
-		if (counter == MAX_DRAW_STRING_LENGTH) {
-			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
-			counter = 0;
-		}
-	}
-
-	if (counter)
-		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
-
-	qglDisableVertexAttribArray(ATT_POSITION);
-	qglDisableVertexAttribArray(ATT_TEX0);
-	qglDisableVertexAttribArray(ATT_COLOR);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void Draw_StringScaledInt(int x, int y, float scale_x, float scale_y, const char* str)
-{
-	int px, py, row, col, num, counter, quadCounter, i;
-	float frow, fcol, size;
-	unsigned char* s = (unsigned char*)str;
-
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quadString);
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglEnableVertexAttribArray(ATT_TEX0);
-	qglEnableVertexAttribArray(ATT_COLOR);
-
-	qglVertexAttribPointer(ATT_POSITION, 2 , GL_FLOAT, qfalse, 0, vertCoord);
-	qglVertexAttribPointer(ATT_TEX0, 2, GL_FLOAT, qfalse, 0, texCoord);
-	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorCoord);
-
-	GL_BindProgram(genericProgram);
-	qglUniform1i(U_2D_PICS, 1);
-	qglUniform1i(U_CONSOLE_BACK, 0);
-	qglUniform1i(U_FRAG_COLOR, 0);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
-
-	GL_SetBindlessTexture(U_TMU0, draw_charsInt->handle);
+	if(international)
+		GL_SetBindlessTexture(U_TMU0, draw_charsInt->handle);
+	else 
+		GL_SetBindlessTexture(U_TMU0, draw_chars->handle);
 
 	if(r_fontsShadow->integer)
 		Draw_StringShadow(x, y, scale_x, scale_y, s);

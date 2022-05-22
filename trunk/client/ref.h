@@ -591,7 +591,7 @@ void Draw_PicBumpScaled(int x, int y, float scale_x, float scale_y, char* pic, c
 void Draw_ScaledBumpPic(int x, int y, float scale_x, float scale_y, image_t* gl, image_t* gl2);
 
 void Draw_CharScaled (int x, int y, float scale_x, float scale_y, unsigned char num);
-void Draw_StringScaled (int x, int y, float scale_x, float scale_y, const char *str);
+void Draw_StringScaled (int x, int y, float scale_x, float scale_y, const char *str, qboolean international);
 
 void Draw_TileClear (int x, int y, int w, int h, char *name);
 void Draw_TileClear2 (int x, int y, int w, int h, image_t * image);

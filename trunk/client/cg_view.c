@@ -124,6 +124,10 @@ void V_AddParticle (vec3_t org, vec3_t length, vec3_t color, float alpha,
 	VectorCopy (oldOrg, p->oldOrg);
 
 	if (p->flags & PARTICLE_VERTEXLIGHT) {
+
+		if (CL_PMpointcontents(org) & CONTENTS_SOLID) // fix strange dm crush
+			return;
+
 		R_LightColor (org, lm);
 		VectorMul (p->color, lm, p->color);
 	}
