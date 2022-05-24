@@ -363,7 +363,85 @@ char *Sys_GetClipboardData(void) {
 }
 
 /*****************************************************************************/
+void *
+Sys_GetProcAddress(void *handle, const char *sym)
+{
+    if (handle == NULL)
+    {
+#ifdef RTLD_DEFAULT
+        return dlsym(RTLD_DEFAULT, sym);
+#else
+        /* POSIX suggests that this is a portable equivalent */
+        static void *global_namespace = NULL;
 
+        if (global_namespace == NULL)
+            global_namespace = dlopen(NULL, RTLD_GLOBAL|RTLD_LAZY);
+
+        return dlsym(global_namespace, sym);
+#endif
+    }
+    return dlsym(handle, sym);
+}
+
+void
+Sys_FreeLibrary(void *handle)
+{
+	if (handle && dlclose(handle))
+	{
+		Com_Error(ERR_FATAL, "dlclose failed on %p: %s", handle, dlerror());
+	}
+}
+
+void *
+Sys_LoadLibrary(const char *path, const char *sym, void **handle)
+{
+	void *module, *entry;
+
+	*handle = NULL;
+
+#ifdef USE_SANITIZER
+	module = dlopen(path, RTLD_LAZY | RTLD_NODELETE);
+#else
+	module = dlopen(path, RTLD_LAZY);
+#endif
+
+	if (!module)
+	{
+		Com_Printf("%s failed: %s\n", __func__, dlerror());
+		return NULL;
+	}
+
+	if (sym)
+	{
+		entry = dlsym(module, sym);
+
+		if (!entry)
+		{
+			Com_Printf("%s failed: %s\n", __func__, dlerror());
+			dlclose(module);
+			return NULL;
+		}
+	}
+	else
+	{
+		entry = NULL;
+	}
+
+	Com_DPrintf("%s succeeded: %s\n", __func__, path);
+
+	*handle = module;
+
+	return entry;
+}
+
+void
+Sys_FreeLibrary(void *handle)
+{
+	if (handle && dlclose(handle))
+	{
+		Com_Error(ERR_FATAL, "dlclose failed on %p: %s", handle, dlerror());
+	}
+}
 
 int
 main(int argc, char **argv)

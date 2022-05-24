@@ -253,7 +253,9 @@ typedef struct {
 	vec3_t color;
 } m_dlight_t;
 
-
+void* Sys_LoadLibrary(const char* path, const char* sym, void** handle);
+void* Sys_GetProcAddress(void* handle, const char* sym);
+void Sys_FreeLibrary(void* handle);
 /*
 
   skins will be outline flood filled and mip mapped

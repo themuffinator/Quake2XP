@@ -64,56 +64,6 @@ CURLMcode (*qcurl_multi_remove_handle)(CURLM *multi_handle, CURL *curl_handle);
  * Load libcurl, connect the function pointer
  * and call cURLs global init function.
  */
-
-void*
-Sys_LoadLibrary(const char* path, const char* sym, void** handle)
-{
-	HMODULE module;
-	void* entry;
-	WCHAR wpath[MAX_OSPATH];
-
-	*handle = NULL;
-
-	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_OSPATH);
-	module = LoadLibraryW(wpath);
-
-	if (!module)
-	{
-		Com_Printf("%s failed: LoadLibrary returned %lu on %s\n",
-			__func__, GetLastError(), path);
-		return NULL;
-	}
-
-	if (sym)
-	{
-		entry = GetProcAddress(module, sym);
-
-		if (!entry)
-		{
-			Com_Printf("%s failed: GetProcAddress returned %lu on %s\n",
-				__func__, GetLastError(), path);
-			FreeLibrary(module);
-			return NULL;
-		}
-	}
-	else
-	{
-		entry = NULL;
-	}
-
-	*handle = module;
-
-	Com_DPrintf("%s succeeded: %s\n", __func__, path);
-
-	return entry;
-}
-
-void*
-Sys_GetProcAddress(void* handle, const char* sym)
-{
-	return GetProcAddress(handle, sym);
-}
-
 qboolean qcurlInit(void)
 {
 	Com_Printf("\n=========== " S_COLOR_YELLOW "Curl Initialization" S_COLOR_WHITE " ===========\n");
@@ -226,20 +176,6 @@ error:
 	Com_Printf("===========================================\n\n");
 
 	return qfalse;
-}
-
-void
-Sys_FreeLibrary(void* handle)
-{
-	if (!handle)
-	{
-		return;
-	}
-
-	if (!FreeLibrary(handle))
-	{
-		Com_Error(ERR_FATAL, "FreeLibrary failed on %p", handle);
-	}
 }
 
 /*
