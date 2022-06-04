@@ -605,7 +605,7 @@ void Touch_Corpse (edict_t *self);
 //
 void Cmd_Help_f (edict_t *ent);
 void Cmd_Score_f (edict_t *ent);
-
+void Cmd_Spawn_f(edict_t* self);
 //
 // g_items.c
 //

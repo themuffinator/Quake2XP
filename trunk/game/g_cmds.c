@@ -275,6 +275,74 @@ void Cmd_Give_f (edict_t *ent) {
 	}
 }
 
+typedef struct
+{
+	char* name;
+	void	(*spawn)(edict_t* ent);
+} spawn_t;
+extern spawn_t	spawns[];
+
+void Cmd_Spawn_f(edict_t* self)
+{
+	char* s;
+	spawn_t* spawn;
+	char		name[MAX_QPATH];
+	edict_t* ent;
+	trace_t		tr;
+	vec3_t		org, forward, end, center;
+
+	if (deathmatch->value)
+	{
+		gi.cprintf(self, PRINT_HIGH, "Not for deathmatch.\n");
+		return;
+	}
+
+	if (gi.argc() == 1)
+	{
+		gi.cprintf(self, PRINT_HIGH, "Available monsters:\n-------------------\nberserk\nboss2\nboss3_stand\nbrain\nchick\ncommander_body\ninfantry\nflipper\nfloater\nflyer\ngladiator\ngunner\nhover\njorg\nmedic\nmutant\nparasite\nsoldier\nsoldier_light\nsoldier_ss\nsupertank\ntank\ntank_commander\ninsane\nexplobox\n");
+		return;
+	}
+
+	s = gi.args();
+	if (!Q_strcasecmp(s, "insane"))
+		Com_sprintf(name, sizeof(name), "misc_insane");
+	else if (!Q_strcasecmp(s, "explobox"))
+		Com_sprintf(name, sizeof(name), "misc_explobox");
+	else
+		Com_sprintf(name, sizeof(name), "monster_%s", s);
+
+	for (spawn = spawns; spawn->name; spawn++)
+	{
+		if (!Q_strcasecmp(spawn->name, name))
+		{	// found it
+			ent = G_Spawn();
+			ent->mass = 0;
+			ent->health = 0;
+			ent->dmg = 0;
+			ent->spawnflags = 0;
+			ent->classname = spawn->name;
+			VectorCopy(self->s.angles, ent->s.angles);
+			ent->s.angles[0] = 0;
+			ent->s.angles[1] = -self->s.angles[1];
+			ent->s.angles[2] = 0;
+			VectorClear(ent->velocity);
+			AngleVectors(self->s.angles, forward, NULL, NULL);
+
+			VectorCopy(self->s.origin, org);
+			org[2] += 25;
+			VectorMA(org, 8192, forward, end);
+
+			tr = gi.trace(org, NULL, NULL, end, self, MASK_SHOT);
+
+			VectorAdd(tr.endpos, self->s.origin, center);
+			VectorScale(center, 0.5, ent->s.origin);
+			KillBox(ent);
+			spawn->spawn(ent);
+			return;
+		}
+	}
+	gi.cprintf(self, PRINT_HIGH, "%s not found\n", name);
+}
 
 /*
 ==================
@@ -918,6 +986,8 @@ void ClientCommand (edict_t *ent) {
 	//      FL_make (ent);
 	else if (Q_stricmp (cmd, "playerlist") == 0)
 		Cmd_PlayerList_f (ent);
+	else if (Q_strcasecmp(cmd, "spawn") == 0)
+		Cmd_Spawn_f(ent);
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, qfalse, qtrue);
 }

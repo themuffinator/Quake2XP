@@ -1731,6 +1731,7 @@ void Q_free (void *buf) {
 	free (buf);
 }
 
+/*
 #ifndef _WIN32
 
 typedef enum {
@@ -1879,12 +1880,12 @@ void Q_memcpy (void *dest, const void *src, const size_t count) {
 }
 
 #else
-
+*/
 void Q_memcpy (void *dest, const void *src, const size_t count) {
 	memcpy (dest, src, count);
 }
 
-#endif
+//#endif
 
 /*
  =================

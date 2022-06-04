@@ -689,6 +689,7 @@ void tank_dead (edict_t *self) {
 	self->nextthink = 0;
 	Touch_Corpse (self);
 	gi.linkentity (self);
+	self->s.effects &= ~EF_FLASHLIGHT;
 
 	if (skill->value < 3) M_FlyCheck (self);
 	monster_reborn (self);
@@ -745,6 +746,7 @@ void tank_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage,
 		ThrowGib (self, "models/objects/gibs/chest/tris.md2", damage, GIB_ORGANIC);
 		ThrowHead (self, "models/objects/gibs/gear/tris.md2", damage, GIB_METALLIC);
 		self->deadflag = DEAD_DEAD;
+		self->s.effects &= ~EF_FLASHLIGHT;
 		return;
 	}
 

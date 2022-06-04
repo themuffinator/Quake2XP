@@ -617,8 +617,6 @@ void Con_DrawNotify (void) {
 	RE_SetColor		(colorWhite);
 }
 
-
-
 /*
 ================
 Con_DrawConsole

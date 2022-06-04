@@ -681,7 +681,7 @@ void SpinControl_Draw (menulist_s * s) {
 		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, fontscale,
-			s->itemnames[s->curvalue], qfalse);
+			s->itemnames[s->curvalue], qtrue);
 	}
 	else {
 		strcpy (buffer, s->itemnames[s->curvalue]);
@@ -689,12 +689,12 @@ void SpinControl_Draw (menulist_s * s) {
 		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, fontscale,
-			buffer, qfalse);
+			buffer, qtrue);
 
 		strcpy (buffer, strchr (s->itemnames[s->curvalue], '\n') + 1);
 		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y + 10 * ui_fontScale->value,
 			fontscale, fontscale,
-			buffer, qfalse);
+			buffer, qtrue);
 	}
 }

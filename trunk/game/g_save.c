@@ -1137,6 +1137,7 @@ functionList_t functionList[] = {
 { "ai_stand", (byte *)ai_stand },
 { "ai_move", (byte *)ai_move },
 { "AI_SetSightClient", (byte *)AI_SetSightClient },
+{ "Cmd_Spawn_f", (byte*)Cmd_Spawn_f },
 { 0, 0 }
 
 };
