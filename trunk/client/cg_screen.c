@@ -343,6 +343,7 @@ void SCR_DrawLoadingBar (float percent, float scale) {
 
 }
 
+#include "..\ref_gl\r_local.h"
 void Draw_LoadingScreen (int x, int y, int w, int h, char *pic);
 
 void SCR_DrawLoading (void) {
@@ -358,13 +359,14 @@ void SCR_DrawLoading (void) {
 
 	if (loadingMessage && cl.configstrings[CS_MODELS + 1][0]) {
 		
+		qglDisable(GL_FRAMEBUFFER_SRGB);
+
 		strcpy (mapfile, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
 		mapfile[strlen (mapfile) - 4] = 0;	// cut off ".bsp"
 		
 		if (drawSaveShot[0])
 		{
 		strcpy(saveshot, va("/savexp/%s/shot.jpg", drawSaveShot));
-		
 		// start from level autosave
 		if (!Q_strcasecmp(drawSaveShot, "save0")){
 			if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
@@ -378,6 +380,7 @@ void SCR_DrawLoading (void) {
 				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
 			}
 			else {
+			qglEnable(GL_FRAMEBUFFER_SRGB);
 			if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
 				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
 			else
@@ -400,6 +403,7 @@ void SCR_DrawLoading (void) {
 		Draw_StringScaled (0, 64 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[2]), qtrue);
 		Draw_StringScaled (0, 74 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[3]), qtrue);
 		RE_SetColor (colorWhite);
+		qglDisable(GL_FRAMEBUFFER_SRGB);
 	}
 }
 

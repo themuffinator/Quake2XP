@@ -177,7 +177,7 @@ void CreateSSAOBuffer(void) {
 	r_miniDepthTex = R_CreateTexture("***r_miniDepthTex***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, it_pic, vid.width / 2, vid.height / 2, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_FLOAT, qfalse, NULL);
 	
 	for(int i = 0; i<2; i++)
-		r_ssaoColorTex[i] = R_CreateTexture("***r_ssaoColorTex***", GL_TEXTURE_RECTANGLE, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width / 2, vid.height / 2, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
+		r_ssaoColorTex[i] = R_CreateTexture("***r_ssaoColorTex***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_pic, vid.width / 2, vid.height / 2, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
 
 	r_ssaoColorTexIndex = 0;
 
@@ -190,6 +190,69 @@ void CreateSSAOBuffer(void) {
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
 		Com_Printf(S_COLOR_RED"Failed!");
+	else
+		Com_Printf(S_COLOR_WHITE"succeeded\n");
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+void R_CreateScreenFbo() {
+	uint rb;
+	qboolean statusOK;
+
+	Com_Printf("Load "S_COLOR_YELLOW "HDR FBO ");
+
+	qglGenRenderbuffers(1, &rb);
+	qglBindRenderbuffer(GL_RENDERBUFFER, rb);
+	qglRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width, vid.height);
+
+	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	r_hdrScreen				= R_CreateTexture("***r_hdrScreen***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, 
+											it_pic, vid.width, vid.height,
+											GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, 
+											GL_FLOAT, qfalse, NULL);
+
+	r_hdrScreenCopy			= R_CreateTexture("***r_hdrScreenCopy***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, 
+											it_pic, vid.width, vid.height,
+											GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, 
+											GL_FLOAT, qfalse, NULL);
+
+	r_hdrScreenCopy2d		= R_CreateTexture("***r_hdrScreenCopy2d***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB, 
+											it_pic, vid.width, vid.height, 
+											GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, 
+											GL_FLOAT, qtrue, NULL);
+
+	r_fxaaTex				= R_CreateTexture("***r_fxaaTex***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB, 
+											it_pic, vid.width, vid.height, 
+											GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
+											GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+
+	r_fixFovTex				= R_CreateTexture("***r_fixFovTex***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB, 
+											it_pic, vid.width, vid.height, 
+											GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
+											GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+
+
+	r_depthStencilTexture	= R_CreateTexture("***r_depthStencilTexture***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_UNSIGNED_INT_24_8,
+											it_pic, vid.width, vid.height,
+											GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, 
+											GL_UNSIGNED_INT_24_8, qfalse, NULL);
+											
+
+	qglGenFramebuffers(1, &fbo._hdr);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdrScreen->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, r_hdrScreenCopy->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,		r_hdrScreenCopy2d->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D,		r_fxaaTex->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D,		r_fixFovTex->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_RECTANGLE, r_depthStencilTexture->texnum, 0);
+
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (!statusOK)
+		Com_Printf(S_COLOR_RED"Failed!\n");
 	else
 		Com_Printf(S_COLOR_WHITE"succeeded\n");
 
@@ -619,14 +682,9 @@ void R_InitEngineTextures (void) {
 	CreateWaterWarpTexture();
 	Load3dLut();
 
-	r_depthTex		=	R_CreateTexture("***r_depthTex***", GL_TEXTURE_RECTANGLE, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_INT, qfalse, NULL);
-	r_screenTex		=	R_CreateTexture("***r_screenTex***", GL_TEXTURE_RECTANGLE, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
-	r_fxaaTex		=	R_CreateTexture("***r_fxaaTex***", GL_TEXTURE_2D, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
-	r_fixFovTex		=	R_CreateTexture("***r_fixFovTex***", GL_TEXTURE_2D, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse,NULL);
 	r_cinImage		=	R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
-	r_bloomImage	=	R_CreateTexture("***r_bloomImage***", GL_TEXTURE_RECTANGLE, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
-	r_thermalImage	=	R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
-	r_screen2D		=	R_CreateTexture("***r_screen2D***", GL_TEXTURE_2D, r_srgbColorBuffer->integer ? GL_SRGB8 : GL_RGB8, GL_RGB, it_pic, vid.width, vid.height, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qtrue, NULL);
+	r_thermalImage	=	R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_pic, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+	r_bloomImage	=	R_CreateTexture("***r_bloomImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_pic, vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
 }
 
 

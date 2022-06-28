@@ -3016,6 +3016,39 @@ void CL_RailTrail (vec3_t start, vec3_t end) {
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
+
+	p->time = cl.time;
+	p->endTime = cl.time + 20000;
+	VectorClear(p->accel);
+	p->orient = 0;
+	p->flags = PARTICLE_STRETCH;
+	p->flags |= PARTICLE_OVERBRIGHT;
+	p->alpha = 1.0;
+	p->alphavel = -0.5 / (0.3 + frand() * 0.3);
+	p->sFactor = GL_SRC_ALPHA;
+	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
+	p->color[0] = cl_railcore_red->value;
+	p->color[1] = cl_railcore_green->value;
+	p->color[2] = cl_railcore_blue->value;
+
+	p->colorVel[0] = 0.01;
+	p->colorVel[1] = 0.01;
+	p->colorVel[2] = 0.01;
+	p->type = PT_BLASTER;
+	p->size = 3;
+	p->sizeVel = 1;
+
+	for (j = 0; j < 3; j++) {
+		p->org[j] = start[j];
+		p->length[j] = vec[j];
+		p->vel[j] = 0;
+		p->accel[j] = 0;
+	}
+
+	p = free_particles;
+	free_particles = p->next;
+	p->next = active_particles;
+	active_particles = p;
 	p->orient = 0;
 	p->flags = PARTICLE_SPIRAL;
 	p->flags |= PARTICLE_OVERBRIGHT;
@@ -3030,9 +3063,9 @@ void CL_RailTrail (vec3_t start, vec3_t end) {
 	p->color[1] = cl_railspiral_green->value;
 	p->color[2] = cl_railspiral_blue->value;
 
-	p->colorVel[0] = -0.5;
-	p->colorVel[1] = -0.75;
-	p->colorVel[2] = -1.0;
+	p->colorVel[0] = 0.01;
+	p->colorVel[1] = 0.01;
+	p->colorVel[2] = 0.01;
 	p->type = PT_BLASTER;
 	p->size = 2.8;
 	p->sizeVel = 1;
@@ -3043,44 +3076,6 @@ void CL_RailTrail (vec3_t start, vec3_t end) {
 		p->vel[j] = 0;
 		p->accel[j] = 0;
 	}
-
-
-	if (!free_particles)
-		return;
-
-	p = free_particles;
-	free_particles = p->next;
-	p->next = active_particles;
-	active_particles = p;
-
-	p->time = cl.time;
-	p->endTime = cl.time + 20000;
-	VectorClear (p->accel);
-	p->orient = 0;
-	p->flags = PARTICLE_STRETCH;
-	p->flags |= PARTICLE_OVERBRIGHT;
-	p->alpha = 1.0;
-	p->alphavel = -0.5 / (0.3 + frand () * 0.3);
-	p->sFactor = GL_SRC_ALPHA;
-	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
-	p->color[0] = cl_railcore_red->value;
-	p->color[1] = cl_railcore_green->value;
-	p->color[2] = cl_railcore_blue->value;
-
-	p->colorVel[0] = -0.5;
-	p->colorVel[1] = -0.75;
-	p->colorVel[2] = -1.0;
-	p->type = PT_BLASTER;
-	p->size = 3;
-	p->sizeVel = 1;
-
-	for (j = 0; j < 3; j++) {
-		p->org[j] = start[j];
-		p->length[j] = vec[j];
-		p->vel[j] = 0;
-		p->accel[j] = 0;
-	}
-
 }
 
 void CL_ParticleRick (vec3_t org, vec3_t dir) {

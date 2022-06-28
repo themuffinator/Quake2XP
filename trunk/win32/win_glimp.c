@@ -361,9 +361,19 @@ extern qboolean adlInit;
 ** GLimp_SetMode
 */
 
+typedef struct winScreenModes_s {
+	int num;
+	int w;
+	int h;
+	int hz;
+} winScreenModes_t;
+
+winScreenModes_t winScreenModes[128];
+#define NUM_WINSCREENMODES ( sizeof( winSreenModes ) / sizeof( winSreenModes[0] ) )
+
 rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean fullscreen )
 {
-	int width, height, i, idx, cvm, cdsRet, j;
+	int width, height, i, idx, cvm, cdsRet, j, count = 0;
 	const char *win_fs[] = { "Window", "Full Screen" };
 	cvar_t	*vid_monitor = Cvar_Get("vid_monitor", "0", CVAR_ARCHIVE);
 	char	monitorName[128], monitorModel[16];
@@ -473,6 +483,30 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		return rserr_invalid_mode;
 	}
 
+	memset(&dm, 0, sizeof(dm));
+	dm.dmSize = sizeof(dm);
+	
+	for (i = 0; EnumDisplaySettings(NULL, i, &dm) != 0; i++){
+
+		if (dm.dmPelsWidth < 1024 || dm.dmDisplayFrequency <60)
+			continue;
+
+		if (count == 0) {
+			winScreenModes[count].w = glw_state.desktopWidth;;
+			winScreenModes[count].h = glw_state.desktopHeight;
+			winScreenModes[count].hz = dm.dmDisplayFrequency;
+			winScreenModes[count].num = count;
+		}
+		else {
+			winScreenModes[count].w = dm.dmPelsWidth;
+			winScreenModes[count].h = dm.dmPelsHeight;
+			winScreenModes[count].hz = dm.dmDisplayFrequency;
+			winScreenModes[count].num = count;
+		}
+		Com_DPrintf("mode:%i %ix%i %ihz\n", winScreenModes[count].num, winScreenModes[count].w, winScreenModes[count].h, dm.dmDisplayFrequency);
+		count++;
+	}
+	gl_state.numSupportedRefrashes = count;
 
 	if(mode == 0){
 	width = glw_state.desktopWidth;

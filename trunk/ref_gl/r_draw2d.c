@@ -934,6 +934,8 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	int			row;
 	unsigned* dest;
 
+	qglEnable(GL_FRAMEBUFFER_SRGB);
+
 	qglClearColor(0.0, 0.0, 0.0, 0.0);
 
 	memset(image32, 0, sizeof(image32));
@@ -989,4 +991,5 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglDisable(GL_FRAMEBUFFER_SRGB);
 }

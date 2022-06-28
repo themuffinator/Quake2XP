@@ -54,7 +54,7 @@ void GL_UpdateLightColor(vec3_t color) {
 	if (lightUniforms.color[0] == color[0] && lightUniforms.color[1] == color[1] && lightUniforms.color[2] == color[2])
 		return;
 
-	qglUniform4f(U_COLOR, color[0], color[1], color[2], 1.0);
+	qglUniform4f(U_COLOR, color[0] * r_hdrLightScale->value, color[1] * r_hdrLightScale->value, color[2] * r_hdrLightScale->value, 1.0);
 
 	lightUniforms.color[0] = color[0];
 	lightUniforms.color[1] = color[1];

@@ -1037,7 +1037,16 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-	
+
+	Com_Printf("Load "S_COLOR_YELLOW"tonemap program"S_COLOR_WHITE" ");
+	tonemapProgram = R_FindProgram("tonemap", S_GEO);
+	if (tonemapProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
 
 #ifdef GLSL_LOADING_TIME
 	stop = Sys_Milliseconds ();

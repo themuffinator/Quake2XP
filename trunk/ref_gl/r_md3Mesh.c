@@ -1220,9 +1220,9 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 				normalArray[k][1] = verts[k].normal[1] * frontlerp + oldVerts[k].normal[1] * backlerp;
 				normalArray[k][2] = verts[k].normal[2] * frontlerp + oldVerts[k].normal[2] * backlerp;
 
-				colorArray[k][0] = currentShadowLight->color[0];
-				colorArray[k][1] = currentShadowLight->color[1];
-				colorArray[k][2] = currentShadowLight->color[2];
+				colorArray[k][0] = currentShadowLight->color[0] * r_hdrLightScale->value;
+				colorArray[k][1] = currentShadowLight->color[1] * r_hdrLightScale->value;
+				colorArray[k][2] = currentShadowLight->color[2] * r_hdrLightScale->value;
 				colorArray[k][3] = 1.0;
 		}
 
@@ -1234,8 +1234,8 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU3, r_lightCubeMap[currentShadowLight->filter]->handle);
 		GL_SetBindlessTexture(U_TMU4, rgh->handle);
 		GL_SetBindlessTexture(U_TMU5, skinBump->handle);
-		GL_SetBindlessTexture(U_TMU6, r_screenTex->handle);
-		GL_SetBindlessTexture(U_TMU7, r_depthTex->handle);
+		GL_SetBindlessTexture(U_TMU6, r_hdrScreenCopy->handle);
+		GL_SetBindlessTexture(U_TMU7, r_depthStencilTexture->handle);
 		GL_SetBindlessTexture(U_TMU8, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 
 		qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);

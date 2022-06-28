@@ -1768,8 +1768,6 @@ worldShadowLight_t *R_AddNewWorldLight (vec3_t origin, vec3_t color, float radiu
 	else
 		light->spherical = qfalse;
 
-	Clamp2RGB (light->startColor);
-
 	light->_cone = cone;
 	light->isStatic = isStatic;
 	light->isShadow = isShadow;
@@ -2609,11 +2607,12 @@ void R_DrawLightFlare () {
 	dist2 = VectorLength(v);
 	dist = dist2 * (currentShadowLight->flareSize * 0.01);
 	scale = ((1024.0 - dist2) / 1024.0) * 0.5;
-
+	if (scale < 0.01)
+		scale = 0.01;
 	VectorScale (currentShadowLight->color, scale, tmp);
-	
+
 	GL_SetBindlessTexture(U_TMU0, r_particleTexture[PT_FLARE]->handle);
-	GL_SetBindlessTexture(U_TMU1, r_depthTex->handle);
+	GL_SetBindlessTexture(U_TMU1, r_depthStencilTexture->handle);
 	
 	qglUniform2f(U_PARAM_VEC2_0, 1.0, 0.0);
 	qglUniform1f(U_PARAM_FLOAT_0, 10.0 * 1.5);
@@ -2652,6 +2651,7 @@ void R_DrawLightFlare () {
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TEX0);
 	qglDisableVertexAttribArray (ATT_COLOR);
+
 }
 
 void R_LightFlareOutLine() { //flare editing highlights

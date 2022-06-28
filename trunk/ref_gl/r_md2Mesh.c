@@ -513,9 +513,9 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 			normalArray[jj][1] = oldNormals[index_xyz][1] * backlerp + normals[index_xyz][1] * frontlerp;
 			normalArray[jj][2] = oldNormals[index_xyz][2] * backlerp + normals[index_xyz][2] * frontlerp;
 			
-			colorArray[jj][0] = currentShadowLight->color[0];
-			colorArray[jj][1] = currentShadowLight->color[1];
-			colorArray[jj][2] = currentShadowLight->color[2];
+			colorArray[jj][0] = currentShadowLight->color[0] * r_hdrLightScale->value;
+			colorArray[jj][1] = currentShadowLight->color[1] * r_hdrLightScale->value;
+			colorArray[jj][2] = currentShadowLight->color[2] * r_hdrLightScale->value;
 			colorArray[jj][3] = 1.0;
 		}
 	}

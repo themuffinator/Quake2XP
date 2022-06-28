@@ -513,7 +513,7 @@ typedef struct {
 
 
 typedef struct {
-	uint	hdrBuf;
+	uint	_hdr;
 	uint	mirror;
 	uint	nullfbo;
 	uint	ssao;

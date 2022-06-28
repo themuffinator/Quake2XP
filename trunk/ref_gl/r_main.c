@@ -328,23 +328,7 @@ void R_SetupFrame(void)
 		outMap = qfalse;
 
 	for (i = 0; i < 4; i++)
-		v_blend[i] = r_newrefdef.blend[i];
-
-	// clear out the portion of the screen that the NOWORLDMODEL defines
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
-
-			GL_Enable(GL_SCISSOR_TEST);
-			GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
-
-		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
-			qglClearColor(0.0, 0.0, 0.0, 0.0);
-			qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		} else
-			qglClear(GL_DEPTH_BUFFER_BIT);
-		GL_Disable(GL_SCISSOR_TEST);
-	}
-
-	
+		v_blend[i] = r_newrefdef.blend[i];	
 }
 
 /*
@@ -777,8 +761,6 @@ void R_RenderSprites(void)
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-//	GL_DepthMask(0);
-
 	qglEnableVertexAttribArray(ATT_POSITION);
 	qglEnableVertexAttribArray(ATT_TEX0);
 
@@ -789,8 +771,10 @@ void R_RenderSprites(void)
 	GL_BindProgram(spriteProgram);
 
 	GL_SetBindlessTexture(U_TMU0, r_distort->handle);
-	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
-	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
+//	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
+//	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
+	GL_SetBindlessTexture(U_TMU2, /*r_screenTex->handle*/r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU3, /*r_depthTex->handle*/r_depthStencilTexture->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 4.5);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -989,6 +973,28 @@ void R_RenderView (refdef_t *fd) {
 	R_SetupGL();
 	R_MarkLeaves();				// done here so we know if we're in water
 	
+	// clear out the portion of the screen that the NOWORLDMODEL defines
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL) {
+
+		GL_Enable(GL_SCISSOR_TEST);
+		GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+		qglEnable(GL_FRAMEBUFFER_SRGB);
+		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
+			qglClearColor(0.0, 0.0, 0.0, 0.0);
+			qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
+		else
+		qglClear(GL_DEPTH_BUFFER_BIT);
+		GL_Disable(GL_SCISSOR_TEST);
+	}
+	else {
+		qglDisable(GL_FRAMEBUFFER_SRGB);
+		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+		qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+		qglClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
 	R_DrawDepthScene();
 	R_SetFrustum(qfalse);
 	R_CaptureDepthBuffer();
@@ -1019,6 +1025,7 @@ void R_RenderView (refdef_t *fd) {
 		R_GlobalFog();
 
 	R_DrawPlayerWeapon();
+	R_CaptureColorBuffer();
 }
 
 
@@ -1074,13 +1081,13 @@ extern char buff17[128];
 extern worldShadowLight_t *selectedShadowLight;
 
 void R_FixFov(void);
+void R_ToneMaping(void);
 
 void R_RenderFrame(refdef_t * fd) {
 
 	R_RenderView(fd);
 	R_SetupOrthoMatrix();
 	R_SetLightLevel();
-
 	// post processing - cut off if player camera is out of map bounds
 	if (!outMap) {
 		R_FixFov();
@@ -1094,11 +1101,11 @@ void R_RenderFrame(refdef_t * fd) {
 		R_ScreenBlend();
 	}
 	R_ColorTemperatureCorrection();
+	R_ToneMaping();
 	R_lutCorrection();
-	
-	GL_CheckError("shadows", 1064, "");
 
 	// set alpha blend for 2D mode
+	qglDisable(GL_FRAMEBUFFER_SRGB);
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	GL_DepthMask(1);
@@ -1312,6 +1319,8 @@ void R_RegisterCvars(void)
 	r_contrast	=						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
 	r_saturation =						Cvar_Get("r_saturation", "1.0", CVAR_ARCHIVE);
 	r_gamma =							Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE); 
+	r_hdrExposure =						Cvar_Get("r_hdrExposure", "4.0", CVAR_ARCHIVE);
+	r_hdrLightScale =					Cvar_Get("r_hdrLightScale", "1.0", CVAR_ARCHIVE);
 
 	r_colorVibrance =					Cvar_Get("r_colorVibrance", "0.0", CVAR_ARCHIVE);
 	r_colorBalanceRed =					Cvar_Get("r_colorBalanceRed", "1.0", CVAR_ARCHIVE);
@@ -1596,6 +1605,7 @@ qboolean IsExtensionSupported(const char *name)
 void R_InitFboBuffers() {
 	
 	Com_Printf("Initializing FBOs...\n\n");
+	R_CreateScreenFbo();
 	CreateSSAOBuffer();
 	Com_Printf("\n");
 }
@@ -1807,7 +1817,6 @@ int R_Init(void *hinstance, void *hWnd)
 	glGenerateTextureMipmap =		(PFNGLGENERATETEXTUREMIPMAPPROC)qwglGetProcAddress("glGenerateTextureMipmap");
 	glTextureStorage3D		=		(PFNGLTEXTURESTORAGE3DPROC)		qwglGetProcAddress("glTextureStorage3D");
 	glTextureSubImage3D		=		(PFNGLTEXTURESUBIMAGE3DPROC)	qwglGetProcAddress("glTextureSubImage3D");
-
 	glGetTextureImage		=		(PFNGLGETTEXTUREIMAGEPROC)		qwglGetProcAddress("glGetTextureImage");
 
 	// texture storage
@@ -1824,9 +1833,14 @@ int R_Init(void *hinstance, void *hWnd)
 	glGetQueryObjectiv	= (PFNGLGETQUERYOBJECTIVPROC)	qwglGetProcAddress("glGetQueryObjectiv");
 	glGetQueryObjectuiv	= (PFNGLGETQUERYOBJECTUIVPROC)	qwglGetProcAddress("glGetQueryObjectuiv");
 
-	glGetProgramBinary =	(PFNGLGETPROGRAMBINARYPROC)		qwglGetProcAddress("glGetProgramBinary");
-	glProgramBinary =		(PFNGLPROGRAMBINARYPROC)		qwglGetProcAddress("glProgramBinary");
+	glGetProgramBinary	=	(PFNGLGETPROGRAMBINARYPROC)		qwglGetProcAddress("glGetProgramBinary");
+	glProgramBinary		=	(PFNGLPROGRAMBINARYPROC)		qwglGetProcAddress("glProgramBinary");
 	glProgramParameteri =	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
+
+	qglClampColorARB	=	(PFNGLCLAMPCOLORARBPROC)		qwglGetProcAddress("glClampColorARB");
+
+	qglClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
+	qglClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
 
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
@@ -1928,10 +1942,10 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 		gl_state.depthBoundsTest = qfalse;
 	}
-	if (r_srgbColorBuffer->integer && IsExtensionSupported("GL_ARB_framebuffer_sRGB")) {
-		qglEnable(GL_FRAMEBUFFER_SRGB);
-		Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
-	}
+//	if (r_srgbColorBuffer->integer && IsExtensionSupported("GL_ARB_framebuffer_sRGB")) {
+//		qglEnable(GL_FRAMEBUFFER_SRGB);
+//		Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
+//	}
 	Com_Printf("=====================================\n");
 
 	GL_SetDefaultState();
@@ -1995,7 +2009,8 @@ void R_Shutdown(void)
 #ifdef _WIN32
 	Cmd_RemoveCommand("gpuInfo");
 #endif
-	qglDeleteFramebuffers (1, &fboId);
+	qglDeleteFramebuffers (1, &fbo.ssao);
+	qglDeleteFramebuffers(1, &fbo._hdr);
 
 	DeleteShadowVertexBuffers();
 	R_ShutDownVertexBuffers();

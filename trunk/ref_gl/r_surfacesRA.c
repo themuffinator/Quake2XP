@@ -84,8 +84,8 @@ void R_DrawAlphaSurfaces() {
 	// setup program
 	GL_BindProgram(glassProgram);
 
-	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
-	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
+	GL_SetBindlessTexture(U_TMU2, /*r_screenTex->handle*/r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU3, /*r_depthTex->handle*/r_depthStencilTexture->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
@@ -169,8 +169,10 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 	GL_BindProgram(waterProgram);
 
 	GL_SetBindlessTexture(U_TMU1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->handle);
-	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
-	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
+//	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
+//	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
+	GL_SetBindlessTexture(U_TMU2, /*r_screenTex->handle*/r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU3, /*r_depthTex->handle*/r_depthStencilTexture->handle);
 
 	qglUniform1f(U_WATER_DEFORM_MUL, 1.0);
 	qglUniform1f(U_AMBIENT_LEVEL, ambientScale);
@@ -407,7 +409,7 @@ void R_UpdateLightRAuniforms(qboolean bModel){
 
 	qglUniform1i(U_AMBIENT_LIGHT, (int)currentShadowLight->isAmbient);
 	qglUniform3fv(U_LIGHT_POS, 1, currentShadowLight->origin);
-	qglUniform4f(U_COLOR, currentShadowLight->color[0], currentShadowLight->color[1], currentShadowLight->color[2], 1.0);
+	qglUniform4f(U_COLOR, currentShadowLight->color[0] * r_hdrLightScale->value, currentShadowLight->color[1] * r_hdrLightScale->value, currentShadowLight->color[2] * r_hdrLightScale->value, 1.0);
 	qglUniform1i(U_USE_FOG, (int)currentShadowLight->isFog);
 	qglUniform1f(U_FOG_DENSITY, currentShadowLight->fogDensity);
 	qglUniform1f(U_CAUSTICS_SCALE, 2.5);

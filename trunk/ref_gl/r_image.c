@@ -137,7 +137,8 @@ void R_CaptureColorBuffer(){
 		
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
-	glCopyTextureSubImage2D(r_screenTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 
@@ -146,8 +147,8 @@ void R_CaptureDepthBuffer(){
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	glBindTextureUnit(0, r_depthTex->texnum);
-	glCopyTextureSubImage2D(r_depthTex->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+	glBindTextureUnit(0, r_depthStencilTexture->texnum);
+	glCopyTextureSubImage2D(r_depthStencilTexture->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 /*
@@ -649,13 +650,13 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	imageIdx = image->texnum;
 
 	qboolean srgb = qfalse;
-	if (r_srgbColorBuffer->integer) {
-		if (image->type == it_pic) {
-			if (!strstr(image->name, "_bump"))
-				srgb = qtrue;
-		}
-	}
-
+//	if (r_srgbColorBuffer->integer) {
+//		if (image->type == it_pic) {
+//			if (!strstr(image->name, "_bump"))
+//				srgb = qtrue;
+//		}
+//	}
+	
 	qboolean unScaled = qfalse;
 	if (image->type == it_mipmap)
 		unScaled = qtrue;

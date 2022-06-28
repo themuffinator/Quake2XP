@@ -11,7 +11,7 @@
 # - cl_maxfps works fine at 60, and uses usleep() to wait
 #
 
-VERSION = '1.26.8'
+VERSION = '1.27.0'
 APPNAME = 'quake2xp'
 top = '.'
 out = 'build'
@@ -46,7 +46,7 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_c')
-    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'IL', 'ILU', 'ILUT', 'openal', 'x11']:
+    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'IL', 'ILU', 'ILUT', 'openal', 'x11', 'curl']:
         conf.check_cfg(package=lib, args=['--cflags', '--libs'])
 
 def build(bld):

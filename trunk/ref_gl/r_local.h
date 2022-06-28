@@ -150,8 +150,7 @@ int numgltextures;
 
 image_t *r_notexture;
 image_t *r_distort;
-image_t *r_predator;
-image_t *r_depthTex;
+//image_t *r_depthTex;
 image_t	*cinMap;
 
 image_t *r_particleTexture[PT_MAX];
@@ -163,16 +162,16 @@ image_t *draw_chars, *draw_charsRu, *draw_charsInt;
 image_t *r_DSTTex;
 
 image_t	*r_defBump;
-image_t	*r_screenTex;
-image_t	*Screen2D;
+//image_t	*r_screenTex;
+//image_t	*Screen2D;
 image_t	*r_envTex;
 image_t	*r_randomNormalTex;
 image_t	*r_conBump;
 
 image_t	*r_whiteMap;
 image_t *skinBump;
-image_t *r_shadowMask;
-image_t *r_depthMask;
+//image_t *r_shadowMask;
+//image_t *r_depthMask;
 
 image_t	*r_fxaaTex;
 image_t	*r_fixFovTex;
@@ -180,10 +179,15 @@ image_t	*r_fixFovTex;
 image_t *r_miniDepthTex;
 image_t *r_ssaoColorTex[2];
 
+image_t* r_hdrScreen;
+image_t* r_hdrScreenCopy;
+image_t* r_depthStencilTexture;
+image_t* r_hdrScreenCopy2d;
+
 image_t	*r_cinImage;
 image_t	*r_bloomImage;
 image_t	*r_thermalImage;
-image_t *r_screen2D;
+
 
 int			skyCube;
 uint64_t	skyCube_handle;
@@ -240,6 +244,8 @@ cvar_t *r_brightness;
 cvar_t *r_contrast;
 cvar_t *r_saturation;
 cvar_t *r_gamma;
+cvar_t *r_hdrExposure;
+cvar_t* r_hdrLightScale;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -363,6 +369,8 @@ extern int r_visframecount;
 
 qboolean xhargar2hack;
 qboolean RA_Frame;
+
+void R_CreateScreenFbo();
 
 void GL_SetBindlessTexture(int loc, uint64 handle);
 
@@ -657,6 +665,7 @@ typedef struct {
 	qboolean	texture_compression_bptc;
 	int			displayrefresh;
 	int			monitorWidth, monitorHeight;
+	int			numSupportedRefrashes;
 
 	qboolean	wgl_no_error;
 	qboolean	wgl_swap_control_tear;
@@ -979,6 +988,7 @@ glslProgram_t		*globalFogProgram;
 glslProgram_t		*spriteProgram;
 glslProgram_t		*screenFlashProgram;
 glslProgram_t		*tbnDebugProgram;
+glslProgram_t		*tonemapProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureDepthBuffer ();

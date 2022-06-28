@@ -30,6 +30,135 @@ char *GLimp_NvApi_GetThermalController(NV_THERMAL_CONTROLLER tc)
 	case NVAPI_THERMAL_CONTROLLER_UNKNOWN: return "Unknown";
 	}
 }
+void NvApi_GetDisplayInfo() {
+	NvAPI_Status status = NVAPI_OK;
+	NvU32 deviceCount = 0;
+	NV_DISPLAYCONFIG_PATH_INFO_V2* pathInfo = NULL;
+
+	Com_Printf("\n...collecting info from connected displays.\n");
+	status = NvAPI_DISP_GetDisplayConfig(&deviceCount, pathInfo);
+
+	if ((status == NVAPI_OK) && (deviceCount > 0)) {
+
+		pathInfo = malloc(deviceCount * (sizeof(NV_DISPLAYCONFIG_PATH_INFO_V2)));
+
+		for (int i = 0; i < deviceCount; i++){
+			pathInfo[i].targetInfo = 0;
+			pathInfo[i].targetInfoCount = 0;
+			pathInfo[i].version = NV_DISPLAYCONFIG_PATH_INFO_VER2;
+			pathInfo[i].sourceModeInfo = 0;
+			pathInfo[i].reserved = 0;
+		}
+
+		status = NvAPI_DISP_GetDisplayConfig(&deviceCount, pathInfo);
+		if (status == NVAPI_OK) {
+			for (int i = 0; i < deviceCount; i++)
+			{
+				pathInfo[i].sourceModeInfo = malloc(sizeof(NV_DISPLAYCONFIG_SOURCE_MODE_INFO_V1));
+				pathInfo[i].sourceModeInfo->reserved = 0;
+				pathInfo[i].targetInfo = malloc(pathInfo[i].targetInfoCount * sizeof(NV_DISPLAYCONFIG_PATH_TARGET_INFO_V2));
+				for (int j = 0; j < pathInfo[i].targetInfoCount; j++) {
+					pathInfo[i].targetInfo[j].details = malloc(sizeof(NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_V1));
+					pathInfo[i].targetInfo[j].details->version = NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_VER1;
+					pathInfo[i].targetInfo[j].details->reserved = 0;
+				}
+			}
+		}
+		
+		status = NvAPI_DISP_GetDisplayConfig(&deviceCount, pathInfo);
+		if (status == NVAPI_OK) {
+			//--------------
+			for (int i = 0; i < deviceCount; i++)
+			{
+				for (int j = 0; j < pathInfo[i].targetInfoCount; j++) {
+
+					Com_Printf("\n>%i:" S_COLOR_GREEN "%s\n",i, pathInfo[i].targetInfo[j].details->timing.etc.name);
+					Com_Printf("Connection Type: ");
+					switch (pathInfo[i].targetInfo[j].details->connector)
+					{
+					case NVAPI_GPU_CONNECTOR_DVI_I:
+						Com_Printf(S_COLOR_GREEN"DVI I\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_DVI_D:
+						Com_Printf(S_COLOR_GREEN"DVI D\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_LFH_DVI_I_1:
+						Com_Printf(S_COLOR_GREEN"LFH DVI I 1\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_LFH_DVI_I_2:
+						Com_Printf(S_COLOR_GREEN"LFH DVI I 2\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_DISPLAYPORT_EXTERNAL:
+						Com_Printf(S_COLOR_GREEN"DISPLAYPORT EXT\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_DISPLAYPORT_INTERNAL:
+						Com_Printf(S_COLOR_GREEN"DISPLAYPORT INT\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_DISPLAYPORT_MINI_EXT:
+						Com_Printf(S_COLOR_GREEN"DISPLAYPORT MINI EXT\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_HDMI_A:
+						Com_Printf(S_COLOR_GREEN"HDMI A\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_HDMI_C_MINI:
+						Com_Printf(S_COLOR_GREEN"HDMI C MINI\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_LFH_DISPLAYPORT_1:
+						Com_Printf(S_COLOR_GREEN"LFH DISPLAYPORT 1\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_LFH_DISPLAYPORT_2:
+						Com_Printf(S_COLOR_GREEN"LFH DISPLAYPORT 2\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_USB_C:
+						Com_Printf(S_COLOR_GREEN"USB C\n");
+						break;
+					case NVAPI_GPU_CONNECTOR_UNKNOWN:
+						Com_Printf(S_COLOR_MAGENTA"UNKNOW\n");
+						break;
+					default:
+						Com_Printf(S_COLOR_MAGENTA"UNKNOW\n");
+						break;
+					}
+					if(pathInfo[i].sourceModeInfo->colorFormat == NV_FORMAT_A16B16G16R16F)
+						Com_Printf("30bit Display: " S_COLOR_GREEN "true\n");
+					else
+						Com_Printf("30bit Display: " S_COLOR_GREEN "false\n");
+					Com_Printf("Scale Mode: ");
+					switch (pathInfo[i].targetInfo[j].details->scaling)
+					{
+					case NV_SCALING_DEFAULT:
+						Com_Printf(S_COLOR_GREEN"Default\n");
+						break;
+					case NV_SCALING_GPU_SCALING_TO_CLOSEST:
+						Com_Printf(S_COLOR_GREEN"Balanced  - Full Screen\n");
+						break;
+					case NV_SCALING_GPU_SCALING_TO_NATIVE:
+						Com_Printf(S_COLOR_GREEN"GPU - Full Screen\n");
+						break;
+					case NV_SCALING_GPU_SCANOUT_TO_NATIVE:
+						Com_Printf(S_COLOR_GREEN"GPU - Centered|No Scaling\n");
+						break;
+					case NV_SCALING_GPU_SCALING_TO_ASPECT_SCANOUT_TO_NATIVE:
+						Com_Printf(S_COLOR_GREEN"GPU - Aspect Ratio\n");
+						break;
+					case NV_SCALING_GPU_SCALING_TO_ASPECT_SCANOUT_TO_CLOSEST:
+						Com_Printf(S_COLOR_GREEN"Balanced  - Aspect Ratio\n");
+						break;
+					case NV_SCALING_GPU_SCANOUT_TO_CLOSEST:
+						Com_Printf(S_COLOR_GREEN"Balanced  - Centered|No Scaling\n");
+						break;
+					case NV_SCALING_GPU_INTEGER_ASPECT_SCALING:
+						Com_Printf(S_COLOR_GREEN"Force GPU - Integer Scaling\n");
+					default:
+						Com_Printf(S_COLOR_GREEN"Nothing\n");
+						break;
+					}
+				}
+			}
+			
+		}
+	}
+}
 
 void GLimp_InitNvApi() {
 
@@ -66,7 +195,7 @@ void GLimp_InitNvApi() {
 	Com_Printf("...found " S_COLOR_GREEN "%i " S_COLOR_WHITE "physical gpu's\n", physicalGpuCount);
 
 	nvApiInit = qtrue;
-
+	NvApi_GetDisplayInfo();
 	Com_Printf("\n==================================\n\n");
 }
 
