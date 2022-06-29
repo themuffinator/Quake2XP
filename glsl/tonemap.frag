@@ -16,17 +16,18 @@ vec3 uncharted2Tonemap(vec3 x) {
 }
 
 vec3 uncharted2(vec3 color) {
-  const float W = 11.2;
+  const float W = 1.0;
   vec3 curr = uncharted2Tonemap(u_exposure * color);
   vec3 whiteScale = 1.0 / uncharted2Tonemap(vec3(W));
   return curr * whiteScale;
 }
 
+void main(){
 
-void main()
-{
     vec3 hdrColor = texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb;
     fragData.rgb = uncharted2(hdrColor);
-    fragData.rgb = pow(fragData.rgb, vec3(1.0 / u_gamma));
+
+    float gamma = 1.0 / 2.2; // hdr gamma
+    fragData.rgb = pow( fragData.rgb, vec3(gamma) );
     fragData.a = 1.0;
 }
