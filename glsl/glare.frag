@@ -3,6 +3,7 @@ layout (bindless_sampler, location  = U_TMU0) uniform	sampler2DRect	u_map;
 
 layout(location = U_PARAM_FLOAT_0) uniform float	u_glareParams;
 
+
 void main(void) // Robert Beckebans hdr glare
 {
 	vec2 st = gl_FragCoord.xy;
@@ -28,31 +29,28 @@ void main(void) // Robert Beckebans hdr glare
 	
 	vec3 sumColor = vec3( 0.0 );
 	vec3 sumSpectrum = vec3( 0.0 );
-
 	const int samples = 9;
 	
-	float scale = 3.0; // bloom width
-	const float weightScale = 1.5; // bloom strength
+	float scale = 13.0; // glare width
+	const float weightScale = 1.5; // glare power
 	
 	for( int i = 0; i < samples; i++ )
     {
 		vec3 so = chromaticOffsets[ i ];
-		vec4 color = texture2DRect( u_map, st + vec2( float( i ), 0 )  *  scale );
+		vec4 color = texture2DRect( u_map, st + vec2( float( i ), 0 )  * vec2(0.5, 0.25) *  scale );
 			
 		float weight = gaussFact[ i ];
 		sumColor += color.rgb * ( so.rgb * weight * weightScale );
 	}
-	
-#if 1
+
 	for( int i = 1; i < samples; i++ )
     {
 		vec3 so = chromaticOffsets[ i ];
-		vec4 color = texture2DRect( u_map, st + vec2( float( -i ), 0 )  *  scale );
+		vec4 color = texture2DRect( u_map, st + vec2( float( -i ), 0 ) * vec2(0.5, 0.25)  *  scale );
 			
 		float weight = gaussFact[ i ];
 		sumColor += color.rgb * ( so.rgb * weight * weightScale );
 	}
-#endif
 	
 	fragData = vec4( sumColor, 1.0 );
 }

@@ -212,7 +212,7 @@ void main (void) {
       metalness = 0.0;
     }
   
-  roughness = clamp(roughness, 0.001, 1.0);
+  roughness = clamp(roughness, 0.01, 1.0);
 
 	if (u_isAmbient == 0) {
        
@@ -235,8 +235,12 @@ void main (void) {
 			else{
 			if(u_blinnPhong == 1)
 				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * v_lightColor.rgb * cubeFilter.rgb * attenMap; 
-			if(u_blinnPhong == 0)
-				metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap; 
+			if(u_blinnPhong == 0)  {
+				if(u_useSSLR == 1)
+          metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
+       if(u_useSSLR != 1) 
+          metall_color = Lighting_BRDF(diffuseMap.rgb, specular, roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
+      } 
 			}		
 
 			fragData = mix(skin_color, vec4(metall_color, 1.0), SSS);	
