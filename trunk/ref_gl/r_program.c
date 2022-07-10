@@ -1048,6 +1048,16 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"final pass program"S_COLOR_WHITE" ");
+	finalPassProgram = R_FindProgram("finalPass", S_GEO);
+	if (finalPassProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 #ifdef GLSL_LOADING_TIME
 	stop = Sys_Milliseconds ();
 	sec = (float)stop - (float)start;

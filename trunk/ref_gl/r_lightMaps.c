@@ -195,7 +195,7 @@ static void LM_UploadBlock () {
 		glTextureParameteri(gl_lms.texnum[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(gl_lms.texnum[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glTextureStorage2D(gl_lms.texnum[i], 1, GL_RGB16F, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
+		glTextureStorage2D(gl_lms.texnum[i], 1, GL_RGB8, LIGHTMAP_SIZE, LIGHTMAP_SIZE);
 		glTextureSubImage2D(gl_lms.texnum[i], 0, 0, 0, LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGB, GL_UNSIGNED_BYTE, gl_lms.lightmap_buffer[i]);
 
 		gl_lms.handle[i] = glGetTextureHandleARB(gl_lms.texnum[i]);

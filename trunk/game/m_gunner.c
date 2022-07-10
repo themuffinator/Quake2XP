@@ -456,12 +456,13 @@ void GunnerFire (edict_t *self) {
 	VectorSubtract (target, start, aim);
 	VectorNormalize (aim);
 	monster_fire_bullet (self, start, aim, 3, 4, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, flash_number);
+//	monster_fire_blaster(self, start, aim, 10, 1000, MZ2_MEDIC_BLASTER_1, qtrue);
 }
 
 void GunnerGrenade (edict_t *self) {
 	vec3_t	start;
 	vec3_t	forward, right;
-	vec3_t	aim;
+	vec3_t	aim/*, vec, dir*/;
 	int		flash_number;
 
 	if (self->s.frame == FRAME_attak105)
@@ -478,8 +479,13 @@ void GunnerGrenade (edict_t *self) {
 
 	//FIXME : do a spread -225 -75 75 225 degrees around forward
 	VectorCopy (forward, aim);
-
 	monster_fire_grenade (self, start, aim, 50, 600, flash_number);
+
+//	VectorCopy(self->enemy->s.origin, vec);
+//	vec[2] += self->enemy->viewheight;
+//	VectorSubtract(vec, start, dir);
+//	VectorNormalize(dir);
+//	monster_fire_rocket(self, start, dir, 50, 500, MZ2_TANK_ROCKET_1);
 }
 
 mframe_t gunner_frames_attack_chain[] =

@@ -83,7 +83,7 @@ typedef struct {
 
 extern viddef_t vid;
 
-#define	MAX_GLTEXTURES		32768 
+#define	MAX_GLTEXTURES	SHRT_MAX
 
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
@@ -183,6 +183,7 @@ image_t* r_hdrScreen;
 image_t* r_hdrScreenCopy;
 image_t* r_depthStencilTexture;
 image_t* r_hdrScreenCopy2d;
+image_t* r_finalScreen;
 
 image_t	*r_cinImage;
 image_t	*r_bloomImage;
@@ -371,6 +372,8 @@ qboolean xhargar2hack;
 qboolean RA_Frame;
 
 void R_CreateScreenFbo();
+void R_FboFinal();
+void CreateBloomBuffer(void);
 
 void GL_SetBindlessTexture(int loc, uint64 handle);
 
@@ -989,6 +992,7 @@ glslProgram_t		*spriteProgram;
 glslProgram_t		*screenFlashProgram;
 glslProgram_t		*tbnDebugProgram;
 glslProgram_t		*tonemapProgram;
+glslProgram_t		*finalPassProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureDepthBuffer ();

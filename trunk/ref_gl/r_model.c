@@ -1880,8 +1880,8 @@ void Mod_LoadFogScript(model_t * mod) {
 		//can't find fog script? Set default  params 
 		Com_Printf("Load default fog values for:" S_COLOR_GREEN " %s\n", mod->name);
 		fog.type = 0;
-		VectorSet(fog.worldColor, 1.0, 1.0, 0.5);
-		VectorSet(fog.skyColor, 1.0, 0.5, 0.3);
+		VectorSet(fog.worldColor, 1.0, 0.3, 0.1);
+		VectorSet(fog.skyColor, 1.0, 0.35, 0.0);
 		fog.worldDensity = 0.02500;
 		fog.skyDensity = 0.005;
 		fog.worldBias = 0.0;
@@ -2407,7 +2407,7 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 
 	// set default render fx values
 	mod->glowCfg[0] = 0.3;
-	mod->glowCfg[1] = 1.0;
+	mod->glowCfg[1] = 3.0;
 	mod->glowCfg[2] = 5.666;
 	mod->noSelfShadow = (qboolean)qfalse;
 	mod->modelScale = 1.0;
@@ -2917,7 +2917,7 @@ void Mod_FreeAll() {
 
 }
 
-#ifndef _WIN32
+#ifdef _WIN32
 /// from Tenebrae, asm by Berserker
 qboolean HasSharedLeafs(byte *v1, byte *v2) {
 

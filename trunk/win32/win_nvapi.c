@@ -123,6 +123,7 @@ void NvApi_GetDisplayInfo() {
 						Com_Printf("30bit Display: " S_COLOR_GREEN "true\n");
 					else
 						Com_Printf("30bit Display: " S_COLOR_GREEN "false\n");
+
 					Com_Printf("Scale Mode: ");
 					switch (pathInfo[i].targetInfo[j].details->scaling)
 					{

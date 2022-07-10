@@ -694,8 +694,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	qglUniform1i(U_TRANS_PASS, 0);
 
 	float alphaShift = sin(ref_realtime * 5.666);
-	alphaShift = (alphaShift + 1) * 0.5f;
-	alphaShift = clamp(alphaShift, 0.01, 1.0);
+	alphaShift = (alphaShift + 2.0) * 0.5f;
+	alphaShift = clamp(alphaShift, 0.01, 4.0);
 
 	qglUniform1f(U_COLOR_OFFSET, alphaShift);
 	qglUniform1f(U_ENV_SCALE, 0.1);

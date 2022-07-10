@@ -421,7 +421,7 @@ void M_ColorInit() {
 	if (!r_fixFovStrength)
 		r_fixFovStrength = Cvar_Get("r_fixFovStrength", "0.0", CVAR_ARCHIVE);
 
-	r_gamma->value = ClampCvar(0.1, 2.5, r_gamma->value);
+	r_gamma->value = ClampCvar(1.0, 2.2, r_gamma->value);
 	r_brightness->value = ClampCvar(0.1, 2.0, r_brightness->value);
 	r_contrast->value = ClampCvar(0.1, 2.0, r_contrast->value);
 	r_saturation->value = ClampCvar(0.1, 2.0, r_saturation->value);
@@ -449,8 +449,8 @@ void M_ColorInit() {
 	s_gamma_slider.generic.y = 10 * ui_fontScale->value;
 	s_gamma_slider.generic.name = "Gamma";
 	s_gamma_slider.generic.callback = GammaCallback;
-	s_gamma_slider.minvalue = 1;
-	s_gamma_slider.maxvalue = 20;
+	s_gamma_slider.minvalue = 10;
+	s_gamma_slider.maxvalue = 22;
 	s_gamma_slider.curvalue = r_gamma->value * 10;
 	s_gamma_slider.generic.statusbar = "Screen Gamma";
 

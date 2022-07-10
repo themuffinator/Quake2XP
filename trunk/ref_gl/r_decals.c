@@ -142,7 +142,9 @@ void R_RenderDecals(qboolean twoside)
 
 		for (i = 0; i < 3; i++) {
 			decalColor[i] = dl->color[i] + (dl->endColor[i] - dl->color[i]) * endLerp;
-		
+			//hdr - negative color clamp
+			decalColor[i] = clamp(decalColor[i], 0.0, 3.0);
+			
 			if (decalColor[i] < dl->endColor[i])
 				decalColor[i] = dl->endColor[i];
 		}

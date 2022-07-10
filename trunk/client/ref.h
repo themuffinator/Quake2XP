@@ -514,11 +514,9 @@ typedef struct {
 
 typedef struct {
 	uint	_hdr;
-	uint	mirror;
-	uint	nullfbo;
-	uint	ssao;
-	uint	stencil;
-
+	uint	_final;
+	uint	_bloom;
+	uint	_ssao;
 }fbo_t;
 
 fbo_t fbo;

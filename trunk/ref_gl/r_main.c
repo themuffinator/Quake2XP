@@ -1318,8 +1318,8 @@ void R_RegisterCvars(void)
 	r_brightness =						Cvar_Get("r_brightness", "1.0", CVAR_ARCHIVE);
 	r_contrast	=						Cvar_Get("r_contrast", "1.0", CVAR_ARCHIVE);
 	r_saturation =						Cvar_Get("r_saturation", "1.0", CVAR_ARCHIVE);
-	r_gamma =							Cvar_Get("r_gamma", "1.0", CVAR_ARCHIVE); 
-	r_hdrExposure =						Cvar_Get("r_hdrExposure", "4.0", CVAR_ARCHIVE);
+	r_gamma =							Cvar_Get("r_gamma", "2.2", CVAR_ARCHIVE); 
+	r_hdrExposure =						Cvar_Get("r_hdrExposure", "1.0", CVAR_ARCHIVE);
 	r_hdrLightScale =					Cvar_Get("r_hdrLightScale", "1.0", CVAR_ARCHIVE);
 
 	r_colorVibrance =					Cvar_Get("r_colorVibrance", "0.0", CVAR_ARCHIVE);
@@ -1606,7 +1606,9 @@ void R_InitFboBuffers() {
 	
 	Com_Printf("Initializing FBOs...\n\n");
 	R_CreateScreenFbo();
+	R_FboFinal();
 	CreateSSAOBuffer();
+	CreateBloomBuffer();
 	Com_Printf("\n");
 }
 
@@ -1839,8 +1841,8 @@ int R_Init(void *hinstance, void *hWnd)
 
 	qglClampColorARB	=	(PFNGLCLAMPCOLORARBPROC)		qwglGetProcAddress("glClampColorARB");
 
-	qglClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
-	qglClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
+//	qglClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
+//	qglClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
 
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
@@ -2009,8 +2011,9 @@ void R_Shutdown(void)
 #ifdef _WIN32
 	Cmd_RemoveCommand("gpuInfo");
 #endif
-	qglDeleteFramebuffers (1, &fbo.ssao);
+	qglDeleteFramebuffers (1, &fbo._ssao);
 	qglDeleteFramebuffers(1, &fbo._hdr);
+	qglDeleteFramebuffers(1, &fbo._final);
 
 	DeleteShadowVertexBuffers();
 	R_ShutDownVertexBuffers();

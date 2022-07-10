@@ -219,10 +219,15 @@ void CL_AddParticles (void) {
 
 		if (alpha > 1.0)
 			alpha = 1;
-
+		
 		color[0] = p->color[0] + p->colorVel[0] * time;
 		color[1] = p->color[1] + p->colorVel[1] * time;
 		color[2] = p->color[2] + p->colorVel[2] * time;
+
+		// hdr rendering - clamp negative values
+		color[0] = clamp(color[0], 0.0, 3.0);
+		color[1] = clamp(color[1], 0.0, 3.0);
+		color[2] = clamp(color[2], 0.0, 3.0);
 
 		time2 = time * time;
 
@@ -2448,9 +2453,9 @@ void CL_BlasterTrail (vec3_t start, vec3_t end) {
 		p->flags = PARTICLE_DEFAULT;
 		p->alpha = 1.0;
 		p->alphavel = -1.0 / (0.3 + frand () * 0.2);
-		p->color[0] = 0.97;
-		p->color[1] = 0.46;
-		p->color[2] = 0.14;
+		p->color[0] = 0.25;
+		p->color[1] = 0.125;
+		p->color[2] = 0.035;
 
 		p->colorVel[0] = 0;
 		p->colorVel[1] = 0;
@@ -3031,9 +3036,9 @@ void CL_RailTrail (vec3_t start, vec3_t end) {
 	p->color[1] = cl_railcore_green->value;
 	p->color[2] = cl_railcore_blue->value;
 
-	p->colorVel[0] = 0.01;
-	p->colorVel[1] = 0.01;
-	p->colorVel[2] = 0.01;
+	p->colorVel[0] = -0.5;
+	p->colorVel[1] = -0.75;
+	p->colorVel[2] = -1.0;
 	p->type = PT_BLASTER;
 	p->size = 3;
 	p->sizeVel = 1;
@@ -3063,9 +3068,9 @@ void CL_RailTrail (vec3_t start, vec3_t end) {
 	p->color[1] = cl_railspiral_green->value;
 	p->color[2] = cl_railspiral_blue->value;
 
-	p->colorVel[0] = 0.01;
-	p->colorVel[1] = 0.01;
-	p->colorVel[2] = 0.01;
+	p->colorVel[0] = -0.5;
+	p->colorVel[1] = -0.75;
+	p->colorVel[2] = -1.0;
 	p->type = PT_BLASTER;
 	p->size = 2.8;
 	p->sizeVel = 1;
