@@ -532,6 +532,9 @@
     <ClInclude Include="client\curl\urlapi.h">
       <Filter>Source Files\Client\Headers\curl</Filter>
     </ClInclude>
+    <ClInclude Include="ref_gl\ImageLib\stb_image.h">
+      <Filter>Source Files\Renderer\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="win32\icon1.ico">
