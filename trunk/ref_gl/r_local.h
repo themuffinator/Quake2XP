@@ -100,6 +100,11 @@ typedef enum {
 
 #include "r_model.h"
 
+typedef struct hdri_s {
+	float* data;
+	uint	width, height;
+} hdri_t;
+
 void GL_SetDefaultState (void);
 void GL_UpdateSwapInterval (void);
 
@@ -1164,10 +1169,11 @@ typedef enum {
 }plane_t;
 
 typedef struct img_s {
-	byte* pixels;
+	byte*	pixels;
 	int		width;
 	int		height;
 } img_t;
+void R_FlipImage(int idx, img_t* pix, byte* dst);
 
 /*
 ====================================================================

@@ -387,50 +387,151 @@ void R_SetSky(char* name, float rotate, vec3_t axis) {
 
 }
 
-void R_FlipImage(int idx, img_t* pix, byte* dst);
-unsigned	trans[4096 * 4096];
+#define STB_IMAGE_IMPLEMENTATION
+#include "ImageLib/stb_image.h"
+
+uint	transi[4096 * 4096];
+float	transf[1024 * 1024];
+
+void R_FlipImageFloat(int i, hdri_t* hdri, float* dst) {
+	float* from;
+	float* src = hdri->data;
+	int	width = hdri->width;
+	int	height = hdri->height;
+	int	x, y;
+
+	if (i == 1)		// bk
+	{
+		for (y = height - 1; y >= 0; y--) {
+			for (x = width - 1; x >= 0; x--) {	// copy rgb components
+				from = src + (x * height + y) * 3;
+				dst[0] = from[0];
+				dst[1] = from[1];
+				dst[2] = from[2];
+				dst += 3;
+			}
+		}
+		return;
+	}
+
+	if (i == 2)		// lf
+	{
+		for (y = height - 1; y >= 0; y--) {
+			for (x = 0; x < width; x++) {	// copy rgb components
+				from = src + (y * width + x) * 3;
+				dst[0] = from[0];
+				dst[1] = from[1];
+				dst[2] = from[2];
+				dst += 3;
+			}
+		}
+		return;
+	}
+
+	if (i == 3)		// rt
+	{
+		for (y = 0; y < height; y++) {
+			for (x = width - 1; x >= 0; x--) {	// copy rgb components
+				from = src + (y * width + x) * 3;
+				dst[0] = from[0];
+				dst[1] = from[1];
+				dst[2] = from[2];
+				dst += 3;
+			}
+		}
+		return;
+	}
+
+	// ft, up, dn
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {	// copy rgb components
+			from = src + (x * height + y) * 3;
+			dst[0] = from[0];
+			dst[1] = from[1];
+			dst[2] = from[2];
+			dst += 3;
+		}
+	}
+}
+
 void R_GenSkyCubeMap(char* name) {
 	int		i, minw, minh, maxw, maxh;
 	char	pathname[MAX_QPATH];
 	img_t	pix[6];
+	hdri_t	hdri[6];
+
+	qboolean hdr = qfalse;
 
 	strncpy(skyname, name, sizeof(skyname) - 1);
 
 	glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &skyCube);
 
+	Com_sprintf(pathname, sizeof(pathname), "%s/env/hdr/%s%s.hdr", FS_Gamedir(), skyname, cubeSufGL[0]);
+	if (stbi_is_hdr(pathname)) {
+		hdr = qtrue;
+	}
 	minw = minh = 0;
 	maxw = maxh = 9999999;
+	int bpp = 0;
 	for (i = 0; i < 6; i++) {
 		pix[i].pixels = NULL;
 		pix[i].width = pix[i].height = 0;
-		Com_sprintf(pathname, sizeof(pathname), "env/%s%s.tga", skyname, cubeSufGL[i]);
-		// Berserker: stop spam
-		if (FS_LoadFile(pathname, NULL) != -1) {
-			IL_LoadImage(pathname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
-			if (pix[i].width) {
-				if (minw < pix[i].width)
-					minw = pix[i].width;
-				if (maxw > pix[i].width)
-					maxw = pix[i].width;
-			}
+		
+		hdri[i].width = hdri[i].height = 0;
+		hdri[i].data = NULL;
 
-			if (pix[i].height) {
-				if (minh < pix[i].height)
-					minh = pix[i].height;
-				if (maxh > pix[i].height)
-					maxh = pix[i].height;
+		if (hdr) {
+			Com_sprintf(pathname, sizeof(pathname), "%s/env/hdr/%s%s.hdr", FS_Gamedir(), skyname, cubeSufGL[i]);
+			hdri[i].data = stbi_loadf(pathname, &hdri[i].width, &hdri[i].height, &bpp, 0);
+
+		}
+		else {
+			Com_sprintf(pathname, sizeof(pathname), "env/%s%s.tga", skyname, cubeSufGL[i]);
+
+			// Berserker: stop spam
+			if (FS_LoadFile(pathname, NULL) != -1) {
+
+				IL_LoadImage(pathname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
+				if (pix[i].width) {
+					if (minw < pix[i].width)
+						minw = pix[i].width;
+					if (maxw > pix[i].width)
+						maxw = pix[i].width;
+				}
+
+				if (pix[i].height) {
+					if (minh < pix[i].height)
+						minh = pix[i].height;
+					if (maxh > pix[i].height)
+						maxh = pix[i].height;
+				}
 			}
 		}
 	}
 
-	int numMips = CalcMipmapCount(minw, minh);
-	glTextureStorage2D(skyCube, numMips, GL_RGB8, minw, minh);
+	int numMips;
+	if (hdr) {
+		numMips = CalcMipmapCount(hdri[0].width, hdri[0].height);
+		glTextureStorage2D(skyCube, numMips, GL_RGB32F, hdri[0].width, hdri[0].height);
+	}
+	else {
+		numMips = CalcMipmapCount(minw, minh);
+		glTextureStorage2D(skyCube, numMips, GL_RGB8, minw, minh);
+	}
 
 	for (i = 0; i < 6; i++) {
 
-		R_FlipImage(i, &pix[i], (byte*)trans);
-		free(pix[i].pixels);
-		glTextureSubImage3D(skyCube, 0, 0, 0, i, minw, minh, 1, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+		if (!hdr) {
+			R_FlipImage(i, &pix[i], (byte*)transi);
+			free(pix[i].pixels);
+			glTextureSubImage3D(skyCube, 0, 0, 0, i, minw, minh, 1, GL_RGB, GL_UNSIGNED_BYTE, transi);
+		}
+		else {
+			R_FlipImageFloat(i, &hdri[i], transf);
+			stbi_image_free(hdri[i].data);
+			glTextureSubImage3D(skyCube, 0, 0, 0, i, hdri[i].width, hdri[i].height, 1, GL_RGB, GL_FLOAT,transf);
+
+		}
 	}
 
 	glTextureParameteri(skyCube, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

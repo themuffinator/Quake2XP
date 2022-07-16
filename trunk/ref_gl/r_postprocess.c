@@ -562,7 +562,6 @@ void R_SSAO (void)
 	// blur
 	r_ssaoColorTexIndex = 0;
 
-//	qglBindFramebuffer(GL_FRAMEBUFFER, fbo.ssao);
 	GL_SetBindlessTexture(U_TMU1, r_miniDepthTex->handle);
 
 	GL_BindProgram(ssaoBlurProgram);
@@ -583,7 +582,6 @@ void R_SSAO (void)
 	}
 
 	// restore
-//	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 

@@ -212,8 +212,8 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 				dst[0] = from[0];
 				dst[1] = from[1];
 				dst[2] = from[2];
-				dst[3] = 255;
-				dst += 4;
+			//	dst[3] = 255;
+				dst += 3;
 			}
 		}
 		return;
@@ -227,8 +227,8 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 				dst[0] = from[0];
 				dst[1] = from[1];
 				dst[2] = from[2];
-				dst[3] = 255;
-				dst += 4;
+			//	dst[3] = 255;
+				dst += 3;
 			}
 		}
 		return;
@@ -242,8 +242,8 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 				dst[0] = from[0];
 				dst[1] = from[1];
 				dst[2] = from[2];
-				dst[3] = 255;
-				dst += 4;
+			//	dst[3] = 255;
+				dst += 3;
 			}
 		}
 		return;
@@ -256,11 +256,12 @@ void R_FlipImage (int idx, img_t *pix, byte *dst) {
 			dst[0] = from[0];
 			dst[1] = from[1];
 			dst[2] = from[2];
-			dst[3] = 255;
-			dst += 4;
+		//	dst[3] = 255;
+			dst += 3;
 		}
 	}
 }
+
 
 image_t *R_LoadLightFilter (int id) {
 	int		i, minw, minh, maxw, maxh;
@@ -334,11 +335,11 @@ image_t *R_LoadLightFilter (int id) {
 			allNull = qfalse;
 			R_FlipImage (i, &pix[i], (byte*)trans);
 			free (pix[i].pixels);
-			glTextureSubImage3D(image->texnum, 0, 0, 0, i, minw, minh, 1, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+			glTextureSubImage3D(image->texnum, 0, 0, 0, i, minw, minh, 1, GL_RGB, GL_UNSIGNED_BYTE, trans);
 		}
 		else {
-			nullpixels = (byte*)calloc (minw*minh * 4, 1);
-			glTextureSubImage3D(image->texnum, 0, 0, 0, i, minw, minh, 1, GL_RGBA, GL_UNSIGNED_BYTE, nullpixels);
+			nullpixels = (byte*)calloc (minw*minh * 3, 1);
+			glTextureSubImage3D(image->texnum, 0, 0, 0, i, minw, minh, 1, GL_RGB, GL_UNSIGNED_BYTE, nullpixels);
 			free (nullpixels);
 		}
 
