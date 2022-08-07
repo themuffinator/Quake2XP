@@ -685,7 +685,7 @@ cmodel_t *CM_LoadMap (char *name, qboolean clientload, unsigned *checksum) {
 	strcat (entfile, ".ent");
 	entlength = FS_LoadFile (entfile, (void **)&entbuf);
 	
-	if (!entbuf || !useRussianLoc->integer) {
+	if (!entbuf/* || !useRussianLoc->integer*/) {
 		CMod_LoadEntityString(&header.lumps[LUMP_ENTITIES]);
 	//	Com_Printf("Russian Localization not found. Use English Localization.\n");
 		Com_Printf("Load bsp entity string...\n");

@@ -980,18 +980,18 @@ void R_RenderView (refdef_t *fd) {
 		GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 		qglEnable(GL_FRAMEBUFFER_SRGB);
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
-			qglClearColor(0.0, 0.0, 0.0, 0.0);
+			qglClearColor(0.0, 0.0, 0.0, 1.0);
 			qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 		else
 		qglClear(GL_DEPTH_BUFFER_BIT);
-		GL_Disable(GL_SCISSOR_TEST);
 	}
 	else {
+		GL_Disable(GL_SCISSOR_TEST);
 		qglDisable(GL_FRAMEBUFFER_SRGB);
 		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 		qglDrawBuffer(GL_COLOR_ATTACHMENT0);
-		qglClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -1102,7 +1102,7 @@ void R_RenderFrame(refdef_t * fd) {
 	}
 	R_ColorTemperatureCorrection();
 	R_ToneMaping();
-	R_lutCorrection();
+//	R_lutCorrection();
 
 	// set alpha blend for 2D mode
 	qglDisable(GL_FRAMEBUFFER_SRGB);
@@ -1841,8 +1841,8 @@ int R_Init(void *hinstance, void *hWnd)
 
 	qglClampColorARB	=	(PFNGLCLAMPCOLORARBPROC)		qwglGetProcAddress("glClampColorARB");
 
-//	qglClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
-//	qglClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
+	qglClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
+	qglClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
 
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);

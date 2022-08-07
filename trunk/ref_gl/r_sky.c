@@ -31,7 +31,7 @@ float skyrotate;
 vec3_t skyaxis;
 vec3_t		SkyVertexArray[MAX_TRIANGLES];
 index_t		skyIndex[MAX_INDICES];
-static int	numVerts, idx;
+static int	numSkyVerts, numSkyIdx;
 void IL_LoadImage(char* filename, byte** pic, int* width, int* height, ILenum type);
 
 vec3_t skyclip[6] = {
@@ -283,8 +283,8 @@ void GenSkyVertices(float x, float y, int axis) {
 		else
 			v[j] = b[k - 1];
 	}
-	VA_SetElem3(SkyVertexArray[numVerts], v[0], v[1], v[2]);
-	numVerts++;
+	VA_SetElem3(SkyVertexArray[numSkyVerts], v[0], v[1], v[2]);
+	numSkyVerts++;
 
 }
 
@@ -320,19 +320,22 @@ void R_DrawSkyBox(qboolean color) {
 
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.skyMatrix);
 
+	numSkyVerts = numSkyIdx = 0;
+
 	if (skyrotate) {			// check for no sky at all
 		for (i = 0; i < 6; i++)
-			if (skymins[0][i] < skymaxs[0][i]
-				&& skymins[1][i] < skymaxs[1][i])
+			if (skymins[0][i] < skymaxs[0][i] && skymins[1][i] < skymaxs[1][i])
 				break;
-		if (i == 6)
-			return;	// nothing visible
-	}
 
+		if (i == 6) {
+			glBindVertexArray(0);
+			qglBindBuffer(GL_ARRAY_BUFFER, 0);
+			return;	// nothing visible
+		}
+	}
+	
 	if (color)
 		GL_SetBindlessTexture(U_TMU0, skyCube_handle);
-
-	numVerts = idx = 0;
 
 	for (i = 0; i < 6; i++) {
 
@@ -347,22 +350,22 @@ void R_DrawSkyBox(qboolean color) {
 			|| skymins[1][i] >= skymaxs[1][i])
 			continue;
 
-		skyIndex[idx++] = numVerts + 0;
-		skyIndex[idx++] = numVerts + 1;
-		skyIndex[idx++] = numVerts + 3;
-		skyIndex[idx++] = numVerts + 3;
-		skyIndex[idx++] = numVerts + 1;
-		skyIndex[idx++] = numVerts + 2;
+		skyIndex[numSkyIdx++] = numSkyVerts + 0;
+		skyIndex[numSkyIdx++] = numSkyVerts + 1;
+		skyIndex[numSkyIdx++] = numSkyVerts + 3;
+		skyIndex[numSkyIdx++] = numSkyVerts + 3;
+		skyIndex[numSkyIdx++] = numSkyVerts + 1;
+		skyIndex[numSkyIdx++] = numSkyVerts + 2;
 
 		GenSkyVertices(skymins[0][i], skymins[1][i], i);
 		GenSkyVertices(skymins[0][i], skymaxs[1][i], i);
 		GenSkyVertices(skymaxs[0][i], skymaxs[1][i], i);
 		GenSkyVertices(skymaxs[0][i], skymins[1][i], i);	
 	}
-	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec3_t), SkyVertexArray);
-	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numVerts * 3 * sizeof(uint), skyIndex);
+	qglBufferSubData(GL_ARRAY_BUFFER, 0, numSkyVerts * sizeof(vec3_t), SkyVertexArray);
+	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numSkyVerts * 3 * sizeof(uint), skyIndex);
 
-	qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, 0);
+	qglDrawElements(GL_TRIANGLES, numSkyIdx, GL_UNSIGNED_SHORT, 0);
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -455,7 +458,7 @@ void R_FlipImageFloat(int i, hdri_t* hdri, float* dst) {
 }
 
 void R_GenSkyCubeMap(char* name) {
-	int		i, minw, minh, maxw, maxh;
+	int		i;
 	char	pathname[MAX_QPATH];
 	img_t	pix[6];
 	hdri_t	hdri[6];
@@ -470,8 +473,7 @@ void R_GenSkyCubeMap(char* name) {
 	if (stbi_is_hdr(pathname)) {
 		hdr = qtrue;
 	}
-	minw = minh = 0;
-	maxw = maxh = 9999999;
+
 	int bpp = 0;
 	for (i = 0; i < 6; i++) {
 		pix[i].pixels = NULL;
@@ -483,7 +485,6 @@ void R_GenSkyCubeMap(char* name) {
 		if (hdr) {
 			Com_sprintf(pathname, sizeof(pathname), "%s/env/hdr/%s%s.hdr", FS_Gamedir(), skyname, cubeSufGL[i]);
 			hdri[i].data = stbi_loadf(pathname, &hdri[i].width, &hdri[i].height, &bpp, 0);
-
 		}
 		else {
 			Com_sprintf(pathname, sizeof(pathname), "env/%s%s.tga", skyname, cubeSufGL[i]);
@@ -492,19 +493,6 @@ void R_GenSkyCubeMap(char* name) {
 			if (FS_LoadFile(pathname, NULL) != -1) {
 
 				IL_LoadImage(pathname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
-				if (pix[i].width) {
-					if (minw < pix[i].width)
-						minw = pix[i].width;
-					if (maxw > pix[i].width)
-						maxw = pix[i].width;
-				}
-
-				if (pix[i].height) {
-					if (minh < pix[i].height)
-						minh = pix[i].height;
-					if (maxh > pix[i].height)
-						maxh = pix[i].height;
-				}
 			}
 		}
 	}
@@ -515,8 +503,8 @@ void R_GenSkyCubeMap(char* name) {
 		glTextureStorage2D(skyCube, numMips, GL_RGB32F, hdri[0].width, hdri[0].height);
 	}
 	else {
-		numMips = CalcMipmapCount(minw, minh);
-		glTextureStorage2D(skyCube, numMips, GL_RGB8, minw, minh);
+		numMips = CalcMipmapCount(pix[0].width, pix[0].height);
+		glTextureStorage2D(skyCube, numMips, GL_RGB8, pix[0].width, pix[0].height);
 	}
 
 	for (i = 0; i < 6; i++) {
@@ -524,13 +512,12 @@ void R_GenSkyCubeMap(char* name) {
 		if (!hdr) {
 			R_FlipImage(i, &pix[i], (byte*)transi);
 			free(pix[i].pixels);
-			glTextureSubImage3D(skyCube, 0, 0, 0, i, minw, minh, 1, GL_RGB, GL_UNSIGNED_BYTE, transi);
+			glTextureSubImage3D(skyCube, 0, 0, 0, i, pix[i].width, pix[i].height, 1, GL_RGB, GL_UNSIGNED_BYTE, transi);
 		}
 		else {
 			R_FlipImageFloat(i, &hdri[i], transf);
 			stbi_image_free(hdri[i].data);
 			glTextureSubImage3D(skyCube, 0, 0, 0, i, hdri[i].width, hdri[i].height, 1, GL_RGB, GL_FLOAT,transf);
-
 		}
 	}
 
