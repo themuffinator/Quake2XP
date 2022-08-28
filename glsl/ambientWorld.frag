@@ -122,7 +122,7 @@ void main (void) {
 	}
 
 	if (u_ssao == 1)
-		fragData.xyz *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
+		fragData.xyz *= texture(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
 
 	// fake AO/cavity
 	fragData.xyz *= normalMap.z * 0.5 + 0.5;
@@ -132,5 +132,5 @@ void main (void) {
 
 // DEBUG
 //	if (u_ssao == 1)
-//		fragData.xyz = texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
+//		fragData.xyz = texture(u_ssaoMap, gl_FragCoord.xy * 0.5).xyz;
 }

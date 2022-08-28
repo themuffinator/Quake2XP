@@ -37,14 +37,14 @@ void main(void){
 	vec2 aspectCorrect = vec2(1.0, ASPECTRATIO);
    
 	// Z-feather
-	float depth = DecodeDepth(texture2DRect(u_DepthTex, gl_FragCoord.xy).x, u_dofParams.zw);
+	float depth = DecodeDepth(texture(u_DepthTex, gl_FragCoord.xy).x, u_dofParams.zw);
 	float factor = depth - u_dofParams.x;
 
 	vec2 dofblur = vec2 (clamp(factor * u_dofParams.y, -3.0, 3.0));
 
 	vec4 col = vec4(0.0);
 	for (int i = 0; i< DOF_SAMPLES; i++)
-		col += texture2DRect(u_ScreenTex, gl_FragCoord.xy + (dofOffsets[i] * aspectCorrect) * dofblur);
+		col += texture(u_ScreenTex, gl_FragCoord.xy + (dofOffsets[i] * aspectCorrect) * dofblur);
 	
 	fragData = col / DOF_SAMPLES;
 }

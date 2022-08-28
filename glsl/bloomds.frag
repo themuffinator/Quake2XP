@@ -5,7 +5,7 @@ layout (location = U_PARAM_FLOAT_0)	uniform float u_BloomThreshold;
 
 void main()   
 {  
-vec4 tex = texture2DRect( u_map, gl_FragCoord.xy);  
+vec4 tex = texture( u_map, gl_FragCoord.xy);  
 // Calculate luminance
 float lum = dot(vec4(0.2125, 0.7154, 0.0721, 0.0), tex);
 

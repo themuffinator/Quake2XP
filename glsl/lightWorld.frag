@@ -142,7 +142,7 @@ void main (void) {
         
 		fragData.rgb =  brdfColor  * attenMap * shadow * cubeFilter.rgb; 
 		if(u_ssao == 1)
-			fragData.rgb *= texture2DRect(u_SSAOMap, gl_FragCoord.xy * 0.5).rgb;
+			fragData.rgb *= texture(u_SSAOMap, gl_FragCoord.xy * 0.5).rgb;
 
 		fragData.a = 1.0;
      }

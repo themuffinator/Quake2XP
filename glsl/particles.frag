@@ -18,7 +18,7 @@ void main (void) {
 	
 	if(u_thickness > 0.0){
 	// Z-feather
-	float depth = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+	float depth = DecodeDepth(texture(u_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 	float softness = clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
 	
 	fragData = color * v_color * u_colorScale;

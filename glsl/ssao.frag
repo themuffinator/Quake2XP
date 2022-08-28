@@ -35,7 +35,7 @@ void main (void) {
 	vec3 randomNormal = texture(u_randomNormalMap, gl_FragCoord.xy * (1.0 / 4.0)).xyz * 2.0 - 1.0;
 
 	// get fragment depth
-	float centerDepth = texture2DRect(u_DNMiniMap, gl_FragCoord.xy).x;
+	float centerDepth = texture(u_DNMiniMap, gl_FragCoord.xy).x;
 
 	// compute sample scale
 	vec3 scale = vec3(u_ssaoParms.y *
@@ -58,31 +58,31 @@ void main (void) {
 	for (int i = 0; i < 2; i++) {
 		bias = reflect(kernel[i*4+0], randomNormal) * scale;
 
-		depths[0].x = texture2DRect(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
+		depths[0].x = texture(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
 		#ifdef HQ
 			bias *= HQ_SCALE;
-			depths[1].x = texture2DRect(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
+			depths[1].x = texture(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
 		#endif
 
 		bias = reflect(kernel[i*4+1], randomNormal) * scale;
-		depths[0].y = texture2DRect(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
+		depths[0].y = texture(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
 		#ifdef HQ
 			bias *= HQ_SCALE;
-			depths[1].y = texture2DRect(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
+			depths[1].y = texture(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
 		#endif
 
 		bias = reflect(kernel[i*4+2], randomNormal) * scale;
-		depths[0].z = texture2DRect(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
+		depths[0].z = texture(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
 		#ifdef HQ
 			bias *= HQ_SCALE;
-			depths[1].z = texture2DRect(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
+			depths[1].z = texture(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
 		#endif
 
 		bias = reflect(kernel[i*4+3], randomNormal) * scale;
-		depths[0].w = texture2DRect(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
+		depths[0].w = texture(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
 		#ifdef HQ
 			bias *= HQ_SCALE;
-			depths[1].w = texture2DRect(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
+			depths[1].w = texture(u_DNMiniMap, gl_FragCoord.xy + bias.xy).x + bias.z;
 		#endif
 
 		#ifdef HQ

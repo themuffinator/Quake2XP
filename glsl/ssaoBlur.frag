@@ -12,9 +12,9 @@ layout(location = U_PARAM_INT_0)	uniform int		u_numSamples;		// to each side, wi
 
 void main (void) {
 	vec2 centerTC = gl_FragCoord.xy;
-	float centerDepth = texture2DRect(u_DNMiniMap, centerTC).x;
+	float centerDepth = texture(u_DNMiniMap, centerTC).x;
 	float sum = float(u_numSamples) + 1.0;
-	vec4 color = texture2DRect(u_colorMiniMap, centerTC) * sum;
+	vec4 color = texture(u_colorMiniMap, centerTC) * sum;
 
 	for (int i = 1; i <= u_numSamples; i++) {
 		float f = float(i);
@@ -23,8 +23,8 @@ void main (void) {
 		vec2 sampleTC0 = centerTC + u_axisMask * f;
 		vec2 sampleTC1 = centerTC - u_axisMask * f;
 
-		float depth0 = texture2DRect(u_DNMiniMap, sampleTC0).x;
-		float depth1 = texture2DRect(u_DNMiniMap, sampleTC1).x;
+		float depth0 = texture(u_DNMiniMap, sampleTC0).x;
+		float depth1 = texture(u_DNMiniMap, sampleTC1).x;
 
 		float diff0 = 8.0 * (1.0 - depth0 / centerDepth);
 		float diff1 = 8.0 * (1.0 - depth1 / centerDepth);
@@ -32,8 +32,8 @@ void main (void) {
 		float w0 = max(0.5 - 0.75 * abs(diff0) - 0.25 * diff0, 0.0) * scale;
 		float w1 = max(0.5 - 0.75 * abs(diff1) - 0.25 * diff1, 0.0) * scale;
 
-		color += texture2DRect(u_colorMiniMap, sampleTC0) * w0;
-		color += texture2DRect(u_colorMiniMap, sampleTC1) * w1;
+		color += texture(u_colorMiniMap, sampleTC0) * w0;
+		color += texture(u_colorMiniMap, sampleTC1) * w1;
 
 		sum += w0 + w1;
 	}

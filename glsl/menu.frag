@@ -16,7 +16,7 @@ vec4 SepiaColor (vec4 color)
 void main(void) 
 {
 	vec2 uv = gl_FragCoord.xy / u_screenSize;
-	vec4 color = texture2DRect(u_ScreenTex, gl_FragCoord.xy);
+	vec4 color = texture(u_ScreenTex, gl_FragCoord.xy);
 	color *= 0.45;
 	vec4 sepia = SepiaColor(color);
 

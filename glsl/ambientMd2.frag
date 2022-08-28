@@ -15,6 +15,7 @@ layout(location = U_ENV_PASS)		uniform int		u_isEnvMap;
 layout(location = U_SHELL_PASS)		uniform	int		u_isShell;
 layout(location = U_USE_SSAO)		uniform int		u_ssao;
 layout(location = U_COLOR_OFFSET)	uniform float	u_AddShift; 
+layout(location = U_PARAM_INT_0)	uniform bool	u_nwm; 
 
 void main ()
 {
@@ -31,14 +32,16 @@ void main ()
   // fake AO/cavity
 	fragData.rgb = diffuse.rgb * (normalMap.z * 0.5 + 0.5);
 
-
 	if (u_ssao == 1)
-		fragData.rgb *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).rgb;
+		fragData.rgb *= texture(u_ssaoMap, gl_FragCoord.xy * 0.5).rgb;
 
 	fragData.rgb += glow.rgb * u_AddShift;
 
 	if (u_isEnvMap == 1)
 		fragData.rgb += texture(u_env, v_envCoord).rgb * glow.a * u_envScale;
+	
+	if(u_nwm)
+		fragData.rgb = pow(fragData.rgb, vec3(1.0/2.2));
 
 	fragData.a = 1.0;
 }

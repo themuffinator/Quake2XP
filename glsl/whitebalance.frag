@@ -33,7 +33,7 @@ vec3 ColorTemperatureToRGB(float temperatureInKelvins)
 
 void main(void){
 
-vec3 rawColor = texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb;
+vec3 rawColor = texture(u_ScreenTex, gl_FragCoord.xy).rgb;
 vec3 colorTempRGB;
 	
 if(u_colorTempK > 999.0)

@@ -6,8 +6,8 @@ layout (location = U_PARAM_FLOAT_0)	uniform float	u_bloomParams; //multipler
 
 void main(void) { 
 
-	vec4 screen = texture2DRect(u_map0, gl_FragCoord.xy); 
-	vec4 bloom = texture2DRect(u_map1, gl_FragCoord.xy * 0.25);
-	screen += bloom * u_bloomParams;
+	vec4 screen = texture(u_map0, gl_FragCoord.xy); 
+	vec4 bloom = texture(u_map1, gl_FragCoord.xy * 0.25);
+	screen += (bloom * 0.5) * u_bloomParams; // bloom scale - x pass + y pass
 	fragData = screen;
 }

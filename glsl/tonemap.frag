@@ -26,7 +26,7 @@ vec3 uncharted2(vec3 color) {
 
 void main(){
 
-    vec3 hdrColor = texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb;
+    vec3 hdrColor = texture(u_ScreenTex, gl_FragCoord.xy).rgb;
 //    vec3 minAvgMax = textureLod(u_LevelTex, gl_FragCoord.xy, u_maxmip).rgb;
 
     fragData.rgb = uncharted2(hdrColor);

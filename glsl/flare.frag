@@ -17,7 +17,7 @@ void main(void)
 	vec4 tex = texture(u_map, v_texCoord.st);
 	
   // Z-feather
-	float depth = DecodeDepth(texture2DRect(u_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+	float depth = DecodeDepth(texture(u_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 	float softness = clamp((depth - v_depth) / u_thickness, 0.0, 1.0);
 	
 	fragData = tex * v_color;

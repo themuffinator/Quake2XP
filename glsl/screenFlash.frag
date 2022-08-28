@@ -7,7 +7,7 @@ layout(location = U_PARAM_VEC3_0) uniform vec3	u_flashColor;
 void main(void) 
 {
 	vec2 uv = gl_FragCoord.xy / u_screenSize;
-	vec3 color = texture2DRect(u_ScreenTex, gl_FragCoord.xy).rgb;
+	vec3 color = texture(u_ScreenTex, gl_FragCoord.xy).rgb;
 
 	float dist = length( uv - vec2(0.5,0.5) ); //find center
     float vignette = 1.4 - dist;

@@ -1,5 +1,6 @@
 //!#include "include/global.inc"
 layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	 	u_ScreenTex;
+layout (bindless_sampler, location = U_TMU1) uniform sampler2DRect	 	u_depthMap;
 
 layout (location = U_PARAM_VEC3_0)	uniform vec3 u_params; // x-velocity, y-velocity, numSamples 
 
@@ -13,7 +14,7 @@ void main(void)
 
 	for(int i = 1; i < u_params.z; ++i) {		
 		//Sample the color buffer along the velocity vector.
-		vec4 accum = texture2DRect(u_ScreenTex, uv);
+		vec4 accum = texture(u_ScreenTex, uv);
 		//Add the current color to our color sum.  
 		color += accum;  
 		uv += velocity;
@@ -21,4 +22,5 @@ void main(void)
 
 	//Average all of the samples to get the final blur color.  
 	fragData =  color / u_params.z; 
+
 }

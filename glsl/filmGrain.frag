@@ -65,7 +65,7 @@ const vec4 C = vec4(0.211324865405187,	// (3.0-sqrt(3.0))/6.0
 void main()
 {    
 	vec2 uv = gl_FragCoord.xy / u_screenSize;
-	fragData = texture2DRect(u_ScreenTex, gl_FragCoord.xy);
+	fragData = texture(u_ScreenTex, gl_FragCoord.xy);
 	
 	float noise = snoise(uv * vec2(u_screenSize.x + u_rand * u_screenSize.y)) * 0.5;
 	fragData += noise * u_params.x;     

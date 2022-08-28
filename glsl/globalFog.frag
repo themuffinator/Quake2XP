@@ -11,8 +11,8 @@ layout	(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
 #include depth.inc  //!#include "include/depth.inc"
 
 void main(void){
-	vec3 backBuffer = texture2DRect(u_screenMap, gl_FragCoord.xy).rgb;
-	float depth = DecodeDepth(texture2DRect(u_depthMap, gl_FragCoord.xy).x, u_depthParms);
+	vec3 backBuffer = texture(u_screenMap, gl_FragCoord.xy).rgb;
+	float depth = DecodeDepth(texture(u_depthMap, gl_FragCoord.xy).x, u_depthParms);
 	
 	bool mask;
 	

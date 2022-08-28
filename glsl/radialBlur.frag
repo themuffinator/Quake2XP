@@ -22,21 +22,21 @@ void main (void) {
 	vec4 accum = vec4(0.0);
 	vec2 add = blurVec.xy * strength;
 	vec2 st = gl_FragCoord.xy;
-	accum += texture2DRect(u_r_screenTex, st);
+	accum += texture(u_r_screenTex, st);
 	st += add;
-	accum += texture2DRect(u_r_screenTex, st);
+	accum += texture(u_r_screenTex, st);
 	st += add;
-	accum += texture2DRect(u_r_screenTex, st);
+	accum += texture(u_r_screenTex, st);
+	st += add;            
+	accum += texture(u_r_screenTex, st);
 	st += add;
-	accum += texture2DRect(u_r_screenTex, st);
+	accum += texture(u_r_screenTex, st);
 	st += add;
-	accum += texture2DRect(u_r_screenTex, st);
+	accum += texture(u_r_screenTex, st);
 	st += add;
-	accum += texture2DRect(u_r_screenTex, st);
+	accum += texture(u_r_screenTex, st);
 	st += add;
-	accum += texture2DRect(u_r_screenTex, st);
-	st += add;
-	accum += texture2DRect(u_r_screenTex, st);
+	accum += texture(u_r_screenTex, st);
 	
 	fragData = accum * weight;
 }

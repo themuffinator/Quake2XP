@@ -28,7 +28,7 @@ void main (void) {
 	vec4 diffuse  = texture(u_colorMap,  v_deformTexCoord.xy);
 
 	// Z-feather
-	float depth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+	float depth = DecodeDepth(texture(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 	N *= clamp((depth - v_depth) / u_thickness0, 0.0, 1.0);
 	// scale by the deform multiplier and the viewport size
 	N *= v_deformMul * u_viewport.xy;
@@ -42,7 +42,7 @@ void main (void) {
 	}
 	N *= A;
 	N *= softness;
-	vec3 deform = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
+	vec3 deform = texture(g_colorBufferMap, gl_FragCoord.xy + N).xyz;
 	diffuse *= A;
 	fragData = vec4(deform, 1.0) + diffuse * u_alpha;
 

@@ -168,7 +168,7 @@ Diffuse term.
 ==============
 */
 vec3 Diffuse_Lambert (in vec3 color) {
-	return color;
+	return color * INV_PI;
 }
 
 vec3 Diffuse_Burley (in vec3 color, in float roughness, in float NV, in float NL, in float VH) {
@@ -176,7 +176,7 @@ vec3 Diffuse_Burley (in vec3 color, in float roughness, in float NV, in float NL
 	float FdV = 1.0 + (FD90 - 1.0) * pow(1.0 - NV, 5.0);
 	float FdL = 1.0 + (FD90 - 1.0) * pow(1.0 - NL, 5.0);
 
-	return color * FdV * FdL;
+	return color * INV_PI * FdV * FdL;
 }
 
 vec3 Diffuse_OrenNayar (in vec3 color, in float roughness, in float NV, in float NL, in float VH) {
@@ -187,7 +187,7 @@ vec3 Diffuse_OrenNayar (in vec3 color, in float roughness, in float NV, in float
 	float Cosri = VL - NV * NL;
 	float C2 = 0.45 * m2 / (m2 + 0.09) * Cosri * (Cosri >= 0.0 ? min(1.0, NL / NV) : NL);
 
-	return color * (NL * C1 + C2);
+	return color * INV_PI * (NL * C1 + C2);
 }
 
 /*

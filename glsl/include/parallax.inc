@@ -125,7 +125,7 @@ vec2 LinearStepParallax(in sampler2D u_HeightMap, in vec2 texCoord, vec3 V){
 		offsetBest.xy -= displacement * vec2(textureLod(u_HeightMap, texCoord.xy, lod).a * offset);
 
 	return offsetBest;
-
+	
 }
 
 

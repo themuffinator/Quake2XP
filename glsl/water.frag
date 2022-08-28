@@ -67,16 +67,16 @@ void main (void) {
 	float sceneDepth;
 
 	if (u_transSurf == 1) {
-		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+		sceneDepth = DecodeDepth(texture(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 		N.xy = offset.xy * clamp((sceneDepth + v_positionVS.z) / u_thickness, 0.0, 1.0);
 		// scale by the deform multiplier & viewport size
 		tc = N.xy * v_deformMul * u_viewport;
 
 		// chromatic aberration approximation
 		vec3 refractColor;
-		refractColor.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.x).r;
-		refractColor.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.y).g;
-		refractColor.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.z).b;
+		refractColor.r = texture(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.x).r;
+		refractColor.g = texture(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.y).g;
+		refractColor.b = texture(g_colorBufferMap, gl_FragCoord.xy + tc.xy * cromaticOffcet.z).b;
 
 		// blend water texture
 		fragData = vec4(mix(refractColor, diffuse * (v_color.rgb), v_color.a), 1.0);
@@ -125,7 +125,7 @@ void main (void) {
 		rayPos += R * stepSize;
 
 		tc = VS2UV(rayPos).xy;
-		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
 
 		if (sceneDepth <= -rayPos.z)
 			break;	// intersection
@@ -141,13 +141,13 @@ void main (void) {
 	stepSize *= 0.5;
 	rayPos -= R * stepSize;
 	tc = VS2UV(rayPos).xy;
-	sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+	sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
 
 	for (int j = 0; j < MAX_STEPS_BINARY; j++, stepSize *= 0.5) {
 		rayPos += R * stepSize * (step(-rayPos.z, sceneDepth) - 0.5);
 
 		tc = VS2UV(rayPos).xy;
-		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
 
 		float delta = -rayPos.z - sceneDepth;
 
@@ -173,6 +173,6 @@ void main (void) {
 	scale /= 1.0 + abs(sceneDepth + rayPos.z) * FOREGROUND_FALLOFF;
 
 	// combine
-	fragData.xyz = mix(fragData.xyz, texture2DRect(g_colorBufferMap, tc).xyz, scale);
+	fragData.xyz = mix(fragData.xyz, texture(g_colorBufferMap, tc).xyz, scale);
 	fragData.w = 1.0;
 }

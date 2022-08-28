@@ -18,6 +18,7 @@ layout(location = U_SHELL_PASS)		uniform	int		u_isShell;
 layout(location = U_COLOR_OFFSET)	uniform float	u_AddShift; 
 layout(location = U_PARAM_INT_0)	uniform int		u_alphaMask; 
 layout(location = U_USE_SSAO)		uniform int		u_ssao;
+layout(location = U_PARAM_INT_1)	uniform bool	u_nwm; 
 
 void main ()
 {
@@ -35,6 +36,8 @@ void main ()
 		diffuse *= (normalMap.z * 0.5 + 0.5);
 		diffuse += env;
 		fragData = diffuse;
+		if(u_nwm)
+			fragData.rgb = pow(fragData.rgb, vec3(1.0/2.2));
 		return;
 	}
 
@@ -45,12 +48,15 @@ void main ()
 	fragData.rgb = diffuse.rgb * (bakedAO * 2.0);
 	
 	if(u_ssao == 1)
-		fragData.rgb *= texture2DRect(u_ssaoMap, gl_FragCoord.xy * 0.5).rgb;
+		fragData.rgb *= texture(u_ssaoMap, gl_FragCoord.xy * 0.5).rgb;
 
 	fragData.rgb += glow * u_AddShift;
 
 	if (u_isEnvMap == 1)
 		fragData.rgb += texture(u_env, v_envCoord).xyz * u_envScale;
+	
+	if(u_nwm)
+		fragData.rgb = pow(fragData.rgb, vec3(1.0/2.2));
 
 	fragData.a = 1.0;
 }

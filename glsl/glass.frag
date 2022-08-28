@@ -26,7 +26,7 @@ void main (void) {
 	vec4 diffuse  = texture(u_colorMap,  v_deformTexCoord.xy);
 
 	// Z-feather
-	float depth = DecodeDepth(texture2DRect(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+	float depth = DecodeDepth(texture(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
 	N *= clamp((depth - v_depth) / u_thickness0, 0.0, 1.0);
 	// scale by the deform multiplier and the viewport size
 	N *= v_deformMul * u_viewport.xy;
@@ -34,9 +34,9 @@ void main (void) {
 	// world refracted surfaces
 	// chromatic aberration approximation
     vec4 clearGlass;
-    clearGlass.r = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
-	clearGlass.g = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
-	clearGlass.b = texture2DRect(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
+    clearGlass.r = texture(g_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
+	clearGlass.g = texture(g_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
+	clearGlass.b = texture(g_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
 
     vec4 bluredGlass = boxBlur2(g_colorBufferMap, max(8.0, diffuse.a * u_blurScale), N);
 

@@ -27,6 +27,7 @@ layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 layout(location = U_USE_SSAO)			uniform int		u_ssao;
+layout(location = U_PARAM_INT_5)		uniform bool	u_nwm;
 
 in vec2			v_texCoord;
 in vec3			v_viewVec;
@@ -103,7 +104,7 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness){
 		rayPos += R * stepSize;
 
 		tc = VS2UV(rayPos).xy;
-		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
 
 		if (sceneDepth <= -rayPos.z)
 			break;	// intersection
@@ -116,13 +117,13 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness){
 	rayPos -= R * stepSize;
 	tc = VS2UV(rayPos).xy;
 
-	sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+	sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
 
 	for (int j = 0; j < MAX_STEPS_BINARY; j++, stepSize *= 0.5) {
 		rayPos += R * stepSize * (step(-rayPos.z, sceneDepth) - 0.5);
 
 		tc = VS2UV(rayPos).xy;
-		sceneDepth = DecodeDepth(texture2DRect(g_depthBufferMap, tc).x, u_depthParms);
+		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
 
 		float delta = -rayPos.z - sceneDepth;
 
@@ -225,6 +226,8 @@ void main (void) {
 
 	//		vec4 tmp = mix(skin_color, vec4(brdfColor, 1.0), SSS);
 			fragData = mix(v_lightColor, vec4(tmp, 1.0), fogFactor) * attenMap; // u_LightColor == fogColor
+			if(u_nwm)
+				fragData.rgb = pow(fragData.rgb, vec3(1.0/2.2));
 			return;
 		}
 	
@@ -264,7 +267,9 @@ void main (void) {
        }
       }	
 	  if(u_ssao == 1){
-		fragData.rgb *= texture2DRect(u_SSAOMap, gl_FragCoord.xy * 0.5).rgb;
+		fragData.rgb *= texture(u_SSAOMap, gl_FragCoord.xy * 0.5).rgb;
 		fragData.rgb *= vec3(backedAO);
 	}
+	if(u_nwm)
+		fragData.rgb = pow(fragData.rgb, vec3(1.0/2.2));
 }

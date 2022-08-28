@@ -1,23 +1,21 @@
 //!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2DRect u_screenTex;
 
-const vec4 colors[3] = vec4[](vec4(0.0, 0.0, 1.0, 1.0),
-                              vec4(1.0, 1.0, 0.0, 1.0),
-                              vec4(1.0, 0.0, 0.0, 1.0));
+const vec4 colors[5] = vec4[](vec4(0.0, 0.0, 1.0, 1.0), //blue
+                              vec4(0.0, 1.0, 0.0, 1.0), //green
+                              vec4(1.0, 0.0, 0.0, 1.0), //red
+                              vec4(1.0, 1.0, 0.0, 1.0), //yellow
+                              vec4(1.0, 1.0, 1.0, 1.0));//white
+                              
+vec3 unreal(vec3 x) {
+  return x / (x + 0.155) * 1.019;
+}
+void main(){
 
-void main()
-{
- vec2 ds = gl_FragCoord.xy * 2.0; 
- vec4 pixcol = texture2DRect(u_screenTex, ds);
- pixcol += texture2DRect( u_screenTex, ds + vec2(1.0, 0.0)); 
- pixcol += texture2DRect( u_screenTex, ds + vec2(0.0, 1.0)); 
- pixcol += texture2DRect( u_screenTex, ds + vec2(1.0, 1.0)); 
- pixcol *= 0.25;
+vec4 color = texture(u_screenTex, gl_FragCoord.xy);
+color.rgb = unreal(color.rgb); // fix out of range
+float lum = dot(vec3(0.2125, 0.7154, 0.0721), color.rgb);
 
- float lum = (pixcol.r  +pixcol.g + pixcol.b)/3.0;
-
- int ix = (lum < 0.5) ? 0 : 1;
-
- fragData = mix(colors[ix], colors[ix+1], (lum-float(ix) * 0.5) * 2.0);
-
+int ix = (lum < 0.5) ? 0 : 1;
+fragData = mix(colors[ix], colors[ix+1], (lum-float(ix) * 0.5) * 2.0);
 }

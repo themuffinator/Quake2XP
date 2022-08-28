@@ -13,7 +13,7 @@ layout(location = U_USE_CAUSTICS)		uniform int		u_isCaustics;
 layout(location = U_AMBIENT_LIGHT)		uniform int		u_isAmbient;
 layout(location = U_SPOT_LIGHT)			uniform int		u_spotLight;
 layout(location = U_SPOT_PARAMS)		uniform vec3	u_spotParams;
-layout(location = U_PARAM_FLOAT_0)		uniform float	u_alpha;
+layout(location = U_PARAM_FLOAT_3)		uniform float	u_alpha;
 
 in vec3			v_positionVS;
 in vec3			v_viewVecTS;
@@ -25,6 +25,7 @@ in vec3			v_lightAtten;
 in vec3			v_lightSpot;
 
 #include lighting.inc   //!#include "include/lighting.inc"
+#include parallax.inc   //!#include "include/parallax.inc"
 
 void main (void) {
 
@@ -39,14 +40,15 @@ void main (void) {
 	}
 	vec3	V = normalize(v_viewVecTS);
 	vec3	L = normalize(v_lightVec);
+  vec2 tc = LinearStepParallax(u_Diffuse, v_texCoord, V);
 
-	vec4 diffuseMap = texture(u_Diffuse,  v_texCoord);
-	vec3 N =  normalize(texture(u_NormalMap, v_texCoord).rgb * 2.0 - 1.0);
-	float specular = texture(u_NormalMap, v_texCoord).a;
+	vec4 diffuseMap = texture(u_Diffuse,  tc);
+	vec3 N =  normalize(texture(u_NormalMap, tc).rgb * 2.0 - 1.0);
+	float specular = texture(u_NormalMap, tc).a;
 	vec4 cubeFilter = texture(u_CubeFilterMap, v_CubeCoord.xyz) * 2.0;
 
 	if (u_isCaustics == 1) {
-		vec4 causticsMap = texture(u_Caustics, v_texCoord);
+		vec4 causticsMap = texture(u_Caustics, tc);
 		vec4 tmp = causticsMap * diffuseMap;
 		tmp *= u_CausticsModulate;
 		diffuseMap = tmp + diffuseMap;

@@ -9,7 +9,7 @@ void main(void) // Robert Beckebans hdr glare
 	vec2 st = gl_FragCoord.xy;
 	
 	// base color with tone mapping applied
-	vec4 color = texture2DRect( u_map, st );
+	vec4 color = texture( u_map, st );
 	
 	const float gaussFact[9] = float[9](0.13298076, 0.12579441, 0.10648267, 0.08065691, 0.05467002, 0.03315905, 0.01799699, 0.00874063, 0.00379866);
 	
@@ -37,7 +37,7 @@ void main(void) // Robert Beckebans hdr glare
 	for( int i = 0; i < samples; i++ )
     {
 		vec3 so = chromaticOffsets[ i ];
-		vec4 color = texture2DRect( u_map, st + vec2( float( i ), 0 )  * vec2(0.5, 0.25) *  scale );
+		vec4 color = texture( u_map, st + vec2( float( i ), 0 )  * vec2(0.5, 0.25) *  scale );
 			
 		float weight = gaussFact[ i ];
 		sumColor += color.rgb * ( so.rgb * weight * weightScale );
@@ -46,7 +46,7 @@ void main(void) // Robert Beckebans hdr glare
 	for( int i = 1; i < samples; i++ )
     {
 		vec3 so = chromaticOffsets[ i ];
-		vec4 color = texture2DRect( u_map, st + vec2( float( -i ), 0 ) * vec2(0.5, 0.25)  *  scale );
+		vec4 color = texture( u_map, st + vec2( float( -i ), 0 ) * vec2(0.5, 0.25)  *  scale );
 			
 		float weight = gaussFact[ i ];
 		sumColor += color.rgb * ( so.rgb * weight * weightScale );
@@ -78,15 +78,15 @@ void main2(void)
   
     vec2 sdx = dx;
     vec2 sdx2 = dx2;
-    vec4 sColor = ( texture2DRect(u_map, fragCoord) * gaussFact[0] ) * chromaticOffsets[0];
+    vec4 sColor = ( texture(u_map, fragCoord) * gaussFact[0] ) * chromaticOffsets[0];
     
     for (int i = 1; i < 9; i++){
-		sColor += ( texture2DRect(u_map, fragCoord + sdx) + texture2DRect(u_map, fragCoord - sdx) ) *  gaussFact[i] * chromaticOffsets[i];
+		sColor += ( texture(u_map, fragCoord + sdx) + texture(u_map, fragCoord - sdx) ) *  gaussFact[i] * chromaticOffsets[i];
 		sdx += dx;
     } 
     
     for (int i = 1; i < 9; i++){
-		  sColor += ( texture2DRect(u_map, fragCoord + sdx2) + texture2DRect(u_map, fragCoord - sdx2) ) *  gaussFact[i] * chromaticOffsets[i];
+		  sColor += ( texture(u_map, fragCoord + sdx2) + texture(u_map, fragCoord - sdx2) ) *  gaussFact[i] * chromaticOffsets[i];
 		  sdx2 += dx2;
     }
 
