@@ -101,9 +101,10 @@ typedef enum {
 #include "r_model.h"
 
 typedef struct hdri_s {
-	float* data;
+	float	*data;
 	uint	width, height;
 } hdri_t;
+qboolean R_LoadHdri(const char* fileName, hdri_t* res);
 
 void GL_SetDefaultState (void);
 void GL_UpdateSwapInterval (void);
@@ -146,9 +147,9 @@ image_t *r_bfg_expl[MAX_BFG_EXPL];
 image_t* r_lightCubeMap[MAX_FILTERS];
 #define		MAX_GLOBAL_FILTERS	38
 
-#define		MAX_LUTS 8
-image_t* r_3dLut[MAX_LUTS];
-int			lutCount;
+//#define		MAX_LUTS 8
+//image_t* r_3dLut[MAX_LUTS];
+//int			lutCount;
 
 image_t gltextures[MAX_GLTEXTURES];
 int numgltextures;
@@ -167,16 +168,12 @@ image_t *draw_chars, *draw_charsRu, *draw_charsInt;
 image_t *r_DSTTex;
 
 image_t	*r_defBump;
-//image_t	*r_screenTex;
-//image_t	*Screen2D;
 image_t	*r_envTex;
 image_t	*r_randomNormalTex;
 image_t	*r_conBump;
 
 image_t	*r_whiteMap;
 image_t *skinBump;
-//image_t *r_shadowMask;
-//image_t *r_depthMask;
 
 image_t	*r_fxaaTex;
 image_t	*r_fixFovTex;
@@ -190,10 +187,14 @@ image_t* r_depthStencilTexture;
 image_t* r_hdrScreenCopy2d;
 image_t* r_finalScreen;
 
+image_t* r_shadowMask;
+
 image_t	*r_cinImage;
 image_t	*r_bloomImage;
 image_t	*r_thermalImage;
 
+int i_stencilView;
+uint64_t i_stencilView_handle;
 
 int			skyCube;
 uint64_t	skyCube_handle;
@@ -379,6 +380,7 @@ qboolean RA_Frame;
 void R_CreateScreenFbo();
 void R_FboFinal();
 void CreateBloomBuffer(void);
+void CreateThermalBuffer(void);
 
 void GL_SetBindlessTexture(int loc, uint64 handle);
 
@@ -959,11 +961,10 @@ glslProgram_t		*lightWorldProgram;
 glslProgram_t		*aliasAmbientProgram;
 glslProgram_t		*md3AmbientProgram;
 glslProgram_t		*aliasBumpProgram;
-glslProgram_t		*gaussXProgram;
-glslProgram_t		*gaussYProgram;
 glslProgram_t		*glareProgram;
 glslProgram_t		*bloomdsProgram;
 glslProgram_t		*bloomfpProgram;
+glslProgram_t		*bloomBlurProgram;
 glslProgram_t		*motionBlurProgram;
 glslProgram_t		*ssaoProgram;
 glslProgram_t		*depthDownsampleProgram;
@@ -998,6 +999,7 @@ glslProgram_t		*screenFlashProgram;
 glslProgram_t		*tbnDebugProgram;
 glslProgram_t		*tonemapProgram;
 glslProgram_t		*finalPassProgram;
+glslProgram_t		*shadowBlurProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureDepthBuffer ();

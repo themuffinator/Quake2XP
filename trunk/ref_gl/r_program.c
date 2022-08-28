@@ -704,19 +704,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"gauss blur program"S_COLOR_WHITE" ");
-	gaussXProgram = R_FindProgram ("gaussX", S_DEFAULT);
-	gaussYProgram = R_FindProgram ("gaussY", S_DEFAULT);
-	
-
-	if (gaussXProgram->valid && gaussYProgram->valid){
-		Com_Printf("succeeded\n");
-	}
-	else {
-		Com_Printf (S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
 	Com_Printf ("Load "S_COLOR_YELLOW"glare program"S_COLOR_WHITE" ");
 	glareProgram = R_FindProgram ("glare", S_DEFAULT);
 
@@ -786,6 +773,18 @@ void R_InitPrograms (void) {
 		Com_Printf (S_COLOR_RED"Failed!\n");
 		missing++;
 	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"bloom blur program"S_COLOR_WHITE" ");
+	bloomBlurProgram = R_FindProgram("bloomBlur", S_DEFAULT);
+
+	if (bloomBlurProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 
 	Com_Printf ("Load "S_COLOR_YELLOW"glass program"S_COLOR_WHITE" ");
 	glassProgram = R_FindProgram ("glass", S_DEFAULT);
@@ -920,7 +919,7 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf("Load "S_COLOR_YELLOW"lookup color table program"S_COLOR_WHITE" ");
+/*	Com_Printf("Load "S_COLOR_YELLOW"lookup color table program"S_COLOR_WHITE" ");
 	lutProgram = R_FindProgram("lut", S_DEFAULT);
 	if (lutProgram->valid) {
 		Com_Printf("succeeded\n");
@@ -929,7 +928,7 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
-	
+*/	
 	Com_Printf("Load "S_COLOR_YELLOW"white balance program"S_COLOR_WHITE" ");
 	whiteBalanceProgram = R_FindProgram("whitebalance", S_DEFAULT);
 	if (whiteBalanceProgram->valid) {

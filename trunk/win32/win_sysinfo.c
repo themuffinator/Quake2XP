@@ -734,8 +734,8 @@ qboolean Sys_CheckWindowsVersion() {
 			HKEY	hKey = 0;
 			DWORD	dwSize = 64;
 			DWORD	keyMode = KEY_READ;
-			char	buildId[12] = { 0 }, releaseId[9] = { 0 }, versionID[14] = { 0 }, winName[64] = { 0 }; // buildId[12] - debug crash fix
-			int		build, release, ubr;
+			char	buildId[12] = { 0 }, releaseId[9] = { 0 }, versionID[14] = { 0 }, winName[64] = { 0 }, EditionID[64] = { 0 }; // buildId[12] - debug crash fix
+			int		build =0, release=0, ubr=0;
 
 			// win 10 Pro reads as Enterprise on win64.
 			// https://docs.microsoft.com/en-us/windows/win32/winprog64/accessing-an-alternate-registry-view
@@ -746,6 +746,8 @@ qboolean Sys_CheckWindowsVersion() {
 
 				dwType = REG_SZ;
 				RegQueryValueEx(hKey, "ProductName", 0, &dwType, (LPBYTE)&winName, &dwSize); // windows name
+
+				RegQueryValueEx(hKey, "EditionID", 0, &dwType, (LPBYTE)&EditionID, &dwSize); // edition
 
 				RegQueryValueEx(hKey, "CurrentBuild", 0, &dwType, (LPBYTE)&buildId, &dwSize); // build num
 				build = atoi(buildId);
@@ -759,16 +761,19 @@ qboolean Sys_CheckWindowsVersion() {
 				dwSize = sizeof(DWORD);
 				RegQueryValueEx(hKey, "UBR", 0, &dwType, &ubr, &dwSize); // Update Build Revision
 
-				sprintf(S, "'Version %s' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", versionID, release);
+				sprintf(S, "'%s' " S_COLOR_WHITE "(" S_COLOR_GREEN "%i" S_COLOR_WHITE ")", versionID, release);
 
 				RegCloseKey(hKey);
 			}
-
+			if (build >= 22000) {
+				Com_Printf("OS: " S_COLOR_YELLOW "Windows 11 %s %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", EditionID, S, build, ubr);
+			}
+			else {
 			if (!isWin64x())
 				Com_Printf("OS: " S_COLOR_YELLOW "%s " S_COLOR_GREEN "x86 " S_COLOR_YELLOW "%s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", winName, S, build, ubr);
 			else
 				Com_Printf("OS: " S_COLOR_YELLOW "%s " S_COLOR_GREEN "x64 " S_COLOR_YELLOW "%s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", winName, S, build, ubr);
-
+		}
 			return qtrue;
 		}		
 }

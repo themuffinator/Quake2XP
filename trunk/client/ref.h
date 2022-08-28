@@ -516,6 +516,7 @@ typedef struct {
 	uint	_hdr;
 	uint	_final;
 	uint	_bloom;
+	uint	_thermal;
 	uint	_ssao;
 }fbo_t;
 

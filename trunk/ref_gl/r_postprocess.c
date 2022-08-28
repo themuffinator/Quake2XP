@@ -68,7 +68,6 @@ void R_Bloom (void)
 	// downsample and cut color
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._bloom);
 
@@ -77,41 +76,33 @@ void R_Bloom (void)
 	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width*0.25, vid.height*0.25, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
-	// setup program
 	GL_BindProgram (bloomdsProgram);
 	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
 	qglUniform1f(U_PARAM_FLOAT_0, r_bloomThreshold->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawQuarterScreenQuad ();
-
-	// generate star shape
 	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
-
+	
+	//glare
 	GL_BindProgram (glareProgram);
 	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
 	qglUniform1f(U_PARAM_FLOAT_0, r_bloomWidth->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawQuarterScreenQuad ();
-
-	// blur x
 	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
-	GL_BindProgram(gaussXProgram);
+	//blur
+	GL_BindProgram(bloomBlurProgram);
 	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
+
+	qglUniform1i(U_PARAM_INT_0, 1); // horizontal
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawQuarterScreenQuad ();
-
-	// blur y
 	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
-	GL_BindProgram (gaussYProgram);
-	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
+	qglUniform1i(U_PARAM_INT_0, 0); // vertical
 	R_DrawQuarterScreenQuad ();
-
-	// store 2 pass gauss blur 
-	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
 
 	//final pass
 	GL_BindProgram (bloomfpProgram);
@@ -120,6 +111,7 @@ void R_Bloom (void)
 	qglUniform1f(U_PARAM_FLOAT_0, r_bloomIntens->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 
@@ -135,35 +127,40 @@ void R_ThermalVision (void)
 	// grab screen
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 
-	// setup program
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._thermal);
+
+	qglReadBuffer(GL_COLOR_ATTACHMENT0);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width * 0.5, vid.height * 0.5, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+
+	// process colors
 	GL_BindProgram (thermalProgram);
-	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	R_DrawHalfScreenQuad ();
-
-	// blur x
-	glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width*0.5, vid.height*0.5);
-
-	GL_BindProgram (gaussXProgram);
 	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	R_DrawHalfScreenQuad ();
-
-	// blur y
+	R_DrawHalfScreenQuad();
 	glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.5, vid.height * 0.5);
 
-	GL_BindProgram (gaussYProgram);
+	//blur
+	GL_BindProgram(bloomBlurProgram);
 	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	R_DrawHalfScreenQuad ();
 
-	// store 2 pass gauss blur 
+	qglUniform1i(U_PARAM_INT_0, 1); // horizontal
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+	R_DrawHalfScreenQuad();
 	glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.5, vid.height * 0.5);
+
+	qglUniform1i(U_PARAM_INT_0, 0); // vertical
+	R_DrawHalfScreenQuad();
+	glCopyTextureSubImage2D(r_thermalImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.5, vid.height * 0.5);
+	
 	//final pass
 	GL_BindProgram (thermalfpProgram);
 	GL_SetBindlessTexture(U_TMU0, r_thermalImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 
@@ -175,7 +172,7 @@ void R_RadialBlur (void)
 	if (!r_radialBlur->integer)
 		return;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 	
 	if (r_newrefdef.fov_x <= r_radialBlurFov->value)
@@ -422,7 +419,7 @@ void R_ColorTemperatureCorrection(void){
 	if (!r_useColorCorrection->integer)
 		return;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
 	GL_BindProgram(whiteBalanceProgram);
@@ -435,7 +432,7 @@ void R_ColorTemperatureCorrection(void){
 	R_DrawFullScreenQuad();
 
 }
-
+/*
 void R_lutCorrection(void)
 {
 	if (!lutCount)
@@ -464,13 +461,14 @@ void R_lutCorrection(void)
 	R_DrawFullScreenQuad();
 
 }
+*/
 
 void R_MotionBlur(void)
 {
 	vec2_t	angles, delta;
 	vec3_t velocity;
 	float blur;
-
+	
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
@@ -499,15 +497,14 @@ void R_MotionBlur(void)
 	qglUniform3f(U_PARAM_VEC3_0, velocity[0], velocity[1], r_motionBlurSamples->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 
-	GL_SetBindlessTexture(U_TMU0, /*r_screenTex->handle*/r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
 	R_DrawFullScreenQuad();
 
 	// restore 3d
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
 
-	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
-		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
 void R_DownsampleDepth(void) 
@@ -533,10 +530,7 @@ void R_SSAO (void)
 {
 	int i, j, numSamples;
 
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
 	if (!r_ssao->integer)

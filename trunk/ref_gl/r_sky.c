@@ -390,9 +390,6 @@ void R_SetSky(char* name, float rotate, vec3_t axis) {
 
 }
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "ImageLib/stb_image.h"
-
 uint	transi[4096 * 4096];
 float	transf[1024 * 1024];
 
@@ -469,11 +466,6 @@ void R_GenSkyCubeMap(char* name) {
 
 	glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &skyCube);
 
-	Com_sprintf(pathname, sizeof(pathname), "%s/env/hdr/%s%s.hdr", FS_Gamedir(), skyname, cubeSufGL[0]);
-	if (stbi_is_hdr(pathname)) {
-		hdr = qtrue;
-	}
-
 	int bpp = 0;
 	for (i = 0; i < 6; i++) {
 		pix[i].pixels = NULL;
@@ -481,19 +473,16 @@ void R_GenSkyCubeMap(char* name) {
 		
 		hdri[i].width = hdri[i].height = 0;
 		hdri[i].data = NULL;
+		
+		Com_sprintf(pathname, sizeof(pathname), "%s/env/hdr/%s%s.hdr", FS_Gamedir(), skyname, cubeSufGL[i]);
 
-		if (hdr) {
-			Com_sprintf(pathname, sizeof(pathname), "%s/env/hdr/%s%s.hdr", FS_Gamedir(), skyname, cubeSufGL[i]);
-			hdri[i].data = stbi_loadf(pathname, &hdri[i].width, &hdri[i].height, &bpp, 0);
+		if (R_LoadHdri(pathname, &hdri[i])) {
+			hdr = qtrue;
 		}
 		else {
 			Com_sprintf(pathname, sizeof(pathname), "env/%s%s.tga", skyname, cubeSufGL[i]);
-
-			// Berserker: stop spam
-			if (FS_LoadFile(pathname, NULL) != -1) {
-
-				IL_LoadImage(pathname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
-			}
+			if (FS_LoadFile(pathname, NULL) != -1)
+				IL_LoadImage(pathname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);			
 		}
 	}
 
@@ -516,7 +505,7 @@ void R_GenSkyCubeMap(char* name) {
 		}
 		else {
 			R_FlipImageFloat(i, &hdri[i], transf);
-			stbi_image_free(hdri[i].data);
+			free(hdri[i].data);
 			glTextureSubImage3D(skyCube, 0, 0, 0, i, hdri[i].width, hdri[i].height, 1, GL_RGB, GL_FLOAT,transf);
 		}
 	}

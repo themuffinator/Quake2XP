@@ -102,7 +102,7 @@ unsigned d_8to24table[256];
 float d_8to24tablef[256][3];
 
 qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap, qboolean is_sky);
-qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean srgb, qboolean unScaled);
+qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean unScaled);
 
 int upload_width, upload_height;
 qboolean uploaded_paletted;
@@ -364,7 +364,7 @@ byte *R_ResampleTexture(const byte* in, int inwidth, int inheight, int outwidth,
 }
 static uint imageIdx;
 
-qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean srgb, qboolean unScaled)
+qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean unScaled)
 {
 	int			samples, intFormat, c, i;
 	byte		*scan;
@@ -382,39 +382,20 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 			break;
 		}
 	}
-	if (!r_srgbColorBuffer->integer || !srgb) {
-		if (samples == 3) {
+	if (samples == 3) {
 
-			if (gl_state.texture_compression_bptc && mipmap)
-				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
-			else
-				intFormat = gl_tex_solid_format;
-		}
-
-		if (samples == 4) {
-
-			if (gl_state.texture_compression_bptc && mipmap)
-				intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
-			else
-				intFormat = gl_tex_alpha_format;
-		}
+		if (gl_state.texture_compression_bptc && mipmap)
+			intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
+		else
+			intFormat = gl_tex_solid_format;
 	}
-	else {
-		if (samples == 3) {
 
-			if (gl_state.texture_compression_bptc && mipmap)
-				intFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
-			else
-				intFormat = GL_SRGB8;
-		}
+	if (samples == 4) {
 
-		if (samples == 4) {
-
-			if (gl_state.texture_compression_bptc && mipmap)
-				intFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
-			else
-				intFormat = GL_SRGB8_ALPHA8;
-		}
+		if (gl_state.texture_compression_bptc && mipmap)
+			intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
+		else
+			intFormat = gl_tex_alpha_format;
 	}
 
 	if(r_maxTextureSize->integer && mipmap && !unScaled){
@@ -522,7 +503,7 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	}
 
 
-	return GL_Upload32(trans, width, height, mipmap, qfalse, qtrue);
+	return GL_Upload32(trans, width, height, mipmap, qtrue);
 }
 
 
@@ -649,14 +630,6 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
 	imageIdx = image->texnum;
 
-	qboolean srgb = qfalse;
-//	if (r_srgbColorBuffer->integer) {
-//		if (image->type == it_pic) {
-//			if (!strstr(image->name, "_bump"))
-//				srgb = qtrue;
-//		}
-//	}
-	
 	qboolean unScaled = qfalse;
 	if (image->type == it_mipmap)
 		unScaled = qtrue;
@@ -664,7 +637,7 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 		if (bits == 8)
 			image->has_alpha = GL_Upload8(pic, width, height, (image->type != it_sky && image->type != it_pic), image->type == it_sky);
 		else 									
-			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_sky && image->type != it_pic), srgb, unScaled);
+			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_sky && image->type != it_pic), unScaled);
 					
 		image->upload_width = width;	
 		image->upload_height = height;

@@ -55,7 +55,7 @@ static menuslider_s		s_saturation_slider;
 static menuslider_s		s_gamma_slider;
 static menuslider_s		s_vibrance_slider;
 static menuslider_s		s_fixfov_slider;
-static menulist_s		s_lut_list;
+//static menulist_s		s_lut_list;
 
 static menuslider_s		s_bloomIntens_slider;
 static menuslider_s		s_bloomThreshold_slider;
@@ -433,12 +433,12 @@ void M_ColorInit() {
 	
 	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
 
-	static char * lut_table[8] = {0};
+/*	static char* lut_table[8] = {0};
 	
 	for (int i = 0; i < lutCount; i++) {
 		lut_table[i] = r_3dLut[i]->lutName;
 	}
-
+*/
 	drawIDlogo = qfalse;
 
 	s_opengl2_menu.x = viddef.width * 0.50;
@@ -535,7 +535,7 @@ void M_ColorInit() {
 	s_fixfov_slider.curvalue = r_fixFovStrength->value * 10;
 	s_fixfov_slider.generic.statusbar = "Reducing Field Of View Distortion";
 
-	s_lut_list.generic.type = MTYPE_SPINCONTROL;
+/*	s_lut_list.generic.type = MTYPE_SPINCONTROL;
 	s_lut_list.generic.name = "Color Grading";
 	s_lut_list.generic.x = 0;
 	s_lut_list.generic.y = 130 * ui_fontScale->value;
@@ -543,7 +543,7 @@ void M_ColorInit() {
 	s_lut_list.curvalue = r_lutId->integer;
 	s_lut_list.generic.callback = lutCallBack;
 	s_lut_list.generic.statusbar = "Add Color Filters";
-
+	*/
 	s_menuColorTemp.generic.type = MTYPE_FIELD;
 	s_menuColorTemp.generic.name = "Color Temperature";
 	s_menuColorTemp.generic.flags = QMF_NUMBERSONLY;
@@ -567,7 +567,7 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomThreshold_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomWidth_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_fixfov_slider);
-	Menu_AddItem(&s_opengl2_menu, (void *)&s_lut_list);
+//	Menu_AddItem(&s_opengl2_menu, (void *)&s_lut_list);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_menuColorTemp);
 
 

@@ -124,6 +124,7 @@ void CreateWaterWarpTexture(void) {
 
 }
 
+/*
 void Load3dLut(void) {
 	int		i, j, len;
 	char	name[MAX_OSPATH];
@@ -190,7 +191,7 @@ void Load3dLut(void) {
 	}
 	Com_Printf("\n=====================================\n\n");
 }
-
+*/
 
 
 char	*lsuf[6] = { "ft", "bk", "lf", "rt", "up", "dn" };
@@ -545,10 +546,9 @@ void R_InitEngineTextures (void) {
 		skinBump = r_notexture;
 
 	CreateWaterWarpTexture();
-	Load3dLut();
+	//Load3dLut();
 
 	r_cinImage		=	R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
-	r_thermalImage	=	R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_pic, vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
 }
 
 

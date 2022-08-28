@@ -722,6 +722,11 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	else
 		GL_DepthMask(0);
 
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		qglUniform1i(U_PARAM_INT_1, 1);
+	else
+		qglUniform1i(U_PARAM_INT_1, 0);
+
 	for (i = 0; i < md3Hdr->num_meshes; i++) {
 
 		md3Mesh_t *mesh = &md3Hdr->meshes[i];
@@ -842,6 +847,8 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	}
 
 		// Draw Transluscent meshes
+		if (r_newrefdef.rdflags & RDF_IRGOGGLES)
+			return;
 
 		GL_Enable(GL_BLEND);
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1134,6 +1141,11 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 			qglUniform1i(U_PARAM_INT_1, 1);
 		else
 			qglUniform1i(U_PARAM_INT_1, 0);
+		
+		if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+			qglUniform1i(U_PARAM_INT_5, 1);
+		else
+			qglUniform1i(U_PARAM_INT_5, 0);
 
 	/*	if (weapon) {
 			trace_t trace;

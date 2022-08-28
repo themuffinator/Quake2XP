@@ -760,6 +760,8 @@
   <ItemGroup>
     <None Include="..\baseq2\glsl\ambientMd3.frag" />
     <None Include="..\baseq2\glsl\ambientMd3.vert" />
+    <None Include="..\baseq2\glsl\bloomBlur.frag" />
+    <None Include="..\baseq2\glsl\bloomBlur.vert" />
     <None Include="..\baseq2\glsl\color.frag" />
     <None Include="..\baseq2\glsl\color.vert" />
     <None Include="..\baseq2\glsl\depthDownsample.frag" />
@@ -798,10 +800,6 @@
     <None Include="..\baseq2\glsl\fxaa.vert" />
     <None Include="..\baseq2\glsl\gamma.frag" />
     <None Include="..\baseq2\glsl\gamma.vert" />
-    <None Include="..\baseq2\glsl\gaussX.frag" />
-    <None Include="..\baseq2\glsl\gaussX.vert" />
-    <None Include="..\baseq2\glsl\gaussY.frag" />
-    <None Include="..\baseq2\glsl\gaussY.vert" />
     <None Include="..\baseq2\glsl\generic.frag" />
     <None Include="..\baseq2\glsl\generic.vert" />
     <None Include="..\baseq2\glsl\include\depth.inc" />
@@ -831,6 +829,8 @@
     <None Include="..\baseq2\glsl\screenFlash.vert" />
     <None Include="..\baseq2\glsl\shadow.frag" />
     <None Include="..\baseq2\glsl\shadow.vert" />
+    <None Include="..\baseq2\glsl\shadowBlur.frag" />
+    <None Include="..\baseq2\glsl\shadowBlur.vert" />
     <None Include="..\baseq2\glsl\sky.frag" />
     <None Include="..\baseq2\glsl\sky.vert" />
     <None Include="..\baseq2\glsl\sprite.frag" />

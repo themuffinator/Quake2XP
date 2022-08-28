@@ -2,25 +2,7 @@
 * This is an open source non-commercial project. Dear PVS-Studio, please check it.
 * PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 */
-/*
-Copyright (C) 1997-2001 Id Software, Inc.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 // r_fbo.c
 
 #include "r_local.h"
@@ -103,11 +85,34 @@ void CreateBloomBuffer(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
 
-		r_bloomImage = R_CreateTexture("***r_bloomImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_pic, vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+	r_bloomImage = R_CreateTexture("***r_bloomImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_pic, vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
 
 	qglGenFramebuffers(1, &fbo._bloom);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._bloom);
 	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_bloomImage->texnum, 0);
+
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (!statusOK)
+		Com_Printf(S_COLOR_RED"Failed!");
+	else
+		Com_Printf(S_COLOR_WHITE"succeeded\n");
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+void CreateThermalBuffer(void) {
+	qboolean statusOK;
+
+	Com_Printf("Load "S_COLOR_YELLOW "THERMAL FBO ");
+
+	r_thermalImage = R_CreateTexture("***r_thermalImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_pic, 
+									vid.width * 0.5, vid.height * 0.5, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
+									GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+	
+	qglGenFramebuffers(1, &fbo._thermal);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._thermal);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_thermalImage->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)

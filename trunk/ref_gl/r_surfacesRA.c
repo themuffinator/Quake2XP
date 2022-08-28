@@ -385,7 +385,7 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 		alpha = 0.33f;
 	else
 		alpha = 0.66f;
-	qglUniform1f(U_PARAM_FLOAT_0, alpha);
+	qglUniform1f(U_PARAM_FLOAT_3, alpha);
 
 	if (update) {
 		GL_SetBindlessTexture(U_TMU0, s->texInfo->image->handle);

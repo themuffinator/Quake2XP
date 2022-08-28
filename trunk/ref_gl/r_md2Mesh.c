@@ -273,6 +273,11 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglUniform1i (U_SHELL_PASS, 0);
 	qglUniform1f (U_COLOR_OFFSET, alphaShift);
 	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		qglUniform1i(U_PARAM_INT_0, 1);
+	else
+		qglUniform1i(U_PARAM_INT_0, 0);
+
 	GL_SetBindlessTexture(U_TMU0, skin->handle);
 	GL_SetBindlessTexture(U_TMU1, glowskin->handle);
 	GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
@@ -547,6 +552,11 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 		qglUniform1i(U_USE_SSAO, 1);
 	else
 		qglUniform1i(U_USE_SSAO, 0);
+	
+	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		qglUniform1i(U_PARAM_INT_5, 1);
+	else
+		qglUniform1i(U_PARAM_INT_5, 0);
 
 	GL_SetBindlessTexture(U_TMU0, skinNormalmap->handle);
 	GL_SetBindlessTexture(U_TMU1, skin->handle);

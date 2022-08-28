@@ -230,12 +230,10 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	qglUniform1f(U_REFR_THICKNESS1, len * 0.5);
 
 	if (currententity->flags & RF_BFG_SPRITE) {
-	//	GL_MBind(GL_TEXTURE1, r_notexture->texnum);
 		GL_SetBindlessTexture(U_TMU1, r_notexture->handle);
 		scaled = 2;
 	}
 	else		
-	//	GL_MBind(GL_TEXTURE1, currentmodel->skins[e->frame]->texnum);
 		GL_SetBindlessTexture(U_TMU1, currentmodel->skins[e->frame]->handle);
 	
 	VectorMA	(e->origin,				-frame->origin_y * scaled, up, wVertexArray[vert+0]);
@@ -522,9 +520,8 @@ void R_DrawLightScene (void)
 
 	num_visLights = 0;
 
-//	GL_DepthMask(0);
 	GL_Enable(GL_BLEND);
-	GL_BlendFunc(GL_ONE, GL_ONE /*GL_DST_COLOR, GL_ZERO*/);
+	GL_BlendFunc(GL_ONE, GL_ONE);
 
 	if (!(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 
@@ -623,12 +620,11 @@ void R_DrawLightScene (void)
 			R_DrawLightBrushModel();
 		}
 	
-	R_DrawLightFlare();				// light flare
-	R_DrawLightBounds();			// debug stuff
+		R_DrawLightFlare();				// light flare
+		R_DrawLightBounds();			// debug stuff
 	}
 	}
 	
-//	GL_DepthMask(1);
 	GL_Disable(GL_STENCIL_TEST);
 	GL_Disable(GL_SCISSOR_TEST);
 	if(gl_state.depthBoundsTest && r_depthBoundsTest->integer)
@@ -668,7 +664,7 @@ void R_DrawPlayerWeaponAmbient(void)
 	// draw transluscent shells
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
-//	GL_DepthMask(0);
+
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
 
@@ -690,7 +686,6 @@ void R_DrawPlayerWeaponAmbient(void)
 	}
 
 	GL_Disable(GL_BLEND);
-//	GL_DepthMask(1);
 }
 
 void R_DrawPlayerWeapon(void)
@@ -771,10 +766,8 @@ void R_RenderSprites(void)
 	GL_BindProgram(spriteProgram);
 
 	GL_SetBindlessTexture(U_TMU0, r_distort->handle);
-//	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
-//	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
-	GL_SetBindlessTexture(U_TMU2, /*r_screenTex->handle*/r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU3, /*r_depthTex->handle*/r_depthStencilTexture->handle);
+	GL_SetBindlessTexture(U_TMU2,r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU3, r_depthStencilTexture->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 4.5);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -799,7 +792,6 @@ void R_RenderSprites(void)
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
-//	GL_DepthMask(1);	
 }
 
 // draws ambient opaque entities
@@ -860,7 +852,6 @@ static void R_DrawTransEntities(void) {
 
 	GL_Enable(GL_BLEND);
 	GL_BlendFunc(GL_ONE, GL_ONE);
-//	GL_DepthMask(0);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];
@@ -890,7 +881,6 @@ static void R_DrawTransEntities(void) {
 		}
 	}
 	GL_Disable(GL_BLEND);
-//	GL_DepthMask(1);
 }
 
 // draw all opaque, non-reflective stuff
@@ -908,7 +898,6 @@ void R_DrawRAScene (void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-//	GL_DepthMask(0);
 	GL_PolygonOffset(-1.0, 1.0);
 
 	RA_Frame = qfalse;
@@ -918,7 +907,6 @@ void R_DrawRAScene (void) {
 
 	R_DrawSurfacesRA(qfalse);
 
-//	GL_DepthMask(1);
 	GL_PolygonOffset(0.0, 1.0);
 
 	R_CaptureColorBuffer();
@@ -978,7 +966,7 @@ void R_RenderView (refdef_t *fd) {
 
 		GL_Enable(GL_SCISSOR_TEST);
 		GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
-		qglEnable(GL_FRAMEBUFFER_SRGB);
+	//	qglEnable(GL_FRAMEBUFFER_SRGB);
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
 			qglClearColor(0.0, 0.0, 0.0, 1.0);
 			qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -988,7 +976,7 @@ void R_RenderView (refdef_t *fd) {
 	}
 	else {
 		GL_Disable(GL_SCISSOR_TEST);
-		qglDisable(GL_FRAMEBUFFER_SRGB);
+	//	qglDisable(GL_FRAMEBUFFER_SRGB);
 		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 		qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 		qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1100,12 +1088,11 @@ void R_RenderFrame(refdef_t * fd) {
 		R_FilmFilter();
 		R_ScreenBlend();
 	}
-	R_ColorTemperatureCorrection();
+
 	R_ToneMaping();
-//	R_lutCorrection();
+	R_ColorTemperatureCorrection();
 
 	// set alpha blend for 2D mode
-	qglDisable(GL_FRAMEBUFFER_SRGB);
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	GL_DepthMask(1);
@@ -1194,7 +1181,7 @@ void SkipRestOfLine(char **data) {
 
 	*data = p;
 }
-
+/*
 void Cube2Lut_f(void)
 {
 	char *buf, *buf0;
@@ -1289,7 +1276,7 @@ void Cube2Lut_f(void)
 	fclose(out);
 	Com_Printf(S_COLOR_YELLOW"wrote: %s\n", outName);
 }
-
+*/
 void R_GLSLinfo_f(void);
 void GL_LevelShot_f(void);
 void R_FogEditor_f(void);
@@ -1460,7 +1447,7 @@ void R_RegisterCvars(void)
 	Cmd_AddCommand("glslInfo",			R_ListPrograms_f);
 	Cmd_AddCommand("glsl",				R_GLSLinfo_f);
 
-	Cmd_AddCommand("makeLut",			Cube2Lut_f);
+	//Cmd_AddCommand("makeLut",			Cube2Lut_f);
 
 	Cmd_AddCommand("fogEdit",			R_FogEditor_f);
 
@@ -1609,6 +1596,7 @@ void R_InitFboBuffers() {
 	R_FboFinal();
 	CreateSSAOBuffer();
 	CreateBloomBuffer();
+	CreateThermalBuffer();
 	Com_Printf("\n");
 }
 
@@ -1804,8 +1792,8 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramUniformMatrix3x4fv =	(PFNGLPROGRAMUNIFORMMATRIX3X4FVPROC)	qwglGetProcAddress("glProgramUniformMatrix3x4fv");
 	glProgramUniformMatrix4x3fv =	(PFNGLPROGRAMUNIFORMMATRIX4X3FVPROC)	qwglGetProcAddress("glProgramUniformMatrix4x3fv");
 
-	
-	qglTexImage3D		=		(PFNGLTEXIMAGE3DPROC)			qwglGetProcAddress("glTexImage3D");
+	qglTextureView	=	(PFNGLTEXTUREVIEWPROC)	qwglGetProcAddress("glTextureView");
+	qglTexImage3D	=	(PFNGLTEXIMAGE3DPROC)	qwglGetProcAddress("glTexImage3D");
 
 	// Textures DSA 
 	glBindTextures			=		(PFNGLBINDTEXTURESPROC)			qwglGetProcAddress("glBindTextures");

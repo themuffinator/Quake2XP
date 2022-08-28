@@ -41,8 +41,6 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light);
 void R_LightFlareOutLine ();
 void R_AddLightInteraction(worldShadowLight_t *light);
 void R_DrawOcclusionBbox(worldShadowLight_t* light, qboolean update);
-void Clamp2RGB(vec3_t color);
-
 
 qboolean R_AddLightToFrame (worldShadowLight_t *light, qboolean weapon) {
 
@@ -686,12 +684,7 @@ void kelvinToRGB(float kelvin, float intens, vec3_t outColor) {
 
 		b = 1.0;
 	}
-	outColor[0] = clamp(r,	0.0, 1.0);
-	outColor[1] = clamp(g, 0.0, 1.0);
-	outColor[2] = clamp(b,	0.0, 1.0);
-
-	VectorScale(outColor, intens, outColor);
-	
+	VectorScale(outColor, intens, outColor);	
 }
 
 void R_EditSelectedLight_f (void) {
@@ -1305,8 +1298,6 @@ void R_ScaleLightColor_f(void) {
 	selectedShadowLight->startColor[0] += scale;
 	selectedShadowLight->startColor[1] += scale;
 	selectedShadowLight->startColor[2] += scale;
-
-	Clamp2RGB(selectedShadowLight->startColor);
 }
 
 void R_ChangeLightCone_f (void) {
@@ -1585,28 +1576,6 @@ void UpdateLightEditor(void) {
 
 	R_LightFlareOutLine();
 }
-
-void Clamp2RGB (vec3_t color) {
-	if (color[0] > 1.0)
-		color[0] = 1.0;
-
-	if (color[1] > 1.0)
-		color[1] = 1.0;
-
-	if (color[2] > 1.0)
-		color[2] = 1.0;
-
-	if (color[0] < 0.0)
-		color[0] = 0.0;
-
-	if (color[1] < 0.0)
-		color[1] = 0.0;
-
-	if (color[2] < 0.0)
-		color[2] = 0.0;
-}
-
-
 
 void CreateNormal (vec3_t dst, vec3_t xyz0, vec3_t xyz1, vec3_t xyz2) {
 	float x10, y10, z10;
@@ -2572,6 +2541,8 @@ void R_DrawLightFlare () {
 	uchar		quadIdx[] = { 0, 1, 2, 0, 2, 3 };
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
+		return;
+	if (r_newrefdef.rdflags & RDF_IRGOGGLES)
 		return;
 
 	if (!currentShadowLight->flare)

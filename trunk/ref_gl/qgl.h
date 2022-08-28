@@ -783,6 +783,7 @@ extern	PFNGLMULTIDRAWELEMENTSPROC				glMultiDrawElements;
 extern	PFNGLMULTIDRAWARRAYSPROC				glMultiDrawArrays;
 
 extern PFNGLTEXIMAGE3DPROC						qglTexImage3D;
+extern PFNGLTEXTUREVIEWPROC						qglTextureView;
 
 extern PFNGLCREATETEXTURESPROC					glCreateTextures;
 extern PFNGLTEXSTORAGE2DPROC					glTexStorage2D;
