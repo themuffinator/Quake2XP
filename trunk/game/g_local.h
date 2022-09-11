@@ -1118,6 +1118,9 @@ struct edict_s {
 	int flaresize;
 	int flareim;
 	edict_t *flashlight;
+
+	float timeout;
+
 };
 
 void ED_CallSpawn (edict_t *ent);

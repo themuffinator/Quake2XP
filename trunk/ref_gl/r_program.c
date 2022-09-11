@@ -909,16 +909,6 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"color correction program"S_COLOR_WHITE" ");
-	gammaProgram = R_FindProgram ("gamma", S_DEFAULT);
-	if (gammaProgram->valid) {
-		Com_Printf ("succeeded\n");
-	}
-	else {
-		Com_Printf (S_COLOR_RED"Failed!\n");
-		missing++;
-	}
-
 /*	Com_Printf("Load "S_COLOR_YELLOW"lookup color table program"S_COLOR_WHITE" ");
 	lutProgram = R_FindProgram("lut", S_DEFAULT);
 	if (lutProgram->valid) {

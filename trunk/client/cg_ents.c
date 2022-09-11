@@ -1680,7 +1680,6 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 	if (!gun.model)
 		return;
 
-
 	// set up gun position
 	for (i = 0; i < 3; i++) {
 		gun.origin[i] = cl.refdef.vieworg[i] + ops->gunoffset[i]
@@ -1739,7 +1738,7 @@ void CL_AddViewWeapon (player_state_t * ps, player_state_t * ops) {
 			gun.oldframe = ops->gunframe;
 	}
 
-	gun.flags = RF_MINLIGHT /* | RF_DEPTHHACK*/ | RF_WEAPONMODEL;
+	gun.flags = RF_MINLIGHT  /* | RF_DEPTHHACK*/ | RF_WEAPONMODEL;
 	gun.backlerp = 1.0 - cl.lerpfrac;
 	VectorCopy (gun.origin, gun.oldorigin);	// don't lerp at all
 	VectorCopy (gun.origin, viewweapon);

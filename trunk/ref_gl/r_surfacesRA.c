@@ -36,7 +36,7 @@ int			numInteractionTransSurfs;
 void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	int i;
 	uint numIndices;
-	float scroll = 0.0;
+	float scroll = 0.0, scale[2];
 	qboolean scrolling = qfalse;
 	int nv = s->polys->numVerts;
 
@@ -64,6 +64,11 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 			GL_SetBindlessTexture(U_TMU0, s->texInfo->normalmap->handle);
 		GL_SetBindlessTexture(U_TMU1, s->texInfo->image->handle);
 	}
+	
+	scale[0] = r_parallaxScale->value / s->texInfo->image->width;
+	scale[1] = r_parallaxScale->value / s->texInfo->image->height;
+
+	qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], s->texInfo->image->upload_width, s->texInfo->image->upload_height);
 
 	for (i = 0; i < nv - 2; i++) {
 		indexArray[numIndices++] = s->baseIndex;
@@ -84,8 +89,8 @@ void R_DrawAlphaSurfaces() {
 	// setup program
 	GL_BindProgram(glassProgram);
 
-	GL_SetBindlessTexture(U_TMU2, /*r_screenTex->handle*/r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU3, /*r_depthTex->handle*/r_depthStencilTexture->handle);
+	GL_SetBindlessTexture(U_TMU2, r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU3, r_depthStencilTexture->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
@@ -169,10 +174,8 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 	GL_BindProgram(waterProgram);
 
 	GL_SetBindlessTexture(U_TMU1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->handle);
-//	GL_SetBindlessTexture(U_TMU2, r_screenTex->handle);
-//	GL_SetBindlessTexture(U_TMU3, r_depthTex->handle);
-	GL_SetBindlessTexture(U_TMU2, /*r_screenTex->handle*/r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU3, /*r_depthTex->handle*/r_depthStencilTexture->handle);
+	GL_SetBindlessTexture(U_TMU2, r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU3, r_depthStencilTexture->handle);
 
 	qglUniform1f(U_WATER_DEFORM_MUL, 1.0);
 	qglUniform1f(U_AMBIENT_LEVEL, ambientScale);
@@ -364,7 +367,7 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	float scroll = 0.0;
 	qboolean scrolling = qfalse;
 	int nv = s->polys->numVerts;
-	float alpha;
+	float alpha, scale[2];
 
 	numIndices = *indeces;
 
@@ -380,6 +383,11 @@ void R_AddLightAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 	}
 	else
 		qglUniform1f(U_SCROLL, 0.0);
+	
+	scale[0] = r_parallaxScale->value / s->texInfo->image->width;
+	scale[1] = r_parallaxScale->value / s->texInfo->image->height;
+
+	qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], s->texInfo->image->upload_width, s->texInfo->image->upload_height);
 
 	if (s->texInfo->flags & SURF_TRANS33)
 		alpha = 0.33f;

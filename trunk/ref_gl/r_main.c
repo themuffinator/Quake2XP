@@ -1373,7 +1373,6 @@ void R_RegisterCvars(void)
 	r_zFar =							Cvar_Get("r_zFar", "4096", CVAR_ARCHIVE);
 
 	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
-	r_bloomThreshold =					Cvar_Get("r_bloomThreshold", "0.65", CVAR_ARCHIVE);
 	r_bloomIntens =						Cvar_Get("r_bloomIntens", "1.0", CVAR_ARCHIVE);
 	r_bloomWidth =						Cvar_Get("r_bloomWidth", "3.0", CVAR_ARCHIVE);
 
@@ -1428,7 +1427,6 @@ void R_RegisterCvars(void)
 	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
 	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", CVAR_ARCHIVE);
 
-	r_lutId =							Cvar_Get("r_lutId", "0", CVAR_ARCHIVE);
 	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);
 	r_colorTempK->help =				"Color Temperature in Kelvins (from 1000K to 40000K)";
 	r_useColorCorrection =				Cvar_Get("r_useColorCorrection", "1", CVAR_ARCHIVE);

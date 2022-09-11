@@ -36,13 +36,13 @@ void Sys_WindowsInfo() {
 	Com_Printf("User Name:         " S_COLOR_YELLOW "%s\n", GetUserName(s, &len) ? s : "");
 	Com_Printf("Computer Name:     " S_COLOR_YELLOW "%s\n", GetComputerName(s2, &len2) ? s2 : "");
 
-	char my_documents[MAX_PATH];
-	HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+//	char my_documents[MAX_PATH];
+//	HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
 
-	if (result == S_OK)
-		Com_Printf("Save Folder:					" S_COLOR_YELLOW "%s\n", my_documents);
+//	if (result == S_OK)
+//		Com_Printf("Save Folder:					" S_COLOR_YELLOW "%s\n", my_documents);
 
-//	LoadKeyboardLayout("00000409", KLF_ACTIVATE); // eng
+	LoadKeyboardLayout("00000409", KLF_ACTIVATE); // eng
 //	LoadKeyboardLayout("00000419", KLF_ACTIVATE); //rus
 	HKL currentLayout = GetKeyboardLayout(0);
 	uint kbLang = (uint)currentLayout & 0x0000FFFF;

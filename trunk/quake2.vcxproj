@@ -798,8 +798,6 @@
     <None Include="..\baseq2\glsl\filmGrain.vert" />
     <None Include="..\baseq2\glsl\fxaa.frag" />
     <None Include="..\baseq2\glsl\fxaa.vert" />
-    <None Include="..\baseq2\glsl\gamma.frag" />
-    <None Include="..\baseq2\glsl\gamma.vert" />
     <None Include="..\baseq2\glsl\generic.frag" />
     <None Include="..\baseq2\glsl\generic.vert" />
     <None Include="..\baseq2\glsl\include\depth.inc" />
@@ -829,8 +827,6 @@
     <None Include="..\baseq2\glsl\screenFlash.vert" />
     <None Include="..\baseq2\glsl\shadow.frag" />
     <None Include="..\baseq2\glsl\shadow.vert" />
-    <None Include="..\baseq2\glsl\shadowBlur.frag" />
-    <None Include="..\baseq2\glsl\shadowBlur.vert" />
     <None Include="..\baseq2\glsl\sky.frag" />
     <None Include="..\baseq2\glsl\sky.vert" />
     <None Include="..\baseq2\glsl\sprite.frag" />

@@ -730,6 +730,60 @@ void IL_LoadImage(char *filename, byte ** pic, int *width, int *height,
 	return;
 }
 
+void IL_LoadImageFloat(char* filename, float** pic, int* width, int* height,
+	ILenum type)
+{
+	int length;
+	float* buffer;
+	float *buf;
+	float* image;
+	ILuint imageID;
+	signed int w, h;
+
+	*pic = NULL; //missing cubemaps plug
+
+	length = FS_LoadFile(filename, (void**)&buffer);
+	if (!buffer) {
+		Con_Printf(PRINT_DEVELOPER, "Bad image file %s\n", filename);
+		return;
+	}
+
+	if (!length) {
+		FS_FreeFile(buffer);
+		Con_Printf(PRINT_DEVELOPER, "Bad image file %s\n", filename);
+		return;
+	}
+
+	ilGenImages(1, &imageID);
+	ilBindImage(imageID);
+
+	if (!ilLoadL(type, (ILvoid*)buffer, (ILint)length)) {
+		FS_FreeFile(buffer);
+		free(buffer);
+		LoadImageErrors();
+		return;
+	}
+
+	w = ilGetInteger(IL_IMAGE_WIDTH);
+	h = ilGetInteger(IL_IMAGE_HEIGHT);
+	image = ilGetData();
+
+	buf = malloc(w * h * 3);
+
+	if (!buf)
+		Com_Error(ERR_FATAL, ""S_COLOR_RED"IL_LoadImage - FALED!\n");   // wtf, man??? drop to console
+
+	Q_memcpy(buf, image, w * h * 3);
+
+	ilDeleteImages(1, &imageID);
+	FS_FreeFile(buffer);
+
+	*pic = buf;
+	*width = w;
+	*height = h;
+	return;
+}
+
 /*
 ================
 GL_LoadWal

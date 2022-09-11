@@ -648,6 +648,17 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	if (currententity->flags & (RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM | RF_SHELL_GOD | RF_FULLBRIGHT))
 		VectorSet(shadelight, 1, 1, 1);
 
+	if (currententity->flags & RF_MINLIGHT) {
+		for (i = 0; i < 3; i++)
+			if (shadelight[i] > 0.0019)
+				break;
+		if (i == 3) {
+			shadelight[0] = 0.0019;
+			shadelight[1] = 0.0019;
+			shadelight[2] = 0.0019;
+		}
+	}
+
 	CheckEntityFrameMD3(md3Hdr);
 
 	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls

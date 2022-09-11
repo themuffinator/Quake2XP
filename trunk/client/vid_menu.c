@@ -58,7 +58,6 @@ static menuslider_s		s_fixfov_slider;
 //static menulist_s		s_lut_list;
 
 static menuslider_s		s_bloomIntens_slider;
-static menuslider_s		s_bloomThreshold_slider;
 static menuslider_s		s_bloomWidth_slider;
 
 static menulist_s  		s_fs_box;
@@ -220,11 +219,6 @@ static void bloomLevelCallback(void *s) {
 	Cvar_SetValue("r_bloomIntens", intens);
 }
 
-static void bloomThresholdCallback(void *s) {
-	float mins = s_bloomThreshold_slider.curvalue / 10;
-	Cvar_SetValue("r_bloomThreshold", mins);
-}
-
 static void bloomWhidthCallback(void *s) {
 	float star = s_bloomWidth_slider.curvalue / 10;
 	Cvar_SetValue("r_bloomWidth", star);
@@ -348,9 +342,6 @@ static void ApplyChanges (void *unused) {
 	if (r_bloomIntens->modified)
 		vid_ref->modified = qtrue;
 
-	if (r_bloomThreshold->modified)
-		vid_ref->modified = qtrue;
-
 	if (r_bloomWidth->modified)
 		vid_ref->modified = qtrue;
 
@@ -409,9 +400,6 @@ void M_ColorInit() {
 	if (!r_saturation)
 		r_saturation = Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
 
-	if (!r_bloomThreshold)
-		r_bloomThreshold = Cvar_Get("r_bloomThreshold", "0.75", CVAR_ARCHIVE);
-
 	if (!r_bloomIntens)
 		r_bloomIntens = Cvar_Get("r_bloomIntens", "0.5", CVAR_ARCHIVE);
 
@@ -428,7 +416,6 @@ void M_ColorInit() {
 	r_colorVibrance->value = ClampCvar(-1.0, 1.0, r_colorVibrance->value);
 
 	r_bloomIntens->value = ClampCvar(0.1, 2.0, r_bloomIntens->value);
-	r_bloomThreshold->value = ClampCvar(0.1, 1.0, r_bloomThreshold->value);
 	r_bloomWidth->value = ClampCvar(0.1, 3.0, r_bloomWidth->value);
 	
 	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
@@ -505,19 +492,9 @@ void M_ColorInit() {
 	s_bloomIntens_slider.curvalue = r_bloomIntens->value * 10;
 	s_bloomIntens_slider.generic.statusbar = "Bloom Intensity";
 
-	s_bloomThreshold_slider.generic.type = MTYPE_SLIDER;
-	s_bloomThreshold_slider.generic.x = 0;
-	s_bloomThreshold_slider.generic.y = 80 * ui_fontScale->value;
-	s_bloomThreshold_slider.generic.name = "Bloom Threshold";
-	s_bloomThreshold_slider.generic.callback = bloomThresholdCallback;
-	s_bloomThreshold_slider.minvalue = 1;
-	s_bloomThreshold_slider.maxvalue = 10;
-	s_bloomThreshold_slider.curvalue = r_bloomThreshold->value * 10;
-	s_bloomThreshold_slider.generic.statusbar = "Bloom Threshold";
-
 	s_bloomWidth_slider.generic.type = MTYPE_SLIDER;
 	s_bloomWidth_slider.generic.x = 0;
-	s_bloomWidth_slider.generic.y = 90 * ui_fontScale->value;
+	s_bloomWidth_slider.generic.y = 80 * ui_fontScale->value;
 	s_bloomWidth_slider.generic.name = "Bloom Shape Size";
 	s_bloomWidth_slider.generic.callback = bloomWhidthCallback;
 	s_bloomWidth_slider.minvalue = 1;
@@ -527,7 +504,7 @@ void M_ColorInit() {
 
 	s_fixfov_slider.generic.type = MTYPE_SLIDER;
 	s_fixfov_slider.generic.x = 0;
-	s_fixfov_slider.generic.y = 110 * ui_fontScale->value;
+	s_fixfov_slider.generic.y = 100 * ui_fontScale->value;
 	s_fixfov_slider.generic.name = "Hi-FOV Corection";
 	s_fixfov_slider.generic.callback = FixFovCallback;
 	s_fixfov_slider.minvalue = 0;
@@ -548,7 +525,7 @@ void M_ColorInit() {
 	s_menuColorTemp.generic.name = "Color Temperature";
 	s_menuColorTemp.generic.flags = QMF_NUMBERSONLY;
 	s_menuColorTemp.generic.x = 0;
-	s_menuColorTemp.generic.y = 140 * ui_fontScale->value;
+	s_menuColorTemp.generic.y = 120 * ui_fontScale->value;
 	s_menuColorTemp.generic.statusbar = "Color Temperature in Kelvins 1000 - 40000";
 	s_menuColorTemp.length = 5;
 	s_menuColorTemp.visible_length = 5;
@@ -564,7 +541,6 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_vibrance_slider);
 
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomIntens_slider);
-	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomThreshold_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomWidth_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_fixfov_slider);
 //	Menu_AddItem(&s_opengl2_menu, (void *)&s_lut_list);

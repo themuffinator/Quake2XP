@@ -33,7 +33,7 @@ a non-instant attack weapon.  It checks to see if a
 monster's dodge function should be called.
 =================
 */
-static void check_dodge (edict_t *self, vec3_t start, vec3_t dir, int speed) {
+void check_dodge (edict_t *self, vec3_t start, vec3_t dir, int speed) {
 	vec3_t	end;
 	vec3_t	v;
 	trace_t	tr;

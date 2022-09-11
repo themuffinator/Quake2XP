@@ -624,12 +624,6 @@
     <None Include="..\baseq2\glsl\fxaa.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
-    <None Include="..\baseq2\glsl\gamma.frag">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\gamma.vert">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
     <None Include="..\baseq2\glsl\generic.frag">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
@@ -817,12 +811,6 @@
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
     <None Include="..\baseq2\glsl\bloomBlur.vert">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\shadowBlur.frag">
-      <Filter>Source Files\Renderer\glsl</Filter>
-    </None>
-    <None Include="..\baseq2\glsl\shadowBlur.vert">
       <Filter>Source Files\Renderer\glsl</Filter>
     </None>
   </ItemGroup>

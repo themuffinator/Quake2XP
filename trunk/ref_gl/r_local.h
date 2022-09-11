@@ -175,9 +175,6 @@ image_t	*r_conBump;
 image_t	*r_whiteMap;
 image_t *skinBump;
 
-image_t	*r_fxaaTex;
-image_t	*r_fixFovTex;
-
 image_t *r_miniDepthTex;
 image_t *r_ssaoColorTex[2];
 
@@ -288,7 +285,6 @@ cvar_t	*r_customWidth;
 cvar_t	*r_customHeight;
 
 cvar_t	*r_bloom;
-cvar_t	*r_bloomThreshold;
 cvar_t	*r_bloomIntens;
 cvar_t	*r_bloomWidth;
 
@@ -362,7 +358,6 @@ cvar_t	*r_screenBlend;
 cvar_t	*r_useShaderCache;
 cvar_t	*r_particlesOverdraw;
 
-cvar_t	*r_lutId;
 cvar_t	*r_colorTempK;
 
 cvar_t *r_earthSky, *r_earthSunAzimuth, *r_earthSunIntens;
@@ -984,7 +979,6 @@ glslProgram_t		*loadingProgram;
 glslProgram_t		*fxaaProgram;
 glslProgram_t		*filmGrainProgram;
 glslProgram_t		*nullProgram;
-glslProgram_t		*gammaProgram;
 glslProgram_t		*lutProgram;
 glslProgram_t		*whiteBalanceProgram;
 glslProgram_t		*light2dProgram;

@@ -733,12 +733,12 @@ void SetModelsLight()
 
 	if (currententity->flags & RF_MINLIGHT) {
 		for (i = 0; i < 3; i++)
-			if (shadelight[i] > 0.01)
+			if (shadelight[i] > 0.0019)
 				break;
 		if (i == 3) {
-			shadelight[0] = 0.005;
-			shadelight[1] = 0.005;
-			shadelight[2] = 0.005;
+			shadelight[0] = 0.0019;
+			shadelight[1] = 0.0019;
+			shadelight[2] = 0.0019;
 		}
 	}
 

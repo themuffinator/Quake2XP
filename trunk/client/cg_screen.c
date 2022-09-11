@@ -1057,7 +1057,6 @@ void SCR_ShowTexNames() {
 	RE_SetColor(colorWhite);
 }
 
-void R_GammaRamp (void);
 extern cvar_t *r_mode;
 
 void GL_MakeSaveShot(char* dir);
@@ -1192,6 +1191,5 @@ void SCR_UpdateScreen (void) {
 		SCR_DrawLoading ();
 		
 	}
-	R_GammaRamp ();
 	GLimp_EndFrame();
 }

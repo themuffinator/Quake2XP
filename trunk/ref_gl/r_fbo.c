@@ -125,19 +125,14 @@ void CreateThermalBuffer(void) {
 }
 
 void R_CreateScreenFbo() {
-	uint rb;//, cb;
+	uint rbId;
 	qboolean statusOK;
 
 	Com_Printf("Load "S_COLOR_YELLOW "HDR FBO ");
 
-	//	qglGenRenderbuffers(1, &cb);
-	//	qglBindRenderbuffer(GL_RENDERBUFFER, cb);
-	//	qglRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB16F, vid.width, vid.height);
-
-	qglGenRenderbuffers(1, &rb);
-	qglBindRenderbuffer(GL_RENDERBUFFER, rb);
+	qglGenRenderbuffers(1, &rbId);
+	qglBindRenderbuffer(GL_RENDERBUFFER, rbId);
 	qglRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, vid.width, vid.height);
-	//	qglRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, vid.width, vid.height);
 	qglBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	r_hdrScreen = R_CreateTexture("***r_hdrScreen***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB,
@@ -155,17 +150,6 @@ void R_CreateScreenFbo() {
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
 		GL_FLOAT, qtrue, NULL);
 
-	r_fxaaTex = R_CreateTexture("***r_fxaaTex***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
-		it_pic, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
-		GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
-
-	r_fixFovTex = R_CreateTexture("***r_fixFovTex***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
-		it_pic, vid.width, vid.height,
-		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
-		GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
-
-
 	r_depthStencilTexture = R_CreateTexture("***r_depthStencilTexture***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_UNSIGNED_INT_24_8,
 		it_pic, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
@@ -175,16 +159,10 @@ void R_CreateScreenFbo() {
 	qglGenFramebuffers(1, &fbo._hdr);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 
-	//	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, cb);
-	qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, GL_RENDERBUFFER, rb);
-
-
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdrScreen->texnum, 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, r_hdrScreenCopy->texnum, 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, r_hdrScreenCopy2d->texnum, 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, r_fxaaTex->texnum, 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, r_fixFovTex->texnum, 0);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_RECTANGLE, r_depthStencilTexture->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE,			r_hdrScreen->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE,			r_hdrScreenCopy->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,				r_hdrScreenCopy2d->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_RECTANGLE,	r_depthStencilTexture->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
