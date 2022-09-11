@@ -4,7 +4,7 @@ layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_ScreenTex;
 
 layout(location = U_PARAM_FLOAT_0)	uniform float	u_exposure;	
 layout(location = U_PARAM_FLOAT_1)	uniform float	u_gamma;	
-//layout(location = U_PARAM_INT_0)	uniform int	u_maxmip;	
+//layout(location = U_PARAM_INT_0)	uniform int	    u_maxMip;	
 
 vec3 uncharted2Tonemap(vec3 x) {
   float A = 0.15;
@@ -27,7 +27,8 @@ vec3 uncharted2(vec3 color) {
 void main(){
 
     vec3 hdrColor = texture(u_ScreenTex, gl_FragCoord.xy).rgb;
-//    vec3 minAvgMax = textureLod(u_LevelTex, gl_FragCoord.xy, u_maxmip).rgb;
+ // vec3 lumKey = textureLod(u_LevelTex, gl_FragCoord.xy, u_maxMip).rgb;
+ // float lum =  dot(vec3(0.2125, 0.7154, 0.0721), lumKey);
 
     fragData.rgb = uncharted2(hdrColor);
 

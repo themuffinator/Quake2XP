@@ -14,10 +14,10 @@
 //#define FXAA_QUALITY__PRESET 12
 
 // hi
-#define FXAA_QUALITY__PRESET 29
+//#define FXAA_QUALITY__PRESET 29
 
 // ultra
-//#define FXAA_QUALITY__PRESET 39
+#define FXAA_QUALITY__PRESET 39
 
 /*--------------------------------------------------------------------------*/
 #ifndef FXAA_GLSL_130
@@ -25,27 +25,7 @@
 #endif
 /*--------------------------------------------------------------------------*/
 
-#ifndef FXAA_GREEN_AS_LUMA
-    //
-    // For those using non-linear color,
-    // and either not able to get luma in alpha, or not wanting to,
-    // this enables FXAA to run using green as a proxy for luma.
-    // So with this enabled, no need to pack luma in alpha.
-    //
-    // This will turn off AA on anything which lacks some amount of green.
-    // Pure red and blue or combination of only R and B, will get no AA.
-    //
-    // Might want to lower the settings for both,
-    //    fxaaConsoleEdgeThresholdMin
-    //    fxaaQualityEdgeThresholdMin
-    // In order to insure AA does not get turned off on colors 
-    // which contain a minor amount of green.
-    //
-    // 1 = On.
-    // 0 = Off.
-    //
-    #define FXAA_GREEN_AS_LUMA 0
-#endif
+
 /*--------------------------------------------------------------------------*/
 #ifndef FXAA_EARLY_EXIT
     //
@@ -109,37 +89,6 @@
         #define FXAA_GATHER4_ALPHA 0
     #endif
 #endif
-
-
-/*============================================================================
-                        FXAA QUALITY - TUNING KNOBS
-------------------------------------------------------------------------------
-NOTE the other tuning knobs are now in the shader function inputs!
-============================================================================*/
-#ifndef FXAA_QUALITY__PRESET
-    //
-    // Choose the quality preset.
-    // This needs to be compiled into the shader as it effects code.
-    // Best option to include multiple presets is to 
-    // in each shader define the preset, then include this file.
-    // 
-    // OPTIONS
-    // -----------------------------------------------------------------------
-    // 10 to 15 - default medium dither (10=fastest, 15=highest quality)
-    // 20 to 29 - less dither, more expensive (20=fastest, 29=highest quality)
-    // 39       - no dither, very expensive 
-    //
-    // NOTES
-    // -----------------------------------------------------------------------
-    // 12 = slightly faster then FXAA 3.9 and higher edge quality (default)
-    // 13 = about same speed as FXAA 3.9 and better than 12
-    // 23 = closest to FXAA 3.9 visually and performance wise
-    //  _ = the lowest digit is directly related to performance
-    // _  = the highest digit is directly related to style
-    // 
-    #define FXAA_QUALITY__PRESET 12
-#endif
-
 
 /*============================================================================
 
@@ -822,7 +771,7 @@ void main(void)
     //   0.50 - lower limit (sharper, less sub-pixel aliasing removal)
     //   0.25 - almost off
     //   0.00 - completely off
-    float QualitySubpix = 0.75;
+    float QualitySubpix = 0.5;
 
     // The minimum amount of local contrast required to apply algorithm.
     //   0.333 - too little (faster)
@@ -830,8 +779,22 @@ void main(void)
     //   0.166 - default
     //   0.125 - high quality 
     //   0.033 - very high quality (slower)
-    float QualityEdgeThreshold = 0.166;
-    float QualityEdgeThresholdMin = 0.0833;
+    float QualityEdgeThreshold = 0.125;
+
+     // Only used on FXAA Quality.
+    // This used to be the FXAA_QUALITY__EDGE_THRESHOLD_MIN define.
+    // It is here now to allow easier tuning.
+    // Trims the algorithm from processing darks.
+    //   0.0833 - upper limit (default, the start of visible unfiltered edges)
+    //   0.0625 - high quality (faster)
+    //   0.0312 - visible limit (slower)
+    // Special notes when using FXAA_GREEN_AS_LUMA,
+    //   Likely want to set this to zero.
+    //   As colors that are mostly not-green
+    //   will appear very dark in the green channel!
+    //   Tune by looking at mostly non-green content,
+    //   then start at zero and increase until aliasing is a problem.
+    float QualityEdgeThresholdMin = 0.0625;
 
     fragData = FxaaPixelShader(pos, u_ScreenTex, rcpFrame, QualitySubpix, QualityEdgeThreshold, QualityEdgeThresholdMin);
 }

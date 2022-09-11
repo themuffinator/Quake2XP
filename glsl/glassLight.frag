@@ -40,7 +40,7 @@ void main (void) {
 	}
 	vec3	V = normalize(v_viewVecTS);
 	vec3	L = normalize(v_lightVec);
-  vec2 tc = LinearStepParallax(u_Diffuse, v_texCoord, V);
+	vec2 tc = ReliefMapping(u_Diffuse, v_texCoord, V);
 
 	vec4 diffuseMap = texture(u_Diffuse,  tc);
 	vec3 N =  normalize(texture(u_NormalMap, tc).rgb * 2.0 - 1.0);
