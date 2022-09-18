@@ -749,6 +749,17 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"linear depth program"S_COLOR_WHITE" ");
+	linearDepthProgram = R_FindProgram("linearDepth", S_DEFAULT);
+
+	if (linearDepthProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	Com_Printf ("Load "S_COLOR_YELLOW"ssao program"S_COLOR_WHITE" ");
 	ssaoProgram = R_FindProgram ("ssao", S_DEFAULT);
 	depthDownsampleProgram = R_FindProgram("depthDownsample", S_DEFAULT);

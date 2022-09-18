@@ -361,32 +361,22 @@ extern qboolean adlInit;
 ** GLimp_SetMode
 */
 
-typedef struct winScreenModes_s {
-	int num;
-	int w;
-	int h;
-	int hz;
-} winScreenModes_t;
-
-winScreenModes_t winScreenModes[128];
-#define NUM_WINSCREENMODES ( sizeof( winSreenModes ) / sizeof( winSreenModes[0] ) )
-
-rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean fullscreen )
+rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fullscreen)
 {
-	int width, height, i, idx, cvm, cdsRet, j, count = 0;
-	const char *win_fs[] = { "Window", "Full Screen" };
-	cvar_t	*vid_monitor = Cvar_Get("vid_monitor", "0", CVAR_ARCHIVE);
+	int /*width, height*/ i, idx, cvm, cdsRet, j, count = 0;
+	const char* win_fs[] = { "Window", "Full Screen" };
+	cvar_t* vid_monitor = Cvar_Get("vid_monitor", "0", CVAR_ARCHIVE);
 	char	monitorName[128], monitorModel[16];
 	HDC		hDC;
 	DEVMODE dm;
 
 	GLimp_InitNvApi();
 	GLimp_InitADL();
-	
+
 	Com_Printf("\n==================================\n\n");
 
 	Com_Printf(S_COLOR_YELLOW"...Initializing OpenGL display\n");
-	
+
 	Com_Printf("\n==================================\n");
 
 	monitorCounter = 0;
@@ -447,6 +437,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		glw_state.desktopBitPixel = GetDeviceCaps(hDC, BITSPIXEL);
 		glw_state.desktopWidth = GetDeviceCaps(hDC, HORZRES);
 		glw_state.desktopHeight = GetDeviceCaps(hDC, VERTRES);
+		glw_state.desktopRefresh = GetDeviceCaps(hDC, VREFRESH);
 		ReleaseDC(GetDesktopWindow(), hDC);
 	}
 	else
@@ -462,6 +453,7 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		glw_state.desktopBitPixel = GetDeviceCaps(hDC, BITSPIXEL);
 		glw_state.desktopWidth = GetDeviceCaps(hDC, HORZRES);
 		glw_state.desktopHeight = GetDeviceCaps(hDC, VERTRES);
+		glw_state.desktopRefresh = GetDeviceCaps(hDC, VREFRESH);
 		DeleteDC(hDC);
 
 		if (monitorNames[cvm][0])
@@ -470,59 +462,69 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 			Com_Printf("...using monitor " S_COLOR_GREEN "%i\n", vid_monitor->integer);
 
 	}
-		Com_Printf(S_COLOR_YELLOW"\n...Available monitors:\n\n");
-		monitorCounter = 0;
-		EnumDisplayMonitors(NULL, NULL, MonitorEnumProc2, 0);
+	Com_Printf(S_COLOR_YELLOW"\n...Available monitors:\n\n");
+	monitorCounter = 0;
+	EnumDisplayMonitors(NULL, NULL, MonitorEnumProc2, 0);
 
 
 	Com_Printf("\n==================================\n\n");
 
-	if ( !VID_GetModeInfo( &width, &height, mode ) )
-	{
-		Com_Printf(S_COLOR_RED " invalid mode\n" );
-		return rserr_invalid_mode;
-	}
-
 	memset(&dm, 0, sizeof(dm));
 	dm.dmSize = sizeof(dm);
-	
-	for (i = 0; EnumDisplaySettings(NULL, i, &dm) != 0; i++){
+	int w = 0;
+	int h = 0;
+	int hz = 0;
 
-		if (dm.dmPelsWidth < 1024 || dm.dmDisplayFrequency <60)
+	for (i = 0; EnumDisplaySettings(NULL, i, &dm) != 0; i++) {
+
+		if (dm.dmPelsHeight < 768 || dm.dmDisplayFrequency < 60 || dm.dmBitsPerPel != 32)
+			continue;
+
+		if (dm.dmDisplayFlags & DM_INTERLACED)
 			continue;
 
 		if (count == 0) {
 			winScreenModes[count].w = glw_state.desktopWidth;;
 			winScreenModes[count].h = glw_state.desktopHeight;
-			winScreenModes[count].hz = dm.dmDisplayFrequency;
+			winScreenModes[count].hz = glw_state.desktopRefresh;
 			winScreenModes[count].num = count;
+			winScreenModes[count].description = malloc(sizeof(char) * 9);
+			sprintf(winScreenModes[count].description, "[Desktop]");
 		}
 		else {
+			if (w == dm.dmPelsWidth && h == dm.dmPelsHeight && hz == dm.dmDisplayFrequency)
+				continue;
+
 			winScreenModes[count].w = dm.dmPelsWidth;
 			winScreenModes[count].h = dm.dmPelsHeight;
 			winScreenModes[count].hz = dm.dmDisplayFrequency;
 			winScreenModes[count].num = count;
+			winScreenModes[count].description = malloc(sizeof(char) * 21);
+			sprintf(winScreenModes[count].description, "[%i %i][%i hz]", winScreenModes[count].w, winScreenModes[count].h, winScreenModes[count].hz);
+			
+			w = dm.dmPelsWidth;
+			h = dm.dmPelsHeight;
+			hz = dm.dmDisplayFrequency;
+
 		}
-		Com_DPrintf("mode:%i %ix%i %ihz\n", winScreenModes[count].num, winScreenModes[count].w, winScreenModes[count].h, dm.dmDisplayFrequency);
+		Com_Printf("mode:%i %ix%i %ihz %s\n", winScreenModes[count].num, winScreenModes[count].w, winScreenModes[count].h, dm.dmDisplayFrequency, winScreenModes[count].description);
 		count++;
 	}
-	gl_state.numSupportedRefrashes = count;
-
-	if(mode == 0){
-	width = glw_state.desktopWidth;
-	height = glw_state.desktopHeight;
+	count += 1; //num modes + terminator for menu
+	memset(&vid_winModes, 0, sizeof(vid_winModes));
+	vid_winModes = malloc(count * sizeof(char*));
+	for (i = 0; i < count; i++) {
+	if (vid_winModes)
+		vid_winModes[i] = winScreenModes[i].description;
 	}
 
-	Com_Printf ("...setting mode "S_COLOR_YELLOW"%d"S_COLOR_WHITE":"S_COLOR_YELLOW"[%ix%i]", mode , width, height);
+	Com_Printf("\n");
 
-	if(width > glw_state.desktopWidth || height > glw_state.desktopHeight){
-		width = glw_state.desktopWidth;
-		height = glw_state.desktopHeight;
-		Com_Printf(S_COLOR_RED "\n!!!Invalid Resolution!!!\n"S_COLOR_MAGENTA"Set Current Desktop Resolution\n"S_COLOR_WHITE"%i"S_COLOR_GREEN"x"S_COLOR_WHITE"%i "S_COLOR_WHITE"%s\n", 
-					width, height, win_fs[fullscreen]);
-		
-	} else
-	Con_Printf( PRINT_ALL, " "S_COLOR_WHITE"%s\n", win_fs[fullscreen] );
+	Com_DPrintf ("...setting mode "S_COLOR_YELLOW"%i"S_COLOR_WHITE":"S_COLOR_YELLOW"[%i %i][%i hz]",	winScreenModes[r_mode->integer].num, 
+																								winScreenModes[r_mode->integer].w, 
+																								winScreenModes[r_mode->integer].h,
+																								winScreenModes[r_mode->integer].hz);
+	Com_DPrintf(" "S_COLOR_WHITE"%s\n", win_fs[fullscreen] );
 
 
 	// destroy the existing window
@@ -539,32 +541,12 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		memset( &dm, 0, sizeof( dm ) );
 		dm.dmSize = sizeof( dm );
 
-		dm.dmPelsWidth  = width;
-		dm.dmPelsHeight = height;
+		dm.dmPelsWidth  = winScreenModes[r_mode->integer].w;
+		dm.dmPelsHeight = winScreenModes[r_mode->integer].h;
 		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
 
-		gl_state.monitorWidth = GetSystemMetrics(SM_CXSCREEN);
-		gl_state.monitorHeight = GetSystemMetrics(SM_CYSCREEN);
-
-		/* display frequency */
-		if (r_displayRefresh->integer != 0){
-	        gl_state.displayrefresh	= r_displayRefresh->integer;
-			dm.dmDisplayFrequency	= r_displayRefresh->integer;
-			dm.dmFields				|= DM_DISPLAYFREQUENCY;
-			Com_Printf("...display frequency is "S_COLOR_GREEN"%d"S_COLOR_WHITE" hz\n", gl_state.displayrefresh);
-		}
-		else {
-			
-			int displayref = GetDeviceCaps (hDC, VREFRESH);
-            dm.dmDisplayFrequency	= displayref;
-			dm.dmFields				|= DM_DISPLAYFREQUENCY;
-			Com_Printf("...using desktop frequency.\n");
-		}
-     
-			// force set 32-bit color depth
-			dm.dmBitsPerPel = 32;
-			dm.dmFields |= DM_BITSPERPEL;
-
+		dm.dmDisplayFrequency = winScreenModes[r_mode->integer].hz;
+		dm.dmFields |= DM_DISPLAYFREQUENCY;
 			
 		Con_Printf( PRINT_ALL, "...calling CDS: " );
 		
@@ -575,29 +557,29 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 
 		if (cdsRet == DISP_CHANGE_SUCCESSFUL )
 		{
-			*pwidth = width;
-			*pheight = height;
+			*pwidth = winScreenModes[r_mode->integer].w;
+			*pheight = winScreenModes[r_mode->integer].h;
 
 			gl_state.fullscreen = qtrue;
 
 			Com_Printf(S_COLOR_GREEN"ok\n" );
 
-			if ( !VID_CreateWindow (width, height, qtrue) )
+			if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qtrue) )
 				return rserr_invalid_mode;
 
 			return rserr_ok;
 		}
 		else
 		{
-			*pwidth = width;
-			*pheight = height;
+			*pwidth = winScreenModes[r_mode->integer].w;
+			*pheight = winScreenModes[r_mode->integer].h;
 
 			Com_Printf(S_COLOR_RED"failed\n" );
 
 			Com_Printf("...calling CDS assuming dual monitors:" );
 
-			dm.dmPelsWidth = width * 2;
-			dm.dmPelsHeight = height;
+			dm.dmPelsWidth = winScreenModes[r_mode->integer].w * 2;
+			dm.dmPelsHeight = winScreenModes[r_mode->integer].h;
 			dm.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
 		
 			/*
@@ -617,17 +599,17 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 
 				ChangeDisplaySettings( 0, 0 );
 
-				*pwidth = width;
-				*pheight = height;
+				*pwidth = winScreenModes[r_mode->integer].w;
+				*pheight = winScreenModes[r_mode->integer].h;
 				gl_state.fullscreen = qfalse;
-				if ( !VID_CreateWindow (width, height, qfalse) )
+				if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qfalse) )
 					return rserr_invalid_mode;
 				return rserr_invalid_fullscreen;
 			}
 			else
 			{
 				Com_Printf(S_COLOR_GREEN" ok\n" );
-				if ( !VID_CreateWindow (width, height, qtrue) )
+				if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qtrue) )
 					return rserr_invalid_mode;
 				gl_state.fullscreen = qtrue;
 				return rserr_ok;
@@ -639,12 +621,23 @@ rserr_t GLimp_SetMode( unsigned *pwidth, unsigned *pheight, int mode, qboolean f
 		Com_Printf("...setting windowed mode\n" );
 
 		ChangeDisplaySettings( 0, 0 );
-
-		*pwidth = width;
-		*pheight = height;
 		gl_state.fullscreen = qfalse;
-		if ( !VID_CreateWindow (width, height, qfalse) )
-			return rserr_invalid_mode;
+
+		if ((int)r_customWindowWidth->integer >= 1024 && (int)r_customWindowHeight >= 768) {
+			*pwidth = r_customWindowWidth->integer;
+			*pheight = r_customWindowHeight->integer;
+
+			if (!VID_CreateWindow(r_customWindowWidth->integer, r_customWindowHeight->integer, qfalse))
+				return rserr_invalid_mode;
+		}
+		else {
+			*pwidth = winScreenModes[r_mode->integer].w;
+			*pheight = winScreenModes[r_mode->integer].h;
+
+			if (!VID_CreateWindow(winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qfalse))
+				return rserr_invalid_mode;
+		}
+
 	}
 	return rserr_ok;
 }
@@ -766,8 +759,6 @@ GLW_InitExtensions
 
 ==================
 */
-qboolean ext_sRGB, arb_sRGB;
-
 void GLW_InitExtensions() {
 
 	qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)qwglGetProcAddress("wglGetExtensionsStringARB");
@@ -834,22 +825,10 @@ void GLW_InitExtensions() {
 			}
 		}
 
-	ext_sRGB = qfalse;
-	arb_sRGB = qfalse;
-
 		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_profile"))
 			Com_Printf("...using WGL_ARB_create_context_profile\n");
 //==========================================================
-		if (strstr(glw_state.wglExtsString, "WGL_ARB_framebuffer_sRGB")) {
-			Com_Printf("...using WGL_ARB_framebuffer_sRGB\n");
-			arb_sRGB = qtrue;
-		}
-		else {
-			if (strstr(glw_state.wglExtsString, "WGL_EXT_framebuffer_sRGB"))
-				Com_Printf("...using WGL_EXT_framebuffer_sRGB\n");
-			ext_sRGB = qtrue;
-		}
-
+		
 		if (strstr(glw_state.wglExtsString, "WGL_ARB_create_context_no_error")) {
 			if(r_contextNoError->integer)
 				Com_Printf("...using WGL_ARB_create_context_no_error\n");

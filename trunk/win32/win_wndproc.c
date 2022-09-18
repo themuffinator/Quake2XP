@@ -26,12 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Quake refresh engine.
 //#include <assert.h>
 #include <float.h>
-
 #include "..\client\client.h"
 #include "winquake.h"
 #include "../client/snd_loc.h"			//for experimental OpenAL suspend feature.
-//#include "zmouse.h"
-
 #include "xinput.h"
 
 cvar_t *win_noalttab;
@@ -43,14 +40,11 @@ cvar_t *win_noalttab;
 static UINT MSH_MOUSEWHEEL;
 
 // Console variables that we need to access from this module
-cvar_t		*r_brightness;
-cvar_t		*vid_ref;			// Name of Refresh DLL loaded
-cvar_t		*vid_xpos;			// X coordinate of window position
-cvar_t		*vid_ypos;			// Y coordinate of window position
-cvar_t		*r_fullScreen;
-cvar_t		*r_customWidth;
-cvar_t		*r_customHeight;
 
+cvar_t	*vid_ref;			// Name of Refresh DLL loaded
+cvar_t	*vid_xpos;			// X coordinate of window position
+cvar_t	*vid_ypos;			// Y coordinate of window position
+cvar_t	*r_fullScreen;
 
 
 // Global variables used internally by this module
@@ -511,60 +505,6 @@ void VID_Front_f (void) {
 }
 
 /*
-** VID_GetModeInfo
-*/
-typedef struct vidmode_s {
-	const char *description;
-	int         width, height;
-	int         mode;
-} vidmode_t;
-
-static vidmode_t vid_modes[] = {
-	{ "Desktop",	-1, -1, 0 },		// desktop native
-	// generic screen
-	{ "1024x768",	1024, 768, 1 },     // 4:3
-	{ "1152x864",	1152, 864, 2 },     // 4:3
-	{ "1280x1024",	1280, 1024, 3 },    // 5:4
-	{ "1600x1200",	1600, 1200, 4 },    // 4:3
-	{ "2048x1536",	2048, 1536, 5 },    // 4:3
-	// wide screen
-	{ "1280x720",	1280, 720, 6 },     // 16:9 720p HDTV
-	{ "1280x800",	1280, 800, 7 },     // 16:10
-	{ "1366x768",	1366, 768, 8 },     // 16:9, plasma & LCD TV
-	{ "1440x900",	1440, 900, 9 },     // 16:10
-	{ "1600x900",	1600, 900, 10 },    // 16:9 TV
-	{ "1680x1050",	1680, 1050, 11 },   // 16:10
-	{ "1920x1080",	1920, 1080, 12 },   // 16:9 1080p full HDTV
-	{ "1920x1200",	1920, 1200, 13 },   // 16:10
-	{ "2560x1440",	2560, 1440, 14 },   // 16:9 WQHD
-	{ "2560x1600",	2560, 1600, 15 },   // 16:10
-	{ "3440x1440",  3440, 1440, 16 },   // 21:9 QHD
-	{ "3840x1600",  3840, 1600, 17 },   // 12:5 Ultra Wide TV
-	{ "3840x2160",  3840, 2160, 18 },   // 16:9 ULTRA HD
-	{ "4096x1716",  4096, 1716, 19 },   // 2.39:1 DCI 4K WIDE
-	{ "4096x2160",  4096, 2160, 20 },   // 1.89:1 DCI 4K
-	{ "Custom",		-1, -1, 21 }		// custom
-};
-
-
-
-qboolean VID_GetModeInfo (int *width, int *height, int mode) {
-	if (mode < 0 || mode >= VID_NUM_MODES)
-		return qfalse;
-
-	if (mode == 21) {
-		*width = r_customWidth->value;
-		*height = r_customHeight->value;
-	}
-	else {
-		*width = vid_modes[mode].width;
-		*height = vid_modes[mode].height;
-	}
-
-	return qtrue;
-}
-
-/*
 ** VID_UpdateWindowPosAndSize
 */
 void VID_UpdateWindowPosAndSize (int x, int y) {
@@ -710,8 +650,6 @@ void VID_Init (void) {
 	vid_xpos = Cvar_Get ("vid_xpos", "0", CVAR_ARCHIVE);
 	vid_ypos = Cvar_Get ("vid_ypos", "0", CVAR_ARCHIVE);
 	r_fullScreen = Cvar_Get ("r_fullScreen", "0", CVAR_ARCHIVE);
-	r_customWidth = Cvar_Get ("r_customWidth", "1024", CVAR_ARCHIVE);
-	r_customHeight = Cvar_Get ("r_customHeight", "768", CVAR_ARCHIVE);
 	win_noalttab = Cvar_Get ("win_noalttab", "0", CVAR_ARCHIVE);
 
 

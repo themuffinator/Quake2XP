@@ -518,6 +518,7 @@ typedef struct {
 	uint	_bloom;
 	uint	_thermal;
 	uint	_ssao;
+	uint	_linearDepth;
 }fbo_t;
 
 fbo_t fbo;
@@ -620,7 +621,6 @@ void R_BeginFrame ();
 void GLimp_EndFrame (void);
 void GLimp_AppActivate (qboolean active);
 void VID_NewWindow (int width, int height);
-qboolean VID_GetModeInfo (int *width, int *height, int mode);
 void VectorNormalizeFast(vec3_t v);
 
 struct sfx_s;

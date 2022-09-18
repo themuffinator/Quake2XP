@@ -80,6 +80,29 @@ void CreateSSAOBuffer(void) {
 
 }
 
+void CreateLinearDepthBuffer(void) {
+	qboolean statusOK;
+
+	Com_Printf("Load "S_COLOR_YELLOW "LINEAR DEPTH FBO ");
+
+	r_linearDepth = R_CreateTexture("***r_linearDepth***", GL_TEXTURE_RECTANGLE, GL_R16F, GL_RED, it_pic, vid.width, vid.height, 
+		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
+		GL_FLOAT, qfalse, NULL);
+
+	qglGenFramebuffers(1, &fbo._linearDepth);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._linearDepth);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_linearDepth->texnum, 0);
+
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (!statusOK)
+		Com_Printf(S_COLOR_RED"Failed!");
+	else
+		Com_Printf(S_COLOR_WHITE"succeeded\n");
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
 void CreateBloomBuffer(void) {
 	qboolean statusOK;
 
@@ -148,14 +171,13 @@ void R_CreateScreenFbo() {
 	r_hdrScreenCopy2d = R_CreateTexture("***r_hdrScreenCopy2d***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB,
 		it_pic, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
-		GL_FLOAT, qtrue, NULL);
+		GL_FLOAT, qfalse, NULL);
 
 	r_depthStencilTexture = R_CreateTexture("***r_depthStencilTexture***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_UNSIGNED_INT_24_8,
 		it_pic, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_UNSIGNED_INT_24_8, qfalse, NULL);
-
-
+	
 	qglGenFramebuffers(1, &fbo._hdr);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 

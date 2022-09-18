@@ -142,15 +142,6 @@ void R_CaptureColorBuffer(){
 }
 
 
-void R_CaptureDepthBuffer(){
-		
-	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
-		return;
-
-	glBindTextureUnit(0, r_depthStencilTexture->texnum);
-	glCopyTextureSubImage2D(r_depthStencilTexture->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
-}
-
 /*
 ===============
 GL_ImageList_f

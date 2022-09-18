@@ -706,7 +706,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 
 	float alphaShift = sin(ref_realtime * 5.666);
 	alphaShift = (alphaShift + 2.0) * 0.5f;
-	alphaShift = clamp(alphaShift, 0.01, 4.0);
+	alphaShift = clamp(alphaShift, 0.1, 1.5);
 
 	qglUniform1f(U_COLOR_OFFSET, alphaShift);
 	qglUniform1f(U_ENV_SCALE, 0.1);
@@ -1258,10 +1258,9 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU4, rgh->handle);
 		GL_SetBindlessTexture(U_TMU5, skinBump->handle);
 		GL_SetBindlessTexture(U_TMU6, r_hdrScreenCopy->handle);
-		GL_SetBindlessTexture(U_TMU7, r_depthStencilTexture->handle);
+		GL_SetBindlessTexture(U_TMU7, r_linearDepth->handle);
 		GL_SetBindlessTexture(U_TMU8, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 
-		qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 		qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 		qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
 

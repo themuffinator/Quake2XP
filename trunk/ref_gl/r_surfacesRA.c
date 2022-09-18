@@ -90,7 +90,8 @@ void R_DrawAlphaSurfaces() {
 	GL_BindProgram(glassProgram);
 
 	GL_SetBindlessTexture(U_TMU2, r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU3, r_depthStencilTexture->handle);
+//	GL_SetBindlessTexture(U_TMU3, r_depthStencilTexture->handle);
+	GL_SetBindlessTexture(U_TMU3, r_linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
@@ -99,7 +100,6 @@ void R_DrawAlphaSurfaces() {
 
 	qglUniform1f(U_REFR_THICKNESS0, 150.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
-	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform1f(U_AMBIENT_LEVEL, ambientScale);
 
 	float blurScale = 18.88 * ((float)vid.width / 1024.0);
@@ -175,13 +175,12 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 
 	GL_SetBindlessTexture(U_TMU1, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->handle);
 	GL_SetBindlessTexture(U_TMU2, r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU3, r_depthStencilTexture->handle);
+	GL_SetBindlessTexture(U_TMU3, r_linearDepth->handle);
 
 	qglUniform1f(U_WATER_DEFORM_MUL, 1.0);
 	qglUniform1f(U_AMBIENT_LEVEL, ambientScale);
 	qglUniform1f(U_WATHER_THICKNESS, 150.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
-	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 
 	if (!bmodel)
 		qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);

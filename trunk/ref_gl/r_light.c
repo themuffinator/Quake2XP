@@ -2583,11 +2583,10 @@ void R_DrawLightFlare () {
 	VectorScale (currentShadowLight->color, scale, tmp);
 
 	GL_SetBindlessTexture(U_TMU0, r_particleTexture[PT_FLARE]->handle);
-	GL_SetBindlessTexture(U_TMU1, r_depthStencilTexture->handle);
-	
+	GL_SetBindlessTexture(U_TMU1, r_linearDepth->handle);
+
 	qglUniform2f(U_PARAM_VEC2_0, 1.0, 0.0);
 	qglUniform1f(U_PARAM_FLOAT_0, 10.0 * 1.5);
-	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
 

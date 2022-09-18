@@ -767,7 +767,7 @@ void R_RenderSprites(void)
 
 	GL_SetBindlessTexture(U_TMU0, r_distort->handle);
 	GL_SetBindlessTexture(U_TMU2,r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU3, r_depthStencilTexture->handle);
+	GL_SetBindlessTexture(U_TMU3, r_linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 4.5);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
@@ -775,7 +775,6 @@ void R_RenderSprites(void)
 	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float *)r_newrefdef.projectionMatrix);
 
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
-	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniform2f(U_REFR_MASK, 0.0, 1.0);
 	qglUniform1i(U_REFR_ALPHA_MASK, 1);
 
@@ -925,7 +924,33 @@ void R_DrawRAScene (void) {
 	}
 }
 
-void R_DrawLightWorldRA(void);
+void R_LinearDepth(void)
+{
+	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL))
+		return;
+
+	R_SetupOrthoMatrix();
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._linearDepth);
+
+	GL_BindProgram(linearDepthProgram);
+	glBindTextureUnit(0, r_depthStencilTexture->texnum);
+	glCopyTextureSubImage2D(r_depthStencilTexture->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+	GL_SetBindlessTexture(U_TMU0, r_depthStencilTexture->handle);
+
+	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+
+	R_DrawFullScreenQuad();
+
+	GL_Enable(GL_CULL_FACE);
+	GL_Enable(GL_DEPTH_TEST);
+
+	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
+		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+}
 
 /*
 ================
@@ -966,7 +991,7 @@ void R_RenderView (refdef_t *fd) {
 
 		GL_Enable(GL_SCISSOR_TEST);
 		GL_Scissor(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
-	//	qglEnable(GL_FRAMEBUFFER_SRGB);
+
 		if (!(r_newrefdef.rdflags & RDF_NOCLEAR)) {
 			qglClearColor(0.0, 0.0, 0.0, 1.0);
 			qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -976,7 +1001,6 @@ void R_RenderView (refdef_t *fd) {
 	}
 	else {
 		GL_Disable(GL_SCISSOR_TEST);
-	//	qglDisable(GL_FRAMEBUFFER_SRGB);
 		qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 		qglDrawBuffer(GL_COLOR_ATTACHMENT0);
 		qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -985,7 +1009,7 @@ void R_RenderView (refdef_t *fd) {
 
 	R_DrawDepthScene();
 	R_SetFrustum(qfalse);
-	R_CaptureDepthBuffer();
+	R_LinearDepth();
 	
 	R_SSAO();
 	R_DrawAmbientScene();
@@ -1313,9 +1337,8 @@ void R_RegisterCvars(void)
 	r_colorBalanceRed =					Cvar_Get("r_colorBalanceRed", "1.0", CVAR_ARCHIVE);
 	r_colorBalanceGreen =				Cvar_Get("r_colorBalanceGreen", "1.0", CVAR_ARCHIVE);
 	r_colorBalanceBlue =				Cvar_Get("r_colorBalanceBlue", "1.0", CVAR_ARCHIVE);
-	r_srgbColorBuffer =					Cvar_Get("r_srgbColorBuffer", "1", CVAR_ARCHIVE);
 
-	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
+//	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
@@ -1338,8 +1361,8 @@ void R_RegisterCvars(void)
 	r_drawFlares =						Cvar_Get("r_drawFlares", "1", CVAR_ARCHIVE);
 	r_scaleAutoLightColor =				Cvar_Get("r_scaleAutoLightColor", "3", CVAR_ARCHIVE);
 
-	r_customWidth =						Cvar_Get("r_customWidth", "1024", CVAR_ARCHIVE);
-	r_customHeight =					Cvar_Get("r_customHeight", "768", CVAR_ARCHIVE);
+	r_customWindowWidth =				Cvar_Get("r_customWindowWidth", "0", CVAR_ARCHIVE);
+	r_customWindowHeight =					Cvar_Get("r_customWindowHeight", "0", CVAR_ARCHIVE);
 		
 	hunk_bsp=							Cvar_Get("hunk_bsp", "60", CVAR_ARCHIVE);
 	hunk_md2=							Cvar_Get("hunk_md2", "5", CVAR_ARCHIVE);
@@ -1506,7 +1529,7 @@ qboolean R_SetMode(void)
 
 	r_fullScreen->modified = qfalse;
 	r_mode->modified = qfalse;
-
+ 
     err = GLimp_SetMode(&vid.width, &vid.height, r_mode->integer, fullscreen);
 
     // success, update variables
@@ -1592,6 +1615,7 @@ void R_InitFboBuffers() {
 	Com_Printf("Initializing FBOs...\n\n");
 	R_CreateScreenFbo();
 	R_FboFinal();
+	CreateLinearDepthBuffer();
 	CreateSSAOBuffer();
 	CreateBloomBuffer();
 	CreateThermalBuffer();

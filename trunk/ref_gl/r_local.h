@@ -98,6 +98,18 @@ typedef enum {
 	rserr_unknown
 } rserr_t;
 
+typedef struct winScreenModes_s {
+	int num;
+	int w;
+	int h;
+	int hz;
+	char *description;
+} winScreenModes_t;
+
+winScreenModes_t winScreenModes[64];
+#define NUM_WINSCREENMODES ( sizeof( winSreenModes ) / sizeof( winSreenModes[0] ) )
+char** vid_winModes;
+
 #include "r_model.h"
 
 typedef struct hdri_s {
@@ -183,8 +195,7 @@ image_t* r_hdrScreenCopy;
 image_t* r_depthStencilTexture;
 image_t* r_hdrScreenCopy2d;
 image_t* r_finalScreen;
-
-image_t* r_shadowMask;
+image_t* r_linearDepth;
 
 image_t	*r_cinImage;
 image_t	*r_bloomImage;
@@ -255,7 +266,6 @@ cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
 cvar_t	*r_colorBalanceGreen;
 cvar_t	*r_colorBalanceBlue;
-cvar_t	*r_srgbColorBuffer;
 cvar_t	*r_useColorCorrection;
 
 cvar_t *vid_ref;
@@ -281,8 +291,8 @@ extern cvar_t	*deathmatch;
 cvar_t	*r_drawFlares;
 cvar_t	*r_scaleAutoLightColor;
 
-cvar_t	*r_customWidth;
-cvar_t	*r_customHeight;
+cvar_t	*r_customWindowWidth;
+cvar_t	*r_customWindowHeight;
 
 cvar_t	*r_bloom;
 cvar_t	*r_bloomIntens;
@@ -376,7 +386,9 @@ void R_CreateScreenFbo();
 void R_FboFinal();
 void CreateBloomBuffer(void);
 void CreateThermalBuffer(void);
-
+void CreateLinearDepthBuffer(void);
+void R_LinearDepth(void);
+void R_DrawLightWorldRA(void);
 void GL_SetBindlessTexture(int loc, uint64 handle);
 
 void R_LightPoint (vec3_t p, vec3_t color);
@@ -668,9 +680,6 @@ typedef struct {
 	int		currentBindlessLocation;
 
 	qboolean	texture_compression_bptc;
-	int			displayrefresh;
-	int			monitorWidth, monitorHeight;
-	int			numSupportedRefrashes;
 
 	qboolean	wgl_no_error;
 	qboolean	wgl_swap_control_tear;
@@ -963,6 +972,7 @@ glslProgram_t		*bloomBlurProgram;
 glslProgram_t		*motionBlurProgram;
 glslProgram_t		*ssaoProgram;
 glslProgram_t		*depthDownsampleProgram;
+glslProgram_t		*linearDepthProgram;
 glslProgram_t		*ssaoBlurProgram;
 glslProgram_t		*glassProgram;
 glslProgram_t		*lightGlassProgram;
@@ -1211,7 +1221,7 @@ typedef struct {
 
 	const char	*wglExtsString;
 	const char	*wglRenderer;
-	int desktopWidth, desktopHeight;
+	int desktopWidth, desktopHeight, desktopRefresh;
 	int monitorWidth, monitorHeight;
 	int desktopBitPixel;
 	int dpi;

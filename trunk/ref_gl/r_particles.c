@@ -81,9 +81,8 @@ void R_DrawParticles (void) {
 
 	// setup program
 	GL_BindProgram(particlesProgram);
+	GL_SetBindlessTexture(U_TMU1, r_linearDepth->handle);
 
-	GL_SetBindlessTexture	(U_TMU1, /*r_depthTex->handle*/r_depthStencilTexture->handle);
-	qglUniform2f			(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
 	qglUniformMatrix4fv		(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv		(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 

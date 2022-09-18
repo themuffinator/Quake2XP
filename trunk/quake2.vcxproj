@@ -805,6 +805,8 @@
     <None Include="..\baseq2\glsl\include\parallax.inc" />
     <None Include="..\baseq2\glsl\lightWorld.frag" />
     <None Include="..\baseq2\glsl\lightWorld.vert" />
+    <None Include="..\baseq2\glsl\linearDepth.frag" />
+    <None Include="..\baseq2\glsl\linearDepth.vert" />
     <None Include="..\baseq2\glsl\loading.frag" />
     <None Include="..\baseq2\glsl\loading.vert" />
     <None Include="..\baseq2\glsl\light2d.frag" />

@@ -284,11 +284,11 @@ void R_DofBlur (void)
 	GL_BindProgram (dofProgram);
 
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
-	qglUniform4f(U_PARAM_VEC4_0, dofParams[0], dofParams[1], r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	qglUniform2f(U_PARAM_VEC2_0, dofParams[0], dofParams[1]);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU1, r_depthStencilTexture->handle);
+	GL_SetBindlessTexture(U_TMU1, r_linearDepth->handle);
 
 	R_DrawFullScreenQuad ();
 }
@@ -489,9 +489,7 @@ void R_DownsampleDepth(void)
 	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
 
 	GL_BindProgram(depthDownsampleProgram);
-	GL_SetBindlessTexture(U_TMU0, r_depthStencilTexture->handle);
-
-	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	GL_SetBindlessTexture(U_TMU0, r_linearDepth->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
 	R_DrawHalfScreenQuad();
@@ -775,9 +773,7 @@ void R_GlobalFog() {
 	GL_BindProgram(globalFogProgram);
 
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU1, r_depthStencilTexture->handle);
-
-	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);
+	GL_SetBindlessTexture(U_TMU1, r_linearDepth->handle);
 
 	qglUniform1i(U_PARAM_INT_0, fog.type);
 	qglUniform4f(U_PARAM_VEC4_0, fog.worldColor[0], fog.worldColor[1], fog.worldColor[2], fog.worldDensity);
