@@ -601,7 +601,7 @@ static void ColorSettingsFunc(void *unused) {
 */
 
 void VID_MenuInit (void) {
-	
+#ifndef _WINDOWS
 	static char *resolutions[] = {
 		"[Native][Desktop Resolution]",
 		"[1024 768][4:3]",
@@ -626,9 +626,9 @@ void VID_MenuInit (void) {
 		"[4096 1716][2.39:1 DCI 4K WIDE]",
 		"[4096 2160][1.89:1 DCI 4K]",
 		"[Custom]", 0 };
+#endif
 	static char* parallax_names[] = { "off", "Linear Step Parallax", "Relief Mapping", "Crytek Parallax Occusion Mapping", 0 };
 	static char	*yesno_names[] = { "off", "yes", 0 };
-	static char* customWindow[] = { "custom window resolution", 0 };
 	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
 	static char	*aniso_items[] =
 	{	"Off",	  // 1
@@ -705,23 +705,10 @@ void VID_MenuInit (void) {
 #ifndef _WINDOWS
 	s_mode_list.itemnames = resolutions;
 #else
-	if (r_fullScreen->integer) {
-		s_mode_list.itemnames = vid_winModes;
-		s_mode_list.generic.statusbar = "Screen Resolution <Requires Restart Video Sub-System>";
-	}
-	else {
-		if ((int)r_customWindowWidth->integer >= 1024 && (int)r_customWindowHeight >= 768) {
-			s_mode_list.itemnames = customWindow;
-			s_mode_list.generic.statusbar = "Custom Window Resolution use r_customWindowWidth and r_customWindowHeight for changes";
-		}
-		else {
-			s_mode_list.itemnames = vid_winModes;
-			s_mode_list.generic.statusbar = "Screen Resolution <Requires Restart Video Sub-System>";
-		}
-	}
+	s_mode_list.itemnames = vid_winModes;
 #endif
 	s_mode_list.curvalue = r_mode->integer;
-
+	s_mode_list.generic.statusbar = "Screen Resolution <Requires Restart Video Sub-System>";
 
 	s_fs_box.generic.type = MTYPE_SPINCONTROL;
 	s_fs_box.generic.x = 0;

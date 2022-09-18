@@ -616,28 +616,16 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 			}
 		}
 	}
-	else
-	{
+	else{
 		Com_Printf("...setting windowed mode\n" );
 
 		ChangeDisplaySettings( 0, 0 );
 		gl_state.fullscreen = qfalse;
+		*pwidth = winScreenModes[r_mode->integer].w;
+		*pheight = winScreenModes[r_mode->integer].h;
 
-		if ((int)r_customWindowWidth->integer >= 1024 && (int)r_customWindowHeight >= 768) {
-			*pwidth = r_customWindowWidth->integer;
-			*pheight = r_customWindowHeight->integer;
-
-			if (!VID_CreateWindow(r_customWindowWidth->integer, r_customWindowHeight->integer, qfalse))
-				return rserr_invalid_mode;
-		}
-		else {
-			*pwidth = winScreenModes[r_mode->integer].w;
-			*pheight = winScreenModes[r_mode->integer].h;
-
-			if (!VID_CreateWindow(winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qfalse))
-				return rserr_invalid_mode;
-		}
-
+		if (!VID_CreateWindow(winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qfalse))
+			return rserr_invalid_mode;
 	}
 	return rserr_ok;
 }
