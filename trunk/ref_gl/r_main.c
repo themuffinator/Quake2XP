@@ -1362,8 +1362,10 @@ void R_RegisterCvars(void)
 	r_scaleAutoLightColor =				Cvar_Get("r_scaleAutoLightColor", "3", CVAR_ARCHIVE);
 
 	r_customWindowWidth =				Cvar_Get("r_customWindowWidth", "0", CVAR_ARCHIVE);
-	r_customWindowHeight =					Cvar_Get("r_customWindowHeight", "0", CVAR_ARCHIVE);
-		
+	r_customWindowWidth->help = "Minimal value is 1024\n Minimal custom resolution 1024x768";
+	r_customWindowHeight =				Cvar_Get("r_customWindowHeight", "0", CVAR_ARCHIVE);
+	r_customWindowHeight->help = "Minimal value is 768\n Minimal custom resolution 1024x768";
+
 	hunk_bsp=							Cvar_Get("hunk_bsp", "60", CVAR_ARCHIVE);
 	hunk_md2=							Cvar_Get("hunk_md2", "5", CVAR_ARCHIVE);
 	hunk_md3=							Cvar_Get("hunk_md3", "14", CVAR_ARCHIVE);
@@ -2015,15 +2017,19 @@ void R_Shutdown(void)
 	Cmd_RemoveCommand("glslInfo");
 	Cmd_RemoveCommand("openglInfo");
 
-	Cmd_RemoveCommand("makeLut");
+//	Cmd_RemoveCommand("makeLut");
 
 	Cmd_RemoveCommand("fogEdit");
 #ifdef _WIN32
 	Cmd_RemoveCommand("gpuInfo");
 #endif
-	qglDeleteFramebuffers (1, &fbo._ssao);
+
 	qglDeleteFramebuffers(1, &fbo._hdr);
 	qglDeleteFramebuffers(1, &fbo._final);
+	qglDeleteFramebuffers(1, &fbo._bloom);
+	qglDeleteFramebuffers(1, &fbo._thermal);
+	qglDeleteFramebuffers(1, &fbo._ssao);
+	qglDeleteFramebuffers(1, &fbo._linearDepth);
 
 	DeleteShadowVertexBuffers();
 	R_ShutDownVertexBuffers();

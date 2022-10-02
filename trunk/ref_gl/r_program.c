@@ -1028,6 +1028,16 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+	Com_Printf("Load "S_COLOR_YELLOW"heat haze program"S_COLOR_WHITE" ");
+	heatHazeProgram = R_FindProgram("heatHaze", S_DEFAULT);
+	if (heatHazeProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 	Com_Printf("Load "S_COLOR_YELLOW"debug TBN program"S_COLOR_WHITE" ");
 	tbnDebugProgram = R_FindProgram("tbnDebug", S_GEO);
 	if (tbnDebugProgram->valid) {

@@ -30,7 +30,7 @@ int waterSurfSort(const msurface_t** a, const msurface_t** b) {
 	return	(((*a)->texInfo->image->texnum)) - (((*b)->texInfo->image->texnum));
 }
 
-msurface_t* interactionTranSurf[MAX_MAP_FACES];
+msurface_t* interactionTranSurf[MAX_MAP_FACES/4];
 int			numInteractionTransSurfs;
 
 void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
@@ -90,7 +90,6 @@ void R_DrawAlphaSurfaces() {
 	GL_BindProgram(glassProgram);
 
 	GL_SetBindlessTexture(U_TMU2, r_hdrScreenCopy->handle);
-//	GL_SetBindlessTexture(U_TMU3, r_depthStencilTexture->handle);
 	GL_SetBindlessTexture(U_TMU3, r_linearDepth->handle);
 
 	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
@@ -228,12 +227,71 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 	numReflectiveSurfaces = 0;
 }
 
+
+void R_AddHeatHazeSurceces(msurface_t* s, uint* indeces) {
+	int i;
+	uint numIndices;
+	int nv = s->polys->numVerts;
+
+	numIndices = *indeces;
+
+	for (i = 0; i < nv - 2; i++) {
+		indexArray[numIndices++] = s->baseIndex;
+		indexArray[numIndices++] = s->baseIndex + i + 1;
+		indexArray[numIndices++] = s->baseIndex + i + 2;
+	}
+	*indeces = numIndices;
+}
+
+void R_DrawHeatHazeSurfaces() {
+	msurface_t* s;
+	uint		numIndices = 0;
+
+	// setup program
+	GL_BindProgram(heatHazeProgram);
+
+	GL_SetBindlessTexture(U_TMU0, r_waterNormals[((int)(r_newrefdef.time * 15)) & (MAX_WATER_NORMALS - 1)]->handle);
+	GL_SetBindlessTexture(U_TMU1, r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU2, r_linearDepth->handle);
+
+	qglUniform1f(U_REFR_DEFORM_MUL, 1.0);
+	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
+
+	qglUniform1f(U_REFR_THICKNESS0, 75.0);
+	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+
+	for (int i = 0; i < numHeatHazeSurfaces; i++) {
+
+		s = r_heatHazeSurfaces[i];
+
+		R_AddHeatHazeSurceces(s, &numIndices);
+
+		if (numIndices >= MAX_IDX) { //overflow
+			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+			c_brush_polys += numIndices / 3;
+			numIndices = 0;
+		}
+	}
+	if (numIndices) {
+		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		c_brush_polys += numIndices / 3;
+		numIndices = 0;
+	}
+	numHeatHazeSurfaces = 0;
+}
+
+
 void R_DrawSurfacesRA(qboolean bmodel) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
 	glBindVertexArray(vao.bsp);
+	
+	R_CaptureColorBuffer();
+	R_DrawHeatHazeSurfaces();
 
 	R_CaptureColorBuffer();
 	R_DrawAlphaSurfaces();

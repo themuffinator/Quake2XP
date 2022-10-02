@@ -571,9 +571,12 @@ extern vec3_t skyaxis;
 
 int			numAlphaSurfaces;
 int			numReflectiveSurfaces;
-msurface_t* r_alphaSurfaces[MAX_MAP_FACES];
-msurface_t* r_reflectiveSurfaces[MAX_MAP_FACES];
+msurface_t* r_alphaSurfaces[MAX_MAP_FACES/4];
+msurface_t* r_reflectiveSurfaces[MAX_MAP_FACES/4];
 msurface_t* r_reflSurfChains;
+
+msurface_t* r_heatHazeSurfaces[MAX_MAP_FACES / 4];
+int numHeatHazeSurfaces;
 
 int R_Init (void *hinstance, void *hWnd);
 void R_Shutdown (void);
@@ -1003,7 +1006,7 @@ glslProgram_t		*screenFlashProgram;
 glslProgram_t		*tbnDebugProgram;
 glslProgram_t		*tonemapProgram;
 glslProgram_t		*finalPassProgram;
-glslProgram_t		*shadowBlurProgram;
+glslProgram_t		*heatHazeProgram;
 
 void GL_BindProgram (glslProgram_t *program);
 void R_CaptureDepthBuffer ();

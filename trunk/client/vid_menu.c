@@ -630,6 +630,7 @@ void VID_MenuInit (void) {
 	static char* parallax_names[] = { "off", "Linear Step Parallax", "Relief Mapping", "Crytek Parallax Occusion Mapping", 0 };
 	static char	*yesno_names[] = { "off", "yes", 0 };
 	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
+	static char* customScreenRes[] = { "Custom Window Resolution", 0 };
 	static char	*aniso_items[] =
 	{	"Off",	  // 1
 		"Low",	  // 2
@@ -704,10 +705,24 @@ void VID_MenuInit (void) {
 	s_mode_list.generic.y = 10 * ui_fontScale->value;
 #ifndef _WINDOWS
 	s_mode_list.itemnames = resolutions;
-#else
-	s_mode_list.itemnames = vid_winModes;
-#endif
 	s_mode_list.curvalue = r_mode->integer;
+#else
+	if (gl_state.fullscreen) {
+		s_mode_list.itemnames = vid_winModes;
+		s_mode_list.curvalue = r_mode->integer;
+	}
+	else {
+		if (r_customWindowWidth->integer >= 1024 && r_customWindowHeight->integer >= 768) {
+			s_mode_list.itemnames = customScreenRes;
+			s_mode_list.curvalue = 0;
+		}
+		else {
+			s_mode_list.itemnames = vid_winModes;
+			s_mode_list.curvalue = r_mode->integer;
+		}
+	}
+#endif
+	
 	s_mode_list.generic.statusbar = "Screen Resolution <Requires Restart Video Sub-System>";
 
 	s_fs_box.generic.type = MTYPE_SPINCONTROL;

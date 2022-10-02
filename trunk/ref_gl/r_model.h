@@ -82,7 +82,7 @@ typedef struct worldShadowLight_s {
 	msurface_t	*interaction[MAX_MAP_FACES];
 	int			numInteractionSurfs;
 
-	msurface_t* interactionRA[MAX_MAP_FACES];
+	msurface_t* interactionRA[MAX_MAP_FACES/4];
 	int			numInteractionSurfsRA;
 
 	char		targetname[MAX_QPATH];

@@ -680,6 +680,9 @@ static void R_RecursiveWorldNode (mnode_t * node) {
 			else {
 				// add to the ambient batch
 				sceneSurfaces[numSceneSurfaces++] = surf;
+				
+				if (surf->flags & MSURF_LAVA) 
+					r_heatHazeSurfaces[numHeatHazeSurfaces++] = surf;
 			}
 		}
 	}

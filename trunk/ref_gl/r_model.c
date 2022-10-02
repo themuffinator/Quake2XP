@@ -954,9 +954,10 @@ void CalcSurfaceExtents(msurface_t * s) {
 			v = &loadmodel->vertexes[loadmodel->edges[-e].v[1]];
 
 		for (j = 0; j < 2; j++) {
-			val = v->position[0] * tex->vecs[j][0] +
-				v->position[1] * tex->vecs[j][1] +
-				v->position[2] * tex->vecs[j][2] + tex->vecs[j][3];
+			val =	(long double)v->position[0] * (long double)tex->vecs[j][0] +
+					(long double)v->position[1] * (long double)tex->vecs[j][1] +
+					(long double)v->position[2] * (long double)tex->vecs[j][2] + 
+					(long double)tex->vecs[j][3];
 			if (val < mins[j])
 				mins[j] = val;
 			if (val > maxs[j])
@@ -1400,7 +1401,7 @@ void Mod_LoadFaces(lump_t * l) {
 	Z_Free(tempEdges);
 }
 
-#define bspSmoothAngle cosf(DEG2RAD(33.0))
+#define bspSmoothAngle cosf(DEG2RAD(45.0))
 
 void GL_BuildTBN(int count) {
 	int			ci, cj, i, j;
@@ -1428,8 +1429,6 @@ void GL_BuildTBN(int count) {
 			sj = &currentmodel->surfaces[j];
 
 			if (!(sj->texInfo->flags & (SURF_SKY | SURF_NODRAW))) {
-				if (si->texInfo->image->texnum != sj->texInfo->image->texnum)
-					continue;
 
 				if (sj->flags & MSURF_PLANEBACK)
 					VectorNegate(sj->plane->normal, nj);
@@ -1460,9 +1459,12 @@ void GL_BuildTBN(int count) {
 			VectorNormalize(normal);
 
 			if (DotProduct(normal, ni) < bspSmoothAngle) {
-				vi[7] = normal[0] + ni[0];
-				vi[8] = normal[1] + ni[1];
-				vi[9] = normal[2] + ni[2];
+				vec3_t out;
+				VectorAdd(normal, ni, out);
+				VectorNormalize(out);
+				vi[7] = out[0];
+				vi[8] = out[1];
+				vi[9] = out[2];
 			}
 			else {
 				vi[7] = normal[0];

@@ -507,7 +507,7 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 			hz = dm.dmDisplayFrequency;
 
 		}
-		Com_Printf("mode:%i %ix%i %ihz %s\n", winScreenModes[count].num, winScreenModes[count].w, winScreenModes[count].h, dm.dmDisplayFrequency, winScreenModes[count].description);
+		Com_DPrintf("mode:%i %ix%i %ihz %s\n", winScreenModes[count].num, winScreenModes[count].w, winScreenModes[count].h, dm.dmDisplayFrequency, winScreenModes[count].description);
 		count++;
 	}
 	count += 1; //num modes + terminator for menu
@@ -520,11 +520,11 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 
 	Com_Printf("\n");
 
-	Com_DPrintf ("...setting mode "S_COLOR_YELLOW"%i"S_COLOR_WHITE":"S_COLOR_YELLOW"[%i %i][%i hz]",	winScreenModes[r_mode->integer].num, 
+	Com_Printf ("...setting mode "S_COLOR_YELLOW"%i"S_COLOR_WHITE":"S_COLOR_YELLOW"[%i %i][%i hz]",	winScreenModes[r_mode->integer].num, 
 																								winScreenModes[r_mode->integer].w, 
 																								winScreenModes[r_mode->integer].h,
 																								winScreenModes[r_mode->integer].hz);
-	Com_DPrintf(" "S_COLOR_WHITE"%s\n", win_fs[fullscreen] );
+	Com_Printf(" "S_COLOR_WHITE"%s\n", win_fs[fullscreen] );
 
 
 	// destroy the existing window
@@ -598,10 +598,11 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 				Com_Printf(S_COLOR_YELLOW"...setting windowed mode\n" );
 
 				ChangeDisplaySettings( 0, 0 );
-
+				
 				*pwidth = winScreenModes[r_mode->integer].w;
 				*pheight = winScreenModes[r_mode->integer].h;
 				gl_state.fullscreen = qfalse;
+
 				if ( !VID_CreateWindow (winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qfalse) )
 					return rserr_invalid_mode;
 				return rserr_invalid_fullscreen;
@@ -617,15 +618,24 @@ rserr_t GLimp_SetMode(unsigned* pwidth, unsigned* pheight, int mode, qboolean fu
 		}
 	}
 	else{
-		Com_Printf("...setting windowed mode\n" );
-
+		
 		ChangeDisplaySettings( 0, 0 );
 		gl_state.fullscreen = qfalse;
-		*pwidth = winScreenModes[r_mode->integer].w;
-		*pheight = winScreenModes[r_mode->integer].h;
+		if (r_customWindowWidth->integer >= 1024 && r_customWindowHeight->integer >= 768) {
+			Com_Printf("...setting custom windowed mode [%ix%i]\n", r_customWindowWidth->integer, r_customWindowHeight->integer);
+			*pwidth = r_customWindowWidth->integer;
+			*pheight = r_customWindowHeight->integer;
+			if (!VID_CreateWindow(r_customWindowWidth->integer, r_customWindowHeight->integer, qfalse))
+				return rserr_invalid_mode;
+		}
+		else {
+			Com_Printf("...setting windowed mode [%ix%i]\n", winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h);
+			*pwidth = winScreenModes[r_mode->integer].w;
+			*pheight = winScreenModes[r_mode->integer].h;
+			if (!VID_CreateWindow(winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qfalse))
+				return rserr_invalid_mode;
+		}
 
-		if (!VID_CreateWindow(winScreenModes[r_mode->integer].w, winScreenModes[r_mode->integer].h, qfalse))
-			return rserr_invalid_mode;
 	}
 	return rserr_ok;
 }
