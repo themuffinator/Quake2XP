@@ -8,7 +8,7 @@ layout(location = U_REFR_ALPHA)			uniform float	u_alpha;
 layout(location = U_REFR_THICKNESS0)	uniform float	u_thickness0; //depth feather
 layout(location = U_REFR_THICKNESS1)	uniform float	u_thickness1; //sprite softeness
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
-layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
+
 layout(location = U_COLOR_MUL)			uniform float	u_ambientScale;
 layout(location = U_REFR_MASK)			uniform vec2	u_mask;			//softeness
 layout(location = U_REFR_ALPHA_MASK)	uniform int		u_ALPHAMASK;	//is sprite
@@ -20,7 +20,7 @@ in float	v_depthS;
 in vec2		v_deformMul;
 in vec2		v_deformTexCoord;
 
-#include depth.inc  //!#include "include/depth.inc"
+//#include depth.inc  //!#include "include/depth.inc"
 
 void main (void) {
 
@@ -28,7 +28,8 @@ void main (void) {
 	vec4 diffuse  = texture(u_colorMap,  v_deformTexCoord.xy);
 
 	// Z-feather
-	float depth = DecodeDepth(texture(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+	float depth = texture(g_depthBufferMap, gl_FragCoord.xy).x;
+
 	N *= clamp((depth - v_depth) / u_thickness0, 0.0, 1.0);
 	// scale by the deform multiplier and the viewport size
 	N *= v_deformMul * u_viewport.xy;

@@ -6,14 +6,11 @@ layout	(location = U_PARAM_INT_0)		uniform int		u_fogType;		// exp1 and exp2
 layout	(location = U_PARAM_VEC4_0)		uniform vec4	u_fogParams;	//world rgb and density
 layout	(location = U_PARAM_VEC4_1)		uniform vec4	u_fogSkyParams; //sky rgb and density
 layout	(location = U_PARAM_VEC2_0)		uniform vec2	u_fogBias;		// x - world, y - sky
-layout	(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
-
-#include depth.inc  //!#include "include/depth.inc"
 
 void main(void){
 	vec3 backBuffer = texture(u_screenMap, gl_FragCoord.xy).rgb;
-	float depth = DecodeDepth(texture(u_depthMap, gl_FragCoord.xy).x, u_depthParms);
-	
+	float depth = texture(u_depthMap, gl_FragCoord.xy).x;
+
 	bool mask;
 	
 	if(depth >= 0.9999)

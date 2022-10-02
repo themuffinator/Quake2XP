@@ -8,7 +8,6 @@ layout(location = U_WATER_DEFORM_MUL)	uniform float	u_deformMul;		// for normal 
 layout(location = U_WATHER_THICKNESS)	uniform float	u_thickness;
 layout(location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
-layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
 layout(location = U_WATER_TRANS)		uniform int		u_transSurf;
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 layout(location = U_WATER_MIRROR)		uniform int		u_mirror;
@@ -39,9 +38,6 @@ in vec4		v_color;
 #define OPAQUE_OFFSET		4.0
 #define OPAQUE_MUL			(-1.0 / 512.0)
 
-
-#include depth.inc  //!#include "include/depth.inc"
-
 //
 // view space to viewport
 //
@@ -67,7 +63,7 @@ void main (void) {
 	float sceneDepth;
 
 	if (u_transSurf == 1) {
-		sceneDepth = DecodeDepth(texture(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+		sceneDepth = texture(g_depthBufferMap, gl_FragCoord.xy).x;
 		N.xy = offset.xy * clamp((sceneDepth + v_positionVS.z) / u_thickness, 0.0, 1.0);
 		// scale by the deform multiplier & viewport size
 		tc = N.xy * v_deformMul * u_viewport;
@@ -125,7 +121,7 @@ void main (void) {
 		rayPos += R * stepSize;
 
 		tc = VS2UV(rayPos).xy;
-		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
+		sceneDepth = texture(g_depthBufferMap, tc).x;
 
 		if (sceneDepth <= -rayPos.z)
 			break;	// intersection
@@ -141,13 +137,13 @@ void main (void) {
 	stepSize *= 0.5;
 	rayPos -= R * stepSize;
 	tc = VS2UV(rayPos).xy;
-	sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
+	sceneDepth = texture(g_depthBufferMap, tc).x;
 
 	for (int j = 0; j < MAX_STEPS_BINARY; j++, stepSize *= 0.5) {
 		rayPos += R * stepSize * (step(-rayPos.z, sceneDepth) - 0.5);
 
 		tc = VS2UV(rayPos).xy;
-		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
+		sceneDepth = texture(g_depthBufferMap, tc).x;
 
 		float delta = -rayPos.z - sceneDepth;
 

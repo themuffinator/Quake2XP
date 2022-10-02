@@ -4,9 +4,7 @@ layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_ScreenTex;
 layout (bindless_sampler, location = U_TMU1) uniform sampler2DRect	u_DepthTex;
 
 layout (location = U_SCREEN_SIZE)	uniform vec2	u_screenSize;
-layout (location = U_PARAM_VEC4_0)	uniform vec4	u_dofParams;
-
-#include depth.inc //!#include "include/depth.inc"
+layout (location = U_PARAM_VEC2_0)	uniform vec2	u_dofParams;
 
 #define DOF_SAMPLES 17
 
@@ -35,9 +33,8 @@ const	vec2 dofOffsets[DOF_SAMPLES] = vec2[](
 void main(void){
 
 	vec2 aspectCorrect = vec2(1.0, ASPECTRATIO);
-   
 	// Z-feather
-	float depth = DecodeDepth(texture(u_DepthTex, gl_FragCoord.xy).x, u_dofParams.zw);
+	float depth = texture(u_DepthTex, gl_FragCoord.xy).x;
 	float factor = depth - u_dofParams.x;
 
 	vec2 dofblur = vec2 (clamp(factor * u_dofParams.y, -3.0, 3.0));

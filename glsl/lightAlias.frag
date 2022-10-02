@@ -23,7 +23,6 @@ layout(location = U_PARAM_INT_1)		uniform int		u_alphaMask;
 layout(location = U_PARAM_INT_2)		uniform int		u_useSSS;
 layout(location = U_PARAM_INT_3)		uniform int		u_useSkyRefl;
 layout(location = U_PARAM_INT_4)		uniform int		u_useSSLR;
-layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;
 layout(location = U_USE_SSAO)			uniform int		u_ssao;
@@ -43,7 +42,7 @@ in mat3			v_tangentToView;
 in mat4			v_mvMatrix;
 in vec3	v_t, v_b, v_n;
 
-#include depth.inc		//!#include "include/depth.inc"
+//#include depth.inc		//!#include "include/depth.inc"
 #include lighting.inc	//!#include "include/lighting.inc"
 #include blur.inc		//!#include "include/blur.inc"
 
@@ -53,7 +52,7 @@ in vec3	v_t, v_b, v_n;
 #define STEP_SIZE			10.0
 #define STEP_SIZE_MUL		1.35
 
-#define Z_THRESHOLD			0.5			// sufficient difference to stop tracing
+#define Z_THRESHOLD			1.0			// sufficient difference to stop tracing
 
 #define	FRESNEL_MUL			1.0
 #define FRESNEL_EXP			1.6
@@ -70,9 +69,6 @@ vec2 VS2UV (const in vec3 p) {
 }
 
 vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness){
-
-	if (u_useSSLR == 0)
-		return vec3(0.0);
 
 	if(_sss <= 0.0)
 		return vec3(0.0);
@@ -104,7 +100,8 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness){
 		rayPos += R * stepSize;
 
 		tc = VS2UV(rayPos).xy;
-		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
+		//sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
+		sceneDepth = texture(g_depthBufferMap, tc).x;
 
 		if (sceneDepth <= -rayPos.z)
 			break;	// intersection
@@ -117,13 +114,15 @@ vec3 SSLR(vec3 normal, float roughness, float _sss, float metalness){
 	rayPos -= R * stepSize;
 	tc = VS2UV(rayPos).xy;
 
-	sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
+//	sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
+	sceneDepth = texture(g_depthBufferMap, tc).x;
 
 	for (int j = 0; j < MAX_STEPS_BINARY; j++, stepSize *= 0.5) {
 		rayPos += R * stepSize * (step(-rayPos.z, sceneDepth) - 0.5);
 
 		tc = VS2UV(rayPos).xy;
-		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
+//		sceneDepth = DecodeDepth(texture(g_depthBufferMap, tc).x, u_depthParms);
+		sceneDepth = texture(g_depthBufferMap, tc).x;
 
 		float delta = -rayPos.z - sceneDepth;
 
@@ -239,10 +238,10 @@ void main (void) {
 			if(u_blinnPhong == 1)
 				metall_color = BlinnPhongLighting(diffuseMap.rgb, specular.r, normalMap.rgb, L, V, 128.0)  * v_lightColor.rgb * cubeFilter.rgb * attenMap; 
 			if(u_blinnPhong == 0)  {
-				if(u_useSSLR == 1)
-          metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
-       if(u_useSSLR != 1) 
-          metall_color = Lighting_BRDF(diffuseMap.rgb, specular, roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
+			if(u_useSSLR == 1)
+			    metall_color = Lighting_BRDF(diffuseMap.rgb, SSLR(normalMap.xyz, roughness, SSS, metalness), roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
+			if(u_useSSLR != 1) 
+				metall_color = Lighting_BRDF(diffuseMap.rgb, specular, roughness, normalMap.xyz, L, V)  * v_lightColor.rgb * cubeFilter.rgb * attenMap;
       } 
 			}		
 

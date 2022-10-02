@@ -6,7 +6,6 @@ layout (bindless_sampler, location  = U_TMU3) uniform sampler2DRect	g_depthBuffe
 
 layout(location = U_REFR_THICKNESS0)	uniform float	u_thickness0; //depth feather
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
-layout(location = U_DEPTH_PARAMS)		uniform vec2	u_depthParms;
 layout(location = U_AMBIENT_LEVEL)		uniform float	u_ambientScale;
 layout(location = U_PARAM_FLOAT_0)		uniform float	u_blurScale;
 
@@ -17,7 +16,7 @@ in vec2		v_deformMul;
 in vec2		v_deformTexCoord;
 in vec4		v_color;
 
-#include depth.inc //!#include "include/depth.inc"
+//#include depth.inc //!#include "include/depth.inc"
 #include blur.inc //!#include "include/blur.inc"
 
 void main (void) {
@@ -26,7 +25,7 @@ void main (void) {
 	vec4 diffuse  = texture(u_colorMap,  v_deformTexCoord.xy);
 
 	// Z-feather
-	float depth = DecodeDepth(texture(g_depthBufferMap, gl_FragCoord.xy).x, u_depthParms);
+	float depth = texture(g_depthBufferMap, gl_FragCoord.xy).x;
 	N *= clamp((depth - v_depth) / u_thickness0, 0.0, 1.0);
 	// scale by the deform multiplier and the viewport size
 	N *= v_deformMul * u_viewport.xy;

@@ -148,6 +148,7 @@ out vec4 fragData;	// out fragColor
 #define	U_TMU8		110 
 #define	U_TMU9		111 
 #define	U_TMU10		112 
+#define	U_SCREEN_ST	113 
 
 #ifndef saturate
 #define saturate(x)    clamp(x, 0.0, 1.0)
