@@ -1649,7 +1649,9 @@ void CL_InitLocal (void) {
 	//
 	// register our commands
 	//
+  #ifdef _WINDOWS
 	Cmd_AddCommand("memInfo", Sys_MemoryUsage_f);
+  #endif
 	Cmd_AddCommand ("cmd", CL_ForwardToServer_f);
 	Cmd_AddCommand ("pause", CL_Pause_f);
 	Cmd_AddCommand ("pingservers", CL_PingServers_f);

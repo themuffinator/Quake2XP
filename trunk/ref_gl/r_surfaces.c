@@ -897,7 +897,7 @@ R_DrawInlineBModel
 
 =================
 */
-extern qboolean bmodelcaust = qfalse;
+extern qboolean bmodelcaust;
 
 void R_DrawBrushModel();
 

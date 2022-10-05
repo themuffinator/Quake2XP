@@ -343,7 +343,7 @@ void SCR_DrawLoadingBar (float percent, float scale) {
 
 }
 
-#include "..\ref_gl\r_local.h"
+#include "../ref_gl/r_local.h"
 void Draw_LoadingScreen (int x, int y, int w, int h, char *pic);
 
 void SCR_DrawLoading (void) {

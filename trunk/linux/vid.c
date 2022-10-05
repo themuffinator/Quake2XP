@@ -223,7 +223,7 @@ VID_CheckChanges(void)
         vid_ref->modified = qfalse;
 		r_fullScreen->modified = qtrue;
 		cl.refresh_prepped = qfalse;
-		cls.disable_screen = qtrue;
+		cls.disableScreen = qtrue;
         CL_ClearDecals();
 
 		if (!VID_StartRefresh()) {
@@ -233,7 +233,7 @@ VID_CheckChanges(void)
 			if (cls.key_dest != key_console) 
 				Con_ToggleConsole_f();
 		}
-		cls.disable_screen = qfalse;
+		cls.disableScreen = qfalse;
 		CL_InitImages(); 
     CL_CacheMenuModels();
 

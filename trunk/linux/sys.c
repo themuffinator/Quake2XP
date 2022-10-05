@@ -434,15 +434,6 @@ Sys_LoadLibrary(const char *path, const char *sym, void **handle)
 	return entry;
 }
 
-void
-Sys_FreeLibrary(void *handle)
-{
-	if (handle && dlclose(handle))
-	{
-		Com_Error(ERR_FATAL, "dlclose failed on %p: %s", handle, dlerror());
-	}
-}
-
 int
 main(int argc, char **argv)
 {

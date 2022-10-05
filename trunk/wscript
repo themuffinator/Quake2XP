@@ -46,7 +46,7 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_c')
-    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'IL', 'ILU', 'ILUT', 'openal', 'x11', 'curl']:
+    for lib in ['sdl', 'ogg', 'vorbis', 'vorbisfile', 'IL', 'ILU', 'ILUT', 'openal', 'x11', 'libcurl']:
         conf.check_cfg(package=lib, args=['--cflags', '--libs'])
 
 def build(bld):
@@ -55,7 +55,9 @@ def build(bld):
 
     bld.env.append_value('CFLAGS', ['-Wno-unused-result'])
     bld.env.append_value('CFLAGS', ['-O3', '-march=native'])
-    bld.env.append_value('CFLAGS', ['-fcommon'])
+    bld.env.append_value('CFLAGS', ['-fcommon']) 
+    bld.env.append_value('CFLAGS', ['-mcmodel=medium'])
+    
     #bld.env.append_value('CFLAGS', ['-g', '-Wall'])
     #bld.env.append_value('CFLAGS', ['-pg', '-O3', '-march=native'])
     #bld.env.append_value('LINKFLAGS', ['-pg']) 
