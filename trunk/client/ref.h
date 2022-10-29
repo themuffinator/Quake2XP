@@ -526,6 +526,7 @@ fbo_t fbo;
 
 typedef struct {
 	int		x, y, width, height;	// in virtual screen coordinates
+	uint	virtualWidth, virtualHeight;
 	float	fov_x, fov_y;
 	float	vieworg[3];
 	float	vieworg_old[3];

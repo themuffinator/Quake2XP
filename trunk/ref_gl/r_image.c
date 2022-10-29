@@ -503,7 +503,6 @@ void R_FreePic(char* name)
 {
 	int		i;
 	image_t* image;
-	uint  hash = Com_HashKey(name);
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++)
 	{
@@ -513,9 +512,6 @@ void R_FreePic(char* name)
 		if (image->type != it_pic)
 			continue;		// only free pics
 		
-		if (image->hash != hash)
-			continue;
-
 		if (!b_stricmp(name, image->bare_name)){
 			// free it
 			glMakeTextureHandleNonResidentARB(image->handle);

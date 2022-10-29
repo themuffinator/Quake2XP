@@ -92,7 +92,7 @@ typedef void ILvoid;
 #ifndef VIDDEF_LOCK
 #define VIDDEF_LOCK
 typedef struct {
-	unsigned width, height;		// coordinates from main game
+	uint width, height;		// coordinates from main game
 } viddef_t;
 #endif
 
@@ -713,6 +713,7 @@ typedef struct {
 	mat4_t		projectionMatrix;
 	mat4_t		modelViewMatrix;		// ready to load
 
+	float		screenScale;
 	// frame buffer
 	int			maxRenderBufferSize;
 	int			maxColorAttachments;
@@ -784,6 +785,7 @@ void GL_UpdateLightColor(vec3_t color);
 
 typedef struct {
 
+GLuint	vbo_fullScreenQuadF;
 GLuint	vbo_fullScreenQuad;
 GLuint	vbo_halfScreenQuad;
 GLuint	vbo_quarterScreenQuad;
@@ -820,6 +822,7 @@ typedef struct {
 	GLuint	dynamic;
 	GLuint	md2Shadow;
 	GLuint	md3Shadow;
+	GLuint	fullscreenQuadF;
 	GLuint	fullscreenQuad;
 	GLuint	halfScreenQuad;
 	GLuint	quaterScreenQuad;
@@ -1024,7 +1027,6 @@ glslProgram_t		*finalPassProgram;
 glslProgram_t		*heatHazeProgram;
 
 void GL_BindProgram (glslProgram_t *program);
-void R_CaptureDepthBuffer ();
 void R_CaptureColorBuffer ();
 void R_DrawLightWorld ();
 void R_SetupOrthoMatrix(void);

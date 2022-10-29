@@ -143,6 +143,27 @@ VID_GetModeInfo(int *width, int *height, int mode)
   Display* d = XOpenDisplay(NULL);
   Screen*  s = DefaultScreenOfDisplay(d);
   
+   Display *display;
+    Screen *screen;
+
+    // open a display
+    display = XOpenDisplay(NULL);
+   // return the number of available screens
+    int count_screens = ScreenCount(display);
+
+    printf("Total count screens: %d\n", count_screens);
+
+
+    for (int i = 0; i < count_screens; ++i) {
+        screen = ScreenOfDisplay(display, i);
+        Com_Printf("Screen %d: %dX%d\n", i + 1, screen->width, screen->height);
+    }
+
+    // close the display
+    XCloseDisplay(display);
+
+
+
   *width = s->width;
   *height = s->height;  
   

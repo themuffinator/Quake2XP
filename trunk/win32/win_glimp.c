@@ -1030,7 +1030,7 @@ static qboolean GLW_ChoosePixelFormat() {
 	gl_config.samples = samples;
 
 	Com_Printf("\nPIXELFORMAT: Color "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Depth "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, Alpha "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits,\n             Stencil "S_COLOR_GREEN"%i"S_COLOR_WHITE"-bits, MSAA [" S_COLOR_GREEN "%i" S_COLOR_WHITE " max] [" S_COLOR_GREEN "%i"S_COLOR_WHITE" selected]\n\n",
-		gl_config.colorBits, gl_config.depthBits, gl_config.alphaBits, gl_config.stencilBits, gl_config.maxSamples, gl_config.samples);
+		32, 24, 8, 8, gl_config.maxSamples, gl_config.samples);
 
 	return qtrue;
 }

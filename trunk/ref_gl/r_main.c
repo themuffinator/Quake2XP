@@ -962,6 +962,7 @@ r_newrefdef must be set before the first call.
 void R_SetViewport3D(refdef_t* fd) {
 	
 	r_newrefdef = *fd;
+
 	r_newrefdef.viewport[0] = fd->x;
 	r_newrefdef.viewport[1] = vid.height - fd->height - fd->y;
 	r_newrefdef.viewport[2] = fd->width;
@@ -1120,7 +1121,7 @@ void R_RenderFrame(refdef_t * fd) {
 	GL_Enable(GL_BLEND); 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	GL_DepthMask(1);
-
+	
 	if (selectedShadowLight && r_lightEditor->integer){
 		RE_SetColor(colorCyan);
 		Draw_StringScaled(0, vid.height*0.5,     2, 2, buff0, qtrue);
@@ -1338,7 +1339,6 @@ void R_RegisterCvars(void)
 	r_colorBalanceGreen =				Cvar_Get("r_colorBalanceGreen", "1.0", CVAR_ARCHIVE);
 	r_colorBalanceBlue =				Cvar_Get("r_colorBalanceBlue", "1.0", CVAR_ARCHIVE);
 
-//	vid_ref =							Cvar_Get("vid_ref", "xpgl", CVAR_ARCHIVE);
 	r_displayRefresh =					Cvar_Get("r_displayRefresh", "0", CVAR_ARCHIVE);
 
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
@@ -1660,13 +1660,8 @@ int R_Init(void *hinstance, void *hWnd)
 
 	VID_MenuInit();
 
-	Con_Printf(PRINT_ALL,"\n");
-
 	// Get Extension string
-	glGetStringi = (PFNGLGETSTRINGIPROC)			qwglGetProcAddress("glGetStringi");
-
-	// Multitexture stuff
-	qglActiveTexture = (PFNGLACTIVETEXTUREPROC)qwglGetProcAddress("glActiveTexture");
+	glGetStringi = (PFNGLGETSTRINGIPROC)qwglGetProcAddress("glGetStringi");
 
 	// Separated Stencil 
 	qglStencilFuncSeparate	= (PFNGLSTENCILFUNCSEPARATEPROC)	qwglGetProcAddress("glStencilFuncSeparate");
@@ -1852,9 +1847,6 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramParameteri =	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
 
 	qglClampColorARB	=	(PFNGLCLAMPCOLORARBPROC)		qwglGetProcAddress("glClampColorARB");
-
-	qglClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
-	qglClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
 
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
