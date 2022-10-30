@@ -1449,7 +1449,7 @@ void R_RegisterCvars(void)
 	r_fogEditor =						Cvar_Get("r_fogEditor", "0", 0);
 	r_fogEditor->help =					 "type fogEdit ? for help list.";
 
-	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", CVAR_ARCHIVE);
+	r_useShaderCache =					Cvar_Get("r_useShaderCache", "0", 0);
 	r_particlesOverdraw =				Cvar_Get("r_particlesOverdraw", "1", CVAR_ARCHIVE);
 
 	r_colorTempK =						Cvar_Get("r_colorTempK", "6500", CVAR_ARCHIVE);

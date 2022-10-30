@@ -173,7 +173,7 @@ void R_CreateScreenFbo() {
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR,
 		GL_FLOAT, qfalse, NULL);
 
-	r_depthStencilTexture = R_CreateTexture("***r_depthStencilTexture***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_UNSIGNED_INT_24_8,
+	r_depthStencilTexture = R_CreateTexture("***r_depthStencilTexture***", GL_TEXTURE_RECTANGLE, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL,
 		it_pic, vid.width, vid.height,
 		GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST,
 		GL_UNSIGNED_INT_24_8, qfalse, NULL);
