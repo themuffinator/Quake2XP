@@ -98,12 +98,11 @@ typedef struct {
 
 extern viddef_t vid;
 
-#define	MAX_GLTEXTURES	SHRT_MAX
-
+#define	MAX_GLTEXTURES		16384
+#define	IMAGE_HASH_SIZE		MAX_GLTEXTURES
+#define MAX_IDX				65536
 #define BUFFER_OFFSET(i) ((byte *)NULL + (i))
 
-#define MAX_IDX 4294967295 //uint size
-#define MAX_MESHES	65536
 // ===================================================================
 
 typedef enum {

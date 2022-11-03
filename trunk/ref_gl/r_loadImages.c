@@ -376,8 +376,8 @@ void R_InitEngineTextures (void) {
 	static byte	bump[1][1][4]	= { 0x80, 0x80, 0xff, 0x10 };
 	static byte	white[1][1][4]	= { 0xff, 0xff, 0xff, 0xff };
 
-	r_defBump	= GL_LoadPic ("***r_defBump***",	(byte *)bump, 1, 1, it_bump, 32, 0);
-	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_bump, 32, 0);
+	r_defBump	= GL_LoadPic ("***r_defBump***",	(byte *)bump, 1, 1, it_normal, 32, 0);
+	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_wall, 32, 0);
 	r_notexture = GL_LoadPic ("***r_notexture***",	(byte *)notex, 1, 1, it_wall, 32, 0);
 
 	r_particleTexture[PT_DEFAULT] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
@@ -463,7 +463,7 @@ void R_InitEngineTextures (void) {
 			Com_sprintf(name, sizeof(name), "gfx/water/00%iNormal.tga", i);
 		else
 			Com_sprintf(name, sizeof(name), "gfx/water/0%iNormal.tga", i);
-		r_waterNormals[i] = GL_FindImage(name, it_bump);
+		r_waterNormals[i] = GL_FindImage(name, it_normal);
 		if (!r_waterNormals[i])
 			r_waterNormals[i] = r_notexture;
 	}
@@ -541,14 +541,14 @@ void R_InitEngineTextures (void) {
 	for (i = 0; i < MAX_GLOBAL_FILTERS; i++)
 		r_lightCubeMap[i] = R_LoadLightFilter (i);
 
-	skinBump = GL_FindImage("gfx/skinBlend_bump.tga", it_bump);
+	skinBump = GL_FindImage("gfx/skinBlend_bump.tga", it_normal);
 	if (!skinBump)
 		skinBump = r_notexture;
 
 	CreateWaterWarpTexture();
 	//Load3dLut();
 
-	r_cinImage		=	R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
+	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
 }
 
 

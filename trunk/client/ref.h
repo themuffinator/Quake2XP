@@ -275,24 +275,12 @@ typedef enum {
 	it_wall,
 	it_pic,
 	it_sky,
-	it_bump,
+	it_normal,
 	it_mipmap, 
-	it_srgb
+	it_screen
 } imagetype_t;
 
-typedef enum {
-	texSRGB = 1,
-	texMIPMAP = 2,
-	texSCALED = 4,
-	tex2D = 8,
-	texNORMALMAP = 16,
-	texWORLD = 32,
-	texSCREEN = 64
-}imageFlags_t;
-
 typedef unsigned long long uint64;
-
-
 
 typedef struct image_s {
 
