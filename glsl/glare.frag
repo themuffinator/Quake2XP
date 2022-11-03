@@ -37,7 +37,7 @@ void main(void) // Robert Beckebans hdr glare
 	for( int i = 0; i < samples; i++ )
     {
 		vec3 so = chromaticOffsets[ i ];
-		vec4 color = texture( u_map, st + vec2( float( i ), 0 )  * vec2(0.5, 0.25) *  scale );
+		vec4 color = texture( u_map, st + vec2( float( i ), 0 )  * vec2(0.5, 0.125) *  scale );
 			
 		float weight = gaussFact[ i ];
 		sumColor += color.rgb * ( so.rgb * weight * weightScale );
@@ -46,7 +46,7 @@ void main(void) // Robert Beckebans hdr glare
 	for( int i = 1; i < samples; i++ )
     {
 		vec3 so = chromaticOffsets[ i ];
-		vec4 color = texture( u_map, st + vec2( float( -i ), 0 ) * vec2(0.5, 0.25)  *  scale );
+		vec4 color = texture( u_map, st + vec2( float( -i ), 0 ) * vec2(0.5, 0.125)  *  scale );
 			
 		float weight = gaussFact[ i ];
 		sumColor += color.rgb * ( so.rgb * weight * weightScale );
