@@ -295,7 +295,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	qglUniform3fv(U_VIEW_POS, 1, r_origin);
 	qglUniformMatrix4fv(U_MVP_MATRIX, 1, qfalse, (const float *)currententity->orMatrix);
 
-	qglDrawArrays (GL_TRIANGLES, 0, jj);
+	GL_DrawArrays(GL_TRIANGLES, 0, jj);
 
 	if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 		GL_BindProgram(tbnDebugProgram);
@@ -304,7 +304,7 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 			qglUniform1f(U_PARAM_FLOAT_0, 0.3);
 		else
 			qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
-		qglDrawArrays(GL_TRIANGLES, 0, jj);
+		GL_DrawArrays(GL_TRIANGLES, 0, jj);
 	}
 
 	qglDisableVertexAttribArray (ATT_POSITION);
@@ -406,7 +406,7 @@ void GL_DrawAliasFrameLerpShell (dmdl_t *paliashdr) {
 	qglVertexAttribPointer(ATT_NORMAL, 3, GL_FLOAT, qfalse, 0, normalArray);
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 
-	qglDrawArrays (GL_TRIANGLES, 0, jj);
+	GL_DrawArrays(GL_TRIANGLES, 0, jj);
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_NORMAL);
@@ -591,7 +591,7 @@ void GL_DrawAliasFrameLerpLight (dmdl_t *paliashdr) {
 	qglVertexAttribPointer (ATT_TEX0, 2, GL_FLOAT, qfalse, 0, currentmodel->st);
 	qglVertexAttribPointer(ATT_COLOR, 4, GL_FLOAT, qfalse, 0, colorArray);
 
-	qglDrawArrays (GL_TRIANGLES, 0, jj);
+	GL_DrawArrays(GL_TRIANGLES, 0, jj);
 
 	qglDisableVertexAttribArray (ATT_POSITION);
 	qglDisableVertexAttribArray (ATT_TANGENT);

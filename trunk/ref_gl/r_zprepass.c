@@ -46,7 +46,7 @@ static void GL_DrawDepthBspTris () {
 
 		if (!R_FillDepthBatch (s, &numVertices, &numIndices)) {
 			if (numIndices != 0xFFFFFFFF) {
-				qglDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numVertices = 0;
 				numIndices = 0xFFFFFFFF;
@@ -56,7 +56,7 @@ static void GL_DrawDepthBspTris () {
 
 	// draw the rest
 	if (numIndices != 0xFFFFFFFF) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 	}
 }
@@ -295,7 +295,7 @@ void GL_DrawAliasFrameLerpDepth(dmdl_t *paliashdr) {
 		}
 	}
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, jj * sizeof(vec3_t), vertexArray);
-	qglDrawArrays(GL_TRIANGLES, 0, jj);
+	GL_DrawArrays(GL_TRIANGLES, 0, jj);
 
 }
 
@@ -407,7 +407,7 @@ void R_DrawDepthMD3Model(void) {
 
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, mesh->num_verts * sizeof(vec3_t), md3VertexCache);
 		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->num_tris * 3 * sizeof(uint), mesh->indexes);
-		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, 0);
+		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, 0);
 	}
 
 	if (currententity->flags & RF_DEPTHHACK)

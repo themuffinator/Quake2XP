@@ -112,7 +112,7 @@ void R_DrawAlphaSurfaces() {
 
 		if (s->texInfo->image->texnum != oldTex) {
 			if (numIndices) {
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0;
 			}
@@ -125,13 +125,13 @@ void R_DrawAlphaSurfaces() {
 		R_AddAlphaSurceces(s, &numIndices, newTex);
 
 		if (numIndices >= MAX_IDX) { //overflow
-			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_brush_polys += numIndices / 3;
 			numIndices = 0;
 		}
 	}
 	if (numIndices) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 		numIndices = 0;
 	}
@@ -201,7 +201,7 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 
 		if (s->texInfo->image->texnum != oldTex) {
 			if (numIndices) {
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0;
 			}
@@ -214,13 +214,13 @@ void R_DrawWaterSurfaces(qboolean bmodel) {
 		R_AddWaterSurceces(s, &numIndices, newTex);
 
 		if (numIndices >= MAX_IDX) { //overflow
-			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_brush_polys += numIndices / 3;
 			numIndices = 0;
 		}
 	}
 	if (numIndices) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 		numIndices = 0;
 	}
@@ -269,13 +269,13 @@ void R_DrawHeatHazeSurfaces() {
 		R_AddHeatHazeSurceces(s, &numIndices);
 
 		if (numIndices >= MAX_IDX) { //overflow
-			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_brush_polys += numIndices / 3;
 			numIndices = 0;
 		}
 	}
 	if (numIndices) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 		numIndices = 0;
 	}
@@ -531,7 +531,7 @@ void R_DrawLightAlphaSurfaces() {
 
 		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag) {
 			if (numIndices) {
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0;
 			}
@@ -545,13 +545,13 @@ void R_DrawLightAlphaSurfaces() {
 		R_AddLightAlphaSurceces(s, &numIndices, newTex);
 
 		if (numIndices >= MAX_IDX) { //overflow
-			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_brush_polys += numIndices / 3;
 			numIndices = 0;
 		}
 	}
 	if (numIndices) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 		numIndices = 0;
 	}
@@ -584,7 +584,7 @@ void R_DrawLightAlphaSurfacesDynamic(qboolean bmodel, qboolean caustics) {
 
 		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust) {
 			if (numIndices) {
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0;
 			}
@@ -599,13 +599,13 @@ void R_DrawLightAlphaSurfacesDynamic(qboolean bmodel, qboolean caustics) {
 		R_AddLightAlphaSurceces(s, &numIndices, newTex);
 
 		if (numIndices >= MAX_IDX) { //overflow
-			qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+			GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 			c_brush_polys += numIndices / 3;
 			numIndices = 0;
 		}
 	}
 	if (numIndices) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 		numIndices = 0;
 	}

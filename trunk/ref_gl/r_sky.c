@@ -365,7 +365,7 @@ void R_DrawSkyBox(qboolean color) {
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numSkyVerts * sizeof(vec3_t), SkyVertexArray);
 	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numSkyVerts * 3 * sizeof(uint), skyIndex);
 
-	qglDrawElements(GL_TRIANGLES, numSkyIdx, GL_UNSIGNED_SHORT, 0);
+	GL_DrawElements(GL_TRIANGLES, numSkyIdx, GL_UNSIGNED_SHORT, 0);
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);

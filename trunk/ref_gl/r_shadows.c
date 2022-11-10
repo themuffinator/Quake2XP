@@ -200,7 +200,7 @@ void BuildShadowVolumeTriangles(dmdl_t * hdr, vec3_t lightOrg) {
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(vec4_t), vcacheMd2);
 	qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, id * sizeof(uint), icacheMd2);
 
-	qglDrawElements (GL_TRIANGLES, id, GL_UNSIGNED_INT, NULL);
+	GL_DrawElements (GL_TRIANGLES, id, GL_UNSIGNED_INT, NULL);
 
 	c_shadow_tris += id / 3;
 	c_shadow_volumes++;
@@ -504,7 +504,7 @@ void R_DrawMD3ShadowVolume(){
 		}
 	}
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, numVerts * sizeof(float), shadowVerts);
-	qglDrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
+	GL_DrawElements(GL_TRIANGLES, numVerts / 4, GL_UNSIGNED_INT, NULL);
 	c_shadow_volumes++;
 }
 
@@ -813,7 +813,7 @@ void R_DrawBrushModelVolumes () {
 		qglBufferSubData(GL_ARRAY_BUFFER, 0, surfBase * sizeof(vec3_t), vcache);
 		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
 
-		qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
+		GL_DrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
 	}
 
 	c_shadow_volumes++;
@@ -998,7 +998,7 @@ void R_DrawBspModelVolumes (qboolean precalc, worldShadowLight_t *light) {
 			qglBufferSubData(GL_ARRAY_BUFFER, 0, surfBase * sizeof(vec3_t), vcache);
 			qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, ib * sizeof(uint), icache);
 			
-			qglDrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
+			GL_DrawElements	(GL_TRIANGLES, ib, GL_UNSIGNED_INT, NULL);
 		}
 	}
 	c_shadow_tris += ib / 3;
@@ -1032,7 +1032,7 @@ void R_CastBspShadowVolumes (void) {
 	if (currentShadowLight->isStatic) { // draw vbo shadow
 
 		glBindVertexArray(currentShadowLight->vao);
-		qglDrawElements	(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_INT, NULL);
+		GL_DrawElements	(GL_TRIANGLES, currentShadowLight->iboNumIndices, GL_UNSIGNED_INT, NULL);
 		glBindVertexArray(0);
 	}
 

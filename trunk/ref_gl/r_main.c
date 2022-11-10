@@ -255,7 +255,7 @@ static void R_DrawDistortSpriteModel(entity_t * e)
 	vert+=4;
 	
 	if(vert)
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
+		GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
 }
 
 //==================================================================================
@@ -934,8 +934,6 @@ void R_LinearDepth(void)
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._linearDepth);
 
 	GL_BindProgram(linearDepthProgram);
-	glBindTextureUnit(0, r_depthStencilTexture->texnum);
-	glCopyTextureSubImage2D(r_depthStencilTexture->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 	GL_SetBindlessTexture(U_TMU0, r_depthStencilTexture->handle);
 
 	qglUniform2f(U_DEPTH_PARAMS, r_newrefdef.depthParms[0], r_newrefdef.depthParms[1]);

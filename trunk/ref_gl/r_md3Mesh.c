@@ -836,7 +836,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 		GL_SetBindlessTexture(U_TMU4, r_ssaoColorTex[r_ssaoColorTexIndex]->handle);
 		GL_SetBindlessTexture(U_TMU5, ao->handle);
 
-		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	
 		if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 			GL_BindProgram(tbnDebugProgram);
@@ -845,7 +845,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 				qglUniform1f(U_PARAM_FLOAT_0, 0.3);
 			else
 				qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
-			qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 			GL_BindProgram(md3AmbientProgram);
 		}
 
@@ -938,7 +938,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_SetBindlessTexture(U_TMU2, r_envTex->handle);
 			GL_SetBindlessTexture(U_TMU3, normal->handle);
 
-			qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+			GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 
 			if (r_debugTbn->integer && !(r_newrefdef.rdflags & RDF_NOWORLDMODEL)) {
 				GL_Disable(GL_BLEND);
@@ -948,7 +948,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 					qglUniform1f(U_PARAM_FLOAT_0, 0.3);
 				else
 					qglUniform1f(U_PARAM_FLOAT_0, r_debugTbnLen->value);
-				qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+				GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 				GL_BindProgram(md3AmbientProgram);
 			}
 		}
@@ -1270,7 +1270,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 			qglUniform1i(U_USE_RGH_MAP, 1);
 		}
 
-		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	}
 
 	qglDisableVertexAttribArray(ATT_POSITION);
@@ -1386,7 +1386,7 @@ void R_DrawMD3ShellMesh(qboolean weapon) {
 			normalArray[j][2] = oldVerts->normal[2] * backlerp + verts->normal[2] * frontlerp;
 		}
 
-		qglDrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
+		GL_DrawElements(GL_TRIANGLES, mesh->num_tris * 3, GL_UNSIGNED_SHORT, mesh->indexes);
 	}
 
 	qglDisableVertexAttribArray(ATT_POSITION);

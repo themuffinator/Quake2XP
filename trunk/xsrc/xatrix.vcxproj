@@ -40,14 +40,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
-    <IntDir>.\Debug\</IntDir>
+    <OutDir>e:\Quake2\xatrix\</OutDir>
+    <IntDir>e:\quake2\source\xatrix\Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>gamex86xp</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>D:\Quake2\xatrix\</OutDir>
-    <IntDir>d:\quake2\source\xatrix\Release\</IntDir>
+    <OutDir>e:\Quake2\xatrix\</OutDir>
+    <IntDir>e:\quake2\source\xatrix\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>gamex86xp</TargetName>
   </PropertyGroup>

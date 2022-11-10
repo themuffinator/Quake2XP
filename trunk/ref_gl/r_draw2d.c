@@ -102,7 +102,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 		for (int i = 0; i < 4; i++)
 			VA_SetElem4(colorCoord[i], 0.0, 0.0, 0.0, 1.0);
 
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
+		GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 	}
 
 	//====== draw regular font
@@ -114,7 +114,7 @@ void Draw_CharScaled(int x, int y, float scale_x, float scale_y, unsigned char n
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(colorCoord[i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -176,7 +176,7 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 		for (int i = 0; i < 4; i++)
 			VA_SetElem4(colorCoord[i], 0.0, 0.0, 0.0, 1.0);
 
-		qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
+		GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 	}
 
 	//====== draw regular font
@@ -188,7 +188,7 @@ void Draw_CharScaledInt(int x, int y, float scale_x, float scale_y, unsigned cha
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(colorCoord[i], gl_state.fontColor[0], gl_state.fontColor[1], gl_state.fontColor[2], gl_state.fontColor[3]);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -244,13 +244,13 @@ void Draw_StringShadow(int x, int y, float scale_x, float scale_y, unsigned char
 		counter++;
 
 		if (counter == MAX_DRAW_STRING_LENGTH) {
-			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+			GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 			counter = 0;
 		}
 	}
 
 	if (counter)
-		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+		GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 }
 
 
@@ -327,13 +327,13 @@ void Draw_StringScaled(int x, int y, float scale_x, float scale_y, const char* s
 		counter++;
 
 		if (counter == MAX_DRAW_STRING_LENGTH) {
-			qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+			GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 			counter = 0;
 		}
 	}
 
 	if (counter)
-		qglDrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
+		GL_DrawElements(GL_TRIANGLES, 6 * counter, GL_UNSIGNED_SHORT, NULL);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -478,7 +478,7 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(colorCoord[i], 1.0, 1.0, 1.0, 1.0);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -550,7 +550,7 @@ void Draw_LoadingScreen2(int x, int y, int w, int h, image_t* gl)
 
 	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -635,7 +635,7 @@ void Draw_Pic2(int x, int y, image_t* gl)
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(colorCoord[0], 1.0, 1.0, 1.0, 1.0);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 
 
 	if (!gl->has_alpha)
@@ -699,7 +699,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t* gl)
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(colorCoord[i], 1.0, 1.0, 1.0, 1.0);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 
 
 	if (!gl->has_alpha)
@@ -748,7 +748,7 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 	VA_SetElem3(vertCoord[2], x + w, y + h, 1.0);
 	VA_SetElem3(vertCoord[3], x, y + h, 1.0);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 
 
 	GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -849,7 +849,7 @@ void Draw_TileClear2(int x, int y, int w, int h, image_t* image)
 	for (int i = 0; i < 4; i++)
 		VA_SetElem4(colorCoord[i], 1.0, 1.0, 1.0, 1.0);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
 	qglDisableVertexAttribArray(ATT_TEX0);
@@ -910,7 +910,7 @@ void Draw_Fill(int x, int y, int w, int h, float r, float g, float b, float a, q
 
 	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -987,7 +987,7 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 
 	qglBufferData(GL_ARRAY_BUFFER, sizeof(tess2d), NULL, GL_STREAM_DRAW); // buffer orphaning
 	qglBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tess2d), &tess2d);
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -270,7 +270,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		if (s->texInfo->image->texnum != oldTex)
 		{
 			if (numIndices != 0xFFFFFFFF){
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0xFFFFFFFF;
 			}
@@ -285,7 +285,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 		if (!R_FillAmbientBatch(s, newBatch, &numIndices, bmodel))
 		{
 			if (numIndices != 0xFFFFFFFF){
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0xFFFFFFFF;
 				}
@@ -294,7 +294,7 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	
 	// draw the rest
 	if (numIndices != 0xFFFFFFFF) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 	}
 }
@@ -493,7 +493,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag || caustics != oldCaust)
 		{
 			if (numIndices != 0xffffffff){
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
@@ -509,7 +509,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 		if (!R_FillLightBatch(s, newBatch, &numIndices, bmodel, caustics))
 		{
 			if (numIndices != 0xffffffff){
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
@@ -517,7 +517,7 @@ static void GL_DrawDynamicLightPass(qboolean bmodel, qboolean caustics)
 	}
 	// draw the rest
 	if (numIndices != 0xffffffff) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 	}
 }
@@ -544,7 +544,7 @@ static void GL_DrawStaticLightPass()
 		if (s->texInfo->image->texnum != oldTex || s->flags != oldFlag)
 		{
 			if (numIndices != 0xffffffff) {
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
@@ -560,7 +560,7 @@ static void GL_DrawStaticLightPass()
 		if (!R_FillLightBatch(s, newBatch, &numIndices, qfalse, qfalse))
 		{
 			if (numIndices != 0xffffffff) {
-				qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+				GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 				c_brush_polys += numIndices / 3;
 				numIndices = 0xffffffff;
 			}
@@ -568,7 +568,7 @@ static void GL_DrawStaticLightPass()
 	}
 	// draw the rest
 	if (numIndices != 0xffffffff) {
-		qglDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
+		GL_DrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, indexArray);
 		c_brush_polys += numIndices / 3;
 	}
 }

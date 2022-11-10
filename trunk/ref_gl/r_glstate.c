@@ -37,6 +37,18 @@ void GL_SetBindlessTexture(int loc, uint64 handle) {
 	gl_state.bindlessCache[gl_state.currentBindlessHandle] = handle;
 }
 
+void GL_DrawElements(int mode, uint numIdx, int type, GLvoid* idxArray) {
+
+	if (numIdx > 0)
+		qglDrawElements(mode, numIdx, type, idxArray);
+}
+
+void GL_DrawArrays(int mode, int first, int count) {
+	
+	if (count > 0)
+		qglDrawArrays(mode, first, count);
+}
+
 void GL_UpdateLightPos(vec3_t pos) {
 	
 	if (lightUniforms.pos[0] == pos[0] && lightUniforms.pos[1] == pos[1] && lightUniforms.pos[2] == pos[2])
@@ -408,6 +420,98 @@ void GL_Disable(GLenum cap) {
 	}
 
 	qglDisable(cap);
+}
+
+void GL_EnableVertexAttribArray(GLenum cap) {
+	switch (cap) {
+	case ATT_POSITION:
+		if (gl_state.att_position)
+			return;
+		gl_state.att_position = qtrue;
+		break;
+	case ATT_NORMAL:
+		if (gl_state.att_normal)
+			return;
+		gl_state.att_normal = qtrue;
+		break;
+	case ATT_TANGENT:
+		if (gl_state.att_tangent)
+			return;
+		gl_state.att_tangent = qtrue;
+		break;
+	case ATT_BINORMAL:
+		if (gl_state.att_bitangent)
+			return;
+		gl_state.att_bitangent = qtrue;
+		break;
+	case ATT_COLOR:
+		if (gl_state.att_color)
+			return;
+		gl_state.att_color = qtrue;
+		break;
+	case ATT_TEX0:
+		if (gl_state.att_tex0)
+			return;
+		gl_state.att_tex0 = qtrue;
+		break;
+	case ATT_TEX1:
+		if (gl_state.att_tex1)
+			return;
+		gl_state.att_tex1 = qtrue;
+		break;
+	case ATT_TEX2:
+		if (gl_state.att_tex2)
+			return;
+		gl_state.att_tex2 = qtrue;
+		break;
+	}
+	qglEnableVertexAttribArray(cap);
+}
+
+void GL_DisableVertexAttribArray(GLenum cap) {
+	switch (cap) {
+	case ATT_POSITION:
+		if (!gl_state.att_position)
+			return;
+		gl_state.att_position = qfalse;
+		break;
+	case ATT_NORMAL:
+		if (!gl_state.att_normal)
+			return;
+		gl_state.att_normal = qfalse;
+		break;
+	case ATT_TANGENT:
+		if (!gl_state.att_tangent)
+			return;
+		gl_state.att_tangent = qfalse;
+		break;
+	case ATT_BINORMAL:
+		if (!gl_state.att_bitangent)
+			return;
+		gl_state.att_bitangent = qfalse;
+		break;
+	case ATT_COLOR:
+		if (!gl_state.att_color)
+			return;
+		gl_state.att_color = qfalse;
+		break;
+	case ATT_TEX0:
+		if (!gl_state.att_tex0)
+			return;
+		gl_state.att_tex0 = qfalse;
+		break;
+	case ATT_TEX1:
+		if (!gl_state.att_tex1)
+			return;
+		gl_state.att_tex1 = qfalse;
+		break;
+	case ATT_TEX2:
+		if (!gl_state.att_tex2)
+			return;
+		gl_state.att_tex2 = qfalse;
+		break;
+	}
+	qglDisableVertexAttribArray(cap);
 }
 
 /*

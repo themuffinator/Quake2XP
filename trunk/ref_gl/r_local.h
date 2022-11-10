@@ -404,6 +404,8 @@ void CreateLinearDepthBuffer(void);
 void R_LinearDepth(void);
 void R_DrawLightWorldRA(void);
 void GL_SetBindlessTexture(int loc, uint64 handle);
+void GL_DrawElements(int mode, uint numIdx, int type, GLvoid* idxArray);
+void GL_DrawArrays(int mode, int first, int count);
 
 void R_LightPoint (vec3_t p, vec3_t color);
 
@@ -761,6 +763,14 @@ typedef struct {
 	GLfloat			depthBoundsMins;
 	GLfloat			depthBoundsMax;
 
+	qboolean		att_position, 
+					att_normal, 
+					att_tangent, 
+					att_bitangent, 
+					att_tex0, 
+					att_tex1, 
+					att_tex2, 
+					att_color;
 	vec4_t			fontColor;
 } glstate_t;
 
@@ -889,6 +899,8 @@ void GL_DepthBoundsTest (GLfloat mins, GLfloat maxs);
 
 void GL_Enable (GLenum cap);
 void GL_Disable (GLenum cap);
+void GL_EnableVertexAttribArray(GLenum cap);
+void GL_DisableVertexAttribArray(GLenum cap);
 
 #ifndef BIT
 #define BIT(num)				(1 << (num))

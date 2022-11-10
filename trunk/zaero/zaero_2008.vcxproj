@@ -69,8 +69,8 @@
     <_ProjectFileVersion>17.0.32203.90</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>d:\quake2\zaero\</OutDir>
-    <IntDir>.\Release\</IntDir>
+    <OutDir>e:\quake2\zaero\</OutDir>
+    <IntDir>e:\quake2\source\zaero\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>gamex86</TargetName>
   </PropertyGroup>
@@ -80,9 +80,10 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
-    <IntDir>.\Debug\</IntDir>
+    <OutDir>e:\quake2\zaero\</OutDir>
+    <IntDir>e:\quake2\source\zaero\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>gamex86</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
@@ -122,7 +123,7 @@
       <Command>.\extractfuncs\extractfuncs.bat</Command>
     </PreLinkEvent>
     <Link>
-      <OutputFile>$(OutDir)$(TargetName).dll</OutputFile>
+      <OutputFile>e:\quake2\zaero\gamex86.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ModuleDefinitionFile>.\game.def</ModuleDefinitionFile>
       <ProgramDatabaseFile>.\Release/gamex86.pdb</ProgramDatabaseFile>
@@ -220,7 +221,7 @@
       <Command>.\extractfuncs\extractfuncs.bat</Command>
     </PreLinkEvent>
     <Link>
-      <OutputFile>gamex86.dll</OutputFile>
+      <OutputFile>e:\quake2\zaero\gamex86.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ModuleDefinitionFile>.\game.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>

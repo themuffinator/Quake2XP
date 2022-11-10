@@ -34,7 +34,7 @@ void R_DrawFullScreenQuad () {
 
 	glBindVertexArray(vao.fullscreenQuad);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
 }
@@ -43,7 +43,7 @@ void R_DrawHalfScreenQuad () {
 
 	glBindVertexArray(vao.halfScreenQuad);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 	glBindVertexArray(0);
 }
@@ -52,7 +52,7 @@ void R_DrawQuarterScreenQuad () {
 	
 	glBindVertexArray(vao.quaterScreenQuad);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 	
 	glBindVertexArray(0);
 }
@@ -478,22 +478,6 @@ void R_MotionBlur(void)
 	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
-void R_DownsampleDepth(void) 
-{
-	if (!r_ssao->integer)
-		return;
-
-	GL_DepthRange(0.0, 1.0);
-	// downsample the depth buffer
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._ssao);
-	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
-
-	GL_BindProgram(depthDownsampleProgram);
-	GL_SetBindlessTexture(U_TMU0, r_linearDepth->handle);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
-	R_DrawHalfScreenQuad();
-}
 
 void R_SSAO (void) 
 {
@@ -506,12 +490,20 @@ void R_SSAO (void)
 		return;
 	
 	R_SetupOrthoMatrix();
-	R_DownsampleDepth();
+	
+	// downsample the depth buffer
+	GL_DepthRange(0.0, 1.0);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._ssao);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT2);
+
+	GL_BindProgram(depthDownsampleProgram);
+	GL_SetBindlessTexture(U_TMU0, r_linearDepth->handle);
+	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+
+	R_DrawHalfScreenQuad();
 
 	// process
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._ssao);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
-
 	GL_BindProgram (ssaoProgram);
 	GL_SetBindlessTexture(U_TMU0, r_miniDepthTex->handle);
 	GL_SetBindlessTexture(U_TMU1, r_randomNormalTex->handle);
@@ -525,9 +517,8 @@ void R_SSAO (void)
 	// blur
 	r_ssaoColorTexIndex = 0;
 
-	GL_SetBindlessTexture(U_TMU1, r_miniDepthTex->handle);
-
 	GL_BindProgram(ssaoBlurProgram);
+	GL_SetBindlessTexture(U_TMU1, r_miniDepthTex->handle);
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 
@@ -537,13 +528,13 @@ void R_SSAO (void)
 	for (i = 0; i < r_ssaoBlur->integer; i++) {
 		// two-pass shader
 		for (j = 0; j < 2; j++) {
-			GL_SetBindlessTexture(U_TMU0, r_ssaoColorTex[j]->handle);
 			qglDrawBuffer(GL_COLOR_ATTACHMENT0 + (j ^ 1));
+			GL_SetBindlessTexture(U_TMU0, r_ssaoColorTex[j]->handle);
 			qglUniform2f(U_PARAM_VEC2_0, j ? 0.f : 1.f, j ? 1.f : 0.f);
 			R_DrawHalfScreenQuad();
 		}
 	}
-
+	
 	// restore
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 	qglDrawBuffer(GL_COLOR_ATTACHMENT0);

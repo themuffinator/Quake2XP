@@ -195,7 +195,7 @@ void R_DrawParticles (void) {
 		if (texture != texId || flags != flagId) {
 
 			if (partVert) {
-				qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, ParticleIndex);
+				GL_DrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, ParticleIndex);
 				c_part_tris += index / 3;
 			}
 			texture = texId;
@@ -572,7 +572,7 @@ void R_DrawParticles (void) {
 	}
 
 	if (partVert) {
-		qglDrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, ParticleIndex);
+		GL_DrawElements	(GL_TRIANGLES, index, GL_UNSIGNED_SHORT, ParticleIndex);
 		c_part_tris += index / 3;
 	}
 

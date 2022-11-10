@@ -1404,7 +1404,7 @@ void R_DrawCube(vec3_t v[8], vec3_t org, int size) {
 	VectorSet(v[6], org[0] + size, org[1] + size, org[2] - size);
 	VectorSet(v[7], org[0] - size, org[1] + size, org[2] - size);
 
-	qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
+	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
 
 }
 
@@ -1420,7 +1420,7 @@ void R_DrawLightBox(vec3_t v[8], vec3_t org, vec3_t radius) {
 	VectorSet(v[6], org[0] + radius[0], org[1] + radius[1], org[2] - radius[2]);
 	VectorSet(v[7], org[0] - radius[0], org[1] + radius[1], org[2] - radius[2]);
 
-	qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
+	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
 
 }
 
@@ -2610,7 +2610,7 @@ void R_DrawLightFlare () {
 	VA_SetElem2 (tex_array[3], 1, 1);
 	VA_SetElem4 (color_array[3], tmp[0], tmp[1], tmp[2], 1);
 
-	qglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
+	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, quadIdx);
 
 	if (gl_state.depthBoundsTest && r_depthBoundsTest->integer)
 		GL_Enable (GL_DEPTH_BOUNDS_TEST_EXT);
@@ -2660,7 +2660,7 @@ void R_LightFlareOutLine() { //flare editing highlights
 	VA_SetElem3(v[0], currentShadowLight->origin[0], currentShadowLight->origin[1], currentShadowLight->origin[2]);
 	VA_SetElem3(v[1], currentShadowLight->flareOrigin[0], currentShadowLight->flareOrigin[1], currentShadowLight->flareOrigin[2]);
 
-	qglDrawArrays(GL_LINES, 0, 2);
+	GL_DrawArrays(GL_LINES, 0, 2);
 	GL_Disable(GL_LINE_SMOOTH);
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_cube);
@@ -2677,7 +2677,7 @@ void R_LightFlareOutLine() { //flare editing highlights
 	VectorSet(v[6], tmpOrg[0] + 1, tmpOrg[1] + 1, tmpOrg[2] - 1);
 	VectorSet(v[7], tmpOrg[0] - 1, tmpOrg[1] + 1, tmpOrg[2] - 1);
 
-	qglDrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
+	GL_DrawElements(GL_TRIANGLES, CUBE_INDICES, GL_UNSIGNED_BYTE, NULL);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if (r_lightScissors->integer)
