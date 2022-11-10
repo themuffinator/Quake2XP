@@ -64,7 +64,7 @@ self-extracting archives (i.e. can be extracted without Wine).
   After extracting it you should have baseq2/pak1.pak and baseq2/pak2.pak
 
 - Quake2XP game data
-  Available at https://yadi.sk/d/RP5yRSM-sx5ck
+  Available at https://disk.yandex.ru/d/HqIZgWA9I_T5JQ
   You should put all the .pkx files in the baseq2/xatrix/rogue directory
 
 - Quake2XP shaders
