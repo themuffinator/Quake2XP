@@ -475,7 +475,7 @@ void R_MotionBlur(void)
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
 
-	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
 
@@ -542,7 +542,7 @@ void R_SSAO (void)
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
 
-	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
+	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 				r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
@@ -779,6 +779,6 @@ void R_GlobalFog() {
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
 
-	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
+	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 				r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }

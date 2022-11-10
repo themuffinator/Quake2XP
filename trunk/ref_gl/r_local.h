@@ -441,7 +441,6 @@ void R_DrawAliasModelLightPass (qboolean weapon_model);
 void R_SetupEntityMatrix (entity_t * e);
 void R_SSAO(void);
 void R_DrawDepthScene(void);
-void R_DownsampleDepth(void);
 void R_ScreenBlend(void);
 void R_GlobalFog();
 void R_MotionBlur(void);
@@ -771,6 +770,10 @@ typedef struct {
 					att_tex1, 
 					att_tex2, 
 					att_color;
+	int				viewportX,
+					viewportY,
+					viewportWidth,
+					viewportHeight;
 	vec4_t			fontColor;
 } glstate_t;
 
@@ -901,6 +904,7 @@ void GL_Enable (GLenum cap);
 void GL_Disable (GLenum cap);
 void GL_EnableVertexAttribArray(GLenum cap);
 void GL_DisableVertexAttribArray(GLenum cap);
+void GL_Viewport(GLint x, GLint y, GLint w, GLint h);
 
 #ifndef BIT
 #define BIT(num)				(1 << (num))

@@ -74,7 +74,23 @@ void GL_UpdateLightColor(vec3_t color) {
 	lightUniforms.color[3] = 1.0;
 }
 
+/*
+ ==================
+ GL_Viewport
+ ==================
+*/
+void GL_Viewport(GLint x, GLint y, GLint w, GLint h) {
 
+	if (gl_state.viewportX == x && gl_state.viewportY == y && gl_state.viewportWidth == w && gl_state.viewportHeight == h)
+		return;
+
+	gl_state.viewportX = x;
+	gl_state.viewportY = y;
+	gl_state.viewportWidth = w;
+	gl_state.viewportHeight = h;
+
+	qglViewport(x, y, w, h);
+}
 
 /*
 =============
@@ -422,6 +438,12 @@ void GL_Disable(GLenum cap) {
 	qglDisable(cap);
 }
 
+/*
+===========
+GL_EnableVertexAttribArray
+
+===========
+*/
 void GL_EnableVertexAttribArray(GLenum cap) {
 	switch (cap) {
 	case ATT_POSITION:
@@ -468,6 +490,12 @@ void GL_EnableVertexAttribArray(GLenum cap) {
 	qglEnableVertexAttribArray(cap);
 }
 
+/*
+===========
+GL_DisableVertexAttribArray
+
+===========
+*/
 void GL_DisableVertexAttribArray(GLenum cap) {
 	switch (cap) {
 	case ATT_POSITION:

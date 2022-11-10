@@ -428,7 +428,7 @@ void R_SetupOrthoMatrix(void) {
 	GL_Disable(GL_CULL_FACE);
 
 	// set 2D virtual screen size
-	qglViewport(0, 0, vid.width, vid.height);
+	GL_Viewport(0, 0, vid.width, vid.height);
 
 	// setup orthographic projection
 	r_newrefdef.orthoMatrix[0][0] = 2.f / (float)vid.width;
@@ -944,7 +944,7 @@ void R_LinearDepth(void)
 	GL_Enable(GL_CULL_FACE);
 	GL_Enable(GL_DEPTH_TEST);
 
-	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
+	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1],
 		r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
@@ -966,7 +966,7 @@ void R_SetViewport3D(refdef_t* fd) {
 	r_newrefdef.viewport[2] = fd->width;
 	r_newrefdef.viewport[3] = fd->height;
 
-	qglViewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
+	GL_Viewport(r_newrefdef.viewport[0], r_newrefdef.viewport[1], r_newrefdef.viewport[2], r_newrefdef.viewport[3]);
 }
 
 void R_RenderView (refdef_t *fd) {
