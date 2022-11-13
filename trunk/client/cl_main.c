@@ -1943,9 +1943,11 @@ void CL_Frame_Async(int msec)
 			// Let the mouse activate or deactivate
 			IN_Frame();
 
+
+		}
+
 			// Allow rendering DLL change
 			VID_CheckChanges();
-		}
 		// Predict all unacknowledged movements
 		CL_PredictMovement();
 

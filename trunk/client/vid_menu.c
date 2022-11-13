@@ -104,13 +104,13 @@ static void ambientLevelCallback (void *s) {
 static void filmCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_filmFilter", box->curvalue * 1);
+	Cvar_SetValue ("r_filmFilter", box->curInteger * 1);
 }
 
 static void ParallaxCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_parallaxMapping", box->curvalue * 1);
+	Cvar_SetValue ("r_parallaxMapping", box->curInteger * 1);
 }
 
 static void reliefScaleCallback(void *s) {
@@ -120,19 +120,19 @@ static void reliefScaleCallback(void *s) {
 
 static void reliefShadowCallback(void *s) {
 	menulist_s *box = (menulist_s *)s;
-	Cvar_SetValue("r_selfShadowingParallax", box->curvalue * 1);
+	Cvar_SetValue("r_selfShadowingParallax", box->curInteger * 1);
 }
 
 static void FlareCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_drawFlares", box->curvalue * 1);
+	Cvar_SetValue ("r_drawFlares", box->curInteger * 1);
 }
 
 static void AnisoCallback (void *s) {
 	menulist_s *box  = (menulist_s*)s;
 
-	Cvar_SetValue ("r_anisotropic", box->curvalue * 1);
+	Cvar_SetValue ("r_anisotropic", box->curInteger * 1);
 }
 
 static void BrightnessCallback (void *s) {
@@ -181,37 +181,37 @@ static void FixFovCallback(void *s) {
 static void BloomCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_bloom", box->curvalue * 1);
+	Cvar_SetValue ("r_bloom", box->curInteger * 1);
 }
 
 static void DofCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_dof", box->curvalue * 1);
+	Cvar_SetValue ("r_dof", box->curInteger * 1);
 }
 
 static void RBCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_radialBlur", box->curvalue * 1);
+	Cvar_SetValue ("r_radialBlur", box->curInteger * 1);
 }
 
 static void ssaoCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_ssao", box->curvalue * 1);
+	Cvar_SetValue ("r_ssao", box->curInteger * 1);
 }
 
 static void fxaaCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_fxaa", box->curvalue * 1);
+	Cvar_SetValue ("r_fxaa", box->curInteger * 1);
 }
 
 static void mbCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_motionBlur", box->curvalue * 1);
+	Cvar_SetValue ("r_motionBlur", box->curInteger * 1);
 }
 
 static void bloomLevelCallback(void *s) {
@@ -230,27 +230,27 @@ static void ResetDefaults (void *unused) {
 
 static void ApplyChanges (void *unused) {
 
-	Cvar_SetValue ("r_anisotropic", s_aniso_list.curvalue);
-	Cvar_SetValue ("r_fullScreen", s_fs_box.curvalue);
-	Cvar_SetValue ("r_drawFlares", s_flare_box.curvalue);
-	Cvar_SetValue ("r_textureCompression", s_tc_box.curvalue);
-	Cvar_SetValue ("r_mode", s_mode_list.curvalue);
+	Cvar_SetValue ("r_anisotropic", s_aniso_list.curInteger);
+	Cvar_SetValue ("r_fullScreen", s_fs_box.curInteger);
+	Cvar_SetValue ("r_drawFlares", s_flare_box.curInteger);
+	Cvar_SetValue ("r_textureCompression", s_tc_box.curInteger);
+	Cvar_SetValue ("r_mode", s_mode_list.curInteger);
 	Cvar_SetValue ("r_parallaxScale", s_reliefScale_slider.curvalue);
-	Cvar_SetValue ("r_parallaxMapping", s_parallax_box.curvalue);
+	Cvar_SetValue ("r_parallaxMapping", s_parallax_box.curInteger);
 
-	Cvar_SetValue("r_selfShadowingParallax", s_parallax_shadow.curvalue);
+	Cvar_SetValue("r_selfShadowingParallax", s_parallax_shadow.curInteger);
 
-	Cvar_SetValue ("r_bloom", s_bloom_box.curvalue);
-	Cvar_SetValue ("r_dof", s_dof_box.curvalue);
-	Cvar_SetValue ("r_radialBlur", s_radBlur_box.curvalue);
-	Cvar_SetValue ("r_ssao", s_ssao.curvalue);
-	Cvar_SetValue ("r_fxaa", s_fxaa_box.curvalue);
-	Cvar_SetValue ("r_vsync", s_finish_box.curvalue);
-	Cvar_SetValue ("r_filmFilter", s_film_grain.curvalue);
-	Cvar_SetValue ("r_motionBlur", s_mb_box.curvalue);
+	Cvar_SetValue ("r_bloom", s_bloom_box.curInteger);
+	Cvar_SetValue ("r_dof", s_dof_box.curInteger);
+	Cvar_SetValue ("r_radialBlur", s_radBlur_box.curInteger);
+	Cvar_SetValue ("r_ssao", s_ssao.curInteger);
+	Cvar_SetValue ("r_fxaa", s_fxaa_box.curInteger);
+	Cvar_SetValue ("r_vsync", s_finish_box.curInteger);
+	Cvar_SetValue ("r_filmFilter", s_film_grain.curInteger);
+	Cvar_SetValue ("r_motionBlur", s_mb_box.curInteger);
 	Cvar_SetValue("r_fixFovStrength", s_fixfov_slider.curvalue);
 
-	switch (s_aniso_list.curvalue)
+	switch (s_aniso_list.curInteger)
 	{
 	case 0:
 		Cvar_SetValue("r_anisotropic", 1);
@@ -362,19 +362,19 @@ static void CancelChanges (void *unused) {
 static void autoBumpCallBack (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_imageAutoBump", box->curvalue * 1);
+	Cvar_SetValue ("r_imageAutoBump", box->curInteger * 1);
 }
 
 static void vSyncCallBack (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_vsync", box->curvalue * 1);
+	Cvar_SetValue ("r_vsync", box->curInteger * 1);
 }
 
 static void lutCallBack(void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue("r_lutId", box->curvalue * 1);
+	Cvar_SetValue("r_lutId", box->curInteger * 1);
 }
 
 void ColorTempFunc(void *unused)
@@ -415,7 +415,7 @@ void M_ColorInit() {
 	r_saturation->value = ClampCvar(0.1, 2.0, r_saturation->value);
 	r_colorVibrance->value = ClampCvar(-1.0, 1.0, r_colorVibrance->value);
 
-	r_bloomIntens->value = ClampCvar(0.1, 2.0, r_bloomIntens->value);
+	r_bloomIntens->value = ClampCvar(0.1, 1.0, r_bloomIntens->value);
 	r_bloomWidth->value = ClampCvar(0.1, 3.0, r_bloomWidth->value);
 	
 	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
@@ -488,7 +488,7 @@ void M_ColorInit() {
 	s_bloomIntens_slider.generic.name = "Bloom Intensity";
 	s_bloomIntens_slider.generic.callback = bloomLevelCallback;
 	s_bloomIntens_slider.minvalue = 1;
-	s_bloomIntens_slider.maxvalue = 20;
+	s_bloomIntens_slider.maxvalue = 10;
 	s_bloomIntens_slider.curvalue = r_bloomIntens->value * 10;
 	s_bloomIntens_slider.generic.statusbar = "Bloom Intensity";
 
@@ -627,7 +627,7 @@ void VID_MenuInit (void) {
 		"[4096 2160][1.89:1 DCI 4K]",
 		"[Custom]", 0 };
 #endif
-	static char* parallax_names[] = { "off", "Linear Step Parallax", "Relief Mapping", "Crytek Parallax Occusion Mapping", 0 };
+	static char* parallax_names[] = { "off", "Parallax Mapping", "Relief Mapping", "Crytek Parallax Occusion Mapping", 0 };
 	static char	*yesno_names[] = { "off", "yes", 0 };
 	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
 	static char* customScreenRes[] = { "Custom Window Resolution", 0 };
@@ -664,7 +664,7 @@ void VID_MenuInit (void) {
 	if (r_parallaxMapping->integer > 3)
 		r_parallaxMapping = Cvar_Get("r_parallaxMapping", "1", CVAR_ARCHIVE);
 
-	r_parallaxScale->integer = ClampCvarInteger(1, 10, r_parallaxScale->integer);
+	r_parallaxScale->value = ClampCvar(1.0, 10.0, r_parallaxScale->value);
 	r_parallaxMapping->integer = ClampCvarInteger(0, 3, r_parallaxMapping->integer);
 
 	if (!r_dof)
@@ -709,16 +709,16 @@ void VID_MenuInit (void) {
 #else
 	if (gl_state.fullscreen) {
 		s_mode_list.itemnames = vid_winModes;
-		s_mode_list.curvalue = r_mode->integer;
+		s_mode_list.curInteger = r_mode->integer;
 	}
 	else {
 		if (r_customWindowWidth->integer >= 1024 && r_customWindowHeight->integer >= 768) {
 			s_mode_list.itemnames = customScreenRes;
-			s_mode_list.curvalue = 0;
+			s_mode_list.curInteger = 0;
 		}
 		else {
 			s_mode_list.itemnames = vid_winModes;
-			s_mode_list.curvalue = r_mode->integer;
+			s_mode_list.curInteger = r_mode->integer;
 		}
 	}
 #endif
@@ -730,7 +730,7 @@ void VID_MenuInit (void) {
 	s_fs_box.generic.y = 20 * ui_fontScale->value;
 	s_fs_box.generic.name = "Fullscreen";
 	s_fs_box.itemnames = yesno_names;
-	s_fs_box.curvalue = r_fullScreen->value;
+	s_fs_box.curInteger = r_fullScreen->integer;
 	s_fs_box.generic.statusbar = " Use Full Screen <Requires Restart Video Sub-System>";
 
 	// -----------------------------------------------------------------------
@@ -740,32 +740,32 @@ void VID_MenuInit (void) {
 	s_aniso_list.generic.x = 0;
 	s_aniso_list.generic.y = 40 * ui_fontScale->value;
 	s_aniso_list.itemnames = aniso_items;
-	s_aniso_list.curvalue = r_anisotropic->value;
+	s_aniso_list.curInteger = r_anisotropic->value;
 	s_aniso_list.generic.statusbar = "Texture Filtering Quality <Requires Restart Video Sub-System>";
 		
 	if (r_anisotropic->value == 1.0)
-		s_aniso_list.curvalue = 0.0;
+		s_aniso_list.curInteger = 0;
 	else
 		if (r_anisotropic->value == 2.0)
-			s_aniso_list.curvalue = 1.0;
+			s_aniso_list.curInteger = 1;
 	else
 		if (r_anisotropic->value == 4.0)
-			s_aniso_list.curvalue = 2.0;
+			s_aniso_list.curInteger = 2;
 	else
 		if (r_anisotropic->value == 8.0)
-			s_aniso_list.curvalue = 3.0;
+			s_aniso_list.curInteger = 3;
 	else
 		if (r_anisotropic->value == 16.0)
-			s_aniso_list.curvalue = 4.0;
+			s_aniso_list.curInteger = 4;
 		else
-			s_aniso_list.curvalue = 0.0;
+			s_aniso_list.curInteger = 0;
 
 	s_tc_box.generic.type = MTYPE_SPINCONTROL;
 	s_tc_box.generic.x = 0;
 	s_tc_box.generic.y = 50 * ui_fontScale->value;
 	s_tc_box.generic.name = "Texture Compression";
 	s_tc_box.itemnames = yesno_names;
-	s_tc_box.curvalue = r_textureCompression->value;
+	s_tc_box.curInteger = r_textureCompression->integer;
 	s_tc_box.generic.statusbar = "Use Compressed Textures <Requires Restart Video Sub-System>";
 
 	// -----------------------------------------------------------------------
@@ -775,7 +775,7 @@ void VID_MenuInit (void) {
 	s_autoBump_list.generic.x = 0;
 	s_autoBump_list.generic.y = 70 * ui_fontScale->value;
 	s_autoBump_list.itemnames = yesno_names;
-	s_autoBump_list.curvalue = r_imageAutoBump->value;
+	s_autoBump_list.curInteger = r_imageAutoBump->integer;
 	s_autoBump_list.generic.callback = autoBumpCallBack;
 	s_autoBump_list.generic.statusbar = "Realtime Normal Maps Generation For Old Textures";
 
@@ -784,7 +784,7 @@ void VID_MenuInit (void) {
 	s_parallax_box.generic.y = 80 * ui_fontScale->value;
 	s_parallax_box.generic.name = "Parallax Mapping";
 	s_parallax_box.itemnames = parallax_names;
-	s_parallax_box.curvalue = clamp(r_parallaxMapping->value, 0, 3);
+	s_parallax_box.curInteger = clamp(r_parallaxMapping->integer, 0, 3);
 	s_parallax_box.generic.callback = ParallaxCallback;
 	s_parallax_box.generic.statusbar = "Virtual Displacement Mapping";
 
@@ -793,7 +793,7 @@ void VID_MenuInit (void) {
 	s_parallax_shadow.generic.y = 90 * ui_fontScale->value;
 	s_parallax_shadow.generic.name = "Self Shadowing Parallax";
 	s_parallax_shadow.itemnames = yesno_names;
-	s_parallax_shadow.curvalue = r_selfShadowingParallax->integer;
+	s_parallax_shadow.curInteger = r_selfShadowingParallax->integer;
 	s_parallax_shadow.generic.callback = reliefShadowCallback;
 	s_parallax_shadow.generic.statusbar = "Virtual Displacement Mapping Self Shadowing";
 
@@ -823,7 +823,7 @@ void VID_MenuInit (void) {
 	s_flare_box.generic.y = 130 * ui_fontScale->value;
 	s_flare_box.generic.name = "Light Flares";
 	s_flare_box.itemnames = yesno_names;
-	s_flare_box.curvalue = r_drawFlares->value;
+	s_flare_box.curInteger = r_drawFlares->integer;
 	s_flare_box.generic.callback = FlareCallback;
 	s_flare_box.generic.statusbar = "Draw Lights Corona Effect";
 
@@ -832,7 +832,7 @@ void VID_MenuInit (void) {
 	s_bloom_box.generic.y = 140 * ui_fontScale->value;
 	s_bloom_box.generic.name = "Bloom";
 	s_bloom_box.itemnames = yesno_names;
-	s_bloom_box.curvalue = r_bloom->integer;
+	s_bloom_box.curInteger = r_bloom->integer;
 	s_bloom_box.generic.callback = BloomCallback;
 	s_bloom_box.generic.statusbar = "Draw Bloom Effect";
 
@@ -841,7 +841,7 @@ void VID_MenuInit (void) {
 	s_dof_box.generic.y = 150 * ui_fontScale->value;
 	s_dof_box.generic.name = "Depth of Field";
 	s_dof_box.itemnames = yesno_names;
-	s_dof_box.curvalue = r_dof->value;
+	s_dof_box.curInteger = r_dof->integer;
 	s_dof_box.generic.callback = DofCallback;
 	s_dof_box.generic.statusbar = "Draw Depth of Field Effect";
 
@@ -850,7 +850,7 @@ void VID_MenuInit (void) {
 	s_radBlur_box.generic.y = 160 * ui_fontScale->value;
 	s_radBlur_box.generic.name = "Radial Blur";
 	s_radBlur_box.itemnames = yesno_names;
-	s_radBlur_box.curvalue = r_radialBlur->value;
+	s_radBlur_box.curInteger = r_radialBlur->integer;
 	s_radBlur_box.generic.callback = RBCallback;
 	s_radBlur_box.generic.statusbar = "Draw Radial Blur Effect";
 
@@ -859,7 +859,7 @@ void VID_MenuInit (void) {
 	s_mb_box.generic.y = 170 * ui_fontScale->value;
 	s_mb_box.generic.name = "Motion Blur";
 	s_mb_box.itemnames = yesno_names;
-	s_mb_box.curvalue = r_motionBlur->value;
+	s_mb_box.curInteger = r_motionBlur->integer;
 	s_mb_box.generic.callback = mbCallback;
 	s_mb_box.generic.statusbar = "Draw Motion Blur Effect";
 
@@ -868,7 +868,7 @@ void VID_MenuInit (void) {
 	s_ssao.generic.y = 180 * ui_fontScale->value;
 	s_ssao.generic.name = "SSAO";
 	s_ssao.itemnames = yesno_names;
-	s_ssao.curvalue = r_ssao->value;
+	s_ssao.curInteger = r_ssao->integer;
 	s_ssao.generic.callback = ssaoCallback;
 	s_ssao.generic.statusbar = "Draw Screen Space Ambient Occlusion Effect";
 
@@ -877,7 +877,7 @@ void VID_MenuInit (void) {
 	s_film_grain.generic.y = 190 * ui_fontScale->value;
 	s_film_grain.generic.name = "Cinematic filter";
 	s_film_grain.itemnames = yesno_names;
-	s_film_grain.curvalue = r_filmFilter->integer;
+	s_film_grain.curInteger = r_filmFilter->integer;
 	s_film_grain.generic.callback = filmCallback;
 	s_film_grain.generic.statusbar = "Use Cinematic Film Effect noise, vignet and scratches";
 
@@ -886,7 +886,7 @@ void VID_MenuInit (void) {
 	s_fxaa_box.generic.y = 200 * ui_fontScale->value;
 	s_fxaa_box.generic.name = "FXAA";
 	s_fxaa_box.itemnames = yesno_names;
-	s_fxaa_box.curvalue = r_fxaa->value;
+	s_fxaa_box.curInteger = r_fxaa->integer;
 	s_fxaa_box.generic.callback = fxaaCallback;
 	s_fxaa_box.generic.statusbar = "Use Post-Process Anti-Aliasing";
 
@@ -895,8 +895,8 @@ void VID_MenuInit (void) {
 	s_finish_box.generic.y = 210 * ui_fontScale->value;
 	s_finish_box.generic.name = "Vertical Sync";
 	s_finish_box.generic.callback = vSyncCallBack;
-	s_finish_box.curvalue = r_vsync->value;
-if (r_vsync->value >= 3)
+	s_finish_box.curInteger = r_vsync->integer;
+if (r_vsync->integer >= 3)
 	Cvar_SetValue ("r_vsync", 2);
 	s_finish_box.itemnames = adaptive_vc;
 	s_finish_box.generic.statusbar = "Standart Or Adaptive";

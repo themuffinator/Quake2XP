@@ -1168,7 +1168,7 @@ void Mod_BuildVertexCache() {
 
 	buf = (float*)malloc(vbo_size);
 	if (!buf)
-		Com_Error(ERR_DROP, ""S_COLOR_RED"Create vertex buffer - FALED!\n");   // wtf, man??? drop to console
+		Com_Error(ERR_DROP, ""S_COLOR_RED"Create vertex buffer - FAILED!\n");   // wtf, man??? drop to console
 
 	// fill vbo
 	vb = 0;

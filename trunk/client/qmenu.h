@@ -100,7 +100,7 @@ typedef struct {
 typedef struct {
 	menucommon_s generic;
 
-	int curvalue;
+	int curInteger;
 
 	char **itemnames;
 } menulist_s;

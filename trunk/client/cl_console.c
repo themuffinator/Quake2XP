@@ -488,7 +488,7 @@ The input line scrolls horizontally if typing goes beyond the right edge
 */
 
 void Con_DrawInput (void) {
-	char	*text, output[2048], addch[8];
+	char	*text, output[2048], addch[8], cursor[2048];
 	int		i;
 	float	fontscale = ui_fontScale->value;
 
@@ -499,12 +499,6 @@ void Con_DrawInput (void) {
 		return;					// don't draw anything (always draw if not active)
 
 	text = key_lines[edit_line];
-
-	// add the cursor frame
-	if (con.backedit)
-		text[key_linepos] = ' ';
-	else
-		text[key_linepos] = 12;
 
 	// fill out remainder with spaces
 	for (i = key_linepos + 1; i < con.lineWidth; i++)
@@ -518,21 +512,40 @@ void Con_DrawInput (void) {
 	RE_SetColor (colorWhite);
 
 	Com_sprintf(output, sizeof(output), "");
+	Com_sprintf(cursor, sizeof(cursor), "");
 	for (i = 0; i < con.lineWidth; i++) {
 		
-		if (con.backedit == key_linepos - i && ((int)(cls.realTime >> 8) & 1)) {
-			addch[0] = 10;
-			addch[1] = '\0';
-			Q_strncatz(output, sizeof(output), addch);
+		if (con.backedit == 0) {
+
+			if (key_linepos == i && ((int)(cls.realTime >> 8) & 1)) {
+				addch[0] = 11;
+				addch[1] = '\0';
+				Q_strncatz(cursor, sizeof(cursor), addch);
+			}
+			else {
+				addch[0] = ' ';
+				addch[1] = '\0';
+				Q_strncatz(cursor, sizeof(cursor), addch);
+			}
 		}
 		else {
-			addch[0] = text[i];
-			addch[1] = '\0';
-			Q_strncatz(output, sizeof(output), addch);
+			if (con.backedit == key_linepos - i && ((int)(cls.realTime >> 8) & 1)) {
+				addch[0] = 10;
+				addch[1] = '\0';
+				Q_strncatz(cursor, sizeof(cursor), addch);
+			}
+			else {
+				addch[0] = ' ';
+				addch[1] = '\0';
+				Q_strncatz(cursor, sizeof(cursor), addch);
+			}
 		}
-
+		addch[0] = text[i];
+		addch[1] = '\0';
+		Q_strncatz(output, sizeof(output), addch);
 	}
 	Draw_StringScaled(0, con.vislines - 15 * fontscale, fontscale, fontscale, output, qtrue);
+	Draw_StringScaled(0, con.vislines - 15 * fontscale, fontscale, fontscale, cursor, qtrue);
 	// remove cursor
 	key_lines[edit_line][key_linepos] = 0;
 }

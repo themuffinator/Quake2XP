@@ -214,7 +214,7 @@ Sets scr_vrect, the coordinates of the rendered window
 =================
 */
 static void SCR_CalcVrect (void) {
-/*	int size;
+	int size;
 
 	// bound viewsize
 	if (scr_viewsize->value < 40)
@@ -223,15 +223,15 @@ static void SCR_CalcVrect (void) {
 		Cvar_Set ("viewsize", "100");
 
 	size = scr_viewsize->value;
-*/
-	scr_vrect.width = viddef.width/* * size / 100*/;
-	//scr_vrect.width &= ~7;
 
-	scr_vrect.height = viddef.height/* * size / 100*/;
-	//scr_vrect.height &= ~1;
+	scr_vrect.width = viddef.width * size / 100;
+	scr_vrect.width &= ~7;
 
-	scr_vrect.x = 0;//(viddef.width - scr_vrect.width) * 0.5;
-	scr_vrect.y = 0;//(viddef.height - scr_vrect.height) * 0.5;
+	scr_vrect.height = viddef.height * size / 100;
+	scr_vrect.height &= ~1;
+
+	scr_vrect.x = (viddef.width - scr_vrect.width) * 0.5;
+	scr_vrect.y = (viddef.height - scr_vrect.height) * 0.5;
 }
 
 

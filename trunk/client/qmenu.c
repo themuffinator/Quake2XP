@@ -552,7 +552,7 @@ void Menulist_DoEnter (menulist_s * l) {
 
 	start = l->generic.y / 10 + 1;
 
-	l->curvalue = l->generic.parent->cursor - start;
+	l->curInteger = l->generic.parent->cursor - start;
 
 	if (l->generic.callback)
 		l->generic.callback (l);
@@ -570,7 +570,7 @@ void MenuList_Draw (menulist_s * l) {
 	n = l->itemnames;
 
 	Draw_Fill (l->generic.x - 112 + l->generic.parent->x,
-		l->generic.parent->y + l->generic.y + l->curvalue * 10 + 10,
+		l->generic.parent->y + l->generic.y + l->curInteger * 10 + 10,
 		128, 10, 1.0, 0.0, 1.0, 1.0, qfalse);
 	
 	while (*n) {
@@ -647,21 +647,21 @@ void Slider_Draw (menuslider_s * s) {
 }
 
 void SpinControl_DoEnter (menulist_s * s) {
-	s->curvalue++;
-	if (s->itemnames[s->curvalue] == 0)
-		s->curvalue = 0;
+	s->curInteger++;
+	if (s->itemnames[s->curInteger] == 0)
+		s->curInteger = 0;
 
 	if (s->generic.callback)
 		s->generic.callback (s);
 }
 
 void SpinControl_DoSlide (menulist_s * s, int dir) {
-	s->curvalue += dir;
+	s->curInteger += dir;
 
-	if (s->curvalue < 0)
-		s->curvalue = 0;
-	else if (s->itemnames[s->curvalue] == 0)
-		s->curvalue--;
+	if (s->curInteger < 0)
+		s->curInteger = 0;
+	else if (s->itemnames[s->curInteger] == 0)
+		s->curInteger--;
 
 	if (s->generic.callback)
 		s->generic.callback (s);
@@ -677,21 +677,21 @@ void SpinControl_Draw (menulist_s * s) {
 			s->generic.y + s->generic.parent->y,
 			s->generic.name);
 	}
-	if (!strchr (s->itemnames[s->curvalue], '\n')) {
+	if (!strchr (s->itemnames[s->curInteger], '\n')) {
 		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, fontscale,
-			s->itemnames[s->curvalue], qtrue);
+			s->itemnames[s->curInteger], qtrue);
 	}
 	else {
-		strcpy (buffer, s->itemnames[s->curvalue]);
+		strcpy (buffer, s->itemnames[s->curInteger]);
 		*strchr (buffer, '\n') = 0;
 		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y,
 			fontscale, fontscale,
 			buffer, qtrue);
 
-		strcpy (buffer, strchr (s->itemnames[s->curvalue], '\n') + 1);
+		strcpy (buffer, strchr (s->itemnames[s->curInteger], '\n') + 1);
 		Draw_StringScaled (RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x,
 			s->generic.y + s->generic.parent->y + 10 * ui_fontScale->value,
 			fontscale, fontscale,
