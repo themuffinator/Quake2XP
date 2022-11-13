@@ -63,7 +63,7 @@ void main (void) {
 			texCoord = v_texCoord;
 			break;
 			case 1: 
-			texCoord = LinearStepParallax(u_Diffuse, v_texCoord, V);
+			texCoord = parallaxMapping(u_Diffuse, v_texCoord, V);
 			break;
 			case 2:
 			texCoord = ReliefMapping(u_Diffuse, v_texCoord, V);

@@ -109,23 +109,15 @@ vec2 ParallaxOcclusionMap(in sampler2D hiMap, const in vec2 texCoord, const in v
  return offsetBest;
 }
 
-
-#define NUM_STEPS 16
-
-vec2 LinearStepParallax(in sampler2D u_HeightMap, in vec2 texCoord, vec3 V){
-	
-	float	lod = ComputeLOD(texCoord, u_parallaxParams.zw);
-	vec2	displacement = V.xy * u_parallaxParams.xy / max(V.z * NUM_STEPS, 0.001);
-	float	offset = 0.01;
+vec2 parallaxMapping(in sampler2D hiMap, in vec2 texCoord, vec3 V){
 	vec2	offsetBest;
+	float	lod = ComputeLOD(texCoord, u_parallaxParams.zw);
+	float	offset = textureLod(hiMap, texCoord.xy, lod).a;
 
-	offsetBest.xy = texCoord - displacement * vec2(textureLod(u_HeightMap, texCoord, lod).a * offset);
-		
-	for(int i = 0; i < NUM_STEPS; i++)
-		offsetBest.xy -= displacement * vec2(textureLod(u_HeightMap, texCoord.xy, lod).a * offset);
-
-	return offsetBest;
+	offset = offset * 0.04 - 0.02;
+	offsetBest.xy = offset * V.xy + texCoord.xy;
 	
+	return offsetBest.xy; 	
 }
 
 

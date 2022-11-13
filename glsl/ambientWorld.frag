@@ -40,7 +40,7 @@ void main (void) {
 		P = v_wTexCoord;
 		break;
 		case 1: 
-		P = LinearStepParallax(u_Diffuse, v_wTexCoord, V);
+		P = parallaxMapping(u_Diffuse, v_wTexCoord, V);
 		break;
 		case 2: 
 		P = ReliefMapping(u_Diffuse, v_wTexCoord, V);
