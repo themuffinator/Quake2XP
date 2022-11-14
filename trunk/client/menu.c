@@ -1121,7 +1121,7 @@ static void ControlsSetMenuItemValues(void) {
 #ifdef _WIN32
 	s_options_invertmouse_box.curInteger = m_inversion->value > 0;
 #else
-	s_options_invertmouse_box.curvalue = m_pitch->value < 0;
+	s_options_invertmouse_box.curInteger = m_pitch->value < 0;
 #endif
 
 	Cvar_SetValue("crosshair", ClampCvarInteger(0, 13, crosshair->integer));
@@ -1130,7 +1130,7 @@ static void ControlsSetMenuItemValues(void) {
 	Cvar_SetValue("in_useXInput", ClampCvarInteger(0, 1, in_useXInput->integer));
 	s_options_gamepad_box.curInteger = in_useXInput->integer;
 #else
-	s_options_gamepad_box.curvalue = 0;
+	s_options_gamepad_box.curInteger = 0;
 #endif
 
 	s_options_noalttab_box.curInteger = win_noalttab->value;
