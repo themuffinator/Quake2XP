@@ -1119,9 +1119,9 @@ static void ControlsSetMenuItemValues(void) {
 	s_options_alwaysrun_box.curInteger = cl_run->value;
 
 #ifdef _WIN32
-	s_options_invertmouse_box.curInteger = m_inversion->value > 0;
+	s_options_invertmouse_box.curInteger = m_inversion->integer > 0;
 #else
-	s_options_invertmouse_box.curInteger = m_pitch->value < 0;
+	s_options_invertmouse_box.curInteger = m_pitch->integer < 0;
 #endif
 
 	Cvar_SetValue("crosshair", ClampCvarInteger(0, 13, crosshair->integer));

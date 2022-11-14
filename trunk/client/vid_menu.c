@@ -705,7 +705,7 @@ void VID_MenuInit (void) {
 	s_mode_list.generic.y = 10 * ui_fontScale->value;
 #ifndef _WINDOWS
 	s_mode_list.itemnames = resolutions;
-	s_mode_list.curvalue = r_mode->integer;
+	s_mode_list.curInteger = r_mode->integer;
 #else
 	if (gl_state.fullscreen) {
 		s_mode_list.itemnames = vid_winModes;
