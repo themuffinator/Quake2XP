@@ -590,7 +590,7 @@ char *bindnames[][2] = {
 	{ "invdrop", "drop item" },
 	{ "invprev", "prev item" },
 	{ "invnext", "next item" },
-	{ "+zoom", "zoom" },     // ��������� ����� ����, ��� ����� � ���� ���������� �������!
+	{ "+zoom", "zoom" },     
 	{ "+flashlight", "flashlight" },
 	{ "cmd help", "help computer" },
 	{ 0, 0 }
@@ -1107,16 +1107,16 @@ static void TimeFunc(void *unused) {
 static void ControlsSetMenuItemValues(void) {
 
 	s_options_effectsVolume_slider.curvalue = Cvar_VariableValue("s_effectsVolume") * 10;
-	s_options_musicvolume_slider.curvalue = Cvar_VariableValue("s_musicVolume") * 10;
-	s_options_musicsrc_list.curInteger = Cvar_VariableValue("s_musicSrc");
-	s_options_useEFX_list.curInteger = Cvar_VariableValue("s_useEfx");
-	s_options_hrtf.curInteger = Cvar_VariableValue("s_useHRTF");
+	s_options_musicvolume_slider.curvalue	= Cvar_VariableValue("s_musicVolume") * 10;
+	s_options_musicsrc_list.curInteger		= Cvar_VariableInteger("s_musicSrc");
+	s_options_useEFX_list.curInteger		= Cvar_VariableInteger("s_useEfx");
+	s_options_hrtf.curInteger				= Cvar_VariableInteger("s_useHRTF");
 	
 
 	s_options_sensitivity_slider.curvalue = (sensitivity->value) * 2;
 
-	Cvar_SetValue("cl_run", ClampCvar(0, 1, cl_run->value));
-	s_options_alwaysrun_box.curInteger = cl_run->value;
+	Cvar_SetValue("cl_run", ClampCvar(0, 1, cl_run->integer));
+	s_options_alwaysrun_box.curInteger = cl_run->integer;
 
 #ifdef _WIN32
 	s_options_invertmouse_box.curInteger = m_inversion->integer > 0;
@@ -1125,7 +1125,7 @@ static void ControlsSetMenuItemValues(void) {
 #endif
 
 	Cvar_SetValue("crosshair", ClampCvarInteger(0, 13, crosshair->integer));
-	s_options_crosshair_box.curInteger = crosshair->value;
+	s_options_crosshair_box.curInteger = crosshair->integer;
 #ifdef _WIN32
 	Cvar_SetValue("in_useXInput", ClampCvarInteger(0, 1, in_useXInput->integer));
 	s_options_gamepad_box.curInteger = in_useXInput->integer;
@@ -1136,13 +1136,13 @@ static void ControlsSetMenuItemValues(void) {
 	s_options_noalttab_box.curInteger = win_noalttab->value;
 
 	Cvar_SetValue("sys_cpuUtilization", ClampCvarInteger(0, 1, sys_cpuUtilization->integer));
-	s_options_cpuUtil_box.curInteger = sys_cpuUtilization->value;
+	s_options_cpuUtil_box.curInteger = sys_cpuUtilization->integer;
 
 	Cvar_SetValue("ui_drawFPS", ClampCvarInteger(0, 2, ui_drawFPS->integer));
-	s_options_fps_box.curInteger = ui_drawFPS->value;
+	s_options_fps_box.curInteger = ui_drawFPS->integer;
 
 	Cvar_SetValue("ui_drawTime", ClampCvarInteger(0, 1, ui_drawTime->integer));
-	s_options_time_box.curInteger = ui_drawTime->value;
+	s_options_time_box.curInteger = ui_drawTime->integer;
 
 }
 
@@ -1156,9 +1156,9 @@ static void ControlsResetDefaultsFunc(void *unused) {
 static void InvertMouseFunc(void *unused) {
 
 #ifdef _WIN32
-	Cvar_SetValue("m_inversion", !(m_inversion->value));
+	Cvar_SetValue("m_inversion", !(m_inversion->integer));
 #else
-	Cvar_SetValue("m_pitch", -m_pitch->value);
+	Cvar_SetValue("m_pitch", -m_pitch->integer);
 #endif
 }
 
@@ -1406,7 +1406,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_blood_box.generic.name = "Enable Blood and Gore";
 	s_aoptions_blood_box.generic.callback = UpdateBloodFunc;
 	s_aoptions_blood_box.itemnames = yesno_names;
-	s_aoptions_blood_box.curInteger = Cvar_VariableValue("cl_blood");
+	s_aoptions_blood_box.curInteger = Cvar_VariableInteger("cl_blood");
 	menu_y += 20 * ui_fontScale->value;
 
 	s_aoptions_decals_box.generic.type = MTYPE_SPINCONTROL;
@@ -1415,7 +1415,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_decals_box.generic.name = "Enable Decals";
 	s_aoptions_decals_box.generic.callback = UpdateDecalsFunc;
 	s_aoptions_decals_box.itemnames = yesno_names;
-	s_aoptions_decals_box.curInteger = Cvar_VariableValue("cl_decals");
+	s_aoptions_decals_box.curInteger = Cvar_VariableInteger("cl_decals");
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_3dcam_box.generic.type = MTYPE_SPINCONTROL;
@@ -1424,7 +1424,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_3dcam_box.generic.name = "Third Person view";
 	s_aoptions_3dcam_box.generic.callback = Update3dCamFunc;
 	s_aoptions_3dcam_box.itemnames = yesno_names;
-	s_aoptions_3dcam_box.curInteger = Cvar_VariableValue("cl_thirdPepson");
+	s_aoptions_3dcam_box.curInteger = Cvar_VariableInteger("cl_thirdPepson");
 	menu_y += 20 * ui_fontScale->value;
 
 	s_aoptions_drawHud_box.generic.type = MTYPE_SPINCONTROL;
@@ -1433,7 +1433,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_drawHud_box.generic.name = "Draw Hud";
 	s_aoptions_drawHud_box.generic.callback = UpdateHud;
 	s_aoptions_drawHud_box.itemnames = yesno_names;
-	s_aoptions_drawHud_box.curInteger = Cvar_VariableValue("ui_drawHud");
+	s_aoptions_drawHud_box.curInteger = Cvar_VariableInteger("ui_drawHud");
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_hudScale_slider.generic.type = MTYPE_SLIDER;
@@ -1452,7 +1452,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_3dhud_box.generic.name = "Draw hud models";
 	s_aoptions_3dhud_box.generic.callback = Update3dHud;
 	s_aoptions_3dhud_box.itemnames = yesno_names;
-	s_aoptions_3dhud_box.curInteger = Cvar_VariableValue("ui_3dHud");
+	s_aoptions_3dhud_box.curInteger = Cvar_VariableInteger("ui_3dHud");
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_railCoreRed_slider.curvalue = cl_railcore_red->value * 10;
@@ -1463,11 +1463,11 @@ void M_AdvancedInit(void) {
 	s_aoptions_railSpiralGreen_slider.curvalue = cl_railspiral_green->value * 10;
 	s_aoptions_railSpiralBlue_slider.curvalue = cl_railspiral_blue->value * 10;
 
-	s_aoptions_blood_box.curInteger = cl_blood->value;
-	s_aoptions_decals_box.curInteger = cl_decals->value;
-	s_aoptions_3dcam_box.curInteger = cl_thirdPerson->value;
+	s_aoptions_blood_box.curInteger = cl_blood->integer;
+	s_aoptions_decals_box.curInteger = cl_decals->integer;
+	s_aoptions_3dcam_box.curInteger = cl_thirdPerson->integer;
 
-	s_aoptions_drawHud_box.curInteger = ui_drawHud->value;
+	s_aoptions_drawHud_box.curInteger = ui_drawHud->integer;
 	s_aoptions_hudScale_slider.curvalue = ui_hudScale->value * 10;
 
 
@@ -1580,7 +1580,7 @@ void Options_MenuInit(void) {
 	s_options_musicsrc_list.generic.name = "Music Source";
 	s_options_musicsrc_list.generic.callback = UpdateMusicSrcFunc;
 	s_options_musicsrc_list.itemnames = s_musicsrc_items;
-	s_options_musicsrc_list.curInteger = Cvar_VariableValue("s_musicSrc");
+	s_options_musicsrc_list.curInteger = Cvar_VariableInteger("s_musicSrc");
 
 
 	s_options_aldev_box.generic.type = MTYPE_SPINCONTROL;
@@ -1655,7 +1655,7 @@ void Options_MenuInit(void) {
 	s_options_useEFX_list.generic.name = "Use EFX Reverbation";
 	s_options_useEFX_list.generic.callback = UpdateEFX;
 	s_options_useEFX_list.itemnames = yesno_names;
-	s_options_useEFX_list.curInteger = Cvar_VariableValue("s_openal_efx");
+	s_options_useEFX_list.curInteger = Cvar_VariableInteger("s_openal_efx");
 	s_options_useEFX_list.generic.statusbar = "Enable room and underwater reverberation effects";
 
 	s_options_sensitivity_slider.generic.type = MTYPE_SLIDER;
