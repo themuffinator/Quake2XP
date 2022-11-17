@@ -24,9 +24,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // r_main.c
 #include "r_local.h"
 
+/*
 #ifndef _WIN32
 #include <dlfcn.h>
 #define qwglGetProcAddress( a ) dlsym( glw_state.hinstOpenGL, a )
+#endif
+*/
+
+#ifndef _WIN32 // fix sdl bug
+#include <SDL.h>
+#define qwglGetProcAddress( a ) SDL_GL_GetProcAddress ( a )
 #endif
 
 viddef_t vid;
