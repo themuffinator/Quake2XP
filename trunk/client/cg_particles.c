@@ -3996,7 +3996,7 @@ void CL_AddLasers (void) {
 			p->flags |= PARTICLE_STRETCH;
 			p->time = cl.time;
 			p->endTime = cl.time + 20000;
-			p->sFactor = GL_SRC_ALPHA;
+			p->sFactor = GL_ONE;
 			p->dFactor = GL_ONE;
 			VectorClear (p->accel);
 			VectorClear (p->vel);
@@ -4012,9 +4012,9 @@ void CL_AddLasers (void) {
 			p->colorVel[1] = 0;
 			p->colorVel[2] = 0;
 
-			p->type = PT_BLASTER;
-			p->size = 3;
-			p->sizeVel = 3;
+			p->type = PT_BFG_LASER;
+			p->size = 7.0;
+			p->sizeVel = 7.0;
 			VectorCopy (l->ent.origin, p->org);
 			VectorSubtract (l->ent.oldorigin, l->ent.origin, p->length);
 

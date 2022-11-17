@@ -134,7 +134,6 @@ void R_DrawParticles (void) {
 				texId = r_particleTexture[PT_SPIRAL]->handle;
 				break;
 
-
 			case PT_FLAME:
 				texId = flameanim[((int)((r_newrefdef.time - p->time) * 10)) % MAX_FLAMEANIM]->handle;
 				break;
@@ -183,11 +182,14 @@ void R_DrawParticles (void) {
 				texId = r_particleTexture[PT_BFG_EXPL2]->handle;
 				break;
 
+			case PT_BFG_LASER:
+				texId = r_particleTexture[PT_BFG_LASER]->handle;
+				break;
+
 			default:
 				texId = r_particleTexture[PT_DEFAULT]->handle;
 
 		}
-
 
 		scale = p->size;
 		flagId = p->flags;
@@ -255,14 +257,14 @@ void R_DrawParticles (void) {
 			VectorNormalizeFast(width);
 			VectorScale (width, scale, width);
 
-			VA_SetElem2 (ParticleTextCoord[partVert + 0], 1, 1);
+			VA_SetElem2 (ParticleTextCoord[partVert + 0], 0, 0);
 			VA_SetElem3 (ParticleVert[partVert + 0], p->origin[0] + width[0],
 				p->origin[1] + width[1],
 				p->origin[2] + width[2]);
 			VA_SetElem4 (ParticleColor[partVert + 0], r, g, b, a);
 
 
-			VA_SetElem2 (ParticleTextCoord[partVert + 1], 0, 0);
+			VA_SetElem2 (ParticleTextCoord[partVert + 1], 1, 0);
 			VA_SetElem3 (ParticleVert[partVert + 1], p->origin[0] - width[0],
 				p->origin[1] - width[1],
 				p->origin[2] - width[2]);
@@ -273,13 +275,13 @@ void R_DrawParticles (void) {
 			VectorNormalizeFast(width);
 			VectorScale (width, scale, width);
 
-			VA_SetElem2 (ParticleTextCoord[partVert + 2], 0, 0);
+			VA_SetElem2 (ParticleTextCoord[partVert + 2], 1, 1);
 			VA_SetElem3 (ParticleVert[partVert + 2], p->origin[0] + p->length[0] - width[0],
 				p->origin[1] + p->length[1] - width[1],
 				p->origin[2] + p->length[2] - width[2]);
 			VA_SetElem4 (ParticleColor[partVert + 2], r, g, b, a);
 
-			VA_SetElem2 (ParticleTextCoord[partVert + 3], 1, 1);
+			VA_SetElem2 (ParticleTextCoord[partVert + 3], 0, 1);
 			VA_SetElem3 (ParticleVert[partVert + 3], p->origin[0] + p->length[0] + width[0],
 				p->origin[1] + p->length[1] + width[1],
 				p->origin[2] + p->length[2] + width[2]);

@@ -390,7 +390,7 @@ void R_InitEngineTextures (void) {
 	r_particleTexture[PT_SPLASH] = GL_FindImage ("gfx/particles/drop.tga", it_wall);
 	r_particleTexture[PT_SPARK] = GL_FindImage ("gfx/particles/spark.tga", it_wall);
 
-	r_particleTexture[PT_BEAM] = GL_FindImage ("gfx/particles/pt_beam.png", it_wall);
+	r_particleTexture[PT_BEAM] = GL_FindImage ("gfx/particles/pt_beam.tga", it_wall);
 	r_particleTexture[PT_SPIRAL] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
 	r_particleTexture[PT_FLAME] = GL_FindImage ("gfx/flame/fire_00.tga", it_wall);
 	r_particleTexture[PT_BLOODSPRAY] = GL_FindImage ("gfx/particles/bloodhit0.tga", it_wall);
@@ -403,6 +403,7 @@ void R_InitEngineTextures (void) {
 	r_particleTexture[PT_BLOODMIST]		= GL_FindImage ("gfx/particles/bloodmist.tga", it_wall);
 	r_particleTexture[PT_BLOOD_SPLAT]	= GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
 	r_particleTexture[PT_BLASTER_BOLT]	= GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
+	r_particleTexture[PT_BFG_LASER]		= GL_FindImage("gfx/particles/bfglaser.tga", it_wall);
 	r_particleTexture[PT_BFG_BALL]		= GL_FindImage("gfx/bfg/bfgBall.tga", it_wall);
 	r_particleTexture[PT_BFG_REFR]		= GL_FindImage("gfx/bfg/bfgRefr.tga", it_wall);
 	r_particleTexture[PT_BFG_EXPL]		= GL_FindImage("gfx/bfg/bfg_expl.tga", it_wall);
@@ -548,7 +549,8 @@ void R_InitEngineTextures (void) {
 	CreateWaterWarpTexture();
 	//Load3dLut();
 
-	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
+	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, 
+								GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
 }
 
 
