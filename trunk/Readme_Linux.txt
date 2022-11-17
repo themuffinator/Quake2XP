@@ -6,7 +6,6 @@ Quake2XP Linux Notes
 2. Copying data
 3. Notes
 4. Contact
-5. AMD/MESA notes
 
 ==============================================================================
 1. Building and installing
@@ -143,17 +142,4 @@ https://www.moddb.com/mods/quake-2-xp
 
 Discord:
 RU  - https://discord.gg/q9CeNH6
-ENG - https://discord.gg/ncq3C2r
-
-==============================================================================
-5. AMD/MESA notes
-==============================================================================
-
-If anyone happens to run a recent version of Arch, Fedora, Debian Unstable or any up-to-date / rolling release distro, and you encounter an issue with a black-screen on loading any map (running Mesa 22.1.0 onward), it is likely due to an architectural model with the sdl12-compat library.
-sdl12-compat is a backward compatibility layer that runs through sdl2 and has replaced the vanilla sdl12 on most distros. Running the game with vanilla sdl12 is one possible solution that does work (until q2xp potentially upgrades to SDL2) but the easiest solution is to simply run quake2xp with the following command:
-
-SDL12COMPAT_OPENGL_SCALING=0 ./quake2xp
-
-Applies to X11 and Wayland sessions.
-
-==============================================================================
+ENG - https://discord.gg/ncq3C2r      
