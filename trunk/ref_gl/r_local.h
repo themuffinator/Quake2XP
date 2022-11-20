@@ -212,7 +212,7 @@ image_t* r_finalScreen;
 image_t* r_linearDepth;
 
 image_t	*r_cinImage;
-image_t	*r_bloomImage;
+image_t	*r_hdrGlareImage;
 image_t	*r_thermalImage;
 
 int i_stencilView;
@@ -269,12 +269,16 @@ cvar_t *r_imageAutoSpecularScale;
 cvar_t *r_lockPvs;
 cvar_t *r_fullScreen;
 
-cvar_t *r_brightness;
-cvar_t *r_contrast;
-cvar_t *r_saturation;
-cvar_t *r_gamma;
-cvar_t *r_hdrExposure;
-cvar_t* r_hdrLightScale;
+cvar_t	*r_brightness;
+cvar_t	*r_contrast;
+cvar_t	*r_saturation;
+cvar_t	*r_gamma;
+
+cvar_t	*r_hdrExposure;
+cvar_t	*r_hdrLightScale;
+cvar_t	*r_hdrGlarePasses;
+cvar_t	*r_hdrGlareIntens;
+cvar_t	*r_hdrGlare;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -307,10 +311,6 @@ cvar_t	*r_scaleAutoLightColor;
 
 cvar_t	*r_customWindowWidth;
 cvar_t	*r_customWindowHeight;
-
-cvar_t	*r_bloom;
-cvar_t	*r_bloomIntens;
-cvar_t	*r_bloomWidth;
 
 cvar_t	*r_ssao;
 cvar_t	*r_ssaoIntensity;
@@ -378,6 +378,7 @@ cvar_t	*r_fixFovStrength; // 0.0 = no hi-fov perspective correction
 cvar_t	*r_fixFovDistroctionRatio; // 0.0 = cylindrical distortion ratio. 1.0 = spherical
 
 cvar_t	*r_screenBlend;
+cvar_t	* r_screenBlendIntensity;
 
 cvar_t	*r_useShaderCache;
 cvar_t	*r_particlesOverdraw;
@@ -398,6 +399,7 @@ qboolean RA_Frame;
 
 void R_CreateScreenFbo();
 void R_FboFinal();
+void R_FxaaFbo();
 void CreateBloomBuffer(void);
 void CreateThermalBuffer(void);
 void CreateLinearDepthBuffer(void);
@@ -430,7 +432,8 @@ void R_DofBlur (void);
 void R_FXAA (void);
 void R_FilmFilter (void);
 void R_FixFov(void);
-void R_lutCorrection(void);
+void R_FixFov(void);
+void R_ToneMaping(void);
 void R_ListPrograms_f (void);
 void R_InitPrograms (void);
 void R_ClearWorldLights (void);

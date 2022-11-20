@@ -59,15 +59,13 @@ void R_DrawQuarterScreenQuad () {
 
 void R_Bloom (void) 
 {
-	if (!r_bloom->integer)
+	if (!r_hdrGlare->integer)
 		return;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
 
 	// downsample and cut color
-	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
-
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._bloom);
 
@@ -77,37 +75,38 @@ void R_Bloom (void)
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
 	GL_BindProgram (bloomdsProgram);
-	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
+	GL_SetBindlessTexture(U_TMU0, r_hdrGlareImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawQuarterScreenQuad ();
-	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	glCopyTextureSubImage2D(r_hdrGlareImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 	
 	//glare
 	GL_BindProgram (glareProgram);
-	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
-	qglUniform1f(U_PARAM_FLOAT_0, r_bloomWidth->value);
-	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	R_DrawQuarterScreenQuad ();
-	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	for (int i = 0; i< r_hdrGlarePasses->integer; i++) {
+		GL_SetBindlessTexture(U_TMU0, r_hdrGlareImage->handle);
+		qglUniform1f(U_PARAM_FLOAT_0, r_hdrGlareIntens->value);
+		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+		R_DrawQuarterScreenQuad();
+		glCopyTextureSubImage2D(r_hdrGlareImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+	}
 
 	//blur
 	GL_BindProgram(bloomBlurProgram);
-	GL_SetBindlessTexture(U_TMU0, r_bloomImage->handle);
+	GL_SetBindlessTexture(U_TMU0, r_hdrGlareImage->handle);
 
 	qglUniform1i(U_PARAM_INT_0, 1); // horizontal
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawQuarterScreenQuad ();
-	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	glCopyTextureSubImage2D(r_hdrGlareImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	qglUniform1i(U_PARAM_INT_0, 0); // vertical
 	R_DrawQuarterScreenQuad ();
-	glCopyTextureSubImage2D(r_bloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+	glCopyTextureSubImage2D(r_hdrGlareImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
 
 	//final pass
 	GL_BindProgram (bloomfpProgram);
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU1, r_bloomImage->handle);
-	qglUniform1f(U_PARAM_FLOAT_0, r_bloomIntens->value);
+	GL_SetBindlessTexture(U_TMU1, r_hdrGlareImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -123,9 +122,6 @@ void R_ThermalVision (void)
 	if (!(r_newrefdef.rdflags & RDF_IRGOGGLES))
 		return;
 	
-	// grab screen
-	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
-
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._thermal);
 
@@ -179,11 +175,7 @@ void R_RadialBlur (void)
 
 	if (r_newrefdef.rdflags & (RDF_UNDERWATER | RDF_PAIN)) {
 
-	hack:
-
-	
-		R_CaptureColorBuffer();
-
+	hack:	
 		// setup program
 		GL_BindProgram (radialProgram);
 
@@ -196,8 +188,8 @@ void R_RadialBlur (void)
 		// xy = radial center screen space position, z = radius attenuation, w = blur strength
 		qglUniform4f(U_PARAM_VEC4_0, vid.width*0.5, vid.height*0.5, 1.0 / vid.height, blur);
 		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 		R_DrawFullScreenQuad ();
+		glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 	}
 }
 
@@ -212,15 +204,14 @@ void R_ScreenBlend(void)
 	if (!v_blend[3] || !r_screenBlend->integer)
 		return;
 
-	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
-
 	GL_BindProgram(screenFlashProgram);
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniform1f(U_PARAM_FLOAT_0, r_screenBlendIntensity->value);
 	qglUniform3f(U_PARAM_VEC3_0, v_blend[0], v_blend[1], v_blend[2]);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
-
 	R_DrawFullScreenQuad();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 void R_DofBlur (void) 
@@ -278,19 +269,16 @@ void R_DofBlur (void)
 		dofParams[0] = r_dofFocus->value;
 		dofParams[1] = r_dofBias->value;
 	}
-
-	R_CaptureColorBuffer();
 	// setup program
 	GL_BindProgram (dofProgram);
 
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform2f(U_PARAM_VEC2_0, dofParams[0], dofParams[1]);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
 	GL_SetBindlessTexture(U_TMU1, r_linearDepth->handle);
-
 	R_DrawFullScreenQuad ();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 void R_FXAA (void) {
@@ -304,13 +292,20 @@ void R_FXAA (void) {
 	// setup program
 	GL_BindProgram (fxaaProgram);
 
-	glCopyTextureSubImage2D(r_hdrScreenCopy2d->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
+
+	qglReadBuffer(GL_COLOR_ATTACHMENT0);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy2d->handle);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawFullScreenQuad ();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 void R_FilmFilter (void) 
@@ -325,17 +320,14 @@ void R_FilmFilter (void)
 	// setup program
 	GL_BindProgram (filmGrainProgram);
 
-	R_CaptureColorBuffer();
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-
 	qglUniform2f (U_SCREEN_SIZE,	vid.width, vid.height);
 	qglUniform1f (U_PARAM_FLOAT_0,	crand());
 	qglUniform1i (U_PARAM_INT_0,	r_framecount);
 	qglUniform3f (U_PARAM_VEC3_0,	r_filmFilterNoiseIntens->value, r_filmFilterScratchIntens->value, r_filmFilterVignetIntens->value);
-
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawFullScreenQuad ();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 void R_ToneMaping(void) {
@@ -345,16 +337,9 @@ void R_ToneMaping(void) {
 
 	GL_BindProgram(tonemapProgram);
 
-//	glCopyTextureSubImage2D(r_hdrScreenCopy2d->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
-//	glGenerateTextureMipmap(r_hdrScreenCopy2d->texnum);
-
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-//	GL_SetBindlessTexture(U_TMU1, r_hdrScreenCopy2d->handle);
-
 	qglUniform1f(U_PARAM_FLOAT_0, r_hdrExposure->value);
 	qglUniform1f(U_PARAM_FLOAT_1, r_gamma->value);
-//	qglUniform1f(U_PARAM_INT_0, r_hdrScreenCopy2d->numMips - 1);
-
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
 
@@ -394,15 +379,12 @@ void R_ColorTemperatureCorrection(void){
 		return;
 
 	GL_BindProgram(whiteBalanceProgram);
-
-	R_CaptureColorBuffer();
-
 	qglUniform1f(U_PARAM_FLOAT_0, r_colorTempK->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU0, r_finalScreen->handle);
 	R_DrawFullScreenQuad();
-
 }
+
 /*
 void R_lutCorrection(void)
 {
@@ -460,8 +442,6 @@ void R_MotionBlur(void)
 	VectorSet(velocity, delta[0], delta[1], 1.0);
 	VectorNormalize(velocity);
 
-	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
-
 	// setup program
 	GL_BindProgram(motionBlurProgram);
 
@@ -470,6 +450,7 @@ void R_MotionBlur(void)
 
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
 	R_DrawFullScreenQuad();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	// restore 3d
 	GL_Enable(GL_CULL_FACE);
@@ -566,7 +547,14 @@ void R_FixFov(void) {
 	// setup program
 	GL_BindProgram(fixFovProgram);
 
-	glCopyTextureSubImage2D(r_hdrScreenCopy2d->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
+
+	qglReadBuffer(GL_COLOR_ATTACHMENT0);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 
 	params[0] = r_fixFovStrength->value;
 	params[1] = tan(DEG2RAD(r_newrefdef.fov_x) / 2.0) / (vid.width / vid.height);
@@ -577,19 +565,17 @@ void R_FixFov(void) {
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy2d->handle);
 	R_DrawFullScreenQuad();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 void R_MenuBackGround() {
 
 	GL_Disable(GL_BLEND);
-
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
-
 	GL_BindProgram(menuProgram);
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
-
 	R_DrawFullScreenQuad();
 	GL_Enable(GL_BLEND);
 }
@@ -774,6 +760,7 @@ void R_GlobalFog() {
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 
 	R_DrawFullScreenQuad();
+	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 
 	// restore 3d
 	GL_Enable(GL_CULL_FACE);

@@ -53,6 +53,7 @@ PT_BFG_EXPL,
 PT_BFG_EXPL2,
 PT_BFG_LASER,
 PT_FLARE,
+PT_RAILBEAM,
 PT_MAX
 }particleTex_t;
 
@@ -508,6 +509,7 @@ typedef struct {
 	uint	_thermal;
 	uint	_ssao;
 	uint	_linearDepth;
+	uint	_tex2d;
 }fbo_t;
 
 fbo_t fbo;

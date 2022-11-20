@@ -1441,8 +1441,8 @@ void M_AdvancedInit(void) {
 	s_aoptions_hudScale_slider.generic.y = menu_y;
 	s_aoptions_hudScale_slider.generic.name = "Hud Scale";
 	s_aoptions_hudScale_slider.generic.callback = UpdateHudScaleFunc;
-	s_aoptions_hudScale_slider.minvalue = 0;
-	s_aoptions_hudScale_slider.maxvalue = 10;
+	s_aoptions_hudScale_slider.minvalue = 3;
+	s_aoptions_hudScale_slider.maxvalue = 8;
 	s_aoptions_hudScale_slider.curvalue = Cvar_VariableValue("ui_hudScale") * 10;
 	menu_y += 10 * ui_fontScale->value;
 

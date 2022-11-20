@@ -1098,9 +1098,6 @@ extern char buff17[128];
 
 extern worldShadowLight_t *selectedShadowLight;
 
-void R_FixFov(void);
-void R_ToneMaping(void);
-
 void R_RenderFrame(refdef_t * fd) {
 
 	R_RenderView(fd);
@@ -1110,12 +1107,11 @@ void R_RenderFrame(refdef_t * fd) {
 	if (!outMap) {
 		R_FixFov();
 		R_FXAA();
+		R_FilmFilter();
 		R_RadialBlur();
 		R_ThermalVision();
 		R_DofBlur();
 		R_Bloom();
-
-		R_FilmFilter();
 		R_ScreenBlend();
 	}
 
@@ -1338,6 +1334,9 @@ void R_RegisterCvars(void)
 	r_gamma =							Cvar_Get("r_gamma", "2.2", CVAR_ARCHIVE); 
 	r_hdrExposure =						Cvar_Get("r_hdrExposure", "1.0", CVAR_ARCHIVE);
 	r_hdrLightScale =					Cvar_Get("r_hdrLightScale", "1.0", CVAR_ARCHIVE);
+	r_hdrGlare =						Cvar_Get("r_hdrGlare", "1", CVAR_ARCHIVE);
+	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
+	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.2", CVAR_ARCHIVE);
 
 	r_colorVibrance =					Cvar_Get("r_colorVibrance", "0.0", CVAR_ARCHIVE);
 	r_colorBalanceRed =					Cvar_Get("r_colorBalanceRed", "1.0", CVAR_ARCHIVE);
@@ -1402,10 +1401,6 @@ void R_RegisterCvars(void)
 	r_zNear =							Cvar_Get("r_zNear", "3", CVAR_ARCHIVE);
 	r_zFar =							Cvar_Get("r_zFar", "4096", CVAR_ARCHIVE);
 
-	r_bloom =							Cvar_Get("r_bloom", "1", CVAR_ARCHIVE);
-	r_bloomIntens =						Cvar_Get("r_bloomIntens", "1.0", CVAR_ARCHIVE);
-	r_bloomWidth =						Cvar_Get("r_bloomWidth", "3.0", CVAR_ARCHIVE);
-
 	r_ssao =							Cvar_Get ("r_ssao", "1", CVAR_ARCHIVE);
 	r_ssaoIntensity =					Cvar_Get ("r_ssaoIntensity", "2.0", CVAR_ARCHIVE);
 	r_ssaoScale =						Cvar_Get ("r_ssaoScale", "80.0", CVAR_ARCHIVE);
@@ -1449,7 +1444,7 @@ void R_RegisterCvars(void)
 	r_fixFovDistroctionRatio->help =	"cylindrical distortion ratio";
 
 	r_screenBlend =						Cvar_Get("r_screenBlend", "1", CVAR_ARCHIVE);
-
+	r_screenBlendIntensity = Cvar_Get("r_screenBlendIntensity", "0.75", CVAR_ARCHIVE);
 	r_globalFog =						Cvar_Get("r_globalFog", "1", CVAR_ARCHIVE);
 	r_fogEditor =						Cvar_Get("r_fogEditor", "0", 0);
 	r_fogEditor->help =					 "type fogEdit ? for help list.";
@@ -1622,6 +1617,7 @@ void R_InitFboBuffers() {
 	Com_Printf("Initializing FBOs...\n\n");
 	R_CreateScreenFbo();
 	R_FboFinal();
+	R_FxaaFbo();
 	CreateLinearDepthBuffer();
 	CreateSSAOBuffer();
 	CreateBloomBuffer();
@@ -2027,6 +2023,7 @@ void R_Shutdown(void)
 	qglDeleteFramebuffers(1, &fbo._thermal);
 	qglDeleteFramebuffers(1, &fbo._ssao);
 	qglDeleteFramebuffers(1, &fbo._linearDepth);
+	qglDeleteFramebuffers(1, &fbo._tex2d);
 
 	DeleteShadowVertexBuffers();
 	R_ShutDownVertexBuffers();

@@ -232,7 +232,6 @@ cvar_t* ui_3dHud;
 cvar_t* ui_drawHud;
 cvar_t* ui_hudScale;
 cvar_t* ui_fontScale;
-cvar_t* ui_hudModelScale;
 
 cvar_t* scr_showTexName;
 cvar_t* sys_cpuUtilization;

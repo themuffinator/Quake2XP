@@ -58,7 +58,6 @@ static menuslider_s		s_fixfov_slider;
 //static menulist_s		s_lut_list;
 
 static menuslider_s		s_bloomIntens_slider;
-static menuslider_s		s_bloomWidth_slider;
 
 static menulist_s  		s_fs_box;
 
@@ -181,7 +180,7 @@ static void FixFovCallback(void *s) {
 static void BloomCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_bloom", box->curInteger * 1);
+	Cvar_SetValue ("r_hdrGlare", box->curInteger * 1);
 }
 
 static void DofCallback (void *s) {
@@ -216,12 +215,7 @@ static void mbCallback (void *s) {
 
 static void bloomLevelCallback(void *s) {
 	float intens = s_bloomIntens_slider.curvalue / 10;
-	Cvar_SetValue("r_bloomIntens", intens);
-}
-
-static void bloomWhidthCallback(void *s) {
-	float star = s_bloomWidth_slider.curvalue / 10;
-	Cvar_SetValue("r_bloomWidth", star);
+	Cvar_SetValue("r_hdrGlareIntens", intens);
 }
 
 static void ResetDefaults (void *unused) {
@@ -240,7 +234,7 @@ static void ApplyChanges (void *unused) {
 
 	Cvar_SetValue("r_selfShadowingParallax", s_parallax_shadow.curInteger);
 
-	Cvar_SetValue ("r_bloom", s_bloom_box.curInteger);
+	Cvar_SetValue ("r_hdrGlare", s_bloom_box.curInteger);
 	Cvar_SetValue ("r_dof", s_dof_box.curInteger);
 	Cvar_SetValue ("r_radialBlur", s_radBlur_box.curInteger);
 	Cvar_SetValue ("r_ssao", s_ssao.curInteger);
@@ -300,7 +294,7 @@ static void ApplyChanges (void *unused) {
 	if (r_parallaxScale->modified)
 		vid_ref->modified = qtrue;
 
-	if (r_bloom->modified)
+	if (r_hdrGlare->modified)
 		vid_ref->modified = qtrue;
 
 	if (r_dof->modified)
@@ -339,11 +333,9 @@ static void ApplyChanges (void *unused) {
 	if (r_motionBlur->modified)
 		vid_ref->modified = qtrue;
 
-	if (r_bloomIntens->modified)
+	if (r_hdrGlareIntens->modified)
 		vid_ref->modified = qtrue;
 
-	if (r_bloomWidth->modified)
-		vid_ref->modified = qtrue;
 
 	if (r_fixFovStrength->modified)
 		vid_ref->modified = qtrue;
@@ -400,11 +392,8 @@ void M_ColorInit() {
 	if (!r_saturation)
 		r_saturation = Cvar_Get("r_saturation", "1", CVAR_ARCHIVE);
 
-	if (!r_bloomIntens)
-		r_bloomIntens = Cvar_Get("r_bloomIntens", "0.5", CVAR_ARCHIVE);
-
-	if (!r_bloomWidth)
-		r_bloomWidth = Cvar_Get("r_bloomWidth", "3.0", CVAR_ARCHIVE);
+	if (!r_hdrGlareIntens)
+		r_hdrGlareIntens = Cvar_Get("r_hdrGlareIntens", "1.2", CVAR_ARCHIVE);
 
 	if (!r_fixFovStrength)
 		r_fixFovStrength = Cvar_Get("r_fixFovStrength", "0.0", CVAR_ARCHIVE);
@@ -415,8 +404,7 @@ void M_ColorInit() {
 	r_saturation->value = ClampCvar(0.1, 2.0, r_saturation->value);
 	r_colorVibrance->value = ClampCvar(-1.0, 1.0, r_colorVibrance->value);
 
-	r_bloomIntens->value = ClampCvar(0.1, 1.0, r_bloomIntens->value);
-	r_bloomWidth->value = ClampCvar(0.1, 3.0, r_bloomWidth->value);
+	r_hdrGlareIntens->value = ClampCvar(1.2, 2.0, r_hdrGlareIntens->value);
 	
 	r_fixFovStrength->value = ClampCvar(0.0, 1.0, r_fixFovStrength->value);
 
@@ -485,22 +473,12 @@ void M_ColorInit() {
 	s_bloomIntens_slider.generic.type = MTYPE_SLIDER;
 	s_bloomIntens_slider.generic.x = 0;
 	s_bloomIntens_slider.generic.y = 70 * ui_fontScale->value;
-	s_bloomIntens_slider.generic.name = "Bloom Intensity";
+	s_bloomIntens_slider.generic.name = "Glare Intensity";
 	s_bloomIntens_slider.generic.callback = bloomLevelCallback;
-	s_bloomIntens_slider.minvalue = 1;
-	s_bloomIntens_slider.maxvalue = 10;
-	s_bloomIntens_slider.curvalue = r_bloomIntens->value * 10;
-	s_bloomIntens_slider.generic.statusbar = "Bloom Intensity";
-
-	s_bloomWidth_slider.generic.type = MTYPE_SLIDER;
-	s_bloomWidth_slider.generic.x = 0;
-	s_bloomWidth_slider.generic.y = 80 * ui_fontScale->value;
-	s_bloomWidth_slider.generic.name = "Bloom Shape Size";
-	s_bloomWidth_slider.generic.callback = bloomWhidthCallback;
-	s_bloomWidth_slider.minvalue = 1;
-	s_bloomWidth_slider.maxvalue = 30;
-	s_bloomWidth_slider.curvalue = r_bloomWidth->value * 10;
-	s_bloomWidth_slider.generic.statusbar = "Bloom Shape Size";
+	s_bloomIntens_slider.minvalue = 12;
+	s_bloomIntens_slider.maxvalue = 20;
+	s_bloomIntens_slider.curvalue = r_hdrGlareIntens->value * 10;
+	s_bloomIntens_slider.generic.statusbar = "Glare Intensity";
 
 	s_fixfov_slider.generic.type = MTYPE_SLIDER;
 	s_fixfov_slider.generic.x = 0;
@@ -541,7 +519,6 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_vibrance_slider);
 
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomIntens_slider);
-	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomWidth_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_fixfov_slider);
 //	Menu_AddItem(&s_opengl2_menu, (void *)&s_lut_list);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_menuColorTemp);
@@ -655,8 +632,8 @@ void VID_MenuInit (void) {
 		r_drawFlares = Cvar_Get ("r_drawFlares", "0", CVAR_ARCHIVE);
 
 
-	if (!r_bloom)
-		r_bloom = Cvar_Get ("r_bloom", "0", CVAR_ARCHIVE);
+	if (!r_hdrGlare)
+		r_hdrGlare = Cvar_Get ("r_hdrGlare", "0", CVAR_ARCHIVE);
 
 	if (!r_parallaxMapping)
 		r_parallaxMapping = Cvar_Get ("r_parallaxMapping", "0", CVAR_ARCHIVE);
@@ -830,11 +807,11 @@ void VID_MenuInit (void) {
 	s_bloom_box.generic.type = MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x = 0;
 	s_bloom_box.generic.y = 140 * ui_fontScale->value;
-	s_bloom_box.generic.name = "Bloom";
+	s_bloom_box.generic.name = "Glare";
 	s_bloom_box.itemnames = yesno_names;
-	s_bloom_box.curInteger = r_bloom->integer;
+	s_bloom_box.curInteger = r_hdrGlare->integer;
 	s_bloom_box.generic.callback = BloomCallback;
-	s_bloom_box.generic.statusbar = "Draw Bloom Effect";
+	s_bloom_box.generic.statusbar = "Draw Hdr Glare Effect";
 
 	s_dof_box.generic.type = MTYPE_SPINCONTROL;
 	s_dof_box.generic.x = 0;

@@ -282,11 +282,11 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 		return;
 
 	screenAspect = (float)viddef.width / (float)viddef.height;
-	scaledHeight = 320.0 / screenAspect;
+	scaledHeight = 640.0 / screenAspect;
 
 	scale = ui_hudScale->value;
 
-	hud_sx = (float)viddef.width / 320.0 * scale;
+	hud_sx = (float)viddef.width / 640.0 * scale;
 	hud_sy = (float)viddef.height / scaledHeight * scale;
 
 	memset (&refdef, 0, sizeof(refdef));
@@ -295,12 +295,12 @@ void SCR_DrawHudModel (float x, float y, struct model_s *model) {
 	R_ModelRadius (model, rad);
 	R_ModelCenter (model, center);
 
-	refdef.x = (int)x + ui_hudModelScale->value;
-	refdef.y = (int)y - ui_hudModelScale->value * hud_sy;
-	refdef.width = (24 + ui_hudModelScale->value) * hud_sx;
-	refdef.height = (24 + ui_hudModelScale->value) * hud_sy;
-	refdef.fov_x = 43;
-	refdef.fov_y = 43;
+	refdef.x		= (int)x -2 * hud_sx;
+	refdef.y		= (int)y -2 * hud_sy;
+	refdef.width	= 48 * hud_sx;
+	refdef.height	= 48 * hud_sy;
+	refdef.fov_x	= 45;
+	refdef.fov_y	= 45;
 	refdef.time = cls.realTime*0.001;
 	refdef.viewangles[0] = 30;
 	refdef.areabits = 0;
@@ -742,7 +742,7 @@ void SCR_ExecuteLayoutString3d (char *s) {
 				if (!strcmp
 					(cl.configstrings[CS_IMAGES + value], "i_help")) {
 					stopRotation = qtrue;
-					SCR_DrawHudModel(x, y - ui_hudModelScale->value * hud_sy, hudmodel.cl_hud_comp);
+					SCR_DrawHudModel(x, y - 24 * hud_sy, hudmodel.cl_hud_comp);
 				} else
 					stopRotation = qfalse;
 

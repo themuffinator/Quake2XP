@@ -186,6 +186,10 @@ void R_DrawParticles (void) {
 				texId = r_particleTexture[PT_BFG_LASER]->handle;
 				break;
 
+			case PT_RAILBEAM:
+				texId = r_particleTexture[PT_RAILBEAM]->handle;
+				break;
+
 			default:
 				texId = r_particleTexture[PT_DEFAULT]->handle;
 

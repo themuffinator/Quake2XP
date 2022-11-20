@@ -404,11 +404,21 @@ void R_InitEngineTextures (void) {
 	r_particleTexture[PT_BLOOD_SPLAT]	= GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
 	r_particleTexture[PT_BLASTER_BOLT]	= GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
 	r_particleTexture[PT_BFG_LASER]		= GL_FindImage("gfx/particles/bfglaser.tga", it_wall);
+	r_particleTexture[PT_RAILBEAM]		= GL_FindImage("gfx/particles/rail_beam.tga", it_wall);
 	r_particleTexture[PT_BFG_BALL]		= GL_FindImage("gfx/bfg/bfgBall.tga", it_wall);
 	r_particleTexture[PT_BFG_REFR]		= GL_FindImage("gfx/bfg/bfgRefr.tga", it_wall);
 	r_particleTexture[PT_BFG_EXPL]		= GL_FindImage("gfx/bfg/bfg_expl.tga", it_wall);
 	r_particleTexture[PT_BFG_EXPL2]		= GL_FindImage("gfx/bfg/bfgballblast.tga", it_wall);
 	r_particleTexture[PT_FLARE]			= GL_FindImage("gfx/flares/flare0.tga", it_wall);
+
+	for (i = 0; i < MAX_BFG_EXPL; i++) {
+		char name[MAX_QPATH];
+		Com_sprintf(name, sizeof(name), "gfx/bfg/bfgExpl_%i.tga", i);
+
+		r_bfg_expl[i] = GL_FindImage(name, it_wall);
+		if (!r_bfg_expl[i])
+			r_bfg_expl[i] = r_notexture;
+	}
 
 	for (i = 0; i < PT_MAX; i++)
 	if (!r_particleTexture[i])
@@ -446,15 +456,6 @@ void R_InitEngineTextures (void) {
 		r_caustic[i] = GL_FindImage (name, it_wall);
 		if (!r_caustic[i])
 			r_caustic[i] = r_notexture;
-	}
-
-	for (i = 0; i < MAX_BFG_EXPL; i++) {
-		char name[MAX_QPATH];
-		Com_sprintf(name, sizeof(name), "gfx/bfg/bfgExpl_%i.tga", i);
-
-		r_bfg_expl[i] = GL_FindImage(name, it_wall);
-		if (!r_bfg_expl[i])
-			r_bfg_expl[i] = r_notexture;
 	}
 
 	for (i = 0; i < MAX_WATER_NORMALS; i++) {

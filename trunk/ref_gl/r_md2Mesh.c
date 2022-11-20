@@ -114,9 +114,9 @@ void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, vec3_t lightColor) {
 	byte			*binormals,	*oldBinormals;
 	uint			offs;
 
-	alphaShift = sin (ref_realtime * currentmodel->glowCfg[2]);
-	alphaShift = (alphaShift + 1) * 0.5f;
-	alphaShift = clamp (alphaShift, currentmodel->glowCfg[0], currentmodel->glowCfg[1]);
+	alphaShift = sin (ref_realtime * 5.666);
+	alphaShift = (alphaShift + 3.0) * 0.5f;
+	alphaShift = clamp (alphaShift, 0.01, 6.0);
 
 	if (currententity->flags & RF_TRANSLUCENT) {
 		alpha = currententity->alpha;

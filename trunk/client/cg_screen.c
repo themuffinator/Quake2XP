@@ -1083,7 +1083,7 @@ void SCR_UpdateScreen (void) {
 		return;					// not initialized yet
 
 
-	ui_hudScale->value = ClampCvar(0.1, 1.0, ui_hudScale->value);
+	ui_hudScale->value = ClampCvar(0.3, 0.8, ui_hudScale->value);
 	ui_fontScale->value = ClampCvar(2.0, 4.0, ui_fontScale->value);
 
 	if(viddef.height <= 1024)
