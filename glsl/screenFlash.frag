@@ -1,8 +1,9 @@
 //!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2DRect	u_ScreenTex;
 
-layout(location = U_SCREEN_SIZE) uniform vec2	u_screenSize; 
-layout(location = U_PARAM_VEC3_0) uniform vec3	u_flashColor; 
+layout(location = U_SCREEN_SIZE)	uniform vec2	u_screenSize; 
+layout(location = U_PARAM_VEC3_0)	uniform vec3	u_flashColor; 
+layout(location = U_PARAM_FLOAT_0)	uniform float	u_flashIntens; 
 
 void main(void) 
 {
@@ -13,6 +14,6 @@ void main(void)
     float vignette = 1.4 - dist;
     vignette = smoothstep(0.1, 1.0, vignette);
 
-	fragData.rgb = mix(u_flashColor, color, vignette);
+	fragData.rgb = mix(u_flashColor * u_flashIntens, color, vignette);
 	fragData.a = 1.0;
 }

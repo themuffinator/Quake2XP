@@ -127,7 +127,7 @@ void main (void) {
 	// fake AO/cavity
 	fragData.xyz *= normalMap.z * 0.5 + 0.5;
 	fragData.xyz *= u_ambientScale;
-	fragData += vec4(glowMap, 1.0);
+	fragData += vec4(glowMap * 2.0, 1.0);
 	fragData.w = 1.0;
 
 // DEBUG
