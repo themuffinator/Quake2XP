@@ -510,6 +510,7 @@ typedef struct {
 	uint	_ssao;
 	uint	_linearDepth;
 	uint	_tex2d;
+	uint	_hdr64;
 }fbo_t;
 
 fbo_t fbo;

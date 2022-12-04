@@ -75,38 +75,38 @@ void R_Bloom (void)
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
 	GL_BindProgram (bloomdsProgram);
-	GL_SetBindlessTexture(U_TMU0, r_hdrGlareImage->handle);
+	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawQuarterScreenQuad ();
-	glCopyTextureSubImage2D(r_hdrGlareImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 	
 	//glare
 	GL_BindProgram (glareProgram);
 	for (int i = 0; i< r_hdrGlarePasses->integer; i++) {
-		GL_SetBindlessTexture(U_TMU0, r_hdrGlareImage->handle);
+		GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
 		qglUniform1f(U_PARAM_FLOAT_0, r_hdrGlareIntens->value);
 		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 		R_DrawQuarterScreenQuad();
-		glCopyTextureSubImage2D(r_hdrGlareImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+		glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
 	}
 
 	//blur
 	GL_BindProgram(bloomBlurProgram);
-	GL_SetBindlessTexture(U_TMU0, r_hdrGlareImage->handle);
+	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
 
 	qglUniform1i(U_PARAM_INT_0, 1); // horizontal
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawQuarterScreenQuad ();
-	glCopyTextureSubImage2D(r_hdrGlareImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
+	glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 
 	qglUniform1i(U_PARAM_INT_0, 0); // vertical
 	R_DrawQuarterScreenQuad ();
-	glCopyTextureSubImage2D(r_hdrGlareImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+	glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
 
 	//final pass
 	GL_BindProgram (bloomfpProgram);
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU1, r_hdrGlareImage->handle);
+	GL_SetBindlessTexture(U_TMU1, r_hdrBloomImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
@@ -319,8 +319,16 @@ void R_FilmFilter (void)
 	 
 	// setup program
 	GL_BindProgram (filmGrainProgram);
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
 
-	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
+	qglReadBuffer(GL_COLOR_ATTACHMENT0);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, vid.width, vid.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
+
+	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy2d->handle);
 	qglUniform2f (U_SCREEN_SIZE,	vid.width, vid.height);
 	qglUniform1f (U_PARAM_FLOAT_0,	crand());
 	qglUniform1i (U_PARAM_INT_0,	r_framecount);
@@ -330,15 +338,143 @@ void R_FilmFilter (void)
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
+float ClampFloat(float value, float min, float max) {
+	if (value < min)
+		return min;
+	if (value > max)
+		return max;
+	return value;
+}
+void CalculateAutomaticExposure()
+{
+	int				i;
+	static float	image[64 * 64 * 3];
+	float           curTime;
+	float			deltaTime;
+	float           luminance;
+	float			avgLuminance;
+	float			maxLuminance;
+	double			sum;
+	const vec3_t    luma = { 0.2125f, 0.7154f, 0.0721f }; // be careful wether this should be linear RGB or sRGB
+	vec3_t			color;
+	float			newAdaptation;
+	float			newMaximum;
+
+	if (!r_hdrAutoExposure->integer)
+		return;
+
+	curTime = Sys_Milliseconds() * 0.001;
+
+	// calculate the average scene luminance
+	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr64);
+
+	qglReadBuffer(GL_COLOR_ATTACHMENT0);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0);
+	qglBlitFramebuffer(0, 0, vid.width, vid.height, 0, 0, 64, 64, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+	// read back the contents
+	qglReadPixels(0, 0, 64, 64, GL_RGB, GL_FLOAT, image);
+		
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
+		
+	vec3_t tmp = { 0.0,0.0,0.0 };
+	sum = 0.0f;
+	maxLuminance = 0.0f;
+	for (i = 0; i < 4096; i += 3)
+	{
+		color[0] = image[i * 3 + 0];
+		color[1] = image[i * 3 + 1];
+		color[2] = image[i * 3 + 2];
+
+		tmp[0] = pow(color[0], 1.0 / 2.2);
+		tmp[1] = pow(color[1], 1.0 / 2.2);
+		tmp[2] = pow(color[2], 1.0 / 2.2);
+		luminance = DotProduct(luma, tmp) + 0.0001f;
+		if (luminance > maxLuminance)
+		{
+			maxLuminance = luminance;
+		}
+
+		float logLuminance = log(luminance + 1.0f);
+		//if( logLuminance > 0 )
+		{
+			sum += luminance;
+		}
+	}
+
+	avgLuminance = sum / 4096.0f;
+
+	// the user's adapted luminance level is simulated by closing the gap between
+	// adapted luminance and current luminance by 2% every frame, based on a
+	// 30 fps rate. This is not an accurate model of human adaptation, which can
+	// take longer than half an hour.
+	if (hdrTime > curTime){		
+		hdrTime = curTime;
+	}
+
+	deltaTime = curTime - hdrTime;
+
+	hdrAverageLuminance = ClampFloat(hdrAverageLuminance, r_hdrMinLuminance->value, r_hdrMaxLuminance->value);
+	avgLuminance = ClampFloat(avgLuminance, r_hdrMinLuminance->value, r_hdrMaxLuminance->value);
+		
+	hdrMaxLuminance = ClampFloat(hdrMaxLuminance, r_hdrMinLuminance->value, r_hdrMaxLuminance->value);
+	maxLuminance = ClampFloat(maxLuminance, r_hdrMinLuminance->value, r_hdrMaxLuminance->value);
+
+	newAdaptation = hdrAverageLuminance + (avgLuminance - hdrAverageLuminance) * (1.0f - powf(0.98f, 30.0f * deltaTime));
+	newMaximum = hdrMaxLuminance + (maxLuminance - hdrMaxLuminance) * (1.0f - powf(0.98f, 30.0f * deltaTime));
+
+	if (!isnan(newAdaptation) && !isnan(newMaximum))
+	{
+		hdrAverageLuminance = newAdaptation;
+		hdrMaxLuminance = newMaximum;
+	}
+
+	hdrTime = curTime;
+
+	// calculate HDR image key
+	hdrKey = r_hdrKey->value;
+
+//	Com_Printf("HDR luminance avg = %f, max = %f, key = %f\n", hdrAverageLuminance, hdrMaxLuminance, hdrKey);
+}
+
+float Lerp(const float v1, const float v2, const float l)
+{
+	float out;
+	if (l <= 0.0f) 
+		return v1;
+	if (l >= 1.0f) 
+		return v2;
+	out = v1 + l * (v2 - v1);
+	return out;
+}
+
 void R_ToneMaping(void) {
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
+	CalculateAutomaticExposure();
+	vec4_t hdrParams;
+		
+	if (r_hdrAutoExposure->integer){
+
+		hdrParams[0] = hdrKey; 
+		hdrParams[1] = hdrAverageLuminance;
+		hdrParams[2] = ClampFloat(hdrMaxLuminance, 0.2, 0.5);
+		hdrParams[3] = r_hdrExposure->value; //exposure
+	}
+	else{
+		hdrParams[0] = 0.015f;
+		hdrParams[1] = 0.005f;
+		hdrParams[2] = 1;
+		hdrParams[3] = r_hdrExposure->value;
+	}
+
 	GL_BindProgram(tonemapProgram);
 
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-	qglUniform1f(U_PARAM_FLOAT_0, r_hdrExposure->value);
+	qglUniform4fv(U_PARAM_VEC4_0, 1, hdrParams);
 	qglUniform1f(U_PARAM_FLOAT_1, r_gamma->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
@@ -365,6 +501,7 @@ void R_ToneMaping(void) {
 
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();
+	glCopyTextureSubImage2D(r_finalScreen->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
 void R_ColorTemperatureCorrection(void){

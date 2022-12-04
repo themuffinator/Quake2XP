@@ -674,7 +674,10 @@ void GL_SetDefaultState(void) {
 	lightUniforms.color[2] = -1.0;
 	lightUniforms.color[3] = -1.0;
 
-	qglHint(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
+	hdrAverageLuminance = 0.0;
+	hdrMaxLuminance = 0.0;
+	hdrTime = 0.0;
+	hdrKey = 0.0;
 
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

@@ -210,9 +210,10 @@ image_t* r_depthStencilTexture;
 image_t* r_hdrScreenCopy2d;
 image_t* r_finalScreen;
 image_t* r_linearDepth;
+image_t* r_hdr64image;
 
 image_t	*r_cinImage;
-image_t	*r_hdrGlareImage;
+image_t	*r_hdrBloomImage;
 image_t	*r_thermalImage;
 
 int i_stencilView;
@@ -273,6 +274,11 @@ cvar_t	*r_brightness;
 cvar_t	*r_contrast;
 cvar_t	*r_saturation;
 cvar_t	*r_gamma;
+
+cvar_t* r_hdrAutoExposure;
+cvar_t* r_hdrKey;
+cvar_t* r_hdrMinLuminance;
+cvar_t* r_hdrMaxLuminance;
 
 cvar_t	*r_hdrExposure;
 cvar_t	*r_hdrLightScale;
@@ -397,7 +403,13 @@ extern int r_visframecount;
 qboolean xhargar2hack;
 qboolean RA_Frame;
 
+float	hdrAverageLuminance;
+float	hdrMaxLuminance;
+float	hdrTime;
+float	hdrKey;
+
 void R_CreateScreenFbo();
+void CreateHDR64Buffer(void);
 void R_FboFinal();
 void R_FxaaFbo();
 void CreateBloomBuffer(void);

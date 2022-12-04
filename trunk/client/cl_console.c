@@ -661,7 +661,7 @@ void Con_DrawConsole (float frac) {
 	if (lines > viddef.height)
 		lines = viddef.height;
 
-	qglEnable(GL_FRAMEBUFFER_SRGB);
+//	qglEnable(GL_FRAMEBUFFER_SRGB);
 
 	// draw the background
 	Draw_StretchPic2 (0, lines - viddef.height, viddef.width, viddef.height, i_conback);
@@ -787,6 +787,6 @@ void Con_DrawConsole (float frac) {
 	Con_DrawInput ();
 
 	RE_SetColor (colorWhite);
-	qglDisable(GL_FRAMEBUFFER_SRGB);
+//	qglDisable(GL_FRAMEBUFFER_SRGB);
 }
 

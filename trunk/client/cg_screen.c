@@ -359,7 +359,7 @@ void SCR_DrawLoading (void) {
 
 	if (loadingMessage && cl.configstrings[CS_MODELS + 1][0]) {
 		
-		qglDisable(GL_FRAMEBUFFER_SRGB);
+	//	qglDisable(GL_FRAMEBUFFER_SRGB);
 
 		strcpy (mapfile, cl.configstrings[CS_MODELS + 1] + 5);	// skip "maps/"
 		mapfile[strlen (mapfile) - 4] = 0;	// cut off ".bsp"
@@ -380,7 +380,7 @@ void SCR_DrawLoading (void) {
 				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, "/gfx/defshot.jpg");
 			}
 			else {
-			qglEnable(GL_FRAMEBUFFER_SRGB);
+		//	qglEnable(GL_FRAMEBUFFER_SRGB);
 			if (Draw_FindPic(va("/levelshots/%s.jpg", mapfile)))
 				Draw_LoadingScreen(0, 0, viddef.width, viddef.height, va("/levelshots/%s.jpg", mapfile));
 			else
@@ -403,7 +403,7 @@ void SCR_DrawLoading (void) {
 		Draw_StringScaled (0, 64 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[2]), qtrue);
 		Draw_StringScaled (0, 74 * fontscale, fontscale, fontscale, va ("%s", loadingMessages[3]), qtrue);
 		RE_SetColor (colorWhite);
-		qglDisable(GL_FRAMEBUFFER_SRGB);
+	//	qglDisable(GL_FRAMEBUFFER_SRGB);
 	}
 }
 
@@ -420,8 +420,13 @@ Scroll it up or down
 */
 void SCR_RunConsole (void) {
 	// decide on the height of the console
-	if (cls.key_dest == key_console)
-		scr_conlines = 0.5;		// half screen
+	if (cls.key_dest == key_console) {
+		
+		if (!com_fullConsole->integer)
+			scr_conlines = 0.25;
+		else
+			scr_conlines = 0.5;		// half screen
+	}
 	else
 		scr_conlines = 0;		// none visible
 
@@ -446,7 +451,7 @@ SCR_DrawConsole
 */
 void SCR_DrawConsole (void) {
 	Con_CheckResize ();
-
+	
 	if (cls.state == ca_disconnected || cls.state == ca_connecting) {	// forced
 		// full
 		// screen
@@ -458,8 +463,9 @@ void SCR_DrawConsole (void) {
 	if (cls.state != ca_active || !cl.refresh_prepped) {	// connected,
 		// but can't
 		// render
-		Con_DrawConsole (0.5);
-		Draw_Fill (0, viddef.height * 0.5f, viddef.width, viddef.height * 0.5f, 0.0, 0.0, 0.0, 1.0, qfalse);
+		float size = 0.5;
+		Con_DrawConsole (size);
+		Draw_Fill (0, viddef.height * size, viddef.width, viddef.height * size, 0.0, 0.0, 0.0, 1.0, qfalse);
 		return;
 	}
 

@@ -238,7 +238,6 @@ void Key_Console (int key) {
 		char *cbd;
 
 		if ((cbd = Sys_GetClipboardData ()) != 0) {
-			int i;
 
 			strtok (cbd, "\n\r\b");
 
@@ -764,6 +763,7 @@ Called by the system between frames for both key up and key down events
 Should NOT be called during an interrupt!
 ===================
 */
+
 void Key_Event (int key, qboolean down, unsigned time) {
 	char *kb;
 	char cmd[1024];
@@ -774,7 +774,7 @@ void Key_Event (int key, qboolean down, unsigned time) {
 			key_waiting = key;
 		return;
 	}
-
+	
 	// update auto-repeat status
 	if (down) {
 		key_repeats[key]++;
@@ -805,13 +805,14 @@ void Key_Event (int key, qboolean down, unsigned time) {
 	if (key == K_SHIFT)
 		shift_down = down;
 
-	// console key is hardcoded, so the user can never unbind it
-	if (key == '`' || key == '~') {
-		if (!down)
+		// console key is hardcoded, so the user can never unbind it
+		if ((key == '`' || key == '~')) {
+			if (!down)
+				return;
+			Con_ToggleConsole_f();
 			return;
-		Con_ToggleConsole_f ();
-		return;
-	}
+		}
+
 	// any key during the attract mode will bring up the menu
 	if (cl.attractloop && cls.key_dest != key_menu &&
 		!(key >= K_F1 && key <= K_F12))

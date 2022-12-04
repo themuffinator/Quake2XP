@@ -716,7 +716,9 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t* gl)
 void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* gl2)
 {
 	int w, h;
-	float lightShift;
+	
+	if (!r_bump2D->integer)
+		return;
 
 	w = gl->width * sX * gl->picScale_w;
 	h = gl->height * sY * gl->picScale_h;
@@ -731,8 +733,20 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 
 	GL_BindProgram(light2dProgram);
 
-	lightShift = 66.6 * sin(Sys_Milliseconds() * 0.001f);
-	qglUniform2f(U_PARAM_VEC2_0, lightShift, r_hudLighting->value);
+	float	t;
+	vec4_t	lPos;
+	t = Sys_Milliseconds() * 0.001;
+	lPos[0] = sin(t);
+	lPos[1] = cos(t);
+	lPos[2] = 0.5;
+	lPos[3] = ((float)h + (float)y) / (float)h;
+	VectorNormalize(lPos);
+	lPos[0] = lPos[0] * 0.5 + 0.5;
+	lPos[1] = lPos[1] * 0.5 + 0.5;
+	lPos[2] = lPos[2] * 0.5 + 0.5;
+
+	qglUniform4fv(U_PARAM_VEC4_0, 1, lPos);
+
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 
 	GL_SetBindlessTexture(U_TMU0, gl->handle);
@@ -934,7 +948,7 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 	int			row;
 	unsigned* dest;
 
-	qglEnable(GL_FRAMEBUFFER_SRGB);
+//	qglEnable(GL_FRAMEBUFFER_SRGB);
 
 	qglClearColor(0.0, 0.0, 0.0, 0.0);
 
@@ -991,5 +1005,5 @@ void Draw_StretchRaw(int x, int y, int w, int h, int rawWidth, int rawHeight, by
 
 	glBindVertexArray(0);
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
-	qglDisable(GL_FRAMEBUFFER_SRGB);
+//	qglDisable(GL_FRAMEBUFFER_SRGB);
 }

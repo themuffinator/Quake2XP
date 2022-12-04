@@ -1197,11 +1197,11 @@ void SV_Init (void) {
 
 	if (!net_compatibility->integer) {
 		Cvar_Get ("protocol", va ("%i", PROTOCOL_VERSION),
-			CVAR_SERVERINFO | CVAR_NOSET);;
+			CVAR_SERVERINFO | CVAR_NOSET);
 	}
 	else {
 		Cvar_Get ("protocol", va ("%i", OLD_PROTOCOL_VERSION),
-			CVAR_SERVERINFO | CVAR_NOSET);;
+			CVAR_SERVERINFO | CVAR_NOSET);
 	}
 
 	maxclients = Cvar_Get ("maxclients", "1", CVAR_SERVERINFO | CVAR_LATCH);
@@ -1235,11 +1235,8 @@ void SV_Init (void) {
 
 	sv_reconnect_limit = Cvar_Get ("sv_reconnect_limit", "3", CVAR_ARCHIVE);
 	
-	sv_downloadserver = Cvar_Get("sv_downloadserver", "", 0);	
-	sv_downloadserver->help = "Sets URL of HTTP autodownload server where clients can download game content over HTTP. Default empty. Path leads to game dir name, e.g. quake2.com/baseq2/maps.";
-	sv_iplimit = Cvar_Get("sv_iplimit", "3", 0);	
-	sv_iplimit->help = "Sets connection limit per IP address.  Stops zombie DoS/Flood.";
-
+	sv_downloadserver = Cvar_Get("sv_downloadserver", "", 0);
+	sv_iplimit = Cvar_Get("sv_iplimit", "3", 0);
 
 	SZ_Init (&net_message, net_message_buffer, sizeof(net_message_buffer));
 }

@@ -25,10 +25,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-
+/*
 #ifndef _WIN32
 #include <dlfcn.h>
 #define qwglGetProcAddress( a ) dlsym( glw_state.hinstOpenGL, a )
+#endif
+*/
+#ifndef _WIN32 // fix sdl bug
+#include <SDL.h>
+#define qwglGetProcAddress( a ) SDL_GL_GetProcAddress ( a )
 #endif
 
 /*
@@ -91,7 +96,7 @@ image_t *R_CreateTexture(char *texName, uint targetTex,
 
 	if (mipmap) {
 		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
-		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips-1);
 		glGenerateTextureMipmap(image->texnum);
 	}
 
@@ -548,6 +553,7 @@ void R_InitEngineTextures (void) {
 		skinBump = r_notexture;
 
 	CreateWaterWarpTexture();
+
 	//Load3dLut();
 
 	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, 

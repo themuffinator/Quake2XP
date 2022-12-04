@@ -440,7 +440,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		glTextureParameteri(imageIdx, GL_TEXTURE_MIN_FILTER,		gl_filter_min);
 		glTextureParameteri(imageIdx, GL_TEXTURE_MAG_FILTER,		gl_filter_max);
 		glTextureParameteri(imageIdx, GL_TEXTURE_BASE_LEVEL,		0);
-		glTextureParameteri(imageIdx, GL_TEXTURE_MAX_LEVEL,			numMips);
+		glTextureParameteri(imageIdx, GL_TEXTURE_MAX_LEVEL,			numMips-1);
 	}
 	else
 	{

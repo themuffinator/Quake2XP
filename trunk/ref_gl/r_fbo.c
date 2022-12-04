@@ -112,13 +112,36 @@ void CreateBloomBuffer(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW "BLOOM FBO ");
 
-	r_hdrGlareImage = R_CreateTexture("***r_hdrGlareImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_screen, 
+	r_hdrBloomImage = R_CreateTexture("***r_hdrBloomImage***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_screen, 
 									vid.width * 0.25, vid.height * 0.25, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 
 									GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
 
 	qglGenFramebuffers(1, &fbo._bloom);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._bloom);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdrGlareImage->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdrBloomImage->texnum, 0);
+
+	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	if (!statusOK)
+		Com_Printf(S_COLOR_RED"Failed!");
+	else
+		Com_Printf(S_COLOR_WHITE"succeeded\n");
+
+	qglBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+void CreateHDR64Buffer(void) {
+	qboolean statusOK;
+
+	Com_Printf("Load "S_COLOR_YELLOW "HDR64 FBO ");
+
+	r_hdr64image= R_CreateTexture("***r_hdr64image***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_screen,
+		64, 64, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
+		GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
+
+	qglGenFramebuffers(1, &fbo._hdr64);
+	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr64);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdr64image->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)
@@ -157,7 +180,7 @@ void R_CreateScreenFbo() {
 	uint rbId;
 	qboolean statusOK;
 
-	Com_Printf("Load "S_COLOR_YELLOW "SCREEN FBO ");
+	Com_Printf("Load "S_COLOR_YELLOW "HDR FBO ");
 
 	qglGenRenderbuffers(1, &rbId);
 	qglBindRenderbuffer(GL_RENDERBUFFER, rbId);

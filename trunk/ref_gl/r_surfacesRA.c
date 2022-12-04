@@ -259,7 +259,7 @@ void R_DrawHeatHazeSurfaces() {
 	qglUniformMatrix4fv(U_MODELVIEW_MATRIX, 1, qfalse, (const float*)r_newrefdef.modelViewMatrix);
 	qglUniformMatrix4fv(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
 
-	qglUniform1f(U_REFR_THICKNESS0, 75.0);
+	qglUniform1f(U_REFR_THICKNESS0, 50.0);
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 
 	for (int i = 0; i < numHeatHazeSurfaces; i++) {

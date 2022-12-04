@@ -516,7 +516,7 @@ void R_GenSkyCubeMap(char* name) {
 	glTextureParameteri(skyCube, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTextureParameteri(skyCube, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTextureParameteri(skyCube, GL_TEXTURE_BASE_LEVEL, 0);
-	glTextureParameteri(skyCube, GL_TEXTURE_MAX_LEVEL, numMips);
+	glTextureParameteri(skyCube, GL_TEXTURE_MAX_LEVEL, numMips-1);
 	glGenerateTextureMipmap(skyCube);
 
 	skyCube_handle = glGetTextureHandleARB(skyCube);

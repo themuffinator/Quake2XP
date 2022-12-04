@@ -52,6 +52,7 @@ void CL_InitImages () {
 	i_banner_save_game[0]	= Draw_FindPic("m_banner_save_game");
 	i_banner_join_server[0] = Draw_FindPic("m_banner_join_server");
 	i_banner_addressbook[0]	= Draw_FindPic("m_banner_addressbook");
+	i_banner_player_setup[0]= Draw_FindPic("m_banner_plauer_setup");
 	i_banner_options[0]		= Draw_FindPic("m_banner_options");
 	i_banner_video[0]		= Draw_FindPic("m_banner_video");
 
@@ -61,6 +62,7 @@ void CL_InitImages () {
 	i_banner_save_game[1]	= Draw_FindPic("m_banner_save_game_bump");
 	i_banner_join_server[1] = Draw_FindPic("m_banner_join_server_bump");
 	i_banner_addressbook[1]	= Draw_FindPic("m_banner_addressbook_bump");
+	i_banner_player_setup[1]= Draw_FindPic("m_banner_plauer_setup_bump");
 	i_banner_options[1]		= Draw_FindPic("m_banner_options_bump");
 	i_banner_video[1]		= Draw_FindPic("m_banner_video_bump");
 

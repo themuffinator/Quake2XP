@@ -236,6 +236,7 @@ cvar_t* ui_fontScale;
 cvar_t* scr_showTexName;
 cvar_t* sys_cpuUtilization;
 cvar_t* cl_gunCollision;
+cvar_t* com_fullConsole;
 
 cvar_t* cl_async;
 cvar_t* net_maxFps;
@@ -1046,6 +1047,7 @@ image_t	*i_quit[2];
 image_t	*i_banner_multiplayer[2],	*i_banner_game[2], 
 		*i_banner_load_game[2],		*i_banner_save_game[2], 
 		*i_banner_join_server[2],	*i_banner_addressbook[2], 
-		*i_banner_options[2],		*i_banner_video[2];
+		*i_banner_options[2],		*i_banner_video[2],
+		*i_banner_player_setup[2];
 
 void Q_snprintfz (char *dst, int dstSize, const char *fmt, ...);

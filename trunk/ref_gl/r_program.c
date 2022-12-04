@@ -1049,7 +1049,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"tonemap program"S_COLOR_WHITE" ");
-	tonemapProgram = R_FindProgram("tonemap", S_GEO);
+	tonemapProgram = R_FindProgram("tonemap", S_DEFAULT);
 	if (tonemapProgram->valid) {
 		Com_Printf("succeeded\n");
 	}
@@ -1059,7 +1059,7 @@ void R_InitPrograms (void) {
 	}
 
 	Com_Printf("Load "S_COLOR_YELLOW"final pass program"S_COLOR_WHITE" ");
-	finalPassProgram = R_FindProgram("finalPass", S_GEO);
+	finalPassProgram = R_FindProgram("finalPass", S_DEFAULT);
 	if (finalPassProgram->valid) {
 		Com_Printf("succeeded\n");
 	}

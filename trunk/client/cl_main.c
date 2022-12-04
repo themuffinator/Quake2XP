@@ -1293,11 +1293,11 @@ void CL_InitLocal (void) {
 	ui_drawTime = Cvar_Get("ui_drawTime", "0", CVAR_ARCHIVE);
 	ui_fontScale = Cvar_Get("ui_fontScale", "3", 0);
 	ui_drawFPS = Cvar_Get("ui_drawFPS", "0", CVAR_ARCHIVE);
-	ui_drawFPS->help = "off / average / full";
 
 	useRussianLoc = Cvar_Get("useRussianLoc", "0", CVAR_SERVERINFO);
 
 	cl_gunCollision = Cvar_Get("cl_gunCollision", "2", CVAR_ARCHIVE);
+	com_fullConsole = Cvar_Get("com_fullConsole", "0", CVAR_ARCHIVE);
 
 #ifdef USE_CURL
 	cl_http_proxy = Cvar_Get("cl_http_proxy", "", 0);
@@ -1320,9 +1320,7 @@ void CL_InitLocal (void) {
 	hand = Cvar_Get ("hand", "0", CVAR_USERINFO | CVAR_ARCHIVE);
 
 	fov = Cvar_Get ("fov", "91", CVAR_USERINFO | CVAR_ARCHIVE);
-	fov->help = "Field Of Vision (degrees). '90' will block '+zoom'.";
 	zoomfov = Cvar_Get ("zoomfov", "22.5", CVAR_ARCHIVE);
-	zoomfov->help = "lower FOV limit for '+zoom'";
 
 	gender = Cvar_Get ("gender", "male", CVAR_USERINFO | CVAR_ARCHIVE);
 	gender_auto = Cvar_Get ("gender_auto", "1", CVAR_ARCHIVE);
@@ -1481,8 +1479,7 @@ void CL_FixCvarCheats (void) {
 	if (!numcheatvars) {
 		while (cheatvars[numcheatvars].name) {
 			cheatvars[numcheatvars].var =
-				Cvar_Get (cheatvars[numcheatvars].name,
-				cheatvars[numcheatvars].value, 0);
+				Cvar_Get (cheatvars[numcheatvars].name, cheatvars[numcheatvars].value, 0);
 			numcheatvars++;
 		}
 	}

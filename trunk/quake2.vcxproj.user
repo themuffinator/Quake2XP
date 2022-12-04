@@ -3,12 +3,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>+set r_fullScreen 0 +set r_mode 1 +set net_compatibility 1 +connect 23.227.170.222:27940</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>+set r_fullScreen 0 +set r_mode 1 +map q2dm1</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>+set r_fullScreen 0 +set r_mode 1 +qqqq</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>+set r_fullScreen 0 +set r_mode 1 +map q2dm1</LocalDebuggerCommandArguments>
     <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
   </PropertyGroup>
   <PropertyGroup>

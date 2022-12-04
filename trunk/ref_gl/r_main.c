@@ -1107,16 +1107,18 @@ void R_RenderFrame(refdef_t * fd) {
 	if (!outMap) {
 		R_FixFov();
 		R_FXAA();
-		R_FilmFilter();
 		R_RadialBlur();
 		R_ThermalVision();
 		R_DofBlur();
 		R_Bloom();
+		R_FilmFilter();
 		R_ScreenBlend();
 	}
 
 	R_ToneMaping();
-	R_ColorTemperatureCorrection();
+	
+	if (!outMap)
+		R_ColorTemperatureCorrection();
 
 	// set alpha blend for 2D mode
 	GL_Enable(GL_BLEND); 
@@ -1337,6 +1339,11 @@ void R_RegisterCvars(void)
 	r_hdrGlare =						Cvar_Get("r_hdrGlare", "1", CVAR_ARCHIVE);
 	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
 	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.2", CVAR_ARCHIVE);
+
+	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "0", 0);
+	r_hdrKey =							Cvar_Get("r_hdrKey", "0.015", 0);
+	r_hdrMinLuminance =					Cvar_Get("r_hdrMinLuminance", "0.005", 0);
+	r_hdrMaxLuminance =					Cvar_Get("r_hdrMaxLuminance", "300.0", 0);
 
 	r_colorVibrance =					Cvar_Get("r_colorVibrance", "0.0", CVAR_ARCHIVE);
 	r_colorBalanceRed =					Cvar_Get("r_colorBalanceRed", "1.0", CVAR_ARCHIVE);
@@ -1618,6 +1625,7 @@ void R_InitFboBuffers() {
 	R_CreateScreenFbo();
 	R_FboFinal();
 	R_FxaaFbo();
+	CreateHDR64Buffer();
 	CreateLinearDepthBuffer();
 	CreateSSAOBuffer();
 	CreateBloomBuffer();
@@ -2024,6 +2032,7 @@ void R_Shutdown(void)
 	qglDeleteFramebuffers(1, &fbo._ssao);
 	qglDeleteFramebuffers(1, &fbo._linearDepth);
 	qglDeleteFramebuffers(1, &fbo._tex2d);
+	qglDeleteFramebuffers(1, &fbo._hdr64);
 
 	DeleteShadowVertexBuffers();
 	R_ShutDownVertexBuffers();

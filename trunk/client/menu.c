@@ -4642,6 +4642,8 @@ void PlayerConfig_MenuDraw(void) {
 	char scratch[MAX_QPATH];
 	int x2, y2;
 
+	M_Banner(i_banner_player_setup);
+
 	srand(time(0));
 
 	memset(&refdef, 0, sizeof(refdef));
@@ -4784,6 +4786,7 @@ void M_Menu_PlayerConfig_f(void) {
 			"No valid player models found");
 		return;
 	}
+	
 	Menu_SetStatusBar(&s_multiplayer_menu, NULL);
 	M_PushMenu(PlayerConfig_MenuDraw, PlayerConfig_MenuKey);
 }
