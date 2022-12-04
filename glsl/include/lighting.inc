@@ -1,4 +1,4 @@
-//!#include "global.inc"
+
 
 float sqr (in float x) { return x * x; }
 vec2 sqr (in vec2 x) { return x * x; }
@@ -128,10 +128,10 @@ vec4 SkinLighting (in vec3 V, in vec3 L, in vec3 N, vec3 lightColor, in vec4 Dif
 
 vec3 SubScateringLighting (in vec3 V, in vec3 L, in vec3 N, in vec3 Color, in float Specular)
 {
-    float MaterialThickness =0.5f;  
+    float MaterialThickness =0.5;  
     vec3 ext =  Color * 0.5;
     vec3 ExtinctionCoefficient = vec3(ext.r, ext.g- 0.1, ext.b-0.15);
-    float backFaceSpecularIntens = 0.5f;
+    float backFaceSpecularIntens = 0.5;
 
     vec3 dotLN = vec3(LambertLighting(L, N));
     dotLN *= Color;

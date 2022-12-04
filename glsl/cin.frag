@@ -85,7 +85,8 @@ vec4 TechniColor(in vec4 color)
 void main ()
 {
 	vec4 cin = vec4(median(u_cinMap), 1.0) * 2.0;
-	cin = clamp(cin, 0.05, 1.0);
+	cin = clamp(cin, 0.05, 2.0);
 	fragData = TechniColor(cin);
+	fragData.rgb = pow(fragData.rgb, vec3(1.0/2.2));
 	fragData -= mod(gl_FragCoord.y, 3.0) < 1.0 ? 0.5 : 0.0;
 }

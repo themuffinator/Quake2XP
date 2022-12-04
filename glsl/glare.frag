@@ -1,6 +1,7 @@
 //!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform	sampler2DRect	u_map;
 layout(location = U_PARAM_FLOAT_0)	uniform float	u_glareIntens; 
+
 void main(void) // Robert Beckebans hdr glare
 {
 	vec2 st = gl_FragCoord.xy;

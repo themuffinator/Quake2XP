@@ -1,5 +1,5 @@
 //!#include "include/global.inc"
-layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect u_ScreenTex;
+layout (bindless_sampler, location = U_TMU0) uniform sampler2D u_ScreenTex;
 
 layout(location = U_PARAM_VEC3_0) uniform vec3	u_params;	// x- noise interns
 															// y - scarch intens
@@ -62,14 +62,69 @@ const vec4 C = vec4(0.211324865405187,	// (3.0-sqrt(3.0))/6.0
 	return 130.0 * dot(m, g);
 }
 
+// CHROMATIC ABBERATION
+
+vec2 BarrelDistortion( vec2 xy, float amount )
+{
+	vec2 cc = xy - 0.5;
+	float dist = dot( cc, cc );
+
+	return xy + cc * dist * amount;
+}
+
+float Linterp( float t )
+{
+	return saturate( 1.0 - abs( 2.0 * t - 1.0 ) );
+}
+
+float Remap( float t, float a, float b )
+{
+	return saturate( ( t - a ) / ( b - a ) );
+}
+
+vec3 SpectrumOffset( float t )
+{
+	float lo = step( t, 0.5 );
+	float hi = 1.0 - lo;
+	float w = Linterp( Remap( t, 1.0 / 6.0, 5.0 / 6.0 ) );
+	vec3 ret = vec3( lo, 1.0, hi ) * vec3( 1.0 - w, w, 1.0 - w );
+
+	return pow( ret, vec3( 1.0 / 2.2 ) );
+}
+
+#define Chromatic_Power 0.177
+#define Chromatic_Samples 12
+
+void ChromaticAberrationPass( inout vec3 color ){
+
+	vec3 sum = vec3( 0.0 );
+	vec3 sumColor = vec3( 0.0 );
+
+	vec2 uv = gl_FragCoord.xy / u_screenSize;
+
+	for(int i = 0; i < Chromatic_Samples; i++){
+
+		float t = ( float(i) / ( float(Chromatic_Samples) - 1.0 ) );
+		vec3 so = SpectrumOffset( t );
+
+		sum += so.xyz;
+		sumColor += so * texture(u_ScreenTex, BarrelDistortion( uv, ( 0.5 * Chromatic_Power * t ) ) ).rgb;
+	}
+
+	color = ( sumColor / sum );
+}
+
 void main()
 {    
 	vec2 uv = gl_FragCoord.xy / u_screenSize;
-	fragData = texture(u_ScreenTex, gl_FragCoord.xy);
+	vec4 color = texture(u_ScreenTex, uv);
 	
-	float noise = snoise(uv * vec2(u_screenSize.x + u_rand * u_screenSize.y)) * 0.5;
-	fragData += noise * u_params.x;     
-	
+	ChromaticAberrationPass(vec3(color));
+	fragData = color;
+
+//	float noise = snoise(uv * vec2(u_screenSize.x + u_rand * u_screenSize.y)) * 0.5;
+//	fragData += noise * u_params.x; 
+
 	if ( u_rand < u_params.y )
 	{
 		// Pick a random spot to show scratches
@@ -95,5 +150,5 @@ void main()
 	float d = distance(vec2(0.5, 0.5), uv) * 1.414213;
 	float vignetting = clamp((OuterVignetting - d) / (OuterVignetting - InnerVignetting), 0.0, 1.0);
 	fragData *= vignetting;
-
+	fragData.a = 1.0;
 }

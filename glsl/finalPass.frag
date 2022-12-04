@@ -30,6 +30,8 @@ void Vibrance(inout vec3 color){
   color  = mix(vec3(lum), color.rgb, (1.0 + (u_rgbVibrance * (1.0 - (sign(u_rgbVibrance) * mid)))));
 }
 
+
+
 void main(void){
 	vec3 color = texture(u_ScreenTex, gl_FragCoord.xy).rgb;
 	BrightnesContrastSaturation(color, u_control.x, u_control.y, u_control.z);
