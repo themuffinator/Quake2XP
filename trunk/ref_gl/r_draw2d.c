@@ -744,6 +744,7 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 	lPos[0] = lPos[0] * 0.5 + 0.5;
 	lPos[1] = lPos[1] * 0.5 + 0.5;
 	lPos[2] = lPos[2] * 0.5 + 0.5;
+	lPos[3] = lPos[3] * 0.5 + 0.5;
 
 	qglUniform4fv(U_PARAM_VEC4_0, 1, lPos);
 
