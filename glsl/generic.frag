@@ -73,6 +73,8 @@ vec4 diffuse;
 if(u_console == 1){
 	
 	diffuse = texture(u_map, v_texCoord.xy);
+	diffuse = pow(diffuse, vec4(1.0/2.2));
+
 	vec3 normal = normalize(texture(u_normalMap, v_texCoord).rgb * 2.0 - 1.0);
 	float specular = texture(u_normalMap, v_texCoord).a;	
 

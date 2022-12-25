@@ -35,7 +35,7 @@ void main ()
 	if (u_ssao == 1)
 		fragData.rgb *= texture(u_ssaoMap, gl_FragCoord.xy * 0.5).rgb;
 
-	fragData.rgb += glow.rgb * 1.5 * u_AddShift;
+	fragData.rgb += glow.rgb * u_AddShift;
 
 	if (u_isEnvMap == 1)
 		fragData.rgb += texture(u_env, v_envCoord).rgb * glow.a * u_envScale;
