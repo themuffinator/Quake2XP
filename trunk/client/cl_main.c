@@ -1268,13 +1268,15 @@ void CL_InitLocal (void) {
 	cl_brass = Cvar_Get ("cl_brass", "128", CVAR_ARCHIVE);
 	cl_brassTimeScale = Cvar_Get("cl_brassTimeScale", "20", CVAR_ARCHIVE);
 
-	cl_railcore_red = Cvar_Get ("cl_railcore_red", "1", CVAR_ARCHIVE);
+/*	cl_railcore_red = Cvar_Get("cl_railcore_red", "1", CVAR_ARCHIVE);
 	cl_railcore_green = Cvar_Get ("cl_railcore_green", "1", CVAR_ARCHIVE);
 	cl_railcore_blue = Cvar_Get ("cl_railcore_blue", "1", CVAR_ARCHIVE);
 
 	cl_railspiral_red = Cvar_Get ("cl_railspiral_red", "0", CVAR_ARCHIVE);
 	cl_railspiral_green = Cvar_Get ("cl_railspiral_green", "0", CVAR_ARCHIVE);
 	cl_railspiral_blue = Cvar_Get ("cl_railspiral_blue", "1", CVAR_ARCHIVE);
+*/
+	cl_railSpiral = Cvar_Get("cl_railSpiral", "1", CVAR_ARCHIVE);
 
 	cl_decals = Cvar_Get ("cl_decals", "1", CVAR_ARCHIVE);
 	cl_thirdPerson = Cvar_Get ("cl_thirdPerson", "0", CVAR_ARCHIVE);

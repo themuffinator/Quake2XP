@@ -1251,16 +1251,10 @@ static void ConsoleFunc(void *unused) {
 
 //Q2xp stuff
 
-static menuslider_s s_aoptions_railCoreRed_slider;
-static menuslider_s s_aoptions_railCoreGreen_slider;
-static menuslider_s s_aoptions_railCoreBlue_slider;
-static menuslider_s s_aoptions_railSpiralRed_slider;
-static menuslider_s s_aoptions_railSpiralGreen_slider;
-static menuslider_s s_aoptions_railSpiralBlue_slider;
-
 static menuslider_s s_aoptions_hudScale_slider;
 static menuslider_s s_aoptions_fontScale_slider;
 
+static menulist_s s_aoptions_railSpiral_box;
 static menulist_s s_aoptions_blood_box;
 static menulist_s s_aoptions_decals_box;
 static menulist_s s_aoptions_3dcam_box;
@@ -1268,29 +1262,6 @@ static menulist_s s_aoptions_3dcam_box;
 static menulist_s s_aoptions_drawHud_box;
 static menulist_s s_aoptions_3dhud_box;
 
-static void UpdateRailCoreRedFunc(void *unused) {
-	Cvar_SetValue("cl_railcore_red", s_aoptions_railCoreRed_slider.curvalue / 10);
-}
-
-static void UpdateRailCoreGreenFunc(void *unused) {
-	Cvar_SetValue("cl_railcore_green", s_aoptions_railCoreGreen_slider.curvalue / 10);
-}
-
-static void UpdateRailCoreBlueFunc(void *unused) {
-	Cvar_SetValue("cl_railcore_blue", s_aoptions_railCoreBlue_slider.curvalue / 10);
-}
-
-static void UpdateRailSpiralRedFunc(void *unused) {
-	Cvar_SetValue("cl_railspiral_red", s_aoptions_railSpiralRed_slider.curvalue / 10);
-}
-
-static void UpdateRailSpiralGreenFunc(void *unused) {
-	Cvar_SetValue("cl_railspiral_green", s_aoptions_railSpiralGreen_slider.curvalue / 10);
-}
-
-static void UpdateRailSpiralBlueFunc(void *unused) {
-	Cvar_SetValue("cl_railspiral_blue", s_aoptions_railSpiralBlue_slider.curvalue / 10);
-}
 
 static void UpdateHudScaleFunc(void *unused) {
 	Cvar_SetValue("ui_hudScale", s_aoptions_hudScale_slider.curvalue / 10);
@@ -1298,6 +1269,10 @@ static void UpdateHudScaleFunc(void *unused) {
 
 static void UpdateFontScaleFunc(void *unused) {
 	Cvar_SetValue("ui_fontScale", s_aoptions_fontScale_slider.curvalue / 10 + 1);
+}
+
+static void UpdateRailSpiralFunc(void* unused) {
+	Cvar_SetValue("cl_railSpiral", s_aoptions_railSpiral_box.curInteger);
 }
 
 static void UpdateBloodFunc(void *unused) {
@@ -1339,66 +1314,15 @@ void M_AdvancedInit(void) {
 	s_options_menu.x = viddef.width >> 1;
 	s_options_menu.y = (viddef.height >> 1) - 100 * ui_fontScale->value;
 	s_options_menu.nitems = 0;
-
-	s_aoptions_railCoreRed_slider.generic.type = MTYPE_SLIDER;
-	s_aoptions_railCoreRed_slider.generic.x = 0;
-	s_aoptions_railCoreRed_slider.generic.y = menu_y;
-	s_aoptions_railCoreRed_slider.generic.name = "Railgun Core Red";
-	s_aoptions_railCoreRed_slider.generic.callback = UpdateRailCoreRedFunc;
-	s_aoptions_railCoreRed_slider.minvalue = 0;
-	s_aoptions_railCoreRed_slider.maxvalue = 10;
-	s_aoptions_railCoreRed_slider.curvalue = Cvar_VariableValue("cl_railcore_red") * 10;
+		
+	s_aoptions_railSpiral_box.generic.type = MTYPE_SPINCONTROL;
+	s_aoptions_railSpiral_box.generic.x = 0;
+	s_aoptions_railSpiral_box.generic.y = menu_y;
+	s_aoptions_railSpiral_box.generic.name = "Draw Rail Gun Spiral";
+	s_aoptions_railSpiral_box.generic.callback = UpdateRailSpiralFunc;
+	s_aoptions_railSpiral_box.itemnames = yesno_names;
+	s_aoptions_railSpiral_box.curInteger = Cvar_VariableInteger("cl_railSpiral");
 	menu_y += 10 * ui_fontScale->value;
-
-	s_aoptions_railCoreGreen_slider.generic.type = MTYPE_SLIDER;
-	s_aoptions_railCoreGreen_slider.generic.x = 0;
-	s_aoptions_railCoreGreen_slider.generic.y = menu_y;
-	s_aoptions_railCoreGreen_slider.generic.name = "Railgun Core Green";
-	s_aoptions_railCoreGreen_slider.generic.callback = UpdateRailCoreGreenFunc;
-	s_aoptions_railCoreGreen_slider.minvalue = 0;
-	s_aoptions_railCoreGreen_slider.maxvalue = 10;
-	s_aoptions_railCoreGreen_slider.curvalue = Cvar_VariableValue("cl_railcore_green") * 10;
-	menu_y += 10 * ui_fontScale->value;
-
-	s_aoptions_railCoreBlue_slider.generic.type = MTYPE_SLIDER;
-	s_aoptions_railCoreBlue_slider.generic.x = 0;
-	s_aoptions_railCoreBlue_slider.generic.y = menu_y;
-	s_aoptions_railCoreBlue_slider.generic.name = "Railgun Core Blue";
-	s_aoptions_railCoreBlue_slider.generic.callback = UpdateRailCoreBlueFunc;
-	s_aoptions_railCoreBlue_slider.minvalue = 0;
-	s_aoptions_railCoreBlue_slider.maxvalue = 10;
-	s_aoptions_railCoreBlue_slider.curvalue = Cvar_VariableValue("cl_railcore_blue") * 10;
-	menu_y += 20 * ui_fontScale->value;
-
-	s_aoptions_railSpiralRed_slider.generic.type = MTYPE_SLIDER;
-	s_aoptions_railSpiralRed_slider.generic.x = 0;
-	s_aoptions_railSpiralRed_slider.generic.y = menu_y;
-	s_aoptions_railSpiralRed_slider.generic.name = "Railgun Spiral Red";
-	s_aoptions_railSpiralRed_slider.generic.callback = UpdateRailSpiralRedFunc;
-	s_aoptions_railSpiralRed_slider.minvalue = 0;
-	s_aoptions_railSpiralRed_slider.maxvalue = 10;
-	s_aoptions_railSpiralRed_slider.curvalue = Cvar_VariableValue("cl_railspiral_red") * 10;
-	menu_y += 10 * ui_fontScale->value;
-
-	s_aoptions_railSpiralGreen_slider.generic.type = MTYPE_SLIDER;
-	s_aoptions_railSpiralGreen_slider.generic.x = 0;
-	s_aoptions_railSpiralGreen_slider.generic.y = menu_y;
-	s_aoptions_railSpiralGreen_slider.generic.name = "Railgun Spiral Green";
-	s_aoptions_railSpiralGreen_slider.generic.callback = UpdateRailSpiralGreenFunc;
-	s_aoptions_railSpiralGreen_slider.minvalue = 0;
-	s_aoptions_railSpiralGreen_slider.maxvalue = 10;
-	s_aoptions_railSpiralGreen_slider.curvalue = Cvar_VariableValue("cl_railspiral_green") * 10;
-	menu_y += 10 * ui_fontScale->value;
-
-	s_aoptions_railSpiralBlue_slider.generic.type = MTYPE_SLIDER;
-	s_aoptions_railSpiralBlue_slider.generic.x = 0;
-	s_aoptions_railSpiralBlue_slider.generic.y = menu_y;
-	s_aoptions_railSpiralBlue_slider.generic.name = "Railgun Spiral Blue";
-	s_aoptions_railSpiralBlue_slider.generic.callback = UpdateRailSpiralBlueFunc;
-	s_aoptions_railSpiralBlue_slider.minvalue = 0;
-	s_aoptions_railSpiralBlue_slider.maxvalue = 10;
-	s_aoptions_railSpiralBlue_slider.curvalue = Cvar_VariableValue("cl_railspiral_blue") * 10;
-	menu_y += 20 * ui_fontScale->value;
 
 	s_aoptions_blood_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_blood_box.generic.x = 0;
@@ -1407,7 +1331,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_blood_box.generic.callback = UpdateBloodFunc;
 	s_aoptions_blood_box.itemnames = yesno_names;
 	s_aoptions_blood_box.curInteger = Cvar_VariableInteger("cl_blood");
-	menu_y += 20 * ui_fontScale->value;
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_decals_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_decals_box.generic.x = 0;
@@ -1455,14 +1379,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_3dhud_box.curInteger = Cvar_VariableInteger("ui_3dHud");
 	menu_y += 10 * ui_fontScale->value;
 
-	s_aoptions_railCoreRed_slider.curvalue = cl_railcore_red->value * 10;
-	s_aoptions_railCoreGreen_slider.curvalue = cl_railcore_green->value * 10;
-	s_aoptions_railCoreBlue_slider.curvalue = cl_railcore_blue->value * 10;
-
-	s_aoptions_railSpiralRed_slider.curvalue = cl_railspiral_red->value * 10;
-	s_aoptions_railSpiralGreen_slider.curvalue = cl_railspiral_green->value * 10;
-	s_aoptions_railSpiralBlue_slider.curvalue = cl_railspiral_blue->value * 10;
-
+	s_aoptions_railSpiral_box.curInteger = cl_railSpiral->integer;
 	s_aoptions_blood_box.curInteger = cl_blood->integer;
 	s_aoptions_decals_box.curInteger = cl_decals->integer;
 	s_aoptions_3dcam_box.curInteger = cl_thirdPerson->integer;
@@ -1470,15 +1387,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_drawHud_box.curInteger = ui_drawHud->integer;
 	s_aoptions_hudScale_slider.curvalue = ui_hudScale->value * 10;
 
-
-	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_railCoreRed_slider);
-	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_railCoreGreen_slider);
-	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_railCoreBlue_slider);
-
-	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_railSpiralRed_slider);
-	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_railSpiralGreen_slider);
-	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_railSpiralBlue_slider);
-
+	Menu_AddItem(&s_options_menu, (void*)&s_aoptions_railSpiral_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_blood_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_decals_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_3dcam_box);

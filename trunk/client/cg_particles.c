@@ -3007,15 +3007,15 @@ CL_RailTrail
 */
 
 void CL_RailTrail (vec3_t start, vec3_t end) {
-	vec3_t vec;
+	vec3_t vec, right, up, move;
 	int j;
+	float dec, len;
 	cparticle_t *p;
 
 	VectorSubtract (end, start, vec);
 
 	if (!free_particles)
 		return;
-
 
 	p = free_particles;
 	free_particles = p->next;
@@ -3027,21 +3027,21 @@ void CL_RailTrail (vec3_t start, vec3_t end) {
 	VectorClear(p->accel);
 	p->orient = 0;
 	p->flags = PARTICLE_STRETCH;
-	p->flags |= PARTICLE_OVERBRIGHT;
-	p->alpha = 0.75;
+	p->flags |= PARTICLE_DISTORT;
+	p->alpha = 1.0;
 	p->alphavel = -0.5 / (0.3 + frand() * 0.3);
 	p->sFactor = GL_SRC_ALPHA;
 	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
-	p->color[0] = cl_railcore_red->value;
-	p->color[1] = cl_railcore_green->value;
-	p->color[2] = cl_railcore_blue->value;
+	p->color[0] = 1.0;
+	p->color[1] = 1.0;
+	p->color[2] = 1.0;
 
 	p->colorVel[0] = -0.5;
 	p->colorVel[1] = -0.75;
 	p->colorVel[2] = -1.0;
 	p->type = PT_RAILBEAM;
-	p->size = 5.0;
-	p->sizeVel = -1.0;
+	p->size = 7.0;
+	p->sizeVel = 13.0;
 
 	for (j = 0; j < 3; j++) {
 		p->org[j] = start[j];
@@ -3049,37 +3049,94 @@ void CL_RailTrail (vec3_t start, vec3_t end) {
 		p->vel[j] = 0;
 		p->accel[j] = 0;
 	}
+//========================================
+	if (cl_railSpiral->integer) {
+		p = free_particles;
+		free_particles = p->next;
+		p->next = active_particles;
+		active_particles = p;
 
-	p = free_particles;
-	free_particles = p->next;
-	p->next = active_particles;
-	active_particles = p;
+		p->orient = 0;
+		p->flags = PARTICLE_SPIRAL;
+		p->time = cl.time;
+		p->endTime = cl.time + 20000;
+		VectorClear(p->accel);
+		p->sFactor = GL_SRC_ALPHA;
+		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
+		p->alpha = 0.5;
+		p->alphavel = -0.25 / (0.3 + frand() * 0.3);
+		p->color[0] = 0.8;
+		p->color[1] = 0.7;
+		p->color[2] = 0.7;
 
-	p->orient = 0;
-	p->flags = PARTICLE_SPIRAL;
-	p->time = cl.time;
-	p->endTime = cl.time + 20000;
-	VectorClear(p->accel);
-	p->sFactor = GL_SRC_ALPHA;
-	p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
-	p->alpha = 0.5;
-	p->alphavel = -0.50 / (0.3 + frand() * 0.3);
-	p->color[0] = cl_railspiral_red->value;
-	p->color[1] = cl_railspiral_green->value;
-	p->color[2] = cl_railspiral_blue->value;
+		p->colorVel[0] = -0.5;
+		p->colorVel[1] = -0.75;
+		p->colorVel[2] = -1.0;
+		p->type = PT_DEFAULT;
+		p->size = 0.75;
+		p->sizeVel = -1.0;
 
-	p->colorVel[0] = -0.5;
-	p->colorVel[1] = -0.75;
-	p->colorVel[2] = -1.0;
-	p->type = PT_BLASTER;
-	p->size = 0.5;
-	p->sizeVel = 1;
+		for (j = 0; j < 3; j++) {
+			p->org[j] = start[j];
+			p->length[j] = vec[j];
+			p->vel[j] = 0;
+			p->accel[j] = 0;
+		}
+	}
+	else {
+		VectorCopy(start, move);
+		VectorSubtract(end, start, vec);
+		len = VectorNormalize(vec);
 
-	for (j = 0; j < 3; j++) {
-		p->org[j] = start[j];
-		p->length[j] = vec[j];
-		p->vel[j] = 0;
-		p->accel[j] = 0;
+		MakeNormalVectors(vec, right, up);
+		dec = 0.75f;
+		VectorScale(vec, dec, vec);
+		VectorCopy(start, move);
+
+		while (len > 0)
+		{
+			len -= dec;
+
+			if (!free_particles)
+				return;
+			p = free_particles;
+			free_particles = p->next;
+			p->next = active_particles;
+			active_particles = p;
+
+			p->time = cl.time;
+			VectorClear(p->accel);
+
+			p->orient = frand() * 360;;
+			p->flags = PARTICLE_DEFAULT;
+			p->time = cl.time;
+			p->endTime = cl.time + 20000;
+			VectorClear(p->accel);
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
+			p->type = PT_SMOKE;
+			p->size = 0.5;
+			p->sizeVel = 10.0;
+
+			p->alpha = 0.55f;
+			p->alphavel = -0.3f / (0.3f + frand() * 0.3f);
+			p->color[0] = 0.75;
+			p->color[1] = 0.75;
+			p->color[2] = 0.55;
+
+			p->colorVel[0] = -0.5;
+			p->colorVel[1] = -0.5;
+			p->colorVel[2] = -0.5;
+
+			p->org[0] = move[0] + crand() * 3;
+			p->org[1] = move[1] + crand() * 3;
+			p->org[2] = move[2] + crand() * 3;
+			p->vel[0] = crand() * 3;
+			p->vel[1] = crand() * 3;
+			p->vel[2] = crand() * 3;
+
+			VectorAdd(move, vec, move);
+		}
 	}
 
 }

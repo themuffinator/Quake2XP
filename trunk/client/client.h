@@ -210,12 +210,15 @@ cvar_t* cl_run;
 //q2xp stuff
 cvar_t* cl_brass;
 cvar_t* cl_brassTimeScale;
-cvar_t* cl_railcore_red;
+/*cvar_t* cl_railcore_red;
 cvar_t* cl_railcore_green;
 cvar_t* cl_railcore_blue;
 cvar_t* cl_railspiral_red;
 cvar_t* cl_railspiral_green;
 cvar_t* cl_railspiral_blue;
+*/
+cvar_t* cl_railSpiral;
+
 cvar_t* cl_decals;
 cvar_t* net_compatibility;
 cvar_t* cl_thirdPerson;

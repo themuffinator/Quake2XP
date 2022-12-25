@@ -374,7 +374,6 @@ image_t *R_LoadLightFilter (int id) {
 	return image;
 }
 
-
 void R_InitEngineTextures (void) {
 	int		i;
 	static byte	notex[1][1][4]	= { 0x0, 0x0, 0x0, 0x0 };
@@ -558,6 +557,10 @@ void R_InitEngineTextures (void) {
 
 	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, 
 								GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
+
+	r_railCoreNormal = GL_FindImage("gfx/railbeamn.tga", it_wall);
+	if (!r_railCoreNormal)
+		r_railCoreNormal = r_defBump;
 }
 
 

@@ -76,10 +76,11 @@ DECAL_BFG,
 DECAL_MAX
 }decalTex_t;
 
-#define DF_OVERBRIGHT	1
-#define DF_VERTEXLIGHT	2
-#define DF_TWOSIDE		4
-
+typedef enum {
+	DF_OVERBRIGHT	= BIT(0),
+	DF_VERTEXLIGHT	= BIT(1),
+	DF_TWOSIDE		= BIT(2)
+} cDecalsFlagss_t;
 
 #define	MAX_DLIGHTS		32
 #define	MAX_ENTITIES	128
@@ -216,33 +217,38 @@ typedef struct {
 	float time;
 } particle_t;
 
-#define PARTICLE_BOUNCE					1
-#define PARTICLE_FRICTION				2
-#define PARTICLE_DIRECTIONAL			4
-#define PARTICLE_VERTEXLIGHT			8
-#define PARTICLE_STRETCH				16
-#define PARTICLE_UNDERWATER				32
-#define PARTICLE_OVERBRIGHT				64
-#define PARTICLE_SPIRAL					128
-#define PARTICLE_AIRONLY				256
-#define PARTICLE_LIGHTING				512
-#define PARTICLE_ALIGNED				1024
-#define PARTICLE_NONSOLID				2048
-#define PARTICLE_STOPED					4096
-#define PARTICLE_CLAMP					8192
-#define PARTICLE_NOFADE					16384
-#define PARTICLE_DEFAULT				32768
-#define PARTICLE_ROTATE					65536
-#define PARTICLE_SOFT_MIDLE				131072
+typedef enum {
+	PARTICLE_BOUNCE			=	BIT(0),
+	PARTICLE_FRICTION		=	BIT(1),
+	PARTICLE_DIRECTIONAL	=	BIT(2),
+	PARTICLE_VERTEXLIGHT	=	BIT(3),
+	PARTICLE_STRETCH		=	BIT(4),
+	PARTICLE_UNDERWATER		=	BIT(5),
+	PARTICLE_OVERBRIGHT		=	BIT(6),
+	PARTICLE_SPIRAL			=	BIT(7),
+	PARTICLE_AIRONLY		=	BIT(8),
+	PARTICLE_LIGHTING		=	BIT(9),
+	PARTICLE_ALIGNED		=	BIT(10),
+	PARTICLE_NONSOLID		=	BIT(11),
+	PARTICLE_STOPED			=	BIT(12),
+	PARTICLE_CLAMP			=	BIT(13),
+	PARTICLE_NOFADE			=	BIT(14),
+	PARTICLE_DEFAULT		=	BIT(15),
+	PARTICLE_ROTATE			=	BIT(16),
+	PARTICLE_SOFT_MIDLE		=	BIT(17),
+	PARTICLE_DISTORT		=	BIT(18)
+} cPatricleFlags_t;
 
-#define CLM_BOUNCE			1
-#define CLM_FRICTION		2
-#define CLM_DIRECTIONAL		4
-#define CLM_ROTATE			8
-#define CLM_STOPPED			16
-#define CLM_STRETCH			32
-#define CLM_MSHELL			64
-#define CLM_NOSHADOW		128
+typedef enum {
+	CLM_BOUNCE		=	BIT(0),
+	CLM_FRICTION	=	BIT(1),
+	CLM_DIRECTIONAL	=	BIT(2),
+	CLM_ROTATE		=	BIT(3),
+	CLM_STOPPED		=	BIT(4),
+	CLM_STRETCH		=	BIT(5),
+	CLM_MSHELL		=	BIT(6),
+	CLM_NOSHADOW	=	BIT(7)
+} cModelFlags_t;
 
 typedef struct {
 	float rgb[3];				// 0.0 - 2.0
@@ -313,8 +319,9 @@ typedef struct image_s {
 	uint64		handle;
 	
 	//lut description
-	float		lutSize;
-	char		lutName[MAX_QPATH];
+//	float		lutSize;
+//	char		lutName[MAX_QPATH];
+
 	uint		hash;
 } image_t;
 
@@ -565,7 +572,7 @@ typedef struct {
 extern float loadScreenColorFade;
 extern char *sInf;
 
-#define	API_VERSION		3
+//#define	API_VERSION		3
 
 //
 // these are the functions exported by the refresh module

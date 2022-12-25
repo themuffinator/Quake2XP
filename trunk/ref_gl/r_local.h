@@ -177,7 +177,7 @@ image_t* r_lightCubeMap[MAX_FILTERS];
 //image_t* r_3dLut[MAX_LUTS];
 //int			lutCount;
 
-image_t gltextures[MAX_GLTEXTURES];
+image_t gltextures[MAX_IDX];
 int numgltextures;
 
 image_t *r_notexture;
@@ -187,6 +187,7 @@ image_t	*cinMap;
 
 image_t *r_particleTexture[PT_MAX];
 image_t *r_decalTexture[DECAL_MAX];
+image_t	*r_railCoreNormal;
 
 image_t *r_flare;
 

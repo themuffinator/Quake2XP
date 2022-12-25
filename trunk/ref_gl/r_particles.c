@@ -81,10 +81,18 @@ void R_DrawParticles (void) {
 
 	// setup program
 	GL_BindProgram(particlesProgram);
-	GL_SetBindlessTexture(U_TMU1, r_linearDepth->handle);
 
-	qglUniformMatrix4fv		(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
-	qglUniformMatrix4fv		(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	GL_SetBindlessTexture(U_TMU1, r_linearDepth->handle);
+	GL_SetBindlessTexture(U_TMU2, r_hdrScreenCopy->handle);
+	GL_SetBindlessTexture(U_TMU3, r_distort->handle);
+
+	qglUniformMatrix4fv	(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
+	qglUniformMatrix4fv	(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
+	qglUniformMatrix4fv	(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
+	
+	qglUniform1f		(U_REFR_DEFORM_MUL, 1.0);
+	qglUniform2f		(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniform1i		(U_PARAM_INT_0, 0);
 
 	qsort (r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
 
@@ -246,6 +254,12 @@ void R_DrawParticles (void) {
 				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)m);
 			}else
 				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)m);
+
+			if (p->flags & PARTICLE_DISTORT) {
+				glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
+				qglUniform1i(U_PARAM_INT_0, 1); 
+			} else
+				qglUniform1i(U_PARAM_INT_0, 0);
 
 		}
 

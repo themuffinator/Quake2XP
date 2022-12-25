@@ -328,11 +328,9 @@ void R_FilmFilter (void)
 
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 
-	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy2d->handle);
+	GL_SetBindlessTexture(U_TMU0,	r_hdrScreenCopy2d->handle);
 	qglUniform2f (U_SCREEN_SIZE,	vid.width, vid.height);
-	qglUniform1f (U_PARAM_FLOAT_0,	crand());
-	qglUniform1i (U_PARAM_INT_0,	r_framecount);
-	qglUniform3f (U_PARAM_VEC3_0,	r_filmFilterNoiseIntens->value, r_filmFilterScratchIntens->value, r_filmFilterVignetIntens->value);
+	qglUniform1f (U_PARAM_FLOAT_0,	r_filmFilterVignetIntens->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);

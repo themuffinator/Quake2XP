@@ -45,30 +45,31 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 
 	if (update) {
 
-	if (s->texInfo->flags & SURF_FLOWING) {
-		scroll = -64 * ((r_newrefdef.time / 500.0) - (int)(r_newrefdef.time / 500.0));
+		if (s->texInfo->flags & SURF_FLOWING) {
+			scroll = -64 * ((r_newrefdef.time / 500.0) - (int)(r_newrefdef.time / 500.0));
 
-		if (scroll == 0.0)
-			scroll = -64.0;
+			if (scroll == 0.0)
+				scroll = -64.0;
 
-		scrolling = qtrue;
+			scrolling = qtrue;
 
-		qglUniform1f(U_SCROLL, scroll);
-	}
-	else
-		qglUniform1f(U_SCROLL, 0.0);
+			qglUniform1f(U_SCROLL, scroll);
+		}
+		else
+			qglUniform1f(U_SCROLL, 0.0);
 
 		if (scrolling)
 			GL_SetBindlessTexture(U_TMU0, r_DSTTex->handle);
 		else
 			GL_SetBindlessTexture(U_TMU0, s->texInfo->normalmap->handle);
 		GL_SetBindlessTexture(U_TMU1, s->texInfo->image->handle);
-	}
-	
-	scale[0] = r_parallaxScale->value / s->texInfo->image->width;
-	scale[1] = r_parallaxScale->value / s->texInfo->image->height;
 
-	qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], s->texInfo->image->upload_width, s->texInfo->image->upload_height);
+
+		scale[0] = r_parallaxScale->value / s->texInfo->image->width;
+		scale[1] = r_parallaxScale->value / s->texInfo->image->height;
+
+		qglUniform4f(U_PARALLAX_PARAMS, scale[0], scale[1], s->texInfo->image->upload_width, s->texInfo->image->upload_height);
+	}
 
 	for (i = 0; i < nv - 2; i++) {
 		indexArray[numIndices++] = s->baseIndex;

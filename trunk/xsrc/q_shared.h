@@ -516,15 +516,22 @@ typedef enum {
 	PM_FREEZE
 } pmtype_t;
 
+#ifndef BIT
+#define BIT(num)				(1 << (num))
+#endif
+
 // pmove->pm_flags
-#define	PMF_DUCKED			1
-#define	PMF_JUMP_HELD		2
-#define	PMF_ON_GROUND		4
-#define	PMF_TIME_WATERJUMP	8	// pm_time is waterjump
-#define	PMF_TIME_LAND		16	// pm_time is time before rejump
-#define	PMF_TIME_TELEPORT	32	// pm_time is non-moving time
-#define PMF_NO_PREDICTION	64	// temporarily disables prediction (used for grappling hook)
-#define PMF_DOUBLE_JUMP		128
+typedef enum {
+	PMF_DUCKED			= BIT(0),
+	PMF_JUMP_HELD		= BIT(1),
+	PMF_ON_GROUND		= BIT(2),
+	PMF_TIME_WATERJUMP	= BIT(3),	// pm_time is waterjump
+	PMF_TIME_LAND		= BIT(4),	// pm_time is time before rejump
+	PMF_TIME_TELEPORT	= BIT(5),	// pm_time is non-moving time
+	PMF_NO_PREDICTION	= BIT(6),	// temporarily disables prediction (used for grappling hook)
+	PMF_DOUBLE_JUMP		= BIT(7)
+}pmFlags_t;
+
 // this structure needs to be communicated bit-accurate
 // from the server to the client to guarantee that
 // prediction stays in sync, so no floats are used.
@@ -596,89 +603,96 @@ typedef struct {
 // that happen constantly on the given entity.
 // An entity that has effects will be sent to the client
 // even if it has a zero index model.
-#define	EF_ROTATE			0x00000001		// rotate (bonus items)
-#define	EF_GIB				0x00000002		// leave a trail
-#define	EF_BLASTER			0x00000008		// redlight + trail
-#define	EF_ROCKET			0x00000010		// redlight + trail
-#define	EF_GRENADE			0x00000020
-#define	EF_HYPERBLASTER		0x00000040
-#define	EF_BFG				0x00000080
-#define EF_COLOR_SHELL		0x00000100
-#define EF_POWERSCREEN		0x00000200
-#define	EF_ANIM01			0x00000400		// automatically cycle between frames 0 and 1 at 2 hz
-#define	EF_ANIM23			0x00000800		// automatically cycle between frames 2 and 3 at 2 hz
-#define EF_ANIM_ALL			0x00001000		// automatically cycle through all frames at 2hz
-#define EF_ANIM_ALLFAST		0x00002000		// automatically cycle through all frames at 10hz
-#define	EF_FLIES			0x00004000
-#define	EF_QUAD				0x00008000
-#define	EF_PENT				0x00010000
-#define	EF_TELEPORTER		0x00020000		// particle fountain
-#define EF_FLAG1			0x00040000
-#define EF_FLAG2			0x00080000
-// RAFAEL
-#define EF_IONRIPPER		0x00100000
-#define EF_GREENGIB			0x00200000
-#define	EF_BLUEHYPERBLASTER 0x00400000
-#define EF_SPINNINGLIGHTS	0x00800000
-#define EF_PLASMA			0x01000000
-#define EF_TRAP				0x02000000
+typedef enum {
 
-//ROGUE
-#define EF_TRACKER			0x04000000
-#define	EF_DOUBLE			0x08000000
-#define	EF_SPHERETRANS		0x10000000
-#define EF_TAGTRAIL			0x20000000
-#define EF_HALF_DAMAGE		0x40000000
-#define EF_TRACKERTRAIL		0x80000000
-//ROGUE
+	EF_ROTATE = BIT(0),		// rotate (bonus items)
+	EF_GIB = BIT(1),		// leave a trail
+	EF_FLASHLIGHT = BIT(2),		// reserved in vanilla
+	EF_BLASTER = BIT(3),		// redlight + trail
+	EF_ROCKET = BIT(4),		// redlight + trail
+	EF_GRENADE = BIT(5),
+	EF_HYPERBLASTER = BIT(6),
+	EF_BFG = BIT(7),
+	EF_COLOR_SHELL = BIT(8),
+	EF_POWERSCREEN = BIT(9),
+	EF_ANIM01 = BIT(10),		// automatically cycle between frames 0 and 1 at 2 hz
+	EF_ANIM23 = BIT(11),		// automatically cycle between frames 2 and 3 at 2 hz
+	EF_ANIM_ALL = BIT(12),		// automatically cycle through all frames at 2hz
+	EF_ANIM_ALLFAST = BIT(13),		// automatically cycle through all frames at 10hz
+	EF_FLIES = BIT(14),
+	EF_QUAD = BIT(15),
+	EF_PENT = BIT(16),
+	EF_TELEPORTER = BIT(17),		// particle fountain
+	EF_FLAG1 = BIT(18),
+	EF_FLAG2 = BIT(19),
 
-#define EF_FLASHLIGHT		0x08000000
+	// RAFAEL
+	EF_IONRIPPER = BIT(20),
+	EF_GREENGIB = BIT(21),
+	EF_BLUEHYPERBLASTER = BIT(22),
+	EF_SPINNINGLIGHTS = BIT(23),
+	EF_PLASMA = BIT(24),
+	EF_TRAP = BIT(25),
+
+	//ROGUE
+	EF_TRACKER = BIT(26),
+	EF_DOUBLE = BIT(27),
+	EF_SPHERETRANS = BIT(28),
+	EF_TAGTRAIL = BIT(29),
+	EF_HALF_DAMAGE = BIT(30),
+	EF_TRACKERTRAIL = BIT(31)
+}entityEffect_t;
 
 // entity_state_t->renderfx flags
-#define	RF_MINLIGHT			1		// allways have some light (viewmodel)
-#define	RF_VIEWERMODEL		2		// don't draw through eyes, only mirrors
-#define	RF_WEAPONMODEL		4		// only draw through eyes
-#define	RF_FULLBRIGHT		8		// allways draw full intensity
-#define	RF_DEPTHHACK		16		// for view weapon Z crunching
-#define	RF_TRANSLUCENT		32
-#define	RF_FRAMELERP		64
-#define RF_BEAM				128
-#define	RF_CUSTOMSKIN		256		// skin is an index in image_precache
-#define	RF_GLOW				512		// pulse lighting for bonus items
-#define RF_SHELL_RED		1024
-#define	RF_SHELL_GREEN		2048
-#define RF_SHELL_BLUE		4096
-#define RF_NOSHADOW         8192
-#define RF_CAMERAMODEL2     0x10000000
-#define RF_SHELL_GOD		0x20000000
-#define RF_DISTORT		    0x80000000
-#define RF_NOCULL		    0x00080000
+typedef enum {
+	RF_MINLIGHT			= BIT(0),		// allways have some light (viewmodel)
+	RF_VIEWERMODEL		= BIT(1),		// don't draw through eyes, only mirrors
+	RF_WEAPONMODEL		= BIT(2),		// only draw through eyes
+	RF_FULLBRIGHT		= BIT(3),		// allways draw full intensity
+	RF_DEPTHHACK		= BIT(4),		// for view weapon Z crunching
+	RF_TRANSLUCENT		= BIT(5),
+	RF_FRAMELERP		= BIT(6),
+	RF_BEAM				= BIT(7),
+	RF_CUSTOMSKIN		= BIT(8),		// skin is an index in image_precache
+	RF_GLOW				= BIT(9),		// pulse lighting for bonus items
+	RF_SHELL_RED		= BIT(10),
+	RF_SHELL_GREEN		= BIT(11),
+	RF_SHELL_BLUE		= BIT(12),		//	4096
 
-//ROGUE
-#define RF_IR_VISIBLE		0x00008000		// 32768
-#define	RF_SHELL_DOUBLE		0x00010000		// 65536
-#define	RF_SHELL_HALF_DAM	0x00020000
-#define RF_USE_DISGUISE		0x00040000
-//ROGUE
+	RF_RESERVE0			= BIT(13),		//	8192	
+	RF_RESERVE1			= BIT(14),		//	16384
+	//ROGUE
+	RF_IR_VISIBLE		= BIT(15),		// 32768
+	RF_SHELL_DOUBLE		= BIT(16),		// 65536
+	RF_SHELL_HALF_DAM	= BIT(17),
+	RF_USE_DISGUISE		= BIT(18),
+
+	//q2xp
+	RF_NOSHADOW			= BIT(19),
+	RF_CAMERAMODEL2		= BIT(20),
+	RF_SHELL_GOD		= BIT(21),
+	RF_NOCULL			= BIT(22),
+	RF_BFG_SPRITE		= BIT(23),
+	RF_DISTORT			= BIT(24)
+}renderFx_t;
 
 
 // player_state_t->refdef flags
-#define	RDF_UNDERWATER		1		// warp the screen as apropriate
-#define RDF_NOWORLDMODEL	2		// used for player configuration screen
-//ROGUE
-#define	RDF_IRGOGGLES		4
-#define RDF_UVGOGGLES		8
-//ROGUE
-
-// BEEFQUAKE
-#define RDF_NOCLEAR			16
-// BEEFQUAKE
-#define RDF_PAIN            32
-#define RDF_WATER			64
-#define RDF_LAVA			128
-#define RDF_SLIME			256
-
-
+typedef enum {
+	RDF_UNDERWATER		= BIT(0),		// warp the screen as apropriate
+	RDF_NOWORLDMODEL	= BIT(1),		// used for player configuration screen
+	//ROGUE
+	RDF_IRGOGGLES		= BIT(2),
+	RDF_UVGOGGLES		= BIT(3),
+	// BEEFQUAKE
+	RDF_NOCLEAR			= BIT(4),
+	// q2xp
+	RDF_PAIN			= BIT(5),
+	RDF_WATER			= BIT(6),
+	RDF_LAVA			= BIT(7),
+	RDF_SLIME			= BIT(8),
+	RDF_NOWORLDMODEL2	= BIT(9)
+}refdefFlags;
 
 
 //
@@ -1085,34 +1099,37 @@ typedef enum {
 
 
 // dmflags->value flags
-#define	DF_NO_HEALTH		0x00000001	// 1
-#define	DF_NO_ITEMS			0x00000002	// 2
-#define	DF_WEAPONS_STAY		0x00000004	// 4
-#define	DF_NO_FALLING		0x00000008	// 8
-#define	DF_INSTANT_ITEMS	0x00000010	// 16
-#define	DF_SAME_LEVEL		0x00000020	// 32
-#define DF_SKINTEAMS		0x00000040	// 64
-#define DF_MODELTEAMS		0x00000080	// 128
-#define DF_NO_FRIENDLY_FIRE	0x00000100	// 256
-#define	DF_SPAWN_FARTHEST	0x00000200	// 512
-#define DF_FORCE_RESPAWN	0x00000400	// 1024
-#define DF_NO_ARMOR			0x00000800	// 2048
-#define DF_ALLOW_EXIT		0x00001000	// 4096
-#define DF_INFINITE_AMMO	0x00002000	// 8192
-#define DF_QUAD_DROP		0x00004000	// 16384
-#define DF_FIXED_FOV		0x00008000	// 32768
+typedef enum {
+	DF_NO_HEALTH			= BIT(0),	// 1
+	DF_NO_ITEMS				= BIT(1),	// 2
+	DF_WEAPONS_STAY			= BIT(2),	// 4
+	DF_NO_FALLING			= BIT(3),	// 8
+	DF_INSTANT_ITEMS		= BIT(4),	// 16
+	DF_SAME_LEVEL			= BIT(5),	// 32
+	DF_SKINTEAMS			= BIT(6),	// 64
+	DF_MODELTEAMS			= BIT(7),	// 128
+	DF_NO_FRIENDLY_FIRE		= BIT(8),	// 256
+	DF_SPAWN_FARTHEST		= BIT(9),	// 512
+	DF_FORCE_RESPAWN		= BIT(10),	// 1024
+	DF_NO_ARMOR				= BIT(11),	// 2048
+	DF_ALLOW_EXIT			= BIT(12),	// 4096
+	DF_INFINITE_AMMO		= BIT(13),	// 8192
+	DF_QUAD_DROP			= BIT(14),	// 16384
+	DF_FIXED_FOV			= BIT(15),	// 32768
 
-// RAFAEL
-#define	DF_QUADFIRE_DROP	0x00010000	// 65536
+	// RAFAEL
+	DF_QUADFIRE_DROP		= BIT(16),	// 65536
 
-//ROGUE
-#define DF_NO_MINES			0x00020000
-#define DF_NO_STACK_DOUBLE	0x00040000
-#define DF_NO_NUKES			0x00080000
-#define DF_NO_SPHERES		0x00100000
-//ROGUE
-#define DF_FLASHLIGHT			0x00800000
-#define DF_UT_DOUBLE_JUMP	0x01000000
+	//ROGUE
+	DF_NO_MINES				= BIT(17),
+	DF_NO_STACK_DOUBLE		= BIT(18),
+	DF_NO_NUKES				= BIT(19),
+	DF_NO_SPHERES			= BIT(20),
+
+	// q2xp
+	DF_FLASHLIGHT			= BIT(21),
+	DF_UT_DOUBLE_JUMP		= BIT(22)
+}dmFlags_t;
 /*
 ROGUE - VERSIONS
 1234	08/13/1998		Activision
