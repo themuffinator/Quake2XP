@@ -782,9 +782,9 @@ void CL_AddPacketEntities (frame_t * frame) {
 					cent->prev.origin[i]);
 			}
 		}
-
-
-		// tweak the color of beams
+		//==================
+		// guard lasers code
+		//==================
 		if (renderfx & RF_BEAM) {
 			cparticle_t	*p;
 			if (!free_particles)
@@ -796,10 +796,11 @@ void CL_AddPacketEntities (frame_t * frame) {
 			p->orient = 0;
 			p->flags = PARTICLE_OVERBRIGHT;
 			p->flags |= PARTICLE_STRETCH;
+			p->flags |= PARTICLE_DISTORT;
 			p->time = cl.time;
 			p->endTime = cl.time + 1;
-			p->sFactor = GL_ONE;
-			p->dFactor = GL_ONE;
+			p->sFactor = GL_SRC_ALPHA;
+			p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
 			VectorClear (p->accel);
 			VectorClear (p->vel);
 			p->alpha = 1;
@@ -815,8 +816,8 @@ void CL_AddPacketEntities (frame_t * frame) {
 			p->colorVel[2] = 0;
 
 			p->type = PT_BEAM;
-			p->size = 4;
-			p->sizeVel = 4;
+			p->size = 4.0;
+			p->sizeVel = 0.0;
 			VectorCopy (s1->origin, p->org);
 			VectorSubtract (s1->old_origin, s1->origin, p->length);
 			ent.alpha = 0;

@@ -187,7 +187,8 @@ image_t	*cinMap;
 
 image_t *r_particleTexture[PT_MAX];
 image_t *r_decalTexture[DECAL_MAX];
-image_t	*r_railCoreNormal;
+image_t	* r_rail_normal;
+image_t* r_laser_normal;
 
 image_t *r_flare;
 
@@ -377,9 +378,7 @@ cvar_t	*r_hudLighting;
 cvar_t	*r_bump2D;
 
 cvar_t	*r_filmFilter;
-cvar_t	*r_filmFilterNoiseIntens;
-cvar_t	*r_filmFilterScratchIntens;
-cvar_t	*r_filmFilterVignetIntens;
+cvar_t	*r_filmFilterVignetSize;
 
 cvar_t	*r_fixFovStrength; // 0.0 = no hi-fov perspective correction
 cvar_t	*r_fixFovDistroctionRatio; // 0.0 = cylindrical distortion ratio. 1.0 = spherical
@@ -1039,7 +1038,7 @@ glslProgram_t		*genericProgram;
 glslProgram_t		*cinProgram;
 glslProgram_t		*loadingProgram;
 glslProgram_t		*fxaaProgram;
-glslProgram_t		*filmGrainProgram;
+glslProgram_t		*filmicFxProgram;
 glslProgram_t		*nullProgram;
 glslProgram_t		*lutProgram;
 glslProgram_t		*whiteBalanceProgram;

@@ -604,7 +604,7 @@ void VID_MenuInit (void) {
 		"[4096 2160][1.89:1 DCI 4K]",
 		"[Custom]", 0 };
 #endif
-	static char* parallax_names[] = { "off", "Parallax Mapping", "Relief Mapping", "Crytek Parallax Occusion Mapping", 0 };
+	static char* parallax_names[] = { "off", "Parallax Mapping", "Relief Mapping", 0 };
 	static char	*yesno_names[] = { "off", "yes", 0 };
 	static char	*adaptive_vc[] = { "off", "standart", "adaptive", 0 };
 	static char* customScreenRes[] = { "Custom Window Resolution", 0 };
@@ -761,7 +761,7 @@ void VID_MenuInit (void) {
 	s_parallax_box.generic.y = 80 * ui_fontScale->value;
 	s_parallax_box.generic.name = "Parallax Mapping";
 	s_parallax_box.itemnames = parallax_names;
-	s_parallax_box.curInteger = clamp(r_parallaxMapping->integer, 0, 3);
+	s_parallax_box.curInteger = clamp(r_parallaxMapping->integer, 0, 2);
 	s_parallax_box.generic.callback = ParallaxCallback;
 	s_parallax_box.generic.statusbar = "Virtual Displacement Mapping";
 
@@ -852,11 +852,11 @@ void VID_MenuInit (void) {
 	s_film_grain.generic.type = MTYPE_SPINCONTROL;
 	s_film_grain.generic.x = 0;
 	s_film_grain.generic.y = 190 * ui_fontScale->value;
-	s_film_grain.generic.name = "Cinematic filter";
+	s_film_grain.generic.name = "Filmic FX";
 	s_film_grain.itemnames = yesno_names;
 	s_film_grain.curInteger = r_filmFilter->integer;
 	s_film_grain.generic.callback = filmCallback;
-	s_film_grain.generic.statusbar = "Use Cinematic Film Effect noise, vignet and scratches";
+	s_film_grain.generic.statusbar = "Chromatic Abberation, Lens Distortion Add Vignet Filters";
 
 	s_fxaa_box.generic.type = MTYPE_SPINCONTROL;
 	s_fxaa_box.generic.x = 0;

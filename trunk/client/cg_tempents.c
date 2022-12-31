@@ -770,12 +770,12 @@ void CL_ParseTEnt (void) {
 			MSG_ReadDir (&net_message, dir);
 			color = MSG_ReadByte (&net_message);
 
-			CL_AddDecalToScene (pos, dir,
+	/*		CL_AddDecalToScene(pos, dir,
 				1, 1, 0, 1,
 				0, -0.1, 0, 1,
 				3, 2000,
 				DECAL_BLASTER, 0, frand () * 360,
-				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 			CL_LaserParticle2 (pos, dir, color, cnt);
 			break;
 

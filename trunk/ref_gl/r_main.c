@@ -1341,6 +1341,7 @@ void R_RegisterCvars(void)
 	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.2", CVAR_ARCHIVE);
 
 	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "0", 0);
+	r_hdrAutoExposure->help = "buggy feature, don't turn it on\n";
 	r_hdrKey =							Cvar_Get("r_hdrKey", "0.015", 0);
 	r_hdrMinLuminance =					Cvar_Get("r_hdrMinLuminance", "0.005", 0);
 	r_hdrMaxLuminance =					Cvar_Get("r_hdrMaxLuminance", "300.0", 0);
@@ -1425,9 +1426,7 @@ void R_RegisterCvars(void)
 	r_radialBlurFov =                   Cvar_Get("r_radialBlurFov", "30", CVAR_ARCHIVE);
 	
 	r_filmFilter = 						Cvar_Get("r_filmFilter", "0", CVAR_ARCHIVE);
-	r_filmFilterNoiseIntens =			Cvar_Get("r_filmFilterNoiseIntens", "0.03", CVAR_ARCHIVE);
-	r_filmFilterScratchIntens =			Cvar_Get("r_filmFilterScratchIntens", "0.4", CVAR_ARCHIVE);
-	r_filmFilterVignetIntens =			Cvar_Get("r_filmFilterVignetIntens", "0.35", CVAR_ARCHIVE);
+	r_filmFilterVignetSize =			Cvar_Get("r_filmFilterVignetSize", "0.4", CVAR_ARCHIVE);
 
 	r_glDebugOutput =					Cvar_Get("r_glDebugOutput", "0", 0);
 	r_glMajorVersion =					Cvar_Get("r_glMajorVersion", "4", CVAR_ARCHIVE);

@@ -54,7 +54,7 @@ int SortPart (particle_t *a, particle_t *b) {
 
 void R_DrawParticles (void) {
 	particle_t *p;
-	uint64		texId, texture = 0;
+	uint64		texId, bumpId, texture = 0;
 	uint		flagId, flags = 0;
 	int			i, len, loc, partVert = 0, index = 0;
 	vec3_t		point, width;
@@ -64,6 +64,7 @@ void R_DrawParticles (void) {
 	vec3_t		oldOrigin;
 	float		scale, r, g, b, a;
 	float		c, d, s;
+	float		scroll = 0.0;
 	mat4_t		m;
 
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
@@ -84,7 +85,6 @@ void R_DrawParticles (void) {
 
 	GL_SetBindlessTexture(U_TMU1, r_linearDepth->handle);
 	GL_SetBindlessTexture(U_TMU2, r_hdrScreenCopy->handle);
-	GL_SetBindlessTexture(U_TMU3, r_distort->handle);
 
 	qglUniformMatrix4fv	(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv	(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
@@ -104,98 +104,122 @@ void R_DrawParticles (void) {
 
 			case PT_BUBBLE:
 				texId = r_particleTexture[PT_BUBBLE]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_FLY:
 				texId = fly[((int)(r_newrefdef.time * 10)) & (MAX_FLY - 1)]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BLOOD:
 				texId = r_particleTexture[PT_BLOOD]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BLOOD2:
 				texId = r_particleTexture[PT_BLOOD2]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BLASTER:
 				texId = r_particleTexture[PT_BLASTER]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_SMOKE:
 				texId = r_particleTexture[PT_SMOKE]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_SPLASH:
 				texId = r_particleTexture[PT_SPLASH]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_SPARK:
 				texId = r_particleTexture[PT_SPARK]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BEAM:
 				texId = r_particleTexture[PT_BEAM]->handle;
+				bumpId = r_laser_normal->handle;
 				break;
 
 			case PT_SPIRAL:
 				texId = r_particleTexture[PT_SPIRAL]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_FLAME:
 				texId = flameanim[((int)((r_newrefdef.time - p->time) * 10)) % MAX_FLAMEANIM]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BLOODSPRAY:
 				texId = r_blood[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_xBLOODSPRAY:
 				texId = r_xblood[((int)((r_newrefdef.time - p->time) * 15)) % MAX_BLOOD]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_EXPLODE:
 				texId = r_explode[((int)((r_newrefdef.time - p->time) * 20)) % MAX_EXPLODE]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_WATERPULME:
 				texId = r_particleTexture[PT_WATERPULME]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_WATERCIRCLE:
 				texId = r_particleTexture[PT_WATERCIRCLE]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BLOODDRIP:
 				texId = r_particleTexture[PT_BLOODDRIP]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BLOODMIST:
 				texId = r_particleTexture[PT_BLOODMIST]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BLASTER_BOLT:
 				texId = r_particleTexture[PT_BLASTER_BOLT]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BFG_BALL:
 				texId = r_particleTexture[PT_BFG_BALL]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BFG_EXPL:
 				texId = r_bfg_expl[((int)((r_newrefdef.time - p->time) * 20)) % MAX_BFG_EXPL]->handle;
+				bumpId = r_defBump->handle;
 				break;
 			
 			case PT_BFG_EXPL2:
 				texId = r_particleTexture[PT_BFG_EXPL2]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_BFG_LASER:
 				texId = r_particleTexture[PT_BFG_LASER]->handle;
+				bumpId = r_defBump->handle;
 				break;
 
 			case PT_RAILBEAM:
 				texId = r_particleTexture[PT_RAILBEAM]->handle;
+				bumpId = r_distort->handle;
 				break;
 
 			default:
@@ -255,12 +279,25 @@ void R_DrawParticles (void) {
 			}else
 				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)m);
 
+			GL_SetBindlessTexture(U_TMU3, bumpId);
+
 			if (p->flags & PARTICLE_DISTORT) {
 				glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 				qglUniform1i(U_PARAM_INT_0, 1); 
-			} else
+				
+				if (p->type == PT_BEAM) {
+					scroll = -64 * ((r_newrefdef.time / 500.0) - (int)(r_newrefdef.time / 500.0));
+					if (scroll == 0.0)
+						scroll = -64.0;
+					qglUniform1f(U_SCROLL, scroll);
+					qglUniform1i(U_PARAM_INT_1, 1);
+				}
+			}
+			else {
 				qglUniform1i(U_PARAM_INT_0, 0);
-
+				qglUniform1i(U_PARAM_INT_1, 0);
+				qglUniform1f(U_SCROLL, 0.0);
+			}
 		}
 
 		r = p->color[0];

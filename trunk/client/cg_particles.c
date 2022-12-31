@@ -705,7 +705,8 @@ void CL_LaserParticle2 (vec3_t org, vec3_t dir, int color, int count) {
 		free_particles = p->next;
 		p->next = active_particles;
 		active_particles = p;
-
+		
+		p->flags = 0;
 		p->flags = PARTICLE_BOUNCE;
 		p->flags |= PARTICLE_FRICTION;
 		p->orient = 0;
@@ -4072,7 +4073,7 @@ void CL_AddLasers (void) {
 
 			p->type = PT_BFG_LASER;
 			p->size = 7.0;
-			p->sizeVel = 7.0;
+			p->sizeVel = 0.0;
 			VectorCopy (l->ent.origin, p->org);
 			VectorSubtract (l->ent.oldorigin, l->ent.origin, p->length);
 

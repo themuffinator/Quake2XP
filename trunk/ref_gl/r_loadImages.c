@@ -424,6 +424,10 @@ void R_InitEngineTextures (void) {
 			r_bfg_expl[i] = r_notexture;
 	}
 
+	r_laser_normal = GL_FindImage("gfx/particles/laser_distort.tga", it_wall);
+	if (!r_laser_normal)
+		r_laser_normal = r_defBump;
+
 	for (i = 0; i < PT_MAX; i++)
 	if (!r_particleTexture[i])
 		r_particleTexture[i] = r_notexture;
@@ -558,9 +562,6 @@ void R_InitEngineTextures (void) {
 	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, 
 								GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
 
-	r_railCoreNormal = GL_FindImage("gfx/railbeamn.tga", it_wall);
-	if (!r_railCoreNormal)
-		r_railCoreNormal = r_defBump;
 }
 
 

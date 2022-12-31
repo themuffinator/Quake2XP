@@ -909,10 +909,10 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
-	Com_Printf ("Load "S_COLOR_YELLOW"film grain program"S_COLOR_WHITE" ");
-	filmGrainProgram = R_FindProgram ("filmGrain", S_DEFAULT);
+	Com_Printf ("Load "S_COLOR_YELLOW"filmicFx program"S_COLOR_WHITE" ");
+	filmicFxProgram = R_FindProgram ("filmicFx", S_DEFAULT);
 
-	if (filmGrainProgram->valid) {
+	if (filmicFxProgram->valid) {
 		Com_Printf ("succeeded\n");
 	}
 	else {

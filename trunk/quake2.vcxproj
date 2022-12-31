@@ -796,8 +796,8 @@
     <None Include="..\baseq2\glsl\cin.vert" />
     <None Include="..\baseq2\glsl\dof.frag" />
     <None Include="..\baseq2\glsl\dof.vert" />
-    <None Include="..\baseq2\glsl\filmGrain.frag" />
-    <None Include="..\baseq2\glsl\filmGrain.vert" />
+    <None Include="..\baseq2\glsl\filmicFx.frag" />
+    <None Include="..\baseq2\glsl\filmicFx.vert" />
     <None Include="..\baseq2\glsl\fxaa.frag" />
     <None Include="..\baseq2\glsl\fxaa.vert" />
     <None Include="..\baseq2\glsl\generic.frag" />

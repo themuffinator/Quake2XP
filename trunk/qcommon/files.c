@@ -428,7 +428,6 @@ of the list so they override previous pack files.
 =================
 */
 
-
 pack_t *FS_LoadZipFile (char *packfile) {
 	pack_t	*pack;
 

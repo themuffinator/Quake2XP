@@ -318,7 +318,7 @@ void R_FilmFilter (void)
 		return;
 	 
 	// setup program
-	GL_BindProgram (filmGrainProgram);
+	GL_BindProgram (filmicFxProgram);
 	qglBindFramebuffer(GL_READ_FRAMEBUFFER, fbo._hdr);
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._tex2d);
 
@@ -330,7 +330,7 @@ void R_FilmFilter (void)
 
 	GL_SetBindlessTexture(U_TMU0,	r_hdrScreenCopy2d->handle);
 	qglUniform2f (U_SCREEN_SIZE,	vid.width, vid.height);
-	qglUniform1f (U_PARAM_FLOAT_0,	r_filmFilterVignetIntens->value);
+	qglUniform1f (U_PARAM_FLOAT_0,	r_filmFilterVignetSize->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad ();
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
