@@ -9,14 +9,14 @@ layout(location = U_PARTICLE_THICKNESS)	uniform float	u_thickness;
 layout(location = U_COLOR_MUL)			uniform float	u_colorScale;
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_PARAM_INT_0)		uniform int		u_distort;
+layout(location = U_PARAM_INT_1)		uniform int		u_scaledNormal;
+layout(location = U_SCROLL)				uniform float	u_scroll;
 
 in float		v_depthS;
 in float		v_depth;
 in vec4			v_color;
 in vec4			v_texCoord0;
 in vec2			v_deformMul;
-
-//#include depth.inc //!#include "include/depth.inc"
 
 void main (void) {
 	vec4 color = texture(u_colorMap, v_texCoord0.st);
@@ -28,23 +28,26 @@ void main (void) {
 
 		if(u_distort == 1){
 			//deform
-			vec2 N = texture(u_deformMap, v_texCoord0.st).xy * 2.0 - 1.0;
-			vec4 normal = texture(u_deformMap, v_texCoord0.st);
+			vec2 scaledTC = v_texCoord0.st;
+			if (u_scaledNormal == 1)
+				scaledTC *=vec2(2.0, 8.0)+ vec2(u_scroll, 0.0);
+
+			vec2 N = texture(u_deformMap, scaledTC.st).xy * 2.0 - 1.0;
 			float A = texture(u_deformMap, v_texCoord0.st).a;
 
 			N *= clamp((depth - v_depth) / 0.01, 0.0, 1.0);
 			N *= v_deformMul * u_viewport.xy;
-	
-			if (A <= 0.01) {
-				discard;
-				return;
-			}
+
 			N *= A;
-			//N *= color.a;
 			N *= softness;
 
-			vec3 deform = texture(u_colorBufferMap, gl_FragCoord.xy + N).xyz;
-			fragData = vec4(deform * color.a, 1.0) + color * v_color * u_colorScale;;
+			vec3 deform;
+			deform.r = texture(u_colorBufferMap, gl_FragCoord.xy + N * 0.85).r;
+			deform.g = texture(u_colorBufferMap, gl_FragCoord.xy + N * 1.00).g;
+			deform.b = texture(u_colorBufferMap, gl_FragCoord.xy + N * 1.15).b;
+  
+			fragData = vec4(deform, A) + color * v_color * u_colorScale;
+			fragData.a = 1.0;
 			return;
 		}
 

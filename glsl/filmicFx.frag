@@ -38,12 +38,13 @@ vec3 SpectrumOffset( float t )
 #define Chromatic_Power 0.075
 #define Chromatic_Samples 12
 
-void ChromaticAberrationPass( inout vec3 color ){
+void main()
+{    
+	vec2 uv = gl_FragCoord.xy / u_screenSize;
+	vec4 color = texture(u_ScreenTex, uv);
 
 	vec3 sum = vec3( 0.0 );
 	vec3 sumColor = vec3( 0.0 );
-
-	vec2 uv = gl_FragCoord.xy / u_screenSize;
 
 	for(int i = 0; i < Chromatic_Samples; i++){
 
@@ -54,16 +55,9 @@ void ChromaticAberrationPass( inout vec3 color ){
 		sumColor += so * texture(u_ScreenTex, BarrelDistortion( uv, ( 0.5 * Chromatic_Power * t ) ) ).rgb;
 	}
 
-	color = ( sumColor / sum );
-}
-
-void main()
-{    
-	vec2 uv = gl_FragCoord.xy / u_screenSize;
-	vec4 color = texture(u_ScreenTex, uv);
-
-	ChromaticAberrationPass(vec3(color));
+	color.rgb = ( sumColor / sum );
 	fragData = color;
+	fragData.a = 1.0;
 
 	float OuterVignetting	= 1.4 - u_vignetSize;
 	float InnerVignetting	= 1.0 - u_vignetSize;

@@ -68,9 +68,6 @@ void main (void) {
 			case 2:
 			texCoord = ReliefMapping(u_Diffuse, v_texCoord, V);
 			break;
-			case 3:
-			texCoord = ParallaxOcclusionMap(u_Diffuse, v_texCoord, V);
-			break;
 		}
 		diffuseMap = texture(u_Diffuse,  texCoord);
 		normalMap.rgb =  normalize(texture(u_NormalMap, texCoord).rgb * 2.0 - 1.0);

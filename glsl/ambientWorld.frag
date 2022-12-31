@@ -45,9 +45,6 @@ void main (void) {
 		case 2: 
 		P = ReliefMapping(u_Diffuse, v_wTexCoord, V);
 		break;
-		case 3:	
-		P = ParallaxOcclusionMap(u_Diffuse, v_wTexCoord, V);
-		break;
 }
 
 	vec3 diffuseMap = texture(u_Diffuse, P).xyz;
