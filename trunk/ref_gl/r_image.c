@@ -152,6 +152,7 @@ void GL_ImageList_f(void)
 {
 	int i;
 	uint totalTexturesSize = 0;
+	uint totalFBSize = 0;
 	image_t *image;
 
 	const char *palstrings[2] = {
@@ -182,9 +183,10 @@ void GL_ImageList_f(void)
 			break;
 		case it_screen:
 			Com_Printf("Frame Buffers");
+			totalFBSize += (image->upload_width * image->upload_height) * 16;
 			break;
 		case it_normal:
-			Com_Printf("Normalmaps");
+			Com_Printf("Bump");
 			break;
 		default:
 			Com_Printf(" ");
@@ -195,6 +197,7 @@ void GL_ImageList_f(void)
 				   image->upload_width, image->upload_height,
 				   palstrings[image->paletted], image->name);
 	}
+	Com_Printf("%i MB total fbo memory\n", totalFBSize >> 20);
 	Com_Printf("%i MB total image memory\n",totalTexturesSize>>20);
 }
 

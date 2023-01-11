@@ -284,6 +284,7 @@ typedef enum {
 	it_pic,
 	it_sky,
 	it_normal,
+	it_pbr,
 	it_mipmap, 
 	it_screen
 } imagetype_t;

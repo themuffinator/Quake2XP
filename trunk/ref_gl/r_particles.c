@@ -89,10 +89,10 @@ void R_DrawParticles (void) {
 	qglUniformMatrix4fv	(U_MVP_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewProjectionMatrix);
 	qglUniformMatrix4fv	(U_MODELVIEW_MATRIX, 1, qfalse, (const float *)r_newrefdef.modelViewMatrix);
 	qglUniformMatrix4fv	(U_PROJ_MATRIX, 1, qfalse, (const float*)r_newrefdef.projectionMatrix);
-	
-	qglUniform1f		(U_REFR_DEFORM_MUL, 1.0);
-	qglUniform2f		(U_SCREEN_SIZE, vid.width, vid.height);
-	qglUniform1i		(U_PARAM_INT_0, 0);
+
+	qglUniform2f	(U_SCREEN_SIZE, vid.width, vid.height);
+	qglUniform1i	(U_PARAM_INT_0, 0);
+	qglUniform1i	(U_PARAM_INT_1, 0);
 
 	qsort (r_newrefdef.particles, r_newrefdef.num_particles, sizeof(particle_t), (int (*)(const void *, const void *))SortPart);
 
@@ -242,6 +242,7 @@ void R_DrawParticles (void) {
 			index = 0;
 
 			GL_SetBindlessTexture(U_TMU0, texId);
+			GL_SetBindlessTexture(U_TMU3, bumpId);
 
 			GL_BlendFunc (p->sFactor, p->dFactor);
 
@@ -256,7 +257,10 @@ void R_DrawParticles (void) {
 				if (p->flags & PARTICLE_SOFT_MIDLE)
 					qglUniform1f(U_PARTICLE_THICKNESS, scale * 0.35);
 				else
-				qglUniform1f (U_PARTICLE_THICKNESS, scale * 0.75); // soft blend scale
+					if (p->flags & PARTICLE_STRETCH)
+						qglUniform1f(U_PARTICLE_THICKNESS, scale * 8.0);
+					else
+						qglUniform1f (U_PARTICLE_THICKNESS, scale * 0.75); // soft blend scale
 
 			if (p->flags & PARTICLE_OVERBRIGHT)
 				qglUniform1f (U_COLOR_MUL, 2.0);
@@ -279,12 +283,10 @@ void R_DrawParticles (void) {
 			}else
 				qglUniformMatrix4fv(U_TEXTURE0_MATRIX, 1, qfalse, (const float *)m);
 
-			GL_SetBindlessTexture(U_TMU3, bumpId);
-
 			if (p->flags & PARTICLE_DISTORT) {
 				glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 				qglUniform1i(U_PARAM_INT_0, 1); 
-				
+
 				if (p->type == PT_BEAM) {
 					scroll = -64 * ((r_newrefdef.time / 500.0) - (int)(r_newrefdef.time / 500.0));
 					if (scroll == 0.0)
@@ -350,8 +352,6 @@ void R_DrawParticles (void) {
 			ParticleIndex[index++] = partVert + 2;
 
 			partVert += 4;
-
-
 		}
 
 		if (p->flags & PARTICLE_SPIRAL) {

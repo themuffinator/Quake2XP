@@ -42,7 +42,7 @@ void Sys_WindowsInfo() {
 //	if (result == S_OK)
 //		Com_Printf("Save Folder:					" S_COLOR_YELLOW "%s\n", my_documents);
 
-	LoadKeyboardLayout("00000409", KLF_ACTIVATE); // eng
+//	LoadKeyboardLayout("00000409", KLF_ACTIVATE); // eng
 //	LoadKeyboardLayout("00000419", KLF_ACTIVATE); //rus
 	HKL currentLayout = GetKeyboardLayout(0);
 	uint kbLang = (uint)currentLayout & 0x0000FFFF;

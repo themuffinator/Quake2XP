@@ -1020,18 +1020,18 @@ void BuildSurfaceNeighbours(msurface_t *surf) {
 	}
 }
 
+
 /*
 ================
 GL_BuildPolygonFromSurface
 ================
 */
+
 void GL_BuildPolygonFromSurface(msurface_t *fa) {
-	int			i, lindex, lnumverts;
-	medge_t *pedges, *r_pedge;
-	int			vertpage;
-	float *vec;
-	float		s, t;
-	glpoly_t *poly;
+	int			i, index, numVerts;
+	medge_t		*pedges, *r_pedge;
+	float		*vec, s, t;
+	glpoly_t	*poly;
 	vec3_t		total;
 	temp_connect_t *tempEdge;
 
@@ -1040,36 +1040,36 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 
 	// reconstruct the polygon
 	pedges = currentmodel->edges;
-	lnumverts = fa->numEdges;
-	vertpage = 0;
+	numVerts = fa->numEdges;
 
 	VectorClear(total);
 	//
 	// draw texture
 	//
-	poly = (glpoly_t *)Hunk_Alloc(sizeof(glpoly_t) + (lnumverts - 4) * VERTEXSIZE * sizeof(float));
+	poly = (glpoly_t *)Hunk_Alloc(sizeof(glpoly_t) + (numVerts - 4) * VERTEXSIZE * sizeof(float));
 	poly->next = fa->polys;
 	poly->flags = fa->flags;
 	fa->polys = poly;
-	poly->numVerts = lnumverts;
+	poly->numVerts = numVerts;
 
-	currentmodel->memorySize += sizeof(glpoly_t) + (lnumverts - 4) * VERTEXSIZE * sizeof(float);
+	currentmodel->memorySize += sizeof(glpoly_t) + (numVerts - 4) * VERTEXSIZE * sizeof(float);
 
 	// reserve space for neighbour pointers
 	// FIXME: pointers don't need to be 4 bytes
-	poly->neighbours = (glpoly_t **)Hunk_Alloc(lnumverts * 4);
+	poly->neighbours = (glpoly_t **)Hunk_Alloc(numVerts * 4);
 
-	for (i = 0; i < lnumverts; i++) {
-		lindex = currentmodel->surfEdges[fa->firstedge + i];
+	for (i = 0; i < numVerts; i++) {
+		index = currentmodel->surfEdges[fa->firstedge + i];
 
-		if (lindex > 0) {
-			r_pedge = &pedges[lindex];
+		if (index > 0) {
+			r_pedge = &pedges[index];
 			vec = currentmodel->vertexes[r_pedge->v[0]].position;
 		}
 		else {
-			r_pedge = &pedges[-lindex];
+			r_pedge = &pedges[-index];
 			vec = currentmodel->vertexes[r_pedge->v[1]].position;
 		}
+
 		s = DotProduct(vec,
 			fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3];
 		s /= fa->texInfo->image->width;
@@ -1101,8 +1101,44 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 		poly->verts[i][5] = s;
 		poly->verts[i][6] = t;
 
+		// unsmoothed tbn
+		vec3_t tangent, binormal, normal, tmp;
+
+		if (!(fa->flags & MSURF_PLANEBACK))
+			VectorCopy(fa->plane->normal, normal);
+		else
+			VectorNegate(fa->plane->normal, normal);
+
+		CrossProduct(normal, fa->texInfo->vecs[0], tmp);
+		CrossProduct(normal, tmp, tangent);
+		VectorNormalize(tangent);
+		if (DotProduct(tangent, fa->texInfo->vecs[0]) < 0.0)
+			VectorInverse(tangent);
+
+		CrossProduct(normal, fa->texInfo->vecs[1], tmp);
+		CrossProduct(normal, tmp, binormal);
+		VectorNormalize(binormal);
+		if (DotProduct(binormal, fa->texInfo->vecs[1]) < 0.0)
+			VectorInverse(binormal);
+
+		VectorNormalize(normal);
+		VectorNormalize(tangent);
+		VectorNormalize(binormal);
+
+		poly->verts[i][7] = normal[0];
+		poly->verts[i][8] = normal[1];
+		poly->verts[i][9] = normal[2];
+
+		poly->verts[i][10] = tangent[0];
+		poly->verts[i][11] = tangent[1];
+		poly->verts[i][12] = tangent[2];
+
+		poly->verts[i][13] = binormal[0];
+		poly->verts[i][14] = binormal[1];
+		poly->verts[i][15] = binormal[2];
+
 		// Store edge data for shadow volumes
-		tempEdge = tempEdges + abs(lindex);
+		tempEdge = tempEdges + abs(index);
 		if (tempEdge->used < 2) {
 			tempEdge->poly[tempEdge->used] = poly;
 			tempEdge->used++;
@@ -1112,9 +1148,9 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 
 	}
 
-	poly->numVerts = lnumverts;
+	poly->numVerts = numVerts;
 
-	VectorScale(total, 1.0f / (float)lnumverts, total);
+	VectorScale(total, 1.0f / (float)numVerts, total);
 
 	fa->c_s =
 		(DotProduct(total, fa->texInfo->vecs[0]) + fa->texInfo->vecs[0][3])
@@ -1287,7 +1323,7 @@ void Mod_BuildVertexCache() {
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
-
+void Mod_UpdateLoadingBar(float percent, char* text);
 void Mod_LoadFaces(lump_t * l) {
 	dface_t		*in;
 	msurface_t *out;
@@ -1388,7 +1424,11 @@ void Mod_LoadFaces(lump_t * l) {
 	}
 
 	// Build TBN for smoothing bump mapping (Berserker)
-	GL_BuildTBN(count);
+//	if (r_bspSmoothTbn->integer) {
+//		Mod_UpdateLoadingBar(51.0, "Calc Tangent Space");
+//		GL_BuildTBN(count);
+//	}
+
 	GL_EndBuildingLightmaps();
 
 	// calc neighbours for shadow volumes
@@ -1405,46 +1445,48 @@ void Mod_LoadFaces(lump_t * l) {
 
 void GL_BuildTBN(int count) {
 	int			ci, cj, i, j;
-	float		*vi, *vj;
-	msurface_t	*si, *sj;
-	vec3_t		ni, nj;
+	float		*v1, *v2;
+	msurface_t	*s1, *s2;
+	vec3_t		n1, n2;
 
 	for (i = 0; i < count; i++) {
-		si = &currentmodel->surfaces[i];
+		s1 = &currentmodel->surfaces[i];
 
-		if (si->texInfo->flags & (SURF_SKY | SURF_NODRAW))
+		if (s1->texInfo->flags & (SURF_SKY | SURF_NODRAW))
 			continue;
 
-		vi = si->polys->verts[0];
+		v1 = s1->polys->verts[0];
 
-		for (ci = 0; ci < si->numEdges; ci++, vi += VERTEXSIZE)
-			vi[7] = vi[8] = vi[9] = vi[10] = vi[11] = vi[12] = vi[13] = vi[14] = vi[15] = 0;
+		for (ci = 0; ci < s1->numEdges; ci++, v1 += VERTEXSIZE)
+			v1[7] = v1[8] = v1[9] = v1[10] = v1[11] = v1[12] = v1[13] = v1[14] = v1[15] = 0.0;
 
-		if (si->flags & MSURF_PLANEBACK)
-			VectorNegate(si->plane->normal, ni);
+		if (s1->flags & MSURF_PLANEBACK)
+			VectorNegate(s1->plane->normal, n1);
 		else
-			VectorCopy(si->plane->normal, ni);
+			VectorCopy(s1->plane->normal, n1);
 
 		for (j = 0; j < count; j++) {
-			sj = &currentmodel->surfaces[j];
+			s2 = &currentmodel->surfaces[j];
 
-			if (!(sj->texInfo->flags & (SURF_SKY | SURF_NODRAW))) {
+			if (!(s2->texInfo->flags & (SURF_SKY | SURF_NODRAW))) {
 
-				if (sj->flags & MSURF_PLANEBACK)
-					VectorNegate(sj->plane->normal, nj);
+				if (s2->flags & MSURF_PLANEBACK)
+					VectorNegate(s2->plane->normal, n2);
 				else
-					VectorCopy(sj->plane->normal, nj);
+					VectorCopy(s2->plane->normal, n2);
 
-				if (DotProduct(ni, nj) >= bspSmoothAngle) {
-					vi = si->polys->verts[0];
-					for (ci = 0; ci < si->numEdges; ci++, vi += VERTEXSIZE) {
-						vj = sj->polys->verts[0];
-						for (cj = 0; cj < sj->numEdges; cj++, vj += VERTEXSIZE) {
+				if (DotProduct(n1, n2) >= bspSmoothAngle) {
+					v1 = s1->polys->verts[0];
 
-							if (VectorCompare(vi, vj)) {
-								vi[7] += nj[0];
-								vi[8] += nj[1];
-								vi[9] += nj[2];
+					for (ci = 0; ci < s1->numEdges; ci++, v1 += VERTEXSIZE) {
+						v2 = s2->polys->verts[0];
+
+						for (cj = 0; cj < s2->numEdges; cj++, v2 += VERTEXSIZE) {
+
+							if (VectorCompare(v1, v2)) {
+								v1[7] += n2[0];
+								v1[8] += n2[1];
+								v1[9] += n2[2];
 							}
 						}
 					}
@@ -1452,58 +1494,56 @@ void GL_BuildTBN(int count) {
 			}
 		}
 
-		vi = si->polys->verts[0];
-		for (ci = 0; ci < si->numEdges; ci++, vi += VERTEXSIZE) {
+		v1 = s1->polys->verts[0];
+		for (ci = 0; ci < s1->numEdges; ci++, v1 += VERTEXSIZE) {
 			vec3_t normal, biTangent, tmp;
-			VectorSet(normal, vi[7], vi[8], vi[9]);
+			VectorSet(normal, v1[7], v1[8], v1[9]);
 			VectorNormalize(normal);
 
-			if (DotProduct(normal, ni) < bspSmoothAngle) {
+			if (DotProduct(normal, n1) < bspSmoothAngle) {
 				vec3_t out;
-				VectorAdd(normal, ni, out);
+				VectorAdd(normal, n1, out);
 				VectorNormalize(out);
-				vi[7] = out[0];
-				vi[8] = out[1];
-				vi[9] = out[2];
+				v1[7] = out[0];
+				v1[8] = out[1];
+				v1[9] = out[2];
 			}
 			else {
-				vi[7] = normal[0];
-				vi[8] = normal[1];
-				vi[9] = normal[2];
+				v1[7] = normal[0];
+				v1[8] = normal[1];
+				v1[9] = normal[2];
 			}
-
-			CrossProduct(normal, si->texInfo->vecs[0], tmp);
+			
+			CrossProduct(normal, s1->texInfo->vecs[0], tmp);
 			CrossProduct(normal, tmp, biTangent);
 			VectorNormalize(biTangent);
-			if (DotProduct(biTangent, si->texInfo->vecs[0]) < 0.0) {
-				vi[10] = -biTangent[0];
-				vi[11] = -biTangent[1];
-				vi[12] = -biTangent[2];
+			if (DotProduct(biTangent, s1->texInfo->vecs[0]) < 0.0) {
+				v1[10] = -biTangent[0];
+				v1[11] = -biTangent[1];
+				v1[12] = -biTangent[2];
 			}
 			else {
-				vi[10] = biTangent[0];
-				vi[11] = biTangent[1];
-				vi[12] = biTangent[2];
+				v1[10] = biTangent[0];
+				v1[11] = biTangent[1];
+				v1[12] = biTangent[2];
 			}
 
-			CrossProduct(normal, si->texInfo->vecs[1], tmp);
+			CrossProduct(normal, s1->texInfo->vecs[1], tmp);
 			CrossProduct(normal, tmp, biTangent);
 			VectorNormalize(biTangent);
-			if (DotProduct(biTangent, si->texInfo->vecs[1]) < 0.0) {
-				vi[13] = -biTangent[0];
-				vi[14] = -biTangent[1];
-				vi[15] = -biTangent[2];
+			if (DotProduct(biTangent, s1->texInfo->vecs[1]) < 0.0) {
+				v1[13] = -biTangent[0];
+				v1[14] = -biTangent[1];
+				v1[15] = -biTangent[2];
 			}
 			else {
-				vi[13] = biTangent[0];
-				vi[14] = biTangent[1];
-				vi[15] = biTangent[2];
+				v1[13] = biTangent[0];
+				v1[14] = biTangent[1];
+				v1[15] = biTangent[2];
 			}
 		}
 	}
 }
-
-
 
 /*
 =================

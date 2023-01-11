@@ -777,6 +777,12 @@ void CL_ParseTEnt (void) {
 				DECAL_BLASTER, 0, frand () * 360,
 				GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 			CL_LaserParticle2 (pos, dir, color, cnt);
+
+			vec3_t rgb;
+			rgb[0] = cl_indexPalette[color][0];
+			rgb[1] = cl_indexPalette[color][1];
+			rgb[2] = cl_indexPalette[color][2];
+			CL_ParticleSmoke2(pos, dir, rgb[0], rgb[1], rgb[2], 16, qtrue);
 			break;
 
 			// RAFAEL
@@ -866,9 +872,6 @@ void CL_ParseTEnt (void) {
 				S_StartSound (pos, 0, 0, cl_sfx_watrexp, 1, ATTN_EXPLOSION, 0);
 			else
 				S_StartSound (pos, 0, 0, cl_sfx_grenexp, 1, ATTN_EXPLOSION, 0);
-
-
-
 			break;
 
 			// RAFAEL

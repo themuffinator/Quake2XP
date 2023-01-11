@@ -1402,7 +1402,7 @@ void train_wait (edict_t *self) {
 
 		if (!(self->flags & FL_TEAMSLAVE)) {
 			if (self->moveinfo.sound_end)
-				gi.sound (self, CHAN_NO_PHS_ADD + CHAN_VOICE, self->moveinfo.sound_end, 1, ATTN_STATIC, 0);
+				gi.sound (self, CHAN_NO_PHS_ADD + CHAN_VOICE, self->moveinfo.sound_end, 1, ATTN_MEDIUM, 0);
 			self->s.sound = 0;
 		}
 	}
@@ -1451,7 +1451,7 @@ again:
 
 	if (!(self->flags & FL_TEAMSLAVE)) {
 		if (self->moveinfo.sound_start)
-			gi.sound (self, CHAN_NO_PHS_ADD + CHAN_VOICE, self->moveinfo.sound_start, 1, ATTN_STATIC, 0);
+			gi.sound (self, CHAN_NO_PHS_ADD + CHAN_VOICE, self->moveinfo.sound_start, 1, ATTN_MEDIUM, 0);
 		self->s.sound = self->moveinfo.sound_middle;
 	}
 

@@ -1056,7 +1056,7 @@ void SCR_ShowTexNames() {
 	if (trace.surface->name[0])
 	{
 		char	string[MAX_QPATH];
-		Com_sprintf(string, sizeof(string), "Surface texture: %s", trace.surface->name);
+		Com_sprintf(string, sizeof(string), "Surface texture: %s surf flag %i", trace.surface->name, trace.surface->flags);
 		Draw_StringScaled(0, viddef.height / 2 - 50, 2.0, 2.0, string, qtrue);
 	} 
 

@@ -574,6 +574,7 @@ void R_DrawLightScene (void)
 
 	R_CastBspShadowVolumes();			// bsp and bmodels shadows
 	R_CastAliasShadowVolumes(qtrue);	// player shadow
+	R_CastAliasShadowVolumes(qfalse);   // alias shadows with out player model
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) { 
 		currententity = &r_newrefdef.entities[i];
@@ -601,7 +602,6 @@ void R_DrawLightScene (void)
 			R_DrawMD3MeshLight(qfalse);
 	}
 
-	R_CastAliasShadowVolumes(qfalse);   // alias shadows with out player model
 	R_DrawLightWorld();					// light world
 
 	//brush models light pass
@@ -1403,6 +1403,7 @@ void R_RegisterCvars(void)
 
 	r_debugTbn =						Cvar_Get("r_debugTbn", "0", 0);
 	r_debugTbnLen =						Cvar_Get("r_debugTbnLen", "1.0", 0);
+	r_bspSmoothTbn =					Cvar_Get("r_bspSmoothTbn", "1", CVAR_ARCHIVE);
 
 	r_radiositySpecularScale =			Cvar_Get("r_radiositySpecularScale", "0.3", CVAR_ARCHIVE);
 	r_radiosityNormalMapping =			Cvar_Get("r_radiosityNormalMapping", "1", CVAR_ARCHIVE);

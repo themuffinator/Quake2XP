@@ -192,7 +192,6 @@ void CL_ForceWall (vec3_t start, vec3_t end, int color) {
 
 	VectorScale (vec, 4, vec);
 
-	color &= 0xff;
 	// FIXME: this is a really silly way to have a loop
 	while (len > 0) {
 		len -= 4;
@@ -581,8 +580,6 @@ void CL_MonsterPlasma_Shell (vec3_t origin) {
 	int i, color=0;
 	cparticle_t *p;
 
-
-
 	for (i = 0; i < 40; i++) {
 		if (!free_particles)
 			return;
@@ -687,8 +684,6 @@ void CL_Nukeblast (cl_sustain_t * self) {
 
 	ratio = 1.0 - (((float)self->endtime - (float)cl.time) / 1000.0);
 
-
-
 	for (i = 0; i < 700; i++) {
 		if (!free_particles)
 			return;
@@ -738,8 +733,6 @@ void CL_WidowSplash (vec3_t org) {
 	cparticle_t *p;
 	vec3_t dir;
 
-
-
 	for (i = 0; i < 256; i++) {
 		if (!free_particles)
 			return;
@@ -760,14 +753,12 @@ void CL_WidowSplash (vec3_t org) {
 		p->color[1] = cl_indexPalette[color][1];
 		p->color[2] = cl_indexPalette[color][2];
 
-
 		p->colorVel[0] = 0;
 		p->colorVel[1] = 0;
 		p->colorVel[2] = 0;
 
 		p->size = 1;
 		p->sizeVel = 0;
-
 
 		dir[0] = crand ();
 		dir[1] = crand ();

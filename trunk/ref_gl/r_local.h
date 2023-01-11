@@ -363,6 +363,7 @@ cvar_t	*r_fogEditor;
 
 cvar_t	*r_debugTbn;
 cvar_t	*r_debugTbnLen;
+cvar_t	*r_bspSmoothTbn;
 
 cvar_t	*r_glDebugOutput;
 cvar_t	*r_glMinorVersion;

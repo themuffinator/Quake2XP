@@ -187,7 +187,14 @@ static void LM_UploadBlock () {
 	const int numVecs = loadmodel->useXPLM ? 3 : 1;
 	int i;
 
+	
 	for (i = 0; i < numVecs; i++) {
+		
+		if (gl_lms.handle) { // remove prev lm
+			glMakeTextureHandleNonResidentARB(gl_lms.handle[i]);
+			qglDeleteTextures(1, &gl_lms.texnum[i]);
+		}
+		
 		glCreateTextures(GL_TEXTURE_2D, 1, &gl_lms.texnum[i]);
 
 		glTextureParameteri(gl_lms.texnum[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

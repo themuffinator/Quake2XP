@@ -696,8 +696,6 @@ void CL_LaserParticle2 (vec3_t org, vec3_t dir, int color, int count) {
 	cparticle_t *p;
 	float d;
 
-	color &= 0xff;
-
 	for (i = 0; i < count; i++) {
 		if (!free_particles)
 			return;
@@ -838,7 +836,7 @@ void CL_ParticleSmoke2 (vec3_t org, vec3_t dir, float r, float g, float b,
 
 		p->accel[0] = p->accel[1] = 0;
 		p->accel[2] = 9;
-		p->alpha = 1.0;
+		p->alpha = 0.75;
 
 		p->alphavel = -1.0 / (0.5 + frand () * 0.5);
 
@@ -4076,7 +4074,13 @@ void CL_AddLasers (void) {
 			p->sizeVel = 0.0;
 			VectorCopy (l->ent.origin, p->org);
 			VectorSubtract (l->ent.oldorigin, l->ent.origin, p->length);
-
+			
+			vec3_t tmp;
+			VectorCopy(l->ent.oldorigin, tmp);
+			tmp[2] += l->ent.maxs[2];
+			vec3_t dir;
+			VectorSet(dir, 0.0, 0.0, 1.0);
+			CL_ParticleSmoke2(tmp, dir, p->color[0], p->color[1], p->color[2], 8, qtrue);
 		}
 
 	}
