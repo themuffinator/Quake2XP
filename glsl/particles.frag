@@ -35,7 +35,7 @@ void main (void) {
 			vec2 N = texture(u_deformMap, scaledTC.st).xy * 2.0 - 1.0;
 			float A = texture(u_deformMap, v_texCoord0.st).a;
 
-			N *= clamp((depth - v_depth) / 0.01, 0.0, 1.0);
+			N *= clamp((depth - v_depth) / 1.0, 0.0, 1.0);
 			N *= v_deformMul * u_viewport.xy;
 
 			N *= A;
@@ -48,10 +48,8 @@ void main (void) {
   
 			fragData = vec4(deform, A) + color * v_color * u_colorScale;
 			fragData.a = 1.0;
-			return;
-		}
-
-		fragData = color * v_color * u_colorScale;
+		}else
+			fragData = color * v_color * u_colorScale;
 	
 		if(depth < 0.9999)
 			return;

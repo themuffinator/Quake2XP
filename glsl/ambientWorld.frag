@@ -29,7 +29,7 @@ float	u_specularExp = 16.0;
 
 
 void main (void) {
-
+	
 	vec3 whiteLM = vec3(1.0, 1.0, 1.0);	
 
 	vec3 V = normalize(v_viewVecTS);
@@ -45,9 +45,11 @@ void main (void) {
 		case 2: 
 		P = ReliefMapping(u_Diffuse, v_wTexCoord, V);
 		break;
-}
-
+	}
+	
 	vec3 diffuseMap = texture(u_Diffuse, P).xyz;
+//	diffuseMap.rgb = pow(diffuseMap.rgb, vec3(2.2));
+
 	vec3 glowMap = texture(u_Add, P).xyz;
 	vec3 normalMap = normalize(texture(u_NormalMap, P).rgb * 2.0 - 1.0);
 	float specular = texture(u_NormalMap, P).a;

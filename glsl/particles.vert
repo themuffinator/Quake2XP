@@ -7,7 +7,6 @@ layout(location = U_MVP_MATRIX)			uniform mat4	u_modelViewProjectionMatrix;
 layout(location = U_MODELVIEW_MATRIX)	uniform mat4	u_modelViewMatrix; 
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix; 
 layout(location = U_TEXTURE0_MATRIX)	uniform mat4	u_texRotateMatrix;
-layout(location = U_REFR_DEFORM_MUL)	uniform float	u_deformMul;
 
 out vec4	v_texCoord0;
 out float	v_depthS;
@@ -30,8 +29,7 @@ void main (void) {
 	// compute the deform strength
 	vec2 d = (u_projectionMatrix * positionVS).xw;
 	d.x /= max(d.y, 1.0);
-
-	v_deformMul = min(d.xx, 0.02) * u_deformMul;
+	v_deformMul = min(d.xx, 0.02); // mul by deform mul
 
 	gl_Position = u_modelViewProjectionMatrix * vec4(att_position, 1.0);
 }
