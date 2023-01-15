@@ -1988,9 +1988,9 @@ void CL_BfgBall(vec3_t org) {
 	p->color[1] = 1;
 	p->color[2] = 1;
 
-	p->colorVel[0] = 1;
-	p->colorVel[1] = 1;
-	p->colorVel[2] = 1;
+	p->colorVel[0] = 0;
+	p->colorVel[1] = 0;
+	p->colorVel[2] = 0;
 	p->type = PT_BFG_BALL;
 
 	VectorCopy(org, p->org);
@@ -3736,7 +3736,6 @@ void CL_BfgParticles (entity_t * ent) {
 		}
 	}
 
-
 	ltime = (float)cl.time / 1000.0;
 	for (i = 0; i < NUM_VERTEX_NORMALS; i++) {
 		angle = ltime * avelocities[i][0];
@@ -3762,9 +3761,9 @@ void CL_BfgParticles (entity_t * ent) {
 		p->orient = 0.0f;
 		p->sFactor = GL_SRC_ALPHA;
 		p->dFactor = GL_ONE_MINUS_SRC_ALPHA;
-		p->flags = PARTICLE_OVERBRIGHT;
+		p->flags = 0;
 		p->type = PT_DEFAULT;
-		p->size = 2.0f;
+		p->size = 1.0f;
 		p->sizeVel = 16.0f;
 		p->time = cl.time;
 		p->endTime = cl.time + 20000;
@@ -3792,7 +3791,7 @@ void CL_BfgParticles (entity_t * ent) {
 		p->colorVel[2] = 0.0;
 
 		p->alpha = 1.0 - dist;
-		p->alphavel = -100;
+		p->alphavel = -100.0;
 
 	}
 }

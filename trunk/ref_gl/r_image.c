@@ -1108,10 +1108,15 @@ void GL_FreeUnusedImages(void)
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)
 			continue;			// used this sequence
+
 		if (!image->registration_sequence)
 			continue;			// free image_t slot
+
 		if (image->type == it_pic)
 			continue;			// don't free pics
+
+		if (image->type == it_screen)
+			continue;			// don't free fbos images
 
 		glMakeTextureHandleNonResidentARB(image->handle);
 		// free it
