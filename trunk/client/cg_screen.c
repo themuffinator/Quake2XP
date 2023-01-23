@@ -852,13 +852,12 @@ void SCR_TouchPics (void) {
 	for (j = 0; j < 11; j++)
 		Draw_FindPic(sb_nums_bump[j]);
 
-	if (crosshair->integer) {
-		if (crosshair->integer > 13 || crosshair->integer < 0)
-			crosshair->integer = 13;
+	if (crossHair->integer) {
+		if (crossHair->integer > 8 || crossHair->integer < 0)
+			crossHair->integer = 8;
 
-		Com_sprintf (crosshair_pic, sizeof(crosshair_pic), "chxp%i", (int)(crosshair->value));
-		Draw_GetPicSize (&crosshair_width, &crosshair_height,
-			crosshair_pic);
+		Com_sprintf (crosshair_pic, sizeof(crosshair_pic), "chx%i", (int)(crossHair->value));
+		Draw_GetPicSize (&crosshair_width, &crosshair_height, crosshair_pic);
 
 		if (!crosshair_width)
 			crosshair_pic[0] = 0;

@@ -32,7 +32,6 @@ vec3_t skyaxis;
 vec3_t		SkyVertexArray[MAX_TRIANGLES];
 index_t		skyIndex[MAX_INDICES];
 static int	numSkyVerts, numSkyIdx;
-void IL_LoadImage(char* filename, byte** pic, int* width, int* height, ILenum type);
 
 vec3_t skyclip[6] = {
 	{ 1, 1, 0 }
@@ -482,7 +481,7 @@ void R_GenSkyCubeMap(char* name) {
 		else {
 			Com_sprintf(pathname, sizeof(pathname), "env/%s%s.tga", skyname, cubeSufGL[i]);
 			if (FS_LoadFile(pathname, NULL) != -1)
-				IL_LoadImage(pathname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);			
+				STB_LoadLdr(pathname, &pix[i].pixels, &pix[i].width, &pix[i].height);
 		}
 	}
 

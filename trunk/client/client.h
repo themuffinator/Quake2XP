@@ -205,7 +205,9 @@ cvar_t* cl_pitchspeed;
 cvar_t* cl_anglespeedkey;
 cvar_t* cl_run;
 
-
+cvar_t* crossHair;
+cvar_t* crossHairScale;
+#define CROSSHAIRSIZE 242 //magic
 
 //q2xp stuff
 cvar_t* cl_brass;
@@ -227,7 +229,7 @@ cvar_t* cl_thirdPersonRange;
 cvar_t* cl_blood;
 cvar_t* deathmatch;
 cvar_t* cl_itemsBobbing;
-
+cvar_t* cl_crossHairHealth;
 cvar_t* ui_drawTime;
 cvar_t* ui_drawFPS;
 
@@ -1042,6 +1044,7 @@ image_t *i_main_menu[5],		*i_main_menu_bump[5],
 		*i_main_menu_sel[5],	*i_main_menu_bump_sel[5];
 
 image_t	*i_batteryLevel[6];
+image_t	*i_crossHair[9];
 
 image_t	*i_main_plaque[2], *i_main_logo[2]; // pack color and normal map
 image_t	*i_menuBackground;

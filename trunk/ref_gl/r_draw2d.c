@@ -662,7 +662,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t* gl)
 		GL_Disable(GL_BLEND);
 
 
-	if (strstr(gl->name, "chxp")) { // crosshair hack
+	if (strstr(gl->name, "chx")) { // crosshair hack
 		GL_Enable(GL_BLEND);
 		GL_BlendFunc(GL_ONE, GL_ONE);
 		w = gl->width * sX;
@@ -696,8 +696,13 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t* gl)
 	VA_SetElem2(vertCoord[2], x + w, y + h);
 	VA_SetElem2(vertCoord[3], x, y + h);
 
-	for (int i = 0; i < 4; i++)
-		VA_SetElem4(colorCoord[i], 1.0, 1.0, 1.0, 1.0);
+
+	for (int i = 0; i < 4; i++) {
+		if (strstr(gl->name, "chx"))
+			VA_SetElem4(colorCoord[i], hColor[0], hColor[1], hColor[2], 1.0);
+		else
+			VA_SetElem4(colorCoord[i], 1.0, 1.0, 1.0, 1.0);
+	}
 
 	GL_DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, quadIndeces);
 
@@ -705,7 +710,7 @@ void Draw_ScaledPic(int x, int y, float sX, float sY, image_t* gl)
 	if (!gl->has_alpha)
 		GL_Enable(GL_BLEND);
 
-	if (strstr(gl->name, "chxp"))
+	if (strstr(gl->name, "chx"))
 		GL_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	qglDisableVertexAttribArray(ATT_POSITION);
@@ -718,6 +723,9 @@ void Draw_ScaledBumpPic(int x, int y, float sX, float sY, image_t* gl, image_t* 
 	int w, h;
 	
 	if (!r_bump2D->integer)
+		return;
+
+	if (strstr(gl->name, "chx"))
 		return;
 
 	w = gl->width * sX * gl->picScale_w;

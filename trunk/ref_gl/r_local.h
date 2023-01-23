@@ -51,23 +51,7 @@ typedef void GLvoid;
 #include "r_md3.h"
 
 #ifdef _WIN32
-
 #include "wglext.h"
-#include "imagelib/ilut_config.h"
-#include "imagelib/il.h"
-#include "imagelib/ilu.h"
-#include "imagelib/ilut.h"
-typedef void ILvoid;
-#define _inline inline
-
-#else
-
-#include <IL/il.h>
-#include <IL/ilu.h>
-#include <IL/ilut.h>
-
-typedef void ILvoid;
-#define _inline inline
 #endif
 
 #include "qgl.h"
@@ -299,7 +283,6 @@ cvar_t *vid_ref;
 cvar_t	*r_displayRefresh;
 
 cvar_t	*r_screenShot;
-cvar_t	*r_screenShotJpegQuality;
 
 cvar_t	*r_textureCompression;
 cvar_t	*r_anisotropic;
@@ -408,6 +391,9 @@ float	hdrAverageLuminance;
 float	hdrMaxLuminance;
 float	hdrTime;
 float	hdrKey;
+
+qboolean STB_LoadLdr(const char* name, byte** pic, int* width, int* height);
+qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height);
 
 void R_CreateScreenFbo();
 void CreateHDR64Buffer(void);
@@ -565,7 +551,7 @@ extern float shadelight[3];
 byte Normal2Index(const vec3_t vec);
 extern int	occ_framecount;
 void R_ColorTemperatureCorrection(void);
-void IL_LoadImage(char* filename, byte** pic, int* width, int* height, ILenum type);
+
 image_t* R_CreateTexture(char* texName, uint targetTex,
 	uint intFormat, uint format,
 	uint type, uint width, uint height,

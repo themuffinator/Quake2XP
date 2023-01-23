@@ -1363,7 +1363,6 @@ void R_RegisterCvars(void)
 	r_imageAutoSpecularScale =			Cvar_Get("r_imageAutoSpecularScale", "1", CVAR_ARCHIVE);
 
 	r_screenShot =						Cvar_Get("r_screenShot", "jpg", CVAR_ARCHIVE);
-	r_screenShotJpegQuality =			Cvar_Get("r_screenShotJpegQuality", "99", CVAR_ARCHIVE);
 
 	r_multiSamples =					Cvar_Get("r_multiSamples", "0", CVAR_ARCHIVE);
 	r_fxaa =							Cvar_Get("r_fxaa", "1", CVAR_ARCHIVE);
@@ -1576,7 +1575,7 @@ qboolean R_SetMode(void)
 }
 
 static void DevIL_Init() {
-    static qboolean init = qfalse;
+ /*   static qboolean init = qfalse;
 
     if (init)
         return;
@@ -1595,6 +1594,7 @@ static void DevIL_Init() {
 	Com_Printf ("OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
 
 	init = qtrue;
+	*/
 }
 
 
@@ -2041,7 +2041,6 @@ void R_Shutdown(void)
 	GL_ShutdownImages();
 
 	R_ClearWorldLights();
-	ilShutDown();
 	R_ShutdownPrograms();
 
 	GLimp_Shutdown();

@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "r_local.h"
 
-
 static image_t* r_imageHashTable[IMAGE_HASH_SIZE];
 
 // original Q2 palette
@@ -102,7 +101,7 @@ unsigned d_8to24table[256];
 float d_8to24tablef[256][3];
 
 qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap, qboolean is_sky);
-qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean unScaled);
+qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean unScaled, uint ClampMode);
 
 int upload_width, upload_height;
 qboolean uploaded_paletted;
@@ -116,6 +115,68 @@ int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;
 int gl_filter_max = GL_LINEAR;
 
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "imageLib\stb_image.h"
+
+qboolean STB_LoadLdr(const char* name, byte** pic, int* width, int* height){
+	int		w, h, bbp;
+	byte*	buffer = NULL;
+	byte*	data = NULL;
+
+	int len = FS_LoadFile(name, (void**)&buffer);
+	if (buffer == NULL){
+		Com_DPrintf("%s couldn't read image form %s\n", __func__, name);
+		return qfalse;
+	}
+
+	data = stbi_load_from_memory(buffer, len, &w, &h, &bbp, STBI_rgb_alpha);
+	if (data == NULL)
+	{
+		Com_DPrintf("%s couldn't load data from %s: %s!\n", __func__, name, stbi_failure_reason());
+		FS_FreeFile(buffer);
+		return qfalse;
+	}
+
+	FS_FreeFile(buffer);
+
+	Com_DPrintf("%s() loaded: %s\n", __func__, name);
+
+	*pic = NULL;
+	*pic = data;
+	*width = w;
+	*height = h;
+	return qtrue;
+}
+
+qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height) {
+	int		w, h, bbp;
+	byte* buffer = NULL;
+	float* data = NULL;
+
+	int len = FS_LoadFile(name, (void**)&buffer);
+	if (buffer == NULL) {
+		Com_DPrintf("%s couldn't read image form %s\n", __func__, name);
+		return qfalse;
+	}
+
+	data = stbi_loadf_from_memory(buffer, len, &w, &h, &bbp, STBI_rgb_alpha);
+	if (data == NULL)
+	{
+		Com_DPrintf("%s couldn't load data from %s: %s!\n", __func__, name, stbi_failure_reason());
+		FS_FreeFile(buffer);
+		return qfalse;
+	}
+
+	FS_FreeFile(buffer);
+
+	Com_DPrintf("%s() loaded: %s\n", __func__, name);
+
+	*pic = NULL;
+	*pic = data;
+	*width = w;
+	*height = h;
+	return qtrue;
+}
 
 int CalcMipmapCount(int w, int h)
 {
@@ -152,7 +213,6 @@ void GL_ImageList_f(void)
 {
 	int i;
 	uint totalTexturesSize = 0;
-	uint totalFBSize = 0;
 	image_t *image;
 
 	const char *palstrings[2] = {
@@ -183,7 +243,6 @@ void GL_ImageList_f(void)
 			break;
 		case it_screen:
 			Com_Printf("Frame Buffers");
-			totalFBSize += (image->upload_width * image->upload_height) * 16;
 			break;
 		case it_normal:
 			Com_Printf("Bump");
@@ -197,7 +256,6 @@ void GL_ImageList_f(void)
 				   image->upload_width, image->upload_height,
 				   palstrings[image->paletted], image->name);
 	}
-	Com_Printf("%i MB total fbo memory\n", totalFBSize >> 20);
 	Com_Printf("%i MB total image memory\n",totalTexturesSize>>20);
 }
 
@@ -364,7 +422,7 @@ byte *R_ResampleTexture(const byte* in, int inwidth, int inheight, int outwidth,
 }
 static uint imageIdx;
 
-qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean unScaled)
+qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qboolean unScaled, uint ClampMode)
 {
 	int			samples, intFormat, c, i;
 	byte		*scan;
@@ -409,8 +467,8 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 		if (r_maxTextureSize->integer >= max_size)
 			Cvar_SetInteger("r_maxTextureSize", max_size);
 
-		if (r_maxTextureSize->integer <= 64 && r_maxTextureSize->integer > 0)
-			Cvar_SetInteger("r_maxTextureSize", 64);
+		if (r_maxTextureSize->integer <= 256 && r_maxTextureSize->integer > 0)
+			Cvar_SetInteger("r_maxTextureSize", 256);
 
 		if (r_maxTextureSize->integer)
 			max_size = r_maxTextureSize->integer;
@@ -434,6 +492,9 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 
 	if (scaled_width != width || scaled_height != height)
 		free(scaled);
+
+	glTextureParameteri(imageIdx, GL_TEXTURE_WRAP_S, ClampMode);
+	glTextureParameteri(imageIdx, GL_TEXTURE_WRAP_T, ClampMode);
 
 	if (mipmap)
 	{
@@ -503,7 +564,7 @@ qboolean GL_Upload8(byte * data, int width, int height, qboolean mipmap,
 	}
 
 
-	return GL_Upload32(trans, width, height, mipmap, qtrue);
+	return GL_Upload32(trans, width, height, mipmap, qtrue, GL_REPEAT);
 }
 
 
@@ -629,11 +690,15 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	qboolean unScaled = qfalse;
 	if (image->type == it_mipmap)
 		unScaled = qtrue;
+	
+	uint ClampMode = GL_REPEAT;
+	if (image->type == it_part)
+		ClampMode = GL_CLAMP_TO_EDGE;
 
 		if (bits == 8)
-			image->has_alpha = GL_Upload8(pic, width, height, (image->type != it_sky && image->type != it_pic), image->type == it_sky);
+			image->has_alpha = GL_Upload8(pic, width, height, image->type != it_pic, image->type == it_sky);
 		else 									
-			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, (image->type != it_sky && image->type != it_pic), unScaled);
+			image->has_alpha = GL_Upload32(	(unsigned *) pic, width, height, image->type != it_pic, unScaled, ClampMode);
 					
 		image->upload_width = width;	
 		image->upload_height = height;
@@ -643,6 +708,7 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 		image->sh = 1;
 		image->tl = 0;
 		image->th = 1;
+
 		image->handle = glGetTextureHandleARB(image->texnum);
 		glMakeTextureHandleResidentARB(image->handle);
 		
@@ -653,7 +719,7 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 /*=====================
 DevIL Stuff
 =====================*/
-
+/*
 void LoadImageErrors(void)
 {
 	ILenum Error;
@@ -725,6 +791,7 @@ void IL_LoadImage(char *filename, byte ** pic, int *width, int *height,
 	*height = h;
 	return;
 }
+*/
 
 /*
 ================
@@ -873,11 +940,9 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 
 		image = GL_LoadWal(name);
 
-
-
 	} else if (!strcmp(name + len - 4, ".tga")) {
-		IL_LoadImage(name, &pic, &width, &height, IL_TGA);
-
+	//	IL_LoadImage(name, &pic, &width, &height, IL_TGA);
+		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
@@ -885,27 +950,27 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		
 	}
 
-	else if (!strcmp(name + len - 4, ".dds")) {
+/*	else if (!strcmp(name + len - 4, ".dds")) {
 		IL_LoadImage(name, &pic, &width, &height, IL_DDS);
 
 		if (!pic)
 			return NULL;
 
 		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
-	}
+	}*/
 
 
 	else if (!strcmp(name + len - 4, ".jpg")) {
-		IL_LoadImage(name, &pic, &width, &height, IL_JPG);
-
+	//	IL_LoadImage(name, &pic, &width, &height, IL_JPG);
+		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
 		image = GL_LoadPic(name, pic, width, height, it_pic, 24, Com_HashKey(name));
 	} 
 	else if (!strcmp(name + len - 4, ".png")) {
-		IL_LoadImage(name, &pic, &width, &height, IL_PNG);
-	
+	//	IL_LoadImage(name, &pic, &width, &height, IL_PNG);
+		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
@@ -950,8 +1015,8 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 	}
 
  if (!strcmp(name + len - 4, ".tga")) {
-		IL_LoadImage(name, &pic, &width, &height, IL_TGA);
-
+	//	IL_LoadImage(name, &pic, &width, &height, IL_TGA);
+		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
@@ -959,27 +1024,27 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 
 	}
 
-	else if (!strcmp(name + len - 4, ".dds")) {
+	/*else if (!strcmp(name + len - 4, ".dds")) {
 		IL_LoadImage(name, &pic, &width, &height, IL_DDS);
 
 		if (!pic)
 			return NULL;
 
 		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
-	}
+	}*/
 
 
 	else if (!strcmp(name + len - 4, ".jpg")) {
-		IL_LoadImage(name, &pic, &width, &height, IL_JPG);
-
+		//IL_LoadImage(name, &pic, &width, &height, IL_JPG);
+	 STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
 		image = GL_LoadPic(name, pic, width, height, type, 24, Com_HashKey(name));
 	}
 	else if (!strcmp(name + len - 4, ".png")) {
-		IL_LoadImage(name, &pic, &width, &height, IL_PNG);
-
+	//	IL_LoadImage(name, &pic, &width, &height, IL_PNG);
+		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
 
@@ -1118,8 +1183,8 @@ void GL_FreeUnusedImages(void)
 		if (image->type == it_screen)
 			continue;			// don't free fbos images
 
-		glMakeTextureHandleNonResidentARB(image->handle);
 		// free it
+		glMakeTextureHandleNonResidentARB(image->handle);
 		qglDeleteTextures(1, &image->texnum);
 		memset(image, 0, sizeof(*image));
 	}

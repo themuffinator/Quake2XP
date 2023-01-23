@@ -106,12 +106,17 @@ void CL_InitImages () {
 		i_main_menu_bump_sel[i] = Draw_FindPic(namesBump_sel[i]);
 	}
 
+	for (int i = 0; i < 9; i++)
+		i_crossHair[i] = Draw_FindPic(va("chx%i", i));
+
 	i_batteryLevel[0] = Draw_FindPic("battery_empty");
 	i_batteryLevel[1] = Draw_FindPic("battery_low");
 	i_batteryLevel[2] = Draw_FindPic("battery_medium");
 	i_batteryLevel[3] = Draw_FindPic("battery_full");
 	i_batteryLevel[4] = Draw_FindPic("battery_usb");
 	i_batteryLevel[5] = Draw_FindPic("battery_update");
+	
+
 }
 
 void CL_CacheMenuModels() {

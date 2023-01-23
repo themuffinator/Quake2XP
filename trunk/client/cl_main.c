@@ -1301,6 +1301,8 @@ void CL_InitLocal (void) {
 	cl_gunCollision = Cvar_Get("cl_gunCollision", "2", CVAR_ARCHIVE);
 	com_fullConsole = Cvar_Get("com_fullConsole", "0", CVAR_ARCHIVE);
 
+	cl_crossHairHealth = Cvar_Get("cl_crossHairHealth", "1", CVAR_ARCHIVE);
+
 #ifdef USE_CURL
 	cl_http_proxy = Cvar_Get("cl_http_proxy", "", 0);
 	cl_http_filelists = Cvar_Get("cl_http_filelists", "1", 0);

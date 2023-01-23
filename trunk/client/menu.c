@@ -1058,8 +1058,9 @@ extern cvar_t	*m_inversion;
 #ifdef _WIN32
 extern cvar_t	*in_useXInput;
 #endif
+
 static void CrosshairFunc(void *unused) {
-	Cvar_SetValue("crosshair", s_options_crosshair_box.curInteger);
+	Cvar_SetValue("crossHair", s_options_crosshair_box.curInteger);
 }
 
 
@@ -1124,8 +1125,8 @@ static void ControlsSetMenuItemValues(void) {
 	s_options_invertmouse_box.curInteger = m_pitch->integer < 0;
 #endif
 
-	Cvar_SetValue("crosshair", ClampCvarInteger(0, 13, crosshair->integer));
-	s_options_crosshair_box.curInteger = crosshair->integer;
+	Cvar_SetValue("crossHair", ClampCvarInteger(0, 9, crossHair->integer));
+	s_options_crosshair_box.curInteger = crossHair->integer;
 #ifdef _WIN32
 	Cvar_SetValue("in_useXInput", ClampCvarInteger(0, 1, in_useXInput->integer));
 	s_options_gamepad_box.curInteger = in_useXInput->integer;
@@ -1253,6 +1254,7 @@ static void ConsoleFunc(void *unused) {
 
 static menuslider_s s_aoptions_hudScale_slider;
 static menuslider_s s_aoptions_fontScale_slider;
+static menuslider_s s_aoptions_crossHairScale_slider;
 
 static menulist_s s_aoptions_railSpiral_box;
 static menulist_s s_aoptions_blood_box;
@@ -1265,6 +1267,10 @@ static menulist_s s_aoptions_3dhud_box;
 
 static void UpdateHudScaleFunc(void *unused) {
 	Cvar_SetValue("ui_hudScale", s_aoptions_hudScale_slider.curvalue / 10);
+}
+
+static void UpdateCrossScaleFunc(void* unused) {
+	Cvar_SetValue("crossHairScale", s_aoptions_crossHairScale_slider.curvalue / 10);
 }
 
 static void UpdateFontScaleFunc(void *unused) {
@@ -1295,7 +1301,16 @@ static void Update3dHud(void *unused) {
 	Cvar_SetValue("ui_3dHud", s_aoptions_3dhud_box.curInteger);
 }
 
+void DrawCrossHairPic(void* m) {
 
+	menuaction_s* menu = (menuaction_s*)m;
+
+	int size = CROSSHAIRSIZE * crossHairScale->value;
+	VectorSet(hColor, 1.0, 1.0, 1.0);
+	Draw_ScaledPic((viddef.width * 0.5)-(size * 0.5), (viddef.height * 0.5) -(size * 0.5),
+					crossHairScale->value, crossHairScale->value, i_crossHair[crossHair->integer]);
+
+}
 
 void M_AdvancedInit(void) {
 	static char *yesno_names[] = {
@@ -1303,6 +1318,20 @@ void M_AdvancedInit(void) {
 		"yes",
 		0
 	};
+
+	static char* crosshair_names[] = {
+	"off",
+	"on",
+	"on",
+	"on",
+	"on",
+	"on",
+	"on",
+	"on",
+	"on",
+	0
+	};
+
 
 	unsigned  menu_y = 0;
 
@@ -1322,6 +1351,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_railSpiral_box.generic.callback = UpdateRailSpiralFunc;
 	s_aoptions_railSpiral_box.itemnames = yesno_names;
 	s_aoptions_railSpiral_box.curInteger = Cvar_VariableInteger("cl_railSpiral");
+	s_aoptions_railSpiral_box.curInteger = cl_railSpiral->integer;
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_blood_box.generic.type = MTYPE_SPINCONTROL;
@@ -1331,6 +1361,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_blood_box.generic.callback = UpdateBloodFunc;
 	s_aoptions_blood_box.itemnames = yesno_names;
 	s_aoptions_blood_box.curInteger = Cvar_VariableInteger("cl_blood");
+	s_aoptions_blood_box.curInteger = cl_blood->integer;
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_decals_box.generic.type = MTYPE_SPINCONTROL;
@@ -1340,6 +1371,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_decals_box.generic.callback = UpdateDecalsFunc;
 	s_aoptions_decals_box.itemnames = yesno_names;
 	s_aoptions_decals_box.curInteger = Cvar_VariableInteger("cl_decals");
+	s_aoptions_decals_box.curInteger = cl_decals->integer;
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_3dcam_box.generic.type = MTYPE_SPINCONTROL;
@@ -1349,7 +1381,8 @@ void M_AdvancedInit(void) {
 	s_aoptions_3dcam_box.generic.callback = Update3dCamFunc;
 	s_aoptions_3dcam_box.itemnames = yesno_names;
 	s_aoptions_3dcam_box.curInteger = Cvar_VariableInteger("cl_thirdPepson");
-	menu_y += 20 * ui_fontScale->value;
+	s_aoptions_3dcam_box.curInteger = cl_thirdPerson->integer;
+	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_drawHud_box.generic.type = MTYPE_SPINCONTROL;
 	s_aoptions_drawHud_box.generic.x = 0;
@@ -1358,6 +1391,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_drawHud_box.generic.callback = UpdateHud;
 	s_aoptions_drawHud_box.itemnames = yesno_names;
 	s_aoptions_drawHud_box.curInteger = Cvar_VariableInteger("ui_drawHud");
+	s_aoptions_drawHud_box.curInteger = ui_drawHud->integer;
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_hudScale_slider.generic.type = MTYPE_SLIDER;
@@ -1368,6 +1402,7 @@ void M_AdvancedInit(void) {
 	s_aoptions_hudScale_slider.minvalue = 3;
 	s_aoptions_hudScale_slider.maxvalue = 8;
 	s_aoptions_hudScale_slider.curvalue = Cvar_VariableValue("ui_hudScale") * 10;
+	s_aoptions_hudScale_slider.curvalue = ui_hudScale->value * 10;
 	menu_y += 10 * ui_fontScale->value;
 
 	s_aoptions_3dhud_box.generic.type = MTYPE_SPINCONTROL;
@@ -1379,13 +1414,25 @@ void M_AdvancedInit(void) {
 	s_aoptions_3dhud_box.curInteger = Cvar_VariableInteger("ui_3dHud");
 	menu_y += 10 * ui_fontScale->value;
 
-	s_aoptions_railSpiral_box.curInteger = cl_railSpiral->integer;
-	s_aoptions_blood_box.curInteger = cl_blood->integer;
-	s_aoptions_decals_box.curInteger = cl_decals->integer;
-	s_aoptions_3dcam_box.curInteger = cl_thirdPerson->integer;
+	s_options_crosshair_box.generic.type = MTYPE_SPINCONTROL;
+	s_options_crosshair_box.generic.x = 0;
+	s_options_crosshair_box.generic.y = menu_y;
+	s_options_crosshair_box.generic.name = "Crosshair";
+	s_options_crosshair_box.generic.callback = CrosshairFunc;
+	s_options_crosshair_box.itemnames = crosshair_names;
+	s_options_crosshair_box.generic.statusbarfunc = DrawCrossHairPic;
+	menu_y += 10 * ui_fontScale->value;
 
-	s_aoptions_drawHud_box.curInteger = ui_drawHud->integer;
-	s_aoptions_hudScale_slider.curvalue = ui_hudScale->value * 10;
+	s_aoptions_crossHairScale_slider.generic.type = MTYPE_SLIDER;
+	s_aoptions_crossHairScale_slider.generic.x = 0;
+	s_aoptions_crossHairScale_slider.generic.y = menu_y;
+	s_aoptions_crossHairScale_slider.generic.name = "Crosshair Scale";
+	s_aoptions_crossHairScale_slider.generic.callback = UpdateCrossScaleFunc;
+	s_aoptions_crossHairScale_slider.minvalue = 2;
+	s_aoptions_crossHairScale_slider.maxvalue = 5;
+	s_aoptions_crossHairScale_slider.curvalue = crossHairScale->value * 10;
+	s_aoptions_crossHairScale_slider.generic.statusbarfunc = DrawCrossHairPic;
+	menu_y += 10 * ui_fontScale->value;
 
 	Menu_AddItem(&s_options_menu, (void*)&s_aoptions_railSpiral_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_blood_box);
@@ -1395,9 +1442,9 @@ void M_AdvancedInit(void) {
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_drawHud_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_hudScale_slider);
 	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_3dhud_box);
-
+	Menu_AddItem(&s_options_menu, (void *)&s_options_crosshair_box);
+	Menu_AddItem(&s_options_menu, (void *)&s_aoptions_crossHairScale_slider);
 }
-
 
 
 
@@ -1421,25 +1468,6 @@ void Options_MenuInit(void) {
 		"average",
 		"full",
 		0
-	};
-
-	static char *crosshair_names[] = {
-		"none",
-		"dot",
-		"dot in circle",
-		"cross",
-		"cross1",
-		"q3 style",
-		"cross2",
-		"cross3",
-		"cross4",
-		"cross5",
-		"celtic cross",
-		"wp cross",
-		"sun cross",
-		"wolfsangel cross",
-		0
-
 	};
 
 	static char* not_found[] = {
@@ -1591,13 +1619,6 @@ void Options_MenuInit(void) {
 	s_options_invertmouse_box.generic.callback = InvertMouseFunc;
 	s_options_invertmouse_box.itemnames = yesno_names;
 
-	s_options_crosshair_box.generic.type = MTYPE_SPINCONTROL;
-	s_options_crosshair_box.generic.x = 0;
-	s_options_crosshair_box.generic.y = 130 * ui_fontScale->value;
-	s_options_crosshair_box.generic.name = "Crosshair";
-	s_options_crosshair_box.generic.callback = CrosshairFunc;
-	s_options_crosshair_box.itemnames = crosshair_names;
-
 	/*
 	s_options_noalttab_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_noalttab_box.generic.x	= 0;
@@ -1610,7 +1631,7 @@ void Options_MenuInit(void) {
 
 	s_options_gamepad_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_gamepad_box.generic.x = 0;
-	s_options_gamepad_box.generic.y = 140 * ui_fontScale->value;;
+	s_options_gamepad_box.generic.y = 130 * ui_fontScale->value;;
 	s_options_gamepad_box.generic.name = "Gamepad";
 #ifdef _WIN32
 	s_options_gamepad_box.generic.callback = GamePadFunc;
@@ -1623,14 +1644,14 @@ void Options_MenuInit(void) {
 
 	s_options_cpuUtil_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_cpuUtil_box.generic.x = 0;
-	s_options_cpuUtil_box.generic.y = 160 * ui_fontScale->value;
+	s_options_cpuUtil_box.generic.y = 150 * ui_fontScale->value;
 	s_options_cpuUtil_box.generic.name = "Draw CPU Utilization";
 	s_options_cpuUtil_box.generic.callback = CpuUtilFunc;
 	s_options_cpuUtil_box.itemnames = yesno_names;
 
 	s_options_fps_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_fps_box.generic.x = 0;
-	s_options_fps_box.generic.y = 170 * ui_fontScale->value;
+	s_options_fps_box.generic.y = 160 * ui_fontScale->value;
 	s_options_fps_box.generic.name = "Draw FPS";
 	s_options_fps_box.generic.callback = FpsFunc;
 	s_options_fps_box.itemnames = fps_names;
@@ -1638,7 +1659,7 @@ void Options_MenuInit(void) {
 
 	s_options_time_box.generic.type = MTYPE_SPINCONTROL;
 	s_options_time_box.generic.x = 0;
-	s_options_time_box.generic.y = 180 * ui_fontScale->value;
+	s_options_time_box.generic.y = 170 * ui_fontScale->value;
 	s_options_time_box.generic.name = "Draw Date / Time";
 	s_options_time_box.generic.callback = TimeFunc;
 	s_options_time_box.itemnames = yesno_names;
@@ -1646,28 +1667,28 @@ void Options_MenuInit(void) {
 
 	s_options_advanced_options_action.generic.type = MTYPE_ACTION;
 	s_options_advanced_options_action.generic.x = 0;
-	s_options_advanced_options_action.generic.y = 200 * ui_fontScale->value;
+	s_options_advanced_options_action.generic.y = 190 * ui_fontScale->value;
 	s_options_advanced_options_action.generic.name = "Advanced Settings";
 	s_options_advanced_options_action.generic.callback = AdvancedSettingsFunc;
 
 
 	s_options_customize_options_action.generic.type = MTYPE_ACTION;
 	s_options_customize_options_action.generic.x = 0;
-	s_options_customize_options_action.generic.y = 210 * ui_fontScale->value;
+	s_options_customize_options_action.generic.y = 200 * ui_fontScale->value;
 	s_options_customize_options_action.generic.name = "Customize Controls";
 	s_options_customize_options_action.generic.callback = CustomizeControlsFunc;
 	//-------------------------
 
 	s_options_defaults_action.generic.type = MTYPE_ACTION;
 	s_options_defaults_action.generic.x = 0;
-	s_options_defaults_action.generic.y = 230 * ui_fontScale->value;
+	s_options_defaults_action.generic.y = 220 * ui_fontScale->value;
 	s_options_defaults_action.generic.name = "Reset Defaults";
 	s_options_defaults_action.generic.callback = ControlsResetDefaultsFunc;
 
 
 	s_options_console_action.generic.type = MTYPE_ACTION;
 	s_options_console_action.generic.x = 0;
-	s_options_console_action.generic.y = 240 * ui_fontScale->value;
+	s_options_console_action.generic.y = 230 * ui_fontScale->value;
 	s_options_console_action.generic.name = "go to console";
 	s_options_console_action.generic.callback = ConsoleFunc;
 
@@ -1685,7 +1706,6 @@ void Options_MenuInit(void) {
 	Menu_AddItem(&s_options_menu, (void *)&s_options_sensitivity_slider);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_alwaysrun_box);
 	Menu_AddItem(&s_options_menu, (void *)&s_options_invertmouse_box);
-	Menu_AddItem(&s_options_menu, (void *)&s_options_crosshair_box);
 	Menu_AddItem(&s_options_menu, (void*)&s_options_gamepad_box);
 
 	Menu_AddItem(&s_options_menu, (void *)&s_options_cpuUtil_box);

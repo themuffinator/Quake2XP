@@ -202,7 +202,7 @@ void Load3dLut(void) {
 char	*lsuf[6] = { "ft", "bk", "lf", "rt", "up", "dn" };
 unsigned	trans[4096 * 4096];
 
-void IL_LoadImage (char *filename, byte ** pic, int *width, int *height, ILenum type);
+//void IL_LoadImage (char *filename, byte ** pic, int *width, int *height, ILenum type);
 void R_FlipImage (int idx, img_t *pix, byte *dst) {
 	byte *from;
 	byte *src = pix->pixels;
@@ -308,7 +308,9 @@ image_t *R_LoadLightFilter (int id) {
 
 		// Berserker: stop spam
 		if (FS_LoadFile (checkname, NULL) != -1) {
-			IL_LoadImage (checkname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
+			//IL_LoadImage (checkname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
+			STB_LoadLdr(checkname, &pix[i].pixels, &pix[i].width, &pix[i].height);
+
 			if (pix[i].width) {
 				if (minw < pix[i].width)	
 					minw = pix[i].width;
@@ -384,42 +386,42 @@ void R_InitEngineTextures (void) {
 	r_whiteMap	= GL_LoadPic ("***r_whiteMap***",	(byte *)white, 1, 1, it_wall, 32, 0);
 	r_notexture = GL_LoadPic ("***r_notexture***",	(byte *)notex, 1, 1, it_wall, 32, 0);
 
-	r_particleTexture[PT_DEFAULT] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
-	r_particleTexture[PT_BUBBLE] = GL_FindImage ("gfx/particles/bubble.png", it_wall);
-	r_particleTexture[PT_FLY] = GL_FindImage ("gfx/fly/fly0.png", it_wall);
-	r_particleTexture[PT_BLOOD] = GL_FindImage ("gfx/particles/bloodTrail.tga", it_wall);	// default
-	r_particleTexture[PT_BLOOD2] = GL_FindImage ("gfx/particles/bloodTrail2.tga", it_wall);	// xatrix
-	r_particleTexture[PT_BLASTER] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
-	r_particleTexture[PT_SMOKE] = GL_FindImage ("gfx/particles/smoke.png", it_wall);
-	r_particleTexture[PT_SPLASH] = GL_FindImage ("gfx/particles/drop.tga", it_wall);
-	r_particleTexture[PT_SPARK] = GL_FindImage ("gfx/particles/spark.tga", it_wall);
+	r_particleTexture[PT_DEFAULT] = GL_FindImage ("gfx/particles/pt_blast.tga", it_part);
+	r_particleTexture[PT_BUBBLE] = GL_FindImage ("gfx/particles/bubble.png", it_part);
+	r_particleTexture[PT_FLY] = GL_FindImage ("gfx/fly/fly0.png", it_part);
+	r_particleTexture[PT_BLOOD] = GL_FindImage ("gfx/particles/bloodTrail.tga", it_part);	// default
+	r_particleTexture[PT_BLOOD2] = GL_FindImage ("gfx/particles/bloodTrail2.tga", it_part);	// xatrix
+	r_particleTexture[PT_BLASTER] = GL_FindImage ("gfx/particles/pt_blast.tga", it_part);
+	r_particleTexture[PT_SMOKE] = GL_FindImage ("gfx/particles/smoke.png", it_part);
+	r_particleTexture[PT_SPLASH] = GL_FindImage ("gfx/particles/drop.tga", it_part);
+	r_particleTexture[PT_SPARK] = GL_FindImage ("gfx/particles/spark.tga", it_part);
 
-	r_particleTexture[PT_BEAM] = GL_FindImage ("gfx/particles/pt_beam.tga", it_wall);
-	r_particleTexture[PT_SPIRAL] = GL_FindImage ("gfx/particles/pt_blast.tga", it_wall);
-	r_particleTexture[PT_FLAME] = GL_FindImage ("gfx/flame/fire_00.tga", it_wall);
-	r_particleTexture[PT_BLOODSPRAY] = GL_FindImage ("gfx/particles/bloodhit0.tga", it_wall);
-	r_particleTexture[PT_xBLOODSPRAY] = GL_FindImage ("gfx/particles/xbloodhit0.tga", it_wall);
+	r_particleTexture[PT_BEAM] = GL_FindImage ("gfx/particles/pt_beam.tga", it_part);
+	r_particleTexture[PT_SPIRAL] = GL_FindImage ("gfx/particles/pt_blast.tga", it_part);
+	r_particleTexture[PT_FLAME] = GL_FindImage ("gfx/flame/fire_00.tga", it_part);
+	r_particleTexture[PT_BLOODSPRAY] = GL_FindImage ("gfx/particles/bloodhit0.tga", it_part);
+	r_particleTexture[PT_xBLOODSPRAY] = GL_FindImage ("gfx/particles/xbloodhit0.tga", it_part);
 
-	r_particleTexture[PT_EXPLODE]		= GL_FindImage ("gfx/explode/rlboom_0.jpg", it_wall);
-	r_particleTexture[PT_WATERPULME]	= GL_FindImage ("gfx/particles/waterplume.tga", it_wall);
-	r_particleTexture[PT_WATERCIRCLE]	= GL_FindImage ("gfx/particles/water_ripples.dds", it_wall);
-	r_particleTexture[PT_BLOODDRIP]		= GL_FindImage ("gfx/particles/blooddrip.tga", it_wall);
-	r_particleTexture[PT_BLOODMIST]		= GL_FindImage ("gfx/particles/bloodmist.tga", it_wall);
-	r_particleTexture[PT_BLOOD_SPLAT]	= GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
-	r_particleTexture[PT_BLASTER_BOLT]	= GL_FindImage ("gfx/particles/blaster_bolt.tga", it_wall);
-	r_particleTexture[PT_BFG_LASER]		= GL_FindImage("gfx/particles/bfglaser.tga", it_wall);
-	r_particleTexture[PT_RAILBEAM]		= GL_FindImage("gfx/particles/rail_beam.tga", it_wall);
-	r_particleTexture[PT_BFG_BALL]		= GL_FindImage("gfx/bfg/bfgBall.tga", it_wall);
-	r_particleTexture[PT_BFG_REFR]		= GL_FindImage("gfx/bfg/bfgRefr.tga", it_wall);
-	r_particleTexture[PT_BFG_EXPL]		= GL_FindImage("gfx/bfg/bfg_expl.tga", it_wall);
-	r_particleTexture[PT_BFG_EXPL2]		= GL_FindImage("gfx/bfg/bfgballblast.tga", it_wall);
-	r_particleTexture[PT_FLARE]			= GL_FindImage("gfx/flares/flare0.tga", it_wall);
+	r_particleTexture[PT_EXPLODE]		= GL_FindImage ("gfx/explode/rlboom_0.jpg", it_part);
+	r_particleTexture[PT_WATERPULME]	= GL_FindImage ("gfx/particles/waterplume.tga", it_part);
+	r_particleTexture[PT_WATERCIRCLE]	= GL_FindImage ("gfx/particles/water_ripples.dds", it_part);
+	r_particleTexture[PT_BLOODDRIP]		= GL_FindImage ("gfx/particles/blooddrip.tga", it_part);
+	r_particleTexture[PT_BLOODMIST]		= GL_FindImage ("gfx/particles/bloodmist.tga", it_part);
+	r_particleTexture[PT_BLOOD_SPLAT]	= GL_FindImage ("gfx/decals/decal_splat.tga", it_part);
+	r_particleTexture[PT_BLASTER_BOLT]	= GL_FindImage ("gfx/particles/blaster_bolt.tga", it_part);
+	r_particleTexture[PT_BFG_LASER]		= GL_FindImage("gfx/particles/bfglaser.tga", it_part);
+	r_particleTexture[PT_RAILBEAM]		= GL_FindImage("gfx/particles/rail_beam.tga", it_part);
+	r_particleTexture[PT_BFG_BALL]		= GL_FindImage("gfx/bfg/bfgBall.tga", it_part);
+	r_particleTexture[PT_BFG_REFR]		= GL_FindImage("gfx/bfg/bfgRefr.tga", it_part);
+	r_particleTexture[PT_BFG_EXPL]		= GL_FindImage("gfx/bfg/bfg_expl.tga", it_part);
+	r_particleTexture[PT_BFG_EXPL2]		= GL_FindImage("gfx/bfg/bfgballblast.tga", it_part);
+	r_particleTexture[PT_FLARE]			= GL_FindImage("gfx/flares/flare0.tga", it_part);
 
 	for (i = 0; i < MAX_BFG_EXPL; i++) {
 		char name[MAX_QPATH];
 		Com_sprintf(name, sizeof(name), "gfx/bfg/bfgExpl_%i.tga", i);
 
-		r_bfg_expl[i] = GL_FindImage(name, it_wall);
+		r_bfg_expl[i] = GL_FindImage(name, it_part);
 		if (!r_bfg_expl[i])
 			r_bfg_expl[i] = r_notexture;
 	}
@@ -432,21 +434,21 @@ void R_InitEngineTextures (void) {
 	if (!r_particleTexture[i])
 		r_particleTexture[i] = r_notexture;
 
-	r_decalTexture[DECAL_RAIL]		=	GL_FindImage ("gfx/decals/decal_railgun.tga", it_wall);
-	r_decalTexture[DECAL_BULLET]	=	GL_FindImage ("gfx/decals/decal_bullet2.tga", it_wall);
-	r_decalTexture[DECAL_BLASTER]	=	GL_FindImage ("gfx/decals/decal_blaster2.tga", it_wall);
-	r_decalTexture[DECAL_EXPLODE]	=	GL_FindImage ("gfx/decals/decal_explode.tga", it_wall);
-	r_decalTexture[DECAL_BLOOD1]	=	GL_FindImage ("gfx/decals/decal_blood1.tga", it_wall);
-	r_decalTexture[DECAL_BLOOD2]	=	GL_FindImage ("gfx/decals/decal_blood2.tga", it_wall);
-	r_decalTexture[DECAL_BLOOD3]	=	GL_FindImage ("gfx/decals/decal_blood3.tga", it_wall);
-	r_decalTexture[DECAL_BLOOD4]	=	GL_FindImage ("gfx/decals/decal_blood4.tga", it_wall);
-	r_decalTexture[DECAL_BLOOD5]	=	GL_FindImage ("gfx/decals/decal_blood5.tga", it_wall);
-	r_decalTexture[DECAL_BLOOD6]	=	GL_FindImage ("gfx/decals/decal_blood6.tga", it_wall);
-	r_decalTexture[DECAL_BLOOD7]	=	GL_FindImage ("gfx/decals/decal_blood7.tga", it_wall);
-	r_decalTexture[DECAL_BLOOD8]	=	GL_FindImage ("gfx/decals/decal_blood8.tga", it_wall);
-	r_decalTexture[DECAL_BLOOD9]	=	GL_FindImage ("gfx/decals/decal_splat.tga", it_wall);
-	r_decalTexture[DECAL_ACIDMARK]	=	GL_FindImage ("gfx/decals/decal_acidmark.tga", it_wall);
-	r_decalTexture[DECAL_BFG]		=	GL_FindImage ("gfx/decals/decal_bfg.tga", it_wall);
+	r_decalTexture[DECAL_RAIL]		=	GL_FindImage ("gfx/decals/decal_railgun.tga", it_part);
+	r_decalTexture[DECAL_BULLET]	=	GL_FindImage ("gfx/decals/decal_bullet2.tga", it_part);
+	r_decalTexture[DECAL_BLASTER]	=	GL_FindImage ("gfx/decals/decal_blaster2.tga", it_part);
+	r_decalTexture[DECAL_EXPLODE]	=	GL_FindImage ("gfx/decals/decal_explode.tga", it_part);
+	r_decalTexture[DECAL_BLOOD1]	=	GL_FindImage ("gfx/decals/decal_blood1.tga", it_part);
+	r_decalTexture[DECAL_BLOOD2]	=	GL_FindImage ("gfx/decals/decal_blood2.tga", it_part);
+	r_decalTexture[DECAL_BLOOD3]	=	GL_FindImage ("gfx/decals/decal_blood3.tga", it_part);
+	r_decalTexture[DECAL_BLOOD4]	=	GL_FindImage ("gfx/decals/decal_blood4.tga", it_part);
+	r_decalTexture[DECAL_BLOOD5]	=	GL_FindImage ("gfx/decals/decal_blood5.tga", it_part);
+	r_decalTexture[DECAL_BLOOD6]	=	GL_FindImage ("gfx/decals/decal_blood6.tga", it_part);
+	r_decalTexture[DECAL_BLOOD7]	=	GL_FindImage ("gfx/decals/decal_blood7.tga", it_part);
+	r_decalTexture[DECAL_BLOOD8]	=	GL_FindImage ("gfx/decals/decal_blood8.tga", it_part);
+	r_decalTexture[DECAL_BLOOD9]	=	GL_FindImage ("gfx/decals/decal_splat.tga", it_part);
+	r_decalTexture[DECAL_ACIDMARK]	=	GL_FindImage ("gfx/decals/decal_acidmark.tga", it_part);
+	r_decalTexture[DECAL_BFG]		=	GL_FindImage ("gfx/decals/decal_bfg.tga", it_part);
 
 
 	for (i = 0; i < DECAL_MAX; i++) {
@@ -519,7 +521,7 @@ void R_InitEngineTextures (void) {
 	for (i = 0; i < MAX_EXPLODE; i++) {
 		char expl[MAX_QPATH];
 		Com_sprintf (expl, sizeof(expl), "gfx/explode/rlboom_%i.jpg", i);
-		r_explode[i] = GL_FindImage (expl, it_wall);
+		r_explode[i] = GL_FindImage (expl, it_part);
 		if (!r_explode[i])
 			r_explode[i] = r_notexture;
 	}
@@ -566,16 +568,19 @@ void R_InitEngineTextures (void) {
 
 
 /*
-=============================
-Universal GL_ScreenShot_f
-with DevIL Lib
-=============================
+=================
+ GL_ScreenShot_f
+=================
 */
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "imageLib\stb_image_write.h"
+#define NUM_CHANNELS 3
+
 void GL_ScreenShot_f (void) {
-	FILE	*file;
+	FILE*	file;
+	byte*	buffer;
 	char	picname[80] = {0}, checkname[MAX_OSPATH];
 	int		i, image = 0;
-	ILuint	ImagesToSave[1];
 	int		startTime, endTime;
 	float	sec;
 
@@ -583,18 +588,9 @@ void GL_ScreenShot_f (void) {
 
 	if (Q_stricmp (r_screenShot->string, "tga") != 0 &&
 		Q_stricmp (r_screenShot->string, "png") != 0 &&
-		Q_stricmp (r_screenShot->string, "jpg") != 0 &&
-		Q_stricmp (r_screenShot->string, "tif") != 0)
+		Q_stricmp (r_screenShot->string, "bmp") != 0 &&
+		Q_stricmp (r_screenShot->string, "jpg") != 0)
 		Cvar_Set ("r_screenShot", "jpg");
-
-	if (!Q_stricmp (r_screenShot->string, "tga"))
-		image = IL_TGA;
-	if (!Q_stricmp (r_screenShot->string, "png"))
-		image = IL_PNG;
-	if (!Q_stricmp (r_screenShot->string, "jpg"))
-		image = IL_JPG;
-	if (!Q_stricmp (r_screenShot->string, "tif"))
-		image = IL_TIF;
 
 	// Create the scrnshots directory if it doesn't exist
 	Com_sprintf (checkname, sizeof(checkname), "%s/screenshots", FS_Gamedir ());
@@ -617,21 +613,22 @@ void GL_ScreenShot_f (void) {
 		return;
 	}
 
+	buffer = malloc(vid.width * vid.height * NUM_CHANNELS);
 
-	if ((r_screenShotJpegQuality->integer >= 99) || (r_screenShotJpegQuality->integer <= 0))
-		Cvar_SetValue ("r_screenShotJpegQuality", 99);
+	qglReadPixels(0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	
+	stbi_flip_vertically_on_write(1);
 
-	ilHint (IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
-	ilSetInteger (IL_JPG_QUALITY, r_screenShotJpegQuality->integer);
+	if (!Q_stricmp(r_screenShot->string, "tga"))
+		stbi_write_tga(checkname, vid.width, vid.height, NUM_CHANNELS, buffer);
+	if (!Q_stricmp(r_screenShot->string, "png"))
+		stbi_write_png(checkname, vid.width, vid.height, NUM_CHANNELS, buffer, vid.width * NUM_CHANNELS);
+	if (!Q_stricmp(r_screenShot->string, "jpg"))
+		stbi_write_jpg(checkname, vid.width, vid.height, NUM_CHANNELS, buffer, 100); // max quality
+	if (!Q_stricmp(r_screenShot->string, "bmp"))
+		stbi_write_bmp(checkname, vid.width, vid.height, NUM_CHANNELS, buffer);
 
-	ilGenImages (1, ImagesToSave);
-	ilBindImage (ImagesToSave[0]);
-
-	if (ilutGLScreen ())
-		ilSave (image, checkname);
-
-
-	ilDeleteImages (1, ImagesToSave);
+	free(buffer);
 
 	// Done!
 	Com_Printf ("Wrote %s\n", picname);
@@ -639,12 +636,12 @@ void GL_ScreenShot_f (void) {
 	endTime = Sys_Milliseconds ();
 	sec = (float)endTime - (float)startTime;
 	Com_DPrintf ("Screenshot time: "S_COLOR_GREEN"%5.4f"S_COLOR_WHITE" sec\n", sec * 0.001);
+
 }
 
 void GL_LevelShot_f(void) {
 	char	picname[80] = {0}, checkname[MAX_OSPATH], shortName[MAX_QPATH];
-	int		image = 0;
-	ILuint	ImagesToSave[1];
+	byte*	buffer;
 
 	// Create the scrnshots levelshots if it doesn't exist
 	Com_sprintf(checkname, sizeof(checkname), "%s/levelshots", FS_Gamedir());
@@ -656,19 +653,13 @@ void GL_LevelShot_f(void) {
 	Com_sprintf(picname, sizeof(picname), "%s.%s", shortName, "jpg");
 	Com_sprintf(checkname, sizeof(checkname), "%s/levelshots/%s", FS_Gamedir(), picname);
 
-	if ((r_screenShotJpegQuality->integer >= 99) || (r_screenShotJpegQuality->integer <= 0))
-		Cvar_SetValue("r_screenShotJpegQuality", 99);
+	buffer = malloc(vid.width * vid.height * NUM_CHANNELS);
+	qglReadPixels(0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 
-	ilHint(IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
-	ilSetInteger(IL_JPG_QUALITY, r_screenShotJpegQuality->integer);
+	stbi_flip_vertically_on_write(1);
+	stbi_write_jpg(checkname, vid.width, vid.height, NUM_CHANNELS, buffer, 100);
 
-	ilGenImages(1, ImagesToSave);
-	ilBindImage(ImagesToSave[0]);
-
-	if (ilutGLScreen())
-		ilSave(IL_JPG, checkname);
-
-	ilDeleteImages(1, ImagesToSave);
+	free(buffer);
 
 	// Done!
 	Com_Printf("Wrote level shot %s\n", & picname);
@@ -677,27 +668,16 @@ void GL_LevelShot_f(void) {
 
 void GL_MakeSaveShot(char* dir) {
 	char	name[MAX_QPATH];
-	int		image = 0;
-	ILuint	ImagesToSave[1];
+	byte*	buffer;
 
 	Com_sprintf(name, sizeof(name), "%s/savexp/%s/shot.jpg", FS_Gamedir(), dir);
 	remove(name);
 
-	if ((r_screenShotJpegQuality->integer >= 99) || (r_screenShotJpegQuality->integer <= 0))
-		Cvar_SetValue("r_screenShotJpegQuality", 99);
+	buffer = malloc(vid.width * vid.height * NUM_CHANNELS);
+	qglReadPixels(0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 
-	ilHint(IL_COMPRESSION_HINT, IL_USE_COMPRESSION);
-	ilSetInteger(IL_JPG_QUALITY, r_screenShotJpegQuality->integer);
-
-	ilGenImages(1, ImagesToSave);
-	ilBindImage(ImagesToSave[0]);
-
-	if (ilutGLScreen()) {
-//		iluGammaCorrect(0.5);
-		ilSave(image, name);
-	}
-
-	ilDeleteImages(1, ImagesToSave);
+	stbi_flip_vertically_on_write(1);
+	stbi_write_jpg(name, vid.width, vid.height, NUM_CHANNELS, buffer, 100);
 
 	// Done!
 	Com_Printf("Wrote save shot %s\n", name);

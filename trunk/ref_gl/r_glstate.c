@@ -366,10 +366,10 @@ void GL_Enable(GLenum cap) {
 			return;
 		gl_state.depthClamp = qtrue;
 
-	case GL_ALPHA_TEST:
-		if (gl_state.alphaTest)
-			return;
-		gl_state.alphaTest = qtrue;
+//	case GL_ALPHA_TEST:
+//		if (gl_state.alphaTest)
+//			return;
+//		gl_state.alphaTest = qtrue;
 
 	}
 
@@ -428,10 +428,10 @@ void GL_Disable(GLenum cap) {
 		if (!gl_state.depthClamp)
 			return;
 		gl_state.depthClamp = qfalse;
-	case GL_ALPHA_TEST:
-		if (!gl_state.alphaTest)
-			return;
-		gl_state.alphaTest = qfalse;
+//	case GL_ALPHA_TEST:
+//		if (!gl_state.alphaTest)
+//			return;
+//		gl_state.alphaTest = qfalse;
 	}
 
 	qglDisable(cap);

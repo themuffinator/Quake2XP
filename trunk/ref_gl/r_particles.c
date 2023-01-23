@@ -224,6 +224,7 @@ void R_DrawParticles (void) {
 
 			default:
 				texId = r_particleTexture[PT_DEFAULT]->handle;
+				bumpId = r_defBump->handle;
 
 		}
 

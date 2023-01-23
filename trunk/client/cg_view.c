@@ -34,8 +34,6 @@ struct model_s *gun_model;
 
 //=============
 
-cvar_t *crosshair;
-cvar_t *crosshairScale;
 cvar_t *cl_stats;
 
 
@@ -416,6 +414,49 @@ void V_Gun_Model_f (void) {
 }
 
 //============================================================================
+#define ARMOR_PROTECTION 0.66
+
+void CL_GetColorForHealth() { //rtcw adoptation
+	int health, armor, max;
+
+	if (!cl_crossHairHealth->integer) {
+		VectorSet(hColor, 1.0, 1.0, 1.0);
+		return;
+	}
+
+	health = cl.frame.playerstate.stats[STAT_HEALTH];
+	if (health <= 0) {
+		VectorClear(hColor);  // black, dont draw
+		return;
+	}
+	armor = cl.frame.playerstate.stats[STAT_ARMOR];
+	max = health * ARMOR_PROTECTION / (1.0 - ARMOR_PROTECTION);
+	if (max < armor) {
+		armor = max;
+	}
+	health += armor;
+
+	hColor[0] = 1.0;
+	if (health >= 100) {
+		hColor[2] = 1.0;
+	}
+	else if (health < 66) {
+		hColor[2] = 0;
+	}
+	else {
+		hColor[2] = (health - 66) / 33.0;
+	}
+
+	if (health > 60) {
+		hColor[1] = 1.0;
+	}
+	else if (health < 30) {
+		hColor[1] = 0;
+	}
+	else {
+		hColor[1] = (health - 30) / 30.0;
+	}
+}
 
 
 /*
@@ -423,28 +464,32 @@ void V_Gun_Model_f (void) {
 SCR_DrawCrosshair
 =================
 */
+
 void SCR_DrawCrosshair (void) {
 	int		size_x, size_y;
 
-
-	if (!crosshair->integer)
+	if (cls.key_dest == key_menu)
 		return;
 
-	if (crosshair->modified) {
-		crosshair->modified = qfalse;
+	if (!crossHair->integer)
+		return;
+
+	if (crossHair->modified) {
+		crossHair->modified = qfalse;
 		SCR_TouchPics ();
 	}
 
 	if (!crosshair_pic[0])
 		return;
 
-	size_x = crosshair_width * crosshairScale->value;
-	size_y = crosshair_height * crosshairScale->value;
+	size_x = crosshair_width * crossHairScale->value;
+	size_y = crosshair_height * crossHairScale->value;
 
 	//	Com_Printf("width %i height %i syze_x %i size_y %i cross width %i cross height %i\n",viddef.width, viddef.height, size_x, size_y, crosshair_width, crosshair_height);
+	CL_GetColorForHealth();
 
 	Draw_PicScaled ((viddef.width * 0.5) - (size_x * 0.5), (viddef.height * 0.5) - (size_y * 0.5),
-		crosshairScale->value, crosshairScale->value, crosshair_pic);
+		crossHairScale->value, crossHairScale->value, crosshair_pic);
 
 }
 
@@ -705,7 +750,7 @@ void V_Init (void) {
 
 	Cmd_AddCommand ("viewpos", V_Viewpos_f);
 
-	crosshair = Cvar_Get ("crosshair", "0", CVAR_ARCHIVE);
-	crosshairScale = Cvar_Get ("crosshairScale", "0.666", CVAR_ARCHIVE);
+	crossHair = Cvar_Get ("crossHair", "1", CVAR_ARCHIVE);
+	crossHairScale = Cvar_Get ("crossHairScale", "0.3", CVAR_ARCHIVE);
 	cl_stats = Cvar_Get ("cl_stats", "0", 0);
 }

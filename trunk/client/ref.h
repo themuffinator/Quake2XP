@@ -286,8 +286,11 @@ typedef enum {
 	it_normal,
 	it_pbr,
 	it_mipmap, 
-	it_screen
+	it_screen,
+	it_part // clamp to enge mode
 } imagetype_t;
+
+vec3_t hColor;
 
 typedef unsigned long long uint64;
 
