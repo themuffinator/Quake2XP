@@ -1328,7 +1328,7 @@ void M_AdvancedInit(void) {
 	"type 5",
 	"type 6",
 	"type 7",
-	"last type lol",
+	"type 8",
 	0
 	};
 

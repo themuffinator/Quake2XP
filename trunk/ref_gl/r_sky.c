@@ -454,18 +454,20 @@ void R_FlipImageFloat(int i, hdri_t* hdri, float* dst) {
 }
 
 void R_GenSkyCubeMap(char* name) {
-	int		i;
-	char	pathname[MAX_QPATH];
-	img_t	pix[6];
-	hdri_t	hdri[6];
-
-	qboolean hdr = qfalse;
+	int			i, numMips;
+	char		ldrName[MAX_QPATH], hdrName[MAX_QPATH];
+	img_t		pix[6];
+	hdri_t		hdri[6];
+	qboolean	hdr = qfalse;
 
 	strncpy(skyname, name, sizeof(skyname) - 1);
-
+	
+	if (skyCube) {
+		glMakeTextureHandleNonResidentARB(skyCube_handle);
+		qglDeleteTextures(1, &skyCube);
+	}
 	glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &skyCube);
 
-	int bpp = 0;
 	for (i = 0; i < 6; i++) {
 		pix[i].pixels = NULL;
 		pix[i].width = pix[i].height = 0;
@@ -473,26 +475,20 @@ void R_GenSkyCubeMap(char* name) {
 		hdri[i].width = hdri[i].height = 0;
 		hdri[i].data = NULL;
 		
-		Com_sprintf(pathname, sizeof(pathname), "env/hdr/%s%s.hdr", skyname, cubeSufGL[i]);
+		Com_sprintf(hdrName, sizeof(hdrName), "env/hdr/%s%s.hdr", skyname, cubeSufGL[i]);
 
-		if (STB_LoadHdr(pathname, &hdri[i].data, &hdri[i].width, &hdri[i].height)) {
+		if (STB_LoadHdr(hdrName, &hdri[i].data, &hdri[i].width, &hdri[i].height)) {
+			numMips = CalcMipmapCount(hdri[0].width, hdri[0].height);
+			glTextureStorage2D(skyCube, numMips, GL_RGB32F, hdri[0].width, hdri[0].height);
 			hdr = qtrue;
 		}
 		else {
-			Com_sprintf(pathname, sizeof(pathname), "env/%s%s.tga", skyname, cubeSufGL[i]);
-			if (FS_LoadFile(pathname, NULL) != -1)
-				STB_LoadLdr(pathname, &pix[i].pixels, &pix[i].width, &pix[i].height);
-		}
-	}
+			Com_sprintf(ldrName, sizeof(ldrName), "env/%s%s.tga", skyname, cubeSufGL[i]);
+			STB_LoadLdr(ldrName, &pix[i].pixels, &pix[i].width, &pix[i].height);
 
-	int numMips;
-	if (hdr) {
-		numMips = CalcMipmapCount(hdri[0].width, hdri[0].height);
-		glTextureStorage2D(skyCube, numMips, GL_RGB32F, hdri[0].width, hdri[0].height);
-	}
-	else {
-		numMips = CalcMipmapCount(pix[0].width, pix[0].height);
-		glTextureStorage2D(skyCube, numMips, GL_RGB8, pix[0].width, pix[0].height);
+			numMips = CalcMipmapCount(pix[0].width, pix[0].height);
+			glTextureStorage2D(skyCube, numMips, GL_RGB8, pix[0].width, pix[0].height);
+		}
 	}
 
 	for (i = 0; i < 6; i++) {

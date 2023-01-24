@@ -1037,6 +1037,8 @@ void GL_FreeUnusedImages(void)
 	int i;
 	image_t *image;
 
+	// image cache
+	//=========================
 	r_notexture->registration_sequence = registration_sequence;
 
 	for (i = 0; i < MAX_CAUSTICS; i++) {

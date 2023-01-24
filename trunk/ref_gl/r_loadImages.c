@@ -308,7 +308,6 @@ image_t *R_LoadLightFilter (int id) {
 
 		// Berserker: stop spam
 		if (FS_LoadFile (checkname, NULL) != -1) {
-			//IL_LoadImage (checkname, &pix[i].pixels, &pix[i].width, &pix[i].height, IL_TGA);
 			STB_LoadLdr(checkname, &pix[i].pixels, &pix[i].width, &pix[i].height);
 
 			if (pix[i].width) {
@@ -327,10 +326,9 @@ image_t *R_LoadLightFilter (int id) {
 		}
 	}
 
-	if ((minw == 0) || (minh == 0)) {
-		///		Com_DPrintf("R_LoadLightFilter: filter %i does not exist\n", id+1);	// Berserker: stop spam
+	if ((minw == 0) || (minh == 0)) 
 		minw = minh = maxw = maxh = 1;	// Для отсутствующего фильтра пусть будет фильтр 1х1 черный... (нет света)
-	}
+	
 
 	if ((minw != maxw) || (minh != maxh) || (minw != minh))
 		Com_Error (ERR_DROP, "R_LoadLightFilter: (%i) all images must be quadratic with equal sizes", id + 1);
@@ -364,7 +362,7 @@ image_t *R_LoadLightFilter (int id) {
 	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
-	glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, numMips);
+	glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, numMips-1);
 	glGenerateTextureMipmap(image->texnum);
 
 	image->handle = glGetTextureHandleARB(image->texnum);
