@@ -473,9 +473,9 @@ void R_GenSkyCubeMap(char* name) {
 		hdri[i].width = hdri[i].height = 0;
 		hdri[i].data = NULL;
 		
-		Com_sprintf(pathname, sizeof(pathname), "%s/env/hdr/%s%s.hdr", FS_Gamedir(), skyname, cubeSufGL[i]);
+		Com_sprintf(pathname, sizeof(pathname), "env/hdr/%s%s.hdr", skyname, cubeSufGL[i]);
 
-		if (R_LoadHdri(pathname, &hdri[i])) {
+		if (STB_LoadHdr(pathname, &hdri[i].data, &hdri[i].width, &hdri[i].height)) {
 			hdr = qtrue;
 		}
 		else {

@@ -573,12 +573,13 @@ void R_InitEngineTextures (void) {
 =================
 */
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "imageLib\stb_image_write.h"
+#include "stb/stb_image_write.h"
 #define NUM_CHANNELS 3
 
 void GL_ScreenShot_f (void) {
 	FILE*	file;
 	byte*	buffer;
+	float*	hdrData = NULL;
 	char	picname[80] = {0}, checkname[MAX_OSPATH];
 	int		i, image = 0;
 	int		startTime, endTime;
@@ -589,6 +590,7 @@ void GL_ScreenShot_f (void) {
 	if (Q_stricmp (r_screenShot->string, "tga") != 0 &&
 		Q_stricmp (r_screenShot->string, "png") != 0 &&
 		Q_stricmp (r_screenShot->string, "bmp") != 0 &&
+		Q_stricmp(r_screenShot->string, "hdr") != 0 &&
 		Q_stricmp (r_screenShot->string, "jpg") != 0)
 		Cvar_Set ("r_screenShot", "jpg");
 
@@ -613,22 +615,32 @@ void GL_ScreenShot_f (void) {
 		return;
 	}
 
-	buffer = malloc(vid.width * vid.height * NUM_CHANNELS);
-
-	qglReadPixels(0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 	
 	stbi_flip_vertically_on_write(1);
 
-	if (!Q_stricmp(r_screenShot->string, "tga"))
-		stbi_write_tga(checkname, vid.width, vid.height, NUM_CHANNELS, buffer);
-	if (!Q_stricmp(r_screenShot->string, "png"))
-		stbi_write_png(checkname, vid.width, vid.height, NUM_CHANNELS, buffer, vid.width * NUM_CHANNELS);
-	if (!Q_stricmp(r_screenShot->string, "jpg"))
-		stbi_write_jpg(checkname, vid.width, vid.height, NUM_CHANNELS, buffer, 100); // max quality
-	if (!Q_stricmp(r_screenShot->string, "bmp"))
-		stbi_write_bmp(checkname, vid.width, vid.height, NUM_CHANNELS, buffer);
+	if (!Q_stricmp(r_screenShot->string, "hdr")) {
+		hdrData = malloc(vid.width * vid.height * NUM_CHANNELS * sizeof(float));
+		qglReadPixels(0, 0, vid.width, vid.height, GL_RGB, GL_FLOAT, hdrData);
+		stbi_write_hdr(checkname, vid.width, vid.height, NUM_CHANNELS, hdrData);
+		free(hdrData);
+	}
+	else {
 
-	free(buffer);
+		buffer = malloc(vid.width * vid.height * NUM_CHANNELS);
+		qglReadPixels(0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+
+		if (!Q_stricmp(r_screenShot->string, "tga"))
+			stbi_write_tga(checkname, vid.width, vid.height, NUM_CHANNELS, buffer);
+		if (!Q_stricmp(r_screenShot->string, "png"))
+			stbi_write_png(checkname, vid.width, vid.height, NUM_CHANNELS, buffer, vid.width * NUM_CHANNELS);
+		if (!Q_stricmp(r_screenShot->string, "jpg"))
+			stbi_write_jpg(checkname, vid.width, vid.height, NUM_CHANNELS, buffer, 100); // max quality
+		if (!Q_stricmp(r_screenShot->string, "bmp"))
+			stbi_write_bmp(checkname, vid.width, vid.height, NUM_CHANNELS, buffer);
+		
+		free(buffer);
+	}
+
 
 	// Done!
 	Com_Printf ("Wrote %s\n", picname);

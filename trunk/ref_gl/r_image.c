@@ -116,7 +116,7 @@ int gl_filter_max = GL_LINEAR;
 
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "imageLib\stb_image.h"
+#include "stb/stb_image.h"
 
 qboolean STB_LoadLdr(const char* name, byte** pic, int* width, int* height){
 	int		w, h, bbp;
@@ -141,7 +141,6 @@ qboolean STB_LoadLdr(const char* name, byte** pic, int* width, int* height){
 
 	Com_DPrintf("%s() loaded: %s\n", __func__, name);
 
-	*pic = NULL;
 	*pic = data;
 	*width = w;
 	*height = h;
@@ -149,9 +148,9 @@ qboolean STB_LoadLdr(const char* name, byte** pic, int* width, int* height){
 }
 
 qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height) {
-	int		w, h, bbp;
-	byte* buffer = NULL;
-	float* data = NULL;
+	int		w, h, bpp;
+	byte*	buffer = NULL;
+	float*	data = NULL;
 
 	int len = FS_LoadFile(name, (void**)&buffer);
 	if (buffer == NULL) {
@@ -159,7 +158,12 @@ qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height) {
 		return qfalse;
 	}
 
-	data = stbi_loadf_from_memory(buffer, len, &w, &h, &bbp, STBI_rgb_alpha);
+	data = stbi_loadf_from_memory(buffer, len, &w, &h, &bpp, 0);
+	if (bpp != 3) {
+		Com_Printf("HDR has not 3 channels %s\n", name); //paranoid
+		return qfalse;
+	}
+
 	if (data == NULL)
 	{
 		Com_DPrintf("%s couldn't load data from %s: %s!\n", __func__, name, stbi_failure_reason());
@@ -171,7 +175,6 @@ qboolean STB_LoadHdr(const char* name, float** pic, int* width, int* height) {
 
 	Com_DPrintf("%s() loaded: %s\n", __func__, name);
 
-	*pic = NULL;
 	*pic = data;
 	*width = w;
 	*height = h;
@@ -715,83 +718,6 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	return image;
 }
 
-
-/*=====================
-DevIL Stuff
-=====================*/
-/*
-void LoadImageErrors(void)
-{
-	ILenum Error;
-	char message[2048];
-
-	while ((Error = ilGetError()) != IL_NO_ERROR) {
-		memset(message, 0, 2048);
-		sprintf(message, "%d: %s", Error, (const char*)iluErrorString(Error));
-		Com_Printf("%s\n", message);
-	}
-}
-
-void IL_LoadImage(char *filename, byte ** pic, int *width, int *height,
-				  ILenum type)
-{
-	int length;
-	unsigned char *buffer, *buf;
-	ILubyte *image;
-	ILuint imageID;
-	signed int w, h;
-
-	*pic = NULL; //missing cubemaps plug
-
-	length = FS_LoadFile(filename, (void **) &buffer);
-	if (!buffer) {
-		Con_Printf(PRINT_DEVELOPER, "Bad image file %s\n", filename);
-		return;
-	}
-
-	if (!length) {
-		FS_FreeFile(buffer);
-		Con_Printf(PRINT_DEVELOPER, "Bad image file %s\n", filename);
-		return;
-	}
-
-	ilGenImages(1, &imageID);
-	ilBindImage(imageID);
-
-	if (!ilLoadL(type, (ILvoid *) buffer, (ILint) length)) {
-		FS_FreeFile(buffer);
-		free(buffer);
-		LoadImageErrors();
-		return;
-	}
-
-	if (!ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE)) {
-		FS_FreeFile(buffer);
-		LoadImageErrors();
-		ilDeleteImages(1, &imageID);
-		return;
-	}
-
-	w = ilGetInteger(IL_IMAGE_WIDTH);
-	h = ilGetInteger(IL_IMAGE_HEIGHT);
-	image = ilGetData();
-
-	buf = (unsigned char*)malloc(w * h * 4);
-
-	if (!buf)
-		Com_Error(ERR_FATAL, ""S_COLOR_RED"IL_LoadImage - FALED!\n");   // wtf, man??? drop to console
-
-	Q_memcpy(buf, image, w * h * 4);
-
-	ilDeleteImages(1, &imageID);
-	FS_FreeFile(buffer);
-
-	*pic = buf;
-	*width = w;
-	*height = h;
-	return;
-}
-*/
 
 /*
 ================

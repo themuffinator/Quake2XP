@@ -72,11 +72,11 @@
     <Filter Include="Source Files\Sound\Headers\openAL">
       <UniqueIdentifier>{52b9c68e-a8d8-40f9-9fc6-70d0eb5743fb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Renderer\Headers\devIL">
-      <UniqueIdentifier>{8841ba1e-940d-4730-a76d-493813d16efd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Client\Headers\curl">
       <UniqueIdentifier>{adc1de6c-495a-4004-8001-7e1646ae6b67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Renderer\Headers\stb">
+      <UniqueIdentifier>{f5c75588-fc60-42d3-913c-26ab5b835c00}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -475,18 +475,6 @@
     <ClInclude Include="client\AL\efx.h">
       <Filter>Source Files\Sound\Headers\openAL</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\ImageLib\il.h">
-      <Filter>Source Files\Renderer\Headers\devIL</Filter>
-    </ClInclude>
-    <ClInclude Include="ref_gl\ImageLib\ilu.h">
-      <Filter>Source Files\Renderer\Headers\devIL</Filter>
-    </ClInclude>
-    <ClInclude Include="ref_gl\ImageLib\ilut.h">
-      <Filter>Source Files\Renderer\Headers\devIL</Filter>
-    </ClInclude>
-    <ClInclude Include="ref_gl\ImageLib\ilut_config.h">
-      <Filter>Source Files\Renderer\Headers\devIL</Filter>
-    </ClInclude>
     <ClInclude Include="win32\xinput3.h">
       <Filter>Source Files\Win32\Headers</Filter>
     </ClInclude>
@@ -532,8 +520,11 @@
     <ClInclude Include="client\curl\urlapi.h">
       <Filter>Source Files\Client\Headers\curl</Filter>
     </ClInclude>
-    <ClInclude Include="ref_gl\ImageLib\stb_image.h">
-      <Filter>Source Files\Renderer\Headers</Filter>
+    <ClInclude Include="ref_gl\stb\stb_image.h">
+      <Filter>Source Files\Renderer\Headers\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="ref_gl\stb\stb_image_write.h">
+      <Filter>Source Files\Renderer\Headers\stb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
