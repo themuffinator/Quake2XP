@@ -344,9 +344,6 @@
     <ClCompile Include="ref_gl\r_fbo.c">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ref_gl\r_image_hdri.c">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ref_gl\qgl.h">

@@ -1321,14 +1321,14 @@ void M_AdvancedInit(void) {
 
 	static char* crosshair_names[] = {
 	"off",
-	"on",
-	"on",
-	"on",
-	"on",
-	"on",
-	"on",
-	"on",
-	"on",
+	"type 1",
+	"type 2",
+	"type 3",
+	"type 4",
+	"type 5",
+	"type 6",
+	"type 7",
+	"last type lol",
 	0
 	};
 

@@ -429,7 +429,6 @@
     <ClCompile Include="ref_gl\r_cull.c" />
     <ClCompile Include="ref_gl\r_fbo.c" />
     <ClCompile Include="ref_gl\r_glstate.c" />
-    <ClCompile Include="ref_gl\r_image_hdri.c" />
     <ClCompile Include="ref_gl\r_light.c" />
     <ClCompile Include="ref_gl\r_lightMaps.c" />
     <ClCompile Include="ref_gl\r_main.c" />
