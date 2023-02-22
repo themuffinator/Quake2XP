@@ -523,6 +523,9 @@
     <ClInclude Include="ref_gl\stb\stb_image_write.h">
       <Filter>Source Files\Renderer\Headers\stb</Filter>
     </ClInclude>
+    <ClInclude Include="ref_gl\khrplatform.h">
+      <Filter>Source Files\Renderer\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="win32\icon1.ico">

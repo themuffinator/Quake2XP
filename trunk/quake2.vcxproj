@@ -710,6 +710,7 @@
     <ClInclude Include="client\curl\urlapi.h" />
     <ClInclude Include="client\music.h" />
     <ClInclude Include="ref_gl\glcorearb.h" />
+    <ClInclude Include="ref_gl\khrplatform.h" />
     <ClInclude Include="ref_gl\r_md3.h" />
     <ClInclude Include="ref_gl\stb\stb_image.h" />
     <ClInclude Include="ref_gl\stb\stb_image_write.h" />
