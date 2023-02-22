@@ -768,8 +768,6 @@ void Mod_LoadTexinfo(lump_t * l) {
 
 			if (!out->image)
 				out->image = r_notexture;
-
-			// no normal/glow map
 			continue;
 		}
 
@@ -1102,40 +1100,42 @@ void GL_BuildPolygonFromSurface(msurface_t *fa) {
 		poly->verts[i][6] = t;
 
 		// unsmoothed tbn
-		vec3_t tangent, binormal, normal, tmp;
+		if (!r_bspSmoothTbn->integer) {
+			vec3_t tangent, binormal, normal, tmp;
 
-		if (!(fa->flags & MSURF_PLANEBACK))
-			VectorCopy(fa->plane->normal, normal);
-		else
-			VectorNegate(fa->plane->normal, normal);
+			if (!(fa->flags & MSURF_PLANEBACK))
+				VectorCopy(fa->plane->normal, normal);
+			else
+				VectorNegate(fa->plane->normal, normal);
 
-		CrossProduct(normal, fa->texInfo->vecs[0], tmp);
-		CrossProduct(normal, tmp, tangent);
-		VectorNormalize(tangent);
-		if (DotProduct(tangent, fa->texInfo->vecs[0]) < 0.0)
-			VectorInverse(tangent);
+			CrossProduct(normal, fa->texInfo->vecs[0], tmp);
+			CrossProduct(normal, tmp, tangent);
+			VectorNormalize(tangent);
+			if (DotProduct(tangent, fa->texInfo->vecs[0]) < 0.0)
+				VectorInverse(tangent);
 
-		CrossProduct(normal, fa->texInfo->vecs[1], tmp);
-		CrossProduct(normal, tmp, binormal);
-		VectorNormalize(binormal);
-		if (DotProduct(binormal, fa->texInfo->vecs[1]) < 0.0)
-			VectorInverse(binormal);
+			CrossProduct(normal, fa->texInfo->vecs[1], tmp);
+			CrossProduct(normal, tmp, binormal);
+			VectorNormalize(binormal);
+			if (DotProduct(binormal, fa->texInfo->vecs[1]) < 0.0)
+				VectorInverse(binormal);
 
-		VectorNormalize(normal);
-		VectorNormalize(tangent);
-		VectorNormalize(binormal);
+			VectorNormalize(normal);
+			VectorNormalize(tangent);
+			VectorNormalize(binormal);
 
-		poly->verts[i][7] = normal[0];
-		poly->verts[i][8] = normal[1];
-		poly->verts[i][9] = normal[2];
+			poly->verts[i][7] = normal[0];
+			poly->verts[i][8] = normal[1];
+			poly->verts[i][9] = normal[2];
 
-		poly->verts[i][10] = tangent[0];
-		poly->verts[i][11] = tangent[1];
-		poly->verts[i][12] = tangent[2];
+			poly->verts[i][10] = tangent[0];
+			poly->verts[i][11] = tangent[1];
+			poly->verts[i][12] = tangent[2];
 
-		poly->verts[i][13] = binormal[0];
-		poly->verts[i][14] = binormal[1];
-		poly->verts[i][15] = binormal[2];
+			poly->verts[i][13] = binormal[0];
+			poly->verts[i][14] = binormal[1];
+			poly->verts[i][15] = binormal[2];
+		}
 
 		// Store edge data for shadow volumes
 		tempEdge = tempEdges + abs(index);
@@ -1424,10 +1424,10 @@ void Mod_LoadFaces(lump_t * l) {
 	}
 
 	// Build TBN for smoothing bump mapping (Berserker)
-//	if (r_bspSmoothTbn->integer) {
-//		Mod_UpdateLoadingBar(51.0, "Calc Tangent Space");
-//		GL_BuildTBN(count);
-//	}
+	if (r_bspSmoothTbn->integer) {
+		Mod_UpdateLoadingBar(51.0, "Calc Tangent Space");
+		GL_BuildTBN(count);
+	}
 
 	GL_EndBuildingLightmaps();
 
@@ -1467,43 +1467,47 @@ void GL_BuildTBN(int count) {
 
 		for (j = 0; j < count; j++) {
 			s2 = &currentmodel->surfaces[j];
+			
+			if (s2->texInfo->flags & (SURF_SKY | SURF_NODRAW))
+				continue;
 
-			if (!(s2->texInfo->flags & (SURF_SKY | SURF_NODRAW))) {
+			if (s1->texInfo->image->texnum != s2->texInfo->image->texnum)
+				continue;
 
-				if (s2->flags & MSURF_PLANEBACK)
-					VectorNegate(s2->plane->normal, n2);
-				else
-					VectorCopy(s2->plane->normal, n2);
+			if (s2->flags & MSURF_PLANEBACK)
+				VectorNegate(s2->plane->normal, n2);
+			else
+				VectorCopy(s2->plane->normal, n2);
 
-				if (DotProduct(n1, n2) >= bspSmoothAngle) {
-					v1 = s1->polys->verts[0];
+			if (DotProduct(n1, n2) < bspSmoothAngle)
+				continue;
 
-					for (ci = 0; ci < s1->numEdges; ci++, v1 += VERTEXSIZE) {
-						v2 = s2->polys->verts[0];
+			v1 = s1->polys->verts[0];
 
-						for (cj = 0; cj < s2->numEdges; cj++, v2 += VERTEXSIZE) {
+			for (ci = 0; ci < s1->numEdges; ci++, v1 += VERTEXSIZE) {
+				v2 = s2->polys->verts[0];
 
-							if (VectorCompare(v1, v2)) {
-								v1[7] += n2[0];
-								v1[8] += n2[1];
-								v1[9] += n2[2];
-							}
-						}
-					}
+				for (cj = 0; cj < s2->numEdges; cj++, v2 += VERTEXSIZE) {
+
+					if (!VectorCompare(v1, v2))
+						continue;
+
+					v1[7] += n2[0];
+					v1[8] += n2[1];
+					v1[9] += n2[2];					
 				}
-			}
+			}			
 		}
 
 		v1 = s1->polys->verts[0];
 		for (ci = 0; ci < s1->numEdges; ci++, v1 += VERTEXSIZE) {
-			vec3_t normal, biTangent, tmp;
+			vec3_t normal, tangent, binormal, tmp;
 			VectorSet(normal, v1[7], v1[8], v1[9]);
 			VectorNormalize(normal);
 
 			if (DotProduct(normal, n1) < bspSmoothAngle) {
 				vec3_t out;
 				VectorAdd(normal, n1, out);
-				VectorNormalize(out);
 				v1[7] = out[0];
 				v1[8] = out[1];
 				v1[9] = out[2];
@@ -1515,31 +1519,31 @@ void GL_BuildTBN(int count) {
 			}
 			
 			CrossProduct(normal, s1->texInfo->vecs[0], tmp);
-			CrossProduct(normal, tmp, biTangent);
-			VectorNormalize(biTangent);
-			if (DotProduct(biTangent, s1->texInfo->vecs[0]) < 0.0) {
-				v1[10] = -biTangent[0];
-				v1[11] = -biTangent[1];
-				v1[12] = -biTangent[2];
+			CrossProduct(normal, tmp, tangent);
+			VectorNormalize(tangent);
+			if (DotProduct(tangent, s1->texInfo->vecs[0]) < 0.0) {
+				v1[10] = -tangent[0];
+				v1[11] = -tangent[1];
+				v1[12] = -tangent[2];
 			}
 			else {
-				v1[10] = biTangent[0];
-				v1[11] = biTangent[1];
-				v1[12] = biTangent[2];
+				v1[10] = tangent[0];
+				v1[11] = tangent[1];
+				v1[12] = tangent[2];
 			}
 
 			CrossProduct(normal, s1->texInfo->vecs[1], tmp);
-			CrossProduct(normal, tmp, biTangent);
-			VectorNormalize(biTangent);
-			if (DotProduct(biTangent, s1->texInfo->vecs[1]) < 0.0) {
-				v1[13] = -biTangent[0];
-				v1[14] = -biTangent[1];
-				v1[15] = -biTangent[2];
+			CrossProduct(normal, tmp, binormal);
+			VectorNormalize(binormal);
+			if (DotProduct(binormal, s1->texInfo->vecs[1]) < 0.0) {
+				v1[13] = -binormal[0];
+				v1[14] = -binormal[1];
+				v1[15] = -binormal[2];
 			}
 			else {
-				v1[13] = biTangent[0];
-				v1[14] = biTangent[1];
-				v1[15] = biTangent[2];
+				v1[13] = binormal[0];
+				v1[14] = binormal[1];
+				v1[15] = binormal[2];
 			}
 		}
 	}
@@ -2009,7 +2013,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 
 	Mod_UpdateLoadingBar(2.0, "Planes");
 	Mod_LoadPlanes(&header->lumps[LUMP_PLANES]);
-	Mod_UpdateLoadingBar(5.0, "Materials");
+	Mod_UpdateLoadingBar(3.0, "Materials");
 	Mod_LoadTexinfo(&header->lumps[LUMP_TEXINFO]);
 	Mod_UpdateLoadingBar(50.0, "Faces");
 	Mod_LoadFaces(&header->lumps[LUMP_FACES]);
@@ -2019,9 +2023,9 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 
 	Mod_UpdateLoadingBar(52.25, "Mark Surfaces");
 	Mod_LoadMarksurfaces(&header->lumps[LUMP_LEAFFACES]);
-	Mod_UpdateLoadingBar(52.50, "Visibility");
+	Mod_UpdateLoadingBar(52.35, "Visibility");
 	Mod_LoadVisibility(&header->lumps[LUMP_VISIBILITY]);
-	Mod_UpdateLoadingBar(52.35, "Leafs");
+	Mod_UpdateLoadingBar(52.50, "Leafs");
 	Mod_LoadLeafs(&header->lumps[LUMP_LEAFS]);
 	Mod_UpdateLoadingBar(53.0, "Nodes");
 	Mod_LoadNodes(&header->lumps[LUMP_NODES]);
@@ -2038,7 +2042,7 @@ void Mod_LoadBrushModel(model_t * mod, void *buffer) {
 
 	mod->numFrames = 2;			// regular and alternate animation
 
-	Mod_UpdateLoadingBar(34.0, "Sub Models");
+	Mod_UpdateLoadingBar(54.5, "Sub Models");
 	// set up the subModels
 	for (i = 0; i < mod->numSubModels; i++) {
 		model_t *starmod;

@@ -111,7 +111,7 @@ void gib_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, 
 void Spawn_Gib_Blood (edict_t *self) {
 	vec3_t tmp;
 
-	if (net_compatibility->value) return;
+	if (net_compatibility->integer) return;
 
 	VectorCopy (self->s.origin, tmp);
 	tmp[2] += 30;
@@ -420,7 +420,7 @@ void BecomeExplosion2 (edict_t *self) {
 	gi.WriteByte (svc_temp_entity);
 	gi.WriteByte (TE_EXPLOSION2);
 	gi.WritePosition (self->s.origin);
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		if (!plane)
 			gi.WriteDir (vec3_origin);
 		else
@@ -940,7 +940,7 @@ void barrel_explode (edict_t *self) {
 
 	VectorCopy (self->s.origin, save);
 	VectorMA (self->absmin, 0.5, self->size, self->s.origin);
-	if (net_compatibility->value) {
+	if (net_compatibility->integer) {
 		// a few big chunks
 		spd = 1.5 * (float)self->dmg / 200.0;
 		org[0] = self->s.origin[0] + crandom () * self->size[0];

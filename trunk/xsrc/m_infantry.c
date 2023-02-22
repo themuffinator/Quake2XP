@@ -385,7 +385,7 @@ mmove_t infantry_move_death3 = {FRAME_death301, FRAME_death309, infantry_frames_
 void infantry_unhead(edict_t *self) {
 	vec3_t tmp;
 
-	if (net_compatibility->value) return;
+	if (net_compatibility->integer) return;
 
 	VectorCopy(self->s.origin, tmp);
 	tmp[2] += 30;

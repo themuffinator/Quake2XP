@@ -1340,11 +1340,8 @@ void R_RegisterCvars(void)
 	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
 	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.2", CVAR_ARCHIVE);
 
-	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "0", 0);
+	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "0", CVAR_ARCHIVE);
 	r_hdrAutoExposure->help = "buggy feature, don't turn it on\n";
-	r_hdrKey =							Cvar_Get("r_hdrKey", "0.015", 0);
-	r_hdrMinLuminance =					Cvar_Get("r_hdrMinLuminance", "0.005", 0);
-	r_hdrMaxLuminance =					Cvar_Get("r_hdrMaxLuminance", "300.0", 0);
 
 	r_colorVibrance =					Cvar_Get("r_colorVibrance", "0.0", CVAR_ARCHIVE);
 	r_colorBalanceRed =					Cvar_Get("r_colorBalanceRed", "1.0", CVAR_ARCHIVE);
@@ -1574,30 +1571,6 @@ qboolean R_SetMode(void)
     }
 }
 
-static void DevIL_Init() {
- /*   static qboolean init = qfalse;
-
-    if (init)
-        return;
-
-	Com_Printf (S_COLOR_YELLOW"\n...Initializing OpenIL Library\n\n");
-	
-	ilInit();
-	iluInit();
-	ilutInit();
-
-	ilutRenderer(ILUT_OPENGL);
-	ilEnable(IL_ORIGIN_SET);
-	ilSetInteger(IL_ORIGIN_MODE, IL_ORIGIN_UPPER_LEFT);
-
-	Com_Printf ("OpenIL VENDOR: "S_COLOR_GREEN" %s\n", ilGetString(IL_VENDOR));
-	Com_Printf ("OpenIL Version: "S_COLOR_GREEN"%i\n", ilGetInteger(IL_VERSION_NUM));
-
-	init = qtrue;
-	*/
-}
-
-
 /*
 ===============
 R_Init
@@ -1656,9 +1629,6 @@ int R_Init(void *hinstance, void *hWnd)
 	gl_state.prev_mode = 0;
 
 	Com_Printf("\n====" S_COLOR_YELLOW " Starting OpenGL Renderer" S_COLOR_WHITE " ====\n");
-
-    // initialize IL library
-    DevIL_Init();
 
 	// create the window and set up the context
 	if (!R_SetMode()) {
@@ -1855,7 +1825,8 @@ int R_Init(void *hinstance, void *hWnd)
 	glProgramBinary		=	(PFNGLPROGRAMBINARYPROC)		qwglGetProcAddress("glProgramBinary");
 	glProgramParameteri =	(PFNGLPROGRAMPARAMETERIPROC)	qwglGetProcAddress("glProgramParameteri");
 
-	qglClampColorARB	=	(PFNGLCLAMPCOLORARBPROC)		qwglGetProcAddress("glClampColorARB");
+	qglClampColor		=	(PFNGLCLAMPCOLORPROC)		qwglGetProcAddress("glClampColor");
+	qglClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
 
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
@@ -1957,10 +1928,8 @@ int R_Init(void *hinstance, void *hWnd)
 		Com_Printf(S_COLOR_RED"...GL_EXT_depth_bounds_test not found\n");
 		gl_state.depthBoundsTest = qfalse;
 	}
-//	if (r_srgbColorBuffer->integer && IsExtensionSupported("GL_ARB_framebuffer_sRGB")) {
-//		qglEnable(GL_FRAMEBUFFER_SRGB);
-//		Com_Printf("...using GL_ARB_framebuffer_sRGB\n");
-//	}
+
+
 	Com_Printf("=====================================\n");
 
 	GL_SetDefaultState();

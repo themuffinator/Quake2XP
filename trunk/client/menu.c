@@ -2479,10 +2479,10 @@ qboolean Mods_MenuInit()
 				}
 		
 			}
-
 			Menu_AddItem(&s_mods_menu, &s_mods_actions[t]);
 
 		t++;
+
 	}
 
 	return qtrue;

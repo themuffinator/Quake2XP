@@ -135,13 +135,13 @@ void CreateHDR64Buffer(void) {
 
 	Com_Printf("Load "S_COLOR_YELLOW "HDR64 FBO ");
 
-	r_hdr64image= R_CreateTexture("***r_hdr64image***", GL_TEXTURE_RECTANGLE, GL_RGB16F, GL_RGB, it_screen,
+	r_hdr64image= R_CreateTexture("***r_hdr64image***", GL_TEXTURE_2D, GL_RGB16F, GL_RGB, it_screen,
 		64, 64, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE,
 		GL_LINEAR, GL_LINEAR, GL_FLOAT, qfalse, NULL);
 
 	qglGenFramebuffers(1, &fbo._hdr64);
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr64);
-	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, r_hdr64image->texnum, 0);
+	qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, r_hdr64image->texnum, 0);
 
 	statusOK = qglCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 	if (!statusOK)

@@ -213,8 +213,6 @@ functionList_t functionList[] = {
 { "DeathmatchScoreboardMessage", (byte *)DeathmatchScoreboardMessage },
 { "BeginIntermission", (byte *)BeginIntermission },
 { "MoveClientToIntermission", (byte *)MoveClientToIntermission },
-{ "FL_make", (byte *)FL_make },
-{ "FL_think", (byte *)FL_think },
 { "ClientBeginServerFrame", (byte *)ClientBeginServerFrame },
 { "ClientThink", (byte *)ClientThink },
 { "PrintPmove", (byte *)PrintPmove },

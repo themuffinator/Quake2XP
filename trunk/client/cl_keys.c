@@ -823,9 +823,7 @@ void Key_Event (int key, qboolean down, unsigned time) {
 		if (!down)
 			return;
 
-		if (cls.state == ca_disconnected && cls.key_dest != key_menu)	// added 
-			// from 
-			// Quake2Max
+		if (cls.state == ca_disconnected && cls.key_dest != key_menu)	// added from Quake2Max
 		{
 			SCR_EndLoadingPlaque ();	// get rid of loading plaque
 			Cbuf_AddText ("d1\n");

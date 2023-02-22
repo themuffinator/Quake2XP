@@ -555,41 +555,41 @@ void IN_ControllerMove(usercmd_t *cmd)
 	int buttonState = 0;
 
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_START)			
-		buttonState |= 1;
+		buttonState |= BIT(0);
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)				
-		buttonState |= 2;
+		buttonState |= BIT(1);
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)		
-		buttonState |= 4; // down
+		buttonState |= BIT(2); // down
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)		
-		buttonState |= 8; // down
+		buttonState |= BIT(3); // down
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)	
-		buttonState |= 16; // up
+		buttonState |= BIT(4); // up
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)	
-		buttonState |= 32; // up
+		buttonState |= BIT(5); // up
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_A)				
-		buttonState |= 64;
+		buttonState |= BIT(6);
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_B)				
-		buttonState |= 128;
+		buttonState |= BIT(7);
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_X)				
-		buttonState |= 256;
+		buttonState |= BIT(8);
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_Y)				
-		buttonState |= 512;
+		buttonState |= BIT(9);
 
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)			
-		buttonState |= 1024;
+		buttonState |= BIT(10);
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)		
-		buttonState |= 2048;
+		buttonState |= BIT(11);
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)		
-		buttonState |= 4096;
+		buttonState |= BIT(12);
 	if (xInputStage.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)		
-		buttonState |= 8192;
+		buttonState |= BIT(13);
 
 	int treshold = 255.0 * x360_triggerTreshold->value;
 
 	if (xInputStage.Gamepad.bLeftTrigger >= treshold)
-		buttonState |= 16384; 
+		buttonState |= BIT(14); 
 	if (xInputStage.Gamepad.bRightTrigger >= treshold)
-		buttonState |= 32768; 
+		buttonState |= BIT(15); 
 
 	// check for event changes
 	for (int i = 0; i < XINPUT_MAX_CONTROLLER_BUTTONS; i++)

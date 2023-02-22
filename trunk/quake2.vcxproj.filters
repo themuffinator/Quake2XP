@@ -152,9 +152,6 @@
     <ClCompile Include="qcommon\cvar.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
-    <ClCompile Include="qcommon\files.c">
-      <Filter>Source Files\qcommon</Filter>
-    </ClCompile>
     <ClCompile Include="qcommon\md4.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
@@ -165,9 +162,6 @@
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
     <ClCompile Include="game\q_shared.c">
-      <Filter>Source Files\qcommon</Filter>
-    </ClCompile>
-    <ClCompile Include="qcommon\unzip.c">
       <Filter>Source Files\qcommon</Filter>
     </ClCompile>
     <ClCompile Include="ref_gl\r_decals.c">
@@ -343,6 +337,12 @@
     </ClCompile>
     <ClCompile Include="ref_gl\r_fbo.c">
       <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="qcommon\files.c">
+      <Filter>Source Files\qcommon</Filter>
+    </ClCompile>
+    <ClCompile Include="qcommon\unzip.c">
+      <Filter>Source Files\qcommon</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

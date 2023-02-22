@@ -8,34 +8,29 @@
 #include "AL/efx-presets.h"
 
 EFXEAXREVERBPROPERTIES rvb_generic			= EFX_REVERB_PRESET_GENERIC;
-EFXEAXREVERBPROPERTIES rvb_room				= EFX_REVERB_PRESET_ROOM;
 EFXEAXREVERBPROPERTIES rvb_underwater		= EFX_REVERB_PRESET_UNDERWATER;
-EFXEAXREVERBPROPERTIES rvb_level			= EFX_REVERB_PRESET_CITY;
 
+EFXEAXREVERBPROPERTIES rvb_alcove			= EFX_REVERB_PRESET_FACTORY_ALCOVE;
 EFXEAXREVERBPROPERTIES rvb_small_room		= EFX_REVERB_PRESET_FACTORY_SMALLROOM;
 EFXEAXREVERBPROPERTIES rvb_medium_room		= EFX_REVERB_PRESET_FACTORY_MEDIUMROOM;
 EFXEAXREVERBPROPERTIES rvb_large_room		= EFX_REVERB_PRESET_FACTORY_LARGEROOM;
-
-EFXEAXREVERBPROPERTIES rvb_alcove			= EFX_REVERB_PRESET_FACTORY_ALCOVE;
-EFXEAXREVERBPROPERTIES rvb_short_passege	= EFX_REVERB_PRESET_FACTORY_SHORTPASSAGE;
-EFXEAXREVERBPROPERTIES rvb_long_passege		= EFX_REVERB_PRESET_FACTORY_LONGPASSAGE;
 EFXEAXREVERBPROPERTIES rvb_hall				= EFX_REVERB_PRESET_FACTORY_HALL;
-EFXEAXREVERBPROPERTIES rvb_cour_yard		= EFX_REVERB_PRESET_FACTORY_COURTYARD;
+EFXEAXREVERBPROPERTIES rvb_courtYard		= EFX_REVERB_PRESET_FACTORY_COURTYARD;
 
 extern cvar_t *s_dynamicReverberation;
 
 typedef struct {
 	qboolean on;
 	ALuint rvbGenericEffect;
-	ALuint rvbRoomEffect;
 	ALuint rvbUnderwaterEffect;
-	ALuint rvbLevelEffect;
 	ALuint rvbAuxSlot;
 
 	ALuint rvbSmallRoomEffect;
 	ALuint rvbMediumRoomEffect;
 	ALuint rvbLargeRoomEffect;
-	ALuint rvbAlcoveEffect;
+	ALuint rvbFactoryHall;
+	ALuint rvbFactoryCourtYard;
+	ALuint rvbFactoryAlcove;
 } efx_t;
 
 efx_t efx;
@@ -103,15 +98,15 @@ void EFX_RvbInit (void) {
 	Com_Printf("EFX_VERSION: " S_COLOR_GREEN "%i.%i\n\n", major, minor);
 	Com_Printf("Load EFX Presets...\n\n");
 
-	efx.rvbGenericEffect = EFX_RvbCreate (&rvb_generic, "GENERIC");
-	efx.rvbRoomEffect = EFX_RvbCreate (&rvb_room, "ROOM");
-	efx.rvbUnderwaterEffect = EFX_RvbCreate (&rvb_underwater, "UNDERWATHER");
-	efx.rvbLevelEffect = EFX_RvbCreate (&rvb_level, "DEFAULT LEVEL");
+	efx.rvbGenericEffect		= EFX_RvbCreate (&rvb_generic, "GENERIC");
+	efx.rvbUnderwaterEffect		= EFX_RvbCreate (&rvb_underwater, "UNDERWATHER");
 
-	efx.rvbSmallRoomEffect = EFX_RvbCreate(&rvb_small_room, "SMALL ROOM");
-	efx.rvbMediumRoomEffect = EFX_RvbCreate(&rvb_medium_room, "MEDIUM ROOM");
-	efx.rvbLargeRoomEffect = EFX_RvbCreate(&rvb_large_room, "LARGE ROOM");
-	efx.rvbAlcoveEffect = EFX_RvbCreate(&rvb_alcove, "ALCOVE");
+	efx.rvbSmallRoomEffect		= EFX_RvbCreate(&rvb_small_room, "SMALL ROOM");
+	efx.rvbMediumRoomEffect		= EFX_RvbCreate(&rvb_medium_room, "MEDIUM ROOM");
+	efx.rvbLargeRoomEffect		= EFX_RvbCreate(&rvb_large_room, "LARGE ROOM");
+	efx.rvbFactoryHall			= EFX_RvbCreate(&rvb_hall, "HALL");
+	efx.rvbFactoryCourtYard		= EFX_RvbCreate(&rvb_courtYard, "COURTYARD");
+	efx.rvbFactoryAlcove		= EFX_RvbCreate(&rvb_alcove, "ALCOVE");
 
 	alGenAuxiliaryEffectSlots(1, &efx.rvbAuxSlot);
 	alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_TRUE);
@@ -127,10 +122,9 @@ void EFX_RvbInit (void) {
 }
 
 void EFX_GetRoomSize() {
-	vec3_t forward, right, up;
-	vec3_t end, tmp;
+	vec3_t len;
 	trace_t trace;
-	float sum = 0.0, frontL=0.0, backL = 0.0, leftL = 0.0, rightL = 0.0, upL = 0.0, downL = 0.0;
+	int avr = 0;
 
 	if (CL_PMpointcontents(cl.refdef.vieworg) & CONTENTS_SOLID)
 		return;
@@ -139,72 +133,45 @@ void EFX_GetRoomSize() {
 		return;
 
 	if (!s_dynamicReverberation->integer) {
-		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbLevelEffect);
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbGenericEffect);
 		return;
 	}
 
-	VectorSet (forward,	1, 0, 0);
-	VectorSet (right,	0, 1, 0);
-	VectorSet (up,		0, 0, 1);
+	vec3_t dir[6] = {
+	{8192, 0, 0 },	// forward 
+	{-8192, 0, 0},	// back
+	{0, 8192, 0 },	// left 
+	{0, -8192, 0},	// right
+	{0, 0, 8192 },	// up 
+	{0, 0, -8192},	// down
+	};
 
-	// trace to forward
-	VectorMA(cl.refdef.vieworg, 2048.0, forward, end);
-	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
-	if (trace.fraction > 0 && trace.fraction < 1) {
-		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
-		frontL = VectorLength(tmp);
+	for (int i = 0; i < 6; i++){
+
+		trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, dir[i], MASK_SOLID, qfalse);
+		if (trace.fraction > 0 && trace.fraction < 1) {
+			VectorSubtract(trace.endpos, cl.refdef.vieworg, len);
+			avr += VectorLength(len);
+		}
 	}
+	avr /= 5;
 
-	// trace to back
-	VectorMA(cl.refdef.vieworg, -2048.0, forward, end);
-	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
-	if (trace.fraction > 0 && trace.fraction < 1) {
-		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
-		backL = VectorLength(tmp);
-	}
+//	Com_Printf("%i\n", avr);
 
-	// trace to right
-	VectorMA(cl.refdef.vieworg, 2048.0, right, end);
-	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
-	if (trace.fraction > 0 && trace.fraction < 1) {
-		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
-		rightL = VectorLength(tmp);
-	}
+	if (avr < 128)
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbFactoryAlcove);
 
-	// trace to left
-	VectorMA(cl.refdef.vieworg, -2048.0, right, end);
-	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
-	if (trace.fraction > 0 && trace.fraction < 1) {
-		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
-		leftL = VectorLength(tmp);
-	}
-
-	// trace to up
-	VectorMA(cl.refdef.vieworg, 2048.0, up, end);
-	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
-	if (trace.fraction > 0 && trace.fraction < 1) {
-		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
-		upL = VectorLength(tmp);
-	}
-
-	// trace to down
-	VectorMA(cl.refdef.vieworg, -2048.0, up, end);
-	trace = CL_PMTraceWorld(cl.refdef.vieworg, vec3_origin, vec3_origin, end, MASK_SOLID, qfalse);
-	if (trace.fraction > 0 && trace.fraction < 1) {
-		VectorSubtract(trace.endpos, cl.refdef.vieworg, tmp);
-		downL = VectorLength(tmp);
-	}
-
-	sum = ( frontL + backL + leftL + rightL + upL + downL) / 6.0;
-
-	if (sum <= 128.0)
-		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbAlcoveEffect);
-	else if (sum <= 256.0)
+	if (avr >= 128 && avr < 250)
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbSmallRoomEffect);
-	else if (sum <= 512.0)
+	
+	if (avr >= 250 && avr < 350)
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbMediumRoomEffect);
-	else
+
+	if (avr >= 350 && avr < 450)
 		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbLargeRoomEffect);
+	
+	if (avr >= 450)
+		alAuxiliaryEffectSloti(efx.rvbAuxSlot, AL_EFFECTSLOT_EFFECT, efx.rvbFactoryCourtYard);
 }
 
 
@@ -245,10 +212,11 @@ void EFX_RvbUpdate (vec3_t listener_position) {
 		EFX_GetRoomSize();
 	}
 
-/*	unsigned err;
+/*	unsigned err; // errors with creative cards
 	err = alGetError();
 	if (err != AL_NO_ERROR)
-		Com_Printf (S_COLOR_RED "EFX update failed, error %s\n", al_error(err));*/
+		Com_Printf (S_COLOR_RED "EFX update failed, error %s\n", al_error(err));
+*/		
 }
 
 void EFX_RvbShutdown (void) {
@@ -258,14 +226,14 @@ void EFX_RvbShutdown (void) {
 	Com_Printf ("EFX shutdown\n");
 	alDeleteAuxiliaryEffectSlots (1, &efx.rvbAuxSlot);
 	alDeleteEffects (1, &efx.rvbGenericEffect);
-	alDeleteEffects (1, &efx.rvbRoomEffect);
 	alDeleteEffects (1, &efx.rvbUnderwaterEffect);
-	alDeleteEffects (1, &efx.rvbLevelEffect);
 
 	alDeleteEffects(1, &efx.rvbLargeRoomEffect);
 	alDeleteEffects(1, &efx.rvbMediumRoomEffect);
 	alDeleteEffects(1, &efx.rvbSmallRoomEffect);
-	alDeleteEffects(1, &efx.rvbAlcoveEffect);
+	alDeleteEffects(1, &efx.rvbFactoryCourtYard);
+	alDeleteEffects(1, &efx.rvbFactoryHall);
+	alDeleteEffects(1, &efx.rvbFactoryAlcove);
 
 	efx.on = qfalse;
 }

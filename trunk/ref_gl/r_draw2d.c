@@ -438,6 +438,8 @@ void Draw_StretchPic2(int x, int y, int w, int h, image_t* gl)
 	else {
 		offsX = offsY = 0;
 	}
+	if(w==h)
+		offsX = offsY = 0;
 
 	if (console) {
 		qglUniform1i(U_CONSOLE_BACK, 1);

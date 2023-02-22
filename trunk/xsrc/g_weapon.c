@@ -200,7 +200,7 @@ void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 					gi.WriteByte (svc_temp_entity);
 					gi.WriteByte (te_impact);
 					gi.WritePosition (tr.endpos);
-					if (!net_compatibility->value)
+					if (!net_compatibility->integer)
 						gi.WritePosition (start2);
 					gi.WriteDir (tr.plane.normal);
 					gi.multicast (tr.endpos, MULTICAST_PVS);
@@ -452,7 +452,7 @@ void Grenade_Explode (edict_t *ent) {
 			gi.WriteByte (TE_ROCKET_EXPLOSION);
 	}
 	gi.WritePosition (origin);
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		if (!plane)
 			gi.WriteDir (vec3_origin);
 		else
@@ -610,7 +610,7 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 	else
 		gi.WriteByte (TE_ROCKET_EXPLOSION);
 	gi.WritePosition (origin);
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		if (!plane)
 			gi.WriteDir (vec3_origin);
 		else
@@ -704,7 +704,7 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 	gi.WriteByte (TE_RAILTRAIL);
 	gi.WritePosition (start);
 	gi.WritePosition (tr.endpos);
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		if (!tr2.plane.normal) {
 			gi.WriteDir (vec3_origin);
 
@@ -722,7 +722,7 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 		gi.WriteByte (TE_RAILTRAIL);
 		gi.WritePosition (start);
 		gi.WritePosition (tr.endpos);
-		if (!net_compatibility->value) {
+		if (!net_compatibility->integer) {
 			if (!tr2.plane.normal) {
 				gi.WriteDir (vec3_origin);
 			}
@@ -824,7 +824,7 @@ void bfg_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf
 	gi.WriteByte (svc_temp_entity);
 	gi.WriteByte (TE_BFG_BIGEXPLOSION);
 	gi.WritePosition (origin);
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		if (!plane) {
 			gi.WriteDir (vec3_origin);
 		}
@@ -1179,7 +1179,7 @@ void plasma_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 	gi.WriteByte (svc_temp_entity);
 	gi.WriteByte (TE_PLASMA_EXPLOSION);
 	gi.WritePosition (origin);
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 		if (!plane)
 			gi.WriteDir (vec3_origin);
 		else

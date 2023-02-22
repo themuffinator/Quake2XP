@@ -423,8 +423,10 @@ void Menu_Draw (menuframework_s * menu) {
 	}
 
 	if (item) {
-		if (item->statusbarfunc)
-			item->statusbarfunc ((void *)item);
+		if (item->statusbarfunc) {
+			item->statusbarfunc((void*)item);
+			Menu_DrawStatusBar(item->statusbar);// status bar+status func
+		}
 		else if (item->statusbar)
 			Menu_DrawStatusBar (item->statusbar);
 		else

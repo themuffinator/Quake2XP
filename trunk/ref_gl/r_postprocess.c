@@ -358,9 +358,6 @@ void CalculateAutomaticExposure()
 	float			newAdaptation;
 	float			newMaximum;
 
-	if (!r_hdrAutoExposure->integer)
-		return;
-
 	curTime = Sys_Milliseconds() * 0.001;
 
 	// calculate the average scene luminance
@@ -373,8 +370,6 @@ void CalculateAutomaticExposure()
 
 	// read back the contents
 	qglReadPixels(0, 0, 64, 64, GL_RGB, GL_FLOAT, image);
-		
-	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 		
 	vec3_t tmp = { 0.0,0.0,0.0 };
 	sum = 0.0f;
@@ -413,12 +408,6 @@ void CalculateAutomaticExposure()
 
 	deltaTime = curTime - hdrTime;
 
-	hdrAverageLuminance = ClampFloat(hdrAverageLuminance, r_hdrMinLuminance->value, r_hdrMaxLuminance->value);
-	avgLuminance = ClampFloat(avgLuminance, r_hdrMinLuminance->value, r_hdrMaxLuminance->value);
-		
-	hdrMaxLuminance = ClampFloat(hdrMaxLuminance, r_hdrMinLuminance->value, r_hdrMaxLuminance->value);
-	maxLuminance = ClampFloat(maxLuminance, r_hdrMinLuminance->value, r_hdrMaxLuminance->value);
-
 	newAdaptation = hdrAverageLuminance + (avgLuminance - hdrAverageLuminance) * (1.0f - powf(0.98f, 30.0f * deltaTime));
 	newMaximum = hdrMaxLuminance + (maxLuminance - hdrMaxLuminance) * (1.0f - powf(0.98f, 30.0f * deltaTime));
 
@@ -430,10 +419,9 @@ void CalculateAutomaticExposure()
 
 	hdrTime = curTime;
 
-	// calculate HDR image key
-	hdrKey = r_hdrKey->value;
+	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
-//	Com_Printf("HDR luminance avg = %f, max = %f, key = %f\n", hdrAverageLuminance, hdrMaxLuminance, hdrKey);
+//	Com_Printf("HDR luminance avg = %f, max = %f\n", hdrAverageLuminance, hdrMaxLuminance);
 }
 
 float Lerp(const float v1, const float v2, const float l)
@@ -452,27 +440,22 @@ void R_ToneMaping(void) {
 	if (r_newrefdef.rdflags & RDF_NOWORLDMODEL)
 		return;
 
-	CalculateAutomaticExposure();
-	vec4_t hdrParams;
+	vec2_t hdrParams;
 		
 	if (r_hdrAutoExposure->integer){
-
-		hdrParams[0] = hdrKey; 
-		hdrParams[1] = hdrAverageLuminance;
-		hdrParams[2] = ClampFloat(hdrMaxLuminance, 0.2, 0.5);
-		hdrParams[3] = r_hdrExposure->value; //exposure
-	}
+		CalculateAutomaticExposure();
+		hdrParams[0] = clamp(hdrMaxLuminance - hdrAverageLuminance, 0.01, 0.1);
+		hdrParams[1] = 0.1;
+	} 
 	else{
-		hdrParams[0] = 0.015f;
-		hdrParams[1] = 0.005f;
-		hdrParams[2] = 1;
-		hdrParams[3] = r_hdrExposure->value;
+		hdrParams[0] = 1.0;
+		hdrParams[1] = r_hdrExposure->value;
 	}
 
 	GL_BindProgram(tonemapProgram);
 
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
-	qglUniform4fv(U_PARAM_VEC4_0, 1, hdrParams);
+	qglUniform2fv(U_PARAM_VEC2_0, 1, hdrParams);
 	qglUniform1f(U_PARAM_FLOAT_1, r_gamma->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
 	R_DrawFullScreenQuad();

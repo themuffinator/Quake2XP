@@ -845,13 +845,13 @@ void G_SetClientEffects (edict_t *ent) {
 		ent->s.renderfx |= RF_SHELL_GOD;
 	}
 
-	if (!net_compatibility->value) {
+	if (!net_compatibility->integer) {
 
 		if (ent->flags & FL_FLASHLIGHT) {
 
-			if (deathmatch->value) {
+			if (deathmatch->integer) {
 
-				if ((int)dmflags->value & DF_FLASHLIGHT)
+				if ((int)dmflags->integer & DF_FLASHLIGHT)
 					ent->s.effects |= EF_FLASHLIGHT;
 			}
 			else

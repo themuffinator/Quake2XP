@@ -640,19 +640,16 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	else
 		image->hash = Com_HashKey(name);
 
-	// Knightmare- Nexus's image replacement scaling code
 	len = strlen(name);
 	strcpy(s, name);
-	// NOTE: once Q3 map support is added, be be sure to disable this for
-	// Q3 format maps,
-	// because they will be natively textured with hi-res textures.
-	if (!strcmp(s + len - 4, ".tga") || !strcmp(s + len - 4, ".dds") || !strcmp(s + len - 4, ".png") || !strcmp(s + len - 4, ".jpg"))
+
+	if (!strcmp(s + len - 4, ".tga") || !strcmp(s + len - 4, ".png") || !strcmp(s + len - 4, ".jpg"))
 	{
 		miptex_t* mt;
-		s[len - 3] = 'w';
-		s[len - 2] = 'a';
-		s[len - 1] = 'l';		// replace extension 
-		FS_LoadFile(s, (void**)&mt);	// load .wal file 
+		strcpy(s, name);
+		s[strlen(s) - 4] = 0;
+		strcat(s, ".wal");
+		FS_LoadFile(s, (void**)&mt); 
 
 		if (mt) {
 			image->width = LittleLong(mt->width);	// grab size from wal
@@ -666,9 +663,9 @@ image_t* GL_LoadPic(char* name, byte* pic, int width, int height, imagetype_t ty
 	{
 		byte* pics, * palettes;
 		int pcx_w, pcx_h;
-		s[len - 3] = 'p';
-		s[len - 2] = 'c';
-		s[len - 1] = 'x';
+		strcpy(s, name);
+		s[strlen(s) - 4] = 0;
+		strcat(s, ".pcx");
 		LoadPCX(s, &pics, &palettes, &pcx_w, &pcx_h);
 
 		image->picScale_w = 1.0;
@@ -790,14 +787,13 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 	pic = NULL;
 	palette = NULL;
 		
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Targa override  crap
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && !override) {
 
 		char s[128];
 		override = 1;
 		strcpy(s, name);
-		s[len - 3] = 't';
-		s[len - 2] = 'g';
-		s[len - 1] = 'a';
+		s[strlen(s) - 4] = 0;
+		strcat(s, ".tga");
 
 		image = GL_FindImage(s, type);
 		if (image) {
@@ -805,14 +801,13 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 			return image;
 		}
 	}
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Jpeg override  crap
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && !override) {
 
 		char s[128];
 		override = 1;
 		strcpy(s, name);
-		s[len - 3] = 'j';
-		s[len - 2] = 'p';
-		s[len - 1] = 'g';
+		s[strlen(s) - 4] = 0;
+		strcat(s, ".jpg");
 
 		image = GL_FindImage(s, type);
 		if (image) {
@@ -820,31 +815,13 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 			return image;
 		}
 	}
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// Png override  crap
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && !override) {
 																															
 		char s[128];
 		override = 1;
 		strcpy(s, name);
-		s[len - 3] = 'p';
-		s[len - 2] = 'n';
-		s[len - 1] = 'g';
-
-		image = GL_FindImage(s, type);
-		if (image) {
-			override = 0;
-			return image;
-		}
-	}
-
-
-	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {	// DDS override  crap
-																															
-		char s[128];
-		override = 1;
-		strcpy(s, name);
-		s[len - 3] = 'd';
-		s[len - 2] = 'd';
-		s[len - 1] = 's';
+		s[strlen(s) - 4] = 0;
+		strcat(s, ".png");
 
 		image = GL_FindImage(s, type);
 		if (image) {
@@ -867,7 +844,6 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		image = GL_LoadWal(name);
 
 	} else if (!strcmp(name + len - 4, ".tga")) {
-	//	IL_LoadImage(name, &pic, &width, &height, IL_TGA);
 		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
@@ -876,18 +852,7 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		
 	}
 
-/*	else if (!strcmp(name + len - 4, ".dds")) {
-		IL_LoadImage(name, &pic, &width, &height, IL_DDS);
-
-		if (!pic)
-			return NULL;
-
-		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
-	}*/
-
-
 	else if (!strcmp(name + len - 4, ".jpg")) {
-	//	IL_LoadImage(name, &pic, &width, &height, IL_JPG);
 		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
@@ -895,7 +860,6 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		image = GL_LoadPic(name, pic, width, height, it_pic, 24, Com_HashKey(name));
 	} 
 	else if (!strcmp(name + len - 4, ".png")) {
-	//	IL_LoadImage(name, &pic, &width, &height, IL_PNG);
 		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
@@ -941,7 +905,6 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 	}
 
  if (!strcmp(name + len - 4, ".tga")) {
-	//	IL_LoadImage(name, &pic, &width, &height, IL_TGA);
 		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
@@ -950,18 +913,7 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 
 	}
 
-	/*else if (!strcmp(name + len - 4, ".dds")) {
-		IL_LoadImage(name, &pic, &width, &height, IL_DDS);
-
-		if (!pic)
-			return NULL;
-
-		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
-	}*/
-
-
 	else if (!strcmp(name + len - 4, ".jpg")) {
-		//IL_LoadImage(name, &pic, &width, &height, IL_JPG);
 	 STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;
@@ -969,7 +921,6 @@ image_t* GL_FindImage2(char* name, imagetype_t type)// no override
 		image = GL_LoadPic(name, pic, width, height, type, 24, Com_HashKey(name));
 	}
 	else if (!strcmp(name + len - 4, ".png")) {
-	//	IL_LoadImage(name, &pic, &width, &height, IL_PNG);
 		STB_LoadLdr(name, &pic, &width, &height);
 		if (!pic)
 			return NULL;

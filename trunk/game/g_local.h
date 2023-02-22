@@ -1114,13 +1114,7 @@ struct edict_s {
 	// common data blocks
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
-	vec3_t	color;
-	int flaresize;
-	int flareim;
-	edict_t *flashlight;
-
 	float timeout;
-
 };
 
 void ED_CallSpawn (edict_t *ent);

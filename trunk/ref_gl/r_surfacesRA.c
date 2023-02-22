@@ -42,7 +42,6 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 
 	numIndices = *indeces;
 
-
 	if (update) {
 
 		if (s->texInfo->flags & SURF_FLOWING) {
@@ -62,7 +61,9 @@ void R_AddAlphaSurceces(msurface_t* s, uint* indeces, qboolean update) {
 			GL_SetBindlessTexture(U_TMU0, r_DSTTex->handle);
 		else
 			GL_SetBindlessTexture(U_TMU0, s->texInfo->normalmap->handle);
+
 		GL_SetBindlessTexture(U_TMU1, s->texInfo->image->handle);
+		GL_SetBindlessTexture(U_TMU4, s->texInfo->addTexture->handle);
 
 
 		scale[0] = r_parallaxScale->value / s->texInfo->image->width;

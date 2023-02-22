@@ -800,7 +800,7 @@ extern PFNGLTEXTURESTORAGE3DPROC				glTextureStorage3D;
 extern PFNGLTEXTURESUBIMAGE3DPROC				glTextureSubImage3D;
 extern PFNGLGETTEXTUREIMAGEPROC					glGetTextureImage;
 
-extern PFNGLCLAMPCOLORARBPROC					qglClampColorARB;
+extern PFNGLCLAMPCOLORPROC						qglClampColor;
 
 #ifdef _WIN32
 

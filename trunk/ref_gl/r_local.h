@@ -262,10 +262,6 @@ cvar_t	*r_saturation;
 cvar_t	*r_gamma;
 
 cvar_t* r_hdrAutoExposure;
-cvar_t* r_hdrKey;
-cvar_t* r_hdrMinLuminance;
-cvar_t* r_hdrMaxLuminance;
-
 cvar_t	*r_hdrExposure;
 cvar_t	*r_hdrLightScale;
 cvar_t	*r_hdrGlarePasses;

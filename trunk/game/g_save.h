@@ -175,8 +175,6 @@ extern void DeathmatchScoreboard ( edict_t * ent ) ;
 extern void DeathmatchScoreboardMessage ( edict_t * ent , edict_t * killer ) ;
 extern void BeginIntermission ( edict_t * targ ) ;
 extern void MoveClientToIntermission ( edict_t * ent ) ;
-extern void FL_make ( edict_t * self ) ;
-extern void FL_think ( edict_t * self ) ;
 extern void ClientBeginServerFrame ( edict_t * ent ) ;
 extern void ClientThink ( edict_t * ent , usercmd_t * ucmd ) ;
 extern void PrintPmove ( pmove_t * pm ) ;
