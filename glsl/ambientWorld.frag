@@ -101,9 +101,9 @@ void main (void) {
 		// Assume all shiny materials are metals of the same moderate roughness in Q2,
 		// treat diffuse map as combined albedo & normal map alpha channel as a rough-to-shiny ratio.
 		if(u_bump == 1)
-			fragData.xyz = diffuseMap * mix(D, S, specular * u_specularScale);
+			fragData.xyz = diffuseMap * clamp( mix(D, S, specular * u_specularScale),0.0, 1.0);
 		else
-			fragData.xyz = diffuseMap * D;
+			fragData.xyz = diffuseMap * clamp(D, 0.0 , 1.0);
 
 	} else
 		fragData.xyz = diffuseMap * lm;
@@ -125,7 +125,8 @@ void main (void) {
 
 	// fake AO/cavity
 	fragData.xyz *= normalMap.z * 0.5 + 0.5;
-	fragData.xyz *= u_ambientScale;
+	fragData.xyz *=	u_ambientScale;
+	
 	fragData += vec4(glowMap * 2.0, 1.0);
 	fragData.w = 1.0;
 

@@ -2,7 +2,7 @@
 layout (bindless_sampler, location = U_TMU0) uniform sampler2DRect	u_ScreenTex;
 
 layout(location = U_PARAM_FLOAT_1)	uniform float	u_gamma;	
-layout(location = U_PARAM_VEC4_0)	uniform vec4	u_hdrParams;
+layout(location = U_PARAM_VEC2_0)	uniform vec2	u_hdrParams;
 
 vec3 uncharted2Tonemap(vec3 x) {
   float A = 0.15;
@@ -19,10 +19,8 @@ void main(){
 	
     vec3 hdrColor = texture(u_ScreenTex, gl_FragCoord.xy).rgb;
 
-	float hdrKey				= u_hdrParams.x;
-	float hdrAverageLuminance	= u_hdrParams.y;
-	float hdrMaxLuminance		= u_hdrParams.z;
-	float exposure				= u_hdrParams.w;
+	float hdrMaxLuminance		= u_hdrParams.x;
+	float exposure				= u_hdrParams.y;
 
 	vec3 exposedColor = exposure * hdrColor.rgb;
 
