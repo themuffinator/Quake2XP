@@ -21,7 +21,6 @@ layout(location = U_AUTOBUMP_PARAMS)	uniform vec2	u_autoBumpParams; // x - bump 
 layout(location = U_PARAM_INT_0)		uniform int		u_blinnPhong; // use old lighting model
 layout(location = U_PARAM_INT_1)		uniform int		u_alphaMask;
 layout(location = U_PARAM_INT_2)		uniform int		u_useSSS;
-layout(location = U_PARAM_INT_3)		uniform int		u_useSkyRefl;
 layout(location = U_PARAM_INT_4)		uniform int		u_useSSLR;
 layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 layout(location = U_PROJ_MATRIX)		uniform mat4	u_projectionMatrix;

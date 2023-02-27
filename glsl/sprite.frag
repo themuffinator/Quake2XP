@@ -11,7 +11,6 @@ layout(location = U_SCREEN_SIZE)		uniform vec2	u_viewport;
 
 layout(location = U_COLOR_MUL)			uniform float	u_ambientScale;
 layout(location = U_REFR_MASK)			uniform vec2	u_mask;			//softeness
-layout(location = U_REFR_ALPHA_MASK)	uniform int		u_ALPHAMASK;	//is sprite
 layout(location = U_PARAM_FLOAT_0)		uniform float	u_blurScale;
 
 
