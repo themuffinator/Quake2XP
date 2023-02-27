@@ -253,9 +253,6 @@ static void GL_DrawLightmappedPoly(qboolean bmodel)
 	unsigned	oldFlag		= 0xffffffff;
 	unsigned	numIndices  = 0xffffffff;
 
-	if (!r_lightmapScale->value)
-		return;
-
 	// setup program
 	GL_BindProgram(ambientWorldProgram);
 

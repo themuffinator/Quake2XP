@@ -100,16 +100,20 @@ typedef vec4_t	mat4_t[4];		// row-major
 //
 // msurface_t->flags
 //
-#define	MSURF_PLANEBACK		0x2
-#define	MSURF_DRAWSKY		0x4
-#define MSURF_DRAWTURB		0x10
-//#define MSURF_DRAWBACKGROUND	0x40
-#define MSURF_UNDERWATER		0x80
-#define MSURF_ENVMAP		0x100
-#define MSURF_SSS			0x200
-#define MSURF_WATER      	0x400
-#define MSURF_SLIME      	0x800
-#define MSURF_LAVA       	0x1000
+typedef enum {
+	// vanila
+	MSURF_PLANEBACK			= BIT(1), 
+	MSURF_DRAWSKY			= BIT(2),
+	MSURF_DRAWTURB			= BIT(4),
+	MSURF_DRAWBACKGROUND	= BIT(6),
+	MSURF_UNDERWATER		= BIT(7),
+	//q2xp
+	MSURF_ENVMAP			= BIT(3),
+	MSURF_SSS				= BIT(5),
+	MSURF_WATER				= BIT(8),
+	MSURF_SLIME				= BIT(9),
+	MSURF_LAVA				= BIT(10)
+}msurfFlag_t;
 
 
 #define POWERSUIT_SCALE		4.0F

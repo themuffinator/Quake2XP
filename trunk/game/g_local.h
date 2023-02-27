@@ -967,6 +967,17 @@ struct gclient_s {
 	qboolean	update_chase;		// need to update chase info?
 };
 
+typedef struct modelTR_s modelTR_t;
+
+modelTR_t* TR_Model_Get(const char* name);
+modelTR_t* TR_Model_Create(const char* filename);
+modelTR_t* TR_Model_Load(const char* name);
+qboolean TR_Model_Trace(edict_t* ent, vec3_t start, vec3_t end, float* o);
+void TR_Model_Save(modelTR_t* model, const char* fileName);
+void TR_Model_Convert();
+void TR_Model_Free();
+void TR_AliasTransformVector(vec3_t in, vec3_t out, float xf[3][4]);
+int TR_Intersect_Triangle(float orig[3], float dir[3], float vert0[3], float vert1[3], float vert2[3], float* t, float* u, float* v);
 
 struct edict_s {
 	entity_state_t	s;
@@ -1115,6 +1126,9 @@ struct edict_s {
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
 	float timeout;
+
+	modelTR_t* collision_model;
+	solid_t old_contentmask;
 };
 
 void ED_CallSpawn (edict_t *ent);

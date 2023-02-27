@@ -572,6 +572,7 @@ void SP_monster_flyer (edict_t *self) {
 
 	gi.soundindex ("flyer/flyatck3.wav");
 
+	self->collision_model = TR_Model_Get("flyer");
 	self->s.modelindex = gi.modelindex ("models/monsters/flyer/tris.md2");
 	VectorSet (self->mins, -16, -16, -24);
 	VectorSet (self->maxs, 16, 16, 32);

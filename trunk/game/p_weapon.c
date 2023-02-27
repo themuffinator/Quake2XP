@@ -160,7 +160,7 @@ edict_t *mod_GetLeadoffVec(edict_t *self, vec3_t fireorigin, float rad, float pr
 }
 
 /// Berserker: также меняет forward
-void P_ProjectSource(edict_t *ent, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
+void P_ProjectSourceOld(edict_t *ent, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
 {
 	gclient_t *client = ent->client;
 	float *point = ent->s.origin;
@@ -191,6 +191,57 @@ void P_ProjectSource(edict_t *ent, vec3_t distance, vec3_t forward, vec3_t right
 	}
 }
 
+void P_ProjectSource(edict_t* ent, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
+{
+	gclient_t* client = ent->client;
+	float* point = ent->s.origin;
+	vec3_t		_distance;
+
+	VectorCopy(distance, _distance);
+	if (client->pers.hand == LEFT_HANDED)
+		_distance[1] *= -1;
+	else if (client->pers.hand == CENTER_HANDED)
+		_distance[1] = 0;
+	G_ProjectSource(point, _distance, forward, right, result);
+
+	char* value = Info_ValueForKey(client->pers.userinfo, "g_weaponHitAccuracy");
+	///	if (!value)		PVS-Studio
+	///		return;
+	if (!atoi(value))
+		return;
+
+	/// Berserker: fix - теперь заряд попадает точно туда, куда показывает прицел  ;p
+	int i;
+	vec3_t	start, end;
+	edict_t* hits[MAX_EDICTS];
+	int numHits = 0;
+	VectorSet(start, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] + ent->viewheight);
+	while (1)
+	{
+		VectorMA(start, 8192, forward, end);
+		trace_t	tr = gi.trace(start, NULL, NULL, end, ent, MASK_SHOT);
+		if (tr.fraction < 1)
+		{
+			if (tr.ent->collision_model)
+			{
+				/// если тормознулись об монстра, то сделаем его невидимым и трейсим заново
+				hits[numHits++] = tr.ent;
+				tr.ent->old_contentmask = tr.ent->solid;
+				tr.ent->solid = SOLID_NOT;
+			}
+			else
+			{
+				VectorSubtract(tr.endpos, result, forward);
+				VectorNormalize(forward);
+				break;
+			}
+		}
+		else
+			break;
+	}
+	for (i = 0; i < numHits; i++)
+		hits[i]->solid = hits[i]->old_contentmask;
+}
 
 /*
 ===============

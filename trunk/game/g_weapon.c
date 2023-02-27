@@ -128,7 +128,7 @@ fire_lead
 This is an internal support routine used for bullet/pellet based weapons.
 =================
 */
-static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int te_impact, int hspread, int vspread, int mod) {
+static void fire_lead_Orig (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int te_impact, int hspread, int vspread, int mod) {
 	trace_t		tr;
 	vec3_t		dir;
 	vec3_t		forward, right, up;
@@ -254,6 +254,163 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 	}
 }
 
+static void fire_lead(edict_t* self, vec3_t start, vec3_t aimdir, int damage, int kick, int te_impact, int hspread, int vspread, int mod) {
+	trace_t		tr;
+	vec3_t		dir;
+	vec3_t		forward, right, up;
+	vec3_t		end;
+	float		r;
+	float		u;
+	vec3_t		water_start, cur_start;
+	qboolean	water = qfalse;
+	int			i, content_mask = MASK_SHOT | MASK_WATER;
+
+	///	std::deque<edict_t*> hits;
+	edict_t* hits[MAX_EDICTS];
+	int numHits = 0;
+
+	///hits.push_back(self);
+	hits[numHits++] = self;
+	self->old_contentmask = self->solid;
+	self->solid = SOLID_NOT;
+
+	VectorCopy(start, cur_start);
+
+	tr = gi.trace(self->s.origin, NULL, NULL, start, self, MASK_SHOT);
+	if (!(tr.fraction < 1.0))
+	{
+		vectoangles(aimdir, dir);
+		AngleVectors(dir, forward, right, up);
+
+		r = crandom() * hspread;
+		u = crandom() * vspread;
+		VectorMA(start, 8192, forward, end);
+		VectorMA(end, r, right, end);
+		VectorMA(end, u, up, end);
+
+		if (gi.pointcontents(start) & MASK_WATER)
+		{
+			water = qtrue;
+			VectorCopy(start, water_start);
+			content_mask &= ~MASK_WATER;
+		}
+
+		while (qtrue)
+		{
+			tr = gi.trace(start, NULL, NULL, end, self, content_mask);
+			// see if we hit water
+			if (tr.contents & MASK_WATER)
+			{
+				int	color;
+
+				water = qtrue;
+				VectorCopy(tr.endpos, water_start);
+
+				if (!VectorCompare(start, tr.endpos))
+				{
+					if (tr.contents & CONTENTS_WATER)
+					{
+						if (strcmp(tr.surface->name, "*brwater") == 0)
+							color = SPLASH_BROWN_WATER;
+						else
+							color = SPLASH_BLUE_WATER;
+					}
+					else if (tr.contents & CONTENTS_SLIME)
+						color = SPLASH_SLIME;
+					else if (tr.contents & CONTENTS_LAVA)
+						color = SPLASH_LAVA;
+					else
+						color = SPLASH_UNKNOWN;
+
+					if (color != SPLASH_UNKNOWN)
+					{
+						gi.WriteByte(svc_temp_entity);
+						gi.WriteByte(TE_SPLASH);
+						gi.WriteByte(8);
+						gi.WritePosition(tr.endpos);
+						gi.WriteDir(tr.plane.normal);
+						gi.WriteByte(color);
+						gi.multicast(tr.endpos, MULTICAST_PVS);
+					}												
+
+					// change bullet's course when it enters water
+					VectorSubtract(end, start, dir);
+					vectoangles(dir, dir);
+					AngleVectors(dir, forward, right, up);
+					r = crandom() * hspread * 2;
+					u = crandom() * vspread * 2;
+					VectorMA(water_start, 8192, forward, end);
+					VectorMA(end, r, right, end);
+					VectorMA(end, u, up, end);
+				}
+
+				// re-trace ignoring water this time
+				tr = gi.trace(water_start, NULL, NULL, end, self, MASK_SHOT);
+			}
+			else 
+				if (tr.ent && tr.ent->collision_model){
+
+					if (!TR_Model_Trace(tr.ent, cur_start, end, NULL)){
+
+						VectorCopy(tr.endpos, cur_start);
+						hits[numHits++] = tr.ent;
+						tr.ent->old_contentmask = tr.ent->solid;
+						tr.ent->solid = SOLID_NOT;
+						continue;
+					}
+				}
+				break;
+		}
+	}
+
+	for (i = 0; i < numHits; i++)
+		hits[i]->solid = hits[i]->old_contentmask;
+
+	// send gun puff / flash
+	if (!((tr.surface) && (tr.surface->flags & SURF_SKY))) {
+		if (tr.fraction < 1.0) {
+			if (tr.ent->takedamage) {
+				T_Damage(tr.ent, self, self, aimdir, tr.endpos, tr.plane.normal, damage, kick, DAMAGE_BULLET, mod);
+			}
+			else {
+				if (strncmp(tr.surface->name, "sky", 3) != 0) {
+					gi.WriteByte(svc_temp_entity);
+					gi.WriteByte(te_impact);
+					gi.WritePosition(tr.endpos);
+					if (!net_compatibility->value)
+						gi.WritePosition(cur_start);
+					gi.WriteDir(tr.plane.normal);
+					gi.multicast(tr.endpos, MULTICAST_PVS);
+
+					if (self->client)
+						PlayerNoise(self, tr.endpos, PNOISE_IMPACT);
+				}
+			}
+		}
+	}
+
+	// if went through water, determine where the end and make a bubble trail
+	if (water) {
+		vec3_t	pos;
+
+		VectorSubtract(tr.endpos, water_start, dir);
+		VectorNormalize(dir);
+		VectorMA(tr.endpos, -2, dir, pos);
+		if (gi.pointcontents(pos) & MASK_WATER)
+			VectorCopy(pos, tr.endpos);
+		else
+			tr = gi.trace(pos, NULL, NULL, water_start, tr.ent, MASK_WATER);
+
+		VectorAdd(water_start, tr.endpos, pos);
+		VectorScale(pos, 0.5, pos);
+
+		gi.WriteByte(svc_temp_entity);
+		gi.WriteByte(TE_BUBBLETRAIL);
+		gi.WritePosition(water_start);
+		gi.WritePosition(tr.endpos);
+		gi.multicast(pos, MULTICAST_PVS);
+	}
+}
 
 /*
 =================
@@ -299,6 +456,18 @@ void blaster_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 	if (surf && (surf->flags & SURF_SKY)) {
 		G_FreeEdict (self);
 		return;
+	}
+
+	if (other->collision_model && other->takedamage)
+	{
+		vec3_t dir, start, end;
+		VectorCopy(self->velocity, dir);
+		VectorNormalize(dir);
+		VectorMA(self->s.origin, 1024, dir, start);
+		VectorMA(self->s.origin, -1024, dir, end);
+		///		VectorNegate(dir, dir);
+		if (!TR_Model_Trace(other, start, end, NULL))///, dir))
+			return;
 	}
 
 	if (self->owner->client)
@@ -446,6 +615,18 @@ void Grenade_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *s
 		G_FreeEdict (ent);
 		return;
 	}
+	
+	if (other->collision_model && other->takedamage)
+	{
+		vec3_t dir, start, end;
+		VectorCopy(ent->velocity, dir);
+		VectorNormalize(dir);
+		VectorMA(ent->s.origin, 1024, dir, start);
+		VectorMA(ent->s.origin, -1024, dir, end);
+		///		VectorNegate(dir, dir);
+		if (!TR_Model_Trace(other, start, end, NULL))///, dir))
+			return;
+	}
 
 	if (!other->takedamage) {
 		if (ent->spawnflags & 1) {
@@ -559,6 +740,18 @@ void rocket_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
 		return;
 	}
 
+	if (other->collision_model && other->takedamage)
+	{
+		vec3_t dir, start, end;
+		VectorCopy(ent->velocity, dir);
+		VectorNormalize(dir);
+		VectorMA(ent->s.origin, 1024, dir, start);
+		VectorMA(ent->s.origin, -1024, dir, end);
+		///		VectorNegate(dir, dir);
+		if (!TR_Model_Trace(other, start, end, NULL))///, dir))
+			return;
+	}
+
 	if (ent->owner->client)
 		PlayerNoise (ent->owner, ent->s.origin, PNOISE_IMPACT);
 
@@ -669,7 +862,20 @@ void fire_rail (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick
 				ignore = tr.ent;
 			else
 				ignore = NULL;
+			
+			if (tr.ent && tr.ent->collision_model)
+			{
+				float dist;
 
+				if (TR_Model_Trace(tr.ent, from, end, &dist))///, tr.plane.normal))
+					VectorMA(from, dist, aimdir, tr.endpos);
+				else
+				{
+					VectorCopy(tr.endpos, from);
+					ignore = tr.ent;
+					continue;
+				}
+			}
 			//	if ((tr.ent != self) && (tr.ent->takedamage))
 			//		T_Damage (tr.ent, self, self, aimdir, tr.endpos, tr.plane.normal, damage, kick, 0, MOD_RAILGUN);
 

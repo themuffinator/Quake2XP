@@ -574,6 +574,7 @@ void SP_monster_hover (edict_t *self) {
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
+	self->collision_model = TR_Model_Get("hover");
 	self->s.modelindex = gi.modelindex ("models/monsters/hover/tris.md2");
 	VectorSet (self->mins, -24, -24, -24);
 	VectorSet (self->maxs, 24, 24, 32);

@@ -783,7 +783,7 @@ void R_RenderSprites(void)
 
 	qglUniform2f(U_SCREEN_SIZE, vid.width, vid.height);
 	qglUniform2f(U_REFR_MASK, 0.0, 1.0);
-	qglUniform1i(U_REFR_ALPHA_MASK, 1);
+//	qglUniform1i(U_REFR_ALPHA_MASK, 1);
 
 	for (i = 0; i < r_newrefdef.num_entities; i++) {
 		currententity = &r_newrefdef.entities[i];

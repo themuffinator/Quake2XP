@@ -338,7 +338,11 @@ retry:
 
 	trace = gi.trace (start, ent->mins, ent->maxs, end, ent, mask);
 
-	VectorCopy (trace.endpos, ent->s.origin);
+	if (trace.ent->collision_model)
+		VectorCopy(end, ent->s.origin);
+	else
+		VectorCopy (trace.endpos, ent->s.origin);
+
 	gi.linkentity (ent);
 
 	if (trace.fraction != 1.0) {
@@ -669,6 +673,9 @@ void SV_Physics_Toss (edict_t *ent) {
 	VectorScale (ent->velocity, FRAMETIME, move);
 	trace = SV_PushEntity (ent, move);
 	if (!ent->inuse)
+		return;
+
+	if (trace.ent->collision_model && ent->clipmask == MASK_SHOT && ent->solid == SOLID_BBOX)
 		return;
 
 	if (trace.fraction < 1) {

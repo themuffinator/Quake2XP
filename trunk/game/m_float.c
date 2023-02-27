@@ -617,6 +617,7 @@ void SP_monster_floater (edict_t *self) {
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
+	self->collision_model = TR_Model_Get("float");
 	self->s.modelindex = gi.modelindex ("models/monsters/float/tris.md2");
 	VectorSet (self->mins, -24, -24, -24);
 	VectorSet (self->maxs, 24, 24, 32);

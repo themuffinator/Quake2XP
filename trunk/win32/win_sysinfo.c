@@ -549,7 +549,7 @@ BOOL GetOsVersion(RTL_OSVERSIONINFOEXW* pk_OsVer)
 	return Status == 0; // STATUS_SUCCESS;
 }
 
-qboolean Sys_CheckWindowsVersion() {
+void Sys_CheckWindowsVersion() {
 
 	RTL_OSVERSIONINFOEXW    rtl_OsVer;
 	DWORD					prType;
@@ -559,6 +559,11 @@ qboolean Sys_CheckWindowsVersion() {
 	if (GetOsVersion(&rtl_OsVer))
 	{
 		pGPI = (PGPI)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
+		
+		if (!pGPI) {
+			Com_Printf("Can't get ProcAddress for GetProductInfo\n");
+			return;
+		}
 
 		pGPI(rtl_OsVer.dwMajorVersion, rtl_OsVer.dwMinorVersion, 0, 0, &prType);
 
@@ -689,7 +694,6 @@ qboolean Sys_CheckWindowsVersion() {
 				else
 					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows Server 2008 R2 " S_COLOR_GREEN "x64 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
-			return qtrue;
 		}
 		if (rtl_OsVer.dwMajorVersion == 6 && rtl_OsVer.dwMinorVersion == 2) {
 			if (!isWin64x()) {
@@ -706,7 +710,6 @@ qboolean Sys_CheckWindowsVersion() {
 				else
 					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows Server 2012 R2 " S_COLOR_GREEN "x64 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
-			return qtrue;
 		}
 
 		if (rtl_OsVer.dwMajorVersion == 6 && rtl_OsVer.dwMinorVersion == 3) {
@@ -724,8 +727,6 @@ qboolean Sys_CheckWindowsVersion() {
 				else
 					Com_Printf(S_COLOR_WHITE"OS: " S_COLOR_YELLOW "Microsoft Windows Server 2012 R2 " S_COLOR_GREEN "x64 " S_COLOR_WHITE "%s" S_COLOR_YELLOW " %s " S_COLOR_WHITE "build " S_COLOR_GREEN "%d\n", S, rtl_OsVer.szCSDVersion, rtl_OsVer.dwBuildNumber);
 			}
-		
-			return qtrue;
 		}
 
 		if (rtl_OsVer.dwMajorVersion == 10 && rtl_OsVer.dwMinorVersion == 0) { //win 10-11 detection
@@ -774,10 +775,7 @@ qboolean Sys_CheckWindowsVersion() {
 			else
 				Com_Printf("OS: " S_COLOR_YELLOW "%s " S_COLOR_GREEN "x64 " S_COLOR_YELLOW "%s " S_COLOR_WHITE "build " S_COLOR_GREEN "%i.%i\n", winName, S, build, ubr);
 		}
-			return qtrue;
-		}		
+	}		
 }
-
-return qfalse;
 
 }

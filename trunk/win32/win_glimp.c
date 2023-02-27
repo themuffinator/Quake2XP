@@ -730,12 +730,7 @@ qboolean GLimp_Init( void *hinstance, void *wndproc )
 	
 	Sys_CpuID();
 	Sys_GetMemorySize();
-
-	if(!Sys_CheckWindowsVersion()){
-		Com_Printf( S_COLOR_RED "GLimp_CheckWindowsVersion() - Unsupported windows version.\nWindows 7 and above required\n" );
-		QGL_Shutdown();
-		Com_Error(ERR_FATAL, "GLimp_CheckWindowsVersion() - Unsupported windows version.\nWindows 7 and above required\n");
-	}
+	Sys_CheckWindowsVersion();
 
 	Sys_WindowsInfo();
 

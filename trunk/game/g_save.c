@@ -1137,8 +1137,17 @@ functionList_t functionList[] = {
 { "AI_SetSightClient", (byte *)AI_SetSightClient },
 { "Cmd_Spawn_f", (byte*)Cmd_Spawn_f },
 
-{ 0, 0 }
+{ "TR_Model_Create", (byte*)TR_Model_Create },
+{ "TR_Model_Load", (byte*)TR_Model_Load },
+{ "TR_Model_Trace", (byte*)TR_Model_Trace },
+{ "TR_Model_Save", (byte*)TR_Model_Save },
+{ "TR_Model_Convert", (byte*)TR_Model_Convert },
+{ "TR_Model_Get", (byte*)TR_Model_Get },
+{ "TR_Model_Free", (byte*)TR_Model_Free },
+{ "TR_AliasTransformVector", (byte*)TR_AliasTransformVector },
+{ "TR_Intersect_Triangle", (byte*)TR_Intersect_Triangle },
 
+{ 0, 0 }
 };
 
 /*
@@ -1561,6 +1570,8 @@ is loaded.
 
 void InitGame (void) {
 	gi.dprintf ("==== InitGame ====\n");
+
+	TR_Model_Convert();
 
 	gun_x = gi.cvar ("gun_x", "0", 0);
 	gun_y = gi.cvar ("gun_y", "0", 0);

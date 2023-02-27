@@ -760,16 +760,16 @@ void R_DrawMD3Mesh(qboolean weapon) {
 			GL_BlendFunc(GL_ONE, GL_ONE);
 		}
 
-		if (mesh->skinAlphatest) {
-			qglUniform1i(U_PARAM_INT_0, 1);
-			rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
-			if (!rgh)
-				rgh = r_notexture;
+	//	if (mesh->skinAlphatest) {
+	//		qglUniform1i(U_PARAM_INT_0, 1);
+	//		rgh = mesh->skinsRgh[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
+	//		if (!rgh)
+	//			rgh = r_notexture;
 
-			GL_SetBindlessTexture(U_TMU5, rgh->handle);
-		}
-		else 
-			qglUniform1i(U_PARAM_INT_0, 0);
+	//		GL_SetBindlessTexture(U_TMU5, rgh->handle);
+	//	}
+	//	else 
+	//		qglUniform1i(U_PARAM_INT_0, 0);
 
 		skin = mesh->skinsAlbedo[min(currententity->skinnum, MD3_MAX_SKINS - 1)];
 		if (!skin || skin == r_notexture)
@@ -1196,7 +1196,7 @@ void R_DrawMD3MeshLight(qboolean weapon) {
 			}
 		}
 		else*/
-			qglUniform1i(U_PARAM_INT_3, 0);
+		//	qglUniform1i(U_PARAM_INT_3, 0);
 
 		c_alias_polys += md3Hdr->meshes[i].num_tris;
 

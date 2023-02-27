@@ -373,6 +373,7 @@ void SP_monster_gladiator (edict_t *self) {
 
 	self->movetype = MOVETYPE_STEP;
 	self->solid = SOLID_BBOX;
+	self->collision_model = TR_Model_Get("gladiator");
 	self->s.modelindex = gi.modelindex ("models/monsters/gladiatr/tris.md2");
 	VectorSet (self->mins, -32, -32, -24);
 	VectorSet (self->maxs, 32, 32, 64);
