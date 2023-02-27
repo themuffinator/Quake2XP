@@ -2,7 +2,10 @@
 
 #include "g_local.h"
 #include <float.h>
-#include <direct.h>
+
+#ifdef _WIN32
+  #include <direct.h>
+#endif
 
 typedef struct{
 
