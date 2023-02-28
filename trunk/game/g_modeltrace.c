@@ -5,6 +5,8 @@
 
 #ifdef _WIN32
   #include <direct.h>
+//#else
+ // «#include <limits.h>
 #endif
 
 typedef struct{
@@ -247,8 +249,8 @@ modelTR_t* TR_Model_Create(const char* fileName){
 	return model;
 }
 
-#define FloatToUShort(f) ((unsigned short)(f * USHRT_MAX))
-#define UShortToFloat(us) (((float)us) / USHRT_MAX)
+#define FloatToUShort(f) ((unsigned short)(f * 65535))
+#define UShortToFloat(us) (((float)us) / 65535)
 
 modelTR_t* TR_Model_Load(const char* name){
 

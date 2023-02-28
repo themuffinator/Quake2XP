@@ -102,7 +102,7 @@ void R_Bloom (void)
 	qglUniform1i(U_PARAM_INT_0, 0); // vertical
 	R_DrawQuarterScreenQuad ();
 	glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
-
+	
 	//final pass
 	GL_BindProgram (bloomfpProgram);
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
