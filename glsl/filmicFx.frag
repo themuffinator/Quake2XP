@@ -1,5 +1,6 @@
 //!#include "include/global.inc"
 layout (bindless_sampler, location = U_TMU0) uniform sampler2D u_ScreenTex;
+layout (bindless_sampler, location = U_TMU1) uniform sampler2D u_lensDirtTex;
 
 layout(location = U_PARAM_FLOAT_0) uniform float	u_vignetSize;
 layout(location = U_SCREEN_SIZE)	uniform vec2	u_screenSize; 
@@ -42,6 +43,9 @@ void main()
 {    
 	vec2 uv = gl_FragCoord.xy / u_screenSize;
 	vec4 color = texture(u_ScreenTex, uv);
+	float lum = dot(vec3(0.2125, 0.7154, 0.0721), color.rgb);
+	vec3 dirt = pow(texture(u_lensDirtTex, uv).rgb, vec3(2.2));
+	dirt *= lum;
 
 	vec3 sum = vec3( 0.0 );
 	vec3 sumColor = vec3( 0.0 );
@@ -52,7 +56,7 @@ void main()
 		vec3 so = SpectrumOffset( t );
 
 		sum += so.xyz;
-		sumColor += so * texture(u_ScreenTex, BarrelDistortion( uv, ( 0.5 * Chromatic_Power * t ) ) ).rgb;
+		sumColor += so * texture(u_ScreenTex, BarrelDistortion( uv, ( 0.5 * Chromatic_Power * t ) ) ).rgb + dirt;
 	}
 
 	color.rgb = ( sumColor / sum );
