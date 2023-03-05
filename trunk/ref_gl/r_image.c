@@ -1048,6 +1048,7 @@ void GL_FreeUnusedImages(void)
 	r_whiteMap->registration_sequence = registration_sequence;
 	skinBump->registration_sequence = registration_sequence;
 	r_laser_normal->registration_sequence = registration_sequence;
+	r_lensDirt->registration_sequence = registration_sequence;
 
 	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
 		if (image->registration_sequence == registration_sequence)

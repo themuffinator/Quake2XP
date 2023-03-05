@@ -58,6 +58,7 @@ static menuslider_s		s_fixfov_slider;
 //static menulist_s		s_lut_list;
 
 static menuslider_s		s_bloomIntens_slider;
+static menuslider_s		s_bloomIntens2_slider;
 
 static menulist_s  		s_fs_box;
 
@@ -180,7 +181,7 @@ static void FixFovCallback(void *s) {
 static void BloomCallback (void *s) {
 	menulist_s *box = (menulist_s *)s;
 
-	Cvar_SetValue ("r_hdrGlare", box->curInteger * 1);
+	Cvar_SetValue ("r_hdrBloom", box->curInteger * 1);
 }
 
 static void DofCallback (void *s) {
@@ -216,6 +217,11 @@ static void mbCallback (void *s) {
 static void bloomLevelCallback(void *s) {
 	float intens = s_bloomIntens_slider.curvalue / 10;
 	Cvar_SetValue("r_hdrGlareIntens", intens);
+}
+
+static void bloomLevelCallback2(void* s) {
+	float intens = s_bloomIntens2_slider.curvalue / 10;
+	Cvar_SetValue("r_hdrBloomIntens", intens);
 }
 
 static void ResetDefaults (void *unused) {
@@ -294,7 +300,7 @@ static void ApplyChanges (void *unused) {
 	if (r_parallaxScale->modified)
 		vid_ref->modified = qtrue;
 
-	if (r_hdrGlare->modified)
+	if (r_hdrBloom->modified)
 		vid_ref->modified = qtrue;
 
 	if (r_dof->modified)
@@ -395,6 +401,9 @@ void M_ColorInit() {
 	if (!r_hdrGlareIntens)
 		r_hdrGlareIntens = Cvar_Get("r_hdrGlareIntens", "1.2", CVAR_ARCHIVE);
 
+	if (!r_hdrBloomIntens)
+		r_hdrBloomIntens = Cvar_Get("r_hdrBloomIntens", "1.0", CVAR_ARCHIVE);
+
 	if (!r_fixFovStrength)
 		r_fixFovStrength = Cvar_Get("r_fixFovStrength", "0.0", CVAR_ARCHIVE);
 
@@ -480,6 +489,16 @@ void M_ColorInit() {
 	s_bloomIntens_slider.curvalue = r_hdrGlareIntens->value * 10;
 	s_bloomIntens_slider.generic.statusbar = "Glare Intensity";
 
+	s_bloomIntens2_slider.generic.type = MTYPE_SLIDER;
+	s_bloomIntens2_slider.generic.x = 0;
+	s_bloomIntens2_slider.generic.y = 80 * ui_fontScale->value;
+	s_bloomIntens2_slider.generic.name = "Bloom Intensity";
+	s_bloomIntens2_slider.generic.callback = bloomLevelCallback2;
+	s_bloomIntens2_slider.minvalue = 1;
+	s_bloomIntens2_slider.maxvalue = 10;
+	s_bloomIntens2_slider.curvalue = r_hdrBloomIntens->value * 10;
+	s_bloomIntens2_slider.generic.statusbar = "Bloom Intensity";
+
 	s_fixfov_slider.generic.type = MTYPE_SLIDER;
 	s_fixfov_slider.generic.x = 0;
 	s_fixfov_slider.generic.y = 100 * ui_fontScale->value;
@@ -519,6 +538,7 @@ void M_ColorInit() {
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_vibrance_slider);
 
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_bloomIntens_slider);
+	Menu_AddItem(&s_opengl2_menu, (void*)&s_bloomIntens2_slider);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_fixfov_slider);
 //	Menu_AddItem(&s_opengl2_menu, (void *)&s_lut_list);
 	Menu_AddItem(&s_opengl2_menu, (void *)&s_menuColorTemp);
@@ -632,8 +652,8 @@ void VID_MenuInit (void) {
 		r_drawFlares = Cvar_Get ("r_drawFlares", "0", CVAR_ARCHIVE);
 
 
-	if (!r_hdrGlare)
-		r_hdrGlare = Cvar_Get ("r_hdrGlare", "0", CVAR_ARCHIVE);
+	if (!r_hdrBloom)
+		r_hdrBloom = Cvar_Get ("r_hdrBloom", "0", CVAR_ARCHIVE);
 
 	if (!r_parallaxMapping)
 		r_parallaxMapping = Cvar_Get ("r_parallaxMapping", "0", CVAR_ARCHIVE);
@@ -807,11 +827,11 @@ void VID_MenuInit (void) {
 	s_bloom_box.generic.type = MTYPE_SPINCONTROL;
 	s_bloom_box.generic.x = 0;
 	s_bloom_box.generic.y = 140 * ui_fontScale->value;
-	s_bloom_box.generic.name = "Glare";
+	s_bloom_box.generic.name = "Bloom";
 	s_bloom_box.itemnames = yesno_names;
-	s_bloom_box.curInteger = r_hdrGlare->integer;
+	s_bloom_box.curInteger = r_hdrBloom->integer;
 	s_bloom_box.generic.callback = BloomCallback;
-	s_bloom_box.generic.statusbar = "Draw Hdr Glare Effect";
+	s_bloom_box.generic.statusbar = "Draw Hdr Bloom Effect";
 
 	s_dof_box.generic.type = MTYPE_SPINCONTROL;
 	s_dof_box.generic.x = 0;

@@ -59,8 +59,9 @@ void R_DrawQuarterScreenQuad () {
 
 void R_Bloom (void) 
 {
-	if (!r_hdrGlare->integer)
-		return;
+	if (!r_filmFilter->integer)
+		if (!r_hdrBloom->integer)
+			return;
 
 	if (r_newrefdef.rdflags & (RDF_NOWORLDMODEL | RDF_IRGOGGLES))
 		return;
@@ -75,21 +76,27 @@ void R_Bloom (void)
 	qglBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo._hdr);
 
 	GL_BindProgram (bloomdsProgram);
+	if (r_filmFilter->integer)
+		qglUniform1i(U_PARAM_INT_0, 1);
+	else
+		qglUniform1i(U_PARAM_INT_0, 0);
+
 	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
 	R_DrawQuarterScreenQuad ();
 	glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width*0.25, vid.height*0.25);
 	
-	//glare
-	GL_BindProgram (glareProgram);
-	for (int i = 0; i< r_hdrGlarePasses->integer; i++) {
-		GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
-		qglUniform1f(U_PARAM_FLOAT_0, r_hdrGlareIntens->value);
-		qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
-		R_DrawQuarterScreenQuad();
-		glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+	if (r_filmFilter->integer) {
+		//glare
+		GL_BindProgram(glareProgram);
+		for (int i = 0; i < r_hdrGlarePasses->integer; i++) {
+			GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
+			qglUniform1f(U_PARAM_FLOAT_0, r_hdrGlareIntens->value);
+			qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float*)r_newrefdef.orthoMatrix);
+			R_DrawQuarterScreenQuad();
+			glCopyTextureSubImage2D(r_hdrBloomImage->texnum, 0, 0, 0, 0, 0, vid.width * 0.25, vid.height * 0.25);
+		}
 	}
-
 	//blur
 	GL_BindProgram(bloomBlurProgram);
 	GL_SetBindlessTexture(U_TMU0, r_hdrBloomImage->handle);
@@ -105,6 +112,8 @@ void R_Bloom (void)
 	
 	//final pass
 	GL_BindProgram (bloomfpProgram);
+	qglUniform1f(U_PARAM_FLOAT_0, r_hdrBloomIntens->value);
+
 	GL_SetBindlessTexture(U_TMU0, r_hdrScreenCopy->handle);
 	GL_SetBindlessTexture(U_TMU1, r_hdrBloomImage->handle);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);
@@ -308,7 +317,7 @@ void R_FXAA (void) {
 	glCopyTextureSubImage2D(r_hdrScreenCopy->texnum, 0, 0, 0, 0, 0, vid.width, vid.height);
 }
 
-void R_FilmFilter (void) 
+void R_FilmFx(void)
 {
 
 	if (!r_filmFilter->integer)
@@ -329,6 +338,8 @@ void R_FilmFilter (void)
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo._hdr);
 
 	GL_SetBindlessTexture(U_TMU0,	r_hdrScreenCopy2d->handle);
+	GL_SetBindlessTexture(U_TMU1,	r_lensDirt->handle);
+
 	qglUniform2f (U_SCREEN_SIZE,	vid.width, vid.height);
 	qglUniform1f (U_PARAM_FLOAT_0,	r_filmFilterVignetSize->value);
 	qglUniformMatrix4fv(U_ORTHO_MATRIX, 1, qfalse, (const float *)r_newrefdef.orthoMatrix);

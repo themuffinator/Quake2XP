@@ -610,7 +610,7 @@ void R_DrawMD3Mesh(qboolean weapon) {
 	vec3_t		move, delta, vectors[3];
 	md3Vertex_t	*verts, *oldVerts;
 	vec3_t		luminance = { 0.2125, 0.7154, 0.0721 };
-	image_t     *skin, *light, *normal, *ao, *rgh;
+	image_t     *skin, *light, *normal, *ao;
 
 	if (!r_drawEntities->integer)
 		return;

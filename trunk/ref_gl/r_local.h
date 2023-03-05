@@ -201,6 +201,7 @@ image_t* r_hdr64image;
 image_t	*r_cinImage;
 image_t	*r_hdrBloomImage;
 image_t	*r_thermalImage;
+image_t* r_lensDirt;
 
 int i_stencilView;
 uint64_t i_stencilView_handle;
@@ -266,7 +267,8 @@ cvar_t	*r_hdrExposure;
 cvar_t	*r_hdrLightScale;
 cvar_t	*r_hdrGlarePasses;
 cvar_t	*r_hdrGlareIntens;
-cvar_t	*r_hdrGlare;
+cvar_t	*r_hdrBloom;
+cvar_t* r_hdrBloomIntens;
 
 cvar_t	*r_colorVibrance;
 cvar_t	*r_colorBalanceRed;
@@ -425,7 +427,7 @@ void R_ThermalVision (void);
 void R_RadialBlur (void);
 void R_DofBlur (void);
 void R_FXAA (void);
-void R_FilmFilter (void);
+void R_FilmFx (void);
 void R_FixFov(void);
 void R_FixFov(void);
 void R_ToneMaping(void);

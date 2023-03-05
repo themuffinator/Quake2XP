@@ -562,6 +562,7 @@ void R_InitEngineTextures (void) {
 	r_cinImage = R_CreateTexture("***r_cinImage***", GL_TEXTURE_2D, GL_RGB8, GL_RGB, it_pic, 256, 256, 
 								GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR, GL_UNSIGNED_BYTE, qfalse, NULL);
 
+	r_lensDirt = GL_FindImage("gfx/lens_dirt.tga", it_pic);
 }
 
 

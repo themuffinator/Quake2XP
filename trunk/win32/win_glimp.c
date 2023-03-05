@@ -968,7 +968,7 @@ static qboolean GLW_ChoosePixelFormat() {
 		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
 		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
 		WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB, // WGL_TYPE_RGBA_FLOAT_ARB
+		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
 		WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
 		WGL_COLOR_BITS_ARB, 32,
 		WGL_ALPHA_BITS_ARB, 8,
@@ -1034,7 +1034,7 @@ void GLW_CreateContext() {
 
 	const char	*profileName[] = { "core", "compatibility" };
 
-	int	contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR;
+	int	contextFlag = r_glDebugOutput->integer ? WGL_CONTEXT_DEBUG_BIT_ARB : 0;
 	int	contextMask = r_glCoreProfile->integer ? WGL_CONTEXT_CORE_PROFILE_BIT_ARB : WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 
 	int	attribs[] =

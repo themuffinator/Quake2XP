@@ -1111,7 +1111,7 @@ void R_RenderFrame(refdef_t * fd) {
 		R_ThermalVision();
 		R_DofBlur();
 		R_Bloom();
-		R_FilmFilter();
+		R_FilmFx();
 		R_ScreenBlend();
 	}
 
@@ -1336,9 +1336,10 @@ void R_RegisterCvars(void)
 	r_gamma =							Cvar_Get("r_gamma", "2.2", CVAR_ARCHIVE); 
 	r_hdrExposure =						Cvar_Get("r_hdrExposure", "1.0", CVAR_ARCHIVE);
 	r_hdrLightScale =					Cvar_Get("r_hdrLightScale", "1.0", CVAR_ARCHIVE);
-	r_hdrGlare =						Cvar_Get("r_hdrGlare", "1", CVAR_ARCHIVE);
+	r_hdrBloom =						Cvar_Get("r_hdrBloom", "1", CVAR_ARCHIVE);
 	r_hdrGlarePasses =					Cvar_Get("r_hdrGlarePasses", "8", CVAR_ARCHIVE);
-	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.2", CVAR_ARCHIVE);
+	r_hdrGlareIntens =					Cvar_Get("r_hdrGlareIntens", "1.6", CVAR_ARCHIVE);
+	r_hdrBloomIntens =					Cvar_Get("r_hdrBloomIntens", "0.55", CVAR_ARCHIVE);
 
 	r_hdrAutoExposure =					Cvar_Get("r_hdrAutoExposure", "0", CVAR_ARCHIVE);
 	r_hdrAutoExposure->help = "buggy feature, don't turn it on\n";
