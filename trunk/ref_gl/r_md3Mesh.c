@@ -292,8 +292,14 @@ void Mod_LoadMD3(model_t *mod, void *buffer)
 			tex[strlen(tex) - 4] = 0;
 			strcat(tex, "_bump.tga");
 			outMesh->skinsNormal[j] = GL_FindImage(tex, it_normal);
+
+		//	if (!outMesh->skinsNormal[j]) {
+		//		tex[strlen(tex) - 4] = 0;
+		//		strcat(tex, "_bump.tga");
+		//		outMesh->skinsNormal[j] = GL_FindImage(tex, it_normal);				
+		//	}
 			if (!outMesh->skinsNormal[j])
-				outMesh->skinsNormal[j] = r_notexture;
+				outMesh->skinsNormal[j] = r_defBump;
 
 			// Roughness maps loading
 			strcpy(tex, name);

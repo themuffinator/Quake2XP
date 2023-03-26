@@ -920,6 +920,7 @@ void R_InitPrograms (void) {
 		missing++;
 	}
 
+
 /*	Com_Printf("Load "S_COLOR_YELLOW"lookup color table program"S_COLOR_WHITE" ");
 	lutProgram = R_FindProgram("lut", S_DEFAULT);
 	if (lutProgram->valid) {
@@ -1057,6 +1058,17 @@ void R_InitPrograms (void) {
 		Com_Printf(S_COLOR_RED"Failed!\n");
 		missing++;
 	}
+
+	Com_Printf("Load "S_COLOR_YELLOW"calc hdr luminance program"S_COLOR_WHITE" ");
+	hdrLumProgram = R_FindProgram("calcHdrLuma", S_DEFAULT);
+	if (hdrLumProgram->valid) {
+		Com_Printf("succeeded\n");
+	}
+	else {
+		Com_Printf(S_COLOR_RED"Failed!\n");
+		missing++;
+	}
+
 
 	Com_Printf("Load "S_COLOR_YELLOW"final pass program"S_COLOR_WHITE" ");
 	finalPassProgram = R_FindProgram("finalPass", S_DEFAULT);

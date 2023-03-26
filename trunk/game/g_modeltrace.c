@@ -491,6 +491,9 @@ qboolean TR_Model_Trace(edict_t* ent, vec3_t start, vec3_t end, float* o)
 	float	aliasworldtransform[3][4];
 	vec3_t s_alias_forward, s_alias_right, s_alias_up;
 	float len;
+	
+	if (!ent->collision_model->num_triangles)
+		return qfalse;
 
 	VectorSubtract(end, start, dir);
 	len = VectorNormalize(dir);

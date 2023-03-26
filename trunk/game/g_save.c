@@ -1136,7 +1136,7 @@ functionList_t functionList[] = {
 { "ai_move", (byte *)ai_move },
 { "AI_SetSightClient", (byte *)AI_SetSightClient },
 { "Cmd_Spawn_f", (byte*)Cmd_Spawn_f },
-
+/*
 { "TR_Model_Create", (byte*)TR_Model_Create },
 { "TR_Model_Load", (byte*)TR_Model_Load },
 { "TR_Model_Trace", (byte*)TR_Model_Trace },
@@ -1146,7 +1146,7 @@ functionList_t functionList[] = {
 { "TR_Model_Free", (byte*)TR_Model_Free },
 { "TR_AliasTransformVector", (byte*)TR_AliasTransformVector },
 { "TR_Intersect_Triangle", (byte*)TR_Intersect_Triangle },
-
+*/
 { 0, 0 }
 };
 

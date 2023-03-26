@@ -1354,6 +1354,7 @@ void R_RegisterCvars(void)
 	r_anisotropic =						Cvar_Get("r_anisotropic", "16", CVAR_ARCHIVE);
 	r_maxAnisotropy =					Cvar_Get("r_maxAnisotropy", "0", 0);
 	r_textureCompression =				Cvar_Get("r_textureCompression", "0", CVAR_ARCHIVE);			
+	r_textureCompressionHQ =			Cvar_Get("r_textureCompressionHQ", "0", CVAR_ARCHIVE);
 	r_textureLodBias =					Cvar_Get("r_textureLodBias", "0.0", CVAR_ARCHIVE);
 	r_maxTextureSize =					Cvar_Get("r_maxTextureSize", "0", CVAR_ARCHIVE);
 	r_imageAutoBump	=					Cvar_Get("r_imageAutoBump", "1", CVAR_ARCHIVE);
@@ -1600,6 +1601,7 @@ void R_InitFboBuffers() {
 	R_FboFinal();
 	R_FxaaFbo();
 	CreateHDR64Buffer();
+	R_HdrLumFbo();
 	CreateLinearDepthBuffer();
 	CreateSSAOBuffer();
 	CreateBloomBuffer();
@@ -1809,9 +1811,15 @@ int R_Init(void *hinstance, void *hWnd)
 	glGetTextureImage		=		(PFNGLGETTEXTUREIMAGEPROC)		qwglGetProcAddress("glGetTextureImage");
 
 	// texture storage
-	glTexStorage2D		=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
-	glTexStorage3D		=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");
-	qglTexSubImage3D	=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
+	glTexStorage2D			=		(PFNGLTEXSTORAGE2DPROC)			qwglGetProcAddress("glTexStorage2D");
+	glTexStorage3D			=		(PFNGLTEXSTORAGE3DPROC)			qwglGetProcAddress("glTexStorage3D");
+	qglTexSubImage3D		=		(PFNGLTEXSUBIMAGE3DPROC)		qwglGetProcAddress("glTexSubImage3D");
+
+	qglCompressedTexImage2D			=	(PFNGLCOMPRESSEDTEXIMAGE2DPROC)			qwglGetProcAddress("glCompressedTexImage2D");
+	qglCompressedTextureSubImage2D	=	(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC)	qwglGetProcAddress("glCompressedTextureSubImage2D");
+
+	qglCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)qwglGetProcAddress("glCompressedTexSubImage2D"); ;
+
 
 	glGenQueries		= (PFNGLGENQUERIESPROC)			qwglGetProcAddress("glGenQueries");
 	glDeleteQueries		= (PFNGLDELETEQUERIESPROC)		qwglGetProcAddress("glDeleteQueries");
@@ -1828,6 +1836,8 @@ int R_Init(void *hinstance, void *hWnd)
 
 	qglClampColor		=	(PFNGLCLAMPCOLORPROC)		qwglGetProcAddress("glClampColor");
 	qglClampColor(GL_CLAMP_READ_COLOR, GL_FALSE);
+
+
 
 	qglGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &gl_state.numFormats);
 	qglGetIntegerv(GL_PROGRAM_BINARY_FORMATS, &gl_state.binaryFormats);
@@ -1930,6 +1940,10 @@ int R_Init(void *hinstance, void *hWnd)
 		gl_state.depthBoundsTest = qfalse;
 	}
 
+	qglObjectLabel = (PFNGLOBJECTLABELPROC)qwglGetProcAddress("glObjectLabel");
+	qglGetObjectLabel = (PFNGLGETOBJECTLABELPROC)qwglGetProcAddress("glGetObjectLabel");
+	if (qglObjectLabel && qglGetObjectLabel)
+		Com_Printf("...using GL_debug_label\n");
 
 	Com_Printf("=====================================\n");
 

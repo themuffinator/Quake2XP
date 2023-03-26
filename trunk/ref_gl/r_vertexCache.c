@@ -113,46 +113,6 @@ void R_InitVertexBuffers() {
 
 	glBindVertexArray(0);
 
-	// half quad
-	VA_SetElem2(tmpVerts[0], 0, vid.height);
-	VA_SetElem2(tmpVerts[1], vid.width * 0.5, vid.height);
-	VA_SetElem2(tmpVerts[2], vid.width * 0.5, vid.height * 0.5);
-	VA_SetElem2(tmpVerts[3], 0, vid.height * 0.5);
-
-	qglGenBuffers(1, &vbo.vbo_halfScreenQuad);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_halfScreenQuad);
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vec2_t) * 4, tmpVerts, GL_STATIC_DRAW);
-
-	glGenVertexArrays(1, &vao.halfScreenQuad);
-	glBindVertexArray(vao.halfScreenQuad);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_halfScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quad);
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
-
-	glBindVertexArray(0);
-
-	// quater quad
-	VA_SetElem2(tmpVerts[0], 0, vid.height);
-	VA_SetElem2(tmpVerts[1], vid.width * 0.25, vid.height);
-	VA_SetElem2(tmpVerts[2], vid.width * 0.25, vid.height * 0.25);
-	VA_SetElem2(tmpVerts[3], 0, vid.height * 0.25);
-
-	qglGenBuffers(1, &vbo.vbo_quarterScreenQuad);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_quarterScreenQuad);
-	qglBufferData(GL_ARRAY_BUFFER, sizeof(vec2_t) * 4, tmpVerts, GL_STATIC_DRAW);
-
-	glGenVertexArrays(1, &vao.quaterScreenQuad);
-	glBindVertexArray(vao.quaterScreenQuad);
-	qglBindBuffer(GL_ARRAY_BUFFER, vbo.vbo_quarterScreenQuad);
-	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.ibo_quad);
-
-	qglEnableVertexAttribArray(ATT_POSITION);
-	qglVertexAttribPointer(ATT_POSITION, 2, GL_FLOAT, qfalse, 0, 0);
-
-	glBindVertexArray(0);
-	
 	//------------------------------------------------
 	// md2-3 shadows
 
@@ -223,8 +183,6 @@ void R_InitVertexBuffers() {
 void R_ShutDownVertexBuffers() {
 
 	qglDeleteBuffers(1, &vbo.vbo_fullScreenQuad);
-	qglDeleteBuffers(1, &vbo.vbo_halfScreenQuad);
-	qglDeleteBuffers(1, &vbo.vbo_quarterScreenQuad);
 	qglDeleteBuffers(1, &vbo.vbo_aliasShadow);
 	qglDeleteBuffers(1, &vbo.vbo_BSP);
 	qglDeleteBuffers(1, &vbo.vbo_draw2d);
@@ -238,7 +196,5 @@ void R_ShutDownVertexBuffers() {
 	glDeleteVertexArrays(1, &vao.bsp);
 	glDeleteVertexArrays(1, &vao.dynamic);
 	glDeleteVertexArrays(1, &vao.fullscreenQuad);
-	glDeleteVertexArrays(1, &vao.halfScreenQuad);
-	glDeleteVertexArrays(1, &vao.quaterScreenQuad);
 	glDeleteVertexArrays(1, &vao.draw2d);
 }

@@ -108,9 +108,6 @@ qboolean uploaded_paletted;
 
 image_t *GL_LoadPic(char *name, byte * pic, int width, int height, imagetype_t type, int bits, uint _hash);
 
-int gl_tex_solid_format = GL_RGBA8;
-int gl_tex_alpha_format = GL_RGBA8;
-
 int gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;	
 int gl_filter_max = GL_LINEAR;
 
@@ -195,6 +192,182 @@ int CalcMipmapCount(int w, int h)
 	}
 
 	return mipcount + 1;
+}
+
+image_t* R_LoadDDS(char* texName, uint type) {
+
+	unsigned		i, uw, uh, uploadWidth, uploadHeight, format, intFormat, bw;
+	int				length;
+	qboolean		compressed;
+	byte* buf;
+	byte* imagedata;
+	image_t* image;
+	ddsFileHeader_t* header;
+	textureCompression_t	texComp;
+
+	length = FS_LoadFile(texName, (void**)&buf);
+	if (!buf)
+		return NULL;
+
+	if (length <= sizeof(ddsFileHeader_t) + 4)
+	{
+		FS_FreeFile(buf);
+		Com_Printf("R_LoadDDS: file too short (%s)\n", texName);
+		return NULL;
+	}
+
+	// verify the type of file
+	if (strncmp(buf, "DDS ", 4) != 0)
+	{
+		FS_FreeFile(buf);
+		Com_Printf("R_LoadDDS: not a direct draw surface file (%s)\n", texName);
+		return NULL;
+	}
+
+	header = (ddsFileHeader_t*)(buf + 4);
+	uploadWidth = header->dwWidth;
+	uploadHeight = header->dwHeight;
+
+	texComp = TC_NONE;
+	compressed = qfalse;
+	if (header->ddspf.dwFlags & DDSF_FOURCC)
+	{
+		compressed = qtrue;
+		switch (header->ddspf.dwFourCC)
+		{
+		case DDS_MAKEFOURCC('D', 'X', 'T', '5'):
+			texComp = TC_DXT;
+			format = GL_RGBA;
+			intFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			Com_Printf("R_LoadDDS: DXT5 (%s)\n", texName);
+			break;
+		default:
+			FS_FreeFile(buf);
+			Com_Printf("R_LoadDDS: invalid compressed internal format (supported DXT5) (%s)\n", texName);
+			return NULL;
+		}
+	}
+	else if ((header->ddspf.dwFlags & DDSF_RGBA) && header->ddspf.dwRGBBitCount == 32)
+	{
+		format = GL_BGRA;
+		intFormat = GL_RGBA8;
+	}
+	else if ((header->ddspf.dwFlags & DDSF_RGB) && header->ddspf.dwRGBBitCount == 24)
+	{
+		format = GL_BGR;
+		intFormat = GL_RGB8;
+	}
+	else
+	{
+		FS_FreeFile(buf);
+		Com_Printf("R_LoadDDS: invalid uncompressed internal format (supported RGB and RGBA) (%s)\n", texName);
+		return NULL;
+	}
+
+	uw = uploadWidth;
+	uh = uploadHeight;
+
+	// find a free image_t
+	for (i = 0, image = gltextures; i < numgltextures; i++, image++) {
+		if (!image->texnum)
+			break;
+	}
+	if (i == numgltextures) {
+		if (numgltextures == MAX_GLTEXTURES)
+			VID_Error(ERR_FATAL, "MAX_GLTEXTURES");
+		numgltextures++;
+	}
+	image = &gltextures[i];
+
+	strcpy(image->name, texName);
+
+	image->width = uw;
+	image->height = uh;
+	image->upload_width = uw;
+	image->upload_height = uh;
+	image->type = type;
+	image->hash = Com_HashKey(image->name);
+
+//	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
+	qglGenTextures(1, &image->texnum);
+	qglBindTexture(GL_TEXTURE_2D, image->texnum);
+
+	if (type == it_part) {
+//		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+	else {
+	//	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+
+	if (header->dwFlags & DDSF_MIPMAPCOUNT) {
+		image->numMips = header->dwMipMapCount;
+	//	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, gl_filter_min);
+	//	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+	//	glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
+	//	glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
+	}
+	else {
+		image->numMips = 1;
+	//	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	Com_Printf("R_LoadDDS: num mips %i\n", image->numMips);
+
+	imagedata = buf + sizeof(ddsFileHeader_t) + 4;
+
+	if (!compressed)
+		bw = header->ddspf.dwRGBBitCount / 8;
+	else
+		bw = 16;
+
+	int level = 0;
+
+	for (i = 0; i < image->numMips; i++) {
+		int size = 0;
+
+		if (compressed) {
+			size = ((uw + 3) / 4) * ((uh + 3) / 4) * bw;
+		//	qglCompressedTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, intFormat, size, imagedata);
+			qglCompressedTexImage2D(GL_TEXTURE_2D, level, intFormat, uw, uh, 0, size, imagedata);
+		//	qglCompressedTexSubImage2D (GL_TEXTURE_2D, level, 0, 0, uw, uh, intFormat, size, imagedata);
+
+			level++;
+		}
+		else {
+			size = uw * uh * bw;
+		//	glTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, format, GL_UNSIGNED_BYTE, imagedata);
+			qglTexImage2D(GL_TEXTURE_2D, level, intFormat, uw, uh, 0, format, GL_UNSIGNED_BYTE, imagedata);
+			level++;
+		}
+		imagedata += size;
+		uw >>= 1;
+		uh >>= 1;
+		if (uw < 1)
+			uw = 1;
+		if (uh < 1)
+			uh = 1;
+	}
+
+//	glTextureStorage2D(image->texnum, image->numMips, intFormat, uw, uh);
+//	glTexStorage2D(GL_TEXTURE_2D, image->numMips, intFormat, uw, uh);
+
+	image->handle = glGetTextureHandleARB(image->texnum);
+	glMakeTextureHandleResidentARB(image->handle);
+
+	return image;
+
 }
 
 void R_CaptureColorBuffer(){
@@ -431,6 +604,7 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 	byte		*scan;
 	int			scaled_width, scaled_height;
 	uint		*scaled;
+	uint		comprFormat = r_textureCompressionHQ->integer ? GL_COMPRESSED_RGBA_BPTC_UNORM : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 
 	// scan the texture for any non-255 alpha
 	c = width * height;
@@ -446,17 +620,17 @@ qboolean GL_Upload32(unsigned *data, int width, int height, qboolean mipmap, qbo
 	if (samples == 3) {
 
 		if (gl_state.texture_compression_bptc && mipmap)
-			intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
+			intFormat = comprFormat;
 		else
-			intFormat = gl_tex_solid_format;
+			intFormat = GL_RGBA8;
 	}
 
 	if (samples == 4) {
 
 		if (gl_state.texture_compression_bptc && mipmap)
-			intFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
+			intFormat = comprFormat;
 		else
-			intFormat = gl_tex_alpha_format;
+			intFormat = GL_RGBA8;
 	}
 
 	if(r_maxTextureSize->integer && mipmap && !unScaled){
@@ -830,6 +1004,21 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 		}
 	}
 
+	if (strcmp(name + len - 4, ".jpg") && strcmp(name + len - 4, ".png") && strcmp(name + len - 4, ".tga") && strcmp(name + len - 4, ".dds") && !override) {
+
+		char s[128];
+		override = 1;
+		strcpy(s, name);
+		s[strlen(s) - 4] = 0;
+		strcat(s, ".dds");
+
+		image = GL_FindImage(s, type);
+		if (image) {
+			override = 0;
+			return image;
+		}
+	}
+
 	override = 0;
 	if (!strcmp(name + len - 4, ".pcx")) {
 		LoadPCX(name, &pic, &palette, &width, &height);
@@ -866,17 +1055,16 @@ image_t *GL_FindImage(char *name, imagetype_t type)
 
 		image = GL_LoadPic(name, pic, width, height, type, 32, Com_HashKey(name));
 	}
-	else
-		return NULL;
+	else if (!strcmp(name + len - 4, ".dds")) {
+		image = R_LoadDDS(name, type);
 
+	}
 
 	if (pic)
-		free(pic);
-	
+		free(pic);	
 
 	if (palette)
-		free(palette);
-	
+		free(palette);	
 
 	return image;
 }

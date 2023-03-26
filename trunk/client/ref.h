@@ -526,10 +526,18 @@ typedef struct {
 	uint	_linearDepth;
 	uint	_tex2d;
 	uint	_hdr64;
+	uint	_hdrLum[9];
 }fbo_t;
 
 fbo_t fbo;
 
+typedef struct {
+	uint	_64[2];
+	uint	_fsq[2];
+}pbo_t;
+
+pbo_t pbo;
+void R_PboInit();
 
 typedef struct {
 	int		x, y, width, height;	// in virtual screen coordinates

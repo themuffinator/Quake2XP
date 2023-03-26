@@ -1441,7 +1441,7 @@ void Mod_LoadFaces(lump_t * l) {
 	Z_Free(tempEdges);
 }
 
-#define bspSmoothAngle cosf(DEG2RAD(45.0))
+#define bspSmoothAngle cosf(DEG2RAD(44.0))
 
 void GL_BuildTBN(int count) {
 	int			ci, cj, i, j;
@@ -2531,12 +2531,12 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		strcat(gl, "_light.tga");
 		mod->glowtexture[i] = GL_FindImage(gl, it_skin);
 
-		if (!mod->glowtexture[i]) {
-			strcpy(gl, pname);
-			gl[strlen(gl) - 4] = 0;
-			strcat(gl, "_light.dds");
-			mod->glowtexture[i] = GL_FindImage(gl, it_skin);
-		}
+	//	if (!mod->glowtexture[i]) {
+	//		strcpy(gl, pname);
+	//		gl[strlen(gl) - 4] = 0;
+	//		strcat(gl, "_light.dds");
+	//		mod->glowtexture[i] = GL_FindImage(gl, it_skin);
+	//	}
 
 		if (!mod->glowtexture[i])
 			mod->glowtexture[i] = r_notexture;
@@ -2547,12 +2547,12 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		strcat(gl, "_bump.tga");
 		mod->skins_normal[i] = GL_FindImage(gl, it_normal);
 
-		if (!mod->skins_normal[i]) {
-			strcpy(gl, pname);
-			gl[strlen(gl) - 4] = 0;
-			strcat(gl, "_bump.dds");
-			mod->skins_normal[i] = GL_FindImage(gl, it_normal);
-		}
+	//	if (!mod->skins_normal[i]) {
+	//		strcpy(gl, pname);
+	//		gl[strlen(gl) - 4] = 0;
+	//		strcat(gl, "_bump.dds");
+	//		mod->skins_normal[i] = GL_FindImage(gl, it_normal);
+	//	}
 
 		if (!mod->skins_normal[i])
 			mod->skins_normal[i] = r_defBump;
@@ -2563,12 +2563,12 @@ void Mod_LoadAliasModel(model_t * mod, void *buffer) {
 		strcat(gl, "_rgh.tga");
 		mod->skins_roughness[i] = GL_FindImage(gl, it_wall);
 
-		if (!mod->skins_roughness[i]) {
-			strcpy(gl, pname);
-			gl[strlen(gl) - 4] = 0;
-			strcat(gl, "_rgh.dds");
-			mod->skins_roughness[i] = GL_FindImage(gl, it_wall);
-		}
+	//	if (!mod->skins_roughness[i]) {
+	//		strcpy(gl, pname);
+	//		gl[strlen(gl) - 4] = 0;
+	//		strcat(gl, "_rgh.dds");
+	//		mod->skins_roughness[i] = GL_FindImage(gl, it_wall);
+	//	}
 
 		if (!mod->skins_roughness[i])
 			mod->skins_roughness[i] = r_notexture;
