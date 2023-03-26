@@ -288,40 +288,28 @@ image_t* R_LoadDDS(char* texName, uint type) {
 	image->type = type;
 	image->hash = Com_HashKey(image->name);
 
-//	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
-	qglGenTextures(1, &image->texnum);
-	qglBindTexture(GL_TEXTURE_2D, image->texnum);
+	glCreateTextures(GL_TEXTURE_2D, 1, &image->texnum);
 
 	if (type == it_part) {
-//		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 	else {
-	//	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//	glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(image->texnum, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
 	if (header->dwFlags & DDSF_MIPMAPCOUNT) {
 		image->numMips = header->dwMipMapCount;
-	//	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-	//	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-	//	glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
-	//	glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, gl_filter_min);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		glTextureParameteri(image->texnum, GL_TEXTURE_BASE_LEVEL, 0);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MAX_LEVEL, image->numMips - 1);
 	}
 	else {
 		image->numMips = 1;
-	//	glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//	glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(image->texnum, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	Com_Printf("R_LoadDDS: num mips %i\n", image->numMips);
 
@@ -334,21 +322,19 @@ image_t* R_LoadDDS(char* texName, uint type) {
 
 	int level = 0;
 
+	glTextureStorage2D(image->texnum, image->numMips, intFormat, uw, uh); // call before glCompressedTextureSubImage2D !!!
+
 	for (i = 0; i < image->numMips; i++) {
 		int size = 0;
 
 		if (compressed) {
 			size = ((uw + 3) / 4) * ((uh + 3) / 4) * bw;
-		//	qglCompressedTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, intFormat, size, imagedata);
-			qglCompressedTexImage2D(GL_TEXTURE_2D, level, intFormat, uw, uh, 0, size, imagedata);
-		//	qglCompressedTexSubImage2D (GL_TEXTURE_2D, level, 0, 0, uw, uh, intFormat, size, imagedata);
-
+			qglCompressedTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, intFormat, size, imagedata);
 			level++;
 		}
 		else {
 			size = uw * uh * bw;
-		//	glTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, format, GL_UNSIGNED_BYTE, imagedata);
-			qglTexImage2D(GL_TEXTURE_2D, level, intFormat, uw, uh, 0, format, GL_UNSIGNED_BYTE, imagedata);
+			glTextureSubImage2D(image->texnum, level, 0, 0, uw, uh, format, GL_UNSIGNED_BYTE, imagedata);
 			level++;
 		}
 		imagedata += size;
@@ -359,9 +345,6 @@ image_t* R_LoadDDS(char* texName, uint type) {
 		if (uh < 1)
 			uh = 1;
 	}
-
-//	glTextureStorage2D(image->texnum, image->numMips, intFormat, uw, uh);
-//	glTexStorage2D(GL_TEXTURE_2D, image->numMips, intFormat, uw, uh);
 
 	image->handle = glGetTextureHandleARB(image->texnum);
 	glMakeTextureHandleResidentARB(image->handle);
