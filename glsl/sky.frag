@@ -145,6 +145,5 @@ void main(void)
         return;
     }
   
-  fragData = textureLod(u_map, v_texCoord.xyz, 0.0);
-//  fragData.rgb *= 2.0; // overbright hdr sky
+  fragData = texture(u_map, v_texCoord.xyz);
 }

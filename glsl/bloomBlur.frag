@@ -1,12 +1,12 @@
 //!#include "include/global.inc"
 layout (bindless_sampler, location  = U_TMU0) uniform sampler2DRect u_map;  
-layout (location = U_PARAM_INT_0)	uniform int horizontal;
+layout (location = U_PARAM_INT_0)	uniform int pass;
 
  void main(void){
 
  vec4 outp = vec4(0.0, 0.0, 0.0, 1.0);
 
-    if(horizontal == 1){
+    if(pass == 0){ // horizontal
 
     outp  = 0.015625 *	texture(u_map, gl_FragCoord.xy - vec2(6.0,0.0) );
     outp += 0.0596875 * texture(u_map, gl_FragCoord.xy - vec2(5.0,0.0) );
@@ -26,7 +26,7 @@ layout (location = U_PARAM_INT_0)	uniform int horizontal;
     return;
     }
     
-    if(horizontal == 0){
+    if(pass == 1){ // vertical
 
     outp  = 0.015625    *   texture(u_map, gl_FragCoord.xy - vec2(0.0,6.0) );
     outp += 0.0596875   *	texture(u_map, gl_FragCoord.xy - vec2(0.0,5.0) );

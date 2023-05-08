@@ -1,13 +1,11 @@
 //!#include "include/global.inc"
-layout (bindless_sampler, location  = U_TMU0) uniform	sampler2DRect	u_map;
-layout(location = U_PARAM_FLOAT_0)	uniform float	u_glareIntens; 
+layout (bindless_sampler, location  = U_TMU0)	uniform	sampler2DRect	u_glare;
+layout(location = U_PARAM_FLOAT_0)				uniform float			u_glareIntens; 
 
 void main(void) // Robert Beckebans hdr glare
 {
 	vec2 st = gl_FragCoord.xy;
-	
-	// base color with tone mapping applied
-	vec4 color = texture( u_map, st );
+	vec4 color = texture(u_glare, st);
 	
 	const float gaussFact[9] = float[9](0.13298076, 0.12579441, 0.10648267, 0.08065691, 0.05467002, 0.03315905, 0.01799699, 0.00874063, 0.00379866);
 	
@@ -34,16 +32,16 @@ void main(void) // Robert Beckebans hdr glare
 	for( int i = 0; i < samples; i++ )
     {
 		vec3 so = chromaticOffsets[ i ];
-		vec4 color = texture( u_map, st + vec2( float( i ), 0 )  * vec2(0.5, 0.5) *  scale );
+		vec4 color = texture(u_glare, st + vec2( float( i ), 0 )  * vec2(0.3) *  scale);
 			
 		float weight = gaussFact[ i ];
-		sumColor += color.rgb * ( so.rgb * weight * u_glareIntens );
+		sumColor += color.rgb * (so.rgb * weight * u_glareIntens);
 	}
 
 	for( int i = 1; i < samples; i++ )
     {
 		vec3 so = chromaticOffsets[ i ];
-		vec4 color = texture( u_map, st + vec2( float( -i ), 0 ) * vec2(0.5, 0.5)  *  scale );
+		vec4 color = texture(u_glare, st + vec2( float( -i ), 0 ) * vec2(0.3)  *  scale);
 			
 		float weight = gaussFact[ i ];
 		sumColor += color.rgb * ( so.rgb * weight * u_glareIntens );
