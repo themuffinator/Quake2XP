@@ -1406,9 +1406,9 @@ typedef enum D3D10_RESOURCE_DIMENSION {
 typedef struct {
 	DXGI_FORMAT              dxgiFormat;
 	D3D10_RESOURCE_DIMENSION resourceDimension;
-	UINT                     miscFlag;
-	UINT                     arraySize;
-	UINT                     miscFlags2;
+	uint                     miscFlag;
+	uint                     arraySize;
+	uint                     miscFlags2;
 } ddsFileHeaderDXT10_t;
 
 image_t* R_LoadDDS(char* texName, uint type);
